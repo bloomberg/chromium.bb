@@ -125,7 +125,7 @@ class MerkleIntegritySourceStreamTest
   std::unique_ptr<MerkleIntegritySourceStream> stream_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MerkleIntegritySourceStreamTests,
     MerkleIntegritySourceStreamTest,
     ::testing::Values(

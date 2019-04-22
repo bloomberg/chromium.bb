@@ -17,7 +17,7 @@ namespace views {
 // TODO(alicet): bring pane rotation into views and add tests.
 //               See browser_view.cc for details.
 
-typedef ViewsTestBase AccessiblePaneViewTest;
+using AccessiblePaneViewTest = ViewsTestBase;
 
 class TestBarView : public AccessiblePaneView,
                     public ButtonListener {
@@ -51,7 +51,7 @@ TestBarView::TestBarView() {
   set_allow_deactivate_on_esc(true);
 }
 
-TestBarView::~TestBarView() {}
+TestBarView::~TestBarView() = default;
 
 void TestBarView::ButtonPressed(Button* sender, const ui::Event& event) {
 }
@@ -59,13 +59,13 @@ void TestBarView::ButtonPressed(Button* sender, const ui::Event& event) {
 void TestBarView::Init() {
   SetLayoutManager(std::make_unique<FillLayout>());
   base::string16 label;
-  child_button_.reset(new LabelButton(this, label));
+  child_button_ = std::make_unique<LabelButton>(this, label);
   AddChildView(child_button_.get());
-  second_child_button_.reset(new LabelButton(this, label));
+  second_child_button_ = std::make_unique<LabelButton>(this, label);
   AddChildView(second_child_button_.get());
-  third_child_button_.reset(new LabelButton(this, label));
+  third_child_button_ = std::make_unique<LabelButton>(this, label);
   AddChildView(third_child_button_.get());
-  not_child_button_.reset(new LabelButton(this, label));
+  not_child_button_ = std::make_unique<LabelButton>(this, label);
 }
 
 View* TestBarView::GetDefaultFocusableChild() {
@@ -75,7 +75,8 @@ View* TestBarView::GetDefaultFocusableChild() {
 TEST_F(AccessiblePaneViewTest, SimpleSetPaneFocus) {
   TestBarView* test_view = new TestBarView();
   std::unique_ptr<Widget> widget(new Widget());
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -103,10 +104,9 @@ TEST_F(AccessiblePaneViewTest, SimpleSetPaneFocus) {
 TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
   View* test_view_main = new View();
   std::unique_ptr<Widget> widget_main(new Widget());
-  Widget::InitParams params_main = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params_main =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params_main.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  // By default, TYPE_POPUP is not activatable.
-  params_main.activatable = Widget::InitParams::ACTIVATABLE_YES;
   params_main.bounds = gfx::Rect(0, 0, 20, 20);
   widget_main->Init(params_main);
   View* root_main = widget_main->GetRootView();
@@ -119,9 +119,9 @@ TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
 
   TestBarView* test_view_bar = new TestBarView();
   std::unique_ptr<Widget> widget_bar(new Widget());
-  Widget::InitParams params_bar = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params_bar =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params_bar.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params_bar.activatable = Widget::InitParams::ACTIVATABLE_YES;
   params_bar.bounds = gfx::Rect(50, 50, 650, 650);
   widget_bar->Init(params_bar);
   View* root_bar = widget_bar->GetRootView();
@@ -137,19 +137,17 @@ TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
   EXPECT_EQ(test_view_bar->child_button(),
             test_view_bar->GetWidget()->GetFocusManager()->GetFocusedView());
 
-  if (!IsMus()) {
-    // Deactivate() is only reliable on Ash. On Windows it uses
-    // ::GetNextWindow() to simply activate another window, and which one is not
-    // predictable. On Mac, Deactivate() is not implemented. Note that
-    // TestBarView calls set_allow_deactivate_on_esc(true), which is only
-    // otherwise used in Ash.
+  // Deactivate() is only reliable on Ash. On Windows it uses
+  // ::GetNextWindow() to simply activate another window, and which one is not
+  // predictable. On Mac, Deactivate() is not implemented. Note that
+  // TestBarView calls set_allow_deactivate_on_esc(true), which is only
+  // otherwise used in Ash.
 #if !defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    // Esc should deactivate the widget.
-    test_view_bar->AcceleratorPressed(test_view_bar->escape_key());
-    EXPECT_TRUE(widget_main->IsActive());
-    EXPECT_FALSE(widget_bar->IsActive());
+  // Esc should deactivate the widget.
+  test_view_bar->AcceleratorPressed(test_view_bar->escape_key());
+  EXPECT_TRUE(widget_main->IsActive());
+  EXPECT_FALSE(widget_bar->IsActive());
 #endif
-  }
 
   widget_bar->CloseNow();
   widget_bar.reset();
@@ -162,7 +160,8 @@ TEST_F(AccessiblePaneViewTest, TwoSetPaneFocus) {
   TestBarView* test_view = new TestBarView();
   TestBarView* test_view_2 = new TestBarView();
   std::unique_ptr<Widget> widget(new Widget());
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -192,7 +191,8 @@ TEST_F(AccessiblePaneViewTest, PaneFocusTraversal) {
   TestBarView* test_view = new TestBarView();
   TestBarView* original_test_view = new TestBarView();
   std::unique_ptr<Widget> widget(new Widget());
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -239,7 +239,8 @@ TEST_F(AccessiblePaneViewTest, DoesntCrashOnEscapeWithRemovedView) {
   TestBarView* test_view1 = new TestBarView();
   TestBarView* test_view2 = new TestBarView();
   Widget widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget.Init(params);

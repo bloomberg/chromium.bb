@@ -24,12 +24,14 @@ struct SurfaceState;
 namespace gl
 {
 class Context;
-class ContextState;
+class ErrorSet;
+class State;
 }  // namespace gl
 
 namespace rx
 {
 class ContextImpl;
+class EGLSyncImpl;
 class ImageImpl;
 class ExternalImageSiblingImpl;
 class SurfaceImpl;
@@ -58,7 +60,8 @@ class EGLImplFactory : angle::NonCopyable
                                    EGLenum target,
                                    const egl::AttributeMap &attribs) = 0;
 
-    virtual ContextImpl *createContext(const gl::ContextState &state,
+    virtual ContextImpl *createContext(const gl::State &state,
+                                       gl::ErrorSet *errorSet,
                                        const egl::Config *configuration,
                                        const gl::Context *shareContext,
                                        const egl::AttributeMap &attribs) = 0;
@@ -70,12 +73,26 @@ class EGLImplFactory : angle::NonCopyable
     virtual ExternalImageSiblingImpl *createExternalImageSibling(const gl::Context *context,
                                                                  EGLenum target,
                                                                  EGLClientBuffer buffer,
-                                                                 const egl::AttributeMap &attribs)
-    {
-        UNREACHABLE();
-        return nullptr;
-    }
+                                                                 const egl::AttributeMap &attribs);
+
+    virtual EGLSyncImpl *createSync(const egl::AttributeMap &attribs);
 };
+
+inline ExternalImageSiblingImpl *EGLImplFactory::createExternalImageSibling(
+    const gl::Context *context,
+    EGLenum target,
+    EGLClientBuffer buffer,
+    const egl::AttributeMap &attribs)
+{
+    UNREACHABLE();
+    return nullptr;
+}
+
+inline EGLSyncImpl *EGLImplFactory::createSync(const egl::AttributeMap &attribs)
+{
+    UNREACHABLE();
+    return nullptr;
+}
 
 }  // namespace rx
 

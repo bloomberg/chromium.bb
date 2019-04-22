@@ -7,12 +7,11 @@
 
 #include "base/callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observation.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -57,6 +56,20 @@ class CORE_EXPORT IntersectionObserver final
   //                         ////////////////////
   enum ThresholdInterpretation { kFractionOfTarget, kFractionOfRoot };
 
+  // This value can be used to detect transitions between non-intersecting or
+  // edge-adjacent (i.e., zero area) state, and intersecting by any non-zero
+  // number of pixels.
+  static const float kMinimumThreshold;
+
+  // Used to specify when callbacks should be invoked with new notifications.
+  // Blink-internal users of IntersectionObserver will have their callbacks
+  // invoked synchronously at the end of a lifecycle update. Javascript
+  // observers will PostTask to invoke their callbacks.
+  enum DeliveryBehavior {
+    kDeliverDuringPostLifecycleSteps,
+    kPostTaskToDeliver
+  };
+
   static IntersectionObserver* Create(const IntersectionObserverInit*,
                                       IntersectionObserverDelegate&,
                                       ExceptionState&);
@@ -81,6 +94,7 @@ class CORE_EXPORT IntersectionObserver final
       ThresholdInterpretation semantics = kFractionOfTarget,
       DOMHighResTimeStamp delay = 0,
       bool track_visbility = false,
+      bool always_report_root_bounds = false,
       ExceptionState& = ASSERT_NO_EXCEPTION);
 
   static void ResumeSuspendedObservers();
@@ -91,7 +105,8 @@ class CORE_EXPORT IntersectionObserver final
                                 const Vector<float>& thresholds,
                                 ThresholdInterpretation semantics,
                                 DOMHighResTimeStamp delay,
-                                bool track_visibility);
+                                bool track_visibility,
+                                bool always_report_root_bounds);
 
   // API methods.
   void observe(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -114,13 +129,16 @@ class CORE_EXPORT IntersectionObserver final
   // root just because root_ is null.  Hence root_is_implicit_.
   bool RootIsImplicit() const { return root_is_implicit_; }
 
+  bool AlwaysReportRootBounds() const { return always_report_root_bounds_; }
+
   DOMHighResTimeStamp GetTimeStamp() const;
   DOMHighResTimeStamp GetEffectiveDelay() const;
   const Length& TopMargin() const { return top_margin_; }
   const Length& RightMargin() const { return right_margin_; }
   const Length& BottomMargin() const { return bottom_margin_; }
   const Length& LeftMargin() const { return left_margin_; }
-  unsigned FirstThresholdGreaterThan(float ratio) const;
+  void SetNeedsDelivery();
+  DeliveryBehavior GetDeliveryBehavior() const;
   void Deliver();
 
   // Returns false if this observer has an explicit root element which has been
@@ -139,7 +157,7 @@ class CORE_EXPORT IntersectionObserver final
  private:
   void ClearWeakMembers(Visitor*);
 
-  const TraceWrapperMember<IntersectionObserverDelegate> delegate_;
+  const Member<IntersectionObserverDelegate> delegate_;
   WeakMember<Element> root_;
   HeapLinkedHashSet<WeakMember<IntersectionObservation>> observations_;
   Vector<float> thresholds_;
@@ -151,6 +169,8 @@ class CORE_EXPORT IntersectionObserver final
   unsigned root_is_implicit_ : 1;
   unsigned track_visibility_ : 1;
   unsigned track_fraction_of_root_ : 1;
+  unsigned always_report_root_bounds_ : 1;
+  unsigned needs_delivery_ : 1;
 };
 
 }  // namespace blink

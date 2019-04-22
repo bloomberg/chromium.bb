@@ -28,8 +28,8 @@ TextTrackImpl::TextTrackImpl(
 
 TextTrackImpl::~TextTrackImpl() {
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&TextTrackImpl::OnRemoveTrack, client_,
-                                    base::Passed(&text_track_)));
+                         base::BindOnce(&TextTrackImpl::OnRemoveTrack, client_,
+                                        std::move(text_track_)));
 }
 
 void TextTrackImpl::addWebVTTCue(base::TimeDelta start,

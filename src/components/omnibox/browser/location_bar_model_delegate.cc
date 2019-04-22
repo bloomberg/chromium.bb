@@ -4,26 +4,27 @@
 
 #include "components/omnibox/browser/location_bar_model_delegate.h"
 
+bool LocationBarModelDelegate::ShouldPreventElision() const {
+  return false;
+}
+
 bool LocationBarModelDelegate::ShouldDisplayURL() const {
   return true;
 }
 
-void LocationBarModelDelegate::GetSecurityInfo(
-    security_state::SecurityInfo* result) const {
-  return;
+security_state::SecurityLevel LocationBarModelDelegate::GetSecurityLevel()
+    const {
+  return security_state::NONE;
+}
+
+std::unique_ptr<security_state::VisibleSecurityState>
+LocationBarModelDelegate::GetVisibleSecurityState() const {
+  return std::make_unique<security_state::VisibleSecurityState>();
 }
 
 scoped_refptr<net::X509Certificate> LocationBarModelDelegate::GetCertificate()
     const {
   return nullptr;
-}
-
-bool LocationBarModelDelegate::FailsBillingCheck() const {
-  return false;
-}
-
-bool LocationBarModelDelegate::FailsMalwareCheck() const {
-  return false;
 }
 
 const gfx::VectorIcon* LocationBarModelDelegate::GetVectorIconOverride() const {
@@ -32,4 +33,12 @@ const gfx::VectorIcon* LocationBarModelDelegate::GetVectorIconOverride() const {
 
 bool LocationBarModelDelegate::IsOfflinePage() const {
   return false;
+}
+
+AutocompleteClassifier* LocationBarModelDelegate::GetAutocompleteClassifier() {
+  return nullptr;
+}
+
+TemplateURLService* LocationBarModelDelegate::GetTemplateURLService() {
+  return nullptr;
 }

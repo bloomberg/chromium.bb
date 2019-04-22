@@ -188,6 +188,18 @@ gfx::Rect Tween::RectValueBetween(double value,
 }
 
 // static
+gfx::RectF Tween::RectFValueBetween(double value,
+                                    const gfx::RectF& start,
+                                    const gfx::RectF& target) {
+  const float x = FloatValueBetween(value, start.x(), target.x());
+  const float y = FloatValueBetween(value, start.y(), target.y());
+  const float right = FloatValueBetween(value, start.right(), target.right());
+  const float bottom =
+      FloatValueBetween(value, start.bottom(), target.bottom());
+  return gfx::RectF(x, y, right - x, bottom - y);
+}
+
+// static
 gfx::Transform Tween::TransformValueBetween(double value,
                                             const gfx::Transform& start,
                                             const gfx::Transform& target) {

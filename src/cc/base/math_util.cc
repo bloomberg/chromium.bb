@@ -20,6 +20,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -800,6 +801,25 @@ void MathUtil::AddToTracedValue(const char* name,
   res->AppendInteger(box.width());
   res->AppendInteger(box.height());
   res->AppendInteger(box.depth());
+  res->EndArray();
+}
+
+void MathUtil::AddToTracedValue(const char* name,
+                                const gfx::RRectF& rect,
+                                base::trace_event::TracedValue* res) {
+  res->BeginArray(name);
+  res->AppendDouble(rect.rect().x());
+  res->AppendDouble(rect.rect().y());
+  res->AppendDouble(rect.rect().width());
+  res->AppendDouble(rect.rect().height());
+  res->AppendDouble(rect.GetCornerRadii(gfx::RRectF::Corner::kUpperLeft).x());
+  res->AppendDouble(rect.GetCornerRadii(gfx::RRectF::Corner::kUpperLeft).y());
+  res->AppendDouble(rect.GetCornerRadii(gfx::RRectF::Corner::kUpperRight).x());
+  res->AppendDouble(rect.GetCornerRadii(gfx::RRectF::Corner::kUpperRight).y());
+  res->AppendDouble(rect.GetCornerRadii(gfx::RRectF::Corner::kLowerRight).x());
+  res->AppendDouble(rect.GetCornerRadii(gfx::RRectF::Corner::kLowerRight).y());
+  res->AppendDouble(rect.GetCornerRadii(gfx::RRectF::Corner::kLowerLeft).x());
+  res->AppendDouble(rect.GetCornerRadii(gfx::RRectF::Corner::kLowerLeft).y());
   res->EndArray();
 }
 

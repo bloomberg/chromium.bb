@@ -105,8 +105,7 @@ public class BackgroundSyncLauncher {
             protected void onPostExecute(Boolean shouldLaunch) {
                 callback.run(shouldLaunch);
             }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**

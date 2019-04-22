@@ -93,7 +93,7 @@ class CORE_EXPORT Range final : public ScriptWrappable {
               ExceptionState& = ASSERT_NO_EXCEPTION);
   void collapse(bool to_start);
   bool isPointInRange(Node* ref_node, unsigned offset, ExceptionState&) const;
-  short comparePoint(Node* ref_node, unsigned offset, ExceptionState&) const;
+  int16_t comparePoint(Node* ref_node, unsigned offset, ExceptionState&) const;
   enum CompareResults {
     NODE_BEFORE,
     NODE_AFTER,
@@ -101,17 +101,17 @@ class CORE_EXPORT Range final : public ScriptWrappable {
     NODE_INSIDE
   };
   enum CompareHow { kStartToStart, kStartToEnd, kEndToEnd, kEndToStart };
-  short compareBoundaryPoints(unsigned how,
-                              const Range* source_range,
-                              ExceptionState&) const;
-  static short compareBoundaryPoints(Node* container_a,
-                                     unsigned offset_a,
-                                     Node* container_b,
-                                     unsigned offset_b,
-                                     ExceptionState&);
-  static short compareBoundaryPoints(const RangeBoundaryPoint& boundary_a,
-                                     const RangeBoundaryPoint& boundary_b,
-                                     ExceptionState&);
+  int16_t compareBoundaryPoints(unsigned how,
+                                const Range* source_range,
+                                ExceptionState&) const;
+  static int16_t compareBoundaryPoints(Node* container_a,
+                                       unsigned offset_a,
+                                       Node* container_b,
+                                       unsigned offset_b,
+                                       ExceptionState&);
+  static int16_t compareBoundaryPoints(const RangeBoundaryPoint& boundary_a,
+                                       const RangeBoundaryPoint& boundary_b,
+                                       ExceptionState&);
   bool BoundaryPointsValid() const;
   bool intersectsNode(Node* ref_node, ExceptionState&);
   void deleteContents(ExceptionState&);
@@ -176,7 +176,7 @@ class CORE_EXPORT Range final : public ScriptWrappable {
 
   static Node* CheckNodeWOffset(Node*, unsigned offset, ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void SetDocument(Document&);
@@ -194,7 +194,7 @@ class CORE_EXPORT Range final : public ScriptWrappable {
                                              unsigned end_offset,
                                              ExceptionState&);
   static void ProcessNodes(ActionType,
-                           HeapVector<Member<Node>>&,
+                           NodeVector&,
                            Node* old_container,
                            Node* new_container,
                            ExceptionState&);

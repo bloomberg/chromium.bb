@@ -23,14 +23,13 @@ constexpr uint32_t kRenderNodeEnd = kRenderNodeStart + kDrmMaxMinor + 1;
 
 }  // namespace
 
-DrmRenderNodePathFinder::DrmRenderNodePathFinder() = default;
+DrmRenderNodePathFinder::DrmRenderNodePathFinder() {
+  FindDrmRenderNodePath();
+}
 
 DrmRenderNodePathFinder::~DrmRenderNodePathFinder() = default;
 
-base::FilePath DrmRenderNodePathFinder::GetDrmRenderNodePath() {
-  if (drm_render_node_path_.empty())
-    FindDrmRenderNodePath();
-
+base::FilePath DrmRenderNodePathFinder::GetDrmRenderNodePath() const {
   return drm_render_node_path_;
 }
 

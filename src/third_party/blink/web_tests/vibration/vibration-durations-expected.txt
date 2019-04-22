@@ -2,7 +2,6 @@ Tests for how durations are handled in the Vibration API.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS navigator.vibrate([]) is true
 PASS areArraysEqual(internals.pendingVibrationPattern(navigator), []) is true
 PASS internals.isVibrating(navigator) is false

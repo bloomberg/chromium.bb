@@ -12,7 +12,7 @@ cat <<-EOF
 No prebuilt ninja binary was found for this system.
 Try building your own binary by doing:
   cd ~
-  git clone https://github.com/martine/ninja.git -b v1.8.2
+  git clone https://github.com/ninja-build/ninja.git -b v1.8.2
   cd ninja && ./configure.py --bootstrap
 Then add ~/ninja/ to your PATH.
 EOF

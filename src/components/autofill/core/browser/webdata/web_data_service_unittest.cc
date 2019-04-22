@@ -17,7 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -43,6 +43,7 @@ using base::TimeDelta;
 using base::WaitableEvent;
 using testing::_;
 using testing::DoDefault;
+using testing::ElementsAre;
 using testing::ElementsAreArray;
 
 namespace {
@@ -106,7 +107,7 @@ class WebDataServiceTest : public testing::Test {
         base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()});
     wdbs_ = new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                    db_task_runner);
-    wdbs_->AddTable(base::WrapUnique(new AutofillTable));
+    wdbs_->AddTable(std::make_unique<AutofillTable>());
     wdbs_->LoadDatabase();
 
     wds_ = new AutofillWebDataService(
@@ -152,7 +153,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
         &AutofillWebDataService::AddObserver;
     wds_->GetDBTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(add_observer_func, wds_, &observer_));
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
   void TearDown() override {
@@ -204,7 +205,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
   // The event will be signaled when the mock observer is notified.
   done_event_.TimedWait(test_timeout_);
 
-  AutofillWebDataServiceConsumer<std::vector<base::string16>> consumer;
+  AutofillWebDataServiceConsumer<std::vector<AutofillEntry>> consumer;
   WebDataServiceBase::Handle handle;
   static const int limit = 10;
   handle = wds_->GetFormValuesForElementName(
@@ -212,7 +213,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(handle, consumer.handle());
   ASSERT_EQ(1U, consumer.result().size());
-  EXPECT_EQ(value1_, consumer.result()[0]);
+  EXPECT_EQ(value1_, consumer.result()[0].key().value());
 }
 
 TEST_F(WebDataServiceAutofillTest, FormFillRemoveOne) {
@@ -312,7 +313,7 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
 
   // Check that GUID-based notification was sent.
   const AutofillProfileChange expected_change(AutofillProfileChange::REMOVE,
-                                              profile.guid(), nullptr);
+                                              profile.guid(), &profile);
   EXPECT_CALL(observer_, AutofillProfileChanged(expected_change))
       .WillOnce(SignalEvent(&done_event_));
 
@@ -490,7 +491,7 @@ TEST_F(WebDataServiceAutofillTest, AutofillRemoveModifiedBetween) {
 
   // Check that GUID-based notification was sent for the profile.
   const AutofillProfileChange expected_profile_change(
-      AutofillProfileChange::REMOVE, profile.guid(), nullptr);
+      AutofillProfileChange::REMOVE, profile.guid(), &profile);
   EXPECT_CALL(observer_, AutofillProfileChanged(expected_profile_change))
       .WillOnce(SignalEvent(&done_event_));
 

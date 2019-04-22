@@ -12,10 +12,14 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
+namespace {
+class WebUITestPageHandler;
+}
+
 // The runner of Mojo WebUI javascript based tests. The main difference between
 // this and WebUIBrowserTest is that tests subclassing from this class use a
 // mojo pipe to send the test result, so there is no reliance on chrome.send().
-class MojoWebUIBrowserTest : public WebUIBrowserTest,
+class MojoWebUIBrowserTest : public BaseWebUIBrowserTest,
                              public content::WebContentsObserver {
  public:
   MojoWebUIBrowserTest();
@@ -36,6 +40,8 @@ class MojoWebUIBrowserTest : public WebUIBrowserTest,
 
  private:
   void BindTestRunner(web_ui_test::mojom::TestRunnerRequest request);
+
+  WebUITestPageHandler* test_page_handler_;
 
   service_manager::BinderRegistry registry_;
   bool use_mojo_lite_bindings_ = false;

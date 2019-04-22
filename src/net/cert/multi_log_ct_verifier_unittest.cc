@@ -40,8 +40,6 @@ namespace {
 
 const char kHostname[] = "example.com";
 const char kLogDescription[] = "somelog";
-const char kSCTCountHistogram[] =
-    "Net.CertificateTransparency.SCTsPerConnection";
 
 class MockSCTObserver : public CTVerifier::Observer {
  public:
@@ -143,16 +141,12 @@ class MultiLogCTVerifierTest : public ::testing::Test {
     base::Histogram* histogram = static_cast<base::Histogram*>(
         base::StatisticsRecorder::FindHistogram(histogram_name));
 
-    if (histogram == NULL)
+    if (histogram == nullptr)
       return 0;
 
     std::unique_ptr<base::HistogramSamples> samples =
         histogram->SnapshotSamples();
     return samples->GetCount(sample_index);
-  }
-
-  int NumConnectionsWithSingleSCT() {
-    return GetValueFromHistogram(kSCTCountHistogram, 1);
   }
 
   int NumEmbeddedSCTsInHistogram() {
@@ -251,23 +245,10 @@ TEST_F(MultiLogCTVerifierTest, CountsInvalidSCTsInStatusHistogram) {
                                   ct::SCT_STATUS_LOG_UNKNOWN));
 }
 
-TEST_F(MultiLogCTVerifierTest, CountsSingleEmbeddedSCTInConnectionsHistogram) {
-  int old_sct_count = NumConnectionsWithSingleSCT();
-  ASSERT_TRUE(CheckPrecertificateVerification(embedded_sct_chain_));
-  EXPECT_EQ(old_sct_count + 1, NumConnectionsWithSingleSCT());
-}
-
 TEST_F(MultiLogCTVerifierTest, CountsSingleEmbeddedSCTInOriginsHistogram) {
   int old_embedded_count = NumEmbeddedSCTsInHistogram();
   ASSERT_TRUE(CheckPrecertificateVerification(embedded_sct_chain_));
   EXPECT_EQ(old_embedded_count + 1, NumEmbeddedSCTsInHistogram());
-}
-
-TEST_F(MultiLogCTVerifierTest, CountsZeroSCTsCorrectly) {
-  int connections_without_scts = GetValueFromHistogram(kSCTCountHistogram, 0);
-  EXPECT_FALSE(VerifySinglePrecertificateChain(chain_));
-  ASSERT_EQ(connections_without_scts + 1,
-            GetValueFromHistogram(kSCTCountHistogram, 0));
 }
 
 TEST_F(MultiLogCTVerifierTest, NotifiesOfValidSCT) {

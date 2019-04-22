@@ -8,7 +8,6 @@ https://code.google.com/p/trace-viewer/
 """
 
 import collections
-import copy
 
 import telemetry.timeline.async_slice as tracing_async_slice
 import telemetry.timeline.flow_event as tracing_flow_event
@@ -19,9 +18,7 @@ from tracing.trace_data import trace_data as trace_data_module
 
 class TraceEventTimelineImporter(importer.TimelineImporter):
   def __init__(self, model, trace_data):
-    super(TraceEventTimelineImporter, self).__init__(
-        model, trace_data, import_order=1)
-    assert isinstance(trace_data, trace_data_module.TraceData)
+    super(TraceEventTimelineImporter, self).__init__(model, trace_data)
     self._trace_data = trace_data
 
     self._all_async_events = []
@@ -50,11 +47,6 @@ class TraceEventTimelineImporter(importer.TimelineImporter):
 
   def _GetOrCreateProcess(self, pid):
     return self._model.GetOrCreateProcess(pid)
-
-  def _DeepCopyIfNeeded(self, obj):
-    if self._trace_data.events_are_safely_mutable:
-      return obj
-    return copy.deepcopy(obj)
 
   def _ProcessAsyncEvent(self, event):
     """Helper to process an 'async finish' event, which will close an

@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -38,17 +39,17 @@ namespace {
 // could break their functionality, so these heuristics are used to recognize
 // likely hidden frames and immediately load them so that they can function
 // properly.
-bool IsFrameProbablyHidden(const DOMRectReadOnly& bounding_client_rect,
+bool IsFrameProbablyHidden(const LayoutRect& bounding_client_rect,
                            const Element& element) {
   // Tiny frames that are 4x4 or smaller are likely not intended to be seen by
   // the user. Note that this condition includes frames marked as
   // "display:none", since those frames would have dimensions of 0x0.
-  if (bounding_client_rect.width() < 4.1 || bounding_client_rect.height() < 4.1)
+  if (bounding_client_rect.Width() < 4.1 || bounding_client_rect.Height() < 4.1)
     return true;
 
   // Frames that are positioned completely off the page above or to the left are
   // likely never intended to be visible to the user.
-  if (bounding_client_rect.right() < 0.0 || bounding_client_rect.bottom() < 0.0)
+  if (bounding_client_rect.MaxX() < 0.0 || bounding_client_rect.MaxY() < 0.0)
     return true;
 
   const ComputedStyle* style = element.GetComputedStyle();
@@ -116,9 +117,8 @@ void LazyLoadFrameObserver::DeferLoadUntilNearViewport(
   was_recorded_as_deferred_ = false;
 
   lazy_load_intersection_observer_ = IntersectionObserver::Create(
-      {Length(GetLazyFrameLoadingViewportDistanceThresholdPx(
-                  element_->GetDocument()),
-              kFixed)},
+      {Length::Fixed(GetLazyFrameLoadingViewportDistanceThresholdPx(
+          element_->GetDocument()))},
       {std::numeric_limits<float>::min()}, &element_->GetDocument(),
       WTF::BindRepeating(&LazyLoadFrameObserver::LoadIfHiddenOrNearViewport,
                          WrapWeakPersistent(this)));
@@ -143,7 +143,7 @@ void LazyLoadFrameObserver::LoadIfHiddenOrNearViewport(
   if (entries.back()->isIntersecting()) {
     RecordInitialDeferralAction(
         FrameInitialDeferralAction::kLoadedNearOrInViewport);
-  } else if (IsFrameProbablyHidden(*entries.back()->boundingClientRect(),
+  } else if (IsFrameProbablyHidden(entries.back()->GetGeometry().TargetRect(),
                                    *element_)) {
     RecordInitialDeferralAction(FrameInitialDeferralAction::kLoadedHidden);
   } else {
@@ -168,6 +168,8 @@ void LazyLoadFrameObserver::LoadImmediately() {
             .GetFrame()
             ->Client()
             ->GetEffectiveConnectionType());
+    element_->GetDocument().GetFrame()->Client()->DidObserveLazyLoadBehavior(
+        WebLocalFrameClient::LazyLoadBehavior::kLazyLoadedFrame);
   }
 
   std::unique_ptr<LazyLoadRequestInfo> scoped_request_info =
@@ -180,7 +182,7 @@ void LazyLoadFrameObserver::LoadImmediately() {
 
   // Note that calling FrameLoader::StartNavigation() causes the
   // |lazy_load_intersection_observer_| to be disconnected.
-  ToLocalFrame(element_->ContentFrame())
+  To<LocalFrame>(element_->ContentFrame())
       ->Loader()
       .StartNavigation(FrameLoadRequest(&element_->GetDocument(),
                                         scoped_request_info->resource_request),
@@ -207,7 +209,8 @@ void LazyLoadFrameObserver::RecordMetricsOnVisibilityChanged(
   DCHECK(!entries.IsEmpty());
   DCHECK_EQ(element_, entries.back()->target());
 
-  if (IsFrameProbablyHidden(*entries.back()->boundingClientRect(), *element_)) {
+  if (IsFrameProbablyHidden(entries.back()->GetGeometry().TargetRect(),
+                            *element_)) {
     visibility_metrics_observer_->disconnect();
     visibility_metrics_observer_.Clear();
     return;
@@ -388,11 +391,14 @@ void LazyLoadFrameObserver::RecordInitialDeferralAction(
       break;
   }
 
-  if (action == FrameInitialDeferralAction::kDeferred)
+  if (action == FrameInitialDeferralAction::kDeferred) {
+    element_->GetDocument().GetFrame()->Client()->DidObserveLazyLoadBehavior(
+        WebLocalFrameClient::LazyLoadBehavior::kDeferredFrame);
     was_recorded_as_deferred_ = true;
+  }
 }
 
-void LazyLoadFrameObserver::Trace(blink::Visitor* visitor) {
+void LazyLoadFrameObserver::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(lazy_load_intersection_observer_);
   visitor->Trace(visibility_metrics_observer_);

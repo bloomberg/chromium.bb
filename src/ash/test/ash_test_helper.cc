@@ -13,6 +13,7 @@
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_ash.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/mojo_test_interface_factory.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
@@ -20,18 +21,18 @@
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/system/screen_layout_observer.h"
-#include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test_shell_delegate.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/ws/window_service_owner.h"
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/token.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/audio/cras_audio_client.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
@@ -54,7 +55,7 @@
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/ui_base_features.h"
@@ -66,6 +67,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/wm_state.h"
@@ -89,8 +91,8 @@ class TestGpuInterfaceProvider : public ws::GpuInterfaceProvider {
     registry->AddInterface(base::BindRepeating(
         &TestGpuInterfaceProvider::BindGpuRequest, base::Unretained(this)));
   }
-  void RegisterOzoneGpuInterfaces(
-      service_manager::BinderRegistry* registry) override {}
+  void BindOzoneGpuInterface(const std::string& interface_name,
+                             mojo::ScopedMessagePipeHandle handle) override {}
 
  private:
   void BindDiscardableSharedMemoryManager(
@@ -107,9 +109,8 @@ class TestGpuInterfaceProvider : public ws::GpuInterfaceProvider {
   DISALLOW_COPY_AND_ASSIGN(TestGpuInterfaceProvider);
 };
 
-AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
-    : ash_test_environment_(ash_test_environment),
-      command_line_(std::make_unique<base::test::ScopedCommandLine>()) {
+AshTestHelper::AshTestHelper()
+    : command_line_(std::make_unique<base::test::ScopedCommandLine>()) {
   ui::test::EnableTestConfigForPlatformWindows();
 }
 
@@ -136,18 +137,6 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
         ::switches::kHostWindowBounds, "1+1-800x600");
   }
 
-  // TODO(wutao): We enabled a smooth screen rotation animation, which is using
-  // an asynchronous method. However for some tests require to evaluate the
-  // screen rotation immediately after the operation of setting display
-  // rotation, we need to append a slow screen rotation animation flag to pass
-  // the tests. When we remove the flag "ash-disable-smooth-screen-rotation", we
-  // need to disable the screen rotation animation in the test.
-  if (!command_line_->GetProcessCommandLine()->HasSwitch(
-          switches::kAshDisableSmoothScreenRotation)) {
-    command_line_->GetProcessCommandLine()->AppendSwitch(
-        switches::kAshDisableSmoothScreenRotation);
-  }
-
   statistics_provider_ =
       std::make_unique<chromeos::system::ScopedFakeStatisticsProvider>();
 
@@ -156,7 +145,9 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
   display::ResetDisplayIdForTest();
   wm_state_ = std::make_unique<::wm::WMState>();
-  test_views_delegate_ = ash_test_environment_->CreateViewsDelegate();
+  // Only create a ViewsDelegate if the test didn't create one already.
+  if (!views::ViewsDelegate::GetInstance())
+    test_views_delegate_ = std::make_unique<AshTestViewsDelegate>();
 
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
@@ -167,29 +158,24 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   if (!test_shell_delegate_)
     test_shell_delegate_ = new TestShellDelegate;
 
-  if (!chromeos::DBusThreadManager::IsInitialized()) {
-    chromeos::DBusThreadManager::Initialize(
-        chromeos::DBusThreadManager::kShared);
-    dbus_thread_manager_initialized_ = true;
-  }
-
   if (!bluez::BluezDBusManager::IsInitialized()) {
-    bluez::BluezDBusManager::Initialize();
+    bluez::BluezDBusManager::InitializeFake();
     bluez_dbus_manager_initialized_ = true;
   }
 
+  chromeos::PowerManagerClient::InitializeFake();
+
   if (!chromeos::PowerPolicyController::IsInitialized()) {
     chromeos::PowerPolicyController::Initialize(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+        chromeos::PowerManagerClient::Get());
     power_policy_controller_initialized_ = true;
   }
 
+  chromeos::CrasAudioClient::InitializeFake();
   // Create CrasAudioHandler for testing since g_browser_process is not
   // created in AshTestBase tests.
   chromeos::CrasAudioHandler::InitializeForTesting();
-  chromeos::SystemSaltGetter::Initialize();
 
-  ash_test_environment_->SetUp();
   // Reset the global state for the cursor manager. This includes the
   // last cursor visibility state, etc.
   ::wm::CursorManager::ResetCursorVisibilityStateForTest();
@@ -242,16 +228,20 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   CreateWindowService();
 
   // Create the test keyboard controller observer to respond to
-  // OnKeyboardLoadContents() and enable the virtual keyboard. Note: enabling
-  // the keyboard just makes it available, it does not show it or otherwise
-  // affect behavior.
+  // OnLoadKeyboardContentsRequested().
   test_keyboard_controller_observer_ =
       std::make_unique<TestKeyboardControllerObserver>(
           shell->ash_keyboard_controller());
-  shell->ash_keyboard_controller()->EnableKeyboard();
+
+  // Remove the app dragging animations delay for testing purposes.
+  shell->overview_controller()->set_delayed_animation_task_delay_for_test(
+      base::TimeDelta());
 }
 
 void AshTestHelper::TearDown() {
+  mus_client_.reset();
+  window_tree_client_setter_.reset();
+
   test_keyboard_controller_observer_.reset();
   app_list_test_helper_.reset();
 
@@ -262,25 +252,21 @@ void AshTestHelper::TearDown() {
   // Suspend the tear down until all resources are returned via
   // CompositorFrameSinkClient::ReclaimResources()
   base::RunLoop().RunUntilIdle();
-  ash_test_environment_->TearDown();
 
-  chromeos::SystemSaltGetter::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
+  chromeos::CrasAudioClient::Shutdown();
 
   if (power_policy_controller_initialized_) {
     chromeos::PowerPolicyController::Shutdown();
     power_policy_controller_initialized_ = false;
   }
 
+  chromeos::PowerManagerClient::Shutdown();
+
   if (bluez_dbus_manager_initialized_) {
     device::BluetoothAdapterFactory::Shutdown();
     bluez::BluezDBusManager::Shutdown();
     bluez_dbus_manager_initialized_ = false;
-  }
-
-  if (dbus_thread_manager_initialized_) {
-    chromeos::DBusThreadManager::Shutdown();
-    dbus_thread_manager_initialized_ = false;
   }
 
   ui::TerminateContextFactoryForTests();
@@ -303,7 +289,6 @@ void AshTestHelper::TearDown() {
   command_line_.reset();
 
   display::Display::ResetForceDeviceScaleFactorForTesting();
-  env_window_tree_client_setter_.reset();
 
   CHECK(!::wm::CaptureController::Get());
 #if !defined(NDEBUG)
@@ -343,6 +328,25 @@ service_manager::Connector* AshTestHelper::GetWindowServiceConnector() {
   return window_service_connector_.get();
 }
 
+void AshTestHelper::CreateMusClient() {
+  DCHECK(!mus_client_);
+  // Set aura::Env's WindowTreeClient to null. This is necessary as code such
+  // as AshTestBase may have already installed a WindowTreeClient.
+  window_tree_client_setter_ =
+      std::make_unique<aura::test::EnvWindowTreeClientSetter>(nullptr);
+  // As EnvWindowTreeClientSetter sets aura::Env's WindowTreeClient to null, it
+  // also sets Env::in_mus_shutdown_ to false. Env isn't in shutdown at this
+  // point, so force it to false.
+  aura::test::EnvTestHelper().SetInMusShutdown(false);
+
+  // Configure views backed by mus.
+  views::MusClient::InitParams mus_client_init_params;
+  mus_client_init_params.connector = GetWindowServiceConnector();
+  mus_client_init_params.create_wm_state = false;
+  mus_client_init_params.running_in_ws_process = true;
+  mus_client_ = std::make_unique<views::MusClient>(mus_client_init_params);
+}
+
 void AshTestHelper::CreateWindowService() {
   Shell::Get()->window_service_owner()->BindWindowService(
       test_connector_factory_.RegisterInstance(ws::mojom::kServiceName));
@@ -368,6 +372,7 @@ void AshTestHelper::CreateShell() {
   init_params.context_factory_private = context_factory_private;
   init_params.gpu_interface_provider =
       std::make_unique<TestGpuInterfaceProvider>();
+  init_params.keyboard_ui_factory = std::make_unique<TestKeyboardUIFactory>();
   Shell::CreateInstance(std::move(init_params));
 }
 

@@ -7,7 +7,7 @@
 #include "src/handles.h"
 #include "src/isolate.h"
 #include "src/objects-inl.h"
-#include "src/objects.h"
+#include "src/objects/heap-number-inl.h"
 #include "src/property-descriptor.h"
 #include "src/wasm/module-decoder.h"
 #include "src/wasm/wasm-engine.h"
@@ -46,12 +46,12 @@ std::shared_ptr<WasmModule> DecodeWasmModuleForTesting(
   auto enabled_features = WasmFeaturesFromIsolate(isolate);
   ModuleResult decoding_result = DecodeWasmModule(
       enabled_features, module_start, module_end, verify_functions, origin,
-      isolate->counters(), isolate->allocator());
+      isolate->counters(), isolate->wasm_engine()->allocator());
 
   if (decoding_result.failed()) {
     // Module verification failed. throw.
     thrower->CompileError("DecodeWasmModule failed: %s",
-                          decoding_result.error_msg().c_str());
+                          decoding_result.error().message().c_str());
   }
 
   return std::move(decoding_result).value();
@@ -61,6 +61,8 @@ bool InterpretWasmModuleForTesting(Isolate* isolate,
                                    Handle<WasmInstanceObject> instance,
                                    const char* name, size_t argc,
                                    WasmValue* args) {
+  HandleScope handle_scope(isolate);  // Avoid leaking handles.
+  WasmCodeRefScope code_ref_scope;
   MaybeHandle<WasmExportedFunction> maybe_function =
       GetExportedFunction(isolate, instance, "main");
   Handle<WasmExportedFunction> function;
@@ -72,7 +74,10 @@ bool InterpretWasmModuleForTesting(Isolate* isolate,
   size_t param_count = signature->parameter_count();
   std::unique_ptr<WasmValue[]> arguments(new WasmValue[param_count]);
 
-  memcpy(arguments.get(), args, std::min(param_count, argc));
+  size_t arg_count = std::min(param_count, argc);
+  if (arg_count > 0) {
+    memcpy(arguments.get(), args, arg_count);
+  }
 
   // Fill the parameters up with default values.
   for (size_t i = argc; i < param_count; ++i) {

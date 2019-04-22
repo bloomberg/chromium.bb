@@ -42,8 +42,17 @@ bool IsPinEnabled(PrefService* pref_service);
 // Returns true if the fingerprint is allowed for specified profile.
 bool IsFingerprintEnabled(Profile* profile);
 
-// Forcibly enable all quick-unlock modes for testing.
-void EnableForTesting();
+// Whether fingerprint setup UI should use resources that indicate the
+// fingerprint sensor placement for laptops, rather than tablets.
+// TODO(yulunwu): Reevaluate this once the fingerprint UI settings are supported
+// by cros_config.
+bool IsFingerprintReaderOnKeyboard();
+
+// Enable or Disable quick-unlock modes for testing
+void EnabledForTesting(bool state);
+
+// Returns true if EnableForTesting() was previously called.
+bool IsEnabledForTesting();
 
 // Forcibly disable PIN for testing purposes.
 void DisablePinByPolicyForTesting(bool disable);

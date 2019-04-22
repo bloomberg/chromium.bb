@@ -18,9 +18,10 @@
 #include "chrome/common/supervised_user_commands.mojom.h"
 #include "chrome/renderer/net/net_error_helper_core.h"
 #include "chrome/renderer/net/net_error_page_controller.h"
-#include "chrome/renderer/ssl/ssl_certificate_error_page_controller.h"
+#include "chrome/renderer/security_interstitials/security_interstitial_page_controller.h"
 #include "chrome/renderer/supervised_user/supervised_user_error_page_controller.h"
 #include "chrome/renderer/supervised_user/supervised_user_error_page_controller_delegate.h"
+#include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -55,7 +56,7 @@ class NetErrorHelper
       public content::RenderThreadObserver,
       public NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate,
-      public SSLCertificateErrorPageController::Delegate,
+      public SecurityInterstitialPageController::Delegate,
       public SupervisedUserErrorPageControllerDelegate,
       public chrome::mojom::NetworkDiagnosticsClient,
       public chrome::mojom::NavigationCorrector {
@@ -73,8 +74,9 @@ class NetErrorHelper
   void CancelSavePage() override;
   void ListVisibilityChanged(bool is_visible) override;
   void UpdateEasterEggHighScore(int high_score) override;
+  void ResetEasterEggHighScore() override;
 
-  // SSLCertificateErrorPageController::Delegate implementation
+  // SecurityInterstitialPageController::Delegate implementation
   void SendCommand(
       security_interstitials::SecurityInterstitialCommand command) override;
 
@@ -84,8 +86,9 @@ class NetErrorHelper
   void Feedback() override;
 
   // RenderFrameObserver implementation.
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* loader,
-                               bool is_content_initiated) override;
+  void DidStartNavigation(
+      const GURL& url,
+      base::Optional<blink::WebNavigationType> navigation_type) override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
   void DidFinishLoad() override;
@@ -115,24 +118,19 @@ class NetErrorHelper
   chrome::mojom::NetworkEasterEgg* GetRemoteNetworkEasterEgg();
 
   // NetErrorHelperCore::Delegate implementation:
-  void GenerateLocalizedErrorPage(
+  error_page::LocalizedError::PageState GenerateLocalizedErrorPage(
       const error_page::Error& error,
       bool is_failed_post,
       bool can_use_local_diagnostics_service,
       std::unique_ptr<error_page::ErrorPageParams> params,
-      bool* reload_button_shown,
-      bool* show_saved_copy_button_shown,
-      bool* show_cached_copy_button_shown,
-      bool* download_button_shown,
-      error_page::LocalizedError::OfflineContentOnNetErrorFeatureState*
-          offline_content_feature_state,
-      bool* auto_fetch_allowed,
       std::string* html) const override;
   void LoadErrorPage(const std::string& html, const GURL& failed_url) override;
-  void EnablePageHelperFunctions(net::Error net_error) override;
-  void UpdateErrorPage(const error_page::Error& error,
-                       bool is_failed_post,
-                       bool can_use_local_diagnostics_service) override;
+
+  void EnablePageHelperFunctions() override;
+  error_page::LocalizedError::PageState UpdateErrorPage(
+      const error_page::Error& error,
+      bool is_failed_post,
+      bool can_use_local_diagnostics_service) override;
   void InitializeErrorPageEasterEggHighScore(int high_score) override;
   void RequestEasterEggHighScore() override;
   void FetchNavigationCorrections(
@@ -142,15 +140,12 @@ class NetErrorHelper
   void SendTrackingRequest(const GURL& tracking_url,
                            const std::string& tracking_request_body) override;
   void ReloadPage(bool bypass_cache) override;
-  void LoadPageFromCache(const GURL& page_url) override;
   void DiagnoseError(const GURL& page_url) override;
   void DownloadPageLater() override;
   void SetIsShowingDownloadButton(bool show) override;
   void OfflineContentAvailable(
       bool list_visible_by_prefs,
       const std::string& offline_content_json) override;
-  void OfflineContentSummaryAvailable(
-      const std::string& offline_content_summary_json) override;
   content::RenderFrame* GetRenderFrame() override;
 
 #if defined(OS_ANDROID)
@@ -207,8 +202,8 @@ class NetErrorHelper
   base::WeakPtrFactory<NetErrorPageController::Delegate>
       weak_controller_delegate_factory_;
 
-  base::WeakPtrFactory<SSLCertificateErrorPageController::Delegate>
-      weak_ssl_error_controller_delegate_factory_;
+  base::WeakPtrFactory<SecurityInterstitialPageController::Delegate>
+      weak_security_interstitial_controller_delegate_factory_;
 
   base::WeakPtrFactory<SupervisedUserErrorPageControllerDelegate>
       weak_supervised_user_error_controller_delegate_factory_;

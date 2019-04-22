@@ -40,16 +40,15 @@ void AttemptRelaunch();
 // unload handler, and the browser may or may not exit.
 void AttemptExit();
 
-#if defined(OS_CHROMEOS)
-// Shutdown chrome cleanly without blocking. This is called
-// when SIGTERM is received on Chrome OS, and always sets
+// Shutdown chrome cleanly without blocking. This always sets
 // exit-cleanly bit and exits the browser, even if there is
 // ongoing downloads or a page with onbeforeunload handler.
 //
 // If you need to exit or restart in your code on ChromeOS,
 // use AttemptExit or AttemptRestart respectively.
-void ExitCleanly();
+void ExitIgnoreUnloadHandlers();
 
+#if defined(OS_CHROMEOS)
 // Returns true if any of the above Attempt calls have been called.
 bool IsAttemptingShutdown();
 #endif

@@ -20,7 +20,6 @@ using content::WebContents;
 static ScopedJavaLocalRef<jobjectArray>
 JNI_CertificateChainHelper_GetCertificateChain(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);

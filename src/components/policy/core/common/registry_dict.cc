@@ -125,7 +125,7 @@ std::unique_ptr<base::Value> ConvertRegistryValue(const base::Value& value,
       // Dictionaries may be encoded as JSON strings.
       if (value.GetAsString(&string_value)) {
         std::unique_ptr<base::Value> result =
-            base::JSONReader::Read(string_value);
+            base::JSONReader::ReadDeprecated(string_value);
         if (result && result->type() == schema.type())
           return result;
       }
@@ -135,6 +135,10 @@ std::unique_ptr<base::Value> ConvertRegistryValue(const base::Value& value,
     case base::Value::Type::BINARY:
       // No conversion possible.
       break;
+    // TODO(crbug.com/859477): Remove after root cause is found.
+    case base::Value::Type::DEAD:
+      CHECK(false);
+      return nullptr;
   }
 
   LOG(WARNING) << "Failed to convert " << value.type() << " to "

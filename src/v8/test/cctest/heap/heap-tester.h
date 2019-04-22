@@ -30,6 +30,8 @@
   V(TestNewSpaceRefsInCopiedCode)                         \
   V(GCFlags)                                              \
   V(MarkCompactCollector)                                 \
+  V(MarkCompactEpochCounter)                              \
+  V(MemoryReducerActivationForSmallHeaps)                 \
   V(NoPromotion)                                          \
   V(NumberStringCacheSize)                                \
   V(ObjectGroups)                                         \
@@ -95,12 +97,12 @@ class HeapTester {
 
   // test-heap.cc
   static AllocationResult AllocateByteArrayForTest(Heap* heap, int length,
-                                                   PretenureFlag pretenure);
+                                                   AllocationType allocation);
 
   // test-mark-compact.cc
   static AllocationResult AllocateMapForTest(v8::internal::Isolate* isolate);
   static AllocationResult AllocateFixedArrayForTest(Heap* heap, int length,
-                                                    PretenureFlag pretenure);
+                                                    AllocationType allocation);
 
   static void UncommitFromSpace(Heap* heap);
 };

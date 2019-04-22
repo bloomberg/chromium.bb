@@ -69,16 +69,6 @@ class ChromeZoomLevelPrefs : public content::ZoomLevelDelegate {
   // zoom levels (if any) managed by this class (for its associated partition).
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
-  // |partition_key_| used to be a hash as returned by
-  // std::hash<std::string>.  These functions check for zoom settings
-  // under the old key and copies them to the new one only if there is
-  // not already a new setting.
-  // TODO(thomasanderson): Remove these after Chrome M65 has reached
-  // stable.
-  void MigrateOldZoomPreferences(const base::FilePath& partition_relative_path);
-  void MigrateOldZoomPreferencesForKeys(const std::string& old_key,
-                                        const std::string& new_key);
-
   PrefService* pref_service_;
   base::WeakPtr<zoom::ZoomEventManager> zoom_event_manager_;
   content::HostZoomMap* host_zoom_map_;

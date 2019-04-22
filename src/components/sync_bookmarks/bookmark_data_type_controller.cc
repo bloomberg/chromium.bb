@@ -11,7 +11,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/sync/driver/model_associator.h"
 #include "components/sync/driver/sync_api_component_factory.h"
-#include "components/sync/driver/sync_client.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/model/change_processor.h"
 
 using bookmarks::BookmarkModel;
@@ -19,11 +19,17 @@ using bookmarks::BookmarkModel;
 namespace sync_bookmarks {
 
 BookmarkDataTypeController::BookmarkDataTypeController(
-    const base::Closure& dump_stack,
-    syncer::SyncClient* sync_client)
+    const base::RepeatingClosure& dump_stack,
+    syncer::SyncService* sync_service,
+    bookmarks::BookmarkModel* bookmark_model,
+    history::HistoryService* history_service,
+    syncer::SyncApiComponentFactory* component_factory)
     : syncer::FrontendDataTypeController(syncer::BOOKMARKS,
                                          dump_stack,
-                                         sync_client),
+                                         sync_service),
+      bookmark_model_(bookmark_model),
+      history_service_(history_service),
+      component_factory_(component_factory),
       history_service_observer_(this),
       bookmark_model_observer_(this) {}
 
@@ -32,11 +38,8 @@ BookmarkDataTypeController::~BookmarkDataTypeController() {}
 bool BookmarkDataTypeController::StartModels() {
   DCHECK(CalledOnValidThread());
   if (!DependentsLoaded()) {
-    BookmarkModel* bookmark_model = sync_client_->GetBookmarkModel();
-    bookmark_model_observer_.Add(bookmark_model);
-    history::HistoryService* history_service =
-        sync_client_->GetHistoryService();
-    history_service_observer_.Add(history_service);
+    bookmark_model_observer_.Add(bookmark_model_);
+    history_service_observer_.Add(history_service_);
     return false;
   }
   return true;
@@ -51,8 +54,8 @@ void BookmarkDataTypeController::CleanUpState() {
 void BookmarkDataTypeController::CreateSyncComponents() {
   DCHECK(CalledOnValidThread());
   syncer::SyncApiComponentFactory::SyncComponents sync_components =
-      sync_client_->GetSyncApiComponentFactory()->CreateBookmarkSyncComponents(
-          CreateErrorHandler());
+      component_factory_->CreateBookmarkSyncComponents(
+          CreateErrorHandler(), sync_service()->GetUserShare());
   set_model_associator(std::move(sync_components.model_associator));
   set_change_processor(std::move(sync_components.change_processor));
 }
@@ -82,12 +85,10 @@ void BookmarkDataTypeController::BookmarkModelBeingDeleted(
 // are loaded.
 bool BookmarkDataTypeController::DependentsLoaded() {
   DCHECK(CalledOnValidThread());
-  BookmarkModel* bookmark_model = sync_client_->GetBookmarkModel();
-  if (!bookmark_model || !bookmark_model->loaded())
+  if (!bookmark_model_ || !bookmark_model_->loaded())
     return false;
 
-  history::HistoryService* history_service = sync_client_->GetHistoryService();
-  if (!history_service || !history_service->BackendLoaded())
+  if (!history_service_ || !history_service_->BackendLoaded())
     return false;
 
   // All necessary services are loaded.

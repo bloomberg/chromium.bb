@@ -11,13 +11,24 @@
 #ifndef MODULES_REMOTE_BITRATE_ESTIMATOR_TEST_ESTIMATORS_SEND_SIDE_H_
 #define MODULES_REMOTE_BITRATE_ESTIMATOR_TEST_ESTIMATORS_SEND_SIDE_H_
 
+#include <stdint.h>
 #include <memory>
 #include <vector>
 
+#include "api/transport/field_trial_based_config.h"
 #include "logging/rtc_event_log/mock/mock_rtc_event_log.h"
+#include "modules/bitrate_controller/include/bitrate_controller.h"
 #include "modules/congestion_controller/goog_cc/acknowledged_bitrate_estimator.h"
+#include "modules/congestion_controller/goog_cc/delay_based_bwe.h"
 #include "modules/congestion_controller/rtp/send_time_history.h"
+#include "modules/include/module_common_types_public.h"
+#include "modules/remote_bitrate_estimator/include/remote_bitrate_estimator.h"
 #include "modules/remote_bitrate_estimator/test/bwe.h"
+#include "modules/remote_bitrate_estimator/test/packet.h"
+#include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
+#include "rtc_base/constructor_magic.h"
+#include "system_wrappers/include/clock.h"
+#include "test/gmock.h"
 
 namespace webrtc {
 namespace testing {
@@ -35,6 +46,9 @@ class SendSideBweSender : public BweSender, public RemoteBitrateObserver {
                                uint32_t bitrate) override;
   int64_t TimeUntilNextProcess() override;
   void Process() override;
+
+ private:
+  FieldTrialBasedConfig field_trial_config_;
 
  protected:
   std::unique_ptr<BitrateController> bitrate_controller_;

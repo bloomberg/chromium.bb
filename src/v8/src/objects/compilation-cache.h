@@ -5,8 +5,11 @@
 #ifndef V8_OBJECTS_COMPILATION_CACHE_H_
 #define V8_OBJECTS_COMPILATION_CACHE_H_
 
+#include "src/objects/feedback-cell.h"
 #include "src/objects/hash-table.h"
 #include "src/objects/js-regexp.h"
+#include "src/objects/shared-function-info.h"
+#include "src/roots.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -16,7 +19,7 @@ namespace internal {
 
 class CompilationCacheShape : public BaseShape<HashTableKey*> {
  public:
-  static inline bool IsMatch(HashTableKey* key, Object* value) {
+  static inline bool IsMatch(HashTableKey* key, Object value) {
     return key->IsMatch(value);
   }
 
@@ -27,11 +30,11 @@ class CompilationCacheShape : public BaseShape<HashTableKey*> {
   static inline uint32_t RegExpHash(String string, Smi flags);
 
   static inline uint32_t StringSharedHash(String source,
-                                          SharedFunctionInfo* shared,
+                                          SharedFunctionInfo shared,
                                           LanguageMode language_mode,
                                           int position);
 
-  static inline uint32_t HashForObject(Isolate* isolate, Object* object);
+  static inline uint32_t HashForObject(ReadOnlyRoots roots, Object object);
 
   static const int kPrefixSize = 0;
   static const int kEntrySize = 3;
@@ -39,19 +42,32 @@ class CompilationCacheShape : public BaseShape<HashTableKey*> {
 
 class InfoCellPair {
  public:
-  InfoCellPair() : shared_(nullptr), feedback_cell_(nullptr) {}
-  InfoCellPair(SharedFunctionInfo* shared, FeedbackCell* feedback_cell)
-      : shared_(shared), feedback_cell_(feedback_cell) {}
+  InfoCellPair() {}
+  inline InfoCellPair(SharedFunctionInfo shared, FeedbackCell feedback_cell);
 
-  FeedbackCell* feedback_cell() const { return feedback_cell_; }
-  SharedFunctionInfo* shared() const { return shared_; }
+  FeedbackCell feedback_cell() const {
+    DCHECK(is_compiled_scope_.is_compiled());
+    return feedback_cell_;
+  }
+  SharedFunctionInfo shared() const {
+    DCHECK(is_compiled_scope_.is_compiled());
+    return shared_;
+  }
 
-  bool has_feedback_cell() const { return feedback_cell_ != nullptr; }
-  bool has_shared() const { return shared_ != nullptr; }
+  bool has_feedback_cell() const {
+    return !feedback_cell_.is_null() && is_compiled_scope_.is_compiled();
+  }
+  bool has_shared() const {
+    // Only return true if SFI is compiled - the bytecode could have been
+    // flushed while it's in the compilation cache, and not yet have been
+    // removed form the compilation cache.
+    return !shared_.is_null() && is_compiled_scope_.is_compiled();
+  }
 
  private:
-  SharedFunctionInfo* shared_;
-  FeedbackCell* feedback_cell_;
+  IsCompiledScope is_compiled_scope_;
+  SharedFunctionInfo shared_;
+  FeedbackCell feedback_cell_;
 };
 
 // This cache is used in two different variants. For regexp caching, it simply
@@ -90,11 +106,11 @@ class CompilationCacheTable
   static Handle<CompilationCacheTable> PutRegExp(
       Isolate* isolate, Handle<CompilationCacheTable> cache, Handle<String> src,
       JSRegExp::Flags flags, Handle<FixedArray> value);
-  void Remove(Object* value);
+  void Remove(Object value);
   void Age();
   static const int kHashGenerations = 10;
 
-  DECL_CAST2(CompilationCacheTable)
+  DECL_CAST(CompilationCacheTable)
 
  private:
   OBJECT_CONSTRUCTORS(CompilationCacheTable,

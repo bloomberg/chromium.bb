@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -87,7 +88,8 @@ QuicChromiumPacketWriter::QuicChromiumPacketWriter(
     base::SequencedTaskRunner* task_runner)
     : socket_(socket),
       delegate_(nullptr),
-      packet_(base::MakeRefCounted<ReusableIOBuffer>(quic::kMaxPacketSize)),
+      packet_(
+          base::MakeRefCounted<ReusableIOBuffer>(quic::kMaxOutgoingPacketSize)),
       write_in_progress_(false),
       force_write_blocked_(false),
       retry_count_(0),
@@ -109,7 +111,7 @@ void QuicChromiumPacketWriter::set_force_write_blocked(
 void QuicChromiumPacketWriter::SetPacket(const char* buffer, size_t buf_len) {
   if (UNLIKELY(!packet_)) {
     packet_ = base::MakeRefCounted<ReusableIOBuffer>(
-        std::max(buf_len, static_cast<size_t>(quic::kMaxPacketSize)));
+        std::max(buf_len, static_cast<size_t>(quic::kMaxOutgoingPacketSize)));
     RecordNotReusableReason(NOT_REUSABLE_NULLPTR);
   }
   if (UNLIKELY(packet_->capacity() < buf_len)) {
@@ -118,7 +120,7 @@ void QuicChromiumPacketWriter::SetPacket(const char* buffer, size_t buf_len) {
   }
   if (UNLIKELY(!packet_->HasOneRef())) {
     packet_ = base::MakeRefCounted<ReusableIOBuffer>(
-        std::max(buf_len, static_cast<size_t>(quic::kMaxPacketSize)));
+        std::max(buf_len, static_cast<size_t>(quic::kMaxOutgoingPacketSize)));
     RecordNotReusableReason(NOT_REUSABLE_REF_COUNT);
   }
   packet_->Set(buffer, buf_len);
@@ -151,7 +153,8 @@ quic::WriteResult QuicChromiumPacketWriter::WritePacketToSocketImpl() {
                           kTrafficAnnotation);
 
   if (MaybeRetryAfterWriteError(rv))
-    return quic::WriteResult(quic::WRITE_STATUS_BLOCKED, ERR_IO_PENDING);
+    return quic::WriteResult(quic::WRITE_STATUS_BLOCKED_DATA_BUFFERED,
+                             ERR_IO_PENDING);
 
   if (rv < 0 && rv != ERR_IO_PENDING && delegate_ != nullptr) {
     // If write error, then call delegate's HandleWriteError, which
@@ -166,7 +169,7 @@ quic::WriteResult QuicChromiumPacketWriter::WritePacketToSocketImpl() {
     if (rv != ERR_IO_PENDING) {
       status = quic::WRITE_STATUS_ERROR;
     } else {
-      status = quic::WRITE_STATUS_BLOCKED;
+      status = quic::WRITE_STATUS_BLOCKED_DATA_BUFFERED;
       write_in_progress_ = true;
     }
   }
@@ -174,7 +177,7 @@ quic::WriteResult QuicChromiumPacketWriter::WritePacketToSocketImpl() {
   base::TimeDelta delta = base::TimeTicks::Now() - now;
   if (status == quic::WRITE_STATUS_OK) {
     UMA_HISTOGRAM_TIMES("Net.QuicSession.PacketWriteTime.Synchronous", delta);
-  } else if (status == quic::WRITE_STATUS_BLOCKED) {
+  } else if (quic::IsWriteBlockedStatus(status)) {
     UMA_HISTOGRAM_TIMES("Net.QuicSession.PacketWriteTime.Asynchronous", delta);
   }
 
@@ -186,12 +189,6 @@ void QuicChromiumPacketWriter::RetryPacketAfterNoBuffers() {
   quic::WriteResult result = WritePacketToSocketImpl();
   if (result.error_code != ERR_IO_PENDING)
     OnWriteComplete(result.error_code);
-}
-
-bool QuicChromiumPacketWriter::IsWriteBlockedDataBuffered() const {
-  // Chrome sockets' Write() methods buffer the data until the Write is
-  // permitted.
-  return true;
 }
 
 bool QuicChromiumPacketWriter::IsWriteBlocked() const {
@@ -256,7 +253,7 @@ bool QuicChromiumPacketWriter::MaybeRetryAfterWriteError(int rv) {
 
 quic::QuicByteCount QuicChromiumPacketWriter::GetMaxPacketSize(
     const quic::QuicSocketAddress& peer_address) const {
-  return quic::kMaxPacketSize;
+  return quic::kMaxOutgoingPacketSize;
 }
 
 bool QuicChromiumPacketWriter::SupportsReleaseTime() const {

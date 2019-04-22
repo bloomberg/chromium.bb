@@ -64,7 +64,9 @@ NET_EXPORT_PRIVATE bool EncodeV1SCTSignedData(
 // Encodes the data signed by a Signed Tree Head (STH) |signed_tree_head| into
 // |output|. The signature included in the |signed_tree_head| can then be
 // verified over these bytes.
-NET_EXPORT_PRIVATE void EncodeTreeHeadSignature(
+// Returns true if the data could be encoded successfully, false
+// otherwise.
+NET_EXPORT_PRIVATE bool EncodeTreeHeadSignature(
     const SignedTreeHead& signed_tree_head,
     std::string* output);
 
@@ -86,7 +88,9 @@ NET_EXPORT_PRIVATE bool DecodeSignedCertificateTimestamp(
     scoped_refptr<ct::SignedCertificateTimestamp>* output);
 
 // Serializes a Signed Certificate Timestamp (SCT) into |output|.
-NET_EXPORT void EncodeSignedCertificateTimestamp(
+// Returns true if the SCT could be encoded successfully, false
+// otherwise.
+NET_EXPORT bool EncodeSignedCertificateTimestamp(
     const scoped_refptr<ct::SignedCertificateTimestamp>& input,
     std::string* output);
 

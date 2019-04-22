@@ -1,9 +1,8 @@
 <!DOCTYPE html>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
-if (window.testRunner) {
+if (window.testRunner)
     testRunner.keepWebHistory();
-    testRunner.waitUntilDone();
-}
 </script>
 <style>
 div { -webkit-text-stroke-width: 1px; -webkit-text-stroke-color: red }
@@ -14,11 +13,8 @@ a, a:hover {  -webkit-text-stroke-color: green; color: initial; text-decoration:
     <a id="anchor" href="">Should have green stroke when hovered</a>
 </div>
 <script>
-if (window.testRunner) {
-    testRunner.layoutAndPaintAsyncThen(function(){
+    runAfterLayoutAndPaint(function(){
         if (window.eventSender);
             eventSender.mouseMoveTo(anchor.offsetLeft + 1, anchor.offsetTop + 1);
-        testRunner.notifyDone();
-    });
-}
+    }, true);
 </script>

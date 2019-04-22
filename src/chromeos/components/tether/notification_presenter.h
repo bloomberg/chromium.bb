@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/network/network_state.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -28,7 +28,7 @@ class NotificationPresenter {
   // Notifies the user that a nearby device can potentially provide a tether
   // hotspot, and shows the signal strength with a blue icon.
   virtual void NotifyPotentialHotspotNearby(
-      cryptauth::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       int signal_strength) = 0;
 
   // Notifies the user that multiple nearby devices can potentially provide

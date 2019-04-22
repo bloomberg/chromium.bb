@@ -45,7 +45,7 @@ var tests = [
     chrome.test.assertTrue(shouldIgnoreKeyEvents(toolbar));
 
     // Test case where the active element has a shadow root of its own.
-    toolbar.$.buttons.children[1].focus();
+    toolbar.$['rotate-right'].focus();
     chrome.test.assertFalse(shouldIgnoreKeyEvents(toolbar));
 
     chrome.test.assertFalse(
@@ -67,13 +67,15 @@ var tests = [
 
     // Clicking on the plugin should close the bookmarks menu.
     chrome.test.assertFalse(dropdown.dropdownOpen);
-    MockInteractions.tap(dropdown.$.icon);
+    MockInteractions.tap(dropdown.$.button);
     chrome.test.assertTrue(dropdown.dropdownOpen);
-    MockInteractions.tap(plugin);
+    // Generate pointer event manually, as MockInteractions doesn't include
+    // this.
+    plugin.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
     chrome.test.assertFalse(dropdown.dropdownOpen,
         "Clicking plugin closes dropdown");
 
-    MockInteractions.tap(dropdown.$.icon);
+    MockInteractions.tap(dropdown.$.button);
     chrome.test.assertTrue(dropdown.dropdownOpen);
     MockInteractions.pressAndReleaseKeyOn(document, ESC_KEY);
     chrome.test.assertFalse(dropdown.dropdownOpen,

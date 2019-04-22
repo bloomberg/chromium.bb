@@ -19,10 +19,20 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace consent_auditor {
 namespace {
 
 using sync_pb::UserConsentSpecifics;
+using syncer::DataBatch;
+using syncer::EntityChange;
+using syncer::EntityChangeList;
+using syncer::EntityData;
+using syncer::MetadataChangeList;
+using syncer::MockModelTypeChangeProcessor;
+using syncer::ModelTypeStore;
+using syncer::ModelTypeStoreTestUtil;
+using syncer::ModelTypeSyncBridge;
+using syncer::OnceModelTypeStoreFactory;
 using testing::_;
 using testing::ElementsAre;
 using testing::Eq;
@@ -187,9 +197,7 @@ TEST_F(ConsentSyncBridgeImplTest, ShouldNotDeleteConsentsWhenSyncIsDisabled) {
       std::make_unique<UserConsentSpecifics>(user_consent_specifics));
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
-  EXPECT_THAT(
-      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -233,9 +241,10 @@ TEST_F(ConsentSyncBridgeImplTest,
   bridge()->RecordConsent(SpecificsUniquePtr(/*client_consent_time_usec=*/2u));
   ASSERT_THAT(GetAllData(), SizeIs(2));
 
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(EntityChange::CreateDelete(first_storage_key));
   auto error_on_delete = bridge()->ApplySyncChanges(
-      bridge()->CreateMetadataChangeList(),
-      {EntityChange::CreateDelete(first_storage_key)});
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
   EXPECT_FALSE(error_on_delete);
   EXPECT_THAT(GetAllData(), SizeIs(1));
   EXPECT_THAT(GetData(first_storage_key), IsNull());
@@ -304,9 +313,7 @@ TEST_F(ConsentSyncBridgeImplTest,
 
   // User disables sync, hovewer, the consent hasn't been submitted yet. It is
   // preserved to be submitted when sync is re-enabled.
-  EXPECT_THAT(
-      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -375,9 +382,7 @@ TEST_F(ConsentSyncBridgeImplTest,
       std::make_unique<UserConsentSpecifics>(user_consent_specifics));
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
-  EXPECT_THAT(
-      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -394,9 +399,7 @@ TEST_F(ConsentSyncBridgeImplTest,
                           EntityChangeList());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(
-      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   base::RunLoop().RunUntilIdle();
 
   // This time their consent should be resubmitted, because it is for the same
@@ -412,4 +415,4 @@ TEST_F(ConsentSyncBridgeImplTest,
 
 }  // namespace
 
-}  // namespace syncer
+}  // namespace consent_auditor

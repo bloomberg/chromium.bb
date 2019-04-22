@@ -25,7 +25,7 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
                           const NGConstraintSpace& space,
                           const NGBreakToken* break_token = nullptr);
 
-  scoped_refptr<NGLayoutResult> Layout() override;
+  scoped_refptr<const NGLayoutResult> Layout() override;
 
   base::Optional<MinMaxSize> ComputeMinMaxSize(
       const MinMaxSizeInput&) const override;
@@ -50,6 +50,6 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       const NGLogicalSize& column_size) const;
 };
 
-}  // namespace Blink
+}  // namespace blink
 
 #endif  // NGColumnLayoutAlgorithm_h

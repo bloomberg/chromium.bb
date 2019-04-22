@@ -9,11 +9,12 @@
  */
 
 #include <string>
-#include "third_party/libjingle_xmpp/xmllite/qname.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
 
-using buzz::StaticQName;
-using buzz::QName;
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libjingle_xmpp/xmllite/qname.h"
+
+using jingle_xmpp::StaticQName;
+using jingle_xmpp::QName;
 
 TEST(QNameTest, TestTrivial) {
   QName name("test");

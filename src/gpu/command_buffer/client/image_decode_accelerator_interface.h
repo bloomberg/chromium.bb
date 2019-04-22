@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_IMAGE_DECODE_ACCELERATOR_INTERFACE_H_
 #define GPU_COMMAND_BUFFER_CLIENT_IMAGE_DECODE_ACCELERATOR_INTERFACE_H_
 
+#include <stdint.h>
+
 #include "base/containers/span.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -22,6 +24,9 @@ class ImageDecodeAcceleratorInterface {
  public:
   virtual ~ImageDecodeAcceleratorInterface() {}
 
+  virtual bool IsImageSupported(
+      base::span<const uint8_t> encoded_data) const = 0;
+
   virtual SyncToken ScheduleImageDecode(
       base::span<const uint8_t> encoded_data,
       const gfx::Size& output_size,
@@ -29,6 +34,7 @@ class ImageDecodeAcceleratorInterface {
       uint32_t transfer_cache_entry_id,
       int32_t discardable_handle_shm_id,
       uint32_t discardable_handle_shm_offset,
+      uint64_t discardable_handle_release_count,
       const gfx::ColorSpace& target_color_space,
       bool needs_mips) = 0;
 };

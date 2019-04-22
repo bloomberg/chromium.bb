@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -14,6 +14,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/system/sys_info.h"
@@ -25,15 +26,37 @@ namespace {
 
 class MockContentBrowserClient final : public ContentBrowserClient {
  public:
-  void UpdateRendererPreferencesForWorker(BrowserContext*,
-                                          RendererPreferences* prefs) override {
-    prefs->enable_do_not_track = true;
-    prefs->enable_referrers = true;
+  void UpdateRendererPreferencesForWorker(
+      BrowserContext*,
+      blink::mojom::RendererPreferences* prefs) override {
+    if (do_not_track_enabled_) {
+      prefs->enable_do_not_track = true;
+      prefs->enable_referrers = true;
+    }
   }
+
+  void EnableDoNotTrack() { do_not_track_enabled_ = true; }
+
+ private:
+  bool do_not_track_enabled_ = false;
 };
 
 class DoNotTrackTest : public ContentBrowserTest {
  protected:
+  void SetUpOnMainThread() override {
+#if defined(OS_ANDROID)
+    // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
+    // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
+    // this test available on KitKat.
+    int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
+    base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                                 &bugfix_version);
+    if (major_version < 5)
+      return;
+#endif
+
+    original_client_ = SetBrowserClientForTesting(&client_);
+  }
   void TearDownOnMainThread() override {
     if (original_client_)
       SetBrowserClientForTesting(original_client_);
@@ -41,19 +64,11 @@ class DoNotTrackTest : public ContentBrowserTest {
 
   // Returns false if we cannot enable do not track. It happens only when
   // Android Kitkat or older systems.
-  // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
-  // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
-  // this test available on KitKat.
   bool EnableDoNotTrack() {
-#if defined(OS_ANDROID)
-    int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
-    base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
-                                                 &bugfix_version);
-    if (major_version < 5)
+    if (!original_client_)
       return false;
-#endif
-    original_client_ = SetBrowserClientForTesting(&client_);
-    RendererPreferences* prefs =
+    client_.EnableDoNotTrack();
+    blink::mojom::RendererPreferences* prefs =
         shell()->web_contents()->GetMutableRendererPrefs();
     EXPECT_FALSE(prefs->enable_do_not_track);
     prefs->enable_do_not_track = true;

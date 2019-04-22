@@ -10,6 +10,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "components/navigation_interception/intercept_navigation_throttle.h"
 
 namespace content {
 class NavigationHandle;
@@ -49,7 +50,8 @@ class InterceptNavigationDelegate : public base::SupportsUserData::Data {
   // Creates a InterceptNavigationThrottle that will direct all callbacks to
   // the InterceptNavigationDelegate.
   static std::unique_ptr<content::NavigationThrottle> CreateThrottleFor(
-      content::NavigationHandle* handle);
+      content::NavigationHandle* handle,
+      navigation_interception::SynchronyMode mode);
 
   virtual bool ShouldIgnoreNavigation(
       const NavigationParams& navigation_params);

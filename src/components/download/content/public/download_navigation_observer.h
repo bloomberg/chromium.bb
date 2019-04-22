@@ -38,6 +38,8 @@ class DownloadNavigationObserver
   // Used to inform the navigation events to download systems.
   NavigationMonitor* navigation_monitor_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(DownloadNavigationObserver);
 };
 

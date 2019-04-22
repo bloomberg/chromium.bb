@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -22,19 +24,18 @@
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/net/nss_context.h"
-#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/chromeos_test_utils.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/onc/onc_test_utils.h"
-#include "chromeos/policy_certificate_provider.h"
+#include "chromeos/network/policy_certificate_provider.h"
+#include "chromeos/test/chromeos_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -121,10 +122,7 @@ class NetworkCertLoaderTestObserver
   }
 
   // chromeos::NetworkCertLoader::Observer
-  void OnCertificatesLoaded(
-      const net::ScopedCERTCertificateList& all_certs) override {
-    run_loop_.Quit();
-  }
+  void OnCertificatesLoaded() override { run_loop_.Quit(); }
 
   void Wait() { run_loop_.Run(); }
 
@@ -335,10 +333,11 @@ bool IsCertInNSSDatabase(Profile* profile,
   return cert_found;
 }
 
-bool IsCertInCertificateList(const net::X509Certificate* cert,
-                             const net::ScopedCERTCertificateList& cert_list) {
-  for (const auto& cert_list_element : cert_list) {
-    if (net::x509_util::IsSameCertificate(cert_list_element.get(), cert))
+bool IsCertInCertificateList(
+    const net::X509Certificate* cert,
+    const chromeos::NetworkCertLoader::NetworkCertList& network_cert_list) {
+  for (const auto& network_cert : network_cert_list) {
+    if (net::x509_util::IsSameCertificate(network_cert.cert(), cert))
       return true;
   }
   return false;
@@ -407,9 +406,9 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
   ASSERT_TRUE(chromeos::NetworkCertLoader::IsInitialized());
   chromeos::NetworkCertLoader::Get()->SetUserNSSDB(test_nss_cert_db_.get());
 
-  EXPECT_FALSE(
-      IsCertInCertificateList(user_policy_certs_helper_.root_cert().get(),
-                              chromeos::NetworkCertLoader::Get()->all_certs()));
+  EXPECT_FALSE(IsCertInCertificateList(
+      user_policy_certs_helper_.root_cert().get(),
+      chromeos::NetworkCertLoader::Get()->authority_certs()));
   NetworkCertLoaderTestObserver network_cert_loader_observer(
       chromeos::NetworkCertLoader::Get());
   user_policy_certs_helper_.SetRootCertONCUserPolicy(browser()->profile());
@@ -418,9 +417,9 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
   // Check that |NetworkCertLoader| is aware of the authority certificate.
   // (Web Trust does not matter for the NetworkCertLoader, but we currently only
   // set a policy with a certificate requesting Web Trust here).
-  EXPECT_TRUE(
-      IsCertInCertificateList(user_policy_certs_helper_.root_cert().get(),
-                              chromeos::NetworkCertLoader::Get()->all_certs()));
+  EXPECT_TRUE(IsCertInCertificateList(
+      user_policy_certs_helper_.root_cert().get(),
+      chromeos::NetworkCertLoader::Get()->authority_certs()));
 }
 
 // Base class for testing policy-provided trust roots with device-local
@@ -438,29 +437,12 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
   }
 
  protected:
-  void SetUp() override {
-    // Configure and start the test server.
-    std::unique_ptr<crypto::RSAPrivateKey> signing_key(
-        PolicyBuilder::CreateTestSigningKey());
-    ASSERT_TRUE(policy_server_.SetSigningKeyAndSignature(
-        signing_key.get(), PolicyBuilder::GetTestSigningKeySignature()));
-    signing_key.reset();
-    policy_server_.RegisterClient(PolicyBuilder::kFakeToken,
-                                  PolicyBuilder::kFakeDeviceId);
-    ASSERT_TRUE(policy_server_.Start());
-
-    DevicePolicyCrosBrowserTest::SetUp();
-  }
-
   virtual void SetupDevicePolicy() = 0;
 
   void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
 
     user_policy_certs_helper_.SetUpInProcessBrowserTestFixture();
-
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
 
     device_policy()->policy_data().set_public_key_version(1);
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
@@ -475,8 +457,6 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitch(chromeos::switches::kOobeSkipPostLogin);
-    command_line->AppendSwitchASCII(switches::kDeviceManagementUrl,
-                                    policy_server_.GetServiceURL().spec());
   }
 
   void WaitForSessionStart() {
@@ -487,7 +467,7 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
         .Wait();
   }
 
-  LocalPolicyTestServer policy_server_;
+  chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
 
   const AccountId device_local_account_id_ =
       AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
@@ -514,9 +494,7 @@ class PolicyProvidedTrustAnchorsPublicSessionTest
     account->set_type(
         em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
     RefreshDevicePolicy();
-    ASSERT_TRUE(
-        policy_server_.UpdatePolicy(dm_protocol::kChromeDevicePolicyType,
-                                    std::string(), proto.SerializeAsString()));
+    ASSERT_TRUE(local_policy_mixin_.UpdateDevicePolicy(proto));
   }
 
   void StartLogin() {

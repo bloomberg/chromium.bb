@@ -5,6 +5,8 @@
 #include "chrome/browser/media/router/discovery/discovery_network_monitor_metric_observer.h"
 #include "net/base/network_change_notifier.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 

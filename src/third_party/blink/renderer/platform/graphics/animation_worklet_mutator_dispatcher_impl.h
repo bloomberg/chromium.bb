@@ -16,13 +16,14 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
 class CompositorMutatorClient;
 class MainThreadMutatorClient;
-class WaitableEvent;
 
 // Fans out requests to all of the registered AnimationWorkletMutators which can
 // then run worklet animations to produce mutation updates. Requests for
@@ -47,7 +48,13 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   ~AnimationWorkletMutatorDispatcherImpl() override;
 
   // AnimationWorkletMutatorDispatcher implementation.
-  void Mutate(std::unique_ptr<AnimationWorkletDispatcherInput>) override;
+  void MutateSynchronously(
+      std::unique_ptr<AnimationWorkletDispatcherInput>) override;
+
+  bool MutateAsynchronously(std::unique_ptr<AnimationWorkletDispatcherInput>,
+                            MutateQueuingStrategy,
+                            AsyncMutationCompleteCallback) override;
+
   // TODO(majidvp): Remove when timeline inputs are known.
   bool HasMutators() override;
 
@@ -62,29 +69,45 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
 
   void SetClient(MutatorClient* client) { client_ = client; }
 
- private:
-  using AnimationWorkletMutatorToTaskRunnerMap =
-      HashMap<CrossThreadPersistent<AnimationWorkletMutator>,
-              scoped_refptr<base::SingleThreadTaskRunner>>;
+  void SynchronizeAnimatorName(const String& animator_name);
 
-  class AutoSignal {
-   public:
-    explicit AutoSignal(WaitableEvent*);
-    ~AutoSignal();
-
-   private:
-    WaitableEvent* event_;
-
-    DISALLOW_COPY_AND_ASSIGN(AutoSignal);
-  };
-
-  // The AnimationWorkletProxyClients are also owned by the WorkerClients
-  // dictionary.
-  AnimationWorkletMutatorToTaskRunnerMap mutator_map_;
+  MutatorClient* client() { return client_; }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
     return host_queue_;
   }
+
+  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+ private:
+  class OutputVectorRef;
+  struct AsyncMutationRequest;
+
+  using InputMap = HashMap<int, std::unique_ptr<AnimationWorkletInput>>;
+
+  using AnimationWorkletMutatorToTaskRunnerMap =
+      HashMap<CrossThreadPersistent<AnimationWorkletMutator>,
+              scoped_refptr<base::SingleThreadTaskRunner>>;
+
+  InputMap CreateInputMap(AnimationWorkletDispatcherInput& mutator_input) const;
+
+  // Dispatches mutation update requests. The callback is triggered once all
+  // mutation updates have been computed and it runs on the animation worklet
+  // thread associated with the last mutation to complete.
+  void RequestMutations(WTF::CrossThreadClosure done_callback);
+
+  void MutateAsynchronouslyInternal(AsyncMutationCompleteCallback);
+
+  void AsyncMutationsDone(int async_mutation_id);
+
+  // Returns true if any updates were applied.
+  bool ApplyMutationsOnHostThread();
+
+  // The AnimationWorkletProxyClients are also owned by the WorkerClients
+  // dictionary.
+  AnimationWorkletMutatorToTaskRunnerMap mutator_map_;
 
   template <typename ClientType>
   static std::unique_ptr<ClientType> CreateClient(
@@ -97,6 +120,33 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   // The MutatorClient owns (std::unique_ptr) us, so this pointer is
   // valid as long as this class exists.
   MutatorClient* client_;
+
+  // Map of mutator scope IDs to mutator input. The Mutate methods safeguards
+  // against concurrent calls (important once async mutations are introduced) by
+  // checking that the map has been reset on entry. For this reason, it is
+  // important to reset the map at the end of the mutation cycle.
+  InputMap mutator_input_map_;
+
+  // Reference to a vector for collecting mutation output. The vector is
+  // accessed across threads, thus it must be guaranteed to persist until the
+  // last mutation update is complete, and updates must be done in a thread-safe
+  // manner. The Mutate method guards against concurrent calls (important once
+  // async mutations are introduced)  by checking that the output vector is
+  // empty. For this reason, it is important to clear the output at the end of
+  // the mutation cycle.
+  scoped_refptr<OutputVectorRef> outputs_;
+
+  // Active callback for the completion of an async mutation cycle.
+  AsyncMutationCompleteCallback on_async_mutation_complete_;
+
+  // Queues for pending mutation requests. Each queue can hold a single request.
+  // On completion of a mutation cycle, a fresh mutation cycle is started if
+  // either queue contains a request. The priority queue takes precedence if
+  // both queues contain a request.  The request stored in the replaceable queue
+  // can be updated in a later async mutation call, whereas the priority queue
+  // entry cannot, as each priority request is required to run.
+  std::unique_ptr<AsyncMutationRequest> queued_priority_request;
+  std::unique_ptr<AsyncMutationRequest> queued_replaceable_request;
 
   base::WeakPtrFactory<AnimationWorkletMutatorDispatcherImpl> weak_factory_;
 

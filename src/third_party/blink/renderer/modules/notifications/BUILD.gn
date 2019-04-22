@@ -21,6 +21,8 @@ blink_modules_sources("notifications") {
     "service_worker_global_scope_notifications.h",
     "service_worker_registration_notifications.cc",
     "service_worker_registration_notifications.h",
+    "timestamp_trigger.cc",
+    "timestamp_trigger.h",
   ]
   deps = [
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",

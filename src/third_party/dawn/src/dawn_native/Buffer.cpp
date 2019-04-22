@@ -16,12 +16,43 @@
 
 #include "common/Assert.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/DynamicUploader.h"
 #include "dawn_native/ValidationUtils_autogen.h"
 
 #include <cstdio>
 #include <utility>
 
 namespace dawn_native {
+
+    namespace {
+
+        class ErrorBuffer : public BufferBase {
+          public:
+            ErrorBuffer(DeviceBase* device) : BufferBase(device, ObjectBase::kError) {
+            }
+
+          private:
+            MaybeError SetSubDataImpl(uint32_t start,
+                                      uint32_t count,
+                                      const uint8_t* data) override {
+                UNREACHABLE();
+                return {};
+            }
+            void MapReadAsyncImpl(uint32_t serial) override {
+                UNREACHABLE();
+            }
+            void MapWriteAsyncImpl(uint32_t serial) override {
+                UNREACHABLE();
+            }
+            void UnmapImpl() override {
+                UNREACHABLE();
+            }
+            void DestroyImpl() override {
+                UNREACHABLE();
+            }
+        };
+
+    }  // anonymous namespace
 
     MaybeError ValidateBufferDescriptor(DeviceBase*, const BufferDescriptor* descriptor) {
         if (descriptor->nextInChain != nullptr) {
@@ -50,58 +81,79 @@ namespace dawn_native {
     // Buffer
 
     BufferBase::BufferBase(DeviceBase* device, const BufferDescriptor* descriptor)
-        : ObjectBase(device), mSize(descriptor->size), mUsage(descriptor->usage) {
+        : ObjectBase(device),
+          mSize(descriptor->size),
+          mUsage(descriptor->usage),
+          mState(BufferState::Unmapped) {
+    }
+
+    BufferBase::BufferBase(DeviceBase* device, ObjectBase::ErrorTag tag)
+        : ObjectBase(device, tag), mState(BufferState::Unmapped) {
     }
 
     BufferBase::~BufferBase() {
-        if (mIsMapped) {
-            CallMapReadCallback(mMapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN, nullptr);
-            CallMapWriteCallback(mMapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN, nullptr);
+        if (mState == BufferState::Mapped) {
+            ASSERT(!IsError());
+            CallMapReadCallback(mMapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN, nullptr, 0u);
+            CallMapWriteCallback(mMapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN, nullptr, 0u);
         }
     }
 
-    BufferViewBuilder* BufferBase::CreateBufferViewBuilder() {
-        return new BufferViewBuilder(GetDevice(), this);
+    // static
+    BufferBase* BufferBase::MakeError(DeviceBase* device) {
+        return new ErrorBuffer(device);
     }
 
     uint32_t BufferBase::GetSize() const {
+        ASSERT(!IsError());
         return mSize;
     }
 
     dawn::BufferUsageBit BufferBase::GetUsage() const {
+        ASSERT(!IsError());
         return mUsage;
     }
 
     MaybeError BufferBase::ValidateCanUseInSubmitNow() const {
-        if (mIsMapped) {
-            return DAWN_VALIDATION_ERROR("Buffer used in a submit while mapped");
+        ASSERT(!IsError());
+
+        switch (mState) {
+            case BufferState::Destroyed:
+                return DAWN_VALIDATION_ERROR("Destroyed buffer used in a submit");
+            case BufferState::Mapped:
+                return DAWN_VALIDATION_ERROR("Buffer used in a submit while mapped");
+            case BufferState::Unmapped:
+                return {};
         }
-        return {};
     }
 
     void BufferBase::CallMapReadCallback(uint32_t serial,
-                                         dawnBufferMapAsyncStatus status,
-                                         const void* pointer) {
+                                         DawnBufferMapAsyncStatus status,
+                                         const void* pointer,
+                                         uint32_t dataLength) {
+        ASSERT(!IsError());
         if (mMapReadCallback != nullptr && serial == mMapSerial) {
             ASSERT(mMapWriteCallback == nullptr);
             // Tag the callback as fired before firing it, otherwise it could fire a second time if
             // for example buffer.Unmap() is called inside the application-provided callback.
-            dawnBufferMapReadCallback callback = mMapReadCallback;
+            DawnBufferMapReadCallback callback = mMapReadCallback;
             mMapReadCallback = nullptr;
-            callback(status, pointer, mMapUserdata);
+            callback(status, pointer, dataLength, mMapUserdata);
         }
     }
 
     void BufferBase::CallMapWriteCallback(uint32_t serial,
-                                          dawnBufferMapAsyncStatus status,
-                                          void* pointer) {
+                                          DawnBufferMapAsyncStatus status,
+                                          void* pointer,
+                                          uint32_t dataLength) {
+        ASSERT(!IsError());
         if (mMapWriteCallback != nullptr && serial == mMapSerial) {
             ASSERT(mMapReadCallback == nullptr);
             // Tag the callback as fired before firing it, otherwise it could fire a second time if
             // for example buffer.Unmap() is called inside the application-provided callback.
-            dawnBufferMapWriteCallback callback = mMapWriteCallback;
+            DawnBufferMapWriteCallback callback = mMapWriteCallback;
             mMapWriteCallback = nullptr;
-            callback(status, pointer, mMapUserdata);
+            callback(status, pointer, dataLength, mMapUserdata);
         }
     }
 
@@ -109,18 +161,20 @@ namespace dawn_native {
         if (GetDevice()->ConsumedError(ValidateSetSubData(start, count))) {
             return;
         }
+        ASSERT(!IsError());
 
-        SetSubDataImpl(start, count, data);
-    }
-
-    void BufferBase::MapReadAsync(uint32_t start,
-                                  uint32_t size,
-                                  dawnBufferMapReadCallback callback,
-                                  dawnCallbackUserdata userdata) {
-        if (GetDevice()->ConsumedError(ValidateMap(start, size, dawn::BufferUsageBit::MapRead))) {
-            callback(DAWN_BUFFER_MAP_ASYNC_STATUS_ERROR, nullptr, userdata);
+        if (GetDevice()->ConsumedError(SetSubDataImpl(start, count, data))) {
             return;
         }
+    }
+
+    void BufferBase::MapReadAsync(DawnBufferMapReadCallback callback,
+                                  DawnCallbackUserdata userdata) {
+        if (GetDevice()->ConsumedError(ValidateMap(dawn::BufferUsageBit::MapRead))) {
+            callback(DAWN_BUFFER_MAP_ASYNC_STATUS_ERROR, nullptr, 0, userdata);
+            return;
+        }
+        ASSERT(!IsError());
 
         ASSERT(mMapWriteCallback == nullptr);
 
@@ -128,19 +182,38 @@ namespace dawn_native {
         mMapSerial++;
         mMapReadCallback = callback;
         mMapUserdata = userdata;
-        mIsMapped = true;
+        mState = BufferState::Mapped;
 
-        MapReadAsyncImpl(mMapSerial, start, size);
+        MapReadAsyncImpl(mMapSerial);
     }
 
-    void BufferBase::MapWriteAsync(uint32_t start,
-                                   uint32_t size,
-                                   dawnBufferMapWriteCallback callback,
-                                   dawnCallbackUserdata userdata) {
-        if (GetDevice()->ConsumedError(ValidateMap(start, size, dawn::BufferUsageBit::MapWrite))) {
-            callback(DAWN_BUFFER_MAP_ASYNC_STATUS_ERROR, nullptr, userdata);
+    MaybeError BufferBase::SetSubDataImpl(uint32_t start, uint32_t count, const uint8_t* data) {
+        DynamicUploader* uploader = nullptr;
+        DAWN_TRY_ASSIGN(uploader, GetDevice()->GetDynamicUploader());
+
+        // TODO(bryan.bernhart@intel.com): Remove once alignment constraint is added to validation
+        // (dawn:73). D3D12 does not specify so we assume 4-byte alignment to be safe.
+        static constexpr size_t kDefaultAlignment = 4;
+
+        UploadHandle uploadHandle;
+        DAWN_TRY_ASSIGN(uploadHandle, uploader->Allocate(count, kDefaultAlignment));
+        ASSERT(uploadHandle.mappedBuffer != nullptr);
+
+        memcpy(uploadHandle.mappedBuffer, data, count);
+
+        DAWN_TRY(GetDevice()->CopyFromStagingToBuffer(
+            uploadHandle.stagingBuffer, uploadHandle.startOffset, this, start, count));
+
+        return {};
+    }
+
+    void BufferBase::MapWriteAsync(DawnBufferMapWriteCallback callback,
+                                   DawnCallbackUserdata userdata) {
+        if (GetDevice()->ConsumedError(ValidateMap(dawn::BufferUsageBit::MapWrite))) {
+            callback(DAWN_BUFFER_MAP_ASYNC_STATUS_ERROR, nullptr, 0, userdata);
             return;
         }
+        ASSERT(!IsError());
 
         ASSERT(mMapReadCallback == nullptr);
 
@@ -148,30 +221,67 @@ namespace dawn_native {
         mMapSerial++;
         mMapWriteCallback = callback;
         mMapUserdata = userdata;
-        mIsMapped = true;
+        mState = BufferState::Mapped;
 
-        MapWriteAsyncImpl(mMapSerial, start, size);
+        MapWriteAsyncImpl(mMapSerial);
+    }
+
+    void BufferBase::Destroy() {
+        if (GetDevice()->ConsumedError(ValidateDestroy())) {
+            return;
+        }
+        ASSERT(!IsError());
+
+        if (mState == BufferState::Mapped) {
+            Unmap();
+        }
+        DestroyInternal();
     }
 
     void BufferBase::Unmap() {
         if (GetDevice()->ConsumedError(ValidateUnmap())) {
             return;
         }
+        ASSERT(!IsError());
 
         // A map request can only be called once, so this will fire only if the request wasn't
         // completed before the Unmap
-        CallMapReadCallback(mMapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN, nullptr);
-        CallMapWriteCallback(mMapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN, nullptr);
+        CallMapReadCallback(mMapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN, nullptr, 0u);
+        CallMapWriteCallback(mMapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN, nullptr, 0u);
         UnmapImpl();
-        mIsMapped = false;
+        mState = BufferState::Unmapped;
         mMapReadCallback = nullptr;
         mMapWriteCallback = nullptr;
         mMapUserdata = 0;
     }
 
     MaybeError BufferBase::ValidateSetSubData(uint32_t start, uint32_t count) const {
-        // TODO(cwallez@chromium.org): check for overflows.
-        if (start + count > GetSize()) {
+        DAWN_TRY(GetDevice()->ValidateObject(this));
+
+        if (mState == BufferState::Destroyed) {
+            return DAWN_VALIDATION_ERROR("Buffer is destroyed");
+        }
+
+        if (mState == BufferState::Mapped) {
+            return DAWN_VALIDATION_ERROR("Buffer is mapped");
+        }
+
+        if (count > GetSize()) {
+            return DAWN_VALIDATION_ERROR("Buffer subdata with too much data");
+        }
+
+        // Metal requests buffer to buffer copy size must be a multiple of 4 bytes on macOS
+        if (count % 4 != 0) {
+            return DAWN_VALIDATION_ERROR("Buffer subdata size must be a multiple of 4 bytes");
+        }
+
+        // Metal requests offset of buffer to buffer copy must be a multiple of 4 bytes on macOS
+        if (start % 4 != 0) {
+            return DAWN_VALIDATION_ERROR("Start position must be a multiple of 4 bytes");
+        }
+
+        // Note that no overflow can happen because we already checked for GetSize() >= count
+        if (start > GetSize() - count) {
             return DAWN_VALIDATION_ERROR("Buffer subdata out of range");
         }
 
@@ -182,15 +292,14 @@ namespace dawn_native {
         return {};
     }
 
-    MaybeError BufferBase::ValidateMap(uint32_t start,
-                                       uint32_t size,
-                                       dawn::BufferUsageBit requiredUsage) const {
-        // TODO(cwallez@chromium.org): check for overflows.
-        if (start + size > GetSize()) {
-            return DAWN_VALIDATION_ERROR("Buffer map read out of range");
+    MaybeError BufferBase::ValidateMap(dawn::BufferUsageBit requiredUsage) const {
+        DAWN_TRY(GetDevice()->ValidateObject(this));
+
+        if (mState == BufferState::Destroyed) {
+            return DAWN_VALIDATION_ERROR("Buffer is destroyed");
         }
 
-        if (mIsMapped) {
+        if (mState == BufferState::Mapped) {
             return DAWN_VALIDATION_ERROR("Buffer already mapped");
         }
 
@@ -202,69 +311,30 @@ namespace dawn_native {
     }
 
     MaybeError BufferBase::ValidateUnmap() const {
-        if (!mIsMapped) {
-            return DAWN_VALIDATION_ERROR("Buffer wasn't mapped");
-        }
+        DAWN_TRY(GetDevice()->ValidateObject(this));
 
+        if ((mUsage & (dawn::BufferUsageBit::MapRead | dawn::BufferUsageBit::MapWrite)) == 0) {
+            return DAWN_VALIDATION_ERROR("Buffer does not have map usage");
+        }
+        switch (mState) {
+            case BufferState::Unmapped:
+            case BufferState::Mapped:
+                return {};
+            case BufferState::Destroyed:
+                return DAWN_VALIDATION_ERROR("Buffer is destroyed");
+        }
+    }
+
+    MaybeError BufferBase::ValidateDestroy() const {
+        DAWN_TRY(GetDevice()->ValidateObject(this));
         return {};
     }
 
-    // BufferViewBase
-
-    BufferViewBase::BufferViewBase(BufferViewBuilder* builder)
-        : ObjectBase(builder->GetDevice()),
-          mBuffer(std::move(builder->mBuffer)),
-          mSize(builder->mSize),
-          mOffset(builder->mOffset) {
-    }
-
-    BufferBase* BufferViewBase::GetBuffer() {
-        return mBuffer.Get();
-    }
-
-    uint32_t BufferViewBase::GetSize() const {
-        return mSize;
-    }
-
-    uint32_t BufferViewBase::GetOffset() const {
-        return mOffset;
-    }
-
-    // BufferViewBuilder
-
-    enum BufferViewSetProperties {
-        BUFFER_VIEW_PROPERTY_EXTENT = 0x1,
-    };
-
-    BufferViewBuilder::BufferViewBuilder(DeviceBase* device, BufferBase* buffer)
-        : Builder(device), mBuffer(buffer) {
-    }
-
-    BufferViewBase* BufferViewBuilder::GetResultImpl() {
-        constexpr int allProperties = BUFFER_VIEW_PROPERTY_EXTENT;
-        if ((mPropertiesSet & allProperties) != allProperties) {
-            HandleError("Buffer view missing properties");
-            return nullptr;
+    void BufferBase::DestroyInternal() {
+        if (mState != BufferState::Destroyed) {
+            DestroyImpl();
         }
-
-        return GetDevice()->CreateBufferView(this);
-    }
-
-    void BufferViewBuilder::SetExtent(uint32_t offset, uint32_t size) {
-        if ((mPropertiesSet & BUFFER_VIEW_PROPERTY_EXTENT) != 0) {
-            HandleError("Buffer view extent property set multiple times");
-            return;
-        }
-
-        uint64_t viewEnd = static_cast<uint64_t>(offset) + static_cast<uint64_t>(size);
-        if (viewEnd > static_cast<uint64_t>(mBuffer->GetSize())) {
-            HandleError("Buffer view end is OOB");
-            return;
-        }
-
-        mOffset = offset;
-        mSize = size;
-        mPropertiesSet |= BUFFER_VIEW_PROPERTY_EXTENT;
+        mState = BufferState::Destroyed;
     }
 
 }  // namespace dawn_native

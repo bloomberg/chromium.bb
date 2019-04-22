@@ -9,14 +9,20 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # and //ash/public/cpp needs to depend on this for generated code (such as
 # enums and constants).
 mojom("interfaces_internal") {
-  visibility = [ "//ash/public/cpp:*" ]
+  visibility = [
+    "//ash/public/cpp:*",
+    "//ash/public/interfaces:test_interfaces",
+  ]
   disable_variants = true
 
   sources = [
     "accelerator_controller.mojom",
     "accessibility_controller.mojom",
+    "accessibility_controller_enums.mojom",
     "accessibility_focus_ring_controller.mojom",
     "app_list.mojom",
+    "app_list_view.mojom",
+    "arc_custom_tab.mojom",
     "ash_display_controller.mojom",
     "ash_message_center_controller.mojom",
     "ash_window_manager.mojom",
@@ -26,7 +32,6 @@ mojom("interfaces_internal") {
     "assistant_volume_control.mojom",
     "cast_config.mojom",
     "constants.mojom",
-    "contained_shell.mojom",
     "cros_display_config.mojom",
     "display_output_protection.mojom",
     "docked_magnifier_controller.mojom",
@@ -38,6 +43,7 @@ mojom("interfaces_internal") {
     "ime_info.mojom",
     "keyboard_controller.mojom",
     "kiosk_app_info.mojom",
+    "kiosk_next_shell.mojom",
     "locale.mojom",
     "login_screen.mojom",
     "login_user_info.mojom",
@@ -100,14 +106,15 @@ mojom("test_interfaces") {
   testonly = true
   disable_variants = true
   sources = [
-    "login_screen_test_api.mojom",
-    "shelf_test_api.mojom",
-    "shell_test_api.mojom",
-    "status_area_widget_test_api.mojom",
-    "system_tray_test_api.mojom",
-    "time_to_first_present_recorder_test_api.mojom",
+    "login_screen_test_api.test-mojom",
+    "shelf_test_api.test-mojom",
+    "shell_test_api.test-mojom",
+    "status_area_widget_test_api.test-mojom",
+    "system_tray_test_api.test-mojom",
+    "time_to_first_present_recorder_test_api.test-mojom",
   ]
   deps = [
+    "//ash/public/interfaces:interfaces_internal",
     "//components/account_id/interfaces",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",

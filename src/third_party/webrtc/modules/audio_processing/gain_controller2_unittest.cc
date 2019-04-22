@@ -202,8 +202,8 @@ struct FixedDigitalTestParams {
 };
 
 class FixedDigitalTest
-    : public testing::Test,
-      public testing::WithParamInterface<FixedDigitalTestParams> {};
+    : public ::testing::Test,
+      public ::testing::WithParamInterface<FixedDigitalTestParams> {};
 
 TEST_P(FixedDigitalTest, CheckSaturationBehaviorWithLimiter) {
   const float kInputLevel = 32767.f;
@@ -227,7 +227,7 @@ TEST_P(FixedDigitalTest, CheckSaturationBehaviorWithLimiter) {
 }
 
 static_assert(test::kLimiterMaxInputLevelDbFs < 10, "");
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     GainController2,
     FixedDigitalTest,
     ::testing::Values(

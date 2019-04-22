@@ -23,8 +23,12 @@ namespace content {
 //  private:
 //   explicit FooTabHelper(content::WebContents* contents);
 //   friend class content::WebContentsUserData<FooTabHelper>;
+//   WEB_CONTENTS_USER_DATA_KEY_DECL();
 //   // ... more private stuff here ...
-// }
+// };
+//
+// --- in foo_tab_helper.cc ---
+// WEB_CONTENTS_USER_DATA_KEY_IMPL(FooTabHelper)
 template <typename T>
 class WebContentsUserData : public base::SupportsUserData::Data {
  public:
@@ -48,12 +52,25 @@ class WebContentsUserData : public base::SupportsUserData::Data {
     return static_cast<const T*>(contents->GetUserData(UserDataKey()));
   }
 
- protected:
-  static inline const void* UserDataKey() {
-    static const int kId = 0;
-    return &kId;
-  }
+  static const void* UserDataKey() { return &T::kUserDataKey; }
 };
+
+// This macro declares a static variable inside the class that inherits from
+// WebContentsUserData The address of this static variable is used as the key to
+// store/retrieve an instance of the class on/from a WebState.
+#define WEB_CONTENTS_USER_DATA_KEY_DECL() static constexpr int kUserDataKey = 0
+
+// This macro instantiates the static variable declared by the previous macro.
+// It must live in a .cc file to ensure that there is only one instantiation
+// of the static variable.
+#define WEB_CONTENTS_USER_DATA_KEY_IMPL(Type) const int Type::kUserDataKey;
+
+// We tried using the address of a static local variable in UserDataKey() as a
+// key instead of the address of a member variable. That solution allowed us to
+// get rid of the macros above. Unfortately, each dynamic library that accessed
+// UserDataKey() had its own instantiation of the method, resulting in different
+// keys for the same WebContentsUserData type. Because of that, the solution was
+// reverted. https://crbug.com/589840#c16
 
 }  // namespace content
 

@@ -6,6 +6,8 @@
 
 #include <wayland-server-core.h>
 
+#include <string>
+
 #include "components/exo/wm_helper.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -71,10 +73,18 @@ void WaylandDisplayObserver::SendDisplayMetrics() {
   const std::string& model = info.product_id();
 
   gfx::Rect bounds = info.bounds_in_native();
+
+  // |origin| is used in wayland service to identify the workspace
+  // the pixel size will be applied.
+  gfx::Point origin = display.bounds().origin();
+  // Don't use ManagedDisplayInfo.bound_in_native() because it
+  // has raw information before overscan, rotation applied.
+  gfx::Size size_in_pixel = display.GetSizeInPixel();
+
   wl_output_send_geometry(
-      output_resource_, bounds.x(), bounds.y(),
-      static_cast<int>(kInchInMm * bounds.width() / info.device_dpi()),
-      static_cast<int>(kInchInMm * bounds.height() / info.device_dpi()),
+      output_resource_, origin.x(), origin.y(),
+      static_cast<int>(kInchInMm * size_in_pixel.width() / info.device_dpi()),
+      static_cast<int>(kInchInMm * size_in_pixel.height() / info.device_dpi()),
       WL_OUTPUT_SUBPIXEL_UNKNOWN, make.empty() ? kUnknown : make.c_str(),
       model.empty() ? kUnknown : model.c_str(),
       OutputTransform(display.rotation()));

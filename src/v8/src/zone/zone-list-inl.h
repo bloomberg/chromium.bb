@@ -9,7 +9,7 @@
 
 #include "src/base/macros.h"
 #include "src/base/platform/platform.h"
-#include "src/utils.h"
+#include "src/memcopy.h"
 
 namespace v8 {
 namespace internal {
@@ -66,7 +66,9 @@ template <typename T>
 void ZoneList<T>::Resize(int new_capacity, ZoneAllocationPolicy alloc) {
   DCHECK_LE(length_, new_capacity);
   T* new_data = NewData(new_capacity, alloc);
-  MemCopy(new_data, data_, length_ * sizeof(T));
+  if (length_ > 0) {
+    MemCopy(new_data, data_, length_ * sizeof(T));
+  }
   ZoneList<T>::DeleteData(data_);
   data_ = new_data;
   capacity_ = new_capacity;
@@ -126,14 +128,6 @@ template <typename T>
 template <class Visitor>
 void ZoneList<T>::Iterate(Visitor* visitor) {
   for (int i = 0; i < length_; i++) visitor->Apply(&data_[i]);
-}
-
-template <typename T>
-bool ZoneList<T>::Contains(const T& elm) const {
-  for (int i = 0; i < length_; i++) {
-    if (data_[i] == elm) return true;
-  }
-  return false;
 }
 
 template <typename T>

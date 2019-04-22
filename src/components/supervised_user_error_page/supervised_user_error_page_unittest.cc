@@ -49,9 +49,9 @@ BlockMessageIDTestParameter block_message_id_test_params[] = {
     {MANUAL, true, false, IDS_CHILD_BLOCK_MESSAGE_MANUAL_MULTI_PARENT},
 };
 
-INSTANTIATE_TEST_CASE_P(GetBlockMessageIDParameterized,
-                        SupervisedUserErrorPageTest_GetBlockMessageID,
-                        ::testing::ValuesIn(block_message_id_test_params));
+INSTANTIATE_TEST_SUITE_P(GetBlockMessageIDParameterized,
+                         SupervisedUserErrorPageTest_GetBlockMessageID,
+                         ::testing::ValuesIn(block_message_id_test_params));
 
 struct BuildHtmlTestParameter {
   bool allow_access_requests;
@@ -201,8 +201,8 @@ BuildHtmlTestParameter build_html_test_parameter[] = {
      "custodian2_email", true, false, ASYNC_CHECKER, true},
 };
 
-INSTANTIATE_TEST_CASE_P(GetBlockMessageIDParameterized,
-                        SupervisedUserErrorPageTest_BuildHtml,
-                        ::testing::ValuesIn(build_html_test_parameter));
+INSTANTIATE_TEST_SUITE_P(GetBlockMessageIDParameterized,
+                         SupervisedUserErrorPageTest_BuildHtml,
+                         ::testing::ValuesIn(build_html_test_parameter));
 
 }  //  namespace supervised_user_error_page

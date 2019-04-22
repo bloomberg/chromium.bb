@@ -14,9 +14,9 @@
 #include "components/ukm/ukm_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -40,7 +40,7 @@
 using chrome_test_util::AccountsSyncButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
-using chrome_test_util::ClearBrowsingDataCollectionView;
+using chrome_test_util::ClearBrowsingDataView;
 using chrome_test_util::GetIncognitoTabCount;
 using chrome_test_util::IsIncognitoMode;
 using chrome_test_util::IsSyncInitialized;
@@ -136,7 +136,7 @@ void ClearBrowsingData() {
 
   // Before returning, make sure that the top of the Clear Browsing Data
   // settings screen is visible to match the state at the start of the method.
-  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataCollectionView()]
+  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataView()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -199,7 +199,8 @@ void SignOut() {
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
 }
 
 }  // namespace
@@ -402,9 +403,9 @@ void SignOut() {
   // Open sync encryption menu.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"kSettingsSyncId")]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
-                                          l10n_util::GetNSStringWithFixup(
-                                              IDS_IOS_SYNC_ENCRYPTION_TITLE))]
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+
+                                          IDS_IOS_SYNC_ENCRYPTION_TITLE)]
       performAction:grey_tap()];
   // Select passphrase encryption.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(

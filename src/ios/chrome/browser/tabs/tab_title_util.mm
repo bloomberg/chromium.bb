@@ -22,8 +22,12 @@ namespace tab_util {
 
 NSString* GetTabTitle(web::WebState* web_state) {
   base::string16 title;
-  if (!web_state->GetNavigationManager()->GetVisibleItem() &&
-      DownloadManagerTabHelper::FromWebState(web_state)->has_download_task()) {
+  web::NavigationManager* navigationManager = web_state->GetNavigationManager();
+  DownloadManagerTabHelper* downloadTabHelper =
+      DownloadManagerTabHelper::FromWebState(web_state);
+  if (navigationManager && downloadTabHelper &&
+      !navigationManager->GetVisibleItem() &&
+      downloadTabHelper->has_download_task()) {
     title = l10n_util::GetStringUTF16(IDS_DOWNLOAD_TAB_TITLE);
   } else {
     title = web_state->GetTitle();

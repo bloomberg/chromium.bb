@@ -90,7 +90,7 @@ std::pair<GURL, GURL> MakeGURLPair(std::string requesting_url,
 
 TEST_F(UsbPolicyAllowedDevicesTest, InitializeWithExistingPrefValue) {
   std::unique_ptr<base::Value> pref_value =
-      base::JSONReader::Read(kPolicySetting);
+      base::JSONReader::ReadDeprecated(kPolicySetting);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
@@ -134,7 +134,7 @@ TEST_F(UsbPolicyAllowedDevicesTest,
 
   // Ensure that the allowed devices can be dynamically updated.
   std::unique_ptr<base::Value> pref_value =
-      base::JSONReader::Read(kPolicySetting);
+      base::JSONReader::ReadDeprecated(kPolicySetting);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
@@ -170,7 +170,7 @@ TEST_F(UsbPolicyAllowedDevicesTest,
 TEST_F(UsbPolicyAllowedDevicesTest,
        InitializeWithExistingPolicyThenRemovePolicy) {
   std::unique_ptr<base::Value> pref_value =
-      base::JSONReader::Read(kPolicySetting);
+      base::JSONReader::ReadDeprecated(kPolicySetting);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
@@ -232,7 +232,7 @@ constexpr char kPolicySettingWithEntriesContainingDuplicateDevices[] = R"(
 
 TEST_F(UsbPolicyAllowedDevicesTest,
        InitializeWithExistingPrefValueContainingDuplicateDevices) {
-  std::unique_ptr<base::Value> pref_value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> pref_value = base::JSONReader::ReadDeprecated(
       kPolicySettingWithEntriesContainingDuplicateDevices);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
@@ -273,8 +273,8 @@ constexpr char kPolicySettingWithEntriesMatchingMultipleDevices[] = R"(
 }  // namespace
 
 TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowed) {
-  std::unique_ptr<base::Value> pref_value =
-      base::JSONReader::Read(kPolicySettingWithEntriesMatchingMultipleDevices);
+  std::unique_ptr<base::Value> pref_value = base::JSONReader::ReadDeprecated(
+      kPolicySettingWithEntriesMatchingMultipleDevices);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
@@ -341,8 +341,8 @@ TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowed) {
 }
 
 TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowedForUrlsNotInPref) {
-  std::unique_ptr<base::Value> pref_value =
-      base::JSONReader::Read(kPolicySettingWithEntriesMatchingMultipleDevices);
+  std::unique_ptr<base::Value> pref_value = base::JSONReader::ReadDeprecated(
+      kPolicySettingWithEntriesMatchingMultipleDevices);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
@@ -364,8 +364,8 @@ TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowedForUrlsNotInPref) {
 }
 
 TEST_F(UsbPolicyAllowedDevicesTest, IsDeviceAllowedForDeviceNotInPref) {
-  std::unique_ptr<base::Value> pref_value =
-      base::JSONReader::Read(kPolicySettingWithEntriesMatchingMultipleDevices);
+  std::unique_ptr<base::Value> pref_value = base::JSONReader::ReadDeprecated(
+      kPolicySettingWithEntriesMatchingMultipleDevices);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 
@@ -401,8 +401,8 @@ constexpr char kPolicySettingWithUrlContainingEmbeddingOrigin[] = R"(
 
 TEST_F(UsbPolicyAllowedDevicesTest,
        IsDeviceAllowedForUrlContainingEmbeddingOrigin) {
-  std::unique_ptr<base::Value> pref_value =
-      base::JSONReader::Read(kPolicySettingWithUrlContainingEmbeddingOrigin);
+  std::unique_ptr<base::Value> pref_value = base::JSONReader::ReadDeprecated(
+      kPolicySettingWithUrlContainingEmbeddingOrigin);
 
   SetWebUsbAllowDevicesForUrlsPrefValue(*pref_value);
 

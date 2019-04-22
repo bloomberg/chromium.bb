@@ -293,7 +293,7 @@ TEST_F(EmbedderTest, MultiprocessBaseSharedMemory) {
     WriteMessageWithHandles(server_mp, "hello", &sb2, 1);
 
     // 4. Read a message from |server_mp|.
-    EXPECT_EQ("bye", ReadMessage(server_mp));
+    EXPECT_EQ("hey", ReadMessage(server_mp));
 
     // 5. Expect that the contents of the shared buffer have changed.
     EXPECT_EQ(kByeWorld, std::string(buffer));
@@ -305,6 +305,9 @@ TEST_F(EmbedderTest, MultiprocessBaseSharedMemory) {
     EXPECT_EQ(kByeWorld, std::string(static_cast<char*>(mapping.memory())));
 
     ASSERT_EQ(MOJO_RESULT_OK, MojoClose(sb1));
+
+    // Tell the child it's safe to shut down.
+    WriteMessage(server_mp, "bye");
   });
 }
 
@@ -327,7 +330,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessSharedMemoryClient,
 
   // 4. Write into |buffer| and send a message back.
   memcpy(buffer, kByeWorld, sizeof(kByeWorld));
-  WriteMessage(client_mp, "bye");
+  WriteMessage(client_mp, "hey");
 
   // 5. Extract the shared memory handle and ensure we can map it and read the
   // contents.
@@ -337,6 +340,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessSharedMemoryClient,
   ASSERT_TRUE(mapping.IsValid());
   EXPECT_NE(buffer, mapping.memory());
   EXPECT_EQ(kByeWorld, std::string(static_cast<char*>(mapping.memory())));
+
+  EXPECT_EQ("bye", ReadMessage(client_mp));
 
   // 6. Close |sb1|. Should fail because |ExtractRegionFromSharedBuffer()|
   // should have closed the handle.

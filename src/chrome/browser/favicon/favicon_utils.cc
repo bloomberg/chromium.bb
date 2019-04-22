@@ -12,9 +12,12 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/favicon_url.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace favicon {
 
@@ -42,27 +45,28 @@ void CreateContentFaviconDriverForWebContents(
 }
 
 bool ShouldDisplayFavicon(content::WebContents* web_contents) {
-  // No favicon on interstitials. This check must be done first since
-  // interstitial navigations don't commit and always have a pending entry.
+  // No favicon on interstitials.
   if (web_contents->ShowingInterstitialPage())
     return false;
 
-  // Always display a throbber during pending loads.
-  const content::NavigationController& controller =
-      web_contents->GetController();
-  if (controller.GetLastCommittedEntry() && controller.GetPendingEntry())
-    return true;
-
-  GURL url = web_contents->GetURL();
+  // Suppress the icon for the new-tab page, even if a navigation to it is
+  // not committed yet. Note that we're looking at the visible URL, so
+  // navigations from NTP generally don't hit this case and still show an icon.
+  GURL url = web_contents->GetVisibleURL();
   if (url.SchemeIs(content::kChromeUIScheme) &&
       url.host_piece() == chrome::kChromeUINewTabHost) {
     return false;
   }
 
-  // No favicon on Instant New Tab Pages.
-  if (search::IsInstantNTP(web_contents))
+  // Also suppress instant-NTP. This does not use search::IsInstantNTP since
+  // it looks at the last-committed entry and we need to show icons for pending
+  // navigations away from it.
+  if (search::IsInstantNTPURL(url, Profile::FromBrowserContext(
+                                       web_contents->GetBrowserContext()))) {
     return false;
+  }
 
+  // Otherwise, always display the favicon.
   return true;
 }
 
@@ -75,7 +79,7 @@ gfx::Image TabFaviconFromWebContents(content::WebContents* contents) {
 
   // Desaturate the favicon if the navigation entry contains a network error.
   if (!contents->IsLoadingToDifferentDocument()) {
-    const content::NavigationController& controller = contents->GetController();
+    content::NavigationController& controller = contents->GetController();
 
     content::NavigationEntry* entry = controller.GetLastCommittedEntry();
     if (entry && (entry->GetPageType() == content::PAGE_TYPE_ERROR)) {
@@ -87,6 +91,15 @@ gfx::Image TabFaviconFromWebContents(content::WebContents* contents) {
   }
 
   return favicon;
+}
+
+gfx::Image GetDefaultFavicon() {
+  const ui::NativeTheme* native_theme =
+      ui::NativeTheme::GetInstanceForNativeUi();
+  bool is_dark = native_theme && native_theme->SystemDarkModeEnabled();
+  int resource_id = is_dark ? IDR_DEFAULT_FAVICON_DARK : IDR_DEFAULT_FAVICON;
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      resource_id);
 }
 
 }  // namespace favicon

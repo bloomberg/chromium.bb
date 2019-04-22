@@ -40,9 +40,9 @@ class NGBaselineRequestListDataTest
     : public NGBaselineTest,
       public testing::WithParamInterface<NGBaselineRequestListTestData> {};
 
-INSTANTIATE_TEST_CASE_P(NGBaselineTest,
-                        NGBaselineRequestListDataTest,
-                        testing::ValuesIn(baseline_request_list_test_data));
+INSTANTIATE_TEST_SUITE_P(NGBaselineTest,
+                         NGBaselineRequestListDataTest,
+                         testing::ValuesIn(baseline_request_list_test_data));
 
 TEST_P(NGBaselineRequestListDataTest, Data) {
   const auto& data = GetParam();

@@ -95,8 +95,6 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
   void OnPrefetchedPageOpened() override;
   void ReportAccumulatedStats() override;
 
-  void SetClockForTesting(base::Clock* clock);
-
  private:
   void EnsureLoaded();
   void SaveToPrefs();
@@ -150,9 +148,6 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
   // Has the same lifetime as profile, so should outlive this subcomponent
   // of profile's PrefetchService.
   PrefService* prefs_ = nullptr;
-
-  // Used in tests, managed by the test, outlives this object.
-  base::Clock* testing_clock_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineMetricsCollectorImpl);
 };

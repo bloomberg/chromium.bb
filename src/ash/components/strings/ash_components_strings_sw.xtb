@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Ongeza sauti</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, kisha <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Sogeza hadi mwanzo wa neno la awali</translation>
-<translation id="1671169355475348905">Badili utumie mbinu ya kuingiza maandishi ya lugha iliyotangulia</translation>
 <translation id="1679841710523778799">Ongeza ung'aavu</translation>
 <translation id="168356808214100546">Bonyeza na ushikilie <ph name="ALT" />, gusa <ph name="TAB" /> hadi utakapoona dirisha ambalo ungependa kufungua, kisha uachilie.</translation>
 <translation id="169515659049020177">Hama</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Onyesha au ufiche sehemu ya alamisho</translation>
 <translation id="2185166372312820725">Nenda kwenye kichupo cha awali</translation>
 <translation id="2194790690264064655">Bonyeza <ph name="CTRL" /> na ubofye kiungo</translation>
+<translation id="2246352309084894470">Fungua au funga kufungua programu cha skrini nzima</translation>
 <translation id="2382644247745281995">Haitumiki kwenye mpangilio wa sasa wa kibodi</translation>
 <translation id="2397416548179033562">Onyesha Menyu ya Chrome</translation>
 <translation id="2424073332829844142">Washa au uzime Caps Lock</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Badilisha kiwango cha kukuza ukurasa</translation>
 <translation id="2596078834055697711">Piga picha ya skrini ya dirisha</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, kisha <ph name="TAB" /> au <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Badili utumie mbinu ya kuingiza maandishi ya lugha inayofuata</translation>
 <translation id="2699509451653686398">Hifadhi ukurasa wa sasa wa wavuti uwe alamisho</translation>
 <translation id="2750942583782703988">Pakia upya ukurasa wa sasa</translation>
 <translation id="2764005613199379871">Angazia sehemu ya anwani ya utafutaji</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Funga skrini</translation>
 <translation id="6727005317916125192">Dirisha lililotangulia</translation>
 <translation id="6740781404993465795">Chagua neno au herufi inayofuata</translation>
+<translation id="6755851152783057058">Badilisha utumie mbinu ya kuingiza data iliyotumika mara ya mwisho</translation>
 <translation id="6760706756348334449">Punguza sauti</translation>
 <translation id="6941333068993625698">Wasilisha maoni</translation>
 <translation id="6981982820502123353">Upatikanaji</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Andika anwani ya tovuti kwenye sehemu ya anwani, kisha ubonyeze <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Weka kifaa kiwe katika hali tuli (simamisha kwa muda)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> au <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Nenda kwenye mbinu inayofuata ya kuingiza data</translation>
 <translation id="743754632698445141">Bandua programu</translation>
 <translation id="7439718573248533901">Futa herufi inayofuata (futa kuelekea mbele)</translation>
 <translation id="7611271430932669992">Sogeza uangaziaji kwenye dirisha ibukizi au visanduku</translation>

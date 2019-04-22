@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -41,7 +42,7 @@ using base::test::ios::WaitUntilCondition;
 
 - (void)passwordFetcher:(PasswordFetcher*)passwordFetcher
       didFetchPasswords:
-          (std::vector<std::unique_ptr<autofill::PasswordForm>>&)passwords {
+          (std::vector<std::unique_ptr<autofill::PasswordForm>>)passwords {
   _passwords = std::move(passwords);
 }
 
@@ -121,7 +122,7 @@ class PasswordFetcherTest : public PlatformTest {
     form->password_element = base::ASCIIToUTF16("password");
     form->password_value = base::ASCIIToUTF16("cantsay");
     form->submit_element = base::ASCIIToUTF16("signIn");
-    form->signon_realm = "http://www.secret.com/";
+    form->signon_realm = "http://www.secret.test/";
     form->preferred = false;
     form->scheme = autofill::PasswordForm::SCHEME_HTML;
     form->blacklisted_by_user = true;
@@ -140,7 +141,8 @@ TEST_F(PasswordFetcherTest, Initialization) {
       chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   PasswordFetcher* passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
-                                            delegate:passwordFetcherDelegate];
+                                            delegate:passwordFetcherDelegate
+                                                 URL:GURL::EmptyGURL()];
   EXPECT_TRUE(passwordFetcher);
 }
 
@@ -153,7 +155,9 @@ TEST_F(PasswordFetcherTest, ReturnsPassword) {
       chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   PasswordFetcher* passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
-                                            delegate:passwordFetcherDelegate];
+                                            delegate:passwordFetcherDelegate
+                                                 URL:GURL::EmptyGURL()];
+
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;
@@ -174,7 +178,8 @@ TEST_F(PasswordFetcherTest, ReturnsTwoPasswords) {
       chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   PasswordFetcher* passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
-                                            delegate:passwordFetcherDelegate];
+                                            delegate:passwordFetcherDelegate
+                                                 URL:GURL::EmptyGURL()];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;
@@ -195,7 +200,8 @@ TEST_F(PasswordFetcherTest, IgnoresBlacklisted) {
       chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   PasswordFetcher* passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
-                                            delegate:passwordFetcherDelegate];
+                                            delegate:passwordFetcherDelegate
+                                                 URL:GURL::EmptyGURL()];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;
@@ -218,7 +224,8 @@ TEST_F(PasswordFetcherTest, IgnoresDuplicated) {
       chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   PasswordFetcher* passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
-                                            delegate:passwordFetcherDelegate];
+                                            delegate:passwordFetcherDelegate
+                                                 URL:GURL::EmptyGURL()];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;
@@ -238,7 +245,8 @@ TEST_F(PasswordFetcherTest, ReceivesZeroPasswords) {
       chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   PasswordFetcher* passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
-                                            delegate:passwordFetcherDelegate];
+                                            delegate:passwordFetcherDelegate
+                                                 URL:GURL::EmptyGURL()];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;
@@ -254,6 +262,28 @@ TEST_F(PasswordFetcherTest, ReceivesZeroPasswords) {
       },
       true, base::TimeDelta::FromSeconds(1000));
   EXPECT_EQ(passwordFetcherDelegate.passwordNumber, 0u);
+  EXPECT_TRUE(passwordFetcher);
+}
+
+// Tests PasswordFetcher filters 1 passwords.
+TEST_F(PasswordFetcherTest, FilterPassword) {
+  AddSavedForm1();
+  AddSavedForm2();
+  TestPasswordFetcherDelegate* passwordFetcherDelegate =
+      [[TestPasswordFetcherDelegate alloc] init];
+  auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+      chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
+  PasswordFetcher* passwordFetcher = [[PasswordFetcher alloc]
+      initWithPasswordStore:passwordStore
+                   delegate:passwordFetcherDelegate
+                        URL:GURL("http://www.secret.test/")];
+  WaitUntilCondition(
+      ^bool {
+        return passwordFetcherDelegate.passwordNumber > 0;
+      },
+      true, base::TimeDelta::FromSeconds(1000));
+
+  EXPECT_EQ(passwordFetcherDelegate.passwordNumber, 2u);
   EXPECT_TRUE(passwordFetcher);
 }
 

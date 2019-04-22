@@ -12,11 +12,12 @@
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -100,7 +101,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
         core_(dm_protocol::kChromeUserPolicyType,
               std::string(),
               &store_,
-              loop_.task_runner(),
+              base::ThreadTaskRunnerHandle::Get(),
               network::TestNetworkConnectionTracker::CreateGetter()) {
     builder_.SetDefaultSigningKey();
     builder_.policy_data().set_policy_type(
@@ -123,7 +124,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     owned_cache_.reset(new ResourceCache(temp_dir_.GetPath(),
-                                         loop_.task_runner(),
+                                         base::ThreadTaskRunnerHandle::Get(),
                                          /* max_cache_size */ base::nullopt));
     cache_ = owned_cache_.get();
   }
@@ -141,8 +142,9 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &loader_factory_));
     service_.reset(new ComponentCloudPolicyService(
-        dm_protocol::kChromeExtensionPolicyType, &delegate_, &registry_, &core_,
-        client_, std::move(owned_cache_), loop_.task_runner()));
+        dm_protocol::kChromeExtensionPolicyType, POLICY_SOURCE_CLOUD,
+        &delegate_, &registry_, &core_, client_, std::move(owned_cache_),
+        base::ThreadTaskRunnerHandle::Get()));
 
     client_->SetDMToken(ComponentCloudPolicyBuilder::kFakeToken);
     EXPECT_EQ(1u, client_->types_to_fetch_.size());
@@ -179,16 +181,22 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   }
 
   void PopulateCache() {
-    EXPECT_TRUE(cache_->Store("extension-policy", kTestExtension,
-                              CreateSerializedResponse()));
-    EXPECT_TRUE(
-        cache_->Store("extension-policy-data", kTestExtension, kTestPolicy));
+    EXPECT_FALSE(cache_
+                     ->Store("extension-policy", kTestExtension,
+                             CreateSerializedResponse())
+                     .empty());
+    EXPECT_FALSE(
+        cache_->Store("extension-policy-data", kTestExtension, kTestPolicy)
+            .empty());
 
     builder_.policy_data().set_settings_entity_id(kTestExtension2);
-    EXPECT_TRUE(cache_->Store("extension-policy", kTestExtension2,
-                              CreateSerializedResponse()));
-    EXPECT_TRUE(
-        cache_->Store("extension-policy-data", kTestExtension2, kTestPolicy));
+    EXPECT_FALSE(cache_
+                     ->Store("extension-policy", kTestExtension2,
+                             CreateSerializedResponse())
+                     .empty());
+    EXPECT_FALSE(
+        cache_->Store("extension-policy-data", kTestExtension2, kTestPolicy)
+            .empty());
     builder_.policy_data().set_settings_entity_id(kTestExtension);
   }
 
@@ -214,7 +222,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   const PolicyNamespace kTestExtensionNS2 =
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension2);
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   network::TestURLLoaderFactory loader_factory_;
   MockComponentCloudPolicyDelegate delegate_;
@@ -550,10 +558,13 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
   // loaded, the other should be filtered out by the schema.
   builder_.payload().set_secure_hash(
       crypto::SHA256HashString(kInvalidTestPolicy));
-  EXPECT_TRUE(cache_->Store("extension-policy", kTestExtension,
-                            CreateSerializedResponse()));
-  EXPECT_TRUE(cache_->Store("extension-policy-data", kTestExtension,
-                            kInvalidTestPolicy));
+  EXPECT_FALSE(cache_
+                   ->Store("extension-policy", kTestExtension,
+                           CreateSerializedResponse())
+                   .empty());
+  EXPECT_FALSE(
+      cache_->Store("extension-policy-data", kTestExtension, kInvalidTestPolicy)
+          .empty());
 
   LoadStore();
   InitializeRegistry();

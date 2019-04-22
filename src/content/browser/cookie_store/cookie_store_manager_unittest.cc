@@ -11,12 +11,14 @@
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
+#include "content/browser/service_worker/fake_service_worker.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
@@ -86,6 +88,94 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
  public:
   using EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper;
 
+  explicit CookieStoreWorkerTestHelper(
+      const base::FilePath& user_data_directory)
+      : EmbeddedWorkerTestHelper(user_data_directory) {}
+  ~CookieStoreWorkerTestHelper() override = default;
+
+  class EmbeddedWorkerInstanceClient : public FakeEmbeddedWorkerInstanceClient {
+   public:
+    explicit EmbeddedWorkerInstanceClient(
+        CookieStoreWorkerTestHelper* worker_helper)
+        : FakeEmbeddedWorkerInstanceClient(worker_helper),
+          worker_helper_(worker_helper) {}
+    ~EmbeddedWorkerInstanceClient() override = default;
+
+    // Collects the worker's registration ID for OnInstallEvent().
+    void StartWorker(
+        blink::mojom::EmbeddedWorkerStartParamsPtr params) override {
+      ServiceWorkerVersion* service_worker_version =
+          worker_helper_->context()->GetLiveVersion(
+              params->service_worker_version_id);
+      DCHECK(service_worker_version);
+      worker_helper_->service_worker_registration_id_ =
+          service_worker_version->registration_id();
+
+      FakeEmbeddedWorkerInstanceClient::StartWorker(std::move(params));
+    }
+
+   private:
+    CookieStoreWorkerTestHelper* const worker_helper_;
+
+    DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceClient);
+  };
+
+  class ServiceWorker : public FakeServiceWorker {
+   public:
+    explicit ServiceWorker(CookieStoreWorkerTestHelper* worker_helper)
+        : FakeServiceWorker(worker_helper), worker_helper_(worker_helper) {}
+    ~ServiceWorker() override = default;
+
+    // Cookie change subscriptions can only be created in this event handler.
+    void DispatchInstallEvent(DispatchInstallEventCallback callback) override {
+      for (auto& subscriptions :
+           worker_helper_->install_subscription_batches_) {
+        worker_helper_->cookie_store_service_->AppendSubscriptions(
+            worker_helper_->service_worker_registration_id_,
+            std::move(subscriptions), base::BindOnce([](bool success) {
+              CHECK(success) << "AppendSubscriptions failed";
+            }));
+      }
+      worker_helper_->install_subscription_batches_.clear();
+
+      FakeServiceWorker::DispatchInstallEvent(std::move(callback));
+    }
+
+    // Used to implement WaitForActivateEvent().
+    void DispatchActivateEvent(
+        DispatchActivateEventCallback callback) override {
+      if (worker_helper_->quit_on_activate_) {
+        worker_helper_->quit_on_activate_->Quit();
+        worker_helper_->quit_on_activate_ = nullptr;
+      }
+
+      FakeServiceWorker::DispatchActivateEvent(std::move(callback));
+    }
+
+    void DispatchCookieChangeEvent(
+        const net::CanonicalCookie& cookie,
+        ::network::mojom::CookieChangeCause cause,
+        DispatchCookieChangeEventCallback callback) override {
+      worker_helper_->changes_.emplace_back(cookie, cause);
+      std::move(callback).Run(
+          blink::mojom::ServiceWorkerEventStatus::COMPLETED);
+    }
+
+   private:
+    CookieStoreWorkerTestHelper* const worker_helper_;
+
+    DISALLOW_COPY_AND_ASSIGN(ServiceWorker);
+  };
+
+  std::unique_ptr<FakeEmbeddedWorkerInstanceClient> CreateInstanceClient()
+      override {
+    return std::make_unique<EmbeddedWorkerInstanceClient>(this);
+  }
+
+  std::unique_ptr<FakeServiceWorker> CreateServiceWorker() override {
+    return std::make_unique<ServiceWorker>(this);
+  }
+
   // Sets the cookie change subscriptions requested in the next install event.
   void SetOnInstallSubscriptions(
       std::vector<CookieStoreSync::Subscriptions> subscription_batches,
@@ -106,67 +196,6 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
       std::pair<net::CanonicalCookie, ::network::mojom::CookieChangeCause>>&
   changes() {
     return changes_;
-  }
-
- protected:
-  // Collects the worker's registration ID for OnInstallEvent().
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t service_worker_version_id,
-      const GURL& scope,
-      const GURL& script_url,
-      bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
-      mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
-      override {
-    ServiceWorkerVersion* service_worker_version =
-        context()->GetLiveVersion(service_worker_version_id);
-    DCHECK(service_worker_version);
-    service_worker_registration_id_ = service_worker_version->registration_id();
-
-    EmbeddedWorkerTestHelper::OnStartWorker(
-        embedded_worker_id, service_worker_version_id, scope, script_url,
-        pause_after_download, std::move(service_worker_request),
-        std::move(controller_request), std::move(instance_host),
-        std::move(provider_info), std::move(installed_scripts_info));
-  }
-
-  // Cookie change subscriptions can only be created in this event handler.
-  void OnInstallEvent(
-      mojom::ServiceWorker::DispatchInstallEventCallback callback) override {
-    for (auto& subscriptions : install_subscription_batches_) {
-      cookie_store_service_->AppendSubscriptions(
-          service_worker_registration_id_, std::move(subscriptions),
-          base::BindOnce([](bool success) {
-            CHECK(success) << "AppendSubscriptions failed";
-          }));
-    }
-    install_subscription_batches_.clear();
-
-    EmbeddedWorkerTestHelper::OnInstallEvent(std::move(callback));
-  }
-
-  // Used to implement WaitForActivateEvent().
-  void OnActivateEvent(
-      mojom::ServiceWorker::DispatchActivateEventCallback callback) override {
-    if (quit_on_activate_) {
-      quit_on_activate_->Quit();
-      quit_on_activate_ = nullptr;
-    }
-
-    EmbeddedWorkerTestHelper::OnActivateEvent(std::move(callback));
-  }
-
-  void OnCookieChangeEvent(
-      const net::CanonicalCookie& cookie,
-      ::network::mojom::CookieChangeCause cause,
-      mojom::ServiceWorker::DispatchCookieChangeEventCallback callback)
-      override {
-    changes_.emplace_back(cookie, cause);
-    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
  private:
@@ -289,11 +318,15 @@ class CookieStoreManagerTest
   bool SetCanonicalCookie(const net::CanonicalCookie& cookie) {
     base::RunLoop run_loop;
     bool success = false;
+    net::CookieOptions options;
+    options.set_include_httponly();
     cookie_manager_->SetCanonicalCookie(
-        cookie, /* secure_source = */ true, /* can_modify_httponly = */ true,
+        cookie, "https", options,
         base::BindOnce(
-            [](base::RunLoop* run_loop, bool* success, bool service_success) {
-              *success = success;
+            [](base::RunLoop* run_loop, bool* success,
+               net::CanonicalCookie::CookieInclusionStatus service_success) {
+              *success = (service_success ==
+                          net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
               run_loop->Quit();
             },
             &run_loop, &success));
@@ -907,9 +940,9 @@ TEST_P(CookieStoreManagerTest, GetSubscriptionsFromWrongOrigin) {
   EXPECT_FALSE(wrong_subscriptions_opt.has_value());
 }
 
-INSTANTIATE_TEST_CASE_P(CookieStoreManagerTest,
-                        CookieStoreManagerTest,
-                        testing::Bool() /* reset_storage_during_test */);
+INSTANTIATE_TEST_SUITE_P(CookieStoreManagerTest,
+                         CookieStoreManagerTest,
+                         testing::Bool() /* reset_storage_during_test */);
 
 }  // namespace
 

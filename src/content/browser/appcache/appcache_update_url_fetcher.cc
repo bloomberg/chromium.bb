@@ -4,10 +4,13 @@
 
 #include "content/browser/appcache/appcache_update_url_fetcher.h"
 
+#include <memory>
+
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "content/browser/appcache/appcache_update_request_base.h"
+#include "content/browser/appcache/appcache_update_url_loader_request.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -31,8 +34,11 @@ AppCacheUpdateJob::URLFetcher::URLFetcher(const GURL& url,
       job_(job),
       fetch_type_(fetch_type),
       retry_503_attempts_(0),
-      request_(
-          UpdateRequestBase::Create(job->service_, url, buffer_size, this)),
+      request_(std::make_unique<UpdateURLLoaderRequest>(
+          job->service_->url_loader_factory_getter(),
+          url,
+          buffer_size,
+          this)),
       result_(AppCacheUpdateJob::UPDATE_OK),
       redirect_response_code_(-1),
       buffer_size_(buffer_size) {}
@@ -244,8 +250,8 @@ bool AppCacheUpdateJob::URLFetcher::MaybeRetryRequest() {
   }
   ++retry_503_attempts_;
   result_ = AppCacheUpdateJob::UPDATE_OK;
-  request_ =
-      UpdateRequestBase::Create(job_->service_, url_, buffer_size_, this);
+  request_ = std::make_unique<UpdateURLLoaderRequest>(
+      job_->service_->url_loader_factory_getter(), url_, buffer_size_, this);
   Start();
   return true;
 }

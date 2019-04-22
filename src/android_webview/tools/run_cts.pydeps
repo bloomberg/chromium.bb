@@ -5,6 +5,8 @@
 //build/android/pylib/__init__.py
 //build/android/pylib/constants/__init__.py
 //build/android/pylib/constants/host_paths.py
+//build/android/pylib/utils/__init__.py
+//build/android/pylib/utils/test_filter.py
 //third_party/catapult/common/py_utils/py_utils/__init__.py
 //third_party/catapult/common/py_utils/py_utils/cloud_storage.py
 //third_party/catapult/common/py_utils/py_utils/cloud_storage_global_lock.py
@@ -35,6 +37,8 @@
 //third_party/catapult/devil/devil/android/install_commands.py
 //third_party/catapult/devil/devil/android/logcat_monitor.py
 //third_party/catapult/devil/devil/android/md5sum.py
+//third_party/catapult/devil/devil/android/ndk/__init__.py
+//third_party/catapult/devil/devil/android/ndk/abis.py
 //third_party/catapult/devil/devil/android/sdk/__init__.py
 //third_party/catapult/devil/devil/android/sdk/aapt.py
 //third_party/catapult/devil/devil/android/sdk/adb_wrapper.py

@@ -38,7 +38,6 @@ const GUID kMediaSubTypeHDYC = {
     0x0000,
     0x0010,
     {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
-;
 
 // 16-bit grey-scale single plane formats provided by some depth cameras.
 const GUID kMediaSubTypeZ16 = {

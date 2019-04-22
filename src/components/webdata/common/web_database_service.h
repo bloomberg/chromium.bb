@@ -107,7 +107,7 @@ class WEBDATA_EXPORT WebDatabaseService
   // be stored or called.
   void RegisterDBErrorCallback(const DBLoadErrorCallback& callback);
 
-  bool db_loaded() const { return db_loaded_; };
+  bool db_loaded() const { return db_loaded_; }
 
  private:
   class BackendDelegate;

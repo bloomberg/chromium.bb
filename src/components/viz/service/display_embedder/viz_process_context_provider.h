@@ -38,6 +38,7 @@ class GrContextForGLES2Interface;
 
 namespace viz {
 class ContextLostObserver;
+class RendererSettings;
 
 // A ContextProvider used in the viz process to setup an InProcessCommandBuffer
 // for the display compositor.
@@ -47,13 +48,12 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
       public base::trace_event::MemoryDumpProvider {
  public:
   VizProcessContextProvider(
-      scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+      gpu::CommandBufferTaskExecutor* task_executor,
       gpu::SurfaceHandle surface_handle,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
       gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-      const gpu::SharedMemoryLimits& limits,
-      bool requires_alpha_channel);
+      const RendererSettings& renderer_settings);
 
   // ContextProvider implementation.
   void AddRef() const override;
@@ -84,7 +84,7 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
   ~VizProcessContextProvider() override;
 
   void InitializeContext(
-      scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+      gpu::CommandBufferTaskExecutor* task_executor,
       gpu::SurfaceHandle surface_handle,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,

@@ -188,7 +188,7 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
+      base::BindOnce(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
 #else
   NotifyRenderFrameHostAndEnd(files);
 #endif  // defined(OS_MACOSX)
@@ -216,7 +216,7 @@ void FileSelectHelper::MultiFilesSelectedWithExtraInfo(
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
+      base::BindOnce(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
 #else
   NotifyRenderFrameHostAndEnd(files);
 #endif  // defined(OS_MACOSX)
@@ -254,6 +254,14 @@ void FileSelectHelper::LaunchConfirmationDialog(
 }
 
 void FileSelectHelper::OnListDone(int error) {
+  if (!web_contents_) {
+    // Web contents was destroyed under us (probably by closing the tab). We
+    // must notify |listener_| and release our reference to
+    // ourself. RunFileChooserEnd() performs this.
+    RunFileChooserEnd();
+    return;
+  }
+
   // This entry needs to be cleaned up when this function is done.
   std::unique_ptr<ActiveDirectoryEnumeration> entry =
       std::move(directory_enumeration_);
@@ -462,7 +470,7 @@ void FileSelectHelper::EnumerateDirectory(
   // message.
   scoped_refptr<FileSelectHelper> file_select_helper(
       new FileSelectHelper(profile));
-  file_select_helper->EnumerateDirectory(std::move(listener), path);
+  file_select_helper->EnumerateDirectoryImpl(tab, std::move(listener), path);
 }
 
 void FileSelectHelper::RunFileChooser(
@@ -650,12 +658,14 @@ void FileSelectHelper::RunFileChooserEnd() {
   Release();
 }
 
-void FileSelectHelper::EnumerateDirectory(
+void FileSelectHelper::EnumerateDirectoryImpl(
+    content::WebContents* tab,
     std::unique_ptr<content::FileSelectListener> listener,
     const base::FilePath& path) {
   DCHECK(listener);
   DCHECK(!listener_);
   dialog_type_ = ui::SelectFileDialog::SELECT_NONE;
+  web_contents_ = tab;
   listener_ = std::move(listener);
   // Because this class returns notifications to the RenderViewHost, it is
   // difficult for callers to know how long to keep a reference to this
@@ -668,7 +678,7 @@ void FileSelectHelper::EnumerateDirectory(
 
 // This method is called when we receive the last callback from the enumeration
 // code. Perform any cleanup and release the reference we added in
-// EnumerateDirectory().
+// EnumerateDirectoryImpl().
 void FileSelectHelper::EnumerateDirectoryEnd() {
   Release();
 }

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/webui/web_ui_data_source_impl.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -38,10 +38,10 @@ class TestClient : public TestContentClient {
     base::RefCountedStaticMemory* bytes = nullptr;
     if (resource_id == kDummyDefaultResourceId) {
       bytes = new base::RefCountedStaticMemory(
-          kDummyDefaultResource, arraysize(kDummyDefaultResource));
+          kDummyDefaultResource, base::size(kDummyDefaultResource));
     } else if (resource_id == kDummyResourceId) {
       bytes = new base::RefCountedStaticMemory(kDummyResource,
-                                               arraysize(kDummyResource));
+                                               base::size(kDummyResource));
     }
     return bytes;
   }
@@ -65,10 +65,9 @@ class WebUIDataSourceTest : public testing::Test {
     return source_->GetMimeType(path);
   }
 
-  bool HandleRequest(const std::string& path,
+  void HandleRequest(const std::string& path,
                      const WebUIDataSourceImpl::GotDataCallback&) {
     request_path_ = path;
-    return true;
   }
 
   void RequestFilterQueryStringCallback(
@@ -180,6 +179,7 @@ void WebUIDataSourceTest::RequestFilterQueryStringCallback(
 TEST_F(WebUIDataSourceTest, RequestFilterQueryString) {
   request_path_ = std::string();
   source()->SetRequestFilter(
+      base::BindRepeating([](const std::string& path) { return true; }),
       base::Bind(&WebUIDataSourceTest::HandleRequest, base::Unretained(this)));
   source()->SetDefaultResource(kDummyDefaultResourceId);
   source()->AddResourcePath("foobar", kDummyResourceId);
@@ -193,6 +193,7 @@ TEST_F(WebUIDataSourceTest, MimeType) {
   const char* css = "text/css";
   const char* html = "text/html";
   const char* js = "application/javascript";
+  const char* png = "image/png";
   EXPECT_EQ(GetMimeType(std::string()), html);
   EXPECT_EQ(GetMimeType("foo"), html);
   EXPECT_EQ(GetMimeType("foo.html"), html);
@@ -204,6 +205,9 @@ TEST_F(WebUIDataSourceTest, MimeType) {
   EXPECT_EQ(GetMimeType("foocss"), html);
   EXPECT_EQ(GetMimeType("foo.css"), css);
   EXPECT_EQ(GetMimeType(".css.foo"), html);
+  EXPECT_EQ(GetMimeType("foopng"), html);
+  EXPECT_EQ(GetMimeType("foo.png"), png);
+  EXPECT_EQ(GetMimeType(".png.foo"), html);
 
   // With query strings.
   EXPECT_EQ(GetMimeType("foo?abc?abc"), html);
@@ -214,11 +218,20 @@ TEST_F(WebUIDataSourceTest, MimeType) {
 
 TEST_F(WebUIDataSourceTest, IsGzipped) {
   EXPECT_FALSE(source()->IsGzipped("foobar"));
+  EXPECT_FALSE(source()->IsGzipped(""));
+  source()->UseGzip();
+  EXPECT_TRUE(source()->IsGzipped("foobar"));
+  EXPECT_TRUE(source()->IsGzipped(""));
+}
+
+TEST_F(WebUIDataSourceTest, IsGzippedWithCallback) {
+  EXPECT_FALSE(source()->IsGzipped("foobar"));
 
   source()->AddResourcePath("foobar", kDummyResourceId);
   source()->SetDefaultResource(kDummyDefaultResourceId);
   source()->SetJsonPath("strings.js");
-  source()->UseGzip({"json/special/path"});
+  source()->UseGzip(base::BindRepeating(
+      [](const std::string& path) { return path != "json/special/path"; }));
 
   EXPECT_TRUE(source()->IsGzipped("foobar"));
   EXPECT_TRUE(source()->IsGzipped("foobar?query"));
@@ -230,6 +243,10 @@ TEST_F(WebUIDataSourceTest, IsGzipped) {
   EXPECT_FALSE(source()->IsGzipped("json/special/path?query"));
   EXPECT_FALSE(source()->IsGzipped("strings.js"));
   EXPECT_FALSE(source()->IsGzipped("strings.js?query"));
+}
+
+TEST_F(WebUIDataSourceTest, ShouldServeMimeTypeAsContentTypeHeader) {
+  EXPECT_TRUE(source()->source()->ShouldServeMimeTypeAsContentTypeHeader());
 }
 
 }  // namespace content

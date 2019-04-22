@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen_ozone.h"
 
+#include "base/bind.h"
 #include "ui/aura/screen_ozone.h"
 #include "ui/display/display.h"
 #include "ui/display/types/display_constants.h"

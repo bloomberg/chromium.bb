@@ -23,14 +23,20 @@ import org.chromium.chrome.browser.notifications.channels.ChannelsInitializer;
 public class NotificationBuilder implements ChromeNotificationBuilder {
     private final Notification.Builder mBuilder;
     private final Context mContext;
+    private final NotificationMetadata mMetadata;
 
-    NotificationBuilder(
-            Context context, String channelId, ChannelsInitializer channelsInitializer) {
+    NotificationBuilder(Context context, String channelId, ChannelsInitializer channelsInitializer,
+            NotificationMetadata metadata) {
         mContext = context;
         mBuilder = new Notification.Builder(mContext);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             channelsInitializer.safeInitialize(channelId);
             mBuilder.setChannelId(channelId);
+        }
+        mMetadata = metadata;
+        if (mMetadata != null) {
+            mBuilder.setDeleteIntent(
+                    NotificationIntentInterceptor.getDefaultDeletePendingIntent(mMetadata));
         }
     }
 
@@ -43,6 +49,16 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     @Override
     public ChromeNotificationBuilder setContentIntent(PendingIntent contentIntent) {
         mBuilder.setContentIntent(contentIntent);
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setContentIntent(PendingIntentProvider contentIntent) {
+        assert (mMetadata != null);
+        PendingIntent pendingIntent = NotificationIntentInterceptor.createInterceptPendingIntent(
+                NotificationIntentInterceptor.IntentType.CONTENT_INTENT, 0 /* intentId */,
+                mMetadata, contentIntent);
+        mBuilder.setContentIntent(pendingIntent);
         return this;
     }
 
@@ -147,6 +163,18 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
+    public ChromeNotificationBuilder addAction(int icon, CharSequence title,
+            PendingIntentProvider pendingIntentProvider,
+            @NotificationUmaTracker.ActionType int actionType) {
+        assert (mMetadata != null);
+        PendingIntent pendingIntent = NotificationIntentInterceptor.createInterceptPendingIntent(
+                NotificationIntentInterceptor.IntentType.ACTION_INTENT, actionType, mMetadata,
+                pendingIntentProvider);
+        addAction(icon, title, pendingIntent);
+        return this;
+    }
+
+    @Override
     public ChromeNotificationBuilder addAction(Notification.Action action) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
             mBuilder.addAction(action);
@@ -155,8 +183,32 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
+    public ChromeNotificationBuilder addAction(Notification.Action action, int flags,
+            @NotificationUmaTracker.ActionType int actionType) {
+        assert (mMetadata != null);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            PendingIntent pendingIntent =
+                    NotificationIntentInterceptor.createInterceptPendingIntent(
+                            NotificationIntentInterceptor.IntentType.ACTION_INTENT, actionType,
+                            mMetadata, new PendingIntentProvider(action.actionIntent, flags));
+            action.actionIntent = pendingIntent;
+            addAction(action);
+        }
+        return this;
+    }
+
+    @Override
     public ChromeNotificationBuilder setDeleteIntent(PendingIntent intent) {
         mBuilder.setDeleteIntent(intent);
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setDeleteIntent(PendingIntentProvider intent) {
+        assert (mMetadata != null);
+        mBuilder.setDeleteIntent(NotificationIntentInterceptor.createInterceptPendingIntent(
+                NotificationIntentInterceptor.IntentType.DELETE_INTENT, 0 /* intentId */, mMetadata,
+                intent));
         return this;
     }
 
@@ -266,27 +318,45 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
+    public ChromeNotificationBuilder setCategory(String category) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mBuilder.setCategory(category);
+        }
+        return this;
+    }
+
+    @Override
     @SuppressWarnings("deprecation")
-    public Notification buildWithBigContentView(RemoteViews view) {
+    public ChromeNotification buildWithBigContentView(RemoteViews view) {
+        assert mMetadata != null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return mBuilder.setCustomBigContentView(view).build();
+            return new ChromeNotification(
+                    mBuilder.setCustomBigContentView(view).build(), mMetadata);
         } else {
             Notification notification = mBuilder.build();
             notification.bigContentView = view;
-            return notification;
+            return new ChromeNotification(notification, mMetadata);
         }
     }
 
     @Override
-    public Notification buildWithBigTextStyle(String bigText) {
+    public ChromeNotification buildWithBigTextStyle(String bigText) {
         Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
         bigTextStyle.setBuilder(mBuilder);
         bigTextStyle.bigText(bigText);
-        return bigTextStyle.build();
+
+        assert mMetadata != null;
+        return new ChromeNotification(bigTextStyle.build(), mMetadata);
     }
 
     @Override
     public Notification build() {
         return mBuilder.build();
+    }
+
+    @Override
+    public ChromeNotification buildChromeNotification() {
+        assert mMetadata != null;
+        return new ChromeNotification(build(), mMetadata);
     }
 }

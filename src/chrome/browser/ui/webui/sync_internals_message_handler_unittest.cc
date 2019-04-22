@@ -13,7 +13,6 @@
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/browser_sync/browser_sync_switches.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -66,8 +65,9 @@ class TestSyncService : public syncer::FakeSyncService {
     return js_controller_.AsWeakPtr();
   }
 
-  void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
-                       callback) override {
+  void GetAllNodesForDebugging(
+      const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback)
+      override {
     get_all_nodes_callback_ = std::move(callback);
   }
 

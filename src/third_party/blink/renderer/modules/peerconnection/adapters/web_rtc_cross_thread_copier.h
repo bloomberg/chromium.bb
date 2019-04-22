@@ -12,8 +12,9 @@
 #include <set>
 #include <vector>
 
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/platform/cross_thread_copier.h"
-#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
+#include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace cricket {
 class Candidate;
@@ -24,6 +25,11 @@ struct RelayServerConfig;
 namespace rtc {
 class RTCCertificate;
 class SocketAddress;
+}
+
+namespace webrtc {
+class DtlsTransportInformation;
+class SctpTransportInformation;
 }
 
 namespace blink {
@@ -91,6 +97,36 @@ struct CrossThreadCopier<std::pair<cricket::Candidate, cricket::Candidate>>
 template <>
 struct CrossThreadCopier<P2PQuicTransportConfig>
     : public CrossThreadCopierPassThrough<P2PQuicTransportConfig> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<webrtc::DtlsTransportInformation>
+    : public CrossThreadCopierPassThrough<webrtc::DtlsTransportInformation> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<webrtc::SctpTransportInformation>
+    : public CrossThreadCopierPassThrough<webrtc::SctpTransportInformation> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<P2PQuicTransport::StartConfig>
+    : public CrossThreadCopierPassThrough<P2PQuicTransport::StartConfig> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = P2PQuicTransport::StartConfig;
+  static P2PQuicTransport::StartConfig Copy(
+      P2PQuicTransport::StartConfig config) {
+    // This is in fact a move.
+    return config;
+  }
+};
+
+template <>
+struct CrossThreadCopier<P2PQuicTransportStats>
+    : public CrossThreadCopierPassThrough<P2PQuicTransportStats> {
   STATIC_ONLY(CrossThreadCopier);
 };
 

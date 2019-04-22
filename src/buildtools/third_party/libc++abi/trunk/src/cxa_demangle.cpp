@@ -1,9 +1,8 @@
 //===-------------------------- cxa_demangle.cpp --------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
@@ -11,12 +10,8 @@
 // file does not yet support:
 //   - C++ modules TS
 
-#define _LIBCPP_NO_EXCEPTIONS
-
-#include "__cxxabi_config.h"
-
 #include "demangle/ItaniumDemangle.h"
-
+#include "__cxxabi_config.h"
 #include <cassert>
 #include <cctype>
 #include <cstdio>
@@ -25,7 +20,6 @@
 #include <functional>
 #include <numeric>
 #include <utility>
-#include <vector>
 
 using namespace itanium_demangle;
 
@@ -114,14 +108,20 @@ struct DumpVisitor {
     printStr("}");
     --Depth;
   }
+
   // Overload used when T is exactly 'bool', not merely convertible to 'bool'.
-  template<typename T, T * = (bool*)nullptr>
-  void print(T B) {
-    printStr(B ? "true" : "false");
+  void print(bool B) { printStr(B ? "true" : "false"); }
+
+  template <class T>
+  typename std::enable_if<std::is_unsigned<T>::value>::type print(T N) {
+    fprintf(stderr, "%llu", (unsigned long long)N);
   }
-  void print(size_t N) {
-    fprintf(stderr, "%zu", N);
+
+  template <class T>
+  typename std::enable_if<std::is_signed<T>::value>::type print(T N) {
+    fprintf(stderr, "%lld", (long long)N);
   }
+
   void print(ReferenceKind RK) {
     switch (RK) {
     case ReferenceKind::LValue:
@@ -318,7 +318,7 @@ public:
 // Code beyond this point should not be synchronized with LLVM.
 //===----------------------------------------------------------------------===//
 
-using Demangler = itanium_demangle::Db<DefaultAllocator>;
+using Demangler = itanium_demangle::ManglingParser<DefaultAllocator>;
 
 namespace {
 enum : int {
@@ -346,7 +346,7 @@ __cxa_demangle(const char *MangledName, char *Buf, size_t *N, int *Status) {
 
   if (AST == nullptr)
     InternalStatus = demangle_invalid_mangled_name;
-  else if (initializeOutputStream(Buf, N, S, 1024))
+  else if (!initializeOutputStream(Buf, N, S, 1024))
     InternalStatus = demangle_memory_alloc_failure;
   else {
     assert(Parser.ForwardTemplateRefs.empty());

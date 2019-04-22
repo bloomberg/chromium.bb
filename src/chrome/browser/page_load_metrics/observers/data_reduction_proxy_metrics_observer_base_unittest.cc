@@ -21,12 +21,13 @@
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/data_reduction_proxy/content/browser/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/test/web_contents_tester.h"
+#include "net/base/ip_endpoint.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -179,7 +180,7 @@ TEST_F(DataReductionProxyMetricsObserverBaseTest, OnCompletePingback) {
   // Verify LoFi is tracked when a LoFi response is received.
   page_load_metrics::ExtraRequestCompleteInfo resource = {
       GURL(kResourceUrl),
-      net::HostPortPair(),
+      net::IPEndPoint(),
       -1 /* frame_tree_node_id */,
       true /*was_cached*/,
       1024 * 40 /* raw_body_bytes */,

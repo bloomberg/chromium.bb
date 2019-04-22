@@ -46,4 +46,24 @@ class SupportLibWebSettingsAdapter implements WebSettingsBoundaryInterface {
     public int getDisabledActionModeMenuItems() {
         return mAwSettings.getDisabledActionModeMenuItems();
     }
+
+    @Override
+    public boolean getWillSuppressErrorPage() {
+        return mAwSettings.getWillSuppressErrorPage();
+    }
+
+    @Override
+    public void setWillSuppressErrorPage(boolean suppressed) {
+        mAwSettings.setWillSuppressErrorPage(suppressed);
+    }
+
+    @Override
+    public void setForceDark(int forceDarkMode) {
+        mAwSettings.setForceDarkMode(forceDarkMode);
+    }
+
+    @Override
+    public int getForceDark() {
+        return mAwSettings.getForceDarkMode();
+    }
 }

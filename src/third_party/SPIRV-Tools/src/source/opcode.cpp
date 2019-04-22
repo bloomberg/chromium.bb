@@ -260,6 +260,7 @@ int32_t spvOpcodeIsComposite(const SpvOp opcode) {
     case SpvOpTypeMatrix:
     case SpvOpTypeArray:
     case SpvOpTypeStruct:
+    case SpvOpTypeCooperativeMatrixNV:
       return true;
     default:
       return false;
@@ -325,6 +326,7 @@ int32_t spvOpcodeGeneratesType(SpvOp op) {
     case SpvOpTypePipeStorage:
     case SpvOpTypeNamedBarrier:
     case SpvOpTypeAccelerationStructureNV:
+    case SpvOpTypeCooperativeMatrixNV:
       return true;
     default:
       // In particular, OpTypeForwardPointer does not generate a type,
@@ -601,5 +603,37 @@ bool spvOpcodeIsDebug(SpvOp opcode) {
       return true;
     default:
       return false;
+  }
+}
+
+std::vector<uint32_t> spvOpcodeMemorySemanticsOperandIndices(SpvOp opcode) {
+  switch (opcode) {
+    case SpvOpMemoryBarrier:
+      return {1};
+    case SpvOpAtomicStore:
+    case SpvOpControlBarrier:
+    case SpvOpAtomicFlagClear:
+    case SpvOpMemoryNamedBarrier:
+      return {2};
+    case SpvOpAtomicLoad:
+    case SpvOpAtomicExchange:
+    case SpvOpAtomicIIncrement:
+    case SpvOpAtomicIDecrement:
+    case SpvOpAtomicIAdd:
+    case SpvOpAtomicISub:
+    case SpvOpAtomicSMin:
+    case SpvOpAtomicUMin:
+    case SpvOpAtomicSMax:
+    case SpvOpAtomicUMax:
+    case SpvOpAtomicAnd:
+    case SpvOpAtomicOr:
+    case SpvOpAtomicXor:
+    case SpvOpAtomicFlagTestAndSet:
+      return {4};
+    case SpvOpAtomicCompareExchange:
+    case SpvOpAtomicCompareExchangeWeak:
+      return {4, 5};
+    default:
+      return {};
   }
 }

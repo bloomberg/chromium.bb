@@ -19,22 +19,19 @@
 #include "DawnSPIRVCrossFuzzer.h"
 
 namespace {
-
     int GLSLFastFuzzTask(const std::vector<uint32_t>& input) {
-        std::unique_ptr<spirv_cross::CompilerGLSL> compiler;
-        DawnSPIRVCrossFuzzer::ExecuteWithSignalTrap([&compiler, input]() {
-            compiler = std::make_unique<spirv_cross::CompilerGLSL>(input);
-        });
-        if (compiler == nullptr) {
+        shaderc_spvc::Compiler compiler;
+        if (!compiler.IsValid()) {
             return 0;
         }
 
-        // Using the options that are used by Dawn, they appear in ShaderModuleGL.cpp
-        spirv_cross::CompilerGLSL::Options options;
-        options.version = 440;
-        compiler->set_common_options(options);
-
-        DawnSPIRVCrossFuzzer::ExecuteWithSignalTrap([&compiler]() { compiler->compile(); });
+        DawnSPIRVCrossFuzzer::ExecuteWithSignalTrap([&compiler, &input]() {
+            // Using the options that are used by Dawn, they appear in ShaderModuleGL.cpp
+            shaderc_spvc::CompileOptions options;
+            options.SetGLSLLanguageVersion(440);
+            options.SetFixupClipspace(true);
+            compiler.CompileSpvToGlsl(input.data(), input.size(), options);
+        });
 
         return 0;
     }

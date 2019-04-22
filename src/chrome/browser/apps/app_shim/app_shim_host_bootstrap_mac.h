@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/process/process_handle.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/common/mac/app_shim.mojom.h"
@@ -23,19 +24,35 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   // a file descriptor of a channel created by an UnixDomainSocketAcceptor, and
   // begins listening for messages on it.
   static void CreateForChannel(mojo::PlatformChannelEndpoint endpoint);
+
+  // Creates a new server-side mojo channel at |endpoint|, which contains a
+  // a Mach port for a channel created by an MachBootstrapAcceptor, and
+  // begins listening for messages on it. The PID of the sender of |endpoint|
+  // is stored in |peer_pid|.
+  static void CreateForChannelAndPeerID(mojo::PlatformChannelEndpoint endpoint,
+                                        base::ProcessId peer_pid);
+
   ~AppShimHostBootstrap() override;
 
-  void OnLaunchAppSucceeded(chrome::mojom::AppShimRequest app_shim_request);
-  void OnLaunchAppFailed(apps::AppShimLaunchResult result);
+  // Called in response to connecting (or failing to connect to) an
+  // AppShimHost.
+  void OnConnectedToHost(chrome::mojom::AppShimRequest app_shim_request);
+  void OnFailedToConnectToHost(apps::AppShimLaunchResult result);
 
   chrome::mojom::AppShimHostRequest GetLaunchAppShimHostRequest();
+  base::ProcessId GetAppShimPid() const { return pid_; }
   const std::string& GetAppId() const { return app_id_; }
   const base::FilePath& GetProfilePath() const { return profile_path_; }
+
+  // Indicates the type of launch (by Chrome or from the app).
   apps::AppShimLaunchType GetLaunchType() const { return launch_type_; }
+
+  // If non-empty, holds an array of file paths given as arguments, or dragged
+  // onto the app bundle or dock icon.
   const std::vector<base::FilePath>& GetLaunchFiles() const { return files_; }
 
  protected:
-  AppShimHostBootstrap();
+  explicit AppShimHostBootstrap(base::ProcessId peer_pid);
   void ServeChannel(mojo::PlatformChannelEndpoint endpoint);
   void ChannelError(uint32_t custom_reason, const std::string& description);
   virtual apps::AppShimHandler* GetHandler();
@@ -54,6 +71,7 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   // The arguments from the LaunchApp call, and whether or not it has happened
   // yet.
   bool has_received_launch_app_ = false;
+  base::ProcessId pid_ = 0;
   chrome::mojom::AppShimHostRequest app_shim_host_request_;
   base::FilePath profile_path_;
   std::string app_id_;

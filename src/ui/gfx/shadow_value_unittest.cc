@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -58,7 +58,7 @@ TEST(ShadowValueTest, GetMargin) {
       },
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     Insets margin = ShadowValue::GetMargin(
         ShadowValues(kTestCases[i].shadows,
                      kTestCases[i].shadows + kTestCases[i].shadow_count));

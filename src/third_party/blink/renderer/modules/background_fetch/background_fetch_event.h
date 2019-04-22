@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_EVENT_H_
 
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -24,16 +24,21 @@ class MODULES_EXPORT BackgroundFetchEvent : public ExtendableEvent {
   static BackgroundFetchEvent* Create(
       const AtomicString& type,
       const BackgroundFetchEventInit* initializer) {
-    return new BackgroundFetchEvent(type, initializer, nullptr /* observer */);
+    return MakeGarbageCollected<BackgroundFetchEvent>(type, initializer,
+                                                      nullptr /* observer */);
   }
 
   static BackgroundFetchEvent* Create(
       const AtomicString& type,
       const BackgroundFetchEventInit* initializer,
       WaitUntilObserver* observer) {
-    return new BackgroundFetchEvent(type, initializer, observer);
+    return MakeGarbageCollected<BackgroundFetchEvent>(type, initializer,
+                                                      observer);
   }
 
+  BackgroundFetchEvent(const AtomicString& type,
+                       const BackgroundFetchEventInit* initializer,
+                       WaitUntilObserver* observer);
   ~BackgroundFetchEvent() override;
 
   // Web Exposed attribute defined in the IDL file.
@@ -45,10 +50,6 @@ class MODULES_EXPORT BackgroundFetchEvent : public ExtendableEvent {
   void Trace(blink::Visitor* visitor) override;
 
  protected:
-  BackgroundFetchEvent(const AtomicString& type,
-                       const BackgroundFetchEventInit* initializer,
-                       WaitUntilObserver* observer);
-
   // Corresponds to the 'registration' attribute in the idl.
   Member<BackgroundFetchRegistration> registration_;
 };

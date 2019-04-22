@@ -60,24 +60,31 @@ def raiseError(code):
       'cannot turn this into a real code yet: %s' % code)
 
 
-class TestCase(net_utils.TestCase):
+class HashAlgoNameTest(net_utils.TestCase):
   def test_get_hash_algo(self):
     pairs = [
       ('default', hashlib.sha1),
       ('default-gzip', hashlib.sha1),
-      ('sha-1-flat', hashlib.sha1),
-      ('sha-1-deflate', hashlib.sha1),
-      ('sha-256-flat', hashlib.sha256),
-      ('sha-256-deflate', hashlib.sha256),
-      ('sha-512-flat', hashlib.sha512),
-      ('sha-512-deflate', hashlib.sha512),
+      ('sha1-flat', hashlib.sha1),
+      ('sha1-deflate', hashlib.sha1),
+      ('sha256-flat', hashlib.sha256),
+      ('sha256-deflate', hashlib.sha256),
+      ('sha512-flat', hashlib.sha512),
+      ('sha512-deflate', hashlib.sha512),
     ]
     for namespace, expected in pairs:
       server_ref = isolate_storage.ServerRef('http://localhost:0', namespace)
       self.assertIs(expected, server_ref.hash_algo, namespace)
 
 
-class IsolateStorageTest(auto_stub.TestCase):
+@unittest.skipIf(
+    not isolate_storage.grpc, 'gRPC could not be loaded; skipping tests')
+class IsolateStorageGPRCTest(auto_stub.TestCase):
+  def setUp(self):
+    super(IsolateStorageGPRCTest, self).setUp()
+    self.mock(
+        isolate_storage.bytestream_pb2, 'ByteStreamStub', ByteStreamStubMock)
+
   def get_server(self):
     s = isolate_storage.ServerRef(
         'https://luci.appspot.com', 'default-gzip')
@@ -317,10 +324,4 @@ class IsolateStorageTest(auto_stub.TestCase):
 
 
 if __name__ == '__main__':
-  if not isolate_storage.grpc:
-    # Don't print to stderr or return error code as this will
-    # show up as a warning and fail in presubmit.
-    print('gRPC could not be loaded; skipping tests')
-    sys.exit(0)
-  isolate_storage.bytestream_pb2.ByteStreamStub = ByteStreamStubMock
   test_utils.main()

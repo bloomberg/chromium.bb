@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/run_loop.h"
@@ -28,7 +29,6 @@ class PdfCompositorServiceTest : public testing::Test {
   PdfCompositorServiceTest()
       : connector_(test_connector_factory_.CreateConnector()),
         service_(
-            "pdf_compositor_service_unittest",
             test_connector_factory_.RegisterInstance(mojom::kServiceName)) {
     // We don't want the service instance setting up its own discardable memory
     // allocator, which it normally does. Instead it will use the one provided

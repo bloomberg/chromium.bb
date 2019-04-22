@@ -4,6 +4,7 @@
 
 #include "chrome/browser/offline_pages/android/evaluation/evaluation_test_scheduler.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
@@ -30,8 +31,8 @@ const char kLogTag[] = "EvaluationTestScheduler";
 void StartProcessing();
 
 void ProcessingDoneCallback(bool result) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&StartProcessing));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&StartProcessing));
 }
 
 void GetAllRequestsDone(
@@ -49,7 +50,7 @@ void StartProcessing() {
   if (net::NetworkChangeNotifier::GetConnectionType() ==
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&StartProcessing),
+        FROM_HERE, base::BindOnce(&StartProcessing),
         base::TimeDelta::FromSeconds(2));
     return;
   }
@@ -81,8 +82,8 @@ void EvaluationTestScheduler::Schedule(
   }
   coordinator_->GetLogger()->RecordActivity(std::string(kLogTag) +
                                             " Start schedule!");
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&StartProcessing));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&StartProcessing));
 }
 
 void EvaluationTestScheduler::BackupSchedule(
@@ -108,8 +109,8 @@ DeviceConditions& EvaluationTestScheduler::GetCurrentDeviceConditions() {
 }
 
 void EvaluationTestScheduler::ImmediateScheduleCallback(bool result) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&StartProcessing));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&StartProcessing));
 }
 
 }  // namespace android

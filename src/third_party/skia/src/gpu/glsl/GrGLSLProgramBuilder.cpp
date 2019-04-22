@@ -9,6 +9,7 @@
 
 #include "GrCaps.h"
 #include "GrPipeline.h"
+#include "GrRenderTarget.h"
 #include "GrShaderCaps.h"
 #include "GrTexturePriv.h"
 #include "glsl/GrGLSLFragmentProcessor.h"
@@ -19,15 +20,20 @@
 
 const int GrGLSLProgramBuilder::kVarsPerBlock = 8;
 
-GrGLSLProgramBuilder::GrGLSLProgramBuilder(const GrPrimitiveProcessor& primProc,
+GrGLSLProgramBuilder::GrGLSLProgramBuilder(GrRenderTarget* renderTarget, GrSurfaceOrigin origin,
+                                           const GrPrimitiveProcessor& primProc,
+                                           const GrTextureProxy* const primProcProxies[],
                                            const GrPipeline& pipeline,
                                            GrProgramDesc* desc)
         : fVS(this)
         , fGS(this)
         , fFS(this)
         , fStageIndex(-1)
+        , fRenderTarget(renderTarget)
+        , fOrigin(origin)
         , fPipeline(pipeline)
         , fPrimProc(primProc)
+        , fPrimProcProxies(primProcProxies)
         , fDesc(desc)
         , fGeometryProcessor(nullptr)
         , fXferProcessor(nullptr)
@@ -51,21 +57,20 @@ void GrGLSLProgramBuilder::addFeature(GrShaderFlags shaders,
 bool GrGLSLProgramBuilder::emitAndInstallProcs() {
     // First we loop over all of the installed processors and collect coord transforms.  These will
     // be sent to the GrGLSLPrimitiveProcessor in its emitCode function
-    const GrPrimitiveProcessor& primProc = this->primitiveProcessor();
-
     SkString inputColor;
     SkString inputCoverage;
-    this->emitAndInstallPrimProc(primProc, &inputColor, &inputCoverage);
+    this->emitAndInstallPrimProc(&inputColor, &inputCoverage);
     this->emitAndInstallFragProcs(&inputColor, &inputCoverage);
     this->emitAndInstallXferProc(inputColor, inputCoverage);
-    this->emitFSOutputSwizzle(this->pipeline().getXferProcessor().hasSecondaryOutput());
 
     return this->checkSamplerCounts();
 }
 
-void GrGLSLProgramBuilder::emitAndInstallPrimProc(const GrPrimitiveProcessor& proc,
-                                                  SkString* outputColor,
+void GrGLSLProgramBuilder::emitAndInstallPrimProc(SkString* outputColor,
                                                   SkString* outputCoverage) {
+    const GrPrimitiveProcessor& proc = this->primitiveProcessor();
+    const GrTextureProxy* const* primProcProxies = this->primProcProxies();
+
     // Program builders have a bit of state we need to clear with each effect
     AutoStageAdvance adv(this);
     this->nameExpression(outputColor, "outputColor");
@@ -99,7 +104,12 @@ void GrGLSLProgramBuilder::emitAndInstallPrimProc(const GrPrimitiveProcessor& pr
         SkString name;
         name.printf("TextureSampler_%d", i);
         const auto& sampler = proc.textureSampler(i);
-        texSamplers[i] = this->emitSampler(sampler.textureType(), sampler.config(), name.c_str());
+        const GrTexture* texture = primProcProxies[i]->peekTexture();
+        SkASSERT(sampler.textureType() == texture->texturePriv().textureType());
+        SkASSERT(sampler.config() == texture->config());
+        texSamplers[i] = this->emitSampler(texture,
+                                           sampler.samplerState(),
+                                           name.c_str());
     }
 
     GrGLSLPrimitiveProcessor::FPCoordTransformHandler transformHandler(fPipeline,
@@ -179,8 +189,8 @@ SkString GrGLSLProgramBuilder::emitAndInstallFragProc(
             SkString name;
             name.printf("TextureSampler_%d", samplerIdx++);
             const auto& sampler = subFP->textureSampler(i);
-            GrTextureType textureType = sampler.peekTexture()->texturePriv().textureType();
-            texSamplers.emplace_back(this->emitSampler(textureType, sampler.peekTexture()->config(),
+            texSamplers.emplace_back(this->emitSampler(sampler.peekTexture(),
+                                                       sampler.samplerState(),
                                                        name.c_str()));
         }
     }
@@ -237,22 +247,33 @@ void GrGLSLProgramBuilder::emitAndInstallXferProc(const SkString& colorIn,
         // GrProcessor::TextureSampler sampler(dstTexture);
         SkString name("DstTextureSampler");
         dstTextureSamplerHandle =
-                this->emitSampler(dstTexture->texturePriv().textureType(), dstTexture->config(),
-                                  "DstTextureSampler");
+                this->emitSampler(dstTexture, GrSamplerState(), "DstTextureSampler");
         dstTextureOrigin = fPipeline.dstTextureProxy()->origin();
         SkASSERT(dstTexture->texturePriv().textureType() != GrTextureType::kExternal);
+    }
+
+    SkString finalInColor;
+    if (colorIn.size()) {
+        if (this->desc()->header().fClampBlendInput) {
+            finalInColor.printf("saturate(%s)", colorIn.c_str());
+        } else {
+            finalInColor = colorIn;
+        }
+    } else {
+        finalInColor = "float4(1)";
     }
 
     GrGLSLXferProcessor::EmitArgs args(&fFS,
                                        this->uniformHandler(),
                                        this->shaderCaps(),
                                        xp,
-                                       colorIn.size() ? colorIn.c_str() : "float4(1)",
+                                       finalInColor.c_str(),
                                        coverageIn.size() ? coverageIn.c_str() : "float4(1)",
                                        fFS.getPrimaryColorOutputName(),
                                        fFS.getSecondaryColorOutputName(),
                                        dstTextureSamplerHandle,
-                                       dstTextureOrigin);
+                                       dstTextureOrigin,
+                                       this->desc()->header().fOutputSwizzle);
     fXferProcessor->emitCode(args);
 
     // We have to check that effects and the code they emit are consistent, ie if an effect
@@ -261,29 +282,11 @@ void GrGLSLProgramBuilder::emitAndInstallXferProc(const SkString& colorIn,
     fFS.codeAppend("}");
 }
 
-GrGLSLProgramBuilder::SamplerHandle GrGLSLProgramBuilder::emitSampler(GrTextureType textureType,
-                                                                      GrPixelConfig config,
+GrGLSLProgramBuilder::SamplerHandle GrGLSLProgramBuilder::emitSampler(const GrTexture* texture,
+                                                                      const GrSamplerState& state,
                                                                       const char* name) {
     ++fNumFragmentSamplers;
-    GrSLPrecision precision = GrSLSamplerPrecision(config);
-    GrSwizzle swizzle = this->shaderCaps()->configTextureSwizzle(config);
-    return this->uniformHandler()->addSampler(swizzle, textureType, precision, name);
-}
-
-void GrGLSLProgramBuilder::emitFSOutputSwizzle(bool hasSecondaryOutput) {
-    // Swizzle the fragment shader outputs if necessary.
-    GrSwizzle swizzle;
-    swizzle.setFromKey(this->desc()->header().fOutputSwizzle);
-    if (swizzle != GrSwizzle::RGBA()) {
-        fFS.codeAppendf("%s = %s.%s;", fFS.getPrimaryColorOutputName(),
-                        fFS.getPrimaryColorOutputName(),
-                        swizzle.c_str());
-        if (hasSecondaryOutput) {
-            fFS.codeAppendf("%s = %s.%s;", fFS.getSecondaryColorOutputName(),
-                            fFS.getSecondaryColorOutputName(),
-                            swizzle.c_str());
-        }
-    }
+    return this->uniformHandler()->addSampler(texture, state, name, this->shaderCaps());
 }
 
 bool GrGLSLProgramBuilder::checkSamplerCounts() {
@@ -297,13 +300,18 @@ bool GrGLSLProgramBuilder::checkSamplerCounts() {
 
 #ifdef SK_DEBUG
 void GrGLSLProgramBuilder::verify(const GrPrimitiveProcessor& gp) {
-}
-
-void GrGLSLProgramBuilder::verify(const GrXferProcessor& xp) {
-    SkASSERT(fFS.hasReadDstColor() == xp.willReadDstColor());
+    SkASSERT(!fFS.fHasReadDstColorThisStage_DebugOnly);
+    SkASSERT(fFS.fUsedProcessorFeaturesThisStage_DebugOnly == gp.requestedFeatures());
 }
 
 void GrGLSLProgramBuilder::verify(const GrFragmentProcessor& fp) {
+    SkASSERT(!fFS.fHasReadDstColorThisStage_DebugOnly);
+    SkASSERT(fFS.fUsedProcessorFeaturesThisStage_DebugOnly == fp.requestedFeatures());
+}
+
+void GrGLSLProgramBuilder::verify(const GrXferProcessor& xp) {
+    SkASSERT(xp.willReadDstColor() == fFS.fHasReadDstColorThisStage_DebugOnly);
+    SkASSERT(fFS.fUsedProcessorFeaturesThisStage_DebugOnly == xp.requestedFeatures());
 }
 #endif
 
@@ -344,18 +352,16 @@ void GrGLSLProgramBuilder::addRTWidthUniform(const char* name) {
         SkASSERT(!fUniformHandles.fRTWidthUni.isValid());
         GrGLSLUniformHandler* uniformHandler = this->uniformHandler();
         fUniformHandles.fRTWidthUni =
-            uniformHandler->internalAddUniformArray(kFragment_GrShaderFlag,
-                                                    kHalf_GrSLType, kDefault_GrSLPrecision,
-                                                    name, false, 0, nullptr);
+            uniformHandler->internalAddUniformArray(kFragment_GrShaderFlag, kHalf_GrSLType, name,
+                                                    false, 0, nullptr);
 }
 
 void GrGLSLProgramBuilder::addRTHeightUniform(const char* name) {
         SkASSERT(!fUniformHandles.fRTHeightUni.isValid());
         GrGLSLUniformHandler* uniformHandler = this->uniformHandler();
         fUniformHandles.fRTHeightUni =
-            uniformHandler->internalAddUniformArray(kFragment_GrShaderFlag,
-                                                    kHalf_GrSLType, kDefault_GrSLPrecision,
-                                                    name, false, 0, nullptr);
+            uniformHandler->internalAddUniformArray(kFragment_GrShaderFlag, kHalf_GrSLType, name,
+                                                    false, 0, nullptr);
 }
 
 void GrGLSLProgramBuilder::finalizeShaders() {

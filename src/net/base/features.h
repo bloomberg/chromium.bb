@@ -24,6 +24,26 @@ NET_EXPORT extern const base::Feature kIsolatedCodeCache;
 // with some buggy non-compliant TLS-terminating proxies.
 NET_EXPORT extern const base::Feature kEnforceTLS13Downgrade;
 
+// Enables optimizing the network quality estimation algorithms in network
+// quality estimator (NQE).
+NET_EXPORT extern const base::Feature kNetworkQualityEstimator;
+
+// Splits cache entries by the request's top frame's origin if one is available.
+NET_EXPORT extern const base::Feature kSplitCacheByTopFrameOrigin;
+
+// Enables sending TLS 1.3 Key Update messages on TLS 1.3 connections in order
+// to ensure that this corner of the spec is exercised. This is currently
+// disabled by default because we discovered incompatibilities with some
+// servers.
+NET_EXPORT extern const base::Feature kTLS13KeyUpdate;
+
+// Enables CECPQ2, a post-quantum key-agreement, in TLS 1.3 connections.
+NET_EXPORT extern const base::Feature kPostQuantumCECPQ2;
+
+// Changes the timeout after which unused sockets idle sockets are cleaned up.
+NET_EXPORT
+extern const base::Feature kNetUnusedIdleSocketTimeout;
+
 }  // namespace features
 }  // namespace net
 

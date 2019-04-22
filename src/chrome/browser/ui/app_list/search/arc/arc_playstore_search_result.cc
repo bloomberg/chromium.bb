@@ -8,16 +8,16 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_playstore_app_context_menu.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/app.mojom.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/crx_file/id_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -114,7 +114,7 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
          crx_file::id_util::GenerateId(install_intent_uri().value()));
   SetDisplayType(ash::SearchResultDisplayType::kTile);
   SetBadgeIcon(CreateBadgeIcon(
-      is_instant_app() ? kIcBadgeInstantIcon : kIcBadgePlayIcon,
+      is_instant_app() ? kBadgeInstantIcon : kBadgePlayIcon,
       app_list::AppListConfig::instance().search_tile_badge_icon_dimension(),
       kBadgePadding, kBadgeIconSize, kBadgeColor));
   SetFormattedPrice(base::UTF8ToUTF16(formatted_price().value()));
@@ -133,14 +133,12 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
 ArcPlayStoreSearchResult::~ArcPlayStoreSearchResult() = default;
 
 void ArcPlayStoreSearchResult::Open(int event_flags) {
-  if (!LaunchIntent(install_intent_uri().value(),
-                    list_controller_->GetAppListDisplayId())) {
-    return;
-  }
+  LaunchIntent(install_intent_uri().value(),
+               list_controller_->GetAppListDisplayId());
+}
 
-  // Open the installing page of this result in Play Store.
-  RecordHistogram(is_instant_app() ? PLAY_STORE_INSTANT_APP
-                                   : PLAY_STORE_UNINSTALLED_APP);
+SearchResultType ArcPlayStoreSearchResult::GetSearchResultType() const {
+  return is_instant_app() ? PLAY_STORE_INSTANT_APP : PLAY_STORE_UNINSTALLED_APP;
 }
 
 void ArcPlayStoreSearchResult::GetContextMenuModel(

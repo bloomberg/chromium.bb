@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest()">
+    <script xlink:href="../../../resources/run-after-layout-and-paint.js"></script>
     <script xlink:href="../resources/text-based-repaint.js"></script>
     <title>There should be a single green 100x100 square.</title>
     <defs>
@@ -20,7 +21,7 @@
             var greenImage = document.getElementById("feimage-green");
             document.getElementById("filter").removeChild(greenImage);
 
-            testRunner.layoutAndPaintAsyncThen(function() {
+            runAfterLayoutAndPaint(function() {
                 document.getElementById("filter").appendChild(greenImage);
                 finishRepaintTest();
             });

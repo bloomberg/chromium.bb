@@ -15,6 +15,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_ios_and_mac.h"
 #include "net/cert/x509_util_mac.h"
+#include "ui/base/cocoa/remote_views_window.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -158,8 +159,18 @@ class CertificateAnchorWidgetDelegate : public views::WidgetDelegateView {
     views::Widget* overlayWindow =
         constrained_window::ShowWebModalDialogWithOverlayViews(this,
                                                                web_contents);
-    [certificate_viewer_ showCertificateSheet:overlayWindow->GetNativeWindow()
-                                                  .GetNativeNSWindow()];
+    NSWindow* overlayNSWindow =
+        overlayWindow->GetNativeWindow().GetNativeNSWindow();
+    // TODO(https://crbug.com/913303): The certificate viewer's interface to
+    // Cocoa should be wrapped in a mojo interface in order to allow
+    // instantiating across processes. As a temporary solution, create a
+    // transparent in-process window to the front.
+    if (ui::IsWindowUsingRemoteViews(overlayNSWindow)) {
+      remote_views_clone_window_ =
+          ui::CreateTransparentRemoteViewsClone(overlayNSWindow);
+      overlayNSWindow = remote_views_clone_window_;
+    }
+    [certificate_viewer_ showCertificateSheet:overlayNSWindow];
     [certificate_viewer_ setOverlayWindow:overlayWindow];
   }
 
@@ -168,6 +179,7 @@ class CertificateAnchorWidgetDelegate : public views::WidgetDelegateView {
     // -beginSheetForWindow:... method (bad SFCertificatePanel!) so break the
     // retain cycle by explicitly canceling the dialog.
     [certificate_viewer_ closeCertificateSheet];
+    [remote_views_clone_window_ close];
   }
 
   // WidgetDelegate:
@@ -175,6 +187,7 @@ class CertificateAnchorWidgetDelegate : public views::WidgetDelegateView {
 
  private:
   base::scoped_nsobject<SSLCertificateViewerMac> certificate_viewer_;
+  NSWindow* remote_views_clone_window_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateAnchorWidgetDelegate);
 };

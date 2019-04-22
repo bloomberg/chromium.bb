@@ -15,7 +15,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results_win.h"
 #include "components/component_updater/component_updater_service.h"
 
 namespace safe_browsing {
@@ -54,14 +54,14 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   // ChromeCleanerController overrides.
   State state() const override;
   IdleReason idle_reason() const override;
-  void SetLogsEnabled(bool logs_enabled) override;
-  bool logs_enabled() const override;
+  void SetLogsEnabled(Profile* profile, bool logs_enabled) override;
+  bool logs_enabled(Profile* profile) const override;
   void ResetIdleState() override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   void OnReporterSequenceStarted() override;
   void OnReporterSequenceDone(SwReporterInvocationResult result) override;
-  void RequestUserInitiatedScan() override;
+  void RequestUserInitiatedScan(Profile* profile) override;
   void OnSwReporterReady(SwReporterInvocationSequence&& invocations) override;
   void Scan(const SwReporterInvocation& reporter_invocation) override;
   void ReplyWithUserResponse(Profile* profile,
@@ -69,8 +69,7 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
                              UserResponse user_response) override;
   void Reboot() override;
   bool IsAllowedByPolicy() override;
-  bool IsReportingAllowedByPolicy() override;
-  bool IsReportingManagedByPolicy() override;
+  bool IsReportingManagedByPolicy(Profile* profile) override;
 
   static void ResetInstanceForTesting();
   // Passing in a nullptr as |delegate| resets the delegate to a default
@@ -84,8 +83,6 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
  private:
   ChromeCleanerControllerImpl();
   ~ChromeCleanerControllerImpl() override;
-
-  void Init();
 
   void NotifyObserver(Observer* observer) const;
   void SetStateAndNotifyObservers(State state);
@@ -126,9 +123,6 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   extensions::ExtensionService* extension_service_;
 
   State state_ = State::kIdle;
-  // The logs permission checkboxes in the Chrome Cleaner dialog and webui page
-  // are opt out.
-  bool logs_enabled_ = true;
   // Whether Cleanup is powered by an external partner.
   bool powered_by_partner_ = false;
   IdleReason idle_reason_ = IdleReason::kInitial;

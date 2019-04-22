@@ -5,6 +5,7 @@
 #include "test/cctest/interpreter/interpreter-tester.h"
 
 #include "src/api-inl.h"
+#include "src/heap/heap-inl.h"
 #include "src/objects-inl.h"
 
 namespace v8 {
@@ -30,8 +31,10 @@ InterpreterTester::InterpreterTester(
 InterpreterTester::InterpreterTester(
     Isolate* isolate, Handle<BytecodeArray> bytecode,
     MaybeHandle<FeedbackMetadata> feedback_metadata, const char* filter)
-    : InterpreterTester(isolate, nullptr, bytecode, feedback_metadata, filter) {
-}
+    : InterpreterTester(
+          isolate, nullptr, bytecode,
+          FLAG_lite_mode ? MaybeHandle<FeedbackMetadata>() : feedback_metadata,
+          filter) {}
 
 InterpreterTester::InterpreterTester(Isolate* isolate, const char* source,
                                      const char* filter)

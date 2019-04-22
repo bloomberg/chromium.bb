@@ -13,7 +13,7 @@
 
 #include "modules/rtp_rtcp/include/rtp_header_extension_map.h"
 #include "modules/rtp_rtcp/source/rtp_utility.h"
-#include "rtc_base/criticalsection.h"
+#include "rtc_base/critical_section.h"
 #include "rtc_base/thread_annotations.h"
 
 namespace webrtc {
@@ -50,11 +50,21 @@ bool RtpHeaderParser::IsRtcp(const uint8_t* packet, size_t length) {
   return rtp_parser.RTCP();
 }
 
+absl::optional<uint32_t> RtpHeaderParser::GetSsrc(const uint8_t* packet,
+                                                  size_t length) {
+  RtpUtility::RtpHeaderParser rtp_parser(packet, length);
+  RTPHeader header;
+  if (rtp_parser.Parse(&header, nullptr)) {
+    return header.ssrc;
+  }
+  return absl::nullopt;
+}
+
 bool RtpHeaderParserImpl::Parse(const uint8_t* packet,
                                 size_t length,
                                 RTPHeader* header) const {
   RtpUtility::RtpHeaderParser rtp_parser(packet, length);
-  memset(header, 0, sizeof(*header));
+  *header = RTPHeader();
 
   RtpHeaderExtensionMap map;
   {

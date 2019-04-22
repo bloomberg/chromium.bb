@@ -79,6 +79,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   static scoped_refptr<NodeChannel> Create(
       Delegate* delegate,
       ConnectionParams connection_params,
+      Channel::HandlePolicy channel_handle_policy,
       scoped_refptr<base::TaskRunner> io_task_runner,
       const ProcessErrorCallback& process_error_callback);
 
@@ -90,6 +91,8 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   static void GetEventMessageData(Channel::Message* message,
                                   void** data,
                                   size_t* num_data_bytes);
+
+  Channel* channel() const { return channel_.get(); }
 
   // Start receiving messages.
   void Start();
@@ -154,6 +157,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
 
   NodeChannel(Delegate* delegate,
               ConnectionParams connection_params,
+              Channel::HandlePolicy channel_handle_policy,
               scoped_refptr<base::TaskRunner> io_task_runner,
               const ProcessErrorCallback& process_error_callback);
   ~NodeChannel() override;

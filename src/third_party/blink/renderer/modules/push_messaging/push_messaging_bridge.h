@@ -5,8 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_BRIDGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_BRIDGE_H_
 
-#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "base/macros.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -26,7 +27,6 @@ class PushMessagingBridge final
     : public GarbageCollectedFinalized<PushMessagingBridge>,
       public Supplement<ServiceWorkerRegistration> {
   USING_GARBAGE_COLLECTED_MIXIN(PushMessagingBridge);
-  WTF_MAKE_NONCOPYABLE(PushMessagingBridge);
 
  public:
   static const char kSupplementName[];
@@ -47,6 +47,8 @@ class PushMessagingBridge final
                              mojom::blink::PermissionStatus status);
 
   mojom::blink::PermissionServicePtr permission_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(PushMessagingBridge);
 };
 
 }  // namespace blink

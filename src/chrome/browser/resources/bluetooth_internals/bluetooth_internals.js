@@ -30,7 +30,7 @@ cr.define('bluetooth_internals', function() {
   /** @type {devices_page.DevicesPage} */
   var devicesPage = null;
 
-  /** @type {bluetooth.mojom.DiscoverySession.ptrClass} */
+  /** @type {bluetooth.mojom.DiscoverySessionProxy} */
   var discoverySession = null;
 
   /** @type {boolean} */
@@ -38,6 +38,7 @@ cr.define('bluetooth_internals', function() {
 
   /**
    * Observer for page changes. Used to update page title header.
+   * @constructor
    * @extends {cr.ui.pageManager.PageManager.Observer}
    */
   var PageObserver = function() {};
@@ -87,14 +88,15 @@ cr.define('bluetooth_internals', function() {
    * '#page-container', and adds a sidebar item to show the new page. If a
    * page exists that matches |deviceInfo.address|, nothing is created and the
    * existing page is returned.
-   * @param {!bluetooth.mojom.Device} deviceInfo
+   * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
    * @return {!device_details_page.DeviceDetailsPage}
    */
   function makeDeviceDetailsPage(deviceInfo) {
     var deviceDetailsPageId = 'devices/' + deviceInfo.address.toLowerCase();
     var deviceDetailsPage = PageManager.registeredPages[deviceDetailsPageId];
-    if (deviceDetailsPage)
+    if (deviceDetailsPage) {
       return deviceDetailsPage;
+    }
 
     var pageSection = document.createElement('section');
     pageSection.hidden = true;
@@ -140,13 +142,13 @@ cr.define('bluetooth_internals', function() {
   function updateDeviceDetailsPage(address) {
     var detailPageId = 'devices/' + address.toLowerCase();
     var page = PageManager.registeredPages[detailPageId];
-    if (page)
+    if (page) {
       page.redraw();
+    }
   }
 
   function updateStoppedDiscoverySession() {
     devicesPage.setScanStatus(devices_page.ScanStatus.OFF);
-    discoverySession.ptr.reset();
     discoverySession = null;
   }
 
@@ -204,7 +206,7 @@ cr.define('bluetooth_internals', function() {
     });
 
     devicesPage.pageDiv.addEventListener('scanpressed', function(event) {
-      if (discoverySession && discoverySession.ptr.isBound()) {
+      if (discoverySession) {
         userRequestedScanStop = true;
         devicesPage.setScanStatus(devices_page.ScanStatus.STOPPING);
 
@@ -226,9 +228,9 @@ cr.define('bluetooth_internals', function() {
       devicesPage.setScanStatus(devices_page.ScanStatus.STARTING);
       adapterBroker.startDiscoverySession()
           .then(function(session) {
-            discoverySession = session;
+            discoverySession = assert(session);
 
-            discoverySession.ptr.setConnectionErrorHandler(function() {
+            discoverySession.onConnectionError.addListener(() => {
               updateStoppedDiscoverySession();
               Snackbar.show('Discovery session ended', SnackbarType.WARNING);
             });
@@ -261,8 +263,9 @@ cr.define('bluetooth_internals', function() {
     window.addEventListener('hashchange', function() {
       // If a user navigates and the page doesn't exist, do nothing.
       var pageName = window.location.hash.substr(1);
-      if ($(pageName))
+      if ($(pageName)) {
         PageManager.showPageByName(pageName);
+      }
     });
 
     if (!window.location.hash) {

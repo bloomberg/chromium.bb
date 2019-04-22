@@ -11,5 +11,6 @@ var media = {};
 // <include src="client_renderer.js">
 
 media.initialize(new Manager(new ClientRenderer()));
-if (cr.ui)
+if (cr.ui) {
   cr.ui.decorate('tabbox', cr.ui.TabBox);
+}

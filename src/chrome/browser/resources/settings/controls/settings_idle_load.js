@@ -46,8 +46,9 @@ Polymer({
    *     DOM tree.
    */
   get: function() {
-    if (this.loading_)
+    if (this.loading_) {
       return this.loading_;
+    }
 
     this.loading_ = new Promise((resolve, reject) => {
       this.importHref(this.url, () => {
@@ -76,8 +77,9 @@ Polymer({
    * @param {Object} value
    */
   _forwardParentProp: function(prop, value) {
-    if (this.child_)
+    if (this.child_) {
       this.child_._templateInstance[prop] = value;
+    }
   },
 
   /**
@@ -86,8 +88,9 @@ Polymer({
    * @param {Object} value
    */
   _forwardParentPath: function(path, value) {
-    if (this.child_)
+    if (this.child_) {
       this.child_._templateInstance.notifyPath(path, value, true);
+    }
   },
 
   /**
@@ -95,7 +98,8 @@ Polymer({
    * @param {Object} value
    */
   _forwardHostPropV2: function(prop, value) {
-    if (this.instance_)
+    if (this.instance_) {
       this.instance_.forwardHostProp(prop, value);
+    }
   },
 });

@@ -5,11 +5,10 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.support.annotation.CallSuper;
+import android.support.annotation.Nullable;
 import android.view.View;
 
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
-
-import javax.annotation.Nullable;
 
 /**
  * Describes a portion of UI responsible for rendering a group of sites. It abstracts general tasks

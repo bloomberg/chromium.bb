@@ -8,11 +8,12 @@
 #include <map>
 #include <memory>
 
-#include "ash/app_list/views/suggestion_chip_view.h"
 #include "ash/assistant/model/assistant_cache_model_observer.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/base/assistant_scroll_view.h"
+#include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/views/controls/scroll_view.h"
@@ -23,22 +24,23 @@ class BoxLayout;
 
 namespace ash {
 
-class AssistantController;
+class AssistantViewDelegate;
 
 // SuggestionContainerView is the child of AssistantMainView concerned with
 // laying out SuggestionChipViews in response to Assistant interaction model
 // suggestion events.
-class SuggestionContainerView : public AssistantScrollView,
-                                public AssistantCacheModelObserver,
-                                public AssistantInteractionModelObserver,
-                                public AssistantUiModelObserver,
-                                public views::ButtonListener {
+class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
+    : public AssistantScrollView,
+      public AssistantCacheModelObserver,
+      public AssistantInteractionModelObserver,
+      public AssistantUiModelObserver,
+      public views::ButtonListener {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   using AssistantSuggestionPtr =
       chromeos::assistant::mojom::AssistantSuggestionPtr;
 
-  explicit SuggestionContainerView(AssistantController* assistant_controller);
+  explicit SuggestionContainerView(AssistantViewDelegate* delegate);
   ~SuggestionContainerView() override;
 
   // AssistantScrollView:
@@ -77,14 +79,14 @@ class SuggestionContainerView : public AssistantScrollView,
   // Invoked on suggestion chip icon downloaded event.
   void OnSuggestionChipIconDownloaded(int id, const gfx::ImageSkia& icon);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantViewDelegate* const delegate_;  // Owned by Shell.
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
 
   // Cache of suggestion chip views owned by the view hierarchy. The key for the
   // map is the unique identifier by which the Assistant interaction model
   // identifies the view's underlying suggestion.
-  std::map<int, app_list::SuggestionChipView*> suggestion_chip_views_;
+  std::map<int, SuggestionChipView*> suggestion_chip_views_;
 
   // True if we have received a query response during this Assistant UI session,
   // false otherwise.

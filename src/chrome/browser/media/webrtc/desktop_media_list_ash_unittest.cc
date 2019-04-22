@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/webrtc/desktop_media_list_ash.h"
 
-#include "ash/test/ash_test_base.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -13,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_observer.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
@@ -33,7 +33,7 @@ class MockDesktopMediaListObserver : public DesktopMediaListObserver {
                void(DesktopMediaList* list, int index));
 };
 
-class DesktopMediaListAshTest : public ash::AshTestBase {
+class DesktopMediaListAshTest : public ChromeAshTestBase {
  public:
   DesktopMediaListAshTest() {}
   ~DesktopMediaListAshTest() override {}
@@ -41,7 +41,7 @@ class DesktopMediaListAshTest : public ash::AshTestBase {
   void TearDown() override {
     // Reset the unique_ptr so the list stops refreshing.
     list_.reset();
-    ash::AshTestBase::TearDown();
+    ChromeAshTestBase::TearDown();
   }
 
   void CreateList(content::DesktopMediaID::Type type) {

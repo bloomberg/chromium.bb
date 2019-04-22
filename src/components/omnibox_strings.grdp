@@ -7,8 +7,30 @@
   <message name="IDS_EMPTY_KEYWORD_VALUE" desc="Shown in the location bar drop down when the user enters a string that matches a chrome keyword, but they haven't entered any text following the chrome keyword">
     &lt;Type search term&gt;
   </message>
-  <message name="IDS_LINK_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the link has been extracted from the user's clipboard. [Length: 21em]">
-    Link you copied
+  <if expr="use_titlecase">
+    <message name="IDS_LINK_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the link has been extracted from the user's clipboard." meaning="Length: 35em">
+      Link You Copied
+    </message>
+    <message name="IDS_TEXT_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the text has been extracted from the user's clipboard." meaning="Length: 35em">
+      Text You Copied
+    </message>
+    <message name="IDS_IMAGE_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the image has been extracted from the user's clipboard." meaning="Length: 35em">
+      Image You Copied
+    </message>
+  </if>
+  <if expr="not use_titlecase">
+    <message name="IDS_LINK_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the link has been extracted from the user's clipboard." meaning="Length: 21em">
+      Link you copied
+    </message>
+    <message name="IDS_TEXT_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the text has been extracted from the user's clipboard." meaning="Length: 21em">
+      Text you copied
+    </message>
+    <message name="IDS_IMAGE_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the image has been extracted from the user's clipboard." meaning="Length: 21em">
+      Image you copied
+    </message>
+  </if>
+  <message name="IDS_COPIED_TEXT_FROM_CLIPBOARD" desc="The actual text the user copied, surrounded by quotation marks.">
+    &quot;<ph name="TEXT">$1<ex>search string</ex></ph>&quot;
   </message>
   <message name="IDS_SECURE_CONNECTION_EV" desc="Short text shown in the location bar when the connection is secure with an EV cert.">
     <ph name="ORGANIZATION">$1<ex>Paypal Inc.</ex></ph> [<ph name="COUNTRY">$2<ex>US</ex></ph>]
@@ -165,13 +187,13 @@
     <ph name="LOCATION_TITLE">$2<ex>The Chromium Projects</ex></ph> <ph name="SHORT_URL">$1<ex>www.chromium.org</ex> location from history</ph>
   </message>
   <message name="IDS_ACC_AUTOCOMPLETE_SEARCH_HISTORY" desc="Text for screenreaders describing a search from history.">
-    <ph name="TEXT">$1<ex>dogs</ex> search from history</ph>
+    <ph name="TEXT">$1<ex>dogs</ex></ph> search from history
   </message>
   <message name="IDS_ACC_AUTOCOMPLETE_SEARCH" desc="Text for screenreaders describing a generic search.">
-    <ph name="TEXT">$1<ex>dogs</ex> search</ph>
+    <ph name="TEXT">$1<ex>dogs</ex></ph> search
   </message>
   <message name="IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH" desc="Text for screenreaders describing a suggested search.">
-    <ph name="TEXT">$1<ex>dogs</ex> search suggestion</ph>
+    <ph name="TEXT">$1<ex>dogs</ex></ph> search suggestion
   </message>
   <message name="IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH_ENTITY" desc="Text for screenreaders describing a suggested search for an entity with a description. The commas are significant as they will introduce a pause in the spoken text.">
     <ph name="ENTITY">$1<ex>muhammad ali</ex></ph>, <ph name="DESCRIPTION">$2<ex>american professional boxer</ex></ph>, search suggestion
@@ -182,25 +204,31 @@
   <message name="IDS_ACC_AUTOCOMPLETE_BOOKMARK" desc="Text for screenreaders describing a URL from a bookmark.">
     <ph name="LOCATION_TITLE">$2<ex>The Chromium Projects</ex></ph> <ph name="SHORT_URL">$1<ex>www.chromium.org</ex> bookmark</ph>
   </message>
-  <message name="IDS_ACC_AUTOCOMPLETE_CLIPBOARD" desc="Text for screenreaders describing a URL from a clipboard.">
-    <ph name="LOCATION_TITLE">$2<ex>The Chromium Projects</ex></ph> <ph name="SHORT_URL">$1<ex>www.chromium.org</ex> location from clipboard</ph>
+  <message name="IDS_ACC_AUTOCOMPLETE_CLIPBOARD_IMAGE" desc="Text for screenreaders describing an image from a clipboard.">
+    Search for clipboard image
+  </message>
+  <message name="IDS_ACC_AUTOCOMPLETE_CLIPBOARD_TEXT" desc="Text for screenreaders describing text from a clipboard.">
+    Search for clipboard text, <ph name="TEXT">$2<ex>Paris, france</ex></ph>
+  </message>
+  <message name="IDS_ACC_AUTOCOMPLETE_CLIPBOARD_URL" desc="Text for screenreaders describing a URL from a clipboard.">
+    Search for clipboard URL, <ph name="SHORT_URL">$2<ex>www.chromium.org</ex></ph>
   </message>
   <message name="IDS_ACC_SEARCH_ICON" desc="Text for screenreaders describing a search icon image.">
     Search icon
   </message>
   <!-- Supplement accessibility label with item position, e.g. "1 of 3" -->
-  <message name="IDS_ACC_AUTOCOMPLETE_N_OF_M" desc="Text for screenreaders describing the current matche's position in the list of suggestions.">
+  <message name="IDS_ACC_AUTOCOMPLETE_N_OF_M" desc="Text for screenreaders describing the current match's position in the list of suggestions.">
     <ph name="FRIENDLY_MATCH_TEXT">$1<ex>The Chromium Projects http://www.chromium.org bookmark</ex></ph>, <ph name="MATCH_POSITION">$2<ex>2</ex></ph> of <ph name="NUM_MATCHES">$3<ex>3</ex></ph>
   </message>
   <!-- Accessibility suffix for suggestions with a tab switch match. Commas are important as they add pauses. -->
   <message name="IDS_ACC_TAB_SWITCH_SUFFIX" desc="Suffix for tab switch suggestions to explain keystroke used to switch.">
-    <ph name="TAB_SWITCH_SUFFIX">$1, currently open, press tab then enter to switch to the open tab</ph>
+    <ph name="TAB_SWITCH_SUFFIX">$1<ex>The Chromium Projects http://www.chromium.org bookmark</ex></ph>, currently open, press Tab then Enter to switch to the open tab
   </message>
   <!-- Accessibility prefix for suggestions where the tab switch button is focused. Commas are important as they add pauses. -->
   <message name="IDS_ACC_TAB_SWITCH_BUTTON_FOCUSED_PREFIX" desc="Announcement when tab switch button focused.">
-    <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT">Tab switch button, press enter to switch to the open tab, $1<ex>The Chromium Projects http://www.chromium.org bookmark</ex></ph>
+    Tab switch button, press Enter to switch to the open tab, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT">$1<ex>The Chromium Projects http://www.chromium.org bookmark</ex></ph>
   </message>
   <message name="IDS_ACC_TAB_SWITCH_BUTTON" desc="Announcement when tab switch button focused.">
-    Tab switch button, press enter to switch to this tab
+    Tab switch button, press Enter to switch to this tab
   </message>
 </grit-part>

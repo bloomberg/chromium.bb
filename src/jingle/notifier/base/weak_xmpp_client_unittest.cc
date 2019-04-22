@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "jingle/glue/task_pump.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,12 +22,12 @@ class MockXmppDelegate : public sigslot::has_slots<> {
  public:
   ~MockXmppDelegate() override {}
 
-  MOCK_METHOD1(OnStateChange, void(buzz::XmppEngine::State));
+  MOCK_METHOD1(OnStateChange, void(jingle_xmpp::XmppEngine::State));
   MOCK_METHOD2(OnInputLog, void(const char*, int));
   MOCK_METHOD2(OnOutputLog, void(const char*, int));
 };
 
-const buzz::XmppEngine::State kState = buzz::XmppEngine::STATE_OPEN;
+const jingle_xmpp::XmppEngine::State kState = jingle_xmpp::XmppEngine::STATE_OPEN;
 const char kInputLog[] = "input log";
 const char kOutputLog[] = "output log";
 
@@ -37,7 +37,7 @@ class WeakXmppClientTest : public testing::Test {
 
   ~WeakXmppClientTest() override {}
 
-  void ConnectSignals(buzz::XmppClient* xmpp_client) {
+  void ConnectSignals(jingle_xmpp::XmppClient* xmpp_client) {
     xmpp_client->SignalStateChange.connect(
         &mock_xmpp_delegate_, &MockXmppDelegate::OnStateChange);
     xmpp_client->SignalLogInput.connect(
@@ -49,15 +49,15 @@ class WeakXmppClientTest : public testing::Test {
   void ExpectSignalCalls() {
     EXPECT_CALL(mock_xmpp_delegate_, OnStateChange(kState));
     EXPECT_CALL(mock_xmpp_delegate_,
-                OnInputLog(kInputLog, arraysize(kInputLog)));
+                OnInputLog(kInputLog, base::size(kInputLog)));
     EXPECT_CALL(mock_xmpp_delegate_,
-                OnOutputLog(kOutputLog, arraysize(kOutputLog)));
+                OnOutputLog(kOutputLog, base::size(kOutputLog)));
   }
 
-  void RaiseSignals(buzz::XmppClient* xmpp_client) {
+  void RaiseSignals(jingle_xmpp::XmppClient* xmpp_client) {
     xmpp_client->SignalStateChange(kState);
-    xmpp_client->SignalLogInput(kInputLog, arraysize(kInputLog));
-    xmpp_client->SignalLogOutput(kOutputLog, arraysize(kOutputLog));
+    xmpp_client->SignalLogInput(kInputLog, base::size(kInputLog));
+    xmpp_client->SignalLogOutput(kOutputLog, base::size(kOutputLog));
   }
 
   // Needed by TaskPump.

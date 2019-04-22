@@ -18,7 +18,7 @@ namespace aura {
 class EmbedRootDelegate;
 class Window;
 class WindowTreeClient;
-class WindowTreeHost;
+class WindowTreeHostMus;
 
 namespace client {
 class FocusClient;
@@ -43,6 +43,10 @@ class AURA_EXPORT EmbedRoot {
   // delegate.
   aura::Window* window();
 
+  aura::WindowTreeHostMus* window_tree_host() {
+    return window_tree_host_.get();
+  }
+
  private:
   friend class WindowTreeClient;
   friend class WindowTreeClientTestApi;
@@ -55,7 +59,7 @@ class AURA_EXPORT EmbedRoot {
   void OnScheduledEmbedForExistingClient(const base::UnguessableToken& token);
 
   // Called from WindowTreeClient when the embedding is established.
-  void OnEmbed(std::unique_ptr<WindowTreeHost> window_tree_host);
+  void OnEmbed(std::unique_ptr<WindowTreeHostMus> window_tree_host);
 
   // Called from WindowTreeClient when unembedded from the Window.
   void OnUnembed();
@@ -68,7 +72,7 @@ class AURA_EXPORT EmbedRoot {
 
   std::unique_ptr<client::FocusClient> focus_client_;
 
-  std::unique_ptr<WindowTreeHost> window_tree_host_;
+  std::unique_ptr<WindowTreeHostMus> window_tree_host_;
 
   base::WeakPtrFactory<EmbedRoot> weak_factory_;
 

@@ -5,6 +5,8 @@
 #include "content/browser/payments/payment_app_provider_impl.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "content/browser/payments/payment_app_context_impl.h"
@@ -22,8 +24,8 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/mojom/base/time.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 

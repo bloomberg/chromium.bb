@@ -25,8 +25,9 @@ function waitForElements(selector, populateFunctionName, callback) {
 
 function findByContentSubstring(elements, content, childSelector) {
   return Array.prototype.filter.call(elements, function(element) {
-    if (childSelector)
+    if (childSelector) {
       element = element.querySelector(childSelector);
+    }
     return element && element.textContent.indexOf(content) >= 0;
   })[0];
 }

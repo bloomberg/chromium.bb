@@ -8,7 +8,7 @@
 
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
@@ -39,7 +39,7 @@ const char* kProtoNames[] = {
   "mcs_proto.BindAccountResponse",
   "mcs_proto.TalkMetadata"
 };
-static_assert(arraysize(kProtoNames) == kNumProtoTypes,
+static_assert(base::size(kProtoNames) == kNumProtoTypes,
               "Proto Names Must Include All Tags");
 
 const char kLoginId[] = "chrome-";

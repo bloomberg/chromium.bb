@@ -7,26 +7,21 @@
 #ifndef FXBARCODE_DATAMATRIX_BC_DATAMATRIXWRITER_H_
 #define FXBARCODE_DATAMATRIX_BC_DATAMATRIXWRITER_H_
 
-#include "fxbarcode/BC_TwoDimWriter.h"
+#include <vector>
 
-class CBC_CommonByteMatrix;
-class CBC_DefaultPlacement;
-class CBC_SymbolInfo;
+#include "fxbarcode/BC_TwoDimWriter.h"
 
 class CBC_DataMatrixWriter final : public CBC_TwoDimWriter {
  public:
   CBC_DataMatrixWriter();
   ~CBC_DataMatrixWriter() override;
 
-  uint8_t* Encode(const WideString& contents,
-                  int32_t& outWidth,
-                  int32_t& outHeight);
+  std::vector<uint8_t> Encode(const WideString& contents,
+                              int32_t* pOutWidth,
+                              int32_t* pOutHeight);
 
   // CBC_TwoDimWriter
   bool SetErrorCorrectionLevel(int32_t level) override;
-
- private:
-  int32_t m_iCorrectLevel;
 };
 
 #endif  // FXBARCODE_DATAMATRIX_BC_DATAMATRIXWRITER_H_

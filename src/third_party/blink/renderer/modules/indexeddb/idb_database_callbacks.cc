@@ -25,16 +25,10 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
 
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_observation.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks_impl.h"
 
 namespace blink {
-
-IDBDatabaseCallbacks* IDBDatabaseCallbacks::Create() {
-  return MakeGarbageCollected<IDBDatabaseCallbacks>();
-}
 
 IDBDatabaseCallbacks::IDBDatabaseCallbacks() : database_(nullptr) {}
 
@@ -68,7 +62,7 @@ void IDBDatabaseCallbacks::OnComplete(int64_t transaction_id) {
 
 void IDBDatabaseCallbacks::OnChanges(
     const WebIDBDatabaseCallbacks::ObservationIndexMap& observation_index_map,
-    WebVector<WebIDBObservation> observations,
+    Vector<Persistent<IDBObservation>> observations,
     const WebIDBDatabaseCallbacks::TransactionMap& transactions) {
   if (!database_)
     return;
@@ -86,8 +80,7 @@ void IDBDatabaseCallbacks::Connect(IDBDatabase* database) {
 std::unique_ptr<WebIDBDatabaseCallbacks>
 IDBDatabaseCallbacks::CreateWebCallbacks() {
   DCHECK(!web_callbacks_);
-  std::unique_ptr<WebIDBDatabaseCallbacks> callbacks =
-      WebIDBDatabaseCallbacksImpl::Create(this);
+  auto callbacks = std::make_unique<WebIDBDatabaseCallbacksImpl>(this);
   web_callbacks_ = callbacks.get();
   return callbacks;
 }

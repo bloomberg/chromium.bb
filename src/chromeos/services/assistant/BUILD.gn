@@ -3,15 +3,25 @@
 # found in the LICENSE file.
 
 import("//chromeos/assistant/assistant.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 assert(is_chromeos)
 assert(enable_cros_assistant)
 
-source_set("lib") {
+component("lib") {
+  output_name = "assistant_service"
+
+  friend = [
+    ":tests",
+    ":test_support",
+  ]
+
+  defines = [ "IS_ASSISTANT_SERVICE_IMPL" ]
+
   sources = [
     "assistant_manager_service.h",
     "assistant_settings_manager.h",
+    "constants.cc",
+    "constants.h",
     "fake_assistant_manager_service_impl.cc",
     "fake_assistant_manager_service_impl.h",
     "fake_assistant_settings_manager_impl.cc",
@@ -23,18 +33,23 @@ source_set("lib") {
   deps = [
     "//base",
     "//build/util:webkit_version",
-    "//chromeos",
     "//chromeos/assistant:buildflags",
-    "//chromeos/services/assistant/public:feature_flags",
-    "//chromeos/services/assistant/public/mojom",
+    "//chromeos/audio",
+    "//chromeos/constants",
+    "//chromeos/dbus",
+    "//chromeos/dbus/power",
+    "//chromeos/dbus/power:power_manager_proto",
     "//components/account_id",
     "//services/device/public/mojom",
     "//services/identity/public/mojom",
+    "//services/network/public/cpp:cpp",
     "//ui/accessibility:ax_assistant",
   ]
 
   public_deps = [
     "//ash/public/cpp:cpp",
+    "//chromeos/services/assistant/public:feature_flags",
+    "//chromeos/services/assistant/public/mojom",
     "//mojo/public/cpp/bindings:bindings",
     "//services/audio/public/cpp:cpp",
     "//services/service_manager/public/cpp:cpp",
@@ -52,6 +67,10 @@ source_set("lib") {
       "chromium_http_connection.h",
       "default_url_request_context_getter.cc",
       "default_url_request_context_getter.h",
+      "media_session/assistant_media_session.cc",
+      "media_session/assistant_media_session.h",
+      "platform/audio_device_owner.cc",
+      "platform/audio_device_owner.h",
       "platform/audio_input_impl.cc",
       "platform/audio_input_impl.h",
       "platform/audio_input_provider_impl.cc",
@@ -66,8 +85,12 @@ source_set("lib") {
       "platform/file_provider_impl.h",
       "platform/network_provider_impl.cc",
       "platform/network_provider_impl.h",
+      "platform/power_manager_provider_impl.cc",
+      "platform/power_manager_provider_impl.h",
       "platform/system_provider_impl.cc",
       "platform/system_provider_impl.h",
+      "platform/volume_control_impl.cc",
+      "platform/volume_control_impl.h",
       "platform_api_impl.cc",
       "platform_api_impl.h",
       "utils.cc",
@@ -77,8 +100,8 @@ source_set("lib") {
     deps += [
       "//chromeos/assistant/internal",
       "//chromeos/assistant/internal:build_libassistant",
-      "//chromeos/assistant/internal/action",
       "//chromeos/assistant/internal/proto/google3",
+      "//chromeos/dbus",
       "//chromeos/resources",
       "//chromeos/services/assistant/public/proto",
       "//chromeos/strings",
@@ -87,19 +110,21 @@ source_set("lib") {
       "//libassistant/shared/public",
       "//libassistant/shared/public:export",
       "//net",
+      "//services/media_session/public/cpp",
+      "//services/media_session/public/mojom",
       "//services/network/public/cpp",
       "//services/network/public/mojom",
+      "//services/service_manager/public/cpp",
       "//ui/base",
       "//url",
     ]
 
     libs = [ "$root_out_dir/libassistant.so" ]
-  }
-}
 
-service_manifest("manifest") {
-  name = "assistant"
-  source = "manifest.json"
+    data = [
+      "$root_out_dir/libassistant.so",
+    ]
+  }
 }
 
 source_set("tests") {
@@ -108,10 +133,14 @@ source_set("tests") {
     ":lib",
     "//base",
     "//base/test:test_support",
-    "//chromeos",
+    "//chromeos/dbus:test_support",
+    "//chromeos/dbus/power",
+    "//chromeos/services/assistant/public/mojom",
     "//mojo/public/cpp/bindings:bindings",
     "//services/device/public/mojom",
     "//services/identity/public/mojom",
+    "//services/network:test_support",
+    "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
@@ -124,10 +153,15 @@ source_set("tests") {
   if (enable_cros_libassistant) {
     sources += [
       "platform/audio_output_provider_impl_unittest.cc",
+      "platform/power_manager_provider_impl_unittest.cc",
       "platform/system_provider_impl_unittest.cc",
     ]
 
-    deps += [ "//libassistant/shared/public" ]
+    deps += [
+      "//chromeos/dbus",
+      "//libassistant/shared/public",
+      "//services/device/public/cpp/test:test_support",
+    ]
   }
 }
 

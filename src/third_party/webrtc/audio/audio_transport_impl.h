@@ -14,14 +14,14 @@
 #include <vector>
 
 #include "api/audio/audio_mixer.h"
+#include "api/scoped_refptr.h"
 #include "audio/audio_level.h"
 #include "common_audio/resampler/include/push_resampler.h"
 #include "modules/audio_device/include/audio_device.h"
 #include "modules/audio_processing/include/audio_processing.h"
 #include "modules/audio_processing/typing_detection.h"
-#include "rtc_base/constructormagic.h"
-#include "rtc_base/criticalsection.h"
-#include "rtc_base/scoped_ref_ptr.h"
+#include "rtc_base/constructor_magic.h"
+#include "rtc_base/critical_section.h"
 #include "rtc_base/thread_annotations.h"
 
 namespace webrtc {

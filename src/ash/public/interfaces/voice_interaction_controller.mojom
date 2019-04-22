@@ -39,14 +39,14 @@ enum AssistantAllowedState {
   DISALLOWED_BY_NONPRIMARY_USER,
   // Disallowed because current user is supervised user.
   DISALLOWED_BY_SUPERVISED_USER,
-  // Disallowed because current user is child user.
-  DISALLOWED_BY_CHILD_USER,
   // Disallowed because incognito mode.
   DISALLOWED_BY_INCOGNITO,
   // Disallowed because the device is in demo mode.
   DISALLOWED_BY_DEMO_MODE,
   // Disallowed because the device is in public session.
-  DISALLOWED_BY_PUBLIC_SESSION
+  DISALLOWED_BY_PUBLIC_SESSION,
+  // Disallowed because the user's account type is currently not supported.
+  DISALLOWED_BY_ACCOUNT_TYPE
 };
 
 // Allows observing changes to voice interaction status and settings.
@@ -64,11 +64,17 @@ interface VoiceInteractionObserver {
   // Called when hotword listening is enabled/disabled.
   OnVoiceInteractionHotwordEnabled(bool enabled);
 
-  // Called when voice interaction setup flow completed.
-  OnVoiceInteractionSetupCompleted(bool completed);
+  // Called when hotword is set to always on/only with power source.
+  OnVoiceInteractionHotwordAlwaysOn(bool always_on);
+
+  // Called when consent status is updated.
+  OnVoiceInteractionConsentStatusUpdated(ConsentStatus consent_status);
 
   // Called when assistant feature allowed state has changed.
   OnAssistantFeatureAllowedChanged(AssistantAllowedState state);
+
+  // Called when Google Play Store is enabled/disabled.
+  OnArcPlayStoreEnabledChanged(bool enabled);
 
   // Called when locale is changed in pref. The locale is in the format can be
   // "en-US" or simply "en". When locale is not set in pref, it returns empty
@@ -93,8 +99,11 @@ interface VoiceInteractionController {
   // Called when the hotword listening is enabled/disabled.
   NotifyHotwordEnabled(bool enabled);
 
-  // Called when the voice interaction setup complete status is changed.
-  NotifySetupCompleted(bool completed);
+  // Called when the hotword is set to always on/only with power source.
+  NotifyHotwordAlwaysOn(bool enabled);
+
+  // Called when the consent status is obtained from the server.
+  NotifyConsentStatus(ConsentStatus consent_status);
 
   // Notify if voice interaction feature is allowed or not. e.g. not allowed
   // if disabled by policy.
@@ -109,6 +118,26 @@ interface VoiceInteractionController {
   // Called when the launch with mic open state is changed.
   NotifyLaunchWithMicOpen(bool launch_with_mic_open);
 
+  // Called when Google Play Store is enabled/disabled.
+  NotifyArcPlayStoreEnabledChanged(bool enabled);
+
   // Add an observer.
   AddObserver(VoiceInteractionObserver observer);
+};
+
+// The status of the user's consent. The enum values cannot be changed because
+// they are persisted on disk.
+enum ConsentStatus {
+  // The status is unknown.
+  kUnknown = 0,
+
+  // The user accepted activity control access.
+  kActivityControlAccepted = 1,
+
+  // The user is not authorized to give consent.
+  kUnauthorized = 2,
+
+  // The user's consent information is not found. This is typically the case
+  // when consent from the user has never been requested.
+  kNotFound = 3,
 };

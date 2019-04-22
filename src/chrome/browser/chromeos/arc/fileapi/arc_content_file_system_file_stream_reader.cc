@@ -9,6 +9,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -32,7 +33,8 @@ int ReadFile(base::File* file,
 
 // Seeks the file, returns 0 on success, or errno on an error.
 int SeekFile(base::File* file, size_t offset) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   // lseek() instead of |file|'s method for errno.
   off_t result = lseek(file->GetPlatformFile(), offset, SEEK_SET);
   return result < 0 ? errno : 0;

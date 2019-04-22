@@ -12,14 +12,13 @@ import android.view.LayoutInflater;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
-import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.download.R;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -27,7 +26,7 @@ import java.util.ArrayList;
 /**
  * Helper class to handle communication between download location dialog and native.
  */
-public class DownloadLocationDialogBridge implements ModalDialogView.Controller {
+public class DownloadLocationDialogBridge implements ModalDialogProperties.Controller {
     private long mNativeDownloadLocationDialogBridge;
     private PropertyModel mDialogModel;
     private DownloadLocationCustomView mCustomView;
@@ -78,11 +77,11 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
     @Override
     public void onClick(PropertyModel model, int buttonType) {
         switch (buttonType) {
-            case ModalDialogView.ButtonType.POSITIVE:
+            case ModalDialogProperties.ButtonType.POSITIVE:
                 mModalDialogManager.dismissDialog(
                         model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
                 break;
-            case ModalDialogView.ButtonType.NEGATIVE:
+            case ModalDialogProperties.ButtonType.NEGATIVE:
                 mModalDialogManager.dismissDialog(
                         model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
                 break;

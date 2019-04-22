@@ -49,7 +49,7 @@ endif()
 # targets to the current scope.  We are placing Google Test's binary
 # directory in a subdirectory of our own as VC compilation may break
 # if they are the same (the default).
-add_subdirectory("${gtest_dir}" "${gmock_BINARY_DIR}/gtest")
+add_subdirectory("${gtest_dir}" "${gmock_BINARY_DIR}/${gtest_dir}")
 
 
 # These commands only run if this is the main project
@@ -153,9 +153,9 @@ $env:Path = \"$project_bin;$env:Path\"
   cxx_test(gmock-actions_test gmock_main)
   cxx_test(gmock-cardinalities_test gmock_main)
   cxx_test(gmock_ex_test gmock_main)
+  cxx_test(gmock-function-mocker_test gmock_main)
   cxx_test(gmock-generated-actions_test gmock_main)
   cxx_test(gmock-generated-function-mockers_test gmock_main)
-  cxx_test(gmock-generated-internal-utils_test gmock_main)
   cxx_test(gmock-generated-matchers_test gmock_main)
   cxx_test(gmock-internal-utils_test gmock_main)
   cxx_test(gmock-matchers_test gmock_main)

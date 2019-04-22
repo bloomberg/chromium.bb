@@ -10,19 +10,46 @@ import("//build/toolchain/toolchain.gni")
 config("config") {
   cflags = [ "-fstrict-aliasing" ]
   if (is_win) {
-    # libc++ wants to redefine the macros WIN32_LEAN_AND_MEAN and _CRT_RAND_S in its
-    # implementation.
+    # libc++ wants to redefine the macros WIN32_LEAN_AND_MEAN and _CRT_RAND_S in
+    # its implementation.
     cflags += [ "-Wno-macro-redefined" ]
   } else {
     cflags += [ "-fPIC" ]
   }
 }
 
-component("libc++") {
-  if (is_component_build) {
+# Explicitly set version macros to Windows 7 to prevent libc++ from adding a
+# hard dependency on GetSystemTimePreciseAsFileTime, which was introduced in
+# Windows 8.
+config("winver") {
+  defines = [
+    "NTDDI_VERSION=NTDDI_WIN7",
+    "_WIN32_WINNT=_WIN32_WINNT_WIN7",
+    "WINVER=_WIN32_WINNT_WIN7",
+  ]
+}
+
+if (libcxx_is_shared) {
+  _libcxx_target_type = "shared_library"
+} else {
+  _libcxx_target_type = "source_set"
+}
+target(_libcxx_target_type, "libc++") {
+  # Most things that need to depend on libc++ should do so via the implicit
+  # 'common_deps' dependency below.  Some targets that package libc++.so may
+  # need to explicitly depend on libc++.
+  visibility = [
+    "//build/config:common_deps",
+    "//third_party/catapult/devil:devil",
+  ]
+  if (is_linux) {
+    # This target packages libc++.so, so must have an explicit dependency on
+    # libc++.
+    visibility +=
+        [ "//remoting/host/linux:remoting_me2me_host_copy_user_session" ]
+  }
+  if (libcxx_is_shared) {
     no_default_deps = true
-  } else {
-    static_component_type = "source_set"
   }
   sources = [
     "trunk/src/algorithm.cpp",
@@ -62,6 +89,8 @@ component("libc++") {
       "trunk/src/support/win32/support.cpp",
       "trunk/src/support/win32/thread_win32.cpp",
     ]
+    configs -= [ "//build/config/win:winver" ]
+    configs += [ ":winver" ]
   }
   configs -= [
     "//build/config/compiler:chromium_code",
@@ -69,7 +98,7 @@ component("libc++") {
     "//build/config/compiler:no_rtti",
     "//build/config/coverage:default_coverage",
   ]
-  if (is_android && is_component_build) {
+  if (is_android && libcxx_is_shared) {
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   }
   configs += [
@@ -79,35 +108,50 @@ component("libc++") {
     "//build/config/compiler:rtti",
     "//build/config/sanitizers:sanitizer_options_link_helper",
   ]
+  if (libcxx_is_shared && !is_win) {
+    configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+    configs += [ "//build/config/gcc:symbol_visibility_default" ]
+  }
 
   defines = [ "_LIBCPP_BUILDING_LIBRARY" ]
-  if (!is_clang && is_component_build) {
+  if (!is_clang && libcxx_is_shared) {
     # This is a temporary workaround to get libc++ builds working with
     # gcc.  It can be removed with either
     # https://reviews.llvm.org/D35326 or
     # https://reviews.llvm.org/D35388 lands.
     defines += [ "_LIBCPP_EXTERN_TEMPLATE_TYPE_VIS=__attribute__((__visibility__(\"default\")))" ]
   }
-  if (!is_component_build) {
-    defines += [
-      # This resets the visibility to default only for the various
-      # flavors of operator new and operator delete.  These symbols
-      # are weak and get overriden by Chromium-provided ones, but if
-      # these symbols had hidden visibility, this would make the
-      # Chromium symbols hidden too because elf visibility rules
-      # require that linkers use the least visible form when merging,
-      # and if this is hidden, then when we merge it with tcmalloc's
-      # operator new, hidden visibility would win. However, tcmalloc
-      # needs a visible operator new to also override operator new
-      # references from system libraries.
-      # TODO(lld): Ask lld for a --force-public-visibility flag or
-      # similar to that overrides the default elf merging rules, and
-      # make tcmalloc's gn config pass that to all its dependencies,
-      # then remove this override here.
-      "_LIBCPP_OVERRIDABLE_FUNC_VIS=__attribute__((__visibility__(\"default\")))",
-    ]
+  if (!libcxx_is_shared) {
+    # TODO(https://crbug.com/946629): Remove use_xcode_clang condition once
+    # XCode clang is updated to support -fvisibility-global-new-delete-hidden.
+    if ((is_mac || (is_ios && !use_xcode_clang)) && is_clang) {
+      # We want operator new/delete to be private on Mac, but these functions
+      # are implicitly created by the compiler for each translation unit, as
+      # specified in the C++ spec 3.7.4p2, which makes them always have default
+      # visibility.  This option is needed to force hidden visibility since
+      # -fvisibility=hidden doesn't have the desired effect.
+      cflags = [ "-fvisibility-global-new-delete-hidden" ]
+    } else {
+      defines += [
+        # This resets the visibility to default only for the various
+        # flavors of operator new and operator delete.  These symbols
+        # are weak and get overriden by Chromium-provided ones, but if
+        # these symbols had hidden visibility, this would make the
+        # Chromium symbols hidden too because elf visibility rules
+        # require that linkers use the least visible form when merging,
+        # and if this is hidden, then when we merge it with tcmalloc's
+        # operator new, hidden visibility would win. However, tcmalloc
+        # needs a visible operator new to also override operator new
+        # references from system libraries.
+        # TODO(lld): Ask lld for a --force-public-visibility flag or
+        # similar to that overrides the default elf merging rules, and
+        # make tcmalloc's gn config pass that to all its dependencies,
+        # then remove this override here.
+        "_LIBCPP_OVERRIDABLE_FUNC_VIS=__attribute__((__visibility__(\"default\")))",
+      ]
+    }
   }
-  if (is_asan || is_tsan || is_msan) {
+  if (!is_mac && !is_ios && (is_asan || is_tsan || is_msan)) {
     # In {a,t,m}san configurations, operator new and operator delete will be
     # provided by the sanitizer runtime library.  Since libc++ defines these
     # symbols with weak linkage, and the *san runtime uses strong linkage, it

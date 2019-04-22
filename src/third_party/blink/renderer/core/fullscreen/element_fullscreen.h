@@ -23,16 +23,16 @@ class ElementFullscreen {
                                          Element&,
                                          const FullscreenOptions*);
 
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenchange, kFullscreenchange);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror, kFullscreenerror);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenchange, kFullscreenchange)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror, kFullscreenerror)
 
   static void webkitRequestFullscreen(Element&);
   static void webkitRequestFullscreen(Element&, const FullscreenOptions*);
 
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange,
-                                         kWebkitfullscreenchange);
+                                         kWebkitfullscreenchange)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror,
-                                         kWebkitfullscreenerror);
+                                         kWebkitfullscreenerror)
 };
 
 }  // namespace blink

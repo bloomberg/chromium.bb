@@ -151,8 +151,31 @@ imageset("settings_voice_search") {
 imageset("sync_and_google_services") {
   sources = [
     "sync_and_google_services.imageset/Contents.json",
-    "sync_and_google_services.imageset/sync_and_google_services.png",
     "sync_and_google_services.imageset/sync_and_google_services@2x.png",
     "sync_and_google_services.imageset/sync_and_google_services@3x.png",
+  ]
+}
+
+imageset("sync_and_google_services_sync_error") {
+  sources = [
+    "sync_and_google_services_sync_error.imageset/Contents.json",
+    "sync_and_google_services_sync_error.imageset/sync_and_google_services_sync_error@2x.png",
+    "sync_and_google_services_sync_error.imageset/sync_and_google_services_sync_error@3x.png",
+  ]
+}
+
+imageset("sync_and_google_services_sync_off") {
+  sources = [
+    "sync_and_google_services_sync_off.imageset/Contents.json",
+    "sync_and_google_services_sync_off.imageset/sync_and_google_services_sync_off@2x.png",
+    "sync_and_google_services_sync_off.imageset/sync_and_google_services_sync_off@3x.png",
+  ]
+}
+
+imageset("sync_and_google_services_sync_on") {
+  sources = [
+    "sync_and_google_services_sync_on.imageset/Contents.json",
+    "sync_and_google_services_sync_on.imageset/sync_and_google_services_sync_on@2x.png",
+    "sync_and_google_services_sync_on.imageset/sync_and_google_services_sync_on@3x.png",
   ]
 }

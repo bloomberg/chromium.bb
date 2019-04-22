@@ -36,6 +36,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -224,8 +225,10 @@ DownloadRequestCore::CreateDownloadCreateInfo(
       new download::DownloadCreateInfo(base::Time::Now(),
                                        std::move(save_info_)));
 
-  if (result == download::DOWNLOAD_INTERRUPT_REASON_NONE)
-    create_info->remote_address = request()->GetSocketAddress().host();
+  if (result == download::DOWNLOAD_INTERRUPT_REASON_NONE) {
+    create_info->remote_address =
+        request()->GetResponseRemoteEndpoint().ToStringWithoutPort();
+  }
   create_info->method = request()->method();
   create_info->connection_info = request()->response_info().connection_info;
   create_info->url_chain = request()->url_chain();

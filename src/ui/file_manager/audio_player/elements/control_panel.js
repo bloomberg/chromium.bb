@@ -138,12 +138,12 @@ var AriaLabels;
      */
     ready: function() {
       var timeSlider = /** @type {!CrSliderElement} */ (this.$.timeSlider);
-      timeSlider.addEventListener('value-changed', () => {
+      timeSlider.addEventListener('cr-slider-value-changed', () => {
         this.fire('update-time', timeSlider.value);
       });
 
       var volumeSlider = /** @type {!CrSliderElement} */ (this.$.volumeSlider);
-      volumeSlider.addEventListener('value-changed', () => {
+      volumeSlider.addEventListener('cr-slider-value-changed', () => {
         this.volume = volumeSlider.value;
       });
     },
@@ -250,8 +250,9 @@ var AriaLabels;
      * @private
      */
     volumeChanged_: function(volume) {
-      if (!this.$.volumeSlider.dragging)
+      if (!this.$.volumeSlider.dragging) {
         this.$.volumeSlider.value = volume;
+      }
 
       if (this.ariaLabels) {
         this.$.volumeButton.setAttribute('aria-label',
@@ -260,7 +261,7 @@ var AriaLabels;
     },
 
     /**
-     * @param {{detail: {value: boolean}}} e
+     * @param {!CustomEvent<{value: boolean}>} e
      * @private
      */
     onSeekingChanged_: function(e) {

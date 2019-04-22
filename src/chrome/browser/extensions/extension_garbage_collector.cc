@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/one_shot_event.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -36,7 +38,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/app_isolation_info.h"
-#include "extensions/common/one_shot_event.h"
 
 namespace extensions {
 
@@ -117,13 +118,13 @@ ExtensionGarbageCollector::ExtensionGarbageCollector(
 
   extension_system->ready().PostDelayed(
       FROM_HERE,
-      base::Bind(&ExtensionGarbageCollector::GarbageCollectExtensions,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ExtensionGarbageCollector::GarbageCollectExtensions,
+                     weak_factory_.GetWeakPtr()),
       kGarbageCollectStartupDelay);
 
   extension_system->ready().Post(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded,
           weak_factory_.GetWeakPtr()));
 
@@ -221,8 +222,8 @@ void ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded() {
     return;
   extension_prefs->SetNeedsStorageGarbageCollection(false);
 
-  std::unique_ptr<base::hash_set<base::FilePath>> active_paths(
-      new base::hash_set<base::FilePath>());
+  std::unique_ptr<std::unordered_set<base::FilePath>> active_paths(
+      new std::unordered_set<base::FilePath>());
   std::unique_ptr<ExtensionSet> extensions =
       ExtensionRegistry::Get(context_)->GenerateInstalledExtensionsSet();
   for (ExtensionSet::const_iterator iter = extensions->begin();

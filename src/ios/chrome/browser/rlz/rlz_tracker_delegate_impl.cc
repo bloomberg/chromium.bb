@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/rlz/rlz_tracker_delegate_impl.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
@@ -112,6 +113,11 @@ void RLZTrackerDelegateImpl::SetOmniboxSearchCallback(
 void RLZTrackerDelegateImpl::SetHomepageSearchCallback(
     const base::Closure& callback) {
   NOTREACHED();
+}
+
+bool RLZTrackerDelegateImpl::ShouldUpdateExistingAccessPointRlz() {
+  NOTREACHED();
+  return false;
 }
 
 void RLZTrackerDelegateImpl::OnURLOpenedFromOmnibox(OmniboxLog* log) {

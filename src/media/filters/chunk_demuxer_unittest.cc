@@ -14,8 +14,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -734,7 +734,7 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<BufferingApi> {
                              std::vector<uint8_t>(
                                  kEncryptedMediaInitData,
                                  kEncryptedMediaInitData +
-                                     arraysize(kEncryptedMediaInitData))))
+                                     base::size(kEncryptedMediaInitData))))
           .Times(Exactly(need_key_count));
     }
 
@@ -1705,6 +1705,7 @@ TEST_P(ChunkDemuxerTest, EOSDuringInit) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(&host_,
                        NewExpectedStatusCB(DEMUXER_ERROR_COULD_NOT_OPEN));
+  EXPECT_MEDIA_LOG(EosBeforeHaveMetadata());
   MarkEndOfStream(PIPELINE_OK);
 }
 
@@ -1716,7 +1717,10 @@ TEST_P(ChunkDemuxerTest, EndOfStreamWithNoAppend) {
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
 
   CheckExpectedRanges("{ }");
+
+  EXPECT_MEDIA_LOG(EosBeforeHaveMetadata());
   MarkEndOfStream(PIPELINE_OK);
+
   ShutdownDemuxer();
   CheckExpectedRanges("{ }");
   demuxer_->RemoveId(kSourceId);
@@ -2875,7 +2879,7 @@ TEST_P(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
       &host_, base::BindRepeating(&ChunkDemuxerTest::DemuxerInitialized,
                                   base::Unretained(this)));
 
-  for (size_t i = 0; i < arraysize(codec_ids); ++i) {
+  for (size_t i = 0; i < base::size(codec_ids); ++i) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     expected = ChunkDemuxer::kOk;
 #else
@@ -3391,10 +3395,10 @@ TEST_P(ChunkDemuxerTest, WebMIsParsingMediaSegmentDetection) {
       true, true, true, true, false,
   };
 
-  static_assert(arraysize(kBuffer) == arraysize(kExpectedReturnValues),
-      "test arrays out of sync");
-  static_assert(arraysize(kBuffer) == sizeof(kBuffer),
-      "there should be one byte per index");
+  static_assert(base::size(kBuffer) == base::size(kExpectedReturnValues),
+                "test arrays out of sync");
+  static_assert(base::size(kBuffer) == sizeof(kBuffer),
+                "there should be one byte per index");
 
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(23)).Times(2);
@@ -4723,11 +4727,11 @@ TEST_P(ChunkDemuxerTest, ZeroLengthFramesDropped) {
 
 // Though most of these ChunkDemuxerTests use WebM (where PTS==DTS), we still
 // need to ensure that both versions of the buffering API work.
-INSTANTIATE_TEST_CASE_P(LegacyByDts,
-                        ChunkDemuxerTest,
-                        Values(BufferingApi::kLegacyByDts));
-INSTANTIATE_TEST_CASE_P(NewByPts,
-                        ChunkDemuxerTest,
-                        Values(BufferingApi::kNewByPts));
+INSTANTIATE_TEST_SUITE_P(LegacyByDts,
+                         ChunkDemuxerTest,
+                         Values(BufferingApi::kLegacyByDts));
+INSTANTIATE_TEST_SUITE_P(NewByPts,
+                         ChunkDemuxerTest,
+                         Values(BufferingApi::kNewByPts));
 
 }  // namespace media

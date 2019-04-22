@@ -20,7 +20,7 @@ namespace wasm {
 
 namespace {
 bool IsValidFunctionName(const Vector<const char> &name) {
-  if (name.is_empty()) return false;
+  if (name.empty()) return false;
   const char *special_chars = "_.+-*/\\^~=<>!?@#$%&|:'`";
   for (char c : name) {
     bool valid_char = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') ||
@@ -81,7 +81,9 @@ void PrintWasmText(const WasmModule* module, const ModuleWireBytes& wire_bytes,
 
   for (; i.has_next(); i.next()) {
     WasmOpcode opcode = i.current();
-    if (opcode == kExprElse || opcode == kExprEnd) --control_depth;
+    if (opcode == kExprElse || opcode == kExprCatch || opcode == kExprEnd) {
+      --control_depth;
+    }
 
     DCHECK_LE(0, control_depth);
     const int kMaxIndentation = 64;
@@ -113,12 +115,19 @@ void PrintWasmText(const WasmModule* module, const ModuleWireBytes& wire_bytes,
       }
       case kExprBr:
       case kExprBrIf: {
-        BreakDepthImmediate<Decoder::kNoValidate> imm(&i, i.pc());
+        BranchDepthImmediate<Decoder::kNoValidate> imm(&i, i.pc());
         os << WasmOpcodes::OpcodeName(opcode) << ' ' << imm.depth;
         break;
       }
+      case kExprBrOnExn: {
+        BranchOnExceptionImmediate<Decoder::kNoValidate> imm(&i, i.pc());
+        os << WasmOpcodes::OpcodeName(opcode) << ' ' << imm.depth.depth << ' '
+           << imm.index.index;
+        break;
+      }
       case kExprElse:
-        os << "else";
+      case kExprCatch:
+        os << WasmOpcodes::OpcodeName(opcode);
         control_depth++;
         break;
       case kExprEnd:
@@ -132,7 +141,8 @@ void PrintWasmText(const WasmModule* module, const ModuleWireBytes& wire_bytes,
         break;
       }
       case kExprCallIndirect: {
-        CallIndirectImmediate<Decoder::kNoValidate> imm(&i, i.pc());
+        CallIndirectImmediate<Decoder::kNoValidate> imm(kAllWasmFeatures, &i,
+                                                        i.pc());
         DCHECK_EQ(0, imm.table_index);
         os << "call_indirect " << imm.sig_index;
         break;
@@ -149,8 +159,7 @@ void PrintWasmText(const WasmModule* module, const ModuleWireBytes& wire_bytes,
         os << WasmOpcodes::OpcodeName(opcode) << ' ' << imm.index;
         break;
       }
-      case kExprThrow:
-      case kExprCatch: {
+      case kExprThrow: {
         ExceptionIndexImmediate<Decoder::kNoValidate> imm(&i, i.pc());
         os << WasmOpcodes::OpcodeName(opcode) << ' ' << imm.index;
         break;

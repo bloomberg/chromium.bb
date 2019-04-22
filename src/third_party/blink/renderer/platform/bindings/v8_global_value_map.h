@@ -111,6 +111,8 @@ class V8GlobalValueMap : public v8::GlobalValueMap<
   typedef V8GlobalValueMapTraits<KeyType, ValueType, type> Traits;
   explicit V8GlobalValueMap(v8::Isolate* isolate)
       : v8::GlobalValueMap<KeyType, ValueType, Traits>(isolate) {}
+  V8GlobalValueMap(v8::Isolate* isolate, const char* label)
+      : v8::GlobalValueMap<KeyType, ValueType, Traits>(isolate, label) {}
 };
 
 }  // namespace blink

@@ -17,8 +17,7 @@
 #ifndef SRC_TRACE_PROCESSOR_SLICE_TABLE_H_
 #define SRC_TRACE_PROCESSOR_SLICE_TABLE_H_
 
-#include "src/trace_processor/storage_schema.h"
-#include "src/trace_processor/table.h"
+#include "src/trace_processor/storage_table.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -32,20 +31,18 @@ class TraceStorage;
 // The current implementation of this table is extremely simple and not
 // particularly efficient, as it delegates all the sorting and filtering to
 // the SQLite query engine.
-class SliceTable : public Table {
+class SliceTable : public StorageTable {
  public:
   SliceTable(sqlite3*, const TraceStorage* storage);
 
   static void RegisterTable(sqlite3* db, const TraceStorage* storage);
 
-  // Table implementation.
-  Table::Schema CreateSchema(int argc, const char* const* argv) override;
-  std::unique_ptr<Table::Cursor> CreateCursor(const QueryConstraints&,
-                                              sqlite3_value**) override;
+  // StorageTable implementation.
+  StorageSchema CreateStorageSchema() override;
+  uint32_t RowCount() override;
   int BestIndex(const QueryConstraints&, BestIndexInfo*) override;
 
  private:
-  StorageSchema schema_;
   const TraceStorage* const storage_;
 };
 

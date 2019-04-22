@@ -38,6 +38,8 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/notifications/notification_event.idl",
     "//third_party/blink/renderer/modules/payments/abort_payment_event.idl",
     "//third_party/blink/renderer/modules/payments/can_make_payment_event.idl",
+    "//third_party/blink/renderer/modules/payments/merchant_validation_event.idl",
+    "//third_party/blink/renderer/modules/payments/payment_method_change_event.idl",
     "//third_party/blink/renderer/modules/payments/payment_request_event.idl",
     "//third_party/blink/renderer/modules/payments/payment_request_update_event.idl",
     "//third_party/blink/renderer/modules/peerconnection/rtc_data_channel_event.idl",
@@ -66,6 +68,7 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/webmidi/midi_message_event.idl",
     "//third_party/blink/renderer/modules/websockets/close_event.idl",
     "//third_party/blink/renderer/modules/xr/xr_input_source_event.idl",
+    "//third_party/blink/renderer/modules/xr/xr_reference_space_event.idl",
     "//third_party/blink/renderer/modules/xr/xr_session_event.idl",
   ]
 

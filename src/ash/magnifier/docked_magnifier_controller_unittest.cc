@@ -12,7 +12,6 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/magnifier/magnifier_test_utils.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/docked_magnifier_controller.mojom.h"
@@ -22,12 +21,11 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/aura/window.h"
@@ -72,9 +70,6 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    // Explicitly enable the Docked Magnifier feature for the tests.
-    scoped_feature_list_.InitAndEnableFeature(features::kDockedMagnifier);
-
     // Explicitly enable --ash-constrain-pointer-to-root to be able to test
     // mouse cursor confinement outside the magnifier viewport.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -140,8 +135,6 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(DockedMagnifierTest);
 };
 
@@ -334,16 +327,16 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   wm::GetWindowState(window.get())->Maximize();
 
   // Enable overview mode followed by the magnifier.
-  auto* window_selector_controller = Shell::Get()->window_selector_controller();
-  window_selector_controller->ToggleOverview();
-  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
 
   // Expect that overview mode is exited, the display's work area is updated,
   // and the window's bounds are updated to be equal to the new display's work
   // area bounds.
-  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->IsSelecting());
   const display::Display& display = display_manager()->GetDisplayAt(0);
   gfx::Rect workarea = display.bounds();
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
@@ -372,20 +365,20 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
 
   // Simulate going into split view, by enabling overview mode, and snapping
   // a window to the left.
-  auto* window_selector_controller = Shell::Get()->window_selector_controller();
-  window_selector_controller->ToggleOverview();
-  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   EXPECT_EQ(split_view_controller->state(), SplitViewController::LEFT_SNAPPED);
   EXPECT_EQ(split_view_controller->left_window(), window.get());
-  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  EXPECT_TRUE(overview_controller->IsSelecting());
 
   // Enable the docked magnifier and expect that both overview and split view
   // modes are exited, and the window remains maximized, and its bounds are
   // updated to match the new display's work area.
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
-  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->IsSelecting());
   EXPECT_EQ(split_view_controller->state(), SplitViewController::NO_SNAP);
   EXPECT_EQ(split_view_controller->IsSplitViewModeActive(), false);
   const display::Display& display = display_manager()->GetDisplayAt(0);
@@ -411,9 +404,9 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   std::unique_ptr<aura::Window> window2(
       CreateTestWindowInShell(SK_ColorWHITE, 200, gfx::Rect(0, 0, 200, 200)));
 
-  auto* window_selector_controller = Shell::Get()->window_selector_controller();
-  window_selector_controller->ToggleOverview();
-  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
 
   auto* split_view_controller = Shell::Get()->split_view_controller();
   EXPECT_EQ(split_view_controller->IsSplitViewModeActive(), false);
@@ -423,7 +416,7 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   EXPECT_EQ(split_view_controller->state(), SplitViewController::BOTH_SNAPPED);
 
   // Snapping both windows should exit overview mode.
-  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(overview_controller->IsSelecting());
 
   // Enable the docked magnifier, and expect that split view does not exit, and
   // the two windows heights are updated to be equal to the height of the
@@ -695,13 +688,13 @@ TEST_F(DockedMagnifierTest, HighContrastMode) {
   // Enable High Contrast mode, and expect the viewport layer to be inverted.
   Shell::Get()->accessibility_controller()->SetHighContrastEnabled(true);
   EXPECT_TRUE(
-      Shell::Get()->accessibility_controller()->IsHighContrastEnabled());
+      Shell::Get()->accessibility_controller()->high_contrast_enabled());
   EXPECT_TRUE(viewport_layer->layer_inverted());
 
   // Disable High Contrast, the layer should be updated accordingly.
   Shell::Get()->accessibility_controller()->SetHighContrastEnabled(false);
   EXPECT_FALSE(
-      Shell::Get()->accessibility_controller()->IsHighContrastEnabled());
+      Shell::Get()->accessibility_controller()->high_contrast_enabled());
   EXPECT_FALSE(viewport_layer->layer_inverted());
 
   // Now, disable the Docked Magnifier, enable High Contrast, and then re-enable
@@ -710,7 +703,7 @@ TEST_F(DockedMagnifierTest, HighContrastMode) {
   EXPECT_FALSE(magnifier->GetEnabled());
   Shell::Get()->accessibility_controller()->SetHighContrastEnabled(true);
   EXPECT_TRUE(
-      Shell::Get()->accessibility_controller()->IsHighContrastEnabled());
+      Shell::Get()->accessibility_controller()->high_contrast_enabled());
   magnifier->SetEnabled(true);
   EXPECT_TRUE(magnifier->GetEnabled());
   const ui::Layer* new_viewport_layer =

@@ -47,8 +47,8 @@ H264Encoder::H264Encoder(
 H264Encoder::~H264Encoder() {
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&H264Encoder::ShutdownEncoder, base::Passed(&encoding_thread_),
-                 base::Passed(&openh264_encoder_)));
+      base::BindOnce(&H264Encoder::ShutdownEncoder, std::move(encoding_thread_),
+                     std::move(openh264_encoder_)));
 }
 
 void H264Encoder::EncodeOnEncodingTaskRunner(
@@ -106,9 +106,10 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
 
   const bool is_key_frame = info.eFrameType == videoFrameTypeIDR;
   origin_task_runner_->PostTask(
-      FROM_HERE, base::Bind(OnFrameEncodeCompleted, on_encoded_video_callback_,
-                            video_params, base::Passed(&data), nullptr,
-                            capture_timestamp, is_key_frame));
+      FROM_HERE,
+      base::BindOnce(OnFrameEncodeCompleted, on_encoded_video_callback_,
+                     video_params, std::move(data), nullptr, capture_timestamp,
+                     is_key_frame));
 }
 
 void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {

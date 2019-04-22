@@ -18,9 +18,6 @@ component("sandbox") {
     "sandbox_type.h",
     "switches.cc",
     "switches.h",
-
-    # Duplicated here to keep private.
-    "//services/service_manager/embedder/service_manager_embedder_export.h",
   ]
   defines = [ "SERVICE_MANAGER_SANDBOX_IMPL" ]
   public_deps = [
@@ -76,6 +73,12 @@ component("sandbox") {
       "//sandbox/linux:suid_sandbox_client",
     ]
   }
+  if (is_chromeos) {
+    sources += [
+      "linux/bpf_ime_policy_linux.cc",
+      "linux/bpf_ime_policy_linux.h",
+    ]
+  }
   if (is_mac) {
     sources += [
       "mac/sandbox_mac.h",
@@ -97,6 +100,18 @@ component("sandbox") {
       "win/sandbox_win.h",
     ]
     deps += [ "//sandbox/win:sandbox" ]
+  }
+  if (is_fuchsia) {
+    sources += [
+      "fuchsia/sandbox_policy_fuchsia.cc",
+      "fuchsia/sandbox_policy_fuchsia.h",
+    ]
+
+    deps += [
+      "//third_party/fuchsia-sdk/sdk:fonts",
+      "//third_party/fuchsia-sdk/sdk:mediacodec",
+      "//third_party/fuchsia-sdk/sdk:ui_scenic",
+    ]
   }
 }
 

@@ -5,6 +5,7 @@
 #include "components/tracing/common/stack_unwinder_android.h"
 
 #include "base/android/jni_generator/jni_generator_helper.h"
+#include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"
@@ -66,7 +67,7 @@ TEST_F(StackUnwinderTest, UnwindOtherThread) {
                      base::WaitableEvent* unwind_finished_event,
                      uintptr_t test_pc) {
     const void* frames[kMaxStackFrames];
-    auto stack_buffer = base::NativeStackSampler::CreateStackBuffer();
+    auto stack_buffer = base::StackSampler::CreateStackBuffer();
     EXPECT_GT(stack_buffer->size(), 0u);
     size_t result =
         unwinder->TraceStack(tid, stack_buffer.get(), frames, kMaxStackFrames);
@@ -110,7 +111,7 @@ TEST_F(StackUnwinderTest, UnwindOtherThreadOnJNICall) {
   auto callback = [](StackUnwinderAndroid* unwinder, base::PlatformThreadId tid,
                      uintptr_t test_pc) {
     const void* frames[kMaxStackFrames];
-    auto stack_buffer = base::NativeStackSampler::CreateStackBuffer();
+    auto stack_buffer = base::StackSampler::CreateStackBuffer();
     EXPECT_GT(stack_buffer->size(), 0u);
     size_t result =
         unwinder->TraceStack(tid, stack_buffer.get(), frames, kMaxStackFrames);

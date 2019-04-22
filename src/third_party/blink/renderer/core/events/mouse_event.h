@@ -78,7 +78,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   MouseEvent();
   ~MouseEvent() override;
 
-  static unsigned short WebInputEventModifiersToButtons(unsigned modifiers);
+  static uint16_t WebInputEventModifiersToButtons(unsigned modifiers);
   static void SetCoordinatesFromWebPointerProperties(
       const WebPointerProperties&,
       const LocalDOMWindow*,
@@ -98,14 +98,14 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
                       bool alt_key,
                       bool shift_key,
                       bool meta_key,
-                      short button,
+                      int16_t button,
                       EventTarget* related_target,
-                      unsigned short buttons = 0);
+                      uint16_t buttons = 0);
 
   // WinIE uses 1,4,2 for left/middle/right but not for click (just for
   // mousedown/up, maybe others), but we will match the standard DOM.
-  virtual short button() const;
-  unsigned short buttons() const { return buttons_; }
+  virtual int16_t button() const;
+  uint16_t buttons() const { return buttons_; }
   bool ButtonDown() const { return button_ != -1; }
   EventTarget* relatedTarget() const { return related_target_.Get(); }
   void SetRelatedTarget(EventTarget* related_target) {
@@ -202,7 +202,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   void Trace(blink::Visitor*) override;
 
  protected:
-  short RawButton() const { return button_; }
+  int16_t RawButton() const { return button_; }
 
   void ReceivedTarget() override;
 
@@ -228,10 +228,10 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
                               double client_x,
                               double client_y,
                               WebInputEvent::Modifiers,
-                              short button,
+                              int16_t button,
                               EventTarget* related_target,
                               InputDeviceCapabilities* source_capabilities,
-                              unsigned short buttons = 0);
+                              uint16_t buttons = 0);
 
   void InitCoordinates(const double client_x, const double client_y);
 
@@ -242,8 +242,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   DoublePoint layer_location_;     // zoomed CSS pixels
   DoublePoint absolute_location_;  // (un-zoomed) FrameView content space
   PositionType position_type_;
-  short button_;
-  unsigned short buttons_;
+  int16_t button_;
+  uint16_t buttons_;
   Member<EventTarget> related_target_;
   SyntheticEventType synthetic_event_type_;
   String region_;

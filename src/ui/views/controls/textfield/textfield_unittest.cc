@@ -15,12 +15,11 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/i18n/rtl.h"
-#include "base/macros.h"
 #include "base/pickle.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
@@ -29,13 +28,12 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/constants.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/event.h"
@@ -65,10 +63,6 @@
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
-#endif
-
-#if defined(USE_X11)
-#include "ui/events/event_utils.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -138,21 +132,16 @@ class MockInputMethod : public ui::InputMethodBase {
 
   // Record call state of corresponding methods. They will be set to false
   // automatically before dispatching a key event.
-  bool untranslated_ime_message_called_;
-  bool text_input_type_changed_;
-  bool cancel_composition_called_;
+  bool untranslated_ime_message_called_ = false;
+  bool text_input_type_changed_ = false;
+  bool cancel_composition_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputMethod);
 };
 
-MockInputMethod::MockInputMethod()
-    : untranslated_ime_message_called_(false),
-      text_input_type_changed_(false),
-      cancel_composition_called_(false) {
-}
+MockInputMethod::MockInputMethod() : ui::InputMethodBase(nullptr) {}
 
-MockInputMethod::~MockInputMethod() {
-}
+MockInputMethod::~MockInputMethod() = default;
 
 ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {
 // On Mac, emulate InputMethodMac behavior for character events. Composition
@@ -402,14 +391,7 @@ namespace views {
 
 class TextfieldTest : public ViewsTestBase, public TextfieldController {
  public:
-  TextfieldTest()
-      : widget_(NULL),
-        textfield_(NULL),
-        model_(NULL),
-        input_method_(NULL),
-        on_before_user_action_(0),
-        on_after_user_action_(0),
-        copied_to_clipboard_(ui::CLIPBOARD_TYPE_LAST) {
+  TextfieldTest() {
     input_method_ = new MockInputMethod();
     ui::SetUpInputMethodForTesting(input_method_);
   }
@@ -475,7 +457,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     container->AddChildView(textfield_);
     textfield_->SetBoundsRect(params.bounds);
     textfield_->set_id(1);
-    test_api_.reset(new TextfieldTestApi(textfield_));
+    test_api_ = std::make_unique<TextfieldTestApi>(textfield_);
 
     for (int i = 1; i < count; i++) {
       Textfield* textfield = new Textfield();
@@ -720,6 +702,14 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
         textfield_->GetSelectedRange().length() == text.length();
 
     int menu_index = 0;
+
+#if defined(OS_MACOSX)
+    if (textfield_has_selection) {
+      EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Look Up "Selection" */));
+      EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
+    }
+#endif
+
     if (ui::IsEmojiPanelSupported()) {
       EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* EMOJI */));
       EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
@@ -784,27 +774,27 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   void MoveMouseTo(const gfx::Point& where) { mouse_position_ = where; }
 
   // We need widget to populate wrapper class.
-  Widget* widget_;
+  Widget* widget_ = nullptr;
 
-  TestTextfield* textfield_;
+  TestTextfield* textfield_ = nullptr;
   std::unique_ptr<TextfieldTestApi> test_api_;
-  TextfieldModel* model_;
+  TextfieldModel* model_ = nullptr;
 
   // The string from Controller::ContentsChanged callback.
   base::string16 last_contents_;
 
   // For testing input method related behaviors.
-  MockInputMethod* input_method_;
+  MockInputMethod* input_method_ = nullptr;
 
   // Indicates how many times OnBeforeUserAction() is called.
-  int on_before_user_action_;
+  int on_before_user_action_ = 0;
 
   // Indicates how many times OnAfterUserAction() is called.
-  int on_after_user_action_;
+  int on_after_user_action_ = 0;
 
   // Position of the mouse for synthetic mouse events.
   gfx::Point mouse_position_;
-  ui::ClipboardType copied_to_clipboard_;
+  ui::ClipboardType copied_to_clipboard_ = ui::CLIPBOARD_TYPE_LAST;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
  private:
@@ -970,7 +960,7 @@ TEST_F(TextfieldTest, WordSelection) {
   textfield_->SetText(ASCIIToUTF16("12 34567 89"));
 
   // Place the cursor after "5".
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
 
   // Select word towards right.
   SendWordEvent(ui::VKEY_RIGHT, true);
@@ -1013,7 +1003,7 @@ TEST_F(TextfieldTest, LineSelection) {
   textfield_->SetText(ASCIIToUTF16("12 34567 89"));
 
   // Place the cursor after "5".
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
 
   // Select line towards right.
   SendEndEvent(true);
@@ -1042,7 +1032,7 @@ TEST_F(TextfieldTest, LineSelection) {
 TEST_F(TextfieldTest, MoveUpDownAndModifySelection) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("12 34567 89"));
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
 
   // Up/Down keys won't be handled except on Mac where they map to move
   // commands.
@@ -1066,7 +1056,7 @@ TEST_F(TextfieldTest, MoveUpDownAndModifySelection) {
 #endif
   textfield_->clear();
 
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
 
   // Shift+[Up/Down] should select the text to the beginning and end of the
   // line, respectively.
@@ -1090,7 +1080,7 @@ TEST_F(TextfieldTest, MovePageUpDownAndModifySelection) {
 // enabled on Mac.
 #if defined(OS_MACOSX)
   textfield_->SetText(ASCIIToUTF16("12 34567 89"));
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
 
   EXPECT_TRUE(
       textfield_->IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_PAGE_UP));
@@ -1107,7 +1097,7 @@ TEST_F(TextfieldTest, MovePageUpDownAndModifySelection) {
   test_api_->ExecuteTextEditCommand(ui::TextEditCommand::MOVE_PAGE_DOWN);
   EXPECT_EQ(gfx::Range(11), textfield_->GetSelectedRange());
 
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
   test_api_->ExecuteTextEditCommand(
       ui::TextEditCommand::MOVE_PAGE_UP_AND_MODIFY_SELECTION);
   EXPECT_EQ(gfx::Range(6, 0), textfield_->GetSelectedRange());
@@ -1130,7 +1120,7 @@ TEST_F(TextfieldTest, MovePageUpDownAndModifySelection) {
 TEST_F(TextfieldTest, MoveParagraphForwardBackwardAndModifySelection) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("12 34567 89"));
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
 
   test_api_->ExecuteTextEditCommand(
       ui::TextEditCommand::MOVE_PARAGRAPH_FORWARD_AND_MODIFY_SELECTION);
@@ -1237,7 +1227,7 @@ TEST_F(TextfieldTest, DeletionWithSelection) {
   InitTextfield();
   // [Ctrl] ([Alt] on Mac) + [Delete]/[Backspace] should delete the active
   // selection, regardless of [Shift].
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
     textfield_->SetText(ASCIIToUTF16("one two three"));
     textfield_->SelectRange(gfx::Range(2, 6));
@@ -1392,8 +1382,8 @@ TEST_F(TextfieldTest, OnKeyPressBinding) {
   // Install a TextEditKeyBindingsDelegateAuraLinux that does nothing.
   class TestDelegate : public ui::TextEditKeyBindingsDelegateAuraLinux {
    public:
-    TestDelegate() {}
-    ~TestDelegate() override {}
+    TestDelegate() = default;
+    ~TestDelegate() override = default;
 
     bool MatchEvent(
         const ui::Event& event,
@@ -1427,7 +1417,7 @@ TEST_F(TextfieldTest, OnKeyPressBinding) {
   textfield_->clear();
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  ui::SetTextEditKeyBindingsDelegate(NULL);
+  ui::SetTextEditKeyBindingsDelegate(nullptr);
 #endif
 }
 
@@ -1555,8 +1545,6 @@ TEST_F(TextfieldTest, FocusTraversalTest) {
 
 TEST_F(TextfieldTest, ContextMenuDisplayTest) {
   InitTextfield();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
 
   EXPECT_TRUE(textfield_->context_menu_controller());
   textfield_->SetText(ASCIIToUTF16("hello world"));
@@ -1705,7 +1693,7 @@ TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
   base::string16 string(ASCIIToUTF16("string "));
   data.SetString(string);
   int formats = 0;
-  std::set<ui::Clipboard::FormatType> format_types;
+  std::set<ui::ClipboardFormatType> format_types;
 
   // Ensure that disabled textfields do not accept drops.
   textfield_->SetEnabled(false);
@@ -1739,11 +1727,11 @@ TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
   // Ensure that textfields do not accept non-OSExchangeData::STRING types.
   ui::OSExchangeData bad_data;
   bad_data.SetFilename(base::FilePath(FILE_PATH_LITERAL("x")));
-  ui::Clipboard::FormatType fmt = ui::Clipboard::GetBitmapFormatType();
+  ui::ClipboardFormatType fmt = ui::ClipboardFormatType::GetBitmapType();
   bad_data.SetPickledData(fmt, base::Pickle());
   bad_data.SetFileContents(base::FilePath(L"x"), "x");
   bad_data.SetHtml(base::string16(ASCIIToUTF16("x")), GURL("x.org"));
-  ui::OSExchangeData::DownloadFileInfo download(base::FilePath(), NULL);
+  ui::OSExchangeData::DownloadFileInfo download(base::FilePath(), nullptr);
   bad_data.SetDownloadFileInfo(download);
   EXPECT_FALSE(textfield_->CanDrop(bad_data));
 }
@@ -1759,36 +1747,36 @@ TEST_F(TextfieldTest, DragAndDrop_InitiateDrag) {
   const gfx::Range kStringRange(6, 12);
   textfield_->SelectRange(kStringRange);
   const gfx::Point kStringPoint(GetCursorPositionX(9), GetCursorYForTesting());
-  textfield_->WriteDragDataForView(NULL, kStringPoint, &data);
+  textfield_->WriteDragDataForView(nullptr, kStringPoint, &data);
   EXPECT_TRUE(data.GetString(&string));
   EXPECT_EQ(textfield_->GetSelectedText(), string);
 
   // Ensure that disabled textfields do not support drag operations.
   textfield_->SetEnabled(false);
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
-            textfield_->GetDragOperationsForView(NULL, kStringPoint));
+            textfield_->GetDragOperationsForView(nullptr, kStringPoint));
   textfield_->SetEnabled(true);
   // Ensure that textfields without selections do not support drag operations.
   textfield_->ClearSelection();
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
-            textfield_->GetDragOperationsForView(NULL, kStringPoint));
+            textfield_->GetDragOperationsForView(nullptr, kStringPoint));
   textfield_->SelectRange(kStringRange);
   // Ensure that password textfields do not support drag operations.
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
-            textfield_->GetDragOperationsForView(NULL, kStringPoint));
+            textfield_->GetDragOperationsForView(nullptr, kStringPoint));
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
   MoveMouseTo(kStringPoint);
   PressLeftMouseButton();
   // Ensure that textfields only initiate drag operations inside the selection.
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
-            textfield_->GetDragOperationsForView(NULL, gfx::Point()));
-  EXPECT_FALSE(textfield_->CanStartDragForView(NULL, gfx::Point(),
-                                               gfx::Point()));
+            textfield_->GetDragOperationsForView(nullptr, gfx::Point()));
+  EXPECT_FALSE(
+      textfield_->CanStartDragForView(nullptr, gfx::Point(), gfx::Point()));
   EXPECT_EQ(ui::DragDropTypes::DRAG_COPY,
-            textfield_->GetDragOperationsForView(NULL, kStringPoint));
-  EXPECT_TRUE(textfield_->CanStartDragForView(NULL, kStringPoint,
-                                              gfx::Point()));
+            textfield_->GetDragOperationsForView(nullptr, kStringPoint));
+  EXPECT_TRUE(
+      textfield_->CanStartDragForView(nullptr, kStringPoint, gfx::Point()));
   // Ensure that textfields support local moves.
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY,
       textfield_->GetDragOperationsForView(textfield_, kStringPoint));
@@ -1803,7 +1791,7 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheRight) {
   ui::OSExchangeData data;
   int formats = 0;
   int operations = 0;
-  std::set<ui::Clipboard::FormatType> format_types;
+  std::set<ui::ClipboardFormatType> format_types;
 
   // Start dragging "ello".
   textfield_->SelectRange(gfx::Range(1, 5));
@@ -1854,7 +1842,7 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheLeft) {
   ui::OSExchangeData data;
   int formats = 0;
   int operations = 0;
-  std::set<ui::Clipboard::FormatType> format_types;
+  std::set<ui::ClipboardFormatType> format_types;
 
   // Start dragging " worl".
   textfield_->SelectRange(gfx::Range(5, 10));
@@ -2001,8 +1989,8 @@ TEST_F(TextfieldTest, TextInputClientTest) {
   EXPECT_EQ(0U, range.start());
   EXPECT_EQ(10U, range.end());
 
-  EXPECT_TRUE(client->SetSelectionRange(gfx::Range(1, 4)));
-  EXPECT_TRUE(client->GetSelectionRange(&range));
+  EXPECT_TRUE(client->SetEditableSelectionRange(gfx::Range(1, 4)));
+  EXPECT_TRUE(client->GetEditableSelectionRange(&range));
   EXPECT_EQ(gfx::Range(1, 4), range);
 
   base::string16 substring;
@@ -2064,7 +2052,7 @@ TEST_F(TextfieldTest, TextInputClientTest) {
 
   textfield_->clear();
   textfield_->SetText(ASCIIToUTF16("0123456789"));
-  EXPECT_TRUE(client->SetSelectionRange(gfx::Range(5, 5)));
+  EXPECT_TRUE(client->SetEditableSelectionRange(gfx::Range(5, 5)));
   client->ExtendSelectionAndDelete(4, 2);
   EXPECT_STR_EQ("0789", textfield_->text());
 
@@ -2777,7 +2765,7 @@ TEST_F(TextfieldTest, GetCompositionCharacterBounds_ComplexText) {
     // U+0020 SPACE
     0x0020,
   };
-  const size_t kUtf16CharsCount = arraysize(kUtf16Chars);
+  const size_t kUtf16CharsCount = base::size(kUtf16Chars);
 
   ui::CompositionText composition;
   composition.text.assign(kUtf16Chars, kUtf16Chars + kUtf16CharsCount);
@@ -3026,8 +3014,8 @@ TEST_F(TextfieldTest, TestLongPressInitiatesDragDrop) {
       kStringPoint.y(),
       ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   textfield_->OnGestureEvent(&long_press);
-  EXPECT_TRUE(textfield_->CanStartDragForView(NULL, kStringPoint,
-                                              kStringPoint));
+  EXPECT_TRUE(
+      textfield_->CanStartDragForView(nullptr, kStringPoint, kStringPoint));
 }
 
 TEST_F(TextfieldTest, GetTextfieldBaseline_FontFallbackTest) {
@@ -3132,7 +3120,6 @@ class TextfieldTouchSelectionTest : public TextfieldTest {
         point.x(), point.y(), ui::GestureEventDetails(ui::ET_GESTURE_END));
     textfield_->OnGestureEvent(&end);
   }
-
 };
 
 // Touch selection and dragging currently only works for chromeos.
@@ -3227,23 +3214,23 @@ TEST_F(TextfieldTouchSelectionTest, MAYBE_TapOnSelection) {
 
   // Select range |sel_range| and check if touch selection handles are not
   // present and correct range is selected.
-  textfield_->SetSelectionRange(sel_range);
+  textfield_->SetEditableSelectionRange(sel_range);
   gfx::Range range;
-  textfield_->GetSelectionRange(&range);
+  textfield_->GetEditableSelectionRange(&range);
   EXPECT_FALSE(test_api_->touch_selection_controller());
   EXPECT_EQ(sel_range, range);
 
   // Tap on selection and check if touch selectoin handles are shown, but
   // selection range is not modified.
   Tap(tap_point);
-  textfield_->GetSelectionRange(&range);
+  textfield_->GetEditableSelectionRange(&range);
   EXPECT_TRUE(test_api_->touch_selection_controller());
   EXPECT_EQ(sel_range, range);
 
   // Tap again on selection and check if touch selection handles are still
   // present and selection is changed to a cursor at tap location.
   Tap(tap_point);
-  textfield_->GetSelectionRange(&range);
+  textfield_->GetEditableSelectionRange(&range);
   EXPECT_TRUE(test_api_->touch_selection_controller());
   EXPECT_EQ(tap_range, range);
 }
@@ -3369,7 +3356,7 @@ TEST_F(TextfieldTest, TextfieldInitialization) {
 
   new_textfield->SetBoundsRect(params.bounds);
   new_textfield->set_id(1);
-  test_api_.reset(new TextfieldTestApi(new_textfield));
+  test_api_ = std::make_unique<TextfieldTestApi>(new_textfield);
   widget->Show();
   EXPECT_FALSE(new_textfield->HasFocus());
   EXPECT_FALSE(test_api_->IsCursorVisible());
@@ -3444,10 +3431,6 @@ TEST_F(TextfieldTest, EmojiItem_EmptyField) {
   InitTextfield();
   EXPECT_TRUE(textfield_->context_menu_controller());
 
-  // Enable the emoji feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
-
   // A normal empty field may show the Emoji option (if supported).
   ui::MenuModel* context_menu = GetContextMenuModel();
   EXPECT_TRUE(context_menu);
@@ -3461,10 +3444,6 @@ TEST_F(TextfieldTest, EmojiItem_EmptyField) {
 TEST_F(TextfieldTest, EmojiItem_ReadonlyField) {
   InitTextfield();
   EXPECT_TRUE(textfield_->context_menu_controller());
-
-  // Enable the emoji feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
 
   textfield_->SetReadOnly(true);
   // In no case is the emoji option showing on a read-only field.
@@ -3486,10 +3465,6 @@ TEST_F(TextfieldTest, EmojiItem_FieldWithText) {
 #else
   constexpr int kExpectedEmojiIndex = 0;
 #endif
-
-  // Enable the emoji feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
 
   // A field with text may still show the Emoji option (if supported).
   textfield_->SetText(base::ASCIIToUTF16("some text"));
@@ -3540,10 +3515,6 @@ TEST_F(TextfieldTest, TextServicesContextMenuTextDirectionTest) {
 TEST_F(TextfieldTest, LookUpItemUpdate) {
   InitTextfield();
   EXPECT_TRUE(textfield_->context_menu_controller());
-
-  // Make sure the Emoji feature is disabled for this test.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kEnableEmojiContextMenu);
 
   const base::string16 kTextOne = ASCIIToUTF16("crake");
   textfield_->SetText(kTextOne);

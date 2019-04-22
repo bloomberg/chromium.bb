@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_piece.h"

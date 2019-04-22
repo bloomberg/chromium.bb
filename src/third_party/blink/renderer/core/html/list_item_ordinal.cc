@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/html/list_item_ordinal.h"
 
+#include "base/numerics/clamped_math.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/html/html_olist_element.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
@@ -169,7 +170,7 @@ int ListItemOrdinal::CalcValue(const Node& item_node) const {
   // FIXME: This recurses to a possible depth of the length of the list.
   // That's not good -- we need to change this to an iterative algorithm.
   if (NodeAndOrdinal previous = PreviousListItem(list, &item_node))
-    return ClampAdd(previous.ordinal->Value(*previous.node), value_step);
+    return base::ClampAdd(previous.ordinal->Value(*previous.node), value_step);
 
   if (o_list_element)
     return o_list_element->StartConsideringItemCount();
@@ -288,6 +289,8 @@ void ListItemOrdinal::ItemInsertedOrRemoved(
   const Node* item_node = layout_list_item->GetNode();
   if (item_node->GetDocument().IsSlotAssignmentOrLegacyDistributionDirty())
     return;
+  if (item_node->GetDocument().IsFlatTreeTraversalForbidden())
+    return;
 
   Node* list_node = EnclosingList(item_node);
   CHECK(list_node);
@@ -303,7 +306,7 @@ void ListItemOrdinal::ItemInsertedOrRemoved(
 
   // Avoid an O(n^2) walk over the children below when they're all known to be
   // attaching.
-  if (list_node->NeedsAttach())
+  if (list_node->NeedsReattachLayoutTree())
     return;
 
   InvalidateOrdinalsAfter(is_list_reversed, list_node, item_node);

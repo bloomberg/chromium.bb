@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/image/image_skia.h"
@@ -18,16 +19,47 @@ class BrowserContext;
 
 namespace apps {
 
+// A bitwise-or of icon post-processing effects.
+//
+// It derives from a uint32_t because it needs to be the same size as the
+// uint32_t IconKey.icon_effects field.
+enum IconEffects : uint32_t {
+  kNone = 0x00,
+
+  // The icon effects are applied in numerical order, low to high. It is always
+  // resize-and-then-badge and never badge-and-then-resize, which can matter if
+  // the badge has a fixed size.
+  kResizeAndPad = 0x01,  // Resize and Pad per Material Design style.
+  kBadge = 0x02,         // Another (Android) app has the same name.
+  kGray = 0x04,          // Disabled apps are grayed out.
+  kRoundCorners = 0x08,  // Bookmark apps get round corners.
+};
+
 void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                            int size_hint_in_dip,
-                           apps::mojom::Publisher::LoadIconCallback callback,
                            content::BrowserContext* context,
-                           const std::string& extension_id);
+                           const std::string& extension_id,
+                           IconEffects icon_effects,
+                           apps::mojom::Publisher::LoadIconCallback callback);
+
+// The file named by |path| might be empty, not found or otherwise unreadable.
+// If so, "fallback(callback)" is run. If the file is non-empty and readable,
+// just "callback" is run, even if that file doesn't contain a valid image.
+void LoadIconFromFileWithFallback(
+    apps::mojom::IconCompression icon_compression,
+    int size_hint_in_dip,
+    const base::FilePath& path,
+    IconEffects icon_effects,
+    apps::mojom::Publisher::LoadIconCallback callback,
+    base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)>
+        fallback);
 
 void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
                           int size_hint_in_dip,
-                          apps::mojom::Publisher::LoadIconCallback callback,
-                          int resource_id);
+                          int resource_id,
+                          bool is_placeholder_icon,
+                          IconEffects icon_effects,
+                          apps::mojom::Publisher::LoadIconCallback callback);
 
 }  // namespace apps
 

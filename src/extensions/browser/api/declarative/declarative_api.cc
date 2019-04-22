@@ -21,8 +21,6 @@
 #include "base/values.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -159,7 +157,6 @@ ExtensionFunction::ResponseAction RulesFunction::Run() {
     return RespondNow(Error("Missing webview permission"));
   }
 
-  int embedder_process_id = render_frame_host()->GetProcess()->GetID();
   RecordUMA(event_name);
 
   bool from_web_view = web_view_instance_id != 0;
@@ -175,7 +172,7 @@ ExtensionFunction::ResponseAction RulesFunction::Run() {
     event_name = event_name.substr(found);
 
     rules_registry_id = WebViewGuest::GetOrGenerateRulesRegistryID(
-        embedder_process_id, web_view_instance_id);
+        source_process_id(), web_view_instance_id);
   }
 
   // The following call will return a NULL pointer for apps_shell, but should
@@ -217,18 +214,14 @@ ExtensionFunction::ResponseValue
 EventsEventAddRulesFunction::RunAsyncOnCorrectThread() {
   ConvertBinaryListElementsToBase64(args_.get());
 
-  // TODO(devlin): Remove the dependency on linked_ptr here.
-  std::vector<linked_ptr<api::events::Rule>> linked_rules;
-  for (api::events::Rule& rule : params_->rules) {
-    linked_rules.push_back(
-        make_linked_ptr(new api::events::Rule(std::move(rule))));
-  }
-  std::string error = rules_registry_->AddRules(extension_id(), linked_rules);
+  std::vector<const api::events::Rule*> rules_out;
+  std::string error = rules_registry_->AddRules(
+      extension_id(), std::move(params_->rules), &rules_out);
   if (!error.empty())
     return Error(error);
 
   auto rules_value = std::make_unique<base::ListValue>();
-  for (const auto& rule : linked_rules)
+  for (const auto* rule : rules_out)
     rules_value->Append(rule->ToValue());
   return OneArgument(std::move(rules_value));
 }
@@ -306,7 +299,7 @@ bool EventsEventGetRulesFunction::CreateParams() {
 
 ExtensionFunction::ResponseValue
 EventsEventGetRulesFunction::RunAsyncOnCorrectThread() {
-  std::vector<linked_ptr<Rule> > rules;
+  std::vector<const Rule*> rules;
   if (params_->rule_identifiers.get()) {
     rules_registry_->GetRules(extension_id(), *params_->rule_identifiers,
                               &rules);
@@ -315,7 +308,7 @@ EventsEventGetRulesFunction::RunAsyncOnCorrectThread() {
   }
 
   auto rules_value = std::make_unique<base::ListValue>();
-  for (const auto& rule : rules)
+  for (const auto* rule : rules)
     rules_value->Append(rule->ToValue());
   return OneArgument(std::move(rules_value));
 }

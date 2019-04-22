@@ -13,6 +13,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -36,9 +37,7 @@ MemoryChunk::MemoryChunk(int32_t shm_id,
                          CommandBufferHelper* helper)
     : shm_id_(shm_id),
       shm_(shm),
-      allocator_(base::checked_cast<unsigned int>(shm->size()),
-                 helper,
-                 shm->memory()) {}
+      allocator_(shm->size(), helper, shm->memory()) {}
 
 MemoryChunk::~MemoryChunk() = default;
 
@@ -105,12 +104,15 @@ void* MappedMemoryManager::Alloc(unsigned int size,
 
   // Make a new chunk to satisfy the request.
   CommandBuffer* cmd_buf = helper_->command_buffer();
-  unsigned int chunk_size =
-      ((size + chunk_size_multiple_ - 1) / chunk_size_multiple_) *
-      chunk_size_multiple_;
+  base::CheckedNumeric<uint32_t> chunk_size = size;
+  chunk_size = (size + chunk_size_multiple_ - 1) & ~(chunk_size_multiple_ - 1);
+  uint32_t safe_chunk_size = 0;
+  if (!chunk_size.AssignIfValid(&safe_chunk_size))
+    return nullptr;
+
   int32_t id = -1;
   scoped_refptr<gpu::Buffer> shm =
-      cmd_buf->CreateTransferBuffer(chunk_size, &id);
+      cmd_buf->CreateTransferBuffer(safe_chunk_size, &id);
   if (id  < 0)
     return nullptr;
   DCHECK(shm.get());

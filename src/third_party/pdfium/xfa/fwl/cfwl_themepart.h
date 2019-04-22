@@ -40,7 +40,6 @@ enum class CFWL_Part {
   MaximizeBox,
   NarrowCaption,
   RBtn,
-  StretchHandler,
   Thumb,
   ThumbBackArrow,
   ThumbForeArrow,
@@ -88,7 +87,7 @@ class CFWL_ThemePart {
   uint32_t m_dwStates;
   bool m_bMaximize;
   bool m_bStaticBackground;
-  void* m_pData;
+  CFX_RectF* m_pRtData;
 };
 
 #endif  // XFA_FWL_CFWL_THEMEPART_H_

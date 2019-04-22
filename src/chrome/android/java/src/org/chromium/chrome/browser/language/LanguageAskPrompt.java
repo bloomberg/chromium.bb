@@ -22,15 +22,14 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
-import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
 import org.chromium.components.language.AndroidLanguageMetricsBridge;
 import org.chromium.components.language.GeoLanguageProviderBridge;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +42,7 @@ import java.util.List;
  * Implements a modal dialog that prompts the user about the languages they can read. Displayed
  * once at browser startup when no other promo or modals are shown.
  */
-public class LanguageAskPrompt implements ModalDialogView.Controller {
+public class LanguageAskPrompt implements ModalDialogProperties.Controller {
     // Enum values for the Translate.ExplicitLanguageAsk.Event histogram.
     private static final int PROMPT_EVENT_SHOWN = 0;
     private static final int PROMPT_EVENT_SAVED = 1;
@@ -361,7 +360,7 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
 
     @Override
     public void onClick(PropertyModel model, int buttonType) {
-        if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
+        if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
             mModalDialogManager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
         } else {
             saveLanguages();

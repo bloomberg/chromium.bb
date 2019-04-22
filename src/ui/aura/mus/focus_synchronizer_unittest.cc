@@ -24,8 +24,10 @@ class TestFocusRules : public wm::BaseFocusRules {
   ~TestFocusRules() override = default;
 
   // wm::BaseFocusRules overrides:
-  bool SupportsChildActivation(Window* window) const override { return true; }
-  bool CanActivateWindow(Window* window) const override { return true; }
+  bool SupportsChildActivation(const Window* window) const override {
+    return true;
+  }
+  bool CanActivateWindow(const Window* window) const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFocusRules);
@@ -60,6 +62,32 @@ TEST_F(FocusSynchronizerTest, SetFocusFromServerResetsActiveFocusClient) {
   EXPECT_EQ(
       nullptr,
       window_tree_client_impl()->focus_synchronizer()->active_focus_client());
+}
+
+TEST_F(FocusSynchronizerTest, SetFocusFromServerNull) {
+  // Create a WindowTreeHostMus and make it active.
+  std::unique_ptr<WindowTreeHostMus> window_tree_host =
+      std::make_unique<WindowTreeHostMus>(
+          CreateInitParamsForTopLevel(window_tree_client_impl()));
+  window_tree_host->InitHost();
+  wm::FocusController focus_controller(new TestFocusRules);
+  client::SetFocusClient(window_tree_host->window(), &focus_controller);
+  window_tree_host->Show();
+  focus_controller.FocusWindow(window_tree_host->window());
+  FocusSynchronizer* focus_synchronizer =
+      window_tree_client_impl()->focus_synchronizer();
+  focus_synchronizer->SetActiveFocusClient(&focus_controller,
+                                           window_tree_host->window());
+  EXPECT_EQ(&focus_controller, focus_synchronizer->active_focus_client());
+  ASSERT_TRUE(focus_synchronizer->focused_window());
+  EXPECT_EQ(focus_synchronizer->focused_window()->GetWindow(),
+            window_tree_host->window());
+
+  // Simulate the server clearing focus.
+  focus_synchronizer->SetFocusFromServer(nullptr);
+
+  // FocusSynchronizer should no longer think there is a focused window.
+  EXPECT_FALSE(focus_synchronizer->focused_window());
 }
 
 }  // namespace aura

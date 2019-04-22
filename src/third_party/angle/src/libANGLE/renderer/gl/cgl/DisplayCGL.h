@@ -14,8 +14,13 @@
 struct _CGLContextObject;
 typedef _CGLContextObject *CGLContextObj;
 
+struct _CGLPixelFormatObject;
+typedef _CGLPixelFormatObject *CGLPixelFormatObj;
+
 namespace rx
 {
+
+class WorkerContext;
 
 class DisplayCGL : public DisplayGL
 {
@@ -39,7 +44,8 @@ class DisplayCGL : public DisplayGL
                                      NativePixmapType nativePixmap,
                                      const egl::AttributeMap &attribs) override;
 
-    ContextImpl *createContext(const gl::ContextState &state,
+    ContextImpl *createContext(const gl::State &state,
+                               gl::ErrorSet *errorSet,
                                const egl::Config *configuration,
                                const gl::Context *shareContext,
                                const egl::AttributeMap &attribs) override;
@@ -66,6 +72,8 @@ class DisplayCGL : public DisplayGL
 
     CGLContextObj getCGLContext() const;
 
+    WorkerContext *createWorkerContext(std::string *infoLog);
+
   private:
     egl::Error makeCurrentSurfaceless(gl::Context *context) override;
 
@@ -76,6 +84,7 @@ class DisplayCGL : public DisplayGL
 
     egl::Display *mEGLDisplay;
     CGLContextObj mContext;
+    CGLPixelFormatObj mPixelFormat;
 };
 
 }  // namespace rx

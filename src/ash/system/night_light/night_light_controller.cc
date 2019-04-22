@@ -13,12 +13,12 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/icu/source/i18n/astro.h"
@@ -69,34 +69,39 @@ class NightLightControllerDelegateImpl : public NightLightController::Delegate {
   base::Time GetSunsetTime() const override { return GetSunRiseSet(false); }
   base::Time GetSunriseTime() const override { return GetSunRiseSet(true); }
   void SetGeoposition(mojom::SimpleGeopositionPtr position) override {
-    position_ = std::move(position);
+    geoposition_ = std::move(position);
   }
+  bool HasGeoposition() const override { return !!geoposition_; }
 
  private:
+  // Note that the below computation is intentionally performed every time
+  // GetSunsetTime() or GetSunriseTime() is called rather than once whenever we
+  // receive a geoposition (which happens at least once a day). This increases
+  // the chances of getting accurate values, especially around DST changes.
   base::Time GetSunRiseSet(bool sunrise) const {
-    if (!ValidatePosition()) {
+    if (!HasGeoposition()) {
       LOG(ERROR) << "Invalid geoposition. Using default time for "
                  << (sunrise ? "sunrise." : "sunset.");
       return sunrise ? TimeOfDay(kDefaultEndTimeOffsetMinutes).ToTimeToday()
                      : TimeOfDay(kDefaultStartTimeOffsetMinutes).ToTimeToday();
     }
 
-    icu::CalendarAstronomer astro(position_->longitude, position_->latitude);
+    icu::CalendarAstronomer astro(geoposition_->longitude,
+                                  geoposition_->latitude);
     // For sunset and sunrise times calculations to be correct, the time of the
     // icu::CalendarAstronomer object should be set to a time near local noon.
     // This avoids having the computation flopping over into an adjacent day.
     // See the documentation of icu::CalendarAstronomer::getSunRiseSet().
     // Note that the icu calendar works with milliseconds since epoch, and
     // base::Time::FromDoubleT() / ToDoubleT() work with seconds since epoch.
-    const double noon_today_sec = TimeOfDay(12 * 60).ToTimeToday().ToDoubleT();
-    astro.setTime(noon_today_sec * 1000.0);
+    const double midday_today_sec =
+        TimeOfDay(12 * 60).ToTimeToday().ToDoubleT();
+    astro.setTime(midday_today_sec * 1000.0);
     const double sun_rise_set_ms = astro.getSunRiseSet(sunrise);
     return base::Time::FromDoubleT(sun_rise_set_ms / 1000.0);
   }
 
-  bool ValidatePosition() const { return !!position_; }
-
-  mojom::SimpleGeopositionPtr position_;
+  mojom::SimpleGeopositionPtr geoposition_;
 
   DISALLOW_COPY_AND_ASSIGN(NightLightControllerDelegateImpl);
 };
@@ -301,13 +306,11 @@ NightLightController::NightLightController()
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
   Shell::Get()->aura_env()->AddObserver(this);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
 }
 
 NightLightController::~NightLightController() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   Shell::Get()->aura_env()->RemoveObserver(this);
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
@@ -328,6 +331,10 @@ void NightLightController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kNightLightCustomEndTime,
                                 kDefaultEndTimeOffsetMinutes,
                                 PrefRegistry::PUBLIC);
+
+  // Non-public prefs, only meant to be used by ash.
+  registry->RegisterDoublePref(prefs::kNightLightCachedLatitude, 0.0);
+  registry->RegisterDoublePref(prefs::kNightLightCachedLongitude, 0.0);
 }
 
 // static
@@ -471,6 +478,9 @@ void NightLightController::OnActiveUserPrefServiceChanged(
 void NightLightController::SetCurrentGeoposition(
     mojom::SimpleGeopositionPtr position) {
   VLOG(1) << "Received new geoposition.";
+
+  is_current_geoposition_from_cache_ = false;
+  StoreCachedGeoposition(position);
   delegate_->SetGeoposition(std::move(position));
 
   // If the schedule type is sunset to sunrise, then a potential change in the
@@ -499,6 +509,52 @@ void NightLightController::SuspendDone(const base::TimeDelta& sleep_duration) {
 void NightLightController::SetDelegateForTesting(
     std::unique_ptr<Delegate> delegate) {
   delegate_ = std::move(delegate);
+}
+
+void NightLightController::LoadCachedGeopositionIfNeeded() {
+  DCHECK(active_user_pref_service_);
+
+  // Even if there is a geoposition, but it's coming from a previously cached
+  // value, switching users should load the currently saved values for the
+  // new user. This is to keep users' prefs completely separate. We only ignore
+  // the cached values once we have a valid non-cached geoposition from any
+  // user in the same session.
+  if (delegate_->HasGeoposition() && !is_current_geoposition_from_cache_)
+    return;
+
+  if (!active_user_pref_service_->HasPrefPath(
+          prefs::kNightLightCachedLatitude) ||
+      !active_user_pref_service_->HasPrefPath(
+          prefs::kNightLightCachedLongitude)) {
+    VLOG(1) << "No valid current geoposition and no valid cached geoposition"
+               " are available. Will use default times for sunset / sunrise.";
+    return;
+  }
+
+  VLOG(1) << "Temporarily using a previously cached geoposition.";
+  delegate_->SetGeoposition(mojom::SimpleGeoposition::New(
+      active_user_pref_service_->GetDouble(prefs::kNightLightCachedLatitude),
+      active_user_pref_service_->GetDouble(prefs::kNightLightCachedLongitude)));
+  is_current_geoposition_from_cache_ = true;
+}
+
+void NightLightController::StoreCachedGeoposition(
+    const mojom::SimpleGeopositionPtr& position) {
+  DCHECK(position);
+
+  const SessionController* session_controller =
+      Shell::Get()->session_controller();
+  for (const auto& user_session : session_controller->GetUserSessions()) {
+    PrefService* pref_service = session_controller->GetUserPrefServiceForUser(
+        user_session->user_info->account_id);
+    if (!pref_service)
+      continue;
+
+    pref_service->SetDouble(prefs::kNightLightCachedLatitude,
+                            position->latitude);
+    pref_service->SetDouble(prefs::kNightLightCachedLongitude,
+                            position->longitude);
+  }
 }
 
 void NightLightController::RefreshLayersTemperature() {
@@ -544,10 +600,15 @@ void NightLightController::StartWatchingPrefsChanges() {
       prefs::kNightLightCustomEndTime,
       base::BindRepeating(&NightLightController::OnCustomSchedulePrefsChanged,
                           base::Unretained(this)));
+
+  // Note: No need to observe changes in the cached latitude/longitude since
+  // they're only accessed here in ash. We only load them when the active user
+  // changes, and store them whenever we receive an updated geoposition.
 }
 
 void NightLightController::InitFromUserPrefs() {
   StartWatchingPrefsChanges();
+  LoadCachedGeopositionIfNeeded();
   Refresh(true /* did_schedule_change */);
   NotifyStatusChanged();
   NotifyClientWithScheduleChange();

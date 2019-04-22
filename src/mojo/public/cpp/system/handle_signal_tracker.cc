@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/system/handle_signal_tracker.h"
 
+#include "base/bind.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/cpp/system/handle_signals_state.h"
 

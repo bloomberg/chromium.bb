@@ -11,9 +11,13 @@ import android.content.Context;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
+import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 
@@ -37,8 +41,13 @@ public class IncognitoNotificationManager {
 
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.ChannelId.INCOGNITO)
+                        .createChromeNotificationBuilder(true /* preferCompat */,
+                                ChannelDefinitions.ChannelId.INCOGNITO,
+                                null /* remoteAppPackageName */,
+                                new NotificationMetadata(
+                                        NotificationUmaTracker.SystemNotificationType
+                                                .CLOSE_INCOGNITO,
+                                        INCOGNITO_TABS_OPEN_TAG, INCOGNITO_TABS_OPEN_ID))
                         .setContentTitle(title)
                         .setContentIntent(
                                 IncognitoNotificationService.getRemoveAllIncognitoTabsIntent(
@@ -50,12 +59,12 @@ public class IncognitoNotificationManager {
                         .setShowWhen(false)
                         .setLocalOnly(true)
                         .setGroup(NotificationConstants.GROUP_INCOGNITO);
-        NotificationManager nm =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        Notification notification = builder.build();
-        nm.notify(INCOGNITO_TABS_OPEN_TAG, INCOGNITO_TABS_OPEN_ID, notification);
+        NotificationManagerProxy nm = new NotificationManagerProxyImpl(context);
+        ChromeNotification notification = builder.buildChromeNotification();
+        nm.notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.CLOSE_INCOGNITO, notification);
+                NotificationUmaTracker.SystemNotificationType.CLOSE_INCOGNITO,
+                notification.getNotification());
     }
 
     /**

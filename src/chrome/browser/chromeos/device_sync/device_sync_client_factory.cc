@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client_impl.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
@@ -80,10 +80,8 @@ KeyedService* DeviceSyncClientFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   // TODO(crbug.com/848347): Check prohibited by policy in services that depend
   // on this Factory, not here.
-  if (IsEnrollmentAllowedByPolicy(context) &&
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+  if (IsEnrollmentAllowedByPolicy(context))
     return new DeviceSyncClientHolder(context);
-  }
 
   return nullptr;
 }

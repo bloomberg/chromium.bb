@@ -6,6 +6,7 @@ module arc.mojom;
 
 import "components/arc/common/accessibility_helper.mojom";
 import "components/arc/common/app.mojom";
+import "components/arc/common/app_permissions.mojom";
 import "components/arc/common/appfuse.mojom";
 import "components/arc/common/audio.mojom";
 import "components/arc/common/auth.mojom";
@@ -51,9 +52,9 @@ import "components/arc/common/volume_mounter.mojom";
 import "components/arc/common/wake_lock.mojom";
 import "components/arc/common/wallpaper.mojom";
 
-// Next MinVersion: 44
+// Next MinVersion: 45
 // Deprecated method IDs: 101, 105
-// Next method ID: 149
+// Next method ID: 150
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -65,6 +66,9 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the AppInstance interface is ready.
   OnAppInstanceReady@100(AppInstance instance_ptr);
+
+  // Notifies Chrome that the AppPermissionsInstance interface is ready.
+  [MinVersion=44] OnAppPermissionsInstanceReady@149(AppPermissionsInstance instance_ptr);
 
   // Notifies Chrome that the AppfuseInstance interface is ready.
   [MinVersion=40] OnAppfuseInstanceReady@145(AppfuseInstance instance_ptr);

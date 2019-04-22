@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/webrtc_frame_scheduler.h"
 
+#include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/base/session_options.h"
@@ -100,7 +101,7 @@ TEST_F(WebrtcFrameSchedulerTest, EmptyFrameUpdate_ShouldNotBeSentImmediately) {
 
   // Should not be sent, because of throttling of empty frames.
   EXPECT_FALSE(result);
-};
+}
 
 TEST_F(WebrtcFrameSchedulerTest, EmptyFrameUpdate_ShouldBeSentAfter2000ms) {
   // Identical to the previous test, except it waits a short amount of time
@@ -122,7 +123,7 @@ TEST_F(WebrtcFrameSchedulerTest, EmptyFrameUpdate_ShouldBeSentAfter2000ms) {
 
   // Empty frames should be sent at the throttled rate.
   EXPECT_TRUE(result);
-};
+}
 
 TEST_F(WebrtcFrameSchedulerTest, Capturer_RunsAt30Fps) {
   simulate_capture_ = true;

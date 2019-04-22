@@ -83,8 +83,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
     // Get input_components[i].name.
     if (!module_value->GetString(keys::kName, &name_str)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidInputComponentName,
-          base::IntToString(i));
+          errors::kInvalidInputComponentName, base::NumberToString(i));
       return false;
     }
 
@@ -95,14 +94,12 @@ bool InputComponentsHandler::Parse(Extension* extension,
         type = INPUT_COMPONENT_TYPE_IME;
       } else {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidInputComponentType,
-            base::IntToString(i));
+            errors::kInvalidInputComponentType, base::NumberToString(i));
         return false;
       }
     } else {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidInputComponentType,
-          base::IntToString(i));
+          errors::kInvalidInputComponentType, base::NumberToString(i));
       return false;
     }
 
@@ -114,8 +111,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
     // Get input_components[i].description.
     if (!module_value->GetString(keys::kDescription, &description_str)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidInputComponentDescription,
-          base::IntToString(i));
+          errors::kInvalidInputComponentDescription, base::NumberToString(i));
       return false;
     }
 
@@ -146,8 +142,8 @@ bool InputComponentsHandler::Parse(Extension* extension,
         std::string layout_name_str;
         if (!layouts_value->GetString(j, &layout_name_str)) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidInputComponentLayoutName,
-              base::IntToString(i), base::IntToString(j));
+              errors::kInvalidInputComponentLayoutName, base::NumberToString(i),
+              base::NumberToString(j));
           return false;
         }
         layouts.insert(layout_name_str);
@@ -159,8 +155,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
       if (!module_value->GetDictionary(keys::kShortcutKey,
           &shortcut_value)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidInputComponentShortcutKey,
-            base::IntToString(i));
+            errors::kInvalidInputComponentShortcutKey, base::NumberToString(i));
         return false;
       }
 
@@ -168,7 +163,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
       if (!shortcut_value->GetString(keys::kKeycode, &shortcut_keycode_str)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidInputComponentShortcutKeycode,
-            base::IntToString(i));
+            base::NumberToString(i));
         return false;
       }
 
@@ -194,9 +189,8 @@ bool InputComponentsHandler::Parse(Extension* extension,
     if (module_value->GetString(keys::kInputView, &input_view_str)) {
       input_view_url = extension->GetResourceURL(input_view_str);
       if (!input_view_url.is_valid()) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidInputView,
-            base::IntToString(i));
+        *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidInputView,
+                                                     base::NumberToString(i));
         return false;
       }
     }
@@ -208,8 +202,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
       options_page_url = extension->GetResourceURL(options_page_str);
       if (!options_page_url.is_valid()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidOptionsPage,
-            base::IntToString(i));
+            errors::kInvalidOptionsPage, base::NumberToString(i));
         return false;
       }
     } else {

@@ -12,11 +12,11 @@
 
 #include "libANGLE/renderer/d3d/d3d11/NativeWindow11.h"
 
-#include <DispatcherQueue.h>
-#include <VersionHelpers.h>
-#include <Windows.ui.composition.interop.h>
+#include <dispatcherqueue.h>
+#include <versionhelpers.h>
 #include <windows.foundation.metadata.h>
 #include <windows.ui.composition.h>
+#include <windows.ui.composition.interop.h>
 #include <wrl.h>
 
 namespace rx
@@ -76,7 +76,7 @@ class CompositorNativeWindow11 : public NativeWindow11
 {
   public:
     CompositorNativeWindow11(EGLNativeWindowType window, bool hasAlpha);
-    ~CompositorNativeWindow11() override = default;
+    ~CompositorNativeWindow11() override;
 
     bool initialize() override;
     bool getClientRect(LPRECT rect) const override;

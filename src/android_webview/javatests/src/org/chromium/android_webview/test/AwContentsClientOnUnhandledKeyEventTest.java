@@ -13,11 +13,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.ImeAdapter;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -137,7 +137,8 @@ public class AwContentsClientOnUnhandledKeyEventTest {
     }
 
     private boolean dispatchKeyEvent(final KeyEvent event) throws Throwable {
-        return ThreadUtils.runOnUiThreadBlocking(() -> mTestContainerView.dispatchKeyEvent(event));
+        return TestThreadUtils.runOnUiThreadBlocking(
+                () -> mTestContainerView.dispatchKeyEvent(event));
     }
 
     private void dispatchDownAndUpKeyEvents(final int code) throws Throwable {

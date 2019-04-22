@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -61,9 +62,9 @@ class StorageMonitorMacTest : public testing::Test {
   void UpdateDisk(StorageInfo info, StorageMonitorMac::UpdateType update_type) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::Bind(&StorageMonitorMac::UpdateDisk,
-                   base::Unretained(monitor_.get()), update_type,
-                   base::Owned(new std::string("dummy_bsd_name")), info));
+        base::BindOnce(&StorageMonitorMac::UpdateDisk,
+                       base::Unretained(monitor_.get()), update_type,
+                       base::Owned(new std::string("dummy_bsd_name")), info));
     base::RunLoop().RunUntilIdle();
   }
 

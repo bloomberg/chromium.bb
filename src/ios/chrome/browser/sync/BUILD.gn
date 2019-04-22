@@ -11,6 +11,8 @@ source_set("sync") {
     # BUILD.gn depedency.
     "consent_auditor_factory.cc",
     "consent_auditor_factory.h",
+    "device_info_sync_service_factory.h",
+    "device_info_sync_service_factory.mm",
     "ios_chrome_sync_client.h",
     "ios_chrome_sync_client.mm",
     "ios_chrome_synced_tab_delegate.h",
@@ -21,8 +23,10 @@ source_set("sync") {
     "model_type_store_service_factory.h",
     "profile_sync_service_factory.cc",
     "profile_sync_service_factory.h",
-    "session_sync_service_factory.cc",
+    "send_tab_to_self_sync_service_factory.h",
+    "send_tab_to_self_sync_service_factory.mm",
     "session_sync_service_factory.h",
+    "session_sync_service_factory.mm",
     "sync_observer_bridge.h",
     "sync_observer_bridge.mm",
     "sync_setup_service.cc",
@@ -46,11 +50,15 @@ source_set("sync") {
     "//components/prefs",
     "//components/reading_list/core",
     "//components/search_engines",
+    "//components/send_tab_to_self",
     "//components/sessions",
     "//components/signin/core/browser",
     "//components/sync",
+    "//components/sync:device_info",
+    "//components/sync:user_events",
     "//components/sync_preferences",
     "//components/sync_sessions",
+    "//components/unified_consent",
     "//components/version_info",
     "//google_apis",
     "//ios/chrome/browser",
@@ -90,24 +98,20 @@ source_set("sync") {
 source_set("test_support") {
   testonly = true
   sources = [
-    "ios_chrome_profile_sync_test_util.cc",
-    "ios_chrome_profile_sync_test_util.h",
     "sync_setup_service_mock.cc",
     "sync_setup_service_mock.h",
   ]
   deps = [
     ":sync",
     "//base",
-    "//components/browser_sync",
-    "//components/browser_sync:test_support",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/sync",
-    "//components/sync:test_support_driver",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/signin",
     "//ios/chrome/common",
     "//ios/web",
+    "//ui/base",
   ]
   public_deps = [
     "//testing/gmock",

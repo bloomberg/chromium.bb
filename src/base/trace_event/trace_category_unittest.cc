@@ -45,7 +45,7 @@ class TraceCategoryTest : public testing::Test {
           name, [](TraceCategory*) {}, cat);
     }
     return is_new_cat;
-  };
+  }
 
   static CategoryRegistry::Range GetAllCategories() {
     return CategoryRegistry::GetAllCategories();

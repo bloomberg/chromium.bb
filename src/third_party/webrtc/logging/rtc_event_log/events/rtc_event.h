@@ -13,7 +13,7 @@
 
 #include <memory>
 
-#include "rtc_base/timeutils.h"
+#include "rtc_base/time_utils.h"
 
 namespace webrtc {
 
@@ -37,6 +37,8 @@ class RtcEvent {
     AudioSendStreamConfig,
     BweUpdateDelayBased,
     BweUpdateLossBased,
+    DtlsTransportState,
+    DtlsWritableState,
     IceCandidatePairConfig,
     IceCandidatePairEvent,
     ProbeClusterCreated,
@@ -47,7 +49,10 @@ class RtcEvent {
     RtpPacketIncoming,
     RtpPacketOutgoing,
     VideoReceiveStreamConfig,
-    VideoSendStreamConfig
+    VideoSendStreamConfig,
+    GenericPacketSent,
+    GenericPacketReceived,
+    GenericAckReceived
   };
 
   RtcEvent() : timestamp_us_(rtc::TimeMicros()) {}

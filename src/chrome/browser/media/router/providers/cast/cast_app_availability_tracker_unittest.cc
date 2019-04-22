@@ -44,9 +44,9 @@ class CastAppAvailabilityTrackerTest : public testing::Test {
 };
 
 TEST_F(CastAppAvailabilityTrackerTest, RegisterSource) {
-  auto source1 = CastMediaSource::From("cast:AAAAAAAA?clientId=1");
+  auto source1 = CastMediaSource::FromMediaSourceId("cast:AAAAAAAA?clientId=1");
   ASSERT_TRUE(source1);
-  auto source2 = CastMediaSource::From("cast:AAAAAAAA?clientId=2");
+  auto source2 = CastMediaSource::FromMediaSourceId("cast:AAAAAAAA?clientId=2");
   ASSERT_TRUE(source2);
 
   base::flat_set<std::string> expected_app_ids = {"AAAAAAAA"};
@@ -65,7 +65,8 @@ TEST_F(CastAppAvailabilityTrackerTest, RegisterSource) {
 }
 
 TEST_F(CastAppAvailabilityTrackerTest, RegisterSourceReturnsMultipleAppIds) {
-  auto source1 = CastMediaSource::From("urn:x-org.chromium.media:source:tab:1");
+  auto source1 = CastMediaSource::FromMediaSourceId(
+      "urn:x-org.chromium.media:source:tab:1");
   ASSERT_TRUE(source1);
 
   // Mirorring app ids.
@@ -76,7 +77,8 @@ TEST_F(CastAppAvailabilityTrackerTest, RegisterSourceReturnsMultipleAppIds) {
 
 TEST_F(CastAppAvailabilityTrackerTest, MultipleAppIdsAlreadyTrackingOne) {
   // One of the mirroring app IDs.
-  auto source1 = CastMediaSource::From("cast:0F5096E8?clientId=123");
+  auto source1 =
+      CastMediaSource::FromMediaSourceId("cast:0F5096E8?clientId=123");
   ASSERT_TRUE(source1);
 
   base::flat_set<std::string> new_app_ids = {"0F5096E8"};
@@ -84,7 +86,8 @@ TEST_F(CastAppAvailabilityTrackerTest, MultipleAppIdsAlreadyTrackingOne) {
   EXPECT_EQ(new_app_ids, tracker_.RegisterSource(*source1));
   EXPECT_EQ(registered_app_ids, tracker_.GetRegisteredApps());
 
-  auto source2 = CastMediaSource::From("urn:x-org.chromium.media:source:tab:1");
+  auto source2 = CastMediaSource::FromMediaSourceId(
+      "urn:x-org.chromium.media:source:tab:1");
   ASSERT_TRUE(source2);
 
   new_app_ids = {"85CDB22F"};
@@ -95,11 +98,11 @@ TEST_F(CastAppAvailabilityTrackerTest, MultipleAppIdsAlreadyTrackingOne) {
 }
 
 TEST_F(CastAppAvailabilityTrackerTest, UpdateAppAvailability) {
-  auto source1 = CastMediaSource::From("cast:AAAAAAAA?clientId=1");
+  auto source1 = CastMediaSource::FromMediaSourceId("cast:AAAAAAAA?clientId=1");
   ASSERT_TRUE(source1);
-  auto source2 = CastMediaSource::From("cast:AAAAAAAA?clientId=2");
+  auto source2 = CastMediaSource::FromMediaSourceId("cast:AAAAAAAA?clientId=2");
   ASSERT_TRUE(source2);
-  auto source3 = CastMediaSource::From("cast:BBBBBBBB?clientId=3");
+  auto source3 = CastMediaSource::FromMediaSourceId("cast:BBBBBBBB?clientId=3");
   ASSERT_TRUE(source3);
 
   tracker_.RegisterSource(*source3);
@@ -141,7 +144,7 @@ TEST_F(CastAppAvailabilityTrackerTest, UpdateAppAvailability) {
 }
 
 TEST_F(CastAppAvailabilityTrackerTest, RemoveResultsForSink) {
-  auto source1 = CastMediaSource::From("cast:AAAAAAAA?clientId=1");
+  auto source1 = CastMediaSource::FromMediaSourceId("cast:AAAAAAAA?clientId=1");
   ASSERT_TRUE(source1);
 
   tracker_.UpdateAppAvailability("sinkId1", "AAAAAAAA",

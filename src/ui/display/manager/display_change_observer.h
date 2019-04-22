@@ -37,15 +37,14 @@ class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
   DISPLAY_EXPORT static ManagedDisplayInfo::ManagedDisplayModeList
   GetExternalManagedDisplayModeList(const DisplaySnapshot& output);
 
-  DisplayChangeObserver(DisplayConfigurator* display_configurator,
-                        DisplayManager* display_manager);
+  explicit DisplayChangeObserver(DisplayManager* display_manager);
   ~DisplayChangeObserver() override;
 
   // DisplayConfigurator::StateController overrides:
   MultipleDisplayState GetStateForDisplayIds(
       const DisplayConfigurator::DisplayStateList& outputs) override;
-  bool GetResolutionForDisplayId(int64_t display_id,
-                                 gfx::Size* size) const override;
+  bool GetSelectedModeForDisplayId(int64_t display_id,
+                                   ManagedDisplayMode* out_mode) const override;
 
   // Overriden from DisplayConfigurator::Observer:
   void OnDisplayModeChanged(
@@ -55,7 +54,7 @@ class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
       MultipleDisplayState failed_new_state) override;
 
   // Overriden from ui::InputDeviceEventObserver:
-  void OnTouchscreenDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
 
   // Exposed for testing.
   DISPLAY_EXPORT static float FindDeviceScaleFactor(float dpi);
@@ -67,9 +66,7 @@ class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
   ManagedDisplayInfo CreateManagedDisplayInfo(const DisplaySnapshot* snapshot,
                                               const DisplayMode* mode_info);
 
-  // Both |display_configurator_| and |display_manager_| are not owned and must
-  // outlive DisplayChangeObserver.
-  DisplayConfigurator* display_configurator_;
+  // |display_manager_| is not owned and must outlive DisplayChangeObserver.
   DisplayManager* display_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayChangeObserver);

@@ -27,7 +27,6 @@
 
 #include <limits>
 #include <memory>
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h"
 #include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_request.h"
@@ -42,19 +41,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
-using blink::WebIDBCursor;
-using blink::WebIDBDatabase;
-
 namespace blink {
-
-IDBCursor* IDBCursor::Create(std::unique_ptr<WebIDBCursor> backend,
-                             mojom::IDBCursorDirection direction,
-                             IDBRequest* request,
-                             const Source& source,
-                             IDBTransaction* transaction) {
-  return MakeGarbageCollected<IDBCursor>(std::move(backend), direction, request,
-                                         source, transaction);
-}
 
 IDBCursor::IDBCursor(std::unique_ptr<WebIDBCursor> backend,
                      mojom::IDBCursorDirection direction,
@@ -281,7 +268,10 @@ void IDBCursor::Continue(std::unique_ptr<IDBKey> key,
 
   const IDBKey* current_primary_key = IdbPrimaryKey();
 
-  if (key) {
+  if (!key)
+    key = IDBKey::CreateNull();
+
+  if (key->GetType() != mojom::IDBKeyType::Null) {
     DCHECK(key_);
     if (direction_ == mojom::IDBCursorDirection::Next ||
         direction_ == mojom::IDBCursorDirection::NextNoDuplicate) {
@@ -308,14 +298,16 @@ void IDBCursor::Continue(std::unique_ptr<IDBKey> key,
     }
   }
 
+  if (!primary_key)
+    primary_key = IDBKey::CreateNull();
+
   // FIXME: We're not using the context from when continue was called, which
   // means the callback will be on the original context openCursor was called
   // on. Is this right?
   request_->SetPendingCursor(this);
   request_->AssignNewMetrics(std::move(metrics));
   got_value_ = false;
-  backend_->CursorContinue(WebIDBKeyView(key.get()),
-                           WebIDBKeyView(primary_key.get()),
+  backend_->CursorContinue(key.get(), primary_key.get(),
                            request_->CreateWebCallbacks().release());
 }
 
@@ -359,8 +351,8 @@ IDBRequest* IDBCursor::Delete(ScriptState* script_state,
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
   transaction_->BackendDB()->Delete(
-      transaction_->Id(), EffectiveObjectStore()->Id(),
-      WebIDBKeyView(IdbPrimaryKey()), request->CreateWebCallbacks().release());
+      transaction_->Id(), EffectiveObjectStore()->Id(), IdbPrimaryKey(),
+      request->CreateWebCallbacks().release());
   return request;
 }
 

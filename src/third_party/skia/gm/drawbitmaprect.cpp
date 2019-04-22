@@ -5,8 +5,6 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
 #include "SkBlurMask.h"
 #include "SkBlurMaskFilter.h"
 #include "SkColorPriv.h"
@@ -16,7 +14,8 @@
 #include "SkMathPriv.h"
 #include "SkShader.h"
 #include "SkSurface.h"
-
+#include "ToolUtils.h"
+#include "gm.h"
 
 static SkBitmap make_chessbm(int w, int h) {
     SkBitmap bm;
@@ -35,7 +34,7 @@ static SkBitmap make_chessbm(int w, int h) {
 static sk_sp<SkImage> makebm(SkCanvas* origCanvas, SkBitmap* resultBM, int w, int h) {
     SkImageInfo info = SkImageInfo::MakeN32Premul(w, h);
 
-    auto surface(sk_tool_utils::makeSurface(origCanvas, info));
+    auto      surface(ToolUtils::makeSurface(origCanvas, info));
     SkCanvas* canvas = surface->getCanvas();
 
     canvas->clear(SK_ColorTRANSPARENT);
@@ -68,7 +67,7 @@ static sk_sp<SkImage> makebm(SkCanvas* origCanvas, SkBitmap* resultBM, int w, in
                         pt, radius,
                         colors, pos,
                         SK_ARRAY_COUNT(colors),
-                        SkShader::kRepeat_TileMode,
+                        SkTileMode::kRepeat,
                         0, &mat));
         canvas->drawRect(rect, paint);
         rect.inset(wScalar / 8, hScalar / 8);
@@ -163,20 +162,20 @@ protected:
         const int kPadX = 30;
         const int kPadY = 40;
         SkPaint paint;
-        paint.setAlpha(0x20);
+        paint.setAlphaf(0.125f);
         canvas->drawImageRect(fImage, SkRect::MakeIWH(gSize, gSize), &paint);
         canvas->translate(SK_Scalar1 * kPadX / 2,
                           SK_Scalar1 * kPadY / 2);
         SkPaint blackPaint;
         SkScalar titleHeight = SK_Scalar1 * 24;
         blackPaint.setColor(SK_ColorBLACK);
-        blackPaint.setTextSize(titleHeight);
         blackPaint.setAntiAlias(true);
-        sk_tool_utils::set_portable_typeface(&blackPaint);
+
+        SkFont font(ToolUtils::create_portable_typeface(), titleHeight);
+
         SkString title;
         title.printf("Bitmap size: %d x %d", gBmpSize, gBmpSize);
-        canvas->drawString(title, 0,
-                         titleHeight, blackPaint);
+        canvas->drawString(title, 0, titleHeight, font, blackPaint);
 
         canvas->translate(0, SK_Scalar1 * kPadY / 2  + titleHeight);
         int rowCount = 0;
@@ -191,12 +190,9 @@ protected:
                 label.appendf("%d x %d", w, h);
                 blackPaint.setAntiAlias(true);
                 blackPaint.setStyle(SkPaint::kFill_Style);
-                blackPaint.setTextSize(SK_Scalar1 * 10);
-                SkScalar baseline = dstRect.height() +
-                                    blackPaint.getTextSize() + SK_Scalar1 * 3;
-                canvas->drawString(label,
-                                    0, baseline,
-                                    blackPaint);
+                font.setSize(SK_Scalar1 * 10);
+                SkScalar baseline = dstRect.height() + font.getSize() + SK_Scalar1 * 3;
+                canvas->drawString(label, 0, baseline, font, blackPaint);
                 blackPaint.setStyle(SkPaint::kStroke_Style);
                 blackPaint.setStrokeWidth(SK_Scalar1);
                 blackPaint.setAntiAlias(false);

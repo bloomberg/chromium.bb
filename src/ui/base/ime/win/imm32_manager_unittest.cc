@@ -61,9 +61,9 @@ TEST_P(IMM32ManagerTest, ConvertInputModeToImmFlags) {
   EXPECT_EQ(test_case.expected_conversion_mode, conversion_mode);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        IMM32ManagerTest,
-                        ::testing::ValuesIn(kInputModeTestCases));
+INSTANTIATE_TEST_SUITE_P(,
+                         IMM32ManagerTest,
+                         ::testing::ValuesIn(kInputModeTestCases));
 
 }  // namespace
 }  // namespace ui

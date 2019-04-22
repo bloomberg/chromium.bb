@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/core/background/add_request_task.h"
 #include "components/offline_pages/core/background/change_requests_state_task.h"
 #include "components/offline_pages/core/background/get_requests_task.h"
 #include "components/offline_pages/core/background/initialize_store_task.h"
@@ -22,6 +21,7 @@
 #include "components/offline_pages/core/background/remove_requests_task.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/save_page_request.h"
+#include "components/offline_pages/task/closure_task.h"
 
 namespace offline_pages {
 
@@ -33,29 +33,6 @@ void GetRequestsDone(RequestQueue::GetRequestsCallback callback,
   GetRequestsResult result =
       success ? GetRequestsResult::SUCCESS : GetRequestsResult::STORE_FAILURE;
   std::move(callback).Run(result, std::move(requests));
-}
-
-// Completes the add request call.
-void AddRequestDone(RequestQueue::AddRequestCallback callback,
-                    const SavePageRequest& request,
-                    ItemActionStatus status) {
-  AddRequestResult result;
-  switch (status) {
-    case ItemActionStatus::SUCCESS:
-      result = AddRequestResult::SUCCESS;
-      break;
-    case ItemActionStatus::ALREADY_EXISTS:
-      result = AddRequestResult::ALREADY_EXISTS;
-      break;
-    case ItemActionStatus::STORE_ERROR:
-      result = AddRequestResult::STORE_FAILURE;
-      break;
-    case ItemActionStatus::NOT_FOUND:
-    default:
-      NOTREACHED();
-      return;
-  }
-  std::move(callback).Run(result, request);
 }
 
 }  // namespace
@@ -76,11 +53,17 @@ void RequestQueue::GetRequests(GetRequestsCallback callback) {
 }
 
 void RequestQueue::AddRequest(const SavePageRequest& request,
+                              AddOptions options,
                               AddRequestCallback callback) {
-  std::unique_ptr<AddRequestTask> task(new AddRequestTask(
-      store_.get(), request,
-      base::BindOnce(&AddRequestDone, std::move(callback), request)));
-  task_queue_.AddTask(std::move(task));
+  // |callback| receives both |request| and the result, whereas
+  // RequestQueueStore returns only the result. Adapt the callback here.
+  RequestQueueStore::AddCallback adapter = base::BindOnce(
+      [](AddRequestCallback callback, const SavePageRequest& request,
+         AddRequestResult result) { std::move(callback).Run(result, request); },
+      std::move(callback), request);
+  task_queue_.AddTask(std::make_unique<ClosureTask>(base::BindOnce(
+      &RequestQueueStore::AddRequest, base::Unretained(store_.get()), request,
+      std::move(options), std::move(adapter))));
 }
 
 void RequestQueue::RemoveRequests(const std::vector<int64_t>& request_ids,
@@ -88,6 +71,15 @@ void RequestQueue::RemoveRequests(const std::vector<int64_t>& request_ids,
   std::unique_ptr<Task> task(
       new RemoveRequestsTask(store_.get(), request_ids, std::move(callback)));
   task_queue_.AddTask(std::move(task));
+}
+
+void RequestQueue::RemoveRequestsIf(
+    const base::RepeatingCallback<bool(const SavePageRequest&)>&
+        remove_predicate,
+    UpdateCallback done_callback) {
+  task_queue_.AddTask(std::make_unique<ClosureTask>(base::BindOnce(
+      &RequestQueueStore::RemoveRequestsIf, base::Unretained(store_.get()),
+      remove_predicate, std::move(done_callback))));
 }
 
 void RequestQueue::ChangeRequestsState(
@@ -119,6 +111,15 @@ void RequestQueue::MarkAttemptCompleted(int64_t request_id,
   std::unique_ptr<Task> task(new MarkAttemptCompletedTask(
       store_.get(), request_id, fail_state, std::move(callback)));
   task_queue_.AddTask(std::move(task));
+}
+
+void RequestQueue::SetAutoFetchNotificationState(
+    int64_t request_id,
+    SavePageRequest::AutoFetchNotificationState state,
+    base::OnceCallback<void(bool updated)> callback) {
+  task_queue_.AddTask(std::make_unique<ClosureTask>(base::BindOnce(
+      &RequestQueueStore::SetAutoFetchNotificationState,
+      base::Unretained(store_.get()), request_id, state, std::move(callback))));
 }
 
 void RequestQueue::MarkAttemptDeferred(int64_t request_id,

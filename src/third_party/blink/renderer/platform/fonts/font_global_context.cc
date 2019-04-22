@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_unique_name_lookup.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_font_cache.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
 namespace blink {
@@ -36,11 +37,6 @@ void FontGlobalContext::ClearMemory() {
     return;
 
   GetFontCache().Invalidate();
-}
-
-void FontGlobalContext::ClearForTesting() {
-  FontGlobalContext* ctx = Get();
-  ctx->font_cache_.Invalidate();
 }
 
 }  // namespace blink

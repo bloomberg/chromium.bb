@@ -14,6 +14,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/time/time.h"
@@ -76,24 +77,6 @@ ScopedJavaLocalRef<jobject> JNI_SnippetsBridge_ToJavaSuggestionList(
             suggestion.fetch_date().ToJavaTime(),
             suggestion.is_video_suggestion(),
             suggestion.optional_image_dominant_color().value_or(0));
-    if (suggestion.id().category().IsKnownCategory(
-            KnownCategories::DOWNLOADS) &&
-        suggestion.download_suggestion_extra() != nullptr) {
-      if (suggestion.download_suggestion_extra()->is_download_asset) {
-        Java_SnippetsBridge_setAssetDownloadDataForSuggestion(
-            env, java_suggestion,
-            ConvertUTF8ToJavaString(
-                env, suggestion.download_suggestion_extra()->download_guid),
-            ConvertUTF8ToJavaString(env, suggestion.download_suggestion_extra()
-                                             ->target_file_path.value()),
-            ConvertUTF8ToJavaString(
-                env, suggestion.download_suggestion_extra()->mime_type));
-      } else {
-        Java_SnippetsBridge_setOfflinePageDownloadDataForSuggestion(
-            env, java_suggestion,
-            suggestion.download_suggestion_extra()->offline_page_id);
-      }
-    }
   }
 
   return result;
@@ -111,8 +94,7 @@ static jlong JNI_SnippetsBridge_Init(JNIEnv* env,
 
 static void
 JNI_SnippetsBridge_RemoteSuggestionsSchedulerOnPersistentSchedulerWakeUp(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller) {
+    JNIEnv* env) {
   ntp_snippets::RemoteSuggestionsScheduler* scheduler =
       GetRemoteSuggestionsScheduler();
   if (!scheduler) {
@@ -123,8 +105,7 @@ JNI_SnippetsBridge_RemoteSuggestionsSchedulerOnPersistentSchedulerWakeUp(
 }
 
 static void JNI_SnippetsBridge_RemoteSuggestionsSchedulerOnBrowserUpgraded(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller) {
+    JNIEnv* env) {
   ntp_snippets::RemoteSuggestionsScheduler* scheduler =
       GetRemoteSuggestionsScheduler();
   // Can be null if the feature has been disabled but the scheduler has not been
@@ -138,7 +119,6 @@ static void JNI_SnippetsBridge_RemoteSuggestionsSchedulerOnBrowserUpgraded(
 
 static void JNI_SnippetsBridge_SetContentSuggestionsNotificationsEnabled(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     jboolean enabled) {
   ContentSuggestionsNotifierService* notifier_service =
       ContentSuggestionsNotifierServiceFactory::GetForProfile(
@@ -150,8 +130,7 @@ static void JNI_SnippetsBridge_SetContentSuggestionsNotificationsEnabled(
 }
 
 static jboolean JNI_SnippetsBridge_AreContentSuggestionsNotificationsEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller) {
+    JNIEnv* env) {
   ContentSuggestionsNotifierService* notifier_service =
       ContentSuggestionsNotifierServiceFactory::GetForProfile(
           ProfileManager::GetLastUsedProfile());

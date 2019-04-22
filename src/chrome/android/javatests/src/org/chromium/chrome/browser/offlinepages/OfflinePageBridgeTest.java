@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
@@ -36,6 +36,8 @@ import org.chromium.components.offlinepages.DeletePageResult;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.components.offlinepages.background.UpdateRequestResult;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -50,6 +52,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -75,27 +78,24 @@ public class OfflinePageBridgeTest {
     private void initializeBridgeForProfile(final boolean incognitoProfile)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Profile profile = Profile.getLastUsedProfile();
-                if (incognitoProfile) {
-                    profile = profile.getOffTheRecordProfile();
-                }
-                // Ensure we start in an offline state.
-                mOfflinePageBridge = OfflinePageBridge.getForProfile(profile);
-                if (mOfflinePageBridge == null || mOfflinePageBridge.isOfflinePageModelLoaded()) {
-                    semaphore.release();
-                    return;
-                }
-                mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
-                    @Override
-                    public void offlinePageModelLoaded() {
-                        semaphore.release();
-                        mOfflinePageBridge.removeObserver(this);
-                    }
-                });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            Profile profile = Profile.getLastUsedProfile();
+            if (incognitoProfile) {
+                profile = profile.getOffTheRecordProfile();
             }
+            // Ensure we start in an offline state.
+            mOfflinePageBridge = OfflinePageBridge.getForProfile(profile);
+            if (mOfflinePageBridge == null || mOfflinePageBridge.isOfflinePageModelLoaded()) {
+                semaphore.release();
+                return;
+            }
+            mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
+                @Override
+                public void offlinePageModelLoaded() {
+                    semaphore.release();
+                    mOfflinePageBridge.removeObserver(this);
+                }
+            });
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -104,14 +104,11 @@ public class OfflinePageBridgeTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Ensure we start in an offline state.
-                NetworkChangeNotifier.forceConnectivityState(false);
-                if (!NetworkChangeNotifier.isInitialized()) {
-                    NetworkChangeNotifier.init();
-                }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Ensure we start in an offline state.
+            NetworkChangeNotifier.forceConnectivityState(false);
+            if (!NetworkChangeNotifier.isInitialized()) {
+                NetworkChangeNotifier.init();
             }
         });
 
@@ -130,7 +127,7 @@ public class OfflinePageBridgeTest {
     @SmallTest
     @RetryOnFailure
     public void testLoadOfflinePagesWhenEmpty() throws Exception {
-        List<OfflinePageItem> offlinePages = getAllPages();
+        List<OfflinePageItem> offlinePages = OfflineTestUtil.getAllPages();
         Assert.assertEquals("Offline pages count incorrect.", 0, offlinePages.size());
     }
 
@@ -142,7 +139,7 @@ public class OfflinePageBridgeTest {
     public void testAddOfflinePageAndLoad() throws Exception {
         mActivityTestRule.loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
-        List<OfflinePageItem> allPages = getAllPages();
+        List<OfflinePageItem> allPages = OfflineTestUtil.getAllPages();
         OfflinePageItem offlinePage = allPages.get(0);
         Assert.assertEquals("Offline pages count incorrect.", 1, allPages.size());
         Assert.assertEquals("Offline page item url incorrect.", mTestPage, offlinePage.getUrl());
@@ -154,10 +151,11 @@ public class OfflinePageBridgeTest {
     public void testGetPageByBookmarkId() throws Exception {
         mActivityTestRule.loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
-        OfflinePageItem offlinePage = getPageByClientId(TEST_CLIENT_ID);
+        OfflinePageItem offlinePage = OfflineTestUtil.getPageByClientId(TEST_CLIENT_ID);
         Assert.assertEquals("Offline page item url incorrect.", mTestPage, offlinePage.getUrl());
         Assert.assertNull("Offline page is not supposed to exist",
-                getPageByClientId(new ClientId(OfflinePageBridge.BOOKMARK_NAMESPACE, "-42")));
+                OfflineTestUtil.getPageByClientId(
+                        new ClientId(OfflinePageBridge.BOOKMARK_NAMESPACE, "-42")));
     }
 
     @Test
@@ -170,25 +168,10 @@ public class OfflinePageBridgeTest {
         mActivityTestRule.loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
         Assert.assertNotNull("Offline page should be available, but it is not.",
-                getPageByClientId(TEST_CLIENT_ID));
+                OfflineTestUtil.getPageByClientId(TEST_CLIENT_ID));
         deletePage(TEST_CLIENT_ID, DeletePageResult.SUCCESS);
         Assert.assertNull("Offline page should be gone, but it is available.",
-                getPageByClientId(TEST_CLIENT_ID));
-    }
-
-    @Test
-    @CommandLineFlags.Add("disable-features=OfflinePagesSharing")
-    @SmallTest
-    @RetryOnFailure
-    public void testPageSharingSwitch() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertFalse(
-                        "If offline page sharing is off, we should see the feature disabled",
-                        OfflinePageBridge.isPageSharingEnabled());
-            }
-        });
+                OfflineTestUtil.getPageByClientId(TEST_CLIENT_ID));
     }
 
     @Test
@@ -198,7 +181,7 @@ public class OfflinePageBridgeTest {
         String url = "https://www.google.com/";
         String namespace = "custom_tabs";
         savePageLater(url, namespace);
-        SavePageRequest[] requests = getRequestsInQueue();
+        SavePageRequest[] requests = OfflineTestUtil.getRequestsInQueue();
         Assert.assertEquals(1, requests.length);
         Assert.assertEquals(namespace, requests[0].getClientId().getNamespace());
         Assert.assertEquals(url, requests[0].getUrl());
@@ -206,7 +189,7 @@ public class OfflinePageBridgeTest {
         String url2 = "https://mail.google.com/";
         String namespace2 = "last_n";
         savePageLater(url2, namespace2);
-        requests = getRequestsInQueue();
+        requests = OfflineTestUtil.getRequestsInQueue();
         Assert.assertEquals(2, requests.length);
 
         HashSet<String> expectedUrls = new HashSet<>();
@@ -245,7 +228,7 @@ public class OfflinePageBridgeTest {
         String namespace2 = "last_n";
         savePageLater(url2, namespace2);
 
-        SavePageRequest[] requests = getRequestsInQueue();
+        SavePageRequest[] requests = OfflineTestUtil.getRequestsInQueue();
         Assert.assertEquals(2, requests.length);
 
         List<Long> requestsToRemove = new ArrayList<>();
@@ -255,7 +238,7 @@ public class OfflinePageBridgeTest {
                 removeRequestsFromQueue(requestsToRemove);
         Assert.assertEquals(requests[1].getRequestId(), removed.get(0).getRequestId());
         Assert.assertEquals(UpdateRequestResult.SUCCESS, removed.get(0).getUpdateRequestResult());
-        SavePageRequest[] remaining = getRequestsInQueue();
+        SavePageRequest[] remaining = OfflineTestUtil.getRequestsInQueue();
         Assert.assertEquals(1, remaining.length);
 
         Assert.assertEquals(requests[0].getRequestId(), remaining[0].getRequestId());
@@ -347,31 +330,27 @@ public class OfflinePageBridgeTest {
         mActivityTestRule.loadUrl(mTestPage);
         final String originString = origin.encodeAsJsonString();
         final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertNotNull(
-                        "Tab is null", mActivityTestRule.getActivity().getActivityTab());
-                Assert.assertEquals("URL does not match requested.", mTestPage,
-                        mActivityTestRule.getActivity().getActivityTab().getUrl());
-                Assert.assertNotNull("WebContents is null", mActivityTestRule.getWebContents());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertNotNull("Tab is null", mActivityTestRule.getActivity().getActivityTab());
+            Assert.assertEquals("URL does not match requested.", mTestPage,
+                    mActivityTestRule.getActivity().getActivityTab().getUrl());
+            Assert.assertNotNull("WebContents is null", mActivityTestRule.getWebContents());
 
-                mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
-                    @Override
-                    public void offlinePageAdded(OfflinePageItem newPage) {
-                        mOfflinePageBridge.removeObserver(this);
-                        semaphore.release();
-                    }
-                });
+            mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
+                @Override
+                public void offlinePageAdded(OfflinePageItem newPage) {
+                    mOfflinePageBridge.removeObserver(this);
+                    semaphore.release();
+                }
+            });
 
-                OfflinePageDownloadBridge.startDownload(
-                        mActivityTestRule.getActivity().getActivityTab(), origin);
-            }
+            OfflinePageDownloadBridge.startDownload(
+                    mActivityTestRule.getActivity().getActivityTab(), origin);
         });
         Assert.assertTrue("Semaphore acquire failed. Timed out.",
                 semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        List<OfflinePageItem> pages = getAllPages();
+        List<OfflinePageItem> pages = OfflineTestUtil.getAllPages();
         Assert.assertEquals(originString, pages.get(0).getRequestOrigin());
     }
 
@@ -383,28 +362,25 @@ public class OfflinePageBridgeTest {
         mActivityTestRule.loadUrl(mTestPage);
         final String originString = origin.encodeAsJsonString();
         final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
-                    @Override
-                    public void offlinePageAdded(OfflinePageItem newPage) {
-                        mOfflinePageBridge.removeObserver(this);
-                        semaphore.release();
-                    }
-                });
-                mOfflinePageBridge.savePage(mActivityTestRule.getWebContents(), TEST_CLIENT_ID,
-                        origin, new SavePageCallback() {
-                            @Override
-                            public void onSavePageDone(
-                                    int savePageResult, String url, long offlineId) {}
-                        });
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
+                @Override
+                public void offlinePageAdded(OfflinePageItem newPage) {
+                    mOfflinePageBridge.removeObserver(this);
+                    semaphore.release();
+                }
+            });
+            mOfflinePageBridge.savePage(mActivityTestRule.getWebContents(), TEST_CLIENT_ID, origin,
+                    new SavePageCallback() {
+                        @Override
+                        public void onSavePageDone(int savePageResult, String url, long offlineId) {
+                        }
+                    });
         });
 
         Assert.assertTrue("Semaphore acquire failed. Timed out.",
                 semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        List<OfflinePageItem> pages = getAllPages();
+        List<OfflinePageItem> pages = OfflineTestUtil.getAllPages();
         Assert.assertEquals(originString, pages.get(0).getRequestOrigin());
     }
 
@@ -414,7 +390,7 @@ public class OfflinePageBridgeTest {
     public void testSavePageNoOrigin() throws Exception {
         mActivityTestRule.loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
-        List<OfflinePageItem> pages = getAllPages();
+        List<OfflinePageItem> pages = OfflineTestUtil.getAllPages();
         Assert.assertEquals("", pages.get(0).getRequestOrigin());
     }
 
@@ -426,7 +402,7 @@ public class OfflinePageBridgeTest {
     public void testGetLoadUrlParamsForOpeningMhtmlFileUrl() throws Exception {
         mActivityTestRule.loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
-        List<OfflinePageItem> allPages = getAllPages();
+        List<OfflinePageItem> allPages = OfflineTestUtil.getAllPages();
         Assert.assertEquals(1, allPages.size());
         OfflinePageItem offlinePage = allPages.get(0);
         File archiveFile = new File(offlinePage.getFilePath());
@@ -492,29 +468,24 @@ public class OfflinePageBridgeTest {
             final ClientId clientId) throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
         final AtomicLong result = new AtomicLong(-1);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertNotNull(
-                        "Tab is null", mActivityTestRule.getActivity().getActivityTab());
-                Assert.assertEquals("URL does not match requested.", expectedUrl,
-                        mActivityTestRule.getActivity().getActivityTab().getUrl());
-                Assert.assertNotNull("WebContents is null", mActivityTestRule.getWebContents());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertNotNull("Tab is null", mActivityTestRule.getActivity().getActivityTab());
+            Assert.assertEquals("URL does not match requested.", expectedUrl,
+                    mActivityTestRule.getActivity().getActivityTab().getUrl());
+            Assert.assertNotNull("WebContents is null", mActivityTestRule.getWebContents());
 
-                mOfflinePageBridge.savePage(
-                        mActivityTestRule.getWebContents(), clientId, new SavePageCallback() {
-                            @Override
-                            public void onSavePageDone(
-                                    int savePageResult, String url, long offlineId) {
-                                Assert.assertEquals(
-                                        "Requested and returned URLs differ.", expectedUrl, url);
-                                Assert.assertEquals(
-                                        "Save result incorrect.", expectedResult, savePageResult);
-                                result.set(offlineId);
-                                semaphore.release();
-                            }
-                        });
-            }
+            mOfflinePageBridge.savePage(
+                    mActivityTestRule.getWebContents(), clientId, new SavePageCallback() {
+                        @Override
+                        public void onSavePageDone(int savePageResult, String url, long offlineId) {
+                            Assert.assertEquals(
+                                    "Requested and returned URLs differ.", expectedUrl, url);
+                            Assert.assertEquals(
+                                    "Save result incorrect.", expectedResult, savePageResult);
+                            result.set(offlineId);
+                            semaphore.release();
+                        }
+                    });
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         return result.get();
@@ -522,16 +493,13 @@ public class OfflinePageBridgeTest {
 
     private void deletePages(final List<Long> offlineIds) throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mOfflinePageBridge.deletePagesByOfflineId(offlineIds, new Callback<Integer>() {
-                    @Override
-                    public void onResult(Integer deletePageResult) {
-                        semaphore.release();
-                    }
-                });
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            mOfflinePageBridge.deletePagesByOfflineId(offlineIds, new Callback<Integer>() {
+                @Override
+                public void onResult(Integer deletePageResult) {
+                    semaphore.release();
+                }
+            });
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -540,114 +508,46 @@ public class OfflinePageBridgeTest {
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
         final AtomicInteger deletePageResultRef = new AtomicInteger();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mOfflinePageBridge.deletePage(bookmarkId, new Callback<Integer>() {
-                    @Override
-                    public void onResult(Integer deletePageResult) {
-                        deletePageResultRef.set(deletePageResult.intValue());
-                        semaphore.release();
-                    }
-                });
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mOfflinePageBridge.deletePage(bookmarkId, new Callback<Integer>() {
+                @Override
+                public void onResult(Integer deletePageResult) {
+                    deletePageResultRef.set(deletePageResult.intValue());
+                    semaphore.release();
+                }
+            });
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertEquals("Delete result incorrect.", expectedResult, deletePageResultRef.get());
-    }
-
-    private List<OfflinePageItem> getAllPages() throws InterruptedException {
-        final List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
-        final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mOfflinePageBridge.getAllPages(new Callback<List<OfflinePageItem>>() {
-                    @Override
-                    public void onResult(List<OfflinePageItem> pages) {
-                        result.addAll(pages);
-                        semaphore.release();
-                    }
-                });
-            }
-        });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        return result;
     }
 
     private List<OfflinePageItem> getPagesByNamespace(final String namespace)
             throws InterruptedException {
         final List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
         final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mOfflinePageBridge.getPagesByNamespace(
-                        namespace, new Callback<List<OfflinePageItem>>() {
-                            @Override
-                            public void onResult(List<OfflinePageItem> pages) {
-                                result.addAll(pages);
-                                semaphore.release();
-                            }
-                        });
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            mOfflinePageBridge.getPagesByNamespace(
+                    namespace, new Callback<List<OfflinePageItem>>() {
+                        @Override
+                        public void onResult(List<OfflinePageItem> pages) {
+                            result.addAll(pages);
+                            semaphore.release();
+                        }
+                    });
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         return result;
     }
 
     private void forceConnectivityStateOnUiThread(final boolean state) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                NetworkChangeNotifier.forceConnectivityState(state);
-            }
-        });
-    }
-
-    private OfflinePageItem getPageByClientId(ClientId clientId) throws InterruptedException {
-        final OfflinePageItem[] result = {null};
-        final Semaphore semaphore = new Semaphore(0);
-        final List<ClientId> clientIdList = new ArrayList<>();
-        clientIdList.add(clientId);
-
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mOfflinePageBridge.getPagesByClientIds(
-                        clientIdList, new Callback<List<OfflinePageItem>>() {
-                            @Override
-                            public void onResult(List<OfflinePageItem> items) {
-                                if (!items.isEmpty()) {
-                                    result[0] = items.get(0);
-                                }
-                                semaphore.release();
-                            }
-                        });
-            }
-        });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        return result[0];
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { NetworkChangeNotifier.forceConnectivityState(state); });
     }
 
     private Set<String> getUrlsExistOfflineFromSet(final Set<String> query)
-            throws InterruptedException {
+            throws InterruptedException, TimeoutException {
         final Set<String> result = new HashSet<>();
-        final List<OfflinePageItem> pages = new ArrayList<>();
-        final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mOfflinePageBridge.getAllPages(new Callback<List<OfflinePageItem>>() {
-                    @Override
-                    public void onResult(List<OfflinePageItem> offlinePages) {
-                        pages.addAll(offlinePages);
-                        semaphore.release();
-                    }
-                });
-            }
-        });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        final List<OfflinePageItem> pages = OfflineTestUtil.getAllPages();
         for (String url : query) {
             for (OfflinePageItem page : pages) {
                 if (url.equals(page.getUrl())) {
@@ -661,41 +561,18 @@ public class OfflinePageBridgeTest {
     private void savePageLater(final String url, final String namespace)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mOfflinePageBridge.savePageLater(url, namespace, true /* userRequested */,
-                        new OfflinePageOrigin(), new Callback<Integer>() {
-                            @Override
-                            public void onResult(Integer i) {
-                                Assert.assertEquals("SavePageLater did not succeed",
-                                        Integer.valueOf(0),
-                                        i); // 0 is SUCCESS
-                                semaphore.release();
-                            }
-                        });
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            mOfflinePageBridge.savePageLater(url, namespace, true /* userRequested */,
+                    new OfflinePageOrigin(), new Callback<Integer>() {
+                        @Override
+                        public void onResult(Integer i) {
+                            Assert.assertEquals("SavePageLater did not succeed", Integer.valueOf(0),
+                                    i); // 0 is SUCCESS
+                            semaphore.release();
+                        }
+                    });
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    private SavePageRequest[] getRequestsInQueue() throws InterruptedException {
-        final AtomicReference<SavePageRequest[]> ref = new AtomicReference<>();
-        final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mOfflinePageBridge.getRequestsInQueue(new Callback<SavePageRequest[]>() {
-                    @Override
-                    public void onResult(SavePageRequest[] requestsInQueue) {
-                        ref.set(requestsInQueue);
-                        semaphore.release();
-                    }
-                });
-            }
-        });
-        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        return ref.get();
     }
 
     private List<OfflinePageBridge.RequestRemovedResult> removeRequestsFromQueue(
@@ -703,19 +580,16 @@ public class OfflinePageBridgeTest {
         final AtomicReference<List<OfflinePageBridge.RequestRemovedResult>> ref =
                 new AtomicReference<>();
         final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mOfflinePageBridge.removeRequestsFromQueue(requestsToRemove,
-                        new Callback<List<OfflinePageBridge.RequestRemovedResult>>() {
-                            @Override
-                            public void onResult(
-                                    List<OfflinePageBridge.RequestRemovedResult> removedRequests) {
-                                ref.set(removedRequests);
-                                semaphore.release();
-                            }
-                        });
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            mOfflinePageBridge.removeRequestsFromQueue(
+                    requestsToRemove, new Callback<List<OfflinePageBridge.RequestRemovedResult>>() {
+                        @Override
+                        public void onResult(
+                                List<OfflinePageBridge.RequestRemovedResult> removedRequests) {
+                            ref.set(removedRequests);
+                            semaphore.release();
+                        }
+                    });
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         return ref.get();
@@ -725,15 +599,12 @@ public class OfflinePageBridgeTest {
             throws InterruptedException {
         final AtomicReference<LoadUrlParams> ref = new AtomicReference<>();
         final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mOfflinePageBridge.getLoadUrlParamsForOpeningMhtmlFileOrContent(
-                        url, (loadUrlParams) -> {
-                            ref.set(loadUrlParams);
-                            semaphore.release();
-                        });
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            mOfflinePageBridge.getLoadUrlParamsForOpeningMhtmlFileOrContent(
+                    url, (loadUrlParams) -> {
+                        ref.set(loadUrlParams);
+                        semaphore.release();
+                    });
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         return ref.get();

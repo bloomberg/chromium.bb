@@ -56,15 +56,16 @@ class AddressSorterWin : public AddressSorter {
 
     Job(const AddressList& list, CallbackType callback)
         : callback_(std::move(callback)),
-          buffer_size_(sizeof(SOCKET_ADDRESS_LIST) +
-                       list.size() *
-                           (sizeof(SOCKET_ADDRESS) + sizeof(SOCKADDR_STORAGE))),
+          buffer_size_((sizeof(SOCKET_ADDRESS_LIST) +
+                        base::CheckedNumeric<DWORD>(list.size()) *
+                            (sizeof(SOCKET_ADDRESS) + sizeof(SOCKADDR_STORAGE)))
+                           .ValueOrDie<DWORD>()),
           input_buffer_(
               reinterpret_cast<SOCKET_ADDRESS_LIST*>(malloc(buffer_size_))),
           output_buffer_(
               reinterpret_cast<SOCKET_ADDRESS_LIST*>(malloc(buffer_size_))),
           success_(false) {
-      input_buffer_->iAddressCount = list.size();
+      input_buffer_->iAddressCount = base::checked_cast<INT>(list.size());
       SOCKADDR_STORAGE* storage = reinterpret_cast<SOCKADDR_STORAGE*>(
           input_buffer_->Address + input_buffer_->iAddressCount);
 
@@ -87,7 +88,7 @@ class AddressSorterWin : public AddressSorter {
 
     ~Job() {}
 
-    // Executed asynchronously in TaskScheduler.
+    // Executed asynchronously in ThreadPool.
     void Run() {
       SOCKET sock = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
       if (sock == INVALID_SOCKET)
@@ -95,7 +96,7 @@ class AddressSorterWin : public AddressSorter {
       DWORD result_size = 0;
       int result = WSAIoctl(sock, SIO_ADDRESS_LIST_SORT, input_buffer_.get(),
                             buffer_size_, output_buffer_.get(), buffer_size_,
-                            &result_size, NULL, NULL);
+                            &result_size, nullptr, nullptr);
       if (result == SOCKET_ERROR) {
         LOG(ERROR) << "SIO_ADDRESS_LIST_SORT failed " << WSAGetLastError();
       } else {
@@ -128,7 +129,7 @@ class AddressSorterWin : public AddressSorter {
     }
 
     CallbackType callback_;
-    const size_t buffer_size_;
+    const DWORD buffer_size_;
     std::unique_ptr<SOCKET_ADDRESS_LIST, base::FreeDeleter> input_buffer_;
     std::unique_ptr<SOCKET_ADDRESS_LIST, base::FreeDeleter> output_buffer_;
     bool success_;

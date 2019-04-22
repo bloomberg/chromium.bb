@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_metadata.h"
 
@@ -63,7 +64,7 @@ void ValidateRequiredFields(
       ::i18n::addressinput::RECIPIENT
   };
 
-  for (size_t i = 0; i < arraysize(kFields); ++i) {
+  for (size_t i = 0; i < base::size(kFields); ++i) {
     AddressField field = kFields[i];
     if (address_to_check.IsFieldEmpty(field) &&
         IsFieldRequired(field, address_to_check.region_code) &&

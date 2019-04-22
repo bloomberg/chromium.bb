@@ -24,7 +24,7 @@
           outline: auto 5px -webkit-focus-ring-color;
         };
         align-items: center;
-        color: var(--settings-nav-grey);
+        color: var(--settings-nav-item-color);
         display: flex;
         font-weight: 500;
         margin-inline-end: 2px;  /* Margin so selected outline is visible. */
@@ -36,22 +36,21 @@
       }
 
       a[href].iron-selected {
-        color: var(--google-blue-700);
+        color: var(--cr-link-color);
       }
 
       iron-icon {
-        --iron-icon-fill-color: var(--settings-nav-grey);
+        --iron-icon-fill-color: var(--settings-nav-icon-color);
         margin-inline-end: 24px;
         pointer-events: none;
         vertical-align: top;
       }
 
       .iron-selected > iron-icon {
-        fill: var(--google-blue-700);
+        fill: var(--cr-link-color);
       }
 
       #advancedButton {
-        background-color: unset;
         border: none;
         border-radius: initial;
         height: unset;
@@ -86,6 +85,10 @@
         margin-bottom: 8px;
         margin-top: 8px;
       }
+
+      :host-context([dark]) #menuSeparator {
+        border-bottom: var(--cr-separator-line);  /* override */
+      }
     </style>
     <iron-selector id="topMenu" selectable="a:not(#extensionsLink)"
         attr-for-selected="href" on-iron-activate="onSelectorActivate_"
@@ -99,7 +102,8 @@
         <iron-icon icon="cr:bluetooth"></iron-icon>
         $i18n{bluetoothPageTitle}
       </a>
-      <a href="/multidevice" hidden="[[!showMultidevice]]">
+      <a id="multidevice" href="/multidevice"
+          hidden="[[!pageVisibility.multidevice]]">
         <iron-icon icon="settings:multidevice-better-together-suite">
         </iron-icon>
         $i18n{multidevicePageTitle}
@@ -134,11 +138,15 @@
         <iron-icon icon="settings:play-prism"></iron-icon>
         $i18n{androidAppsPageTitle}
       </a>
-</if>
-<if expr="chromeos">
       <a href="/crostini" hidden="[[!showCrostini]]">
         <iron-icon icon="settings:crostini-mascot"></iron-icon>
         $i18n{crostiniPageTitle}
+      </a>
+      <a href="/pluginVm" hidden="[[!showPluginVm]]">
+        <!-- TODO(crbug.com/950738): The placeholder iron-icon here is needed
+          for spacing. Replace this once we get the proper icon. -->
+        <iron-icon icon="cr:info"></iron-icon>
+        $i18n{pluginVmPageTitle}
       </a>
 </if>
 <if expr="not chromeos">
@@ -203,6 +211,7 @@
       </iron-collapse>
       <div id="menuSeparator"></div>
       <a id="extensionsLink" href="chrome://extensions" target="_blank"
+          hidden="[[!pageVisibility.extensions]]"
           on-click="onExtensionsLinkClick_"
           title="$i18n{extensionsLinkTooltip}">
         <span>$i18n{extensionsPageTitle}</span>

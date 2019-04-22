@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/ranges.h"

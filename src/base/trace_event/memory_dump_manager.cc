@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
-#include "base/debug/thread_heap_usage_tracker.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -140,8 +139,6 @@ void MemoryDumpManager::Initialize(
   RegisterDumpProvider(JavaHeapDumpProvider::GetInstance(), "JavaHeap",
                        nullptr);
 #endif
-
-  TRACE_EVENT_WARMUP_CATEGORY(kTraceCategory);
 }
 
 void MemoryDumpManager::RegisterDumpProvider(

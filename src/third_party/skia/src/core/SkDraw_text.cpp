@@ -7,28 +7,11 @@
 
 #include "SkDraw.h"
 #include "SkFontPriv.h"
-#include "SkGlyphCache.h"
 #include "SkPaintPriv.h"
 #include "SkRasterClip.h"
 #include "SkScalerContext.h"
-#include "SkTextToPathIter.h"
+#include "SkStrike.h"
 #include "SkUtils.h"
-
-bool SkDraw::ShouldDrawTextAsPaths(const SkPaint& paint, const SkMatrix& ctm, SkScalar sizeLimit) {
-    // hairline glyphs are fast enough so we don't need to cache them
-    if (SkPaint::kStroke_Style == paint.getStyle() && 0 == paint.getStrokeWidth()) {
-        return true;
-    }
-
-    // we don't cache perspective
-    if (ctm.hasPerspective()) {
-        return true;
-    }
-
-    SkMatrix textM;
-    SkPaintPriv::MakeTextMatrix(&textM, paint);
-    return SkPaint::TooBigToUseCache(ctm, textM, sizeLimit);
-}
 
 bool SkDraw::ShouldDrawTextAsPaths(const SkFont& font, const SkPaint& paint,
                                    const SkMatrix& ctm, SkScalar sizeLimit) {
@@ -42,7 +25,7 @@ bool SkDraw::ShouldDrawTextAsPaths(const SkFont& font, const SkPaint& paint,
         return true;
     }
 
-    return SkPaint::TooBigToUseCache(ctm, SkFontPriv::MakeTextMatrix(font), sizeLimit);
+    return SkFontPriv::TooBigToUseCache(ctm, SkFontPriv::MakeTextMatrix(font), sizeLimit);
 }
 
 // disable warning : local variable used without having been initialized
@@ -118,7 +101,7 @@ void SkDraw::paintMasks(SkSpan<const SkMask> masks, const SkPaint& paint) const 
     }
 }
 
-void SkDraw::paintPaths(SkSpan<const SkGlyphRunListPainter::PathAndPos> pathsAndPositions,
+void SkDraw::paintPaths(SkSpan<const SkPathPos> pathsAndPositions,
                         SkScalar scale,
                         const SkPaint& paint) const {
     for (const auto& pathAndPos : pathsAndPositions) {

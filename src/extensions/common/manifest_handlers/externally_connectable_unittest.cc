@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
@@ -210,7 +210,7 @@ TEST_F(ExternallyConnectableTest, IdCanConnect) {
   // Not in order to test that ExternallyConnectableInfo sorts it.
   std::string matches_ids_array[] = {"g", "h", "c", "i", "a", "z", "b"};
   std::vector<std::string> matches_ids(
-      matches_ids_array, matches_ids_array + arraysize(matches_ids_array));
+      matches_ids_array, matches_ids_array + base::size(matches_ids_array));
 
   std::string nomatches_ids_array[] = {"2", "3", "1"};
 
@@ -219,7 +219,7 @@ TEST_F(ExternallyConnectableTest, IdCanConnect) {
     ExternallyConnectableInfo info(URLPatternSet(), matches_ids, false, false);
     for (size_t i = 0; i < matches_ids.size(); ++i)
       EXPECT_TRUE(info.IdCanConnect(matches_ids[i]));
-    for (size_t i = 0; i < arraysize(nomatches_ids_array); ++i)
+    for (size_t i = 0; i < base::size(nomatches_ids_array); ++i)
       EXPECT_FALSE(info.IdCanConnect(nomatches_ids_array[i]));
   }
 
@@ -228,7 +228,7 @@ TEST_F(ExternallyConnectableTest, IdCanConnect) {
     ExternallyConnectableInfo info(URLPatternSet(), matches_ids, true, false);
     for (size_t i = 0; i < matches_ids.size(); ++i)
       EXPECT_TRUE(info.IdCanConnect(matches_ids[i]));
-    for (size_t i = 0; i < arraysize(nomatches_ids_array); ++i)
+    for (size_t i = 0; i < base::size(nomatches_ids_array); ++i)
       EXPECT_TRUE(info.IdCanConnect(nomatches_ids_array[i]));
   }
 }

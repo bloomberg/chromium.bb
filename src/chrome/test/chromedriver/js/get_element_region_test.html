@@ -29,14 +29,6 @@ function testSvgElement() {
   assertEquals(110, region.height);
 }
 
-function testElementWithoutBoundingRectangle() {
-  var region = getElementRegion(document.getElementsByTagName('br')[0]);
-  assertEquals(0, region.left);
-  assertEquals(0, region.top);
-  assertEquals(0, region.width);
-  assertEquals(0, region.height);
-}
-
 function testAreaPoly() {
   var region = getElementRegion(document.getElementById('poly'));
   assertEquals(20, region.left);

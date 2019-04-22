@@ -4,13 +4,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "gm.h"
-#include "sk_tool_utils.h"
 #include "SkBitmap.h"
-#include "SkShader.h"
 #include "SkBlendModePriv.h"
 #include "SkColorPriv.h"
+#include "SkShader.h"
 #include "SkTextUtils.h"
+#include "ToolUtils.h"
+#include "gm.h"
 
 namespace skiagm {
 
@@ -33,9 +33,7 @@ protected:
         const SkScalar w = SkIntToScalar(kSize);
         const SkScalar h = SkIntToScalar(kSize);
 
-        SkPaint labelP;
-        labelP.setAntiAlias(true);
-        sk_tool_utils::set_portable_typeface(&labelP);
+        SkFont font(ToolUtils::create_portable_typeface());
 
         const int W = 6;
 
@@ -72,8 +70,7 @@ protected:
             canvas->restore();
 
 #if 1
-            SkTextUtils::DrawString(canvas, SkBlendMode_Name(mode),
-                                    x + w/2, y - labelP.getTextSize()/2, labelP,
+            SkTextUtils::DrawString(canvas, SkBlendMode_Name(mode), x + w/2, y - font.getSize()/2, font, SkPaint(),
                                     SkTextUtils::kCenter_Align);
 #endif
             x += w + SkIntToScalar(10);
@@ -98,8 +95,7 @@ private:
 
         SkMatrix lm;
         lm.setScale(SkIntToScalar(16), SkIntToScalar(16));
-        fBG = SkShader::MakeBitmapShader(bg, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
-                                         &lm);
+        fBG = bg.makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat, &lm);
 
         SkBitmap srcBmp;
         srcBmp.allocN32Pixels(kSize, kSize);
@@ -112,8 +108,7 @@ private:
                 pixels[kSize * y + x] = rowColor;
             }
         }
-        fSrc = SkShader::MakeBitmapShader(srcBmp, SkShader::kClamp_TileMode,
-                                          SkShader::kClamp_TileMode);
+        fSrc = srcBmp.makeShader();
         SkBitmap dstBmp;
         dstBmp.allocN32Pixels(kSize, kSize);
         pixels = reinterpret_cast<SkPMColor*>(dstBmp.getPixels());
@@ -125,8 +120,7 @@ private:
                 pixels[kSize * y + x] = colColor;
             }
         }
-        fDst = SkShader::MakeBitmapShader(dstBmp, SkShader::kClamp_TileMode,
-                                          SkShader::kClamp_TileMode);
+        fDst = dstBmp.makeShader();
     }
 
     enum {
@@ -143,7 +137,6 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new Xfermodes2GM; }
-static GMRegistry reg(MyFactory);
+DEF_GM( return new Xfermodes2GM; )
 
 }

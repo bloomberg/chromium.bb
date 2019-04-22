@@ -4,17 +4,19 @@ include_rules = [
   "+android_webview/common",
   "+android_webview/grit",
   "+android_webview/jni",
-  "+android_webview/public/browser",
   "+cc",
   "+components/autofill/android",
   "+components/autofill/content/browser",
+  "+components/autofill/content/common",
   "+components/autofill/core/browser",
   "+components/autofill/core/common",
   "+components/cdm/browser",
+  "+components/crash/content/app",
   "+components/crash/content/browser",
   "+components/crash/core",
   "+components/download/public/common",
   "+components/heap_profiling",
+  "+components/minidump_uploader",
   "+components/navigation_interception",
   "+components/policy/core/browser",
   "+components/policy/core/common",
@@ -32,6 +34,7 @@ include_rules = [
   "+components/visitedlink/browser",
   "+components/viz/common",
   "+components/viz/service/display",
+  "+components/viz/service/display_embedder",
   "+components/viz/service/frame_sinks",
   "+components/viz/test",
   "+components/webdata/common",
@@ -53,8 +56,16 @@ include_rules = [
   "+services/network/public",
   "+services/service_manager/public/cpp",
 
+  # network service related unit tests
+  "+services/network/test",
+  "+mojo/core/embedder/embedder.h",
+  "+mojo/public/cpp/system",
+
   "+storage/browser/quota",
   "+storage/common/quota",
+
+  "+third_party/crashpad/crashpad/client",
+  "+third_party/crashpad/crashpad/util",
 
   "+ui/gfx",
   "+ui/gl",
@@ -64,6 +75,8 @@ include_rules = [
   # AwContentBrowserClient::GetDefaultFavicon
   "!ui/resources/grit/ui_resources.h",
 
+  # Required for MediaStreams.
+  "+third_party/blink/public/common/mediastream",
   # QuotaStatusCode required by AwQuotaManagerBridge.
   "+third_party/blink/public/mojom/quota",
   # Interface required for in-process input event handling.
@@ -71,5 +84,9 @@ include_rules = [
   # For find-in-page
   "+third_party/blink/public/mojom/frame",
   # Required for the Web Speech API.
-  "+third_party/blink/public/mojom/speech"
+  "+third_party/blink/public/mojom/speech",
+  # Required by AwSettings.
+  "+third_party/blink/public/mojom/renderer_preferences.mojom.h",
+  # For the content_browser overlay manifest
+  "+third_party/blink/public/mojom/input",
 ]

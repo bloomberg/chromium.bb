@@ -4,10 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-
 from blinkbuild.name_style_converter import NameStyleConverter
 import media_feature_symbol
 import json5_generator

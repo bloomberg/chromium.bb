@@ -10,6 +10,7 @@ Responsible for generating the decoder based on parsed
 table representations.
 """
 
+from __future__ import print_function
 
 import dgen_opt
 import dgen_output
@@ -111,7 +112,7 @@ H_FOOTER="""
 """
 
 def generate_h(decoder, decoder_name, filename, out, cl_args):
-    """Entry point to the decoder for .h file.
+  """Entry point to the decoder for .h file.
 
     Args:
         decoder: The decoder defined by the list of Table objects to
@@ -123,33 +124,32 @@ def generate_h(decoder, decoder_name, filename, out, cl_args):
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
     """
-    global _cl_args
-    assert filename.endswith('.h')
-    _cl_args = cl_args
+  global _cl_args
+  assert filename.endswith('.h')
+  _cl_args = cl_args
 
-    # Before starting, remove all testing information from the parsed tables.
-    decoder = decoder.action_filter(['actual'])
+  # Before starting, remove all testing information from the parsed tables.
+  decoder = decoder.action_filter(['actual'])
 
-    values = {
-        'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
-        'IFDEF_NAME': dgen_output.ifdef_name(filename),
-        'FILENAME_BASE': filename[:-len('.h')],
-        'decoder_name': decoder_name,
-        }
-    out.write(H_HEADER % values)
-    values['fictitious_decoder'] = (
-        decoder.get_value('FictitiousFirst').actual())
-    out.write(DECODER_DECLARE_HEADER % values)
-    out.write(DECODER_DECLARE_METHOD_COMMENTS)
-    for table in decoder.tables():
-      values['table_name'] = table.name
-      out.write(DECODER_DECLARE_METHOD % values)
-    out.write(DECODER_DECLARE_FIELD_COMMENTS)
-    for action in decoder.action_filter(['actual']).decoders():
-      values['decoder'] = action.actual()
-      out.write(DECODER_DECLARE_FIELD % values)
-    out.write(DECODER_DECLARE_FOOTER % values)
-    out.write(H_FOOTER % values)
+  values = {
+      'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
+      'IFDEF_NAME': dgen_output.ifdef_name(filename),
+      'FILENAME_BASE': filename[:-len('.h')],
+      'decoder_name': decoder_name,
+  }
+  out.write(H_HEADER % values)
+  values['fictitious_decoder'] = (decoder.get_value('FictitiousFirst').actual())
+  out.write(DECODER_DECLARE_HEADER % values)
+  out.write(DECODER_DECLARE_METHOD_COMMENTS)
+  for table in decoder.tables():
+    values['table_name'] = table.name
+    out.write(DECODER_DECLARE_METHOD % values)
+  out.write(DECODER_DECLARE_FIELD_COMMENTS)
+  for action in decoder.action_filter(['actual']).decoders():
+    values['decoder'] = action.actual()
+    out.write(DECODER_DECLARE_FIELD % values)
+  out.write(DECODER_DECLARE_FOOTER % values)
+  out.write(H_FOOTER % values)
 
 # Defines the header for DECODER.h
 CC_HEADER="""%(FILE_HEADER)s
@@ -224,7 +224,7 @@ CC_FOOTER="""
 """
 
 def generate_cc(decoder, decoder_name, filename, out, cl_args):
-    """Implementation of the decoder in .cc file
+  """Implementation of the decoder in .cc file
 
     Args:
         decoder: The decoder defined by the list of Table objects to
@@ -236,27 +236,28 @@ def generate_cc(decoder, decoder_name, filename, out, cl_args):
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
     """
-    global _cl_args
-    assert filename.endswith('.cc')
-    _cl_args = cl_args
+  global _cl_args
+  assert filename.endswith('.cc')
+  _cl_args = cl_args
 
-    # Before starting, remove all testing information from the parsed
-    # tables.
-    decoder = decoder.action_filter(['actual'])
-    values = {
-        'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
-        'header_filename': filename[:-2] + 'h',
-        'decoder_name': decoder_name,
-        'entry_table_name': decoder.primary.name,
-        }
-    out.write(CC_HEADER % values)
-    _generate_constructors(decoder, values, out)
-    _generate_methods(decoder, values, out)
-    out.write(DECODER_METHOD_HEADER % values)
-    if _cl_args.get('trace') == 'True':
-      out.write(DECODER_METHOD_TRACE % values)
-    out.write(DECODER_METHOD_FOOTER % values)
-    out.write(CC_FOOTER % values)
+  # Before starting, remove all testing information from the parsed
+  # tables.
+  decoder = decoder.action_filter(['actual'])
+  values = {
+      'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
+      'header_filename': filename[:-2] + 'h',
+      'decoder_name': decoder_name,
+      'entry_table_name': decoder.primary.name,
+  }
+  out.write(CC_HEADER % values)
+  _generate_constructors(decoder, values, out)
+  _generate_methods(decoder, values, out)
+  out.write(DECODER_METHOD_HEADER % values)
+  if _cl_args.get('trace') == 'True':
+    out.write(DECODER_METHOD_TRACE % values)
+  out.write(DECODER_METHOD_FOOTER % values)
+  out.write(CC_FOOTER % values)
+
 
 def _generate_constructors(decoder, values, out):
   out.write(CONSTRUCTOR_HEADER % values)
@@ -275,14 +276,14 @@ def _generate_methods(decoder, values, out):
       opt_rows.append(table.default_row)
 
     opt_rows = table.add_column_to_rows(opt_rows)
-    print ("Table %s: %d rows minimized to %d"
-           % (table.name, len(table.rows()), len(opt_rows)))
+    print("Table %s: %d rows minimized to %d" % (table.name, len(table.rows()),
+                                                 len(opt_rows)))
 
     values['table_name'] = table.name
     values['citation'] = table.citation
     out.write(METHOD_HEADER % values)
     if _cl_args.get('trace') == 'True':
-        out.write(METHOD_HEADER_TRACE % values)
+      out.write(METHOD_HEADER_TRACE % values)
 
     # Add message to stop compilation warnings if this table
     # doesn't require subtables to select a class decoder.
@@ -312,7 +313,7 @@ def _generate_methods(decoder, values, out):
         out.write(METHOD_DISPATCH_CONTINUE % p.to_commented_bool())
       out.write(METHOD_DISPATCH_END)
       if _cl_args.get('trace') == 'True':
-          out.write(METHOD_DISPATCH_TRACE % count)
+        out.write(METHOD_DISPATCH_TRACE % count)
       if row.action.__class__.__name__ == 'DecoderAction':
         values['decoder'] = row.action.actual()
         out.write(METHOD_DISPATCH_CLASS_DECODER % values)

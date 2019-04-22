@@ -11,12 +11,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feature_engagement/internal/availability_model_impl.h"
 #include "components/feature_engagement/internal/display_lock_controller.h"
@@ -117,7 +117,7 @@ class StoreEverythingEventStorageValidator : public EventStorageValidator {
                   uint32_t event_day,
                   uint32_t current_day) const override {
     return true;
-  };
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StoreEverythingEventStorageValidator);
@@ -129,7 +129,7 @@ class TestTimeProvider : public TimeProvider {
   ~TestTimeProvider() override = default;
 
   // TimeProvider implementation.
-  uint32_t GetCurrentDay() const override { return 1u; };
+  uint32_t GetCurrentDay() const override { return 1u; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTimeProvider);
@@ -415,7 +415,7 @@ class TrackerImplTest : public ::testing::Test {
 
   virtual bool ShouldAvailabilityStoreBeReady() { return true; }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<TrackerImpl> tracker_;
   TestTrackerInMemoryEventStore* event_store_;
   TestTrackerAvailabilityModel* availability_model_;

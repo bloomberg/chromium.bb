@@ -96,7 +96,7 @@ constexpr TimeDelta MediaControlsOrientationLockDelegate::kLockToAnyDelay;
 
 MediaControlsOrientationLockDelegate::MediaControlsOrientationLockDelegate(
     HTMLVideoElement& video)
-    : EventListener(kCPPEventListenerType), video_element_(video) {
+    : video_element_(video) {
   if (VideoElement().isConnected())
     Attach();
 }
@@ -121,11 +121,6 @@ void MediaControlsOrientationLockDelegate::Detach() {
                                      this, true);
   VideoElement().removeEventListener(event_type_names::kLoadedmetadata, this,
                                      true);
-}
-
-bool MediaControlsOrientationLockDelegate::operator==(
-    const EventListener& other) const {
-  return this == &other;
 }
 
 void MediaControlsOrientationLockDelegate::MaybeLockOrientation() {
@@ -479,7 +474,7 @@ void MediaControlsOrientationLockDelegate::
 }
 
 void MediaControlsOrientationLockDelegate::Trace(blink::Visitor* visitor) {
-  EventListener::Trace(visitor);
+  NativeEventListener::Trace(visitor);
   visitor->Trace(video_element_);
 }
 

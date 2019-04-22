@@ -4,16 +4,15 @@
 
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.mojom.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "base/macros.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/ssl/cert_verifier_browser_test.h"
+#include "chrome/browser/ssl/chrome_mock_cert_verifier.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -38,6 +37,7 @@
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
+#include "ui/views/window/frame_caption_button.h"
 
 class ImmersiveModeControllerAshHostedAppBrowserTest
     : public extensions::ExtensionBrowserTest {
@@ -50,8 +50,7 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
   // InProcessBrowserTest override:
   void SetUpOnMainThread() override {
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
-    https_server_.AddDefaultHandlers(
-        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
     ASSERT_TRUE(https_server_.Start());
 
     WebApplicationInfo web_app_info;
@@ -63,11 +62,11 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
 
   GURL GetAppUrl() { return https_server_.GetURL("/simple.html"); }
 
-  void LaunchAppBrowser(bool await_url_load = true) {
+  void LaunchAppBrowser(bool wait = true) {
     ui_test_utils::UrlLoadObserver url_observer(
         GetAppUrl(), content::NotificationService::AllSources());
     browser_ = ExtensionBrowserTest::LaunchAppBrowser(app_);
-    if (await_url_load) {
+    if (wait) {
       // Wait for the URL to load so that the location bar end-state stabilizes.
       url_observer.Wait();
     }
@@ -77,7 +76,7 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
     // which triggers an animation.
     ash::ImmersiveFullscreenControllerTestApi(
         static_cast<ImmersiveModeControllerAsh*>(controller_)->controller())
-        .SetupForTest();
+        .SetupForTest(/*wait_for_mouse_event=*/wait);
 
     browser_->window()->Show();
   }
@@ -269,13 +268,6 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 // tablet mode.
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
                        FrameLayoutToggleTabletMode) {
-  // For mash, the layout is handled in Ash and tested by
-  // FrameCaptionButtonContainerViewTest.
-  // TODO(estade): look into enabling for Mash now that the frame is
-  // client-side.
-  if (features::IsUsingWindowService())
-    return;
-
   LaunchAppBrowser();
   ASSERT_FALSE(controller()->IsEnabled());
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
@@ -293,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   test::SetAndWaitForTabletMode(true);
   frame_test_api.EndAnimations();
 
-  EXPECT_FALSE(frame_test_api.size_button()->visible());
+  EXPECT_TRUE(frame_test_api.size_button()->visible());
 
   VerifyButtonsInImmersiveMode(frame_view);
 

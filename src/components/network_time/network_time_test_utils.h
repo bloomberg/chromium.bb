@@ -14,7 +14,7 @@
 namespace base {
 namespace test {
 class ScopedFeatureList;
-};  // namespace test
+}  // namespace test
 
 class FieldTrialList;
 }  // namespace base

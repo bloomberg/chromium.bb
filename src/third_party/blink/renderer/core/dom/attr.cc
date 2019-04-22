@@ -46,16 +46,6 @@ Attr::Attr(Document& document,
       name_(name),
       standalone_value_or_attached_local_name_(standalone_value) {}
 
-Attr* Attr::Create(Element& element, const QualifiedName& name) {
-  return new Attr(element, name);
-}
-
-Attr* Attr::Create(Document& document,
-                   const QualifiedName& name,
-                   const AtomicString& value) {
-  return new Attr(document, name, value);
-}
-
 Attr::~Attr() = default;
 
 const QualifiedName Attr::GetQualifiedName() const {
@@ -94,7 +84,7 @@ void Attr::setNodeValue(const String& v) {
 }
 
 Node* Attr::Clone(Document& factory, CloneChildrenFlag) const {
-  return new Attr(factory, name_, value());
+  return MakeGarbageCollected<Attr>(factory, name_, value());
 }
 
 void Attr::DetachFromElementWithValue(const AtomicString& value) {
@@ -110,7 +100,7 @@ void Attr::AttachToElement(Element* element,
   standalone_value_or_attached_local_name_ = attached_local_name;
 }
 
-void Attr::Trace(blink::Visitor* visitor) {
+void Attr::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   Node::Trace(visitor);
 }

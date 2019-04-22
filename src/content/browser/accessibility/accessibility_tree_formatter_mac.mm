@@ -13,9 +13,15 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+
+// This file uses the deprecated NSObject accessibility interface.
+// TODO(crbug.com/921109): Migrate to the new NSAccessibility interface.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 using base::StringPrintf;
 using base::SysNSStringToUTF8;
@@ -56,7 +62,8 @@ std::unique_ptr<base::DictionaryValue> PopulatePosition(
 
   position->SetInteger(kXCoordDictAttr,
                        static_cast<int>(node_position.x - root_left));
-  position->SetInteger(kYCoordDictAttr,
+  position->SetInteger(
+      kYCoordDictAttr,
       static_cast<int>(-node_position.y - node_size.height - root_top));
   return position;
 }
@@ -104,8 +111,7 @@ std::unique_ptr<base::Value> StringForBrowserAccessibility(
   // If the role is "group", include the role description as well.
   id roleDescription = [obj roleDescription];
   if ([role isEqualToString:NSAccessibilityGroupRole] &&
-      roleDescription != nil &&
-      ![roleDescription isEqualToString:@""] &&
+      roleDescription != nil && ![roleDescription isEqualToString:@""] &&
       ![roleDescription isEqualToString:@"group"]) {
     [tokens addObject:roleDescription];
   }
@@ -169,6 +175,7 @@ NSArray* AllAttributesArray() {
     @"AXARIAPosInSet",
     @"AXAutocomplete",
     @"AXAutocompleteValue",
+    @"AXBlockQuoteLevel",
     NSAccessibilityColumnHeaderUIElementsAttribute,
     NSAccessibilityColumnIndexRangeAttribute,
     @"AXDOMIdentifier",
@@ -214,15 +221,20 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBrowser {
   explicit AccessibilityTreeFormatterMac();
   ~AccessibilityTreeFormatterMac() override;
 
+  void AddDefaultFilters(
+      std::vector<PropertyFilter>* property_filters) override;
+
  private:
   const base::FilePath::StringType GetExpectedFileSuffix() override;
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
+  const std::string GetDenyNodeString() override;
   void AddProperties(const BrowserAccessibility& node,
                      base::DictionaryValue* dict) override;
-  base::string16 ProcessTreeForOutput(const base::DictionaryValue& node,
-        base::DictionaryValue* filtered_dict_result = nullptr) override;
+  base::string16 ProcessTreeForOutput(
+      const base::DictionaryValue& node,
+      base::DictionaryValue* filtered_dict_result = nullptr) override;
 };
 
 // static
@@ -231,12 +243,24 @@ AccessibilityTreeFormatter::Create() {
   return std::make_unique<AccessibilityTreeFormatterMac>();
 }
 
-AccessibilityTreeFormatterMac::AccessibilityTreeFormatterMac() {
+// static
+std::vector<AccessibilityTreeFormatter::TestPass>
+AccessibilityTreeFormatter::GetTestPasses() {
+  return {
+      {"blink", &AccessibilityTreeFormatterBlink::CreateBlink},
+      {"mac", &AccessibilityTreeFormatter::Create},
+  };
 }
 
-AccessibilityTreeFormatterMac::~AccessibilityTreeFormatterMac() {
-}
+AccessibilityTreeFormatterMac::AccessibilityTreeFormatterMac() {}
 
+AccessibilityTreeFormatterMac::~AccessibilityTreeFormatterMac() {}
+
+void AccessibilityTreeFormatterMac::AddDefaultFilters(
+    std::vector<PropertyFilter>* property_filters) {
+  AddPropertyFilter(property_filters, "AXValueAutofill*");
+  AddPropertyFilter(property_filters, "AXAutocomplete*");
+}
 void AccessibilityTreeFormatterMac::AddProperties(
     const BrowserAccessibility& node,
     base::DictionaryValue* dict) {
@@ -261,9 +285,7 @@ void AccessibilityTreeFormatterMac::AddProperties(
       continue;
     id value = [cocoa_node accessibilityAttributeValue:requestedAttribute];
     if (value != nil) {
-      dict->Set(
-          SysNSStringToUTF8(requestedAttribute),
-          PopulateObject(value));
+      dict->Set(SysNSStringToUTF8(requestedAttribute), PopulateObject(value));
     }
   }
   dict->Set(kPositionDictAttr, PopulatePosition(node));
@@ -281,7 +303,7 @@ base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
   if (show_ids()) {
     int id_value;
     dict.GetInteger("id", &id_value);
-    WriteAttribute(true, base::IntToString16(id_value), &line);
+    WriteAttribute(true, base::NumberToString16(id_value), &line);
   }
 
   NSArray* defaultAttributes =
@@ -289,26 +311,23 @@ base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
                                 NSAccessibilityTitleUIElementAttribute,
                                 NSAccessibilityDescriptionAttribute,
                                 NSAccessibilityHelpAttribute,
-                                NSAccessibilityValueAttribute,
-                                nil];
+                                NSAccessibilityValueAttribute, nil];
   string s_value;
   dict.GetString(SysNSStringToUTF8(NSAccessibilityRoleAttribute), &s_value);
   WriteAttribute(true, base::UTF8ToUTF16(s_value), &line);
 
   string subroleAttribute = SysNSStringToUTF8(NSAccessibilitySubroleAttribute);
   if (dict.GetString(subroleAttribute, &s_value)) {
-    WriteAttribute(false,
-                   StringPrintf("%s=%s",
-                                subroleAttribute.c_str(), s_value.c_str()),
-                   &line);
+    WriteAttribute(
+        false, StringPrintf("%s=%s", subroleAttribute.c_str(), s_value.c_str()),
+        &line);
   }
 
   for (NSString* requestedAttribute in AllAttributesArray()) {
     string requestedAttributeUTF8 = SysNSStringToUTF8(requestedAttribute);
     if (dict.GetString(requestedAttributeUTF8, &s_value)) {
       WriteAttribute([defaultAttributes containsObject:requestedAttribute],
-                     StringPrintf("%s='%s'",
-                                  requestedAttributeUTF8.c_str(),
+                     StringPrintf("%s='%s'", requestedAttributeUTF8.c_str(),
                                   s_value.c_str()),
                      &line);
       continue;
@@ -317,26 +336,23 @@ base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
     if (dict.Get(requestedAttributeUTF8, &value)) {
       std::string json_value;
       base::JSONWriter::Write(*value, &json_value);
-      WriteAttribute(
-          [defaultAttributes containsObject:requestedAttribute],
-          StringPrintf("%s=%s",
-                       requestedAttributeUTF8.c_str(),
-                       json_value.c_str()),
-          &line);
+      WriteAttribute([defaultAttributes containsObject:requestedAttribute],
+                     StringPrintf("%s=%s", requestedAttributeUTF8.c_str(),
+                                  json_value.c_str()),
+                     &line);
     }
   }
   const base::DictionaryValue* d_value = NULL;
   if (dict.GetDictionary(kPositionDictAttr, &d_value)) {
     WriteAttribute(false,
-                   FormatCoordinates(kPositionDictAttr,
-                                     kXCoordDictAttr, kYCoordDictAttr,
-                                     *d_value),
+                   FormatCoordinates(kPositionDictAttr, kXCoordDictAttr,
+                                     kYCoordDictAttr, *d_value),
                    &line);
   }
   if (dict.GetDictionary(kSizeDictAttr, &d_value)) {
     WriteAttribute(false,
-                   FormatCoordinates(kSizeDictAttr,
-                                     kWidthDictAttr, kHeightDictAttr, *d_value),
+                   FormatCoordinates(kSizeDictAttr, kWidthDictAttr,
+                                     kHeightDictAttr, *d_value),
                    &line);
   }
 
@@ -360,4 +376,10 @@ const string AccessibilityTreeFormatterMac::GetDenyString() {
   return "@MAC-DENY:";
 }
 
+const string AccessibilityTreeFormatterMac::GetDenyNodeString() {
+  return "@MAC-DENY-NODE:";
+}
+
 }  // namespace content
+
+#pragma clang diagnostic pop

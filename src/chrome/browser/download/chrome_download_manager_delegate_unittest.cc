@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -16,7 +18,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_path_override.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -60,6 +61,11 @@
 #include "components/infobars/core/infobar_manager.h"
 #endif
 
+using download::DownloadItem;
+using download::DownloadPathReservationTracker;
+using download::PathValidationResult;
+using safe_browsing::DownloadFileType;
+using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtMost;
 using ::testing::DoAll;
@@ -72,9 +78,6 @@ using ::testing::ReturnRef;
 using ::testing::ReturnRefOfCopy;
 using ::testing::SetArgPointee;
 using ::testing::WithArg;
-using ::testing::_;
-using download::DownloadItem;
-using safe_browsing::DownloadFileType;
 
 namespace {
 
@@ -260,7 +263,7 @@ class ChromeDownloadManagerDelegateTest
       DownloadConfirmationResult result,
       const base::FilePath& virtual_path);
 
-  base::FilePath GetDefaultDownloadPath() const;
+  base::FilePath GetDownloadDirectory() const { return test_download_dir_; }
   TestChromeDownloadManagerDelegate* delegate();
   content::MockDownloadManager* download_manager();
   DownloadPrefs* download_prefs();
@@ -270,8 +273,7 @@ class ChromeDownloadManagerDelegateTest
   void GetNextId(uint32_t next_id) { download_ids_.emplace_back(next_id); }
 
  private:
-  base::ScopedPathOverride download_dir_override_{
-      chrome::DIR_DEFAULT_DOWNLOADS};
+  base::FilePath test_download_dir_;
   sync_preferences::TestingPrefServiceSyncable* pref_service_;
   std::unique_ptr<content::MockDownloadManager> download_manager_;
   std::unique_ptr<TestChromeDownloadManagerDelegate> delegate_;
@@ -284,13 +286,18 @@ ChromeDownloadManagerDelegateTest::ChromeDownloadManagerDelegateTest()
 }
 
 void ChromeDownloadManagerDelegateTest::SetUp() {
-  DownloadPrefs::ReinitializeDefaultDownloadDirectoryForTesting();
   ChromeRenderViewHostTestHarness::SetUp();
 
   CHECK(profile());
+
+  test_download_dir_ = profile()->GetPath().AppendASCII("TestDownloadDir");
+  ASSERT_TRUE(base::CreateDirectory(test_download_dir_));
+
   delegate_ =
       std::make_unique<::testing::NiceMock<TestChromeDownloadManagerDelegate>>(
           profile());
+  download_prefs()->SkipSanitizeDownloadTargetPathForTesting();
+  download_prefs()->SetDownloadPath(test_download_dir_);
   delegate_->SetDownloadManager(download_manager_.get());
   pref_service_ = profile()->GetTestingPrefService();
   web_contents()->SetDelegate(&web_contents_delegate_);
@@ -353,8 +360,7 @@ ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
 
 base::FilePath ChromeDownloadManagerDelegateTest::GetPathInDownloadDir(
     const char* relative_path) {
-  base::FilePath full_path =
-      GetDefaultDownloadPath().AppendASCII(relative_path);
+  base::FilePath full_path = GetDownloadDirectory().AppendASCII(relative_path);
   return full_path.NormalizePathSeparators();
 }
 
@@ -400,13 +406,6 @@ bool ChromeDownloadManagerDelegateTest::CheckForFileExistence(
                                     loop_runner.QuitClosure(), &result));
   loop_runner.Run();
   return result;
-}
-
-base::FilePath ChromeDownloadManagerDelegateTest::GetDefaultDownloadPath()
-    const {
-  base::FilePath path;
-  CHECK(base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path));
-  return path;
 }
 
 void ChromeDownloadManagerDelegateTest::OnConfirmationCallbackComplete(
@@ -599,9 +598,8 @@ TEST_F(ChromeDownloadManagerDelegateTest, MaybeDangerousContent) {
 TEST_F(ChromeDownloadManagerDelegateTest, CheckForFileExistence) {
   const char kData[] = "helloworld";
   const size_t kDataLength = sizeof(kData) - 1;
-  base::FilePath existing_path = GetDefaultDownloadPath().AppendASCII("foo");
-  base::FilePath non_existent_path =
-      GetDefaultDownloadPath().AppendASCII("bar");
+  base::FilePath existing_path = GetDownloadDirectory().AppendASCII("foo");
+  base::FilePath non_existent_path = GetDownloadDirectory().AppendASCII("bar");
   base::WriteFile(existing_path, kData, kDataLength);
 
   std::unique_ptr<download::MockDownloadItem> download_item =
@@ -932,6 +930,15 @@ const SafeBrowsingTestParameters kSafeBrowsingTestCases[] = {
      download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
      /*blocked=*/true},
 
+    // UNKNOWN verdict for a potentially dangerous file not blocked by policy.
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+     DownloadFileType::ALLOW_ON_USER_GESTURE,
+     safe_browsing::DownloadCheckResult::UNKNOWN,
+     DownloadPrefs::DownloadRestriction::MALICIOUS_FILES,
+
+     download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+     /*blocked=*/false},
+
     // DANGEROUS verdict for a potentially dangerous file.
     {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
      DownloadFileType::ALLOW_ON_USER_GESTURE,
@@ -940,6 +947,33 @@ const SafeBrowsingTestParameters kSafeBrowsingTestCases[] = {
 
      download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT,
      /*blocked=*/false},
+
+    // DANGEROUS verdict for a potentially dangerous file block by policy.
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+     DownloadFileType::ALLOW_ON_USER_GESTURE,
+     safe_browsing::DownloadCheckResult::DANGEROUS,
+     DownloadPrefs::DownloadRestriction::MALICIOUS_FILES,
+
+     download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT,
+     /*blocked=*/true},
+
+    // DANGEROUS verdict for a potentially dangerous file block by policy.
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+     DownloadFileType::ALLOW_ON_USER_GESTURE,
+     safe_browsing::DownloadCheckResult::DANGEROUS,
+     DownloadPrefs::DownloadRestriction::MALICIOUS_FILES,
+
+     download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST,
+     /*blocked=*/true},
+
+    // DANGEROUS verdict for a potentially dangerous file block by policy.
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+     DownloadFileType::ALLOW_ON_USER_GESTURE,
+     safe_browsing::DownloadCheckResult::DANGEROUS,
+     DownloadPrefs::DownloadRestriction::MALICIOUS_FILES,
+
+     download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
+     /*blocked=*/true},
 
     // UNCOMMON verdict for a potentially dangerous file.
     {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
@@ -975,6 +1009,16 @@ const SafeBrowsingTestParameters kSafeBrowsingTestCases[] = {
      DownloadFileType::ALLOW_ON_USER_GESTURE,
      safe_browsing::DownloadCheckResult::POTENTIALLY_UNWANTED,
      DownloadPrefs::DownloadRestriction::DANGEROUS_FILES,
+
+     download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
+     /*blocked=*/false},
+
+    // POTENTIALLY_UNWANTED verdict for a potentially dangerous file, not
+    // blocked by policy.
+    {download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
+     DownloadFileType::ALLOW_ON_USER_GESTURE,
+     safe_browsing::DownloadCheckResult::POTENTIALLY_UNWANTED,
+     DownloadPrefs::DownloadRestriction::MALICIOUS_FILES,
 
      download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
      /*blocked=*/false},
@@ -1021,9 +1065,9 @@ const SafeBrowsingTestParameters kSafeBrowsingTestCases[] = {
      /*blocked=*/false},
 };
 
-INSTANTIATE_TEST_CASE_P(_,
-                        ChromeDownloadManagerDelegateTestWithSafeBrowsing,
-                        ::testing::ValuesIn(kSafeBrowsingTestCases));
+INSTANTIATE_TEST_SUITE_P(_,
+                         ChromeDownloadManagerDelegateTestWithSafeBrowsing,
+                         ::testing::ValuesIn(kSafeBrowsingTestCases));
 
 }  // namespace
 

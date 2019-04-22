@@ -14,7 +14,7 @@ import os
 import subprocess
 import sys
 
-import gclient_utils
+import gclient_paths
 
 class NotFoundError(Exception):
   """A file could not be found."""
@@ -26,7 +26,7 @@ class NotFoundError(Exception):
 
 def FindDartFmtToolInChromiumTree():
   """Return a path to the dartfmt executable, or die trying."""
-  primary_solution_path = gclient_utils.GetPrimarySolutionPath()
+  primary_solution_path = gclient_paths.GetPrimarySolutionPath()
   if not primary_solution_path:
     raise NotFoundError(
         'Could not find checkout in any parent of the current path.')

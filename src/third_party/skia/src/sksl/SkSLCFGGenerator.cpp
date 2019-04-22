@@ -391,6 +391,7 @@ void CFGGenerator::addExpression(CFG& cfg, std::unique_ptr<Expression>* e, bool 
         case Expression::kBoolLiteral_Kind:  // fall through
         case Expression::kFloatLiteral_Kind: // fall through
         case Expression::kIntLiteral_Kind:   // fall through
+        case Expression::kNullLiteral_Kind:   // fall through
         case Expression::kSetting_Kind:      // fall through
         case Expression::kVariableReference_Kind:
             cfg.fBlocks[cfg.fCurrent].fNodes.push_back({ BasicBlock::Node::kExpression_Kind,
@@ -448,6 +449,10 @@ void CFGGenerator::addLValue(CFG& cfg, std::unique_ptr<Expression>* e) {
             SkASSERT(false);
             break;
     }
+}
+
+static bool is_true(Expression& expr) {
+    return expr.fKind == Expression::kBoolLiteral_Kind && ((BoolLiteral&) expr).fValue;
 }
 
 void CFGGenerator::addStatement(CFG& cfg, std::unique_ptr<Statement>* s) {
@@ -535,7 +540,9 @@ void CFGGenerator::addStatement(CFG& cfg, std::unique_ptr<Statement>* s) {
             fLoopExits.push(loopExit);
             this->addExpression(cfg, &w.fTest, true);
             BlockId test = cfg.fCurrent;
-            cfg.addExit(test, loopExit);
+            if (!is_true(*w.fTest)) {
+                cfg.addExit(test, loopExit);
+            }
             cfg.newBlock();
             this->addStatement(cfg, &w.fStatement);
             cfg.addExit(cfg.fCurrent, loopStart);

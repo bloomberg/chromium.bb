@@ -10,6 +10,12 @@ import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build_overrides/build.gni")
 
+if (is_chromeos) {
+  import("//build/config/chromeos/rules.gni")
+} else {
+  is_cros_chrome_sdk = false
+}
+
 if (is_android) {
   import("//build/config/android/abi.gni")
 }
@@ -51,7 +57,6 @@ declare_args() {
 
   # Enables support for ThinLTO, which links 3x-10x faster than full LTO. See
   # also http://blog.llvm.org/2016/06/thinlto-scalable-and-incremental-lto.html
-  # TODO(https://crbug.com/887272): Reenable on is_android && is_official_build
   use_thin_lto = is_cfi || (is_android && is_official_build)
 
   # Tell VS to create a PDB that references information in .obj files rather
@@ -78,15 +83,15 @@ assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")
 # For unofficial (e.g. development) builds and non-Chrome branded (e.g. Cronet
 # which doesn't use Crashpad, crbug.com/479283) builds it's useful to be able
 # to unwind at runtime.
-exclude_unwind_tables =
-    (is_chrome_branded && is_official_build) ||
-    (is_chromecast && !is_cast_desktop_build && !is_debug && !is_fuchsia)
+exclude_unwind_tables = (is_chrome_branded && is_official_build) ||
+                        (is_chromecast && !is_cast_desktop_build && !is_debug &&
+                         !cast_is_debug && !is_fuchsia)
 
 # If true, optimize for size. Does not affect windows builds.
 # Linux & Mac favor speed over size.
 # TODO(brettw) it's weird that Mac and desktop Linux are different. We should
 # explore favoring size over speed in this case as well.
-optimize_for_size = is_android || is_ios || is_fuchsia
+optimize_for_size = is_android || is_chromecast || is_fuchsia || is_ios
 
 declare_args() {
   # Whether we should consider the profile we're using to be accurate. Accurate
@@ -164,27 +169,33 @@ declare_args() {
 }
 
 declare_args() {
-  # Set to true to use lld, the LLVM linker. This flag may be used on Windows,
-  # Linux or Fuchsia.
-  # TODO(pcc): Enable lld on more architectures on Linux. E.g. we probably need
-  # to fix some of crbug.com/742655 to enable it on ARM.
-  use_lld =
-      is_clang &&
-      (is_win || is_fuchsia || (use_thin_lto && target_os != "chromeos") ||
-       (is_linux && current_cpu == "x64" && target_os != "chromeos") ||
-       (is_android && (current_cpu != "arm" || arm_version >= 7) &&
-        current_cpu != "mipsel" && current_cpu != "mips64el"))
+  # Set to true to use lld, the LLVM linker.
+  # https://crbug.com/911658 for using lld on 32-bit linux.
+  # https://crbug.com/917504 for arm chromeos
+  use_lld = is_clang &&
+            (is_win || is_fuchsia || is_android ||
+             (is_linux && target_os != "chromeos" && current_cpu != "x86") ||
+             (target_os == "chromeos" && current_cpu != "arm"))
 }
 
 declare_args() {
   # Whether to use the gold linker from binutils instead of lld or bfd.
-  use_gold = !use_lld && !(is_chromecast && is_linux &&
-                           (current_cpu == "arm" || current_cpu == "mipsel")) &&
-             ((is_linux && (current_cpu == "x64" || current_cpu == "x86" ||
-                            current_cpu == "arm" || current_cpu == "mipsel" ||
-                            current_cpu == "mips64el")) ||
-              (is_android && (current_cpu == "x86" || current_cpu == "x64" ||
-                              current_cpu == "arm" || current_cpu == "arm64")))
+  use_gold =
+      !use_lld && !(is_chromecast && is_linux &&
+                    (current_cpu == "arm" || current_cpu == "mipsel")) &&
+      ((is_linux && (current_cpu == "x64" || current_cpu == "x86" ||
+                     current_cpu == "arm" || current_cpu == "arm64" ||
+                     current_cpu == "mipsel" || current_cpu == "mips64el")) ||
+       (is_android && (current_cpu == "x86" || current_cpu == "x64" ||
+                       current_cpu == "arm" || current_cpu == "arm64")))
+
+  # Use relative paths for debug info. This is important to make the build
+  # results independent of the checkout and build directory names, which
+  # in turn is important for goma compile hit rate.
+  # Setting this to true may make it harder to debug binaries on Linux, see
+  # https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md#Source-level-debug-with-fdebug_compilation_dir
+  strip_absolute_paths_from_debug_symbols =
+      is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux
 }
 
 # If it wasn't manually set, set to an appropriate default.
@@ -204,17 +215,29 @@ if (symbol_level == -1) {
     # If you use is_win_fastlink = true or lld or clang then you can set
     # symbol_level = 2 when using goma.
     symbol_level = 1
+  } else if (is_cros_chrome_sdk) {
+    # Use lower symbol level in Simple Chrome build for faster link time.
+    # For Simple Chrome, this should take precedence over is_official_build,
+    # turned on by --internal.
+    if ((target_cpu == "x64" || target_cpu == "x86") && !is_debug) {
+      # For release x86/x64 build, specify symbol_level=0 for faster link time.
+      # x86/x64 shows backtraces with symbol_level=0 (arm requires
+      # symbol_level=1).
+      symbol_level = 0
+    } else {
+      symbol_level = 1
+    }
+  } else if (using_sanitizer) {
+    # Sanitizers need line table info for stack traces. They don't need type
+    # info or variable info, so we can leave that out to speed up the build.
+    # Sanitizers also require symbols for filename suppressions to work.
+    symbol_level = 1
   } else if ((!is_nacl && !is_linux && !is_fuchsia) || is_debug ||
              is_official_build || is_chromecast) {
     # Linux builds slower by having symbols as part of the target binary,
     # whereas Mac and Windows have them separate, so in Release Linux, default
     # them off, but keep them on for Official builds and Chromecast builds.
     symbol_level = 2
-  } else if (using_sanitizer) {
-    # Sanitizers need line table info for stack traces. They don't need type
-    # info or variable info, so we can leave that out to speed up the build.
-    # Sanitizers also require symbols for filename suppressions to work.
-    symbol_level = 1
   } else {
     symbol_level = 0
   }
@@ -227,6 +250,18 @@ if (symbol_level == -1) {
   }
 }
 
+# Non-component debug builds with symbol_level = 2 are an undesirable (very slow
+# build times) and unsupported (some test binaries will fail with > 4 GB PDBs)
+# combination. This is only checked when current_toolchain == default_toolchain
+# because the is_component_build flag is set to false in various components of
+# the build (like nacl) and we don't want to assert on those.
+# iOS does not support component builds so add an exception for this platform.
+if (build_with_chromium) {
+  assert(symbol_level != 2 || current_toolchain != default_toolchain ||
+             is_component_build || !is_debug || is_ios,
+         "Can't do non-component debug builds at symbol_level=2")
+}
+
 # Assert that the configuration isn't going to hit https://crbug.com/648948.
 # An exception is made when target_os == "chromeos" as we only use the Android
 # toolchain there to build relatively small binaries.
@@ -237,3 +272,15 @@ assert(ignore_elf32_limitations || !is_android || target_os == "chromeos" ||
            "due to 4GiB file size limit, see https://crbug.com/648948. " +
            "If you really want to try this out, " +
            "set ignore_elf32_limitations=true.")
+
+# This variable is true if the current toolchain is either the default
+# toolchain, or, on Android, the secondary ABI toolchain. In other words, it's
+# a toolchain that generates targets for the product, as opposed to the host
+# OS. It can be used in situations where we wish to avoid doing work on the
+# host toolchain, but we don't want to break Android's secondary ABI.
+# Ie. "current_toolchain == default_toolchain" is not a good way to infer
+# "not the host toolchain".
+is_a_target_toolchain =
+    current_toolchain == default_toolchain ||
+    (is_android && defined(android_secondary_abi_toolchain) &&
+     current_toolchain == android_secondary_abi_toolchain)

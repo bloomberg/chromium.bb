@@ -6,6 +6,7 @@
 
 DEPS = [
   'checkout',
+  'env',
   'infra',
   'recipe_engine/file',
   'recipe_engine/path',
@@ -17,7 +18,7 @@ DEPS = [
 ]
 
 
-DOCKER_IMAGE = 'gcr.io/skia-public/perf-karma-chrome-tests:68.0.3440.106_v6'
+DOCKER_IMAGE = 'gcr.io/skia-public/perf-karma-chrome-tests:72.0.3626.121_v1'
 INNER_KARMA_SCRIPT = '/SRC/skia/infra/pathkit/perf_pathkit.sh'
 
 
@@ -117,10 +118,13 @@ os.chmod(out_dir, 0o777) # important, otherwise non-privileged docker can't writ
       '--patch_storage', api.vars.patch_storage,
     ])
 
-  api.run(
-    api.step,
-    'Performance tests of PathKit with Docker',
-    cmd=cmd)
+  # Override DOCKER_CONFIG set by Kitchen.
+  env = {'DOCKER_CONFIG': '/home/chrome-bot/.docker'}
+  with api.env(env):
+    api.run(
+        api.step,
+        'Performance tests of PathKit with Docker',
+        cmd=cmd)
 
 
 def GenTests(api):

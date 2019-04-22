@@ -17,9 +17,23 @@
 
 #include "VkConfig.h"
 #include "VkObject.hpp"
+#include "VkDescriptorSet.hpp"
+#include "Device/Context.hpp"
+#include <memory>
+#include <vector>
+
+namespace sw
+{
+	class Context;
+	class Renderer;
+}
 
 namespace vk
 {
+
+class Framebuffer;
+class Pipeline;
+class RenderPass;
 
 class CommandBuffer
 {
@@ -107,20 +121,67 @@ public:
 	void drawIndirect(VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride);
 	void drawIndexedIndirect(VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride);
 
-	void submit();
+	// TODO(sugoi): Move ExecutionState out of CommandBuffer (possibly into Device)
+	struct ExecutionState
+	{
+		struct PipelineState
+		{
+			Pipeline *pipeline = nullptr;
+			vk::DescriptorSet::Bindings descriptorSets = {};
+			vk::DescriptorSet::DynamicOffsets descriptorDynamicOffsets = {};
+		};
 
+		sw::Renderer* renderer = nullptr;
+		RenderPass* renderPass = nullptr;
+		Framebuffer* renderPassFramebuffer = nullptr;
+		std::array<PipelineState, VK_PIPELINE_BIND_POINT_RANGE_SIZE> pipelineState;
+
+		struct DynamicState
+		{
+			VkViewport viewport;
+			VkRect2D scissor;
+			sw::Color<float> blendConstants;
+			float depthBiasConstantFactor = 0.0f;
+			float depthBiasClamp = 0.0f;
+			float depthBiasSlopeFactor = 0.0f;
+			float minDepthBounds = 0.0f;
+			float maxDepthBounds = 0.0f;
+
+			uint32_t compareMask[2] = { 0 };
+			uint32_t writeMask[2] = { 0 };
+			uint32_t reference[2] = { 0 };
+		};
+		DynamicState dynamicState;
+
+		sw::PushConstantStorage pushConstants;
+
+		struct VertexInputBinding
+		{
+			VkBuffer buffer;
+			VkDeviceSize offset;
+		};
+		VertexInputBinding vertexInputBindings[MAX_VERTEX_INPUT_BINDINGS] = {};
+		VertexInputBinding indexBufferBinding;
+		VkIndexType indexType;
+
+		void bindAttachments();
+		void bindVertexInputs(sw::Context& context, int firstVertex, int firstInstance);
+	};
+
+	void submit(CommandBuffer::ExecutionState& executionState);
+	void submitSecondary(CommandBuffer::ExecutionState& executionState) const;
+
+	class Command;
 private:
+	void resetState();
+	template<typename T, typename... Args> void addCommand(Args&&... args);
+
 	enum State { INITIAL, RECORDING, EXECUTABLE, PENDING, INVALID };
 	State state = INITIAL;
 	VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	VkPipeline pipelines[VK_PIPELINE_BIND_POINT_RANGE_SIZE];
 
-	struct VertexInputBindings
-	{
-		VkBuffer buffer;
-		VkDeviceSize offset;
-	};
-	VertexInputBindings vertexInputBindings[MAX_VERTEX_INPUT_BINDINGS];
+	// FIXME (b/119409619): replace this vector by an allocator so we can control all memory allocations
+	std::vector<std::unique_ptr<Command>>* commands;
 };
 
 using DispatchableCommandBuffer = DispatchableObject<CommandBuffer, VkCommandBuffer>;

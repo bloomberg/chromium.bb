@@ -16,7 +16,8 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "extensions/browser/extension_system.h"
 
 namespace {
@@ -144,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, LocalStorage) {
   Profile* profile = GetProfile(0);
   app_list::AppListSyncableService* service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile);
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   const size_t kNumApps = 5;
@@ -171,8 +172,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, LocalStorage) {
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   // Disable app sync.
-  sync_service->GetUserSettings()->SetChosenDataTypes(false,
-                                                      syncer::ModelTypeSet());
+  sync_service->GetUserSettings()->SetSelectedTypes(
+      false, syncer::UserSelectableTypeSet());
 
   // Change data when sync is off.
   for (const auto& app_id : app_ids) {
@@ -187,8 +188,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, LocalStorage) {
   EXPECT_FALSE(SyncItemsMatch(service, &compare_service));
 
   // Restore sync and sync data should override local changes.
-  sync_service->GetUserSettings()->SetChosenDataTypes(true,
-                                                      syncer::ModelTypeSet());
+  sync_service->GetUserSettings()->SetSelectedTypes(
+      true, syncer::UserSelectableTypeSet());
   EXPECT_TRUE(AppListSyncUpdateWaiter(service).Wait());
   EXPECT_TRUE(SyncItemsMatch(service, &compare_service));
 }

@@ -11,19 +11,17 @@ import glob
 import os
 
 from chromite.cbuildbot import commands
-from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import portage_util
 
 _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
+_POSTSUBMIT_BINHOST = 'POSTSUBMIT_BINHOST'
 _CHROME_BINHOST = 'CHROME_BINHOST'
 _FULL_BINHOST = 'FULL_BINHOST'
-_BINHOST_PACKAGE_FILE = ('/usr/share/dev-install/portage/make.profile/'
-                         'package.installable')
-PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-partner-overlay/'
-                            'chromeos/binhost')
-PUBLIC_BINHOST_CONF_DIR = 'src/third_party/chromiumos-overlay/chromeos/binhost'
+# The list of packages to upload for the dev-install tool.  This path is
+# relative to the /build/$BOARD sysroot.
+_BINHOST_PACKAGE_FILE = 'build/dev-install/package.installable'
 
 
 def _AddPackagesForPrebuilt(filename):
@@ -127,7 +125,8 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
   """Upload Prebuilts for non-dev-installer use cases.
 
   Args:
-    category: Build type. Can be [binary|full|chrome|chroot|paladin].
+    category: Build type.
+      Can be [binary|full|chrome|chroot|paladin|postsubmit].
     chrome_rev: Chrome_rev of type constants.VALID_CHROME_REVISIONS.
     private_bucket: True if we are uploading to a private bucket.
     buildroot: The root directory where the build occurs.
@@ -139,9 +138,9 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
   extra_args.extend(['--upload', 'gs://chromeos-prebuilt'])
   if private_bucket:
     extra_args.extend(['--private', '--binhost-conf-dir',
-                       PRIVATE_BINHOST_CONF_DIR])
+                       constants.PRIVATE_BINHOST_CONF_DIR])
   else:
-    extra_args.extend(['--binhost-conf-dir', PUBLIC_BINHOST_CONF_DIR])
+    extra_args.extend(['--binhost-conf-dir', constants.PUBLIC_BINHOST_CONF_DIR])
 
   if version is not None:
     extra_args.extend(['--set-version', version])
@@ -184,11 +183,10 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
     assert chrome_rev
     key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
     extra_args.extend(['--key', key.upper()])
-  elif config_lib.IsPFQType(category):
-    extra_args.extend(['--key', _PREFLIGHT_BINHOST])
+  elif category == constants.POSTSUBMIT_TYPE:
+    extra_args.extend(['--key', _POSTSUBMIT_BINHOST])
   else:
     assert category in (constants.FULL_TYPE,
-                        constants.POSTSUBMIT_TYPE,
                         constants.CHROOT_BUILDER_TYPE)
     extra_args.extend(['--key', _FULL_BINHOST])
 
@@ -225,8 +223,8 @@ def UploadDevInstallerPrebuilts(binhost_bucket, binhost_key, binhost_base_url,
   extra_args.extend(['--upload', binhost_bucket])
   extra_args.extend(['--key', binhost_key])
 
-  filename = os.path.join(buildroot, 'chroot', 'build', board,
-                          _BINHOST_PACKAGE_FILE.lstrip('/'))
+  filename = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR,
+                          'build', board, _BINHOST_PACKAGE_FILE)
   cmd_packages = _AddPackagesForPrebuilt(filename)
   if cmd_packages:
     extra_args.extend(cmd_packages)
@@ -319,10 +317,6 @@ class BinhostConfWriter(object):
     public_args, private_args = [], []
     # Gather public/private (slave) builders.
     public_builders, private_builders = [], []
-
-    # Distributed builders that use manifest-versions to sync with one another
-    # share prebuilt logic by passing around versions.
-    assert config_lib.IsPFQType(self._prebuilt_type)
 
     # Public pfqs should upload host preflight prebuilts.
     public_args.append('--sync-host')

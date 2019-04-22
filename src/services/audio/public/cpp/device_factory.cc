@@ -5,6 +5,7 @@
 #include "services/audio/public/cpp/device_factory.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/threading/platform_thread.h"
@@ -20,7 +21,7 @@ scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
       std::move(connector), device_id, std::move(log));
 
   return base::MakeRefCounted<media::AudioInputDevice>(
-      std::move(ipc), base::ThreadPriority::REALTIME_AUDIO);
+      std::move(ipc), media::AudioInputDevice::Purpose::kUserInput);
 }
 
 scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
@@ -30,7 +31,7 @@ scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
       std::make_unique<InputIPC>(std::move(connector), device_id, nullptr);
 
   return base::MakeRefCounted<media::AudioInputDevice>(
-      std::move(ipc), base::ThreadPriority::REALTIME_AUDIO);
+      std::move(ipc), media::AudioInputDevice::Purpose::kUserInput);
 }
 
 }  // namespace audio

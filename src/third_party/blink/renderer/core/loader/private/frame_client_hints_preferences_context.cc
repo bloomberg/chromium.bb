@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/private/frame_client_hints_preferences_context.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
@@ -20,10 +21,15 @@ static constexpr WebFeature kWebFeatureMapping[] = {
     WebFeature::kClientHintsRtt,
     WebFeature::kClientHintsDownlink,
     WebFeature::kClientHintsEct,
+    WebFeature::kClientHintsLang,
+    WebFeature::kClientHintsUA,
+    WebFeature::kClientHintsUAArch,
+    WebFeature::kClientHintsUAPlatform,
+    WebFeature::kClientHintsUAModel,
 };
 
 static_assert(static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1 ==
-                  arraysize(kWebFeatureMapping),
+                  base::size(kWebFeatureMapping),
               "unhandled client hint type");
 
 }  // namespace
@@ -34,11 +40,13 @@ FrameClientHintsPreferencesContext::FrameClientHintsPreferencesContext(
 
 void FrameClientHintsPreferencesContext::CountClientHints(
     mojom::WebClientHintsType type) {
-  UseCounter::Count(frame_, kWebFeatureMapping[static_cast<int32_t>(type)]);
+  UseCounter::Count(*frame_->GetDocument(),
+                    kWebFeatureMapping[static_cast<int32_t>(type)]);
 }
 
 void FrameClientHintsPreferencesContext::CountPersistentClientHintHeaders() {
-  UseCounter::Count(frame_, WebFeature::kPersistentClientHintHeader);
+  UseCounter::Count(*frame_->GetDocument(),
+                    WebFeature::kPersistentClientHintHeader);
 }
 
 }  // namespace blink

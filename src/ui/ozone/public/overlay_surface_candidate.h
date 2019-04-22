@@ -28,13 +28,19 @@ class OZONE_BASE_EXPORT OverlaySurfaceCandidate {
   OverlaySurfaceCandidate();
   OverlaySurfaceCandidate(const OverlaySurfaceCandidate& other);
   ~OverlaySurfaceCandidate();
+  OverlaySurfaceCandidate& operator=(const OverlaySurfaceCandidate& other);
 
-  bool operator<(const OverlaySurfaceCandidate& plane) const;
+  // Note that |clip_rect|, |is_clipped| and |overlay_handled| are
+  // *not* used as part of the comparison.
+  bool operator<(const OverlaySurfaceCandidate& other) const;
 
   // Transformation to apply to layer during composition.
   gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;
   // Format of the buffer to composite.
   gfx::BufferFormat format = gfx::BufferFormat::BGRA_8888;
+  // Stacking order of the overlay plane relative to the main surface,
+  // which is 0. Signed to allow for "underlays".
+  int plane_z_order = 0;
   // Size of the buffer, in pixels.
   gfx::Size buffer_size;
   // Rect on the display to position the overlay to. Input rectangle may
@@ -46,10 +52,7 @@ class OZONE_BASE_EXPORT OverlaySurfaceCandidate {
   // Clip rect in the target content space after composition.
   gfx::Rect clip_rect;
   // If the quad is clipped after composition.
-  bool is_clipped;
-  // Stacking order of the overlay plane relative to the main surface,
-  // which is 0. Signed to allow for "underlays".
-  int plane_z_order = 0;
+  bool is_clipped = false;
 
   // To be modified by the implementer if this candidate can go into
   // an overlay.

@@ -12,9 +12,9 @@
 #include <cmath>
 #include <sstream>
 
-#include "Matrix.h"
-#include "random_utils.h"
-#include "shader_utils.h"
+#include "util/Matrix.h"
+#include "util/random_utils.h"
+#include "util/shader_utils.h"
 
 using namespace angle;
 using namespace egl_platform;
@@ -109,7 +109,7 @@ void InstancingPerfBenchmark::initializeBenchmark()
 {
     const auto &params = GetParam();
 
-    const std::string vs =
+    const char kVS[] =
         "attribute vec2 aPosition;\n"
         "attribute vec3 aTranslate;\n"
         "attribute float aScale;\n"
@@ -125,7 +125,7 @@ void InstancingPerfBenchmark::initializeBenchmark()
         "    vColor = aColor;\n"
         "}\n";
 
-    const std::string fs =
+    constexpr char kFS[] =
         "precision mediump float;\n"
         "varying vec3 vColor;\n"
         "void main()\n"
@@ -133,7 +133,7 @@ void InstancingPerfBenchmark::initializeBenchmark()
         "    gl_FragColor = vec4(vColor, 1.0);\n"
         "}\n";
 
-    mProgram = CompileProgram(vs, fs);
+    mProgram = CompileProgram(kVS, kFS);
     ASSERT_NE(0u, mProgram);
 
     glUseProgram(mProgram);
@@ -276,9 +276,6 @@ void InstancingPerfBenchmark::drawBenchmark()
     // Animatino makes the test more interesting visually, but also eats up many CPU cycles.
     if (params.animationEnabled)
     {
-        // Not implemented for billboards.
-        ASSERT(params.instancingEnabled);
-
         float time = static_cast<float>(mTimer->getElapsedTime());
 
         for (size_t pointIndex = 0; pointIndex < mTranslateData.size(); ++pointIndex)

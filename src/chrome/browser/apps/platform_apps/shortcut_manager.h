@@ -13,7 +13,6 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
-class PrefService;
 class Profile;
 
 namespace extensions {
@@ -35,8 +34,8 @@ class AppShortcutManager : public KeyedService,
 
   ~AppShortcutManager() override;
 
-  // Updates all shortcuts if kAppShortcutsVersion in prefs is less than
-  // kCurrentAppShortcutsVersion.
+  // Schedules a call to UpdateShortcutsForAllAppsNow() if kAppShortcutsVersion
+  // in prefs is less than kCurrentAppShortcutsVersion.
   void UpdateShortcutsForAllAppsIfNeeded();
 
   // extensions::ExtensionRegistryObserver.
@@ -52,11 +51,12 @@ class AppShortcutManager : public KeyedService,
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
 
  private:
+  void UpdateShortcutsForAllAppsNow();
+  void SetCurrentAppShortcutsVersion();
   void DeleteApplicationShortcuts(const extensions::Extension* extension);
 
   Profile* profile_;
   bool is_profile_attributes_storage_observer_;
-  PrefService* prefs_;
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>

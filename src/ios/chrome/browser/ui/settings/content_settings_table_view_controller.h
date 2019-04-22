@@ -6,7 +6,6 @@
 #define IOS_CHROME_BROWSER_UI_SETTINGS_CONTENT_SETTINGS_TABLE_VIEW_CONTROLLER_H_
 
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
-#import "ios/chrome/browser/web/mailto_handler_manager.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -14,8 +13,7 @@ class ChromeBrowserState;
 
 // Controller for the UI that allows the user to change content settings like
 // blocking popups.
-@interface ContentSettingsTableViewController
-    : SettingsRootTableViewController<MailtoHandlerManagerObserver>
+@interface ContentSettingsTableViewController : SettingsRootTableViewController
 
 // The designated initializer. |browserState| must not be nil.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState

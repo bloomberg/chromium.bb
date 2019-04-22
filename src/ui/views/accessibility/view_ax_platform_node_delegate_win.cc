@@ -14,9 +14,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
@@ -87,11 +89,18 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegateWin::GetParent() {
   if (!hwnd)
     return nullptr;
 
-  IAccessible* parent;
-  if (SUCCEEDED(
-          ::AccessibleObjectFromWindow(hwnd, OBJID_WINDOW, IID_IAccessible,
-                                       reinterpret_cast<void**>(&parent))))
-    return parent;
+  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+    ui::AXFragmentRootWin* ax_fragment_root =
+        ui::AXFragmentRootWin::GetForAcceleratedWidget(hwnd);
+    if (ax_fragment_root)
+      return ax_fragment_root->GetNativeViewAccessible();
+  } else {
+    IAccessible* parent;
+    if (SUCCEEDED(
+            ::AccessibleObjectFromWindow(hwnd, OBJID_WINDOW, IID_IAccessible,
+                                         reinterpret_cast<void**>(&parent))))
+      return parent;
+  }
 
   return nullptr;
 }
@@ -101,14 +110,19 @@ ViewAXPlatformNodeDelegateWin::GetTargetForNativeAccessibilityEvent() {
   return HWNDForView(view());
 }
 
-gfx::Rect ViewAXPlatformNodeDelegateWin::GetClippedScreenBoundsRect() const {
-  // We could optionally add clipping here if ever needed.
-  return GetUnclippedScreenBoundsRect();
+gfx::Rect ViewAXPlatformNodeDelegateWin::GetBoundsRect(
+    const ui::AXCoordinateSystem coordinate_system,
+    const ui::AXClippingBehavior clipping_behavior,
+    ui::AXOffscreenResult* offscreen_result) const {
+  switch (coordinate_system) {
+    case ui::AXCoordinateSystem::kScreen:
+      // We could optionally add clipping here if ever needed.
+      return display::win::ScreenWin::DIPToScreenRect(
+          HWNDForView(view()), view()->GetBoundsInScreen());
+    case ui::AXCoordinateSystem::kRootFrame:
+    case ui::AXCoordinateSystem::kFrame:
+      NOTIMPLEMENTED();
+      return gfx::Rect();
+  }
 }
-
-gfx::Rect ViewAXPlatformNodeDelegateWin::GetUnclippedScreenBoundsRect() const {
-  gfx::Rect bounds = view()->GetBoundsInScreen();
-  return display::win::ScreenWin::DIPToScreenRect(HWNDForView(view()), bounds);
-}
-
 }  // namespace views

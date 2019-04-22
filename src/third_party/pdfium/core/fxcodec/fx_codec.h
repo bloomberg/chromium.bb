@@ -45,7 +45,6 @@ class CCodec_JpxModule;
 class CFX_DIBBase;
 class CJPX_Decoder;
 class CPDF_ColorSpace;
-class CPDF_StreamAcc;
 
 #ifdef PDF_ENABLE_XFA
 class CCodec_ProgressiveDecoder;
@@ -55,13 +54,8 @@ class CFX_DIBAttribute {
   CFX_DIBAttribute();
   ~CFX_DIBAttribute();
 
-#ifdef PDF_ENABLE_XFA_BMP
-  int32_t m_nBmpCompressType = 0;
-#endif  // PDF_ENABLE_XFA_BMP
-
   int32_t m_nXDPI = -1;
   int32_t m_nYDPI = -1;
-  float m_fAspectRatio = -1.0f;
   uint16_t m_wDPIUnit = 0;
   std::map<uint32_t, void*> m_Exif;
 };

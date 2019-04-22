@@ -13,6 +13,8 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import android.text.format.DateUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,9 +22,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
@@ -52,7 +54,7 @@ public class BackgroundSchedulerTest {
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
         doReturn(true)
                 .when(mTaskScheduler)
-                .schedule(eq(RuntimeEnvironment.application), mTaskInfo.capture());
+                .schedule(eq(ContextUtils.getApplicationContext()), mTaskInfo.capture());
     }
 
     private void verifyFixedTaskInfoValues(TaskInfo info) {
@@ -60,8 +62,7 @@ public class BackgroundSchedulerTest {
         assertEquals(OfflineBackgroundTask.class, info.getBackgroundTaskClass());
         assertTrue(info.isPersisted());
         assertFalse(info.isPeriodic());
-        assertEquals(BackgroundScheduler.ONE_WEEK_IN_MILLISECONDS,
-                info.getOneOffInfo().getWindowEndTimeMs());
+        assertEquals(DateUtils.WEEK_IN_MILLIS, info.getOneOffInfo().getWindowEndTimeMs());
         assertTrue(info.getOneOffInfo().hasWindowStartTimeConstraint());
 
         long scheduledTimeMillis = TaskExtrasPacker.unpackTimeFromBundle(info.getExtras());
@@ -73,12 +74,12 @@ public class BackgroundSchedulerTest {
     public void testScheduleUnmeteredAndCharging() {
         BackgroundScheduler.getInstance().schedule(mConditions1);
         verify(mTaskScheduler, times(1))
-                .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
+                .schedule(eq(ContextUtils.getApplicationContext()), eq(mTaskInfo.getValue()));
 
         TaskInfo info = mTaskInfo.getValue();
         verifyFixedTaskInfoValues(info);
 
-        assertEquals(TaskInfo.NETWORK_TYPE_UNMETERED, info.getRequiredNetworkType());
+        assertEquals(TaskInfo.NetworkType.UNMETERED, info.getRequiredNetworkType());
         assertTrue(info.requiresCharging());
 
         assertTrue(info.shouldUpdateCurrent());
@@ -93,12 +94,12 @@ public class BackgroundSchedulerTest {
     public void testScheduleMeteredAndNotCharging() {
         BackgroundScheduler.getInstance().schedule(mConditions2);
         verify(mTaskScheduler, times(1))
-                .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
+                .schedule(eq(ContextUtils.getApplicationContext()), eq(mTaskInfo.getValue()));
 
         TaskInfo info = mTaskInfo.getValue();
         verifyFixedTaskInfoValues(info);
 
-        assertEquals(TaskInfo.NETWORK_TYPE_ANY, info.getRequiredNetworkType());
+        assertEquals(TaskInfo.NetworkType.ANY, info.getRequiredNetworkType());
         assertFalse(info.requiresCharging());
 
         assertTrue(info.shouldUpdateCurrent());
@@ -112,19 +113,18 @@ public class BackgroundSchedulerTest {
     @Feature({"OfflinePages"})
     public void testScheduleBackup() {
         BackgroundScheduler.getInstance().scheduleBackup(
-                mConditions1, BackgroundScheduler.FIVE_MINUTES_IN_MILLISECONDS);
+                mConditions1, 5 * DateUtils.MINUTE_IN_MILLIS);
         verify(mTaskScheduler, times(1))
-                .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
+                .schedule(eq(ContextUtils.getApplicationContext()), eq(mTaskInfo.getValue()));
 
         TaskInfo info = mTaskInfo.getValue();
         verifyFixedTaskInfoValues(info);
 
-        assertEquals(TaskInfo.NETWORK_TYPE_UNMETERED, info.getRequiredNetworkType());
+        assertEquals(TaskInfo.NetworkType.UNMETERED, info.getRequiredNetworkType());
         assertTrue(info.requiresCharging());
 
         assertFalse(info.shouldUpdateCurrent());
-        assertEquals(BackgroundScheduler.FIVE_MINUTES_IN_MILLISECONDS,
-                info.getOneOffInfo().getWindowStartTimeMs());
+        assertEquals(5 * DateUtils.MINUTE_IN_MILLIS, info.getOneOffInfo().getWindowStartTimeMs());
 
         assertEquals(
                 mConditions1, TaskExtrasPacker.unpackTriggerConditionsFromBundle(info.getExtras()));
@@ -135,15 +135,15 @@ public class BackgroundSchedulerTest {
     public void testCancel() {
         BackgroundScheduler.getInstance().schedule(mConditions1);
         verify(mTaskScheduler, times(1))
-                .schedule(eq(RuntimeEnvironment.application), eq(mTaskInfo.getValue()));
+                .schedule(eq(ContextUtils.getApplicationContext()), eq(mTaskInfo.getValue()));
 
         doNothing()
                 .when(mTaskScheduler)
-                .cancel(eq(RuntimeEnvironment.application),
+                .cancel(eq(ContextUtils.getApplicationContext()),
                         eq(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID));
         BackgroundScheduler.getInstance().cancel();
         verify(mTaskScheduler, times(1))
-                .cancel(eq(RuntimeEnvironment.application),
+                .cancel(eq(ContextUtils.getApplicationContext()),
                         eq(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID));
     }
 }

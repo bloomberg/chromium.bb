@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -17,6 +18,7 @@
 #include "net/base/proxy_server.h"
 #include "net/proxy_resolution/mock_proxy_resolver.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
@@ -51,7 +53,8 @@ class TestRequestClient : public mojom::ProxyResolverRequestClient {
   void ReportResult(int32_t error, const net::ProxyInfo& results) override;
   void Alert(const std::string& message) override;
   void OnError(int32_t line_number, const std::string& message) override;
-  void ResolveDns(std::unique_ptr<net::HostResolver::RequestInfo> request_info,
+  void ResolveDns(const std::string& hostname,
+                  net::ProxyResolveDnsOperation operation,
                   mojom::HostResolverRequestClientPtr client) override;
 
   // Mojo error handler.
@@ -95,9 +98,10 @@ void TestRequestClient::Alert(const std::string& message) {}
 void TestRequestClient::OnError(int32_t line_number,
                                 const std::string& message) {}
 
-void TestRequestClient::ResolveDns(
-    std::unique_ptr<net::HostResolver::RequestInfo> request_info,
-    mojom::HostResolverRequestClientPtr client) {}
+void TestRequestClient::ResolveDns(const std::string& hostname,
+                                   net::ProxyResolveDnsOperation operation,
+                                   mojom::HostResolverRequestClientPtr client) {
+}
 
 void TestRequestClient::OnConnectionError() {
   event_waiter_.NotifyEvent(CONNECTION_ERROR);

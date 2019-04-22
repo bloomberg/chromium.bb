@@ -12,11 +12,11 @@
 #include <utility>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
 
 namespace content {
@@ -32,7 +32,7 @@ namespace storage {
 class QuotaReservation;
 class QuotaReservationBuffer;
 
-class STORAGE_EXPORT QuotaReservationManager {
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaReservationManager {
  public:
   // Callback for ReserveQuota. When this callback returns false, ReserveQuota
   // operation should be reverted.
@@ -40,7 +40,7 @@ class STORAGE_EXPORT QuotaReservationManager {
       base::OnceCallback<bool(base::File::Error error, int64_t delta)>;
 
   // An abstraction of backing quota system.
-  class STORAGE_EXPORT QuotaBackend {
+  class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaBackend {
    public:
     QuotaBackend() = default;
     virtual ~QuotaBackend() = default;

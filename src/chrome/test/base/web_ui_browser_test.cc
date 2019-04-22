@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
@@ -72,7 +73,7 @@ bool LogHandler(int severity,
 class WebUIJsInjectionReadyObserver : public content::WebContentsObserver {
  public:
   WebUIJsInjectionReadyObserver(content::WebContents* web_contents,
-                                WebUIBrowserTest* browser_test,
+                                BaseWebUIBrowserTest* browser_test,
                                 const std::string& preload_test_fixture,
                                 const std::string& preload_test_name)
       : content::WebContentsObserver(web_contents),
@@ -86,47 +87,84 @@ class WebUIJsInjectionReadyObserver : public content::WebContentsObserver {
   }
 
  private:
-  WebUIBrowserTest* browser_test_;
+  BaseWebUIBrowserTest* browser_test_;
   std::string preload_test_fixture_;
   std::string preload_test_name_;
 };
 
+// Handles chrome.send()-style test communication.
+class WebUITestMessageHandler : public content::WebUIMessageHandler,
+                                public WebUITestHandler {
+ public:
+  WebUITestMessageHandler() = default;
+  ~WebUITestMessageHandler() override {}
+
+  // Receives testResult messages.
+  void HandleTestResult(const base::ListValue* test_result) {
+    // To ensure this gets done, do this before ASSERT* calls.
+    RunQuitClosure();
+
+    bool test_succeeded = false;
+    std::string message;
+    ASSERT_TRUE(test_result->GetBoolean(0, &test_succeeded));
+    if (!test_succeeded)
+      ASSERT_TRUE(test_result->GetString(1, &message));
+
+    TestComplete(test_succeeded ? base::Optional<std::string>() : message);
+  }
+
+  // content::WebUIMessageHandler:
+  void RegisterMessages() override {
+    web_ui()->RegisterMessageCallback(
+        "testResult",
+        base::BindRepeating(&WebUITestMessageHandler::HandleTestResult,
+                            base::Unretained(this)));
+  }
+
+  content::WebUI* GetWebUI() override { return web_ui(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebUITestMessageHandler);
+};
+
 }  // namespace
 
-WebUIBrowserTest::~WebUIBrowserTest() {
-}
+BaseWebUIBrowserTest::~BaseWebUIBrowserTest() {}
 
-bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name) {
+bool BaseWebUIBrowserTest::RunJavascriptFunction(
+    const std::string& function_name) {
   std::vector<base::Value> empty_args;
   return RunJavascriptFunction(function_name, std::move(empty_args));
 }
 
-bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name,
-                                             base::Value arg) {
+bool BaseWebUIBrowserTest::RunJavascriptFunction(
+    const std::string& function_name,
+    base::Value arg) {
   std::vector<base::Value> args;
   args.push_back(std::move(arg));
   return RunJavascriptFunction(function_name, std::move(args));
 }
 
-bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name,
-                                             base::Value arg1,
-                                             base::Value arg2) {
+bool BaseWebUIBrowserTest::RunJavascriptFunction(
+    const std::string& function_name,
+    base::Value arg1,
+    base::Value arg2) {
   std::vector<base::Value> args;
   args.push_back(std::move(arg1));
   args.push_back(std::move(arg2));
   return RunJavascriptFunction(function_name, std::move(args));
 }
 
-bool WebUIBrowserTest::RunJavascriptFunction(
+bool BaseWebUIBrowserTest::RunJavascriptFunction(
     const std::string& function_name,
     std::vector<base::Value> function_arguments) {
   return RunJavascriptUsingHandler(function_name, std::move(function_arguments),
                                    false, false, nullptr);
 }
 
-bool WebUIBrowserTest::RunJavascriptTestF(bool is_async,
-                                          const std::string& test_fixture,
-                                          const std::string& test_name) {
+bool BaseWebUIBrowserTest::RunJavascriptTestF(bool is_async,
+                                              const std::string& test_fixture,
+                                              const std::string& test_name) {
   std::vector<base::Value> args;
   args.push_back(base::Value(test_fixture));
   args.push_back(base::Value(test_name));
@@ -137,59 +175,60 @@ bool WebUIBrowserTest::RunJavascriptTestF(bool is_async,
     return RunJavascriptTest("RUN_TEST_F", std::move(args));
 }
 
-bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name) {
+bool BaseWebUIBrowserTest::RunJavascriptTest(const std::string& test_name) {
   std::vector<base::Value> empty_args;
   return RunJavascriptTest(test_name, std::move(empty_args));
 }
 
-bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name,
-                                         base::Value arg) {
+bool BaseWebUIBrowserTest::RunJavascriptTest(const std::string& test_name,
+                                             base::Value arg) {
   std::vector<base::Value> args;
   args.push_back(std::move(arg));
   return RunJavascriptTest(test_name, std::move(args));
 }
 
-bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name,
-                                         base::Value arg1,
-                                         base::Value arg2) {
+bool BaseWebUIBrowserTest::RunJavascriptTest(const std::string& test_name,
+                                             base::Value arg1,
+                                             base::Value arg2) {
   std::vector<base::Value> args;
   args.push_back(std::move(arg1));
   args.push_back(std::move(arg2));
   return RunJavascriptTest(test_name, std::move(args));
 }
 
-bool WebUIBrowserTest::RunJavascriptTest(
+bool BaseWebUIBrowserTest::RunJavascriptTest(
     const std::string& test_name,
     std::vector<base::Value> test_arguments) {
   return RunJavascriptUsingHandler(test_name, std::move(test_arguments), true,
                                    false, nullptr);
 }
 
-bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name) {
+bool BaseWebUIBrowserTest::RunJavascriptAsyncTest(
+    const std::string& test_name) {
   std::vector<base::Value> empty_args;
   return RunJavascriptAsyncTest(test_name, std::move(empty_args));
 }
 
-bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
-                                              base::Value arg) {
+bool BaseWebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
+                                                  base::Value arg) {
   std::vector<base::Value> args;
   args.push_back(std::move(arg));
   return RunJavascriptAsyncTest(test_name, std::move(args));
 }
 
-bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
-                                              base::Value arg1,
-                                              base::Value arg2) {
+bool BaseWebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
+                                                  base::Value arg1,
+                                                  base::Value arg2) {
   std::vector<base::Value> args;
   args.push_back(std::move(arg1));
   args.push_back(std::move(arg2));
   return RunJavascriptAsyncTest(test_name, std::move(args));
 }
 
-bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
-                                              base::Value arg1,
-                                              base::Value arg2,
-                                              base::Value arg3) {
+bool BaseWebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
+                                                  base::Value arg1,
+                                                  base::Value arg2,
+                                                  base::Value arg3) {
   std::vector<base::Value> args;
   args.push_back(std::move(arg1));
   args.push_back(std::move(arg2));
@@ -197,14 +236,14 @@ bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
   return RunJavascriptAsyncTest(test_name, std::move(args));
 }
 
-bool WebUIBrowserTest::RunJavascriptAsyncTest(
+bool BaseWebUIBrowserTest::RunJavascriptAsyncTest(
     const std::string& test_name,
     std::vector<base::Value> test_arguments) {
   return RunJavascriptUsingHandler(test_name, std::move(test_arguments), true,
                                    true, nullptr);
 }
 
-void WebUIBrowserTest::PreLoadJavascriptLibraries(
+void BaseWebUIBrowserTest::PreLoadJavascriptLibraries(
     const std::string& preload_test_fixture,
     const std::string& preload_test_name,
     RenderViewHost* preload_host) {
@@ -219,16 +258,11 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
   bool should_wait_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::content::kWaitForDebuggerWebUI);
 
-  const std::string debugger_port =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          ::switches::kRemoteDebuggingPort);
-
-  // Only wait if there is a debugger port, so user can issue go() command.
-  if (should_wait_flag && !debugger_port.empty())
+  if (should_wait_flag)
     RunJavascriptUsingHandler("setWaitUser", {}, false, false, preload_host);
 }
 
-void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
+void BaseWebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   WebUIJsInjectionReadyObserver injection_observer(
@@ -247,7 +281,7 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
 // for the print preview dialog gets created.
 class PrintContentBrowserClient : public ChromeContentBrowserClient {
  public:
-  PrintContentBrowserClient(WebUIBrowserTest* browser_test,
+  PrintContentBrowserClient(BaseWebUIBrowserTest* browser_test,
                             const std::string& preload_test_fixture,
                             const std::string& preload_test_name)
       : browser_test_(browser_test),
@@ -274,7 +308,7 @@ class PrintContentBrowserClient : public ChromeContentBrowserClient {
     return nullptr;
   }
 
-  WebUIBrowserTest* browser_test_;
+  BaseWebUIBrowserTest* browser_test_;
   std::unique_ptr<WebUIJsInjectionReadyObserver> observer_;
   std::string preload_test_fixture_;
   std::string preload_test_name_;
@@ -283,7 +317,7 @@ class PrintContentBrowserClient : public ChromeContentBrowserClient {
 };
 #endif
 
-void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
+void BaseWebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   ui_test_utils::NavigateToURL(browser(), browse_to);
 
@@ -309,19 +343,17 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
 #endif
 }
 
-const char WebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";
+const char BaseWebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";
 
-WebUIBrowserTest::WebUIBrowserTest()
-    : test_handler_(std::make_unique<WebUITestHandler>()),
-      libraries_preloaded_(false),
-      override_selected_web_ui_(nullptr) {}
+BaseWebUIBrowserTest::BaseWebUIBrowserTest()
+    : libraries_preloaded_(false), override_selected_web_ui_(nullptr) {}
 
-void WebUIBrowserTest::set_preload_test_fixture(
+void BaseWebUIBrowserTest::set_preload_test_fixture(
     const std::string& preload_test_fixture) {
   preload_test_fixture_ = preload_test_fixture;
 }
 
-void WebUIBrowserTest::set_preload_test_name(
+void BaseWebUIBrowserTest::set_preload_test_name(
     const std::string& preload_test_name) {
   preload_test_name_ = preload_test_name;
 }
@@ -389,7 +421,7 @@ base::LazyInstance<MockWebUIProvider>::DestructorAtExit mock_provider_ =
 
 }  // namespace
 
-void WebUIBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
+void BaseWebUIBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   JavaScriptBrowserTest::SetUpCommandLine(command_line);
 
   // Enables the MojoJSTest bindings which are used for WebUI tests.
@@ -397,7 +429,7 @@ void WebUIBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
       switches::kEnableBlinkFeatures, "MojoJSTest");
 }
 
-void WebUIBrowserTest::SetUpOnMainThread() {
+void BaseWebUIBrowserTest::SetUpOnMainThread() {
   JavaScriptBrowserTest::SetUpOnMainThread();
 
   logging::SetLogMessageHandler(&LogHandler);
@@ -417,7 +449,7 @@ void WebUIBrowserTest::SetUpOnMainThread() {
                                     mock_provider_.Pointer());
 }
 
-void WebUIBrowserTest::TearDownOnMainThread() {
+void BaseWebUIBrowserTest::TearDownOnMainThread() {
   logging::SetLogMessageHandler(nullptr);
 
   test_factory_->RemoveFactoryOverride(GURL(kDummyURL).host());
@@ -432,15 +464,15 @@ void WebUIBrowserTest::TearDownOnMainThread() {
   test_factory_.reset();
 }
 
-void WebUIBrowserTest::SetWebUIInstance(content::WebUI* web_ui) {
+void BaseWebUIBrowserTest::SetWebUIInstance(content::WebUI* web_ui) {
   override_selected_web_ui_ = web_ui;
 }
 
-WebUIMessageHandler* WebUIBrowserTest::GetMockMessageHandler() {
+WebUIMessageHandler* BaseWebUIBrowserTest::GetMockMessageHandler() {
   return nullptr;
 }
 
-bool WebUIBrowserTest::RunJavascriptUsingHandler(
+bool BaseWebUIBrowserTest::RunJavascriptUsingHandler(
     const std::string& function_name,
     std::vector<base::Value> function_arguments,
     bool is_test,
@@ -502,23 +534,7 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
   return result;
 }
 
-void WebUIBrowserTest::SetupHandlers() {
-  content::WebUI* web_ui_instance =
-      override_selected_web_ui_
-          ? override_selected_web_ui_
-          : browser()->tab_strip_model()->GetActiveWebContents()->GetWebUI();
-  ASSERT_TRUE(web_ui_instance != nullptr);
-
-  test_handler_->set_web_ui(web_ui_instance);
-  test_handler_->RegisterMessages();
-
-  if (GetMockMessageHandler()) {
-    GetMockMessageHandler()->set_web_ui(web_ui_instance);
-    GetMockMessageHandler()->RegisterMessages();
-  }
-}
-
-GURL WebUIBrowserTest::WebUITestDataPathToURL(
+GURL BaseWebUIBrowserTest::WebUITestDataPathToURL(
     const base::FilePath::StringType& path) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath dir_test_data;
@@ -526,4 +542,27 @@ GURL WebUIBrowserTest::WebUITestDataPathToURL(
   base::FilePath test_path(dir_test_data.Append(kWebUITestFolder).Append(path));
   EXPECT_TRUE(base::PathExists(test_path));
   return net::FilePathToFileURL(test_path);
+}
+
+WebUIBrowserTest::WebUIBrowserTest()
+    : test_message_handler_(new WebUITestMessageHandler) {
+  set_test_handler(std::unique_ptr<WebUITestHandler>(test_message_handler_));
+}
+
+WebUIBrowserTest::~WebUIBrowserTest() = default;
+
+void WebUIBrowserTest::SetupHandlers() {
+  content::WebUI* web_ui_instance =
+      override_selected_web_ui()
+          ? override_selected_web_ui()
+          : browser()->tab_strip_model()->GetActiveWebContents()->GetWebUI();
+  ASSERT_TRUE(web_ui_instance != nullptr);
+
+  test_message_handler_->set_web_ui(web_ui_instance);
+  test_message_handler_->RegisterMessages();
+
+  if (GetMockMessageHandler()) {
+    GetMockMessageHandler()->set_web_ui(web_ui_instance);
+    GetMockMessageHandler()->RegisterMessages();
+  }
 }

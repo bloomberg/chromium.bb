@@ -19,7 +19,6 @@ struct usbdevfs_urb;
 
 namespace base {
 class SequencedTaskRunner;
-class SingleThreadTaskRunner;
 }
 
 namespace device {
@@ -66,8 +65,6 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                               const std::vector<uint32_t>& packet_lengths,
                               unsigned int timeout,
                               IsochronousTransferCallback callback) override;
-  // To support DevTools this function may be called from any thread and on
-  // completion |callback| will be run on that thread.
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<base::RefCountedBytes> buffer,
@@ -79,7 +76,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
  protected:
   ~UsbDeviceHandleUsbfs() override;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
+  scoped_refptr<base::SequencedTaskRunner> task_runner() const {
     return task_runner_;
   }
 
@@ -91,7 +88,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   virtual void CloseBlocking();
 
  private:
-  class FileThreadHelper;
+  class BlockingTaskRunnerHelper;
   struct Transfer;
   struct InterfaceInfo {
     uint8_t alternate_setting;
@@ -111,13 +108,6 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                                    const std::vector<uint32_t>& packet_lengths,
                                    unsigned int timeout,
                                    IsochronousTransferCallback callback);
-  void GenericTransferInternal(
-      UsbTransferDirection direction,
-      uint8_t endpoint_number,
-      scoped_refptr<base::RefCountedBytes> buffer,
-      unsigned int timeout,
-      TransferCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
   void ReapedUrbs(const std::vector<usbdevfs_urb*>& urbs);
   void TransferComplete(std::unique_ptr<Transfer> transfer);
   void RefreshEndpointInfo();
@@ -134,7 +124,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
 
   scoped_refptr<UsbDevice> device_;
   int fd_;  // Copy of the base::ScopedFD held by |helper_| valid if |device_|.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // Maps claimed interfaces by interface number to their current alternate
@@ -148,7 +138,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
 
   // Helper object exists on the blocking task thread and all calls to it and
   // its destruction must be posted there.
-  std::unique_ptr<FileThreadHelper> helper_;
+  std::unique_ptr<BlockingTaskRunnerHelper> helper_;
 
   std::list<std::unique_ptr<Transfer>> transfers_;
   base::SequenceChecker sequence_checker_;

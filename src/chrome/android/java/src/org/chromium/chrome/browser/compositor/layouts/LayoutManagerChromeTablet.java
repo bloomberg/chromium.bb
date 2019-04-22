@@ -14,8 +14,8 @@ import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperMa
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -36,9 +36,11 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     /**
      * Creates an instance of a {@link LayoutManagerChromePhone}.
      * @param host                     A {@link LayoutManagerHost} instance.
+     * @param overviewModeDelegate     OverviewModeController to delegate tab switcher behavior.
      */
-    public LayoutManagerChromeTablet(LayoutManagerHost host) {
-        super(host, false);
+    public LayoutManagerChromeTablet(
+            LayoutManagerHost host, OverviewModeController overviewModeDelegate) {
+        super(host, false, overviewModeDelegate);
         Context context = host.getContext();
 
         mTabStripLayoutHelperManager =

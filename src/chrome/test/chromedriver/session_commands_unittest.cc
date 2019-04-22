@@ -220,7 +220,8 @@ namespace {
 
 Status ProcessCapabilitiesJson(const std::string& paramsJson,
                                base::DictionaryValue* result_capabilities) {
-  std::unique_ptr<base::Value> params = base::JSONReader::Read(paramsJson);
+  std::unique_ptr<base::Value> params =
+      base::JSONReader::ReadDeprecated(paramsJson);
   if (!params || !params->is_dict())
     return Status(kUnknownError);
   return ProcessCapabilities(
@@ -418,7 +419,7 @@ TEST(SessionCommandsTest, AutoReporting) {
 
   // an error should be given if the |enabled| parameter is not set
   status_code = ExecuteSetAutoReporting(&session, params, &value).code();
-  ASSERT_EQ(kUnknownError, status_code);
+  ASSERT_EQ(kInvalidArgument, status_code);
 
   // try to enable autoreporting
   params.SetBoolean("enabled", true);

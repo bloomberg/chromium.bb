@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -76,8 +77,11 @@ AlarmManager::AlarmList AlarmsFromValue(const std::string extension_id,
     if (list->GetDictionary(i, &alarm_dict) &&
         alarms::Alarm::Populate(*alarm_dict, alarm->js_alarm.get())) {
       const base::Value* time_value = nullptr;
-      if (alarm_dict->Get(kAlarmGranularity, &time_value))
-        base::GetValueAsTimeDelta(*time_value, &alarm->granularity);
+      if (alarm_dict->Get(kAlarmGranularity, &time_value)) {
+        // It's okay to ignore the failure since we have minimum granularity.
+        ignore_result(
+            base::GetValueAsTimeDelta(*time_value, &alarm->granularity));
+      }
       alarm->minimum_granularity = base::TimeDelta::FromSecondsD(
           (is_unpacked ? alarms_api_constants::kDevDelayMinimum
                        : alarms_api_constants::kReleaseDelayMinimum) *

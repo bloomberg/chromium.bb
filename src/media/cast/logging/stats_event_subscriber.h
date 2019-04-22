@@ -12,7 +12,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/tick_clock.h"
 #include "media/cast/logging/logging_defines.h"
@@ -186,7 +185,7 @@ class StatsEventSubscriber : public RawEventSubscriber {
   };
 
   typedef std::map<CastStat, double> StatsMap;
-  typedef std::map<CastStat, linked_ptr<SimpleHistogram> > HistogramMap;
+  typedef std::map<CastStat, std::unique_ptr<SimpleHistogram>> HistogramMap;
   typedef std::map<RtpTimeTicks, FrameInfo> FrameInfoMap;
   typedef std::map<std::pair<RtpTimeTicks, uint16_t>,
                    std::pair<base::TimeTicks, CastLoggingEvent>>

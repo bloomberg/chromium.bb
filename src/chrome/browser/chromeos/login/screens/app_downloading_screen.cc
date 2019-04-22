@@ -15,10 +15,11 @@ constexpr const char kUserActionButtonContinueSetup[] =
 }  // namespace
 
 AppDownloadingScreen::AppDownloadingScreen(
-    BaseScreenDelegate* base_screen_delegate,
-    AppDownloadingScreenView* view)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_APP_DOWNLOADING),
-      view_(view) {
+    AppDownloadingScreenView* view,
+    const base::RepeatingClosure& exit_callback)
+    : BaseScreen(OobeScreen::SCREEN_APP_DOWNLOADING),
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   view_->Bind(this);
 }
@@ -38,7 +39,7 @@ void AppDownloadingScreen::Hide() {
 
 void AppDownloadingScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionButtonContinueSetup) {
-    Finish(ScreenExitCode::APP_DOWNLOADING_FINISHED);
+    exit_callback_.Run();
     return;
   }
   BaseScreen::OnUserAction(action_id);

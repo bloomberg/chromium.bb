@@ -12,9 +12,8 @@
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/system_clock_client.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
@@ -27,19 +26,9 @@ namespace settings {
 
 namespace {
 
-// Returns whether the system time zone automatic detection policy is disabled
-// by a flag.
-bool IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSystemTimezoneAutomaticDetectionPolicy);
-}
-
 // Returns whether the system's automatic time zone detection setting is
 // managed, which may override the user's setting.
 bool IsSystemTimezoneAutomaticDetectionManaged() {
-  if (IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled())
-    return false;
-
   return g_browser_process->local_state()->IsManagedPreference(
       prefs::kSystemTimezoneAutomaticDetectionPolicy);
 }
@@ -101,8 +90,7 @@ void DateTimeHandler::RegisterMessages() {
 }
 
 void DateTimeHandler::OnJavascriptAllowed() {
-  SystemClockClient* system_clock_client =
-      DBusThreadManager::Get()->GetSystemClockClient();
+  SystemClockClient* system_clock_client = SystemClockClient::Get();
   scoped_observer_.Add(system_clock_client);
   SystemClockCanSetTimeChanged(system_clock_client->CanSetTime());
 
@@ -113,9 +101,6 @@ void DateTimeHandler::OnJavascriptAllowed() {
           kSystemTimezonePolicy,
           base::Bind(&DateTimeHandler::NotifyTimezoneAutomaticDetectionPolicy,
                      weak_ptr_factory_.GetWeakPtr()));
-
-  if (IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled())
-    return;
 
   // The auto-detection policy can force auto-detection on or off.
   local_state_pref_change_registrar_.Init(g_browser_process->local_state());
@@ -128,9 +113,7 @@ void DateTimeHandler::OnJavascriptAllowed() {
 void DateTimeHandler::OnJavascriptDisallowed() {
   scoped_observer_.RemoveAll();
   system_timezone_policy_subscription_.reset();
-
-  if (!IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled())
-    local_state_pref_change_registrar_.RemoveAll();
+  local_state_pref_change_registrar_.RemoveAll();
 }
 
 void DateTimeHandler::HandleDateTimePageReady(const base::ListValue* args) {
@@ -152,9 +135,9 @@ void DateTimeHandler::HandleGetTimeZones(const base::ListValue* args) {
 
 void DateTimeHandler::HandleShowSetDateTimeUI(const base::ListValue* args) {
   // Make sure the clock status hasn't changed since the button was clicked.
-  if (!DBusThreadManager::Get()->GetSystemClockClient()->CanSetTime())
+  if (!SystemClockClient::Get()->CanSetTime())
     return;
-  SetTimeDialog::ShowDialogInParent(
+  SetTimeDialog::ShowDialog(
       web_ui()->GetWebContents()->GetTopLevelNativeWindow());
 }
 

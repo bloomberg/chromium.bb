@@ -54,7 +54,6 @@ class SyncCycleSnapshot;
 class SyncEncryptionHandler;
 class TypeDebugInfoObserver;
 class UnrecoverableErrorHandler;
-struct Experiments;
 struct UserShare;
 
 // SyncManager encapsulates syncable::Directory and serves as the parent of all
@@ -220,8 +219,7 @@ class SyncManager {
     // Must outlive SyncManager.
     ChangeDelegate* change_delegate;
 
-    // Credentials to be used when talking to the sync server.
-    SyncCredentials credentials;
+    std::string authenticated_account_id;
 
     // Unqiuely identifies this client to the invalidation notification server.
     std::string invalidator_client_id;
@@ -247,9 +245,15 @@ class SyncManager {
     // Optional nigori state to be restored.
     std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
 
-    // Define the polling intervals. Must not be zero.
-    base::TimeDelta short_poll_interval;
-    base::TimeDelta long_poll_interval;
+    // Define the polling interval. Must not be zero.
+    base::TimeDelta poll_interval;
+
+    // Non-authoritative values from prefs, to be compared with the Directory's
+    // counterparts.
+    // TODO(crbug.com/923285): Consider making these the authoritative data.
+    std::string cache_guid;
+    std::string birthday;
+    std::string bag_of_chips;
   };
 
   // The state of sync the feature. If the user turned on sync explicitly, it
@@ -353,11 +357,6 @@ class SyncManager {
   // Requires that the SyncManager be initialized.
   virtual const std::string cache_guid() = 0;
 
-  // Reads the nigori node to determine if any experimental features should
-  // be enabled.
-  // Note: opens a transaction.  May be called on any thread.
-  virtual bool ReceivedExperiment(Experiments* experiments) = 0;
-
   // Returns whether there are remaining unsynced items.
   virtual bool HasUnsyncedItemsForTest() = 0;
 
@@ -383,13 +382,6 @@ class SyncManager {
   // been updated.  Useful for initializing new observers' state.
   virtual void RequestEmitDebugInfo() = 0;
 
-  // Clears server data and invokes |callback| when complete.
-  //
-  // This is an asynchronous operation that requires interaction with the sync
-  // server. The operation will automatically be retried with backoff until it
-  // completes successfully or sync is shutdown.
-  virtual void ClearServerData(const base::Closure& callback) = 0;
-
   // Updates Sync's tracking of whether the cookie jar has a mismatch with the
   // chrome account. See ClientConfigParams proto message for more info.
   // Note: this does not trigger a sync cycle. It just updates the sync context.
@@ -397,6 +389,9 @@ class SyncManager {
 
   // Adds memory usage statistics to |pmd| for chrome://tracing.
   virtual void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) = 0;
+
+  // Updates invalidation client id.
+  virtual void UpdateInvalidationClientId(const std::string& client_id) = 0;
 };
 
 }  // namespace syncer

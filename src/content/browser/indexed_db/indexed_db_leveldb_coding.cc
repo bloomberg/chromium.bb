@@ -8,10 +8,12 @@
 #include <limits>
 #include <utility>
 
+#include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
+#include "build/build_config.h"
 
 // See leveldb_coding_scheme.md for detailed documentation of the coding
 // scheme implemented here.
@@ -19,73 +21,71 @@
 using base::StringPiece;
 using blink::IndexedDBKey;
 using blink::IndexedDBKeyPath;
-using blink::WebIDBKeyType;
-using blink::kWebIDBKeyTypeArray;
-using blink::kWebIDBKeyTypeBinary;
-using blink::kWebIDBKeyTypeDate;
-using blink::kWebIDBKeyTypeInvalid;
-using blink::kWebIDBKeyTypeMin;
-using blink::kWebIDBKeyTypeNull;
-using blink::kWebIDBKeyTypeNumber;
-using blink::kWebIDBKeyTypeString;
-using blink::WebIDBKeyPathType;
-using blink::kWebIDBKeyPathTypeArray;
-using blink::kWebIDBKeyPathTypeNull;
-using blink::kWebIDBKeyPathTypeString;
 
 namespace content {
+namespace {
+
+inline uint64_t ByteSwapToBE64(uint64_t x) {
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+  return base::ByteSwap(x);
+#else
+  return x;
+#endif
+}
 
 // As most of the IndexedDBKeys and encoded values are short, we
 // initialize some std::vectors with a default inline buffer size to reduce
 // the memory re-allocations when the std::vectors are appended.
-static const size_t kDefaultInlineBufferSize = 32;
+const size_t kDefaultInlineBufferSize = 32;
 
-static const unsigned char kIndexedDBKeyNullTypeByte = 0;
-static const unsigned char kIndexedDBKeyStringTypeByte = 1;
-static const unsigned char kIndexedDBKeyDateTypeByte = 2;
-static const unsigned char kIndexedDBKeyNumberTypeByte = 3;
-static const unsigned char kIndexedDBKeyArrayTypeByte = 4;
-static const unsigned char kIndexedDBKeyMinKeyTypeByte = 5;
-static const unsigned char kIndexedDBKeyBinaryTypeByte = 6;
+constexpr unsigned char kIndexedDBKeyNullTypeByte = 0;
+constexpr unsigned char kIndexedDBKeyStringTypeByte = 1;
+constexpr unsigned char kIndexedDBKeyDateTypeByte = 2;
+constexpr unsigned char kIndexedDBKeyNumberTypeByte = 3;
+constexpr unsigned char kIndexedDBKeyArrayTypeByte = 4;
+constexpr unsigned char kIndexedDBKeyMinKeyTypeByte = 5;
+constexpr unsigned char kIndexedDBKeyBinaryTypeByte = 6;
 
-static const unsigned char kIndexedDBKeyPathTypeCodedByte1 = 0;
-static const unsigned char kIndexedDBKeyPathTypeCodedByte2 = 0;
+constexpr unsigned char kIndexedDBKeyPathTypeCodedByte1 = 0;
+constexpr unsigned char kIndexedDBKeyPathTypeCodedByte2 = 0;
 
-static const unsigned char kIndexedDBKeyPathNullTypeByte = 0;
-static const unsigned char kIndexedDBKeyPathStringTypeByte = 1;
-static const unsigned char kIndexedDBKeyPathArrayTypeByte = 2;
+constexpr unsigned char kIndexedDBKeyPathNullTypeByte = 0;
+constexpr unsigned char kIndexedDBKeyPathStringTypeByte = 1;
+constexpr unsigned char kIndexedDBKeyPathArrayTypeByte = 2;
 
-static const unsigned char kObjectStoreDataIndexId = 1;
-static const unsigned char kExistsEntryIndexId = 2;
-static const unsigned char kBlobEntryIndexId = 3;
+constexpr unsigned char kObjectStoreDataIndexId = 1;
+constexpr unsigned char kExistsEntryIndexId = 2;
+constexpr unsigned char kBlobEntryIndexId = 3;
 
-static const unsigned char kSchemaVersionTypeByte = 0;
-static const unsigned char kMaxDatabaseIdTypeByte = 1;
-static const unsigned char kDataVersionTypeByte = 2;
-static const unsigned char kBlobJournalTypeByte = 3;
-static const unsigned char kLiveBlobJournalTypeByte = 4;
-static const unsigned char kEarliestSweepTimeTypeByte = 5;
-static const unsigned char kMaxSimpleGlobalMetaDataTypeByte =
+constexpr unsigned char kSchemaVersionTypeByte = 0;
+constexpr unsigned char kMaxDatabaseIdTypeByte = 1;
+constexpr unsigned char kDataVersionTypeByte = 2;
+constexpr unsigned char kBlobJournalTypeByte = 3;
+constexpr unsigned char kLiveBlobJournalTypeByte = 4;
+constexpr unsigned char kEarliestSweepTimeTypeByte = 5;
+constexpr unsigned char kMaxSimpleGlobalMetaDataTypeByte =
     6;  // Insert before this and increment.
-static const unsigned char kDatabaseFreeListTypeByte = 100;
-static const unsigned char kDatabaseNameTypeByte = 201;
+constexpr unsigned char kDatabaseFreeListTypeByte = 100;
+constexpr unsigned char kDatabaseNameTypeByte = 201;
 
-static const unsigned char kObjectStoreMetaDataTypeByte = 50;
-static const unsigned char kIndexMetaDataTypeByte = 100;
-static const unsigned char kObjectStoreFreeListTypeByte = 150;
-static const unsigned char kIndexFreeListTypeByte = 151;
-static const unsigned char kObjectStoreNamesTypeByte = 200;
-static const unsigned char kIndexNamesKeyTypeByte = 201;
+constexpr unsigned char kObjectStoreMetaDataTypeByte = 50;
+constexpr unsigned char kIndexMetaDataTypeByte = 100;
+constexpr unsigned char kObjectStoreFreeListTypeByte = 150;
+constexpr unsigned char kIndexFreeListTypeByte = 151;
+constexpr unsigned char kObjectStoreNamesTypeByte = 200;
+constexpr unsigned char kIndexNamesKeyTypeByte = 201;
 
-static const unsigned char kObjectMetaDataTypeMaximum = 255;
-static const unsigned char kIndexMetaDataTypeMaximum = 255;
-
-const unsigned char kMinimumIndexId = 30;
+constexpr unsigned char kObjectMetaDataTypeMaximum = 255;
+constexpr unsigned char kIndexMetaDataTypeMaximum = 255;
 
 inline void EncodeIntSafely(int64_t value, int64_t max, std::string* into) {
   DCHECK_LE(value, max);
   return EncodeInt(value, into);
 }
+
+}  // namespace
+
+const unsigned char kMinimumIndexId = 30;
 
 std::string MaxIDBKey() {
   std::string ret;
@@ -173,7 +173,7 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
   size_t previous_size = into->size();
   DCHECK(value.IsValid());
   switch (value.type()) {
-    case kWebIDBKeyTypeArray: {
+    case blink::mojom::IDBKeyType::Array: {
       EncodeByte(kIndexedDBKeyArrayTypeByte, into);
       size_t length = value.array().size();
       EncodeVarInt(length, into);
@@ -182,29 +182,29 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
       DCHECK_GT(into->size(), previous_size);
       return;
     }
-    case kWebIDBKeyTypeBinary:
+    case blink::mojom::IDBKeyType::Binary:
       EncodeByte(kIndexedDBKeyBinaryTypeByte, into);
       EncodeBinary(value.binary(), into);
       DCHECK_GT(into->size(), previous_size);
       return;
-    case kWebIDBKeyTypeString:
+    case blink::mojom::IDBKeyType::String:
       EncodeByte(kIndexedDBKeyStringTypeByte, into);
       EncodeStringWithLength(value.string(), into);
       DCHECK_GT(into->size(), previous_size);
       return;
-    case kWebIDBKeyTypeDate:
+    case blink::mojom::IDBKeyType::Date:
       EncodeByte(kIndexedDBKeyDateTypeByte, into);
       EncodeDouble(value.date(), into);
       DCHECK_EQ(9u, static_cast<size_t>(into->size() - previous_size));
       return;
-    case kWebIDBKeyTypeNumber:
+    case blink::mojom::IDBKeyType::Number:
       EncodeByte(kIndexedDBKeyNumberTypeByte, into);
       EncodeDouble(value.number(), into);
       DCHECK_EQ(9u, static_cast<size_t>(into->size() - previous_size));
       return;
-    case kWebIDBKeyTypeNull:
-    case kWebIDBKeyTypeInvalid:
-    case kWebIDBKeyTypeMin:
+    case blink::mojom::IDBKeyType::Null:
+    case blink::mojom::IDBKeyType::Invalid:
+    case blink::mojom::IDBKeyType::Min:
     default:
       NOTREACHED();
       EncodeByte(kIndexedDBKeyNullTypeByte, into);
@@ -217,11 +217,11 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
       static_cast<unsigned char>(a) == static_cast<unsigned char>(b), \
       "Blink enum and coding byte must match.")
 
-COMPILE_ASSERT_MATCHING_VALUES(kWebIDBKeyPathTypeNull,
+COMPILE_ASSERT_MATCHING_VALUES(blink::mojom::IDBKeyPathType::Null,
                                kIndexedDBKeyPathNullTypeByte);
-COMPILE_ASSERT_MATCHING_VALUES(kWebIDBKeyPathTypeString,
+COMPILE_ASSERT_MATCHING_VALUES(blink::mojom::IDBKeyPathType::String,
                                kIndexedDBKeyPathStringTypeByte);
-COMPILE_ASSERT_MATCHING_VALUES(kWebIDBKeyPathTypeArray,
+COMPILE_ASSERT_MATCHING_VALUES(blink::mojom::IDBKeyPathType::Array,
                                kIndexedDBKeyPathArrayTypeByte);
 
 void EncodeIDBKeyPath(const IndexedDBKeyPath& value, std::string* into) {
@@ -232,13 +232,13 @@ void EncodeIDBKeyPath(const IndexedDBKeyPath& value, std::string* into) {
   EncodeByte(kIndexedDBKeyPathTypeCodedByte2, into);
   EncodeByte(static_cast<char>(value.type()), into);
   switch (value.type()) {
-    case kWebIDBKeyPathTypeNull:
+    case blink::mojom::IDBKeyPathType::Null:
       break;
-    case kWebIDBKeyPathTypeString: {
+    case blink::mojom::IDBKeyPathType::String: {
       EncodeStringWithLength(value.string(), into);
       break;
     }
-    case kWebIDBKeyPathTypeArray: {
+    case blink::mojom::IDBKeyPathType::Array: {
       const std::vector<base::string16>& array = value.array();
       size_t count = array.size();
       EncodeVarInt(count, into);
@@ -412,14 +412,16 @@ bool DecodeIDBKey(StringPiece* slice, std::unique_ptr<IndexedDBKey>* value) {
       double d;
       if (!DecodeDouble(slice, &d))
         return false;
-      *value = std::make_unique<IndexedDBKey>(d, kWebIDBKeyTypeDate);
+      *value =
+          std::make_unique<IndexedDBKey>(d, blink::mojom::IDBKeyType::Date);
       return true;
     }
     case kIndexedDBKeyNumberTypeByte: {
       double d;
       if (!DecodeDouble(slice, &d))
         return false;
-      *value = std::make_unique<IndexedDBKey>(d, kWebIDBKeyTypeNumber);
+      *value =
+          std::make_unique<IndexedDBKey>(d, blink::mojom::IDBKeyType::Number);
       return true;
     }
   }
@@ -452,15 +454,16 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
 
   slice->remove_prefix(2);
   DCHECK(!slice->empty());
-  WebIDBKeyPathType type = static_cast<WebIDBKeyPathType>((*slice)[0]);
+  blink::mojom::IDBKeyPathType type =
+      static_cast<blink::mojom::IDBKeyPathType>((*slice)[0]);
   slice->remove_prefix(1);
 
   switch (type) {
-    case kWebIDBKeyPathTypeNull:
+    case blink::mojom::IDBKeyPathType::Null:
       DCHECK(slice->empty());
       *value = IndexedDBKeyPath();
       return true;
-    case kWebIDBKeyPathTypeString: {
+    case blink::mojom::IDBKeyPathType::String: {
       base::string16 string;
       if (!DecodeStringWithLength(slice, &string))
         return false;
@@ -468,7 +471,7 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
       *value = IndexedDBKeyPath(string);
       return true;
     }
-    case kWebIDBKeyPathTypeArray: {
+    case blink::mojom::IDBKeyPathType::Array: {
       std::vector<base::string16> array;
       int64_t count;
       if (!DecodeVarInt(slice, &count))
@@ -567,26 +570,26 @@ bool ExtractEncodedIDBKey(StringPiece* slice, std::string* result) {
   return true;
 }
 
-static WebIDBKeyType KeyTypeByteToKeyType(unsigned char type) {
+static blink::mojom::IDBKeyType KeyTypeByteToKeyType(unsigned char type) {
   switch (type) {
     case kIndexedDBKeyNullTypeByte:
-      return kWebIDBKeyTypeInvalid;
+      return blink::mojom::IDBKeyType::Invalid;
     case kIndexedDBKeyArrayTypeByte:
-      return kWebIDBKeyTypeArray;
+      return blink::mojom::IDBKeyType::Array;
     case kIndexedDBKeyBinaryTypeByte:
-      return kWebIDBKeyTypeBinary;
+      return blink::mojom::IDBKeyType::Binary;
     case kIndexedDBKeyStringTypeByte:
-      return kWebIDBKeyTypeString;
+      return blink::mojom::IDBKeyType::String;
     case kIndexedDBKeyDateTypeByte:
-      return kWebIDBKeyTypeDate;
+      return blink::mojom::IDBKeyType::Date;
     case kIndexedDBKeyNumberTypeByte:
-      return kWebIDBKeyTypeNumber;
+      return blink::mojom::IDBKeyType::Number;
     case kIndexedDBKeyMinKeyTypeByte:
-      return kWebIDBKeyTypeMin;
+      return blink::mojom::IDBKeyType::Min;
   }
 
   NOTREACHED();
-  return kWebIDBKeyTypeInvalid;
+  return blink::mojom::IDBKeyType::Invalid;
 }
 
 int CompareEncodedStringsWithLength(StringPiece* slice1,
@@ -679,7 +682,10 @@ static inline int CompareSizes(size_t a, size_t b) {
   return 0;
 }
 
-static int CompareTypes(WebIDBKeyType a, WebIDBKeyType b) { return b - a; }
+static int CompareTypes(blink::mojom::IDBKeyType a,
+                        blink::mojom::IDBKeyType b) {
+  return static_cast<int32_t>(b) - static_cast<int32_t>(a);
+}
 
 int CompareEncodedIDBKeys(StringPiece* slice_a,
                           StringPiece* slice_b,
@@ -993,6 +999,7 @@ int Compare(const StringPiece& a,
             bool only_compare_index_keys) {
   bool ok;
   int result = Compare(a, b, only_compare_index_keys, &ok);
+  // TODO(dmurph): Report this somehow. https://crbug.com/913121
   DCHECK(ok);
   if (!ok)
     return 0;
@@ -1005,6 +1012,30 @@ int CompareKeys(const StringPiece& a, const StringPiece& b) {
 
 int CompareIndexKeys(const StringPiece& a, const StringPiece& b) {
   return Compare(a, b, true /*index_keys*/);
+}
+
+ScopeLockRange GetDatabaseLockRange(int64_t database_id) {
+  // The numbers are transformed into big-endian to make them
+  // bytewise-comparable. Eventually, these lock ranges should just match the
+  // leveldb keys when they are bytewise-comparable.
+  uint64_t first[1] = {ByteSwapToBE64(static_cast<uint64_t>(database_id))};
+  uint64_t next[1] = {ByteSwapToBE64(static_cast<uint64_t>(database_id + 1))};
+  return {std::string(reinterpret_cast<char*>(&first), sizeof(first)),
+          std::string(reinterpret_cast<char*>(&next), sizeof(next))};
+}
+
+ScopeLockRange GetObjectStoreLockRange(int64_t database_id,
+                                       int64_t object_store_id) {
+  // The numbers are transformed into big-endian to make them
+  // bytewise-comparable. Eventually, these lock ranges should just match the
+  // leveldb keys when they are bytewise-comparable.
+  uint64_t first[2] = {ByteSwapToBE64(static_cast<uint64_t>(database_id)),
+                       ByteSwapToBE64(static_cast<uint64_t>(object_store_id))};
+  uint64_t next[2] = {
+      ByteSwapToBE64(static_cast<uint64_t>(database_id)),
+      ByteSwapToBE64(static_cast<uint64_t>(object_store_id + 1))};
+  return {std::string(reinterpret_cast<char*>(&first), sizeof(first)),
+          std::string(reinterpret_cast<char*>(&next), sizeof(next))};
 }
 
 KeyPrefix::KeyPrefix()

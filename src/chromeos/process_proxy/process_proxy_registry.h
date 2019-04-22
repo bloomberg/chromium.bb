@@ -26,7 +26,7 @@ namespace chromeos {
 // live on a single thread (where all methods must be called).
 class CHROMEOS_EXPORT ProcessProxyRegistry {
  public:
-  using OutputCallback = base::Callback<void(int terminal_id,
+  using OutputCallback = base::Callback<void(const std::string& id,
                                              const std::string& output_type,
                                              const std::string& output_data)>;
 
@@ -48,22 +48,27 @@ class CHROMEOS_EXPORT ProcessProxyRegistry {
   static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 
   // Starts new ProcessProxy (which starts new process).
-  // Returns ID used for the created process. Returns -1 on failure.
-  int OpenProcess(const base::CommandLine& cmdline,
-                  const std::string& user_id_hash,
-                  const OutputCallback& callback);
+  // Returns true if the process is created sucessfully, false otherwise.
+  // The unique process id is passed back via |id|.
+  bool OpenProcess(const base::CommandLine& cmdline,
+                   const std::string& user_id_hash,
+                   const OutputCallback& callback,
+                   std::string* id);
   // Sends data to the process identified by |id|.
-  bool SendInput(int id, const std::string& data);
+  bool SendInput(const std::string& id, const std::string& data);
   // Stops the process identified by |id|.
-  bool CloseProcess(int id);
+  bool CloseProcess(const std::string& id);
   // Reports terminal resize to process proxy.
-  bool OnTerminalResize(int id, int width, int height);
+  bool OnTerminalResize(const std::string& id, int width, int height);
   // Notifies process proxy identified by |id| that previously reported output
   // has been handled.
-  void AckOutput(int id);
+  void AckOutput(const std::string& id);
 
   // Shuts down registry, closing all associated processed.
   void ShutDown();
+
+  // Get the process handle for testing purposes.
+  base::ProcessHandle GetProcessHandleForTesting(const std::string& id);
 
  private:
   friend struct ::base::LazyInstanceTraitsBase<ProcessProxyRegistry>;
@@ -72,12 +77,14 @@ class CHROMEOS_EXPORT ProcessProxyRegistry {
   ~ProcessProxyRegistry();
 
   // Gets called when output gets detected.
-  void OnProcessOutput(int id, ProcessOutputType type, const std::string& data);
+  void OnProcessOutput(const std::string& id,
+                       ProcessOutputType type,
+                       const std::string& data);
 
   bool EnsureWatcherThreadStarted();
 
   // Map of all existing ProcessProxies.
-  std::map<int, ProcessProxyInfo> proxy_map_;
+  std::map<std::string, ProcessProxyInfo> proxy_map_;
 
   std::unique_ptr<base::Thread> watcher_thread_;
 

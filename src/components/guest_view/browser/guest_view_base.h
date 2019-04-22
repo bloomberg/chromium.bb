@@ -212,6 +212,14 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   content::RenderWidgetHost* GetOwnerRenderWidgetHost() override;
   content::SiteInstance* GetOwnerSiteInstance() override;
 
+  // Starts the attaching process for a (frame-based) GuestView.
+  // |embedder_frame| is a frame in the embedder WebContents (owned by a
+  // HTMLFrameOwnerElement associated with the GuestView's element in the
+  // embedder process) which will be used for attaching.
+  void AttachToOuterWebContentsFrame(content::RenderFrameHost* embedder_frame,
+                                     int32_t element_instance_id,
+                                     bool is_full_page_plugin);
+
  protected:
   explicit GuestViewBase(content::WebContents* owner_web_contents);
 
@@ -329,8 +337,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void SetGuestZoomLevelToMatchEmbedder();
 
  private:
-  friend class GuestViewMessageFilter;
-
   class OwnerContentsObserver;
   class OpenerLifetimeObserver;
 
@@ -378,15 +384,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void OnZoomChanged(
       const zoom::ZoomController::ZoomChangedEventData& data) final;
 
-  // See BrowserPluginGuestDelegate::WillAttach.
-  // This version also takes a |perform_attach| callback to specify
-  // attachment operations which must be done synchronously.
-  void WillAttach(content::WebContents* embedder_web_contents,
-                  int element_instance_id,
-                  bool is_full_page_plugin,
-                  base::OnceClosure perform_attach,
-                  base::OnceClosure completion_callback);
-
   void SendQueuedEvents();
 
   void CompleteInit(std::unique_ptr<base::DictionaryValue> create_params,
@@ -412,6 +409,15 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   GuestViewManager* GetGuestViewManager();
   void SetOwnerHost();
+
+  // TODO(ekaramad): Revisit this once MimeHandlerViewGuest is frame-based
+  // (https://crbug.com/659750); either remove or unify with
+  // BrowserPluginGuestDelegate::WillAttach.
+  void WillAttach(content::WebContents* embedder_web_contents,
+                  content::RenderFrameHost* outer_contents_frame,
+                  int browser_plugin_instance_id,
+                  bool is_full_page_plugin,
+                  base::OnceClosure completion_callback);
 
   // This guest tracks the lifetime of the WebContents specified by
   // |owner_web_contents_|. If |owner_web_contents_| is destroyed then this

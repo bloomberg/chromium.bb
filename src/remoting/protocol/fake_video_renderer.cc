@@ -24,11 +24,11 @@ void FakeVideoStub::set_on_frame_callback(base::Closure on_frame_callback) {
 
 void FakeVideoStub::ProcessVideoPacket(
     std::unique_ptr<VideoPacket> video_packet,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   CHECK(thread_checker_.CalledOnValidThread());
   received_packets_.push_back(std::move(video_packet));
   if (!done.is_null())
-    done.Run();
+    std::move(done).Run();
   if (!on_frame_callback_.is_null())
     on_frame_callback_.Run();
 }

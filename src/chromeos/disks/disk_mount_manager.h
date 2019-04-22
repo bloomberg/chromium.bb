@@ -11,8 +11,8 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cros_disks_client.h"
 
 namespace chromeos {
@@ -29,7 +29,7 @@ enum MountCondition {
 
 // This class handles the interaction with cros-disks.
 // Other classes can add themselves as observers.
-class CHROMEOS_EXPORT DiskMountManager {
+class COMPONENT_EXPORT(CHROMEOS_DISKS) DiskMountManager {
  public:
   // Event types passed to the observers.
   enum DiskEvent {

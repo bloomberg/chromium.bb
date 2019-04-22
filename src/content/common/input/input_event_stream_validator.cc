@@ -44,7 +44,7 @@ bool InputEventStreamValidator::ValidateImpl(
   if (WebInputEvent::IsGestureEventType(event.GetType())) {
     const WebGestureEvent& gesture = static_cast<const WebGestureEvent&>(event);
     // TODO(jdduke): Validate touchpad gesture streams.
-    if (gesture.SourceDevice() == blink::kWebGestureDeviceTouchscreen)
+    if (gesture.SourceDevice() == blink::WebGestureDevice::kTouchscreen)
       return gesture_validator_.Validate(
           gesture, fling_cancellation_is_deferred, error_msg);
   } else if (WebInputEvent::IsTouchEventType(event.GetType())) {

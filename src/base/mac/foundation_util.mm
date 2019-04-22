@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_logging.h"
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "build/build_config.h"
 
@@ -149,7 +149,7 @@ FilePath GetUserLibraryPath() {
 //   returns - path to the application bundle, or empty on error
 FilePath GetAppBundlePath(const FilePath& exec_name) {
   const char kExt[] = ".app";
-  const size_t kExtLength = arraysize(kExt) - 1;
+  const size_t kExtLength = base::size(kExt) - 1;
 
   // Split the path into components.
   std::vector<std::string> components;
@@ -196,27 +196,28 @@ std::string TypeNameForCFType(TypeCF##Ref) { \
   return #TypeCF; \
 }
 
-TYPE_NAME_FOR_CF_TYPE_DEFN(CFArray);
-TYPE_NAME_FOR_CF_TYPE_DEFN(CFBag);
-TYPE_NAME_FOR_CF_TYPE_DEFN(CFBoolean);
-TYPE_NAME_FOR_CF_TYPE_DEFN(CFData);
-TYPE_NAME_FOR_CF_TYPE_DEFN(CFDate);
-TYPE_NAME_FOR_CF_TYPE_DEFN(CFDictionary);
-TYPE_NAME_FOR_CF_TYPE_DEFN(CFNull);
-TYPE_NAME_FOR_CF_TYPE_DEFN(CFNumber);
-TYPE_NAME_FOR_CF_TYPE_DEFN(CFSet);
-TYPE_NAME_FOR_CF_TYPE_DEFN(CFString);
-TYPE_NAME_FOR_CF_TYPE_DEFN(CFURL);
-TYPE_NAME_FOR_CF_TYPE_DEFN(CFUUID);
+TYPE_NAME_FOR_CF_TYPE_DEFN(CFArray)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CFBag)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CFBoolean)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CFData)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CFDate)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CFDictionary)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CFNull)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CFNumber)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CFSet)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CFString)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CFURL)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CFUUID)
 
-TYPE_NAME_FOR_CF_TYPE_DEFN(CGColor);
+TYPE_NAME_FOR_CF_TYPE_DEFN(CGColor)
 
-TYPE_NAME_FOR_CF_TYPE_DEFN(CTFont);
-TYPE_NAME_FOR_CF_TYPE_DEFN(CTRun);
+TYPE_NAME_FOR_CF_TYPE_DEFN(CTFont)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CTRun)
 
 #if !defined(OS_IOS)
-TYPE_NAME_FOR_CF_TYPE_DEFN(SecKey);
-TYPE_NAME_FOR_CF_TYPE_DEFN(SecPolicy);
+TYPE_NAME_FOR_CF_TYPE_DEFN(SecCertificate)
+TYPE_NAME_FOR_CF_TYPE_DEFN(SecKey)
+TYPE_NAME_FOR_CF_TYPE_DEFN(SecPolicy)
 #endif
 
 #undef TYPE_NAME_FOR_CF_TYPE_DEFN
@@ -229,17 +230,6 @@ void NSObjectRetain(void* obj) {
 void NSObjectRelease(void* obj) {
   id<NSObject> nsobj = static_cast<id<NSObject> >(obj);
   [nsobj release];
-}
-
-void* CFTypeRefToNSObjectAutorelease(CFTypeRef cf_object) {
-  // When GC is on, NSMakeCollectable marks cf_object for GC and autorelease
-  // is a no-op.
-  //
-  // In the traditional GC-less environment, NSMakeCollectable is a no-op,
-  // and cf_object is autoreleased, balancing out the caller's ownership claim.
-  //
-  // NSMakeCollectable returns nil when used on a NULL object.
-  return [NSMakeCollectable(cf_object) autorelease];
 }
 
 static const char* base_bundle_id;
@@ -296,26 +286,26 @@ CFMutable##name##Ref NSToCFCast(NSMutable##name* ns_val) { \
   return cf_val; \
 }
 
-CF_TO_NS_MUTABLE_CAST_DEFN(Array);
-CF_TO_NS_MUTABLE_CAST_DEFN(AttributedString);
-CF_TO_NS_CAST_DEFN(CFCalendar, NSCalendar);
-CF_TO_NS_MUTABLE_CAST_DEFN(CharacterSet);
-CF_TO_NS_MUTABLE_CAST_DEFN(Data);
-CF_TO_NS_CAST_DEFN(CFDate, NSDate);
-CF_TO_NS_MUTABLE_CAST_DEFN(Dictionary);
-CF_TO_NS_CAST_DEFN(CFError, NSError);
-CF_TO_NS_CAST_DEFN(CFLocale, NSLocale);
-CF_TO_NS_CAST_DEFN(CFNumber, NSNumber);
-CF_TO_NS_CAST_DEFN(CFRunLoopTimer, NSTimer);
-CF_TO_NS_CAST_DEFN(CFTimeZone, NSTimeZone);
-CF_TO_NS_MUTABLE_CAST_DEFN(Set);
-CF_TO_NS_CAST_DEFN(CFReadStream, NSInputStream);
-CF_TO_NS_CAST_DEFN(CFWriteStream, NSOutputStream);
-CF_TO_NS_MUTABLE_CAST_DEFN(String);
-CF_TO_NS_CAST_DEFN(CFURL, NSURL);
+CF_TO_NS_MUTABLE_CAST_DEFN(Array)
+CF_TO_NS_MUTABLE_CAST_DEFN(AttributedString)
+CF_TO_NS_CAST_DEFN(CFCalendar, NSCalendar)
+CF_TO_NS_MUTABLE_CAST_DEFN(CharacterSet)
+CF_TO_NS_MUTABLE_CAST_DEFN(Data)
+CF_TO_NS_CAST_DEFN(CFDate, NSDate)
+CF_TO_NS_MUTABLE_CAST_DEFN(Dictionary)
+CF_TO_NS_CAST_DEFN(CFError, NSError)
+CF_TO_NS_CAST_DEFN(CFLocale, NSLocale)
+CF_TO_NS_CAST_DEFN(CFNumber, NSNumber)
+CF_TO_NS_CAST_DEFN(CFRunLoopTimer, NSTimer)
+CF_TO_NS_CAST_DEFN(CFTimeZone, NSTimeZone)
+CF_TO_NS_MUTABLE_CAST_DEFN(Set)
+CF_TO_NS_CAST_DEFN(CFReadStream, NSInputStream)
+CF_TO_NS_CAST_DEFN(CFWriteStream, NSOutputStream)
+CF_TO_NS_MUTABLE_CAST_DEFN(String)
+CF_TO_NS_CAST_DEFN(CFURL, NSURL)
 
 #if defined(OS_IOS)
-CF_TO_NS_CAST_DEFN(CTFont, UIFont);
+CF_TO_NS_CAST_DEFN(CTFont, UIFont)
 #else
 // The NSFont/CTFont toll-free bridging is broken when it comes to type
 // checking, so do some special-casing.
@@ -361,26 +351,26 @@ CFCastStrict<TypeCF##Ref>(const CFTypeRef& cf_val) { \
   return rv; \
 }
 
-CF_CAST_DEFN(CFArray);
-CF_CAST_DEFN(CFBag);
-CF_CAST_DEFN(CFBoolean);
-CF_CAST_DEFN(CFData);
-CF_CAST_DEFN(CFDate);
-CF_CAST_DEFN(CFDictionary);
-CF_CAST_DEFN(CFNull);
-CF_CAST_DEFN(CFNumber);
-CF_CAST_DEFN(CFSet);
-CF_CAST_DEFN(CFString);
-CF_CAST_DEFN(CFURL);
-CF_CAST_DEFN(CFUUID);
+CF_CAST_DEFN(CFArray)
+CF_CAST_DEFN(CFBag)
+CF_CAST_DEFN(CFBoolean)
+CF_CAST_DEFN(CFData)
+CF_CAST_DEFN(CFDate)
+CF_CAST_DEFN(CFDictionary)
+CF_CAST_DEFN(CFNull)
+CF_CAST_DEFN(CFNumber)
+CF_CAST_DEFN(CFSet)
+CF_CAST_DEFN(CFString)
+CF_CAST_DEFN(CFURL)
+CF_CAST_DEFN(CFUUID)
 
-CF_CAST_DEFN(CGColor);
+CF_CAST_DEFN(CGColor)
 
-CF_CAST_DEFN(CTFontDescriptor);
-CF_CAST_DEFN(CTRun);
+CF_CAST_DEFN(CTFontDescriptor)
+CF_CAST_DEFN(CTRun)
 
 #if defined(OS_IOS)
-CF_CAST_DEFN(CTFont);
+CF_CAST_DEFN(CTFont)
 #else
 // The NSFont/CTFont toll-free bridging is broken when it comes to type
 // checking, so do some special-casing.
@@ -413,10 +403,11 @@ CFCastStrict<CTFontRef>(const CFTypeRef& cf_val) {
 #endif
 
 #if !defined(OS_IOS)
-CF_CAST_DEFN(SecACL);
-CF_CAST_DEFN(SecKey);
-CF_CAST_DEFN(SecPolicy);
-CF_CAST_DEFN(SecTrustedApplication);
+CF_CAST_DEFN(SecACL)
+CF_CAST_DEFN(SecCertificate)
+CF_CAST_DEFN(SecKey)
+CF_CAST_DEFN(SecPolicy)
+CF_CAST_DEFN(SecTrustedApplication)
 #endif
 
 #undef CF_CAST_DEFN
@@ -434,6 +425,12 @@ std::string GetValueFromDictionaryErrorMessage(
       " instead";
 }
 
+NSURL* FilePathToNSURL(const FilePath& path) {
+  if (NSString* path_string = FilePathToNSString(path))
+    return [NSURL fileURLWithPath:path_string];
+  return nil;
+}
+
 NSString* FilePathToNSString(const FilePath& path) {
   if (path.empty())
     return nil;
@@ -444,6 +441,25 @@ FilePath NSStringToFilePath(NSString* str) {
   if (![str length])
     return FilePath();
   return FilePath([str fileSystemRepresentation]);
+}
+
+base::ScopedCFTypeRef<CFURLRef> FilePathToCFURL(const FilePath& path) {
+  DCHECK(!path.empty());
+
+  // The function's docs promise that it does not require an NSAutoreleasePool.
+  // A straightforward way to accomplish this is to use *Create* functions,
+  // combined with base::ScopedCFTypeRef.
+  const std::string& path_string = path.value();
+  base::ScopedCFTypeRef<CFStringRef> path_cfstring(CFStringCreateWithBytes(
+      kCFAllocatorDefault, reinterpret_cast<const UInt8*>(path_string.data()),
+      path_string.length(), kCFStringEncodingUTF8,
+      /*isExternalRepresentation=*/FALSE));
+  if (!path_cfstring)
+    return base::ScopedCFTypeRef<CFURLRef>();
+
+  return base::ScopedCFTypeRef<CFURLRef>(CFURLCreateWithFileSystemPath(
+      kCFAllocatorDefault, path_cfstring, kCFURLPOSIXPathStyle,
+      /*isDirectory=*/FALSE));
 }
 
 bool CFRangeToNSRange(CFRange range, NSRange* range_out) {

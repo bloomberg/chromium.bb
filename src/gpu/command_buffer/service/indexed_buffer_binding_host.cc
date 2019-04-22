@@ -75,11 +75,15 @@ void IndexedBufferBindingHost::IndexedBufferBinding::Reset() {
   effective_full_buffer_size = 0;
 }
 
-IndexedBufferBindingHost::IndexedBufferBindingHost(uint32_t max_bindings,
-                                                   GLenum target,
-                                                   bool needs_emulation)
+IndexedBufferBindingHost::IndexedBufferBindingHost(
+    uint32_t max_bindings,
+    GLenum target,
+    bool needs_emulation,
+    bool round_down_uniform_bind_buffer_range_size)
     : is_bound_(false),
       needs_emulation_(needs_emulation),
+      round_down_uniform_bind_buffer_range_size_(
+          round_down_uniform_bind_buffer_range_size),
       max_non_null_binding_index_plus_one_(0u),
       target_(target) {
   DCHECK(needs_emulation);
@@ -113,7 +117,8 @@ void IndexedBufferBindingHost::DoBindBufferRange(GLuint index,
   GLuint service_id = buffer ? buffer->service_id() : 0;
   if (buffer && needs_emulation_) {
     DoAdjustedBindBufferRange(target_, index, service_id, offset, size,
-                              buffer->size());
+                              buffer->size(),
+                              round_down_uniform_bind_buffer_range_size_);
   } else {
     glBindBufferRange(target_, index, service_id, offset, size);
   }
@@ -130,8 +135,13 @@ void IndexedBufferBindingHost::DoBindBufferRange(GLuint index,
 
 // static
 void IndexedBufferBindingHost::DoAdjustedBindBufferRange(
-    GLenum target, GLuint index, GLuint service_id, GLintptr offset,
-    GLsizeiptr size, GLsizeiptr full_buffer_size) {
+    GLenum target,
+    GLuint index,
+    GLuint service_id,
+    GLintptr offset,
+    GLsizeiptr size,
+    GLsizeiptr full_buffer_size,
+    bool round_down_uniform_bind_buffer_range_size) {
   GLsizeiptr adjusted_size = size;
   if (offset >= full_buffer_size) {
     // Situation 1: We can't really call glBindBufferRange with reasonable
@@ -142,7 +152,8 @@ void IndexedBufferBindingHost::DoAdjustedBindBufferRange(
     // MacOSX with AMD/4.1.
     glBindBufferBase(target, index, service_id);
     return;
-  } else if (offset + size > full_buffer_size) {
+  }
+  if (offset + size > full_buffer_size) {
     adjusted_size = full_buffer_size - offset;
     // size needs to be a multiple of 4.
     adjusted_size = adjusted_size & ~3;
@@ -150,6 +161,22 @@ void IndexedBufferBindingHost::DoAdjustedBindBufferRange(
       // Situation 2: The original size is valid, but the adjusted size
       // is 0 and isn't valid. Handle it the same way as situation 1.
       glBindBufferBase(target, index, service_id);
+      return;
+    }
+  }
+  if (round_down_uniform_bind_buffer_range_size) {
+    adjusted_size = adjusted_size & ~3;
+    if (adjusted_size == 0) {
+      // This case is invalid and we shouldn't call the driver.
+      // Without rounding, this would generate INVALID_OPERATION
+      // at draw time because the size is not enough to fill the smallest
+      // possible uniform block (4 bytes).
+      // The size of the range is set in DoBindBufferRange and validated in
+      // BufferManager::RequestBuffersAccess. It is fine to not bind the buffer
+      // because any draw call with this buffer range binding will generate
+      // INVALID_OPERATION.
+      // Clear the buffer binding because it will not be used.
+      glBindBufferBase(target, index, 0);
       return;
     }
   }
@@ -168,7 +195,8 @@ void IndexedBufferBindingHost::OnBufferData(Buffer* buffer) {
           buffer_bindings_[ii].effective_full_buffer_size != buffer->size()) {
         DoAdjustedBindBufferRange(target_, ii, buffer->service_id(),
                                   buffer_bindings_[ii].offset,
-                                  buffer_bindings_[ii].size, buffer->size());
+                                  buffer_bindings_[ii].size, buffer->size(),
+                                  round_down_uniform_bind_buffer_range_size_);
         buffer_bindings_[ii].effective_full_buffer_size = buffer->size();
       }
     }
@@ -206,7 +234,8 @@ void IndexedBufferBindingHost::SetIsBound(bool is_bound) {
           buffer_bindings_[ii].effective_full_buffer_size != buffer->size()) {
         DoAdjustedBindBufferRange(target_, ii, buffer->service_id(),
                                   buffer_bindings_[ii].offset,
-                                  buffer_bindings_[ii].size, buffer->size());
+                                  buffer_bindings_[ii].size, buffer->size(),
+                                  round_down_uniform_bind_buffer_range_size_);
         buffer_bindings_[ii].effective_full_buffer_size = buffer->size();
       }
     }

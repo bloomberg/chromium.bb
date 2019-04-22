@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import os
 import time
 
 from chromite.cbuildbot.stages import generic_stages
@@ -18,29 +17,6 @@ from chromite.lib import config_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import request_build
-from chromite.lib.const import waterfall
-
-
-def BuilderName(build_config, active_waterfall, current_builder):
-  """Gets the corresponding builder name of the build.
-
-  Args:
-    build_config: build config (string) of the build.
-    active_waterfall: active waterfall to run the build.
-    current_builder: buildbot builder name of the current builder, or None.
-
-  Returns:
-    Builder name to run the build on.
-  """
-  # The builder name is configured differently for release builds in
-  # chromeos and chromeos_release waterfalls. (see crbug.com/755276)
-  if active_waterfall == waterfall.WATERFALL_RELEASE:
-    assert current_builder
-    # Example: master-release release-R64-10176.B
-    named_branch = current_builder.split()[1]
-    return '%s %s' % (build_config, named_branch)
-  else:
-    return build_config
 
 
 class ScheduleSlavesStage(generic_stages.BuilderStage):
@@ -48,30 +24,10 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, sync_stage, **kwargs):
-    super(ScheduleSlavesStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, sync_stage, **kwargs):
+    super(ScheduleSlavesStage, self).__init__(builder_run, buildstore, **kwargs)
     self.sync_stage = sync_stage
     self.buildbucket_client = self.GetBuildbucketClient()
-
-  def _GetBuildbucketBucket(self, build_name, build_config):
-    """Get the corresponding Buildbucket bucket.
-
-    Args:
-      build_name: name of the build to put to Buildbucket.
-      build_config: config of the build to put to Buildbucket.
-
-    Raises:
-      NoBuildbucketBucketFoundException when no Buildbucket bucket found.
-    """
-    bucket = buildbucket_lib.WATERFALL_BUCKET_MAP.get(
-        build_config.active_waterfall)
-
-    if bucket is None:
-      raise buildbucket_lib.NoBuildbucketBucketFoundException(
-          'No Buildbucket bucket found for builder %s waterfall: %s' %
-          (build_name, build_config.active_waterfall))
-
-    return bucket
 
   def _FindMostRecentBotId(self, build_config, branch):
     buildbucket_client = self.GetBuildbucketClient()
@@ -98,8 +54,45 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
     return bot_id
 
-  def PostSlaveBuildToBuildbucket(self, build_name, build_config,
-                                  master_build_id, master_buildbucket_id,
+  def _CreateRequestBuild(self,
+                          build_name,
+                          build_config,
+                          master_build_id,
+                          master_buildbucket_id,
+                          requested_bot):
+    if build_config.build_affinity:
+      requested_bot = self._FindMostRecentBotId(build_config.name,
+                                                self._run.manifest_branch)
+      logging.info('Requesting build affinity for %s against %s',
+                   build_config.name, requested_bot)
+
+    cbb_extra_args = ['--buildbot']
+    if master_buildbucket_id is not None:
+      cbb_extra_args.append('--master-buildbucket-id')
+      cbb_extra_args.append(master_buildbucket_id)
+    # Adding cbb_snapshot_revision to child builders to force child builders
+    # to sync to annealing snapshot revision.
+    if self._run.options.cbb_snapshot_revision:
+      logging.info('Adding --cbb_snapshot_revision=%s for %s',
+                   self._run.options.cbb_snapshot_revision, build_config.name)
+      cbb_extra_args.append('--cbb_snapshot_revision')
+      cbb_extra_args.append(self._run.options.cbb_snapshot_revision)
+
+    return request_build.RequestBuild(
+        build_config=build_name,
+        display_label=build_config.display_label,
+        branch=self._run.manifest_branch,
+        master_cidb_id=master_build_id,
+        master_buildbucket_id=master_buildbucket_id,
+        extra_args=cbb_extra_args,
+        requested_bot=requested_bot,
+    )
+
+  def PostSlaveBuildToBuildbucket(self,
+                                  build_name,
+                                  build_config,
+                                  master_build_id,
+                                  master_buildbucket_id,
                                   dryrun=False):
     """Send a Put slave build request to Buildbucket.
 
@@ -116,35 +109,13 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
         buildbucket_id
         created_ts
     """
-    bucket = self._GetBuildbucketBucket(build_name, build_config)
-
-    luci_builder = None
     requested_bot = None
-    if bucket == constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET:
-      if build_config.build_affinity:
-        requested_bot = self._FindMostRecentBotId(build_config.name,
-                                                  self._run.manifest_branch)
-    else:
-      # If it's not a swarming build, we must explicitly set this to the
-      # waterfall column name.
-      current_buildername = os.environ.get('BUILDBOT_BUILDERNAME', None)
-      luci_builder = BuilderName(
-          build_name, build_config.active_waterfall, current_buildername)
-
-    if requested_bot:
-      logging.info('Requesting build affinity for %s against %s',
-                   build_config.name, requested_bot)
-
-    request = request_build.RequestBuild(
-        build_config=build_name,
-        luci_builder=luci_builder,
-        display_label=build_config.display_label,
-        branch=self._run.manifest_branch,
-        master_cidb_id=master_build_id,
-        master_buildbucket_id=master_buildbucket_id,
-        bucket=bucket,
-        extra_args=['--buildbot'],
-        requested_bot=requested_bot,
+    request = self._CreateRequestBuild(
+        build_name,
+        build_config,
+        master_build_id,
+        master_buildbucket_id,
+        requested_bot
     )
     result = request.Submit(dryrun=dryrun)
 
@@ -154,7 +125,8 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
     return (result.buildbucket_id, result.created_ts)
 
-  def ScheduleSlaveBuildsViaBuildbucket(self, important_only=False,
+  def ScheduleSlaveBuildsViaBuildbucket(self,
+                                        important_only=False,
                                         dryrun=False):
     """Schedule slave builds by sending PUT requests to Buildbucket.
 
@@ -167,13 +139,18 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
       logging.info('No buildbucket_client. Skip scheduling slaves.')
       return
 
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     if build_id is None:
       logging.info('No build id. Skip scheduling slaves.')
       return
 
     # May be None. This is okay.
     master_buildbucket_id = self._run.options.buildbucket_id
+
+    if self._run.options.cbb_snapshot_revision:
+      logging.info('Parent has cbb_snapshot_rev=%s',
+                   self._run.options.cbb_snapshot_revision)
 
     scheduled_important_slave_builds = []
     scheduled_experimental_slave_builds = []
@@ -185,22 +162,25 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     for slave_config_name, slave_config in sorted(slave_config_map.iteritems()):
       try:
         buildbucket_id, created_ts = self.PostSlaveBuildToBuildbucket(
-            slave_config_name, slave_config, build_id, master_buildbucket_id,
+            slave_config_name,
+            slave_config,
+            build_id,
+            master_buildbucket_id,
             dryrun=dryrun)
         request_reason = None
 
         if slave_config.important:
-          scheduled_important_slave_builds.append(
-              (slave_config_name, buildbucket_id, created_ts))
+          scheduled_important_slave_builds.append((slave_config_name,
+                                                   buildbucket_id, created_ts))
           request_reason = build_requests.REASON_IMPORTANT_CQ_SLAVE
         else:
           scheduled_experimental_slave_builds.append(
               (slave_config_name, buildbucket_id, created_ts))
           request_reason = build_requests.REASON_EXPERIMENTAL_CQ_SLAVE
 
-        scheduled_build_reqs.append(build_requests.BuildRequest(
-            None, build_id, slave_config_name, None, buildbucket_id,
-            request_reason, None))
+        scheduled_build_reqs.append(
+            build_requests.BuildRequest(None, build_id, slave_config_name, None,
+                                        buildbucket_id, request_reason, None))
       except buildbucket_lib.BuildbucketResponseException as e:
         # Use 16-digit ts to be consistent with the created_ts from Buildbucket
         current_ts = int(round(time.time() * 1000000))
@@ -231,5 +211,5 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
                    'do not schedule CQ slaves.')
       return
 
-    self.ScheduleSlaveBuildsViaBuildbucket(important_only=False,
-                                           dryrun=self._run.options.debug)
+    self.ScheduleSlaveBuildsViaBuildbucket(
+        important_only=False, dryrun=self._run.options.debug)

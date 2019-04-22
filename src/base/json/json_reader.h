@@ -32,11 +32,11 @@
 #include <string>
 
 #include "base/base_export.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "base/values.h"
 
 namespace base {
-
-class Value;
 
 namespace internal {
 class JSONParser;
@@ -75,6 +75,24 @@ class BASE_EXPORT JSONReader {
     JSON_PARSE_ERROR_COUNT
   };
 
+  struct BASE_EXPORT ValueWithError {
+    ValueWithError();
+    ValueWithError(ValueWithError&& other);
+    ValueWithError& operator=(ValueWithError&& other);
+    ~ValueWithError();
+
+    Optional<Value> value;
+
+    // Contains default values if |value| exists, or the error status if |value|
+    // is base::nullopt.
+    JsonParseError error_code = JSON_NO_ERROR;
+    std::string error_message;
+    int error_line = 0;
+    int error_column = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(ValueWithError);
+  };
+
   // String versions of parse error codes.
   static const char kInvalidEscape[];
   static const char kSyntaxError[];
@@ -92,18 +110,32 @@ class BASE_EXPORT JSONReader {
   ~JSONReader();
 
   // Reads and parses |json|, returning a Value.
+  // If |json| is not a properly formed JSON string, returns base::nullopt.
+  static Optional<Value> Read(StringPiece json,
+                              int options = JSON_PARSE_RFC,
+                              int max_depth = kStackMaxDepth);
+
+  // Deprecated. Use the Read() method above.
+  // Reads and parses |json|, returning a Value.
   // If |json| is not a properly formed JSON string, returns nullptr.
   // Wrap this in base::FooValue::From() to check the Value is of type Foo and
   // convert to a FooValue at the same time.
-  static std::unique_ptr<Value> Read(StringPiece json,
-                                     int options = JSON_PARSE_RFC,
-                                     int max_depth = kStackMaxDepth);
+  static std::unique_ptr<Value> ReadDeprecated(StringPiece json,
+                                               int options = JSON_PARSE_RFC,
+                                               int max_depth = kStackMaxDepth);
 
+  // Reads and parses |json| like Read(). Returns a ValueWithError, which on
+  // error, will be populated with a formatted error message, an error code, and
+  // the error location if appropriate.
+  static ValueWithError ReadAndReturnValueWithError(StringPiece json,
+                                                    int options);
+
+  // Deprecated. Use the ReadAndReturnValueWithError() method above.
   // Reads and parses |json| like Read(). |error_code_out| and |error_msg_out|
   // are optional. If specified and nullptr is returned, they will be populated
   // an error code and a formatted error message (including error location if
   // appropriate). Otherwise, they will be unmodified.
-  static std::unique_ptr<Value> ReadAndReturnError(
+  static std::unique_ptr<Value> ReadAndReturnErrorDeprecated(
       StringPiece json,
       int options,  // JSONParserOptions
       int* error_code_out,
@@ -116,7 +148,11 @@ class BASE_EXPORT JSONReader {
   static std::string ErrorCodeToString(JsonParseError error_code);
 
   // Non-static version of Read() above.
-  std::unique_ptr<Value> ReadToValue(StringPiece json);
+  Optional<Value> ReadToValue(StringPiece json);
+
+  // Deprecated. Use the ReadToValue() method above.
+  // Non-static version of Read() above.
+  std::unique_ptr<Value> ReadToValueDeprecated(StringPiece json);
 
   // Returns the error code if the last call to ReadToValue() failed.
   // Returns JSON_NO_ERROR otherwise.

@@ -79,10 +79,11 @@ class BaseTestTriggerer(object):
       bot_args.append('--env')
       bot_args.append('GTEST_TOTAL_SHARDS')
       bot_args.append(str(total_shards))
-    for key, val in sorted(self._bot_configs[bot_index].iteritems()):
-      bot_args.append('--dimension')
-      bot_args.append(key)
-      bot_args.append(val)
+    if self._bot_configs:
+      for key, val in sorted(self._bot_configs[bot_index].iteritems()):
+        bot_args.append('--dimension')
+        bot_args.append(key)
+        bot_args.append(val)
     if '--' in all_args:
       dash_ind = all_args.index('--')
       additional_args = all_args[:dash_ind] + bot_args + all_args[dash_ind:]
@@ -206,11 +207,19 @@ class BaseTestTriggerer(object):
     pass
 
   def select_config_indices(self, args, verbose):
-    # Main implementation for base class to determine what
-    # configs to trigger jobs on from self._bot_configs.
-    # Returns a list of indices into the self._bot_configs and
-    # len(args.shards) == len(selected_indices).
+    # Main implementation for base class to determine which bot config to
+    # trigger for each shard.
+    #
+    # Returns a list of tuples (shard_index, bot_config_index).
+    # bot_config_index is an index into self._bot_configs
     pass
+
+  def indices_to_trigger(self, args):
+    """Returns the indices of the swarming shards that should be triggered."""
+    if args.shard_index is None:
+      return range(args.shards)
+    else:
+      return [args.shard_index]
 
   def trigger_tasks(self, args, remaining):
     """Triggers tasks for each bot.
@@ -243,27 +252,25 @@ class BaseTestTriggerer(object):
     merged_json = {}
 
     # Choose selected configs for this run of the test suite.
-    selected_configs = self.select_config_indices(args, verbose)
-    for i in xrange(args.shards):
+    for shard_index, bot_index in self.select_config_indices(args, verbose):
       # For each shard that we're going to distribute, do the following:
       # 1. Pick which bot configuration to use.
       # 2. Insert that bot configuration's dimensions as command line
       #    arguments, and invoke "swarming.py trigger".
-      bot_index = selected_configs[i]
       # Holds the results of the swarming.py trigger call.
       try:
         json_temp = self.make_temp_file(prefix='base_trigger_dimensions',
                                         suffix='.json')
-        args_to_pass = self.modify_args(filtered_remaining_args, bot_index, i,
-                                        args.shards, json_temp)
+        args_to_pass = self.modify_args(filtered_remaining_args, bot_index,
+                                        shard_index, args.shards, json_temp)
         ret = self.run_swarming(args_to_pass, verbose)
         if ret:
           sys.stderr.write('Failed to trigger a task, aborting\n')
           return ret
         result_json = self.read_json_from_temp_file(json_temp)
-        if i == 0:
+        if not merged_json:
           # Copy the entire JSON -- in particular, the "request"
-          # dictionary -- from shard 0. "swarming.py collect" uses
+          # dictionary -- from the first shard. "swarming.py collect" uses
           # some keys from this dictionary, in particular related to
           # expiration. It also contains useful debugging information.
           merged_json = copy.deepcopy(result_json)
@@ -271,8 +278,8 @@ class BaseTestTriggerer(object):
           # which will be handled specially.
           merged_json['tasks'] = {}
         for k, v in result_json['tasks'].items():
-          v['shard_index'] = i
-          merged_json['tasks'][k + ':%d:%d' % (i, args.shards)] = v
+          v['shard_index'] = shard_index
+          merged_json['tasks'][k + ':%d:%d' % (shard_index, args.shards)] = v
       finally:
         self.delete_temp_file(json_temp)
     self.write_json_to_file(merged_json, args.dump_json)
@@ -294,5 +301,8 @@ class BaseTestTriggerer(object):
     parser.add_argument('--shards', type=int, default=1,
                         help='How many shards to trigger. Duplicated from the'
                        ' `swarming.py trigger` command.')
+    parser.add_argument('--shard-index', type=int, default=None,
+                        help='Which shard to trigger. Duplicated from the '
+                             '`swarming.py trigger` command.')
     return parser
 

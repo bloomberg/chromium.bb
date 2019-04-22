@@ -391,7 +391,7 @@ bool ScrollbarThemeAura::HasScrollbarButtons(
   }
   return !theme_engine->GetSize(WebThemeEngine::kPartScrollbarLeftArrow)
               .IsEmpty();
-};
+}
 
 IntSize ScrollbarThemeAura::ButtonSize(const Scrollbar& scrollbar) {
   if (!HasScrollbarButtons(scrollbar.Orientation()))

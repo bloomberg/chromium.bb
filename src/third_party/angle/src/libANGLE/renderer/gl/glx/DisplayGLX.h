@@ -20,6 +20,7 @@ namespace rx
 {
 
 class FunctionsGLX;
+class WorkerContext;
 
 // State-tracking data for the swap control to allow DisplayGLX to remember per
 // drawable information for swap control.
@@ -61,7 +62,8 @@ class DisplayGLX : public DisplayGL
                                      NativePixmapType nativePixmap,
                                      const egl::AttributeMap &attribs) override;
 
-    ContextImpl *createContext(const gl::ContextState &state,
+    ContextImpl *createContext(const gl::State &state,
+                               gl::ErrorSet *errorSet,
                                const egl::Config *configuration,
                                const gl::Context *shareContext,
                                const egl::AttributeMap &attribs) override;
@@ -96,6 +98,8 @@ class DisplayGLX : public DisplayGL
 
     bool isValidWindowVisualId(unsigned long visualId) const;
 
+    WorkerContext *createWorkerContext(std::string *infoLog);
+
   private:
     egl::Error initializeContext(glx::FBConfig config,
                                  const egl::AttributeMap &eglAttributes,
@@ -110,7 +114,7 @@ class DisplayGLX : public DisplayGL
     egl::Error createContextAttribs(glx::FBConfig,
                                     const Optional<gl::Version> &version,
                                     int profileMask,
-                                    glx::Context *context) const;
+                                    glx::Context *context);
 
     std::shared_ptr<RendererGL> mRenderer;
 
@@ -118,9 +122,14 @@ class DisplayGLX : public DisplayGL
 
     EGLint mRequestedVisual;
     glx::FBConfig mContextConfig;
+    std::vector<int> mAttribs;
+    XVisualInfo *mVisuals;
     glx::Context mContext;
+    glx::Context mSharedContext;
     // A pbuffer the context is current on during ANGLE initialization
     glx::Pbuffer mDummyPbuffer;
+
+    std::vector<glx::Pbuffer> mWorkerPbufferPool;
 
     bool mUsesNewXDisplay;
     bool mIsMesa;

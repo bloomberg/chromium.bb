@@ -7,8 +7,8 @@
 
 #include "GrPathRenderer.h"
 #include "GrCaps.h"
-#include "GrContextPriv.h"
 #include "GrPaint.h"
+#include "GrRecordingContextPriv.h"
 #include "GrRenderTargetContext.h"
 #include "GrShape.h"
 #include "GrUserStencilSettings.h"
@@ -22,7 +22,6 @@ void GrPathRenderer::StencilPathArgs::validate() const {
     SkASSERT(fViewMatrix);
     SkASSERT(fShape);
     SkASSERT(fShape->style().isSimpleFill());
-    SkASSERT(GrAAType::kCoverage != fAAType);
     SkPath path;
     fShape->asPath(&path);
     SkASSERT(!path.isInverseFillType());
@@ -45,18 +44,18 @@ bool GrPathRenderer::drawPath(const DrawPathArgs& args) {
 #ifdef SK_DEBUG
     args.validate();
     CanDrawPathArgs canArgs;
-    canArgs.fCaps = args.fContext->contextPriv().caps();
+    canArgs.fCaps = args.fContext->priv().caps();
     canArgs.fClipConservativeBounds = args.fClipConservativeBounds;
     canArgs.fViewMatrix = args.fViewMatrix;
     canArgs.fShape = args.fShape;
-    canArgs.fAAType = args.fAAType;
+    canArgs.fAATypeFlags = args.fAATypeFlags;
+    canArgs.fTargetIsWrappedVkSecondaryCB = args.fRenderTargetContext->wrapsVkSecondaryCB();
     canArgs.validate();
 
     canArgs.fHasUserStencilSettings = !args.fUserStencilSettings->isUnused();
-    SkASSERT(!(canArgs.fAAType == GrAAType::kMSAA &&
-               GrFSAAType::kUnifiedMSAA != args.fRenderTargetContext->fsaaType()));
-    SkASSERT(!(canArgs.fAAType == GrAAType::kMixedSamples &&
-               GrFSAAType::kMixedSamples != args.fRenderTargetContext->fsaaType()));
+    if (AATypeFlags::kMixedSampledStencilThenCover & canArgs.fAATypeFlags) {
+        SkASSERT(GrFSAAType::kMixedSamples == args.fRenderTargetContext->fsaaType());
+    }
     SkASSERT(CanDrawPath::kNo != this->canDrawPath(canArgs));
     if (!args.fUserStencilSettings->isUnused()) {
         SkPath path;
@@ -117,7 +116,9 @@ void GrPathRenderer::onStencilPath(const StencilPathArgs& args) {
                           args.fClipConservativeBounds,
                           args.fViewMatrix,
                           args.fShape,
-                          args.fAAType,
+                          (GrAA::kYes == args.fDoStencilMSAA)
+                                  ? AATypeFlags::kMSAA
+                                  : AATypeFlags::kNone,
                           false};
     this->drawPath(drawArgs);
 }

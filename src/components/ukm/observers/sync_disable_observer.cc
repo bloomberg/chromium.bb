@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/sync/driver/sync_token_status.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/engine/connection_status.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
@@ -113,7 +114,8 @@ SyncDisableObserver::SyncState SyncDisableObserver::GetSyncState(
                     status.connection_status == syncer::CONNECTION_OK;
 
   state.passphrase_protected =
-      state.initialized && sync_service->IsUsingSecondaryPassphrase();
+      state.initialized &&
+      sync_service->GetUserSettings()->IsUsingSecondaryPassphrase();
   if (consent_helper) {
     state.anonymized_data_collection_state =
         consent_helper->IsEnabled() ? DataCollectionState::kEnabled
@@ -243,17 +245,14 @@ void SyncDisableObserver::UpdateSyncState(
     must_purge = previous_state.AllowsUkm() && !state.AllowsUkm();
   } else {
     // Use the previous logic to investigate crbug.com/891777.
-    must_purge =
-        // Trigger a purge if history sync was disabled.
-        (previous_state.history_enabled && !state.history_enabled) ||
-        // Trigger a purge if engine has become disabled.
-        (previous_state.initialized && !state.initialized) ||
-        // Trigger a purge if the user added a passphrase.  Since we can't
-        // detect the use of a passphrase while the engine is not initialized,
-        // we may miss the transition if the user adds a passphrase in this
-        // state.
-        (previous_state.initialized && state.initialized &&
-         !previous_state.passphrase_protected && state.passphrase_protected);
+    bool previous_state_allowed_ukm = previous_state.history_enabled &&
+                                      previous_state.initialized &&
+                                      !previous_state.passphrase_protected;
+    bool current_state_allows_ukm = state.history_enabled &&
+                                    state.initialized &&
+                                    !state.passphrase_protected;
+    // Trigger a purge if UKM used to be allowed, but isn't anymore.
+    must_purge = previous_state_allowed_ukm && !current_state_allows_ukm;
   }
 
   UMA_HISTOGRAM_BOOLEAN("UKM.SyncDisable.Purge", must_purge);

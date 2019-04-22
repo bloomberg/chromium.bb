@@ -4,13 +4,35 @@
 
 #include "android_webview/browser/aw_print_manager.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 
 namespace android_webview {
+
+namespace {
+
+int SaveDataToFd(int fd,
+                 int page_count,
+                 scoped_refptr<base::RefCountedSharedMemoryMapping> data) {
+  base::File file(fd);
+  bool result =
+      file.IsValid() && base::IsValueInRangeForNumericType<int>(data->size());
+  if (result) {
+    int size = data->size();
+    result = file.WriteAtCurrentPos(data->front_as<char>(), size) == size;
+  }
+  file.TakePlatformFile();
+  return result ? page_count : 0;
+}
+
+}  // namespace
 
 struct AwPrintManager::FrameDispatchHelper {
   AwPrintManager* manager;
@@ -32,7 +54,7 @@ struct AwPrintManager::FrameDispatchHelper {
 AwPrintManager* AwPrintManager::CreateForWebContents(
     content::WebContents* contents,
     const printing::PrintSettings& settings,
-    const base::FileDescriptor& file_descriptor,
+    int file_descriptor,
     PrintManager::PdfWritingDoneCallback callback) {
   AwPrintManager* print_manager = new AwPrintManager(
       contents, settings, file_descriptor, std::move(callback));
@@ -42,15 +64,20 @@ AwPrintManager* AwPrintManager::CreateForWebContents(
 
 AwPrintManager::AwPrintManager(content::WebContents* contents,
                                const printing::PrintSettings& settings,
-                               const base::FileDescriptor& file_descriptor,
+                               int file_descriptor,
                                PdfWritingDoneCallback callback)
-    : PrintManager(contents), settings_(settings) {
-  set_file_descriptor(file_descriptor);
+    : PrintManager(contents), settings_(settings), fd_(file_descriptor) {
   pdf_writing_done_callback_ = std::move(callback);
-  cookie_ = 1;
+  cookie_ = 1;  // Set a valid dummy cookie value.
 }
 
-AwPrintManager::~AwPrintManager() {
+AwPrintManager::~AwPrintManager() = default;
+
+void AwPrintManager::PdfWritingDone(int page_count) {
+  if (pdf_writing_done_callback_)
+    pdf_writing_done_callback_.Run(page_count);
+  // Invalidate the file descriptor so it doesn't get reused.
+  fd_ = -1;
 }
 
 bool AwPrintManager::PrintNow() {
@@ -64,7 +91,8 @@ bool AwPrintManager::OnMessageReceived(
     content::RenderFrameHost* render_frame_host) {
   FrameDispatchHelper helper = {this, render_frame_host};
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AwPrintManager, message)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(AwPrintManager, message, render_frame_host)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintDocument, OnDidPrintDocument)
     IPC_MESSAGE_FORWARD_DELAY_REPLY(
         PrintHostMsg_GetDefaultPrintSettings, &helper,
         FrameDispatchHelper::OnGetDefaultPrintSettings)
@@ -72,8 +100,7 @@ bool AwPrintManager::OnMessageReceived(
                                     FrameDispatchHelper::OnScriptedPrint)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled ? true
-                 : PrintManager::OnMessageReceived(message, render_frame_host);
+  return handled || PrintManager::OnMessageReceived(message, render_frame_host);
 }
 
 void AwPrintManager::OnGetDefaultPrintSettings(
@@ -100,5 +127,39 @@ void AwPrintManager::OnScriptedPrint(
   PrintHostMsg_ScriptedPrint::WriteReplyParams(reply_msg, params);
   render_frame_host->Send(reply_msg);
 }
+
+void AwPrintManager::OnDidPrintDocument(
+    content::RenderFrameHost* render_frame_host,
+    const PrintHostMsg_DidPrintDocument_Params& params) {
+  if (params.document_cookie != cookie_)
+    return;
+
+  const PrintHostMsg_DidPrintContent_Params& content = params.content;
+  if (!content.metafile_data_region.IsValid()) {
+    NOTREACHED() << "invalid memory handle";
+    web_contents()->Stop();
+    PdfWritingDone(0);
+    return;
+  }
+
+  auto data = base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(
+      content.metafile_data_region);
+  if (!data) {
+    NOTREACHED() << "couldn't map";
+    web_contents()->Stop();
+    PdfWritingDone(0);
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      base::CreateTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
+          .get(),
+      FROM_HERE, base::BindRepeating(&SaveDataToFd, fd_, number_pages_, data),
+      pdf_writing_done_callback_);
+}
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AwPrintManager)
 
 }  // namespace android_webview

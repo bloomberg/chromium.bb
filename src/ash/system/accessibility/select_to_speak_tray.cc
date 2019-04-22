@@ -90,7 +90,7 @@ void SelectToSpeakTray::UpdateIconsForSession() {
 }
 
 void SelectToSpeakTray::CheckStatusAndUpdateIcon() {
-  if (!Shell::Get()->accessibility_controller()->IsSelectToSpeakEnabled()) {
+  if (!Shell::Get()->accessibility_controller()->select_to_speak_enabled()) {
     SetVisible(false);
     return;
   }

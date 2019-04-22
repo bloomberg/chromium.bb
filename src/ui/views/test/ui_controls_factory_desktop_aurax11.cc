@@ -53,15 +53,18 @@ class UIControlsDesktopX11 : public UIControlsAura {
   UIControlsDesktopX11()
       : x_display_(gfx::GetXDisplay()),
         x_root_window_(DefaultRootWindow(x_display_)),
-        x_window_(XCreateWindow(
-            x_display_, x_root_window_,
-            -100, -100, 10, 10,  // x, y, width, height
-            0,                   // border width
-            CopyFromParent,      // depth
-            InputOnly,
-            CopyFromParent,      // visual
-            0,
-            NULL)) {
+        x_window_(XCreateWindow(x_display_,
+                                x_root_window_,
+                                -100,            // x
+                                -100,            // y
+                                10,              // width
+                                10,              // height
+                                0,               // border width
+                                CopyFromParent,  // depth
+                                InputOnly,
+                                CopyFromParent,  // visual
+                                0,
+                                nullptr)) {
     XStoreName(x_display_, x_window_, "Chromium UIControlsDesktopX11 Window");
   }
 
@@ -227,7 +230,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
   void RunClosureAfterAllPendingUIEvents(base::OnceClosure closure) {
     if (closure.is_null())
       return;
-    static XEvent* marker_event = NULL;
+    static XEvent* marker_event = nullptr;
     if (!marker_event) {
       marker_event = new XEvent();
       marker_event->xclient.type = ClientMessage;
@@ -237,7 +240,8 @@ class UIControlsDesktopX11 : public UIControlsAura {
     }
     marker_event->xclient.message_type = MarkerEventAtom();
     XSendEvent(x_display_, x_window_, x11::False, 0, marker_event);
-    ui::PlatformEventWaiter::Create(std::move(closure), base::Bind(&Matcher));
+    ui::PlatformEventWaiter::Create(std::move(closure),
+                                    base::BindRepeating(&Matcher));
   }
  private:
   aura::Window* RootWindowForPoint(const gfx::Point& point) {
@@ -256,7 +260,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
 
     NOTREACHED() << "Couldn't find RW for " << point.ToString() << " among "
                  << windows.size() << " RWs.";
-    return NULL;
+    return nullptr;
   }
 
   void SetKeycodeAndSendThenMask(aura::WindowTreeHost* host,

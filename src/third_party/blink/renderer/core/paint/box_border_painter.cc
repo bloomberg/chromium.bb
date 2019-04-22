@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/paint/box_border_painter.h"
 
 #include <algorithm>
+
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -663,7 +665,7 @@ BoxBorderPainter::BoxBorderPainter(const ComputedStyle& style,
 }
 
 void BoxBorderPainter::ComputeBorderProperties() {
-  for (unsigned i = 0; i < arraysize(edges_); ++i) {
+  for (unsigned i = 0; i < base::size(edges_); ++i) {
     const BorderEdge& edge = edges_[i];
 
     if (!edge.ShouldRender()) {

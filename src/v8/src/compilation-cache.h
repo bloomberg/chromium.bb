@@ -26,7 +26,7 @@ class CompilationSubCache {
   CompilationSubCache(Isolate* isolate, int generations)
       : isolate_(isolate),
         generations_(generations) {
-    tables_ = NewArray<Object*>(generations);
+    tables_ = NewArray<Object>(generations);
   }
 
   ~CompilationSubCache() { DeleteArray(tables_); }
@@ -68,7 +68,7 @@ class CompilationSubCache {
  private:
   Isolate* isolate_;
   int generations_;  // Number of generations.
-  Object** tables_;  // Compilation cache tables - one for each generation.
+  Object* tables_;   // Compilation cache tables - one for each generation.
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(CompilationSubCache);
 };
@@ -150,7 +150,7 @@ class CompilationCacheRegExp: public CompilationSubCache {
 // scripts and evals. The shared function infos are looked up using
 // the source string as the key. For regular expressions the
 // compilation data is cached.
-class CompilationCache {
+class V8_EXPORT_PRIVATE CompilationCache {
  public:
   // Finds the script shared function info for a source
   // string. Returns an empty handle if the cache doesn't contain a
@@ -239,7 +239,6 @@ class CompilationCache {
 
   DISALLOW_COPY_AND_ASSIGN(CompilationCache);
 };
-
 
 }  // namespace internal
 }  // namespace v8

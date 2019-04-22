@@ -10,6 +10,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/cursor_manager_test_api.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/viz/common/features.h"
@@ -124,7 +125,7 @@ TEST_F(MirrorWindowControllerTest, DockMode) {
 TEST_F(MirrorOnBootTest, MirrorOnBoot) {
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
 
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   MirrorWindowTestApi test_api;
   EXPECT_EQ(1U, test_api.GetHosts().size());
 }

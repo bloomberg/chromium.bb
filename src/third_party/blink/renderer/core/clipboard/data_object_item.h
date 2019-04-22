@@ -64,8 +64,10 @@ class CORE_EXPORT DataObjectItem
   static DataObjectItem* CreateFromClipboard(const String& type,
                                              uint64_t sequence_number);
 
-  DataObjectItem(ItemKind, const String& type);
-  DataObjectItem(ItemKind, const String& type, uint64_t sequence_number);
+  explicit DataObjectItem(ItemKind, const String& type);
+  explicit DataObjectItem(ItemKind,
+                          const String& type,
+                          uint64_t sequence_number);
 
   ItemKind Kind() const { return kind_; }
   String GetType() const { return type_; }
@@ -103,8 +105,8 @@ class CORE_EXPORT DataObjectItem
   String title_;
   KURL base_url_;
 
-  uint64_t sequence_number_;  // Only valid when m_source == PasteboardSource
-  String file_system_id_;     // Only valid when m_file is backed by FileEntry.
+  uint64_t sequence_number_;  // Only valid when |source_| == PasteboardSource.
+  String file_system_id_;     // Only valid when |file_| is backed by FileEntry.
 };
 
 }  // namespace blink

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 
 namespace gfx {
 class Image;
@@ -22,16 +21,11 @@ namespace image_fetcher {
 
 struct RequestMetadata;
 
-using DataUseServiceName = data_use_measurement::DataUseUserData::ServiceName;
-
 using ImageFetcherCallback =
-    base::OnceCallback<void(const std::string& id,
-                            const gfx::Image& image,
-                            const RequestMetadata& metadata)>;
+    base::OnceCallback<void(const gfx::Image& image,
+                            const RequestMetadata& request_metadata)>;
 
-// Callback with the |image_data|. If an error prevented a http response,
-// |request_metadata.response_code| will be RESPONSE_CODE_INVALID.
-// TODO(treib): Use RefCountedBytes to avoid copying.
+// TODO(wylieb): Use RefCountedBytes to avoid copying.
 using ImageDataFetcherCallback =
     base::OnceCallback<void(const std::string& image_data,
                             const RequestMetadata& request_metadata)>;

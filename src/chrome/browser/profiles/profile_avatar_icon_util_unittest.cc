@@ -53,23 +53,6 @@ TEST(ProfileInfoUtilTest, SizedMenuIcon) {
   VerifyScaling(result2, size);
 }
 
-TEST(ProfileInfoUtilTest, MenuIcon) {
-  // Test that an avatar icon isn't changed.
-  const gfx::Image& profile_image(
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_PROFILE_AVATAR_0));
-  gfx::Image result = profiles::GetAvatarIconForMenu(profile_image, false);
-  EXPECT_FALSE(gfx::test::IsEmpty(result));
-  EXPECT_TRUE(gfx::test::AreImagesEqual(profile_image, result));
-
-  // Test that a rectangular picture is changed.
-  gfx::Image rect_picture(gfx::test::CreateImage());
-  gfx::Size size(profiles::kAvatarIconWidth, profiles::kAvatarIconHeight);
-  gfx::Image result2 = profiles::GetAvatarIconForMenu(rect_picture, true);
-
-  VerifyScaling(result2, size);
-}
-
 TEST(ProfileInfoUtilTest, WebUIIcon) {
   // Test that an avatar icon isn't changed.
   const gfx::Image& profile_image(
@@ -81,7 +64,7 @@ TEST(ProfileInfoUtilTest, WebUIIcon) {
 
   // Test that a rectangular picture is changed.
   gfx::Image rect_picture(gfx::test::CreateImage());
-  gfx::Size size(profiles::kAvatarIconWidth, profiles::kAvatarIconHeight);
+  gfx::Size size(profiles::kAvatarIconSize, profiles::kAvatarIconSize);
   gfx::Image result2 = profiles::GetAvatarIconForWebUI(rect_picture, true);
 
   VerifyScaling(result2, size);

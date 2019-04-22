@@ -117,7 +117,7 @@ void SessionInputInjectorWin::Core::Start(
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&Core::Start, this, base::Passed(&client_clipboard)));
+        base::BindOnce(&Core::Start, this, std::move(client_clipboard)));
     return;
   }
 
@@ -128,7 +128,7 @@ void SessionInputInjectorWin::Core::InjectClipboardEvent(
     const ClipboardEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::InjectClipboardEvent, this, event));
+        FROM_HERE, base::BindOnce(&Core::InjectClipboardEvent, this, event));
     return;
   }
 
@@ -138,7 +138,7 @@ void SessionInputInjectorWin::Core::InjectClipboardEvent(
 void SessionInputInjectorWin::Core::InjectKeyEvent(const KeyEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::InjectKeyEvent, this, event));
+        FROM_HERE, base::BindOnce(&Core::InjectKeyEvent, this, event));
     return;
   }
 
@@ -171,7 +171,7 @@ void SessionInputInjectorWin::Core::InjectKeyEvent(const KeyEvent& event) {
 void SessionInputInjectorWin::Core::InjectTextEvent(const TextEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::InjectTextEvent, this, event));
+        FROM_HERE, base::BindOnce(&Core::InjectTextEvent, this, event));
     return;
   }
 
@@ -182,7 +182,7 @@ void SessionInputInjectorWin::Core::InjectTextEvent(const TextEvent& event) {
 void SessionInputInjectorWin::Core::InjectMouseEvent(const MouseEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::InjectMouseEvent, this, event));
+        FROM_HERE, base::BindOnce(&Core::InjectMouseEvent, this, event));
     return;
   }
 
@@ -193,7 +193,7 @@ void SessionInputInjectorWin::Core::InjectMouseEvent(const MouseEvent& event) {
 void SessionInputInjectorWin::Core::InjectTouchEvent(const TouchEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::InjectTouchEvent, this, event));
+        FROM_HERE, base::BindOnce(&Core::InjectTouchEvent, this, event));
     return;
   }
 

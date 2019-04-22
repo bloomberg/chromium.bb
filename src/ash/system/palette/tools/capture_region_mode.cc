@@ -11,6 +11,7 @@
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/utility/screenshot_controller.h"
+#include "base/bind.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {

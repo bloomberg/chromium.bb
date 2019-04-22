@@ -2528,6 +2528,18 @@ TEST_F(GLES2ImplementationTest, RenderbufferStorageMultisampleCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, RenderbufferStorageMultisampleAdvancedAMD) {
+  struct Cmds {
+    cmds::RenderbufferStorageMultisampleAdvancedAMD cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_RENDERBUFFER, 2, 3, GL_RGBA4, 5, 6);
+
+  gl_->RenderbufferStorageMultisampleAdvancedAMD(GL_RENDERBUFFER, 2, 3,
+                                                 GL_RGBA4, 5, 6);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, RenderbufferStorageMultisampleEXT) {
   struct Cmds {
     cmds::RenderbufferStorageMultisampleEXT cmd;
@@ -2710,6 +2722,24 @@ TEST_F(GLES2ImplementationTest, DispatchCompute) {
 
   gl_->DispatchCompute(1, 2, 3);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, GetProgramInterfaceiv) {
+  struct Cmds {
+    cmds::GetProgramInterfaceiv cmd;
+  };
+  typedef cmds::GetProgramInterfaceiv::Result::Type ResultType;
+  ResultType result = 0;
+  Cmds expected;
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
+  expected.cmd.Init(123, 2, 3, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
+      .RetiresOnSaturation();
+  gl_->GetProgramInterfaceiv(123, 2, 3, &result);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
 TEST_F(GLES2ImplementationTest, MemoryBarrierEXT) {
@@ -2933,6 +2963,19 @@ TEST_F(GLES2ImplementationTest, FlushDriverCachesCHROMIUM) {
   expected.cmd.Init();
 
   gl_->FlushDriverCachesCHROMIUM();
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, ScheduleDCLayerCHROMIUM) {
+  struct Cmds {
+    cmds::ScheduleDCLayerCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+                    true, 19, 20, 21, 22, 23);
+
+  gl_->ScheduleDCLayerCHROMIUM(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+                               15, 16, 17, true, 19, 20, 21, 22, 23);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -3184,14 +3227,14 @@ TEST_F(GLES2ImplementationTest, DestroyGpuFenceCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
-TEST_F(GLES2ImplementationTest, FramebufferTextureMultiviewLayeredANGLE) {
+TEST_F(GLES2ImplementationTest, FramebufferTextureMultiviewOVR) {
   struct Cmds {
-    cmds::FramebufferTextureMultiviewLayeredANGLE cmd;
+    cmds::FramebufferTextureMultiviewOVR cmd;
   };
   Cmds expected;
   expected.cmd.Init(1, 2, 3, 4, 5, 6);
 
-  gl_->FramebufferTextureMultiviewLayeredANGLE(1, 2, 3, 4, 5, 6);
+  gl_->FramebufferTextureMultiviewOVR(1, 2, 3, 4, 5, 6);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

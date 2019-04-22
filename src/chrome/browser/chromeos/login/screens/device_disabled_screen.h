@@ -16,15 +16,12 @@ namespace system {
 class DeviceDisablingManager;
 }
 
-class BaseScreenDelegate;
-
 // Screen informing the user that the device has been disabled by its owner.
 class DeviceDisabledScreen : public BaseScreen,
                              public DeviceDisabledScreenView::Delegate,
                              public system::DeviceDisablingManager::Observer {
  public:
-  DeviceDisabledScreen(BaseScreenDelegate* base_screen_delegate,
-                       DeviceDisabledScreenView* view);
+  explicit DeviceDisabledScreen(DeviceDisabledScreenView* view);
   ~DeviceDisabledScreen() override;
 
   // BaseScreen:
@@ -42,10 +39,9 @@ class DeviceDisabledScreen : public BaseScreen,
 
  private:
   DeviceDisabledScreenView* view_;
-  system::DeviceDisablingManager* device_disabling_manager_;
 
   // Whether the screen is currently showing.
-  bool showing_;
+  bool showing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDisabledScreen);
 };

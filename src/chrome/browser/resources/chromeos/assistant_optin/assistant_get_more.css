@@ -6,6 +6,19 @@
   padding-bottom: 58px;
 }
 
-p {
-  margin-block-end: 0;
+#ready-img {
+  display: block;
+  height: 186px;
+  margin: auto;
+}
+
+#ready-image-container {
+  border-right: 1px solid rgb(218, 220, 224);
+  padding-right: 24px;
+  width: 50%;
+}
+
+#toggles-container {
+  padding-left: 24px;
+  width: 50%;
 }

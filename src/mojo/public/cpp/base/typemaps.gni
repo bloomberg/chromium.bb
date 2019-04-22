@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 typemaps = [
+  "//mojo/public/cpp/base/application_state.typemap",
   "//mojo/public/cpp/base/big_buffer.typemap",
   "//mojo/public/cpp/base/big_string.typemap",
   "//mojo/public/cpp/base/file_error.typemap",
@@ -11,6 +12,7 @@ typemaps = [
   "//mojo/public/cpp/base/file.typemap",
   "//mojo/public/cpp/base/read_only_buffer.typemap",
   "//mojo/public/cpp/base/memory_allocator_dump_cross_process_uid.typemap",
+  "//mojo/public/cpp/base/memory_pressure_level.typemap",
   "//mojo/public/cpp/base/process_id.typemap",
   "//mojo/public/cpp/base/ref_counted_memory.typemap",
   "//mojo/public/cpp/base/shared_memory.typemap",

@@ -3,7 +3,7 @@
 <style>
     select {
         width: 168px;
-        padding: 5px; 
+        padding: 5px;
         font-size: 16px;
         height: 34px;
         background: transparent;
@@ -13,7 +13,7 @@
 if (window.testRunner)
     testRunner.setUseMockTheme(false);
 </script>
-<p>The background should be yellow.</p>
+<p>The background should be blue.</p>
     <select id = "select">
         <option>CA</option>
         <option>TX</option>
@@ -21,6 +21,6 @@ if (window.testRunner)
 <script>
     var select = document.getElementById('select');
     if (window.internals)
-        internals.setAutofilled(select, true);            
+        internals.setAutofilled(select, true);
 </script>
 </body>

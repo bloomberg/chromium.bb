@@ -28,7 +28,7 @@
 
 // Cell to display a Card where the username and password are interactable
 // and send the data to the delegate.
-@interface ManualFillCardCell : UITableViewCell
+@interface ManualFillCardCell : TableViewCell
 
 // Updates the cell with credit card and the |delegate| to be notified.
 - (void)setUpWithCreditCard:(ManualFillCreditCard*)card

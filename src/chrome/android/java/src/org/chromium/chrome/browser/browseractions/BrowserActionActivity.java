@@ -16,8 +16,8 @@ import android.view.Menu;
 import android.view.View;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.MenuSourceType;
 
@@ -81,7 +82,7 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
             Log.e(TAG, "Url should only be HTTP or HTTPS scheme");
             return false;
         } else if (mUntrustedCreatorPackageName == null) {
-            Log.e(TAG, "Missing creator's pacakge name");
+            Log.e(TAG, "Missing creator's package name");
             return false;
         } else if (!TextUtils.equals(mUntrustedCreatorPackageName, getPackageName())
                 && (intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
@@ -177,16 +178,12 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
 
     private void recordClientPackageName() {
         if (TextUtils.isEmpty(mUntrustedCreatorPackageName)) return;
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                RapporServiceBridge.sampleString(
-                        "BrowserActions.ServiceClient.PackageName", mUntrustedCreatorPackageName);
-                if (GSAState.isGsaPackageName(mUntrustedCreatorPackageName)) return;
-                RapporServiceBridge.sampleString(
-                        "BrowserActions.ServiceClient.PackageNameThirdParty",
-                        mUntrustedCreatorPackageName);
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            RapporServiceBridge.sampleString(
+                    "BrowserActions.ServiceClient.PackageName", mUntrustedCreatorPackageName);
+            if (GSAState.isGsaPackageName(mUntrustedCreatorPackageName)) return;
+            RapporServiceBridge.sampleString("BrowserActions.ServiceClient.PackageNameThirdParty",
+                    mUntrustedCreatorPackageName);
         });
     }
 

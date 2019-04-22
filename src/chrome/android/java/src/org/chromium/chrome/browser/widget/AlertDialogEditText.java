@@ -13,13 +13,19 @@ import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
- * EditText to use in AlertDialog needed due to b/20882793. This class should be removed
- * when we roll to AppCompat with a fix.
+ * EditText to use in AlertDialog needed due to b/20882793 and b/122113958. This class should be
+ * removed when we roll to AppCompat with a fix for both issues.
+ *
+ * Note that for password fields the hint text is expected to be set in XML so that it is available
+ * during inflation. If the hint text or content description is changed programatically, consider
+ * calling {@link ApiCompatibilityUtils#setPasswordEditTextContentDescription(EditText)} after
+ * the change.
  */
 public class AlertDialogEditText extends AppCompatEditText {
 
@@ -30,7 +36,11 @@ public class AlertDialogEditText extends AppCompatEditText {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+
+        ApiCompatibilityUtils.setPasswordEditTextContentDescription(this);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) return;
+
         setCustomSelectionActionModeCallback(new ActionMode.Callback() {
             @Override
             public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
@@ -60,5 +70,4 @@ public class AlertDialogEditText extends AppCompatEditText {
             }
         });
     }
-
 }

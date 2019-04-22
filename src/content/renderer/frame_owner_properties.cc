@@ -8,7 +8,7 @@
 #include <iterator>
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/platform/modules/permissions/permission.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 
 namespace content {
 
@@ -23,6 +23,7 @@ FrameOwnerProperties ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
   result.allow_fullscreen = web_frame_owner_properties.allow_fullscreen;
   result.allow_payment_request =
       web_frame_owner_properties.allow_payment_request;
+  result.is_display_none = web_frame_owner_properties.is_display_none;
   result.required_csp = web_frame_owner_properties.required_csp.Utf8();
 
   return result;
@@ -39,6 +40,7 @@ ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(
   result.margin_height = frame_owner_properties.margin_height;
   result.allow_fullscreen = frame_owner_properties.allow_fullscreen;
   result.allow_payment_request = frame_owner_properties.allow_payment_request;
+  result.is_display_none = frame_owner_properties.is_display_none;
   result.required_csp =
       blink::WebString::FromUTF8(frame_owner_properties.required_csp);
 

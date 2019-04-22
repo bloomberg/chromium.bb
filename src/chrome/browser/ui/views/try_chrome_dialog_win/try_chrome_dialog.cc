@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "cc/paint/paint_flags.h"
@@ -745,7 +746,7 @@ void TryChromeDialog::Context::TaskbarCalculator::OnWidgetBoundsChanged(
   POINT polygon[7];
   properties_->region_creator(window_size, dialog_bounds, arrow_bounds,
                               arrow_border_insets, &polygon[0]);
-  HRGN region = ::CreatePolygonRgn(&polygon[0], arraysize(polygon), WINDING);
+  HRGN region = ::CreatePolygonRgn(&polygon[0], base::size(polygon), WINDING);
   ::SetWindowRgn(hwnd, region, FALSE);
 }
 
@@ -964,7 +965,7 @@ void TryChromeDialog::ModalShowDelegate::InteractionComplete() {
 TryChromeDialog::Result TryChromeDialog::Show(
     size_t group,
     ActiveModalDialogListener listener) {
-  if (group >= arraysize(kExperiments)) {
+  if (group >= base::size(kExperiments)) {
     // Exit immediately given bogus values; see TryChromeDialogBrowserTest test.
     return NOT_NOW;
   }
@@ -990,7 +991,7 @@ TryChromeDialog::TryChromeDialog(size_t group, Delegate* delegate)
     : group_(group),
       delegate_(delegate),
       context_(std::make_unique<Context>()) {
-  DCHECK_LT(group, arraysize(kExperiments));
+  DCHECK_LT(group, base::size(kExperiments));
   DCHECK(delegate);
 }
 
@@ -1033,6 +1034,7 @@ void TryChromeDialog::OnContextInitialized() {
   params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
   // An approximate window size. Layout() can adjust.
   params.bounds = gfx::Rect(kToastWidth, 120);
+  params.name = "TryChromeDialog";
   popup_ = new views::Widget;
   popup_->AddObserver(this);
   popup_->Init(params);

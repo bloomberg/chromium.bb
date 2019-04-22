@@ -8,6 +8,12 @@ import("//build/config/nacl/config.gni")
 jumbo_component("shared_impl") {
   output_name = "ppapi_shared"
 
+  if (is_nacl) {
+    # The nacl toolchain has template related bugs that are triggered
+    # in jumbo builds. https://crbug.com/912152
+    never_build_jumbo = true
+  }
+
   sources = [
     "array_var.cc",
     "array_var.h",
@@ -15,8 +21,6 @@ jumbo_component("shared_impl") {
     "array_writer.h",
     "callback_tracker.cc",
     "callback_tracker.h",
-    "compositor_layer_data.cc",
-    "compositor_layer_data.h",
     "dictionary_var.cc",
     "dictionary_var.h",
     "file_growth.cc",

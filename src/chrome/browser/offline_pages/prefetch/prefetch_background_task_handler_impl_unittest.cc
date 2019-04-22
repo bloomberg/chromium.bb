@@ -6,6 +6,7 @@
 
 #include "base/test/test_mock_time_task_runner.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/backoff_entry.h"
@@ -45,7 +46,7 @@ class PrefetchBackgroundTaskHandlerImplTest : public testing::Test {
 };
 
 PrefetchBackgroundTaskHandlerImplTest::PrefetchBackgroundTaskHandlerImplTest()
-    : task_runner_(new base::TestMockTimeTaskRunner(base::Time::Now(),
+    : task_runner_(new base::TestMockTimeTaskRunner(OfflineTimeNow(),
                                                     base::TimeTicks::Now())) {
   task_handler_ = CreateHandler();
 }

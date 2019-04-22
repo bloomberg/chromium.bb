@@ -4,8 +4,8 @@
 
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
@@ -72,6 +72,8 @@ TEST_F(InitValueManifestTest, InitFromValueInvalid) {
       Testcase("init_invalid_files_css_item_invalid.json", errors::kInvalidCss),
       Testcase("init_invalid_permissions_invalid.json",
                errors::kInvalidPermissions),
+      Testcase("init_invalid_host_permissions_invalid.json",
+               errors::kInvalidHostPermissions),
       Testcase("init_invalid_permissions_item_invalid.json",
                errors::kInvalidPermission),
       Testcase("init_invalid_options_url_invalid.json",
@@ -87,8 +89,7 @@ TEST_F(InitValueManifestTest, InitFromValueInvalid) {
       Testcase("init_invalid_short_name_type.json", errors::kInvalidShortName),
   };
 
-  RunTestcases(testcases, arraysize(testcases),
-               EXPECT_TYPE_ERROR);
+  RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
 }
 
 TEST_F(InitValueManifestTest, InitFromValueValid) {
@@ -147,8 +148,7 @@ TEST_F(InitValueManifestTest, InitFromValueValid) {
     Testcase("init_valid_permissions_unknown.json")
   };
 
-  RunTestcases(testcases, arraysize(testcases),
-               EXPECT_TYPE_SUCCESS);
+  RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_SUCCESS);
 }
 
 TEST_F(InitValueManifestTest, InitFromValueValidNameInRTL) {

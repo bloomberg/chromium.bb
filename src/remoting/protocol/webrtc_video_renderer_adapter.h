@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/client_video_stats_dispatcher.h"
 #include "remoting/protocol/video_stats_stub.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/api/video/video_sink_interface.h"
 
 namespace base {

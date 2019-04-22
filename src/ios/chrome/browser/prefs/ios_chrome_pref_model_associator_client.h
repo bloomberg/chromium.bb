@@ -8,12 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/sync_preferences/pref_model_associator_client.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 class IOSChromePrefModelAssociatorClient
     : public sync_preferences::PrefModelAssociatorClient {
@@ -22,8 +18,7 @@ class IOSChromePrefModelAssociatorClient
   static IOSChromePrefModelAssociatorClient* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<
-      IOSChromePrefModelAssociatorClient>;
+  friend class base::NoDestructor<IOSChromePrefModelAssociatorClient>;
 
   IOSChromePrefModelAssociatorClient();
   ~IOSChromePrefModelAssociatorClient() override;

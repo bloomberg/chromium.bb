@@ -12,8 +12,8 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/service_worker/navigation_preload_manager.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -84,7 +84,7 @@ class ServiceWorkerRegistration final
   ScriptPromise update(ScriptState*);
   ScriptPromise unregister(ScriptState*);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound, kUpdatefound);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound, kUpdatefound)
 
   ~ServiceWorkerRegistration() override;
 
@@ -111,7 +111,6 @@ class ServiceWorkerRegistration final
 
   const int64_t registration_id_;
   const KURL scope_;
-  const mojom::ScriptType type_;
   mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   // Both |host_| and |binding_| are associated with
   // content.mojom.ServiceWorkerContainer interface for a Document, and

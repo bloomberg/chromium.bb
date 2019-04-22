@@ -20,11 +20,14 @@
 #include "utils/TerribleCommandBuffer.h"
 
 #include <dawn/dawn.h>
-#include <dawn/dawncpp.h>
 #include <dawn/dawn_wsi.h>
+#include <dawn/dawncpp.h>
 #include <dawn_native/DawnNative.h>
+#include <dawn_wire/WireClient.h>
+#include <dawn_wire/WireServer.h>
 #include "GLFW/glfw3.h"
 
+#include <algorithm>
 #include <cstring>
 #include <iostream>
 
@@ -45,51 +48,68 @@ enum class CmdBufType {
 // Default to D3D12, Metal, Vulkan, OpenGL in that order as D3D12 and Metal are the preferred on
 // their respective platforms, and Vulkan is preferred to OpenGL
 #if defined(DAWN_ENABLE_BACKEND_D3D12)
-    static utils::BackendType backendType = utils::BackendType::D3D12;
+    static dawn_native::BackendType backendType = dawn_native::BackendType::D3D12;
 #elif defined(DAWN_ENABLE_BACKEND_METAL)
-    static utils::BackendType backendType = utils::BackendType::Metal;
+    static dawn_native::BackendType backendType = dawn_native::BackendType::Metal;
 #elif defined(DAWN_ENABLE_BACKEND_OPENGL)
-    static utils::BackendType backendType = utils::BackendType::OpenGL;
+    static dawn_native::BackendType backendType = dawn_native::BackendType::OpenGL;
 #elif defined(DAWN_ENABLE_BACKEND_VULKAN)
-    static utils::BackendType backendType = utils::BackendType::Vulkan;
+    static dawn_native::BackendType backendType = dawn_native::BackendType::Vulkan;
 #else
     #error
 #endif
 
 static CmdBufType cmdBufType = CmdBufType::Terrible;
+static std::unique_ptr<dawn_native::Instance> instance;
 static utils::BackendBinding* binding = nullptr;
 
 static GLFWwindow* window = nullptr;
 
-static dawn_wire::CommandHandler* wireServer = nullptr;
-static dawn_wire::CommandHandler* wireClient = nullptr;
+static dawn_wire::WireServer* wireServer = nullptr;
+static dawn_wire::WireClient* wireClient = nullptr;
 static utils::TerribleCommandBuffer* c2sBuf = nullptr;
 static utils::TerribleCommandBuffer* s2cBuf = nullptr;
 
 dawn::Device CreateCppDawnDevice() {
-    binding = utils::CreateBinding(backendType);
-    if (binding == nullptr) {
-        return dawn::Device();
-    }
-
     glfwSetErrorCallback(PrintGLFWError);
     if (!glfwInit()) {
         return dawn::Device();
     }
 
-    binding->SetupGLFWWindowHints();
+    // Create the test window and discover adapters using it (esp. for OpenGL)
+    utils::SetupGLFWWindowHintsForBackend(backendType);
     window = glfwCreateWindow(640, 480, "Dawn window", nullptr, nullptr);
     if (!window) {
         return dawn::Device();
     }
 
-    binding->SetWindow(window);
+    instance = std::make_unique<dawn_native::Instance>();
+    utils::DiscoverAdapter(instance.get(), window, backendType);
 
-    dawnDevice backendDevice = binding->CreateDevice();
-    dawnProcTable backendProcs = dawn_native::GetProcs();
+    // Get an adapter for the backend to use, and create the device.
+    dawn_native::Adapter backendAdapter;
+    {
+        std::vector<dawn_native::Adapter> adapters = instance->GetAdapters();
+        auto adapterIt = std::find_if(adapters.begin(), adapters.end(),
+                                      [](const dawn_native::Adapter adapter) -> bool {
+            return adapter.GetBackendType() == backendType;
+        });
+        ASSERT(adapterIt != adapters.end());
+        backendAdapter = *adapterIt;
+    }
 
-    dawnDevice cDevice = nullptr;
-    dawnProcTable procs;
+    DawnDevice backendDevice = backendAdapter.CreateDevice();
+    DawnProcTable backendProcs = dawn_native::GetProcs();
+
+    binding = utils::CreateBinding(backendType, window, backendDevice);
+    if (binding == nullptr) {
+        return dawn::Device();
+    }
+
+    // Choose whether to use the backend procs and devices directly, or set up the wire.
+    DawnDevice cDevice = nullptr;
+    DawnProcTable procs;
+
     switch (cmdBufType) {
         case CmdBufType::None:
             procs = backendProcs;
@@ -101,12 +121,12 @@ dawn::Device CreateCppDawnDevice() {
                 c2sBuf = new utils::TerribleCommandBuffer();
                 s2cBuf = new utils::TerribleCommandBuffer();
 
-                wireServer = dawn_wire::NewServerCommandHandler(backendDevice, backendProcs, s2cBuf);
+                wireServer = new dawn_wire::WireServer(backendDevice, backendProcs, s2cBuf);
                 c2sBuf->SetHandler(wireServer);
 
-                dawnDevice clientDevice;
-                dawnProcTable clientProcs;
-                wireClient = dawn_wire::NewClientDevice(&clientProcs, &clientDevice, c2sBuf);
+                wireClient = new dawn_wire::WireClient(c2sBuf);
+                DawnDevice clientDevice = wireClient->GetDevice();
+                DawnProcTable clientProcs = wireClient->GetProcs();
                 s2cBuf->SetHandler(wireClient);
 
                 procs = clientProcs;
@@ -130,9 +150,9 @@ dawn::TextureFormat GetPreferredSwapChainTextureFormat() {
 }
 
 dawn::SwapChain GetSwapChain(const dawn::Device &device) {
-    return device.CreateSwapChainBuilder()
-        .SetImplementation(GetSwapChainImplementation())
-        .GetResult();
+    dawn::SwapChainDescriptor swapChainDesc;
+    swapChainDesc.implementation = GetSwapChainImplementation();
+    return device.CreateSwapChain(&swapChainDesc);
 }
 
 dawn::TextureView CreateDefaultDepthStencilView(const dawn::Device& device) {
@@ -141,25 +161,13 @@ dawn::TextureView CreateDefaultDepthStencilView(const dawn::Device& device) {
     descriptor.size.width = 640;
     descriptor.size.height = 480;
     descriptor.size.depth = 1;
-    descriptor.arrayLayer = 1;
+    descriptor.arrayLayerCount = 1;
+    descriptor.sampleCount = 1;
     descriptor.format = dawn::TextureFormat::D32FloatS8Uint;
-    descriptor.levelCount = 1;
+    descriptor.mipLevelCount = 1;
     descriptor.usage = dawn::TextureUsageBit::OutputAttachment;
     auto depthStencilTexture = device.CreateTexture(&descriptor);
-    return depthStencilTexture.CreateDefaultTextureView();
-}
-
-void GetNextRenderPassDescriptor(const dawn::Device& device,
-    const dawn::SwapChain& swapchain,
-    const dawn::TextureView& depthStencilView,
-    dawn::Texture* backbuffer,
-    dawn::RenderPassDescriptor* info) {
-    *backbuffer = swapchain.GetNextTexture();
-    auto backbufferView = backbuffer->CreateDefaultTextureView();
-    *info = device.CreateRenderPassDescriptorBuilder()
-        .SetColorAttachment(0, backbufferView, dawn::LoadOp::Clear)
-        .SetDepthStencilAttachment(depthStencilView, dawn::LoadOp::Clear, dawn::LoadOp::Clear)
-        .GetResult();
+    return depthStencilTexture.CreateDefaultView();
 }
 
 bool InitSample(int argc, const char** argv) {
@@ -167,23 +175,23 @@ bool InitSample(int argc, const char** argv) {
         if (std::string("-b") == argv[i] || std::string("--backend") == argv[i]) {
             i++;
             if (i < argc && std::string("d3d12") == argv[i]) {
-                backendType = utils::BackendType::D3D12;
+                backendType = dawn_native::BackendType::D3D12;
                 continue;
             }
             if (i < argc && std::string("metal") == argv[i]) {
-                backendType = utils::BackendType::Metal;
+                backendType = dawn_native::BackendType::Metal;
                 continue;
             }
             if (i < argc && std::string("null") == argv[i]) {
-                backendType = utils::BackendType::Null;
+                backendType = dawn_native::BackendType::Null;
                 continue;
             }
             if (i < argc && std::string("opengl") == argv[i]) {
-                backendType = utils::BackendType::OpenGL;
+                backendType = dawn_native::BackendType::OpenGL;
                 continue;
             }
             if (i < argc && std::string("vulkan") == argv[i]) {
-                backendType = utils::BackendType::Vulkan;
+                backendType = dawn_native::BackendType::Vulkan;
                 continue;
             }
             fprintf(stderr, "--backend expects a backend name (opengl, metal, d3d12, null, vulkan)\n");

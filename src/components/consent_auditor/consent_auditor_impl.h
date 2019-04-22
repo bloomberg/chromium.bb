@@ -28,12 +28,11 @@ namespace consent_auditor {
 
 class ConsentAuditorImpl : public ConsentAuditor {
  public:
-  ConsentAuditorImpl(
-      PrefService* pref_service,
-      std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge,
-      const std::string& app_version,
-      const std::string& app_locale,
-      base::Clock* clock);
+  ConsentAuditorImpl(PrefService* pref_service,
+                     std::unique_ptr<ConsentSyncBridge> consent_sync_bridge,
+                     const std::string& app_version,
+                     const std::string& app_locale,
+                     base::Clock* clock);
   ~ConsentAuditorImpl() override;
 
   // KeyedService (through ConsentAuditor) implementation.
@@ -79,7 +78,7 @@ class ConsentAuditorImpl : public ConsentAuditor {
       ConsentStatus status);
 
   PrefService* pref_service_;
-  std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge_;
+  std::unique_ptr<ConsentSyncBridge> consent_sync_bridge_;
   std::string app_version_;
   std::string app_locale_;
   base::Clock* clock_;

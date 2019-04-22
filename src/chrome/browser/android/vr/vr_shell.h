@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 #include "chrome/browser/vr/assets_load_status.h"
@@ -205,7 +206,12 @@ class VrShell : device::GvrGamepadDataProvider,
   void StartAutocomplete(const AutocompleteRequest& request);
   void StopAutocomplete();
   void ShowPageInfo();
-  bool HasAudioPermission();
+  bool HasRecordAudioPermission() const;
+  bool CanRequestRecordAudioPermission() const;
+  void RequestRecordAudioPermissionResult(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object,
+      jboolean can_record_audio);
 
   void ClearFocusedElement();
   void ProcessContentGesture(std::unique_ptr<InputEvent> event, int content_id);
@@ -267,6 +273,7 @@ class VrShell : device::GvrGamepadDataProvider,
   void SetPermissionInfo(const PermissionInfoList& permission_info_list,
                          ChosenObjectInfoList chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
+  void SetPageFeatureInfo(const PageFeatureInfo& info) override;
 
   void AcceptDoffPromptForTesting(
       JNIEnv* env,
@@ -326,7 +333,6 @@ class VrShell : device::GvrGamepadDataProvider,
   std::unique_ptr<PageInfo> CreatePageInfo();
 
   bool webvr_mode_ = false;
-  bool web_vr_autopresentation_expected_ = false;
 
   content::WebContents* web_contents_ = nullptr;
   bool web_contents_is_native_page_ = false;

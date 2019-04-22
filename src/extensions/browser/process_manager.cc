@@ -9,15 +9,19 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/one_shot_event.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -25,14 +29,17 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/lazy_context_id.h"
+#include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager_delegate.h"
 #include "extensions/browser/process_manager_factory.h"
@@ -43,7 +50,6 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
-#include "extensions/common/one_shot_event.h"
 
 using content::BrowserContext;
 
@@ -114,9 +120,26 @@ static void CreateBackgroundHostForExtensionLoad(
                                   BackgroundInfo::GetBackgroundURL(extension));
 }
 
-void PropagateExtensionWakeResult(base::OnceCallback<void(bool)> callback,
-                                  extensions::ExtensionHost* host) {
-  std::move(callback).Run(host != nullptr);
+void PropagateExtensionWakeResult(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
+  std::move(callback).Run(context_info != nullptr);
+}
+
+void StartServiceWorkerExternalRequest(content::ServiceWorkerContext* context,
+                                       int64_t service_worker_version_id,
+                                       const std::string& request_uuid) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  context->StartingExternalRequest(service_worker_version_id, request_uuid);
+}
+
+void FinishServiceWorkerExternalRequest(content::ServiceWorkerContext* context,
+                                        int64_t service_worker_version_id,
+                                        const std::string& request_uuid) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  bool status =
+      context->FinishedExternalRequest(service_worker_version_id, request_uuid);
+  DCHECK(status);
 }
 
 }  // namespace
@@ -232,8 +255,11 @@ ProcessManager::ProcessManager(BrowserContext* context,
     : extension_registry_(extension_registry),
       site_instance_(content::SiteInstance::Create(context)),
       browser_context_(context),
+      worker_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::IO})),
       startup_background_hosts_created_(false),
       last_background_close_sequence_id_(0),
+      process_observer_(this),
       weak_ptr_factory_(this) {
   // ExtensionRegistry is shared between incognito and regular contexts.
   DCHECK_EQ(original_context, extension_registry_->browser_context());
@@ -430,10 +456,9 @@ bool ProcessManager::WakeEventPage(const std::string& extension_id,
     // The extension is already awake.
     return false;
   }
-  LazyBackgroundTaskQueue* queue =
-      LazyBackgroundTaskQueue::Get(browser_context_);
-  queue->AddPendingTask(
-      browser_context_, extension_id,
+  const LazyContextId context_id(browser_context_, extension_id);
+  context_id.GetTaskQueue()->AddPendingTask(
+      context_id,
       base::BindOnce(&PropagateExtensionWakeResult, std::move(callback)));
   return true;
 }
@@ -460,8 +485,7 @@ const Extension* ProcessManager::GetExtensionForWebContents(
     // For hosted apps, be sure to exclude URLs outside of the app that might
     // be loaded in the same SiteInstance (extensions guarantee that only
     // extension urls are loaded in that SiteInstance).
-    const content::NavigationController& controller =
-        web_contents->GetController();
+    content::NavigationController& controller = web_contents->GetController();
     content::NavigationEntry* entry = controller.GetLastCommittedEntry();
     // If there is no last committed entry, check the pending entry. This can
     // happen in cases where we query this before any entry is fully committed,
@@ -528,8 +552,8 @@ void ProcessManager::OnSuspendAck(const std::string& extension_id) {
   uint64_t sequence_id = background_page_data_[extension_id].close_sequence_id;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ProcessManager::CloseLazyBackgroundPageNow,
-                 weak_ptr_factory_.GetWeakPtr(), extension_id, sequence_id),
+      base::BindOnce(&ProcessManager::CloseLazyBackgroundPageNow,
+                     weak_ptr_factory_.GetWeakPtr(), extension_id, sequence_id),
       base::TimeDelta::FromMilliseconds(g_event_page_suspending_time_msec));
 }
 
@@ -746,6 +770,32 @@ void ProcessManager::ReleaseLazyKeepaliveCountForFrame(
   }
 }
 
+std::string ProcessManager::IncrementServiceWorkerKeepaliveCount(
+    const WorkerId& worker_id,
+    Activity::Type activity_type,
+    const std::string& extra_data) {
+  // TODO(lazyboy): Use |activity_type| and |extra_data|.
+  int64_t service_worker_version_id = worker_id.version_id;
+  DCHECK(!worker_id.extension_id.empty());
+  const Extension* extension =
+      extension_registry_->enabled_extensions().GetByID(worker_id.extension_id);
+
+  DCHECK(extension);
+  DCHECK(BackgroundInfo::IsServiceWorkerBased(extension));
+
+  std::string request_uuid = base::GenerateGUID();
+  content::ServiceWorkerContext* service_worker_context =
+      content::BrowserContext::GetStoragePartitionForSite(browser_context_,
+                                                          extension->url())
+          ->GetServiceWorkerContext();
+
+  content::ServiceWorkerContext::RunTask(
+      worker_task_runner_, FROM_HERE, service_worker_context,
+      base::BindOnce(&StartServiceWorkerExternalRequest, service_worker_context,
+                     service_worker_version_id, request_uuid));
+  return request_uuid;
+}
+
 void ProcessManager::DecrementLazyKeepaliveCount(
     const std::string& extension_id,
     Activity::Type activity_type,
@@ -772,12 +822,38 @@ void ProcessManager::DecrementLazyKeepaliveCount(
       data.close_sequence_id = ++last_background_close_sequence_id_;
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&ProcessManager::OnLazyBackgroundPageIdle,
-                     weak_ptr_factory_.GetWeakPtr(), extension_id,
-                     last_background_close_sequence_id_),
+          base::BindOnce(&ProcessManager::OnLazyBackgroundPageIdle,
+                         weak_ptr_factory_.GetWeakPtr(), extension_id,
+                         last_background_close_sequence_id_),
           base::TimeDelta::FromMilliseconds(g_event_page_idle_time_msec));
     }
   }
+}
+
+void ProcessManager::DecrementServiceWorkerKeepaliveCount(
+    const WorkerId& worker_id,
+    const std::string& request_uuid,
+    Activity::Type activity_type,
+    const std::string& extra_data) {
+  DCHECK(!worker_id.extension_id.empty());
+  const Extension* extension =
+      extension_registry_->enabled_extensions().GetByID(worker_id.extension_id);
+  if (!extension)
+    return;
+
+  DCHECK(BackgroundInfo::IsServiceWorkerBased(extension));
+
+  int64_t service_worker_version_id = worker_id.version_id;
+  content::ServiceWorkerContext* service_worker_context =
+      content::BrowserContext::GetStoragePartitionForSite(browser_context_,
+                                                          extension->url())
+          ->GetServiceWorkerContext();
+
+  content::ServiceWorkerContext::RunTask(
+      worker_task_runner_, FROM_HERE, service_worker_context,
+      base::BindOnce(&FinishServiceWorkerExternalRequest,
+                     service_worker_context, service_worker_version_id,
+                     request_uuid));
 }
 
 void ProcessManager::OnLazyBackgroundPageIdle(const std::string& extension_id,
@@ -887,6 +963,71 @@ void ProcessManager::UnregisterExtension(const std::string& extension_id) {
   }
 
   background_page_data_.erase(extension_id);
+
+  all_extension_workers_.RemoveAllForExtension(extension_id);
+}
+
+void ProcessManager::RegisterServiceWorker(const WorkerId& worker_id) {
+  all_extension_workers_.Add(worker_id);
+
+  // Observe the RenderProcessHost for cleaning up on process shutdown.
+  int render_process_id = worker_id.render_process_id;
+  bool inserted = worker_process_to_extension_ids_[render_process_id]
+                      .insert(worker_id.extension_id)
+                      .second;
+  if (inserted) {
+    content::RenderProcessHost* render_process_host =
+        content::RenderProcessHost::FromID(render_process_id);
+    DCHECK(render_process_host);
+    if (!process_observer_.IsObserving(render_process_host)) {
+      // These will be cleaned up in RenderProcessExited().
+      process_observer_.Add(render_process_host);
+    }
+  }
+}
+
+void ProcessManager::RenderProcessExited(
+    content::RenderProcessHost* host,
+    const content::ChildProcessTerminationInfo& info) {
+  DCHECK(process_observer_.IsObserving(host));
+  process_observer_.Remove(host);
+  const int render_process_id = host->GetID();
+  // Look up and then clean up the entries that are affected by
+  // |render_process_id| destruction.
+  //
+  // TODO(lazyboy): Revisit this once incognito is tested for extension SWs, as
+  // the cleanup below only works because regular and OTR ProcessManagers are
+  // separate. The conclusive approach would be to have a
+  // all_extension_workers_.RemoveAllForProcess(render_process_id) method:
+  //   Pros: We won't need worker_process_to_extension_ids_ anymore.
+  //   Cons: We would require traversing all workers within
+  //         |all_extension_workers_| (slow) as things stand right now.
+  auto iter = worker_process_to_extension_ids_.find(render_process_id);
+  if (iter == worker_process_to_extension_ids_.end())
+    return;
+  for (const ExtensionId& extension_id : iter->second)
+    all_extension_workers_.RemoveAllForExtension(extension_id);
+  worker_process_to_extension_ids_.erase(iter);
+}
+
+void ProcessManager::UnregisterServiceWorker(const WorkerId& worker_id) {
+  // TODO(lazyboy): DCHECK that |worker_id| exists in |all_extension_workers_|.
+  all_extension_workers_.Remove(worker_id);
+}
+
+bool ProcessManager::HasServiceWorker(const WorkerId& worker_id) const {
+  return all_extension_workers_.Contains(worker_id);
+}
+
+std::vector<WorkerId> ProcessManager::GetServiceWorkers(
+    const ExtensionId& extension_id,
+    int render_process_id) const {
+  return all_extension_workers_.GetAllForExtension(extension_id,
+                                                   render_process_id);
+}
+
+std::vector<WorkerId> ProcessManager::GetAllWorkersIdsForTesting() {
+  return all_extension_workers_.GetAllForTesting();
 }
 
 void ProcessManager::ClearBackgroundPageData(const std::string& extension_id) {

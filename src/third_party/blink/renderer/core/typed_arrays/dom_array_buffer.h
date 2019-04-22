@@ -53,6 +53,13 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
   // transfer that.
   bool Transfer(v8::Isolate*, WTF::ArrayBufferContents& result);
 
+  // Share the ArrayBuffer, even if it is non-shared. Such sharing is necessary
+  // for e.g. WebAudio which uses a separate thread for processing the
+  // ArrayBuffer while at the same time exposing a NonShared Float32Array.
+  bool ShareNonSharedForInternalUse(WTF::ArrayBufferContents& result) {
+    return Buffer()->ShareNonSharedForInternalUse(result);
+  }
+
   v8::Local<v8::Object> Wrap(v8::Isolate*,
                              v8::Local<v8::Object> creation_context) override;
 };

@@ -2,7 +2,6 @@ Test that a manifest served with a wrong signature isn't treated as such.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS window.applicationCache.status is applicationCache.UNCACHED
 PASS event.reason is "signature"
 PASS event.url is ""

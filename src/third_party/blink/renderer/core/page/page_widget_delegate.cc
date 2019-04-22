@@ -34,20 +34,13 @@
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
-#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
-#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -73,57 +66,9 @@ void PageWidgetDelegate::UpdateLifecycle(
   }
 }
 
-static void PaintContentInternal(Page& page,
-                                 cc::PaintCanvas* canvas,
-                                 const WebRect& rect,
-                                 LocalFrame& root,
-                                 const GlobalPaintFlags global_paint_flags) {
-  if (rect.IsEmpty())
-    return;
-
-  // FIXME: device scale factor settings are layering violations and should
-  // not be used within Blink paint code.
-  float scale_factor = page.DeviceScaleFactorDeprecated();
-  canvas->save();
-  canvas->scale(scale_factor, scale_factor);
-
-  IntRect dirty_rect(rect);
-  LocalFrameView* view = root.View();
-  if (view) {
-    DCHECK(view->GetLayoutView()->GetDocument().Lifecycle().GetState() ==
-           DocumentLifecycle::kPaintClean);
-    canvas->clipRect(dirty_rect);
-
-    PaintRecordBuilder builder;
-    builder.Context().SetDeviceScaleFactor(scale_factor);
-    view->PaintWithLifecycleUpdate(builder.Context(), global_paint_flags,
-                                   CullRect(dirty_rect));
-    builder.EndRecording(
-        *canvas,
-        view->GetLayoutView()->FirstFragment().LocalBorderBoxProperties());
-  } else {
-    PaintFlags flags;
-    flags.setColor(SK_ColorWHITE);
-    canvas->drawRect(dirty_rect, flags);
-  }
-
-  canvas->restore();
-}
-
-void PageWidgetDelegate::PaintContent(Page& page,
-                                      cc::PaintCanvas* canvas,
-                                      const WebRect& rect,
-                                      LocalFrame& root) {
-  PaintContentInternal(page, canvas, rect, root, kGlobalPaintNormalPhase);
-}
-
-void PageWidgetDelegate::PaintContentIgnoringCompositing(
-    Page& page,
-    cc::PaintCanvas* canvas,
-    const WebRect& rect,
-    LocalFrame& root) {
-  PaintContentInternal(page, canvas, rect, root,
-                       kGlobalPaintFlattenCompositingLayers);
+void PageWidgetDelegate::DidBeginFrame(LocalFrame& root) {
+  if (LocalFrameView* frame_view = root.View())
+    frame_view->RunPostLifecycleSteps();
 }
 
 WebInputEventResult PageWidgetDelegate::HandleInputEvent(
@@ -135,15 +80,7 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     Document* document = root->GetDocument();
     DCHECK(document);
 
-    InteractiveDetector* interactive_detector(
-        InteractiveDetector::From(*document));
-
-    // interactive_detector is null in the OOPIF case.
-    // TODO(crbug.com/808089): report across OOPIFs.
-    if (interactive_detector)
-      interactive_detector->HandleForInputDelay(event);
-
-    if (RuntimeEnabledFeatures::JankTrackingEnabled()) {
+    if (RuntimeEnabledFeatures::JankTrackingEnabled(document)) {
       if (LocalFrameView* view = document->View())
         view->GetJankTracker().NotifyInput(event);
     }

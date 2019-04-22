@@ -12,6 +12,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
+#include "chrome/common/available_offline_content.mojom-test-utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/ntp_snippets/pref_names.h"
@@ -34,11 +35,6 @@ using offline_items_collection::OfflineItemState;
 using offline_items_collection::OfflineItemVisuals;
 using testing::_;
 const char kProviderNamespace[] = "offline_pages";
-
-std::unique_ptr<KeyedService> BuildOfflineContentAggregator(
-    content::BrowserContext* context) {
-  return std::make_unique<OfflineContentAggregator>();
-}
 
 OfflineItem UninterestingImageItem() {
   OfflineItem item;
@@ -128,11 +124,8 @@ class AvailableOfflineContentTest : public testing::Test {
  protected:
   void SetUp() override {
     scoped_feature_list_->InitAndEnableFeature(features::kNewNetErrorPageUI);
-    // To control the items in the aggregator, we create it and register a
-    // single MockOfflineContentProvider.
-    aggregator_ = static_cast<OfflineContentAggregator*>(
-        OfflineContentAggregatorFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, base::BindRepeating(&BuildOfflineContentAggregator)));
+    aggregator_ =
+        OfflineContentAggregatorFactory::GetForBrowserContext(nullptr);
     aggregator_->RegisterProvider(kProviderNamespace, &content_provider_);
     content_provider_.SetVisuals({});
   }
@@ -145,14 +138,6 @@ class AvailableOfflineContentTest : public testing::Test {
         &provider_);
     waiter.List(&list_visible_by_prefs, &suggestions);
     return std::make_tuple(list_visible_by_prefs, std::move(suggestions));
-  }
-
-  chrome::mojom::AvailableOfflineContentSummaryPtr SummarizeAndWait() {
-    chrome::mojom::AvailableOfflineContentSummaryPtr summary;
-    chrome::mojom::AvailableOfflineContentProviderAsyncWaiter waiter(
-        &provider_);
-    waiter.Summarize(&summary);
-    return summary;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -168,13 +153,7 @@ TEST_F(AvailableOfflineContentTest, NoContent) {
   bool list_visible_by_prefs;
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
   std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
-  chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
 
-  EXPECT_EQ(0u, summary->total_items);
-  EXPECT_FALSE(summary->has_prefetched_page);
-  EXPECT_FALSE(summary->has_offline_page);
-  EXPECT_FALSE(summary->has_video);
-  EXPECT_FALSE(summary->has_audio);
   EXPECT_TRUE(suggestions.empty());
   EXPECT_TRUE(list_visible_by_prefs);
 }
@@ -187,20 +166,13 @@ TEST_F(AvailableOfflineContentTest, TooFewInterestingItems) {
                               TransientItem(), OffTheRecordItem(),
                               IncompleteItem(), DangerousItem()});
 
-  // Call List() and Summary().
+  // Call List().
   bool list_visible_by_prefs;
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
   std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
-  chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
 
   // As interesting items are below the minimum to show, nothing should be
   // reported.
-  EXPECT_EQ(0u, summary->total_items);
-  EXPECT_FALSE(summary->has_prefetched_page);
-  EXPECT_FALSE(summary->has_offline_page);
-  EXPECT_FALSE(summary->has_video);
-  EXPECT_FALSE(summary->has_audio);
-
   EXPECT_TRUE(suggestions.empty());
   EXPECT_TRUE(list_visible_by_prefs);
 }
@@ -214,18 +186,10 @@ TEST_F(AvailableOfflineContentTest, FourInterestingItems) {
   content_provider_.SetVisuals(
       {{SuggestedOfflinePageItem().id, TestThumbnail()}});
 
-  // Call List() and Summary().
+  // Call List().
   bool list_visible_by_prefs;
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
   std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
-  chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
-
-  // Check summary.
-  EXPECT_EQ(5u, summary->total_items);
-  EXPECT_TRUE(summary->has_prefetched_page);
-  EXPECT_TRUE(summary->has_offline_page);
-  EXPECT_TRUE(summary->has_video);
-  EXPECT_TRUE(summary->has_audio);
 
   // Check that the right suggestions have been received in order.
   EXPECT_EQ(3ul, suggestions.size());

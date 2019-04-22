@@ -8,8 +8,10 @@
 
 #include <memory>
 
-#include "components/browser_sync/profile_sync_service.h"
+#include "base/bind.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/model/fake_model_type_controller_delegate.h"
+#include "components/sync/user_events/global_id_mapper.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -24,6 +26,7 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
@@ -100,6 +103,16 @@ class OpenTabsUIDelegateMock : public sync_sessions::OpenTabsUIDelegate {
                bool(const sync_sessions::SyncedSession** local));
 };
 
+class GlobalIdMapperMock : public syncer::GlobalIdMapper {
+ public:
+  GlobalIdMapperMock() {}
+  ~GlobalIdMapperMock() {}
+
+  MOCK_METHOD1(AddGlobalIdChangeObserver,
+               void(syncer::GlobalIdChange callback));
+  MOCK_METHOD1(GetLatestGlobalId, int64_t(int64_t global_id));
+};
+
 class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
  public:
   RecentTabsTableCoordinatorTest()
@@ -135,8 +148,13 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
     if (signedIn) {
       identity_test_env_.MakePrimaryAccountAvailable("test@test.com");
     } else if (identity_test_env_.identity_manager()->HasPrimaryAccount()) {
-      identity_test_env_.identity_manager()->ClearPrimaryAccount(
-          identity::IdentityManager::ClearAccountTokensAction::kDefault,
+      auto* account_mutator =
+          identity_test_env_.identity_manager()->GetPrimaryAccountMutator();
+
+      // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
+      DCHECK(account_mutator);
+      account_mutator->ClearPrimaryAccount(
+          identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
           signin_metrics::SIGNOUT_TEST,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
     }
@@ -150,6 +168,8 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
     // initialization of SyncSetupServiceMock.
     ON_CALL(*session_sync_service, GetControllerDelegate())
         .WillByDefault(Return(fake_controller_delegate_.GetWeakPtr()));
+    ON_CALL(*session_sync_service, GetGlobalIdMapper())
+        .WillByDefault(Return(&global_id_mapper_));
 
     SyncSetupServiceMock* syncSetupService = static_cast<SyncSetupServiceMock*>(
         SyncSetupServiceFactory::GetForBrowserState(
@@ -184,6 +204,7 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
 
   syncer::FakeModelTypeControllerDelegate fake_controller_delegate_;
   testing::NiceMock<OpenTabsUIDelegateMock> open_tabs_ui_delegate_;
+  testing::NiceMock<GlobalIdMapperMock> global_id_mapper_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 
   // Must be declared *after* |chrome_browser_state_| so it can outlive it.

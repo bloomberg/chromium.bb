@@ -70,13 +70,11 @@ class NotificationPlatformBridgeMacTest : public BrowserWithTestWindowTest {
     return [builder buildUserNotification];
   }
 
-  static void StoreNotificationCount(
-      int* out_notification_count,
-      std::unique_ptr<std::set<std::string>> notifications,
-      bool supports_synchronization) {
+  static void StoreNotificationCount(int* out_notification_count,
+                                     std::set<std::string> notifications,
+                                     bool supports_synchronization) {
     DCHECK(out_notification_count);
-    DCHECK(notifications);
-    *out_notification_count = notifications->size();
+    *out_notification_count = notifications.size();
   }
 
   std::unique_ptr<Notification> CreateBanner(const char* title,
@@ -129,8 +127,9 @@ class NotificationPlatformBridgeMacTest : public BrowserWithTestWindowTest {
 
   NSMutableDictionary* BuildDefaultNotificationResponse() {
     return [NSMutableDictionary
-        dictionaryWithDictionary:[NotificationResponseBuilder
-                                     buildDictionary:BuildNotification()]];
+        dictionaryWithDictionary:
+            [NotificationResponseBuilder
+                buildActivatedDictionary:BuildNotification()]];
   }
 
   NSUserNotificationCenter* notification_center() {

@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -24,31 +25,31 @@ bool IsWifiEnabled() {
       chromeos::NetworkTypePattern::WiFi());
 }
 
+bool IsMobileEnabled() {
+  return NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
+      chromeos::NetworkTypePattern::Cellular() |
+      chromeos::NetworkTypePattern::Tether());
+}
+
 }  // namespace
 
 namespace ash {
 
 TrayNetworkStateObserver::TrayNetworkStateObserver(Delegate* delegate)
-    : delegate_(delegate),
-      update_frequency_(kUpdateFrequencyMs) {
+    : delegate_(delegate), update_frequency_(kUpdateFrequencyMs) {
   if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION) {
     update_frequency_ = 0;  // Send updates immediately for tests.
   }
-  // TODO(mash): Figure out what to do about NetworkHandler and
-  // NetworkPortalDetector.
+  // TODO(mash): Figure out what to do about NetworkHandler.
   if (NetworkHandler::IsInitialized()) {
     NetworkHandler::Get()->network_state_handler()->AddObserver(this,
                                                                 FROM_HERE);
     wifi_enabled_ = IsWifiEnabled();
   }
-  if (chromeos::network_portal_detector::IsInitialized())
-    chromeos::network_portal_detector::GetInstance()->AddObserver(this);
 }
 
 TrayNetworkStateObserver::~TrayNetworkStateObserver() {
-  if (chromeos::network_portal_detector::IsInitialized())
-    chromeos::network_portal_detector::GetInstance()->RemoveObserver(this);
   if (NetworkHandler::IsInitialized()) {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
                                                                    FROM_HERE);
@@ -63,18 +64,8 @@ void TrayNetworkStateObserver::DeviceListChanged() {
   SignalUpdate(false /* notify_a11y */);
 }
 
-// Any change to the Default (primary connected) network, including Strength
-// changes, should trigger a NetworkStateChanged update.
-void TrayNetworkStateObserver::DefaultNetworkChanged(
-    const chromeos::NetworkState* network) {
-  SignalUpdate(true /* notify_a11y */);
-}
-
-// Any change to the Connection State should trigger a NetworkStateChanged
-// update. This is important when both a VPN and a physical network are
-// connected.
-void TrayNetworkStateObserver::NetworkConnectionStateChanged(
-    const chromeos::NetworkState* network) {
+void TrayNetworkStateObserver::ActiveNetworksChanged(
+    const std::vector<const chromeos::NetworkState*>& active_networks) {
   SignalUpdate(true /* notify_a11y */);
 }
 
@@ -86,23 +77,24 @@ void TrayNetworkStateObserver::NetworkPropertiesUpdated(
   SignalUpdate(false /* notify_a11y */);
 }
 
+// Required to propagate changes to the "scanning" property of DeviceStates.
 void TrayNetworkStateObserver::DevicePropertiesUpdated(
     const chromeos::DeviceState* device) {
   SignalUpdate(false /* notify_a11y */);
 }
 
-void TrayNetworkStateObserver::OnPortalDetectionCompleted(
-    const chromeos::NetworkState* network,
-    const chromeos::NetworkPortalDetector::CaptivePortalState& state) {
-  SignalUpdate(true /* notify_a11y */);
-}
-
 void TrayNetworkStateObserver::SignalUpdate(bool notify_a11y) {
-  bool old_state = wifi_enabled_;
+  bool old_wifi_state = wifi_enabled_;
   wifi_enabled_ = IsWifiEnabled();
 
-  // Update immediately when wifi network changed from enabled->disabled.
-  if (old_state && !wifi_enabled_) {
+  bool old_mobile_state = mobile_enabled_;
+  mobile_enabled_ = IsMobileEnabled();
+
+  // Update immediately when Wi-Fi and/or Mobile have been turned on or off.
+  // This ensures that the UI for settings and quick settings stays in sync; see
+  // https://crbug.com/917325.
+  if (old_wifi_state != wifi_enabled_ || old_mobile_state != mobile_enabled_) {
+    timer_.Stop();
     SendNetworkStateChanged(notify_a11y);
     return;
   }

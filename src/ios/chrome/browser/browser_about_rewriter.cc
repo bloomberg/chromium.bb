@@ -27,6 +27,8 @@ const struct HostReplacement {
 }  // namespace
 
 bool WillHandleWebBrowserAboutURL(GURL* url, web::BrowserState* browser_state) {
+  GURL original_url = *url;
+
   // Ensure that any cleanup done by FixupURL happens before the rewriting
   // phase that determines the virtual URL, by including it in an initial
   // URLHandler.  This prevents minor changes from producing a virtual URL,
@@ -48,7 +50,7 @@ bool WillHandleWebBrowserAboutURL(GURL* url, web::BrowserState* browser_state) {
       GURL::Replacements replacements;
       replacements.SetSchemeStr(url::kAboutScheme);
       *url = url->ReplaceComponents(replacements);
-      return true;
+      return *url != original_url;
     }
   }
 

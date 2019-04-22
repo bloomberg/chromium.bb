@@ -43,6 +43,16 @@ struct ActionInfo {
                                           const base::DictionaryValue* dict,
                                           base::string16* error);
 
+  // Returns any action associated with the extension, whether it's specified
+  // under the "page_action", "browser_action", or "action" key (note this does
+  // *not* check system indicator).
+  // TODO(devlin): This is a crutch while moving away from the distinct action
+  // types. Remove it when that's done.
+  static const ActionInfo* GetAnyActionInfo(const Extension* extension);
+
+  // Returns the action specified under the "action" key, if any.
+  static const ActionInfo* GetExtensionActionInfo(const Extension* extension);
+
   // Returns the extension's browser action, if any.
   static const ActionInfo* GetBrowserActionInfo(const Extension* extension);
 
@@ -52,18 +62,21 @@ struct ActionInfo {
   // Returns the extension's system indicator, if any.
   static const ActionInfo* GetSystemIndicatorInfo(const Extension* extension);
 
-  // Sets the extension's action. |extension| takes ownership of |info|.
-  static void SetExtensionActionInfo(Extension* extension, ActionInfo* info);
+  // Sets the extension's action.
+  static void SetExtensionActionInfo(Extension* extension,
+                                     std::unique_ptr<ActionInfo> info);
 
-  // Sets the extension's browser action. |extension| takes ownership of |info|.
-  static void SetBrowserActionInfo(Extension* extension, ActionInfo* info);
+  // Sets the extension's browser action.
+  static void SetBrowserActionInfo(Extension* extension,
+                                   std::unique_ptr<ActionInfo> info);
 
-  // Sets the extension's page action. |extension| takes ownership of |info|.
-  static void SetPageActionInfo(Extension* extension, ActionInfo* info);
+  // Sets the extension's page action.
+  static void SetPageActionInfo(Extension* extension,
+                                std::unique_ptr<ActionInfo> info);
 
-  // Sets the extension's system indicator. |extension| takes ownership of
-  // |info|.
-  static void SetSystemIndicatorInfo(Extension* extension, ActionInfo* info);
+  // Sets the extension's system indicator.
+  static void SetSystemIndicatorInfo(Extension* extension,
+                                     std::unique_ptr<ActionInfo> info);
 
   // Returns true if the extension needs a verbose install message because
   // of its page action.

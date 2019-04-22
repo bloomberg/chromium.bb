@@ -38,7 +38,7 @@ void CheckSystemCookie(const base::Time& expires, bool secure, bool httponly) {
       base::Time(),  // creation
       expires,
       base::Time(),  // last_access
-      secure, httponly, net::CookieSameSite::DEFAULT_MODE,
+      secure, httponly, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_DEFAULT);
   // Convert it to system cookie.
   NSHTTPCookie* system_cookie =
@@ -171,7 +171,7 @@ TEST_F(CookieUtil, SystemCookieFromBadCanonicalCookie) {
       base::Time(),  // last_access
       false,         // secure
       false,         // httponly
-      net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
+      net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT);
   // Convert it to system cookie.
   NSHTTPCookie* system_cookie =
       SystemCookieFromCanonicalCookie(bad_canonical_cookie);

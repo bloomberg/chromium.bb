@@ -20,9 +20,6 @@ class AccessibilityControllerClient
   // Initializes and connects to ash.
   void Init();
 
-  // Tests can provide a mock mojo interface for the ash controller.
-  void InitForTesting(ash::mojom::AccessibilityControllerPtr controller);
-
   // ash::mojom::AccessibilityControllerClient:
   void TriggerAccessibilityAlert(ash::mojom::AccessibilityAlert alert) override;
   void PlayEarcon(int32_t sound_key) override;

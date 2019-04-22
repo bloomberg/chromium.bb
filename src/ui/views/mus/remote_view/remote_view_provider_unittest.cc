@@ -7,18 +7,48 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/unguessable_token.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/mus/remote_view/remote_view_provider_test_api.h"
 
 namespace views {
+
+class TestFocusChangeObserver : public aura::client::FocusChangeObserver {
+ public:
+  explicit TestFocusChangeObserver(aura::Window* window) : window_(window) {
+    aura::client::SetFocusChangeObserver(window_, this);
+  }
+  ~TestFocusChangeObserver() override {
+    aura::client::SetFocusChangeObserver(window_, nullptr);
+  }
+
+  // aura::client::FocusChangeObserver:
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override {
+    on_window_focused_called_ = true;
+  }
+
+  bool on_window_focused_called() const { return on_window_focused_called_; }
+
+ private:
+  aura::Window* const window_;
+  bool on_window_focused_called_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFocusChangeObserver);
+};
 
 class RemoteViewProviderTest : public aura::test::AuraTestBase {
  public:
@@ -27,6 +57,7 @@ class RemoteViewProviderTest : public aura::test::AuraTestBase {
 
   // aura::test::AuraTestBase
   void SetUp() override {
+    env_ = aura::Env::CreateInstance();
     EnableMusWithTestWindowTree();
     AuraTestBase::SetUp();
 
@@ -52,13 +83,11 @@ class RemoteViewProviderTest : public aura::test::AuraTestBase {
   base::UnguessableToken GetEmbedToken() {
     base::RunLoop run_loop;
     base::UnguessableToken token;
-    provider_->GetEmbedToken(base::BindOnce(
-        [](base::RunLoop* run_loop, base::UnguessableToken* out_token,
-           const base::UnguessableToken& token) {
-          *out_token = token;
-          run_loop->Quit();
-        },
-        &run_loop, &token));
+    provider_->GetEmbedToken(
+        base::BindLambdaForTesting([&](const base::UnguessableToken& in_token) {
+          token = in_token;
+          run_loop.Quit();
+        }));
     run_loop.Run();
     return token;
   }
@@ -70,13 +99,10 @@ class RemoteViewProviderTest : public aura::test::AuraTestBase {
     base::RunLoop run_loop;
     aura::Window* embedder = nullptr;
     provider_->SetCallbacks(
-        base::BindRepeating(
-            [](base::RunLoop* run_loop, aura::Window** out_embedder,
-               aura::Window* embedder) {
-              *out_embedder = embedder;
-              run_loop->Quit();
-            },
-            &run_loop, &embedder),
+        base::BindLambdaForTesting([&](aura::Window* in_embedder) {
+          embedder = in_embedder;
+          run_loop.Quit();
+        }),
         base::DoNothing() /* OnUnembedCallback */);
     window_tree()->AddEmbedRootForToken(token);
     run_loop.Run();
@@ -99,8 +125,7 @@ class RemoteViewProviderTest : public aura::test::AuraTestBase {
     base::RunLoop run_loop;
     provider_->SetCallbacks(
         base::DoNothing() /* OnEmbedCallback */,
-        base::BindRepeating([](base::RunLoop* run_loop) { run_loop->Quit(); },
-                            &run_loop));
+        base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
 
     const ws::Id embedder_window_id =
         aura::WindowMus::Get(embedder)->server_id();
@@ -109,6 +134,7 @@ class RemoteViewProviderTest : public aura::test::AuraTestBase {
   }
 
  protected:
+  std::unique_ptr<aura::Env> env_;
   std::unique_ptr<aura::Window> embedded_;
   std::unique_ptr<RemoteViewProvider> provider_;
 
@@ -169,6 +195,46 @@ TEST_F(RemoteViewProviderTest, EmbedAgain) {
   aura::Window* new_embedder = SimulateEmbed();
   // SimulateEmbed() should create a new window.
   ASSERT_TRUE(new_embedder);
+}
+
+TEST_F(RemoteViewProviderTest, ScreenBounds) {
+  aura::Window* embedder = SimulateEmbed();
+  ASSERT_TRUE(embedder);
+
+  aura::Window* root_window = embedded_->GetRootWindow();
+  ASSERT_TRUE(root_window);
+  const gfx::Rect root_bounds(101, 102, 100, 50);
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator;
+  parent_local_surface_id_allocator.GenerateId();
+  window_tree_client()->OnWindowBoundsChanged(
+      aura::WindowMus::Get(root_window)->server_id(), root_bounds,
+      ui::SHOW_STATE_DEFAULT,
+      parent_local_surface_id_allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_EQ(root_bounds, root_window->GetHost()->GetBoundsInPixels());
+  EXPECT_EQ(root_bounds.origin(), root_window->GetBoundsInScreen().origin());
+}
+
+TEST_F(RemoteViewProviderTest, FocusChangeObserver) {
+  SimulateEmbed();
+
+  TestFocusChangeObserver observer(embedded_.get());
+  ASSERT_FALSE(observer.on_window_focused_called());
+
+  embedded_->Focus();
+  EXPECT_TRUE(observer.on_window_focused_called());
+}
+
+TEST_F(RemoteViewProviderTest, Cursor) {
+  aura::Window* embedder = SimulateEmbed();
+  ASSERT_TRUE(embedder);
+
+  auto* cursor_client =
+      aura::client::GetCursorClient(embedded_->GetRootWindow());
+  ASSERT_TRUE(cursor_client);
+
+  EXPECT_NE(window_tree()->last_cursor(), ui::CursorType::kHand);
+  cursor_client->SetCursor(ui::CursorType::kHand);
+  EXPECT_EQ(window_tree()->last_cursor(), ui::CursorType::kHand);
 }
 
 }  // namespace views

@@ -13,6 +13,7 @@
 #include "ui/base/win/shell.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace {
 
@@ -109,9 +110,9 @@ void ThemeServiceWin::OnDwmKeyUpdated() {
     // with 0xff to make an opaque ARGB color.
     SkColor input_color = SkColorSetA(colorization_color, 0xff);
 
-    dwm_accent_border_color_ = color_utils::AlphaBlend(
-        input_color, SkColorSetRGB(0xd9, 0xd9, 0xd9),
-        gfx::ToRoundedInt(255 * colorization_color_balance / 100.f));
+    dwm_accent_border_color_ =
+        color_utils::AlphaBlend(input_color, SkColorSetRGB(0xd9, 0xd9, 0xd9),
+                                colorization_color_balance / 100.0f);
   }
 
   inactive_frame_color_from_registry_ = false;
@@ -146,6 +147,9 @@ void ThemeServiceWin::OnDwmKeyUpdated() {
         dwm_frame_color_.value(),
         GetTint(ThemeProperties::TINT_FRAME_INACTIVE, false));
   }
+
+  // Notify native theme observers that the native theme has changed.
+  ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
 
   // Watch for future changes.
   if (!dwm_key_->StartWatching(base::Bind(

@@ -3,6 +3,9 @@
 <head>
 <script src="../resources/js-test.js"></script>
 <script src="../http/tests/resources/permissions-helper.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/media/midi/midi_service.mojom.js"></script>
+<script src="../http/tests/webmidi/mock-midiservice.js"></script>
 </head>
 <body>
 <script>
@@ -43,10 +46,14 @@ function verifyData(e) {
     expected = testData[receiveCount];
     actual = e.data;
     shouldBe("actual", "expected");
-    midiMessageEvent = e;
     receiveCount++;
-    if (receiveCount == testData.length)
-        e.target.resolve();
+    if (receiveCount == testData.length) {
+      // Clear the event handler in case the input object isn't GC'ed, to
+      // prevent it from being called on the second run of test().
+      e.target.onmidimessage = undefined;
+      e.target.removeEventListener('midimessage', verifyData);
+      e.target.resolve();
+    }
 }
 
 function test(useAddEventListener) {

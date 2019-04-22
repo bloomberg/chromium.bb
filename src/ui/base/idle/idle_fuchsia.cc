@@ -8,10 +8,10 @@
 
 namespace ui {
 
-void CalculateIdleTime(IdleTimeCallback notify) {
+int CalculateIdleTime() {
   // TODO(fuchsia): https://crbug.com/743296.
   NOTIMPLEMENTED();
-  notify.Run(0);
+  return 0;
 }
 
 bool CheckIdleStateIsLocked() {

@@ -26,10 +26,14 @@ const ContentSettingProvider = {
 let IsValid;
 
 /**
- * Stores origin information.
+ * Stores origin information. The |hasPermissionSettings| will be set to true
+ * when this origin has permissions or when there is a pattern permission
+ * affecting this origin.
  * @typedef {{origin: string,
  *            engagement: number,
- *            usage: number}}
+ *            usage: number,
+              numCookies: number,
+              hasPermissionSettings: boolean}}
  */
 let OriginInfo;
 
@@ -72,6 +76,26 @@ let RawSiteException;
 let SiteException;
 
 /**
+ * The chooser exception information passed from the C++ handler.
+ * See also: ChooserException.
+ * @typedef {{chooserType: !settings.ChooserType,
+ *            displayName: string,
+ *            object: Object,
+ *            sites: Array<!RawSiteException>}}
+ */
+let RawChooserException;
+
+/**
+ * The chooser exception after it has been converted/filtered for UI use.
+ * See also: RawChooserException.
+ * @typedef {{chooserType: !settings.ChooserType,
+ *            displayName: string,
+ *            object: Object,
+ *            sites: Array<!SiteException>}}
+ */
+let ChooserException;
+
+/**
  * @typedef {{setting: !settings.ContentSetting,
  *            source: !ContentSettingProvider}}
  */
@@ -88,24 +112,6 @@ let MediaPickerEntry;
  *            spec: string}}
  */
 let ProtocolHandlerEntry;
-
-/**
- * @typedef {{name: string,
- *            product-id: Number,
- *            serial-number: string,
- *            vendor-id: Number}}
- */
-let UsbDeviceDetails;
-
-/**
- * @typedef {{embeddingOrigin: string,
- *            object: UsbDeviceDetails,
- *            objectName: string,
- *            origin: string,
- *            setting: string,
- *            source: string}}
- */
-let UsbDeviceEntry;
 
 /**
  * @typedef {{origin: string,
@@ -140,6 +146,14 @@ cr.define('settings', function() {
      * @return {!Promise<!Array<!SiteGroup>>}
      */
     getAllSites(contentTypes) {}
+
+    /**
+     * Gets the chooser exceptions for a particular chooser type.
+     * @param {settings.ChooserType} chooserType The chooser type to grab
+     *     exceptions from.
+     * @return {!Promise<!Array<!RawChooserException>>}
+     */
+    getChooserExceptionList(chooserType) {}
 
     /**
      * Converts a given number of bytes into a human-readable format, with data
@@ -200,6 +214,17 @@ cr.define('settings', function() {
      */
     resetCategoryPermissionForPattern(
         primaryPattern, secondaryPattern, contentType, incognito) {}
+
+    /**
+     * Removes a particular chooser object permission by origin and embedding
+     * origin.
+     * @param {settings.ChooserType} chooserType The chooser exception type
+     * @param {string} origin The origin to look up the permission for.
+     * @param {string} embeddingOrigin the embedding origin to look up.
+     * @param {!Object} exception The exception to revoke permission for.
+     */
+    resetChooserExceptionForSite(
+        chooserType, origin, embeddingOrigin, exception) {}
 
     /**
      * Sets the category permission for a given origin (expressed as primary and
@@ -288,22 +313,6 @@ cr.define('settings', function() {
     removeProtocolHandler(protocol, url) {}
 
     /**
-     * Fetches a list of all USB devices and the sites permitted to use them.
-     * @return {!Promise<!Array<!UsbDeviceEntry>>} The list of USB devices.
-     */
-    fetchUsbDevices() {}
-
-    /**
-     * Removes a particular USB device object permission by origin and embedding
-     * origin.
-     * @param {string} origin The origin to look up the permission for.
-     * @param {string} embeddingOrigin the embedding origin to look up.
-     * @param {!UsbDeviceDetails} usbDevice The USB device to revoke permission
-     *     for.
-     */
-    removeUsbDevice(origin, embeddingOrigin, usbDevice) {}
-
-    /**
      * Fetches the incognito status of the current profile (whether an incognito
      * profile exists). Returns the results via onIncognitoStatusChanged.
      */
@@ -334,6 +343,18 @@ cr.define('settings', function() {
      * onBlockAutoplayStatusChanged.
      */
     fetchBlockAutoplayStatus() {}
+
+    /**
+     * Clears all the web storage data and cookies for a given etld+1.
+     * @param {string} etldPlus1 The etld+1 to clear data from.
+     */
+    clearEtldPlus1DataAndCookies(etldPlus1) {}
+
+    /**
+     * Record All Sites Page action for metrics.
+     *  @param {number} action number.
+     */
+    recordAction(action) {}
   }
 
   /**
@@ -353,6 +374,11 @@ cr.define('settings', function() {
     /** @override */
     getAllSites(contentTypes) {
       return cr.sendWithPromise('getAllSites', contentTypes);
+    }
+
+    /** @override */
+    getChooserExceptionList(chooserType) {
+      return cr.sendWithPromise('getChooserExceptionList', chooserType);
     }
 
     /** @override */
@@ -387,6 +413,14 @@ cr.define('settings', function() {
       chrome.send(
           'resetCategoryPermissionForPattern',
           [primaryPattern, secondaryPattern, contentType, incognito]);
+    }
+
+    /** @override */
+    resetChooserExceptionForSite(
+        chooserType, origin, embeddingOrigin, exception) {
+      chrome.send(
+          'resetChooserExceptionForSite',
+          [chooserType, origin, embeddingOrigin, exception]);
     }
 
     /** @override */
@@ -446,16 +480,6 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    fetchUsbDevices() {
-      return cr.sendWithPromise('fetchUsbDevices');
-    }
-
-    /** @override */
-    removeUsbDevice(origin, embeddingOrigin, usbDevice) {
-      chrome.send('removeUsbDevice', [origin, embeddingOrigin, usbDevice]);
-    }
-
-    /** @override */
     updateIncognitoStatus() {
       chrome.send('updateIncognitoStatus');
     }
@@ -480,6 +504,16 @@ cr.define('settings', function() {
     /** @override */
     fetchBlockAutoplayStatus() {
       chrome.send('fetchBlockAutoplayStatus');
+    }
+
+    /** @override */
+    clearEtldPlus1DataAndCookies(etldPlus1) {
+      chrome.send('clearEtldPlus1DataAndCookies', [etldPlus1]);
+    }
+
+    /** @override */
+    recordAction(action) {
+      chrome.send('recordAction', [action]);
     }
   }
 

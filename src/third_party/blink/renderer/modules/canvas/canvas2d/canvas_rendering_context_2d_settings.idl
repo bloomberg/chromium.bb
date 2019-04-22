@@ -9,5 +9,6 @@ dictionary CanvasRenderingContext2DSettings {
     boolean alpha = true;
     [RuntimeEnabled=CanvasColorManagement] CanvasColorSpace colorSpace = "srgb";
     [RuntimeEnabled=CanvasColorManagement] CanvasPixelFormat pixelFormat = "uint8";
+    boolean desynchronized = false;
 };
 

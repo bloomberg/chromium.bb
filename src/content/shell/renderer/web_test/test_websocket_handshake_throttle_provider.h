@@ -18,9 +18,11 @@ class TestWebSocketHandshakeThrottleProvider
   TestWebSocketHandshakeThrottleProvider() = default;
   ~TestWebSocketHandshakeThrottleProvider() override = default;
 
-  std::unique_ptr<content::WebSocketHandshakeThrottleProvider> Clone() override;
+  std::unique_ptr<content::WebSocketHandshakeThrottleProvider> Clone(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebSocketHandshakeThrottle> CreateThrottle(
-      int render_frame_id) override;
+      int render_frame_id,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWebSocketHandshakeThrottleProvider);

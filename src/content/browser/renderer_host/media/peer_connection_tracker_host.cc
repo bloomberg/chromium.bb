@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 
+#include "base/bind.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/task/post_task.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -75,7 +76,6 @@ void PeerConnectionTrackerHost::OnAddPeerConnection(
   WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
   if (logger) {
     logger->PeerConnectionAdded(render_process_id_, info.lid,
-                                info.peer_connection_id,
                                 base::OnceCallback<void(bool)>());
   }
 }
@@ -122,6 +122,25 @@ void PeerConnectionTrackerHost::UpdatePeerConnection(int lid,
   if (webrtc_internals) {
     webrtc_internals->OnUpdatePeerConnection(peer_pid(), lid, type, value);
   }
+}
+
+void PeerConnectionTrackerHost::OnPeerConnectionSessionIdSet(
+    int lid,
+    const std::string& session_id) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&PeerConnectionTrackerHost::OnPeerConnectionSessionIdSet,
+                       this, lid, session_id));
+    return;
+  }
+
+  WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+  if (!logger) {
+    return;
+  }
+  logger->PeerConnectionSessionIdSet(render_process_id_, lid, session_id,
+                                     base::OnceCallback<void(bool)>());
 }
 
 void PeerConnectionTrackerHost::OnAddStats(int lid,

@@ -16,7 +16,7 @@ DocumentPortals& DocumentPortals::From(Document& document) {
   DocumentPortals* supplement =
       Supplement<Document>::From<DocumentPortals>(document);
   if (!supplement) {
-    supplement = new DocumentPortals(document);
+    supplement = MakeGarbageCollected<DocumentPortals>(document);
     Supplement<Document>::ProvideTo(document, supplement);
   }
   return *supplement;
@@ -41,6 +41,14 @@ HTMLPortalElement* DocumentPortals::GetPortal(
   }
 
   return nullptr;
+}
+
+bool DocumentPortals::IsPortalInDocumentActivating() const {
+  for (HTMLPortalElement* portal : portals_) {
+    if (portal->IsActivating())
+      return true;
+  }
+  return false;
 }
 
 void DocumentPortals::Trace(Visitor* visitor) {

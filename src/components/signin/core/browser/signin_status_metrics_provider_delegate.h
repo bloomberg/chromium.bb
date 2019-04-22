@@ -12,8 +12,11 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 
-class SigninManager;
 class SigninStatusMetricsProvider;
+
+namespace identity {
+class IdentityManager;
+}
 
 // Provides information relating to the status of accounts in the embedder: how
 // many there are, how many are open, and how many are signed in. Note that
@@ -44,8 +47,9 @@ class SigninStatusMetricsProviderDelegate {
   // Returns the status of all accounts.
   virtual AccountsStatus GetStatusOfAllAccounts() = 0;
 
-  // Returns the SigninManager instance (if any) associated with each account.
-  virtual std::vector<SigninManager*> GetSigninManagersForAllAccounts() = 0;
+  // Returns the IdentityManager instance (if any) associated with each account.
+  virtual std::vector<identity::IdentityManager*>
+  GetIdentityManagersForAllAccounts() = 0;
 
  protected:
   SigninStatusMetricsProvider* owner() { return owner_; }

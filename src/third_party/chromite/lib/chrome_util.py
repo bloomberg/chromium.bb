@@ -302,7 +302,6 @@ STAGING_FLAGS = (
     _HIGHDPI_FLAG,
 )
 
-_CHROME_SANDBOX_DEST = 'chrome-sandbox'
 C = Conditions
 
 # In the below Path lists, if two Paths both match a file, the earlier Path
@@ -310,7 +309,6 @@ C = Conditions
 
 # Files shared between all deployment types.
 _COPY_PATHS_COMMON = (
-    Path('chrome_sandbox', mode=0o755, dest=_CHROME_SANDBOX_DEST),
     Path('icudtl.dat'),
     Path('libosmesa.so', exe=True, optional=True),
     # Do not strip the nacl_helper_bootstrap binary because the binutils

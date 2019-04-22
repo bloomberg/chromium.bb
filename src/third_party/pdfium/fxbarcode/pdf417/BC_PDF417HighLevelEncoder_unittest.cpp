@@ -3,17 +3,18 @@
 // found in the LICENSE file.
 
 #include "fxbarcode/pdf417/BC_PDF417HighLevelEncoder.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(PDF417HighLevelEncoder, EncodeHighLevel) {
+TEST(PDF417HighLevelEncoderTest, EncodeHighLevel) {
   // TODO(tsepez): implement test cases.
 }
 
-TEST(PDF417HighLevelEncoder, EncodeText) {
+TEST(PDF417HighLevelEncoderTest, EncodeText) {
   // TODO(tsepez): implement test cases.
 }
 
-TEST(PDF417HighLevelEncoder, EncodeBinary) {
+TEST(PDF417HighLevelEncoderTest, EncodeBinary) {
   struct EncodeBinaryCase {
     const char* input;
     int offset;
@@ -38,7 +39,6 @@ TEST(PDF417HighLevelEncoder, EncodeBinary) {
        L"\u039c\u00c9\u031f\u012a\u00d2\u02d0", 6},
   };
 
-  CBC_PDF417HighLevelEncoder::Initialize();
   for (size_t i = 0; i < FX_ArraySize(encode_binary_cases); ++i) {
     EncodeBinaryCase* ptr = &encode_binary_cases[i];
     std::vector<uint8_t> input_array;
@@ -53,10 +53,9 @@ TEST(PDF417HighLevelEncoder, EncodeBinary) {
         input_array, ptr->offset, ptr->count, ptr->startmode, &result);
     EXPECT_EQ(expected, result) << " for case number " << i;
   }
-  CBC_PDF417HighLevelEncoder::Finalize();
 }
 
-TEST(PDF417HighLevelEncoder, EncodeNumeric) {
+TEST(PDF417HighLevelEncoderTest, EncodeNumeric) {
   struct EncodeNumericCase {
     const wchar_t* input;
     int offset;
@@ -106,7 +105,6 @@ TEST(PDF417HighLevelEncoder, EncodeNumeric) {
        18},
   };
 
-  CBC_PDF417HighLevelEncoder::Initialize();
   for (size_t i = 0; i < FX_ArraySize(encode_numeric_cases); ++i) {
     EncodeNumericCase* ptr = &encode_numeric_cases[i];
     WideString input(ptr->input);
@@ -116,10 +114,9 @@ TEST(PDF417HighLevelEncoder, EncodeNumeric) {
                                               &result);
     EXPECT_EQ(expected, result) << " for case number " << i;
   }
-  CBC_PDF417HighLevelEncoder::Finalize();
 }
 
-TEST(PDF417HighLevelEncoder, ConsecutiveDigitCount) {
+TEST(PDF417HighLevelEncoderTest, ConsecutiveDigitCount) {
   struct ConsecutiveDigitCase {
     const wchar_t* input;
     int offset;
@@ -153,7 +150,6 @@ TEST(PDF417HighLevelEncoder, ConsecutiveDigitCount) {
       {L"123FOO45678", 6, 5},
   };
 
-  CBC_PDF417HighLevelEncoder::Initialize();
   for (size_t i = 0; i < FX_ArraySize(consecutive_digit_cases); ++i) {
     ConsecutiveDigitCase* ptr = &consecutive_digit_cases[i];
     WideString input(ptr->input);
@@ -162,10 +158,9 @@ TEST(PDF417HighLevelEncoder, ConsecutiveDigitCount) {
                                                                    ptr->offset);
     EXPECT_EQ(ptr->expected_count, actual_count) << " for case number " << i;
   }
-  CBC_PDF417HighLevelEncoder::Finalize();
 }
 
-TEST(PDF417HighLevelEncoder, ConsecutiveTextCount) {
+TEST(PDF417HighLevelEncoderTest, ConsecutiveTextCount) {
   struct ConsecutiveTextCase {
     const wchar_t* input;
     int offset;
@@ -214,7 +209,6 @@ TEST(PDF417HighLevelEncoder, ConsecutiveTextCount) {
       {L"XXX121XXX12345678901234", 0, 9},
   };
 
-  CBC_PDF417HighLevelEncoder::Initialize();
   for (size_t i = 0; i < FX_ArraySize(consecutive_text_cases); ++i) {
     ConsecutiveTextCase* ptr = &consecutive_text_cases[i];
     WideString input(ptr->input);
@@ -223,7 +217,8 @@ TEST(PDF417HighLevelEncoder, ConsecutiveTextCount) {
                                                                   ptr->offset);
     EXPECT_EQ(ptr->expected_count, actual_count) << " for case number " << i;
   }
-  CBC_PDF417HighLevelEncoder::Finalize();
 }
 
-TEST(PDF417HighLevelEncoder, ConsecutiveBinaryCount) {}
+TEST(PDF417HighLevelEncoderTest, ConsecutiveBinaryCount) {
+  // TODO(tsepez): implement test cases.
+}

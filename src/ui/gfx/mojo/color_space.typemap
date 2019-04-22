@@ -4,12 +4,11 @@
 
 mojom = "//ui/gfx/mojo/color_space.mojom"
 public_headers = [ "//ui/gfx/color_space.h" ]
-traits_headers = [ "//ui/gfx/ipc/color/gfx_param_traits.h" ]
-public_deps = [
-  "//ipc",
-  "//ui/gfx",
+traits_headers = [ "//ui/gfx/mojo/color_space_mojom_traits.h" ]
+sources = [
+  "//ui/gfx/mojo/color_space_mojom_traits.cc",
 ]
-deps = [
-  "//ui/gfx/ipc/color",
+public_deps = [
+  "//ui/gfx",
 ]
 type_mappings = [ "gfx.mojom.ColorSpace=gfx::ColorSpace" ]

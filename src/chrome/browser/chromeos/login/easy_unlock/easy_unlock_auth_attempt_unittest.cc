@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
@@ -36,17 +36,17 @@ const unsigned char kWrappedSecret[] = {
 
 std::string GetSecret() {
   return std::string(reinterpret_cast<const char*>(kSecret),
-                     arraysize(kSecret));
+                     base::size(kSecret));
 }
 
 std::string GetWrappedSecret() {
   return std::string(reinterpret_cast<const char*>(kWrappedSecret),
-                     arraysize(kWrappedSecret));
+                     base::size(kWrappedSecret));
 }
 
 std::string GetSessionKey() {
   return std::string(reinterpret_cast<const char*>(kSessionKey),
-                     arraysize(kSessionKey));
+                     base::size(kSessionKey));
 }
 
 // Fake lock handler to be used in these tests.
@@ -100,6 +100,8 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
     ADD_FAILURE() << "Should not be reached.";
   }
 
+  // TODO(crbug.com/927498): This tests is the only dependency on
+  // ScreenlockBridge::EnableInput. It should be removed.
   void EnableInput() override {
     ASSERT_EQ(STATE_ATTEMPTING_UNLOCK, state_);
     state_ = STATE_UNLOCK_CANCELED;

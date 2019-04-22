@@ -59,6 +59,14 @@ void MockLoginScreenClient::EnrollUserWithExternalBinary(
   }
 }
 
+void MockLoginScreenClient::ValidateParentAccessCode(
+    const AccountId& account_id,
+    const std::string& code,
+    ValidateParentAccessCodeCallback callback) {
+  ValidateParentAccessCode_(account_id, code, callback);
+  std::move(callback).Run(validate_parent_access_code_result_);
+}
+
 std::unique_ptr<MockLoginScreenClient> BindMockLoginScreenClient() {
   auto client = std::make_unique<MockLoginScreenClient>();
   Shell::Get()->login_screen_controller()->SetClient(

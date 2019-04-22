@@ -61,7 +61,7 @@ async_test(t => {
     assert_false(mediaControls(video).classList.contains('audio-only'));
 
     // The buttons should be children of the media button panel.
-    assert_equals(muteButton(video).parentElement.getAttribute('pseudo'), '-internal-media-controls-button-panel');
+    assert_equals(muteButton(video).parentElement.parentElement.getAttribute('pseudo'), '-internal-media-controls-button-panel');
   }
 
   function expectLooksLikeAudio(video) {
@@ -69,7 +69,7 @@ async_test(t => {
     assert_true(mediaControls(video).classList.contains('audio-only'));
 
     // The buttons should be children of the main panel.
-    assert_equals(muteButton(video).parentElement.getAttribute('pseudo'), '-webkit-media-controls-panel');
+    assert_equals(muteButton(video).parentElement.parentElement.getAttribute('pseudo'), '-webkit-media-controls-panel');
   }
 });
 </script>

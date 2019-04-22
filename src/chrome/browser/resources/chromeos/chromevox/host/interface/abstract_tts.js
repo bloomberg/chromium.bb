@@ -60,20 +60,6 @@ cvox.AbstractTts = function() {
    */
   this.propertyStep = {'rate': 0.1, 'pitch': 0.1, 'volume': 0.1};
 
-
-  /** @private */
-
-  if (cvox.AbstractTts.pronunciationDictionaryRegexp_ == undefined) {
-    // Create an expression that matches all words in the pronunciation
-    // dictionary on word boundaries, ignoring case.
-    var words = [];
-    for (var word in cvox.AbstractTts.PRONUNCIATION_DICTIONARY) {
-      words.push(word);
-    }
-    var expr = '\\b(' + words.join('|') + ')\\b';
-    cvox.AbstractTts.pronunciationDictionaryRegexp_ = new RegExp(expr, 'ig');
-  }
-
   if (cvox.AbstractTts.substitutionDictionaryRegexp_ == undefined) {
     // Create an expression that matches all words in the substitution
     // dictionary.
@@ -238,15 +224,6 @@ cvox.AbstractTts.prototype.preprocess = function(text, properties) {
             .format({'COUNT': 1}) :
         text.toUpperCase();
   }
-
-  // Substitute all words in the pronunciation dictionary. This is pretty
-  // efficient because we use a single regexp that matches all words
-  // simultaneously, and it calls a function with each match, which we can
-  // use to look up the replacement in our dictionary.
-  text = text.replace(
-      cvox.AbstractTts.pronunciationDictionaryRegexp_, function(word) {
-        return cvox.AbstractTts.PRONUNCIATION_DICTIONARY[word.toLowerCase()];
-      });
 
   // Expand all repeated characters.
   text = text.replace(
@@ -428,36 +405,6 @@ cvox.AbstractTts.CHARACTER_DICTIONARY = {
   '\n': 'new_line',
   '\\': 'backslash',
   '\u2022': 'bullet'
-};
-
-
-/**
- * Pronunciation dictionary. Each key must be lowercase, its replacement
- * should be spelled out the way most TTS engines will pronounce it
- * correctly. This particular dictionary only handles letters and numbers,
- * no symbols.
- * @type {Object<string>}
- */
-cvox.AbstractTts.PRONUNCIATION_DICTIONARY = {
-  'admob': 'ad-mob',
-  'adsense': 'ad-sense',
-  'adwords': 'ad-words',
-  'angularjs': 'angular j s',
-  'bcc': 'B C C',
-  'cc': 'C C',
-  'chromevox': 'chrome vox',
-  'cr48': 'C R 48',
-  'ctrl': 'control',
-  'doubleclick': 'double-click',
-  'gmail': 'gee mail',
-  'gtalk': 'gee talk',
-  'http': 'H T T P',
-  'https': 'H T T P S',
-  'igoogle': 'eye google',
-  'pagerank': 'page-rank',
-  'username': 'user-name',
-  'www': 'W W W',
-  'youtube': 'you tube'
 };
 
 

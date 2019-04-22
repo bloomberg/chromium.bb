@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context.h"
@@ -146,16 +147,15 @@ void CacheStorageBlobToDiskCache::OnDataPipeReadable(MojoResult unused) {
   auto buffer = base::MakeRefCounted<network::MojoToNetIOBuffer>(
       pending_read_.get(), bytes_to_read);
 
-  net::CompletionCallback cache_write_callback =
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&CacheStorageBlobToDiskCache::DidWriteDataToEntry,
-                         weak_ptr_factory_.GetWeakPtr(), bytes_to_read));
+  net::CompletionOnceCallback cache_write_callback =
+      base::BindOnce(&CacheStorageBlobToDiskCache::DidWriteDataToEntry,
+                     weak_ptr_factory_.GetWeakPtr(), bytes_to_read);
 
-  int rv = entry_->WriteData(disk_cache_body_index_, cache_entry_offset_,
-                             buffer.get(), bytes_to_read, cache_write_callback,
-                             true /* truncate */);
+  int rv = entry_->WriteData(
+      disk_cache_body_index_, cache_entry_offset_, buffer.get(), bytes_to_read,
+      std::move(cache_write_callback), true /* truncate */);
   if (rv != net::ERR_IO_PENDING)
-    std::move(cache_write_callback).Run(rv);
+    CacheStorageBlobToDiskCache::DidWriteDataToEntry(bytes_to_read, rv);
 }
 
 }  // namespace content

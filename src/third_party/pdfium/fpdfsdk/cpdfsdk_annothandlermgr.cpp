@@ -17,6 +17,7 @@
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
 #include "fpdfsdk/cpdfsdk_widgethandler.h"
+#include "public/fpdf_fwlevent.h"
 #include "third_party/base/ptr_util.h"
 
 #ifdef PDF_ENABLE_XFA
@@ -252,6 +253,20 @@ bool CPDFSDK_AnnotHandlerMgr::Annot_OnKillFocus(
     uint32_t nFlag) {
   ASSERT(pAnnot->HasObservable());
   return GetAnnotHandler(pAnnot->Get())->OnKillFocus(pAnnot, nFlag);
+}
+
+bool CPDFSDK_AnnotHandlerMgr::Annot_SetIndexSelected(
+    CPDFSDK_Annot::ObservedPtr* pAnnot,
+    int index,
+    bool selected) {
+  return GetAnnotHandler(pAnnot->Get())
+      ->SetIndexSelected(pAnnot, index, selected);
+}
+
+bool CPDFSDK_AnnotHandlerMgr::Annot_IsIndexSelected(
+    CPDFSDK_Annot::ObservedPtr* pAnnot,
+    int index) {
+  return GetAnnotHandler(pAnnot->Get())->IsIndexSelected(pAnnot, index);
 }
 
 #ifdef PDF_ENABLE_XFA

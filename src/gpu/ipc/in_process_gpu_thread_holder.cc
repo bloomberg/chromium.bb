@@ -4,11 +4,14 @@
 
 #include "gpu/ipc/in_process_gpu_thread_holder.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "gpu/command_buffer/service/mailbox_manager_factory.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_utils.h"
+#include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
@@ -48,8 +51,7 @@ GpuFeatureInfo* InProcessGpuThreadHolder::GetGpuFeatureInfo() {
   return &gpu_feature_info_;
 }
 
-scoped_refptr<CommandBufferTaskExecutor>
-InProcessGpuThreadHolder::GetTaskExecutor() {
+CommandBufferTaskExecutor* InProcessGpuThreadHolder::GetTaskExecutor() {
   if (!task_executor_) {
     base::WaitableEvent completion;
     task_runner()->PostTask(
@@ -58,7 +60,7 @@ InProcessGpuThreadHolder::GetTaskExecutor() {
                        base::Unretained(this), &completion));
     completion.Wait();
   }
-  return task_executor_;
+  return task_executor_.get();
 }
 
 void InProcessGpuThreadHolder::InitializeOnGpuThread(
@@ -66,9 +68,12 @@ void InProcessGpuThreadHolder::InitializeOnGpuThread(
   sync_point_manager_ = std::make_unique<SyncPointManager>();
   scheduler_ =
       std::make_unique<Scheduler>(task_runner(), sync_point_manager_.get());
-  task_executor_ = base::MakeRefCounted<GpuInProcessThreadService>(
-      task_runner(), scheduler_.get(), sync_point_manager_.get(), nullptr,
-      nullptr, gl::GLSurfaceFormat(), gpu_feature_info_, gpu_preferences_);
+  mailbox_manager_ = gles2::CreateMailboxManager(gpu_preferences_);
+  shared_image_manager_ = std::make_unique<SharedImageManager>();
+  task_executor_ = std::make_unique<GpuInProcessThreadService>(
+      task_runner(), scheduler_.get(), sync_point_manager_.get(),
+      mailbox_manager_.get(), nullptr, gl::GLSurfaceFormat(), gpu_feature_info_,
+      gpu_preferences_, shared_image_manager_.get(), nullptr);
 
   completion->Signal();
 }
@@ -77,6 +82,7 @@ void InProcessGpuThreadHolder::DeleteOnGpuThread() {
   task_executor_.reset();
   scheduler_.reset();
   sync_point_manager_.reset();
+  shared_image_manager_.reset();
 }
 
 }  // namespace gpu

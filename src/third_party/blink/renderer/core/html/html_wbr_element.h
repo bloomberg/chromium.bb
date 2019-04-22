@@ -41,10 +41,10 @@ class HTMLWBRElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLWBRElement);
 
- private:
   explicit HTMLWBRElement(Document&);
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+ private:
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 };
 
 }  // namespace blink

@@ -21,7 +21,8 @@ import subprocess
 import sys
 import urllib2
 
-GS_BASE_URL = 'https://storage.googleapis.com/chromeos-prebuilt/afdo-job/llvm'
+GS_HTTP_URL = 'https://storage.googleapis.com'
+GS_BASE_URL = GS_HTTP_URL + '/chromeos-prebuilt/afdo-job/llvm'
 PROFILE_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
 LOCAL_PROFILE_PATH = os.path.join(PROFILE_DIRECTORY, 'afdo.prof')
 
@@ -75,7 +76,12 @@ def RetrieveProfile(desired_profile_name, out_path):
   # properly.
   ext = os.path.splitext(desired_profile_name)[1]
   compressed_path = out_path + ext
-  gs_url = GS_BASE_URL + '/' + desired_profile_name
+  gs_prefix = 'gs://'
+  if not desired_profile_name.startswith(gs_prefix):
+    gs_url = GS_BASE_URL + '/' + desired_profile_name
+  else:
+    gs_url = GS_HTTP_URL + '/' + desired_profile_name[len(gs_prefix):]
+
   with contextlib.closing(urllib2.urlopen(gs_url)) as u:
     with open(compressed_path, 'wb') as f:
       while True:

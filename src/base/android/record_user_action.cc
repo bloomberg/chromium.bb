@@ -21,7 +21,6 @@ namespace android {
 
 static void JNI_RecordUserAction_RecordUserAction(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_action) {
   RecordComputedAction(ConvertJavaStringToUTF8(env, j_action));
 }
@@ -35,7 +34,6 @@ static void OnActionRecorded(const JavaRef<jobject>& callback,
 
 static jlong JNI_RecordUserAction_AddActionCallbackForTesting(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& callback) {
   // Create a wrapper for the ActionCallback, so it can life on the heap until
   // RemoveActionCallbackForTesting() is called.
@@ -47,7 +45,6 @@ static jlong JNI_RecordUserAction_AddActionCallbackForTesting(
 
 static void JNI_RecordUserAction_RemoveActionCallbackForTesting(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jlong callback_id) {
   DCHECK(callback_id);
   auto* wrapper = reinterpret_cast<ActionCallbackWrapper*>(callback_id);

@@ -6,50 +6,70 @@ Tests that adding a property is undone properly.
 element.style { ()
 
 [expanded] 
-.container { (<style>…</style>)
+.container { (<style>)
     font-weight: bold;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 (After adding property)
 [expanded] 
 element.style { ()
 
 [expanded] 
-.container { (<style>…</style>)
+.container { (<style>)
     font-weight: bold;
     margin-left: 2px;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 (After undo)
 [expanded] 
 element.style { ()
 
 [expanded] 
-.container { (<style>…</style>)
+.container { (<style>)
     font-weight: bold;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 (After redo)
 [expanded] 
 element.style { ()
 
 [expanded] 
-.container { (<style>…</style>)
+.container { (<style>)
     font-weight: bold;
     margin-left: 2px;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 === First property ===
 (Initial value)
@@ -57,20 +77,25 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (<style>…</style>)
+.container { (<style>)
     font-weight: bold;
     margin-left: 2px;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 (After adding property)
 [expanded] 
 element.style { ()
 
 [expanded] 
-.container { (<style>…</style>)
+.container { (<style>)
     margin-top: 0px;
     font-weight: bold;
     margin-left: 2px;
@@ -78,13 +103,18 @@ element.style { ()
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 (After undo)
 [expanded] 
 element.style { ()
 
 [expanded] 
-.container { (<style>…</style>)
+.container { (<style>)
     font-weight: bold;
     margin-left: 2px;
 
@@ -92,12 +122,17 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 (After redo)
 [expanded] 
 element.style { ()
 
 [expanded] 
-.container { (<style>…</style>)
+.container { (<style>)
     margin-top: 0px;
     font-weight: bold;
     margin-left: 2px;
@@ -105,6 +140,11 @@ element.style { ()
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 === Middle property ===
 (Initial value)
@@ -112,7 +152,7 @@ div { (user agent stylesheet)
 element.style { ()
 
 [expanded] 
-.container { (<style>…</style>)
+.container { (<style>)
     margin-top: 0px;
     font-weight: bold;
     margin-left: 2px;
@@ -120,13 +160,18 @@ element.style { ()
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 (After adding property)
 [expanded] 
 element.style { ()
 
 [expanded] 
-.container { (<style>…</style>)
+.container { (<style>)
     margin-top: 0px;
     margin-right: 1px;
     font-weight: bold;
@@ -135,13 +180,18 @@ element.style { ()
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 (After undo)
 [expanded] 
 element.style { ()
 
 [expanded] 
-.container { (<style>…</style>)
+.container { (<style>)
     margin-top: 0px;
     font-weight: bold;
     margin-left: 2px;
@@ -150,12 +200,17 @@ element.style { ()
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 (After redo)
 [expanded] 
 element.style { ()
 
 [expanded] 
-.container { (<style>…</style>)
+.container { (<style>)
     margin-top: 0px;
     margin-right: 1px;
     font-weight: bold;
@@ -164,5 +219,10 @@ element.style { ()
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 

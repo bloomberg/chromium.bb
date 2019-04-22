@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/stl_util.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
@@ -82,7 +83,7 @@ const char PowerMetricsReporter::kLidClosedSuspendCountName[] =
 void PowerMetricsReporter::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   metrics::DailyEvent::RegisterPref(registry, prefs::kPowerMetricsDailySample);
-  for (size_t i = 0; i < arraysize(kDailyCounts); ++i)
+  for (size_t i = 0; i < base::size(kDailyCounts); ++i)
     registry->RegisterIntegerPref(kDailyCounts[i].pref_name, 0);
 }
 
@@ -95,7 +96,7 @@ PowerMetricsReporter::PowerMetricsReporter(
           std::make_unique<metrics::DailyEvent>(pref_service_,
                                                 prefs::kPowerMetricsDailySample,
                                                 kDailyEventIntervalName)) {
-  for (size_t i = 0; i < arraysize(kDailyCounts); ++i) {
+  for (size_t i = 0; i < base::size(kDailyCounts); ++i) {
     daily_counts_[kDailyCounts[i].pref_name] =
         pref_service_->GetInteger(kDailyCounts[i].pref_name);
   }
@@ -143,14 +144,14 @@ void PowerMetricsReporter::ReportDailyMetrics(
     metrics::DailyEvent::IntervalType type) {
   // Don't send metrics on first run or if the clock is changed.
   if (type == metrics::DailyEvent::IntervalType::DAY_ELAPSED) {
-    for (size_t i = 0; i < arraysize(kDailyCounts); ++i) {
+    for (size_t i = 0; i < base::size(kDailyCounts); ++i) {
       base::UmaHistogramCounts100(kDailyCounts[i].metric_name,
                                   daily_counts_[kDailyCounts[i].pref_name]);
     }
   }
 
   // Reset all counts now that they've been reported.
-  for (size_t i = 0; i < arraysize(kDailyCounts); ++i) {
+  for (size_t i = 0; i < base::size(kDailyCounts); ++i) {
     const char* pref_name = kDailyCounts[i].pref_name;
     AddToCount(pref_name, -1 * daily_counts_[pref_name]);
   }

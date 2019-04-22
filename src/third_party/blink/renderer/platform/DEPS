@@ -16,6 +16,7 @@ include_rules = [
     "+base/json",
     "+base/location.h",
     "+base/logging.h",
+    "+base/mac/mac_util.h",
     "+base/memory",
     "+base/observer_list.h",
     "+base/memory/shared_memory.h",
@@ -46,6 +47,7 @@ include_rules = [
     "+base/unguessable_token.h",
     "+base/values.h",
     "+base/lazy_instance.h",
+    "+cc/paint/text_holder.h",
     "+net/base/filename_util.h",
     "+net/http/http_util.h",
     "+net/http/http_request_headers.h",
@@ -74,6 +76,10 @@ include_rules = [
 ]
 
 specific_include_rules = {
+    "crypto\.(cc|h)": [
+        "+crypto",
+        "+third_party/boringssl/src/include",
+    ],
     "web_url_error\.cc": [
         "+net/base/net_errors.h"
     ],

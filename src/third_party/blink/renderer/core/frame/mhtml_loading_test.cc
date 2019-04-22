@@ -32,7 +32,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/renderer/core/dom/class_collection.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -44,6 +43,7 @@
 #include "third_party/blink/renderer/core/frame/location.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -62,22 +62,22 @@ class MHTMLLoadingTest : public testing::Test {
  protected:
   void SetUp() override { helper_.Initialize(); }
 
-  void TearDown() override {
-    platform_->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
-  }
-
-  void RegisterMockedURLLoad(const std::string& url,
-                             const std::string& file_name) {
-    url_test_helpers::RegisterMockedURLLoad(
-        ToKURL(url),
-        test::CoreTestDataPath(WebString::FromUTF8("mhtml/" + file_name)),
-        WebString::FromUTF8("multipart/related"));
-  }
-
-  void LoadURLInTopFrame(const WebURL& url) {
-    frame_test_helpers::LoadFrame(helper_.GetWebView()->MainFrameImpl(),
-                                  url.GetString().Utf8().data());
+  void LoadURLInTopFrame(const WebURL& url, const std::string& file_name) {
+    scoped_refptr<SharedBuffer> buffer = test::ReadFromFile(
+        test::CoreTestDataPath(WebString::FromUTF8("mhtml/" + file_name)));
+    WebLocalFrameImpl* frame = helper_.GetWebView()->MainFrameImpl();
+    auto params = std::make_unique<WebNavigationParams>();
+    params->url = url;
+    params->response = WebURLResponse(url);
+    params->response.SetMimeType("multipart/related");
+    params->response.SetHttpStatusCode(200);
+    params->response.SetExpectedContentLength(buffer->size());
+    auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
+    body_loader->Write(*buffer);
+    body_loader->Finish();
+    params->body_loader = std::move(body_loader);
+    frame->CommitNavigation(std::move(params), nullptr /* extra_data */);
+    frame_test_helpers::PumpPendingRequestsForFrameToLoad(frame);
   }
 
   Page* GetPage() const { return helper_.GetWebView()->GetPage(); }
@@ -92,12 +92,9 @@ class MHTMLLoadingTest : public testing::Test {
 TEST_F(MHTMLLoadingTest, CheckDomain) {
   const char kFileURL[] = "file:///simple_test.mht";
 
-  // Register the mocked frame and load it.
-  WebURL url = ToKURL(kFileURL);
-  RegisterMockedURLLoad(kFileURL, "simple_test.mht");
-  LoadURLInTopFrame(url);
+  LoadURLInTopFrame(ToKURL(kFileURL), "simple_test.mht");
   ASSERT_TRUE(GetPage());
-  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
@@ -113,19 +110,18 @@ TEST_F(MHTMLLoadingTest, CheckDomain) {
 TEST_F(MHTMLLoadingTest, EnforceSandboxFlags) {
   const char kURL[] = "http://www.example.com";
 
-  // Register the mocked frame and load it.
-  RegisterMockedURLLoad(kURL, "page_with_javascript.mht");
-  LoadURLInTopFrame(ToKURL(kURL));
+  LoadURLInTopFrame(ToKURL(kURL), "page_with_javascript.mht");
   ASSERT_TRUE(GetPage());
-  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
 
   // Full sandboxing with the exception to new top-level windows should be
   // turned on.
-  EXPECT_EQ(kSandboxAll & ~(kSandboxPopups |
-                            kSandboxPropagatesToAuxiliaryBrowsingContexts),
+  EXPECT_EQ(WebSandboxFlags::kAll &
+                ~(WebSandboxFlags::kPopups |
+                  WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts),
             document->GetSandboxFlags());
 
   // MHTML document should be loaded into unique origin.
@@ -138,13 +134,14 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlags) {
 
   // Make sure the subframe is also sandboxed.
   LocalFrame* child_frame =
-      ToLocalFrame(GetPage()->MainFrame()->Tree().FirstChild());
+      To<LocalFrame>(GetPage()->MainFrame()->Tree().FirstChild());
   ASSERT_TRUE(child_frame);
   Document* child_document = child_frame->GetDocument();
   ASSERT_TRUE(child_document);
 
-  EXPECT_EQ(kSandboxAll & ~(kSandboxPopups |
-                            kSandboxPropagatesToAuxiliaryBrowsingContexts),
+  EXPECT_EQ(WebSandboxFlags::kAll &
+                ~(WebSandboxFlags::kPopups |
+                  WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts),
             child_document->GetSandboxFlags());
 
   // MHTML document should be loaded into unique origin.
@@ -159,19 +156,18 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlags) {
 TEST_F(MHTMLLoadingTest, EnforceSandboxFlagsInXSLT) {
   const char kURL[] = "http://www.example.com";
 
-  // Register the mocked frame and load it.
-  RegisterMockedURLLoad(kURL, "xslt.mht");
-  LoadURLInTopFrame(ToKURL(kURL));
+  LoadURLInTopFrame(ToKURL(kURL), "xslt.mht");
   ASSERT_TRUE(GetPage());
-  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
 
   // Full sandboxing with the exception to new top-level windows should be
   // turned on.
-  EXPECT_EQ(kSandboxAll & ~(kSandboxPopups |
-                            kSandboxPropagatesToAuxiliaryBrowsingContexts),
+  EXPECT_EQ(WebSandboxFlags::kAll &
+                ~(WebSandboxFlags::kPopups |
+                  WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts),
             document->GetSandboxFlags());
 
   // MHTML document should be loaded into unique origin.
@@ -183,11 +179,9 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlagsInXSLT) {
 TEST_F(MHTMLLoadingTest, ShadowDom) {
   const char kURL[] = "http://www.example.com";
 
-  // Register the mocked frame and load it.
-  RegisterMockedURLLoad(kURL, "shadow.mht");
-  LoadURLInTopFrame(ToKURL(kURL));
+  LoadURLInTopFrame(ToKURL(kURL), "shadow.mht");
   ASSERT_TRUE(GetPage());
-  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
@@ -211,11 +205,9 @@ TEST_F(MHTMLLoadingTest, ShadowDom) {
 TEST_F(MHTMLLoadingTest, FormControlElements) {
   const char kURL[] = "http://www.example.com";
 
-  // Register the mocked frame and load it.
-  RegisterMockedURLLoad(kURL, "form.mht");
-  LoadURLInTopFrame(ToKURL(kURL));
+  LoadURLInTopFrame(ToKURL(kURL), "form.mht");
   ASSERT_TRUE(GetPage());
-  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
@@ -232,11 +224,9 @@ TEST_F(MHTMLLoadingTest, FormControlElements) {
 TEST_F(MHTMLLoadingTest, LoadMHTMLContainingSoftLineBreaks) {
   const char kURL[] = "http://www.example.com";
 
-  // Register the mocked frame and load it.
-  RegisterMockedURLLoad(kURL, "soft_line_break.mht");
-  LoadURLInTopFrame(ToKURL(kURL));
+  LoadURLInTopFrame(ToKURL(kURL), "soft_line_break.mht");
   ASSERT_TRUE(GetPage());
-  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
   // We should not have problem to concatenate header lines separated by soft
   // line breaks.

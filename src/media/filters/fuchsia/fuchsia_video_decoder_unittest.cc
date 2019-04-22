@@ -5,6 +5,7 @@
 #include "media/filters/fuchsia/fuchsia_video_decoder.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
@@ -16,7 +17,9 @@ namespace media {
 
 class FuchsiaVideoDecoderTest : public testing::Test {
  public:
-  FuchsiaVideoDecoderTest() { decoder_ = CreateFuchsiaVideoDecoder(); }
+  FuchsiaVideoDecoderTest() {
+    decoder_ = CreateFuchsiaVideoDecoderForTests(/*enable_sw_decoding=*/true);
+  }
   ~FuchsiaVideoDecoderTest() override = default;
 
   bool Initialize(VideoDecoderConfig config) WARN_UNUSED_RESULT {
@@ -32,7 +35,7 @@ class FuchsiaVideoDecoderTest : public testing::Test {
             &init_cb_result, &run_loop),
         base::BindRepeating(&FuchsiaVideoDecoderTest::OnVideoFrame,
                             base::Unretained(this)),
-        VideoDecoder::WaitingForDecryptionKeyCB());
+        base::NullCallback());
 
     run_loop.Run();
     return init_cb_result;
@@ -82,11 +85,9 @@ class FuchsiaVideoDecoderTest : public testing::Test {
   base::RepeatingClosure on_frame_;
 };
 
-// All tests are disabled because they currently depend on HW decoder that
-// doesn't work on test bots.
-TEST_F(FuchsiaVideoDecoderTest, DISABLED_CreateAndDestroy) {}
+TEST_F(FuchsiaVideoDecoderTest, CreateAndDestroy) {}
 
-TEST_F(FuchsiaVideoDecoderTest, DISABLED_CreateInitDestroy) {
+TEST_F(FuchsiaVideoDecoderTest, CreateInitDestroy) {
   EXPECT_TRUE(Initialize(TestVideoConfig::NormalH264()));
 }
 
@@ -100,7 +101,7 @@ TEST_F(FuchsiaVideoDecoderTest, DISABLED_VP9) {
   EXPECT_EQ(num_output_frames_, 1);
 }
 
-TEST_F(FuchsiaVideoDecoderTest, DISABLED_H264) {
+TEST_F(FuchsiaVideoDecoderTest, H264) {
   ASSERT_TRUE(Initialize(TestVideoConfig::NormalH264()));
 
   ASSERT_TRUE(ReadAndDecodeFrame("h264-320x180-frame-0") == DecodeStatus::OK);

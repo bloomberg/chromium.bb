@@ -150,8 +150,8 @@ void LayoutListMarker::UpdateLayout() {
   SetMarginStart(LayoutUnit());
   SetMarginEnd(LayoutUnit());
 
-  Length start_margin = StyleRef().MarginStart();
-  Length end_margin = StyleRef().MarginEnd();
+  const Length& start_margin = StyleRef().MarginStart();
+  const Length& end_margin = StyleRef().MarginEnd();
   if (start_margin.IsFixed())
     SetMarginStart(LayoutUnit(start_margin.Value()));
   if (end_margin.IsFixed())
@@ -282,8 +282,8 @@ void LayoutListMarker::UpdateMargins() {
         InlineMarginsForOutside(style, IsImage(), MinPreferredLogicalWidth());
   }
 
-  Length start_length(margin_start, kFixed);
-  Length end_length(margin_end, kFixed);
+  Length start_length = Length::Fixed(margin_start);
+  Length end_length = Length::Fixed(margin_end);
 
   if (start_length != style.MarginStart() || end_length != style.MarginEnd()) {
     scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(style);

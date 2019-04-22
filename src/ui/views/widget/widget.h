@@ -20,6 +20,7 @@
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/native_widget_delegate.h"
@@ -42,7 +43,6 @@ class DefaultThemeProvider;
 class GestureRecognizer;
 class InputMethod;
 class Layer;
-class NativeTheme;
 class OSExchangeData;
 class ThemeProvider;
 }  // namespace ui
@@ -134,12 +134,27 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     ANIMATE_NONE = 0x4,
   };
 
+  // Represents the reason a Widget was closed, if it is known.
+  //
+  // For backwards compatibility, we default to kUnspecified when
+  // Widget::Close() is called. Note that we do not currently handle close
+  // reason for menu or for the main Chrome browser, as we have no reason to
+  // specifically differentiate those yet.
+  //
+  // Add additional values as needed.
+  enum class ClosedReason {
+    kUnspecified = 0,      // No reason was given for the widget closing.
+    kEscKeyPressed,        // The ESC key was pressed to cancel the widget.
+    kCloseButtonClicked,   // The [X] button was explicitly clicked.
+    kLostFocus,            // The widget destroyed itself when it lost focus.
+    kCancelButtonClicked,  // The widget's cancel button was clicked.
+    kAcceptButtonClicked   // The widget's done/accept button was clicked.
+  };
+
   struct VIEWS_EXPORT InitParams {
     enum Type {
       TYPE_WINDOW,      // A decorated Window, like a frame window.
                         // Widgets of TYPE_WINDOW will have a NonClientView.
-      TYPE_PANEL,       // Always on top window managed by PanelManager.
-                        // Widgets of TYPE_PANEL will have a NonClientView.
       TYPE_WINDOW_FRAMELESS,
                         // An undecorated Window.
       TYPE_CONTROL,     // A control, like a button.
@@ -381,7 +396,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator) const;
 
   // Forwarded from the RootView so that the widget can do any cleanup.
-  void ViewHierarchyChanged(const View::ViewHierarchyChangedDetails& details);
+  void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details);
 
   // Called right before changing the widget's parent NativeView to do any
   // cleanup.
@@ -468,8 +483,15 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // be rectangular.
   void SetShape(std::unique_ptr<ShapeRects> shape);
 
-  // Hides the widget then closes it after a return to the message loop.
-  virtual void Close();
+  // Equivalent to CloseWithReason(ClosedReason::kUnspecified).
+  // DEPRECATED: Please use CloseWithReason() instead.
+  void Close();
+
+  // Hides the widget, then closes it after a return to the message loop,
+  // specifying the reason for it having been closed.
+  // Note that while you can pass ClosedReason::kUnspecified, it is highly
+  // discouraged and only supported for backwards-compatibility with Close().
+  void CloseWithReason(ClosedReason closed_reason);
 
   // TODO(beng): Move off public API.
   // Closes the widget immediately. Compare to |Close|. This will destroy the
@@ -480,6 +502,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Whether the widget has been asked to close itself. In particular this is
   // set to true after Close() has been invoked on the NativeWidget.
   bool IsClosed() const;
+
+  // Returns the reason the widget was closed, if it was specified.
+  ClosedReason closed_reason() const { return closed_reason_; }
 
   // Shows the widget. The widget is activated if during initialization the
   // can_activate flag in the InitParams structure is set to true.
@@ -529,6 +554,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Accessors for fullscreen state.
   void SetFullscreen(bool fullscreen);
   bool IsFullscreen() const;
+
+  // macOS: Sets whether the window can share fullscreen windows' spaces.
+  void SetCanAppearInExistingFullscreenSpaces(
+      bool can_appear_in_existing_fullscreen_spaces);
 
   // Sets the opacity of the widget. This may allow widgets behind the widget
   // in the Z-order to become visible, depending on the capabilities of the
@@ -603,6 +632,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // redrawn.
   virtual void SchedulePaintInRect(const gfx::Rect& rect);
 
+  // Schedule a layout to occur. This is called by RootView, client code should
+  // not need to call this.
+  void ScheduleLayout();
+
   // Sets the currently visible cursor. If |cursor| is NULL, the cursor used
   // before the current is restored.
   void SetCursor(gfx::NativeCursor cursor);
@@ -621,6 +654,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Tell the window to update its icon from the delegate.
   void UpdateWindowIcon();
+
+  // Shows the platform specific emoji picker for this widget.
+  void ShowEmojiPanel();
 
   // Retrieves the focus traversable for this widget.
   FocusTraversable* GetFocusTraversable();
@@ -677,7 +713,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   }
   const ClientView* client_view() const {
     // non_client_view_ may be NULL, especially during creation.
-    return non_client_view_ ? non_client_view_->client_view() : NULL;
+    return non_client_view_ ? non_client_view_->client_view() : nullptr;
   }
 
   ui::Compositor* GetCompositor() {
@@ -767,6 +803,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Called when the delegate's CanResize or CanMaximize changes.
   void OnSizeConstraintsChanged();
 
+  // Called when WidgetDelegate::CanActivate() changes.
+  void OnCanActivateChanged();
+
   // Notification that our owner is closing.
   // NOTE: this is not invoked for aura as it's currently not needed there.
   // Under aura menus close by way of activation getting reset when the owner
@@ -780,6 +819,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   bool IsModal() const override;
   bool IsDialogBox() const override;
   bool CanActivate() const override;
+  bool IsNativeWidgetInitialized() const override;
   bool IsAlwaysRenderAsActive() const override;
   void SetAlwaysRenderAsActive(bool always_render_as_active) override;
   bool OnNativeWidgetActivationChanged(bool active) override;
@@ -787,7 +827,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void OnNativeBlur() override;
   void OnNativeWidgetVisibilityChanging(bool visible) override;
   void OnNativeWidgetVisibilityChanged(bool visible) override;
-  void OnNativeWidgetCreated(bool desktop_widget) override;
+  void OnNativeWidgetCreated() override;
   void OnNativeWidgetDestroying() override;
   void OnNativeWidgetDestroyed() override;
   gfx::Size GetMinimumSize() const override;
@@ -808,7 +848,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool ExecuteCommand(int command_id) override;
   bool HasHitTestMask() const override;
-  void GetHitTestMask(gfx::Path* mask) const override;
+  void GetHitTestMask(SkPath* mask) const override;
   Widget* AsWidget() override;
   const Widget* AsWidget() const override;
   bool SetInitialFocus(ui::WindowShowState show_state) override;
@@ -817,6 +857,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       gfx::NativeView child,
       ui::Layer* child_layer,
       const gfx::Point& location) override;
+  void LayoutRootViewIfNecessary() override;
 
   // Overridden from ui::EventSource:
   ui::EventSink* GetEventSink() override;
@@ -847,8 +888,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual void OnDragComplete();
 
  private:
-  friend class ComboboxTest;
   friend class ButtonTest;
+  friend class ComboboxTest;
   friend class TextfieldTest;
   friend class ViewAuraTest;
   friend void DisableActivationChangeHandlingForTests();
@@ -879,7 +920,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   static bool g_disable_activation_change_handling_;
 
-  internal::NativeWidgetPrivate* native_widget_;
+  internal::NativeWidgetPrivate* native_widget_ = nullptr;
 
   base::ObserverList<WidgetObserver> observers_;
 
@@ -887,7 +928,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Non-owned pointer to the Widget's delegate. If a NULL delegate is supplied
   // to Init() a default WidgetDelegate is created.
-  WidgetDelegate* widget_delegate_;
+  WidgetDelegate* widget_delegate_ = nullptr;
 
   // The root of the View hierarchy attached to this window.
   // WARNING: see warning in tooltip_manager_ for ordering dependencies with
@@ -898,7 +939,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // window controls, sizing borders etc). To use an implementation other than
   // the default, this class must be sub-classed and this value set to the
   // desired implementation before calling |InitWindow()|.
-  NonClientView* non_client_view_;
+  NonClientView* non_client_view_ = nullptr;
 
   // The focus manager keeping track of focus for this Widget and any of its
   // children.  NULL for non top-level widgets.
@@ -911,28 +952,33 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Valid for the lifetime of RunShellDrag(), indicates the view the drag
   // started from.
-  View* dragged_view_;
+  View* dragged_view_ = nullptr;
 
   // See class documentation for Widget above for a note about ownership.
-  InitParams::Ownership ownership_;
+  InitParams::Ownership ownership_ = InitParams::NATIVE_WIDGET_OWNS_WIDGET;
 
   // See set_is_secondary_widget().
-  bool is_secondary_widget_;
+  bool is_secondary_widget_ = true;
 
   // The current frame type in use by this window. Defaults to
   // FRAME_TYPE_DEFAULT.
-  FrameType frame_type_;
+  FrameType frame_type_ = FRAME_TYPE_DEFAULT;
 
   // True when the window should be rendered as active, regardless of whether
   // or not it actually is.
-  bool always_render_as_active_;
+  bool always_render_as_active_ = false;
 
   // Set to true if the widget is in the process of closing.
-  bool widget_closed_;
+  bool widget_closed_ = false;
+
+  // The reason the widget was closed.
+  // Note that this may be ClosedReason::kUnspecified if the deprecated Close()
+  // method was called rather than CloseWithReason().
+  ClosedReason closed_reason_ = ClosedReason::kUnspecified;
 
   // The saved "show" state for this window. See note in SetInitialBounds
   // that explains why we save this.
-  ui::WindowShowState saved_show_state_;
+  ui::WindowShowState saved_show_state_ = ui::SHOW_STATE_DEFAULT;
 
   // The restored bounds used for the initial show. This is only used if
   // |saved_show_state_| is maximized.
@@ -941,46 +987,47 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Focus is automatically set to the view provided by the delegate
   // when the widget is shown. Set this value to false to override
   // initial focus for the widget.
-  bool focus_on_creation_;
+  bool focus_on_creation_ = true;
 
   // See |is_top_level()| accessor.
-  bool is_top_level_;
+  bool is_top_level_ = false;
 
   // Tracks whether native widget has been initialized.
-  bool native_widget_initialized_;
+  bool native_widget_initialized_ = false;
 
   // Whether native widget has been destroyed.
-  bool native_widget_destroyed_;
+  bool native_widget_destroyed_ = false;
 
   // TODO(beng): Remove NativeWidgetGtk's dependence on these:
   // If true, the mouse is currently down.
-  bool is_mouse_button_pressed_;
+  bool is_mouse_button_pressed_ = false;
 
   // True if capture losses should be ignored.
-  bool ignore_capture_loss_;
+  bool ignore_capture_loss_ = false;
 
   // TODO(beng): Remove NativeWidgetGtk's dependence on these:
   // The following are used to detect duplicate mouse move events and not
   // deliver them. Displaying a window may result in the system generating
   // duplicate move events even though the mouse hasn't moved.
-  bool last_mouse_event_was_move_;
+  bool last_mouse_event_was_move_ = false;
   gfx::Point last_mouse_event_position_;
 
   // True if event capture should be released on a mouse up event. Default is
   // true.
-  bool auto_release_capture_;
+  bool auto_release_capture_ = true;
 
   // See description in GetViewsWithLayers().
   View::Views views_with_layers_;
 
   // Does |views_with_layers_| need updating?
-  bool views_with_layers_dirty_;
+  bool views_with_layers_dirty_ = false;
 
   // True when window movement via mouse interaction with the frame should be
   // disabled.
-  bool movement_disabled_;
+  bool movement_disabled_ = false;
 
-  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> observer_manager_;
+  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> observer_manager_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

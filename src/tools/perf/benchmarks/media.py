@@ -28,9 +28,6 @@ class _MediaBenchmark(perf_benchmark.PerfBenchmark):
   """Base class for TBMv2-based media benchmarks (MediaDesktop and
   MediaMobile)."""
 
-  def CreateStorySet(self, options):
-    return page_sets.MediaCasesStorySet(measure_memory=True)
-
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
 
@@ -62,11 +59,14 @@ class _MediaBenchmark(perf_benchmark.PerfBenchmark):
     return not _IGNORED_STATS_RE.search(name)
 
 
-@benchmark.Info(emails=['johnchen@chromium.org', 'crouleau@chromium.org'],
-                 component='Internals>Media')
+@benchmark.Info(emails=['dalecurtis@chromium.org'],
+                component='Internals>Media')
 class MediaDesktop(_MediaBenchmark):
   """Obtains media performance for key user scenarios on desktop."""
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
+
+  def CreateStorySet(self, options):
+    return page_sets.MediaCasesDesktopStorySet(measure_memory=True)
 
   @classmethod
   def Name(cls):
@@ -74,14 +74,15 @@ class MediaDesktop(_MediaBenchmark):
 
 
 # If any story is failing on svelte, please only disable on svelte.
-@benchmark.Info(emails=['johnchen@chromium.org', 'crouleau@chromium.org'],
-                 component='Internals>Media')
+@benchmark.Info(emails=['dalecurtis@chromium.org'],
+                component='Internals>Media')
 class MediaMobile(_MediaBenchmark):
   """Obtains media performance for key user scenarios on mobile devices."""
 
-  tag = 'android'
-  options = {'story_tag_filter_exclude': 'is_4k,is_50fps'}
   SUPPORTED_PLATFORMS = [story.expectations.ANDROID_NOT_WEBVIEW]
+
+  def CreateStorySet(self, options):
+    return page_sets.MediaCasesMobileStorySet(measure_memory=True)
 
   @classmethod
   def Name(cls):

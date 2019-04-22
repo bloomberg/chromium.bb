@@ -164,7 +164,7 @@ TEST_F(SVGImageTest, SupportsSubsequenceCaching) {
   Load(kAnimatedDocument, kShouldPause);
   PumpFrame();
   LocalFrame* local_frame =
-      ToLocalFrame(GetImage().GetPageForTesting()->MainFrame());
+      To<LocalFrame>(GetImage().GetPageForTesting()->MainFrame());
   EXPECT_TRUE(local_frame->GetDocument()->IsSVGDocument());
   LayoutObject* svg_root = local_frame->View()->GetLayoutView()->FirstChild();
   EXPECT_TRUE(svg_root->IsSVGRoot());
@@ -176,7 +176,7 @@ TEST_F(SVGImageTest, JankTrackerDisabled) {
   const bool kDontPause = false;
   Load("<svg xmlns='http://www.w3.org/2000/svg'></svg>", kDontPause);
   LocalFrame* local_frame =
-      ToLocalFrame(GetImage().GetPageForTesting()->MainFrame());
+      To<LocalFrame>(GetImage().GetPageForTesting()->MainFrame());
   EXPECT_TRUE(local_frame->GetDocument()->IsSVGDocument());
   auto& jank_tracker = local_frame->View()->GetJankTracker();
   EXPECT_FALSE(jank_tracker.IsActive());
@@ -191,17 +191,18 @@ TEST_F(SVGImageTest, SetSizeOnVisualViewport) {
       kDontPause);
   PumpFrame();
   LocalFrame* local_frame =
-      ToLocalFrame(GetImage().GetPageForTesting()->MainFrame());
+      To<LocalFrame>(GetImage().GetPageForTesting()->MainFrame());
   ASSERT_FALSE(local_frame->View()->Size().IsEmpty());
   EXPECT_EQ(local_frame->View()->Size(),
             GetImage().GetPageForTesting()->GetVisualViewport().Size());
 }
 
-class SVGImagePageVisibilityTest : public SimTest {};
+class SVGImageSimTest : public SimTest {};
 
-TEST_F(SVGImagePageVisibilityTest, PageVisibilityHiddenToVisible) {
+TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   SimRequest main_resource("https://example.com/", "text/html");
-  SimRequest image_resource("https://example.com/image.svg", "image/svg+xml");
+  SimSubresourceRequest image_resource("https://example.com/image.svg",
+                                       "image/svg+xml");
   LoadURL("https://example.com/");
   main_resource.Complete("<img src='image.svg' width='100' id='image'>");
   image_resource.Complete(kAnimatedDocument);
@@ -234,7 +235,7 @@ TEST_F(SVGImagePageVisibilityTest, PageVisibilityHiddenToVisible) {
   // Set page visibility to 'hidden', and then wait for the animation timer to
   // fire. This should suspend the image animation. (Suspend the image's
   // animation timeline.)
-  WebView().SetVisibilityState(mojom::PageVisibilityState::kHidden, false);
+  WebView().SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
   test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());
 
@@ -242,12 +243,34 @@ TEST_F(SVGImagePageVisibilityTest, PageVisibilityHiddenToVisible) {
 
   // Set page visibility to 'visible' - this should schedule a new animation
   // frame and resume the image animation.
-  WebView().SetVisibilityState(mojom::PageVisibilityState::kVisible, false);
+  WebView().SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
   test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());
   Compositor().BeginFrame();
 
   EXPECT_FALSE(svg_image_chrome_client.IsSuspended());
+}
+
+TEST_F(SVGImageSimTest, TwoImagesSameSVGImageDifferentSize) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimSubresourceRequest image_resource("https://example.com/image.svg",
+                                       "image/svg+xml");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <img src="image.svg" style="width: 100px">
+    <img src="image.svg" style="width: 200px">
+  )HTML");
+  image_resource.Complete(R"SVG(
+    <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+       <rect fill="green" width="100" height="100"/>
+    </svg>
+  )SVG");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  // The previous frame should result in a stable state and should not schedule
+  // new visual updates.
+  EXPECT_FALSE(Compositor().NeedsBeginFrame());
 }
 
 }  // namespace blink

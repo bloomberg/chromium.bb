@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 
@@ -61,6 +62,13 @@ class VIZ_COMMON_EXPORT BeginFrameObserver {
 
   // Whether the observer also wants to receive animate_only BeginFrames.
   virtual bool WantsAnimateOnlyBeginFrames() const = 0;
+
+  // Indicates whether this observer is the root frame sink. This helps in
+  // a workaround for input jank, allowing us to deliver BeginFrames to the
+  // root last, avoiding a race.
+  // TODO(ericrk): Remove this once we have a longer-term fix.
+  // https://crbug.com/947717
+  virtual bool IsRoot() const;
 };
 
 // Simple base class which implements a BeginFrameObserver which checks the
@@ -298,6 +306,12 @@ class VIZ_COMMON_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
 
   void OnSetBeginFrameSourcePaused(bool paused);
   void OnBeginFrame(const BeginFrameArgs& args);
+
+#if defined(OS_ANDROID)
+  // Notifies when the refresh rate of the display is updated. |refresh_rate| is
+  // the rate in frames per second.
+  virtual void UpdateRefreshRate(float refresh_rate) {}
+#endif
 
  protected:
   // Called on AddObserver and gets missed BeginFrameArgs for the given

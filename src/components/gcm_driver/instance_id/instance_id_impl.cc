@@ -256,7 +256,7 @@ void InstanceIDImpl::EnsureIDGenerated() {
 
   // Save to the persistent store.
   Handler()->AddInstanceIDData(
-      app_id(), id_, base::Int64ToString(creation_time_.ToInternalValue()));
+      app_id(), id_, base::NumberToString(creation_time_.ToInternalValue()));
 }
 
 gcm::InstanceIDHandler* InstanceIDImpl::Handler() {

@@ -145,7 +145,9 @@ TestingProfile* TestingProfileManager::CreateGuestProfile() {
   profile->set_profile_name(kGuestProfileName);
 
   // Set up a profile with an off the record profile.
-  TestingProfile::Builder().BuildIncognito(profile);
+  TestingProfile::Builder off_the_record_builder;
+  off_the_record_builder.SetGuestSession();
+  off_the_record_builder.BuildIncognito(profile);
 
   profile_manager_->AddProfile(profile);  // Takes ownership.
   profile_manager_->SetNonPersonalProfilePrefs(profile);

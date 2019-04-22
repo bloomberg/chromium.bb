@@ -21,8 +21,7 @@ const int kLineHeight = 20;
 }  // namespace
 
 NetworkRowTitleView::NetworkRowTitleView(int title_message_id)
-    : title_(TrayPopupUtils::CreateDefaultLabel()),
-      subtitle_(TrayPopupUtils::CreateDefaultLabel()) {
+    : title_(TrayPopupUtils::CreateDefaultLabel()) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
@@ -31,27 +30,7 @@ NetworkRowTitleView::NetworkRowTitleView(int title_message_id)
   title_->SetLineHeight(kLineHeight);
   title_->SetText(l10n_util::GetStringUTF16(title_message_id));
   AddChildView(title_);
-
-  TrayPopupItemStyle subtitle_style(TrayPopupItemStyle::FontStyle::SYSTEM_INFO);
-  subtitle_style.SetupLabel(subtitle_);
-  subtitle_->SetMultiLine(true);
-  subtitle_->SetLineHeight(kLineHeight);
-  subtitle_->SetVisible(false);
-  AddChildView(subtitle_);
 }
 
 NetworkRowTitleView::~NetworkRowTitleView() = default;
-
-void NetworkRowTitleView::SetSubtitle(int subtitle_message_id) {
-  if (subtitle_message_id) {
-    title_->SetFontList(subtitle_->font_list());
-    subtitle_->SetText(l10n_util::GetStringUTF16(subtitle_message_id));
-    subtitle_->SetVisible(true);
-    return;
-  }
-
-  subtitle_->SetText(base::string16());
-  subtitle_->SetVisible(false);
-}
-
 }  // namespace ash

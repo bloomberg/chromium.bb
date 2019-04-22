@@ -15,6 +15,7 @@ action("embed_js_in_cpp") {
     "js/dispatch_touch_event.js",
     "js/execute_async_script.js",
     "js/focus.js",
+    "js/get_element_location.js",
     "js/get_element_region.js",
     "js/is_option_element_toggleable.js",
   ]
@@ -81,6 +82,8 @@ source_set("automation_client_lib") {
     "chrome/adb_impl.h",
     "chrome/automation_extension.cc",
     "chrome/automation_extension.h",
+    "chrome/cast_tracker.cc",
+    "chrome/cast_tracker.h",
     "chrome/chrome.h",
     "chrome/chrome_android_impl.cc",
     "chrome/chrome_android_impl.h",
@@ -189,6 +192,7 @@ source_set("automation_client_lib") {
     ":embed_user_data_dir_in_cpp",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//chrome/common:version_header",
     "//net",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
@@ -200,33 +204,6 @@ source_set("automation_client_lib") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
-  ]
-}
-
-action("embed_version_in_cpp") {
-  script = "embed_version_in_cpp.py"
-  inputs = [
-    "cpp_source.py",
-    "VERSION",
-    "//chrome/VERSION",
-
-    # We don't actually use LASTCHANGE as an input file. It is updated
-    # whenever a different Git revision is checked out, at which point
-    # version.cc needs to be updated with the new revision info.
-    lastchange_file,
-  ]
-  outputs = [
-    "$target_gen_dir/version.cc",
-    "$target_gen_dir/version.h",
-  ]
-
-  args = [
-    "--chromedriver-version-file",
-    rebase_path("VERSION", root_build_dir),
-    "--chrome-version-file",
-    rebase_path("//chrome/VERSION", root_build_dir),
-    "--directory",
-    rebase_path(target_gen_dir, root_build_dir),
   ]
 }
 
@@ -276,15 +253,14 @@ source_set("lib") {
     "session_thread_map.h",
     "util.cc",
     "util.h",
+    "version.cc",
+    "version.h",
     "window_commands.cc",
     "window_commands.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-  # Also compile the generated version files.
-  sources += get_target_outputs(":embed_version_in_cpp")
 
   if (use_x11) {
     sources += [ "keycode_text_conversion_x.cc" ]
@@ -297,11 +273,11 @@ source_set("lib") {
 
   deps = [
     ":automation_client_lib",
-    ":embed_version_in_cpp",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//chrome/common:constants",
     "//chrome/common:version_header",
+    "//components/version_info:generate_version_info",
     "//crypto",
     "//net",
     "//net/server:http_server",
@@ -384,6 +360,7 @@ test("chromedriver_unittests") {
   sources = [
     "capabilities_unittest.cc",
     "chrome/browser_info_unittest.cc",
+    "chrome/cast_tracker_unittest.cc",
     "chrome/chrome_finder_unittest.cc",
     "chrome/console_logger_unittest.cc",
     "chrome/device_manager_unittest.cc",
@@ -410,10 +387,17 @@ test("chromedriver_unittests") {
     "chrome_launcher_unittest.cc",
     "command_listener_proxy_unittest.cc",
     "commands_unittest.cc",
+    "key_converter_unittest.cc",
+    "keycode_text_conversion_unittest.cc",
     "log_replay/devtools_log_reader_unittest.cc",
     "logging_unittest.cc",
     "net/adb_client_socket_unittest.cc",
+    "net/net_util_unittest.cc",
+    "net/sync_websocket_impl_unittest.cc",
+    "net/test_http_server.cc",
+    "net/test_http_server.h",
     "net/timeout_unittest.cc",
+    "net/websocket_unittest.cc",
     "performance_logger_unittest.cc",
     "server/http_handler_unittest.cc",
     "session_commands_unittest.cc",
@@ -434,46 +418,18 @@ test("chromedriver_unittests") {
     ":lib",
     "//base",
     "//base/test:run_all_unittests",
-    "//net",
-    "//net:test_support",
-    "//net/server:http_server",
-    "//services/network/public/mojom",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//ui/base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-  ]
-}
-
-# ChromeDriver tests that aren't run on the main buildbot. Available as an
-# optional test type on trybots.
-test("chromedriver_tests") {
-  sources = [
-    "key_converter_unittest.cc",
-    "keycode_text_conversion_unittest.cc",
-    "net/net_util_unittest.cc",
-    "net/sync_websocket_impl_unittest.cc",
-    "net/test_http_server.cc",
-    "net/test_http_server.h",
-    "net/websocket_unittest.cc",
-  ]
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-  deps = [
-    ":lib",
-    "//base",
-    "//base/test:run_all_unittests",
     "//mojo/core/embedder",
     "//net",
     "//net:test_support",
     "//net/server:http_server",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
+    "//testing/gmock",
     "//testing/gtest",
+    "//ui/base",
     "//ui/events:test_support",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
     "//url",
   ]
 }

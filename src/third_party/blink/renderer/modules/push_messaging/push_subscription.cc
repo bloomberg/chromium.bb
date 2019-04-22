@@ -95,7 +95,7 @@ DOMArrayBuffer* PushSubscription::getKey(const AtomicString& name) const {
 }
 
 ScriptPromise PushSubscription::unsubscribe(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   WebPushProvider* web_push_provider = Platform::Current()->PushProvider();

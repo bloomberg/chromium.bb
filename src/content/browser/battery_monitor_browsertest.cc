@@ -15,6 +15,7 @@
 #include "content/shell/browser/shell.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
+#include "services/device/public/mojom/battery_status.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 

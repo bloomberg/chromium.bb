@@ -20,8 +20,8 @@ CFX_XMLElement::CFX_XMLElement(const WideString& wsTag) : name_(wsTag) {
 
 CFX_XMLElement::~CFX_XMLElement() = default;
 
-FX_XMLNODETYPE CFX_XMLElement::GetType() const {
-  return FX_XMLNODE_Element;
+CFX_XMLNode::Type CFX_XMLElement::GetType() const {
+  return Type::kElement;
 }
 
 CFX_XMLNode* CFX_XMLElement::Clone(CFX_XMLDocument* doc) {
@@ -32,7 +32,7 @@ CFX_XMLNode* CFX_XMLElement::Clone(CFX_XMLDocument* doc) {
   // text nodes?
   for (CFX_XMLNode* pChild = GetFirstChild(); pChild;
        pChild = pChild->GetNextSibling()) {
-    if (pChild->GetType() == FX_XMLNODE_Text)
+    if (pChild->GetType() == Type::kText)
       node->AppendChild(pChild->Clone(doc));
   }
   return node;
@@ -57,10 +57,7 @@ WideString CFX_XMLElement::GetNamespaceURI() const {
     attr += wsPrefix;
   }
   const CFX_XMLNode* pNode = this;
-  while (pNode) {
-    if (pNode->GetType() != FX_XMLNODE_Element)
-      break;
-
+  while (pNode && pNode->GetType() == Type::kElement) {
     auto* pElement = static_cast<const CFX_XMLElement*>(pNode);
     if (!pElement->HasAttribute(attr)) {
       pNode = pNode->GetParent();
@@ -68,7 +65,7 @@ WideString CFX_XMLElement::GetNamespaceURI() const {
     }
     return pElement->GetAttribute(attr);
   }
-  return L"";
+  return WideString();
 }
 
 WideString CFX_XMLElement::GetTextData() const {
@@ -112,12 +109,11 @@ void CFX_XMLElement::Save(
   pXMLStream->WriteString(">\n");
 }
 
-CFX_XMLElement* CFX_XMLElement::GetFirstChildNamed(
-    const WideStringView& name) const {
+CFX_XMLElement* CFX_XMLElement::GetFirstChildNamed(WideStringView name) const {
   return GetNthChildNamed(name, 0);
 }
 
-CFX_XMLElement* CFX_XMLElement::GetNthChildNamed(const WideStringView& name,
+CFX_XMLElement* CFX_XMLElement::GetNthChildNamed(WideStringView name,
                                                  size_t idx) const {
   for (auto* child = GetFirstChild(); child; child = child->GetNextSibling()) {
     CFX_XMLElement* elem = ToXMLElement(child);
@@ -137,7 +133,7 @@ bool CFX_XMLElement::HasAttribute(const WideString& name) const {
 
 WideString CFX_XMLElement::GetAttribute(const WideString& name) const {
   auto it = attrs_.find(name);
-  return it != attrs_.end() ? it->second : L"";
+  return it != attrs_.end() ? it->second : WideString();
 }
 
 void CFX_XMLElement::SetAttribute(const WideString& name,

@@ -5,11 +5,11 @@
 #ifndef CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_RESOLVER_H_
 #define CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_RESOLVER_H_
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT AuthAttemptStateResolver {
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthAttemptStateResolver {
  public:
   AuthAttemptStateResolver();
   virtual ~AuthAttemptStateResolver();

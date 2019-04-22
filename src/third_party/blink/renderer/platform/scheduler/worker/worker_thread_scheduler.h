@@ -11,7 +11,6 @@
 #include "base/task/sequence_manager/task_time_observer.h"
 #include "components/scheduling_metrics/task_duration_metric_reporter.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
-#include "third_party/blink/renderer/platform/scheduler/common/idle_canceled_delayed_task_sweeper.h"
 #include "third_party/blink/renderer/platform/scheduler/common/idle_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/common/thread_load_tracker.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -47,9 +46,11 @@ class PLATFORM_EXPORT WorkerThreadScheduler
       public IdleHelper::Delegate,
       public base::sequence_manager::TaskTimeObserver {
  public:
+  // |sequence_manager|and |proxy| must remain valid for the entire lifetime of
+  // this object.
   WorkerThreadScheduler(
       WebThreadType thread_type,
-      std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
+      base::sequence_manager::SequenceManager* sequence_manager,
       WorkerSchedulerProxy* proxy);
   ~WorkerThreadScheduler() override;
 
@@ -62,7 +63,8 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
-  void AddRAILModeObserver(WebRAILModeObserver*) override {}
+  void AddRAILModeObserver(RAILModeObserver*) override {}
+  void RemoveRAILModeObserver(RAILModeObserver const*) override {}
   void Shutdown() override;
 
   // ThreadSchedulerImpl implementation:
@@ -128,6 +130,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   std::unordered_set<WorkerScheduler*>& GetWorkerSchedulersForTesting();
 
+  void SetUkmTaskSamplingRateForTest(double rate);
   void SetUkmRecorderForTest(std::unique_ptr<ukm::UkmRecorder> ukm_recorder);
 
  private:
@@ -140,7 +143,6 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   const WebThreadType thread_type_;
   IdleHelper idle_helper_;
-  IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
   ThreadLoadTracker load_tracker_;
   bool initialized_;
   base::TimeTicks thread_start_time_;

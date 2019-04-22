@@ -899,7 +899,7 @@ namespace sw
 	void VertexProcessor::setRoutineCacheSize(int cacheSize)
 	{
 		delete routineCache;
-		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536), precacheVertex ? "sw-vertex" : 0);
+		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536));
 	}
 
 	const VertexProcessor::State VertexProcessor::update(DrawType drawType)
@@ -970,7 +970,6 @@ namespace sw
 
 		state.preTransformed = context->preTransformed;
 		state.superSampling = context->getSuperSampleCount() > 1;
-		state.multiSampling = context->getMultiSampleCount() > 1;
 
 		state.transformFeedbackQueryEnabled = context->transformFeedbackQueryEnabled;
 		state.transformFeedbackEnabled = context->transformFeedbackEnabled;
@@ -1107,7 +1106,7 @@ namespace sw
 			}
 
 			generator->generate();
-			routine = (*generator)(L"VertexRoutine_%0.8X", state.shaderID);
+			routine = (*generator)("VertexRoutine_%0.8X", state.shaderID);
 			delete generator;
 
 			routineCache->add(state, routine);

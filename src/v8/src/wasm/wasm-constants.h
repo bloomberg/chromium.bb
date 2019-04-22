@@ -63,7 +63,7 @@ enum SectionCode : int8_t {
   kTypeSectionCode = 1,        // Function signature declarations
   kImportSectionCode = 2,      // Import declarations
   kFunctionSectionCode = 3,    // Function declarations
-  kTableSectionCode = 4,       // Indirect function table and other tables
+  kTableSectionCode = 4,       // Indirect function table and others
   kMemorySectionCode = 5,      // Memory attributes
   kGlobalSectionCode = 6,      // Global declarations
   kExportSectionCode = 7,      // Exports
@@ -71,14 +71,20 @@ enum SectionCode : int8_t {
   kElementSectionCode = 9,     // Elements section
   kCodeSectionCode = 10,       // Function code
   kDataSectionCode = 11,       // Data segments
-  kNameSectionCode = 12,       // Name section (encoded as a string)
+  kDataCountSectionCode = 12,  // Number of data segments
   kExceptionSectionCode = 13,  // Exception section
-  kSourceMappingURLSectionCode = 14,  // Source Map URL section
+
+  // The following sections are custom sections, and are identified using a
+  // string rather than an integer. Their enumeration values are not guaranteed
+  // to be consistent.
+  kNameSectionCode,              // Name section (encoded as a string)
+  kSourceMappingURLSectionCode,  // Source Map URL section
+  kCompilationHintsSectionCode,  // Compilation hints section
 
   // Helper values
   kFirstSectionInModule = kTypeSectionCode,
-  kLastKnownModuleSection = kSourceMappingURLSectionCode,
-  kFirstUnorderedSection = kNameSectionCode,
+  kLastKnownModuleSection = kCompilationHintsSectionCode,
+  kFirstUnorderedSection = kDataCountSectionCode,
 };
 
 // Binary encoding of name section kinds.

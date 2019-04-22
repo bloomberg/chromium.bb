@@ -23,21 +23,15 @@
 //  #include "foo/foo_export.h"
 //  #include "ui/base/class_property.h"
 //
-//  DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(FOO_EXPORT, MyType);
+//  DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(FOO_EXPORT, MyType)
 //  namespace foo {
 //    // Use this to define an exported property that is primitive,
 //    // or a pointer you don't want automatically deleted.
-//    DEFINE_UI_CLASS_PROPERTY_KEY(MyType, kMyKey, MyDefault);
+//    DEFINE_UI_CLASS_PROPERTY_KEY(MyType, kMyKey, MyDefault)
 //
 //    // Use this to define an exported property whose value is a heap
 //    // allocated object, and has to be owned and freed by the class.
-//    DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr);
-//
-//    // Use this to define a non exported property that is primitive,
-//    // or a pointer you don't want to automatically deleted, and is used
-//    // only in a specific file. This will define the property in an unnamed
-//    // namespace which cannot be accessed from another file.
-//    DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(MyType, kMyKey, MyDefault);
+//    DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr)
 //
 //  }  // foo namespace
 //
@@ -52,7 +46,7 @@
 //
 // If the properties are used outside the file where they are defined
 // their accessor methods should also be declared in a suitable header
-// using DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(FOO_EXPORT, MyType);
+// using DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(FOO_EXPORT, MyType)
 
 namespace ui {
 
@@ -99,10 +93,16 @@ class UI_BASE_EXPORT PropertyHandler {
  protected:
   friend class subtle::PropertyHelper;
 
+  // Called from SetPropertyInternal() prior to changing the value. If
+  // |is_value_changing| is false, the new value is the same as the old value
+  // (in other words, the value isn't really changing, but observers will
+  // still be notified).
+  virtual std::unique_ptr<PropertyData> BeforePropertyChange(
+      const void* key,
+      bool is_value_changing);
   virtual void AfterPropertyChange(const void* key,
                                    int64_t old_value,
                                    std::unique_ptr<PropertyData> data) {}
-  virtual std::unique_ptr<PropertyData> BeforePropertyChange(const void* key);
   void ClearProperties();
 
   // Called by the public {Set,Get,Clear}Property functions.
@@ -234,17 +234,8 @@ class UI_BASE_EXPORT PropertyHelper {
 
 #define DEFINE_UI_CLASS_PROPERTY_KEY(TYPE, NAME, DEFAULT)                    \
   static_assert(sizeof(TYPE) <= sizeof(int64_t), "property type too large"); \
-  namespace {                                                                \
   const ::ui::ClassProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr};  \
-  } /* namespace */                                                          \
   const ::ui::ClassProperty<TYPE>* const NAME = &NAME##_Value;
-
-#define DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(TYPE, NAME, DEFAULT)              \
-  static_assert(sizeof(TYPE) <= sizeof(int64_t), "property type too large"); \
-  namespace {                                                                \
-  const ::ui::ClassProperty<TYPE> NAME##_Value = {DEFAULT, #NAME, nullptr};  \
-  const ::ui::ClassProperty<TYPE>* const NAME = &NAME##_Value;               \
-  }  // namespace
 
 #define DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(TYPE, NAME, DEFAULT)         \
   namespace {                                                           \

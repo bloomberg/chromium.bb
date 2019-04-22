@@ -122,14 +122,15 @@ void MTPReadFileWorker::OnDidWriteIntoSnapshotFile(
   DCHECK(snapshot_file_details.get());
 
   if (snapshot_file_details->error_occurred()) {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::Bind(snapshot_file_details->error_callback(),
-                                        base::File::FILE_ERROR_FAILED));
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
+        base::BindOnce(snapshot_file_details->error_callback(),
+                       base::File::FILE_ERROR_FAILED));
     return;
   }
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(snapshot_file_details->success_callback(),
-                 snapshot_file_details->file_info(),
-                 snapshot_file_details->snapshot_file_path()));
+      base::BindOnce(snapshot_file_details->success_callback(),
+                     snapshot_file_details->file_info(),
+                     snapshot_file_details->snapshot_file_path()));
 }

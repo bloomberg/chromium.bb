@@ -21,9 +21,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "sandbox/linux/services/namespace_utils.h"
 #include "sandbox/linux/services/proc_util.h"
@@ -37,6 +37,7 @@ namespace sandbox {
 namespace {
 
 const int kExitSuccess = 0;
+const int kExitFailure = 1;
 
 #if defined(__clang__)
 // Disable sanitizers that rely on TLS and may write to non-stack memory.
@@ -228,7 +229,7 @@ bool Credentials::HasAnyCapability() {
 
   PCHECK(sys_capget(&hdr, data) == 0);
 
-  for (size_t i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < base::size(data); ++i) {
     if (data[i].effective || data[i].permitted || data[i].inheritable) {
       return true;
     }
@@ -281,7 +282,7 @@ bool Credentials::CanCreateProcessInNewUserNS() {
     // unshare() requires the effective uid and gid to have a mapping in the
     // parent namespace.
     if (!SetGidAndUidMaps(gid, uid))
-      _exit(1);
+      _exit(kExitFailure);
 
     // Make sure we drop CAP_SYS_ADMIN.
     CHECK(sandbox::Credentials::DropAllCapabilities());
@@ -290,7 +291,7 @@ bool Credentials::CanCreateProcessInNewUserNS() {
     // Jessie explicitly forbids this case.  See:
     // add-sysctl-to-disallow-unprivileged-CLONE_NEWUSER-by-default.patch
     if (sys_unshare(CLONE_NEWUSER))
-      _exit(1);
+      _exit(kExitFailure);
 
     _exit(kExitSuccess);
   }
@@ -298,6 +299,9 @@ bool Credentials::CanCreateProcessInNewUserNS() {
   // Always reap the child.
   int status = -1;
   PCHECK(HANDLE_EINTR(waitpid(pid, &status, 0)) == pid);
+
+  DCHECK(WIFEXITED(status) && (WEXITSTATUS(status) == kExitSuccess ||
+                               WEXITSTATUS(status) == kExitFailure));
 
   // clone(2) succeeded.  Now return true only if the system grants
   // unprivileged use of CLONE_NEWUSER as well.

@@ -12,8 +12,8 @@
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 
 namespace {
@@ -30,22 +30,20 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
 class SingleClientSecondaryAccountSyncTest : public SyncTest {
  public:
   SingleClientSecondaryAccountSyncTest() : SyncTest(SINGLE_CLIENT) {
-    features_.InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncStandaloneTransport,
-                              switches::kSyncSupportSecondaryAccount},
-        /*disabled_features=*/{});
+    features_.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
   }
   ~SingleClientSecondaryAccountSyncTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
-    fake_gaia_cookie_manager_factory_ =
-        secondary_account_helper::SetUpFakeGaiaCookieManagerService();
+    test_signin_client_factory_ =
+        secondary_account_helper::SetUpSigninClient(&test_url_loader_factory_);
   }
 
   void SetUpOnMainThread() override {
 #if defined(OS_CHROMEOS)
     secondary_account_helper::InitNetwork();
 #endif  // defined(OS_CHROMEOS)
+    SyncTest::SetUpOnMainThread();
   }
 
   Profile* profile() { return GetProfile(0); }
@@ -53,39 +51,33 @@ class SingleClientSecondaryAccountSyncTest : public SyncTest {
  private:
   base::test::ScopedFeatureList features_;
 
-  secondary_account_helper::ScopedFakeGaiaCookieManagerServiceFactory
-      fake_gaia_cookie_manager_factory_;
+  secondary_account_helper::ScopedSigninClientFactory
+      test_signin_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleClientSecondaryAccountSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
-                       DoesNotStartSyncWithStandaloneTransportDisabled) {
-  base::test::ScopedFeatureList disable_standalone_transport;
-  disable_standalone_transport.InitAndDisableFeature(
-      switches::kSyncStandaloneTransport);
+class SingleClientSecondaryAccountWithoutSecondaryAccountSupportSyncTest
+    : public SingleClientSecondaryAccountSyncTest {
+ public:
+  SingleClientSecondaryAccountWithoutSecondaryAccountSupportSyncTest() {
+    features_.InitAndDisableFeature(switches::kSyncSupportSecondaryAccount);
+  }
 
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+ private:
+  base::test::ScopedFeatureList features_;
+};
 
-  // Since standalone transport is disabled, just signing in (without making the
-  // account Chrome's primary one) should *not* start the Sync machinery.
-  secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
-            GetSyncService(0)->GetTransportState());
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
-                       DoesNotStartSyncWithSecondaryAccountSupportDisabled) {
-  base::test::ScopedFeatureList disable_secondary_account_support;
-  disable_secondary_account_support.InitAndDisableFeature(
-      switches::kSyncSupportSecondaryAccount);
-
+IN_PROC_BROWSER_TEST_F(
+    SingleClientSecondaryAccountWithoutSecondaryAccountSupportSyncTest,
+    DoesNotStartSyncWithSecondaryAccountSupportDisabled) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Since secondary account support is disabled, just signing in (without
   // making the account Chrome's primary one) should *not* start the Sync
   // machinery.
-  secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
+  secondary_account_helper::SignInSecondaryAccount(
+      profile(), &test_url_loader_factory_, "user@email.com");
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             GetSyncService(0)->GetTransportState());
 }
@@ -97,7 +89,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   // Signing in (without making the account Chrome's primary one or explicitly
   // setting up Sync) should trigger starting the Sync machinery in standalone
   // transport mode.
-  secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
+  secondary_account_helper::SignInSecondaryAccount(
+      profile(), &test_url_loader_factory_, "user@email.com");
   if (browser_defaults::kSyncAutoStarts) {
     EXPECT_EQ(syncer::SyncService::TransportState::INITIALIZING,
               GetSyncService(0)->GetTransportState());
@@ -106,8 +99,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
               GetSyncService(0)->GetTransportState());
   }
 
-  EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  EXPECT_TRUE(GetClient(0)->AwaitSyncTransportActive());
 
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
@@ -135,9 +127,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Set up Sync in transport mode for a non-primary account.
-  secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
-  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  secondary_account_helper::SignInSecondaryAccount(
+      profile(), &test_url_loader_factory_, "user@email.com");
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -146,10 +138,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   // Simulate the user opting in to full Sync: Make the account primary, and
   // set first-time setup to complete.
   secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
 
-  EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
-      /*skip_passphrase_verification=*/false));
+  EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -158,8 +150,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   // Make sure that some model type which is not allowed in transport-only mode
   // got activated.
   ASSERT_FALSE(AllowedTypesInStandaloneTransportMode().Has(syncer::BOOKMARKS));
-  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->GetChosenDataTypes().Has(
-      syncer::BOOKMARKS));
+  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->GetSelectedTypes().Has(
+      syncer::UserSelectableType::kBookmarks));
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::BOOKMARKS));
 }
 #endif  // !defined(OS_CHROMEOS)

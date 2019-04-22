@@ -44,26 +44,6 @@ class PrimitiveInterpolation {
 // eg. "0px" and "100px".
 class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
  public:
-  ~PairwisePrimitiveInterpolation() override = default;
-
-  static std::unique_ptr<PairwisePrimitiveInterpolation> Create(
-      const InterpolationType& type,
-      std::unique_ptr<InterpolableValue> start,
-      std::unique_ptr<InterpolableValue> end,
-      scoped_refptr<NonInterpolableValue> non_interpolable_value) {
-    return base::WrapUnique(new PairwisePrimitiveInterpolation(
-        type, std::move(start), std::move(end),
-        std::move(non_interpolable_value)));
-  }
-
-  const InterpolationType& GetType() const { return type_; }
-
-  std::unique_ptr<TypedInterpolationValue> InitialValue() const {
-    return TypedInterpolationValue::Create(type_, start_->Clone(),
-                                           non_interpolable_value_);
-  }
-
- private:
   PairwisePrimitiveInterpolation(
       const InterpolationType& type,
       std::unique_ptr<InterpolableValue> start,
@@ -77,6 +57,16 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
     DCHECK(end_);
   }
 
+  ~PairwisePrimitiveInterpolation() override = default;
+
+  const InterpolationType& GetType() const { return type_; }
+
+  std::unique_ptr<TypedInterpolationValue> InitialValue() const {
+    return std::make_unique<TypedInterpolationValue>(type_, start_->Clone(),
+                                                     non_interpolable_value_);
+  }
+
+ private:
   void InterpolateValue(
       double fraction,
       std::unique_ptr<TypedInterpolationValue>& result) const final {
@@ -103,22 +93,15 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
 // behaviour eg. "auto" and "0px".
 class FlipPrimitiveInterpolation : public PrimitiveInterpolation {
  public:
-  ~FlipPrimitiveInterpolation() override = default;
-
-  static std::unique_ptr<FlipPrimitiveInterpolation> Create(
-      std::unique_ptr<TypedInterpolationValue> start,
-      std::unique_ptr<TypedInterpolationValue> end) {
-    return base::WrapUnique(
-        new FlipPrimitiveInterpolation(std::move(start), std::move(end)));
-  }
-
- private:
   FlipPrimitiveInterpolation(std::unique_ptr<TypedInterpolationValue> start,
                              std::unique_ptr<TypedInterpolationValue> end)
       : start_(std::move(start)),
         end_(std::move(end)),
         last_fraction_(std::numeric_limits<double>::quiet_NaN()) {}
 
+  ~FlipPrimitiveInterpolation() override = default;
+
+ private:
   void InterpolateValue(
       double fraction,
       std::unique_ptr<TypedInterpolationValue>& result) const final {

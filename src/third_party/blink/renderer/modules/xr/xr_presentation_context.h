@@ -12,13 +12,15 @@
 
 namespace blink {
 
+class XRSession;
+
 class MODULES_EXPORT XRPresentationContext final
     : public ImageBitmapRenderingContextBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   class Factory : public CanvasRenderingContextFactory {
-    WTF_MAKE_NONCOPYABLE(Factory);
+    DISALLOW_COPY_AND_ASSIGN(Factory);
 
    public:
     Factory() {}
@@ -41,6 +43,13 @@ class MODULES_EXPORT XRPresentationContext final
   XRPresentationContext(CanvasRenderingContextHost*,
                         const CanvasContextCreationAttributesCore&);
   ~XRPresentationContext() override;
+
+  void BindToSession(XRSession*);
+
+  void Trace(blink::Visitor*) override;
+
+ private:
+  Member<XRSession> bound_session_;
 };
 
 DEFINE_TYPE_CASTS(XRPresentationContext,

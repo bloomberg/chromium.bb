@@ -160,24 +160,29 @@ class ManifestHandlerTest : public testing::Test {
 };
 
 TEST_F(ManifestHandlerTest, DependentHandlers) {
-  ScopedTestingManifestHandlerRegistry registry;
+  ScopedTestingManifestHandlerRegistry scoped_registry;
   ParsingWatcher watcher;
   std::vector<std::string> prereqs;
-  (new TestManifestHandler("A", SingleKey("a"), prereqs, &watcher))->Register();
-  (new TestManifestHandler("B", SingleKey("b"), prereqs, &watcher))->Register();
-  (new TestManifestHandler("J", SingleKey("j"), prereqs, &watcher))->Register();
-  (new AlwaysParseTestManifestHandler("K", SingleKey("k"), prereqs, &watcher))->
-      Register();
+  ManifestHandlerRegistry* registry = ManifestHandlerRegistry::Get();
+  registry->RegisterHandler(std::make_unique<TestManifestHandler>(
+      "A", SingleKey("a"), prereqs, &watcher));
+  registry->RegisterHandler(std::make_unique<TestManifestHandler>(
+      "B", SingleKey("b"), prereqs, &watcher));
+  registry->RegisterHandler(std::make_unique<TestManifestHandler>(
+      "J", SingleKey("j"), prereqs, &watcher));
+  registry->RegisterHandler(std::make_unique<AlwaysParseTestManifestHandler>(
+      "K", SingleKey("k"), prereqs, &watcher));
   prereqs.push_back("c.d");
   std::vector<std::string> keys;
   keys.push_back("c.e");
   keys.push_back("c.z");
-  (new TestManifestHandler("C.EZ", keys, prereqs, &watcher))->Register();
+  registry->RegisterHandler(
+      std::make_unique<TestManifestHandler>("C.EZ", keys, prereqs, &watcher));
   prereqs.clear();
   prereqs.push_back("b");
   prereqs.push_back("k");
-  (new TestManifestHandler("C.D", SingleKey("c.d"), prereqs, &watcher))->
-      Register();
+  registry->RegisterHandler(std::make_unique<TestManifestHandler>(
+      "C.D", SingleKey("c.d"), prereqs, &watcher));
   ManifestHandler::FinalizeRegistration();
 
   scoped_refptr<const Extension> extension =
@@ -205,7 +210,7 @@ TEST_F(ManifestHandlerTest, DependentHandlers) {
 }
 
 TEST_F(ManifestHandlerTest, FailingHandlers) {
-  ScopedTestingManifestHandlerRegistry registry;
+  ScopedTestingManifestHandlerRegistry scoped_registry;
   // Can't use ExtensionBuilder, because this extension will fail to
   // be parsed.
   std::unique_ptr<base::DictionaryValue> manifest_a(
@@ -225,8 +230,9 @@ TEST_F(ManifestHandlerTest, FailingHandlers) {
 
   // Register a handler for "a" that fails.
   ParsingWatcher watcher;
-  (new FailingTestManifestHandler(
-      "A", SingleKey("a"), std::vector<std::string>(), &watcher))->Register();
+  ManifestHandlerRegistry* registry = ManifestHandlerRegistry::Get();
+  registry->RegisterHandler(std::make_unique<FailingTestManifestHandler>(
+      "A", SingleKey("a"), std::vector<std::string>(), &watcher));
   ManifestHandler::FinalizeRegistration();
 
   extension = Extension::Create(
@@ -240,7 +246,7 @@ TEST_F(ManifestHandlerTest, FailingHandlers) {
 }
 
 TEST_F(ManifestHandlerTest, Validate) {
-  ScopedTestingManifestHandlerRegistry registry;
+  ScopedTestingManifestHandlerRegistry scoped_registry;
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -253,20 +259,18 @@ TEST_F(ManifestHandlerTest, Validate) {
           .Build();
   EXPECT_TRUE(extension.get());
 
+  ManifestHandlerRegistry* registry = ManifestHandlerRegistry::Get();
   std::string error;
   std::vector<InstallWarning> warnings;
   // Always validates and fails.
-  (new TestManifestValidator(false, true, SingleKey("c")))->Register();
+  registry->RegisterHandler(
+      std::make_unique<TestManifestValidator>(false, true, SingleKey("c")));
   EXPECT_FALSE(
       ManifestHandler::ValidateExtension(extension.get(), &error, &warnings));
 
-  // This overrides the registered handler for "c".
-  (new TestManifestValidator(false, false, SingleKey("c")))->Register();
-  EXPECT_TRUE(
-      ManifestHandler::ValidateExtension(extension.get(), &error, &warnings));
-
   // Validates "a" and fails.
-  (new TestManifestValidator(false, true, SingleKey("a")))->Register();
+  registry->RegisterHandler(
+      std::make_unique<TestManifestValidator>(false, true, SingleKey("a")));
   EXPECT_FALSE(
       ManifestHandler::ValidateExtension(extension.get(), &error, &warnings));
 }

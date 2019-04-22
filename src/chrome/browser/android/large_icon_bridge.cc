@@ -22,12 +22,12 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF16;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
-using base::android::AttachCurrentThread;
-using base::android::ConvertJavaStringToUTF16;
 
 namespace {
 
@@ -40,8 +40,7 @@ void OnLargeIconAvailable(const JavaRef<jobject>& j_callback,
   ScopedJavaLocalRef<jobject> j_bitmap;
   if (result.bitmap.is_valid()) {
     gfx::PNGCodec::Decode(result.bitmap.bitmap_data->front(),
-                          result.bitmap.bitmap_data->size(),
-                          &bitmap);
+                          result.bitmap.bitmap_data->size(), &bitmap);
     if (!bitmap.isNull())
       j_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
   }
@@ -58,16 +57,13 @@ void OnLargeIconAvailable(const JavaRef<jobject>& j_callback,
 
 }  // namespace
 
-static jlong JNI_LargeIconBridge_Init(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz) {
+static jlong JNI_LargeIconBridge_Init(JNIEnv* env) {
   return reinterpret_cast<intptr_t>(new LargeIconBridge());
 }
 
-LargeIconBridge::LargeIconBridge() {
-}
+LargeIconBridge::LargeIconBridge() {}
 
-LargeIconBridge::~LargeIconBridge() {
-}
+LargeIconBridge::~LargeIconBridge() {}
 
 void LargeIconBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
@@ -92,12 +88,11 @@ jboolean LargeIconBridge::GetLargeIconForURL(
   favicon_base::LargeIconCallback callback_runner = base::Bind(
       &OnLargeIconAvailable, ScopedJavaGlobalRef<jobject>(env, j_callback));
 
-  large_icon_service->GetLargeIconOrFallbackStyle(
-      GURL(ConvertJavaStringToUTF16(env, j_page_url)),
-      min_source_size_px,
-      0,  // Do not resize.
-      callback_runner,
-      &cancelable_task_tracker_);
+  // Use desired_size = 0 for getting the icon from the cache (so that
+  // the icon is not poorly rescaled by LargeIconService).
+  large_icon_service->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
+      GURL(ConvertJavaStringToUTF16(env, j_page_url)), min_source_size_px,
+      /*desired_size_in_pixel=*/0, callback_runner, &cancelable_task_tracker_);
 
   return true;
 }

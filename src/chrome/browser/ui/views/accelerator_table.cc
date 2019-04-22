@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "printing/buildflags/buildflags.h"
@@ -120,6 +120,8 @@ const AcceleratorMapping kAcceleratorMap[] = {
     {ui::VKEY_F6, ui::EF_SHIFT_DOWN, IDC_FOCUS_PREVIOUS_PANE},
     {ui::VKEY_F10, ui::EF_NONE, IDC_FOCUS_MENU_BAR},
     {ui::VKEY_F11, ui::EF_NONE, IDC_FULLSCREEN},
+    {ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_PLATFORM_ACCELERATOR,
+     IDC_SHOW_AVATAR_MENU},
 
   // Platform-specific key maps.
 #if defined(OS_LINUX)
@@ -150,8 +152,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
     // On Windows, all VKEY_BROWSER_* keys except VKEY_BROWSER_SEARCH are
     // handled via WM_APPCOMMAND.
     {ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, IDC_FOCUS_SEARCH},
-    {ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_PLATFORM_ACCELERATOR,
-     IDC_SHOW_AVATAR_MENU},
 #endif  // !OS_CHROMEOS
 
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_MACOSX)
@@ -216,7 +216,7 @@ const int kRepeatableCommandIds[] = {
   IDC_SELECT_NEXT_TAB,
   IDC_SELECT_PREVIOUS_TAB,
 };
-const size_t kRepeatableCommandIdsLength = arraysize(kRepeatableCommandIds);
+const size_t kRepeatableCommandIdsLength = base::size(kRepeatableCommandIds);
 
 } // namespace
 

@@ -226,7 +226,9 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
       : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
         render_frame_host_(rfh),
         scheme_(scheme),
-        allowed_hosts_(std::move(allowed_hosts)) {}
+        allowed_hosts_(std::move(allowed_hosts)) {
+    DCHECK(render_frame_host_);
+  }
 
   ~WebUIURLLoaderFactory() override {}
 

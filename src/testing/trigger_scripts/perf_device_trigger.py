@@ -115,27 +115,30 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
 
   def select_config_indices(self, args, verbose):
     if args.multiple_trigger_configs:
+      configs = []
       # If specific bot ids were passed in, we want to trigger a job for
       # every valid config regardless of health status since
       # each config represents exactly one bot in the perf swarming pool.
-      return range(args.shards)
+      for index in range(len(self.indices_to_trigger(args))):
+        configs.append((index, index))
     return self._select_config_indices_with_soft_affinity(args, verbose)
 
   def _select_config_indices_with_soft_affinity(self, args, verbose):
+    trigger_count = len(self.indices_to_trigger(args))
     # First make sure the number of shards doesn't exceed the
     # number of eligible bots.  This means there is a config error somewhere.
-    if args.shards > len(self._eligible_bots_by_ids):
+    if trigger_count > len(self._eligible_bots_by_ids):
       if verbose:
         self._print_device_affinity_info({}, {},
-          self._eligible_bots_by_ids, args.shards)
+          self._eligible_bots_by_ids, trigger_count)
       raise ValueError('Not enough available machines exist in in swarming'
                        'pool.  Shards requested (%d) exceeds available bots '
                        '(%d).' % (
-                           args.shards, len(self._eligible_bots_by_ids)))
+                           trigger_count, len(self._eligible_bots_by_ids)))
 
     shard_to_bot_assignment_map = {}
     unallocated_bots_by_ids = copy.deepcopy(self._eligible_bots_by_ids)
-    for shard_index in xrange(args.shards):
+    for shard_index in self.indices_to_trigger(args):
       bot_id = self._query_swarming_for_last_shard_id(shard_index)
       if bot_id and bot_id in unallocated_bots_by_ids:
         bot = unallocated_bots_by_ids[bot_id]
@@ -174,14 +177,14 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
 
     # Now populate the indices into the bot_configs array
     selected_configs = []
-    for shard_index in xrange(args.shards):
-      selected_configs.append(self._find_bot_config_index(
-          shard_to_bot_assignment_map[shard_index].id()))
+    for shard_index in self.indices_to_trigger(args):
+      selected_configs.append((shard_index, self._find_bot_config_index(
+          shard_to_bot_assignment_map[shard_index].id())))
     if verbose:
       self._print_device_affinity_info(
         shard_to_bot_assignment_map,
         existing_shard_bot_to_shard_map,
-        self._eligible_bots_by_ids, args.shards)
+        self._eligible_bots_by_ids, trigger_count)
     return selected_configs
 
 

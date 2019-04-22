@@ -5,7 +5,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_overlay_validator.h"
 
 #include <drm_fourcc.h>
-
 #include <memory>
 #include <utility>
 

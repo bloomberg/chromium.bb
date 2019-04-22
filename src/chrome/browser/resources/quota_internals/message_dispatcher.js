@@ -41,7 +41,7 @@ cr.define('cr.quota', function() {
    * @param {Object} detail Message specific additional data.
    */
   function messageHandler(message, detail) {
-    var target = null;
+    let target = null;
     switch (message) {
       case 'AvailableSpaceUpdated':
         target = cr.quota.onAvailableSpaceUpdated;
@@ -63,7 +63,7 @@ cr.define('cr.quota', function() {
         break;
     }
     if (target) {
-      var event = cr.doc.createEvent('CustomEvent');
+      const event = cr.doc.createEvent('CustomEvent');
       event.initCustomEvent('update', false, false, detail);
       target.dispatchEvent(event);
     }

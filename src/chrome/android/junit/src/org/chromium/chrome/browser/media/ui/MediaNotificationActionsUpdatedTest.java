@@ -48,7 +48,9 @@ public class MediaNotificationActionsUpdatedTest extends MediaNotificationManage
 
         getManager().mThrottler.mManager = getManager();
         doCallRealMethod().when(getManager()).onServiceStarted(any(ListenerService.class));
-        doCallRealMethod().when(mMockAppHooks).startForegroundService(any(Intent.class));
+        doCallRealMethod()
+                .when(mMockForegroundServiceUtils)
+                .startForegroundService(any(Intent.class));
         mTabHolder = new MediaNotificationTestTabHolder(TAB_ID_1, "about:blank", "title1");
     }
 

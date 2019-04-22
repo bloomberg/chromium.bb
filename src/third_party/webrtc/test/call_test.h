@@ -10,14 +10,16 @@
 #ifndef TEST_CALL_TEST_H_
 #define TEST_CALL_TEST_H_
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "absl/types/optional.h"
 #include "api/test/video/function_video_decoder_factory.h"
 #include "api/test/video/function_video_encoder_factory.h"
 #include "api/video/video_bitrate_allocator_factory.h"
 #include "call/call.h"
-#include "call/rtp_transport_controller_send.h"
 #include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/audio_device/include/test_audio_device.h"
 #include "test/encoder_settings.h"
@@ -65,10 +67,11 @@ class CallTest : public ::testing::Test {
   static const uint32_t kReceiverLocalVideoSsrc;
   static const uint32_t kReceiverLocalAudioSsrc;
   static const int kNackRtpHistoryMs;
-  static const uint8_t kDefaultKeepalivePayloadType;
   static const std::map<uint8_t, MediaType> payload_type_map_;
 
  protected:
+  void RegisterRtpExtension(const RtpExtension& extension);
+
   // RunBaseTest overwrites the audio_state of the send and receive Call configs
   // to simplify test code.
   void RunBaseTest(BaseTest* test);
@@ -154,9 +157,7 @@ class CallTest : public ::testing::Test {
 
   void Start();
   void StartVideoStreams();
-  void StartVideoCapture();
   void Stop();
-  void StopVideoCapture();
   void StopVideoStreams();
   void DestroyStreams();
   void DestroyVideoSendStreams();
@@ -176,7 +177,6 @@ class CallTest : public ::testing::Test {
   std::unique_ptr<webrtc::RtcEventLog> send_event_log_;
   std::unique_ptr<webrtc::RtcEventLog> recv_event_log_;
   std::unique_ptr<Call> sender_call_;
-  RtpTransportControllerSend* sender_call_transport_controller_;
   std::unique_ptr<PacketTransport> send_transport_;
   std::vector<VideoSendStream::Config> video_send_configs_;
   std::vector<VideoEncoderConfig> video_encoder_configs_;
@@ -194,14 +194,12 @@ class CallTest : public ::testing::Test {
   std::vector<FlexfecReceiveStream*> flexfec_receive_streams_;
 
   test::FrameGeneratorCapturer* frame_generator_capturer_;
-  std::vector<rtc::VideoSourceInterface<VideoFrame>*> video_sources_;
-  std::vector<std::unique_ptr<TestVideoCapturer>> video_capturers_;
+  std::vector<std::unique_ptr<rtc::VideoSourceInterface<VideoFrame>>>
+      video_sources_;
   DegradationPreference degradation_preference_ =
       DegradationPreference::MAINTAIN_FRAMERATE;
 
   std::unique_ptr<FecControllerFactoryInterface> fec_controller_factory_;
-  std::unique_ptr<NetworkControllerFactoryInterface>
-      bbr_network_controller_factory_;
 
   test::FunctionVideoEncoderFactory fake_encoder_factory_;
   int fake_encoder_max_bitrate_ = -1;
@@ -218,6 +216,13 @@ class CallTest : public ::testing::Test {
   SingleThreadedTaskQueueForTesting task_queue_;
 
  private:
+  absl::optional<RtpExtension> GetRtpExtensionByUri(
+      const std::string& uri) const;
+
+  void AddRtpExtensionByUri(const std::string& uri,
+                            std::vector<RtpExtension>* extensions) const;
+
+  std::vector<RtpExtension> rtp_extensions_;
   rtc::scoped_refptr<AudioProcessing> apm_send_;
   rtc::scoped_refptr<AudioProcessing> apm_recv_;
   rtc::scoped_refptr<TestAudioDeviceModule> fake_send_audio_device_;
@@ -246,8 +251,6 @@ class BaseTest : public RtpRtcpObserver {
   virtual void ModifySenderBitrateConfig(BitrateConstraints* bitrate_config);
   virtual void ModifyReceiverBitrateConfig(BitrateConstraints* bitrate_config);
 
-  virtual void OnRtpTransportControllerSendCreated(
-      RtpTransportControllerSend* controller);
   virtual void OnCallsCreated(Call* sender_call, Call* receiver_call);
 
   virtual test::PacketTransport* CreateSendTransport(

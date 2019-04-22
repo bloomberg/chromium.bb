@@ -40,17 +40,24 @@ bool WebFrame::Swap(WebFrame* frame) {
   // wasn't detached before continuing with the swap.
   // FIXME: There is no unit test for this condition, so one needs to be
   // written.
-  if (!old_frame->PrepareForCommit())
+  if (!old_frame->PrepareForCommit()) {
+    // If the Swap() fails, it should be because the frame has been detached
+    // already. Otherwise the caller will not detach the frame when we return
+    // false, and the browser and renderer will disagree about the destruction
+    // of |old_frame|.
+    CHECK(!old_frame->IsAttached());
     return false;
+  }
 
   // If there is a local parent, it might incorrectly declare itself complete
   // during the detach phase of this swap. Suppress its completion until swap is
   // over, at which point its completion will be correctly dependent on its
   // newly swapped-in child.
+  auto* parent_web_local_frame = DynamicTo<WebLocalFrameImpl>(parent_);
   std::unique_ptr<IncrementLoadEventDelayCount> delay_parent_load =
-      parent_ && parent_->IsWebLocalFrame()
-          ? IncrementLoadEventDelayCount::Create(
-                *ToWebLocalFrameImpl(parent_)->GetFrame()->GetDocument())
+      parent_web_local_frame
+          ? std::make_unique<IncrementLoadEventDelayCount>(
+                *parent_web_local_frame->GetFrame()->GetDocument())
           : nullptr;
 
   if (parent_) {
@@ -96,27 +103,24 @@ bool WebFrame::Swap(WebFrame* frame) {
   // Clone the state of the current Frame into the one being swapped in.
   // FIXME: This is a bit clunky; this results in pointless decrements and
   // increments of connected subframes.
-  if (frame->IsWebLocalFrame()) {
+  if (auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(frame)) {
     // TODO(dcheng): in an ideal world, both branches would just use
     // WebFrame's initializeCoreFrame() helper. However, Blink
     // currently requires a 'provisional' local frame to serve as a
     // placeholder for loading state when swapping to a local frame.
     // In this case, the core LocalFrame is already initialized, so just
     // update a bit of state.
-    LocalFrame& local_frame = *ToWebLocalFrameImpl(frame)->GetFrame();
+    LocalFrame& local_frame = *web_local_frame->GetFrame();
     DCHECK_EQ(owner, local_frame.Owner());
     if (owner) {
       owner->SetContentFrame(local_frame);
 
-      if (owner->IsLocal()) {
-        ToHTMLFrameOwnerElement(owner)->SetEmbeddedContentView(
-            local_frame.View());
+      if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(owner)) {
+        frame_owner_element->SetEmbeddedContentView(local_frame.View());
       }
     } else {
       Page* other_page = local_frame.GetPage();
       other_page->SetMainFrame(&local_frame);
-      if (PageScheduler* page_scheduler = other_page->GetPageScheduler())
-        page_scheduler->SetIsMainFrameLocal(true);
       // This trace event is needed to detect the main frame of the
       // renderer in telemetry metrics. See crbug.com/692112#c11.
       TRACE_EVENT_INSTANT1("loading", "markAsMainFrame",
@@ -129,20 +133,15 @@ bool WebFrame::Swap(WebFrame* frame) {
 
   Frame* new_frame = ToCoreFrame(*frame);
 
-  if (parent_ && old_frame->HasBeenActivated())
-    new_frame->NotifyUserActivationInLocalTree();
-
   new_frame->GetWindowProxyManager()->SetGlobalProxies(global_proxies);
 
   parent_ = nullptr;
 
-  if (owner && owner->IsLocal()) {
-    if (new_frame && new_frame->IsLocalFrame()) {
-      probe::frameOwnerContentUpdated(ToLocalFrame(new_frame),
-                                      ToHTMLFrameOwnerElement(owner));
-    } else if (old_frame && old_frame->IsLocalFrame()) {
-      probe::frameOwnerContentUpdated(ToLocalFrame(old_frame),
-                                      ToHTMLFrameOwnerElement(owner));
+  if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(owner)) {
+    if (auto* new_local_frame = DynamicTo<LocalFrame>(new_frame)) {
+      probe::FrameOwnerContentUpdated(new_local_frame, frame_owner_element);
+    } else if (auto* old_local_frame = DynamicTo<LocalFrame>(old_frame)) {
+      probe::FrameOwnerContentUpdated(old_local_frame, frame_owner_element);
     }
   }
 
@@ -158,15 +157,11 @@ WebSecurityOrigin WebFrame::GetSecurityOrigin() const {
       ToCoreFrame(*this)->GetSecurityContext()->GetSecurityOrigin());
 }
 
-void WebFrame::SetFrameOwnerPolicy(
-    WebSandboxFlags flags,
-    const blink::ParsedFeaturePolicy& container_policy) {
+void WebFrame::SetFrameOwnerPolicy(const FramePolicy& frame_policy) {
   // At the moment, this is only used to replicate sandbox flags and container
   // policy for frames with a remote owner.
-  RemoteFrameOwner* owner = ToRemoteFrameOwner(ToCoreFrame(*this)->Owner());
-  DCHECK(owner);
-  owner->SetSandboxFlags(static_cast<SandboxFlags>(flags));
-  owner->SetContainerPolicy(container_policy);
+  To<RemoteFrameOwner>(ToCoreFrame(*this)->Owner())
+      ->SetFramePolicy(frame_policy);
 }
 
 WebInsecureRequestPolicy WebFrame::GetInsecureRequestPolicy() const {
@@ -183,14 +178,13 @@ void WebFrame::SetFrameOwnerProperties(
     const WebFrameOwnerProperties& properties) {
   // At the moment, this is only used to replicate frame owner properties
   // for frames with a remote owner.
-  RemoteFrameOwner* owner = ToRemoteFrameOwner(ToCoreFrame(*this)->Owner());
-  DCHECK(owner);
+  auto* owner = To<RemoteFrameOwner>(ToCoreFrame(*this)->Owner());
 
   Frame* frame = ToCoreFrame(*this);
   DCHECK(frame);
 
-  if (frame->IsLocalFrame()) {
-    ToLocalFrame(frame)->GetDocument()->WillChangeFrameOwnerProperties(
+  if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+    local_frame->GetDocument()->WillChangeFrameOwnerProperties(
         properties.margin_width, properties.margin_height,
         static_cast<ScrollbarMode>(properties.scrolling_mode),
         properties.is_display_none);
@@ -208,8 +202,7 @@ void WebFrame::SetFrameOwnerProperties(
 
 void WebFrame::Collapse(bool collapsed) {
   FrameOwner* owner = ToCoreFrame(*this)->Owner();
-  DCHECK(owner->IsLocal());
-  ToHTMLFrameOwnerElement(owner)->SetCollapsed(collapsed);
+  To<HTMLFrameOwnerElement>(owner)->SetCollapsed(collapsed);
 }
 
 WebFrame* WebFrame::Opener() const {
@@ -311,9 +304,9 @@ WebFrame* WebFrame::TraverseNext() const {
 WebFrame* WebFrame::FromFrameOwnerElement(const WebNode& web_node) {
   Node* node = web_node;
 
-  if (!node->IsFrameOwnerElement())
-    return nullptr;
-  return FromFrame(ToHTMLFrameOwnerElement(node)->ContentFrame());
+  if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node))
+    return FromFrame(frame_owner->ContentFrame());
+  return nullptr;
 }
 
 bool WebFrame::IsLoading() const {
@@ -326,9 +319,9 @@ WebFrame* WebFrame::FromFrame(Frame* frame) {
   if (!frame)
     return nullptr;
 
-  if (frame->IsLocalFrame())
-    return WebLocalFrameImpl::FromFrame(ToLocalFrame(*frame));
-  return WebRemoteFrameImpl::FromFrame(ToRemoteFrame(*frame));
+  if (auto* local_frame = DynamicTo<LocalFrame>(frame))
+    return WebLocalFrameImpl::FromFrame(*local_frame);
+  return WebRemoteFrameImpl::FromFrame(To<RemoteFrame>(*frame));
 }
 
 WebFrame::WebFrame(WebTreeScopeType scope)
@@ -349,8 +342,8 @@ void WebFrame::TraceFrame(Visitor* visitor, WebFrame* frame) {
   if (!frame)
     return;
 
-  if (frame->IsWebLocalFrame())
-    visitor->Trace(ToWebLocalFrameImpl(frame));
+  if (auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(frame))
+    visitor->Trace(web_local_frame);
   else
     visitor->Trace(ToWebRemoteFrameImpl(frame));
 }
@@ -381,8 +374,8 @@ void WebFrame::DetachFromParent() {
 }
 
 Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {
-  if (frame.IsWebLocalFrame())
-    return ToWebLocalFrameImpl(frame).GetFrame();
+  if (auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(&frame))
+    return web_local_frame->GetFrame();
   if (frame.IsWebRemoteFrame())
     return ToWebRemoteFrameImpl(frame).GetFrame();
   NOTREACHED();

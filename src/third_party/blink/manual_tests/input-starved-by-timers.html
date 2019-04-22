@@ -21,7 +21,7 @@ function timerCallback(creationTimestamp) {
     // Create more timers. Capture the current time so when callbacks are fired,
     // we can check how long it actually took (latency caused by a long timer queue).
     var timestamp = new Date().getTime();
-    for (i = 0; i < multiplyFactor; ++i) {
+    for (var i = 0; i < multiplyFactor; ++i) {
         setTimeout(function() { timerCallback(timestamp); }, 0);
         ++timerCount;
     }

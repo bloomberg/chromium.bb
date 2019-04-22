@@ -4,7 +4,7 @@
 
 #include "components/autofill/ios/browser/autofill_driver_ios_webframe.h"
 
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 
 namespace autofill {
 
@@ -20,8 +20,8 @@ void AutofillDriverIOSWebFrameFactory::CreateForWebStateAndDelegate(
 
   web_state->SetUserData(
       UserDataKey(),
-      base::WrapUnique(new AutofillDriverIOSWebFrameFactory(
-          web_state, client, bridge, app_locale, enable_download_manager)));
+      std::make_unique<AutofillDriverIOSWebFrameFactory>(
+          web_state, client, bridge, app_locale, enable_download_manager));
 }
 
 AutofillDriverIOSWebFrameFactory::AutofillDriverIOSWebFrameFactory(
@@ -59,9 +59,9 @@ void AutofillDriverIOSWebFrame::CreateForWebFrameAndDelegate(
     return;
 
   web_frame->SetUserData(UserDataKey(),
-                         base::WrapUnique(new AutofillDriverIOSWebFrame(
+                         std::make_unique<AutofillDriverIOSWebFrame>(
                              web_state, web_frame, client, bridge, app_locale,
-                             enable_download_manager)));
+                             enable_download_manager));
 }
 
 AutofillDriverIOSRefCountable::AutofillDriverIOSRefCountable(
@@ -100,5 +100,7 @@ scoped_refptr<AutofillDriverIOSRefCountable>
 AutofillDriverIOSWebFrame::GetRetainableDriver() {
   return driver_;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(AutofillDriverIOSWebFrameFactory)
 
 }  //  namespace autofill

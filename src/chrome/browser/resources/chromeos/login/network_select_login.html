@@ -14,15 +14,15 @@
     }
   </style>
   <template>
-    <cr-network-select id="networkSelect"
+    <cr-network-select id="networkSelect" class="focus-on-show"
+        custom-items="[[getNetworkCustomItems_(isConnected)]]"
         on-default-network-changed="onDefaultNetworkChanged_"
         on-network-connect-changed="onNetworkConnectChanged_"
         on-network-list-changed="onNetworkListChanged_"
         on-network-item-selected="onNetworkListNetworkItemSelected_"
         on-custom-item-selected="onNetworkListCustomItemSelected_"
-        custom-items="[[getNetworkCustomItems_(isConnected)]]"
         no-bottom-scroll-border="[[noBottomScrollBorder]]"
-        class="focus-on-show">
+        show-technology-badge="[[showTechnologyBadge_]]">
     </cr-network-select>
   </template>
 </dom-module>

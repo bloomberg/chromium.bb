@@ -14,13 +14,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/update_client/network.h"
 #include "components/update_client/utils.h"
-#include "net/base/load_flags.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/public/cpp/resource_response.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace {
@@ -35,9 +30,9 @@ namespace update_client {
 
 UrlFetcherDownloader::UrlFetcherDownloader(
     std::unique_ptr<CrxDownloader> successor,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    scoped_refptr<NetworkFetcherFactory> network_fetcher_factory)
     : CrxDownloader(std::move(successor)),
-      url_loader_factory_(std::move(url_loader_factory)) {}
+      network_fetcher_factory_(network_fetcher_factory) {}
 
 UrlFetcherDownloader::~UrlFetcherDownloader() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -45,7 +40,6 @@ UrlFetcherDownloader::~UrlFetcherDownloader() {
 
 void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, kTaskTraits,
       base::BindOnce(&UrlFetcherDownloader::CreateDownloadDir,
@@ -61,35 +55,6 @@ void UrlFetcherDownloader::CreateDownloadDir() {
 
 void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("url_fetcher_downloader", R"(
-        semantics {
-          sender: "Component Updater"
-          description:
-            "The component updater in Chrome is responsible for updating code "
-            "and data modules such as Flash, CrlSet, Origin Trials, etc. These "
-            "modules are updated on cycles independent of the Chrome release "
-            "tracks. It runs in the browser process and communicates with a "
-            "set of servers using the Omaha protocol to find the latest "
-            "versions of components, download them, and register them with the "
-            "rest of Chrome."
-          trigger: "Manual or automatic software updates."
-          data:
-            "The URL that refers to a component. It is obfuscated for most "
-            "components."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: NO
-          setting: "This feature cannot be disabled."
-          chrome_policy {
-            ComponentUpdatesEnabled {
-              policy_options {mode: MANDATORY}
-              ComponentUpdatesEnabled: false
-            }
-          }
-        })");
 
   if (download_dir_.empty()) {
     Result result;
@@ -110,39 +75,23 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
     return;
   }
 
-  const base::FilePath response =
-      download_dir_.AppendASCII(url.ExtractFileName());
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = url;
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES |
-                                 net::LOAD_DISABLE_CACHE;
-  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
-                                                 traffic_annotation);
-  const int kMaxRetries = 3;
-  url_loader_->SetRetryOptions(
-      kMaxRetries,
-      network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
-
-  url_loader_->SetOnResponseStartedCallback(base::BindOnce(
-      &UrlFetcherDownloader::OnResponseStarted, base::Unretained(this)));
-
-  // For the end-to-end system it is important that the client reports the
-  // number of bytes it loaded from the server even in the case that the
-  // overall network transaction failed.
-  url_loader_->SetAllowPartialResults(true);
-
-  VLOG(1) << "Starting background download: " << url.spec();
-  url_loader_->DownloadToFile(
-      url_loader_factory_.get(),
-      base::BindOnce(&UrlFetcherDownloader::OnURLLoadComplete,
+  const auto file_path = download_dir_.AppendASCII(url.ExtractFileName());
+  network_fetcher_ = network_fetcher_factory_->Create();
+  network_fetcher_->DownloadToFile(
+      url, file_path,
+      base::BindOnce(&UrlFetcherDownloader::OnResponseStarted,
                      base::Unretained(this)),
-      response);
+      base::BindRepeating(&UrlFetcherDownloader::OnDownloadProgress,
+                          base::Unretained(this)),
+      base::BindOnce(&UrlFetcherDownloader::OnNetworkFetcherComplete,
+                     base::Unretained(this)));
 
   download_start_time_ = base::TimeTicks::Now();
 }
 
-void UrlFetcherDownloader::OnURLLoadComplete(base::FilePath file_path) {
+void UrlFetcherDownloader::OnNetworkFetcherComplete(base::FilePath file_path,
+                                                    int net_error,
+                                                    int64_t content_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const base::TimeTicks download_end_time(base::TimeTicks::Now());
@@ -154,47 +103,39 @@ void UrlFetcherDownloader::OnURLLoadComplete(base::FilePath file_path) {
   // Consider a 5xx response from the server as an indication to terminate
   // the request and avoid overloading the server in this case.
   // is not accepting requests for the moment.
-  int response_code = -1;
-  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
-    response_code = url_loader_->ResponseInfo()->headers->response_code();
-  }
-
-  int fetch_error = -1;
-  if (!file_path.empty() && response_code == 200) {
-    fetch_error = 0;
-  } else if (response_code != -1) {
-    fetch_error = response_code;
+  int error = -1;
+  if (!file_path.empty() && response_code_ == 200) {
+    DCHECK_EQ(0, net_error);
+    error = 0;
+  } else if (response_code_ != -1) {
+    error = response_code_;
   } else {
-    fetch_error = url_loader_->NetError();
+    error = net_error;
   }
 
-  const bool is_handled = fetch_error == 0 || IsHttpServerError(fetch_error);
+  const bool is_handled = error == 0 || IsHttpServerError(error);
 
   Result result;
-  result.error = fetch_error;
-  if (!fetch_error) {
+  result.error = error;
+  if (!error) {
     result.response = file_path;
   }
 
   DownloadMetrics download_metrics;
   download_metrics.url = url();
   download_metrics.downloader = DownloadMetrics::kUrlFetcher;
-  download_metrics.error = fetch_error;
+  download_metrics.error = error;
   // Tests expected -1, in case of failures and no content is available.
-  download_metrics.downloaded_bytes =
-      fetch_error && !url_loader_->GetContentSize()
-          ? -1
-          : url_loader_->GetContentSize();
+  download_metrics.downloaded_bytes = error ? -1 : content_size;
   download_metrics.total_bytes = total_bytes_;
   download_metrics.download_time_ms = download_time.InMilliseconds();
 
-  VLOG(1) << "Downloaded " << url_loader_->GetContentSize() << " bytes in "
-          << download_time.InMilliseconds() << "ms from "
-          << url_loader_->GetFinalURL().spec() << " to "
-          << result.response.value();
+  VLOG(1) << "Downloaded " << content_size << " bytes in "
+          << download_time.InMilliseconds() << "ms from " << final_url_.spec()
+          << " to " << result.response.value();
 
   // Delete the download directory in the error cases.
-  if (fetch_error && !download_dir_.empty())
+  if (error && !download_dir_.empty())
     base::PostTaskWithTraits(
         FROM_HERE, kTaskTraits,
         base::BindOnce(IgnoreResult(&base::DeleteFile), download_dir_, true));
@@ -206,15 +147,21 @@ void UrlFetcherDownloader::OnURLLoadComplete(base::FilePath file_path) {
 }
 
 // This callback is used to indicate that a download has been started.
-void UrlFetcherDownloader::OnResponseStarted(
-    const GURL& final_url,
-    const network::ResourceResponseHead& response_head) {
+void UrlFetcherDownloader::OnResponseStarted(const GURL& final_url,
+                                             int response_code,
+                                             int64_t content_length) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (response_head.content_length != -1)
-    total_bytes_ = response_head.content_length;
+  VLOG(1) << "url fetcher response started for: " << final_url.spec();
 
-  OnDownloadProgress();
+  final_url_ = final_url;
+  response_code_ = response_code;
+  total_bytes_ = content_length;
+}
+
+void UrlFetcherDownloader::OnDownloadProgress(int64_t current) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  CrxDownloader::OnDownloadProgress();
 }
 
 }  // namespace update_client

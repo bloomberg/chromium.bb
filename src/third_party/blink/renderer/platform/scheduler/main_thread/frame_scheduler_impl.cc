@@ -118,19 +118,6 @@ std::set<std::string> TaskTypesFromFieldTrialParam(const char* param) {
 
 }  // namespace
 
-FrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
-    FrameSchedulerImpl* frame_scheduler)
-    : frame_scheduler_(frame_scheduler->GetWeakPtr()) {
-  frame_scheduler->DidOpenActiveConnection();
-}
-
-FrameSchedulerImpl::ActiveConnectionHandleImpl::~ActiveConnectionHandleImpl() {
-  if (frame_scheduler_) {
-    static_cast<FrameSchedulerImpl*>(frame_scheduler_.get())
-        ->DidCloseActiveConnection();
-  }
-}
-
 FrameSchedulerImpl::PauseSubresourceLoadingHandleImpl::
     PauseSubresourceLoadingHandleImpl(
         base::WeakPtr<FrameSchedulerImpl> frame_scheduler)
@@ -198,13 +185,20 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                              this,
                              &tracing_controller_,
                              YesNoStateToString),
-      active_connection_count_(0),
+      aggressive_throttling_opt_out_count(0),
+      opted_out_from_aggressive_throttling_(
+          false,
+          "FrameScheduler.AggressiveThrottlingDisabled",
+          this,
+          &tracing_controller_,
+          YesNoStateToString),
       subresource_loading_pause_count_(0u),
-      has_active_connection_(false,
-                             "FrameScheduler.HasActiveConnection",
-                             this,
-                             &tracing_controller_,
-                             YesNoStateToString),
+      opted_out_from_back_forward_cache_(
+          false,
+          "FrameScheduler.OptedOutFromBackForwardCache",
+          this,
+          &tracing_controller_,
+          YesNoStateToString),
       page_frozen_for_tracing_(
           parent_page_scheduler_ ? parent_page_scheduler_->IsFrozen() : true,
           "FrameScheduler.PageFrozen",
@@ -225,6 +219,7 @@ FrameSchedulerImpl::FrameSchedulerImpl(
           this,
           &tracing_controller_,
           KeepActiveStateToString),
+      document_bound_weak_factory_(this),
       weak_factory_(this) {
   frame_task_queue_controller_.reset(
       new FrameTaskQueueController(main_thread_scheduler_, this, this));
@@ -245,7 +240,6 @@ void CleanUpQueue(MainThreadTaskQueue* queue) {
   queue->DetachFromMainThreadScheduler();
   queue->DetachFromFrameScheduler();
   queue->SetBlameContext(nullptr);
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
 }
 
 }  // namespace
@@ -265,8 +259,8 @@ FrameSchedulerImpl::~FrameSchedulerImpl() {
   if (parent_page_scheduler_) {
     parent_page_scheduler_->Unregister(this);
 
-    if (has_active_connection())
-      parent_page_scheduler_->OnConnectionUpdated();
+    if (opted_out_from_aggressive_throttling())
+      parent_page_scheduler_->OnAggressiveThrottlingStatusUpdated();
   }
 }
 
@@ -372,8 +366,8 @@ void FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
     TaskType type = static_cast<TaskType>(i);
     base::Optional<QueueTraits> queue_traits =
         CreateQueueTraitsForTaskType(type);
-    if (queue_traits && (throttleable_task_type_names.size() ||
-                         freezable_task_type_names.size())) {
+    if (queue_traits && (!throttleable_task_type_names.empty() ||
+                         !freezable_task_type_names.empty())) {
       const char* task_type_name = TaskTypeNames::TaskTypeToString(type);
       if (throttleable_task_type_names.erase(task_type_name))
         queue_traits->SetCanBeThrottled(true);
@@ -392,6 +386,9 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     TaskType type) {
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   switch (type) {
+    // kInternalContentCapture uses BestEffortTaskQueue and is handled
+    // sparately.
+    case TaskType::kInternalContentCapture:
     case TaskType::kJavascriptTimer:
       return ThrottleableTaskQueueTraits();
     case TaskType::kInternalLoading:
@@ -400,12 +397,15 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kNetworkingControl:
       // Loading task queues are handled separately.
       return base::nullopt;
+    case TaskType::kExperimentalWebSchedulingUserInteraction:
+    case TaskType::kExperimentalWebSchedulingBestEffort:
+      // WebScheduling queues are handled separately.
+      return base::nullopt;
     // Throttling following tasks may break existing web pages, so tentatively
     // these are unthrottled.
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
     // or provide a mechanism that web pages can opt-out it if throttling is not
     // desirable.
-    case TaskType::kDatabaseAccess:
     case TaskType::kDOMManipulation:
     case TaskType::kHistoryTraversal:
     case TaskType::kEmbed:
@@ -422,19 +422,24 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kIdleTask:
     case TaskType::kInternalDefault:
     case TaskType::kMiscPlatformAPI:
+    case TaskType::kFontLoading:
+    case TaskType::kApplicationLifeCycle:
+    case TaskType::kBackgroundFetch:
+    case TaskType::kPermission:
       // TODO(altimin): Move appropriate tasks to throttleable task queue.
       return DeferrableTaskQueueTraits();
     // PostedMessage can be used for navigation, so we shouldn't defer it
     // when expecting a user gesture.
     case TaskType::kPostedMessage:
+    case TaskType::kServiceWorkerClientMessage:
     case TaskType::kWorkerAnimation:
     // UserInteraction tasks should be run even when expecting a user gesture.
     case TaskType::kUserInteraction:
     // Media events should not be deferred to ensure that media playback is
     // smooth.
     case TaskType::kMediaElementEvent:
+    case TaskType::kDatabaseAccess:
     case TaskType::kInternalWebCrypto:
-    case TaskType::kInternalIndexedDB:
     case TaskType::kInternalMedia:
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
@@ -454,6 +459,9 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
       return UnpausableTaskQueueTraits();
     case TaskType::kInternalTranslation:
       return ForegroundOnlyTaskQueueTraits();
+    // Navigation IPCs do not run using virtual time to avoid hanging.
+    case TaskType::kInternalNavigation:
+      return DoesNotUseVirtualTimeTaskQueueTraits();
     case TaskType::kDeprecatedNone:
     case TaskType::kMainThreadTaskQueueV8:
     case TaskType::kMainThreadTaskQueueCompositor:
@@ -463,13 +471,12 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kMainThreadTaskQueueIPC:
     case TaskType::kMainThreadTaskQueueControl:
     case TaskType::kMainThreadTaskQueueCleanup:
+    case TaskType::kMainThreadTaskQueueMemoryPurge:
     case TaskType::kCompositorThreadTaskQueueDefault:
     case TaskType::kCompositorThreadTaskQueueInput:
     case TaskType::kWorkerThreadTaskQueueDefault:
     case TaskType::kWorkerThreadTaskQueueV8:
     case TaskType::kWorkerThreadTaskQueueCompositor:
-    case TaskType::kExperimentalWebSchedulingUserInteraction:
-    case TaskType::kExperimentalWebSchedulingBestEffort:
     case TaskType::kCount:
       // Not a valid frame-level TaskType.
       return base::nullopt;
@@ -499,6 +506,8 @@ scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
       return frame_task_queue_controller_->LoadingControlTaskQueue();
     case TaskType::kInternalInspector:
       return frame_task_queue_controller_->InspectorTaskQueue();
+    case TaskType::kInternalContentCapture:
+      return frame_task_queue_controller_->BestEffortTaskQueue();
     case TaskType::kExperimentalWebSchedulingUserInteraction:
       return frame_task_queue_controller_->ExperimentalWebSchedulingTaskQueue(
           FrameTaskQueueController::WebSchedulingTaskQueueType::
@@ -532,7 +541,7 @@ std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
 FrameSchedulerImpl::CreateResourceLoadingTaskRunnerHandleImpl() {
   if (main_thread_scheduler_->scheduling_settings()
           .use_resource_fetch_priority ||
-      (parent_page_scheduler_->IsLoading() &&
+      (parent_page_scheduler_ && parent_page_scheduler_->IsLoading() &&
        main_thread_scheduler_->scheduling_settings()
            .use_resource_priorities_only_during_loading)) {
     scoped_refptr<MainThreadTaskQueue> task_queue =
@@ -596,10 +605,15 @@ void FrameSchedulerImpl::DidStartProvisionalLoad(bool is_main_frame) {
 
 void FrameSchedulerImpl::DidCommitProvisionalLoad(
     bool is_web_history_inert_commit,
-    bool is_reload,
-    bool is_main_frame) {
-  main_thread_scheduler_->DidCommitProvisionalLoad(is_web_history_inert_commit,
-                                                   is_reload, is_main_frame);
+    NavigationType navigation_type) {
+  bool is_main_frame = GetFrameType() == FrameType::kMainFrame;
+  if (is_main_frame && navigation_type != NavigationType::kSameDocument)
+    task_time_ = base::TimeDelta();
+  main_thread_scheduler_->DidCommitProvisionalLoad(
+      is_web_history_inert_commit, navigation_type == NavigationType::kReload,
+      is_main_frame);
+  if (navigation_type != NavigationType::kSameDocument)
+    ResetForNavigation();
 }
 
 WebScopedVirtualTimePauser FrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
@@ -608,19 +622,108 @@ WebScopedVirtualTimePauser FrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
   return WebScopedVirtualTimePauser(main_thread_scheduler_, duration, name);
 }
 
-void FrameSchedulerImpl::DidOpenActiveConnection() {
-  ++active_connection_count_;
-  has_active_connection_ = static_cast<bool>(active_connection_count_);
-  if (parent_page_scheduler_)
-    parent_page_scheduler_->OnConnectionUpdated();
+void FrameSchedulerImpl::ResetForNavigation() {
+  document_bound_weak_factory_.InvalidateWeakPtrs();
+
+  back_forward_cache_opt_out_counts_.clear();
+  back_forward_cache_opt_outs_.reset();
+  last_uploaded_active_features_ = 0;
 }
 
-void FrameSchedulerImpl::DidCloseActiveConnection() {
-  DCHECK_GT(active_connection_count_, 0);
-  --active_connection_count_;
-  has_active_connection_ = static_cast<bool>(active_connection_count_);
+void FrameSchedulerImpl::OnStartedUsingFeature(
+    SchedulingPolicy::Feature feature,
+    const SchedulingPolicy& policy) {
+  uint64_t old_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+
+  if (policy.disable_aggressive_throttling)
+    OnAddedAggressiveThrottlingOptOut();
+  if (policy.disable_back_forward_cache)
+    OnAddedBackForwardCacheOptOut(feature);
+
+  uint64_t new_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+
+  if (old_mask != new_mask)
+    NotifyDelegateAboutFeaturesAfterCurrentTask();
+}
+
+void FrameSchedulerImpl::OnStoppedUsingFeature(
+    SchedulingPolicy::Feature feature,
+    const SchedulingPolicy& policy) {
+  uint64_t old_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+
+  if (policy.disable_aggressive_throttling)
+    OnRemovedAggressiveThrottlingOptOut();
+  if (policy.disable_back_forward_cache)
+    OnRemovedBackForwardCacheOptOut(feature);
+
+  uint64_t new_mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+
+  if (old_mask != new_mask)
+    NotifyDelegateAboutFeaturesAfterCurrentTask();
+}
+
+void FrameSchedulerImpl::NotifyDelegateAboutFeaturesAfterCurrentTask() {
+  if (!delegate_)
+    return;
+  if (feature_report_scheduled_)
+    return;
+  feature_report_scheduled_ = true;
+
+  main_thread_scheduler_->ExecuteAfterCurrentTask(
+      base::BindOnce(&FrameSchedulerImpl::ReportFeaturesToDelegate,
+                     document_bound_weak_factory_.GetWeakPtr()));
+}
+
+void FrameSchedulerImpl::ReportFeaturesToDelegate() {
+  DCHECK(delegate_);
+  feature_report_scheduled_ = false;
+  uint64_t mask = GetActiveFeaturesOptingOutFromBackForwardCacheMask();
+  if (mask == last_uploaded_active_features_)
+    return;
+  last_uploaded_active_features_ = mask;
+  delegate_->UpdateActiveSchedulerTrackedFeatures(mask);
+}
+
+base::WeakPtr<FrameScheduler> FrameSchedulerImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+void FrameSchedulerImpl::OnAddedAggressiveThrottlingOptOut() {
+  ++aggressive_throttling_opt_out_count;
+  opted_out_from_aggressive_throttling_ =
+      static_cast<bool>(aggressive_throttling_opt_out_count);
   if (parent_page_scheduler_)
-    parent_page_scheduler_->OnConnectionUpdated();
+    parent_page_scheduler_->OnAggressiveThrottlingStatusUpdated();
+}
+
+void FrameSchedulerImpl::OnRemovedAggressiveThrottlingOptOut() {
+  DCHECK_GT(aggressive_throttling_opt_out_count, 0);
+  --aggressive_throttling_opt_out_count;
+  opted_out_from_aggressive_throttling_ =
+      static_cast<bool>(aggressive_throttling_opt_out_count);
+  if (parent_page_scheduler_)
+    parent_page_scheduler_->OnAggressiveThrottlingStatusUpdated();
+}
+
+void FrameSchedulerImpl::OnAddedBackForwardCacheOptOut(
+    SchedulingPolicy::Feature feature) {
+  ++back_forward_cache_opt_out_counts_[feature];
+  back_forward_cache_opt_outs_.set(static_cast<size_t>(feature));
+  opted_out_from_back_forward_cache_ = true;
+}
+
+void FrameSchedulerImpl::OnRemovedBackForwardCacheOptOut(
+    SchedulingPolicy::Feature feature) {
+  DCHECK_GT(back_forward_cache_opt_out_counts_[feature], 0);
+  auto it = back_forward_cache_opt_out_counts_.find(feature);
+  if (it->second == 1) {
+    back_forward_cache_opt_out_counts_.erase(it);
+    back_forward_cache_opt_outs_.reset(static_cast<size_t>(feature));
+  } else {
+    --it->second;
+  }
+  opted_out_from_back_forward_cache_ =
+      !back_forward_cache_opt_out_counts_.empty();
 }
 
 void FrameSchedulerImpl::AsValueInto(
@@ -721,7 +824,7 @@ void FrameSchedulerImpl::UpdateQueuePolicy(
   // immediately when their frame becomes invisible get frozen. They will be
   // resumed when the frame becomes visible again.
   queue_disabled |= !frame_visible_ && !queue->CanRunInBackground();
-  voter->SetQueueEnabled(!queue_disabled);
+  voter->SetVoteToEnable(!queue_disabled);
 }
 
 SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
@@ -738,7 +841,7 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
   if (subresource_loading_paused_ && type == ObserverType::kLoader)
     return SchedulingLifecycleState::kStopped;
   if (type == ObserverType::kLoader &&
-      parent_page_scheduler_->HasActiveConnection()) {
+      parent_page_scheduler_->OptedOutFromAggressiveThrottling()) {
     return SchedulingLifecycleState::kNotThrottled;
   }
   if (parent_page_scheduler_->IsThrottled())
@@ -750,11 +853,6 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
 
 void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
   main_thread_scheduler_->OnFirstMeaningfulPaint();
-}
-
-std::unique_ptr<FrameScheduler::ActiveConnectionHandle>
-FrameSchedulerImpl::OnActiveConnectionCreated() {
-  return std::make_unique<FrameSchedulerImpl::ActiveConnectionHandleImpl>(this);
 }
 
 bool FrameSchedulerImpl::ShouldThrottleTaskQueues() const {
@@ -783,7 +881,7 @@ void FrameSchedulerImpl::UpdateTaskQueueThrottling(
 }
 
 bool FrameSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
-  return has_active_connection();
+  return opted_out_from_aggressive_throttling();
 }
 
 TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
@@ -806,6 +904,12 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
 
   if (fixed_priority)
     return fixed_priority.value();
+
+  if (!parent_page_scheduler_) {
+    // Frame might be detached during its shutdown. Return a default priority
+    // in that case.
+    return TaskQueue::QueuePriority::kNormalPriority;
+  }
 
   // A hidden page with no audio.
   if (parent_page_scheduler_->IsBackgrounded()) {
@@ -953,6 +1057,43 @@ void FrameSchedulerImpl::OnTaskQueueCreated(
   }
 }
 
+void FrameSchedulerImpl::AddTaskTime(base::TimeDelta time) {
+  // The duration of task time under which AddTaskTime buffers rather than
+  // sending the task time update to the delegate.
+  constexpr base::TimeDelta kTaskDurationSendThreshold =
+      base::TimeDelta::FromMilliseconds(100);
+  if (!delegate_)
+    return;
+  task_time_ += time;
+  if (task_time_ >= kTaskDurationSendThreshold) {
+    delegate_->UpdateTaskTime(task_time_);
+    task_time_ = base::TimeDelta();
+  }
+}
+
+WTF::HashSet<SchedulingPolicy::Feature>
+FrameSchedulerImpl::GetActiveFeaturesOptingOutFromBackForwardCache() {
+  WTF::HashSet<SchedulingPolicy::Feature> result;
+  for (const auto& it : back_forward_cache_opt_out_counts_)
+    result.insert(it.first);
+  return result;
+}
+
+uint64_t
+FrameSchedulerImpl::GetActiveFeaturesOptingOutFromBackForwardCacheMask() const {
+  auto result = back_forward_cache_opt_outs_.to_ullong();
+  static_assert(static_cast<size_t>(SchedulingPolicy::Feature::kCount) <=
+                    sizeof(result) * 8,
+                "Number of the features should allow a bitmask to fit into "
+                "64-bit integer");
+  return result;
+}
+
+base::WeakPtr<FrameOrWorkerScheduler>
+FrameSchedulerImpl::GetDocumentBoundWeakPtr() {
+  return document_bound_weak_factory_.GetWeakPtr();
+}
+
 // static
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::ThrottleableTaskQueueTraits() {
@@ -990,6 +1131,11 @@ FrameSchedulerImpl::UnpausableTaskQueueTraits() {
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits() {
   return ThrottleableTaskQueueTraits().SetCanRunInBackground(false);
+}
+
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::DoesNotUseVirtualTimeTaskQueueTraits() {
+  return UnpausableTaskQueueTraits().SetShouldUseVirtualTime(false);
 }
 
 }  // namespace scheduler

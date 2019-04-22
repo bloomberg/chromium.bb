@@ -16,13 +16,11 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.signin.AccountTrackerService;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -33,6 +31,7 @@ import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Test suite for Sync.
@@ -118,35 +117,32 @@ public class SyncTest {
         final Account oldAccount = mSyncTestRule.setUpTestAccountAndSignIn();
         final Account newAccount = SigninTestUtil.addTestAccount("test2@gmail.com");
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // First, we force a call to updateAccountRenameData. In the real world,
-                // this should be called by one of our broadcast listener that listens to
-                // real account rename events instead of the mocks.
-                MockChangeEventChecker eventChecker = new MockChangeEventChecker();
-                eventChecker.insertRenameEvent(oldAccount.name, newAccount.name);
-                SigninHelper.resetAccountRenameEventIndex();
-                SigninHelper.updateAccountRenameData(eventChecker);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // First, we force a call to updateAccountRenameData. In the real world,
+            // this should be called by one of our broadcast listener that listens to
+            // real account rename events instead of the mocks.
+            MockChangeEventChecker eventChecker = new MockChangeEventChecker();
+            eventChecker.insertRenameEvent(oldAccount.name, newAccount.name);
+            SigninHelper.updateAccountRenameData(eventChecker);
 
-                // Tell the fake content resolver that a rename had happen and copy over the sync
-                // settings. This would normally be done by the
-                // SystemSyncTestRule.getSyncContentResolver().
-                mSyncTestRule.getSyncContentResolver().renameAccounts(
-                        oldAccount, newAccount, AndroidSyncSettings.get().getContractAuthority());
+            // Tell the fake content resolver that a rename had happen and copy over the sync
+            // settings. This would normally be done by the
+            // SystemSyncTestRule.getSyncContentResolver().
+            mSyncTestRule.getSyncContentResolver().renameAccounts(
+                    oldAccount, newAccount, AndroidSyncSettings.get().getContractAuthority());
 
-                // Inform the AccountTracker, these would normally be done by account validation
-                // or signin. We will only be calling the testing versions of it.
-                AccountIdProvider provider = AccountIdProvider.getInstance();
-                String[] accountNames = {oldAccount.name, newAccount.name};
-                String[] accountIds = {provider.getAccountId(accountNames[0]),
-                        provider.getAccountId(accountNames[1])};
-                AccountTrackerService.get().syncForceRefreshForTest(accountIds, accountNames);
+            // Inform the AccountTracker, these would normally be done by account validation
+            // or signin. We will only be calling the testing versions of it.
+            AccountIdProvider provider = AccountIdProvider.getInstance();
+            String[] accountNames = {oldAccount.name, newAccount.name};
+            String[] accountIds = {
+                    provider.getAccountId(accountNames[0]), provider.getAccountId(accountNames[1])};
+            IdentityServicesProvider.getAccountTrackerService().syncForceRefreshForTest(
+                    accountIds, accountNames);
 
-                // Starts the rename process. Normally, this is triggered by the broadcast
-                // listener as well.
-                SigninHelper.get().validateAccountSettings(true);
-            }
+            // Starts the rename process. Normally, this is triggered by the broadcast
+            // listener as well.
+            SigninHelper.get().validateAccountSettings(true);
         });
 
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
@@ -171,16 +167,15 @@ public class SyncTest {
         mSyncTestRule.startSyncAndWait();
     }
 
-    /*
-     * @LargeTest
-     * @Feature({"Sync"})
-     */
     @Test
-    @FlakyTest(message = "crbug.com/594558")
-    public void testStopAndStartSyncThroughAndroid() {
+    @LargeTest
+    @Feature({"Sync"})
+    public void testStopAndStartSyncThroughAndroidChromeSync() {
         Account account = mSyncTestRule.setUpTestAccountAndSignIn();
-
         String authority = AndroidSyncSettings.get().getContractAuthority();
+
+        Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
 
         // Disabling Android sync should turn Chrome sync engine off.
         mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, false);
@@ -189,6 +184,16 @@ public class SyncTest {
         // Enabling Android sync should turn Chrome sync engine on.
         mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, true);
         SyncTestUtil.waitForSyncActive();
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    public void testStopAndStartSyncThroughAndroidMasterSync() {
+        mSyncTestRule.setUpTestAccountAndSignIn();
+
+        Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
 
         // Disabling Android's master sync should turn Chrome sync engine off.
         mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(false);
@@ -197,18 +202,74 @@ public class SyncTest {
         // Enabling Android's master sync should turn Chrome sync engine on.
         mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(true);
         SyncTestUtil.waitForSyncActive();
+    }
 
-        // Disabling both should definitely turn sync off.
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    public void testReenableMasterSyncFirst() {
+        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        String authority = AndroidSyncSettings.get().getContractAuthority();
+
+        Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
+        Assert.assertTrue(SyncTestUtil.canSyncFeatureStart());
+
+        // Disable Chrome sync first. Sync should be off.
         mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, false);
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.canSyncFeatureStart());
+
+        // Also disable master sync.
         mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(false);
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.canSyncFeatureStart());
 
         // Re-enabling master sync should not turn sync back on.
         mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(true);
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.canSyncFeatureStart());
 
         // But then re-enabling Chrome sync should.
         mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, true);
+        Assert.assertTrue(SyncTestUtil.canSyncFeatureStart());
+        SyncTestUtil.waitForSyncActive();
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    public void testReenableChromeSyncFirst() {
+        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        String authority = AndroidSyncSettings.get().getContractAuthority();
+
+        Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
+        Assert.assertTrue(SyncTestUtil.canSyncFeatureStart());
+
+        // Disabling master sync first. Sync should be off.
+        mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(false);
+        // TODO(crbug.com/921025): Master sync shouldn't influence isSyncRequested, so at this point
+        // isSyncRequested should be true; only canSyncFeatureStart should be false.
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.canSyncFeatureStart());
+
+        // Also disable Chrome sync.
+        mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, false);
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.canSyncFeatureStart());
+
+        // Re-enabling Chrome sync should not turn sync back on.
+        mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, true);
+        // TODO(crbug.com/921025): Master sync (which is still disabled) shouldn't influence
+        // isSyncRequested, so at this point isSyncRequested should be true (but
+        // canSyncFeatureStart should remain false).
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.canSyncFeatureStart());
+
+        // But then re-enabling master sync should.
+        mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(true);
+        Assert.assertTrue(SyncTestUtil.canSyncFeatureStart());
         SyncTestUtil.waitForSyncActive();
     }
 

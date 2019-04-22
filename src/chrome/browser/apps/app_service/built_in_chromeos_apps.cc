@@ -7,11 +7,13 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/profiles/profile.h"
-// TODO(crbug.com/826982): move source of truth for built-in apps out of
-// ui/app_list when the AppService feature is enabled by default.
+#include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
+#include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,16 +27,34 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
     return apps::mojom::AppPtr();
   }
   apps::mojom::AppPtr app = apps::mojom::App::New();
+
   app->app_type = apps::mojom::AppType::kBuiltIn;
   app->app_id = internal_app.app_id;
   app->readiness = apps::mojom::Readiness::kReady;
   app->name = l10n_util::GetStringUTF8(internal_app.name_string_resource_id);
-  app->icon_key = apps::mojom::IconKey::New();
-  app->icon_key->icon_type = apps::mojom::IconType::kResource;
-  app->icon_key->u_key = static_cast<uint64_t>(internal_app.icon_resource_id);
+  app->short_name = app->name;
+  if (internal_app.searchable_string_resource_id != 0) {
+    app->additional_search_terms.push_back(
+        l10n_util::GetStringUTF8(internal_app.searchable_string_resource_id));
+  }
+
+  app->icon_key = apps::mojom::IconKey::New(
+      apps::mojom::IconKey::kDoesNotChangeOverTime,
+      internal_app.icon_resource_id, apps::IconEffects::kNone);
+
+  app->last_launch_time = base::Time();
+  app->install_time = base::Time();
+
+  app->installed_internally = apps::mojom::OptionalBool::kTrue;
+  app->is_platform_app = apps::mojom::OptionalBool::kFalse;
   app->show_in_launcher = internal_app.show_in_launcher
                               ? apps::mojom::OptionalBool::kTrue
                               : apps::mojom::OptionalBool::kFalse;
+  app->show_in_search = internal_app.searchable
+                            ? apps::mojom::OptionalBool::kTrue
+                            : apps::mojom::OptionalBool::kFalse;
+  app->show_in_management = apps::mojom::OptionalBool::kFalse;
+
   return app;
 }
 
@@ -62,7 +82,19 @@ void BuiltInChromeOsApps::Connect(apps::mojom::SubscriberPtr subscriber,
                                   apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
   if (profile_) {
+    // TODO(crbug.com/826982): move source of truth for built-in apps from
+    // ui/app_list to here when the AppService feature is enabled by default.
     for (const auto& internal_app : app_list::GetInternalAppList(profile_)) {
+      // TODO(crbug.com/826982): support the "continue reading" app? Or leave
+      // it specifically to the chrome/browser/ui/app_list/search code? If
+      // moved here, it might mean calling sync_sessions::SessionSyncService's
+      // SubscribeToForeignSessionsChanged. See also app_search_provider.cc's
+      // InternalDataSource.
+      if (internal_app.internal_app_name ==
+          app_list::InternalAppName::kContinueReading) {
+        continue;
+      }
+
       apps::mojom::AppPtr app = Convert(internal_app);
       if (!app.is_null()) {
         apps.push_back(std::move(app));
@@ -83,13 +115,15 @@ void BuiltInChromeOsApps::LoadIcon(
     apps::mojom::IconKeyPtr icon_key,
     apps::mojom::IconCompression icon_compression,
     int32_t size_hint_in_dip,
+    bool allow_placeholder_icon,
     LoadIconCallback callback) {
-  if (!icon_key.is_null() &&
-      (icon_key->icon_type == apps::mojom::IconType::kResource) &&
-      (icon_key->u_key != 0) && (icon_key->u_key <= INT_MAX)) {
-    int resource_id = static_cast<int>(icon_key->u_key);
+  constexpr bool is_placeholder_icon = false;
+  if (icon_key &&
+      (icon_key->resource_id != apps::mojom::IconKey::kInvalidResourceId)) {
     LoadIconFromResource(icon_compression, size_hint_in_dip,
-                         std::move(callback), resource_id);
+                         icon_key->resource_id, is_placeholder_icon,
+                         static_cast<IconEffects>(icon_key->icon_effects),
+                         std::move(callback));
     return;
   }
   // On failure, we still run the callback, with the zero IconValue.
@@ -97,8 +131,41 @@ void BuiltInChromeOsApps::LoadIcon(
 }
 
 void BuiltInChromeOsApps::Launch(const std::string& app_id,
-                                 int32_t event_flags) {
+                                 int32_t event_flags,
+                                 apps::mojom::LaunchSource launch_source,
+                                 int64_t display_id) {
+  switch (launch_source) {
+    case apps::mojom::LaunchSource::kUnknown:
+    case apps::mojom::LaunchSource::kFromKioskNextHome:
+      break;
+    case apps::mojom::LaunchSource::kFromAppListGrid:
+    case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
+      InternalAppItem::RecordActiveHistogram(app_id);
+      break;
+    case apps::mojom::LaunchSource::kFromAppListQuery:
+    case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
+      app_list::InternalAppResult::RecordOpenHistogram(app_id);
+      break;
+    case apps::mojom::LaunchSource::kFromAppListRecommendation:
+      app_list::InternalAppResult::RecordOpenHistogram(app_id);
+      break;
+  }
+
   app_list::OpenInternalApp(app_id, profile_, event_flags);
+}
+
+void BuiltInChromeOsApps::SetPermission(const std::string& app_id,
+                                        apps::mojom::PermissionPtr permission) {
+  NOTIMPLEMENTED();
+}
+
+void BuiltInChromeOsApps::Uninstall(const std::string& app_id) {
+  LOG(ERROR) << "Uninstall failed, could not remove built-in app with id "
+             << app_id;
+}
+
+void BuiltInChromeOsApps::OpenNativeSettings(const std::string& app_id) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace apps

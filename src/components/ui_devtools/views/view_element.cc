@@ -37,8 +37,7 @@ void ViewElement::OnChildViewRemoved(views::View* parent, views::View* view) {
 
 void ViewElement::OnChildViewAdded(views::View* parent, views::View* view) {
   DCHECK_EQ(parent, view_);
-  AddChild(new ViewElement(view, delegate(), this),
-           children().empty() ? nullptr : children().back());
+  AddChild(new ViewElement(view, delegate(), this));
 }
 
 void ViewElement::OnChildViewReordered(views::View* parent, views::View* view) {
@@ -60,12 +59,10 @@ void ViewElement::OnViewBoundsChanged(views::View* view) {
 
 std::vector<std::pair<std::string, std::string>>
 ViewElement::GetCustomProperties() const {
-  base::string16 description;
-  if (view_->GetTooltipText(gfx::Point(), &description)) {
-    return {std::make_pair<std::string, std::string>(
-        "tooltip", base::UTF16ToUTF8(description))};
-  }
-  return {};
+  base::string16 description = view_->GetTooltipText(gfx::Point());
+  if (description.empty())
+    return {};
+  return {{"tooltip", base::UTF16ToUTF8(description)}};
 }
 
 void ViewElement::GetBounds(gfx::Rect* bounds) const {
@@ -93,8 +90,8 @@ std::unique_ptr<protocol::Array<std::string>> ViewElement::GetAttributes()
   return attributes;
 }
 
-std::pair<gfx::NativeWindow, gfx::Rect> ViewElement::GetNodeWindowAndBounds()
-    const {
+std::pair<gfx::NativeWindow, gfx::Rect>
+ViewElement::GetNodeWindowAndScreenBounds() const {
   return std::make_pair(view_->GetWidget()->GetNativeWindow(),
                         view_->GetBoundsInScreen());
 }

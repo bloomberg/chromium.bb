@@ -186,8 +186,7 @@ circle{
     "className": ".float.circle",
     "nodeWidth": "128",
     "nodeHeight": "128"
-  },
-  "displayAsMaterial": false
+  }
 }
 circle{
   "paths": [
@@ -375,7 +374,6 @@ circle{
     "className": ".float.circle",
     "nodeWidth": "128",
     "nodeHeight": "128"
-  },
-  "displayAsMaterial": false
+  }
 }
 

@@ -29,7 +29,6 @@ from devil.android.sdk import intent
 sys.path.append(os.path.join(_SRC_PATH, 'build', 'android'))
 import devil_chromium
 
-sys.path.append(os.path.join(_SRC_PATH, 'tools', 'android', 'loading'))
 import chrome_setup
 
 

@@ -58,7 +58,7 @@ void ChunkedUploadDataStream::AppendData(
   int result = ReadChunk(read_buffer_.get(), read_buffer_len_);
   // Shouldn't get an error or ERR_IO_PENDING.
   DCHECK_GE(result, 0);
-  read_buffer_ = NULL;
+  read_buffer_ = nullptr;
   read_buffer_len_ = 0;
   OnReadCompleted(result);
 }
@@ -84,7 +84,7 @@ int ChunkedUploadDataStream::ReadInternal(IOBuffer* buf, int buf_len) {
 }
 
 void ChunkedUploadDataStream::ResetInternal() {
-  read_buffer_ = NULL;
+  read_buffer_ = nullptr;
   read_buffer_len_ = 0;
   read_index_ = 0;
   read_offset_ = 0;

@@ -10,35 +10,37 @@ cr.define('sidebar', function() {
   /** @typedef {{pageName: string, text: string}} */
   var SidebarItem;
 
-  /** @const {!cr.ui.pageManager.PageManager}*/
+  /** @const {!Object}*/
   var PageManager = cr.ui.pageManager.PageManager;
 
   /**
    * A side menu that lists the currently navigable pages.
    * @constructor
    * @param {!Element} sidebarDiv The div corresponding to the sidebar.
-   * @extends {PageManager.Observer}
+   * @extends {cr.ui.pageManager.PageManager.Observer}
    */
   function Sidebar(sidebarDiv) {
     /** @private {!Element} */
     this.sidebarDiv_ = sidebarDiv;
     /** @private {!Element} */
-    this.sidebarContent_ = this.sidebarDiv_.querySelector('.sidebar-content');
+    this.sidebarContent_ =
+        assert(this.sidebarDiv_.querySelector('.sidebar-content'));
     /** @private {!Element} */
-    this.sidebarList_ = this.sidebarContent_.querySelector('ul');
+    this.sidebarList_ = assert(this.sidebarContent_.querySelector('ul'));
 
     this.sidebarList_.querySelectorAll('li button').forEach(function(item) {
       item.addEventListener('click', this.onItemClick_.bind(this));
     }, this);
 
     /** @private {!Element} */
-    this.overlayDiv_ = this.sidebarDiv_.querySelector('.overlay');
+    this.overlayDiv_ = assert(this.sidebarDiv_.querySelector('.overlay'));
     this.overlayDiv_.addEventListener('click', this.close.bind(this));
 
     window.matchMedia('screen and (max-width: 600px)')
         .addListener(function(query) {
-          if (!query.matches)
+          if (!query.matches) {
             this.close();
+          }
         }.bind(this));
   }
 

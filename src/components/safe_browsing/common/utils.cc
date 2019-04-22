@@ -13,7 +13,7 @@
 #include "crypto/sha2.h"
 
 #if defined(OS_WIN)
-#include "base/win/win_util.h"
+#include "base/enterprise_util.h"
 #endif
 
 namespace safe_browsing {
@@ -38,7 +38,7 @@ void LogNoUserActionResourceLoadingDelay(base::TimeDelta time) {
 ChromeUserPopulation::ProfileManagementStatus GetProfileManagementStatus(
     const policy::BrowserPolicyConnector* bpc) {
 #if defined(OS_WIN)
-  if (base::win::IsEnterpriseManaged())
+  if (base::IsMachineExternallyManaged())
     return ChromeUserPopulation::ENTERPRISE_MANAGED;
   else
     return ChromeUserPopulation::NOT_MANAGED;

@@ -55,13 +55,64 @@ int16_t WebRtcOpus_EncoderCreate(OpusEncInst** inst,
       return -1;
   }
 
-  OpusEncInst* state = calloc(1, sizeof(OpusEncInst));
+  OpusEncInst* state = (OpusEncInst*)calloc(1, sizeof(OpusEncInst));
   RTC_DCHECK(state);
 
   int error;
   state->encoder = opus_encoder_create(48000, (int)channels, opus_app,
                                        &error);
-  if (error != OPUS_OK || !state->encoder) {
+
+  if (error != OPUS_OK || (!state->encoder &&
+                           !state->multistream_encoder)) {
+    WebRtcOpus_EncoderFree(state);
+    return -1;
+  }
+
+  state->in_dtx_mode = 0;
+  state->channels = channels;
+
+  *inst = state;
+  return 0;
+}
+
+int16_t WebRtcOpus_MultistreamEncoderCreate(
+    OpusEncInst** inst,
+    size_t channels,
+    int32_t application,
+    size_t streams,
+    size_t coupled_streams,
+    const unsigned char *channel_mapping) {
+  int opus_app;
+  if (!inst)
+    return -1;
+
+  switch (application) {
+    case 0:
+      opus_app = OPUS_APPLICATION_VOIP;
+      break;
+    case 1:
+      opus_app = OPUS_APPLICATION_AUDIO;
+      break;
+    default:
+      return -1;
+  }
+
+  OpusEncInst* state = (OpusEncInst*)calloc(1, sizeof(OpusEncInst));
+  RTC_DCHECK(state);
+
+  int error;
+  state->multistream_encoder =
+      opus_multistream_encoder_create(
+          48000,
+          channels,
+          streams,
+          coupled_streams,
+          channel_mapping,
+          opus_app,
+          &error);
+
+  if (error != OPUS_OK || (!state->encoder &&
+                           !state->multistream_encoder)) {
     WebRtcOpus_EncoderFree(state);
     return -1;
   }
@@ -75,7 +126,11 @@ int16_t WebRtcOpus_EncoderCreate(OpusEncInst** inst,
 
 int16_t WebRtcOpus_EncoderFree(OpusEncInst* inst) {
   if (inst) {
-    opus_encoder_destroy(inst->encoder);
+    if (inst->encoder) {
+      opus_encoder_destroy(inst->encoder);
+    } else {
+      opus_multistream_encoder_destroy(inst->multistream_encoder);
+    }
     free(inst);
     return 0;
   } else {
@@ -94,11 +149,19 @@ int WebRtcOpus_Encode(OpusEncInst* inst,
     return -1;
   }
 
-  res = opus_encode(inst->encoder,
-                    (const opus_int16*)audio_in,
-                    (int)samples,
-                    encoded,
-                    (opus_int32)length_encoded_buffer);
+  if (inst->encoder) {
+    res = opus_encode(inst->encoder,
+                      (const opus_int16*)audio_in,
+                      (int)samples,
+                      encoded,
+                      (opus_int32)length_encoded_buffer);
+  } else {
+    res = opus_multistream_encode(inst->multistream_encoder,
+                                  (const opus_int16*)audio_in,
+                                  (int)samples,
+                                  encoded,
+                                  (opus_int32)length_encoded_buffer);
+  }
 
   if (res <= 0) {
     return -1;
@@ -120,9 +183,15 @@ int WebRtcOpus_Encode(OpusEncInst* inst,
   return res;
 }
 
+#define ENCODER_CTL(inst, vargs) (                                   \
+    inst->encoder ?                                                  \
+    opus_encoder_ctl(inst->encoder, vargs)                           \
+    : opus_multistream_encoder_ctl(inst->multistream_encoder, vargs))
+
+
 int16_t WebRtcOpus_SetBitRate(OpusEncInst* inst, int32_t rate) {
   if (inst) {
-    return opus_encoder_ctl(inst->encoder, OPUS_SET_BITRATE(rate));
+    return ENCODER_CTL(inst, OPUS_SET_BITRATE(rate));
   } else {
     return -1;
   }
@@ -130,8 +199,7 @@ int16_t WebRtcOpus_SetBitRate(OpusEncInst* inst, int32_t rate) {
 
 int16_t WebRtcOpus_SetPacketLossRate(OpusEncInst* inst, int32_t loss_rate) {
   if (inst) {
-    return opus_encoder_ctl(inst->encoder,
-                            OPUS_SET_PACKET_LOSS_PERC(loss_rate));
+    return ENCODER_CTL(inst, OPUS_SET_PACKET_LOSS_PERC(loss_rate));
   } else {
     return -1;
   }
@@ -154,13 +222,52 @@ int16_t WebRtcOpus_SetMaxPlaybackRate(OpusEncInst* inst, int32_t frequency_hz) {
   } else {
     set_bandwidth = OPUS_BANDWIDTH_FULLBAND;
   }
-  return opus_encoder_ctl(inst->encoder,
-                          OPUS_SET_MAX_BANDWIDTH(set_bandwidth));
+  return ENCODER_CTL(inst, OPUS_SET_MAX_BANDWIDTH(set_bandwidth));
+}
+
+int16_t WebRtcOpus_GetMaxPlaybackRate(OpusEncInst* const inst,
+                                      int32_t* result_hz) {
+  if (inst->encoder) {
+    if (opus_encoder_ctl(
+            inst->encoder,
+            OPUS_GET_MAX_BANDWIDTH(result_hz)) == OPUS_OK) {
+      return 0;
+    }
+    return -1;
+  }
+
+  opus_int32 max_bandwidth;
+  int s;
+  int ret;
+
+  max_bandwidth = 0;
+  ret = OPUS_OK;
+  s = 0;
+  while (ret == OPUS_OK) {
+    OpusEncoder *enc;
+    opus_int32 bandwidth;
+
+    ret = ENCODER_CTL(inst, OPUS_MULTISTREAM_GET_ENCODER_STATE(s, &enc));
+    if (ret == OPUS_BAD_ARG)
+      break;
+    if (ret != OPUS_OK)
+      return -1;
+    if (opus_encoder_ctl(enc, OPUS_GET_MAX_BANDWIDTH(&bandwidth)) != OPUS_OK)
+      return -1;
+
+    if (max_bandwidth != 0 && max_bandwidth != bandwidth)
+      return -1;
+
+    max_bandwidth = bandwidth;
+    s++;
+  }
+  *result_hz = max_bandwidth;
+  return 0;
 }
 
 int16_t WebRtcOpus_EnableFec(OpusEncInst* inst) {
   if (inst) {
-    return opus_encoder_ctl(inst->encoder, OPUS_SET_INBAND_FEC(1));
+    return ENCODER_CTL(inst, OPUS_SET_INBAND_FEC(1));
   } else {
     return -1;
   }
@@ -168,7 +275,7 @@ int16_t WebRtcOpus_EnableFec(OpusEncInst* inst) {
 
 int16_t WebRtcOpus_DisableFec(OpusEncInst* inst) {
   if (inst) {
-    return opus_encoder_ctl(inst->encoder, OPUS_SET_INBAND_FEC(0));
+    return ENCODER_CTL(inst, OPUS_SET_INBAND_FEC(0));
   } else {
     return -1;
   }
@@ -184,21 +291,21 @@ int16_t WebRtcOpus_EnableDtx(OpusEncInst* inst) {
   // last long during a pure silence, if the signal type is not forced.
   // TODO(minyue): Remove the signal type forcing when Opus DTX works properly
   // without it.
-  int ret = opus_encoder_ctl(inst->encoder,
-                             OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
+  int ret = ENCODER_CTL(inst,
+                        OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
   if (ret != OPUS_OK)
     return ret;
 
-  return opus_encoder_ctl(inst->encoder, OPUS_SET_DTX(1));
+  return ENCODER_CTL(inst, OPUS_SET_DTX(1));
 }
 
 int16_t WebRtcOpus_DisableDtx(OpusEncInst* inst) {
   if (inst) {
-    int ret = opus_encoder_ctl(inst->encoder,
-                               OPUS_SET_SIGNAL(OPUS_AUTO));
+    int ret = ENCODER_CTL(inst,
+                          OPUS_SET_SIGNAL(OPUS_AUTO));
     if (ret != OPUS_OK)
       return ret;
-    return opus_encoder_ctl(inst->encoder, OPUS_SET_DTX(0));
+    return ENCODER_CTL(inst, OPUS_SET_DTX(0));
   } else {
     return -1;
   }
@@ -206,7 +313,7 @@ int16_t WebRtcOpus_DisableDtx(OpusEncInst* inst) {
 
 int16_t WebRtcOpus_EnableCbr(OpusEncInst* inst) {
   if (inst) {
-    return opus_encoder_ctl(inst->encoder, OPUS_SET_VBR(0));
+    return ENCODER_CTL(inst, OPUS_SET_VBR(0));
   } else {
     return -1;
   }
@@ -214,7 +321,7 @@ int16_t WebRtcOpus_EnableCbr(OpusEncInst* inst) {
 
 int16_t WebRtcOpus_DisableCbr(OpusEncInst* inst) {
   if (inst) {
-    return opus_encoder_ctl(inst->encoder, OPUS_SET_VBR(1));
+    return ENCODER_CTL(inst, OPUS_SET_VBR(1));
   } else {
     return -1;
   }
@@ -222,7 +329,8 @@ int16_t WebRtcOpus_DisableCbr(OpusEncInst* inst) {
 
 int16_t WebRtcOpus_SetComplexity(OpusEncInst* inst, int32_t complexity) {
   if (inst) {
-    return opus_encoder_ctl(inst->encoder, OPUS_SET_COMPLEXITY(complexity));
+    return ENCODER_CTL(inst,
+                       OPUS_SET_COMPLEXITY(complexity));
   } else {
     return -1;
   }
@@ -233,7 +341,8 @@ int32_t WebRtcOpus_GetBandwidth(OpusEncInst* inst) {
     return -1;
   }
   int32_t bandwidth;
-  if (opus_encoder_ctl(inst->encoder, OPUS_GET_BANDWIDTH(&bandwidth)) == 0) {
+  if (ENCODER_CTL(inst,
+                  OPUS_GET_BANDWIDTH(&bandwidth)) == 0) {
     return bandwidth;
   } else {
     return -1;
@@ -243,7 +352,8 @@ int32_t WebRtcOpus_GetBandwidth(OpusEncInst* inst) {
 
 int16_t WebRtcOpus_SetBandwidth(OpusEncInst* inst, int32_t bandwidth) {
   if (inst) {
-    return opus_encoder_ctl(inst->encoder, OPUS_SET_BANDWIDTH(bandwidth));
+    return ENCODER_CTL(inst,
+                       OPUS_SET_BANDWIDTH(bandwidth));
   } else {
     return -1;
   }
@@ -253,11 +363,11 @@ int16_t WebRtcOpus_SetForceChannels(OpusEncInst* inst, size_t num_channels) {
   if (!inst)
     return -1;
   if (num_channels == 0) {
-    return opus_encoder_ctl(inst->encoder,
+    return ENCODER_CTL(inst,
                             OPUS_SET_FORCE_CHANNELS(OPUS_AUTO));
   } else if (num_channels == 1 || num_channels == 2) {
-    return opus_encoder_ctl(inst->encoder,
-                            OPUS_SET_FORCE_CHANNELS(num_channels));
+    return ENCODER_CTL(inst,
+                       OPUS_SET_FORCE_CHANNELS(num_channels));
   } else {
     return -1;
   }
@@ -268,16 +378,17 @@ int16_t WebRtcOpus_DecoderCreate(OpusDecInst** inst, size_t channels) {
   OpusDecInst* state;
 
   if (inst != NULL) {
-    /* Create Opus decoder state. */
+    // Create Opus decoder state.
     state = (OpusDecInst*) calloc(1, sizeof(OpusDecInst));
     if (state == NULL) {
       return -1;
     }
 
-    /* Create new memory, always at 48000 Hz. */
-    state->decoder = opus_decoder_create(48000, (int)channels, &error);
-    if (error == OPUS_OK && state->decoder != NULL) {
-      /* Creation of memory all ok. */
+    // Create new memory, always at 48000 Hz.
+    state->decoder = opus_decoder_create(48000,
+                                                 (int)channels, &error);
+    if (error == OPUS_OK && state->decoder) {
+      // Creation of memory all ok.
       state->channels = channels;
       state->prev_decoded_samples = kWebRtcOpusDefaultFrameSize;
       state->in_dtx_mode = 0;
@@ -285,7 +396,7 @@ int16_t WebRtcOpus_DecoderCreate(OpusDecInst** inst, size_t channels) {
       return 0;
     }
 
-    /* If memory allocation was unsuccessful, free the entire state. */
+    // If memory allocation was unsuccessful, free the entire state.
     if (state->decoder) {
       opus_decoder_destroy(state->decoder);
     }
@@ -294,9 +405,52 @@ int16_t WebRtcOpus_DecoderCreate(OpusDecInst** inst, size_t channels) {
   return -1;
 }
 
+int16_t WebRtcOpus_MultistreamDecoderCreate(
+    OpusDecInst** inst, size_t channels,
+    size_t streams,
+    size_t coupled_streams,
+    const unsigned char* channel_mapping) {
+  int error;
+  OpusDecInst* state;
+
+  if (inst != NULL) {
+    // Create Opus decoder state.
+    state = (OpusDecInst*) calloc(1, sizeof(OpusDecInst));
+    if (state == NULL) {
+      return -1;
+    }
+
+    // Create new memory, always at 48000 Hz.
+    state->multistream_decoder = opus_multistream_decoder_create(
+        48000, channels,
+        streams,
+        coupled_streams,
+        channel_mapping,
+        &error);
+
+    if (error == OPUS_OK && state->multistream_decoder) {
+      // Creation of memory all ok.
+      state->channels = channels;
+      state->prev_decoded_samples = kWebRtcOpusDefaultFrameSize;
+      state->in_dtx_mode = 0;
+      *inst = state;
+      return 0;
+    }
+
+    // If memory allocation was unsuccessful, free the entire state.
+    opus_multistream_decoder_destroy(state->multistream_decoder);
+    free(state);
+  }
+  return -1;
+}
+
 int16_t WebRtcOpus_DecoderFree(OpusDecInst* inst) {
   if (inst) {
-    opus_decoder_destroy(inst->decoder);
+    if (inst->decoder) {
+      opus_decoder_destroy(inst->decoder);
+    } else if (inst->multistream_decoder) {
+      opus_multistream_decoder_destroy(inst->multistream_decoder);
+    }
     free(inst);
     return 0;
   } else {
@@ -309,7 +463,12 @@ size_t WebRtcOpus_DecoderChannels(OpusDecInst* inst) {
 }
 
 void WebRtcOpus_DecoderInit(OpusDecInst* inst) {
-  opus_decoder_ctl(inst->decoder, OPUS_RESET_STATE);
+  if (inst->decoder) {
+    opus_decoder_ctl(inst->decoder, OPUS_RESET_STATE);
+  } else {
+    opus_multistream_decoder_ctl(inst->multistream_decoder,
+                                 OPUS_RESET_STATE);
+  }
   inst->in_dtx_mode = 0;
 }
 
@@ -324,6 +483,10 @@ static int16_t DetermineAudioType(OpusDecInst* inst, size_t encoded_bytes) {
     // fact a 1-byte TOC with a 1-byte payload. That will be erroneously
     // interpreted as comfort noise output, but such a payload is probably
     // faulty anyway.
+
+    // TODO(webrtc:10218): This is wrong for multistream opus. Then are several
+    // single-stream packets glued together with some packet size bytes in
+    // between. See https://tools.ietf.org/html/rfc6716#appendix-B
     inst->in_dtx_mode = 1;
     return 2;  // Comfort noise.
   } else {
@@ -338,8 +501,15 @@ static int16_t DetermineAudioType(OpusDecInst* inst, size_t encoded_bytes) {
 static int DecodeNative(OpusDecInst* inst, const uint8_t* encoded,
                         size_t encoded_bytes, int frame_size,
                         int16_t* decoded, int16_t* audio_type, int decode_fec) {
-  int res = opus_decode(inst->decoder, encoded, (opus_int32)encoded_bytes,
-                        (opus_int16*)decoded, frame_size, decode_fec);
+  int res = -1;
+  if (inst->decoder) {
+    res = opus_decode(inst->decoder, encoded, (opus_int32)encoded_bytes,
+                      (opus_int16*)decoded, frame_size, decode_fec);
+  } else {
+    res = opus_multistream_decode(
+        inst->multistream_decoder, encoded, (opus_int32)encoded_bytes,
+        (opus_int16*)decoded, frame_size, decode_fec);
+  }
 
   if (res <= 0)
     return -1;

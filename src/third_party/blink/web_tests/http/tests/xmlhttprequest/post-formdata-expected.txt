@@ -2,7 +2,6 @@ Test verifies that FormData is sent correctly when using XMLHttpRequest asynchro
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS echoResult is "string=string value"
 PASS echoResult is "bareBlob=blob:application/octet-stream:blob-value"
 PASS echoResult is "mimeBlob=blob:text/html:blob-value"

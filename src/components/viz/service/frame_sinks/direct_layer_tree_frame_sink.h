@@ -10,6 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -69,6 +70,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SubmitCompositorFrame(CompositorFrame frame,
+                             bool hit_test_data_changed,
                              bool show_hit_test_borders) override;
   void DidNotProduceFrame(const BeginFrameAck& ack) override;
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
@@ -83,22 +85,19 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
   void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override;
-  void DidSwapAfterSnapshotRequestReceived(
-      const std::vector<ui::LatencyInfo>& latency_info) override;
 
  private:
   // mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
       const std::vector<ReturnedResource>& resources) override;
   void OnBeginFrame(const BeginFrameArgs& args,
-                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
-                        feedbacks) override;
+                    const PresentationFeedbackMap& feedbacks) override;
   void ReclaimResources(
       const std::vector<ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;
 
   // ExternalBeginFrameSourceClient implementation:
-  void OnNeedsBeginFrames(bool needs_begin_frame) override;
+  void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
   // ContextLostObserver implementation:
   void OnContextLost() override;
@@ -111,6 +110,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
 
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 
+  bool needs_begin_frames_ = false;
   const FrameSinkId frame_sink_id_;
   CompositorFrameSinkSupportManager* const support_manager_;
   FrameSinkManagerImpl* frame_sink_manager_;
@@ -123,6 +123,9 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   float device_scale_factor_ = 1.f;
   bool is_lost_ = false;
   std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
+
+  HitTestRegionList last_hit_test_data_;
+
   // Use this map to record the time when client received the BeginFrameArgs.
   base::flat_map<int64_t, PipelineReporting> pipeline_reporting_frame_times_;
   base::WeakPtrFactory<DirectLayerTreeFrameSink> weak_factory_;

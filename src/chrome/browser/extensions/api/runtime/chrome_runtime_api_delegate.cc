@@ -9,11 +9,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -33,11 +35,12 @@
 #include "extensions/browser/warning_set.h"
 #include "extensions/common/api/runtime.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest.h"
 #include "net/base/backoff_entry.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #endif
@@ -58,9 +61,16 @@ const char kUpdateFound[] = "update_available";
 // itself, the reload is considered suspiciously fast.
 const int kFastReloadTime = 10000;
 
+// Same as above, but we shorten the fast reload interval for unpacked
+// extensions for ease of testing.
+const int kUnpackedFastReloadTime = 1000;
+
 // After this many suspiciously fast consecutive reloads, an extension will get
 // disabled.
 const int kFastReloadCount = 5;
+
+// Same as above, but we increase the fast reload count for unpacked extensions.
+const int kUnpackedFastReloadCount = 30;
 
 // A holder class for the policy we use for exponential backoff of update check
 // requests.
@@ -173,11 +183,26 @@ void ChromeRuntimeAPIDelegate::RemoveUpdateObserver(
 
 void ChromeRuntimeAPIDelegate::ReloadExtension(
     const std::string& extension_id) {
+  const Extension* extension =
+      extensions::ExtensionRegistry::Get(browser_context_)
+          ->GetInstalledExtension(extension_id);
+  int fast_reload_time = kFastReloadTime;
+  int fast_reload_count = kFastReloadCount;
+
+  // If an extension is unpacked, we allow for a faster reload interval
+  // and more fast reload attempts before terminating the extension.
+  // This is intended to facilitate extension testing for developers.
+  if (extensions::Manifest::IsUnpackedLocation(extension->location())) {
+    fast_reload_time = kUnpackedFastReloadTime;
+    fast_reload_count = kUnpackedFastReloadCount;
+  }
+
   std::pair<base::TimeTicks, int>& reload_info =
       last_reload_time_[extension_id];
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now =
+      g_test_clock ? g_test_clock->NowTicks() : base::TimeTicks::Now();
   if (reload_info.first.is_null() ||
-      (now - reload_info.first).InMilliseconds() > kFastReloadTime) {
+      (now - reload_info.first).InMilliseconds() > fast_reload_time) {
     reload_info.second = 0;
   } else {
     reload_info.second++;
@@ -192,7 +217,8 @@ void ChromeRuntimeAPIDelegate::ReloadExtension(
 
   extensions::ExtensionService* service =
       ExtensionSystem::Get(browser_context_)->extension_service();
-  if (reload_info.second >= kFastReloadCount) {
+
+  if (reload_info.second >= fast_reload_count) {
     // Unloading an extension clears all warnings, so first terminate the
     // extension, and then add the warning. Since this is called from an
     // extension function unloading the extension has to be done
@@ -252,7 +278,9 @@ void ChromeRuntimeAPIDelegate::OpenURL(const GURL& uninstall_url) {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   Browser* browser = chrome::FindLastActiveWithProfile(profile);
   if (!browser)
-    browser = new Browser(Browser::CreateParams(profile, false));
+    browser = Browser::Create(Browser::CreateParams(profile, false));
+  if (!browser)
+    return;
 
   NavigateParams params(browser, uninstall_url,
                         ui::PAGE_TRANSITION_CLIENT_REDIRECT);
@@ -316,7 +344,7 @@ bool ChromeRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
 bool ChromeRuntimeAPIDelegate::RestartDevice(std::string* error_message) {
 #if defined(OS_CHROMEOS)
   if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp()) {
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+    chromeos::PowerManagerClient::Get()->RequestRestart(
         power_manager::REQUEST_RESTART_OTHER, "chrome.runtime API");
     return true;
   }

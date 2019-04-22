@@ -38,7 +38,6 @@
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -88,15 +87,16 @@ class NavigationURLLoaderTest : public testing::Test {
             blink::WebMixedContentContextType::kBlockable,
             false /* is_form_submission */, GURL() /* searchable_form_url */,
             std::string() /* searchable_form_encoding */,
-            url::Origin::Create(url), GURL() /* client_side_redirect_url */,
+            GURL() /* client_side_redirect_url */,
             base::nullopt /* devtools_initiator_info */);
     CommonNavigationParams common_params;
     common_params.url = url;
+    common_params.initiator_origin = url::Origin::Create(url);
 
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(common_params, std::move(begin_params), url,
-                                  true, false, false, -1, false, false, false,
-                                  false, nullptr,
+                                  url::Origin::Create(url), true, false, false,
+                                  -1, false, false, false, false, nullptr,
                                   base::UnguessableToken::Create(),
                                   base::UnguessableToken::Create()));
     return NavigationURLLoader::Create(
@@ -229,7 +229,7 @@ TEST_F(NavigationURLLoaderTest, CancelResponseRace) {
 
   // In the same event loop iteration, follow the redirect (allowing the
   // response to go through) and destroy the loader.
-  loader->FollowRedirect(base::nullopt, base::nullopt);
+  loader->FollowRedirect({}, {}, PREVIEWS_OFF);
   loader.reset();
 
   // Verify the URLRequestTestJob no longer has anything paused and that no

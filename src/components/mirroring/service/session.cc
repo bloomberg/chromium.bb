@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -718,7 +719,7 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
       audio_input_device_ = new media::AudioInputDevice(
           std::make_unique<CapturedAudioInput>(base::BindRepeating(
               &Session::CreateAudioStream, base::Unretained(this))),
-          base::ThreadPriority::NORMAL);
+          media::AudioInputDevice::Purpose::kLoopback);
       audio_input_device_->Initialize(mirror_settings_.GetAudioCaptureParams(),
                                       audio_capturing_callback_.get());
       audio_input_device_->Start();

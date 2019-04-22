@@ -185,7 +185,7 @@ class PositionTemplate {
   // should check null-position before comparing them.
   // TODO(yosin): We should use |Position::operator<()| instead of
   // |Position::comapreTo()| to utilize |DHCECK_XX()|.
-  int CompareTo(const PositionTemplate<Strategy>&) const;
+  int16_t CompareTo(const PositionTemplate<Strategy>&) const;
   bool operator<(const PositionTemplate<Strategy>&) const;
   bool operator<=(const PositionTemplate<Strategy>&) const;
   bool operator>(const PositionTemplate<Strategy>&) const;
@@ -221,7 +221,7 @@ class PositionTemplate {
   void ShowTreeForThisInFlatTree() const;
 #endif
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   bool IsAfterAnchorOrAfterChildren() const {
@@ -257,7 +257,7 @@ bool operator==(const PositionTemplate<Strategy>& a,
     return false;
 
   if (!a.IsOffsetInAnchor()) {
-    // Note: |m_offset| only has meaning when
+    // Note: |offset_| only has meaning when
     // |PositionAnchorType::OffsetInAnchor|.
     return true;
   }

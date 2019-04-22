@@ -8,10 +8,9 @@
 #ifndef GrVkRenderPass_DEFINED
 #define GrVkRenderPass_DEFINED
 
-#include "GrVkVulkan.h"
-
 #include "GrTypes.h"
 #include "GrVkResource.h"
+#include "vk/GrVkTypes.h"
 
 class GrProcessorKeyBuilder;
 class GrVkGpu;
@@ -20,6 +19,15 @@ class GrVkRenderTarget;
 class GrVkRenderPass : public GrVkResource {
 public:
     GrVkRenderPass() : INHERITED(), fRenderPass(VK_NULL_HANDLE), fClearValueCount(0) {}
+
+    // Used when importing an external render pass. In this case we have to explicitly be told the
+    // color attachment index
+    explicit GrVkRenderPass(VkRenderPass renderPass, uint32_t colorAttachmentIndex)
+            : INHERITED()
+            , fRenderPass(renderPass)
+            , fAttachmentFlags(kExternal_AttachmentFlag)
+            , fClearValueCount(0)
+            , fColorAttachmentIndex(colorAttachmentIndex) {}
 
     struct LoadStoreOps {
         VkAttachmentLoadOp  fLoadOp;
@@ -79,6 +87,11 @@ public:
     enum AttachmentFlags {
         kColor_AttachmentFlag = 0x1,
         kStencil_AttachmentFlag = 0x2,
+        // The external attachment flag signals that this render pass is imported from an external
+        // client. Since we don't know every attachment on the render pass we don't set any of the
+        // specific attachment flags when using external. However, the external render pass must
+        // at least have a color attachment.
+        kExternal_AttachmentFlag = 0x4,
     };
     GR_DECL_BITFIELD_OPS_FRIENDS(AttachmentFlags);
 
@@ -95,6 +108,8 @@ public:
     bool isCompatible(const GrVkRenderTarget& target) const;
 
     bool isCompatible(const GrVkRenderPass& renderPass) const;
+
+    bool isCompatibleExternalRP(VkRenderPass) const;
 
     bool equalLoadStoreOps(const LoadStoreOps& colorOps,
                            const LoadStoreOps& stencilOps) const;
@@ -125,13 +140,15 @@ private:
 
     bool isCompatible(const AttachmentsDescriptor&, const AttachmentFlags&) const;
 
-    void freeGPUData(const GrVkGpu* gpu) const override;
+    void freeGPUData(GrVkGpu* gpu) const override;
 
     VkRenderPass          fRenderPass;
     AttachmentFlags       fAttachmentFlags;
     AttachmentsDescriptor fAttachmentsDescriptor;
     VkExtent2D            fGranularity;
     uint32_t              fClearValueCount;
+    // For internally created render passes we assume the color attachment index is always 0.
+    uint32_t              fColorAttachmentIndex = 0;
 
     typedef GrVkResource INHERITED;
 };

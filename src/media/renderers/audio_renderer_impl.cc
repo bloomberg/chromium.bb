@@ -580,7 +580,7 @@ void AudioRendererImpl::OnDeviceInfoReceived(
       cdm_context,
       base::BindRepeating(&AudioRendererImpl::OnStatisticsUpdate,
                           weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&AudioRendererImpl::OnWaitingForDecryptionKey,
+      base::BindRepeating(&AudioRendererImpl::OnWaiting,
                           weak_factory_.GetWeakPtr()));
 }
 
@@ -667,9 +667,9 @@ void AudioRendererImpl::OnBufferingStateChange(BufferingState state) {
   client_->OnBufferingStateChange(state);
 }
 
-void AudioRendererImpl::OnWaitingForDecryptionKey() {
+void AudioRendererImpl::OnWaiting(WaitingReason reason) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnWaitingForDecryptionKey();
+  client_->OnWaiting(reason);
 }
 
 void AudioRendererImpl::SetVolume(float volume) {

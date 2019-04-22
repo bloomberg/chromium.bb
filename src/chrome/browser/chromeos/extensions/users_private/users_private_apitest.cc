@@ -10,24 +10,23 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/users_private/users_private_delegate.h"
 #include "chrome/browser/chromeos/extensions/users_private/users_private_delegate_factory.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/users_private.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/session_manager/core/session_manager.h"
-#include "components/session_manager/session_manager_types.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
@@ -124,6 +123,9 @@ class UsersPrivateApiTest : public ExtensionApiTest {
 
     chromeos::OwnerSettingsServiceChromeOSFactory::GetInstance()
         ->SetOwnerKeyUtilForTesting(owner_key_util);
+
+    scoped_testing_cros_settings_.device_settings()->Set(
+        chromeos::kDeviceOwner, base::Value("testuser@gmail.com"));
   }
   ~UsersPrivateApiTest() override = default;
 
@@ -131,14 +133,6 @@ class UsersPrivateApiTest : public ExtensionApiTest {
       content::BrowserContext* profile) {
     CHECK(s_test_delegate_);
     return base::WrapUnique(s_test_delegate_);
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kStubCrosSettings);
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                    "testuser@gmail.com");
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
   }
 
   void SetUpOnMainThread() override {
@@ -163,6 +157,9 @@ class UsersPrivateApiTest : public ExtensionApiTest {
   static TestDelegate* s_test_delegate_;
 
  private:
+  chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
+  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+
   DISALLOW_COPY_AND_ASSIGN(UsersPrivateApiTest);
 };
 
@@ -239,16 +236,7 @@ IN_PROC_BROWSER_TEST_F(UsersPrivateApiLoginStatusTest, User) {
 
 // Screenlock - logged in, screen locked.
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiLockStatusTest, ScreenLock) {
-  chromeos::ScreenLocker::Show();
-  std::unique_ptr<chromeos::ScreenLockerTester> tester =
-      chromeos::ScreenLockerTester::Create();
-  content::WindowedNotificationObserver lock_state_observer(
-      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      content::NotificationService::AllSources());
-  if (!tester->IsLocked())
-    lock_state_observer.Wait();
-  EXPECT_EQ(session_manager::SessionState::LOCKED,
-            session_manager::SessionManager::Get()->session_state());
+  chromeos::ScreenLockerTester().Lock();
   EXPECT_TRUE(RunExtensionSubtest("users_private", "main.html?getLoginStatus",
                                   kFlagLoadAsComponent))
       << message_;

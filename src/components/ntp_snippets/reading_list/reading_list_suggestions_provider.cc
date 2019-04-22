@@ -47,7 +47,7 @@ ReadingListSuggestionsProvider::ReadingListSuggestionsProvider(
   scoped_observer_.Add(reading_list_model_);
 }
 
-ReadingListSuggestionsProvider::~ReadingListSuggestionsProvider(){};
+ReadingListSuggestionsProvider::~ReadingListSuggestionsProvider() {}
 
 CategoryStatus ReadingListSuggestionsProvider::GetCategoryStatus(
     Category category) {

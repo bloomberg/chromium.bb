@@ -63,6 +63,9 @@ class CastToolbarButton : public ToolbarButton,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::View
+  void AddedToWidget() override;
+
   MediaRouterContextualMenu* context_menu_for_test() {
     return context_menu_.get();
   }
@@ -71,6 +74,8 @@ class CastToolbarButton : public ToolbarButton,
   const gfx::VectorIcon& GetCurrentIcon() const;
 
   MediaRouterActionController* GetActionController() const;
+
+  SkColor GetIconColor(const gfx::VectorIcon* icon_id) const;
 
   Browser* const browser_;
   Profile* const profile_;

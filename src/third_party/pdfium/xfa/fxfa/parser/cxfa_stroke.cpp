@@ -17,21 +17,21 @@
 #include "xfa/fxgraphics/cxfa_graphics.h"
 
 void XFA_StrokeTypeSetLineDash(CXFA_Graphics* pGraphics,
-                               XFA_AttributeEnum iStrokeType,
-                               XFA_AttributeEnum iCapType) {
+                               XFA_AttributeValue iStrokeType,
+                               XFA_AttributeValue iCapType) {
   switch (iStrokeType) {
-    case XFA_AttributeEnum::DashDot: {
+    case XFA_AttributeValue::DashDot: {
       float dashArray[] = {4, 1, 2, 1};
-      if (iCapType != XFA_AttributeEnum::Butt) {
+      if (iCapType != XFA_AttributeValue::Butt) {
         dashArray[1] = 2;
         dashArray[3] = 2;
       }
       pGraphics->SetLineDash(0, dashArray, FX_ArraySize(dashArray));
       break;
     }
-    case XFA_AttributeEnum::DashDotDot: {
+    case XFA_AttributeValue::DashDotDot: {
       float dashArray[] = {4, 1, 2, 1, 2, 1};
-      if (iCapType != XFA_AttributeEnum::Butt) {
+      if (iCapType != XFA_AttributeValue::Butt) {
         dashArray[1] = 2;
         dashArray[3] = 2;
         dashArray[5] = 2;
@@ -39,17 +39,17 @@ void XFA_StrokeTypeSetLineDash(CXFA_Graphics* pGraphics,
       pGraphics->SetLineDash(0, dashArray, FX_ArraySize(dashArray));
       break;
     }
-    case XFA_AttributeEnum::Dashed: {
+    case XFA_AttributeValue::Dashed: {
       float dashArray[] = {5, 1};
-      if (iCapType != XFA_AttributeEnum::Butt)
+      if (iCapType != XFA_AttributeValue::Butt)
         dashArray[1] = 2;
 
       pGraphics->SetLineDash(0, dashArray, FX_ArraySize(dashArray));
       break;
     }
-    case XFA_AttributeEnum::Dotted: {
+    case XFA_AttributeValue::Dotted: {
       float dashArray[] = {2, 1};
-      if (iCapType != XFA_AttributeEnum::Butt)
+      if (iCapType != XFA_AttributeValue::Butt)
         dashArray[1] = 2;
 
       pGraphics->SetLineDash(0, dashArray, FX_ArraySize(dashArray));
@@ -66,9 +66,8 @@ CXFA_Stroke::CXFA_Stroke(CXFA_Document* pDoc,
                          uint32_t validPackets,
                          XFA_ObjectType oType,
                          XFA_Element eType,
-                         const PropertyData* properties,
-                         const AttributeData* attributes,
-                         const WideStringView& elementName,
+                         pdfium::span<const PropertyData> properties,
+                         pdfium::span<const AttributeData> attributes,
                          std::unique_ptr<CJX_Object> js_node)
     : CXFA_Node(pDoc,
                 ePacket,
@@ -77,23 +76,22 @@ CXFA_Stroke::CXFA_Stroke(CXFA_Document* pDoc,
                 eType,
                 properties,
                 attributes,
-                elementName,
                 std::move(js_node)) {}
 
 CXFA_Stroke::~CXFA_Stroke() = default;
 
 bool CXFA_Stroke::IsVisible() {
-  XFA_AttributeEnum presence = JSObject()
-                                   ->TryEnum(XFA_Attribute::Presence, true)
-                                   .value_or(XFA_AttributeEnum::Visible);
-  return presence == XFA_AttributeEnum::Visible;
+  XFA_AttributeValue presence = JSObject()
+                                    ->TryEnum(XFA_Attribute::Presence, true)
+                                    .value_or(XFA_AttributeValue::Visible);
+  return presence == XFA_AttributeValue::Visible;
 }
 
-XFA_AttributeEnum CXFA_Stroke::GetCapType() {
+XFA_AttributeValue CXFA_Stroke::GetCapType() {
   return JSObject()->GetEnum(XFA_Attribute::Cap);
 }
 
-XFA_AttributeEnum CXFA_Stroke::GetStrokeType() {
+XFA_AttributeValue CXFA_Stroke::GetStrokeType() {
   return JSObject()->GetEnum(XFA_Attribute::Stroke);
 }
 
@@ -134,7 +132,7 @@ void CXFA_Stroke::SetColor(FX_ARGB argb) {
                               false);
 }
 
-XFA_AttributeEnum CXFA_Stroke::GetJoinType() {
+XFA_AttributeValue CXFA_Stroke::GetJoinType() {
   return JSObject()->GetEnum(XFA_Attribute::Join);
 }
 
@@ -186,7 +184,7 @@ void CXFA_Stroke::Stroke(CXFA_GEPath* pPath,
   pGS->SetLineWidth(fThickness);
   pGS->EnableActOnDash();
   pGS->SetLineCap(CFX_GraphStateData::LineCapButt);
-  XFA_StrokeTypeSetLineDash(pGS, GetStrokeType(), XFA_AttributeEnum::Butt);
+  XFA_StrokeTypeSetLineDash(pGS, GetStrokeType(), XFA_AttributeValue::Butt);
   pGS->SetStrokeColor(CXFA_GEColor(GetColor()));
   pGS->StrokePath(pPath, &matrix);
   pGS->RestoreGraphState();

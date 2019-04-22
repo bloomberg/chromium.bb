@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
@@ -65,11 +66,11 @@ v8::Local<v8::Value> ToV8(const IDBKeyPath& value,
                           v8::Local<v8::Object> creation_context,
                           v8::Isolate* isolate) {
   switch (value.GetType()) {
-    case IDBKeyPath::kNullType:
+    case mojom::IDBKeyPathType::Null:
       return v8::Null(isolate);
-    case IDBKeyPath::kStringType:
+    case mojom::IDBKeyPathType::String:
       return V8String(isolate, value.GetString());
-    case IDBKeyPath::kArrayType:
+    case mojom::IDBKeyPathType::Array:
       return ToV8(value.Array(), creation_context, isolate);
   }
   NOTREACHED();
@@ -90,21 +91,23 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   switch (key->GetType()) {
-    case IDBKey::kInvalidType:
-    case IDBKey::kTypeEnumMax:
+    case mojom::IDBKeyType::Invalid:
+    case mojom::IDBKeyType::Min:
       NOTREACHED();
       return v8::Local<v8::Value>();
-    case IDBKey::kNumberType:
+    case mojom::IDBKeyType::Null:
+      return v8::Null(isolate);
+    case mojom::IDBKeyType::Number:
       return v8::Number::New(isolate, key->Number());
-    case IDBKey::kStringType:
+    case mojom::IDBKeyType::String:
       return V8String(isolate, key->GetString());
-    case IDBKey::kBinaryType:
+    case mojom::IDBKeyType::Binary:
       // https://w3c.github.io/IndexedDB/#convert-a-value-to-a-key
       return ToV8(DOMArrayBuffer::Create(key->Binary()), creation_context,
                   isolate);
-    case IDBKey::kDateType:
+    case mojom::IDBKeyType::Date:
       return v8::Date::New(context, key->Date()).ToLocalChecked();
-    case IDBKey::kArrayType: {
+    case mojom::IDBKeyType::Array: {
       v8::Local<v8::Array> array = v8::Array::New(isolate, key->Array().size());
       for (wtf_size_t i = 0; i < key->Array().size(); ++i) {
         v8::Local<v8::Value> value =
@@ -375,7 +378,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
     ExceptionState& exception_state) {
   DCHECK(!key_path.IsNull());
   v8::HandleScope handle_scope(isolate);
-  if (key_path.GetType() == IDBKeyPath::kArrayType) {
+  if (key_path.GetType() == mojom::IDBKeyPathType::Array) {
     IDBKey::KeyArray result;
     const Vector<String>& array = key_path.Array();
     for (wtf_size_t i = 0; i < array.size(); ++i) {
@@ -387,7 +390,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
     return IDBKey::CreateArray(std::move(result));
   }
 
-  DCHECK_EQ(key_path.GetType(), IDBKeyPath::kStringType);
+  DCHECK_EQ(key_path.GetType(), mojom::IDBKeyPathType::String);
   return CreateIDBKeyFromValueAndKeyPath(isolate, value, key_path.GetString(),
                                          exception_state);
 }
@@ -494,7 +497,7 @@ bool InjectV8KeyIntoV8Value(v8::Isolate* isolate,
   IDB_TRACE("injectIDBV8KeyIntoV8Value");
   DCHECK(isolate->InContext());
 
-  DCHECK_EQ(key_path.GetType(), IDBKeyPath::kStringType);
+  DCHECK_EQ(key_path.GetType(), mojom::IDBKeyPathType::String);
   Vector<String> key_path_elements = ParseKeyPath(key_path.GetString());
 
   // The conbination of a key generator and an empty key path is forbidden by
@@ -584,7 +587,7 @@ bool CanInjectIDBKeyIntoScriptValue(v8::Isolate* isolate,
                                     const ScriptValue& script_value,
                                     const IDBKeyPath& key_path) {
   IDB_TRACE("canInjectIDBKeyIntoScriptValue");
-  DCHECK_EQ(key_path.GetType(), IDBKeyPath::kStringType);
+  DCHECK_EQ(key_path.GetType(), mojom::IDBKeyPathType::String);
   Vector<String> key_path_elements = ParseKeyPath(key_path.GetString());
 
   if (!key_path_elements.size())

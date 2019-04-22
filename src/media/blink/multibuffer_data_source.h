@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/data_source.h"
@@ -83,6 +82,10 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // This must be called after the response arrives.
   bool IsCorsCrossOrigin() const;
 
+  // Returns true if the response includes an Access-Control-Allow-Origin
+  // header (that is not "null").
+  bool HasAccessControl() const;
+
   // Returns the CorsMode of the underlying UrlData.
   UrlData::CorsMode cors_mode() const;
 
@@ -93,7 +96,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   bool media_has_played() const;
 
   // Returns true if the resource is local.
-  bool assume_fully_buffered();
+  bool AssumeFullyBuffered() const override;
 
   // Cancels any open network connections once reaching the deferred state. If
   // |always_cancel| is false this is done only for preload=metadata, non-
@@ -102,7 +105,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // deferred, connections will be immediately closed.
   void OnBufferingHaveEnough(bool always_cancel);
 
-  int64_t GetMemoryUsage() const;
+  int64_t GetMemoryUsage() override;
 
   GURL GetUrlAfterRedirects() const;
 
@@ -123,8 +126,6 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   }
 
  protected:
-  UrlData* url_data() const { return url_data_and_loading_state_.url_data(); }
-
   void OnRedirect(const scoped_refptr<UrlData>& destination);
 
   // A factory method to create a BufferedResourceLoader based on the read
@@ -213,7 +214,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   const scoped_refptr<base::SingleThreadTaskRunner> render_task_runner_;
 
   // URL of the resource requested.
-  UrlData::UrlDataWithLoadingState url_data_and_loading_state_;
+  scoped_refptr<UrlData> url_data_;
 
   // A resource reader for the media resource.
   std::unique_ptr<MultiBufferReader> reader_;

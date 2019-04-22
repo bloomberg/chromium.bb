@@ -120,6 +120,7 @@ static aom_image_t *img_alloc_helper(
 
     img->img_data = (uint8_t *)aom_memalign(buf_align, (size_t)alloc_size);
     img->img_data_owner = 1;
+    img->sz = (size_t)alloc_size;
   }
 
   if (!img->img_data) goto fail;

@@ -76,22 +76,32 @@ function waitForAnimationEnd(getValue, max_frame, max_unchanged_frame) {
 
 // Enums for gesture_source_type parameters in gpuBenchmarking synthetic
 // gesture methods. Must match C++ side enums in synthetic_gesture_params.h
-const GestureSourceType = {
-  DEFAULT_INPUT: 0,
-  TOUCH_INPUT: 1,
-  MOUSE_INPUT: 2,
-  TOUCHPAD_INPUT:2,
-  PEN_INPUT: 3,
-  ToString: function(value) {
-    switch(value) {
-      case 0: return "DefaultInput";
-      case 1: return "Touchscreen";
-      case 2: return "MouseWheel/Touchpad";
-      case 3: return "Pen";
-      default: return "Invalid";
+const GestureSourceType = (function() {
+  var isDefined = (window.chrome && chrome.gpuBenchmarking);
+  return {
+    DEFAULT_INPUT: isDefined && chrome.gpuBenchmarking.DEFAULT_INPUT,
+    TOUCH_INPUT: isDefined && chrome.gpuBenchmarking.TOUCH_INPUT,
+    MOUSE_INPUT: isDefined && chrome.gpuBenchmarking.MOUSE_INPUT,
+    TOUCHPAD_INPUT: isDefined && chrome.gpuBenchmarking.TOUCHPAD_INPUT,
+    PEN_INPUT: isDefined && chrome.gpuBenchmarking.PEN_INPUT,
+    ToString: function(value) {
+      if (!isDefined)
+        return 'Synthetic gestures unavailable';
+      switch (value) {
+        case chrome.gpuBenchmarking.DEFAULT_INPUT:
+          return 'DefaultInput';
+        case chrome.gpuBenchmarking.TOUCH_INPUT:
+          return 'Touchscreen';
+        case chrome.gpuBenchmarking.MOUSE_INPUT:
+          return 'MouseWheel/Touchpad';
+        case chrome.gpuBenchmarking.PEN_INPUT:
+          return 'Pen';
+        default:
+          return 'Invalid';
+      }
     }
   }
-};
+})();
 
 // Use this for speed to make gestures (effectively) instant. That is, finish
 // entirely within one Begin|Update|End triplet. This is in physical
@@ -104,7 +114,7 @@ const SPEED_INSTANT = 400000;
 
 function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, direction, speed_in_pixels_s, precise_scrolling_deltas, scroll_by_page, cursor_visible) {
   return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.smoothScrollBy(pixels_to_scroll,
                                             resolve,
                                             start_x,
@@ -142,7 +152,7 @@ function pixelsPerTick() {
 
 function swipe(pixels_to_scroll, start_x, start_y, direction, speed_in_pixels_s, fling_velocity, gesture_source_type) {
   return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.swipe(direction,
                                    pixels_to_scroll,
                                    resolve,
@@ -159,7 +169,7 @@ function swipe(pixels_to_scroll, start_x, start_y, direction, speed_in_pixels_s,
 
 function pinchBy(scale, centerX, centerY, speed_in_pixels_s, gesture_source_type) {
   return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.pinchBy(scale,
                                      centerX,
                                      centerY,
@@ -175,7 +185,7 @@ function pinchBy(scale, centerX, centerY, speed_in_pixels_s, gesture_source_type
 
 function mouseMoveTo(xPosition, yPosition) {
   return new Promise(function(resolve, reject) {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.pointerActionSequence([
         {source: 'mouse',
          actions: [
@@ -189,7 +199,7 @@ function mouseMoveTo(xPosition, yPosition) {
 
 function mouseDownAt(xPosition, yPosition) {
   return new Promise(function(resolve, reject) {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.pointerActionSequence([
         {source: 'mouse',
          actions: [
@@ -203,7 +213,7 @@ function mouseDownAt(xPosition, yPosition) {
 
 function mouseUpAt(xPosition, yPosition) {
   return new Promise(function(resolve, reject) {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       chrome.gpuBenchmarking.pointerActionSequence([
         {source: 'mouse',
          actions: [
@@ -218,7 +228,7 @@ function mouseUpAt(xPosition, yPosition) {
 // Simulate a mouse click on point.
 function mouseClickOn(x, y, button = 0 /* left */) {
   return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       let pointerActions = [{
         source: 'mouse',
         actions: [
@@ -237,7 +247,7 @@ function mouseClickOn(x, y, button = 0 /* left */) {
 // Simulate a mouse press on point for a certain time.
 function mousePressOn(x, y, t) {
   return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       let pointerActions = [{
         source: 'mouse',
         actions: [
@@ -258,7 +268,7 @@ function mousePressOn(x, y, t) {
 // {end_x, end_y} and release.
 function mouseDragAndDrop(start_x, start_y, end_x, end_y, button = 0 /* left */, t = 0) {
   return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
+    if (window.chrome && chrome.gpuBenchmarking) {
       let pointerActions = [{
         source: 'mouse',
         actions: [
@@ -328,7 +338,7 @@ function touchTapOn(xPosition, yPosition) {
 
 function doubleTapAt(xPosition, yPosition) {
   // This comes from config constants in gesture_detector.cc.
-  const DOUBLE_TAP_MINIMUM_DURATION_S = 0.04;
+  const DOUBLE_TAP_MINIMUM_DURATION_MS = 40;
 
   return new Promise(function(resolve, reject) {
     if (!window.chrome || !chrome.gpuBenchmarking) {
@@ -341,7 +351,7 @@ function doubleTapAt(xPosition, yPosition) {
       actions: [
         { name: 'pointerDown', x: xPosition, y: yPosition },
         { name: 'pointerUp' },
-        { name: 'pause', duration: DOUBLE_TAP_MINIMUM_DURATION_S },
+        { name: 'pause', duration: DOUBLE_TAP_MINIMUM_DURATION_MS },
         { name: 'pointerDown', x: xPosition, y: yPosition },
         { name: 'pointerUp' }
       ]
@@ -351,4 +361,24 @@ function doubleTapAt(xPosition, yPosition) {
 
 function approx_equals(actual, expected, epsilon) {
   return actual >= expected - epsilon && actual <= expected + epsilon;
+}
+
+// Returns the given element's client rect center in an object with |x| and |y|
+// properties. Client rect being relative to the layout viewport. i.e. this will
+// not do what you thing if the page is pinch-zoomed.
+function elementCenter(element) {
+  const rect = element.getBoundingClientRect();
+  return {
+    x: rect.x + rect.width / 2,
+    y: rect.y + rect.height / 2
+  };
+}
+
+// Requests an animation frame.
+function raf() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      resolve();
+    });
+  });
 }

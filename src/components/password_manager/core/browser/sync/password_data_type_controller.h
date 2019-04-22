@@ -17,6 +17,7 @@ class PasswordStore;
 
 namespace syncer {
 class SyncClient;
+class SyncService;
 }
 
 namespace browser_sync {
@@ -28,6 +29,7 @@ class PasswordDataTypeController : public syncer::AsyncDirectoryTypeController,
   // |dump_stack| is called when an unrecoverable error occurs.
   PasswordDataTypeController(
       const base::RepeatingClosure& dump_stack,
+      syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client,
       const base::RepeatingClosure& state_changed_callback,
       const scoped_refptr<password_manager::PasswordStore>& password_store);
@@ -44,7 +46,6 @@ class PasswordDataTypeController : public syncer::AsyncDirectoryTypeController,
   void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
-  syncer::SyncClient* const sync_client_;
   const base::RepeatingClosure state_changed_callback_;
   scoped_refptr<password_manager::PasswordStore> password_store_;
 

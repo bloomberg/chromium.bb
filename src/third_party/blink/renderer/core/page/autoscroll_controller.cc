@@ -77,10 +77,6 @@ static const Cursor& MiddleClickAutoscrollCursor(const FloatSize& velocity) {
   return MiddlePanningCursor();
 }
 
-AutoscrollController* AutoscrollController::Create(Page& page) {
-  return new AutoscrollController(page);
-}
-
 AutoscrollController::AutoscrollController(Page& page) : page_(&page) {}
 
 void AutoscrollController::Trace(blink::Visitor* visitor) {
@@ -159,7 +155,7 @@ void AutoscrollController::UpdateAutoscrollLayoutObject() {
 }
 
 void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
-                                             const IntPoint& event_position,
+                                             const FloatPoint& event_position,
                                              TimeTicks event_time) {
   if (!drop_target_node || !drop_target_node->GetLayoutObject()) {
     StopAutoscroll();
@@ -189,19 +185,20 @@ void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
     return;
   }
 
-  IntSize offset = scrollable->CalculateAutoscrollDirection(event_position);
+  LayoutSize offset = scrollable->CalculateAutoscrollDirection(event_position);
   if (offset.IsZero()) {
     StopAutoscroll();
     return;
   }
 
-  drag_and_drop_autoscroll_reference_position_ = event_position + offset;
+  drag_and_drop_autoscroll_reference_position_ =
+      LayoutPoint(event_position) + offset;
 
   if (autoscroll_type_ == kNoAutoscroll) {
     autoscroll_type_ = kAutoscrollForDragAndDrop;
     autoscroll_layout_object_ = scrollable;
     drag_and_drop_autoscroll_start_time_ = event_time;
-    UseCounter::Count(autoscroll_layout_object_->GetFrame(),
+    UseCounter::Count(drop_target_node->GetDocument(),
                       WebFeature::kDragAndDropScrollStart);
     ScheduleMainThreadAnimation();
   } else if (autoscroll_layout_object_ != scrollable) {
@@ -293,7 +290,8 @@ void AutoscrollController::StartMiddleClickAutoscroll(
   middle_click_mode_ = kMiddleClickInitial;
   middle_click_autoscroll_start_pos_global_ = position_global;
 
-  UseCounter::Count(frame, WebFeature::kMiddleClickAutoscrollStart);
+  UseCounter::Count(frame->GetDocument(),
+                    WebFeature::kMiddleClickAutoscrollStart);
 
   last_velocity_ = FloatSize();
 
@@ -316,10 +314,10 @@ void AutoscrollController::Animate() {
 
   EventHandler& event_handler =
       autoscroll_layout_object_->GetFrame()->GetEventHandler();
-  IntSize offset = autoscroll_layout_object_->CalculateAutoscrollDirection(
+  LayoutSize offset = autoscroll_layout_object_->CalculateAutoscrollDirection(
       event_handler.LastKnownMousePositionInRootFrame());
-  IntPoint selection_point =
-      event_handler.LastKnownMousePositionInRootFrame() + offset;
+  LayoutPoint selection_point =
+      LayoutPoint(event_handler.LastKnownMousePositionInRootFrame()) + offset;
   switch (autoscroll_type_) {
     case kAutoscrollForDragAndDrop:
       ScheduleMainThreadAnimation();

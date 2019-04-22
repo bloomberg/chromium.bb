@@ -70,7 +70,8 @@ def CheckMatchingEnum(ax_enums,
                       automation_enums,
                       automation_enum_name,
                       errs,
-                      output_api):
+                      output_api,
+                      strict_ordering=False):
   if ax_enum_name not in ax_enums:
     errs.append(output_api.PresubmitError(
         'Expected %s to have an enum named %s' % (AX_MOJOM, ax_enum_name)))
@@ -82,6 +83,25 @@ def CheckMatchingEnum(ax_enums,
     return
   src = ax_enums[ax_enum_name]
   dst = automation_enums[automation_enum_name]
+  if strict_ordering and len(src) != len(dst):
+    errs.append(output_api.PresubmitError(
+        'Expected %s to have the same number of items as %s' % (
+            automation_enum_name, ax_enum_name)))
+    return
+
+  if strict_ordering:
+    for index, value in enumerate(src):
+      lower_value = InitialLowerCamelCase(value)
+      if lower_value != dst[index]:
+        errs.append(output_api.PresubmitError(
+            ('At index %s in enums, unexpected ordering around %s.%s ' +
+            'and %s.%s in %s and %s') % (
+                index, ax_enum_name, lower_value,
+                automation_enum_name, dst[index],
+                AX_MOJOM, AUTOMATION_IDL)))
+        return
+    return
+
   for value in src:
     lower_value = InitialLowerCamelCase(value)
     if lower_value in dst:
@@ -114,9 +134,9 @@ def CheckEnumsMatch(input_api, output_api):
   CheckMatchingEnum(ax_enums, 'Role', automation_enums, 'RoleType', errs,
                     output_api)
   CheckMatchingEnum(ax_enums, 'State', automation_enums, 'StateType', errs,
-                    output_api)
+                    output_api, strict_ordering=True)
   CheckMatchingEnum(ax_enums, 'Action', automation_enums, 'ActionType', errs,
-                    output_api)
+                    output_api, strict_ordering=True)
   CheckMatchingEnum(ax_enums, 'Event', automation_enums, 'EventType', errs,
                     output_api)
   CheckMatchingEnum(ax_enums, 'NameFrom', automation_enums, 'NameFromType',
@@ -139,7 +159,11 @@ def GetConstexprFromFile(fullpath):
     # Look for lines of the form "static constexpr <type> NAME "
     m = re.search('static constexpr [\w]+ ([\w]+)', line)
     if m:
-      values.append(m.group(1))
+      value = m.group(1)
+      # Skip first/last sentinels
+      if value == 'kFirstModeFlag' or value == 'kLastModeFlag':
+        continue
+      values.append(value)
 
   return values
 

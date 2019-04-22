@@ -5,36 +5,29 @@
 #ifndef CHROME_BROWSER_VR_FONT_FALLBACK_H_
 #define CHROME_BROWSER_VR_FONT_FALLBACK_H_
 
+#include <set>
 #include <string>
-
+#include "base/strings/string16.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 
 namespace gfx {
-class Font;
+class FontList;
 }  // namespace gfx
 
 namespace vr {
 
-// Return a font name which provides a glyph for the Unicode code point
-// specified by character.
-//   default_font: The main font for which fallbacks are required
-//   c: a UTF-32 code point
-//   preferred_locale: preferred locale identifier (if any) for |c|
-//                     (e.g. "en", "ja", "zh-CN")
-//
-// The funtion, if it succeeds, sets |font_name|. Even if it succeeds, it may
-// set |font_name| to the empty string if the character is supported by the
-// default font.
-//
-// Returns:
-//   * false, if the request could not be satisfied or if the provided default
-//     font supports it.
-//   * true, otherwis.
-//
-bool GetFallbackFontNameForChar(const gfx::Font& default_font,
-                                UChar32 c,
-                                const std::string& preferred_locale,
-                                std::string* font_name);
+// Just convert a string to a set of unique characters, used for each platform-
+// specific implementation of GetFontList.
+std::set<UChar32> CollectDifferentChars(base::string16 text);
+
+// Attempt to find a font list that supports all characters in the text. If
+// validate_fonts_contain_all_code_points == true, actually iterates all
+// characters to ensure they have valid glyphs in the fonts.
+bool GetFontList(const std::string& preferred_font_name,
+                 int font_size,
+                 base::string16 text,
+                 gfx::FontList* font_list,
+                 bool validate_fonts_contain_all_code_points);
 
 }  // namespace vr
 

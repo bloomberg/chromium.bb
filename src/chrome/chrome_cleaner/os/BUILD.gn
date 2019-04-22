@@ -101,6 +101,7 @@ source_set("cleaner_os") {
 
   deps = [
     ":common_os",
+    ":file_remover_api",
     "//base:base",
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/constants:quarantine_constants",
@@ -114,7 +115,6 @@ source_set("cleaner_os") {
   ]
 
   public_deps = [
-    ":file_remover_api",
     "//chrome/chrome_cleaner/logging/proto:removal_status_proto",
   ]
 }

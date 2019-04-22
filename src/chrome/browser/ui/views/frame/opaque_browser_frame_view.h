@@ -16,6 +16,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/linux_ui/linux_ui.h"
+#include "ui/views/window/caption_button_types.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserView;
@@ -27,8 +28,12 @@ namespace chrome {
 enum class FrameButtonDisplayType;
 }
 
+namespace gfx {
+struct VectorIcon;
+}
+
 namespace views {
-class ImageButton;
+class Button;
 class FrameBackground;
 class Label;
 }
@@ -47,8 +52,14 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
                          OpaqueBrowserFrameViewLayout* layout);
   ~OpaqueBrowserFrameView() override;
 
+  // Creates and adds child views.  Should be called after
+  // OpaqueBrowserFrameView is constructed.  This is not called from the
+  // constructor because it relies on virtual method calls.
+  void InitViews();
+
   // BrowserNonClientFrameView:
-  gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
+  gfx::Rect GetBoundsForTabStripRegion(
+      const views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
@@ -59,7 +70,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override;
   int NonClientHitTest(const gfx::Point& point) override;
-  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override;
+  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override;
   void ResetWindowControls() override;
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
@@ -73,7 +84,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::MenuButton* source,
+  void OnMenuButtonClicked(views::Button* source,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 
@@ -81,7 +92,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   bool ShouldTabIconViewAnimate() const override;
   gfx::ImageSkia GetFaviconForTabIconView() override;
 
-  // OpaqueBrowserFrameViewLayoutDelegate implementation:
+  // OpaqueBrowserFrameViewLayoutDelegate:
   bool ShouldShowWindowIcon() const override;
   bool ShouldShowWindowTitle() const override;
   base::string16 GetWindowTitle() const override;
@@ -99,32 +110,41 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   bool UseCustomFrame() const override;
   bool IsFrameCondensed() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;
+  FrameButtonStyle GetFrameButtonStyle() const override;
 
  protected:
-  views::ImageButton* minimize_button() const { return minimize_button_; }
-  views::ImageButton* maximize_button() const { return maximize_button_; }
-  views::ImageButton* restore_button() const { return restore_button_; }
-  views::ImageButton* close_button() const { return close_button_; }
+  views::Button* minimize_button() const { return minimize_button_; }
+  views::Button* maximize_button() const { return maximize_button_; }
+  views::Button* restore_button() const { return restore_button_; }
+  views::Button* close_button() const { return close_button_; }
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
-
-  // BrowserNonClientFrameView:
-  bool ShouldPaintAsThemed() const override;
 
   OpaqueBrowserFrameViewLayout* layout() { return layout_; }
 
  private:
   friend class HostedAppOpaqueBrowserFrameViewTest;
 
-  // Creates, adds and returns a new image button with |this| as its listener.
+  // Creates and returns a FrameCaptionButton with |this| as its listener.
   // Memory is owned by the caller.
-  views::ImageButton* InitWindowCaptionButton(int normal_image_id,
-                                              int hot_image_id,
-                                              int pushed_image_id,
-                                              int mask_image_id,
-                                              int accessibility_string_id,
-                                              ViewID view_id);
+  views::Button* CreateFrameCaptionButton(views::CaptionButtonIcon icon_type,
+                                          int ht_component,
+                                          const gfx::VectorIcon& icon_image);
+
+  // Creates and returns an ImageButton with |this| as its listener.
+  // Memory is owned by the caller.
+  views::Button* CreateImageButton(int normal_image_id,
+                                   int hot_image_id,
+                                   int pushed_image_id,
+                                   int mask_image_id,
+                                   ViewID view_id);
+
+  // Initializes state on |button| common to both FrameCaptionButtons and
+  // ImageButtons.
+  void InitWindowCaptionButton(views::Button* button,
+                               int accessibility_string_id,
+                               ViewID view_id);
 
   // Returns the size of the custom image specified by |image_id| in the frame's
   // ThemeProvider.
@@ -162,10 +182,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // Returns true if the view should draw its own custom title bar.
   bool ShouldShowWindowTitleBar() const;
 
-  // Returns the color to use for text and other title bar elements given the
-  // frame background color for |active_state|.
-  SkColor GetReadableFrameForegroundColor(ActiveState active_state) const;
-
   // Paint various sub-components of this view.  The *FrameBorder() functions
   // also paint the background of the titlebar area, since the top frame border
   // and titlebar background are a contiguous component.
@@ -177,10 +193,10 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   OpaqueBrowserFrameViewLayout* layout_;
 
   // Window controls.
-  views::ImageButton* minimize_button_;
-  views::ImageButton* maximize_button_;
-  views::ImageButton* restore_button_;
-  views::ImageButton* close_button_;
+  views::Button* minimize_button_;
+  views::Button* maximize_button_;
+  views::Button* restore_button_;
+  views::Button* close_button_;
 
   // The window icon and title.
   TabIconView* window_icon_;

@@ -91,15 +91,18 @@ let deleteLinkTitle = '';
  * @param {number} rid Restricted id of the link to be edited.
  */
 function prepopulateFields(rid) {
-  if (!isFinite(rid))
+  if (!isFinite(rid)) {
     return;
+  }
 
   // Grab the link data from the embeddedSearch API.
   let data = chrome.embeddedSearch.newTabPage.getMostVisitedItemData(rid);
-  if (!data)
+  if (!data) {
     return;
+  }
   prepopulatedLink.rid = rid;
   $(IDS.TITLE_FIELD).value = prepopulatedLink.title = data.title;
+  $(IDS.TITLE_FIELD).dir = data.direction || 'ltr';
   $(IDS.URL_FIELD).value = prepopulatedLink.url = data.url;
 
   // Set accessibility names.
@@ -142,13 +145,14 @@ function finishEditLink() {
   }
 
   const titleValue = $(IDS.TITLE_FIELD).value;
-  if (!titleValue)  // Set the URL input as the title if no title is provided.
+  if (!titleValue) {  // Set the URL input as the title if no title is provided.
     newTitle = urlValue;
-  else if (titleValue != prepopulatedLink.title)
+  } else if (titleValue != prepopulatedLink.title) {
     newTitle = titleValue;
+  }
 
   // Update the link only if a field was changed.
-  if (!!newUrl || !!newTitle) {
+  if (newUrl || newTitle) {
     chrome.embeddedSearch.newTabPage.updateCustomLink(
         prepopulatedLink.rid, newUrl, newTitle);
   }
@@ -175,6 +179,7 @@ function closeDialog() {
   // Small delay to allow the dialog to close before cleaning up.
   window.setTimeout(() => {
     $(IDS.FORM).reset();
+    $(IDS.TITLE_FIELD).dir = '';
     $(IDS.URL_FIELD_CONTAINER).classList.remove('invalid');
     $(IDS.DELETE).disabled = false;
     $(IDS.DONE).disabled = false;
@@ -204,6 +209,15 @@ function focusBackOnCancel(event) {
 
 
 /**
+ * Handler for the 'updateTheme' message from the host page.
+ * @param {!Object} info Data received in the message.
+ */
+function updateTheme(info) {
+  document.documentElement.setAttribute('darkmode', info.isDarkMode);
+}
+
+
+/**
  * Event handler for messages from the host page.
  * @param {Event} event Event received.
  */
@@ -229,6 +243,8 @@ function handlePostMessage(event) {
     window.setTimeout(() => {
       $(IDS.TITLE_FIELD).select();
     }, 10);
+  } else if (cmd === 'updateTheme') {
+    updateTheme(args);
   }
 }
 
@@ -242,18 +258,17 @@ function init() {
   queryArgs = {};
   for (let i = 0; i < query.length; ++i) {
     let val = query[i].split('=');
-    if (val[0] == '')
+    if (val[0] == '') {
       continue;
+    }
     queryArgs[decodeURIComponent(val[0])] = decodeURIComponent(val[1]);
   }
 
   document.title = queryArgs['editTitle'];
 
   // Enable RTL.
-  // TODO(851293): Add RTL formatting.
   if (queryArgs['rtl'] == '1') {
-    let html = document.querySelector('html');
-    html.dir = 'rtl';
+    document.documentElement.setAttribute('dir', 'rtl');
   }
 
   // Populate text content.
@@ -290,8 +305,9 @@ function init() {
   let finishEditOrClose = (event) => {
     if (event.keyCode === KEYCODES.ENTER) {
       event.preventDefault();
-      if (!$(IDS.DONE).disabled)
+      if (!$(IDS.DONE).disabled) {
         finishEditLink();
+      }
     }
   };
   $(IDS.TITLE_FIELD).onkeydown = finishEditOrClose;
@@ -317,6 +333,8 @@ function init() {
   // Disables the "Done" button when the URL field is empty.
   $(IDS.URL_FIELD).addEventListener('input',
       () => $(IDS.DONE).disabled = ($(IDS.URL_FIELD).value.trim() === ''));
+
+  utils.setPlatformClass(document.body);
 
   $(IDS.EDIT_DIALOG).showModal();
 

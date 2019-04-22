@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -20,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
@@ -48,7 +50,6 @@
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
 
 namespace aura {
@@ -208,9 +209,13 @@ void Window::SetTitle(const base::string16& title) {
 }
 
 void Window::SetTransparent(bool transparent) {
+  if (transparent == transparent_)
+    return;
   transparent_ = transparent;
   if (layer())
     layer()->SetFillsBoundsOpaquely(!transparent_);
+  if (port_)
+    port_->OnTransparentChanged(transparent);
 }
 
 void Window::SetFillsBoundsCompletely(bool fills_bounds) {
@@ -317,9 +322,9 @@ std::unique_ptr<WindowTargeter> Window::SetEventTargeter(
 }
 
 void Window::SetBounds(const gfx::Rect& new_bounds) {
-  if (parent_ && parent_->layout_manager())
+  if (parent_ && parent_->layout_manager()) {
     parent_->layout_manager()->SetChildBounds(this, new_bounds);
-  else {
+  } else {
     // Ensure we don't go smaller than our minimum bounds.
     gfx::Rect final_bounds(new_bounds);
     if (delegate_) {
@@ -359,6 +364,10 @@ void Window::SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen,
 
 gfx::Rect Window::GetTargetBounds() const {
   return layer() ? layer()->GetTargetBounds() : bounds();
+}
+
+void Window::ScheduleDraw() {
+  layer()->ScheduleDraw();
 }
 
 void Window::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -580,6 +589,7 @@ void Window::SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy policy) {
     return;
 
   event_targeting_policy_ = policy;
+  layer()->SetAcceptEvents(policy != ws::mojom::EventTargetingPolicy::NONE);
   if (port_)
     port_->OnEventTargetingPolicyChanged();
 }
@@ -690,21 +700,6 @@ bool Window::CanFocus() const {
   return parent_->CanFocus();
 }
 
-bool Window::CanReceiveEvents() const {
-  // TODO(sky): this may want to delegate to the WindowPort as for mus there
-  // isn't a point in descending into windows owned by the client.
-  if (IsRootWindow())
-    return IsVisible();
-
-  // The client may forbid certain windows from receiving events at a given
-  // point in time.
-  client::EventClient* client = client::GetEventClient(GetRootWindow());
-  if (client && !client->CanProcessEventsWithinSubtree(this))
-    return false;
-
-  return parent_ && IsVisible() && parent_->CanReceiveEvents();
-}
-
 void Window::SetCapture() {
   if (!IsVisible())
     return;
@@ -769,17 +764,24 @@ void Window::OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                     new_device_scale_factor);
 }
 
+void Window::UpdateVisualState() {
+  if (delegate_)
+    delegate_->UpdateVisualState();
+}
+
 #if !defined(NDEBUG)
 std::string Window::GetDebugInfo() const {
   return base::StringPrintf(
-      "%s<%d> bounds(%d, %d, %d, %d) %s %s opacity=%.1f",
+      "%s<%d> bounds(%d, %d, %d, %d) %s %s opacity=%.1f "
+      "occlusion_state=%s",
       GetName().empty() ? "Unknown" : GetName().c_str(), id(), bounds().x(),
       bounds().y(), bounds().width(), bounds().height(),
       visible_ ? "WindowVisible" : "WindowHidden",
       layer()
           ? (layer()->GetTargetVisibility() ? "LayerVisible" : "LayerHidden")
           : "NoLayer",
-      layer() ? layer()->opacity() : 1.0f);
+      layer() ? layer()->opacity() : 1.0f,
+      OcclusionStateToString(occlusion_state_));
 }
 
 void Window::PrintWindowHierarchy(int depth) const {
@@ -810,8 +812,10 @@ void Window::RemoveOrDestroyChildren() {
 }
 
 std::unique_ptr<ui::PropertyData> Window::BeforePropertyChange(
-    const void* key) {
-  return port_ ? port_->OnWillChangeProperty(key) : nullptr;
+    const void* key,
+    bool is_value_changing) {
+  return (is_value_changing && port_) ? port_->OnWillChangeProperty(key)
+                                      : nullptr;
 }
 
 void Window::AfterPropertyChange(const void* key,
@@ -831,7 +835,7 @@ bool Window::HitTest(const gfx::Point& local_point) {
   if (!delegate_ || !delegate_->HasHitTestMask())
     return local_bounds.Contains(local_point);
 
-  gfx::Path mask;
+  SkPath mask;
   delegate_->GetHitTestMask(&mask);
 
   SkRegion clip_region;
@@ -893,6 +897,9 @@ void Window::SetOcclusionInfo(OcclusionState occlusion_state,
     occluded_region_ = occluded_region;
     if (delegate_)
       delegate_->OnWindowOcclusionChanged(occlusion_state, occluded_region);
+
+    for (WindowObserver& observer : observers_)
+      observer.OnWindowOcclusionChanged(this);
   }
 }
 
@@ -1058,7 +1065,7 @@ void Window::NotifyWindowHierarchyChangeAtReceiver(
 void Window::NotifyWindowVisibilityChanged(aura::Window* target,
                                            bool visible) {
   if (!NotifyWindowVisibilityChangedDown(target, visible))
-    return; // |this| has been deleted.
+    return;  // |this| has been deleted.
   NotifyWindowVisibilityChangedUp(target, visible);
 }
 
@@ -1077,7 +1084,7 @@ bool Window::NotifyWindowVisibilityChangedAtReceiver(aura::Window* target,
 bool Window::NotifyWindowVisibilityChangedDown(aura::Window* target,
                                                bool visible) {
   if (!NotifyWindowVisibilityChangedAtReceiver(target, visible))
-    return false; // |this| was deleted.
+    return false;  // |this| was deleted.
 
   WindowTracker this_tracker;
   this_tracker.Add(this);
@@ -1103,11 +1110,23 @@ void Window::NotifyWindowVisibilityChangedUp(aura::Window* target,
 }
 
 bool Window::CleanupGestureState() {
+  // If it's in the process already, nothing has to be done. Reentrant can
+  // happen through some event handlers for CancelActiveTouches().
+  if (cleaning_up_gesture_state_)
+    return false;
+
+  base::AutoReset<bool> in_cleanup(&cleaning_up_gesture_state_, true);
   bool state_modified = false;
   state_modified |= env_->gesture_recognizer()->CancelActiveTouches(this);
   state_modified |= env_->gesture_recognizer()->CleanupStateForConsumer(this);
-  for (auto iter = children_.begin(); iter != children_.end(); ++iter) {
-    state_modified |= (*iter)->CleanupGestureState();
+  // Potentially event handlers for CancelActiveTouches() within
+  // CleanupGestureState may change the window hierarchy (or reorder the
+  // |children_|), and therefore iterating over |children_| is not safe. Use
+  // WindowTracker to track the list of children.
+  WindowTracker children(children_);
+  while (!children.windows().empty()) {
+    Window* child = children.Pop();
+    state_modified |= child->CleanupGestureState();
   }
   return state_modified;
 }
@@ -1185,6 +1204,34 @@ void Window::TrackOcclusionState() {
 
 bool Window::RequiresDoubleTapGestureEvents() const {
   return delegate_ && delegate_->RequiresDoubleTapGestureEvents();
+}
+
+// static
+const char* Window::OcclusionStateToString(OcclusionState state) {
+#define CASE_TYPE(t) \
+  case t:            \
+    return #t
+
+  switch (state) {
+    CASE_TYPE(OcclusionState::UNKNOWN);
+    CASE_TYPE(OcclusionState::VISIBLE);
+    CASE_TYPE(OcclusionState::OCCLUDED);
+    CASE_TYPE(OcclusionState::HIDDEN);
+  }
+#undef CASE_TYPE
+
+  NOTREACHED();
+  return "";
+}
+
+void Window::NotifyResizeLoopStarted() {
+  for (auto& observer : observers_)
+    observer.OnResizeLoopStarted(this);
+}
+
+void Window::NotifyResizeLoopEnded() {
+  for (auto& observer : observers_)
+    observer.OnResizeLoopEnded(this);
 }
 
 #if DCHECK_IS_ON()
@@ -1280,10 +1327,9 @@ ui::EventTargeter* Window::GetEventTargeter() {
   return targeter_.get();
 }
 
-void Window::ConvertEventToTarget(ui::EventTarget* target,
-                                  ui::LocatedEvent* event) {
-  event->ConvertLocationToTarget(this,
-                                 static_cast<Window*>(target));
+void Window::ConvertEventToTarget(const ui::EventTarget* target,
+                                  ui::LocatedEvent* event) const {
+  event->ConvertLocationToTarget(this, static_cast<const Window*>(target));
 }
 
 gfx::PointF Window::GetScreenLocationF(const ui::LocatedEvent& event) const {
@@ -1343,7 +1389,7 @@ void Window::UpdateLayerName() {
     layer_name = "Unnamed Window";
 
   if (id_ != -1)
-    layer_name += " " + base::IntToString(id_);
+    layer_name += " " + base::NumberToString(id_);
 
   layer()->set_name(layer_name);
 #endif

@@ -197,7 +197,8 @@ IceConfig IceConfig::Parse(const base::DictionaryValue& dictionary) {
 
 // static
 IceConfig IceConfig::Parse(const std::string& config_json) {
-  std::unique_ptr<base::Value> json = base::JSONReader::Read(config_json);
+  std::unique_ptr<base::Value> json =
+      base::JSONReader::ReadDeprecated(config_json);
   if (!json) {
     return IceConfig();
   }

@@ -67,7 +67,7 @@ void TelemetryLogWriter::SendPendingEntries() {
     LOG(ERROR) << "Failed to serialize log to JSON.";
     return;
   }
-  token_getter_->CallWithToken(base::BindRepeating(
+  token_getter_->CallWithToken(base::BindOnce(
       &TelemetryLogWriter::PostJsonToServer, base::Unretained(this), json));
 }
 

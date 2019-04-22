@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.contextualsearch;
 
 import android.support.annotation.Nullable;
 
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.WebContents;
 
@@ -18,19 +17,17 @@ import java.util.Map;
  * Implements the UMA logging for Ranker that's used for Contextual Search Tap Suppression.
  */
 public class ContextualSearchRankerLoggerImpl implements ContextualSearchInteractionRecorder {
-    private static final String TAG = "ContextualSearch";
-
     // Names for all our features and labels.
-    // Integer values should contain @Feature values only.
+    // Map keys should contain @Feature int values only.
     private static final Map<Integer, String> ALL_NAMES;
     @VisibleForTesting
-    // Integer values should contain @Feature values only.
+    // Map keys should contain @Feature int values only.
     static final Map<Integer, String> OUTCOMES;
     @VisibleForTesting
-    // Integer values should contain @Feature values only.
+    // Map keys should contain @Feature int values only.
     static final Map<Integer, String> FEATURES;
     static {
-        // Integer values should contain @Feature values only.
+        // Map keys should contain @Feature int values only.
         Map<Integer, String> outcomes = new HashMap<Integer, String>();
         outcomes.put(Feature.OUTCOME_WAS_PANEL_OPENED, "OutcomeWasPanelOpened");
         outcomes.put(Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED, "OutcomeWasQuickActionClicked");
@@ -75,7 +72,7 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
         features.put(Feature.QUICK_ACTIONS_IGNORED_COUNT, "QuickActionsIgnored");
         FEATURES = Collections.unmodifiableMap(features);
 
-        // Integer values should contain @Feature values only.
+        // Map keys should contain @Feature int values only.
         Map<Integer, String> allNames = new HashMap<Integer, String>();
         allNames.putAll(outcomes);
         allNames.putAll(features);
@@ -100,21 +97,34 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
             AssistRankerPrediction.UNDETERMINED;
 
     // Map that accumulates all of the Features to log for a specific user-interaction.
-    // Integer values should contain @Feature values only.
+    // Map keys should contain @Feature int values only.
     private Map<Integer, Object> mFeaturesToLog;
 
     // A for-testing copy of all the features to log setup so that it will survive a {@link #reset}.
-    // Integer values should contain @Feature values only.
+    // Map keys should contain @Feature int values only.
     private Map<Integer, Object> mFeaturesLoggedForTesting;
     private Map<Integer, Object> mOutcomesLoggedForTesting;
+
+    private ContextualSearchInteractionPersister mInteractionPersister;
+
+    private long mEventIdToPersist;
 
     /**
      * Constructs a Ranker Logger and associated native implementation to write Contextual Search
      * ML data to Ranker.
      */
     public ContextualSearchRankerLoggerImpl() {
-        // TODO(donnd): remove when behind-the-flag bug fixed (crbug.com/786589).
-        Log.i(TAG, "Consructing ContextualSearchRankerLoggerImpl, enabled: %s", isEnabled());
+        this(new ContextualSearchInteractionPersisterImpl());
+    }
+
+    /**
+     * Constructs a Ranker Logger implementation for testing.
+     * @param interactionPersister The {@link ContextualSearchInteractionPersister} to use for this
+     *        instance.
+     */
+    public ContextualSearchRankerLoggerImpl(
+            ContextualSearchInteractionPersister interactionPersister) {
+        mInteractionPersister = interactionPersister;
         if (isEnabled()) mNativePointer = nativeInit();
     }
 
@@ -210,10 +220,25 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
                 }
                 mOutcomesLoggedForTesting = mFeaturesToLog;
                 ContextualSearchUma.logRecordedOutcomesToRanker();
+                // Also persist the outcomes if we are persisting this interaction.
+                if (mEventIdToPersist != 0) {
+                    mInteractionPersister.persistInteractions(mEventIdToPersist, mFeaturesToLog);
+                    mEventIdToPersist = 0;
+                }
             }
             nativeWriteLogAndReset(mNativePointer);
         }
         reset();
+    }
+
+    @Override
+    public void persistInteraction(long eventId) {
+        if (eventId != 0) mEventIdToPersist = eventId;
+    }
+
+    @Override
+    public ContextualSearchInteractionPersister getInteractionPersister() {
+        return mInteractionPersister;
     }
 
     /**

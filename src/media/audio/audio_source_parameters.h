@@ -9,7 +9,7 @@
 
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "media/audio/audio_processing.h"
+#include "media/base/audio_processing.h"
 #include "media/base/media_export.h"
 
 namespace media {

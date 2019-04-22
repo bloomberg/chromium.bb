@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_watcher_manager.h"
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/task/post_task.h"
@@ -21,7 +22,7 @@ namespace arc {
 namespace {
 
 void OnAddWatcherOnUIThread(
-    const ArcDocumentsProviderRoot::StatusCallback& callback,
+    const storage::WatcherManager::StatusCallback& callback,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
@@ -29,7 +30,7 @@ void OnAddWatcherOnUIThread(
 }
 
 void OnRemoveWatcherOnUIThread(
-    const ArcDocumentsProviderRoot::StatusCallback& callback,
+    const storage::WatcherManager::StatusCallback& callback,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
@@ -37,7 +38,7 @@ void OnRemoveWatcherOnUIThread(
 }
 
 void OnNotificationOnUIThread(
-    const ArcDocumentsProviderRoot::WatcherCallback& notification_callback,
+    const storage::WatcherManager::NotificationCallback& notification_callback,
     ArcDocumentsProviderRoot::ChangeType change_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
@@ -46,8 +47,9 @@ void OnNotificationOnUIThread(
 
 void AddWatcherOnUIThread(
     const storage::FileSystemURL& url,
-    const ArcDocumentsProviderRoot::StatusCallback& callback,
-    const ArcDocumentsProviderRoot::WatcherCallback& notification_callback) {
+    const storage::WatcherManager::StatusCallback& callback,
+    const storage::WatcherManager::NotificationCallback&
+        notification_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ArcDocumentsProviderRootMap* roots =
@@ -71,7 +73,7 @@ void AddWatcherOnUIThread(
 
 void RemoveWatcherOnUIThread(
     const storage::FileSystemURL& url,
-    const ArcDocumentsProviderRoot::StatusCallback& callback) {
+    const ArcDocumentsProviderRoot::WatcherStatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ArcDocumentsProviderRootMap* roots =

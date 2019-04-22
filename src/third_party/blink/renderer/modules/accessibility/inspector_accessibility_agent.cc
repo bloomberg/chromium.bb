@@ -96,7 +96,7 @@ void FillLiveRegionProperties(AXObject& ax_object,
                      CreateValue(ax_object.ContainerLiveRegionRelevant(),
                                  AXValueTypeEnum::TokenList)));
 
-  if (!ax_object.IsLiveRegion()) {
+  if (!ax_object.IsLiveRegionRoot()) {
     properties.addItem(CreateProperty(
         AXPropertyNameEnum::Root,
         CreateRelatedNodeListValue(*(ax_object.LiveRegionRoot()))));
@@ -105,7 +105,7 @@ void FillLiveRegionProperties(AXObject& ax_object,
 
 void FillGlobalStates(AXObject& ax_object,
                       protocol::Array<AXProperty>& properties) {
-  if (ax_object.Restriction() == kDisabled) {
+  if (ax_object.Restriction() == kRestrictionDisabled) {
     properties.addItem(
         CreateProperty(AXPropertyNameEnum::Disabled, CreateBooleanValue(true)));
   }
@@ -275,7 +275,7 @@ void FillWidgetProperties(AXObject& ax_object,
   if (RoleAllowsReadonly(role)) {
     properties.addItem(CreateProperty(
         AXPropertyNameEnum::Readonly,
-        CreateBooleanValue(ax_object.Restriction() == kReadOnly)));
+        CreateBooleanValue(ax_object.Restriction() == kRestrictionReadOnly)));
   }
 
   if (RoleAllowsRequired(role)) {
@@ -528,7 +528,7 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
     return response;
 
   Document& document = dom_node->GetDocument();
-  document.UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document.UpdateStyleAndLayout();
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       document.Lifecycle());
   LocalFrame* local_frame = document.GetFrame();
@@ -628,14 +628,15 @@ void InspectorAccessibilityAgent::PopulateDOMNodeAncestors(
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
   // Walk up parents until an AXObject can be found.
-  Node* parent_node = inspected_dom_node.IsShadowRoot()
-                          ? &ToShadowRoot(inspected_dom_node).host()
+  auto* shadow_root = DynamicTo<ShadowRoot>(inspected_dom_node);
+  Node* parent_node = shadow_root
+                          ? &shadow_root->host()
                           : FlatTreeTraversal::Parent(inspected_dom_node);
   AXObject* parent_ax_object = cache.GetOrCreate(parent_node);
   while (parent_node && !parent_ax_object) {
-    parent_node = parent_node->IsShadowRoot()
-                      ? &ToShadowRoot(parent_node)->host()
-                      : FlatTreeTraversal::Parent(*parent_node);
+    shadow_root = DynamicTo<ShadowRoot>(parent_node);
+    parent_node = shadow_root ? &shadow_root->host()
+                              : FlatTreeTraversal::Parent(*parent_node);
     parent_ax_object = cache.GetOrCreate(parent_node);
   }
 

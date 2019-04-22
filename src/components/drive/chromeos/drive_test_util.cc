@@ -21,19 +21,5 @@ void RegisterDrivePrefs(PrefRegistrySimple* pref_registry) {
       true);
 }
 
-FakeNetworkChangeNotifier::FakeNetworkChangeNotifier()
-    : type_(CONNECTION_WIFI) {
-}
-
-void FakeNetworkChangeNotifier::SetConnectionType(ConnectionType type) {
-  type_ = type;
-  NotifyObserversOfConnectionTypeChange();
-}
-
-net::NetworkChangeNotifier::ConnectionType
-FakeNetworkChangeNotifier::GetCurrentConnectionType() const {
-  return type_;
-}
-
 }  // namespace test_util
 }  // namespace drive

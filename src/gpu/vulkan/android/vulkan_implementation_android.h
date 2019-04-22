@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/android/scoped_hardware_buffer_handle.h"
 #include "base/component_export.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_instance.h"
@@ -21,8 +22,8 @@ class COMPONENT_EXPORT(VULKAN_ANDROID) VulkanImplementationAndroid
   ~VulkanImplementationAndroid() override;
 
   // VulkanImplementation:
-  bool InitializeVulkanInstance() override;
-  VkInstance GetVulkanInstance() override;
+  bool InitializeVulkanInstance(bool using_surface) override;
+  VulkanInstance* GetVulkanInstance() override;
   std::unique_ptr<VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window) override;
   bool GetPhysicalDevicePresentationSupport(
@@ -34,12 +35,21 @@ class COMPONENT_EXPORT(VULKAN_ANDROID) VulkanImplementationAndroid
   std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
       VkFence vk_fence) override;
-  bool ImportSemaphoreFdKHR(VkDevice vk_device,
-                            base::ScopedFD sync_fd,
-                            VkSemaphore* vk_semaphore) override;
-  bool GetSemaphoreFdKHR(VkDevice vk_device,
-                         VkSemaphore vk_semaphore,
-                         base::ScopedFD* sync_fd) override;
+  VkSemaphore CreateExternalSemaphore(VkDevice vk_device) override;
+  VkSemaphore ImportSemaphoreHandle(VkDevice vk_device,
+                                    SemaphoreHandle handle) override;
+  SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
+                                     VkSemaphore vk_semaphore) override;
+  VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
+  bool CreateVkImageAndImportAHB(
+      const VkDevice& vk_device,
+      const VkPhysicalDevice& vk_physical_device,
+      const gfx::Size& size,
+      base::android::ScopedHardwareBufferHandle ahb_handle,
+      VkImage* vk_image,
+      VkImageCreateInfo* vk_image_info,
+      VkDeviceMemory* vk_device_memory,
+      VkDeviceSize* mem_allocation_size) override;
 
  private:
   VulkanInstance vulkan_instance_;

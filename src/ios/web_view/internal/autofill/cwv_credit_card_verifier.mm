@@ -8,8 +8,8 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
-#include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
 #import "ios/web_view/public/cwv_credit_card_verifier_data_source.h"
 #import "ios/web_view/public/cwv_credit_card_verifier_delegate.h"

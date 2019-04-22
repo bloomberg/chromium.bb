@@ -36,6 +36,8 @@ static_library("snapshot") {
     "memory_snapshot.cc",
     "memory_snapshot.h",
     "memory_snapshot_generic.h",
+    "minidump/exception_snapshot_minidump.cc",
+    "minidump/exception_snapshot_minidump.h",
     "minidump/memory_snapshot_minidump.cc",
     "minidump/memory_snapshot_minidump.h",
     "minidump/minidump_annotation_reader.cc",
@@ -142,10 +144,16 @@ static_library("snapshot") {
     ]
   }
 
-  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia ||
+      crashpad_is_win) {
     sources += [
       "crashpad_types/crashpad_info_reader.cc",
       "crashpad_types/crashpad_info_reader.h",
+    ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    sources += [
       "crashpad_types/image_annotation_reader.cc",
       "crashpad_types/image_annotation_reader.h",
       "elf/elf_dynamic_array_reader.cc",
@@ -200,6 +208,8 @@ static_library("snapshot") {
       "fuchsia/exception_snapshot_fuchsia.h",
       "fuchsia/memory_map_fuchsia.cc",
       "fuchsia/memory_map_fuchsia.h",
+      "fuchsia/memory_map_region_snapshot_fuchsia.cc",
+      "fuchsia/memory_map_region_snapshot_fuchsia.h",
       "fuchsia/process_reader_fuchsia.cc",
       "fuchsia/process_reader_fuchsia.h",
       "fuchsia/process_snapshot_fuchsia.cc",
@@ -230,29 +240,6 @@ static_library("snapshot") {
   if (crashpad_is_win) {
     cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
     libs = [ "powrprof.lib" ]
-  }
-}
-
-if (crashpad_is_win) {
-  static_library("snapshot_api") {
-    sources = [
-      "api/module_annotations_win.cc",
-      "api/module_annotations_win.h",
-    ]
-
-    public_configs = [ "..:crashpad_config" ]
-
-    cflags = [ "/wd4201" ]
-
-    deps = [
-      ":snapshot",
-      "../compat",
-      "../third_party/mini_chromium:base",
-      "../util",
-    ]
-  }
-} else {
-  group("snapshot_api") {
   }
 }
 
@@ -353,9 +340,13 @@ source_set("snapshot_test") {
     sources += [ "crashpad_info_client_options_test.cc" ]
   }
 
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia ||
+      crashpad_is_win) {
+    sources += [ "crashpad_types/crashpad_info_reader_test.cc" ]
+  }
+
   if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
     sources += [
-      "crashpad_types/crashpad_info_reader_test.cc",
       "crashpad_types/image_annotation_reader_test.cc",
       "elf/elf_image_reader_test.cc",
       "elf/elf_image_reader_test_note.S",
@@ -365,11 +356,10 @@ source_set("snapshot_test") {
 
   if (crashpad_is_win) {
     sources += [
-      "api/module_annotations_win_test.cc",
       "win/cpu_context_win_test.cc",
       "win/exception_snapshot_win_test.cc",
       "win/extra_memory_ranges_test.cc",
-      "win/pe_image_annotations_reader_test.cc",
+      "win/module_snapshot_win_test.cc",
       "win/pe_image_reader_test.cc",
       "win/process_reader_win_test.cc",
       "win/process_snapshot_win_test.cc",
@@ -384,7 +374,10 @@ source_set("snapshot_test") {
   }
 
   if (crashpad_is_fuchsia) {
-    sources += [ "fuchsia/process_reader_fuchsia_test.cc" ]
+    sources += [
+      "fuchsia/process_reader_fuchsia_test.cc",
+      "fuchsia/process_snapshot_fuchsia_test.cc",
+    ]
   }
 
   # public_configs isn’t quite right. snapshot_test_link sets ldflags, and
@@ -394,7 +387,6 @@ source_set("snapshot_test") {
   public_configs = [ ":snapshot_test_link" ]
 
   deps = [
-    ":snapshot_api",
     ":test_support",
     "../client",
     "../compat",

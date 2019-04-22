@@ -12,9 +12,14 @@ class Transform;
 
 namespace ui {
 
+class Compositor;
+
 void CheckApproximatelyEqual(const gfx::Transform& lhs,
                              const gfx::Transform& rhs);
 void CheckApproximatelyEqual(const gfx::Rect& lhs, const gfx::Rect& rhs);
+
+// Runs a RunLoop until the next frame is presented.
+void WaitForNextFrameToBePresented(ui::Compositor* compositor);
 
 }  // namespace ui
 

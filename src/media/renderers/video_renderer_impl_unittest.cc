@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
-#include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -28,6 +27,7 @@
 #include "media/base/gmock_callback_support.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/null_video_sink.h"
 #include "media/base/test_helpers.h"
@@ -133,7 +133,7 @@ class VideoRendererImplTest : public testing::Test {
                       bool expect_success) {
     if (low_delay)
       demuxer_stream->set_liveness(DemuxerStream::LIVENESS_LIVE);
-    EXPECT_CALL(mock_cb_, OnWaitingForDecryptionKey()).Times(0);
+    EXPECT_CALL(mock_cb_, OnWaiting(_)).Times(0);
     EXPECT_CALL(mock_cb_, OnAudioConfigChange(_)).Times(0);
     EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
     renderer_->Initialize(
@@ -445,7 +445,7 @@ class VideoRendererImplTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment task_environment_;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
 
   // Fixture members.
   std::unique_ptr<VideoRendererImpl> renderer_;

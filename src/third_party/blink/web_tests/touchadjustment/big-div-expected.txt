@@ -3,7 +3,6 @@ Test touch adjustment on a large div. The adjusted touch point should lie inside
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-
 Overlapping touch above the target should snap to the top of the target element.
 PASS adjustedNode.id is element.id
 PASS adjustedPoint.x >= targetBounds.left is true

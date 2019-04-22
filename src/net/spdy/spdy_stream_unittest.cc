@@ -14,8 +14,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_info.h"
@@ -36,7 +38,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_scoped_task_environment.h"
-#include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,7 +52,7 @@ namespace {
 
 const char kPushUrl[] = "https://www.example.org/push";
 const char kPostBody[] = "\0hello!\xff";
-const size_t kPostBodyLength = arraysize(kPostBody);
+const size_t kPostBodyLength = base::size(kPostBody);
 const base::StringPiece kPostBodyStringPiece(kPostBody, kPostBodyLength);
 
 static base::TimeTicks g_time_now;
@@ -78,7 +80,8 @@ class SpdyStreamTest : public TestWithScopedTaskEnvironment {
 
   base::WeakPtr<SpdySession> CreateDefaultSpdySession() {
     SpdySessionKey key(HostPortPair::FromURL(url_), ProxyServer::Direct(),
-                       PRIVACY_MODE_DISABLED, SocketTag());
+                       PRIVACY_MODE_DISABLED,
+                       SpdySessionKey::IsProxySession::kFalse, SocketTag());
     return CreateSpdySession(session_.get(), key, NetLogWithSource());
   }
 
@@ -342,7 +345,8 @@ TEST_F(SpdyStreamTest, PushedStream) {
   data.RunUntilPaused();
 
   const SpdySessionKey key(HostPortPair::FromURL(url_), ProxyServer::Direct(),
-                           PRIVACY_MODE_DISABLED, SocketTag());
+                           PRIVACY_MODE_DISABLED,
+                           SpdySessionKey::IsProxySession::kFalse, SocketTag());
   const GURL pushed_url(kPushUrl);
   HttpRequestInfo push_request;
   push_request.url = pushed_url;
@@ -569,7 +573,7 @@ TEST_F(SpdyStreamTest, UpperCaseHeaders) {
 
   const char* const kExtraHeaders[] = {"X-UpperCase", "yes"};
   spdy::SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(
-      kExtraHeaders, arraysize(kExtraHeaders) / 2, 1));
+      kExtraHeaders, base::size(kExtraHeaders) / 2, 1));
   AddRead(reply);
 
   spdy::SpdySerializedFrame rst(
@@ -623,7 +627,7 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersOnPush) {
 
   const char* const kExtraHeaders[] = {"X-UpperCase", "yes"};
   spdy::SpdySerializedFrame push(spdy_util_.ConstructSpdyPush(
-      kExtraHeaders, arraysize(kExtraHeaders) / 2, 2, 1, kPushUrl));
+      kExtraHeaders, base::size(kExtraHeaders) / 2, 2, 1, kPushUrl));
   AddRead(push);
 
   spdy::SpdySerializedFrame priority(

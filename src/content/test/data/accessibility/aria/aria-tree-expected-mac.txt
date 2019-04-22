@@ -1,13 +1,13 @@
 AXWebArea
-++AXOutline
+++AXOutline AXARIASetSize='2'
 ++++AXRow AXTitle='Animals' AXValue='2' AXARIASetSize='2' AXARIAPosInSet='1'
 ++++++AXLink AXTitle='Animals'
 ++++++++AXStaticText AXValue='Animals'
-++++++AXGroup
+++++++AXGroup AXARIASetSize='2'
 ++++++++AXRow AXTitle='Domesticated' AXARIASetSize='2' AXARIAPosInSet='1'
 ++++++++++AXLink AXTitle='Domesticated'
 ++++++++++++AXStaticText AXValue='Domesticated'
-++++++++++AXGroup
+++++++++++AXGroup AXARIASetSize='2'
 ++++++++++++AXRow AXTitle='Dog' AXValue='1' AXARIASetSize='2' AXARIAPosInSet='1'
 ++++++++++++++AXLink AXTitle='Dog'
 ++++++++++++++++AXStaticText AXValue='Dog'

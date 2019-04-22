@@ -18,6 +18,7 @@ class GrAuditTrail;
 class GrCaps;
 class GrOpFlushState;
 class GrOpMemoryPool;
+class GrRecordingContext;
 class GrRenderTargetOpList;
 class GrResourceAllocator;
 class GrResourceProvider;
@@ -29,7 +30,7 @@ struct SkIRect;
 
 class GrOpList : public SkRefCnt {
 public:
-    GrOpList(GrResourceProvider*, sk_sp<GrOpMemoryPool>, GrSurfaceProxy*, GrAuditTrail*);
+    GrOpList(GrResourceProvider*, sk_sp<GrOpMemoryPool>, sk_sp<GrSurfaceProxy>, GrAuditTrail*);
     ~GrOpList() override;
 
     // These four methods are invoked at flush time
@@ -39,7 +40,7 @@ public:
     void prepare(GrOpFlushState* flushState);
     bool execute(GrOpFlushState* flushState) { return this->onExecute(flushState); }
 
-    virtual bool copySurface(GrContext*,
+    virtual bool copySurface(GrRecordingContext*,
                              GrSurfaceProxy* dst,
                              GrSurfaceProxy* src,
                              const SkIRect& srcRect,
@@ -88,9 +89,6 @@ public:
 
     SkDEBUGCODE(virtual int numClips() const { return 0; })
 
-    // TODO: it would be nice for this to be hidden
-    void setStencilLoadOp(GrLoadOp loadOp) { fStencilLoadOp = loadOp; }
-
 protected:
     bool isInstantiated() const;
 
@@ -115,13 +113,23 @@ protected:
 private:
     friend class GrDrawingManager; // for resetFlag, TopoSortTraits & gatherProxyIntervals
 
+    virtual bool onIsUsed(GrSurfaceProxy*) const = 0;
+
+    bool isUsed(GrSurfaceProxy* proxy) const {
+        if (proxy == fTarget.get()) {
+            return true;
+        }
+
+        return this->onIsUsed(proxy);
+    }
+
     void addDependency(GrOpList* dependedOn);
     void addDependent(GrOpList* dependent);
-    SkDEBUGCODE(bool isDependedent(const GrOpList* dependent) const);
-    SkDEBUGCODE(void validate() const);
+    SkDEBUGCODE(bool isDependedent(const GrOpList* dependent) const;)
+    SkDEBUGCODE(void validate() const;)
     void closeThoseWhoDependOnMe(const GrCaps&);
 
-    // Remove all Ops which reference proxies that have not been instantiated.
+    // Remove all Ops which reference proxies that are not instantiated.
     virtual void purgeOpsWithUninstantiatedProxies() = 0;
 
     // Feed proxy usage intervals to the GrResourceAllocator class

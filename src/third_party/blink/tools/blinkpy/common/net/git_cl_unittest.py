@@ -52,7 +52,7 @@ class GitCLTest(unittest.TestCase):
             ],
             [
                 'git', 'cl', 'try',
-                '-B', 'master.tryserver.chromium.android',
+                '-B', 'luci.chromium.try',
                 '-b', 'android_blink_rel',
                 '--auth-refresh-token-json', 'token.json'
             ],

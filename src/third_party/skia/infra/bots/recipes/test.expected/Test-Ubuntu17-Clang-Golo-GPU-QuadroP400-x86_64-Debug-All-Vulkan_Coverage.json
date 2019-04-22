@@ -150,6 +150,8 @@
       "Test-Ubuntu17-Clang-Golo-GPU-QuadroP400-x86_64-Debug-All-Vulkan_Coverage",
       "buildbucket_build_id",
       "123454321",
+      "task_id",
+      "task_12345",
       "swarming_bot_id",
       "skia-bot-123",
       "swarming_task_id",
@@ -173,6 +175,8 @@
       "Golo",
       "os",
       "Ubuntu17",
+      "style",
+      "default",
       "--dont_write",
       "pdf",
       "--randomProcessorTest",
@@ -300,7 +304,7 @@
       "CHROME_HEADLESS": "1",
       "LD_LIBRARY_PATH": "[START_DIR]/linux_vulkan_sdk/lib",
       "LLVM_PROFILE_FILE": "[START_DIR]/[SWARM_OUT_DIR]/All.profraw",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]:[START_DIR]/linux_vulkan_sdk/bin"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]:[START_DIR]/linux_vulkan_sdk/bin"
     },
     "name": "symbolized dm"
   },

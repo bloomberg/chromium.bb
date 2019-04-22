@@ -28,7 +28,7 @@ template <typename T, typename U>
 struct TypeConverter;
 template <typename T>
 class StructPtr;
-};
+}  // namespace mojo
 
 namespace media {
 class AudioBus;

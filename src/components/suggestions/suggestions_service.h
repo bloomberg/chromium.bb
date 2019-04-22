@@ -43,18 +43,6 @@ class SuggestionsService : public KeyedService {
   virtual std::unique_ptr<ResponseCallbackList::Subscription> AddCallback(
       const ResponseCallback& callback) WARN_UNUSED_RESULT = 0;
 
-  // Retrieves stored thumbnail for website |url| asynchronously. Calls
-  // |callback| with Bitmap pointer if found, and NULL otherwise.
-  virtual void GetPageThumbnail(const GURL& url,
-                                const BitmapCallback& callback) = 0;
-
-  // A version of |GetPageThumbnail| that explicitly supplies the download URL
-  // for the thumbnail. Replaces any pre-existing thumbnail URL with the
-  // supplied one.
-  virtual void GetPageThumbnailWithURL(const GURL& url,
-                                       const GURL& thumbnail_url,
-                                       const BitmapCallback& callback) = 0;
-
   // Adds a URL to the blacklist cache, returning true on success or false on
   // failure. The URL will eventually be uploaded to the server.
   virtual bool BlacklistURL(const GURL& candidate_url) = 0;

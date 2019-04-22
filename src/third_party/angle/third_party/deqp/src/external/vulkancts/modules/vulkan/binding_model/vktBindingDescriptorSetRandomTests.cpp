@@ -42,12 +42,13 @@
 #include "vkBuilderUtil.hpp"
 #include "vkCmdUtil.hpp"
 #include "vkTypeUtil.hpp"
-#include "vktDrawUtil.hpp"
 #include "vktTestGroupUtil.hpp"
+#include "vktTestCase.hpp"
 
 #include "deDefs.h"
 #include "deMath.h"
 #include "deRandom.h"
+#include "deSharedPtr.hpp"
 #include "deString.h"
 
 #include "tcuTestCase.hpp"
@@ -218,6 +219,10 @@ void DescriptorSetRandomTestCase::checkSupport(Context& context) const
 	}
 
 	context.getInstanceInterface().getPhysicalDeviceFeatures2(context.getPhysicalDevice(), &features);
+	if (m_data.stage == STAGE_VERTEX && !features.features.vertexPipelineStoresAndAtomics)
+	{
+		return TCU_THROW(NotSupportedError, "Vertex pipeline stores and atomics not supported");
+	}
 
 	if ((m_data.indexType == INDEX_TYPE_PUSHCONSTANT ||
 		 m_data.indexType == INDEX_TYPE_DEPENDENT ||
@@ -235,6 +240,13 @@ void DescriptorSetRandomTestCase::checkSupport(Context& context) const
 	if (m_data.numDescriptorSets > properties.properties.limits.maxBoundDescriptorSets)
 	{
 		TCU_THROW(NotSupportedError, "Number of descriptor sets not supported");
+	}
+
+	if ((m_data.maxPerStageUniformBuffers + m_data.maxPerStageStorageBuffers +
+		m_data.maxPerStageSampledImages + m_data.maxPerStageStorageImages) >
+		properties.properties.limits.maxPerStageResources)
+	{
+		TCU_THROW(NotSupportedError, "Number of descriptors not supported");
 	}
 
 	if (m_data.maxPerStageUniformBuffers > properties.properties.limits.maxPerStageDescriptorUniformBuffers ||
@@ -687,6 +699,7 @@ void DescriptorSetRandomTestCase::initPrograms (SourceCollections& programCollec
 				<< checks.str() <<
 				"  uvec4 color = (accum != 0) ? uvec4(0,0,0,0) : uvec4(1,0,0,1);\n"
 				"  imageStore(image0_0, ivec2(gl_VertexIndex % " << DIM << ", gl_VertexIndex / " << DIM << "), color);\n"
+				"  gl_PointSize = 1.0f;\n"
 				"}\n";
 
 			programCollection.glslSources.add("test") << glu::VertexSource(vss.str());
@@ -985,7 +998,7 @@ tcu::TestStatus DescriptorSetRandomTestInstance::iterate (void)
 						DE_NULL,
 						(vk::VkBufferViewCreateFlags)0,
 						**buffer,								// buffer
-						VK_FORMAT_R32_UINT,						// format
+						VK_FORMAT_R32_SINT,						// format
 						(vk::VkDeviceSize)align*d,				// offset
 						(vk::VkDeviceSize)sizeof(deUint32)		// range
 					};
@@ -1003,6 +1016,7 @@ tcu::TestStatus DescriptorSetRandomTestInstance::iterate (void)
 		}
 	}
 
+	flushMappedMemoryRange(vk, device, buffer->getAllocation().getMemory(), buffer->getAllocation().getOffset(), VK_WHOLE_SIZE);
 
 	const VkQueue					queue					= m_context.getUniversalQueue();
 	Move<VkCommandPool>				cmdPool					= createCommandPool(vk, device, 0, m_context.getUniversalQueueFamilyIndex());

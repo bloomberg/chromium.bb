@@ -45,7 +45,7 @@
 //    public:
 //     ...
 //
-//     class Observer {
+//     class Observer : public base::CheckedObserver {
 //      public:
 //       virtual void OnFoo(MyWidget* w) = 0;
 //       virtual void OnBar(MyWidget* w, int x, int y) = 0;

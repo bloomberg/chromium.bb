@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -16,7 +17,6 @@
 #include "storage/browser/fileapi/file_stream_writer.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
@@ -26,7 +26,8 @@ namespace storage {
 class FileSystemContext;
 class FileStreamWriter;
 
-class STORAGE_EXPORT SandboxFileStreamWriter : public FileStreamWriter {
+class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileStreamWriter
+    : public FileStreamWriter {
  public:
   SandboxFileStreamWriter(FileSystemContext* file_system_context,
                           const FileSystemURL& url,
@@ -45,7 +46,7 @@ class STORAGE_EXPORT SandboxFileStreamWriter : public FileStreamWriter {
   void set_default_quota(int64_t quota) { default_quota_ = quota; }
 
  private:
-  // Performs quota calculation and calls local_file_writer_->Write().
+  // Performs quota calculation and calls file_writer_->Write().
   int WriteInternal(net::IOBuffer* buf, int buf_len);
 
   // Callbacks that are chained for the first write.  This eventually calls
@@ -71,7 +72,7 @@ class STORAGE_EXPORT SandboxFileStreamWriter : public FileStreamWriter {
   scoped_refptr<FileSystemContext> file_system_context_;
   FileSystemURL url_;
   int64_t initial_offset_;
-  std::unique_ptr<FileStreamWriter> local_file_writer_;
+  std::unique_ptr<FileStreamWriter> file_writer_;
   net::CompletionOnceCallback write_callback_;
   net::CompletionOnceCallback cancel_callback_;
 

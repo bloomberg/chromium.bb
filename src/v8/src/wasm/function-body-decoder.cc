@@ -116,7 +116,7 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
   BodyLocalDecls decls(&zone);
   BytecodeIterator i(body.start, body.end, &decls);
   if (body.start != i.pc() && print_locals == kPrintLocals) {
-    os << "// locals: ";
+    os << "// locals:";
     if (!decls.type_list.empty()) {
       ValueType type = decls.type_list[0];
       uint32_t count = 0;
@@ -129,6 +129,7 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
           count = 1;
         }
       }
+      os << " " << count << " " << ValueTypes::TypeName(type);
     }
     os << std::endl;
     if (line_numbers) line_numbers->push_back(kNoByteCode);
@@ -152,7 +153,9 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
 
     WasmOpcode opcode = i.current();
     if (line_numbers) line_numbers->push_back(i.position());
-    if (opcode == kExprElse) control_depth--;
+    if (opcode == kExprElse || opcode == kExprCatch) {
+      control_depth--;
+    }
 
     int num_whitespaces = control_depth < 32 ? 2 * control_depth : 64;
 
@@ -192,6 +195,7 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
 
     switch (opcode) {
       case kExprElse:
+      case kExprCatch:
         os << "   // @" << i.pc_offset();
         control_depth++;
         break;
@@ -215,12 +219,12 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
         control_depth--;
         break;
       case kExprBr: {
-        BreakDepthImmediate<Decoder::kNoValidate> imm(&i, i.pc());
+        BranchDepthImmediate<Decoder::kNoValidate> imm(&i, i.pc());
         os << "   // depth=" << imm.depth;
         break;
       }
       case kExprBrIf: {
-        BreakDepthImmediate<Decoder::kNoValidate> imm(&i, i.pc());
+        BranchDepthImmediate<Decoder::kNoValidate> imm(&i, i.pc());
         os << "   // depth=" << imm.depth;
         break;
       }
@@ -230,7 +234,8 @@ bool PrintRawWasmCode(AccountingAllocator* allocator, const FunctionBody& body,
         break;
       }
       case kExprCallIndirect: {
-        CallIndirectImmediate<Decoder::kNoValidate> imm(&i, i.pc());
+        CallIndirectImmediate<Decoder::kNoValidate> imm(kAllWasmFeatures, &i,
+                                                        i.pc());
         os << "   // sig #" << imm.sig_index;
         if (decoder.Complete(i.pc(), imm)) {
           os << ": " << *imm.sig;

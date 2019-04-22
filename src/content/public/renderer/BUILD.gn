@@ -40,22 +40,12 @@ target(link_target_type, "renderer_sources") {
     "context_menu_client.h",
     "document_state.cc",
     "document_state.h",
-    "fixed_received_data.cc",
-    "fixed_received_data.h",
-    "media_stream_audio_renderer.h",
-    "media_stream_audio_sink.cc",
-    "media_stream_audio_sink.h",
-    "media_stream_renderer_factory.h",
-    "media_stream_sink.h",
-    "media_stream_utils.cc",
     "media_stream_utils.h",
-    "media_stream_video_renderer.h",
-    "media_stream_video_sink.cc",
-    "media_stream_video_sink.h",
     "pepper_plugin_instance.h",
     "plugin_instance_throttler.h",
     "render_accessibility.h",
     "render_frame.h",
+    "render_frame_media_playback_options.h",
     "render_frame_observer.cc",
     "render_frame_observer.h",
     "render_frame_observer_tracker.h",
@@ -122,10 +112,6 @@ target(link_target_type, "renderer_sources") {
   if (is_android) {
     # For seccomp_sandbox_status_android.h.
     deps += [ "//sandbox" ]
-  }
-
-  if (enable_plugins) {
-    sources += [ "plugin_instance_throttler.h" ]
   }
 
   if (enable_library_cdms) {

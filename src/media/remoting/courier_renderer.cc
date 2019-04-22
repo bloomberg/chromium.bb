@@ -21,6 +21,7 @@
 #include "media/base/media_resource.h"
 #include "media/base/renderer_client.h"
 #include "media/base/video_renderer_sink.h"
+#include "media/base/waiting.h"
 #include "media/remoting/demuxer_stream_adapter.h"
 #include "media/remoting/proto_enum_utils.h"
 #include "media/remoting/proto_utils.h"
@@ -143,7 +144,7 @@ void CourierRenderer::Initialize(MediaResource* media_resource,
       FROM_HERE,
       base::BindOnce(
           &RendererController::StartDataPipe, controller_,
-          base::Passed(&audio_data_pipe), base::Passed(&video_data_pipe),
+          std::move(audio_data_pipe), std::move(video_data_pipe),
           base::BindOnce(&CourierRenderer::OnDataPipeCreatedOnMainThread,
                          media_task_runner_, weak_factory_.GetWeakPtr(),
                          rpc_broker_)));
@@ -294,13 +295,13 @@ void CourierRenderer::OnDataPipeCreatedOnMainThread(
     mojo::ScopedDataPipeProducerHandle video_handle) {
   media_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&CourierRenderer::OnDataPipeCreated, self,
-                 base::Passed(&audio), base::Passed(&video),
-                 base::Passed(&audio_handle), base::Passed(&video_handle),
-                 rpc_broker ? rpc_broker->GetUniqueHandle()
-                            : RpcBroker::kInvalidHandle,
-                 rpc_broker ? rpc_broker->GetUniqueHandle()
-                            : RpcBroker::kInvalidHandle));
+      base::BindOnce(&CourierRenderer::OnDataPipeCreated, self,
+                     std::move(audio), std::move(video),
+                     std::move(audio_handle), std::move(video_handle),
+                     rpc_broker ? rpc_broker->GetUniqueHandle()
+                                : RpcBroker::kInvalidHandle,
+                     rpc_broker ? rpc_broker->GetUniqueHandle()
+                                : RpcBroker::kInvalidHandle));
 }
 
 void CourierRenderer::OnDataPipeCreated(
@@ -369,9 +370,9 @@ void CourierRenderer::OnMessageReceivedOnMainThread(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     base::WeakPtr<CourierRenderer> self,
     std::unique_ptr<pb::RpcMessage> message) {
-  media_task_runner->PostTask(FROM_HERE,
-                              base::Bind(&CourierRenderer::OnReceivedRpc, self,
-                                         base::Passed(&message)));
+  media_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&CourierRenderer::OnReceivedRpc, self,
+                                std::move(message)));
 }
 
 void CourierRenderer::OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message) {
@@ -421,10 +422,7 @@ void CourierRenderer::OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message) {
       break;
     case pb::RpcMessage::RPC_RC_ONWAITINGFORDECRYPTIONKEY:
       VLOG(2) << __func__ << ": Received RPC_RC_ONWAITINGFORDECRYPTIONKEY.";
-      client_->OnWaitingForDecryptionKey();
-      break;
-    case pb::RpcMessage::RPC_RC_ONDURATIONCHANGE:
-      OnDurationChange(std::move(message));
+      client_->OnWaiting(WaitingReason::kNoDecryptionKey);
       break;
 
     default:
@@ -437,7 +435,7 @@ void CourierRenderer::SendRpcToRemote(std::unique_ptr<pb::RpcMessage> message) {
   DCHECK(main_task_runner_);
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RpcBroker::SendMessageToRemote, rpc_broker_,
-                                base::Passed(&message)));
+                                std::move(message)));
 }
 
 void CourierRenderer::AcquireRendererDone(
@@ -699,18 +697,6 @@ void CourierRenderer::OnStatisticsUpdate(
   }
   UpdateVideoStatsQueue(stats.video_frames_decoded, stats.video_frames_dropped);
   client_->OnStatisticsUpdate(stats);
-}
-
-void CourierRenderer::OnDurationChange(
-    std::unique_ptr<pb::RpcMessage> message) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DCHECK(message);
-  VLOG(2) << __func__ << ": Received RPC_RC_ONDURATIONCHANGE with usec="
-          << message->integer64_value();
-  if (message->integer64_value() < 0)
-    return;
-  client_->OnDurationChange(
-      base::TimeDelta::FromMicroseconds(message->integer64_value()));
 }
 
 void CourierRenderer::OnFatalError(StopTrigger stop_trigger) {

@@ -18,12 +18,9 @@ namespace content {
 namespace {
 
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cert-chain-format
-std::unique_ptr<SignedExchangeCertificateChain> ParseB2(
+std::unique_ptr<SignedExchangeCertificateChain> ParseCertChain(
     base::span<const uint8_t> message,
     SignedExchangeDevToolsProxy* devtools_proxy) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
-               "SignedExchangeCertificateChain::ParseB2");
-
   cbor::Reader::DecoderError error;
   base::Optional<cbor::Value> value = cbor::Reader::Read(message, &error);
   if (!value.has_value()) {
@@ -156,11 +153,11 @@ std::unique_ptr<SignedExchangeCertificateChain> ParseB2(
 // static
 std::unique_ptr<SignedExchangeCertificateChain>
 SignedExchangeCertificateChain::Parse(
-    SignedExchangeVersion version,
     base::span<const uint8_t> cert_response_body,
     SignedExchangeDevToolsProxy* devtools_proxy) {
-  DCHECK_EQ(version, SignedExchangeVersion::kB2);
-  return ParseB2(cert_response_body, devtools_proxy);
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "SignedExchangeCertificateChain::Parse");
+  return ParseCertChain(cert_response_body, devtools_proxy);
 }
 
 SignedExchangeCertificateChain::SignedExchangeCertificateChain(

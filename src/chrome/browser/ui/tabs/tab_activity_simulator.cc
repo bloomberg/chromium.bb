@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 
@@ -93,7 +94,8 @@ void TabActivitySimulator::SwitchToTabAt(TabStripModel* tab_strip_model,
   // which is what actually triggers TabActivityWatcher to log the change. For
   // a TestWebContents, we must manually call WasHidden(), and do the reverse
   // for the newly activated tab.
-  tab_strip_model->ActivateTabAt(new_index, true /* user_gesture */);
+  tab_strip_model->ActivateTabAt(new_index,
+                                 {TabStripModel::GestureType::kOther});
   active_contents->WasHidden();
   new_contents->WasShown();
 }

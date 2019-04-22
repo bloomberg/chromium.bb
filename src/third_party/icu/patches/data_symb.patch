@@ -1,5 +1,5 @@
 diff --git a/source/common/unicode/utypes.h b/source/common/unicode/utypes.h
-index 2baf519f..4722ecb4 100644
+index f224ae49..5b7b42be 100644
 --- a/source/common/unicode/utypes.h
 +++ b/source/common/unicode/utypes.h
 @@ -312,7 +312,11 @@ typedef double UDate;

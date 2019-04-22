@@ -35,7 +35,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -76,8 +76,8 @@ void V8GCForContextDispose::NotifyContextDisposed(
   // memory use and trigger a V8+Blink GC. However, on Android, if the frame
   // will not be reused, the process will likely to be killed soon so skip this.
   if (is_main_frame && frame_reuse_status == WindowProxy::kFrameWillBeReused &&
-      ((MemoryCoordinator::IsLowEndDevice() &&
-        MemoryCoordinator::IsCurrentlyLowMemory()) ||
+      ((MemoryPressureListenerRegistry::IsLowEndDevice() &&
+        MemoryPressureListenerRegistry::IsCurrentlyLowMemory()) ||
        force_page_navigation_gc_)) {
     size_t pre_gc_memory_usage = GetMemoryUsage();
     V8PerIsolateData::MainThreadIsolate()->MemoryPressureNotification(

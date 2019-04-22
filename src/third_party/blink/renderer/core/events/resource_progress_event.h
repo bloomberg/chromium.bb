@@ -49,8 +49,8 @@ class CORE_EXPORT ResourceProgressEvent final : public ProgressEvent {
  public:
   static ResourceProgressEvent* Create(const AtomicString& type,
                                        bool length_computable,
-                                       unsigned long long loaded,
-                                       unsigned long long total,
+                                       uint64_t loaded,
+                                       uint64_t total,
                                        const String& url) {
     return MakeGarbageCollected<ResourceProgressEvent>(type, length_computable,
                                                        loaded, total, url);
@@ -58,8 +58,8 @@ class CORE_EXPORT ResourceProgressEvent final : public ProgressEvent {
 
   ResourceProgressEvent(const AtomicString& type,
                         bool length_computable,
-                        unsigned long long loaded,
-                        unsigned long long total,
+                        uint64_t loaded,
+                        uint64_t total,
                         const String& url);
 
   const String& url() const;

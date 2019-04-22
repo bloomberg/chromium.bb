@@ -197,6 +197,7 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
   void SetEditCommandsForNextKeyEvent(
       const std::vector<content::EditCommand>& commands) override;
   void CursorVisibilityChanged(bool visible) override;
+  void FallbackCursorModeToggled(bool is_on) override;
   void ImeSetComposition(const base::string16& text,
                          const std::vector<ui::ImeTextSpan>& ime_text_spans,
                          const gfx::Range& range,
@@ -216,6 +217,7 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
                      DispatchEventCallback callback) override;
   void DispatchNonBlockingEvent(
       std::unique_ptr<content::InputEvent> event) override;
+  void WaitForInputProcessed(WaitForInputProcessedCallback callback) override;
   void AttachSynchronousCompositor(
       mojom::SynchronousCompositorControlHostPtr control_host,
       mojom::SynchronousCompositorHostAssociatedPtrInfo host,

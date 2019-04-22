@@ -89,7 +89,7 @@ bool RegisterSignalHandler(int signal_number, const SignalHandler& handler) {
     int pipe_fd[2];
     int result = pipe(pipe_fd);
     if (result < 0) {
-      LOG(ERROR) << "Could not create signal pipe: " << errno;
+      PLOG(ERROR) << "Could not create signal pipe";
       return false;
     }
 
@@ -101,7 +101,7 @@ bool RegisterSignalHandler(int signal_number, const SignalHandler& handler) {
                               base::Unretained(g_signal_listener)));
   }
   if (signal(signal_number, GlobalSignalHandler) == SIG_ERR) {
-    LOG(ERROR) << "signal() failed: " << errno;
+    PLOG(ERROR) << "signal() failed";
     return false;
   }
   g_signal_listener->AddSignalHandler(signal_number, handler);

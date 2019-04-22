@@ -7,8 +7,8 @@
  */
 
 cr.define('cr.ui.table', function() {
-  /** @const */ var List = cr.ui.List;
-  /** @const */ var ListItem = cr.ui.ListItem;
+  /** @const */ const List = cr.ui.List;
+  /** @const */ const ListItem = cr.ui.ListItem;
 
   /**
    * Creates a new table list element.
@@ -16,7 +16,7 @@ cr.define('cr.ui.table', function() {
    * @constructor
    * @extends {cr.ui.List}
    */
-  var TableList = cr.ui.define('list');
+  const TableList = cr.ui.define('list');
 
   TableList.prototype = {
     __proto__: List.prototype,
@@ -39,8 +39,9 @@ cr.define('cr.ui.table', function() {
         this.redraw();
         return;
       }
-      if (this.updateScrollbars_())
-        List.prototype.redraw.call(this);  // Redraw items only.
+      if (this.updateScrollbars_()) {
+        List.prototype.redraw.call(this);
+      }  // Redraw items only.
       this.resizeCells_();
     },
 
@@ -48,13 +49,14 @@ cr.define('cr.ui.table', function() {
      * Updates width of cells.
      */
     resizeCells_: function() {
-      var cm = this.table_.columnModel;
-      for (var row = this.firstElementChild; row;
+      const cm = this.table_.columnModel;
+      for (let row = this.firstElementChild; row;
            row = row.nextElementSibling) {
-        if (row.tagName != 'LI')
+        if (row.tagName != 'LI') {
           continue;
+        }
 
-        for (var i = 0; i < cm.size; i++) {
+        for (let i = 0; i < cm.size; i++) {
           row.children[i].style.width = cm.getWidth(i) + 'px';
         }
         row.style.width = cm.totalWidth + 'px';
@@ -66,8 +68,9 @@ cr.define('cr.ui.table', function() {
      * Redraws the viewport.
      */
     redraw: function() {
-      if (this.batchCount_ != 0)
+      if (this.batchCount_ != 0) {
         return;
+      }
       this.updateScrollbars_();
 
       List.prototype.redraw.call(this);
@@ -93,8 +96,8 @@ cr.define('cr.ui.table', function() {
      * @return {boolean} True if horizontal scroll bar changed.
      */
     updateScrollbars_: function() {
-      var cm = this.table_.columnModel;
-      var style = this.style;
+      const cm = this.table_.columnModel;
+      const style = this.style;
       if (!cm || cm.size == 0) {
         if (style.overflow != 'hidden') {
           style.overflow = 'hidden';
@@ -104,9 +107,9 @@ cr.define('cr.ui.table', function() {
         }
       }
 
-      var height = this.offsetHeight;
-      var changed = false;
-      var offsetWidth = this.offsetWidth;
+      let height = this.offsetHeight;
+      let changed = false;
+      const offsetWidth = this.offsetWidth;
       if (cm.totalWidth > offsetWidth) {
         if (style.overflowX != 'scroll') {
           style.overflowX = 'scroll';
@@ -122,7 +125,7 @@ cr.define('cr.ui.table', function() {
         changed = this.showVerticalScrollBar_(false);
       } else {
         changed = this.showVerticalScrollBar_(true);
-        var x = cm.totalWidth <= this.clientWidth ? 'hidden' : 'scroll';
+        const x = cm.totalWidth <= this.clientWidth ? 'hidden' : 'scroll';
         if (style.overflowX != x) {
           style.overflowX = x;
         }
@@ -136,11 +139,13 @@ cr.define('cr.ui.table', function() {
      * @return {boolean} True if visibility changed.
      */
     showVerticalScrollBar_: function(show) {
-      var style = this.style;
-      if (show && style.overflowY == 'scroll')
+      const style = this.style;
+      if (show && style.overflowY == 'scroll') {
         return false;
-      if (!show && style.overflowY == 'hidden')
+      }
+      if (!show && style.overflowY == 'hidden') {
         return false;
+      }
       style.overflowY = show ? 'scroll' : 'hidden';
       return true;
     },
@@ -151,8 +156,9 @@ cr.define('cr.ui.table', function() {
      *                   visibleHeight pixels.
      */
     areAllItemsVisible_: function(visibleHeight) {
-      if (!this.dataModel || this.dataModel.length == 0)
+      if (!this.dataModel || this.dataModel.length == 0) {
         return true;
+      }
       return this.getItemTop(this.dataModel.length) <= visibleHeight;
     },
 
@@ -170,16 +176,18 @@ cr.define('cr.ui.table', function() {
      * @return {boolean}
      */
     needsFullRedraw_: function() {
-      var cm = this.table_.columnModel;
-      var row = this.firstElementChild;
+      const cm = this.table_.columnModel;
+      const row = this.firstElementChild;
       // If the number of columns in the model has changed, a full redraw is
       // needed.
-      if (row.children.length != cm.size)
+      if (row.children.length != cm.size) {
         return true;
+      }
       // If the column visibility has changed, a full redraw is required.
-      for (var i = 0; i < cm.size; ++i) {
-        if (cm.isVisible(i) == row.children[i].hidden)
+      for (let i = 0; i < cm.size; ++i) {
+        if (cm.isVisible(i) == row.children[i].hidden) {
           return true;
+        }
       }
       return false;
     },

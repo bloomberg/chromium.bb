@@ -16,7 +16,7 @@ namespace chromeos {
 // Class for handling network configuration UI events in loggin/oobe WebUI.
 class NetworkDropdownHandler : public BaseWebUIHandler {
  public:
-  NetworkDropdownHandler();
+  explicit NetworkDropdownHandler(JSCallsContainer* js_calls_container);
   ~NetworkDropdownHandler() override;
 
   // BaseScreenHandler implementation:

@@ -200,9 +200,19 @@ struct PasswordForm {
   // element corresponding to the new password. Optional, and not persisted.
   base::string16 new_password_element;
 
+  // The renderer id of the new password input element. It is set during the new
+  // form parsing and not persisted.
+  uint32_t new_password_element_renderer_id =
+      FormFieldData::kNotSetFormControlRendererId;
+
   // The confirmation password element. Optional, only set on form parsing, and
   // not persisted.
   base::string16 confirmation_password_element;
+
+  // The renderer id of the confirmation password input element. It is set
+  // during the new form parsing and not persisted.
+  uint32_t confirmation_password_element_renderer_id =
+      FormFieldData::kNotSetFormControlRendererId;
 
   // The new password. Optional, and not persisted.
   base::string16 new_password_value;
@@ -302,12 +312,18 @@ struct PasswordForm {
   // out only for submitted forms.
   SubmissionIndicatorEvent submission_event;
 
-  // True iff heuristics declined this form for saving (e.g. only credit card
-  // fields were found). But this form can be saved only with the fallback.
-  bool only_for_fallback_saving;
+  // True iff heuristics declined this form for normal saving or filling (e.g.
+  // only credit card fields were found). But this form can be saved or filled
+  // only with the fallback.
+  bool only_for_fallback;
 
   // True iff this is Gaia form which should be skipped on saving.
   bool is_gaia_with_skip_save_password_form;
+
+  // True iff the new password field was found with server hints or autocomplete
+  // attributes. Only set on form parsing for filling, and not persisted. Used
+  // as signal for password generation eligibility.
+  bool is_new_password_reliable = false;
 
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.
@@ -317,6 +333,12 @@ struct PasswordForm {
   // without username field. We use only client heuristics, so it could
   // include signup forms.
   bool IsPossibleChangePasswordFormWithoutUsername() const;
+
+  // Returns true if current password element is set.
+  bool HasPasswordElement() const;
+
+  // True iff |federation_origin| isn't empty.
+  bool IsFederatedCredential() const;
 
   // Equality operators for testing.
   bool operator==(const PasswordForm& form) const;
@@ -345,6 +367,9 @@ struct LessThanUniqueKey {
 // Converts a vector of ValueElementPair to string.
 base::string16 ValueElementVectorToString(
     const ValueElementVector& value_element_pairs);
+
+// Returns true if |scheme| corresponds to http auth scheme.
+bool IsHttpAuthScheme(PasswordForm::Scheme scheme);
 
 // For testing.
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form);

@@ -186,7 +186,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   // Sync storage should run out after ~100K.
   std::unique_ptr<base::Value> kilobyte = util::CreateKilobyte();
   for (int i = 0; i < 100; ++i) {
-    sync_storage->Set(DEFAULTS, base::IntToString(i), *kilobyte);
+    sync_storage->Set(DEFAULTS, base::NumberToString(i), *kilobyte);
   }
 
   EXPECT_FALSE(
@@ -194,7 +194,7 @@ TEST_F(ExtensionSettingsFrontendTest,
 
   // Local storage shouldn't run out after ~100K.
   for (int i = 0; i < 100; ++i) {
-    local_storage->Set(DEFAULTS, base::IntToString(i), *kilobyte);
+    local_storage->Set(DEFAULTS, base::NumberToString(i), *kilobyte);
   }
 
   EXPECT_TRUE(
@@ -203,7 +203,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   // Local storage should run out after ~5MB.
   std::unique_ptr<base::Value> megabyte = util::CreateMegabyte();
   for (int i = 0; i < 5; ++i) {
-    local_storage->Set(DEFAULTS, base::IntToString(i), *megabyte);
+    local_storage->Set(DEFAULTS, base::NumberToString(i), *megabyte);
   }
 
   EXPECT_FALSE(

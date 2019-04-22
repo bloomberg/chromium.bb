@@ -60,6 +60,9 @@ def GetArgumentParser(doc=__doc__):
                       help='Force cleaning existing installations')
   parser.add_argument('--write-full-results-to', metavar='FILENAME',
                       help='Path to write the list of full results to.')
+  parser.add_argument('--output-dir', metavar='DIR',
+                      help='Directory into which crash dumps and other output '
+                      ' files are to be written')
   # Here to satisfy the isolated script test interface. See
   # //testing/scripts/run_isolated_script_test.py
   parser.add_argument('--test-list', metavar='FILENAME',
@@ -544,7 +547,8 @@ def DoMain():
   variable_expander = VariableExpander(installer_path,
                                        previous_version_installer_path,
                                        chromedriver_path,
-                                       args.quiet)
+                                       args.quiet,
+                                       args.output_dir)
   config = ParseConfigFile(config_path, variable_expander)
 
   RunCleanCommand(args.force_clean, variable_expander)

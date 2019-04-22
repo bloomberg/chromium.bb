@@ -28,8 +28,10 @@ using gles2::TextureRef;
 bool StreamTexture::Create(CommandBufferStub* owner_stub,
                            uint32_t client_texture_id,
                            int stream_id) {
-  TextureManager* texture_manager =
-      owner_stub->context_group()->texture_manager();
+  gles2::ContextGroup* context_group =
+      owner_stub->decoder_context()->GetContextGroup();
+  DCHECK(context_group);
+  TextureManager* texture_manager = context_group->texture_manager();
   TextureRef* texture = texture_manager->GetTexture(client_texture_id);
 
   if (texture && (!texture->texture()->target() ||
@@ -159,8 +161,10 @@ bool StreamTexture::CopyTexImage(unsigned target) {
 
   UpdateTexImage();
 
-  TextureManager* texture_manager =
-      owner_stub_->context_group()->texture_manager();
+  gles2::ContextGroup* context_group =
+      owner_stub_->decoder_context()->GetContextGroup();
+  DCHECK(context_group);
+  TextureManager* texture_manager = context_group->texture_manager();
   gles2::Texture* texture =
       texture_manager->GetTextureForServiceId(texture_id_);
   if (texture) {
@@ -219,7 +223,12 @@ void StreamTexture::OnForwardForSurfaceRequest(
                                              surface_owner_.get());
 }
 
+StreamTexture::BindOrCopy StreamTexture::ShouldBindOrCopy() {
+  return COPY;
+}
+
 bool StreamTexture::BindTexImage(unsigned target) {
+  NOTREACHED();
   return false;
 }
 

@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -36,10 +37,16 @@ class CORE_EXPORT CharacterData : public Node {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  void Atomize();
-  const String& data() const { return data_; }
+  // Makes the data either Parkable or Atomic. This enables de-duplication in
+  // both cases, the first one allowing compression as well.
+  void MakeParkableOrAtomize();
+  const String& data() const {
+    return is_parkable_ ? parkable_data_.ToString() : data_;
+  }
   void setData(const String&);
-  unsigned length() const { return data_.length(); }
+  unsigned length() const {
+    return is_parkable_ ? parkable_data_.length() : data_.length();
+  }
   String substringData(unsigned offset, unsigned count, ExceptionState&);
   void appendData(const String&);
   void replaceData(unsigned offset,
@@ -52,7 +59,7 @@ class CORE_EXPORT CharacterData : public Node {
 
   bool ContainsOnlyWhitespaceOrEmpty() const;
 
-  StringImpl* DataImpl() { return data_.Impl(); }
+  StringImpl* DataImpl() { return data().Impl(); }
 
   void ParserAppendData(const String&);
 
@@ -60,13 +67,19 @@ class CORE_EXPORT CharacterData : public Node {
   CharacterData(TreeScope& tree_scope,
                 const String& text,
                 ConstructionType type)
-      : Node(&tree_scope, type), data_(!text.IsNull() ? text : g_empty_string) {
+      : Node(&tree_scope, type),
+        is_parkable_(false),
+        data_(!text.IsNull() ? text : g_empty_string) {
     DCHECK(type == kCreateOther || type == kCreateText ||
            type == kCreateEditingText);
   }
 
   void SetDataWithoutUpdate(const String& data) {
     DCHECK(!data.IsNull());
+    if (is_parkable_) {
+      is_parkable_ = false;
+      parkable_data_ = ParkableString();
+    }
     data_ = data;
   }
   enum UpdateSource {
@@ -75,6 +88,8 @@ class CORE_EXPORT CharacterData : public Node {
   };
   void DidModifyData(const String& old_value, UpdateSource);
 
+  bool is_parkable_;
+  ParkableString parkable_data_;
   String data_;
 
  private:

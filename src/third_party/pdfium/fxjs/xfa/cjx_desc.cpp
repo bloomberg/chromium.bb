@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "fxjs/cfx_v8.h"
-#include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cxfa_desc.h"
 
 const CJX_MethodSpec CJX_Desc::MethodSpecs[] = {{"metadata", metadata_static}};
@@ -21,22 +21,14 @@ CJX_Desc::CJX_Desc(CXFA_Desc* desc) : CJX_Node(desc) {
 
 CJX_Desc::~CJX_Desc() {}
 
+bool CJX_Desc::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
+
 CJS_Result CJX_Desc::metadata(CFX_V8* runtime,
                               const std::vector<v8::Local<v8::Value>>& params) {
   if (params.size() != 0 && params.size() != 1)
     return CJS_Result::Failure(JSMessage::kParamError);
 
   return CJS_Result::Success(runtime->NewString(""));
-}
-
-void CJX_Desc::use(CFXJSE_Value* pValue,
-                   bool bSetting,
-                   XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_Desc::usehref(CFXJSE_Value* pValue,
-                       bool bSetting,
-                       XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
 }

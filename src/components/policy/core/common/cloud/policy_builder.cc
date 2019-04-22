@@ -4,7 +4,7 @@
 
 #include "components/policy/core/common/cloud/policy_builder.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/signature_creator.h"
@@ -205,7 +205,7 @@ void PolicyBuilder::SetSigningKey(const crypto::RSAPrivateKey& key) {
 }
 
 void PolicyBuilder::SetDefaultSigningKey() {
-  raw_signing_key_.assign(kSigningKey, kSigningKey + arraysize(kSigningKey));
+  raw_signing_key_.assign(kSigningKey, kSigningKey + base::size(kSigningKey));
 }
 
 void PolicyBuilder::UnsetSigningKey() {
@@ -221,7 +221,7 @@ std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::GetNewSigningKey() const {
 
 void PolicyBuilder::SetDefaultNewSigningKey() {
   raw_new_signing_key_.assign(kNewSigningKey,
-                              kNewSigningKey + arraysize(kNewSigningKey));
+                              kNewSigningKey + base::size(kNewSigningKey));
   raw_new_signing_key_signature_ = GetTestOtherSigningKeySignature();
 }
 
@@ -232,7 +232,7 @@ void PolicyBuilder::UnsetNewSigningKey() {
 
 void PolicyBuilder::SetDefaultInitialSigningKey() {
   raw_new_signing_key_.assign(kSigningKey,
-                              kSigningKey + arraysize(kSigningKey));
+                              kSigningKey + base::size(kSigningKey));
   raw_new_signing_key_signature_ = GetTestSigningKeySignature();
   UnsetSigningKey();
 }
@@ -293,7 +293,7 @@ std::unique_ptr<em::PolicyFetchResponse> PolicyBuilder::GetCopy() const {
 // static
 std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::CreateTestSigningKey() {
   std::vector<uint8_t> raw_signing_key(kSigningKey,
-                                       kSigningKey + arraysize(kSigningKey));
+                                       kSigningKey + base::size(kSigningKey));
   return crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_signing_key);
 }
 
@@ -301,7 +301,7 @@ std::unique_ptr<crypto::RSAPrivateKey> PolicyBuilder::CreateTestSigningKey() {
 std::unique_ptr<crypto::RSAPrivateKey>
 PolicyBuilder::CreateTestOtherSigningKey() {
   std::vector<uint8_t> raw_new_signing_key(
-      kNewSigningKey, kNewSigningKey + arraysize(kNewSigningKey));
+      kNewSigningKey, kNewSigningKey + base::size(kNewSigningKey));
   return crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_new_signing_key);
 }
 

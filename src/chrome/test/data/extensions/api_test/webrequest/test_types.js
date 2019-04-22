@@ -255,7 +255,7 @@ runTests([
           url: getFontURL(),
           tabId: 1,
           initiator: getDomain(initiators.WEB_INITIATED)
-        },
+        }
       },
       { label: 'onSendHeaders',
         event: 'onSendHeaders',
@@ -264,7 +264,49 @@ runTests([
           url: getFontURL(),
           tabId: 1,
           initiator: getDomain(initiators.WEB_INITIATED)
-        },
+        }
+      },
+      { label: 'onErrorOccurred',
+        event: 'onErrorOccurred',
+        details: {
+          type: 'font',
+          url: getFontURL(),
+          tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED),
+          error: 'net::ERR_CACHE_MISS',
+          fromCache: false,
+        }
+      },
+      { label: 'onBeforeRequest-1',
+        event: 'onBeforeRequest',
+        details: {
+          eventCount: 1,
+          type: 'font',
+          url: getFontURL(),
+          frameUrl: 'unknown frame URL',
+          tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
+        }
+      },
+      { label: 'onBeforeSendHeaders-1',
+        event: 'onBeforeSendHeaders',
+        details: {
+          eventCount: 1,
+          type: 'font',
+          url: getFontURL(),
+          tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
+        }
+      },
+      { label: 'onSendHeaders-1',
+        event: 'onSendHeaders',
+        details: {
+          eventCount: 1,
+          type: 'font',
+          url: getFontURL(),
+          tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
+        }
       },
       { label: 'onHeadersReceived',
         event: 'onHeadersReceived',
@@ -275,7 +317,7 @@ runTests([
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
           initiator: getDomain(initiators.WEB_INITIATED)
-        },
+        }
       },
       { label: 'onResponseStarted',
         event: 'onResponseStarted',
@@ -288,7 +330,7 @@ runTests([
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
           initiator: getDomain(initiators.WEB_INITIATED)
-        },
+        }
       },
       { label: 'onCompleted',
         event: 'onCompleted',
@@ -301,10 +343,12 @@ runTests([
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
           initiator: getDomain(initiators.WEB_INITIATED)
-        },
+        }
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
-        'onHeadersReceived', 'onResponseStarted', 'onCompleted']],
+        'onErrorOccurred', 'onBeforeRequest-1', 'onBeforeSendHeaders-1',
+        'onSendHeaders-1', 'onHeadersReceived', 'onResponseStarted',
+        'onCompleted']],
       {urls: [getFontURL()]});
 
     // Load a page to be sure webRequest listeners are set up.

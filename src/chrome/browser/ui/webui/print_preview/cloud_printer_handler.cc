@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/webui/print_preview/cloud_printer_handler.h"
 
-#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/values.h"
+
+namespace printing {
 
 CloudPrinterHandler::CloudPrinterHandler() {}
 
@@ -26,17 +28,16 @@ void CloudPrinterHandler::StartGetPrinters(
 void CloudPrinterHandler::StartGetCapability(const std::string& destination_id,
                                              GetCapabilityCallback callback) {
   // TODO(https://crbug.com/829414): Get capabilities.
-  std::move(callback).Run(nullptr);
+  std::move(callback).Run(base::Value());
 }
 
 void CloudPrinterHandler::StartPrint(
-    const std::string& destination_id,
-    const std::string& capability,
     const base::string16& job_title,
-    const std::string& ticket_json,
-    const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
+    base::Value settings,
+    scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
   // TODO(https://crbug.com/829414): Print to cloud print
   NOTIMPLEMENTED();
 }
+
+}  // namespace printing

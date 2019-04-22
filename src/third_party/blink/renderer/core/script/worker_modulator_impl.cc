@@ -14,10 +14,6 @@
 
 namespace blink {
 
-ModulatorImplBase* WorkerModulatorImpl::Create(ScriptState* script_state) {
-  return MakeGarbageCollected<WorkerModulatorImpl>(script_state);
-}
-
 WorkerModulatorImpl::WorkerModulatorImpl(ScriptState* script_state)
     : ModulatorImplBase(script_state) {}
 
@@ -26,14 +22,14 @@ ModuleScriptFetcher* WorkerModulatorImpl::CreateModuleScriptFetcher(
   auto* global_scope = To<WorkerGlobalScope>(GetExecutionContext());
   switch (custom_fetch_type) {
     case ModuleScriptCustomFetchType::kNone:
-      return MakeGarbageCollected<DocumentModuleScriptFetcher>(
-          global_scope->EnsureFetcher());
+      return MakeGarbageCollected<DocumentModuleScriptFetcher>();
     case ModuleScriptCustomFetchType::kWorkerConstructor:
       return MakeGarbageCollected<WorkerModuleScriptFetcher>(global_scope);
     case ModuleScriptCustomFetchType::kWorkletAddModule:
       break;
     case ModuleScriptCustomFetchType::kInstalledServiceWorker:
-      return new InstalledServiceWorkerModuleScriptFetcher(global_scope);
+      return MakeGarbageCollected<InstalledServiceWorkerModuleScriptFetcher>(
+          global_scope);
   }
   NOTREACHED();
   return nullptr;
@@ -53,6 +49,11 @@ bool WorkerModulatorImpl::IsDynamicImportForbidden(String* reason) {
       "Module scripts are not supported on WorkerGlobalScope yet (see "
       "https://crbug.com/680046).";
   return true;
+}
+
+V8CacheOptions WorkerModulatorImpl::GetV8CacheOptions() const {
+  auto* scope = To<WorkerGlobalScope>(GetExecutionContext());
+  return scope->GetV8CacheOptions();
 }
 
 }  // namespace blink

@@ -6,9 +6,9 @@
 #define CHROMEOS_SERVICES_MULTIDEVICE_SETUP_ELIGIBLE_HOST_DEVICES_PROVIDER_IMPL_H_
 
 #include "base/macros.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -39,7 +39,7 @@ class EligibleHostDevicesProviderImpl
       device_sync::DeviceSyncClient* device_sync_client);
 
   // EligibleHostDevicesProvider:
-  cryptauth::RemoteDeviceRefList GetEligibleHostDevices() const override;
+  multidevice::RemoteDeviceRefList GetEligibleHostDevices() const override;
 
   // device_sync::DeviceSyncClient::Observer:
   void OnNewDevicesSynced() override;
@@ -48,7 +48,7 @@ class EligibleHostDevicesProviderImpl
 
   device_sync::DeviceSyncClient* device_sync_client_;
 
-  cryptauth::RemoteDeviceRefList eligible_devices_from_last_sync_;
+  multidevice::RemoteDeviceRefList eligible_devices_from_last_sync_;
 
   DISALLOW_COPY_AND_ASSIGN(EligibleHostDevicesProviderImpl);
 };

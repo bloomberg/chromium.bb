@@ -13,7 +13,7 @@
 
 namespace variations {
 
-TEST(VariationsHttpHeadersTest, ShouldAppendHeaders) {
+TEST(VariationsHttpHeadersTest, ShouldAppendVariationsHeader) {
   struct {
     const char* url;
     bool should_append_headers;
@@ -154,7 +154,8 @@ TEST(VariationsHttpHeadersTest, ShouldAppendHeaders) {
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     const GURL url(cases[i].url);
-    EXPECT_EQ(cases[i].should_append_headers, ShouldAppendVariationHeaders(url))
+    EXPECT_EQ(cases[i].should_append_headers,
+              ShouldAppendVariationsHeaderForTesting(url))
         << url;
   }
 }

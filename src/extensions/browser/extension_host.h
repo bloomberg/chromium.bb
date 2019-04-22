@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/elapsed_timer.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/deferred_start_render_host.h"
@@ -125,9 +126,10 @@ class ExtensionHost : public DeferredStartRenderHost,
       content::MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type) override;
+                                  blink::MediaStreamType type) override;
   bool IsNeverVisible(content::WebContents* web_contents) override;
-  gfx::Size EnterPictureInPicture(const viz::SurfaceId& surface_id,
+  gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
+                                  const viz::SurfaceId& surface_id,
                                   const gfx::Size& natural_size) override;
   void ExitPictureInPicture() override;
 

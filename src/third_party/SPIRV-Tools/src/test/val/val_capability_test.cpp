@@ -291,6 +291,7 @@ const std::vector<std::string>& AllVulkan10Capabilities() {
     "DerivativeControl",
     "Geometry",
     "Tessellation",
+    "Float16",
     "Float64",
     "Int64",
     "Int64Atomics",
@@ -307,6 +308,7 @@ const std::vector<std::string>& AllVulkan10Capabilities() {
     "CullDistance",
     "ImageCubeArray",
     "SampleRateShading",
+    "Int8",
     "SparseResidency",
     "MinLod",
     "SampledCubeArray",
@@ -335,6 +337,7 @@ const std::vector<std::string>& AllVulkan11Capabilities() {
     "DerivativeControl",
     "Geometry",
     "Tessellation",
+    "Float16",
     "Float64",
     "Int64",
     "Int64Atomics",
@@ -351,6 +354,7 @@ const std::vector<std::string>& AllVulkan11Capabilities() {
     "CullDistance",
     "ImageCubeArray",
     "SampleRateShading",
+    "Int8",
     "SparseResidency",
     "MinLod",
     "SampledCubeArray",
@@ -607,7 +611,7 @@ const char kVoidFVoid2[] = \
   "           OpReturn"
   "           OpFunctionEnd ";
 
-INSTANTIATE_TEST_CASE_P(ExecutionModel, ValidateCapability,
+INSTANTIATE_TEST_SUITE_P(ExecutionModel, ValidateCapability,
                         Combine(
                             ValuesIn(AllCapabilities()),
                             Values(
@@ -635,9 +639,9 @@ std::make_pair(std::string(kOpenCLMemoryModel) +
 std::make_pair(std::string(kGLSL450MemoryModel) +
           " OpEntryPoint Kernel %func \"shader\"" +
           std::string(kVoidFVoid), KernelDependencies())
-)),);
+)));
 
-INSTANTIATE_TEST_CASE_P(AddressingAndMemoryModel, ValidateCapability,
+INSTANTIATE_TEST_SUITE_P(AddressingAndMemoryModel, ValidateCapability,
                         Combine(
                             ValuesIn(AllCapabilities()),
                             Values(
@@ -677,9 +681,9 @@ std::make_pair(" OpCapability Kernel"
           " OpMemoryModel Physical64 OpenCL"
           " OpEntryPoint Kernel %func \"compute\"" +
           std::string(kVoidFVoid),  AddressesDependencies())
-)),);
+)));
 
-INSTANTIATE_TEST_CASE_P(ExecutionMode, ValidateCapability,
+INSTANTIATE_TEST_SUITE_P(ExecutionMode, ValidateCapability,
                         Combine(
                             ValuesIn(AllCapabilities()),
                             Values(
@@ -832,11 +836,11 @@ std::make_pair(std::string(kGLSL450MemoryModel) +
 std::make_pair(std::string(kGLSL450MemoryModel) +
           "OpEntryPoint Kernel %func \"shader\" "
           "OpExecutionMode %func ContractionOff" +
-          std::string(kVoidFVoid), KernelDependencies()))),);
+          std::string(kVoidFVoid), KernelDependencies()))));
 
 // clang-format on
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ExecutionModeV11, ValidateCapabilityV11,
     Combine(ValuesIn(AllCapabilities()),
             Values(std::make_pair(std::string(kOpenCLMemoryModel) +
@@ -849,10 +853,10 @@ INSTANTIATE_TEST_CASE_P(
                            "OpEntryPoint Kernel %func \"shader\" "
                            "OpExecutionMode %func SubgroupsPerWorkgroup 65535" +
                            std::string(kVoidFVoid),
-                       std::vector<std::string>{"SubgroupDispatch"}))), );
+                       std::vector<std::string>{"SubgroupDispatch"}))));
 // clang-format off
 
-INSTANTIATE_TEST_CASE_P(StorageClass, ValidateCapability,
+INSTANTIATE_TEST_SUITE_P(StorageClass, ValidateCapability,
                         Combine(
                             ValuesIn(AllCapabilities()),
                             Values(
@@ -916,9 +920,9 @@ std::make_pair(std::string(kGLSL450MemoryModel) +
           " %ptrt = OpTypePointer Image %intt\n"
           " %var = OpVariable %ptrt Image\n" + std::string(kVoidFVoid),
           AllCapabilities())
-)),);
+)));
 
-INSTANTIATE_TEST_CASE_P(Dim, ValidateCapability,
+INSTANTIATE_TEST_SUITE_P(Dim, ValidateCapability,
                         Combine(
                             ValuesIn(AllCapabilities()),
                             Values(
@@ -964,11 +968,11 @@ std::make_pair(" OpCapability ImageBasic" +
           " %voidt = OpTypeVoid"
           " %imgt = OpTypeImage %voidt SubpassData 0 0 0 2 Unknown" + std::string(kVoidFVoid2),
           std::vector<std::string>{"InputAttachment"})
-)),);
+)));
 
 // NOTE: All Sampler Address Modes require kernel capabilities but the
 // OpConstantSampler requires LiteralSampler which depends on Kernel
-INSTANTIATE_TEST_CASE_P(SamplerAddressingMode, ValidateCapability,
+INSTANTIATE_TEST_SUITE_P(SamplerAddressingMode, ValidateCapability,
                         Combine(
                             ValuesIn(AllCapabilities()),
                             Values(
@@ -1002,7 +1006,7 @@ std::make_pair(std::string(kGLSL450MemoryModel) +
           " %sampler = OpConstantSampler %samplert RepeatMirrored 1 Nearest" +
           std::string(kVoidFVoid),
           std::vector<std::string>{"LiteralSampler"})
-)),);
+)));
 
 // TODO(umar): Sampler Filter Mode
 // TODO(umar): Image Format
@@ -1015,7 +1019,7 @@ std::make_pair(std::string(kGLSL450MemoryModel) +
 // TODO(umar): Access Qualifier
 // TODO(umar): Function Parameter Attribute
 
-INSTANTIATE_TEST_CASE_P(Decoration, ValidateCapability,
+INSTANTIATE_TEST_SUITE_P(Decoration, ValidateCapability,
                         Combine(
                             ValuesIn(AllCapabilities()),
                             Values(
@@ -1125,9 +1129,14 @@ std::make_pair(std::string(kOpenCLMemoryModel) +
           "%intt = OpTypeInt 32 0\n" + std::string(kVoidFVoid),
           AllCapabilities()),
 std::make_pair(std::string(kOpenCLMemoryModel) +
+          // NonWritable must target something valid, such as a storage image.
           "OpEntryPoint Kernel %func \"compute\" \n"
-          "OpDecorate %intt NonWritable\n"
-          "%intt = OpTypeInt 32 0\n" + std::string(kVoidFVoid),
+          "OpDecorate %var NonWritable "
+          "%float = OpTypeFloat 32 "
+          "%imstor = OpTypeImage %float 2D 0 0 0 2 Unknown "
+          "%ptr = OpTypePointer UniformConstant %imstor "
+          "%var = OpVariable %ptr UniformConstant "
+          + std::string(kVoidFVoid),
           AllCapabilities()),
 std::make_pair(std::string(kOpenCLMemoryModel) +
           "OpEntryPoint Kernel %func \"compute\" \n"
@@ -1135,9 +1144,12 @@ std::make_pair(std::string(kOpenCLMemoryModel) +
           "%intt = OpTypeInt 32 0\n" + std::string(kVoidFVoid),
           AllCapabilities()),
 std::make_pair(std::string(kOpenCLMemoryModel) +
+          // Uniform must target a non-void value.
           "OpEntryPoint Kernel %func \"compute\" \n"
-          "OpDecorate %intt Uniform\n"
-          "%intt = OpTypeInt 32 0\n" + std::string(kVoidFVoid),
+          "OpDecorate %int0 Uniform\n"
+          "%intt = OpTypeInt 32 0\n" +
+          "%int0 = OpConstantNull %intt"
+          + std::string(kVoidFVoid),
           ShaderDependencies()),
 std::make_pair(std::string(kGLSL450MemoryModel) +
           "OpEntryPoint Vertex %func \"shader\" \n"
@@ -1219,10 +1231,10 @@ std::make_pair(std::string(kGLSL450MemoryModel) +
           "OpDecorate %intt Alignment 4\n"
           "%intt = OpTypeInt 32 0\n" + std::string(kVoidFVoid),
           KernelDependencies())
-)),);
+)));
 
 // clang-format on
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DecorationSpecId, ValidateCapability,
     Combine(
         ValuesIn(AllSpirV10Capabilities()),
@@ -1232,9 +1244,9 @@ INSTANTIATE_TEST_CASE_P(
                                   "%intt = OpTypeInt 32 0\n"
                                   "%1 = OpSpecConstant %intt 0\n" +
                                   std::string(kVoidFVoid),
-                              ShaderDependencies()))), );
+                              ShaderDependencies()))));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DecorationV11, ValidateCapabilityV11,
     Combine(ValuesIn(AllCapabilities()),
             Values(std::make_pair(std::string(kOpenCLMemoryModel) +
@@ -1263,10 +1275,10 @@ INSTANTIATE_TEST_CASE_P(
                                    "%intt = OpTypeInt 32 0 "
                                    "%1 = OpSpecConstant %intt 0") +
                            std::string(kVoidFVoid),
-                       ShaderDependencies()))), );
+                       ShaderDependencies()))));
 // clang-format off
 
-INSTANTIATE_TEST_CASE_P(BuiltIn, ValidateCapability,
+INSTANTIATE_TEST_SUITE_P(BuiltIn, ValidateCapability,
                         Combine(
                             ValuesIn(AllCapabilities()),
                             Values(
@@ -1488,13 +1500,13 @@ std::make_pair(std::string(kOpenCLMemoryModel) +
           "OpDecorate %intt BuiltIn InstanceIndex\n"
           "%intt = OpTypeInt 32 0\n" + std::string(kVoidFVoid),
           ShaderDependencies())
-)),);
+)));
 
 // Ensure that mere mention of PointSize, ClipDistance, or CullDistance as
 // BuiltIns does not trigger the requirement for the associated
 // capability.
 // See https://github.com/KhronosGroup/SPIRV-Tools/issues/365
-INSTANTIATE_TEST_CASE_P(BuiltIn, ValidateCapabilityVulkan10,
+INSTANTIATE_TEST_SUITE_P(BuiltIn, ValidateCapabilityVulkan10,
                         Combine(
                             // All capabilities to try.
                             ValuesIn(AllSpirV10Capabilities()),
@@ -1525,9 +1537,9 @@ std::make_pair(std::string(kGLSL450MemoryModel) +
           "%f32arr4 = OpTypeArray %f32 %intt_4\n"
           "%block = OpTypeStruct %f32arr4\n" + std::string(kVoidFVoid),
           AllVulkan10Capabilities())
-)),);
+)));
 
-INSTANTIATE_TEST_CASE_P(BuiltIn, ValidateCapabilityOpenGL40,
+INSTANTIATE_TEST_SUITE_P(BuiltIn, ValidateCapabilityOpenGL40,
                         Combine(
                             // OpenGL 4.0 is based on SPIR-V 1.0
                             ValuesIn(AllSpirV10Capabilities()),
@@ -1547,9 +1559,9 @@ std::make_pair(std::string(kGLSL450MemoryModel) +
           "OpDecorate %intt BuiltIn CullDistance\n"
           "%intt = OpTypeInt 32 0\n" + std::string(kVoidFVoid),
           AllSpirV10Capabilities())
-)),);
+)));
 
-INSTANTIATE_TEST_CASE_P(Capabilities, ValidateCapabilityWebGPU,
+INSTANTIATE_TEST_SUITE_P(Capabilities, ValidateCapabilityWebGPU,
                         Combine(
                             // All capabilities to try.
                             ValuesIn(AllCapabilities()),
@@ -1557,9 +1569,9 @@ INSTANTIATE_TEST_CASE_P(Capabilities, ValidateCapabilityWebGPU,
 std::make_pair(std::string(kVulkanMemoryModel) +
           "OpEntryPoint Vertex %func \"shader\" \n" + std::string(kVoidFVoid),
           AllWebGPUCapabilities())
-)),);
+)));
 
-INSTANTIATE_TEST_CASE_P(Capabilities, ValidateCapabilityVulkan11,
+INSTANTIATE_TEST_SUITE_P(Capabilities, ValidateCapabilityVulkan11,
                         Combine(
                             // All capabilities to try.
                             ValuesIn(AllCapabilities()),
@@ -1574,7 +1586,7 @@ std::make_pair(std::string(kGLSL450MemoryModel) +
           "OpDecorate %intt BuiltIn CullDistance\n"
           "%intt = OpTypeInt 32 0\n" + std::string(kVoidFVoid),
           AllVulkan11Capabilities())
-)),);
+)));
 
 // TODO(umar): Selection Control
 // TODO(umar): Loop Control
@@ -1586,7 +1598,7 @@ std::make_pair(std::string(kGLSL450MemoryModel) +
 // TODO(umar): Kernel Enqueue Flags
 // TODO(umar): Kernel Profiling Flags
 
-INSTANTIATE_TEST_CASE_P(MatrixOp, ValidateCapability,
+INSTANTIATE_TEST_SUITE_P(MatrixOp, ValidateCapability,
                         Combine(
                             ValuesIn(AllCapabilities()),
                             Values(
@@ -1595,7 +1607,7 @@ std::make_pair(std::string(kOpenCLMemoryModel) +
           "%f32      = OpTypeFloat 32\n"
           "%vec3     = OpTypeVector %f32 3\n"
           "%mat33    = OpTypeMatrix %vec3 3\n" + std::string(kVoidFVoid),
-          MatrixDependencies()))),);
+          MatrixDependencies()))));
 // clang-format on
 
 #if 0
@@ -1636,7 +1648,7 @@ OpFunctionEnd
   return ss.str();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TwoImageOperandsMask, ValidateCapability,
     Combine(
         ValuesIn(AllCapabilities()),

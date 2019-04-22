@@ -15,8 +15,6 @@
 #include "components/payments/core/features.h"
 #include "url/gurl.h"
 
-#include "base/logging.h"
-
 namespace payments {
 namespace {
 
@@ -48,52 +46,75 @@ CanMakePaymentQuery::~CanMakePaymentQuery() {}
 bool CanMakePaymentQuery::CanQuery(
     const GURL& top_level_origin,
     const GURL& frame_origin,
-    const std::map<std::string, std::set<std::string>>& query) {
-  if (base::FeatureList::IsEnabled(
+    const std::map<std::string, std::set<std::string>>& query,
+    bool per_method_quota) {
+  // Check both with and without per-method quota, so that both queries are
+  // recorded in case if two different tabs of the same website run with and
+  // without the origin trial.
+  bool can_query_with_per_method_quota =
+      CanQueryWithPerMethodQuota(top_level_origin, frame_origin, query);
+
+  bool can_query_without_per_method_quota =
+      CanQueryWithoutPerMethodQuota(top_level_origin, frame_origin, query);
+
+  if (per_method_quota ||
+      base::FeatureList::IsEnabled(
           features::kWebPaymentsPerMethodCanMakePaymentQuota)) {
-    bool can_query = true;
-    for (const auto& method_and_params : query) {
-      std::string method = method_and_params.first;
-      std::set<std::string> params = method_and_params.second;
-      SimpleNormalize(&method, &params);
-
-      const std::string id =
-          frame_origin.spec() + ":" + top_level_origin.spec() + ":" + method;
-
-      auto it = per_method_queries_.find(id);
-      if (it == per_method_queries_.end()) {
-        auto timer = std::make_unique<base::OneShotTimer>();
-        timer->Start(
-            FROM_HERE, base::TimeDelta::FromMinutes(30),
-            base::BindOnce(
-                &CanMakePaymentQuery::ExpireQuotaForFrameOriginAndMethod,
-                base::Unretained(this), id));
-        timers_.insert(std::make_pair(id, std::move(timer)));
-        per_method_queries_.insert(std::make_pair(id, params));
-        continue;
-      }
-
-      can_query &= it->second == params;
-    }
-
-    return can_query;
-  } else {
-    const std::string id = frame_origin.spec() + ":" + top_level_origin.spec();
-
-    const auto& it = queries_.find(id);
-    if (it == queries_.end()) {
-      auto timer = std::make_unique<base::OneShotTimer>();
-      timer->Start(
-          FROM_HERE, base::TimeDelta::FromMinutes(30),
-          base::BindOnce(&CanMakePaymentQuery::ExpireQuotaForFrameOrigin,
-                         base::Unretained(this), id));
-      timers_.insert(std::make_pair(id, std::move(timer)));
-      queries_.insert(std::make_pair(id, query));
-      return true;
-    }
-
-    return it->second == query;
+    return can_query_with_per_method_quota;
   }
+
+  return can_query_without_per_method_quota;
+}
+
+bool CanMakePaymentQuery::CanQueryWithPerMethodQuota(
+    const GURL& top_level_origin,
+    const GURL& frame_origin,
+    const std::map<std::string, std::set<std::string>>& query) {
+  bool can_query = true;
+  for (const auto& method_and_params : query) {
+    std::string method = method_and_params.first;
+    std::set<std::string> params = method_and_params.second;
+    SimpleNormalize(&method, &params);
+
+    const std::string id =
+        frame_origin.spec() + ":" + top_level_origin.spec() + ":" + method;
+
+    auto it = per_method_queries_.find(id);
+    if (it == per_method_queries_.end()) {
+      auto timer = std::make_unique<base::OneShotTimer>();
+      timer->Start(FROM_HERE, base::TimeDelta::FromMinutes(30),
+                   base::BindOnce(
+                       &CanMakePaymentQuery::ExpireQuotaForFrameOriginAndMethod,
+                       base::Unretained(this), id));
+      timers_.insert(std::make_pair(id, std::move(timer)));
+      per_method_queries_.insert(std::make_pair(id, params));
+      continue;
+    }
+
+    can_query &= it->second == params;
+  }
+
+  return can_query;
+}
+
+bool CanMakePaymentQuery::CanQueryWithoutPerMethodQuota(
+    const GURL& top_level_origin,
+    const GURL& frame_origin,
+    const std::map<std::string, std::set<std::string>>& query) {
+  const std::string id = frame_origin.spec() + ":" + top_level_origin.spec();
+
+  const auto& it = queries_.find(id);
+  if (it == queries_.end()) {
+    auto timer = std::make_unique<base::OneShotTimer>();
+    timer->Start(FROM_HERE, base::TimeDelta::FromMinutes(30),
+                 base::BindOnce(&CanMakePaymentQuery::ExpireQuotaForFrameOrigin,
+                                base::Unretained(this), id));
+    timers_.insert(std::make_pair(id, std::move(timer)));
+    queries_.insert(std::make_pair(id, query));
+    return true;
+  }
+
+  return it->second == query;
 }
 
 void CanMakePaymentQuery::ExpireQuotaForFrameOrigin(const std::string& id) {

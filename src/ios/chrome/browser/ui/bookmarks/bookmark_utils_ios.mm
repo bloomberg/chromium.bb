@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/i18n/string_compare.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/stl_util.h"
@@ -19,7 +19,7 @@
 #include "components/query_parser/query_parser.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
-#include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/ui/bookmarks/undo_manager_wrapper.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -515,7 +515,7 @@ class FolderNodeComparator : public std::binary_function<const BookmarkNode*,
  private:
   icu::Collator* collator_;
 };
-};
+}  // namespace
 
 bool FolderHasAncestorInBookmarkNodes(const BookmarkNode* folder,
                                       const NodeSet& bookmarkNodes) {

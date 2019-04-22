@@ -29,6 +29,7 @@ class StubLayerTreeFrameSink : public LayerTreeFrameSink {
                            nullptr) {}
 
   void SubmitCompositorFrame(viz::CompositorFrame frame,
+                             bool hit_test_data_changed,
                              bool show_hit_test_borders) override {
     client_->DidReceiveCompositorFrameAck();
   }

@@ -45,12 +45,15 @@ class ChromePaymentRequestDelegate : public ContentPaymentRequestDelegate {
   std::string GetAuthenticatedEmail() const override;
   PrefService* GetPrefService() override;
   bool IsBrowserWindowActive() const override;
+
+  // ContentPaymentRequestDelegate:
   scoped_refptr<PaymentManifestWebDataService>
   GetPaymentManifestWebDataService() const override;
   PaymentRequestDisplayManager* GetDisplayManager() override;
   void EmbedPaymentHandlerWindow(
       const GURL& url,
       PaymentHandlerOpenWindowCallback callback) override;
+  bool IsInteractive() const override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This

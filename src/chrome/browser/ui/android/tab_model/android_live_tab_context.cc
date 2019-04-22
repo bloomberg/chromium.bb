@@ -100,7 +100,7 @@ sessions::LiveTab* AndroidLiveTabContext::AddRestoredTab(
 
   // Create new tab. Ownership is passed into java, which in turn creates a new
   // TabAndroid instance to own the WebContents.
-  tab_model_->CreateTab(nullptr, web_contents.release(), -1);
+  tab_model_->CreateTab(nullptr, web_contents.release());
   raw_web_contents->GetController().LoadIfNecessary();
   return sessions::ContentLiveTab::GetForWebContents(raw_web_contents);
 }

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 
@@ -15,6 +16,8 @@ class GURL;
 
 namespace net {
 
+class HttpRequestHeaders;
+class HttpResponseHeaders;
 class ProxyInfo;
 class ProxyServer;
 
@@ -43,6 +46,23 @@ class NET_EXPORT ProxyDelegate {
   // explicitly directed to skip a proxy).
   virtual void OnFallback(const ProxyServer& bad_proxy,
                           int net_error) = 0;
+
+  // Called immediately before a HTTP/1.x proxy tunnel request is sent.
+  // Provides the embedder an opportunity to add extra request headers.
+  // Not called for HTTP/2 or QUIC tunnels.
+  virtual void OnBeforeHttp1TunnelRequest(
+      const ProxyServer& proxy_server,
+      HttpRequestHeaders* extra_headers) = 0;
+
+  // Called when the response headers for the HTTP/1.x proxy tunnel request
+  // have been received. Allows the delegate to override the net error code of
+  // the tunnel request. Returning OK causes the standard tunnel response
+  // handling to be performed. Implementations should make sure they can trust
+  // |proxy_server| before making decisions based on |response_headers|.
+  // Not called for HTTP/2 or QUIC tunnels.
+  virtual Error OnHttp1TunnelHeadersReceived(
+      const ProxyServer& proxy_server,
+      const HttpResponseHeaders& response_headers) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyDelegate);

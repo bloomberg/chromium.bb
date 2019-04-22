@@ -17,9 +17,9 @@
 #include <time.h>
 #include <algorithm>
 
-#include "rtc_base/atomicops.h"
+#include "rtc_base/atomic_ops.h"
 #include "rtc_base/checks.h"
-#include "rtc_base/timeutils.h"
+#include "rtc_base/time_utils.h"
 
 namespace rtc {
 namespace {
@@ -39,29 +39,27 @@ struct ThreadAttributes {
 
 PlatformThread::PlatformThread(ThreadRunFunctionDeprecated func,
                                void* obj,
-                               const char* thread_name)
-    : run_function_deprecated_(func),
-      obj_(obj),
-      name_(thread_name ? thread_name : "webrtc") {
+                               absl::string_view thread_name)
+    : run_function_deprecated_(func), obj_(obj), name_(thread_name) {
   RTC_DCHECK(func);
   RTC_DCHECK(name_.length() < 64);
-  spawned_thread_checker_.DetachFromThread();
+  spawned_thread_checker_.Detach();
 }
 
 PlatformThread::PlatformThread(ThreadRunFunction func,
                                void* obj,
-                               const char* thread_name,
+                               absl::string_view thread_name,
                                ThreadPriority priority /*= kNormalPriority*/)
     : run_function_(func), priority_(priority), obj_(obj), name_(thread_name) {
   RTC_DCHECK(func);
   RTC_DCHECK(!name_.empty());
   // TODO(tommi): Consider lowering the limit to 15 (limit on Linux).
   RTC_DCHECK(name_.length() < 64);
-  spawned_thread_checker_.DetachFromThread();
+  spawned_thread_checker_.Detach();
 }
 
 PlatformThread::~PlatformThread() {
-  RTC_DCHECK(thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(thread_checker_.IsCurrent());
 #if defined(WEBRTC_WIN)
   RTC_DCHECK(!thread_);
   RTC_DCHECK(!thread_id_);
@@ -86,7 +84,7 @@ void* PlatformThread::StartThread(void* param) {
 #endif  // defined(WEBRTC_WIN)
 
 void PlatformThread::Start() {
-  RTC_DCHECK(thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(thread_checker_.IsCurrent());
   RTC_DCHECK(!thread_) << "Thread already started?";
 #if defined(WEBRTC_WIN)
   stop_ = false;
@@ -107,7 +105,7 @@ void PlatformThread::Start() {
 }
 
 bool PlatformThread::IsRunning() const {
-  RTC_DCHECK(thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(thread_checker_.IsCurrent());
 #if defined(WEBRTC_WIN)
   return thread_ != nullptr;
 #else
@@ -124,15 +122,22 @@ PlatformThreadRef PlatformThread::GetThreadRef() const {
 }
 
 void PlatformThread::Stop() {
-  RTC_DCHECK(thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(thread_checker_.IsCurrent());
   if (!IsRunning())
     return;
 
 #if defined(WEBRTC_WIN)
   // Set stop_ to |true| on the worker thread.
   bool queued = QueueAPC(&RaiseFlag, reinterpret_cast<ULONG_PTR>(&stop_));
-  // Queuing the APC can fail if the thread is being terminated.
-  RTC_CHECK(queued || GetLastError() == ERROR_GEN_FAILURE);
+  if (!queued) {
+    // Queuing the APC can fail if the thread is being terminated. This should
+    // return ERROR_GEN_FAILURE, though Wine returns ERROR_ACCESS_DENIED, so
+    // allow for either.
+    auto error = ::GetLastError();
+    if (error != ERROR_GEN_FAILURE && error != ERROR_ACCESS_DENIED) {
+      RTC_CHECK(false) << "Failed to QueueUserAPC, error: " << error;
+    }
+  }
   WaitForSingleObject(thread_, INFINITE);
   CloseHandle(thread_);
   thread_ = nullptr;
@@ -145,7 +150,7 @@ void PlatformThread::Stop() {
     AtomicOps::ReleaseStore(&stop_flag_, 0);
   thread_ = 0;
 #endif  // defined(WEBRTC_WIN)
-  spawned_thread_checker_.DetachFromThread();
+  spawned_thread_checker_.Detach();
 }
 
 // TODO(tommi): Deprecate the loop behavior in PlatformThread.
@@ -157,7 +162,7 @@ void PlatformThread::Stop() {
 // and encouraging a busy polling loop, can be costly in terms of power and cpu.
 void PlatformThread::Run() {
   // Attach the worker thread checker to this thread.
-  RTC_DCHECK(spawned_thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(spawned_thread_checker_.IsCurrent());
   rtc::SetCurrentThreadName(name_.c_str());
 
   if (run_function_) {
@@ -220,12 +225,11 @@ bool PlatformThread::SetPriority(ThreadPriority priority) {
   if (run_function_) {
     // The non-deprecated way of how this function gets called, is that it must
     // be called on the worker thread itself.
-    RTC_DCHECK(!thread_checker_.CalledOnValidThread());
-    RTC_DCHECK(spawned_thread_checker_.CalledOnValidThread());
+    RTC_DCHECK(spawned_thread_checker_.IsCurrent());
   } else {
     // In the case of deprecated use of this method, it must be called on the
     // same thread as the PlatformThread object is constructed on.
-    RTC_DCHECK(thread_checker_.CalledOnValidThread());
+    RTC_DCHECK(thread_checker_.IsCurrent());
     RTC_DCHECK(IsRunning());
   }
 #endif
@@ -240,11 +244,7 @@ bool PlatformThread::SetPriority(ThreadPriority priority) {
   // thread priorities.
   return true;
 #else
-#ifdef WEBRTC_THREAD_RR
-  const int policy = SCHED_RR;
-#else
   const int policy = SCHED_FIFO;
-#endif
   const int min_prio = sched_get_priority_min(policy);
   const int max_prio = sched_get_priority_max(policy);
   if (min_prio == -1 || max_prio == -1) {
@@ -283,7 +283,7 @@ bool PlatformThread::SetPriority(ThreadPriority priority) {
 
 #if defined(WEBRTC_WIN)
 bool PlatformThread::QueueAPC(PAPCFUNC function, ULONG_PTR data) {
-  RTC_DCHECK(thread_checker_.CalledOnValidThread());
+  RTC_DCHECK(thread_checker_.IsCurrent());
   RTC_DCHECK(IsRunning());
 
   return QueueUserAPC(function, thread_, data) != FALSE;

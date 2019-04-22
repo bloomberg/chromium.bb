@@ -117,7 +117,6 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
   void OnFrameCaptured(
       base::ReadOnlySharedMemoryRegion data,
       media::mojom::VideoFrameInfoPtr info,
-      const gfx::Rect& update_rect,
       const gfx::Rect& content_rect,
       mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) final;
   void OnStopped() final;

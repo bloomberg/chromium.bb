@@ -7,6 +7,7 @@
 
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
@@ -29,6 +30,10 @@ class BrowserXRRuntimeObserver : public base::CheckedObserver {
  public:
   virtual void SetVRDisplayInfo(
       device::mojom::VRDisplayInfoPtr display_info) = 0;
+
+  // The parameter |contents| is set when a page starts an immersive WebXR
+  // session. There can only be at most one active immersive session for the
+  // XRRuntime. Set to null when there is no active immersive session.
   virtual void SetWebXRWebContents(content::WebContents* contents) = 0;
 };
 
@@ -38,9 +43,12 @@ class BrowserXRRuntimeObserver : public base::CheckedObserver {
 // device activation.
 class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
  public:
-  explicit BrowserXRRuntime(device::mojom::XRRuntimePtr runtime,
+  explicit BrowserXRRuntime(device::mojom::XRDeviceId id,
+                            device::mojom::XRRuntimePtr runtime,
                             device::mojom::VRDisplayInfoPtr info);
   ~BrowserXRRuntime() override;
+
+  void ExitVrFromPresentingRendererDevice();
 
   device::mojom::XRRuntime* GetRuntime() { return runtime_.get(); }
 
@@ -59,6 +67,7 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
     return display_info_.Clone();
   }
   void InitializeAndGetDisplayInfo(
+      content::RenderFrameHost* render_frame_host,
       device::mojom::XRDevice::GetImmersiveVRDisplayInfoCallback callback);
 
   // Methods called to support metrics/overlays on Windows.
@@ -69,6 +78,7 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void RemoveObserver(BrowserXRRuntimeObserver* observer) {
     observers_.RemoveObserver(observer);
   }
+  device::mojom::XRDeviceId GetId() { return id_; }
 
  private:
   // device::XRRuntimeEventListener
@@ -79,8 +89,6 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
                          base::OnceCallback<void(bool)> on_handled) override;
   void OnDeviceIdle(device::mojom::VRDisplayEventReason reason) override;
 
-  void OnInitialDevicePropertiesReceived(
-      device::mojom::VRDisplayInfoPtr display_info);
   void StopImmersiveSession();
   void OnListeningForActivate(bool is_listening);
   void OnRequestSessionResult(
@@ -92,6 +100,7 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void OnImmersiveSessionError();
   void OnInitialized();
 
+  device::mojom::XRDeviceId id_;
   device::mojom::XRRuntimePtr runtime_;
   device::mojom::XRSessionControllerPtr immersive_session_controller_;
 

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "device/usb/public/mojom/device.mojom-blink.h"
+#include "device/usb/public/mojom/device_enumeration_options.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -129,7 +130,7 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
   }
 
   EnsureServiceConnection();
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   get_devices_requests_.insert(resolver);
   service_->GetDevices(WTF::Bind(&USB::OnGetDevices, WrapPersistent(this),
                                  WrapPersistent(resolver)));
@@ -162,7 +163,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   Vector<UsbDeviceFilterPtr> filters;
   if (options->hasFilters()) {
@@ -292,15 +293,18 @@ void USB::EnsureServiceConnection() {
 
   DCHECK(IsContextSupported());
   DCHECK(GetFeatureEnabledState() != FeatureEnabledState::kDisabled);
+  // See https://bit.ly/2S0zRAS for task types.
+  auto task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   GetExecutionContext()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&service_));
+      mojo::MakeRequest(&service_, task_runner));
   service_.set_connection_error_handler(
       WTF::Bind(&USB::OnServiceConnectionError, WrapWeakPersistent(this)));
 
   DCHECK(!client_binding_.is_bound());
 
   device::mojom::blink::UsbDeviceManagerClientAssociatedPtrInfo client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
+  client_binding_.Bind(mojo::MakeRequest(&client), task_runner);
   service_->SetClient(std::move(client));
 }
 

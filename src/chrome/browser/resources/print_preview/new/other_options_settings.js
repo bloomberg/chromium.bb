@@ -22,7 +22,6 @@ Polymer({
       value: function() {
         return [
           {name: 'headerFooter', label: 'optionHeaderFooter'},
-          {name: 'duplex', label: 'optionTwoSided'},
           {name: 'cssBackground', label: 'optionBackgroundColorsAndImages'},
           {name: 'rasterize', label: 'optionRasterize'},
           {name: 'selectionOnly', label: 'optionSelectionOnly'},
@@ -42,7 +41,6 @@ Polymer({
 
   observers: [
     'onHeaderFooterSettingChange_(settings.headerFooter.*)',
-    'onDuplexSettingChange_(settings.duplex.*)',
     'onCssBackgroundSettingChange_(settings.cssBackground.*)',
     'onRasterizeSettingChange_(settings.rasterize.*)',
     'onSelectionOnlySettingChange_(settings.selectionOnly.*)',
@@ -60,13 +58,16 @@ Polymer({
    */
   updateSettingWithTimeout_: function(settingName, newValue) {
     const timeout = this.timeouts_.get(settingName);
-    if (timeout != null)
+    if (timeout != null) {
       clearTimeout(timeout);
+    }
 
     this.timeouts_.set(settingName, setTimeout(() => {
                          this.timeouts_.delete(settingName);
-                         if (this.previousValues_.get(settingName) == newValue)
+                         if (this.previousValues_.get(settingName) ==
+                             newValue) {
                            return;
+                         }
                          this.previousValues_.set(settingName, newValue);
                          this.setSetting(settingName, newValue);
 
@@ -87,8 +88,9 @@ Polymer({
 
     // Update first index
     const availableOptions = this.options_.filter(option => !!option.available);
-    if (availableOptions.length > 0)
+    if (availableOptions.length > 0) {
       this.firstIndex_ = this.options_.indexOf(availableOptions[0]);
+    }
   },
 
   /**
@@ -107,23 +109,18 @@ Polymer({
   },
 
   /** @private */
-  onDuplexSettingChange_: function() {
+  onCssBackgroundSettingChange_: function() {
     this.updateOptionFromSetting_(1);
   },
 
   /** @private */
-  onCssBackgroundSettingChange_: function() {
+  onRasterizeSettingChange_: function() {
     this.updateOptionFromSetting_(2);
   },
 
   /** @private */
-  onRasterizeSettingChange_: function() {
-    this.updateOptionFromSetting_(3);
-  },
-
-  /** @private */
   onSelectionOnlySettingChange_: function() {
-    this.updateOptionFromSetting_(4);
+    this.updateOptionFromSetting_(3);
   },
 
   /**

@@ -6,6 +6,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,30 +42,30 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
   }
 
   bool ResolveDns(const std::string& host,
-                  ResolveDnsOperation op,
+                  ProxyResolveDnsOperation op,
                   std::string* output,
                   bool* terminate) override {
     *terminate = should_terminate;
 
-    if (op == MY_IP_ADDRESS) {
+    if (op == ProxyResolveDnsOperation::MY_IP_ADDRESS) {
       my_ip_address_count++;
       *output = my_ip_address_result;
       return !my_ip_address_result.empty();
     }
 
-    if (op == MY_IP_ADDRESS_EX) {
+    if (op == ProxyResolveDnsOperation::MY_IP_ADDRESS_EX) {
       my_ip_address_ex_count++;
       *output = my_ip_address_ex_result;
       return !my_ip_address_ex_result.empty();
     }
 
-    if (op == DNS_RESOLVE) {
+    if (op == ProxyResolveDnsOperation::DNS_RESOLVE) {
       dns_resolves.push_back(host);
       *output = dns_resolve_result;
       return !dns_resolve_result.empty();
     }
 
-    if (op == DNS_RESOLVE_EX) {
+    if (op == ProxyResolveDnsOperation::DNS_RESOLVE_EX) {
       dns_resolves_ex.push_back(host);
       *output = dns_resolve_ex_result;
       return !dns_resolve_ex_result.empty();
@@ -211,7 +212,7 @@ TEST_F(ProxyResolverV8Test, BadReturnType) {
       // TODO(eroman): Should 'null' be considered equivalent to "DIRECT" ?
       "return_null.js"};
 
-  for (size_t i = 0; i < arraysize(filenames); ++i) {
+  for (size_t i = 0; i < base::size(filenames); ++i) {
     ASSERT_THAT(CreateResolver(filenames[i]), IsOk());
 
     MockJSBindings bindings;

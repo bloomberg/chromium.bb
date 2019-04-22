@@ -41,9 +41,12 @@ Polymer({
 
     /**
      * Authentication token provided by lock-screen-password-prompt-dialog.
-     * @private
      */
-    authToken_: String,
+    authToken: {
+      type: String,
+      value: '',
+      notify: true,
+    },
 
     /**
      * writeUma_ is a function that handles writing uma stats. It may be
@@ -142,8 +145,9 @@ Polymer({
 
   /** @override */
   attached: function() {
-    if (this.shouldAskForPassword_(settings.getCurrentRoute()))
+    if (this.shouldAskForPassword_(settings.getCurrentRoute())) {
       this.openPasswordPromptDialog_();
+    }
 
     this.fingerprintBrowserProxy_ =
         settings.FingerprintBrowserProxyImpl.getInstance();
@@ -180,12 +184,12 @@ Polymer({
    */
   onScreenLockChange_: function(event) {
     const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
-    if (!this.authToken_) {
+    if (!this.authToken) {
       console.error('Screen lock changed with expired token.');
       target.checked = !target.checked;
       return;
     }
-    this.setLockScreenEnabled(this.authToken_, target.checked);
+    this.setLockScreenEnabled(this.authToken, target.checked);
   },
 
   /**
@@ -194,14 +198,16 @@ Polymer({
    * @private
    */
   selectedUnlockTypeChanged_: function(selected) {
-    if (selected == LockScreenUnlockType.VALUE_PENDING)
+    if (selected == LockScreenUnlockType.VALUE_PENDING) {
       return;
+    }
 
     if (selected != LockScreenUnlockType.PIN_PASSWORD && this.setModes_) {
       this.setModes_.call(null, [], [], function(result) {
         assert(result, 'Failed to clear quick unlock modes');
-        if (!result)
+        if (!result) {
           console.error('Failed to clear quick unlock modes');
+        }
       });
     }
   },
@@ -222,12 +228,13 @@ Polymer({
   /** @private */
   onPasswordPromptDialogClose_: function() {
     this.showPasswordPromptDialog_ = false;
-    if (!this.setModes_)
+    if (!this.setModes_) {
       settings.navigateToPreviousRoute();
-    else if (!this.$$('#unlockType').disabled)
+    } else if (!this.$$('#unlockType').disabled) {
       cr.ui.focusWithoutInk(assert(this.$$('#unlockType')));
-    else
+    } else {
       cr.ui.focusWithoutInk(assert(this.$$('#enableLockScreen')));
+    }
   },
 
   /**
@@ -261,8 +268,9 @@ Polymer({
    * @private
    */
   getSetupPinText_: function(hasPin) {
-    if (hasPin)
+    if (hasPin) {
       return this.i18n('lockScreenChangePinButton');
+    }
     return this.i18n('lockScreenSetupPinButton');
   },
 
@@ -306,8 +314,9 @@ Polymer({
    * @private
    */
   selectLockScreenOptionsString(hasPinLogin) {
-    if (hasPinLogin)
+    if (hasPinLogin) {
       return this.i18n('lockScreenOptionsLoginLock');
+    }
     return this.i18n('lockScreenOptionsLock');
   },
 });

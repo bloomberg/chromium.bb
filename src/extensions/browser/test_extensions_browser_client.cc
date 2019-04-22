@@ -7,13 +7,15 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/test_runtime_api_delegate.h"
 #include "extensions/browser/updater/null_extension_cache.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #endif
 
 using content::BrowserContext;
@@ -134,8 +136,8 @@ TestExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
 base::FilePath TestExtensionsBrowserClient::GetBundleResourcePath(
     const network::ResourceRequest& request,
     const base::FilePath& extension_resources_path,
-    int* resource_id) const {
-  *resource_id = 0;
+    ComponentExtensionResourceInfo* resource_info) const {
+  *resource_info = {};
   return base::FilePath();
 }
 
@@ -143,7 +145,7 @@ void TestExtensionsBrowserClient::LoadResourceFromResourceBundle(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderRequest loader,
     const base::FilePath& resource_relative_path,
-    int resource_id,
+    const ComponentExtensionResourceInfo& resource_info,
     const std::string& content_security_policy,
     network::mojom::URLLoaderClientPtr client,
     bool send_cors_header) {

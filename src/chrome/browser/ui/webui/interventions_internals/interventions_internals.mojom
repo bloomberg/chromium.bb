@@ -88,9 +88,11 @@ interface InterventionsInternalsPage {
   OnBlacklistCleared(int64 time);
 
   // Notify the page on the new estimated effective connection type is |type|.
-  // This is called by InterventionsInternalsPageHandler when the estimate
-  // network quality changes.
-  OnEffectiveConnectionTypeChanged(string type);
+  // Also reports the session's maximum intervention effective connection type
+  // |max_intervention_type| for slow pages. This method is called by
+  // InterventionsInternalsPageHandler when the estimate network quality
+  // changes.
+  UpdateEffectiveConnectionType(string type, string max_intervention_type);
 
   // Notify the page on whether the blacklist decision is considered or ignored.
   // This method is called by InterventionsInternalsPageHandler when the status

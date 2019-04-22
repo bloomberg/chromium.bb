@@ -7,24 +7,26 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/fake_gaia.h"
@@ -73,7 +75,9 @@ class UserAddingScreenWaiter : public UserAddingScreen::Observer {
 
 class ChromeSessionManagerTest : public LoginManagerTest {
  public:
-  ChromeSessionManagerTest() : LoginManagerTest(true, true) {}
+  ChromeSessionManagerTest()
+      : LoginManagerTest(true, true),
+        fake_gaia_{&mixin_host_, embedded_test_server()} {}
   ~ChromeSessionManagerTest() override {}
 
   // LoginManagerTest:
@@ -91,6 +95,9 @@ class ChromeSessionManagerTest : public LoginManagerTest {
     OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
   }
 
+ protected:
+  FakeGaiaMixin fake_gaia_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeSessionManagerTest);
 };
@@ -103,8 +110,9 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
   EXPECT_EQ(0u, manager->sessions().size());
 
   // Login via fake gaia to add a new user.
-  fake_gaia_.SetFakeMergeSessionParams(kTestUsers[0].email, "fake_sid",
-                                       "fake_lsid");
+  fake_gaia_.SetupFakeGaiaForLoginManager();
+  fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(kTestUsers[0].email,
+                                                    "fake_sid", "fake_lsid");
   StartSignInScreen();
 
   content::WindowedNotificationObserver session_start_waiter(
@@ -147,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, LoginExistingUsers) {
   EXPECT_EQ(session_manager::SessionState::ACTIVE, manager->session_state());
   EXPECT_EQ(1u, manager->sessions().size());
 
-  for (size_t i = 1; i < arraysize(kTestUsers); ++i) {
+  for (size_t i = 1; i < base::size(kTestUsers); ++i) {
     // Verify that session state is LOGIN_SECONDARY during user adding.
     UserAddingScreen::Get()->Start();
     base::RunLoop().RunUntilIdle();
@@ -190,8 +198,9 @@ class ChromeSessionManagerRlzTest : public ChromeSessionManagerTest {
     EXPECT_EQ(0u, manager->sessions().size());
 
     // Login via fake gaia to add a new user.
-    fake_gaia_.SetFakeMergeSessionParams(kTestUsers[0].email, "fake_sid",
-                                         "fake_lsid");
+    fake_gaia_.SetupFakeGaiaForLoginManager();
+    fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(kTestUsers[0].email,
+                                                      "fake_sid", "fake_lsid");
     StartSignInScreen();
 
     content::WindowedNotificationObserver session_start_waiter(
@@ -296,9 +305,9 @@ IN_PROC_BROWSER_TEST_P(GuestSessionRlzTest, DeviceIsLocked) {
   EXPECT_EQ(expected_brand, google_brand::chromeos::GetBrand());
 }
 
-INSTANTIATE_TEST_CASE_P(GuestSessionRlzTest,
-                        GuestSessionRlzTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(GuestSessionRlzTest,
+                         GuestSessionRlzTest,
+                         ::testing::Values(false, true));
 
 #endif  // BUILDFLAG(ENABLE_RLZ)
 

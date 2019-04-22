@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/arc/bluetooth/arc_bluetooth_task_queue.h"
 #include "components/arc/common/bluetooth.mojom.h"
 #include "components/arc/common/intent_helper.mojom.h"
-#include "components/arc/connection_observer.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -505,11 +505,6 @@ class ArcBluetoothBridge
 
   void SendDevice(const device::BluetoothDevice* device) const;
 
-  // Shows a pairing dialog to handle incoming pairing requests.
-  // Returns the pairing delegate of the dialog UI.
-  device::BluetoothDevice::PairingDelegate* ShowPairingDialog(
-      device::BluetoothDevice* device);
-
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   scoped_refptr<bluez::BluetoothAdapterBlueZ> bluetooth_adapter_;
@@ -549,6 +544,8 @@ class ArcBluetoothBridge
   base::OneShotTimer discovery_off_timer_;
   // Timer to turn adapter discoverable off.
   base::OneShotTimer discoverable_off_timer_;
+  // Adapter discoverable timeout value.
+  uint32_t discoverable_off_timeout_ = 0;
 
   // Queue to track the powered state changes initiated by Android.
   base::queue<AdapterPowerState> remote_power_changes_;

@@ -14,15 +14,13 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "url/origin.h"
 
 namespace content {
 
 class BackgroundFetchContext;
-class RenderFrameHost;
 class RenderProcessHost;
-struct BackgroundFetchOptions;
 
 class CONTENT_EXPORT BackgroundFetchServiceImpl
     : public blink::mojom::BackgroundFetchService {
@@ -30,7 +28,8 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   BackgroundFetchServiceImpl(
       scoped_refptr<BackgroundFetchContext> background_fetch_context,
       url::Origin origin,
-      RenderFrameHost* render_frame_host);
+      int render_frame_tree_node_id,
+      ResourceRequestInfo::WebContentsGetter wc_getter);
   ~BackgroundFetchServiceImpl() override;
 
   static void CreateForWorker(
@@ -47,42 +46,23 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   void Fetch(int64_t service_worker_registration_id,
              const std::string& developer_id,
              std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-             const BackgroundFetchOptions& options,
+             blink::mojom::BackgroundFetchOptionsPtr options,
              const SkBitmap& icon,
              blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
              FetchCallback callback) override;
   void GetIconDisplaySize(GetIconDisplaySizeCallback callback) override;
-  void MatchRequests(int64_t service_worker_registration_id,
-                     const std::string& developer_id,
-                     const std::string& unique_id,
-                     blink::mojom::FetchAPIRequestPtr request_to_match,
-                     blink::mojom::QueryParamsPtr cache_query_params,
-                     bool match_all,
-                     MatchRequestsCallback callback) override;
-  void UpdateUI(int64_t service_worker_registration_id,
-                const std::string& developer_id,
-                const std::string& unique_id,
-                const base::Optional<std::string>& title,
-                const SkBitmap& icon,
-                UpdateUICallback callback) override;
-  void Abort(int64_t service_worker_registration_id,
-             const std::string& developer_id,
-             const std::string& unique_id,
-             AbortCallback callback) override;
   void GetRegistration(int64_t service_worker_registration_id,
                        const std::string& developer_id,
                        GetRegistrationCallback callback) override;
   void GetDeveloperIds(int64_t service_worker_registration_id,
                        GetDeveloperIdsCallback callback) override;
-  void AddRegistrationObserver(
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchRegistrationObserverPtr observer) override;
 
  private:
   static void CreateOnIoThread(
       scoped_refptr<BackgroundFetchContext> background_fetch_context,
       url::Origin origin,
-      RenderFrameHost* render_frame_host,
+      int render_frame_tree_node_id,
+      ResourceRequestInfo::WebContentsGetter wc_getter,
       blink::mojom::BackgroundFetchServiceRequest request);
 
   // Validates and returns whether the |developer_id|, |unique_id|, |requests|
@@ -92,14 +72,14 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   bool ValidateUniqueId(const std::string& unique_id) WARN_UNUSED_RESULT;
   bool ValidateRequests(const std::vector<blink::mojom::FetchAPIRequestPtr>&
                             requests) WARN_UNUSED_RESULT;
-  bool ValidateTitle(const std::string& title) WARN_UNUSED_RESULT;
 
   // The Background Fetch context on which operations will be dispatched.
   scoped_refptr<BackgroundFetchContext> background_fetch_context_;
 
   const url::Origin origin_;
 
-  RenderFrameHost* render_frame_host_;
+  int render_frame_tree_node_id_;
+  ResourceRequestInfo::WebContentsGetter wc_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchServiceImpl);
 };

@@ -76,6 +76,11 @@ class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
     return base::File::FILE_OK;
   }
 
+  void PerformStorageCleanupOnFileTaskRunner(
+      FileSystemContext* context,
+      storage::QuotaManagerProxy* proxy,
+      storage::FileSystemType type) override {}
+
   scoped_refptr<storage::QuotaReservation>
   CreateQuotaReservationOnFileTaskRunner(
       const GURL& origin_url,
@@ -138,9 +143,10 @@ void TestFileSystemBackend::Initialize(FileSystemContext* context) {}
 void TestFileSystemBackend::ResolveURL(const FileSystemURL& url,
                                        storage::OpenFileSystemMode mode,
                                        OpenFileSystemCallback callback) {
-  std::move(callback).Run(GetFileSystemRootURI(url.origin(), url.type()),
-                          GetFileSystemName(url.origin(), url.type()),
-                          base::File::FILE_OK);
+  std::move(callback).Run(
+      GetFileSystemRootURI(url.origin().GetURL(), url.type()),
+      GetFileSystemName(url.origin().GetURL(), url.type()),
+      base::File::FILE_OK);
 }
 
 storage::AsyncFileUtil* TestFileSystemBackend::GetAsyncFileUtil(

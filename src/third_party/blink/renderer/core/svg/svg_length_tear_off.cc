@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -50,7 +51,7 @@ inline bool IsValidLengthUnit(CSSPrimitiveValue::UnitType unit) {
          unit == CSSPrimitiveValue::UnitType::kPicas;
 }
 
-inline bool IsValidLengthUnit(unsigned short type) {
+inline bool IsValidLengthUnit(uint16_t type) {
   return IsValidLengthUnit(static_cast<CSSPrimitiveValue::UnitType>(type));
 }
 
@@ -58,14 +59,14 @@ inline bool CanResolveRelativeUnits(const SVGElement* context_element) {
   return context_element && context_element->isConnected();
 }
 
-inline CSSPrimitiveValue::UnitType ToCSSUnitType(unsigned short type) {
+inline CSSPrimitiveValue::UnitType ToCSSUnitType(uint16_t type) {
   DCHECK(IsValidLengthUnit(type));
   if (type == SVGLengthTearOff::kSvgLengthtypeNumber)
     return CSSPrimitiveValue::UnitType::kUserUnits;
   return static_cast<CSSPrimitiveValue::UnitType>(type);
 }
 
-inline unsigned short ToInterfaceConstant(CSSPrimitiveValue::UnitType type) {
+inline uint16_t ToInterfaceConstant(CSSPrimitiveValue::UnitType type) {
   switch (type) {
     case CSSPrimitiveValue::UnitType::kUnknown:
       return SVGLengthTearOff::kSvgLengthtypeUnknown;
@@ -106,7 +107,7 @@ bool SVGLengthTearOff::HasExposedLengthUnit() {
          unit == CSSPrimitiveValue::UnitType::kUserUnits;
 }
 
-unsigned short SVGLengthTearOff::unitType() {
+uint16_t SVGLengthTearOff::unitType() {
   return HasExposedLengthUnit()
              ? ToInterfaceConstant(Target()->TypeWithCalcResolved())
              : kSvgLengthtypeUnknown;
@@ -192,7 +193,7 @@ void SVGLengthTearOff::setValueAsString(const String& str,
   CommitChange();
 }
 
-void SVGLengthTearOff::newValueSpecifiedUnits(unsigned short unit_type,
+void SVGLengthTearOff::newValueSpecifiedUnits(uint16_t unit_type,
                                               float value_in_specified_units,
                                               ExceptionState& exception_state) {
   if (IsImmutable()) {
@@ -212,7 +213,7 @@ void SVGLengthTearOff::newValueSpecifiedUnits(unsigned short unit_type,
 }
 
 void SVGLengthTearOff::convertToSpecifiedUnits(
-    unsigned short unit_type,
+    uint16_t unit_type,
     ExceptionState& exception_state) {
   if (IsImmutable()) {
     ThrowReadOnly(exception_state);
@@ -243,7 +244,8 @@ SVGLengthTearOff::SVGLengthTearOff(SVGLength* target,
     : SVGPropertyTearOff<SVGLength>(target, binding, property_is_anim_val) {}
 
 SVGLengthTearOff* SVGLengthTearOff::CreateDetached() {
-  return Create(SVGLength::Create(), nullptr, kPropertyIsNotAnimVal);
+  return MakeGarbageCollected<SVGLengthTearOff>(
+      MakeGarbageCollected<SVGLength>(), nullptr, kPropertyIsNotAnimVal);
 }
 
 }  // namespace blink

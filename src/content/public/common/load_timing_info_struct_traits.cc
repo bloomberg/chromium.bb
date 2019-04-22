@@ -32,6 +32,7 @@ bool StructTraits<content::mojom::LoadTimingInfoDataView, net::LoadTimingInfo>::
          data.ReadConnectTiming(&out->connect_timing) &&
          data.ReadSendStart(&out->send_start) &&
          data.ReadSendEnd(&out->send_end) &&
+         data.ReadReceiveHeadersStart(&out->receive_headers_start) &&
          data.ReadReceiveHeadersEnd(&out->receive_headers_end) &&
          data.ReadPushStart(&out->push_start) &&
          data.ReadPushEnd(&out->push_end);

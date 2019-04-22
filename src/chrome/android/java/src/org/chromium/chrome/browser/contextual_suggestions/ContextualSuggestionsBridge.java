@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
-import android.graphics.Bitmap;
-
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -88,18 +86,27 @@ public class ContextualSuggestionsBridge {
         nativeFetchSuggestions(mNativeContextualSuggestionsBridge, url, callback);
     }
 
-    /** Fetches a thumbnail for the suggestion. */
-    void fetchSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback) {
+    /**
+     * Get the url of the image used for the given suggestion.
+     *
+     * @param suggestion The suggestion that the image url is for.
+     * @return The url for the image or null if one can't be found.
+     */
+    String getImageUrl(SnippetArticle suggestion) {
         assert mNativeContextualSuggestionsBridge != 0;
-        nativeFetchSuggestionImage(
-                mNativeContextualSuggestionsBridge, suggestion.mIdWithinCategory, callback);
+        return nativeGetImageUrl(mNativeContextualSuggestionsBridge, suggestion.mIdWithinCategory);
     }
 
-    /** Fetches a favicon for the suggestion. */
-    void fetchSuggestionFavicon(SnippetArticle suggestion, Callback<Bitmap> callback) {
+    /**
+     * Get the url of the favicon used for the given suggestion.
+     *
+     * @param suggestion The suggestion that the favicon url is for.
+     * @return The url for the image or null if one can't be found.
+     */
+    String getFaviconUrl(SnippetArticle suggestion) {
         assert mNativeContextualSuggestionsBridge != 0;
-        nativeFetchSuggestionFavicon(
-                mNativeContextualSuggestionsBridge, suggestion.mIdWithinCategory, callback);
+        return nativeGetFaviconUrl(
+                mNativeContextualSuggestionsBridge, suggestion.mIdWithinCategory);
     }
 
     /** Requests the backend to clear state related to this bridge. */
@@ -157,10 +164,10 @@ public class ContextualSuggestionsBridge {
     private native void nativeDestroy(long nativeContextualSuggestionsBridge);
     private native void nativeFetchSuggestions(long nativeContextualSuggestionsBridge, String url,
             Callback<ContextualSuggestionsResult> callback);
-    private native void nativeFetchSuggestionImage(
-            long nativeContextualSuggestionsBridge, String suggestionId, Callback<Bitmap> callback);
-    private native void nativeFetchSuggestionFavicon(
-            long nativeContextualSuggestionsBridge, String suggestionId, Callback<Bitmap> callback);
+    private native String nativeGetImageUrl(
+            long nativeContextualSuggestionsBridge, String suggestionId);
+    private native String nativeGetFaviconUrl(
+            long nativeContextualSuggestionsBridge, String suggestionId);
     private native void nativeClearState(long nativeContextualSuggestionsBridge);
     private native void nativeReportEvent(
             long nativeContextualSuggestionsBridge, WebContents webContents, int eventId);

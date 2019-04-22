@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "content/browser/renderer_host/media/fake_video_capture_device_launcher.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
@@ -64,7 +65,7 @@ FakeVideoCaptureDeviceLauncher::~FakeVideoCaptureDeviceLauncher() = default;
 
 void FakeVideoCaptureDeviceLauncher::LaunchDeviceAsync(
     const std::string& device_id,
-    content::MediaStreamType stream_type,
+    blink::MediaStreamType stream_type,
     const media::VideoCaptureParams& params,
     base::WeakPtr<media::VideoFrameReceiver> receiver,
     base::OnceClosure connection_lost_cb,

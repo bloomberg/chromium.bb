@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "components/services/heap_profiling/backtrace_storage.h"
 
 namespace heap_profiling {

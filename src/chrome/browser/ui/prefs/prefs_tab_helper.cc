@@ -10,8 +10,9 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -28,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_names_util.h"
 #include "chrome/grit/platform_locale_settings.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/overlay_user_pref_store.h"
 #include "components/prefs/pref_service.h"
@@ -37,15 +39,17 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/web_preferences.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
+#else  // !defined(OS_ANDROID)
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #endif
 
@@ -88,7 +92,7 @@ ALL_FONT_SCRIPTS(WEBKIT_WEBPREFS_FONTS_STANDARD)
 #undef EXPAND_SCRIPT_FONT
   };
 
-  for (size_t i = 0; i < arraysize(kFontFamilyMap); ++i) {
+  for (size_t i = 0; i < base::size(kFontFamilyMap); ++i) {
     const char* pref_name = kFontFamilyMap[i];
     if (fonts_with_defaults.find(pref_name) == fonts_with_defaults.end()) {
       // We haven't already set a default value for this font preference, so set
@@ -192,7 +196,7 @@ const FontDefault kFontDefaults[] = {
 #endif
 };
 
-const size_t kFontDefaultsLength = arraysize(kFontDefaults);
+const size_t kFontDefaultsLength = base::size(kFontDefaults);
 
 // Returns the script of the font pref |pref_name|.  For example, suppose
 // |pref_name| is "webkit.webprefs.fonts.serif.Hant".  Since the script code for
@@ -310,7 +314,7 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
     PrefWatcher::Get(profile_)->RegisterHelper(this);
   }
 
-  content::RendererPreferences* render_prefs =
+  blink::mojom::RendererPreferences* render_prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(render_prefs, profile_);
 
@@ -356,11 +360,14 @@ void PrefsTabHelper::RegisterProfilePrefs(
                                 pref_defaults.force_enable_zoom);
   registry->RegisterBooleanPref(prefs::kWebKitPasswordEchoEnabled,
                                 pref_defaults.password_echo_enabled);
+
+  bool force_dark_mode_enabled =
+      base::FeatureList::IsEnabled(chrome::android::kAndroidWebContentsDarkMode)
+          ? true
+          : pref_defaults.force_dark_mode_enabled;
+  registry->RegisterBooleanPref(prefs::kWebKitForceDarkModeEnabled,
+                                force_dark_mode_enabled);
 #endif
-  registry->RegisterStringPref(
-      prefs::kAcceptLanguages,
-      l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(
       prefs::kDefaultCharset,
       l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING),
@@ -440,7 +447,7 @@ void PrefsTabHelper::UpdateWebPreferences() {
 }
 
 void PrefsTabHelper::UpdateRendererPreferences() {
-  content::RendererPreferences* prefs =
+  blink::mojom::RendererPreferences* prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(prefs, profile_);
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
@@ -493,3 +500,5 @@ void PrefsTabHelper::NotifyWebkitPreferencesChanged(
 
   web_contents_->GetRenderViewHost()->OnWebkitPreferencesChanged();
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrefsTabHelper)

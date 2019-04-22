@@ -17,10 +17,9 @@
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage_index.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace url {
 class Origin;
@@ -35,8 +34,7 @@ class CacheStorageContextImpl;
 // messages are processed on the IO thread.
 class CONTENT_EXPORT CacheStorageDispatcherHost
     : public base::RefCountedThreadSafe<CacheStorageDispatcherHost,
-                                        BrowserThread::DeleteOnIOThread>,
-      public blink::mojom::CacheStorage {
+                                        BrowserThread::DeleteOnIOThread> {
  public:
   CacheStorageDispatcherHost();
 
@@ -57,47 +55,24 @@ class CONTENT_EXPORT CacheStorageDispatcherHost
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
   friend class base::DeleteHelper<CacheStorageDispatcherHost>;
 
+  class CacheStorageImpl;
   class CacheImpl;
+  friend class CacheImpl;
 
-  ~CacheStorageDispatcherHost() override;
+  void AddCacheBinding(
+      std::unique_ptr<CacheImpl> cache_impl,
+      blink::mojom::CacheStorageCacheAssociatedRequest request);
+
+  CacheStorageHandle OpenCacheStorage(const url::Origin& origin);
+
+  ~CacheStorageDispatcherHost();
 
   // Called by Init() on IO thread.
   void CreateCacheListener(CacheStorageContextImpl* context);
 
-  // Mojo CacheStorage Interface implementation:
-  void Keys(blink::mojom::CacheStorage::KeysCallback callback) override;
-  void Delete(const base::string16& cache_name,
-              blink::mojom::CacheStorage::DeleteCallback callback) override;
-  void Has(const base::string16& cache_name,
-           blink::mojom::CacheStorage::HasCallback callback) override;
-  void Match(blink::mojom::FetchAPIRequestPtr request,
-             blink::mojom::QueryParamsPtr match_params,
-             blink::mojom::CacheStorage::MatchCallback callback) override;
-  void Open(const base::string16& cache_name,
-            blink::mojom::CacheStorage::OpenCallback callback) override;
-
-  // Callbacks used by Mojo implementation:
-  void OnKeysCallback(KeysCallback callback,
-                      const CacheStorageIndex& cache_index);
-  void OnHasCallback(blink::mojom::CacheStorage::HasCallback callback,
-                     bool has_cache,
-                     blink::mojom::CacheStorageError error);
-  void OnMatchCallback(blink::mojom::CacheStorage::MatchCallback callback,
-                       blink::mojom::CacheStorageError error,
-                       blink::mojom::FetchAPIResponsePtr response);
-  void OnOpenCallback(url::Origin origin,
-                      blink::mojom::CacheStorage::OpenCallback callback,
-                      CacheStorageCacheHandle cache_handle,
-                      blink::mojom::CacheStorageError error);
-
-  // Validate the current state of required members, returns false if they
-  // aren't valid and also close |bindings_|, so it's safe to not run
-  // mojo callbacks.
-  bool ValidState();
-
   scoped_refptr<CacheStorageContextImpl> context_;
 
-  mojo::BindingSet<blink::mojom::CacheStorage, url::Origin> bindings_;
+  mojo::StrongBindingSet<blink::mojom::CacheStorage> bindings_;
   mojo::StrongAssociatedBindingSet<blink::mojom::CacheStorageCache>
       cache_bindings_;
 

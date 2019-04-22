@@ -34,8 +34,10 @@ inline MemOperand GetStackSlot(uint32_t index) {
   return MemOperand(fp, -kFirstStackSlotOffset - offset);
 }
 
-inline MemOperand GetHalfStackSlot(uint32_t half_index) {
-  int32_t offset = half_index * (LiftoffAssembler::kStackSlotSize / 2);
+inline MemOperand GetHalfStackSlot(uint32_t index, RegPairHalf half) {
+  int32_t half_offset =
+      half == kLowWord ? 0 : LiftoffAssembler::kStackSlotSize / 2;
+  int32_t offset = index * LiftoffAssembler::kStackSlotSize + half_offset;
   return MemOperand(fp, -kFirstStackSlotOffset - offset);
 }
 
@@ -255,9 +257,9 @@ void LiftoffAssembler::PatchPrepareStackFrame(int offset,
   // We can't run out of space, just pass anything big enough to not cause the
   // assembler to try to grow the buffer.
   constexpr int kAvailableSpace = 256;
-  TurboAssembler patching_assembler(nullptr, AssemblerOptions{},
-                                    buffer_ + offset, kAvailableSpace,
-                                    CodeObjectRequired::kNo);
+  TurboAssembler patching_assembler(
+      nullptr, AssemblerOptions{}, CodeObjectRequired::kNo,
+      ExternalAssemblerBuffer(buffer_start_ + offset, kAvailableSpace));
   // If bytes can be represented as 16bit, addiu will be generated and two
   // nops will stay untouched. Otherwise, lui-ori sequence will load it to
   // register and, as third instruction, addu will be generated.
@@ -301,12 +303,26 @@ void LiftoffAssembler::LoadFromInstance(Register dst, uint32_t offset,
   lw(dst, MemOperand(dst, offset));
 }
 
+void LiftoffAssembler::LoadTaggedPointerFromInstance(Register dst,
+                                                     uint32_t offset) {
+  LoadFromInstance(dst, offset, kTaggedSize);
+}
+
 void LiftoffAssembler::SpillInstance(Register instance) {
   sw(instance, liftoff::GetInstanceOperand());
 }
 
 void LiftoffAssembler::FillInstanceInto(Register dst) {
   lw(dst, liftoff::GetInstanceOperand());
+}
+
+void LiftoffAssembler::LoadTaggedPointer(Register dst, Register src_addr,
+                                         Register offset_reg,
+                                         uint32_t offset_imm,
+                                         LiftoffRegList pinned) {
+  STATIC_ASSERT(kTaggedSize == kInt32Size);
+  Load(LiftoffRegister(dst), src_addr, offset_reg, offset_imm,
+       LoadType::kI32Load, pinned);
 }
 
 void LiftoffAssembler::Load(LiftoffRegister dst, Register src_addr,
@@ -467,7 +483,7 @@ void LiftoffAssembler::Store(Register dst_addr, Register offset_reg,
 void LiftoffAssembler::LoadCallerFrameSlot(LiftoffRegister dst,
                                            uint32_t caller_slot_idx,
                                            ValueType type) {
-  int32_t offset = kPointerSize * (caller_slot_idx + 1);
+  int32_t offset = kSystemPointerSize * (caller_slot_idx + 1);
   liftoff::Load(this, dst, fp, offset, type);
 }
 
@@ -499,8 +515,8 @@ void LiftoffAssembler::Spill(uint32_t index, LiftoffRegister reg,
       sw(reg.gp(), dst);
       break;
     case kWasmI64:
-      sw(reg.low_gp(), dst);
-      sw(reg.high_gp(), liftoff::GetHalfStackSlot(2 * index + 1));
+      sw(reg.low_gp(), liftoff::GetHalfStackSlot(index, kLowWord));
+      sw(reg.high_gp(), liftoff::GetHalfStackSlot(index, kHighWord));
       break;
     case kWasmF32:
       swc1(reg.fp(), dst);
@@ -531,8 +547,8 @@ void LiftoffAssembler::Spill(uint32_t index, WasmValue value) {
       TurboAssembler::li(tmp.low_gp(), Operand(low_word));
       TurboAssembler::li(tmp.high_gp(), Operand(high_word));
 
-      sw(tmp.low_gp(), dst);
-      sw(tmp.high_gp(), liftoff::GetHalfStackSlot(2 * index + 1));
+      sw(tmp.low_gp(), liftoff::GetHalfStackSlot(index, kLowWord));
+      sw(tmp.high_gp(), liftoff::GetHalfStackSlot(index, kHighWord));
       break;
     }
     default:
@@ -550,8 +566,8 @@ void LiftoffAssembler::Fill(LiftoffRegister reg, uint32_t index,
       lw(reg.gp(), src);
       break;
     case kWasmI64:
-      lw(reg.low_gp(), src);
-      lw(reg.high_gp(), liftoff::GetHalfStackSlot(2 * index + 1));
+      lw(reg.low_gp(), liftoff::GetHalfStackSlot(index, kLowWord));
+      lw(reg.high_gp(), liftoff::GetHalfStackSlot(index, kHighWord));
       break;
     case kWasmF32:
       lwc1(reg.fp(), src);
@@ -564,8 +580,13 @@ void LiftoffAssembler::Fill(LiftoffRegister reg, uint32_t index,
   }
 }
 
-void LiftoffAssembler::FillI64Half(Register reg, uint32_t half_index) {
-  lw(reg, liftoff::GetHalfStackSlot(half_index));
+void LiftoffAssembler::FillI64Half(Register reg, uint32_t index,
+                                   RegPairHalf half) {
+  lw(reg, liftoff::GetHalfStackSlot(index, half));
+}
+
+void LiftoffAssembler::emit_i32_add(Register dst, Register lhs, int32_t imm) {
+  Addu(dst, lhs, imm);
 }
 
 void LiftoffAssembler::emit_i32_mul(Register dst, Register lhs, Register rhs) {
@@ -657,6 +678,13 @@ I32_SHIFTOP_I(shr, srl)
 
 #undef I32_SHIFTOP
 #undef I32_SHIFTOP_I
+
+void LiftoffAssembler::emit_i64_add(LiftoffRegister dst, LiftoffRegister lhs,
+                                    int32_t imm) {
+  TurboAssembler::AddPair(dst.low_gp(), dst.high_gp(), lhs.low_gp(),
+                          lhs.high_gp(), imm,
+                          kScratchReg, kScratchReg2);
+}
 
 void LiftoffAssembler::emit_i64_mul(LiftoffRegister dst, LiftoffRegister lhs,
                                     LiftoffRegister rhs) {
@@ -1228,7 +1256,7 @@ inline FPUCondition ConditionToConditionCmpFPU(bool& predicate,
   UNREACHABLE();
 }
 
-};  // namespace liftoff
+}  // namespace liftoff
 
 void LiftoffAssembler::emit_f32_set_cond(Condition cond, Register dst,
                                          DoubleRegister lhs,
@@ -1306,11 +1334,11 @@ void LiftoffAssembler::PushRegisters(LiftoffRegList regs) {
   LiftoffRegList gp_regs = regs & kGpCacheRegList;
   unsigned num_gp_regs = gp_regs.GetNumRegsSet();
   if (num_gp_regs) {
-    unsigned offset = num_gp_regs * kPointerSize;
+    unsigned offset = num_gp_regs * kSystemPointerSize;
     addiu(sp, sp, -offset);
     while (!gp_regs.is_empty()) {
       LiftoffRegister reg = gp_regs.GetFirstRegSet();
-      offset -= kPointerSize;
+      offset -= kSystemPointerSize;
       sw(reg.gp(), MemOperand(sp, offset));
       gp_regs.clear(reg);
     }
@@ -1347,13 +1375,14 @@ void LiftoffAssembler::PopRegisters(LiftoffRegList regs) {
     LiftoffRegister reg = gp_regs.GetLastRegSet();
     lw(reg.gp(), MemOperand(sp, gp_offset));
     gp_regs.clear(reg);
-    gp_offset += kPointerSize;
+    gp_offset += kSystemPointerSize;
   }
   addiu(sp, sp, gp_offset);
 }
 
 void LiftoffAssembler::DropStackSlotsAndRet(uint32_t num_stack_slots) {
-  DCHECK_LT(num_stack_slots, (1 << 16) / kPointerSize);  // 16 bit immediate
+  DCHECK_LT(num_stack_slots,
+            (1 << 16) / kSystemPointerSize);  // 16 bit immediate
   TurboAssembler::DropAndRet(static_cast<int>(num_stack_slots));
 }
 
@@ -1438,12 +1467,11 @@ void LiftoffStackSlots::Construct() {
         if (src.type() == kWasmF64) {
           DCHECK_EQ(kLowWord, slot.half_);
           asm_->lw(kScratchReg,
-                   liftoff::GetHalfStackSlot(2 * slot.src_index_ - 1));
+                   liftoff::GetHalfStackSlot(slot.src_index_, kHighWord));
           asm_->push(kScratchReg);
         }
         asm_->lw(kScratchReg,
-                 liftoff::GetHalfStackSlot(2 * slot.src_index_ +
-                                           (slot.half_ == kLowWord ? 0 : 1)));
+                 liftoff::GetHalfStackSlot(slot.src_index_, slot.half_));
         asm_->push(kScratchReg);
         break;
       }
@@ -1456,7 +1484,7 @@ void LiftoffStackSlots::Construct() {
           liftoff::push(asm_, src.reg(), src.type());
         }
         break;
-      case LiftoffAssembler::VarState::KIntConst: {
+      case LiftoffAssembler::VarState::kIntConst: {
         // The high word is the sign extension of the low word.
         asm_->li(kScratchReg,
                  Operand(slot.half_ == kLowWord ? src.i32_const()

@@ -104,6 +104,18 @@ public class BasicCardUtils {
     }
 
     /**
+     * @return a complete map of string identifiers to BasicCardNetworks.
+     */
+    public static Map<String, Integer> getNetworkIdentifiers() {
+        Map<Integer, String> networksByInt = getNetworks();
+        Map<String, Integer> networksByString = new HashMap<>();
+        for (Map.Entry<Integer, String> entry : networksByInt.entrySet()) {
+            networksByString.put(entry.getValue(), entry.getKey());
+        }
+        return networksByString;
+    }
+
+    /**
      * @return a complete map of BasicCardType to CardType.
      */
     public static Map<Integer, Integer> getCardTypes() {

@@ -32,6 +32,8 @@ class CORE_EXPORT LongTaskDetector final
  public:
   static LongTaskDetector& Instance();
 
+  LongTaskDetector();
+
   void RegisterObserver(LongTaskObserver*);
   void UnregisterObserver(LongTaskObserver*);
 
@@ -41,8 +43,6 @@ class CORE_EXPORT LongTaskDetector final
       base::TimeDelta::FromMilliseconds(50);
 
  private:
-  LongTaskDetector();
-
   // scheduler::TaskTimeObserver implementation
   void WillProcessTask(base::TimeTicks start_time) override {}
   void DidProcessTask(base::TimeTicks start_time,

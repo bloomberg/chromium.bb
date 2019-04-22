@@ -66,7 +66,11 @@ class CONTENT_EXPORT IndexedDBConnection {
   void AbortTransaction(IndexedDBTransaction* transaction,
                         const IndexedDBDatabaseError& error);
 
-  void AbortAllTransactions(const IndexedDBDatabaseError& error);
+  // Aborts or commits each transaction owned by this connection depending on
+  // the transaction's current state. Any transaction with is_commit_pending_
+  // false is aborted, and any transaction with is_commit_pending_ true is
+  // committed.
+  void FinishAllTransactions(const IndexedDBDatabaseError& error);
 
   IndexedDBTransaction* GetTransaction(int64_t id) const;
 
@@ -77,18 +81,13 @@ class CONTENT_EXPORT IndexedDBConnection {
   // TODO(dmurph): Change that so this doesn't need to ignore unknown ids.
   void RemoveTransaction(int64_t id);
 
-  // Returns a new transaction id for an observer transaction.
-  // Unique per connection.
-  int64_t NewObserverTransactionId();
+  const std::unordered_map<int64_t, std::unique_ptr<IndexedDBTransaction>>&
+  transactions() const {
+    return transactions_;
+  }
 
  private:
   const int32_t id_;
-
-  // The renderer-created transactions are in the right 32 bits of the
-  // transaction id, and the observer (browser-created) transactions are in the
-  // left 32 bits.
-  // This keeps track of the left 32 bits. Unsigned for defined overflow.
-  uint32_t next_observer_transaction_id_ = 1;
 
   // The process id of the child process this connection is associated with.
   // Tracked for IndexedDBContextImpl::GetAllOriginsDetails and debugging.
@@ -105,6 +104,9 @@ class CONTENT_EXPORT IndexedDBConnection {
   // May be NULL in unit tests.
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
   std::vector<std::unique_ptr<IndexedDBObserver>> active_observers_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<IndexedDBConnection> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBConnection);

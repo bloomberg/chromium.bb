@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -65,9 +66,10 @@ void BroadcastChannelProvider::Connection::OnMessage(
 
 BroadcastChannelProvider::BroadcastChannelProvider() {}
 
-void BroadcastChannelProvider::Connect(
+mojo::BindingId BroadcastChannelProvider::Connect(
+    RenderProcessHostId render_process_host_id,
     blink::mojom::BroadcastChannelProviderRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  return bindings_.AddBinding(this, std::move(request), render_process_host_id);
 }
 
 void BroadcastChannelProvider::ConnectToChannel(
@@ -75,6 +77,21 @@ void BroadcastChannelProvider::ConnectToChannel(
     const std::string& name,
     blink::mojom::BroadcastChannelClientAssociatedPtrInfo client,
     blink::mojom::BroadcastChannelClientAssociatedRequest connection) {
+  RenderProcessHostId process_id = bindings_.dispatch_context();
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+
+  // TODO(943887): Replace HasSecurityState() call with something that can
+  // preserve security state after process shutdown. The security state check
+  // is a temporary solution to avoid crashes when this method is run after the
+  // process associated with |process_id| has been destroyed. It temporarily
+  // restores the old behavior of always allowing access if the process is gone.
+  // See https://crbug.com/943027 for details.
+  if (!policy->CanAccessDataForOrigin(process_id, origin) &&
+      policy->HasSecurityState(process_id)) {
+    mojo::ReportBadMessage("BROADCAST_CHANNEL_INVALID_ORIGIN");
+    return;
+  }
+
   std::unique_ptr<Connection> c(new Connection(origin, name, std::move(client),
                                                std::move(connection), this));
   c->set_connection_error_handler(

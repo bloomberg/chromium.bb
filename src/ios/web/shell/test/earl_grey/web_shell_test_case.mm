@@ -4,20 +4,16 @@
 
 #import "ios/web/shell/test/earl_grey/web_shell_test_case.h"
 
-#import <EarlGrey/EarlGrey.h>
-
-#import "ios/web/public/test/http_server/http_server.h"
-#import "ios/web/shell/test/earl_grey/shell_matchers.h"
-#include "testing/coverage_util_ios.h"
+#import "ios/testing/earl_grey/coverage_utils.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using web::test::HttpServer;
-
 @implementation WebShellTestCase
 
+#if defined(CHROME_EARL_GREY_1)
 // Overrides |testInvocations| to skip all tests if a system alert view is
 // shown, since this isn't a case a user would encounter (i.e. they would
 // dismiss the alert first).
@@ -35,25 +31,20 @@ using web::test::HttpServer;
   }
   return [super testInvocations];
 }
+#endif
 
-// Set up called once for the class.
-+ (void)setUp {
+- (void)setUp {
+#if defined(CHROME_EARL_GREY_2)
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    XCUIApplication* application = [[XCUIApplication alloc] init];
+    [application launch];
+  });
+#endif
+
+  [CoverageUtils configureCoverageReportPath];
+
   [super setUp];
-  HttpServer::GetSharedInstance().StartOrDie();
-
-  coverage_util::ConfigureCoverageReportPath();
-}
-
-// Tear down called once for the class.
-+ (void)tearDown {
-  HttpServer::GetSharedInstance().Stop();
-  [super tearDown];
-}
-
-// Tear down called after each test.
-- (void)tearDown {
-  HttpServer::GetSharedInstance().RemoveAllResponseProviders();
-  [super tearDown];
 }
 
 @end

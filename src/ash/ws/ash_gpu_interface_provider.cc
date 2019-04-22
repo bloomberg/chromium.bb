@@ -27,8 +27,8 @@ AshGpuInterfaceProvider::~AshGpuInterfaceProvider() = default;
 
 void AshGpuInterfaceProvider::RegisterGpuInterfaces(
     service_manager::BinderRegistry* registry) {
-  registry->AddInterface<ws::mojom::Arc>(base::BindRepeating(
-      &AshGpuInterfaceProvider::BindArcRequest, base::Unretained(this)));
+  registry->AddInterface<ws::mojom::ArcGpu>(base::BindRepeating(
+      &AshGpuInterfaceProvider::BindArcGpuRequest, base::Unretained(this)));
   registry->AddInterface(base::BindRepeating(
       &AshGpuInterfaceProvider::BindDiscardableSharedMemoryManagerRequest,
       base::Unretained(this)));
@@ -36,13 +36,15 @@ void AshGpuInterfaceProvider::RegisterGpuInterfaces(
       &AshGpuInterfaceProvider::BindGpuRequest, base::Unretained(this)));
 }
 
-void AshGpuInterfaceProvider::RegisterOzoneGpuInterfaces(
-    service_manager::BinderRegistry* registry) {
-  ui::OzonePlatform::GetInstance()->AddInterfaces(registry);
+void AshGpuInterfaceProvider::BindOzoneGpuInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle handle) {
+  gpu_host_->BindOzoneGpuInterface(interface_name, std::move(handle));
 }
 
-void AshGpuInterfaceProvider::BindArcRequest(ws::mojom::ArcRequest request) {
-  gpu_host_->AddArc(std::move(request));
+void AshGpuInterfaceProvider::BindArcGpuRequest(
+    ws::mojom::ArcGpuRequest request) {
+  gpu_host_->AddArcGpu(std::move(request));
 }
 
 void AshGpuInterfaceProvider::BindDiscardableSharedMemoryManagerRequest(

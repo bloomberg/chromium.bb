@@ -23,6 +23,7 @@ class FloatRoundedRect;
 class GraphicsContext;
 class ImageResourceObserver;
 class IntRect;
+class LayoutPoint;
 class LayoutRect;
 struct PaintInfo;
 
@@ -43,8 +44,7 @@ class BoxPainterBase {
                        const FillLayer&,
                        const LayoutRect&,
                        BackgroundImageGeometry&,
-                       BackgroundBleedAvoidance = kBackgroundBleedNone,
-                       SkBlendMode = SkBlendMode::kSrcOver);
+                       BackgroundBleedAvoidance = kBackgroundBleedNone);
 
   void PaintFillLayer(const PaintInfo&,
                       const Color&,
@@ -52,7 +52,6 @@ class BoxPainterBase {
                       const LayoutRect&,
                       BackgroundBleedAvoidance,
                       BackgroundImageGeometry&,
-                      SkBlendMode = SkBlendMode::kSrcOver,
                       bool object_has_multiple_boxes = false,
                       const LayoutSize flow_box_size = LayoutSize());
 

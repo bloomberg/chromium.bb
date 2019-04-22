@@ -15,8 +15,8 @@ FakeSecureChannel::FakeSecureChannel() = default;
 FakeSecureChannel::~FakeSecureChannel() = default;
 
 void FakeSecureChannel::ListenForConnectionFromDevice(
-    const cryptauth::RemoteDevice& device_to_connect,
-    const cryptauth::RemoteDevice& local_device,
+    const multidevice::RemoteDevice& device_to_connect,
+    const multidevice::RemoteDevice& local_device,
     const std::string& feature,
     ConnectionPriority connection_priority,
     mojom::ConnectionDelegatePtr delegate) {
@@ -24,8 +24,8 @@ void FakeSecureChannel::ListenForConnectionFromDevice(
 }
 
 void FakeSecureChannel::InitiateConnectionToDevice(
-    const cryptauth::RemoteDevice& device_to_connect,
-    const cryptauth::RemoteDevice& local_device,
+    const multidevice::RemoteDevice& device_to_connect,
+    const multidevice::RemoteDevice& local_device,
     const std::string& feature,
     ConnectionPriority connection_priority,
     mojom::ConnectionDelegatePtr delegate) {

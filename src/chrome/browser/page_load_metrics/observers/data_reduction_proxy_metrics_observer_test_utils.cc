@@ -107,7 +107,6 @@ void DataReductionProxyMetricsObserverTestBase::ResetTest() {
   timing_.paint_timing->first_meaningful_paint =
       base::TimeDelta::FromSeconds(8);
   timing_.paint_timing->first_image_paint = base::TimeDelta::FromSeconds(5);
-  timing_.paint_timing->first_text_paint = base::TimeDelta::FromSeconds(6);
   timing_.document_timing->load_event_start = base::TimeDelta::FromSeconds(7);
   timing_.parse_timing->parse_stop = base::TimeDelta::FromSeconds(4);
   timing_.parse_timing->parse_blocked_on_script_load_duration =

@@ -7,7 +7,7 @@
 #include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 
 namespace {
@@ -105,8 +105,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientAppsSyncTest, InstallSomeApps) {
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientAppsSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientAppsSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

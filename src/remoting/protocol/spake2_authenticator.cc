@@ -34,20 +34,20 @@ namespace {
 //                remote_jid.length() + remote_jid)
 // where auth_key is the key produced by SPAKE2.
 
-const buzz::StaticQName kSpakeMessageTag = {kChromotingXmlNamespace,
+const jingle_xmpp::StaticQName kSpakeMessageTag = {kChromotingXmlNamespace,
                                             "spake-message"};
-const buzz::StaticQName kVerificationHashTag = {kChromotingXmlNamespace,
+const jingle_xmpp::StaticQName kVerificationHashTag = {kChromotingXmlNamespace,
                                                 "verification-hash"};
-const buzz::StaticQName kCertificateTag = {kChromotingXmlNamespace,
+const jingle_xmpp::StaticQName kCertificateTag = {kChromotingXmlNamespace,
                                            "certificate"};
 
-std::unique_ptr<buzz::XmlElement> EncodeBinaryValueToXml(
-    const buzz::StaticQName& qname,
+std::unique_ptr<jingle_xmpp::XmlElement> EncodeBinaryValueToXml(
+    const jingle_xmpp::StaticQName& qname,
     const std::string& content) {
   std::string content_base64;
   base::Base64Encode(content, &content_base64);
 
-  std::unique_ptr<buzz::XmlElement> result(new buzz::XmlElement(qname));
+  std::unique_ptr<jingle_xmpp::XmlElement> result(new jingle_xmpp::XmlElement(qname));
   result->SetBodyText(content_base64);
   return result;
 }
@@ -56,11 +56,11 @@ std::unique_ptr<buzz::XmlElement> EncodeBinaryValueToXml(
 // in |data|. If the element is not present then found is set to false otherwise
 // it's set to true. If the element is there and it's content cound't be decoded
 // then false is returned.
-bool DecodeBinaryValueFromXml(const buzz::XmlElement* message,
-                              const buzz::QName& qname,
+bool DecodeBinaryValueFromXml(const jingle_xmpp::XmlElement* message,
+                              const jingle_xmpp::QName& qname,
                               bool* found,
                               std::string* data) {
-  const buzz::XmlElement* element = message->FirstNamed(qname);
+  const jingle_xmpp::XmlElement* element = message->FirstNamed(qname);
   *found = element != nullptr;
   if (!*found)
     return true;
@@ -150,14 +150,14 @@ Authenticator::RejectionReason Spake2Authenticator::rejection_reason() const {
   return rejection_reason_;
 }
 
-void Spake2Authenticator::ProcessMessage(const buzz::XmlElement* message,
+void Spake2Authenticator::ProcessMessage(const jingle_xmpp::XmlElement* message,
                                          const base::Closure& resume_callback) {
   ProcessMessageInternal(message);
   resume_callback.Run();
 }
 
 void Spake2Authenticator::ProcessMessageInternal(
-    const buzz::XmlElement* message) {
+    const jingle_xmpp::XmlElement* message) {
   DCHECK_EQ(state(), WAITING_MESSAGE);
 
   // Parse the certificate.
@@ -248,10 +248,10 @@ void Spake2Authenticator::ProcessMessageInternal(
   state_ = MESSAGE_READY;
 }
 
-std::unique_ptr<buzz::XmlElement> Spake2Authenticator::GetNextMessage() {
+std::unique_ptr<jingle_xmpp::XmlElement> Spake2Authenticator::GetNextMessage() {
   DCHECK_EQ(state(), MESSAGE_READY);
 
-  std::unique_ptr<buzz::XmlElement> message = CreateEmptyAuthenticatorMessage();
+  std::unique_ptr<jingle_xmpp::XmlElement> message = CreateEmptyAuthenticatorMessage();
 
   if (!spake_message_sent_) {
     if (!local_cert_.empty()) {

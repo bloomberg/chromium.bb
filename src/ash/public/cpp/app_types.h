@@ -16,7 +16,8 @@ enum class AppType {
   BROWSER,
   CHROME_APP,
   ARC_APP,
-  APP_TYPE_LAST = ARC_APP,
+  CROSTINI_APP,
+  APP_TYPE_LAST = CROSTINI_APP,
 };
 
 const int kAppCount = static_cast<int>(AppType::APP_TYPE_LAST) + 1;

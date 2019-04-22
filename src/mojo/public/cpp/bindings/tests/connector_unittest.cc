@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -196,7 +197,7 @@ TEST_F(ConnectorTest, Basic_TwoMessages) {
                        base::ThreadTaskRunnerHandle::Get());
 
   const char* kText[] = {"hello", "world"};
-  for (size_t i = 0; i < arraysize(kText); ++i) {
+  for (size_t i = 0; i < base::size(kText); ++i) {
     Message message = CreateMessage(kText[i]);
     connector0.Accept(&message);
   }
@@ -204,7 +205,7 @@ TEST_F(ConnectorTest, Basic_TwoMessages) {
   MessageAccumulator accumulator;
   connector1.set_incoming_receiver(&accumulator);
 
-  for (size_t i = 0; i < arraysize(kText); ++i) {
+  for (size_t i = 0; i < base::size(kText); ++i) {
     if (accumulator.IsEmpty()) {
       base::RunLoop run_loop;
       accumulator.set_closure(run_loop.QuitClosure());
@@ -228,7 +229,7 @@ TEST_F(ConnectorTest, Basic_TwoMessages_Synchronous) {
                        base::ThreadTaskRunnerHandle::Get());
 
   const char* kText[] = {"hello", "world"};
-  for (size_t i = 0; i < arraysize(kText); ++i) {
+  for (size_t i = 0; i < base::size(kText); ++i) {
     Message message = CreateMessage(kText[i]);
     connector0.Accept(&message);
   }
@@ -378,7 +379,7 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
                        base::ThreadTaskRunnerHandle::Get());
 
   const char* kText[] = {"hello", "world"};
-  for (size_t i = 0; i < arraysize(kText); ++i) {
+  for (size_t i = 0; i < base::size(kText); ++i) {
     Message message = CreateMessage(kText[i]);
     connector0.Accept(&message);
   }
@@ -386,7 +387,7 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
   ReentrantMessageAccumulator accumulator(&connector1);
   connector1.set_incoming_receiver(&accumulator);
 
-  for (size_t i = 0; i < arraysize(kText); ++i) {
+  for (size_t i = 0; i < base::size(kText); ++i) {
     if (accumulator.IsEmpty()) {
       base::RunLoop run_loop;
       accumulator.set_closure(run_loop.QuitClosure());

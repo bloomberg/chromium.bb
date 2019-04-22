@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -109,8 +109,19 @@ TEST(AutocompleteInputTest, InputType) {
     // { ASCIIToUTF16("mailto:abuse@foo.com"), metrics::OmniboxInputType::URL },
     {ASCIIToUTF16("view-source:http://www.foo.com/"),
      metrics::OmniboxInputType::URL},
+    {ASCIIToUTF16("javascript"), metrics::OmniboxInputType::UNKNOWN},
     {ASCIIToUTF16("javascript:alert(\"Hi there\");"),
      metrics::OmniboxInputType::URL},
+    {ASCIIToUTF16("javascript:alert%28\"Hi there\"%29;"),
+     metrics::OmniboxInputType::URL},
+    {ASCIIToUTF16("javascript:foo"), metrics::OmniboxInputType::UNKNOWN},
+    {ASCIIToUTF16("javascript:foo;"), metrics::OmniboxInputType::URL},
+    {ASCIIToUTF16("javascript:\"foo\""), metrics::OmniboxInputType::URL},
+    {ASCIIToUTF16("javascript:"), metrics::OmniboxInputType::UNKNOWN},
+    {ASCIIToUTF16("javascript:the cromulent parts"),
+     metrics::OmniboxInputType::UNKNOWN},
+    {ASCIIToUTF16("javascript:foo.getter"), metrics::OmniboxInputType::URL},
+    {ASCIIToUTF16("JavaScript:Tutorials"), metrics::OmniboxInputType::UNKNOWN},
 #if defined(OS_WIN)
     {ASCIIToUTF16("C:\\Program Files"), metrics::OmniboxInputType::URL},
     {ASCIIToUTF16("\\\\Server\\Folder\\File"), metrics::OmniboxInputType::URL},
@@ -201,7 +212,7 @@ TEST(AutocompleteInputTest, InputType) {
     {ASCIIToUTF16("test:80/"), metrics::OmniboxInputType::URL},
   };
 
-  for (size_t i = 0; i < arraysize(input_cases); ++i) {
+  for (size_t i = 0; i < base::size(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input,
                             metrics::OmniboxEventProto::OTHER,
@@ -243,7 +254,7 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
        std::string()},
   };
 
-  for (size_t i = 0; i < arraysize(input_cases); ++i) {
+  for (size_t i = 0; i < base::size(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input, base::string16::npos, "com",
                             metrics::OmniboxEventProto::OTHER,
@@ -297,7 +308,7 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
         Component(12, 11), kInvalidComponent }
   };
 
-  for (size_t i = 0; i < arraysize(input_cases); ++i) {
+  for (size_t i = 0; i < base::size(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     Component scheme, host;
     AutocompleteInput::ParseForEmphasizeComponents(input_cases[i].input,
@@ -339,7 +350,7 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
     { ASCIIToUTF16("  ?  foo bar"), 6, ASCIIToUTF16("?  foo bar"), 4 },
   };
 
-  for (size_t i = 0; i < arraysize(input_cases); ++i) {
+  for (size_t i = 0; i < base::size(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(
         input_cases[i].input, input_cases[i].cursor_position,

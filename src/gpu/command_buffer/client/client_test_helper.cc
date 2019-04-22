@@ -51,7 +51,7 @@ void FakeCommandBufferServiceBase::SetGetBufferHelper(int transfer_buffer_id,
 }
 
 scoped_refptr<gpu::Buffer>
-FakeCommandBufferServiceBase::CreateTransferBufferHelper(size_t size,
+FakeCommandBufferServiceBase::CreateTransferBufferHelper(uint32_t size,
                                                          int32_t* id) {
   *id = GetNextFreeTransferBufferId();
   if (*id >= 0) {
@@ -138,7 +138,7 @@ void MockClientCommandBuffer::SetGetBuffer(int transfer_buffer_id) {
 }
 
 scoped_refptr<gpu::Buffer> MockClientCommandBuffer::CreateTransferBuffer(
-    size_t size,
+    uint32_t size,
     int32_t* id) {
   return CreateTransferBufferHelper(size, id);
 }
@@ -176,5 +176,16 @@ void MockClientCommandBufferMockFlush::DoFlush(int32_t put_offset) {
 MockClientGpuControl::MockClientGpuControl() = default;
 
 MockClientGpuControl::~MockClientGpuControl() = default;
+
+FakeDecoderClient::~FakeDecoderClient() = default;
+void FakeDecoderClient::OnConsoleMessage(int32_t, const std::string&) {}
+void FakeDecoderClient::CacheShader(const std::string&, const std::string&) {}
+void FakeDecoderClient::OnFenceSyncRelease(uint64_t) {}
+void FakeDecoderClient::OnDescheduleUntilFinished() {}
+void FakeDecoderClient::OnRescheduleAfterFinished() {}
+void FakeDecoderClient::OnSwapBuffers(uint64_t, uint32_t) {}
+void FakeDecoderClient::ScheduleGrContextCleanup() {}
+void FakeDecoderClient::SetActiveURL(GURL) {}
+void FakeDecoderClient::HandleReturnData(base::span<const uint8_t>) {}
 
 }  // namespace gpu

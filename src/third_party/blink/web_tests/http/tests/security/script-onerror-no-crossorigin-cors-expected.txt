@@ -3,7 +3,6 @@ The test passes if 'window.onerror' gets sanitized information about an exceptio
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS msg is "Script error."
 PASS url is ""
 PASS line is 0

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class PasswordAccessoryController;
+class PasswordGenerationController;
 
 // Use ManualFillingController::GetOrCreate to obtain instances of this class.
 class ManualFillingControllerImpl
@@ -27,8 +29,8 @@ class ManualFillingControllerImpl
       bool is_fillable,
       const autofill::AccessorySheetData& accessory_sheet_data) override;
   void OnFilledIntoFocusedField(autofill::FillingStatus status) override;
-  void ShowWhenKeyboardIsVisible() override;
-  void Hide() override;
+  void ShowWhenKeyboardIsVisible(FillingSource source) override;
+  void Hide(FillingSource source) override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
   void OnFillingTriggered(bool is_password,
                           const base::string16& text_to_fill) override;
@@ -48,12 +50,17 @@ class ManualFillingControllerImpl
   static void CreateForWebContentsForTesting(
       content::WebContents* web_contents,
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
+      PasswordGenerationController* pwd_generation_controller_for_testing,
       std::unique_ptr<ManualFillingViewInterface> test_view);
 
 #if defined(UNIT_TEST)
   // Returns the held view for testing.
   ManualFillingViewInterface* view() const { return view_.get(); }
 #endif  // defined(UNIT_TEST)
+  // Returns the connected password accessory controller for testing.
+  PasswordAccessoryController* password_controller_for_testing() const {
+    return pwd_controller_.get();
+  }
 
  private:
   friend class content::WebContentsUserData<ManualFillingControllerImpl>;
@@ -65,13 +72,22 @@ class ManualFillingControllerImpl
   ManualFillingControllerImpl(
       content::WebContents* web_contents,
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
+      PasswordGenerationController* pwd_generation_controller_for_testing,
       std::unique_ptr<ManualFillingViewInterface> view);
 
   // The tab for which this class is scoped.
   content::WebContents* web_contents_;
 
+  // This set contains sources to be shown to the user.
+  base::flat_set<FillingSource> visible_sources_;
+
   // The password accessory controller object to forward view requests to.
   base::WeakPtr<PasswordAccessoryController> pwd_controller_;
+
+  // A password generation controller used in tests which receives requests
+  // from the view.
+  PasswordGenerationController* pwd_generation_controller_for_testing_ =
+      nullptr;
 
   // Hold the native instance of the view. Must be last declared and initialized
   // member so the view can be created in the constructor with a fully set up
@@ -79,6 +95,8 @@ class ManualFillingControllerImpl
   std::unique_ptr<ManualFillingViewInterface> view_;
 
   base::WeakPtrFactory<ManualFillingControllerImpl> weak_factory_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(ManualFillingControllerImpl);
 };

@@ -34,16 +34,10 @@ class ASH_EXPORT OverflowButton : public ShelfControlButton {
   // views::Button:
   bool ShouldEnterPushedState(const ui::Event& event) override;
   void NotifyClick(const ui::Event& event) override;
-  void PaintButtonContents(gfx::Canvas* canvas) override;
-
-  // Calculates the bounds of the control button based on the shelf alignment.
-  gfx::Rect CalculateButtonBounds() const;
+  const char* GetClassName() const override;
 
   const gfx::ImageSkia horizontal_dots_image_;
   views::ImageView* horizontal_dots_image_view_;
-
-  ShelfView* shelf_view_;
-  Shelf* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowButton);
 };

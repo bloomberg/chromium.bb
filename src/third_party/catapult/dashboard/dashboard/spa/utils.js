@@ -49,6 +49,7 @@ tr.exportTo('cp', () => {
   }
 
   function deepFreeze(o) {
+    if (!o) return o;
     Object.freeze(o);
     for (const [name, value] of Object.entries(o)) {
       if (typeof(value) !== 'object') continue;
@@ -116,16 +117,17 @@ tr.exportTo('cp', () => {
     return hex;
   }
 
+  const DOCUMENT_READY = (async() => {
+    while (document.readyState !== 'complete') {
+      await animationFrame();
+    }
+  })();
+
   /*
    * Returns the bounding rect of the given element.
    */
   async function measureElement(element) {
-    if (!measureElement.READY) {
-      measureElement.READY = cp.animationFrame().then(() => {
-        measureElement.READY = undefined;
-      });
-    }
-    await measureElement.READY;
+    await DOCUMENT_READY;
     return element.getBoundingClientRect();
   }
 
@@ -136,8 +138,10 @@ tr.exportTo('cp', () => {
   MEASURE_TEXT_HOST.style.position = 'fixed';
   MEASURE_TEXT_HOST.style.visibility = 'hidden';
   MEASURE_TEXT_HOST.style.zIndex = -1000;
-  window.addEventListener('load', () =>
-    document.body.appendChild(MEASURE_TEXT_HOST));
+  MEASURE_TEXT_HOST.readyPromise = (async() => {
+    await DOCUMENT_READY;
+    document.body.appendChild(MEASURE_TEXT_HOST);
+  })();
 
   // Assuming the computed style of MEASURE_TEXT_HOST doesn't change, measuring
   // a string with the same options should always return the same size, so the
@@ -152,6 +156,8 @@ tr.exportTo('cp', () => {
    * opt_options to a <span> containing textContent.
    */
   async function measureText(textContent, opt_options) {
+    await MEASURE_TEXT_HOST.readyPromise;
+
     let cacheKey = {textContent, ...opt_options};
     cacheKey = JSON.stringify(cacheKey, Object.keys(cacheKey).sort());
     if (MEASURE_TEXT_CACHE.has(cacheKey)) {
@@ -292,40 +298,16 @@ tr.exportTo('cp', () => {
     return state;
   }
 
-  /**
-   * Wrap Google Sign-in client library to build the Authorization header, if
-   * one is available. Automatically reloads the token if necessary.
-   */
-  async function authorizationHeaders() {
-    if (window.gapi === undefined) return [];
-    if (gapi.auth2 === undefined) return [];
-
-    const auth = gapi.auth2.getAuthInstance();
-    if (!auth) return [];
-    const user = auth.currentUser.get();
-    let response = user.getAuthResponse();
-
-    if (response.expires_at === undefined) {
-      // The user is not signed in.
-      return [];
-    }
-
-    if (response.expires_at < new Date()) {
-      // The token has expired, so reload it.
-      response = await user.reloadAuthResponse();
-    }
-
-    return [
-      ['Authorization', response.token_type + ' ' + response.access_token],
-    ];
-  }
-
   function normalize(columns, cells) {
     const dict = {};
     for (let i = 0; i < columns.length; ++i) {
       dict[columns[i]] = cells[i];
     }
     return dict;
+  }
+
+  function denormalize(objects, columnNames) {
+    return objects.map(obj => columnNames.map(col => obj[col]));
   }
 
   async function* asGenerator(promise) {
@@ -351,10 +333,7 @@ tr.exportTo('cp', () => {
       this.errors_ = [];
       this.promises_ = new Set();
 
-      for (let task of tasks) {
-        if (task instanceof Promise) task = asGenerator(task);
-        this.generate_(task);
-      }
+      for (const task of tasks) this.add(task);
 
       this.getDelay_ = ms => {
         const promise = getDelay(ms).then(() => {
@@ -362,6 +341,11 @@ tr.exportTo('cp', () => {
         });
         return promise;
       };
+    }
+
+    add(task) {
+      if (task instanceof Promise) task = asGenerator(task);
+      this.generate_(task);
     }
 
     // Adds a Promise to this.promises_ that resolves when the generator next
@@ -393,6 +377,8 @@ tr.exportTo('cp', () => {
     }
 
     async* [Symbol.asyncIterator]() {
+      if (!this.promises_.size) return;
+
       // Yield the first result immediately in order to allow the user to start
       // to understand it (c.f. First Contentful Paint), and also to measure how
       // long it takes the caller to render the data. Use that measurement as an
@@ -456,18 +442,81 @@ tr.exportTo('cp', () => {
     return pluralSuffix;
   }
 
+  /**
+   * Compute a given number of colors by evenly spreading them around the
+   * sinebow hue circle, or, if a Range of brightnesses is given, the hue x
+   * brightness cylinder.
+   *
+   * @param {Number} numColors
+   * @param {!Range} opt_options.brightnessRange
+   * @param {Number} opt_options.brightnessPct
+   * @param {Number} opt_options.hueOffset
+   * @return {!Array.<!tr.b.Color>}
+   */
+  function generateColors(numColors, opt_options) {
+    const options = opt_options || {};
+    const brightnessRange = options.brightnessRange;
+    const hueOffset = options.hueOffset || 0;
+    const colors = [];
+    if (numColors > 15 && brightnessRange) {
+      // Evenly spread numColors around the surface of the hue x brightness
+      // cylinder. Maximize distance between (huePct, brightnessPct) vectors.
+      const numCycles = Math.round(numColors / 15);
+      for (let i = 0; i < numCycles; ++i) {
+        colors.push.apply(colors, generateColors(15, {
+          brightnessPct: brightnessRange.lerp(i / (numCycles - 1)),
+        }));
+      }
+    } else {
+      // Evenly spread numColors throughout the sinebow hue circle.
+      const brightnessPct = (options.brightnessPct === undefined) ? 0.5 :
+        options.brightnessPct;
+      for (let i = 0; i < numColors; ++i) {
+        const huePct = hueOffset + (i / numColors);
+        const [r, g, b] = tr.b.SinebowColorGenerator.sinebow(huePct);
+        const rgba = tr.b.SinebowColorGenerator.calculateColor(
+            r, g, b, 1, brightnessPct * 2);
+        colors.push(tr.b.Color.fromString(rgba));
+      }
+    }
+    return colors;
+  }
+
+  let nextGUID = 0;
+  function simpleGUID() {
+    return ++nextGUID;
+  }
+
+  function* enumerate(iter) {
+    let i = -1;
+    for (const value of iter) {
+      yield [++i, value];
+    }
+  }
+
+  const IS_MAC = navigator.platform.startsWith('Mac');
+  const CTRL_KEY_NAME = IS_MAC ? 'command' : 'Ctrl';
+
+  function hasCtrlKey(event) {
+    return IS_MAC ? event.metaKey : event.ctrlKey;
+  }
+
   return {
     BatchIterator,
+    CTRL_KEY_NAME,
     NON_BREAKING_SPACE,
     ZERO_WIDTH_SPACE,
     afterRender,
     animationFrame,
-    authorizationHeaders,
     breakWords,
     buildProperties,
     buildState,
     deepFreeze,
+    denormalize,
+    enumerate,
+    generateColors,
     getActiveElement,
+    hasCtrlKey,
     idle,
     isElementChildOf,
     measureElement,
@@ -479,6 +528,7 @@ tr.exportTo('cp', () => {
     plural,
     setImmutable,
     sha,
+    simpleGUID,
     timeout,
   };
 });

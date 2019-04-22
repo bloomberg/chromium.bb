@@ -8,9 +8,9 @@
 
 #include <vector>
 
-#include "fxjs/cfxjse_engine.h"
-#include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
+#include "fxjs/xfa/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/fxfa.h"
@@ -29,6 +29,10 @@ CJX_ExclGroup::CJX_ExclGroup(CXFA_ExclGroup* group) : CJX_Node(group) {
 }
 
 CJX_ExclGroup::~CJX_ExclGroup() {}
+
+bool CJX_ExclGroup::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
 
 CJS_Result CJX_ExclGroup::execEvent(
     CFX_V8* runtime,
@@ -103,9 +107,8 @@ CJS_Result CJX_ExclGroup::selectedMember(
     return CJS_Result::Success(runtime->NewNull());
 
   CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetJSValueFromMap(pReturnNode);
-  if (!value)
-    return CJS_Result::Success(runtime->NewNull());
+      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
+          pReturnNode);
 
   return CJS_Result::Success(
       value->DirectGetValue().Get(runtime->GetIsolate()));
@@ -143,152 +146,9 @@ void CJX_ExclGroup::transient(CFXJSE_Value* pValue,
                               bool bSetting,
                               XFA_Attribute eAttribute) {}
 
-void CJX_ExclGroup::access(CFXJSE_Value* pValue,
-                           bool bSetting,
-                           XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::accessKey(CFXJSE_Value* pValue,
+void CJX_ExclGroup::errorText(CFXJSE_Value* pValue,
                               bool bSetting,
                               XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::anchorType(CFXJSE_Value* pValue,
-                               bool bSetting,
-                               XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::borderColor(CFXJSE_Value* pValue,
-                                bool bSetting,
-                                XFA_Attribute eAttribute) {
-  Script_Som_BorderColor(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::borderWidth(CFXJSE_Value* pValue,
-                                bool bSetting,
-                                XFA_Attribute eAttribute) {
-  Script_Som_BorderWidth(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::colSpan(CFXJSE_Value* pValue,
-                            bool bSetting,
-                            XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::fillColor(CFXJSE_Value* pValue,
-                              bool bSetting,
-                              XFA_Attribute eAttribute) {
-  Script_Som_FillColor(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::h(CFXJSE_Value* pValue,
-                      bool bSetting,
-                      XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::hAlign(CFXJSE_Value* pValue,
-                           bool bSetting,
-                           XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::layout(CFXJSE_Value* pValue,
-                           bool bSetting,
-                           XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::mandatory(CFXJSE_Value* pValue,
-                              bool bSetting,
-                              XFA_Attribute eAttribute) {
-  Script_Som_Mandatory(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::mandatoryMessage(CFXJSE_Value* pValue,
-                                     bool bSetting,
-                                     XFA_Attribute eAttribute) {
-  Script_Som_MandatoryMessage(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::maxH(CFXJSE_Value* pValue,
-                         bool bSetting,
-                         XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::maxW(CFXJSE_Value* pValue,
-                         bool bSetting,
-                         XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::minH(CFXJSE_Value* pValue,
-                         bool bSetting,
-                         XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::minW(CFXJSE_Value* pValue,
-                         bool bSetting,
-                         XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::presence(CFXJSE_Value* pValue,
-                             bool bSetting,
-                             XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::relevant(CFXJSE_Value* pValue,
-                             bool bSetting,
-                             XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::use(CFXJSE_Value* pValue,
-                        bool bSetting,
-                        XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::usehref(CFXJSE_Value* pValue,
-                            bool bSetting,
-                            XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::validationMessage(CFXJSE_Value* pValue,
-                                      bool bSetting,
-                                      XFA_Attribute eAttribute) {
-  Script_Som_ValidationMessage(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::vAlign(CFXJSE_Value* pValue,
-                           bool bSetting,
-                           XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::w(CFXJSE_Value* pValue,
-                      bool bSetting,
-                      XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::x(CFXJSE_Value* pValue,
-                      bool bSetting,
-                      XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_ExclGroup::y(CFXJSE_Value* pValue,
-                      bool bSetting,
-                      XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
+  if (bSetting)
+    ThrowInvalidPropertyException();
 }

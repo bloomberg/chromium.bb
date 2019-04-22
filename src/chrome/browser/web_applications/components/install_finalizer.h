@@ -12,6 +12,10 @@
 
 struct WebApplicationInfo;
 
+namespace content {
+class WebContents;
+}
+
 namespace web_app {
 
 enum class InstallResultCode;
@@ -23,9 +27,33 @@ class InstallFinalizer {
  public:
   using InstallFinalizedCallback =
       base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
+  using CreateOsShortcutsCallback =
+      base::OnceCallback<void(bool shortcuts_created)>;
 
-  virtual void FinalizeInstall(std::unique_ptr<WebApplicationInfo> web_app_info,
+  struct FinalizeOptions {
+    bool policy_installed = false;
+    bool no_network_install = false;
+  };
+
+  // Write the WebApp data to disk and register the app.
+  virtual void FinalizeInstall(const WebApplicationInfo& web_app_info,
+                               const FinalizeOptions& options,
                                InstallFinalizedCallback callback) = 0;
+
+  virtual bool CanCreateOsShortcuts() const = 0;
+  virtual void CreateOsShortcuts(const AppId& app_id,
+                                 CreateOsShortcutsCallback callback) = 0;
+
+  virtual bool CanPinAppToShelf() const = 0;
+  virtual void PinAppToShelf(const AppId& app_id) = 0;
+
+  virtual bool CanReparentTab(const AppId& app_id,
+                              bool shortcut_created) const = 0;
+  virtual void ReparentTab(const AppId& app_id,
+                           content::WebContents* web_contents) = 0;
+
+  virtual bool CanRevealAppShim() const = 0;
+  virtual void RevealAppShim(const AppId& app_id) = 0;
 
   virtual ~InstallFinalizer() = default;
 };

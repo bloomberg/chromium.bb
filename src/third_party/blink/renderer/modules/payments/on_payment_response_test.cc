@@ -32,8 +32,6 @@ TEST(OnPaymentResponseTest, RejectMissingShippingOption) {
       BuildPaymentResponseForTest();
   response->shipping_address = payments::mojom::blink::PaymentAddress::New();
   response->shipping_address->country = "US";
-  response->shipping_address->language_code = "en";
-  response->shipping_address->script_code = "Latn";
 
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
@@ -148,8 +146,6 @@ TEST(OnPaymentResponseTest, RejectEmptyShippingOption) {
   response->shipping_option = "";
   response->shipping_address = payments::mojom::blink::PaymentAddress::New();
   response->shipping_address->country = "US";
-  response->shipping_address->language_code = "en";
-  response->shipping_address->script_code = "Latn";
 
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
@@ -267,8 +263,6 @@ TEST(OnPaymentResponseTest, RejectNotRequestedAddress) {
       BuildPaymentResponseForTest();
   response->shipping_address = payments::mojom::blink::PaymentAddress::New();
   response->shipping_address->country = "US";
-  response->shipping_address->language_code = "en";
-  response->shipping_address->script_code = "Latn";
 
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
@@ -399,16 +393,16 @@ class PaymentResponseFunction : public ScriptFunction {
   static v8::Local<v8::Function> Create(ScriptState* script_state,
                                         ScriptValue* out_value) {
     PaymentResponseFunction* self =
-        new PaymentResponseFunction(script_state, out_value);
+        MakeGarbageCollected<PaymentResponseFunction>(script_state, out_value);
     return self->BindToV8Function();
   }
 
- private:
   PaymentResponseFunction(ScriptState* script_state, ScriptValue* out_value)
       : ScriptFunction(script_state), value_(out_value) {
     DCHECK(value_);
   }
 
+ private:
   ScriptValue Call(ScriptValue value) override {
     DCHECK(!value.IsEmpty());
     *value_ = value;
@@ -435,8 +429,6 @@ TEST(OnPaymentResponseTest, CanRequestShippingInformation) {
   response->shipping_option = "standardShipping";
   response->shipping_address = payments::mojom::blink::PaymentAddress::New();
   response->shipping_address->country = "US";
-  response->shipping_address->language_code = "en";
-  response->shipping_address->script_code = "Latn";
   ScriptValue out_value;
   request->show(scope.GetScriptState())
       .Then(PaymentResponseFunction::Create(scope.GetScriptState(), &out_value),
@@ -449,8 +441,6 @@ TEST(OnPaymentResponseTest, CanRequestShippingInformation) {
   PaymentResponse* resp = V8PaymentResponse::ToImplWithTypeCheck(
       scope.GetIsolate(), out_value.V8Value());
   EXPECT_EQ("standardShipping", resp->shippingOption());
-  EXPECT_EQ("US", resp->shippingAddress()->country());
-  EXPECT_EQ("en-Latn", resp->shippingAddress()->languageCode());
 }
 
 // If the merchant requests a payer name, the resolved show() promise should

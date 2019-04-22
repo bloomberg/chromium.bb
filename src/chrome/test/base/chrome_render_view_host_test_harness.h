@@ -15,7 +15,12 @@ class TestingProfile;
 class ChromeRenderViewHostTestHarness
     : public content::RenderViewHostTestHarness {
  public:
-  explicit ChromeRenderViewHostTestHarness(int thread_bundle_options = 0);
+  // Construct a ChromeRenderViewHostTestHarness with zero or more arguments
+  // passed to content::RenderViewHostTestHarness.
+  template <typename... Args>
+  constexpr ChromeRenderViewHostTestHarness(Args... args)
+      : content::RenderViewHostTestHarness(args...) {}
+
   ~ChromeRenderViewHostTestHarness() override;
 
   TestingProfile* profile();

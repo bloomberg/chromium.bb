@@ -32,68 +32,19 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LINK_LOADER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LINK_LOADER_H_
 
-#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/html/link_rel_attribute.h"
-#include "third_party/blink/renderer/core/loader/link_loader_client.h"
+#include "third_party/blink/renderer/core/loader/link_load_parameters.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
-#include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/prerender_client.h"
 
 namespace blink {
 
 class Document;
-class LinkHeader;
-class LocalFrame;
-class NetworkHintsInterface;
+class LinkLoaderClient;
 class PrerenderHandle;
 class Resource;
-enum class ResourceType : uint8_t;
-struct ViewportDescriptionWrapper;
-
-// The parameter object for LinkLoader::LoadLink().
-struct LinkLoadParameters {
-  LinkLoadParameters(const LinkRelAttribute& rel,
-                     const CrossOriginAttributeValue& cross_origin,
-                     const String& type,
-                     const String& as,
-                     const String& media,
-                     const String& nonce,
-                     const String& integrity,
-                     const String& importance,
-                     network::mojom::ReferrerPolicy referrer_policy,
-                     const KURL& href,
-                     const String& image_srcset,
-                     const String& image_sizes)
-      : rel(rel),
-        cross_origin(cross_origin),
-        type(type),
-        as(as),
-        media(media),
-        nonce(nonce),
-        integrity(integrity),
-        importance(importance),
-        referrer_policy(referrer_policy),
-        href(href),
-        image_srcset(image_srcset),
-        image_sizes(image_sizes) {}
-  LinkLoadParameters(const LinkHeader&, const KURL& base_url);
-
-  LinkRelAttribute rel;
-  CrossOriginAttributeValue cross_origin;
-  String type;
-  String as;
-  String media;
-  String nonce;
-  String integrity;
-  String importance;
-  network::mojom::ReferrerPolicy referrer_policy;
-  KURL href;
-  String image_srcset;
-  String image_sizes;
-};
+class ResourceClient;
 
 // The LinkLoader can load link rel types icon, dns-prefetch, prefetch, and
 // prerender.
@@ -102,10 +53,7 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
   USING_GARBAGE_COLLECTED_MIXIN(LinkLoader);
 
  public:
-  static LinkLoader* Create(LinkLoaderClient* client) {
-    return MakeGarbageCollected<LinkLoader>(client,
-                                            client->GetLoadingTaskRunner());
-  }
+  static LinkLoader* Create(LinkLoaderClient*);
 
   LinkLoader(LinkLoaderClient*, scoped_refptr<base::SingleThreadTaskRunner>);
   ~LinkLoader() override;
@@ -117,35 +65,13 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
   void DidSendDOMContentLoadedForPrerender() override;
 
   void Abort();
-  bool LoadLink(const LinkLoadParameters&,
-                Document&,
-                const NetworkHintsInterface&);
+  bool LoadLink(const LinkLoadParameters&, Document&);
   void LoadStylesheet(const LinkLoadParameters&,
                       const AtomicString&,
                       const WTF::TextEncoding&,
                       FetchParameters::DeferOption,
                       Document&,
                       ResourceClient*);
-  void DispatchLinkLoadingErroredAsync();
-
-  enum CanLoadResources {
-    kOnlyLoadResources,
-    kDoNotLoadResources,
-    kLoadResourcesAndPreconnect
-  };
-  // Media links cannot be preloaded until the first chunk is parsed. The rest
-  // can be preloaded at commit time.
-  enum MediaPreloadPolicy { kLoadAll, kOnlyLoadNonMedia, kOnlyLoadMedia };
-  static void LoadLinksFromHeader(const String& header_value,
-                                  const KURL& base_url,
-                                  LocalFrame&,
-                                  Document*,  // can be nullptr
-                                  const NetworkHintsInterface&,
-                                  CanLoadResources,
-                                  MediaPreloadPolicy,
-                                  ViewportDescriptionWrapper*);
-  static base::Optional<ResourceType> GetResourceTypeFromAsAttribute(
-      const String& as);
 
   Resource* GetResourceForTesting();
 

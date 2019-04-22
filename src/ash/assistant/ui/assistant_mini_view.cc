@@ -7,12 +7,10 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/assistant/ui/logo_view/base_logo_view.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,21 +32,18 @@ constexpr int kPreferredHeightDip = 48;
 
 }  // namespace
 
-AssistantMiniView::AssistantMiniView(AssistantController* assistant_controller)
-    : views::Button(this),
-      assistant_controller_(assistant_controller),
-      label_(new views::Label()) {
+AssistantMiniView::AssistantMiniView(AssistantViewDelegate* delegate)
+    : views::Button(this), delegate_(delegate), label_(new views::Label()) {
   InitLayout();
 
-  // AssistantController indirectly owns the view hierarchy to which
-  // AssistantMiniView belongs so is guaranteed to outlive it.
-  assistant_controller_->interaction_controller()->AddModelObserver(this);
-  assistant_controller_->ui_controller()->AddModelObserver(this);
+  // The AssistantViewDelegate should outlive AssistantMiniView.
+  delegate_->AddInteractionModelObserver(this);
+  delegate_->AddUiModelObserver(this);
 }
 
 AssistantMiniView::~AssistantMiniView() {
-  assistant_controller_->ui_controller()->RemoveModelObserver(this);
-  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
+  delegate_->RemoveUiModelObserver(this);
+  delegate_->RemoveInteractionModelObserver(this);
 }
 
 const char* AssistantMiniView::GetClassName() const {
@@ -80,9 +75,9 @@ void AssistantMiniView::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   // Molecule icon.
-  BaseLogoView* molecule_icon = BaseLogoView::Create();
+  LogoView* molecule_icon = LogoView::Create();
   molecule_icon->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  molecule_icon->SetState(BaseLogoView::State::kMoleculeWavy,
+  molecule_icon->SetState(LogoView::State::kMoleculeWavy,
                           /*animate=*/false);
   AddChildView(molecule_icon);
 
@@ -102,8 +97,7 @@ void AssistantMiniView::InitLayout() {
 
 void AssistantMiniView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
-  if (delegate_)
-    delegate_->OnAssistantMiniViewPressed();
+  delegate_->OnMiniViewPressed();
 }
 
 void AssistantMiniView::OnInputModalityChanged(InputModality input_modality) {
@@ -115,9 +109,7 @@ void AssistantMiniView::OnResponseChanged(
   // When a response changes, the committed query becomes active. We'll cache
   // the text for that query to use as our prompt when not using the stylus.
   const AssistantQuery& committed_query =
-      assistant_controller_->interaction_controller()
-          ->model()
-          ->committed_query();
+      delegate_->GetInteractionModel()->committed_query();
 
   switch (committed_query.type()) {
     case AssistantQueryType::kText: {
@@ -156,9 +148,8 @@ void AssistantMiniView::OnUiVisibilityChanged(
 }
 
 void AssistantMiniView::UpdatePrompt() {
-  InputModality input_modality = assistant_controller_->interaction_controller()
-                                     ->model()
-                                     ->input_modality();
+  InputModality input_modality =
+      delegate_->GetInteractionModel()->input_modality();
 
   switch (input_modality) {
     case InputModality::kStylus:

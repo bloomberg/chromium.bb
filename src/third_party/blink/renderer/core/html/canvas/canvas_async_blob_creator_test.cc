@@ -245,13 +245,15 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
   color_space_params.push_back(std::pair<sk_sp<SkColorSpace>, SkColorType>(
       SkColorSpace::MakeSRGBLinear(), kRGBA_F16_SkColorType));
   color_space_params.push_back(std::pair<sk_sp<SkColorSpace>, SkColorType>(
-      SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                            SkColorSpace::kDCIP3_D65_Gamut),
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear, SkNamedGamut::kDCIP3),
       kRGBA_F16_SkColorType));
   color_space_params.push_back(std::pair<sk_sp<SkColorSpace>, SkColorType>(
-      SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                            SkColorSpace::kRec2020_Gamut),
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear, SkNamedGamut::kRec2020),
       kRGBA_F16_SkColorType));
+  color_space_params.push_back(std::pair<sk_sp<SkColorSpace>, SkColorType>(
+      nullptr, kRGBA_F16_SkColorType));
+  color_space_params.push_back(
+      std::pair<sk_sp<SkColorSpace>, SkColorType>(nullptr, kN32_SkColorType));
 
   std::list<String> blob_mime_types = {"image/png", "image/webp", "image/jpeg"};
   std::list<String> blob_color_spaces = {kSRGBImageColorSpaceName,
@@ -261,9 +263,11 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
       kRGBA8ImagePixelFormatName, kRGBA16ImagePixelFormatName,
   };
 
-  // The maximum difference locally observed is 2.
-  const unsigned uint8_color_tolerance = 2;
-  const float f16_color_tolerance = 0.01;
+  // Maximum differences are both observed locally with
+  // kRGBA16ImagePixelFormatName, kSRGBImageColorSpaceName and nil input color
+  // space
+  const unsigned uint8_color_tolerance = 3;
+  const float f16_color_tolerance = 0.015;
 
   for (auto color_space_param : color_space_params) {
     for (auto blob_mime_type : blob_mime_types) {

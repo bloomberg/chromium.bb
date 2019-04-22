@@ -9,6 +9,7 @@
 #include <set>
 
 #include "ash/ash_export.h"
+#include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
@@ -38,7 +39,8 @@ class ASH_EXPORT WorkspaceLayoutManager
       public keyboard::KeyboardControllerObserver,
       public display::DisplayObserver,
       public ShellObserver,
-      public wm::WindowStateObserver {
+      public wm::WindowStateObserver,
+      public ShelfObserver {
  public:
   // |window| is the container for this layout manager.
   explicit WorkspaceLayoutManager(aura::Window* window);
@@ -100,8 +102,11 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   // ShellObserver:
   void OnFullscreenStateChanged(bool is_fullscreen,
-                                aura::Window* root_window) override;
+                                aura::Window* container) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
+
+  // ShelfObserver:
+  void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
  private:
   friend class WorkspaceControllerTestApi;
@@ -154,7 +159,7 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   // Updates the always-on-top state for windows managed by this layout
   // manager.
-  void UpdateAlwaysOnTop(aura::Window* window_on_top);
+  void UpdateAlwaysOnTop(aura::Window* active_desk_fullscreen_window);
 
   // Notifies windows about a change in a system ui area. This could be
   // the keyboard or any window in the SettingsBubbleContainer. Windows will
@@ -174,7 +179,13 @@ class ASH_EXPORT WorkspaceLayoutManager
   // The work area in the coordinates of |window_|.
   gfx::Rect work_area_in_parent_;
 
-  // True if this workspace is currently in fullscreen mode.
+  // True if this workspace is currently in fullscreen mode. Tracks the
+  // fullscreen state of the container |window_| associated with this workspace
+  // rather than the root window.
+  // Note that in the case of a workspace of a PiP or always-on-top containers,
+  // |is_fullscreen_| doesn't make sense since we don't allow windows on those
+  // containers to go fullscreen. Hence, |is_fullscreen_| is always false on
+  // those workspaces.
   bool is_fullscreen_;
 
   // A window which covers the full container and which gets inserted behind the

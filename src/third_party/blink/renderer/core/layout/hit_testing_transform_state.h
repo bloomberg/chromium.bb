@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -41,6 +42,8 @@ namespace blink {
 // (like the way translate() works slightly differently than move()) so care has
 // to be taken when this is done.
 class HitTestingTransformState {
+  STACK_ALLOCATED();
+
  public:
   HitTestingTransformState(const FloatPoint& p,
                            const FloatQuad& quad,

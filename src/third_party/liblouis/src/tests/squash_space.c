@@ -1,6 +1,16 @@
+/* liblouis Braille Translation and Back-Translation Library
+
+Copyright (C) 2012 Swiss Library for the Blind, Visually Impaired and Print Disabled
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved. This file is offered as-is,
+without any warranty. */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "liblouis.h"
 #include "brl_checks.h"
 
 int main(int argc, char **argv)
@@ -95,19 +105,20 @@ int main(int argc, char **argv)
   int tests_len = sizeof(tests)/sizeof(char*);
 
   for (i = 0; i < tests_len; i += 2)
-    result |= check_translation("squash_space_with_repeated.utb", tests[i], NULL, tests[i+1]);
+    result |= check("tests/tables/squash_space_with_repeated.utb", tests[i], tests[i+1]);
 
   tests_len = sizeof(strings)/sizeof(char*);
 
   for (i = 0; i < tests_len; i++)
-    result |= check_translation("squash_space_with_correct.utb", strings[i], NULL, expected);
+    result |= check("tests/tables/squash_space_with_correct.utb", strings[i], expected);
 
   for (i = 0; i < tests_len; i++)
-    result |= check_translation("squash_space_with_context_1.utb", strings[i], NULL, expected);
+    result |= check("tests/tables/squash_space_with_context_1.utb", strings[i], expected);
 
   for (i = 0; i < tests_len; i++)
-    result |= check_translation("squash_space_with_context_2.utb", strings[i], NULL, expected);
+    result |= check("tests/tables/squash_space_with_context_2.utb", strings[i], expected);
 
+  lou_free();
 
   return result;
 }

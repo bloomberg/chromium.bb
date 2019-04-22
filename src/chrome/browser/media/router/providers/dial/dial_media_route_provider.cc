@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -61,6 +63,7 @@ void DialMediaRouteProvider::Init(mojom::MediaRouteProviderRequest request,
 
   binding_.Bind(std::move(request));
   media_router_.Bind(std::move(media_router));
+  media_sink_service_->AddObserver(this);
 
   // |activity_manager_| might have already been set in tests.
   if (!activity_manager_)
@@ -79,6 +82,7 @@ void DialMediaRouteProvider::Init(mojom::MediaRouteProviderRequest request,
 DialMediaRouteProvider::~DialMediaRouteProvider() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(media_sink_queries_.empty());
+  media_sink_service_->RemoveObserver(this);
 }
 
 void DialMediaRouteProvider::CreateRoute(const std::string& media_source,
@@ -395,6 +399,13 @@ void DialMediaRouteProvider::SendRouteBinaryMessage(
 void DialMediaRouteProvider::StartObservingMediaSinks(
     const std::string& media_source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (media_source.empty()) {
+    std::vector<MediaSinkInternal> sinks;
+    for (const auto& sink_it : media_sink_service_->GetSinks())
+      sinks.push_back(sink_it.second);
+    OnSinksDiscovered(sinks);
+    return;
+  }
 
   MediaSource dial_source(media_source);
   if (!IsDialMediaSource(dial_source))
@@ -427,7 +438,7 @@ void DialMediaRouteProvider::StopObservingMediaSinks(
 
   MediaSource dial_source(media_source);
   std::string app_name = AppNameFromDialMediaSource(dial_source);
-  if (app_name.empty())
+  if (!dial_source.id().empty() && app_name.empty())
     return;
 
   const auto& sink_query_it = media_sink_queries_.find(app_name);
@@ -504,6 +515,13 @@ void DialMediaRouteProvider::SetActivityManagerForTest(
     std::unique_ptr<DialActivityManager> activity_manager) {
   DCHECK(!activity_manager_);
   activity_manager_ = std::move(activity_manager);
+}
+
+void DialMediaRouteProvider::OnSinksDiscovered(
+    const std::vector<MediaSinkInternal>& sinks) {
+  // Send a list of all available sinks to Media Router as sinks not associated
+  // with any particular source.
+  NotifyOnSinksReceived(MediaSource::Id(), sinks, {});
 }
 
 void DialMediaRouteProvider::OnAvailableSinksUpdated(

@@ -10,8 +10,8 @@
  */
 function renderTemplate(moduleListData) {
   // This is the javascript code that processes the template:
-  var input = new JsEvalContext(moduleListData);
-  var output = $('flashInfoTemplate');
+  const input = new JsEvalContext(moduleListData);
+  const output = $('flashInfoTemplate');
   jstProcess(input, output);
 }
 

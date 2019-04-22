@@ -5,7 +5,6 @@
 #ifndef CC_ANIMATION_KEYFRAME_EFFECT_H_
 #define CC_ANIMATION_KEYFRAME_EFFECT_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_events.h"
@@ -41,7 +40,10 @@ typedef size_t KeyframeEffectId;
 class CC_ANIMATION_EXPORT KeyframeEffect {
  public:
   explicit KeyframeEffect(KeyframeEffectId id);
+  KeyframeEffect(const KeyframeEffect&) = delete;
   virtual ~KeyframeEffect();
+
+  KeyframeEffect& operator=(const KeyframeEffect&) = delete;
 
   static std::unique_ptr<KeyframeEffect> Create(KeyframeEffectId id);
   std::unique_ptr<KeyframeEffect> CreateImplInstance() const;
@@ -88,7 +90,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   bool is_ticking() const { return is_ticking_; }
 
   void UpdateState(bool start_ready_keyframe_models, AnimationEvents* events);
-  void UpdateTickingState(UpdateTickingType type);
+  void UpdateTickingState();
 
   void Pause(base::TimeDelta pause_offset);
 
@@ -202,8 +204,6 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   base::TimeTicks last_tick_time_;
 
   bool needs_push_properties_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeyframeEffect);
 };
 
 }  // namespace cc

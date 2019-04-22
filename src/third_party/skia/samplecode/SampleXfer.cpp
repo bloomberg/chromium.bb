@@ -5,18 +5,17 @@
  * found in the LICENSE file.
  */
 
+#include "AnimTimer.h"
 #include "Sample.h"
-#include "SkAnimTimer.h"
-#include "SkDrawable.h"
 #include "SkCanvas.h"
 #include "SkDrawable.h"
+#include "SkGradientShader.h"
 #include "SkPath.h"
-#include "SkRandom.h"
 #include "SkRSXform.h"
+#include "SkRandom.h"
 #include "SkString.h"
 #include "SkSurface.h"
 #include "SkTextUtils.h"
-#include "SkGradientShader.h"
 
 const SkBlendMode gModes[] = {
     SkBlendMode::kSrcOver,
@@ -52,10 +51,11 @@ public:
         canvas->drawRoundRect(fRect, 8, 8, paint);
 
         paint.setColor(0xFFFFFFFF);
-        paint.setTextSize(16);
-        paint.setLCDRenderText(true);
-        SkTextUtils::DrawString(canvas, fLabel, fRect.centerX(), fRect.fTop + 0.68f * fRect.height(),
-                                paint, SkTextUtils::kCenter_Align);
+        SkFont font;
+        font.setSize(16);
+        font.setEdging(SkFont::Edging::kSubpixelAntiAlias);
+        SkTextUtils::DrawString(canvas, fLabel.c_str(), fRect.centerX(), fRect.fTop + 0.68f * fRect.height(),
+                                font, paint, SkTextUtils::kCenter_Align);
     }
 
     bool hitTest(SkScalar x, SkScalar y) {
@@ -85,7 +85,7 @@ public:
         const SkColor colors[] = { 0, c };
         fPaint.setShader(SkGradientShader::MakeRadial(SkPoint::Make(size/2, size/2), size/2,
                                                                      colors, nullptr, 2,
-                                                                     SkShader::kClamp_TileMode));
+                                                                     SkTileMode::kClamp));
         fBounds = SkRect::MakeWH(size, size);
     }
 

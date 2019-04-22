@@ -37,6 +37,8 @@ struct ContextMenuParams;
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 // Adds an item at the end of the menu if |visible| is false.
 - (void)addItemWithTitle:(NSString*)title action:(ProceduralBlock)action;

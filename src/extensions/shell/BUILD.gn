@@ -70,7 +70,7 @@ source_set("app_shell_lib") {
     "//google_apis",
     "//third_party/blink/public:blink",
     "//ui/base",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
   ]
 
   # TODO(michaelpg): remove Mac support and always use aura.
@@ -227,7 +227,14 @@ source_set("app_shell_lib") {
       "browser/shell_screen.h",
     ]
     deps += [
-      "//chromeos",
+      "//chromeos/audio",
+      "//chromeos/constants",
+      "//chromeos/dbus",
+      "//chromeos/dbus/audio",
+      "//chromeos/dbus/power",
+      "//chromeos/disks",
+      "//chromeos/login/login_state",
+      "//chromeos/network",
       "//ui/chromeos",
       "//ui/display/manager",
     ]
@@ -283,12 +290,12 @@ test("app_shell_unittests") {
   sources = [
     "../test/extensions_unittests_main.cc",
     "browser/api/identity/identity_api_unittest.cc",
+    "browser/shell_content_browser_client_unittest.cc",
     "browser/shell_extension_loader_unittest.cc",
     "browser/shell_keep_alive_requester_unittest.cc",
     "browser/shell_oauth2_token_service_unittest.cc",
     "browser/shell_prefs_unittest.cc",
     "browser/system_logs/shell_system_logs_fetcher_unittest.cc",
-    "common/shell_content_client_unittest.cc",
     "test/shell_test_extensions_browser_client.cc",
     "test/shell_test_extensions_browser_client.h",
   ]
@@ -341,6 +348,7 @@ test("app_shell_unittests") {
     deps += [
       "//ui/aura:test_support",
       "//ui/base:test_support",
+      "//ui/base/ime/init",
       "//ui/compositor:test_support",
     ]
   }
@@ -351,8 +359,11 @@ test("app_shell_unittests") {
       "browser/shell_screen_unittest.cc",
     ]
     deps += [
-      "//chromeos",
-      "//chromeos:test_support_without_gmock",
+      "//chromeos/audio",
+      "//chromeos/constants",
+      "//chromeos/dbus:test_support",
+      "//chromeos/dbus/audio",
+      "//chromeos/dbus/power",
     ]
   }
 
@@ -400,6 +411,7 @@ source_set("browser_tests") {
     "//extensions/browser",
     "//extensions/browser:test_support",
     "//extensions/common",
+    "//ui/base",
   ]
 
   if (use_aura) {
@@ -421,7 +433,7 @@ source_set("unit_tests") {
 
   if (is_chromeos) {
     deps += [
-      "//chromeos:test_support",
+      "//chromeos/constants",
       "//components/keyed_service/content",
     ]
   }

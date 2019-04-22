@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 
 using content::WebContents;
@@ -33,10 +34,8 @@ class TestWebContentsDelegate : public content::WebContentsDelegate {};
 class PrintPreviewDialogDestroyedObserver : public WebContentsObserver {
  public:
   explicit PrintPreviewDialogDestroyedObserver(WebContents* dialog)
-      : WebContentsObserver(dialog),
-        dialog_destroyed_(false) {
-  }
-  ~PrintPreviewDialogDestroyedObserver() override {}
+      : WebContentsObserver(dialog) {}
+  ~PrintPreviewDialogDestroyedObserver() override = default;
 
   bool dialog_destroyed() const { return dialog_destroyed_; }
 
@@ -44,7 +43,7 @@ class PrintPreviewDialogDestroyedObserver : public WebContentsObserver {
   // content::WebContentsObserver implementation.
   void WebContentsDestroyed() override { dialog_destroyed_ = true; }
 
-  bool dialog_destroyed_;
+  bool dialog_destroyed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogDestroyedObserver);
 };
@@ -224,13 +223,10 @@ TEST_F(PrintPreviewDialogControllerUnitTest, CloseDialogOnNavigation) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  content::NavigationController& nav_controller = web_contents->GetController();
 
   // Navigate to first page
-  nav_controller.LoadURL(tiger, content::Referrer(),
-                         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK),
-                         std::string());
-  CommitPendingLoad(&nav_controller);
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents,
+                                                             tiger);
   EXPECT_EQ(tiger, web_contents->GetLastCommittedURL());
 
   // Get the preview dialog
@@ -249,10 +245,8 @@ TEST_F(PrintPreviewDialogControllerUnitTest, CloseDialogOnNavigation) {
   PrintPreviewDialogDestroyedObserver tiger_destroyed(tiger_preview_dialog);
 
   // Navigate via link to a similar page.
-  nav_controller.LoadURL(tiger_barb, content::Referrer(),
-                         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK),
-                         std::string());
-  CommitPendingLoad(&nav_controller);
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents,
+                                                             tiger_barb);
 
   // Check navigation was successful
   EXPECT_EQ(tiger_barb, web_contents->GetLastCommittedURL());
@@ -276,8 +270,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, CloseDialogOnNavigation) {
   EXPECT_FALSE(manager->PrintPreviewNow(web_contents->GetMainFrame(), false));
 
   // Navigate with back button or ALT+LEFT ARROW to a similar page.
-  nav_controller.GoBack();
-  CommitPendingLoad(&nav_controller);
+  content::NavigationSimulator::GoBack(web_contents);
   EXPECT_EQ(tiger, web_contents->GetLastCommittedURL());
   EXPECT_TRUE(manager->PrintPreviewNow(web_contents->GetMainFrame(), false));
 
@@ -296,6 +289,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, CloseDialogOnNavigation) {
   // Try to simulate Gmail navigation: Navigate to an existing page (via
   // Forward) but modify the navigation type while pending to look like an
   // address bar + typed transition (like Gmail auto navigation)
+  content::NavigationController& nav_controller = web_contents->GetController();
   nav_controller.GoForward();
   nav_controller.GetPendingEntry()->SetTransitionType(ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
@@ -375,4 +369,5 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MultiplePreviewDialogsClose) {
           web_contents_2->GetMainFrame()->GetProcess());
   rph->SimulateCrash();
 }
+
 }  // namespace printing

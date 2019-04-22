@@ -361,7 +361,7 @@ TEST_P(BindingsSampleTest, DefaultValues) {
   EXPECT_EQ(-0x123456789, defaults->a25);
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(BindingsSampleTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(BindingsSampleTest);
 
 }  // namespace
 }  // namespace sample

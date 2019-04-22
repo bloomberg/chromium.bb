@@ -100,10 +100,10 @@ IN_PROC_BROWSER_TEST_F(
 #if defined(OS_MACOSX)
 // Triggers a DCHECK in MacViews: http://crbug.com/823478
 #define MAYBE_KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11 \
-    DISABLED_KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11
+  DISABLED_KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11
 #else
 #define MAYBE_KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11 \
-    KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11
+  KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForF11
 #endif
 IN_PROC_BROWSER_TEST_F(
     BrowserCommandControllerInteractiveTest,
@@ -135,10 +135,10 @@ IN_PROC_BROWSER_TEST_F(
 // TODO(zijiehe): Figure out why this test crashes on Mac OSX. The suspicious
 // command is "SendFullscreenShortcutAndWait()". See, http://crbug.com/738949.
 #define MAYBE_ShortcutsShouldTakeEffectInBrowserFullscreen \
-        DISABLED_ShortcutsShouldTakeEffectInBrowserFullscreen
+  DISABLED_ShortcutsShouldTakeEffectInBrowserFullscreen
 #else
 #define MAYBE_ShortcutsShouldTakeEffectInBrowserFullscreen \
-        ShortcutsShouldTakeEffectInBrowserFullscreen
+  ShortcutsShouldTakeEffectInBrowserFullscreen
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
                        MAYBE_ShortcutsShouldTakeEffectInBrowserFullscreen) {
@@ -165,10 +165,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
 #if defined(OS_CHROMEOS)
 // This test is flaky on ChromeOS, see http://crbug.com/754878.
 #define MAYBE_ShortcutsShouldTakeEffectInJsFullscreen \
-        DISABLED_ShortcutsShouldTakeEffectInJsFullscreen
+  DISABLED_ShortcutsShouldTakeEffectInJsFullscreen
 #else
 #define MAYBE_ShortcutsShouldTakeEffectInJsFullscreen \
-        ShortcutsShouldTakeEffectInJsFullscreen
+  ShortcutsShouldTakeEffectInJsFullscreen
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
                        MAYBE_ShortcutsShouldTakeEffectInJsFullscreen) {

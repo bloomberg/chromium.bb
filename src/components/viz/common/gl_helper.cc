@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/queue.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -23,8 +24,6 @@
 #include "components/viz/common/gl_helper_scaling.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
-#include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/geometry/point.h"
@@ -146,11 +145,6 @@ class GLHelper::CopyTextureToImpl
         flush_(gl) {}
   ~CopyTextureToImpl() { CancelRequests(); }
 
-  GLuint ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
-                                 const gpu::SyncToken& sync_token) {
-    return helper_->ConsumeMailboxToTexture(mailbox, sync_token);
-  }
-
   void ReadbackTextureAsync(GLuint texture,
                             const gfx::Size& dst_size,
                             unsigned char* out,
@@ -256,8 +250,7 @@ class GLHelper::CopyTextureToImpl
 
     bool IsFlippingOutput() const override;
 
-    void ReadbackYUV(const gpu::Mailbox& mailbox,
-                     const gpu::SyncToken& sync_token,
+    void ReadbackYUV(GLuint texture,
                      const gfx::Size& src_texture_size,
                      const gfx::Rect& output_rect,
                      int y_plane_row_stride_bytes,
@@ -537,27 +530,6 @@ GLint GLHelper::MaxDrawBuffers() {
   return max_draw_buffers_;
 }
 
-gpu::MailboxHolder GLHelper::ProduceMailboxHolderFromTexture(
-    GLuint texture_id) {
-  gpu::Mailbox mailbox;
-  gl_->ProduceTextureDirectCHROMIUM(texture_id, mailbox.name);
-
-  gpu::SyncToken sync_token;
-  gl_->GenSyncTokenCHROMIUM(sync_token.GetData());
-
-  return gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D);
-}
-
-GLuint GLHelper::ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
-                                         const gpu::SyncToken& sync_token) {
-  if (mailbox.IsZero())
-    return 0;
-  if (sync_token.HasData())
-    gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-  GLuint texture = gl_->CreateAndConsumeTextureCHROMIUM(mailbox.name);
-  return texture;
-}
-
 void GLHelper::CopyTextureToImpl::ReadbackPlane(
     const gfx::Size& texture_size,
     int row_stride_bytes,
@@ -755,8 +727,7 @@ bool GLHelper::CopyTextureToImpl::ReadbackYUVImpl::IsFlippingOutput() const {
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
-    const gpu::Mailbox& mailbox,
-    const gpu::SyncToken& sync_token,
+    GLuint texture,
     const gfx::Size& src_texture_size,
     const gfx::Rect& output_rect,
     int y_plane_row_stride_bytes,
@@ -770,12 +741,8 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
   DCHECK(!(paste_location.x() & 1));
   DCHECK(!(paste_location.y() & 1));
 
-  GLuint mailbox_texture =
-      copy_impl_->ConsumeMailboxToTexture(mailbox, sync_token);
-  I420ConverterImpl::Convert(mailbox_texture, src_texture_size,
-                             gfx::Vector2dF(), scaler_.get(), output_rect, y_,
-                             u_, v_);
-  gl_->DeleteTextures(1, &mailbox_texture);
+  I420ConverterImpl::Convert(texture, src_texture_size, gfx::Vector2dF(),
+                             scaler_.get(), output_rect, y_, u_, v_);
 
   // Read back planes, one at a time. Keep the video frame alive while doing the
   // readback.

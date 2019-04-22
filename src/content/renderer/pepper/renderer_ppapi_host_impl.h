@@ -74,16 +74,16 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
 
   // RendererPpapiHost implementation.
   ppapi::host::PpapiHost* GetPpapiHost() override;
-  bool IsValidInstance(PP_Instance instance) const override;
-  PepperPluginInstance* GetPluginInstance(PP_Instance instance) const override;
-  RenderFrame* GetRenderFrameForInstance(PP_Instance instance) const override;
-  RenderView* GetRenderViewForInstance(PP_Instance instance) const override;
+  bool IsValidInstance(PP_Instance instance) override;
+  PepperPluginInstance* GetPluginInstance(PP_Instance instance) override;
+  RenderFrame* GetRenderFrameForInstance(PP_Instance instance) override;
+  RenderView* GetRenderViewForInstance(PP_Instance instance) override;
   blink::WebPluginContainer* GetContainerForInstance(
-      PP_Instance instance) const override;
-  bool HasUserGesture(PP_Instance instance) const override;
-  int GetRoutingIDForWidget(PP_Instance instance) const override;
+      PP_Instance instance) override;
+  bool HasUserGesture(PP_Instance instance) override;
+  int GetRoutingIDForWidget(PP_Instance instance) override;
   gfx::Point PluginPointToRenderFrame(PP_Instance instance,
-                                      const gfx::Point& pt) const override;
+                                      const gfx::Point& pt) override;
   IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) override;
@@ -93,15 +93,14 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
       const base::UnsafeSharedMemoryRegion& region) override;
   base::ReadOnlySharedMemoryRegion ShareReadOnlySharedMemoryRegionWithRemote(
       const base::ReadOnlySharedMemoryRegion& region) override;
-  bool IsRunningInProcess() const override;
-  std::string GetPluginName() const override;
+  bool IsRunningInProcess() override;
+  std::string GetPluginName() override;
   void SetToExternalPluginHost() override;
   void CreateBrowserResourceHosts(
       PP_Instance instance,
       const std::vector<IPC::Message>& nested_msgs,
-      const base::Callback<void(const std::vector<int>&)>& callback)
-      const override;
-  GURL GetDocumentURL(PP_Instance pp_instance) const override;
+      base::OnceCallback<void(const std::vector<int>&)> callback) override;
+  GURL GetDocumentURL(PP_Instance pp_instance) override;
 
   // Returns whether the plugin is running in a secure context.
   bool IsSecureContext(PP_Instance pp_instance) const;

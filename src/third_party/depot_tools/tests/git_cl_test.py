@@ -655,6 +655,9 @@ class TestGitCl(TestCase):
     self.mock(git_cl.gerrit_util, 'GetChangeComments',
               lambda *args, **kwargs: self._mocked_call(
                   'GetChangeComments', *args, **kwargs))
+    self.mock(git_cl.gerrit_util, 'GetChangeRobotComments',
+              lambda *args, **kwargs: self._mocked_call(
+                  'GetChangeRobotComments', *args, **kwargs))
     self.mock(git_cl.gerrit_util, 'AddReviewers',
               lambda h, i, reviewers, ccs, notify: self._mocked_call(
                   'AddReviewers', h, i, reviewers, ccs, notify))
@@ -742,14 +745,12 @@ class TestGitCl(TestCase):
     codereview_file = StringIO.StringIO('GERRIT_HOST: true')
     self.calls = [
       ((['git', 'config', '--unset-all', 'rietveld.cc'],), CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.private'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.tree-status-url'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.viewvc-url'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.bug-prefix'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.cpplint-regex'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.cpplint-ignore-regex'],),
         CERR1),
-      ((['git', 'config', '--unset-all', 'rietveld.project'],), CERR1),
       ((['git', 'config', '--unset-all', 'rietveld.run-post-upload-hook'],),
         CERR1),
       ((['git', 'config', 'gerrit.host', 'true'],), ''),
@@ -963,6 +964,7 @@ class TestGitCl(TestCase):
       if not issue:
         # Prompting to edit description on first upload.
         calls += [
+          ((['git', 'config', 'rietveld.bug-prefix'],), ''),
           ((['git', 'config', 'core.editor'],), ''),
           ((['RunEditor'],), description),
         ]
@@ -1061,10 +1063,17 @@ class TestGitCl(TestCase):
         if c in cc:
           cc.remove(c)
 
-    if not tbr:
-      for k, v in sorted((labels or {}).items()):
-        ref_suffix += ',l=%s+%d' % (k, v)
-        metrics_arguments.append('l=%s+%d' % (k, v))
+    for k, v in sorted((labels or {}).items()):
+      ref_suffix += ',l=%s+%d' % (k, v)
+      metrics_arguments.append('l=%s+%d' % (k, v))
+
+    if tbr:
+      calls += [
+        (('GetCodeReviewTbrScore',
+          '%s-review.googlesource.com' % short_hostname,
+          'my/repo'),
+         2,),
+      ]
 
     calls += [
       (('time.time',), 1000,),
@@ -1116,29 +1125,6 @@ class TestGitCl(TestCase):
             cc + ['chromium-reviews+test-more-cc@chromium.org'],
             notify),
            ''),
-      ]
-    if tbr:
-      calls += [
-        (('GetChangeDetail', 'chromium-review.googlesource.com',
-          'my%2Frepo~123456', ['LABELS']), {
-             'labels': {
-                 'Code-Review': {
-                     'default_value': 0,
-                     'all': [],
-                     'values': {
-                         '+2': 'lgtm, approved',
-                         '+1': 'lgtm, but someone else must approve',
-                         ' 0': 'No score',
-                         '-1': 'Don\'t submit as-is',
-                     }
-                 }
-              }
-          }),
-        (('SetReview',
-          'chromium-review.googlesource.com',
-          'my%2Frepo~123456',
-          'Self-approving for TBR',
-          {'Code-Review': 2}, None), ''),
       ]
     calls += cls._git_post_upload_calls()
     return calls
@@ -1263,6 +1249,8 @@ class TestGitCl(TestCase):
         notify=True)
 
   def test_gerrit_reviewer_multiple(self):
+    self.mock(git_cl.gerrit_util, 'GetCodeReviewTbrScore',
+              lambda *a: self._mocked_call('GetCodeReviewTbrScore', *a))
     self._run_gerrit_upload_test(
         [],
         'desc\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n'
@@ -1271,7 +1259,8 @@ class TestGitCl(TestCase):
         ['reviewer@example.com', 'another@example.com'],
         expected_upstream_ref='origin/master',
         cc=['more@example.com', 'people@example.com'],
-        tbr='reviewer@example.com')
+        tbr='reviewer@example.com',
+        labels={'Code-Review': 2})
 
   def test_gerrit_upload_squash_first_is_default(self):
     self._run_gerrit_upload_test(
@@ -1528,8 +1517,7 @@ class TestGitCl(TestCase):
           expected,
           'GetHashTags(%r) == %r, expected %r' % (desc, actual, expected))
 
-  def test_get_target_ref(self):
-    # Check remote or remote branch not present.
+
     self.assertEqual(None, git_cl.GetTargetRef('origin', None, 'master'))
     self.assertEqual(None, git_cl.GetTargetRef(None,
                                                'refs/remotes/origin/master',
@@ -1630,8 +1618,6 @@ class TestGitCl(TestCase):
       self.calls += [
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
-        ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-        ((['git', 'config', 'gerrit.host'],), 'true'),
       ]
     if detect_gerrit_server:
       self.calls += self._get_gerrit_codereview_server_calls(
@@ -1782,8 +1768,6 @@ class TestGitCl(TestCase):
     self.calls = [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
-      ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-      ((['git', 'config', 'gerrit.host'],), 'true'),
       ((['git', 'config', 'branch.master.gerritserver'],), CERR1),
       ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
       ((['git', 'config', 'branch.master.remote'],), 'origin'),
@@ -2060,8 +2044,6 @@ class TestGitCl(TestCase):
           'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
          ((['git', 'config', 'branch.master.gerritissue'],), '456'),
          ((['git', 'config', 'branch.foo.gerritissue'],), CERR1),
-         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-         ((['git', 'config', 'gerrit.host'],), 'true'),
          ((['git', 'config', 'branch.bar.gerritissue'],), '789'),
          ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
          ((['git', 'tag', 'git-cl-archived-456-foo', 'foo'],), ''),
@@ -2097,8 +2079,6 @@ class TestGitCl(TestCase):
           'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
          ((['git', 'config', 'branch.master.gerritissue'],), '456'),
          ((['git', 'config', 'branch.foo.gerritissue'],), CERR1),
-         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-         ((['git', 'config', 'gerrit.host'],), 'true'),
          ((['git', 'config', 'branch.bar.gerritissue'],), '789'),
          ((['git', 'symbolic-ref', 'HEAD'],), 'master'),]
 
@@ -2119,8 +2099,6 @@ class TestGitCl(TestCase):
          ((['git', 'config', 'branch.master.gerritissue'],), '1'),
          ((['git', 'config', 'branch.foo.gerritissue'],), '456'),
          ((['git', 'config', 'branch.bar.gerritissue'],), CERR1),
-         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-         ((['git', 'config', 'gerrit.host'],), 'true'),
          ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
          ((['git', 'branch', '-D', 'foo'],), '')]
 
@@ -2791,8 +2769,8 @@ class TestGitCl(TestCase):
   def test_git_cl_comments_fetch_gerrit(self):
     self.mock(sys, 'stdout', StringIO.StringIO())
     self.calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), CERR1),
-      ((['git', 'symbolic-ref', 'HEAD'],), CERR1),
+      ((['git', 'config', 'branch.foo.gerritserver'],), ''),
+      ((['git', 'config', 'branch.foo.merge'],), ''),
       ((['git', 'config', 'rietveld.upstream-branch'],), CERR1),
       ((['git', 'branch', '-r'],), 'origin/HEAD -> origin/master\n'
                                    'origin/master'),
@@ -2800,8 +2778,18 @@ class TestGitCl(TestCase):
        'https://chromium.googlesource.com/infra/infra'),
       (('GetChangeDetail', 'chromium-review.googlesource.com',
         'infra%2Finfra~1',
-        ['MESSAGES', 'DETAILED_ACCOUNTS']), {
+        ['MESSAGES', 'DETAILED_ACCOUNTS', 'CURRENT_REVISION',
+         'CURRENT_COMMIT']), {
         'owner': {'email': 'owner@example.com'},
+        'current_revision': 'ba5eba11',
+        'revisions': {
+          'deadbeaf':  {
+            '_number': 1,
+          },
+          'ba5eba11':  {
+            '_number': 2,
+          },
+        },
         'messages': [
           {
              u'_revision_number': 1,
@@ -2860,7 +2848,10 @@ class TestGitCl(TestCase):
             'message': 'I removed this because it is bad',
           },
         ]
-      })
+      }),
+      (('GetChangeRobotComments', 'chromium-review.googlesource.com',
+        'infra%2Finfra~1'), {}),
+      ((['git', 'config', 'branch.foo.gerritpatchset', '2'],), ''),
     ] * 2 + [
       (('write_json', 'output.json', [
         {
@@ -2872,6 +2863,7 @@ class TestGitCl(TestCase):
               u'  Base, Line 42: https://chromium-review.googlesource.com/' +
               u'c/1/2/codereview.settings#b42\n' +
               u'  I removed this because it is bad\n'),
+          u'autogenerated': False,
           u'approval': False,
           u'disapproval': False,
           u'sender': u'owner@example.com'
@@ -2884,6 +2876,7 @@ class TestGitCl(TestCase):
               u'  PS2, File comment: https://chromium-review.googlesource' +
               u'.com/c/1/2//COMMIT_MSG#\n' +
               u'  Please include a bug link\n'),
+          u'autogenerated': False,
           u'approval': False,
           u'disapproval': False,
           u'sender': u'reviewer@example.com'
@@ -2900,6 +2893,7 @@ class TestGitCl(TestCase):
             u'c/1/2/codereview.settings#b42\n' +
             u'  I removed this because it is bad\n'),
         date=datetime.datetime(2017, 3, 16, 20, 0, 41, 0),
+        autogenerated=False,
         disapproval=False, approval=False, sender=u'owner@example.com'),
       git_cl._CommentSummary(
         message=(
@@ -2910,12 +2904,127 @@ class TestGitCl(TestCase):
             u'c/1/2//COMMIT_MSG#\n' +
             u'  Please include a bug link\n'),
         date=datetime.datetime(2017, 3, 17, 5, 19, 37, 500000),
+        autogenerated=False,
         disapproval=False, approval=False, sender=u'reviewer@example.com'),
     ]
-    cl = git_cl.Changelist(codereview='gerrit', issue=1)
+    cl = git_cl.Changelist(
+        codereview='gerrit', issue=1, branchref='refs/heads/foo')
     self.assertEqual(cl.GetCommentsSummary(), expected_comments_summary)
-    self.assertEqual(0, git_cl.main(['comment', '-i', '1',
-                                      '-j', 'output.json']))
+    self.mock(git_cl.Changelist, 'GetBranch', lambda _: 'foo')
+    self.assertEqual(
+        0, git_cl.main(['comments', '-i', '1', '-j', 'output.json']))
+
+  def test_git_cl_comments_robot_comments(self):
+    # git cl comments also fetches robot comments (which are considered a type
+    # of autogenerated comment), and unlike other types of comments, only robot
+    # comments from the latest patchset are shown.
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    self.calls = [
+      ((['git', 'config', 'branch.foo.gerritserver'],), ''),
+      ((['git', 'config', 'branch.foo.merge'],), ''),
+      ((['git', 'config', 'rietveld.upstream-branch'],), CERR1),
+      ((['git', 'branch', '-r'],), 'origin/HEAD -> origin/master\n'
+                                   'origin/master'),
+      ((['git', 'config', 'remote.origin.url'],),
+       'https://chromium.googlesource.com/infra/infra'),
+      (('GetChangeDetail', 'chromium-review.googlesource.com',
+        'infra%2Finfra~1',
+        ['MESSAGES', 'DETAILED_ACCOUNTS', 'CURRENT_REVISION',
+         'CURRENT_COMMIT']), {
+        'owner': {'email': 'owner@example.com'},
+        'current_revision': 'ba5eba11',
+        'revisions': {
+          'deadbeaf':  {
+            '_number': 1,
+          },
+          'ba5eba11':  {
+            '_number': 2,
+          },
+        },
+        'messages': [
+          {
+             u'_revision_number': 1,
+             u'author': {
+               u'_account_id': 1111084,
+               u'email': u'commit-bot@chromium.org',
+               u'name': u'Commit Bot'
+             },
+             u'date': u'2017-03-15 20:08:45.000000000',
+             u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046dc50b',
+             u'message': u'Patch Set 1:\n\nDry run: CQ is trying the patch...',
+             u'tag': u'autogenerated:cq:dry-run'
+          },
+          {
+             u'_revision_number': 1,
+             u'author': {
+               u'_account_id': 123,
+               u'email': u'tricium@serviceaccount.com',
+               u'name': u'Tricium'
+             },
+             u'date': u'2017-03-16 20:00:41.000000000',
+             u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046d1234',
+             u'message': u'(1 comment)',
+             u'tag': u'autogenerated:tricium',
+          },
+          {
+             u'_revision_number': 1,
+             u'author': {
+               u'_account_id': 123,
+               u'email': u'tricium@serviceaccount.com',
+               u'name': u'Tricium'
+             },
+             u'date': u'2017-03-16 20:00:41.000000000',
+             u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046d1234',
+             u'message': u'(1 comment)',
+             u'tag': u'autogenerated:tricium',
+          },
+          {
+             u'_revision_number': 2,
+             u'author': {
+               u'_account_id': 123 ,
+               u'email': u'tricium@serviceaccount.com',
+               u'name': u'reviewer'
+             },
+             u'date': u'2017-03-17 05:30:37.000000000',
+             u'tag': u'autogenerated:tricium',
+             u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046d4568',
+             u'message': u'(1 comment)',
+          },
+        ]
+      }),
+      (('GetChangeComments', 'chromium-review.googlesource.com',
+        'infra%2Finfra~1'), {}),
+      (('GetChangeRobotComments', 'chromium-review.googlesource.com',
+        'infra%2Finfra~1'), {
+        'codereview.settings': [
+          {
+            u'author': {u'email': u'tricium@serviceaccount.com'},
+            u'updated': u'2017-03-17 05:30:37.000000000',
+            u'robot_run_id': u'5565031076855808',
+            u'robot_id': u'Linter/Category',
+            u'tag': u'autogenerated:tricium',
+            u'patch_set': 2,
+            u'side': u'REVISION',
+            u'message': u'Linter warning message text',
+            u'line': 32,
+          },
+        ],
+      }),
+      ((['git', 'config', 'branch.foo.gerritpatchset', '2'],), ''),
+    ]
+    expected_comments_summary = [
+       git_cl._CommentSummary(date=datetime.datetime(2017, 3, 17, 5, 30, 37),
+         message=(
+           u'(1 comment)\n\ncodereview.settings\n'
+           u'  PS2, Line 32: https://chromium-review.googlesource.com/'
+           u'c/1/2/codereview.settings#32\n'
+           u'  Linter warning message text\n'),
+         sender=u'tricium@serviceaccount.com',
+         autogenerated=True, approval=False, disapproval=False)
+    ]
+    cl = git_cl.Changelist(
+        codereview='gerrit', issue=1, branchref='refs/heads/foo')
+    self.assertEqual(cl.GetCommentsSummary(), expected_comments_summary)
 
   def test_get_remote_url_with_mirror(self):
     original_os_path_isdir = os.path.isdir
@@ -2941,6 +3050,64 @@ class TestGitCl(TestCase):
     cl = git_cl.Changelist(codereview='gerrit', issue=1)
     self.assertEqual(cl.GetRemoteUrl(), url)
     self.assertEqual(cl.GetRemoteUrl(), url)  # Must be cached.
+
+  def test_get_remote_url_non_existing_mirror(self):
+    original_os_path_isdir = os.path.isdir
+    def selective_os_path_isdir_mock(path):
+      if path == '/cache/this-dir-doesnt-exist':
+        return self._mocked_call('os.path.isdir', path)
+      return original_os_path_isdir(path)
+    self.mock(os.path, 'isdir', selective_os_path_isdir_mock)
+    self.mock(logging, 'error',
+              lambda fmt, *a: self._mocked_call('logging.error', fmt % a))
+
+    self.calls = [
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.merge'],), 'master'),
+      ((['git', 'config', 'branch.master.remote'],), 'origin'),
+      ((['git', 'config', 'remote.origin.url'],),
+       '/cache/this-dir-doesnt-exist'),
+      (('os.path.isdir', '/cache/this-dir-doesnt-exist'),
+       False),
+      (('logging.error',
+        'Remote "origin" for branch "/cache/this-dir-doesnt-exist" points to'
+        ' "master", but it doesn\'t exist.'), None),
+    ]
+    cl = git_cl.Changelist(codereview='gerrit', issue=1)
+    self.assertIsNone(cl.GetRemoteUrl())
+
+  def test_get_remote_url_misconfigured_mirror(self):
+    original_os_path_isdir = os.path.isdir
+    def selective_os_path_isdir_mock(path):
+      if path == '/cache/this-dir-exists':
+        return self._mocked_call('os.path.isdir', path)
+      return original_os_path_isdir(path)
+    self.mock(os.path, 'isdir', selective_os_path_isdir_mock)
+    self.mock(logging, 'error',
+              lambda *a: self._mocked_call('logging.error', *a))
+
+    self.calls = [
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.merge'],), 'master'),
+      ((['git', 'config', 'branch.master.remote'],), 'origin'),
+      ((['git', 'config', 'remote.origin.url'],),
+       '/cache/this-dir-exists'),
+      (('os.path.isdir', '/cache/this-dir-exists'), True),
+      # Runs in /cache/this-dir-exists.
+      ((['git', 'config', 'remote.origin.url'],), ''),
+      (('logging.error',
+        'Remote "%(remote)s" for branch "%(branch)s" points to '
+        '"%(cache_path)s", but it is misconfigured.\n'
+        '"%(cache_path)s" must be a git repo and must have a remote named '
+        '"%(remote)s" pointing to the git host.', {
+              'remote': 'origin',
+              'cache_path': '/cache/this-dir-exists',
+              'branch': 'master'}
+        ), None),
+    ]
+    cl = git_cl.Changelist(codereview='gerrit', issue=1)
+    self.assertIsNone(cl.GetRemoteUrl())
+
 
   def test_gerrit_change_identifier_with_project(self):
     self.calls = [

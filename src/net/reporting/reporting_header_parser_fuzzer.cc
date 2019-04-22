@@ -37,7 +37,7 @@ void FuzzReportingHeaderParser(const std::string& data_json,
   // Emulate what ReportingService::OnHeader does before calling
   // ReportingHeaderParser::ParseHeader.
   std::unique_ptr<base::Value> data_value =
-      base::JSONReader::Read("[" + data_json + "]");
+      base::JSONReader::ReadDeprecated("[" + data_json + "]");
   if (!data_value)
     return;
 

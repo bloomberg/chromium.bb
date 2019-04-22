@@ -59,4 +59,9 @@ class IncognitoTabModelImplCreator implements IncognitoTabModelDelegate {
     public boolean doIncognitoTabsExist() {
         return IncognitoUtils.doIncognitoTabsExist();
     }
+
+    @Override
+    public boolean isCurrentModel(TabModel model) {
+        return mModelDelegate.isCurrentModel(model);
+    }
 }

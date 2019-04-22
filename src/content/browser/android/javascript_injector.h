@@ -40,11 +40,14 @@ class JavascriptInjector : public WebContentsUserData<JavascriptInjector> {
                        const base::android::JavaParamRef<jstring>& name);
 
  private:
+  friend class content::WebContentsUserData<JavascriptInjector>;
   // A weak reference to the Java JavascriptInjectorImpl object.
   JavaObjectWeakGlobalRef java_ref_;
 
   // Manages injecting Java objects.
   scoped_refptr<GinJavaBridgeDispatcherHost> java_bridge_dispatcher_host_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(JavascriptInjector);
 };

@@ -37,6 +37,8 @@ class SVGFEDisplacementMapElement final
  public:
   DECLARE_NODE_FACTORY(SVGFEDisplacementMapElement);
 
+  explicit SVGFEDisplacementMapElement(Document&);
+
   static ChannelSelectorType StringToChannel(const String&);
 
   SVGAnimatedNumber* scale() { return scale_.Get(); }
@@ -52,12 +54,11 @@ class SVGFEDisplacementMapElement final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGFEDisplacementMapElement(Document&);
-
   bool SetFilterEffectAttribute(FilterEffect*,
                                 const QualifiedName& attr_name) override;
   void SvgAttributeChanged(const QualifiedName&) override;
   FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
+  bool TaintsOrigin() const override { return false; }
 
   Member<SVGAnimatedNumber> scale_;
   Member<SVGAnimatedString> in1_;

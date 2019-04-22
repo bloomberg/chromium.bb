@@ -18,6 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/omnibox/browser/answers_cache.h"
@@ -81,7 +82,7 @@ class SearchProvider : public BaseSearchProvider,
 
  private:
   friend class AutocompleteProviderTest;
-  friend class SearchProviderTest;
+  friend class BaseSearchProviderTest;
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, CanSendURL);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest,
                            DontInlineAutocompleteAsynchronously);
@@ -325,6 +326,11 @@ class SearchProvider : public BaseSearchProvider,
   // those is true.
   int GetVerbatimRelevance(bool* relevance_from_server) const;
 
+  // Whether we should limit suggestions from SearchProvider while in
+  // keyword mode to only keyword suggestions. Used when we suspect that the
+  // user intentionally entered keyword mode and doesn't want the others.
+  bool ShouldCurbDefaultSuggestions() const;
+
   // Calculates the relevance score for the verbatim result from the
   // default search engine.  This version takes into account context:
   // i.e., whether the user has entered a keyword-based search or not.
@@ -423,6 +429,8 @@ class SearchProvider : public BaseSearchProvider,
   // Answers prefetch management.
   AnswersCache answers_cache_;  // Cache for last answers seen.
   AnswersQueryData prefetch_data_;  // Data to use for query prefetching.
+
+  ScopedObserver<TemplateURLService, TemplateURLServiceObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };

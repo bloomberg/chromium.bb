@@ -11,7 +11,7 @@
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/ble_service_data_helper.h"
 #include "chromeos/services/secure_channel/error_tolerant_ble_advertisement_impl.h"
 #include "chromeos/services/secure_channel/shared_resource_scheduler.h"
@@ -293,7 +293,7 @@ void BleAdvertiserImpl::AddActiveAdvertisementRequest(size_t index_to_add) {
 void BleAdvertiserImpl::AttemptToAddActiveAdvertisement(size_t index_to_add) {
   const DeviceIdPair pair =
       active_advertisement_requests_[index_to_add]->device_id_pair;
-  std::unique_ptr<cryptauth::DataWithTimestamp> service_data =
+  std::unique_ptr<DataWithTimestamp> service_data =
       ble_service_data_helper_->GenerateForegroundAdvertisement(pair);
 
   // If an advertisement could not be created, the request is immediately

@@ -12,6 +12,7 @@ import perf_device_trigger
 class Args(object):
   def __init__(self):
     self.shards = 1
+    self.shard_index = None
     self.dump_json = ''
     self.multiple_trigger_configs = None
     self.multiple_dimension_script_verbose = False

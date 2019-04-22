@@ -7,6 +7,8 @@
 
 #include "src/objects/fixed-array.h"
 #include "src/objects/js-objects.h"
+#include "src/objects/struct.h"
+#include "torque-generated/class-definitions-from-dsl.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -19,9 +21,7 @@ class JSArgumentsObject : public JSObject {
  public:
   DECL_VERIFIER(JSArgumentsObject)
   DECL_CAST(JSArgumentsObject)
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSArgumentsObject);
+  OBJECT_CONSTRUCTORS(JSArgumentsObject, JSObject);
 };
 
 // Common superclass for JSSloppyArgumentsObject and JSStrictArgumentsObject.
@@ -30,20 +30,15 @@ class JSArgumentsObject : public JSObject {
 // mode already. Only use the below layout with the specific initial maps.
 class JSArgumentsObjectWithLength : public JSArgumentsObject {
  public:
-// Layout description.
-#define JS_ARGUMENTS_OBJECT_WITH_LENGTH_FIELDS(V) \
-  V(kLengthOffset, kTaggedSize)                   \
-  V(kSize, 0)
-
-  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
-                                JS_ARGUMENTS_OBJECT_WITH_LENGTH_FIELDS)
-#undef JS_ARGUMENTS_OBJECT_WITH_LENGTH_FIELDS
+  // Layout description.
+  DEFINE_FIELD_OFFSET_CONSTANTS(
+      JSObject::kHeaderSize,
+      TORQUE_GENERATED_JSARGUMENTS_OBJECT_WITH_LENGTH_FIELDS)
 
   // Indices of in-object properties.
   static const int kLengthIndex = 0;
 
   DECL_VERIFIER(JSArgumentsObjectWithLength)
-  DECL_CAST(JSArgumentsObjectWithLength)
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(JSArgumentsObjectWithLength);
@@ -53,14 +48,9 @@ class JSArgumentsObjectWithLength : public JSArgumentsObject {
 // This initial map adds in-object properties for "length" and "callee".
 class JSSloppyArgumentsObject : public JSArgumentsObjectWithLength {
  public:
-// Layout description.
-#define JS_SLOPPY_ARGUMENTS_OBJECT_FIELDS(V) \
-  V(kCalleeOffset, kTaggedSize)              \
-  V(kSize, 0)
-
-  DEFINE_FIELD_OFFSET_CONSTANTS(JSArgumentsObjectWithLength::kSize,
-                                JS_SLOPPY_ARGUMENTS_OBJECT_FIELDS)
-#undef JS_SLOPPY_ARGUMENTS_OBJECT_FIELDS
+  DEFINE_FIELD_OFFSET_CONSTANTS(
+      JSArgumentsObjectWithLength::kSize,
+      TORQUE_GENERATED_JSSLOPPY_ARGUMENTS_OBJECT_FIELDS)
 
   // Indices of in-object properties.
   static const int kCalleeIndex = kLengthIndex + 1;
@@ -91,9 +81,9 @@ class JSStrictArgumentsObject : public JSArgumentsObjectWithLength {
 // +---------------------------+
 // | 1 | FixedArray arguments  +----+ HOLEY_ELEMENTS
 // +---------------------------+    v-----+-----------+
-// | 2 | Object* param_1_map   |    |  0  | the_hole  |
+// | 2 | Object param_1_map    |    |  0  | the_hole  |
 // |...| ...                   |    | ... | ...       |
-// |n+1| Object* param_n_map   |    | n-1 | the_hole  |
+// |n+1| Object param_n_map    |    | n-1 | the_hole  |
 // +---------------------------+    |  n  | element_1 |
 //                                  | ... | ...       |
 //                                  |n+m-1| element_m |
@@ -116,12 +106,12 @@ class SloppyArgumentsElements : public FixedArray {
   inline FixedArray arguments();
   inline void set_arguments(FixedArray arguments);
   inline uint32_t parameter_map_length();
-  inline Object* get_mapped_entry(uint32_t entry);
-  inline void set_mapped_entry(uint32_t entry, Object* object);
+  inline Object get_mapped_entry(uint32_t entry);
+  inline void set_mapped_entry(uint32_t entry, Object object);
 
-  DECL_CAST2(SloppyArgumentsElements)
+  DECL_CAST(SloppyArgumentsElements)
 #ifdef VERIFY_HEAP
-  void SloppyArgumentsElementsVerify(Isolate* isolate, JSObject* holder);
+  void SloppyArgumentsElementsVerify(Isolate* isolate, JSObject holder);
 #endif
 
   OBJECT_CONSTRUCTORS(SloppyArgumentsElements, FixedArray);
@@ -146,18 +136,10 @@ class AliasedArgumentsEntry : public Struct {
   DECL_PRINTER(AliasedArgumentsEntry)
   DECL_VERIFIER(AliasedArgumentsEntry)
 
-// Layout description.
-#define ALIASED_ARGUMENTS_FIELDS(V)   \
-  V(kAliasedContextSlot, kTaggedSize) \
-  /* Total size. */                   \
-  V(kSize, 0)
-
   DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize,
-                                ALIASED_ARGUMENTS_FIELDS)
-#undef ALIASED_ARGUMENTS_FIELDS
+                                TORQUE_GENERATED_ALIASED_ARGUMENTS_ENTRY_FIELDS)
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AliasedArgumentsEntry);
+  OBJECT_CONSTRUCTORS(AliasedArgumentsEntry, Struct);
 };
 
 }  // namespace internal

@@ -19,7 +19,7 @@ Polymer({
 
     /**
      * Dictionary defining page visibility.
-     * @type {!GuestModePageVisibility}
+     * @type {!PageVisibility}
      */
     pageVisibility: Object,
   },
@@ -47,8 +47,9 @@ Polymer({
    * @private
    */
   onLinkClick_: function(event) {
-    if (event.target.matches('a:not(#extensionsLink)'))
+    if (event.target.matches('a:not(#extensionsLink)')) {
       event.preventDefault();
+    }
   },
 
   /**

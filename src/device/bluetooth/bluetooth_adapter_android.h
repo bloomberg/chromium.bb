@@ -92,6 +92,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
       const base::android::JavaParamRef<jstring>& address,
       const base::android::JavaParamRef<jobject>&
           bluetooth_device_wrapper,  // Java Type: bluetoothDeviceWrapper
+      const base::android::JavaParamRef<jstring>& local_name,
       int32_t rssi,
       const base::android::JavaParamRef<jobjectArray>&
           advertised_uuids,  // Java Type: String[]
@@ -104,7 +105,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
           manufacturer_data_keys,  // Java Type: int[]
       const base::android::JavaParamRef<jobjectArray>&
           manufacturer_data_values  // Java Type: byte[]
-      );
+  );
 
  protected:
   BluetoothAdapterAndroid();

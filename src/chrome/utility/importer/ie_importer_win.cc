@@ -22,6 +22,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -487,7 +488,6 @@ void IEImporter::ImportFavorites() {
 void IEImporter::ImportHistory() {
   const std::string kSchemes[] = {url::kHttpScheme, url::kHttpsScheme,
                                   url::kFtpScheme, url::kFileScheme};
-  int total_schemes = arraysize(kSchemes);
 
   Microsoft::WRL::ComPtr<IUrlHistoryStg2> url_history_stg2;
   if (FAILED(::CoCreateInstance(CLSID_CUrlHistory, NULL, CLSCTX_INPROC_SERVER,
@@ -520,9 +520,7 @@ void IEImporter::ImportHistory() {
 
       GURL url(url_string);
       // Skips the URLs that are invalid or have other schemes.
-      if (!url.is_valid() ||
-          (std::find(kSchemes, kSchemes + total_schemes, url.scheme()) ==
-           kSchemes + total_schemes))
+      if (!url.is_valid() || !base::ContainsValue(kSchemes, url.scheme()))
         continue;
 
       ImporterURLRow row(url);

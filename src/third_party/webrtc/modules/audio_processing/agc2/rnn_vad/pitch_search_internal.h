@@ -15,24 +15,11 @@
 #include <array>
 
 #include "api/array_view.h"
-#include "common_audio/real_fourier.h"
 #include "modules/audio_processing/agc2/rnn_vad/common.h"
 #include "modules/audio_processing/agc2/rnn_vad/pitch_info.h"
 
 namespace webrtc {
 namespace rnn_vad {
-
-// The inverted lags for the pitch interval [|kInitialMinPitch12kHz|,
-// |kMaxPitch12kHz|] are in the range [0, |kNumInvertedLags|].
-static_assert(kMaxPitch12kHz > kInitialMinPitch12kHz, "");
-static_assert(kMaxPitch24kHz > kInitialMinPitch24kHz, "");
-constexpr size_t kNumInvertedLags12kHz = kMaxPitch12kHz - kInitialMinPitch12kHz;
-constexpr size_t kNumInvertedLags24kHz = kMaxPitch24kHz - kInitialMinPitch24kHz;
-constexpr int kAutoCorrelationFftOrder = 9;  // Length-512 FFT.
-
-static_assert(1 << kAutoCorrelationFftOrder >
-                  kNumInvertedLags12kHz + kBufSize12kHz - kMaxPitch12kHz,
-              "");
 
 // Performs 2x decimation without any anti-aliasing filter.
 void Decimate2x(rtc::ArrayView<const float, kBufSize24kHz> src,
@@ -41,12 +28,12 @@ void Decimate2x(rtc::ArrayView<const float, kBufSize24kHz> src,
 // Computes a gain threshold for a candidate pitch period given the initial and
 // the previous pitch period and gain estimates and the pitch period ratio used
 // to derive the candidate pitch period from the initial period.
-float ComputePitchGainThreshold(size_t candidate_pitch_period,
-                                size_t pitch_period_ratio,
-                                size_t initial_pitch_period,
+float ComputePitchGainThreshold(int candidate_pitch_period,
+                                int pitch_period_ratio,
+                                int initial_pitch_period,
                                 float initial_pitch_gain,
-                                size_t prev_pitch_period,
-                                size_t prev_pitch_gain);
+                                int prev_pitch_period,
+                                float prev_pitch_gain);
 
 // Computes the sum of squared samples for every sliding frame in the pitch
 // buffer. |yy_values| indexes are lags.
@@ -60,25 +47,6 @@ float ComputePitchGainThreshold(size_t candidate_pitch_period,
 void ComputeSlidingFrameSquareEnergies(
     rtc::ArrayView<const float, kBufSize24kHz> pitch_buf,
     rtc::ArrayView<float, kMaxPitch24kHz + 1> yy_values);
-
-// Computes the auto-correlation coefficients for a given pitch interval.
-// |auto_corr| indexes are inverted lags.
-//
-// The auto-correlations coefficients are computed as follows:
-// |.........|...........|  <- pitch buffer
-//           [ x (fixed) ]
-// [   y_0   ]
-//         [ y_{m-1} ]
-// x and y are sub-array of equal length; x is never moved, whereas y slides.
-// The cross-correlation between y_0 and x corresponds to the auto-correlation
-// for the maximum pitch period. Hence, the first value in |auto_corr| has an
-// inverted lag equal to 0 that corresponds to a lag equal to the maximum pitch
-// period.
-void ComputePitchAutoCorrelation(
-    rtc::ArrayView<const float, kBufSize12kHz> pitch_buf,
-    size_t max_pitch_period,
-    rtc::ArrayView<float, kNumInvertedLags12kHz> auto_corr,
-    webrtc::RealFourier* fft);
 
 // Given the auto-correlation coefficients stored according to
 // ComputePitchAutoCorrelation() (i.e., using inverted lags), returns the best
@@ -99,7 +67,7 @@ size_t RefinePitchPeriod48kHz(
 // refined pitch estimation data at 48 kHz.
 PitchInfo CheckLowerPitchPeriodsAndComputePitchGain(
     rtc::ArrayView<const float, kBufSize24kHz> pitch_buf,
-    size_t initial_pitch_period_48kHz,
+    int initial_pitch_period_48kHz,
     PitchInfo prev_pitch_48kHz);
 
 }  // namespace rnn_vad

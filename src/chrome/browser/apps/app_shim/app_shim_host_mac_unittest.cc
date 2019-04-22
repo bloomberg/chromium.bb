@@ -4,10 +4,13 @@
 
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 
+#include <unistd.h>
+
 #include <memory>
 #include <tuple>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -52,9 +55,11 @@ class TestingAppShim : public chrome::mojom::AppShim {
       override {}
   void CreateContentNSViewBridgeFactory(
       content::mojom::NSViewBridgeFactoryAssociatedRequest request) override {}
+  void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
   void Hide() override {}
   void UnhideWithoutActivation() override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
+  void SetBadgeLabel(const std::string& badge_label) override {}
 
   bool received_launch_done_result_ = false;
   apps::AppShimLaunchResult launch_done_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
@@ -67,7 +72,8 @@ class TestingAppShimHost : public AppShimHost {
  public:
   TestingAppShimHost(const std::string& app_id,
                      const base::FilePath& profile_path)
-      : AppShimHost(app_id, profile_path), test_weak_factory_(this) {}
+      : AppShimHost(app_id, profile_path, false /* uses_remote_views */),
+        test_weak_factory_(this) {}
 
   base::WeakPtr<TestingAppShimHost> GetWeakPtr() {
     return test_weak_factory_.GetWeakPtr();
@@ -83,7 +89,7 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
  public:
   explicit TestingAppShimHostBootstrap(
       chrome::mojom::AppShimHostBootstrapRequest host_request)
-      : test_weak_factory_(this) {
+      : AppShimHostBootstrap(getpid()), test_weak_factory_(this) {
     // AppShimHost will bind to the request from ServeChannel. For testing
     // purposes, have this request passed in at creation.
     host_bootstrap_binding_.Bind(std::move(host_request));
@@ -118,7 +124,7 @@ class AppShimHostTest : public testing::Test,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return task_runner_;
   }
-  apps::AppShimHandler::Host* host() { return host_.get(); }
+  AppShimHost* host() { return host_.get(); }
   chrome::mojom::AppShimHost* GetMojoHost() { return host_ptr_.get(); }
 
   void LaunchApp(apps::AppShimLaunchType launch_type) {
@@ -138,7 +144,13 @@ class AppShimHostTest : public testing::Test,
   void SimulateDisconnect() { host_ptr_.reset(); }
 
  protected:
-  void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
+  void OnShimLaunchRequested(
+      AppShimHost* host,
+      bool recreate_shims,
+      apps::ShimLaunchedCallback launched_callback,
+      apps::ShimTerminatedCallback terminated_callback) override {}
+  void OnShimProcessConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
     ++launch_count_;
     if (bootstrap->GetLaunchType() == apps::APP_SHIM_LAUNCH_NORMAL)
       ++launch_now_count_;
@@ -147,21 +159,23 @@ class AppShimHostTest : public testing::Test,
     host_ = (new TestingAppShimHost(bootstrap->GetAppId(),
                                     bootstrap->GetProfilePath()))
                 ->GetWeakPtr();
-    host_->OnBootstrapConnected(std::move(bootstrap));
-    host_->OnAppLaunchComplete(launch_result_);
+    if (launch_result_ == apps::APP_SHIM_LAUNCH_SUCCESS)
+      host_->OnBootstrapConnected(std::move(bootstrap));
+    else
+      bootstrap->OnFailedToConnectToHost(launch_result_);
   }
 
-  void OnShimClose(Host* host) override { ++close_count_; }
+  void OnShimClose(AppShimHost* host) override { ++close_count_; }
 
-  void OnShimFocus(Host* host,
+  void OnShimFocus(AppShimHost* host,
                    apps::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& file) override {
     ++focus_count_;
   }
 
-  void OnShimSetHidden(Host* host, bool hidden) override {}
+  void OnShimSetHidden(AppShimHost* host, bool hidden) override {}
 
-  void OnShimQuit(Host* host) override { ++quit_count_; }
+  void OnShimQuit(AppShimHost* host) override { ++quit_count_; }
 
   apps::AppShimLaunchResult launch_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
   int launch_count_ = 0;

@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -65,19 +64,19 @@ float ViewportDescription::ResolveViewportLength(
   if (length.IsFixed())
     return length.GetFloatValue();
 
-  if (length.GetType() == kExtendToZoom)
+  if (length.IsExtendToZoom())
     return ViewportDescription::kValueExtendToZoom;
 
-  if (length.GetType() == kPercent && direction == kHorizontal)
+  if (length.IsPercent() && direction == kHorizontal)
     return initial_viewport_size.Width() * length.GetFloatValue() / 100.0f;
 
-  if (length.GetType() == kPercent && direction == kVertical)
+  if (length.IsPercent() && direction == kVertical)
     return initial_viewport_size.Height() * length.GetFloatValue() / 100.0f;
 
-  if (length.GetType() == kDeviceWidth)
+  if (length.IsDeviceWidth())
     return initial_viewport_size.Width();
 
-  if (length.GetType() == kDeviceHeight)
+  if (length.IsDeviceHeight())
     return initial_viewport_size.Height();
 
   NOTREACHED();
@@ -86,7 +85,7 @@ float ViewportDescription::ResolveViewportLength(
 
 PageScaleConstraints ViewportDescription::Resolve(
     const FloatSize& initial_viewport_size,
-    Length legacy_fallback_width) const {
+    const Length& legacy_fallback_width) const {
   float result_width = kValueAuto;
 
   Length copy_max_width = max_width;
@@ -97,11 +96,11 @@ PageScaleConstraints ViewportDescription::Resolve(
     // setting the 'min' value to 'extend-to-zoom' and the 'max' value to the
     // intended length.  In case the UA-defines a min-width, use that as length.
     if (zoom == ViewportDescription::kValueAuto) {
-      copy_min_width = Length(kExtendToZoom);
+      copy_min_width = Length::ExtendToZoom();
       copy_max_width = legacy_fallback_width;
     } else if (max_height.IsAuto()) {
-      copy_min_width = Length(kExtendToZoom);
-      copy_max_width = Length(kExtendToZoom);
+      copy_min_width = Length::ExtendToZoom();
+      copy_max_width = Length::ExtendToZoom();
     }
   }
 
@@ -265,7 +264,7 @@ void ViewportDescription::ReportMobilePageStats(
   }
 
   if (IsMetaViewportType()) {
-    if (max_width.GetType() == blink::kFixed) {
+    if (max_width.IsFixed()) {
       meta_tag_type_histogram.Count(
           static_cast<int>(ViewportUMAType::kConstantWidth));
 
@@ -283,8 +282,7 @@ void ViewportDescription::ReportMobilePageStats(
         overview_zoom_histogram.Sample(overview_zoom_percent);
       }
 
-    } else if (max_width.GetType() == blink::kDeviceWidth ||
-               max_width.GetType() == blink::kExtendToZoom) {
+    } else if (max_width.IsDeviceWidth() || max_width.IsExtendToZoom()) {
       meta_tag_type_histogram.Count(
           static_cast<int>(ViewportUMAType::kDeviceWidth));
     } else {
@@ -299,12 +297,6 @@ void ViewportDescription::ReportMobilePageStats(
     meta_tag_type_histogram.Count(
         static_cast<int>(ViewportUMAType::kMetaMobileOptimized));
   }
-}
-
-bool ViewportDescription::MatchesHeuristicsForGpuRasterization() const {
-  bool enable_viewport_restriction = base::FeatureList::IsEnabled(
-      features::kEnableGpuRasterizationViewportRestriction);
-  return !enable_viewport_restriction || IsSpecifiedByAuthor();
 }
 
 }  // namespace blink

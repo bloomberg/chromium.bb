@@ -182,21 +182,24 @@ TEST(BlinkEventUtilTest, WebMouseWheelEventCoalescing) {
   coalesced_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
   EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
 
+  // With timer based wheel scroll latching, we break the latching sequence on
+  // direction change when all prior GSU events in the current sequence are
+  // ignored. To do so we dispatch the pending wheel event with phaseEnded and
+  // the first wheel event in the opposite direction will have phaseBegan. The
+  // GSB generated from this wheel event will cause a new hittesting. To make
+  // sure that a GSB will actually get created we should not coalesce the wheel
+  // event with synthetic kPhaseBegan to one with synthetic kPhaseEnded.
   event_to_be_coalesced.has_synthetic_phase = true;
   coalesced_event.has_synthetic_phase = true;
-  EXPECT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
-  Coalesce(event_to_be_coalesced, &coalesced_event);
-  EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseChanged, coalesced_event.phase);
-  EXPECT_EQ(7, coalesced_event.delta_x);
-  EXPECT_EQ(9, coalesced_event.delta_y);
+  EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
 
   event_to_be_coalesced.phase = blink::WebMouseWheelEvent::kPhaseChanged;
   coalesced_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   EXPECT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
   Coalesce(event_to_be_coalesced, &coalesced_event);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseBegan, coalesced_event.phase);
-  EXPECT_EQ(10, coalesced_event.delta_x);
-  EXPECT_EQ(13, coalesced_event.delta_y);
+  EXPECT_EQ(7, coalesced_event.delta_x);
+  EXPECT_EQ(9, coalesced_event.delta_y);
 
   event_to_be_coalesced.resending_plugin_id = 3;
   EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
@@ -224,6 +227,56 @@ TEST(BlinkEventUtilTest, WebGestureEventCoalescing) {
 
   event_to_be_coalesced.resending_plugin_id = 3;
   EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
+}
+
+TEST(BlinkEventUtilTest, GesturePinchUpdateCoalescing) {
+  gfx::PointF position(10.f, 10.f);
+  blink::WebGestureEvent coalesced_event(
+      blink::WebInputEvent::kGesturePinchUpdate,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests(),
+      blink::WebGestureDevice::kTouchpad);
+  coalesced_event.data.pinch_update.scale = 1.1f;
+  coalesced_event.SetPositionInWidget(position);
+
+  blink::WebGestureEvent event_to_be_coalesced(coalesced_event);
+
+  ASSERT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
+  Coalesce(event_to_be_coalesced, &coalesced_event);
+  EXPECT_FLOAT_EQ(1.21, coalesced_event.data.pinch_update.scale);
+
+  // Allow the updates to be coalesced if the anchors are nearly equal.
+  position.Offset(0.1f, 0.1f);
+  event_to_be_coalesced.SetPositionInWidget(position);
+  coalesced_event.data.pinch_update.scale = 1.1f;
+  ASSERT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
+  Coalesce(event_to_be_coalesced, &coalesced_event);
+  EXPECT_FLOAT_EQ(1.21, coalesced_event.data.pinch_update.scale);
+
+  // The anchors are no longer considered equal, so don't coalesce.
+  position.Offset(1.f, 1.f);
+  event_to_be_coalesced.SetPositionInWidget(position);
+  EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
+
+  // Don't logically coalesce touchpad pinch events as touchpad pinch events
+  // don't occur within a gesture scroll sequence.
+  EXPECT_FALSE(
+      IsCompatibleScrollorPinch(event_to_be_coalesced, coalesced_event));
+
+  // Touchscreen pinch events can be logically coalesced.
+  coalesced_event.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
+  event_to_be_coalesced.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
+  coalesced_event.data.pinch_update.scale = 1.1f;
+  ASSERT_TRUE(
+      IsCompatibleScrollorPinch(event_to_be_coalesced, coalesced_event));
+
+  blink::WebGestureEvent logical_scroll, logical_pinch;
+  std::tie(logical_scroll, logical_pinch) =
+      CoalesceScrollAndPinch(nullptr, coalesced_event, event_to_be_coalesced);
+  ASSERT_EQ(blink::WebInputEvent::kGestureScrollUpdate,
+            logical_scroll.GetType());
+  ASSERT_EQ(blink::WebInputEvent::kGesturePinchUpdate, logical_pinch.GetType());
+  EXPECT_FLOAT_EQ(1.21, logical_pinch.data.pinch_update.scale);
 }
 
 TEST(BlinkEventUtilTest, MouseEventCoalescing) {

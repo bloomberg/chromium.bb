@@ -14,6 +14,7 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -70,7 +71,11 @@ bool Equal(float a, float b) {
 // blink::vector_math functions.
 template <typename T>
 class TestVector {
+  STACK_ALLOCATED();
+
   class Iterator {
+    STACK_ALLOCATED();
+
    public:
     // These types are used by std::iterator_traits used by std::equal used by
     // TestVector::operator==.

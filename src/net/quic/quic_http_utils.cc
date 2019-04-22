@@ -8,7 +8,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "net/spdy/spdy_log_util.h"
-#include "net/third_party/quic/platform/api/quic_endian.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_endian.h"
 
 namespace net {
 
@@ -20,7 +20,7 @@ void RecordAltSvcFormat(AltSvcFormat format) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicAltSvcFormat", format, ALTSVC_FORMAT_MAX);
 }
 
-};  // namespace
+}  // namespace
 
 spdy::SpdyPriority ConvertRequestPriorityToQuicPriority(
     const RequestPriority priority) {

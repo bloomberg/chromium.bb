@@ -11,15 +11,12 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/values.h"
 #include "components/payments/core/payment_options_provider.h"
 
 namespace autofill {
 class AutofillProfile;
 }  // namespace autofill
-
-namespace base {
-class DictionaryValue;
-}  // namespace base
 
 namespace payments {
 class PaymentInstrument;
@@ -29,9 +26,9 @@ class PaymentResponse;
 
 namespace payment_request_util {
 
-// Returns a base::DictionaryValue populated with the properties of |response|.
-std::unique_ptr<base::DictionaryValue> PaymentResponseToDictionaryValue(
-    const payments::PaymentResponse& response);
+// Returns a base::Value populated with the properties of |response|. The
+// returned value is always a dictionary.
+base::Value PaymentResponseToValue(const payments::PaymentResponse& response);
 
 // Helper function to create a name label from an autofill profile. Returns nil
 // if the resulting label is empty.

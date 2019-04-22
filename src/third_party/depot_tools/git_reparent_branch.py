@@ -12,6 +12,7 @@ import subprocess2
 
 from git_common import upstream, current_branch, run, tags, set_branch_config
 from git_common import get_or_create_merge_base, root, manual_merge_base
+from git_common import get_branch_tree, topo_iter
 
 import git_rebase_update
 
@@ -81,8 +82,13 @@ def main(args):
 
   manual_merge_base(branch, mbase, new_parent)
 
-  # TODO(iannucci): ONLY rebase-update the branch which moved (and dependants)
-  return git_rebase_update.main(['--no-fetch'])
+  # ONLY rebase-update the branch which moved (and dependants)
+  _, branch_tree = get_branch_tree()
+  branches = [branch]
+  for branch, parent in topo_iter(branch_tree):
+    if parent in branches:
+      branches.append(branch)
+  return git_rebase_update.main(['--no-fetch'] + branches)
 
 
 if __name__ == '__main__':  # pragma: no cover

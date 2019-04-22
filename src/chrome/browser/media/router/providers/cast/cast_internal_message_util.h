@@ -26,8 +26,13 @@ struct CastInternalMessage {
     kClientConnect,   // Initial message sent by SDK client to connect to MRP.
     kAppMessage,      // App messages to pass through between SDK client and the
                       // receiver.
+    kV2Message,       // Cast protocol messages between SDK client and the
+                      // receiver.
+    kLeaveSession,    // Message sent by SDK client to leave current session.
     kReceiverAction,  // Message sent by MRP to inform SDK client of action.
     kNewSession,      // Message sent by MRP to inform SDK client of new
+                      // session.
+    kUpdateSession,   // Message sent by MRP to inform SDK client of updated
                       // session.
     kOther            // All other types of messages which are not considered
                       // part of communication with Cast SDK.
@@ -37,64 +42,115 @@ struct CastInternalMessage {
   // a valid Cast internal message.
   static std::unique_ptr<CastInternalMessage> From(base::Value message);
 
-  CastInternalMessage(Type type, const std::string& client_id);
   ~CastInternalMessage();
 
-  Type type;
-  std::string client_id;
-  int sequence_number = -1;
+  const Type type;
+  const std::string client_id;
+  const base::Optional<int> sequence_number;
 
-  // The following are set if |type| is |kAppMessage|.
-  std::string app_message_namespace;
-  std::string app_message_session_id;
-  base::Value app_message_body;
+  bool has_session_id() const {
+    return type == Type::kAppMessage || type == Type::kV2Message;
+  }
+
+  const std::string& session_id() const {
+    DCHECK(has_session_id());
+    return session_id_;
+  }
+
+  const std::string& app_message_namespace() const {
+    DCHECK(type == Type::kAppMessage);
+    return namespace_or_v2_type_;
+  }
+
+  const std::string& v2_message_type() const {
+    DCHECK(type == Type::kV2Message);
+    return namespace_or_v2_type_;
+  }
+
+  const base::Value& app_message_body() const {
+    DCHECK(type == Type::kAppMessage);
+    return message_body_;
+  }
+
+  const base::Value& v2_message_body() const {
+    DCHECK(type == Type::kV2Message);
+    return message_body_;
+  }
+
+ private:
+  CastInternalMessage(Type type,
+                      const std::string& client_id,
+                      base::Optional<int> sequence_number,
+                      const std::string& session_id,
+                      const std::string& namespace_or_v2_type_,
+                      base::Value message_body);
+
+  // Set if |type| is |kAppMessage| or |kV2Message|.
+  const std::string session_id_;
+  const std::string namespace_or_v2_type_;
+  const base::Value message_body_;
 
   DISALLOW_COPY_AND_ASSIGN(CastInternalMessage);
 };
 
 // Represents a Cast session on a Cast device. Cast sessions are derived from
 // RECEIVER_STATUS messages sent by Cast devices.
+//
+// TODO(jrw): Rename either this class or ::CastSession to avoid confusion.
 class CastSession {
  public:
   // Returns a CastSession from |receiver_status| message sent by |sink|, or
   // nullptr if |receiver_status| is not a valid RECEIVER_STATUS message.
-  // |hash_token| is a per-profile value that is used to hash the sink ID.
   static std::unique_ptr<CastSession> From(const MediaSinkInternal& sink,
-                                           const std::string& hash_token,
                                            const base::Value& receiver_status);
-
-  // Returns a string that can be used as the description of the MediaRoute
-  // associated with this session.
-  static std::string GetRouteDescription(const CastSession& session);
 
   CastSession();
   ~CastSession();
 
+  // Returns a string that can be used as the description of the MediaRoute
+  // associated with this session.
+  std::string GetRouteDescription() const;
+
+  // Partially updates the contents of this object using data in |from|.
+  void UpdateSession(std::unique_ptr<CastSession> from);
+
+  // Sets the 'media' field of |value_| with a value received from the client.
+  void UpdateMedia(const base::Value& media);
+
   // ID of the session.
-  std::string session_id;
+  const std::string& session_id() const { return session_id_; }
 
   // ID of the app in the session.
-  std::string app_id;
+  const std::string& app_id() const { return app_id_; }
 
   // ID used for communicating with the session over the Cast channel.
-  std::string transport_id;
+  const std::string& transport_id() const { return transport_id_; }
 
   // The set of accepted message namespaces. Must be non-empty, unless the
   // session represents a multizone leader.
-  base::flat_set<std::string> message_namespaces;
-
-  // The human-readable name of the Cast application, for example, "YouTube".
-  // Mandatory.
-  std::string display_name;
-
-  // Descriptive text for the current application content, for example “My
-  // Wedding Slideshow”. May be empty.
-  std::string status;
+  const base::flat_set<std::string>& message_namespaces() const {
+    return message_namespaces_;
+  }
 
   // The dictionary representing this session, derived from |receiver_status|.
   // For convenience, this is used for generating messages sent to the SDK that
   // include the session value.
-  base::Value value;
+  const base::Value& value() const { return value_; }
+
+ private:
+  std::string session_id_;
+  std::string app_id_;
+  std::string transport_id_;
+  base::flat_set<std::string> message_namespaces_;
+  base::Value value_;
+
+  // The human-readable name of the Cast application, for example, "YouTube".
+  // Mandatory.
+  std::string display_name_;
+
+  // Descriptive text for the current application content, for example “My
+  // Wedding Slideshow”. May be empty.
+  std::string status_;
 };
 
 // Utility methods for generating messages sent to the SDK.
@@ -109,7 +165,14 @@ blink::mojom::PresentationConnectionMessagePtr CreateReceiverActionStopMessage(
     const std::string& hash_token);
 blink::mojom::PresentationConnectionMessagePtr CreateNewSessionMessage(
     const CastSession& session,
-    const std::string& client_id);
+    const std::string& client_id,
+    const MediaSinkInternal& sink,
+    const std::string& hash_token);
+blink::mojom::PresentationConnectionMessagePtr CreateUpdateSessionMessage(
+    const CastSession& session,
+    const std::string& client_id,
+    const MediaSinkInternal& sink,
+    const std::string& hash_token);
 blink::mojom::PresentationConnectionMessagePtr CreateAppMessageAck(
     const std::string& client_id,
     int sequence_number);
@@ -117,6 +180,18 @@ blink::mojom::PresentationConnectionMessagePtr CreateAppMessage(
     const std::string& session_id,
     const std::string& client_id,
     const cast_channel::CastMessage& cast_message);
+blink::mojom::PresentationConnectionMessagePtr CreateV2Message(
+    const std::string& client_id,
+    const base::Value& payload,
+    base::Optional<int> sequence_number);
+blink::mojom::PresentationConnectionMessagePtr CreateLeaveSessionAckMessage(
+    const std::string& client_id,
+    base::Optional<int> sequence_number);
+blink::mojom::PresentationConnectionMessagePtr CreateLeaveSessionAckMessage(
+    const std::string& client_id,
+    base::Optional<int> sequence_number);
+
+base::Value SupportedMediaRequestsToListValue(int media_requests);
 
 }  // namespace media_router
 

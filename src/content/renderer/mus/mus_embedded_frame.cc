@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "cc/base/switches.h"
@@ -44,7 +45,7 @@ MusEmbeddedFrame::~MusEmbeddedFrame() {
 }
 
 void MusEmbeddedFrame::SetWindowBounds(
-    const viz::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation,
     const gfx::Rect& bounds) {
   if (tree_changed_)
     return;
@@ -52,13 +53,13 @@ void MusEmbeddedFrame::SetWindowBounds(
   if (!window_tree()) {
     DCHECK(pending_state_);
     pending_state_->bounds = bounds;
-    pending_state_->local_surface_id = local_surface_id;
+    pending_state_->local_surface_id_allocation = local_surface_id_allocation;
     pending_state_->was_set_window_bounds_called = true;
     return;
   }
 
   window_tree()->SetWindowBounds(GetAndAdvanceNextChangeId(), window_id_,
-                                 bounds, local_surface_id);
+                                 bounds, local_surface_id_allocation);
 }
 
 MusEmbeddedFrame::MusEmbeddedFrame(
@@ -97,7 +98,8 @@ void MusEmbeddedFrame::OnTreeAvailable() {
   std::unique_ptr<PendingState> pending_state = std::move(pending_state_);
   CreateChildWindowAndEmbed(pending_state->token);
   if (pending_state->was_set_window_bounds_called)
-    SetWindowBounds(pending_state->local_surface_id, pending_state->bounds);
+    SetWindowBounds(pending_state->local_surface_id_allocation,
+                    pending_state->bounds);
 }
 
 void MusEmbeddedFrame::OnTreeWillChange() {

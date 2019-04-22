@@ -121,19 +121,15 @@ void ManageProfileHandler::HandleGetAvailableIcons(
 }
 
 std::unique_ptr<base::ListValue> ManageProfileHandler::GetAvailableIcons() {
-  std::unique_ptr<base::ListValue> avatars(
-      profiles::GetDefaultProfileAvatarIconsAndLabels());
-
   PrefService* pref_service = profile_->GetPrefs();
   bool using_gaia = pref_service->GetBoolean(prefs::kProfileUsingGAIAAvatar);
+  size_t selected_avatar_idx =
+      using_gaia ? SIZE_MAX
+                 : pref_service->GetInteger(prefs::kProfileAvatarIndex);
 
-  // Select the avatar from the default set.
-  if (!using_gaia) {
-    size_t index = pref_service->GetInteger(prefs::kProfileAvatarIndex);
-    base::DictionaryValue* avatar = nullptr;
-    if (avatars->GetDictionary(index, &avatar))
-      avatar->SetBoolean("selected", true);
-  }
+  // Obtain a list of the default avatar icons.
+  std::unique_ptr<base::ListValue> avatars(
+      profiles::GetDefaultProfileAvatarIconsAndLabels(selected_avatar_idx));
 
   // Add the GAIA picture to the beginning of the list if it is available.
   ProfileAttributesEntry* entry;

@@ -117,8 +117,7 @@ gfx::Rect MinimallyShrinkRectForI420(const gfx::Rect& rect) {
 
 VideoCaptureOverlay::OnceRenderer VideoCaptureOverlay::MakeRenderer(
     const gfx::Rect& region_in_frame,
-    const VideoPixelFormat frame_format,
-    const gfx::ColorSpace& frame_color_space) {
+    const VideoPixelFormat frame_format) {
   // If there's no image set yet, punt.
   if (image_.drawsNothing()) {
     return VideoCaptureOverlay::OnceRenderer();
@@ -150,13 +149,12 @@ VideoCaptureOverlay::OnceRenderer VideoCaptureOverlay::MakeRenderer(
     return VideoCaptureOverlay::OnceRenderer();
   }
 
-  // If the cached sprite does not match the computed scaled size, pixel format,
-  // and/or color space, create a new instance for this (and future) renderers.
+  // If the cached sprite does not match the computed scaled size and/or pixel
+  // format, create a new instance for this (and future) renderers.
   if (!sprite_ || sprite_->size() != bounds_in_frame.size() ||
-      sprite_->format() != frame_format ||
-      sprite_->color_space() != frame_color_space) {
+      sprite_->format() != frame_format) {
     sprite_ = base::MakeRefCounted<Sprite>(image_, bounds_in_frame.size(),
-                                           frame_format, frame_color_space);
+                                           frame_format);
   }
 
   return base::BindOnce(&Sprite::Blit, sprite_, bounds_in_frame.origin(),
@@ -167,16 +165,15 @@ VideoCaptureOverlay::OnceRenderer VideoCaptureOverlay::MakeRenderer(
 VideoCaptureOverlay::OnceRenderer VideoCaptureOverlay::MakeCombinedRenderer(
     const std::vector<VideoCaptureOverlay*>& overlays,
     const gfx::Rect& region_in_frame,
-    const VideoPixelFormat frame_format,
-    const gfx::ColorSpace& frame_color_space) {
+    const VideoPixelFormat frame_format) {
   if (overlays.empty()) {
     return VideoCaptureOverlay::OnceRenderer();
   }
 
   std::vector<OnceRenderer> renderers;
   for (VideoCaptureOverlay* overlay : overlays) {
-    renderers.emplace_back(overlay->MakeRenderer(region_in_frame, frame_format,
-                                                 frame_color_space));
+    renderers.emplace_back(
+        overlay->MakeRenderer(region_in_frame, frame_format));
     if (renderers.back().is_null()) {
       renderers.pop_back();
     }
@@ -208,9 +205,8 @@ gfx::Rect VideoCaptureOverlay::ComputeSourceMutationRect() const {
 
 VideoCaptureOverlay::Sprite::Sprite(const SkBitmap& image,
                                     const gfx::Size& size,
-                                    const VideoPixelFormat format,
-                                    const gfx::ColorSpace& color_space)
-    : image_(image), size_(size), format_(format), color_space_(color_space) {
+                                    const VideoPixelFormat format)
+    : image_(image), size_(size), format_(format) {
   DCHECK(!image_.isNull());
 }
 
@@ -260,12 +256,14 @@ void VideoCaptureOverlay::Sprite::Blit(const gfx::Point& position,
   DCHECK(frame);
   DCHECK_EQ(format_, frame->format());
   DCHECK(frame->visible_rect().Contains(blit_rect));
+  DCHECK(frame->ColorSpace().IsValid());
 
   TRACE_EVENT2("gpu.capture", "VideoCaptureOverlay::Sprite::Blit", "x",
                position.x(), "y", position.y());
 
-  if (!transformed_image_) {
-    TransformImageOnce();
+  if (!transformed_image_ || color_space_ != frame->ColorSpace()) {
+    color_space_ = frame->ColorSpace();
+    TransformImage();
   }
 
   // Compute the left-most and top-most pixel to source from the transformed
@@ -402,8 +400,8 @@ void VideoCaptureOverlay::Sprite::Blit(const gfx::Point& position,
   }
 }
 
-void VideoCaptureOverlay::Sprite::TransformImageOnce() {
-  TRACE_EVENT2("gpu.capture", "VideoCaptureOverlay::Sprite::TransformImageOnce",
+void VideoCaptureOverlay::Sprite::TransformImage() {
+  TRACE_EVENT2("gpu.capture", "VideoCaptureOverlay::Sprite::TransformImage",
                "width", size_.width(), "height", size_.height());
 
   // Scale the source |image_| to match the format and size required. For the
@@ -415,29 +413,18 @@ void VideoCaptureOverlay::Sprite::TransformImageOnce() {
   if (image_.info() == scaled_image_format) {
     scaled_image = image_;
   } else {
-    if (!scaled_image.tryAllocPixels(scaled_image_format) ||
-        !image_.pixmap().scalePixels(scaled_image.pixmap(),
-                                     kMedium_SkFilterQuality)) {
+    if (scaled_image.tryAllocPixels(scaled_image_format) &&
+        image_.pixmap().scalePixels(scaled_image.pixmap(),
+                                    kMedium_SkFilterQuality)) {
+      // Cache the scaled image, to avoid needing to re-scale in future calls to
+      // this method.
+      image_ = scaled_image;
+    } else {
       // If the allocation, format conversion and/or scaling failed, just reset
       // the |scaled_image|. This will be checked below.
       scaled_image.reset();
     }
   }
-
-  gfx::ColorSpace image_color_space;
-  if (scaled_image.colorSpace()) {
-    image_color_space = gfx::ColorSpace(*scaled_image.colorSpace());
-    DCHECK(image_color_space.IsValid());
-  } else {
-    // Assume a default linear color space, if no color space was provided.
-    DCHECK(!image_.colorSpace());  // Skia should have set it!
-    image_color_space = gfx::ColorSpace(
-        gfx::ColorSpace::PrimaryID::BT709, gfx::ColorSpace::TransferID::LINEAR,
-        gfx::ColorSpace::MatrixID::RGB, gfx::ColorSpace::RangeID::FULL);
-  }
-
-  // The source image is no longer needed. Reset it to dereference pixel memory.
-  image_.reset();
 
   // Populate |colors| and |alphas| from the |scaled_image|. If the image
   // scaling operation failed, this sprite should draw nothing, and so fully
@@ -466,6 +453,16 @@ void VideoCaptureOverlay::Sprite::TransformImageOnce() {
   }
 
   // Transform the colors, if needed. This may perform RGB→YUV conversion.
+  gfx::ColorSpace image_color_space;
+  if (scaled_image.colorSpace()) {
+    image_color_space = gfx::ColorSpace(*scaled_image.colorSpace());
+  }
+  if (!image_color_space.IsValid()) {
+    // Assume a default linear color space, if no color space was provided.
+    image_color_space = gfx::ColorSpace(
+        gfx::ColorSpace::PrimaryID::BT709, gfx::ColorSpace::TransferID::LINEAR,
+        gfx::ColorSpace::MatrixID::RGB, gfx::ColorSpace::RangeID::FULL);
+  }
   if (image_color_space != color_space_) {
     const auto color_transform = gfx::ColorTransform::NewColorTransform(
         image_color_space, color_space_,

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/i18n/case_conversion.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/url_formatter/url_formatter.h"
@@ -322,7 +322,7 @@ bool URLDatabase::IsTypedHost(const std::string& host, std::string* scheme) {
     url::kFtpScheme
   };
   URLRows dummy;
-  for (size_t i = 0; i < arraysize(schemes); ++i) {
+  for (size_t i = 0; i < base::size(schemes); ++i) {
     std::string scheme_and_host(schemes[i]);
     scheme_and_host += url::kStandardSchemeSeparator + host;
     if (AutocompleteForPrefix(scheme_and_host + '/', 1, true, &dummy) ||

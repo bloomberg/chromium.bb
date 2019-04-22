@@ -13,23 +13,31 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+#include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
+
 namespace blink {
 
 class XRSession;
 
-class XRView final : public ScriptWrappable {
+class MODULES_EXPORT XRView final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   enum XREye { kEyeLeft = 0, kEyeRight = 1 };
 
   XRView(XRSession*, XREye);
+  XRView();
+
+  // Make deep copies.
+  XRView(const XRView& other);
+  XRView& operator=(const XRView& other);
 
   const String& eye() const { return eye_string_; }
   XREye EyeValue() const { return eye_; }
 
   XRSession* session() const;
   DOMFloat32Array* projectionMatrix() const { return projection_matrix_; }
+  XRRigidTransform* transform() const;
 
   void UpdateProjectionMatrixFromRawValues(
       const WTF::Vector<float>& projection_matrix,
@@ -53,6 +61,8 @@ class XRView final : public ScriptWrappable {
                                                          double canvas_width,
                                                          double canvas_height);
 
+  void UpdatePoseMatrix(TransformationMatrix pose_matrix);
+
   // TODO(bajones): Should eventually represent this as a full transform.
   const FloatPoint3D& offset() const { return offset_; }
   void UpdateOffset(float x, float y, float z);
@@ -60,9 +70,12 @@ class XRView final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  const XREye eye_;
+  void AssignMatrices(const XRView& other);
+
+  XREye eye_;
   String eye_string_;
   Member<XRSession> session_;
+  Member<XRRigidTransform> transform_;
   Member<DOMFloat32Array> projection_matrix_;
   FloatPoint3D offset_;
   std::unique_ptr<TransformationMatrix> inv_projection_;

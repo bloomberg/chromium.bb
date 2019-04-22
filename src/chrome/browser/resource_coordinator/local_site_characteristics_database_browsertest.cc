@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/path_service.h"
@@ -38,7 +39,7 @@
 #include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 namespace resource_coordinator {

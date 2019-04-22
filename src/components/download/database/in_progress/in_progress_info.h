@@ -114,6 +114,10 @@ struct InProgressInfo {
   // Count for how many (extra) bytes were used (including resumption).
   int64_t bytes_wasted = 0;
 
+  // The number of times the download has been auto-resumed since last user
+  // triggered resumption.
+  int32_t auto_resume_count = 0;
+
   // Whether the download is initiated on a metered network
   bool metered = false;
 };

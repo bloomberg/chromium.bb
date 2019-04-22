@@ -10,11 +10,13 @@
 #include <string>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/input/browser_controls_offset_manager.h"
+#include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
@@ -44,11 +46,13 @@ unsigned int nextBeginFrameId = 0;
 class ScopedCompletionEvent {
  public:
   explicit ScopedCompletionEvent(CompletionEvent* event) : event_(event) {}
+  ScopedCompletionEvent(const ScopedCompletionEvent&) = delete;
   ~ScopedCompletionEvent() { event_->Signal(); }
+
+  ScopedCompletionEvent& operator=(const ScopedCompletionEvent&) = delete;
 
  private:
   CompletionEvent* const event_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedCompletionEvent);
 };
 
 ProxyImpl::ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
@@ -58,15 +62,13 @@ ProxyImpl::ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
       commit_completion_waits_for_activation_(false),
       next_frame_is_newly_committed_frame_(false),
       inside_draw_(false),
-      input_throttled_until_commit_(false),
       task_runner_provider_(task_runner_provider),
       smoothness_priority_expiration_notifier_(
           task_runner_provider->ImplThreadTaskRunner(),
-          base::Bind(&ProxyImpl::RenewTreePriority, base::Unretained(this)),
+          base::BindRepeating(&ProxyImpl::RenewTreePriority,
+                              base::Unretained(this)),
           base::TimeDelta::FromSecondsD(
               kSmoothnessTakesPriorityExpirationDelay)),
-      rendering_stats_instrumentation_(
-          layer_tree_host->rendering_stats_instrumentation()),
       proxy_main_weak_ptr_(proxy_main_weak_ptr) {
   TRACE_EVENT0("cc", "ProxyImpl::ProxyImpl");
   DCHECK(IsImplThread());
@@ -86,7 +88,8 @@ ProxyImpl::ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
       new CompositorTimingHistory(
           scheduler_settings.using_synchronous_renderer_compositor,
           CompositorTimingHistory::RENDERER_UMA,
-          rendering_stats_instrumentation_));
+          layer_tree_host->rendering_stats_instrumentation(),
+          host_impl_->compositor_frame_reporting_controller()));
   scheduler_.reset(new Scheduler(this, scheduler_settings, layer_tree_host_id_,
                                  task_runner_provider_->ImplThreadTaskRunner(),
                                  std::move(compositor_timing_history)));
@@ -129,6 +132,13 @@ void ProxyImpl::InitializeMutatorOnImpl(
   host_impl_->SetLayerTreeMutator(std::move(mutator));
 }
 
+void ProxyImpl::InitializePaintWorkletLayerPainterOnImpl(
+    std::unique_ptr<PaintWorkletLayerPainter> painter) {
+  TRACE_EVENT0("cc", "ProxyImpl::InitializePaintWorkletLayerPainterOnImpl");
+  DCHECK(IsImplThread());
+  host_impl_->SetPaintWorkletLayerPainter(std::move(painter));
+}
+
 void ProxyImpl::UpdateBrowserControlsStateOnImpl(
     BrowserControlsState constraints,
     BrowserControlsState current,
@@ -155,18 +165,10 @@ void ProxyImpl::InitializeLayerTreeFrameSinkOnImpl(
     scheduler_->DidCreateAndInitializeLayerTreeFrameSink();
 }
 
-void ProxyImpl::SetInputThrottledUntilCommitOnImpl(bool is_throttled) {
+void ProxyImpl::SetDeferBeginMainFrameOnImpl(
+    bool defer_begin_main_frame) const {
   DCHECK(IsImplThread());
-  if (is_throttled == input_throttled_until_commit_)
-    return;
-  input_throttled_until_commit_ = is_throttled;
-  RenewTreePriority();
-}
-
-void ProxyImpl::SetDeferMainFrameUpdateOnImpl(
-    bool defer_main_frame_update) const {
-  DCHECK(IsImplThread());
-  scheduler_->SetDeferMainFrameUpdate(defer_main_frame_update);
+  scheduler_->SetDeferBeginMainFrame(defer_begin_main_frame);
 }
 
 void ProxyImpl::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
@@ -189,9 +191,6 @@ void ProxyImpl::BeginMainFrameAbortedOnImpl(
   DCHECK(IsImplThread());
   DCHECK(scheduler_->CommitPending());
 
-  if (CommitEarlyOutHandledCommit(reason)) {
-    SetInputThrottledUntilCommitOnImpl(false);
-  }
   host_impl_->BeginMainFrameAborted(reason, std::move(swap_promises));
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
   scheduler_->BeginMainFrameAborted(reason);
@@ -414,7 +413,7 @@ void ProxyImpl::RenewTreePriority() {
 
   // New content always takes priority when ui resources have been evicted.
   if (host_impl_->active_tree()->GetDeviceViewport().size().IsEmpty() ||
-      host_impl_->EvictedUIResourcesExist() || input_throttled_until_commit_) {
+      host_impl_->EvictedUIResourcesExist()) {
     // Once we enter NEW_CONTENTS_TAKES_PRIORITY mode, visible tiles on active
     // tree might be freed. We need to set RequiresHighResToDraw to ensure that
     // high res tiles will be required to activate pending tree.
@@ -436,11 +435,11 @@ void ProxyImpl::RenewTreePriority() {
                                               scroll_handler_state);
 }
 
-void ProxyImpl::PostDelayedAnimationTaskOnImplThread(const base::Closure& task,
+void ProxyImpl::PostDelayedAnimationTaskOnImplThread(base::OnceClosure task,
                                                      base::TimeDelta delay) {
   DCHECK(IsImplThread());
-  task_runner_provider_->ImplThreadTaskRunner()->PostDelayedTask(FROM_HERE,
-                                                                 task, delay);
+  task_runner_provider_->ImplThreadTaskRunner()->PostDelayedTask(
+      FROM_HERE, std::move(task), delay);
 }
 
 void ProxyImpl::DidActivateSyncTree() {
@@ -496,6 +495,28 @@ void ProxyImpl::DidPresentCompositorFrameOnImplThread(
       FROM_HERE, base::BindOnce(&ProxyMain::DidPresentCompositorFrame,
                                 proxy_main_weak_ptr_, frame_token,
                                 std::move(callbacks), feedback));
+}
+
+void ProxyImpl::DidGenerateLocalSurfaceIdAllocationOnImplThread(
+    const viz::LocalSurfaceIdAllocation& allocation) {
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyMain::DidGenerateLocalSurfaceIdAllocation,
+                                proxy_main_weak_ptr_, allocation));
+}
+
+void ProxyImpl::NotifyAnimationWorkletStateChange(
+    AnimationWorkletMutationState state,
+    ElementListType element_list_type) {
+  DCHECK(IsImplThread());
+  Scheduler::AnimationWorkletState animation_worklet_state =
+      (state == AnimationWorkletMutationState::STARTED)
+          ? Scheduler::AnimationWorkletState::PROCESSING
+          : Scheduler::AnimationWorkletState::IDLE;
+  Scheduler::TreeType tree_type = (element_list_type == ElementListType::ACTIVE)
+                                      ? Scheduler::TreeType::ACTIVE
+                                      : Scheduler::TreeType::PENDING;
+  scheduler_->NotifyAnimationWorkletStateChange(animation_worklet_state,
+                                                tree_type);
 }
 
 bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
@@ -598,8 +619,6 @@ void ProxyImpl::ScheduledActionCommit() {
   // often a good bit of work to update the tree and prepare the new frame.
   host_impl_->CommitComplete();
 
-  SetInputThrottledUntilCommitOnImpl(false);
-
   next_frame_is_newly_committed_frame_ = true;
 }
 
@@ -647,8 +666,8 @@ void ProxyImpl::ScheduledActionBeginMainFrameNotExpectedUntil(
     base::TimeTicks time) {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyMain::BeginMainFrameNotExpectedUntil,
-                            proxy_main_weak_ptr_, time));
+      FROM_HERE, base::BindOnce(&ProxyMain::BeginMainFrameNotExpectedUntil,
+                                proxy_main_weak_ptr_, time));
 }
 
 DrawResult ProxyImpl::DrawInternal(bool forced_draw) {

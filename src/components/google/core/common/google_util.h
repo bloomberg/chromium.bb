@@ -86,9 +86,8 @@ bool IsGoogleHostname(base::StringPiece host,
 // port for its scheme (80 for HTTP, 443 for HTTPS).
 //
 // Note that this only checks for google.<TLD> domains, but not other Google
-// properties. There is code in variations_http_header_provider.cc that checks
-// for additional Google properties, which can be moved here if more callers
-// are interested in this in the future.
+// properties. If you want to check domains including other Google properties,
+// you can use IsGoogleAssociatedDomainUrl() below.
 bool IsGoogleDomainUrl(const GURL& url,
                        SubdomainPermission subdomain_permission,
                        PortPermission port_permission);
@@ -105,6 +104,9 @@ bool IsGoogleSearchUrl(const GURL& url);
 bool IsYoutubeDomainUrl(const GURL& url,
                         SubdomainPermission subdomain_permission,
                         PortPermission port_permission);
+
+// True if |url| is hosted by Google.
+bool IsGoogleAssociatedDomainUrl(const GURL& url);
 
 // Returns the list of all Google's registerable domains, i.e. domains named
 // google.<eTLD> owned by Google.

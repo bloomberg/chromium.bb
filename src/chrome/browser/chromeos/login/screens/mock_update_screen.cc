@@ -9,11 +9,18 @@ using ::testing::_;
 
 namespace chromeos {
 
-MockUpdateScreen::MockUpdateScreen(BaseScreenDelegate* base_screen_delegate,
-                                   UpdateView* view)
-    : UpdateScreen(base_screen_delegate, view, NULL) {}
+MockUpdateScreen::MockUpdateScreen(
+    BaseScreenDelegate* base_screen_delegate,
+    UpdateView* view,
+    ErrorScreen* error_screen,
+    const UpdateScreen::ScreenExitCallback& exit_callback)
+    : UpdateScreen(base_screen_delegate, view, error_screen, exit_callback) {}
 
 MockUpdateScreen::~MockUpdateScreen() {}
+
+void MockUpdateScreen::RunExit(UpdateScreen::Result result) {
+  ExitUpdate(result);
+}
 
 MockUpdateView::MockUpdateView() {
   EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));

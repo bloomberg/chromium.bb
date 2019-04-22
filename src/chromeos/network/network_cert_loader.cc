@@ -5,15 +5,19 @@
 #include "chromeos/network/network_cert_loader.h"
 
 #include <algorithm>
+#include <initializer_list>
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/flat_set.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "chromeos/network/certificate_helper.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 #include "net/cert/cert_database.h"
@@ -23,10 +27,73 @@
 
 namespace chromeos {
 
-// Caches certificates from a NSSCertDatabase. Handles reloading of certificates
-// on update notifications and provides status flags (loading / loaded).
-// NetworkCertLoader can use multiple CertCaches to combine certificates from
-// multiple sources.
+namespace {
+
+enum class NetworkCertType {
+  kAuthorityCertificate,
+  kClientCertificate,
+  kOther
+};
+
+NetworkCertType GetNetworkCertType(CERTCertificate* cert) {
+  net::CertType type = certificate::GetCertType(cert);
+  if (type == net::USER_CERT)
+    return NetworkCertType::kClientCertificate;
+  if (type == net::CA_CERT)
+    return NetworkCertType::kAuthorityCertificate;
+  VLOG(2) << "Ignoring cert type: " << type;
+  return NetworkCertType::kOther;
+}
+
+// Returns all authority certificats provided by |policy_certificate_provider|
+// as a list of NetworkCerts.
+NetworkCertLoader::NetworkCertList GetPolicyProvidedAuthorities(
+    const PolicyCertificateProvider* policy_certificate_provider,
+    bool device_wide) {
+  NetworkCertLoader::NetworkCertList result;
+  if (!policy_certificate_provider)
+    return result;
+  for (const auto& certificate :
+       policy_certificate_provider->GetAllAuthorityCertificates()) {
+    net::ScopedCERTCertificate x509_cert =
+        net::x509_util::CreateCERTCertificateFromX509Certificate(
+            certificate.get());
+    if (!x509_cert) {
+      LOG(ERROR) << "Unable to create CERTCertificate";
+      continue;
+    }
+    result.push_back(
+        NetworkCertLoader::NetworkCert(std::move(x509_cert), device_wide));
+  }
+  return result;
+}
+
+// Combines all NetworkCerts from all |network_cert_lists| to a resulting list,
+// avoiding duplicates.
+NetworkCertLoader::NetworkCertList CombineNetworkCertLists(
+    std::initializer_list<const NetworkCertLoader::NetworkCertList*>
+        network_cert_lists) {
+  size_t total_size = 0;
+  for (const NetworkCertLoader::NetworkCertList* list : network_cert_lists)
+    total_size += list->size();
+  NetworkCertLoader::NetworkCertList result;
+  result.reserve(total_size);
+  std::set<const CERTCertificate*> already_added_certs;
+  for (const NetworkCertLoader::NetworkCertList* list : network_cert_lists) {
+    for (const NetworkCertLoader::NetworkCert& network_cert : *list) {
+      if (already_added_certs.insert(network_cert.cert()).second)
+        result.push_back(network_cert.Clone());
+    }
+  }
+  return result;
+}
+
+}  // namespace
+
+// Caches certificates from a single slot of a NSSCertDatabase. Handles
+// reloading of certificates on update notifications and provides status flags
+// (loading / loaded). NetworkCertLoader can use multiple CertCaches to combine
+// certificates from multiple sources.
 class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
  public:
   explicit CertCache(base::RepeatingClosure certificates_updated_callback)
@@ -37,9 +104,14 @@ class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
     net::CertDatabase::GetInstance()->RemoveObserver(this);
   }
 
-  void SetNSSDB(net::NSSCertDatabase* nss_database) {
+  void SetNSSDBAndSlot(net::NSSCertDatabase* nss_database,
+                       crypto::ScopedPK11Slot slot,
+                       bool is_slot_device_wide) {
     CHECK(!nss_database_);
+    CHECK(slot);
     nss_database_ = nss_database;
+    slot_ = std::move(slot);
+    is_slot_device_wide_ = is_slot_device_wide;
 
     // Start observing cert database for changes.
     // Observing net::CertDatabase is preferred over observing |nss_database_|
@@ -61,17 +133,21 @@ class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
     LoadCertificates();
   }
 
-  const net::ScopedCERTCertificateList& cert_list() const { return cert_list_; }
+  const NetworkCertList& authority_certs() const { return authority_certs_; }
+
+  const NetworkCertList& client_certs() const { return client_certs_; }
+
+  bool is_initialized() const { return nss_database_; }
 
   bool initial_load_running() const {
     return nss_database_ && !initial_load_finished_;
   }
 
-  bool initial_load_finished() const { return initial_load_finished_; }
+  bool certificates_update_running() const {
+    return certificates_update_running_;
+  }
 
-  // Returns true if the underlying NSSCertDatabase has access to the system
-  // slot.
-  bool has_system_certificates() const { return has_system_certificates_; }
+  bool initial_load_finished() const { return initial_load_finished_; }
 
  private:
   // Trigger a certificate load. If a certificate loading task is already in
@@ -79,6 +155,9 @@ class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
   void LoadCertificates() {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     VLOG(1) << "LoadCertificates: " << certificates_update_running_;
+
+    if (!nss_database_)
+      return;
 
     if (certificates_update_running_) {
       certificates_update_required_ = true;
@@ -88,12 +167,10 @@ class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
     certificates_update_running_ = true;
     certificates_update_required_ = false;
 
-    if (nss_database_) {
-      has_system_certificates_ =
-          static_cast<bool>(nss_database_->GetSystemSlot());
-      nss_database_->ListCerts(base::BindOnce(&CertCache::UpdateCertificates,
-                                              weak_factory_.GetWeakPtr()));
-    }
+    nss_database_->ListCertsInSlot(
+        base::BindOnce(&CertCache::UpdateCertificates,
+                       weak_factory_.GetWeakPtr()),
+        slot_.get());
   }
 
   // Called if a certificate load task is finished.
@@ -102,21 +179,29 @@ class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
     DCHECK(certificates_update_running_);
     VLOG(1) << "UpdateCertificates: " << cert_list.size();
 
-    // Ignore any existing certificates.
-    cert_list_ = std::move(cert_list);
+    authority_certs_.clear();
+    client_certs_.clear();
+    for (auto& cert : cert_list) {
+      NetworkCertType type = GetNetworkCertType(cert.get());
+      if (type == NetworkCertType::kAuthorityCertificate) {
+        authority_certs_.push_back(
+            NetworkCert(std::move(cert), is_slot_device_wide_));
+      } else if (type == NetworkCertType::kClientCertificate) {
+        client_certs_.push_back(
+            NetworkCert(std::move(cert), is_slot_device_wide_));
+      }
+    }
 
     initial_load_finished_ = true;
+    certificates_update_running_ = false;
     certificates_updated_callback_.Run();
 
-    certificates_update_running_ = false;
     if (certificates_update_required_)
       LoadCertificates();
   }
 
   // To be called when certificates have been updated.
   base::RepeatingClosure certificates_updated_callback_;
-
-  bool has_system_certificates_ = false;
 
   // This is true after certificates have been loaded initially.
   bool initial_load_finished_ = false;
@@ -130,8 +215,18 @@ class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
   // The NSS certificate database from which the certificates should be loaded.
   net::NSSCertDatabase* nss_database_ = nullptr;
 
-  // Cached Certificates loaded from the database.
-  net::ScopedCERTCertificateList cert_list_;
+  // The slot from which certificates are listed.
+  crypto::ScopedPK11Slot slot_;
+
+  // true if |slot_| is available device-wide, so certificates listed from it
+  // can be used for shared networks.
+  bool is_slot_device_wide_ = false;
+
+  // Authority Certificates loaded from the database.
+  NetworkCertList authority_certs_;
+
+  // Client Certificates loaded from the database.
+  NetworkCertList client_certs_;
 
   THREAD_CHECKER(thread_checker_);
 
@@ -140,72 +235,21 @@ class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
   DISALLOW_COPY_AND_ASSIGN(CertCache);
 };
 
-namespace {
+NetworkCertLoader::NetworkCert::NetworkCert(net::ScopedCERTCertificate cert,
+                                            bool device_wide)
+    : cert_(std::move(cert)), device_wide_(device_wide) {}
 
-// Checks if |certificate| is on the given |slot|.
-bool IsCertificateOnSlot(CERTCertificate* certificate, PK11SlotInfo* slot) {
-  crypto::ScopedPK11SlotList slots_for_cert(
-      PK11_GetAllSlotsForCert(certificate, nullptr));
-  if (!slots_for_cert)
-    return false;
+NetworkCertLoader::NetworkCert::NetworkCert(NetworkCert&& other) = default;
 
-  for (PK11SlotListElement* slot_element =
-           PK11_GetFirstSafe(slots_for_cert.get());
-       slot_element; slot_element = PK11_GetNextSafe(slots_for_cert.get(),
-                                                     slot_element, PR_FALSE)) {
-    if (slot_element->slot == slot) {
-      // All previously visited elements have been freed by PK11_GetNextSafe,
-      // but we're not calling that for the last one, so free it explicitly.
-      // The slots_for_cert list itself will be freed because ScopedPK11SlotList
-      // is a unique_ptr.
-      PK11_FreeSlotListElement(slots_for_cert.get(), slot_element);
-      return true;
-    }
-  }
-  return false;
+NetworkCertLoader::NetworkCert::~NetworkCert() = default;
+
+NetworkCertLoader::NetworkCert& NetworkCertLoader::NetworkCert::operator=(
+    NetworkCert&& other) = default;
+
+NetworkCertLoader::NetworkCert NetworkCertLoader::NetworkCert::Clone() const {
+  return NetworkCert(net::x509_util::DupCERTCertificate(cert_.get()),
+                     device_wide_);
 }
-
-// Goes through all certificates in |certs| and copies those certificates
-// which are on |system_slot| to a new list.
-net::ScopedCERTCertificateList FilterSystemTokenCertificates(
-    net::ScopedCERTCertificateList certs,
-    crypto::ScopedPK11Slot system_slot) {
-  VLOG(1) << "FilterSystemTokenCertificates";
-  if (!system_slot)
-    return net::ScopedCERTCertificateList();
-
-  PK11SlotInfo* system_slot_ptr = system_slot.get();
-  // Only keep certificates which are on the |system_slot|.
-  certs.erase(
-      std::remove_if(certs.begin(), certs.end(),
-                     [system_slot_ptr](const net::ScopedCERTCertificate& cert) {
-                       return !IsCertificateOnSlot(cert.get(), system_slot_ptr);
-                     }),
-      certs.end());
-  return certs;
-}
-
-void AddPolicyProvidedAuthorities(
-    const PolicyCertificateProvider* policy_certificate_provider,
-    net::ScopedCERTCertificateList* out_certs) {
-  DCHECK(out_certs);
-  if (!policy_certificate_provider)
-    return;
-  for (const auto& certificate :
-       policy_certificate_provider->GetAllAuthorityCertificates()) {
-    net::ScopedCERTCertificate x509_cert =
-        net::x509_util::CreateCERTCertificateFromX509Certificate(
-            certificate.get());
-    if (!x509_cert) {
-      LOG(ERROR) << "Unable to create CERTCertificate";
-      continue;
-    }
-
-    out_certs->push_back(std::move(x509_cert));
-  }
-}
-
-}  // namespace
 
 static NetworkCertLoader* g_cert_loader = nullptr;
 static bool g_force_hardware_backed_for_test = false;
@@ -235,40 +279,60 @@ bool NetworkCertLoader::IsInitialized() {
 }
 
 NetworkCertLoader::NetworkCertLoader() : weak_factory_(this) {
-  system_cert_cache_ = std::make_unique<CertCache>(base::BindRepeating(
+  system_slot_cert_cache_ = std::make_unique<CertCache>(base::BindRepeating(
       &NetworkCertLoader::OnCertCacheUpdated, base::Unretained(this)));
-  user_cert_cache_ = std::make_unique<CertCache>(base::BindRepeating(
-      &NetworkCertLoader::OnCertCacheUpdated, base::Unretained(this)));
+  user_private_slot_cert_cache_ =
+      std::make_unique<CertCache>(base::BindRepeating(
+          &NetworkCertLoader::OnCertCacheUpdated, base::Unretained(this)));
+  user_public_slot_cert_cache_ =
+      std::make_unique<CertCache>(base::BindRepeating(
+          &NetworkCertLoader::OnCertCacheUpdated, base::Unretained(this)));
 }
 
 NetworkCertLoader::~NetworkCertLoader() {
-  DCHECK(policy_certificate_providers_.empty());
+  DCHECK(!device_policy_certificate_provider_);
+  DCHECK(!user_policy_certificate_provider_);
 }
 
 void NetworkCertLoader::SetSystemNSSDB(
     net::NSSCertDatabase* system_slot_database) {
-  system_cert_cache_->SetNSSDB(system_slot_database);
+  system_slot_cert_cache_->SetNSSDBAndSlot(
+      system_slot_database, system_slot_database->GetSystemSlot(),
+      true /* is_slot_device_wide */);
 }
 
 void NetworkCertLoader::SetUserNSSDB(net::NSSCertDatabase* user_database) {
-  user_cert_cache_->SetNSSDB(user_database);
+  // The private slot can be absent.
+  crypto::ScopedPK11Slot private_slot = user_database->GetPrivateSlot();
+  if (private_slot) {
+    user_private_slot_cert_cache_->SetNSSDBAndSlot(
+        user_database, std::move(private_slot),
+        false /* is_slot_device_wide */);
+  }
+  user_public_slot_cert_cache_->SetNSSDBAndSlot(
+      user_database, user_database->GetPublicSlot(),
+      false /* is_slot_device_wide */);
 }
 
-void NetworkCertLoader::AddPolicyCertificateProvider(
-    PolicyCertificateProvider* policy_certificate_provider) {
-  policy_certificate_provider->AddPolicyProvidedCertsObserver(this);
-  policy_certificate_providers_.push_back(policy_certificate_provider);
+void NetworkCertLoader::SetDevicePolicyCertificateProvider(
+    PolicyCertificateProvider* device_policy_certificate_provider) {
+  if (device_policy_certificate_provider_) {
+    device_policy_certificate_provider_->RemovePolicyProvidedCertsObserver(
+        this);
+  }
+  device_policy_certificate_provider_ = device_policy_certificate_provider;
+  if (device_policy_certificate_provider_)
+    device_policy_certificate_provider_->AddPolicyProvidedCertsObserver(this);
   UpdateCertificates();
 }
 
-void NetworkCertLoader::RemovePolicyCertificateProvider(
-    PolicyCertificateProvider* policy_certificate_provider) {
-  auto iter = std::find(policy_certificate_providers_.begin(),
-                        policy_certificate_providers_.end(),
-                        policy_certificate_provider);
-  DCHECK(iter != policy_certificate_providers_.end());
-  policy_certificate_providers_.erase(iter);
-  policy_certificate_provider->RemovePolicyProvidedCertsObserver(this);
+void NetworkCertLoader::SetUserPolicyCertificateProvider(
+    PolicyCertificateProvider* user_policy_certificate_provider) {
+  if (user_policy_certificate_provider_)
+    user_policy_certificate_provider_->RemovePolicyProvidedCertsObserver(this);
+  user_policy_certificate_provider_ = user_policy_certificate_provider;
+  if (user_policy_certificate_provider_)
+    user_policy_certificate_provider_->AddPolicyProvidedCertsObserver(this);
   UpdateCertificates();
 }
 
@@ -289,17 +353,51 @@ bool NetworkCertLoader::IsCertificateHardwareBacked(CERTCertificate* cert) {
 }
 
 bool NetworkCertLoader::initial_load_of_any_database_running() const {
-  return system_cert_cache_->initial_load_running() ||
-         user_cert_cache_->initial_load_running();
+  return system_slot_cert_cache_->initial_load_running() ||
+         user_private_slot_cert_cache_->initial_load_running() ||
+         user_public_slot_cert_cache_->initial_load_running();
 }
 
 bool NetworkCertLoader::initial_load_finished() const {
-  return system_cert_cache_->initial_load_finished() ||
-         user_cert_cache_->initial_load_finished();
+  return system_slot_cert_cache_->initial_load_finished() ||
+         user_cert_database_load_finished();
 }
 
 bool NetworkCertLoader::user_cert_database_load_finished() const {
-  return user_cert_cache_->initial_load_finished();
+  if (!user_public_slot_cert_cache_->is_initialized())
+    return false;
+
+  // The private slot is optional, so it's possible that the private slot cert
+  // cache is not initialized. In this case, only care about the public slot
+  // cert cache's state.
+  if (!user_private_slot_cert_cache_->is_initialized())
+    return user_public_slot_cert_cache_->initial_load_finished();
+
+  return user_private_slot_cert_cache_->initial_load_finished() &&
+         user_public_slot_cert_cache_->initial_load_finished();
+}
+
+// static
+net::ScopedCERTCertificateList
+NetworkCertLoader::GetAllCertsFromNetworkCertList(
+    const NetworkCertList& network_cert_list) {
+  net::ScopedCERTCertificateList result;
+  result.reserve(network_cert_list.size());
+  for (const NetworkCert& network_cert : network_cert_list) {
+    result.push_back(net::x509_util::DupCERTCertificate(network_cert.cert()));
+  }
+  return result;
+}
+
+// static
+NetworkCertLoader::NetworkCertList NetworkCertLoader::CloneNetworkCertList(
+    const NetworkCertList& network_cert_list) {
+  NetworkCertList result;
+  result.reserve(network_cert_list.size());
+  for (const NetworkCert& network_cert : network_cert_list) {
+    result.push_back(network_cert.Clone());
+  }
+  return result;
 }
 
 // static
@@ -345,57 +443,14 @@ void NetworkCertLoader::OnCertCacheUpdated() {
   if (is_shutting_down_)
     return;
 
-  // If user_cert_cache_ has access to system certificates and it has already
-  // finished its initial load, it will contain system certificates which we can
-  // filter.
-  if (user_cert_cache_->initial_load_finished() &&
-      user_cert_cache_->has_system_certificates()) {
-    crypto::ScopedPK11Slot system_slot =
-        user_cert_cache_->nss_database()->GetSystemSlot();
-    DCHECK(system_slot);
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::BindOnce(&FilterSystemTokenCertificates,
-                       net::x509_util::DupCERTCertificateList(
-                           user_cert_cache_->cert_list()),
-                       std::move(system_slot)),
-        base::BindOnce(&NetworkCertLoader::StoreCertsFromCache,
-                       weak_factory_.GetWeakPtr(),
-                       net::x509_util::DupCERTCertificateList(
-                           user_cert_cache_->cert_list())));
-  } else {
-    // The user's cert cache does not contain system certificates.
-    net::ScopedCERTCertificateList system_token_client_certs =
-        net::x509_util::DupCERTCertificateList(system_cert_cache_->cert_list());
-    net::ScopedCERTCertificateList all_certs_from_cache =
-        net::x509_util::DupCERTCertificateList(user_cert_cache_->cert_list());
-    all_certs_from_cache.reserve(all_certs_from_cache.size() +
-                                 system_token_client_certs.size());
-    for (const net::ScopedCERTCertificate& cert : system_token_client_certs) {
-      all_certs_from_cache.push_back(
-          net::x509_util::DupCERTCertificate(cert.get()));
-    }
-    StoreCertsFromCache(std::move(all_certs_from_cache),
-                        std::move(system_token_client_certs));
+  if (system_slot_cert_cache_->certificates_update_running() ||
+      user_private_slot_cert_cache_->certificates_update_running() ||
+      user_public_slot_cert_cache_->certificates_update_running()) {
+    // Don't spam the observers - wait for the pending updates to be triggered.
+    return;
   }
-}
-
-void NetworkCertLoader::StoreCertsFromCache(
-    net::ScopedCERTCertificateList all_certs_from_cache,
-    net::ScopedCERTCertificateList system_token_client_certs) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  VLOG(1) << "StoreCertsFromCache: " << all_certs_from_cache.size() << " ("
-          << system_token_client_certs.size()
-          << " client certs on system slot)";
-
-  // Ignore any existing certificates.
-  all_certs_from_cache_ = std::move(all_certs_from_cache);
-  system_token_client_certs_ = std::move(system_token_client_certs);
 
   certs_from_cache_loaded_ = true;
-
   UpdateCertificates();
 }
 
@@ -408,40 +463,37 @@ void NetworkCertLoader::UpdateCertificates() {
   // Only trigger a notification to observers if one of the |CertCache|s has
   // already loaded certificates. Don't trigger notifications if policy-provided
   // certificates change before that.
-  // TODO(https://crbug.com/888451): When we handle client and authority
+  // TODO(https://crbug.com/888451): Now that we handle client and authority
   // certificates separately in NetworkCertLoader, we could fire different
   // notifications for policy-provided cert changes instead of holding back
-  // notifications. Note that it is possible that only |system_cert_cache_| has
-  // loaded certificates (e.g. on the ChromeOS sign-in screen), and it is also
-  // possible that only |user_cert_cache_| has loaded certificates (e.g. if the
-  // system slot is not available for some reason, but a primary user has signed
-  // in).
+  // notifications.
   if (!certs_from_cache_loaded_)
     return;
 
-  // Copy |all_certs_from_cache_| into |all_certs_|, ignoring any existing
-  // certificates.
-  all_certs_.clear();
-  all_certs_.reserve(all_certs_from_cache_.size());
-  for (const net::ScopedCERTCertificate& cert : all_certs_from_cache_)
-    all_certs_.push_back(net::x509_util::DupCERTCertificate(cert.get()));
+  NetworkCertList user_policy_authorities = GetPolicyProvidedAuthorities(
+      user_policy_certificate_provider_, false /* device_wide */);
+  NetworkCertList device_policy_authorities = GetPolicyProvidedAuthorities(
+      device_policy_certificate_provider_, true /* device_wide */);
+  all_authority_certs_ = CombineNetworkCertLists(
+      {&system_slot_cert_cache_->authority_certs(),
+       &user_public_slot_cert_cache_->authority_certs(),
+       &user_private_slot_cert_cache_->authority_certs(),
+       &user_policy_authorities, &device_policy_authorities});
 
-  // Add policy-provided certificates.
-  // TODO(https://crbug.com/888451): Instead of putting authorities and client
-  // certs into |all_certs_| and then filtering in NetworkCertificateHandler, we
-  // should separate the two categories here in |NetworkCertLoader| already
-  // (pmarko@).
-  for (const PolicyCertificateProvider* policy_certificate_provider :
-       policy_certificate_providers_) {
-    AddPolicyProvidedAuthorities(policy_certificate_provider, &all_certs_);
-  }
+  all_client_certs_ =
+      CombineNetworkCertLists({&system_slot_cert_cache_->client_certs(),
+                               &user_public_slot_cert_cache_->client_certs(),
+                               &user_private_slot_cert_cache_->client_certs()});
 
+  VLOG(1) << "OnCertCacheUpdated (all_authority_certs="
+          << all_authority_certs_.size()
+          << ", all_client_certs=" << all_client_certs_.size() << ")";
   NotifyCertificatesLoaded();
 }
 
 void NetworkCertLoader::NotifyCertificatesLoaded() {
   for (auto& observer : observers_)
-    observer.OnCertificatesLoaded(all_certs_);
+    observer.OnCertificatesLoaded();
 }
 
 void NetworkCertLoader::OnPolicyProvidedCertsChanged(

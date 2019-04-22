@@ -18,9 +18,6 @@
  */
 
 // https://w3c.github.io/DOM-Parsing/#the-domparser-interface
-// The `HTMLString` reference below is from Trusted Types:
-// https://github.com/WICG/trusted-types/, which is still WIP.
-// https://crbug.com/739170.
 
 enum SupportedType {
     "text/html",

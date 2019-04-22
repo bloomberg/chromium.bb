@@ -20,8 +20,8 @@ class DISPLAY_EXPORT ScreenBase : public Screen {
   ScreenBase();
   ~ScreenBase() override;
 
-  DisplayList& display_list() { return display_list_; };
-  const DisplayList& display_list() const { return display_list_; };
+  DisplayList& display_list() { return display_list_; }
+  const DisplayList& display_list() const { return display_list_; }
 
   // Screen:
   gfx::Point GetCursorScreenPoint() override;

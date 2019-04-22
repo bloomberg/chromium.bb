@@ -46,8 +46,12 @@ enum IDBTransactionMode {
     readonly attribute DOMException error;
 
     // Methods
-    [RaisesException] IDBObjectStore objectStore (DOMString name);
-    [RaisesException] void abort ();
+    [RaisesException] IDBObjectStore objectStore(DOMString name);
+    [
+      RaisesException,
+      RuntimeEnabled=IDBTransactionCommit
+    ] void commit();
+    [RaisesException] void abort();
 
     // Events
     attribute EventHandler onabort;

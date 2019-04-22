@@ -23,7 +23,7 @@ TEST(SetuidSandboxClient, SandboxedClientAPI) {
 
   // Set-up a fake environment as if we went through the setuid sandbox.
   EXPECT_TRUE(env->SetVar(kSandboxEnvironmentApiProvides,
-              base::IntToString(kSUIDSandboxApiNumber)));
+                          base::NumberToString(kSUIDSandboxApiNumber)));
   EXPECT_TRUE(env->SetVar(kSandboxDescriptorEnvironmentVarName, "1"));
   EXPECT_TRUE(env->SetVar(kSandboxPIDNSEnvironmentVarName, "1"));
   EXPECT_TRUE(env->UnSetVar(kSandboxNETNSEnvironmentVarName));
@@ -36,7 +36,7 @@ TEST(SetuidSandboxClient, SandboxedClientAPI) {
 
   // Forge an incorrect API version and check.
   EXPECT_TRUE(env->SetVar(kSandboxEnvironmentApiProvides,
-              base::IntToString(kSUIDSandboxApiNumber + 1)));
+                          base::NumberToString(kSUIDSandboxApiNumber + 1)));
   EXPECT_FALSE(sandbox_client->IsSuidSandboxUpToDate());
   // We didn't go through the actual sandboxing mechanism as it is
   // very hard in a unit test.

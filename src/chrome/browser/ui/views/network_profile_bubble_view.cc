@@ -130,7 +130,7 @@ void NetworkProfileBubble::ShowNotification(Browser* browser) {
   views::View* anchor = NULL;
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   if (browser_view && browser_view->toolbar())
-    anchor = browser_view->toolbar()->app_menu_button();
+    anchor = browser_view->toolbar_button_provider()->GetAppMenuButton();
   NetworkProfileBubbleView* bubble =
       new NetworkProfileBubbleView(anchor, browser, browser->profile());
   views::BubbleDialogDelegateView::CreateBubble(bubble)->Show();

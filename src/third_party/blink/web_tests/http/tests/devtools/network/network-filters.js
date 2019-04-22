@@ -9,17 +9,20 @@
 
   await NetworkTestRunner.clearNetworkCache();
 
+  async function makeFetchPromise(url) {
+    return new Promise(resolve => {
+      NetworkTestRunner.makeFetch(url, {}, resolve);
+    });
+  }
+
   NetworkTestRunner.recordNetwork();
 
-  NetworkTestRunner.makeFetch('resources/style.css', {}, ensureAllResources);
-  NetworkTestRunner.makeFetch('resources/abe.png', {}, () => {
-    // Ensures result is cached.
-    NetworkTestRunner.makeFetch('resources/abe.png', {}, ensureAllResources);
-    ensureAllResources();
-  });
-  NetworkTestRunner.makeFetch('missing/foo.bar', {}, ensureAllResources);
+  await makeFetchPromise('resources/style.css');
+  await makeFetchPromise('resources/abe.png');
+  await makeFetchPromise('resources/abe.png');  // Ensure result is cached.
+  await makeFetchPromise('missing/foo.bar');
 
-  var filterChecks = [
+  const filterChecks = [
     '-.css',
     '-.png',
     'css',
@@ -35,34 +38,44 @@
     '-is:from-cache',
   ];
 
-  var resourceCount = 0;
-  var totalResourceCount = 4;
-  function ensureAllResources() {
-    if (++resourceCount >= totalResourceCount)
-      checkFilters();
+  for (const filterText of filterChecks) {
+    TestRunner.addResult('filterText: ' + filterText);
+    setNetworkLogFilter(filterText);
+    printNetworkLog();
   }
+  setNetworkLogFilter('');
 
-  function checkFilters() {
-    for (var filterText of filterChecks) {
-      TestRunner.addResult('filterText: ' + filterText);
-      setNetworkLogFilter(filterText);
+  await TestRunner.evaluateInPageAsync(
+      `fetch('data:;base64,c2VuZGluZyB0aGlzIHV0Zi04IHN0cmluZyBhcyBhIGJpbmFyeSBtZXNzYWdlLi4u')`);
+  await TestRunner.evaluateInPageAsync(
+      `fetch(URL.createObjectURL(new Blob(new Uint8Array([1, 2, 3, 4]))))`);
+  UI.panels.network._networkLogView._filterChanged(null);
 
-      var nodes = UI.panels.network._networkLogView.flatNodesList();
-      var foundNodesCount = 0;
-      for (var i = 0; i < nodes.length; i++) {
-        if (!nodes[i][Network.NetworkLogView._isFilteredOutSymbol])
-          foundNodesCount++;
-      }
+  TestRunner.addResult('hide data URLs unchecked');
+  printNetworkLog();
 
-      TestRunner.addResult('Found results: ' + foundNodesCount);
-      TestRunner.addResult('');
+  UI.panels.network._networkLogView._dataURLFilterUI.setChecked(true);
+  UI.panels.network._networkLogView._filterChanged(null);
+  TestRunner.addResult('hide data URLs checked');
+  printNetworkLog();
+
+  TestRunner.completeTest();
+
+  function printNetworkLog() {
+    const nodes = UI.panels.network._networkLogView.flatNodesList();
+    let foundNodesCount = 0;
+    for (let i = 0; i < nodes.length; i++) {
+      if (!nodes[i][Network.NetworkLogView._isFilteredOutSymbol])
+        foundNodesCount++;
     }
-    TestRunner.completeTest();
+
+    TestRunner.addResult('Found results: ' + foundNodesCount);
+    TestRunner.addResult('');
   }
 
   /**
-     * @param {string} value
-     */
+   * @param {string} value
+   */
   function setNetworkLogFilter(value) {
     UI.panels.network._networkLogView._textFilterUI.setValue(value);
     UI.panels.network._networkLogView._filterChanged(null);  // event not used in this method, so passing null

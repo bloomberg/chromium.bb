@@ -99,47 +99,6 @@ class TestImageRequest : public ImageDecoder::ImageRequest {
   DISALLOW_COPY_AND_ASSIGN(TestImageRequest);
 };
 
-class KillProcessObserver : public content::BrowserChildProcessObserver {
- public:
-  KillProcessObserver()
-      : did_kill_(false),
-        utility_process_name_(
-            l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_IMAGE_DECODER_NAME)) {
-    Add(this);
-  }
-
-  ~KillProcessObserver() override {
-    Remove(this);
-  }
-
-  bool did_kill() const { return did_kill_; }
-
- private:
-  void BrowserChildProcessHostConnected(
-      const content::ChildProcessData& data) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (!data.GetProcess().IsValid() || data.name != utility_process_name_) {
-      return;
-    }
-
-    ASSERT_FALSE(did_kill_);
-
-    // Use a non-zero exit code so it counts as a crash.
-    // Don't wait for the process after sending the termination signal
-    // (SIGTERM). According to POSIX, doing so causes the resulting zombie to be
-    // removed from the process table. However, Chromium treats an error on
-    // |waitpid| (in this case, ECHILD) as a "normal" termination and doesn't
-    // invoke the process host delegate's OnProcessCrashed().
-    EXPECT_TRUE(data.GetProcess().Terminate(1, false));
-    did_kill_ = true;
-  }
-
-  bool did_kill_;
-  const base::string16 utility_process_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(KillProcessObserver);
-};
-
 }  // namespace
 
 class ImageDecoderBrowserTest : public InProcessBrowserTest {
@@ -244,24 +203,4 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, StartAndDestroy) {
   ImageDecoder::Start(test_request.get(), std::vector<uint8_t>());
   test_request.reset();
   runner->Run();
-}
-
-// Killing the utility process counts as a crash. Thus the request fails.
-// If ImageDecoder did not handle the crash properly, the request never finishes
-// and this test would hang.
-// Note: This test is inherently racy because KillProcessObserver lives on the
-// UI thread but ImageDecoder does its work mainly on the IO thread. So the test
-// checks for both possible valid outcomes.
-IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, StartAndKillProcess) {
-  KillProcessObserver observer;
-  scoped_refptr<content::MessageLoopRunner> runner =
-      new content::MessageLoopRunner;
-  TestImageRequest test_request(runner->QuitClosure());
-  ImageDecoder::Start(&test_request, GetValidPngData());
-  runner->Run();
-  if (!test_request.decode_succeeded()) {
-    // The UI thread won the race. Make sure the utility process did get killed.
-    EXPECT_TRUE(observer.did_kill());
-  }
-  // Else the IO thread won the race and the image got decoded. Oh well.
 }

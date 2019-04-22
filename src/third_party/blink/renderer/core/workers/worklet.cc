@@ -6,8 +6,8 @@
 
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -16,13 +16,15 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/workers/worklet_pending_tasks.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 
 Worklet::Worklet(Document* document)
     : ContextLifecycleObserver(document),
-      module_responses_map_(new WorkletModuleResponsesMap) {
+      module_responses_map_(MakeGarbageCollected<WorkletModuleResponsesMap>()) {
   DCHECK(IsMainThread());
 }
 
@@ -48,7 +50,7 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
                     mojom::WebFeature::kWorkletAddModule);
 
   // Step 1: "Let promise be a new promise."
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // Step 2: "Let worklet be the current Worklet."
@@ -123,7 +125,11 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
 
   // Step 7: "Let outsideSettings be the relevant settings object of this."
   auto* outside_settings_object =
-      GetExecutionContext()->CreateFetchClientSettingsObjectSnapshot();
+      MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+          GetExecutionContext()
+              ->Fetcher()
+              ->GetProperties()
+              .GetFetchClientSettingsObject());
   // Specify TaskType::kInternalLoading because it's commonly used for module
   // loading.
   scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner =
@@ -160,7 +166,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   // TODO(nhiroki): Queue a task instead of executing this here.
   for (const auto& proxy : proxies_) {
     proxy->FetchAndInvokeScript(module_url_record, credentials_mode,
-                                outside_settings_object,
+                                *outside_settings_object,
                                 outside_settings_task_runner, pending_tasks);
   }
 }

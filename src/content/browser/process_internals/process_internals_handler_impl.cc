@@ -67,13 +67,19 @@ void ProcessInternalsHandlerImpl::GetIsolationMode(
   if (SiteIsolationPolicy::AreIsolatedOriginsEnabled())
     modes.push_back("Isolate Origins");
 
+  // Retrieve any additional site isolation modes controlled by the embedder.
+  std::vector<std::string> additional_modes =
+      GetContentClient()->browser()->GetAdditionalSiteIsolationModes();
+  std::move(additional_modes.begin(), additional_modes.end(),
+            std::back_inserter(modes));
+
   std::move(callback).Run(modes.empty() ? "Disabled"
                                         : base::JoinString(modes, ", "));
 }
 
 void ProcessInternalsHandlerImpl::GetIsolatedOriginsSize(
     GetIsolatedOriginsSizeCallback callback) {
-  int size = SiteIsolationPolicy::GetIsolatedOrigins().size();
+  size_t size = SiteIsolationPolicy::GetIsolatedOrigins().size();
   std::move(callback).Run(size);
 }
 

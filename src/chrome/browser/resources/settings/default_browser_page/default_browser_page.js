@@ -40,7 +40,8 @@ Polymer({
         'browser-default-state-changed',
         this.updateDefaultBrowserState_.bind(this));
 
-    this.browserProxy_.requestDefaultBrowserState();
+    this.browserProxy_.requestDefaultBrowserState().then(
+        this.updateDefaultBrowserState_.bind(this));
   },
 
   /**
@@ -53,16 +54,17 @@ Polymer({
     this.isUnknownError_ = false;
     this.maySetDefaultBrowser_ = false;
 
-    if (defaultBrowserState.isDefault)
+    if (defaultBrowserState.isDefault) {
       this.isDefault_ = true;
-    else if (!defaultBrowserState.canBeDefault)
+    } else if (!defaultBrowserState.canBeDefault) {
       this.isSecondaryInstall_ = true;
-    else if (
+    } else if (
         !defaultBrowserState.isDisabledByPolicy &&
-        !defaultBrowserState.isUnknownError)
+        !defaultBrowserState.isUnknownError) {
       this.maySetDefaultBrowser_ = true;
-    else
+    } else {
       this.isUnknownError_ = true;
+    }
   },
 
   /** @private */

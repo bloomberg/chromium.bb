@@ -34,10 +34,6 @@ namespace blink {
 FEBlend::FEBlend(Filter* filter, BlendMode mode)
     : FilterEffect(filter), mode_(mode) {}
 
-FEBlend* FEBlend::Create(Filter* filter, BlendMode mode) {
-  return MakeGarbageCollected<FEBlend>(filter, mode);
-}
-
 bool FEBlend::SetBlendMode(BlendMode mode) {
   if (mode_ == mode)
     return false;

@@ -18,6 +18,7 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/skia_common.h"
+#include "cc/test/test_paint_worklet_input.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkGraphics.h"
@@ -564,9 +565,9 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
         SkMatrix scale = SkMatrix::MakeScale(std::max(x * 0.5f, kMinScale),
                                              std::max(y * 0.5f, kMinScale));
         PaintFlags flags;
-        flags.setShader(PaintShader::MakeImage(
-            discardable_image[y][x], SkShader::kClamp_TileMode,
-            SkShader::kClamp_TileMode, &scale));
+        flags.setShader(PaintShader::MakeImage(discardable_image[y][x],
+                                               SkTileMode::kClamp,
+                                               SkTileMode::kClamp, &scale));
         content_layer_client.add_draw_rect(
             gfx::Rect(x * 512 + 6, y * 512 + 6, 500, 500), flags);
       }
@@ -748,8 +749,7 @@ TEST_F(DiscardableImageMapTest, CapturesImagesInPaintRecordShaders) {
   PaintFlags flags;
   SkRect tile = SkRect::MakeWH(100, 100);
   flags.setShader(PaintShader::MakePaintRecord(
-      shader_record, tile, SkShader::TileMode::kClamp_TileMode,
-      SkShader::TileMode::kClamp_TileMode, nullptr));
+      shader_record, tile, SkTileMode::kClamp, SkTileMode::kClamp, nullptr));
   display_list->push<DrawRectOp>(SkRect::MakeWH(200, 200), flags);
   display_list->EndPaintOfUnpaired(visible_rect);
   display_list->Finalize();
@@ -823,8 +823,8 @@ TEST_F(DiscardableImageMapTest, CapturesImagesInPaintFilters) {
 TEST_F(DiscardableImageMapTest, CapturesImagesInSaveLayers) {
   PaintFlags flags;
   PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
-  flags.setShader(PaintShader::MakeImage(image, SkShader::kClamp_TileMode,
-                                         SkShader::kClamp_TileMode, nullptr));
+  flags.setShader(PaintShader::MakeImage(image, SkTileMode::kClamp,
+                                         SkTileMode::kClamp, nullptr));
 
   gfx::Rect visible_rect(500, 500);
   scoped_refptr<DisplayItemList> display_list = new DisplayItemList();
@@ -855,8 +855,7 @@ TEST_F(DiscardableImageMapTest, EmbeddedShaderWithAnimatedImages) {
   PaintImage animated_image = CreateAnimatedImage(gfx::Size(100, 100), frames);
   shader_record->push<DrawImageOp>(animated_image, 0.f, 0.f, nullptr);
   auto shader_with_image = PaintShader::MakePaintRecord(
-      shader_record, tile, SkShader::TileMode::kClamp_TileMode,
-      SkShader::TileMode::kClamp_TileMode, nullptr);
+      shader_record, tile, SkTileMode::kClamp, SkTileMode::kClamp, nullptr);
 
   // Create a second shader which uses the shader above.
   auto second_shader_record = sk_make_sp<PaintOpBuffer>();
@@ -864,8 +863,8 @@ TEST_F(DiscardableImageMapTest, EmbeddedShaderWithAnimatedImages) {
   flags.setShader(shader_with_image);
   second_shader_record->push<DrawRectOp>(SkRect::MakeWH(200, 200), flags);
   auto shader_with_shader_with_image = PaintShader::MakePaintRecord(
-      second_shader_record, tile, SkShader::TileMode::kClamp_TileMode,
-      SkShader::TileMode::kClamp_TileMode, nullptr);
+      second_shader_record, tile, SkTileMode::kClamp, SkTileMode::kClamp,
+      nullptr);
 
   gfx::Rect visible_rect(500, 500);
   scoped_refptr<DisplayItemList> display_list = new DisplayItemList();
@@ -879,6 +878,19 @@ TEST_F(DiscardableImageMapTest, EmbeddedShaderWithAnimatedImages) {
             ImageAnalysisState::kAnimatedImages);
   EXPECT_EQ(shader_with_shader_with_image->image_analysis_state(),
             ImageAnalysisState::kAnimatedImages);
+}
+
+TEST_F(DiscardableImageMapTest, BuildPaintWorkletImage) {
+  gfx::SizeF size(100, 50);
+  scoped_refptr<TestPaintWorkletInput> input =
+      base::MakeRefCounted<TestPaintWorkletInput>(size);
+  PaintImage paint_image = PaintImageBuilder::WithDefault()
+                               .set_id(1)
+                               .set_paint_worklet_input(std::move(input))
+                               .TakePaintImage();
+  EXPECT_TRUE(paint_image.paint_worklet_input());
+  EXPECT_EQ(paint_image.width(), size.width());
+  EXPECT_EQ(paint_image.height(), size.height());
 }
 
 TEST_F(DiscardableImageMapTest, DecodingModeHintsBasic) {
@@ -1068,8 +1080,8 @@ gfx::ColorSpace test_color_spaces[] = {
     gfx::ColorSpace::CreateDisplayP3D65(),
 };
 
-INSTANTIATE_TEST_CASE_P(ColorSpace,
-                        DiscardableImageMapColorSpaceTest,
-                        testing::ValuesIn(test_color_spaces));
+INSTANTIATE_TEST_SUITE_P(ColorSpace,
+                         DiscardableImageMapColorSpaceTest,
+                         testing::ValuesIn(test_color_spaces));
 
 }  // namespace cc

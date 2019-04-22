@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_TRUSTED_SOURCES_MANAGER_H_
 #define CHROME_BROWSER_DOWNLOAD_TRUSTED_SOURCES_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 
@@ -29,7 +31,7 @@ class TrustedSourcesManager {
   // the security zone mapping is used instead to determine whether the source
   // is trusted or not.
   //
-  static TrustedSourcesManager* Create();
+  static std::unique_ptr<TrustedSourcesManager> Create();
 
   // Returns true if the source of this URL is part of the trusted sources.
   virtual bool IsFromTrustedSource(const GURL& url) const;

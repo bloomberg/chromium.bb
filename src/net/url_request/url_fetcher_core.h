@@ -18,7 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "net/base/chunked_upload_data_stream.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -116,7 +116,7 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   void SaveResponseWithWriter(
       std::unique_ptr<URLFetcherResponseWriter> response_writer);
   HttpResponseHeaders* GetResponseHeaders() const;
-  HostPortPair GetSocketAddress() const;
+  IPEndPoint GetSocketAddress() const;
   const ProxyServer& ProxyServerUsed() const;
   bool WasFetchedViaProxy() const;
   bool WasCached() const;
@@ -261,11 +261,10 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   HttpRequestHeaders extra_request_headers_;
   scoped_refptr<HttpResponseHeaders> response_headers_;
   ProxyServer proxy_server_;
-  bool was_fetched_via_proxy_;
   bool was_cached_;
   int64_t received_response_content_length_;
   int64_t total_received_bytes_;
-  HostPortPair socket_address_;
+  IPEndPoint remote_endpoint_;
 
   bool upload_content_set_;          // SetUploadData has been called
   std::string upload_content_;       // HTTP POST payload

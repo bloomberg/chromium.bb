@@ -4,7 +4,6 @@
 
 /**
  * Stats collected about Metadata handling for tests.
- * @struct
  */
 class MetadataStats {
   constructor() {
@@ -25,272 +24,273 @@ class MetadataStats {
   }
 }
 
-/**
- * @param {!MetadataProvider} rawProvider
- * @constructor
- * @struct
- */
-function MetadataModel(rawProvider) {
+class MetadataModel {
   /**
-   * @private {!MetadataProvider}
-   * @const
+   * @param {!MetadataProvider} rawProvider
    */
-  this.rawProvider_ = rawProvider;
+  constructor(rawProvider) {
+    /**
+     * @private {!MetadataProvider}
+     * @const
+     */
+    this.rawProvider_ = rawProvider;
+
+    /**
+     * @private {!MetadataProviderCache}
+     * @const
+     */
+    this.cache_ = new MetadataProviderCache();
+
+    /**
+     * @private {!Array<!MetadataProviderCallbackRequest<T>>}
+     * @const
+     */
+    this.callbackRequests_ = [];
+
+    /** @private {?MetadataStats} record stats about Metadata when in tests. */
+    this.stats_ = null;
+    if (window.IN_TEST) {
+      this.stats_ = new MetadataStats();
+    }
+  }
 
   /**
-   * @private {!MetadataProviderCache}
-   * @const
+   * @param {!VolumeManager} volumeManager
+   * @return {!MetadataModel}
    */
-  this.cache_ = new MetadataProviderCache();
+  static create(volumeManager) {
+    return new MetadataModel(new MultiMetadataProvider(
+        new FileSystemMetadataProvider(), new ExternalMetadataProvider(),
+        new ContentMetadataProvider(), volumeManager));
+  }
 
   /**
-   * @private {!Array<!MetadataProviderCallbackRequest<T>>}
-   * @const
+   * @return {!MetadataProvider}
    */
-  this.callbackRequests_ = [];
+  getProvider() {
+    return this.rawProvider_;
+  }
 
-  /** @private {?MetadataStats} record stats about Metadata when in tests. */
-  this.stats_ = null;
-  if (window.IN_TEST)
-    this.stats_ = new MetadataStats();
+  /**
+   * Obtains metadata for entries.
+   * @param {!Array<!Entry>} entries Entries.
+   * @param {!Array<string>} names Metadata property names to be obtained.
+   * @return {!Promise<!Array<!MetadataItem>>}
+   */
+  get(entries, names) {
+    this.rawProvider_.checkPropertyNames(names);
+
+    // Check if the results are cached or not.
+    if (this.cache_.hasFreshCache(entries, names)) {
+      if (window.IN_TEST) {
+        this.stats_.fromCache += entries.length;
+      }
+      return Promise.resolve(this.getCache(entries, names));
+    }
+
+    if (window.IN_TEST) {
+      this.stats_.fullFetch += entries.length;
+    }
+
+    // The LRU cache may be cached out when the callback is completed.
+    // To hold cached values, create snapshot of the cache for entries.
+    const requestId = this.cache_.generateRequestId();
+    const snapshot = this.cache_.createSnapshot(entries);
+    const requests = snapshot.createRequests(entries, names);
+    snapshot.startRequests(requestId, requests);
+    this.cache_.startRequests(requestId, requests);
+
+    // Register callback.
+    const promise = new Promise(fulfill => {
+      this.callbackRequests_.push(new MetadataProviderCallbackRequest(
+          entries, names, snapshot, fulfill));
+    });
+
+    // If the requests are not empty, call the requests.
+    if (requests.length) {
+      this.rawProvider_.get(requests).then(list => {
+        // Obtain requested entries and ensure all the requested properties are
+        // contained in the result.
+        const requestedEntries = [];
+        for (let i = 0; i < requests.length; i++) {
+          requestedEntries.push(requests[i].entry);
+          for (let j = 0; j < requests[i].names.length; j++) {
+            const name = requests[i].names[j];
+            if (!(name in list[i])) {
+              list[i][name] = undefined;
+            }
+          }
+        }
+
+        // Store cache.
+        this.cache_.storeProperties(requestId, requestedEntries, list, names);
+
+        // Invoke callbacks.
+        let i = 0;
+        while (i < this.callbackRequests_.length) {
+          if (this.callbackRequests_[i].storeProperties(
+                  requestId, requestedEntries, list)) {
+            // Callback was called.
+            this.callbackRequests_.splice(i, 1);
+          } else {
+            i++;
+          }
+        }
+      });
+    }
+
+    return promise;
+  }
+
+  /**
+   * Obtains metadata cache for entries.
+   * @param {!Array<!Entry>} entries Entries.
+   * @param {!Array<string>} names Metadata property names to be obtained.
+   * @return {!Array<!MetadataItem>}
+   */
+  getCache(entries, names) {
+    // Check if the property name is correct or not.
+    this.rawProvider_.checkPropertyNames(names);
+    return this.cache_.get(entries, names);
+  }
+
+  /**
+   * Clears old metadata for newly created entries.
+   * @param {!Array<!Entry>} entries
+   */
+  notifyEntriesCreated(entries) {
+    this.cache_.clear(util.entriesToURLs(entries));
+    if (window.IN_TEST) {
+      this.stats_.clearCacheCount += entries.length;
+    }
+  }
+
+  /**
+   * Clears metadata for deleted entries.
+   * @param {!Array<string>} urls Note it is not an entry list because we cannot
+   *     obtain entries after removing them from the file system.
+   */
+  notifyEntriesRemoved(urls) {
+    this.cache_.clear(urls);
+    if (window.IN_TEST) {
+      this.stats_.clearCacheCount += urls.length;
+    }
+  }
+
+  /**
+   * Invalidates metadata for updated entries.
+   * @param {!Array<!Entry>} entries
+   */
+  notifyEntriesChanged(entries) {
+    this.cache_.invalidate(this.cache_.generateRequestId(), entries);
+    if (window.IN_TEST) {
+      this.stats_.invalidateCount += entries.length;
+    }
+  }
+
+  /**
+   * Clears all cache.
+   */
+  clearAllCache() {
+    this.cache_.clearAll();
+    if (window.IN_TEST) {
+      this.stats_.clearAllCount++;
+    }
+  }
+
+  /** @return {MetadataStats} */
+  getStats() {
+    return this.stats_;
+  }
+
+  /**
+   * Adds event listener to internal cache object.
+   * @param {string} type
+   * @param {function(Event):undefined} callback
+   */
+  addEventListener(type, callback) {
+    this.cache_.addEventListener(type, callback);
+  }
+
+  /**
+   * Removes event listener from internal cache object.
+   * @param {string} type Name of the event to removed.
+   * @param {function(Event):undefined} callback Event listener.
+   */
+  removeEventListener(type, callback) {
+    this.cache_.removeEventListener(type, callback);
+  }
 }
 
-/**
- * @param {!VolumeManager} volumeManager
- * @return {!MetadataModel}
- */
-MetadataModel.create = function(volumeManager) {
-  return new MetadataModel(
-      new MultiMetadataProvider(
-          new FileSystemMetadataProvider(),
-          new ExternalMetadataProvider(),
-          new ContentMetadataProvider(),
-          volumeManager));
-};
+class MetadataProviderCallbackRequest {
+  /**
+   * @param {!Array<!Entry>} entries
+   * @param {!Array<string>} names
+   * @param {!MetadataCacheSet} cache
+   * @param {function(!MetadataItem):undefined} fulfill
+   */
+  constructor(entries, names, cache, fulfill) {
+    /**
+     * @private {!Array<!Entry>}
+     * @const
+     */
+    this.entries_ = entries;
 
-/**
- * @return {!MetadataProvider}
- */
-MetadataModel.prototype.getProvider = function() {
-  return this.rawProvider_;
-};
+    /**
+     * @private {!Array<string>}
+     * @const
+     */
+    this.names_ = names;
 
-/**
- * Obtains metadata for entries.
- * @param {!Array<!Entry>} entries Entries.
- * @param {!Array<string>} names Metadata property names to be obtained.
- * @return {!Promise<!Array<!MetadataItem>>}
- */
-MetadataModel.prototype.get = function(entries, names) {
-  this.rawProvider_.checkPropertyNames(names);
+    /**
+     * @private {!MetadataCacheSet}
+     * @const
+     */
+    this.cache_ = cache;
 
-  // Check if the results are cached or not.
-  if (this.cache_.hasFreshCache(entries, names)) {
-    if (window.IN_TEST)
-      this.stats_.fromCache += entries.length;
-    return Promise.resolve(this.getCache(entries, names));
+    /**
+     * @private {function(!MetadataItem):undefined}
+     * @const
+     */
+    this.fulfill_ = fulfill;
   }
 
-  if (window.IN_TEST)
-    this.stats_.fullFetch += entries.length;
-
-  // The LRU cache may be cached out when the callback is completed.
-  // To hold cached values, create snapshot of the cache for entries.
-  var requestId = this.cache_.generateRequestId();
-  var snapshot = this.cache_.createSnapshot(entries);
-  var requests = snapshot.createRequests(entries, names);
-  snapshot.startRequests(requestId, requests);
-  this.cache_.startRequests(requestId, requests);
-
-  // Register callback.
-  var promise = new Promise(function(fulfill) {
-    this.callbackRequests_.push(new MetadataProviderCallbackRequest(
-        entries, names, snapshot, fulfill));
-  }.bind(this));
-
-  // If the requests are not empty, call the requests.
-  if (requests.length) {
-    this.rawProvider_.get(requests).then(function(list) {
-      // Obtain requested entries and ensure all the requested properties are
-      // contained in the result.
-      var requestedEntries = [];
-      for (var i = 0; i < requests.length; i++) {
-        requestedEntries.push(requests[i].entry);
-        for (var j = 0; j < requests[i].names.length; j++) {
-          var name = requests[i].names[j];
-          if (!(name in list[i]))
-            list[i][name] = undefined;
-        }
-      }
-
-      // Store cache.
-      this.cache_.storeProperties(requestId, requestedEntries, list, names);
-
-      // Invoke callbacks.
-      var i = 0;
-      while (i < this.callbackRequests_.length) {
-        if (this.callbackRequests_[i].storeProperties(
-            requestId, requestedEntries, list)) {
-          // Callback was called.
-          this.callbackRequests_.splice(i, 1);
-        } else {
-          i++;
-        }
-      }
-    }.bind(this));
+  /**
+   * Stores properties to snapshot cache of the callback request.
+   * If all the requested property are served, it invokes the callback.
+   * @param {number} requestId
+   * @param {!Array<!Entry>} entries
+   * @param {!Array<!MetadataItem>} objects
+   * @return {boolean} Whether the callback is invoked or not.
+   */
+  storeProperties(requestId, entries, objects) {
+    this.cache_.storeProperties(requestId, entries, objects, this.names_);
+    if (this.cache_.hasFreshCache(this.entries_, this.names_)) {
+      this.fulfill_(this.cache_.get(this.entries_, this.names_));
+      return true;
+    }
+    return false;
   }
-
-  return promise;
-};
-
-/**
- * Obtains metadata cache for entries.
- * @param {!Array<!Entry>} entries Entries.
- * @param {!Array<string>} names Metadata property names to be obtained.
- * @return {!Array<!MetadataItem>}
- */
-MetadataModel.prototype.getCache = function(entries, names) {
-  // Check if the property name is correct or not.
-  this.rawProvider_.checkPropertyNames(names);
-  return this.cache_.get(entries, names);
-};
-
-/**
- * Clears old metadata for newly created entries.
- * @param {!Array<!Entry>} entries
- */
-MetadataModel.prototype.notifyEntriesCreated = function(entries) {
-  this.cache_.clear(util.entriesToURLs(entries));
-  if (window.IN_TEST)
-    this.stats_.clearCacheCount += entries.length;
-};
-
-/**
- * Clears metadata for deleted entries.
- * @param {!Array<string>} urls Note it is not an entry list because we cannot
- *     obtain entries after removing them from the file system.
- */
-MetadataModel.prototype.notifyEntriesRemoved = function(urls) {
-  this.cache_.clear(urls);
-  if (window.IN_TEST)
-    this.stats_.clearCacheCount += urls.length;
-};
-
-/**
- * Invalidates metadata for updated entries.
- * @param {!Array<!Entry>} entries
- */
-MetadataModel.prototype.notifyEntriesChanged = function(entries) {
-  this.cache_.invalidate(this.cache_.generateRequestId(), entries);
-  if (window.IN_TEST)
-    this.stats_.invalidateCount += entries.length;
-};
-
-/**
- * Clears all cache.
- */
-MetadataModel.prototype.clearAllCache = function() {
-  this.cache_.clearAll();
-  if (window.IN_TEST)
-    this.stats_.clearAllCount++;
-};
-
-/** @return {MetadataStats} */
-MetadataModel.prototype.getStats = function() {
-  return this.stats_;
-};
-
-/**
- * Adds event listener to internal cache object.
- * @param {string} type
- * @param {function(Event):undefined} callback
- */
-MetadataModel.prototype.addEventListener = function(type, callback) {
-  this.cache_.addEventListener(type, callback);
-};
-
-/**
- * Removes event listener from internal cache object.
- * @param {string} type Name of the event to removed.
- * @param {function(Event):undefined} callback Event listener.
- */
-MetadataModel.prototype.removeEventListener = function(type, callback) {
-  this.cache_.removeEventListener(type, callback);
-};
-
-/**
- * @param {!Array<!Entry>} entries
- * @param {!Array<string>} names
- * @param {!MetadataCacheSet} cache
- * @param {function(!MetadataItem):undefined} fulfill
- * @constructor
- * @struct
- */
-function MetadataProviderCallbackRequest(entries, names, cache, fulfill) {
-  /**
-   * @private {!Array<!Entry>}
-   * @const
-   */
-  this.entries_ = entries;
-
-  /**
-   * @private {!Array<string>}
-   * @const
-   */
-  this.names_ = names;
-
-  /**
-   * @private {!MetadataCacheSet}
-   * @const
-   */
-  this.cache_ = cache;
-
-  /**
-   * @private {function(!MetadataItem):undefined}
-   * @const
-   */
-  this.fulfill_ = fulfill;
 }
-
-/**
- * Stores properties to snapshot cache of the callback request.
- * If all the requested property are served, it invokes the callback.
- * @param {number} requestId
- * @param {!Array<!Entry>} entries
- * @param {!Array<!MetadataItem>} objects
- * @return {boolean} Whether the callback is invoked or not.
- */
-MetadataProviderCallbackRequest.prototype.storeProperties = function(
-    requestId, entries, objects) {
-  this.cache_.storeProperties(requestId, entries, objects, this.names_);
-  if (this.cache_.hasFreshCache(this.entries_, this.names_)) {
-    this.fulfill_(this.cache_.get(this.entries_, this.names_));
-    return true;
-  }
-  return false;
-};
 
 /**
  * Helper wrapper for LRUCache.
- * @constructor
- * @extends {MetadataCacheSet}
- * @struct
  */
-function MetadataProviderCache() {
-  MetadataCacheSet.call(this, new MetadataCacheSetStorageForObject({}));
+class MetadataProviderCache extends MetadataCacheSet {
+  constructor() {
+    super(new MetadataCacheSetStorageForObject({}));
+
+    /**
+     * @private {number}
+     */
+    this.requestIdCounter_ = 0;
+  }
 
   /**
-   * @private {number}
+   * Generates a unique request ID every time when it is called.
+   * @return {number}
    */
-  this.requestIdCounter_ = 0;
+  generateRequestId() {
+    return this.requestIdCounter_++;
+  }
 }
-
-MetadataProviderCache.prototype.__proto__ = MetadataCacheSet.prototype;
-
-/**
- * Generates a unique request ID every time when it is called.
- * @return {number}
- */
-MetadataProviderCache.prototype.generateRequestId = function() {
-  return this.requestIdCounter_++;
-};

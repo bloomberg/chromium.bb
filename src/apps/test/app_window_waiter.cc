@@ -4,6 +4,7 @@
 
 #include "apps/test/app_window_waiter.h"
 
+#include "base/task/post_task.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 
@@ -25,7 +26,7 @@ extensions::AppWindow* AppWindowWaiter::Wait() {
     return window_;
 
   wait_type_ = WAIT_FOR_ADDED;
-  run_loop_.reset(new base::RunLoop);
+  run_loop_ = std::make_unique<base::RunLoop>();
   run_loop_->Run();
 
   return window_;
@@ -37,7 +38,21 @@ extensions::AppWindow* AppWindowWaiter::WaitForShown() {
     return window_;
 
   wait_type_ = WAIT_FOR_SHOWN;
-  run_loop_.reset(new base::RunLoop);
+  run_loop_ = std::make_unique<base::RunLoop>();
+  run_loop_->Run();
+
+  return window_;
+}
+
+extensions::AppWindow* AppWindowWaiter::WaitForShownWithTimeout(
+    base::TimeDelta timeout) {
+  window_ = registry_->GetCurrentAppWindowForApp(app_id_);
+  if (window_ && !window_->is_hidden())
+    return window_;
+
+  wait_type_ = WAIT_FOR_SHOWN;
+  run_loop_ = std::make_unique<base::RunLoop>();
+  base::PostDelayedTask(FROM_HERE, run_loop_->QuitClosure(), timeout);
   run_loop_->Run();
 
   return window_;
@@ -49,7 +64,7 @@ extensions::AppWindow* AppWindowWaiter::WaitForActivated() {
     return window_;
 
   wait_type_ = WAIT_FOR_ACTIVATED;
-  run_loop_.reset(new base::RunLoop);
+  run_loop_ = std::make_unique<base::RunLoop>();
   run_loop_->Run();
 
   return window_;

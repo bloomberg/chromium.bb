@@ -7,8 +7,8 @@
 #ifndef FXJS_XFA_CJX_SUBFORM_H_
 #define FXJS_XFA_CJX_SUBFORM_H_
 
-#include "fxjs/jse_define.h"
 #include "fxjs/xfa/cjx_container.h"
+#include "fxjs/xfa/jse_define.h"
 
 class CXFA_Delta;
 
@@ -17,37 +17,22 @@ class CJX_Subform final : public CJX_Container {
   explicit CJX_Subform(CXFA_Node* container);
   ~CJX_Subform() override;
 
-  JSE_METHOD(execCalculate, CJX_Subform);
-  JSE_METHOD(execEvent, CJX_Subform);
-  JSE_METHOD(execInitialize, CJX_Subform);
-  JSE_METHOD(execValidate, CJX_Subform);
+  // CJX_Object:
+  bool DynamicTypeIs(TypeTag eType) const override;
 
-  JSE_PROP(allowMacro);
-  JSE_PROP(anchorType);
-  JSE_PROP(colSpan);
-  JSE_PROP(columnWidths);
-  JSE_PROP(h);
-  JSE_PROP(hAlign);
-  JSE_PROP(instanceIndex);
-  JSE_PROP(layout);
+  JSE_METHOD(execCalculate);
+  JSE_METHOD(execEvent);
+  JSE_METHOD(execInitialize);
+  JSE_METHOD(execValidate);
+
+  JSE_PROP(instanceManager);
   JSE_PROP(locale);
-  JSE_PROP(maxH);
-  JSE_PROP(maxW);
-  JSE_PROP(minH);
-  JSE_PROP(minW);
-  JSE_PROP(presence);
-  JSE_PROP(relevant);
-  JSE_PROP(restoreState);
-  JSE_PROP(scope);
-  JSE_PROP(use);
-  JSE_PROP(usehref);
-  JSE_PROP(validationMessage);
-  JSE_PROP(vAlign);
-  JSE_PROP(w);
-  JSE_PROP(x);
-  JSE_PROP(y);
 
  private:
+  using Type__ = CJX_Subform;
+  using ParentType__ = CJX_Container;
+
+  static const TypeTag static_type__ = TypeTag::Subform;
   static const CJX_MethodSpec MethodSpecs[];
 };
 

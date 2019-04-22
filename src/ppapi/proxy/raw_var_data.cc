@@ -4,7 +4,6 @@
 
 #include "ppapi/proxy/raw_var_data.h"
 
-#include "base/containers/hash_tables.h"
 #include "base/containers/stack.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -43,11 +42,11 @@ struct StackEntry {
 // is newly created. The index into |data| pointing to the result is returned.
 // |visited_map| keeps track of RawVarDatas that have already been created.
 size_t GetOrCreateRawVarData(const PP_Var& var,
-                             base::hash_map<int64_t, size_t>* visited_map,
+                             std::unordered_map<int64_t, size_t>* visited_map,
                              std::vector<std::unique_ptr<RawVarData>>* data) {
   if (VarTracker::IsVarTypeRefcounted(var.type)) {
-    base::hash_map<int64_t, size_t>::iterator it = visited_map->find(
-        var.value.as_id);
+    std::unordered_map<int64_t, size_t>::iterator it =
+        visited_map->find(var.value.as_id);
     if (it != visited_map->end()) {
       return it->second;
     } else {
@@ -87,8 +86,8 @@ std::unique_ptr<RawVarDataGraph> RawVarDataGraph::Create(const PP_Var& var,
                                                          PP_Instance instance) {
   std::unique_ptr<RawVarDataGraph> graph(new RawVarDataGraph);
   // Map of |var.value.as_id| to a RawVarData index in RawVarDataGraph.
-  base::hash_map<int64_t, size_t> visited_map;
-  base::hash_set<int64_t> parent_ids;
+  std::unordered_map<int64_t, size_t> visited_map;
+  std::unordered_set<int64_t> parent_ids;
 
   base::stack<StackEntry> stack;
   stack.push(StackEntry(var, GetOrCreateRawVarData(var, &visited_map,

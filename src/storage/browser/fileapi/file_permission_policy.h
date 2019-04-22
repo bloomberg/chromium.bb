@@ -5,8 +5,6 @@
 #ifndef STORAGE_BROWSER_FILEAPI_FILE_PERMISSION_POLICY_H_
 #define STORAGE_BROWSER_FILEAPI_FILE_PERMISSION_POLICY_H_
 
-#include "storage/browser/storage_browser_export.h"
-
 namespace storage {
 
 enum FilePermissionPolicy {

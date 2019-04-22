@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_PROMISE_PROPERTY_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_PROMISE_PROPERTY_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property_base.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -41,8 +41,6 @@ class ExecutionContext;
 // ScriptPromiseProperty object for a given name at a time. See reset.
 template <typename HolderType, typename ResolvedType, typename RejectedType>
 class ScriptPromiseProperty : public ScriptPromisePropertyBase {
-  WTF_MAKE_NONCOPYABLE(ScriptPromiseProperty);
-
  public:
   // Creates a ScriptPromiseProperty that will create Promises in
   // the specified ExecutionContext for a property of 'holder'
@@ -88,6 +86,8 @@ class ScriptPromiseProperty : public ScriptPromisePropertyBase {
   ResolvedType resolved_;
   RejectedType rejected_;
   bool resolved_with_undefined_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptPromiseProperty);
 };
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>

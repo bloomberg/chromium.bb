@@ -12,12 +12,11 @@
 namespace cc {
 
 UniqueNotifier::UniqueNotifier(base::SequencedTaskRunner* task_runner,
-                               const base::Closure& closure)
+                               base::RepeatingClosure closure)
     : task_runner_(task_runner),
-      closure_(closure),
+      closure_(std::move(closure)),
       notification_pending_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 UniqueNotifier::~UniqueNotifier() = default;
 

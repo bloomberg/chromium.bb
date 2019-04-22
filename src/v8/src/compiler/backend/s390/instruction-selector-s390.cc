@@ -36,8 +36,8 @@ enum class OperandMode : uint32_t {
   kArithmeticCommonMode = kAllowRM | kAllowRI
 };
 
-typedef base::Flags<OperandMode, uint32_t> OperandModes;
-DEFINE_OPERATORS_FOR_FLAGS(OperandModes);
+using OperandModes = base::Flags<OperandMode, uint32_t>;
+DEFINE_OPERATORS_FOR_FLAGS(OperandModes)
 OperandModes immediateModeMask =
     OperandMode::kShift32Imm | OperandMode::kShift64Imm |
     OperandMode::kInt32Imm | OperandMode::kInt32Imm_Negate |
@@ -315,6 +315,9 @@ ArchOpcode SelectLoadOpcode(Node* node) {
 #else
     case MachineRepresentation::kWord64:  // Fall through.
 #endif
+    case MachineRepresentation::kCompressedSigned:   // Fall through.
+    case MachineRepresentation::kCompressedPointer:  // Fall through.
+    case MachineRepresentation::kCompressed:         // Fall through.
     case MachineRepresentation::kSimd128:  // Fall through.
     case MachineRepresentation::kNone:
     default:
@@ -562,7 +565,7 @@ void VisitBinOp(InstructionSelector* selector, Node* node,
     FlagsContinuation cont;                                               \
     Visit##type1##type2##Op(selector, node, opcode, operand_mode, &cont); \
   }
-VISIT_OP_LIST(DECLARE_VISIT_HELPER_FUNCTIONS);
+VISIT_OP_LIST(DECLARE_VISIT_HELPER_FUNCTIONS)
 #undef DECLARE_VISIT_HELPER_FUNCTIONS
 #undef VISIT_OP_LIST_32
 #undef VISIT_OP_LIST
@@ -736,21 +739,8 @@ static void VisitGeneralStore(
       addressing_mode = kMode_MRR;
     }
     inputs[input_count++] = g.UseUniqueRegister(value);
-    RecordWriteMode record_write_mode = RecordWriteMode::kValueIsAny;
-    switch (write_barrier_kind) {
-      case kNoWriteBarrier:
-        UNREACHABLE();
-        break;
-      case kMapWriteBarrier:
-        record_write_mode = RecordWriteMode::kValueIsMap;
-        break;
-      case kPointerWriteBarrier:
-        record_write_mode = RecordWriteMode::kValueIsPointer;
-        break;
-      case kFullWriteBarrier:
-        record_write_mode = RecordWriteMode::kValueIsAny;
-        break;
-    }
+    RecordWriteMode record_write_mode =
+        WriteBarrierKindToRecordWriteMode(write_barrier_kind);
     InstructionOperand temps[] = {g.TempRegister(), g.TempRegister()};
     size_t const temp_count = arraysize(temps);
     InstructionCode code = kArchStoreWithWriteBarrier;
@@ -775,9 +765,12 @@ static void VisitGeneralStore(
         opcode = kS390_StoreWord16;
         break;
 #if !V8_TARGET_ARCH_S390X
-      case MachineRepresentation::kTaggedSigned:   // Fall through.
-      case MachineRepresentation::kTaggedPointer:  // Fall through.
-      case MachineRepresentation::kTagged:         // Fall through.
+      case MachineRepresentation::kTaggedSigned:       // Fall through.
+      case MachineRepresentation::kTaggedPointer:      // Fall through.
+      case MachineRepresentation::kTagged:             // Fall through.
+      case MachineRepresentation::kCompressedSigned:   // Fall through.
+      case MachineRepresentation::kCompressedPointer:  // Fall through.
+      case MachineRepresentation::kCompressed:         // Fall through.
 #endif
       case MachineRepresentation::kWord32:
         opcode = kS390_StoreWord32;
@@ -787,9 +780,12 @@ static void VisitGeneralStore(
         }
         break;
 #if V8_TARGET_ARCH_S390X
-      case MachineRepresentation::kTaggedSigned:   // Fall through.
-      case MachineRepresentation::kTaggedPointer:  // Fall through.
-      case MachineRepresentation::kTagged:         // Fall through.
+      case MachineRepresentation::kTaggedSigned:       // Fall through.
+      case MachineRepresentation::kTaggedPointer:      // Fall through.
+      case MachineRepresentation::kTagged:             // Fall through.
+      case MachineRepresentation::kCompressedSigned:   // Fall through.
+      case MachineRepresentation::kCompressedPointer:  // Fall through.
+      case MachineRepresentation::kCompressed:         // Fall through.
       case MachineRepresentation::kWord64:
         opcode = kS390_StoreWord64;
         if (m.IsWord64ReverseBytes()) {
@@ -1142,8 +1138,6 @@ void InstructionSelector::VisitWord32ReverseBits(Node* node) { UNREACHABLE(); }
 #if V8_TARGET_ARCH_S390X
 void InstructionSelector::VisitWord64ReverseBits(Node* node) { UNREACHABLE(); }
 #endif
-
-void InstructionSelector::VisitSpeculationFence(Node* node) { UNREACHABLE(); }
 
 void InstructionSelector::VisitInt32AbsWithOverflow(Node* node) {
   VisitWord32UnaryOp(this, node, kS390_Abs32, OperandMode::kNone);
@@ -1544,10 +1538,10 @@ static inline bool TryMatchDoubleConstructFromInsert(
     Visit##type##BinOp(this, node, op, mode);           \
   }
 
-WORD32_BIN_OP_LIST(DECLARE_BIN_OP);
-WORD32_UNARY_OP_LIST(DECLARE_UNARY_OP);
-FLOAT_UNARY_OP_LIST(DECLARE_UNARY_OP);
-FLOAT_BIN_OP_LIST(DECLARE_BIN_OP);
+WORD32_BIN_OP_LIST(DECLARE_BIN_OP)
+WORD32_UNARY_OP_LIST(DECLARE_UNARY_OP)
+FLOAT_UNARY_OP_LIST(DECLARE_UNARY_OP)
+FLOAT_BIN_OP_LIST(DECLARE_BIN_OP)
 
 #if V8_TARGET_ARCH_S390X
 WORD64_UNARY_OP_LIST(DECLARE_UNARY_OP)
@@ -2181,7 +2175,7 @@ void InstructionSelector::EmitPrepareArguments(
       if (input.node == nullptr) continue;
       num_slots += input.location.GetType().representation() ==
                            MachineRepresentation::kFloat64
-                       ? kDoubleSize / kPointerSize
+                       ? kDoubleSize / kSystemPointerSize
                        : 1;
     }
     Emit(kS390_StackClaim, g.NoOutput(), g.TempImmediate(num_slots));
@@ -2192,7 +2186,7 @@ void InstructionSelector::EmitPrepareArguments(
              g.TempImmediate(slot));
         slot += input.location.GetType().representation() ==
                         MachineRepresentation::kFloat64
-                    ? (kDoubleSize / kPointerSize)
+                    ? (kDoubleSize / kSystemPointerSize)
                     : 1;
       }
     }
@@ -2203,6 +2197,34 @@ void InstructionSelector::EmitPrepareArguments(
 bool InstructionSelector::IsTailCallAddressImmediate() { return false; }
 
 int InstructionSelector::GetTempsCountForTailCallFromJSFunction() { return 3; }
+
+void InstructionSelector::VisitChangeTaggedToCompressed(Node* node) {
+  UNIMPLEMENTED();
+}
+
+void InstructionSelector::VisitChangeTaggedPointerToCompressedPointer(
+    Node* node) {
+  UNIMPLEMENTED();
+}
+
+void InstructionSelector::VisitChangeTaggedSignedToCompressedSigned(
+    Node* node) {
+  UNIMPLEMENTED();
+}
+
+void InstructionSelector::VisitChangeCompressedToTagged(Node* node) {
+  UNIMPLEMENTED();
+}
+
+void InstructionSelector::VisitChangeCompressedPointerToTaggedPointer(
+    Node* node) {
+  UNIMPLEMENTED();
+}
+
+void InstructionSelector::VisitChangeCompressedSignedToTaggedSigned(
+    Node* node) {
+  UNIMPLEMENTED();
+}
 
 void InstructionSelector::VisitWord32AtomicLoad(Node* node) {
   LoadRepresentation load_rep = LoadRepresentationOf(node->op());
@@ -2632,7 +2654,24 @@ void InstructionSelector::VisitF32x4ReplaceLane(Node* node) { UNIMPLEMENTED(); }
 void InstructionSelector::EmitPrepareResults(
     ZoneVector<PushParameter>* results, const CallDescriptor* call_descriptor,
     Node* node) {
-  // TODO(John): Port.
+  S390OperandGenerator g(this);
+
+  int reverse_slot = 0;
+  for (PushParameter output : *results) {
+    if (!output.location.IsCallerFrameSlot()) continue;
+    // Skip any alignment holes in nodes.
+    if (output.node != nullptr) {
+      DCHECK(!call_descriptor->IsCFunctionCall());
+      if (output.location.GetType() == MachineType::Float32()) {
+        MarkAsFloat32(output.node);
+      } else if (output.location.GetType() == MachineType::Float64()) {
+        MarkAsFloat64(output.node);
+      }
+      Emit(kS390_Peek, g.DefineAsRegister(output.node),
+           g.UseImmediate(reverse_slot));
+    }
+    reverse_slot += output.location.GetSizeInPointers();
+  }
 }
 
 void InstructionSelector::VisitF32x4Add(Node* node) { UNIMPLEMENTED(); }
@@ -2743,6 +2782,8 @@ void InstructionSelector::VisitI8x16ShrS(Node* node) { UNIMPLEMENTED(); }
 void InstructionSelector::VisitI8x16ShrU(Node* node) { UNIMPLEMENTED(); }
 
 void InstructionSelector::VisitI8x16Mul(Node* node) { UNIMPLEMENTED(); }
+
+void InstructionSelector::VisitS8x16Shuffle(Node* node) { UNIMPLEMENTED(); }
 
 // static
 MachineOperatorBuilder::Flags

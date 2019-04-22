@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/modules/locks/lock_manager.h"
 
 #include <algorithm>
+
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -18,7 +20,6 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -54,7 +55,6 @@ class LockManager::LockRequestImpl final
     : public GarbageCollectedFinalized<LockRequestImpl>,
       public NameClient,
       public mojom::blink::LockRequest {
-  WTF_MAKE_NONCOPYABLE(LockRequestImpl);
   EAGERLY_FINALIZE();
 
  public:
@@ -62,13 +62,17 @@ class LockManager::LockRequestImpl final
                   ScriptPromiseResolver* resolver,
                   const String& name,
                   mojom::blink::LockMode mode,
-                  mojom::blink::LockRequestRequest request,
+                  mojom::blink::LockRequestAssociatedRequest request,
                   LockManager* manager)
       : callback_(callback),
         resolver_(resolver),
         name_(name),
         mode_(mode),
-        binding_(this, std::move(request)),
+        // See https://bit.ly/2S0zRAS for task types.
+        binding_(this,
+                 std::move(request),
+                 manager->GetExecutionContext()->GetTaskRunner(
+                     TaskType::kMiscPlatformAPI)),
         manager_(manager) {}
 
   ~LockRequestImpl() override = default;
@@ -126,9 +130,11 @@ class LockManager::LockRequestImpl final
     }
   }
 
-  void Granted(mojom::blink::LockHandlePtr handle) override {
+  void Granted(mojom::blink::LockHandleAssociatedPtrInfo handle_info) override {
     DCHECK(binding_.is_bound());
-    DCHECK(handle.is_bound());
+
+    mojom::blink::LockHandleAssociatedPtr handle;
+    handle.Bind(std::move(handle_info));
 
     // Ensure a local reference to the callback's wrapper is retained, as it
     // can no longer be traced once removed from |manager_|'s list.
@@ -162,7 +168,7 @@ class LockManager::LockRequestImpl final
 
  private:
   // Callback passed by script; invoked when the lock is granted.
-  TraceWrapperMember<V8LockGrantedCallback> callback_;
+  Member<V8LockGrantedCallback> callback_;
 
   // Rejects if the request was aborted, otherwise resolves/rejects with
   // |callback_|'s result.
@@ -174,12 +180,14 @@ class LockManager::LockRequestImpl final
   // Held to stamp the Lock object's |mode| property.
   mojom::blink::LockMode mode_;
 
-  mojo::Binding<mojom::blink::LockRequest> binding_;
+  mojo::AssociatedBinding<mojom::blink::LockRequest> binding_;
 
   // The |manager_| keeps |this| alive until a response comes in and this is
   // registered. If the context is destroyed then |manager_| will dispose of
   // |this| which terminates the request on the service side.
   Member<LockManager> manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(LockRequestImpl);
 };
 
 LockManager::LockManager(ExecutionContext* context)
@@ -198,6 +206,10 @@ ScriptPromise LockManager::request(ScriptState* script_state,
                                    const LockOptions* options,
                                    V8LockGrantedCallback* callback,
                                    ExceptionState& exception_state) {
+  // Observed context may be gone if frame is detached.
+  if (!GetExecutionContext())
+    return ScriptPromise();
+
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
 
@@ -282,16 +294,16 @@ ScriptPromise LockManager::request(ScriptState* script_state,
                              ? mojom::blink::LockManager::WaitMode::NO_WAIT
                              : mojom::blink::LockManager::WaitMode::WAIT;
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  mojom::blink::LockRequestPtr request_ptr;
+  mojom::blink::LockRequestAssociatedPtrInfo request_info;
   // 11.1. Let request be the result of running the steps to request a lock with
   // promise, the current agent, environment’s id, origin, callback, name,
   // options’ mode dictionary member, options’ ifAvailable dictionary member,
   // and options’ steal dictionary member.
   LockRequestImpl* request = MakeGarbageCollected<LockRequestImpl>(
-      callback, resolver, name, mode, mojo::MakeRequest(&request_ptr), this);
+      callback, resolver, name, mode, mojo::MakeRequest(&request_info), this);
   AddPendingRequest(request);
 
   // 11.2. If options’ signal dictionary member is present, then add the
@@ -305,7 +317,7 @@ ScriptPromise LockManager::request(ScriptState* script_state,
                                               String(kRequestAbortedMessage)));
   }
 
-  service_->RequestLock(name, mode, wait, std::move(request_ptr));
+  service_->RequestLock(name, mode, wait, std::move(request_info));
 
   // 12. Return promise.
   return promise;
@@ -313,6 +325,10 @@ ScriptPromise LockManager::request(ScriptState* script_state,
 
 ScriptPromise LockManager::query(ScriptState* script_state,
                                  ExceptionState& exception_state) {
+  // Observed context may be gone if frame is detached.
+  if (!GetExecutionContext())
+    return ScriptPromise();
+
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
 
@@ -334,7 +350,7 @@ ScriptPromise LockManager::query(ScriptState* script_state,
     }
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   service_->QueryState(WTF::Bind(

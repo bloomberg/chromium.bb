@@ -101,11 +101,11 @@ class ServerSharedBitmapManager;
 }
 
 namespace content {
-
 class BrowserAccessibilityManager;
 class FlingSchedulerBase;
 class InputRouter;
 class MockRenderWidgetHost;
+class RenderViewHost;
 class RenderWidgetHostOwnerDelegate;
 class SyntheticGestureController;
 class TimeoutMonitor;
@@ -194,11 +194,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event) override;
   void ForwardGestureEvent(
       const blink::WebGestureEvent& gesture_event) override;
-  RenderProcessHost* GetProcess() const override;
-  int GetRoutingID() const override;
-  RenderWidgetHostViewBase* GetView() const override;
-  bool IsLoading() const override;
-  bool IsCurrentlyUnresponsive() const override;
+  RenderProcessHost* GetProcess() override;
+  int GetRoutingID() override;
+  RenderWidgetHostViewBase* GetView() override;
+  bool IsCurrentlyUnresponsive() override;
   bool SynchronizeVisualProperties() override;
   void AddKeyPressEventCallback(const KeyPressEventCallback& callback) override;
   void RemoveKeyPressEventCallback(
@@ -277,6 +276,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Initializes a RenderWidgetHost that is attached to a RenderFrameHost.
   void InitForFrame();
 
+  // Returns true if the frame content needs be stored before being evicted.
+  bool ShouldShowStaleContentOnEviction();
+
   // Signal whether this RenderWidgetHost is owned by a RenderFrameHost, in
   // which case it does not do self-deletion.
   void set_owned_by_render_frame_host(bool owned_by_rfh) {
@@ -305,7 +307,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.
   void WasHidden();
-  void WasShown(bool record_presentation_time);
+  void WasShown(bool record_presentation_time,
+                base::TimeTicks tab_switch_start_time = base::TimeTicks());
+
+  // Send a WidgetMsg_WasHidden message to the RenderWidget, without caring
+  // about the visibility state of the RenderWidgetHostImpl. This is used to
+  // address https://crbug.com/936858. See the bug for more details.
+  void SetHiddenOnCommit();
 
 #if defined(OS_ANDROID)
   // Set the importance of widget. The importance is passed onto
@@ -347,8 +355,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return is_last_unlocked_by_target_;
   }
 
-  // Noifies the RenderWidget of the current mouse cursor visibility state.
-  void SendCursorVisibilityState(bool is_visible);
+  // Notifies the RenderWidget of the current mouse cursor visibility state.
+  void OnCursorVisibilityStateChanged(bool is_visible);
+
+  // Notifies the RenderWidget when toggle fallback cursor mode on/off.
+  void OnFallbackCursorModeToggled(bool is_on);
 
   // Notifies the RenderWidgetHost that the View was destroyed.
   void ViewDestroyed();
@@ -356,7 +367,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Signals if this host has forwarded a GestureScrollBegin without yet having
   // forwarded a matching GestureScrollEnd/GestureFlingStart.
   bool is_in_touchscreen_gesture_scroll() const {
-    return is_in_gesture_scroll_[blink::kWebGestureDeviceTouchscreen];
+    return is_in_gesture_scroll_[static_cast<int>(
+        blink::WebGestureDevice::kTouchscreen)];
   }
 
   bool visual_properties_ack_pending_for_testing() {
@@ -367,10 +379,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // It will return false if the renderer is not ready (e.g. there's an
   // in flight change).
   bool RequestRepaintForTesting();
-
-  // Called by the RenderProcessHost to handle the case when the process
-  // changed its state of being blocked.
-  void RenderProcessBlockedStateChanged(bool blocked);
 
   // Called after every cross-document navigation. If Surface Synchronizaton is
   // on, we send a new LocalSurfaceId to RenderWidget to be used after
@@ -409,6 +417,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const blink::WebMouseWheelEvent& wheel_event,
       const ui::LatencyInfo& latency) override;
 
+  // Resolves the given callback once all effects of prior input have been
+  // fully realized.
+  void WaitForInputProcessed(SyntheticGestureParams::GestureType type,
+                             SyntheticGestureParams::GestureSourceType source,
+                             base::OnceClosure callback);
+
   // Retrieve an iterator over any RenderWidgetHosts that are immediately
   // embedded within this one. This does not return hosts that are embedded
   // indirectly (i.e. nested within embedded hosts).
@@ -431,8 +445,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void QueueSyntheticGesture(
       std::unique_ptr<SyntheticGesture> synthetic_gesture,
       base::OnceCallback<void(SyntheticGesture::Result)> on_complete);
-
-  void CancelUpdateTextDirection();
+  void QueueSyntheticGestureCompleteImmediately(
+      std::unique_ptr<SyntheticGesture> synthetic_gesture);
 
   // Update the composition node of the renderer (or WebKit).
   // WebKit has a special node (a composition node) for input method to change
@@ -483,9 +497,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool has_touch_handler() const { return has_touch_handler_; }
 
-  // Set the RenderView background transparency.
-  void SetBackgroundOpaque(bool opaque);
-
   // Called when the response to a pending mouse lock request has arrived.
   // Returns true if |allowed| is true and the mouse has been successfully
   // locked.
@@ -504,6 +515,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // properties.
   void ResetSentVisualProperties();
 
+  // When the WebContents (which acts as the Delegate) is destroyed, this object
+  // may still outlive it while the renderer is shutting down. In that case the
+  // delegate pointer is removed (since it would be a UAF).
   void DetachDelegate();
 
   // Update the renderer's cache of the screen rect of the view and window.
@@ -523,9 +537,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return max_size_for_auto_resize_;
   }
 
-  void DidReceiveRendererFrame();
-
-  // Don't check whether we expected a resize ack during layout tests.
+  // Don't check whether we expected a resize ack during web tests.
   static void DisableResizeAckCheckForTesting();
 
   InputRouter* input_router() { return input_router_.get(); }
@@ -551,8 +563,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                      const gfx::Size& min_size,
                      const gfx::Size& max_size);
 
-  // Allows the main frame's page scale factor to be tracked.
-  void SetPageScaleFactor(float page_scale_factor);
+  // Allows the main frame's page scale state to be tracked.
+  void SetPageScaleState(float page_scale_factor, bool is_pinch_gesture_active);
 
   // Fills in the |visual_properties| struct.
   // Returns |false| if the update is redundant, |true| otherwise.
@@ -665,7 +677,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const std::vector<gfx::Rect>& character_bounds) override;
   void OnImeCancelComposition() override;
   bool IsWheelScrollInProgress() override;
+  bool IsAutoscrollInProgress() override;
   void SetMouseCapture(bool capture) override;
+  void FallbackCursorModeLockCursor(bool left,
+                                    bool right,
+                                    bool up,
+                                    bool down) override;
+  void FallbackCursorModeSetCursorVisibility(bool visible) override;
 
   // FrameTokenMessageQueue::Client:
   void OnInvalidFrameToken(uint32_t frame_token) override;
@@ -742,7 +760,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
                          InputEventAckSource ack_source,
                          InputEventAckState ack_result) override;
-  void OnUnexpectedEventAck(UnexpectedEventAckType type) override;
 
   // virtual for testing.
   virtual void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
@@ -772,6 +789,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, AutoResizeWithScale);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            AutoResizeWithBrowserInitiatedResize);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           ChildAllocationAcceptedInParentWhileHidden);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, Resize);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewChildFrameTest,
                            ChildFrameAutoResizeUpdate);
@@ -787,6 +806,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                            ConflictingAllocationsResolve);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            ResizeAndCrossProcessPostMessagePreserveOrder);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostInputEventRouterTest,
+                           EnsureRendererDestroyedHandlesUnAckedTouchEvents);
   friend class MockRenderWidgetHost;
   friend class OverscrollNavigationOverlayTest;
   friend class RenderViewHostTester;
@@ -815,7 +836,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // IPC message handlers
   void OnRenderProcessGone(int status, int error_code);
   void OnClose();
-  void OnRouteCloseEvent();
   void OnUpdateScreenRectsAck();
   void OnRequestSetBounds(const gfx::Rect& bounds);
   void OnSetTooltipText(const base::string16& tooltip_text,
@@ -849,6 +869,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnIntrinsicSizingInfoChanged(blink::WebIntrinsicSizingInfo info);
   void OnAnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
                                          const gfx::Rect& rect_to_zoom);
+  void OnZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom);
 
   // Called when visual properties have changed in the renderer.
   void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
@@ -879,6 +900,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                      const SkBitmap& bitmap);
 
   void OnSnapshotReceived(int snapshot_id, gfx::Image image);
+
+  // Called by the RenderProcessHost to handle the case when the process
+  // changed its state of being blocked.
+  void RenderProcessBlockedStateChanged(bool blocked);
 
   // 1. Grants permissions to URL (if any)
   // 2. Grants permissions to filenames
@@ -929,20 +954,22 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // TouchEmulator.
   TouchEmulator* GetExistingTouchEmulator();
 
+  void CreateSyntheticGestureControllerIfNecessary();
+
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
   // initialization.
-  bool renderer_initialized_;
+  bool renderer_initialized_ = false;
 
   // True if |Destroy()| has been called.
-  bool destroyed_;
+  bool destroyed_ = false;
 
   // Our delegate, which wants to know mainly about keyboard events.
   // It will remain non-NULL until DetachDelegate() is called.
   RenderWidgetHostDelegate* delegate_;
 
   // The delegate of the owner of this object.
-  RenderWidgetHostOwnerDelegate* owner_delegate_;
+  RenderWidgetHostOwnerDelegate* owner_delegate_ = nullptr;
 
   // Created during construction and guaranteed never to be NULL, but its
   // channel may be NULL if the renderer crashed, so one must always check that.
@@ -955,7 +982,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   const base::TickClock* clock_;
 
   // Indicates whether a page is loading or not.
-  bool is_loading_;
+  bool is_loading_ = false;
 
   // Indicates whether a page is hidden or not. Need to call
   // process_->UpdateClientPriority when this value changes.
@@ -976,14 +1003,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 #endif
 
   // True when waiting for visual_properties_ack.
-  bool visual_properties_ack_pending_;
+  bool visual_properties_ack_pending_ = false;
 
   // Visual properties that were most recently sent to the renderer.
   std::unique_ptr<VisualProperties> old_visual_properties_;
 
   // True if the render widget host should track the render widget's size as
   // opposed to visa versa.
-  bool auto_resize_enabled_;
+  bool auto_resize_enabled_ = false;
 
   // The minimum size for the render widget if auto-resize is enabled.
   gfx::Size min_size_for_auto_resize_;
@@ -992,9 +1019,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   gfx::Size max_size_for_auto_resize_;
 
   // The page-scale factor of the main-frame.
-  float page_scale_factor_;
+  float page_scale_factor_ = 1.f;
 
-  bool waiting_for_screen_rects_ack_;
+  // True when the renderer is currently undergoing a pinch-zoom gesture.
+  bool is_pinch_gesture_active_ = false;
+
+  bool waiting_for_screen_rects_ack_ = false;
   gfx::Rect last_view_screen_rect_;
   gfx::Rect last_window_screen_rect_;
 
@@ -1012,27 +1042,22 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   base::ObserverList<RenderWidgetHostObserver>::Unchecked observers_;
 
   // This is true if the renderer is currently unresponsive.
-  bool is_unresponsive_;
+  bool is_unresponsive_ = false;
 
   // This value denotes the number of input events yet to be acknowledged
   // by the renderer.
-  int in_flight_event_count_;
+  int in_flight_event_count_ = 0;
 
   // Flag to detect recursive calls to GetBackingStore().
-  bool in_get_backing_store_;
+  bool in_get_backing_store_ = false;
 
   // Used for UMA histogram logging to measure the time for a repaint view
   // operation to finish.
   base::TimeTicks repaint_start_time_;
 
   // Set when we update the text direction of the selected input element.
-  bool text_direction_updated_;
-  blink::WebTextDirection text_direction_;
-
-  // Set when we cancel updating the text direction.
-  // This flag also ignores succeeding update requests until we call
-  // NotifyTextDirection().
-  bool text_direction_canceled_;
+  bool text_direction_updated_ = false;
+  blink::WebTextDirection text_direction_ = blink::kWebTextDirectionLeftToRight;
 
   // Indicates if Char and KeyUp events should be suppressed or not. Usually all
   // events are sent to the renderer directly in sequence. However, if a
@@ -1045,10 +1070,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // the Char event generated by alt-2 may also activate a HTML element if its
   // accesskey happens to be "2", then the user may get confused when switching
   // back to the original tab, because the content may already have changed.
-  bool suppress_events_until_keydown_;
+  bool suppress_events_until_keydown_ = false;
 
-  bool pending_mouse_lock_request_;
-  bool allow_privileged_mouse_lock_;
+  bool pending_mouse_lock_request_ = false;
+  bool allow_privileged_mouse_lock_ = false;
 
   // Stores the keyboard keys to lock while waiting for a pending lock request.
   base::Optional<base::flat_set<ui::DomCode>> keyboard_keys_to_lock_;
@@ -1058,18 +1083,20 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Used when locking to indicate when a target application has voluntarily
   // unlocked and desires to relock the mouse. If the mouse is unlocked due
   // to ESC being pressed by the user, this will be false.
-  bool is_last_unlocked_by_target_;
+  bool is_last_unlocked_by_target_ = false;
 
   // Keeps track of whether the webpage has any touch event handler. If it does,
   // then touch events are sent to the renderer. Otherwise, the touch events are
   // not sent to the renderer.
-  bool has_touch_handler_;
+  bool has_touch_handler_ = false;
 
   // TODO(wjmaclean) Remove the code for supporting resending gesture events
   // when WebView transitions to OOPIF and BrowserPlugin is removed.
   // http://crbug.com/533069
-  bool is_in_gesture_scroll_[blink::kWebGestureDeviceCount] = {false};
-  bool is_in_touchpad_gesture_fling_;
+  bool is_in_gesture_scroll_[static_cast<int>(
+                                 blink::WebGestureDevice::kMaxValue) +
+                             1] = {false};
+  bool is_in_touchpad_gesture_fling_ = false;
 
   std::unique_ptr<SyntheticGestureController> synthetic_gesture_controller_;
 
@@ -1086,20 +1113,20 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   RenderWidgetHostLatencyTracker latency_tracker_;
 
-  int next_browser_snapshot_id_;
+  int next_browser_snapshot_id_ = 1;
   using PendingSnapshotMap = std::map<int, GetSnapshotFromBrowserCallback>;
   PendingSnapshotMap pending_browser_snapshots_;
   PendingSnapshotMap pending_surface_browser_snapshots_;
 
   // Indicates whether a RenderFramehost has ownership, in which case this
   // object does not self destroy.
-  bool owned_by_render_frame_host_;
+  bool owned_by_render_frame_host_ = false;
 
   // Indicates whether this RenderWidgetHost thinks is focused. This is trying
   // to match what the renderer process knows. It is different from
   // RenderWidgetHostView::HasFocus in that in that the focus request may fail,
   // causing HasFocus to return false when is_focused_ is true.
-  bool is_focused_;
+  bool is_focused_ = false;
 
   // Whether the view should send begin frame messages to its render widget.
   // This is state that may arrive before the view has been set and that must be
@@ -1123,12 +1150,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // a no-op for non-top-level RenderWidgets, as that should always be zero.
   // TODO(kenrb, fsamuel): We should use SurfaceIDs for this purpose when they
   // are available in the renderer process. See https://crbug.com/695579.
-  uint32_t current_content_source_id_;
+  uint32_t current_content_source_id_ = 0;
 
   // When true, the RenderWidget is regularly sending updates regarding
   // composition info. It should only be true when there is a focused editable
   // node.
-  bool monitoring_composition_info_;
+  bool monitoring_composition_info_ = false;
 
   // This is the content_source_id of the latest frame received. This value is
   // compared against current_content_source_id_ to determine whether the
@@ -1179,6 +1206,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool force_enable_zoom_ = false;
 
   RenderFrameMetadataProviderImpl render_frame_metadata_provider_;
+  bool surface_id_allocation_suppressed_ = false;
 
   const viz::FrameSinkId frame_sink_id_;
 
@@ -1186,6 +1214,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool sent_autoscroll_scroll_begin_ = false;
   gfx::PointF autoscroll_start_position_;
+
+  // True when the cursor has entered the autoscroll mode. A GSB is not
+  // necessarily sent yet.
+  bool autoscroll_in_progress_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

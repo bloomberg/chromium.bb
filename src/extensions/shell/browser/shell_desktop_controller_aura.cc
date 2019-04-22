@@ -18,8 +18,8 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/image_cursors.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_factory.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -33,7 +33,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/command_line.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "extensions/shell/browser/shell_screen.h"
 #include "extensions/shell/common/switches.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -124,7 +124,7 @@ class AppsFocusRules : public wm::BaseFocusRules {
   AppsFocusRules() {}
   ~AppsFocusRules() override {}
 
-  bool SupportsChildActivation(aura::Window* window) const override {
+  bool SupportsChildActivation(const aura::Window* window) const override {
     return true;
   }
 
@@ -141,8 +141,7 @@ ShellDesktopControllerAura::ShellDesktopControllerAura(
   extensions::AppWindowClient::Set(app_window_client_.get());
 
 #if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
   display_configurator_.reset(new display::DisplayConfigurator);
   display_configurator_->Init(
       ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), false);
@@ -156,8 +155,7 @@ ShellDesktopControllerAura::ShellDesktopControllerAura(
 ShellDesktopControllerAura::~ShellDesktopControllerAura() {
   TearDownWindowManager();
 #if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 #endif
   extensions::AppWindowClient::Set(NULL);
 }
@@ -213,10 +211,8 @@ void ShellDesktopControllerAura::PowerButtonEventReceived(
     bool down,
     const base::TimeTicks& timestamp) {
   if (down) {
-    chromeos::DBusThreadManager::Get()
-        ->GetPowerManagerClient()
-        ->RequestShutdown(power_manager::REQUEST_SHUTDOWN_FOR_USER,
-                          "AppShell power button");
+    chromeos::PowerManagerClient::Get()->RequestShutdown(
+        power_manager::REQUEST_SHUTDOWN_FOR_USER, "AppShell power button");
   }
 }
 
@@ -234,12 +230,12 @@ void ShellDesktopControllerAura::OnDisplayModeChanged(
 
 ui::EventDispatchDetails ShellDesktopControllerAura::DispatchKeyEventPostIME(
     ui::KeyEvent* key_event,
-    base::OnceCallback<void(bool)> ack_callback) {
+    DispatchKeyEventPostIMECallback callback) {
   if (key_event->target()) {
     aura::WindowTreeHost* host = static_cast<aura::Window*>(key_event->target())
                                      ->GetRootWindow()
                                      ->GetHost();
-    return host->DispatchKeyEventPostIME(key_event, std::move(ack_callback));
+    return host->DispatchKeyEventPostIME(key_event, std::move(callback));
   }
 
   // Send the key event to the focused window.
@@ -247,11 +243,11 @@ ui::EventDispatchDetails ShellDesktopControllerAura::DispatchKeyEventPostIME(
       const_cast<aura::Window*>(focus_controller_->GetActiveWindow());
   if (active_window) {
     return active_window->GetRootWindow()->GetHost()->DispatchKeyEventPostIME(
-        key_event, std::move(ack_callback));
+        key_event, std::move(callback));
   }
 
   return GetPrimaryHost()->DispatchKeyEventPostIME(key_event,
-                                                   std::move(ack_callback));
+                                                   std::move(callback));
 }
 
 void ShellDesktopControllerAura::OnKeepAliveStateChanged(

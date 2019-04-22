@@ -7,13 +7,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/common/channel_info.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/consent_auditor/consent_auditor_impl.h"
 #include "components/consent_auditor/consent_sync_bridge.h"
 #include "components/consent_auditor/consent_sync_bridge_impl.h"
@@ -56,7 +56,7 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
-  std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge;
+  std::unique_ptr<consent_auditor::ConsentSyncBridge> consent_sync_bridge;
   syncer::OnceModelTypeStoreFactory store_factory =
       ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory();
 
@@ -65,8 +65,9 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
           syncer::USER_CONSENTS,
           base::BindRepeating(&syncer::ReportUnrecoverableError,
                               chrome::GetChannel()));
-  consent_sync_bridge = std::make_unique<syncer::ConsentSyncBridgeImpl>(
-      std::move(store_factory), std::move(change_processor));
+  consent_sync_bridge =
+      std::make_unique<consent_auditor::ConsentSyncBridgeImpl>(
+          std::move(store_factory), std::move(change_processor));
 
   return new consent_auditor::ConsentAuditorImpl(
       profile->GetPrefs(), std::move(consent_sync_bridge),

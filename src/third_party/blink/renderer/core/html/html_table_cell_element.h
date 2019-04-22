@@ -37,6 +37,8 @@ class CORE_EXPORT HTMLTableCellElement final : public HTMLTablePartElement {
  public:
   DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableCellElement);
 
+  HTMLTableCellElement(const QualifiedName&, Document&);
+
   int cellIndex() const;
 
   unsigned colSpan() const;
@@ -53,8 +55,6 @@ class CORE_EXPORT HTMLTableCellElement final : public HTMLTablePartElement {
   bool HasNonInBodyInsertionMode() const override { return true; }
 
  private:
-  HTMLTableCellElement(const QualifiedName&, Document&);
-
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(

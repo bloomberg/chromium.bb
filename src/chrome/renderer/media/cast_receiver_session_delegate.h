@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "chrome/renderer/media/cast_receiver_audio_valve.h"
 #include "chrome/renderer/media/cast_session_delegate.h"
-#include "content/public/renderer/media_stream_video_sink.h"
 #include "media/capture/video_capture_types.h"
 #include "media/cast/cast_receiver.h"
+#include "third_party/blink/public/common/media/video_capture.h"
 
 class CastReceiverSessionDelegate : public CastSessionDelegateBase {
  public:
@@ -33,21 +33,21 @@ class CastReceiverSessionDelegate : public CastSessionDelegateBase {
 
   void StartAudio(scoped_refptr<CastReceiverAudioValve> audio_valve);
 
-  void StartVideo(content::VideoCaptureDeliverFrameCB frame_callback);
+  void StartVideo(blink::VideoCaptureDeliverFrameCB frame_callback);
   // Stop Video callbacks (eventually).
   void StopVideo();
 
  private:
   void OnDecodedAudioFrame(std::unique_ptr<media::AudioBus> audio_bus,
                            const base::TimeTicks& playout_time,
-                           bool is_continous);
+                           bool is_continuous);
 
   void OnDecodedVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                            const base::TimeTicks& playout_time,
-                           bool is_continous);
+                           bool is_continuous);
 
   scoped_refptr<CastReceiverAudioValve> audio_valve_;
-  content::VideoCaptureDeliverFrameCB frame_callback_;
+  blink::VideoCaptureDeliverFrameCB frame_callback_;
   media::cast::AudioFrameDecodedCallback on_audio_decoded_cb_;
   media::cast::VideoFrameDecodedCallback on_video_decoded_cb_;
   std::unique_ptr<media::cast::CastReceiver> cast_receiver_;

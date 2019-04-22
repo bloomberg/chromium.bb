@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -24,8 +25,7 @@ namespace device {
 namespace {
 
 using ABI::Windows::Devices::Bluetooth::BluetoothCacheMode;
-using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-    GattCharacteristic;
+using ABI::Windows::Devices::Bluetooth::BluetoothCacheMode_Uncached;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCharacteristic;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
@@ -56,9 +56,9 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattWriteResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattReadResult;
-using ABI::Windows::Foundation::Collections::IVectorView;
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Foundation::ITypedEventHandler;
+using ABI::Windows::Foundation::Collections::IVectorView;
 using ABI::Windows::Storage::Streams::IBuffer;
 using Microsoft::WRL::Make;
 
@@ -120,18 +120,21 @@ HRESULT FakeGattCharacteristicWinrt::get_PresentationFormats(
 
 HRESULT FakeGattCharacteristicWinrt::ReadValueAsync(
     IAsyncOperation<GattReadResult*>** value) {
+  return E_NOTIMPL;
+}
+
+HRESULT FakeGattCharacteristicWinrt::ReadValueWithCacheModeAsync(
+    BluetoothCacheMode cache_mode,
+    IAsyncOperation<GattReadResult*>** value) {
+  if (cache_mode != BluetoothCacheMode_Uncached)
+    return E_NOTIMPL;
+
   auto async_op = Make<base::win::AsyncOperation<GattReadResult*>>();
   DCHECK(!read_value_callback_);
   read_value_callback_ = async_op->callback();
   *value = async_op.Detach();
   bluetooth_test_winrt_->OnFakeBluetoothCharacteristicReadValue();
   return S_OK;
-}
-
-HRESULT FakeGattCharacteristicWinrt::ReadValueWithCacheModeAsync(
-    BluetoothCacheMode cache_mode,
-    IAsyncOperation<GattReadResult*>** value) {
-  return E_NOTIMPL;
 }
 
 HRESULT FakeGattCharacteristicWinrt::WriteValueAsync(

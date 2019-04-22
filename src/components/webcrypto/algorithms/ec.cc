@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "components/webcrypto/algorithms/asymmetric_key_util.h"
 #include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/blink_key_handle.h"
@@ -82,7 +82,7 @@ Status ReadJwkCrv(const JwkReader& jwk,
   if (status.IsError())
     return status;
 
-  for (size_t i = 0; i < arraysize(kJwkCrvMappings); ++i) {
+  for (size_t i = 0; i < base::size(kJwkCrvMappings); ++i) {
     if (kJwkCrvMappings[i].jwk_curve == jwk_curve) {
       *named_curve = kJwkCrvMappings[i].named_curve;
       return Status::Success();
@@ -95,7 +95,7 @@ Status ReadJwkCrv(const JwkReader& jwk,
 // Converts a WebCryptoNamedCurve to an equivalent JWK "crv".
 Status WebCryptoCurveToJwkCrv(blink::WebCryptoNamedCurve named_curve,
                               std::string* jwk_crv) {
-  for (size_t i = 0; i < arraysize(kJwkCrvMappings); ++i) {
+  for (size_t i = 0; i < base::size(kJwkCrvMappings); ++i) {
     if (kJwkCrvMappings[i].named_curve == named_curve) {
       *jwk_crv = kJwkCrvMappings[i].jwk_curve;
       return Status::Success();

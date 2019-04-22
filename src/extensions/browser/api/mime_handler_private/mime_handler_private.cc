@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/stream_handle.h"

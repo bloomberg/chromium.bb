@@ -71,11 +71,10 @@ public final class DownloadForegroundServiceManagerTest {
         }
 
         @Override
-        boolean stopAndUnbindServiceInternal(@DownloadForegroundService.StopForegroundNotification
-                                             int stopForegroundNotification,
+        void stopAndUnbindServiceInternal(@DownloadForegroundService.StopForegroundNotification
+                                          int stopForegroundNotification,
                 int pinnedNotificationId, Notification pinnedNotification) {
             mStopForegroundNotificationFlag = stopForegroundNotification;
-            return true;
         }
 
         @Override
@@ -231,7 +230,7 @@ public final class DownloadForegroundServiceManagerTest {
         mDownloadServiceManager.updateDownloadStatus(mContext,
                 DownloadNotificationService.DownloadStatus.PAUSED, FAKE_DOWNLOAD_1, mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
-        assertEquals(DownloadForegroundService.StopForegroundNotification.DETACH_OR_PERSIST,
+        assertEquals(DownloadForegroundService.StopForegroundNotification.DETACH,
                 mDownloadServiceManager.mStopForegroundNotificationFlag);
 
         // Service restarts and then is cancelled, so notification is killed.
@@ -259,7 +258,7 @@ public final class DownloadForegroundServiceManagerTest {
                 DownloadNotificationService.DownloadStatus.COMPLETED, FAKE_DOWNLOAD_2,
                 mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
-        assertEquals(DownloadForegroundService.StopForegroundNotification.DETACH_OR_ADJUST,
+        assertEquals(DownloadForegroundService.StopForegroundNotification.DETACH,
                 mDownloadServiceManager.mStopForegroundNotificationFlag);
     }
 

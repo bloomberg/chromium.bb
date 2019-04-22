@@ -99,10 +99,6 @@ SecurityOrigin* BlobOriginMap::GetOrigin(const KURL& url) {
 
 }  // namespace
 
-PublicURLManager* PublicURLManager::Create(ExecutionContext* context) {
-  return MakeGarbageCollected<PublicURLManager>(context);
-}
-
 PublicURLManager::PublicURLManager(ExecutionContext* context)
     : ContextLifecycleObserver(context), is_stopped_(false) {}
 
@@ -167,6 +163,9 @@ void PublicURLManager::Revoke(const KURL& url) {
 void PublicURLManager::Resolve(
     const KURL& url,
     network::mojom::blink::URLLoaderFactoryRequest factory_request) {
+  if (is_stopped_)
+    return;
+
   DCHECK(BlobUtils::MojoBlobURLsEnabled());
   DCHECK(url.ProtocolIs("blob"));
   if (!url_store_) {
@@ -179,6 +178,9 @@ void PublicURLManager::Resolve(
 void PublicURLManager::Resolve(
     const KURL& url,
     mojom::blink::BlobURLTokenRequest token_request) {
+  if (is_stopped_)
+    return;
+
   DCHECK(BlobUtils::MojoBlobURLsEnabled());
   DCHECK(url.ProtocolIs("blob"));
   if (!url_store_) {

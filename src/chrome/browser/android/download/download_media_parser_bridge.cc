@@ -6,6 +6,7 @@
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/task/post_task.h"
 #include "jni/DownloadMediaData_jni.h"

@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -29,6 +30,37 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace media {
+namespace {
+
+void ReportMojoVideoDecoderInitializeStatusToUMAAndRunCB(
+    const VideoDecoder::InitCB& init_cb,
+    bool success) {
+  // Send the same histogram as GpuVideoDecoder to avoid breaking the existing
+  // tests.
+  // TODO(crbug.com/902968): Remove it after deprecating GpuVideoDecoder.
+  PipelineStatus status = success ? PIPELINE_OK : DECODER_ERROR_NOT_SUPPORTED;
+  UMA_HISTOGRAM_ENUMERATION("Media.GpuVideoDecoderInitializeStatus", status,
+                            PIPELINE_STATUS_MAX + 1);
+
+  init_cb.Run(success);
+}
+
+void ReportMojoVideoDecoderErrorStatusToUMAAndRunCB(
+    const VideoDecoder::DecodeCB& decode_cb,
+    DecodeStatus status) {
+  // Send the same histogram as GpuVideoDecoder to avoid breaking the existing
+  // tests.
+  // TODO(crbug.com/902968): Remove it after deprecating GpuVideoDecoder.
+  if (status == DecodeStatus::DECODE_ERROR) {
+    UMA_HISTOGRAM_ENUMERATION("Media.GpuVideoDecoderError",
+                              media::VideoDecodeAccelerator::PLATFORM_FAILURE,
+                              media::VideoDecodeAccelerator::ERROR_MAX + 1);
+  }
+
+  decode_cb.Run(status);
+}
+
+}  // namespace
 
 // Provides a thread-safe channel for VideoFrame destruction events.
 class MojoVideoFrameHandleReleaser
@@ -111,24 +143,23 @@ std::string MojoVideoDecoder::GetDisplayName() const {
   return "MojoVideoDecoder";
 }
 
-void MojoVideoDecoder::Initialize(
-    const VideoDecoderConfig& config,
-    bool low_delay,
-    CdmContext* cdm_context,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                  bool low_delay,
+                                  CdmContext* cdm_context,
+                                  const InitCB& init_cb,
+                                  const OutputCB& output_cb,
+                                  const WaitingCB& waiting_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  InitCB bound_init_cb =
+      base::Bind(&ReportMojoVideoDecoderInitializeStatusToUMAAndRunCB, init_cb);
+
   // Fail immediately if we know that the remote side cannot support |config|.
   if (gpu_factories_ && !gpu_factories_->IsDecoderConfigSupported(config)) {
-    // TODO(liberato): Remove bypass once D3D11VideoDecoder provides
-    // SupportedVideoDecoderConfigs.
-    if (!base::FeatureList::IsEnabled(kD3D11VideoDecoder)) {
-      task_runner_->PostTask(FROM_HERE, base::BindRepeating(init_cb, false));
-      return;
-    }
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindRepeating(bound_init_cb, false));
+    return;
   }
 
   int cdm_id =
@@ -141,7 +172,7 @@ void MojoVideoDecoder::Initialize(
   // is passed for reinitialization.
   if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
     DVLOG(1) << __func__ << ": Invalid CdmContext.";
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(init_cb, false));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(bound_init_cb, false));
     return;
   }
 
@@ -149,13 +180,16 @@ void MojoVideoDecoder::Initialize(
     BindRemoteDecoder();
 
   if (has_connection_error_) {
-    task_runner_->PostTask(FROM_HERE, base::BindRepeating(init_cb, false));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindRepeating(bound_init_cb, false));
     return;
   }
 
   initialized_ = false;
-  init_cb_ = init_cb;
+  init_cb_ = bound_init_cb;
   output_cb_ = output_cb;
+  waiting_cb_ = waiting_cb;
+
   remote_decoder_->Initialize(
       config, low_delay, cdm_id,
       base::Bind(&MojoVideoDecoder::OnInitializeDone, base::Unretained(this)));
@@ -177,22 +211,25 @@ void MojoVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DVLOG(3) << __func__ << ": " << buffer->AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  DecodeCB bound_decode_cb =
+      base::Bind(&ReportMojoVideoDecoderErrorStatusToUMAAndRunCB, decode_cb);
+
   if (has_connection_error_) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(bound_decode_cb, DecodeStatus::DECODE_ERROR));
     return;
   }
 
   mojom::DecoderBufferPtr mojo_buffer =
       mojo_decoder_buffer_writer_->WriteDecoderBuffer(std::move(buffer));
   if (!mojo_buffer) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(bound_decode_cb, DecodeStatus::DECODE_ERROR));
     return;
   }
 
   uint64_t decode_id = decode_counter_++;
-  pending_decodes_[decode_id] = decode_cb;
+  pending_decodes_[decode_id] = bound_decode_cb;
   remote_decoder_->Decode(std::move(mojo_buffer),
                           base::Bind(&MojoVideoDecoder::OnDecodeDone,
                                      base::Unretained(this), decode_id));
@@ -315,16 +352,25 @@ void MojoVideoDecoder::BindRemoteDecoder() {
     }
   }
 
-  remote_decoder_->Construct(std::move(client_ptr_info),
-                             std::move(media_log_ptr_info),
-                             std::move(video_frame_handle_releaser_request),
-                             std::move(remote_consumer_handle),
-                             std::move(command_buffer_id), target_color_space_);
+  remote_decoder_->Construct(
+      std::move(client_ptr_info), std::move(media_log_ptr_info),
+      std::move(video_frame_handle_releaser_request),
+      std::move(remote_consumer_handle), std::move(command_buffer_id),
+      target_color_space_, video_decoder_implementation_);
+}
+
+void MojoVideoDecoder::OnWaiting(WaitingReason reason) {
+  DVLOG(2) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  waiting_cb_.Run(reason);
 }
 
 void MojoVideoDecoder::RequestOverlayInfo(bool restart_for_transitions) {
   DVLOG(2) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(request_overlay_info_cb_);
+
   overlay_info_requested_ = true;
   request_overlay_info_cb_.Run(
       restart_for_transitions,
@@ -334,6 +380,8 @@ void MojoVideoDecoder::RequestOverlayInfo(bool restart_for_transitions) {
 
 void MojoVideoDecoder::OnOverlayInfoChanged(const OverlayInfo& overlay_info) {
   DVLOG(2) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   if (has_connection_error_)
     return;
   remote_decoder_->OnOverlayInfoChanged(overlay_info);

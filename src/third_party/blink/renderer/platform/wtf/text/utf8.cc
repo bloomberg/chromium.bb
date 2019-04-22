@@ -26,9 +26,9 @@
 
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
-#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hasher.h"
 
 namespace WTF {
 namespace unicode {
@@ -66,12 +66,12 @@ ConversionResult ConvertLatin1ToUTF8(const LChar** source_start,
   char* target = *target_start;
   while (source < source_end) {
     UChar32 ch;
-    unsigned short bytes_to_write = 0;
+    uint8_t bytes_to_write = 0;
     const UChar32 kByteMask = 0xBF;
     const UChar32 kByteMark = 0x80;
     const LChar* old_source =
         source;  // In case we have to back up because of target overflow.
-    ch = static_cast<unsigned short>(*source++);
+    ch = static_cast<UChar32>(*source++);
 
     // Figure out how many bytes the result will require
     if (ch < (UChar32)0x80)
@@ -111,17 +111,17 @@ ConversionResult ConvertUTF16ToUTF8(const UChar** source_start,
   char* target = *target_start;
   while (source < source_end) {
     UChar32 ch;
-    unsigned short bytes_to_write = 0;
+    uint8_t bytes_to_write = 0;
     const UChar32 kByteMask = 0xBF;
     const UChar32 kByteMark = 0x80;
     const UChar* old_source =
         source;  // In case we have to back up because of target overflow.
-    ch = static_cast<unsigned short>(*source++);
+    ch = static_cast<UChar32>(*source++);
     // If we have a surrogate pair, convert to UChar32 first.
     if (ch >= 0xD800 && ch <= 0xDBFF) {
       // If the 16 bits following the high surrogate are in the source buffer...
       if (source < source_end) {
-        UChar32 ch2 = static_cast<unsigned short>(*source);
+        UChar32 ch2 = static_cast<UChar32>(*source);
         // If it's a low surrogate, convert to UChar32.
         if (ch2 >= 0xDC00 && ch2 <= 0xDFFF) {
           ch = ((ch - 0xD800) << 10) + (ch2 - 0xDC00) + 0x0010000;

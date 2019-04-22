@@ -8,6 +8,10 @@ import("//testing/test.gni")
 
 jumbo_component("native_theme") {
   sources = [
+    "caption_style.cc",
+    "caption_style.h",
+    "caption_style_mac.mm",
+    "caption_style_win.cc",
     "common_theme.cc",
     "common_theme.h",
     "native_theme.cc",
@@ -37,11 +41,14 @@ jumbo_component("native_theme") {
 
   defines = [ "NATIVE_THEME_IMPLEMENTATION" ]
 
+  public_deps = [
+    "//skia",
+  ]
+
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
     "//cc/paint",
-    "//skia",
     "//ui/base",
     "//ui/display",
     "//ui/gfx",
@@ -53,6 +60,7 @@ jumbo_component("native_theme") {
     libs = [
       "CoreGraphics.framework",
       "AppKit.framework",
+      "MediaAccessibility.framework",
     ]
   }
 }
@@ -81,6 +89,20 @@ if (is_win) {
   }
 }
 
+jumbo_source_set("test_support") {
+  testonly = true
+
+  deps = [
+    ":native_theme",
+    "//base",
+  ]
+
+  sources = [
+    "test_native_theme.cc",
+    "test_native_theme.h",
+  ]
+}
+
 test("native_theme_unittests") {
   sources = []
 
@@ -90,6 +112,10 @@ test("native_theme_unittests") {
 
   if (is_mac) {
     sources += [ "native_theme_mac_unittest.cc" ]
+  }
+
+  if (is_win) {
+    sources += [ "caption_style_win_unittest.cc" ]
   }
 
   deps = [

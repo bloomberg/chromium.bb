@@ -8,9 +8,18 @@
 #include "base/strings/string16.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
+
+#if defined(WCHAR_T_IS_UTF16)
+TEST(String16Test, String16Literal) {
+  static constexpr char16 kHelloWorld[] = STRING16_LITERAL("Hello, World");
+  string16 hello_world = kHelloWorld;
+  EXPECT_EQ(kHelloWorld, hello_world);
+}
+#endif
 
 // We define a custom operator<< for string16 so we can use it with logging.
 // This tests that conversion.

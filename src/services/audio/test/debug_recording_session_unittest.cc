@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -29,9 +30,9 @@ namespace audio {
 namespace {
 
 #if defined(OS_WIN)
-#define IntToStringType base::IntToString16
+#define NumberToStringType base::NumberToString16
 #else
-#define IntToStringType base::IntToString
+#define NumberToStringType base::NumberToString
 #endif
 
 const base::FilePath::CharType kBaseFileName[] =
@@ -61,7 +62,7 @@ class DebugRecordingFileProviderTest : public testing::Test {
   base::FilePath GetFileName(const base::FilePath::StringType& stream_type,
                              uint32_t id) {
     return file_path_.AddExtension(stream_type)
-        .AddExtension(IntToStringType(id))
+        .AddExtension(NumberToStringType(id))
         .AddExtension(kWavExtension);
   }
 
@@ -183,7 +184,7 @@ TEST_F(DebugRecordingFileProviderTest,
   scoped_task_environment_.RunUntilIdle();
 
   base::FilePath file_name(
-      GetFileName(IntToStringType(invalid_stream_type), id));
+      GetFileName(NumberToStringType(invalid_stream_type), id));
   EXPECT_FALSE(base::PathExists(file_name));
 }
 

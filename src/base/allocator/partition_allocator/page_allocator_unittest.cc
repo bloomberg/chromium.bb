@@ -182,7 +182,7 @@ TEST(PageAllocatorTest, InaccessiblePages) {
                             PageTag::kChromium, true);
   EXPECT_TRUE(buffer);
 
-  FAULT_TEST_BEGIN();
+  FAULT_TEST_BEGIN()
 
   // Reading from buffer should fault.
   int* buffer0 = reinterpret_cast<int*>(buffer);
@@ -190,7 +190,7 @@ TEST(PageAllocatorTest, InaccessiblePages) {
   EXPECT_EQ(buffer0_contents, *buffer0);
   EXPECT_TRUE(false);
 
-  FAULT_TEST_END();
+  FAULT_TEST_END()
 
   FreePages(buffer, kPageAllocationGranularity);
 }
@@ -204,13 +204,13 @@ TEST(PageAllocatorTest, ReadExecutePages) {
   // Reading from buffer should succeed.
   int buffer0_contents = *buffer0;
 
-  FAULT_TEST_BEGIN();
+  FAULT_TEST_BEGIN()
 
   // Writing to buffer should fault.
   *buffer0 = ~buffer0_contents;
   EXPECT_TRUE(false);
 
-  FAULT_TEST_END();
+  FAULT_TEST_END()
 
   // Make sure no write occurred.
   EXPECT_EQ(buffer0_contents, *buffer0);

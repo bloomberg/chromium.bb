@@ -22,7 +22,7 @@ namespace content {
 
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
     std::unique_ptr<viz::SoftwareOutputDevice> software_device,
-    const UpdateVSyncParametersCallback& update_vsync_parameters_callback)
+    const viz::UpdateVSyncParametersCallback& update_vsync_parameters_callback)
     : BrowserCompositorOutputSurface(std::move(software_device),
                                      update_vsync_parameters_callback),
       weak_factory_(this) {}
@@ -52,9 +52,7 @@ void SoftwareBrowserCompositorOutputSurface::BindFramebuffer() {
 }
 
 void SoftwareBrowserCompositorOutputSurface::SetDrawRectangle(
-    const gfx::Rect& draw_rectangle) {
-  NOTREACHED();
-}
+    const gfx::Rect& draw_rectangle) {}
 
 void SoftwareBrowserCompositorOutputSurface::Reshape(
     const gfx::Size& size,
@@ -85,19 +83,15 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
 
   software_device()->OnSwapBuffers(base::BindOnce(
       &SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback,
-      weak_factory_.GetWeakPtr(), frame.latency_info,
-      frame.need_presentation_feedback));
+      weak_factory_.GetWeakPtr(), frame.latency_info));
 }
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback(
-    const std::vector<ui::LatencyInfo>& latency_info,
-    bool need_presentation_feedback) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   client_->DidReceiveSwapBuffersAck();
-  if (need_presentation_feedback) {
-    client_->DidReceivePresentationFeedback(gfx::PresentationFeedback(
-        base::TimeTicks::Now(), refresh_interval_, 0u));
-  }
+  client_->DidReceivePresentationFeedback(
+      gfx::PresentationFeedback(base::TimeTicks::Now(), refresh_interval_, 0u));
 }
 
 void SoftwareBrowserCompositorOutputSurface::UpdateVSyncCallback(
@@ -126,13 +120,6 @@ SoftwareBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
   NOTREACHED();
   return 0;
 }
-
-#if BUILDFLAG(ENABLE_VULKAN)
-gpu::VulkanSurface* SoftwareBrowserCompositorOutputSurface::GetVulkanSurface() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-#endif
 
 unsigned SoftwareBrowserCompositorOutputSurface::UpdateGpuFence() {
   return 0;

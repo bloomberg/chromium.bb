@@ -154,4 +154,4 @@ bool OffscreenCanvasPlaceholder::PostSetSuspendAnimationToOffscreenCanvasThread(
   return true;
 }
 
-}  // blink
+}  // namespace blink

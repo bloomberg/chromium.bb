@@ -13,6 +13,7 @@
 #include "src/compiler/linkage.h"
 #include "src/compiler/machine-operator.h"
 #include "src/compiler/node.h"
+#include "src/cpu-features.h"
 #include "src/globals.h"
 #include "src/zone/zone-containers.h"
 
@@ -538,6 +539,9 @@ class V8_EXPORT_PRIVATE InstructionSelector final {
   void MarkAsReference(Node* node) {
     MarkAsRepresentation(MachineRepresentation::kTagged, node);
   }
+  void MarkAsCompressed(Node* node) {
+    MarkAsRepresentation(MachineRepresentation::kCompressed, node);
+  }
 
   // Inform the register allocation of the representation of the unallocated
   // operand {op}.
@@ -551,7 +555,7 @@ class V8_EXPORT_PRIVATE InstructionSelector final {
     kCallFixedTargetRegister = 1u << 3,
     kAllowCallThroughSlot = 1u << 4
   };
-  typedef base::Flags<CallBufferFlag> CallBufferFlags;
+  using CallBufferFlags = base::Flags<CallBufferFlag>;
 
   // Initialize the call buffer with the InstructionOperands, nodes, etc,
   // corresponding

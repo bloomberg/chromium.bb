@@ -10,16 +10,16 @@
 
 #include "third_party/libjingle_xmpp/xmpp/xmppclient.h"
 
+#include "base/logging.h"
+#include "net/base/host_port_pair.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/plainsaslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/prexmppauth.h"
 #include "third_party/libjingle_xmpp/xmpp/saslplainmechanism.h"
-#include "third_party/webrtc/rtc_base/stringutils.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
-#include "third_party/webrtc_overrides/rtc_base/logging.h"
 #include "xmpptask.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmppClient::Private :
     public sigslot::has_slots<>,
@@ -31,7 +31,6 @@ public:
     client_(client),
     socket_(),
     engine_(),
-    proxy_port_(0),
     pre_engine_error_(XmppEngine::ERROR_NONE),
     pre_engine_subcode_(0),
     signal_closed_(false),
@@ -53,9 +52,7 @@ public:
   std::string pass_;
   std::string auth_mechanism_;
   std::string auth_token_;
-  rtc::SocketAddress server_;
-  std::string proxy_host_;
-  int proxy_port_;
+  net::HostPortPair server_;
   XmppEngine::Error pre_engine_error_;
   int pre_engine_subcode_;
   CaptchaChallenge captcha_challenge_;
@@ -82,13 +79,6 @@ public:
   void OnSocketRead();
   void OnSocketClosed();
 };
-
-bool IsTestServer(const std::string& server_name,
-                  const std::string& test_server_domain) {
-  return (!test_server_domain.empty() &&
-          rtc::ends_with(server_name.c_str(),
-                               test_server_domain.c_str()));
-}
 
 XmppReturnStatus XmppClient::Connect(
     const XmppClientSettings& settings,
@@ -121,12 +111,11 @@ XmppReturnStatus XmppClient::Connect(
   // For other servers, we leave the strings empty, which causes the jid's
   // domain to be used.  We do the same for gmail.com and googlemail.com as the
   // returned CN matches the account domain in those cases.
-  std::string server_name = settings.server().HostAsURIString();
-  if (server_name == buzz::STR_TALK_GOOGLE_COM ||
-      server_name == buzz::STR_TALKX_L_GOOGLE_COM ||
-      server_name == buzz::STR_XMPP_GOOGLE_COM ||
-      server_name == buzz::STR_XMPPX_L_GOOGLE_COM ||
-      IsTestServer(server_name, settings.test_server_domain())) {
+  std::string server_name = settings.server().host();
+  if (server_name == jingle_xmpp::STR_TALK_GOOGLE_COM ||
+      server_name == jingle_xmpp::STR_TALKX_L_GOOGLE_COM ||
+      server_name == jingle_xmpp::STR_XMPP_GOOGLE_COM ||
+      server_name == jingle_xmpp::STR_XMPPX_L_GOOGLE_COM) {
     if (settings.host() != STR_GMAIL_COM &&
         settings.host() != STR_GOOGLEMAIL_COM) {
       d_->engine_->SetTlsServer("", STR_TALK_GOOGLE_COM);
@@ -136,14 +125,12 @@ XmppReturnStatus XmppClient::Connect(
   // Set language
   d_->engine_->SetLanguage(lang);
 
-  d_->engine_->SetUser(buzz::Jid(settings.user(), settings.host(), STR_EMPTY));
+  d_->engine_->SetUser(jingle_xmpp::Jid(settings.user(), settings.host(), STR_EMPTY));
 
   d_->pass_ = settings.pass();
   d_->auth_mechanism_ = settings.auth_mechanism();
   d_->auth_token_ = settings.auth_token();
   d_->server_ = settings.server();
-  d_->proxy_host_ = settings.proxy_host();
-  d_->proxy_port_ = settings.proxy_port();
   d_->allow_plain_ = settings.allow_plain();
   d_->pre_auth_.reset(pre_auth);
 
@@ -199,14 +186,14 @@ std::string XmppClient::GetAuthToken() {
 int XmppClient::ProcessStart() {
   // Should not happen, but was observed in crash reports
   if (!d_->socket_) {
-    RTC_LOG(LS_ERROR) << "socket_ already reset";
+    DVLOG(1) << "socket_ already reset";
     return STATE_DONE;
   }
 
   if (d_->pre_auth_) {
     d_->pre_auth_->SignalAuthDone.connect(this, &XmppClient::OnAuthDone);
     d_->pre_auth_->StartPreXmppAuth(
-        d_->engine_->GetUser(), d_->server_, d_->pass_,
+        d_->engine_->GetUser(), d_->pass_,
         d_->auth_mechanism_, d_->auth_token_);
     d_->pass_.clear(); // done with this;
     return STATE_PRE_XMPP_LOGIN;
@@ -226,7 +213,7 @@ void XmppClient::OnAuthDone() {
 int XmppClient::ProcessTokenLogin() {
   // Should not happen, but was observed in crash reports
   if (!d_->socket_) {
-    RTC_LOG(LS_ERROR) << "socket_ already reset";
+    DVLOG(1) << "socket_ already reset";
     return STATE_DONE;
   }
 
@@ -270,7 +257,7 @@ int XmppClient::ProcessTokenLogin() {
 int XmppClient::ProcessStartXmppLogin() {
   // Should not happen, but was observed in crash reports
   if (!d_->socket_) {
-    RTC_LOG(LS_ERROR) << "socket_ already reset";
+    DVLOG(1) << "socket_ already reset";
     return STATE_DONE;
   }
 
@@ -349,7 +336,7 @@ void XmppClient::Private::OnSocketRead() {
   for (;;) {
     // Should not happen, but was observed in crash reports
     if (!socket_) {
-      RTC_LOG(LS_ERROR) << "socket_ already reset";
+      DVLOG(1) << "socket_ already reset";
       return;
     }
 
@@ -418,4 +405,4 @@ void XmppClient::EnsureClosed() {
   }
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

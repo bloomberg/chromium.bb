@@ -197,7 +197,8 @@ SettingsResetPromptConfig::ParseDomainHashes(
 
   // Is the input parseable JSON?
   std::unique_ptr<base::DictionaryValue> domains_dict =
-      base::DictionaryValue::From(base::JSONReader::Read(domain_hashes_json));
+      base::DictionaryValue::From(
+          base::JSONReader::ReadDeprecated(domain_hashes_json));
   if (!domains_dict || domains_dict->empty())
     return CONFIG_ERROR_BAD_DOMAIN_HASHES_PARAM;
 

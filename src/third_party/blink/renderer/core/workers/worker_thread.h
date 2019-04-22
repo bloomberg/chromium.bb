@@ -38,9 +38,10 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -48,6 +49,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "v8/include/v8-inspector.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -108,21 +110,21 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // Called on the main thread after Start().
   void EvaluateClassicScript(const KURL& script_url,
                              const String& source_code,
-                             std::unique_ptr<Vector<char>> cached_meta_data,
+                             std::unique_ptr<Vector<uint8_t>> cached_meta_data,
                              const v8_inspector::V8StackTraceId& stack_id);
 
-  // Posts a task to import a top-level classic script on the worker thread.
-  // Called on the main thread after start().
-  void ImportClassicScript(
+  // Posts a task to fetch and run a top-level classic script on the worker
+  // thread. Called on the main thread after Start().
+  void FetchAndRunClassicScript(
       const KURL& script_url,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       const v8_inspector::V8StackTraceId& stack_id);
 
-  // Posts a task to import a top-level module script on the worker thread.
-  // Called on the main thread after start().
-  void ImportModuleScript(
+  // Posts a task to fetch and run a top-level module script on the worker
+  // thread. Called on the main thread after Start().
+  void FetchAndRunModuleScript(
       const KURL& script_url,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode);
 
   // Posts a task to the worker thread to close the global scope and terminate
@@ -183,11 +185,12 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // adds the current WorkerThread* as the first parameter |function|.
   template <typename FunctionType, typename... Parameters>
   static void CallOnAllWorkerThreads(FunctionType function,
+                                     TaskType task_type,
                                      Parameters&&... parameters) {
     MutexLocker lock(ThreadSetMutex());
     for (WorkerThread* thread : WorkerThreads()) {
       PostCrossThreadTask(
-          *thread->GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
+          *thread->GetTaskRunner(task_type), FROM_HERE,
           CrossThreadBind(function, WTF::CrossThreadUnretained(thread),
                           parameters...));
     }
@@ -219,6 +222,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // and underlying thread. After the global scope is destroyed, queued tasks
   // are discarded and PostTask on the returned task runner just fails. This
   // function can be called on both the main thread and the worker thread.
+  // You must not call this after Terminate() is called.
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType type) {
     return worker_scheduler_->GetTaskRunner(type);
   }
@@ -291,14 +295,14 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   void EvaluateClassicScriptOnWorkerThread(
       const KURL& script_url,
       String source_code,
-      std::unique_ptr<Vector<char>> cached_meta_data,
+      std::unique_ptr<Vector<uint8_t>> cached_meta_data,
       const v8_inspector::V8StackTraceId& stack_id);
-  void ImportClassicScriptOnWorkerThread(
+  void FetchAndRunClassicScriptOnWorkerThread(
       const KURL& script_url,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
       const v8_inspector::V8StackTraceId& stack_id);
-  void ImportModuleScriptOnWorkerThread(
+  void FetchAndRunModuleScriptOnWorkerThread(
       const KURL& script_url,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,

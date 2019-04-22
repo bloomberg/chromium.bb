@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_BLINK_TEST_ENVIRONMENT_H_
 #define CONTENT_PUBLIC_TEST_BLINK_TEST_ENVIRONMENT_H_
 
-// This package provides functions used by webkit_unit_tests.
+// This package provides functions used by blink_unittests.
 namespace content {
 
 // Initializes Blink test environment for unit tests.

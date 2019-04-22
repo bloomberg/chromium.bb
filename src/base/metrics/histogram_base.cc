@@ -152,14 +152,14 @@ void HistogramBase::WriteJSON(std::string* output,
 
   JSONStringValueSerializer serializer(output);
   DictionaryValue root;
-  root.SetString("name", histogram_name());
-  root.SetInteger("count", count);
-  root.SetDouble("sum", static_cast<double>(sum));
-  root.SetInteger("flags", flags());
+  root.SetStringKey("name", histogram_name());
+  root.SetIntKey("count", count);
+  root.SetDoubleKey("sum", static_cast<double>(sum));
+  root.SetIntKey("flags", flags());
   root.Set("params", std::move(parameters));
   if (verbosity_level != JSON_VERBOSITY_LEVEL_OMIT_BUCKETS)
     root.Set("buckets", std::move(buckets));
-  root.SetInteger("pid", GetUniqueIdForProcess());
+  root.SetIntKey("pid", GetUniqueIdForProcess());
   serializer.Serialize(root);
 }
 

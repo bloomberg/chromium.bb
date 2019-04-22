@@ -21,6 +21,6 @@ bool GetHexValue(char letter, int* value);
 
 int HexStringToInteger(const char* text);
 
-};  // namespace
+}  // namespace rlz_lib
 
 #endif  // RLZ_LIB_STRING_UTILS_H_

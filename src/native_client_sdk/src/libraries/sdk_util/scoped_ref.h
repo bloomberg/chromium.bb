@@ -73,7 +73,7 @@ class ScopedRef : public ScopedRefBase {
 
  private:
   typedef void (ScopedRef::*bool_as_func_ptr)() const;
-  void bool_as_func_impl() const {};
+  void bool_as_func_impl() const {}
 
  public:
   operator bool_as_func_ptr() const {

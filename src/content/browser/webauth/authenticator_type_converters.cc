@@ -13,16 +13,17 @@
 
 namespace mojo {
 
-using ::blink::mojom::PublicKeyCredentialUserEntityPtr;
-using ::blink::mojom::PublicKeyCredentialRpEntityPtr;
-using ::blink::mojom::AuthenticatorTransport;
-using ::blink::mojom::PublicKeyCredentialType;
-using ::blink::mojom::PublicKeyCredentialParametersPtr;
-using ::blink::mojom::PublicKeyCredentialDescriptorPtr;
-using ::blink::mojom::AuthenticatorSelectionCriteriaPtr;
+using ::blink::mojom::AttestationConveyancePreference;
 using ::blink::mojom::AuthenticatorAttachment;
-using ::blink::mojom::UserVerificationRequirement;
+using ::blink::mojom::AuthenticatorSelectionCriteriaPtr;
+using ::blink::mojom::AuthenticatorTransport;
 using ::blink::mojom::CableAuthenticationPtr;
+using ::blink::mojom::PublicKeyCredentialDescriptorPtr;
+using ::blink::mojom::PublicKeyCredentialParametersPtr;
+using ::blink::mojom::PublicKeyCredentialRpEntityPtr;
+using ::blink::mojom::PublicKeyCredentialType;
+using ::blink::mojom::PublicKeyCredentialUserEntityPtr;
+using ::blink::mojom::UserVerificationRequirement;
 
 // static
 ::device::FidoTransportProtocol
@@ -180,9 +181,10 @@ TypeConverter<::device::PublicKeyCredentialUserEntity,
               PublicKeyCredentialUserEntityPtr>::
     Convert(const PublicKeyCredentialUserEntityPtr& input) {
   device::PublicKeyCredentialUserEntity user_entity(input->id);
-  user_entity.SetUserName(input->name).SetDisplayName(input->display_name);
+  user_entity.name = input->name;
+  user_entity.display_name = input->display_name;
   if (input->icon)
-    user_entity.SetIconUrl(*input->icon);
+    user_entity.icon_url = *input->icon;
 
   return user_entity;
 }
@@ -216,6 +218,25 @@ TypeConverter<std::vector<::device::CableDiscoveryData>,
   }
 
   return discovery_data;
+}
+
+// static
+::device::AttestationConveyancePreference
+TypeConverter<::device::AttestationConveyancePreference,
+              AttestationConveyancePreference>::
+    Convert(const AttestationConveyancePreference& input) {
+  switch (input) {
+    case AttestationConveyancePreference::NONE:
+      return ::device::AttestationConveyancePreference::NONE;
+    case AttestationConveyancePreference::INDIRECT:
+      return ::device::AttestationConveyancePreference::INDIRECT;
+    case AttestationConveyancePreference::DIRECT:
+      return ::device::AttestationConveyancePreference::DIRECT;
+    case AttestationConveyancePreference::ENTERPRISE:
+      return ::device::AttestationConveyancePreference::ENTERPRISE;
+  }
+  NOTREACHED();
+  return ::device::AttestationConveyancePreference::NONE;
 }
 
 }  // namespace mojo

@@ -5,15 +5,16 @@
 #include "base/metrics/field_trial.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/build_time.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
@@ -27,8 +28,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
+#if defined(OS_ANDROID)
+#include "base/posix/global_descriptors.h"
+#endif
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "base/metrics/field_trial_memory_mac.h"
+#include "base/mac/mach_port_rendezvous.h"
 #endif
 
 namespace base {
@@ -1070,9 +1075,9 @@ TEST_F(FieldTrialTest, FloatBoundariesGiveEqualGroupSizes) {
     scoped_refptr<FieldTrial> trial(
         new FieldTrial("test", kBucketCount, "default", entropy));
     for (int j = 0; j < kBucketCount; ++j)
-      trial->AppendGroup(IntToString(j), 1);
+      trial->AppendGroup(NumberToString(j), 1);
 
-    EXPECT_EQ(IntToString(i), trial->group_name());
+    EXPECT_EQ(NumberToString(i), trial->group_name());
   }
 }
 
@@ -1102,7 +1107,7 @@ TEST_F(FieldTrialTest, CreateSimulatedFieldTrial) {
     { 0.95, kDefaultGroupName },
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     TestFieldTrialObserver observer(TestFieldTrialObserver::ASYNCHRONOUS);
     scoped_refptr<FieldTrial> trial(
        FieldTrial::CreateSimulatedFieldTrial(kTrialName, 100, kDefaultGroupName,
@@ -1223,12 +1228,12 @@ TEST(FieldTrialListTest, InstantiateAllocator) {
   FieldTrialList::CreateFieldTrial("Trial1", "Group1");
 
   FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded();
-  void* memory = field_trial_list.field_trial_allocator_->shared_memory();
+  const void* memory = field_trial_list.field_trial_allocator_->data();
   size_t used = field_trial_list.field_trial_allocator_->used();
 
   // Ensure that the function is idempotent.
   FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded();
-  void* new_memory = field_trial_list.field_trial_allocator_->shared_memory();
+  const void* new_memory = field_trial_list.field_trial_allocator_->data();
   size_t new_used = field_trial_list.field_trial_allocator_->used();
   EXPECT_EQ(memory, new_memory);
   EXPECT_EQ(used, new_used);
@@ -1236,7 +1241,7 @@ TEST(FieldTrialListTest, InstantiateAllocator) {
 
 TEST(FieldTrialListTest, AddTrialsToAllocator) {
   std::string save_string;
-  SharedMemoryHandle handle;
+  base::ReadOnlySharedMemoryRegion shm_region;
 
   // Scoping the first FieldTrialList, as we need another one to test that it
   // matches.
@@ -1248,15 +1253,15 @@ TEST(FieldTrialListTest, AddTrialsToAllocator) {
     FieldTrialList::CreateFieldTrial("Trial1", "Group1");
     FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded();
     FieldTrialList::AllStatesToString(&save_string, false);
-    handle = SharedMemory::DuplicateHandle(
-        field_trial_list.field_trial_allocator_->shared_memory()->handle());
+    shm_region = FieldTrialList::DuplicateFieldTrialSharedMemoryForTesting();
+    ASSERT_TRUE(shm_region.IsValid());
   }
 
   FieldTrialList field_trial_list2(nullptr);
-  std::unique_ptr<SharedMemory> shm(new SharedMemory(handle, true));
   // 4 KiB is enough to hold the trials only created for this test.
-  shm.get()->Map(4 << 10);
-  FieldTrialList::CreateTrialsFromSharedMemory(std::move(shm));
+  base::ReadOnlySharedMemoryMapping shm_mapping = shm_region.MapAt(0, 4 << 10);
+  ASSERT_TRUE(shm_mapping.IsValid());
+  FieldTrialList::CreateTrialsFromSharedMemoryMapping(std::move(shm_mapping));
   std::string check_string;
   FieldTrialList::AllStatesToString(&check_string, false);
   EXPECT_EQ(save_string, check_string);
@@ -1264,7 +1269,7 @@ TEST(FieldTrialListTest, AddTrialsToAllocator) {
 
 TEST(FieldTrialListTest, DoNotAddSimulatedFieldTrialsToAllocator) {
   constexpr char kTrialName[] = "trial";
-  SharedMemoryHandle handle;
+  base::ReadOnlySharedMemoryRegion shm_region;
   {
     test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.Init();
@@ -1285,16 +1290,16 @@ TEST(FieldTrialListTest, DoNotAddSimulatedFieldTrialsToAllocator) {
         FieldTrialList::CreateFieldTrial(kTrialName, "Real");
     real_trial->group();
 
-    handle = SharedMemory::DuplicateHandle(
-        field_trial_list.field_trial_allocator_->shared_memory()->handle());
+    shm_region = FieldTrialList::DuplicateFieldTrialSharedMemoryForTesting();
+    ASSERT_TRUE(shm_region.IsValid());
   }
 
   // Check that there's only one entry in the allocator.
   FieldTrialList field_trial_list2(nullptr);
-  std::unique_ptr<SharedMemory> shm(new SharedMemory(handle, true));
   // 4 KiB is enough to hold the trials only created for this test.
-  shm.get()->Map(4 << 10);
-  FieldTrialList::CreateTrialsFromSharedMemory(std::move(shm));
+  base::ReadOnlySharedMemoryMapping shm_mapping = shm_region.MapAt(0, 4 << 10);
+  ASSERT_TRUE(shm_mapping.IsValid());
+  FieldTrialList::CreateTrialsFromSharedMemoryMapping(std::move(shm_mapping));
   std::string check_string;
   FieldTrialList::AllStatesToString(&check_string, false);
   ASSERT_EQ(check_string.find("Simulated"), std::string::npos);
@@ -1344,7 +1349,7 @@ TEST(FieldTrialListTest, MAYBE_ClearParamsFromSharedMemory) {
   std::string trial_name("Trial1");
   std::string group_name("Group1");
 
-  SharedMemoryHandle handle;
+  base::ReadOnlySharedMemoryRegion shm_region;
   {
     test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.Init();
@@ -1375,16 +1380,16 @@ TEST(FieldTrialListTest, MAYBE_ClearParamsFromSharedMemory) {
 
     // Now duplicate the handle so we can easily check that the trial is still
     // in shared memory via AllStatesToString.
-    handle = SharedMemory::DuplicateHandle(
-        field_trial_list.field_trial_allocator_->shared_memory()->handle());
+    shm_region = FieldTrialList::DuplicateFieldTrialSharedMemoryForTesting();
+    ASSERT_TRUE(shm_region.IsValid());
   }
 
   // Check that we have the trial.
   FieldTrialList field_trial_list2(nullptr);
-  std::unique_ptr<SharedMemory> shm(new SharedMemory(handle, true));
   // 4 KiB is enough to hold the trials only created for this test.
-  shm.get()->Map(4 << 10);
-  FieldTrialList::CreateTrialsFromSharedMemory(std::move(shm));
+  base::ReadOnlySharedMemoryMapping shm_mapping = shm_region.MapAt(0, 4 << 10);
+  ASSERT_TRUE(shm_mapping.IsValid());
+  FieldTrialList::CreateTrialsFromSharedMemoryMapping(std::move(shm_mapping));
   std::string check_string;
   FieldTrialList::AllStatesToString(&check_string, false);
   EXPECT_EQ("*Trial1/Group1/", check_string);
@@ -1403,11 +1408,13 @@ TEST(FieldTrialListTest, DumpAndFetchFromSharedMemory) {
   FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
       trial_name, group_name, params);
 
-  std::unique_ptr<SharedMemory> shm(new SharedMemory());
   // 4 KiB is enough to hold the trials only created for this test.
-  shm.get()->CreateAndMapAnonymous(4 << 10);
+  base::MappedReadOnlyRegion shm =
+      base::ReadOnlySharedMemoryRegion::Create(4 << 10);
+  ASSERT_TRUE(shm.IsValid());
   // We _could_ use PersistentMemoryAllocator, this just has less params.
-  SharedPersistentMemoryAllocator allocator(std::move(shm), 1, "", false);
+  WritableSharedPersistentMemoryAllocator allocator(std::move(shm.mapping), 1,
+                                                    "");
 
   // Dump and subsequently retrieve the field trial to |allocator|.
   FieldTrialList::DumpAllFieldTrialsToPersistentAllocator(&allocator);
@@ -1433,67 +1440,86 @@ TEST(FieldTrialListTest, DumpAndFetchFromSharedMemory) {
   EXPECT_EQ("value2", shm_params["key2"]);
 }
 
-#if !defined(OS_NACL) && !defined(OS_IOS)
-MULTIPROCESS_TEST_MAIN(SerializeSharedMemoryHandleMetadata) {
+// Shared-memory distribution of FieldTrial to child process is not implemented
+// on Fuchsia: http://crbug.com/752368.
+#if !defined(OS_NACL) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
+MULTIPROCESS_TEST_MAIN(SerializeSharedMemoryRegionMetadata) {
   std::string serialized =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII("field_trials");
   std::string guid_string =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII("guid");
 
-#if defined(OS_WIN) || defined(OS_FUCHSIA) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
-  SharedMemoryHandle deserialized =
-      FieldTrialList::DeserializeSharedMemoryHandleMetadata(serialized);
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  base::ReadOnlySharedMemoryRegion deserialized =
+      FieldTrialList::DeserializeSharedMemoryRegionMetadata(serialized);
+#elif defined(OS_ANDROID)
+  // Use the arbitrary fd value selected in the main process.
+  // File descriptors are not remapped on Android. They have to be looked up in
+  // the GlobalDescriptors table instead.
+  int fd = base::GlobalDescriptors::GetInstance()->MaybeGet(42);
+  CHECK_NE(fd, -1);
+  base::ReadOnlySharedMemoryRegion deserialized =
+      FieldTrialList::DeserializeSharedMemoryRegionMetadata(fd, serialized);
 #else
-  // Use the arbitrary value selected below.
-  SharedMemoryHandle deserialized =
-      FieldTrialList::DeserializeSharedMemoryHandleMetadata(42, serialized);
-#endif
+  // Use the arbitrary fd value selected in the main process.
+  base::ReadOnlySharedMemoryRegion deserialized =
+      FieldTrialList::DeserializeSharedMemoryRegionMetadata(42, serialized);
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+  CHECK(deserialized.IsValid());
   CHECK_EQ(deserialized.GetGUID().ToString(), guid_string);
   CHECK(!deserialized.GetGUID().is_empty());
 
   return 0;
 }
 
-TEST(FieldTrialListTest, SerializeSharedMemoryHandleMetadata) {
-  std::unique_ptr<SharedMemory> shm(new SharedMemory());
-  shm->CreateAndMapAnonymous(4 << 10);
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  FieldTrialMemoryServer mach_server(shm->handle().GetMemoryObject());
-  ASSERT_TRUE(mach_server.Start());
-#endif
+TEST(FieldTrialListTest, SerializeSharedMemoryRegionMetadata) {
+  base::MappedReadOnlyRegion shm =
+      base::ReadOnlySharedMemoryRegion::Create(4 << 10);
+  ASSERT_TRUE(shm.IsValid());
 
   std::string serialized =
-      FieldTrialList::SerializeSharedMemoryHandleMetadata(shm->handle());
+      FieldTrialList::SerializeSharedMemoryRegionMetadata(shm.region);
 
   LaunchOptions options;
-#if defined(OS_POSIX) && (!defined(OS_MACOSX) && !defined(OS_IOS))
+
+#if defined(OS_WIN)
+  options.handles_to_inherit.push_back(shm.region.GetPlatformHandle());
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  options.mach_ports_for_rendezvous.insert(
+      std::make_pair('fldt', MachRendezvousPort{shm.region.GetPlatformHandle(),
+                                                MACH_MSG_TYPE_COPY_SEND}));
+#elif defined(OS_POSIX)
+
+#if defined(OS_ANDROID)
+  int shm_fd = shm.region.GetPlatformHandle();
+#else
+  int shm_fd = shm.region.GetPlatformHandle().fd;
+#endif  // defined(OS_ANDROID)
+
   // Pick an arbitrary FD number to use for the shmem FD in the child.
-  options.fds_to_remap.emplace_back(
-      std::make_pair(shm->handle().GetHandle(), 42));
-#endif
+  options.fds_to_remap.emplace_back(std::make_pair(shm_fd, 42));
+#endif  // defined(OS_POSIX)
   CommandLine cmd_line = GetMultiProcessTestChildBaseCommandLine();
   cmd_line.AppendSwitchASCII("field_trials", serialized);
-  cmd_line.AppendSwitchASCII("guid", shm->handle().GetGUID().ToString());
+  cmd_line.AppendSwitchASCII("guid", shm.region.GetGUID().ToString());
 
   Process process = SpawnMultiProcessTestChild(
-      "SerializeSharedMemoryHandleMetadata", cmd_line, options);
+      "SerializeSharedMemoryRegionMetadata", cmd_line, options);
 
   int exit_code;
   EXPECT_TRUE(WaitForMultiprocessTestChildExit(
       process, TestTimeouts::action_timeout(), &exit_code));
   EXPECT_EQ(0, exit_code);
 }
-#endif  // !defined(OS_NACL)
+#endif  // !defined(OS_NACL) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
 
 // Verify that the field trial shared memory handle is really read-only, and
-// does not allow writable mappings. Test disabled on NaCl, Windows, Fuchsia,
-// and Mac, which don't support/implement GetFieldTrialHandle(). For Fuchsia,
-// see crbug.com/752368
-#if !defined(OS_NACL) && !defined(OS_WIN) && !defined(OS_FUCHSIA) && \
-    (!defined(OS_MACOSX) && !defined(OS_IOS))
-TEST(FieldTrialListTest, CheckReadOnlySharedMemoryHandle) {
+// does not allow writable mappings. Test disabled on NaCl, Fuchsia, and Mac,
+// which don't support/implement shared memory configuration. For Fuchsia, see
+// crbug.com/752368
+#if !defined(OS_NACL) && !defined(OS_FUCHSIA) && \
+    !(defined(OS_MACOSX) && !defined(OS_IOS))
+TEST(FieldTrialListTest, CheckReadOnlySharedMemoryRegion) {
   FieldTrialList field_trial_list(nullptr);
   FieldTrialList::CreateFieldTrial("Trial1", "Group1");
 
@@ -1502,12 +1528,15 @@ TEST(FieldTrialListTest, CheckReadOnlySharedMemoryHandle) {
 
   FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded();
 
-  SharedMemoryHandle handle = FieldTrialList::GetFieldTrialHandle();
-  ASSERT_TRUE(handle.IsValid());
+  base::ReadOnlySharedMemoryRegion region =
+      FieldTrialList::DuplicateFieldTrialSharedMemoryForTesting();
+  ASSERT_TRUE(region.IsValid());
 
-  ASSERT_TRUE(CheckReadOnlySharedMemoryHandleForTesting(handle));
+  ASSERT_TRUE(CheckReadOnlyPlatformSharedMemoryRegionForTesting(
+      base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region))));
 }
-#endif  // !OS_NACL && !OS_WIN && !OS_FUCHSIA
+#endif  // !OS_NACL && !OS_FUCHSIA && !(OS_MACOSX && !OS_IOS)
 
 TEST_F(FieldTrialTest, TestAllParamsToString) {
   std::string exptected_output = "t1.g1:p1/v1/p2/v2";

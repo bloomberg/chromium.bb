@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder_base_test.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 
@@ -93,6 +94,39 @@ TEST(BMPImageDecoderTest, crbug752898) {
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
   decoder->SetData(data.get(), true);
   decoder->DecodeFrameBufferAtIndex(0);
+}
+
+class BMPImageDecoderCorpusTest : public ImageDecoderBaseTest {
+ public:
+  BMPImageDecoderCorpusTest() : ImageDecoderBaseTest("bmp") {}
+
+ protected:
+  std::unique_ptr<ImageDecoder> CreateImageDecoder() const override {
+    return std::make_unique<BMPImageDecoder>(
+        ImageDecoder::kAlphaPremultiplied, ColorBehavior::TransformToSRGB(),
+        ImageDecoder::kNoDecodedImageByteLimit);
+  }
+
+  // The BMPImageDecoderCorpusTest tests are really slow under Valgrind.
+  // Thus it is split into fast and slow versions. The threshold is
+  // set to 10KB because the fast test can finish under Valgrind in
+  // less than 30 seconds.
+  static const int64_t kThresholdSize = 10240;
+};
+
+TEST_F(BMPImageDecoderCorpusTest, DecodingFast) {
+  TestDecoding(FileSelection::kSmaller, kThresholdSize);
+}
+
+#if defined(THREAD_SANITIZER)
+// BMPImageDecoderCorpusTest.DecodingSlow always times out under ThreadSanitizer
+// v2.
+#define MAYBE_DecodingSlow DISABLED_DecodingSlow
+#else
+#define MAYBE_DecodingSlow DecodingSlow
+#endif
+TEST_F(BMPImageDecoderCorpusTest, MAYBE_DecodingSlow) {
+  TestDecoding(FileSelection::kBigger, kThresholdSize);
 }
 
 }  // namespace blink

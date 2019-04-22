@@ -8,8 +8,8 @@
 #include <stddef.h>
 
 #include <string>
+#include <unordered_set>
 
-#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -47,7 +47,7 @@ class TRACING_EXPORT GraphicsMemoryDumpProvider
 
   // Stores key names coming from the memtrack helper in long-lived storage.
   // This is to allow using cheap char* strings in tracing without copies.
-  base::hash_set<std::string> key_names_;
+  std::unordered_set<std::string> key_names_;
 
   DISALLOW_COPY_AND_ASSIGN(GraphicsMemoryDumpProvider);
 };

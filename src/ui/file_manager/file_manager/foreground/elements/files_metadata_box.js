@@ -144,13 +144,14 @@ var FilesMetadataBox = Polymer({
    * @return {string} String representation of the given duration.
    */
   time2string_: function(time) {
-    if (!time)
+    if (!time) {
       return '';
+    }
 
     time = parseInt(time, 10);
-    var seconds = time % 60;
-    var minutes = Math.floor(time / 60) % 60;
-    var hours = Math.floor(time / 60 / 60);
+    const seconds = time % 60;
+    const minutes = Math.floor(time / 60) % 60;
+    const hours = Math.floor(time / 60 / 60);
 
     if (hours === 0) {
       return minutes + ':' + ('0' + seconds).slice(-2);
@@ -166,8 +167,9 @@ var FilesMetadataBox = Polymer({
    * @private
    */
   dimension_: function(imageWidth, imageHeight) {
-    if (imageWidth && imageHeight)
-      return imageWidth + " x " + imageHeight;
+    if (imageWidth && imageHeight) {
+      return imageWidth + ' x ' + imageHeight;
+    }
     return '';
   },
 
@@ -178,7 +180,7 @@ var FilesMetadataBox = Polymer({
    * @private
    */
   deviceModel_: function(ifd) {
-    var id = 272;
+    const id = 272;
     return (ifd && ifd.image && ifd.image[id] && ifd.image[id].value) || '';
   },
 
@@ -189,8 +191,8 @@ var FilesMetadataBox = Polymer({
    * @private
    */
   parseRational_: function(r) {
-    var num = parseInt(r[0], 10);
-    var den = parseInt(r[1], 10);
+    const num = parseInt(r[0], 10);
+    const den = parseInt(r[1], 10);
     return num / den;
   },
 
@@ -204,19 +206,20 @@ var FilesMetadataBox = Polymer({
    * @private
    */
   geography_: function(ifd) {
-    var gps = ifd && ifd.gps;
-    if (!gps || !gps[1] || !gps[2] || !gps[3] || !gps[4])
+    const gps = ifd && ifd.gps;
+    if (!gps || !gps[1] || !gps[2] || !gps[3] || !gps[4]) {
       return '';
+    }
 
-    var computeCoordinate = function(value) {
+    const computeCoordinate = value => {
       return this.parseRational_(value[0]) +
           this.parseRational_(value[1]) / 60 +
           this.parseRational_(value[2]) / 3600;
-    }.bind(this);
+    };
 
-    var latitude =
+    const latitude =
         computeCoordinate(gps[2].value) * (gps[1].value === 'N\0' ? 1 : -1);
-    var longitude =
+    const longitude =
         computeCoordinate(gps[4].value) * (gps[3].value === 'E\0' ? 1 : -1);
 
     return Number(latitude).toFixed(3) + ', ' + Number(longitude).toFixed(3);
@@ -232,26 +235,27 @@ var FilesMetadataBox = Polymer({
    * @private
    */
   deviceSettings_: function(ifd) {
-    var exif = ifd && ifd.exif;
-    if (!exif)
+    const exif = ifd && ifd.exif;
+    if (!exif) {
       return '';
+    }
 
-    var f = exif[33437] ? this.parseRational_(exif[33437].value) : 0;
-    var fNumber = '';
+    const f = exif[33437] ? this.parseRational_(exif[33437].value) : 0;
+    let fNumber = '';
     if (f) {
       fNumber = 'f/' + (Number.isInteger(f) ? f : Number(f).toFixed(1));
     }
-    var exposureTime =
+    const exposureTime =
         exif[33434] ? exif[33434].value[0] + '/' + exif[33434].value[1] : '';
-    var focalLength = exif[37386] ?
+    const focalLength = exif[37386] ?
         Number(this.parseRational_(exif[37386].value)).toFixed(2) + 'mm' :
         '';
-    var iso = exif[34855] ? 'ISO' + exif[34855].value : '';
+    const iso = exif[34855] ? 'ISO' + exif[34855].value : '';
 
-    var values = [fNumber, exposureTime, focalLength, iso];
+    const values = [fNumber, exposureTime, focalLength, iso];
 
-    var result = '';
-    for (var i = 0; i < values.length; i++) {
+    let result = '';
+    for (let i = 0; i < values.length; i++) {
       if (values[i]) {
         result += (result ? ' ' : '') + values[i];
       }

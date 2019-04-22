@@ -13,18 +13,18 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
+#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_messaging.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/url_pattern.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/it2me/it2me_native_messaging_host_chromeos.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
@@ -53,7 +53,7 @@ class EchoHost : public NativeMessageHost {
 
   void OnMessage(const std::string& request_string) override {
     std::unique_ptr<base::Value> request_value =
-        base::JSONReader::Read(request_string);
+        base::JSONReader::ReadDeprecated(request_string);
     std::unique_ptr<base::DictionaryValue> request(
         static_cast<base::DictionaryValue*>(request_value.release()));
     if (request_string.find("stopHostTest") != std::string::npos) {
@@ -63,11 +63,11 @@ class EchoHost : public NativeMessageHost {
     } else {
       ProcessEcho(*request);
     }
-  };
+  }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override {
     return base::ThreadTaskRunnerHandle::Get();
-  };
+  }
 
  private:
   void ProcessEcho(const base::DictionaryValue& request) {
@@ -95,7 +95,6 @@ struct BuiltInHost {
 
 std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
   return remoting::CreateIt2MeNativeMessagingHostForChromeOS(
-      g_browser_process->system_request_context(),
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::IO}),
       base::CreateSingleThreadTaskRunnerWithTraits(
@@ -122,12 +121,14 @@ const char* const kRemotingIt2MeOrigins[] = {
 
 static const BuiltInHost kBuiltInHost[] = {
     {"com.google.chrome.test.echo",  // ScopedTestNativeMessagingHost::kHostName
-     kEchoHostOrigins, arraysize(kEchoHostOrigins), &EchoHost::Create},
+     kEchoHostOrigins, base::size(kEchoHostOrigins), &EchoHost::Create},
     {"com.google.chrome.remote_assistance", kRemotingIt2MeOrigins,
-     arraysize(kRemotingIt2MeOrigins), &CreateIt2MeHost},
+     base::size(kRemotingIt2MeOrigins), &CreateIt2MeHost},
     {arc::ArcSupportMessageHost::kHostName,
      arc::ArcSupportMessageHost::kHostOrigin, 1,
      &arc::ArcSupportMessageHost::Create},
+    {chromeos::kDiagnosticsdUiMessageHost, nullptr, 0,
+     &chromeos::CreateExtensionOwnedDiagnosticsdMessageHost},
 };
 
 bool MatchesSecurityOrigin(const BuiltInHost& host,
@@ -150,7 +151,7 @@ std::unique_ptr<NativeMessageHost> NativeMessageHost::Create(
     const std::string& native_host_name,
     bool allow_user_level,
     std::string* error) {
-  for (unsigned int i = 0; i < arraysize(kBuiltInHost); i++) {
+  for (unsigned int i = 0; i < base::size(kBuiltInHost); i++) {
     const BuiltInHost& host = kBuiltInHost[i];
     std::string name(host.name);
     if (name == native_host_name) {

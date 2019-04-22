@@ -17,11 +17,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/background_sync/background_sync_context.h"
+#include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
+#include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
+#include "content/browser/idle/idle_manager.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -93,9 +95,11 @@ class CONTENT_EXPORT StoragePartitionImpl
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
   storage::QuotaManager* GetQuotaManager() override;
   ChromeAppCacheService* GetAppCacheService() override;
+  BackgroundSyncContextImpl* GetBackgroundSyncContext() override;
   storage::FileSystemContext* GetFileSystemContext() override;
   storage::DatabaseTracker* GetDatabaseTracker() override;
   DOMStorageContextWrapper* GetDOMStorageContext() override;
+  IdleManager* GetIdleManager();
   LockManager* GetLockManager();  // override; TODO: Add to interface
   IndexedDBContextImpl* GetIndexedDBContext() override;
   CacheStorageContextImpl* GetCacheStorageContext() override;
@@ -121,7 +125,7 @@ class CONTENT_EXPORT StoragePartitionImpl
                  uint32_t quota_storage_remove_mask,
                  const OriginMatcherFunction& origin_matcher,
                  network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
-                 bool perform_cleanup,
+                 bool perform_storage_cleanup,
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override;
@@ -130,7 +134,11 @@ class CONTENT_EXPORT StoragePartitionImpl
       const base::Time end,
       const base::Callback<bool(const GURL&)>& url_matcher,
       base::OnceClosure callback) override;
-  void ClearCodeCaches(base::OnceClosure callback) override;
+  void ClearCodeCaches(
+      const base::Time begin,
+      const base::Time end,
+      const base::RepeatingCallback<bool(const GURL&)>& url_matcher,
+      base::OnceClosure callback) override;
   void Flush() override;
   void ResetURLLoaderFactories() override;
   void ClearBluetoothAllowedDevicesMapForTesting() override;
@@ -138,13 +146,13 @@ class CONTENT_EXPORT StoragePartitionImpl
   void WaitForDeletionTasksForTesting() override;
 
   BackgroundFetchContext* GetBackgroundFetchContext();
-  BackgroundSyncContext* GetBackgroundSyncContext();
   PaymentAppContextImpl* GetPaymentAppContext();
   BroadcastChannelProvider* GetBroadcastChannelProvider();
   BluetoothAllowedDevicesMap* GetBluetoothAllowedDevicesMap();
   BlobRegistryWrapper* GetBlobRegistry();
   PrefetchURLLoaderService* GetPrefetchURLLoaderService();
   CookieStoreContext* GetCookieStoreContext();
+  DevToolsBackgroundServicesContext* GetDevToolsBackgroundServicesContext();
 
   // blink::mojom::StoragePartitionService interface.
   void OpenLocalStorage(const url::Origin& origin,
@@ -168,11 +176,14 @@ class CONTENT_EXPORT StoragePartitionImpl
   // Can return nullptr while |this| is being destroyed.
   BrowserContext* browser_context() const;
 
-  // Called by each renderer process once. Returns the id of the created
-  // binding.
+  // Called by each renderer process for each StoragePartitionService interface
+  // it binds in the renderer process. Returns the id of the created binding.
   mojo::BindingId Bind(
       int process_id,
       mojo::InterfaceRequest<blink::mojom::StoragePartitionService> request);
+
+  // Remove a binding created by a previous Bind() call.
+  void Unbind(mojo::BindingId binding_id);
 
   auto& bindings_for_testing() { return bindings_; }
 
@@ -259,7 +270,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       const GURL& remove_origin,
       const OriginMatcherFunction& origin_matcher,
       network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
-      bool perform_cleanup,
+      bool perform_storage_cleanup,
       const base::Time begin,
       const base::Time end,
       base::OnceClosure callback);
@@ -307,6 +318,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<storage::FileSystemContext> filesystem_context_;
   scoped_refptr<storage::DatabaseTracker> database_tracker_;
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
+  std::unique_ptr<IdleManager> idle_manager_;
   scoped_refptr<LockManager> lock_manager_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   scoped_refptr<CacheStorageContextImpl> cache_storage_context_;
@@ -319,7 +331,7 @@ class CONTENT_EXPORT StoragePartitionImpl
 #endif  // !defined(OS_ANDROID)
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
   scoped_refptr<BackgroundFetchContext> background_fetch_context_;
-  scoped_refptr<BackgroundSyncContext> background_sync_context_;
+  scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
   scoped_refptr<PaymentAppContextImpl> payment_app_context_;
   scoped_refptr<BroadcastChannelProvider> broadcast_channel_provider_;
   scoped_refptr<BluetoothAllowedDevicesMap> bluetooth_allowed_devices_map_;
@@ -327,6 +339,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<PrefetchURLLoaderService> prefetch_url_loader_service_;
   scoped_refptr<CookieStoreContext> cookie_store_context_;
   scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
+  scoped_refptr<DevToolsBackgroundServicesContext>
+      devtools_background_services_context_;
 
   // BindingSet for StoragePartitionService, using the process id as the
   // binding context type. The process id can subsequently be used during

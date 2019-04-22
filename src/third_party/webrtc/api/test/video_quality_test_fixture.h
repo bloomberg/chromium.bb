@@ -18,7 +18,7 @@
 
 #include "api/bitrate_constraints.h"
 #include "api/fec_controller.h"
-#include "api/mediatypes.h"
+#include "api/media_types.h"
 #include "api/test/simulated_network.h"
 #include "api/video_codecs/video_encoder_config.h"
 
@@ -57,15 +57,17 @@ class VideoQualityTestFixtureInterface {
       bool ulpfec;
       bool flexfec;
       bool automatic_scaling;
-      std::string clip_name;  // "Generator" to generate frames instead.
+      std::string clip_path;  // "Generator" to generate frames instead.
       size_t capture_device_index;
       SdpVideoFormat::Parameters sdp_params;
+      double encoder_overshoot_factor;
     } video[2];
     struct Audio {
       bool enabled;
       bool sync_video;
       bool dtx;
       bool use_real_adm;
+      absl::optional<std::string> ana_config;
     } audio;
     struct Screenshare {
       bool enabled;

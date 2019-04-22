@@ -32,7 +32,7 @@ FakeBleScannerDelegate::FakeBleScannerDelegate() = default;
 FakeBleScannerDelegate::~FakeBleScannerDelegate() = default;
 
 void FakeBleScannerDelegate::OnReceivedAdvertisement(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     device::BluetoothDevice* bluetooth_device,
     ConnectionRole connection_role) {
   handled_scan_results_.push_back(

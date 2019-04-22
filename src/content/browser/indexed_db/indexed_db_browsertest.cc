@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <functional>
 #include <utility>
 
 #include "base/bind.h"
@@ -62,7 +64,7 @@ namespace content {
 
 namespace {
 const Origin kFileOrigin = Origin::Create(GURL("file:///"));
-};
+}
 
 // This browser test is aimed towards exercising the IndexedDB bindings and
 // the actual implementation that lives in the browser side.
@@ -90,7 +92,9 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
         failure_class, failure_method, fail_on_instance_num, fail_on_call_num);
   }
 
-  void SimpleTest(const GURL& test_url, bool incognito = false) {
+  void SimpleTest(const GURL& test_url,
+                  bool incognito = false,
+                  Shell** shell_out = nullptr) {
     // The test page will perform tests on IndexedDB, then navigate to either
     // a #pass or #fail ref.
     Shell* the_browser = incognito ? CreateOffTheRecordBrowser() : shell();
@@ -107,6 +111,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
           &js_result));
       FAIL() << "Failed: " << js_result;
     }
+    if (shell_out)
+      *shell_out = the_browser;
   }
 
   void NavigateAndWaitForTitle(Shell* shell,
@@ -307,6 +313,21 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug109187Test) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), url, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug941965Test) {
+  // Double-open an incognito window to test that saving & reading a blob from
+  // indexeddb works.
+  Shell* incognito_browser = nullptr;
+  SimpleTest(GetTestUrl("indexeddb", "simple_blob_read.html"), true,
+             &incognito_browser);
+  ASSERT_TRUE(incognito_browser);
+  incognito_browser->Close();
+  incognito_browser = nullptr;
+  SimpleTest(GetTestUrl("indexeddb", "simple_blob_read.html"), true,
+             &incognito_browser);
+  ASSERT_TRUE(incognito_browser);
+  incognito_browser->Close();
+}
+
 class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
  public:
   IndexedDBBrowserTestWithLowQuota() {}
@@ -334,6 +355,20 @@ class IndexedDBBrowserTestWithGCExposed : public IndexedDBBrowserTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBrowserTestWithGCExposed);
+};
+
+class IndexedDBBrowserTestWithExperimentalWebFeatures
+    : public IndexedDBBrowserTest {
+ public:
+  IndexedDBBrowserTestWithExperimentalWebFeatures() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBBrowserTestWithExperimentalWebFeatures);
 };
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed,
@@ -704,9 +739,8 @@ std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     context->TaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CorruptIndexedDBDatabase, base::ConstRef(context),
-                       origin, &signal_when_finished));
+        FROM_HERE, base::BindOnce(&CorruptIndexedDBDatabase, std::cref(context),
+                                  origin, &signal_when_finished));
     signal_when_finished.Wait();
 
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
@@ -817,14 +851,14 @@ IN_PROC_BROWSER_TEST_P(IndexedDBBrowserTest, OperationOnCorruptedOpenDatabase) {
   SimpleTest(embedded_test_server()->GetURL(test_file));
 }
 
-INSTANTIATE_TEST_CASE_P(IndexedDBBrowserTestInstantiation,
-                        IndexedDBBrowserTest,
-                        ::testing::Values("failGetBlobJournal",
-                                          "get",
-                                          "getAll",
-                                          "iterate",
-                                          "failTransactionCommit",
-                                          "clearObjectStore"));
+INSTANTIATE_TEST_SUITE_P(IndexedDBBrowserTestInstantiation,
+                         IndexedDBBrowserTest,
+                         ::testing::Values("failGetBlobJournal",
+                                           "get",
+                                           "getAll",
+                                           "iterate",
+                                           "failTransactionCommit",
+                                           "clearObjectStore"));
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteCompactsBackingStore) {
   const GURL test_url = GetTestUrl("indexeddb", "delete_compact.html");
@@ -922,6 +956,34 @@ IN_PROC_BROWSER_TEST_F(
   shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(0);
   shell()->Close();
 
+  EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
+}
+
+// Testing abort ordering for commit. Verifies that an explicitly committed
+// transaction blocked by another pending transaction will be committed rather
+// than aborted in the event that the page crashes before its committed.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithExperimentalWebFeatures,
+                       CommitContinuesOnAbort) {
+  // Sets up a database, opens four transactions against it such that two end
+  // up indefinitely blocked, one of which is explicitly committed.
+  NavigateAndWaitForTitle(shell(), "blocked_explicit_commit.html", "#tab1",
+                          "transactions registered");
+
+  // Crashes the tab to cause the database set up above to force close with the
+  // blocked transactions still open.
+  shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(0);
+
+  // Reopens the same page that was just crashed and inspects the database to
+  // see the results of the transactions that were open at time of crash.
+  Shell* new_shell = CreateBrowser();
+  GURL url = GetTestUrl("indexeddb", "blocked_explicit_commit.html");
+  url = GURL(url.spec() + "#tab2");
+  base::string16 expected_title16(
+      ASCIIToUTF16("transactions aborted and committed as expected"));
+  TitleWatcher title_watcher(new_shell->web_contents(), expected_title16);
+  title_watcher.AlsoWaitForTitle(
+      ASCIIToUTF16("fail - transactions did not abort and commit as expected"));
+  NavigateToURL(new_shell, url);
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
 }
 

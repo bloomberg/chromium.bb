@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_util.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace headless {
@@ -33,13 +34,11 @@ class RedirectLoader : public network::mojom::URLLoader {
     binding_.set_connection_error_handler(
         base::BindOnce([](RedirectLoader* self) { delete self; }, this));
     NotifyRedirect(std::move(url));
-  };
+  }
 
-  void FollowRedirect(
-      const base::Optional<std::vector<std::string>>&
-          to_be_removed_request_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
-      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      const base::Optional<GURL>& new_url) override;
 
   void ProceedWithResponse() override { DCHECK(false); }
   void SetPriority(net::RequestPriority priority,
@@ -51,11 +50,13 @@ class RedirectLoader : public network::mojom::URLLoader {
   void NotifyRedirect(const std::string& location) {
     auto redirect_info = net::RedirectInfo::ComputeRedirectInfo(
         url_request_.method, url_request_.url, url_request_.site_for_cookies,
+        url_request_.top_frame_origin,
         net::URLRequest::FirstPartyURLPolicy::
             UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
         url_request_.referrer_policy, url_request_.referrer.spec(),
-        response_->headers.get(), response_->headers->response_code(),
-        url_.Resolve(location), false /* insecure_scheme_was_upgraded */, true);
+        response_->headers->response_code(), url_.Resolve(location),
+        net::RedirectUtil::GetReferrerPolicyHeader(response_->headers.get()),
+        false /* insecure_scheme_was_upgraded */, true);
     network::ResourceResponseHead head;
     head.request_time = base::Time::Now();
     head.response_time = base::Time::Now();
@@ -125,9 +126,8 @@ class TestNetworkInterceptor::Impl {
 };
 
 void RedirectLoader::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const std::vector<std::string>& removed_headers /* unused */,
+    const net::HttpRequestHeaders& modified_headers /* unused */,
     const base::Optional<GURL>& new_url) {
   response_ = interceptor_impl_->FindResponse(method_, url_.spec());
   CHECK(response_) << "No content for " << url_.spec();

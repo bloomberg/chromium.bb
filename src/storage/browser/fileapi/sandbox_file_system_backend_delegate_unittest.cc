@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -27,8 +28,7 @@ namespace {
 FileSystemURL CreateFileSystemURL(const char* path) {
   const GURL kOrigin("http://foo/");
   return storage::FileSystemURL::CreateForTest(
-      kOrigin,
-      storage::kFileSystemTypeTemporary,
+      url::Origin::Create(kOrigin), storage::kFileSystemTypeTemporary,
       base::FilePath::FromUTF8Unsafe(path));
 }
 
@@ -96,7 +96,7 @@ TEST_F(SandboxFileSystemBackendDelegateTest, IsAccessValid) {
 
   // Access from non-allowed scheme should be disallowed.
   EXPECT_FALSE(IsAccessValid(
-      FileSystemURL::CreateForTest(GURL("unknown://bar"),
+      FileSystemURL::CreateForTest(url::Origin::Create(GURL("unknown://bar")),
                                    storage::kFileSystemTypeTemporary,
                                    base::FilePath::FromUTF8Unsafe("foo"))));
 

@@ -28,6 +28,7 @@ ImageLayerBridge::ImageLayerBridge(OpacityMode opacity_mode)
     : opacity_mode_(opacity_mode) {
   layer_ = cc::TextureLayer::CreateForMailbox(this);
   layer_->SetIsDrawable(true);
+  layer_->SetHitTestable(true);
   layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
   if (opacity_mode_ == kOpaque) {
     layer_->SetContentsOpaque(true);
@@ -155,8 +156,9 @@ bool ImageLayerBridge::PrepareTransferableResource(
     *out_resource = viz::TransferableResource::MakeSoftware(
         registered.bitmap->id(), size, resource_format);
     if (RuntimeEnabledFeatures::CanvasColorManagementEnabled()) {
-      out_resource->color_space =
-          SkColorSpaceToGfxColorSpace(sk_image->refColorSpace());
+      out_resource->color_space = sk_image->colorSpace()
+                                      ? gfx::ColorSpace(*sk_image->colorSpace())
+                                      : gfx::ColorSpace::CreateSRGB();
     }
     auto func = WTF::Bind(&ImageLayerBridge::ResourceReleasedSoftware,
                           WrapWeakPersistent(this), std::move(registered));

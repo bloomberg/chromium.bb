@@ -4,6 +4,7 @@
 
 #include "services/video_capture/device_media_to_mojo_adapter.h"
 
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/capture/video/mock_device.h"

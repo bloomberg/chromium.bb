@@ -75,8 +75,8 @@ class TestWebApkInstaller : public WebApkInstaller {
   void PostTaskToRunSuccessCallback() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&TestWebApkInstaller::OnResult, base::Unretained(this),
-                   WebApkInstallResult::SUCCESS));
+        base::BindOnce(&TestWebApkInstaller::OnResult, base::Unretained(this),
+                       WebApkInstallResult::SUCCESS));
   }
 
  private:

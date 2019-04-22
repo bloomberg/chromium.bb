@@ -449,6 +449,45 @@ TEST_F(PathBuilderMultiRootTest, TestCertIssuerOrdering) {
   }
 }
 
+TEST_F(PathBuilderMultiRootTest, TestIterationLimit) {
+  // Both D(D) and C(D) are trusted roots.
+  TrustStoreInMemory trust_store;
+  trust_store.AddTrustAnchor(d_by_d_);
+  trust_store.AddTrustAnchor(c_by_d_);
+
+  // Certs B(C), and C(D) are all supplied.
+  CertIssuerSourceStatic sync_certs;
+  sync_certs.AddCert(b_by_c_);
+  sync_certs.AddCert(c_by_d_);
+
+  for (const bool insufficient_limit : {true, false}) {
+    SCOPED_TRACE(insufficient_limit);
+
+    CertPathBuilder::Result result;
+    CertPathBuilder path_builder(
+        a_by_b_, &trust_store, &delegate_, time_, KeyPurpose::ANY_EKU,
+        initial_explicit_policy_, user_initial_policy_set_,
+        initial_policy_mapping_inhibit_, initial_any_policy_inhibit_, &result);
+    path_builder.AddCertIssuerSource(&sync_certs);
+
+    if (insufficient_limit) {
+      // A limit of one is insufficient to build a path in this case. Therefore
+      // building is expected to fail in this case.
+      path_builder.SetIterationLimit(1);
+    } else {
+      // The other tests in this file exercise the case that |SetIterationLimit|
+      // isn't called. Therefore set a sufficient limit for the path to be
+      // found.
+      path_builder.SetIterationLimit(5);
+    }
+
+    path_builder.Run();
+
+    EXPECT_EQ(!insufficient_limit, result.HasValidPath());
+    EXPECT_EQ(insufficient_limit, result.exceeded_iteration_limit);
+  }
+}
+
 class PathBuilderKeyRolloverTest : public ::testing::Test {
  public:
   PathBuilderKeyRolloverTest()

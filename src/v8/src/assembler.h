@@ -37,6 +37,8 @@
 
 #include <forward_list>
 
+#include "src/code-comments.h"
+#include "src/cpu-features.h"
 #include "src/deoptimize-reason.h"
 #include "src/external-reference.h"
 #include "src/flags.h"
@@ -90,20 +92,14 @@ class JumpOptimizationInfo {
 class HeapObjectRequest {
  public:
   explicit HeapObjectRequest(double heap_number, int offset = -1);
-  explicit HeapObjectRequest(CodeStub* code_stub, int offset = -1);
   explicit HeapObjectRequest(const StringConstantBase* string, int offset = -1);
 
-  enum Kind { kHeapNumber, kCodeStub, kStringConstant };
+  enum Kind { kHeapNumber, kStringConstant };
   Kind kind() const { return kind_; }
 
   double heap_number() const {
     DCHECK_EQ(kind(), kHeapNumber);
     return value_.heap_number;
-  }
-
-  CodeStub* code_stub() const {
-    DCHECK_EQ(kind(), kCodeStub);
-    return value_.code_stub;
   }
 
   const StringConstantBase* string() const {
@@ -127,7 +123,6 @@ class HeapObjectRequest {
 
   union {
     double heap_number;
-    CodeStub* code_stub;
     const StringConstantBase* string;
   } value_;
 
@@ -171,6 +166,10 @@ struct V8_EXPORT_PRIVATE AssemblerOptions {
   // this flag, the code range must be small enough to fit all offsets into
   // the instruction immediates.
   bool use_pc_relative_calls_and_jumps = false;
+  // Enables the collection of information useful for the generation of unwind
+  // info. This is useful in some platform (Win64) where the unwind info depends
+  // on a function prologue/epilogue.
+  bool collect_win64_unwind_info = false;
 
   // Constructs V8-agnostic set of options from current state.
   AssemblerOptions EnableV8AgnosticCode() const;
@@ -179,9 +178,32 @@ struct V8_EXPORT_PRIVATE AssemblerOptions {
       Isolate* isolate, bool explicitly_support_serialization = false);
 };
 
+class AssemblerBuffer {
+ public:
+  virtual ~AssemblerBuffer() = default;
+  virtual byte* start() const = 0;
+  virtual int size() const = 0;
+  // Return a grown copy of this buffer. The contained data is uninitialized.
+  // The data in {this} will still be read afterwards (until {this} is
+  // destructed), but not written.
+  virtual std::unique_ptr<AssemblerBuffer> Grow(int new_size)
+      V8_WARN_UNUSED_RESULT = 0;
+};
+
+// Allocate an AssemblerBuffer which uses an existing buffer. This buffer cannot
+// grow, so it must be large enough for all code emitted by the Assembler.
+V8_EXPORT_PRIVATE
+std::unique_ptr<AssemblerBuffer> ExternalAssemblerBuffer(void* buffer,
+                                                         int size);
+
+// Allocate a new growable AssemblerBuffer with a given initial size.
+V8_EXPORT_PRIVATE
+std::unique_ptr<AssemblerBuffer> NewAssemblerBuffer(int size);
+
 class V8_EXPORT_PRIVATE AssemblerBase : public Malloced {
  public:
-  AssemblerBase(const AssemblerOptions& options, void* buffer, int buffer_size);
+  AssemblerBase(const AssemblerOptions& options,
+                std::unique_ptr<AssemblerBuffer>);
   virtual ~AssemblerBase();
 
   const AssemblerOptions& options() const { return options_; }
@@ -221,11 +243,17 @@ class V8_EXPORT_PRIVATE AssemblerBase : public Malloced {
     jump_optimization_info_ = jump_opt;
   }
 
+  void FinalizeJumpOptimizationInfo() {}
+
   // Overwrite a host NaN with a quiet target NaN.  Used by mksnapshot for
   // cross-snapshotting.
-  static void QuietNaN(HeapObject* nan) { }
+  static void QuietNaN(HeapObject nan) {}
 
-  int pc_offset() const { return static_cast<int>(pc_ - buffer_); }
+  int pc_offset() const { return static_cast<int>(pc_ - buffer_start_); }
+
+  byte* buffer_start() const { return buffer_->start(); }
+  int buffer_size() const { return buffer_->size(); }
+  int instruction_size() const { return pc_offset(); }
 
   // This function is called when code generation is aborted, so that
   // the assembler could clean up internal data structures.
@@ -234,15 +262,15 @@ class V8_EXPORT_PRIVATE AssemblerBase : public Malloced {
   // Debugging
   void Print(Isolate* isolate);
 
-  static const int kMinimalBufferSize = 4*KB;
-
-  static void FlushICache(void* start, size_t size);
-  static void FlushICache(Address start, size_t size) {
-    return FlushICache(reinterpret_cast<void*>(start), size);
+  // Record an inline code comment that can be used by a disassembler.
+  // Use --code-comments to enable.
+  void RecordComment(const char* msg) {
+    if (FLAG_code_comments) {
+      code_comments_writer_.Add(pc_offset(), std::string(msg));
+    }
   }
 
-  // Used to print the name of some special registers.
-  static const char* GetSpecialRegisterName(int code) { return "UNKNOWN"; }
+  static const int kMinimalBufferSize = 4*KB;
 
  protected:
   // Add 'target' to the {code_targets_} vector, if necessary, and return the
@@ -251,14 +279,11 @@ class V8_EXPORT_PRIVATE AssemblerBase : public Malloced {
   Handle<Code> GetCodeTarget(intptr_t code_target_index) const;
   // Update to the code target at {code_target_index} to {target}.
   void UpdateCodeTarget(intptr_t code_target_index, Handle<Code> target);
-  // Reserves space in the code target vector.
-  void ReserveCodeTargetSpace(size_t num_of_code_targets);
 
-  // The buffer into which code and relocation info are generated. It could
-  // either be owned by the assembler or be provided externally.
-  byte* buffer_;
-  int buffer_size_;
-  bool own_buffer_;
+  // The buffer into which code and relocation info are generated.
+  std::unique_ptr<AssemblerBuffer> buffer_;
+  // Cached from {buffer_->start()}, for faster access.
+  byte* buffer_start_;
   std::forward_list<HeapObjectRequest> heap_object_requests_;
   // The program counter, which points into the buffer above and moves forward.
   // TODO(jkummerow): This should probably have type {Address}.
@@ -289,6 +314,8 @@ class V8_EXPORT_PRIVATE AssemblerBase : public Malloced {
     }
     return true;
   }
+
+  CodeCommentsWriter code_comments_writer_;
 
  private:
   // Before we copy code into the code space, we sometimes cannot encode
@@ -347,7 +374,7 @@ class PredictableCodeSizeScope {
 
 
 // Enable a specified feature within a scope.
-class CpuFeatureScope {
+class V8_EXPORT_PRIVATE CpuFeatureScope {
  public:
   enum CheckPolicy {
     kCheckSupported,
@@ -370,177 +397,6 @@ class CpuFeatureScope {
   }
 #endif
 };
-
-// CpuFeatures keeps track of which features are supported by the target CPU.
-// Supported features must be enabled by a CpuFeatureScope before use.
-// Example:
-//   if (assembler->IsSupported(SSE3)) {
-//     CpuFeatureScope fscope(assembler, SSE3);
-//     // Generate code containing SSE3 instructions.
-//   } else {
-//     // Generate alternative code.
-//   }
-class CpuFeatures : public AllStatic {
- public:
-  static void Probe(bool cross_compile) {
-    STATIC_ASSERT(NUMBER_OF_CPU_FEATURES <= kBitsPerInt);
-    if (initialized_) return;
-    initialized_ = true;
-    ProbeImpl(cross_compile);
-  }
-
-  static unsigned SupportedFeatures() {
-    Probe(false);
-    return supported_;
-  }
-
-  static bool IsSupported(CpuFeature f) {
-    return (supported_ & (1u << f)) != 0;
-  }
-
-  static inline bool SupportsOptimizer();
-
-  static inline bool SupportsWasmSimd128();
-
-  static inline unsigned icache_line_size() {
-    DCHECK_NE(icache_line_size_, 0);
-    return icache_line_size_;
-  }
-
-  static inline unsigned dcache_line_size() {
-    DCHECK_NE(dcache_line_size_, 0);
-    return dcache_line_size_;
-  }
-
-  static void PrintTarget();
-  static void PrintFeatures();
-
- private:
-  friend class ExternalReference;
-  friend class AssemblerBase;
-  // Flush instruction cache.
-  static void FlushICache(void* start, size_t size);
-
-  // Platform-dependent implementation.
-  static void ProbeImpl(bool cross_compile);
-
-  static unsigned supported_;
-  static unsigned icache_line_size_;
-  static unsigned dcache_line_size_;
-  static bool initialized_;
-  DISALLOW_COPY_AND_ASSIGN(CpuFeatures);
-};
-
-// -----------------------------------------------------------------------------
-// Utility functions
-
-// Computes pow(x, y) with the special cases in the spec for Math.pow.
-double power_helper(double x, double y);
-double power_double_int(double x, int y);
-double power_double_double(double x, double y);
-
-
-// Base type for CPU Registers.
-//
-// 1) We would prefer to use an enum for registers, but enum values are
-// assignment-compatible with int, which has caused code-generation bugs.
-//
-// 2) By not using an enum, we are possibly preventing the compiler from
-// doing certain constant folds, which may significantly reduce the
-// code generated for some assembly instructions (because they boil down
-// to a few constants). If this is a problem, we could change the code
-// such that we use an enum in optimized mode, and the class in debug
-// mode. This way we get the compile-time error checking in debug mode
-// and best performance in optimized code.
-template <typename SubType, int kAfterLastRegister>
-class RegisterBase {
-  // Internal enum class; used for calling constexpr methods, where we need to
-  // pass an integral type as template parameter.
-  enum class RegisterCode : int { kFirst = 0, kAfterLast = kAfterLastRegister };
-
- public:
-  static constexpr int kCode_no_reg = -1;
-  static constexpr int kNumRegisters = kAfterLastRegister;
-
-  static constexpr SubType no_reg() { return SubType{kCode_no_reg}; }
-
-  template <int code>
-  static constexpr SubType from_code() {
-    static_assert(code >= 0 && code < kNumRegisters, "must be valid reg code");
-    return SubType{code};
-  }
-
-  constexpr operator RegisterCode() const {
-    return static_cast<RegisterCode>(reg_code_);
-  }
-
-  template <RegisterCode reg_code>
-  static constexpr int code() {
-    static_assert(
-        reg_code >= RegisterCode::kFirst && reg_code < RegisterCode::kAfterLast,
-        "must be valid reg");
-    return static_cast<int>(reg_code);
-  }
-
-  template <RegisterCode reg_code>
-  static constexpr RegList bit() {
-    return RegList{1} << code<reg_code>();
-  }
-
-  static SubType from_code(int code) {
-    DCHECK_LE(0, code);
-    DCHECK_GT(kNumRegisters, code);
-    return SubType{code};
-  }
-
-  // Constexpr version (pass registers as template parameters).
-  template <RegisterCode... reg_codes>
-  static constexpr RegList ListOf() {
-    return CombineRegLists(RegisterBase::bit<reg_codes>()...);
-  }
-
-  // Non-constexpr version (pass registers as method parameters).
-  template <typename... Register>
-  static RegList ListOf(Register... regs) {
-    return CombineRegLists(regs.bit()...);
-  }
-
-  bool is_valid() const { return reg_code_ != kCode_no_reg; }
-
-  int code() const {
-    DCHECK(is_valid());
-    return reg_code_;
-  }
-
-  RegList bit() const { return RegList{1} << code(); }
-
-  inline constexpr bool operator==(SubType other) const {
-    return reg_code_ == other.reg_code_;
-  }
-  inline constexpr bool operator!=(SubType other) const {
-    return reg_code_ != other.reg_code_;
-  }
-
- protected:
-  explicit constexpr RegisterBase(int code) : reg_code_(code) {}
-  int reg_code_;
-};
-
-// Helper macros to define a {RegisterName} method based on a macro list
-// containing all names.
-#define DEFINE_REGISTER_NAMES_NAME(name) #name,
-#define DEFINE_REGISTER_NAMES(RegType, LIST)                                   \
-  inline const char* RegisterName(RegType reg) {                               \
-    static constexpr const char* Names[] = {LIST(DEFINE_REGISTER_NAMES_NAME)}; \
-    STATIC_ASSERT(arraysize(Names) == RegType::kNumRegisters);                 \
-    return reg.is_valid() ? Names[reg.code()] : "invalid";                     \
-  }
-
-template <typename RegType,
-          typename = decltype(RegisterName(std::declval<RegType>()))>
-inline std::ostream& operator<<(std::ostream& os, RegType reg) {
-  return os << RegisterName(reg);
-}
 
 }  // namespace internal
 }  // namespace v8

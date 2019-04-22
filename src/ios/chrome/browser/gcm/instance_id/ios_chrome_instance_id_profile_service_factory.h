@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace instance_id {
 class InstanceIDProfileService;
@@ -34,8 +30,7 @@ class IOSChromeInstanceIDProfileServiceFactory
   static IOSChromeInstanceIDProfileServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<
-      IOSChromeInstanceIDProfileServiceFactory>;
+  friend class base::NoDestructor<IOSChromeInstanceIDProfileServiceFactory>;
 
   IOSChromeInstanceIDProfileServiceFactory();
   ~IOSChromeInstanceIDProfileServiceFactory() override;

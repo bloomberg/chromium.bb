@@ -11,10 +11,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/vr/arcore_device/arcore.h"
 
-namespace gl {
-class GLImageAHardwareBuffer;
-}  // namespace gl
-
 namespace device {
 
 // Minimal fake ArCore implementation for testing. It can populate
@@ -39,7 +35,6 @@ class FakeArCore : public ArCore {
   void Resume() override;
 
   bool RequestHitTest(const mojom::XRRayPtr& ray,
-                      const gfx::Size& image_size,
                       std::vector<mojom::XRHitResultPtr>* hit_results) override;
 
   void SetCameraAspect(float aspect) { camera_aspect_ = aspect; }
@@ -53,8 +48,6 @@ class FakeArCore : public ArCore {
   display::Display::Rotation display_rotation_ =
       display::Display::Rotation::ROTATE_0;
   gfx::Size frame_size_;
-  // Storage for the testing placeholder image to keep it alive.
-  scoped_refptr<gl::GLImageAHardwareBuffer> placeholder_camera_image_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeArCore);
 };

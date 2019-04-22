@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -69,7 +69,7 @@ PepperIsolatedFileSystemMessageFilter::PepperIsolatedFileSystemMessageFilter(
       profile_directory_(profile_directory),
       document_url_(document_url),
       ppapi_host_(ppapi_host) {
-  for (size_t i = 0; i < arraysize(kPredefinedAllowedCrxFsOrigins); ++i)
+  for (size_t i = 0; i < base::size(kPredefinedAllowedCrxFsOrigins); ++i)
     allowed_crxfs_origins_.insert(kPredefinedAllowedCrxFsOrigins[i]);
 }
 

@@ -79,6 +79,7 @@ typedef struct LensfunContext {
     float focal_length;
     float aperture;
     float focus_distance;
+    float scale;
     int target_geometry;
     int reverse;
     int interpolation_type;
@@ -108,6 +109,7 @@ static const AVOption lensfun_options[] = {
     { "focal_length", "focal length of video (zoom; constant for the duration of the use of this filter)", OFFSET(focal_length), AV_OPT_TYPE_FLOAT, {.dbl=18}, 0.0, DBL_MAX, FLAGS },
     { "aperture", "aperture (constant for the duration of the use of this filter)", OFFSET(aperture), AV_OPT_TYPE_FLOAT, {.dbl=3.5}, 0.0, DBL_MAX, FLAGS },
     { "focus_distance", "focus distance (constant for the duration of the use of this filter)", OFFSET(focus_distance), AV_OPT_TYPE_FLOAT, {.dbl=1000.0f}, 0.0, DBL_MAX, FLAGS },
+    { "scale", "scale factor applied after corrections (0.0 means automatic scaling)", OFFSET(scale), AV_OPT_TYPE_FLOAT, {.dbl=0.0}, 0.0, DBL_MAX, FLAGS },
     { "target_geometry", "target geometry of the lens correction (only when geometry correction is enabled)", OFFSET(target_geometry), AV_OPT_TYPE_INT, {.i64=LF_RECTILINEAR}, 0, INT_MAX, FLAGS, "lens_geometry" },
         { "rectilinear", "rectilinear lens (default)", 0, AV_OPT_TYPE_CONST, {.i64=LF_RECTILINEAR}, 0, 0, FLAGS, "lens_geometry" },
         { "fisheye", "fisheye lens", 0, AV_OPT_TYPE_CONST, {.i64=LF_FISHEYE}, 0, 0, FLAGS, "lens_geometry" },
@@ -228,7 +230,7 @@ static int config_props(AVFilterLink *inlink)
                                    lensfun->focal_length,
                                    lensfun->aperture,
                                    lensfun->focus_distance,
-                                   0.0,
+                                   lensfun->scale,
                                    lensfun->target_geometry,
                                    lensfun_mode,
                                    lensfun->reverse);
@@ -240,7 +242,7 @@ static int config_props(AVFilterLink *inlink)
 
     if (!lensfun->distortion_coords) {
         if (lensfun->mode & SUBPIXEL_DISTORTION) {
-            lensfun->distortion_coords = av_malloc(sizeof(float) * inlink->w * inlink->h * 2 * 3);
+            lensfun->distortion_coords = av_malloc_array(inlink->w * inlink->h, sizeof(float) * 2 * 3);
             if (!lensfun->distortion_coords)
                 return AVERROR(ENOMEM);
             if (lensfun->mode & GEOMETRY_DISTORTION) {
@@ -257,7 +259,7 @@ static int config_props(AVFilterLink *inlink)
                                                       lensfun->distortion_coords);
             }
         } else if (lensfun->mode & GEOMETRY_DISTORTION) {
-            lensfun->distortion_coords = av_malloc(sizeof(float) * inlink->w * inlink->h * 2);
+            lensfun->distortion_coords = av_malloc_array(inlink->w * inlink->h, sizeof(float) * 2);
             if (!lensfun->distortion_coords)
                 return AVERROR(ENOMEM);
             // apply only geometry distortion
@@ -270,7 +272,7 @@ static int config_props(AVFilterLink *inlink)
 
     if (!lensfun->interpolation)
         if (lensfun->interpolation_type == LANCZOS) {
-            lensfun->interpolation = av_malloc(sizeof(float) * 4 * LANCZOS_RESOLUTION);
+            lensfun->interpolation = av_malloc_array(LANCZOS_RESOLUTION, sizeof(float) * 4);
             if (!lensfun->interpolation)
                 return AVERROR(ENOMEM);
             for (index = 0; index < 4 * LANCZOS_RESOLUTION; ++index) {
@@ -510,10 +512,8 @@ static av_cold void uninit(AVFilterContext *ctx)
         lf_lens_destroy(lensfun->lens);
     if (lensfun->modifier)
         lf_modifier_destroy(lensfun->modifier);
-    if (lensfun->distortion_coords)
-        av_free(lensfun->distortion_coords);
-    if (lensfun->interpolation)
-        av_free(lensfun->interpolation);
+    av_freep(&lensfun->distortion_coords);
+    av_freep(&lensfun->interpolation);
 }
 
 static const AVFilterPad lensfun_inputs[] = {

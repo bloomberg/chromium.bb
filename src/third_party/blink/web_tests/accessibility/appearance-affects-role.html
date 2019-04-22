@@ -2,7 +2,6 @@
 <title>Accessibility: elements with -webkit-appearance: none retain the correct role.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
 <!--
 This test checks that elements with -webkit-appearance: none, do not lose their
 AXRole.
@@ -125,7 +124,7 @@ AXRole.
     test(function () {
         check("iweek", "AXRole: AXDateTimeField");
     }, "Test computed AX role for <input type=week>");
-    
+
     test(function () {
         check("idatalist", "AXRole: AXTextFieldWithComboBox");
     }, "Test computed AX role for <input list=datalist>");

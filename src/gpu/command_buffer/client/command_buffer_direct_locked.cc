@@ -42,7 +42,7 @@ CommandBuffer::State CommandBufferDirectLocked::WaitForGetOffsetInRange(
 }
 
 scoped_refptr<Buffer> CommandBufferDirectLocked::CreateTransferBuffer(
-    size_t size,
+    uint32_t size,
     int32_t* id) {
   if (fail_create_transfer_buffer_) {
     *id = -1;

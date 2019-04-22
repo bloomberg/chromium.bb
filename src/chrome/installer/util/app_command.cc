@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/work_item_list.h"
@@ -60,7 +60,7 @@ bool AppCommand::Initialize(const base::win::RegKey& key) {
 
   command_line_.swap(cmd_line);
 
-  for (size_t i = 0; i < arraysize(kNameBoolVars); ++i) {
+  for (size_t i = 0; i < base::size(kNameBoolVars); ++i) {
     DWORD value = 0;  // Set default to false.
     // Note: ReadValueDW only modifies out param on success.
     key.ReadValueDW(kNameBoolVars[i].name, &value);
@@ -86,7 +86,7 @@ void AppCommand::AddWorkItems(HKEY predefined_root,
                                     true)
       ->set_log_message("setting AppCommand CommandLine registry value");
 
-  for (size_t i = 0; i < arraysize(kNameBoolVars); ++i) {
+  for (size_t i = 0; i < base::size(kNameBoolVars); ++i) {
     const wchar_t* var_name = kNameBoolVars[i].name;
     bool var_data = this->*(kNameBoolVars[i].data);
 

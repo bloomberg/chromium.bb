@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
@@ -66,10 +67,11 @@ class MockEventRouterObserver : public EventRouter::Observer {
   DISALLOW_COPY_AND_ASSIGN(MockEventRouterObserver);
 };
 
-using EventListenerConstructor = base::Callback<std::unique_ptr<EventListener>(
-    const std::string& /* event_name */,
-    content::RenderProcessHost* /* process */,
-    std::unique_ptr<base::DictionaryValue> /* filter */)>;
+using EventListenerConstructor =
+    base::RepeatingCallback<std::unique_ptr<EventListener>(
+        const std::string& /* event_name */,
+        content::RenderProcessHost* /* process */,
+        std::unique_ptr<base::DictionaryValue> /* filter */)>;
 
 std::unique_ptr<EventListener> CreateEventListenerForExtension(
     const std::string& extension_id,
@@ -310,12 +312,12 @@ void EventRouterTest::RunEventRouterObserverTest(
 
 TEST_F(EventRouterTest, EventRouterObserverForExtensions) {
   RunEventRouterObserverTest(
-      base::Bind(&CreateEventListenerForExtension, "extension_id"));
+      base::BindRepeating(&CreateEventListenerForExtension, "extension_id"));
 }
 
 TEST_F(EventRouterTest, EventRouterObserverForURLs) {
-  RunEventRouterObserverTest(
-      base::Bind(&CreateEventListenerForURL, GURL("http://google.com/path")));
+  RunEventRouterObserverTest(base::BindRepeating(
+      &CreateEventListenerForURL, GURL("http://google.com/path")));
 }
 
 TEST_F(EventRouterTest, TestReportEvent) {
@@ -366,7 +368,7 @@ TEST_F(EventRouterFilterTest, Basic) {
   const std::string kExtensionId = "mbflcebpggnecokmikipoihdbecnjfoj";
   const std::string kHostSuffixes[] = {"foo.com", "bar.com", "baz.com"};
   std::vector<std::unique_ptr<DictionaryValue>> filters;
-  for (size_t i = 0; i < arraysize(kHostSuffixes); ++i) {
+  for (size_t i = 0; i < base::size(kHostSuffixes); ++i) {
     std::unique_ptr<base::DictionaryValue> filter =
         CreateHostSuffixFilter(kHostSuffixes[i]);
     event_router()->AddFilteredEventListener(kEventName, render_process_host(),

@@ -8,6 +8,7 @@ import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.webkit.URLUtil;
 
 import org.chromium.base.Callback;
@@ -18,10 +19,10 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -30,7 +31,6 @@ import org.chromium.ui.base.PageTransition;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A helper class responsible for determining when to trigger requests for suggestions and when to
@@ -506,9 +506,10 @@ class FetchHelper {
 
     @VisibleForTesting
     static long getMinimumFetchDelayMillis() {
-        return TimeUnit.SECONDS.toMillis(ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, FETCH_TRIGGERING_DELAY_SECONDS,
-                MINIMUM_FETCH_DELAY_SECONDS));
+        return DateUtils.SECOND_IN_MILLIS
+                * ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                        ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON,
+                        FETCH_TRIGGERING_DELAY_SECONDS, MINIMUM_FETCH_DELAY_SECONDS);
     }
 
     @VisibleForTesting

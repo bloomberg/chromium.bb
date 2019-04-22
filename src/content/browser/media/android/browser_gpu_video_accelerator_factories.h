@@ -28,8 +28,7 @@ class BrowserGpuVideoAcceleratorFactories
       const media::VideoDecoderConfig& config) override;
   std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
       media::MediaLog* media_log,
-      const media::RequestOverlayInfoCB& request_overlay_info_cb,
-      const gfx::ColorSpace& target_color_space) override;
+      const media::RequestOverlayInfoCB& request_overlay_info_cb) override;
   std::unique_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
       override;
   std::unique_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
@@ -55,6 +54,8 @@ class BrowserGpuVideoAcceleratorFactories
   media::GpuVideoAcceleratorFactories::OutputFormat VideoFrameOutputFormat(
       media::VideoPixelFormat pixel_format) override;
   gpu::gles2::GLES2Interface* ContextGL() override;
+  gpu::SharedImageInterface* SharedImageInterface() override;
+  gpu::GpuMemoryBufferManager* GpuMemoryBufferManager() override;
   std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
   media::VideoDecodeAccelerator::Capabilities
@@ -63,6 +64,7 @@ class BrowserGpuVideoAcceleratorFactories
   GetVideoEncodeAcceleratorSupportedProfiles() override;
   scoped_refptr<ws::ContextProviderCommandBuffer> GetMediaContextProvider()
       override;
+  gpu::ContextSupport* GetMediaContextProviderContextSupport() override;
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
 
   scoped_refptr<ws::ContextProviderCommandBuffer> context_provider_;

@@ -661,4 +661,42 @@ TEST_F(ListModelTest, Footers) {
   EXPECT_EQ(weasleyFooter, [model footerForSection:weasleySection]);
 }
 
+// Tests -[ListModel indexPathForItemType:].
+TEST_F(ListModelTest, GetItemByItemType) {
+  ListModel* model = [[ListModel alloc] init];
+
+  [model addSectionWithIdentifier:SectionIdentifierCheese];
+  [model addItemWithType:ItemTypeCheesePepperJack
+      toSectionWithIdentifier:SectionIdentifierCheese];
+  [model addItemWithType:ItemTypeCheeseCheddar
+      toSectionWithIdentifier:SectionIdentifierCheese];
+
+  [model addSectionWithIdentifier:SectionIdentifierWeasley];
+  [model addItemWithType:ItemTypeWeasleyRon
+      toSectionWithIdentifier:SectionIdentifierWeasley];
+  [model addItemWithType:ItemTypeWeasleyArthur
+      toSectionWithIdentifier:SectionIdentifierWeasley];
+  [model addItemWithType:ItemTypeWeasleyGinny
+      toSectionWithIdentifier:SectionIdentifierWeasley];
+  [model addItemWithType:ItemTypeWeasleyArthur
+      toSectionWithIdentifier:SectionIdentifierWeasley];
+
+  // Check that gouda cannot be found.
+  EXPECT_EQ(nil, [model indexPathForItemType:ItemTypeCheeseGouda]);
+  // Check cheddar can be found.
+  NSIndexPath* cheedarIndexPath = [NSIndexPath indexPathForRow:1 inSection:0];
+  EXPECT_EQ(cheedarIndexPath,
+            [model indexPathForItemType:ItemTypeCheeseCheddar]);
+  // Check weasley ginny can be found.
+  NSIndexPath* weasleyGinnyIndexPath = [NSIndexPath indexPathForRow:2
+                                                          inSection:1];
+  EXPECT_EQ(weasleyGinnyIndexPath,
+            [model indexPathForItemType:ItemTypeWeasleyGinny]);
+  // Check the first weasley arthur is found.
+  NSIndexPath* firstWeasleyArthurIndexPath = [NSIndexPath indexPathForRow:1
+                                                                inSection:1];
+  EXPECT_EQ(firstWeasleyArthurIndexPath,
+            [model indexPathForItemType:ItemTypeWeasleyArthur]);
+}
+
 }  // namespace

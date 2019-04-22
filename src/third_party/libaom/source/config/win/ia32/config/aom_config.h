@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2019, Alliance for Open Media. All rights reserved
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -24,17 +24,17 @@
 #define CONFIG_BITSTREAM_DEBUG 0
 #define CONFIG_COEFFICIENT_RANGE_CHECKING 0
 #define CONFIG_COLLECT_INTER_MODE_RD_STATS 1
+#define CONFIG_COLLECT_PARTITION_STATS 0
 #define CONFIG_COLLECT_RD_STATS 0
 #define CONFIG_DEBUG 0
 #define CONFIG_DENOISE 1
+#define CONFIG_DISABLE_FULL_PIXEL_SPLIT_8X8 1
 #define CONFIG_DIST_8X8 0
 #define CONFIG_ENTROPY_STATS 0
 #define CONFIG_FILEOPTIONS 1
-#define CONFIG_FIX_GF_LENGTH 1
 #define CONFIG_FP_MB_STATS 0
 #define CONFIG_GCC 0
 #define CONFIG_GCOV 0
-#define CONFIG_GLOBAL_MOTION_SEARCH 1
 #define CONFIG_GPROF 0
 #define CONFIG_INSPECTION 0
 #define CONFIG_INTERNAL_STATS 0
@@ -47,14 +47,14 @@
 #define CONFIG_NORMAL_TILE_MODE 1
 #define CONFIG_ONE_PASS_SVM 0
 #define CONFIG_OS_SUPPORT 1
-#define CONFIG_PIC 0
+#define CONFIG_PIC 1
 #define CONFIG_RD_DEBUG 0
-#define CONFIG_REDUCED_ENCODER_BORDER 0
 #define CONFIG_RUNTIME_CPU_DETECT 1
 #define CONFIG_SHARED 0
 #define CONFIG_SHARP_SETTINGS 0
 #define CONFIG_SIZE_LIMIT 1
 #define CONFIG_SPATIAL_RESAMPLING 1
+#define CONFIG_SPEED_STATS 0
 #define CONFIG_STATIC 1
 #define CONFIG_WEBM_IO 1
 #define DECODE_HEIGHT_LIMIT 16384

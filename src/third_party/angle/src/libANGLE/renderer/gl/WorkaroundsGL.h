@@ -163,6 +163,19 @@ struct WorkaroundsGL
     // glReadPixels on unsized sRGB texture formats. http://crbug.com/550292 and
     // http://crbug.com/565179
     bool unsizedsRGBReadPixelsDoesntTransform = false;
+
+    // Older Qualcomm drivers generate errors when querying the number of bits in timer queries, ex:
+    // GetQueryivEXT(GL_TIME_ELAPSED, GL_QUERY_COUNTER_BITS).  http://anglebug.com/3027
+    bool queryCounterBitsGeneratesErrors = false;
+
+    // Re-linking a program in parallel is buggy on some Intel Windows OpenGL drivers and Android
+    // platforms.
+    // http://anglebug.com/3045
+    bool dontRelinkProgramsInParallel = false;
+
+    // Some tests have been seen to fail using worker contexts, this switch allows worker contexts
+    // to be disabled for some platforms. http://crbug.com/849576
+    bool disableWorkerContexts = false;
 };
 
 inline WorkaroundsGL::WorkaroundsGL() = default;

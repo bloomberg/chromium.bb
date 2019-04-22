@@ -41,13 +41,19 @@ SyncProtocolError ConvertErrorPBToSyncProtocolError(
 
 class SyncerProtoUtil {
  public:
+  // Adds all fields that must be sent on every request, which includes store
+  // birthday, protocol version, client chips, api keys, etc. |msg| must be not
+  // null. Must be called before calling PostClientToServerMessage().
+  static void AddRequiredFieldsToClientToServerMessage(
+      const SyncCycle* cycle,
+      sync_pb::ClientToServerMessage* msg);
+
   // Posts the given message and fills the buffer with the returned value.
   // Returns true on success.  Also handles store birthday verification: will
-  // produce a SyncError if the birthday is incorrect.
-  // NOTE: This will add all fields that must be sent on every request, which
-  // includes store birthday, protocol version, client chips, api keys, etc.
+  // produce a SyncError if the birthday is incorrect. Before calling this
+  // method, AddRequiredFieldsToClientToServerMessage() must be called.
   static SyncerError PostClientToServerMessage(
-      sync_pb::ClientToServerMessage* msg,
+      const sync_pb::ClientToServerMessage& msg,
       sync_pb::ClientToServerResponse* response,
       SyncCycle* cycle,
       ModelTypeSet* partial_failure_data_types);

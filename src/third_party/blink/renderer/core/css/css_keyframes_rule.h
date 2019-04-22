@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/css/css_rule.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -39,10 +40,6 @@ class StyleRuleKeyframe;
 
 class StyleRuleKeyframes final : public StyleRuleBase {
  public:
-  static StyleRuleKeyframes* Create() {
-    return MakeGarbageCollected<StyleRuleKeyframes>();
-  }
-
   StyleRuleKeyframes();
   explicit StyleRuleKeyframes(const StyleRuleKeyframes&);
   ~StyleRuleKeyframes();
@@ -79,17 +76,17 @@ class StyleRuleKeyframes final : public StyleRuleBase {
   unsigned is_prefixed_ : 1;
 };
 
-DEFINE_STYLE_RULE_TYPE_CASTS(Keyframes);
+template <>
+struct DowncastTraits<StyleRuleKeyframes> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsKeyframesRule();
+  }
+};
 
 class CSSKeyframesRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSKeyframesRule* Create(StyleRuleKeyframes* rule,
-                                  CSSStyleSheet* sheet) {
-    return MakeGarbageCollected<CSSKeyframesRule>(rule, sheet);
-  }
-
   CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);
   ~CSSKeyframesRule() override;
 
@@ -128,7 +125,12 @@ class CSSKeyframesRule final : public CSSRule {
   bool is_prefixed_;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframesRule, kKeyframesRule);
+template <>
+struct DowncastTraits<CSSKeyframesRule> {
+  static bool AllowFrom(const CSSRule& rule) {
+    return rule.type() == CSSRule::kKeyframesRule;
+  }
+};
 
 }  // namespace blink
 

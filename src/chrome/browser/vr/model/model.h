@@ -73,7 +73,8 @@ struct VR_UI_EXPORT Model {
   bool has_mode_in_stack(UiMode mode) const;
   bool browsing_enabled() const;
   bool default_browsing_enabled() const;
-  bool voice_search_enabled() const;
+  bool voice_search_available() const;
+  bool voice_search_active() const;
   bool omnibox_editing_enabled() const;
   bool editing_enabled() const;
   bool fullscreen_enabled() const;
@@ -89,7 +90,9 @@ struct VR_UI_EXPORT Model {
   EditedText web_input_text_field_info;
 
   // Controller state.
-  ControllerModel controller;
+  const ControllerModel& primary_controller() const;
+  ControllerModel& mutable_primary_controller();  // For tests
+  std::vector<ControllerModel> controllers;
   ReticleModel reticle;
 
   // State affecting both VR browsing and WebVR.

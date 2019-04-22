@@ -42,6 +42,7 @@ public class PureJavaExceptionReporter {
     public static final String PRODUCT = "prod";
     public static final String ANDROID_BUILD_ID = "android_build_id";
     public static final String ANDROID_BUILD_FP = "android_build_fp";
+    public static final String SDK = "sdk";
     public static final String DEVICE = "device";
     public static final String GMS_CORE_VERSION = "gms_core_version";
     public static final String INSTALLER_PACKAGE_NAME = "installer_package_name";
@@ -136,6 +137,7 @@ public class PureJavaExceptionReporter {
         addPairedString(BRAND, Build.BRAND);
         addPairedString(BOARD, Build.BOARD);
         addPairedString(ANDROID_BUILD_FP, buildInfo.androidBuildFingerprint);
+        addPairedString(SDK, String.valueOf(Build.VERSION.SDK_INT));
         addPairedString(GMS_CORE_VERSION, buildInfo.gmsVersionCode);
         addPairedString(INSTALLER_PACKAGE_NAME, buildInfo.installerPackageName);
         addPairedString(ABI_NAME, buildInfo.abiString);

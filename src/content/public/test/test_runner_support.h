@@ -13,9 +13,9 @@ class WebLocalFrame;
 
 namespace content {
 
-// Returns a frame name that can be used in the output of layout tests
+// Returns a frame name that can be used in the output of web tests
 // (the name is derived from the frame's unique name).
-std::string GetFrameNameForLayoutTests(blink::WebLocalFrame* frame);
+std::string GetFrameNameForWebTests(blink::WebLocalFrame* frame);
 
 }  // namespace content
 

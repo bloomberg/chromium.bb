@@ -89,10 +89,7 @@ class MetricsServiceTest : public testing::Test {
     MetricsService::RegisterPrefs(testing_local_state_.registry());
   }
 
-  ~MetricsServiceTest() override {
-    MetricsService::SetExecutionPhase(ExecutionPhase::UNINITIALIZED_PHASE,
-                                      GetLocalState());
-  }
+  ~MetricsServiceTest() override {}
 
   MetricsStateManager* GetMetricsStateManager() {
     // Lazy-initialize the metrics_state_manager so that it correctly reads the
@@ -349,6 +346,7 @@ TEST_F(MetricsServiceTest, MetricsProvidersInitialized) {
 }
 
 TEST_F(MetricsServiceTest, SplitRotation) {
+  EnableMetricsReporting();
   TestMetricsServiceClient client;
   TestMetricsService service(GetMetricsStateManager(), &client,
                              GetLocalState());
@@ -399,6 +397,7 @@ TEST_F(MetricsServiceTest, SplitRotation) {
 }
 
 TEST_F(MetricsServiceTest, LastLiveTimestamp) {
+  EnableMetricsReporting();
   TestMetricsServiceClient client;
   TestMetricsService service(GetMetricsStateManager(), &client,
                              GetLocalState());

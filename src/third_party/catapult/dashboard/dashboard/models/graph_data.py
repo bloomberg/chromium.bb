@@ -96,6 +96,8 @@ class Bot(internal_only_model.InternalOnlyModel):
   """
   internal_only = ndb.BooleanProperty(default=False, indexed=True)
 
+  _use_memcache = True
+
   @classmethod
   @ndb.synctasklet
   def GetInternalOnlySync(cls, master, bot):

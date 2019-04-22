@@ -5,7 +5,7 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 
 #include "base/logging.h"
-#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 

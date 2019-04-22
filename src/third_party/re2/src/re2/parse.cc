@@ -27,6 +27,7 @@
 
 #include "util/util.h"
 #include "util/logging.h"
+#include "util/pod_array.h"
 #include "util/strutil.h"
 #include "util/utf.h"
 #include "re2/regexp.h"
@@ -609,7 +610,7 @@ bool Regexp::ParseState::DoLeftParen(const StringPiece& name) {
   Regexp* re = new Regexp(kLeftParen, flags_);
   re->cap_ = ++ncap_;
   if (name.data() != NULL)
-    re->name_ = new string(name);
+    re->name_ = new std::string(name);
   return PushRegexp(re);
 }
 
@@ -899,7 +900,7 @@ struct Frame {
   int nsub;
   int round;
   std::vector<Splice> splices;
-  std::vector<Splice>::iterator spliceiter;
+  int spliceidx;
 };
 
 // Bundled into a class for friend access to Regexp without needing to declare
@@ -937,15 +938,15 @@ int Regexp::FactorAlternation(Regexp** sub, int nsub, ParseFlags flags) {
     auto& nsub = stk.back().nsub;
     auto& round = stk.back().round;
     auto& splices = stk.back().splices;
-    auto& spliceiter = stk.back().spliceiter;
+    auto& spliceidx = stk.back().spliceidx;
 
     if (splices.empty()) {
       // Advance to the next round of factoring. Note that this covers
       // the initialised state: when splices is empty and round is 0.
       round++;
-    } else if (spliceiter != splices.end()) {
+    } else if (spliceidx < static_cast<int>(splices.size())) {
       // We have at least one more Splice to factor. Recurse logically.
-      stk.emplace_back(spliceiter->sub, spliceiter->nsub);
+      stk.emplace_back(splices[spliceidx].sub, splices[spliceidx].nsub);
       continue;
     } else {
       // We have no more Splices to factor. Apply them.
@@ -1006,8 +1007,8 @@ int Regexp::FactorAlternation(Regexp** sub, int nsub, ParseFlags flags) {
           // (Note that references will be invalidated!)
           int nsuffix = nsub;
           stk.pop_back();
-          stk.back().spliceiter->nsuffix = nsuffix;
-          ++stk.back().spliceiter;
+          stk.back().splices[stk.back().spliceidx].nsuffix = nsuffix;
+          ++stk.back().spliceidx;
           continue;
         }
       default:
@@ -1015,11 +1016,11 @@ int Regexp::FactorAlternation(Regexp** sub, int nsub, ParseFlags flags) {
         break;
     }
 
-    // Set spliceiter depending on whether we have Splices to factor.
+    // Set spliceidx depending on whether we have Splices to factor.
     if (splices.empty() || round == 3) {
-      spliceiter = splices.end();
+      spliceidx = static_cast<int>(splices.size());
     } else {
-      spliceiter = splices.begin();
+      spliceidx = 0;
     }
   }
 }
@@ -1217,7 +1218,7 @@ void Regexp::ParseState::DoCollapse(RegexpOp op) {
     return;
 
   // Construct op (alternation or concatenation), flattening op of op.
-  Regexp** subs = new Regexp*[n];
+  PODArray<Regexp*> subs(n);
   next = NULL;
   int i = n;
   for (sub = stacktop_; sub != NULL && !IsMarker(sub->op()); sub = next) {
@@ -1232,8 +1233,7 @@ void Regexp::ParseState::DoCollapse(RegexpOp op) {
     }
   }
 
-  Regexp* re = ConcatOrAlternate(op, subs, n, flags_, true);
-  delete[] subs;
+  Regexp* re = ConcatOrAlternate(op, subs.data(), n, flags_, true);
   re->simple_ = re->ComputeSimple();
   re->down_ = next;
   stacktop_ = re;
@@ -1790,7 +1790,7 @@ ParseStatus ParseUnicodeGroup(StringPiece* s, Regexp::ParseFlags parse_flags,
   // Look up the group in the ICU Unicode data. Because ICU provides full
   // Unicode properties support, this could be more than a lookup by name.
   ::icu::UnicodeString ustr = ::icu::UnicodeString::fromUTF8(
-      string("\\p{") + string(name) + string("}"));
+      std::string("\\p{") + std::string(name) + std::string("}"));
   UErrorCode uerr = U_ZERO_ERROR;
   ::icu::UnicodeSet uset(ustr, uerr);
   if (U_FAILURE(uerr)) {
@@ -2181,7 +2181,7 @@ BadPerlOp:
 // into UTF8 encoding in string.
 // Can't use EncodingUtils::EncodeLatin1AsUTF8 because it is
 // deprecated and because it rejects code points 0x80-0x9F.
-void ConvertLatin1ToUTF8(const StringPiece& latin1, string* utf) {
+void ConvertLatin1ToUTF8(const StringPiece& latin1, std::string* utf) {
   char buf[UTFmax];
 
   utf->clear();
@@ -2208,7 +2208,7 @@ Regexp* Regexp::Parse(const StringPiece& s, ParseFlags global_flags,
 
   // Convert regexp to UTF-8 (easier on the rest of the parser).
   if (global_flags & Latin1) {
-    string* tmp = new string;
+    std::string* tmp = new std::string;
     ConvertLatin1ToUTF8(t, tmp);
     status->set_tmp(tmp);
     t = *tmp;

@@ -98,12 +98,10 @@ EmptyFolderController.prototype.onScanFinished_ = function() {
  */
 EmptyFolderController.prototype.update_ = function() {
   if (!this.isScanning_ && this.dataModel_.length === 0) {
-    var query = this.directoryModel_.getLastSearchQuery();
-    var html = '';
+    const query = this.directoryModel_.getLastSearchQuery();
+    let html = '';
     if (query) {
-      html = strf(
-          'SEARCH_NO_MATCHING_FILES_HTML',
-          util.htmlEscape(query));
+      html = strf('SEARCH_NO_MATCHING_FILES_HTML', util.htmlEscape(query));
     } else {
       html = str('EMPTY_FOLDER');
     }

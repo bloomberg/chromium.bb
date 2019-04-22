@@ -15,7 +15,6 @@
 #ifndef DAWNNATIVE_TEXTURE_H_
 #define DAWNNATIVE_TEXTURE_H_
 
-#include "dawn_native/Builder.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
 #include "dawn_native/ObjectBase.h"
@@ -33,6 +32,8 @@ namespace dawn_native {
     bool TextureFormatHasStencil(dawn::TextureFormat format);
     bool TextureFormatHasDepthOrStencil(dawn::TextureFormat format);
     bool IsColorRenderableTextureFormat(dawn::TextureFormat format);
+    bool IsDepthStencilRenderableTextureFormat(dawn::TextureFormat format);
+    bool IsValidSampleCount(uint32_t sampleCount);
 
     static constexpr dawn::TextureUsageBit kReadOnlyTextureUsages =
         dawn::TextureUsageBit::TransferSrc | dawn::TextureUsageBit::Sampled |
@@ -44,47 +45,73 @@ namespace dawn_native {
 
     class TextureBase : public ObjectBase {
       public:
-        TextureBase(DeviceBase* device, const TextureDescriptor* descriptor);
+        enum class TextureState { OwnedInternal, OwnedExternal, Destroyed };
+
+        TextureBase(DeviceBase* device, const TextureDescriptor* descriptor, TextureState state);
+
+        static TextureBase* MakeError(DeviceBase* device);
 
         dawn::TextureDimension GetDimension() const;
         dawn::TextureFormat GetFormat() const;
         const Extent3D& GetSize() const;
         uint32_t GetArrayLayers() const;
         uint32_t GetNumMipLevels() const;
+        uint32_t GetSampleCount() const;
         dawn::TextureUsageBit GetUsage() const;
+        TextureState GetTextureState() const;
 
         MaybeError ValidateCanUseInSubmitNow() const;
 
+        bool IsMultisampledTexture() const;
+
         // Dawn API
-        TextureViewBase* CreateDefaultTextureView();
-        TextureViewBase* CreateTextureView(const TextureViewDescriptor* descriptor);
+        TextureViewBase* CreateDefaultView();
+        TextureViewBase* CreateView(const TextureViewDescriptor* descriptor);
+        void Destroy();
+
+      protected:
+        void DestroyInternal();
 
       private:
+        TextureBase(DeviceBase* device, ObjectBase::ErrorTag tag);
+        virtual void DestroyImpl();
+
+        MaybeError ValidateDestroy() const;
         dawn::TextureDimension mDimension;
         dawn::TextureFormat mFormat;
         Extent3D mSize;
-        uint32_t mArrayLayers;
-        uint32_t mNumMipLevels;
+        uint32_t mArrayLayerCount;
+        uint32_t mMipLevelCount;
+        uint32_t mSampleCount;
         dawn::TextureUsageBit mUsage = dawn::TextureUsageBit::None;
+        TextureState mState;
     };
 
     class TextureViewBase : public ObjectBase {
       public:
         TextureViewBase(TextureBase* texture, const TextureViewDescriptor* descriptor);
 
+        static TextureViewBase* MakeError(DeviceBase* device);
+
         const TextureBase* GetTexture() const;
         TextureBase* GetTexture();
 
         dawn::TextureFormat GetFormat() const;
+        uint32_t GetBaseMipLevel() const;
         uint32_t GetLevelCount() const;
+        uint32_t GetBaseArrayLayer() const;
         uint32_t GetLayerCount() const;
 
       private:
+        TextureViewBase(DeviceBase* device, ObjectBase::ErrorTag tag);
+
         Ref<TextureBase> mTexture;
 
         dawn::TextureFormat mFormat;
-        uint32_t mLevelCount;
-        uint32_t mLayerCount;
+        uint32_t mBaseMipLevel;
+        uint32_t mMipLevelCount;
+        uint32_t mBaseArrayLayer;
+        uint32_t mArrayLayerCount;
     };
 
 }  // namespace dawn_native

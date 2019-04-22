@@ -9,6 +9,39 @@ index 7a24999..4eefcba 100644
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
 +<link rel="stylesheet" href="chrome://resources/css/roboto.css">
+diff --git a/components-chromium/html-imports/html-imports.min.js b/components-chromium/html-imports/html-imports.min.js
+index 3365917e8b99..8750aefdefb1 100644
+--- a/components-chromium/html-imports/html-imports.min.js
++++ b/components-chromium/html-imports/html-imports.min.js
+@@ -23,5 +23,3 @@ if(d&&b.parentNode!==document.head){var e=document.createElement(b.localName);e.
+ "complete"),a.dispatchEvent(y(a.import?"load":"error",{bubbles:!1,cancelable:!1,detail:void 0})))};h.prototype.w=function(a){var b=this;g(a,function(a){return g(a.addedNodes,function(a){a&&a.nodeType===Node.ELEMENT_NODE&&(r(a)?b.l(a):b.loadImports(a))})})};var x=null;if(u)g(k(document,"link[rel=import]"),function(a){a.import&&"loading"===a.import.readyState||(a.__loaded=!0)}),n=function(a){a=a.target;r(a)&&(a.__loaded=!0)},document.addEventListener("load",n,!0),document.addEventListener("error",n,
+ !0);else{var p=Object.getOwnPropertyDescriptor(Node.prototype,"baseURI");Object.defineProperty((!p||p.configurable?Node:Element).prototype,"baseURI",{get:function(){var a=r(this)?this:m(this);return a?a.href:p&&p.get?p.get.call(this):(document.querySelector("base")||window.location).href},configurable:!0,enumerable:!0});Object.defineProperty(HTMLLinkElement.prototype,"import",{get:function(){return this.__import||null},configurable:!0,enumerable:!0});z(function(){x=new h})}A(function(){return document.dispatchEvent(y("HTMLImportsLoaded",
+ {cancelable:!0,bubbles:!0,detail:void 0}))});q.useNative=u;q.whenReady=A;q.importForElement=m;q.loadImports=function(a){x&&x.loadImports(a)}})(window.HTMLImports=window.HTMLImports||{});
+-
+-//# sourceMappingURL=html-imports.min.js.map
+diff --git a/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js b/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js
+index 2edddb115d46..d3c7fbe36d63 100644
+--- a/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js
++++ b/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js
+@@ -131,6 +131,18 @@
+       return null;
+     },
+
++    /**
++     * Produce installable clone of the SVG element matching `id` in this
++     * iconset, or `undefined` if there is no matching element.
++     * @param {string} iconName Name of the icon to apply.
++     * @param {boolean} targetIsRTL Whether the target element is RTL.
++     * @return {Element} Returns an installable clone of the SVG element
++     *     matching `id`.
++     */
++    createIcon: function(iconName, targetIsRTL) {
++      return this._cloneIcon(iconName, this.rtlMirroring && targetIsRTL);
++    },
++
+     /**
+      * Remove an icon from the given element by undoing the changes effected
+      * by `applyIcon`.
 diff --git a/components-chromium/iron-list/iron-list-extracted.js b/components-chromium/iron-list/iron-list-extracted.js
 index 43c59653a39b..26652936735c 100644
 --- a/components-chromium/iron-list/iron-list-extracted.js
@@ -121,67 +154,6 @@ index 082b0c1e4af2..d985829702a2 100644
 \ No newline at end of file
 +</body></html>
 \ No newline at end of file
-diff --git a/components-chromium/paper-slider/paper-slider.html b/components-chromium/paper-slider/paper-slider.html
-index 233808adc822..4117f3590a61 100644
---- a/components-chromium/paper-slider/paper-slider.html
-+++ b/components-chromium/paper-slider/paper-slider.html
-@@ -12,7 +12,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
- <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
- <link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
- <link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
--<link rel="import" href="../paper-input/paper-input.html">
- <link rel="import" href="../paper-progress/paper-progress.html">
- <link rel="import" href="../paper-styles/color.html">
- 
-@@ -279,6 +278,7 @@ Custom property | Description | Default
- 
-       .pin.expand > .slider-knob > .slider-knob-inner::after {
-         transform: scale(1) translate(0, -17px);
-+        @apply --paper-slider-pin-text;
-       }
- 
-       /* paper-input */
-@@ -330,11 +330,6 @@ Custom property | Description | Default
-           <div class="slider-knob-inner" value$="[[immediateValue]]"></div>
-       </div>
-     </div>
--
--    <template is="dom-if" if="[[editable]]">
--      <paper-input id="input" type="number" step="[[step]]" min="[[min]]" max="[[max]]" class="slider-input" disabled$="[[disabled]]" value="[[immediateValue]]" on-change="_changeValue" on-keydown="_inputKeyDown" no-label-float="">
--      </paper-input>
--    </template>
-   </template>
- 
-   </dom-module>
-diff --git a/components-chromium/paper-slider/paper-slider-extracted.js b/components-chromium/paper-slider/paper-slider-extracted.js
-index 2e63d3731be1..217c7ff1414c 100644
---- a/components-chromium/paper-slider/paper-slider-extracted.js
-+++ b/components-chromium/paper-slider/paper-slider-extracted.js
-@@ -385,24 +385,6 @@ Polymer({
-         this._rippleContainer = this.$.sliderKnob;
-         return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
-       },
--
--      // Hide the ripple when user is not interacting with keyboard.
--      // This behavior is different from other ripple-y controls, but is
--      // according to spec: https://www.google.com/design/spec/components/sliders.html
--      _focusedChanged: function(receivedFocusFromKeyboard) {
--        if (receivedFocusFromKeyboard) {
--          this.ensureRipple();
--        }
--        if (this.hasRipple()) {
--          // note, ripple must be un-hidden prior to setting `holdDown`
--          if (receivedFocusFromKeyboard) {
--            this._ripple.style.display = '';
--          } else {
--            this._ripple.style.display = 'none';
--          }
--          this._ripple.holdDown = receivedFocusFromKeyboard;
--        }
--      }
-     });
- 
-     /**
 diff --git a/components-chromium/paper-input/paper-input-container.html b/components-chromium/paper-input/paper-input-container.html
 index 55714942c93c..46fb9adf6a04 100644
 --- a/components-chromium/paper-input/paper-input-container.html
@@ -189,7 +161,7 @@ index 55714942c93c..46fb9adf6a04 100644
 @@ -254,8 +254,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
          @apply --paper-input-container-label-floating;
        }
- 
+
 -      :host(:dir(rtl)) .input-content.label-is-floating ::slotted(label),
 -      :host(:dir(rtl)) .input-content.label-is-floating ::slotted(.paper-input-label) {
 +      :host-context([dir="rtl"]) .input-content.label-is-floating ::slotted(label),
@@ -197,6 +169,45 @@ index 55714942c93c..46fb9adf6a04 100644
          right: 0;
          left: auto;
          transform-origin: right top;
+diff --git a/components-chromium/paper-tooltip/paper-tooltip-extracted.js b/components-chromium/paper-tooltip/paper-tooltip-extracted.js
+index 2830d229760c..2116f616a93b 100644
+--- a/components-chromium/paper-tooltip/paper-tooltip-extracted.js
++++ b/components-chromium/paper-tooltip/paper-tooltip-extracted.js
+@@ -123,12 +123,16 @@ Polymer({
+       },
+       /**
+        * Returns the target element that this tooltip is anchored to. It is
+-       * either the element given by the `for` attribute, or the immediate parent
+-       * of the tooltip.
++       * either the element given by the `for` attribute, the element manually
++       * specified through the `target` attribute, or the immediate parent of
++       * the tooltip.
+        *
+        * @type {Node}
+        */
+       get target() {
++        if (this._manualTarget)
++          return this._manualTarget;
++
+         var parentNode = Polymer.dom(this).parentNode;
+         // If the parentNode is a document fragment, then we need to use the host.
+         var ownerRoot = Polymer.dom(this).getOwnerRoot();
+@@ -142,6 +146,15 @@ Polymer({
+         return target;
+       },
+
++      /**
++       * Sets the target element that this tooltip will be anchored to.
++       * @param {Node} target
++       */
++      set target(target) {
++        this._manualTarget = target;
++        this._findTarget();
++      },
++
+       /**
+        * @return {void}
+        */
 diff --git a/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html b/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html
 index 7306c651407e..9c88699a3924 100644
 --- a/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html
@@ -218,6 +229,6 @@ index 7306c651407e..9c88699a3924 100644
       */
 -    const legacyElementBase = Polymer.DirMixin(Polymer.GestureEventListeners(Polymer.ElementMixin(base)));
 +    const legacyElementBase = Polymer.GestureEventListeners(Polymer.ElementMixin(base));
- 
+
      /**
       * Map of simple names to touch action names

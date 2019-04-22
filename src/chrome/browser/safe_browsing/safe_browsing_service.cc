@@ -454,6 +454,7 @@ void SafeBrowsingService::Observe(int type,
       DCHECK_CURRENTLY_ON(BrowserThread::UI);
       Profile* profile = content::Source<Profile>(source).ptr();
       services_delegate_->CreatePasswordProtectionService(profile);
+      services_delegate_->CreateTelemetryService(profile);
       if (!profile->IsOffTheRecord())
         AddPrefService(profile->GetPrefs());
       break;
@@ -462,6 +463,7 @@ void SafeBrowsingService::Observe(int type,
       DCHECK_CURRENTLY_ON(BrowserThread::UI);
       Profile* profile = content::Source<Profile>(source).ptr();
       services_delegate_->RemovePasswordProtectionService(profile);
+      services_delegate_->RemoveTelemetryService();
       if (!profile->IsOffTheRecord())
         RemovePrefService(profile->GetPrefs());
       break;

@@ -11,8 +11,15 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "content/public/browser/service_worker_running_info.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-forward.h"
 #include "url/gurl.h"
+
+namespace blink {
+
+struct TransferableMessage;
+
+}
 
 namespace content {
 
@@ -66,6 +73,12 @@ class ServiceWorkerContext {
 
   using StartWorkerCallback = base::OnceCallback<
       void(int64_t version_id, int process_id, int thread_id)>;
+  using GetAllServiceWorkerRunningInfosCallback =
+      base::OnceCallback<void(ServiceWorkerContext*,
+                              const std::vector<ServiceWorkerRunningInfo>)>;
+  using GetServiceWorkerRunningInfoCallback =
+      base::OnceCallback<void(ServiceWorkerContext*,
+                              const ServiceWorkerRunningInfo&)>;
 
   // Returns true if |url| is within the service worker |scope|.
   CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
@@ -140,20 +153,22 @@ class ServiceWorkerContext {
   virtual void DeleteForOrigin(const GURL& origin_url,
                                ResultCallback callback) = 0;
 
+  // Performs internal storage cleanup. Operations to the storage in the past
+  // (e.g. deletion) are usually recorded in disk for a certain period until
+  // compaction happens. This method wipes them out to ensure that the deleted
+  // entries and other traces like log files are removed.
+  // Must be called from the IO thread.
+  virtual void PerformStorageCleanup(base::OnceClosure callback) = 0;
+
   // Returns ServiceWorkerCapability describing existence and properties of a
-  // Service Worker registration matching |url|. Found service worker
-  // registration must also encompass the |other_url|, otherwise it will be
-  // considered non existent by this method. Note that the longest matching
-  // registration for |url| is described, which is not necessarily the longest
-  // matching registration for |other_url|. In case the service worker is being
-  // installed as of calling this method, it will wait for the installation to
-  // finish before coming back with the result.
+  // Service Worker registration matching |url|. In case the service
+  // worker is being installed as of calling this method, it will wait for the
+  // installation to finish before coming back with the result.
   //
   // This function can be called from any thread, but the callback will always
   // be called on the UI thread.
   virtual void CheckHasServiceWorker(
       const GURL& url,
-      const GURL& other_url,
       CheckHasServiceWorkerCallback callback) = 0;
 
   // Stops all running service workers and unregisters all service worker
@@ -172,6 +187,17 @@ class ServiceWorkerContext {
   virtual void StartWorkerForScope(const GURL& scope,
                                    StartWorkerCallback info_callback,
                                    base::OnceClosure failure_callback) = 0;
+
+  // Starts the active worker of the registration for the given |scope| and
+  // dispatches the given |message| to the service worker. |result_callback|
+  // is passed a success boolean indicating whether the message was dispatched
+  // successfully.
+  //
+  // Must be called on IO thread.
+  virtual void StartServiceWorkerAndDispatchMessage(
+      const GURL& scope,
+      blink::TransferableMessage message,
+      ResultCallback result_callback) = 0;
 
   // Deprecated: DO NOT USE
   // This is a temporary addition only to be used for the Android Messages
@@ -205,6 +231,20 @@ class ServiceWorkerContext {
   // This function can be called from any thread.
   // The |callback| is called on the caller's thread.
   virtual void StopAllServiceWorkers(base::OnceClosure callback) = 0;
+
+  // Gets info about all running workers.
+  //
+  // Must be called on the UI thread. The callback is called on the UI thread.
+  virtual void GetAllServiceWorkerRunningInfos(
+      GetAllServiceWorkerRunningInfosCallback callback) = 0;
+
+  // Gets info of the running worker whose version id is
+  // |service_worker_version_id|.
+  //
+  // Must be called on the UI thread. The callback is called on the UI thread.
+  virtual void GetServiceWorkerRunningInfo(
+      int64_t service_worker_version_id,
+      GetServiceWorkerRunningInfoCallback callback) = 0;
 
  protected:
   ServiceWorkerContext() {}

@@ -1,13 +1,41 @@
 # liblouis: Generic Farsi Grade 1 table
 #
-# Copyright (C) 2011 by Mesar Hameed <mhameed@src.gnome.org>
+# ------------
+#-display-name: Persian braille
+#
+#+locale:fa
+#+type:literary
+#+contraction:no
+#+grade:1
+#
+# TODO: Please correct the metadata above. It is not meant to be
+# accurate nor complete. It hasn't been verified by the table
+# author yet. It is merely an attempt by the liblouis maintainers
+# to get some sensible initial values in place.
+#
+# TODO: Please add a reference to official documentation about
+# the implemented braille code. Preferably submit the documents
+# to https://github.com/liblouis/braille-specs.
+# ------------
+#
+# Copyright (C) 2011 by Mesar Hameed <mesar.hameed@gmail.com>
 # Copyright (C) 2011 by Abdolamir Banisaeid <saedjan at gmail.com>
 #
-# liblouis comes with ABSOLUTELY NO WARRANTY.
+#  This file is part of liblouis.
 #
-# This is free software, placed under the terms of the
-# GNU General Public License, as published by the Free Software
-# Foundation.  Please see the file COPYING for details.
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
 
 include ar-ar-g1.utb
 

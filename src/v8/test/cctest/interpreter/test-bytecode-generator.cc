@@ -91,6 +91,7 @@ class InitializedIgnitionHandleScope : public InitializedHandleScope {
   InitializedIgnitionHandleScope() {
     i::FLAG_always_opt = false;
     i::FLAG_allow_natives_syntax = true;
+    i::FLAG_enable_lazy_source_positions = false;
   }
 };
 
@@ -157,13 +158,14 @@ bool CompareTexts(const std::string& generated, const std::string& expected) {
   std::string expected_line;
   // Line number does not include golden file header.
   int line_number = 0;
+  bool strings_match = true;
 
   do {
     std::getline(generated_stream, generated_line);
     std::getline(expected_stream, expected_line);
 
     if (!generated_stream.good() && !expected_stream.good()) {
-      return true;
+      return strings_match;
     }
 
     if (!generated_stream.good()) {
@@ -182,7 +184,7 @@ bool CompareTexts(const std::string& generated, const std::string& expected) {
       std::cerr << "Inputs differ at line " << line_number << "\n";
       std::cerr << "  Generated: '" << generated_line << "'\n";
       std::cerr << "  Expected:  '" << expected_line << "'\n";
-      return false;
+      strings_match = false;
     }
     line_number++;
   } while (true);
@@ -663,6 +665,7 @@ TEST(IIFEWithOneshotOpt) {
         return arguments.callee;
       })();
     )",
+      // TODO(rmcilroy): Make this function produce one-shot code.
       R"(
       var t = 0;
       function f2() {};
@@ -1497,6 +1500,8 @@ TEST(Delete) {
       "return delete a[1];\n",
 
       "return delete 'test';\n",
+
+      "return delete this;\n",
   };
 
   CHECK(CompareTexts(BuildActual(printer, snippets),
@@ -2270,6 +2275,33 @@ TEST(AssignmentsInBinaryExpression) {
                      LoadGolden("AssignmentsInBinaryExpression.golden")));
 }
 
+TEST(DestructuringAssignment) {
+  InitializedIgnitionHandleScope scope;
+  BytecodeExpectationsPrinter printer(CcTest::isolate());
+  const char* snippets[] = {
+      "var x, a = [0,1,2,3];\n"
+      "[x] = a;\n",
+
+      "var x, y, a = [0,1,2,3];\n"
+      "[,x,...y] = a;\n",
+
+      "var x={}, y, a = [0];\n"
+      "[x.foo,y=4] = a;\n",
+
+      "var x, a = {x:1};\n"
+      "({x} = a);\n",
+
+      "var x={}, a = {y:1};\n"
+      "({y:x.foo} = a);\n",
+
+      "var x, a = {y:1, w:2, v:3};\n"
+      "({x=0,...y} = a);\n",
+  };
+
+  CHECK(CompareTexts(BuildActual(printer, snippets),
+                     LoadGolden("DestructuringAssignment.golden")));
+}
+
 TEST(Eval) {
   InitializedIgnitionHandleScope scope;
   BytecodeExpectationsPrinter printer(CcTest::isolate());
@@ -2389,7 +2421,7 @@ TEST(WideRegisters) {
   // Prepare prologue that creates frame for lots of registers.
   std::ostringstream os;
   for (size_t i = 0; i < 157; ++i) {
-    os << "var x" << i << ";\n";
+    os << "var x" << i << " = 0;\n";
   }
   std::string prologue(os.str());
 

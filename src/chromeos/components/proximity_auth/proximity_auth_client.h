@@ -11,13 +11,7 @@
 #include "base/callback_forward.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_manager.h"
 #include "chromeos/components/proximity_auth/screenlock_state.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
-
-namespace cryptauth {
-class CryptAuthClientFactory;
-class CryptAuthDeviceManager;
-class CryptAuthEnrollmentManager;
-}  // namespace cryptauth
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 
 namespace proximity_auth {
 
@@ -57,24 +51,6 @@ class ProximityAuthClient {
 
   // Returns the manager responsible for EasyUnlock preferences.
   virtual ProximityAuthPrefManager* GetPrefManager() = 0;
-
-  // Constructs the CryptAuthClientFactory that can be used for API requests.
-  virtual std::unique_ptr<cryptauth::CryptAuthClientFactory>
-  CreateCryptAuthClientFactory() = 0;
-
-  // Constructs the DeviceClassifier message that is sent to CryptAuth for all
-  // API requests.
-  virtual cryptauth::DeviceClassifier GetDeviceClassifier() = 0;
-
-  // Returns the account id of the user.
-  virtual std::string GetAccountId() = 0;
-
-  virtual cryptauth::CryptAuthEnrollmentManager*
-  GetCryptAuthEnrollmentManager() = 0;
-
-  virtual cryptauth::CryptAuthDeviceManager* GetCryptAuthDeviceManager() = 0;
-
-  virtual std::string GetLocalDevicePublicKey() = 0;
 };
 
 }  // namespace proximity_auth

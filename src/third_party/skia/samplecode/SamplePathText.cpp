@@ -5,16 +5,16 @@
  * found in the LICENSE file.
  */
 
+#include "AnimTimer.h"
 #include "Sample.h"
-#include "SkAnimTimer.h"
 #include "SkCanvas.h"
-#include "SkGlyphCache.h"
 #include "SkPaint.h"
 #include "SkPath.h"
 #include "SkRandom.h"
+#include "SkStrike.h"
 #include "SkStrikeCache.h"
 #include "SkTaskGroup.h"
-#include "sk_tool_utils.h"
+#include "ToolUtils.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Static text from paths.
@@ -38,7 +38,7 @@ public:
         for (int i = 0; i < 52; ++i) {
             // I and l are rects on OS X ...
             char c = "aQCDEFGH7JKLMNOPBRZTUVWXYSAbcdefghijk1mnopqrstuvwxyz"[i];
-            SkPackedGlyphID id(cache->unicharToGlyph(c));
+            SkPackedGlyphID id(defaultFont.unicharToGlyph(c));
             sk_ignore_unused_variable(cache->getScalerContext()->getPath(id, &glyphPaths[i]));
         }
 
@@ -106,7 +106,7 @@ protected:
 
     Glyph      fGlyphs[kNumPaths];
     SkRandom   fRand{25};
-    SkPath     fClipPath = sk_tool_utils::make_star(SkRect{0,0,1,1}, 11, 3);
+    SkPath     fClipPath = ToolUtils::make_star(SkRect{0, 0, 1, 1}, 11, 3);
     bool       fDoClip = false;
 
     typedef Sample INHERITED;
@@ -167,7 +167,7 @@ public:
         fLastTick = 0;
     }
 
-    bool onAnimate(const SkAnimTimer& timer) final {
+    bool onAnimate(const AnimTimer& timer) final {
         fBackgroundAnimationTask.wait();
         this->swapAnimationBuffers();
 
@@ -421,7 +421,7 @@ SkPoint WavyPathText::Waves::apply(float tsec, const Sk2f matrix[3], const SkPoi
 
     float offsetY[4], offsetX[4];
     (dy + SkNx_shuffle<2,3,0,1>(dy)).store(offsetY); // accumulate.
-    (dx + SkNx_shuffle<2,3,0,1>(dx)).store(offsetX);;
+    (dx + SkNx_shuffle<2,3,0,1>(dx)).store(offsetX);
 
     return {devicePt[0] + offsetY[0] + offsetY[1], devicePt[1] - offsetX[0] - offsetX[1]};
 }

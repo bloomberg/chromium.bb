@@ -5,26 +5,20 @@
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 
 #include "base/logging.h"
-#include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/global_shortcut_listener.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
-#include "chrome/browser/ui/browser_command_controller.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/content_accelerators/accelerator_util.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
+#include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @implementation ChromeCommandDispatcherDelegate
 
-- (void)executeChromeCommandBypassingMainMenu:(int)command
-                                      browser:(Browser*)browser {
-  chrome::ExecuteCommand(browser, command);
-}
-
-- (BOOL)eventHandledByExtensionCommand:(NSEvent*)event
-                              priority:(ui::AcceleratorManager::HandlerPriority)
-                                           priority {
+- (BOOL)eventHandledByViewsFocusManager:(NSEvent*)event
+                               priority:
+                                   (ui::AcceleratorManager::HandlerPriority)
+                                       priority {
   NSWindow* window = [event window];
   if (!window)
     return NO;
@@ -45,9 +39,6 @@
   // trigger any other sources of registered accelerators. This is actually
   // desired.
   //
-  // TODO(erikchen): Once we no longer support Cocoa, we should rename this
-  // method to be eventHandledByViewsFocusManager.
-  //
   // Note: FocusManager is also given an opportunity to consume the accelerator
   // in the RenderWidgetHostView event handling path. That logic doesn't trigger
   // when the focused view is not a RenderWidgetHostView, which is why this
@@ -56,16 +47,15 @@
   content::NativeWebKeyboardEvent keyboard_event(event);
   ui::Accelerator accelerator =
       ui::GetAcceleratorFromNativeWebKeyboardEvent(keyboard_event);
-  if (views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window)) {
-    if (priority == ui::AcceleratorManager::HandlerPriority::kHighPriority) {
-      if (!widget->GetFocusManager()->HasPriorityHandler(accelerator)) {
-        return NO;
-      }
-    }
-    return widget->GetFocusManager()->ProcessAccelerator(accelerator);
+  auto* bridge = views::BridgedNativeWidgetImpl::GetFromNativeWindow(window);
+  bool was_handled = false;
+  if (bridge) {
+    bridge->host()->HandleAccelerator(
+        accelerator,
+        priority == ui::AcceleratorManager::HandlerPriority::kHighPriority,
+        &was_handled);
   }
-
-  return NO;
+  return was_handled;
 }
 
 - (ui::PerformKeyEquivalentResult)prePerformKeyEquivalent:(NSEvent*)event
@@ -82,18 +72,10 @@
       return ui::PerformKeyEquivalentResult::kUnhandled;
   }
 
-  if ([self eventHandledByExtensionCommand:event
-                                  priority:ui::AcceleratorManager::
-                                               kHighPriority]) {
+  if ([self eventHandledByViewsFocusManager:event
+                                   priority:ui::AcceleratorManager::
+                                                kHighPriority]) {
     return ui::PerformKeyEquivalentResult::kHandled;
-  }
-
-  // The specification for this private extensions API is incredibly vague. For
-  // now, we avoid triggering chrome commands prior to giving the firstResponder
-  // a chance to handle the event.
-  if (extensions::GlobalShortcutListener::GetInstance()
-          ->IsShortcutHandlingSuspended()) {
-    return ui::PerformKeyEquivalentResult::kUnhandled;
   }
 
   // If this keyEquivalent corresponds to a Chrome command, trigger it directly
@@ -111,16 +93,15 @@
   // highlighting of the NSMenu.
   CommandForKeyEventResult result = CommandForKeyEvent(event);
   if (result.found()) {
-    Browser* browser = chrome::FindBrowserWithWindow(window);
-    if (browser &&
-        browser->command_controller()->IsReservedCommandOrKey(
-            result.chrome_command, content::NativeWebKeyboardEvent(event))) {
-      // If a command is reserved, then we also have it bypass the main menu.
-      // This is based on the rough approximation that reserved commands are
-      // also the ones that we want to be quickly repeatable.
-      // https://crbug.com/836947.
-      chrome::ExecuteCommand(browser, result.chrome_command);
-      return ui::PerformKeyEquivalentResult::kHandled;
+    auto* bridge = views::BridgedNativeWidgetImpl::GetFromNativeWindow(window);
+    if (bridge) {
+      bool was_executed = false;
+      bridge->host()->ExecuteCommand(
+          result.chrome_command, WindowOpenDisposition::CURRENT_TAB,
+          true /* is_before_first_responder */, &was_executed);
+      if (was_executed)
+        return ui::PerformKeyEquivalentResult::kHandled;
+      bridge->SaveKeyEventForRedispatch(event);
     }
   }
 
@@ -130,9 +111,9 @@
 - (ui::PerformKeyEquivalentResult)postPerformKeyEquivalent:(NSEvent*)event
                                                     window:(NSWindow*)window
                                               isRedispatch:(BOOL)isRedispatch {
-  if ([self eventHandledByExtensionCommand:event
-                                  priority:ui::AcceleratorManager::
-                                               kNormalPriority]) {
+  if ([self eventHandledByViewsFocusManager:event
+                                   priority:ui::AcceleratorManager::
+                                                kNormalPriority]) {
     return ui::PerformKeyEquivalentResult::kHandled;
   }
 
@@ -144,8 +125,8 @@
   }
 
   if (result.found()) {
-    Browser* browser = chrome::FindBrowserWithWindow(window);
-    if (browser) {
+    auto* bridge = views::BridgedNativeWidgetImpl::GetFromNativeWindow(window);
+    if (bridge) {
       // postPerformKeyEquivalent: is only called on events that are not
       // reserved. We want to bypass the main menu if and only if the event is
       // reserved. As such, we let all events with main menu keyEquivalents be
@@ -154,7 +135,11 @@
         return ui::PerformKeyEquivalentResult::kPassToMainMenu;
       }
 
-      chrome::ExecuteCommand(browser, result.chrome_command);
+      bool was_executed = false;
+      bridge->host()->ExecuteCommand(
+          result.chrome_command, WindowOpenDisposition::CURRENT_TAB,
+          false /* is_before_first_responder */, &was_executed);
+      DCHECK(was_executed);
       return ui::PerformKeyEquivalentResult::kHandled;
     }
   }

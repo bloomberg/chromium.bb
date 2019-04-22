@@ -62,7 +62,7 @@ void LayoutObjectChildList::DestroyLeftoverChildren() {
   while (FirstChild()) {
     // List markers are owned by their enclosing list and so don't get destroyed
     // by this container.
-    if (FirstChild()->IsListMarker()) {
+    if (FirstChild()->IsListMarkerIncludingNG()) {
       FirstChild()->Remove();
       continue;
     }
@@ -94,6 +94,9 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
     if (notify_layout_object && old_child->EverHadLayout()) {
       old_child->SetNeedsLayoutAndPrefWidthsRecalc(
           layout_invalidation_reason::kRemovedFromLayout);
+      if (old_child->IsOutOfFlowPositioned() &&
+          RuntimeEnabledFeatures::LayoutNGEnabled())
+        old_child->MarkParentForOutOfFlowPositionedChange();
     }
     InvalidatePaintOnRemoval(*old_child);
   }
@@ -111,6 +114,10 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
     } else if (old_child->IsBox() &&
                ToLayoutBox(old_child)->IsOrthogonalWritingModeRoot()) {
       ToLayoutBox(old_child)->UnmarkOrthogonalWritingModeRoot();
+    }
+
+    if (old_child->IsInLayoutNGInlineFormattingContext()) {
+      owner->SetNeedsCollectInlines();
     }
   }
 
@@ -195,6 +202,11 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
       // when moving.
       InvalidateInlineItems(new_child);
     }
+
+    if (owner->IsInLayoutNGInlineFormattingContext() ||
+        (owner->EverHadLayout() && owner->ChildrenInline())) {
+      owner->SetNeedsCollectInlines();
+    }
   }
 
   // Propagate the need to notify ancestors down into any
@@ -207,21 +219,27 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   if (new_child->WasNotifiedOfSubtreeChange())
     owner->NotifyAncestorsOfSubtreeChange();
 
-  // Clear NeedsCollectInlines to ensure the marking doesn't stop on
-  // |new_child|.
-  new_child->ClearNeedsCollectInlines();
+  if (owner->ForceLegacyLayout()) {
+    new_child->SetForceLegacyLayout();
+    // TODO(crbug.com/943574): This would be a great place to DCHECK that the
+    // child isn't an NG object, but there are unfortunately cases where this
+    // actually happens.
+  }
 
   new_child->SetNeedsLayoutAndPrefWidthsRecalc(
       layout_invalidation_reason::kAddedToLayout);
+  if (new_child->IsOutOfFlowPositioned() &&
+      RuntimeEnabledFeatures::LayoutNGEnabled())
+    new_child->MarkParentForOutOfFlowPositionedChange();
   new_child->SetShouldDoFullPaintInvalidation(
       PaintInvalidationReason::kAppeared);
   new_child->AddSubtreePaintPropertyUpdateReason(
       SubtreePaintPropertyUpdateReason::kContainerChainMayChange);
+  new_child->SetNeedsOverflowRecalc();
+
   if (!owner->NormalChildNeedsLayout()) {
     owner->SetChildNeedsLayout();  // We may supply the static position for an
                                    // absolute positioned child.
-  } else {
-    owner->MarkContainerNeedsCollectInlines();
   }
 
   if (!owner->DocumentBeingDestroyed())

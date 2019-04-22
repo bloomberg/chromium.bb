@@ -39,7 +39,7 @@ enum SampleFlags {
   T(const T& other);                      \
   ~T() override;                          \
   bool Parse(BoxReader* reader) override; \
-  FourCC BoxType() const override;
+  FourCC BoxType() const override
 
 struct MEDIA_EXPORT FileType : Box {
   DECLARE_BOX_METHODS(FileType);
@@ -547,6 +547,18 @@ struct MEDIA_EXPORT MovieFragment : Box {
   MovieFragmentHeader header;
   std::vector<TrackFragment> tracks;
   std::vector<ProtectionSystemSpecificHeader> pssh;
+};
+
+struct MEDIA_EXPORT ID3v2Box : Box {
+  DECLARE_BOX_METHODS(ID3v2Box);
+
+  // Up to a maximum of the first 128 bytes of the ID3v2 box.
+  std::vector<uint8_t> id3v2_data;
+};
+
+struct MEDIA_EXPORT MetadataBox : Box {
+  DECLARE_BOX_METHODS(MetadataBox);
+  bool used_shaka_packager;
 };
 
 #undef DECLARE_BOX

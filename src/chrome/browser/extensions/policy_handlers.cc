@@ -24,7 +24,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
-#include "base/win/win_util.h"
+#include "base/enterprise_util.h"
 #endif
 
 namespace extensions {
@@ -52,7 +52,9 @@ bool ExtensionListPolicyHandler::CheckListEntry(const base::Value& value) {
 void ExtensionListPolicyHandler::ApplyList(
     std::unique_ptr<base::ListValue> filtered_list,
     PrefValueMap* prefs) {
-  prefs->SetValue(pref_path_, std::move(filtered_list));
+  DCHECK(filtered_list);
+  prefs->SetValue(pref_path_,
+                  base::Value::FromUniquePtrValue(std::move(filtered_list)));
 }
 
 // ExtensionInstallListPolicyHandler implementation ----------------------------
@@ -75,9 +77,9 @@ void ExtensionInstallListPolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
   const base::Value* value = nullptr;
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  base::DictionaryValue dict;
   if (CheckAndGetValue(policies, nullptr, &value) && value &&
-      ParseList(value, dict.get(), nullptr)) {
+      ParseList(value, &dict, nullptr)) {
     prefs->SetValue(pref_name_, std::move(dict));
   }
 }
@@ -148,13 +150,13 @@ ExtensionInstallForcelistPolicyHandler::ExtensionInstallForcelistPolicyHandler()
     : ExtensionInstallListPolicyHandler(policy::key::kExtensionInstallForcelist,
                                         pref_names::kInstallForceList) {}
 
-// ExtensionInstallLoginScreenAppListPolicyHandler implementation --------------
+// ExtensionInstallLoginScreenExtensionsPolicyHandler implementation -----------
 
-ExtensionInstallLoginScreenAppListPolicyHandler::
-    ExtensionInstallLoginScreenAppListPolicyHandler()
+ExtensionInstallLoginScreenExtensionsPolicyHandler::
+    ExtensionInstallLoginScreenExtensionsPolicyHandler()
     : ExtensionInstallListPolicyHandler(
-          policy::key::kDeviceLoginScreenAppInstallList,
-          pref_names::kInstallLoginScreenAppList) {}
+          policy::key::kDeviceLoginScreenExtensions,
+          pref_names::kLoginScreenExtensions) {}
 
 // ExtensionURLPatternListPolicyHandler implementation -------------------------
 
@@ -212,7 +214,7 @@ void ExtensionURLPatternListPolicyHandler::ApplyPolicySettings(
     return;
   const base::Value* value = policies.GetValue(policy_name());
   if (value)
-    prefs->SetValue(pref_path_, value->CreateDeepCopy());
+    prefs->SetValue(pref_path_, value->Clone());
 }
 
 // ExtensionSettingsPolicyHandler implementation  ------------------------------
@@ -275,7 +277,7 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
 #if defined(OS_WIN)
           // We can't use IsWebstoreUpdateUrl() here since the ExtensionClient
           // isn't set this early during startup.
-          if (!base::win::IsEnterpriseManaged() &&
+          if (!base::IsMachineExternallyManaged() &&
               !base::LowerCaseEqualsASCII(
                   update_url, extension_urls::kChromeWebstoreUpdateURL)) {
             errors->AddError(policy_name(), it.key(),
@@ -346,7 +348,8 @@ void ExtensionSettingsPolicyHandler::ApplyPolicySettings(
   std::unique_ptr<base::Value> policy_value;
   if (!CheckAndGetValue(policies, NULL, &policy_value) || !policy_value)
     return;
-  prefs->SetValue(pref_names::kExtensionManagement, std::move(policy_value));
+  prefs->SetValue(pref_names::kExtensionManagement,
+                  base::Value::FromUniquePtrValue(std::move(policy_value)));
 }
 
 }  // namespace extensions

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file.h"
@@ -31,6 +32,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromeos/printing/epson_driver_matching.h"
 #include "chromeos/printing/ppd_cache.h"
 #include "chromeos/printing/ppd_line_reader.h"
 #include "chromeos/printing/printing_constants.h"
@@ -46,6 +48,8 @@
 
 namespace chromeos {
 namespace {
+
+const char kEpsonGenericPPD[] = "epson generic escpr printer";
 
 // Holds a metadata_v2 reverse-index response
 struct ReverseIndexJSON {
@@ -96,7 +100,12 @@ struct PpdIndexJSON {
 };
 
 // A queued request to download printer information for a manufacturer.
+// Note: Disabled copying/assigning since this holds a base::OnceCalback.
 struct PrinterResolutionQueueEntry {
+  PrinterResolutionQueueEntry() = default;
+  PrinterResolutionQueueEntry(PrinterResolutionQueueEntry&& other) = default;
+  ~PrinterResolutionQueueEntry() = default;
+
   // Localized manufacturer name
   std::string manufacturer;
 
@@ -105,10 +114,17 @@ struct PrinterResolutionQueueEntry {
 
   // User callback on completion.
   PpdProvider::ResolvePrintersCallback cb;
+
+  DISALLOW_COPY_AND_ASSIGN(PrinterResolutionQueueEntry);
 };
 
 // A queued request to download reverse index information for a make and model
+// Note: Disabled copying/assigning since this holds a base::OnceCalback.
 struct ReverseIndexQueueEntry {
+  ReverseIndexQueueEntry() = default;
+  ReverseIndexQueueEntry(ReverseIndexQueueEntry&& other) = default;
+  ~ReverseIndexQueueEntry() = default;
+
   // Canonical Printer Name
   std::string effective_make_and_model;
 
@@ -117,6 +133,8 @@ struct ReverseIndexQueueEntry {
 
   // User callback on completion.
   PpdProvider::ReverseLookupCallback cb;
+
+  DISALLOW_COPY_AND_ASSIGN(ReverseIndexQueueEntry);
 };
 
 // Holds manufacturer to printers relation
@@ -131,7 +149,12 @@ struct ManufacturerMetadata {
 };
 
 // Carried information for an inflight PPD resolution.
+// Note: Disabled copying/assigning since this holds a base::OnceCalback.
 struct PpdResolutionQueueEntry {
+  PpdResolutionQueueEntry() = default;
+  PpdResolutionQueueEntry(PpdResolutionQueueEntry&& other) = default;
+  ~PpdResolutionQueueEntry() = default;
+
   // Original reference being resolved.
   Printer::PpdReference reference;
 
@@ -140,6 +163,28 @@ struct PpdResolutionQueueEntry {
 
   // Callback to be invoked on completion.
   PpdProvider::ResolvePpdCallback callback;
+
+  DISALLOW_COPY_AND_ASSIGN(PpdResolutionQueueEntry);
+};
+
+// Carried information for an inflight PPD reference resolution.
+// Note: Disabled copying/assigning since this holds a base::OnceCalback.
+struct PpdReferenceResolutionQueueEntry {
+  PpdReferenceResolutionQueueEntry() = default;
+  PpdReferenceResolutionQueueEntry(PpdReferenceResolutionQueueEntry&& other) =
+      default;
+  ~PpdReferenceResolutionQueueEntry() = default;
+
+  // Metadata used to resolve to a unique PpdReference object.
+  PrinterSearchData search_data;
+
+  // If true, we have failed usb_index_resolution already.
+  bool usb_resolution_attempted = false;
+
+  // Callback to be invoked on completion.
+  PpdProvider::ResolvePpdReferenceCallback cb;
+
+  DISALLOW_COPY_AND_ASSIGN(PpdReferenceResolutionQueueEntry);
 };
 
 // Extract cupsFilter/cupsFilter2 filter names from a line from a ppd.
@@ -251,7 +296,8 @@ bool PpdReferenceIsWellFormed(const Printer::PpdReference& reference) {
 bool FetchFile(const GURL& url, std::string* file_contents) {
   CHECK(url.is_valid());
   CHECK(url.SchemeIs("file"));
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Here we are un-escaping the file path represented by the url. If we don't
   // transform the url into a valid file path then the file may fail to be
@@ -372,11 +418,13 @@ class PpdProviderImpl : public PpdProvider {
   bool MaybeStartNextPpdReferenceResolution() {
     while (!ppd_reference_resolution_queue_.empty()) {
       auto& next = ppd_reference_resolution_queue_.front();
+      auto& search_data = next.search_data;
+
       // Have we successfully resolved next yet?
       bool resolved_next = false;
-      if (!next.first.make_and_model.empty()) {
+      if (!search_data.make_and_model.empty()) {
         // Check the index for each make-and-model guess.
-        for (const std::string& make_and_model : next.first.make_and_model) {
+        for (const std::string& make_and_model : search_data.make_and_model) {
           // Check if we need to load its ppd_index
           int ppd_index_shard = IndexShard(make_and_model);
           if (!base::ContainsKey(cached_ppd_idxs_, ppd_index_shard)) {
@@ -389,27 +437,40 @@ class PpdProviderImpl : public PpdProvider {
             Printer::PpdReference ret;
             ret.effective_make_and_model = make_and_model;
             base::SequencedTaskRunnerHandle::Get()->PostTask(
-                FROM_HERE, base::BindOnce(std::move(next.second),
-                                          PpdProvider::SUCCESS, ret));
+                FROM_HERE,
+                base::BindOnce(std::move(next.cb), PpdProvider::SUCCESS, ret));
             ppd_reference_resolution_queue_.pop_front();
             resolved_next = true;
             break;
           }
         }
       }
-      if (!resolved_next) {
-        // If we get to this point, either we don't have any make and model
-        // guesses for the front entry, or they all missed.  Try USB ids
-        // instead.  This entry will be completed when the usb fetch
-        // returns.
-        if (next.first.usb_vendor_id && next.first.usb_product_id) {
-          StartFetch(GetUsbURL(next.first.usb_vendor_id), FT_USB_DEVICES);
-          return true;
-        }
+      if (resolved_next)
+        continue;
+
+      // If we get to this point, either we don't have any make and model
+      // guesses for the front entry, or they all missed.  Try USB ids
+      // instead.
+      if (!next.usb_resolution_attempted && search_data.usb_vendor_id &&
+          search_data.usb_product_id) {
+        StartFetch(GetUsbURL(search_data.usb_vendor_id), FT_USB_DEVICES);
+        return true;
+      }
+
+      // If possible, here we fall back to OEM designated generic PPDs.
+      if (CanUseEpsonGenericPPD(search_data)) {
+        // Found a hit, satisfy this resolution.
+        Printer::PpdReference ret;
+        ret.effective_make_and_model = kEpsonGenericPPD;
+        base::SequencedTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::BindOnce(std::move(next.cb), PpdProvider::SUCCESS, ret));
+        ppd_reference_resolution_queue_.pop_front();
+      } else {
         // We don't have anything else left to try.  NOT_FOUND it is.
         base::SequencedTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::BindOnce(std::move(next.second), PpdProvider::NOT_FOUND,
+            base::BindOnce(std::move(next.cb), PpdProvider::NOT_FOUND,
                            Printer::PpdReference()));
         ppd_reference_resolution_queue_.pop_front();
       }
@@ -527,8 +588,10 @@ class PpdProviderImpl : public PpdProvider {
       make_and_model = base::ToLowerASCII(make_and_model);
     }
 
-    ppd_reference_resolution_queue_.push_back(
-        {lowercase_search_data, std::move(cb)});
+    PpdReferenceResolutionQueueEntry entry;
+    entry.search_data = lowercase_search_data;
+    entry.cb = std::move(cb);
+    ppd_reference_resolution_queue_.push_back(std::move(entry));
     MaybeStartFetch();
   }
 
@@ -776,7 +839,8 @@ class PpdProviderImpl : public PpdProvider {
       FailQueuedMetadataResolutions(PpdProvider::SERVER_ERROR);
       return;
     }
-    auto top_list = base::ListValue::From(base::JSONReader::Read(contents));
+    auto top_list =
+        base::ListValue::From(base::JSONReader::ReadDeprecated(contents));
 
     if (top_list.get() == nullptr) {
       // We got something malformed back.
@@ -981,7 +1045,7 @@ class PpdProviderImpl : public PpdProvider {
     PpdProvider::CallbackResultCode result =
         ValidateAndGetResponseAsString(&buffer);
     int desired_device_id =
-        ppd_reference_resolution_queue_.front().first.usb_product_id;
+        ppd_reference_resolution_queue_.front().search_data.usb_product_id;
     if (result == PpdProvider::SUCCESS) {
       // Parse the JSON response.  This should be a list of the form
       // [
@@ -989,7 +1053,8 @@ class PpdProviderImpl : public PpdProvider {
       //  [0x5926, "some othercanonical name"]
       // ]
       // So we scan through the response looking for our desired device id.
-      auto top_list = base::ListValue::From(base::JSONReader::Read(buffer));
+      auto top_list =
+          base::ListValue::From(base::JSONReader::ReadDeprecated(buffer));
 
       if (top_list.get() == nullptr) {
         // We got something malformed back.
@@ -1020,16 +1085,17 @@ class PpdProviderImpl : public PpdProvider {
         }
       }
     }
-    Printer::PpdReference ret;
     if (result == PpdProvider::SUCCESS) {
+      Printer::PpdReference ret;
       ret.effective_make_and_model = contents;
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(ppd_reference_resolution_queue_.front().cb),
+                         result, std::move(ret)));
+      ppd_reference_resolution_queue_.pop_front();
+    } else {
+      ppd_reference_resolution_queue_.front().usb_resolution_attempted = true;
     }
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            std::move(ppd_reference_resolution_queue_.front().second), result,
-            ret));
-    ppd_reference_resolution_queue_.pop_front();
   }
 
   // Something went wrong during metadata fetches.  Fail all queued metadata
@@ -1065,10 +1131,9 @@ class PpdProviderImpl : public PpdProvider {
     // Everything in the PpdReference queue also depends on server information,
     // so should also be failed.
     auto task_runner = base::SequencedTaskRunnerHandle::Get();
-    for (auto& cb : ppd_reference_resolution_queue_) {
-      task_runner->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(cb.second), code, Printer::PpdReference()));
+    for (auto& entry : ppd_reference_resolution_queue_) {
+      task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(entry.cb), code,
+                                                      Printer::PpdReference()));
     }
     ppd_reference_resolution_queue_.clear();
   }
@@ -1154,10 +1219,11 @@ class PpdProviderImpl : public PpdProvider {
   CallbackResultCode ValidateAndGetResponseAsString(std::string* contents) {
     CallbackResultCode ret;
     if (fetcher_.get() != nullptr) {
-      if (response_body_.get() == nullptr) {
-        ret = PpdProvider::SERVER_ERROR;
-      } else if (fetcher_->NetError() != 0) {
-        // TODO(luum): confirm netError != 0 behavior === 404 not found
+      int net_error = fetcher_->NetError();
+      if (net_error != net::OK) {
+        ret = net_error == net::ERR_FILE_NOT_FOUND ? PpdProvider::NOT_FOUND
+                                                   : PpdProvider::SERVER_ERROR;
+      } else if (response_body_.get() == nullptr) {
         ret = PpdProvider::SERVER_ERROR;
       } else {
         *contents = std::move(*response_body_);
@@ -1194,7 +1260,8 @@ class PpdProviderImpl : public PpdProvider {
       return fetch_result;
     }
 
-    auto ret_list = base::ListValue::From(base::JSONReader::Read(buffer));
+    auto ret_list =
+        base::ListValue::From(base::JSONReader::ReadDeprecated(buffer));
     if (ret_list == nullptr) {
       return PpdProvider::INTERNAL_ERROR;
     }
@@ -1449,8 +1516,7 @@ class PpdProviderImpl : public PpdProvider {
   base::circular_deque<PpdResolutionQueueEntry> ppd_resolution_queue_;
 
   // Queued ResolvePpdReference() requests.
-  base::circular_deque<
-      std::pair<PrinterSearchData, ResolvePpdReferenceCallback>>
+  base::circular_deque<PpdReferenceResolutionQueueEntry>
       ppd_reference_resolution_queue_;
 
   // Queued ReverseIndex() calls.
@@ -1512,10 +1578,9 @@ std::string PpdProvider::PpdReferenceToCacheKey(
   }
 }
 
-PpdProvider::PrinterSearchData::PrinterSearchData() = default;
-PpdProvider::PrinterSearchData::PrinterSearchData(
-    const PrinterSearchData& other) = default;
-PpdProvider::PrinterSearchData::~PrinterSearchData() = default;
+PrinterSearchData::PrinterSearchData() = default;
+PrinterSearchData::PrinterSearchData(const PrinterSearchData& other) = default;
+PrinterSearchData::~PrinterSearchData() = default;
 
 // static
 scoped_refptr<PpdProvider> PpdProvider::Create(

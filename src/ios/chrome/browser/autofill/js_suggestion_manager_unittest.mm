@@ -40,6 +40,13 @@ class JsSuggestionManagerTest : public ChromeWebTest {
   NSString* GetActiveElementName() {
     return ExecuteJavaScript(@"document.activeElement.name");
   }
+  // Waits until the active element is |name|.
+  BOOL WaitUntilElementSelected(NSString* name) {
+    return base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForJSCompletionTimeout, ^bool {
+          return [GetActiveElementName() isEqualToString:name];
+        });
+  }
   JsSuggestionManager* manager_;
 };
 
@@ -230,7 +237,7 @@ TEST_F(JsSuggestionManagerTest, SequentialNavigation) {
   ExecuteJavaScript(@"document.getElementsByName('firstname')[0].focus()");
 
   [manager_ selectNextElementInFrameWithID:GetFrameIdForMainFrame()];
-  EXPECT_NSEQ(@"lastname", GetActiveElementName());
+  EXPECT_TRUE(WaitUntilElementSelected(@"lastname"));
   __block BOOL block_was_called = NO;
   [manager_
       fetchPreviousAndNextElementsPresenceInFrameWithID:GetFrameIdForMainFrame()
@@ -245,9 +252,9 @@ TEST_F(JsSuggestionManagerTest, SequentialNavigation) {
     return block_was_called;
   });
   [manager_ selectNextElementInFrameWithID:GetFrameIdForMainFrame()];
-  EXPECT_NSEQ(@"email", GetActiveElementName());
+  EXPECT_TRUE(WaitUntilElementSelected(@"email"));
   [manager_ selectPreviousElementInFrameWithID:GetFrameIdForMainFrame()];
-  EXPECT_NSEQ(@"lastname", GetActiveElementName());
+  EXPECT_TRUE(WaitUntilElementSelected(@"lastname"));
 }
 
 void JsSuggestionManagerTest::SequentialNavigationSkipCheck(NSString* attribute,
@@ -262,11 +269,10 @@ void JsSuggestionManagerTest::SequentialNavigationSkipCheck(NSString* attribute,
   ExecuteJavaScript(@"document.getElementsByName('firstname')[0].focus()");
   EXPECT_NSEQ(@"firstname", GetActiveElementName());
   [manager_ selectNextElementInFrameWithID:GetFrameIdForMainFrame()];
-  NSString* activeElementNameJS = GetActiveElementName();
   if (shouldSkip)
-    EXPECT_NSEQ(@"lastname", activeElementNameJS);
+    EXPECT_TRUE(WaitUntilElementSelected(@"lastname"));
   else
-    EXPECT_NSEQ(@"middlename", activeElementNameJS);
+    EXPECT_TRUE(WaitUntilElementSelected(@"middlename"));
 }
 
 TEST_F(JsSuggestionManagerTest, SequentialNavigationNoSkipText) {
@@ -360,6 +366,7 @@ class FetchPreviousAndNextExceptionTest : public JsSuggestionManagerTest {
             GetFrameIdForMainFrame()
                                         completionHandler:completionHandler];
     base::test::ios::WaitUntilCondition(^bool() {
+      base::RunLoop().RunUntilIdle();
       return block_was_called;
     });
   }

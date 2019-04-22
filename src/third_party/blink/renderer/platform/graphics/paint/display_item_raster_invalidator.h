@@ -6,11 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_RASTER_INVALIDATOR_H_
 
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 // Generates raster invalidation for changed display items in a chunk.
 class DisplayItemRasterInvalidator {
+  STACK_ALLOCATED();
+
  public:
   DisplayItemRasterInvalidator(RasterInvalidator& invalidator,
                                const PaintArtifact& old_paint_artifact,
@@ -34,25 +37,24 @@ class DisplayItemRasterInvalidator {
   static const auto kClientIsNew = RasterInvalidator::kClientIsNew;
 
   ALWAYS_INLINE void AddRasterInvalidation(const DisplayItemClient&,
-                                           const FloatRect&,
+                                           const IntRect&,
                                            PaintInvalidationReason,
                                            RasterInvalidator::ClientIsOldOrNew);
   ALWAYS_INLINE size_t
   MatchNewDisplayItemInOldChunk(const DisplayItem& new_item,
                                 size_t& next_old_item_to_match);
-  ALWAYS_INLINE void GenerateRasterInvalidation(
-      const DisplayItemClient&,
-      const FloatRect* old_visual_rect,
-      const FloatRect* new_visual_rect,
-      PaintInvalidationReason);
+  ALWAYS_INLINE void GenerateRasterInvalidation(const DisplayItemClient&,
+                                                const IntRect* old_visual_rect,
+                                                const IntRect* new_visual_rect,
+                                                PaintInvalidationReason);
   ALWAYS_INLINE void GenerateIncrementalRasterInvalidation(
       const DisplayItemClient&,
-      const FloatRect& old_visual_rect,
-      const FloatRect& new_visual_rect);
+      const IntRect& old_visual_rect,
+      const IntRect& new_visual_rect);
   ALWAYS_INLINE void GenerateFullRasterInvalidation(
       const DisplayItemClient&,
-      const FloatRect& old_visual_rect,
-      const FloatRect& new_visual_rect,
+      const IntRect& old_visual_rect,
+      const IntRect& new_visual_rect,
       PaintInvalidationReason reason);
 
   RasterInvalidator& invalidator_;

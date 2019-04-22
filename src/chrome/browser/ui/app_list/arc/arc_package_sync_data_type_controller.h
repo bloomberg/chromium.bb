@@ -15,7 +15,8 @@ class Profile;
 
 namespace syncer {
 class SyncClient;
-}
+class SyncService;
+}  // namespace syncer
 
 // A DataTypeController for arc package sync datatypes, which enables or
 // disables these types based on whether ArcAppInstance is ready.
@@ -27,6 +28,7 @@ class ArcPackageSyncDataTypeController
   // |dump_stack| is called when an unrecoverable error occurs.
   ArcPackageSyncDataTypeController(syncer::ModelType type,
                                    const base::Closure& dump_stack,
+                                   syncer::SyncService* sync_service,
                                    syncer::SyncClient* sync_client,
                                    Profile* profile);
   ~ArcPackageSyncDataTypeController() override;
@@ -43,8 +45,6 @@ class ArcPackageSyncDataTypeController
   // ArcSessionManager::Observer:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnArcInitialStart() override;
-
-  void EnableDataType();
 
   // Returns true if user enables app sync.
   bool ShouldSyncArc() const;

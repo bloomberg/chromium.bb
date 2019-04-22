@@ -14,7 +14,7 @@
 #include "remoting/signaling/iq_sender.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
-#include "third_party/webrtc/rtc_base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/socket_address.h"
 
 namespace remoting {
 namespace protocol {
@@ -31,10 +31,10 @@ JingleInfoRequest::~JingleInfoRequest() = default;
 
 void JingleInfoRequest::Send(const OnIceConfigCallback& callback) {
   on_ice_config_callback_ = callback;
-  std::unique_ptr<buzz::XmlElement> iq_body(
-      new buzz::XmlElement(buzz::QN_JINGLE_INFO_QUERY, true));
+  std::unique_ptr<jingle_xmpp::XmlElement> iq_body(
+      new jingle_xmpp::XmlElement(jingle_xmpp::QN_JINGLE_INFO_QUERY, true));
   request_ = iq_sender_.SendIq(
-      buzz::STR_GET, buzz::STR_EMPTY, std::move(iq_body),
+      jingle_xmpp::STR_GET, jingle_xmpp::STR_EMPTY, std::move(iq_body),
       base::Bind(&JingleInfoRequest::OnResponse, base::Unretained(this)));
   if (!request_) {
     // If we failed to send IqRequest it means that SignalStrategy is
@@ -47,7 +47,7 @@ void JingleInfoRequest::Send(const OnIceConfigCallback& callback) {
 }
 
 void JingleInfoRequest::OnResponse(IqRequest* request,
-                                   const buzz::XmlElement* stanza) {
+                                   const jingle_xmpp::XmlElement* stanza) {
   IceConfig result;
 
   if (!stanza) {
@@ -56,8 +56,8 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
     return;
   }
 
-  const buzz::XmlElement* query =
-      stanza->FirstNamed(buzz::QN_JINGLE_INFO_QUERY);
+  const jingle_xmpp::XmlElement* query =
+      stanza->FirstNamed(jingle_xmpp::QN_JINGLE_INFO_QUERY);
   if (query == nullptr) {
     LOG(WARNING) << "No Jingle info found in Jingle Info query response."
                  << stanza->Str();
@@ -65,15 +65,15 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
     return;
   }
 
-  const buzz::XmlElement* stun = query->FirstNamed(buzz::QN_JINGLE_INFO_STUN);
+  const jingle_xmpp::XmlElement* stun = query->FirstNamed(jingle_xmpp::QN_JINGLE_INFO_STUN);
   if (stun) {
-    for (const buzz::XmlElement* server =
-         stun->FirstNamed(buzz::QN_JINGLE_INFO_SERVER);
+    for (const jingle_xmpp::XmlElement* server =
+         stun->FirstNamed(jingle_xmpp::QN_JINGLE_INFO_SERVER);
          server != nullptr;
-         server = server->NextNamed(buzz::QN_JINGLE_INFO_SERVER)) {
-      std::string host = server->Attr(buzz::QN_JINGLE_INFO_HOST);
-      std::string port_str = server->Attr(buzz::QN_JINGLE_INFO_UDP);
-      if (host != buzz::STR_EMPTY && port_str != buzz::STR_EMPTY) {
+         server = server->NextNamed(jingle_xmpp::QN_JINGLE_INFO_SERVER)) {
+      std::string host = server->Attr(jingle_xmpp::QN_JINGLE_INFO_HOST);
+      std::string port_str = server->Attr(jingle_xmpp::QN_JINGLE_INFO_UDP);
+      if (host != jingle_xmpp::STR_EMPTY && port_str != jingle_xmpp::STR_EMPTY) {
         int port;
         if (!base::StringToInt(port_str, &port)) {
           LOG(WARNING) << "Unable to parse port in stanza" << stanza->Str();
@@ -85,15 +85,15 @@ void JingleInfoRequest::OnResponse(IqRequest* request,
     }
   }
 
-  const buzz::XmlElement* relay = query->FirstNamed(buzz::QN_JINGLE_INFO_RELAY);
+  const jingle_xmpp::XmlElement* relay = query->FirstNamed(jingle_xmpp::QN_JINGLE_INFO_RELAY);
   if (relay) {
-    result.relay_token = relay->TextNamed(buzz::QN_JINGLE_INFO_TOKEN);
-    for (const buzz::XmlElement* server =
-         relay->FirstNamed(buzz::QN_JINGLE_INFO_SERVER);
+    result.relay_token = relay->TextNamed(jingle_xmpp::QN_JINGLE_INFO_TOKEN);
+    for (const jingle_xmpp::XmlElement* server =
+         relay->FirstNamed(jingle_xmpp::QN_JINGLE_INFO_SERVER);
          server != nullptr;
-         server = server->NextNamed(buzz::QN_JINGLE_INFO_SERVER)) {
-      std::string host = server->Attr(buzz::QN_JINGLE_INFO_HOST);
-      if (host != buzz::STR_EMPTY)
+         server = server->NextNamed(jingle_xmpp::QN_JINGLE_INFO_SERVER)) {
+      std::string host = server->Attr(jingle_xmpp::QN_JINGLE_INFO_HOST);
+      if (host != jingle_xmpp::STR_EMPTY)
         result.relay_servers.push_back(host);
     }
   }

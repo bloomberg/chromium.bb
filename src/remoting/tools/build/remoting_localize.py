@@ -627,7 +627,10 @@ class MessageMap:
 
   def GetText(self, message):
     """ Returns a localized message for the current language. """
-    return self.message_map[self.language][message]
+    try:
+      return self.message_map[self.language][message]
+    except:
+      return self.message_map['en'][message]
 
   def SelectLanguage(self, language):
     """ Selects the language to be used when retrieving localized messages. """

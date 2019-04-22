@@ -19,11 +19,11 @@ class GerritApi(recipe_api.RecipeApi):
     env = self.m.context.env
     env.setdefault('PATH', '%(PATH)s')
     env['PATH'] = self.m.path.pathsep.join([
-        env['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
+        env['PATH'], str(self.repo_resource())])
 
     with self.m.context(env=env):
       return self.m.python(prefix + name,
-                           self.package_repo_resource('gerrit_client.py'),
+                           self.repo_resource('gerrit_client.py'),
                            cmd,
                            infra_step=infra_step,
                            **kwargs)
@@ -68,40 +68,6 @@ class GerritApi(recipe_api.RecipeApi):
     step_result = self(step_name, args, **kwargs)
     revision = step_result.json.output.get('revision')
     return revision
-
-  def get_change_destination_branch(
-      self, host, change, name=None, step_test_data=None):
-    """
-    Get the upstream branch for a given CL.
-
-    Result is cached.
-
-    Args:
-      host: URL of Gerrit host to query.
-      change: The change number.
-
-    Returns:
-      the name of the branch
-    """
-    assert int(change), change
-    change = int(change)
-    branch = self._changes_target_branch_cache.get((host, change))
-    if branch is not None:
-      return branch
-    changes = self.get_changes(
-        host,
-        [('change', change)],
-        limit=1,
-        name=name or 'get_change_destination_branch',
-        step_test_data=step_test_data,
-    )
-    if not changes or 'branch' not in changes[0]:
-      self.m.step.active_result.presentation.status = self.m.step.EXCEPTION
-      raise self.m.step.InfraFailure(
-          'Error quering for branch of CL %s' % change)
-    branch = changes[0]['branch']
-    self._changes_target_branch_cache[(host, change)] = branch
-    return branch
 
   def get_change_description(self, host, change, patchset):
     """
@@ -188,4 +154,24 @@ class GerritApi(recipe_api.RecipeApi):
         args,
         step_test_data=step_test_data,
         **kwargs
+    ).json.output
+
+  def abandon_change(self, host, change, message=None, name=None,
+                     step_test_data=None):
+    args = [
+        'abandon',
+        '--host', host,
+        '--change', int(change),
+        '--json_file', self.m.json.output(),
+    ]
+    if message:
+      args.extend(['--message', message])
+    if not step_test_data:
+      step_test_data = lambda: self.test_api.get_one_change_response_data(
+          status='ABANDONED', _number=str(change))
+
+    return self(
+        name or 'abandon',
+        args,
+        step_test_data=step_test_data,
     ).json.output

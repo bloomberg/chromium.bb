@@ -52,13 +52,10 @@ if (is_android) {
       "media_drm_storage.h",
       "media_drm_storage_bridge.cc",
       "media_drm_storage_bridge.h",
-      "media_player_android.cc",
-      "media_player_android.h",
       "media_player_bridge.cc",
       "media_player_bridge.h",
       "media_player_listener.cc",
       "media_player_listener.h",
-      "media_player_manager.h",
       "media_resource_getter.cc",
       "media_resource_getter.h",
       "media_server_crash_listener.cc",
@@ -157,6 +154,13 @@ if (is_android) {
     ]
   }
 
+  java_cpp_strings("java_switches") {
+    sources = [
+      "//media/base/media_switches.cc",
+    ]
+    template = "//media/base/android/java_templates/MediaSwitches.java.tmpl"
+  }
+
   android_resources("media_java_resources") {
     custom_package = "org.chromium.media"
     resource_dirs = [ "java/res" ]
@@ -166,10 +170,11 @@ if (is_android) {
     deps = [
       ":media_java_resources",
       "//base:base_java",
-      "//third_party/android_deps:android_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
     srcjar_deps = [
       ":java_enums",
+      ":java_switches",
       "//media/base:java_enums",
     ]
     java_files = [
@@ -190,7 +195,6 @@ if (is_android) {
       "java/src/org/chromium/media/MediaPlayerBridge.java",
       "java/src/org/chromium/media/MediaPlayerListener.java",
       "java/src/org/chromium/media/MediaServerCrashListener.java",
-      "java/src/org/chromium/media/MediaSwitches.java",
     ]
   }
 

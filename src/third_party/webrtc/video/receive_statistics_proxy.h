@@ -19,19 +19,18 @@
 #include "absl/types/optional.h"
 #include "call/video_receive_stream.h"
 #include "modules/video_coding/include/video_coding_defines.h"
-#include "rtc_base/criticalsection.h"
+#include "rtc_base/critical_section.h"
 #include "rtc_base/numerics/histogram_percentile_counter.h"
 #include "rtc_base/numerics/moving_max_counter.h"
 #include "rtc_base/numerics/sample_counter.h"
 #include "rtc_base/rate_statistics.h"
-#include "rtc_base/ratetracker.h"
+#include "rtc_base/rate_tracker.h"
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/thread_checker.h"
 #include "video/quality_threshold.h"
 #include "video/report_block_stats.h"
 #include "video/stats_counter.h"
 #include "video/video_quality_observer.h"
-#include "video/video_stream_decoder.h"
 
 namespace webrtc {
 
@@ -50,15 +49,13 @@ class ReceiveStatisticsProxy : public VCMReceiveStatisticsCallback,
 
   VideoReceiveStream::Stats GetStats() const;
 
-  void OnDecodedFrame(absl::optional<uint8_t> qp,
-                      int width,
-                      int height,
+  void OnDecodedFrame(const VideoFrame& frame,
+                      absl::optional<uint8_t> qp,
                       VideoContentType content_type);
   void OnSyncOffsetUpdated(int64_t sync_offset_ms, double estimated_freq_khz);
   void OnRenderedFrame(const VideoFrame& frame);
   void OnIncomingPayloadType(int payload_type);
   void OnDecoderImplementationName(const char* implementation_name);
-  void OnIncomingRate(unsigned int framerate, unsigned int bitrate_bps);
 
   void OnPreDecode(VideoCodecType codec_type, int qp);
 
@@ -68,9 +65,6 @@ class ReceiveStatisticsProxy : public VCMReceiveStatisticsCallback,
   void OnStreamInactive();
 
   // Overrides VCMReceiveStatisticsCallback.
-  void OnReceiveRatesUpdated(uint32_t bitRate, uint32_t frameRate) override;
-  void OnFrameCountsUpdated(const FrameCounts& frame_counts) override;
-  void OnDiscardedPacketsUpdated(int discarded_packets) override;
   void OnCompleteFrame(bool is_keyframe,
                        size_t size_bytes,
                        VideoContentType content_type) override;
@@ -181,6 +175,7 @@ class ReceiveStatisticsProxy : public VCMReceiveStatisticsCallback,
   mutable std::map<int64_t, size_t> frame_window_ RTC_GUARDED_BY(&crit_);
   VideoContentType last_content_type_ RTC_GUARDED_BY(&crit_);
   VideoCodecType last_codec_type_ RTC_GUARDED_BY(&crit_);
+  absl::optional<int64_t> first_frame_received_time_ms_ RTC_GUARDED_BY(&crit_);
   absl::optional<int64_t> first_decoded_frame_time_ms_ RTC_GUARDED_BY(&crit_);
   absl::optional<int64_t> last_decoded_frame_time_ms_ RTC_GUARDED_BY(&crit_);
   size_t num_delayed_frames_rendered_ RTC_GUARDED_BY(&crit_);

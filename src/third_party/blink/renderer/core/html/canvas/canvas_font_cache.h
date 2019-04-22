@@ -27,17 +27,13 @@ class CORE_EXPORT CanvasFontCache final
   USING_PRE_FINALIZER(CanvasFontCache, Dispose);
 
  public:
-  static CanvasFontCache* Create(Document& document) {
-    return MakeGarbageCollected<CanvasFontCache>(document);
-  }
-
   explicit CanvasFontCache(Document&);
 
   MutableCSSPropertyValueSet* ParseFont(const String&);
   void PruneAll();
   unsigned size();
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   static unsigned MaxFonts();
   unsigned HardMaxFonts();

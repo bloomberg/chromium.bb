@@ -26,20 +26,18 @@
 #include <memory>
 
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_data_consumer_handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/buffering_data_pipe_writer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
-class WebDataConsumerHandle;
+class BytesConsumer;
+class BufferingBytesConsumer;
 class FetchParameters;
 class RawResourceClient;
 class ResourceFetcher;
-class SubstituteData;
-class SourceKeyedCachedMetadataHandler;
 
 class PLATFORM_EXPORT RawResource final : public Resource {
  public:
@@ -49,10 +47,6 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   static RawResource* Fetch(FetchParameters&,
                             ResourceFetcher*,
                             RawResourceClient*);
-  static RawResource* FetchMainResource(FetchParameters&,
-                                        ResourceFetcher*,
-                                        RawResourceClient*,
-                                        const SubstituteData&);
   static RawResource* FetchImport(FetchParameters&,
                                   ResourceFetcher*,
                                   RawResourceClient*);
@@ -89,13 +83,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   bool WillFollowRedirect(const ResourceRequest&,
                           const ResourceResponse&) override;
 
-  void SetSerializedCachedMetadata(const char*, size_t) override;
-
-  // Used for code caching of scripts with source code inline in the HTML.
-  // Returns a cache handler which can store multiple cache metadata entries,
-  // keyed by the source code of the script. This is valid only if type is
-  // kMainResource.
-  SourceKeyedCachedMetadataHandler* InlineScriptCacheHandler();
+  void SetSerializedCachedMetadata(const uint8_t*, size_t) override;
 
   // Used for code caching of fetched code resources. Returns a cache handler
   // which can only store a single cache metadata entry. This is valid only if
@@ -105,6 +93,8 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   scoped_refptr<BlobDataHandle> DownloadedBlob() const {
     return downloaded_blob_;
   }
+
+  void Trace(Visitor* visitor) override;
 
  protected:
   CachedMetadataHandler* CreateCachedMetadataHandler(
@@ -121,6 +111,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
       return MakeGarbageCollected<RawResource>(request, type_, options);
     }
   };
+  class PreloadBytesConsumerClient;
 
   // Resource implementation
   void DidAddClient(ResourceClient*) override;
@@ -129,30 +120,33 @@ class PLATFORM_EXPORT RawResource final : public Resource {
     return !IsLinkPreload();
   }
   void WillNotFollowRedirect() override;
-  void ResponseReceived(const ResourceResponse&,
-                        std::unique_ptr<WebDataConsumerHandle>) override;
-  void DidSendData(unsigned long long bytes_sent,
-                   unsigned long long total_bytes_to_be_sent) override;
-  void DidDownloadData(int) override;
+  void ResponseReceived(const ResourceResponse&) override;
+  void ResponseBodyReceived(
+      ResponseBodyLoaderDrainableInterface&,
+      scoped_refptr<base::SingleThreadTaskRunner> loader_task_runner) override;
+  void DidSendData(uint64_t bytes_sent,
+                   uint64_t total_bytes_to_be_sent) override;
+  void DidDownloadData(uint64_t) override;
   void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) override;
   void ReportResourceTimingToClients(const ResourceTimingInfo&) override;
   bool MatchPreload(const FetchParameters&,
                     base::SingleThreadTaskRunner*) override;
-  void NotifyFinished() override;
 
   scoped_refptr<BlobDataHandle> downloaded_blob_;
 
   // Used for preload matching.
-  std::unique_ptr<BufferingDataPipeWriter> data_pipe_writer_;
-  std::unique_ptr<WebDataConsumerHandle> data_consumer_handle_;
+  Member<BufferingBytesConsumer> bytes_consumer_for_preload_;
+  // True when this was initiated as a preload, and matched with a request
+  // without UseStreamOnResponse.
+  bool matched_with_non_streaming_destination_ = false;
 };
 
 // TODO(yhirano): Recover #if ENABLE_SECURITY_ASSERT when we stop adding
 // RawResources to MemoryCache.
 inline bool IsRawResource(ResourceType type) {
-  return type == ResourceType::kMainResource || type == ResourceType::kRaw ||
-         type == ResourceType::kTextTrack || type == ResourceType::kAudio ||
-         type == ResourceType::kVideo || type == ResourceType::kManifest ||
+  return type == ResourceType::kRaw || type == ResourceType::kTextTrack ||
+         type == ResourceType::kAudio || type == ResourceType::kVideo ||
+         type == ResourceType::kManifest ||
          type == ResourceType::kImportResource;
 }
 inline bool IsRawResource(const Resource& resource) {
@@ -169,35 +163,37 @@ class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
 
   // The order of the callbacks is as follows:
   // [Case 1] A successful load:
-  // 0+  redirectReceived() and/or dataSent()
-  // 1   responseReceived()
-  // 0-1 setSerializedCachedMetadata()
-  // 0+  dataReceived() or dataDownloaded(), but never both
-  // 1   notifyFinished() with errorOccurred() = false
+  // 0+  RedirectReceived() and/or DataSent()
+  // 1   ResponseReceived()
+  // 0-1 SetSerializedCachedMetadata()
+  // One of:
+  //   0+  DataReceived()
+  //   0+  DataDownloaded()
+  //   0-1 ResponseBodyReceived()
+  // 1   NotifyFinished() with ErrorOccurred() = false
   // [Case 2] When redirect is blocked:
-  // 0+  redirectReceived() and/or dataSent()
-  // 1   redirectBlocked()
-  // 1   notifyFinished() with errorOccurred() = true
+  // 0+  RedirectReceived() and/or DataSent()
+  // 1   RedirectBlocked()
+  // 1   NotifyFinished() with ErrorOccurred() = true
   // [Case 3] Other failures:
-  //     notifyFinished() with errorOccurred() = true is called at any time
-  //     (unless notifyFinished() is already called).
+  //     NotifyFinished() with ErrorOccurred() = true is called at any time
+  //     (unless NotifyFinished() is already called).
   // In all cases:
-  //     No callbacks are made after notifyFinished() or
-  //     removeClient() is called.
+  //     No callbacks are made after NotifyFinished() or
+  //     RemoveClient() is called.
   virtual void DataSent(Resource*,
-                        unsigned long long /* bytesSent */,
-                        unsigned long long /* totalBytesToBeSent */) {}
-  virtual void ResponseReceived(Resource*,
-                                const ResourceResponse&,
-                                std::unique_ptr<WebDataConsumerHandle>) {}
-  virtual void SetSerializedCachedMetadata(Resource*, const char*, size_t) {}
+                        uint64_t /* bytesSent */,
+                        uint64_t /* totalBytesToBeSent */) {}
+  virtual void ResponseBodyReceived(Resource*, BytesConsumer&) {}
+  virtual void ResponseReceived(Resource*, const ResourceResponse&) {}
+  virtual void SetSerializedCachedMetadata(Resource*, const uint8_t*, size_t) {}
   virtual bool RedirectReceived(Resource*,
                                 const ResourceRequest&,
                                 const ResourceResponse&) {
     return true;
   }
   virtual void RedirectBlocked() {}
-  virtual void DataDownloaded(Resource*, int) {}
+  virtual void DataDownloaded(Resource*, uint64_t) {}
   virtual void DidReceiveResourceTiming(Resource*, const ResourceTimingInfo&) {}
   // Called for requests that had DownloadToBlob set to true. Can be called with
   // null if creating the blob failed for some reason (but the download itself
@@ -209,6 +205,8 @@ class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
 // Checks the sequence of callbacks of RawResourceClient. This can be used only
 // when a RawResourceClient is added as a client to at most one RawResource.
 class PLATFORM_EXPORT RawResourceClientStateChecker final {
+  DISALLOW_NEW();
+
  public:
   RawResourceClientStateChecker();
   ~RawResourceClientStateChecker();
@@ -223,6 +221,7 @@ class PLATFORM_EXPORT RawResourceClientStateChecker final {
   void RedirectBlocked();
   void DataSent();
   void ResponseReceived();
+  void ResponseBodyReceived();
   void SetSerializedCachedMetadata();
   void DataReceived();
   void DataDownloaded();
@@ -235,7 +234,7 @@ class PLATFORM_EXPORT RawResourceClientStateChecker final {
     kStarted,
     kRedirectBlocked,
     kResponseReceived,
-    kSetSerializedCachedMetadata,
+    kDataReceivedAsBytesConsumer,
     kDataReceived,
     kDataDownloaded,
     kDidDownloadToBlob,

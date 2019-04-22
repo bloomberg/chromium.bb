@@ -9,7 +9,7 @@
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_http_header_set.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -77,6 +77,10 @@ PLATFORM_EXPORT bool CheckIfRequestCanSkipPreflight(
     const String& method,
     const HTTPHeaderMap& request_header_map);
 
+// Returns the response tainting value
+// (https://fetch.spec.whatwg.org/#concept-request-response-tainting) for a
+// request and the CORS flag, as specified in
+// https://fetch.spec.whatwg.org/#main-fetch.
 PLATFORM_EXPORT network::mojom::FetchResponseType CalculateResponseTainting(
     const KURL& url,
     network::mojom::FetchRequestMode request_mode,
@@ -93,6 +97,8 @@ PLATFORM_EXPORT bool IsCorsSafelistedMethod(const String& method);
 PLATFORM_EXPORT bool IsCorsSafelistedContentType(const String&);
 PLATFORM_EXPORT bool IsNoCorsSafelistedHeader(const String& name,
                                               const String& value);
+PLATFORM_EXPORT bool IsPrivilegedNoCorsHeaderName(const String& name);
+PLATFORM_EXPORT bool IsNoCorsSafelistedHeaderName(const String& name);
 PLATFORM_EXPORT Vector<String> CorsUnsafeRequestHeaderNames(
     const HTTPHeaderMap& headers);
 PLATFORM_EXPORT bool IsForbiddenHeaderName(const String& name);
@@ -120,7 +126,7 @@ PLATFORM_EXPORT WebHTTPHeaderSet
 ExtractCorsExposedHeaderNamesList(network::mojom::FetchCredentialsMode,
                                   const ResourceResponse&);
 
-PLATFORM_EXPORT bool IsOnAccessControlResponseHeaderWhitelist(const String&);
+PLATFORM_EXPORT bool IsCorsSafelistedResponseHeader(const String&);
 
 // Checks whether request mode 'no-cors' is allowed for a certain context.
 PLATFORM_EXPORT bool IsNoCorsAllowedContext(mojom::RequestContextType);

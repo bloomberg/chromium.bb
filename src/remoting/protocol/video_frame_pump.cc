@@ -85,22 +85,26 @@ void VideoFramePump::SetLosslessEncode(bool want_lossless) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoEncoder::SetLosslessEncode,
-                            base::Unretained(encoder_.get()), want_lossless));
+      FROM_HERE,
+      base::BindOnce(&VideoEncoder::SetLosslessEncode,
+                     base::Unretained(encoder_.get()), want_lossless));
 }
 
 void VideoFramePump::SetLosslessColor(bool want_lossless) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoEncoder::SetLosslessColor,
-                            base::Unretained(encoder_.get()), want_lossless));
+      FROM_HERE,
+      base::BindOnce(&VideoEncoder::SetLosslessColor,
+                     base::Unretained(encoder_.get()), want_lossless));
 }
 
 void VideoFramePump::SetObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observer_ = observer;
 }
+
+void VideoFramePump::SelectSource(int id) {}
 
 void VideoFramePump::OnCaptureResult(
     webrtc::DesktopCapturer::Result result,
@@ -198,9 +202,10 @@ void VideoFramePump::SendPacket(std::unique_ptr<PacketWithTimestamps> packet) {
   UpdateFrameTimers(packet->packet.get(), packet->timestamps.get());
 
   send_pending_ = true;
-  video_stub_->ProcessVideoPacket(std::move(packet->packet),
-                                  base::Bind(&VideoFramePump::OnVideoPacketSent,
-                                             weak_factory_.GetWeakPtr()));
+  video_stub_->ProcessVideoPacket(
+      std::move(packet->packet),
+      base::BindOnce(&VideoFramePump::OnVideoPacketSent,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void VideoFramePump::UpdateFrameTimers(VideoPacket* packet,
@@ -249,8 +254,8 @@ void VideoFramePump::SendKeepAlivePacket() {
 
   video_stub_->ProcessVideoPacket(
       std::make_unique<VideoPacket>(),
-      base::Bind(&VideoFramePump::OnKeepAlivePacketSent,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&VideoFramePump::OnKeepAlivePacketSent,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void VideoFramePump::OnKeepAlivePacketSent() {

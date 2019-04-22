@@ -22,8 +22,7 @@
         margin-inline-start: 8px;
       }
 
-      /* Prevent focus-outline from being chopped by the bottom of dialog body.
-         TODO(scottchen): find a more general way to solve this. */
+      /* Prevent focus-outline from being chopped by bottom of dialog body. */
       .md-select {
         margin-bottom: 2px;
       }
@@ -38,8 +37,18 @@
         padding: 0 0 0 8px;
       }
 
+      :host-context([dark]) #expired {
+        background-color: unset;
+        font-weight: bold;
+        padding: 0;
+      }
+
       #month {
         width: 70px;
+      }
+
+      #saved-to-this-device-only-label {
+        margin-top: var(--cr-form-field-bottom-spacing);
       }
 
       #year {
@@ -81,6 +90,9 @@
             >
           $i18n{creditCardExpired}
         </span>
+        <div id="saved-to-this-device-only-label">
+          $i18n{savedToThisDeviceOnly}
+        </div>
       </div>
       <div slot="button-container">
         <paper-button id="cancelButton" class="cancel-button"

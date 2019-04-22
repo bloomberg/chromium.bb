@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 72 tests; 48 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Success: generateKey({length: 128, name: AES-KW}, false, [wrapKey])
 PASS Success: generateKey({length: 128, name: AES-KW}, true, [wrapKey])
 PASS Success: generateKey({length: 128, name: AES-KW}, false, [unwrapKey, wrapKey])

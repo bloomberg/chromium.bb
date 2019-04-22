@@ -28,47 +28,49 @@ var remoteCallVideoPlayer = new RemoteCall(VIDEO_PLAYER_APP_ID);
 function launch(testVolumeName, volumeType, entries, opt_selected) {
   var entriesPromise = addEntries([testVolumeName], entries).then(function() {
     var selectedEntries = opt_selected || entries;
-    var selectedEntryNames =
-        selectedEntries.map(function(entry) { return entry.nameText; });
+    var selectedEntryNames = selectedEntries.map(function(entry) {
+      return entry.nameText;
+    });
     return remoteCallVideoPlayer.getFilesUnderVolume(
         volumeType, selectedEntryNames);
   });
 
   var appWindow = null;
-  return entriesPromise.then(function(urls) {
-    return remoteCallVideoPlayer.callRemoteTestUtil(
-        'openVideoPlayer', null, [urls]);
-  }).then(function(windowId) {
-    appWindow = windowId;
-    return remoteCallVideoPlayer.waitForElement(appWindow, 'body');
-  }).then(function() {
-    return Promise.all([
-      remoteCallVideoPlayer.waitForElement(
-          appWindow, '#video-player[first-video][last-video]'),
-      remoteCallVideoPlayer.waitForElement(
-          appWindow, '.play.media-button[state="playing"]'),
-    ]);
-  }).then(function(args) {
-    return [appWindow, args[0]];
-  });
+  return entriesPromise
+      .then(function(urls) {
+        return remoteCallVideoPlayer.callRemoteTestUtil(
+            'openVideoPlayer', null, [urls]);
+      })
+      .then(function(windowId) {
+        appWindow = windowId;
+        return remoteCallVideoPlayer.waitForElement(appWindow, 'body');
+      })
+      .then(function() {
+        return Promise.all([
+          remoteCallVideoPlayer.waitForElement(
+              appWindow, '#video-player[first-video]'),
+        ]);
+      })
+      .then(function(args) {
+        return [appWindow, args[0]];
+      });
 }
 
 /**
- * Opens video player with a single video.
+ * Open video player with multiple videos and subtitles.
  * @param {string} volumeName Test volume name passed to the addEntries
  *     function. Either 'drive' or 'local'.
  * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
- * @param {TestEntryInfo} entry File to be opened.
+ * @param {Array<TestEntryInfo>} entries Files to be opened.
+ * @param {Array<TestEntryInfo>=} subtitles Subtitle files to be added to
+ *     volume.
  * @return {Promise} Promise to be fulfilled with the video player element.
  */
-function openSingleVideo(volumeName, volumeType, entry) {
-  var entries = [entry];
-  return launch(volumeName, volumeType, entries).then(function(args) {
-    var videoPlayer = args[1];
+function openVideos(volumeName, volumeType, entries, subtitles = []) {
+  const allEntries = entries.concat(subtitles);
+  return launch(volumeName, volumeType, allEntries, entries).then((args) => {
+    const videoPlayer = args[1];
 
-    chrome.test.assertTrue('first-video' in videoPlayer.attributes);
-    chrome.test.assertTrue('last-video' in videoPlayer.attributes);
-    chrome.test.assertFalse('multiple' in videoPlayer.attributes);
     chrome.test.assertFalse('disabled' in videoPlayer.attributes);
     return args;
   });
@@ -93,8 +95,9 @@ window.addEventListener('load', function() {
     },
     // Request the root entry paths.
     function(mode) {
-      if (JSON.parse(mode) != chrome.extension.inIncognitoContext)
+      if (JSON.parse(mode) != chrome.extension.inIncognitoContext) {
         return;
+      }
       sendBrowserTestCommand({name: 'getRootPaths'}, steps.shift());
     },
     // Request the test case name.

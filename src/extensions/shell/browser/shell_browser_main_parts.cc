@@ -7,6 +7,7 @@
 #include <string>
 
 #include "apps/browser_context_keyed_service_factories.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -41,7 +42,7 @@
 #include "extensions/shell/browser/shell_update_query_params_delegate.h"
 #include "extensions/shell/common/shell_extensions_client.h"
 #include "extensions/shell/common/switches.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(USE_AURA)
@@ -63,7 +64,9 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #elif defined(OS_LINUX)
 #include "device/bluetooth/dbus/bluez_dbus_thread_manager.h"
 #endif
@@ -122,9 +125,18 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   // helper classes so those classes' tests can initialize stub versions of the
   // D-Bus objects.
   chromeos::DBusThreadManager::Initialize();
-  chromeos::disks::DiskMountManager::Initialize();
+  dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
+  if (bus) {
+    bluez::BluezDBusManager::Initialize(bus);
+    chromeos::CrasAudioClient::Initialize(bus);
+    chromeos::PowerManagerClient::Initialize(bus);
+  } else {
+    bluez::BluezDBusManager::InitializeFake();
+    chromeos::CrasAudioClient::InitializeFake();
+    chromeos::PowerManagerClient::InitializeFake();
+  }
 
-  bluez::BluezDBusManager::Initialize();
+  chromeos::disks::DiskMountManager::Initialize();
 
   chromeos::NetworkHandler::Initialize();
   network_controller_.reset(new ShellNetworkController(
@@ -141,8 +153,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   // TODO(michaelpg): Verify this works for target environments.
   ui::InitializeInputMethodForTesting();
 
-  bluez::BluezDBusThreadManager::Initialize();
-  bluez::BluezDBusManager::Initialize();
+  bluez::BluezDBusManager::Initialize(nullptr /* system_bus */);
 #else
   ui::InitializeInputMethodForTesting();
 #endif
@@ -307,6 +318,8 @@ void ShellBrowserMainParts::PostDestroyThreads() {
   chromeos::disks::DiskMountManager::Shutdown();
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
+  chromeos::PowerManagerClient::Shutdown();
+  chromeos::CrasAudioClient::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 #elif defined(OS_LINUX)
   device::BluetoothAdapterFactory::Shutdown();

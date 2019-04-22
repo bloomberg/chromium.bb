@@ -151,7 +151,7 @@ void FileFlusher::Job::ScheduleFinish() {
   finish_scheduled_ = true;
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&Job::FinishOnUIThread, base::Unretained(this)));
+      base::BindOnce(&Job::FinishOnUIThread, base::Unretained(this)));
 }
 
 void FileFlusher::Job::FinishOnUIThread() {

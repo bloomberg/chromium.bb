@@ -6,9 +6,11 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -175,6 +177,7 @@ CheckClientDownloadRequest::CheckClientDownloadRequest(
       is_extended_reporting_(false),
       is_incognito_(false),
       is_under_advanced_protection_(false),
+      requests_ap_verdicts_(false),
       weakptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   item_->AddObserver(this);
@@ -207,6 +210,10 @@ void CheckClientDownloadRequest::Start() {
     is_under_advanced_protection_ =
         profile &&
         AdvancedProtectionStatusManager::IsUnderAdvancedProtection(profile);
+    requests_ap_verdicts_ =
+        profile &&
+        AdvancedProtectionStatusManager::RequestsAdvancedProtectionVerdicts(
+            profile);
   }
 
   // If whitelist check passes, FinishRequest() will be called to avoid
@@ -369,8 +376,7 @@ bool CheckClientDownloadRequest::IsSupportedDownload(
 
 CheckClientDownloadRequest::~CheckClientDownloadRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (item_)
-    item_->RemoveObserver(this);
+  item_->RemoveObserver(this);
   weakptr_factory_.InvalidateWeakPtrs();
 }
 
@@ -444,6 +450,8 @@ void CheckClientDownloadRequest::OnFileFeatureExtractionDone(
   signature_info_ = results.signature_info;
   image_headers_.reset(new ClientDownloadRequest_ImageHeaders());
   *image_headers_ = results.image_headers;
+  file_count_ = results.file_count;
+  directory_count_ = results.directory_count;
 
 #if defined(OS_MACOSX)
   if (!results.disk_image_signature.empty())
@@ -592,6 +600,11 @@ std::string CheckClientDownloadRequest::SanitizeUrl(const GURL& url) const {
 void CheckClientDownloadRequest::SendRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  if (item_->GetState() == download::DownloadItem::CANCELLED) {
+    FinishRequest(DownloadCheckResult::UNKNOWN, REASON_DOWNLOAD_DESTROYED);
+    return;
+  }
+
   auto request = std::make_unique<ClientDownloadRequest>();
   auto population = is_extended_reporting_
                         ? ChromeUserPopulation::EXTENDED_REPORTING
@@ -602,6 +615,7 @@ void CheckClientDownloadRequest::SendRequest() {
           g_browser_process->browser_policy_connector()));
   request->mutable_population()->set_is_under_advanced_protection(
       is_under_advanced_protection_);
+  request->mutable_population()->set_is_incognito(is_incognito_);
 
   request->set_url(SanitizeUrl(item_->GetUrlChain().back()));
   request->mutable_digests()->set_sha256(item_->GetHash());
@@ -694,6 +708,10 @@ void CheckClientDownloadRequest::SendRequest() {
     request->set_allocated_image_headers(image_headers_.release());
   if (!archived_binaries_.empty())
     request->mutable_archived_binary()->Swap(&archived_binaries_);
+  request->set_archive_file_count(file_count_);
+  request->set_archive_directory_count(directory_count_);
+  request->set_request_ap_verdicts(requests_ap_verdicts_);
+
   if (!request->SerializeToString(&client_download_request_data_)) {
     FinishRequest(DownloadCheckResult::UNKNOWN, REASON_INVALID_REQUEST_PROTO);
     return;
@@ -805,10 +823,8 @@ void CheckClientDownloadRequest::FinishRequest(
            << " verdict:" << reason << " result:" << static_cast<int>(result);
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
                             REASON_MAX);
-  if (reason != REASON_DOWNLOAD_DESTROYED)
-    callback_.Run(result);
+  callback_.Run(result);
   item_->RemoveObserver(this);
-  item_ = nullptr;
   service_->RequestFinished(this);
   // DownloadProtectionService::RequestFinished may delete us.
 }

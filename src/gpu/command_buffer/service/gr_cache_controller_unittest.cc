@@ -4,9 +4,13 @@
 
 #include "gpu/command_buffer/service/gr_cache_controller.h"
 
+#include "base/bind_helpers.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "gpu/command_buffer/service/raster_decoder_context_state.h"
+#include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "gpu/config/gpu_feature_info.h"
+#include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -32,11 +36,14 @@ class GrCacheControllerTest : public testing::Test {
         share_group.get(), surface.get(), gl::GLContextAttribs());
     ASSERT_TRUE(context->MakeCurrent(surface.get()));
 
-    task_runner_ = new base::TestMockTimeTaskRunner();
-    context_state_ = new raster::RasterDecoderContextState(
+    task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+    context_state_ = base::MakeRefCounted<SharedContextState>(
         std::move(share_group), std::move(surface), std::move(context),
-        false /* use_virtualized_gl_contexts */);
+        false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
+    auto feature_info =
+        base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
+    context_state_->InitializeGL(GpuPreferences(), std::move(feature_info));
 
     controller_ =
         std::make_unique<GrCacheController>(context_state_.get(), task_runner_);
@@ -49,10 +56,10 @@ class GrCacheControllerTest : public testing::Test {
     gl::init::ShutdownGL(false);
   }
 
-  GrContext* gr_context() { return context_state_->gr_context; }
+  GrContext* gr_context() { return context_state_->gr_context(); }
 
  protected:
-  scoped_refptr<RasterDecoderContextState> context_state_;
+  scoped_refptr<SharedContextState> context_state_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   std::unique_ptr<GrCacheController> controller_;
 };

@@ -8,6 +8,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/tray_action/test_tray_action_client.h"
 #include "ash/tray_action/tray_action.h"
+#include "base/bind.h"
 
 namespace ash {
 

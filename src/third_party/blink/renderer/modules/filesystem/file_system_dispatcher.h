@@ -5,10 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_SYSTEM_DISPATCHER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_SYSTEM_DISPATCHER_H_
 
+#include <memory>
+
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
-#include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
@@ -20,6 +22,7 @@ namespace blink {
 
 class KURL;
 class ExecutionContext;
+class SecurityOrigin;
 
 // Sends messages via mojo to the blink::mojom::FileSystemManager service
 // running in the browser process. It is owned by ExecutionContext, and
@@ -37,80 +40,82 @@ class FileSystemDispatcher
   static const char kSupplementName[];
 
   static FileSystemDispatcher& From(ExecutionContext* context);
+
+  explicit FileSystemDispatcher(ExecutionContext& context);
   virtual ~FileSystemDispatcher();
 
   mojom::blink::FileSystemManager& GetFileSystemManager();
 
-  void OpenFileSystem(const KURL& url,
+  void OpenFileSystem(const SecurityOrigin* origin,
                       mojom::blink::FileSystemType type,
-                      std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
-  void OpenFileSystemSync(const KURL& url,
+                      std::unique_ptr<FileSystemCallbacks> callbacks);
+  void OpenFileSystemSync(const SecurityOrigin* origin,
                           mojom::blink::FileSystemType type,
-                          std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                          std::unique_ptr<FileSystemCallbacks> callbacks);
 
   void ResolveURL(const KURL& filesystem_url,
-                  std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                  std::unique_ptr<ResolveURICallbacks> callbacks);
   void ResolveURLSync(const KURL& filesystem_url,
-                      std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                      std::unique_ptr<ResolveURICallbacks> callbacks);
 
   void Move(const KURL& src_path,
             const KURL& dest_path,
-            std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+            std::unique_ptr<EntryCallbacks> callbacks);
   void MoveSync(const KURL& src_path,
                 const KURL& dest_path,
-                std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                std::unique_ptr<EntryCallbacks> callbacks);
 
   void Copy(const KURL& src_path,
             const KURL& dest_path,
-            std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+            std::unique_ptr<EntryCallbacks> callbacks);
   void CopySync(const KURL& src_path,
                 const KURL& dest_path,
-                std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                std::unique_ptr<EntryCallbacks> callbacks);
 
   void Remove(const KURL& path,
               bool recursive,
-              std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+              std::unique_ptr<VoidCallbacks> callbacks);
   void RemoveSync(const KURL& path,
                   bool recursive,
-                  std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                  std::unique_ptr<VoidCallbacks> callbacks);
 
   void ReadMetadata(const KURL& path,
-                    std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                    std::unique_ptr<MetadataCallbacks> callbacks);
   void ReadMetadataSync(const KURL& path,
-                        std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                        std::unique_ptr<MetadataCallbacks> callbacks);
 
   void CreateFile(const KURL& path,
                   bool exclusive,
-                  std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                  std::unique_ptr<EntryCallbacks> callbacks);
   void CreateFileSync(const KURL& path,
                       bool exclusive,
-                      std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                      std::unique_ptr<EntryCallbacks> callbacks);
 
   void CreateDirectory(const KURL& path,
                        bool exclusive,
                        bool recursive,
-                       std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                       std::unique_ptr<EntryCallbacks> callbacks);
   void CreateDirectorySync(const KURL& path,
                            bool exclusive,
                            bool recursive,
-                           std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                           std::unique_ptr<EntryCallbacks> callbacks);
 
   void Exists(const KURL& path,
               bool for_directory,
-              std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+              std::unique_ptr<EntryCallbacks> callbacks);
   void ExistsSync(const KURL& path,
                   bool for_directory,
-                  std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                  std::unique_ptr<EntryCallbacks> callbacks);
 
   void ReadDirectory(const KURL& path,
-                     std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                     std::unique_ptr<EntriesCallbacks> callbacks);
   void ReadDirectorySync(const KURL& path,
-                         std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                         std::unique_ptr<EntriesCallbacks> callbacks);
 
   void InitializeFileWriter(const KURL& path,
-                            std::unique_ptr<AsyncFileSystemCallbacks>);
+                            std::unique_ptr<FileWriterCallbacks>);
   void InitializeFileWriterSync(const KURL& path,
-                                std::unique_ptr<AsyncFileSystemCallbacks>);
+                                std::unique_ptr<FileWriterCallbacks>);
 
   void Truncate(const KURL& path,
                 int64_t offset,
@@ -133,38 +138,38 @@ class FileSystemDispatcher
   void Cancel(int request_id_to_cancel, StatusCallback callback);
 
   void CreateSnapshotFile(const KURL& file_path,
-                          std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                          std::unique_ptr<SnapshotFileCallbackBase> callbacks);
   void CreateSnapshotFileSync(
       const KURL& file_path,
-      std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+      std::unique_ptr<SnapshotFileCallbackBase> callbacks);
 
  private:
   class WriteListener;
   class ReadDirectoryListener;
 
-  explicit FileSystemDispatcher(ExecutionContext& context);
-
-  void DidOpenFileSystem(std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+  void DidOpenFileSystem(std::unique_ptr<FileSystemCallbacks> callbacks,
                          const String& name,
                          const KURL& root,
                          base::File::Error error_code);
-  void DidResolveURL(std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+  void DidResolveURL(std::unique_ptr<ResolveURICallbacks> callbacks,
                      mojom::blink::FileSystemInfoPtr info,
                      const base::FilePath& file_path,
                      bool is_directory,
                      base::File::Error error_code);
-  void DidFinish(std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+  void DidRemove(std::unique_ptr<VoidCallbacks> callbacks,
                  base::File::Error error_code);
-  void DidReadMetadata(std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+  void DidFinish(std::unique_ptr<EntryCallbacks> callbacks,
+                 base::File::Error error_code);
+  void DidReadMetadata(std::unique_ptr<MetadataCallbacks> callbacks,
                        const base::File::Info& file_info,
                        base::File::Error error);
   void DidReadDirectory(
-      std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+      std::unique_ptr<EntriesCallbacks> callbacks,
       Vector<filesystem::mojom::blink::DirectoryEntryPtr> entries,
       base::File::Error error_code);
   void InitializeFileWriterCallback(
       const KURL& path,
-      std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+      std::unique_ptr<FileWriterCallbacks> callbacks,
       const base::File::Info& file_info,
       base::File::Error error);
   void DidTruncate(int operation_id,
@@ -181,7 +186,7 @@ class FileSystemDispatcher
                  int cancelled_operation_id,
                  base::File::Error error_code);
   void DidCreateSnapshotFile(
-      std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+      std::unique_ptr<SnapshotFileCallbackBase> callbacks,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
       base::File::Error error_code,

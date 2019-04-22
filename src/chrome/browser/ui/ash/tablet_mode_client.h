@@ -37,6 +37,15 @@ class TabletModeClient : public ash::mojom::TabletModeClient,
 
   bool tablet_mode_enabled() const { return tablet_mode_enabled_; }
 
+  // Enables or disabled tablet mode. For testing only since it disables the
+  // Accelerometer and PowerManager observers from the TabletModeController.
+  // Thus preventing to physically switch to/from tablet mode. |callback| is
+  // called when the operation has completed.
+  void SetTabletModeEnabledForTesting(
+      bool enabled,
+      ash::mojom::TabletModeController::SetTabletModeEnabledForTestingCallback
+          callback);
+
   // Adds the observer and immediately triggers it with the initial state.
   void AddObserver(TabletModeClientObserver* observer);
 
@@ -61,7 +70,7 @@ class TabletModeClient : public ash::mojom::TabletModeClient,
   // Binds this object to its mojo interface and sets it as the ash client.
   void BindAndSetClient();
 
-  // Enables/disables mobile-like bahvior for webpages in existing browsers, as
+  // Enables/disables mobile-like behavior for webpages in existing browsers, as
   // well as starts observing new browser pages if |enabled| is true.
   void SetMobileLikeBehaviorEnabled(bool enabled);
 

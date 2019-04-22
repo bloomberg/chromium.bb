@@ -4,8 +4,8 @@
 
 #include "chrome/browser/offline_pages/prefetch/thumbnail_fetcher_impl.h"
 
+#include "base/bind.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "components/ntp_snippets/category_rankers/fake_category_ranker.h"
@@ -22,8 +22,6 @@ namespace offline_pages {
 namespace {
 
 using testing::_;
-using FetchCompleteStatus = ThumbnailFetcherImpl::FetchCompleteStatus;
-
 const char kClientID1[] = "client-id-1";
 
 ntp_snippets::Category ArticlesCategory() {
@@ -112,7 +110,6 @@ class ThumbnailFetcherImplTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_ =
       new base::TestMockTimeTaskRunner;
 
-  base::HistogramTester histogram_tester_;
   ThumbnailFetcherImpl fetcher_;
 
  private:
@@ -120,104 +117,36 @@ class ThumbnailFetcherImplTest : public testing::Test {
   ntp_snippets::MockContentSuggestionsProvider* suggestions_provider_;
 };
 
-TEST_F(ThumbnailFetcherImplTest, FirstAttempt_Success) {
+TEST_F(ThumbnailFetcherImplTest, Success) {
   // Successfully fetch an image.
   ExpectFetchThumbnail("abcdefg");
   base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
   EXPECT_CALL(callback, Run("abcdefg"));
 
   fetcher_.FetchSuggestionImageData(
-      ClientId(kSuggestedArticlesNamespace, kClientID1), true, callback.Get());
+      ClientId(kSuggestedArticlesNamespace, kClientID1), callback.Get());
   task_runner_->RunUntilIdle();
-
-  histogram_tester_.ExpectTotalCount(
-      "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "OfflinePages.Prefetching.FetchThumbnail.Complete2",
-      FetchCompleteStatus::kFirstAttemptSuccess, 1);
 }
 
-TEST_F(ThumbnailFetcherImplTest, SecondAttempt_Success) {
-  // Successfully fetch an image.
-  ExpectFetchThumbnail("abcdefg");
-  base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
-  EXPECT_CALL(callback, Run("abcdefg"));
-
-  fetcher_.FetchSuggestionImageData(
-      ClientId(kSuggestedArticlesNamespace, kClientID1), false, callback.Get());
-  task_runner_->RunUntilIdle();
-
-  histogram_tester_.ExpectTotalCount(
-      "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "OfflinePages.Prefetching.FetchThumbnail.Complete2",
-      FetchCompleteStatus::kSecondAttemptSuccess, 1);
-}
-
-TEST_F(ThumbnailFetcherImplTest, FirstAttempt_TooBig) {
+TEST_F(ThumbnailFetcherImplTest, TooBig) {
   ExpectFetchThumbnail(
       std::string(ThumbnailFetcher::kMaxThumbnailSize + 1, 'x'));
   base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
   EXPECT_CALL(callback, Run(""));
 
   fetcher_.FetchSuggestionImageData(
-      ClientId(kSuggestedArticlesNamespace, kClientID1), true, callback.Get());
+      ClientId(kSuggestedArticlesNamespace, kClientID1), callback.Get());
   task_runner_->RunUntilIdle();
-
-  histogram_tester_.ExpectTotalCount(
-      "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "OfflinePages.Prefetching.FetchThumbnail.Complete2",
-      FetchCompleteStatus::kFirstAttemptTooLarge, 1);
 }
 
-TEST_F(ThumbnailFetcherImplTest, SecondAttempt_TooBig) {
-  ExpectFetchThumbnail(
-      std::string(ThumbnailFetcher::kMaxThumbnailSize + 1, 'x'));
-  base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
-  EXPECT_CALL(callback, Run(""));
-
-  fetcher_.FetchSuggestionImageData(
-      ClientId(kSuggestedArticlesNamespace, kClientID1), false, callback.Get());
-  task_runner_->RunUntilIdle();
-
-  histogram_tester_.ExpectTotalCount(
-      "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "OfflinePages.Prefetching.FetchThumbnail.Complete2",
-      FetchCompleteStatus::kSecondAttemptTooLarge, 1);
-}
-
-TEST_F(ThumbnailFetcherImplTest, FirstAttempt_EmptyImage) {
+TEST_F(ThumbnailFetcherImplTest, EmptyImage) {
   ExpectFetchThumbnail(std::string());
   base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
   EXPECT_CALL(callback, Run(""));
 
   fetcher_.FetchSuggestionImageData(
-      ClientId(kSuggestedArticlesNamespace, kClientID1), true, callback.Get());
+      ClientId(kSuggestedArticlesNamespace, kClientID1), callback.Get());
   task_runner_->RunUntilIdle();
-
-  histogram_tester_.ExpectTotalCount(
-      "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "OfflinePages.Prefetching.FetchThumbnail.Complete2",
-      FetchCompleteStatus::kFirstAttemptEmptyImage, 1);
-}
-
-TEST_F(ThumbnailFetcherImplTest, SecondAttempt_EmptyImage) {
-  ExpectFetchThumbnail(std::string());
-  base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
-  EXPECT_CALL(callback, Run(""));
-
-  fetcher_.FetchSuggestionImageData(
-      ClientId(kSuggestedArticlesNamespace, kClientID1), false, callback.Get());
-  task_runner_->RunUntilIdle();
-
-  histogram_tester_.ExpectTotalCount(
-      "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "OfflinePages.Prefetching.FetchThumbnail.Complete2",
-      FetchCompleteStatus::kSecondAttemptEmptyImage, 1);
 }
 
 }  // namespace

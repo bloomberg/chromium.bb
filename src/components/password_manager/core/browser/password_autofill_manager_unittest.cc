@@ -5,21 +5,23 @@
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 
 #include <memory>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion_test_helpers.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
@@ -133,13 +135,11 @@ std::vector<base::string16> GetSuggestionList(
   return credentials;
 }
 
-std::vector<base::string16> GetIconsList(std::vector<std::string> icons) {
-  std::vector<base::string16> ret(icons.size());
-  std::transform(icons.begin(), icons.end(), ret.begin(), &base::ASCIIToUTF16);
+std::vector<std::string> GetIconsList(std::vector<std::string> icons) {
   // On older Android versions the item "Manage passwords" is absent.
   if (!IsPreLollipopAndroid())
-    ret.push_back(base::string16());
-  return ret;
+    icons.push_back(std::string());
+  return icons;
 }
 
 }  // namespace
@@ -192,7 +192,7 @@ class PasswordAutofillManagerTest : public testing::Test {
 
   // The TestAutofillDriver uses a SequencedWorkerPool which expects the
   // existence of a MessageLoop.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 };
 
 TEST_F(PasswordAutofillManagerTest, FillSuggestion) {
@@ -430,9 +430,9 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
 // Verify that typing "foo" into the username field will match usernames
 // "foo.bar@example.com", "bar.foo@example.com" and "example@foo.com".
 TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
-  // Token matching is currently behind a flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      autofill::features::kAutofillTokenPrefixMatching);
 
   std::unique_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient);
@@ -466,9 +466,9 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
 // Verify that typing "oo" into the username field will not match any usernames
 // "foo.bar@example.com", "bar.foo@example.com" or "example@foo.com".
 TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
-  // Token matching is currently behind a flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      autofill::features::kAutofillTokenPrefixMatching);
 
   std::unique_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient);
@@ -500,9 +500,9 @@ TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
 // tokens.
 TEST_F(PasswordAutofillManagerTest,
        MatchingContentsWithSuggestionTokenSeparator) {
-  // Token matching is currently behind a flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      autofill::features::kAutofillTokenPrefixMatching);
 
   std::unique_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient);
@@ -539,9 +539,9 @@ TEST_F(PasswordAutofillManagerTest,
 // i.e. prefix matched followed by substring matched.
 TEST_F(PasswordAutofillManagerTest,
        DisplaySuggestionsWithPrefixesPrecedeSubstringMatched) {
-  // Token matching is currently behind a flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      autofill::features::kAutofillTokenPrefixMatching);
 
   std::unique_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient);

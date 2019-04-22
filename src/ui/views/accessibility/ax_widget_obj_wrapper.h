@@ -14,6 +14,7 @@
 #include "ui/views/widget/widget_removals_observer.h"
 
 namespace views {
+class AXAuraObjCache;
 class Widget;
 
 // Describes a |Widget| for use with other AX classes.
@@ -21,7 +22,8 @@ class AXWidgetObjWrapper : public AXAuraObjWrapper,
                            public WidgetObserver,
                            public WidgetRemovalsObserver {
  public:
-  explicit AXWidgetObjWrapper(Widget* widget);
+  // |aura_obj_cache| must outlive this object.
+  AXWidgetObjWrapper(AXAuraObjCache* aura_obj_cache, Widget* widget);
   ~AXWidgetObjWrapper() override;
 
   // AXAuraObjWrapper overrides.

@@ -36,11 +36,11 @@
 namespace blink {
 
 // Wrapper functions defined in blink.h
-void SetLayoutTestMode(bool value) {
+void SetWebTestMode(bool value) {
   WebTestSupport::SetIsRunningWebTest(value);
 }
 
-bool LayoutTestMode() {
+bool WebTestMode() {
   return WebTestSupport::IsRunningWebTest();
 }
 
@@ -52,17 +52,17 @@ bool FontAntialiasingEnabledForTest() {
   return WebTestSupport::IsFontAntialiasingEnabledForTest();
 }
 
-static bool g_is_running_layout_test = false;
+static bool g_is_running_web_test = false;
 static bool g_is_mock_theme_enabled = false;
 static bool g_is_font_antialiasing_enabled = false;
 static bool g_is_subpixel_positioning_allowed = true;
 
 bool WebTestSupport::IsRunningWebTest() {
-  return g_is_running_layout_test;
+  return g_is_running_web_test;
 }
 
 void WebTestSupport::SetIsRunningWebTest(bool value) {
-  g_is_running_layout_test = value;
+  g_is_running_web_test = value;
 }
 
 bool WebTestSupport::IsMockThemeEnabledForTest() {
@@ -70,7 +70,7 @@ bool WebTestSupport::IsMockThemeEnabledForTest() {
 }
 
 void WebTestSupport::SetMockThemeEnabledForTest(bool value) {
-  DCHECK(g_is_running_layout_test);
+  DCHECK(g_is_running_web_test);
   g_is_mock_theme_enabled = value;
 }
 

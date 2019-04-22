@@ -178,9 +178,9 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::MergeSyncData(
     // Store the new data locally.
     for (const auto& change : entity_data) {
       const sync_pb::PrinterSpecifics& specifics =
-          change.data().specifics.printer();
+          change->data().specifics.printer();
 
-      DCHECK_EQ(change.storage_key(), specifics.id());
+      DCHECK_EQ(change->storage_key(), specifics.id());
       sync_entity_ids.insert(specifics.id());
 
       // Write the update to local storage even if we already have it.
@@ -216,18 +216,18 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::ApplySyncChanges(
   {
     base::AutoLock lock(data_lock_);
     // For all the entities from the server, apply changes.
-    for (const EntityChange& change : entity_changes) {
+    for (const std::unique_ptr<EntityChange>& change : entity_changes) {
       // We register the entity's storage key as our printer ids since they're
       // globally unique.
-      const std::string& id = change.storage_key();
-      if (change.type() == EntityChange::ACTION_DELETE) {
+      const std::string& id = change->storage_key();
+      if (change->type() == EntityChange::ACTION_DELETE) {
         // Server says delete, try to remove locally.
         DeleteSpecifics(id, batch.get());
       } else {
         // Server says update, overwrite whatever is local.  Conflict resolution
         // guarantees that this will be the newest version of the object.
         const sync_pb::PrinterSpecifics& specifics =
-            change.data().specifics.printer();
+            change->data().specifics.printer();
         DCHECK_EQ(id, specifics.id());
         StoreSpecifics(std::make_unique<sync_pb::PrinterSpecifics>(specifics),
                        batch.get());
@@ -281,13 +281,18 @@ std::string PrintersSyncBridge::GetStorageKey(const EntityData& entity_data) {
 
 // Picks the entity with the most recent updated time as the canonical version.
 ConflictResolution PrintersSyncBridge::ResolveConflict(
-    const EntityData& local_data,
+    const std::string& storage_key,
     const EntityData& remote_data) const {
-  DCHECK(local_data.specifics.has_printer());
   DCHECK(remote_data.specifics.has_printer());
 
-  const sync_pb::PrinterSpecifics& local_printer =
-      local_data.specifics.printer();
+  auto iter = all_data_.find(storage_key);
+  // If the local printer doesn't exist, it must have been deleted. In this
+  // case, use the remote one.
+  if (iter == all_data_.end()) {
+    return ConflictResolution::UseRemote();
+  }
+  const sync_pb::PrinterSpecifics& local_printer = *iter->second;
+
   const sync_pb::PrinterSpecifics& remote_printer =
       remote_data.specifics.printer();
 

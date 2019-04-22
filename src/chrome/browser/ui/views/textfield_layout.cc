@@ -84,6 +84,6 @@ views::Combobox* AddComboboxRow(views::GridLayout* layout,
                         ChromeLayoutProvider::Get()->GetDistanceMetric(
                             DISTANCE_CONTROL_LIST_VERTICAL));
   AddLabelAndField(layout, label, combobox, column_set_id,
-                   views::Combobox::GetFontList());
+                   combobox->GetFontList());
   return combobox;
 }

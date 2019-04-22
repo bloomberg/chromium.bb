@@ -32,6 +32,8 @@ class SingleTabModeTabHelper
 
   bool block_all_new_windows_ = false;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(SingleTabModeTabHelper);
 };
 

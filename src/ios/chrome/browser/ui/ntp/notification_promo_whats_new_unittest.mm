@@ -47,7 +47,7 @@ class NotificationPromoWhatsNewTest : public PlatformTest {
   }
 
   void TearDown() override {
-    promo_.ClearAndInitFromJson(base::DictionaryValue());
+    promo_.ClearAndInitFromJson(base::Value(base::Value::Type::DICTIONARY));
     PlatformTest::TearDown();
   }
 

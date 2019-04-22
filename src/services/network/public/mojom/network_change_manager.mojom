@@ -91,7 +91,7 @@ interface NetworkChangeManager {
   // changes from Shill, and currently that has to be the browser process. This
   // allows the browser process to forward the network changes to the network
   // service.
-  [EnableIf=is_chromeos]
+  [EnableIf=network_change_notifier_in_browser]
   OnNetworkChanged(
       bool dns_changed,
       bool ip_address_changed,

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
@@ -304,19 +305,8 @@ void GpuHostImpl::EstablishGpuChannel(int client_id,
       base::BindOnce(&GpuHostImpl::OnChannelEstablished,
                      weak_ptr_factory_.GetWeakPtr(), client_id));
 
-  if (!params_.disable_gpu_shader_disk_cache) {
+  if (!params_.disable_gpu_shader_disk_cache)
     CreateChannelCache(client_id);
-
-    bool oopd_enabled =
-        base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
-    if (oopd_enabled)
-      CreateChannelCache(gpu::kInProcessCommandBufferClientId);
-
-    bool oopr_enabled =
-        base::FeatureList::IsEnabled(features::kDefaultEnableOopRasterization);
-    if (oopr_enabled)
-      CreateChannelCache(gpu::kGrShaderCacheClientId);
-  }
 }
 
 void GpuHostImpl::SendOutstandingReplies() {
@@ -339,6 +329,12 @@ void GpuHostImpl::SendOutstandingReplies() {
 void GpuHostImpl::BindInterface(const std::string& interface_name,
                                 mojo::ScopedMessagePipeHandle interface_pipe) {
   delegate_->BindInterface(interface_name, std::move(interface_pipe));
+}
+
+void GpuHostImpl::RunService(
+    const std::string& service_name,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+  delegate_->RunService(service_name, std::move(receiver));
 }
 
 mojom::GpuService* GpuHostImpl::gpu_service() {
@@ -513,6 +509,23 @@ void GpuHostImpl::DidInitialize(
   delegate_->DidInitialize(gpu_info, gpu_feature_info,
                            gpu_info_for_hardware_gpu,
                            gpu_feature_info_for_hardware_gpu);
+
+  // Remove entries so that GPU process shader caches get populated on any
+  // GPU process start.
+  client_id_to_shader_cache_.clear();
+
+  if (!params_.disable_gpu_shader_disk_cache) {
+    bool oopd_enabled = features::IsVizDisplayCompositorEnabled();
+    if (oopd_enabled)
+      CreateChannelCache(gpu::kInProcessCommandBufferClientId);
+
+    bool use_gr_shader_cache =
+        base::FeatureList::IsEnabled(
+            features::kDefaultEnableOopRasterization) ||
+        base::FeatureList::IsEnabled(features::kUseSkiaRenderer);
+    if (use_gr_shader_cache)
+      CreateChannelCache(gpu::kGrShaderCacheClientId);
+  }
 }
 
 void GpuHostImpl::DidFailInitialize() {

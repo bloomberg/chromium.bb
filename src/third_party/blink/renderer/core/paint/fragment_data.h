@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/ref_counted_property_tree_state.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -18,6 +19,8 @@ class PaintLayer;
 // FragmentData, and even then only when they are inside of multicol.
 // See README.md.
 class CORE_EXPORT FragmentData {
+  USING_FAST_MALLOC(FragmentData);
+
  public:
   FragmentData* NextFragment() const { return next_fragment_.get(); }
   FragmentData& EnsureNextFragment();
@@ -37,8 +40,8 @@ class CORE_EXPORT FragmentData {
   // AdjustVisualRectForCompositedScrolling().
   // It's location may be different from PaintOffset when there is visual (ink)
   // overflow to the top and/or the left.
-  LayoutRect VisualRect() const { return visual_rect_; }
-  void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
+  IntRect VisualRect() const { return visual_rect_; }
+  void SetVisualRect(const IntRect& rect) { visual_rect_ = rect; }
 
   // An id for this object that is unique for the lifetime of the WebView.
   UniqueObjectId UniqueId() const {
@@ -54,10 +57,10 @@ class CORE_EXPORT FragmentData {
 
   // Visual rect of the selection on this object, in the same coordinate space
   // as DisplayItemClient::VisualRect().
-  LayoutRect SelectionVisualRect() const {
-    return rare_data_ ? rare_data_->selection_visual_rect : LayoutRect();
+  IntRect SelectionVisualRect() const {
+    return rare_data_ ? rare_data_->selection_visual_rect : IntRect();
   }
-  void SetSelectionVisualRect(const LayoutRect& r) {
+  void SetSelectionVisualRect(const IntRect& r) {
     if (rare_data_ || !r.IsEmpty())
       EnsureRareData().selection_visual_rect = r;
   }
@@ -80,11 +83,11 @@ class CORE_EXPORT FragmentData {
   // Covers the sub-rectangles of the object that need to be re-rastered, in
   // visual rect space (see VisualRect()). It will be cleared after the raster
   // invalidation is issued after paint.
-  LayoutRect PartialInvalidationVisualRect() const {
+  IntRect PartialInvalidationVisualRect() const {
     return rare_data_ ? rare_data_->partial_invalidation_visual_rect
-                      : LayoutRect();
+                      : IntRect();
   }
-  void SetPartialInvalidationVisualRect(const LayoutRect& r) {
+  void SetPartialInvalidationVisualRect(const IntRect& r) {
     if (rare_data_ || !r.IsEmpty())
       EnsureRareData().partial_invalidation_visual_rect = r;
   }
@@ -121,8 +124,15 @@ class CORE_EXPORT FragmentData {
     DCHECK(IsClipPathCacheValid());
     return rare_data_ ? rare_data_->clip_path_path.get() : nullptr;
   }
-  void SetClipPathCache(const base::Optional<IntRect>& bounding_box,
+  void SetClipPathCache(const IntRect& bounding_box,
                         scoped_refptr<const RefCountedPath>);
+  void ClearClipPathCache() {
+    if (rare_data_) {
+      rare_data_->is_clip_path_cache_valid = true;
+      rare_data_->clip_path_bounding_box = base::nullopt;
+      rare_data_->clip_path_path = nullptr;
+    }
+  }
 
   // Holds references to the paint property nodes created by this object.
   const ObjectPaintProperties* PaintProperties() const {
@@ -134,7 +144,7 @@ class CORE_EXPORT FragmentData {
   ObjectPaintProperties& EnsurePaintProperties() {
     EnsureRareData();
     if (!rare_data_->paint_properties)
-      rare_data_->paint_properties = ObjectPaintProperties::Create();
+      rare_data_->paint_properties = std::make_unique<ObjectPaintProperties>();
     return *rare_data_->paint_properties;
   }
   void ClearPaintProperties() {
@@ -200,16 +210,16 @@ class CORE_EXPORT FragmentData {
     DCHECK(properties->MaskClip());
     DCHECK(properties->ClipPath());
     return PropertyTreeState(properties->MaskClip()->LocalTransformSpace(),
-                             properties->MaskClip(), properties->ClipPath());
+                             *properties->MaskClip(), *properties->ClipPath());
   }
 
-  const TransformPaintPropertyNode* PreTransform() const;
-  const TransformPaintPropertyNode* PostScrollTranslation() const;
-  const ClipPaintPropertyNode* PreClip() const;
-  const ClipPaintPropertyNode* PostOverflowClip() const;
-  const EffectPaintPropertyNode* PreEffect() const;
-  const EffectPaintPropertyNode* PreFilter() const;
-  const EffectPaintPropertyNode* PostIsolationEffect() const;
+  const TransformPaintPropertyNode& PreTransform() const;
+  const TransformPaintPropertyNode& PostScrollTranslation() const;
+  const ClipPaintPropertyNode& PreClip() const;
+  const ClipPaintPropertyNode& PostOverflowClip() const;
+  const EffectPaintPropertyNode& PreEffect() const;
+  const EffectPaintPropertyNode& PreFilter() const;
+  const EffectPaintPropertyNode& PostIsolationEffect() const;
 
   // Map a rect from |this|'s local border box space to |fragment|'s local
   // border box space. Both fragments must have local border box properties.
@@ -238,9 +248,9 @@ class CORE_EXPORT FragmentData {
     // avoid separate data structure for them.
     std::unique_ptr<PaintLayer> layer;
     UniqueObjectId unique_id;
-    LayoutRect selection_visual_rect;
+    IntRect selection_visual_rect;
     LayoutRect partial_invalidation_local_rect;
-    LayoutRect partial_invalidation_visual_rect;
+    IntRect partial_invalidation_visual_rect;
 
     // Fragment specific data.
     LayoutPoint pagination_offset;
@@ -256,7 +266,7 @@ class CORE_EXPORT FragmentData {
 
   RareData& EnsureRareData();
 
-  LayoutRect visual_rect_;
+  IntRect visual_rect_;
   LayoutPoint paint_offset_;
 
   std::unique_ptr<RareData> rare_data_;

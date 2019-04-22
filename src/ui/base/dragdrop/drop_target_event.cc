@@ -23,5 +23,10 @@ DropTargetEvent::DropTargetEvent(const OSExchangeData& data,
       data_(data),
       source_operations_(source_operations) {}
 
+DropTargetEvent::DropTargetEvent(const DropTargetEvent& other)
+    : LocatedEvent(other),
+      data_(other.data_),
+      source_operations_(other.source_operations_) {}
+
 }  // namespace ui
 

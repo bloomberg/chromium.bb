@@ -18,7 +18,7 @@ namespace {
 // Find the token and its |nParams| parameters from the start of data,
 // and move the current position to the start of those parameters.
 bool FindTagParamFromStart(CPDF_SimpleParser* parser,
-                           const ByteStringView& token,
+                           ByteStringView token,
                            int nParams) {
   nParams++;
 
@@ -59,11 +59,11 @@ Optional<ByteString> CPDF_DefaultAppearance::GetFont(float* fFontSize) {
     return {};
 
   ByteString csFontNameTag;
-  CPDF_SimpleParser syntax(m_csDA.AsStringView().span());
+  CPDF_SimpleParser syntax(m_csDA.AsStringView().raw_span());
   if (FindTagParamFromStart(&syntax, "Tf", 2)) {
     csFontNameTag = ByteString(syntax.GetWord());
     csFontNameTag.Delete(0, 1);
-    *fFontSize = FX_atof(syntax.GetWord());
+    *fFontSize = StringToFloat(syntax.GetWord());
   }
   return {PDF_NameDecode(csFontNameTag.AsStringView())};
 }
@@ -75,22 +75,22 @@ Optional<CFX_Color::Type> CPDF_DefaultAppearance::GetColor(float fc[4]) {
   if (m_csDA.IsEmpty())
     return {};
 
-  CPDF_SimpleParser syntax(m_csDA.AsStringView().span());
+  CPDF_SimpleParser syntax(m_csDA.AsStringView().raw_span());
   if (FindTagParamFromStart(&syntax, "g", 1)) {
-    fc[0] = FX_atof(syntax.GetWord());
+    fc[0] = StringToFloat(syntax.GetWord());
     return {CFX_Color::kGray};
   }
   if (FindTagParamFromStart(&syntax, "rg", 3)) {
-    fc[0] = FX_atof(syntax.GetWord());
-    fc[1] = FX_atof(syntax.GetWord());
-    fc[2] = FX_atof(syntax.GetWord());
+    fc[0] = StringToFloat(syntax.GetWord());
+    fc[1] = StringToFloat(syntax.GetWord());
+    fc[2] = StringToFloat(syntax.GetWord());
     return {CFX_Color::kRGB};
   }
   if (FindTagParamFromStart(&syntax, "k", 4)) {
-    fc[0] = FX_atof(syntax.GetWord());
-    fc[1] = FX_atof(syntax.GetWord());
-    fc[2] = FX_atof(syntax.GetWord());
-    fc[3] = FX_atof(syntax.GetWord());
+    fc[0] = StringToFloat(syntax.GetWord());
+    fc[1] = StringToFloat(syntax.GetWord());
+    fc[2] = StringToFloat(syntax.GetWord());
+    fc[3] = StringToFloat(syntax.GetWord());
     return {CFX_Color::kCMYK};
   }
 
@@ -128,7 +128,7 @@ CPDF_DefaultAppearance::GetColor() {
 
 bool CPDF_DefaultAppearance::FindTagParamFromStartForTesting(
     CPDF_SimpleParser* parser,
-    const ByteStringView& token,
+    ByteStringView token,
     int nParams) {
   return FindTagParamFromStart(parser, token, nParams);
 }

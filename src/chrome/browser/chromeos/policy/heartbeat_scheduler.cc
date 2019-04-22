@@ -351,11 +351,11 @@ void HeartbeatScheduler::SendHeartbeat() {
   // big deal (the new message will replace the old, which is the behavior we
   // want anyway, per:
   // https://developer.chrome.com/apps/cloudMessaging#send_messages
-  message.id = base::Int64ToString(
-      base::Time::NowFromSystemTime().ToInternalValue());
+  message.id =
+      base::NumberToString(base::Time::NowFromSystemTime().ToInternalValue());
   message.data[kGcmMessageTypeKey] = kHeartbeatTypeValue;
-  message.data[kHeartbeatTimestampKey] = base::Int64ToString(
-      base::Time::NowFromSystemTime().ToJavaTime());
+  message.data[kHeartbeatTimestampKey] =
+      base::NumberToString(base::Time::NowFromSystemTime().ToJavaTime());
   message.data[kHeartbeatDomainNameKey] = enrollment_domain_;
   message.data[kHeartbeatDeviceIDKey] = device_id_;
   gcm_driver_->Send(kHeartbeatGCMAppID,
@@ -380,7 +380,7 @@ void HeartbeatScheduler::SignUpUpstreamNotification() {
 
   gcm::OutgoingMessage message;
   message.id =
-      base::Int64ToString(base::Time::NowFromSystemTime().ToInternalValue());
+      base::NumberToString(base::Time::NowFromSystemTime().ToInternalValue());
   message.data[kGcmMessageTypeKey] = kUpstreamNotificationSignUpListeningEvents;
   message.data[kUpstreamNotificationNotifyKey] =
       GetDestinationID() + kHeartbeatGCMSenderSuffix;

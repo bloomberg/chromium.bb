@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -147,7 +148,7 @@ class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
     last_failure_detail_ = failure_detail;
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   const DeviceIdPair test_device_id_pair_;
 
   std::unique_ptr<AuthenticatedChannel> last_authenticated_channel_;

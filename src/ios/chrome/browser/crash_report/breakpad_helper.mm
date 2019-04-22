@@ -159,6 +159,14 @@ void SetEnabled(bool enabled) {
   }
 }
 
+void SetBreakpadUploadingEnabled(bool enabled) {
+  CacheUploadingEnabled(g_crash_reporter_enabled && enabled);
+
+  if (!g_crash_reporter_enabled)
+    return;
+  [[BreakpadController sharedInstance] setUploadingEnabled:enabled];
+}
+
 void SetUploadingEnabled(bool enabled) {
   if (enabled &&
       [UIApplication sharedApplication].applicationState ==
@@ -167,12 +175,14 @@ void SetUploadingEnabled(bool enabled) {
           crash_report::kBreakpadNoDelayInitialUpload)) {
     return;
   }
-
-  CacheUploadingEnabled(g_crash_reporter_enabled && enabled);
-
-  if (!g_crash_reporter_enabled)
-    return;
-  [[BreakpadController sharedInstance] setUploadingEnabled:enabled];
+  if ([MainThreadFreezeDetector sharedInstance].canUploadBreakpadCrashReports) {
+    SetBreakpadUploadingEnabled(enabled);
+  } else {
+    [[MainThreadFreezeDetector sharedInstance]
+        prepareCrashReportsForUpload:^() {
+          SetBreakpadUploadingEnabled(enabled);
+        }];
+  }
 }
 
 bool IsUploadingEnabled() {

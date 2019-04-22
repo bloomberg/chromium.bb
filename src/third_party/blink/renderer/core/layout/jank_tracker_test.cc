@@ -5,7 +5,12 @@
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
 
 #include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -51,6 +56,9 @@ TEST_F(JankTrackerTest, SimpleBlockMovement) {
 }
 
 TEST_F(JankTrackerTest, GranularitySnapping) {
+  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>
       #j { position: relative; width: 304px; height: 104px; }
@@ -197,6 +205,125 @@ TEST_F(JankTrackerTest, CompositedJankBeforeFirstPaint) {
   GetDocument().getElementById("A")->setAttribute(html_names::kClassAttr,
                                                   AtomicString("hide"));
   UpdateAllLifecyclePhases();
+}
+
+TEST_F(JankTrackerTest, IgnoreFixedAndSticky) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    body { height: 1000px; }
+    #f1, #f2 {
+      position: fixed;
+      width: 300px;
+      height: 100px;
+      left: 100px;
+    }
+    #f1 { top: 0; }
+    #f2 { top: 150px; will-change: transform; }
+    #s1 {
+      position: sticky;
+      width: 200px;
+      height: 100px;
+      left: 450px;
+      top: 0;
+    }
+    </style>
+    <div id='f1'>fixed</div>
+    <div id='f2'>fixed composited</div>
+    <div id='s1'>sticky</div>
+    normal
+  )HTML");
+
+  GetDocument().scrollingElement()->setScrollTop(50);
+  UpdateAllLifecyclePhases();
+  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, IgnoreSVG) {
+  SetBodyInnerHTML(R"HTML(
+    <svg>
+      <circle cx="50" cy="50" r="40"
+              stroke="black" stroke-width="3" fill="red" />
+    </svg>
+  )HTML");
+  GetDocument().QuerySelector("circle")->setAttribute(svg_names::kCxAttr,
+                                                      AtomicString("100"));
+  UpdateAllLifecyclePhases();
+  EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
+}
+
+TEST_F(JankTrackerTest, JankWhileScrolled) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { height: 1000px; margin: 0; }
+      #j { position: relative; width: 300px; height: 200px; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+
+  GetDocument().scrollingElement()->setScrollTop(100);
+  EXPECT_EQ(0.0, GetJankTracker().Score());
+  EXPECT_EQ(0.0, GetJankTracker().MaxDistance());
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: 60px"));
+  UpdateAllLifecyclePhases();
+  // 300 * (height 200 - scrollY 100 + movement 60) / (800 * 600 viewport)
+  EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
+}
+
+class JankTrackerSimTest : public SimTest {};
+
+TEST_F(JankTrackerSimTest, SubframeWeighting) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+
+  // TODO(crbug.com/943668): Test OOPIF path.
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest child_resource("https://example.com/sub.html", "text/html");
+
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style> #i { border: 0; position: absolute; left: 0; top: 0; } </style>
+    <iframe id=i width=400 height=300 src='sub.html'></iframe>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  child_resource.Complete(R"HTML(
+    <style>
+      #j { position: relative; width: 300px; height: 100px; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  WebLocalFrameImpl& child_frame =
+      To<WebLocalFrameImpl>(*MainFrame().FirstChild());
+
+  Element* div = child_frame.GetFrame()->GetDocument()->getElementById("j");
+  div->setAttribute(html_names::kStyleAttr, AtomicString("top: 60px"));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  // 300 * (100 + 60) / (default viewport size 800 * 600)
+  JankTracker& jank_tracker = child_frame.GetFrameView()->GetJankTracker();
+  EXPECT_FLOAT_EQ(0.4, jank_tracker.Score());
+  EXPECT_FLOAT_EQ(0.1, jank_tracker.WeightedScore());
+
+  // Move subframe halfway outside the viewport.
+  GetDocument().getElementById("i")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("left: 600px"));
+
+  div->removeAttribute(html_names::kStyleAttr);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_FLOAT_EQ(0.8, jank_tracker.Score());
+  EXPECT_FLOAT_EQ(0.15, jank_tracker.WeightedScore());
 }
 
 }  // namespace blink

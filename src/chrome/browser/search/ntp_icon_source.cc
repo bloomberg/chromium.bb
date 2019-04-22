@@ -7,18 +7,21 @@
 #include <stddef.h>
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
+#include "base/hash/sha1.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
+#include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/platform_locale_settings.h"
@@ -26,6 +29,7 @@
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/favicon_base/favicon_util.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/suggestions/proto/suggestions.pb.h"
@@ -41,20 +45,38 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/native_theme/native_theme.h"
 #include "url/gurl.h"
 
 namespace {
 
+const char kImageFetcherUmaClientName[] = "NtpIconSource";
+
+// The color of the letter drawn for a fallback icon.  Changing this may require
+// changing the algorithm in RenderIconBitmap() that guarantees contrast.
+constexpr SkColor kFallbackIconLetterColor = SK_ColorWHITE;
+
 // Delimiter in the url that looks for the size specification.
 const char kSizeParameter[] = "size/";
 
-// Size of the fallback icon (letter + circle), in dp.
-const int kFallbackIconSizeDip = 48;
+// Delimiter in the url for dark mode specification.
+const char kDarkModeParameter[] = "dark/";
+
+// Size of the icon background (gray circle), in dp.
+const int kIconSizeDip = 48;
+
+// Maximum size of the icon, in dp.
+const int kMaxIconSizeDip = 192;
+
+// Size of the favicon fallback (letter + colored circle), in dp.
+const int kFallbackSizeDip = 32;
 
 // URL to the server favicon service. "alt=404" means the service will return a
 // 404 if an icon can't be found.
@@ -71,7 +93,16 @@ struct ParsedNtpIconPath {
 
   // The device scale factor of the requested icon.
   float device_scale_factor = 1.0;
+
+  // True if a dark mode icon should be used.
+  bool is_dark_mode = false;
 };
+
+float GetMaxDeviceScaleFactor() {
+  std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
+  DCHECK(!favicon_scales.empty());
+  return favicon_scales.back();
+}
 
 // Returns true if |search| is a substring of |path| which starts at
 // |start_index|.
@@ -109,29 +140,48 @@ const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
   std::string scale_str =
       path.substr(scale_delimiter + 1, slash - scale_delimiter - 1);
 
-  if (!base::StringToInt(size_str, &parsed.size_in_dip))
+  int size_in_dip = 0;
+  if (!base::StringToInt(size_str, &size_in_dip))
     return parsed;
+  parsed.size_in_dip = std::min(size_in_dip, kMaxIconSizeDip);
 
-  if (!scale_str.empty())
-    webui::ParseScaleFactor(scale_str, &parsed.device_scale_factor);
+  if (!scale_str.empty()) {
+    float scale_factor = 0.0;
+    webui::ParseScaleFactor(scale_str, &scale_factor);
+    // Do not exceed the maximum scale factor for the device.
+    parsed.device_scale_factor =
+        std::min(scale_factor, GetMaxDeviceScaleFactor());
+  }
 
   parsed_index = slash + 1;
+
+  // Parse the dark mode spec (e.g. "dark"). If present, render a dark mode
+  // icon.
+  if (HasSubstringAt(path, parsed_index, kDarkModeParameter)) {
+    parsed.is_dark_mode = true;
+    slash = path.find("/", parsed_index);
+    if (slash == std::string::npos)
+      return parsed;
+    parsed_index = slash + 1;
+  }
 
   parsed.url = GURL(path.substr(parsed_index));
   return parsed;
 }
 
-// Draws a circle of a given |size| in the |canvas| and fills it with
-// |background_color|.
+// Draws a circle of a given |size| and |offset| in the |canvas| and fills it
+// with |background_color|.
 void DrawCircleInCanvas(gfx::Canvas* canvas,
                         int size,
+                        int offset,
                         SkColor background_color) {
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
   flags.setColor(background_color);
   int corner_radius = static_cast<int>(size * 0.5 + 0.5);
-  canvas->DrawRoundRect(gfx::Rect(0, 0, size, size), corner_radius, flags);
+  canvas->DrawRoundRect(gfx::Rect(offset, offset, size, size), corner_radius,
+                        flags);
 }
 
 // Will paint the appropriate letter in the center of specified |canvas| of
@@ -144,7 +194,7 @@ void DrawFallbackIconLetter(const GURL& icon_url,
   if (icon_text.empty())
     return;
 
-  const double kDefaultFontSizeRatio = 0.44;
+  const double kDefaultFontSizeRatio = 0.34;
   int font_size = static_cast<int>(size * kDefaultFontSizeRatio);
   if (font_size <= 0)
     return;
@@ -161,7 +211,7 @@ void DrawFallbackIconLetter(const GURL& icon_url,
       icon_text,
       gfx::FontList({l10n_util::GetStringUTF8(IDS_NTP_FONT_FAMILY)},
                     gfx::Font::NORMAL, font_size, font_weight),
-      SK_ColorWHITE, gfx::Rect(0, 0, size, size),
+      kFallbackIconLetterColor, gfx::Rect(0, 0, size, size),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 }
 
@@ -186,31 +236,36 @@ SkColor GetBackgroundColorForUrl(const GURL& icon_url) {
   return SkColorSetRGB(hash[0], hash[1], hash[2]);
 }
 
-// For the given |icon_url|, will render a fallback icon with an appropriate
-// letter in a circle.
+// For the given |icon_url|, will render |favicon| within a gray, circular
+// background (dark gray if |is_dark_mode|). If |favicon| is not specifed, will
+// use a colored circular monogram instead.
 std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
                                             const SkBitmap& favicon,
-                                            int size) {
+                                            int icon_size,
+                                            int fallback_size,
+                                            bool is_dark_mode) {
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(size, size, false);
+  bitmap.allocN32Pixels(icon_size, icon_size, false);
   cc::SkiaPaintCanvas paint_canvas(bitmap);
   gfx::Canvas canvas(&paint_canvas, 1.f);
   canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
-  if (!favicon.empty()) {
-    constexpr SkColor kFaviconBackground = SkColorSetRGB(0xF1, 0xF3, 0xF4);
-    DrawCircleInCanvas(&canvas, size, /*background_color=*/kFaviconBackground);
-    DrawFavicon(favicon, &canvas, size);
-  } else {
-    SkColor background_color = GetBackgroundColorForUrl(icon_url);
-    // If luminance is too high, the white text will become unreadable. Invert
-    // the background color to achieve better constrast. The constant comes
-    // W3C Accessibility standards.
-    if (color_utils::GetRelativeLuminance(background_color) > 0.179f)
-      background_color = color_utils::InvertColor(background_color);
 
-    DrawCircleInCanvas(&canvas, size, background_color);
-    DrawFallbackIconLetter(icon_url, size, &canvas);
+  // Draw the gray background.
+  SkColor favicon_bg = is_dark_mode ? gfx::kGoogleGrey900 : gfx::kGoogleGrey100;
+  DrawCircleInCanvas(&canvas, icon_size, /*offset=*/0,
+                     /*background_color=*/favicon_bg);
+  DrawFavicon(favicon, &canvas, icon_size);
+
+  // If necessary, draw the colored fallback monogram.
+  if (favicon.empty()) {
+    SkColor fallback_color = color_utils::GetColorWithMinimumContrast(
+        GetBackgroundColorForUrl(icon_url), kFallbackIconLetterColor);
+
+    int offset = (icon_size - fallback_size) / 2;
+    DrawCircleInCanvas(&canvas, fallback_size, offset, fallback_color);
+    DrawFallbackIconLetter(icon_url, icon_size, &canvas);
   }
+
   std::vector<unsigned char> bitmap_data;
   bool result = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data);
   DCHECK(result);
@@ -223,11 +278,13 @@ struct NtpIconSource::NtpIconRequest {
   NtpIconRequest(const content::URLDataSource::GotDataCallback& cb,
                  const GURL& path,
                  int icon_size_in_pixels,
-                 float scale)
+                 float scale,
+                 bool is_dark_mode)
       : callback(cb),
         path(path),
         icon_size_in_pixels(icon_size_in_pixels),
-        device_scale_factor(scale) {}
+        device_scale_factor(scale),
+        is_dark_mode(is_dark_mode) {}
   NtpIconRequest(const NtpIconRequest& other) = default;
   ~NtpIconRequest() {}
 
@@ -235,18 +292,16 @@ struct NtpIconSource::NtpIconRequest {
   GURL path;
   int icon_size_in_pixels;
   float device_scale_factor;
+  bool is_dark_mode;
 };
 
 NtpIconSource::NtpIconSource(Profile* profile)
     : profile_(profile),
       image_fetcher_(std::make_unique<image_fetcher::ImageFetcherImpl>(
-          std::make_unique<suggestions::ImageDecoderImpl>(),
+          std::make_unique<ImageDecoderImpl>(),
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetURLLoaderFactoryForBrowserProcess())),
-      weak_ptr_factory_(this) {
-  image_fetcher_->SetDataUseServiceName(
-      data_use_measurement::DataUseUserData::NTP_TILES);
-}
+      weak_ptr_factory_(this) {}
 
 NtpIconSource::~NtpIconSource() = default;
 
@@ -268,7 +323,7 @@ void NtpIconSource::StartDataRequest(
     int icon_size_in_pixels =
         std::ceil(parsed.size_in_dip * parsed.device_scale_factor);
     NtpIconRequest request(callback, parsed.url, icon_size_in_pixels,
-                           parsed.device_scale_factor);
+                           parsed.device_scale_factor, parsed.is_dark_mode);
 
     // Check if the requested URL is part of the prepopulated pages (currently,
     // only the Web Store).
@@ -280,7 +335,19 @@ void NtpIconSource::StartDataRequest(
           gfx::Image& image =
               ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                   prepopulated_page.favicon_id);
-          ReturnRenderedIconForRequest(request, image.AsBitmap());
+
+          // Resize as necessary.
+          gfx::Size target_size(icon_size_in_pixels, icon_size_in_pixels);
+          if (!image.IsEmpty() && image.Size() != target_size) {
+            gfx::ImageSkia resized_image =
+                gfx::ImageSkiaOperations::CreateResizedImage(
+                    image.AsImageSkia(), skia::ImageOperations::RESIZE_BEST,
+                    target_size);
+            ReturnRenderedIconForRequest(request,
+                                         gfx::Image(resized_image).AsBitmap());
+          } else {
+            ReturnRenderedIconForRequest(request, image.AsBitmap());
+          }
           return;
         }
       }
@@ -387,18 +454,19 @@ void NtpIconSource::RequestServerFavicon(const NtpIconRequest& request) {
           "default."
         policy_exception_justification: "Not implemented."
       })");
-  image_fetcher_->SetDesiredImageFrameSize(
+  image_fetcher::ImageFetcherParams params(traffic_annotation,
+                                           kImageFetcherUmaClientName);
+  params.set_frame_size(
       gfx::Size(request.icon_size_in_pixels, request.icon_size_in_pixels));
   image_fetcher_->FetchImage(
-      /*id=*/std::string(), server_favicon_url,
+      server_favicon_url,
       base::Bind(&NtpIconSource::OnServerFaviconAvailable,
                  weak_ptr_factory_.GetWeakPtr(), request),
-      traffic_annotation);
+      std::move(params));
 }
 
 void NtpIconSource::OnServerFaviconAvailable(
     const NtpIconRequest& request,
-    const std::string& id,
     const gfx::Image& fetched_image,
     const image_fetcher::RequestMetadata& metadata) {
   // If a server icon was not found, |fetched_bitmap| will be empty and a
@@ -417,9 +485,14 @@ void NtpIconSource::OnServerFaviconAvailable(
 
 void NtpIconSource::ReturnRenderedIconForRequest(const NtpIconRequest& request,
                                                  const SkBitmap& bitmap) {
+  // Only use even pixel sizes to avoid issues when centering the fallback
+  // monogram.
   int desired_overall_size_in_pixel =
-      std::ceil(kFallbackIconSizeDip * request.device_scale_factor);
+      std::round(kIconSizeDip * request.device_scale_factor * 0.5) * 2.0;
+  int desired_fallback_size_in_pixel =
+      std::round(kFallbackSizeDip * request.device_scale_factor * 0.5) * 2.0;
   std::vector<unsigned char> bitmap_data =
-      RenderIconBitmap(request.path, bitmap, desired_overall_size_in_pixel);
+      RenderIconBitmap(request.path, bitmap, desired_overall_size_in_pixel,
+                       desired_fallback_size_in_pixel, request.is_dark_mode);
   request.callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
 }

@@ -4,9 +4,11 @@
 
 #include "components/download/public/common/in_progress_download_manager.h"
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/download/database/download_db_entry.h"
 #include "components/download/database/download_db_impl.h"
 #include "components/download/database/download_namespace.h"
@@ -22,8 +24,13 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/input_stream.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
+
+#if defined(OS_ANDROID)
+#include "components/download/internal/common/android/download_collection_bridge.h"
+#endif
 
 namespace download {
 
@@ -52,9 +59,10 @@ std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
       in_progress_info->original_mime_type, in_progress_info->start_time,
       in_progress_info->end_time, in_progress_info->etag,
       in_progress_info->last_modified, in_progress_info->received_bytes,
-      in_progress_info->total_bytes, in_progress_info->hash,
-      in_progress_info->state, in_progress_info->danger_type,
-      in_progress_info->interrupt_reason, false, base::Time(),
+      in_progress_info->total_bytes, in_progress_info->auto_resume_count,
+      in_progress_info->hash, in_progress_info->state,
+      in_progress_info->danger_type, in_progress_info->interrupt_reason,
+      in_progress_info->paused, in_progress_info->metered, false, base::Time(),
       in_progress_info->transient, in_progress_info->received_slices);
 }
 
@@ -123,6 +131,16 @@ void CreateDownloadHandlerForNavigation(
                               main_task_runner);
 }
 
+#if defined(OS_ANDROID)
+void OnDownloadDisplayNamesReturned(
+    DownloadCollectionBridge::GetDisplayNamesCallback callback,
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+    InProgressDownloadManager::DisplayNames download_names) {
+  main_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(download_names)));
+}
+#endif
 }  // namespace
 
 InProgressDownloadManager::InProgressDownloadManager(
@@ -130,12 +148,12 @@ InProgressDownloadManager::InProgressDownloadManager(
     const base::FilePath& in_progress_db_dir,
     const IsOriginSecureCallback& is_origin_secure_cb,
     const URLSecurityPolicy& url_security_policy)
-    : is_initialized_(false),
-      delegate_(delegate),
+    : delegate_(delegate),
       file_factory_(new DownloadFileFactory()),
       download_start_observer_(nullptr),
       is_origin_secure_cb_(is_origin_secure_cb),
       url_security_policy_(url_security_policy),
+      use_empty_db_(in_progress_db_dir.empty()),
       weak_factory_(this) {
   Initialize(in_progress_db_dir);
 }
@@ -166,6 +184,43 @@ void InProgressDownloadManager::OnUrlDownloadHandlerCreated(
     UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) {
   if (downloader)
     url_download_handlers_.push_back(std::move(downloader));
+}
+
+bool InProgressDownloadManager::DownloadUrl(
+    std::unique_ptr<DownloadUrlParameters> params) {
+  DCHECK(!delegate_);
+  DCHECK(params->is_transient());
+
+  if (!url_loader_factory_getter_)
+    return false;
+
+  if (params->require_safety_checks())
+    return false;
+
+  if (params->file_path().empty())
+    return false;
+
+  // Start the new download, the download should be saved to the file path
+  // specifcied in the |params|.
+  BeginDownload(std::move(params), url_loader_factory_getter_,
+                true /* is_new_download */, GURL() /* site_url */,
+                GURL() /* tab_url */, GURL() /* tab_referral_url */);
+  return true;
+}
+
+void InProgressDownloadManager::GetAllDownloads(
+    SimpleDownloadManager::DownloadVector* downloads) {
+  for (auto& item : in_progress_downloads_)
+    downloads->push_back(item.get());
+}
+
+DownloadItem* InProgressDownloadManager::GetDownloadByGuid(
+    const std::string& guid) {
+  for (auto& item : in_progress_downloads_) {
+    if (item->GetGuid() == guid)
+      return item.get();
+  }
+  return nullptr;
 }
 
 void InProgressDownloadManager::BeginDownload(
@@ -219,7 +274,7 @@ void InProgressDownloadManager::Initialize(
                 DownloadNamespace::NAMESPACE_BROWSER_DOWNLOAD,
                 in_progress_db_dir));
   download_db_cache_->Initialize(base::BindOnce(
-      &InProgressDownloadManager::OnInitialized, weak_factory_.GetWeakPtr()));
+      &InProgressDownloadManager::OnDBInitialized, weak_factory_.GetWeakPtr()));
 }
 
 void InProgressDownloadManager::ShutDown() {
@@ -319,9 +374,16 @@ void InProgressDownloadManager::StartDownload(
                        std::move(url_loader_factory_getter)));
   } else {
     std::string guid = info->guid;
-    StartDownloadWithItem(std::move(stream),
-                          std::move(url_loader_factory_getter), std::move(info),
-                          GetInProgressDownload(guid), false);
+    if (info->is_new_download) {
+      auto download = std::make_unique<DownloadItemImpl>(
+          this, DownloadItem::kInvalidId, *info);
+      OnNewDownloadCreated(download.get());
+      in_progress_downloads_.push_back(std::move(download));
+    }
+    StartDownloadWithItem(
+        std::move(stream), std::move(url_loader_factory_getter),
+        std::move(info),
+        static_cast<DownloadItemImpl*>(GetDownloadByGuid(guid)), false);
   }
 }
 
@@ -369,18 +431,47 @@ void InProgressDownloadManager::StartDownloadWithItem(
   // so that the DownloadItem can salvage what it can out of a failed
   // resumption attempt.
 
-  download->Start(
-      std::move(download_file), std::move(info->request_handle), *info,
-      std::move(url_loader_factory_getter),
-      delegate_ ? delegate_->GetURLRequestContextGetter(*info) : nullptr);
+  net::URLRequestContextGetter* url_request_context_getter = nullptr;
+  if (delegate_ &&
+      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    url_request_context_getter = delegate_->GetURLRequestContextGetter(*info);
+  }
+
+  download->Start(std::move(download_file), std::move(info->request_handle),
+                  *info, std::move(url_loader_factory_getter),
+                  url_request_context_getter);
 
   if (download_start_observer_)
     download_start_observer_->OnDownloadStarted(download);
 }
 
-void InProgressDownloadManager::OnInitialized(
+void InProgressDownloadManager::OnDBInitialized(
     bool success,
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
+#if defined(OS_ANDROID)
+  if (!use_empty_db_ &&
+      DownloadCollectionBridge::NeedToRetrieveDisplayNames()) {
+    DownloadCollectionBridge::GetDisplayNamesCallback callback =
+        base::BindOnce(&InProgressDownloadManager::OnDownloadNamesRetrieved,
+                       weak_factory_.GetWeakPtr(), std::move(entries));
+    GetDownloadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &DownloadCollectionBridge::GetDisplayNamesForDownloads,
+            base::BindOnce(&OnDownloadDisplayNamesReturned, std::move(callback),
+                           base::ThreadTaskRunnerHandle::Get())));
+    return;
+  }
+#endif
+  OnDownloadNamesRetrieved(std::move(entries), nullptr);
+}
+
+void InProgressDownloadManager::OnDownloadNamesRetrieved(
+    std::unique_ptr<std::vector<DownloadDBEntry>> entries,
+    DisplayNames display_names) {
+  std::set<uint32_t> download_ids;
+  int num_duplicates = 0;
+  display_names_ = std::move(display_names);
   for (const auto& entry : *entries) {
     base::Optional<DownloadEntry> download_entry =
         CreateDownloadEntryFromDownloadDBEntry(entry);
@@ -390,36 +481,36 @@ void InProgressDownloadManager::OnInitialized(
       auto item = CreateDownloadItemImpl(this, entry);
       if (!item)
         continue;
+      uint32_t download_id = item->GetId();
+      // Remove entries with duplicate ids.
+      if (download_id != DownloadItem::kInvalidId &&
+          base::ContainsKey(download_ids, download_id)) {
+        RemoveInProgressDownload(item->GetGuid());
+        num_duplicates++;
+        continue;
+      }
+#if defined(OS_ANDROID)
+      const base::FilePath& path = item->GetTargetFilePath();
+      if (path.IsContentUri()) {
+        base::FilePath display_name = GetDownloadDisplayName(path);
+        // If a download doesn't have a display name, remove it.
+        if (display_name.empty()) {
+          RemoveInProgressDownload(item->GetGuid());
+          continue;
+        } else {
+          item->SetDisplayName(display_name);
+        }
+      }
+#endif
       item->AddObserver(download_db_cache_.get());
+      OnNewDownloadCreated(item.get());
       in_progress_downloads_.emplace_back(std::move(item));
+      download_ids.insert(download_id);
     }
   }
-  if (base::FeatureList::IsEnabled(features::kDownloadDBForNewDownloads))
-    OnAllInprogressDownloadsLoaded();
-  is_initialized_ = true;
-  for (auto& callback : on_initialized_callbacks_)
-    std::move(*callback).Run();
-  on_initialized_callbacks_.clear();
-}
-
-DownloadItemImpl* InProgressDownloadManager::GetInProgressDownload(
-    const std::string& guid) {
-  for (auto& item : in_progress_downloads_) {
-    if (item->GetGuid() == guid)
-      return item.get();
-  }
-  return nullptr;
-}
-
-void InProgressDownloadManager::NotifyWhenInitialized(
-    base::OnceClosure on_initialized_cb) {
-  if (is_initialized_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(on_initialized_cb));
-    return;
-  }
-  on_initialized_callbacks_.emplace_back(
-      std::make_unique<base::OnceClosure>(std::move(on_initialized_cb)));
+  if (num_duplicates > 0)
+    RecordDuplicateInProgressDownloadIdCount(num_duplicates);
+  OnInitialized();
 }
 
 std::vector<std::unique_ptr<download::DownloadItemImpl>>
@@ -427,8 +518,26 @@ InProgressDownloadManager::TakeInProgressDownloads() {
   return std::move(in_progress_downloads_);
 }
 
+base::FilePath InProgressDownloadManager::GetDownloadDisplayName(
+    const base::FilePath& path) {
+#if defined(OS_ANDROID)
+  if (!display_names_)
+    return base::FilePath();
+  auto iter = display_names_->find(path.value());
+  if (iter != display_names_->end())
+    return iter->second;
+#endif
+  return base::FilePath();
+}
+
 void InProgressDownloadManager::OnAllInprogressDownloadsLoaded() {
   download_entries_.clear();
+  display_names_.reset();
+}
+
+void InProgressDownloadManager::AddInProgressDownloadForTest(
+    std::unique_ptr<download::DownloadItemImpl> download) {
+  in_progress_downloads_.push_back(std::move(download));
 }
 
 }  // namespace download

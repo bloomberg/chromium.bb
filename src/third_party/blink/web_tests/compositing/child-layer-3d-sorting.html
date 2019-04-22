@@ -21,24 +21,16 @@
         background: green;
     }
 </style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <script type="text/javascript" charset="utf-8">
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.dumpAsTextWithPixelResults();
-    }
     function doTest()
     {
         var child = document.getElementById('child');
 
-        window.setTimeout(function() {
+        runAfterLayoutAndPaint(function() {
             // Move the parent forward
             child.style.webkitTransform = "translateZ(10px)";
-            if (window.testRunner) {
-                window.setTimeout(function() {
-                    testRunner.notifyDone();
-                }, 0);
-            }
-        }, 0);
+        }, true);
     }
 
     window.addEventListener('load', doTest, false);

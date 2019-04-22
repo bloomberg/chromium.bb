@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
@@ -29,10 +30,10 @@
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/contextual_suggestions_service.h"
 #include "components/omnibox/browser/history_url_provider.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/verbatim_match.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engine_type.h"
@@ -171,10 +172,9 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
       return;
     }
 
-    ts->GetMostVisitedURLs(
-        base::Bind(&ZeroSuggestProvider::OnMostVisitedUrlsAvailable,
-                   weak_ptr_factory_.GetWeakPtr(), most_visited_request_num_),
-        false);
+    ts->GetMostVisitedURLs(base::BindRepeating(
+        &ZeroSuggestProvider::OnMostVisitedUrlsAvailable,
+        weak_ptr_factory_.GetWeakPtr(), most_visited_request_num_));
     return;
   }
 
@@ -514,11 +514,10 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
 
 bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
     const GURL& current_page_url) const {
-  // Don't show zero suggest on the NTP.
-  // TODO(hfung): Experiment with showing MostVisited zero suggest on NTP
-  // under the conditions described in crbug.com/305366.
-  if (IsNTPPage(current_page_classification_))
+  if (IsNTPPage(current_page_classification_) &&
+      !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)) {
     return false;
+  }
 
   // Don't run if in incognito mode.
   if (client()->IsOffTheRecord())

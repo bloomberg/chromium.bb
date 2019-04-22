@@ -4,7 +4,7 @@
 
 (function() {
 /**
- * TODO(scottchen): shim for not having Animation.finished implemented. Can
+ * TODO(dpapad): shim for not having Animation.finished implemented. Can
  * replace with Animation.finished if Chrome implements it (see:
  * crbug.com/257235).
  * @param {!Animation} animation
@@ -80,7 +80,7 @@ Polymer({
     const animationFunction = viewAnimations.get(animation);
     assert(animationFunction);
 
-    let effectiveView = view.matches('cr-lazy-render') ? view.get() : view;
+    const effectiveView = view.matches('cr-lazy-render') ? view.get() : view;
 
     effectiveView.classList.add('active');
     effectiveView.dispatchEvent(

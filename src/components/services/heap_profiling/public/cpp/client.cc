@@ -5,21 +5,13 @@
 #include "components/services/heap_profiling/public/cpp/client.h"
 
 #include "base/allocator/allocator_interception_mac.h"
-#include "base/command_line.h"
-#include "base/files/platform_file.h"
-#include "base/metrics/field_trial_params.h"
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/trace_event/malloc_dump_provider.h"
 #include "build/build_config.h"
-#include "components/services/heap_profiling/public/cpp/allocator_shim.h"
 #include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
-#include "components/services/heap_profiling/public/cpp/sender_pipe.h"
-#include "components/services/heap_profiling/public/cpp/settings.h"
-#include "components/services/heap_profiling/public/cpp/stream.h"
-#include "mojo/public/cpp/system/platform_handle.h"
-#include "services/service_manager/sandbox/switches.h"
 
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
@@ -29,7 +21,6 @@
 namespace heap_profiling {
 
 namespace {
-const int kTimeoutDurationMs = 10000;
 
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
@@ -46,24 +37,13 @@ void EnsureCFIInitializedOnBackgroundThread(
 
 }  // namespace
 
-Client::Client()
-    : started_profiling_(false),
-      sampling_profiler_(new SamplingProfilerWrapper()),
-      weak_factory_(this) {}
+Client::Client() : sampling_profiler_(new SamplingProfilerWrapper()) {}
 
 Client::~Client() {
   if (!started_profiling_)
     return;
-
-  StopAllocatorShimDangerous();
-
+  sampling_profiler_->StopProfiling();
   base::trace_event::MallocDumpProvider::GetInstance()->EnableMetrics();
-
-  // The allocator shim cannot be synchronously, consistently stopped. We leak
-  // the sender_pipe_, with the idea that very few future messages will
-  // be sent to it. This happens at shutdown, so resources will be reclaimed
-  // by the OS after the process is terminated.
-  sender_pipe_.release();
 }
 
 void Client::BindToInterface(mojom::ProfilingClientRequest request) {
@@ -71,29 +51,9 @@ void Client::BindToInterface(mojom::ProfilingClientRequest request) {
 }
 
 void Client::StartProfiling(mojom::ProfilingParamsPtr params) {
-  // Never allow profiling of the profiling process. That would cause deadlock.
-  std::string sandbox_type =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          service_manager::switches::kServiceSandboxType);
-  if (sandbox_type == service_manager::switches::kProfilingSandbox)
-    return;
-
   if (started_profiling_)
     return;
   started_profiling_ = true;
-
-  sender_pipe_.reset(new SenderPipe(
-      mojo::UnwrapPlatformHandle(std::move(params->sender_pipe))));
-
-  StreamHeader header;
-  header.signature = kStreamSignature;
-  SenderPipe::Result result =
-      sender_pipe_->Send(&header, sizeof(header), kTimeoutDurationMs);
-  if (result != SenderPipe::Result::kSuccess) {
-    sender_pipe_->Close();
-    return;
-  }
-
   base::trace_event::MallocDumpProvider::GetInstance()->DisableMetrics();
 
 #if defined(OS_MACOSX)
@@ -123,22 +83,12 @@ void Client::StartProfiling(mojom::ProfilingParamsPtr params) {
 #endif
 }
 
-void Client::FlushMemlogPipe(uint32_t barrier_id) {
-  AllocatorShimFlushPipe(barrier_id);
+void Client::RetrieveHeapProfile(RetrieveHeapProfileCallback callback) {
+  std::move(callback).Run(sampling_profiler_->RetrieveHeapProfile());
 }
 
 void Client::StartProfilingInternal(mojom::ProfilingParamsPtr params) {
-  uint32_t sampling_rate = params->sampling_rate;
-  InitAllocationRecorder(sender_pipe_.get(), std::move(params));
-  bool sampling_v2_enabled = base::GetFieldTrialParamByFeatureAsBool(
-      kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureSamplingV2,
-      /* default_value */ false);
-  if (sampling_v2_enabled) {
-    sampling_profiler_->StartProfiling(sampling_rate);
-  } else {
-    InitAllocatorShim();
-  }
-  AllocatorHooksHaveBeenInitialized();
+  sampling_profiler_->StartProfiling(std::move(params));
 }
 
 }  // namespace heap_profiling

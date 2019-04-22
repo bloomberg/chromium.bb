@@ -655,7 +655,7 @@ class TextureTestBase : public GpuServiceTest {
         kMaxArrayTextureLayers, kUseDefaultTextures, nullptr,
         &discardable_manager_));
     decoder_.reset(new ::testing::StrictMock<MockGLES2Decoder>(
-        &command_buffer_service_, &outputter_));
+        &client_, &command_buffer_service_, &outputter_));
     error_state_.reset(new ::testing::StrictMock<MockErrorState>());
     manager_->CreateTexture(kClient1Id, kService1Id);
     texture_ref_ = manager_->GetTexture(kClient1Id);
@@ -689,6 +689,7 @@ class TextureTestBase : public GpuServiceTest {
   }
 
   FakeCommandBufferServiceBase command_buffer_service_;
+  FakeDecoderClient client_;
   TraceOutputter outputter_;
   std::unique_ptr<MockGLES2Decoder> decoder_;
   std::unique_ptr<MockErrorState> error_state_;
@@ -2134,9 +2135,9 @@ TEST_P(ProduceConsumeTextureTest, ProduceConsumeTextureWithImage) {
 static const GLenum kTextureTargets[] = {GL_TEXTURE_2D, GL_TEXTURE_EXTERNAL_OES,
                                          GL_TEXTURE_RECTANGLE_ARB, };
 
-INSTANTIATE_TEST_CASE_P(Target,
-                        ProduceConsumeTextureTest,
-                        ::testing::ValuesIn(kTextureTargets));
+INSTANTIATE_TEST_SUITE_P(Target,
+                         ProduceConsumeTextureTest,
+                         ::testing::ValuesIn(kTextureTargets));
 
 TEST_F(ProduceConsumeTextureTest, ProduceConsumeCube) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_CUBE_MAP);

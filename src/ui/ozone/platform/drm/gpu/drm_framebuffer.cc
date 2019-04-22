@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 
+#include <utility>
+
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"

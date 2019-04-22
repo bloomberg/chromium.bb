@@ -29,6 +29,7 @@
 
 #include "include/v8-profiler.h"
 #include "src/api-inl.h"
+#include "src/log.h"
 #include "src/objects-inl.h"
 #include "src/profiler/cpu-profiler.h"
 #include "src/profiler/profile-generator-inl.h"
@@ -490,7 +491,7 @@ TEST(SampleIds) {
   CHECK_EQ(3, profile->samples_count());
   unsigned expected_id[] = {3, 5, 7};
   for (int i = 0; i < 3; i++) {
-    CHECK_EQ(expected_id[i], profile->sample(i)->id());
+    CHECK_EQ(expected_id[i], profile->sample(i).node->id());
   }
 }
 
@@ -538,7 +539,7 @@ TEST(RecordStackTraceAtStartProfiling) {
   i::FLAG_turbo_inlining = false;
 
   v8::HandleScope scope(CcTest::isolate());
-  v8::Local<v8::Context> env = CcTest::NewContext(PROFILER_EXTENSION);
+  v8::Local<v8::Context> env = CcTest::NewContext({PROFILER_EXTENSION_ID});
   v8::Context::Scope context_scope(env);
   std::unique_ptr<i::CpuProfiler> iprofiler(
       new i::CpuProfiler(CcTest::i_isolate()));
@@ -616,7 +617,7 @@ TEST(ProfileNodeScriptId) {
   i::FLAG_turbo_inlining = false;
 
   v8::HandleScope scope(CcTest::isolate());
-  v8::Local<v8::Context> env = CcTest::NewContext(PROFILER_EXTENSION);
+  v8::Local<v8::Context> env = CcTest::NewContext({PROFILER_EXTENSION_ID});
   v8::Context::Scope context_scope(env);
   std::unique_ptr<CpuProfiler> iprofiler(new CpuProfiler(CcTest::i_isolate()));
   i::ProfilerExtension::set_profiler(iprofiler.get());
@@ -716,7 +717,7 @@ TEST(BailoutReason) {
   i::FLAG_always_opt = false;
   i::FLAG_opt = true;
   v8::HandleScope scope(CcTest::isolate());
-  v8::Local<v8::Context> env = CcTest::NewContext(PROFILER_EXTENSION);
+  v8::Local<v8::Context> env = CcTest::NewContext({PROFILER_EXTENSION_ID});
   v8::Context::Scope context_scope(env);
   std::unique_ptr<CpuProfiler> iprofiler(new CpuProfiler(CcTest::i_isolate()));
   i::ProfilerExtension::set_profiler(iprofiler.get());
@@ -752,8 +753,68 @@ TEST(BailoutReason) {
 
   current = PickChild(current, "Debugger");
   CHECK(const_cast<v8::CpuProfileNode*>(current));
-  CHECK(!strcmp("Optimization disabled for test", current->GetBailoutReason()));
+  CHECK(
+      !strcmp("Optimization is always disabled", current->GetBailoutReason()));
 #endif  // V8_LITE_MODE
+}
+
+TEST(NodeSourceTypes) {
+  ProfileTree tree(CcTest::i_isolate());
+  CodeEntry function_entry(CodeEventListener::FUNCTION_TAG, "function");
+  tree.AddPathFromEnd({&function_entry});
+  CodeEntry builtin_entry(CodeEventListener::BUILTIN_TAG, "builtin");
+  tree.AddPathFromEnd({&builtin_entry});
+  CodeEntry callback_entry(CodeEventListener::CALLBACK_TAG, "callback");
+  tree.AddPathFromEnd({&callback_entry});
+  CodeEntry regex_entry(CodeEventListener::REG_EXP_TAG, "regex");
+  tree.AddPathFromEnd({&regex_entry});
+  CodeEntry stub_entry(CodeEventListener::STUB_TAG, "stub");
+  tree.AddPathFromEnd({&stub_entry});
+
+  tree.AddPathFromEnd({CodeEntry::gc_entry()});
+  tree.AddPathFromEnd({CodeEntry::idle_entry()});
+  tree.AddPathFromEnd({CodeEntry::program_entry()});
+  tree.AddPathFromEnd({CodeEntry::unresolved_entry()});
+
+  auto* root = tree.root();
+  CHECK(root);
+  CHECK_EQ(root->source_type(), v8::CpuProfileNode::kInternal);
+
+  auto* function_node = PickChild(root, "function");
+  CHECK(function_node);
+  CHECK_EQ(function_node->source_type(), v8::CpuProfileNode::kScript);
+
+  auto* builtin_node = PickChild(root, "builtin");
+  CHECK(builtin_node);
+  CHECK_EQ(builtin_node->source_type(), v8::CpuProfileNode::kBuiltin);
+
+  auto* callback_node = PickChild(root, "callback");
+  CHECK(callback_node);
+  CHECK_EQ(callback_node->source_type(), v8::CpuProfileNode::kCallback);
+
+  auto* regex_node = PickChild(root, "regex");
+  CHECK(regex_node);
+  CHECK_EQ(regex_node->source_type(), v8::CpuProfileNode::kInternal);
+
+  auto* stub_node = PickChild(root, "stub");
+  CHECK(stub_node);
+  CHECK_EQ(stub_node->source_type(), v8::CpuProfileNode::kInternal);
+
+  auto* gc_node = PickChild(root, "(garbage collector)");
+  CHECK(gc_node);
+  CHECK_EQ(gc_node->source_type(), v8::CpuProfileNode::kInternal);
+
+  auto* idle_node = PickChild(root, "(idle)");
+  CHECK(idle_node);
+  CHECK_EQ(idle_node->source_type(), v8::CpuProfileNode::kInternal);
+
+  auto* program_node = PickChild(root, "(program)");
+  CHECK(program_node);
+  CHECK_EQ(program_node->source_type(), v8::CpuProfileNode::kInternal);
+
+  auto* unresolved_node = PickChild(root, "(unresolved function)");
+  CHECK(unresolved_node);
+  CHECK_EQ(unresolved_node->source_type(), v8::CpuProfileNode::kUnresolved);
 }
 
 }  // namespace test_profile_generator

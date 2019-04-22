@@ -62,12 +62,6 @@ namespace
 {
 using namespace renderpass;
 
-enum RenderPassType
-{
-	RENDERPASS_TYPE_LEGACY = 0,
-	RENDERPASS_TYPE_RENDERPASS2,
-};
-
 de::MovePtr<Allocation> createBufferMemory (const DeviceInterface&	vk,
 											VkDevice				device,
 											Allocator&				allocator,
@@ -260,9 +254,12 @@ Move<VkRenderPass> createRenderPass (const DeviceInterface&	vkd,
 									 VkDevice				device,
 									 VkFormat				srcFormat,
 									 VkFormat				dstFormat,
-									 deUint32				sampleCount)
+									 deUint32				sampleCount,
+									 RenderPassType			renderPassType)
 {
 	const VkSampleCountFlagBits			samples							(sampleCountBitFromSampleCount(sampleCount));
+	const VkImageAspectFlagBits			aspectFlag						((renderPassType == RENDERPASS_TYPE_RENDERPASS2) ?	VK_IMAGE_ASPECT_COLOR_BIT :
+																															static_cast<VkImageAspectFlagBits>(0u));
 	const AttachmentRef					srcAttachmentRef		//  VkAttachmentReference										||  VkAttachmentReference2KHR
 	(
 																//																||  VkStructureType						sType;
@@ -277,7 +274,7 @@ Move<VkRenderPass> createRenderPass (const DeviceInterface&	vkd,
 		DE_NULL,												//																||  const void*							pNext;
 		0u,														//  deUint32						attachment;					||  deUint32							attachment;
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,				//  VkImageLayout					layout;						||  VkImageLayout						layout;
-		0u														//																||  VkImageAspectFlags					aspectMask;
+		aspectFlag												//																||  VkImageAspectFlags					aspectMask;
 	);
 	const AttachmentRef					dstAttachmentRef		//  VkAttachmentReference										||  VkAttachmentReference2KHR
 	(
@@ -421,9 +418,9 @@ Move<VkRenderPass> createRenderPass (const DeviceInterface&	vkd,
 	switch (renderPassType)
 	{
 		case RENDERPASS_TYPE_LEGACY:
-			return createRenderPass<AttachmentDescription1, AttachmentReference1, SubpassDescription1, SubpassDependency1, RenderPassCreateInfo1>(vkd, device, srcFormat, dstFormat, sampleCount);
+			return createRenderPass<AttachmentDescription1, AttachmentReference1, SubpassDescription1, SubpassDependency1, RenderPassCreateInfo1>(vkd, device, srcFormat, dstFormat, sampleCount, renderPassType);
 		case RENDERPASS_TYPE_RENDERPASS2:
-			return createRenderPass<AttachmentDescription2, AttachmentReference2, SubpassDescription2, SubpassDependency2, RenderPassCreateInfo2>(vkd, device, srcFormat, dstFormat, sampleCount);
+			return createRenderPass<AttachmentDescription2, AttachmentReference2, SubpassDescription2, SubpassDependency2, RenderPassCreateInfo2>(vkd, device, srcFormat, dstFormat, sampleCount, renderPassType);
 		default:
 			TCU_THROW(InternalError, "Impossible");
 	}
@@ -891,81 +888,15 @@ tcu::TestStatus SampleReadTestInstance::iterateInternal (void)
 
 	RenderpassSubpass::cmdEndRenderPass(vkd, *commandBuffer, &subpassEndInfo);
 
-	// Memory barrier between rendering and copy
-	{
-		const VkImageMemoryBarrier barrier =
-		{
-			VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-			DE_NULL,
-
-			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-			VK_ACCESS_TRANSFER_READ_BIT,
-
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-
-			VK_QUEUE_FAMILY_IGNORED,
-			VK_QUEUE_FAMILY_IGNORED,
-
-			*m_dstSinglesampleImage,
-			{
-				VK_IMAGE_ASPECT_COLOR_BIT,
-				0u,
-				1u,
-				0u,
-				1u
-			}
-		};
-
-		vkd.cmdPipelineBarrier(*commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0u, 0u, DE_NULL, 0u, DE_NULL, 1u, &barrier);
-	}
-
-	// Copy image memory to buffer
-	{
-		const VkBufferImageCopy region =
-		{
-			0u,
-			0u,
-			0u,
-			{
-				VK_IMAGE_ASPECT_COLOR_BIT,
-				0u,
-				0u,
-				1u,
-			},
-			{ 0u, 0u, 0u },
-			{ m_width, m_height, 1u }
-		};
-
-		vkd.cmdCopyImageToBuffer(*commandBuffer, *m_dstSinglesampleImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, *m_dstBuffer, 1u, &region);
-	}
-
-	// Memory barrier between copy and host access
-	{
-		const VkBufferMemoryBarrier barrier =
-		{
-			VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-			DE_NULL,
-
-			VK_ACCESS_TRANSFER_WRITE_BIT,
-			VK_ACCESS_HOST_READ_BIT,
-
-			VK_QUEUE_FAMILY_IGNORED,
-			VK_QUEUE_FAMILY_IGNORED,
-
-			*m_dstBuffer,
-			0u,
-			VK_WHOLE_SIZE
-		};
-
-		vkd.cmdPipelineBarrier(*commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0u, 0u, DE_NULL, 1u, &barrier, 0u, DE_NULL);
-	}
+	copyImageToBuffer(vkd, *commandBuffer, *m_dstSinglesampleImage, *m_dstBuffer, tcu::IVec2(m_width, m_height), VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
 	endCommandBuffer(vkd, *commandBuffer);
 
 	submitCommandsAndWait(vkd, device, m_context.getUniversalQueue(), *commandBuffer);
 
 	{
+		invalidateAlloc(vkd, device, *m_dstBufferMemory);
+
 		const tcu::TextureFormat			format		(mapVkFormat(VK_FORMAT_R32_UINT));
 		const void* const					ptr			(m_dstBufferMemory->getHostPtr());
 		const tcu::ConstPixelBufferAccess	access		(format, m_width, m_height, 1, ptr);

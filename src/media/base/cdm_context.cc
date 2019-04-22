@@ -12,8 +12,8 @@ CdmContext::CdmContext() = default;
 
 CdmContext::~CdmContext() = default;
 
-std::unique_ptr<CallbackRegistration> CdmContext::RegisterNewKeyCB(
-    base::RepeatingClosure new_key_cb) {
+std::unique_ptr<CallbackRegistration> CdmContext::RegisterEventCB(
+    EventCB /* event_cb */) {
   return nullptr;
 }
 

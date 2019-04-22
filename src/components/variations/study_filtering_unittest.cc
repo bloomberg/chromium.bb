@@ -222,10 +222,10 @@ TEST(VariationsStudyFilteringTest, CheckStudyPlatform) {
   Study::Filter filter;
 
   // Check in the forwarded order. The loop cond is <= base::size(platforms)
-  // instead of < so that the result of adding the last channel gets checked.
+  // instead of < so that the result of adding the last platform gets checked.
   for (size_t i = 0; i <= base::size(platforms); ++i) {
     for (size_t j = 0; j < base::size(platforms); ++j) {
-      const bool expected = platform_added[j] || filter.platform_size() == 0;
+      const bool expected = platform_added[j];
       const bool result = internal::CheckStudyPlatform(filter, platforms[j]);
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
     }
@@ -241,7 +241,7 @@ TEST(VariationsStudyFilteringTest, CheckStudyPlatform) {
   memset(&platform_added, 0, sizeof(platform_added));
   for (size_t i = 0; i <= base::size(platforms); ++i) {
     for (size_t j = 0; j < base::size(platforms); ++j) {
-      const bool expected = platform_added[j] || filter.platform_size() == 0;
+      const bool expected = platform_added[j];
       const bool result = internal::CheckStudyPlatform(filter, platforms[j]);
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
     }
@@ -575,6 +575,7 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudiesWithCountry) {
     study->set_default_experiment_name("Default");
     AddExperiment("Default", 100, study);
     study->set_consistency(test.consistency);
+    study->mutable_filter()->add_platform(Study::PLATFORM_ANDROID);
     if (test.filter_country)
       study->mutable_filter()->add_country(test.filter_country);
     if (test.filter_exclude_country)
@@ -585,7 +586,7 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudiesWithCountry) {
     client_state.reference_date = base::Time::Now();
     client_state.version = base::Version("20.0.0.0");
     client_state.channel = Study::STABLE;
-    client_state.form_factor = Study::DESKTOP;
+    client_state.form_factor = Study::PHONE;
     client_state.platform = Study::PLATFORM_ANDROID;
     client_state.session_consistency_country = kSessionCountry;
     client_state.permanent_consistency_country = kPermanentCountry;

@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/json/json_value_converter.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -49,14 +49,14 @@ bool GetParentsFromValue(const base::Value* value,
   DCHECK(value);
   DCHECK(result);
 
-  const base::ListValue* list_value = NULL;
+  const base::ListValue* list_value = nullptr;
   if (!value->GetAsList(&list_value))
     return false;
 
   base::JSONValueConverter<ParentReference> converter;
   result->resize(list_value->GetSize());
   for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    const base::Value* parent_value = NULL;
+    const base::Value* parent_value = nullptr;
     if (!list_value->Get(i, &parent_value) ||
         !converter.Convert(*parent_value, &(*result)[i]))
       return false;
@@ -218,7 +218,7 @@ constexpr ChangeTypeMap kChangeTypeMap[] = {
 // |kind| property which denotes the type of the structure (e.g. "drive#file").
 bool IsResourceKindExpected(const base::Value& value,
                             const std::string& expected_kind) {
-  const base::DictionaryValue* as_dict = NULL;
+  const base::DictionaryValue* as_dict = nullptr;
   std::string kind;
   return value.GetAsDictionary(&as_dict) &&
       as_dict->HasKey(kKind) &&
@@ -685,7 +685,7 @@ bool ChangeResource::Parse(const base::Value& value) {
 // static
 bool ChangeResource::GetType(base::StringPiece type_name,
                              ChangeResource::ChangeType* result) {
-  for (size_t i = 0; i < arraysize(kChangeTypeMap); i++) {
+  for (size_t i = 0; i < base::size(kChangeTypeMap); i++) {
     if (type_name == kChangeTypeMap[i].type_name) {
       *result = kChangeTypeMap[i].type;
       return true;

@@ -80,8 +80,8 @@ API_AVAILABLE(macos(10.12.2)) {
   ASSERT_TRUE(opt_response);
   ASSERT_TRUE(opt_response->credential());
   EXPECT_FALSE(opt_response->credential()->id().empty());
-};
 }
+}  // namespace
 }  // namespace mac
 }  // namespace fido
 }  // namespace device

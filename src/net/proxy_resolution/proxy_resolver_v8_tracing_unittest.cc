@@ -6,21 +6,25 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_interfaces.h"
 #include "net/base/test_completion_callback.h"
-#include "net/dns/host_cache.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/mock_proxy_host_resolver.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
@@ -66,7 +70,7 @@ scoped_refptr<PacFileData> LoadScriptData(const char* filename) {
 
 class MockBindings {
  public:
-  explicit MockBindings(HostResolver* host_resolver)
+  explicit MockBindings(ProxyHostResolver* host_resolver)
       : host_resolver_(host_resolver) {}
 
   void Alert(const base::string16& message) {
@@ -79,7 +83,7 @@ class MockBindings {
       error_callback_.Run();
   }
 
-  HostResolver* host_resolver() { return host_resolver_; }
+  ProxyHostResolver* host_resolver() { return host_resolver_; }
 
   std::vector<std::string> GetAlerts() {
     return alerts_;
@@ -119,7 +123,7 @@ class MockBindings {
       return NetLogWithSource();
     }
 
-    HostResolver* GetHostResolver() override {
+    ProxyHostResolver* GetHostResolver() override {
       DCHECK(thread_checker_.CalledOnValidThread());
       return bindings_->host_resolver();
     }
@@ -135,7 +139,7 @@ class MockBindings {
 
   std::vector<std::string> alerts_;
   std::vector<std::pair<int, std::string>> errors_;
-  HostResolver* const host_resolver_;
+  ProxyHostResolver* const host_resolver_;
   base::Closure error_callback_;
   EventWaiter<Event> waiter_;
 };
@@ -157,7 +161,7 @@ std::unique_ptr<ProxyResolverV8Tracing> CreateResolver(
 }
 
 TEST_F(ProxyResolverV8TracingTest, Simple) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
@@ -183,7 +187,7 @@ TEST_F(ProxyResolverV8TracingTest, Simple) {
 }
 
 TEST_F(ProxyResolverV8TracingTest, JavascriptError) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
@@ -211,7 +215,7 @@ TEST_F(ProxyResolverV8TracingTest, JavascriptError) {
 }
 
 TEST_F(ProxyResolverV8TracingTest, TooManyAlerts) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
@@ -248,7 +252,7 @@ TEST_F(ProxyResolverV8TracingTest, TooManyAlerts) {
 // Verify that buffered alerts cannot grow unboundedly, even when the message is
 // empty string.
 TEST_F(ProxyResolverV8TracingTest, TooManyEmptyAlerts) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver = CreateResolver(
@@ -283,20 +287,26 @@ TEST_F(ProxyResolverV8TracingTest, TooManyEmptyAlerts) {
 // verifies the final result, and that the underlying DNS resolver received
 // the correct set of queries.
 TEST_F(ProxyResolverV8TracingTest, Dns) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  host_resolver.rules()->AddRuleForAddressFamily(
-      "host1", ADDRESS_FAMILY_IPV4, "166.155.144.44");
-  host_resolver.rules()
-      ->AddIPLiteralRule("host1", "::1,192.168.1.1", std::string());
-  host_resolver.rules()->AddSimulatedFailure("host2");
-  host_resolver.rules()->AddRule("host3", "166.155.144.33");
-  host_resolver.rules()->AddRule("host5", "166.155.144.55");
-  host_resolver.rules()->AddSimulatedFailure("host6");
-  host_resolver.rules()->AddRuleForAddressFamily(
-      "*", ADDRESS_FAMILY_IPV4, "122.133.144.155");
-  host_resolver.rules()->AddRule("*", "133.122.100.200");
+  host_resolver.SetResult(GetHostName(),
+                          ProxyResolveDnsOperation::MY_IP_ADDRESS,
+                          {IPAddress(122, 133, 144, 155)});
+  host_resolver.SetResult(GetHostName(),
+                          ProxyResolveDnsOperation::MY_IP_ADDRESS_EX,
+                          {IPAddress(133, 122, 100, 200)});
+  host_resolver.SetError("", ProxyResolveDnsOperation::DNS_RESOLVE);
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 44)});
+  IPAddress v6_local;
+  ASSERT_TRUE(v6_local.AssignFromIPLiteral("::1"));
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE_EX,
+                          {v6_local, IPAddress(192, 168, 1, 1)});
+  host_resolver.SetError("host2", ProxyResolveDnsOperation::DNS_RESOLVE);
+  host_resolver.SetResult("host3", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 33)});
+  host_resolver.SetError("host6", ProxyResolveDnsOperation::DNS_RESOLVE_EX);
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "dns.js");
@@ -340,63 +350,17 @@ TEST_F(ProxyResolverV8TracingTest, Dns) {
   EXPECT_EQ("iteration: 7", mock_bindings.GetAlerts()[0]);
 }
 
-// This test runs a PAC script that does "myIpAddress()" followed by
-// "dnsResolve()". This requires 2 restarts. However once the HostResolver's
-// cache is warmed, subsequent calls should take 0 restarts.
-TEST_F(ProxyResolverV8TracingTest, DnsChecksCache) {
-  MockCachingHostResolver host_resolver;
-  MockBindings mock_bindings(&host_resolver);
-
-  host_resolver.rules()->AddRule("foopy", "166.155.144.11");
-  host_resolver.rules()->AddRule("*", "122.133.144.155");
-
-  std::unique_ptr<ProxyResolverV8Tracing> resolver =
-      CreateResolver(mock_bindings.CreateBindings(), "simple_dns.js");
-
-  TestCompletionCallback callback1;
-  TestCompletionCallback callback2;
-  ProxyInfo proxy_info;
-
-  std::unique_ptr<ProxyResolver::Request> req;
-  resolver->GetProxyForURL(GURL("http://foopy/req1"), &proxy_info,
-                           callback1.callback(), &req,
-                           mock_bindings.CreateBindings());
-
-  EXPECT_THAT(callback1.WaitForResult(), IsOk());
-
-  // The test does 2 DNS resolutions.
-  EXPECT_EQ(2u, host_resolver.num_resolve());
-
-  // The first request took 2 restarts, hence on g_iteration=3.
-  EXPECT_EQ("166.155.144.11:3", proxy_info.proxy_server().ToURI());
-
-  std::unique_ptr<ProxyResolver::Request> req2;
-  resolver->GetProxyForURL(GURL("http://foopy/req2"), &proxy_info,
-                           callback2.callback(), &req2,
-                           mock_bindings.CreateBindings());
-
-  EXPECT_THAT(callback2.WaitForResult(), IsOk());
-
-  EXPECT_EQ(4u, host_resolver.num_resolve());
-
-  // This time no restarts were required, so g_iteration incremented by 1.
-  EXPECT_EQ("166.155.144.11:4", proxy_info.proxy_server().ToURI());
-
-  // There were no alerts or errors.
-  EXPECT_TRUE(mock_bindings.GetAlerts().empty());
-  EXPECT_TRUE(mock_bindings.GetErrors().empty());
-}
-
 // This test runs a weird PAC script that was designed to defeat the DNS tracing
 // optimization. The proxy resolver should detect the inconsistency and
 // fall-back to synchronous mode execution.
 TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous1) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  host_resolver.rules()->AddRule("host1", "166.155.144.11");
-  host_resolver.rules()->AddRule("crazy4", "133.199.111.4");
-  host_resolver.rules()->AddRule("*", "122.133.144.155");
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 11)});
+  host_resolver.SetResult("crazy4", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(133, 199, 111, 4)});
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "global_sideffects1.js");
@@ -429,14 +393,17 @@ TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous1) {
 // optimization. The proxy resolver should detect the inconsistency and
 // fall-back to synchronous mode execution.
 TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous2) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  host_resolver.rules()->AddRule("host1", "166.155.144.11");
-  host_resolver.rules()->AddRule("host2", "166.155.144.22");
-  host_resolver.rules()->AddRule("host3", "166.155.144.33");
-  host_resolver.rules()->AddRule("host4", "166.155.144.44");
-  host_resolver.rules()->AddRule("*", "122.133.144.155");
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 11)});
+  host_resolver.SetResult("host2", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 22)});
+  host_resolver.SetResult("host3", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 33)});
+  host_resolver.SetResult("host4", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 44)});
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "global_sideffects2.js");
@@ -464,11 +431,14 @@ TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous2) {
 // DNS resolves per request limit (20) after which every DNS resolve will
 // fail.
 TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  host_resolver.rules()->AddRule("host*", "166.155.144.11");
-  host_resolver.rules()->AddRule("*", "122.133.144.155");
+  for (int i = 0; i < 21; ++i) {
+    host_resolver.SetResult("host" + std::to_string(i),
+                            ProxyResolveDnsOperation::DNS_RESOLVE,
+                            {IPAddress(166, 155, 144, 11)});
+  }
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "global_sideffects3.js");
@@ -505,11 +475,17 @@ TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence) {
 // DNS resolves per request limit (20) after which every DNS resolve will
 // fail.
 TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence2) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  host_resolver.rules()->AddRule("host*", "166.155.144.11");
-  host_resolver.rules()->AddRule("*", "122.133.144.155");
+  host_resolver.SetResult(GetHostName(),
+                          ProxyResolveDnsOperation::MY_IP_ADDRESS,
+                          {IPAddress(122, 133, 144, 155)});
+  for (int i = 0; i < 21; ++i) {
+    host_resolver.SetResult("host" + std::to_string(i),
+                            ProxyResolveDnsOperation::DNS_RESOLVE,
+                            {IPAddress(166, 155, 144, 11)});
+  }
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "global_sideffects4.js");
@@ -536,12 +512,13 @@ TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence2) {
 }
 
 void DnsDuringInitHelper(bool synchronous_host_resolver) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver(synchronous_host_resolver);
   MockBindings mock_bindings(&host_resolver);
-  host_resolver.set_synchronous_mode(synchronous_host_resolver);
 
-  host_resolver.rules()->AddRule("host1", "91.13.12.1");
-  host_resolver.rules()->AddRule("host2", "91.13.12.2");
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(91, 13, 12, 1)});
+  host_resolver.SetResult("host2", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(91, 13, 12, 2)});
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "dns_during_init.js");
@@ -549,11 +526,10 @@ void DnsDuringInitHelper(bool synchronous_host_resolver) {
   // Initialization did 2 dnsResolves.
   EXPECT_EQ(2u, host_resolver.num_resolve());
 
-  host_resolver.rules()->ClearRules();
-  host_resolver.GetHostCache()->clear();
-
-  host_resolver.rules()->AddRule("host1", "145.88.13.3");
-  host_resolver.rules()->AddRule("host2", "137.89.8.45");
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(145, 88, 13, 3)});
+  host_resolver.SetResult("host2", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(137, 89, 8, 45)});
 
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
@@ -595,10 +571,10 @@ void CrashCallback(int) {
 // threads are involved, the cancellation may be received a different
 // times.
 TEST_F(ProxyResolverV8TracingTest, CancelAll) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  host_resolver.rules()->AddSimulatedFailure("*");
+  host_resolver.FailAll();
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "dns.js");
@@ -622,10 +598,10 @@ TEST_F(ProxyResolverV8TracingTest, CancelAll) {
 // threads are involved, the cancellation may be received a different
 // times.
 TEST_F(ProxyResolverV8TracingTest, CancelSome) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  host_resolver.rules()->AddSimulatedFailure("*");
+  host_resolver.FailAll();
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "dns.js");
@@ -651,10 +627,10 @@ TEST_F(ProxyResolverV8TracingTest, CancelSome) {
 // Cancel a request after it has finished running on the worker thread, and has
 // posted a task the completion task back to origin thread.
 TEST_F(ProxyResolverV8TracingTest, CancelWhilePendingCompletionTask) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  host_resolver.rules()->AddSimulatedFailure("*");
+  host_resolver.FailAll();
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "error.js");
@@ -686,115 +662,11 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhilePendingCompletionTask) {
   EXPECT_EQ("i-approve-this-message:42", proxy_info2.proxy_server().ToURI());
 }
 
-// This implementation of HostResolver allows blocking until a resolve request
-// has been received. The resolve requests it receives will never be completed.
-class BlockableHostResolver : public HostResolver {
- public:
-  BlockableHostResolver()
-      : num_cancelled_requests_(0), waiting_for_resolve_(false) {}
-
-  std::unique_ptr<ResolveHostRequest> CreateRequest(
-      const HostPortPair& host,
-      const NetLogWithSource& net_log,
-      const base::Optional<ResolveHostParameters>& optional_parameters)
-      override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  int Resolve(const RequestInfo& info,
-              RequestPriority priority,
-              AddressList* addresses,
-              CompletionOnceCallback callback,
-              std::unique_ptr<Request>* out_req,
-              const NetLogWithSource& net_log) override {
-    EXPECT_FALSE(callback.is_null());
-    EXPECT_TRUE(out_req);
-
-    if (!action_.is_null())
-      action_.Run();
-
-    // Indicate to the caller that a request was received.
-    EXPECT_TRUE(waiting_for_resolve_);
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-
-    // This line is intentionally after action_.Run(), since one of the
-    // tests does a cancellation inside of Resolve(), and it is more
-    // interesting if *out_req hasn't been written yet at that point.
-    out_req->reset(new RequestImpl(this));
-
-    // Return ERR_IO_PENDING as this request will NEVER be completed.
-    // Expectation is for the caller to later cancel the request.
-    return ERR_IO_PENDING;
-  }
-
-  int ResolveFromCache(const RequestInfo& info,
-                       AddressList* addresses,
-                       const NetLogWithSource& net_log) override {
-    NOTREACHED();
-    return ERR_DNS_CACHE_MISS;
-  }
-
-  int ResolveStaleFromCache(const RequestInfo& info,
-                            AddressList* addresses,
-                            HostCache::EntryStaleness* stale_info,
-                            const NetLogWithSource& net_log) override {
-    NOTREACHED();
-    return ERR_DNS_CACHE_MISS;
-  }
-
-  bool HasCached(base::StringPiece hostname,
-                 HostCache::Entry::Source* source_out,
-                 HostCache::EntryStaleness* stale_out) const override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  void IncreaseNumOfCancelledRequests() { num_cancelled_requests_++; }
-
-  void SetAction(const base::Callback<void(void)>& action) {
-    action_ = action;
-  }
-
-  // Waits until Resolve() has been called.
-  void WaitUntilRequestIsReceived() {
-    waiting_for_resolve_ = true;
-    base::RunLoop().Run();
-    DCHECK(waiting_for_resolve_);
-    waiting_for_resolve_ = false;
-  }
-
-  int num_cancelled_requests() const {
-    return num_cancelled_requests_;
-  }
-
- private:
-  class RequestImpl : public HostResolver::Request {
-   public:
-    RequestImpl(BlockableHostResolver* resolver) : resolver_(resolver) {}
-
-    ~RequestImpl() override {
-      if (resolver_)
-        resolver_->IncreaseNumOfCancelledRequests();
-    }
-
-    void ChangeRequestPriority(RequestPriority priority) override {}
-
-   private:
-    BlockableHostResolver* resolver_;
-
-    DISALLOW_COPY_AND_ASSIGN(RequestImpl);
-  };
-
-  int num_cancelled_requests_;
-  bool waiting_for_resolve_;
-  base::Callback<void(void)> action_;
-};
-
 // This cancellation test exercises a more predictable cancellation codepath --
 // when the request has an outstanding DNS request in flight.
 TEST_F(ProxyResolverV8TracingTest, CancelWhileOutstandingNonBlockingDns) {
-  BlockableHostResolver host_resolver;
+  base::RunLoop run_loop1;
+  HangingProxyHostResolver host_resolver(run_loop1.QuitClosure());
   MockBindings mock_bindings(&host_resolver);
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
@@ -809,13 +681,15 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileOutstandingNonBlockingDns) {
                            base::Bind(&CrashCallback), &request1,
                            mock_bindings.CreateBindings());
 
-  host_resolver.WaitUntilRequestIsReceived();
+  run_loop1.Run();
 
+  base::RunLoop run_loop2;
+  host_resolver.set_hang_callback(run_loop2.QuitClosure());
   resolver->GetProxyForURL(GURL("http://foo/req2"), &proxy_info2,
                            base::Bind(&CrashCallback), &request2,
                            mock_bindings.CreateBindings());
 
-  host_resolver.WaitUntilRequestIsReceived();
+  run_loop2.Run();
 
   request1.reset();
   request2.reset();
@@ -827,20 +701,23 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileOutstandingNonBlockingDns) {
   // should have been cancelled.
 }
 
-void CancelRequestAndPause(std::unique_ptr<ProxyResolver::Request>* request) {
+void CancelRequestAndPause(std::unique_ptr<ProxyResolver::Request>* request,
+                           base::RunLoop* run_loop) {
   request->reset();
 
   // Sleep for a little bit. This makes it more likely for the worker
   // thread to have returned from its call, and serves as a regression
   // test for http://crbug.com/173373.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(30));
+
+  run_loop->Quit();
 }
 
 // In non-blocking mode, the worker thread actually does block for
 // a short time to see if the result is in the DNS cache. Test
 // cancellation while the worker thread is waiting on this event.
 TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns) {
-  BlockableHostResolver host_resolver;
+  HangingProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
@@ -849,19 +726,21 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns) {
   ProxyInfo proxy_info;
   std::unique_ptr<ProxyResolver::Request> request;
 
+  base::RunLoop run_loop;
+  host_resolver.set_hang_callback(
+      base::BindRepeating(&CancelRequestAndPause, &request, &run_loop));
+
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                            base::Bind(&CrashCallback), &request,
                            mock_bindings.CreateBindings());
 
-  host_resolver.SetAction(base::Bind(CancelRequestAndPause, &request));
-
-  host_resolver.WaitUntilRequestIsReceived();
+  run_loop.Run();
 }
 
 // Cancel the request while there is a pending DNS request, however before
 // the request is sent to the host resolver.
 TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns2) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
@@ -885,7 +764,8 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns2) {
 
 TEST_F(ProxyResolverV8TracingTest,
        CancelCreateResolverWhileOutstandingBlockingDns) {
-  BlockableHostResolver host_resolver;
+  base::RunLoop run_loop;
+  HangingProxyHostResolver host_resolver(run_loop.QuitClosure());
   MockBindings mock_bindings(&host_resolver);
 
   std::unique_ptr<ProxyResolverV8TracingFactory> factory(
@@ -896,14 +776,15 @@ TEST_F(ProxyResolverV8TracingTest,
       LoadScriptData("dns_during_init.js"), mock_bindings.CreateBindings(),
       &resolver, base::Bind(&CrashCallback), &request);
 
-  host_resolver.WaitUntilRequestIsReceived();
+  run_loop.Run();
 
   request.reset();
   EXPECT_EQ(1, host_resolver.num_cancelled_requests());
 }
 
 TEST_F(ProxyResolverV8TracingTest, DeleteFactoryWhileOutstandingBlockingDns) {
-  BlockableHostResolver host_resolver;
+  base::RunLoop run_loop;
+  HangingProxyHostResolver host_resolver(run_loop.QuitClosure());
   MockBindings mock_bindings(&host_resolver);
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver;
@@ -915,13 +796,13 @@ TEST_F(ProxyResolverV8TracingTest, DeleteFactoryWhileOutstandingBlockingDns) {
     factory->CreateProxyResolverV8Tracing(
         LoadScriptData("dns_during_init.js"), mock_bindings.CreateBindings(),
         &resolver, base::Bind(&CrashCallback), &request);
-    host_resolver.WaitUntilRequestIsReceived();
+    run_loop.Run();
   }
   EXPECT_EQ(1, host_resolver.num_cancelled_requests());
 }
 
 TEST_F(ProxyResolverV8TracingTest, ErrorLoadingScript) {
-  BlockableHostResolver host_resolver;
+  HangingProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
   std::unique_ptr<ProxyResolverV8TracingFactory> factory(
@@ -940,11 +821,13 @@ TEST_F(ProxyResolverV8TracingTest, ErrorLoadingScript) {
 // This tests that the execution of a PAC script is terminated when the DNS
 // dependencies are missing. If the test fails, then it will hang.
 TEST_F(ProxyResolverV8TracingTest, Terminate) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockBindings mock_bindings(&host_resolver);
 
-  host_resolver.rules()->AddRule("host1", "182.111.0.222");
-  host_resolver.rules()->AddRule("host2", "111.33.44.55");
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(182, 111, 0, 222)});
+  host_resolver.SetResult("host2", ProxyResolveDnsOperation::DNS_RESOLVE_EX,
+                          {IPAddress(111, 33, 44, 55)});
 
   std::unique_ptr<ProxyResolverV8Tracing> resolver =
       CreateResolver(mock_bindings.CreateBindings(), "terminate.js");
@@ -976,19 +859,25 @@ TEST_F(ProxyResolverV8TracingTest, MultipleResolvers) {
   // ------------------------
   // Setup resolver0
   // ------------------------
-  MockHostResolver host_resolver0;
+  MockProxyHostResolver host_resolver0;
   MockBindings mock_bindings0(&host_resolver0);
-  host_resolver0.rules()->AddRuleForAddressFamily(
-      "host1", ADDRESS_FAMILY_IPV4, "166.155.144.44");
-  host_resolver0.rules()
-      ->AddIPLiteralRule("host1", "::1,192.168.1.1", std::string());
-  host_resolver0.rules()->AddSimulatedFailure("host2");
-  host_resolver0.rules()->AddRule("host3", "166.155.144.33");
-  host_resolver0.rules()->AddRule("host5", "166.155.144.55");
-  host_resolver0.rules()->AddSimulatedFailure("host6");
-  host_resolver0.rules()->AddRuleForAddressFamily(
-      "*", ADDRESS_FAMILY_IPV4, "122.133.144.155");
-  host_resolver0.rules()->AddRule("*", "133.122.100.200");
+  host_resolver0.SetResult(GetHostName(),
+                           ProxyResolveDnsOperation::MY_IP_ADDRESS,
+                           {IPAddress(122, 133, 144, 155)});
+  host_resolver0.SetResult(GetHostName(),
+                           ProxyResolveDnsOperation::MY_IP_ADDRESS_EX,
+                           {IPAddress(133, 122, 100, 200)});
+  host_resolver0.SetError("", ProxyResolveDnsOperation::DNS_RESOLVE);
+  host_resolver0.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                           {IPAddress(166, 155, 144, 44)});
+  IPAddress v6_local;
+  ASSERT_TRUE(v6_local.AssignFromIPLiteral("::1"));
+  host_resolver0.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE_EX,
+                           {v6_local, IPAddress(192, 168, 1, 1)});
+  host_resolver0.SetError("host2", ProxyResolveDnsOperation::DNS_RESOLVE);
+  host_resolver0.SetResult("host3", ProxyResolveDnsOperation::DNS_RESOLVE,
+                           {IPAddress(166, 155, 144, 33)});
+  host_resolver0.SetError("host6", ProxyResolveDnsOperation::DNS_RESOLVE_EX);
   std::unique_ptr<ProxyResolverV8Tracing> resolver0 =
       CreateResolver(mock_bindings0.CreateBindings(), "dns.js");
 
@@ -1007,9 +896,10 @@ TEST_F(ProxyResolverV8TracingTest, MultipleResolvers) {
   // ------------------------
   // Setup resolver3
   // ------------------------
-  MockHostResolver host_resolver3;
+  MockProxyHostResolver host_resolver3;
   MockBindings mock_bindings3(&host_resolver3);
-  host_resolver3.rules()->AddRule("foo", "166.155.144.33");
+  host_resolver3.SetResult("foo", ProxyResolveDnsOperation::DNS_RESOLVE,
+                           {IPAddress(166, 155, 144, 33)});
   std::unique_ptr<ProxyResolverV8Tracing> resolver3 =
       CreateResolver(mock_bindings3.CreateBindings(), "simple_dns.js");
 
@@ -1021,7 +911,7 @@ TEST_F(ProxyResolverV8TracingTest, MultipleResolvers) {
       resolver0.get(), resolver1.get(), resolver2.get(), resolver3.get(),
   };
 
-  const size_t kNumResolvers = arraysize(resolver);
+  const size_t kNumResolvers = base::size(resolver);
   const size_t kNumIterations = 20;
   const size_t kNumResults = kNumResolvers * kNumIterations;
   TestCompletionCallback callback[kNumResults];

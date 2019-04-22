@@ -40,22 +40,15 @@ void TraceEventImpl::AddTraceEvent(int8_t phase,
 
   static_assert(sizeof(unsigned long long) == sizeof(uint64_t),
                 "unexpected data type sizes");
-
+  // NOTE: The |arg_values| cast is required to avoid a compiler warning,
+  // since uint64_t and unsigned long long are not the same type, even
+  // though they have the same size, on all platforms we care about.
+  base::trace_event::TraceArguments args(
+      num_args, arg_names, arg_types,
+      reinterpret_cast<const unsigned long long*>(arg_values));
   base::trace_event::TraceLog::GetInstance()->AddTraceEvent(
-      phase,
-      static_cast<const unsigned char*>(category_enabled),
-      name,
-      trace_event_internal::kGlobalScope, id,
-      num_args,
-      arg_names,
-      arg_types,
-      // This cast is necessary for LP64 systems, where uint64_t is defined as
-      // an unsigned long int, but trace_event internals are hermetic and
-      // accepts an |unsigned long long*|.  The pointer types are compatible but
-      // the compiler throws an error without an explicit cast.
-      reinterpret_cast<const unsigned long long*>(arg_values),
-      NULL,
-      flags);
+      phase, static_cast<const unsigned char*>(category_enabled), name,
+      trace_event_internal::kGlobalScope, id, &args, flags);
 }
 
 // static
@@ -71,25 +64,16 @@ void TraceEventImpl::AddTraceEventWithThreadIdAndTimestamp(
     const uint8_t arg_types[],
     const uint64_t arg_values[],
     uint8_t flags) {
+  // See above comment about the cast to |const unsigned long long*|.
+  base::trace_event::TraceArguments args(
+      num_args, arg_names, arg_types,
+      reinterpret_cast<const unsigned long long*>(arg_values));
   base::trace_event::TraceLog::GetInstance()
       ->AddTraceEventWithThreadIdAndTimestamp(
-          phase,
-          static_cast<const unsigned char*>(category_enabled),
-          name,
-          trace_event_internal::kGlobalScope, id,
-          trace_event_internal::kNoId,
-          thread_id,
-          base::TimeTicks::FromInternalValue(timestamp),
-          num_args,
-          arg_names,
-          arg_types,
-      // This cast is necessary for LP64 systems, where uint64_t is defined as
-      // an unsigned long int, but trace_event internals are hermetic and
-      // accepts an |unsigned long long*|.  The pointer types are compatible but
-      // the compiler throws an error without an explicit cast.
-      reinterpret_cast<const unsigned long long*>(arg_values),
-      NULL,
-      flags);
+          phase, static_cast<const unsigned char*>(category_enabled), name,
+          trace_event_internal::kGlobalScope, id, trace_event_internal::kNoId,
+          thread_id, base::TimeTicks::FromInternalValue(timestamp), &args,
+          flags);
 }
 
 // static

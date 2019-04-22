@@ -84,6 +84,10 @@ void FullscreenModel::SetCollapsedToolbarHeight(CGFloat height) {
   DCHECK_GE(height, 0.0);
   collapsed_toolbar_height_ = height;
   ResetForNavigation();
+  ScopedIncrementer toolbar_height_incrementer(&observer_callback_count_);
+  for (auto& observer : observers_) {
+    observer.FullscreenModelToolbarHeightsUpdated(this);
+  }
 }
 
 CGFloat FullscreenModel::GetCollapsedToolbarHeight() const {
@@ -96,6 +100,10 @@ void FullscreenModel::SetExpandedToolbarHeight(CGFloat height) {
   DCHECK_GE(height, 0.0);
   expanded_toolbar_height_ = height;
   ResetForNavigation();
+  ScopedIncrementer toolbar_height_incrementer(&observer_callback_count_);
+  for (auto& observer : observers_) {
+    observer.FullscreenModelToolbarHeightsUpdated(this);
+  }
 }
 
 CGFloat FullscreenModel::GetExpandedToolbarHeight() const {
@@ -108,6 +116,10 @@ void FullscreenModel::SetBottomToolbarHeight(CGFloat height) {
   DCHECK_GE(height, 0.0);
   bottom_toolbar_height_ = height;
   ResetForNavigation();
+  ScopedIncrementer toolbar_height_incrementer(&observer_callback_count_);
+  for (auto& observer : observers_) {
+    observer.FullscreenModelToolbarHeightsUpdated(this);
+  }
 }
 
 CGFloat FullscreenModel::GetBottomToolbarHeight() const {
@@ -116,6 +128,7 @@ CGFloat FullscreenModel::GetBottomToolbarHeight() const {
 
 void FullscreenModel::SetScrollViewHeight(CGFloat scroll_view_height) {
   scroll_view_height_ = scroll_view_height;
+  UpdateDisabledCounterForContentHeight();
 }
 
 CGFloat FullscreenModel::GetScrollViewHeight() const {
@@ -124,6 +137,7 @@ CGFloat FullscreenModel::GetScrollViewHeight() const {
 
 void FullscreenModel::SetContentHeight(CGFloat content_height) {
   content_height_ = content_height;
+  UpdateDisabledCounterForContentHeight();
 }
 
 CGFloat FullscreenModel::GetContentHeight() const {
@@ -206,6 +220,25 @@ bool FullscreenModel::IsScrollViewDragging() const {
   return dragging_;
 }
 
+void FullscreenModel::SetResizesScrollView(bool resizes_scroll_view) {
+  resizes_scroll_view_ = resizes_scroll_view;
+}
+
+bool FullscreenModel::ResizesScrollView() const {
+  return resizes_scroll_view_;
+}
+
+void FullscreenModel::SetWebViewSafeAreaInsets(UIEdgeInsets safe_area_insets) {
+  if (UIEdgeInsetsEqualToEdgeInsets(safe_area_insets_, safe_area_insets))
+    return;
+  safe_area_insets_ = safe_area_insets;
+  UpdateDisabledCounterForContentHeight();
+}
+
+UIEdgeInsets FullscreenModel::GetWebViewSafeAreaInsets() const {
+  return safe_area_insets_;
+}
+
 FullscreenModel::ScrollAction FullscreenModel::ActionForScrollFromOffset(
     CGFloat from_offset) const {
   // Update the base offset but don't recalculate progress if:
@@ -224,14 +257,19 @@ FullscreenModel::ScrollAction FullscreenModel::ActionForScrollFromOffset(
   // Ignore if:
   // - explicitly requested via IgnoreRemainderOfCurrentScroll(),
   // - the scroll is a bounce-up animation at the top,
-  // - the scroll is attempting to scroll past the bottom of the page,
-  // - the scroll is attempting to scroll content up when it already fits.
+  // - the scroll is attempting to scroll content up when it already fits,
+  // - the scroll is attempting to scroll past the bottom of the content when
+  //   the scroll view is being resized (the rebound scroll animation
+  //   interferes with the frame resizing).
   bool scrolling_content_down = y_content_offset_ - from_offset < 0.0;
   bool scrolling_past_top = y_content_offset_ <= -top_inset_;
   bool content_fits = content_height_ <= scroll_view_height_ - top_inset_;
+  bool scrolling_past_bottom =
+      y_content_offset_ + scroll_view_height_ + top_inset_ >= content_height_;
   if (ignoring_current_scroll_ ||
       (scrolling_past_top && !scrolling_content_down) ||
-      is_scrolled_to_bottom() || (content_fits && !scrolling_content_down)) {
+      (content_fits && !scrolling_content_down) ||
+      (resizes_scroll_view_ && scrolling_past_bottom)) {
     return ScrollAction::kIgnore;
   }
 
@@ -241,13 +279,45 @@ FullscreenModel::ScrollAction FullscreenModel::ActionForScrollFromOffset(
                            : ScrollAction::kUpdateBaseOffsetAndProgress;
 }
 
+void FullscreenModel::UpdateBaseOffset() {
+  base_offset_ = y_content_offset_ - (1.0 - progress_) * toolbar_height_delta();
+}
+
 void FullscreenModel::UpdateProgress() {
   CGFloat delta = base_offset_ - y_content_offset_;
   SetProgress(1.0 + delta / toolbar_height_delta());
 }
 
-void FullscreenModel::UpdateBaseOffset() {
-  base_offset_ = y_content_offset_ - (1.0 - progress_) * toolbar_height_delta();
+void FullscreenModel::UpdateDisabledCounterForContentHeight() {
+  // The model should be disabled when the content fits.
+  CGFloat disabling_threshold = scroll_view_height_;
+  if (resizes_scroll_view_) {
+    // When the FullscreenProvider is disabled, the scroll view can sometimes be
+    // resized to account for the viewport insets after the page has been
+    // rendered, so account for the maximum toolbar insets in the threshold.
+    disabling_threshold += expanded_toolbar_height_ + bottom_toolbar_height_;
+  } else {
+    // After reloads, pages whose viewports fit the screen are sometimes resized
+    // to account for the safe area insets.  Adding these to the threshold helps
+    // prevent fullscreen from beeing re-enabled in this case.
+    // TODO(crbug.com/924807): This logic can potentially disable fullscreen for
+    // short pages in which this bug does not occur.  It should be removed once
+    // the page can be reloaded without resizing.
+    disabling_threshold += safe_area_insets_.top + safe_area_insets_.bottom;
+  }
+
+  // Don't disable fullscreen if both heights have not been received.
+  bool areBothHeightsSet = !AreCGFloatsEqual(content_height_, 0.0) &&
+                           !AreCGFloatsEqual(scroll_view_height_, 0.0);
+
+  bool disable = areBothHeightsSet && content_height_ <= disabling_threshold;
+  if (disabled_for_short_content_ == disable)
+    return;
+  disabled_for_short_content_ = disable;
+  if (disable)
+    IncrementDisabledCounter();
+  else
+    DecrementDisabledCounter();
 }
 
 void FullscreenModel::SetProgress(CGFloat progress) {

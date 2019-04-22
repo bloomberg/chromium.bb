@@ -7,9 +7,10 @@
 #include <string.h>
 
 #include "base/big_endian.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/zlib/zlib.h"
@@ -298,8 +299,7 @@ void WebRtcRtpDumpWriter::WriteRtpPacket(const uint8_t* packet_header,
 
     // Writes the dump file header.
     AppendToBuffer(kRtpDumpFileHeaderFirstLine,
-                   arraysize(kRtpDumpFileHeaderFirstLine) - 1,
-                   dest_buffer);
+                   base::size(kRtpDumpFileHeaderFirstLine) - 1, dest_buffer);
     WriteRtpDumpFileHeaderBigEndian(start_time_, dest_buffer);
   }
 

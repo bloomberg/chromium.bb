@@ -21,7 +21,7 @@ namespace compiler {
 class JSCallReducerTest : public TypedGraphTest {
  public:
   JSCallReducerTest()
-      : TypedGraphTest(3), javascript_(zone()), deps_(isolate(), zone()) {
+      : TypedGraphTest(3), javascript_(zone()), deps_(broker(), zone()) {
     broker()->SerializeStandardObjects();
   }
   ~JSCallReducerTest() override = default;
@@ -108,7 +108,10 @@ class JSCallReducerTest : public TypedGraphTest {
     // Set the raw feedback metadata to circumvent checks that we are not
     // overwriting existing metadata.
     shared->set_raw_outer_scope_info_or_feedback_metadata(*metadata);
-    Handle<FeedbackVector> vector = FeedbackVector::New(isolate(), shared);
+    Handle<ClosureFeedbackCellArray> closure_feedback_cell_array =
+        ClosureFeedbackCellArray::New(isolate(), shared);
+    Handle<FeedbackVector> vector =
+        FeedbackVector::New(isolate(), shared, closure_feedback_cell_array);
     VectorSlotPair feedback(vector, FeedbackSlot(0), UNINITIALIZED);
     return javascript()->Call(arity, CallFrequency(), feedback,
                               ConvertReceiverMode::kAny,

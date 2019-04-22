@@ -21,7 +21,7 @@
  *   relaxUpdates: boolean,
  * }}
  */
-var WebApkInfo;
+let WebApkInfo;
 
 /**
  * Creates and returns an element (with |text| as content) assigning it the
@@ -33,7 +33,7 @@ var WebApkInfo;
  * @return {Element} The created element.
  */
 function createElementWithTextAndClass(text, type, className) {
-  var element = createElementWithClassName(type, className);
+  const element = createElementWithClassName(type, className);
   element.textContent = text;
   return element;
 }
@@ -47,7 +47,7 @@ function createElementWithTextAndClass(text, type, className) {
  * WebAPKs installed.
  */
 function returnWebApksInfo(webApkList) {
-  for (let webApkInfo of webApkList) {
+  for (const webApkInfo of webApkList) {
     addWebApk(webApkInfo);
   }
 }
@@ -59,7 +59,7 @@ function returnWebApksInfo(webApkList) {
  * @param {string} value Text to set in the new element.
  */
 function addWebApkField(webApkList, label, value) {
-  var divElement =
+  const divElement =
       createElementWithTextAndClass(label, 'div', 'app-property-label');
   divElement.appendChild(
       createElementWithTextAndClass(value, 'span', 'app-property-value'));
@@ -72,7 +72,7 @@ function addWebApkField(webApkList, label, value) {
  * @param {WebApkInfo} webApkInfo Information about an installed WebAPK.
  */
 function addWebApk(webApkInfo) {
-  /** @type {HTMLElement} */ var webApkList = $('webapk-list');
+  /** @type {HTMLElement} */ const webApkList = $('webapk-list');
 
   webApkList.appendChild(
       createElementWithTextAndClass(webApkInfo.name, 'span', 'app-name'));

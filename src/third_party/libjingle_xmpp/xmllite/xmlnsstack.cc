@@ -17,7 +17,7 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlconstants.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 XmlnsStack::XmlnsStack() :
   pxmlnsStack_(new std::vector<std::string>),

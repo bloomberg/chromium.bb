@@ -21,17 +21,13 @@ class SyncEntity;
 namespace syncer {
 
 // An entity that is unique per client account.
-//
-// TODO(pvalenzuela): Reconsider the naming of this class. In some cases, this
-// type is used to represent entities where the unique client tag is irrelevant
-// (e.g., Autofill Wallet).
 class PersistentUniqueClientEntity : public LoopbackServerEntity {
  public:
   PersistentUniqueClientEntity(const std::string& id,
                                syncer::ModelType model_type,
                                int64_t version,
-                               const std::string& name,
-                               const std::string& client_defined_unique_tag,
+                               const std::string& non_unique_name,
+                               const std::string& client_tag_hash,
                                const sync_pb::EntitySpecifics& specifics,
                                int64_t creation_time,
                                int64_t last_modified_time);
@@ -44,8 +40,9 @@ class PersistentUniqueClientEntity : public LoopbackServerEntity {
 
   // Factory function for creating a PersistentUniqueClientEntity for use in the
   // FakeServer injection API.
-  static std::unique_ptr<LoopbackServerEntity> CreateFromEntitySpecifics(
-      const std::string& name,
+  static std::unique_ptr<LoopbackServerEntity> CreateFromSpecificsForTesting(
+      const std::string& non_unique_name,
+      const std::string& client_tag,
       const sync_pb::EntitySpecifics& entity_specifics,
       int64_t creation_time,
       int64_t last_modified_time);
@@ -59,8 +56,8 @@ class PersistentUniqueClientEntity : public LoopbackServerEntity {
 
  private:
   // These member values have equivalent fields in SyncEntity.
-  std::string client_defined_unique_tag_;
-  int64_t creation_time_;
+  const std::string client_tag_hash_;
+  const int64_t creation_time_;
   int64_t last_modified_time_;
 };
 

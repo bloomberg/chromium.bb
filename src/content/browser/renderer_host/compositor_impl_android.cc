@@ -19,10 +19,10 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -46,10 +46,10 @@
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
+#include "components/viz/common/viz_utils.h"
 #include "components/viz/host/host_display_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
@@ -81,12 +81,6 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
-#include "gpu/vulkan/buildflags.h"
-#if BUILDFLAG(ENABLE_VULKAN)
-#include "gpu/vulkan/init/vulkan_factory.h"
-#include "gpu/vulkan/vulkan_implementation.h"
-#include "gpu/vulkan/vulkan_surface.h"
-#endif
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
@@ -101,10 +95,6 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/latency/latency_tracker.h"
-
-namespace gpu {
-class VulkanSurface;
-}
 
 namespace content {
 
@@ -242,7 +232,6 @@ class CompositorDependencies {
   SingleThreadTaskGraphRunner task_graph_runner;
   viz::HostFrameSinkManager host_frame_sink_manager;
   viz::FrameSinkIdAllocator frame_sink_id_allocator;
-  viz::ParentLocalSurfaceIdAllocator surface_id_allocator;
 
   // Non-viz members:
   // This is owned here so that SurfaceManager will be accessible in process
@@ -252,18 +241,13 @@ class CompositorDependencies {
   // http://crbug.com/657959.
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_impl;
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation;
-  scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider;
-#endif
  private:
   friend class base::NoDestructor<CompositorDependencies>;
 
   CompositorDependencies() : frame_sink_id_allocator(kDefaultClientId) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    bool enable_viz =
-        base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
+    bool enable_viz = features::IsVizDisplayCompositorEnabled();
     if (!enable_viz) {
       // The SharedBitmapManager can be null as software compositing is not
       // supported or used on Android.
@@ -348,26 +332,6 @@ class CompositorDependencies {
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
 
-#if BUILDFLAG(ENABLE_VULKAN)
-scoped_refptr<viz::VulkanContextProvider> GetSharedVulkanContextProvider() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVulkan))
-    return nullptr;
-
-  scoped_refptr<viz::VulkanContextProvider>& context_provider =
-      CompositorDependencies::Get().vulkan_context_provider;
-  if (!context_provider) {
-    std::unique_ptr<gpu::VulkanImplementation>& vulkan_implementation =
-        CompositorDependencies::Get().vulkan_implementation;
-    DCHECK(!vulkan_implementation);
-    vulkan_implementation = gpu::CreateVulkanImplementation();
-    context_provider = viz::VulkanInProcessContextProvider::Create(
-        vulkan_implementation.get());
-  }
-  return context_provider;
-}
-#endif
-
 gpu::SharedMemoryLimits GetCompositorContextSharedMemoryLimits(
     gfx::NativeWindow window) {
   const gfx::Size screen_size = display::Screen::GetScreen()
@@ -404,7 +368,7 @@ gpu::ContextCreationAttribs GetCompositorContextAttributes(
 
   if (requires_alpha_channel) {
     attributes.alpha_size = 8;
-  } else if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512) {
+  } else if (viz::PreferRGB565ResourcesForDisplay()) {
     // In this case we prefer to use RGB565 format instead of RGBA8888 if
     // possible.
     // TODO(danakj): CommandBufferStub constructor checks for alpha == 0
@@ -481,12 +445,8 @@ class AndroidOutputSurface : public viz::OutputSurface {
                        std::move(frame.latency_info), frame.size);
     uint32_t flags = 0;
     gpu::ContextSupport::PresentationCallback presentation_callback;
-    if (frame.need_presentation_feedback) {
-      flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
-      presentation_callback =
-          base::BindOnce(&AndroidOutputSurface::OnPresentation,
-                         weak_ptr_factory_.GetWeakPtr());
-    }
+    presentation_callback = base::BindOnce(
+        &AndroidOutputSurface::OnPresentation, weak_ptr_factory_.GetWeakPtr());
     if (frame.sub_buffer_rect) {
       DCHECK(frame.sub_buffer_rect->IsEmpty());
       context_provider_->ContextSupport()->CommitOverlayPlanes(
@@ -496,13 +456,6 @@ class AndroidOutputSurface : public viz::OutputSurface {
           flags, std::move(callback), std::move(presentation_callback));
     }
   }
-
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* GetVulkanSurface() override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-#endif
 
   void BindToClient(viz::OutputSurfaceClient* client) override {
     DCHECK(client);
@@ -585,118 +538,6 @@ class AndroidOutputSurface : public viz::OutputSurface {
   base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_;
 };
 
-#if BUILDFLAG(ENABLE_VULKAN)
-class VulkanOutputSurface : public viz::OutputSurface {
- public:
-  explicit VulkanOutputSurface(
-      scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : OutputSurface(std::move(vulkan_context_provider)),
-        task_runner_(std::move(task_runner)),
-        weak_ptr_factory_(this) {}
-
-  ~VulkanOutputSurface() override { Destroy(); }
-
-  bool Initialize(gfx::AcceleratedWidget widget) {
-    DCHECK(!surface_);
-    std::unique_ptr<gpu::VulkanSurface> surface(
-        vulkan_context_provider()->GetVulkanImplementation()->CreateViewSurface(
-            widget));
-    if (!surface->Initialize(vulkan_context_provider()->GetDeviceQueue(),
-                             gpu::VulkanSurface::DEFAULT_SURFACE_FORMAT)) {
-      return false;
-    }
-    surface_ = std::move(surface);
-
-    return true;
-  }
-
-  void BindToClient(viz::OutputSurfaceClient* client) override {
-    client_ = client;
-  }
-
-  void EnsureBackbuffer() override { NOTIMPLEMENTED(); }
-
-  void DiscardBackbuffer() override { NOTIMPLEMENTED(); }
-
-  void BindFramebuffer() override { NOTIMPLEMENTED(); }
-
-  void SetDrawRectangle(const gfx::Rect& rect) override { NOTIMPLEMENTED(); }
-
-  viz::OverlayCandidateValidator* GetOverlayCandidateValidator()
-      const override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  bool IsDisplayedAsOverlayPlane() const override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  unsigned GetOverlayTextureId() const override {
-    NOTIMPLEMENTED();
-    return 0;
-  }
-
-  gfx::BufferFormat GetOverlayBufferFormat() const override {
-    NOTIMPLEMENTED();
-    return gfx::BufferFormat::BGRA_8888;
-  }
-
-  void Reshape(const gfx::Size& size,
-               float device_scale_factor,
-               const gfx::ColorSpace& color_space,
-               bool has_alpha,
-               bool use_stencil) override {
-    NOTIMPLEMENTED();
-  }
-
-  bool HasExternalStencilTest() const override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  void ApplyExternalStencil() override { NOTIMPLEMENTED(); }
-
-  uint32_t GetFramebufferCopyTextureFormat() override {
-    NOTIMPLEMENTED();
-    return 0;
-  }
-
-  void SwapBuffers(viz::OutputSurfaceFrame frame) override {
-    surface_->SwapBuffers();
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&VulkanOutputSurface::SwapBuffersAck,
-                                      weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  gpu::VulkanSurface* GetVulkanSurface() override { return surface_.get(); }
-
-  unsigned UpdateGpuFence() override {
-    NOTIMPLEMENTED();
-    return 0;
-  }
-
-  void Destroy() {
-    if (surface_) {
-      surface_->Destroy();
-      surface_.reset();
-    }
-  }
-
- private:
-  void SwapBuffersAck() { client_->DidReceiveSwapBuffersAck(); }
-
-  std::unique_ptr<gpu::VulkanSurface> surface_;
-  viz::OutputSurfaceClient* client_ = nullptr;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<VulkanOutputSurface> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(VulkanOutputSurface);
-};
-#endif
-
 static bool g_initialized = false;
 
 }  // anonymous namespace
@@ -761,8 +602,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       lock_manager_(base::ThreadTaskRunnerHandle::Get()),
       enable_surface_synchronization_(
           features::IsSurfaceSynchronizationEnabled()),
-      enable_viz_(
-          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
+      enable_viz_(features::IsVizDisplayCompositorEnabled()),
       weak_factory_(this) {
   DCHECK(client);
 
@@ -812,6 +652,8 @@ void CompositorImpl::SetRootWindow(gfx::NativeWindow root_window) {
   }
 
   root_window_ = root_window;
+  if (base::FeatureList::IsEnabled(features::kForce60HzRefreshRate))
+    root_window_->SetForce60HzRefreshRate();
   root_window_->SetLayer(root_layer ? root_layer : cc::Layer::Create());
   root_window_->GetLayer()->SetBounds(size_);
   if (!readback_layer_tree_) {
@@ -834,7 +676,7 @@ void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
     subroot_layer_->RemoveFromParent();
     subroot_layer_ = nullptr;
   }
-  if (root_window_->GetLayer()) {
+  if (root_layer.get() && root_window_->GetLayer()) {
     subroot_layer_ = root_window_->GetLayer();
     subroot_layer_->AddChild(root_layer);
   }
@@ -896,6 +738,13 @@ void CompositorImpl::CreateLayerTreeHost() {
   settings.single_thread_proxy_scheduler = true;
   settings.use_painted_device_scale_factor = true;
 
+  if (features::IsSurfaceSynchronizationEnabled()) {
+    // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android.
+    // Disable in viz mode for now, with plan to disable more widely once
+    // viz launches.
+    settings.enable_latency_recovery = false;
+  }
+
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 
   cc::LayerTreeHost::InitParams params;
@@ -918,7 +767,6 @@ void CompositorImpl::SetVisible(bool visible) {
 
   if (!visible) {
     DCHECK(host_->IsVisible());
-    CompositorDependencies::Get().OnCompositorHidden(this);
     // Tear down the display first, synchronously completing any pending
     // draws/readbacks if poosible.
     TearDownDisplayAndUnregisterRootFrameSink();
@@ -927,6 +775,10 @@ void CompositorImpl::SetVisible(bool visible) {
     host_->ReleaseLayerTreeFrameSink();
     has_layer_tree_frame_sink_ = false;
     pending_frames_ = 0;
+
+    // Notify CompositorDependencies of visibility changes last, to ensure that
+    // we don't disable the GPU watchdog until sync IPCs above are completed.
+    CompositorDependencies::Get().OnCompositorHidden(this);
   } else {
     DCHECK(!host_->IsVisible());
     CompositorDependencies::Get().OnCompositorVisible(this);
@@ -939,6 +791,10 @@ void CompositorImpl::SetVisible(bool visible) {
 }
 
 void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
+  // TODO(ericrk): Remove this once hang issues have been debugged.
+  // https://crbug.com/899705
+  SCOPED_UMA_HISTOGRAM_LONG_TIMER("CompositorImplAndroid.TearDownDisplayTime");
+
   if (enable_viz_) {
     // Make a best effort to try to complete pending readbacks.
     // TODO(crbug.com/637035): Consider doing this in a better way,
@@ -1009,7 +865,17 @@ void CompositorImpl::SetNeedsComposite() {
   host_->SetNeedsAnimate();
 }
 
-void CompositorImpl::UpdateLayerTreeHost(bool record_main_frame_metrics) {
+void CompositorImpl::DidUpdateLayers() {
+  // Dump property trees and layers if run with:
+  //   --vmodule=compositor_impl_android=3
+  VLOG(3) << "After updating layers:\n"
+          << "property trees:\n"
+          << host_->property_trees()->ToString() << "\n"
+          << "cc::Layers:\n"
+          << host_->LayersAsString();
+}
+
+void CompositorImpl::UpdateLayerTreeHost() {
   client_->UpdateLayerTreeHost();
   if (needs_animate_) {
     needs_animate_ = false;
@@ -1035,9 +901,10 @@ void CompositorImpl::DidInitializeLayerTreeFrameSink() {
 }
 
 void CompositorImpl::DidFailToInitializeLayerTreeFrameSink() {
-  // The context is bound/initialized before handing it to the
-  // LayerTreeFrameSink.
-  NOTREACHED();
+  layer_tree_frame_sink_request_pending_ = false;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&CompositorImpl::RequestNewLayerTreeFrameSink,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
@@ -1047,11 +914,6 @@ void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
   if (!host_->IsVisible())
     return;
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (CreateVulkanOutputSurface())
-    return;
-#endif
-
   DCHECK(surface_handle_ != gpu::kNullSurfaceHandle);
   BrowserMainLoop::GetInstance()
       ->gpu_channel_establish_factory()
@@ -1059,29 +921,6 @@ void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
           base::BindOnce(&CompositorImpl::OnGpuChannelEstablished,
                          weak_factory_.GetWeakPtr()));
 }
-
-#if BUILDFLAG(ENABLE_VULKAN)
-bool CompositorImpl::CreateVulkanOutputSurface() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVulkan))
-    return false;
-
-  scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider =
-      GetSharedVulkanContextProvider();
-  if (!vulkan_context_provider)
-    return false;
-
-  // TODO(crbug.com/582558): Need to match GL and implement DidSwapBuffers.
-  auto vulkan_surface = std::make_unique<VulkanOutputSurface>(
-      vulkan_context_provider, base::ThreadTaskRunnerHandle::Get());
-  if (!vulkan_surface->Initialize(window_))
-    return false;
-
-  InitializeDisplay(std::move(vulkan_surface), nullptr);
-
-  return !!display_;
-}
-#endif
 
 void CompositorImpl::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
@@ -1162,8 +1001,6 @@ void CompositorImpl::InitializeDisplay(
 
   if (context_provider) {
     gpu_capabilities_ = context_provider->ContextCapabilities();
-  } else {
-    // TODO(danakj): Populate gpu_capabilities_ for VulkanContextProvider.
   }
 
   viz::FrameSinkManagerImpl* manager = GetFrameSinkManager();
@@ -1340,9 +1177,15 @@ void CompositorImpl::SetVSyncPaused(bool paused) {
     display_private_->SetVSyncPaused(paused);
 }
 
+void CompositorImpl::OnUpdateRefreshRate(float refresh_rate) {
+  if (display_private_)
+    display_private_->UpdateRefreshRate(refresh_rate);
+}
+
 void CompositorImpl::InitializeVizLayerTreeFrameSink(
     scoped_refptr<ws::ContextProviderCommandBuffer> context_provider) {
   DCHECK(enable_viz_);
+  DCHECK(root_window_);
 
   pending_frames_ = 0;
   gpu_capabilities_ = context_provider->ContextCapabilities();
@@ -1370,6 +1213,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
       display_client_->GetBoundPtr(task_runner).PassInterface();
 
   viz::RendererSettings renderer_settings;
+  renderer_settings.partial_swap_enabled = true;
   renderer_settings.allow_antialiasing = false;
   renderer_settings.highp_threshold_min = 2048;
   renderer_settings.requires_alpha_channel = requires_alpha_channel_;
@@ -1377,10 +1221,13 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(root_window_)
           .GetSizeInPixel();
+  renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
+  renderer_settings.color_space = display_color_space_;
   root_params->frame_sink_id = frame_sink_id_;
   root_params->widget = surface_handle_;
   root_params->gpu_compositing = true;
   root_params->renderer_settings = renderer_settings;
+  root_params->refresh_rate = root_window_->GetRefreshRate();
 
   GetHostFrameSinkManager()->CreateRootCompositorFrameSink(
       std::move(root_params));
@@ -1393,8 +1240,6 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
                                          ->GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_associated_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
-  params.local_surface_id_provider =
-      std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
   params.hit_test_data_provider =
       std::make_unique<viz::HitTestDataProviderDrawQuad>(
@@ -1407,15 +1252,15 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
   display_private_->SetDisplayVisible(true);
   display_private_->Resize(size_);
+  display_private_->SetDisplayColorSpace(display_color_space_,
+                                         display_color_space_);
   display_private_->SetVSyncPaused(vsync_paused_);
 }
 
-viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() const {
+viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() {
   if (enable_surface_synchronization_) {
-    viz::ParentLocalSurfaceIdAllocator& allocator =
-        CompositorDependencies::Get().surface_id_allocator;
-    allocator.GenerateId();
-    return allocator.GetCurrentLocalSurfaceIdAllocation();
+    local_surface_id_allocator_.GenerateId();
+    return local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
   }
 
   return viz::LocalSurfaceIdAllocation();

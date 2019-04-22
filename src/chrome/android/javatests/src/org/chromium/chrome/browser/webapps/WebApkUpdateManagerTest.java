@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -25,6 +24,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.webapk.lib.client.WebApkVersion;
@@ -150,19 +150,16 @@ public class WebApkUpdateManagerTest {
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
         final TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(waiter, storage);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                WebApkInfo info = WebApkInfo.create(WEBAPK_ID, "", creationData.scope, null, null,
-                        null, creationData.name, creationData.shortName, creationData.displayMode,
-                        creationData.orientation, 0, creationData.themeColor,
-                        creationData.backgroundColor, "",
-                        WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION,
-                        creationData.manifestUrl, creationData.startUrl,
-                        WebApkInfo.WebApkDistributor.BROWSER, creationData.iconUrlToMurmur2HashMap,
-                        null, false /* forceNavigation */, false /* useTransparentSplash */, null /* shareData */);
-                updateManager.updateIfNeeded(mTab, info);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            WebApkInfo info = WebApkInfo.create(WEBAPK_ID, "", creationData.scope, null, null, null,
+                    creationData.name, creationData.shortName, creationData.displayMode,
+                    creationData.orientation, 0, creationData.themeColor,
+                    creationData.backgroundColor, "",
+                    WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION, creationData.manifestUrl,
+                    creationData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
+                    creationData.iconUrlToMurmur2HashMap, null, false /* forceNavigation */,
+                    false /* isSplashProvidedByWebApk */, null /* shareData */);
+            updateManager.updateIfNeeded(mTab, info);
         });
         waiter.waitForCallback(0);
 

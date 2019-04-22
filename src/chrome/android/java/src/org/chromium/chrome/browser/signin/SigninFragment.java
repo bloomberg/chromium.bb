@@ -134,10 +134,11 @@ public class SigninFragment extends SigninFragmentBase {
         SigninManager.get().signIn(accountName, getActivity(), new SigninManager.SignInCallback() {
             @Override
             public void onSignInComplete() {
-                UnifiedConsentServiceBridge.setUnifiedConsentGiven(true);
+                UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
                 if (settingsClicked) {
-                    PreferencesLauncher.launchSettingsPage(
-                            getActivity(), SyncAndServicesPreferences.class);
+                    PreferencesLauncher.launchSettingsPage(getActivity(),
+                            SyncAndServicesPreferences.class,
+                            SyncAndServicesPreferences.createArguments(true));
                 }
 
                 recordSigninCompletedHistogramAccountInfo();

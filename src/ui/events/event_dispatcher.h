@@ -18,11 +18,11 @@ class EventDispatcher;
 class EventTarget;
 
 struct EventDispatchDetails {
-  EventDispatchDetails()
-      : dispatcher_destroyed(false),
-        target_destroyed(false) {}
-  bool dispatcher_destroyed;
-  bool target_destroyed;
+  bool dispatcher_destroyed = false;
+  bool target_destroyed = false;
+
+  // Set to true if an EventRewriter discards the event.
+  bool event_discarded = false;
 };
 
 class EVENTS_EXPORT EventDispatcherDelegate {

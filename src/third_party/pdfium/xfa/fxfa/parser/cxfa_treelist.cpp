@@ -17,12 +17,11 @@ CXFA_TreeList::CXFA_TreeList(CXFA_Document* pDocument)
     : CXFA_List(pDocument,
                 XFA_ObjectType::TreeList,
                 XFA_Element::TreeList,
-                WideStringView(L"treeList"),
                 pdfium::MakeUnique<CJX_TreeList>(this)) {}
 
 CXFA_TreeList::~CXFA_TreeList() = default;
 
-CXFA_Node* CXFA_TreeList::NamedItem(const WideStringView& wsName) {
+CXFA_Node* CXFA_TreeList::NamedItem(WideStringView wsName) {
   uint32_t dwHashCode = FX_HashCode_GetW(wsName, false);
   size_t count = GetLength();
   for (size_t i = 0; i < count; i++) {

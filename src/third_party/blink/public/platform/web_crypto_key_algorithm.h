@@ -65,7 +65,7 @@ class WebCryptoKeyAlgorithm {
 
   BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm CreateAes(
       WebCryptoAlgorithmId,
-      unsigned short key_length_bits);
+      uint16_t key_length_bits);
   BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm CreateHmac(
       WebCryptoAlgorithmId hash,
       unsigned key_length_bits);

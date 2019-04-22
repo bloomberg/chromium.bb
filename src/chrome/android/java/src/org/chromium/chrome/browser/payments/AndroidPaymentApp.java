@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.RemoteException;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.util.JsonWriter;
 
@@ -44,8 +45,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * The point of interaction with a locally installed 3rd party native Android payment app.
@@ -295,7 +294,7 @@ public class AndroidPaymentApp
             return;
         }
 
-        new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
+        new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.external_app_leave_incognito_warning_title)
                 .setMessage(ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
                                 ? R.string.external_payment_app_leave_private_warning

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_test.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -27,6 +28,10 @@ AXObjectCacheImpl& AccessibilityTest::GetAXObjectCache() const {
       ToAXObjectCacheImpl(GetDocument().ExistingAXObjectCache());
   DCHECK(ax_object_cache);
   return *ax_object_cache;
+}
+
+AXObject* AccessibilityTest::GetAXObject(const Node& node) const {
+  return GetAXObjectCache().GetOrCreate(&node);
 }
 
 AXObject* AccessibilityTest::GetAXRootObject() const {

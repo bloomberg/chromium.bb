@@ -8,8 +8,9 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -161,7 +162,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
                        weak_ptr_factory_.GetWeakPtr()));
     update_submission_state_callback_ = media::BindToLoop(
         video_frame_compositor_task_runner_,
-        base::BindRepeating(&WebMediaPlayerMSCompositor::UpdateSubmissionState,
+        base::BindRepeating(&WebMediaPlayerMSCompositor::SetIsSurfaceVisible,
                             weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -203,9 +204,9 @@ void WebMediaPlayerMSCompositor::InitializeSubmitter() {
   submitter_->Initialize(this);
 }
 
-void WebMediaPlayerMSCompositor::UpdateSubmissionState(bool state) {
+void WebMediaPlayerMSCompositor::SetIsSurfaceVisible(bool state) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
-  submitter_->UpdateSubmissionState(state);
+  submitter_->SetIsSurfaceVisible(state);
 }
 
 // TODO(https://crbug/879424): Rename, since it really doesn't enable
@@ -214,9 +215,7 @@ void WebMediaPlayerMSCompositor::EnableSubmission(
     const viz::SurfaceId& id,
     base::TimeTicks local_surface_id_allocation_time,
     media::VideoRotation rotation,
-    bool force_submit,
-    bool is_opaque,
-    blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
+    bool force_submit) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
 
   // If we're switching to |submitter_| from some other client, then tell it.
@@ -227,9 +226,7 @@ void WebMediaPlayerMSCompositor::EnableSubmission(
 
   submitter_->SetRotation(rotation);
   submitter_->SetForceSubmit(force_submit);
-  submitter_->SetIsOpaque(is_opaque);
-  submitter_->EnableSubmission(id, local_surface_id_allocation_time,
-                               std::move(frame_sink_destroyed_callback));
+  submitter_->EnableSubmission(id, local_surface_id_allocation_time);
   video_frame_provider_client_ = submitter_.get();
 
   if (!stopped_)
@@ -241,14 +238,20 @@ void WebMediaPlayerMSCompositor::SetForceSubmit(bool force_submit) {
   submitter_->SetForceSubmit(force_submit);
 }
 
+void WebMediaPlayerMSCompositor::SetIsPageVisible(bool is_visible) {
+  DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
+  if (submitter_)
+    submitter_->SetIsPageVisible(is_visible);
+}
+
 gfx::Size WebMediaPlayerMSCompositor::GetCurrentSize() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::AutoLock auto_lock(current_frame_lock_);
   return current_frame_ ? current_frame_->natural_size() : gfx::Size();
 }
 
 base::TimeDelta WebMediaPlayerMSCompositor::GetCurrentTime() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::AutoLock auto_lock(current_frame_lock_);
   return current_frame_.get() ? current_frame_->timestamp() : base::TimeDelta();
 }
@@ -256,14 +259,14 @@ base::TimeDelta WebMediaPlayerMSCompositor::GetCurrentTime() {
 size_t WebMediaPlayerMSCompositor::total_frame_count() {
   base::AutoLock auto_lock(current_frame_lock_);
   DVLOG(1) << __func__ << ", " << total_frame_count_;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return total_frame_count_;
 }
 
 size_t WebMediaPlayerMSCompositor::dropped_frame_count() {
   base::AutoLock auto_lock(current_frame_lock_);
   DVLOG(1) << __func__ << ", " << dropped_frame_count_;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return dropped_frame_count_;
 }
 
@@ -411,7 +414,7 @@ WebMediaPlayerMSCompositor::GetCurrentFrameWithoutUpdatingStatistics() {
 }
 
 void WebMediaPlayerMSCompositor::StartRendering() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   {
     base::AutoLock auto_lock(current_frame_lock_);
     render_started_ = true;
@@ -423,14 +426,14 @@ void WebMediaPlayerMSCompositor::StartRendering() {
 }
 
 void WebMediaPlayerMSCompositor::StopRendering() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   video_frame_compositor_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebMediaPlayerMSCompositor::StopRenderingInternal, this));
 }
 
 void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopy() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Bounce this call off of IO thread to since there might still be frames
   // passed on IO thread.
   io_task_runner_->PostTask(
@@ -441,7 +444,7 @@ void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopy() {
 }
 
 void WebMediaPlayerMSCompositor::StopUsingProvider() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   video_frame_compositor_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebMediaPlayerMSCompositor::StopUsingProviderInternal,
@@ -451,9 +454,11 @@ void WebMediaPlayerMSCompositor::StopUsingProvider() {
 bool WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks(
     const std::vector<base::TimeDelta>& timestamps,
     std::vector<base::TimeTicks>* wall_clock_times) {
+#if DCHECK_IS_ON()
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread() ||
          thread_checker_.CalledOnValidThread() ||
          io_task_runner_->BelongsToCurrentThread());
+#endif
   for (const base::TimeDelta& timestamp : timestamps) {
     DCHECK(timestamps_to_clock_times_.count(timestamp));
     wall_clock_times->push_back(timestamps_to_clock_times_[timestamp]);
@@ -565,8 +570,6 @@ void WebMediaPlayerMSCompositor::CheckForFrameChanges(
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&WebMediaPlayerMS::OnOpacityChanged, player_,
                                   new_frame_is_opaque));
-    if (submitter_)
-      submitter_->SetIsOpaque(new_frame_is_opaque);
   }
   if (old_frame->natural_size() != new_frame->natural_size()) {
     main_task_runner_->PostTask(
@@ -610,7 +613,7 @@ void WebMediaPlayerMSCompositor::StopUsingProviderInternal() {
 }
 
 void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopyInternal() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   scoped_refptr<media::VideoFrame> current_frame_ref;
   {
     base::AutoLock auto_lock(current_frame_lock_);

@@ -103,9 +103,9 @@ TEST_P(AudioEncoderFactoryTest, CanRunAllSupportedEncoders) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(BuiltinAudioEncoderFactoryTest,
-                        AudioEncoderFactoryTest,
-                        ::testing::Values(CreateBuiltinAudioEncoderFactory()));
+INSTANTIATE_TEST_SUITE_P(BuiltinAudioEncoderFactoryTest,
+                         AudioEncoderFactoryTest,
+                         ::testing::Values(CreateBuiltinAudioEncoderFactory()));
 
 TEST(BuiltinAudioEncoderFactoryTest, SupportsTheExpectedFormats) {
   using ::testing::ElementsAreArray;
@@ -116,6 +116,7 @@ TEST(BuiltinAudioEncoderFactoryTest, SupportsTheExpectedFormats) {
 
   const std::vector<SdpAudioFormat> supported_formats = [&specs] {
     std::vector<SdpAudioFormat> formats;
+    formats.reserve(specs.size());
     for (const auto& spec : specs) {
       formats.push_back(spec.format);
     }

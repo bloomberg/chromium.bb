@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
@@ -55,10 +56,6 @@ const char kUnsyncedPreferenceDefaultValue[] = "default";
 const char kDefaultCharsetPrefName[] = "default_charset";
 const char kNonDefaultCharsetValue[] = "foo";
 const char kDefaultCharsetValue[] = "utf-8";
-
-void Increment(int* num) {
-  (*num)++;
-}
 
 class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
  public:
@@ -166,7 +163,7 @@ class PrefServiceSyncableTest : public testing::Test {
     auto it = list.begin();
     for (; it != list.end(); ++it) {
       if (syncer::SyncDataLocal(it->sync_data()).GetTag() == name) {
-        return base::JSONReader::Read(
+        return base::JSONReader::ReadDeprecated(
             it->sync_data().GetSpecifics().preference().value());
       }
     }
@@ -206,7 +203,7 @@ TEST_F(PrefServiceSyncableTest, CreatePrefSyncData) {
   EXPECT_EQ(std::string(kStringPrefName), specifics.name());
 
   std::unique_ptr<base::Value> value =
-      base::JSONReader::Read(specifics.value());
+      base::JSONReader::ReadDeprecated(specifics.value());
   EXPECT_TRUE(pref->GetValue()->Equals(value.get()));
 }
 
@@ -416,7 +413,7 @@ class PrefServiceSyncableMergeTest : public testing::Test {
     auto it = list.begin();
     for (; it != list.end(); ++it) {
       if (syncer::SyncDataLocal(it->sync_data()).GetTag() == name) {
-        return base::JSONReader::Read(
+        return base::JSONReader::ReadDeprecated(
             it->sync_data().GetSpecifics().preference().value());
       }
     }
@@ -906,17 +903,6 @@ TEST_F(PrefServiceSyncableTest, DeletePreference) {
                                   SyncChange::ACTION_DELETE));
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, list);
   EXPECT_TRUE(pref->IsDefaultValue());
-}
-
-TEST_F(PrefServiceSyncableTest, RegisterMergeDataFinishedCallback) {
-  int num_callbacks = 0;
-
-  prefs_.RegisterMergeDataFinishedCallback(
-      base::Bind(&Increment, &num_callbacks));
-  EXPECT_EQ(0, num_callbacks);
-
-  InitWithNoSyncData();
-  EXPECT_EQ(1, num_callbacks);
 }
 
 }  // namespace

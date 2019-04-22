@@ -22,7 +22,7 @@ namespace content {
 class NotificationSource;
 class NotificationDetails;
 class WebContents;
-}
+}  // namespace content
 
 class UnloadController : public content::NotificationObserver,
                          public TabStripModelObserver {

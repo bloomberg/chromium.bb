@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Base class used to start servers used by the layout tests."""
+"""Base class used to start servers used by the web tests."""
 
 import errno
 import logging
@@ -42,7 +42,7 @@ class ServerError(Exception):
 
 
 class ServerBase(object):
-    """A skeleton class for starting and stopping servers used by the layout tests."""
+    """A skeleton class for starting and stopping servers used by the web tests."""
 
     def __init__(self, port_obj, output_dir):
         self._port_obj = port_obj
@@ -251,13 +251,14 @@ class ServerBase(object):
         for mapping in self._mappings:
             s = socket.socket()
             port = mapping['port']
+            scheme = mapping['scheme']
             try:
                 s.connect(('localhost', port))
-                _log.debug('Server running on %d', port)
+                _log.info('Server running on %s://localhost:%d', scheme, port)
             except IOError as error:
                 if error.errno not in (errno.ECONNREFUSED, errno.ECONNRESET):
                     raise
-                _log.debug('Server NOT running on %d: %s', port, error)
+                _log.debug('Server NOT running on %s://localhost:%d : %s', scheme, port, error)
                 return False
             finally:
                 s.close()

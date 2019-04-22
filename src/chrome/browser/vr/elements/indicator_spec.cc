@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/vr/elements/indicator_spec.h"
-#include "chrome/browser/vr/vector_icons/vector_icons.h"
+
+#include "build/build_config.h"
+#include "chrome/browser/vr/ui_support.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/vector_icons/vector_icons.h"
 
 namespace vr {
 
@@ -43,7 +44,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
 
   std::vector<IndicatorSpec> specs = {
       {kLocationAccessIndicator, kWebVrLocationAccessIndicator,
-       kMyLocationIcon,
+       GetVrIcon(kVrMyLocationIcon),
        IDS_VR_SHELL_SITE_IS_TRACKING_LOCATION,
        // Background tabs cannot track high accuracy location.
        0,
@@ -52,7 +53,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        false},
 
       {kAudioCaptureIndicator, kWebVrAudioCaptureIndicator,
-       vector_icons::kMicIcon,
+       GetVrIcon(kVrMicIcon),
        IDS_VR_SHELL_SITE_IS_USING_MICROPHONE,
        IDS_VR_SHELL_BG_IS_USING_MICROPHONE,
        IDS_VR_SHELL_SITE_CAN_USE_MICROPHONE,
@@ -60,7 +61,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        false},
 
       {kVideoCaptureIndicator, kWebVrVideoCaptureIndicator,
-       vector_icons::kVideocamIcon,
+       GetVrIcon(kVrVideocamIcon),
        IDS_VR_SHELL_SITE_IS_USING_CAMERA,
        IDS_VR_SHELL_BG_IS_USING_CAMERA,
        IDS_VR_SHELL_SITE_CAN_USE_CAMERA,
@@ -68,20 +69,43 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        false},
 
       {kBluetoothConnectedIndicator, kWebVrBluetoothConnectedIndicator,
-       vector_icons::kBluetoothConnectedIcon,
+       GetVrIcon(kVrBluetoothConnectedIcon),
        IDS_VR_SHELL_SITE_IS_USING_BLUETOOTH,
+#if defined(OS_ANDROID)
        IDS_VR_SHELL_BG_IS_USING_BLUETOOTH,
+#else
+       0,
+#endif
        IDS_VR_SHELL_SITE_CAN_USE_BLUETOOTH,
        &CapturingStateModel::bluetooth_connected,
        false},
 
       {kScreenCaptureIndicator, kWebVrScreenCaptureIndicator,
-       vector_icons::kScreenShareIcon,
+       GetVrIcon(kVrScreenShareIcon),
        IDS_VR_SHELL_SITE_IS_SHARING_SCREEN,
        IDS_VR_SHELL_BG_IS_SHARING_SCREEN,
        IDS_VR_SHELL_SITE_CAN_SHARE_SCREEN,
        &CapturingStateModel::screen_capture_enabled,
-       false}};
+       false},
+
+#if !defined(OS_ANDROID)
+      {kUsbConnectedIndicator, kWebXrUsbConnectedIndicator,
+       GetVrIcon(kVrUsbIcon),
+       IDS_VR_SHELL_SITE_IS_USING_USB,
+       0,
+       0,
+       &CapturingStateModel::usb_connected,
+       false},
+
+       {kMidiConnectedIndicator, kWebXrMidiConnectedIndicator,
+       GetVrIcon(kVrMidiIcon),
+       IDS_VR_SHELL_SITE_IS_USING_MIDI,
+       0,
+       IDS_VR_SHELL_SITE_CAN_USE_MIDI,
+       &CapturingStateModel::midi_connected,
+       false},
+#endif
+  };
 
   return specs;
 }

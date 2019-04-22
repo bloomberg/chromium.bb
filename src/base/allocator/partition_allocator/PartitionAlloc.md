@@ -50,7 +50,7 @@ Large allocations (> kGenericMaxBucketed == 960KB) are realized by direct
 memory mmapping. This size makes sense because 960KB = 0xF0000. The next larger
 bucket size is 1MB = 0x100000 which is greater than 1/2 the available space in
 a SuperPage meaning it would not be possible to pack even 2 sequential
-alloctions in a SuperPage.
+allocations in a SuperPage.
 
 `PartitionRootGeneric::Alloc()` acquires a lock for thread safety. (The current
 implementation uses a spin lock on the assumption that thread contention will be

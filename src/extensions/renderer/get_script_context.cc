@@ -5,16 +5,16 @@
 #include "extensions/renderer/get_script_context.h"
 
 #include "base/logging.h"
-#include "content/public/renderer/worker_thread.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/worker_thread_dispatcher.h"
+#include "extensions/renderer/worker_thread_util.h"
 
 namespace extensions {
 
 ScriptContext* GetScriptContextFromV8Context(v8::Local<v8::Context> context) {
   ScriptContext* script_context =
-      content::WorkerThread::GetCurrentId() > 0
+      worker_thread_util::IsWorkerThread()
           ? WorkerThreadDispatcher::GetScriptContext()
           : ScriptContextSet::GetContextByV8Context(context);
   DCHECK(!script_context || script_context->v8_context() == context);

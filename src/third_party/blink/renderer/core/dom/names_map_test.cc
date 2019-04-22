@@ -26,48 +26,103 @@ void ExpectEqMap(const ExpectedMap& exp, NamesMap& map) {
 }
 
 TEST(NamesMapTest, Set) {
-  Vector<std::pair<String, ExpectedMap>> test_cases({
-      // Various valid values.
-      {"foo", {{"foo", "foo"}}},
-      {"foo: bar", {{"foo", "bar"}}},
-      {"foo : bar", {{"foo", "bar"}}},
-      {"foo: bar, foo: buz", {{"foo", "bar buz"}}},
-      {"foo: bar, buz", {{"foo", "bar"}, {"buz", "buz"}}},
-      {"foo: bar, buz: bar", {{"foo", "bar"}, {"buz", "bar"}}},
-      {"foo, buz: bar", {{"foo", "foo"}, {"buz", "bar"}}},
-
-      // This is an error but qux should be ignored.
-      {"foo: bar qux, buz: bar", {{"foo", "bar"}, {"buz", "bar"}}},
-      {"foo: bar, buz: bar qux", {{"foo", "bar"}, {"buz", "bar"}}},
-
-      // This is an error but the extra commas and colons should be ignored.
-      {"foo:", {{"foo", "foo"}}},
-      {"foo:,", {{"foo", "foo"}}},
-      {"foo :", {{"foo", "foo"}}},
-      {"foo :,", {{"foo", "foo"}}},
-      {"foo: bar, buz:", {{"foo", "bar"}, {"buz", "buz"}}},
-      {"foo: bar, buz :", {{"foo", "bar"}, {"buz", "buz"}}},
-      {",foo: bar, buz: bar", {{"foo", "bar"}, {"buz", "bar"}}},
-      {"foo: bar,, buz: bar", {{"foo", "bar"}, {"buz", "bar"}}},
-      {"foo: bar, buz: bar,", {{"foo", "bar"}, {"buz", "bar"}}},
-      {"foo: bar, buz: bar,,", {{"foo", "bar"}, {"buz", "bar"}}},
-      {":foo: bar, buz: bar", {{"foo", "bar"}, {"buz", "bar"}}},
-      {"foo: bar:, buz: bar", {{"foo", "bar"}, {"buz", "bar"}}},
-      {"foo: :bar, buz: bar", {{"foo", "bar"}, {"buz", "bar"}}},
-      {"foo: bar, buz: bar:", {{"foo", "bar"}, {"buz", "bar"}}},
-      {"foo: bar, buz: bar::", {{"foo", "bar"}, {"buz", "bar"}}},
-
-      // Spaces in odd places.
-      {" foo: bar, buz: bar", {{"foo", "bar"}, {"buz", "bar"}}},
-      {"foo: bar,  buz: bar", {{"foo", "bar"}, {"buz", "bar"}}},
-      {"foo: bar, buz: bar ", {{"foo", "bar"}, {"buz", "bar"}}},
+  // This is vector of pairs where first is an expected output and second is a
+  // vector of inputs, all of which should produce that output.
+  Vector<std::pair<ExpectedMap, Vector<String>>> test_cases({
+      // First a set of tests where we have an expected value and several valid
+      // strings that encode that value, followed by strings encode the same
+      // value but include invalid input.
+      {{},
+       {
+           // Valid
+           "",
+           " ",
+           "  ",
+           ",",
+           ",,",
+           " ,",
+           ", ",
+           " , , ",
+           // Invalid
+           ":",
+           "foo:",
+           "foo: bar buz",
+           ":bar",
+           ": bar buz",
+       }},
+      {{{"foo", "foo"}},
+       {
+           // Valid
+           "foo",
+           " foo",
+           ", foo",
+           ", foo",
+           "foo",
+           "foo ",
+           "foo,",
+           "foo ,"
+           // Plus invalid
+           ":,foo",
+           ":bar,foo",
+           "bar:,foo",
+           "bar: bar buz,foo",
+           "foo,:",
+           "foo, :bar",
+           "foo, bar:",
+           "foo, bar: bar buz",
+       }},
+      {{{"foo", "bar"}},
+       {
+           // Valid
+           "foo:bar",
+           " foo:bar",
+           "foo :bar",
+           "foo: bar",
+           "foo:bar ",
+           "foo:bar",
+           ",foo:bar",
+           ", foo:bar",
+           " ,foo:bar",
+           "foo:bar,",
+           "foo:bar, ",
+           "foo:bar ,",
+           // Plus invalid
+           ":,foo:bar",
+           ":bar,foo:bar",
+           "bar:,foo:bar",
+           "bar: bar buz,foo:bar",
+           "foo:bar,:",
+           "foo:bar, :bar",
+           "foo:bar, bar:",
+           "foo:bar, bar: bar buz",
+       }},
+      {{{"foo", "bar buz"}},
+       {
+           // Valid
+           "foo:bar,foo:buz",
+           "foo:bar, foo:buz",
+           "foo:bar ,foo:buz",
+           // Plus invalid. In this case invalid occurs between the valid items.
+           "foo:bar,bar:,foo:buz",
+           "foo:bar,bar: ,foo:buz",
+           "foo:bar,:bar,foo:buz",
+           "foo:bar, :bar,foo:buz",
+           "foo:bar,bar: bill bob,foo:buz",
+       }},
+      // Miscellaneous tests.
+      // Same value for 2 keys.
+      {{{"foo", "bar"}, {"buz", "bar"}}, {"foo:bar,buz:bar"}},
+      // Mix key-only with key-value.
+      {{{"foo", "foo"}, {"buz", "bar"}}, {"foo,buz:bar", "buz:bar,foo"}},
   });
 
   NamesMap map;
   for (auto test_case : test_cases) {
-    SCOPED_TRACE(test_case.first);
-    map.Set(AtomicString(test_case.first));
-    ExpectEqMap(test_case.second, map);
+    for (String input : test_case.second) {
+      SCOPED_TRACE(input);
+      map.Set(AtomicString(input));
+      ExpectEqMap(test_case.first, map);
+    }
   }
 }
 

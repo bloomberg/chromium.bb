@@ -7,10 +7,15 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/feature_list.h"
 #include "components/component_updater/component_installer.h"
+
+namespace base {
+class FilePath;
+}  // namespace base
 
 class PrefRegistrySimple;
 class PrefService;
@@ -55,6 +60,14 @@ void RegisterRecoveryImprovedComponent(ComponentUpdateService* cus,
 
 // Registers user preferences related to the recovery component.
 void RegisterPrefsForRecoveryImprovedComponent(PrefRegistrySimple* registry);
+
+// Returns a tuple containing the result of running the recovery component
+// elevated: (bool succeeded, int error_code, int extra_code1).
+std::tuple<bool, int, int> RunRecoveryCRXElevated(
+    const base::FilePath& crx_path,
+    const std::string& browser_appid,
+    const std::string& browser_version,
+    const std::string& session_id);
 
 }  // namespace component_updater
 

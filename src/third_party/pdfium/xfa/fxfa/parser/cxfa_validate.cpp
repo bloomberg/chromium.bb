@@ -6,12 +6,13 @@
 
 #include "xfa/fxfa/parser/cxfa_validate.h"
 
+#include "fxjs/xfa/cjx_node.h"
 #include "fxjs/xfa/cjx_object.h"
-#include "fxjs/xfa/cjx_validate.h"
 #include "third_party/base/ptr_util.h"
 #include "xfa/fxfa/parser/cxfa_message.h"
 #include "xfa/fxfa/parser/cxfa_picture.h"
 #include "xfa/fxfa/parser/cxfa_script.h"
+#include "xfa/fxfa/parser/xfa_basic_data.h"
 
 namespace {
 
@@ -20,22 +21,21 @@ const CXFA_Node::PropertyData kValidatePropertyData[] = {
     {XFA_Element::Picture, 1, 0},
     {XFA_Element::Script, 1, 0},
     {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
 const CXFA_Node::AttributeData kValidateAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::ScriptTest, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Error},
+     (void*)XFA_AttributeValue::Error},
     {XFA_Attribute::NullTest, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Disabled},
+     (void*)XFA_AttributeValue::Disabled},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::FormatTest, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Warning},
+     (void*)XFA_AttributeValue::Warning},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
+};
 
-constexpr wchar_t kValidateName[] = L"validate";
 constexpr wchar_t kFormatTest[] = L"formatTest";
 constexpr wchar_t kNullTest[] = L"nullTest";
 constexpr wchar_t kScriptTest[] = L"scriptTest";
@@ -51,27 +51,26 @@ CXFA_Validate::CXFA_Validate(CXFA_Document* doc, XFA_PacketType packet)
           XFA_Element::Validate,
           kValidatePropertyData,
           kValidateAttributeData,
-          kValidateName,
-          pdfium::MakeUnique<CJX_Validate>(this)) {}
+          pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Validate::~CXFA_Validate() {}
+CXFA_Validate::~CXFA_Validate() = default;
 
-XFA_AttributeEnum CXFA_Validate::GetFormatTest() {
+XFA_AttributeValue CXFA_Validate::GetFormatTest() {
   return JSObject()->GetEnum(XFA_Attribute::FormatTest);
 }
 
 void CXFA_Validate::SetNullTest(const WideString& wsValue) {
-  Optional<XFA_AttributeEnum> item =
-      CXFA_Node::NameToAttributeEnum(wsValue.AsStringView());
+  Optional<XFA_AttributeValue> item =
+      XFA_GetAttributeValueByName(wsValue.AsStringView());
   JSObject()->SetEnum(XFA_Attribute::NullTest,
-                      item ? *item : XFA_AttributeEnum::Disabled, false);
+                      item ? *item : XFA_AttributeValue::Disabled, false);
 }
 
-XFA_AttributeEnum CXFA_Validate::GetNullTest() {
+XFA_AttributeValue CXFA_Validate::GetNullTest() {
   return JSObject()->GetEnum(XFA_Attribute::NullTest);
 }
 
-XFA_AttributeEnum CXFA_Validate::GetScriptTest() {
+XFA_AttributeValue CXFA_Validate::GetScriptTest() {
   return JSObject()->GetEnum(XFA_Attribute::ScriptTest);
 }
 
@@ -79,7 +78,7 @@ WideString CXFA_Validate::GetMessageText(const WideString& wsMessageType) {
   CXFA_Message* pNode =
       JSObject()->GetProperty<CXFA_Message>(0, XFA_Element::Message);
   if (!pNode)
-    return L"";
+    return WideString();
 
   for (CXFA_Node* pItemNode = pNode->GetFirstChild(); pItemNode;
        pItemNode = pItemNode->GetNextSibling()) {
@@ -90,7 +89,7 @@ WideString CXFA_Validate::GetMessageText(const WideString& wsMessageType) {
     if (wsName.IsEmpty() || wsName == wsMessageType)
       return pItemNode->JSObject()->GetContent(false);
   }
-  return L"";
+  return WideString();
 }
 
 void CXFA_Validate::SetFormatMessageText(const WideString& wsMessage) {
@@ -146,7 +145,7 @@ void CXFA_Validate::SetMessageText(const WideString& wsMessageType,
 
 WideString CXFA_Validate::GetPicture() {
   CXFA_Picture* pNode = GetChild<CXFA_Picture>(0, XFA_Element::Picture, false);
-  return pNode ? pNode->JSObject()->GetContent(false) : L"";
+  return pNode ? pNode->JSObject()->GetContent(false) : WideString();
 }
 
 CXFA_Script* CXFA_Validate::GetScriptIfExists() {

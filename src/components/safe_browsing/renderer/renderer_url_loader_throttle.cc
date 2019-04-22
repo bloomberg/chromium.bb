@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
@@ -184,7 +185,7 @@ void RendererURLLoaderThrottle::OnCompleteCheckInternal(
     notifier_bindings_.reset();
     pending_checks_ = 0;
     pending_slow_checks_ = 0;
-    delegate_->CancelWithError(net::ERR_ABORTED,
+    delegate_->CancelWithError(GetNetErrorCodeForSafeBrowsing(),
                                kCustomCancelReasonForURLLoader);
   }
 }

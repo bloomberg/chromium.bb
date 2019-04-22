@@ -28,30 +28,8 @@ const char kIconUrlMapKey[] = "icon";
 const char kCredentialTypeMapKey[] = "type";
 const char kCredentialAlgorithmMapKey[] = "alg";
 
-const size_t kHidPacketSize = 64;
-const uint32_t kHidBroadcastChannel = 0xffffffff;
-const size_t kHidInitPacketHeaderSize = 7;
-const size_t kHidContinuationPacketHeader = 5;
-const size_t kHidMaxPacketSize = 64;
-const size_t kHidInitPacketDataSize =
-    kHidMaxPacketSize - kHidInitPacketHeaderSize;
-const size_t kHidContinuationPacketDataSize =
-    kHidMaxPacketSize - kHidContinuationPacketHeader;
-const uint8_t kHidMaxLockSeconds = 10;
-const size_t kHidMaxMessageSize = 7609;
-
-const size_t kU2fMaxResponseSize = 65536;
-const uint8_t kP1TupRequired = 0x01;
-const uint8_t kP1TupConsumed = 0x02;
-const uint8_t kP1TupRequiredConsumed = kP1TupRequired | kP1TupConsumed;
-const uint8_t kP1CheckOnly = 0x07;
-const uint8_t kP1IndividualAttestation = 0x80;
-const size_t kMaxKeyHandleLength = 255;
-
 const base::TimeDelta kDeviceTimeout = base::TimeDelta::FromSeconds(3);
 const base::TimeDelta kU2fRetryDelay = base::TimeDelta::FromMilliseconds(200);
-const base::TimeDelta kHidKeepAliveDelay =
-    base::TimeDelta::FromMilliseconds(100);
 
 const char kFormatKey[] = "fmt";
 const char kAttestationStatementKey[] = "attStmt";

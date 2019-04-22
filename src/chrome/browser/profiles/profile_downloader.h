@@ -14,7 +14,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/image_decoder.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -29,8 +28,7 @@ class ProfileDownloaderDelegate;
 // Downloads user profile information. The profile picture is decoded in a
 // sandboxed process.
 class ProfileDownloader : public ImageDecoder::ImageRequest,
-                          public identity::IdentityManager::Observer,
-                          public AccountTrackerService::Observer {
+                          public identity::IdentityManager::Observer {
  public:
   enum PictureStatus {
     PICTURE_SUCCESS,
@@ -97,11 +95,7 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   void OnDecodeImageFailed() override;
 
   // Overriden from identity::IdentityManager::Observer:
-  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
-                                       bool is_valid) override;
-
-  // Implementation of AccountTrackerService::Observer.
-  void OnAccountUpdated(const AccountInfo& info) override;
+  void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
 
   // Callback for AccessTokenFetcher.
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
@@ -125,7 +119,6 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   AccountInfo account_info_;
   SkBitmap profile_picture_;
   PictureStatus picture_status_;
-  AccountTrackerService* account_tracker_service_;
   identity::IdentityManager* identity_manager_;
   ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
       identity_manager_observer_;

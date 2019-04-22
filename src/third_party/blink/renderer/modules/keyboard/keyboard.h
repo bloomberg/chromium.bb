@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_KEYBOARD_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_KEYBOARD_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
@@ -17,7 +18,6 @@ class ScriptState;
 
 class Keyboard final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(Keyboard);
 
  public:
   explicit Keyboard(ExecutionContext*);
@@ -35,6 +35,8 @@ class Keyboard final : public ScriptWrappable {
  private:
   Member<KeyboardLock> keyboard_lock_;
   Member<KeyboardLayout> keyboard_layout_;
+
+  DISALLOW_COPY_AND_ASSIGN(Keyboard);
 };
 
 }  // namespace blink

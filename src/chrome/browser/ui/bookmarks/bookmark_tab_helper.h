@@ -51,7 +51,6 @@ class BookmarkTabHelper
 
   bool is_starred() const { return is_starred_; }
 
-  // Returns true if the bookmark bar should be shown detached.
   bool ShouldShowBookmarkBar() const;
 
   void AddObserver(BookmarkTabHelperObserver* observer);
@@ -103,6 +102,8 @@ class BookmarkTabHelper
   // The BookmarkDrag is used to forward bookmark drag and drop events to
   // extensions.
   BookmarkDrag* bookmark_drag_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkTabHelper);
 };

@@ -10,18 +10,21 @@
 namespace blink {
 
 class FormData;
+class FormDataEventInit;
 
 class FormDataEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static FormDataEvent* Create(FormData& form_data);
-
+  static FormDataEvent* Create(const AtomicString& type,
+                               const FormDataEventInit* event_init);
   FormDataEvent(FormData& form_data);
+  FormDataEvent(const AtomicString& type, const FormDataEventInit* event_init);
 
   void Trace(Visitor* visitor) override;
 
-  FormData* formData() const { return form_data_; };
+  FormData* formData() const { return form_data_; }
 
   const AtomicString& InterfaceName() const override;
 

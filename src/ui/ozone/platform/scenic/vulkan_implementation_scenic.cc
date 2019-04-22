@@ -7,92 +7,36 @@
 #include <lib/ui/scenic/cpp/commands.h>
 #include <lib/ui/scenic/cpp/session.h>
 #include <lib/zx/channel.h>
+#include <vulkan/vulkan.h>
+#include <memory>
 
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
 #include "base/native_library.h"
+#include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/ozone/platform/scenic/scenic_surface.h"
+#include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
-#include "ui/ozone/platform/scenic/vulkan_magma.h"
 
 namespace ui {
 
-namespace {
-
-// Holds resources necessary for presenting to a View using a VkSurfaceKHR.
-class ScenicSurface {
- public:
-  ScenicSurface(fuchsia::ui::scenic::Scenic* scenic,
-                mojom::ScenicGpuHost* gpu_host,
-                gfx::AcceleratedWidget window)
-      : scenic_(scenic),
-        parent_(&scenic_),
-        shape_(&scenic_),
-        material_(&scenic_),
-        gpu_host_(gpu_host),
-        window_(window) {
-    shape_.SetShape(scenic::Rectangle(&scenic_, 1.f, 1.f));
-    shape_.SetMaterial(material_);
-  }
-
-  // Sets the texture of the surface to a new image pipe.
-  void SetTextureToNewImagePipe(
-      fidl::InterfaceRequest<fuchsia::images::ImagePipe> image_pipe_request) {
-    uint32_t image_pipe_id = scenic_.AllocResourceId();
-    scenic_.Enqueue(scenic::NewCreateImagePipeCmd(
-        image_pipe_id, std::move(image_pipe_request)));
-    material_.SetTexture(image_pipe_id);
-    scenic_.ReleaseResource(image_pipe_id);
-  }
-
-  // Links the surface to the window in the browser process.
-  //
-  // Scenic does not care about order here; it's totally fine for imports to
-  // cause exports, and that's what's done here.
-  void LinkToParent() {
-    zx::eventpair export_token;
-    parent_.BindAsRequest(&export_token);
-    parent_.AddChild(shape_);
-    gpu_host_->ExportParent(window_,
-                            mojo::WrapPlatformHandle(
-                                mojo::PlatformHandle(std::move(export_token))));
-  }
-
-  // Flushes commands to scenic & executes them.
-  void Commit() {
-    scenic_.Present(
-        /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
-  }
-
- private:
-  scenic::Session scenic_;
-  scenic::ImportNode parent_;
-  scenic::ShapeNode shape_;
-  scenic::Material material_;
-
-  mojom::ScenicGpuHost* gpu_host_ = nullptr;
-  gfx::AcceleratedWidget window_ = gfx::kNullAcceleratedWidget;
-
-  DISALLOW_COPY_AND_ASSIGN(ScenicSurface);
-};
-
-}  // namespace
-
 VulkanImplementationScenic::VulkanImplementationScenic(
-    mojom::ScenicGpuHost* scenic_gpu_host,
-    fuchsia::ui::scenic::Scenic* scenic)
-    : scenic_gpu_host_(scenic_gpu_host), scenic_(scenic) {}
+    ScenicSurfaceFactory* scenic_surface_factory)
+    : scenic_surface_factory_(scenic_surface_factory) {}
 
 VulkanImplementationScenic::~VulkanImplementationScenic() = default;
 
-bool VulkanImplementationScenic::InitializeVulkanInstance() {
+bool VulkanImplementationScenic::InitializeVulkanInstance(bool using_surface) {
+  DCHECK(using_surface);
   base::NativeLibraryLoadError error;
   base::NativeLibrary handle =
       base::LoadNativeLibrary(base::FilePath("libvulkan.so"), &error);
@@ -105,75 +49,53 @@ bool VulkanImplementationScenic::InitializeVulkanInstance() {
       gpu::GetVulkanFunctionPointers();
   vulkan_function_pointers->vulkan_loader_library_ = handle;
   std::vector<const char*> required_extensions = {
-      VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_MAGMA_SURFACE_EXTENSION_NAME,
+      VK_KHR_SURFACE_EXTENSION_NAME,
+      VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME,
   };
   std::vector<const char*> required_layers = {
-      "VK_LAYER_GOOGLE_image_pipe_swapchain",
+      "VK_LAYER_FUCHSIA_imagepipe_swapchain",
   };
-  if (!vulkan_instance_.Initialize(required_extensions, required_layers)) {
-    vulkan_instance_.Destroy();
+  if (!vulkan_instance_.Initialize(required_extensions, required_layers))
     return false;
-  }
 
-  vkCreateMagmaSurfaceKHR_ = vkGetInstanceProcAddr(
-      vulkan_instance_.vk_instance(), "vkCreateMagmaSurfaceKHR");
-  if (!vkCreateMagmaSurfaceKHR_) {
-    vulkan_instance_.Destroy();
+  vkCreateImagePipeSurfaceFUCHSIA_ =
+      reinterpret_cast<PFN_vkCreateImagePipeSurfaceFUCHSIA>(
+          vkGetInstanceProcAddr(vulkan_instance_.vk_instance(),
+                                "vkCreateImagePipeSurfaceFUCHSIA"));
+  if (!vkCreateImagePipeSurfaceFUCHSIA_)
     return false;
-  }
-
-  vkGetPhysicalDeviceMagmaPresentationSupportKHR_ =
-      vkGetInstanceProcAddr(vulkan_instance_.vk_instance(),
-                            "vkGetPhysicalDeviceMagmaPresentationSupportKHR");
-  if (!vkGetPhysicalDeviceMagmaPresentationSupportKHR_) {
-    vulkan_instance_.Destroy();
-    return false;
-  }
 
   return true;
 }
 
-VkInstance VulkanImplementationScenic::GetVulkanInstance() {
-  return vulkan_instance_.vk_instance();
+gpu::VulkanInstance* VulkanImplementationScenic::GetVulkanInstance() {
+  return &vulkan_instance_;
 }
 
 std::unique_ptr<gpu::VulkanSurface>
 VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
-  auto scenic_surface =
-      std::make_unique<ScenicSurface>(scenic_, scenic_gpu_host_, window);
-
-  // Attach the surface to the window.
-  scenic_surface->LinkToParent();
-
   fuchsia::images::ImagePipePtr image_pipe;
+  ScenicSurface* scenic_surface = scenic_surface_factory_->GetSurface(window);
   scenic_surface->SetTextureToNewImagePipe(image_pipe.NewRequest());
 
   VkSurfaceKHR surface;
-  VkMagmaSurfaceCreateInfoKHR surface_create_info = {};
-  surface_create_info.sType = VK_STRUCTURE_TYPE_MAGMA_SURFACE_CREATE_INFO_KHR;
+  VkImagePipeSurfaceCreateInfoFUCHSIA surface_create_info = {};
+  surface_create_info.sType =
+      VK_STRUCTURE_TYPE_IMAGEPIPE_SURFACE_CREATE_INFO_FUCHSIA;
+  surface_create_info.flags = 0;
   surface_create_info.imagePipeHandle =
       image_pipe.Unbind().TakeChannel().release();
 
-  VkResult result =
-      reinterpret_cast<PFN_vkCreateMagmaSurfaceKHR>(vkCreateMagmaSurfaceKHR_)(
-          GetVulkanInstance(), &surface_create_info, nullptr, &surface);
+  VkResult result = vkCreateImagePipeSurfaceFUCHSIA_(
+      vulkan_instance_.vk_instance(), &surface_create_info, nullptr, &surface);
   if (result != VK_SUCCESS) {
     // This shouldn't fail, and we don't know whether imagePipeHandle was closed
     // if it does.
-    LOG(FATAL) << "vkCreateMagmaSurfaceKHR failed: " << result;
+    LOG(FATAL) << "vkCreateImagePipeSurfaceFUCHSIA failed: " << result;
   }
 
-  // Execute the initialization commands. Once this is done we won't need to
-  // make any further changes to ScenicSurface other than to keep it alive; the
-  // texture can be replaced through the vulkan swapchain API.
-  scenic_surface->Commit();
-
-  auto destruction_callback =
-      base::BindOnce(base::DoNothing::Once<std::unique_ptr<ScenicSurface>>(),
-                     std::move(scenic_surface));
-
-  return std::make_unique<gpu::VulkanSurface>(GetVulkanInstance(), surface,
-                                              std::move(destruction_callback));
+  return std::make_unique<gpu::VulkanSurface>(vulkan_instance_.vk_instance(),
+                                              surface);
 }
 
 bool VulkanImplementationScenic::GetPhysicalDevicePresentationSupport(
@@ -188,7 +110,8 @@ bool VulkanImplementationScenic::GetPhysicalDevicePresentationSupport(
 
 std::vector<const char*>
 VulkanImplementationScenic::GetRequiredDeviceExtensions() {
-  return {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+  return {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+          VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME};
 }
 
 VkFence VulkanImplementationScenic::CreateVkFenceForGpuFence(
@@ -202,6 +125,78 @@ VulkanImplementationScenic::ExportVkFenceToGpuFence(VkDevice vk_device,
                                                     VkFence vk_fence) {
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+VkSemaphore VulkanImplementationScenic::CreateExternalSemaphore(
+    VkDevice vk_device) {
+  return gpu::CreateExternalVkSemaphore(
+      vk_device,
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA);
+}
+
+VkSemaphore VulkanImplementationScenic::ImportSemaphoreHandle(
+    VkDevice vk_device,
+    gpu::SemaphoreHandle handle) {
+  if (!handle.is_valid())
+    return VK_NULL_HANDLE;
+
+  if (handle.vk_handle_type() !=
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA) {
+    return VK_NULL_HANDLE;
+  }
+
+  VkSemaphore semaphore = VK_NULL_HANDLE;
+  VkSemaphoreCreateInfo info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+  VkResult result = vkCreateSemaphore(vk_device, &info, nullptr, &semaphore);
+  if (result != VK_SUCCESS)
+    return VK_NULL_HANDLE;
+
+  zx::event event = handle.TakeHandle();
+  VkImportSemaphoreZirconHandleInfoFUCHSIA import = {
+      VK_STRUCTURE_TYPE_TEMP_IMPORT_SEMAPHORE_ZIRCON_HANDLE_INFO_FUCHSIA};
+  import.semaphore = semaphore;
+  import.handleType =
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA;
+  import.handle = event.get();
+
+  result = vkImportSemaphoreZirconHandleFUCHSIA(vk_device, &import);
+  if (result != VK_SUCCESS) {
+    vkDestroySemaphore(vk_device, semaphore, nullptr);
+    return VK_NULL_HANDLE;
+  }
+
+  // Vulkan took ownership of the handle.
+  ignore_result(event.release());
+
+  return semaphore;
+}
+
+gpu::SemaphoreHandle VulkanImplementationScenic::GetSemaphoreHandle(
+    VkDevice vk_device,
+    VkSemaphore vk_semaphore) {
+  // Create VkSemaphoreGetFdInfoKHR structure.
+  VkSemaphoreGetZirconHandleInfoFUCHSIA info = {
+      VK_STRUCTURE_TYPE_TEMP_SEMAPHORE_GET_ZIRCON_HANDLE_INFO_FUCHSIA};
+  info.semaphore = vk_semaphore;
+  info.handleType =
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA;
+
+  zx_handle_t handle;
+  VkResult result =
+      vkGetSemaphoreZirconHandleFUCHSIA(vk_device, &info, &handle);
+  if (result != VK_SUCCESS) {
+    LOG(ERROR) << "vkGetSemaphoreFuchsiaHandleKHR failed : " << result;
+    return gpu::SemaphoreHandle();
+  }
+
+  return gpu::SemaphoreHandle(
+      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA,
+      zx::event(handle));
+}
+
+VkExternalMemoryHandleTypeFlagBits
+VulkanImplementationScenic::GetExternalImageHandleType() {
+  return VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
 }
 
 }  // namespace ui

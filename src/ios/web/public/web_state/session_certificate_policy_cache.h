@@ -8,10 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "net/cert/cert_status_flags.h"
 
-namespace net {
-class X509Certificate;
-}
-
 namespace web {
 
 class CertificatePolicyCache;
@@ -24,16 +20,6 @@ class SessionCertificatePolicyCache {
  public:
   SessionCertificatePolicyCache() {}
   virtual ~SessionCertificatePolicyCache() {}
-
-  // Stores certificate information that a user has indicated should be allowed
-  // for this session.
-  virtual void RegisterAllowedCertificate(
-      const scoped_refptr<net::X509Certificate> certificate,
-      const std::string& host,
-      net::CertStatus status) = 0;
-
-  // Removes all previously allowed certificates.
-  virtual void ClearAllowedCertificates() = 0;
 
   // Transfers the allowed certificate information from this session to |cache|.
   virtual void UpdateCertificatePolicyCache(

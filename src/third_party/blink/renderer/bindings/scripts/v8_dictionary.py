@@ -58,7 +58,7 @@ def unwrap_nullable_if_needed(idl_type):
 
 # Context for V8 bindings
 
-def dictionary_context(dictionary, interfaces_info):
+def dictionary_context(dictionary, interfaces_info, component_info):
     includes.clear()
     includes.update(DICTIONARY_CPP_INCLUDES)
 
@@ -66,7 +66,7 @@ def dictionary_context(dictionary, interfaces_info):
         raise Exception(
             'Dictionary cannot be RuntimeEnabled: %s' % dictionary.name)
 
-    members = [member_context(dictionary, member)
+    members = [member_context(dictionary, member, component_info)
                for member in sorted(dictionary.members,
                                     key=operator.attrgetter('name'))]
 
@@ -80,6 +80,7 @@ def dictionary_context(dictionary, interfaces_info):
         if member['origin_trial_feature_name']:
             has_origin_trial_members = True
             includes.add('core/origin_trials/origin_trials.h')
+            includes.add('core/execution_context/execution_context.h')
             break
 
     cpp_class = v8_utilities.cpp_name(dictionary)
@@ -105,7 +106,7 @@ def dictionary_context(dictionary, interfaces_info):
     return context
 
 
-def member_context(dictionary, member):
+def member_context(_, member, component_info):
     extended_attributes = member.extended_attributes
     idl_type = member.idl_type
     idl_type.add_includes_for_type(extended_attributes)
@@ -114,6 +115,11 @@ def member_context(dictionary, member):
     if member.is_required and member.default_value:
         raise Exception(
             'Required member %s must not have a default value.' % member.name)
+
+    if idl_type.is_nullable and idl_type.inner_type.is_dictionary:
+        raise Exception(
+            'The inner type of nullable member %s must not be a dictionary.' %
+            member.name)
 
     # In most cases, we don't have to distinguish `null` and `not present`,
     # and use null-states (e.g. nullptr, foo.IsUndefinedOrNull()) to show such
@@ -143,6 +149,7 @@ def member_context(dictionary, member):
     has_value_or_default = snake_case_name + "_has_value_or_default"
     getter_name = getter_name_for_dictionary_member(member)
     is_deprecated_dictionary = unwrapped_idl_type.name == 'Dictionary'
+    runtime_features = component_info['runtime_enabled_features']
 
     return {
         'cpp_default_value': cpp_default_value,
@@ -159,14 +166,15 @@ def member_context(dictionary, member):
         'has_explicit_presence': has_explicit_presence,
         'has_method_name': has_method_name_for_dictionary_member(member),
         'idl_type': idl_type.base_type,
+        'is_callback_function_type': idl_type.is_callback_function,
         'is_interface_type': idl_type.is_interface_type and not is_deprecated_dictionary,
         'is_nullable': idl_type.is_nullable,
         'is_object': unwrapped_idl_type.name == 'Object' or is_deprecated_dictionary,
         'is_string_type': idl_type.preprocessed_type.is_string_type,
         'is_required': member.is_required,
         'name': member.name,
-        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(member),  # [OriginTrialEnabled]
-        'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(member),  # [RuntimeEnabled]
+        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(member, runtime_features),  # [OriginTrialEnabled]
+        'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(member, runtime_features),  # [RuntimeEnabled]
         'setter_name': setter_name_for_dictionary_member(member),
         'has_value_or_default': has_value_or_default,
         'null_setter_name': null_setter_name_for_dictionary_member(member),

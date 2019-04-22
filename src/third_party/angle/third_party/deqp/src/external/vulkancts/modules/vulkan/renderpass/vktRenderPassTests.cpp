@@ -28,7 +28,9 @@
 #include "vktRenderPassMultisampleResolveTests.hpp"
 #include "vktRenderPassSampleReadTests.hpp"
 #include "vktRenderPassSparseRenderTargetTests.hpp"
+#include "vktRenderPassSubpassDependencyTests.hpp"
 #include "vktRenderPassUnusedAttachmentTests.hpp"
+#include "vktRenderPassDepthStencilResolveTests.hpp"
 
 #include "vktTestCaseUtil.hpp"
 #include "vktTestGroupUtil.hpp"
@@ -102,12 +104,6 @@ enum AllocationKind
 {
 	ALLOCATION_KIND_SUBALLOCATED,
 	ALLOCATION_KIND_DEDICATED,
-};
-
-enum RenderPassType
-{
-	RENDERPASS_TYPE_LEGACY = 0,
-	RENDERPASS_TYPE_RENDERPASS2,
 };
 
 struct TestConfigExternal
@@ -2347,20 +2343,20 @@ public:
 				const bool					hasStencil	= hasStencilComponent(format.order);
 				const VkImageMemoryBarrier	barrier		=
 				{
-					VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,			// sType;
-					DE_NULL,										// pNext;
+					VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,			                // sType;
+					DE_NULL,										                // pNext;
 
-					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,	// srcAccessMask
-					VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,			// dstAccessMask
+					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,	                // srcAccessMask
+					VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,			                // dstAccessMask
 
-					VK_IMAGE_LAYOUT_GENERAL,						// oldLayout
-					VK_IMAGE_LAYOUT_GENERAL,						// newLayout;
+					m_renderInfo.getInputAttachmentLayout(inputAttachmentNdx),      // oldLayout
+					m_renderInfo.getInputAttachmentLayout(inputAttachmentNdx),      // newLayout;
 
-					VK_QUEUE_FAMILY_IGNORED,						// srcQueueFamilyIndex;
-					VK_QUEUE_FAMILY_IGNORED,						// destQueueFamilyIndex;
+					VK_QUEUE_FAMILY_IGNORED,						                // srcQueueFamilyIndex;
+					VK_QUEUE_FAMILY_IGNORED,						                // destQueueFamilyIndex;
 
-					m_depthStencilAttachmentImage,					// image;
-					{												// subresourceRange;
+					m_depthStencilAttachmentImage,					                // image;
+					{												                // subresourceRange;
 						(hasDepth ? (VkImageAspectFlags)VK_IMAGE_ASPECT_DEPTH_BIT : 0u)
 							| (hasStencil ? (VkImageAspectFlags)VK_IMAGE_ASPECT_STENCIL_BIT : 0u),	// aspect;
 						0,															// baseMipLevel;
@@ -3639,31 +3635,13 @@ bool logAndVerifyImages (TestLog&											log,
 			if (tcu::hasDepthComponent(format.order) && tcu::hasStencilComponent(format.order))
 			{
 				const tcu::TextureFormat	depthFormat			= getDepthCopyFormat(attachment.getFormat());
-				const VkDeviceSize			depthBufferSize		= targetSize.x() * targetSize.y() * depthFormat.getPixelSize();
 				void* const					depthPtr			= attachmentResources[attachmentNdx]->getResultMemory().getHostPtr();
 
 				const tcu::TextureFormat	stencilFormat		= getStencilCopyFormat(attachment.getFormat());
-				const VkDeviceSize			stencilBufferSize	= targetSize.x() * targetSize.y() * stencilFormat.getPixelSize();
 				void* const					stencilPtr			= attachmentResources[attachmentNdx]->getSecondaryResultMemory().getHostPtr();
 
-				const VkMappedMemoryRange	ranges[]			=
-				{
-					{
-						VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,								// sType;
-						DE_NULL,															// pNext;
-						attachmentResources[attachmentNdx]->getResultMemory().getMemory(),	// mem;
-						attachmentResources[attachmentNdx]->getResultMemory().getOffset(),	// offset;
-						depthBufferSize														// size;
-					},
-					{
-						VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,										// sType;
-						DE_NULL,																	// pNext;
-						attachmentResources[attachmentNdx]->getSecondaryResultMemory().getMemory(),	// mem;
-						attachmentResources[attachmentNdx]->getSecondaryResultMemory().getOffset(),	// offset;
-						stencilBufferSize															// size;
-					}
-				};
-				VK_CHECK(vk.invalidateMappedMemoryRanges(device, 2u, ranges));
+				invalidateAlloc(vk, device, attachmentResources[attachmentNdx]->getResultMemory());
+				invalidateAlloc(vk, device, attachmentResources[attachmentNdx]->getSecondaryResultMemory());
 
 				{
 					const ConstPixelBufferAccess	depthAccess			(depthFormat, targetSize.x(), targetSize.y(), 1, depthPtr);
@@ -3693,18 +3671,9 @@ bool logAndVerifyImages (TestLog&											log,
 			}
 			else
 			{
-				const VkDeviceSize			bufferSize	= targetSize.x() * targetSize.y() * format.getPixelSize();
-				void* const					ptr			= attachmentResources[attachmentNdx]->getResultMemory().getHostPtr();
+				void* const	ptr	= attachmentResources[attachmentNdx]->getResultMemory().getHostPtr();
 
-				const VkMappedMemoryRange	range		=
-				{
-					VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,								// sType;
-					DE_NULL,															// pNext;
-					attachmentResources[attachmentNdx]->getResultMemory().getMemory(),	// mem;
-					attachmentResources[attachmentNdx]->getResultMemory().getOffset(),	// offset;
-					bufferSize															// size;
-				};
-				VK_CHECK(vk.invalidateMappedMemoryRanges(device, 1u, &range));
+				invalidateAlloc(vk, device, attachmentResources[attachmentNdx]->getResultMemory());
 
 				if (tcu::hasDepthComponent(format.order))
 				{
@@ -5315,7 +5284,13 @@ void addAttachmentAllocationTests (tcu::TestCaseGroup* group, const TestConfigEx
 
 								lastUseOfAttachment[inputAttachmentIndex] = just(subpassIndex);
 
-								inputAttachmentReferences.push_back(AttachmentReference((deUint32)subpassInputAttachments[inputAttachmentNdx], VK_IMAGE_LAYOUT_GENERAL));
+								VkImageAspectFlags aspect = 0u;
+								if (testConfigExternal.renderPassType == RENDERPASS_TYPE_RENDERPASS2)
+								{
+									bool col = colorAttachments.find(inputAttachmentIndex) != colorAttachments.end();
+									aspect = col ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT;
+								}
+								inputAttachmentReferences.push_back(AttachmentReference((deUint32)subpassInputAttachments[inputAttachmentNdx], VK_IMAGE_LAYOUT_GENERAL, aspect));
 							}
 						}
 
@@ -5579,8 +5554,9 @@ void addAttachmentAllocationTests (tcu::TestCaseGroup* group, const TestConfigEx
 
 					for (size_t subpassNdx = 1; subpassNdx < attachmentCount; subpassNdx++)
 					{
+						const VkImageAspectFlags inputAttachmentAspectMask = (testConfigExternal.renderPassType == RENDERPASS_TYPE_RENDERPASS2) ? VK_IMAGE_ASPECT_COLOR_BIT : static_cast<VkImageAspectFlagBits>(0);
 						subpasses.push_back(Subpass(VK_PIPELINE_BIND_POINT_GRAPHICS, 0u,
-												vector<AttachmentReference>(1, AttachmentReference((deUint32)(subpassNdx - 1), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)),
+												vector<AttachmentReference>(1, AttachmentReference((deUint32)(subpassNdx - 1), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, inputAttachmentAspectMask)),
 												vector<AttachmentReference>(1, AttachmentReference((deUint32)(subpassNdx), rng.choose<VkImageLayout>(DE_ARRAY_BEGIN(subpassLayoutsColor), DE_ARRAY_END(subpassLayoutsColor)))),
 												vector<AttachmentReference>(),
 												AttachmentReference(VK_ATTACHMENT_UNUSED, VK_IMAGE_LAYOUT_GENERAL),
@@ -6001,7 +5977,6 @@ void addSimpleTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 										 0,
 										 testConfigExternal.allocationKind,
 										 testConfigExternal.renderPassType);
-
 		addFunctionCaseWithPrograms<TestConfig>(group, "color_unused_omit_blend_state", "Two unused color attachment case without blend state", createTestShaders, renderPassTest, testConfig);
 	}
 }
@@ -6181,7 +6156,7 @@ void addFormatTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 								{
 									const VkInputAttachmentAspectReference inputAspect =
 									{
-										0u,
+										1u,
 										0u,
 										VK_IMAGE_ASPECT_COLOR_BIT
 									};
@@ -6249,6 +6224,7 @@ void addFormatTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 								deps.push_back(SubpassDependency(1, 1,
 																vk::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 																vk::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+
 																vk::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 																vk::VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
 																vk::VK_DEPENDENCY_BY_REGION_BIT));
@@ -6257,7 +6233,7 @@ void addFormatTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 								{
 									const VkInputAttachmentAspectReference inputAspect =
 									{
-										0u,
+										1u,
 										0u,
 										VK_IMAGE_ASPECT_COLOR_BIT
 									};
@@ -6497,19 +6473,11 @@ void addFormatTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 																vk::VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
 																0u));
 
-								deps.push_back(SubpassDependency(1, 1,
-																vk::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-																vk::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-
-																vk::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-																vk::VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
-																vk::VK_DEPENDENCY_BY_REGION_BIT));
-
 								if (useInputAspect)
 								{
 									const VkInputAttachmentAspectReference inputAspect =
 									{
-										0u,
+										1u,
 										0u,
 										(isDepthAttachment ? (VkImageAspectFlags)VK_IMAGE_ASPECT_DEPTH_BIT : 0u)
 											| (isStencilAttachment ? (VkImageAspectFlags)VK_IMAGE_ASPECT_STENCIL_BIT : 0u)
@@ -6587,7 +6555,7 @@ void addFormatTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 								{
 									const VkInputAttachmentAspectReference inputAspect =
 									{
-										0u,
+										1u,
 										0u,
 
 										(isDepthAttachment ? (VkImageAspectFlags)VK_IMAGE_ASPECT_DEPTH_BIT : 0u)
@@ -6671,7 +6639,7 @@ void addFormatTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 									{
 										const VkInputAttachmentAspectReference inputAspect =
 										{
-											0u,
+											1u,
 											0u,
 
 											(isDepthAttachment ? (VkImageAspectFlags)VK_IMAGE_ASPECT_DEPTH_BIT : 0u)
@@ -6739,10 +6707,10 @@ void addFormatTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 																	vk::VK_DEPENDENCY_BY_REGION_BIT));
 
 									deps.push_back(SubpassDependency(1, 1,
-																	vk::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+																	vk::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | vk::VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
 																	vk::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 
-																	vk::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+																	vk::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 																	vk::VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
 																	vk::VK_DEPENDENCY_BY_REGION_BIT));
 
@@ -6750,7 +6718,7 @@ void addFormatTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 									{
 										const VkInputAttachmentAspectReference inputAspect =
 										{
-											0u,
+											1u,
 											0u,
 
 											(isDepthAttachment ? (VkImageAspectFlags)VK_IMAGE_ASPECT_DEPTH_BIT : 0u)
@@ -6820,7 +6788,7 @@ void addFormatTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 																vector<deUint32>()));
 
 									deps.push_back(SubpassDependency(0, 1,
-																	vk::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | vk::VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+																	vk::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | vk::VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | vk::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 																	vk::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 
 																	vk::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
@@ -6831,7 +6799,7 @@ void addFormatTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 									{
 										const VkInputAttachmentAspectReference inputAspect =
 										{
-											0u,
+											1u,
 											0u,
 
 											(isDepthAttachment ? (VkImageAspectFlags)VK_IMAGE_ASPECT_DEPTH_BIT : 0u)
@@ -6899,10 +6867,10 @@ void addFormatTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 																	vk::VK_DEPENDENCY_BY_REGION_BIT));
 
 									deps.push_back(SubpassDependency(1, 1,
-																	vk::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+																	vk::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | vk::VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
 																	vk::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 
-																	vk::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+																	vk::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 																	vk::VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
 																	vk::VK_DEPENDENCY_BY_REGION_BIT));
 
@@ -6911,7 +6879,7 @@ void addFormatTests (tcu::TestCaseGroup* group, const TestConfigExternal testCon
 									{
 										const VkInputAttachmentAspectReference inputAspect =
 										{
-											0u,
+											1u,
 											0u,
 
 											(isDepthAttachment ? (VkImageAspectFlags)VK_IMAGE_ASPECT_DEPTH_BIT : 0u)
@@ -6998,22 +6966,20 @@ tcu::TestCaseGroup* createRenderPassTestsInternal (tcu::TestContext& testCtx, Re
 	de::MovePtr<tcu::TestCaseGroup>	suballocationTestGroup			= createSuballocationTests(testCtx, renderPassType);
 	de::MovePtr<tcu::TestCaseGroup>	dedicatedAllocationTestGroup	= createDedicatedAllocationTests(testCtx, renderPassType);
 
-	suballocationTestGroup->addChild((renderPassType == RENDERPASS_TYPE_LEGACY) ? createRenderPassMultisampleTests(testCtx) : createRenderPass2MultisampleTests(testCtx));
-	suballocationTestGroup->addChild((renderPassType == RENDERPASS_TYPE_LEGACY) ? createRenderPassMultisampleResolveTests(testCtx) : createRenderPass2MultisampleResolveTests(testCtx));
+	suballocationTestGroup->addChild((renderPassType == RENDERPASS_TYPE_LEGACY) ? createRenderPassMultisampleTests(testCtx)			: createRenderPass2MultisampleTests(testCtx));
+	suballocationTestGroup->addChild((renderPassType == RENDERPASS_TYPE_LEGACY) ? createRenderPassMultisampleResolveTests(testCtx)	: createRenderPass2MultisampleResolveTests(testCtx));
+	suballocationTestGroup->addChild((renderPassType == RENDERPASS_TYPE_LEGACY) ? createRenderPassSubpassDependencyTests(testCtx)	: createRenderPass2SubpassDependencyTests(testCtx));
+	suballocationTestGroup->addChild((renderPassType == RENDERPASS_TYPE_LEGACY) ? createRenderPassSampleReadTests(testCtx)			: createRenderPass2SampleReadTests(testCtx));
+	suballocationTestGroup->addChild((renderPassType == RENDERPASS_TYPE_LEGACY) ? createRenderPassSparseRenderTargetTests(testCtx)	: createRenderPass2SparseRenderTargetTests(testCtx));
+	suballocationTestGroup->addChild(createRenderPassUnusedAttachmentTests(testCtx, renderPassType));
 
 	renderpassTests->addChild(suballocationTestGroup.release());
 	renderpassTests->addChild(dedicatedAllocationTestGroup.release());
 
-	if (renderPassType == RENDERPASS_TYPE_LEGACY)
+	if (renderPassType != RENDERPASS_TYPE_LEGACY)
 	{
-		renderpassTests->addChild(createRenderPassMultisampleTests(testCtx));
-		renderpassTests->addChild(createRenderPassMultisampleResolveTests(testCtx));
+		renderpassTests->addChild(createRenderPass2DepthStencilResolveTests(testCtx));
 	}
-
-	renderpassTests->addChild((renderPassType == RENDERPASS_TYPE_LEGACY) ? createRenderPassSampleReadTests(testCtx) : createRenderPass2SampleReadTests(testCtx));
-	renderpassTests->addChild((renderPassType == RENDERPASS_TYPE_LEGACY) ? createRenderPassSparseRenderTargetTests(testCtx) : createRenderPass2SparseRenderTargetTests(testCtx));
-
-	renderpassTests->addChild(createRenderPassUnusedAttachmentTests(testCtx));
 
 	return renderpassTests.release();
 }

@@ -207,7 +207,8 @@ UmaRemoteCallResult ParseJsonFromGMSCore(const std::string& metadata_str,
     return UMA_STATUS_JSON_EMPTY;
 
   // Pick out the "matches" list.
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(metadata_str);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(metadata_str);
   const base::ListValue* matches = nullptr;
   if (!value.get() || !value->is_dict() ||
       !(static_cast<base::DictionaryValue*>(value.get()))

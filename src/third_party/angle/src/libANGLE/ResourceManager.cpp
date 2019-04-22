@@ -12,6 +12,7 @@
 #include "libANGLE/Buffer.h"
 #include "libANGLE/Context.h"
 #include "libANGLE/Fence.h"
+#include "libANGLE/MemoryObject.h"
 #include "libANGLE/Path.h"
 #include "libANGLE/Program.h"
 #include "libANGLE/ProgramPipeline.h"
@@ -243,7 +244,7 @@ void TextureManager::signalAllTexturesDirty(const Context *context) const
         {
             // We don't know if the Texture needs init, but that's ok, since it will only force
             // a re-check, and will not initialize the pixels if it's not needed.
-            texture.second->signalDirty(context, InitState::MayNeedInit);
+            texture.second->signalDirtyStorage(context, InitState::MayNeedInit);
         }
     }
 }
@@ -346,7 +347,7 @@ angle::Result PathManager::createPaths(Context *context, GLsizei range, GLuint *
     {
         context->handleError(GL_OUT_OF_MEMORY, "Failed to allocate path handle range.", __FILE__,
                              ANGLE_FUNCTION, __LINE__);
-        return angle::Result::Stop();
+        return angle::Result::Stop;
     }
 
     const auto &paths = context->getImplementation()->createPaths(range);
@@ -355,7 +356,7 @@ angle::Result PathManager::createPaths(Context *context, GLsizei range, GLuint *
         mHandleAllocator.releaseRange(client, range);
         context->handleError(GL_OUT_OF_MEMORY, "Failed to allocate path objects.", __FILE__,
                              ANGLE_FUNCTION, __LINE__);
-        return angle::Result::Stop();
+        return angle::Result::Stop;
     }
 
     for (GLsizei i = 0; i < range; ++i)
@@ -365,7 +366,7 @@ angle::Result PathManager::createPaths(Context *context, GLsizei range, GLuint *
         mPaths.assign(id, new Path(impl));
     }
     *createdOut = client;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void PathManager::deletePaths(GLuint first, GLsizei range)
@@ -474,6 +475,55 @@ GLuint ProgramPipelineManager::createProgramPipeline()
 ProgramPipeline *ProgramPipelineManager::getProgramPipeline(GLuint handle) const
 {
     return mObjectMap.query(handle);
+}
+
+// MemoryObjectManager Implementation.
+
+MemoryObjectManager::MemoryObjectManager() {}
+
+MemoryObjectManager::~MemoryObjectManager()
+{
+    ASSERT(mMemoryObjects.empty());
+}
+
+void MemoryObjectManager::reset(const Context *context)
+{
+    while (!mMemoryObjects.empty())
+    {
+        deleteMemoryObject(context, mMemoryObjects.begin()->first);
+    }
+    mMemoryObjects.clear();
+}
+
+GLuint MemoryObjectManager::createMemoryObject(rx::GLImplFactory *factory)
+{
+    GLuint handle = mHandleAllocator.allocate();
+    MemoryObject *memoryObject = new MemoryObject(factory, handle);
+    memoryObject->addRef();
+    mMemoryObjects.assign(handle, memoryObject);
+    return handle;
+}
+
+void MemoryObjectManager::deleteMemoryObject(const Context *context, GLuint handle)
+{
+    MemoryObject *memoryObject = nullptr;
+    if (!mMemoryObjects.erase(handle, &memoryObject))
+    {
+        return;
+    }
+
+    // Requires an explicit this-> because of C++ template rules.
+    this->mHandleAllocator.release(handle);
+
+    if (memoryObject)
+    {
+        memoryObject->release(context);
+    }
+}
+
+MemoryObject *MemoryObjectManager::getMemoryObject(GLuint handle) const
+{
+    return mMemoryObjects.query(handle);
 }
 
 }  // namespace gl

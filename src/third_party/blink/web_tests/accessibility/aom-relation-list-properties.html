@@ -206,7 +206,6 @@ test(function(t)
     assert_equals(axList1.role, "AXRole: AXListBox");
     assert_equals(axList1.childrenCount, 3);
 
-    var axListitem = axList1.childAtIndex(0);
     assert_equals(axList1.childAtIndex(0).name, "One");
     assert_equals(axList1.childAtIndex(1).name, "Two");
     assert_equals(axList1.childAtIndex(2).name, "Three");
@@ -217,19 +216,9 @@ test(function(t)
     assert_equals(axList2.childAtIndex(0).name, "Four");
 
     var list1 = document.getElementById("list1");
-    var item4 = document.getElementById("item4");
 
     list1.accessibleNode.owns = new AccessibleNodeList();
     assert_equals(axList1.childrenCount, 2);
-/**
-
-
-    list1.accessibleNode.owns[0] = item4.accessibleNode;
-    assert_equals(axList1.childrenCount, 3);
-    assert_equals(axList1.childAtIndex(0).name, "One");
-    assert_equals(axList1.childAtIndex(1).name, "Two");
-assert_equals(axList1.childAtIndex(2).name, "Four");
-**/
 }, "AccessibleNode.owns");
 </script>
 

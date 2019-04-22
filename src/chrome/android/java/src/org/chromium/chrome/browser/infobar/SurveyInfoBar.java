@@ -70,7 +70,7 @@ public class SurveyInfoBar extends InfoBar {
      */
     private SurveyInfoBar(String siteId, boolean showAsBottomSheet, int displayLogoResId,
             SurveyInfoBarDelegate surveyInfoBarDelegate) {
-        super(displayLogoResId, null, null);
+        super(displayLogoResId, 0, null, null);
 
         mSiteId = siteId;
         mShowAsBottomSheet = showAsBottomSheet;
@@ -104,12 +104,13 @@ public class SurveyInfoBar extends InfoBar {
             }
         });
 
-        NoUnderlineClickableSpan clickableSpan = new NoUnderlineClickableSpan((widget) -> {
-            // Prevent double clicking on the text span.
-            if (mClicked) return;
-            showSurvey(tab);
-            mClosedByInteraction = true;
-        });
+        NoUnderlineClickableSpan clickableSpan =
+                new NoUnderlineClickableSpan(layout.getResources(), (widget) -> {
+                    // Prevent double clicking on the text span.
+                    if (mClicked) return;
+                    showSurvey(tab);
+                    mClosedByInteraction = true;
+                });
 
         CharSequence infoBarText = SpanApplier.applySpans(mDelegate.getSurveyPromptString(),
                 new SpanInfo("<LINK>", "</LINK>", clickableSpan));
@@ -118,7 +119,7 @@ public class SurveyInfoBar extends InfoBar {
         prompt.setText(infoBarText);
         prompt.setMovementMethod(LinkMovementMethod.getInstance());
         prompt.setGravity(Gravity.CENTER_VERTICAL);
-        ApiCompatibilityUtils.setTextAppearance(prompt, R.style.BlackTitle1);
+        ApiCompatibilityUtils.setTextAppearance(prompt, R.style.TextAppearance_BlackTitle1);
         addAccessibilityClickListener(prompt, tab);
         layout.addContent(prompt, 1f);
     }

@@ -22,6 +22,7 @@ GeneratePageBundleRequest::GeneratePageBundleRequest(
     int max_bundle_size_bytes,
     const std::vector<std::string>& page_urls,
     version_info::Channel channel,
+    const std::string& testing_header_value,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     PrefetchRequestFinishedCallback callback)
     : callback_(std::move(callback)), requested_urls_(page_urls) {
@@ -41,7 +42,8 @@ GeneratePageBundleRequest::GeneratePageBundleRequest(
   request.SerializeToString(&upload_data);
 
   fetcher_ = PrefetchRequestFetcher::CreateForPost(
-      GeneratePageBundleRequestURL(channel), upload_data, url_loader_factory,
+      GeneratePageBundleRequestURL(channel), upload_data, testing_header_value,
+      requested_urls_.empty(), url_loader_factory,
       base::BindOnce(&GeneratePageBundleRequest::OnCompleted,
                      // Fetcher is owned by this instance.
                      base::Unretained(this)));
@@ -65,8 +67,7 @@ void GeneratePageBundleRequest::OnCompleted(PrefetchRequestStatus status,
     return;
   }
 
-  std::move(callback_).Run(PrefetchRequestStatus::kSuccess, operation_name,
-                           pages);
+  std::move(callback_).Run(status, operation_name, pages);
 }
 
 }  // namespace offline_pages

@@ -40,7 +40,7 @@ public class UmaUtils {
     // Please treat this list as append only and keep it in sync with
     // Android.DownloadManager.List.View.Actions in enums.xml.
     @IntDef({ViewAction.OPEN, ViewAction.RESUME, ViewAction.PAUSE, ViewAction.CANCEL,
-            ViewAction.MENU_SHARE, ViewAction.MENU_DELETE, ViewAction.RETRY})
+            ViewAction.MENU_SHARE, ViewAction.MENU_DELETE, ViewAction.RETRY, ViewAction.MENU_RENAME})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewAction {
         int OPEN = 0;
@@ -50,7 +50,8 @@ public class UmaUtils {
         int MENU_SHARE = 4;
         int MENU_DELETE = 5;
         int RETRY = 6;
-        int NUM_ENTRIES = 7;
+        int MENU_RENAME = 7;
+        int NUM_ENTRIES = 8;
     }
 
     // Please treat this list as append only and keep it in sync with
@@ -120,6 +121,9 @@ public class UmaUtils {
                 break;
             case ViewAction.RETRY:
                 userActionSuffix = "Retry";
+                break;
+            case ViewAction.MENU_RENAME:
+                userActionSuffix = "MenuRename";
                 break;
             default:
                 assert false : "Unexpected action " + action + " passed to recordItemAction.";
@@ -239,5 +243,29 @@ public class UmaUtils {
                 assert false : "Unexpected type " + type + " passed to getSuffixForFilter.";
                 return "Invalid";
         }
+    }
+
+    /**
+     * Records the required stretch for each dimension before rendering the image.
+     * @param requiredWidthStretch Required stretch for width.
+     * @param requiredHeightStretch Required stretch for height.
+     * @param filter The filter type of the view being shown.
+     */
+    public static void recordImageViewRequiredStretch(float requiredWidthStretch,
+            float requiredHeightStretch, @Filters.FilterType int filter) {
+        float maxRequiredStretch = Math.max(requiredWidthStretch, requiredHeightStretch);
+        RecordHistogram.recordCustomCountHistogram(
+                "Android.DownloadManager.Thumbnail.MaxRequiredStretch."
+                        + getSuffixForFilter(filter),
+                (int) (maxRequiredStretch * 100), 10, 1000, 50);
+    }
+
+    /**
+     * Records the number of chips enabled whenever the chip row is changed.
+     * @param numEnabledChips The number of chips being shown.
+     */
+    public static void recordChipStats(int numEnabledChips) {
+        RecordHistogram.recordCustomCountHistogram(
+                "Android.DownloadManager.Chips.Enabled", numEnabledChips, 1, 10, 10);
     }
 }

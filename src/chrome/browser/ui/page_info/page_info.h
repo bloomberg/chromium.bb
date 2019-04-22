@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_H_
 #define CHROME_BROWSER_UI_PAGE_INFO_PAGE_INFO_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -128,8 +130,8 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   struct ChooserUIInfo {
     ContentSettingsType content_settings_type;
     ChooserContextBase* (*get_context)(Profile*);
-    int label_string_id;
-    int secondary_label_string_id;
+    int description_string_id;
+    int allowed_by_policy_description_string_id;
     int delete_tooltip_string_id;
     const char* ui_name_key;
   };
@@ -142,7 +144,8 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
            TabSpecificContentSettings* tab_specific_content_settings,
            content::WebContents* web_contents,
            const GURL& url,
-           const security_state::SecurityInfo& security_info);
+           security_state::SecurityLevel security_level,
+           const security_state::VisibleSecurityState& visible_security_state);
   ~PageInfo() override;
 
   void RecordPageInfoAction(PageInfoAction action);
@@ -191,7 +194,9 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
                            NonFactoryDefaultAndRecentlyChangedPermissionsShown);
   friend class PageInfoBubbleViewBrowserTest;
   // Initializes the |PageInfo|.
-  void Init(const GURL& url, const security_state::SecurityInfo& security_info);
+  void Init(const GURL& url,
+            const security_state::SecurityLevel security_level,
+            const security_state::VisibleSecurityState& visible_security_state);
 
   // Sets (presents) the information about the site's permissions in the |ui_|.
   void PresentSitePermissions();
@@ -202,6 +207,10 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   // Sets (presents) the information about the site's identity and connection
   // in the |ui_|.
   void PresentSiteIdentity();
+
+  // Presents feature related info in the |ui_|; like, if VR content is being
+  // presented in a headset.
+  void PresentPageFeatureInfo();
 
   // Helper function to get the site identification status and details by
   // malicious content status.
@@ -279,7 +288,7 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
 
   security_state::SecurityLevel security_level_;
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
   // Used to handle changing password, and whitelisting site.
   safe_browsing::ChromePasswordProtectionService* password_protection_service_;
 #endif

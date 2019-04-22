@@ -14,8 +14,8 @@
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer.h"
-#include "media/base/media_log.h"
 #include "media/base/media_tracks.h"
+#include "media/base/media_util.h"
 #include "media/base/test_helpers.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
@@ -308,7 +308,7 @@ DemuxResult FFmpegDemuxForTest(const base::FilePath& filepath,
   ::media::FileDataSource data_source;
   CHECK(data_source.Initialize(filepath));
 
-  ::media::MediaLog media_log;
+  ::media::NullMediaLog media_log;
   ::media::FFmpegDemuxer demuxer(
       base::ThreadTaskRunnerHandle::Get(), &data_source,
       base::BindRepeating(&OnEncryptedMediaInitData),

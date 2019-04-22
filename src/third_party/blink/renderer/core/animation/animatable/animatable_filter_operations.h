@@ -41,25 +41,24 @@ class AnimatableFilterOperations final : public AnimatableValue {
  public:
   static AnimatableFilterOperations* Create(
       const FilterOperations& operations) {
-    return new AnimatableFilterOperations(operations);
+    return MakeGarbageCollected<AnimatableFilterOperations>(operations);
   }
 
+  AnimatableFilterOperations(const FilterOperations& operations)
+      : operation_wrapper_(
+            MakeGarbageCollected<FilterOperationsWrapper>(operations)) {}
   ~AnimatableFilterOperations() override = default;
 
   const FilterOperations& Operations() const {
     return operation_wrapper_->Operations();
   }
 
-  void Trace(Visitor*) override;
-
- protected:
-  AnimatableValue* InterpolateTo(const AnimatableValue*,
-                                 double fraction) const override;
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(operation_wrapper_);
+    AnimatableValue::Trace(visitor);
+  }
 
  private:
-  AnimatableFilterOperations(const FilterOperations& operations)
-      : operation_wrapper_(FilterOperationsWrapper::Create(operations)) {}
-
   AnimatableType GetType() const override { return kTypeFilterOperations; }
 
   Member<FilterOperationsWrapper> operation_wrapper_;

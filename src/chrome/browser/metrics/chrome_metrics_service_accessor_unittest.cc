@@ -4,8 +4,6 @@
 
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 
-#include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/common/pref_names.h"
@@ -44,16 +42,6 @@ TEST_F(ChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
   EXPECT_TRUE(
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
   GetLocalState()->ClearPref(pref);
-  EXPECT_FALSE(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
-
-  // If field trials are forced, metrics should always be disabled, regardless
-  // of the value of the pref.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kForceFieldTrials);
-  EXPECT_FALSE(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
-  GetLocalState()->SetBoolean(pref, true);
   EXPECT_FALSE(
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
 #else

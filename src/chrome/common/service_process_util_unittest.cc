@@ -10,13 +10,14 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 
 #if !defined(OS_MACOSX)
@@ -230,7 +231,7 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestReadyFalse) {
 
 MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
   base::PlatformThread::SetName("ServiceProcessStateTestShutdownMainThread");
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   base::RunLoop run_loop;
   base::Thread io_thread_("ServiceProcessStateTestShutdownIOThread");
   base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
@@ -239,7 +240,7 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
   EXPECT_TRUE(state.Initialize());
   EXPECT_TRUE(state.SignalReady(io_thread_.task_runner().get(),
                                 base::Bind(&ShutdownTask, &run_loop)));
-  message_loop.task_runner()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitWhenIdleClosure(),
       TestTimeouts::action_max_timeout());
   EXPECT_FALSE(g_good_shutdown);

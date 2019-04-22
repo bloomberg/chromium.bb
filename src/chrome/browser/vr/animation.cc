@@ -126,7 +126,7 @@ struct AnimationTraits {};
       animation_target->NotifyClient##notify_name##Animated(                  \
           target_value, target_property, nullptr);                            \
     }                                                                         \
-  };
+  }
 
 DEFINE_ANIMATION_TRAITS(float, Float, Float);
 DEFINE_ANIMATION_TRAITS(cc::TransformOperations,
@@ -134,6 +134,8 @@ DEFINE_ANIMATION_TRAITS(cc::TransformOperations,
                         TransformOperations);
 DEFINE_ANIMATION_TRAITS(gfx::SizeF, Size, Size);
 DEFINE_ANIMATION_TRAITS(SkColor, Color, Color);
+
+#undef DEFINE_ANIMATION_TRAITS
 
 }  // namespace
 

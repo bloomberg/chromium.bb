@@ -8,25 +8,32 @@
 #include <alsa/asoundlib.h>
 #include <string>
 
+#include "media/base/media_export.h"
+
 namespace media {
 class AlsaWrapper;
 }
 
 namespace alsa_util {
 
-snd_pcm_t* OpenCaptureDevice(media::AlsaWrapper* wrapper,
-                             const char* device_name,
-                             int channels,
-                             int sample_rate,
-                             snd_pcm_format_t pcm_format,
-                             int latency_us);
+// When opening ALSA devices, |period_us| is the size of a packet and
+// |buffer_us| is the size of the ring buffer, which consists of multiple
+// packets. In capture devices, the latency relies more on |period_us|, and thus
+// one may require more details upon the value implicitly set by ALSA.
+MEDIA_EXPORT snd_pcm_t* OpenCaptureDevice(media::AlsaWrapper* wrapper,
+                                          const char* device_name,
+                                          int channels,
+                                          int sample_rate,
+                                          snd_pcm_format_t pcm_format,
+                                          int buffer_us,
+                                          int period_us);
 
 snd_pcm_t* OpenPlaybackDevice(media::AlsaWrapper* wrapper,
                               const char* device_name,
                               int channels,
                               int sample_rate,
                               snd_pcm_format_t pcm_format,
-                              int latency_us);
+                              int buffer_us);
 
 int CloseDevice(media::AlsaWrapper* wrapper, snd_pcm_t* handle);
 

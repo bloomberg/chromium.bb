@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 
 #include <algorithm>
 #include <utility>
 
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 
 namespace content {
+
+using blink::MediaStreamVideoSource;
 
 namespace {
 
@@ -32,7 +34,7 @@ const char kGroupID4[] = "fake_group_4";
 const char kGroupID5[] = "fake_group_5";
 
 void CheckTrackAdapterSettingsEqualsResolution(
-    const VideoCaptureSettings& settings) {
+    const blink::VideoCaptureSettings& settings) {
   EXPECT_FALSE(settings.track_adapter_settings().target_size());
   EXPECT_EQ(1.0 / settings.Format().frame_size.height(),
             settings.track_adapter_settings().min_aspect_ratio());
@@ -41,7 +43,7 @@ void CheckTrackAdapterSettingsEqualsResolution(
 }
 
 void CheckTrackAdapterSettingsEqualsFrameRate(
-    const VideoCaptureSettings& settings,
+    const blink::VideoCaptureSettings& settings,
     double value = 0.0) {
   if (value >= settings.FrameRate())
     value = 0.0;
@@ -49,7 +51,7 @@ void CheckTrackAdapterSettingsEqualsFrameRate(
 }
 
 void CheckTrackAdapterSettingsEqualsFormat(
-    const VideoCaptureSettings& settings) {
+    const blink::VideoCaptureSettings& settings) {
   CheckTrackAdapterSettingsEqualsResolution(settings);
   CheckTrackAdapterSettingsEqualsFrameRate(settings);
 }
@@ -59,8 +61,8 @@ double AspectRatio(const media::VideoCaptureFormat& format) {
          static_cast<double>(format.frame_size.height());
 }
 
-VideoCaptureSettings SelectSettingsVideoDeviceCapture(
-    const VideoDeviceCaptureCapabilities& capabilities,
+blink::VideoCaptureSettings SelectSettingsVideoDeviceCapture(
+    const blink::VideoDeviceCaptureCapabilities& capabilities,
     const blink::WebMediaConstraints& constraints) {
   return SelectSettingsVideoDeviceCapture(
       capabilities, constraints, MediaStreamVideoSource::kDefaultWidth,
@@ -74,12 +76,11 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
  public:
   void SetUp() override {
     // Default device. It is default because it is the first in the enumeration.
-    blink::mojom::VideoInputDeviceCapabilitiesPtr device =
-        blink::mojom::VideoInputDeviceCapabilities::New();
-    device->device_id = kDeviceID1;
-    device->group_id = kGroupID1;
-    device->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
-    device->formats = {
+    blink::VideoInputDeviceCapabilities device;
+    device.device_id = kDeviceID1;
+    device.group_id = kGroupID1;
+    device.facing_mode = media::MEDIA_VIDEO_FACING_NONE;
+    device.formats = {
         media::VideoCaptureFormat(gfx::Size(200, 200), 40.0f,
                                   media::PIXEL_FORMAT_I420),
         // This entry is is the closest to defaults.
@@ -91,11 +92,10 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A low-resolution device.
-    device = blink::mojom::VideoInputDeviceCapabilities::New();
-    device->device_id = kDeviceID2;
-    device->group_id = kGroupID2;
-    device->facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
-    device->formats = {
+    device.device_id = kDeviceID2;
+    device.group_id = kGroupID2;
+    device.facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
+    device.formats = {
         media::VideoCaptureFormat(gfx::Size(40, 30), 20.0f,
                                   media::PIXEL_FORMAT_I420),
         media::VideoCaptureFormat(gfx::Size(320, 240), 30.0f,
@@ -112,11 +112,10 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A high-resolution device.
-    device = blink::mojom::VideoInputDeviceCapabilities::New();
-    device->device_id = kDeviceID3;
-    device->group_id = kGroupID3;
-    device->facing_mode = media::MEDIA_VIDEO_FACING_USER;
-    device->formats = {
+    device.device_id = kDeviceID3;
+    device.group_id = kGroupID3;
+    device.facing_mode = media::MEDIA_VIDEO_FACING_USER;
+    device.formats = {
         media::VideoCaptureFormat(gfx::Size(600, 400), 10.0f,
                                   media::PIXEL_FORMAT_I420),
         media::VideoCaptureFormat(gfx::Size(640, 480), 10.0f,
@@ -144,21 +143,19 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A depth capture device.
-    device = blink::mojom::VideoInputDeviceCapabilities::New();
-    device->device_id = kDeviceID4;
-    device->group_id = kGroupID4;
-    device->facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
-    device->formats = {media::VideoCaptureFormat(gfx::Size(640, 480), 30.0f,
-                                                 media::PIXEL_FORMAT_Y16)};
+    device.device_id = kDeviceID4;
+    device.group_id = kGroupID4;
+    device.facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
+    device.formats = {media::VideoCaptureFormat(gfx::Size(640, 480), 30.0f,
+                                                media::PIXEL_FORMAT_Y16)};
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A device that reports invalid frame rates. These devices exist and should
     // be supported if no constraints are placed on the frame rate.
-    device = blink::mojom::VideoInputDeviceCapabilities::New();
-    device->device_id = kDeviceID5;
-    device->group_id = kGroupID5;
-    device->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
-    device->formats = {
+    device.device_id = kDeviceID5;
+    device.group_id = kGroupID5;
+    device.facing_mode = media::MEDIA_VIDEO_FACING_NONE;
+    device.formats = {
         media::VideoCaptureFormat(
             gfx::Size(MediaStreamVideoSource::kDefaultWidth,
                       MediaStreamVideoSource::kDefaultHeight),
@@ -173,10 +170,10 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
         base::Optional<bool>(false),
     };
 
-    default_device_ = capabilities_.device_capabilities[0].get();
-    low_res_device_ = capabilities_.device_capabilities[1].get();
-    high_res_device_ = capabilities_.device_capabilities[2].get();
-    invalid_frame_rate_device_ = capabilities_.device_capabilities[4].get();
+    default_device_ = &capabilities_.device_capabilities[0];
+    low_res_device_ = &capabilities_.device_capabilities[1];
+    high_res_device_ = &capabilities_.device_capabilities[2];
+    invalid_frame_rate_device_ = &capabilities_.device_capabilities[4];
     default_closest_format_ = &default_device_->formats[1];
     low_res_closest_format_ = &low_res_device_->formats[2];
     high_res_closest_format_ = &high_res_device_->formats[3];
@@ -184,17 +181,17 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
   }
 
  protected:
-  VideoCaptureSettings SelectSettings() {
+  blink::VideoCaptureSettings SelectSettings() {
     blink::WebMediaConstraints constraints =
         constraint_factory_.CreateWebMediaConstraints();
     return SelectSettingsVideoDeviceCapture(capabilities_, constraints);
   }
 
-  VideoDeviceCaptureCapabilities capabilities_;
-  const blink::mojom::VideoInputDeviceCapabilities* default_device_;
-  const blink::mojom::VideoInputDeviceCapabilities* low_res_device_;
-  const blink::mojom::VideoInputDeviceCapabilities* high_res_device_;
-  const blink::mojom::VideoInputDeviceCapabilities* invalid_frame_rate_device_;
+  blink::VideoDeviceCaptureCapabilities capabilities_;
+  const blink::VideoInputDeviceCapabilities* default_device_;
+  const blink::VideoInputDeviceCapabilities* low_res_device_;
+  const blink::VideoInputDeviceCapabilities* high_res_device_;
+  const blink::VideoInputDeviceCapabilities* invalid_frame_rate_device_;
   // Closest formats to the default settings.
   const media::VideoCaptureFormat* default_closest_format_;
   const media::VideoCaptureFormat* low_res_closest_format_;
@@ -394,12 +391,11 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // Simulate a system that does not support noise reduction.
   // Manually adding device capabilities because VideoDeviceCaptureCapabilities
   // is move only.
-  VideoDeviceCaptureCapabilities capabilities;
-  blink::mojom::VideoInputDeviceCapabilitiesPtr device =
-      blink::mojom::VideoInputDeviceCapabilities::New();
-  device->device_id = kDeviceID1;
-  device->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
-  device->formats = {
+  blink::VideoDeviceCaptureCapabilities capabilities;
+  blink::VideoInputDeviceCapabilities device;
+  device.device_id = kDeviceID1;
+  device.facing_mode = media::MEDIA_VIDEO_FACING_NONE;
+  device.formats = {
       media::VideoCaptureFormat(gfx::Size(200, 200), 40.0f,
                                 media::PIXEL_FORMAT_I420),
   };
@@ -2519,7 +2515,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
 // when there are no candidates to choose from.
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, NoDevicesNoConstraints) {
   constraint_factory_.Reset();
-  VideoDeviceCaptureCapabilities capabilities;
+  blink::VideoDeviceCaptureCapabilities capabilities;
   auto result = SelectSettingsVideoDeviceCapture(
       capabilities, constraint_factory_.CreateWebMediaConstraints());
   EXPECT_FALSE(result.HasValue());
@@ -2529,7 +2525,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, NoDevicesNoConstraints) {
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, NoDevicesWithConstraints) {
   constraint_factory_.Reset();
   constraint_factory_.basic().height.SetExact(100);
-  VideoDeviceCaptureCapabilities capabilities;
+  blink::VideoDeviceCaptureCapabilities capabilities;
   auto result = SelectSettingsVideoDeviceCapture(
       capabilities, constraint_factory_.CreateWebMediaConstraints());
   EXPECT_FALSE(result.HasValue());

@@ -1,2 +1,4 @@
+file://chrome/browser/usb/OWNERS
+
 # COMPONENT: Blink>USB
-# TEAM: device-dev@chromium.org
+# TEAM: webusb@chromium.org

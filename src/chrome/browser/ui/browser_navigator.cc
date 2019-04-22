@@ -15,9 +15,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -47,7 +51,7 @@
 #include "url/url_constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "components/account_id/account_id.h"
 #endif
 
@@ -313,6 +317,7 @@ void LoadURLInContents(WebContents* target_contents,
                        const GURL& url,
                        NavigateParams* params) {
   NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.initiator_origin = params->initiator_origin;
   load_url_params.source_site_instance = params->source_site_instance;
   load_url_params.referrer = params->referrer;
   load_url_params.frame_name = params->frame_name;
@@ -329,13 +334,20 @@ void LoadURLInContents(WebContents* target_contents,
   load_url_params.input_start = params->input_start;
   load_url_params.was_activated = params->was_activated;
   load_url_params.href_translate = params->href_translate;
+  load_url_params.reload_type = params->reload_type;
 
   // |frame_tree_node_id| is kNoFrameTreeNodeId for main frame navigations.
   if (params->frame_tree_node_id ==
       content::RenderFrameHost::kNoFrameTreeNodeId) {
+    PreviewsService* previews_service =
+        PreviewsServiceFactory::GetForProfile(GetSourceProfile(params));
+    uint64_t previews_page_id =
+        previews_service
+            ? previews_service->previews_lite_page_decider()->GeneratePageID()
+            : 0;
     load_url_params.navigation_ui_data =
         ChromeNavigationUIData::CreateForMainFrameNavigation(
-            target_contents, params->disposition);
+            target_contents, params->disposition, previews_page_id);
   }
 
   if (params->uses_post) {
@@ -466,6 +478,12 @@ void Navigate(NavigateParams* params) {
     params->url = GURL(chrome::kExtensionInvalidRequestURL);
 #endif
 
+  if (source_browser &&
+      platform_util::IsBrowserLockedFullscreen(source_browser)) {
+    // Block any navigation requests in locked fullscreen mode.
+    return;
+  }
+
   // Trying to open a background tab when in an app browser results in
   // focusing a regular browser window an opening a tab in the background
   // of that window. Change the disposition to NEW_FOREGROUND_TAB so that
@@ -498,25 +516,35 @@ void Navigate(NavigateParams* params) {
   if (singleton_index != -1) {
     contents_to_navigate_or_insert =
         params->browser->tab_strip_model()->GetWebContentsAt(singleton_index);
+  } else if (params->disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
+    // The user is trying to open a tab that no longer exists. If we open a new
+    // tab, it could leave orphaned NTPs around, but always overwriting the
+    // current tab could could clobber state that the user was trying to
+    // preserve. Fallback to the behavior used for singletons: overwrite the
+    // current tab if it's the NTP, otherwise open a new tab.
+    params->disposition = WindowOpenDisposition::SINGLETON_TAB;
+    ShowSingletonTabOverwritingNTP(params->browser, std::move(*params));
+    return;
   }
 #if defined(OS_CHROMEOS)
   if (source_browser && source_browser != params->browser) {
     // When the newly created browser was spawned by a browser which visits
     // another user's desktop, it should be shown on the same desktop as the
     // originating one. (This is part of the desktop separation per profile).
-    MultiUserWindowManager* manager = MultiUserWindowManager::GetInstance();
-    // Some unit tests have no manager instantiated.
-    if (manager) {
+    MultiUserWindowManagerClient* client =
+        MultiUserWindowManagerClient::GetInstance();
+    // Some unit tests have no client instantiated.
+    if (client) {
       aura::Window* src_window = source_browser->window()->GetNativeWindow();
       aura::Window* new_window = params->browser->window()->GetNativeWindow();
       const AccountId& src_account_id =
-          manager->GetUserPresentingWindow(src_window);
-      if (src_account_id != manager->GetUserPresentingWindow(new_window)) {
+          client->GetUserPresentingWindow(src_window);
+      if (src_account_id != client->GetUserPresentingWindow(new_window)) {
         // Once the window gets presented, it should be shown on the same
         // desktop as the desktop of the creating browser. Note that this
         // command will not show the window if it wasn't shown yet by the
         // browser creation.
-        manager->ShowWindowForUser(new_window, src_account_id);
+        client->ShowWindowForUser(new_window, src_account_id);
       }
     }
   }
@@ -647,7 +675,7 @@ void Navigate(NavigateParams* params) {
     // The navigation should insert a new tab into the target Browser.
     params->browser->tab_strip_model()->AddWebContents(
         std::move(contents_to_insert), params->tabstrip_index,
-        params->transition, params->tabstrip_add_types);
+        params->transition, params->tabstrip_add_types, params->group);
   }
 
   if (singleton_index >= 0) {
@@ -668,8 +696,10 @@ void Navigate(NavigateParams* params) {
     if (params->source_contents != contents_to_navigate_or_insert) {
       // Use the index before the potential close below, because it could
       // make the index refer to a different tab.
+      auto gesture_type = user_initiated ? TabStripModel::GestureType::kOther
+                                         : TabStripModel::GestureType::kNone;
       params->browser->tab_strip_model()->ActivateTabAt(singleton_index,
-                                                        user_initiated);
+                                                        {gesture_type});
       if (params->disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
         // Close orphaned NTP (and the like) with no history when the user
         // switches away from them.
@@ -716,7 +746,7 @@ bool IsHostAllowedInIncognito(const GURL& url) {
     // retrieve the login scope token without touching any profiles. This
     // option is only available on Windows for use with Google Credential
     // Provider for Windows.
-    return signin::GetSigninReasonForPromoURL(url) ==
+    return signin::GetSigninReasonForEmbeddedPromoURL(url) ==
            signin_metrics::Reason::REASON_FETCH_LST_ONLY;
 #else
     return false;
@@ -727,6 +757,7 @@ bool IsHostAllowedInIncognito(const GURL& url) {
   // chrome://extensions is on the list because it redirects to
   // chrome://settings.
   return host != chrome::kChromeUIAppLauncherPageHost &&
+         host != chrome::kChromeUIAppManagementHost &&
          host != chrome::kChromeUISettingsHost &&
          host != chrome::kChromeUIHelpHost &&
          host != chrome::kChromeUIHistoryHost &&

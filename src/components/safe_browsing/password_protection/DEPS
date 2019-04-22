@@ -11,5 +11,6 @@ include_rules = [
   "+services/network/public",
   "+services/network/test",
   "+ui/gfx/geometry",
+  "+third_party/skia/include",
 ]
 

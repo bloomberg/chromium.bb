@@ -6,21 +6,25 @@
 """
 lastchange.py -- Chromium revision fetching utility.
 """
+from __future__ import print_function
 
-import re
+import argparse
+import collections
 import logging
-import optparse
 import os
 import subprocess
 import sys
 
-class VersionInfo(object):
-  def __init__(self, revision_id, full_revision_string, timestamp):
-    self.revision_id = revision_id
-    self.revision = full_revision_string
-    self.timestamp = timestamp
+VersionInfo = collections.namedtuple("VersionInfo",
+                                     ("revision_id", "revision", "timestamp"))
 
+class GitError(Exception):
+  pass
 
+# This function exists for compatibility with logic outside this
+# repository that uses this file as a library.
+# TODO(eliribble) remove this function after it has been ported into
+# the repositories that depend on it
 def RunGitCommand(directory, command):
   """
   Launches git subcommand.
@@ -49,50 +53,95 @@ def RunGitCommand(directory, command):
     return None
 
 
-def FetchGitRevision(directory, filter):
+def _RunGitCommand(directory, command):
+  """Launches git subcommand.
+
+  Returns:
+    The stripped stdout of the git command.
+  Raises:
+    GitError on failure, including a nonzero return code.
+  """
+  command = ['git'] + command
+  # Force shell usage under cygwin. This is a workaround for
+  # mysterious loss of cwd while invoking cygwin's git.
+  # We can't just pass shell=True to Popen, as under win32 this will
+  # cause CMD to be used, while we explicitly want a cygwin shell.
+  if sys.platform == 'cygwin':
+    command = ['sh', '-c', ' '.join(command)]
+  try:
+    logging.info("Executing '%s' in %s", ' '.join(command), directory)
+    proc = subprocess.Popen(command,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            cwd=directory,
+                            shell=(sys.platform=='win32'))
+    stdout, stderr = proc.communicate()
+    stdout = stdout.strip()
+    logging.debug("returncode: %d", proc.returncode)
+    logging.debug("stdout: %s", stdout)
+    logging.debug("stderr: %s", stderr)
+    if proc.returncode != 0 or not stdout:
+      raise GitError((
+          "Git command '{}' in {} failed: "
+          "rc={}, stdout='{}' stderr='{}'").format(
+          " ".join(command), directory, proc.returncode, stdout, stderr))
+    return stdout
+  except OSError as e:
+    raise GitError("Git command 'git {}' in {} failed: {}".format(
+        " ".join(command), directory, e))
+
+
+def GetMergeBase(directory, ref):
+  """
+  Return the merge-base of HEAD and ref.
+
+  Args:
+    directory: The directory containing the .git directory.
+    ref: The ref to use to find the merge base.
+  Returns:
+    The git commit SHA of the merge-base as a string.
+  """
+  logging.debug("Calculating merge base between HEAD and %s in %s",
+                ref, directory)
+  command = ['merge-base', 'HEAD', ref]
+  return _RunGitCommand(directory, command)
+
+
+def FetchGitRevision(directory, commit_filter, start_commit="HEAD"):
   """
   Fetch the Git hash (and Cr-Commit-Position if any) for a given directory.
 
-  Errors are swallowed.
-
+  Args:
+    directory: The directory containing the .git directory.
+    commit_filter: A filter to supply to grep to filter commits
+    start_commit: A commit identifier. The result of this function
+      will be limited to only consider commits before the provided
+      commit.
   Returns:
-    A VersionInfo object or None on error.
+    A VersionInfo object. On error all values will be 0.
   """
-  hsh = ''
+  hash_ = ''
+
   git_args = ['log', '-1', '--format=%H %ct']
-  if filter is not None:
-    git_args.append('--grep=' + filter)
-  proc = RunGitCommand(directory, git_args)
-  if proc:
-    output = proc.communicate()[0].strip()
-    if proc.returncode == 0 and output:
-      hsh, ct = output.split()
-    else:
-      logging.error('Git error: rc=%d, output=%r' %
-                    (proc.returncode, output))
-  if not hsh:
-    return None
-  pos = ''
-  proc = RunGitCommand(directory, ['cat-file', 'commit', hsh])
-  if proc:
-    output = proc.communicate()[0]
-    if proc.returncode == 0 and output:
-      for line in reversed(output.splitlines()):
-        if line.startswith('Cr-Commit-Position:'):
-          pos = line.rsplit()[-1].strip()
-          break
-  return VersionInfo(hsh, '%s-%s' % (hsh, pos), int(ct))
+  if commit_filter is not None:
+    git_args.append('--grep=' + commit_filter)
 
+  git_args.append(start_commit)
 
-def FetchVersionInfo(directory=None, filter=None):
-  """
-  Returns the last change (as a VersionInfo object)
-  from some appropriate revision control system.
-  """
-  version_info = FetchGitRevision(directory, filter)
-  if not version_info:
-    version_info = VersionInfo('0', '0', 0)
-  return version_info
+  output = _RunGitCommand(directory, git_args)
+  hash_, commit_timestamp = output.split()
+  if not hash_:
+    return VersionInfo('0', '0', 0)
+
+  revision = hash_
+  output = _RunGitCommand(directory, ['cat-file', 'commit', hash_])
+  for line in reversed(output.splitlines()):
+    if line.startswith('Cr-Commit-Position:'):
+      pos = line.rsplit()[-1].strip()
+      logging.debug("Found Cr-Commit-Position '%s'", pos)
+      revision = "{}-{}".format(hash_, pos)
+      break
+  return VersionInfo(hash_, revision, int(commit_timestamp))
 
 
 def GetHeaderGuard(path):
@@ -133,6 +182,17 @@ def GetHeaderContents(path, define, version):
   return header_contents
 
 
+def GetGitTopDirectory(source_dir):
+  """Get the top git directory - the directory that contains the .git directory.
+
+  Args:
+    source_dir: The directory to search.
+  Returns:
+    The output of "git rev-parse --show-toplevel" as a string
+  """
+  return _RunGitCommand(source_dir, ['rev-parse', '--show-toplevel'])
+
+
 def WriteIfChanged(file_name, contents):
   """
   Writes the specified contents to the specified file_name
@@ -155,62 +215,89 @@ def main(argv=None):
   if argv is None:
     argv = sys.argv
 
-  parser = optparse.OptionParser(usage="lastchange.py [options]")
-  parser.add_option("-m", "--version-macro",
-                    help="Name of C #define when using --header. Defaults to " +
-                    "LAST_CHANGE.",
-                    default="LAST_CHANGE")
-  parser.add_option("-o", "--output", metavar="FILE",
-                    help="Write last change to FILE. " +
-                    "Can be combined with --header to write both files.")
-  parser.add_option("", "--header", metavar="FILE",
-                    help="Write last change to FILE as a C/C++ header. " +
-                    "Can be combined with --output to write both files.")
-  parser.add_option("--revision-id-only", action='store_true',
-                    help="Output the revision as a VCS revision ID only (in " +
-                    "Git, a 40-character commit hash, excluding the " +
-                    "Cr-Commit-Position).")
-  parser.add_option("--print-only", action='store_true',
-                    help="Just print the revision string. Overrides any " +
-                    "file-output-related options.")
-  parser.add_option("-s", "--source-dir", metavar="DIR",
+  parser = argparse.ArgumentParser(usage="lastchange.py [options]")
+  parser.add_argument("-m", "--version-macro",
+                    help=("Name of C #define when using --header. Defaults to "
+                          "LAST_CHANGE."))
+  parser.add_argument("-o", "--output", metavar="FILE",
+                    help=("Write last change to FILE. "
+                          "Can be combined with --header to write both files."))
+  parser.add_argument("--header", metavar="FILE",
+                    help=("Write last change to FILE as a C/C++ header. "
+                          "Can be combined with --output to write both files."))
+  parser.add_argument("--merge-base-ref",
+                    default=None,
+                    help=("Only consider changes since the merge "
+                          "base between HEAD and the provided ref"))
+  parser.add_argument("--revision-id-only", action='store_true',
+                    help=("Output the revision as a VCS revision ID only (in "
+                          "Git, a 40-character commit hash, excluding the "
+                          "Cr-Commit-Position)."))
+  parser.add_argument("--print-only", action="store_true",
+                    help=("Just print the revision string. Overrides any "
+                          "file-output-related options."))
+  parser.add_argument("-s", "--source-dir", metavar="DIR",
                     help="Use repository in the given directory.")
-  parser.add_option("", "--filter", metavar="REGEX",
-                    help="Only use log entries where the commit message " +
-                    "matches the supplied filter regex. Defaults to " +
-                    "'^Change-Id:' to suppress local commits.",
+  parser.add_argument("--filter", metavar="REGEX",
+                    help=("Only use log entries where the commit message "
+                          "matches the supplied filter regex. Defaults to "
+                          "'^Change-Id:' to suppress local commits."),
                     default='^Change-Id:')
-  opts, args = parser.parse_args(argv[1:])
+
+  args, extras = parser.parse_known_args(argv[1:])
 
   logging.basicConfig(level=logging.WARNING)
 
-  out_file = opts.output
-  header = opts.header
-  filter=opts.filter
+  out_file = args.output
+  header = args.header
+  commit_filter=args.filter
 
-  while len(args) and out_file is None:
+  while len(extras) and out_file is None:
     if out_file is None:
-      out_file = args.pop(0)
-  if args:
-    sys.stderr.write('Unexpected arguments: %r\n\n' % args)
+      out_file = extras.pop(0)
+  if extras:
+    sys.stderr.write('Unexpected arguments: %r\n\n' % extras)
     parser.print_help()
     sys.exit(2)
 
-  if opts.source_dir:
-    src_dir = opts.source_dir
-  else:
-    src_dir = os.path.dirname(os.path.abspath(__file__))
+  source_dir = args.source_dir or os.path.dirname(os.path.abspath(__file__))
+  try:
+    git_top_dir = GetGitTopDirectory(source_dir)
+  except GitError as e:
+    logging.error("Failed to get git top directory from '%s': %s",
+                  source_dir, e)
+    return 2
 
-  version_info = FetchVersionInfo(directory=src_dir, filter=filter)
+  if args.merge_base_ref:
+    try:
+      merge_base_sha = GetMergeBase(git_top_dir, args.merge_base_ref)
+    except GitError as e:
+      logging.error("You requested a --merge-base-ref value of '%s' but no "
+                    "merge base could be found between it and HEAD. Git "
+                    "reports: %s", args.merge_base_ref, e)
+      return 3
+  else:
+    merge_base_sha = 'HEAD'
+
+  try:
+    version_info = FetchGitRevision(git_top_dir, commit_filter, merge_base_sha)
+  except GitError as e:
+    logging.error("Failed to get version info: %s", e)
+    logging.info(("Falling back to a version of 0.0.0 to allow script to "
+        "finish. This is normal if you are bootstrapping a new environment "
+        "or do not have a git repository for any other reason. If not, this "
+        "could represent a serious error."))
+    version_info = VersionInfo('0', '0', 0)
+
   revision_string = version_info.revision
-  if opts.revision_id_only:
+  if args.revision_id_only:
     revision_string = version_info.revision_id
 
-  if opts.print_only:
-    print revision_string
+  if args.print_only:
+    print(revision_string)
   else:
     contents = "LASTCHANGE=%s\n" % revision_string
-    if not out_file and not opts.header:
+    if not out_file and not args.header:
       sys.stdout.write(contents)
     else:
       if out_file:
@@ -221,7 +308,7 @@ def main(argv=None):
             timefile.write(str(version_info.timestamp))
       if header:
         WriteIfChanged(header,
-                       GetHeaderContents(header, opts.version_macro,
+                       GetHeaderContents(header, args.version_macro,
                                          revision_string))
 
   return 0

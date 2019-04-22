@@ -39,13 +39,17 @@ def GetParser():
 
   parser_update = subparsers.add_parser('update')
   parser_update.add_argument(
-      '--regenerate-timing-data', '-r', action='store_true',
-      help=('Whether to regenerate timing data for builders in '
-            'chromium.perf & chromium.perf.fyi waterfall'), default=False)
+      '--use-old-timing-data', '-o', action='store_true',
+      help=('Whether to reuse existing builder timing data (stored in '
+            '//tools/perf/core/shard_maps/timing_data/) and skip the step of '
+            'fetching the most recent timing data from test results server. '
+            'This flag is default to False. One typically uses this option '
+            'when they need to fix the timing data to debug sharding '
+            'generation.'),
+      default=False)
   parser_update.add_argument(
-      '--builders', '-b', action='store', nargs='*',
-      help=('The builder names to reshard.'),
-      default=[],
+      '--builders', '-b', action='append',
+      help=('The builder names to reshard.'), default=[],
       choices=bot_platforms.ALL_PLATFORM_NAMES)
   parser_update.add_argument(
       '--waterfall', '-w', choices=['perf', 'perf-fyi', 'all'], default=None,
@@ -168,7 +172,7 @@ def _UpdateShardsForBuilders(args):
     builders = bot_platforms.ALL_PLATFORMS
     _PromptWarning()
 
-  if args.regenerate_timing_data:
+  if not args.use_old_timing_data:
     print 'Update shards timing data. May take a while...'
     load_timing_args = []
     for b in builders:

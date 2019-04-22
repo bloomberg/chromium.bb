@@ -17,11 +17,6 @@ namespace content {
 
 namespace {
 
-static const WebContents* WEB_CONTENTS_0 = reinterpret_cast<WebContents*>(0x00);
-static const WebContents* WEB_CONTENTS_1 = reinterpret_cast<WebContents*>(0x01);
-static const WebContents* WEB_CONTENTS_2 = reinterpret_cast<WebContents*>(0x10);
-static const WebContents* WEB_CONTENTS_3 = reinterpret_cast<WebContents*>(0x11);
-
 static const char* CONCURRENT_TAB_WHEN_STARTING_HISTOGRAM =
     "Media.Audible.ConcurrentTabsWhenStarting";
 static const char* MAX_CONCURRENT_TAB_IN_SESSION_HISTOGRAM =
@@ -52,7 +47,7 @@ class AudibleMetricsTest : public RenderViewHostTestHarness {
 
   base::SimpleTestTickClock* clock() { return &clock_; }
 
-  AudibleMetrics* audible_metrics() { return audible_metrics_.get(); };
+  AudibleMetrics* audible_metrics() { return audible_metrics_.get(); }
 
   const base::UserActionTester& user_action_tester() const {
     return user_action_tester_;
@@ -63,8 +58,16 @@ class AudibleMetricsTest : public RenderViewHostTestHarness {
     return histogram_tester_.GetHistogramSamplesSinceCreation(name);
   }
 
-  TestWebContents* test_web_contents() {
-    return static_cast<TestWebContents*>(web_contents());
+  std::unique_ptr<TestWebContents> CreateWebContents() {
+    return TestWebContents::Create(GetBrowserContext(), nullptr);
+  }
+
+  std::unique_ptr<MediaWebContentsObserver> CreateMediaObserver(
+      TestWebContents* web_contents) {
+    std::unique_ptr<MediaWebContentsObserver> media_observer =
+        std::make_unique<MediaWebContentsObserver>(web_contents);
+    media_observer->SetAudibleMetricsForTest(audible_metrics());
+    return media_observer;
   }
 
  private:
@@ -105,7 +108,9 @@ TEST_F(AudibleMetricsTest, CreateAndKillDoesNothing) {
 }
 
 TEST_F(AudibleMetricsTest, AudibleStart) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
+  std::unique_ptr<TestWebContents> web_contents = CreateWebContents();
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents.get(), true);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -132,8 +137,10 @@ TEST_F(AudibleMetricsTest, AudibleStart) {
 }
 
 TEST_F(AudibleMetricsTest, AudibleStartAndStop) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
+  std::unique_ptr<TestWebContents> web_contents = CreateWebContents();
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents.get(), false);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -159,11 +166,13 @@ TEST_F(AudibleMetricsTest, AudibleStartAndStop) {
 }
 
 TEST_F(AudibleMetricsTest, AddSameTabIsNoOp) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
+  std::unique_ptr<TestWebContents> web_contents = CreateWebContents();
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents.get(), true);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -189,8 +198,10 @@ TEST_F(AudibleMetricsTest, AddSameTabIsNoOp) {
 }
 
 TEST_F(AudibleMetricsTest, RemoveUnknownTabIsNoOp) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
+  std::unique_ptr<TestWebContents> web_contents = CreateWebContents();
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents.get(), false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents.get(), false);
 
   EXPECT_EQ(0, GetHistogramSamplesSinceTestStart(
       CONCURRENT_TAB_WHEN_STARTING_HISTOGRAM)->TotalCount());
@@ -201,10 +212,15 @@ TEST_F(AudibleMetricsTest, RemoveUnknownTabIsNoOp) {
 }
 
 TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionIsIncremental) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_3, true);
+  std::unique_ptr<TestWebContents> web_contents_0 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_1 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_2 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_3 = CreateWebContents();
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_2.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_3.get(), true);
 
   std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart(
@@ -217,13 +233,18 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionIsIncremental) {
 }
 
 TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionKeepTrackOfRemovedTabs) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, false);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, false);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_3, true);
+  std::unique_ptr<TestWebContents> web_contents_0 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_1 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_2 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_3 = CreateWebContents();
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_2.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_2.get(), false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_3.get(), true);
 
   std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart(
@@ -234,20 +255,25 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionKeepTrackOfRemovedTabs) {
 }
 
 TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionIsNotCountedTwice) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_3, true);
+  std::unique_ptr<TestWebContents> web_contents_0 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_1 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_2 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_3 = CreateWebContents();
 
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, false);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, false);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_3, false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_2.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_3.get(), true);
 
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_3, true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_2.get(), false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_3.get(), false);
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_2.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_3.get(), true);
 
   std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart(
@@ -260,8 +286,11 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsInSessionIsNotCountedTwice) {
 }
 
 TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
+  std::unique_ptr<TestWebContents> web_contents_0 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_1 = CreateWebContents();
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -273,8 +302,8 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
   }
 
   // Added again: ignored.
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -286,8 +315,8 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
   }
 
   // Removing both.
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), false);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -299,8 +328,8 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
   }
 
   // Adding them after removed, it is counted.
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -313,8 +342,11 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsWhenStartingAddedPerTab) {
 }
 
 TEST_F(AudibleMetricsTest, ConcurrentTabsTimeRequiresTwoAudibleTabs) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
+  std::unique_ptr<TestWebContents> web_contents_0 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_1 = CreateWebContents();
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
 
   clock()->Advance(base::TimeDelta::FromMilliseconds(1000));
 
@@ -323,7 +355,7 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsTimeRequiresTwoAudibleTabs) {
       CONCURRENT_TABS_TIME_HISTOGRAM)->TotalCount());
 
   // No longer concurrent.
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), false);
   {
     std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(CONCURRENT_TABS_TIME_HISTOGRAM));
@@ -332,7 +364,7 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsTimeRequiresTwoAudibleTabs) {
   }
 
   // Stopping the second tab is a no-op.
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), false);
   {
     std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(CONCURRENT_TABS_TIME_HISTOGRAM));
@@ -342,24 +374,28 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsTimeRequiresTwoAudibleTabs) {
 }
 
 TEST_F(AudibleMetricsTest, ConcurrentTabsTimeRunsAsLongAsTwoAudibleTabs) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
+  std::unique_ptr<TestWebContents> web_contents_0 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_1 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_2 = CreateWebContents();
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
 
   clock()->Advance(base::TimeDelta::FromMilliseconds(1000));
 
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_2.get(), true);
 
   clock()->Advance(base::TimeDelta::FromMilliseconds(500));
 
   // Mutes one of the three audible tabs.
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), false);
 
   // No record because concurrent audible tabs still running.
   EXPECT_EQ(0, GetHistogramSamplesSinceTestStart(
       CONCURRENT_TABS_TIME_HISTOGRAM)->TotalCount());
 
   // Mutes the first audible tab.
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), false);
   {
     std::unique_ptr<base::HistogramSamples> samples(
         GetHistogramSamplesSinceTestStart(CONCURRENT_TABS_TIME_HISTOGRAM));
@@ -369,73 +405,148 @@ TEST_F(AudibleMetricsTest, ConcurrentTabsTimeRunsAsLongAsTwoAudibleTabs) {
 }
 
 TEST_F(AudibleMetricsTest, MediaWebContentsObserver_Audible_Muted) {
-  MediaWebContentsObserver media_observer(test_web_contents());
-  media_observer.SetAudibleMetricsForTest(audible_metrics());
+  std::unique_ptr<TestWebContents> web_contents = CreateWebContents();
+  std::unique_ptr<MediaWebContentsObserver> media_observer =
+      CreateMediaObserver(web_contents.get());
 
-  test_web_contents()->SetAudioMuted(true);
-  test_web_contents()
-      ->audio_stream_monitor()
-      ->set_is_currently_audible_for_testing(true);
+  web_contents->SetAudioMuted(true);
+  web_contents->audio_stream_monitor()->set_is_currently_audible_for_testing(
+      true);
 
-  EXPECT_TRUE(
-      test_web_contents()->audio_stream_monitor()->IsCurrentlyAudible());
-  EXPECT_TRUE(test_web_contents()->IsAudioMuted());
+  EXPECT_TRUE(web_contents->audio_stream_monitor()->IsCurrentlyAudible());
+  EXPECT_TRUE(web_contents->IsAudioMuted());
 
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
-  media_observer.MaybeUpdateAudibleState();
+  media_observer->MaybeUpdateAudibleState();
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
 }
 
 TEST_F(AudibleMetricsTest, MediaWebContentsObserver_Audible_NotMuted) {
-  MediaWebContentsObserver media_observer(test_web_contents());
-  media_observer.SetAudibleMetricsForTest(audible_metrics());
+  std::unique_ptr<TestWebContents> web_contents = CreateWebContents();
+  std::unique_ptr<MediaWebContentsObserver> media_observer =
+      CreateMediaObserver(web_contents.get());
 
-  test_web_contents()
-      ->audio_stream_monitor()
-      ->set_is_currently_audible_for_testing(true);
+  web_contents->audio_stream_monitor()->set_is_currently_audible_for_testing(
+      true);
 
-  EXPECT_TRUE(
-      test_web_contents()->audio_stream_monitor()->IsCurrentlyAudible());
-  EXPECT_FALSE(test_web_contents()->IsAudioMuted());
+  EXPECT_TRUE(web_contents->audio_stream_monitor()->IsCurrentlyAudible());
+  EXPECT_FALSE(web_contents->IsAudioMuted());
 
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
-  media_observer.MaybeUpdateAudibleState();
+  media_observer->MaybeUpdateAudibleState();
   EXPECT_EQ(1, audible_metrics()->GetAudibleWebContentsSizeForTest());
 }
 
 TEST_F(AudibleMetricsTest, MediaWebContentsObserver_NotAudible_Muted) {
-  MediaWebContentsObserver media_observer(test_web_contents());
-  media_observer.SetAudibleMetricsForTest(audible_metrics());
+  std::unique_ptr<TestWebContents> web_contents = CreateWebContents();
+  std::unique_ptr<MediaWebContentsObserver> media_observer =
+      CreateMediaObserver(web_contents.get());
 
-  test_web_contents()->SetAudioMuted(true);
+  web_contents->SetAudioMuted(true);
 
-  EXPECT_FALSE(
-      test_web_contents()->audio_stream_monitor()->IsCurrentlyAudible());
-  EXPECT_TRUE(test_web_contents()->IsAudioMuted());
+  EXPECT_FALSE(web_contents->audio_stream_monitor()->IsCurrentlyAudible());
+  EXPECT_TRUE(web_contents->IsAudioMuted());
 
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
-  media_observer.MaybeUpdateAudibleState();
+  media_observer->MaybeUpdateAudibleState();
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
 }
 
 TEST_F(AudibleMetricsTest, MediaWebContentsObserver_NotAudible_NotMuted) {
-  MediaWebContentsObserver media_observer(test_web_contents());
-  media_observer.SetAudibleMetricsForTest(audible_metrics());
+  std::unique_ptr<TestWebContents> web_contents = CreateWebContents();
+  std::unique_ptr<MediaWebContentsObserver> media_observer =
+      CreateMediaObserver(web_contents.get());
 
-  EXPECT_FALSE(
-      test_web_contents()->audio_stream_monitor()->IsCurrentlyAudible());
-  EXPECT_FALSE(test_web_contents()->IsAudioMuted());
+  EXPECT_FALSE(web_contents->audio_stream_monitor()->IsCurrentlyAudible());
+  EXPECT_FALSE(web_contents->IsAudioMuted());
 
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
-  media_observer.MaybeUpdateAudibleState();
+  media_observer->MaybeUpdateAudibleState();
   EXPECT_EQ(0, audible_metrics()->GetAudibleWebContentsSizeForTest());
 }
 
-TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_IgnoreNotAudible) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, false);
+TEST_F(AudibleMetricsTest, MediaWebContentsObserver_Destroyed_RecentlyAudible) {
+  std::unique_ptr<TestWebContents> web_contents_0 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_1 = CreateWebContents();
 
-  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_0);
+  std::unique_ptr<MediaWebContentsObserver> media_observer_1 =
+      CreateMediaObserver(web_contents_1.get());
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
+
+  // Even though |web_contents_1| is no longer audible it was still recently
+  // audible so we should count metrics from it.
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), false);
+  web_contents_1->audio_stream_monitor()->set_was_recently_audible_for_testing(
+      true);
+  media_observer_1->WebContentsDestroyed();
+
+  {
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(CLOSE_NEWEST_TAB_HISTOGRAM));
+    EXPECT_EQ(1, samples->TotalCount());
+    EXPECT_EQ(
+        1, samples->GetCount(static_cast<int>(
+               AudibleMetrics::ExitConcurrentPlaybackContents::kMostRecent)));
+  }
+}
+
+TEST_F(AudibleMetricsTest,
+       MediaWebContentsObserver_Destroyed_RecentlyAudibleButMuted) {
+  std::unique_ptr<TestWebContents> web_contents_0 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_1 = CreateWebContents();
+
+  std::unique_ptr<MediaWebContentsObserver> media_observer_1 =
+      CreateMediaObserver(web_contents_1.get());
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
+
+  // Even though |web_contents_1| was recently audible it was also muted so we
+  // should ignore it.
+  web_contents_1->SetAudioMuted(true);
+  web_contents_1->audio_stream_monitor()->set_was_recently_audible_for_testing(
+      true);
+  media_observer_1->WebContentsDestroyed();
+
+  {
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(CLOSE_NEWEST_TAB_HISTOGRAM));
+    EXPECT_EQ(0, samples->TotalCount());
+    EXPECT_EQ(0, samples->GetCount(0));
+  }
+}
+
+TEST_F(AudibleMetricsTest,
+       MediaWebContentsObserver_Destroyed_NotRecentlyAudible) {
+  std::unique_ptr<TestWebContents> web_contents_0 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_1 = CreateWebContents();
+
+  std::unique_ptr<MediaWebContentsObserver> media_observer_1 =
+      CreateMediaObserver(web_contents_1.get());
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
+
+  // |web_contents_1| was not recently audible so no metrics should be recorded.
+  media_observer_1->WebContentsDestroyed();
+
+  {
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(CLOSE_NEWEST_TAB_HISTOGRAM));
+    EXPECT_EQ(0, samples->TotalCount());
+    EXPECT_EQ(0, samples->GetCount(0));
+  }
+}
+
+TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_IgnoreNotAudible) {
+  std::unique_ptr<TestWebContents> web_contents = CreateWebContents();
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents.get(), false);
+
+  audible_metrics()->WebContentsDestroyed(web_contents.get(), false);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -445,11 +556,15 @@ TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_IgnoreNotAudible) {
 }
 
 TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_Newest) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, true);
+  std::unique_ptr<TestWebContents> web_contents_0 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_1 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_2 = CreateWebContents();
 
-  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_2);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_2.get(), true);
+
+  audible_metrics()->WebContentsDestroyed(web_contents_2.get(), true);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -460,7 +575,7 @@ TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_Newest) {
                AudibleMetrics::ExitConcurrentPlaybackContents::kMostRecent)));
   }
 
-  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_1);
+  audible_metrics()->WebContentsDestroyed(web_contents_1.get(), true);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -471,7 +586,7 @@ TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_Newest) {
                AudibleMetrics::ExitConcurrentPlaybackContents::kMostRecent)));
   }
 
-  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_0);
+  audible_metrics()->WebContentsDestroyed(web_contents_0.get(), true);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -484,11 +599,15 @@ TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_Newest) {
 }
 
 TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_Old) {
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_0, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_1, true);
-  audible_metrics()->UpdateAudibleWebContentsState(WEB_CONTENTS_2, true);
+  std::unique_ptr<TestWebContents> web_contents_0 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_1 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_2 = CreateWebContents();
 
-  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_1);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_2.get(), true);
+
+  audible_metrics()->WebContentsDestroyed(web_contents_1.get(), true);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -499,7 +618,7 @@ TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_Old) {
                      AudibleMetrics::ExitConcurrentPlaybackContents::kOlder)));
   }
 
-  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_0);
+  audible_metrics()->WebContentsDestroyed(web_contents_0.get(), true);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -509,7 +628,7 @@ TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_Old) {
                      AudibleMetrics::ExitConcurrentPlaybackContents::kOlder)));
   }
 
-  audible_metrics()->WebContentsDestroyed(WEB_CONTENTS_2);
+  audible_metrics()->WebContentsDestroyed(web_contents_2.get(), true);
 
   {
     std::unique_ptr<base::HistogramSamples> samples(
@@ -517,6 +636,28 @@ TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_Old) {
     EXPECT_EQ(1, samples->TotalCount());
     EXPECT_EQ(1, samples->GetCount(static_cast<int>(
                      AudibleMetrics::ExitConcurrentPlaybackContents::kOlder)));
+  }
+}
+
+TEST_F(AudibleMetricsTest, CloseNewestAudibleTabHistogram_ToggleAudibility) {
+  std::unique_ptr<TestWebContents> web_contents_0 = CreateWebContents();
+  std::unique_ptr<TestWebContents> web_contents_1 = CreateWebContents();
+
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_1.get(), true);
+
+  // Toggling audibility should make |web_contents_0| the most recently audible.
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), false);
+  audible_metrics()->UpdateAudibleWebContentsState(web_contents_0.get(), true);
+  audible_metrics()->WebContentsDestroyed(web_contents_0.get(), true);
+
+  {
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(CLOSE_NEWEST_TAB_HISTOGRAM));
+    EXPECT_EQ(1, samples->TotalCount());
+    EXPECT_EQ(
+        1, samples->GetCount(static_cast<int>(
+               AudibleMetrics::ExitConcurrentPlaybackContents::kMostRecent)));
   }
 }
 

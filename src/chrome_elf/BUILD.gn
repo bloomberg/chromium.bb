@@ -372,6 +372,7 @@ shared_library("main_unittest_dll_1") {
 
   # Disable sanitizer instrumentation in the test DLLs to avoid unwanted
   # exports.
+  no_default_deps = true
   configs -= [
     "//build/config/sanitizers:default_sanitizer_flags",
     "//build/config:shared_library_config",
@@ -387,6 +388,7 @@ shared_library("main_unittest_dll_2") {
 
   # Disable sanitizer instrumentation in the test DLLs to avoid unwanted
   # exports.
+  no_default_deps = true
   configs -= [
     "//build/config/sanitizers:default_sanitizer_flags",
     "//build/config:shared_library_config",

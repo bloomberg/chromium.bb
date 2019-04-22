@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -48,7 +49,7 @@ class GLImageIOSurfaceTestDelegate : public GLImageTestDelegateBase {
       corrected_color[2] = color[0];
       corrected_color[3] = color[3];
     } else {
-      memcpy(corrected_color, color, arraysize(corrected_color));
+      memcpy(corrected_color, color, base::size(corrected_color));
     }
 
     for (size_t plane = 0; plane < NumberOfPlanesForBufferFormat(format);
@@ -96,7 +97,7 @@ using GLImageTestTypes = testing::Types<
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::YUV_420_BIPLANAR>,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRX_1010102>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface, GLImageTest, GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageIOSurface, GLImageTest, GLImageTestTypes);
 
 using GLImageRGBTestTypes = testing::Types<
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_8888>,
@@ -105,9 +106,9 @@ using GLImageRGBTestTypes = testing::Types<
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRX_1010102>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface,
-                              GLImageZeroInitializeTest,
-                              GLImageRGBTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageIOSurface,
+                               GLImageZeroInitializeTest,
+                               GLImageRGBTestTypes);
 
 using GLImageBindTestTypes = testing::Types<
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>,
@@ -116,11 +117,11 @@ using GLImageBindTestTypes = testing::Types<
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRX_1010102>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface,
-                              GLImageBindTest,
-                              GLImageBindTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageIOSurface,
+                               GLImageBindTest,
+                               GLImageBindTestTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(
+INSTANTIATE_TYPED_TEST_SUITE_P(
     GLImageIOSurface,
     GLImageCopyTest,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::YUV_420_BIPLANAR>);

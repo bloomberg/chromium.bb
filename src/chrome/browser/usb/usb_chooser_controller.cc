@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/referrer.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/usb/public/cpp/usb_utils.h"
+#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -160,7 +162,7 @@ void UsbChooserController::Select(const std::vector<size_t>& indices) {
 }
 
 void UsbChooserController::Cancel() {
-  RecordWebUsbChooserClosure(devices_.size() == 0
+  RecordWebUsbChooserClosure(devices_.empty()
                                  ? WEBUSB_CHOOSER_CLOSED_CANCELLED_NO_DEVICES
                                  : WEBUSB_CHOOSER_CLOSED_CANCELLED);
 }

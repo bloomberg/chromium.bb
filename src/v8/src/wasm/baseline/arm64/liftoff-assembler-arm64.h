@@ -41,8 +41,8 @@ namespace liftoff {
 //  -----+--------------------+  <-- stack ptr (sp)
 //
 
-constexpr int32_t kInstanceOffset = 2 * kPointerSize;
-constexpr int32_t kFirstStackSlotOffset = kInstanceOffset + kPointerSize;
+constexpr int32_t kInstanceOffset = 2 * kSystemPointerSize;
+constexpr int32_t kFirstStackSlotOffset = kInstanceOffset + kSystemPointerSize;
 constexpr int32_t kConstantStackSpace = 0;
 
 inline MemOperand GetStackSlot(uint32_t index) {
@@ -148,7 +148,8 @@ void LiftoffAssembler::PatchPrepareStackFrame(int offset,
     return;
   }
 #endif
-  PatchingAssembler patching_assembler(AssemblerOptions{}, buffer_ + offset, 1);
+  PatchingAssembler patching_assembler(AssemblerOptions{},
+                                       buffer_start_ + offset, 1);
   patching_assembler.PatchSubSp(bytes);
 }
 
@@ -188,12 +189,27 @@ void LiftoffAssembler::LoadFromInstance(Register dst, uint32_t offset,
   }
 }
 
+void LiftoffAssembler::LoadTaggedPointerFromInstance(Register dst,
+                                                     uint32_t offset) {
+  LoadFromInstance(dst, offset, kTaggedSize);
+}
+
 void LiftoffAssembler::SpillInstance(Register instance) {
   Str(instance, liftoff::GetInstanceOperand());
 }
 
 void LiftoffAssembler::FillInstanceInto(Register dst) {
   Ldr(dst, liftoff::GetInstanceOperand());
+}
+
+void LiftoffAssembler::LoadTaggedPointer(Register dst, Register src_addr,
+                                         Register offset_reg,
+                                         uint32_t offset_imm,
+                                         LiftoffRegList pinned) {
+  UseScratchRegisterScope temps(this);
+  MemOperand src_op =
+      liftoff::GetMemOp(this, &temps, src_addr, offset_reg, offset_imm);
+  LoadTaggedPointerField(dst, src_op);
 }
 
 void LiftoffAssembler::Load(LiftoffRegister dst, Register src_addr,
@@ -329,12 +345,20 @@ void LiftoffAssembler::Spill(uint32_t index, WasmValue value) {
   CPURegister src = CPURegister::no_reg();
   switch (value.type()) {
     case kWasmI32:
-      src = temps.AcquireW();
-      Mov(src.W(), value.to_i32());
+      if (value.to_i32() == 0) {
+        src = wzr;
+      } else {
+        src = temps.AcquireW();
+        Mov(src.W(), value.to_i32());
+      }
       break;
     case kWasmI64:
-      src = temps.AcquireX();
-      Mov(src.X(), value.to_i64());
+      if (value.to_i64() == 0) {
+        src = xzr;
+      } else {
+        src = temps.AcquireX();
+        Mov(src.X(), value.to_i64());
+      }
       break;
     default:
       // We do not track f32 and f64 constants, hence they are unreachable.
@@ -349,7 +373,7 @@ void LiftoffAssembler::Fill(LiftoffRegister reg, uint32_t index,
   Ldr(liftoff::GetRegFromType(reg, type), src);
 }
 
-void LiftoffAssembler::FillI64Half(Register, uint32_t half_index) {
+void LiftoffAssembler::FillI64Half(Register, uint32_t index, RegPairHalf) {
   UNREACHABLE();
 }
 
@@ -554,6 +578,15 @@ void LiftoffAssembler::emit_i32_remu(Register dst, Register lhs, Register rhs,
   Cbz(rhs_w, trap_div_by_zero);
   // Compute remainder.
   Msub(dst_w, scratch, rhs_w, lhs_w);
+}
+
+void LiftoffAssembler::emit_i64_add(LiftoffRegister dst, LiftoffRegister lhs,
+                                    int32_t imm) {
+  Add(dst.gp().X(), lhs.gp().X(), Immediate(imm));
+}
+
+void LiftoffAssembler::emit_i32_add(Register dst, Register lhs, int32_t imm) {
+  Add(dst.W(), lhs.W(), Immediate(imm));
 }
 
 bool LiftoffAssembler::emit_i64_divs(LiftoffRegister dst, LiftoffRegister lhs,
@@ -1010,7 +1043,7 @@ void LiftoffStackSlots::Construct() {
         asm_->Poke(liftoff::GetRegFromType(slot.src_.reg(), slot.src_.type()),
                    poke_offset);
         break;
-      case LiftoffAssembler::VarState::KIntConst:
+      case LiftoffAssembler::VarState::kIntConst:
         DCHECK(slot.src_.type() == kWasmI32 || slot.src_.type() == kWasmI64);
         if (slot.src_.i32_const() == 0) {
           Register zero_reg = slot.src_.type() == kWasmI32 ? wzr : xzr;

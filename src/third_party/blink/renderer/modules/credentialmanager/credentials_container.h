@@ -22,7 +22,7 @@ class MODULES_EXPORT CredentialsContainer final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CredentialsContainer* Create();
+  CredentialsContainer();
 
   // CredentialsContainer.idl
   ScriptPromise get(ScriptState*, const CredentialRequestOptions*);
@@ -31,9 +31,6 @@ class MODULES_EXPORT CredentialsContainer final : public ScriptWrappable {
                        const CredentialCreationOptions*,
                        ExceptionState&);
   ScriptPromise preventSilentAccess(ScriptState*);
-
- private:
-  CredentialsContainer();
 };
 
 }  // namespace blink

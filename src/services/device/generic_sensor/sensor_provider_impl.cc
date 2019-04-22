@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -38,11 +39,9 @@ bool IsExtraSensorClass(mojom::SensorType type) {
 
 // static
 void SensorProviderImpl::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     mojom::SensorProviderRequest request) {
   PlatformSensorProvider* provider = PlatformSensorProvider::GetInstance();
   if (provider) {
-    provider->SetFileTaskRunner(file_task_runner);
     mojo::MakeStrongBinding(base::WrapUnique(new SensorProviderImpl(provider)),
                             std::move(request));
   }

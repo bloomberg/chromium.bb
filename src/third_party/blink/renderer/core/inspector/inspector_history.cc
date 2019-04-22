@@ -97,7 +97,8 @@ void InspectorHistory::AppendPerformedAction(Action* action) {
 }
 
 void InspectorHistory::MarkUndoableState() {
-  Perform(new UndoableStateMark(), IGNORE_EXCEPTION_FOR_TESTING);
+  Perform(MakeGarbageCollected<UndoableStateMark>(),
+          IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 bool InspectorHistory::Undo(ExceptionState& exception_state) {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_EMBEDDER_MESSAGE_DISPATCHER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -91,6 +92,8 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void RecordEnumeratedHistogram(const std::string& name,
                                            int sample,
                                            int boundary_value) = 0;
+    virtual void RecordPerformanceHistogram(const std::string& name,
+                                            double duration) = 0;
     virtual void SendJsonRequest(const DispatchCallback& callback,
                                  const std::string& browser_id,
                                  const std::string& url) = 0;
@@ -109,8 +112,8 @@ class DevToolsEmbedderMessageDispatcher {
                         const std::string& method,
                         const base::ListValue* params) = 0;
 
-  static DevToolsEmbedderMessageDispatcher* CreateForDevToolsFrontend(
-      Delegate* delegate);
+  static std::unique_ptr<DevToolsEmbedderMessageDispatcher>
+  CreateForDevToolsFrontend(Delegate* delegate);
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_EMBEDDER_MESSAGE_DISPATCHER_H_

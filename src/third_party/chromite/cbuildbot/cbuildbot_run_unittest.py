@@ -12,7 +12,6 @@ import mock
 import time
 
 from chromite.cbuildbot import cbuildbot_run
-from chromite.lib.const import waterfall
 from chromite.lib import config_lib
 from chromite.lib import config_lib_unittest
 from chromite.lib import cros_test_lib
@@ -347,14 +346,6 @@ class BuilderRunTest(_BuilderRunTestCase):
 
   def testInEmailReportingEnvironment(self):
     run = self._NewBuilderRun()
-    self.assertTrue(run.InEmailReportingEnvironment())
-
-    run.attrs.metadata.UpdateWithDict(
-        {'buildbot-master-name': waterfall.WATERFALL_INTERNAL})
-    self.assertTrue(run.InEmailReportingEnvironment())
-
-    run.attrs.metadata.UpdateWithDict(
-        {'buildbot-master-name': waterfall.WATERFALL_INFRA})
     self.assertFalse(run.InEmailReportingEnvironment())
 
 

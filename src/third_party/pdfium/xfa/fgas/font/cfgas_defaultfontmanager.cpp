@@ -6,13 +6,14 @@
 
 #include "xfa/fgas/font/cfgas_defaultfontmanager.h"
 
+#include "core/fxge/fx_font.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
 #include "xfa/fgas/font/fgas_fontutils.h"
 
 // static
 RetainPtr<CFGAS_GEFont> CFGAS_DefaultFontManager::GetFont(
     CFGAS_FontMgr* pFontMgr,
-    const WideStringView& wsFontFamily,
+    WideStringView wsFontFamily,
     uint32_t dwFontStyles) {
   WideString wsFontName(wsFontFamily);
   RetainPtr<CFGAS_GEFont> pFont =
@@ -56,7 +57,7 @@ RetainPtr<CFGAS_GEFont> CFGAS_DefaultFontManager::GetFont(
 // static
 RetainPtr<CFGAS_GEFont> CFGAS_DefaultFontManager::GetDefaultFont(
     CFGAS_FontMgr* pFontMgr,
-    const WideStringView& wsFontFamily,
+    WideStringView wsFontFamily,
     uint32_t dwFontStyles) {
   RetainPtr<CFGAS_GEFont> pFont =
       pFontMgr->LoadFont(L"Arial Narrow", dwFontStyles, 0xFFFF);

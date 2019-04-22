@@ -22,7 +22,7 @@ class CFGAS_PDFFontMgr final : public Observable<CFGAS_PDFFontMgr> {
   explicit CFGAS_PDFFontMgr(CPDF_Document* pDoc, CFGAS_FontMgr* pFontMgr);
   ~CFGAS_PDFFontMgr();
 
-  RetainPtr<CFGAS_GEFont> GetFont(const WideStringView& wsFontFamily,
+  RetainPtr<CFGAS_GEFont> GetFont(WideStringView wsFontFamily,
                                   uint32_t dwFontStyles,
                                   bool bStrictMatch);
 
@@ -34,7 +34,7 @@ class CFGAS_PDFFontMgr final : public Observable<CFGAS_PDFFontMgr> {
   ByteString PsNameToFontName(const ByteString& strPsName,
                               bool bBold,
                               bool bItalic);
-  bool PsNameMatchDRFontName(const ByteStringView& bsPsName,
+  bool PsNameMatchDRFontName(ByteStringView bsPsName,
                              bool bBold,
                              bool bItalic,
                              const ByteString& bsDRFontName,

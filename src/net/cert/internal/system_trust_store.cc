@@ -75,6 +75,16 @@ class SystemTrustStoreNSS : public BaseSystemTrustStore {
  public:
   explicit SystemTrustStoreNSS() : trust_store_nss_(trustSSL) {
     trust_store_.AddTrustStore(&trust_store_nss_);
+
+    // When running in test mode, also layer in the test-only root certificates.
+    //
+    // Note that this integration requires TestRootCerts::HasInstance() to be
+    // true by the time SystemTrustStoreNSS is created - a limitation which is
+    // acceptable for the test-only code that consumes this.
+    if (TestRootCerts::HasInstance()) {
+      trust_store_.AddTrustStore(
+          TestRootCerts::GetInstance()->test_trust_store());
+    }
   }
 
   bool UsesSystemTrustStore() const override { return true; }

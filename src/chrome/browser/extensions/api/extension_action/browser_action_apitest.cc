@@ -452,7 +452,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
   EXPECT_EQ("hi!", GetBrowserActionsBar()->GetTooltip(0));
 
   // Go back to first tab, changed title should reappear.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   EXPECT_EQ("Showing icon 2", GetBrowserActionsBar()->GetTooltip(0));
 
   // Reload that tab, default title should come back.

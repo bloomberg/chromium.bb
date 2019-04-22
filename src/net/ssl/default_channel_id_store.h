@@ -61,7 +61,7 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
   void DeleteAll(base::OnceClosure callback) override;
   void GetAllChannelIDs(GetChannelIDListCallback callback) override;
   void Flush() override;
-  int GetChannelIDCount() override;
+  size_t GetChannelIDCount() override;
   void SetForceKeepSessionState() override;
   bool IsEphemeral() override;
 

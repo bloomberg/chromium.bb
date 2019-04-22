@@ -7,7 +7,9 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   sources = [
     "device.mojom",
+    "device_enumeration_options.mojom",
     "device_manager.mojom",
+    "device_manager_client.mojom",
   ]
 
   public_deps = [
@@ -32,5 +34,16 @@ mojom("mojom") {
     "//components/arc/common:common_blink",
     "//third_party/blink/public/mojom/usb:usb_blink",
     "//third_party/blink/renderer/modules/webusb",
+    "//chrome/browser/ui/webui/usb_internals:mojo_bindings_blink",
+  ]
+}
+
+mojom("test") {
+  sources = [
+    "device_manager_test.mojom",
+  ]
+
+  public_deps = [
+    "//url/mojom:url_mojom_gurl",
   ]
 }

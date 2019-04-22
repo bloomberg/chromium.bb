@@ -17,11 +17,11 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/hash/md5.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -530,7 +530,8 @@ bool PrintSystemCUPS::ValidatePrintTicket(
     const std::string& print_ticket_mime_type) {
   DCHECK(initialized_);
   std::unique_ptr<base::DictionaryValue> ticket_value(
-      base::DictionaryValue::From(base::JSONReader::Read(print_ticket_data)));
+      base::DictionaryValue::From(
+          base::JSONReader::ReadDeprecated(print_ticket_data)));
   return !!ticket_value;
 }
 
@@ -540,7 +541,8 @@ bool PrintSystemCUPS::ParsePrintTicket(
     std::map<std::string, std::string>* options) {
   DCHECK(options);
   std::unique_ptr<base::DictionaryValue> ticket_value(
-      base::DictionaryValue::From(base::JSONReader::Read(print_ticket)));
+      base::DictionaryValue::From(
+          base::JSONReader::ReadDeprecated(print_ticket)));
   if (!ticket_value)
     return false;
 

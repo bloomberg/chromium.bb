@@ -54,16 +54,14 @@ class InlineBoxPainterBase {
                        const FillLayer&,
                        const LayoutRect&,
                        BackgroundImageGeometry& geometry,
-                       bool object_has_multiple_boxes,
-                       SkBlendMode op = SkBlendMode::kSrcOver);
+                       bool object_has_multiple_boxes);
   void PaintFillLayer(BoxPainterBase&,
                       const PaintInfo&,
                       const Color&,
                       const FillLayer&,
                       const LayoutRect&,
                       BackgroundImageGeometry& geometry,
-                      bool object_has_multiple_boxes,
-                      SkBlendMode op);
+                      bool object_has_multiple_boxes);
   virtual void PaintNormalBoxShadow(const PaintInfo&,
                                     const ComputedStyle&,
                                     const LayoutRect& paint_rect) = 0;

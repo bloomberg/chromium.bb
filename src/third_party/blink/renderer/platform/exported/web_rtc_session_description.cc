@@ -32,12 +32,15 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
 class WebRTCSessionDescriptionPrivate final
     : public RefCounted<WebRTCSessionDescriptionPrivate> {
+  USING_FAST_MALLOC(WebRTCSessionDescription);
+
  public:
   static scoped_refptr<WebRTCSessionDescriptionPrivate> Create(
       const WebString& type,

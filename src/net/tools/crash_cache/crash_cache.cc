@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -48,7 +49,7 @@ int RunSlave(RankCrashes action) {
   base::PathService::Get(base::FILE_EXE, &exe);
 
   base::CommandLine cmdline(exe);
-  cmdline.AppendArg(base::IntToString(action));
+  cmdline.AppendArg(base::NumberToString(action));
 
   base::Process process = base::LaunchProcess(cmdline, base::LaunchOptions());
   if (!process.IsValid()) {
@@ -115,7 +116,7 @@ bool CreateTargetFolder(const base::FilePath& path, RankCrashes action,
     "remove_load2",
     "remove_load3"
   };
-  static_assert(arraysize(folders) == disk_cache::MAX_CRASH, "sync folders");
+  static_assert(base::size(folders) == disk_cache::MAX_CRASH, "sync folders");
   DCHECK(action > disk_cache::NO_CRASH && action < disk_cache::MAX_CRASH);
 
   *full_path = path.AppendASCII(folders[action]);
@@ -142,9 +143,8 @@ bool CreateCache(const base::FilePath& path,
   int size = 1024 * 1024;
   disk_cache::BackendImpl* backend = new disk_cache::BackendImpl(
       path, /* cleanup_tracker = */ nullptr, thread->task_runner().get(),
-      /* net_log = */ nullptr);
+      net::DISK_CACHE, /* net_log = */ nullptr);
   backend->SetMaxSize(size);
-  backend->SetType(net::DISK_CACHE);
   backend->SetFlags(disk_cache::kNoRandom);
   int rv = backend->Init(cb->callback());
   *cache = backend;
@@ -271,7 +271,7 @@ int LoadOperations(const base::FilePath& path, RankCrashes action,
 
   // Work with a tiny index table (16 entries).
   disk_cache::BackendImpl* cache = new disk_cache::BackendImpl(
-      path, 0xf, cache_thread->task_runner().get(), NULL);
+      path, 0xf, cache_thread->task_runner().get(), net::DISK_CACHE, nullptr);
   if (!cache->SetMaxSize(0x100000))
     return GENERIC;
 

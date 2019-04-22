@@ -24,32 +24,21 @@ set -x
 BUILD_ROOT=$PWD
 SRC=$PWD/github/shaderc
 
-# Set the glslang repo URL.
-GLSLANG_REMOTE=$1
-GLSLANG_REPO_URL="https://github.com/google/glslang.git"
-if [ $GLSLANG_REMOTE = "KHRONOS" ]
-then
-  GLSLANG_REPO_URL="https://github.com/KhronosGroup/glslang.git"
-fi
-
 # Get NINJA.
 wget -q https://github.com/ninja-build/ninja/releases/download/v1.7.2/ninja-linux.zip
 unzip -q ninja-linux.zip
 export PATH="$PWD:$PATH"
 
-# NDK Path
-export ANDROID_NDK=/opt/android-ndk-r15c
+# Get Android NDK.
+wget -q https://dl.google.com/android/repository/android-ndk-r18b-linux-x86_64.zip
+unzip -q android-ndk-r18b-linux-x86_64.zip
+export ANDROID_NDK=$PWD/android-ndk-r18b
 
 # Get shaderc dependencies.
-cd $SRC/third_party
-git clone $GLSLANG_REPO_URL
-git clone https://github.com/google/googletest.git
-git clone https://github.com/KhronosGroup/SPIRV-Tools.git   spirv-tools
-git clone https://github.com/KhronosGroup/SPIRV-Headers.git spirv-tools/external/spirv-headers
-git clone https://github.com/google/re2                     spirv-tools/external/re2
-git clone https://github.com/google/effcee                  spirv-tools/external/effcee
+cd $SRC
+./utils/git-sync-deps
 
-cd $SRC/
+cd $SRC
 mkdir build
 cd $SRC/build
 
@@ -61,8 +50,7 @@ $ANDROID_NDK/ndk-build \
   NDK_APP_OUT=`pwd` \
   V=1 \
   SPVTOOLS_LOCAL_PATH=$SRC/third_party/spirv-tools \
-  SPVHEADERS_LOCAL_PATH=$SRC/third_party/spirv-tools/external/spirv-headers \
+  SPVHEADERS_LOCAL_PATH=$SRC/third_party/spirv-headers \
   -j 8
 
 echo $(date): ndk-build completed.
-

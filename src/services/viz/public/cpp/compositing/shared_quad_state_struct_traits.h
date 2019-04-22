@@ -7,6 +7,7 @@
 
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "services/viz/public/interfaces/compositing/shared_quad_state.mojom-shared.h"
+#include "ui/gfx/mojo/rrect_f_struct_traits.h"
 
 namespace mojo {
 
@@ -32,6 +33,11 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, OptSharedQuadState> {
   static const gfx::Rect& visible_quad_layer_rect(
       const OptSharedQuadState& input) {
     return input.sqs->visible_quad_layer_rect;
+  }
+
+  static const gfx::RRectF& rounded_corner_bounds(
+      const OptSharedQuadState& input) {
+    return input.sqs->rounded_corner_bounds;
   }
 
   static const gfx::Rect& clip_rect(const OptSharedQuadState& input) {
@@ -75,6 +81,11 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, viz::SharedQuadState> {
     return sqs.visible_quad_layer_rect;
   }
 
+  static const gfx::RRectF& rounded_corner_bounds(
+      const viz::SharedQuadState& sqs) {
+    return sqs.rounded_corner_bounds;
+  }
+
   static const gfx::Rect& clip_rect(const viz::SharedQuadState& sqs) {
     return sqs.clip_rect;
   }
@@ -102,6 +113,7 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, viz::SharedQuadState> {
     if (!data.ReadQuadToTargetTransform(&out->quad_to_target_transform) ||
         !data.ReadQuadLayerRect(&out->quad_layer_rect) ||
         !data.ReadVisibleQuadLayerRect(&out->visible_quad_layer_rect) ||
+        !data.ReadRoundedCornerBounds(&out->rounded_corner_bounds) ||
         !data.ReadClipRect(&out->clip_rect)) {
       return false;
     }

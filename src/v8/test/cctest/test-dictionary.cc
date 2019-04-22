@@ -34,9 +34,9 @@
 #include "src/global-handles.h"
 #include "src/heap/factory.h"
 #include "src/heap/spaces.h"
-#include "src/macro-assembler.h"
 #include "src/objects-inl.h"
 #include "src/objects/hash-table-inl.h"
+#include "src/roots.h"
 #include "test/cctest/heap/heap-utils.h"
 
 namespace v8 {
@@ -104,7 +104,7 @@ static void TestHashMap(Handle<HashMap> table) {
   for (int i = 0; i < 100; i++) {
     Handle<JSReceiver> key = factory->NewJSArray(7);
     CHECK_EQ(table->Lookup(key), roots.the_hole_value());
-    Object* identity_hash = key->GetIdentityHash();
+    Object identity_hash = key->GetIdentityHash();
     CHECK_EQ(roots.undefined_value(), identity_hash);
   }
 }
@@ -174,7 +174,7 @@ static void TestHashSet(Handle<HashSet> table) {
   for (int i = 0; i < 100; i++) {
     Handle<JSReceiver> key = factory->NewJSArray(7);
     CHECK(!table->Has(isolate, key));
-    Object* identity_hash = key->GetIdentityHash();
+    Object identity_hash = key->GetIdentityHash();
     CHECK_EQ(ReadOnlyRoots(CcTest::heap()).undefined_value(), identity_hash);
   }
 }
@@ -219,7 +219,7 @@ TEST(HashTableRehash) {
     for (int i = 0; i < capacity - 1; i++) {
       t->insert(i, i * i, i);
     }
-    t->Rehash(isolate);
+    t->Rehash(ReadOnlyRoots(isolate));
     for (int i = 0; i < capacity - 1; i++) {
       CHECK_EQ(i, t->lookup(i * i));
     }
@@ -232,7 +232,7 @@ TEST(HashTableRehash) {
     for (int i = 0; i < capacity / 2; i++) {
       t->insert(i, i * i, i);
     }
-    t->Rehash(isolate);
+    t->Rehash(ReadOnlyRoots(isolate));
     for (int i = 0; i < capacity / 2; i++) {
       CHECK_EQ(i, t->lookup(i * i));
     }

@@ -44,7 +44,7 @@ views::ScrollView* CreateCredentialsView(
     const PasswordDialogController::FormsVector& forms,
     views::ButtonListener* button_listener,
     network::mojom::URLLoaderFactory* loader_factory) {
-  views::View* list_view = new views::View;
+  auto list_view = std::make_unique<views::View>();
   list_view->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   int item_height = 0;
@@ -67,7 +67,7 @@ views::ScrollView* CreateCredentialsView(
   }
   views::ScrollView* scroll_view = new views::ScrollView;
   scroll_view->ClipHeightTo(0, kMaxHeightAccounts * item_height);
-  scroll_view->SetContents(list_view);
+  scroll_view->SetContents(std::move(list_view));
   return scroll_view;
 }
 

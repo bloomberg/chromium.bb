@@ -13,7 +13,7 @@
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 #include "third_party/libjingle_xmpp/xmpp/xmpptask.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 XmppClientInterface::XmppClientInterface() {
 }
@@ -90,7 +90,7 @@ const XmlElement* XmppTask::NextStanza() {
 }
 
 XmlElement* XmppTask::MakeIq(const std::string& type,
-                             const buzz::Jid& to,
+                             const jingle_xmpp::Jid& to,
                              const std::string& id) {
   XmlElement* result = new XmlElement(QN_IQ);
   if (!type.empty())

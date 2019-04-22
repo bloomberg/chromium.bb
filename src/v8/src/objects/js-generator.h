@@ -6,6 +6,7 @@
 #define V8_OBJECTS_JS_GENERATOR_H_
 
 #include "src/objects/js-objects.h"
+#include "src/objects/struct.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -22,7 +23,7 @@ class JSGeneratorObject : public JSObject {
   DECL_ACCESSORS(function, JSFunction)
 
   // [context]: The context of the suspended computation.
-  DECL_ACCESSORS2(context, Context)
+  DECL_ACCESSORS(context, Context)
 
   // [receiver]: The receiver of the suspended computation.
   DECL_ACCESSORS(receiver, Object)
@@ -54,7 +55,7 @@ class JSGeneratorObject : public JSObject {
   int source_position() const;
 
   // [parameters_and_registers]: Saved interpreter register file.
-  DECL_ACCESSORS2(parameters_and_registers, FixedArray)
+  DECL_ACCESSORS(parameters_and_registers, FixedArray)
 
   DECL_CAST(JSGeneratorObject)
 
@@ -67,22 +68,10 @@ class JSGeneratorObject : public JSObject {
   static const int kGeneratorClosed = -1;
 
   // Layout description.
-#define JS_GENERATOR_FIELDS(V)                  \
-  V(kFunctionOffset, kTaggedSize)               \
-  V(kContextOffset, kTaggedSize)                \
-  V(kReceiverOffset, kTaggedSize)               \
-  V(kInputOrDebugPosOffset, kTaggedSize)        \
-  V(kResumeModeOffset, kTaggedSize)             \
-  V(kContinuationOffset, kTaggedSize)           \
-  V(kParametersAndRegistersOffset, kTaggedSize) \
-  /* Header size. */                            \
-  V(kSize, 0)
+  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
+                                TORQUE_GENERATED_JSGENERATOR_OBJECT_FIELDS)
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize, JS_GENERATOR_FIELDS)
-#undef JS_GENERATOR_FIELDS
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSGeneratorObject);
+  OBJECT_CONSTRUCTORS(JSGeneratorObject, JSObject);
 };
 
 class JSAsyncFunctionObject : public JSGeneratorObject {
@@ -96,17 +85,10 @@ class JSAsyncFunctionObject : public JSGeneratorObject {
   DECL_ACCESSORS(promise, JSPromise)
 
   // Layout description.
-#define JS_ASYNC_FUNCTION_FIELDS(V) \
-  V(kPromiseOffset, kTaggedSize)    \
-  /* Header size. */                \
-  V(kSize, 0)
-
   DEFINE_FIELD_OFFSET_CONSTANTS(JSGeneratorObject::kSize,
-                                JS_ASYNC_FUNCTION_FIELDS)
-#undef JS_ASYNC_FUNCTION_FIELDS
+                                TORQUE_GENERATED_JSASYNC_FUNCTION_OBJECT_FIELDS)
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSAsyncFunctionObject);
+  OBJECT_CONSTRUCTORS(JSAsyncFunctionObject, JSGeneratorObject);
 };
 
 class JSAsyncGeneratorObject : public JSGeneratorObject {
@@ -126,18 +108,12 @@ class JSAsyncGeneratorObject : public JSGeneratorObject {
   DECL_INT_ACCESSORS(is_awaiting)
 
   // Layout description.
-#define JS_ASYNC_GENERATOR_FIELDS(V) \
-  V(kQueueOffset, kTaggedSize)       \
-  V(kIsAwaitingOffset, kTaggedSize)  \
-  /* Header size. */                 \
-  V(kSize, 0)
-
-  DEFINE_FIELD_OFFSET_CONSTANTS(JSGeneratorObject::kSize,
-                                JS_ASYNC_GENERATOR_FIELDS)
+  DEFINE_FIELD_OFFSET_CONSTANTS(
+      JSGeneratorObject::kSize,
+      TORQUE_GENERATED_JSASYNC_GENERATOR_OBJECT_FIELDS)
 #undef JS_ASYNC_GENERATOR_FIELDS
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSAsyncGeneratorObject);
+  OBJECT_CONSTRUCTORS(JSAsyncGeneratorObject, JSGeneratorObject);
 };
 
 class AsyncGeneratorRequest : public Struct {
@@ -148,18 +124,14 @@ class AsyncGeneratorRequest : public Struct {
   DECL_ACCESSORS(value, Object)
   DECL_ACCESSORS(promise, Object)
 
-  static const int kNextOffset = Struct::kHeaderSize;
-  static const int kResumeModeOffset = kNextOffset + kPointerSize;
-  static const int kValueOffset = kResumeModeOffset + kPointerSize;
-  static const int kPromiseOffset = kValueOffset + kPointerSize;
-  static const int kSize = kPromiseOffset + kPointerSize;
+  DEFINE_FIELD_OFFSET_CONSTANTS(Struct::kHeaderSize,
+                                TORQUE_GENERATED_ASYNC_GENERATOR_REQUEST_FIELDS)
 
   DECL_CAST(AsyncGeneratorRequest)
   DECL_PRINTER(AsyncGeneratorRequest)
   DECL_VERIFIER(AsyncGeneratorRequest)
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AsyncGeneratorRequest);
+  OBJECT_CONSTRUCTORS(AsyncGeneratorRequest, Struct);
 };
 
 }  // namespace internal

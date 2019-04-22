@@ -68,14 +68,9 @@ function startTestAfterFirstPaint() {
     debug("2) when drawingBuffer is not preserved.")
     drawWebGLToCanvas2D(nonpreserve_ctx2D, nonpreserve_canvas3D, false);
 
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.layoutAndPaintAsyncThen(asyncTest);
-    } else {
-        window.requestAnimationFrame(asyncTest);
-    }
+    runAfterLayoutAndPaint(asyncTest);
 }
 
 window.onload = function () {
-    window.requestAnimationFrame(startTestAfterFirstPaint);
+    runAfterLayoutAndPaint(startTestAfterFirstPaint);
 }

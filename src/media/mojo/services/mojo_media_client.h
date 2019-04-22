@@ -11,10 +11,13 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/unguessable_token.h"
 #include "media/base/overlay_info.h"
 #include "media/media_buildflags.h"
+#include "media/mojo/buildflags.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
+#include "media/video/supported_video_decoder_config.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -55,7 +58,7 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   virtual std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  virtual std::vector<mojom::SupportedVideoDecoderConfigPtr>
+  virtual std::vector<SupportedVideoDecoderConfig>
   GetSupportedVideoDecoderConfigs();
 
   virtual std::unique_ptr<VideoDecoder> CreateVideoDecoder(
@@ -63,15 +66,30 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
       RequestOverlayInfoCB request_overlay_info_cb,
-      const gfx::ColorSpace& target_color_space);
+      const gfx::ColorSpace& target_color_space,
+      mojom::VideoDecoderImplementation implementation);
 
   // Returns the Renderer to be used by MojoRendererService.
   // TODO(hubbe): Find out whether we should pass in |target_color_space| here.
+  // TODO(guohuideng): Merge this function into CreateCastRenderer.
   virtual std::unique_ptr<Renderer> CreateRenderer(
       service_manager::mojom::InterfaceProvider* host_interfaces,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       MediaLog* media_log,
       const std::string& audio_device_id);
+
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  // Used on Chromecast only.
+  // When CastRenderer is created to play video content, an |overlay_plane_id|
+  // is needed to indicate which |overlay_factory| this CastRenderer will be
+  // associtated with.
+  // Chromecast also uses CreateRenderer to create "audio only" renderers.
+  virtual std::unique_ptr<Renderer> CreateCastRenderer(
+      service_manager::mojom::InterfaceProvider* host_interfaces,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      MediaLog* media_log,
+      const base::UnguessableToken& overlay_plane_id);
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
   // Returns the CdmFactory to be used by MojoCdmService. |host_interfaces| can
   // be used to request interfaces provided remotely by the host. It may be a

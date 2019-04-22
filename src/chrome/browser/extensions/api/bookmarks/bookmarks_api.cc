@@ -15,7 +15,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -281,14 +280,14 @@ void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
                                             int new_index) {
   const BookmarkNode* node = new_parent->GetChild(new_index);
   api::bookmarks::OnMoved::MoveInfo move_info;
-  move_info.parent_id = base::Int64ToString(new_parent->id());
+  move_info.parent_id = base::NumberToString(new_parent->id());
   move_info.index = new_index;
-  move_info.old_parent_id = base::Int64ToString(old_parent->id());
+  move_info.old_parent_id = base::NumberToString(old_parent->id());
   move_info.old_index = old_index;
 
   DispatchEvent(events::BOOKMARKS_ON_MOVED, api::bookmarks::OnMoved::kEventName,
-                api::bookmarks::OnMoved::Create(base::Int64ToString(node->id()),
-                                                move_info));
+                api::bookmarks::OnMoved::Create(
+                    base::NumberToString(node->id()), move_info));
 }
 
 void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
@@ -300,7 +299,7 @@ void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
   DispatchEvent(events::BOOKMARKS_ON_CREATED,
                 api::bookmarks::OnCreated::kEventName,
                 api::bookmarks::OnCreated::Create(
-                    base::Int64ToString(node->id()), tree_node));
+                    base::NumberToString(node->id()), tree_node));
 }
 
 void BookmarkEventRouter::BookmarkNodeRemoved(
@@ -310,7 +309,7 @@ void BookmarkEventRouter::BookmarkNodeRemoved(
     const BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
   api::bookmarks::OnRemoved::RemoveInfo remove_info;
-  remove_info.parent_id = base::Int64ToString(parent->id());
+  remove_info.parent_id = base::NumberToString(parent->id());
   remove_info.index = index;
   bookmark_api_helpers::PopulateBookmarkTreeNode(managed_, node, true, false,
                                                  &remove_info.node);
@@ -318,7 +317,7 @@ void BookmarkEventRouter::BookmarkNodeRemoved(
   DispatchEvent(events::BOOKMARKS_ON_REMOVED,
                 api::bookmarks::OnRemoved::kEventName,
                 api::bookmarks::OnRemoved::Create(
-                    base::Int64ToString(node->id()), remove_info));
+                    base::NumberToString(node->id()), remove_info));
 }
 
 void BookmarkEventRouter::BookmarkAllUserNodesRemoved(
@@ -345,7 +344,7 @@ void BookmarkEventRouter::BookmarkNodeChanged(BookmarkModel* model,
   DispatchEvent(events::BOOKMARKS_ON_CHANGED,
                 api::bookmarks::OnChanged::kEventName,
                 api::bookmarks::OnChanged::Create(
-                    base::Int64ToString(node->id()), change_info));
+                    base::NumberToString(node->id()), change_info));
 }
 
 void BookmarkEventRouter::BookmarkNodeFaviconChanged(BookmarkModel* model,
@@ -360,13 +359,13 @@ void BookmarkEventRouter::BookmarkNodeChildrenReordered(
   int childCount = node->child_count();
   for (int i = 0; i < childCount; ++i) {
     const BookmarkNode* child = node->GetChild(i);
-    reorder_info.child_ids.push_back(base::Int64ToString(child->id()));
+    reorder_info.child_ids.push_back(base::NumberToString(child->id()));
   }
 
   DispatchEvent(events::BOOKMARKS_ON_CHILDREN_REORDERED,
                 api::bookmarks::OnChildrenReordered::kEventName,
                 api::bookmarks::OnChildrenReordered::Create(
-                    base::Int64ToString(node->id()), reorder_info));
+                    base::NumberToString(node->id()), reorder_info));
 }
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesBeginning(

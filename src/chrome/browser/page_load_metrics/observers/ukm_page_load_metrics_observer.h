@@ -6,11 +6,18 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_UKM_PAGE_LOAD_METRICS_OBSERVER_H_
 
 #include "base/macros.h"
+#include "base/metrics/ukm_source_id.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "ui/base/page_transition_types.h"
+
+namespace content {
+class BrowserContext;
+}
 
 namespace network {
 class NetworkQualityTracker;
@@ -40,8 +47,14 @@ class UkmPageLoadMetricsObserver
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
 
+  ObservePolicy OnRedirect(
+      content::NavigationHandle* navigation_handle) override;
+
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
+
+  ObservePolicy ShouldObserveMimeType(
+      const std::string& mime_type) const override;
 
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
@@ -58,8 +71,22 @@ class UkmPageLoadMetricsObserver
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
 
+  void OnResourceDataUseObserved(
+      content::RenderFrameHost* content,
+      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+          resources) override;
+
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_complete_info) override;
+
+  void OnTimingUpdate(
+      content::RenderFrameHost* subframe_rfh,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+
+  // Whether the current page load is an Offline Preview. Must be called from
+  // OnCommit. Virtual for testing.
+  virtual bool IsOfflinePreview(content::WebContents* web_contents) const;
 
  private:
   // Records page load timing related metrics available in PageLoadTiming, such
@@ -76,9 +103,22 @@ class UkmPageLoadMetricsObserver
       base::TimeTicks app_background_time);
 
   // Adds main resource timing metrics to |builder|.
-  void ReportMainResourceTimingMetrics(ukm::builders::PageLoad* builder);
+  void ReportMainResourceTimingMetrics(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      ukm::builders::PageLoad* builder);
 
   void ReportLayoutStability(const page_load_metrics::PageLoadExtraInfo& info);
+
+  // Captures the site engagement score for the commited URL and
+  // returns the score rounded to the nearest 10.
+  base::Optional<int64_t> GetRoundedSiteEngagementScore(
+      const page_load_metrics::PageLoadExtraInfo& info) const;
+
+  // Records the metrics for the nostate prefetch to an event with UKM source ID
+  // |source_id|.
+  void RecordNoStatePrefetchMetrics(
+      content::NavigationHandle* navigation_handle,
+      ukm::SourceId source_id);
 
   // Guaranteed to be non-null during the lifetime of |this|.
   network::NetworkQualityTracker* network_quality_tracker_;
@@ -104,6 +144,40 @@ class UkmPageLoadMetricsObserver
 
   // True if the page started hidden, or ever became hidden.
   bool was_hidden_ = false;
+
+  // True if the page main resource was served from disk cache.
+  bool was_cached_ = false;
+
+  // True if the page main resource is inner response of a signed exchange.
+  bool is_signed_exchange_inner_response_ = false;
+
+  // The number of main frame redirects that occurred before commit.
+  uint32_t main_frame_request_redirect_count_ = 0;
+
+  // The browser context this navigation is operating in.
+  content::BrowserContext* browser_context_ = nullptr;
+
+  // Whether the navigation resulted in the main frame being hosted in
+  // a different process.
+  bool navigation_is_cross_process_ = false;
+
+  // Difference between indices of the previous and current navigation entries
+  // (i.e. item history for the current tab).
+  // Typically -1/0/1 for back navigations / reloads / forward navigations.
+  // 0 for most of navigations with replacement (e.g. location.replace).
+  // 1 for regular navigations (link click / omnibox / etc).
+  int navigation_entry_offset_ = 0;
+
+  // Id for the main document, which persists across history navigations to the
+  // same document.
+  // Unique across the lifetime of the browser process.
+  int main_document_sequence_number_ = -1;
+
+  // The connection info for the committed URL.
+  base::Optional<net::HttpResponseInfo::ConnectionInfo> connection_info_;
+
+  page_load_metrics::LargestContentfulPaintHandler
+      largest_contentful_paint_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmPageLoadMetricsObserver);
 };

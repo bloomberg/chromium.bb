@@ -69,12 +69,6 @@ struct PrefetchItem {
   // The URL to the favicon image of the article's hosting web site.
   GURL favicon_url;
 
-  // A snippet of the article's contents.
-  std::string snippet;
-
-  // The publisher name/web site the article is attributed to.
-  std::string attribution;
-
   // Number of attempts to request OPS to generate an archive for this item.
   int generate_bundle_attempts = 0;
 
@@ -105,10 +99,10 @@ struct PrefetchItem {
   // item. It holds a negative value otherwise.
   int64_t archive_body_length = -1;
 
-  // The last time the URL was attempted to be added to the store. Normally this
-  // is just the time the item was added. If the same URL is added multiple
-  // times, this is the timestamp of the last time. creation_time
-  // is used as a proxy for priority.
+  // The last time the URL was suggested to be prefetched. Normally this is the
+  // time the item was initially added but if the same URL is suggested multiple
+  // times, it will be updated with the timestamp of the last time.
+  // |creation_time| is used as a proxy for priority.
   base::Time creation_time;
 
   // Time used for the expiration of the item depending on the applicable policy
@@ -123,6 +117,12 @@ struct PrefetchItem {
 
   // The title of the page.
   base::string16 title;
+
+  // A snippet of the article's contents.
+  std::string snippet;
+
+  // The publisher name/web site the article is attributed to.
+  std::string attribution;
 
   // The file path to the archive of the page.
   base::FilePath file_path;

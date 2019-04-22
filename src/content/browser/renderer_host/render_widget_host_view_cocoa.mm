@@ -26,6 +26,7 @@
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
@@ -62,6 +63,7 @@ class DummyClientHelper : public RenderWidgetHostNSViewClientHelper {
   // RenderWidgetHostNSViewClientHelper implementation.
   id GetRootBrowserAccessibilityElement() override { return nil; }
   id GetFocusedBrowserAccessibilityElement() override { return nil; }
+  void SetAccessibilityWindow(NSWindow* window) override {}
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
                             const ui::LatencyInfo& latency_info) override {}
   void ForwardKeyboardEventWithCommands(
@@ -90,9 +92,7 @@ NSString* const kWebContentTouchBarId = @"web-content";
 
 // Whether a keyboard event has been reserved by OSX.
 BOOL EventIsReservedBySystem(NSEvent* event) {
-  content::SystemHotkeyHelperMac* helper =
-      content::SystemHotkeyHelperMac::GetInstance();
-  return helper->map()->IsEventReserved(event);
+  return content::GetSystemHotkeyMap()->IsEventReserved(event);
 }
 
 // TODO(suzhe): Upstream this function.
@@ -300,6 +300,8 @@ void ExtractUnderlines(NSAttributedString* string,
   replacementRange.location += textSelectionOffset_;
   [self insertText:selectedResult.replacementString
       replacementRange:replacementRange];
+
+  ui::LogTouchBarUMA(ui::TouchBarAction::TEXT_SUGGESTION);
 }
 
 - (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
@@ -478,7 +480,10 @@ void ExtractUnderlines(NSAttributedString* string,
   // Traverse the superview hierarchy as the hitTest will return the frontmost
   // view, such as an NSTextView, while nonWebContentView may be specified by
   // its parent view.
+  BOOL hitSelf = NO;
   while (view) {
+    if (view == self)
+      hitSelf = YES;
     if ([view respondsToSelector:nonWebContentViewSelector] &&
         [view performSelector:nonWebContentViewSelector]) {
       // The cursor is over a nonWebContentView - ignore this mouse event.
@@ -498,7 +503,10 @@ void ExtractUnderlines(NSAttributedString* string,
     }
     view = [view superview];
   }
-  return NO;
+  // Ignore events which don't hit test to this subtree (and hit, for example,
+  // an overlapping view instead). As discussed above, the mouse may go outside
+  // the bounds of the view and keep sending events during a drag.
+  return !hitSelf && !hasOpenMouseDown_;
 }
 
 - (void)mouseEvent:(NSEvent*)theEvent {
@@ -551,6 +559,7 @@ void ExtractUnderlines(NSAttributedString* string,
       clientHelper_->ForwardMouseEvent(exitEvent);
     }
     mouseEventWasIgnored_ = YES;
+    [self updateCursor:nil];
     return;
   }
 
@@ -615,6 +624,7 @@ void ExtractUnderlines(NSAttributedString* string,
   if (!send_touch) {
     WebMouseEvent event =
         WebMouseEventBuilder::Build(theEvent, self, pointerType_);
+    last_mouse_screen_position_ = event.PositionInScreen();
     clientHelper_->RouteOrProcessMouseEvent(event);
   } else {
     WebTouchEvent event = WebTouchEventBuilder::Build(theEvent, self);
@@ -642,6 +652,26 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)unlockKeyboard {
   keyboardLockActive_ = false;
   lockedKeys_.reset();
+}
+
+- (void)setCursorLocked:(BOOL)locked {
+  mouse_locked_ = locked;
+  if (mouse_locked_) {
+    CGAssociateMouseAndMouseCursorPosition(NO);
+    NSRect bound = [self bounds];
+    bound = [[self window] convertRectToScreen:bound];
+    mouse_locked_screen_position_ = last_mouse_screen_position_;
+    CGDisplayMoveCursorToPoint(CGMainDisplayID(),
+                               NSMakePoint(NSMidX(bound), NSMidY(bound)));
+    [NSCursor hide];
+  } else {
+    // Unlock position of mouse cursor and unhide it.
+    CGAssociateMouseAndMouseCursorPosition(YES);
+    CGDisplayMoveCursorToPoint(CGMainDisplayID(),
+                               NSMakePoint(mouse_locked_screen_position_.x(),
+                                           mouse_locked_screen_position_.y()));
+    [NSCursor unhide];
+  }
 }
 
 // CommandDispatcherTarget implementation:
@@ -976,8 +1006,7 @@ void ExtractUnderlines(NSAttributedString* string,
       [event type] == NSEventTypeEndGesture) {
     WebGestureEvent endEvent(WebGestureEventBuilder::Build(event, self));
     endEvent.SetType(WebInputEvent::kGesturePinchEnd);
-    endEvent.SetSourceDevice(
-        blink::WebGestureDevice::kWebGestureDeviceTouchpad);
+    endEvent.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
     endEvent.SetNeedsWheelEvent(true);
     clientHelper_->GestureEnd(endEvent);
   }
@@ -1200,6 +1229,7 @@ void ExtractUnderlines(NSAttributedString* string,
                              object:newWindow];
   }
 
+  clientHelper_->SetAccessibilityWindow(newWindow);
   [self sendWindowFrameInScreenToClient];
 }
 
@@ -1347,8 +1377,8 @@ void ExtractUnderlines(NSAttributedString* string,
       return valid;
   }
 
-  bool is_render_view = false;
-  client_->SyncIsRenderViewHost(&is_render_view);
+  bool is_for_main_frame = false;
+  client_->SyncIsWidgetForMainFrame(&is_for_main_frame);
 
   bool is_speaking = false;
   client_->SyncIsSpeaking(&is_speaking);
@@ -1356,10 +1386,10 @@ void ExtractUnderlines(NSAttributedString* string,
   SEL action = [item action];
 
   if (action == @selector(stopSpeaking:))
-    return is_render_view && is_speaking;
+    return is_for_main_frame && is_speaking;
 
   if (action == @selector(startSpeaking:))
-    return is_render_view;
+    return is_for_main_frame;
 
   // For now, these actions are always enabled for render view,
   // this is sub-optimal.
@@ -1368,7 +1398,7 @@ void ExtractUnderlines(NSAttributedString* string,
       action == @selector(cut:) || action == @selector(copy:) ||
       action == @selector(copyToFindPboard:) || action == @selector(paste:) ||
       action == @selector(pasteAndMatchStyle:)) {
-    return is_render_view;
+    return is_for_main_frame;
   }
 
   return editCommandHelper_->IsMenuItemEnabled(action, self);
@@ -1377,6 +1407,15 @@ void ExtractUnderlines(NSAttributedString* string,
 - (RenderWidgetHostNSViewClient*)renderWidgetHostNSViewClient {
   return client_;
 }
+
+- (void)setAccessibilityParentElement:(id)accessibilityParent {
+  accessibilityParent_.reset(accessibilityParent, base::scoped_policy::RETAIN);
+}
+
+// TODO(crbug.com/921109): Migrate from the NSObject accessibility API to the
+// NSAccessibility API, then remove this suppression.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 - (NSArray*)accessibilityArrayAttributeValues:(NSString*)attribute
                                         index:(NSUInteger)index
@@ -1403,6 +1442,9 @@ void ExtractUnderlines(NSAttributedString* string,
        [attribute isEqualToString:NSAccessibilityContentsAttribute]) &&
       root_element) {
     return [NSArray arrayWithObjects:root_element, nil];
+  } else if ([attribute isEqualToString:NSAccessibilityParentAttribute] &&
+             accessibilityParent_) {
+    return accessibilityParent_;
   } else if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
     return NSAccessibilityScrollAreaRole;
   }
@@ -1447,6 +1489,8 @@ void ExtractUnderlines(NSAttributedString* string,
 - (id)accessibilityFocusedUIElement {
   return clientHelper_->GetFocusedBrowserAccessibilityElement();
 }
+
+#pragma clang diagnostic pop
 
 // Below is our NSTextInputClient implementation.
 //
@@ -1933,9 +1977,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 
 - (NSTouchBar*)makeTouchBar {
   if (textInputType_ != ui::TEXT_INPUT_TYPE_NONE &&
-      textInputType_ != ui::TEXT_INPUT_TYPE_PASSWORD &&
-      (base::FeatureList::IsEnabled(features::kTextSuggestionsTouchBar) ||
-       base::FeatureList::IsEnabled(features::kExperimentalUi))) {
+      textInputType_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
     candidateListTouchBarItem_.reset([[NSCandidateListTouchBarItem alloc]
         initWithIdentifier:NSTouchBarItemIdentifierCandidateList]);
     auto* candidateListItem = candidateListTouchBarItem_.get();

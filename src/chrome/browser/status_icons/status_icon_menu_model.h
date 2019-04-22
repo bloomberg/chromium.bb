@@ -28,10 +28,6 @@ class StatusIconMenuModel
  public:
   class Delegate {
    public:
-    // Notifies the delegate that the item with the specified command id was
-    // visually highlighted within the menu.
-    virtual void CommandIdHighlighted(int command_id);
-
     // Performs the action associates with the specified command id.
     // The passed |event_flags| are the flags from the event which issued this
     // command and they can be examined to find modifier keys.
@@ -97,7 +93,6 @@ class StatusIconMenuModel
 
  private:
   // Overridden from ui::SimpleMenuModel::Delegate:
-  void CommandIdHighlighted(int command_id) override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
   struct ItemState;

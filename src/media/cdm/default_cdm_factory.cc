@@ -50,7 +50,7 @@ void DefaultCdmFactory::Create(
   if (!ShouldCreateAesDecryptor(key_system)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(cdm_created_cb, nullptr, "Unsupported key system."));
+        base::BindOnce(cdm_created_cb, nullptr, "Unsupported key system."));
     return;
   }
 

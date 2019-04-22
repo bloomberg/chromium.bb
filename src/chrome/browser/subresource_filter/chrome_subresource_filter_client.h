@@ -93,6 +93,7 @@ class ChromeSubresourceFilterClient
   static void LogAction(SubresourceFilterAction action);
 
  private:
+  friend class content::WebContentsUserData<ChromeSubresourceFilterClient>;
   void WhitelistByContentSettings(const GURL& url);
   void ShowUI(const GURL& url);
 
@@ -108,6 +109,8 @@ class ChromeSubresourceFilterClient
   // loads. We must be careful to ensure this boolean does not persist after the
   // devtools window is closed, which should be handled by the devtools system.
   bool activated_via_devtools_ = false;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSubresourceFilterClient);
 };

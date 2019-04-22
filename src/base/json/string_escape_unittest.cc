@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,6 +26,7 @@ TEST(JSONStringEscapeTest, EscapeUTF8) {
       {"Hello\xe2\x80\xa8world", "Hello\\u2028world"},
       {"\xe2\x80\xa9purple", "\\u2029purple"},
       {"\xF3\xBF\xBF\xBF", "\xEF\xBF\xBD"},
+      {"\uFFFF", "\xEF\xBF\xBD"},
   };
 
   for (const auto& i : cases) {
@@ -38,15 +39,13 @@ TEST(JSONStringEscapeTest, EscapeUTF8) {
     EXPECT_TRUE(IsStringUTF8(out));
 
     out.erase();
-    bool convert_ok = EscapeJSONString(in_str, false, &out);
+    EscapeJSONString(in_str, false, &out);
     EXPECT_EQ(std::string(i.escaped), out);
     EXPECT_TRUE(IsStringUTF8(out));
 
-    if (convert_ok) {
-      std::string fooout = GetQuotedJSONString(in_str);
-      EXPECT_EQ("\"" + std::string(i.escaped) + "\"", fooout);
-      EXPECT_TRUE(IsStringUTF8(out));
-    }
+    std::string fooout = GetQuotedJSONString(in_str);
+    EXPECT_EQ("\"" + std::string(i.escaped) + "\"", fooout);
+    EXPECT_TRUE(IsStringUTF8(out));
   }
 
   std::string in = cases[0].to_escape;
@@ -78,14 +77,14 @@ TEST(JSONStringEscapeTest, EscapeUTF16) {
     const wchar_t* to_escape;
     const char* escaped;
   } cases[] = {
-    {L"b\uffb1\u00ff", "b\xEF\xBE\xB1\xC3\xBF"},
-    {L"\b\001aZ\"\\wee", "\\b\\u0001aZ\\\"\\\\wee"},
-    {L"a\b\f\n\r\t\v\1\\.\"z",
-        "a\\b\\f\\n\\r\\t\\u000B\\u0001\\\\.\\\"z"},
-    {L"b\x0f\x7f\xf0\xff!", "b\\u000F\x7F\xC3\xB0\xC3\xBF!"},
-    {L"c<>d", "c\\u003C>d"},
-    {L"Hello\u2028world", "Hello\\u2028world"},
-    {L"\u2029purple", "\\u2029purple"},
+      {L"b\uffb1\u00ff", "b\xEF\xBE\xB1\xC3\xBF"},
+      {L"\b\001aZ\"\\wee", "\\b\\u0001aZ\\\"\\\\wee"},
+      {L"a\b\f\n\r\t\v\1\\.\"z", "a\\b\\f\\n\\r\\t\\u000B\\u0001\\\\.\\\"z"},
+      {L"b\x0f\x7f\xf0\xff!", "b\\u000F\x7F\xC3\xB0\xC3\xBF!"},
+      {L"c<>d", "c\\u003C>d"},
+      {L"Hello\u2028world", "Hello\\u2028world"},
+      {L"\u2029purple", "\\u2029purple"},
+      {L"\uFFFF", "\xEF\xBF\xBD"},
   };
 
   for (const auto& i : cases) {
@@ -180,7 +179,7 @@ TEST(JSONStringEscapeTest, EscapeBytes) {
   }
 
   const char kEmbedNull[] = { '\xab', '\x39', '\0', '\x9f', '\xab' };
-  std::string in(kEmbedNull, arraysize(kEmbedNull));
+  std::string in(kEmbedNull, base::size(kEmbedNull));
   EXPECT_FALSE(IsStringUTF8(in));
   EXPECT_EQ(std::string("\\u00AB9\\u0000\\u009F\\u00AB"),
             EscapeBytesAsInvalidJSONString(in, false));

@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_FOCUS_FOCUS_SEARCH_H_
 #define UI_VIEWS_FOCUS_FOCUS_SEARCH_H_
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -53,7 +54,7 @@ class VIEWS_EXPORT FocusSearch {
   //   needed and you want to check IsAccessibilityFocusable(), rather than
   //   IsFocusable().
   FocusSearch(View* root, bool cycle, bool accessibility_mode);
-  virtual ~FocusSearch() {}
+  virtual ~FocusSearch() = default;
 
   // Finds the next view that should be focused and returns it. If a
   // FocusTraversable is found while searching for the focusable view,
@@ -122,13 +123,16 @@ class VIEWS_EXPORT FocusSearch {
   // |check_starting_view|, |can_go_up| and |can_go_down| controls the
   // traversal of the views hierarchy. |skip_group_id| specifies a group_id,
   // -1 means no group. All views from a group are traversed in one pass.
-  View* FindNextFocusableViewImpl(View* starting_view,
-                                  StartingViewPolicy check_starting_view,
-                                  bool can_go_up,
-                                  bool can_go_down,
-                                  int skip_group_id,
-                                  FocusTraversable** focus_traversable,
-                                  View** focus_traversable_view);
+  View* FindNextFocusableViewImpl(
+      View* starting_view,
+      StartingViewPolicy check_starting_view,
+      bool can_go_up,
+      bool can_go_down,
+      AnchoredDialogPolicy can_go_into_anchored_dialog,
+      int skip_group_id,
+      base::flat_set<View*>* seen_views,
+      FocusTraversable** focus_traversable,
+      View** focus_traversable_view);
 
   // Same as FindNextFocusableViewImpl but returns the previous focusable view.
   View* FindPreviousFocusableViewImpl(
@@ -138,6 +142,7 @@ class VIEWS_EXPORT FocusSearch {
       bool can_go_down,
       AnchoredDialogPolicy can_go_into_anchored_dialog,
       int skip_group_id,
+      base::flat_set<View*>* seen_views,
       FocusTraversable** focus_traversable,
       View** focus_traversable_view);
 

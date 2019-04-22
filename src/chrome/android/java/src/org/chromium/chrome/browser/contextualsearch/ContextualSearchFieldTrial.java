@@ -75,8 +75,6 @@ public class ContextualSearchFieldTrial {
     private static final String DISABLE_AMP_AS_SEPARATE_TAB = "disable_amp_as_separate_tab";
     // Disable logging for Machine Learning
     private static final String DISABLE_UKM_RANKER_LOGGING = "disable_ukm_ranker_logging";
-    private static final String DISABLE_SUPPRESS_FOR_SMART_SELECTION =
-            "disable_suppress_for_smart_selection";
 
     // ----------------------
     // Privacy-related flags.
@@ -112,7 +110,6 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsSendHomeCountryDisabled;
     private static Boolean sIsPageContentNotificationDisabled;
     private static Boolean sIsUkmRankerLoggingDisabled;
-    private static Boolean sIsSuppressForSmartSelectionDisabled;
     private static Integer sWaitAfterTapDelayMs;
     private static Integer sTapDurationThresholdMs;
     private static Integer sRecentScrollDurationMs;
@@ -366,21 +363,6 @@ public class ContextualSearchFieldTrial {
             sIsUkmRankerLoggingDisabled = getBooleanParam(DISABLE_UKM_RANKER_LOGGING);
         }
         return sIsUkmRankerLoggingDisabled;
-    }
-
-    /**
-     * Determines whether the Contextual Search UI is suppressed when Smart Select is active.
-     * This applies to long-press activation of a UI for Smart Select and/or Contextual Search. If
-     * this returns true, the Contextual Search Bar will be allowed to show in response to a
-     * long-press gesture on Android O even when the Smart Select UI may be active.
-     * @return Whether suppression our UI when Smart Select is active has been disabled.
-     */
-    static boolean isSuppressForSmartSelectionDisabled() {
-        if (sIsSuppressForSmartSelectionDisabled == null) {
-            sIsSuppressForSmartSelectionDisabled =
-                    getBooleanParam(DISABLE_SUPPRESS_FOR_SMART_SELECTION);
-        }
-        return sIsSuppressForSmartSelectionDisabled;
     }
 
     /**

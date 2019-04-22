@@ -110,7 +110,7 @@ void PasswordReuseDetectionManager::OnReuseFound(
   metrics_util::LogPasswordReuse(password_length, saved_passwords,
                                  matching_domains.size(),
                                  password_field_detected, reused_password_type);
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
   if (reused_password_type == metrics_util::PasswordType::SYNC_PASSWORD)
     client_->LogPasswordReuseDetectedEvent();
 

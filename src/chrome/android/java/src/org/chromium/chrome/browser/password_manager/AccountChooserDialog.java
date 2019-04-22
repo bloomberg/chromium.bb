@@ -28,7 +28,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
@@ -189,7 +188,7 @@ public class AccountChooserDialog
         }
         mAdapter = generateAccountsArrayAdapter(mContext, mCredentials);
         final AlertDialog.Builder builder =
-                new AlertDialog.Builder(mContext, R.style.AlertDialogTheme)
+                new AlertDialog.Builder(mContext, R.style.Theme_Chromium_AlertDialog)
                         .setCustomTitle(titleView)
                         .setNegativeButton(R.string.cancel, this)
                         .setAdapter(mAdapter, new DialogInterface.OnClickListener() {
@@ -238,7 +237,7 @@ public class AccountChooserDialog
 
         final int width = view.getWidth();
 
-        final int xOffset = ApiCompatibilityUtils.isLayoutRtl(view)
+        final int xOffset = view.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL
                 ? screenPos[0]
                 : screenPos[0] + width - text.getMeasuredWidth();
 
@@ -256,7 +255,8 @@ public class AccountChooserDialog
 
         // The xOffset is with regard to the left edge of the screen. Gravity.LEFT is deprecated,
         // which is why the following line is necessary.
-        final int xGravity = ApiCompatibilityUtils.isLayoutRtl(view) ? Gravity.END : Gravity.START;
+        final int xGravity = view.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL ? Gravity.END
+                                                                                    : Gravity.START;
 
         Toast toast = new Toast(context);
         toast.setGravity(Gravity.TOP | xGravity, xOffset, yOffset);

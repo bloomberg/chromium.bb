@@ -17,21 +17,29 @@
 
 @implementation AppStartupParameters {
   GURL _externalURL;
+  GURL _completeURL;
 }
 
 @synthesize externalURLParams = _externalURLParams;
 @synthesize postOpeningAction = _postOpeningAction;
 @synthesize launchInIncognito = _launchInIncognito;
 @synthesize completePaymentRequest = _completePaymentRequest;
+@synthesize textQuery = _textQuery;
 
 - (const GURL&)externalURL {
   return _externalURL;
 }
 
-- (instancetype)initWithExternalURL:(const GURL&)externalURL {
+- (const GURL&)completeURL {
+  return _completeURL;
+}
+
+- (instancetype)initWithExternalURL:(const GURL&)externalURL
+                        completeURL:(const GURL&)completeURL {
   self = [super init];
   if (self) {
     _externalURL = externalURL;
+    _completeURL = completeURL;
   }
   return self;
 }
@@ -40,7 +48,8 @@
   // If a new tab with |_externalURL| needs to be opened after the App
   // was launched as the result of a Universal Link navigation, the only
   // supported possibility at this time is the New Tab Page.
-  self = [self initWithExternalURL:GURL(kChromeUINewTabURL)];
+  self = [self initWithExternalURL:GURL(kChromeUINewTabURL)
+                       completeURL:GURL(kChromeUINewTabURL)];
 
   if (self) {
     std::map<std::string, std::string> parameters;
@@ -79,6 +88,9 @@
       break;
     case FOCUS_OMNIBOX:
       [description appendString:@", should focus omnibox"];
+      break;
+    case SEARCH_TEXT:
+      [description appendString:@", should search for text"];
       break;
     default:
       break;

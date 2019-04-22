@@ -114,7 +114,8 @@ InputServiceLinuxImpl::~InputServiceLinuxImpl() {
 
 void InputServiceLinuxImpl::OnDeviceAdded(udev_device* device) {
   DCHECK(CalledOnValidThread());
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   if (!device)
     return;
@@ -157,7 +158,8 @@ void InputServiceLinuxImpl::OnDeviceRemoved(udev_device* device) {
   if (!device)
     return;
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   const char* devnode = udev_device_get_devnode(device);
   if (devnode)
     RemoveDevice(devnode);

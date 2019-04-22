@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"

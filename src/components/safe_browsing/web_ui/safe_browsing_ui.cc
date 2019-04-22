@@ -12,13 +12,16 @@
 
 #include "base/base64.h"
 #include "base/base64url.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/grit/components_resources.h"
@@ -31,6 +34,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
 #if SAFE_BROWSING_DB_LOCAL
@@ -38,13 +43,12 @@
 #endif
 
 using base::Time;
+using sync_pb::GaiaPasswordReuse;
 using PasswordCaptured = sync_pb::UserEventSpecifics::GaiaPasswordCaptured;
-using PasswordReuseLookup =
-    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup;
-using PasswordReuseDetected =
-    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseDetected;
-using PasswordReuseDialogInteraction = sync_pb::UserEventSpecifics::
-    GaiaPasswordReuse::PasswordReuseDialogInteraction;
+using PasswordReuseLookup = sync_pb::GaiaPasswordReuse::PasswordReuseLookup;
+using PasswordReuseDetected = sync_pb::GaiaPasswordReuse::PasswordReuseDetected;
+using PasswordReuseDialogInteraction =
+    sync_pb::GaiaPasswordReuse::PasswordReuseDialogInteraction;
 
 namespace safe_browsing {
 WebUIInfoSingleton::WebUIInfoSingleton() = default;
@@ -58,12 +62,13 @@ WebUIInfoSingleton* WebUIInfoSingleton::GetInstance() {
 
 // static
 bool WebUIInfoSingleton::HasListener() {
-  return !GetInstance()->webui_instances_.empty();
+  return GetInstance()->has_test_listener_ ||
+         !GetInstance()->webui_instances_.empty();
 }
 
 void WebUIInfoSingleton::AddToClientDownloadRequestsSent(
     std::unique_ptr<ClientDownloadRequest> client_download_request) {
-  if (webui_instances_.empty())
+  if (!HasListener())
     return;
 
   for (auto* webui_listener : webui_instances_)
@@ -79,7 +84,7 @@ void WebUIInfoSingleton::ClearClientDownloadRequestsSent() {
 
 void WebUIInfoSingleton::AddToClientDownloadResponsesReceived(
     std::unique_ptr<ClientDownloadResponse> client_download_response) {
-  if (webui_instances_.empty())
+  if (!HasListener())
     return;
 
   for (auto* webui_listener : webui_instances_)
@@ -96,7 +101,7 @@ void WebUIInfoSingleton::ClearClientDownloadResponsesReceived() {
 
 void WebUIInfoSingleton::AddToCSBRRsSent(
     std::unique_ptr<ClientSafeBrowsingReportRequest> csbrr) {
-  if (webui_instances_.empty())
+  if (!HasListener())
     return;
 
   for (auto* webui_listener : webui_instances_)
@@ -111,7 +116,7 @@ void WebUIInfoSingleton::ClearCSBRRsSent() {
 
 void WebUIInfoSingleton::AddToPGEvents(
     const sync_pb::UserEventSpecifics& event) {
-  if (webui_instances_.empty())
+  if (!HasListener())
     return;
 
   for (auto* webui_listener : webui_instances_)
@@ -126,7 +131,7 @@ void WebUIInfoSingleton::ClearPGEvents() {
 
 int WebUIInfoSingleton::AddToPGPings(
     const LoginReputationClientRequest& request) {
-  if (webui_instances_.empty())
+  if (!HasListener())
     return -1;
 
   for (auto* webui_listener : webui_instances_)
@@ -140,7 +145,7 @@ int WebUIInfoSingleton::AddToPGPings(
 void WebUIInfoSingleton::AddToPGResponses(
     int token,
     const LoginReputationClientResponse& response) {
-  if (webui_instances_.empty())
+  if (!HasListener())
     return;
 
   for (auto* webui_listener : webui_instances_)
@@ -155,18 +160,29 @@ void WebUIInfoSingleton::ClearPGPings() {
 }
 
 void WebUIInfoSingleton::LogMessage(const std::string& message) {
-  if (webui_instances_.empty())
+  if (!HasListener())
     return;
 
   base::Time timestamp = base::Time::Now();
   log_messages_.push_back(std::make_pair(timestamp, message));
 
-  for (auto* webui_listener : webui_instances_)
-    webui_listener->NotifyLogMessageJsListener(timestamp, message);
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&WebUIInfoSingleton::NotifyLogMessageListeners, timestamp,
+                     message));
 }
 
 void WebUIInfoSingleton::ClearLogMessages() {
   std::vector<std::pair<base::Time, std::string>>().swap(log_messages_);
+}
+
+/* static */ void WebUIInfoSingleton::NotifyLogMessageListeners(
+    const base::Time& timestamp,
+    const std::string& message) {
+  WebUIInfoSingleton* web_ui_info = GetInstance();
+
+  for (auto* webui_listener : web_ui_info->webui_instances())
+    webui_listener->NotifyLogMessageJsListener(timestamp, message);
 }
 
 void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
@@ -175,7 +191,7 @@ void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
 
 void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   base::Erase(webui_instances_, webui);
-  if (webui_instances_.empty()) {
+  if (!HasListener()) {
     ClearCSBRRsSent();
     ClearClientDownloadRequestsSent();
     ClearClientDownloadResponsesReceived();
@@ -197,36 +213,48 @@ base::Value UserReadableTimeFromMillisSinceEpoch(int64_t time_in_milliseconds) {
 
 void AddStoreInfo(const DatabaseManagerInfo::DatabaseInfo::StoreInfo store_info,
                   base::ListValue* database_info_list) {
-  if (store_info.has_file_size_bytes() && store_info.has_file_name()) {
+  if (store_info.has_file_name()) {
     database_info_list->GetList().push_back(
         base::Value(store_info.file_name()));
-    database_info_list->GetList().push_back(
-        base::Value(static_cast<double>(store_info.file_size_bytes())));
+  } else {
+    database_info_list->GetList().push_back(base::Value("Unknown store"));
   }
+
+  std::string store_info_string = "<blockquote>";
+  if (store_info.has_file_size_bytes()) {
+    store_info_string +=
+        "Size (in bytes): " + std::to_string(store_info.file_size_bytes()) +
+        "<br>";
+  }
+
   if (store_info.has_update_status()) {
-    database_info_list->GetList().push_back(base::Value("Store update status"));
-    database_info_list->GetList().push_back(
-        base::Value(store_info.update_status()));
+    store_info_string +=
+        "Update status: " + std::to_string(store_info.update_status()) + "<br>";
   }
+
   if (store_info.has_last_apply_update_time_millis()) {
-    database_info_list->GetList().push_back(base::Value("Last update time"));
-    database_info_list->GetList().push_back(
-        UserReadableTimeFromMillisSinceEpoch(
-            store_info.last_apply_update_time_millis()));
+    store_info_string += "Last update time: " +
+                         UserReadableTimeFromMillisSinceEpoch(
+                             store_info.last_apply_update_time_millis())
+                             .GetString() +
+                         "<br>";
   }
+
   if (store_info.has_checks_attempted()) {
-    database_info_list->GetList().push_back(
-        base::Value("Number of database checks"));
-    database_info_list->GetList().push_back(
-        base::Value(static_cast<int>(store_info.checks_attempted())));
+    store_info_string += "Number of database checks: " +
+                         std::to_string(store_info.checks_attempted()) + "<br>";
   }
+
+  store_info_string += "</blockquote>";
+
+  database_info_list->GetList().push_back(base::Value(store_info_string));
 }
 
 void AddDatabaseInfo(const DatabaseManagerInfo::DatabaseInfo database_info,
                      base::ListValue* database_info_list) {
   if (database_info.has_database_size_bytes()) {
     database_info_list->GetList().push_back(
-        base::Value("Database size in bytes"));
+        base::Value("Database size (in bytes)"));
     database_info_list->GetList().push_back(
         base::Value(static_cast<double>(database_info.database_size_bytes())));
   }
@@ -251,6 +279,12 @@ void AddUpdateInfo(const DatabaseManagerInfo::UpdateInfo update_info,
     database_info_list->GetList().push_back(
         UserReadableTimeFromMillisSinceEpoch(
             update_info.last_update_time_millis()));
+  }
+  if (update_info.has_next_update_time_millis()) {
+    database_info_list->GetList().push_back(base::Value("Next update time"));
+    database_info_list->GetList().push_back(
+        UserReadableTimeFromMillisSinceEpoch(
+            update_info.next_update_time_millis()));
   }
 }
 
@@ -457,6 +491,11 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
       dict_archived_binary->SetInteger("length", archived_binary.length());
     if (archived_binary.is_encrypted())
       dict_archived_binary->SetBoolean("is_encrypted", true);
+    if (archived_binary.digests().has_sha256()) {
+      const std::string& sha256 = archived_binary.digests().sha256();
+      dict_archived_binary->SetString(
+          "digests.sha256", base::HexEncode(sha256.c_str(), sha256.size()));
+    }
     archived_binaries->Append(std::move(dict_archived_binary));
   }
   dict.SetList("archived_binary", std::move(archived_binaries));
@@ -467,6 +506,13 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
         SerializeReferrer(referrer_chain_entry));
   }
   dict.SetList("referrer_chain", std::move(referrer_chain));
+
+  dict.SetBoolean("request_ap_verdicts", cdr.request_ap_verdicts());
+
+  dict.SetInteger("archive_file_count", cdr.archive_file_count());
+  dict.SetInteger("archive_directory_count", cdr.archive_directory_count());
+
+  dict.SetBoolean("request_ap_verdicts", cdr.request_ap_verdicts());
 
   base::Value* request_tree = &dict;
   std::string request_serialized;
@@ -586,8 +632,7 @@ base::DictionaryValue SerializePGEvent(
                        base::Value(event_trigger));
   }
 
-  sync_pb::UserEventSpecifics::GaiaPasswordReuse reuse =
-      event.gaia_password_reuse_event();
+  GaiaPasswordReuse reuse = event.gaia_password_reuse_event();
   if (reuse.has_reuse_detected()) {
     event_dict.SetPath({"reuse_detected", "status", "enabled"},
                        base::Value(reuse.reuse_detected().status().enabled()));
@@ -955,10 +1000,23 @@ SafeBrowsingUI::~SafeBrowsingUI() {}
 
 SafeBrowsingUIHandler::SafeBrowsingUIHandler(content::BrowserContext* context)
     : browser_context_(context) {
-  WebUIInfoSingleton::GetInstance()->RegisterWebUIInstance(this);
 }
 
 SafeBrowsingUIHandler::~SafeBrowsingUIHandler() {
+  WebUIInfoSingleton::GetInstance()->UnregisterWebUIInstance(this);
+}
+
+void SafeBrowsingUIHandler::OnJavascriptAllowed() {
+  // We don't want to register the SafeBrowsingUIHandler with the
+  // WebUIInfoSingleton at construction, since this can lead to
+  // messages being sent to the renderer before it's ready. So register it here.
+  WebUIInfoSingleton::GetInstance()->RegisterWebUIInstance(this);
+}
+
+void SafeBrowsingUIHandler::OnJavascriptDisallowed() {
+  // In certain situations, Javascript can become disallowed before the
+  // destructor is called (e.g. tab refresh/renderer crash). In these situation,
+  // we want to stop receiving JS messages.
   WebUIInfoSingleton::GetInstance()->UnregisterWebUIInstance(this);
 }
 
@@ -1149,6 +1207,7 @@ void SafeBrowsingUIHandler::GetReferrerChain(const base::ListValue* args) {
   if (!provider) {
     AllowJavascript();
     ResolveJavascriptCallback(base::Value(callback_id), base::Value(""));
+    return;
   }
 
   ReferrerChain referrer_chain;
@@ -1301,6 +1360,7 @@ CrSBLogMessage::CrSBLogMessage() {}
 
 CrSBLogMessage::~CrSBLogMessage() {
   WebUIInfoSingleton::GetInstance()->LogMessage(stream_.str());
+  DLOG(WARNING) << stream_.str();
 }
 
 }  // namespace safe_browsing

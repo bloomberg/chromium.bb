@@ -43,7 +43,7 @@ CSSMatrixComponent* CSSMatrixComponent::FromCSSValue(
     const CSSFunctionValue& value) {
   WTF::Vector<double> entries;
   for (const auto& item : value)
-    entries.push_back(ToCSSPrimitiveValue(*item).GetDoubleValue());
+    entries.push_back(To<CSSPrimitiveValue>(*item).GetDoubleValue());
 
   return CSSMatrixComponent::Create(
       DOMMatrixReadOnly::CreateForSerialization(entries.data(), entries.size()),
@@ -51,8 +51,8 @@ CSSMatrixComponent* CSSMatrixComponent::FromCSSValue(
 }
 
 const CSSFunctionValue* CSSMatrixComponent::ToCSSValue() const {
-  CSSFunctionValue* result =
-      CSSFunctionValue::Create(is2D() ? CSSValueMatrix : CSSValueMatrix3d);
+  CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(
+      is2D() ? CSSValueID::kMatrix : CSSValueID::kMatrix3d);
 
   if (is2D()) {
     double values[6] = {matrix_->a(), matrix_->b(), matrix_->c(),

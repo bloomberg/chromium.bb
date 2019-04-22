@@ -7,7 +7,7 @@
  * file system.
  * @interface
  */
-function EntryLocation() {};
+function EntryLocation() {}
 
 /**
  * Volume information.

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
+
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -100,14 +102,17 @@ id<GREYMatcher> RequiredSelectorEditorFieldMatcher(int string_id) {
   [super setUp];
 
   _profile = autofill::test::GetFullProfile();
-  [self addAutofillProfile:_profile];
+  NSError* profileError = [self addAutofillProfile:_profile];
+  GREYAssertNil(profileError, profileError.localizedDescription);
 
   _creditCard1 = autofill::test::GetCreditCard();
   _creditCard1.set_billing_address_id(_profile.guid());
-  [self addCreditCard:_creditCard1];
+  NSError* card1Error = [self addCreditCard:_creditCard1];
+  GREYAssertNil(card1Error, card1Error.localizedDescription);
 
   _creditCard2 = autofill::test::GetCreditCard2();
-  [self addCreditCard:_creditCard2];
+  NSError* card2Error = [self addCreditCard:_creditCard2];
+  GREYAssertNil(card2Error, card2Error.localizedDescription);
 
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kPaymentRequestDemoPage)];
@@ -162,7 +167,15 @@ id<GREYMatcher> RequiredSelectorEditorFieldMatcher(int string_id) {
 
 // Tests accessibility on the Payment Request payment method page, add credit
 // card page and billing address selection page.
-- (void)testAccessibilityOnPaymentRequestPaymentMethodAndSubPages {
+// TODO(crbug.com/947194): Fails on iOS 12 devices.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testAccessibilityOnPaymentRequestPaymentMethodAndSubPages \
+  DISABLED_testAccessibilityOnPaymentRequestPaymentMethodAndSubPages
+#else
+#define MAYBE_testAccessibilityOnPaymentRequestPaymentMethodAndSubPages \
+  testAccessibilityOnPaymentRequestPaymentMethodAndSubPages
+#endif
+- (void)MAYBE_testAccessibilityOnPaymentRequestPaymentMethodAndSubPages {
   [[[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(&_creditCard1)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   kScrollDisplacement)
@@ -186,7 +199,15 @@ id<GREYMatcher> RequiredSelectorEditorFieldMatcher(int string_id) {
 
 // Tests accessibility on the Payment Request contact info page, and add contact
 // info page.
-- (void)testAccessibilityOnPaymentRequestContactInfoAndSubPages {
+// TODO(crbug.com/947194): Fails on iOS 12 devices.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testAccessibilityOnPaymentRequestContactInfoAndSubPages \
+  DISABLED_testAccessibilityOnPaymentRequestContactInfoAndSubPages
+#else
+#define MAYBE_testAccessibilityOnPaymentRequestContactInfoAndSubPages \
+  testAccessibilityOnPaymentRequestContactInfoAndSubPages
+#endif
+- (void)MAYBE_testAccessibilityOnPaymentRequestContactInfoAndSubPages {
   [[[EarlGrey selectElementWithMatcher:ContactInfoCellMatcher(&_profile)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
                                                   kScrollDisplacement)

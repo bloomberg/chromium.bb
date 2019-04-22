@@ -21,11 +21,11 @@ include_rules = [
   "+components/viz/common",
   "+components/viz/host",
   "+components/wallpaper",
+  "+dbus",
   "+extensions/common/constants.h",
   "+gpu/config",
   "+media",
   "+mojo/public",
-  "+services/catalog/public",
   "+services/content/public",
   "+services/media_session/public",
   "+services/preferences/public",
@@ -48,7 +48,7 @@ include_rules = [
   "-ash/components",
 
   # Ash can talk to public interfaces for mini-apps.
-  "+ash/components/quick_launch/public",
+  "+ash/components/shortcut_viewer/public",
   "+ash/components/tap_visualizer/public",
 
   # Ash sits above content. Exceptions live in //ash/content.
@@ -57,34 +57,30 @@ include_rules = [
   # Only allow Chrome OS services and D-Bus clients accessible to the mustash
   # ash process.
   "-chromeos",
-  "+chromeos/accelerometer",
   "+chromeos/audio",
-  "+chromeos/chromeos_features.h",
-  "+chromeos/chromeos_switches.h",
-  "+chromeos/chromeos_paths.h",
-  "+chromeos/components/proximity_auth/logging/logging.h",
-  "+chromeos/dbus/dbus_thread_manager.h",
-  "+chromeos/dbus/fake_power_manager_client.h",
-  "+chromeos/dbus/fake_session_manager_client.h",
+  "+chromeos/components/multidevice/logging/logging.h",
+  "+chromeos/constants",
+  # TODO(https://crbug.com/940810): Eliminate this.
+  "+chromeos/dbus/audio",
+  "+chromeos/dbus/hammerd",
+  # TODO(https://crbug.com/644348): Eliminate this.
+  "+chromeos/dbus/power",
   "+chromeos/dbus/power_manager",
-  "+chromeos/dbus/power_manager_client.h",
-  "+chromeos/dbus/power_policy_controller.h",
-  "+chromeos/dbus/services/cros_dbus_service.h",
-  "+chromeos/dbus/session_manager_client.h",
-  "+chromeos/dbus/shill_device_client.h",
-  "+chromeos/dbus/system_clock_client.h",
-  "+chromeos/login",
-  # LoginState is deprecated and is not instantiated in mash.
-  "-chromeos/login/login_state.h",
-  # TODO(jamescook): Eliminate this. http://crbug.com/644355
+  # TODO(https://crbug.com/644355): Eliminate this.
+  "+chromeos/dbus/shill",
+  "+chromeos/dbus/system_clock",
+  # TODO(https://crbug.com/644355): Eliminate this.
   "+chromeos/network",
   "+chromeos/services/assistant/public" ,
   "+chromeos/services/assistant/test_support",
   "+chromeos/services/multidevice_setup/public",
-  # TODO(jamescook): Eliminate this. http://crbug.com/644361
+  # TODO(https://crbug.com/644361): Eliminate this.
   "+chromeos/settings/timezone_settings.h",
   "+chromeos/strings",
   "+chromeos/system",
+
+  # ui/base/idle depends on SessionManagerClient so disallow it.
+  "-ui/base/idle"
 
   # InputMethodManager lives in the browser process. Use ImeController.
   "-ui/base/ime/chromeos/input_method_manager.h"
@@ -109,9 +105,6 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "app_launch_unittest.cc": [
-    "+ash/components/quick_launch/public",
-  ],
   "ash_service\.*": [
     "+chromeos/cryptohome",
   ],

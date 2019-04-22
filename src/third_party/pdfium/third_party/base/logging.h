@@ -38,29 +38,6 @@
 #define TRAP_SEQUENCE() __builtin_trap()
 #endif  // ARCH_CPU_*
 
-// CHECK() and the trap sequence can be invoked from a constexpr function.
-// This could make compilation fail on GCC, as it forbids directly using inline
-// asm inside a constexpr function. However, it allows calling a lambda
-// expression including the same asm.
-// The side effect is that the top of the stacktrace will not point to the
-// calling function, but to this anonymous lambda. This is still useful as the
-// full name of the lambda will typically include the name of the function that
-// calls CHECK() and the debugger will still break at the right line of code.
-#if !defined(__clang__)
-#define WRAPPED_TRAP_SEQUENCE() \
-  do {                          \
-    [] { TRAP_SEQUENCE(); }();  \
-  } while (false)
-#else
-#define WRAPPED_TRAP_SEQUENCE() TRAP_SEQUENCE()
-#endif
-
-#define IMMEDIATE_CRASH()    \
-  ({                         \
-    WRAPPED_TRAP_SEQUENCE(); \
-    __builtin_unreachable(); \
-  })
-
 #elif defined(COMPILER_MSVC)
 
 // Clang is cleverer about coalescing int3s, so we need to add a unique-ish
@@ -75,33 +52,72 @@
 // __COUNTER__, so eventually it will emit the dword form of push.
 // TODO(scottmg): Reinvestigate a short sequence that will work on both
 // compilers once clang supports more intrinsics. See https://crbug.com/693713.
-#if defined(__clang__)
-#define IMMEDIATE_CRASH()                           \
-  ({                                                \
-    {__asm int 3 __asm ud2 __asm push __COUNTER__}; \
-    __builtin_unreachable();                        \
-  })
+#if !defined(__clang__)
+#define TRAP_SEQUENCE() __debugbreak()
+#elif defined(ARCH_CPU_ARM64)
+#define TRAP_SEQUENCE() \
+  __asm volatile("brk #0\n hlt %0\n" ::"i"(__COUNTER__ % 65536));
 #else
-#define IMMEDIATE_CRASH() __debugbreak()
+#define TRAP_SEQUENCE() ({ {__asm int 3 __asm ud2 __asm push __COUNTER__}; })
 #endif  // __clang__
 
 #else
 #error Port
+#endif  // COMPILER_GCC
+
+// CHECK() and the trap sequence can be invoked from a constexpr function.
+// This could make compilation fail on GCC, as it forbids directly using inline
+// asm inside a constexpr function. However, it allows calling a lambda
+// expression including the same asm.
+// The side effect is that the top of the stacktrace will not point to the
+// calling function, but to this anonymous lambda. This is still useful as the
+// full name of the lambda will typically include the name of the function that
+// calls CHECK() and the debugger will still break at the right line of code.
+#if !defined(COMPILER_GCC)
+#define WRAPPED_TRAP_SEQUENCE() TRAP_SEQUENCE()
+#else
+#define WRAPPED_TRAP_SEQUENCE() \
+  do {                          \
+    [] { TRAP_SEQUENCE(); }();  \
+  } while (false)
 #endif
 
-#define CHECK(condition)        \
-  if (UNLIKELY(!(condition))) { \
-    IMMEDIATE_CRASH();          \
-  }
+#if defined(__clang__) || defined(COMPILER_GCC)
+#define IMMEDIATE_CRASH()    \
+  ({                         \
+    WRAPPED_TRAP_SEQUENCE(); \
+    __builtin_unreachable(); \
+  })
+#else
+// This is supporting non-chromium user of logging.h to build with MSVC, like
+// pdfium. On MSVC there is no __builtin_unreachable().
+#define IMMEDIATE_CRASH() WRAPPED_TRAP_SEQUENCE()
+#endif
 
-// TODO(palmer): These are quick hacks to import PartitionAlloc with minimum
-// hassle. Look into pulling in the real DCHECK definition. It might be more
-// than we need, or have more dependencies than we want. In the meantime, this
-// is safe, at the cost of some performance.
+#define CHECK(condition)          \
+  do {                            \
+    if (UNLIKELY(!(condition))) { \
+      IMMEDIATE_CRASH();          \
+    }                             \
+  } while (0)
+
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+#define DCHECK_IS_ON() 0
+#else
+#define DCHECK_IS_ON() 1
+#endif
+
+// Debug mode: Use assert() for better diagnostics
+// Release mode, DCHECK_ALWAYS_ON: Use CHECK() since assert() is a no-op.
+// Release mode, no DCHECK_ALWAYS_ON: Use assert(), which is a no-op.
+#if defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
 #define DCHECK CHECK
-#define DCHECK_EQ(x, y) CHECK((x) == (y))
-#define DCHECK_IS_ON() true
+#else
+#define DCHECK assert
+#endif
 
-#define NOTREACHED() assert(false)
+#define CHECK_EQ(x, y) CHECK((x) == (y))
+#define DCHECK_EQ(x, y) DCHECK((x) == (y))
+#define NOTREACHED() DCHECK(false)
 
 #endif  // THIRD_PARTY_BASE_LOGGING_H_

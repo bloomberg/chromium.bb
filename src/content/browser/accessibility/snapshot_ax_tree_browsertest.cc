@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -24,9 +25,7 @@ class AXTreeSnapshotWaiter {
  public:
   AXTreeSnapshotWaiter() : loop_runner_(new MessageLoopRunner()) {}
 
-  void Wait() {
-    loop_runner_->Run();
-  }
+  void Wait() { loop_runner_->Run(); }
 
   const ui::AXTreeUpdate& snapshot() const { return snapshot_; }
 
@@ -107,8 +106,9 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
   FrameTreeNode* root_frame = web_contents->GetFrameTree()->root();
 
   NavigateFrameToURL(root_frame->child_at(0), GURL("data:text/plain,Alpha"));
-  NavigateFrameToURL(root_frame->child_at(1), embedded_test_server()->GetURL(
-      "/accessibility/snapshot/inner.html"));
+  NavigateFrameToURL(
+      root_frame->child_at(1),
+      embedded_test_server()->GetURL("/accessibility/snapshot/inner.html"));
 
   AXTreeSnapshotWaiter waiter;
   web_contents->RequestAXTreeSnapshot(

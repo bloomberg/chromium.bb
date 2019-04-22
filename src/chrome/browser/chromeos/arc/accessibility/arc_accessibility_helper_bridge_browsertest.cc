@@ -10,10 +10,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_features.h"
-#include "components/arc/arc_bridge_service.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_accessibility_helper_instance.h"
 #include "components/exo/shell_surface.h"
@@ -102,11 +102,8 @@ IN_PROC_BROWSER_TEST_F(ArcAccessibilityHelperBridgeBrowserTest,
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
 
   // Confirm that filter type is updated with preference change.
-  EXPECT_EQ(
-      base::FeatureList::IsEnabled(chromeos::features::kChromeVoxArcSupport)
-          ? mojom::AccessibilityFilterType::ALL
-          : mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME,
-      fake_accessibility_helper_instance_->filter_type());
+  EXPECT_EQ(mojom::AccessibilityFilterType::ALL,
+            fake_accessibility_helper_instance_->filter_type());
 
   // Touch exploration pass through of test_window_1 (current active window)
   // would become true as no accessibility tree is available for it. Note that

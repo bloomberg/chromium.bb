@@ -21,8 +21,8 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -131,9 +131,9 @@ TEST_F(GLHelperBenchmark, ScaleBenchmark) {
   int input_sizes[] = {3200, 2040, 2560, 1476,  // Pixel tab size
                        1920, 1080, 1280, 720,  800, 480, 256, 144};
 
-  for (size_t q = 0; q < arraysize(kQualities); q++) {
-    for (size_t outsize = 0; outsize < arraysize(output_sizes); outsize += 2) {
-      for (size_t insize = 0; insize < arraysize(input_sizes); insize += 2) {
+  for (size_t q = 0; q < base::size(kQualities); q++) {
+    for (size_t outsize = 0; outsize < base::size(output_sizes); outsize += 2) {
+      for (size_t insize = 0; insize < base::size(input_sizes); insize += 2) {
         uint32_t src_texture;
         gl_->GenTextures(1, &src_texture);
         uint32_t dst_texture;

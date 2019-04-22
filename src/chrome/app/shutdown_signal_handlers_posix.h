@@ -16,7 +16,7 @@ class SingleThreadTaskRunner;
 // signals like SIGTERM, SIGINT and SIGTERM. |shutdown_callback| is invoked on
 // |task_runner| which is usually the main thread's task runner.
 void InstallShutdownSignalHandlers(
-    const base::Closure& shutdown_callback,
+    base::OnceCallback<void(int)> shutdown_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
 #endif  // CHROME_APP_SHUTDOWN_SIGNAL_HANDLERS_POSIX_H_

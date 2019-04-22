@@ -68,7 +68,7 @@ TEST_P(TextureRectangleTest, TexImage2D)
 
     // Defining a texture of the max size is allowed
     {
-        ScopedIgnorePlatformMessages ignore(this);
+        ScopedIgnorePlatformMessages ignore;
 
         glTexImage2D(GL_TEXTURE_RECTANGLE_ANGLE, 0, GL_RGBA, maxSize, maxSize, 0, GL_RGBA,
                      GL_UNSIGNED_BYTE, nullptr);
@@ -154,7 +154,7 @@ TEST_P(TextureRectangleTest, TexStorage2D)
 
     // Defining a texture of the max size is allowed but still allow for OOM
     {
-        ScopedIgnorePlatformMessages ignore(this);
+        ScopedIgnorePlatformMessages ignore;
 
         GLTexture tex;
         glBindTexture(GL_TEXTURE_RECTANGLE_ANGLE, tex);
@@ -289,7 +289,7 @@ TEST_P(TextureRectangleTest, SamplingFromRectangleESSL1)
     glTexImage2D(GL_TEXTURE_RECTANGLE_ANGLE, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                  &GLColor::green);
 
-    const std::string fs =
+    constexpr char kFS[] =
         "#extension GL_ARB_texture_rectangle : require\n"
         "precision mediump float;\n"
         "uniform sampler2DRect tex;\n"
@@ -298,7 +298,7 @@ TEST_P(TextureRectangleTest, SamplingFromRectangleESSL1)
         "    gl_FragColor = texture2DRect(tex, vec2(0, 0));\n"
         "}\n";
 
-    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), fs);
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), kFS);
     glUseProgram(program);
 
     GLint location = glGetUniformLocation(program, "tex");
@@ -322,7 +322,7 @@ TEST_P(TextureRectangleTestES3, SamplingFromRectangleESSL3)
     glTexImage2D(GL_TEXTURE_RECTANGLE_ANGLE, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                  &GLColor::green);
 
-    const std::string fs =
+    constexpr char kFS[] =
         "#version 300 es\n"
         "#extension GL_ARB_texture_rectangle : require\n"
         "precision mediump float;\n"
@@ -333,7 +333,7 @@ TEST_P(TextureRectangleTestES3, SamplingFromRectangleESSL3)
         "    fragColor = texture(tex, vec2(0, 0));\n"
         "}\n";
 
-    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), fs);
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
     glUseProgram(program);
 
     GLint location = glGetUniformLocation(program, "tex");

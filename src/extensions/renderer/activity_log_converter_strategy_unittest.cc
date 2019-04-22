@@ -116,95 +116,139 @@ TEST_F(ActivityLogConverterStrategyTest, ConversionTest) {
 
   v8::MicrotasksScope microtasks(
       isolate_, v8::MicrotasksScope::kDoNotRunMicrotasks);
+  v8::Local<v8::Context> context = context_.Get(isolate_);
   v8::Local<v8::Script> script(
       v8::Script::Compile(
-          context_.Get(isolate_),
-          v8::String::NewFromUtf8(isolate_, source,
-                                  v8::NewStringType::kInternalized)
-              .ToLocalChecked())
+          context, v8::String::NewFromUtf8(isolate_, source,
+                                           v8::NewStringType::kInternalized)
+                       .ToLocalChecked())
           .ToLocalChecked());
   v8::Local<v8::Object> v8_object =
-      script->Run(context_.Get(isolate_)).ToLocalChecked().As<v8::Object>();
+      script->Run(context).ToLocalChecked().As<v8::Object>();
 
   EXPECT_TRUE(VerifyString(v8_object, "[Object]"));
   EXPECT_TRUE(VerifyNull(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "null",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked())));
+      v8_object
+          ->Get(context, v8::String::NewFromUtf8(
+                             isolate_, "null", v8::NewStringType::kInternalized)
+                             .ToLocalChecked())
+          .ToLocalChecked()));
   EXPECT_TRUE(VerifyBoolean(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "true",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context, v8::String::NewFromUtf8(
+                             isolate_, "true", v8::NewStringType::kInternalized)
+                             .ToLocalChecked())
+          .ToLocalChecked(),
       true));
   EXPECT_TRUE(VerifyBoolean(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "false",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate_, "false",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked(),
       false));
   EXPECT_TRUE(VerifyInteger(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "positive_int",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate_, "positive_int",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked(),
       42));
   EXPECT_TRUE(VerifyInteger(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "negative_int",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate_, "negative_int",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked(),
       -42));
   EXPECT_TRUE(VerifyInteger(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "zero",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context, v8::String::NewFromUtf8(
+                             isolate_, "zero", v8::NewStringType::kInternalized)
+                             .ToLocalChecked())
+          .ToLocalChecked(),
       0));
   EXPECT_TRUE(VerifyDouble(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "double",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate_, "double",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked(),
       88.8));
   EXPECT_TRUE(VerifyDouble(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "big_integral_double",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate_, "big_integral_double",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked(),
       9007199254740992.0));
   EXPECT_TRUE(VerifyString(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "string",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate_, "string",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked(),
       "foobar"));
   EXPECT_TRUE(VerifyString(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "empty_string",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate_, "empty_string",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked(),
       ""));
   EXPECT_TRUE(VerifyString(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "dictionary",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate_, "dictionary",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked(),
       "[Object]"));
   EXPECT_TRUE(VerifyString(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "empty_dictionary",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate_, "empty_dictionary",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked(),
       "[Object]"));
   EXPECT_TRUE(VerifyString(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "list",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context, v8::String::NewFromUtf8(
+                             isolate_, "list", v8::NewStringType::kInternalized)
+                             .ToLocalChecked())
+          .ToLocalChecked(),
       "[Array]"));
   EXPECT_TRUE(VerifyString(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "empty_list",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate_, "empty_list",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked(),
       "[Array]"));
   EXPECT_TRUE(VerifyString(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "function",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate_, "function",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked(),
       "[Function]"));
   EXPECT_TRUE(VerifyString(
-      v8_object->Get(v8::String::NewFromUtf8(isolate_, "named_function",
-                                             v8::NewStringType::kInternalized)
-                         .ToLocalChecked()),
+      v8_object
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate_, "named_function",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked(),
       "[Function foo()]"));
 }
 

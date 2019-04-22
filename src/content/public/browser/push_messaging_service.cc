@@ -4,6 +4,7 @@
 
 #include "content/public/browser/push_messaging_service.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/task/post_task.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"

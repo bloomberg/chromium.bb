@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_manager.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/task_runner_util.h"
@@ -35,7 +36,7 @@ const char kErrorMediaPipelineFailure[] =
 class WiFiDisplayAudioSink {
  public:
   WiFiDisplayAudioSink(const blink::WebMediaStreamTrack& track,
-                       content::MediaStreamAudioSink* delegate)
+                       blink::WebMediaStreamAudioSink* delegate)
       : track_(track), delegate_(delegate), sink_added_(false) {}
 
   ~WiFiDisplayAudioSink() { Stop(); }
@@ -55,7 +56,7 @@ class WiFiDisplayAudioSink {
 
  private:
   blink::WebMediaStreamTrack track_;
-  content::MediaStreamAudioSink* delegate_;
+  blink::WebMediaStreamAudioSink* delegate_;
   bool sink_added_;
 };
 
@@ -432,9 +433,9 @@ wds::AudioCodec WiFiDisplayMediaManager::GetOptimalAudioFormat() const {
 
 void WiFiDisplayMediaManager::SendIDRPicture() {
   DCHECK(player_);
-  io_task_runner_->PostTask(FROM_HERE,
-      base::Bind(&WiFiDisplayMediaPipeline::RequestIDRPicture,
-                 base::Unretained(player_)));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&WiFiDisplayMediaPipeline::RequestIDRPicture,
+                                base::Unretained(player_)));
 }
 
 std::string WiFiDisplayMediaManager::GetSessionId() const {
@@ -453,10 +454,10 @@ void WiFiDisplayMediaManager::OnPlayerCreated(
      &WiFiDisplayMediaManager::OnMediaPipelineInitialized,
      weak_factory_.GetWeakPtr());
 
-  io_task_runner_->PostTask(FROM_HERE,
-      base::Bind(&WiFiDisplayMediaPipeline::Initialize,
-                 base::Unretained(player_),
-                 media::BindToCurrentLoop(completion_callback)));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&WiFiDisplayMediaPipeline::Initialize,
+                                base::Unretained(player_),
+                                media::BindToCurrentLoop(completion_callback)));
 }
 
 void WiFiDisplayMediaManager::OnMediaPipelineInitialized(bool success) {

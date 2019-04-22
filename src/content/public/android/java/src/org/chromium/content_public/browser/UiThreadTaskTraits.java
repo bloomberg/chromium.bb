@@ -5,6 +5,7 @@
 package org.chromium.content_public.browser;
 
 import org.chromium.base.task.TaskTraits;
+import org.chromium.content.browser.UiThreadTaskTraitsImpl;
 
 /**
  * Traits for tasks that need to run on the Browser UI thread. Keep in sync with
@@ -13,31 +14,13 @@ import org.chromium.base.task.TaskTraits;
  * NB if you wish to post to the thread pool then use {@link TaskTraits} instead of {@link
  * UiThreadTaskTraits}.
  */
-public class UiThreadTaskTraits extends TaskTraits {
-    // Corresponds to content::BrowserTaskTraitsExtension.
-    static final byte EXTENSION_ID = 1;
+public class UiThreadTaskTraits {
+    private UiThreadTaskTraits() {}
 
-    private static final byte UI_THREAD_ID = 0; // Corresponds to content::BrowserThread::ID.
-
-    // Keep in sync with content::BrowserTaskTraitsExtension::Serialize.
-    private static final byte THREAD_INDEX = 0;
-    private static final byte NESTING_INDEX = 1;
-
-    private static final byte[] sDefaultExtensionData = getDefaultExtesionData();
-
-    public UiThreadTaskTraits() {
-        setExtensionId(EXTENSION_ID);
-        setExtensionData(sDefaultExtensionData);
-    }
-
-    private static byte[] getDefaultExtesionData() {
-        byte extensionData[] = new byte[TaskTraits.EXTENSION_STORAGE_SIZE];
-
-        // Note we don't specify the UI thread directly here because it's ID 0 and the array is
-        // initialized to zero.
-
-        // TODO(crbug.com/876272) Remove this if possible.
-        extensionData[NESTING_INDEX] = 1; // Allow the task to run in a nested RunLoop.
-        return extensionData;
-    }
+    // These are convenience constants for UI thread tasks at different priority levels.
+    public static final TaskTraits DEFAULT = UiThreadTaskTraitsImpl.DEFAULT;
+    public static final TaskTraits BEST_EFFORT = UiThreadTaskTraitsImpl.BEST_EFFORT;
+    public static final TaskTraits USER_VISIBLE = UiThreadTaskTraitsImpl.USER_VISIBLE;
+    public static final TaskTraits USER_BLOCKING = UiThreadTaskTraitsImpl.USER_BLOCKING;
+    public static final TaskTraits BOOTSTRAP = UiThreadTaskTraitsImpl.BOOTSTRAP;
 }

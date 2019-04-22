@@ -19,7 +19,8 @@ namespace blink {
 AbortPaymentEvent* AbortPaymentEvent::Create(
     const AtomicString& type,
     const ExtendableEventInit* initializer) {
-  return new AbortPaymentEvent(type, initializer, nullptr, nullptr);
+  return MakeGarbageCollected<AbortPaymentEvent>(type, initializer, nullptr,
+                                                 nullptr);
 }
 
 AbortPaymentEvent* AbortPaymentEvent::Create(
@@ -27,8 +28,8 @@ AbortPaymentEvent* AbortPaymentEvent::Create(
     const ExtendableEventInit* initializer,
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer) {
-  return new AbortPaymentEvent(type, initializer, respond_with_observer,
-                               wait_until_observer);
+  return MakeGarbageCollected<AbortPaymentEvent>(
+      type, initializer, respond_with_observer, wait_until_observer);
 }
 
 AbortPaymentEvent::~AbortPaymentEvent() = default;

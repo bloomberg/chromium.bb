@@ -66,9 +66,6 @@
 
 - (void)revealToolbarForWebContents:(content::WebContents*)contents
                        inForeground:(BOOL)inForeground {
-  if (!base::FeatureList::IsEnabled(features::kFullscreenToolbarReveal))
-    return;
-
   animationController_->AnimateToolbarForTabstripChanges(contents,
                                                          inForeground);
 }

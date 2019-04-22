@@ -54,7 +54,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -156,39 +155,39 @@ void WorkerThread::Start(
 void WorkerThread::EvaluateClassicScript(
     const KURL& script_url,
     const String& source_code,
-    std::unique_ptr<Vector<char>> cached_meta_data,
+    std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
-      *GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
+      *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
       CrossThreadBind(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
                       CrossThreadUnretained(this), script_url, source_code,
                       WTF::Passed(std::move(cached_meta_data)), stack_id));
 }
 
-void WorkerThread::ImportClassicScript(
+void WorkerThread::FetchAndRunClassicScript(
     const KURL& script_url,
-    FetchClientSettingsObjectSnapshot* outside_settings_object,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
-      *GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
-      CrossThreadBind(&WorkerThread::ImportClassicScriptOnWorkerThread,
+      *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
+      CrossThreadBind(&WorkerThread::FetchAndRunClassicScriptOnWorkerThread,
                       CrossThreadUnretained(this), script_url,
-                      WTF::Passed(outside_settings_object->CopyData()),
+                      WTF::Passed(outside_settings_object.CopyData()),
                       stack_id));
 }
 
-void WorkerThread::ImportModuleScript(
+void WorkerThread::FetchAndRunModuleScript(
     const KURL& script_url,
-    FetchClientSettingsObjectSnapshot* outside_settings_object,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
-      *GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
-      CrossThreadBind(&WorkerThread::ImportModuleScriptOnWorkerThread,
+      *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
+      CrossThreadBind(&WorkerThread::FetchAndRunModuleScriptOnWorkerThread,
                       CrossThreadUnretained(this), script_url,
-                      WTF::Passed(outside_settings_object->CopyData()),
+                      WTF::Passed(outside_settings_object.CopyData()),
                       credentials_mode));
 }
 
@@ -435,6 +434,7 @@ void WorkerThread::InitializeOnWorkerThread(
     const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
     std::unique_ptr<WorkerDevToolsParams> devtools_params) {
   DCHECK(IsCurrentThread());
+  worker_reporting_proxy_.WillInitializeWorkerContext();
   {
     MutexLocker lock(mutex_);
     DCHECK_EQ(ThreadState::kNotStarted, thread_state_);
@@ -447,15 +447,19 @@ void WorkerThread::InitializeOnWorkerThread(
     }
     GetWorkerBackingThread().BackingThread().AddTaskObserver(this);
 
+    // TODO(crbug.com/866666): Ideally this URL should be the response URL of
+    // the worker top-level script, while currently can be the request URL
+    // for off-the-main-thread top-level script fetch cases.
     const KURL url_for_debugger = global_scope_creation_params->script_url;
 
-    console_message_storage_ = new ConsoleMessageStorage();
+    console_message_storage_ = MakeGarbageCollected<ConsoleMessageStorage>();
     global_scope_ =
         CreateWorkerGlobalScope(std::move(global_scope_creation_params));
     worker_reporting_proxy_.DidCreateWorkerGlobalScope(GlobalScope());
 
     worker_inspector_controller_ = WorkerInspectorController::Create(
-        this, inspector_task_runner_, std::move(devtools_params));
+        this, url_for_debugger, inspector_task_runner_,
+        std::move(devtools_params));
 
     // Since context initialization below may fail, we should notify debugger
     // about the new worker thread separately, so that it can resolve it by id
@@ -464,14 +468,17 @@ void WorkerThread::InitializeOnWorkerThread(
             WorkerThreadDebugger::From(GetIsolate()))
       debugger->WorkerThreadCreated(this);
 
-    // TODO(nhiroki): Handle a case where the script controller fails to
-    // initialize the context.
-    if (GlobalScope()->ScriptController()->InitializeContextIfNeeded(
-            String(), url_for_debugger)) {
+    if (GlobalScope()->ScriptController()->Initialize(url_for_debugger)) {
       worker_reporting_proxy_.DidInitializeWorkerContext();
       v8::HandleScope handle_scope(GetIsolate());
       Platform::Current()->WorkerContextCreated(
           GlobalScope()->ScriptController()->GetContext());
+    } else {
+      // TODO(nhiroki): Handle a case where the script controller fails to
+      // initialize the context. Specifically, we need to terminate this worker
+      // thread from the the parent thread. Currently we only record trace
+      // event.
+      worker_reporting_proxy_.DidFailToInitializeWorkerContext();
     }
 
     inspector_task_runner_->InitIsolate(GetIsolate());
@@ -497,27 +504,34 @@ void WorkerThread::InitializeOnWorkerThread(
 void WorkerThread::EvaluateClassicScriptOnWorkerThread(
     const KURL& script_url,
     String source_code,
-    std::unique_ptr<Vector<char>> cached_meta_data,
+    std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
-  To<WorkerGlobalScope>(GlobalScope())
-      ->EvaluateClassicScriptPausable(script_url, std::move(source_code),
+  // TODO(crbug.com/930618): Remove this check after we identified the cause
+  // of the crash.
+  {
+    MutexLocker lock(mutex_);
+    CHECK_EQ(ThreadState::kRunning, thread_state_);
+  }
+  WorkerGlobalScope* global_scope = To<WorkerGlobalScope>(GlobalScope());
+  CHECK(global_scope);
+  global_scope->EvaluateClassicScript(script_url, std::move(source_code),
                                       std::move(cached_meta_data), stack_id);
 }
 
-void WorkerThread::ImportClassicScriptOnWorkerThread(
+void WorkerThread::FetchAndRunClassicScriptOnWorkerThread(
     const KURL& script_url,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id) {
   To<WorkerGlobalScope>(GlobalScope())
-      ->ImportClassicScriptPausable(
+      ->FetchAndRunClassicScript(
           script_url,
-          MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+          *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),
           stack_id);
 }
 
-void WorkerThread::ImportModuleScriptOnWorkerThread(
+void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
     const KURL& script_url,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
@@ -526,9 +540,9 @@ void WorkerThread::ImportModuleScriptOnWorkerThread(
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like
   // Worklets.
   To<WorkerGlobalScope>(GlobalScope())
-      ->ImportModuleScriptPausable(
+      ->FetchAndRunModuleScript(
           script_url,
-          MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+          *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),
           credentials_mode);
 }

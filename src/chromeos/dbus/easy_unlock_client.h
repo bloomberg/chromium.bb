@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 
 namespace chromeos {
@@ -24,7 +24,7 @@ namespace chromeos {
 // where OpenSSL is already supported.
 // TODO(tbarzic): Get rid of this client when Chrome switches from NSS to
 // OpenSSL (http://crbug.com/338888).
-class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) EasyUnlockClient : public DBusClient {
  public:
   // Callback for |GenerateEcP256KeyPair|. Carries the generated keys.
   // On error, arguments are empty strings.

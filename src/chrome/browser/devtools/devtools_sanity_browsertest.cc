@@ -13,15 +13,16 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
+#include "chrome/browser/devtools/protocol/browser_handler.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -98,7 +100,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 using app_modal::JavaScriptAppModalDialog;
@@ -154,7 +156,7 @@ void DispatchOnTestSuiteSkipCheck(DevToolsWindow* window,
   const char* args_array[] = {method, args...};
   std::ostringstream script;
   script << "uiTests.dispatchOnTestSuite([";
-  for (size_t i = 0; i < arraysize(args_array); ++i)
+  for (size_t i = 0; i < base::size(args_array); ++i)
     script << (i ? "," : "") << '\"' << args_array[i] << '\"';
   script << "])";
   ASSERT_TRUE(
@@ -269,7 +271,7 @@ class SitePerProcessDevToolsSanityTest : public DevToolsSanityTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DevToolsSanityTest::SetUpCommandLine(command_line);
     content::IsolateAllSitesForTesting(command_line);
-  };
+  }
 
   void SetUpOnMainThread() override {
     DevToolsSanityTest::SetUpOnMainThread();
@@ -1654,6 +1656,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
   CloseDevToolsWindow();
 }
 
+// Tests that whitelisted unhandled shortcuts are forwarded from inspected page
+// into devtools frontend
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, testKeyEventUnhandled) {
+  OpenDevToolsWindow("about:blank", true);
+  RunTestFunction(window_, "testKeyEventUnhandled");
+  CloseDevToolsWindow();
+}
+
 // Tests that settings are stored in profile correctly.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSettings) {
   OpenDevToolsWindow("about:blank", true);
@@ -2174,7 +2184,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestRawHeadersWithRedirectAndHSTS) {
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(
       net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
-  https_test_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_test_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_test_server.Start());
   GURL https_url = https_test_server.GetURL("localhost", "/devtools/image.png");
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
@@ -2257,6 +2267,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestOpenInNewTabFilter) {
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, LoadNetworkResourceForFrontend) {
+  base::FilePath root_dir;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_dir));
+  std::string file_url =
+      "file://" +
+      root_dir.AppendASCII("content/test/data/devtools/navigation.html")
+          .NormalizePathSeparatorsTo('/')
+          .AsUTF8Unsafe();
+
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -2265,12 +2283,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, LoadNetworkResourceForFrontend) {
                                embedded_test_server()->GetURL("/hello.html"));
   window_ =
       DevToolsWindowTesting::OpenDevToolsWindowSync(GetInspectedTab(), false);
-  RunTestMethod("testLoadResourceForFrontend", url.spec().c_str());
+  RunTestMethod("testLoadResourceForFrontend", url.spec().c_str(),
+                file_url.c_str());
   DevToolsWindowTesting::CloseDevToolsWindowSync(window_);
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, CreateBrowserContext) {
-  embedded_test_server()->ServeFilesFromSourceDirectory("chrome/test/data");
+// TODO(crbug.com/921608) Disabled for flakiness.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_CreateBrowserContext) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/devtools/empty.html"));
   window_ = DevToolsWindowTesting::OpenDiscoveryDevToolsWindowSync(
@@ -2315,6 +2334,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest, InspectElement) {
 
   DispatchOnTestSuite(window, "testInspectedElementIs", "INSPECTED-DIV");
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
+}
+
+IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, BrowserCloseWithBeforeUnload) {
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(
+      tab,
+      "window.addEventListener('beforeunload',"
+      "function(event) { event.returnValue = 'Foo'; });"));
+  content::PrepContentsForBeforeUnloadTest(tab);
+  content::WindowedNotificationObserver close_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser()));
+  BrowserHandler handler(nullptr, std::string());
+  handler.Close();
+  close_observer.Wait();
 }
 
 // Flaky on Mus. See https://crbug.com/819285.

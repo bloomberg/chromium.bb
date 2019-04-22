@@ -6,23 +6,22 @@
 
 #include "xfa/fxfa/parser/cxfa_button.h"
 
-#include "fxjs/xfa/cjx_button.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
 
 const CXFA_Node::PropertyData kButtonPropertyData[] = {
     {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kButtonAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Highlight, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Inverted},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kButtonName[] = L"button";
+     (void*)XFA_AttributeValue::Inverted},
+};
 
 }  // namespace
 
@@ -34,15 +33,14 @@ CXFA_Button::CXFA_Button(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Button,
                 kButtonPropertyData,
                 kButtonAttributeData,
-                kButtonName,
-                pdfium::MakeUnique<CJX_Button>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Button::~CXFA_Button() {}
+CXFA_Button::~CXFA_Button() = default;
 
 XFA_FFWidgetType CXFA_Button::GetDefaultFFWidgetType() const {
   return XFA_FFWidgetType::kButton;
 }
 
-XFA_AttributeEnum CXFA_Button::GetHighlight() {
+XFA_AttributeValue CXFA_Button::GetHighlight() {
   return JSObject()->GetEnum(XFA_Attribute::Highlight);
 }

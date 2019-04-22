@@ -1,7 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 </head>
 <body id="body">
 <div id="content">
@@ -14,17 +15,13 @@
 </div>
 <div id="console"></div>
 <script>
-    if (window.testRunner)
-    testRunner.dumpAsText();
-
-    description("This tests that when a link is inside a button, its visible text is still available for the button.");
-    if (window.accessibilityController) {
-          var button1 = accessibilityController.accessibleElementById("button1");
-          shouldBe("button1.name", "'foo1'");
-          var button2 = accessibilityController.accessibleElementById("button2");
-          shouldBe("button2.name", "'foo2'");
-          document.getElementById("content").style.visibility = 'hidden';
-    }
+test((t) => {
+    var button1 = accessibilityController.accessibleElementById("button1");
+    assert_equals(button1.name, 'foo1');
+    var button2 = accessibilityController.accessibleElementById("button2");
+    assert_equals(button2.name, 'foo2');
+    document.getElementById("content").style.visibility = 'hidden';
+}, "This tests that when a link is inside a button, its visible text is still available for the button.");
 </script>
 </body>
 </html>

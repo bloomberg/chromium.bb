@@ -9,6 +9,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -424,6 +426,20 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchFilteredActions) {
   CheckReadFilteredData(
       policy, extension->id(), Action::ACTION_API_CALL, "tabs.testMethod", "",
       "", -1,
+      base::BindOnce(
+          &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions1));
+
+  // Test for case insensitive matching for api_call.
+  CheckReadFilteredData(
+      policy, extension->id(), Action::ACTION_API_CALL, "tabs.testmethod", "",
+      "", -1,
+      base::BindOnce(
+          &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions1));
+
+  // Test for prefix matching for api_call.
+  CheckReadFilteredData(
+      policy, extension->id(), Action::ACTION_API_CALL, "tabs.testM", "", "",
+      -1,
       base::BindOnce(
           &FullStreamUIPolicyTest::RetrieveActions_FetchFilteredActions1));
 

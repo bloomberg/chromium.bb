@@ -13,8 +13,6 @@ presentation from the VR browser.
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webvr_boilerplate.js"></script>
     <script>
-      var t = async_test("rAFs continue to fire after presentation re-entry");
-
       function stepVerifyFirstPresent() {
         onPresentingAnimationFrameCallback = () => {
           onPresentingAnimationFrameCallback = null;
@@ -31,7 +29,7 @@ presentation from the VR browser.
 
       function stepVerifySecondPresent() {
         onPresentingAnimationFrameCallback = () => {
-          t.done();
+          done();
         };
       }
     </script>

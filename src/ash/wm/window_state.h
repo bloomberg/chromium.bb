@@ -26,7 +26,6 @@ class Rect;
 }
 
 namespace ash {
-class ImmersiveGestureDragHandler;
 class LockWindowState;
 class TabletModeWindowState;
 
@@ -74,6 +73,11 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Each subclass defines its own behavior and transition for each WMEvent.
   class State {
    public:
+    // Animation type of updating window bounds for entering current state.
+    // "IMMEDIATE" means update bounds directly without animation. "STEP_END"
+    // means update bounds at the end of the animation.
+    enum EnterAnimationType { DEFAULT, IMMEDIATE, STEP_END };
+
     State() {}
     virtual ~State() {}
 
@@ -98,7 +102,16 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     // Called when the window is being destroyed.
     virtual void OnWindowDestroying(WindowState* window_state) {}
 
+    EnterAnimationType enter_animation_type() const {
+      return enter_animation_type_;
+    }
+    void set_enter_animation_type(EnterAnimationType type) {
+      enter_animation_type_ = type;
+    }
+
    private:
+    EnterAnimationType enter_animation_type_ = DEFAULT;
+
     DISALLOW_COPY_AND_ASSIGN(State);
   };
 
@@ -279,13 +292,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool bounds_changed_by_user() const { return bounds_changed_by_user_; }
   void set_bounds_changed_by_user(bool bounds_changed_by_user);
 
-  // True if the window is ignored by the shelf layout manager for
-  // purposes of darkening the shelf.
-  bool ignored_by_shelf() const { return ignored_by_shelf_; }
-  void set_ignored_by_shelf(bool ignored_by_shelf) {
-    ignored_by_shelf_ = ignored_by_shelf;
-  }
-
   // True if the window should be offered a chance to consume special system
   // keys such as brightness, volume, etc. that are usually handled by the
   // shell.
@@ -417,9 +423,13 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
       const gfx::Rect& bounds,
       gfx::Tween::Type animation_type = gfx::Tween::EASE_OUT);
 
-  // Update PIP related state, such as next window animation type, upon
-  // state change.
-  void UpdatePipState(bool was_pip);
+  // Called before the state change and update PIP related state, such as next
+  // window animation type, upon state change.
+  void OnPrePipStateChange(mojom::WindowStateType old_window_state_type);
+
+  // Called after the state change and update PIP related state, such as next
+  // window animation type, upon state change.
+  void OnPostPipStateChange(mojom::WindowStateType old_window_state_type);
 
   // Update the PIP bounds if necessary. This may need to happen when the
   // display work area changes, or if system ui regions like the virtual
@@ -438,7 +448,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   std::unique_ptr<WindowStateDelegate> delegate_;
 
   bool bounds_changed_by_user_;
-  bool ignored_by_shelf_;
   bool can_consume_system_keys_;
   std::unique_ptr<DragDetails> drag_details_;
 
@@ -475,10 +484,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool ignore_property_change_;
 
   std::unique_ptr<State> current_state_;
-
-  // An object that assists with dragging immersive mode windows in tablet mode.
-  // Only non-null when immersive mode is active.
-  std::unique_ptr<ImmersiveGestureDragHandler> immersive_gesture_drag_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowState);
 };

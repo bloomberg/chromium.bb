@@ -12,6 +12,11 @@
 #include "src/objects-inl.h"
 #include "src/roots-inl.h"
 
+#ifdef DEBUG
+// For GetIsolateFromWritableHeapObject.
+#include "src/heap/heap-write-barrier-inl.h"
+#endif
+
 namespace v8 {
 namespace internal {
 
@@ -25,11 +30,11 @@ ASSERT_TRIVIALLY_COPYABLE(MaybeHandle<Object>);
 #ifdef DEBUG
 bool HandleBase::IsDereferenceAllowed(DereferenceCheckMode mode) const {
   DCHECK_NOT_NULL(location_);
-  Object* object = reinterpret_cast<Object*>(*location_);
+  Object object(*location_);
   if (object->IsSmi()) return true;
-  HeapObject* heap_object = HeapObject::cast(object);
+  HeapObject heap_object = HeapObject::cast(object);
   Isolate* isolate;
-  if (!Isolate::FromWritableHeapObject(heap_object, &isolate)) return true;
+  if (!GetIsolateFromWritableObject(heap_object, &isolate)) return true;
   RootIndex root_index;
   if (isolate->roots_table().IsRootHandleLocation(location_, &root_index) &&
       RootsTable::IsImmortalImmovable(root_index)) {
@@ -158,7 +163,7 @@ Address* CanonicalHandleScope::Lookup(Address object) {
       return isolate_->root_handle(root_index).location();
     }
   }
-  Address** entry = identity_map_->Get(reinterpret_cast<Object*>(object));
+  Address** entry = identity_map_->Get(Object(object));
   if (*entry == nullptr) {
     // Allocate new handle location.
     *entry = HandleScope::CreateHandle(isolate_, object);

@@ -235,7 +235,7 @@ void XSLStyleSheet::LoadChildSheet(const String& href) {
     return;
 
   XSLStyleSheet* style_sheet = MakeGarbageCollected<XSLStyleSheet>(
-      this, url_string, resource->GetResponse().Url());
+      this, url_string, resource->GetResponse().CurrentRequestUrl());
   children_.push_back(style_sheet);
   style_sheet->ParseString(resource->Sheet());
   CheckLoaded();

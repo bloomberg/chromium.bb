@@ -15,6 +15,7 @@
 #include "tests/DawnTest.h"
 
 #include "common/Assert.h"
+#include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/DawnHelpers.h"
 
 constexpr static unsigned int kRTSize = 64;
@@ -29,31 +30,28 @@ class DepthStencilStateTest : public DawnTest {
             renderTargetDescriptor.size.width = kRTSize;
             renderTargetDescriptor.size.height = kRTSize;
             renderTargetDescriptor.size.depth = 1;
-            renderTargetDescriptor.arrayLayer = 1;
+            renderTargetDescriptor.arrayLayerCount = 1;
+            renderTargetDescriptor.sampleCount = 1;
             renderTargetDescriptor.format = dawn::TextureFormat::R8G8B8A8Unorm;
-            renderTargetDescriptor.levelCount = 1;
+            renderTargetDescriptor.mipLevelCount = 1;
             renderTargetDescriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::TransferSrc;
             renderTarget = device.CreateTexture(&renderTargetDescriptor);
 
-            renderTargetView = renderTarget.CreateDefaultTextureView();
+            renderTargetView = renderTarget.CreateDefaultView();
 
             dawn::TextureDescriptor depthDescriptor;
             depthDescriptor.dimension = dawn::TextureDimension::e2D;
             depthDescriptor.size.width = kRTSize;
             depthDescriptor.size.height = kRTSize;
             depthDescriptor.size.depth = 1;
-            depthDescriptor.arrayLayer = 1;
+            depthDescriptor.arrayLayerCount = 1;
+            depthDescriptor.sampleCount = 1;
             depthDescriptor.format = dawn::TextureFormat::D32FloatS8Uint;
-            depthDescriptor.levelCount = 1;
+            depthDescriptor.mipLevelCount = 1;
             depthDescriptor.usage = dawn::TextureUsageBit::OutputAttachment;
             depthTexture = device.CreateTexture(&depthDescriptor);
 
-            depthTextureView = depthTexture.CreateDefaultTextureView();
-
-            renderpass = device.CreateRenderPassDescriptorBuilder()
-                .SetColorAttachment(0, renderTargetView, dawn::LoadOp::Clear)
-                .SetDepthStencilAttachment(depthTextureView, dawn::LoadOp::Clear, dawn::LoadOp::Clear)
-                .GetResult();
+            depthTextureView = depthTexture.CreateDefaultView();
 
             vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
                 #version 450
@@ -92,7 +90,7 @@ class DepthStencilStateTest : public DawnTest {
         }
 
         struct TestSpec {
-            const dawn::DepthStencilState& depthStencilState;
+            const dawn::DepthStencilStateDescriptor& depthStencilState;
             RGBA8 color;
             float depth;
             uint32_t stencil;
@@ -101,15 +99,27 @@ class DepthStencilStateTest : public DawnTest {
         // Check whether a depth comparison function works as expected
         // The less, equal, greater booleans denote wether the respective triangle should be visible based on the comparison function
         void CheckDepthCompareFunction(dawn::CompareFunction compareFunction, bool less, bool equal, bool greater) {
-            dawn::DepthStencilState baseState = device.CreateDepthStencilStateBuilder()
-                .SetDepthCompareFunction(dawn::CompareFunction::Always)
-                .SetDepthWriteEnabled(true)
-                .GetResult();
+            dawn::StencilStateFaceDescriptor stencilFace;
+            stencilFace.compare = dawn::CompareFunction::Always;
+            stencilFace.failOp = dawn::StencilOperation::Keep;
+            stencilFace.depthFailOp = dawn::StencilOperation::Keep;
+            stencilFace.passOp = dawn::StencilOperation::Keep;
 
-            dawn::DepthStencilState state = device.CreateDepthStencilStateBuilder()
-                .SetDepthCompareFunction(compareFunction)
-                .SetDepthWriteEnabled(true)
-                .GetResult();
+            dawn::DepthStencilStateDescriptor baseState;
+            baseState.depthWriteEnabled = true;
+            baseState.depthCompare = dawn::CompareFunction::Always;
+            baseState.stencilBack = stencilFace;
+            baseState.stencilFront = stencilFace;
+            baseState.stencilReadMask = 0xff;
+            baseState.stencilWriteMask = 0xff;
+
+            dawn::DepthStencilStateDescriptor state;
+            state.depthWriteEnabled = true;
+            state.depthCompare = compareFunction;
+            state.stencilBack = stencilFace;
+            state.stencilFront = stencilFace;
+            state.stencilReadMask = 0xff;
+            state.stencilWriteMask = 0xff;
 
             RGBA8 baseColor = RGBA8(255, 255, 255, 255);
             RGBA8 lessColor = RGBA8(255, 0, 0, 255);
@@ -119,7 +129,8 @@ class DepthStencilStateTest : public DawnTest {
             // Base triangle at depth 0.5, depth always, depth write enabled
             TestSpec base = { baseState, baseColor, 0.5f, 0u };
 
-            // Draw the base triangle, then a triangle in front of the base triangle with the given depth comparison function
+            // Draw the base triangle, then a triangle in stencilFront of the base triangle with the
+            // given depth comparison function
             DoTest({ base, { state, lessColor, 0.f, 0u } }, less ? lessColor : baseColor);
 
             // Draw the base triangle, then a triangle in at the same depth as the base triangle with the given depth comparison function
@@ -132,13 +143,31 @@ class DepthStencilStateTest : public DawnTest {
         // Check whether a stencil comparison function works as expected
         // The less, equal, greater booleans denote wether the respective triangle should be visible based on the comparison function
         void CheckStencilCompareFunction(dawn::CompareFunction compareFunction, bool less, bool equal, bool greater) {
-            dawn::DepthStencilState baseState = device.CreateDepthStencilStateBuilder()
-                .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Always, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, dawn::StencilOperation::Replace)
-                .GetResult();
+            dawn::StencilStateFaceDescriptor baseStencilFaceDescriptor;
+            baseStencilFaceDescriptor.compare = dawn::CompareFunction::Always;
+            baseStencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+            baseStencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+            baseStencilFaceDescriptor.passOp = dawn::StencilOperation::Replace;
+            dawn::DepthStencilStateDescriptor baseState;
+            baseState.depthWriteEnabled = false;
+            baseState.depthCompare = dawn::CompareFunction::Always;
+            baseState.stencilBack = baseStencilFaceDescriptor;
+            baseState.stencilFront = baseStencilFaceDescriptor;
+            baseState.stencilReadMask = 0xff;
+            baseState.stencilWriteMask = 0xff;
 
-            dawn::DepthStencilState state = device.CreateDepthStencilStateBuilder()
-                .SetStencilFunction(dawn::Face::Both, compareFunction, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep)
-                .GetResult();
+            dawn::StencilStateFaceDescriptor stencilFaceDescriptor;
+            stencilFaceDescriptor.compare = compareFunction;
+            stencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+            stencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+            stencilFaceDescriptor.passOp = dawn::StencilOperation::Keep;
+            dawn::DepthStencilStateDescriptor state;
+            state.depthWriteEnabled = false;
+            state.depthCompare = dawn::CompareFunction::Always;
+            state.stencilBack = stencilFaceDescriptor;
+            state.stencilFront = stencilFaceDescriptor;
+            state.stencilReadMask = 0xff;
+            state.stencilWriteMask = 0xff;
 
             RGBA8 baseColor = RGBA8(255, 255, 255, 255);
             RGBA8 lessColor = RGBA8(255, 0, 0, 255);
@@ -160,13 +189,31 @@ class DepthStencilStateTest : public DawnTest {
 
         // Given the provided `initialStencil` and `reference`, check that applying the `stencilOperation` produces the `expectedStencil`
         void CheckStencilOperation(dawn::StencilOperation stencilOperation, uint32_t initialStencil, uint32_t reference, uint32_t expectedStencil) {
-            dawn::DepthStencilState baseState = device.CreateDepthStencilStateBuilder()
-                .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Always, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, dawn::StencilOperation::Replace)
-                .GetResult();
+            dawn::StencilStateFaceDescriptor baseStencilFaceDescriptor;
+            baseStencilFaceDescriptor.compare = dawn::CompareFunction::Always;
+            baseStencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+            baseStencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+            baseStencilFaceDescriptor.passOp = dawn::StencilOperation::Replace;
+            dawn::DepthStencilStateDescriptor baseState;
+            baseState.depthWriteEnabled = false;
+            baseState.depthCompare = dawn::CompareFunction::Always;
+            baseState.stencilBack = baseStencilFaceDescriptor;
+            baseState.stencilFront = baseStencilFaceDescriptor;
+            baseState.stencilReadMask = 0xff;
+            baseState.stencilWriteMask = 0xff;
 
-            dawn::DepthStencilState state = device.CreateDepthStencilStateBuilder()
-                .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Always, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, stencilOperation)
-                .GetResult();
+            dawn::StencilStateFaceDescriptor stencilFaceDescriptor;
+            stencilFaceDescriptor.compare = dawn::CompareFunction::Always;
+            stencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+            stencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+            stencilFaceDescriptor.passOp = stencilOperation;
+            dawn::DepthStencilStateDescriptor state;
+            state.depthWriteEnabled = false;
+            state.depthCompare = dawn::CompareFunction::Always;
+            state.stencilBack = stencilFaceDescriptor;
+            state.stencilFront = stencilFaceDescriptor;
+            state.stencilReadMask = 0xff;
+            state.stencilWriteMask = 0xff;
 
             CheckStencil({
                 // Wipe the stencil buffer with the initialStencil value
@@ -179,9 +226,18 @@ class DepthStencilStateTest : public DawnTest {
 
         // Draw a list of test specs, and check if the stencil value is equal to the expected value
         void CheckStencil(std::vector<TestSpec> testParams, uint32_t expectedStencil) {
-            dawn::DepthStencilState state = device.CreateDepthStencilStateBuilder()
-                .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Equal, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep)
-                .GetResult();
+            dawn::StencilStateFaceDescriptor stencilFaceDescriptor;
+            stencilFaceDescriptor.compare = dawn::CompareFunction::Equal;
+            stencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+            stencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+            stencilFaceDescriptor.passOp = dawn::StencilOperation::Keep;
+            dawn::DepthStencilStateDescriptor state;
+            state.depthWriteEnabled = false;
+            state.depthCompare = dawn::CompareFunction::Always;
+            state.stencilBack = stencilFaceDescriptor;
+            state.stencilFront = stencilFaceDescriptor;
+            state.stencilReadMask = 0xff;
+            state.stencilWriteMask = 0xff;
 
             testParams.push_back({ state, RGBA8(0, 255, 0, 255), 0, expectedStencil });
             DoTest(testParams, RGBA8(0, 255, 0, 255));
@@ -190,14 +246,15 @@ class DepthStencilStateTest : public DawnTest {
         // Each test param represents a pair of triangles with a color, depth, stencil value, and depthStencil state, one frontfacing, one backfacing
         // Draw the triangles in order and check the expected colors for the frontfaces and backfaces
         void DoTest(const std::vector<TestSpec> &testParams, const RGBA8& expectedFront, const RGBA8& expectedBack) {
-            dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+            dawn::CommandEncoder encoder = device.CreateCommandEncoder();
 
             struct TriangleData {
                 float color[3];
                 float depth;
             };
 
-            dawn::RenderPassEncoder pass = builder.BeginRenderPass(renderpass);
+            utils::ComboRenderPassDescriptor renderPass({renderTargetView}, depthTextureView);
+            dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
 
             for (size_t i = 0; i < testParams.size(); ++i) {
                 const TestSpec& test = testParams[i];
@@ -209,34 +266,29 @@ class DepthStencilStateTest : public DawnTest {
                 // Upload a buffer for each triangle's depth and color data
                 dawn::Buffer buffer = utils::CreateBufferFromData(device, &data, sizeof(TriangleData), dawn::BufferUsageBit::Uniform);
 
-                dawn::BufferView view = buffer.CreateBufferViewBuilder()
-                    .SetExtent(0, sizeof(TriangleData))
-                    .GetResult();
-
                 // Create a bind group for the data
-                dawn::BindGroup bindGroup = device.CreateBindGroupBuilder()
-                    .SetLayout(bindGroupLayout)
-                    .SetBufferViews(0, 1, &view)
-                    .GetResult();
+                dawn::BindGroup bindGroup = utils::MakeBindGroup(device, bindGroupLayout, {{0, buffer, 0, sizeof(TriangleData)}});
 
                 // Create a pipeline for the triangles with the test spec's depth stencil state
-                dawn::RenderPipeline pipeline = device.CreateRenderPipelineBuilder()
-                    .SetColorAttachmentFormat(0, dawn::TextureFormat::R8G8B8A8Unorm)
-                    .SetDepthStencilAttachmentFormat(dawn::TextureFormat::D32FloatS8Uint)
-                    .SetLayout(pipelineLayout)
-                    .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-                    .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-                    .SetDepthStencilState(test.depthStencilState)
-                    .GetResult();
 
-                pass.SetRenderPipeline(pipeline);
+                utils::ComboRenderPipelineDescriptor descriptor(device);
+                descriptor.layout = pipelineLayout;
+                descriptor.cVertexStage.module = vsModule;
+                descriptor.cFragmentStage.module = fsModule;
+                descriptor.cDepthStencilState = test.depthStencilState;
+                descriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
+                descriptor.depthStencilState = &descriptor.cDepthStencilState;
+
+                dawn::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+
+                pass.SetPipeline(pipeline);
                 pass.SetStencilReference(test.stencil);  // Set the stencil reference
-                pass.SetBindGroup(0, bindGroup);         // Set the bind group which contains color and depth data
-                pass.DrawArrays(6, 1, 0, 0);
+                pass.SetBindGroup(0, bindGroup, 0, nullptr);         // Set the bind group which contains color and depth data
+                pass.Draw(6, 1, 0, 0);
             }
             pass.EndPass();
 
-            dawn::CommandBuffer commands = builder.GetResult();
+            dawn::CommandBuffer commands = encoder.Finish();
             queue.Submit(1, &commands);
 
             EXPECT_PIXEL_RGBA8_EQ(expectedFront, renderTarget, kRTSize / 4, kRTSize / 2) << "Front face check failed";
@@ -247,7 +299,6 @@ class DepthStencilStateTest : public DawnTest {
             DoTest(testParams, expected, expected);
         }
 
-        dawn::RenderPassDescriptor renderpass;
         dawn::Texture renderTarget;
         dawn::Texture depthTexture;
         dawn::TextureView renderTargetView;
@@ -260,8 +311,19 @@ class DepthStencilStateTest : public DawnTest {
 
 // Test compilation and usage of the fixture
 TEST_P(DepthStencilStateTest, Basic) {
-    dawn::DepthStencilState state = device.CreateDepthStencilStateBuilder()
-        .GetResult();
+    dawn::StencilStateFaceDescriptor stencilFace;
+    stencilFace.compare = dawn::CompareFunction::Always;
+    stencilFace.failOp = dawn::StencilOperation::Keep;
+    stencilFace.depthFailOp = dawn::StencilOperation::Keep;
+    stencilFace.passOp = dawn::StencilOperation::Keep;
+
+    dawn::DepthStencilStateDescriptor state;
+    state.depthWriteEnabled = false;
+    state.depthCompare = dawn::CompareFunction::Always;
+    state.stencilBack = stencilFace;
+    state.stencilFront = stencilFace;
+    state.stencilReadMask = 0xff;
+    state.stencilWriteMask = 0xff;
 
     DoTest({
         { state, RGBA8(0, 255, 0, 255), 0.5f, 0u },
@@ -270,8 +332,19 @@ TEST_P(DepthStencilStateTest, Basic) {
 
 // Test defaults: depth and stencil tests disabled
 TEST_P(DepthStencilStateTest, DepthStencilDisabled) {
-    dawn::DepthStencilState state = device.CreateDepthStencilStateBuilder()
-        .GetResult();
+    dawn::StencilStateFaceDescriptor stencilFace;
+    stencilFace.compare = dawn::CompareFunction::Always;
+    stencilFace.failOp = dawn::StencilOperation::Keep;
+    stencilFace.depthFailOp = dawn::StencilOperation::Keep;
+    stencilFace.passOp = dawn::StencilOperation::Keep;
+
+    dawn::DepthStencilStateDescriptor state;
+    state.depthWriteEnabled = false;
+    state.depthCompare = dawn::CompareFunction::Always;
+    state.stencilBack = stencilFace;
+    state.stencilFront = stencilFace;
+    state.stencilReadMask = 0xff;
+    state.stencilWriteMask = 0xff;
 
     TestSpec specs[3] = {
         { state, RGBA8(255, 0, 0, 255), 0.0f, 0u },
@@ -324,19 +397,35 @@ TEST_P(DepthStencilStateTest, DepthNotEqual) {
 
 // Test that disabling depth writes works and leaves the depth buffer unchanged
 TEST_P(DepthStencilStateTest, DepthWriteDisabled) {
-    dawn::DepthStencilState baseState = device.CreateDepthStencilStateBuilder()
-        .SetDepthCompareFunction(dawn::CompareFunction::Always)
-        .SetDepthWriteEnabled(true)
-        .GetResult();
+    dawn::StencilStateFaceDescriptor stencilFace;
+    stencilFace.compare = dawn::CompareFunction::Always;
+    stencilFace.failOp = dawn::StencilOperation::Keep;
+    stencilFace.depthFailOp = dawn::StencilOperation::Keep;
+    stencilFace.passOp = dawn::StencilOperation::Keep;
 
-    dawn::DepthStencilState noDepthWrite = device.CreateDepthStencilStateBuilder()
-        .SetDepthCompareFunction(dawn::CompareFunction::Always)
-        .SetDepthWriteEnabled(false)
-        .GetResult();
+    dawn::DepthStencilStateDescriptor baseState;
+    baseState.depthWriteEnabled = true;
+    baseState.depthCompare = dawn::CompareFunction::Always;
+    baseState.stencilBack = stencilFace;
+    baseState.stencilFront = stencilFace;
+    baseState.stencilReadMask = 0xff;
+    baseState.stencilWriteMask = 0xff;
 
-    dawn::DepthStencilState checkState = device.CreateDepthStencilStateBuilder()
-        .SetDepthCompareFunction(dawn::CompareFunction::Equal)
-        .GetResult();
+    dawn::DepthStencilStateDescriptor noDepthWrite;
+    noDepthWrite.depthWriteEnabled = false;
+    noDepthWrite.depthCompare = dawn::CompareFunction::Always;
+    noDepthWrite.stencilBack = stencilFace;
+    noDepthWrite.stencilFront = stencilFace;
+    noDepthWrite.stencilReadMask = 0xff;
+    noDepthWrite.stencilWriteMask = 0xff;
+
+    dawn::DepthStencilStateDescriptor checkState;
+    checkState.depthWriteEnabled = false;
+    checkState.depthCompare = dawn::CompareFunction::Equal;
+    checkState.stencilBack = stencilFace;
+    checkState.stencilFront = stencilFace;
+    checkState.stencilReadMask = 0xff;
+    checkState.stencilWriteMask = 0xff;
 
     DoTest({
         { baseState, RGBA8(255, 255, 255, 255), 1.f, 0u }, // Draw a base triangle with depth enabled
@@ -417,14 +506,31 @@ TEST_P(DepthStencilStateTest, StencilDecrementWrap) {
 
 // Check that the setting a stencil read mask works
 TEST_P(DepthStencilStateTest, StencilReadMask) {
-    dawn::DepthStencilState baseState = device.CreateDepthStencilStateBuilder()
-        .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Always, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, dawn::StencilOperation::Replace)
-        .GetResult();
+    dawn::StencilStateFaceDescriptor baseStencilFaceDescriptor;
+    baseStencilFaceDescriptor.compare = dawn::CompareFunction::Always;
+    baseStencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+    baseStencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+    baseStencilFaceDescriptor.passOp = dawn::StencilOperation::Replace;
+    dawn::DepthStencilStateDescriptor baseState;
+    baseState.depthWriteEnabled = false;
+    baseState.depthCompare = dawn::CompareFunction::Always;
+    baseState.stencilBack = baseStencilFaceDescriptor;
+    baseState.stencilFront = baseStencilFaceDescriptor;
+    baseState.stencilReadMask = 0xff;
+    baseState.stencilWriteMask = 0xff;
 
-    dawn::DepthStencilState state = device.CreateDepthStencilStateBuilder()
-        .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Equal, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep)
-        .SetStencilMask(0x2, 0xff)
-        .GetResult();
+    dawn::StencilStateFaceDescriptor stencilFaceDescriptor;
+    stencilFaceDescriptor.compare = dawn::CompareFunction::Equal;
+    stencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+    stencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+    stencilFaceDescriptor.passOp = dawn::StencilOperation::Keep;
+    dawn::DepthStencilStateDescriptor state;
+    state.depthWriteEnabled = false;
+    state.depthCompare = dawn::CompareFunction::Always;
+    state.stencilBack = stencilFaceDescriptor;
+    state.stencilFront = stencilFaceDescriptor;
+    state.stencilReadMask = 0x2;
+    state.stencilWriteMask = 0xff;
 
     RGBA8 baseColor = RGBA8(255, 255, 255, 255);
     RGBA8 red = RGBA8(255, 0, 0, 255);
@@ -437,14 +543,31 @@ TEST_P(DepthStencilStateTest, StencilReadMask) {
 
 // Check that setting a stencil write mask works
 TEST_P(DepthStencilStateTest, StencilWriteMask) {
-    dawn::DepthStencilState baseState = device.CreateDepthStencilStateBuilder()
-        .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Always, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, dawn::StencilOperation::Replace)
-        .SetStencilMask(0xff, 0x1)
-        .GetResult();
+    dawn::StencilStateFaceDescriptor baseStencilFaceDescriptor;
+    baseStencilFaceDescriptor.compare = dawn::CompareFunction::Always;
+    baseStencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+    baseStencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+    baseStencilFaceDescriptor.passOp = dawn::StencilOperation::Replace;
+    dawn::DepthStencilStateDescriptor baseState;
+    baseState.depthWriteEnabled = false;
+    baseState.depthCompare = dawn::CompareFunction::Always;
+    baseState.stencilBack = baseStencilFaceDescriptor;
+    baseState.stencilFront = baseStencilFaceDescriptor;
+    baseState.stencilReadMask = 0xff;
+    baseState.stencilWriteMask = 0x1;
 
-    dawn::DepthStencilState state = device.CreateDepthStencilStateBuilder()
-        .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Equal, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep)
-        .GetResult();
+    dawn::StencilStateFaceDescriptor stencilFaceDescriptor;
+    stencilFaceDescriptor.compare = dawn::CompareFunction::Equal;
+    stencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+    stencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+    stencilFaceDescriptor.passOp = dawn::StencilOperation::Keep;
+    dawn::DepthStencilStateDescriptor state;
+    state.depthWriteEnabled = false;
+    state.depthCompare = dawn::CompareFunction::Always;
+    state.stencilBack = stencilFaceDescriptor;
+    state.stencilFront = stencilFaceDescriptor;
+    state.stencilReadMask = 0xff;
+    state.stencilWriteMask = 0xff;
 
     RGBA8 baseColor = RGBA8(255, 255, 255, 255);
     RGBA8 green = RGBA8(0, 255, 0, 255);
@@ -456,13 +579,31 @@ TEST_P(DepthStencilStateTest, StencilWriteMask) {
 
 // Test that the stencil operation is executed on stencil fail
 TEST_P(DepthStencilStateTest, StencilFail) {
-    dawn::DepthStencilState baseState = device.CreateDepthStencilStateBuilder()
-        .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Always, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, dawn::StencilOperation::Replace)
-        .GetResult();
+    dawn::StencilStateFaceDescriptor baseStencilFaceDescriptor;
+    baseStencilFaceDescriptor.compare = dawn::CompareFunction::Always;
+    baseStencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+    baseStencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+    baseStencilFaceDescriptor.passOp = dawn::StencilOperation::Replace;
+    dawn::DepthStencilStateDescriptor baseState;
+    baseState.depthWriteEnabled = false;
+    baseState.depthCompare = dawn::CompareFunction::Always;
+    baseState.stencilBack = baseStencilFaceDescriptor;
+    baseState.stencilFront = baseStencilFaceDescriptor;
+    baseState.stencilReadMask = 0xff;
+    baseState.stencilWriteMask = 0xff;
 
-    dawn::DepthStencilState state = device.CreateDepthStencilStateBuilder()
-        .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Less, dawn::StencilOperation::Replace, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep)
-        .GetResult();
+    dawn::StencilStateFaceDescriptor stencilFaceDescriptor;
+    stencilFaceDescriptor.compare = dawn::CompareFunction::Less;
+    stencilFaceDescriptor.failOp = dawn::StencilOperation::Replace;
+    stencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+    stencilFaceDescriptor.passOp = dawn::StencilOperation::Keep;
+    dawn::DepthStencilStateDescriptor state;
+    state.depthWriteEnabled = false;
+    state.depthCompare = dawn::CompareFunction::Always;
+    state.stencilBack = stencilFaceDescriptor;
+    state.stencilFront = stencilFaceDescriptor;
+    state.stencilReadMask = 0xff;
+    state.stencilWriteMask = 0xff;
 
     CheckStencil({
         { baseState, RGBA8(255, 255, 255, 255), 1.f, 1 },   // Triangle to set stencil value to 1
@@ -472,16 +613,31 @@ TEST_P(DepthStencilStateTest, StencilFail) {
 
 // Test that the stencil operation is executed on stencil pass, depth fail
 TEST_P(DepthStencilStateTest, StencilDepthFail) {
-    dawn::DepthStencilState baseState = device.CreateDepthStencilStateBuilder()
-        .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Always, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, dawn::StencilOperation::Replace)
-        .SetDepthWriteEnabled(true)
-        .GetResult();
+    dawn::StencilStateFaceDescriptor baseStencilFaceDescriptor;
+    baseStencilFaceDescriptor.compare = dawn::CompareFunction::Always;
+    baseStencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+    baseStencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+    baseStencilFaceDescriptor.passOp = dawn::StencilOperation::Replace;
+    dawn::DepthStencilStateDescriptor baseState;
+    baseState.depthWriteEnabled = true;
+    baseState.depthCompare = dawn::CompareFunction::Always;
+    baseState.stencilBack = baseStencilFaceDescriptor;
+    baseState.stencilFront = baseStencilFaceDescriptor;
+    baseState.stencilReadMask = 0xff;
+    baseState.stencilWriteMask = 0xff;
 
-    dawn::DepthStencilState state = device.CreateDepthStencilStateBuilder()
-        .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Greater, dawn::StencilOperation::Keep, dawn::StencilOperation::Replace, dawn::StencilOperation::Keep)
-        .SetDepthWriteEnabled(true)
-        .SetDepthCompareFunction(dawn::CompareFunction::Less)
-        .GetResult();
+    dawn::StencilStateFaceDescriptor stencilFaceDescriptor;
+    stencilFaceDescriptor.compare = dawn::CompareFunction::Greater;
+    stencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+    stencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Replace;
+    stencilFaceDescriptor.passOp = dawn::StencilOperation::Keep;
+    dawn::DepthStencilStateDescriptor state;
+    state.depthWriteEnabled = true;
+    state.depthCompare = dawn::CompareFunction::Less;
+    state.stencilBack = stencilFaceDescriptor;
+    state.stencilFront = stencilFaceDescriptor;
+    state.stencilReadMask = 0xff;
+    state.stencilWriteMask = 0xff;
 
     CheckStencil({
         { baseState, RGBA8(255, 255, 255, 255), 0.f, 1 },   // Triangle to set stencil value to 1. Depth is 0
@@ -491,16 +647,31 @@ TEST_P(DepthStencilStateTest, StencilDepthFail) {
 
 // Test that the stencil operation is executed on stencil pass, depth pass
 TEST_P(DepthStencilStateTest, StencilDepthPass) {
-    dawn::DepthStencilState baseState = device.CreateDepthStencilStateBuilder()
-        .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Always, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, dawn::StencilOperation::Replace)
-        .SetDepthWriteEnabled(true)
-        .GetResult();
+    dawn::StencilStateFaceDescriptor baseStencilFaceDescriptor;
+    baseStencilFaceDescriptor.compare = dawn::CompareFunction::Always;
+    baseStencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+    baseStencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+    baseStencilFaceDescriptor.passOp = dawn::StencilOperation::Replace;
+    dawn::DepthStencilStateDescriptor baseState;
+    baseState.depthWriteEnabled = true;
+    baseState.depthCompare = dawn::CompareFunction::Always;
+    baseState.stencilBack = baseStencilFaceDescriptor;
+    baseState.stencilFront = baseStencilFaceDescriptor;
+    baseState.stencilReadMask = 0xff;
+    baseState.stencilWriteMask = 0xff;
 
-    dawn::DepthStencilState state = device.CreateDepthStencilStateBuilder()
-        .SetStencilFunction(dawn::Face::Both, dawn::CompareFunction::Greater, dawn::StencilOperation::Keep, dawn::StencilOperation::Keep, dawn::StencilOperation::Replace)
-        .SetDepthWriteEnabled(true)
-        .SetDepthCompareFunction(dawn::CompareFunction::Less)
-        .GetResult();
+    dawn::StencilStateFaceDescriptor stencilFaceDescriptor;
+    stencilFaceDescriptor.compare = dawn::CompareFunction::Greater;
+    stencilFaceDescriptor.failOp = dawn::StencilOperation::Keep;
+    stencilFaceDescriptor.depthFailOp = dawn::StencilOperation::Keep;
+    stencilFaceDescriptor.passOp = dawn::StencilOperation::Replace;
+    dawn::DepthStencilStateDescriptor state;
+    state.depthWriteEnabled = true;
+    state.depthCompare = dawn::CompareFunction::Less;
+    state.stencilBack = stencilFaceDescriptor;
+    state.stencilFront = stencilFaceDescriptor;
+    state.stencilReadMask = 0xff;
+    state.stencilWriteMask = 0xff;
 
     CheckStencil({
         { baseState, RGBA8(255, 255, 255, 255), 1.f, 1 },   // Triangle to set stencil value to 1. Depth is 0
@@ -512,4 +683,4 @@ DAWN_INSTANTIATE_TEST(DepthStencilStateTest,
                      D3D12Backend,
                      MetalBackend,
                      OpenGLBackend,
-                     VulkanBackend)
+                     VulkanBackend);

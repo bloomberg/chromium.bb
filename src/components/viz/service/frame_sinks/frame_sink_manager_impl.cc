@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
@@ -228,7 +229,7 @@ void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
   mapping.children.erase(child_frame_sink_id);
 
   // Delete the FrameSinkSourceMapping for |parent_frame_sink_id| if empty.
-  if (!mapping.has_children() && !mapping.source) {
+  if (mapping.children.empty() && !mapping.source) {
     frame_sink_source_map_.erase(iter);
     return;
   }
@@ -256,8 +257,10 @@ void FrameSinkManagerImpl::AddVideoDetectorObserver(
 
 void FrameSinkManagerImpl::CreateVideoCapturer(
     mojom::FrameSinkVideoCapturerRequest request) {
-  video_capturers_.emplace(
-      std::make_unique<FrameSinkVideoCapturerImpl>(this, std::move(request)));
+  video_capturers_.emplace(std::make_unique<FrameSinkVideoCapturerImpl>(
+      this, std::move(request),
+      std::make_unique<media::VideoCaptureOracle>(
+          true /* enable_auto_throttling */)));
 }
 
 void FrameSinkManagerImpl::EvictSurfaces(
@@ -334,9 +337,10 @@ bool FrameSinkManagerImpl::OnSurfaceDamaged(const SurfaceId& surface_id,
   return false;
 }
 
-void FrameSinkManagerImpl::OnSurfaceDiscarded(const SurfaceId& surface_id) {}
-
 void FrameSinkManagerImpl::OnSurfaceDestroyed(const SurfaceId& surface_id) {}
+
+void FrameSinkManagerImpl::OnSurfaceMarkedForDestruction(
+    const SurfaceId& surface_id) {}
 
 void FrameSinkManagerImpl::OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                                    const BeginFrameArgs& args) {
@@ -467,7 +471,7 @@ void FrameSinkManagerImpl::RecursivelyDetachBeginFrameSource(
   }
 
   // Delete the FrameSinkSourceMapping for |frame_sink_id| if empty.
-  if (!mapping.has_children()) {
+  if (mapping.children.empty()) {
     frame_sink_source_map_.erase(iter);
     return;
   }

@@ -8,7 +8,7 @@
 #include <array>
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace ui {
 
@@ -19,7 +19,7 @@ namespace ui {
 // estimate.
 struct PercentileResults {
   static constexpr double kPercentiles[] = {.50, .99};
-  static constexpr size_t kCount = arraysize(kPercentiles);
+  static constexpr size_t kCount = base::size(kPercentiles);
 
   double values[kCount]{};
 };

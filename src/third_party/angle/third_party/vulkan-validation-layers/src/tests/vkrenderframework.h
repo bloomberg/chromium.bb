@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2017 The Khronos Group Inc.
- * Copyright (c) 2015-2017 Valve Corporation
- * Copyright (c) 2015-2017 LunarG, Inc.
+ * Copyright (c) 2015-2019 The Khronos Group Inc.
+ * Copyright (c) 2015-2019 Valve Corporation
+ * Copyright (c) 2015-2019 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ class VkDeviceObj : public vk_testing::Device {
    public:
     VkDeviceObj(uint32_t id, VkPhysicalDevice obj);
     VkDeviceObj(uint32_t id, VkPhysicalDevice obj, std::vector<const char *> &extension_names,
-                VkPhysicalDeviceFeatures *features = nullptr, VkPhysicalDeviceFeatures2KHR *features2 = nullptr);
+                VkPhysicalDeviceFeatures *features = nullptr, void *create_device_pnext = nullptr);
 
     uint32_t QueueFamilyMatching(VkQueueFlags with, VkQueueFlags without, bool all_bits = true);
     uint32_t QueueFamilyWithoutCapabilities(VkQueueFlags capabilities) {
@@ -94,12 +94,12 @@ class VkRenderFramework : public VkTestFramework {
     void InitRenderTarget(VkImageView *dsBinding);
     void InitRenderTarget(uint32_t targets, VkImageView *dsBinding);
     void DestroyRenderTarget();
-    void InitFramework(PFN_vkDebugReportCallbackEXT = NULL, void *userData = NULL);
+    void InitFramework(PFN_vkDebugReportCallbackEXT = NULL, void *userData = NULL, void *instance_pnext = NULL);
 
     void ShutdownFramework();
     void GetPhysicalDeviceFeatures(VkPhysicalDeviceFeatures *features);
     void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties *props);
-    void InitState(VkPhysicalDeviceFeatures *features = nullptr, VkPhysicalDeviceFeatures2 *features2 = nullptr,
+    void InitState(VkPhysicalDeviceFeatures *features = nullptr, void *create_device_pnext = nullptr,
                    const VkCommandPoolCreateFlags flags = 0);
 
     const VkRenderPassBeginInfo &renderPassBeginInfo() const { return m_renderPassBeginInfo; }
@@ -110,6 +110,8 @@ class VkRenderFramework : public VkTestFramework {
     bool InstanceExtensionEnabled(const char *name);
     bool DeviceExtensionSupported(VkPhysicalDevice dev, const char *layer, const char *name, uint32_t specVersion = 0);
     bool DeviceExtensionEnabled(const char *name);
+    bool DeviceIsMockICD();
+    bool DeviceCanDraw();
 
    protected:
     VkApplicationInfo app_info;
@@ -281,6 +283,10 @@ class VkImageObj : public vk_testing::Image {
 
     VkResult CopyImage(VkImageObj &src_image);
 
+    VkResult CopyImageOut(VkImageObj &dst_image);
+
+    std::array<std::array<uint32_t, 16>, 16> Read();
+
     VkImage image() const { return handle(); }
 
     VkImageView targetView(VkFormat format) {
@@ -320,7 +326,7 @@ class VkTextureObj : public VkImageObj {
    public:
     VkTextureObj(VkDeviceObj *device, uint32_t *colors = NULL);
 
-    VkDescriptorImageInfo m_imageInfo;
+    const VkDescriptorImageInfo &DescriptorImageInfo() const { return m_descriptorImageInfo; }
 
    protected:
     VkDeviceObj *m_device;
@@ -398,7 +404,7 @@ class VkDescriptorSetObj : public vk_testing::DescriptorPool {
 class VkShaderObj : public vk_testing::ShaderModule {
    public:
     VkShaderObj(VkDeviceObj *device, const char *shaderText, VkShaderStageFlagBits stage, VkRenderFramework *framework,
-                char const *name = "main");
+                char const *name = "main", bool debug = false);
     VkShaderObj(VkDeviceObj *device, const std::string spv_source, VkShaderStageFlagBits stage, VkRenderFramework *framework,
                 char const *name = "main");
     VkPipelineShaderStageCreateInfo const &GetStageCreateInfo() const;

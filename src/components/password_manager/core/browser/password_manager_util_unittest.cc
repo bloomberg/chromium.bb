@@ -30,6 +30,7 @@ namespace {
 
 constexpr char kTestAndroidRealm[] = "android://hash@com.example.beta.android";
 constexpr char kTestFederationURL[] = "https://google.com/";
+constexpr char kTestURL[] = "https://example.com/login/";
 constexpr char kTestUsername[] = "Username";
 constexpr char kTestUsername2[] = "Username2";
 constexpr char kTestPassword[] = "12345";
@@ -43,17 +44,24 @@ autofill::PasswordForm GetTestAndroidCredentials(const char* signon_realm) {
   return form;
 }
 
-bool StoreContains(password_manager::TestPasswordStore* store,
-                   const autofill::PasswordForm& form) {
-  const auto it = store->stored_passwords().find(form.signon_realm);
-  return it != store->stored_passwords().end() &&
-         base::ContainsValue(it->second, form);
+autofill::PasswordForm GetTestCredential() {
+  autofill::PasswordForm form;
+  form.scheme = autofill::PasswordForm::SCHEME_HTML;
+  form.origin = GURL(kTestURL);
+  form.signon_realm = form.origin.GetOrigin().spec();
+  form.username_value = base::ASCIIToUTF16(kTestUsername);
+  form.password_value = base::ASCIIToUTF16(kTestPassword);
+  return form;
 }
 
-// The argument is std::vector<autofill::PasswordForm*>*. The caller is
-// responsible for the lifetime of all the password forms.
-ACTION_P(AppendForm, form) {
-  arg0->push_back(std::make_unique<autofill::PasswordForm>(form));
+std::map<base::string16, const autofill::PasswordForm*> MapFromCredentials(
+    const std::vector<const autofill::PasswordForm*>& forms) {
+  std::map<base::string16, const autofill::PasswordForm*> result;
+  for (const autofill::PasswordForm* form : forms) {
+    auto inserted = result.emplace(form->username_value, form);
+    EXPECT_TRUE(inserted.second);
+  }
+  return result;
 }
 
 }  // namespace
@@ -88,125 +96,6 @@ TEST(PasswordManagerUtil, TrimUsernameOnlyCredentials) {
   TrimUsernameOnlyCredentials(&forms);
 
   EXPECT_THAT(forms, UnorderedPasswordFormElementsAre(&expected_forms));
-}
-
-// This test is supposed to check the behavior when:
-// 1. User blacklisted on http site two forms (they being considered
-// duplicated because they have the same signon_realm).
-// 2. They are faulty migrated, resulting in 2 blacklisted invalid credentials.
-// Check that both duplicated and invalid credentials are
-// correctly deleted.
-TEST(PasswordManagerUtil,
-     RemoveInvalidHttpsCredentialsAndBlacklistedDuplicates) {
-  for (auto scheme : {autofill::PasswordForm::Scheme::SCHEME_HTML,
-                      autofill::PasswordForm::Scheme::SCHEME_BASIC}) {
-    SCOPED_TRACE(testing::Message() << "scheme=" << static_cast<int>(scheme));
-
-    base::test::ScopedTaskEnvironment scoped_task_environment;
-    auto password_store =
-        base::MakeRefCounted<password_manager::TestPasswordStore>();
-    ASSERT_TRUE(password_store->Init(syncer::SyncableService::StartSyncFlare(),
-                                     nullptr));
-
-    autofill::PasswordForm http_blacklisted;
-    http_blacklisted.origin = GURL("http://example.com/something/");
-    http_blacklisted.signon_realm = "http://example.com/";
-    http_blacklisted.blacklisted_by_user = true;
-    http_blacklisted.date_created = base::Time::FromDoubleT(100);
-    http_blacklisted.scheme = scheme;
-    password_store->AddLogin(http_blacklisted);
-
-    // Duplicate version of |http_blacklisted|.
-    autofill::PasswordForm http_blacklisted_duplicate;
-    http_blacklisted_duplicate.origin = GURL("http://example.com/something-2/");
-    http_blacklisted_duplicate.signon_realm = "http://example.com/";
-    http_blacklisted_duplicate.blacklisted_by_user = true;
-    http_blacklisted_duplicate.date_created = base::Time::FromDoubleT(200);
-    http_blacklisted_duplicate.scheme = scheme;
-    password_store->AddLogin(http_blacklisted_duplicate);
-
-    // Migrated version of |http_blacklisted|.
-    autofill::PasswordForm invalid_blacklisted = http_blacklisted;
-    invalid_blacklisted.origin = GURL("https://example.com/something/");
-    invalid_blacklisted.signon_realm = "https://example.com/something/";
-    password_store->AddLogin(invalid_blacklisted);
-
-    // Migrated version of |http_blacklisted_duplicate|.
-    autofill::PasswordForm invalid_blacklisted_duplicate =
-        http_blacklisted_duplicate;
-    invalid_blacklisted_duplicate.origin =
-        GURL("https://example.com/something-2/");
-    invalid_blacklisted_duplicate.signon_realm =
-        "https://example.com/something-2/";
-    password_store->AddLogin(invalid_blacklisted_duplicate);
-
-    // These credentials have to be untouched by cleaning of invalid https but
-    // one of them has to be removed by function that removes blacklisted
-    // duplicates.
-    autofill::PasswordForm https_blacklisted;
-    https_blacklisted.blacklisted_by_user = true;
-    https_blacklisted.origin = GURL("https://google.com/something/");
-    https_blacklisted.signon_realm = "https://google.com/";
-    https_blacklisted.scheme = scheme;
-    password_store->AddLogin(https_blacklisted);
-
-    autofill::PasswordForm https_blacklisted_duplicate = https_blacklisted;
-    https_blacklisted_duplicate.origin =
-        GURL("https://google.com/something-2/");
-    https_blacklisted_duplicate.signon_realm = "https://google.com/";
-    password_store->AddLogin(https_blacklisted_duplicate);
-
-    scoped_task_environment.RunUntilIdle();
-    // Check that all credentials were successfully added.
-    ASSERT_TRUE(StoreContains(password_store.get(), http_blacklisted));
-    ASSERT_TRUE(
-        StoreContains(password_store.get(), http_blacklisted_duplicate));
-    ASSERT_TRUE(StoreContains(password_store.get(), invalid_blacklisted));
-    ASSERT_TRUE(
-        StoreContains(password_store.get(), invalid_blacklisted_duplicate));
-    ASSERT_TRUE(StoreContains(password_store.get(), https_blacklisted));
-    ASSERT_TRUE(
-        StoreContains(password_store.get(), https_blacklisted_duplicate));
-
-    TestingPrefServiceSimple prefs;
-    prefs.registry()->RegisterBooleanPref(
-        password_manager::prefs::kDuplicatedBlacklistedCredentialsRemoved,
-        false);
-
-    prefs.registry()->RegisterBooleanPref(
-        password_manager::prefs::kCredentialsWithWrongSignonRealmRemoved,
-        false);
-
-    RemoveUselessCredentials(password_store, &prefs, 0, base::NullCallback());
-    scoped_task_environment.RunUntilIdle();
-
-    // Check that invalid credentials were removed.
-    EXPECT_FALSE(StoreContains(password_store.get(), invalid_blacklisted));
-    EXPECT_FALSE(
-        StoreContains(password_store.get(), invalid_blacklisted_duplicate));
-
-    // One of them has to be removed.
-    EXPECT_NE(StoreContains(password_store.get(), http_blacklisted),
-              StoreContains(password_store.get(), http_blacklisted_duplicate));
-    // One of them has to be removed.
-    EXPECT_NE(StoreContains(password_store.get(), https_blacklisted),
-              StoreContains(password_store.get(), https_blacklisted_duplicate));
-
-    RemoveUselessCredentials(password_store, &prefs, 0, base::NullCallback());
-    scoped_task_environment.RunUntilIdle();
-
-    // Nothing must be removed by a second call.
-    EXPECT_FALSE(StoreContains(password_store.get(), invalid_blacklisted));
-    EXPECT_FALSE(
-        StoreContains(password_store.get(), invalid_blacklisted_duplicate));
-    EXPECT_NE(StoreContains(password_store.get(), http_blacklisted),
-              StoreContains(password_store.get(), http_blacklisted_duplicate));
-    EXPECT_NE(StoreContains(password_store.get(), https_blacklisted),
-              StoreContains(password_store.get(), https_blacklisted_duplicate));
-
-    password_store->ShutdownOnUIThread();
-    scoped_task_environment.RunUntilIdle();
-  }
 }
 
 TEST(PasswordManagerUtil, GetSignonRealmWithProtocolExcluded) {
@@ -340,6 +229,128 @@ TEST(PasswordManagerUtil, FindBestMatches) {
       EXPECT_EQ(best_matches.size(), matches.size());
     }
   }
+}
+
+TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsername) {
+  autofill::PasswordForm stored = GetTestCredential();
+  autofill::PasswordForm parsed = GetTestCredential();
+  parsed.password_value = base::ASCIIToUTF16("new_password");
+
+  EXPECT_EQ(&stored,
+            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+}
+
+TEST(PasswordManagerUtil, GetMatchForUpdating_RejectUnknownUsername) {
+  autofill::PasswordForm stored = GetTestCredential();
+  autofill::PasswordForm parsed = GetTestCredential();
+  parsed.username_value = base::ASCIIToUTF16("other_username");
+
+  EXPECT_EQ(nullptr,
+            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+}
+
+TEST(PasswordManagerUtil, GetMatchForUpdating_FederatedCredential) {
+  autofill::PasswordForm stored = GetTestCredential();
+  autofill::PasswordForm parsed = GetTestCredential();
+  parsed.password_value.clear();
+  parsed.federation_origin = url::Origin::Create(GURL(kTestFederationURL));
+
+  EXPECT_EQ(nullptr,
+            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+}
+
+TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsernamePSL) {
+  autofill::PasswordForm stored = GetTestCredential();
+  stored.is_public_suffix_match = true;
+  autofill::PasswordForm parsed = GetTestCredential();
+
+  EXPECT_EQ(&stored,
+            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+}
+
+TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsernamePSLAnotherPassword) {
+  autofill::PasswordForm stored = GetTestCredential();
+  stored.is_public_suffix_match = true;
+  autofill::PasswordForm parsed = GetTestCredential();
+  parsed.password_value = base::ASCIIToUTF16("new_password");
+
+  EXPECT_EQ(nullptr,
+            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+}
+
+TEST(PasswordManagerUtil,
+     GetMatchForUpdating_MatchUsernamePSLNewPasswordKnown) {
+  autofill::PasswordForm stored = GetTestCredential();
+  stored.is_public_suffix_match = true;
+  autofill::PasswordForm parsed = GetTestCredential();
+  parsed.new_password_value = parsed.password_value;
+  parsed.password_value.clear();
+
+  EXPECT_EQ(&stored,
+            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+}
+
+TEST(PasswordManagerUtil,
+     GetMatchForUpdating_MatchUsernamePSLNewPasswordUnknown) {
+  autofill::PasswordForm stored = GetTestCredential();
+  stored.is_public_suffix_match = true;
+  autofill::PasswordForm parsed = GetTestCredential();
+  parsed.new_password_value = base::ASCIIToUTF16("new_password");
+  parsed.password_value.clear();
+
+  EXPECT_EQ(nullptr,
+            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+}
+
+TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameFindByPassword) {
+  autofill::PasswordForm stored = GetTestCredential();
+  autofill::PasswordForm parsed = GetTestCredential();
+  parsed.username_value.clear();
+
+  EXPECT_EQ(&stored,
+            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+}
+
+TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameFindByPasswordPSL) {
+  autofill::PasswordForm stored = GetTestCredential();
+  stored.is_public_suffix_match = true;
+  autofill::PasswordForm parsed = GetTestCredential();
+  parsed.username_value.clear();
+
+  EXPECT_EQ(&stored,
+            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+}
+
+TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameCMAPI) {
+  autofill::PasswordForm stored = GetTestCredential();
+  autofill::PasswordForm parsed = GetTestCredential();
+  parsed.username_value.clear();
+  parsed.type = PasswordForm::TYPE_API;
+
+  // In case of the Credential Management API we know for sure that the site
+  // meant empty username. Don't try any other heuristics.
+  EXPECT_EQ(nullptr,
+            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+}
+
+TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernamePickFirst) {
+  autofill::PasswordForm stored1 = GetTestCredential();
+  stored1.username_value = base::ASCIIToUTF16("Adam");
+  stored1.password_value = base::ASCIIToUTF16("Adam_password");
+  autofill::PasswordForm stored2 = GetTestCredential();
+  stored2.username_value = base::ASCIIToUTF16("Ben");
+  stored2.password_value = base::ASCIIToUTF16("Ben_password");
+  autofill::PasswordForm stored3 = GetTestCredential();
+  stored3.username_value = base::ASCIIToUTF16("Cindy");
+  stored3.password_value = base::ASCIIToUTF16("Cindy_password");
+
+  autofill::PasswordForm parsed = GetTestCredential();
+  parsed.username_value.clear();
+
+  // The credential with the first username is picked.
+  EXPECT_EQ(&stored1,
+            GetMatchForUpdating(
+                parsed, MapFromCredentials({&stored3, &stored2, &stored1})));
 }
 
 }  // namespace password_manager_util

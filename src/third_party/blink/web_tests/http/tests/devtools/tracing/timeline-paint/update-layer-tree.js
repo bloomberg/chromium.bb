@@ -17,13 +17,14 @@
       </style>
       <div id="parent-layer"></div>
     `);
+  await TestRunner.addScriptTag('../../../resources/run-after-layout-and-paint.js');
   await TestRunner.evaluateInPagePromise(`
       function doActions()
       {
           var layer = document.createElement("div");
           layer.classList.add("layer");
           document.getElementById("parent-layer").appendChild(layer);
-          return new Promise((fulfill) => testRunner.layoutAndPaintAsyncThen(fulfill));
+          return new Promise((fulfill) => runAfterLayoutAndPaint(fulfill));
       }
   `);
 

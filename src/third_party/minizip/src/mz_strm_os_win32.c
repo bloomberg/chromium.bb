@@ -1,5 +1,5 @@
 /* mz_strm_win32.c -- Stream for filesystem access for windows
-   Version 2.7.5, November 13, 2018
+   Version 2.8.1, December 1, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -14,15 +14,13 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#include <stdlib.h>
-#include <inttypes.h>
-
-#include <windows.h>
 
 #include "mz.h"
 #include "mz_os.h"
 #include "mz_strm.h"
 #include "mz_strm_os.h"
+
+#include <windows.h>
 
 /***************************************************************************/
 
@@ -89,7 +87,7 @@ int32_t mz_stream_os_open(void *stream, const char *path, int32_t mode)
     if (path == NULL)
         return MZ_PARAM_ERROR;
 
-    // Some use cases require write sharing as well
+    /* Some use cases require write sharing as well */
     share_mode |= FILE_SHARE_WRITE;
 
     if ((mode & MZ_OPEN_MODE_READWRITE) == MZ_OPEN_MODE_READ)

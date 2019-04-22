@@ -83,7 +83,7 @@ class CORE_EXPORT HitTestResult {
   Node* InnerPossiblyPseudoNode() const {
     return inner_possibly_pseudo_node_.Get();
   }
-  Element* InnerElement() const;
+  Element* InnerElement() const { return inner_element_.Get(); }
 
   // If innerNode is an image map or image map area, return the associated image
   // node.
@@ -186,6 +186,8 @@ class CORE_EXPORT HitTestResult {
   bool cacheable_;
 
   Member<Node> inner_node_;
+  // This gets calculated in the first call to InnerElement function.
+  Member<Element> inner_element_;
   Member<Node> inner_possibly_pseudo_node_;
   // FIXME: Nothing changes this to a value different from m_hitTestLocation!
   // The hit-tested point in innerNode frame coordinates.
@@ -207,6 +209,6 @@ class CORE_EXPORT HitTestResult {
 
 }  // namespace blink
 
-WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::HitTestResult);
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::HitTestResult)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_RESULT_H_

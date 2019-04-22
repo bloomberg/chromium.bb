@@ -15,6 +15,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
+#include "remoting/host/client_session_control.h"
 #include "remoting/proto/control.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -42,6 +44,7 @@ class DesktopCapturerProxy::Core : public webrtc::DesktopCapturer::Callback {
   void Start();
   void SetSharedMemoryFactory(
       std::unique_ptr<webrtc::SharedMemoryFactory> shared_memory_factory);
+  void SelectSource(SourceId id);
   void CaptureFrame();
 
  private:
@@ -96,6 +99,13 @@ void DesktopCapturerProxy::Core::SetSharedMemoryFactory(
   }
 }
 
+void DesktopCapturerProxy::Core::SelectSource(SourceId id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (capturer_) {
+    capturer_->SelectSource(id);
+  }
+}
+
 void DesktopCapturerProxy::Core::CaptureFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (capturer_) {
@@ -111,13 +121,17 @@ void DesktopCapturerProxy::Core::OnCaptureResult(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   caller_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DesktopCapturerProxy::OnFrameCaptured, proxy_,
-                            result, base::Passed(&frame)));
+      FROM_HERE, base::BindOnce(&DesktopCapturerProxy::OnFrameCaptured, proxy_,
+                                result, std::move(frame)));
 }
 
 DesktopCapturerProxy::DesktopCapturerProxy(
-    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner)
-    : capture_task_runner_(capture_task_runner), weak_factory_(this) {
+    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
+    base::WeakPtr<ClientSessionControl> client_session_control)
+    : capture_task_runner_(capture_task_runner),
+      client_session_control_(client_session_control),
+      desktop_display_info_(new DesktopDisplayInfo()),
+      weak_factory_(this) {
   core_.reset(new Core(weak_factory_.GetWeakPtr()));
 }
 
@@ -129,8 +143,8 @@ void DesktopCapturerProxy::CreateCapturer(
     const webrtc::DesktopCaptureOptions& options) {
   DCHECK(thread_checker_.CalledOnValidThread());
   capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::CreateCapturer,
-                            base::Unretained(core_.get()), options));
+      FROM_HERE, base::BindOnce(&Core::CreateCapturer,
+                                base::Unretained(core_.get()), options));
 }
 
 void DesktopCapturerProxy::set_capturer(
@@ -144,7 +158,7 @@ void DesktopCapturerProxy::Start(Callback* callback) {
   callback_ = callback;
 
   capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::Start, base::Unretained(core_.get())));
+      FROM_HERE, base::BindOnce(&Core::Start, base::Unretained(core_.get())));
 }
 
 void DesktopCapturerProxy::SetSharedMemoryFactory(
@@ -153,7 +167,7 @@ void DesktopCapturerProxy::SetSharedMemoryFactory(
 
   capture_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &Core::SetSharedMemoryFactory, base::Unretained(core_.get()),
           base::Passed(base::WrapUnique(shared_memory_factory.release()))));
 }
@@ -166,7 +180,7 @@ void DesktopCapturerProxy::CaptureFrame() {
 
   capture_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Core::CaptureFrame, base::Unretained(core_.get())));
+      base::BindOnce(&Core::CaptureFrame, base::Unretained(core_.get())));
 }
 
 bool DesktopCapturerProxy::GetSourceList(SourceList* sources) {
@@ -174,8 +188,18 @@ bool DesktopCapturerProxy::GetSourceList(SourceList* sources) {
   return false;
 }
 
-bool DesktopCapturerProxy::SelectSource(SourceId id) {
-  NOTIMPLEMENTED();
+bool DesktopCapturerProxy::SelectSource(SourceId id_index) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(desktop_display_info_);
+
+  SourceId id = -1;
+  if (id_index >= 0 && id_index < desktop_display_info_->NumDisplays()) {
+    DisplayGeometry display = desktop_display_info_->displays()[id_index];
+    id = display.id;
+  }
+  capture_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Core::SelectSource, base::Unretained(core_.get()), id));
   return false;
 }
 
@@ -185,6 +209,26 @@ void DesktopCapturerProxy::OnFrameCaptured(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   callback_->OnCaptureResult(result, std::move(frame));
+
+  if (client_session_control_) {
+    auto info = std::make_unique<DesktopDisplayInfo>();
+    info->LoadCurrentDisplayInfo();
+    if (*desktop_display_info_ != *info) {
+      desktop_display_info_ = std::move(info);
+
+      auto layout = std::make_unique<protocol::VideoLayout>();
+      for (auto display : desktop_display_info_->displays()) {
+        protocol::VideoTrackLayout* track = layout->add_video_track();
+        track->set_position_x(display.x);
+        track->set_position_y(display.y);
+        track->set_width(display.width);
+        track->set_height(display.height);
+        track->set_x_dpi(display.dpi);
+        track->set_y_dpi(display.dpi);
+      }
+      client_session_control_->OnDesktopDisplayChanged(std::move(layout));
+    }
+  }
 }
 
 }  // namespace remoting

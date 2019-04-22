@@ -6,6 +6,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <algorithm>
+
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -30,12 +32,8 @@ VulkanSurface::~VulkanSurface() {
   DCHECK_EQ(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);
 }
 
-VulkanSurface::VulkanSurface(VkInstance vk_instance,
-                             VkSurfaceKHR surface,
-                             base::OnceClosure destruction_callback)
-    : vk_instance_(vk_instance),
-      surface_(surface),
-      destruction_callback_(std::move(destruction_callback)) {
+VulkanSurface::VulkanSurface(VkInstance vk_instance, VkSurfaceKHR surface)
+    : vk_instance_(vk_instance), surface_(surface) {
   DCHECK_NE(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);
 }
 
@@ -89,7 +87,7 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
 
   if (formats.size() == 1 && VK_FORMAT_UNDEFINED == formats[0].format) {
     surface_format_.format = preferred_formats[0];
-    surface_format_.colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+    surface_format_.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
   } else {
     bool format_set = false;
     for (VkSurfaceFormatKHR supported_format : formats) {
@@ -97,7 +95,7 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
       while (counter < size && format_set == false) {
         if (supported_format.format == preferred_formats[counter]) {
           surface_format_ = supported_format;
-          surface_format_.colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+          surface_format_.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
           format_set = true;
         }
         counter++;
@@ -110,15 +108,13 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
       return false;
     }
   }
-  // Delay creating SwapChain to when the surface size is specified by Resize().
-  return true;
+  return CreateSwapChain(gfx::Size());
 }
 
 void VulkanSurface::Destroy() {
   swap_chain_->Destroy();
   vkDestroySurfaceKHR(vk_instance_, surface_, nullptr);
   surface_ = VK_NULL_HANDLE;
-  std::move(destruction_callback_).Run();
 }
 
 gfx::SwapResult VulkanSurface::SwapBuffers() {
@@ -134,6 +130,10 @@ void VulkanSurface::Finish() {
 }
 
 bool VulkanSurface::SetSize(const gfx::Size& size) {
+  return CreateSwapChain(size);
+}
+
+bool VulkanSurface::CreateSwapChain(const gfx::Size& size) {
   // Get Surface Information.
   VkSurfaceCapabilitiesKHR surface_caps;
   VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
@@ -149,16 +149,14 @@ bool VulkanSurface::SetSize(const gfx::Size& size) {
   // In that case, we will use the |size| which is the window size for the
   // swapchain. Otherwise, we just use the current surface size for the
   // swapchian.
-  if (surface_caps.currentExtent.width ==
-          std::numeric_limits<uint32_t>::max() ||
-      surface_caps.currentExtent.height ==
-          std::numeric_limits<uint32_t>::max()) {
-    DCHECK_EQ(surface_caps.currentExtent.width,
-              std::numeric_limits<uint32_t>::max());
-    DCHECK_EQ(surface_caps.currentExtent.height,
-              std::numeric_limits<uint32_t>::max());
-    surface_caps.currentExtent.width = size.width();
-    surface_caps.currentExtent.height = size.height();
+  const uint32_t kUndefinedExtent = 0xFFFFFFFF;
+  if (surface_caps.currentExtent.width == kUndefinedExtent &&
+      surface_caps.currentExtent.height == kUndefinedExtent) {
+    surface_caps.currentExtent.width = std::max(
+        surface_caps.minImageExtent.width, static_cast<uint32_t>(size.width()));
+    surface_caps.currentExtent.height =
+        std::max(surface_caps.minImageExtent.height,
+                 static_cast<uint32_t>(size.height()));
   }
 
   DCHECK_GE(surface_caps.currentExtent.width,
@@ -172,8 +170,9 @@ bool VulkanSurface::SetSize(const gfx::Size& size) {
   DCHECK_GT(surface_caps.currentExtent.width, 0u);
   DCHECK_GT(surface_caps.currentExtent.height, 0u);
 
-  gfx::Size new_size(surface_caps.currentExtent.width,
-                     surface_caps.currentExtent.height);
+  gfx::Size new_size(
+      base::checked_cast<int>(surface_caps.currentExtent.width),
+      base::checked_cast<int>(surface_caps.currentExtent.height));
   if (size_ == new_size)
     return true;
 

@@ -44,7 +44,6 @@ RecyclableCompositorMac::RecyclableCompositorMac(
                   context_factory,
                   context_factory_private,
                   GetCompositorTaskRunner(),
-                  features::IsSurfaceSynchronizationEnabled(),
                   ui::IsPixelCanvasRecordingEnabled()) {
   g_recyclable_compositor_count += 1;
   compositor_.SetAcceleratedWidget(

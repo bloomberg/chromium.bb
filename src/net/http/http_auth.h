@@ -20,6 +20,7 @@ namespace net {
 class HttpAuthHandler;
 class HttpAuthHandlerFactory;
 class HttpResponseHeaders;
+class HostResolver;
 class NetLogWithSource;
 class SSLInfo;
 
@@ -102,6 +103,18 @@ class NET_EXPORT_PRIVATE HttpAuth {
     AUTH_SCHEME_MAX,
   };
 
+  // Type of Kerberos credentials delegation to be performed during
+  // authentication.
+  enum class DelegationType {
+    // Disallow delegation.
+    kNone,
+    // Delegate if approved by KDC policy. Implemented in GSSAPI.
+    kByKdcPolicy,
+    // Unconstrained delegation. On Windows both kByKdcPolicy and kUnconstraned
+    // check KDC policy.
+    kUnconstrained,
+  };
+
   // Helper structure used by HttpNetworkTransaction to track
   // the current identity being used for authorization.
   struct Identity {
@@ -147,6 +160,7 @@ class NET_EXPORT_PRIVATE HttpAuth {
       const GURL& origin,
       const std::set<Scheme>& disabled_schemes,
       const NetLogWithSource& net_log,
+      HostResolver* host_resolver,
       std::unique_ptr<HttpAuthHandler>* handler);
 
   // Handle a 401/407 response from a server/proxy after a previous

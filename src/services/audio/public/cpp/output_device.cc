@@ -6,9 +6,12 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/threading/thread_restrictions.h"
 #include "media/audio/audio_output_device_thread_callback.h"
+#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
+#include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 
@@ -82,7 +85,7 @@ void OutputDevice::StreamCreated(
 void OutputDevice::OnConnectionError() {
   // Connection errors should be rare and handling them synchronously is
   // simpler.
-  base::ScopedAllowBlocking allow_blocking;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
   CleanUp();
 }
 

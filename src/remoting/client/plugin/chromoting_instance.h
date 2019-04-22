@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/timer.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
@@ -211,6 +212,9 @@ class ChromotingInstance : public ClientUserInterface,
   void HandleEnableStuckModifierKeyDetection(const base::DictionaryValue& data);
 
   void Disconnect();
+
+  void UpdateNetConfigAndConnect(const base::DictionaryValue& data);
+  void OnNetConfigUpdated(std::unique_ptr<base::DictionaryValue> data);
 
   // Helper method to post messages to the webapp.
   void PostChromotingMessage(const std::string& method,

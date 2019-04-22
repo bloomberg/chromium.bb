@@ -39,6 +39,27 @@ if (is_win && use_libfuzzer) {
     ]
   }
 
+  config("skia_test_fonts_includes_config") {
+    include_dirs = [
+      "//third_party/skia/tools/fonts",
+      "//third_party/skia/tools/",
+    ]
+  }
+
+  static_library("skia_test_fonts") {
+    sources = [
+      "//third_party/skia/tools/fonts/TestFontMgr.cpp",
+      "//third_party/skia/tools/fonts/TestSVGTypeface.cpp",
+      "//third_party/skia/tools/fonts/TestTypeface.cpp",
+    ]
+    configs += [ "//skia:skia_library_config" ]
+
+    public_configs = [ ":skia_test_fonts_includes_config" ]
+    deps = [
+      "//skia",
+    ]
+  }
+
   # TODO(metzman): Enable the other fuzzers that cannot yet build in Chromium.
   fuzzer_test("skia_region_deserialize_fuzzer") {
     sources = [
@@ -57,6 +78,7 @@ if (is_win && use_libfuzzer) {
     defines = [ "IS_FUZZING_WITH_LIBFUZZER" ]
     deps = [
       ":skia_fuzzer_sources",
+      ":skia_test_fonts",
     ]
   }
 
@@ -77,6 +99,7 @@ if (is_win && use_libfuzzer) {
     defines = [ "IS_FUZZING_WITH_LIBFUZZER" ]
     deps = [
       ":skia_fuzzer_sources",
+      ":skia_test_fonts",
     ]
   }
 

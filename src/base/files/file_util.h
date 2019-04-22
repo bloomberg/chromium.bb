@@ -396,12 +396,26 @@ BASE_EXPORT bool SetCurrentDirectory(const FilePath& path);
 BASE_EXPORT int GetUniquePathNumber(const FilePath& path,
                                     const FilePath::StringType& suffix);
 
+// If file at |path| already exists, modifies filename portion of |path| to
+// return unique path.
+BASE_EXPORT FilePath GetUniquePath(const FilePath& path);
+
 // Sets the given |fd| to non-blocking mode.
 // Returns true if it was able to set it in the non-blocking mode, otherwise
 // false.
 BASE_EXPORT bool SetNonBlocking(int fd);
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
+
+// Creates a pipe. Returns true on success, otherwise false.
+// On success, |read_fd| will be set to the fd of the read side, and
+// |write_fd| will be set to the one of write side. If |non_blocking|
+// is set the pipe will be created with O_NONBLOCK|O_CLOEXEC flags set
+// otherwise flag is set to zero (default).
+BASE_EXPORT bool CreatePipe(ScopedFD* read_fd,
+                            ScopedFD* write_fd,
+                            bool non_blocking = false);
+
 // Creates a non-blocking, close-on-exec pipe.
 // This creates a non-blocking pipe that is not intended to be shared with any
 // child process. This will be done atomically if the operating system supports

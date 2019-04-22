@@ -69,7 +69,6 @@ class StartupTabProviderImpl : public StartupTabProvider {
     bool has_seen_welcome_page = false;
     bool is_signin_allowed = false;
     bool is_signed_in = false;
-    bool is_signin_in_progress = false;
     bool is_supervised_user = false;
     bool is_force_signin_enabled = false;
   };
@@ -95,8 +94,7 @@ class StartupTabProviderImpl : public StartupTabProvider {
   // Returns true if the standard welcome page should be shown in a tab. This
   // should only be used following a positive result from CanShowWelcome.
   static bool ShouldShowWelcomeForOnboarding(bool has_seen_welcome_page,
-                                             bool is_signed_in,
-                                             bool is_signin_in_progress);
+                                             bool is_signed_in);
 
   // Determines which tabs should be shown according to onboarding/first
   // run policy.

@@ -146,7 +146,7 @@ api::tabs::Tab SessionsGetRecentlyClosedFunction::CreateTabModel(
     const sessions::TabRestoreService::Tab& tab,
     bool active) {
   return CreateTabModelHelper(tab.navigations[tab.current_navigation_index],
-                              base::IntToString(tab.id.id()),
+                              base::NumberToString(tab.id.id()),
                               tab.tabstrip_index, tab.pinned, active,
                               extension());
 }
@@ -162,7 +162,7 @@ SessionsGetRecentlyClosedFunction::CreateWindowModel(
         CreateTabModel(*tab, tab->tabstrip_index == window.selected_tab_index));
 
   return CreateWindowModelHelper(
-      std::move(tabs), base::IntToString(window.id.id()),
+      std::move(tabs), base::NumberToString(window.id.id()),
       api::windows::WINDOW_TYPE_NORMAL, api::windows::WINDOW_STATE_NORMAL);
 }
 
@@ -246,8 +246,9 @@ SessionsGetDevicesFunction::CreateWindowModel(
       continue;
     const sessions::SerializedNavigationEntry& current_navigation =
         tab->navigations.at(tab->normalized_navigation_index());
-    if (search::IsNTPURL(current_navigation.virtual_url(),
-                         Profile::FromBrowserContext(browser_context()))) {
+    if (search::IsNTPOrRelatedURL(
+            current_navigation.virtual_url(),
+            Profile::FromBrowserContext(browser_context()))) {
       continue;
     }
     tabs_in_window.push_back(tab);

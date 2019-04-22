@@ -39,10 +39,10 @@ class TestTimeDomain : public TimeDomain {
 
   ~TestTimeDomain() override = default;
 
+  using TimeDomain::MoveReadyDelayedTasksToWorkQueues;
   using TimeDomain::NextScheduledRunTime;
   using TimeDomain::SetNextWakeUpForQueue;
   using TimeDomain::UnregisterQueue;
-  using TimeDomain::WakeUpReadyDelayedQueues;
 
   LazyNow CreateLazyNow() const override { return LazyNow(now_); }
   TimeTicks Now() const override { return now_; }
@@ -99,12 +99,14 @@ class TimeDomainTest : public testing::Test {
 TEST_F(TimeDomainTest, ScheduleWakeUpForQueue) {
   TimeDelta delay = TimeDelta::FromMilliseconds(10);
   TimeTicks delayed_runtime = time_domain_->Now() + delay;
+  EXPECT_TRUE(time_domain_->Empty());
   EXPECT_CALL(*time_domain_.get(), SetNextDelayedDoWork(_, delayed_runtime));
   TimeTicks now = time_domain_->Now();
   LazyNow lazy_now(now);
   task_queue_->SetDelayedWakeUpForTesting(
       internal::DelayedWakeUp{now + delay, 0});
 
+  EXPECT_FALSE(time_domain_->Empty());
   EXPECT_EQ(delayed_runtime, time_domain_->NextScheduledRunTime());
 
   EXPECT_EQ(task_queue_.get(), time_domain_->NextScheduledTaskQueue());
@@ -195,6 +197,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   std::unique_ptr<TaskQueueImplForTest> task_queue2 =
       std::make_unique<TaskQueueImplForTest>(nullptr, time_domain_.get(),
                                              TaskQueue::Spec("test"));
+  EXPECT_TRUE(time_domain_->Empty());
 
   TimeTicks now = time_domain_->Now();
   LazyNow lazy_now(now);
@@ -203,6 +206,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   task_queue_->SetDelayedWakeUpForTesting(internal::DelayedWakeUp{wake_up1, 0});
   TimeTicks wake_up2 = now + TimeDelta::FromMilliseconds(100);
   task_queue2->SetDelayedWakeUpForTesting(internal::DelayedWakeUp{wake_up2, 0});
+  EXPECT_FALSE(time_domain_->Empty());
 
   EXPECT_EQ(task_queue_.get(), time_domain_->NextScheduledTaskQueue());
 
@@ -216,6 +220,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   task_queue_->UnregisterTaskQueue();
   task_queue_ = nullptr;
 
+  EXPECT_FALSE(time_domain_->Empty());
   testing::Mock::VerifyAndClearExpectations(time_domain_.get());
 
   EXPECT_CALL(*time_domain_.get(), SetNextDelayedDoWork(_, TimeTicks::Max()))
@@ -226,9 +231,10 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
 
   task_queue2->UnregisterTaskQueue();
   task_queue2 = nullptr;
+  EXPECT_TRUE(time_domain_->Empty());
 }
 
-TEST_F(TimeDomainTest, WakeUpReadyDelayedQueues) {
+TEST_F(TimeDomainTest, MoveReadyDelayedTasksToWorkQueues) {
   TimeDelta delay = TimeDelta::FromMilliseconds(50);
   TimeTicks now = time_domain_->Now();
   LazyNow lazy_now_1(now);
@@ -239,17 +245,17 @@ TEST_F(TimeDomainTest, WakeUpReadyDelayedQueues) {
 
   EXPECT_EQ(delayed_runtime, time_domain_->NextScheduledRunTime());
 
-  time_domain_->WakeUpReadyDelayedQueues(&lazy_now_1);
+  time_domain_->MoveReadyDelayedTasksToWorkQueues(&lazy_now_1);
   EXPECT_EQ(delayed_runtime, time_domain_->NextScheduledRunTime());
 
   EXPECT_CALL(*time_domain_.get(), SetNextDelayedDoWork(_, TimeTicks::Max()));
   time_domain_->SetNow(delayed_runtime);
   LazyNow lazy_now_2(time_domain_->CreateLazyNow());
-  time_domain_->WakeUpReadyDelayedQueues(&lazy_now_2);
+  time_domain_->MoveReadyDelayedTasksToWorkQueues(&lazy_now_2);
   ASSERT_FALSE(time_domain_->NextScheduledRunTime());
 }
 
-TEST_F(TimeDomainTest, WakeUpReadyDelayedQueuesWithIdenticalRuntimes) {
+TEST_F(TimeDomainTest, MoveReadyDelayedTasksToWorkQueuesWithIdenticalRuntimes) {
   int sequence_num = 0;
   TimeDelta delay = TimeDelta::FromMilliseconds(50);
   TimeTicks now = time_domain_->Now();
@@ -267,7 +273,7 @@ TEST_F(TimeDomainTest, WakeUpReadyDelayedQueuesWithIdenticalRuntimes) {
   task_queue_->SetDelayedWakeUpForTesting(
       internal::DelayedWakeUp{delayed_runtime, ++sequence_num});
 
-  time_domain_->WakeUpReadyDelayedQueues(&lazy_now);
+  time_domain_->MoveReadyDelayedTasksToWorkQueues(&lazy_now);
 
   // The second task queue should wake up first since it has a lower sequence
   // number.
@@ -389,8 +395,8 @@ TEST_F(TimeDomainTest, SetNextWakeUpForQueueInThePast) {
   constexpr auto kType = MessageLoop::TYPE_DEFAULT;
   constexpr auto kDelay = TimeDelta::FromMilliseconds(20);
   SimpleTestTickClock clock;
-  auto sequence_manager =
-      internal::SequenceManagerImpl::CreateUnboundWithPump(kType, &clock);
+  auto sequence_manager = sequence_manager::CreateUnboundSequenceManager(
+      SequenceManager::Settings{.message_loop_type = kType, .clock = &clock});
   sequence_manager->BindToMessagePump(
       MessageLoop::CreateMessagePumpForType(kType));
   auto high_prio_queue =
@@ -414,9 +420,9 @@ TEST_F(TimeDomainTest, SetNextWakeUpForQueueInThePast) {
   low_prio_runner->PostDelayedTask(FROM_HERE, task_2.Get(), kDelay);
   high_prio_runner->PostDelayedTask(FROM_HERE, task_1.Get(), kDelay * 2);
   high_prio_runner->PostTask(
-      FROM_HERE, Bind([](SimpleTestTickClock* clock,
-                         TimeDelta delay) { clock->Advance(delay); },
-                      base::Unretained(&clock), kDelay * 2));
+      FROM_HERE, BindOnce([](SimpleTestTickClock* clock,
+                             TimeDelta delay) { clock->Advance(delay); },
+                          base::Unretained(&clock), kDelay * 2));
   RunLoop().RunUntilIdle();
 }
 

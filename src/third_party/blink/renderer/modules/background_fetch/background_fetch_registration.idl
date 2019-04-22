@@ -3,26 +3,10 @@
 // found in the LICENSE file.
 
 // https://wicg.github.io/background-fetch/#background-fetch-registration
-enum BackgroundFetchFailureReason {
-  "",
-  // The operation was aborted by the user, or abort() was called.
-  "aborted",
-  // A response had a not-ok-status.
-  "bad-status",
-  // A fetch failed for other reasons, e.g. CORS, MIX, an invalid partial response,
-  // or a general network failure for a fetch that cannot be retried.
-  "fetch-error",
-  // Storage quota was reached during the operation.
-  "quota-exceeded",
-  // The provided downloadTotal was exceeded.
-  "total-download-exceeded"
-};
-
-enum BackgroundFetchResult { "", "success", "failure" };
-
 [
     Exposed=(Window,Worker),
-    OriginTrialEnabled=BackgroundFetch
+    RuntimeEnabled=BackgroundFetch,
+    ActiveScriptWrappable
 ] interface BackgroundFetchRegistration : EventTarget {
     readonly attribute DOMString id;
     readonly attribute unsigned long long uploadTotal;
@@ -36,9 +20,25 @@ enum BackgroundFetchResult { "", "success", "failure" };
     attribute EventHandler onprogress;
 
     [CallWith=ScriptState, MeasureAs=BackgroundFetchRegistrationAbort] Promise<boolean> abort();
-
-    // TODO(crbug.com/875201): Change to (Window,Worker) once we support
-    // match() and matchAll() for active fetches.
-    [CallWith=ScriptState, Exposed=ServiceWorker, RaisesException, MeasureAs=BackgroundFetchRegistrationMatch] Promise<BackgroundFetchRecord> match(RequestInfo request, optional CacheQueryOptions options);
-    [CallWith=ScriptState, Exposed=ServiceWorker, RaisesException, MeasureAs=BackgroundFetchRegistrationMatchAll] Promise<sequence<BackgroundFetchRecord>> matchAll(optional RequestInfo request, optional CacheQueryOptions options);
+    [CallWith=ScriptState, RaisesException, MeasureAs=BackgroundFetchRegistrationMatch] Promise<BackgroundFetchRecord> match(RequestInfo request, optional CacheQueryOptions options);
+    [CallWith=ScriptState, RaisesException, MeasureAs=BackgroundFetchRegistrationMatchAll] Promise<sequence<BackgroundFetchRecord>> matchAll(optional RequestInfo request, optional CacheQueryOptions options);
 };
+
+enum BackgroundFetchResult { "", "success", "failure" };
+
+enum BackgroundFetchFailureReason {
+  // The background fetch has not completed yet, or was successful.
+  "",
+  // The operation was aborted by the user, or abort() was called.
+  "aborted",
+  // A response had a not-ok-status.
+  "bad-status",
+  // A fetch failed for other reasons, e.g. CORS, MIX, an invalid partial response,
+  // or a general network failure for a fetch that cannot be retried.
+  "fetch-error",
+  // Storage quota was reached during the operation.
+  "quota-exceeded",
+  // The provided downloadTotal was exceeded.
+  "download-total-exceeded"
+};
+

@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -27,6 +28,7 @@
 #include "content/browser/appcache/appcache_storage_impl.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
@@ -174,7 +176,8 @@ void AppCacheServiceImpl::DeleteOriginHelper::OnAllInfo(
   }
 
   // We have some caches to delete.
-  const AppCacheInfoVector& caches_to_delete = found->second;
+  const std::vector<blink::mojom::AppCacheInfo>& caches_to_delete =
+      found->second;
   successes_ = 0;
   failures_ = 0;
   num_caches_to_delete_ = static_cast<int>(caches_to_delete.size());

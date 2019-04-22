@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
+import("//build/config/c++/c++.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/jumbo.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//headless/headless.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//printing/buildflags/buildflags.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/inspector_protocol/inspector_protocol.gni")
@@ -17,12 +17,9 @@ import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
-config("headless_implementation") {
+# For code inside the build component "headless".
+config("inside_headless_component") {
   defines = [ "HEADLESS_IMPLEMENTATION" ]
-
-  if (headless_use_embedded_resources) {
-    defines += [ "HEADLESS_USE_EMBEDDED_RESOURCES" ]
-  }
 }
 
 group("headless_lib") {
@@ -110,16 +107,6 @@ action("embed_resources") {
   ]
 }
 
-service_manifest("headless_browser_manifest_overlay") {
-  source = "lib/browser/headless_browser_manifest_overlay.json"
-}
-
-service_manifest("headless_packaged_services_manifest_overlay") {
-  source = "lib/browser/headless_packaged_services_manifest_overlay.json"
-  packaged_services =
-      [ "//components/services/pdf_compositor:pdf_compositor_manifest" ]
-}
-
 grit("resources") {
   source = "lib/resources/headless_lib_resources.grd"
   outputs = [
@@ -127,14 +114,6 @@ grit("resources") {
     "$root_gen_dir/headless/headless_lib_resources.pak",
   ]
   source_is_generated = true
-  grit_flags = [
-    "-E",
-    "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
-  ]
-  deps = [
-    ":headless_browser_manifest_overlay",
-    ":headless_packaged_services_manifest_overlay",
-  ]
 }
 
 devtools_domains = [
@@ -243,7 +222,7 @@ if (headless_fontconfig_utils && !is_fuchsia) {
       "//third_party/fontconfig",
     ]
 
-    configs += [ ":headless_implementation" ]
+    configs += [ ":inside_headless_component" ]
   }
 }
 
@@ -268,6 +247,8 @@ inspector_protocol_generate("protocol_sources") {
 
   # These are relative to $target_gen_dir.
   outputs = [
+    "lib/browser/protocol/base_string_adapter.cc",
+    "lib/browser/protocol/base_string_adapter.h",
     "lib/browser/protocol/dp_browser.cc",
     "lib/browser/protocol/dp_browser.h",
     "lib/browser/protocol/dp_headless_experimental.cc",
@@ -325,8 +306,6 @@ jumbo_component("headless") {
     "lib/browser/protocol/headless_handler.h",
     "lib/browser/protocol/page_handler.cc",
     "lib/browser/protocol/page_handler.h",
-    "lib/browser/protocol/protocol_string.cc",
-    "lib/browser/protocol/protocol_string.h",
     "lib/browser/protocol/target_handler.cc",
     "lib/browser/protocol/target_handler.h",
     "lib/headless_content_client.cc",
@@ -403,6 +382,7 @@ jumbo_component("headless") {
     "//content/public/common:service_names",
     "//services/service_manager/public/cpp",
     "//ui/base",
+    "//ui/base/clipboard",
     "//ui/compositor",
     "//ui/display",
     "//ui/events/devices",
@@ -421,6 +401,8 @@ jumbo_component("headless") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/browser/headless_overlay_manifests.cc",
+      "lib/browser/headless_overlay_manifests.h",
       "lib/browser/headless_web_contents_impl.cc",
       "lib/browser/headless_web_contents_impl.h",
       "lib/headless_content_main_delegate.cc",
@@ -442,6 +424,8 @@ jumbo_component("headless") {
     deps += [
       "//components/crash/core/common:crash_key",
       "//components/security_state/content",
+      "//components/services/pdf_compositor/public/cpp:manifest",
+      "//components/services/pdf_compositor/public/interfaces",
       "//gin",
       "//third_party/blink/public:blink",
       "//third_party/blink/public:blink_headers",
@@ -488,6 +472,7 @@ jumbo_component("headless") {
   }
 
   if (headless_use_embedded_resources) {
+    defines = [ "HEADLESS_USE_EMBEDDED_RESOURCES" ]
     deps += [ ":embed_resources" ]
     sources += [
       "$root_gen_dir/headless/embedded_resource_pak.cc",
@@ -505,7 +490,7 @@ jumbo_component("headless") {
     deps += [ ":headless_fontconfig_utils" ]
   }
 
-  configs += [ ":headless_implementation" ]
+  configs += [ ":inside_headless_component" ]
 }
 
 # Headless renderer is a convenience library for non component builds that
@@ -521,6 +506,10 @@ if (!is_component_build) {
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
     ]
+
+    if (headless_use_embedded_resources) {
+      defines = [ "HEADLESS_USE_EMBEDDED_RESOURCES" ]
+    }
 
     if (enable_basic_printing) {
       sources += [
@@ -539,8 +528,6 @@ if (!is_component_build) {
     if (enable_basic_printing) {
       deps += [ "//components/printing/renderer" ]
     }
-
-    configs += [ ":headless_implementation" ]
   }
 } else {
   # For component builds all dependencies are already included in the headless
@@ -564,7 +551,6 @@ group("headless_tests") {
 
 test("headless_unittests") {
   sources = [
-    "lib/browser/protocol/protocol_unittest.cc",
     "public/domains/types_unittest.cc",
     "public/util/error_reporter_unittest.cc",
   ]
@@ -573,6 +559,8 @@ test("headless_unittests") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/browser/headless_overlay_manifests.cc",
+      "lib/browser/headless_overlay_manifests.h",
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
@@ -583,6 +571,8 @@ test("headless_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/security_state/content",
+    "//components/services/pdf_compositor/public/cpp:manifest",
+    "//components/services/pdf_compositor/public/interfaces",
     "//content/public/app:both",
     "//content/public/child:child",
     "//content/public/common",
@@ -611,16 +601,11 @@ test("headless_unittests") {
 if (is_mac) {
   copy("mac_helpers") {
     sources = [
-      "$root_out_dir/crashpad_handler",
+      "$root_out_dir/chrome_crashpad_handler",
     ]
 
-    if (is_component_build) {
-      sources += [ "$root_out_dir/libbase.dylib" ]
-    }
-
     deps = [
-      "//base",
-      "//third_party/crashpad/crashpad/handler:crashpad_handler",
+      "//components/crash/content/app:chrome_crashpad_handler",
     ]
 
     outputs = [
@@ -726,6 +711,8 @@ test("headless_browsertests") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/browser/headless_overlay_manifests.cc",
+      "lib/browser/headless_overlay_manifests.h",
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
@@ -735,10 +722,13 @@ test("headless_browsertests") {
     ":headless_renderer",
     "//base",
     "//components/security_state/content",
+    "//components/services/pdf_compositor/public/cpp:manifest",
+    "//components/services/pdf_compositor/public/interfaces",
     "//content/test:test_support",
     "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base/clipboard",
   ]
 
   if (!is_fuchsia) {
@@ -776,15 +766,17 @@ if (is_win) {
     sources = [
       "app/headless_shell.cc",
       "app/headless_shell.h",
-      "app/headless_shell_switches.cc",
-      "app/headless_shell_switches.h",
       "app/headless_shell_win.cc",
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/browser/headless_overlay_manifests.cc",
+      "lib/browser/headless_overlay_manifests.h",
       "public/headless_shell.h",
     ]
     deps = [
       ":headless",
+      "//components/services/pdf_compositor/public/cpp:manifest",
+      "//components/services/pdf_compositor/public/interfaces",
       "//content:sandbox_helper_win",
       "//content/public/browser",
       "//content/public/common",
@@ -806,8 +798,6 @@ if (is_win) {
         "//third_party/blink/public:blink_headers",
       ]
     }
-
-    configs += [ ":headless_implementation" ]
   }
 
   # Headless library with child specific dependencies (e.g., renderer). This
@@ -842,8 +832,6 @@ if (is_win) {
         "//third_party/blink/public:blink_headers",
       ]
     }
-
-    configs += [ ":headless_implementation" ]
   }
 }
 
@@ -860,6 +848,8 @@ jumbo_static_library("headless_shell_lib") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/browser/headless_overlay_manifests.cc",
+      "lib/browser/headless_overlay_manifests.h",
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
@@ -869,6 +859,8 @@ jumbo_static_library("headless_shell_lib") {
     ":headless_renderer",
     "//components/os_crypt",
     "//components/security_state/content",
+    "//components/services/pdf_compositor/public/cpp:manifest",
+    "//components/services/pdf_compositor/public/interfaces",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/child:child",
@@ -892,7 +884,7 @@ jumbo_static_library("headless_shell_lib") {
   }
 
   if (is_win) {
-    defines = [ "HEADLESS_USE_CRASPHAD" ]
+    defines = [ "HEADLESS_USE_CRASHPAD" ]
 
     deps += [
       "//components/crash/content/app:crash_export_thunks",

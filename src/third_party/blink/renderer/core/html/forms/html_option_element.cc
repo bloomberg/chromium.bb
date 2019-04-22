@@ -345,7 +345,8 @@ void HTMLOptionElement::RemovedFrom(ContainerNode& insertion_point) {
     if (!parentNode() || IsHTMLOptGroupElement(*parentNode()))
       select->OptionRemoved(*this);
   } else if (IsHTMLOptGroupElement(insertion_point)) {
-    if (auto* select = ToHTMLSelectElementOrNull(insertion_point.parentNode()))
+    select = ToHTMLSelectElementOrNull(insertion_point.parentNode());
+    if (select)
       select->OptionRemoved(*this);
   }
   HTMLElement::RemovedFrom(insertion_point);

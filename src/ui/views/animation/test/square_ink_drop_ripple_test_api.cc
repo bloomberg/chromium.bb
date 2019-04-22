@@ -19,7 +19,7 @@ SquareInkDropRippleTestApi::SquareInkDropRippleTestApi(
     SquareInkDropRipple* ink_drop_ripple)
     : InkDropRippleTestApi(ink_drop_ripple) {}
 
-SquareInkDropRippleTestApi::~SquareInkDropRippleTestApi() {}
+SquareInkDropRippleTestApi::~SquareInkDropRippleTestApi() = default;
 
 void SquareInkDropRippleTestApi::CalculateCircleTransforms(
     const gfx::Size& size,

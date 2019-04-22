@@ -149,6 +149,6 @@ TEST_P(UpdateActiveSetupVersionWorkItemTest, Execute) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(UpdateActiveSetupVersionWorkItemTestInstance,
-                        UpdateActiveSetupVersionWorkItemTest,
-                        ValuesIn(kUpdateActiveSetupVersionWorkItemTestCases));
+INSTANTIATE_TEST_SUITE_P(UpdateActiveSetupVersionWorkItemTestInstance,
+                         UpdateActiveSetupVersionWorkItemTest,
+                         ValuesIn(kUpdateActiveSetupVersionWorkItemTestCases));

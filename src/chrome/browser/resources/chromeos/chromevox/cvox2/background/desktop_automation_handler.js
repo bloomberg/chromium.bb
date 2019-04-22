@@ -72,7 +72,6 @@ DesktopAutomationHandler = function(node) {
   this.addListener_(EventType.BLUR, this.onBlur);
   this.addListener_(
       EventType.CHECKED_STATE_CHANGED, this.onCheckedStateChanged);
-  this.addListener_(EventType.CHILDREN_CHANGED, this.onChildrenChanged);
   this.addListener_(
       EventType.DOCUMENT_SELECTION_CHANGED, this.onDocumentSelectionChanged);
   this.addListener_(EventType.EXPANDED_CHANGED, this.onEventIfInRange);
@@ -188,14 +187,17 @@ DesktopAutomationHandler.prototype = {
     if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
         evt.target.state.focused) {
       var prevTarget = this.lastAttributeTarget_;
-      this.lastAttributeTarget_ = evt.target;
-      var prevOutput = this.lastAttributeOutput_;
-      this.lastAttributeOutput_ = new Output().withRichSpeechAndBraille(
-          cursors.Range.fromNode(evt.target), prev, Output.EventType.NAVIGATE);
 
-      if (evt.target == prevTarget && prevOutput &&
-          prevOutput.equals(this.lastAttributeOutput_))
+      // Re-target to active descendant if it exists.
+      var prevOutput = this.lastAttributeOutput_;
+      this.lastAttributeTarget_ = evt.target.activeDescendant || evt.target;
+      this.lastAttributeOutput_ = new Output().withRichSpeechAndBraille(
+          cursors.Range.fromNode(this.lastAttributeTarget_), prev,
+          Output.EventType.NAVIGATE);
+      if (this.lastAttributeTarget_ == prevTarget && prevOutput &&
+          prevOutput.equals(this.lastAttributeOutput_)) {
         return;
+      }
 
       // If the target or an ancestor is controlled by another control, we may
       // want to delay the output.
@@ -228,10 +230,16 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onAriaAttributeChanged: function(evt) {
-    if (evt.target.state.editable)
+    // Don't report changes on editable nodes since they interfere with text
+    // selection changes. Users can query via Search+k for the current state of
+    // the text field (which would also report the entire value).
+    if (evt.target.state[StateType.EDITABLE])
       return;
-    // Only report attribute changes on menu list items if it is selected.
-    if (evt.target.role == RoleType.MENU_LIST_OPTION && !evt.target.selected)
+
+    // Only report attribute changes on some *Option roles if it is selected.
+    if ((evt.target.role == RoleType.MENU_LIST_OPTION ||
+         evt.target.role == RoleType.LIST_BOX_OPTION) &&
+        !evt.target.selected)
       return;
 
     this.onEventIfInRange(evt);
@@ -318,12 +326,11 @@ DesktopAutomationHandler.prototype = {
   onActiveDescendantChanged: function(evt) {
     if (!evt.target.activeDescendant || !evt.target.state.focused)
       return;
-    var prevRange = ChromeVoxState.instance.currentRange;
-    var range = cursors.Range.fromNode(evt.target.activeDescendant);
-    ChromeVoxState.instance.setCurrentRange(range);
-    new Output()
-        .withRichSpeechAndBraille(range, prevRange, Output.EventType.NAVIGATE)
-        .go();
+
+    // Various events might come before a key press (which forces flushed
+    // speech) and this handler. Force output to be at least category flushed.
+    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
+    this.onEventIfInRange(evt);
   },
 
   /**
@@ -364,32 +371,11 @@ DesktopAutomationHandler.prototype = {
   /**
    * @param {!AutomationEvent} evt
    */
-  onChildrenChanged: function(evt) {
-    var curRange = ChromeVoxState.instance.currentRange;
-
-    // views::TextField blinks by making its cursor view alternate between
-    // visible and not visible. This results in a children changed event on its
-    // parent (the text field itself). In general, text field feedback should be
-    // given within text field specific events.
-    if (evt.target.role == RoleType.TEXT_FIELD)
-      return;
-
-    // Always refresh the braille contents.
-    if (curRange && curRange.equals(cursors.Range.fromNode(evt.target))) {
-      new Output()
-          .withBraille(curRange, curRange, Output.EventType.NAVIGATE)
-          .go();
-    }
-  },
-
-  /**
-   * @param {!AutomationEvent} evt
-   */
   onDocumentSelectionChanged: function(evt) {
-    var anchor = evt.target.anchorObject;
+    var selectionStart = evt.target.selectionStartObject;
 
     // No selection.
-    if (!anchor)
+    if (!selectionStart)
       return;
 
     // A caller requested this event be ignored.
@@ -398,10 +384,11 @@ DesktopAutomationHandler.prototype = {
       return;
 
     // Editable selection.
-    if (anchor.state[StateType.EDITABLE]) {
-      anchor = AutomationUtil.getEditableRoot(anchor) || anchor;
+    if (selectionStart.state[StateType.EDITABLE]) {
+      selectionStart =
+          AutomationUtil.getEditableRoot(selectionStart) || selectionStart;
       this.onEditableChanged_(
-          new CustomAutomationEvent(evt.type, anchor, evt.eventFrom));
+          new CustomAutomationEvent(evt.type, selectionStart, evt.eventFrom));
     }
 
     // Non-editable selections are handled in |Background|.
@@ -550,14 +537,15 @@ DesktopAutomationHandler.prototype = {
     }
 
     // Sync the ChromeVox range to the editable, if a selection exists.
-    var anchorObject = evt.target.root.anchorObject;
-    var anchorOffset = evt.target.root.anchorOffset || 0;
-    var focusObject = evt.target.root.focusObject;
-    var focusOffset = evt.target.root.focusOffset || 0;
-    if (anchorObject && focusObject) {
+    var selectionStartObject = evt.target.root.selectionStartObject;
+    var selectionStartOffset = evt.target.root.selectionStartOffset || 0;
+    var selectionEndObject = evt.target.root.selectionEndObject;
+    var selectionEndOffset = evt.target.root.selectionEndOffset || 0;
+    if (selectionStartObject && selectionEndObject) {
       var selectedRange = new cursors.Range(
-          new cursors.WrappingCursor(anchorObject, anchorOffset),
-          new cursors.WrappingCursor(focusObject, focusOffset));
+          new cursors.WrappingCursor(
+              selectionStartObject, selectionStartOffset),
+          new cursors.WrappingCursor(selectionEndObject, selectionEndOffset));
 
       // Sync ChromeVox range with selection.
       ChromeVoxState.instance.setCurrentRange(selectedRange);
@@ -608,7 +596,8 @@ DesktopAutomationHandler.prototype = {
             range, range, Output.EventType.NAVIGATE);
         this.lastValueTarget_ = t;
       } else {
-        output.format('$value', t);
+        output.format(
+            '$if($value, $value, $if($valueForRange, $valueForRange))', t);
       }
       output.go();
     }
@@ -642,7 +631,7 @@ DesktopAutomationHandler.prototype = {
 
       // Some cases (e.g. in overview mode), require overriding the assumption
       // that focus is an ancestor of a selection target.
-      var override = evt.target.role == RoleType.MENU_ITEM ||
+      var override = AutomationPredicate.menuItem(evt.target) ||
           (evt.target.root == focus.root &&
            focus.root.role == RoleType.DESKTOP);
       if (override || AutomationUtil.isDescendantOf(evt.target, focus))

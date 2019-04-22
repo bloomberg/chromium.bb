@@ -9,14 +9,14 @@ cr.define('chrome.invalidations', function() {
    * log any invalidations ocurred prior to opening the about:invalidation
    * page).
    */
-  var tableObjects = {};
+  const tableObjects = {};
 
   /**
    * Local variable that contains the detailed information in an object form.
    * This was done this way as to allow multiple calls to updateDetailedStatus
    * to keep adding new items.
    */
-  var cachedDetails = {};
+  let cachedDetails = {};
 
   function quote(str) {
     return '\"' + str + '\"';
@@ -31,23 +31,23 @@ cr.define('chrome.invalidations', function() {
    * @param {string} logMessage The string to be appended.
    */
   function appendToLog(logMessage) {
-    var invalidationsLog = $('invalidations-log');
+    const invalidationsLog = $('invalidations-log');
     invalidationsLog.value += logMessage + '\n';
   }
   /**
    *  Updates the jstemplate with the latest ObjectIds, ordered by registrar.
    */
   function repaintTable() {
-    var keys = [];
-    for (var key in tableObjects) {
+    const keys = [];
+    for (const key in tableObjects) {
       keys.push(key);
     }
     keys.sort();
-    var sortedInvalidations = [];
-    for (var i = 0; i < keys.length; i++) {
+    const sortedInvalidations = [];
+    for (let i = 0; i < keys.length; i++) {
       sortedInvalidations.push(tableObjects[keys[i]]);
     }
-    var wrapped = {objectsidtable: sortedInvalidations};
+    const wrapped = {objectsidtable: sortedInvalidations};
     jstProcess(new JsEvalContext(wrapped), $('objectsid-table-div'));
   }
 
@@ -58,7 +58,7 @@ cr.define('chrome.invalidations', function() {
    *     changed.
    */
   function updateInvalidatorState(newState, lastChangedTime) {
-    var logMessage = nowTimeString() +
+    const logMessage = nowTimeString() +
         'Invalidations service state changed to ' + quote(newState);
 
     appendToLog(logMessage);
@@ -72,16 +72,17 @@ cr.define('chrome.invalidations', function() {
    *     that contains the invalidations received by the InvalidatorService.
    */
   function logInvalidations(allInvalidations) {
-    for (var i = 0; i < allInvalidations.length; i++) {
-      var inv = allInvalidations[i];
+    for (let i = 0; i < allInvalidations.length; i++) {
+      const inv = allInvalidations[i];
       if (inv.hasOwnProperty('objectId')) {
-        var logMessage = nowTimeString() + 'Received Invalidation with type ' +
-            quote(inv.objectId.name) + ' version ' +
+        const logMessage = nowTimeString() +
+            'Received Invalidation with type ' + quote(inv.objectId.name) +
+            ' version ' +
             quote((inv.isUnknownVersion ? 'Unknown' : inv.version)) +
             ' with payload ' + quote(inv.payload);
 
         appendToLog(logMessage);
-        var isInvalidation = true;
+        const isInvalidation = true;
         logToTable(inv, isInvalidation);
       }
     }
@@ -97,16 +98,17 @@ cr.define('chrome.invalidations', function() {
    *     as it was just updated its state.
    */
   function logToTable(oId, isInvalidation) {
-    var registrar = oId.registrar;
-    var name = oId.objectId.name;
-    var source = oId.objectId.source;
-    var totalCount = oId.objectId.totalCount || 0;
-    var key = source + '-' + name;
-    var time = new Date();
-    var version = oId.isUnknownVersion ? '?' : oId.version;
-    var payload = '';
-    if (oId.hasOwnProperty('payload'))
+    const registrar = oId.registrar;
+    const name = oId.objectId.name;
+    const source = oId.objectId.source;
+    const totalCount = oId.objectId.totalCount || 0;
+    const key = source + '-' + name;
+    const time = new Date();
+    const version = oId.isUnknownVersion ? '?' : oId.version;
+    let payload = '';
+    if (oId.hasOwnProperty('payload')) {
       payload = oId.payload;
+    }
     if (!(key in tableObjects)) {
       tableObjects[key] = {
         name: name,
@@ -140,9 +142,9 @@ cr.define('chrome.invalidations', function() {
    *     InvalidatorService.
    */
   function updateHandlers(allHandlers) {
-    var allHandlersFormatted = allHandlers.join(', ');
+    const allHandlersFormatted = allHandlers.join(', ');
     $('registered-handlers').textContent = allHandlersFormatted;
-    var logMessage = nowTimeString() +
+    const logMessage = nowTimeString() +
         'InvalidatorHandlers currently registered: ' + allHandlersFormatted;
     appendToLog(logMessage);
   }
@@ -159,14 +161,15 @@ cr.define('chrome.invalidations', function() {
   function updateIds(registrar, allIds) {
     // Grey out every datatype assigned to this registrar
     // (and reenable them later in case they are still registered).
-    for (var key in tableObjects) {
-      if (tableObjects[key]['registrar'] === registrar)
+    for (const key in tableObjects) {
+      if (tableObjects[key]['registrar'] === registrar) {
         tableObjects[key].type = 'greyed';
+      }
     }
     // Reenable those ObjectsIds still registered with this registrar.
-    for (var i = 0; i < allIds.length; i++) {
-      var oId = {objectId: allIds[i], registrar: registrar};
-      var isInvalidation = false;
+    for (let i = 0; i < allIds.length; i++) {
+      const oId = {objectId: allIds[i], registrar: registrar};
+      const isInvalidation = false;
       logToTable(oId, isInvalidation);
     }
     repaintTable();
@@ -178,7 +181,7 @@ cr.define('chrome.invalidations', function() {
    *      details (e.g. Network Channel information).
    */
   function updateDetailedStatus(newDetails) {
-    for (var key in newDetails) {
+    for (const key in newDetails) {
       cachedDetails[key] = newDetails[key];
     }
     $('internal-display').value = JSON.stringify(cachedDetails, null, 2);

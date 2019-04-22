@@ -27,8 +27,8 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/multiprocess_test.h"
@@ -111,13 +111,13 @@ typedef struct _REPARSE_DATA_BUFFER {
 // Sets a reparse point. |source| will now point to |target|. Returns true if
 // the call succeeds, false otherwise.
 bool SetReparsePoint(HANDLE source, const FilePath& target_path) {
-  std::wstring kPathPrefix = L"\\??\\";
-  std::wstring target_str;
+  string16 kPathPrefix = FILE_PATH_LITERAL("\\??\\");
+  string16 target_str;
   // The juction will not work if the target path does not start with \??\ .
   if (kPathPrefix != target_path.value().substr(0, kPathPrefix.size()))
     target_str += kPathPrefix;
   target_str += target_path.value();
-  const wchar_t* target = target_str.c_str();
+  const wchar_t* target = as_wcstr(target_str);
   USHORT size_target = static_cast<USHORT>(wcslen(target)) * sizeof(target[0]);
   char buffer[2000] = {0};
   DWORD returned;
@@ -159,13 +159,11 @@ class ReparsePoint {
   // Creates a reparse point from |source| (an empty directory) to |target|.
   ReparsePoint(const FilePath& source, const FilePath& target) {
     dir_.Set(
-      ::CreateFile(source.value().c_str(),
-                   GENERIC_READ | GENERIC_WRITE,
-                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                   NULL,
-                   OPEN_EXISTING,
-                   FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
-                   NULL));
+        ::CreateFile(as_wcstr(source.value()), GENERIC_READ | GENERIC_WRITE,
+                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                     NULL, OPEN_EXISTING,
+                     FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
+                     NULL));
     created_ = dir_.IsValid() && SetReparsePoint(dir_.Get(), target);
   }
 
@@ -208,11 +206,11 @@ void ChangePosixFilePermissions(const FilePath& path,
 void SetReadOnly(const FilePath& path, bool read_only) {
 #if defined(OS_WIN)
   // On Windows, it involves setting/removing the 'readonly' bit.
-  DWORD attrs = GetFileAttributes(path.value().c_str());
+  DWORD attrs = GetFileAttributes(as_wcstr(path.value()));
   ASSERT_NE(INVALID_FILE_ATTRIBUTES, attrs);
   ASSERT_TRUE(SetFileAttributes(
-      path.value().c_str(), read_only ? (attrs | FILE_ATTRIBUTE_READONLY)
-                                      : (attrs & ~FILE_ATTRIBUTE_READONLY)));
+      as_wcstr(path.value()), read_only ? (attrs | FILE_ATTRIBUTE_READONLY)
+                                        : (attrs & ~FILE_ATTRIBUTE_READONLY)));
 
   DWORD expected =
       read_only
@@ -221,7 +219,7 @@ void SetReadOnly(const FilePath& path, bool read_only) {
           : (attrs & (FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_DIRECTORY));
 
   // Ignore FILE_ATTRIBUTE_NOT_CONTENT_INDEXED if present.
-  attrs = GetFileAttributes(path.value().c_str()) &
+  attrs = GetFileAttributes(as_wcstr(path.value())) &
           ~FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
   ASSERT_EQ(expected, attrs);
 #else
@@ -234,7 +232,7 @@ void SetReadOnly(const FilePath& path, bool read_only) {
 
 bool IsReadOnly(const FilePath& path) {
 #if defined(OS_WIN)
-  DWORD attrs = GetFileAttributes(path.value().c_str());
+  DWORD attrs = GetFileAttributes(as_wcstr(path.value()));
   EXPECT_NE(INVALID_FILE_ATTRIBUTES, attrs);
   return attrs & FILE_ATTRIBUTE_READONLY;
 #else
@@ -297,7 +295,11 @@ class FindResultCollector {
 void CreateTextFile(const FilePath& filename,
                     const std::wstring& contents) {
   std::wofstream file;
-  file.open(filename.value().c_str());
+#if defined(OS_WIN)
+  file.open(as_wcstr(filename.value()));
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  file.open(filename.value());
+#endif  // OS_WIN
   ASSERT_TRUE(file.is_open());
   file << contents;
   file.close();
@@ -307,9 +309,13 @@ void CreateTextFile(const FilePath& filename,
 std::wstring ReadTextFile(const FilePath& filename) {
   wchar_t contents[64];
   std::wifstream file;
-  file.open(filename.value().c_str());
+#if defined(OS_WIN)
+  file.open(as_wcstr(filename.value()));
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  file.open(filename.value());
+#endif  // OS_WIN
   EXPECT_TRUE(file.is_open());
-  file.getline(contents, arraysize(contents));
+  file.getline(contents, size(contents));
   file.close();
   return std::wstring(contents);
 }
@@ -476,13 +482,13 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
 
     // Normalize a junction free path: base_a\sub_a\file.txt .
     ASSERT_TRUE(NormalizeFilePath(file_txt, &normalized_path));
-    ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
+    ASSERT_EQ(file_txt.value(), normalized_path.value());
 
     // Check that the path base_b\to_sub_a\file.txt can be normalized to exclude
     // the junction to_sub_a.
     ASSERT_TRUE(NormalizeFilePath(to_sub_a.Append(FPL("file.txt")),
                                              &normalized_path));
-    ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
+    ASSERT_EQ(file_txt.value(), normalized_path.value());
 
     // Check that the path base_b\to_base_b\to_base_b\to_sub_a\file.txt can be
     // normalized to exclude junctions to_base_b and to_sub_a .
@@ -491,7 +497,7 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
                                                    .Append(FPL("to_sub_a"))
                                                    .Append(FPL("file.txt")),
                                              &normalized_path));
-    ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
+    ASSERT_EQ(file_txt.value(), normalized_path.value());
 
     // A long enough path will cause NormalizeFilePath() to fail.  Make a long
     // path using to_base_b many times, and check that paths long enough to fail
@@ -529,9 +535,9 @@ TEST_F(FileUtilTest, DevicePathToDriveLetter) {
   }
 
   // Get the NT style path to that drive.
-  wchar_t device_path[MAX_PATH] = {'\0'};
-  ASSERT_TRUE(
-      ::QueryDosDevice(real_drive_letter.c_str(), device_path, MAX_PATH));
+  char16 device_path[MAX_PATH] = {'\0'};
+  ASSERT_TRUE(::QueryDosDevice(as_wcstr(real_drive_letter),
+                               as_writable_wcstr(device_path), MAX_PATH));
   FilePath actual_device_path(device_path);
   FilePath win32_path;
 
@@ -546,7 +552,9 @@ TEST_F(FileUtilTest, DevicePathToDriveLetter) {
   ASSERT_TRUE(DevicePathToDriveLetterPath(
       actual_device_path.Append(kRelativePath),
       &win32_path));
-  EXPECT_EQ(FilePath(real_drive_letter + L"\\").Append(kRelativePath).value(),
+  EXPECT_EQ(FilePath(real_drive_letter + FILE_PATH_LITERAL("\\"))
+                .Append(kRelativePath)
+                .value(),
             win32_path.value());
 
   // Deform the real path so that it is invalid by removing the last four
@@ -556,9 +564,9 @@ TEST_F(FileUtilTest, DevicePathToDriveLetter) {
   // real drive is if more than 10^3 disks are mounted:
   // \Device\HardDiskVolume10000 would be truncated to \Device\HardDiskVolume1
   // Check that DevicePathToDriveLetterPath fails.
-  int path_length = actual_device_path.value().length();
-  int new_length = path_length - 4;
-  ASSERT_LT(0, new_length);
+  size_t path_length = actual_device_path.value().length();
+  size_t new_length = path_length - 4;
+  ASSERT_GT(new_length, 0u);
   FilePath prefix_of_real_device_path(
       actual_device_path.value().substr(0, new_length));
   ASSERT_FALSE(DevicePathToDriveLetterPath(prefix_of_real_device_path,
@@ -594,24 +602,25 @@ TEST_F(FileUtilTest, CreateTemporaryFileInDirLongPathTest) {
   // - the filesystem at |temp_dir_| supports long filenames.
   // - the account has FILE_LIST_DIRECTORY permission for all ancestor
   //   directories of |temp_dir_|.
-  const FilePath::CharType kLongDirName[] = FPL("A long path");
-  const FilePath::CharType kTestSubDirName[] = FPL("test");
+  constexpr FilePath::CharType kLongDirName[] = FPL("A long path");
+  constexpr FilePath::CharType kTestSubDirName[] = FPL("test");
   FilePath long_test_dir = temp_dir_.GetPath().Append(kLongDirName);
   ASSERT_TRUE(CreateDirectory(long_test_dir));
 
   // kLongDirName is not a 8.3 component. So GetShortName() should give us a
   // different short name.
-  WCHAR path_buffer[MAX_PATH];
-  DWORD path_buffer_length = GetShortPathName(long_test_dir.value().c_str(),
-                                              path_buffer, MAX_PATH);
+  char16 path_buffer[MAX_PATH];
+  DWORD path_buffer_length =
+      GetShortPathName(as_wcstr(long_test_dir.value()),
+                       as_writable_wcstr(path_buffer), MAX_PATH);
   ASSERT_LT(path_buffer_length, DWORD(MAX_PATH));
   ASSERT_NE(DWORD(0), path_buffer_length);
   FilePath short_test_dir(path_buffer);
-  ASSERT_STRNE(kLongDirName, short_test_dir.BaseName().value().c_str());
+  ASSERT_NE(kLongDirName, short_test_dir.BaseName().value());
 
   FilePath temp_file;
   ASSERT_TRUE(CreateTemporaryFileInDir(short_test_dir, &temp_file));
-  EXPECT_STREQ(kLongDirName, temp_file.DirName().BaseName().value().c_str());
+  EXPECT_EQ(kLongDirName, temp_file.DirName().BaseName().value());
   EXPECT_TRUE(PathExists(temp_file));
 
   // Create a subdirectory of |long_test_dir| and make |long_test_dir|
@@ -633,8 +642,8 @@ TEST_F(FileUtilTest, CreateTemporaryFileInDirLongPathTest) {
   EXPECT_TRUE(short_test_dir.IsParent(temp_file.DirName()));
 
   // Check that the long path can't be determined for |temp_file|.
-  path_buffer_length = GetLongPathName(temp_file.value().c_str(),
-                                       path_buffer, MAX_PATH);
+  path_buffer_length = GetLongPathName(
+      as_wcstr(temp_file.value()), as_writable_wcstr(path_buffer), MAX_PATH);
   EXPECT_EQ(DWORD(0), path_buffer_length);
 }
 
@@ -2347,7 +2356,7 @@ TEST_F(FileUtilTest, GetTempDirTest) {
   ASSERT_EQ(0, ::_tdupenv_s(&original_tmp, &original_tmp_size, kTmpKey));
   // original_tmp may be NULL.
 
-  for (unsigned int i = 0; i < arraysize(kTmpValues); ++i) {
+  for (unsigned int i = 0; i < size(kTmpValues); ++i) {
     FilePath path;
     ::_tputenv_s(kTmpKey, kTmpValues[i]);
     GetTempDir(&path);
@@ -2426,6 +2435,45 @@ TEST_F(FileUtilTest, CreateAndOpenTemporaryFileTest) {
   for (i = 0; i < 3; ++i) {
     EXPECT_TRUE(CloseFile(fps[i]));
     EXPECT_TRUE(DeleteFile(names[i], false));
+  }
+}
+
+TEST_F(FileUtilTest, GetUniquePathTest) {
+  // Create a unique temp directory and use it to generate a unique file path.
+  base::ScopedTempDir temp_dir;
+  EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
+  EXPECT_TRUE(temp_dir.IsValid());
+  FilePath base_name(FILE_PATH_LITERAL("Unique_Base_Name.txt"));
+  FilePath base_path = temp_dir.GetPath().Append(base_name);
+  EXPECT_FALSE(PathExists(base_path));
+
+  // GetUniquePath() should return unchanged path if file does not exist.
+  EXPECT_EQ(base_path, GetUniquePath(base_path));
+
+  // Create the file.
+  File file(base_path, File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE);
+  EXPECT_TRUE(PathExists(base_path));
+
+  static const FilePath::CharType* const kExpectedNames[] = {
+      FILE_PATH_LITERAL("Unique_Base_Name (1).txt"),
+      FILE_PATH_LITERAL("Unique_Base_Name (2).txt"),
+      FILE_PATH_LITERAL("Unique_Base_Name (3).txt"),
+  };
+
+  // Call GetUniquePath() three times against this existing file name.
+  for (const FilePath::CharType* expected_name : kExpectedNames) {
+    FilePath expected_path = temp_dir.GetPath().Append(expected_name);
+    FilePath path = GetUniquePath(base_path);
+    EXPECT_EQ(expected_path, path);
+
+    // Verify that a file with this path indeed does not exist on the file
+    // system.
+    EXPECT_FALSE(PathExists(path));
+
+    // Create the file so it exists for the next call to GetUniquePath() in the
+    // loop.
+    File file(path, File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE);
+    EXPECT_TRUE(PathExists(path));
   }
 }
 
@@ -2870,7 +2918,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithUnknownFileSize) {
 
 MULTIPROCESS_TEST_MAIN(ChildMain) {
   const char kTestData[] = "0123";
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
   const FilePath pipe_path = command_line->GetSwitchValuePath("pipe-path");
 
   int fd = open(pipe_path.value().c_str(), O_WRONLY);
@@ -2893,7 +2941,7 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
 
 MULTIPROCESS_TEST_MAIN(MoreThanBufferSizeChildMain) {
   std::string data(kLargeFileSize, 'c');
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
   const FilePath pipe_path = command_line->GetSwitchValuePath("pipe-path");
 
   int fd = open(pipe_path.value().c_str(), O_WRONLY);
@@ -2918,13 +2966,12 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("test_pipe"));
   ASSERT_EQ(0, mkfifo(pipe_path.value().c_str(), 0600));
 
-  base::CommandLine child_command_line(
-      base::GetMultiProcessTestChildBaseCommandLine());
+  CommandLine child_command_line(GetMultiProcessTestChildBaseCommandLine());
   child_command_line.AppendSwitchPath("pipe-path", pipe_path);
 
   {
-    base::Process child_process = base::SpawnMultiProcessTestChild(
-        ChildMainString, child_command_line, base::LaunchOptions());
+    Process child_process = SpawnMultiProcessTestChild(
+        ChildMainString, child_command_line, LaunchOptions());
     ASSERT_TRUE(child_process.IsValid());
 
     std::string data = "temp";
@@ -2937,8 +2984,8 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
     ASSERT_EQ(0, rv);
   }
   {
-    base::Process child_process = base::SpawnMultiProcessTestChild(
-        ChildMainString, child_command_line, base::LaunchOptions());
+    Process child_process = SpawnMultiProcessTestChild(
+        ChildMainString, child_command_line, LaunchOptions());
     ASSERT_TRUE(child_process.IsValid());
 
     std::string data = "temp";
@@ -2951,9 +2998,8 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
     ASSERT_EQ(0, rv);
   }
   {
-    base::Process child_process = base::SpawnMultiProcessTestChild(
-        MoreThanBufferSizeChildMainString, child_command_line,
-        base::LaunchOptions());
+    Process child_process = SpawnMultiProcessTestChild(
+        MoreThanBufferSizeChildMainString, child_command_line, LaunchOptions());
     ASSERT_TRUE(child_process.IsValid());
 
     std::string data = "temp";
@@ -2966,9 +3012,8 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
     ASSERT_EQ(0, rv);
   }
   {
-    base::Process child_process = base::SpawnMultiProcessTestChild(
-        MoreThanBufferSizeChildMainString, child_command_line,
-        base::LaunchOptions());
+    Process child_process = SpawnMultiProcessTestChild(
+        MoreThanBufferSizeChildMainString, child_command_line, LaunchOptions());
     ASSERT_TRUE(child_process.IsValid());
 
     std::string data = "temp";
@@ -2982,9 +3027,8 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
     ASSERT_EQ(0, rv);
   }
   {
-    base::Process child_process = base::SpawnMultiProcessTestChild(
-        MoreThanBufferSizeChildMainString, child_command_line,
-        base::LaunchOptions());
+    Process child_process = SpawnMultiProcessTestChild(
+        MoreThanBufferSizeChildMainString, child_command_line, LaunchOptions());
     ASSERT_TRUE(child_process.IsValid());
 
     std::string data = "temp";
@@ -2997,9 +3041,8 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
     ASSERT_EQ(0, rv);
   }
   {
-    base::Process child_process = base::SpawnMultiProcessTestChild(
-        MoreThanBufferSizeChildMainString, child_command_line,
-        base::LaunchOptions());
+    Process child_process = SpawnMultiProcessTestChild(
+        MoreThanBufferSizeChildMainString, child_command_line, LaunchOptions());
     ASSERT_TRUE(child_process.IsValid());
 
     std::string data = "temp";
@@ -3024,7 +3067,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
 
 MULTIPROCESS_TEST_MAIN(ChildMain) {
   const char kTestData[] = "0123";
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
   const FilePath pipe_path = command_line->GetSwitchValuePath("pipe-path");
   std::string switch_string = command_line->GetSwitchValueASCII("sync_event");
   EXPECT_FALSE(switch_string.empty());
@@ -3032,7 +3075,7 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
   EXPECT_TRUE(StringToUint(switch_string, &switch_uint));
   win::ScopedHandle sync_event(win::Uint32ToHandle(switch_uint));
 
-  HANDLE ph = CreateNamedPipe(pipe_path.value().c_str(), PIPE_ACCESS_OUTBOUND,
+  HANDLE ph = CreateNamedPipe(as_wcstr(pipe_path.value()), PIPE_ACCESS_OUTBOUND,
                               PIPE_WAIT, 1, 0, 0, 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));
@@ -3051,7 +3094,7 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
 
 MULTIPROCESS_TEST_MAIN(MoreThanBufferSizeChildMain) {
   std::string data(kLargeFileSize, 'c');
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
   const FilePath pipe_path = command_line->GetSwitchValuePath("pipe-path");
   std::string switch_string = command_line->GetSwitchValueASCII("sync_event");
   EXPECT_FALSE(switch_string.empty());
@@ -3059,7 +3102,7 @@ MULTIPROCESS_TEST_MAIN(MoreThanBufferSizeChildMain) {
   EXPECT_TRUE(StringToUint(switch_string, &switch_uint));
   win::ScopedHandle sync_event(win::Uint32ToHandle(switch_uint));
 
-  HANDLE ph = CreateNamedPipe(pipe_path.value().c_str(), PIPE_ACCESS_OUTBOUND,
+  HANDLE ph = CreateNamedPipe(as_wcstr(pipe_path.value()), PIPE_ACCESS_OUTBOUND,
                               PIPE_WAIT, 1, data.size(), data.size(), 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));
@@ -3076,17 +3119,16 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
   FilePath pipe_path(FILE_PATH_LITERAL("\\\\.\\pipe\\test_pipe"));
   win::ScopedHandle sync_event(CreateEvent(0, false, false, nullptr));
 
-  base::CommandLine child_command_line(
-      base::GetMultiProcessTestChildBaseCommandLine());
+  CommandLine child_command_line(GetMultiProcessTestChildBaseCommandLine());
   child_command_line.AppendSwitchPath("pipe-path", pipe_path);
   child_command_line.AppendSwitchASCII(
-      "sync_event", UintToString(win::HandleToUint32(sync_event.Get())));
+      "sync_event", NumberToString(win::HandleToUint32(sync_event.Get())));
 
-  base::LaunchOptions options;
+  LaunchOptions options;
   options.handles_to_inherit.push_back(sync_event.Get());
 
   {
-    base::Process child_process = base::SpawnMultiProcessTestChild(
+    Process child_process = SpawnMultiProcessTestChild(
         ChildMainString, child_command_line, options);
     ASSERT_TRUE(child_process.IsValid());
     // Wait for pipe creation in child process.
@@ -3102,7 +3144,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
     ASSERT_EQ(0, rv);
   }
   {
-    base::Process child_process = base::SpawnMultiProcessTestChild(
+    Process child_process = SpawnMultiProcessTestChild(
         ChildMainString, child_command_line, options);
     ASSERT_TRUE(child_process.IsValid());
     // Wait for pipe creation in child process.
@@ -3118,7 +3160,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
     ASSERT_EQ(0, rv);
   }
   {
-    base::Process child_process = base::SpawnMultiProcessTestChild(
+    Process child_process = SpawnMultiProcessTestChild(
         MoreThanBufferSizeChildMainString, child_command_line, options);
     ASSERT_TRUE(child_process.IsValid());
     // Wait for pipe creation in child process.
@@ -3134,7 +3176,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
     ASSERT_EQ(0, rv);
   }
   {
-    base::Process child_process = base::SpawnMultiProcessTestChild(
+    Process child_process = SpawnMultiProcessTestChild(
         MoreThanBufferSizeChildMainString, child_command_line, options);
     ASSERT_TRUE(child_process.IsValid());
     // Wait for pipe creation in child process.
@@ -3151,7 +3193,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
     ASSERT_EQ(0, rv);
   }
   {
-    base::Process child_process = base::SpawnMultiProcessTestChild(
+    Process child_process = SpawnMultiProcessTestChild(
         MoreThanBufferSizeChildMainString, child_command_line, options);
     ASSERT_TRUE(child_process.IsValid());
     // Wait for pipe creation in child process.
@@ -3167,7 +3209,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
     ASSERT_EQ(0, rv);
   }
   {
-    base::Process child_process = base::SpawnMultiProcessTestChild(
+    Process child_process = SpawnMultiProcessTestChild(
         MoreThanBufferSizeChildMainString, child_command_line, options);
     ASSERT_TRUE(child_process.IsValid());
     // Wait for pipe creation in child process.
@@ -3291,11 +3333,11 @@ TEST_F(FileUtilTest, IsDirectoryEmpty) {
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 TEST_F(FileUtilTest, SetNonBlocking) {
-  const int kInvalidFd = 99999;
-  EXPECT_FALSE(SetNonBlocking(kInvalidFd));
+  const int kBogusFd = 99999;
+  EXPECT_FALSE(SetNonBlocking(kBogusFd));
 
-  base::FilePath path;
-  ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &path));
+  FilePath path;
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &path));
   path = path.Append(FPL("file_util")).Append(FPL("original.txt"));
   ScopedFD fd(open(path.value().c_str(), O_RDONLY));
   ASSERT_GE(fd.get(), 0);
@@ -3303,11 +3345,11 @@ TEST_F(FileUtilTest, SetNonBlocking) {
 }
 
 TEST_F(FileUtilTest, SetCloseOnExec) {
-  const int kInvalidFd = 99999;
-  EXPECT_FALSE(SetCloseOnExec(kInvalidFd));
+  const int kBogusFd = 99999;
+  EXPECT_FALSE(SetCloseOnExec(kBogusFd));
 
-  base::FilePath path;
-  ASSERT_TRUE(PathService::Get(base::DIR_TEST_DATA, &path));
+  FilePath path;
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &path));
   path = path.Append(FPL("file_util")).Append(FPL("original.txt"));
   ScopedFD fd(open(path.value().c_str(), O_RDONLY));
   ASSERT_GE(fd.get(), 0);

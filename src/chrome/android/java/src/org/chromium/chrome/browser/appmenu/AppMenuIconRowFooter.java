@@ -59,8 +59,8 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
         // ImageView tinting doesn't work with LevelListDrawable, use Drawable tinting instead.
         // See https://crbug.com/891593 for details.
         Drawable icon = AppCompatResources.getDrawable(getContext(), R.drawable.btn_reload_stop);
-        DrawableCompat.setTintList(
-                icon, AppCompatResources.getColorStateList(getContext(), R.color.dark_mode_tint));
+        DrawableCompat.setTintList(icon,
+                AppCompatResources.getColorStateList(getContext(), R.color.standard_mode_tint));
         mReloadButton.setImageDrawable(icon);
     }
 

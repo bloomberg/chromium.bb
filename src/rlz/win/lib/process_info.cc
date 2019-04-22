@@ -82,4 +82,4 @@ bool ProcessInfo::HasAdminRights() {
   return has_rights;
 }
 
-};  // namespace
+}  // namespace rlz_lib

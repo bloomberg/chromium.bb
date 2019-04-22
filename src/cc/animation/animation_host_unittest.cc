@@ -37,7 +37,7 @@ class AnimationHostTest : public AnimationTimelinesTest {
     client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
 
     worklet_animation_ = WorkletAnimation::Create(
-        worklet_animation_id_, "test_name", nullptr, nullptr);
+        worklet_animation_id_, "test_name", 1, nullptr, nullptr);
     int cc_id = worklet_animation_->id();
     worklet_animation_->AttachElement(element_id_);
     host_->AddAnimationTimeline(timeline_);
@@ -149,7 +149,7 @@ TEST_F(AnimationHostTest, ImplOnlyScrollAnimationUpdateTargetIfDetached) {
 
 // Tests that verify interaction of AnimationHost with LayerTreeMutator.
 
-TEST_F(AnimationHostTest, LayerTreeMutatorUpdateTakesEffectInSameFrame) {
+TEST_F(AnimationHostTest, FastLayerTreeMutatorUpdateTakesEffectInSameFrame) {
   AttachWorkletAnimation();
 
   const float start_opacity = .7f;
@@ -178,6 +178,11 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateTakesEffectInSameFrame) {
   // Ticking host should cause layer tree mutator to update output state which
   // should take effect in the same animation frame.
   TickAnimationsTransferEvents(base::TimeTicks(), 0u);
+
+  // Emulate behavior in PrepareToDraw. Animation worklet updates are best
+  // effort, and the animation tick is deferred until draw to allow time for the
+  // updates to arrive.
+  host_impl_->TickWorkletAnimations();
 
   TestLayer* layer =
       client_.FindTestLayer(element_id_, ElementListType::ACTIVE);
@@ -328,13 +333,13 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
 
   // Create scroll timeline that links scroll animation and worklet animation
   // together. Use timerange so that we have 1:1 time & scroll mapping.
-  auto scroll_timeline =
-      std::make_unique<ScrollTimeline>(element_id, ScrollTimeline::ScrollDown,
-                                       base::nullopt, base::nullopt, 100);
+  auto scroll_timeline = std::make_unique<ScrollTimeline>(
+      element_id, ScrollTimeline::ScrollDown, base::nullopt, base::nullopt, 100,
+      KeyframeModel::FillMode::NONE);
 
   // Create a worklet animation that is bound to the scroll timeline.
   scoped_refptr<WorkletAnimation> worklet_animation(
-      new WorkletAnimation(animation_id2, worklet_animation_id, "test_name",
+      new WorkletAnimation(animation_id2, worklet_animation_id, "test_name", 1,
                            std::move(scroll_timeline), nullptr, true));
   worklet_animation->AttachElement(element_id);
   timeline_->AttachAnimation(worklet_animation);

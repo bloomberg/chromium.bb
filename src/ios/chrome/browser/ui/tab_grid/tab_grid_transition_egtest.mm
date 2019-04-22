@@ -6,6 +6,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -45,8 +46,8 @@ namespace {
 
 // Returns the tab model for non-incognito tabs.
 TabModel* GetNormalTabModel() {
-  return [[chrome_test_util::GetMainController() browserViewInformation]
-      mainTabModel];
+  return chrome_test_util::GetMainController()
+      .interfaceProvider.mainInterface.tabModel;
 }
 
 // Shows the tab switcher by tapping the switcher button.  Works on both phone

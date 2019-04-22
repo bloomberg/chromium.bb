@@ -19,7 +19,7 @@
 #include "base/file_version_info.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/current_module.h"
 #include "base/win/wrapped_window_proc.h"
@@ -164,8 +164,8 @@ google_breakpad::CustomClientInfo* BreakpadWin::GetCustomInfo() {
       kBreakpadPlatformEntry, kBreakpadPlatformWin32);
   static google_breakpad::CustomInfoEntry entries[] = {
       ver_entry, prod_entry, plat_entry  };
-  static google_breakpad::CustomClientInfo custom_info = {
-      entries, arraysize(entries) };
+  static google_breakpad::CustomClientInfo custom_info = {entries,
+                                                          base::size(entries)};
   return &custom_info;
 }
 

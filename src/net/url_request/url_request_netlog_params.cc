@@ -36,7 +36,7 @@ std::unique_ptr<base::Value> NetLogURLRequestStartCallback(
   dict->SetInteger("load_flags", load_flags);
   dict->SetInteger("privacy_mode", privacy_mode == PRIVACY_MODE_ENABLED);
   if (upload_id > -1)
-    dict->SetString("upload_id", base::Int64ToString(upload_id));
+    dict->SetString("upload_id", base::NumberToString(upload_id));
   return std::move(dict);
 }
 

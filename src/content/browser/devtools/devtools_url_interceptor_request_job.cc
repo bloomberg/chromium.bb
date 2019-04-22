@@ -5,6 +5,7 @@
 #include "content/browser/devtools/devtools_url_interceptor_request_job.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -17,14 +18,13 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_element_reader.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
@@ -53,7 +53,7 @@ class DevToolsURLInterceptorRequestJob::SubRequest
 
   // net::URLRequest::Delegate methods:
   void OnAuthRequired(net::URLRequest* request,
-                      net::AuthChallengeInfo* auth_info) override;
+                      const net::AuthChallengeInfo& auth_info) override;
   void OnCertificateRequested(
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info) override;
@@ -134,10 +134,9 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
   request_->set_initiator(original_request->initiator());
 
   // Mimic the ResourceRequestInfoImpl of the original request.
-  const ResourceRequestInfoImpl* resource_request_info =
-      static_cast<const ResourceRequestInfoImpl*>(
-          ResourceRequestInfo::ForRequest(
-              devtools_interceptor_request_job->request()));
+  ResourceRequestInfoImpl* resource_request_info =
+      static_cast<ResourceRequestInfoImpl*>(ResourceRequestInfo::ForRequest(
+          devtools_interceptor_request_job->request()));
   ResourceRequestInfoImpl* extra_data = new ResourceRequestInfoImpl(
       resource_request_info->requester_info(),
       resource_request_info->GetRouteID(),
@@ -150,7 +149,7 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
       resource_request_info->GetResourceType(),
       resource_request_info->GetPageTransition(),
       resource_request_info->IsDownload(), resource_request_info->is_stream(),
-      resource_request_info->allow_download(),
+      resource_request_info->resource_intercept_policy(),
       resource_request_info->HasUserGesture(),
       resource_request_info->is_load_timing_enabled(),
       resource_request_info->is_upload_progress_enabled(),
@@ -189,7 +188,7 @@ void DevToolsURLInterceptorRequestJob::SubRequest::Cancel() {
 
 void DevToolsURLInterceptorRequestJob::SubRequest::OnAuthRequired(
     net::URLRequest* request,
-    net::AuthChallengeInfo* auth_info) {
+    const net::AuthChallengeInfo& auth_info) {
   devtools_interceptor_request_job_->OnSubRequestAuthRequired(auth_info);
 }
 
@@ -527,7 +526,8 @@ bool IsDownload(net::URLRequest* orig_request, net::URLRequest* subrequest) {
   // should not have this problem, as it's on top of MIME sniffer.
   std::string mime_type;
   subrequest->GetMimeType(&mime_type);
-  return req_info->allow_download() &&
+  return req_info->resource_intercept_policy() ==
+             ResourceInterceptPolicy::kAllowAll &&
          download_utils::IsDownload(orig_request->url(),
                                     subrequest->response_headers(), mime_type);
 }
@@ -582,52 +582,17 @@ void DevToolsURLInterceptorRequestJob::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto* store = request_details_.url_request_context->cookie_store();
   if (!store || (request()->load_flags() & net::LOAD_DO_NOT_SEND_COOKIES)) {
-    StartWithCookies(net::CookieList());
+    StartWithCookies(net::CookieList(), net::CookieStatusList());
     return;
   }
 
+  // Matches what URLRequestHttpJob would use.
   net::CookieOptions options;
   options.set_include_httponly();
-  // The below is a copy of the logic in URLRequestHttpJob
-
-  // Set SameSiteCookieMode according to the rules laid out in
-  // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site:
-  //
-  // * Include both "strict" and "lax" same-site cookies if the request's
-  //   |url|, |initiator|, and |site_for_cookies| all have the same
-  //   registrable domain. Note: this also covers the case of a request
-  //   without an initiator (only happens for browser-initiated main frame
-  //   navigations).
-  //
-  // * Include only "lax" same-site cookies if the request's |URL| and
-  //   |site_for_cookies| have the same registrable domain, _and_ the
-  //   request's |method| is "safe" ("GET" or "HEAD").
-  //
-  //   Note that this will generally be the case only for cross-site requests
-  //   which target a top-level browsing context.
-  //
-  // * Include both "strict" and "lax" same-site cookies if the request is
-  //   tagged with a flag allowing it.
-  //   Note that this can be the case for requests initiated by extensions,
-  //   which need to behave as though they are made by the document itself,
-  //   but appear like cross-site ones.
-  //
-  // * Otherwise, do not include same-site cookies.
-  using namespace net::registry_controlled_domains;
-  if (SameDomainOrHost(request()->url(), request()->site_for_cookies(),
-                       INCLUDE_PRIVATE_REGISTRIES)) {
-    if (!request()->initiator() ||
-        SameDomainOrHost(request()->url(),
-                         request()->initiator().value().GetURL(),
-                         INCLUDE_PRIVATE_REGISTRIES) ||
-        request()->attach_same_site_cookies()) {
-      options.set_same_site_cookie_mode(
-          net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-    } else if (net::HttpUtil::IsMethodSafe(request()->method())) {
-      options.set_same_site_cookie_mode(
-          net::CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
-    }
-  }
+  options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContextForRequest(
+          request()->method(), request()->url(), request()->site_for_cookies(),
+          request()->initiator(), request()->attach_same_site_cookies()));
 
   store->GetCookieListWithOptionsAsync(
       request_details_.url, options,
@@ -636,7 +601,8 @@ void DevToolsURLInterceptorRequestJob::Start() {
 }
 
 void DevToolsURLInterceptorRequestJob::StartWithCookies(
-    const net::CookieList& cookie_list) {
+    const net::CookieList& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   request_details_.cookie_line =
       net::CanonicalCookie::BuildCookieLine(cookie_list);
 
@@ -740,9 +706,10 @@ bool DevToolsURLInterceptorRequestJob::NeedsAuth() {
   return !!auth_info_;
 }
 
-void DevToolsURLInterceptorRequestJob::GetAuthChallengeInfo(
-    scoped_refptr<net::AuthChallengeInfo>* auth_info) {
-  *auth_info = auth_info_.get();
+std::unique_ptr<net::AuthChallengeInfo>
+DevToolsURLInterceptorRequestJob::GetAuthChallengeInfo() {
+  DCHECK(auth_info_);
+  return std::make_unique<net::AuthChallengeInfo>(*auth_info_);
 }
 
 void DevToolsURLInterceptorRequestJob::SetAuth(
@@ -757,8 +724,8 @@ void DevToolsURLInterceptorRequestJob::CancelAuth() {
 }
 
 void DevToolsURLInterceptorRequestJob::OnSubRequestAuthRequired(
-    net::AuthChallengeInfo* auth_info) {
-  auth_info_ = auth_info;
+    const net::AuthChallengeInfo& auth_info) {
+  auth_info_ = std::make_unique<net::AuthChallengeInfo>(auth_info);
 
   if (stage_to_intercept_ == InterceptionStage::DONT_INTERCEPT) {
     // This should trigger default auth behavior.
@@ -775,7 +742,8 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestAuthRequired(
   waiting_for_user_response_ = WaitingForUserResponse::WAITING_FOR_AUTH_ACK;
 
   std::unique_ptr<InterceptedRequestInfo> request_info = BuildRequestInfo();
-  request_info->auth_challenge = auth_info;
+  request_info->auth_challenge =
+      std::make_unique<net::AuthChallengeInfo>(auth_info);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(callback_, std::move(request_info)));
 }
@@ -1077,9 +1045,9 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
         continue;
 
       auto* store = request_details_.url_request_context->cookie_store();
-      store->SetCanonicalCookieAsync(
-          std::move(cookie), request_details_.url.SchemeIsCryptographic(),
-          !options.exclude_httponly(), net::CookieStore::SetCookiesCallback());
+      store->SetCanonicalCookieAsync(std::move(cookie),
+                                     request_details_.url.scheme(), options,
+                                     net::CookieStore::SetCookiesCallback());
     }
 
     if (sub_request_) {

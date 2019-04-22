@@ -34,7 +34,7 @@ class MODULES_EXPORT PresentationConnectionList final
 
   // PresentationConnectionList.idl implementation.
   const HeapVector<Member<ReceiverPresentationConnection>>& connections() const;
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable, kConnectionavailable);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable, kConnectionavailable)
 
   void AddConnection(ReceiverPresentationConnection*);
   // Remove connection from connection list. Returns true if connection is

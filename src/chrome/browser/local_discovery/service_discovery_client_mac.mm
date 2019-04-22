@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
@@ -200,15 +201,15 @@ ServiceWatcherImplMac::NetServiceBrowserContainer::
 void ServiceWatcherImplMac::NetServiceBrowserContainer::Start() {
   service_discovery_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&NetServiceBrowserContainer::StartOnDiscoveryThread,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&NetServiceBrowserContainer::StartOnDiscoveryThread,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWatcherImplMac::NetServiceBrowserContainer::DiscoverNewServices() {
   service_discovery_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&NetServiceBrowserContainer::DiscoverOnDiscoveryThread,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&NetServiceBrowserContainer::DiscoverOnDiscoveryThread,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void
@@ -232,16 +233,14 @@ ServiceWatcherImplMac::NetServiceBrowserContainer::DiscoverOnDiscoveryThread() {
   DVLOG(1) << "Listening for service type '" << [type UTF8String]
            << "' on domain '" << [domain UTF8String] << "'";
 
-  base::Time start_time = base::Time::Now();
   [browser_ searchForServicesOfType:type inDomain:domain];
-  UMA_HISTOGRAM_TIMES("LocalDiscovery.MacBrowseCallTimes",
-                      base::Time::Now() - start_time);
 }
 
 void ServiceWatcherImplMac::NetServiceBrowserContainer::OnServicesUpdate(
     ServiceWatcher::UpdateType update,
     const std::string& service) {
-  callback_runner_->PostTask(FROM_HERE, base::Bind(callback_, update, service));
+  callback_runner_->PostTask(FROM_HERE,
+                             base::BindOnce(callback_, update, service));
 }
 
 void ServiceWatcherImplMac::NetServiceBrowserContainer::DeleteSoon() {
@@ -319,8 +318,8 @@ ServiceResolverImplMac::NetServiceContainer::~NetServiceContainer() {
 void ServiceResolverImplMac::NetServiceContainer::StartResolving() {
   service_discovery_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&NetServiceContainer::StartResolvingOnDiscoveryThread,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&NetServiceContainer::StartResolvingOnDiscoveryThread,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ServiceResolverImplMac::NetServiceContainer::DeleteSoon() {

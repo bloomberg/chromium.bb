@@ -11,6 +11,8 @@
       'http://user42:Alina-!$&@example.com/foo/bar.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes');
   parseAndDumpURL(
       'http://foo@example.com/foo/bar/baz.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes');
+  parseAndDumpURL('://');
+  parseAndDumpURL('');
 
   // support IPv6 localhost
   parseAndDumpURL('http://[::]/?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes');

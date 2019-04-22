@@ -9,16 +9,15 @@
 #include <map>
 
 #include "base/memory/ref_counted_memory.h"
-#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/x/x11.h"
 
 namespace ui {
 class SelectionData;
 
-extern const char kString[];
-extern const char kText[];
-extern const char kUtf8String[];
+UI_BASE_EXPORT extern const char kString[];
+UI_BASE_EXPORT extern const char kText[];
+UI_BASE_EXPORT extern const char kUtf8String[];
 
 // Returns a list of all text atoms that we handle.
 UI_BASE_EXPORT std::vector<::Atom> GetTextAtomsFrom();

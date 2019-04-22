@@ -16,6 +16,7 @@
 
 namespace bluez {
 class BluetoothAdapterClient;
+class BluetoothDeviceClient;
 }
 
 namespace device {
@@ -41,9 +42,11 @@ class BluetoothSystem : public mojom::BluetoothSystem,
   void GetScanState(GetScanStateCallback callback) override;
   void StartScan(StartScanCallback callback) override;
   void StopScan(StopScanCallback callback) override;
+  void GetAvailableDevices(GetAvailableDevicesCallback callback) override;
 
  private:
   bluez::BluetoothAdapterClient* GetBluetoothAdapterClient();
+  bluez::BluetoothDeviceClient* GetBluetoothDeviceClient();
 
   void UpdateStateAndNotifyIfNecessary();
 

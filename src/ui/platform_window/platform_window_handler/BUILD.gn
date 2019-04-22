@@ -10,6 +10,8 @@ jumbo_component("platform_window_handler") {
   sources = [
     "wm_drag_handler.cc",
     "wm_drag_handler.h",
+    "wm_drop_handler.cc",
+    "wm_drop_handler.h",
     "wm_move_resize_handler.cc",
     "wm_move_resize_handler.h",
     "wm_platform_export.h",

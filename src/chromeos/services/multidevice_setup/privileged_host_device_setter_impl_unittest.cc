@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
@@ -47,7 +48,7 @@ class MultiDeviceSetupPrivilegedHostDeviceSetterImplTest
   }
 
  private:
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   void OnSetHostDeviceResult(bool success) {
     EXPECT_FALSE(last_set_host_success_);

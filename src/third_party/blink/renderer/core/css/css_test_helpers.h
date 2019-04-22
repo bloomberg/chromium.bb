@@ -29,7 +29,7 @@ class TestStyleSheet {
   TestStyleSheet();
   ~TestStyleSheet();
 
-  const Document& GetDocument() { return *document_; };
+  const Document& GetDocument() { return *document_; }
 
   void AddCSSRules(const char* rule_text, bool is_empty_sheet = false);
   RuleSet& GetRuleSet();

@@ -162,14 +162,14 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
         : range(range),
           style_info(style_info) {
     }
-    ~StyleRange() {}
+    ~StyleRange() = default;
 
     bool operator<(const StyleRange& other) const;
 
     gfx::Range range;
     RangeStyleInfo style_info;
   };
-  typedef std::list<StyleRange> StyleRanges;
+  using StyleRanges = std::list<StyleRange>;
 
   // Returns the default line height, based on the default style.
   int GetDefaultLineHeight() const;

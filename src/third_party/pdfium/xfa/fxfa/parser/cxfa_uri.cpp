@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_uri.h"
 
-#include "fxjs/xfa/cjx_uri.h"
+#include "fxjs/xfa/cjx_textnode.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -18,9 +18,7 @@ const CXFA_Node::AttributeData kUriAttributeData[] = {
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kUriName[] = L"uri";
+};
 
 }  // namespace
 
@@ -30,9 +28,8 @@ CXFA_Uri::CXFA_Uri(CXFA_Document* doc, XFA_PacketType packet)
                 (XFA_XDPPACKET_Config | XFA_XDPPACKET_ConnectionSet),
                 XFA_ObjectType::TextNode,
                 XFA_Element::Uri,
-                nullptr,
+                {},
                 kUriAttributeData,
-                kUriName,
-                pdfium::MakeUnique<CJX_Uri>(this)) {}
+                pdfium::MakeUnique<CJX_TextNode>(this)) {}
 
-CXFA_Uri::~CXFA_Uri() {}
+CXFA_Uri::~CXFA_Uri() = default;

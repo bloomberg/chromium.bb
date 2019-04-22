@@ -14,7 +14,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
+#include "components/history/core/common/pref_names.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/language/core/browser/language_prefs.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
@@ -29,7 +31,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
-#include "ios/web_view/cwv_web_view_features.h"
+#include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_cookie_settings_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"
@@ -37,15 +39,9 @@
 #include "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_internals_service_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
-#include "ios/web_view/internal/pref_names.h"
-#include "ios/web_view/internal/signin/web_view_account_fetcher_service_factory.h"
-#include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
-#include "ios/web_view/internal/signin/web_view_gaia_cookie_manager_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
-#include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
@@ -127,6 +123,11 @@ WebViewBrowserState::~WebViewBrowserState() {
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   ActiveStateManager::FromBrowserState(this)->SetActive(false);
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
+      base::BindOnce(&WebViewURLRequestContextGetter::ShutDown,
+                     request_context_getter_));
 }
 
 PrefService* WebViewBrowserState::GetPrefs() {
@@ -164,14 +165,10 @@ net::URLRequestContextGetter* WebViewBrowserState::GetRequestContext() {
 
 void WebViewBrowserState::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* pref_registry) {
-  // TODO(crbug.com/679895): Find a good value for the kAcceptLanguages pref.
-  // TODO(crbug.com/679895): Pass this value to the network stack somehow, for
-  // the HTTP header.
-  pref_registry->RegisterStringPref(prefs::kAcceptLanguages,
-                                    l10n_util::GetLocaleOverride());
   pref_registry->RegisterBooleanPref(prefs::kOfferTranslateEnabled, true);
   pref_registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
                                      true);
+  language::LanguagePrefs::RegisterProfilePrefs(pref_registry);
   translate::TranslatePrefs::RegisterProfilePrefs(pref_registry);
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
@@ -201,14 +198,9 @@ void WebViewBrowserState::RegisterPrefs(
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   WebViewCookieSettingsFactory::GetInstance();
   WebViewHostContentSettingsMapFactory::GetInstance();
-  WebViewAccountFetcherServiceFactory::GetInstance();
-  WebViewAccountTrackerServiceFactory::GetInstance();
-  WebViewGaiaCookieManagerServiceFactory::GetInstance();
-  WebViewOAuth2TokenServiceFactory::GetInstance();
   WebViewSigninClientFactory::GetInstance();
   WebViewSigninErrorControllerFactory::GetInstance();
-  WebViewSigninManagerFactory::GetInstance();
-  WebViewIdentityManagerFactory::GetInstance();
+  WebViewIdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt();
   WebViewGCMProfileServiceFactory::GetInstance();
   WebViewProfileInvalidationProviderFactory::GetInstance();
   WebViewProfileSyncServiceFactory::GetInstance();
@@ -216,7 +208,7 @@ void WebViewBrowserState::RegisterPrefs(
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
   BrowserStateDependencyManager::GetInstance()
-      ->RegisterBrowserStatePrefsForServices(this, pref_registry);
+      ->RegisterBrowserStatePrefsForServices(pref_registry);
 }
 
 }  // namespace ios_web_view

@@ -51,15 +51,6 @@ static_assert(sizeof(FX_RECT::bottom) == sizeof(RECT::bottom),
               "FX_RECT vs. RECT mismatch");
 #endif
 
-inline CFX_Matrix ConcatInternal(const CFX_Matrix& left,
-                                 const CFX_Matrix& right) {
-  return CFX_Matrix(
-      left.a * right.a + left.b * right.c, left.a * right.b + left.b * right.d,
-      left.c * right.a + left.d * right.c, left.c * right.b + left.d * right.d,
-      left.e * right.a + left.f * right.c + right.e,
-      left.e * right.b + left.f * right.d + right.f);
-}
-
 }  // namespace
 
 void FX_RECT::Normalize() {
@@ -114,13 +105,6 @@ void CFX_FloatRect::Normalize() {
     std::swap(top, bottom);
 }
 
-void CFX_FloatRect::Reset() {
-  left = 0.0f;
-  right = 0.0f;
-  bottom = 0.0f;
-  top = 0.0f;
-}
-
 void CFX_FloatRect::Intersect(const CFX_FloatRect& other_rect) {
   Normalize();
   CFX_FloatRect other = other_rect;
@@ -130,7 +114,7 @@ void CFX_FloatRect::Intersect(const CFX_FloatRect& other_rect) {
   right = std::min(right, other.right);
   top = std::min(top, other.top);
   if (left > right || bottom > top)
-    Reset();
+    *this = CFX_FloatRect();
 }
 
 void CFX_FloatRect::Union(const CFX_FloatRect& other_rect) {
@@ -319,22 +303,6 @@ CFX_Matrix CFX_Matrix::GetInverse() const {
   inverse.e = (c * f - d * e) / i;
   inverse.f = (a * f - b * e) / j;
   return inverse;
-}
-
-void CFX_Matrix::Concat(const CFX_Matrix& m) {
-  *this = ConcatInternal(*this, m);
-}
-
-void CFX_Matrix::ConcatPrepend(const CFX_Matrix& m) {
-  *this = ConcatInternal(m, *this);
-}
-
-void CFX_Matrix::ConcatInverse(const CFX_Matrix& src) {
-  Concat(src.GetInverse());
-}
-
-void CFX_Matrix::ConcatInversePrepend(const CFX_Matrix& src) {
-  ConcatPrepend(src.GetInverse());
 }
 
 bool CFX_Matrix::Is90Rotated() const {

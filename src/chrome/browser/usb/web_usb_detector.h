@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_USB_WEB_USB_DETECTOR_H_
 #define CHROME_BROWSER_USB_WEB_USB_DETECTOR_H_
 
+#include <map>
+
 #include "base/macros.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
+#include "device/usb/public/mojom/device_manager_client.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "url/gurl.h"
 
 class WebUsbDetector : public device::mojom::UsbDeviceManagerClient {
  public:
@@ -19,6 +23,7 @@ class WebUsbDetector : public device::mojom::UsbDeviceManagerClient {
 
   void SetDeviceManagerForTesting(
       device::mojom::UsbDeviceManagerPtr fake_device_manager);
+  void RemoveNotification(const std::string& id);
 
  private:
   // device::mojom::UsbDeviceManagerClient implementation.
@@ -26,11 +31,16 @@ class WebUsbDetector : public device::mojom::UsbDeviceManagerClient {
   void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device_info) override;
 
   void OnDeviceManagerConnectionError();
+  bool IsDisplayingNotification(const GURL& url);
+
+  std::map<std::string, GURL> open_notifications_by_id_;
 
   // Connection to |device_manager_instance_|.
   device::mojom::UsbDeviceManagerPtr device_manager_;
   mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
       client_binding_;
+
+  base::WeakPtrFactory<WebUsbDetector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUsbDetector);
 };

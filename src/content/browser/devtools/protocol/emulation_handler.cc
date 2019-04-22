@@ -183,7 +183,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
       screen_height.fromMaybe(0) > max_size) {
     return Response::InvalidParams(
         "Screen width and height values must be positive, not greater than " +
-        base::IntToString(max_size));
+        base::NumberToString(max_size));
   }
 
   if (position_x.fromMaybe(0) < 0 || position_y.fromMaybe(0) < 0 ||
@@ -195,7 +195,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   if (width < 0 || height < 0 || width > max_size || height > max_size) {
     return Response::InvalidParams(
         "Width and height values must be positive, not greater than " +
-        base::IntToString(max_size));
+        base::NumberToString(max_size));
   }
 
   if (device_scale_factor < 0)
@@ -219,7 +219,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     if (orientationAngle < 0 || orientationAngle >= max_orientation_angle) {
       return Response::InvalidParams(
           "Screen orientation angle must be non-negative, less than " +
-          base::IntToString(max_orientation_angle));
+          base::NumberToString(max_orientation_angle));
     }
   }
 

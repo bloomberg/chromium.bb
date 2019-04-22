@@ -23,5 +23,27 @@ bool StartsWith(const std::string& str, const std::string& prefix) {
   return str.compare(0, prefix.length(), prefix) == 0;
 }
 
+bool EndsWith(const std::string& str, const std::string& suffix) {
+  if (suffix.size() > str.size())
+    return false;
+  return str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+bool Contains(const std::string& haystack, const std::string& needle) {
+  return haystack.find(needle) != std::string::npos;
+}
+
+std::string Join(const std::vector<std::string>& parts,
+                 const std::string& delim) {
+  std::string acc;
+  for (size_t i = 0; i < parts.size(); ++i) {
+    acc += parts[i];
+    if (i + 1 != parts.size()) {
+      acc += delim;
+    }
+  }
+  return acc;
+}
+
 }  // namespace base
 }  // namespace perfetto

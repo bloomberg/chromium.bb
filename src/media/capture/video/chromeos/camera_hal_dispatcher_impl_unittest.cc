@@ -7,9 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
+#include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
 #include "media/capture/video/chromeos/mojo/cros_camera_service.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -172,7 +174,7 @@ TEST_F(CameraHalDispatcherImplTest, ServerConnectionError) {
 
   // Wait until the clients gets the newly established Mojo channel.
   DoLoop();
-};
+}
 
 // Test that the CameraHalDisptcherImpl correctly re-establishes a Mojo channel
 // for the client when the client reconnects after crash.
@@ -221,6 +223,6 @@ TEST_F(CameraHalDispatcherImplTest, ClientConnectionError) {
 
   // Wait until the clients gets the newly established Mojo channel.
   DoLoop();
-};
+}
 
 }  // namespace media

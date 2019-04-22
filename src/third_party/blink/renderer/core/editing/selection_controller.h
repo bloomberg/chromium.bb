@@ -48,11 +48,9 @@ class CORE_EXPORT SelectionController final
   USING_GARBAGE_COLLECTED_MIXIN(SelectionController);
 
  public:
-  static SelectionController* Create(LocalFrame&);
-
   explicit SelectionController(LocalFrame&);
   virtual ~SelectionController();
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool HandleMousePressEvent(const MouseEventWithHitTestResults&);
   void HandleMouseDraggedEvent(const MouseEventWithHitTestResults&,
@@ -146,7 +144,7 @@ class CORE_EXPORT SelectionController final
   DISALLOW_COPY_AND_ASSIGN(SelectionController);
 };
 
-bool IsLinkSelection(const MouseEventWithHitTestResults&);
+bool IsSelectionOverLink(const MouseEventWithHitTestResults&);
 bool IsExtendingSelection(const MouseEventWithHitTestResults&);
 CORE_EXPORT SelectionInFlatTree
 AdjustSelectionWithTrailingWhitespace(const SelectionInFlatTree&);

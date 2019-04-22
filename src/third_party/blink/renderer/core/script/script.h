@@ -17,7 +17,7 @@ namespace blink {
 class LocalFrame;
 class SecurityOrigin;
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#concept-script
+// https://html.spec.whatwg.org/C/#concept-script
 class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
  public:
   virtual void Trace(blink::Visitor* visitor) {}
@@ -26,11 +26,11 @@ class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
 
   virtual mojom::ScriptType GetScriptType() const = 0;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#run-a-classic-script
+  // https://html.spec.whatwg.org/C/#run-a-classic-script
   // or
-  // https://html.spec.whatwg.org/multipage/webappapis.html#run-a-module-script,
+  // https://html.spec.whatwg.org/C/#run-a-module-script,
   // depending on the script type.
-  virtual void RunScript(LocalFrame*, const SecurityOrigin*) const = 0;
+  virtual void RunScript(LocalFrame*, const SecurityOrigin*) = 0;
 
   // For CSP check for inline scripts.
   virtual String InlineSourceTextForCSP() const = 0;
@@ -43,10 +43,10 @@ class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
       : fetch_options_(fetch_options), base_url_(base_url) {}
 
  private:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-script-fetch-options
+  // https://html.spec.whatwg.org/C/#concept-script-script-fetch-options
   const ScriptFetchOptions fetch_options_;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
+  // https://html.spec.whatwg.org/C/#concept-script-base-url
   const KURL base_url_;
 };
 

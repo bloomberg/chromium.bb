@@ -13,9 +13,7 @@ namespace gpu {
 // until either it gets unlocked or the client waits for progress.
 class CommandBufferDirectLocked : public CommandBufferDirect {
  public:
-  explicit CommandBufferDirectLocked(
-      TransferBufferManager* transfer_buffer_manager)
-      : CommandBufferDirect(transfer_buffer_manager) {}
+  CommandBufferDirectLocked() = default;
   ~CommandBufferDirectLocked() override = default;
 
   // Overridden from CommandBufferDirect
@@ -24,7 +22,8 @@ class CommandBufferDirectLocked : public CommandBufferDirect {
   CommandBuffer::State WaitForGetOffsetInRange(uint32_t set_get_buffer_count,
                                                int32_t start,
                                                int32_t end) override;
-  scoped_refptr<Buffer> CreateTransferBuffer(size_t size, int32_t* id) override;
+  scoped_refptr<Buffer> CreateTransferBuffer(uint32_t size,
+                                             int32_t* id) override;
 
   void LockFlush() { flush_locked_ = true; }
 

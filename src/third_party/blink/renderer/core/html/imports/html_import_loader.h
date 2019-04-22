@@ -93,13 +93,11 @@ class HTMLImportLoader final
 
   V0CustomElementSyncMicrotaskQueue* MicrotaskQueue() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // RawResourceClient overrides:
-  void ResponseReceived(Resource*,
-                        const ResourceResponse&,
-                        std::unique_ptr<WebDataConsumerHandle>) final;
+  void ResponseReceived(Resource*, const ResourceResponse&) final;
   void DataReceived(Resource*, const char* data, size_t length) final;
   void NotifyFinished(Resource*) final;
   String DebugName() const final { return "HTMLImportLoader"; }

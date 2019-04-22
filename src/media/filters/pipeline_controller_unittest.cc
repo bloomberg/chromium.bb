@@ -147,7 +147,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnDurationChange() override {}
   void OnAddTextTrack(const TextTrackConfig& config,
                       const AddTextTrackDoneCB& done_cb) override {}
-  void OnWaitingForDecryptionKey() override {}
+  void OnWaiting(WaitingReason reason) override {}
   void OnVideoNaturalSizeChange(const gfx::Size& size) override {}
   void OnAudioConfigChange(const AudioDecoderConfig& config) override {}
   void OnVideoConfigChange(const VideoDecoderConfig& config) override {}
@@ -155,6 +155,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnVideoAverageKeyframeDistanceUpdate() override {}
   void OnAudioDecoderChange(const std::string& name) override {}
   void OnVideoDecoderChange(const std::string& name) override {}
+  void OnRemotePlayStateChange(MediaStatus::State state) override {}
 
   base::MessageLoop message_loop_;
 
@@ -251,6 +252,40 @@ TEST_F(PipelineControllerTest, Seek) {
   Complete(seek_cb);
   EXPECT_TRUE(was_seeked_);
   EXPECT_TRUE(pipeline_controller_.IsStable());
+}
+
+// Makes sure OnDecoderStateLost() triggers a seek to the current media time.
+TEST_F(PipelineControllerTest, DecoderStateLost) {
+  Complete(StartPipeline());
+
+  constexpr auto kCurrentMediaTime = base::TimeDelta::FromSeconds(7);
+  EXPECT_CALL(*pipeline_, GetMediaTime())
+      .WillRepeatedly(Return(kCurrentMediaTime));
+
+  EXPECT_CALL(demuxer_, StartWaitingForSeek(kCurrentMediaTime));
+  EXPECT_CALL(*pipeline_, Seek(kCurrentMediaTime, _));
+
+  pipeline_controller_.OnDecoderStateLost();
+  base::RunLoop().RunUntilIdle();
+}
+
+// Makes sure OnDecoderStateLost() does not trigger a seek during pending seek.
+TEST_F(PipelineControllerTest, DecoderStateLost_DuringPendingSeek) {
+  Complete(StartPipeline());
+
+  // Create a pending seek.
+  base::TimeDelta kSeekTime = base::TimeDelta::FromSeconds(5);
+  EXPECT_CALL(demuxer_, StartWaitingForSeek(kSeekTime));
+  PipelineStatusCB seek_cb = SeekPipeline(kSeekTime);
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClear(&demuxer_);
+
+  // OnDecoderStateLost() should not trigger another seek.
+  EXPECT_CALL(*pipeline_, GetMediaTime()).Times(0);
+  pipeline_controller_.OnDecoderStateLost();
+  base::RunLoop().RunUntilIdle();
+
+  Complete(seek_cb);
 }
 
 TEST_F(PipelineControllerTest, SuspendResumeTime) {

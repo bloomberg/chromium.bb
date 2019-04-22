@@ -5,7 +5,7 @@ const kTestReply = "hehe got ya";
 class TestHelperImpl {
   constructor() {
     this.binding_ =
-        new mojo.Binding(content.mojom.MojoLayoutTestHelper, this);
+        new mojo.Binding(content.mojom.MojoWebTestHelper, this);
   }
   bindRequest(request) { this.binding_.bind(request); }
   getLastString() { return this.lastString_; }

@@ -93,29 +93,4 @@ uint32_t HidReportDescriptorItem::GetShortData() const {
   return shortData_;
 }
 
-HidReportDescriptorItem::CollectionType
-HidReportDescriptorItem::GetCollectionTypeFromValue(uint32_t value) {
-  switch (value) {
-    case 0x00:
-      return kCollectionTypePhysical;
-    case 0x01:
-      return kCollectionTypeApplication;
-    case 0x02:
-      return kCollectionTypeLogical;
-    case 0x03:
-      return kCollectionTypeReport;
-    case 0x04:
-      return kCollectionTypeNamedArray;
-    case 0x05:
-      return kCollectionTypeUsageSwitch;
-    case 0x06:
-      return kCollectionTypeUsageModifier;
-    default:
-      break;
-  }
-  if (0x80 < value && value < 0xFF)
-    return kCollectionTypeVendor;
-  return kCollectionTypeReserved;
-}
-
 }  // namespace device

@@ -20,14 +20,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VIBRATION_VIBRATION_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_VIBRATION_VIBRATION_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "services/device/public/mojom/vibration_manager.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -40,7 +40,6 @@ class MODULES_EXPORT VibrationController final
       public ContextLifecycleObserver,
       public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(VibrationController);
-  WTF_MAKE_NONCOPYABLE(VibrationController);
 
  public:
   using VibrationPattern = Vector<unsigned>;
@@ -94,6 +93,8 @@ class MODULES_EXPORT VibrationController final
   bool is_calling_vibrate_;
 
   VibrationPattern pattern_;
+
+  DISALLOW_COPY_AND_ASSIGN(VibrationController);
 };
 
 }  // namespace blink

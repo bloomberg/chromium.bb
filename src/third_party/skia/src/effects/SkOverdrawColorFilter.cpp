@@ -6,6 +6,7 @@
  */
 
 #include "SkArenaAlloc.h"
+#include "SkEffectPriv.h"
 #include "SkOverdrawColorFilter.h"
 #include "SkRasterPipeline.h"
 #include "SkReadBuffer.h"
@@ -21,7 +22,7 @@ layout(ctype=SkPMColor) in uniform half4 color3;
 layout(ctype=SkPMColor) in uniform half4 color4;
 layout(ctype=SkPMColor) in uniform half4 color5;
 
-void main(int x, int y, inout half4 color) {
+void main(inout half4 color) {
     half alpha = 255.0 * color.a;
     if (alpha < 0.5) {
         color = color0;
@@ -40,15 +41,12 @@ void main(int x, int y, inout half4 color) {
 )";
 #endif
 
-void SkOverdrawColorFilter::onAppendStages(SkRasterPipeline* p,
-                                           SkColorSpace* dstCS,
-                                           SkArenaAlloc* alloc,
-                                           bool shader_is_opaque) const {
+bool SkOverdrawColorFilter::onAppendStages(const SkStageRec& rec, bool shader_is_opaque) const {
     struct Ctx : public SkRasterPipeline_CallbackCtx {
         const SkPMColor* colors;
     };
     // TODO: do we care about transforming to dstCS?
-    auto ctx = alloc->make<Ctx>();
+    auto ctx = rec.fAlloc->make<Ctx>();
     ctx->colors = fColors;
     ctx->fn = [](SkRasterPipeline_CallbackCtx* arg, int active_pixels) {
         auto ctx = (Ctx*)arg;
@@ -61,7 +59,8 @@ void SkOverdrawColorFilter::onAppendStages(SkRasterPipeline* p,
             pixels[i] = SkPMColor4f::FromPMColor(ctx->colors[alpha]);
         }
     };
-    p->append(SkRasterPipeline::callback, ctx);
+    rec.fPipeline->append(SkRasterPipeline::callback, ctx);
+    return true;
 }
 
 void SkOverdrawColorFilter::flatten(SkWriteBuffer& buffer) const {
@@ -82,12 +81,14 @@ sk_sp<SkFlattenable> SkOverdrawColorFilter::CreateProc(SkReadBuffer& buffer) {
 }
 
 void SkOverdrawColorFilter::RegisterFlattenables() {
-    SK_REGISTER_FLATTENABLE(SkOverdrawColorFilter)
+    SK_REGISTER_FLATTENABLE(SkOverdrawColorFilter);
 }
 #if SK_SUPPORT_GPU
 
+#include "GrRecordingContext.h"
+
 std::unique_ptr<GrFragmentProcessor> SkOverdrawColorFilter::asFragmentProcessor(
-        GrContext* context, const GrColorSpaceInfo&) const {
+        GrRecordingContext* context, const GrColorSpaceInfo&) const {
     static int overdrawIndex = GrSkSLFP::NewIndex();
     return GrSkSLFP::Make(context, overdrawIndex, "Overdraw", SKSL_OVERDRAW_SRC, fColors,
                           sizeof(fColors));

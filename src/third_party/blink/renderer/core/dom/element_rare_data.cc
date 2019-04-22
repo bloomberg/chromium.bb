@@ -41,7 +41,7 @@ namespace blink {
 
 struct SameSizeAsElementRareData : NodeRareData {
   IntSize scroll_offset;
-  void* pointers_or_strings[4];
+  void* pointers_or_strings[3];
   Member<void*> members[17];
   bool flags[1];
 };
@@ -73,15 +73,6 @@ InlineStylePropertyMap& ElementRareData::EnsureInlineStylePropertyMap(
   return *cssom_map_wrapper_;
 }
 
-void ElementRareData::SetComputedStyle(
-    scoped_refptr<ComputedStyle> computed_style) {
-  computed_style_ = std::move(computed_style);
-}
-
-void ElementRareData::ClearComputedStyle() {
-  computed_style_ = nullptr;
-}
-
 AttrNodeList& ElementRareData::EnsureAttrNodeList() {
   if (!attr_node_list_)
     attr_node_list_ = MakeGarbageCollected<AttrNodeList>();
@@ -91,9 +82,8 @@ AttrNodeList& ElementRareData::EnsureAttrNodeList() {
 ElementRareData::ResizeObserverDataMap&
 ElementRareData::EnsureResizeObserverData() {
   if (!resize_observer_data_) {
-    resize_observer_data_ =
-        MakeGarbageCollected<HeapHashMap<TraceWrapperMember<ResizeObserver>,
-                                         Member<ResizeObservation>>>();
+    resize_observer_data_ = MakeGarbageCollected<
+        HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>>();
   }
   return *resize_observer_data_;
 }

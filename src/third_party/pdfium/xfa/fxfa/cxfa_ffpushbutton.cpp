@@ -32,14 +32,14 @@ CXFA_FFPushButton::~CXFA_FFPushButton() = default;
 
 void CXFA_FFPushButton::RenderWidget(CXFA_Graphics* pGS,
                                      const CFX_Matrix& matrix,
-                                     uint32_t dwStatus) {
-  if (!IsMatchVisibleStatus(dwStatus))
+                                     HighlightOption highlight) {
+  if (!HasVisibleStatus())
     return;
 
   CFX_Matrix mtRotate = GetRotateMatrix();
   mtRotate.Concat(matrix);
 
-  CXFA_FFWidget::RenderWidget(pGS, mtRotate, dwStatus);
+  CXFA_FFWidget::RenderWidget(pGS, mtRotate, highlight);
   RenderHighlightCaption(pGS, &mtRotate);
 
   CFX_RectF rtWidget = GetRectWithoutRotate();
@@ -71,13 +71,13 @@ bool CXFA_FFPushButton::LoadWidget() {
 void CXFA_FFPushButton::UpdateWidgetProperty() {
   uint32_t dwStyleEx = 0;
   switch (button_->GetHighlight()) {
-    case XFA_AttributeEnum::Inverted:
+    case XFA_AttributeValue::Inverted:
       dwStyleEx = XFA_FWL_PSBSTYLEEXT_HiliteInverted;
       break;
-    case XFA_AttributeEnum::Outline:
+    case XFA_AttributeValue::Outline:
       dwStyleEx = XFA_FWL_PSBSTYLEEXT_HiliteOutLine;
       break;
-    case XFA_AttributeEnum::Push:
+    case XFA_AttributeValue::Push:
       dwStyleEx = XFA_FWL_PSBSTYLEEXT_HilitePush;
       break;
     default:
@@ -110,7 +110,7 @@ bool CXFA_FFPushButton::PerformLayout() {
 
 float CXFA_FFPushButton::GetLineWidth() {
   CXFA_Border* border = m_pNode->GetBorderIfExists();
-  if (border && border->GetPresence() == XFA_AttributeEnum::Visible) {
+  if (border && border->GetPresence() == XFA_AttributeValue::Visible) {
     CXFA_Edge* edge = border->GetEdgeIfExists(0);
     return edge ? edge->GetThickness() : 0;
   }

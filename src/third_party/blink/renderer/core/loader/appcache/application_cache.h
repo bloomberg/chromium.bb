@@ -26,8 +26,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_H_
 
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -43,37 +44,33 @@ class ApplicationCache final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
 
  public:
-  static ApplicationCache* Create(LocalFrame* frame) {
-    return new ApplicationCache(frame);
-  }
+  explicit ApplicationCache(LocalFrame*);
   ~ApplicationCache() override = default;
 
-  unsigned short status() const;
+  uint16_t status() const;
   void update(ExceptionState&);
   void swapCache(ExceptionState&);
   void abort();
 
   // Explicitly named attribute event listener helpers
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(checking, kChecking);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(noupdate, kNoupdate);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(downloading, kDownloading);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(updateready, kUpdateready);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(cached, kCached);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(obsolete, kObsolete);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(checking, kChecking)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(noupdate, kNoupdate)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(downloading, kDownloading)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(updateready, kUpdateready)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(cached, kCached)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(obsolete, kObsolete)
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  static const AtomicString& ToEventType(ApplicationCacheHost::EventID);
+  static const AtomicString& ToEventType(mojom::AppCacheEventID);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit ApplicationCache(LocalFrame*);
-
   void RecordAPIUseType() const;
 
   ApplicationCacheHost* GetApplicationCacheHost() const;

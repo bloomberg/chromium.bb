@@ -6,20 +6,26 @@
 /**
  * Size of additional padding in the inner scrollable section of the dropdown.
  */
-var DROPDOWN_INNER_PADDING = 12;
+const DROPDOWN_INNER_PADDING = 12;
 
 /** Size of vertical padding on the outer #dropdown element. */
-var DROPDOWN_OUTER_PADDING = 2;
+const DROPDOWN_OUTER_PADDING = 2;
 
 /** Minimum height of toolbar dropdowns (px). */
-var MIN_DROPDOWN_HEIGHT = 200;
+const MIN_DROPDOWN_HEIGHT = 200;
 
 Polymer({
   is: 'viewer-toolbar-dropdown',
 
   properties: {
-    /** String to be displayed at the top of the dropdown. */
+    /**
+     * String to be displayed at the top of the dropdown and for the tooltip
+     * of the button.
+      */
     header: String,
+
+    /** Whether to hide the header at the top of the dropdown. */
+    hideHeader: {type: Boolean, value: false},
 
     /** Icon to display when the dropdown is closed. */
     closedIcon: String,
@@ -32,6 +38,15 @@ Polymer({
 
     /** True if the dropdown is currently open. */
     dropdownOpen: {type: Boolean, reflectToAttribute: true, value: false},
+
+    /** Whether the dropdown should be centered or right aligned. */
+    dropdownCentered: {type: Boolean, reflectToAttribute: true, value: false},
+
+    /** Whether the dropdown is marked as selected. */
+    selected: {type: Boolean, reflectToAttribute: true, value: false},
+
+    /** Whether the dropdown must be selected before opening. */
+    openAfterSelect: {type: Boolean, reflectToAttribute: true, value: false},
 
     /** Toolbar icon currently being displayed. */
     dropdownIcon: {
@@ -60,24 +75,46 @@ Polymer({
 
   lowerBoundChanged_: function() {
     this.maxHeightValid_ = false;
-    if (this.dropdownOpen)
+    if (this.dropdownOpen) {
       this.updateMaxHeight();
+    }
   },
 
   toggleDropdown: function() {
+    if (!this.dropdownOpen && this.openAfterSelect && !this.selected) {
+      // The dropdown has `openAfterSelect` set, but is not yet selected.
+      return;
+    }
     this.dropdownOpen = !this.dropdownOpen;
     if (this.dropdownOpen) {
       this.$.dropdown.style.display = 'block';
-      if (!this.maxHeightValid_)
+      if (!this.maxHeightValid_) {
         this.updateMaxHeight();
+      }
       this.fire('dropdown-opened', this.metricsId);
     }
+
+    if (this.dropdownOpen) {
+      const listener = (e) => {
+        if (e.path.includes(this)) {
+          return;
+        }
+        if (this.dropdownOpen) {
+          this.toggleDropdown();
+          this.blur();
+        }
+        // Clean up the handler. The dropdown may already be closed.
+        window.removeEventListener('pointerdown', listener);
+      };
+      window.addEventListener('pointerdown', listener);
+    }
+
     this.playAnimation_(this.dropdownOpen);
   },
 
   updateMaxHeight: function() {
-    var scrollContainer = this.$['scroll-container'];
-    var height = this.lowerBound - scrollContainer.getBoundingClientRect().top -
+    const scrollContainer = this.$['scroll-container'];
+    let height = this.lowerBound - scrollContainer.getBoundingClientRect().top -
         DROPDOWN_INNER_PADDING;
     height = Math.max(height, MIN_DROPDOWN_HEIGHT);
     scrollContainer.style.maxHeight = height + 'px';
@@ -94,17 +131,19 @@ Polymer({
     this.animation_ = isEntry ? this.animateEntry_() : this.animateExit_();
     this.animation_.onfinish = () => {
       this.animation_ = null;
-      if (!this.dropdownOpen)
+      if (!this.dropdownOpen) {
         this.$.dropdown.style.display = 'none';
+      }
     };
   },
 
   animateEntry_: function() {
-    var maxHeight =
+    let maxHeight =
         this.$.dropdown.getBoundingClientRect().height - DROPDOWN_OUTER_PADDING;
 
-    if (maxHeight < 0)
+    if (maxHeight < 0) {
       maxHeight = 0;
+    }
 
     this.$.dropdown.animate(
         {

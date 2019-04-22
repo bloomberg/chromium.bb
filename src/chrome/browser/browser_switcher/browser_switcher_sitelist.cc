@@ -4,8 +4,15 @@
 
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 
+#include <string.h>
+
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
@@ -56,7 +63,8 @@ bool UrlMatchesPattern(const NoCopyUrl& url, base::StringPiece pattern) {
     return true;
   }
   if (pattern.find('/') != base::StringPiece::npos) {
-    // Check prefix using the normalized URL, case sensitive.
+    // Check prefix using the normalized URL. Case sensitive, but with
+    // case-insensitive scheme/hostname.
     size_t pos = url.spec.find(pattern);
     if (pos == base::StringPiece::npos)
       return false;
@@ -95,29 +103,70 @@ bool StringSizeCompare(const base::StringPiece& a, const base::StringPiece& b) {
 
 }  // namespace
 
-BrowserSwitcherSitelistImpl::RuleSet::RuleSet() = default;
-BrowserSwitcherSitelistImpl::RuleSet::~RuleSet() = default;
+void CanonicalizeRule(std::string* pattern) {
+  if (*pattern == "*" || pattern->find("/") == std::string::npos) {
+    // No "/" in the string. It's a hostnmae or wildcard, convert to lowercase.
+    *pattern = base::ToLowerASCII(*pattern);
+    return;
+  }
+
+  // The string has a "/" in it. It could be:
+  // - "//example.com/abc", convert hostname to lowercase
+  // - "example.com/abc", treat same as "//example.com/abc"
+  // - "http://example.com/abc", convert hostname and scheme to lowercase
+  // - "/abc", keep capitalization
+
+  const char* prefix = "";
+  base::StringPiece pattern_strpiece(*pattern);
+  if (IsInverted(*pattern)) {
+    prefix = "!";
+    *pattern = pattern->substr(1);
+  }
+
+  if (base::StartsWith(*pattern, "/", base::CompareCase::SENSITIVE) &&
+      !base::StartsWith(*pattern, "//", base::CompareCase::SENSITIVE)) {
+    // Rule starts with a single slash, e.g. "/abc". Don't change case.
+    pattern->insert(0, prefix);
+    return;
+  }
+
+  if (pattern->find("/") != 0 && pattern->find("://") == std::string::npos) {
+    // Transform "example.com/abc" => "//example.com/abc".
+    pattern->insert(0, "//");
+  }
+
+  // For patterns that include a "/": parse the URL to get the proper
+  // capitalization (for scheme/hostname).
+  //
+  // To properly parse URLs with no scheme, we need a valid base URL. We use
+  // "ftp://XXX/", which is a valid URL with an unsupported scheme. That way,
+  // parsing still succeeds, and we can easily know when the scheme isn't part
+  // of the original pattern (and omit it from the output).
+  const char* placeholder_scheme = "ftp:";
+  std::string placeholder = base::StrCat({placeholder_scheme, "//XXX/"});
+  GURL base_url(placeholder);
+
+  GURL relative_url = base_url.Resolve(*pattern);
+  base::StringPiece spec = relative_url.possibly_invalid_spec();
+
+  // The parsed URL might start with "ftp://XXX/" or "ftp://". Remove that
+  // prefix.
+  if (base::StartsWith(spec, placeholder, base::CompareCase::INSENSITIVE_ASCII))
+    spec = spec.substr(placeholder.size());
+  if (base::StartsWith(spec, placeholder_scheme,
+                       base::CompareCase::INSENSITIVE_ASCII))
+    spec = spec.substr(strlen(placeholder_scheme));
+
+  *pattern = base::StrCat({prefix, spec.as_string()});
+}
 
 BrowserSwitcherSitelist::~BrowserSwitcherSitelist() = default;
 
-BrowserSwitcherSitelistImpl::BrowserSwitcherSitelistImpl(PrefService* prefs)
-    : prefs_(prefs) {
-  DCHECK(prefs_);
-  change_registrar_.Init(prefs);
-  change_registrar_.Add(
-      prefs::kUrlList,
-      base::BindRepeating(&BrowserSwitcherSitelistImpl::OnUrlListChanged,
-                          base::Unretained(this)));
-  change_registrar_.Add(
-      prefs::kUrlGreylist,
-      base::BindRepeating(&BrowserSwitcherSitelistImpl::OnGreylistChanged,
-                          base::Unretained(this)));
-  // Ensure |chrome_policies_| is initialized.
-  OnUrlListChanged();
-  OnGreylistChanged();
-}
+BrowserSwitcherSitelistImpl::BrowserSwitcherSitelistImpl(
+    const BrowserSwitcherPrefs* prefs)
+    : prefs_(prefs) {}
 
-BrowserSwitcherSitelistImpl::~BrowserSwitcherSitelistImpl() {}
+BrowserSwitcherSitelistImpl::~BrowserSwitcherSitelistImpl() = default;
 
 bool BrowserSwitcherSitelistImpl::ShouldSwitch(const GURL& url) const {
   // Don't record metrics for LBS non-users.
@@ -141,7 +190,7 @@ bool BrowserSwitcherSitelistImpl::ShouldSwitchImpl(const GURL& url) const {
 
   base::StringPiece reason_to_go = std::max(
       {
-          MatchUrlToList(no_copy_url, chrome_policies_.sitelist, true),
+          MatchUrlToList(no_copy_url, prefs_->GetRules().sitelist, true),
           MatchUrlToList(no_copy_url, ieem_sitelist_.sitelist, true),
           MatchUrlToList(no_copy_url, external_sitelist_.sitelist, true),
       },
@@ -154,7 +203,7 @@ bool BrowserSwitcherSitelistImpl::ShouldSwitchImpl(const GURL& url) const {
 
   base::StringPiece reason_to_stay = std::max(
       {
-          MatchUrlToList(no_copy_url, chrome_policies_.greylist, false),
+          MatchUrlToList(no_copy_url, prefs_->GetRules().greylist, false),
           MatchUrlToList(no_copy_url, ieem_sitelist_.greylist, false),
           MatchUrlToList(no_copy_url, external_sitelist_.greylist, false),
       },
@@ -187,48 +236,19 @@ void BrowserSwitcherSitelistImpl::SetExternalSitelist(ParsedXml&& parsed_xml) {
   external_sitelist_.greylist = std::move(parsed_xml.greylist);
 }
 
-void BrowserSwitcherSitelistImpl::OnUrlListChanged() {
-  // This pref is sensitive. Only set through policies.
-  if (!prefs_->IsManagedPreference(prefs::kUrlList))
-    return;
-
-  UMA_HISTOGRAM_COUNTS_100000(
-      "BrowserSwitcher.UrlListSize",
-      prefs_->GetList(prefs::kUrlList)->GetList().size());
-
-  chrome_policies_.sitelist.clear();
-  bool has_wildcard = false;
-  for (const auto& url : *prefs_->GetList(prefs::kUrlList)) {
-    chrome_policies_.sitelist.push_back(url.GetString());
-    if (url.GetString() == "*")
-      has_wildcard = true;
-  }
-
-  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.UrlListWildcard", has_wildcard);
+const RuleSet* BrowserSwitcherSitelistImpl::GetIeemSitelist() const {
+  return &ieem_sitelist_;
 }
 
-void BrowserSwitcherSitelistImpl::OnGreylistChanged() {
-  // This pref is sensitive. Only set through policies.
-  if (!prefs_->IsManagedPreference(prefs::kUrlGreylist))
-    return;
-
-  UMA_HISTOGRAM_COUNTS_100000(
-      "BrowserSwitcher.GreylistSize",
-      prefs_->GetList(prefs::kUrlGreylist)->GetList().size());
-
-  chrome_policies_.greylist.clear();
-  bool has_wildcard = false;
-  for (const auto& url : *prefs_->GetList(prefs::kUrlGreylist)) {
-    chrome_policies_.greylist.push_back(url.GetString());
-    if (url.GetString() == "*")
-      has_wildcard = true;
-  }
-
-  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.GreylistWildcard", has_wildcard);
+const RuleSet* BrowserSwitcherSitelistImpl::GetExternalSitelist() const {
+  return &external_sitelist_;
 }
 
 bool BrowserSwitcherSitelistImpl::IsActive() const {
-  const RuleSet* rulesets[] = {&chrome_policies_, &ieem_sitelist_,
+  if (!prefs_->IsEnabled())
+    return false;
+
+  const RuleSet* rulesets[] = {&prefs_->GetRules(), &ieem_sitelist_,
                                &external_sitelist_};
   for (const RuleSet* rules : rulesets) {
     if (!rules->sitelist.empty() || !rules->greylist.empty())

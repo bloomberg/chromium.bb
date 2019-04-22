@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "constants/form_flags.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
@@ -1099,6 +1100,20 @@ ByteString GetRectFillAppStream(const CFX_FloatRect& rect,
   return ByteString(sAppStream);
 }
 
+void SetDefaultIconName(CPDF_Stream* pIcon, const char* name) {
+  if (!pIcon)
+    return;
+
+  CPDF_Dictionary* pImageDict = pIcon->GetDict();
+  if (!pImageDict)
+    return;
+
+  if (pImageDict->KeyExist("Name"))
+    return;
+
+  pImageDict->SetNewFor<CPDF_String>("Name", name, false);
+}
+
 }  // namespace
 
 CPWL_AppStream::CPWL_AppStream(CPDFSDK_Widget* widget, CPDF_Dictionary* dict)
@@ -1212,29 +1227,11 @@ void CPWL_AppStream::SetAsPushButton() {
   if (pControl->HasMKEntry("IX"))
     pDownIcon = pControl->GetDownIcon();
 
-  if (pNormalIcon) {
-    if (CPDF_Dictionary* pImageDict = pNormalIcon->GetDict()) {
-      if (pImageDict->GetStringFor("Name").IsEmpty())
-        pImageDict->SetNewFor<CPDF_String>("Name", "ImgA", false);
-    }
-  }
-
-  if (pRolloverIcon) {
-    if (CPDF_Dictionary* pImageDict = pRolloverIcon->GetDict()) {
-      if (pImageDict->GetStringFor("Name").IsEmpty())
-        pImageDict->SetNewFor<CPDF_String>("Name", "ImgB", false);
-    }
-  }
-
-  if (pDownIcon) {
-    if (CPDF_Dictionary* pImageDict = pDownIcon->GetDict()) {
-      if (pImageDict->GetStringFor("Name").IsEmpty())
-        pImageDict->SetNewFor<CPDF_String>("Name", "ImgC", false);
-    }
-  }
+  SetDefaultIconName(pNormalIcon, "ImgA");
+  SetDefaultIconName(pRolloverIcon, "ImgB");
+  SetDefaultIconName(pDownIcon, "ImgC");
 
   CPDF_IconFit iconFit = pControl->GetIconFit();
-
   CBA_FontMap font_map(
       widget_.Get(),
       widget_->GetInteractiveForm()->GetFormFillEnv()->GetSysHandler());
@@ -1248,7 +1245,7 @@ void CPWL_AppStream::SetAsPushButton() {
                              &font_map, pNormalIcon, iconFit, csNormalCaption,
                              crText, fFontSize, nLayout);
 
-  Write("N", csAP, "");
+  Write("N", csAP, ByteString());
   if (pNormalIcon)
     AddImage("N", pNormalIcon);
 
@@ -1269,7 +1266,7 @@ void CPWL_AppStream::SetAsPushButton() {
                                &font_map, pRolloverIcon, iconFit,
                                csRolloverCaption, crText, fFontSize, nLayout);
 
-    Write("R", csAP, "");
+    Write("R", csAP, ByteString());
     if (pRolloverIcon)
       AddImage("R", pRolloverIcon);
 
@@ -1304,7 +1301,7 @@ void CPWL_AppStream::SetAsPushButton() {
                                &font_map, pDownIcon, iconFit, csDownCaption,
                                crText, fFontSize, nLayout);
 
-    Write("D", csAP, "");
+    Write("D", csAP, ByteString());
     if (pDownIcon)
       AddImage("D", pDownIcon);
   } else {
@@ -1649,7 +1646,7 @@ void CPWL_AppStream::SetAsComboBox(Optional<WideString> sValue) {
   sBody << GetDropButtonAppStream(rcButton);
   Write("N",
         GetBackgroundAppStream() + GetBorderAppStream() + ByteString(sBody),
-        "");
+        ByteString());
 }
 
 void CPWL_AppStream::SetAsListBox() {
@@ -1734,7 +1731,7 @@ void CPWL_AppStream::SetAsListBox() {
   }
   Write("N",
         GetBackgroundAppStream() + GetBorderAppStream() + ByteString(sBody),
-        "");
+        ByteString());
 }
 
 void CPWL_AppStream::SetAsTextField(Optional<WideString> sValue) {
@@ -1757,7 +1754,7 @@ void CPWL_AppStream::SetAsTextField(Optional<WideString> sValue) {
   pEdit->SetAlignmentH(pControl->GetControlAlignment(), true);
 
   uint32_t dwFieldFlags = pField->GetFieldFlags();
-  bool bMultiLine = (dwFieldFlags >> 12) & 1;
+  bool bMultiLine = dwFieldFlags & pdfium::form_flags::kTextMultiline;
   if (bMultiLine) {
     pEdit->SetMultiLine(true, true);
     pEdit->SetAutoReturn(true, true);
@@ -1766,13 +1763,13 @@ void CPWL_AppStream::SetAsTextField(Optional<WideString> sValue) {
   }
 
   uint16_t subWord = 0;
-  if ((dwFieldFlags >> 13) & 1) {
+  if (dwFieldFlags & pdfium::form_flags::kTextPassword) {
     subWord = '*';
     pEdit->SetPasswordChar(subWord, true);
   }
 
   int nMaxLen = pField->GetMaxLen();
-  bool bCharArray = (dwFieldFlags >> 24) & 1;
+  bool bCharArray = dwFieldFlags & pdfium::form_flags::kTextComb;
   float fFontSize = widget_->GetFontSize();
 
 #ifdef PDF_ENABLE_XFA
@@ -1884,7 +1881,7 @@ void CPWL_AppStream::SetAsTextField(Optional<WideString> sValue) {
   Write("N",
         GetBackgroundAppStream() + GetBorderAppStream() + ByteString(sLines) +
             ByteString(sBody),
-        "");
+        ByteString());
 }
 
 void CPWL_AppStream::AddImage(const ByteString& sAPType, CPDF_Stream* pImage) {

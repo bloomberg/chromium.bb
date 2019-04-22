@@ -5,6 +5,7 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -37,8 +38,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using web::test::ElementSelector;
 
 namespace {
 
@@ -246,12 +245,8 @@ void CheckOmniboxVisibility(BOOL omniboxFocused) {
     CheckVisibleInPrimaryToolbar(chrome_test_util::Omnibox(), YES);
   } else {
     // Check that location view is visible.
-    if (IsRefreshLocationBarEnabled()) {
       CheckVisibleInPrimaryToolbar(chrome_test_util::DefocusedLocationView(),
                                    YES);
-    } else {
-      CheckVisibleInPrimaryToolbar(chrome_test_util::Omnibox(), YES);
-    }
   }
 }
 
@@ -364,7 +359,6 @@ void CheckToolbarButtonVisibility(UITraitCollection* traitCollection,
 // view to focus the omnibox where the full URL can be seen, then comparing
 // the strings, and finally defocusing the omnibox.
 void CheckCurrentURLContainsString(std::string string) {
-  if (IsRefreshLocationBarEnabled()) {
     [[EarlGrey
         selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
         performAction:grey_tap()];
@@ -383,21 +377,12 @@ void CheckCurrentURLContainsString(std::string string) {
               grey_accessibilityID(kToolbarCancelOmniboxEditButtonIdentifier)]
           performAction:grey_tap()];
     }
-  } else {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-        assertWithMatcher:chrome_test_util::OmniboxContainingText(string)];
-  }
 }
 
 void FocusOmnibox() {
-  if (IsRefreshLocationBarEnabled()) {
     [[EarlGrey
         selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
         performAction:grey_tap()];
-  } else {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-        performAction:grey_tap()];
-  }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:firstResponder()];
 }
@@ -687,7 +672,7 @@ void FocusOmnibox() {
       selectElementWithMatcher:web::WebViewInWebState(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        ElementSelector::ElementSelectorId(kLinkID),
+                        [ElementSelector selectorWithElementID:kLinkID],
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabelId(

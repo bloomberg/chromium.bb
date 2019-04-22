@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
@@ -184,7 +185,7 @@ void LayoutTextCombine::UpdateFontStyleForCombinedText() {
     // Need to try compressed glyphs.
     static const FontWidthVariant kWidthVariants[] = {kHalfWidth, kThirdWidth,
                                                       kQuarterWidth};
-    for (size_t i = 0; i < arraysize(kWidthVariants); ++i) {
+    for (size_t i = 0; i < base::size(kWidthVariants); ++i) {
       description.SetWidthVariant(kWidthVariants[i]);
       Font compressed_font = Font(description);
       compressed_font.Update(font_selector);

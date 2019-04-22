@@ -32,7 +32,8 @@ void CacheStorageQuotaClient::GetOriginUsage(const url::Origin& origin,
                                              GetUsageCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!cache_manager_ || !DoesSupport(type)) {
+  if (!cache_manager_ || !DoesSupport(type) ||
+      !CacheStorageManager::IsValidQuotaOrigin(origin)) {
     std::move(callback).Run(0);
     return;
   }
@@ -75,7 +76,7 @@ void CacheStorageQuotaClient::DeleteOriginData(const url::Origin& origin,
     return;
   }
 
-  if (!DoesSupport(type)) {
+  if (!DoesSupport(type) || !CacheStorageManager::IsValidQuotaOrigin(origin)) {
     std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);
     return;
   }

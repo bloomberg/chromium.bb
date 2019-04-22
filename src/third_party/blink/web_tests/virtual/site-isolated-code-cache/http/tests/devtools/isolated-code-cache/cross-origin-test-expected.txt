@@ -33,7 +33,6 @@ Text details for v8.compile: v8-cache-script.js:1
 v8.compile Properties:
 {
     data : {
-        cacheProduceOptions : "code"
         columnNumber : 0
         lineNumber : 0
         notStreamedReason : "already used streamed data"

@@ -15,11 +15,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// Vertical spacing between label and the container view of a cell.
-const CGFloat kLabelCellVerticalSpacing = 11.0;
-}  // namespace
-
 #pragma mark - TableViewTextItem
 
 @implementation TableViewTextItem
@@ -28,16 +23,16 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [TableViewTextCell class];
+    _enabled = YES;
   }
   return self;
 }
 
-- (void)configureCell:(UITableViewCell*)tableCell
+- (void)configureCell:(TableViewCell*)tableCell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:tableCell withStyler:styler];
   TableViewTextCell* cell =
       base::mac::ObjCCastStrict<TableViewTextCell>(tableCell);
-  // TODO(crbug.com/894791): set isAccessibilityElement = YES in TableViewItem.
   cell.isAccessibilityElement = YES;
 
   if (self.masked) {
@@ -70,7 +65,9 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
         UIColorFromRGB(kTableViewTextLabelColorLightGrey);
   }
   cell.textLabel.textAlignment =
-      self.textAlignment ? self.textAlignment : NSTextAlignmentLeft;
+      self.textAlignment ? self.textAlignment : NSTextAlignmentNatural;
+
+  cell.userInteractionEnabled = self.enabled;
 }
 
 @end
@@ -102,11 +99,12 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
       [_textLabel.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
                          constant:kTableViewHorizontalSpacing],
-      [_textLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
-                                           constant:kLabelCellVerticalSpacing],
+      [_textLabel.topAnchor
+          constraintEqualToAnchor:self.contentView.topAnchor
+                         constant:kTableViewOneLabelCellVerticalSpacing],
       [_textLabel.bottomAnchor
           constraintEqualToAnchor:self.contentView.bottomAnchor
-                         constant:-kLabelCellVerticalSpacing],
+                         constant:-kTableViewOneLabelCellVerticalSpacing],
       [_textLabel.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kTableViewHorizontalSpacing]
@@ -128,6 +126,7 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.checked = NO;
+  self.userInteractionEnabled = YES;
 }
 
 @end

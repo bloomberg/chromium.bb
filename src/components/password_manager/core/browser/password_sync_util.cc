@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -39,9 +39,8 @@ std::string GetSyncUsernameIfSyncingPasswords(
 
   // Return early if the user has explicitly disabled password sync. Note that
   // this does not cover the case when sync as a whole is turned off.
-  if (sync_service &&
-      !sync_service->GetUserSettings()->GetChosenDataTypes().Has(
-          syncer::PASSWORDS)) {
+  if (sync_service && !sync_service->GetUserSettings()->GetSelectedTypes().Has(
+                          syncer::UserSelectableType::kPasswords)) {
     return std::string();
   }
 

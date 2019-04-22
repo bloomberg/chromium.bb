@@ -26,8 +26,8 @@ void TestImeControllerClient::SwitchToNextIme() {
   ++next_ime_count_;
 }
 
-void TestImeControllerClient::SwitchToPreviousIme() {
-  ++previous_ime_count_;
+void TestImeControllerClient::SwitchToLastUsedIme() {
+  ++last_used_ime_count_;
 }
 
 void TestImeControllerClient::SwitchImeById(const std::string& id,
@@ -48,6 +48,14 @@ void TestImeControllerClient::OverrideKeyboardKeyset(
     OverrideKeyboardKeysetCallback callback) {
   last_keyset_ = keyset;
   std::move(callback).Run();
+}
+
+void TestImeControllerClient::UpdateMirroringState(bool enabled) {
+  is_mirroring_ = enabled;
+}
+
+void TestImeControllerClient::UpdateCastingState(bool enabled) {
+  is_casting_ = enabled;
 }
 
 }  // namespace ash

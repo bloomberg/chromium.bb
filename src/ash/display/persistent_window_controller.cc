@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/display/manager/display_manager.h"
@@ -101,10 +102,11 @@ void PersistentWindowController::MaybeRestorePersistentWindowBounds() {
     const int64_t persistent_display_id = persistent_window_info.display_id;
     if (persistent_display_id == screen->GetDisplayNearestWindow(window).id())
       continue;
-    const auto& display =
-        GetDisplayManager()->GetDisplayForId(persistent_display_id);
-    if (!display.is_valid())
+    auto* display_manager = GetDisplayManager();
+    if (!display_manager->IsDisplayIdValid(persistent_display_id))
       continue;
+    const auto& display =
+        display_manager->GetDisplayForId(persistent_display_id);
 
     // Update |persistent_window_bounds| based on |persistent_display_bounds|'s
     // position change. This ensures that |persistent_window_bounds| is

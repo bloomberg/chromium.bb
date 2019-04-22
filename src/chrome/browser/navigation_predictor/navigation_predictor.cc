@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -25,17 +26,29 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
+#include "url/url_canon.h"
 
 namespace {
 
-content::RenderFrameHost* GetMainFrame(content::RenderFrameHost* rfh) {
+bool IsMainFrame(content::RenderFrameHost* rfh) {
   // Don't use rfh->GetRenderViewHost()->GetMainFrame() here because
   // RenderViewHost is being deprecated and because in OOPIF,
   // RenderViewHost::GetMainFrame() returns nullptr for child frames hosted in a
   // different process from the main frame.
-  while (rfh->GetParent() != nullptr)
-    rfh = rfh->GetParent();
-  return rfh;
+  return rfh->GetParent() == nullptr;
+}
+
+std::string GetURLWithoutRefParams(const GURL& gurl) {
+  url::Replacements<char> replacements;
+  replacements.ClearRef();
+  return gurl.ReplaceComponents(replacements).spec();
+}
+
+// Returns true if |a| and |b| are both valid HTTP/HTTPS URLs and have the
+// same scheme, host, path and query params. This method does not take into
+// account the ref params of the two URLs.
+bool AreGURLsEqualExcludingRefParams(const GURL& a, const GURL& b) {
+  return GetURLWithoutRefParams(a) == GetURLWithoutRefParams(b);
 }
 
 }  // namespace
@@ -74,35 +87,35 @@ NavigationPredictor::NavigationPredictor(
     : browser_context_(
           render_frame_host->GetSiteInstance()->GetBrowserContext()),
       ratio_area_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "ratio_area_scale",
           100)),
       is_in_iframe_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "is_in_iframe_scale",
           0)),
       is_same_host_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "is_same_host_scale",
           100)),
       contains_image_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "contains_image_scale",
           50)),
       is_url_incremented_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "is_url_incremented_scale",
           100)),
       source_engagement_score_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "source_engagement_score_scale",
           100)),
       target_engagement_score_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "target_engagement_score_scale",
           100)),
       area_rank_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "area_rank_scale",
           100)),
       sum_scales_(ratio_area_scale_ + is_in_iframe_scale_ +
@@ -111,36 +124,25 @@ NavigationPredictor::NavigationPredictor(
                   target_engagement_score_scale_ + area_rank_scale_),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()),
       prefetch_url_score_threshold_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "prefetch_url_score_threshold",
           0)),
       preconnect_origin_score_threshold_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kRecordAnchorMetricsVisible,
+          blink::features::kNavigationPredictor,
           "preconnect_origin_score_threshold",
           0)),
       same_origin_preconnecting_allowed_(
           base::GetFieldTrialParamByFeatureAsBool(
-              blink::features::kRecordAnchorMetricsVisible,
+              blink::features::kNavigationPredictor,
               "same_origin_preconnecting_allowed",
               false))
-#ifdef OS_ANDROID
-      ,
-      application_status_listener_(
-          base::android::ApplicationStatusListener::New(base::BindRepeating(
-              &NavigationPredictor::OnApplicationStateChange,
-              // It's safe to use base::Unretained here since the application
-              // state listener is owned by |this|. So, no callbacks can
-              // arrive after |this| has been destroyed.
-              base::Unretained(this)))),
-      application_state_(base::android::ApplicationStatusListener::GetState())
-#endif  // OS_ANDROID
 {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK_LE(0, preconnect_origin_score_threshold_);
   DCHECK_LE(0, prefetch_url_score_threshold_);
 
-  if (render_frame_host != GetMainFrame(render_frame_host))
+  if (!IsMainFrame(render_frame_host))
     return;
 
   content::WebContents* web_contents =
@@ -157,10 +159,7 @@ NavigationPredictor::~NavigationPredictor() {
 void NavigationPredictor::Create(
     blink::mojom::AnchorElementMetricsHostRequest request,
     content::RenderFrameHost* render_frame_host) {
-  DCHECK(base::FeatureList::IsEnabled(
-      blink::features::kRecordAnchorMetricsClicked));
-  DCHECK(base::FeatureList::IsEnabled(
-      blink::features::kRecordAnchorMetricsVisible));
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kNavigationPredictor));
 
   // Only valid for the main frame.
   if (render_frame_host->GetParent())
@@ -261,7 +260,7 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Check if the visibility changed from HIDDEN to VISIBLE. Since navigation
-  // predictor is currently restriced to Android, it is okay to disregard the
+  // predictor is currently restricted to Android, it is okay to disregard the
   // occluded state.
   if (current_visibility_ != content::Visibility::HIDDEN ||
       visibility != content::Visibility::VISIBLE) {
@@ -273,17 +272,7 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
 
   // Previously, the visibility was HIDDEN, and now it is VISIBLE implying that
   // the web contents that was fully hidden is now fully visible.
-  TakeActionNowOnTabOrAppVisibilityChange(
-      Action::kPreconnectOnVisibilityChange);
-
-  // To keep the overhead as low, Pre* action on tab foreground is taken at most
-  // once per page.
-  Observe(nullptr);
-}
-
-void NavigationPredictor::TakeActionNowOnTabOrAppVisibilityChange(
-    Action log_action) {
-  MaybePreconnectNow(log_action);
+  MaybePreconnectNow(Action::kPreconnectOnVisibilityChange);
 }
 
 void NavigationPredictor::MaybePreconnectNow(Action log_action) {
@@ -334,8 +323,7 @@ TemplateURLService* NavigationPredictor::GetTemplateURLService() const {
 void NavigationPredictor::ReportAnchorElementMetricsOnClick(
     blink::mojom::AnchorElementMetricsPtr metrics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::FeatureList::IsEnabled(
-      blink::features::kRecordAnchorMetricsClicked));
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kNavigationPredictor));
 
   if (browser_context_->IsOffTheRecord())
     return;
@@ -459,9 +447,13 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
 
   for (auto& metric : *metrics) {
     // Do not include anchor elements that point to the same URL as the URL of
-    // the current navigation since these are unlikely to be clicked.
-    if (metric->target_url == metric->source_url)
+    // the current navigation since these are unlikely to be clicked. Also,
+    // exclude the anchor elements that differ from the URL of the current
+    // navigation by only the ref param.
+    if (AreGURLsEqualExcludingRefParams(metric->target_url,
+                                        metric->source_url)) {
       continue;
+    }
 
     if (!metric->target_url.SchemeIsCryptographic())
       continue;
@@ -472,7 +464,10 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
     if (metric->is_in_iframe)
       continue;
 
-    const std::string& key = metric->target_url.spec();
+    // Skip ref params when merging the anchor elements. This ensures that two
+    // anchor elements which differ only in the ref params are combined
+    // together.
+    const std::string& key = GetURLWithoutRefParams(metric->target_url);
     auto iter = metrics_map.find(key);
     if (iter == metrics_map.end()) {
       metrics_map[key] = std::move(metric);
@@ -537,8 +532,7 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
 void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
     std::vector<blink::mojom::AnchorElementMetricsPtr> metrics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::FeatureList::IsEnabled(
-      blink::features::kRecordAnchorMetricsVisible));
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kNavigationPredictor));
 
   // Each document should only report metrics once when page is loaded.
   DCHECK(navigation_scores_map_.empty());
@@ -814,6 +808,12 @@ base::Optional<url::Origin> NavigationPredictor::GetOriginToPreconnect(
   if (source_is_default_search_engine_page_)
     return base::nullopt;
 
+  if (base::GetFieldTrialParamByFeatureAsBool(
+          blink::features::kNavigationPredictor, "preconnect_skip_link_scores",
+          false)) {
+    return document_origin;
+  }
+
   // Compute preconnect score for each origins: Multiple anchor elements on
   // the webpage may point to the same origin. The preconnect score for an
   // origin is computed by taking sum of score of all anchor elements that
@@ -923,32 +923,3 @@ void NavigationPredictor::RecordMetricsOnLoad(
   UMA_HISTOGRAM_BOOLEAN("AnchorElementMetrics.Visible.IsUrlIncrementedByOne",
                         metric.is_url_incremented_by_one);
 }
-
-#ifdef OS_ANDROID
-void NavigationPredictor::OnApplicationStateChange(
-    base::android::ApplicationState application_state) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!application_status_listener_)
-    return;
-
-  if (application_state_ !=
-          base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES ||
-      application_state !=
-          base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
-    application_state_ = application_state;
-    return;
-  }
-
-  application_state_ = application_state;
-
-  // The app was moved from background to foreground.
-  TakeActionNowOnTabOrAppVisibilityChange(Action::kPreconnectOnAppForeground);
-
-  // To keep the overhead as low, Pre* action on app foreground is taken at most
-  // once per page. Stop listening to application change events only if
-  // OnLoad() has been fired implying that prediction computation has finished.
-  if (document_loaded_timing_ != base::TimeTicks())
-    application_status_listener_.reset();
-}
-#endif  // OS_ANDROID

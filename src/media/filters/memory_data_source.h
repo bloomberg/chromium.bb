@@ -19,6 +19,10 @@ class MEDIA_EXPORT MemoryDataSource : public DataSource {
   // Construct MemoryDataSource with |data| and |size|. The data is guaranteed
   // to be valid during the lifetime of MemoryDataSource.
   MemoryDataSource(const uint8_t* data, size_t size);
+
+  // Similar to the above, but takes ownership of the std::string.
+  explicit MemoryDataSource(std::string data);
+
   ~MemoryDataSource() final;
 
   // Implementation of DataSource.
@@ -33,8 +37,9 @@ class MEDIA_EXPORT MemoryDataSource : public DataSource {
   void SetBitrate(int bitrate) final;
 
  private:
+  const std::string data_string_;
   const uint8_t* data_ = nullptr;
-  size_t size_ = 0;
+  const size_t size_ = 0;
 
   bool is_stopped_ = false;
 

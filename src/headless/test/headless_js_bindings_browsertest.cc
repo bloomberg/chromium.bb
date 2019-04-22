@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
@@ -144,7 +145,7 @@ class HeadlessJsBindingsTest
 
   void OnMessageFromJS(const std::string& json_message) {
     std::unique_ptr<base::Value> message =
-        base::JSONReader::Read(json_message, base::JSON_PARSE_RFC);
+        base::JSONReader::ReadDeprecated(json_message, base::JSON_PARSE_RFC);
     const base::Value* method_value = message->FindKey("method");
     if (!method_value) {
       FinishAsynchronousTest();

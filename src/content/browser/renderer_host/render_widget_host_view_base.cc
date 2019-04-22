@@ -18,12 +18,14 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/display_util.h"
+#include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
+#include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -78,7 +80,7 @@ RenderWidgetHostImpl* RenderWidgetHostViewBase::GetFocusedWidget() const {
              : nullptr;
 }
 
-RenderWidgetHost* RenderWidgetHostViewBase::GetRenderWidgetHost() const {
+RenderWidgetHost* RenderWidgetHostViewBase::GetRenderWidgetHost() {
   return host();
 }
 
@@ -116,7 +118,7 @@ void RenderWidgetHostViewBase::StopFlingingIfNecessary(
       event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
       event.data.scroll_update.inertial_phase ==
           blink::WebGestureEvent::kMomentumPhase &&
-      event.SourceDevice() != blink::kWebGestureDeviceSyntheticAutoscroll) {
+      event.SourceDevice() != blink::WebGestureDevice::kSyntheticAutoscroll) {
     StopFling();
     view_stopped_flinging_for_test_ = true;
   }
@@ -139,17 +141,9 @@ void RenderWidgetHostViewBase::OnLocalSurfaceIdChanged(
 void RenderWidgetHostViewBase::UpdateIntrinsicSizingInfo(
     const blink::WebIntrinsicSizingInfo& sizing_info) {}
 
-gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() const {
+gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() {
   return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
                                 GetDeviceScaleFactor());
-}
-
-bool RenderWidgetHostViewBase::DoBrowserControlsShrinkRendererSize() const {
-  return false;
-}
-
-float RenderWidgetHostViewBase::GetTopControlsHeight() const {
-  return 0.f;
 }
 
 void RenderWidgetHostViewBase::SelectionBoundsChanged(
@@ -160,10 +154,6 @@ void RenderWidgetHostViewBase::SelectionBoundsChanged(
 #else
   NOTREACHED() << "Selection bounds should be routed through the compositor.";
 #endif
-}
-
-float RenderWidgetHostViewBase::GetBottomControlsHeight() const {
-  return 0.f;
 }
 
 int RenderWidgetHostViewBase::GetMouseWheelMinimumGranularity() const {
@@ -184,7 +174,7 @@ void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
     GetTextInputManager()->SelectionChanged(this, text, offset, range);
 }
 
-gfx::Size RenderWidgetHostViewBase::GetRequestedRendererSize() const {
+gfx::Size RenderWidgetHostViewBase::GetRequestedRendererSize() {
   return GetViewBounds().size();
 }
 
@@ -211,7 +201,7 @@ viz::FrameSinkId RenderWidgetHostViewBase::GetRootFrameSinkId() {
   return viz::FrameSinkId();
 }
 
-bool RenderWidgetHostViewBase::IsSurfaceAvailableForCopy() const {
+bool RenderWidgetHostViewBase::IsSurfaceAvailableForCopy() {
   return false;
 }
 
@@ -319,6 +309,9 @@ base::string16 RenderWidgetHostViewBase::GetSelectedText() {
 }
 
 void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
+  // TODO(danakj): OPAQUE colors only make sense for main frame widgets,
+  // as child frames are always transparent background. We should move this to
+  // RenderView instead.
   DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
          SkColorGetA(color) == SK_AlphaTRANSPARENT);
   if (default_background_color_ == color)
@@ -329,11 +322,15 @@ void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
                     : SK_AlphaOPAQUE;
   default_background_color_ = color;
   UpdateBackgroundColor();
-  if (opaque != (SkColorGetA(color) == SK_AlphaOPAQUE))
-    host()->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
+  if (opaque != (SkColorGetA(color) == SK_AlphaOPAQUE)) {
+    if (host()->owner_delegate()) {
+      host()->owner_delegate()->SetBackgroundOpaque(SkColorGetA(color) ==
+                                                    SK_AlphaOPAQUE);
+    }
+  }
 }
 
-base::Optional<SkColor> RenderWidgetHostViewBase::GetBackgroundColor() const {
+base::Optional<SkColor> RenderWidgetHostViewBase::GetBackgroundColor() {
   if (content_background_color_)
     return content_background_color_;
   return default_background_color_;
@@ -384,6 +381,19 @@ void RenderWidgetHostViewBase::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
 }
+
+bool RenderWidgetHostViewBase::OnUnconsumedKeyboardEventAck(
+    const NativeWebKeyboardEventWithLatencyInfo& event) {
+  return false;
+}
+
+void RenderWidgetHostViewBase::FallbackCursorModeLockCursor(bool left,
+                                                            bool right,
+                                                            bool up,
+                                                            bool down) {}
+
+void RenderWidgetHostViewBase::FallbackCursorModeSetCursorVisibility(
+    bool visible) {}
 
 void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
     const blink::WebGestureEvent& event,
@@ -475,6 +485,11 @@ gfx::NativeViewAccessible
   return nullptr;
 }
 
+gfx::NativeViewAccessible
+RenderWidgetHostViewBase::AccessibilityGetNativeViewAccessibleForWindow() {
+  return nullptr;
+}
+
 bool RenderWidgetHostViewBase::RequestRepaintForTesting() {
   return false;
 }
@@ -536,7 +551,7 @@ void RenderWidgetHostViewBase::DisableAutoResize(const gfx::Size& new_size) {
   host()->SynchronizeVisualProperties();
 }
 
-bool RenderWidgetHostViewBase::IsScrollOffsetAtTop() const {
+bool RenderWidgetHostViewBase::IsScrollOffsetAtTop() {
   return is_scroll_offset_at_top_;
 }
 
@@ -555,22 +570,16 @@ base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-std::unique_ptr<SyntheticGestureTarget>
-RenderWidgetHostViewBase::CreateSyntheticGestureTarget() {
-  return std::unique_ptr<SyntheticGestureTarget>(
-      new SyntheticGestureTargetBase(host()));
-}
-
 void RenderWidgetHostViewBase::FocusedNodeTouched(
     bool editable) {
   DVLOG(1) << "FocusedNodeTouched: " << editable;
 }
 
-void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) const {
+void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) {
   DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
 }
 
-float RenderWidgetHostViewBase::GetDeviceScaleFactor() const {
+float RenderWidgetHostViewBase::GetDeviceScaleFactor() {
   ScreenInfo screen_info;
   GetScreenInfo(&screen_info);
   return screen_info.device_scale_factor;
@@ -592,7 +601,7 @@ void RenderWidgetHostViewBase::OnAutoscrollStart() {
   GetMouseWheelPhaseHandler()->DispatchPendingWheelEndEvent();
 }
 
-gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() const {
+gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() {
   return GetViewBounds().size();
 }
 
@@ -708,11 +717,10 @@ gfx::PointF RenderWidgetHostViewBase::TransformRootPointToViewCoordSpace(
 bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
-    gfx::PointF* transformed_point,
-    viz::EventSource source) {
+    gfx::PointF* transformed_point) {
   if (use_viz_hit_test_) {
     return TransformPointToLocalCoordSpaceViz(point, original_surface,
-                                              transformed_point, source);
+                                              transformed_point);
   }
   return TransformPointToLocalCoordSpaceLegacy(point, original_surface,
                                                transformed_point);
@@ -729,8 +737,7 @@ bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpaceLegacy(
 bool RenderWidgetHostViewBase::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
-    gfx::PointF* transformed_point,
-    viz::EventSource source) {
+    gfx::PointF* transformed_point) {
   NOTREACHED();
   return true;
 }
@@ -752,6 +759,10 @@ void RenderWidgetHostViewBase::Destroy() {
     host_->render_frame_metadata_provider()->RemoveObserver(this);
     host_ = nullptr;
   }
+}
+
+bool RenderWidgetHostViewBase::CanSynchronizeVisualProperties() {
+  return true;
 }
 
 void RenderWidgetHostViewBase::TextInputStateChanged(
@@ -816,6 +827,17 @@ void RenderWidgetHostViewBase::RemoveObserver(
 TouchSelectionControllerClientManager*
 RenderWidgetHostViewBase::GetTouchSelectionControllerClientManager() {
   return nullptr;
+}
+
+void RenderWidgetHostViewBase::SetLastTabChangeStartTime(
+    base::TimeTicks start_time) {
+  last_tab_switch_start_time_ = start_time;
+}
+
+base::TimeTicks RenderWidgetHostViewBase::GetAndResetLastTabChangeStartTime() {
+  auto stored_time = last_tab_switch_start_time_;
+  last_tab_switch_start_time_ = base::TimeTicks();
+  return stored_time;
 }
 
 #if defined(USE_AURA)
@@ -890,8 +912,6 @@ RenderWidgetHostViewBase::GetWindowTreeClientFromRenderer() {
 bool RenderWidgetHostViewBase::ShouldContinueToPauseForFrame() {
   return false;
 }
-
-void RenderWidgetHostViewBase::SetParentUiLayer(ui::Layer* parent_ui_layer) {}
 #endif
 
 void RenderWidgetHostViewBase::DidNavigate() {
@@ -905,8 +925,7 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
     RenderWidgetHostViewBase* original_view,
     RenderWidgetHostViewBase* target_view,
     const gfx::PointF& point,
-    gfx::PointF* transformed_point,
-    viz::EventSource source) const {
+    gfx::PointF* transformed_point) const {
   DCHECK(use_viz_hit_test_);
   viz::FrameSinkId root_frame_sink_id = original_view->GetRootFrameSinkId();
   if (!root_frame_sink_id.is_valid())
@@ -956,9 +975,8 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
                               &transform_root_to_original);
   if (!transform_root_to_original.TransformPointReverse(&point_in_pixels))
     return false;
-  if (!query->TransformLocationForTarget(source, target_ancestors,
-                                         point_in_pixels.AsPointF(),
-                                         transformed_point)) {
+  if (!query->TransformLocationForTarget(
+          target_ancestors, point_in_pixels.AsPointF(), transformed_point)) {
     return false;
   }
   *transformed_point =
@@ -1027,8 +1045,7 @@ bool RenderWidgetHostViewBase::GetTransformToViewCoordSpace(
 bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpaceViz(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
-    gfx::PointF* transformed_point,
-    viz::EventSource source) {
+    gfx::PointF* transformed_point) {
   DCHECK(use_viz_hit_test_);
   viz::FrameSinkId original_frame_sink_id = original_surface.frame_sink_id();
   viz::FrameSinkId target_frame_sink_id = GetFrameSinkId();
@@ -1045,7 +1062,7 @@ bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpaceViz(
   return TransformPointToTargetCoordSpace(
       router->FindViewFromFrameSinkId(original_frame_sink_id),
       router->FindViewFromFrameSinkId(target_frame_sink_id), point,
-      transformed_point, source);
+      transformed_point);
 }
 
 }  // namespace content

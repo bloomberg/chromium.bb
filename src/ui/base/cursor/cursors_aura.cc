@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -204,16 +204,16 @@ const CursorData kAnimatedCursors[] = {
 };
 
 const CursorSizeData kCursorSizes[] = {
-    {CursorSize::kNormal, kNormalCursors, arraysize(kNormalCursors),
-     kAnimatedCursors, arraysize(kAnimatedCursors)},
-    {CursorSize::kLarge, kLargeCursors, arraysize(kLargeCursors),
+    {CursorSize::kNormal, kNormalCursors, base::size(kNormalCursors),
+     kAnimatedCursors, base::size(kAnimatedCursors)},
+    {CursorSize::kLarge, kLargeCursors, base::size(kLargeCursors),
      // TODO(yoshiki): Replace animated cursors with big assets.
      // crbug.com/247254
-     kAnimatedCursors, arraysize(kAnimatedCursors)},
+     kAnimatedCursors, base::size(kAnimatedCursors)},
 };
 
 const CursorSizeData* GetCursorSizeByType(CursorSize cursor_size) {
-  for (size_t i = 0; i < arraysize(kCursorSizes); ++i) {
+  for (size_t i = 0; i < base::size(kCursorSizes); ++i) {
     if (kCursorSizes[i].id == cursor_size)
       return &kCursorSizes[i];
   }

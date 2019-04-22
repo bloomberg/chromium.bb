@@ -125,7 +125,6 @@ Polymer({
   },
 
   listeners: {
-    'show-password': 'showPassword_',
     'password-menu-tap': 'onPasswordMenuTap_',
     'export-passwords': 'onExportPasswords_',
   },
@@ -215,8 +214,9 @@ Polymer({
          */
         (this.setPasswordExceptionsListener_));
 
-    if (this.$.undoToast.open)
+    if (this.$.undoToast.open) {
       this.$.undoToast.hide();
+    }
   },
 
   /**
@@ -247,11 +247,12 @@ Polymer({
    * @private
    */
   getFilteredPasswords_: function(filter) {
-    if (!filter)
+    if (!filter) {
       return this.savedPasswords.slice();
+    }
 
     return this.savedPasswords.filter(
-        p => [p.entry.loginPair.urls.shown, p.entry.loginPair.username].some(
+        p => [p.entry.urls.shown, p.entry.username].some(
             term => term.toLowerCase().includes(filter.toLowerCase())));
   },
 
@@ -367,23 +368,6 @@ Polymer({
    */
   hasSome_: function(list) {
     return !!(list && list.length);
-  },
-
-  /**
-   * Listens for the show-password event, and calls the private API.
-   * @param {!Event} event
-   * @private
-   */
-  showPassword_: function(event) {
-    this.passwordManager_.getPlaintextPassword(
-        /** @type {!number} */ (event.detail.item.entry.id), item => {
-          // Note: We are explicitly not using event.detail.set() here, as that
-          // would not trigger notifyPath if event.detail.item.password is
-          // already equal to item.plaintextPassword. See crbug/910081 for more
-          // details.
-          event.detail.item.password = item.plaintextPassword;
-          event.detail.notifyPath('item.password');
-        });
   },
 
   /**

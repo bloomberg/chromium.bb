@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/process/process_handle.h"
@@ -19,7 +20,7 @@
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/desktop_session_proxy.h"
-#include "remoting/host/file_proxy_wrapper.h"
+#include "remoting/host/file_transfer/file_operations.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -33,12 +34,15 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
     base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-    const DesktopEnvironmentOptions& options) {
+    const DesktopEnvironmentOptions& options)
+    : desktop_session_proxy_(
+          base::MakeRefCounted<DesktopSessionProxy>(audio_task_runner,
+                                                    caller_task_runner,
+                                                    io_task_runner,
+                                                    client_session_control,
+                                                    desktop_session_connector,
+                                                    options)) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
-
-  desktop_session_proxy_ = new DesktopSessionProxy(
-      audio_task_runner, caller_task_runner, io_task_runner,
-      client_session_control, desktop_session_connector, options);
 }
 
 IpcDesktopEnvironment::~IpcDesktopEnvironment() = default;
@@ -69,9 +73,8 @@ IpcDesktopEnvironment::CreateVideoCapturer() {
   return desktop_session_proxy_->CreateVideoCapturer();
 }
 
-std::unique_ptr<FileProxyWrapper>
-IpcDesktopEnvironment::CreateFileProxyWrapper() {
-  return FileProxyWrapper::Create();
+std::unique_ptr<FileOperations> IpcDesktopEnvironment::CreateFileOperations() {
+  return desktop_session_proxy_->CreateFileOperations();
 }
 
 std::string IpcDesktopEnvironment::GetCapabilities() const {
@@ -175,9 +178,9 @@ void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached,
-                   base::Unretained(this), terminal_id, session_id,
-                   desktop_pipe));
+        base::BindOnce(
+            &IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached,
+            base::Unretained(this), terminal_id, session_id, desktop_pipe));
     return;
   }
 
@@ -192,9 +195,10 @@ void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
 
 void IpcDesktopEnvironmentFactory::OnTerminalDisconnected(int terminal_id) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
-    caller_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &IpcDesktopEnvironmentFactory::OnTerminalDisconnected,
-        base::Unretained(this), terminal_id));
+    caller_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IpcDesktopEnvironmentFactory::OnTerminalDisconnected,
+                       base::Unretained(this), terminal_id));
     return;
   }
 

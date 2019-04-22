@@ -86,7 +86,8 @@ IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewsMacTest,
   // Add a second tab, but make sure the first is selected.
   AddTabAtIndex(1, GURL("https://test_url.com"),
                 ui::PageTransition::PAGE_TRANSITION_LINK);
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
 
   // Show the (internal or external) Page Info bubble and check it's visible.
@@ -113,6 +114,6 @@ IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewsMacTest,
   EXPECT_FALSE(PageInfoBubbleView::GetPageInfoBubble());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        PageInfoBubbleViewsMacTest,
-                        testing::ValuesIn(kGurlBubbleTypePairs));
+INSTANTIATE_TEST_SUITE_P(,
+                         PageInfoBubbleViewsMacTest,
+                         testing::ValuesIn(kGurlBubbleTypePairs));

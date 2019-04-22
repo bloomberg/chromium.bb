@@ -13,6 +13,10 @@
 class Profile;
 class GURL;
 
+namespace sync_sessions {
+class OpenTabsUIDelegate;
+}  // namespace sync_sessions
+
 namespace app_list {
 
 // The internal app's histogram name of the chrome search result. This is used
@@ -23,7 +27,8 @@ enum class InternalAppName {
   kContinueReading = 2,
   kCamera = 3,
   kDiscover = 4,
-  kMaxValue = kDiscover,
+  kPluginVm = 5,
+  kMaxValue = kPluginVm,
 };
 
 // Metadata about an internal app.
@@ -86,9 +91,12 @@ gfx::ImageSkia GetIconForResourceId(int resource_id, int resource_size_in_dip);
 // tab's last navigation.
 // If |url| is not nullptr, it will be replaced with the url of the foreign
 // tab's last navigation.
-bool HasRecommendableForeignTab(Profile* profile,
-                                base::string16* title,
-                                GURL* url);
+// |test_delegate| is used to mock OpenTabsUIDelegate in test.
+bool HasRecommendableForeignTab(
+    Profile* profile,
+    base::string16* title,
+    GURL* url,
+    sync_sessions::OpenTabsUIDelegate* test_delegate);
 
 // Returns the InternalAppName of an internal app.
 InternalAppName GetInternalAppNameByAppId(

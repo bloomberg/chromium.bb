@@ -9,8 +9,8 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
-#include "ash/system/unified/unified_detailed_view_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "components/prefs/pref_service.h"
@@ -71,7 +71,7 @@ class TrayAccessibilityTest : public AshTestBase {
   ~TrayAccessibilityTest() override = default;
 
   void CreateDetailedMenu() {
-    delegate_ = std::make_unique<UnifiedDetailedViewDelegate>(nullptr);
+    delegate_ = std::make_unique<DetailedViewDelegate>(nullptr);
     detailed_menu_ =
         std::make_unique<tray::AccessibilityDetailedView>(delegate_.get());
   }
@@ -324,29 +324,29 @@ TEST_F(TrayAccessibilityTest, ClickDetailMenu) {
   AccessibilityController* accessibility_controller =
       Shell::Get()->accessibility_controller();
   // Confirms that the check item toggles the spoken feedback.
-  EXPECT_FALSE(accessibility_controller->IsSpokenFeedbackEnabled());
+  EXPECT_FALSE(accessibility_controller->spoken_feedback_enabled());
 
   CreateDetailedMenu();
   ClickSpokenFeedbackOnDetailMenu();
-  EXPECT_TRUE(accessibility_controller->IsSpokenFeedbackEnabled());
+  EXPECT_TRUE(accessibility_controller->spoken_feedback_enabled());
 
   CreateDetailedMenu();
   ClickSpokenFeedbackOnDetailMenu();
-  EXPECT_FALSE(accessibility_controller->IsSpokenFeedbackEnabled());
+  EXPECT_FALSE(accessibility_controller->spoken_feedback_enabled());
 
   // Confirms that the check item toggles the high contrast.
-  EXPECT_FALSE(accessibility_controller->IsHighContrastEnabled());
+  EXPECT_FALSE(accessibility_controller->high_contrast_enabled());
 
   CreateDetailedMenu();
   ClickHighContrastOnDetailMenu();
-  EXPECT_TRUE(accessibility_controller->IsHighContrastEnabled());
+  EXPECT_TRUE(accessibility_controller->high_contrast_enabled());
 
   CreateDetailedMenu();
   ClickHighContrastOnDetailMenu();
-  EXPECT_FALSE(accessibility_controller->IsHighContrastEnabled());
+  EXPECT_FALSE(accessibility_controller->high_contrast_enabled());
 
   // Confirms that the check item toggles the magnifier.
-  EXPECT_FALSE(accessibility_controller->IsHighContrastEnabled());
+  EXPECT_FALSE(accessibility_controller->high_contrast_enabled());
 
   EXPECT_FALSE(Shell::Get()->accessibility_delegate()->IsMagnifierEnabled());
   CreateDetailedMenu();
@@ -358,103 +358,103 @@ TEST_F(TrayAccessibilityTest, ClickDetailMenu) {
   EXPECT_FALSE(Shell::Get()->accessibility_delegate()->IsMagnifierEnabled());
 
   // Confirms that the check item toggles autoclick.
-  EXPECT_FALSE(accessibility_controller->IsAutoclickEnabled());
+  EXPECT_FALSE(accessibility_controller->autoclick_enabled());
 
   CreateDetailedMenu();
   ClickAutoclickOnDetailMenu();
-  EXPECT_TRUE(accessibility_controller->IsAutoclickEnabled());
+  EXPECT_TRUE(accessibility_controller->autoclick_enabled());
 
   CreateDetailedMenu();
   ClickAutoclickOnDetailMenu();
-  EXPECT_FALSE(accessibility_controller->IsAutoclickEnabled());
+  EXPECT_FALSE(accessibility_controller->autoclick_enabled());
 
   // Confirms that the check item toggles on-screen keyboard.
-  EXPECT_FALSE(accessibility_controller->IsVirtualKeyboardEnabled());
+  EXPECT_FALSE(accessibility_controller->virtual_keyboard_enabled());
 
   CreateDetailedMenu();
   ClickVirtualKeyboardOnDetailMenu();
-  EXPECT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
+  EXPECT_TRUE(accessibility_controller->virtual_keyboard_enabled());
 
   CreateDetailedMenu();
   ClickVirtualKeyboardOnDetailMenu();
-  EXPECT_FALSE(accessibility_controller->IsVirtualKeyboardEnabled());
+  EXPECT_FALSE(accessibility_controller->virtual_keyboard_enabled());
 
   // Confirms that the check item toggles large mouse cursor.
-  EXPECT_FALSE(accessibility_controller->IsLargeCursorEnabled());
+  EXPECT_FALSE(accessibility_controller->large_cursor_enabled());
 
   CreateDetailedMenu();
   ClickLargeMouseCursorOnDetailMenu();
-  EXPECT_TRUE(accessibility_controller->IsLargeCursorEnabled());
+  EXPECT_TRUE(accessibility_controller->large_cursor_enabled());
 
   CreateDetailedMenu();
   ClickLargeMouseCursorOnDetailMenu();
-  EXPECT_FALSE(accessibility_controller->IsLargeCursorEnabled());
+  EXPECT_FALSE(accessibility_controller->large_cursor_enabled());
 
   // Confirms that the check item toggles mono audio.
-  EXPECT_FALSE(accessibility_controller->IsMonoAudioEnabled());
+  EXPECT_FALSE(accessibility_controller->mono_audio_enabled());
 
   CreateDetailedMenu();
   ClickMonoAudioOnDetailMenu();
-  EXPECT_TRUE(accessibility_controller->IsMonoAudioEnabled());
+  EXPECT_TRUE(accessibility_controller->mono_audio_enabled());
 
   CreateDetailedMenu();
   ClickMonoAudioOnDetailMenu();
-  EXPECT_FALSE(accessibility_controller->IsMonoAudioEnabled());
+  EXPECT_FALSE(accessibility_controller->mono_audio_enabled());
 
   // Confirms that the check item toggles caret highlight.
-  EXPECT_FALSE(accessibility_controller->IsCaretHighlightEnabled());
+  EXPECT_FALSE(accessibility_controller->caret_highlight_enabled());
 
   CreateDetailedMenu();
   ClickCaretHighlightOnDetailMenu();
-  EXPECT_TRUE(accessibility_controller->IsCaretHighlightEnabled());
+  EXPECT_TRUE(accessibility_controller->caret_highlight_enabled());
 
   CreateDetailedMenu();
   ClickCaretHighlightOnDetailMenu();
-  EXPECT_FALSE(accessibility_controller->IsCaretHighlightEnabled());
+  EXPECT_FALSE(accessibility_controller->caret_highlight_enabled());
 
   // Confirms that the check item toggles highlight mouse cursor.
-  EXPECT_FALSE(accessibility_controller->IsCursorHighlightEnabled());
+  EXPECT_FALSE(accessibility_controller->cursor_highlight_enabled());
 
   CreateDetailedMenu();
   ClickHighlightMouseCursorOnDetailMenu();
-  EXPECT_TRUE(accessibility_controller->IsCursorHighlightEnabled());
+  EXPECT_TRUE(accessibility_controller->cursor_highlight_enabled());
 
   CreateDetailedMenu();
   ClickHighlightMouseCursorOnDetailMenu();
-  EXPECT_FALSE(accessibility_controller->IsCursorHighlightEnabled());
+  EXPECT_FALSE(accessibility_controller->cursor_highlight_enabled());
 
   // Confirms that the check item toggles highlight keyboard focus.
-  EXPECT_FALSE(accessibility_controller->IsFocusHighlightEnabled());
+  EXPECT_FALSE(accessibility_controller->focus_highlight_enabled());
 
   CreateDetailedMenu();
   ClickHighlightKeyboardFocusOnDetailMenu();
-  EXPECT_TRUE(accessibility_controller->IsFocusHighlightEnabled());
+  EXPECT_TRUE(accessibility_controller->focus_highlight_enabled());
 
   CreateDetailedMenu();
   ClickHighlightKeyboardFocusOnDetailMenu();
-  EXPECT_FALSE(accessibility_controller->IsFocusHighlightEnabled());
+  EXPECT_FALSE(accessibility_controller->focus_highlight_enabled());
 
   // Confirms that the check item toggles sticky keys.
-  EXPECT_FALSE(accessibility_controller->IsStickyKeysEnabled());
+  EXPECT_FALSE(accessibility_controller->sticky_keys_enabled());
 
   CreateDetailedMenu();
   ClickStickyKeysOnDetailMenu();
-  EXPECT_TRUE(accessibility_controller->IsStickyKeysEnabled());
+  EXPECT_TRUE(accessibility_controller->sticky_keys_enabled());
 
   CreateDetailedMenu();
   ClickStickyKeysOnDetailMenu();
-  EXPECT_FALSE(accessibility_controller->IsStickyKeysEnabled());
+  EXPECT_FALSE(accessibility_controller->sticky_keys_enabled());
 
   // Confirms that the check item toggles select-to-speak.
-  EXPECT_FALSE(accessibility_controller->IsSelectToSpeakEnabled());
+  EXPECT_FALSE(accessibility_controller->select_to_speak_enabled());
 
   CreateDetailedMenu();
   ClickSelectToSpeakOnDetailMenu();
-  EXPECT_TRUE(accessibility_controller->IsSelectToSpeakEnabled());
+  EXPECT_TRUE(accessibility_controller->select_to_speak_enabled());
 
   CreateDetailedMenu();
   ClickSelectToSpeakOnDetailMenu();
-  EXPECT_FALSE(accessibility_controller->IsSelectToSpeakEnabled());
+  EXPECT_FALSE(accessibility_controller->select_to_speak_enabled());
 }
 
 class TrayAccessibilityLoginScreenTest : public TrayAccessibilityTest {

@@ -8,6 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing/db/v4_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace extensions {
 namespace {

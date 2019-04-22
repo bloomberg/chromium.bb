@@ -19,10 +19,12 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/frame_rate_decider.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/software_output_device_client.h"
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/surfaces/latest_local_surface_id_lookup_delegate.h"
+#include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
@@ -58,7 +60,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
                                    public OutputSurfaceClient,
                                    public ContextLostObserver,
                                    public LatestLocalSurfaceIdLookupDelegate,
-                                   public SoftwareOutputDeviceClient {
+                                   public SoftwareOutputDeviceClient,
+                                   public FrameRateDecider::Client {
  public:
   // The |begin_frame_source| and |scheduler| may be null (together). In that
   // case, DrawAndSwap must be called externally when needed.
@@ -76,7 +79,11 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   ~Display() override;
 
-  void Initialize(DisplayClient* client, SurfaceManager* surface_manager);
+  // TODO(cblume, crbug.com/900973): |enable_shared_images| is a temporary
+  // solution that unblocks us until SharedImages are threadsafe in WebView.
+  void Initialize(DisplayClient* client,
+                  SurfaceManager* surface_manager,
+                  bool enable_shared_images = false);
 
   void AddObserver(DisplayObserver* observer);
   void RemoveObserver(DisplayObserver* observer);
@@ -99,10 +106,10 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   // DisplaySchedulerClient implementation.
   bool DrawAndSwap() override;
-  bool SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const override;
+  bool SurfaceHasUnackedFrame(const SurfaceId& surface_id) const override;
   bool SurfaceDamaged(const SurfaceId& surface_id,
                       const BeginFrameAck& ack) override;
-  void SurfaceDiscarded(const SurfaceId& surface_id) override;
+  void SurfaceDestroyed(const SurfaceId& surface_id) override;
   void DidFinishFrame(const BeginFrameAck& ack) override;
 
   // OutputSurfaceClient implementation.
@@ -126,6 +133,11 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void SoftwareDeviceUpdatedCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
 
+  // FrameRateDecider::Client implementation
+  void SetPreferredFrameInterval(base::TimeDelta interval) override;
+  base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
+      const FrameSinkId& id) override;
+
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }
 
@@ -133,9 +145,14 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void SetNeedsOneBeginFrame();
   void RemoveOverdrawQuads(CompositorFrame* frame);
 
+  void SetSupportedFrameIntervals(std::vector<base::TimeDelta> intervals);
+
  private:
-  void InitializeRenderer();
+  // TODO(cblume, crbug.com/900973): |enable_shared_images| is a temporary
+  // solution that unblocks us until SharedImages are threadsafe in WebView.
+  void InitializeRenderer(bool enable_shared_images = true);
   void UpdateRootFrameMissing();
+  void RunDrawCallbacks();
 
   // ContextLostObserver implementation.
   void OnContextLost() override;
@@ -161,6 +178,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   std::unique_ptr<DisplayScheduler> scheduler_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
+  std::unique_ptr<FrameRateDecider> frame_rate_decider_;
   // This may be null if the Display is on a thread without a MessageLoop.
   scoped_refptr<base::SingleThreadTaskRunner> current_task_runner_;
   std::unique_ptr<DirectRenderer> renderer_;
@@ -174,6 +192,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   int64_t swapped_trace_id_ = 0;
   int64_t last_acked_trace_id_ = 0;
+  int64_t last_presented_trace_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

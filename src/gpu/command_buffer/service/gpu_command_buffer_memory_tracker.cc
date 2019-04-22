@@ -15,7 +15,7 @@
 // into the same call-site).
 #define GPU_COMMAND_BUFFER_MEMORY_BLOCK(category)                          \
   do {                                                                     \
-    size_t mb_used = size_ / (1024 * 1024);                                \
+    uint64_t mb_used = size_ / (1024 * 1024);                              \
     switch (context_type_) {                                               \
       case CONTEXT_TYPE_WEBGL1:                                            \
       case CONTEXT_TYPE_WEBGL2:                                            \

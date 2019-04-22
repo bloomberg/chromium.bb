@@ -94,7 +94,7 @@ std::string URLRequestTestJob::test_headers() {
       "HTTP/1.1 200 OK\n"
       "Content-type: text/html\n"
       "\n";
-  return std::string(kHeaders, arraysize(kHeaders));
+  return std::string(kHeaders, base::size(kHeaders));
 }
 
 // static getter for redirect response headers
@@ -103,7 +103,7 @@ std::string URLRequestTestJob::test_redirect_headers() {
       "HTTP/1.1 302 MOVED\n"
       "Location: somewhere\n"
       "\n";
-  return std::string(kHeaders, arraysize(kHeaders));
+  return std::string(kHeaders, base::size(kHeaders));
 }
 
 // static getter for redirect response headers
@@ -133,7 +133,7 @@ std::string URLRequestTestJob::test_error_headers() {
   static const char kHeaders[] =
       "HTTP/1.1 500 BOO HOO\n"
       "\n";
-  return std::string(kHeaders, arraysize(kHeaders));
+  return std::string(kHeaders, base::size(kHeaders));
 }
 
 // static
@@ -154,7 +154,7 @@ URLRequestTestJob::URLRequestTestJob(URLRequest* request,
       stage_(WAITING),
       priority_(DEFAULT_PRIORITY),
       offset_(0),
-      async_buf_(NULL),
+      async_buf_(nullptr),
       async_buf_size_(0),
       response_headers_length_(0),
       async_reads_(false),
@@ -199,8 +199,8 @@ void URLRequestTestJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestTestJob::StartAsync, weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&URLRequestTestJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void URLRequestTestJob::StartAsync() {
@@ -269,8 +269,8 @@ int URLRequestTestJob::ReadRawData(IOBuffer* buf, int buf_size) {
     if (stage_ != WAITING) {
       stage_ = WAITING;
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&URLRequestTestJob::ProcessNextOperation,
-                                weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&URLRequestTestJob::ProcessNextOperation,
+                                    weak_factory_.GetWeakPtr()));
     }
     return ERR_IO_PENDING;
   }
@@ -363,8 +363,8 @@ bool URLRequestTestJob::NextReadAsync() {
 void URLRequestTestJob::AdvanceJob() {
   if (auto_advance_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&URLRequestTestJob::ProcessNextOperation,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&URLRequestTestJob::ProcessNextOperation,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
   g_pending_jobs.Get().push_back(this);

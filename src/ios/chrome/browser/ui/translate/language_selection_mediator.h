@@ -10,15 +10,25 @@
 
 @protocol LanguageSelectionConsumer;
 @class LanguageSelectionContext;
+@protocol LanguageSelectionHandler;
+class WebStateList;
 
 // Mediator object to configure and provide data for language selection.
 @interface LanguageSelectionMediator : NSObject
 
-// Designated initializer. |context| is the context object provided for language
-// selection.
-- (instancetype)initWithContext:(LanguageSelectionContext*)context
-    NS_DESIGNATED_INITIALIZER;
+// |handler| presents and dismisses the language selection UI.
+- (instancetype)initWithLanguageSelectionHandler:
+    (id<LanguageSelectionHandler>)handler NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
+
+// Disconnects the mediator.
+- (void)disconnect;
+
+// The WebStateList being observed.
+@property(nonatomic) WebStateList* webStateList;
+
+// The context object provided for language selection.
+@property(nonatomic) LanguageSelectionContext* context;
 
 // Consumer for this mediator.
 @property(nonatomic, weak) id<LanguageSelectionConsumer> consumer;

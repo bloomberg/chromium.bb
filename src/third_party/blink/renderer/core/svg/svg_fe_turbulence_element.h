@@ -47,6 +47,8 @@ class SVGFETurbulenceElement final
  public:
   DECLARE_NODE_FACTORY(SVGFETurbulenceElement);
 
+  explicit SVGFETurbulenceElement(Document&);
+
   SVGAnimatedNumber* baseFrequencyX() { return base_frequency_->FirstNumber(); }
   SVGAnimatedNumber* baseFrequencyY() {
     return base_frequency_->SecondNumber();
@@ -62,11 +64,9 @@ class SVGFETurbulenceElement final
 
   // Turbulence takes no inputs and doesn't taint origin, so we can always
   // return false.
-  bool TaintsOrigin(bool inputs_taint_origin) const override { return false; }
+  bool TaintsOrigin() const override { return false; }
 
  private:
-  explicit SVGFETurbulenceElement(Document&);
-
   bool SetFilterEffectAttribute(FilterEffect*,
                                 const QualifiedName& attr_name) override;
   void SvgAttributeChanged(const QualifiedName&) override;

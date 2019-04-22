@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -36,19 +37,16 @@ TEST(WindowServiceTest, DeleteWithClients) {
 
   // Create another WindowService.
   TestWindowServiceDelegate test_window_service_delegate;
-  std::unique_ptr<WindowService> window_service_ptr =
-      std::make_unique<WindowService>(&test_window_service_delegate, nullptr,
-                                      test_setup.focus_controller());
-  WindowService* window_service = window_service_ptr.get();
-  std::unique_ptr<service_manager::TestConnectorFactory> factory =
-      service_manager::TestConnectorFactory::CreateForUniqueService(
-          std::move(window_service_ptr));
-  std::unique_ptr<service_manager::Connector> connector =
-      factory->CreateConnector();
+  WindowService window_service(&test_window_service_delegate, nullptr,
+                               test_setup.focus_controller());
+  service_manager::TestConnectorFactory factory;
+  window_service.BindServiceRequest(
+      factory.RegisterInstance(mojom::kServiceName));
 
   // Connect to |window_service| and ask for a new WindowTree.
   mojom::WindowTreeFactoryPtr window_tree_factory;
-  connector->BindInterface(mojom::kServiceName, &window_tree_factory);
+  factory.GetDefaultConnector()->BindInterface(mojom::kServiceName,
+                                               &window_tree_factory);
   mojom::WindowTreePtr window_tree;
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request = MakeRequest(&client);
@@ -59,7 +57,7 @@ TEST(WindowServiceTest, DeleteWithClients) {
   window_tree_factory.FlushForTesting();
 
   // There should be at least one WindowTree.
-  EXPECT_FALSE(window_service->window_trees().empty());
+  EXPECT_FALSE(window_service.window_trees().empty());
 
   // Destroying the |window_service| should remove all the WindowTrees and
   // ensure a DCHECK isn't hit in ~WindowTree.
@@ -110,24 +108,48 @@ class TestWindowServiceDelegateWithInterface
   DISALLOW_COPY_AND_ASSIGN(TestWindowServiceDelegateWithInterface);
 };
 
+class TestImeEngineClient : public ime::mojom::ImeEngineClient {
+ public:
+  TestImeEngineClient() : binding_(this) {}
+  ~TestImeEngineClient() override = default;
+
+  ime::mojom::ImeEngineClientPtr BindInterface() {
+    ime::mojom::ImeEngineClientPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    return ptr;
+  }
+
+ private:
+  // ime::mojom::ImeEngineClient:
+  void CommitText(const std::string& text) override {}
+  void UpdateCompositionText(const ui::CompositionText& composition,
+                             uint32_t cursor_pos,
+                             bool visible) override {}
+  void DeleteSurroundingText(int32_t offset, uint32_t length) override {}
+  void SendKeyEvent(std::unique_ptr<ui::Event> key_event) override {}
+  void Reconnect() override {}
+
+  mojo::Binding<ime::mojom::ImeEngineClient> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestImeEngineClient);
+};
+
 TEST(WindowServiceTest, GetWindowManagerInterface) {
   // Use |test_setup| to configure aura and other state.
   WindowServiceTestSetup test_setup;
 
   // Create another WindowService.
   TestWindowServiceDelegateWithInterface test_window_service_delegate;
-  std::unique_ptr<WindowService> window_service_ptr =
-      std::make_unique<WindowService>(&test_window_service_delegate, nullptr,
-                                      test_setup.focus_controller());
-  std::unique_ptr<service_manager::TestConnectorFactory> factory =
-      service_manager::TestConnectorFactory::CreateForUniqueService(
-          std::move(window_service_ptr));
-  std::unique_ptr<service_manager::Connector> connector =
-      factory->CreateConnector();
+  WindowService window_service(&test_window_service_delegate, nullptr,
+                               test_setup.focus_controller());
+  service_manager::TestConnectorFactory factory;
+  window_service.BindServiceRequest(
+      factory.RegisterInstance(mojom::kServiceName));
 
   // Connect to |window_service| and ask for a new WindowTree.
   mojom::WindowTreeFactoryPtr window_tree_factory;
-  connector->BindInterface(mojom::kServiceName, &window_tree_factory);
+  factory.GetDefaultConnector()->BindInterface(mojom::kServiceName,
+                                               &window_tree_factory);
   mojom::WindowTreePtr window_tree;
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request = MakeRequest(&client);
@@ -200,12 +222,45 @@ TEST(WindowServiceTest, ScheduleEmbedForExistingClientUsingLocalWindow) {
 
   // Create a window that will serve as the parent for the remote window and
   // complete the embedding.
-  std::unique_ptr<aura::Window> local_window =
-      std::make_unique<aura::Window>(nullptr);
+  auto local_window = std::make_unique<aura::Window>(nullptr);
   local_window->Init(ui::LAYER_NOT_DRAWN);
   ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
       local_window.get(), token, /* embed_flags */ 0));
-  EXPECT_TRUE(WindowService::HasRemoteClient(local_window.get()));
+  EXPECT_TRUE(WindowService::IsProxyWindow(local_window.get()));
+}
+
+TEST(WindowServiceTest, ScheduleEmbedForExistingClientTwice) {
+  WindowServiceTestSetup setup;
+  // Schedule an embed in the tree created by |setup|.
+  base::UnguessableToken token_1;
+  const uint32_t window_id_in_child_1 = 149;
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->ScheduleEmbedForExistingClient(
+          window_id_in_child_1,
+          base::BindOnce(&ScheduleEmbedCallback, &token_1));
+  EXPECT_FALSE(token_1.is_empty());
+
+  // Create a window that will serve as the parent for the remote window and
+  // complete the embedding.
+  auto local_window = std::make_unique<aura::Window>(nullptr);
+  local_window->Init(ui::LAYER_NOT_DRAWN);
+  ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
+      local_window.get(), token_1, /* embed_flags */ 0));
+  EXPECT_TRUE(WindowService::IsProxyWindow(local_window.get()));
+
+  // Embedding again should replace the existing embed with the new one.
+  base::UnguessableToken token_2;
+  const uint32_t window_id_in_child_2 = 150;
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->ScheduleEmbedForExistingClient(
+          window_id_in_child_2,
+          base::BindOnce(&ScheduleEmbedCallback, &token_2));
+  EXPECT_FALSE(token_2.is_empty());
+  ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
+      local_window.get(), token_2, /* embed_flags */ 0));
+  EXPECT_TRUE(WindowService::IsProxyWindow(local_window.get()));
 }
 
 TEST(WindowServiceTest,
@@ -227,16 +282,39 @@ TEST(WindowServiceTest,
 
   // Create a window that will serve as the parent for the remote window and
   // complete the embedding.
-  std::unique_ptr<aura::Window> local_window =
-      std::make_unique<aura::Window>(nullptr);
+  auto local_window = std::make_unique<aura::Window>(nullptr);
   local_window->Init(ui::LAYER_NOT_DRAWN);
   ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
       local_window.get(), token, /* embed_flags */ 0));
-  EXPECT_TRUE(WindowService::HasRemoteClient(local_window.get()));
+  EXPECT_TRUE(WindowService::IsProxyWindow(local_window.get()));
 
-  // Deleting |window_tree2| should remove the remote client.
+  // Deleting |window_tree2| should make |local_window| no longer a proxy.
   window_tree2.reset();
-  EXPECT_FALSE(WindowService::HasRemoteClient(local_window.get()));
+  EXPECT_FALSE(WindowService::IsProxyWindow(local_window.get()));
+}
+
+TEST(WindowServiceTest, ConnectToImeEngine) {
+  // Use |test_setup| to configure aura and other state.
+  WindowServiceTestSetup test_setup;
+
+  aura::Window* top_level =
+      test_setup.window_tree_test_helper()->NewTopLevelWindow();
+  top_level->Show();
+
+  // Verifies only the focused window tree can connect to ime engine.
+  ime::mojom::ImeEnginePtr engine;
+  TestImeEngineClient engine_client1;
+  test_setup.window_tree_test_helper()->ConnectToImeEngine(
+      MakeRequest(&engine), engine_client1.BindInterface());
+  ASSERT_FALSE(test_setup.delegate()->ime_engine_connected());
+
+  test_setup.window_tree_test_helper()->SetFocus(top_level);
+
+  engine.reset();
+  TestImeEngineClient engine_client2;
+  test_setup.window_tree_test_helper()->ConnectToImeEngine(
+      MakeRequest(&engine), engine_client2.BindInterface());
+  ASSERT_TRUE(test_setup.delegate()->ime_engine_connected());
 }
 
 }  // namespace ws

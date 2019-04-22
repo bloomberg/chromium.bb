@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "net/cert/x509_util_nss.h"
 
 namespace enterprise_management {

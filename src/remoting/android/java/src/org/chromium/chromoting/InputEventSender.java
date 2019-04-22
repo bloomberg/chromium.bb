@@ -84,7 +84,8 @@ public final class InputEventSender {
      */
     public void sendTouchEvent(MotionEvent event) {
         int action = event.getActionMasked();
-        TouchEventData.EventType touchEventType = TouchEventData.EventType.fromMaskedAction(action);
+        @TouchEventData.EventType
+        int touchEventType = TouchEventData.eventTypeFromMaskedAction(action);
         List<TouchEventData> touchEventList = new ArrayList<TouchEventData>();
 
         if (action == MotionEvent.ACTION_MOVE) {

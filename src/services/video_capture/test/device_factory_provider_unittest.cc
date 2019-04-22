@@ -8,7 +8,9 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
+#include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
+#include "services/video_capture/public/mojom/virtual_device.mojom.h"
 #include "services/video_capture/test/device_factory_provider_test.h"
 #include "services/video_capture/test/mock_devices_changed_observer.h"
 
@@ -87,7 +89,9 @@ TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
   MockDevicesChangedObserver mock_observer;
   mojo::Binding<mojom::DevicesChangedObserver> observer_binding(
       &mock_observer, mojo::MakeRequest(&observer));
-  factory_->RegisterVirtualDevicesChangedObserver(std::move(observer));
+  factory_->RegisterVirtualDevicesChangedObserver(
+      std::move(observer),
+      false /*raise_event_if_virtual_devices_already_present*/);
 
   std::unique_ptr<SharedMemoryVirtualDeviceContext> device_context_1;
   {
@@ -132,7 +136,9 @@ TEST_F(VideoCaptureServiceDeviceFactoryProviderTest,
   MockDevicesChangedObserver mock_observer;
   mojo::Binding<mojom::DevicesChangedObserver> observer_binding(
       &mock_observer, mojo::MakeRequest(&observer));
-  factory_->RegisterVirtualDevicesChangedObserver(std::move(observer));
+  factory_->RegisterVirtualDevicesChangedObserver(
+      std::move(observer),
+      false /*raise_event_if_virtual_devices_already_present*/);
 
   // Disconnect observer
   observer_binding.Close();

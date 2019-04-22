@@ -104,8 +104,9 @@ Polymer({
     // If export started on a different tab and is still in progress, display a
     // busy UI.
     this.passwordManager_.requestExportProgressStatus(status => {
-      if (status == ProgressStatus.IN_PROGRESS)
+      if (status == ProgressStatus.IN_PROGRESS) {
         this.switchToDialog_(States.IN_PROGRESS);
+      }
     });
 
     this.passwordManager_.addPasswordsFileExportProgressListener(
@@ -124,7 +125,7 @@ Polymer({
     // time (|delayedCompletionToken_| is not null) progress should be cached
     // for consumption when the blocking time ends.
     const progressBlocked =
-        !this.progressTaskToken_ && !!this.delayedCompletionToken_;
+        !this.progressTaskToken_ && this.delayedCompletionToken_;
     if (!progressBlocked) {
       clearTimeout(this.progressTaskToken_);
       this.progressTaskToken_ = null;
@@ -171,7 +172,9 @@ Polymer({
     this.showStartDialog_ = false;
     this.showProgressDialog_ = false;
     this.showErrorDialog_ = false;
-    this.fire('passwords-export-dialog-close');
+    // Need to allow for the dialogs to be removed from the DOM before firing
+    // the close event. Otherwise the handler will not be able to set focus.
+    this.async(() => this.fire('passwords-export-dialog-close'));
   },
 
   /**

@@ -13,7 +13,6 @@
 
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -34,6 +33,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -57,9 +57,10 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this. Increment this number if you
-// change default theme assets or if you need themes to recreate their generated
-// images (which are cached).
-const int kThemePackVersion = 61;
+// change default theme assets, if you need themes to recreate their generated
+// images (which are cached), or if you changed how missing values are
+// generated.
+const int kThemePackVersion = 64;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -105,7 +106,7 @@ struct PersistingImagesTable {
 
   // String to check for when parsing theme manifests or NULL if this isn't
   // supposed to be changeable by the user.
-  const char* key;
+  const char* const key;
 };
 
 // IDR_* resource names change whenever new resources are added; use persistent
@@ -142,7 +143,7 @@ const PersistingImagesTable kPersistingImages[] = {
     {PRS_THEME_WINDOW_CONTROL_BACKGROUND, IDR_THEME_WINDOW_CONTROL_BACKGROUND,
      "theme_window_control_background"},
 };
-const size_t kPersistingImagesLength = arraysize(kPersistingImages);
+const size_t kPersistingImagesLength = base::size(kPersistingImages);
 
 int GetPersistentIDByNameHelper(const std::string& key,
                                 const PersistingImagesTable* image_table,
@@ -216,7 +217,7 @@ std::string GetScaleFactorsAsString(
 }
 
 struct StringToIntTable {
-  const char* key;
+  const char* const key;
   TP::OverwritableByUserThemeProperty id;
 };
 
@@ -229,7 +230,7 @@ const StringToIntTable kTintTable[] = {
     {"frame_incognito_inactive", TP::TINT_FRAME_INCOGNITO_INACTIVE},
     {"background_tab", TP::TINT_BACKGROUND_TAB},
 };
-const size_t kTintTableLength = arraysize(kTintTable);
+const size_t kTintTableLength = base::size(kTintTable);
 
 // Strings used by themes to identify colors in the JSON.
 constexpr StringToIntTable kOverwritableColorTable[] = {
@@ -242,19 +243,20 @@ constexpr StringToIntTable kOverwritableColorTable[] = {
     {"background_tab_incognito", TP::COLOR_BACKGROUND_TAB_INCOGNITO},
     {"background_tab_incognito_inactive",
      TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE},
-    {"toolbar", TP::COLOR_TOOLBAR},
-    {"tab_text", TP::COLOR_TAB_TEXT},
+    {"bookmark_text", TP::COLOR_BOOKMARK_TEXT},
+    {"button_background", TP::COLOR_CONTROL_BUTTON_BACKGROUND},
     {"tab_background_text", TP::COLOR_BACKGROUND_TAB_TEXT},
     {"tab_background_text_inactive", TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
     {"tab_background_text_incognito", TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO},
     {"tab_background_text_incognito_inactive",
      TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE},
-    {"bookmark_text", TP::COLOR_BOOKMARK_TEXT},
+    {"tab_text", TP::COLOR_TAB_TEXT},
+    {"toolbar", TP::COLOR_TOOLBAR},
+    {"toolbar_button_icon", TP::COLOR_TOOLBAR_BUTTON_ICON},
     {"ntp_background", TP::COLOR_NTP_BACKGROUND},
-    {"ntp_text", TP::COLOR_NTP_TEXT},
-    {"ntp_link", TP::COLOR_NTP_LINK},
     {"ntp_header", TP::COLOR_NTP_HEADER},
-    {"button_background", TP::COLOR_BUTTON_BACKGROUND},
+    {"ntp_link", TP::COLOR_NTP_LINK},
+    {"ntp_text", TP::COLOR_NTP_TEXT},
 };
 constexpr size_t kOverwritableColorTableLength =
     base::size(kOverwritableColorTable);
@@ -265,6 +267,9 @@ constexpr int kNonOverwritableColorTable[] = {
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
+    TP::COLOR_INFOBAR,
+    TP::COLOR_DOWNLOAD_SHELF,
+    TP::COLOR_STATUS_BUBBLE,
 };
 constexpr size_t kNonOverwritableColorTableLength =
     base::size(kNonOverwritableColorTable);
@@ -280,7 +285,7 @@ const StringToIntTable kDisplayProperties[] = {
     {"ntp_background_repeat", TP::NTP_BACKGROUND_TILING},
     {"ntp_logo_alternate", TP::NTP_LOGO_ALTERNATE},
 };
-const size_t kDisplayPropertiesSize = arraysize(kDisplayProperties);
+const size_t kDisplayPropertiesSize = base::size(kDisplayProperties);
 
 int GetIntForString(const std::string& key,
                     const StringToIntTable* table,
@@ -364,6 +369,50 @@ SkBitmap CreateLowQualityResizedBitmap(const SkBitmap& source_bitmap,
   // a mask image.
   canvas.drawBitmapRect(source_bitmap, scaled_bounds, NULL);
   return scaled_bitmap;
+}
+
+// Decreases the lightness of the given color.
+SkColor DarkenColor(SkColor color, float change) {
+  color_utils::HSL hsl;
+  SkColorToHSL(color, &hsl);
+  hsl.l -= change;
+  if (hsl.l >= 0.0f)
+    return HSLToSkColor(hsl, 255);
+  return color;
+}
+
+// Increases the lightness of |source| until it reaches |contrast_ratio| with
+// |base| or reaches |white_contrast| with white. This avoids decreasing
+// saturation, as the alternative contrast-guaranteeing functions in color_utils
+// would do.
+SkColor LightenUntilContrast(SkColor source,
+                             SkColor base,
+                             float contrast_ratio,
+                             float white_contrast) {
+  const float kBaseLuminance = color_utils::GetRelativeLuminance(base);
+  constexpr float kWhiteLuminance = 1.0f;
+
+  color_utils::HSL hsl;
+  SkColorToHSL(source, &hsl);
+  float min_l = hsl.l;
+  float max_l = 1.0f;
+
+  // Need only precision of 2 digits.
+  while (max_l - min_l > 0.01) {
+    hsl.l = min_l + (max_l - min_l) / 2;
+    float luminance = color_utils::GetRelativeLuminance(HSLToSkColor(hsl, 255));
+    if (color_utils::GetContrastRatio(kBaseLuminance, luminance) >=
+            contrast_ratio ||
+        (color_utils::GetContrastRatio(kWhiteLuminance, luminance) <
+         white_contrast)) {
+      max_l = hsl.l;
+    } else {
+      min_l = hsl.l;
+    }
+  }
+
+  hsl.l = max_l;
+  return HSLToSkColor(hsl, 255);
 }
 
 // A ImageSkiaSource that scales 100P image to the target scale factor
@@ -507,8 +556,8 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
       gfx::ImageSkia bg_tint = gfx::ImageSkiaOperations::CreateHSLShiftedImage(
           image_to_tint_, hsl_shift_);
       canvas->TileImageInt(bg_tint, 0, vertical_offset_, 0, 0, size().width(),
-                           size().height(), 1.0f, SkShader::kRepeat_TileMode,
-                           SkShader::kMirror_TileMode);
+                           size().height(), 1.0f, SkTileMode::kRepeat,
+                           SkTileMode::kMirror);
     }
 
     // If the theme has a custom tab background image, overlay it.  Vertical
@@ -516,8 +565,8 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
     // stay in sync with how tabs are drawn.
     if (!overlay_.isNull()) {
       canvas->TileImageInt(overlay_, 0, 0, 0, 0, size().width(),
-                           size().height(), 1.0f, SkShader::kRepeat_TileMode,
-                           SkShader::kMirror_TileMode);
+                           size().height(), 1.0f, SkTileMode::kRepeat,
+                           SkTileMode::kMirror);
     }
   }
 
@@ -588,98 +637,47 @@ void BrowserThemePack::SetColor(int id, SkColor color) {
   colors_[first_available_color].color = color;
 }
 
-void BrowserThemePack::ComputeColorFromImage(int color_id,
-                                             int height,
-                                             const gfx::Image& image) {
+void BrowserThemePack::SetColorIfUnspecified(int id, SkColor color) {
   SkColor temp_color;
-  if (!GetColor(color_id, &temp_color)) {
-    // Include all colors in the analysis.
-    constexpr color_utils::HSL kNoBounds = {-1, -1, -1};
-    const SkColor color = color_utils::CalculateKMeanColorOfBitmap(
-        *image.ToSkBitmap(), height, kNoBounds, kNoBounds, false);
-    SetColor(color_id, color);
-  }
+  if (!GetColor(id, &temp_color))
+    SetColor(id, color);
+}
+
+SkColor BrowserThemePack::ComputeImageColor(const gfx::Image& image,
+                                            int height) {
+  // Include all colors in the analysis.
+  constexpr color_utils::HSL kNoBounds = {-1, -1, -1};
+  const SkColor color = color_utils::CalculateKMeanColorOfBitmap(
+      *image.ToSkBitmap(), height, kNoBounds, kNoBounds, false);
+
+  return color;
 }
 
 // static
 void BrowserThemePack::BuildFromExtension(
     const extensions::Extension* extension,
-    scoped_refptr<BrowserThemePack> pack) {
+    BrowserThemePack* pack) {
   DCHECK(extension);
   DCHECK(extension->is_theme());
   DCHECK(!pack->is_valid());
 
-  pack->BuildHeader(extension);
-  pack->BuildTintsFromJSON(extensions::ThemeInfo::GetTints(extension));
-  pack->BuildColorsFromJSON(extensions::ThemeInfo::GetColors(extension));
-  pack->BuildDisplayPropertiesFromJSON(
+  pack->InitEmptyPack();
+  pack->SetHeaderId(extension);
+  pack->SetTintsFromJSON(extensions::ThemeInfo::GetTints(extension));
+  pack->SetColorsFromJSON(extensions::ThemeInfo::GetColors(extension));
+  pack->SetDisplayPropertiesFromJSON(
       extensions::ThemeInfo::GetDisplayProperties(extension));
 
   // Builds the images. (Image building is dependent on tints).
   FilePathMap file_paths;
-  pack->ParseImageNamesFromJSON(
-      extensions::ThemeInfo::GetImages(extension),
-      extension->path(),
-      &file_paths);
+  pack->ParseImageNamesFromJSON(extensions::ThemeInfo::GetImages(extension),
+                                extension->path(), &file_paths);
   pack->BuildSourceImagesArray(file_paths);
 
   if (!pack->LoadRawBitmapsTo(file_paths, &pack->images_))
     return;
 
-  pack->CropImages(&pack->images_);
-
-  // Create frame images, and generate frame colors from images where relevant.
-  // This must be done after reading colors from JSON (so they aren't
-  // overwritten).
-  pack->CreateFrameImagesAndColors(&pack->images_);
-
-  // Generate any missing frame colors.  This must be done after generating
-  // colors from the frame images, so only colors with no matching images are
-  // generated.
-  pack->GenerateFrameColors();
-
-  // Generate background color information for window control buttons.  This
-  // must be done after frame colors are set, since they are used when
-  // determining window control button colors.
-  pack->GenerateWindowControlButtonColor(&pack->images_);
-
-  // Create the tab background images, and generate colors where relevant.  This
-  // must be done after all frame colors are set, since they are used when
-  // creating these.
-  pack->CreateTabBackgroundImagesAndColors(&pack->images_);
-
-  // Generate any missing text colors.  This must be done after generating frame
-  // and tab colors, as generated text colors will try to appropriately contrast
-  // with the frame/tab behind them.
-  pack->GenerateMissingTextColors();
-
-  // Make sure the |images_on_file_thread_| has bitmaps for supported
-  // scale factors before passing to FILE thread.
-  pack->images_on_file_thread_ = pack->images_;
-  for (auto it = pack->images_on_file_thread_.begin();
-       it != pack->images_on_file_thread_.end(); ++it) {
-    gfx::ImageSkia* image_skia =
-        const_cast<gfx::ImageSkia*>(it->second.ToImageSkia());
-    image_skia->MakeThreadSafe();
-  }
-
-  // Set ThemeImageSource on |images_| to resample the source
-  // image if a caller of BrowserThemePack::GetImageNamed() requests an
-  // ImageSkiaRep for a scale factor not specified by the theme author.
-  // Callers of BrowserThemePack::GetImageNamed() to be able to retrieve
-  // ImageSkiaReps for all supported scale factors.
-  for (auto it = pack->images_.begin(); it != pack->images_.end(); ++it) {
-    const gfx::ImageSkia source_image_skia = it->second.AsImageSkia();
-    auto source = std::make_unique<ThemeImageSource>(source_image_skia);
-    gfx::ImageSkia image_skia(std::move(source), source_image_skia.size());
-    it->second = gfx::Image(image_skia);
-  }
-
-  // Generate raw images (for new-tab-page attribution and background) for
-  // any missing scale from an available scale image.
-  for (size_t i = 0; i < arraysize(kPreloadIDs); ++i) {
-    pack->GenerateRawImageForAllSupportedScales(kPreloadIDs[i]);
-  }
+  pack->AdjustThemePack();
 
   // The BrowserThemePack is now in a consistent state.
   pack->is_valid_ = true;
@@ -692,7 +690,10 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   // Allow IO on UI thread due to deep-seated theme design issues.
   // (see http://crbug.com/80206)
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  scoped_refptr<BrowserThemePack> pack(new BrowserThemePack);
+
+  // For now data pack can only have extension type.
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(ThemeType::EXTENSION));
   // Scale factor parameter is moot as data pack has image resources for all
   // supported scale factors.
   pack->data_pack_.reset(
@@ -763,7 +764,112 @@ bool BrowserThemePack::IsPersistentImageID(int id) {
   return false;
 }
 
-BrowserThemePack::BrowserThemePack() : CustomThemeSupplier(EXTENSION) {
+// static
+void BrowserThemePack::BuildFromColor(SkColor color, BrowserThemePack* pack) {
+  DCHECK(!pack->is_valid());
+
+  pack->InitEmptyPack();
+
+  // Init |source_images_| only here as other code paths initialize it
+  // differently.
+  pack->InitSourceImages();
+
+  GenerateFrameAndTabColors(color, pack);
+
+  SkColor tab_color;
+  pack->GetColor(TP::COLOR_TOOLBAR, &tab_color);
+  pack->SetColor(TP::COLOR_NTP_BACKGROUND, tab_color);
+
+  SkColor tab_text_color;
+  pack->GetColor(TP::COLOR_TAB_TEXT, &tab_text_color);
+  pack->SetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, tab_text_color);
+  pack->SetColor(TP::COLOR_BOOKMARK_TEXT, tab_text_color);
+
+  pack->AdjustThemePack();
+
+  // The BrowserThemePack is now in a consistent state.
+  pack->is_valid_ = true;
+}
+
+// static
+void BrowserThemePack::GenerateFrameAndTabColors(SkColor color,
+                                                 BrowserThemePack* pack) {
+  SkColor frame_color = color;
+  SkColor frame_text_color;
+  SkColor active_tab_color = color;
+  SkColor tab_text_color;
+  constexpr float kDarkenStep = 0.03f;
+  constexpr float kMinWhiteContrast = 1.3f;
+  constexpr float kNoWhiteContrast = 0.0f;
+
+  // Increasingly darken frame color and calculate the rest until colors with
+  // sufficient contrast are found.
+  while (true) {
+    // Calculate frame color to have sufficient contrast with white or dark grey
+    // text.
+    frame_text_color = color_utils::GetColorWithMaxContrast(frame_color);
+    SkColor blend_target =
+        color_utils::GetColorWithMaxContrast(frame_text_color);
+    SkAlpha alpha = color_utils::GetBlendValueWithMinimumContrast(
+        frame_color, blend_target, frame_text_color,
+        kPreferredReadableContrastRatio);
+    frame_color = color_utils::AlphaBlend(blend_target, frame_color, alpha);
+
+    // Generate active tab color so that it has enough contrast with the
+    // |frame_color| to avoid the isolation line in the tab strip.
+    active_tab_color = LightenUntilContrast(
+        frame_color, frame_color, kActiveTabMinContrast, kNoWhiteContrast);
+    // Try lightening the color to get more contrast with frame without getting
+    // too close to white.
+    active_tab_color =
+        LightenUntilContrast(active_tab_color, frame_color,
+                             kActiveTabPreferredContrast, kMinWhiteContrast);
+
+    // If we didn't succeed in generating active tab color with minimum
+    // contrast with frame, then darken the frame color and try again.
+    if (color_utils::GetContrastRatio(frame_color, active_tab_color) <
+        kActiveTabMinContrast) {
+      frame_color = DarkenColor(frame_color, kDarkenStep);
+      continue;
+    }
+
+    // Select active tab text color, if possible.
+    tab_text_color = color_utils::GetColorWithMaxContrast(active_tab_color);
+
+    if (!color_utils::IsDark(active_tab_color)) {
+      // If active tab is light color then continue lightening it until enough
+      // contrast with dark text is reached.
+      tab_text_color = color_utils::GetColorWithMaxContrast(active_tab_color);
+      active_tab_color = LightenUntilContrast(active_tab_color, tab_text_color,
+                                              kPreferredReadableContrastRatio,
+                                              kNoWhiteContrast);
+      break;
+    }
+
+    // If the active tab color is dark and has enough contrast with white text.
+    // Then we are all set.
+    if (color_utils::GetContrastRatio(active_tab_color, SK_ColorWHITE) >=
+        kPreferredReadableContrastRatio)
+      break;
+
+    // If the active tab color is a dark color but the contrast with white is
+    // not enough then we should darken the active tab color to reach the
+    // contrast with white. But to keep the contrast with the frame we should
+    // also darken the frame color. Therefore, just darken the frame color and
+    // try again.
+    frame_color = DarkenColor(frame_color, kDarkenStep);
+  }
+
+  pack->SetColor(TP::COLOR_FRAME, frame_color);
+  pack->SetColor(TP::COLOR_BACKGROUND_TAB, frame_color);
+  pack->SetColor(TP::COLOR_BACKGROUND_TAB_TEXT, frame_text_color);
+
+  pack->SetColor(TP::COLOR_TOOLBAR, active_tab_color);
+  pack->SetColor(TP::COLOR_TAB_TEXT, tab_text_color);
+}
+
+BrowserThemePack::BrowserThemePack(ThemeType theme_type)
+    : CustomThemeSupplier(theme_type) {
   scale_factors_ = ui::GetSupportedScaleFactors();
   // On Windows HiDPI SCALE_FACTOR_100P may not be supported by default.
   if (!base::ContainsValue(scale_factors_, ui::SCALE_FACTOR_100P))
@@ -787,11 +893,11 @@ bool BrowserThemePack::WriteToDisk(const base::FilePath& path) const {
 
   int source_count = 1;
   int* end = source_images_;
-  for (; *end != -1 ; end++)
+  for (; *end != -1; end++)
     source_count++;
-  resources[kSourceImagesID] = base::StringPiece(
-      reinterpret_cast<const char*>(source_images_),
-      source_count * sizeof(*source_images_));
+  resources[kSourceImagesID] =
+      base::StringPiece(reinterpret_cast<const char*>(source_images_),
+                        source_count * sizeof(*source_images_));
 
   // Store results of GetScaleFactorsAsString() in std::string as
   // base::StringPiece does not copy data in constructor.
@@ -936,7 +1042,82 @@ bool BrowserThemePack::HasCustomImage(int idr_id) const {
 
 // private:
 
-void BrowserThemePack::BuildHeader(const Extension* extension) {
+void BrowserThemePack::AdjustThemePack() {
+  CropImages(&images_);
+
+  // Set toolbar related elements' colors (e.g. status bubble, info bar,
+  // download shelf, detached bookmark bar) to toolbar color.
+  SetToolbarRelatedColors();
+
+  // Create toolbar image, and generate toolbar color from image where relevant.
+  // This must be done after reading colors from JSON (so they can be used for
+  // compositing the image).
+  CreateToolbarImageAndColors(&images_);
+
+  // Create frame images, and generate frame colors from images where relevant.
+  // This must be done after reading colors from JSON (so they can be used for
+  // compositing the image).
+  CreateFrameImagesAndColors(&images_);
+
+  // Generate any missing frame colors from tints. This must be done after
+  // generating colors from the frame images, so only colors with no matching
+  // images are generated.
+  GenerateFrameColorsFromTints();
+
+  // Generate background color information for window control buttons.  This
+  // must be done after frame colors are set, since they are used when
+  // determining window control button colors.
+  GenerateWindowControlButtonColor(&images_);
+
+  // Create the tab background images, and generate colors where relevant.  This
+  // must be done after all frame colors are set, since they are used when
+  // creating these.
+  CreateTabBackgroundImagesAndColors(&images_);
+
+  // Generate any missing text colors.  This must be done after generating frame
+  // and tab colors, as generated text colors will try to appropriately contrast
+  // with the frame/tab behind them.
+  GenerateMissingTextColors();
+
+  // Make sure the |images_on_file_thread_| has bitmaps for supported
+  // scale factors before passing to FILE thread.
+  images_on_file_thread_ = images_;
+  for (auto& image : images_on_file_thread_) {
+    gfx::ImageSkia* image_skia =
+        const_cast<gfx::ImageSkia*>(image.second.ToImageSkia());
+    image_skia->MakeThreadSafe();
+  }
+
+  // Set ThemeImageSource on |images_| to resample the source
+  // image if a caller of BrowserThemePack::GetImageNamed() requests an
+  // ImageSkiaRep for a scale factor not specified by the theme author.
+  // Callers of BrowserThemePack::GetImageNamed() to be able to retrieve
+  // ImageSkiaReps for all supported scale factors.
+  for (auto& image : images_) {
+    const gfx::ImageSkia source_image_skia = image.second.AsImageSkia();
+    auto source = std::make_unique<ThemeImageSource>(source_image_skia);
+    gfx::ImageSkia image_skia(std::move(source), source_image_skia.size());
+    image.second = gfx::Image(image_skia);
+  }
+
+  // Generate raw images (for new-tab-page attribution and background) for
+  // any missing scale from an available scale image.
+  for (size_t i = 0; i < base::size(kPreloadIDs); ++i) {
+    GenerateRawImageForAllSupportedScales(kPreloadIDs[i]);
+  }
+}
+
+void BrowserThemePack::InitEmptyPack() {
+  InitHeader();
+
+  InitTints();
+
+  InitColors();
+
+  InitDisplayProperties();
+}
+
+void BrowserThemePack::InitHeader() {
   header_ = new BrowserThemePackHeader;
   header_->version = kThemePackVersion;
 
@@ -951,13 +1132,9 @@ void BrowserThemePack::BuildHeader(const Extension* extension) {
 #error DataPack assumes little endian
 #endif
   header_->little_endian = 1;
-
-  const std::string& id = extension->id();
-  memcpy(header_->theme_id, id.c_str(), crx_file::id_util::kIdSize);
 }
 
-void BrowserThemePack::BuildTintsFromJSON(
-    const base::DictionaryValue* tints_value) {
+void BrowserThemePack::InitTints() {
   tints_ = new TintEntry[kTintTableLength];
   for (size_t i = 0; i < kTintTableLength; ++i) {
     tints_[i].id = -1;
@@ -965,6 +1142,40 @@ void BrowserThemePack::BuildTintsFromJSON(
     tints_[i].s = -1;
     tints_[i].l = -1;
   }
+}
+
+void BrowserThemePack::InitColors() {
+  colors_ = new ColorPair[kColorsArrayLength];
+  for (size_t i = 0; i < kColorsArrayLength; ++i) {
+    colors_[i].id = -1;
+    colors_[i].color = SkColorSetRGB(0, 0, 0);
+  }
+}
+
+void BrowserThemePack::InitDisplayProperties() {
+  display_properties_ = new DisplayPropertyPair[kDisplayPropertiesSize];
+  for (size_t i = 0; i < kDisplayPropertiesSize; ++i) {
+    display_properties_[i].id = -1;
+    display_properties_[i].property = 0;
+  }
+  display_properties_[0].id = TP::NTP_LOGO_ALTERNATE;
+  display_properties_[0].property = 1;
+}
+
+void BrowserThemePack::InitSourceImages() {
+  source_images_ = new int[1];
+  source_images_[0] = -1;
+}
+
+void BrowserThemePack::SetHeaderId(const Extension* extension) {
+  DCHECK(header_);
+  const std::string& id = extension->id();
+  memcpy(header_->theme_id, id.c_str(), crx_file::id_util::kIdSize);
+}
+
+void BrowserThemePack::SetTintsFromJSON(
+    const base::DictionaryValue* tints_value) {
+  DCHECK(tints_);
 
   if (!tints_value)
     return;
@@ -1003,13 +1214,9 @@ void BrowserThemePack::BuildTintsFromJSON(
   }
 }
 
-void BrowserThemePack::BuildColorsFromJSON(
+void BrowserThemePack::SetColorsFromJSON(
     const base::DictionaryValue* colors_value) {
-  colors_ = new ColorPair[kColorsArrayLength];
-  for (size_t i = 0; i < kColorsArrayLength; ++i) {
-    colors_[i].id = -1;
-    colors_[i].color = SkColorSetRGB(0, 0, 0);
-  }
+  DCHECK(colors_);
 
   std::map<int, SkColor> temp_colors;
   if (colors_value)
@@ -1072,13 +1279,9 @@ void BrowserThemePack::ReadColorsFromJSON(
   }
 }
 
-void BrowserThemePack::BuildDisplayPropertiesFromJSON(
+void BrowserThemePack::SetDisplayPropertiesFromJSON(
     const base::DictionaryValue* display_properties_value) {
-  display_properties_ = new DisplayPropertyPair[kDisplayPropertiesSize];
-  for (size_t i = 0; i < kDisplayPropertiesSize; ++i) {
-    display_properties_[i].id = -1;
-    display_properties_[i].property = 0;
-  }
+  DCHECK(display_properties_);
 
   if (!display_properties_value)
     return;
@@ -1194,7 +1397,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
     // Some images need to go directly into |image_memory_|. No modification is
     // necessary or desirable.
     bool is_copyable = false;
-    for (size_t i = 0; i < arraysize(kPreloadIDs); ++i) {
+    for (size_t i = 0; i < base::size(kPreloadIDs); ++i) {
       if (kPreloadIDs[i] == prs_id) {
         is_copyable = true;
         break;
@@ -1248,7 +1451,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
 }
 
 void BrowserThemePack::CropImages(ImageCache* images) const {
-  for (size_t i = 0; i < arraysize(kImagesToCrop); ++i) {
+  for (size_t i = 0; i < base::size(kImagesToCrop); ++i) {
     int prs_id = kImagesToCrop[i].prs_id;
     auto it = images->find(prs_id);
     if (it == images->end())
@@ -1259,6 +1462,52 @@ void BrowserThemePack::CropImages(ImageCache* images) const {
     (*images)[prs_id] = gfx::Image(gfx::ImageSkiaOperations::ExtractSubset(
         image_skia, gfx::Rect(0, 0, image_skia.width(), crop_height)));
   }
+}
+
+void BrowserThemePack::SetToolbarRelatedColors() {
+  // Propagate the user-specified Toolbar Color to similar elements (for
+  // backwards-compatibility with themes written before this toolbar processing
+  // was introduced).
+  SkColor toolbar_color;
+  if (GetColor(TP::COLOR_TOOLBAR, &toolbar_color)) {
+    SetColor(TP::COLOR_INFOBAR, toolbar_color);
+    SetColor(TP::COLOR_DOWNLOAD_SHELF, toolbar_color);
+    SetColor(TP::COLOR_STATUS_BUBBLE, toolbar_color);
+  }
+}
+
+void BrowserThemePack::CreateToolbarImageAndColors(ImageCache* images) {
+  ImageCache temp_output;
+
+  constexpr int kSrcImageId = PRS_THEME_TOOLBAR;
+
+  const auto image_it = images->find(kSrcImageId);
+  if (image_it == images->end())
+    return;
+
+  auto image = image_it->second.AsImageSkia();
+
+  constexpr int kToolbarColorId = TP::COLOR_TOOLBAR;
+  SkColor toolbar_color;
+  if (!GetColor(kToolbarColorId, &toolbar_color)) {
+    toolbar_color = TP::GetDefaultColor(kToolbarColorId, false);
+  }
+
+  // Generate a composite image by drawing the toolbar image on top of the
+  // specified toolbar color (if any).
+  color_utils::HSL hsl_shift{-1, -1, -1};
+  gfx::ImageSkia overlay;
+  auto source = std::make_unique<TabBackgroundImageSource>(
+      toolbar_color, image, overlay, hsl_shift, 0);
+  gfx::Size dest_size = image.size();
+
+  const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));
+  temp_output[kSrcImageId] = dest_image;
+
+  SetColorIfUnspecified(kToolbarColorId,
+                        ComputeImageColor(dest_image, dest_size.height()));
+
+  MergeImageCaches(temp_output, images);
 }
 
 void BrowserThemePack::CreateFrameImagesAndColors(ImageCache* images) {
@@ -1314,37 +1563,33 @@ void BrowserThemePack::CreateFrameImagesAndColors(ImageCache* images) {
       temp_output[frame_values.prs_id] = dest_image;
 
       if (frame_values.color_id) {
-        ComputeColorFromImage(frame_values.color_id.value(),
-                              kTallestFrameHeight, dest_image);
+        SetColorIfUnspecified(
+            frame_values.color_id.value(),
+            ComputeImageColor(dest_image, kTallestFrameHeight));
       }
     }
   }
   MergeImageCaches(temp_output, images);
 }
 
-void BrowserThemePack::GenerateFrameColors() {
+void BrowserThemePack::GenerateFrameColorsFromTints() {
   SkColor frame;
   if (!GetColor(TP::COLOR_FRAME, &frame)) {
     frame = TP::GetDefaultColor(TP::COLOR_FRAME, false);
     SetColor(TP::COLOR_FRAME, HSLShift(frame, GetTintInternal(TP::TINT_FRAME)));
   }
 
-  SkColor temp;
-  if (!GetColor(TP::COLOR_FRAME_INACTIVE, &temp)) {
-    SetColor(TP::COLOR_FRAME_INACTIVE,
-             HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INACTIVE)));
-  }
+  SetColorIfUnspecified(
+      TP::COLOR_FRAME_INACTIVE,
+      HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INACTIVE)));
 
-  if (!GetColor(TP::COLOR_FRAME_INCOGNITO, &temp)) {
-    SetColor(TP::COLOR_FRAME_INCOGNITO,
-             HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO)));
-  }
+  SetColorIfUnspecified(
+      TP::COLOR_FRAME_INCOGNITO,
+      HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO)));
 
-  if (!GetColor(TP::COLOR_FRAME_INCOGNITO_INACTIVE, &temp)) {
-    SetColor(
-        TP::COLOR_FRAME_INCOGNITO_INACTIVE,
-        HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO_INACTIVE)));
-  }
+  SetColorIfUnspecified(
+      TP::COLOR_FRAME_INCOGNITO_INACTIVE,
+      HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO_INACTIVE)));
 }
 
 void BrowserThemePack::GenerateWindowControlButtonColor(ImageCache* images) {
@@ -1374,7 +1619,7 @@ void BrowserThemePack::GenerateWindowControlButtonColor(ImageCache* images) {
 
   SkColor button_bg_color;
   SkAlpha button_bg_alpha = SK_AlphaTRANSPARENT;
-  if (GetColor(TP::COLOR_BUTTON_BACKGROUND, &button_bg_color))
+  if (GetColor(TP::COLOR_CONTROL_BUTTON_BACKGROUND, &button_bg_color))
     button_bg_alpha = SkColorGetA(button_bg_color);
 
   button_bg_alpha =
@@ -1415,7 +1660,8 @@ void BrowserThemePack::GenerateWindowControlButtonColor(ImageCache* images) {
         base_color, bg_image, dest_size);
     const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));
 
-    ComputeColorFromImage(bg_pair.color_id, dest_size.height(), dest_image);
+    SetColorIfUnspecified(bg_pair.color_id,
+                          ComputeImageColor(dest_image, dest_size.height()));
   }
 }
 
@@ -1453,7 +1699,7 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
   };
 
   ImageCache temp_output;
-  for (size_t i = 0; i < arraysize(kTabBackgroundMap); ++i) {
+  for (size_t i = 0; i < base::size(kTabBackgroundMap); ++i) {
     const int tab_id = kTabBackgroundMap[i].tab_id;
     ImageCache::const_iterator tab_it = images->find(tab_id);
 
@@ -1490,8 +1736,8 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
       const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));
       temp_output[tab_id] = dest_image;
 
-      ComputeColorFromImage(kTabBackgroundMap[i].color_id, kTallestTabHeight,
-                            dest_image);
+      SetColorIfUnspecified(kTabBackgroundMap[i].color_id,
+                            ComputeImageColor(dest_image, kTallestTabHeight));
     }
   }
   MergeImageCaches(temp_output, images);

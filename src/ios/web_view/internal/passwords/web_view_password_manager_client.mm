@@ -15,11 +15,9 @@
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_internals_service_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "net/cert/cert_status_flags.h"
 #include "url/gurl.h"
@@ -90,6 +88,13 @@ void WebViewPasswordManagerClient::ShowManualFallbackForSaving(
 }
 
 void WebViewPasswordManagerClient::HideManualFallbackForSaving() {
+  NOTIMPLEMENTED();
+}
+
+void WebViewPasswordManagerClient::FocusedInputChanged(
+    const url::Origin& last_committed_origin,
+    bool is_fillable,
+    bool is_password_field) {
   NOTIMPLEMENTED();
 }
 
@@ -179,4 +184,9 @@ password_manager::PasswordManager*
 WebViewPasswordManagerClient::GetPasswordManager() {
   return delegate_.passwordManager;
 }
+
+bool WebViewPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
+  return false;
+}
+
 }  // namespace ios_web_view

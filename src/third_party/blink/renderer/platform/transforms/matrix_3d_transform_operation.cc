@@ -38,14 +38,20 @@ scoped_refptr<TransformOperation> Matrix3DTransformOperation::Blend(
   if (from && !from->IsSameType(*this))
     return this;
 
-  // Convert the TransformOperations into matrices
+  // Convert the TransformOperations into matrices. Fail the blend operation
+  // if either of the matrices is non-invertible.
   FloatSize size;
   TransformationMatrix from_t;
   TransformationMatrix to_t;
-  if (from)
+  if (from) {
     from->Apply(from_t, size);
+    if (!from_t.IsInvertible())
+      return nullptr;
+  }
 
   Apply(to_t, size);
+  if (!to_t.IsInvertible())
+    return nullptr;
 
   if (blend_to_identity)
     std::swap(from_t, to_t);

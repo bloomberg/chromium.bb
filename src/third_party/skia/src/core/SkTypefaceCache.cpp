@@ -5,28 +5,26 @@
  * found in the LICENSE file.
  */
 
-
-
 #include "SkTypefaceCache.h"
-#include "SkAtomics.h"
 #include "SkMutex.h"
+#include <atomic>
 
 #define TYPEFACE_CACHE_LIMIT    1024
 
 SkTypefaceCache::SkTypefaceCache() {}
 
-void SkTypefaceCache::add(SkTypeface* face) {
+void SkTypefaceCache::add(sk_sp<SkTypeface> face) {
     if (fTypefaces.count() >= TYPEFACE_CACHE_LIMIT) {
         this->purge(TYPEFACE_CACHE_LIMIT >> 2);
     }
 
-    fTypefaces.emplace_back(SkRef(face));
+    fTypefaces.emplace_back(std::move(face));
 }
 
-SkTypeface* SkTypefaceCache::findByProcAndRef(FindProc proc, void* ctx) const {
+sk_sp<SkTypeface> SkTypefaceCache::findByProcAndRef(FindProc proc, void* ctx) const {
     for (const sk_sp<SkTypeface>& typeface : fTypefaces) {
         if (proc(typeface.get(), ctx)) {
-            return SkRef(typeface.get());
+            return typeface;
         }
     }
     return nullptr;
@@ -60,18 +58,18 @@ SkTypefaceCache& SkTypefaceCache::Get() {
 }
 
 SkFontID SkTypefaceCache::NewFontID() {
-    static int32_t gFontID;
-    return sk_atomic_inc(&gFontID) + 1;
+    static std::atomic<int32_t> nextID{1};
+    return nextID++;
 }
 
 SK_DECLARE_STATIC_MUTEX(gMutex);
 
-void SkTypefaceCache::Add(SkTypeface* face) {
+void SkTypefaceCache::Add(sk_sp<SkTypeface> face) {
     SkAutoMutexAcquire ama(gMutex);
-    Get().add(face);
+    Get().add(std::move(face));
 }
 
-SkTypeface* SkTypefaceCache::FindByProcAndRef(FindProc proc, void* ctx) {
+sk_sp<SkTypeface> SkTypefaceCache::FindByProcAndRef(FindProc proc, void* ctx) {
     SkAutoMutexAcquire ama(gMutex);
     return Get().findByProcAndRef(proc, ctx);
 }

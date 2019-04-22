@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HANDLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HANDLE_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/heap_traits.h"
@@ -39,7 +40,6 @@
 #include "third_party/blink/renderer/platform/heap/trace_traits.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 #if defined(LEAK_SANITIZER)
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
@@ -55,7 +55,6 @@ namespace blink {
 #if defined(LEAK_SANITIZER)
 class LeakSanitizerDisableScope {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(LeakSanitizerDisableScope);
 
  public:
   LeakSanitizerDisableScope() {
@@ -69,6 +68,9 @@ class LeakSanitizerDisableScope {
     if (ThreadState::Current())
       ThreadState::Current()->leaveStaticReferenceRegistrationDisabledScope();
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LeakSanitizerDisableScope);
 };
 #define LEAK_SANITIZER_DISABLED_SCOPE \
   LeakSanitizerDisableScope lsanDisabledScope

@@ -17,6 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/constants.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/events/event.h"
@@ -151,7 +152,6 @@ InputMethodEngineBase::InputMethodEngineBase()
       next_context_id_(1),
       composition_text_(new ui::CompositionText()),
       composition_cursor_(0),
-      sent_key_event_(nullptr),
       profile_(nullptr),
       next_request_id_(1),
       composition_changed_(false),
@@ -173,8 +173,186 @@ void InputMethodEngineBase::Initialize(
   profile_ = profile;
 }
 
+void InputMethodEngineBase::FocusIn(
+    const ui::IMEEngineHandlerInterface::InputContext& input_context) {
+  current_input_type_ = input_context.type;
+
+  if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
+    return;
+
+  context_id_ = next_context_id_;
+  ++next_context_id_;
+
+  observer_->OnFocus(ui::IMEEngineHandlerInterface::InputContext(
+      context_id_, input_context.type, input_context.mode, input_context.flags,
+      input_context.focus_reason, input_context.should_do_learning));
+}
+
+void InputMethodEngineBase::FocusOut() {
+  if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
+    return;
+
+  current_input_type_ = ui::TEXT_INPUT_TYPE_NONE;
+
+  int context_id = context_id_;
+  context_id_ = -1;
+  observer_->OnBlur(context_id);
+}
+
+void InputMethodEngineBase::Enable(const std::string& component_id) {
+  active_component_id_ = component_id;
+  observer_->OnActivate(component_id);
+  const ui::IMEEngineHandlerInterface::InputContext& input_context =
+      ui::IMEBridge::Get()->GetCurrentInputContext();
+  current_input_type_ = input_context.type;
+  FocusIn(input_context);
+}
+
+void InputMethodEngineBase::Disable() {
+  std::string last_component_id{active_component_id_};
+  active_component_id_.clear();
+  CommitTextToInputContext(context_id_,
+                           base::UTF16ToUTF8(composition_text_->text));
+  composition_text_.reset(new ui::CompositionText());
+  observer_->OnDeactivated(last_component_id);
+}
+
+void InputMethodEngineBase::Reset() {
+  composition_text_.reset(new ui::CompositionText());
+  observer_->OnReset(active_component_id_);
+}
+
+void InputMethodEngineBase::ProcessKeyEvent(const ui::KeyEvent& key_event,
+                                            KeyEventDoneCallback callback) {
+  // Make true that we don't handle IME API calling of setComposition and
+  // commitText while the extension is handling key event.
+  handling_key_event_ = true;
+
+  if (key_event.IsCommandDown()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  KeyboardEvent ext_event;
+  GetExtensionKeyboardEventFromKeyEvent(key_event, &ext_event);
+
+  // If the given key event is from VK, it means the key event was simulated.
+  // Sets the |extension_id| value so that the IME extension can ignore it.
+  auto* properties = key_event.properties();
+  if (properties && properties->find(ui::kPropertyFromVK) != properties->end())
+    ext_event.extension_id = extension_id_;
+
+  // Should not pass key event in password field.
+  if (current_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD)
+    observer_->OnKeyEvent(active_component_id_, ext_event, std::move(callback));
+}
+
+void InputMethodEngineBase::SetSurroundingText(const std::string& text,
+                                               uint32_t cursor_pos,
+                                               uint32_t anchor_pos,
+                                               uint32_t offset_pos) {
+  observer_->OnSurroundingTextChanged(
+      active_component_id_, text, static_cast<int>(cursor_pos),
+      static_cast<int>(anchor_pos), static_cast<int>(offset_pos));
+}
+
+void InputMethodEngineBase::SetCompositionBounds(
+    const std::vector<gfx::Rect>& bounds) {
+  composition_bounds_ = bounds;
+  observer_->OnCompositionBoundsChanged(bounds);
+}
+
+bool InputMethodEngineBase::IsInterestedInKeyEvent() const {
+  return observer_->IsInterestedInKeyEvent();
+}
+
 const std::string& InputMethodEngineBase::GetActiveComponentId() const {
   return active_component_id_;
+}
+
+bool InputMethodEngineBase::ClearComposition(int context_id,
+                                             std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  composition_cursor_ = 0;
+  composition_text_.reset(new ui::CompositionText());
+  UpdateComposition(*composition_text_, composition_cursor_, false);
+  return true;
+}
+
+bool InputMethodEngineBase::CommitText(int context_id,
+                                       const char* text,
+                                       std::string* error) {
+  if (!IsActive()) {
+    // TODO: Commit the text anyways.
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  CommitTextToInputContext(context_id, std::string(text));
+  return true;
+}
+
+bool InputMethodEngineBase::DeleteSurroundingText(int context_id,
+                                                  int offset,
+                                                  size_t number_of_chars,
+                                                  std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  // TODO(nona): Return false if there is ongoing composition.
+
+  DeleteSurroundingTextToInputContext(offset, number_of_chars);
+
+  return true;
+}
+
+bool InputMethodEngineBase::SendKeyEvents(
+    int context_id,
+    const std::vector<KeyboardEvent>& events) {
+  // context_id  ==  0, means sending key events to non-input field.
+  // context_id_ == -1, means the focus is not in an input field.
+  if (!IsActive() ||
+      (context_id != 0 && (context_id != context_id_ || context_id_ == -1)))
+    return false;
+
+  for (size_t i = 0; i < events.size(); ++i) {
+    const KeyboardEvent& event = events[i];
+    const ui::EventType type =
+        (event.type == "keyup") ? ui::ET_KEY_RELEASED : ui::ET_KEY_PRESSED;
+    ui::KeyboardCode key_code = static_cast<ui::KeyboardCode>(event.key_code);
+
+    int flags = ui::EF_NONE;
+    flags |= event.alt_key ? ui::EF_ALT_DOWN : ui::EF_NONE;
+    flags |= event.ctrl_key ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
+    flags |= event.shift_key ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
+    flags |= event.caps_lock ? ui::EF_CAPS_LOCK_ON : ui::EF_NONE;
+
+    ui::KeyEvent ui_event(
+        type, key_code, ui::KeycodeConverter::CodeStringToDomCode(event.code),
+        flags, ui::KeycodeConverter::KeyStringToDomKey(event.key),
+        ui::EventTimeForNow());
+    if (!SendKeyEvent(&ui_event, event.code))
+      return false;
+  }
+  return true;
 }
 
 bool InputMethodEngineBase::SetComposition(
@@ -230,179 +408,20 @@ bool InputMethodEngineBase::SetComposition(
   return true;
 }
 
-bool InputMethodEngineBase::ClearComposition(int context_id,
-                                             std::string* error) {
-  if (!IsActive()) {
-    *error = kErrorNotActive;
-    return false;
-  }
-  if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
-    return false;
-  }
-
-  composition_cursor_ = 0;
-  composition_text_.reset(new ui::CompositionText());
-  UpdateComposition(*composition_text_, composition_cursor_, false);
-  return true;
-}
-
-bool InputMethodEngineBase::CommitText(int context_id,
-                                       const char* text,
-                                       std::string* error) {
-  if (!IsActive()) {
-    // TODO: Commit the text anyways.
-    *error = kErrorNotActive;
-    return false;
-  }
-  if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
-    return false;
-  }
-
-  CommitTextToInputContext(context_id, std::string(text));
-  return true;
-}
-
-bool InputMethodEngineBase::DeleteSurroundingText(int context_id,
-                                                  int offset,
-                                                  size_t number_of_chars,
-                                                  std::string* error) {
-  if (!IsActive()) {
-    *error = kErrorNotActive;
-    return false;
-  }
-  if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
-    return false;
-  }
-
-  // TODO(nona): Return false if there is ongoing composition.
-
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context)
-    input_context->DeleteSurroundingText(offset, number_of_chars);
-
-  return true;
-}
-
-void InputMethodEngineBase::SetCompositionBounds(
-    const std::vector<gfx::Rect>& bounds) {
-  composition_bounds_ = bounds;
-  observer_->OnCompositionBoundsChanged(bounds);
-}
-
-void InputMethodEngineBase::FocusIn(
-    const ui::IMEEngineHandlerInterface::InputContext& input_context) {
-  current_input_type_ = input_context.type;
-
-  if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
-    return;
-
-  context_id_ = next_context_id_;
-  ++next_context_id_;
-
-  observer_->OnFocus(ui::IMEEngineHandlerInterface::InputContext(
-      context_id_, input_context.type, input_context.mode, input_context.flags,
-      input_context.focus_reason, input_context.should_do_learning));
-}
-
-void InputMethodEngineBase::FocusOut() {
-  if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
-    return;
-
-  current_input_type_ = ui::TEXT_INPUT_TYPE_NONE;
-
-  int context_id = context_id_;
-  context_id_ = -1;
-  observer_->OnBlur(context_id);
-}
-
-void InputMethodEngineBase::Enable(const std::string& component_id) {
-  active_component_id_ = component_id;
-  observer_->OnActivate(component_id);
-  const ui::IMEEngineHandlerInterface::InputContext& input_context =
-      ui::IMEBridge::Get()->GetCurrentInputContext();
-  current_input_type_ = input_context.type;
-  FocusIn(input_context);
-}
-
-void InputMethodEngineBase::Disable() {
-  std::string last_component_id{active_component_id_};
-  active_component_id_.clear();
-  if (ui::IMEBridge::Get()->GetInputContextHandler())
-    ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(
-        base::UTF16ToUTF8(composition_text_->text));
-  composition_text_.reset(new ui::CompositionText());
-  observer_->OnDeactivated(last_component_id);
-}
-
-void InputMethodEngineBase::Reset() {
-  composition_text_.reset(new ui::CompositionText());
-  observer_->OnReset(active_component_id_);
-}
-
-bool InputMethodEngineBase::IsInterestedInKeyEvent() const {
-  return observer_->IsInterestedInKeyEvent();
-}
-
-void InputMethodEngineBase::ProcessKeyEvent(const ui::KeyEvent& key_event,
-                                            KeyEventDoneCallback callback) {
-  // Make true that we don't handle IME API calling of setComposition and
-  // commitText while the extension is handling key event.
-  handling_key_event_ = true;
-
-  if (key_event.IsCommandDown()) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  KeyboardEvent ext_event;
-  GetExtensionKeyboardEventFromKeyEvent(key_event, &ext_event);
-
-  // If the given key event is equal to the key event sent by
-  // SendKeyEvents, this engine ID is propagated to the extension IME.
-  // Note, this check relies on that ui::KeyEvent is propagated as
-  // reference without copying.
-  if (&key_event == sent_key_event_)
-    ext_event.extension_id = extension_id_;
-
-  // Should not pass key event in password field.
-  if (current_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD)
-    observer_->OnKeyEvent(active_component_id_, ext_event, std::move(callback));
-}
-
-void InputMethodEngineBase::SetSurroundingText(const std::string& text,
-                                               uint32_t cursor_pos,
-                                               uint32_t anchor_pos,
-                                               uint32_t offset_pos) {
-  observer_->OnSurroundingTextChanged(
-      active_component_id_, text, static_cast<int>(cursor_pos),
-      static_cast<int>(anchor_pos), static_cast<int>(offset_pos));
-}
-
 void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
                                             const std::string& request_id,
                                             bool handled) {
   handling_key_event_ = false;
   // When finish handling key event, take care of the unprocessed commitText
   // and setComposition calls.
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
   if (commit_text_changed_) {
-    if (input_context) {
-      input_context->CommitText(text_);
-    }
+    CommitTextToInputContext(context_id_, text_);
     text_ = "";
     commit_text_changed_ = false;
   }
 
   if (composition_changed_) {
-    if (input_context) {
-      input_context->UpdateCompositionText(
-          composition_, composition_.selection.start(), true);
-    }
+    UpdateComposition(composition_, composition_.selection.start(), true);
     composition_ = ui::CompositionText();
     composition_changed_ = false;
   }
@@ -420,45 +439,12 @@ void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
 std::string InputMethodEngineBase::AddRequest(
     const std::string& component_id,
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) {
-  std::string request_id = base::IntToString(next_request_id_);
+  std::string request_id = base::NumberToString(next_request_id_);
   ++next_request_id_;
 
   request_map_[request_id] = std::make_pair(component_id, std::move(key_data));
 
   return request_id;
-}
-
-bool InputMethodEngineBase::SendKeyEvents(
-    int context_id,
-    const std::vector<KeyboardEvent>& events) {
-  // context_id  ==  0, means sending key events to non-input field.
-  // context_id_ == -1, means the focus is not in an input field.
-  if (!IsActive() ||
-      (context_id != 0 && (context_id != context_id_ || context_id_ == -1)))
-    return false;
-
-  for (size_t i = 0; i < events.size(); ++i) {
-    const KeyboardEvent& event = events[i];
-    const ui::EventType type =
-        (event.type == "keyup") ? ui::ET_KEY_RELEASED : ui::ET_KEY_PRESSED;
-    ui::KeyboardCode key_code = static_cast<ui::KeyboardCode>(event.key_code);
-
-    int flags = ui::EF_NONE;
-    flags |= event.alt_key ? ui::EF_ALT_DOWN : ui::EF_NONE;
-    flags |= event.ctrl_key ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
-    flags |= event.shift_key ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
-    flags |= event.caps_lock ? ui::EF_CAPS_LOCK_ON : ui::EF_NONE;
-
-    ui::KeyEvent ui_event(
-        type, key_code, ui::KeycodeConverter::CodeStringToDomCode(event.code),
-        flags, ui::KeycodeConverter::KeyStringToDomKey(event.key),
-        ui::EventTimeForNow());
-    base::AutoReset<const ui::KeyEvent*> reset_sent_key(&sent_key_event_,
-                                                        &ui_event);
-    if (!SendKeyEvent(&ui_event, event.code))
-      return false;
-  }
-  return true;
 }
 
 }  // namespace input_method

@@ -19,7 +19,7 @@ class RecommendAppsScreen;
 class RecommendAppsScreenHandler : public BaseScreenHandler,
                                    public RecommendAppsScreenView {
  public:
-  RecommendAppsScreenHandler();
+  explicit RecommendAppsScreenHandler(JSCallsContainer* js_calls_container);
   ~RecommendAppsScreenHandler() override;
 
   // BaseScreenHandler:

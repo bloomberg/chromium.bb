@@ -6,7 +6,9 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/views/native_widget_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_browser_window.h"
@@ -16,10 +18,6 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/platform_test_helper.h"
 #include "ui/views/widget/widget.h"
-
-#if !defined(OS_CHROMEOS)
-#include "ui/views/test/native_widget_factory.h"
-#endif
 
 namespace views {
 namespace test {
@@ -41,7 +39,8 @@ class MenuControllerUITest : public InProcessBrowserTest {
     menu_item->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
     // Run the menu, so that the menu item size will be calculated.
     menu_runner_->RunMenuAt(widget, nullptr, gfx::Rect(),
-                            views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
+                            views::MenuAnchorPosition::kTopLeft,
+                            ui::MENU_SOURCE_NONE);
     RunPendingMessages();
     // Figure out the middle of the first menu item.
     mouse_pos_.set_x(first_item_->width() / 2);
@@ -78,11 +77,11 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, TestMouseOverShownMenu) {
   // Create a parent widget.
   Widget* widget = new views::Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-#if !defined(OS_CHROMEOS)
-  params.native_widget = ::views::test::CreatePlatformDesktopNativeWidgetImpl(
-      params, widget, nullptr);
-#endif
   params.bounds = {0, 0, 200, 200};
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+  params.native_widget = CreateNativeWidget(
+      NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA, &params, widget);
+#endif
   widget->Init(params);
   widget->Show();
   widget->Activate();
@@ -90,7 +89,8 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, TestMouseOverShownMenu) {
   // when we run the menu.
   SetupMenu(widget);
   menu_runner_->RunMenuAt(widget, nullptr, gfx::Rect(),
-                          views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
+                          views::MenuAnchorPosition::kTopLeft,
+                          ui::MENU_SOURCE_NONE);
   // One or two mouse events are posted by the menu being shown.
   // Process event(s), and check what's selected in the menu.
   RunPendingMessages();
@@ -125,7 +125,8 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, FocusOnOrphanMenu) {
       menu_item->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One"));
   menu_item->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
   menu_runner->RunMenuAt(nullptr, nullptr, gfx::Rect(),
-                         views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
+                         views::MenuAnchorPosition::kTopLeft,
+                         ui::MENU_SOURCE_NONE);
   base::RunLoop loop;
   // SendKeyPress fails if the window doesn't have focus.
   ASSERT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(

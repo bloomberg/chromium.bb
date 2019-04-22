@@ -6,10 +6,15 @@ threadsafe: true
 instance_class: F4_1G
 
 libraries:
+- name: jinja2
+  version: "2.6"
 - name: pycrypto
   version: "2.6"
 - name: webapp2
   version: "2.5.2"
+
+builtins:
+- deferred: on
 
 handlers:
 
@@ -33,9 +38,18 @@ handlers:
   script: dashboard.pinpoint.dispatcher.APP
   secure: always
 
+- url: /cron/.*
+  script: dashboard.pinpoint.dispatcher.APP
+  secure: always
+
 - url: /components/(.*)/(.*\.(html|js|css))$
   static_files: polymer/components/\1/\2
   upload: polymer/components/.*/.*\.(html|js|css)$
+  secure: always
+
+- url: /chopsui/(.*\.(html|js|css))$
+  static_files: chopsui/\1
+  upload: chopsui/.*\.(html|js|css)$
   secure: always
 
 - url: /dashboard/elements/(.*\.html)$

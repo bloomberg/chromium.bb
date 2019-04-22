@@ -151,10 +151,8 @@ typedef enum {
   // Use non-fixed partitions based on source variance.
   SOURCE_VAR_BASED_PARTITION,
 
-#if CONFIG_ML_VAR_PARTITION
   // Make partition decisions with machine learning models.
   ML_BASED_PARTITION
-#endif  // CONFIG_ML_VAR_PARTITION
 } PARTITION_SEARCH_TYPE;
 
 typedef enum {
@@ -167,15 +165,17 @@ typedef enum {
   ONE_LOOP_REDUCED = 1
 } FAST_COEFF_UPDATE;
 
+typedef enum { EIGHTH_PEL, QUARTER_PEL, HALF_PEL, FULL_PEL } SUBPEL_FORCE_STOP;
+
 typedef struct ADAPT_SUBPEL_FORCE_STOP {
   // Threshold for full pixel motion vector;
   int mv_thresh;
 
   // subpel_force_stop if full pixel MV is below the threshold.
-  int force_stop_below;
+  SUBPEL_FORCE_STOP force_stop_below;
 
   // subpel_force_stop if full pixel MV is equal to or above the threshold.
-  int force_stop_above;
+  SUBPEL_FORCE_STOP force_stop_above;
 } ADAPT_SUBPEL_FORCE_STOP;
 
 typedef struct MV_SPEED_FEATURES {
@@ -200,12 +200,8 @@ typedef struct MV_SPEED_FEATURES {
   // extensive subpel search.
   int subpel_search_level;
 
-  // Control when to stop subpel search:
-  // 0: Full subpel search.
-  // 1: Stop at quarter pixel.
-  // 2: Stop at half pixel.
-  // 3: Stop at full pixel.
-  int subpel_force_stop;
+  // When to stop subpel motion search.
+  SUBPEL_FORCE_STOP subpel_force_stop;
 
   // If it's enabled, different subpel_force_stop will be used for different MV.
   int enable_adaptive_subpel_force_stop;
@@ -292,6 +288,9 @@ typedef struct SPEED_FEATURES {
   // level within a frame.
   int allow_skip_recode;
 
+  // Enable Wiener filter based block complexity analysis.
+  int enable_wiener_variance;
+
   // Coefficient probability model approximation step size
   int coeff_prob_appx_step;
 
@@ -352,12 +351,6 @@ typedef struct SPEED_FEATURES {
 
   // Prune reference frames for rectangular partitions.
   int prune_ref_frame_for_rect_partitions;
-
-  // Threshold values used for ML based rectangular partition search pruning.
-  // If < 0, the feature is turned off.
-  // Higher values mean more aggressiveness to skip rectangular partition
-  // search that results in better encoding speed but worse coding performance.
-  int ml_prune_rect_partition_threhold[4];
 
   // Sets min and max partition sizes for this 64x64 region based on the
   // same 64x64 in last encoded frame, and the left and above neighbor.
@@ -513,18 +506,27 @@ typedef struct SPEED_FEATURES {
   // Partition search early breakout thresholds.
   PARTITION_SEARCH_BREAKOUT_THR partition_search_breakout_thr;
 
-  // Use ML-based partition search early breakout.
-  int use_ml_partition_search_breakout;
-  // Higher values mean more aggressiveness for partition search breakout that
-  // results in better encoding  speed but worse compression performance.
-  float ml_partition_search_breakout_thresh[3];
+  struct {
+    // Use ML-based partition search early breakout.
+    int search_breakout;
+    // Higher values mean more aggressiveness for partition search breakout that
+    // results in better encoding  speed but worse compression performance.
+    float search_breakout_thresh[3];
 
-  // Machine-learning based partition search early termination
-  int ml_partition_search_early_termination;
+    // Machine-learning based partition search early termination
+    int search_early_termination;
 
-  // Machine-learning based partition search pruning using prediction residue
-  // variance.
-  int ml_var_partition_pruning;
+    // Machine-learning based partition search pruning using prediction residue
+    // variance.
+    int var_pruning;
+
+    // Threshold values used for ML based rectangular partition search pruning.
+    // If < 0, the feature is turned off.
+    // Higher values mean more aggressiveness to skip rectangular partition
+    // search that results in better encoding speed but worse coding
+    // performance.
+    int prune_rect_thresh[4];
+  } rd_ml_partition;
 
   // Allow skipping partition search for still image frame
   int allow_partition_search_skip;
@@ -597,12 +599,23 @@ typedef struct SPEED_FEATURES {
   // Allow sub-pixel search to use interpolation filters with different taps in
   // order to achieve accurate motion search result.
   SUBPEL_SEARCH_TYPE use_accurate_subpel_search;
+
+  // Search method used by temporal filtering in full_pixel_motion_search.
+  SEARCH_METHODS temporal_filter_search_method;
+
+  // Use machine learning based partition search.
+  int nonrd_use_ml_partition;
+
+  // Multiplier for base thresold for variance partitioning.
+  int variance_part_thresh_mult;
 } SPEED_FEATURES;
 
 struct VP9_COMP;
 
-void vp9_set_speed_features_framesize_independent(struct VP9_COMP *cpi);
-void vp9_set_speed_features_framesize_dependent(struct VP9_COMP *cpi);
+void vp9_set_speed_features_framesize_independent(struct VP9_COMP *cpi,
+                                                  int speed);
+void vp9_set_speed_features_framesize_dependent(struct VP9_COMP *cpi,
+                                                int speed);
 
 #ifdef __cplusplus
 }  // extern "C"

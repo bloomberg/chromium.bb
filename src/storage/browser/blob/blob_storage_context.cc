@@ -122,7 +122,6 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
 
   entry->SetSharedBlobItems(std::move(items));
   std::unique_ptr<BlobDataHandle> handle = CreateHandle(uuid, entry);
-  UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.ItemCount", entry->items().size());
   UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.TotalSize", total_memory_size / 1024);
   entry->set_status(BlobStatus::DONE);
   memory_controller_.NotifyMemoryItemsUsed(entry->items());
@@ -228,12 +227,11 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
   } else if (content->transport_quota_needed()) {
     entry->set_status(BlobStatus::PENDING_QUOTA);
   } else {
-    entry->set_status(BlobStatus::PENDING_INTERNALS);
+    entry->set_status(BlobStatus::PENDING_REFERENCED_BLOBS);
   }
 
   std::unique_ptr<BlobDataHandle> handle = CreateHandle(content->uuid_, entry);
 
-  UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.ItemCount", entry->items().size());
   UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.TotalSize",
                           content->total_memory_size() / 1024);
 
@@ -461,7 +459,7 @@ void BlobStorageContext::NotifyTransportCompleteInternal(BlobEntry* entry) {
     DCHECK(shareable_item->state() == ShareableBlobDataItem::QUOTA_GRANTED);
     shareable_item->set_state(ShareableBlobDataItem::POPULATED_WITH_QUOTA);
   }
-  entry->set_status(BlobStatus::PENDING_INTERNALS);
+  entry->set_status(BlobStatus::PENDING_REFERENCED_BLOBS);
   if (entry->CanFinishBuilding())
     FinishBuilding(entry);
 }

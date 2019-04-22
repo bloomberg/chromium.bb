@@ -5,7 +5,10 @@
 #include "ios/web/public/network_context_owner.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
@@ -17,6 +20,7 @@ namespace web {
 
 NetworkContextOwner::NetworkContextOwner(
     net::URLRequestContextGetter* request_context,
+    const std::vector<std::string>& cors_exempt_header_list,
     network::mojom::NetworkContextPtr* network_context_client)
     : request_context_(request_context) {
   DCHECK_CURRENTLY_ON(WebThread::UI);
@@ -25,7 +29,7 @@ NetworkContextOwner::NetworkContextOwner(
       base::BindOnce(&NetworkContextOwner::InitializeOnIOThread,
                      // This is safe, since |this| will be deleted on the IO
                      // thread, which would have to happen afterwards.
-                     base::Unretained(this),
+                     base::Unretained(this), cors_exempt_header_list,
                      mojo::MakeRequest(network_context_client)));
 }
 
@@ -36,13 +40,14 @@ NetworkContextOwner::~NetworkContextOwner() {
 }
 
 void NetworkContextOwner::InitializeOnIOThread(
+    const std::vector<std::string> cors_exempt_header_list,
     network::mojom::NetworkContextRequest network_context_request) {
   DCHECK_CURRENTLY_ON(WebThread::IO);
   DCHECK(!network_context_);
 
   network_context_ = std::make_unique<network::NetworkContext>(
       nullptr, std::move(network_context_request),
-      request_context_->GetURLRequestContext());
+      request_context_->GetURLRequestContext(), cors_exempt_header_list);
   request_context_->AddObserver(this);
 }
 

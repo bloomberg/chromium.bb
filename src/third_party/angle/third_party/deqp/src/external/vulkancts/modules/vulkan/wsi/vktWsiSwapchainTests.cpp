@@ -567,6 +567,7 @@ vector<VkSwapchainCreateInfoKHR> generateSwapchainParameterCases (Type								ws
 
 tcu::TestStatus createSwapchainTest (Context& context, TestParameters params)
 {
+	tcu::TestLog&							log			= context.getTestContext().getLog();
 	const InstanceHelper					instHelper	(context, params.wsiType);
 	const NativeObjects						native		(context, instHelper.supportedExtensions, params.wsiType);
 	const Unique<VkSurfaceKHR>				surface		(createSurface(instHelper.vki, *instHelper.instance, params.wsiType, *native.display, *native.window));
@@ -575,21 +576,55 @@ tcu::TestStatus createSwapchainTest (Context& context, TestParameters params)
 
 	for (size_t caseNdx = 0; caseNdx < cases.size(); ++caseNdx)
 	{
+		std::ostringstream subcase;
+		subcase << "Sub-case " << (caseNdx+1) << " / " << cases.size() << ": ";
+
 		VkSwapchainCreateInfoKHR	curParams	= cases[caseNdx];
 
 		curParams.surface				= *surface;
 		curParams.queueFamilyIndexCount	= 1u;
 		curParams.pQueueFamilyIndices	= &devHelper.queueFamilyIndex;
 
-		context.getTestContext().getLog()
-			<< TestLog::Message << "Sub-case " << (caseNdx+1) << " / " << cases.size() << ": " << curParams << TestLog::EndMessage;
+		log << TestLog::Message << subcase.str() << curParams << TestLog::EndMessage;
 
-		{
-			const Unique<VkSwapchainKHR>	swapchain	(createSwapchainKHR(devHelper.vkd, *devHelper.device, &curParams));
+		// The Vulkan 1.1.87 spec contains the following VU for VkSwapchainCreateInfoKHR:
+		//
+		//     * imageFormat, imageUsage, imageExtent, and imageArrayLayers must be supported for VK_IMAGE_TYPE_2D
+		//     VK_IMAGE_TILING_OPTIMAL images as reported by vkGetPhysicalDeviceImageFormatProperties.
+		VkImageFormatProperties properties;
+		const VkResult propertiesResult = instHelper.vki.getPhysicalDeviceImageFormatProperties(devHelper.physicalDevice,
+																								curParams.imageFormat,
+																								VK_IMAGE_TYPE_2D,
+																								VK_IMAGE_TILING_OPTIMAL,
+																								curParams.imageUsage,
+																								0, // flags
+																								&properties);
+
+		log << TestLog::Message << subcase.str()
+			<< "vkGetPhysicalDeviceImageFormatProperties => "
+			<< getResultStr(propertiesResult) << TestLog::EndMessage;
+
+		switch (propertiesResult) {
+		case VK_SUCCESS:
+			{
+				const Unique<VkSwapchainKHR>	swapchain	(createSwapchainKHR(devHelper.vkd, *devHelper.device, &curParams));
+			}
+			log << TestLog::Message << subcase.str()
+				<< "Creating swapchain succeeeded" << TestLog::EndMessage;
+			break;
+		case VK_ERROR_FORMAT_NOT_SUPPORTED:
+			log << TestLog::Message << subcase.str()
+				<< "Skip because vkGetPhysicalDeviceImageFormatProperties returned VK_ERROR_FORMAT_NOT_SUPPORTED" << TestLog::EndMessage;
+			break;
+		default:
+			log << TestLog::Message << subcase.str()
+				<< "Fail because vkGetPhysicalDeviceImageFormatProperties returned "
+				<< getResultStr(propertiesResult) << TestLog::EndMessage;
+			return tcu::TestStatus::fail("Unexpected result from vkGetPhysicalDeviceImageFormatProperties");
 		}
 	}
 
-	return tcu::TestStatus::pass("Creating swapchain succeeded");
+	return tcu::TestStatus::pass("No sub-case failed");
 }
 
 tcu::TestStatus createSwapchainSimulateOOMTest (Context& context, TestParameters params)
@@ -661,9 +696,9 @@ tcu::TestStatus createSwapchainSimulateOOMTest (Context& context, TestParameters
 				else if (numPassingAllocs == maxAllocs)
 					results.addResult(QP_TEST_RESULT_QUALITY_WARNING, "Creating swapchain did not succeed, callback limit exceeded");
 			}
-		}
 
-		context.getTestContext().touchWatchdog();
+			context.getTestContext().touchWatchdog();
+		}
 	}
 
 	if (!validateAndLog(log, allocationRecorder, 0u))
@@ -1436,6 +1471,36 @@ tcu::TestStatus getImagesIncompleteResultTest (Context& context, Type wsiType)
 		return tcu::TestStatus::pass("Get swapchain images tests succeeded");
 }
 
+tcu::TestStatus getImagesResultsCountTest (Context& context, Type wsiType)
+{
+	const tcu::UVec2				desiredSize(256, 256);
+	const InstanceHelper			instHelper(context, wsiType);
+	const NativeObjects				native(context, instHelper.supportedExtensions, wsiType, tcu::just(desiredSize));
+	const Unique<VkSurfaceKHR>		surface(createSurface(instHelper.vki, *instHelper.instance, wsiType, *native.display, *native.window));
+	const DeviceHelper				devHelper(context, instHelper.vki, *instHelper.instance, *surface);
+	const VkSwapchainCreateInfoKHR	swapchainInfo = getBasicSwapchainParameters(wsiType, instHelper.vki, devHelper.physicalDevice, *surface, desiredSize, 2);
+	const Unique<VkSwapchainKHR>	swapchain(createSwapchainKHR(devHelper.vkd, *devHelper.device, &swapchainInfo));
+
+	deUint32	numImages = 0;
+
+	VK_CHECK(devHelper.vkd.getSwapchainImagesKHR(*devHelper.device, *swapchain, &numImages, DE_NULL));
+
+	if (numImages > 0)
+	{
+		std::vector<VkImage>	images			(numImages + 1);
+		const deUint32			numImagesOrig	= numImages;
+
+		// check if below call properly overwrites formats count
+		numImages++;
+
+		VK_CHECK(devHelper.vkd.getSwapchainImagesKHR(*devHelper.device, *swapchain, &numImages, &images[0]));
+
+		if ((size_t)numImages != numImagesOrig)
+			TCU_FAIL("Image count changed between calls");
+	}
+	return tcu::TestStatus::pass("Get swapchain images tests succeeded");
+}
+
 tcu::TestStatus destroyNullHandleSwapchainTest (Context& context, Type wsiType)
 {
 	const InstanceHelper		instHelper	(context, wsiType);
@@ -1473,6 +1538,7 @@ void populateRenderGroup (tcu::TestCaseGroup* testGroup, Type wsiType)
 void populateGetImagesGroup (tcu::TestCaseGroup* testGroup, Type wsiType)
 {
 	addFunctionCase(testGroup, "incomplete", "Test VK_INCOMPLETE return code", getImagesIncompleteResultTest, wsiType);
+	addFunctionCase(testGroup, "count",	"Test proper count of images", getImagesResultsCountTest, wsiType);
 }
 
 void populateModifyGroup (tcu::TestCaseGroup* testGroup, Type wsiType)

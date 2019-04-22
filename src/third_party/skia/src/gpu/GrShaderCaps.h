@@ -73,6 +73,8 @@ public:
 
     bool noperspectiveInterpolationSupport() const { return fNoPerspectiveInterpolationSupport; }
 
+    bool sampleVariablesSupport() const { return fSampleVariablesSupport; }
+
     bool externalTextureSupport() const { return fExternalTextureSupport; }
 
     bool vertexIDSupport() const { return fVertexIDSupport; }
@@ -83,6 +85,8 @@ public:
     bool floatIs32Bits() const { return fFloatIs32Bits; }
 
     bool halfIs32Bits() const { return fHalfIs32Bits; }
+
+    bool hasLowFragmentPrecision() const { return fHasLowFragmentPrecision; }
 
     bool unsignedSupport() const { return fUnsignedSupport; }
 
@@ -150,6 +154,10 @@ public:
         return fMustGuardDivisionEvenAfterExplicitZeroCheck;
     }
 
+    // On Nexus 6, the GL context can get lost if a shader does not write a value to gl_FragColor.
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=445377
+    bool mustWriteToFragColor() const { return fMustWriteToFragColor; }
+
     // Returns the string of an extension that must be enabled in the shader to support
     // derivatives. If nullptr is returned then no extension needs to be enabled. Before calling
     // this function, the caller should check that shaderDerivativeSupport exists.
@@ -207,6 +215,11 @@ public:
         return fNoPerspectiveInterpolationExtensionString;
     }
 
+    const char* sampleVariablesExtensionString() const {
+        SkASSERT(this->sampleVariablesSupport());
+        return fSampleVariablesExtensionString;
+    }
+
     const char* imageLoadStoreExtensionString() const {
         SkASSERT(this->imageLoadStoreSupport());
         return fImageLoadStoreExtensionString;
@@ -250,11 +263,13 @@ private:
     bool fFlatInterpolationSupport          : 1;
     bool fPreferFlatInterpolation           : 1;
     bool fNoPerspectiveInterpolationSupport : 1;
+    bool fSampleVariablesSupport            : 1;
     bool fExternalTextureSupport            : 1;
     bool fVertexIDSupport                   : 1;
     bool fFPManipulationSupport             : 1;
     bool fFloatIs32Bits                     : 1;
     bool fHalfIs32Bits                      : 1;
+    bool fHasLowFragmentPrecision           : 1;
     bool fUnsignedSupport                   : 1;
 
     // Used by SkSL to know when to generate polyfills.
@@ -277,6 +292,7 @@ private:
     bool fEmulateAbsIntFunction                       : 1;
     bool fRewriteDoWhileLoops                         : 1;
     bool fRemovePowWithConstantExponent               : 1;
+    bool fMustWriteToFragColor                        : 1;
 
     const char* fVersionDeclString;
 
@@ -288,14 +304,13 @@ private:
     const char* fExternalTextureExtensionString;
     const char* fSecondExternalTextureExtensionString;
     const char* fNoPerspectiveInterpolationExtensionString;
+    const char* fSampleVariablesExtensionString;
     const char* fImageLoadStoreExtensionString;
 
     const char* fFBFetchColorName;
     const char* fFBFetchExtensionString;
 
     int fMaxFragmentSamplers;
-
-    size_t fDisableImageMultitexturingDstRectAreaThreshold;
 
     AdvBlendEqInteraction fAdvBlendEqInteraction;
 

@@ -18,15 +18,12 @@ FX_FILESIZE CPDFSDK_CustomAccess::GetSize() {
 bool CPDFSDK_CustomAccess::ReadBlockAtOffset(void* buffer,
                                              FX_FILESIZE offset,
                                              size_t size) {
-  if (offset < 0)
+  if (!buffer || offset < 0 || !size)
     return false;
 
-  FX_SAFE_FILESIZE newPos = pdfium::base::checked_cast<FX_FILESIZE>(size);
-  newPos += offset;
-  if (!newPos.IsValid() ||
-      newPos.ValueOrDie() > static_cast<FX_FILESIZE>(m_FileAccess.m_FileLen)) {
-    return false;
-  }
-  return !!m_FileAccess.m_GetBlock(m_FileAccess.m_Param, offset,
-                                   static_cast<uint8_t*>(buffer), size);
+  FX_SAFE_FILESIZE new_pos = pdfium::base::checked_cast<FX_FILESIZE>(size);
+  new_pos += offset;
+  return new_pos.IsValid() && new_pos.ValueOrDie() <= GetSize() &&
+         m_FileAccess.m_GetBlock(m_FileAccess.m_Param, offset,
+                                 static_cast<uint8_t*>(buffer), size);
 }

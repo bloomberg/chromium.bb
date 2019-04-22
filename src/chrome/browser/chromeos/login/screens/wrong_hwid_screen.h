@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
@@ -19,8 +20,8 @@ namespace chromeos {
 class WrongHWIDScreen : public BaseScreen,
                         public WrongHWIDScreenView::Delegate {
  public:
-  WrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
-                  WrongHWIDScreenView* view);
+  WrongHWIDScreen(WrongHWIDScreenView* view,
+                  const base::RepeatingClosure& exit_callback);
   ~WrongHWIDScreen() override;
 
   // BaseScreen implementation:
@@ -33,6 +34,7 @@ class WrongHWIDScreen : public BaseScreen,
 
  private:
   WrongHWIDScreenView* view_;
+  base::RepeatingClosure exit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WrongHWIDScreen);
 };

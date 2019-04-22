@@ -9,17 +9,12 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 
-namespace {
-
-constexpr char kJsScreenPath[] = "login.DemoPreferencesScreen";
-
-}  // namespace
-
 namespace chromeos {
 
-DemoPreferencesScreenHandler::DemoPreferencesScreenHandler()
-    : BaseScreenHandler(kScreenId) {
-  set_call_js_prefix(kJsScreenPath);
+DemoPreferencesScreenHandler::DemoPreferencesScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
+  set_user_acted_method_path("login.DemoPreferencesScreen.userActed");
 }
 
 DemoPreferencesScreenHandler::~DemoPreferencesScreenHandler() {
@@ -38,6 +33,12 @@ void DemoPreferencesScreenHandler::Bind(DemoPreferencesScreen* screen) {
   BaseScreenHandler::SetBaseScreen(screen);
 }
 
+void DemoPreferencesScreenHandler::SetInputMethodId(
+    const std::string& input_method) {
+  CallJS("login.DemoPreferencesScreen.setInputMethodIdFromBackend",
+         input_method);
+}
+
 void DemoPreferencesScreenHandler::Initialize() {}
 
 void DemoPreferencesScreenHandler::DeclareLocalizedValues(
@@ -50,6 +51,35 @@ void DemoPreferencesScreenHandler::DeclareLocalizedValues(
   builder->Add("languageDropdownLabel", IDS_LANGUAGE_DROPDOWN_LABEL);
   builder->Add("keyboardDropdownTitle", IDS_KEYBOARD_DROPDOWN_TITLE);
   builder->Add("keyboardDropdownLabel", IDS_KEYBOARD_DROPDOWN_LABEL);
+  builder->Add("countryDropdownTitle", IDS_COUNTRY_DROPDOWN_TITLE);
+  builder->Add("countryDropdownLabel", IDS_COUNTRY_DROPDOWN_LABEL);
+}
+
+void DemoPreferencesScreenHandler::DeclareJSCallbacks() {
+  AddCallback("DemoPreferencesScreen.setLocaleId",
+              &DemoPreferencesScreenHandler::HandleSetLocaleId);
+  AddCallback("DemoPreferencesScreen.setInputMethodId",
+              &DemoPreferencesScreenHandler::HandleSetInputMethodId);
+  AddCallback("DemoPreferencesScreen.setDemoModeCountry",
+              &DemoPreferencesScreenHandler::HandleSetDemoModeCountry);
+}
+
+void DemoPreferencesScreenHandler::HandleSetLocaleId(
+    const std::string& language_id) {
+  if (screen_)
+    screen_->SetLocale(language_id);
+}
+
+void DemoPreferencesScreenHandler::HandleSetInputMethodId(
+    const std::string& input_method_id) {
+  if (screen_)
+    screen_->SetInputMethod(input_method_id);
+}
+
+void DemoPreferencesScreenHandler::HandleSetDemoModeCountry(
+    const std::string& country_id) {
+  if (screen_)
+    screen_->SetDemoModeCountry(country_id);
 }
 
 }  // namespace chromeos

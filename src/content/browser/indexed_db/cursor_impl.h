@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
@@ -20,7 +22,6 @@ namespace content {
 class IndexedDBCursor;
 class IndexedDBDispatcherHost;
 
-// Expected to be constructed, called, and destructed on the IO thread.
 class CursorImpl : public blink::mojom::IDBCursor {
  public:
   CursorImpl(std::unique_ptr<IndexedDBCursor> cursor,
@@ -31,25 +32,27 @@ class CursorImpl : public blink::mojom::IDBCursor {
 
   // blink::mojom::IDBCursor implementation
   void Advance(uint32_t count,
-               blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+               blink::mojom::IDBCursor::AdvanceCallback callback) override;
   void CursorContinue(
       const blink::IndexedDBKey& key,
       const blink::IndexedDBKey& primary_key,
-      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+      blink::mojom::IDBCursor::CursorContinueCallback callback) override;
   void Prefetch(int32_t count,
-                blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+                blink::mojom::IDBCursor::PrefetchCallback callback) override;
   void PrefetchReset(int32_t used_prefetches,
                      int32_t unused_prefetches) override;
 
- private:
-  class IDBSequenceHelper;
+  void OnRemoveBinding(base::OnceClosure remove_binding_cb);
 
-  IDBSequenceHelper* helper_;
+ private:
   // This raw pointer is safe because all CursorImpl instances are owned by an
   // IndexedDBDispatcherHost.
   IndexedDBDispatcherHost* dispatcher_host_;
   const url::Origin origin_;
   scoped_refptr<base::SequencedTaskRunner> idb_runner_;
+  std::unique_ptr<IndexedDBCursor> cursor_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(CursorImpl);
 };

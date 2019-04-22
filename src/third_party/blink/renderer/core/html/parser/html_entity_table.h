@@ -38,8 +38,8 @@ struct HTMLEntityTableEntry {
 
   UChar32 first_value;
   UChar second_value;  // UChar since double char sequences only use BMP chars.
-  short entity_offset;
-  short length;
+  uint16_t entity_offset;
+  uint16_t length;
 };
 
 class HTMLEntityTable {

@@ -4,6 +4,7 @@
 
 #include "components/browsing_data/core/counters/bookmark_counter.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"

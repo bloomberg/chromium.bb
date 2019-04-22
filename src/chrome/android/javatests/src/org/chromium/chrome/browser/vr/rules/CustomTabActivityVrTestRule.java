@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
  * opens up a CustomTabActivity to a blank page while performing some additional VR-only setup.
  */
 public class CustomTabActivityVrTestRule extends CustomTabActivityTestRule implements VrTestRule {
-    private boolean mTrackerDirty;
     private boolean mDonEnabled;
 
     @Override
@@ -44,16 +43,6 @@ public class CustomTabActivityVrTestRule extends CustomTabActivityTestRule imple
     @Override
     public @SupportedActivity int getRestriction() {
         return SupportedActivity.CCT;
-    }
-
-    @Override
-    public boolean isTrackerDirty() {
-        return mTrackerDirty;
-    }
-
-    @Override
-    public void setTrackerDirty() {
-        mTrackerDirty = true;
     }
 
     @Override

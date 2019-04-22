@@ -4,6 +4,8 @@
 
 #include "components/gwp_asan/crash_handler/crash_handler.h"
 
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -34,10 +36,9 @@ namespace internal {
 
 namespace {
 
-class GwpAsanTest : public testing::Test {};
-
 constexpr size_t kAllocationSize = 902;
 constexpr int kSuccess = 0;
+constexpr size_t kTotalPages = AllocatorState::kMaxSlots;
 
 int HandlerMainAdaptor(int argc, char* argv[]) {
   crashpad::UserStreamDataSources user_stream_data_sources;
@@ -50,19 +51,24 @@ int HandlerMainAdaptor(int argc, char* argv[]) {
 MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 
-  std::vector<base::CommandLine::StringType> argv(cmd_line->argv());
-  for (auto I = argv.begin(); I != argv.end(); ++I) {
-    if (I->find(L"test-child-process") != std::string::npos) {
-      argv.erase(I);
-      break;
-    }
+  // Remove the --test-child-process argument from argv and launch crashpad.
+#if defined(OS_WIN)
+  std::vector<wchar_t*> argv;
+  for (auto& arg : cmd_line->argv()) {
+    if (arg.find(L"test-child-process") == std::string::npos)
+      argv.push_back(const_cast<wchar_t*>(arg.c_str()));
   }
 
-  wchar_t* wargv[argv.size()];
-  for (size_t i = 0; i < argv.size(); i++)
-    wargv[i] = const_cast<wchar_t*>(argv[i].c_str());
+  crashpad::ToolSupport::Wmain(argv.size(), argv.data(), HandlerMainAdaptor);
+#else
+  std::vector<char*> argv;
+  for (auto& arg : cmd_line->argv()) {
+    if (arg.find("test-child-process") == std::string::npos)
+      argv.push_back(const_cast<char*>(arg.c_str()));
+  }
 
-  crashpad::ToolSupport::Wmain(argv.size(), wargv, HandlerMainAdaptor);
+  HandlerMainAdaptor(argv.size(), argv.data());
+#endif
 
   return 0;
 }
@@ -70,13 +76,14 @@ MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
 // Child process that launches the crashpad handler and then crashes.
 MULTIPROCESS_TEST_MAIN(CrashingProcess) {
   base::NoDestructor<GuardedPageAllocator> gpa;
-  gpa->Init(AllocatorState::kGpaMaxPages);
+  gpa->Init(AllocatorState::kMaxMetadata, AllocatorState::kMaxMetadata,
+            kTotalPages);
 
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   base::FilePath directory = cmd_line->GetSwitchValuePath("directory");
   CHECK(!directory.empty());
-  std::string crash_type = cmd_line->GetSwitchValueASCII("crash-type");
-  CHECK(!crash_type.empty());
+  std::string test_name = cmd_line->GetSwitchValueASCII("test-name");
+  CHECK(!test_name.empty());
 
   static char gpa_addr_buf[32];
   snprintf(gpa_addr_buf, sizeof(gpa_addr_buf), "%zx",
@@ -104,26 +111,49 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
     return kSuccess;
   }
 
-  if (crash_type == "use-after-free") {
+  if (test_name == "UseAfterFree") {
     void* ptr = gpa->Allocate(kAllocationSize);
     gpa->Deallocate(ptr);
     *(int*)ptr = 0;
-  } else if (crash_type == "double-free") {
+  } else if (test_name == "DoubleFree") {
     void* ptr = gpa->Allocate(kAllocationSize);
     gpa->Deallocate(ptr);
     gpa->Deallocate(ptr);
-  } else if (crash_type == "underflow") {
+  } else if (test_name == "Underflow") {
     void* ptr = gpa->Allocate(kAllocationSize);
     for (size_t i = 0; i < base::GetPageSize(); i++)
       ((unsigned char*)ptr)[-i] = 0;
-  } else if (crash_type == "overflow") {
+  } else if (test_name == "Overflow") {
     void* ptr = gpa->Allocate(kAllocationSize);
     for (size_t i = 0; i <= base::GetPageSize(); i++)
       ((unsigned char*)ptr)[i] = 0;
-  } else if (crash_type == "trap") {
+  } else if (test_name == "UnrelatedException") {
     __builtin_trap();
+  } else if (test_name == "FreeInvalidAddress") {
+    void* ptr = gpa->Allocate(kAllocationSize);
+    uintptr_t bad_address = reinterpret_cast<uintptr_t>(ptr) + 1;
+    gpa->Deallocate(reinterpret_cast<void*>(bad_address));
+  } else if (test_name == "MissingMetadata") {
+    // Consume all allocations/metadata
+    void* ptrs[AllocatorState::kMaxMetadata];
+    for (size_t i = 0; i < AllocatorState::kMaxMetadata; i++)
+      ptrs[i] = gpa->Allocate(1);
+
+    gpa->Deallocate(ptrs[0]);
+
+    // Take the remaining metadata slot with an allocation on a different page.
+    while (1) {
+      void* new_alloc = gpa->Allocate(1);
+      if (new_alloc != ptrs[0])
+        break;
+      gpa->Deallocate(new_alloc);
+    }
+
+    // Cause a crash accessing an allocation that no longer has metadata
+    // associated with it.
+    *(uint8_t*)(ptrs[0]) = 0;
   } else {
-    LOG(ERROR) << "Unknown crash type " << crash_type;
+    LOG(ERROR) << "Unknown test name " << test_name;
   }
 
   LOG(ERROR) << "This return should never be reached.";
@@ -131,19 +161,36 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
 }
 
 class CrashHandlerTest : public base::MultiProcessTest {
- public:
+ protected:
+  // Launch a child process and wait for it to crash. Set |gwp_asan_found_| if a
+  // GWP-ASan data was found and if so, read it into |proto_|.
+  void SetUp() final {
+    base::ScopedTempDir database_dir;
+    ASSERT_TRUE(database_dir.CreateUniqueTempDir());
+    ASSERT_TRUE(runTestProcess(
+        database_dir.GetPath(),
+        ::testing::UnitTest::GetInstance()->current_test_info()->name()));
+
+    bool minidump_found;
+    readGwpAsanStreamFromCrash(database_dir.GetPath(), &minidump_found,
+                               &gwp_asan_found_, &proto_);
+    ASSERT_TRUE(minidump_found);
+  }
+
   // Launch a second process that installs a crashpad handler and causes an
-  // exception of type crash_type, then validate that it exited successfully.
+  // exception of type test_name, then validate that it exited successfully.
   // crashpad is initialized to write to the given database directory.
   bool runTestProcess(const base::FilePath& database_dir,
-                      const char* crash_type) {
+                      const char* test_name) {
     base::CommandLine cmd_line =
         base::GetMultiProcessTestChildBaseCommandLine();
     cmd_line.AppendSwitchPath("directory", database_dir);
-    cmd_line.AppendSwitchASCII("crash-type", crash_type);
+    cmd_line.AppendSwitchASCII("test-name", test_name);
 
     base::LaunchOptions options;
+#if defined(OS_WIN)
     options.start_hidden = true;
+#endif  // defined(OS_WIN)
     base::Process process =
         base::SpawnMultiProcessTestChild("CrashingProcess", cmd_line, options);
 
@@ -191,6 +238,42 @@ class CrashHandlerTest : public base::MultiProcessTest {
       }
     }
   }
+
+  void checkProto(Crash_ErrorType error_type, bool has_deallocation) {
+    EXPECT_TRUE(proto_.has_error_type());
+    EXPECT_EQ(proto_.error_type(), error_type);
+
+    EXPECT_TRUE(proto_.has_allocation_address());
+
+    EXPECT_TRUE(proto_.has_allocation_size());
+    EXPECT_EQ(proto_.allocation_size(), kAllocationSize);
+
+    EXPECT_TRUE(proto_.has_allocation());
+    EXPECT_TRUE(proto_.allocation().has_thread_id());
+    EXPECT_NE(proto_.allocation().thread_id(), base::kInvalidThreadId);
+    EXPECT_GT(proto_.allocation().stack_trace_size(), 0);
+
+    EXPECT_EQ(proto_.has_deallocation(), has_deallocation);
+    if (has_deallocation) {
+      EXPECT_TRUE(proto_.deallocation().has_thread_id());
+      EXPECT_NE(proto_.deallocation().thread_id(), base::kInvalidThreadId);
+      EXPECT_EQ(proto_.allocation().thread_id(),
+                proto_.deallocation().thread_id());
+      EXPECT_GT(proto_.deallocation().stack_trace_size(), 0);
+    }
+
+    EXPECT_TRUE(proto_.has_region_start());
+    EXPECT_TRUE(proto_.has_region_size());
+    EXPECT_EQ(proto_.region_start() & (base::GetPageSize() - 1), 0U);
+    EXPECT_EQ(proto_.region_size(),
+              base::GetPageSize() * (2 * kTotalPages + 1));
+
+    EXPECT_TRUE(proto_.has_missing_metadata());
+    EXPECT_FALSE(proto_.missing_metadata());
+  }
+
+  gwp_asan::Crash proto_;
+  bool gwp_asan_found_;
 };
 
 #if defined(ADDRESS_SANITIZER) && defined(OS_WIN)
@@ -201,145 +284,49 @@ class CrashHandlerTest : public base::MultiProcessTest {
 #endif  // defined(ADDRESS_SANITIZER) && defined(OS_WIN)
 
 TEST_F(CrashHandlerTest, MAYBE_DISABLED(UseAfterFree)) {
-  base::ScopedTempDir database_dir;
-  ASSERT_TRUE(database_dir.CreateUniqueTempDir());
-
-  ASSERT_TRUE(runTestProcess(database_dir.GetPath(), "use-after-free"));
-
-  bool minidump_found, gwp_asan_found;
-  gwp_asan::Crash proto;
-  readGwpAsanStreamFromCrash(database_dir.GetPath(), &minidump_found,
-                             &gwp_asan_found, &proto);
-  ASSERT_TRUE(minidump_found);
-  ASSERT_TRUE(gwp_asan_found);
-
-  EXPECT_TRUE(proto.has_error_type());
-  EXPECT_EQ(proto.error_type(), Crash_ErrorType_USE_AFTER_FREE);
-
-  EXPECT_TRUE(proto.has_allocation_address());
-
-  EXPECT_TRUE(proto.has_allocation_size());
-  EXPECT_EQ(proto.allocation_size(), kAllocationSize);
-
-  EXPECT_TRUE(proto.has_allocation());
-  EXPECT_TRUE(proto.allocation().has_thread_id());
-  EXPECT_NE(proto.allocation().thread_id(), base::kInvalidThreadId);
-
-  EXPECT_TRUE(proto.has_deallocation());
-  EXPECT_TRUE(proto.deallocation().has_thread_id());
-  EXPECT_NE(proto.deallocation().thread_id(), base::kInvalidThreadId);
-  EXPECT_EQ(proto.allocation().thread_id(), proto.deallocation().thread_id());
-
-  EXPECT_GT(proto.allocation().stack_trace_size(), 0);
-  EXPECT_GT(proto.deallocation().stack_trace_size(), 0);
+  ASSERT_TRUE(gwp_asan_found_);
+  checkProto(Crash_ErrorType_USE_AFTER_FREE, true);
 }
 
 TEST_F(CrashHandlerTest, MAYBE_DISABLED(DoubleFree)) {
-  base::ScopedTempDir database_dir;
-  ASSERT_TRUE(database_dir.CreateUniqueTempDir());
-
-  ASSERT_TRUE(runTestProcess(database_dir.GetPath(), "double-free"));
-
-  bool minidump_found, gwp_asan_found;
-  gwp_asan::Crash proto;
-  readGwpAsanStreamFromCrash(database_dir.GetPath(), &minidump_found,
-                             &gwp_asan_found, &proto);
-  ASSERT_TRUE(minidump_found);
-  ASSERT_TRUE(gwp_asan_found);
-
-  EXPECT_TRUE(proto.has_error_type());
-  EXPECT_EQ(proto.error_type(), Crash_ErrorType_DOUBLE_FREE);
-
-  EXPECT_TRUE(proto.has_allocation_address());
-
-  EXPECT_TRUE(proto.has_allocation_size());
-  EXPECT_EQ(proto.allocation_size(), kAllocationSize);
-
-  EXPECT_TRUE(proto.has_allocation());
-  EXPECT_TRUE(proto.allocation().has_thread_id());
-  EXPECT_NE(proto.allocation().thread_id(), base::kInvalidThreadId);
-
-  EXPECT_TRUE(proto.has_deallocation());
-  EXPECT_TRUE(proto.deallocation().has_thread_id());
-  EXPECT_NE(proto.deallocation().thread_id(), base::kInvalidThreadId);
-  EXPECT_EQ(proto.allocation().thread_id(), proto.deallocation().thread_id());
-
-  EXPECT_GT(proto.allocation().stack_trace_size(), 0);
-  EXPECT_GT(proto.deallocation().stack_trace_size(), 0);
+  ASSERT_TRUE(gwp_asan_found_);
+  checkProto(Crash_ErrorType_DOUBLE_FREE, true);
 }
 
 TEST_F(CrashHandlerTest, MAYBE_DISABLED(Underflow)) {
-  base::ScopedTempDir database_dir;
-  ASSERT_TRUE(database_dir.CreateUniqueTempDir());
-
-  ASSERT_TRUE(runTestProcess(database_dir.GetPath(), "underflow"));
-
-  bool minidump_found, gwp_asan_found;
-  gwp_asan::Crash proto;
-  readGwpAsanStreamFromCrash(database_dir.GetPath(), &minidump_found,
-                             &gwp_asan_found, &proto);
-  ASSERT_TRUE(minidump_found);
-  ASSERT_TRUE(gwp_asan_found);
-
-  EXPECT_TRUE(proto.has_error_type());
-  EXPECT_EQ(proto.error_type(), Crash_ErrorType_BUFFER_UNDERFLOW);
-
-  EXPECT_TRUE(proto.has_allocation_address());
-
-  EXPECT_TRUE(proto.has_allocation_size());
-  EXPECT_EQ(proto.allocation_size(), kAllocationSize);
-
-  EXPECT_TRUE(proto.has_allocation());
-  EXPECT_TRUE(proto.allocation().has_thread_id());
-  EXPECT_NE(proto.allocation().thread_id(), base::kInvalidThreadId);
-
-  EXPECT_FALSE(proto.has_deallocation());
-
-  EXPECT_GT(proto.allocation().stack_trace_size(), 0);
+  ASSERT_TRUE(gwp_asan_found_);
+  checkProto(Crash_ErrorType_BUFFER_UNDERFLOW, false);
 }
 
 TEST_F(CrashHandlerTest, MAYBE_DISABLED(Overflow)) {
-  base::ScopedTempDir database_dir;
-  ASSERT_TRUE(database_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(gwp_asan_found_);
+  checkProto(Crash_ErrorType_BUFFER_OVERFLOW, false);
+}
 
-  ASSERT_TRUE(runTestProcess(database_dir.GetPath(), "overflow"));
+TEST_F(CrashHandlerTest, MAYBE_DISABLED(FreeInvalidAddress)) {
+  ASSERT_TRUE(gwp_asan_found_);
+  checkProto(Crash_ErrorType_FREE_INVALID_ADDRESS, false);
+  EXPECT_TRUE(proto_.has_free_invalid_address());
+}
 
-  bool minidump_found, gwp_asan_found;
-  gwp_asan::Crash proto;
-  readGwpAsanStreamFromCrash(database_dir.GetPath(), &minidump_found,
-                             &gwp_asan_found, &proto);
-  ASSERT_TRUE(minidump_found);
-  ASSERT_TRUE(gwp_asan_found);
+TEST_F(CrashHandlerTest, MAYBE_DISABLED(MissingMetadata)) {
+  ASSERT_TRUE(gwp_asan_found_);
 
-  EXPECT_TRUE(proto.has_error_type());
-  EXPECT_EQ(proto.error_type(), Crash_ErrorType_BUFFER_OVERFLOW);
+  ASSERT_TRUE(proto_.has_missing_metadata());
+  EXPECT_TRUE(proto_.missing_metadata());
 
-  EXPECT_TRUE(proto.has_allocation_address());
-
-  EXPECT_TRUE(proto.has_allocation_size());
-  EXPECT_EQ(proto.allocation_size(), kAllocationSize);
-
-  EXPECT_TRUE(proto.has_allocation());
-  EXPECT_TRUE(proto.allocation().has_thread_id());
-  EXPECT_NE(proto.allocation().thread_id(), base::kInvalidThreadId);
-
-  EXPECT_FALSE(proto.has_deallocation());
-
-  EXPECT_GT(proto.allocation().stack_trace_size(), 0);
+  EXPECT_FALSE(proto_.has_error_type());
+  EXPECT_FALSE(proto_.has_allocation_address());
+  EXPECT_FALSE(proto_.has_allocation_size());
+  EXPECT_FALSE(proto_.has_allocation());
+  EXPECT_FALSE(proto_.has_deallocation());
+  EXPECT_FALSE(proto_.has_free_invalid_address());
+  EXPECT_TRUE(proto_.has_region_start());
+  EXPECT_TRUE(proto_.has_region_size());
 }
 
 TEST_F(CrashHandlerTest, MAYBE_DISABLED(UnrelatedException)) {
-  base::ScopedTempDir database_dir;
-  ASSERT_TRUE(database_dir.CreateUniqueTempDir());
-
-  ASSERT_TRUE(runTestProcess(database_dir.GetPath(), "trap"));
-
-  bool minidump_found, gwp_asan_found;
-  gwp_asan::Crash proto;
-  readGwpAsanStreamFromCrash(database_dir.GetPath(), &minidump_found,
-                             &gwp_asan_found, &proto);
-  ASSERT_TRUE(minidump_found);
-  ASSERT_FALSE(gwp_asan_found);
+  ASSERT_FALSE(gwp_asan_found_);
 }
 
 }  // namespace

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -308,6 +309,10 @@ class ContentVerifierPolicyTest : public ContentVerifierTest {
 
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
+    // ExtensionManagementPolicyUpdater requires a single-threaded context to
+    // call RunLoop::RunUntilIdle internally, and it isn't ready at this setup
+    // moment.
+    base::test::ScopedTaskEnvironment env;
     ExtensionManagementPolicyUpdater management_policy(&policy_provider_);
     management_policy.SetIndividualExtensionAutoInstalled(
         id_, extension_urls::kChromeWebstoreUpdateURL, true /* forced */);

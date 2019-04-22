@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -48,11 +49,11 @@ TEST(FontDescriptionTest, TestHashCollision) {
 
   FontDescription source;
   WTF::Vector<unsigned> hashes;
-  for (size_t i = 0; i < arraysize(weights); i++) {
+  for (size_t i = 0; i < base::size(weights); i++) {
     source.SetWeight(weights[i]);
-    for (size_t j = 0; j < arraysize(stretches); j++) {
+    for (size_t j = 0; j < base::size(stretches); j++) {
       source.SetStretch(stretches[j]);
-      for (size_t k = 0; k < arraysize(slopes); k++) {
+      for (size_t k = 0; k < base::size(slopes); k++) {
         source.SetStyle(slopes[k]);
         unsigned hash = source.StyleHashWithoutFamilyList();
         ASSERT_FALSE(hashes.Contains(hash));

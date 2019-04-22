@@ -4,6 +4,7 @@
 
 #include "components/crash/core/common/crash_key.h"
 
+#include "base/debug/stack_trace.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 

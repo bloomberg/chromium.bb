@@ -23,8 +23,8 @@ class CXFA_Graphics;
 class CXFA_Node;
 
 void XFA_StrokeTypeSetLineDash(CXFA_Graphics* pGraphics,
-                               XFA_AttributeEnum iStrokeType,
-                               XFA_AttributeEnum iCapType);
+                               XFA_AttributeValue iStrokeType,
+                               XFA_AttributeValue iCapType);
 
 class CXFA_Stroke : public CXFA_Node {
  public:
@@ -34,9 +34,9 @@ class CXFA_Stroke : public CXFA_Node {
   bool IsVisible();
   bool IsInverted();
 
-  XFA_AttributeEnum GetCapType();
-  XFA_AttributeEnum GetStrokeType();
-  XFA_AttributeEnum GetJoinType();
+  XFA_AttributeValue GetCapType();
+  XFA_AttributeValue GetStrokeType();
+  XFA_AttributeValue GetJoinType();
   float GetRadius() const;
   float GetThickness() const;
 
@@ -56,9 +56,8 @@ class CXFA_Stroke : public CXFA_Node {
               uint32_t validPackets,
               XFA_ObjectType oType,
               XFA_Element eType,
-              const PropertyData* properties,
-              const AttributeData* attributes,
-              const WideStringView& elementName,
+              pdfium::span<const PropertyData> properties,
+              pdfium::span<const AttributeData> attributes,
               std::unique_ptr<CJX_Object> js_node);
 };
 

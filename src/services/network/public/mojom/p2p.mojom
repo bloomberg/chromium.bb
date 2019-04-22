@@ -5,12 +5,10 @@
 module network.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
+import "services/network/public/mojom/network_interface.mojom";
 import "services/network/public/mojom/ip_address.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
-
-[Native]
-struct NetworkInterface;
 
 [Native]
 enum P2PSocketType;

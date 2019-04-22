@@ -11,7 +11,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -235,7 +234,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   // be the pointer to the interface pointer supplied by the plugin if it's
   // supported, or NULL if it's not supported. This allows us to cache failures
   // and not req-query if a plugin doesn't support the interface.
-  typedef base::hash_map<std::string, const void*> InterfaceMap;
+  typedef std::unordered_map<std::string, const void*> InterfaceMap;
   InterfaceMap plugin_interfaces_;
 
   typedef std::unordered_map<PP_Instance, std::unique_ptr<InstanceData>>

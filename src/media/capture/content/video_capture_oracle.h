@@ -84,9 +84,9 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   // Returns true iff the captured frame should be delivered.  |frame_timestamp|
   // is set to the timestamp that should be provided to the consumer of the
   // frame.
-  bool CompleteCapture(int frame_number,
-                       bool capture_was_successful,
-                       base::TimeTicks* frame_timestamp);
+  virtual bool CompleteCapture(int frame_number,
+                               bool capture_was_successful,
+                               base::TimeTicks* frame_timestamp);
 
   // Notify that all in-flight captures have been canceled.  This has the same
   // effect as calling CompleteCapture() with a non-success status for all
@@ -118,7 +118,7 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   // Returns the capture frame size the client should use.  This is updated by
   // calls to ObserveEventAndDecideCapture().  The oracle prevents too-frequent
   // changes to the capture size, to avoid stressing the end-to-end pipeline.
-  gfx::Size capture_size() const { return capture_size_; }
+  virtual gfx::Size capture_size() const;
 
   // Returns the oracle's estimate of the last time animation was detected.
   base::TimeTicks last_time_animation_was_detected() const {

@@ -23,6 +23,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -55,6 +56,7 @@
 #include "remoting/proto/control.pb.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
+#include "remoting/protocol/native_ip_synthesizer.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/delegating_signal_strategy.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
@@ -223,6 +225,18 @@ bool ChromotingInstance::Init(uint32_t argc,
   // Start all the threads.
   context_.Start();
 
+  // Initialize ThreadPool. ThreadPool::StartWithDefaultParams() doesn't
+  // work on NACL.
+  base::ThreadPool::Create("RemotingChromeApp");
+  // TODO(etiennep): Change this to 2 in future CL.
+  constexpr int kBackgroundMaxThreads = 3;
+  constexpr int kForegroundMaxThreads = 3;
+  constexpr base::TimeDelta kSuggestedReclaimTime =
+      base::TimeDelta::FromSeconds(30);
+  base::ThreadPool::GetInstance()->Start(
+      {{kBackgroundMaxThreads, kSuggestedReclaimTime},
+       {kForegroundMaxThreads, kSuggestedReclaimTime}});
+
   return true;
 }
 
@@ -232,7 +246,7 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     return;
   }
 
-  std::unique_ptr<base::Value> json = base::JSONReader::Read(
+  std::unique_ptr<base::Value> json = base::JSONReader::ReadDeprecated(
       message.AsString(), base::JSON_ALLOW_TRAILING_COMMAS);
   base::DictionaryValue* message_dict = nullptr;
   std::string method;
@@ -246,7 +260,7 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
   }
 
   if (method == "connect") {
-    HandleConnect(*data);
+    UpdateNetConfigAndConnect(*data);
   } else if (method == "disconnect") {
     HandleDisconnect(*data);
   } else if (method == "incomingIq") {
@@ -1014,6 +1028,20 @@ void ChromotingInstance::Disconnect() {
   audio_player_.reset();
   stats_update_timer_.Stop();
   transport_context_ = nullptr;
+}
+
+void ChromotingInstance::UpdateNetConfigAndConnect(
+    const base::DictionaryValue& data) {
+  // We can't bind HandleConnect() directly because base::DictionaryValue has
+  // no copy constructor. CreateDeepCopy() returns a unique_ptr.
+  protocol::RefreshNativeIpSynthesizer(
+      base::BindOnce(&ChromotingInstance::OnNetConfigUpdated,
+                     weak_factory_.GetWeakPtr(), data.CreateDeepCopy()));
+}
+
+void ChromotingInstance::OnNetConfigUpdated(
+    std::unique_ptr<base::DictionaryValue> data) {
+  HandleConnect(*data);
 }
 
 void ChromotingInstance::PostChromotingMessage(const std::string& method,

@@ -6,14 +6,15 @@
 
 #include "xfa/fxfa/parser/cxfa_rename.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kRenameAttributeData[] = {
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kRenameName[] = L"rename";
+};
 
 }  // namespace
 
@@ -23,8 +24,8 @@ CXFA_Rename::CXFA_Rename(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_Config,
                 XFA_ObjectType::NodeV,
                 XFA_Element::Rename,
-                nullptr,
+                {},
                 kRenameAttributeData,
-                kRenameName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Rename::~CXFA_Rename() {}
+CXFA_Rename::~CXFA_Rename() = default;

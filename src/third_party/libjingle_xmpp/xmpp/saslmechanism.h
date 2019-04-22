@@ -8,12 +8,12 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_SASLMECHANISM_H_
-#define WEBRTC_LIBJINGLE_XMPP_SASLMECHANISM_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_SASLMECHANISM_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_SASLMECHANISM_H_
 
 #include <string>
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlElement;
 
@@ -54,4 +54,4 @@ protected:
 
 }
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_SASLMECHANISM_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_SASLMECHANISM_H_

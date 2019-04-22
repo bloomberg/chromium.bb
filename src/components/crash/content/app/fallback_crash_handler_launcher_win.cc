@@ -54,7 +54,7 @@ bool FallbackCrashHandlerLauncher::Initialize(
       "exception-pointers",
       base::NumberToString(reinterpret_cast<uintptr_t>(&exception_pointers_)));
   cmd_line.AppendSwitchASCII(
-      "process", base::UintToString(
+      "process", base::NumberToString(
                      base::win::HandleToUint32(self_process_handle_.Get())));
 
   std::wstring str_cmd_line = cmd_line.GetCommandLineString();

@@ -76,8 +76,9 @@ var FilesToast = Polymer({
    * @private
    */
   showInternal_: function(text, action, generationId) {
-    if (this.generationId_ !== generationId)
+    if (this.generationId_ !== generationId) {
       return;
+    }
 
     this._setVisible(true);
 
@@ -99,9 +100,9 @@ var FilesToast = Polymer({
       {bottom: '16px', opacity: 1, offset: 1}
     ], 100 /* ms */);
 
-    this.enterAnimationPlayer_.addEventListener('finish', function() {
+    this.enterAnimationPlayer_.addEventListener('finish', () => {
       this.enterAnimationPlayer_ = null;
-    }.bind(this));
+    });
 
     // Set timeout.
     setTimeout(this.timeout_.bind(this, this.generationId_), this.duration);
@@ -112,8 +113,9 @@ var FilesToast = Polymer({
    * @param {number} generationId Generation id.
    */
   timeout_: function(generationId) {
-    if (this.generationId_ !== generationId)
+    if (this.generationId_ !== generationId) {
       return;
+    }
 
     this.hide();
   },
@@ -122,8 +124,9 @@ var FilesToast = Polymer({
    * Handles tap event of action button.
    */
   onActionTapped_: function() {
-    if (!this.action_ || !this.action_.callback)
+    if (!this.action_ || !this.action_.callback) {
       return;
+    }
 
     this.action_.callback();
     this.hide();
@@ -134,20 +137,23 @@ var FilesToast = Polymer({
    * @return {!Promise} A promise which is resolved when toast is hidden.
    */
   hide: function() {
-    if (!this.visible)
+    if (!this.visible) {
       return Promise.resolve();
+    }
 
     // If it's performing enter animation, wait until it's done and come back
     // later.
     if (this.enterAnimationPlayer_ && !this.enterAnimationPlayer_.finished) {
-      return new Promise(function(resolve) {
+      return new Promise(resolve => {
         // Check that the animation is still playing. Animation can be finished
         // between the above condition check and this function call.
-        if (!this.enterAnimationPlayer_ || this.enterAnimationPlayer_.finished)
+        if (!this.enterAnimationPlayer_ ||
+            this.enterAnimationPlayer_.finished) {
           resolve();
+        }
 
         this.enterAnimationPlayer_.addEventListener('finish', resolve);
-      }.bind(this)).then(this.hide.bind(this));
+      }).then(this.hide.bind(this));
     }
 
     // Start hide animation if it's not performing now.
@@ -158,12 +164,12 @@ var FilesToast = Polymer({
       ], 100 /* ms */);
     }
 
-    return new Promise(function(resolve) {
+    return new Promise(resolve => {
       this.hideAnimationPlayer_.addEventListener('finish', resolve);
-    }.bind(this)).then(function() {
+    }).then(() => {
       this.$.container.hidden = true;
       this.hideAnimationPlayer_ = null;
       this._setVisible(false);
-    }.bind(this));
+    });
   }
 });

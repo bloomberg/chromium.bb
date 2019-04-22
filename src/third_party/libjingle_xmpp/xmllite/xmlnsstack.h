@@ -8,15 +8,15 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMLLITE_XMLNSSTACK_H_
-#define WEBRTC_LIBJINGLE_XMLLITE_XMLNSSTACK_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLNSSTACK_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLNSSTACK_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlnsStack {
 public:
@@ -42,4 +42,4 @@ private:
 };
 }
 
-#endif  // WEBRTC_LIBJINGLE_XMLLITE_XMLNSSTACK_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLNSSTACK_H_

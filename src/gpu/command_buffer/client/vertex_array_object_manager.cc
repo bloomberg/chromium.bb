@@ -16,7 +16,8 @@
 namespace gpu {
 namespace gles2 {
 
-static GLsizei RoundUpToMultipleOf4(GLsizei size) {
+template <typename T>
+static T RoundUpToMultipleOf4(T size) {
   return (size + 3) & ~3;
 }
 
@@ -444,7 +445,7 @@ bool VertexArrayObjectManager::SetAttribPointer(
     const void* ptr,
     GLboolean integer) {
   // Client side arrays are not allowed in vaos.
-  if (buffer_id == 0 && !IsDefaultVAOBound()) {
+  if (buffer_id == 0 && !IsDefaultVAOBound() && ptr) {
     return false;
   }
   bound_vertex_array_object_->SetAttribPointer(
@@ -505,19 +506,26 @@ bool VertexArrayObjectManager::SetupSimulatedClientSideBuffers(
     return false;
   }
   *simulated = true;
-  GLsizei total_size = 0;
+  base::CheckedNumeric<GLsizei> checked_total_size = 0;
   // Compute the size of the buffer we need.
   const VertexArrayObject::VertexAttribs& vertex_attribs =
       bound_vertex_array_object_->vertex_attribs();
   for (GLuint ii = 0; ii < vertex_attribs.size(); ++ii) {
     const VertexArrayObject::VertexAttrib& attrib = vertex_attribs[ii];
     if (attrib.IsClientSide() && attrib.enabled()) {
-      size_t bytes_per_element =
+      uint32_t bytes_per_element =
           GLES2Util::GetGroupSizeForBufferType(attrib.size(), attrib.type());
       GLsizei elements = (primcount && attrib.divisor() > 0) ?
           ((primcount - 1) / attrib.divisor() + 1) : num_elements;
-      total_size += RoundUpToMultipleOf4(bytes_per_element * elements);
+      checked_total_size +=
+          RoundUpToMultipleOf4(base::CheckMul(bytes_per_element, elements));
     }
+  }
+  GLsizei total_size = 0;
+  if (!checked_total_size.AssignIfValid(&total_size)) {
+    gl->SetGLError(GL_INVALID_OPERATION, function_name,
+                   "size overflow for client side arrays");
+    return false;
   }
   gl_helper->BindBuffer(GL_ARRAY_BUFFER, array_buffer_id_);
   array_buffer_offset_ = 0;
@@ -528,7 +536,7 @@ bool VertexArrayObjectManager::SetupSimulatedClientSideBuffers(
   for (GLuint ii = 0; ii < vertex_attribs.size(); ++ii) {
     const VertexArrayObject::VertexAttrib& attrib = vertex_attribs[ii];
     if (attrib.IsClientSide() && attrib.enabled()) {
-      size_t bytes_per_element =
+      uint32_t bytes_per_element =
           GLES2Util::GetGroupSizeForBufferType(attrib.size(), attrib.type());
       GLsizei real_stride = attrib.stride() ?
           attrib.stride() : static_cast<GLsizei>(bytes_per_element);
@@ -612,8 +620,14 @@ bool VertexArrayObjectManager::SetupSimulatedIndexAndClientSideBuffers(
         break;
     }
     gl_helper->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_array_buffer_id_);
-    GLsizei bytes_per_element = GLES2Util::GetGLTypeSizeForBuffers(type);
-    GLsizei bytes_needed = bytes_per_element * count;
+    uint32_t bytes_per_element = GLES2Util::GetGLTypeSizeForBuffers(type);
+    GLsizei bytes_needed = 0;
+    if (!base::CheckMul(bytes_per_element, count)
+             .AssignIfValid(&bytes_needed)) {
+      gl->SetGLError(GL_INVALID_OPERATION, function_name,
+                     "size overflow for client side index arrays");
+      return false;
+    }
     if (bytes_needed > element_array_buffer_size_) {
       element_array_buffer_size_ = bytes_needed;
       gl->BufferDataHelper(GL_ELEMENT_ARRAY_BUFFER, bytes_needed, nullptr,

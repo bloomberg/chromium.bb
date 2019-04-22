@@ -5,10 +5,9 @@ Tests that Page.lifecycleEvent is issued for important events.
     [2] : firstMeaningfulPaint
     [3] : firstMeaningfulPaintCandidate
     [4] : firstPaint
-    [5] : firstTextPaint
-    [6] : init
-    [7] : load
-    [8] : networkAlmostIdle
-    [9] : networkIdle
+    [5] : init
+    [6] : load
+    [7] : networkAlmostIdle
+    [8] : networkIdle
 ]
 

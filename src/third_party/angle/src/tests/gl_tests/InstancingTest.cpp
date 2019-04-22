@@ -9,6 +9,30 @@
 
 using namespace angle;
 
+namespace
+{
+enum Geometry
+{
+    Quad,
+    Point
+};
+enum Storage
+{
+    Buffer,
+    Memory
+};
+enum Draw
+{
+    Indexed,
+    NonIndexed
+};
+enum Vendor
+{
+    Angle,
+    Ext
+};
+}  // namespace
+
 class InstancingTest : public ANGLETest
 {
   protected:
@@ -25,15 +49,17 @@ class InstancingTest : public ANGLETest
     void TearDown() override
     {
         glDeleteBuffers(1, &mInstanceBuffer);
-        glDeleteProgram(mProgram0);
-        glDeleteProgram(mProgram1);
+        glDeleteProgram(mProgram[0]);
+        glDeleteProgram(mProgram[1]);
+
+        ANGLETest::TearDown();
     }
 
     void SetUp() override
     {
         ANGLETest::SetUp();
 
-        for (int i = 0; i < kMaxDrawn; ++i)
+        for (unsigned i = 0; i < kMaxDrawn; ++i)
         {
             mInstanceData[i] = i * kDrawSize;
         }
@@ -53,70 +79,113 @@ class InstancingTest : public ANGLETest
         )";
 
         // attrib 0 is instanced
-        mProgram0 = CompileProgram(inst + pos + main, essl1_shaders::fs::Red());
-        ASSERT_NE(0u, mProgram0);
-        ASSERT_EQ(0, glGetAttribLocation(mProgram0, "a_instance"));
-        ASSERT_EQ(1, glGetAttribLocation(mProgram0, "a_position"));
+        const std::string inst0 = inst + pos + main;
+        mProgram[0]             = CompileProgram(inst0.c_str(), essl1_shaders::fs::Red());
+        ASSERT_NE(0u, mProgram[0]);
+        ASSERT_EQ(0, glGetAttribLocation(mProgram[0], "a_instance"));
+        ASSERT_EQ(1, glGetAttribLocation(mProgram[0], "a_position"));
 
         // attrib 1 is instanced
-        mProgram1 = CompileProgram(pos + inst + main, essl1_shaders::fs::Red());
-        ASSERT_NE(0u, mProgram1);
-        ASSERT_EQ(1, glGetAttribLocation(mProgram1, "a_instance"));
-        ASSERT_EQ(0, glGetAttribLocation(mProgram1, "a_position"));
+        const std::string inst1 = pos + inst + main;
+        mProgram[1]             = CompileProgram(inst1.c_str(), essl1_shaders::fs::Red());
+        ASSERT_NE(0u, mProgram[1]);
+        ASSERT_EQ(1, glGetAttribLocation(mProgram[1], "a_instance"));
+        ASSERT_EQ(0, glGetAttribLocation(mProgram[1], "a_position"));
 
         glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     }
 
-    void runTest(
-        unsigned numInstance,
-        unsigned divisor,
-        bool attribZeroInstanced,  // true: attrib 0 is instance, false: attrib 1 is instanced
-        bool points,               // true: draw points, false: draw quad
-        bool indexed,              // true: DrawElements, false: DrawArrays
-        bool offset,               // true: pass nonzero offset to DrawArrays, false: zero offset
-        bool buffer)               // true: use instance data in buffer, false: in client memory
+    void runTest(unsigned numInstance,
+                 unsigned divisor,
+                 const int instanceAttrib,  // which attrib is instanced: 0 or 1
+                 Geometry geometry,
+                 Draw draw,
+                 Storage storage,
+                 Vendor vendor,
+                 unsigned offset)  // for NonIndexed/DrawArrays only
     {
+        if (vendor == Angle)
+        {
+            ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_ANGLE_instanced_arrays"));
+        }
+        else if (vendor == Ext)
+        {
+            ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_instanced_arrays"));
+        }
+
+        // TODO: Fix these.  http://anglebug.com/3129
+        ANGLE_SKIP_TEST_IF(IsD3D9() && draw == Indexed && geometry == Point);
+        ANGLE_SKIP_TEST_IF(IsD3D9() && IsAMD());
+
+        // D3D11 FL9_3 has a special codepath that emulates instanced points rendering
+        // but it has bugs and was only implemented for vertex positions in a buffer object,
+        // not client memory as used in this test.
+        ANGLE_SKIP_TEST_IF(IsD3D11_FL93() && geometry == Point);
+
+        // Unknown problem.  FL9_3 is not officially supported anyway.
+        ANGLE_SKIP_TEST_IF(IsD3D11_FL93() && geometry == Quad && draw == NonIndexed);
+
         // The window is divided into kMaxDrawn slices of size kDrawSize.
         // The slice drawn into is determined by the instance datum.
         // The instance data array selects all the slices in order.
         // 'lastDrawn' is the index (zero-based) of the last slice into which we draw.
         const unsigned lastDrawn = (numInstance - 1) / divisor;
-        ASSERT(lastDrawn < kMaxDrawn);
 
-        const int instanceAttrib = attribZeroInstanced ? 0 : 1;
-        const int positionAttrib = attribZeroInstanced ? 1 : 0;
+        // Ensure the numInstance and divisor parameters are valid.
+        ASSERT_TRUE(lastDrawn < kMaxDrawn);
 
-        glUseProgram(attribZeroInstanced ? mProgram0 : mProgram1);
+        ASSERT_TRUE(instanceAttrib == 0 || instanceAttrib == 1);
+        const int positionAttrib = 1 - instanceAttrib;
 
-        glBindBuffer(GL_ARRAY_BUFFER, buffer ? mInstanceBuffer : 0);
+        glUseProgram(mProgram[instanceAttrib]);
+
+        glBindBuffer(GL_ARRAY_BUFFER, storage == Buffer ? mInstanceBuffer : 0);
         glVertexAttribPointer(instanceAttrib, 1, GL_FLOAT, GL_FALSE, 0,
-                              buffer ? nullptr : mInstanceData);
+                              storage == Buffer ? nullptr : mInstanceData);
         glEnableVertexAttribArray(instanceAttrib);
-        glVertexAttribDivisorANGLE(instanceAttrib, divisor);
+        if (vendor == Angle)
+            glVertexAttribDivisorANGLE(instanceAttrib, divisor);
+        else if (vendor == Ext)
+            glVertexAttribDivisorEXT(instanceAttrib, divisor);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glVertexAttribPointer(positionAttrib, 2, GL_FLOAT, GL_FALSE, 0,
-                              points ? kPointVertices : kQuadVertices);
+                              geometry == Point ? kPointVertices : kQuadVertices);
         glEnableVertexAttribArray(positionAttrib);
-        glVertexAttribDivisorANGLE(positionAttrib, 0);
+        if (vendor == Angle)
+            glVertexAttribDivisorANGLE(positionAttrib, 0);
+        else if (vendor == Ext)
+            glVertexAttribDivisorEXT(positionAttrib, 0);
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (points)
+        if (geometry == Point)
         {
-            if (indexed)
-                glDrawElementsInstancedANGLE(GL_POINTS, ArraySize(kPointIndices), GL_UNSIGNED_SHORT,
-                                             kPointIndices, numInstance);
+            if (draw == Indexed)
+                if (vendor == Angle)
+                    glDrawElementsInstancedANGLE(GL_POINTS, ArraySize(kPointIndices),
+                                                 GL_UNSIGNED_SHORT, kPointIndices, numInstance);
+                else
+                    glDrawElementsInstancedEXT(GL_POINTS, ArraySize(kPointIndices),
+                                               GL_UNSIGNED_SHORT, kPointIndices, numInstance);
+            else if (vendor == Angle)
+                glDrawArraysInstancedANGLE(GL_POINTS, offset, 4 /*vertices*/, numInstance);
             else
-                glDrawArraysInstancedANGLE(GL_POINTS, offset ? 2 : 0, 4, numInstance);
+                glDrawArraysInstancedEXT(GL_POINTS, offset, 4 /*vertices*/, numInstance);
         }
         else
         {
-            if (indexed)
-                glDrawElementsInstancedANGLE(GL_TRIANGLES, ArraySize(kQuadIndices),
-                                             GL_UNSIGNED_SHORT, kQuadIndices, numInstance);
+            if (draw == Indexed)
+                if (vendor == Angle)
+                    glDrawElementsInstancedANGLE(GL_TRIANGLES, ArraySize(kQuadIndices),
+                                                 GL_UNSIGNED_SHORT, kQuadIndices, numInstance);
+                else
+                    glDrawElementsInstancedEXT(GL_TRIANGLES, ArraySize(kQuadIndices),
+                                               GL_UNSIGNED_SHORT, kQuadIndices, numInstance);
+            else if (vendor == Angle)
+                glDrawArraysInstancedANGLE(GL_TRIANGLES, offset, 6 /*vertices*/, numInstance);
             else
-                glDrawArraysInstancedANGLE(GL_TRIANGLES, offset ? 4 : 0, 6, numInstance);
+                glDrawArraysInstancedEXT(GL_TRIANGLES, offset, 6 /*vertices*/, numInstance);
         }
 
         ASSERT_GL_NO_ERROR();
@@ -127,22 +196,23 @@ class InstancingTest : public ANGLETest
     {
         for (unsigned i = 0; i < kMaxDrawn; ++i)
         {
-            float y = -1.0 + kDrawSize / 2.0 + i * kDrawSize;
-            int iy  = (y + 1.0) / 2.0 * getWindowHeight();
+            float y =
+                -1.0f + static_cast<float>(kDrawSize) / 2.0f + static_cast<float>(i * kDrawSize);
+            int iy = static_cast<int>((y + 1.0f) / 2.0f * getWindowHeight());
             for (unsigned j = 0; j < 8; j += 2)
             {
-                int ix = (kPointVertices[j] + 1.0) / 2.0 * getWindowWidth();
-                EXPECT_PIXEL_COLOR_EQ(ix, iy, i <= lastDrawn ? GLColor::red : GLColor::blue);
+                int ix = static_cast<int>((kPointVertices[j] + 1.0f) / 2.0f * getWindowWidth());
+                EXPECT_PIXEL_COLOR_EQ(ix, iy, i <= lastDrawn ? GLColor::red : GLColor::blue)
+                    << std::endl;
             }
         }
     }
 
-    GLuint mProgram0;
-    GLuint mProgram1;
+    GLuint mProgram[2];
     GLuint mInstanceBuffer;
 
-    static constexpr int kMaxDrawn   = 4;
-    static constexpr float kDrawSize = 2.0 / kMaxDrawn;
+    static constexpr unsigned kMaxDrawn = 16;
+    static constexpr float kDrawSize    = 2.0 / kMaxDrawn;
     GLfloat mInstanceData[kMaxDrawn];
 
     // clang-format off
@@ -181,90 +251,142 @@ class InstancingTest : public ANGLETest
     static constexpr GLushort kPointIndices[] = {1, 5, 3, 2};
 };
 
+constexpr unsigned InstancingTest::kMaxDrawn;
+constexpr float InstancingTest::kDrawSize;
 constexpr GLfloat InstancingTest::kQuadVertices[];
 constexpr GLfloat InstancingTest::kPointVertices[];
 constexpr GLushort InstancingTest::kQuadIndices[];
 constexpr GLushort InstancingTest::kPointIndices[];
 
-class InstancingTestAllConfigs : public InstancingTest
-{
-  protected:
-    InstancingTestAllConfigs() {}
-};
+#define TEST_INDEXED(attrib, geometry, storage, vendor)                      \
+    TEST_P(InstancingTest, IndexedAttrib##attrib##geometry##storage##vendor) \
+    {                                                                        \
+        runTest(11, 2, attrib, geometry, Indexed, storage, vendor, 0);       \
+    }
 
-class InstancingTestNo9_3 : public InstancingTest
-{
-  protected:
-    InstancingTestNo9_3() {}
-};
+#define TEST_NONINDEXED(attrib, geometry, storage, vendor, offset)                              \
+    TEST_P(InstancingTest, NonIndexedAttrib##attrib##geometry##storage##vendor##Offset##offset) \
+    {                                                                                           \
+        runTest(11, 2, attrib, geometry, NonIndexed, storage, vendor, offset);                  \
+    }
 
-class InstancingTestPoints : public InstancingTest
-{
-  protected:
-    InstancingTestPoints() {}
-};
+#define TEST_DIVISOR(numInstance, divisor)                                    \
+    TEST_P(InstancingTest, Instances##numInstance##Divisor##divisor)          \
+    {                                                                         \
+        runTest(numInstance, divisor, 1, Quad, NonIndexed, Buffer, Angle, 0); \
+    }
 
-// This test uses a vertex shader with the first attribute (attribute zero) instanced.
-// On D3D9 and D3D11 FL9_3, this triggers a special codepath that rearranges the input layout sent
-// to D3D, to ensure that slot/stream zero of the input layout doesn't contain per-instance data.
-TEST_P(InstancingTestAllConfigs, AttributeZeroInstanced)
-{
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_ANGLE_instanced_arrays"));
+// D3D9 and D3D11 FL9_3, have a special codepath that rearranges the input layout sent to D3D,
+// to ensure that slot/stream zero of the input layout doesn't contain per-instance data, so
+// we test with attribute 0 being instanced, as will as attribute 1 being instanced.
+//
+// Tests with a non-zero 'offset' check that "first" parameter to glDrawArraysInstancedANGLE is only
+// an offset into the non-instanced vertex attributes.
+TEST_INDEXED(0, Quad, Buffer, Angle)
+TEST_INDEXED(0, Quad, Memory, Angle)
+TEST_INDEXED(1, Quad, Buffer, Angle)
+TEST_INDEXED(1, Quad, Memory, Angle)
+TEST_INDEXED(0, Point, Buffer, Angle)
+TEST_INDEXED(0, Point, Memory, Angle)
+TEST_INDEXED(1, Point, Buffer, Angle)
+TEST_INDEXED(1, Point, Memory, Angle)
+TEST_INDEXED(0, Quad, Buffer, Ext)
+TEST_INDEXED(0, Quad, Memory, Ext)
+TEST_INDEXED(1, Quad, Buffer, Ext)
+TEST_INDEXED(1, Quad, Memory, Ext)
+TEST_INDEXED(0, Point, Buffer, Ext)
+TEST_INDEXED(0, Point, Memory, Ext)
+TEST_INDEXED(1, Point, Buffer, Ext)
+TEST_INDEXED(1, Point, Memory, Ext)
 
-    runTest(4, 1, true /* attrib 0 instanced */, false /* quads */, true /* DrawElements */,
-            false /* N/A */, false /* no buffer */);
-}
+// offset should be 0 or 4 for quads
+TEST_NONINDEXED(0, Quad, Buffer, Angle, 0)
+TEST_NONINDEXED(0, Quad, Buffer, Angle, 4)
+TEST_NONINDEXED(0, Quad, Memory, Angle, 0)
+TEST_NONINDEXED(0, Quad, Memory, Angle, 4)
+TEST_NONINDEXED(1, Quad, Buffer, Angle, 0)
+TEST_NONINDEXED(1, Quad, Buffer, Angle, 4)
+TEST_NONINDEXED(1, Quad, Memory, Angle, 0)
+TEST_NONINDEXED(1, Quad, Memory, Angle, 4)
+TEST_NONINDEXED(0, Quad, Buffer, Ext, 0)
+TEST_NONINDEXED(0, Quad, Buffer, Ext, 4)
+TEST_NONINDEXED(0, Quad, Memory, Ext, 0)
+TEST_NONINDEXED(0, Quad, Memory, Ext, 4)
+TEST_NONINDEXED(1, Quad, Buffer, Ext, 0)
+TEST_NONINDEXED(1, Quad, Buffer, Ext, 4)
+TEST_NONINDEXED(1, Quad, Memory, Ext, 0)
+TEST_NONINDEXED(1, Quad, Memory, Ext, 4)
 
-// Same as AttributeZeroInstanced, but attribute zero is not instanced.
-// This ensures the general instancing codepath (i.e. without rearranging the input layout) works as
-// expected.
-TEST_P(InstancingTestAllConfigs, AttributeZeroNotInstanced)
-{
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_ANGLE_instanced_arrays"));
+// offset should be 0 or 2 for points
+TEST_NONINDEXED(0, Point, Buffer, Angle, 0)
+TEST_NONINDEXED(0, Point, Buffer, Angle, 2)
+TEST_NONINDEXED(0, Point, Memory, Angle, 0)
+TEST_NONINDEXED(0, Point, Memory, Angle, 2)
+TEST_NONINDEXED(1, Point, Buffer, Angle, 0)
+TEST_NONINDEXED(1, Point, Buffer, Angle, 2)
+TEST_NONINDEXED(1, Point, Memory, Angle, 0)
+TEST_NONINDEXED(1, Point, Memory, Angle, 2)
+TEST_NONINDEXED(0, Point, Buffer, Ext, 0)
+TEST_NONINDEXED(0, Point, Buffer, Ext, 2)
+TEST_NONINDEXED(0, Point, Memory, Ext, 0)
+TEST_NONINDEXED(0, Point, Memory, Ext, 2)
+TEST_NONINDEXED(1, Point, Buffer, Ext, 0)
+TEST_NONINDEXED(1, Point, Buffer, Ext, 2)
+TEST_NONINDEXED(1, Point, Memory, Ext, 0)
+TEST_NONINDEXED(1, Point, Memory, Ext, 2)
 
-    runTest(4, 1, false /* attrib 1 instanced */, false /* quads */, true /* DrawElements */,
-            false /* N/A */, false /* no buffer */);
-}
-
-// Tests that the "first" parameter to glDrawArraysInstancedANGLE is only an offset into
-// the non-instanced vertex attributes.
-TEST_P(InstancingTestNo9_3, DrawArraysWithOffset)
-{
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_ANGLE_instanced_arrays"));
-
-    runTest(4, 1, false /* attribute 1 instanced */, false /* quads */, false /* DrawArrays */,
-            true /* offset>0 */, true /* buffer */);
-}
-
-// This test verifies instancing with GL_POINTS with glDrawArraysInstanced works.
-// On D3D11 FL9_3, this triggers a special codepath that emulates instanced points rendering.
-TEST_P(InstancingTestPoints, DrawArrays)
-{
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_ANGLE_instanced_arrays"));
-
-    // Disable D3D11 SDK Layers warnings checks, see ANGLE issue 667 for details
-    // On Win7, the D3D SDK Layers emits a false warning for these tests.
-    // This doesn't occur on Windows 10 (Version 1511) though.
-    ignoreD3D11SDKLayersWarnings();
-
-    runTest(4, 1, false /* attrib 1 instanced */, true /* points */, false /* DrawArrays */,
-            false /* offset=0 */, true /* buffer */);
-}
-
-// This test verifies instancing with GL_POINTS with glDrawElementsInstanced works.
-// On D3D11 FL9_3, this triggers a special codepath that emulates instanced points rendering.
-TEST_P(InstancingTestPoints, DrawElements)
-{
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_ANGLE_instanced_arrays"));
-
-    // Disable D3D11 SDK Layers warnings checks, see ANGLE issue 667 for details
-    // On Win7, the D3D SDK Layers emits a false warning for these tests.
-    // This doesn't occur on Windows 10 (Version 1511) though.
-    ignoreD3D11SDKLayersWarnings();
-
-    runTest(4, 1, false /* attrib 1 instanced */, true /* points */, true /* DrawElements */,
-            false /* N/A */, true /* buffer */);
-}
+// The following tests produce each value of 'lastDrawn' in runTest() from 1 to kMaxDrawn, a few
+// different ways.
+TEST_DIVISOR(1, 1)
+TEST_DIVISOR(1, 2)
+TEST_DIVISOR(2, 1)
+TEST_DIVISOR(3, 1)
+TEST_DIVISOR(3, 2)
+TEST_DIVISOR(4, 1)
+TEST_DIVISOR(5, 1)
+TEST_DIVISOR(5, 2)
+TEST_DIVISOR(6, 1)
+TEST_DIVISOR(6, 2)
+TEST_DIVISOR(7, 1)
+TEST_DIVISOR(7, 2)
+TEST_DIVISOR(8, 1)
+TEST_DIVISOR(8, 2)
+TEST_DIVISOR(8, 4)
+TEST_DIVISOR(9, 1)
+TEST_DIVISOR(9, 2)
+TEST_DIVISOR(10, 1)
+TEST_DIVISOR(11, 1)
+TEST_DIVISOR(11, 2)
+TEST_DIVISOR(12, 1)
+TEST_DIVISOR(12, 11)
+TEST_DIVISOR(13, 1)
+TEST_DIVISOR(13, 2)
+TEST_DIVISOR(14, 1)
+TEST_DIVISOR(15, 1)
+TEST_DIVISOR(15, 2)
+TEST_DIVISOR(16, 1)
+TEST_DIVISOR(16, 3)
+TEST_DIVISOR(16, 7)
+TEST_DIVISOR(17, 2)
+TEST_DIVISOR(20, 2)
+TEST_DIVISOR(21, 2)
+TEST_DIVISOR(23, 2)
+TEST_DIVISOR(25, 5)
+TEST_DIVISOR(25, 33)
+TEST_DIVISOR(26, 2)
+TEST_DIVISOR(26, 3)
+TEST_DIVISOR(27, 2)
+TEST_DIVISOR(27, 4)
+TEST_DIVISOR(28, 3)
+TEST_DIVISOR(29, 2)
+TEST_DIVISOR(29, 11)
+TEST_DIVISOR(30, 4)
+TEST_DIVISOR(31, 6)
+TEST_DIVISOR(32, 2)
+TEST_DIVISOR(32, 3)
+TEST_DIVISOR(32, 8)
+TEST_DIVISOR(34, 3)
+TEST_DIVISOR(34, 30)
 
 class InstancingTestES3 : public InstancingTest
 {
@@ -283,11 +405,11 @@ TEST_P(InstancingTestES31, UpdateAttribBindingByVertexAttribDivisor)
 {
     ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_ANGLE_instanced_arrays"));
 
-    glUseProgram(mProgram0);
+    glUseProgram(mProgram[0]);
 
     // Get the attribute locations
-    GLint positionLoc    = glGetAttribLocation(mProgram0, "a_position");
-    GLint instancePosLoc = glGetAttribLocation(mProgram0, "a_instance");
+    GLint positionLoc    = glGetAttribLocation(mProgram[0], "a_position");
+    GLint instancePosLoc = glGetAttribLocation(mProgram[0], "a_instance");
     ASSERT_NE(-1, positionLoc);
     ASSERT_NE(-1, instancePosLoc);
     ASSERT_GL_NO_ERROR();
@@ -303,7 +425,9 @@ TEST_P(InstancingTestES31, UpdateAttribBindingByVertexAttribDivisor)
     const unsigned numInstance = 4;
     const unsigned divisor     = 1;
     const unsigned lastDrawn   = (numInstance - 1) / divisor;
-    ASSERT(lastDrawn < kMaxDrawn);
+
+    // Ensure the numInstance and divisor parameters are valid.
+    ASSERT_TRUE(lastDrawn < kMaxDrawn);
 
     // Set the formats by VertexAttribFormat
     glVertexAttribFormat(positionLoc, 2, GL_FLOAT, GL_FALSE, 0);
@@ -360,7 +484,7 @@ TEST_P(InstancingTestES31, UpdateAttribBindingByVertexAttribDivisor)
 // Verify that a large divisor that also changes doesn't cause issues and renders correctly.
 TEST_P(InstancingTestES3, LargeDivisor)
 {
-    const std::string &vs = R"(#version 300 es
+    constexpr char kVS[] = R"(#version 300 es
 layout(location = 0) in vec4 a_position;
 layout(location = 1) in vec4 a_color;
 out vec4 v_color;
@@ -371,7 +495,7 @@ void main()
     v_color = a_color;
 })";
 
-    const std::string &fs = R"(#version 300 es
+    constexpr char kFS[] = R"(#version 300 es
 precision highp float;
 in vec4 v_color;
 out vec4 my_FragColor;
@@ -380,7 +504,7 @@ void main()
     my_FragColor = v_color;
 })";
 
-    ANGLE_GL_PROGRAM(program, vs, fs);
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
     glUseProgram(program);
 
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
@@ -468,22 +592,15 @@ TEST_P(InstancingTestES3, LargestDivisor)
         << "Vertex attrib divisor read was not the same that was passed in.";
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these
-// tests should be run against. We test on D3D9 and D3D11 9_3 because they use special codepaths
-// when attribute zero is instanced, unlike D3D11.
-ANGLE_INSTANTIATE_TEST(InstancingTestAllConfigs,
-                       ES2_D3D9(),
-                       ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
-                       ES2_OPENGL(),
-                       ES2_OPENGLES(),
-                       ES2_VULKAN());
-
-// TODO(jmadill): Figure out the situation with DrawInstanced on FL 9_3
-ANGLE_INSTANTIATE_TEST(InstancingTestNo9_3, ES2_D3D9(), ES2_D3D11());
-
-ANGLE_INSTANTIATE_TEST(InstancingTestPoints, ES2_D3D11(), ES2_D3D11_FL9_3());
-
 ANGLE_INSTANTIATE_TEST(InstancingTestES3, ES3_OPENGL(), ES3_OPENGLES(), ES3_D3D11());
 
 ANGLE_INSTANTIATE_TEST(InstancingTestES31, ES31_OPENGL(), ES31_OPENGLES(), ES31_D3D11());
+
+ANGLE_INSTANTIATE_TEST(InstancingTest,
+                       ES2_D3D9(),
+                       ES2_D3D11(),
+                       ES2_D3D11_FL9_3(),
+                       ES2_OPENGL(3, 0),
+                       ES2_OPENGL(),
+                       ES2_OPENGLES(),
+                       ES2_VULKAN());

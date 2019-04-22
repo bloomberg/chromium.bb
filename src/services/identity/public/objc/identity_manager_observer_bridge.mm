@@ -22,41 +22,24 @@ IdentityManagerObserverBridge::~IdentityManagerObserverBridge() {
 }
 
 void IdentityManagerObserverBridge::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   if ([delegate_ respondsToSelector:@selector(onPrimaryAccountSet:)]) {
     [delegate_ onPrimaryAccountSet:primary_account_info];
   }
 }
 
-void IdentityManagerObserverBridge::OnPrimaryAccountSetWithPassword(
-    const AccountInfo& primary_account_info,
-    const std::string& password) {
-  if ([delegate_ respondsToSelector:@selector(onPrimaryAccountSet:
-                                                     withPassword:)]) {
-    [delegate_ onPrimaryAccountSet:primary_account_info withPassword:password];
-  }
-}
-
 void IdentityManagerObserverBridge::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   if ([delegate_ respondsToSelector:@selector(onPrimaryAccountCleared:)]) {
     [delegate_ onPrimaryAccountCleared:previous_primary_account_info];
   }
 }
 
-void IdentityManagerObserverBridge::OnPrimaryAccountSigninFailed(
-    const GoogleServiceAuthError& error) {
-  if ([delegate_ respondsToSelector:@selector(onPrimaryAccountSigninFailed:)]) {
-    [delegate_ onPrimaryAccountSigninFailed:error];
-  }
-}
-
 void IdentityManagerObserverBridge::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
-  if ([delegate_ respondsToSelector:@selector
-                 (onRefreshTokenUpdatedForAccount:valid:)]) {
-    [delegate_ onRefreshTokenUpdatedForAccount:account_info valid:is_valid];
+    const CoreAccountInfo& account_info) {
+  if ([delegate_
+          respondsToSelector:@selector(onRefreshTokenUpdatedForAccount:)]) {
+    [delegate_ onRefreshTokenUpdatedForAccount:account_info];
   }
 }
 
@@ -75,16 +58,12 @@ void IdentityManagerObserverBridge::OnRefreshTokensLoaded() {
 }
 
 void IdentityManagerObserverBridge::OnAccountsInCookieUpdated(
-    const std::vector<AccountInfo>& accounts) {
-  if ([delegate_ respondsToSelector:@selector(onAccountsInCookieUpdated:)]) {
-    [delegate_ onAccountsInCookieUpdated:accounts];
-  }
-}
-
-void IdentityManagerObserverBridge::OnStartBatchOfRefreshTokenStateChanges() {
-  if ([delegate_ respondsToSelector:@selector
-                 (onStartBatchOfRefreshTokenStateChanges)]) {
-    [delegate_ onStartBatchOfRefreshTokenStateChanges];
+    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const GoogleServiceAuthError& error) {
+  if ([delegate_ respondsToSelector:@selector(onAccountsInCookieUpdated:
+                                                                  error:)]) {
+    [delegate_ onAccountsInCookieUpdated:accounts_in_cookie_jar_info
+                                   error:error];
   }
 }
 

@@ -59,10 +59,6 @@
   If you need to pass arguments to run_web_tests.py, use
     -wt='arguments to run_web_tests.py e.g. test directories'
 
-  Note: Generating coverage over entire suite can take minimum of 3 hours due to
-  --batch-size=1 argument added by default. This is needed since otherwise any
-  crash will cause us to lose coverage from prior successful test runs.
-
   For more options, please refer to tools/code_coverage/coverage.py -h.
 
   For an overview of how code coverage works in Chromium, please refer to
@@ -114,9 +110,6 @@ BUILD_DIR = None
 # Output directory for generated artifacts, the value is parsed from command
 # line arguemnts.
 OUTPUT_DIR = None
-
-# Default number of jobs used to build when goma is configured and enabled.
-DEFAULT_GOMA_JOBS = 100
 
 # Name of the file extension for profraw data files.
 PROFRAW_FILE_EXTENSION = 'profraw'
@@ -291,21 +284,9 @@ def _BuildTargets(targets, jobs_count):
     jobs_count: Number of jobs to run in parallel for compilation. If None, a
                 default value is derived based on CPUs availability.
   """
-
-  def _IsGomaConfigured():
-    """Returns True if goma is enabled in the gn build args.
-
-    Returns:
-      A boolean indicates whether goma is configured for building or not.
-    """
-    build_args = _GetBuildArgs()
-    return 'use_goma' in build_args and build_args['use_goma'] == 'true'
-
   logging.info('Building %s.', str(targets))
-  if jobs_count is None and _IsGomaConfigured():
-    jobs_count = DEFAULT_GOMA_JOBS
 
-  subprocess_cmd = ['ninja', '-C', BUILD_DIR]
+  subprocess_cmd = ['autoninja', '-C', BUILD_DIR]
   if jobs_count is not None:
     subprocess_cmd.append('-j' + str(jobs_count))
 
@@ -785,7 +766,7 @@ def _GetCommandForWebTests(arguments):
       'third_party/blink/tools/run_web_tests.py',
       '--additional-driver-flag=--no-sandbox',
       '--additional-env-var=LLVM_PROFILE_FILE=%s' %
-      LLVM_PROFILE_FILE_PATH_SUBSTITUTION, '--batch-size=1',
+      LLVM_PROFILE_FILE_PATH_SUBSTITUTION,
       '--child-processes=%d' % max(1, int(multiprocessing.cpu_count() / 2)),
       '--disable-breakpad', '--no-show-results', '--skip-failing-tests',
       '--target=%s' % os.path.basename(BUILD_DIR), '--time-out-ms=30000'
@@ -816,6 +797,16 @@ def _SetupOutputDir():
 
   # Creates |OUTPUT_DIR| and its platform sub-directory.
   os.makedirs(coverage_utils.GetCoverageReportRootDirPath(OUTPUT_DIR))
+
+
+def _SetMacXcodePath():
+  """Set DEVELOPER_DIR to the path to hermetic Xcode.app on Mac OS X."""
+  if sys.platform != 'darwin':
+    return
+
+  xcode_path = os.path.join(SRC_ROOT_PATH, 'build', 'mac_files', 'Xcode.app')
+  if os.path.exists(xcode_path):
+    os.environ['DEVELOPER_DIR'] = xcode_path
 
 
 def _ParseCommandArguments():
@@ -913,8 +904,8 @@ def _ParseCommandArguments():
       type=int,
       default=None,
       help='Run N jobs to build in parallel. If not specified, a default value '
-      'will be derived based on CPUs availability. Please refer to '
-      '\'ninja -h\' for more details.')
+      'will be derived based on CPUs and goma availability. Please refer to '
+      '\'autoninja -h\' for more details.')
 
   arg_parser.add_argument(
       '-v',
@@ -1004,6 +995,11 @@ def Main():
     # An input prof-data file is already provided. Just calculate binary paths.
     profdata_file_path = args.profdata_file
     binary_paths = _GetBinaryPathsFromTargets(args.targets, args.build_dir)
+
+  # DEVELOPER_DIR needs to be set when Xcode isn't in a standard location
+  # and xcode-select wasn't run.  This path needs to be set prior to calling
+  # otool which happens on mac in coverage_utils.GetSharedLibraries().
+  _SetMacXcodePath()
 
   binary_paths.extend(
       coverage_utils.GetSharedLibraries(binary_paths, BUILD_DIR))

@@ -28,9 +28,7 @@ namespace contextual_suggestions {
 // body protos and parsing the response body protos.
 class ContextualSuggestionsFetch {
  public:
-  ContextualSuggestionsFetch(const GURL& url,
-                             const std::string& bcp_language,
-                             bool include_cookies);
+  ContextualSuggestionsFetch(const GURL& url, const std::string& bcp_language);
   ~ContextualSuggestionsFetch();
 
   // Get the url used to fetch suggestions.
@@ -61,8 +59,6 @@ class ContextualSuggestionsFetch {
 
   // Identifier for the spoken language in BCP47 format.
   const std::string bcp_language_code_;
-
-  bool include_cookies_ = false;
 
   // The loader for downloading the suggestions. Only non-null if a fetch is
   // currently ongoing.

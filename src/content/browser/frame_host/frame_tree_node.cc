@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include <queue>
+#include <unordered_map>
 #include <utility>
 
 #include "base/feature_list.h"
@@ -17,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -34,7 +36,7 @@ namespace {
 
 // This is a global map between frame_tree_node_ids and pointers to
 // FrameTreeNodes.
-typedef base::hash_map<int, FrameTreeNode*> FrameTreeNodeIdMap;
+typedef std::unordered_map<int, FrameTreeNode*> FrameTreeNodeIdMap;
 
 base::LazyInstance<FrameTreeNodeIdMap>::DestructorAtExit
     g_frame_tree_node_id_map = LAZY_INSTANCE_INITIALIZER;
@@ -137,6 +139,8 @@ FrameTreeNode::~FrameTreeNode() {
   // Remove the children.
   current_frame_host()->ResetChildren();
 
+  current_frame_host()->ResetLoadingState();
+
   // If the removed frame was created by a script, then its history entry will
   // never be reused - we can save some memory by removing the history entry.
   // See also https://crbug.com/784356.
@@ -166,6 +170,12 @@ FrameTreeNode::~FrameTreeNode() {
     navigation_request_.reset();
     DidStopLoading();
   }
+
+  // ~SiteProcessCountTracker DCHECKs in some tests if CleanUpNavigation is not
+  // called last. Ideally this would be closer to (possible before) the
+  // ResetLoadingState() call above.
+  render_manager_.CleanUpNavigation();
+  DCHECK(!IsLoading());
 }
 
 void FrameTreeNode::AddObserver(Observer* observer) {
@@ -189,14 +199,10 @@ void FrameTreeNode::ResetForNavigation() {
   // frame.
   UpdateFramePolicyHeaders(blink::WebSandboxFlags::kNone, {});
 
-  // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
-  if (IsMainFrame()) {
-    // This frame has had its user activation bits cleared in the renderer
-    // before arriving here. We just need to clear them here and in the other
-    // renderer processes that may have a reference to this frame.
-    UpdateUserActivationState(
-        blink::UserActivationUpdateType::kClearActivation);
-  }
+  // This frame has had its user activation bits cleared in the renderer
+  // before arriving here. We just need to clear them here and in the other
+  // renderer processes that may have a reference to this frame.
+  UpdateUserActivationState(blink::UserActivationUpdateType::kClearActivation);
 }
 
 void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
@@ -549,14 +555,16 @@ void FrameTreeNode::BeforeUnloadCanceled() {
 }
 
 bool FrameTreeNode::NotifyUserActivation() {
-  for (FrameTreeNode* node = this; node; node = node->parent())
+  for (FrameTreeNode* node = this; node; node = node->parent()) {
+    if (!node->user_activation_state_.HasBeenActive() &&
+        node->current_frame_host())
+      node->current_frame_host()->DidReceiveFirstUserActivation();
     node->user_activation_state_.Activate();
+  }
   replication_state_.has_received_user_gesture = true;
 
-  // TODO(mustaq): The following block relaxes UAv2 a bit to make it slightly
-  // closer to the old (v1) model, to address a Hangout regression.  We will
-  // remove this after implementing a mechanism to delegate activation to
-  // subframes (https://crbug.com/728334)
+  // See the "Same-origin Visibility" section in |UserActivationState| class
+  // doc.
   if (base::FeatureList::IsEnabled(features::kUserActivationV2) &&
       base::FeatureList::IsEnabled(
           features::kUserActivationSameOriginVisibility)) {
@@ -570,6 +578,11 @@ bool FrameTreeNode::NotifyUserActivation() {
     }
   }
 
+  NavigationControllerImpl* controller =
+      static_cast<NavigationControllerImpl*>(navigator()->GetController());
+  if (controller)
+    controller->NotifyUserActivation();
+
   return true;
 }
 
@@ -581,9 +594,6 @@ bool FrameTreeNode::ConsumeTransientUserActivation() {
 }
 
 bool FrameTreeNode::ClearUserActivation() {
-  // Only received for a new main frame.
-  // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
-  DCHECK(IsMainFrame());
   for (FrameTreeNode* node : frame_tree()->SubtreeNodes(this))
     node->user_activation_state_.Clear();
   return true;
@@ -649,6 +659,13 @@ void FrameTreeNode::UpdateFramePolicyHeaders(
     render_manager()->OnDidSetFramePolicyHeaders();
 }
 
+// TODO(lanwei): Also transfer user activation in the frame trees in other
+// (i.e non-source non-destination) renderer processes. crbug.com/928838.
+void FrameTreeNode::TransferActivationFrom(FrameTreeNode* source) {
+  if (source)
+    user_activation_state_.TransferFrom(source->user_activation_state_);
+}
+
 void FrameTreeNode::PruneChildFrameNavigationEntries(
     NavigationEntryImpl* entry) {
   for (size_t i = 0; i < current_frame_host()->child_count(); ++i) {
@@ -659,6 +676,14 @@ void FrameTreeNode::PruneChildFrameNavigationEntries(
     } else {
       child->PruneChildFrameNavigationEntries(entry);
     }
+  }
+}
+
+void FrameTreeNode::SetOpenerFeaturePolicyState(
+    const blink::FeaturePolicy::FeatureState& feature_state) {
+  DCHECK(IsMainFrame());
+  if (base::FeatureList::IsEnabled(features::kFeaturePolicyForSandbox)) {
+    replication_state_.opener_feature_state = feature_state;
   }
 }
 

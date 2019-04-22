@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_VIEW_HOST_FACTORY_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_VIEW_HOST_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 
 class Browser;
@@ -22,11 +24,13 @@ class ExtensionViewHostFactory {
   // Creates a new ExtensionHost with its associated view, grouping it in the
   // appropriate SiteInstance (and therefore process) based on the URL and
   // profile.
-  static ExtensionViewHost* CreatePopupHost(const GURL& url, Browser* browser);
+  static std::unique_ptr<ExtensionViewHost> CreatePopupHost(const GURL& url,
+                                                            Browser* browser);
 
   // Some dialogs may not be associated with a particular browser window and
   // hence only require a |profile|.
-  static ExtensionViewHost* CreateDialogHost(const GURL& url, Profile* profile);
+  static std::unique_ptr<ExtensionViewHost> CreateDialogHost(const GURL& url,
+                                                             Profile* profile);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewHostFactory);

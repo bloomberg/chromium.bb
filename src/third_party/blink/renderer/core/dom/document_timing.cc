@@ -14,7 +14,7 @@ namespace blink {
 
 DocumentTiming::DocumentTiming(Document& document) : document_(document) {}
 
-void DocumentTiming::Trace(blink::Visitor* visitor) {
+void DocumentTiming::Trace(Visitor* visitor) {
   visitor->Trace(document_);
 }
 

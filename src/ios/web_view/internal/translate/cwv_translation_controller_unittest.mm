@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
+#include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
@@ -24,6 +25,7 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -39,9 +41,11 @@ NSString* const kTestPageHost = @"www.chromium.org";
 
 class CWVTranslationControllerTest : public PlatformTest {
  protected:
-  CWVTranslationControllerTest() : browser_state_(/*off_the_record=*/false) {
-    l10n_util::OverrideLocaleWithCocoaLocale();
-
+  CWVTranslationControllerTest()
+      : browser_state_(
+            // Using comma-operator to perform required initialization before
+            // creating browser_state.
+            (InitializeLocaleAndResources(), /*off_the_record=*/false)) {
     web_state_.SetBrowserState(&browser_state_);
     auto test_navigation_manager =
         std::make_unique<web::TestNavigationManager>();
@@ -49,6 +53,9 @@ class CWVTranslationControllerTest : public PlatformTest {
     CRWTestJSInjectionReceiver* injection_receiver =
         [[CRWTestJSInjectionReceiver alloc] init];
     web_state_.SetJSInjectionReceiver(injection_receiver);
+    language::IOSLanguageDetectionTabHelper::CreateForWebState(
+        &web_state_,
+        /*url_language_histogram=*/nullptr);
     translate_client_ = std::make_unique<FakeWebViewTranslateClient>(
         &web_state_, /*page_lang=*/"en");
     translation_controller_ = [[CWVTranslationController alloc]
@@ -59,6 +66,7 @@ class CWVTranslationControllerTest : public PlatformTest {
 
   ~CWVTranslationControllerTest() override {
     translate_prefs_->ResetToDefaults();
+    ui::ResourceBundle::CleanupSharedInstance();
   }
 
   // Checks if |lang_code| matches the OCMArg's CWVTranslationLanguage.
@@ -66,6 +74,13 @@ class CWVTranslationControllerTest : public PlatformTest {
     return [OCMArg checkWithBlock:^BOOL(CWVTranslationLanguage* lang) {
       return [lang.languageCode isEqualToString:lang_code];
     }];
+  }
+
+  static void InitializeLocaleAndResources() {
+    l10n_util::OverrideLocaleWithCocoaLocale();
+    ui::ResourceBundle::InitSharedInstanceWithLocale(
+        l10n_util::GetLocaleOverride(), /*delegate=*/nullptr,
+        ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   }
 
   web::TestWebThreadBundle web_thread_bundle_;

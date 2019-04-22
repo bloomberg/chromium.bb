@@ -372,7 +372,9 @@ TEST_P(ProductStateTest, InitializeMultiInstall) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(UserLevel, ProductStateTest, ::testing::Values(false));
-INSTANTIATE_TEST_CASE_P(SystemLevel, ProductStateTest, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(UserLevel, ProductStateTest, ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(SystemLevel,
+                         ProductStateTest,
+                         ::testing::Values(true));
 
 }  // namespace installer

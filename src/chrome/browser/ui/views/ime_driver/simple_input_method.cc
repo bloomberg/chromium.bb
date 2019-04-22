@@ -10,12 +10,17 @@ SimpleInputMethod::SimpleInputMethod() {}
 
 SimpleInputMethod::~SimpleInputMethod() {}
 
-void SimpleInputMethod::OnTextInputTypeChanged(
-    ui::TextInputType text_input_type) {
+void SimpleInputMethod::OnTextInputStateChanged(
+    ws::mojom::TextInputStatePtr text_input_state) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void SimpleInputMethod::OnCaretBoundsChanged(const gfx::Rect& caret_bounds) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void SimpleInputMethod::OnTextInputClientDataChanged(
+    ws::mojom::TextInputClientDataPtr data) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 

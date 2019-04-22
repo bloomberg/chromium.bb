@@ -28,6 +28,7 @@
 namespace blink {
 
 class Frame;
+struct FrameLoadRequest;
 
 class CORE_EXPORT FrameTree final {
   DISALLOW_NEW();
@@ -58,7 +59,18 @@ class CORE_EXPORT FrameTree final {
   bool IsDescendantOf(const Frame* ancestor) const;
   Frame* TraverseNext(const Frame* stay_within = nullptr) const;
 
-  Frame* Find(const AtomicString& name) const;
+  // https://html.spec.whatwg.org/#the-rules-for-choosing-a-browsing-context-given-a-browsing-context-name
+  struct FindResult {
+    STACK_ALLOCATED();
+
+   public:
+    FindResult(Frame* f, bool is_new) : frame(f), new_window(is_new) {}
+    Member<Frame> frame;
+    bool new_window;
+  };
+  FindResult FindFrameForNavigation(FrameLoadRequest&) const;
+  FindResult FindOrCreateFrameForNavigation(FrameLoadRequest&) const;
+
   unsigned ChildCount() const;
 
   Frame* ScopedChild(unsigned index) const;
@@ -74,6 +86,8 @@ class CORE_EXPORT FrameTree final {
   void Trace(blink::Visitor*);
 
  private:
+  Frame* FindFrameForNavigationInternal(FrameLoadRequest&) const;
+
   Member<Frame> this_frame_;
 
   AtomicString name_;  // The actual frame name (may be empty).

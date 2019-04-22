@@ -6,18 +6,18 @@ concepts, such as DOM elements and layout objects.
 
 This code is owned by the [paint team][paint-team-site].
 
-Slimming Paint v2 is currently being implemented. Unlike Slimming Paint v1, SPv2
-represents its paint artifact not as a flat display list, but as a list of
-drawings, and a list of paint chunks, stored together.
+CompositeAfterPaint is currently being implemented. Unlike Slimming Paint v1,
+CompositeAfterPaint represents its paint artifact not as a flat display list,
+but as a list of drawings, and a list of paint chunks, stored together.
 
-This document explains the SPv2 world as it develops, not the SPv1 world it
-replaces.
+This document explains the CompositeAfterPaint (CAP) world as it develops, not
+the SPv1 world it replaces.
 
-[paint-team-site]: https://www.chromium.org/developers/paint-team
+[paint-team-site]: https://www.chromium.org/teams/paint-team
 
 ## Paint artifact
 
-The SPv2 [paint artifact](paint_artifact.h) consists of a list of display items
+The CAP [paint artifact](paint_artifact.h) consists of a list of display items
 in paint order (ideally mostly or all drawings), partitioned into *paint chunks*
 which define certain *paint properties* which affect how the content should be
 drawn or composited.
@@ -142,7 +142,7 @@ images.
 *** note
 It is illegal for there to be two display items with the same ID in a display
 item list, except for display items that are marked uncacheable
-(see [DisplayItemCacheSkipper](DisplayItemCacheSkipper.h)).
+(see [DisplayItemCacheSkipper](display_item_cache_skipper.h)).
 ***
 
 Generally, clients of this code should use stack-allocated recorder classes to
@@ -150,19 +150,19 @@ emit display items to a `PaintController` (using `GraphicsContext`).
 
 ### Standalone display items
 
-#### [DrawingDisplayItem](DrawingDisplayItem.h)
+#### [DrawingDisplayItem](drawing_display_item.h)
 
 Holds a `PaintRecord` which contains the paint operations required to draw some
 atom of content.
 
-#### [ForeignLayerDisplayItem](ForeignLayerDisplayItem.h)
+#### [ForeignLayerDisplayItem](foreign_layer_display_item.h)
 
 Draws an atom of content, but using a `cc::Layer` produced by some agent outside
 of the normal Blink paint system (for example, a plugin). Since they always map
 to a `cc::Layer`, they are always the only display item in their paint chunk,
 and are ineligible for squashing with other layers.
 
-#### [ScrollHitTestDisplayItem](ScrollHitTestDisplayItem.h)
+#### [ScrollHitTestDisplayItem](scroll_hit_test_display_item.h)
 
 Placeholder for creating a cc::Layer for scrolling in paint order. Hit testing
 in the compositor requires both property trees (scroll nodes) and a scrollable
@@ -199,9 +199,9 @@ module using `PaintController` API.
 
 ## Paint artifact compositor
 
-The [`PaintArtifactCompositor`](paint_artifact_compositor.h) is responsible for
-consuming the `PaintArtifact` produced by the `PaintController`, and converting
-it into a form suitable for the compositor to consume.
+[`PaintArtifactCompositor`](../compositing/paint_artifact_compositor.h) is
+responsible for consuming the `PaintArtifact` produced by the `PaintController`,
+and converting it into a form suitable for the compositor to consume.
 
 At present, `PaintArtifactCompositor` creates a cc layer tree, with one layer
 for each paint chunk. In the future, it is expected that we will use heuristics

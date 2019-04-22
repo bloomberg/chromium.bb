@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/svg/svg_fe_func_r_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_component_transfer.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -35,7 +36,7 @@ inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(
     Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEComponentTransferTag,
                                            document),
-      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)) {
+      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)) {
   AddToPropertyMap(in1_);
 }
 
@@ -81,8 +82,8 @@ FilterEffect* SVGFEComponentTransferElement::Build(
       alpha = func_a->TransferFunction();
   }
 
-  FilterEffect* effect =
-      FEComponentTransfer::Create(filter, red, green, blue, alpha);
+  auto* effect = MakeGarbageCollected<FEComponentTransfer>(filter, red, green,
+                                                           blue, alpha);
   effect->InputEffects().push_back(input1);
   return effect;
 }

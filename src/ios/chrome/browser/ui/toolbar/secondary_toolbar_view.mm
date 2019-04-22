@@ -14,10 +14,15 @@
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_collapsing.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#include "ui/gfx/ios/uikit_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+const CGFloat kToolsMenuOffset = -7;
+}  // namespace
 
 @interface SecondaryToolbarView ()<ToolbarCollapsing>
 // Factory used to create the buttons.
@@ -129,10 +134,22 @@
   self.tabGridButton = [self.buttonFactory tabGridButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
 
+  // Move the tools menu button such as it looks visually balanced with the
+  // button on the other side of the toolbar.
+  NSInteger textDirection = base::i18n::IsRTL() ? -1 : 1;
+  self.toolsMenuButton.transform =
+      CGAffineTransformMakeTranslation(textDirection * kToolsMenuOffset, 0);
+
   self.allButtons = @[
     self.backButton, self.forwardButton, self.omniboxButton, self.tabGridButton,
     self.toolsMenuButton
   ];
+
+  UIView* separator = [[UIView alloc] init];
+  separator.backgroundColor = [UIColor colorWithWhite:0
+                                                alpha:kToolbarSeparatorAlpha];
+  separator.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:separator];
 
   self.stackView =
       [[UIStackView alloc] initWithArrangedSubviews:self.allButtons];
@@ -152,6 +169,13 @@
     [self.stackView.topAnchor
         constraintEqualToAnchor:self.topAnchor
                        constant:kBottomButtonsBottomMargin],
+
+    [separator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [separator.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [separator.bottomAnchor constraintEqualToAnchor:self.topAnchor],
+    [separator.heightAnchor
+        constraintEqualToConstant:ui::AlignValueToUpperPixel(
+                                      kToolbarSeparatorHeight)],
   ]];
 }
 

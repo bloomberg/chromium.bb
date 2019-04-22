@@ -7,15 +7,16 @@
 #include <utility>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/session/arc_bridge_service.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/path.h"
 
 namespace app_list {
 
@@ -59,7 +60,7 @@ class AvatarImageSource : public gfx::CanvasImageSource {
  private:
   // gfx::CanvasImageSource overrides:
   void Draw(gfx::Canvas* canvas) override {
-    gfx::Path circular_mask;
+    SkPath circular_mask;
     circular_mask.addCircle(SkIntToScalar(radius_), SkIntToScalar(radius_),
                             SkIntToScalar(radius_));
     canvas->ClipPath(circular_mask, true);
@@ -122,6 +123,18 @@ void ArcAppDataSearchResult::ApplyIcon(const gfx::ImageSkia& icon) {
     return;
   }
   SetIcon(icon);
+}
+
+SearchResultType ArcAppDataSearchResult::GetSearchResultType() const {
+  switch (data_->type) {
+    case arc::mojom::AppDataResultType::PERSON:
+      return APP_DATA_RESULT_PERSON;
+    case arc::mojom::AppDataResultType::NOTE_DOCUMENT:
+      return APP_DATA_RESULT_NOTE_DOCUMENT;
+    default:
+      NOTREACHED();
+      return SEARCH_RESULT_TYPE_BOUNDARY;
+  }
 }
 
 }  // namespace app_list

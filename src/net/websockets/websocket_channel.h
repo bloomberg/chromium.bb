@@ -33,12 +33,12 @@ namespace net {
 
 class HttpRequestHeaders;
 class IOBuffer;
+class IPEndPoint;
 class NetLogWithSource;
 class URLRequest;
 class URLRequestContext;
 struct WebSocketHandshakeRequestInfo;
 struct WebSocketHandshakeResponseInfo;
-class WebSocketHandshakeStreamCreateHelper;
 
 // Transport-independent implementation of WebSockets. Implements protocol
 // semantics that do not depend on the underlying transport. Provides the
@@ -51,7 +51,7 @@ class NET_EXPORT WebSocketChannel {
   // WebSocketStream::CreateAndConnectStream().
   typedef base::Callback<std::unique_ptr<WebSocketStreamRequest>(
       const GURL&,
-      std::unique_ptr<WebSocketHandshakeStreamCreateHelper>,
+      const std::vector<std::string>&,
       const url::Origin&,
       const GURL&,
       const HttpRequestHeaders&,
@@ -213,9 +213,9 @@ class NET_EXPORT WebSocketChannel {
 
   // Authentication request from WebSocketStream::CreateAndConnectStream().
   // Forwards the request to the event interface.
-  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+  int OnAuthRequired(const AuthChallengeInfo& auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
-                     const HostPortPair& host_port_pair,
+                     const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials);
 

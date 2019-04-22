@@ -11,7 +11,7 @@
 #include "ash/frame/header_view.h"
 #include "ash/public/cpp/menu_utils.h"
 #include "ash/public/interfaces/menu.mojom.h"
-#include "ash/shell_observer.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -40,7 +40,7 @@ class NonClientFrameViewAshImmersiveHelper;
 // the top of the screen. See also views::CustomFrameView and
 // BrowserNonClientFrameViewAsh.
 class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
-                                         public ShellObserver,
+                                         public OverviewObserver,
                                          public SplitViewController::Observer,
                                          public views::ContextMenuController,
                                          public ui::SimpleMenuModel::Delegate {
@@ -95,7 +95,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override;
   int NonClientHitTest(const gfx::Point& point) override;
-  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override;
+  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override;
   void ResetWindowControls() override;
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
@@ -116,7 +116,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // header of v2 and ARC apps.
   virtual void SetShouldPaintHeader(bool paint);
 
-  // ShellObserver:
+  // OverviewObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
 
@@ -125,9 +125,9 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
                                SplitViewController::State state) override;
 
   // views::ContextMenuController:
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;
@@ -153,6 +153,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   friend class NonClientFrameViewAshSizeLock;
   friend class NonClientFrameViewAshTestWidgetDelegate;
   friend class TestWidgetConstraintsDelegate;
+  friend class WindowServiceDelegateImplTest;
 
   // views::NonClientFrameView:
   bool DoesIntersectRect(const views::View* target,
@@ -178,9 +179,9 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // Track whether the device is in overview mode. Set this to true when
   // overview mode started and false when overview mode finished. Use this to
   // check whether we should paint when splitview state changes instead of
-  // Shell::Get()->window_selector_controller()->IsSelecting() because the
+  // Shell::Get()->overview_controller()->IsSelecting() because the
   // later actually may be still be false after overview mode has started.
-  bool in_overview_mode_ = false;
+  bool in_overview_ = false;
 
   // Helpers for the context menu users will see when right-clicking on
   // |header_view_|.

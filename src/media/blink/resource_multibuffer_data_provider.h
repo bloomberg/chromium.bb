@@ -22,7 +22,6 @@
 
 namespace blink {
 class WebAssociatedURLLoader;
-struct WebAssociatedURLLoaderOptions;
 }  // namespace blink
 
 namespace media {
@@ -53,10 +52,9 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   bool WillFollowRedirect(
       const blink::WebURL& new_url,
       const blink::WebURLResponse& redirect_response) override;
-  void DidSendData(unsigned long long bytesSent,
-                   unsigned long long totalBytesToBeSent) override;
+  void DidSendData(uint64_t bytesSent, uint64_t totalBytesToBeSent) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
-  void DidDownloadData(int data_length) override;
+  void DidDownloadData(uint64_t data_length) override;
   void DidReceiveData(const char* data, int data_length) override;
   void DidReceiveCachedMetadata(const char* data, int dataLength) override;
   void DidFinishLoading() override;
@@ -70,11 +68,6 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
 
   // Callback used when we're asked to fetch data after the end of the file.
   void Terminate();
-
-  // At the end of Start(), we potentially wait for other loaders to
-  // finish, when they do a callback calls this function.
-  void StartLoading(std::unique_ptr<blink::WebURLRequest> request,
-                    const blink::WebAssociatedURLLoaderOptions& options);
 
   // Parse a Content-Range header into its component pieces and return true if
   // each of the expected elements was found & parsed correctly.

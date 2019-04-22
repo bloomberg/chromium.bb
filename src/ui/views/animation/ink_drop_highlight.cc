@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer.h"
@@ -117,10 +118,10 @@ void InkDropHighlight::AnimateFade(AnimationType animation_type,
   // AnimationStartedCallback() returns true.
   ui::CallbackLayerAnimationObserver* animation_observer =
       new ui::CallbackLayerAnimationObserver(
-          base::Bind(&InkDropHighlight::AnimationStartedCallback,
-                     base::Unretained(this), animation_type),
-          base::Bind(&InkDropHighlight::AnimationEndedCallback,
-                     base::Unretained(this), animation_type));
+          base::BindRepeating(&InkDropHighlight::AnimationStartedCallback,
+                              base::Unretained(this), animation_type),
+          base::BindRepeating(&InkDropHighlight::AnimationEndedCallback,
+                              base::Unretained(this), animation_type));
 
   ui::LayerAnimator* animator = layer_->GetAnimator();
   ui::ScopedLayerAnimationSettings animation(animator);

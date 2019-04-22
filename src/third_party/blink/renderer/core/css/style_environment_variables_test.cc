@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/platform/loader/fetch/substitute_data.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -82,9 +82,8 @@ class StyleEnvironmentVariablesTest : public PageTestBase {
   void SimulateNavigation() {
     const KURL& url = KURL(NullURL(), "https://www.example.com");
     GetDocument().GetFrame()->Loader().CommitNavigation(
-        ResourceRequest(url), SubstituteData(SharedBuffer::Create()),
-        ClientRedirectPolicy::kNotClientRedirect,
-        base::UnguessableToken::Create());
+        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
+        nullptr /* extra_data */);
     blink::test::RunPendingTasks();
     ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
   }
@@ -233,13 +232,11 @@ TEST_F(StyleEnvironmentVariablesTest, MultiDocumentInvalidation_FromRoot) {
   InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Create a second page that uses the variable.
-  std::unique_ptr<DummyPageHolder> new_page =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto new_page = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   InitializeTestPageWithVariableNamed(new_page->GetFrame(), kVariableName);
 
   // Create an empty page that does not use the variable.
-  std::unique_ptr<DummyPageHolder> empty_page =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto empty_page = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   empty_page->GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 
@@ -256,8 +253,7 @@ TEST_F(StyleEnvironmentVariablesTest, MultiDocumentInvalidation_FromDocument) {
   InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Create a second page that uses the variable.
-  std::unique_ptr<DummyPageHolder> new_page =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto new_page = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   InitializeTestPageWithVariableNamed(new_page->GetFrame(), kVariableName);
 
   GetDocumentVariables().SetVariable(kVariableName, kVariableTestColor);

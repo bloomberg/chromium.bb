@@ -29,43 +29,33 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_
 
-#include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
-namespace base {
-class SingleThreadTaskRunner;
+namespace WTF {
+class String;
 }
 
 namespace blink {
 
 class WebIDBCallbacks;
 class WebIDBDatabaseCallbacks;
-class WebSecurityOrigin;
-class WebString;
 
 class MODULES_EXPORT WebIDBFactory {
  public:
   virtual ~WebIDBFactory() = default;
 
-  virtual void GetDatabaseInfo(WebIDBCallbacks*,
-                               const WebSecurityOrigin&,
-                               scoped_refptr<base::SingleThreadTaskRunner>) = 0;
-  virtual void GetDatabaseNames(
-      WebIDBCallbacks*,
-      const WebSecurityOrigin&,
-      scoped_refptr<base::SingleThreadTaskRunner>) = 0;
-  virtual void Open(const WebString& name,
-                    long long version,
-                    long long transaction_id,
-                    WebIDBCallbacks*,
-                    WebIDBDatabaseCallbacks*,
-                    const WebSecurityOrigin&,
-                    scoped_refptr<base::SingleThreadTaskRunner>) = 0;
-  virtual void DeleteDatabase(const WebString& name,
-                              WebIDBCallbacks*,
-                              const WebSecurityOrigin&,
-                              bool force_close,
-                              scoped_refptr<base::SingleThreadTaskRunner>) = 0;
+  virtual void GetDatabaseInfo(std::unique_ptr<WebIDBCallbacks>) = 0;
+  virtual void GetDatabaseNames(std::unique_ptr<WebIDBCallbacks>) = 0;
+  virtual void Open(
+      const WTF::String& name,
+      int64_t version,
+      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
+      int64_t transaction_id,
+      std::unique_ptr<WebIDBCallbacks>,
+      std::unique_ptr<WebIDBDatabaseCallbacks>) = 0;
+  virtual void DeleteDatabase(const WTF::String& name,
+                              std::unique_ptr<WebIDBCallbacks>,
+                              bool force_close) = 0;
 };
 
 }  // namespace blink

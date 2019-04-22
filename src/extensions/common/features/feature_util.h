@@ -7,7 +7,7 @@
 
 #include "base/debug/alias.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 
 // Writes |message| to the stack so that it shows up in the minidump, then
@@ -18,14 +18,14 @@
 // This is provided in feature_util because for some reason features are prone
 // to mysterious crashes in named map lookups. For example see crbug.com/365192
 // and crbug.com/461915.
-#define CRASH_WITH_MINIDUMP(message)                                           \
-  {                                                                            \
-    std::string message_copy(message);                                         \
-    char minidump[BUFSIZ];                                                     \
-    base::debug::Alias(&minidump);                                             \
-    base::snprintf(minidump, arraysize(minidump), "e::%s:%d:\"%s\"", __FILE__, \
-                   __LINE__, message_copy.c_str());                            \
-    LOG(FATAL) << message_copy;                                                \
+#define CRASH_WITH_MINIDUMP(message)                                  \
+  {                                                                   \
+    std::string message_copy(message);                                \
+    char minidump[BUFSIZ];                                            \
+    base::debug::Alias(&minidump);                                    \
+    base::snprintf(minidump, base::size(minidump), "e::%s:%d:\"%s\"", \
+                   __FILE__, __LINE__, message_copy.c_str());         \
+    LOG(FATAL) << message_copy;                                       \
   }
 
 namespace extensions {

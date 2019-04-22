@@ -10,11 +10,10 @@
 
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "url/origin.h"
 
 namespace content {
-
 namespace background_fetch {
 
 // Deletes Background Fetch registration entries from the database.
@@ -39,6 +38,7 @@ class DeleteRegistrationTask : public background_fetch::DatabaseTask {
                              blink::ServiceWorkerStatusCode status);
 
   void DidDeleteCache(base::OnceClosure done_closure,
+                      int64_t trace_id,
                       blink::mojom::CacheStorageError error);
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
@@ -56,7 +56,6 @@ class DeleteRegistrationTask : public background_fetch::DatabaseTask {
 };
 
 }  // namespace background_fetch
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_DELETE_REGISTRATION_TASK_H_

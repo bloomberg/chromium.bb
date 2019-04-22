@@ -24,6 +24,9 @@ class Size;
 
 namespace views {
 
+class CursorManagerOwner;
+class DesktopScreenPositionClient;
+
 namespace test {
 class RemoteViewProviderTestApi;
 }
@@ -52,8 +55,7 @@ class RemoteViewProvider : public aura::EmbedRootDelegate {
   // Optional callbacks to be invoked when embed or unembed happens.
   using OnEmbedCallback = base::RepeatingCallback<void(aura::Window* embedder)>;
   using OnUnembedCallback = base::RepeatingClosure;
-  void SetCallbacks(const OnEmbedCallback& on_embed,
-                    const OnUnembedCallback& on_unembed);
+  void SetCallbacks(OnEmbedCallback on_embed, OnUnembedCallback on_unembed);
 
  private:
   friend class test::RemoteViewProviderTestApi;
@@ -89,6 +91,12 @@ class RemoteViewProvider : public aura::EmbedRootDelegate {
 
   // Observes the embeddding window provided by embedder.
   std::unique_ptr<EmbeddingWindowObserver> embedding_window_observer_;
+
+  // Installed on the WindowTreeHost's window. Installing this makes
+  // aura::Window::GetBoundsInScreen() work for any descendants.
+  std::unique_ptr<DesktopScreenPositionClient> screen_position_client_;
+
+  std::unique_ptr<CursorManagerOwner> cursor_manager_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteViewProvider);
 };

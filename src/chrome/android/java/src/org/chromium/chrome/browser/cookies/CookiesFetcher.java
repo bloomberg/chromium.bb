@@ -10,6 +10,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -150,7 +151,7 @@ public class CookiesFetcher {
      * Delete the cookies file. Called when we detect that all incognito tabs have been closed.
      */
     private static void scheduleDeleteCookiesFile() {
-        new AsyncTask<Void>() {
+        new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
                 File cookiesFile = new File(fetchFileName());
@@ -161,8 +162,7 @@ public class CookiesFetcher {
                 }
                 return null;
             }
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     @CalledByNative
@@ -177,15 +177,14 @@ public class CookiesFetcher {
     private static void onCookieFetchFinished(final CanonicalCookie[] cookies) {
         // Cookies fetching requires operations with the profile and must be
         // done in the main thread. Once that is done, do the save to disk
-        // part in {@link AsyncTask} to avoid strict mode violations.
-        new AsyncTask<Void>() {
+        // part in {@link BackgroundOnlyAsyncTask} to avoid strict mode violations.
+        new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
                 saveFetchedCookiesToDisk(cookies);
                 return null;
             }
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private static void saveFetchedCookiesToDisk(CanonicalCookie[] cookies) {

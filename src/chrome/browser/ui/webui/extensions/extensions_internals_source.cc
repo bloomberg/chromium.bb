@@ -82,9 +82,41 @@ const char* LocationToString(extensions::Manifest::Location loc) {
   return "";
 }
 
+base::Value CreationFlagsToList(int creation_flags) {
+  base::Value flags_value(base::Value::Type::LIST);
+  if (creation_flags & extensions::Extension::NO_FLAGS)
+    flags_value.GetList().emplace_back("NO_FLAGS");
+  if (creation_flags & extensions::Extension::REQUIRE_KEY)
+    flags_value.GetList().emplace_back("REQUIRE_KEY");
+  if (creation_flags & extensions::Extension::REQUIRE_MODERN_MANIFEST_VERSION)
+    flags_value.GetList().emplace_back("REQUIRE_MODERN_MANIFEST_VERSION");
+  if (creation_flags & extensions::Extension::ALLOW_FILE_ACCESS)
+    flags_value.GetList().emplace_back("ALLOW_FILE_ACCESS");
+  if (creation_flags & extensions::Extension::FROM_WEBSTORE)
+    flags_value.GetList().emplace_back("FROM_WEBSTORE");
+  if (creation_flags & extensions::Extension::FROM_BOOKMARK)
+    flags_value.GetList().emplace_back("FROM_BOOKMARK");
+  if (creation_flags & extensions::Extension::FOLLOW_SYMLINKS_ANYWHERE)
+    flags_value.GetList().emplace_back("FOLLOW_SYMLINKS_ANYWHERE");
+  if (creation_flags & extensions::Extension::ERROR_ON_PRIVATE_KEY)
+    flags_value.GetList().emplace_back("ERROR_ON_PRIVATE_KEY");
+  if (creation_flags & extensions::Extension::WAS_INSTALLED_BY_DEFAULT)
+    flags_value.GetList().emplace_back("WAS_INSTALLED_BY_DEFAULT");
+  if (creation_flags & extensions::Extension::REQUIRE_PERMISSIONS_CONSENT)
+    flags_value.GetList().emplace_back("REQUIRE_PERMISSIONS_CONSENT");
+  if (creation_flags & extensions::Extension::IS_EPHEMERAL)
+    flags_value.GetList().emplace_back("IS_EPHEMERAL");
+  if (creation_flags & extensions::Extension::WAS_INSTALLED_BY_OEM)
+    flags_value.GetList().emplace_back("WAS_INSTALLED_BY_OEM");
+  if (creation_flags & extensions::Extension::MAY_BE_UNTRUSTED)
+    flags_value.GetList().emplace_back("MAY_BE_UNTRUSTED");
+  return flags_value;
+}
+
 // The JSON we generate looks like this:
 //
 // [ {
+//    "creation_flags": [ "ALLOW_FILE_ACCESS", "FROM_WEBSTORE" ],
 //    "event_listeners": {
 //       "count": 2,
 //       "events": [ {
@@ -113,6 +145,8 @@ const char* LocationToString(extensions::Manifest::Location loc) {
 //
 // LIST
 //  DICT
+//    "creation_flags": LIST
+//      STRING
 //    "event_listeners": DICT
 //      "count": INT
 //      "listeners": LIST
@@ -142,6 +176,7 @@ constexpr base::StringPiece kEventNameKey = "event_name";
 constexpr base::StringPiece kEventsListenersKey = "event_listeners";
 constexpr base::StringPiece kExtraDataKey = "extra_data";
 constexpr base::StringPiece kFilterKey = "filter";
+constexpr base::StringPiece kInternalsCreationFlagsKey = "creation_flags";
 constexpr base::StringPiece kInternalsIdKey = "id";
 constexpr base::StringPiece kInternalsNameKey = "name";
 constexpr base::StringPiece kInternalsVersionKey = "version";
@@ -268,6 +303,8 @@ std::string ExtensionsInternalsSource::WriteToString() const {
   for (const auto& extension : *extensions) {
     base::Value extension_data(base::Value::Type::DICTIONARY);
     extension_data.SetKey(kInternalsIdKey, base::Value(extension->id()));
+    extension_data.SetKey(kInternalsCreationFlagsKey,
+                          CreationFlagsToList(extension->creation_flags()));
     extension_data.SetKey(
         kKeepaliveKey, FormatKeepaliveData(process_manager, extension.get()));
     extension_data.SetKey(kLocationKey,

@@ -16,8 +16,6 @@ jumbo_static_library("core") {
     "insecure_input_event_data.h",
     "security_state.cc",
     "security_state.h",
-    "security_state_ui.cc",
-    "security_state_ui.h",
   ]
 
   public_deps = [

@@ -36,6 +36,8 @@ class SyncMetadataStoreChangeList : public MetadataChangeList {
   void ClearMetadata(const std::string& storage_key) override;
   base::Optional<syncer::ModelError> TakeError();
 
+  const SyncMetadataStore* GetMetadataStoreForTesting() const;
+
  private:
   // The metadata store to store metadata in; always outlives |this|.
   SyncMetadataStore* store_;

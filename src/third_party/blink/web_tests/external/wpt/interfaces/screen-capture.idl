@@ -4,19 +4,26 @@
 // Source: Screen Capture (https://w3c.github.io/mediacapture-screen-share/)
 
 partial interface MediaDevices {
-    Promise<MediaStream> getDisplayMedia(optional MediaStreamConstraints constraints);
+    Promise<MediaStream> getDisplayMedia(optional DisplayMediaStreamConstraints constraints);
+};
+
+dictionary DisplayMediaStreamConstraints {
+    (boolean or MediaTrackConstraints) video = true;
+    (boolean or MediaTrackConstraints) audio = false;
 };
 
 partial dictionary MediaTrackSupportedConstraints {
              boolean displaySurface = true;
              boolean logicalSurface = true;
              boolean cursor = true;
+             boolean restrictOwnAudio = true;
 };
 
 partial dictionary MediaTrackConstraintSet {
              ConstrainDOMString displaySurface;
              ConstrainBoolean logicalSurface;
              ConstrainDOMString cursor;
+             ConstrainBoolean restrictOwnAudio;
 };
 
 partial dictionary MediaTrackSettings {

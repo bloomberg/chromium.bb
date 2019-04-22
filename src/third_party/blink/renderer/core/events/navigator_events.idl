@@ -33,5 +33,5 @@
 [
     ImplementedAs=NavigatorEvents
 ] partial interface Navigator {
-    readonly attribute long maxTouchPoints;
+    [HighEntropy, MeasureAs=NavigatorMaxTouchPoints] readonly attribute long maxTouchPoints;
 };

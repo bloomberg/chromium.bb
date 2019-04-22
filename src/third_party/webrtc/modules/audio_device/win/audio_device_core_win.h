@@ -26,8 +26,8 @@
 #include <mediaobj.h>     // IMediaObject
 #include <mmdeviceapi.h>  // MMDevice
 
-#include "rtc_base/criticalsection.h"
-#include "rtc_base/scoped_ref_ptr.h"
+#include "api/scoped_refptr.h"
+#include "rtc_base/critical_section.h"
 
 // Use Multimedia Class Scheduler Service (MMCSS) to boost the thread priority
 #pragma comment(lib, "avrt.lib")
@@ -235,7 +235,7 @@ class AudioDeviceWindowsCore : public AudioDeviceGeneric {
 
   // Converts from wide-char to UTF-8 if UNICODE is defined.
   // Does nothing if UNICODE is undefined.
-  char* WideToUTF8(const TCHAR* src) const;
+  char* WideToUTF8(const wchar_t* src) const;
 
   int32_t InitRecordingDMO();
 

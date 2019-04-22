@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TRUNCATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TRUNCATION_H_
 
-#include <climits>
+#include <limits>
 
 namespace blink {
 
@@ -17,10 +17,11 @@ namespace blink {
 //  representing the characters that are not truncated.
 //
 // Thus the maximum possible length of the text displayed before an ellipsis in
-// a single NGTextFragment or InlineTextBox is |USHRT_MAX - 2| to allow for the
-// no-truncation and full-truncation states.
-const unsigned short kCNoTruncation = USHRT_MAX;
-const unsigned short kCFullTruncation = USHRT_MAX - 1;
+// a single NGTextFragment or InlineTextBox is
+// |std::numeric_limits<uint16_t>::max() - 2| to allow for the no-truncation and
+// full-truncation states.
+constexpr uint16_t kCNoTruncation = std::numeric_limits<uint16_t>::max();
+constexpr uint16_t kCFullTruncation = std::numeric_limits<uint16_t>::max() - 1;
 
 }  // namespace blink
 

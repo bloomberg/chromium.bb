@@ -7,6 +7,7 @@ module tracing.mojom;
 import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
+import "services/tracing/public/mojom/perfetto_service.mojom";
 
 // The JSON type of data coming from a tracing agents.
 //
@@ -30,7 +31,6 @@ enum TraceDataType {
 // to collect traces from other processes using the |Coordinator| interface.
 interface AgentRegistry {
   RegisterAgent(Agent agent, string label, TraceDataType type,
-                bool supports_explicit_clock_sync,
                 mojo_base.mojom.ProcessId pid);
 };
 
@@ -42,11 +42,7 @@ interface Agent {
   StartTracing(string config, mojo_base.mojom.TimeTicks coordinator_time)
       => (bool success);
   StopAndFlush(Recorder recorder);
-  RequestClockSyncMarker(string sync_id)
-      => (mojo_base.mojom.TimeTicks issue_ts,
-          mojo_base.mojom.TimeTicks issue_end_ts);
   RequestBufferStatus() => (uint32 capacity, uint32 count);
-  GetCategories() => (string categories);
 };
 
 // An agent can make several calls to |AddChunk|. Chunks will be concatenated
@@ -75,5 +71,4 @@ interface Coordinator {
   IsTracing() => (bool is_tracing);
   RequestBufferUsage() => (bool success, float percent_full,
                            uint32 approximate_count);
-  GetCategories() => (bool success, string categories);
 };

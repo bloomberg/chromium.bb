@@ -42,6 +42,8 @@ namespace blink {
 
 class PLATFORM_EXPORT OpenTypeVerticalData
     : public RefCounted<OpenTypeVerticalData> {
+  USING_FAST_MALLOC(OpenTypeVerticalData);
+
  public:
   static scoped_refptr<OpenTypeVerticalData> CreateUnscaled(
       sk_sp<SkTypeface> typeface) {

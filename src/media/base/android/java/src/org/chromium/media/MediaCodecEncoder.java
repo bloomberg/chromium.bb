@@ -28,7 +28,7 @@ class MediaCodecEncoder extends MediaCodecBridge {
     // SPS and PPS NALs (Config frame).
     private ByteBuffer mConfigData;
 
-    protected MediaCodecEncoder(MediaCodec mediaCodec, BitrateAdjuster bitrateAdjuster) {
+    protected MediaCodecEncoder(MediaCodec mediaCodec, @BitrateAdjuster.Type int bitrateAdjuster) {
         super(mediaCodec, bitrateAdjuster, false);
     }
 

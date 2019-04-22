@@ -41,7 +41,23 @@ source_set("force_installed_extension") {
 
   deps = [
     ":extension_id",
+  ]
+
+  public_deps = [
     "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
+  ]
+
+  all_dependent_configs = [ "//third_party/protobuf:using_proto" ]
+}
+
+source_set("extension_file_logger_lib") {
+  sources = [
+    "extension_file_logger.cc",
+    "extension_file_logger.h",
+  ]
+  deps = [
+    "//base:base",
+    "//chrome/chrome_cleaner/os:common_os",
   ]
 }
 
@@ -49,13 +65,16 @@ source_set("unittest_sources") {
   testonly = true
 
   sources = [
+    "extension_file_logger_unittest.cc",
     "extensions_util_unittest.cc",
   ]
 
   deps = [
+    ":extension_file_logger_lib",
     ":extensions_util_lib",
     "//base:base",
     "//base/test:test_support",
+    "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/parsers/json_parser",
     "//chrome/chrome_cleaner/test:test_extensions",
     "//chrome/chrome_cleaner/test:test_util",

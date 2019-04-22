@@ -5,23 +5,33 @@ Initial value
 element.style { ()
 
 [expanded] 
-#container { (<style>…</style>)
+#container { (<style>)
     padding: 15px;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 After changing property
 [expanded] 
 element.style { ()
 
 [expanded] 
-#container { (<style>…</style>)
+#container { (<style>)
     padding: 20px;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 

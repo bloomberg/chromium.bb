@@ -1,5 +1,9 @@
 # Chrome DevTools frontend
 
+<!-- [START badges] -->
+[![NPM package](https://img.shields.io/npm/v/chrome-devtools-frontend.svg)](https://npmjs.org/package/chrome-devtools-frontend)
+<!-- [END badges] -->
+
 The client-side of the Chrome DevTools, including all JS & CSS to run the DevTools webapp.
 
 It is available on NPM as the [chrome-devtools-frontend](https://www.npmjs.com/package/chrome-devtools-frontend) package. It's not currently available via CJS or ES2015 modules, so consuming this package in other tools may require [some effort](https://github.com/paulirish/devtools-timeline-model/blob/master/index.js).
@@ -70,7 +74,7 @@ Formats your Python code using [yapf](https://github.com/google/yapf)
 > Note: Yapf is a command line tool. You will have to install this manually, either from PyPi through `pip install yapf` or if you want to enable multiprocessing in Python 2.7, `pip install futures`
 
 #### `npm test`
-Builds devtools and runs all inspector/devtools layout tests.
+Builds devtools and runs all inspector/devtools web tests.
 
 > Note: If you're using a full chromium checkout and compiled content shell in out/Release, then `npm test` uses that. Otherwise, with only a front-end checkout (i.e. cloning from GitHub), then `npm test` will fetch a previously compiled content shell from the cloud (and cache it for future test runs).
 

@@ -18,7 +18,7 @@ TEST_F(DeclarativeManifestTest, Valid) {
   DeclarativeManifestData* manifest_data =
       DeclarativeManifestData::Get(extension.get());
   ASSERT_TRUE(manifest_data);
-  std::vector<linked_ptr<DeclarativeManifestData::Rule>>& rules =
+  std::vector<DeclarativeManifestData::Rule> rules =
       manifest_data->RulesForEvent("foo");
   EXPECT_EQ(1u, rules.size());
   std::unique_ptr<base::DictionaryValue> expected_rule = ParseDictionary(
@@ -30,7 +30,7 @@ TEST_F(DeclarativeManifestTest, Valid) {
       "    \"instanceType\" : \"condition_type\""
       "  }]"
       "}");
-  EXPECT_TRUE(expected_rule->Equals(rules[0]->ToValue().get()));
+  EXPECT_TRUE(expected_rule->Equals(rules[0].ToValue().get()));
 }
 
 TEST_F(DeclarativeManifestTest, ConditionMissingType) {
@@ -44,7 +44,7 @@ TEST_F(DeclarativeManifestTest, ConditionMissingType) {
       "    {"
       "      \"event\": \"declarativeContent.onPageChanged\","
       "      \"actions\": [{"
-      "        \"type\": \"declarativeContent.ShowPageAction\""
+      "        \"type\": \"declarativeContent.ShowAction\""
       "      }],"
       "      \"conditions\" : [{"
       "        \"css\": [\"video\"]"
@@ -67,7 +67,7 @@ TEST_F(DeclarativeManifestTest, ConditionNotDictionary) {
       "    {"
       "      \"event\": \"declarativeContent.onPageChanged\","
       "      \"actions\": [{"
-      "        \"type\": \"declarativeContent.ShowPageAction\""
+      "        \"type\": \"declarativeContent.ShowAction\""
       "      }],"
       "      \"conditions\" : [true]"
       "    }"
@@ -157,7 +157,7 @@ TEST_F(DeclarativeManifestTest, EventMissingFromRule) {
       "  \"event_rules\": ["
       "    {"
       "      \"actions\": [{"
-      "        \"type\": \"declarativeContent.ShowPageAction\""
+      "        \"type\": \"declarativeContent.ShowAction\""
       "      }],"
       "      \"conditions\" : [{"
       "        \"css\": [\"video\"],"

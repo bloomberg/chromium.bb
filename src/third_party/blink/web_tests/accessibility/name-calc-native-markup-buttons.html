@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
     <button id="button1"></button>
 </div>
@@ -137,10 +131,4 @@ test(function(t) {
     assert_equals(axButton11.name, "label-for-button11");
     assert_equals(axButton11.nameFrom, "relatedElement");
 }, "Button with text content and label");
-</script>
-
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

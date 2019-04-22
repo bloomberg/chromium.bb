@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -75,7 +76,7 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
     scoped_refptr<net::IOBuffer> buffer =
         base::MakeRefCounted<net::IOBuffer>(kBufferSize);
 
-    if (response_buffer_.size() > 0)
+    if (!response_buffer_.empty())
       ProcessResponseBuffer(buffer);
     else
       Read(buffer);

@@ -50,6 +50,10 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   // to e.g. update metrics.
   virtual void OnInterstitialClosing() = 0;
 
+  // Whether a URL should be displayed on this interstitial page. This is
+  // respected by committed interstitials only.
+  virtual bool ShouldDisplayURL() const;
+
  protected:
   // Returns true if the interstitial should create a new navigation entry.
   virtual bool ShouldCreateNewNavigation() const = 0;

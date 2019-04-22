@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "ash/app_list/model/app_list_view_state.h"
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/test/test_app_list_client.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/interfaces/app_list_view.mojom.h"
 
 namespace app_list {
 class AppListView;
@@ -57,11 +57,8 @@ class AppListTestHelper {
   // Fails in tests if either one doesn't match |visible|,.
   void CheckVisibility(bool visible);
 
-  // Check the accumulated voice session count.
-  void CheckVoiceSessionCount(size_t count);
-
   // Check the current app list view state.
-  void CheckState(app_list::AppListViewState state);
+  void CheckState(ash::mojom::AppListViewState state);
 
   // Run all pending in message loop and flush all mojo calls.
   void WaitUntilIdle();

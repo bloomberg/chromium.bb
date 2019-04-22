@@ -29,9 +29,8 @@
 #include "base/callback.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/input/event_listener_properties.h"
-#include "cc/input/layer_selection_bound.h"
-#include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
+#include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
@@ -41,77 +40,14 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-class SkBitmap;
-
-namespace cc {
-class AnimationHost;
-class PaintImage;
-}
-
-namespace gfx {
-class Size;
-class Vector2d;
-}  // namespace gfx
-
 namespace blink {
 
 class WebLayerTreeView {
  public:
-  // SwapResult mirrors the values of cc::SwapPromise::DidNotSwapReason, and
-  // should be kept consistent with it. SwapResult additionally adds a success
-  // value (kDidSwap).
-  // These values are written to logs. New enum values can be added, but
-  // existing enums must never be renumbered, deleted or reused.
-  enum SwapResult {
-    kDidSwap = 0,
-    kDidNotSwapSwapFails = 1,
-    kDidNotSwapCommitFails = 2,
-    kDidNotSwapCommitNoUpdate = 3,
-    kDidNotSwapActivationFails = 4,
-    kSwapResultMax,
-  };
-  using ReportTimeCallback =
-      base::OnceCallback<void(SwapResult, base::TimeTicks)>;
 
   virtual ~WebLayerTreeView() = default;
 
-  // Initialization and lifecycle --------------------------------------
-
-  // Sets the root of the tree. The root is set by way of the constructor.
-  virtual void SetRootLayer(scoped_refptr<cc::Layer>) {}
-  virtual void ClearRootLayer() {}
-
-  // TODO(loyso): This should use CompositorAnimationHost. crbug.com/584551
-  virtual cc::AnimationHost* CompositorAnimationHost() { return nullptr; }
-
   // View properties ---------------------------------------------------
-
-  // Viewport size is given in physical pixels.
-  virtual gfx::Size GetViewportSize() const = 0;
-
-  // Sets the background color for the viewport.
-  virtual void SetBackgroundColor(SkColor) {}
-
-  // Sets the current page scale factor and minimum / maximum limits. Both
-  // limits are initially 1 (no page scale allowed).
-  virtual void SetPageScaleFactorAndLimits(float page_scale_factor,
-                                           float minimum,
-                                           float maximum) {}
-
-  // Starts an animation of the page scale to a target scale factor and scroll
-  // offset.
-  // If useAnchor is true, destination is a point on the screen that will remain
-  // fixed for the duration of the animation.
-  // If useAnchor is false, destination is the final top-left scroll position.
-  virtual void StartPageScaleAnimation(const gfx::Vector2d& destination,
-                                       bool use_anchor,
-                                       float new_page_scale,
-                                       double duration_sec) {}
-
-  // Returns true if the page scale animation had started.
-  virtual bool HasPendingPageScaleAnimation() const { return false; }
-
-  virtual void HeuristicsForGpuRasterizationUpdated(bool) {}
 
   // Sets the amount that the browser controls are showing, from 0 (hidden) to 1
   // (fully shown).
@@ -131,26 +67,7 @@ class WebLayerTreeView {
                                         float bottom_height,
                                         bool shrink_viewport) {}
 
-  // Set the browser's behavior when overscroll happens, e.g. whether to glow
-  // or navigate.
-  virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
-
   // Flow control and scheduling ---------------------------------------
-
-  // Indicates that blink needs a BeginFrame, but that nothing might actually be
-  // dirty.
-  virtual void SetNeedsBeginFrame() {}
-
-  // Run layout and paint of all pending document changes asynchronously.
-  virtual void LayoutAndPaintAsync(base::OnceClosure callback) {}
-
-  virtual void CompositeAndReadbackAsync(
-      base::OnceCallback<void(const SkBitmap&)> callback) {}
-
-  // Synchronously performs the complete set of document lifecycle phases,
-  // including updates to the compositor state, optionally including
-  // rasterization.
-  virtual void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) {}
 
   // Prevents any updates to the input for the layer tree, and the layer tree
   // itself, and the layer tree from becoming visible.
@@ -159,25 +76,14 @@ class WebLayerTreeView {
     return nullptr;
   }
 
-  struct ViewportLayers {
-    cc::ElementId overscroll_elasticity_element_id;
-    scoped_refptr<cc::Layer> page_scale;
-    scoped_refptr<cc::Layer> inner_viewport_container;
-    scoped_refptr<cc::Layer> outer_viewport_container;
-    scoped_refptr<cc::Layer> inner_viewport_scroll;
-    scoped_refptr<cc::Layer> outer_viewport_scroll;
-  };
+  // Start defering commits to the compositor, allowing document lifecycle
+  // updates without committing the layer tree. Commits are deferred
+  // until at most the given |timeout| has passed. If multiple calls are made
+  // when deferal is active then the initial timeout applies.
+  virtual void StartDeferringCommits(base::TimeDelta timeout) {}
 
-  // Identify key viewport layers to the compositor.
-  virtual void RegisterViewportLayers(const ViewportLayers& viewport_layers) {}
-  virtual void ClearViewportLayers() {}
-
-  // Used to update the active selection bounds.
-  virtual void RegisterSelection(const cc::LayerSelection&) {}
-  virtual void ClearSelection() {}
-
-  // Mutations are plumbed back to the layer tree via the mutator client.
-  virtual void SetMutatorClient(std::unique_ptr<cc::LayerTreeMutator>) {}
+  // Immediately stop deferring commits.
+  virtual void StopDeferringCommits() {}
 
   // For when the embedder itself change scales on the page (e.g. devtools)
   // and wants all of the content at the new scale to be crisp.
@@ -202,34 +108,7 @@ class WebLayerTreeView {
 
   virtual int LayerTreeId() const { return 0; }
 
-  // Toggles the FPS counter in the HUD layer
-  virtual void SetShowFPSCounter(bool) {}
-
-  // Toggles the paint rects in the HUD layer
-  virtual void SetShowPaintRects(bool) {}
-
-  // Toggles the debug borders on layers
-  virtual void SetShowDebugBorders(bool) {}
-
-  // Toggles scroll bottleneck rects on the HUD layer
-  virtual void SetShowScrollBottleneckRects(bool) {}
-
-  // Toggles the hit-test borders on layers
-  virtual void SetShowHitTestBorders(bool) {}
-
-  // ReportTimeCallback is a callback that should be fired when the
-  // corresponding Swap completes (either with DidSwap or DidNotSwap).
-  virtual void NotifySwapTime(ReportTimeCallback callback) {}
-
   virtual void RequestBeginMainFrameNotExpected(bool new_state) {}
-
-  virtual void RequestDecode(const cc::PaintImage& image,
-                             base::OnceCallback<void(bool)> callback) {}
-
-  // Runs |callback| after a new frame has been submitted to the display
-  // compositor, and the display-compositor has displayed it on screen. Forces a
-  // redraw so that a new frame is submitted.
-  virtual void RequestPresentationCallback(base::OnceClosure callback) {}
 };
 
 }  // namespace blink

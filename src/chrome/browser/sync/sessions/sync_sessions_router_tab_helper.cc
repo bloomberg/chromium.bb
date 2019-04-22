@@ -87,4 +87,6 @@ void SyncSessionsRouterTabHelper::NotifyRouter(bool page_load_completed) {
     router_->NotifyTabModified(web_contents(), page_load_completed);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SyncSessionsRouterTabHelper)
+
 }  // namespace sync_sessions

@@ -16,6 +16,11 @@ def GetTelemetryDir():
       GetChromiumSrcDir(), 'third_party', 'catapult', 'telemetry')
 
 
+def GetTracingDir():
+  return os.path.join(
+      GetChromiumSrcDir(), 'third_party', 'catapult', 'tracing')
+
+
 def GetPerfDir():
   return os.path.join(GetChromiumSrcDir(), 'tools', 'perf')
 
@@ -40,6 +45,12 @@ def AddTelemetryToPath():
   telemetry_path = GetTelemetryDir()
   if telemetry_path not in sys.path:
     sys.path.insert(1, telemetry_path)
+
+
+def AddTracingToPath():
+  tracing_path = GetTracingDir()
+  if tracing_path not in sys.path:
+    sys.path.insert(1, tracing_path)
 
 
 def AddPyUtilsToPath():

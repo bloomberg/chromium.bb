@@ -24,3 +24,4 @@ Oculus-required attribution in LICENSE.
 Removed WINCRYPT32API from OVR_CAPIShim.c in order to build with Clang.
 Changed OVR_StereoProjection.h to #include "OVR_Math.h" to solve DEP issue.
 Changed OVR_CAPI_Util.h to #include "../OVR_CAPI.h" to solve include issue.
+Remove extra semicolons.

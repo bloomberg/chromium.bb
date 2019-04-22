@@ -28,7 +28,7 @@ class CORE_EXPORT InternalPopupMenu final : public PopupMenu,
 
   InternalPopupMenu(ChromeClient*, HTMLSelectElement&);
   ~InternalPopupMenu() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Update();
 
@@ -52,7 +52,7 @@ class CORE_EXPORT InternalPopupMenu final : public PopupMenu,
   void SelectFontsFromOwnerDocument(Document&) override;
   void SetValueAndClosePopup(int, const String&) override;
   void SetValue(const String&) override;
-  void ClosePopup() override;
+  void CancelPopup() override;
   Element& OwnerElement() override;
   float ZoomFactor() override { return 1.0; }
   Locale& GetLocale() override;

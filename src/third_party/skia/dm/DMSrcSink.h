@@ -8,12 +8,12 @@
 #ifndef DMSrcSink_DEFINED
 #define DMSrcSink_DEFINED
 
+#include "CommonFlagsConfig.h"
 #include "SkBBHFactory.h"
 #include "SkBBoxHierarchy.h"
 #include "SkBitmap.h"
 #include "SkBitmapRegionDecoder.h"
 #include "SkCanvas.h"
-#include "SkCommonFlagsConfig.h"
 #include "SkData.h"
 #include "SkMultiPictureDocument.h"
 #include "SkPicture.h"
@@ -212,29 +212,15 @@ private:
 
 class ColorCodecSrc : public Src {
 public:
-    enum Mode {
-        // Mimic legacy behavior and apply no color correction.
-        kBaseline_Mode,
-
-        // Color correct images into a specific dst color space.  If you happen to have this
-        // monitor, you're in luck!  The unmarked outputs of this test should display
-        // correctly on this monitor in the Chrome browser.  If not, it's useful to know
-        // that this monitor has a profile that is fairly similar to Adobe RGB.
-        kDst_HPZR30w_Mode,
-
-        kDst_sRGB_Mode,
-    };
-
-    ColorCodecSrc(Path, Mode, SkColorType);
+    ColorCodecSrc(Path, bool decode_to_dst);
 
     Error draw(SkCanvas*) const override;
     SkISize size() const override;
     Name name() const override;
     bool veto(SinkFlags) const override;
 private:
-    Path                    fPath;
-    Mode                    fMode;
-    SkColorType             fColorType;
+    Path fPath;
+    bool fDecodeToDst;
 };
 
 class SKPSrc : public Src {
@@ -408,7 +394,8 @@ public:
                                   SkCommandLineConfigGpu::SurfType surfType, int samples,
                                   bool diText, SkColorType colorType, SkAlphaType alphaType,
                                   sk_sp<SkColorSpace> colorSpace, bool threaded,
-                                  const GrContextOptions& grCtxOptions);
+                                  const GrContextOptions& grCtxOptions,
+                                  int cacheType);
 
     Error draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
 
@@ -418,6 +405,8 @@ public:
     }
 
 private:
+    int fCacheType;
+
     typedef GPUSink INHERITED;
 };
 
@@ -543,9 +532,10 @@ private:
 
 class ViaDDL : public Via {
 public:
-    ViaDDL(int numDivisions, Sink* sink);
+    ViaDDL(int numReplays, int numDivisions, Sink* sink);
     Error draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
 private:
+    const int fNumReplays;
     const int fNumDivisions;
 };
 
@@ -559,15 +549,6 @@ class ViaLite : public Via {
 public:
     explicit ViaLite(Sink* sink) : Via(sink) {}
     Error draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
-};
-
-class ViaCSXform : public Via {
-public:
-    explicit ViaCSXform(Sink*, sk_sp<SkColorSpace>, bool colorSpin);
-    Error draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
-private:
-    sk_sp<SkColorSpace> fCS;
-    bool                fColorSpin;
 };
 
 }  // namespace DM

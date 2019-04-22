@@ -183,15 +183,17 @@ CSSKeyframeRule* CSSKeyframesRule::AnonymousIndexedGetter(
 }
 
 CSSRuleList* CSSKeyframesRule::cssRules() const {
-  if (!rule_list_cssom_wrapper_)
-    rule_list_cssom_wrapper_ = LiveCSSRuleList<CSSKeyframesRule>::Create(
-        const_cast<CSSKeyframesRule*>(this));
+  if (!rule_list_cssom_wrapper_) {
+    rule_list_cssom_wrapper_ =
+        MakeGarbageCollected<LiveCSSRuleList<CSSKeyframesRule>>(
+            const_cast<CSSKeyframesRule*>(this));
+  }
   return rule_list_cssom_wrapper_.Get();
 }
 
 void CSSKeyframesRule::Reattach(StyleRuleBase* rule) {
   DCHECK(rule);
-  keyframes_rule_ = ToStyleRuleKeyframes(rule);
+  keyframes_rule_ = To<StyleRuleKeyframes>(rule);
 }
 
 void CSSKeyframesRule::Trace(blink::Visitor* visitor) {

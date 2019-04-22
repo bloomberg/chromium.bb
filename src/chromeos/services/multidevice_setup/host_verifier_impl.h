@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate.h"
 #include "chromeos/services/multidevice_setup/host_verifier.h"
@@ -42,7 +44,9 @@ class HostVerifierImpl : public HostVerifier,
         device_sync::DeviceSyncClient* device_sync_client,
         PrefService* pref_service,
         base::Clock* clock = base::DefaultClock::GetInstance(),
-        std::unique_ptr<base::OneShotTimer> timer =
+        std::unique_ptr<base::OneShotTimer> retry_timer =
+            std::make_unique<base::OneShotTimer>(),
+        std::unique_ptr<base::OneShotTimer> sync_timer =
             std::make_unique<base::OneShotTimer>());
 
    private:
@@ -58,7 +62,8 @@ class HostVerifierImpl : public HostVerifier,
                    device_sync::DeviceSyncClient* device_sync_client,
                    PrefService* pref_service,
                    base::Clock* clock,
-                   std::unique_ptr<base::OneShotTimer> timer);
+                   std::unique_ptr<base::OneShotTimer> retry_timer,
+                   std::unique_ptr<base::OneShotTimer> sync_timer);
 
   // HostVerifier:
   bool IsHostVerified() override;
@@ -71,18 +76,25 @@ class HostVerifierImpl : public HostVerifier,
   void OnNewDevicesSynced() override;
 
   void UpdateRetryState();
-  void StopTimerAndClearPrefs();
+  void StopRetryTimerAndClearPrefs();
   void AttemptVerificationWithInitialTimeout();
   void AttemptVerificationAfterInitialTimeout(
       const base::Time& retry_time_from_prefs);
-  void StartTimer(const base::Time& time_to_fire);
+  void StartRetryTimer(const base::Time& time_to_fire);
   void AttemptHostVerification();
+  void OnFindEligibleDevicesResult(
+      device_sync::mojom::NetworkRequestResult result,
+      multidevice::RemoteDeviceRefList eligible_devices,
+      multidevice::RemoteDeviceRefList ineligible_devices);
+  void OnSyncTimerFired();
 
   HostBackendDelegate* host_backend_delegate_;
   device_sync::DeviceSyncClient* device_sync_client_;
   PrefService* pref_service_;
   base::Clock* clock_;
-  std::unique_ptr<base::OneShotTimer> timer_;
+  std::unique_ptr<base::OneShotTimer> retry_timer_;
+  std::unique_ptr<base::OneShotTimer> sync_timer_;
+  base::WeakPtrFactory<HostVerifierImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostVerifierImpl);
 };

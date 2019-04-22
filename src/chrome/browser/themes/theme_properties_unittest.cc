@@ -54,4 +54,4 @@ TEST_F(ThemePropertiesTest, AlignmentConversionInput) {
   EXPECT_EQ("center center", ThemeProperties::AlignmentToString(alignment));
 }
 
-}; // namespace
+}  // namespace

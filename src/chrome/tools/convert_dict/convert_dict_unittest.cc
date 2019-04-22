@@ -11,6 +11,7 @@
 #include "base/format_macros.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/tools/convert_dict/aff_reader.h"
@@ -146,7 +147,7 @@ TEST(ConvertDictTest, English) {
   };
 
   std::map<base::string16, bool> word_list;
-  for (size_t i = 0; i < arraysize(kWords); ++i) {
+  for (size_t i = 0; i < base::size(kWords); ++i) {
     word_list.insert(
         std::make_pair<base::string16, bool>(base::WideToUTF16(kWords[i]),
                                              true));
@@ -170,7 +171,7 @@ TEST(ConvertDictTest, Russian) {
   };
 
   std::map<base::string16, bool> word_list;
-  for (size_t i = 0; i < arraysize(kWords); ++i) {
+  for (size_t i = 0; i < base::size(kWords); ++i) {
     word_list.insert(
         std::make_pair<base::string16, bool>(base::WideToUTF16(kWords[i]),
                                              true));
@@ -196,7 +197,7 @@ TEST(ConvertDictTest, Hungarian) {
   };
 
   std::map<base::string16, bool> word_list;
-  for (size_t i = 0; i < arraysize(kWords); ++i) {
+  for (size_t i = 0; i < base::size(kWords); ++i) {
     word_list.insert(
         std::make_pair<base::string16, bool>(base::WideToUTF16(kWords[i]),
                                              true));

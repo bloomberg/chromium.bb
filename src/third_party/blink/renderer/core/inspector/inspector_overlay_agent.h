@@ -34,6 +34,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
@@ -47,27 +48,68 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace cc {
+class Layer;
+}
+
 namespace blink {
 
-class Color;
-class GraphicsLayer;
+class FrameOverlay;
+class GraphicsContext;
 class InspectedFrames;
 class InspectorDOMAgent;
 class LocalFrame;
+class LocalFrameView;
 class Node;
 class Page;
-class PageOverlay;
 class WebGestureEvent;
+class WebKeyboardEvent;
 class WebMouseEvent;
 class WebLocalFrameImpl;
 class WebPointerEvent;
 
+class InspectorOverlayAgent;
+
+using OverlayFrontend = protocol::Overlay::Metainfo::FrontendClass;
+
+class CORE_EXPORT InspectTool : public GarbageCollectedFinalized<InspectTool> {
+ public:
+  virtual ~InspectTool() = default;
+  void Init(InspectorOverlayAgent* overlay, OverlayFrontend* frontend);
+  virtual CString GetDataResourceName();
+  virtual bool HandleInputEvent(LocalFrameView* frame_view,
+                                const WebInputEvent& input_event,
+                                bool* swallow_next_mouse_up);
+  virtual bool HandleMouseEvent(const WebMouseEvent&,
+                                bool* swallow_next_mouse_up);
+  virtual bool HandleMouseDown(const WebMouseEvent&,
+                               bool* swallow_next_mouse_up);
+  virtual bool HandleMouseUp(const WebMouseEvent&);
+  virtual bool HandleMouseMove(const WebMouseEvent&);
+  virtual bool HandleGestureTapEvent(const WebGestureEvent&);
+  virtual bool HandlePointerEvent(const WebPointerEvent&);
+  virtual bool HandleKeyboardEvent(const WebKeyboardEvent&);
+  virtual bool ForwardEventsToOverlay();
+  virtual void Draw(float scale) {}
+  virtual void Dispatch(const String& message) {}
+  virtual void Trace(blink::Visitor* visitor);
+  virtual void Dispose() {}
+  virtual bool HideOnHideHighlight();
+
+ protected:
+  virtual void DoInit() {}
+  Member<InspectorOverlayAgent> overlay_;
+  OverlayFrontend* frontend_ = nullptr;
+};
+
 class CORE_EXPORT InspectorOverlayAgent final
     : public InspectorBaseAgent<protocol::Overlay::Metainfo>,
-      public InspectorOverlayHost::Listener {
+      public InspectorOverlayHost::Delegate {
   USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayAgent);
 
  public:
+  static std::unique_ptr<InspectorHighlightConfig> ToHighlightConfig(
+      protocol::Overlay::HighlightConfig*);
   InspectorOverlayAgent(WebLocalFrameImpl*,
                         InspectedFrames*,
                         v8_inspector::V8InspectorSession*,
@@ -78,6 +120,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   // protocol::Dispatcher::OverlayCommandHandler implementation.
   protocol::Response enable() override;
   protocol::Response disable() override;
+  protocol::Response setShowAdHighlights(bool) override;
   protocol::Response setShowPaintRects(bool) override;
   protocol::Response setShowDebugBorders(bool) override;
   protocol::Response setShowFPSCounter(bool) override;
@@ -86,7 +129,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   protocol::Response setShowViewportSizeOnResize(bool) override;
   protocol::Response setPausedInDebuggerMessage(
       protocol::Maybe<String>) override;
-  protocol::Response setSuspended(bool) override;
   protocol::Response setInspectMode(
       const String& mode,
       protocol::Maybe<protocol::Overlay::HighlightConfig>) override;
@@ -105,7 +147,8 @@ class CORE_EXPORT InspectorOverlayAgent final
       std::unique_ptr<protocol::Overlay::HighlightConfig>,
       protocol::Maybe<int> node_id,
       protocol::Maybe<int> backend_node_id,
-      protocol::Maybe<String> object_id) override;
+      protocol::Maybe<String> object_id,
+      protocol::Maybe<String> selector_list) override;
   protocol::Response hideHighlight() override;
   protocol::Response highlightFrame(
       const String& frame_id,
@@ -121,106 +164,70 @@ class CORE_EXPORT InspectorOverlayAgent final
 
   void Inspect(Node*);
   void DispatchBufferedTouchEvents();
-  bool HandleInputEvent(const WebInputEvent&);
+  WebInputEventResult HandleInputEvent(const WebInputEvent&);
+  WebInputEventResult HandleInputEventInOverlay(const WebInputEvent&);
   void PageLayoutInvalidated(bool resized);
+  void EvaluateInOverlay(const String& method, const String& argument);
+  void EvaluateInOverlay(const String& method,
+                         std::unique_ptr<protocol::Value> argument);
   String EvaluateInOverlayForTest(const String&);
 
-  // Update the complete lifecycle (e.g., layout, paint) for the overlay.
-  void UpdateAllOverlayLifecyclePhases();
+  void UpdatePrePaint();
+  // For CompositeAfterPaint.
+  void PaintOverlay(GraphicsContext&);
 
-  bool IsInspectorLayer(GraphicsLayer*);
+  bool IsInspectorLayer(const cc::Layer*) const;
+
+  LocalFrame* GetFrame() const;
+  float WindowToViewportScale() const;
+  void ScheduleUpdate();
 
  private:
   class InspectorOverlayChromeClient;
   class InspectorPageOverlayDelegate;
 
-  enum SearchMode {
-    kNotSearching,
-    kSearchingForNormal,
-    kSearchingForUAShadow,
-  };
-
-  // InspectorOverlayHost::Listener implementation.
-  void OverlayResumed() override;
-  void OverlaySteppedOver() override;
+  // InspectorOverlayHost::Delegate implementation.
+  void Dispatch(const String& message) override;
 
   bool IsEmpty();
-  void DrawNodeHighlight();
-  void DrawQuadHighlight();
-  void DrawPausedInDebuggerMessage();
-  void DrawViewSize();
-  void DrawScreenshotBorder();
 
-  float WindowToViewportScale() const;
-
-  Page* OverlayPage();
+  void EnsureOverlayPageCreated();
   LocalFrame* OverlayMainFrame();
   void Reset(const IntSize& viewport_size);
-  void EvaluateInOverlay(const String& method, const String& argument);
-  void EvaluateInOverlay(const String& method,
-                         std::unique_ptr<protocol::Value> argument);
-  void OnTimer(TimerBase*);
-  void RebuildOverlayPage();
-  void Invalidate();
-  void ScheduleUpdate();
-  void ClearInternal();
-
-  bool HandleMouseDown(const WebMouseEvent&);
-  bool HandleMouseUp(const WebMouseEvent&);
-  bool HandleGestureEvent(const WebGestureEvent&);
-  bool HandlePointerEvent(const WebPointerEvent&);
-  bool HandleMouseMove(const WebMouseEvent&);
+  void OnResizeTimer(TimerBase*);
+  void PaintOverlayPage();
 
   protocol::Response CompositingEnabled();
 
-  bool ShouldSearchForNode();
-  void NodeHighlightRequested(Node*);
-  protocol::Response SetSearchingForNode(
-      SearchMode,
-      protocol::Maybe<protocol::Overlay::HighlightConfig>);
+  bool InSomeInspectMode();
+
+  void SetNeedsUnbufferedInput(bool unbuffered);
+  void PickTheRightTool();
+  void SetInspectTool(InspectTool* inspect_tool);
+  void LoadFrameForTool();
   protocol::Response HighlightConfigFromInspectorObject(
       protocol::Maybe<protocol::Overlay::HighlightConfig>
           highlight_inspector_object,
       std::unique_ptr<InspectorHighlightConfig>*);
-  void InnerHighlightQuad(std::unique_ptr<FloatQuad>,
-                          protocol::Maybe<protocol::DOM::RGBA> color,
-                          protocol::Maybe<protocol::DOM::RGBA> outline_color);
-  void InnerHighlightNode(Node*,
-                          Node* event_target,
-                          const InspectorHighlightConfig&,
-                          bool omit_tooltip);
-  void InnerHideHighlight();
 
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
-  Member<Node> highlight_node_;
-  Member<Node> event_target_node_;
-  InspectorHighlightConfig node_highlight_config_;
-  std::unique_ptr<FloatQuad> highlight_quad_;
   Member<Page> overlay_page_;
+  CString frame_resource_name_;
   Member<InspectorOverlayChromeClient> overlay_chrome_client_;
   Member<InspectorOverlayHost> overlay_host_;
-  Color quad_content_color_;
-  Color quad_content_outline_color_;
   bool resize_timer_active_;
-  bool omit_tooltip_;
-  TaskRunnerTimer<InspectorOverlayAgent> timer_;
+  TaskRunnerTimer<InspectorOverlayAgent> resize_timer_;
   bool disposed_;
-  bool in_layout_;
-  bool needs_update_;
   v8_inspector::V8InspectorSession* v8_session_;
   Member<InspectorDOMAgent> dom_agent_;
-  std::unique_ptr<PageOverlay> page_overlay_;
-  Member<Node> hovered_node_for_inspect_mode_;
+  std::unique_ptr<FrameOverlay> frame_overlay_;
+  Member<InspectTool> inspect_tool_;
   bool swallow_next_mouse_up_;
-  SearchMode inspect_mode_;
-  std::unique_ptr<InspectorHighlightConfig> inspect_mode_highlight_config_;
+  bool swallow_next_escape_up_;
   DOMNodeId backend_node_id_to_inspect_;
-  bool screenshot_mode_ = false;
-  IntPoint screenshot_anchor_;
-  IntPoint screenshot_position_;
   InspectorAgentState::Boolean enabled_;
-  InspectorAgentState::Boolean suspended_;
+  InspectorAgentState::Boolean show_ad_highlights_;
   InspectorAgentState::Boolean show_debug_borders_;
   InspectorAgentState::Boolean show_fps_counter_;
   InspectorAgentState::Boolean show_paint_rects_;
@@ -228,6 +235,8 @@ class CORE_EXPORT InspectorOverlayAgent final
   InspectorAgentState::Boolean show_hit_test_borders_;
   InspectorAgentState::Boolean show_size_on_resize_;
   InspectorAgentState::String paused_in_debugger_message_;
+  InspectorAgentState::String inspect_mode_;
+  InspectorAgentState::String inspect_mode_protocol_config_;
   DISALLOW_COPY_AND_ASSIGN(InspectorOverlayAgent);
 };
 

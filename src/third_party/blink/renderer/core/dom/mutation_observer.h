@@ -34,12 +34,11 @@
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_options.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -85,7 +84,7 @@ class CORE_EXPORT MutationObserver final
     virtual ExecutionContext* GetExecutionContext() const = 0;
     virtual void Deliver(const MutationRecordVector& records,
                          MutationObserver&) = 0;
-    virtual void Trace(blink::Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) {}
     const char* NameInHeapSnapshot() const override {
       return "MutationObserver::Delegate";
     }
@@ -117,7 +116,7 @@ class CORE_EXPORT MutationObserver final
 
   // Eagerly finalized as destructor accesses heap object members.
   EAGERLY_FINALIZE();
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   struct ObserverLessThan;
@@ -126,8 +125,8 @@ class CORE_EXPORT MutationObserver final
   bool ShouldBeSuspended() const;
   void CancelInspectorAsyncTasks();
 
-  TraceWrapperMember<Delegate> delegate_;
-  HeapVector<TraceWrapperMember<MutationRecord>> records_;
+  Member<Delegate> delegate_;
+  HeapVector<Member<MutationRecord>> records_;
   MutationObserverRegistrationSet registrations_;
   unsigned priority_;
 

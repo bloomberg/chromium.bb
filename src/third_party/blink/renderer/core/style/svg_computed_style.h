@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/style/svg_computed_style_defs.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
@@ -41,6 +42,8 @@ class StyleDifference;
 // all methods on it, merging them into copy/creation methods on ComputedStyle
 // instead. Keep the allocation logic, only allocating a new object if needed.
 class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
+  USING_FAST_MALLOC(SVGComputedStyle);
+
  public:
   static scoped_refptr<SVGComputedStyle> Create() {
     return base::AdoptRef(new SVGComputedStyle);
@@ -52,10 +55,10 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
 
   bool InheritedEqual(const SVGComputedStyle&) const;
   bool NonInheritedEqual(const SVGComputedStyle&) const;
-  void InheritFrom(const SVGComputedStyle*);
-  void CopyNonInheritedFromCached(const SVGComputedStyle*);
+  void InheritFrom(const SVGComputedStyle&);
+  void CopyNonInheritedFromCached(const SVGComputedStyle&);
 
-  CORE_EXPORT StyleDifference Diff(const SVGComputedStyle*) const;
+  CORE_EXPORT StyleDifference Diff(const SVGComputedStyle&) const;
 
   bool operator==(const SVGComputedStyle&) const;
   bool operator!=(const SVGComputedStyle& o) const { return !(*this == o); }
@@ -64,7 +67,7 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   static EAlignmentBaseline InitialAlignmentBaseline() { return AB_AUTO; }
   static EDominantBaseline InitialDominantBaseline() { return DB_AUTO; }
   static EBaselineShift InitialBaselineShift() { return BS_LENGTH; }
-  static Length InitialBaselineShiftValue() { return Length(kFixed); }
+  static Length InitialBaselineShiftValue() { return Length::Fixed(); }
   static EVectorEffect InitialVectorEffect() { return VE_NONE; }
   static EBufferedRendering InitialBufferedRendering() { return BR_AUTO; }
   static LineCap InitialCapStyle() { return kButtCap; }
@@ -83,16 +86,16 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   static float InitialStrokeOpacity() { return 1; }
   static SVGPaint InitialStrokePaint() { return SVGPaint(); }
   static scoped_refptr<SVGDashArray> InitialStrokeDashArray();
-  static Length InitialStrokeDashOffset() { return Length(kFixed); }
+  static Length InitialStrokeDashOffset() { return Length::Fixed(); }
   static float InitialStrokeMiterLimit() { return 4; }
   static UnzoomedLength InitialStrokeWidth() {
-    return UnzoomedLength(Length(1, kFixed));
+    return UnzoomedLength(Length::Fixed(1));
   }
   static float InitialStopOpacity() { return 1; }
-  static Color InitialStopColor() { return Color(0, 0, 0); }
+  static Color InitialStopColor() { return Color::kBlack; }
   static float InitialFloodOpacity() { return 1; }
-  static Color InitialFloodColor() { return Color(0, 0, 0); }
-  static Color InitialLightingColor() { return Color(255, 255, 255); }
+  static Color InitialFloodColor() { return Color::kBlack; }
+  static Color InitialLightingColor() { return Color::kWhite; }
   static StyleSVGResource* InitialMaskerResource() { return nullptr; }
   static StyleSVGResource* InitialMarkerStartResource() { return nullptr; }
   static StyleSVGResource* InitialMarkerMidResource() { return nullptr; }
@@ -100,13 +103,13 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   static EMaskType InitialMaskType() { return MT_LUMINANCE; }
   static EPaintOrder InitialPaintOrder() { return kPaintOrderNormal; }
   static StylePath* InitialD() { return nullptr; }
-  static Length InitialCx() { return Length(kFixed); }
-  static Length InitialCy() { return Length(kFixed); }
-  static Length InitialX() { return Length(kFixed); }
-  static Length InitialY() { return Length(kFixed); }
-  static Length InitialR() { return Length(kFixed); }
-  static Length InitialRx() { return Length(kAuto); }
-  static Length InitialRy() { return Length(kAuto); }
+  static Length InitialCx() { return Length::Fixed(); }
+  static Length InitialCy() { return Length::Fixed(); }
+  static Length InitialX() { return Length::Fixed(); }
+  static Length InitialY() { return Length::Fixed(); }
+  static Length InitialR() { return Length::Fixed(); }
+  static Length InitialRx() { return Length::Auto(); }
+  static Length InitialRy() { return Length::Auto(); }
 
   // SVG CSS Property setters
   void SetAlignmentBaseline(EAlignmentBaseline val) {
@@ -232,7 +235,7 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
       stops.Access()->opacity = obj;
   }
 
-  void SetStopColor(const Color& obj) {
+  void SetStopColor(const StyleColor& obj) {
     if (!(stops->color == obj))
       stops.Access()->color = obj;
   }
@@ -320,7 +323,7 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   const UnzoomedLength& StrokeWidth() const { return stroke->width; }
   const Length& StrokeDashOffset() const { return stroke->dash_offset; }
   float StopOpacity() const { return stops->opacity; }
-  const Color& StopColor() const { return stops->color; }
+  const StyleColor& StopColor() const { return stops->color; }
   float FloodOpacity() const { return misc->flood_opacity; }
   StyleColor FloodColor() const {
     return misc->flood_color_is_current_color ? StyleColor::CurrentColor()
@@ -465,8 +468,8 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   SVGComputedStyle(
       CreateInitialType);  // Used to create the initial style singleton.
 
-  bool DiffNeedsLayoutAndPaintInvalidation(const SVGComputedStyle* other) const;
-  bool DiffNeedsPaintInvalidation(const SVGComputedStyle* other) const;
+  bool DiffNeedsLayoutAndPaintInvalidation(const SVGComputedStyle& other) const;
+  bool DiffNeedsPaintInvalidation(const SVGComputedStyle& other) const;
 
   void SetBitDefaults() {
     svg_inherited_flags.clip_rule = InitialClipRule();

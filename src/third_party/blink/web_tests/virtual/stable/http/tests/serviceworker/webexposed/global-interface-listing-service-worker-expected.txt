@@ -14,6 +14,41 @@ interface AbortSignal : EventTarget
     getter onabort
     method constructor
     setter onabort
+interface BackgroundFetchEvent : ExtendableEvent
+    attribute @@toStringTag
+    getter registration
+    method constructor
+interface BackgroundFetchManager
+    attribute @@toStringTag
+    method constructor
+    method fetch
+    method get
+    method getIds
+interface BackgroundFetchRecord
+    attribute @@toStringTag
+    getter request
+    getter responseReady
+    method constructor
+interface BackgroundFetchRegistration : EventTarget
+    attribute @@toStringTag
+    getter downloadTotal
+    getter downloaded
+    getter failureReason
+    getter id
+    getter onprogress
+    getter recordsAvailable
+    getter result
+    getter uploadTotal
+    getter uploaded
+    method abort
+    method constructor
+    method match
+    method matchAll
+    setter onprogress
+interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent
+    attribute @@toStringTag
+    method constructor
+    method updateUI
 interface Blob
     attribute @@toStringTag
     getter size
@@ -246,6 +281,7 @@ interface DOMMatrixReadOnly
     method rotateFromVector
     method scale
     method scale3d
+    method scaleNonUniform
     method skewX
     method skewY
     method toFloat32Array
@@ -316,6 +352,14 @@ interface DOMStringList
     method constructor
     method contains
     method item
+interface ErrorEvent : Event
+    attribute @@toStringTag
+    getter colno
+    getter error
+    getter filename
+    getter lineno
+    getter message
+    method constructor
 interface Event
     attribute @@toStringTag
     attribute AT_TARGET
@@ -865,6 +909,7 @@ interface PerformanceMeasure : PerformanceEntry
     attribute @@toStringTag
     method constructor
 interface PerformanceObserver
+    static getter supportedEntryTypes
     attribute @@toStringTag
     method constructor
     method disconnect
@@ -1011,6 +1056,7 @@ interface ServiceWorkerGlobalScope : WorkerGlobalScope
 interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
     getter active
+    getter backgroundFetch
     getter installing
     getter navigationPreload
     getter onupdatefound
@@ -1076,6 +1122,7 @@ interface TextEncoder
     getter encoding
     method constructor
     method encode
+    method encodeInto
 interface TextEncoderStream
     attribute @@toStringTag
     getter encoding
@@ -2446,6 +2493,7 @@ interface WorkerGlobalScope : EventTarget
     getter location
     getter navigator
     getter onerror
+    getter onlanguagechange
     getter onrejectionhandled
     getter onunhandledrejection
     getter origin
@@ -2465,6 +2513,7 @@ interface WorkerGlobalScope : EventTarget
     method setInterval
     method setTimeout
     setter onerror
+    setter onlanguagechange
     setter onrejectionhandled
     setter onunhandledrejection
     setter origin
@@ -2490,6 +2539,8 @@ interface WorkerNavigator
     getter connection
     getter deviceMemory
     getter hardwareConcurrency
+    getter language
+    getter languages
     getter locks
     getter onLine
     getter permissions
@@ -2512,6 +2563,10 @@ interface WritableStream
     getter clients
     getter onabortpayment
     getter onactivate
+    getter onbackgroundfetchabort
+    getter onbackgroundfetchclick
+    getter onbackgroundfetchfail
+    getter onbackgroundfetchsuccess
     getter oncanmakepayment
     getter onfetch
     getter oninstall
@@ -2527,6 +2582,10 @@ interface WritableStream
     method skipWaiting
     setter onabortpayment
     setter onactivate
+    setter onbackgroundfetchabort
+    setter onbackgroundfetchclick
+    setter onbackgroundfetchfail
+    setter onbackgroundfetchsuccess
     setter oncanmakepayment
     setter onfetch
     setter oninstall

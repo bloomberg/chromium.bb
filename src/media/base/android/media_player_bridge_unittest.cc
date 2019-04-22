@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/android/media_player_bridge.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "media/base/android/media_player_bridge.h"
-#include "media/base/android/media_player_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,34 +13,17 @@ namespace media {
 
 namespace {
 
-class MockMediaPlayerManager : public MediaPlayerManager {
+using testing::_;
+using testing::StrictMock;
+
+class MockMediaPlayerBridgeClient : public MediaPlayerBridge::Client {
  public:
   MOCK_METHOD0(GetMediaResourceGetter, MediaResourceGetter*());
   MOCK_METHOD0(GetMediaUrlInterceptor, MediaUrlInterceptor*());
-  MOCK_METHOD3(OnTimeUpdate,
-               void(int player_id,
-                    base::TimeDelta current_timestamp,
-                    base::TimeTicks current_time_ticks));
-  MOCK_METHOD5(OnMediaMetadataChanged,
-               void(int player_id,
-                    base::TimeDelta duration,
-                    int width,
-                    int height,
-                    bool success));
-  MOCK_METHOD1(OnPlaybackComplete, void(int player_id));
-  MOCK_METHOD1(OnMediaInterrupted, void(int player_id));
-  MOCK_METHOD2(OnBufferingUpdate, void(int player_id, int percentage));
-  MOCK_METHOD2(OnSeekComplete,
-               void(int player_id, const base::TimeDelta& current_time));
-  MOCK_METHOD2(OnError, void(int player_id, int error));
-  MOCK_METHOD3(OnVideoSizeChanged, void(int player_id, int width, int height));
-  MOCK_METHOD2(OnAudibleStateChanged, void(int player_id, bool is_audible_now));
-  MOCK_METHOD1(OnWaitingForDecryptionKey, void(int player_id));
-  MOCK_METHOD1(GetPlayer, MediaPlayerAndroid*(int player_id));
-  MOCK_METHOD3(RequestPlay,
-               bool(int player_id, base::TimeDelta duration, bool has_audio));
-
-  void OnMediaResourcesRequested(int player_id) {}
+  MOCK_METHOD1(OnMediaDurationChanged, void(base::TimeDelta duration));
+  MOCK_METHOD0(OnPlaybackComplete, void());
+  MOCK_METHOD1(OnError, void(int error));
+  MOCK_METHOD2(OnVideoSizeChanged, void(int width, int height));
 };
 
 }  // anonymous namespace
@@ -48,63 +31,60 @@ class MockMediaPlayerManager : public MediaPlayerManager {
 class MediaPlayerBridgeTest : public testing::Test {
  public:
   MediaPlayerBridgeTest()
-      : bridge_(0,
-                GURL(),
-                GURL(),
-                "",
-                false,
-                &manager_,
-                base::Bind(&MockMediaPlayerManager::OnMediaResourcesRequested,
-                           base::Unretained(&manager_)),
-                GURL(),
-                false) {}
+      : bridge_(GURL(), GURL(), "", false, &client_, false) {}
 
-  void SetCanSeekForward(bool can_seek_forward) {
-    bridge_.can_seek_forward_ = can_seek_forward;
+ protected:
+  void SimulateDurationChange(base::TimeDelta duration) {
+    bridge_.PropagateDuration(duration);
   }
 
-  void SetCanSeekBackward(bool can_seek_backward) {
-    bridge_.can_seek_backward_ = can_seek_backward;
+  void SimulateVideoSizeChanged(int width, int height) {
+    bridge_.OnVideoSizeChanged(width, height);
   }
 
-  bool SeekInternal(const base::TimeDelta& current_time, base::TimeDelta time) {
-    return bridge_.SeekInternal(current_time, time);
-  }
+  void SimulateError(int error) { bridge_.OnMediaError(error); }
 
- private:
+  void SimulatePlaybackCompleted() { bridge_.OnPlaybackComplete(); }
+
   // A message loop needs to be instantiated in order for the test to run
   // properly.
   base::MessageLoop message_loop_;
-  MockMediaPlayerManager manager_;
+  StrictMock<MockMediaPlayerBridgeClient> client_;
   MediaPlayerBridge bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPlayerBridgeTest);
 };
 
-TEST_F(MediaPlayerBridgeTest, PreventForwardSeekWhenItIsNotPossible) {
-  // Simulate the Java MediaPlayerBridge reporting that forward seeks are not
-  // possible
-  SetCanSeekForward(false);
-  SetCanSeekBackward(true);
+TEST_F(MediaPlayerBridgeTest, Client_OnMediaMetadataChanged) {
+  const base::TimeDelta kDuration = base::TimeDelta::FromSeconds(20);
 
-  // If this assertion fails, seeks will be allowed which will result in a
-  // crash because j_media_player_bridge_ cannot be properly instantiated
-  // during this test.
-  ASSERT_FALSE(
-      SeekInternal(base::TimeDelta(), base::TimeDelta::FromSeconds(10)));
+  EXPECT_CALL(client_, OnMediaDurationChanged(kDuration));
+
+  SimulateDurationChange(kDuration);
 }
 
-TEST_F(MediaPlayerBridgeTest, PreventBackwardSeekWhenItIsNotPossible) {
-  // Simulate the Java MediaPlayerBridge reporting that backward seeks are not
-  // possible
-  SetCanSeekForward(true);
-  SetCanSeekBackward(false);
+TEST_F(MediaPlayerBridgeTest, Client_OnVideoSizeChanged) {
+  const int kWidth = 1600;
+  const int kHeight = 900;
 
-  // If this assertion fails, seeks will be allowed which will result in a
-  // crash because j_media_player_bridge_ cannot be properly instantiated
-  // during this test.
-  ASSERT_FALSE(
-      SeekInternal(base::TimeDelta::FromSeconds(10), base::TimeDelta()));
+  EXPECT_CALL(client_, OnVideoSizeChanged(kWidth, kHeight));
+
+  SimulateVideoSizeChanged(kWidth, kHeight);
+}
+
+TEST_F(MediaPlayerBridgeTest, Client_OnPlaybackComplete) {
+  EXPECT_CALL(client_, OnPlaybackComplete());
+
+  SimulatePlaybackCompleted();
+}
+
+TEST_F(MediaPlayerBridgeTest, Client_OnError) {
+  // MEDIA_ERROR_INVALID_CODE should still be propagated.
+  EXPECT_CALL(client_, OnError(_)).Times(1);
+  SimulateError(MediaPlayerBridge::MediaErrorType::MEDIA_ERROR_INVALID_CODE);
+
+  EXPECT_CALL(client_, OnError(_)).Times(1);
+  SimulateError(MediaPlayerBridge::MediaErrorType::MEDIA_ERROR_FORMAT);
 }
 
 }  // namespace media

@@ -42,8 +42,8 @@ isolation of WPT origins.  The tests need to stay under
 - external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html
 - external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html
 - external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html
-- external/wpt/wasm/serialization/window-domain-success.sub.html
-- external/wpt/wasm/serialization/window-similar-but-cross-origin-success.sub.html
+- external/wpt/wasm/serialization/module/window-domain-success.sub.html
+- external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html
 
 ## Tests that need further investigation and/or decisions
 

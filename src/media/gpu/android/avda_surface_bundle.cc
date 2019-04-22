@@ -4,6 +4,7 @@
 
 #include "media/gpu/android/avda_surface_bundle.h"
 
+#include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "media/base/android/android_overlay.h"
 

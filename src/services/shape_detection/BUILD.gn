@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 source_set("lib") {
@@ -18,6 +17,8 @@ source_set("lib") {
       "barcode_detection_impl_mac.mm",
       "barcode_detection_impl_mac_vision.h",
       "barcode_detection_impl_mac_vision.mm",
+      "barcode_detection_impl_mac_vision_api.h",
+      "barcode_detection_impl_mac_vision_api.mm",
       "barcode_detection_provider_mac.h",
       "barcode_detection_provider_mac.mm",
       "detection_utils_mac.h",
@@ -114,15 +115,11 @@ if (is_android) {
   }
 }
 
-service_manifest("manifest") {
-  name = "shape_detection"
-  source = "manifest.json"
-}
-
 source_set("tests") {
   testonly = true
   sources = [
     "barcode_detection_impl_mac_unittest.mm",
+    "barcode_detection_provider_mac_unittest.mm",
     "face_detection_impl_mac_unittest.mm",
     "face_detection_impl_win_unittest.cc",
     "text_detection_impl_mac_unittest.mm",
@@ -140,6 +137,7 @@ source_set("tests") {
     ":lib",
     "//base",
     "//base/test:test_support",
+    "//mojo/public/cpp/test_support:test_utils",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

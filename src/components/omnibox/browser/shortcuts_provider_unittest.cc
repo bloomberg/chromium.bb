@@ -15,9 +15,9 @@
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -192,7 +192,7 @@ void ShortcutsProviderTest::SetUp() {
   provider_ = base::MakeRefCounted<ShortcutsProvider>(client_.get());
   PopulateShortcutsBackendWithTestData(client_->GetShortcutsBackend(),
                                        shortcut_test_db,
-                                       arraysize(shortcut_test_db));
+                                       base::size(shortcut_test_db));
 }
 
 void ShortcutsProviderTest::TearDown() {
@@ -509,7 +509,7 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
   size_t original_shortcuts_count = backend->shortcuts_map().size();
 
   PopulateShortcutsBackendWithTestData(backend, shortcuts_to_test_delete,
-                                       arraysize(shortcuts_to_test_delete));
+                                       base::size(shortcuts_to_test_delete));
 
   EXPECT_EQ(original_shortcuts_count + 4, backend->shortcuts_map().size());
   EXPECT_FALSE(backend->shortcuts_map().end() ==

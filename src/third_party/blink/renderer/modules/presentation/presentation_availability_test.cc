@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_availability.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -30,7 +29,7 @@ TEST(PresentationAvailabilityTest, NoPageVisibilityChangeAfterDetach) {
     urls.push_back(url_test_helpers::ToKURL("https://another.com"));
 
     Persistent<PresentationAvailabilityProperty> resolver =
-        new PresentationAvailabilityProperty(
+        MakeGarbageCollected<PresentationAvailabilityProperty>(
             scope.GetExecutionContext(), nullptr,
             PresentationAvailabilityProperty::kReady);
     Persistent<PresentationAvailability> availability =
@@ -42,7 +41,7 @@ TEST(PresentationAvailabilityTest, NoPageVisibilityChangeAfterDetach) {
   // TODO(dcheng): Why are we calling functions on Page after it's been closed?
   // This case doesn't seem like it should be reachable as we should be shutting
   // down communication from the embedder on context detach.
-  page->SetVisibilityState(mojom::PageVisibilityState::kHidden, false);
+  page->SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
 }
 
 }  // anonymous namespace

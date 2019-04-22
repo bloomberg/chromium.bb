@@ -16,17 +16,6 @@ namespace extensions {
 
 // Item
 struct ProcessMap::Item {
-  Item() : process_id(0), site_instance_id(0) {
-  }
-
-  // Purposely implicit constructor needed on older gcc's. See:
-  // http://codereview.chromium.org/8769022/
-  explicit Item(const ProcessMap::Item& other)
-      : extension_id(other.extension_id),
-        process_id(other.process_id),
-        site_instance_id(other.site_instance_id) {
-  }
-
   Item(const std::string& extension_id, int process_id,
        int site_instance_id)
       : extension_id(extension_id),
@@ -37,6 +26,9 @@ struct ProcessMap::Item {
   ~Item() {
   }
 
+  Item(ProcessMap::Item&&) = default;
+  Item& operator=(ProcessMap::Item&&) = default;
+
   bool operator<(const ProcessMap::Item& other) const {
     return std::tie(extension_id, process_id, site_instance_id) <
            std::tie(other.extension_id, other.process_id,
@@ -44,8 +36,11 @@ struct ProcessMap::Item {
   }
 
   std::string extension_id;
-  int process_id;
-  int site_instance_id;
+  int process_id = 0;
+  int site_instance_id = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Item);
 };
 
 

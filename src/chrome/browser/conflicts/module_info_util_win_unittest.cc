@@ -17,6 +17,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_environment_variable_override.h"
 #include "base/win/pe_image.h"
@@ -57,7 +58,7 @@ TEST(ModuleInfoUtilTest, GetCertificateInfoUnsigned) {
   ASSERT_TRUE(base::PathService::Get(base::FILE_EXE, &path));
   CertificateInfo cert_info;
   GetCertificateInfo(path, &cert_info);
-  EXPECT_EQ(CertificateType::NO_CERTIFICATE, cert_info.type);
+  EXPECT_EQ(CertificateInfo::Type::NO_CERTIFICATE, cert_info.type);
   EXPECT_TRUE(cert_info.path.empty());
   EXPECT_TRUE(cert_info.subject.empty());
 }
@@ -72,7 +73,7 @@ TEST(ModuleInfoUtilTest, GetCertificateInfoSigned) {
 
   CertificateInfo cert_info;
   GetCertificateInfo(path, &cert_info);
-  EXPECT_NE(CertificateType::NO_CERTIFICATE, cert_info.type);
+  EXPECT_NE(CertificateInfo::Type::NO_CERTIFICATE, cert_info.type);
   EXPECT_FALSE(cert_info.path.empty());
   EXPECT_FALSE(cert_info.subject.empty());
 }
@@ -114,7 +115,7 @@ TEST(ModuleInfoUtilTest, CollapseMatchingPrefixInPath) {
       std::make_pair(L"c:\\foo\\bar", L"%x%"),
   };
 
-  for (size_t i = 0; i < arraysize(kCollapsePathList); ++i) {
+  for (size_t i = 0; i < base::size(kCollapsePathList); ++i) {
     base::string16 test_case = kCollapsePathList[i].test_case;
     CollapseMatchingPrefixInPath(string_mapping, &test_case);
     EXPECT_EQ(kCollapsePathList[i].expected_result, test_case);

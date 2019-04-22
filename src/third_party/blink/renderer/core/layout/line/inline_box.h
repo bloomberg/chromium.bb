@@ -129,8 +129,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 
   // DisplayItemClient methods
   String DebugName() const override;
-  LayoutRect VisualRect() const override;
-  LayoutRect PartialInvalidationVisualRect() const override;
+  IntRect VisualRect() const override;
+  IntRect PartialInvalidationVisualRect() const override;
 
   bool IsText() const { return bitfields_.IsText(); }
   void SetIsText(bool is_text) { bitfields_.SetIsText(is_text); }
@@ -362,6 +362,9 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   void FlipForWritingMode(LayoutRect&) const;
   LayoutPoint FlipForWritingMode(const LayoutPoint&) const;
 
+  // Returns trus if it is known that this box has no layout or visual
+  // overflow. This is used as a fast-path to skip expensive overflow
+  // recalc.
   bool KnownToHaveNoOverflow() const {
     return bitfields_.KnownToHaveNoOverflow();
   }
@@ -376,13 +379,13 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   // invalidation.
   void SetShouldDoFullPaintInvalidationRecursively();
 
-#define ADD_BOOLEAN_BITFIELD(field_name_, MethodNameBase) \
- private:                                                 \
-  unsigned field_name_ : 1;                               \
-                                                          \
- public:                                                  \
-  bool MethodNameBase() const { return field_name_; }     \
-  void Set##MethodNameBase(bool new_value) { field_name_ = new_value; }
+#define ADD_BOOLEAN_BITFIELD(field_name_, MethodNameBase)               \
+ public:                                                                \
+  bool MethodNameBase() const { return field_name_; }                   \
+  void Set##MethodNameBase(bool new_value) { field_name_ = new_value; } \
+                                                                        \
+ private:                                                               \
+  unsigned field_name_ : 1
 
   class InlineBoxBitfields {
     DISALLOW_NEW();

@@ -39,6 +39,8 @@ component("bindings_base") {
     "disconnect_reason.h",
     "enum_traits.h",
     "equals_traits.h",
+    "features.cc",
+    "features.h",
     "interface_data_view.h",
     "interface_id.h",
     "lib/array_internal.cc",
@@ -68,6 +70,7 @@ component("bindings_base") {
     "lib/serialization_util.h",
     "lib/string_serialization.h",
     "lib/template_util.h",
+    "lib/tracing_helper.h",
     "lib/unserialized_message_context.cc",
     "lib/unserialized_message_context.h",
     "lib/validate_params.h",
@@ -117,7 +120,6 @@ component("bindings") {
     "associated_interface_request.h",
     "binding.h",
     "binding_set.h",
-    "bindings_export.h",
     "callback_helpers.h",
     "connection_error_callback.h",
     "connector.h",
@@ -160,10 +162,15 @@ component("bindings") {
     "lib/task_runner_helper.cc",
     "lib/task_runner_helper.h",
     "native_enum.h",
+    "pending_receiver.h",
+    "pending_remote.h",
     "pipe_control_message_handler.h",
     "pipe_control_message_handler_delegate.h",
     "pipe_control_message_proxy.h",
     "raw_ptr_impl_ref_traits.h",
+    "receiver.h",
+    "receiver_set.h",
+    "remote.h",
     "sequence_local_sync_event_watcher.h",
     "strong_associated_binding.h",
     "strong_binding.h",
@@ -204,7 +211,7 @@ component("bindings") {
     "//ipc:native_handle_type_converters",
   ]
 
-  defines = [ "MOJO_CPP_BINDINGS_IMPLEMENTATION" ]
+  defines = [ "IS_MOJO_CPP_BINDINGS_IMPL" ]
 }
 
 source_set("struct_traits") {

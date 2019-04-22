@@ -63,7 +63,8 @@ public:
      *  child.
      */
     static std::unique_ptr<GrFragmentProcessor> OverrideInput(std::unique_ptr<GrFragmentProcessor>,
-                                                              const SkPMColor4f&);
+                                                              const SkPMColor4f&,
+                                                              bool useUniform = true);
 
     /**
      *  Returns a fragment processor that premuls the input before calling the passed in fragment
@@ -260,8 +261,21 @@ protected:
      * This assumes that the subclass output color will be a modulation of the input color with a
      * value read from a texture of the passed config and that the texture contains premultiplied
      * color or alpha values that are in range.
+     *
+     * Since there are multiple ways in which a sampler may have its coordinates clamped or wrapped,
+     * callers must determine on their own if the sampling uses a decal strategy in any way, in
+     * which case the texture may become transparent regardless of the pixel config.
      */
-    static OptimizationFlags ModulateByConfigOptimizationFlags(GrPixelConfig config) {
+    static OptimizationFlags ModulateForSamplerOptFlags(GrPixelConfig config, bool samplingDecal) {
+        if (samplingDecal) {
+            return kCompatibleWithCoverageAsAlpha_OptimizationFlag;
+        } else {
+            return ModulateForClampedSamplerOptFlags(config);
+        }
+    }
+
+    // As above, but callers should somehow ensure or assert their sampler still uses clamping
+    static OptimizationFlags ModulateForClampedSamplerOptFlags(GrPixelConfig config) {
         if (GrPixelConfigIsOpaque(config)) {
             return kCompatibleWithCoverageAsAlpha_OptimizationFlag |
                    kPreservesOpaqueInput_OptimizationFlag;
@@ -271,13 +285,18 @@ protected:
     }
 
     GrFragmentProcessor(ClassID classID, OptimizationFlags optimizationFlags)
-    : INHERITED(classID)
-    , fFlags(optimizationFlags) {
+            : INHERITED(classID)
+            , fFlags(optimizationFlags) {
         SkASSERT((fFlags & ~kAll_OptimizationFlags) == 0);
     }
 
     OptimizationFlags optimizationFlags() const {
         return static_cast<OptimizationFlags>(kAll_OptimizationFlags & fFlags);
+    }
+
+    /** Useful when you can't call fp->optimizationFlags() on a base class object from a subclass.*/
+    static OptimizationFlags ProcessorOptimizationFlags(const GrFragmentProcessor* fp) {
+        return fp->optimizationFlags();
     }
 
     /**
@@ -418,8 +437,13 @@ public:
     bool operator!=(const TextureSampler& other) const { return !(*this == other); }
 
     // 'instantiate' should only ever be called at flush time.
+    // TODO: this can go away once explicit allocation has stuck
     bool instantiate(GrResourceProvider* resourceProvider) const {
-        return SkToBool(fProxyRef.get()->instantiate(resourceProvider));
+        if (resourceProvider->explicitlyAllocateGPUResources()) {
+            return fProxyRef.get()->isInstantiated();
+        } else {
+            return SkToBool(fProxyRef.get()->instantiate(resourceProvider));
+        }
     }
 
     // 'peekTexture' should only ever be called after a successful 'instantiate' call

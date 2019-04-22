@@ -4,7 +4,9 @@
 
 #include "components/download/internal/background_service/debugging_client.h"
 
+#include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/download/public/background_service/download_metadata.h"
 #include "services/network/public/cpp/resource_request_body.h"
 
 namespace download {
@@ -23,6 +25,7 @@ Client::ShouldDownload DebuggingClient::OnDownloadStarted(
 }
 
 void DebuggingClient::OnDownloadUpdated(const std::string& guid,
+                                        uint64_t bytes_uploaded,
                                         uint64_t bytes_downloaded) {}
 
 void DebuggingClient::OnDownloadFailed(const std::string& guid,

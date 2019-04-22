@@ -11,6 +11,16 @@
 namespace mojo {
 
 template <>
+struct EnumTraits<viz::mojom::BeginFrameArgsType,
+                  viz::BeginFrameArgs::BeginFrameArgsType> {
+  static viz::mojom::BeginFrameArgsType ToMojom(
+      viz::BeginFrameArgs::BeginFrameArgsType type);
+
+  static bool FromMojom(viz::mojom::BeginFrameArgsType input,
+                        viz::BeginFrameArgs::BeginFrameArgsType* out);
+};
+
+template <>
 struct StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs> {
   static base::TimeTicks frame_time(const viz::BeginFrameArgs& args) {
     return args.frame_time;
@@ -36,8 +46,9 @@ struct StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs> {
     return args.trace_id;
   }
 
-  static viz::mojom::BeginFrameArgsType type(const viz::BeginFrameArgs& args) {
-    return static_cast<viz::mojom::BeginFrameArgsType>(args.type);
+  static viz::BeginFrameArgs::BeginFrameArgsType type(
+      const viz::BeginFrameArgs& args) {
+    return args.type;
   }
 
   static bool on_critical_path(const viz::BeginFrameArgs& args) {

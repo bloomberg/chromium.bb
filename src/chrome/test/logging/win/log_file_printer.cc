@@ -15,7 +15,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
@@ -144,7 +144,7 @@ void EventPrinter::PrintEventContext(const EVENT_TRACE* event,
 void EventPrinter::PrintBadEvent(const EVENT_TRACE* event,
                                  const base::StringPiece& error) {
   wchar_t guid[64];
-  StringFromGUID2(event->Header.Guid, &guid[0], arraysize(guid));
+  StringFromGUID2(event->Header.Guid, &guid[0], base::size(guid));
   *out_ << error << " (class=" << guid << ", type="
        << static_cast<int>(event->Header.Class.Type) << ")";
 }

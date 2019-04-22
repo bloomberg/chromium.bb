@@ -60,14 +60,6 @@ struct CALayerSharedState {
   gfx::Transform transform;
 };
 
-struct DCLayerSharedState {
-  float opacity;
-  bool is_clipped;
-  gfx::Rect clip_rect;
-  int z_order;
-  gfx::Transform transform;
-};
-
 std::vector<int> GetAllGLErrors();
 
 bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,

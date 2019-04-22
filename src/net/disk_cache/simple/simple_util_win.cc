@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/rand_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/disk_cache/cache_util.h"
 
@@ -30,8 +31,8 @@ bool SimpleCacheDeleteFile(const base::FilePath& path) {
       path.DirName().AppendASCII(base::StringPrintf("todelete_%016" PRIx64,
                                                     base::RandUint64()));
 
-  bool rename_succeeded = !!MoveFile(path.value().c_str(),
-                                     rename_target.value().c_str());
+  bool rename_succeeded = !!MoveFile(base::as_wcstr(path.value()),
+                                     base::as_wcstr(rename_target.value()));
   if (rename_succeeded)
     return DeleteCacheFile(rename_target);
 

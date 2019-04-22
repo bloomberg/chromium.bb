@@ -19,9 +19,7 @@ class CBC_PDF417HighLevelEncoder {
   CBC_PDF417HighLevelEncoder() = delete;
   ~CBC_PDF417HighLevelEncoder() = delete;
 
-  static void Initialize();
-  static void Finalize();
-  static Optional<WideString> EncodeHighLevel(const WideString& msg);
+  static Optional<WideString> EncodeHighLevel(WideStringView msg);
 
  private:
   enum class EncodingMode { kUnknown = 0, kText, kByte, kNumeric };
@@ -49,12 +47,12 @@ class CBC_PDF417HighLevelEncoder {
       std::vector<uint8_t>* bytes,
       size_t startpos);
 
-  friend class PDF417HighLevelEncoder_EncodeNumeric_Test;
-  friend class PDF417HighLevelEncoder_EncodeBinary_Test;
-  friend class PDF417HighLevelEncoder_EncodeText_Test;
-  friend class PDF417HighLevelEncoder_ConsecutiveDigitCount_Test;
-  friend class PDF417HighLevelEncoder_ConsecutiveTextCount_Test;
-  friend class PDF417HighLevelEncoder_ConsecutiveBinaryCount_Test;
+  friend class PDF417HighLevelEncoderTest_EncodeNumeric_Test;
+  friend class PDF417HighLevelEncoderTest_EncodeBinary_Test;
+  friend class PDF417HighLevelEncoderTest_EncodeText_Test;
+  friend class PDF417HighLevelEncoderTest_ConsecutiveDigitCount_Test;
+  friend class PDF417HighLevelEncoderTest_ConsecutiveTextCount_Test;
+  friend class PDF417HighLevelEncoderTest_ConsecutiveBinaryCount_Test;
 };
 
 #endif  // FXBARCODE_PDF417_BC_PDF417HIGHLEVELENCODER_H_

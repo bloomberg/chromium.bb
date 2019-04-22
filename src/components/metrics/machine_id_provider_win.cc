@@ -25,7 +25,8 @@ bool MachineIdProvider::HasId() {
 // is running from.
 // static
 std::string MachineIdProvider::GetMachineId() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Use the program's path to get the drive used for the machine id. This means
   // that whenever the underlying drive changes, it's considered a new machine.

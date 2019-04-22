@@ -35,10 +35,11 @@ class HTMLHRElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLHRElement);
 
+  explicit HTMLHRElement(Document&);
+
   bool CanContainRangeEndPoint() const override { return HasChildren(); }
 
  private:
-  explicit HTMLHRElement(Document&);
   HTMLSelectElement* OwnerSelectElement() const;
 
   bool IsPresentationAttribute(const QualifiedName&) const override;

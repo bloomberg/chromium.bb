@@ -85,7 +85,7 @@ void OobeConfiguration::OnConfigurationCheck(bool has_configuration,
 
   int error_code, row, col;
   std::string error_message;
-  auto value = base::JSONReader::ReadAndReturnError(
+  auto value = base::JSONReader::ReadAndReturnErrorDeprecated(
       configuration, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS,
       &error_code, &error_message, &row, &col);
   if (!value) {

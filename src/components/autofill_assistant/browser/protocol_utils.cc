@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
+#include "components/autofill_assistant/browser/actions/expect_navigation_action.h"
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
 #include "components/autofill_assistant/browser/actions/get_payment_information_action.h"
 #include "components/autofill_assistant/browser/actions/highlight_element_action.h"
@@ -20,12 +21,14 @@
 #include "components/autofill_assistant/browser/actions/set_attribute_action.h"
 #include "components/autofill_assistant/browser/actions/set_form_field_value_action.h"
 #include "components/autofill_assistant/browser/actions/show_details_action.h"
+#include "components/autofill_assistant/browser/actions/show_info_box_action.h"
 #include "components/autofill_assistant/browser/actions/show_progress_bar_action.h"
 #include "components/autofill_assistant/browser/actions/stop_action.h"
 #include "components/autofill_assistant/browser/actions/tell_action.h"
 #include "components/autofill_assistant/browser/actions/unsupported_action.h"
 #include "components/autofill_assistant/browser/actions/upload_dom_action.h"
 #include "components/autofill_assistant/browser/actions/wait_for_dom_action.h"
+#include "components/autofill_assistant/browser/actions/wait_for_navigation_action.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "url/gurl.h"
 
@@ -45,44 +48,34 @@ void AddScriptParametersToProto(
   }
 }
 
+void FillClientContext(const ClientContextProto& client_context,
+                       const TriggerContext& trigger_context,
+                       ClientContextProto* proto) {
+  proto->CopyFrom(client_context);
+  if (!trigger_context.experiment_ids.empty()) {
+    proto->set_experiment_ids(trigger_context.experiment_ids);
+  }
+}
+
 }  // namespace
 
 // static
 std::string ProtocolUtils::CreateGetScriptsRequest(
     const GURL& url,
-    const std::map<std::string, std::string>& parameters,
+    const TriggerContext& trigger_context,
     const ClientContextProto& client_context) {
   DCHECK(!url.is_empty());
 
   SupportsScriptRequestProto script_proto;
   script_proto.set_url(url.spec());
-  script_proto.mutable_client_context()->CopyFrom(client_context);
-  AddScriptParametersToProto(parameters,
+  FillClientContext(client_context, trigger_context,
+                    script_proto.mutable_client_context());
+  AddScriptParametersToProto(trigger_context.script_parameters,
                              script_proto.mutable_script_parameters());
   std::string serialized_script_proto;
   bool success = script_proto.SerializeToString(&serialized_script_proto);
   DCHECK(success);
   return serialized_script_proto;
-}
-
-// static
-bool ProtocolUtils::ParseScripts(
-    const std::string& response,
-    std::vector<std::unique_ptr<Script>>* scripts) {
-  DCHECK(scripts);
-
-  SupportsScriptResponseProto response_proto;
-  if (!response_proto.ParseFromString(response)) {
-    LOG(ERROR) << "Failed to parse getting assistant scripts response.";
-    return false;
-  }
-
-  scripts->clear();
-  for (const auto& script_proto : response_proto.scripts()) {
-    ProtocolUtils::AddScript(script_proto, scripts);
-  }
-
-  return true;
 }
 
 // static
@@ -96,7 +89,8 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
   script->handle.autostart = presentation.autostart();
   script->handle.interrupt = presentation.interrupt();
   script->handle.initial_prompt = presentation.initial_prompt();
-  script->handle.highlight = presentation.highlight();
+  script->handle.chip_type = presentation.chip_type();
+  script->handle.chip_icon = presentation.chip_icon();
   script->precondition = ScriptPrecondition::FromProto(
       script_proto.path(), presentation.precondition());
   script->priority = presentation.priority();
@@ -114,7 +108,7 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
 std::string ProtocolUtils::CreateInitialScriptActionsRequest(
     const std::string& script_path,
     const GURL& url,
-    const std::map<std::string, std::string>& parameters,
+    const TriggerContext& trigger_context,
     const std::string& global_payload,
     const std::string& script_payload,
     const ClientContextProto& client_context) {
@@ -126,9 +120,11 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
   query->add_script_path(script_path);
   query->set_url(url.spec());
   query->set_policy(PolicyType::SCRIPT);
+  FillClientContext(client_context, trigger_context,
+                    request_proto.mutable_client_context());
   AddScriptParametersToProto(
-      parameters, initial_request_proto->mutable_script_parameters());
-  request_proto.mutable_client_context()->CopyFrom(client_context);
+      trigger_context.script_parameters,
+      initial_request_proto->mutable_script_parameters());
 
   if (!global_payload.empty()) {
     request_proto.set_global_payload(global_payload);
@@ -146,6 +142,7 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
 
 // static
 std::string ProtocolUtils::CreateNextScriptActionsRequest(
+    const TriggerContext& trigger_context,
     const std::string& global_payload,
     const std::string& script_payload,
     const std::vector<ProcessedActionProto>& processed_actions,
@@ -158,7 +155,8 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
   for (const auto& processed_action : processed_actions) {
     next_request->add_processed_actions()->MergeFrom(processed_action);
   }
-  request_proto.mutable_client_context()->CopyFrom(client_context);
+  FillClientContext(client_context, trigger_context,
+                    request_proto.mutable_client_context());
   std::string serialized_request_proto;
   bool success = request_proto.SerializeToString(&serialized_request_proto);
   DCHECK(success);
@@ -189,86 +187,104 @@ bool ProtocolUtils::ParseActions(const std::string& response,
   }
 
   for (const auto& action : response_proto.actions()) {
+    std::unique_ptr<Action> client_action;
     switch (action.action_info_case()) {
       case ActionProto::ActionInfoCase::kClick: {
-        actions->emplace_back(std::make_unique<ClickAction>(action));
+        client_action = std::make_unique<ClickAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kTell: {
-        actions->emplace_back(std::make_unique<TellAction>(action));
+        client_action = std::make_unique<TellAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kFocusElement: {
-        actions->emplace_back(std::make_unique<FocusElementAction>(action));
+        client_action = std::make_unique<FocusElementAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kUseAddress:
       case ActionProto::ActionInfoCase::kUseCard: {
-        actions->emplace_back(std::make_unique<AutofillAction>(action));
+        client_action = std::make_unique<AutofillAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kWaitForDom: {
-        actions->emplace_back(std::make_unique<WaitForDomAction>(action));
+        client_action = std::make_unique<WaitForDomAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kSelectOption: {
-        actions->emplace_back(std::make_unique<SelectOptionAction>(action));
+        client_action = std::make_unique<SelectOptionAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kNavigate: {
-        actions->emplace_back(std::make_unique<NavigateAction>(action));
+        client_action = std::make_unique<NavigateAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kPrompt: {
-        actions->emplace_back(std::make_unique<PromptAction>(action));
+        client_action = std::make_unique<PromptAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kStop: {
-        actions->emplace_back(std::make_unique<StopAction>(action));
+        client_action = std::make_unique<StopAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kReset: {
-        actions->emplace_back(std::make_unique<ResetAction>(action));
+        client_action = std::make_unique<ResetAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kHighlightElement: {
-        actions->emplace_back(std::make_unique<HighlightElementAction>(action));
+        client_action = std::make_unique<HighlightElementAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kUploadDom: {
-        actions->emplace_back(std::make_unique<UploadDomAction>(action));
+        client_action = std::make_unique<UploadDomAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kShowDetails: {
-        actions->emplace_back(std::make_unique<ShowDetailsAction>(action));
+        client_action = std::make_unique<ShowDetailsAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kGetPaymentInformation: {
-        actions->emplace_back(
-            std::make_unique<GetPaymentInformationAction>(action));
+        client_action = std::make_unique<GetPaymentInformationAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kSetFormValue: {
-        actions->emplace_back(
-            std::make_unique<SetFormFieldValueAction>(action));
+        client_action = std::make_unique<SetFormFieldValueAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kShowProgressBar: {
-        actions->emplace_back(std::make_unique<ShowProgressBarAction>(action));
+        client_action = std::make_unique<ShowProgressBarAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kSetAttribute: {
-        actions->emplace_back(std::make_unique<SetAttributeAction>(action));
+        client_action = std::make_unique<SetAttributeAction>(action);
         break;
       }
-      default:
+      case ActionProto::ActionInfoCase::kShowInfoBox: {
+        client_action = std::make_unique<ShowInfoBoxAction>(action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kExpectNavigation: {
+        client_action = std::make_unique<ExpectNavigationAction>(action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kWaitForNavigation: {
+        client_action = std::make_unique<WaitForNavigationAction>(action);
+        break;
+      }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
-        DLOG(ERROR) << "Unknown or unsupported action with action_case="
-                    << action.action_info_case();
-        actions->emplace_back(std::make_unique<UnsupportedAction>(action));
+        DVLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
+        client_action = std::make_unique<UnsupportedAction>(action);
         break;
       }
+        // Intentionally no default case to ensure a compilation error for new
+        // cases added to the proto.
     }
+    if (client_action == nullptr) {
+      DVLOG(1) << "Encountered action with Unknown or unsupported action with "
+                  "action_case="
+               << action.action_info_case();
+      client_action = std::make_unique<UnsupportedAction>(action);
+    }
+    actions->emplace_back(std::move(client_action));
   }
 
   *should_update_scripts = response_proto.has_update_script_list();

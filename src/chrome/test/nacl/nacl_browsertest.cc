@@ -11,6 +11,7 @@
 
 #define TELEMETRY 1
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/path_service.h"
@@ -284,9 +285,9 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
     // (see note in chrome/browser/nacl_host/test/nacl_gdb_browsertest.cc)
 #if defined(OS_WIN)
     if (base::win::OSInfo::GetInstance()->wow64_status() ==
-        base::win::OSInfo::WOW64_DISABLED &&
-        base::win::OSInfo::GetInstance()->architecture() ==
-        base::win::OSInfo::X86_ARCHITECTURE) {
+            base::win::OSInfo::WOW64_DISABLED &&
+        base::win::OSInfo::GetArchitecture() ==
+            base::win::OSInfo::X86_ARCHITECTURE) {
       return true;
     }
 #endif
@@ -302,7 +303,7 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
     base::PathService::Get(chrome::DIR_TEST_DATA, &script);
     script = script.AppendASCII("nacl/debug_stub_browser_tests.py");
     cmd.AppendArgPath(script);
-    cmd.AppendArg(base::IntToString(debug_stub_port));
+    cmd.AppendArg(base::NumberToString(debug_stub_port));
     cmd.AppendArg("continue");
     LOG(INFO) << cmd.GetCommandLineString();
     *test_process = base::LaunchProcess(cmd, base::LaunchOptions());

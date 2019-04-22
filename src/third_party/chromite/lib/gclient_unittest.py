@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import os
 
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gclient
 from chromite.lib import osutils
@@ -20,12 +19,12 @@ class TestGclientWriteConfigFile(cros_test_lib.RunCommandTempDirTestCase):
 
   _TEST_CWD = '/work/chrome'
 
-  def _AssertGclientConfigSpec(self, expected_spec, use_cache=True):
-    if cros_build_lib.HostIsCIBuilder() and use_cache:
-      if cros_build_lib.IsInsideChroot():
-        expected_spec += "cache_dir = '/tmp/b/git-cache'\n"
-      else:
-        expected_spec += "cache_dir = '/b/git-cache'\n"
+  def setUp(self):
+    valid_dirs = ['/exists', '/b/git-cache']
+    self.PatchObject(os.path, 'exists',
+                     side_effect=lambda d: d in valid_dirs)
+
+  def _AssertGclientConfigSpec(self, expected_spec):
     self.rc.assertCommandContains(('gclient', 'config', '--spec',
                                    expected_spec),
                                   cwd=self._TEST_CWD)
@@ -45,6 +44,35 @@ class TestGclientWriteConfigFile(cros_test_lib.RunCommandTempDirTestCase):
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git'}]
 target_os = ['chromeos']
+cache_dir = '/b/git-cache'
+""")
+
+  def testChromiumSpecCustomCache(self):
+    """Test WriteConfigFile with chromium checkout and no revision."""
+    gclient.WriteConfigFile('gclient', self._TEST_CWD, False, None,
+                            git_cache_dir='/exists')
+    self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
+  'custom_vars': {},
+  'deps_file': '.DEPS.git',
+  'managed': True,
+  'name': 'src',
+  'url': 'https://chromium.googlesource.com/chromium/src.git'}]
+target_os = ['chromeos']
+cache_dir = '/exists'
+""")
+
+  def testChromiumSpecCustomInvalidCacheDir(self):
+    """Test WriteConfigFile with chromium checkout and no revision."""
+    gclient.WriteConfigFile('gclient', self._TEST_CWD, False, None,
+                            git_cache_dir='/doesnotexist')
+    self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
+  'custom_vars': {},
+  'deps_file': '.DEPS.git',
+  'managed': True,
+  'name': 'src',
+  'url': 'https://chromium.googlesource.com/chromium/src.git'}]
+target_os = ['chromeos']
+cache_dir = '/tmp/git-cache'
 """)
 
   def testChromiumSpecNotUseCache(self):
@@ -58,7 +86,7 @@ target_os = ['chromeos']
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git'}]
 target_os = ['chromeos']
-""", use_cache=False)
+""")
 
   def testChromeSpec(self):
     """Test WriteConfigFile with chrome checkout and no revision."""
@@ -76,6 +104,7 @@ target_os = ['chromeos']
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
 target_os = ['chromeos']
+cache_dir = '/b/git-cache'
 """)
 
   def testChromiumSpecWithGitHash(self):
@@ -89,6 +118,7 @@ target_os = ['chromeos']
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git@7becbe4afb42b3301d42149d7d1cade017f150ff'}]
 target_os = ['chromeos']
+cache_dir = '/b/git-cache'
 """)
 
   def testChromeSpecWithGitHash(self):
@@ -108,6 +138,7 @@ target_os = ['chromeos']
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
 target_os = ['chromeos']
+cache_dir = '/b/git-cache'
 """)
 
   def testChromiumSpecWithGitHead(self):
@@ -120,6 +151,7 @@ target_os = ['chromeos']
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git@HEAD'}]
 target_os = ['chromeos']
+cache_dir = '/b/git-cache'
 """)
 
   def testChromeSpecWithGitHead(self):
@@ -138,6 +170,7 @@ target_os = ['chromeos']
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
 target_os = ['chromeos']
+cache_dir = '/b/git-cache'
 """)
 
   def testChromeSpecWithGitHashNoManaged(self):
@@ -158,6 +191,7 @@ target_os = ['chromeos']
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
 target_os = ['chromeos']
+cache_dir = '/b/git-cache'
 """)
 
   def testChromeSpecWithReleaseTag(self):
@@ -170,6 +204,7 @@ target_os = ['chromeos']
   'name': 'CHROME_DEPS',
   'url': 'https://chrome-internal.googlesource.com/chrome/tools/buildspec.git'}]
 target_os = ['chromeos']
+cache_dir = '/b/git-cache'
 """)
 
   def testChromiumSpecWithReleaseTag(self):
@@ -182,6 +217,7 @@ target_os = ['chromeos']
   'name': 'src',
   'url': 'https://chromium.googlesource.com/chromium/src.git@refs/tags/41.0.2270.0'}]
 target_os = ['chromeos']
+cache_dir = '/b/git-cache'
 """)
 
   def testChromeSpecWithReleaseTagDepsGit(self):
@@ -194,6 +230,7 @@ target_os = ['chromeos']
   'name': 'CHROME_DEPS',
   'url': 'https://chrome-internal.googlesource.com/chrome/tools/buildspec.git'}]
 target_os = ['chromeos']
+cache_dir = '/b/git-cache'
 """)
 
   def testChromeSpecDepsResolution(self):
@@ -237,6 +274,7 @@ target_os = ['chromeos']
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
 target_os = ['chromeos']
+cache_dir = '/b/git-cache'
 """)
 
 

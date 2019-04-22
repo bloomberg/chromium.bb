@@ -34,17 +34,10 @@ MockResource* MockResource::Fetch(FetchParameters& params,
       fetcher->RequestResource(params, MockResourceFactory(), client));
 }
 
-// static
-MockResource* MockResource::Create(const ResourceRequest& request) {
-  ResourceLoaderOptions options;
-  return MakeGarbageCollected<MockResource>(request, options);
-}
-
-MockResource* MockResource::Create(const KURL& url) {
-  ResourceRequest request(url);
-  return Create(request);
-}
-
+MockResource::MockResource(const KURL& url)
+    : MockResource(ResourceRequest(url)) {}
+MockResource::MockResource(const ResourceRequest& request)
+    : MockResource(request, ResourceLoaderOptions()) {}
 MockResource::MockResource(const ResourceRequest& request,
                            const ResourceLoaderOptions& options)
     : Resource(request, ResourceType::kMock, options) {}
@@ -54,7 +47,8 @@ CachedMetadataHandler* MockResource::CreateCachedMetadataHandler(
   return MakeGarbageCollected<MockCacheHandler>(std::move(send_callback));
 }
 
-void MockResource::SetSerializedCachedMetadata(const char* data, size_t size) {
+void MockResource::SetSerializedCachedMetadata(const uint8_t* data,
+                                               size_t size) {
   Resource::SetSerializedCachedMetadata(data, size);
   MockCacheHandler* cache_handler =
       static_cast<MockCacheHandler*>(Resource::CacheHandler());
@@ -63,7 +57,7 @@ void MockResource::SetSerializedCachedMetadata(const char* data, size_t size) {
   }
 }
 
-void MockResource::SendCachedMetadata(const char* data, size_t size) {
+void MockResource::SendCachedMetadata(const uint8_t* data, size_t size) {
   MockCacheHandler* cache_handler =
       static_cast<MockCacheHandler*>(Resource::CacheHandler());
   if (cache_handler) {
@@ -80,7 +74,7 @@ MockCacheHandler::MockCacheHandler(
     std::unique_ptr<CachedMetadataSender> send_callback)
     : send_callback_(std::move(send_callback)) {}
 
-void MockCacheHandler::Set(const char* data, size_t size) {
+void MockCacheHandler::Set(const uint8_t* data, size_t size) {
   data_.emplace();
   data_->Append(data, SafeCast<wtf_size_t>(size));
 }

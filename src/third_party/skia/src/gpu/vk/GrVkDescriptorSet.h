@@ -8,10 +8,9 @@
 #ifndef GrVkDescriptorSet_DEFINED
 #define GrVkDescriptorSet_DEFINED
 
-#include "GrVkVulkan.h"
-
 #include "GrVkDescriptorSetManager.h"
 #include "GrVkResource.h"
+#include "vk/GrVkTypes.h"
 
 class GrVkDescriptorPool;
 class GrVkGpu;
@@ -33,7 +32,7 @@ public:
 #endif
 
 private:
-    void freeGPUData(const GrVkGpu* gpu) const override;
+    void freeGPUData(GrVkGpu* gpu) const override;
     void abandonGPUData() const override;
     void onRecycle(GrVkGpu* gpu) const override;
 

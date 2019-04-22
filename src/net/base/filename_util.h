@@ -42,7 +42,11 @@ NET_EXPORT bool FileURLToFilePath(const GURL& url, base::FilePath* file_path);
 // 2) |suggested_name| if specified.  |suggested_name| is assumed to be in
 //    UTF-8.
 // 3) The filename extracted from the |url|.  |referrer_charset| will be used to
-//    interpret the URL if there are non-ascii characters.
+//    interpret the URL if there are non-ascii characters.The file extension for
+//    filenames extracted from the URL are considered unreliable if the URL
+//    contains a query string. If a MIME type is available (i.e. |mime_type| is
+//    not empty) and that MIME type has a preferred extension, then the
+//    resulting filename will have that preferred extension.
 // 4) |default_name|.  If non-empty, |default_name| is assumed to be a filename
 //    and shouldn't contain a path.  |default_name| is not subject to validation
 //    or sanitization, and therefore shouldn't be a user supplied string.
@@ -77,6 +81,18 @@ NET_EXPORT base::FilePath GenerateFileName(
     const std::string& suggested_name,
     const std::string& mime_type,
     const std::string& default_name);
+
+// Similar to GetSuggestedFilename(). If |should_replace_extension| is true, the
+// file extension extracted from a URL will always be considered unreliable and
+// the file extension will be determined by |mime_type|.
+NET_EXPORT base::FilePath GenerateFileName(
+    const GURL& url,
+    const std::string& content_disposition,
+    const std::string& referrer_charset,
+    const std::string& suggested_name,
+    const std::string& mime_type,
+    const std::string& default_name,
+    bool should_replace_extension);
 
 // Valid components:
 // * are not empty

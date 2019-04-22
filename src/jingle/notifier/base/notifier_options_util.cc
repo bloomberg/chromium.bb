@@ -12,28 +12,28 @@
 
 namespace notifier {
 
-buzz::XmppClientSettings MakeXmppClientSettings(
+jingle_xmpp::XmppClientSettings MakeXmppClientSettings(
     const NotifierOptions& notifier_options,
     const std::string& email, const std::string& token) {
-  buzz::Jid jid = buzz::Jid(email);
+  jingle_xmpp::Jid jid = jingle_xmpp::Jid(email);
   DCHECK(!jid.node().empty());
   DCHECK(jid.IsValid());
 
-  buzz::XmppClientSettings xmpp_client_settings;
+  jingle_xmpp::XmppClientSettings xmpp_client_settings;
   xmpp_client_settings.set_user(jid.node());
   xmpp_client_settings.set_resource("chrome-sync");
   xmpp_client_settings.set_host(jid.domain());
-  xmpp_client_settings.set_use_tls(buzz::TLS_REQUIRED);
+  xmpp_client_settings.set_use_tls(jingle_xmpp::TLS_REQUIRED);
   xmpp_client_settings.set_auth_token(notifier_options.auth_mechanism,
       notifier_options.invalidate_xmpp_login ?
       token + "bogus" : token);
-  if (notifier_options.auth_mechanism == buzz::AUTH_MECHANISM_OAUTH2)
+  if (notifier_options.auth_mechanism == jingle_xmpp::AUTH_MECHANISM_OAUTH2)
     xmpp_client_settings.set_token_service("oauth2");
   else
     xmpp_client_settings.set_token_service("chromiumsync");
   if (notifier_options.allow_insecure_connection) {
     xmpp_client_settings.set_allow_plain(true);
-    xmpp_client_settings.set_use_tls(buzz::TLS_DISABLED);
+    xmpp_client_settings.set_use_tls(jingle_xmpp::TLS_DISABLED);
   }
   return xmpp_client_settings;
 }

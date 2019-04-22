@@ -26,7 +26,8 @@ namespace tracing {
 // collecting trace events behind the scenes.
 class PerfettoTracingCoordinator : public Coordinator {
  public:
-  explicit PerfettoTracingCoordinator(AgentRegistry* agent_registry);
+  PerfettoTracingCoordinator(AgentRegistry* agent_registry,
+                             base::RepeatingClosure on_disconnect_callback);
 
   ~PerfettoTracingCoordinator() override;
 
@@ -44,11 +45,17 @@ class PerfettoTracingCoordinator : public Coordinator {
                          const std::string& agent_label,
                          StopAndFlushCallback callback) override;
   void IsTracing(IsTracingCallback callback) override;
+  void RequestBufferUsage(RequestBufferUsageCallback callback) override;
 
  private:
-  void BindOnSequence(mojom::CoordinatorRequest request);
+  void OnPIDStartedTracing(base::ProcessId pid);
+  void OnAgentStartedTracing(AgentRegistry::AgentEntry* agent_entry);
   void OnTracingOverCallback();
-  void OnClientConnectionError();
+  void OnClientConnectionError() override;
+  void WaitForAgentToBeginTracing(AgentRegistry::AgentEntry* agent_entry);
+  void StopAndFlushInternal(mojo::ScopedDataPipeProducerHandle stream,
+                            const std::string& agent_label,
+                            StopAndFlushCallback callback);
 
   mojo::Binding<mojom::Coordinator> binding_;
 

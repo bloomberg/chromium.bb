@@ -13,6 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,38 +36,56 @@ ScopedDeviceSettingsTestHelper::~ScopedDeviceSettingsTestHelper() {
 }
 
 DeviceSettingsTestBase::DeviceSettingsTestBase()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-      user_manager_(new FakeChromeUserManager()),
-      user_manager_enabler_(base::WrapUnique(user_manager_)),
-      owner_key_util_(new ownership::MockOwnerKeyUtil()),
-      dbus_setter_(chromeos::DBusThreadManager::GetSetterForTesting()) {
+    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+
+DeviceSettingsTestBase::~DeviceSettingsTestBase() {
+  CHECK(teardown_called_);
+}
+
+void DeviceSettingsTestBase::SetUp() {
+  device_policy_ = std::make_unique<policy::DevicePolicyBuilder>();
+  user_manager_ = new FakeChromeUserManager();
+  user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+      base::WrapUnique(user_manager_));
+  owner_key_util_ = new ownership::MockOwnerKeyUtil();
+  device_settings_service_ = std::make_unique<DeviceSettingsService>();
+  dbus_setter_ = DBusThreadManager::GetSetterForTesting();
+  CryptohomeClient::InitializeFake();
+  PowerManagerClient::InitializeFake();
   OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(
-      &device_settings_service_);
+      device_settings_service_.get());
   OwnerSettingsServiceChromeOSFactory::GetInstance()->SetOwnerKeyUtilForTesting(
       owner_key_util_);
   base::RunLoop().RunUntilIdle();
 
-  device_policy_.payload().mutable_metrics_enabled()->set_metrics_enabled(
+  device_policy_->payload().mutable_metrics_enabled()->set_metrics_enabled(
       false);
   ReloadDevicePolicy();
-  owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
-  device_settings_service_.SetSessionManager(&session_manager_client_,
-                                             owner_key_util_);
+  owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_->GetSigningKey());
+  device_settings_service_->SetSessionManager(&session_manager_client_,
+                                              owner_key_util_);
 
   profile_.reset(new TestingProfile());
 }
 
-DeviceSettingsTestBase::~DeviceSettingsTestBase() {
-  OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(NULL);
+void DeviceSettingsTestBase::TearDown() {
+  teardown_called_ = true;
+  OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(
+      nullptr);
   FlushDeviceSettings();
-  device_settings_service_.UnsetSessionManager();
+  device_settings_service_->UnsetSessionManager();
+  device_settings_service_.reset();
+  PowerManagerClient::Shutdown();
+  CryptohomeClient::Shutdown();
   DBusThreadManager::Shutdown();
+  device_policy_.reset();
   base::RunLoop().RunUntilIdle();
+  profile_.reset();
 }
 
 void DeviceSettingsTestBase::ReloadDevicePolicy() {
-  device_policy_.Build();
-  session_manager_client_.set_device_policy(device_policy_.GetBlob());
+  device_policy_->Build();
+  session_manager_client_.set_device_policy(device_policy_->GetBlob());
 }
 
 void DeviceSettingsTestBase::FlushDeviceSettings() {
@@ -74,7 +93,7 @@ void DeviceSettingsTestBase::FlushDeviceSettings() {
 }
 
 void DeviceSettingsTestBase::ReloadDeviceSettings() {
-  device_settings_service_.OwnerKeySet(true);
+  device_settings_service_->OwnerKeySet(true);
   FlushDeviceSettings();
 }
 
@@ -95,6 +114,10 @@ void DeviceSettingsTestBase::InitOwner(const AccountId& account_id,
   CHECK(service);
   if (tpm_is_ready)
     service->OnTPMTokenReady(true /* token is enabled */);
+}
+
+FakePowerManagerClient* DeviceSettingsTestBase::power_manager_client() {
+  return FakePowerManagerClient::Get();
 }
 
 }  // namespace chromeos

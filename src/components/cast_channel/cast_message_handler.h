@@ -11,8 +11,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
+#include "base/timer/timer.h"
 #include "base/token.h"
 #include "base/values.h"
 #include "components/cast_channel/cast_message_util.h"
@@ -68,10 +70,14 @@ using LaunchSessionCallback =
     base::OnceCallback<void(LaunchSessionResponse response)>;
 using LaunchSessionRequest = PendingRequest<LaunchSessionCallback>;
 
+enum class Result { kOk, kFailed };
+using ResultCallback = base::OnceCallback<void(Result result)>;
+
 // Represents an app stop request to a Cast sink.
-// |success|: Whether the app was successfully stopped.
-using StopSessionCallback = base::OnceCallback<void(bool success)>;
-using StopSessionRequest = PendingRequest<StopSessionCallback>;
+using StopSessionRequest = PendingRequest<ResultCallback>;
+
+// Reresents request for a sink to set its volume level.
+using SetVolumeRequest = PendingRequest<ResultCallback>;
 
 // Represents a virtual connection on a cast channel. A virtual connection is
 // given by a source and destination ID pair, and must be created before
@@ -101,6 +107,9 @@ struct InternalMessage {
   CastMessageType type;
   base::Value message;
 };
+
+// Default timeout amount for requests waiting for a response.
+constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromSeconds(5);
 
 // Handles messages that are sent between this browser instance and the Cast
 // devices connected to it. This class also manages virtual connections (VCs)
@@ -146,6 +155,9 @@ class CastMessageHandler : public CastSocket::Observer {
                                       const std::string& app_id,
                                       GetAppAvailabilityCallback callback);
 
+  // Sends a receiver status request to the socket given by |channel_id|.
+  virtual void RequestReceiverStatus(int channel_id);
+
   // Sends a broadcast message containing |app_ids| and |request| to the socket
   // given by |channel_id|.
   virtual void SendBroadcastMessage(int channel_id,
@@ -165,13 +177,39 @@ class CastMessageHandler : public CastSocket::Observer {
   // request.
   virtual void StopSession(int channel_id,
                            const std::string& session_id,
-                           StopSessionCallback callback);
+                           const base::Optional<std::string>& client_id,
+                           ResultCallback callback);
 
   // Sends |message| to the device given by |channel_id|. The caller may use
   // this method to forward app messages from the SDK client to the device. It
   // is invalid to call this method with a message in one of the Cast internal
   // message namespaces.
-  virtual void SendAppMessage(int channel_id, const CastMessage& message);
+  virtual Result SendAppMessage(int channel_id, const CastMessage& message);
+
+  // Sends a media command |body|. Returns the ID of the request that is sent to
+  // the receiver. It is invalid to call this with a message body that is not a
+  // media command.  Returns |base::nullopt| if |channel_id| is invalid.
+  //
+  // Note: This API is designed to return a request ID instead of taking a
+  // callback. This is because a MEDIA_STATUS message from the receiver can be
+  // the response to a media command from a client. Thus when we get a
+  // MEDIA_STATUS message, we need to be able to (1) broadcast the message to
+  // all clients and (2) make sure the client that sent the media command
+  // receives the message only once *and* in the form of a response (by setting
+  // the sequenceNumber on the message).
+  virtual base::Optional<int> SendMediaRequest(
+      int channel_id,
+      const base::Value& body,
+      const std::string& source_id,
+      const std::string& destination_id);
+
+  // Sends a set system volume command |body|. |callback| will be invoked
+  // with the result of the operation. It is invalid to call this with
+  // a message body that is not a volume request.
+  virtual Result SendSetVolumeRequest(int channel_id,
+                                      const base::Value& body,
+                                      const std::string& source_id,
+                                      ResultCallback callback);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -179,11 +217,13 @@ class CastMessageHandler : public CastSocket::Observer {
   // CastSocket::Observer implementation.
   void OnError(const CastSocket& socket, ChannelError error_state) override;
   void OnMessage(const CastSocket& socket, const CastMessage& message) override;
+  void OnReadyStateChanged(const CastSocket& socket) override;
 
   const std::string& sender_id() const { return sender_id_; }
 
  private:
   friend class CastMessageHandlerTest;
+  FRIEND_TEST_ALL_PREFIXES(CastMessageHandlerTest, HandlePendingRequest);
 
   // Set of PendingRequests for a CastSocket.
   class PendingRequests {
@@ -191,11 +231,14 @@ class CastMessageHandler : public CastSocket::Observer {
     PendingRequests();
     ~PendingRequests();
 
+    // Returns true if this is the first request for the given app ID.
     bool AddAppAvailabilityRequest(
         std::unique_ptr<GetAppAvailabilityRequest> request);
+
     bool AddLaunchRequest(std::unique_ptr<LaunchSessionRequest> request,
                           base::TimeDelta timeout);
     bool AddStopRequest(std::unique_ptr<StopSessionRequest> request);
+    void AddVolumeRequest(std::unique_ptr<SetVolumeRequest> request);
     void HandlePendingRequest(int request_id, const base::Value& response);
 
    private:
@@ -204,15 +247,19 @@ class CastMessageHandler : public CastSocket::Observer {
     void AppAvailabilityTimedOut(int request_id);
     void LaunchSessionTimedOut(int request_id);
     void StopSessionTimedOut(int request_id);
+    void SetVolumeTimedOut(int request_id);
 
-    // App availability requests pending responses, keyed by app ID.
-    base::flat_map<std::string, std::unique_ptr<GetAppAvailabilityRequest>>
+    // Requests are kept in the order in which they were created.
+    std::vector<std::unique_ptr<GetAppAvailabilityRequest>>
         pending_app_availability_requests_;
     std::unique_ptr<LaunchSessionRequest> pending_launch_session_request_;
     std::unique_ptr<StopSessionRequest> pending_stop_session_request_;
+    base::flat_map<int, std::unique_ptr<SetVolumeRequest>>
+        pending_volume_requests_by_id_;
   };
 
   // Used internally to generate the next ID to use in a request type message.
+  // Returns a positive integer (unless the counter overflows).
   int NextRequestId() { return ++next_request_id_; }
 
   PendingRequests* GetOrCreatePendingRequests(int channel_id);

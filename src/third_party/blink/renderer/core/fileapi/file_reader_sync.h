@@ -35,6 +35,10 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 
 class Blob;
@@ -63,6 +67,8 @@ class FileReaderSync final : public ScriptWrappable {
 
  private:
   void StartLoading(FileReaderLoader&, const Blob&, ExceptionState&);
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink

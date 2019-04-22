@@ -10,8 +10,8 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/base/models/dialog_model.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -31,8 +31,7 @@ class LabelButton;
 //  certain events.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
-                                    public WidgetDelegate {
+class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
  public:
   DialogDelegate();
 
@@ -48,6 +47,24 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
                                                       gfx::NativeWindow context,
                                                       gfx::NativeView parent,
                                                       const gfx::Rect& bounds);
+
+  // Returns a mask specifying which of the available DialogButtons are visible
+  // for the dialog. Note: Dialogs with just an OK button are frowned upon.
+  virtual int GetDialogButtons() const;
+
+  // Returns the default dialog button. This should not be a mask as only
+  // one button should ever be the default button.  Return
+  // ui::DIALOG_BUTTON_NONE if there is no default.  Default
+  // behavior is to return ui::DIALOG_BUTTON_OK or
+  // ui::DIALOG_BUTTON_CANCEL (in that order) if they are
+  // present, ui::DIALOG_BUTTON_NONE otherwise.
+  virtual int GetDefaultDialogButton() const;
+
+  // Returns the label of the specified dialog button.
+  virtual base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
+
+  // Returns whether the specified dialog button is enabled.
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const;
 
   // Override this function to display an extra view adjacent to the buttons.
   // Overrides may construct the view; this will only be called once per dialog.
@@ -93,11 +110,8 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   // LayoutProvider's snapping.
   virtual bool ShouldSnapFrameWidth() const;
 
-  // Overridden from ui::DialogModel:
-  int GetDialogButtons() const override;
-  int GetDefaultDialogButton() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  // Returns whether the dialog should have round corners
+  virtual bool ShouldHaveRoundCorners() const;
 
   // Overridden from WidgetDelegate:
   View* GetInitiallyFocusedView() override;
@@ -131,15 +145,18 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   ~DialogDelegate() override;
 
   // Overridden from WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
 
  private:
   // A flag indicating whether this dialog is able to use the custom frame
   // style for dialogs.
-  bool supports_custom_frame_;
+  bool supports_custom_frame_ = true;
 
   // The margins between the content and the inside of the border.
-  gfx::Insets margins_;
+  // TODO(crbug.com/733040): Most subclasses assume they must set their own
+  // margins explicitly, so we set them to 0 here for now to avoid doubled
+  // margins.
+  gfx::Insets margins_{0};
 
   // The time the dialog is created.
   base::TimeTicks creation_time_;

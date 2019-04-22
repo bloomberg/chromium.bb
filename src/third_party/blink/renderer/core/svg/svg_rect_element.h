@@ -33,6 +33,8 @@ class SVGRectElement final : public SVGGeometryElement {
  public:
   DECLARE_NODE_FACTORY(SVGRectElement);
 
+  explicit SVGRectElement(Document&);
+
   Path AsPath() const override;
 
   SVGAnimatedLength* x() const { return x_.Get(); }
@@ -45,8 +47,6 @@ class SVGRectElement final : public SVGGeometryElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGRectElement(Document&);
-
   void CollectStyleForPresentationAttribute(
       const QualifiedName&,
       const AtomicString&,
@@ -55,7 +55,7 @@ class SVGRectElement final : public SVGGeometryElement {
 
   bool SelfHasRelativeLengths() const override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   Member<SVGAnimatedLength> x_;
   Member<SVGAnimatedLength> y_;

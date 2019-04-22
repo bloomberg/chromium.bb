@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/find_bar_view.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
@@ -43,7 +44,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
 
@@ -55,30 +56,6 @@ constexpr int kDefaultCharWidth = 30;
 // The minimum allowable width in chars for the find_text_ view. This ensures
 // the view can at least display the caret and some number of characters.
 constexpr int kMinimumCharWidth = 1;
-
-// The match count label is like a normal label, but can process events (which
-// makes it easier to forward events to the text input --- see
-// FindBarView::TargetForRect).
-class MatchCountLabel : public views::Label {
- public:
-  MatchCountLabel() {}
-  ~MatchCountLabel() override {}
-
-  // views::Label overrides:
-  bool CanProcessEventsWithinSubtree() const override { return true; }
-
-  gfx::Size CalculatePreferredSize() const override {
-    // We need to return at least 1dip so that box layout adds padding on either
-    // side (otherwise there will be a jump when our size changes between empty
-    // and non-empty).
-    gfx::Size size = views::Label::CalculatePreferredSize();
-    size.set_width(std::max(1, size.width()));
-    return size;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MatchCountLabel);
-};
 
 // We use a hidden view to grab mouse clicks and bring focus to the find
 // text box. This is because although the find text box may look like it
@@ -106,6 +83,69 @@ class FocusForwarderView : public views::View {
 
 }  // namespace
 
+// The match count label is like a normal label, but can process events (which
+// makes it easier to forward events to the text input --- see
+// FindBarView::TargetForRect).
+class FindBarView::MatchCountLabel : public views::Label {
+ public:
+  MatchCountLabel() {}
+  ~MatchCountLabel() override {}
+
+  // views::Label overrides:
+  bool CanProcessEventsWithinSubtree() const override { return true; }
+
+  gfx::Size CalculatePreferredSize() const override {
+    // We need to return at least 1dip so that box layout adds padding on either
+    // side (otherwise there will be a jump when our size changes between empty
+    // and non-empty).
+    gfx::Size size = views::Label::CalculatePreferredSize();
+    size.set_width(std::max(1, size.width()));
+    return size;
+  }
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    if (!last_result_) {
+      node_data->SetNameExplicitlyEmpty();
+    } else if (last_result_->number_of_matches() < 1) {
+      node_data->SetName(
+          l10n_util::GetStringUTF16(IDS_ACCESSIBLE_FIND_IN_PAGE_NO_RESULTS));
+    } else {
+      node_data->SetName(l10n_util::GetStringFUTF16(
+          IDS_ACCESSIBLE_FIND_IN_PAGE_COUNT,
+          base::FormatNumber(last_result_->active_match_ordinal()),
+          base::FormatNumber(last_result_->number_of_matches())));
+    }
+    node_data->role = ax::mojom::Role::kStatus;
+  }
+
+  void SetResult(const FindNotificationDetails& result) {
+    last_result_ = result;
+    SetText(l10n_util::GetStringFUTF16(
+        IDS_FIND_IN_PAGE_COUNT,
+        base::FormatNumber(last_result_->active_match_ordinal()),
+        base::FormatNumber(last_result_->number_of_matches())));
+
+    if (last_result_->final_update()) {
+      NotifyAccessibilityEvent(ax::mojom::Event::kLiveRegionChanged,
+                               /* send_native_event = */ true);
+    }
+  }
+
+  void ClearResult() {
+    last_result_.reset();
+    SetText(base::string16());
+  }
+
+ protected:
+  // views::Label:
+  void SetText(const base::string16& text) override { Label::SetText(text); }
+
+ private:
+  base::Optional<FindNotificationDetails> last_result_;
+
+  DISALLOW_COPY_AND_ASSIGN(MatchCountLabel);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarView, public:
 
@@ -125,6 +165,12 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
   find_text_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
   AddChildView(find_text_);
+
+  match_count_text_->SetEventTargeter(
+      std::make_unique<views::ViewTargeter>(this));
+  AddChildView(match_count_text_);
+
+  AddChildView(separator_);
 
   find_previous_button_->set_id(VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON);
   find_previous_button_->SetFocusForPlatform();
@@ -146,22 +192,12 @@ FindBarView::FindBarView(FindBarHost* host)
   close_button_->SetFocusForPlatform();
   close_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   close_button_->SetAnimationDuration(0);
   AddChildView(close_button_);
 
   AddChildView(focus_forwarder_view_);
 
   EnableCanvasFlippingForRTLUI(true);
-
-  match_count_text_->SetEventTargeter(
-      std::make_unique<views::ViewTargeter>(this));
-  AddChildViewAt(match_count_text_, 1);
-
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-
-  AddChildViewAt(separator_, 2);
 
   // Normally we could space objects horizontally by simply passing a constant
   // value to BoxLayout for between-child spacing.  But for the vector image
@@ -171,6 +207,7 @@ FindBarView::FindBarView(FindBarHost* host)
   // we place views directly adjacent, with horizontal margins on each view
   // that will add up to the right spacing amounts.
 
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const gfx::Insets horizontal_margin(
       0,
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL) / 2);
@@ -263,9 +300,7 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
     return;
   }
 
-  match_count_text_->SetText(l10n_util::GetStringFUTF16(
-      IDS_FIND_IN_PAGE_COUNT, base::FormatNumber(result.active_match_ordinal()),
-      base::FormatNumber(result.number_of_matches())));
+  match_count_text_->SetResult(result);
 
   UpdateMatchCountAppearance(result.number_of_matches() == 0 &&
                              result.final_update());
@@ -278,7 +313,7 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
 }
 
 void FindBarView::ClearMatchCount() {
-  match_count_text_->SetText(base::string16());
+  match_count_text_->ClearResult();
   UpdateMatchCountAppearance(false);
   Layout();
   SchedulePaint();
@@ -332,12 +367,12 @@ void FindBarView::AddedToWidget() {
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarView, DropdownBarHostDelegate implementation:
 
-void FindBarView::SetFocusAndSelection(bool select_all) {
+void FindBarView::FocusAndSelectAll() {
   find_text_->RequestFocus();
 #if !defined(OS_WIN)
   GetWidget()->GetInputMethod()->ShowVirtualKeyboardIfEnabled();
 #endif
-  if (select_all && !find_text_->text().empty())
+  if (!find_text_->text().empty())
     find_text_->SelectAll(true);
 }
 
@@ -468,10 +503,17 @@ const char* FindBarView::GetClassName() const {
 }
 
 void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  SkColor bg_color = theme->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultBackground);
+  SkColor bg_color =
+      SkColorSetA(theme->GetSystemColor(
+                      ui::NativeTheme::kColorId_TextfieldDefaultBackground),
+                  0xFF);
   auto border = std::make_unique<views::BubbleBorder>(
       views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW, bg_color);
+  // TODO(sajadm): Remove when fixing https://crbug.com/822075 and use
+  // EMPHASIS_HIGH metric values from the LayoutProvider to get the
+  // corner radius.
+  border->SetCornerRadius(2);
+
   SetBackground(std::make_unique<views::BubbleBackground>(border.get()));
   SetBorder(std::move(border));
 

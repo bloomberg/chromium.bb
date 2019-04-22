@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -160,7 +162,7 @@ class HttpProtocolHandlerCore
                           const RedirectInfo& new_url,
                           bool* defer_redirect) override;
   void OnAuthRequired(URLRequest* request,
-                      AuthChallengeInfo* auth_info) override;
+                      const AuthChallengeInfo& auth_info) override;
   void OnCertificateRequested(URLRequest* request,
                               SSLCertRequestInfo* cert_request_info) override;
   void OnSSLCertificateError(URLRequest* request,
@@ -399,8 +401,9 @@ void HttpProtocolHandlerCore::OnReceivedRedirect(
   StopNetRequest();
 }
 
-void HttpProtocolHandlerCore::OnAuthRequired(URLRequest* request,
-                                             AuthChallengeInfo* auth_info) {
+void HttpProtocolHandlerCore::OnAuthRequired(
+    URLRequest* request,
+    const AuthChallengeInfo& auth_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // A request with no tab ID should not hit HTTP authentication.
   if (tracker_) {
@@ -949,7 +952,7 @@ int HttpProtocolHandlerCore::OnRead(char* buffer, int buffer_length) {
   g_protocol_handler_delegate->GetDefaultURLRequestContext()
       ->GetNetworkTaskRunner()
       ->PostTask(FROM_HERE,
-                 base::Bind(&net::HttpProtocolHandlerCore::Cancel, _core));
+                 base::BindOnce(&net::HttpProtocolHandlerCore::Cancel, _core));
 }
 
 @end
@@ -1058,8 +1061,8 @@ int HttpProtocolHandlerCore::OnRead(char* buffer, int buffer_length) {
   DCHECK(_protocolProxy);
   g_protocol_handler_delegate->GetDefaultURLRequestContext()
       ->GetNetworkTaskRunner()
-      ->PostTask(FROM_HERE, base::Bind(&net::HttpProtocolHandlerCore::Start,
-                                       _core, _protocolProxy));
+      ->PostTask(FROM_HERE, base::BindOnce(&net::HttpProtocolHandlerCore::Start,
+                                           _core, _protocolProxy));
 }
 
 - (id<CRNHTTPProtocolHandlerProxy>)getProtocolHandlerProxy {
@@ -1085,7 +1088,7 @@ int HttpProtocolHandlerCore::OnRead(char* buffer, int buffer_length) {
   g_protocol_handler_delegate->GetDefaultURLRequestContext()
       ->GetNetworkTaskRunner()
       ->PostTask(FROM_HERE,
-                 base::Bind(&net::HttpProtocolHandlerCore::Cancel, _core));
+                 base::BindOnce(&net::HttpProtocolHandlerCore::Cancel, _core));
   [_protocolProxy invalidate];
 }
 

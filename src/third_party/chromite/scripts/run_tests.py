@@ -65,12 +65,12 @@ SKIP = 'skip'
 # List all exceptions, with a token describing what's odd here.
 SPECIAL_TESTS = {
     # Tests that need to run inside the chroot.
+    'api/controller/board_build_dependency_unittest': INSIDE,
     'cbuildbot/stages/sync_stages_unittest': INSIDE,
     'cbuildbot/stages/test_stages_unittest': INSIDE,
     'cli/cros/cros_build_unittest': INSIDE,
     'cli/cros/cros_chroot_unittest': INSIDE,
     'cli/cros/cros_debug_unittest': INSIDE,
-    'cli/cros/cros_payload_unittest': INSIDE,
     'cli/cros/lint_unittest': INSIDE,
     'cli/cros/lint_autotest_unittest': INSIDE,
     'cli/deploy_unittest': INSIDE,
@@ -79,9 +79,11 @@ SPECIAL_TESTS = {
     'lib/chroot_util_unittest': INSIDE,
     'lib/filetype_unittest': INSIDE,
     'lib/paygen/paygen_payload_lib_unittest': INSIDE,
+    'lib/paygen/signer_payloads_client_unittest': INSIDE,
     'lib/upgrade_table_unittest': INSIDE,
     'mobmonitor/checkfile/manager_unittest': INSIDE,
     'mobmonitor/scripts/mobmonitor_unittest': INSIDE,
+    'scripts/cros_extract_deps_unittest': INSIDE,
     'scripts/cros_generate_update_payload_unittest': INSIDE,
     'scripts/cros_mark_android_as_stable_unittest': INSIDE,
     'scripts/cros_oobe_autoconfig_unittest': INSIDE,
@@ -89,11 +91,12 @@ SPECIAL_TESTS = {
     'scripts/cros_list_modified_packages_unittest': INSIDE,
     'scripts/cros_mark_as_stable_unittest': INSIDE,
     'scripts/cros_mark_chrome_as_stable_unittest': INSIDE,
-    'scripts/sync_package_status_unittest': INSIDE,
     'scripts/cros_portage_upgrade_unittest': INSIDE,
+    'scripts/cros_run_unit_tests_unittest': INSIDE,
     'scripts/dep_tracker_unittest': INSIDE,
+    'scripts/gconv_strip_unittest': INSIDE,
     'scripts/test_image_unittest': INSIDE,
-    'scripts/upload_package_status_unittest': INSIDE,
+    'service/dependency_unittest': INSIDE,
 
     # Tests that need to run outside the chroot.
     'lib/cgroups_unittest': OUTSIDE,
@@ -104,6 +107,13 @@ SPECIAL_TESTS = {
     # the lvm hang is resolved.
     'scripts/cros_sdk_unittest': SKIP,
 
+    # The proto compile unittest requires network access to install protoc
+    # with CIPD. Since ebuilds have no network access and our tests are run
+    # through the chromite ebuild on builders, this is a problem. The test
+    # can be run manually, but it primarily exists to be a presubmit check
+    # anyway, so it not running for run_tests is fine.
+    'api/proto_compiled_unittest': SKIP,
+
     # Tests that take >2 minutes to run.  All the slow tests are
     # disabled atm though ...
     #'scripts/cros_portage_upgrade_unittest': SKIP,
@@ -111,9 +121,6 @@ SPECIAL_TESTS = {
 
 SLOW_TESTS = {
     # Tests that require network can be really slow.
-    'buildbot/manifest_version_unittest': SKIP,
-    'buildbot/repository_unittest': SKIP,
-    'buildbot/remote_try_unittest': SKIP,
     'lib/cros_build_lib_unittest': SKIP,
     'lib/gce_unittest': SKIP,
     'lib/gerrit_unittest': SKIP,
@@ -123,6 +130,8 @@ SLOW_TESTS = {
     'lib/cgroups_unittest': SKIP,
     # cros_sdk_unittest runs cros_sdk a lot, so is slow.
     'scripts/cros_sdk_unittest': SKIP,
+    # This test involves lots of git operations, which are very slow.
+    'cli/cros/cros_branch_unittest': SKIP,
 }
 
 
@@ -239,7 +248,7 @@ def SortTests(tests, jobs=1, timing_cache_file=None):
   return ret
 
 
-def BuildTestSets(tests, chroot_available, network, jobs=1):
+def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1):
   """Build the tests to execute.
 
   Take care of special test handling like whether it needs to be inside or
@@ -249,6 +258,7 @@ def BuildTestSets(tests, chroot_available, network, jobs=1):
     tests: List of tests to execute.
     chroot_available: Whether we can execute tests inside the sdk.
     network: Whether to execute network tests.
+    config_skew: Whether to execute config skew tests.
     jobs: How many jobs will we run in parallel.
 
   Returns:
@@ -287,6 +297,8 @@ def BuildTestSets(tests, chroot_available, network, jobs=1):
     cmd.append('--verbose')
     if network:
       cmd.append('--network')
+    if config_skew:
+      cmd.append('--config_skew')
     cmd = ['timeout', '--preserve-status', '-k', '%sm' % TEST_SIG_TIMEOUT,
            '%sm' % TEST_TIMEOUT] + cmd
 
@@ -295,8 +307,8 @@ def BuildTestSets(tests, chroot_available, network, jobs=1):
   return testsets
 
 
-def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False,
-             failfast=False):
+def RunTests(tests, jobs=1, chroot_available=True, network=False,
+             config_skew=False, dryrun=False, failfast=False):
   """Execute |paths| with |jobs| in parallel (including |network| tests).
 
   Args:
@@ -304,6 +316,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False,
     jobs: How many tests to run in parallel.
     chroot_available: Whether we can run tests inside the sdk.
     network: Whether to run network based tests.
+    config_skew: Whether to run config skew tests.
     dryrun: Do everything but execute the test.
     failfast: Stop on first failure
 
@@ -323,7 +336,8 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False,
   # Launch all the tests!
   try:
     # Build up the testsets.
-    testsets = BuildTestSets(tests, chroot_available, network, jobs=jobs)
+    testsets = BuildTestSets(tests, chroot_available, network,
+                             config_skew, jobs=jobs)
 
     # Fork each test and add it to the list.
     for test, cmd, tmpfile in testsets:
@@ -498,6 +512,9 @@ def GetParser():
                       help='Number of tests to run in parallel at a time')
   parser.add_argument('--network', default=False, action='store_true',
                       help='Run tests that depend on good network connectivity')
+  parser.add_argument('--config_skew', default=False, action='store_true',
+                      help='Run tests that check if new config matches legacy '
+                      'config')
   parser.add_argument('tests', nargs='*', default=None, help='Tests to run')
   return parser
 
@@ -553,7 +570,8 @@ def main(argv):
     with cros_build_lib.TimedSection() as timer:
       result = RunTests(
           tests, jobs=jobs, chroot_available=ChrootAvailable(),
-          network=opts.network, dryrun=opts.dryrun, failfast=opts.failfast)
+          network=opts.network, config_skew=opts.config_skew,
+          dryrun=opts.dryrun, failfast=opts.failfast)
 
     if result:
       logging.info('All tests succeeded! (%s total)', timer.delta)
@@ -562,3 +580,6 @@ def main(argv):
 
   if not opts.network:
     logging.warning('Network tests skipped; use --network to run them')
+
+  if not opts.config_skew:
+    logging.warning('Config skew tests skipped; use --config_skew to run them')

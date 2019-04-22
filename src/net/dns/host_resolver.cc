@@ -4,16 +4,23 @@
 
 #include "net/dns/host_resolver.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "net/base/address_list.h"
 #include "net/base/net_errors.h"
+#include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_cache.h"
-#include "net/dns/host_resolver_impl.h"
+#include "net/dns/host_resolver_manager.h"
+#include "net/dns/mapped_host_resolver.h"
 
 namespace net {
 
@@ -90,29 +97,32 @@ HostResolver::Options::Options()
       enable_caching(true) {}
 
 std::unique_ptr<HostResolver> HostResolver::Factory::CreateResolver(
+    HostResolverManager* manager,
+    base::StringPiece host_mapping_rules,
+    bool enable_caching) {
+  return HostResolver::CreateResolver(manager, host_mapping_rules,
+                                      enable_caching);
+}
+
+std::unique_ptr<HostResolver> HostResolver::Factory::CreateStandaloneResolver(
+    NetLog* net_log,
     const Options& options,
-    NetLog* net_log) {
-  return CreateSystemResolver(options, net_log);
+    base::StringPiece host_mapping_rules,
+    bool enable_caching) {
+  return HostResolver::CreateStandaloneResolver(
+      net_log, options, host_mapping_rules, enable_caching);
 }
-
-HostResolver::RequestInfo::RequestInfo(const HostPortPair& host_port_pair)
-    : RequestInfo() {
-  host_port_pair_ = host_port_pair;
-}
-
-HostResolver::RequestInfo::RequestInfo(const RequestInfo& request_info) =
-    default;
-
-HostResolver::RequestInfo::~RequestInfo() = default;
-
-HostResolver::RequestInfo::RequestInfo()
-    : address_family_(ADDRESS_FAMILY_UNSPECIFIED),
-      host_resolver_flags_(0),
-      allow_cached_response_(true),
-      is_speculative_(false),
-      is_my_ip_address_(false) {}
 
 HostResolver::~HostResolver() = default;
+
+std::unique_ptr<HostResolver::MdnsListener> HostResolver::CreateMdnsListener(
+    const HostPortPair& host,
+    DnsQueryType query_type) {
+  // Should be overridden in any HostResolver implementation where this method
+  // may be called.
+  NOTREACHED();
+  return nullptr;
+}
 
 void HostResolver::SetDnsClientEnabled(bool enabled) {}
 
@@ -138,36 +148,79 @@ void HostResolver::SetDnsConfigOverrides(const DnsConfigOverrides& overrides) {
   NOTREACHED();
 }
 
+void HostResolver::SetRequestContext(URLRequestContext* request_context) {
+  // Should be overridden in any HostResolver implementation where this method
+  // may be called.
+  NOTREACHED();
+}
+
 const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
 HostResolver::GetDnsOverHttpsServersForTesting() const {
   return nullptr;
 }
 
-// static
-std::unique_ptr<HostResolver> HostResolver::CreateSystemResolver(
-    const Options& options,
-    NetLog* net_log) {
-  return std::unique_ptr<HostResolver>(
-      CreateSystemResolverImpl(options, net_log).release());
+HostResolverManager* HostResolver::GetManagerForTesting() {
+  // Should be overridden in any HostResolver implementation where this method
+  // may be called.
+  NOTREACHED();
+  return nullptr;
+}
+
+const URLRequestContext* HostResolver::GetContextForTesting() const {
+  // Should be overridden in any HostResolver implementation where this method
+  // may be called.
+  NOTREACHED();
+  return nullptr;
 }
 
 // static
-std::unique_ptr<HostResolverImpl> HostResolver::CreateSystemResolverImpl(
-    const Options& options,
-    NetLog* net_log) {
-  return std::make_unique<HostResolverImpl>(options, net_log);
+std::unique_ptr<HostResolver> HostResolver::CreateResolver(
+    HostResolverManager* manager,
+    base::StringPiece host_mapping_rules,
+    bool enable_caching) {
+  DCHECK(manager);
+
+  auto cache = enable_caching ? HostCache::CreateDefaultCache() : nullptr;
+  auto resolver =
+      std::make_unique<ContextHostResolver>(manager, std::move(cache));
+
+  if (host_mapping_rules.empty())
+    return resolver;
+  auto remapped_resolver =
+      std::make_unique<MappedHostResolver>(std::move(resolver));
+  remapped_resolver->SetRulesFromString(host_mapping_rules);
+  return remapped_resolver;
 }
 
 // static
-std::unique_ptr<HostResolver> HostResolver::CreateDefaultResolver(
-    NetLog* net_log) {
-  return CreateSystemResolver(Options(), net_log);
+std::unique_ptr<HostResolver> HostResolver::CreateStandaloneResolver(
+    NetLog* net_log,
+    base::Optional<Options> options,
+    base::StringPiece host_mapping_rules,
+    bool enable_caching) {
+  std::unique_ptr<ContextHostResolver> resolver =
+      CreateStandaloneContextResolver(net_log, std::move(options),
+                                      enable_caching);
+
+  if (host_mapping_rules.empty())
+    return resolver;
+  auto remapped_resolver =
+      std::make_unique<MappedHostResolver>(std::move(resolver));
+  remapped_resolver->SetRulesFromString(host_mapping_rules);
+  return remapped_resolver;
 }
 
 // static
-std::unique_ptr<HostResolverImpl> HostResolver::CreateDefaultResolverImpl(
-    NetLog* net_log) {
-  return CreateSystemResolverImpl(Options(), net_log);
+std::unique_ptr<ContextHostResolver>
+HostResolver::CreateStandaloneContextResolver(NetLog* net_log,
+                                              base::Optional<Options> options,
+                                              bool enable_caching) {
+  auto cache = enable_caching ? HostCache::CreateDefaultCache() : nullptr;
+
+  return std::make_unique<ContextHostResolver>(
+      std::make_unique<HostResolverManager>(
+          std::move(options).value_or(Options()), net_log),
+      std::move(cache));
 }
 
 // static
@@ -185,45 +238,6 @@ AddressFamily HostResolver::DnsQueryTypeToAddressFamily(
       NOTREACHED();
       return ADDRESS_FAMILY_UNSPECIFIED;
   }
-}
-
-// static
-HostResolver::ResolveHostParameters
-HostResolver::RequestInfoToResolveHostParameters(
-    const HostResolver::RequestInfo& request_info,
-    RequestPriority priority) {
-  // Flag that should only be set internally, not used in input.
-  DCHECK(!(request_info.host_resolver_flags() &
-           HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6));
-
-  ResolveHostParameters parameters;
-
-  parameters.dns_query_type =
-      AddressFamilyToDnsQueryType(request_info.address_family());
-  parameters.initial_priority = priority;
-  parameters.source = FlagsToSource(request_info.host_resolver_flags());
-  parameters.allow_cached_response = request_info.allow_cached_response();
-  parameters.include_canonical_name =
-      request_info.host_resolver_flags() & HOST_RESOLVER_CANONNAME;
-  parameters.loopback_only =
-      request_info.host_resolver_flags() & HOST_RESOLVER_LOOPBACK_ONLY;
-  parameters.is_speculative = request_info.is_speculative();
-
-  return parameters;
-}
-
-// static
-HostResolverSource HostResolver::FlagsToSource(HostResolverFlags flags) {
-  // To counter the lack of CNAME support in the async host resolver, SYSTEM is
-  // forced when CANONNAME flags is present. This restriction can be removed
-  // once CNAME support is added to the async resolver.  See
-  // https://crbug.com/872665
-  //
-  // It is intentional that the presence of either flag forces SYSTEM.
-  if (flags & (HOST_RESOLVER_SYSTEM_ONLY | HOST_RESOLVER_CANONNAME))
-    return HostResolverSource::SYSTEM;
-
-  return HostResolverSource::ANY;
 }
 
 // static

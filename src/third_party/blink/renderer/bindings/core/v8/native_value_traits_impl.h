@@ -28,11 +28,6 @@ struct CORE_EXPORT NativeValueTraits<IDLBoolean>
 };
 
 // Integers
-//
-// All integer specializations offer a second nativeValue() besides the default
-// one: it takes an IntegerConversionConfiguration argument to let callers
-// specify how the integers should be converted. The default nativeValue()
-// overload will always use NormalConversion.
 template <>
 struct CORE_EXPORT NativeValueTraits<IDLByte>
     : public NativeValueTraitsBase<IDLByte> {

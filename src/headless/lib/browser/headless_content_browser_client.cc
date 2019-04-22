@@ -8,9 +8,9 @@
 #include <unordered_set>
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -24,18 +24,17 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "headless/app/headless_shell_switches.h"
-#include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
+#include "headless/lib/browser/headless_overlay_manifests.h"
 #include "headless/lib/browser/headless_quota_permission_context.h"
 #include "headless/lib/headless_macros.h"
 #include "net/base/url_util.h"
 #include "net/ssl/client_cert_identity.h"
 #include "printing/buildflags/buildflags.h"
 #include "storage/browser/quota/quota_settings.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
 
@@ -147,17 +146,16 @@ HeadlessContentBrowserClient::GetDevToolsManagerDelegate() {
   return new HeadlessDevToolsManagerDelegate(browser_->GetWeakPtr());
 }
 
-std::unique_ptr<base::Value>
+base::Optional<service_manager::Manifest>
 HeadlessContentBrowserClient::GetServiceManifestOverlay(
     base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
-    return GetBrowserServiceManifestOverlay();
-  if (name == content::mojom::kRendererServiceName)
-    return GetRendererServiceManifestOverlay();
-  if (name == content::mojom::kPackagedServicesServiceName)
-    return GetPackagedServicesServiceManifestOverlay();
+    return GetHeadlessContentBrowserOverlayManifest();
 
-  return nullptr;
+  if (name == content::mojom::kPackagedServicesServiceName)
+    return GetHeadlessContentPackagedServicesOverlayManifest();
+
+  return base::nullopt;
 }
 
 void HeadlessContentBrowserClient::RegisterOutOfProcessServices(
@@ -166,30 +164,6 @@ void HeadlessContentBrowserClient::RegisterOutOfProcessServices(
   (*services)[printing::mojom::kServiceName] =
       base::BindRepeating(&base::ASCIIToUTF16, "PDF Compositor Service");
 #endif
-}
-
-std::unique_ptr<base::Value>
-HeadlessContentBrowserClient::GetBrowserServiceManifestOverlay() {
-  base::StringPiece manifest_template =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_HEADLESS_BROWSER_MANIFEST_OVERLAY);
-  return base::JSONReader::Read(manifest_template);
-}
-
-std::unique_ptr<base::Value>
-HeadlessContentBrowserClient::GetRendererServiceManifestOverlay() {
-  base::StringPiece manifest_template =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_HEADLESS_RENDERER_MANIFEST_OVERLAY);
-  return base::JSONReader::Read(manifest_template);
-}
-
-std::unique_ptr<base::Value>
-HeadlessContentBrowserClient::GetPackagedServicesServiceManifestOverlay() {
-  base::StringPiece manifest_template =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_HEADLESS_PACKAGED_SERVICES_MANIFEST_OVERLAY);
-  return base::JSONReader::Read(manifest_template);
 }
 
 content::QuotaPermissionContext*
@@ -202,7 +176,8 @@ void HeadlessContentBrowserClient::GetQuotaSettings(
     content::StoragePartition* partition,
     ::storage::OptionalQuotaSettingsCallback callback) {
   ::storage::GetNominalDynamicSettings(
-      partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
+      partition->GetPath(), context->IsOffTheRecord(),
+      ::storage::GetDefaultDiskInfoHelper(), std::move(callback));
 }
 
 content::GeneratedCodeCacheSettings
@@ -346,6 +321,14 @@ HeadlessContentBrowserClient::CreateNetworkContext(
     const base::FilePath& relative_partition_path) {
   return HeadlessBrowserContextImpl::From(context)->CreateNetworkContext(
       in_memory, relative_partition_path);
+}
+
+std::string HeadlessContentBrowserClient::GetProduct() const {
+  return browser_->options()->product_name_and_version;
+}
+
+std::string HeadlessContentBrowserClient::GetUserAgent() const {
+  return browser_->options()->user_agent;
 }
 
 }  // namespace headless

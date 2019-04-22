@@ -37,8 +37,10 @@
 #include "src/api-inl.h"
 #include "src/assembler-inl.h"
 #include "src/base/hashmap.h"
+#include "src/base/optional.h"
 #include "src/collector.h"
 #include "src/debug/debug.h"
+#include "src/heap/heap-inl.h"
 #include "src/objects-inl.h"
 #include "src/profiler/allocation-tracker.h"
 #include "src/profiler/heap-profiler.h"
@@ -1194,9 +1196,7 @@ class TestStatsStream : public v8::OutputStream {
       entries_size_(0),
       intervals_count_(0),
       first_interval_index_(-1) { }
-  TestStatsStream(const TestStatsStream& stream)
-
-      = default;
+  TestStatsStream(const TestStatsStream& stream) V8_NOEXCEPT = default;
   ~TestStatsStream() override = default;
   void EndOfStream() override { ++eos_signaled_; }
   WriteResult WriteAsciiChunk(char* buffer, int chars_written) override {
@@ -1672,11 +1672,11 @@ TEST(HeapSnapshotRetainedObjectInfo) {
   CHECK(ValidateSnapshot(snapshot));
 
   const v8::HeapGraphNode* native_group_aaa =
-      GetNode(snapshot->GetRoot(), v8::HeapGraphNode::kNative, "aaa-group");
-  CHECK(native_group_aaa);
+      GetNode(snapshot->GetRoot(), v8::HeapGraphNode::kSynthetic, "aaa-group");
+  CHECK_NOT_NULL(native_group_aaa);
   const v8::HeapGraphNode* native_group_ccc =
-      GetNode(snapshot->GetRoot(), v8::HeapGraphNode::kNative, "ccc-group");
-  CHECK(native_group_ccc);
+      GetNode(snapshot->GetRoot(), v8::HeapGraphNode::kSynthetic, "ccc-group");
+  CHECK_NOT_NULL(native_group_ccc);
 
   const v8::HeapGraphNode* n_AAA =
       GetNode(native_group_aaa, v8::HeapGraphNode::kString, "AAA");
@@ -1849,26 +1849,26 @@ TEST(GetHeapValueForNode) {
   CHECK(heap_profiler->FindObjectById(global->GetId())->IsObject());
   v8::Local<v8::Object> js_global =
       env->Global()->GetPrototype().As<v8::Object>();
-  CHECK(js_global == heap_profiler->FindObjectById(global->GetId()));
+  CHECK_EQ(js_global, heap_profiler->FindObjectById(global->GetId()));
   const v8::HeapGraphNode* obj =
       GetProperty(env->GetIsolate(), global, v8::HeapGraphEdge::kProperty, "a");
   CHECK(heap_profiler->FindObjectById(obj->GetId())->IsObject());
   v8::Local<v8::Object> js_obj = js_global->Get(env.local(), v8_str("a"))
                                      .ToLocalChecked()
                                      .As<v8::Object>();
-  CHECK(js_obj == heap_profiler->FindObjectById(obj->GetId()));
+  CHECK_EQ(js_obj, heap_profiler->FindObjectById(obj->GetId()));
   const v8::HeapGraphNode* s_prop = GetProperty(
       env->GetIsolate(), obj, v8::HeapGraphEdge::kProperty, "s_prop");
   v8::Local<v8::String> js_s_prop = js_obj->Get(env.local(), v8_str("s_prop"))
                                         .ToLocalChecked()
                                         .As<v8::String>();
-  CHECK(js_s_prop == heap_profiler->FindObjectById(s_prop->GetId()));
+  CHECK_EQ(js_s_prop, heap_profiler->FindObjectById(s_prop->GetId()));
   const v8::HeapGraphNode* n_prop = GetProperty(
       env->GetIsolate(), obj, v8::HeapGraphEdge::kProperty, "n_prop");
   v8::Local<v8::String> js_n_prop = js_obj->Get(env.local(), v8_str("n_prop"))
                                         .ToLocalChecked()
                                         .As<v8::String>();
-  CHECK(js_n_prop == heap_profiler->FindObjectById(n_prop->GetId()));
+  CHECK_EQ(js_n_prop, heap_profiler->FindObjectById(n_prop->GetId()));
 }
 
 
@@ -1931,37 +1931,37 @@ TEST(GetConstructor) {
                                    .As<v8::Object>();
   i::Handle<i::JSObject> js_obj1 =
       i::Handle<i::JSObject>::cast(v8::Utils::OpenHandle(*obj1));
-  CHECK(i::V8HeapExplorer::GetConstructor(*js_obj1));
+  CHECK(!i::V8HeapExplorer::GetConstructor(*js_obj1).is_null());
   v8::Local<v8::Object> obj2 = js_global->Get(env.local(), v8_str("obj2"))
                                    .ToLocalChecked()
                                    .As<v8::Object>();
   i::Handle<i::JSObject> js_obj2 =
       i::Handle<i::JSObject>::cast(v8::Utils::OpenHandle(*obj2));
-  CHECK(i::V8HeapExplorer::GetConstructor(*js_obj2));
+  CHECK(!i::V8HeapExplorer::GetConstructor(*js_obj2).is_null());
   v8::Local<v8::Object> obj3 = js_global->Get(env.local(), v8_str("obj3"))
                                    .ToLocalChecked()
                                    .As<v8::Object>();
   i::Handle<i::JSObject> js_obj3 =
       i::Handle<i::JSObject>::cast(v8::Utils::OpenHandle(*obj3));
-  CHECK(i::V8HeapExplorer::GetConstructor(*js_obj3));
+  CHECK(!i::V8HeapExplorer::GetConstructor(*js_obj3).is_null());
   v8::Local<v8::Object> obj4 = js_global->Get(env.local(), v8_str("obj4"))
                                    .ToLocalChecked()
                                    .As<v8::Object>();
   i::Handle<i::JSObject> js_obj4 =
       i::Handle<i::JSObject>::cast(v8::Utils::OpenHandle(*obj4));
-  CHECK(i::V8HeapExplorer::GetConstructor(*js_obj4));
+  CHECK(!i::V8HeapExplorer::GetConstructor(*js_obj4).is_null());
   v8::Local<v8::Object> obj5 = js_global->Get(env.local(), v8_str("obj5"))
                                    .ToLocalChecked()
                                    .As<v8::Object>();
   i::Handle<i::JSObject> js_obj5 =
       i::Handle<i::JSObject>::cast(v8::Utils::OpenHandle(*obj5));
-  CHECK(!i::V8HeapExplorer::GetConstructor(*js_obj5));
+  CHECK(i::V8HeapExplorer::GetConstructor(*js_obj5).is_null());
   v8::Local<v8::Object> obj6 = js_global->Get(env.local(), v8_str("obj6"))
                                    .ToLocalChecked()
                                    .As<v8::Object>();
   i::Handle<i::JSObject> js_obj6 =
       i::Handle<i::JSObject>::cast(v8::Utils::OpenHandle(*obj6));
-  CHECK(!i::V8HeapExplorer::GetConstructor(*js_obj6));
+  CHECK(i::V8HeapExplorer::GetConstructor(*js_obj6).is_null());
 }
 
 TEST(GetConstructorName) {
@@ -2447,6 +2447,8 @@ TEST(ManyLocalsInSharedContext) {
 
 
 TEST(AllocationSitesAreVisible) {
+  if (i::FLAG_lite_mode) return;
+
   LocalContext env;
   v8::Isolate* isolate = env->GetIsolate();
   v8::HandleScope scope(isolate);
@@ -2690,7 +2692,12 @@ TEST(TrackHeapAllocationsWithInlining) {
   const char* names[] = {"", "start", "f_0_0"};
   AllocationTraceNode* node = FindNode(tracker, ArrayVector(names));
   CHECK(node);
-  CHECK_GE(node->allocation_count(), 8u);
+  // In lite mode, there is feedback and feedback metadata.
+  unsigned int num_nodes = (i::FLAG_lite_mode) ? 6 : 8;
+  // Without forced source position collection, there is no source position
+  // table.
+  if (i::FLAG_enable_lazy_source_positions) num_nodes -= 1;
+  CHECK_GE(node->allocation_count(), num_nodes);
   CHECK_GE(node->allocation_size(), 4 * node->allocation_count());
   heap_profiler->StopTrackingHeapObjects();
 }
@@ -2941,7 +2948,8 @@ TEST(WeakContainers) {
   CHECK_NE(0, count);
   for (int i = 0; i < count; ++i) {
     const v8::HeapGraphEdge* prop = dependent_code->GetChild(i);
-    CHECK_EQ(v8::HeapGraphEdge::kInternal, prop->GetType());
+    CHECK(prop->GetType() == v8::HeapGraphEdge::kInternal ||
+          prop->GetType() == v8::HeapGraphEdge::kWeak);
   }
 }
 
@@ -3845,7 +3853,7 @@ TEST(SamplingHeapProfilerSampleDuringDeopt) {
   v8::internal::FLAG_sampling_heap_profiler_suppress_randomness = true;
 
   // Small sample interval to force each object to be sampled.
-  heap_profiler->StartSamplingHeapProfiler(i::kPointerSize);
+  heap_profiler->StartSamplingHeapProfiler(i::kTaggedSize);
 
   // Lazy deopt from runtime call from inlined callback function.
   const char* source =
@@ -3901,10 +3909,13 @@ TEST(WeakReference) {
   i::Handle<i::SharedFunctionInfo> shared_function =
       i::Handle<i::SharedFunctionInfo>(i::JSFunction::cast(*obj)->shared(),
                                        i_isolate);
-  i::Handle<i::FeedbackVector> fv = factory->NewFeedbackVector(shared_function);
+  i::Handle<i::ClosureFeedbackCellArray> feedback_cell_array =
+      i::ClosureFeedbackCellArray::New(i_isolate, shared_function);
+  i::Handle<i::FeedbackVector> fv =
+      factory->NewFeedbackVector(shared_function, feedback_cell_array);
 
   // Create a Code.
-  i::Assembler assm(i::AssemblerOptions{}, nullptr, 0);
+  i::Assembler assm(i::AssemblerOptions{});
   assm.nop();  // supported on all architectures
   i::CodeDesc desc;
   assm.GetCode(i_isolate, &desc);

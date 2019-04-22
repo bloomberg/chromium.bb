@@ -83,6 +83,10 @@ class VIEWS_EXPORT RootView : public View,
   // hierarchy.
   void ThemeChanged();
 
+  // Used to clear event handlers so events aren't captured by old event
+  // handlers, e.g., when the widget is minimized.
+  void ResetEventHandlers();
+
   // Public API for broadcasting device scale factor change notifications to
   // this View hierarchy.
   void DeviceScaleFactorChanged(float old_device_scale_factor,

@@ -8,23 +8,24 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/web_heap.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/test/mock_peerconnectioninterface.h"
-#include "third_party/webrtc/media/base/fakemediaengine.h"
+#include "third_party/webrtc/media/base/fake_media_engine.h"
 
 using ::testing::Return;
 
@@ -242,9 +243,11 @@ class WebRtcSetDescriptionObserverHandlerTest
     web_source.Initialize(
         blink::WebString::FromUTF8(id), blink::WebMediaStreamSource::kTypeAudio,
         blink::WebString::FromUTF8("local_audio_track"), false);
-    MediaStreamAudioSource* audio_source = new MediaStreamAudioSource(true);
+    blink::MediaStreamAudioSource* audio_source =
+        new blink::MediaStreamAudioSource(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
     // Takes ownership of |audio_source|.
-    web_source.SetExtraData(audio_source);
+    web_source.SetPlatformSource(base::WrapUnique(audio_source));
 
     blink::WebMediaStreamTrack web_track;
     web_track.Initialize(web_source.Id(), web_source);
@@ -260,7 +263,7 @@ class WebRtcSetDescriptionObserverHandlerTest
         track_adapter_map_->GetOrCreateLocalTrackAdapter(web_local_track);
     scoped_refptr<webrtc::MediaStreamTrackInterface> local_track =
         local_track_adapter->webrtc_track();
-    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender(
+    rtc::scoped_refptr<FakeRtpSender> sender(
         new rtc::RefCountedObject<FakeRtpSender>(
             local_track.get(), std::vector<std::string>({"local_stream"})));
     // A requirement of WebRtcSet[Local/Remote]DescriptionObserverHandler is
@@ -273,7 +276,7 @@ class WebRtcSetDescriptionObserverHandlerTest
         MockWebRtcAudioTrack::Create("remote_track");
     scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
         new rtc::RefCountedObject<MockMediaStream>("remote_stream"));
-    rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver(
+    rtc::scoped_refptr<FakeRtpReceiver> receiver(
         new rtc::RefCountedObject<FakeRtpReceiver>(
             remote_track.get(),
             std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>>(
@@ -359,7 +362,7 @@ class WebRtcSetDescriptionObserverHandlerTest
 
  protected:
   // The ScopedTaskEnvironment prevents the ChildProcess from leaking a
-  // TaskScheduler.
+  // ThreadPool.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChildProcess child_process_;
 
@@ -480,7 +483,7 @@ TEST_P(WebRtcSetDescriptionObserverHandlerTest,
   EXPECT_EQ(0u, observer_->states().transceiver_states.size());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     WebRtcSetDescriptionObserverHandlerTest,
     ::testing::Values(std::make_tuple(ObserverHandlerType::kLocal,

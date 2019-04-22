@@ -6,33 +6,14 @@
 
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
-#include "core/fxcrt/cfx_memorystream.h"
 #include "core/fxcrt/fx_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
-
-class InvalidStream final : public IFX_SeekableReadStream {
- public:
-  InvalidStream() = default;
-  ~InvalidStream() override = default;
-
-  // IFX_SeekableReadStream overrides:
-  bool ReadBlockAtOffset(void* buffer,
-                         FX_FILESIZE offset,
-                         size_t size) override {
-    // Read failure.
-    return false;
-  }
-
-  FX_FILESIZE GetSize() override { return 1024; }
-};
-
-}  // namespace
+#include "testing/invalid_seekable_read_stream.h"
 
 TEST(CPDF_StreamAccTest, ReadRawDataFailed) {
   CPDF_Stream stream;
-  stream.InitStreamFromFile(pdfium::MakeRetain<InvalidStream>(), nullptr);
+  stream.InitStreamFromFile(pdfium::MakeRetain<InvalidSeekableReadStream>(1024),
+                            pdfium::MakeUnique<CPDF_Dictionary>());
   auto stream_acc = pdfium::MakeRetain<CPDF_StreamAcc>(&stream);
   stream_acc->LoadAllDataRaw();
   EXPECT_EQ(0u, stream_acc->GetSize());

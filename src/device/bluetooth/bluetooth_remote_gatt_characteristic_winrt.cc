@@ -6,11 +6,13 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/post_async_results.h"
 #include "base/win/winrt_storage_util.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -25,6 +27,7 @@ namespace device {
 
 namespace {
 
+using ABI::Windows::Devices::Bluetooth::BluetoothCacheMode_Uncached;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCharacteristicProperties;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
@@ -41,9 +44,9 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCommunicationStatus_Success;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattReadResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-    GattWriteOption_WriteWithResponse;
-using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattWriteOption_WriteWithoutResponse;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattWriteOption_WriteWithResponse;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattWriteResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
@@ -163,9 +166,10 @@ void BluetoothRemoteGattCharacteristicWinrt::ReadRemoteCharacteristic(
   }
 
   ComPtr<IAsyncOperation<GattReadResult*>> read_value_op;
-  HRESULT hr = characteristic_->ReadValueAsync(&read_value_op);
+  HRESULT hr = characteristic_->ReadValueWithCacheModeAsync(
+      BluetoothCacheMode_Uncached, &read_value_op);
   if (FAILED(hr)) {
-    VLOG(2) << "GattCharacteristic::ReadValueAsync failed: "
+    VLOG(2) << "GattCharacteristic::ReadValueWithCacheModeAsync failed: "
             << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -174,7 +178,7 @@ void BluetoothRemoteGattCharacteristicWinrt::ReadRemoteCharacteristic(
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(read_value_op),
       base::BindOnce(&BluetoothRemoteGattCharacteristicWinrt::OnReadValue,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -255,10 +259,11 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
     return;
   }
 
-  hr = PostAsyncResults(std::move(write_value_op),
-                        base::BindOnce(&BluetoothRemoteGattCharacteristicWinrt::
-                                           OnWriteValueWithResultAndOption,
-                                       weak_ptr_factory_.GetWeakPtr()));
+  hr = base::win::PostAsyncResults(
+      std::move(write_value_op),
+      base::BindOnce(&BluetoothRemoteGattCharacteristicWinrt::
+                         OnWriteValueWithResultAndOption,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   if (FAILED(hr)) {
     VLOG(2) << "PostAsyncResults failed: "
@@ -339,7 +344,8 @@ bool BluetoothRemoteGattCharacteristicWinrt::WriteWithoutResponse(
 
   // While we are ignoring the response, we still post the async_op in order to
   // extend its lifetime until the operation has completed.
-  hr = PostAsyncResults(std::move(write_value_op), base::DoNothing());
+  hr =
+      base::win::PostAsyncResults(std::move(write_value_op), base::DoNothing());
   if (FAILED(hr)) {
     VLOG(2) << "PostAsyncResults failed: "
             << logging::SystemErrorCodeToString(hr);
@@ -470,7 +476,7 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteCccDescriptor(
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(write_ccc_descriptor_op),
       base::BindOnce(
           &BluetoothRemoteGattCharacteristicWinrt::OnWriteCccDescriptor,

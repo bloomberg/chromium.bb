@@ -29,8 +29,12 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
                          ? fuzz->ConsumeIntegralInRange<uint32_t>(
                                1, std::numeric_limits<uint32_t>::max())
                          : viz::AsyncHitTestReasons::kNotAsyncHitTest;
-  gfx::Rect rect(fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>(),
-                 fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>());
+  gfx::Rect rect(
+      fuzz->ConsumeIntegralInRange<int>(std::numeric_limits<int>::min() + 1,
+                                        std::numeric_limits<int>::max()),
+      fuzz->ConsumeIntegralInRange<int>(std::numeric_limits<int>::min() + 1,
+                                        std::numeric_limits<int>::max()),
+      fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>());
   int32_t child_count =
       depth < kMaxDepthAllowed ? fuzz->ConsumeIntegralInRange(0, 10) : 0;
   gfx::Transform transform;
@@ -49,9 +53,17 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
     AddHitTestRegion(fuzz, regions, frame_sink_ids, depth + 1);
 }
 
+class Environment {
+ public:
+  Environment() { base::CommandLine::Init(0, nullptr); }
+};
+
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t num_bytes) {
+  // Initialize the environment only once.
+  static Environment environment;
+
   // If there isn't enough memory to have a single AggregatedHitTestRegion, then
   // skip.
   if (num_bytes < sizeof(viz::AggregatedHitTestRegion))
@@ -71,8 +83,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t num_bytes) {
     for (float y = 0; y < 1000.; y += 10) {
       gfx::PointF location(x, y);
       query.FindTargetForLocation(viz::EventSource::MOUSE, location);
-      query.TransformLocationForTarget(viz::EventSource::MOUSE, frame_sink_ids,
-                                       location, &location);
+      query.TransformLocationForTarget(frame_sink_ids, location, &location);
     }
   }
 

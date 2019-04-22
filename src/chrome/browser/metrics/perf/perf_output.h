@@ -16,6 +16,8 @@
 #include "base/time/time.h"
 #include "chromeos/dbus/pipe_reader.h"
 
+namespace metrics {
+
 // Class for handling getting output from perf over DBus. Manages the
 // asynchronous DBus call and retrieving data from quipper over a pipe.
 class PerfOutputCall {
@@ -36,7 +38,7 @@ class PerfOutputCall {
  private:
   // Internal callbacks.
   void OnIOComplete(base::Optional<std::string> data);
-  void OnGetPerfOutput(bool success);
+  void OnGetPerfOutput(base::Optional<uint64_t> result);
 
   // Used to capture perf data written to a pipe.
   std::unique_ptr<chromeos::PipeReader> perf_data_pipe_reader_;
@@ -46,12 +48,14 @@ class PerfOutputCall {
   std::vector<std::string> perf_args_;
   DoneCallback done_callback_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // To pass around the "this" pointer across threads safely.
   base::WeakPtrFactory<PerfOutputCall> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfOutputCall);
 };
+
+}  // namespace metrics
 
 #endif  // CHROME_BROWSER_METRICS_PERF_PERF_OUTPUT_H_

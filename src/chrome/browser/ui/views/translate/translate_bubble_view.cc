@@ -86,9 +86,10 @@ TranslateBubbleView::~TranslateBubbleView() {
 views::Widget* TranslateBubbleView::ShowBubble(
     views::View* anchor_view,
     views::Button* highlighted_button,
-    const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     translate::TranslateStep step,
+    const std::string& source_language,
+    const std::string& target_language,
     translate::TranslateErrors::Type error_type,
     DisplayReason reason) {
   if (translate_bubble_view_) {
@@ -114,11 +115,6 @@ views::Widget* TranslateBubbleView::ShowBubble(
     }
   }
 
-  std::string source_language;
-  std::string target_language;
-  ChromeTranslateClient::GetTranslateLanguages(web_contents, &source_language,
-                                               &target_language);
-
   std::unique_ptr<translate::TranslateUIDelegate> ui_delegate(
       new translate::TranslateUIDelegate(
           ChromeTranslateClient::GetManagerFromWebContents(web_contents)
@@ -127,7 +123,7 @@ views::Widget* TranslateBubbleView::ShowBubble(
   std::unique_ptr<TranslateBubbleModel> model(
       new TranslateBubbleModelImpl(step, std::move(ui_delegate)));
   TranslateBubbleView* view = new TranslateBubbleView(
-      anchor_view, anchor_point, std::move(model), error_type, web_contents);
+      anchor_view, std::move(model), error_type, web_contents);
 
   if (highlighted_button)
     view->SetHighlightedButton(highlighted_button);
@@ -366,7 +362,7 @@ void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
       options_menu_model_.get(), views::MenuRunner::COMBOBOX));
   gfx::Rect screen_bounds = source->GetBoundsInScreen();
   options_menu_runner_->RunMenuAt(source->GetWidget(), nullptr, screen_bounds,
-                                  views::MENU_ANCHOR_TOPRIGHT,
+                                  views::MenuAnchorPosition::kTopRight,
                                   ui::MENU_SOURCE_MOUSE);
 }
 
@@ -423,7 +419,8 @@ void TranslateBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
 }
 
 void TranslateBubbleView::OnWidgetClosing(views::Widget* widget) {
-  if (GetBubbleFrameView()->close_button_clicked()) {
+  if (GetBubbleFrameView()->GetWidget()->closed_reason() ==
+      views::Widget::ClosedReason::kCloseButtonClicked) {
     model_->DeclineTranslation();
     translate::ReportUiAction(translate::CLOSE_BUTTON_CLICKED);
   }
@@ -435,11 +432,10 @@ TranslateBubbleModel::ViewState TranslateBubbleView::GetViewState() const {
 
 TranslateBubbleView::TranslateBubbleView(
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     std::unique_ptr<TranslateBubbleModel> model,
     translate::TranslateErrors::Type error_type,
     content::WebContents* web_contents)
-    : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
       before_translate_view_(NULL),
       translating_view_(NULL),
       after_translate_view_(NULL),
@@ -457,6 +453,7 @@ TranslateBubbleView::TranslateBubbleView(
       is_in_incognito_window_(
           web_contents && web_contents->GetBrowserContext()->IsOffTheRecord()),
       should_always_translate_(false) {
+  DCHECK(anchor_view);
   translate_bubble_view_ = this;
   if (web_contents)  // web_contents can be null in unit_tests.
     mouse_handler_.reset(new WebContentMouseHandler(this, web_contents));

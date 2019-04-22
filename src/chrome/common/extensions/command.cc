@@ -16,6 +16,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "ui/base/accelerators/media_keys_listener.h"
 
 namespace extensions {
 
@@ -77,8 +78,7 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
       platform_key != values::kKeybindingPlatformLinux &&
       platform_key != values::kKeybindingPlatformDefault) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidKeyBindingUnknownPlatform,
-        base::IntToString(index),
+        errors::kInvalidKeyBindingUnknownPlatform, base::NumberToString(index),
         platform_key);
     return ui::Accelerator();
   }
@@ -88,11 +88,9 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
   if (tokens.size() == 0 ||
       (tokens.size() == 1 && DoesRequireModifier(accelerator)) ||
       tokens.size() > kMaxTokenSize) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidKeyBinding,
-        base::IntToString(index),
-        platform_key,
-        accelerator);
+    *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidKeyBinding,
+                                                 base::NumberToString(index),
+                                                 platform_key, accelerator);
     return ui::Accelerator();
   }
 
@@ -209,11 +207,9 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
         break;
       }
     } else {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidKeyBinding,
-          base::IntToString(index),
-          platform_key,
-          accelerator);
+      *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidKeyBinding,
+                                                   base::NumberToString(index),
+                                                   platform_key, accelerator);
       return ui::Accelerator();
     }
   }
@@ -231,24 +227,17 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
   // as a modifier.
   if (key == ui::VKEY_UNKNOWN || (ctrl && alt) || (command && alt) ||
       (shift && !ctrl && !alt && !command)) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidKeyBinding,
-        base::IntToString(index),
-        platform_key,
-        accelerator);
+    *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidKeyBinding,
+                                                 base::NumberToString(index),
+                                                 platform_key, accelerator);
     return ui::Accelerator();
   }
 
-  if ((key == ui::VKEY_MEDIA_NEXT_TRACK ||
-       key == ui::VKEY_MEDIA_PREV_TRACK ||
-       key == ui::VKEY_MEDIA_PLAY_PAUSE ||
-       key == ui::VKEY_MEDIA_STOP) &&
+  if (ui::MediaKeysListener::IsMediaKeycode(key) &&
       (shift || ctrl || alt || command)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidKeyBindingMediaKeyWithModifier,
-        base::IntToString(index),
-        platform_key,
-        accelerator);
+        base::NumberToString(index), platform_key, accelerator);
     return ui::Accelerator();
   }
 
@@ -429,10 +418,7 @@ bool Command::IsMediaKey(const ui::Accelerator& accelerator) {
   if (accelerator.modifiers() != 0)
     return false;
 
-  return (accelerator.key_code() == ui::VKEY_MEDIA_NEXT_TRACK ||
-          accelerator.key_code() == ui::VKEY_MEDIA_PREV_TRACK ||
-          accelerator.key_code() == ui::VKEY_MEDIA_PLAY_PAUSE ||
-          accelerator.key_code() == ui::VKEY_MEDIA_STOP);
+  return ui::MediaKeysListener::IsMediaKeycode(accelerator.key_code());
 }
 
 bool Command::Parse(const base::DictionaryValue* command,
@@ -446,8 +432,7 @@ bool Command::Parse(const base::DictionaryValue* command,
     if (!command->GetString(keys::kDescription, &description) ||
         description.empty()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidKeyBindingDescription,
-          base::IntToString(index));
+          errors::kInvalidKeyBindingDescription, base::NumberToString(index));
       return false;
     }
   }
@@ -469,10 +454,8 @@ bool Command::Parse(const base::DictionaryValue* command,
         suggestions[iter.key()] = suggested_key_string;
       } else {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidKeyBinding,
-            base::IntToString(index),
-            keys::kSuggestedKey,
-            kMissing);
+            errors::kInvalidKeyBinding, base::NumberToString(index),
+            keys::kSuggestedKey, kMissing);
         return false;
       }
     }
@@ -503,10 +486,8 @@ bool Command::Parse(const base::DictionaryValue* command,
     if (iter->first == values::kKeybindingPlatformDefault &&
         iter->second.find("Command+") != std::string::npos) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidKeyBinding,
-          base::IntToString(index),
-          keys::kSuggestedKey,
-          kCommandKeyNotSupported);
+          errors::kInvalidKeyBinding, base::NumberToString(index),
+          keys::kSuggestedKey, kCommandKeyNotSupported);
       return false;
     }
 
@@ -520,10 +501,8 @@ bool Command::Parse(const base::DictionaryValue* command,
     key = values::kKeybindingPlatformDefault;
   if (suggestions.find(key) == suggestions.end()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidKeyBindingMissingPlatform,
-        base::IntToString(index),
-        keys::kSuggestedKey,
-        platform);
+        errors::kInvalidKeyBindingMissingPlatform, base::NumberToString(index),
+        keys::kSuggestedKey, platform);
     return false;  // No platform specified and no fallback. Bail.
   }
 
@@ -541,10 +520,8 @@ bool Command::Parse(const base::DictionaryValue* command,
       if (accelerator.key_code() == ui::VKEY_UNKNOWN) {
         if (error->empty()) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidKeyBinding,
-              base::IntToString(index),
-              iter->first,
-              iter->second);
+              errors::kInvalidKeyBinding, base::NumberToString(index),
+              iter->first, iter->second);
         }
         return false;
       }

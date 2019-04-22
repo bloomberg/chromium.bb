@@ -23,9 +23,8 @@
 namespace printing {
 
 PdfCompositorImpl::PdfCompositorImpl(
-    const std::string& creator,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)), creator_(creator) {}
+    : service_ref_(std::move(service_ref)) {}
 
 PdfCompositorImpl::~PdfCompositorImpl() = default;
 
@@ -106,6 +105,11 @@ void PdfCompositorImpl::SetWebContentsURL(const GURL& url) {
   // for users using print preview by default.
   static crash_reporter::CrashKeyString<1024> crash_key("main-frame-url");
   crash_key.Set(url.spec());
+}
+
+void PdfCompositorImpl::SetUserAgent(const std::string& user_agent) {
+  if (!user_agent.empty())
+    creator_ = user_agent;
 }
 
 void PdfCompositorImpl::UpdateRequestsWithSubframeInfo(

@@ -4,7 +4,8 @@
 <title>Event Timing: long-latency events after onload and before observer
 registration are lost
 </title>
-<button id='button' onclick='1'>Generate a 'click' event</button>
+<meta name="timeout" content="long">
+<button id='button'>Generate a 'click' event</button>
 <script src=/resources/testharness.js></script>
 <script src=/resources/testharnessreport.js></script>
 <script src=/resources/testdriver.js></script>
@@ -18,7 +19,7 @@ registration are lost
 
   function verifyBufferAndObserverEntries(observedEntries) {
     // Verify buffer entries
-    const bufferedEntries = performance.getEntriesByName('click', 'event');
+    const bufferedEntries = performance.getEntriesByName('mousedown', 'event');
     const bufferedEntriesBeforeObserver = bufferedEntries.filter(e => e.startTime <
       observerStart);
     assert_equals(bufferedEntries.length, 0,
@@ -42,7 +43,8 @@ registration are lost
   function startObserver(t) {
     new PerformanceObserver(t.step_func_done((entryList, obs) => {
         callbackTime = performance.now();
-        const observedEntries = entryList.getEntries();
+        const observedEntries = entryList.getEntries().filter(
+            entry => entry.name === 'mousedown');
         verifyBufferAndObserverEntries(observedEntries);
       })).observe({ entryTypes: ['event'] });
     observerStart = performance.now();
@@ -61,16 +63,22 @@ registration are lost
      (Dispatch and Process Click 2 (not buffered, observed))
   */
   async_test(function(t) {
-      on_event(window, 'load', () => {
-        clickAndBlockMain('button').then(() => {
-          startObserver(t);
-          clickAndBlockMain('button').then(wait);
-          processingStartMin = performance.now();
-        });
+    // Use a dummy observer to know when the first click has been dispatched.
+    const observerPromise = new Promise((resolve, reject) => {
+      new PerformanceObserver((entryList, observer) => {
+        resolve();
+        observer.disconnect();
+      }).observe({ entryTypes: ['event'] });
+    });
+    on_event(window, 'load', () => {
+      const clickPromise = clickAndBlockMain('button');
+      Promise.all([observerPromise, clickPromise]).then(() => {
+        startObserver(t);
+        clickAndBlockMain('button');
+        processingStartMin = performance.now();
       });
-    },
-    "Event Timing: onload, click, observer, click."
-  );
+    });
+  },"Event Timing: onload, click, observer, click.");
 
 </script>
 </html>

@@ -8,35 +8,39 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
-
-namespace browser_sync {
+namespace syncer {
 class ProfileSyncService;
-}  // namespace browser_sync
+class SyncService;
+}  // namespace syncer
 
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-// Singleton that owns all ProfileSyncService and associates them with
+// Singleton that owns all SyncServices and associates them with
 // ios::ChromeBrowserState.
 class ProfileSyncServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
-  static browser_sync::ProfileSyncService* GetForBrowserState(
+  static syncer::SyncService* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
 
-  static browser_sync::ProfileSyncService* GetForBrowserStateIfExists(
+  static syncer::SyncService* GetForBrowserStateIfExists(
+      ios::ChromeBrowserState* browser_state);
+
+  static syncer::ProfileSyncService* GetAsProfileSyncServiceForBrowserState(
+      ios::ChromeBrowserState* browser_state);
+
+  static syncer::ProfileSyncService*
+  GetAsProfileSyncServiceForBrowserStateIfExists(
       ios::ChromeBrowserState* browser_state);
 
   static ProfileSyncServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<ProfileSyncServiceFactory>;
+  friend class base::NoDestructor<ProfileSyncServiceFactory>;
 
   ProfileSyncServiceFactory();
   ~ProfileSyncServiceFactory() override;

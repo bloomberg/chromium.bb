@@ -310,6 +310,10 @@ class Wrappers {
         public int getScanRecord_getTxPowerLevel() {
             return mScanResult.getScanRecord().getTxPowerLevel();
         }
+
+        public String getScanRecord_getDeviceName() {
+            return mScanResult.getScanRecord().getDeviceName();
+        }
     }
 
     /**

@@ -13,15 +13,16 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/feature_list.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
-#include "base/md5.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
-#include "chrome/browser/local_discovery/endpoint_resolver.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -30,8 +31,6 @@
 #include "chromeos/printing/printer_configuration.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/host_port_pair.h"
-#include "net/base/ip_endpoint.h"
 #include "third_party/cros_system_api/dbus/debugd/dbus-constants.h"
 
 const std::map<const std::string, const std::string>&
@@ -50,14 +49,58 @@ namespace chromeos {
 
 namespace {
 
+PrinterSetupResult PrinterSetupResultFromDbusResultCode(const Printer& printer,
+                                                        int result_code) {
+  DCHECK_GE(result_code, 0);
+  switch (result_code) {
+    case debugd::CupsResult::CUPS_SUCCESS:
+      PRINTER_LOG(DEBUG) << printer.make_and_model()
+                         << " Printer setup successful";
+      return PrinterSetupResult::kSuccess;
+    case debugd::CupsResult::CUPS_INVALID_PPD:
+      PRINTER_LOG(EVENT) << printer.make_and_model() << " PPD Invalid";
+      return PrinterSetupResult::kInvalidPpd;
+    case debugd::CupsResult::CUPS_AUTOCONF_FAILURE:
+      PRINTER_LOG(EVENT) << printer.make_and_model() << " Autoconf failed";
+      // There are other reasons autoconf fails but this is the most likely.
+      return PrinterSetupResult::kPrinterUnreachable;
+    case debugd::CupsResult::CUPS_LPADMIN_FAILURE:
+      // Printers should always be configurable by lpadmin.
+      PRINTER_LOG(ERROR) << printer.make_and_model()
+                         << " lpadmin could not add the printer";
+      return PrinterSetupResult::kFatalError;
+    case debugd::CupsResult::CUPS_FATAL:
+    default:
+      // We have no idea.  It must be fatal.
+      PRINTER_LOG(ERROR) << printer.make_and_model()
+                         << " Unrecognized printer setup error: "
+                         << result_code;
+      return PrinterSetupResult::kFatalError;
+  }
+}
+
+// Map D-Bus errors from the debug daemon client to D-Bus errors enumerated
+// in PrinterSetupResult.
+PrinterSetupResult PrinterSetupResultFromDbusErrorCode(
+    DbusLibraryError dbus_error) {
+  DCHECK_LT(dbus_error, 0);
+  static const base::NoDestructor<
+      base::flat_map<DbusLibraryError, PrinterSetupResult>>
+      kDbusErrorMap({
+          {DbusLibraryError::kNoReply, PrinterSetupResult::kDbusNoReply},
+          {DbusLibraryError::kTimeout, PrinterSetupResult::kDbusTimeout},
+      });
+  auto it = kDbusErrorMap->find(dbus_error);
+  return it != kDbusErrorMap->end() ? it->second
+                                    : PrinterSetupResult::kDbusError;
+}
+
 // Configures printers by downloading PPDs then adding them to CUPS through
 // debugd.  This class must be used on the UI thread.
 class PrinterConfigurerImpl : public PrinterConfigurer {
  public:
   explicit PrinterConfigurerImpl(Profile* profile)
-      : endpoint_resolver_(new local_discovery::EndpointResolver()),
-        ppd_provider_(CreatePpdProvider(profile)),
-        weak_factory_(this) {}
+      : ppd_provider_(CreatePpdProvider(profile)), weak_factory_(this) {}
 
   PrinterConfigurerImpl(const PrinterConfigurerImpl&) = delete;
   PrinterConfigurerImpl& operator=(const PrinterConfigurerImpl&) = delete;
@@ -70,26 +113,6 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     DCHECK(!printer.id().empty());
     DCHECK(!printer.uri().empty());
     PRINTER_LOG(USER) << printer.make_and_model() << " Printer setup requested";
-
-    if (!printer.RequiresIpResolution()) {
-      StartConfiguration(printer, std::move(callback));
-      return;
-    }
-
-    PRINTER_LOG(DEBUG) << printer.make_and_model() << " Resolving IP";
-    // Resolve the uri to an ip with a mutable copy of the printer.
-    endpoint_resolver_->Start(
-        printer.GetHostAndPort(),
-        base::BindOnce(
-            &PrinterConfigurerImpl::OnIpResolved, weak_factory_.GetWeakPtr(),
-            std::make_unique<Printer>(printer), std::move(callback)));
-  }
-
- private:
-  // Run installation for a printer with a resolved uri.  |callback| is called
-  // with the result of the setup when it is complete.
-  void StartConfiguration(const Printer& printer,
-                          PrinterSetupCallback callback) {
     if (!printer.IsIppEverywhere()) {
       PRINTER_LOG(DEBUG) << printer.make_and_model() << " Lookup PPD";
       ppd_provider_->ResolvePpd(
@@ -104,83 +127,27 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
                        << " Attempting autoconf setup";
     auto* client = DBusThreadManager::Get()->GetDebugDaemonClient();
     client->CupsAddAutoConfiguredPrinter(
-        printer.id(), printer.UriForCups(),
+        printer.id(), printer.uri(),
         base::BindOnce(&PrinterConfigurerImpl::OnAddedPrinter,
                        weak_factory_.GetWeakPtr(), printer,
                        std::move(callback)));
   }
 
-  // Callback for when the IP for a zeroconf printer has been resolved.  If the
-  // request was successful, sets the |effective_uri| on |printer| with
-  // |endpoint| then continues setup. |cb| is called with a result reporting the
-  // success or failure of the setup operation, eventually.
-  void OnIpResolved(std::unique_ptr<Printer> printer,
-                    PrinterSetupCallback cb,
-                    const net::IPEndPoint& endpoint) {
-    bool address_resolved = endpoint.address().IsValid();
-    UMA_HISTOGRAM_BOOLEAN("Printing.CUPS.AddressResolutionResult",
-                          address_resolved);
-    if (!address_resolved) {
-      PRINTER_LOG(ERROR) << printer->make_and_model()
-                         << " IP Resolution failed";
-      // |endpoint| does not have a valid address. Address was not resolved.
-      std::move(cb).Run(kPrinterUnreachable);
-      return;
-    }
-
-    PRINTER_LOG(EVENT) << printer->make_and_model()
-                       << " IP Resolution succeeded";
-    std::string effective_uri = printer->ReplaceHostAndPort(endpoint);
-    printer->set_effective_uri(effective_uri);
-
-    StartConfiguration(*printer, std::move(cb));
-  }
-
+ private:
+  // Receive the callback from the debug daemon client once we attempt to
+  // add the printer.
   void OnAddedPrinter(const Printer& printer,
                       PrinterSetupCallback cb,
-                      base::Optional<int32_t> result_code) {
+                      int32_t result_code) {
     // It's expected that debug daemon posts callbacks on the UI thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    if (!result_code.has_value()) {
-      PRINTER_LOG(ERROR) << printer.make_and_model()
-                         << " Could not contact debugd";
-      std::move(cb).Run(PrinterSetupResult::kDbusError);
-      return;
-    }
-
-    PrinterSetupResult result;
-    switch (result_code.value()) {
-      case debugd::CupsResult::CUPS_SUCCESS:
-        PRINTER_LOG(DEBUG) << printer.make_and_model()
-                           << " Printer setup successful";
-        result = PrinterSetupResult::kSuccess;
-        break;
-      case debugd::CupsResult::CUPS_INVALID_PPD:
-        PRINTER_LOG(EVENT) << printer.make_and_model() << " PPD Invalid";
-        result = PrinterSetupResult::kInvalidPpd;
-        break;
-      case debugd::CupsResult::CUPS_AUTOCONF_FAILURE:
-        PRINTER_LOG(EVENT) << printer.make_and_model() << " Autoconf failed";
-        // There are other reasons autoconf fails but this is the most likely.
-        result = PrinterSetupResult::kPrinterUnreachable;
-        break;
-      case debugd::CupsResult::CUPS_LPADMIN_FAILURE:
-        // Printers should always be configurable by lpadmin.
-        NOTREACHED() << "lpadmin could not add the printer";
-        result = PrinterSetupResult::kFatalError;
-        break;
-      case debugd::CupsResult::CUPS_FATAL:
-      default:
-        // We have no idea.  It must be fatal.
-        PRINTER_LOG(ERROR) << printer.make_and_model()
-                           << " Unrecognized printer setup error: "
-                           << result_code.value();
-        result = PrinterSetupResult::kFatalError;
-        break;
-    }
-
-    std::move(cb).Run(result);
+    PrinterSetupResult setup_result =
+        result_code < 0
+            ? PrinterSetupResultFromDbusErrorCode(
+                  static_cast<DbusLibraryError>(result_code))
+            : PrinterSetupResultFromDbusResultCode(printer, result_code);
+    std::move(cb).Run(setup_result);
   }
 
   void AddPrinter(const Printer& printer,
@@ -190,7 +157,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
 
     PRINTER_LOG(EVENT) << printer.make_and_model() << " Manual printer setup";
     client->CupsAddManuallyConfiguredPrinter(
-        printer.id(), printer.UriForCups(), ppd_contents,
+        printer.id(), printer.uri(), ppd_contents,
         base::BindOnce(&PrinterConfigurerImpl::OnAddedPrinter,
                        weak_factory_.GetWeakPtr(), printer, std::move(cb)));
   }
@@ -215,33 +182,31 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
                          PrinterSetupCallback cb,
                          const std::string& ppd_contents,
                          const std::vector<std::string>& ppd_filters) {
-    if (base::FeatureList::IsEnabled(features::kCrOSComponent)) {
-      std::set<std::string> components_requested;
-      for (const auto& ppd_filter : ppd_filters) {
-        for (const auto& component : GetComponentizedFilters()) {
-          if (component.first == ppd_filter) {
-            components_requested.insert(component.second);
-          }
+    std::set<std::string> components_requested;
+    for (const auto& ppd_filter : ppd_filters) {
+      for (const auto& component : GetComponentizedFilters()) {
+        if (component.first == ppd_filter) {
+          components_requested.insert(component.second);
         }
       }
-      if (components_requested.size() == 1) {
-        // Only allow one filter request in ppd file.
-        auto& component_name = *components_requested.begin();
-        g_browser_process->platform_part()->cros_component_manager()->Load(
-            component_name,
-            component_updater::CrOSComponentManager::MountPolicy::kMount,
-            component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
-            base::BindOnce(&PrinterConfigurerImpl::OnComponentLoad,
-                           weak_factory_.GetWeakPtr(), printer, ppd_contents,
-                           std::move(cb)));
-        return;
-      }
-      if (components_requested.size() > 1) {
-        PRINTER_LOG(ERROR) << printer.make_and_model()
-                           << " More than one filter component is requested.";
-        std::move(cb).Run(PrinterSetupResult::kFatalError);
-        return;
-      }
+    }
+    if (components_requested.size() == 1) {
+      // Only allow one filter request in ppd file.
+      auto& component_name = *components_requested.begin();
+      g_browser_process->platform_part()->cros_component_manager()->Load(
+          component_name,
+          component_updater::CrOSComponentManager::MountPolicy::kMount,
+          component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
+          base::BindOnce(&PrinterConfigurerImpl::OnComponentLoad,
+                         weak_factory_.GetWeakPtr(), printer, ppd_contents,
+                         std::move(cb)));
+      return;
+    }
+    if (components_requested.size() > 1) {
+      PRINTER_LOG(ERROR) << printer.make_and_model()
+                         << " More than one filter component is requested.";
+      std::move(cb).Run(PrinterSetupResult::kFatalError);
+      return;
     }
     AddPrinter(printer, ppd_contents, std::move(cb));
   }
@@ -274,7 +239,6 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     }
   }
 
-  std::unique_ptr<local_discovery::EndpointResolver> endpoint_resolver_;
   scoped_refptr<PpdProvider> ppd_provider_;
   base::WeakPtrFactory<PrinterConfigurerImpl> weak_factory_;
 };
@@ -286,7 +250,7 @@ std::string PrinterConfigurer::SetupFingerprint(const Printer& printer) {
   base::MD5Context ctx;
   base::MD5Init(&ctx);
   base::MD5Update(&ctx, printer.id());
-  base::MD5Update(&ctx, printer.UriForCups());
+  base::MD5Update(&ctx, printer.uri());
   base::MD5Update(&ctx, printer.ppd_reference().user_supplied_ppd_url);
   base::MD5Update(&ctx, printer.ppd_reference().effective_make_and_model);
   char autoconf = printer.ppd_reference().autoconf ? 1 : 0;
@@ -307,7 +271,10 @@ std::ostream& operator<<(std::ostream& out, const PrinterSetupResult& result) {
       out << "fatal error";
       break;
     case kSuccess:
-      out << "success";
+      out << "add success";
+      break;
+    case kEditSuccess:
+      out << "edit success";
       break;
     case kPrinterUnreachable:
       out << "printer unreachable";
@@ -335,6 +302,12 @@ std::ostream& operator<<(std::ostream& out, const PrinterSetupResult& result) {
       break;
     case kPpdUnretrievable:
       out << "failed to download PPD";
+      break;
+    case kDbusNoReply:
+      out << "no reply from debugd";
+      break;
+    case kDbusTimeout:
+      out << "timeout in D-Bus";
       break;
     case kMaxValue:
       out << "unexpected result";

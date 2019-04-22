@@ -70,9 +70,16 @@ public class NotificationConstants {
 
     /**
      * Unique identifier for the persistent notification displayed while a Trusted Web Activity is
-     * in foreground.
+     * in foreground. No longer used.
      */
+    @SuppressWarnings("unused")
     public static final int NOTIFICATION_ID_TWA_PERSISTENT = 6;
+
+    /**
+     * Unique identifier for notification shown in VR if Chrome's VR browser is still getting ready
+     * and cannot be accessed yet.
+     */
+    public static final int NOTIFICATION_ID_PREPARING_VR = 7;
 
     /**
      * Unique identifier for the summary notification for downloads.  Using the ID this summary was
@@ -103,6 +110,7 @@ public class NotificationConstants {
     public static final String GROUP_MEDIA_REMOTE = "MediaRemote";
     public static final String GROUP_SYNC = "Sync";
     public static final String GROUP_WEBAPK = "WebApk";
+    public static final String GROUP_SEND_TAB_TO_SELF = "SendTabToSelf";
 
     // Web notification group names are set dynamically as this prefix + notification origin.
     // For example, 'Web:chromium.org' for a notification from chromium.org.

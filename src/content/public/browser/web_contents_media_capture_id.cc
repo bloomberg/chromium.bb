@@ -104,9 +104,9 @@ bool WebContentsMediaCaptureId::is_null() const {
 
 std::string WebContentsMediaCaptureId::ToString() const {
   std::string s = kWebContentsCaptureScheme;
-  s.append(base::Int64ToString(render_process_id));
+  s.append(base::NumberToString(render_process_id));
   s.append(":");
-  s.append(base::Int64ToString(main_render_frame_id));
+  s.append(base::NumberToString(main_render_frame_id));
 
   char connector = kOptionStart;
   if (enable_auto_throttling) {

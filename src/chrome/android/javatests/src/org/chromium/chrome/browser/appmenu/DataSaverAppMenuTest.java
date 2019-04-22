@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
 /**
  * Tests the Data Saver AppMenu footer
@@ -31,6 +32,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@EnableFeatures("DataReductionProxyEnabledWithNetworkService")
 public class DataSaverAppMenuTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

@@ -23,21 +23,27 @@ class TextureHolder;
 class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
     : public StaticBitmapImage {
  public:
+  enum class MailboxType { kSharedImageId, kDeprecatedMailbox };
+
   ~AcceleratedStaticBitmapImage() override;
   // SkImage with a texture backing.
   static scoped_refptr<AcceleratedStaticBitmapImage> CreateFromSkImage(
       sk_sp<SkImage>,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>);
+
   // Can specify the GrContext that created the texture backing. Ideally all
   // callers would use this option. The |mailbox| is a name for the texture
-  // backing, allowing other contexts to use the same backing.
+  // backing, allowing other contexts to use the same backing. |mailbox_type|
+  // indicates whether |mailbox| is a SharedImage identifier or a deprecated
+  // mailbox (generated via ProduceTextureDirectCHROMIUM).
   static scoped_refptr<AcceleratedStaticBitmapImage>
   CreateFromWebGLContextImage(
       const gpu::Mailbox&,
       const gpu::SyncToken&,
       unsigned texture_id,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-      IntSize mailbox_size);
+      IntSize mailbox_size,
+      MailboxType mailbox_type = MailboxType::kDeprecatedMailbox);
 
   bool CurrentFrameKnownToBeOpaque() override;
   IntSize Size() const override;
@@ -65,6 +71,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   bool CopyToTexture(gpu::gles2::GLES2Interface* dest_gl,
                      GLenum dest_target,
                      GLuint dest_texture_id,
+                     GLint dest_level,
                      bool unpack_premultiply_alpha,
                      bool unpack_flip_y,
                      const IntPoint& dest_point,
@@ -88,8 +95,6 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
 
   PaintImage PaintImageForCurrentFrame() override;
 
-  void Abandon() final;
-
   TextureHolder* TextureHolderForTesting() { return texture_holder_.get(); }
 
  private:
@@ -101,7 +106,8 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       const gpu::SyncToken&,
       unsigned texture_id,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-      IntSize mailbox_size);
+      IntSize mailbox_size,
+      MailboxType mailbox_type);
 
   void CreateImageFromMailboxIfNeeded();
   void WaitSyncTokenIfNeeded();
@@ -117,6 +123,8 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   scoped_refptr<base::SingleThreadTaskRunner> original_skia_image_task_runner_;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper>
       original_skia_image_context_provider_wrapper_;
+
+  const MailboxType mailbox_type_;
 };
 
 }  // namespace blink

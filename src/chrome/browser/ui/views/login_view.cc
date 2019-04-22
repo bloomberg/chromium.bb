@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/login_view.h"
 
+#include <memory>
+
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/textfield_layout.h"
@@ -69,12 +71,6 @@ LoginView::LoginView(const base::string16& authority,
       layout, l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_PASSWORD_FIELD),
       kFieldsColumnSetId);
   password_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-
-  if (provider->UseExtraDialogPadding()) {
-    layout->AddPaddingRow(views::GridLayout::kFixedSize,
-                          provider->GetDistanceMetric(
-                              views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
-  }
 
   if (login_model_data) {
     login_model_->AddObserverAndDeliverCredentials(this,

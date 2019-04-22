@@ -274,7 +274,7 @@ TEST_F(ThroughputAnalyzerTest, TestHangingRequests) {
             "10000";
     variation_params["throughput_hanging_requests_cwnd_size_multiplier"] = "-1";
     variation_params["hanging_request_duration_http_rtt_multiplier"] =
-        base::IntToString(test.hanging_request_duration_http_rtt_multiplier);
+        base::NumberToString(test.hanging_request_duration_http_rtt_multiplier);
 
     NetworkQualityEstimatorParams params(variation_params);
 
@@ -332,37 +332,6 @@ TEST_F(ThroughputAnalyzerTest, TestHangingRequests) {
 
     EXPECT_EQ(test.expect_throughput_observation,
               throughput_analyzer.throughput_observations_received() > 0);
-
-    // Verify metrics recording.
-    if (test.hanging_request_duration_http_rtt_multiplier < 0) {
-      histogram_tester.ExpectTotalCount(
-          "NQE.ThroughputAnalyzer.HangingRequests.Erased", 0);
-      histogram_tester.ExpectTotalCount(
-          "NQE.ThroughputAnalyzer.HangingRequests.NotErased", 0);
-    } else {
-      if (!test.expect_throughput_observation) {
-        histogram_tester.ExpectBucketCount(
-            "NQE.ThroughputAnalyzer.HangingRequests.Erased", num_requests, 1);
-        // A sample is recorded everytime a request starts.
-        histogram_tester.ExpectBucketCount(
-            "NQE.ThroughputAnalyzer.HangingRequests.Erased", 0, num_requests);
-        histogram_tester.ExpectTotalCount(
-            "NQE.ThroughputAnalyzer.HangingRequests.Erased", num_requests + 1);
-
-        histogram_tester.ExpectTotalCount(
-            "NQE.ThroughputAnalyzer.HangingRequests.NotErased",
-            num_requests + 1);
-      } else {
-        // One sample is recorded when request starts, and another when the
-        // request completes.
-        histogram_tester.ExpectUniqueSample(
-            "NQE.ThroughputAnalyzer.HangingRequests.Erased", 0,
-            num_requests * 2);
-        histogram_tester.ExpectTotalCount(
-            "NQE.ThroughputAnalyzer.HangingRequests.NotErased",
-            num_requests * 2);
-      }
-    }
   }
 }
 
@@ -671,7 +640,7 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
     // Localhost requests are not allowed for estimation purposes.
     std::map<std::string, std::string> variation_params;
     variation_params["throughput_min_requests_in_flight"] =
-        base::IntToString(test.throughput_min_requests_in_flight);
+        base::NumberToString(test.throughput_min_requests_in_flight);
     variation_params["throughput_hanging_requests_cwnd_size_multiplier"] = "-1";
     NetworkQualityEstimatorParams params(variation_params);
     // Set HTTP RTT to a large value so that the throughput observation window

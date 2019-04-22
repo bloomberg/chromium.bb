@@ -2,7 +2,6 @@ This test documents all properties on all element instances.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 [HTML NAMESPACE ELEMENT PROPERTIES]
 namespace http://www.w3.org/1999/xhtml
 <common>
@@ -44,9 +43,12 @@ namespace http://www.w3.org/1999/xhtml
     property ariaDescribedBy
     property ariaDetails
     property ariaDisabled
+    property ariaErrorMessage
     property ariaExpanded
+    property ariaFlowTo
     property ariaHasPopup
     property ariaHidden
+    property ariaKeyShortcuts
     property ariaLabel
     property ariaLabelledBy
     property ariaLevel
@@ -213,6 +215,7 @@ namespace http://www.w3.org/1999/xhtml
     property onmouseover
     property onmouseup
     property onmousewheel
+    property onoverscroll
     property onpaste
     property onpause
     property onplay
@@ -231,6 +234,7 @@ namespace http://www.w3.org/1999/xhtml
     property onreset
     property onresize
     property onscroll
+    property onscrollend
     property onsearch
     property onseeked
     property onseeking
@@ -438,6 +442,7 @@ html element body
     property onpagehide
     property onpageshow
     property onpopstate
+    property onportalactivate
     property onrejectionhandled
     property onstorage
     property onunhandledrejection
@@ -589,6 +594,7 @@ html element frameset
     property onpagehide
     property onpageshow
     property onpopstate
+    property onportalactivate
     property onrejectionhandled
     property onstorage
     property onunhandledrejection
@@ -626,6 +632,7 @@ html element iframe
     property contentDocument
     property contentWindow
     property csp
+    property featurePolicy
     property frameBorder
     property getSVGDocument
     property height
@@ -633,7 +640,6 @@ html element iframe
     property marginHeight
     property marginWidth
     property name
-    property policy
     property referrerPolicy
     property sandbox
     property scrolling
@@ -873,6 +879,7 @@ html element picture
 html element plaintext
 html element portal
     property activate
+    property postMessage
     property src
 html element pre
     property width
@@ -897,6 +904,7 @@ html element script
     property defer
     property event
     property htmlFor
+    property importance
     property integrity
     property noModule
     property referrerPolicy
@@ -1113,6 +1121,7 @@ html element video
     property NETWORK_NO_SOURCE
     property addTextTrack
     property audioTracks
+    property autoPictureInPicture
     property autoplay
     property buffered
     property canPlayType
@@ -1140,13 +1149,13 @@ html element video
     property onencrypted
     property onenterpictureinpicture
     property onleavepictureinpicture
-    property onpictureinpicturecontrolclick
     property onwaitingforkey
     property pause
     property paused
     property play
     property playbackRate
     property played
+    property playsInline
     property poster
     property preload
     property readyState
@@ -1155,7 +1164,6 @@ html element video
     property seekable
     property seeking
     property setMediaKeys
-    property setPictureInPictureControls
     property setSinkId
     property sinkId
     property src
@@ -1219,9 +1227,12 @@ namespace http://www.w3.org/2000/svg
     property ariaDescribedBy
     property ariaDetails
     property ariaDisabled
+    property ariaErrorMessage
     property ariaExpanded
+    property ariaFlowTo
     property ariaHasPopup
     property ariaHidden
+    property ariaKeyShortcuts
     property ariaLabel
     property ariaLabelledBy
     property ariaLevel
@@ -1371,6 +1382,7 @@ namespace http://www.w3.org/2000/svg
     property onmouseover
     property onmouseup
     property onmousewheel
+    property onoverscroll
     property onpaste
     property onpause
     property onplay
@@ -1389,6 +1401,7 @@ namespace http://www.w3.org/2000/svg
     property onreset
     property onresize
     property onscroll
+    property onscrollend
     property onsearch
     property onseeked
     property onseeking

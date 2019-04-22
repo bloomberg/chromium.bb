@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <limits>
 #include <memory>
 
 #include "base/bind.h"
@@ -487,7 +489,7 @@ std::vector<std::string> MakeMenuItemStringsFor(
 }
 
 // How much we should scroll per event - the value here is chosen to match the
-// WebKit impl and layout test results.
+// WebKit impl and web test results.
 const float kScrollbarPixelsPerTick = 40.0f;
 
 // Get the edit command corresponding to a keyboard event.
@@ -619,6 +621,8 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void LeapForward(int milliseconds);
   double LastEventTimestamp();
   void BeginDragWithFiles(const std::vector<std::string>& files);
+  void BeginDragWithStringData(const std::string& data,
+                               const std::string& mime_type);
   void AddTouchPoint(double x, double y, gin::Arguments* args);
   void GestureScrollBegin(gin::Arguments* args);
   void GestureScrollEnd(gin::Arguments* args);
@@ -702,7 +706,8 @@ void EventSenderBindings::Install(base::WeakPtr<EventSender> sender,
   if (bindings.IsEmpty())
     return;
   v8::Local<v8::Object> global = context->Global();
-  global->Set(gin::StringToV8(isolate, "eventSender"), bindings.ToV8());
+  global->Set(context, gin::StringToV8(isolate, "eventSender"), bindings.ToV8())
+      .Check();
 }
 
 gin::ObjectTemplateBuilder EventSenderBindings::GetObjectTemplateBuilder(
@@ -741,6 +746,8 @@ gin::ObjectTemplateBuilder EventSenderBindings::GetObjectTemplateBuilder(
       .SetMethod("leapForward", &EventSenderBindings::LeapForward)
       .SetMethod("lastEventTimestamp", &EventSenderBindings::LastEventTimestamp)
       .SetMethod("beginDragWithFiles", &EventSenderBindings::BeginDragWithFiles)
+      .SetMethod("beginDragWithStringData",
+                 &EventSenderBindings::BeginDragWithStringData)
       .SetMethod("addTouchPoint", &EventSenderBindings::AddTouchPoint)
       .SetMethod("gestureScrollBegin", &EventSenderBindings::GestureScrollBegin)
       .SetMethod("gestureScrollEnd", &EventSenderBindings::GestureScrollEnd)
@@ -947,6 +954,13 @@ void EventSenderBindings::BeginDragWithFiles(
     const std::vector<std::string>& files) {
   if (sender_)
     sender_->BeginDragWithFiles(files);
+}
+
+void EventSenderBindings::BeginDragWithStringData(
+    const std::string& data,
+    const std::string& mime_type) {
+  if (sender_)
+    sender_->BeginDragWithStringData(data, mime_type);
 }
 
 void EventSenderBindings::AddTouchPoint(double x,
@@ -1300,8 +1314,8 @@ EventSender::SavedEvent::SavedEvent()
       milliseconds(0),
       modifiers(0) {}
 
-EventSender::EventSender(WebWidgetTestProxyBase* web_widget_test_proxy_base)
-    : web_widget_test_proxy_base_(web_widget_test_proxy_base),
+EventSender::EventSender(WebWidgetTestProxy* web_widget_test_proxy)
+    : web_widget_test_proxy_(web_widget_test_proxy),
       replaying_saved_events_(false),
       weak_factory_(this) {
   Reset();
@@ -1502,7 +1516,7 @@ void EventSender::KeyDown(const std::string& code_str,
 
   bool generate_char = false;
 
-  // Convert \n -> VK_RETURN. Some layout tests use \n to mean "Enter", when
+  // Convert \n -> VK_RETURN. Some web tests use \n to mean "Enter", when
   // Windows uses \r for "Enter".
   int code = 0;
   int text = 0;
@@ -1817,32 +1831,32 @@ void EventSender::TextZoomOut() {
 }
 
 void EventSender::ZoomPageIn() {
-  const std::vector<WebViewTestProxyBase*>& window_list =
+  const std::vector<WebViewTestProxy*>& window_list =
       interfaces()->GetWindowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->web_view()->SetZoomLevel(
-        window_list.at(i)->web_view()->ZoomLevel() + 1);
+    window_list.at(i)->webview()->SetZoomLevel(
+        window_list.at(i)->webview()->ZoomLevel() + 1);
   }
 }
 
 void EventSender::ZoomPageOut() {
-  const std::vector<WebViewTestProxyBase*>& window_list =
+  const std::vector<WebViewTestProxy*>& window_list =
       interfaces()->GetWindowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->web_view()->SetZoomLevel(
-        window_list.at(i)->web_view()->ZoomLevel() - 1);
+    window_list.at(i)->webview()->SetZoomLevel(
+        window_list.at(i)->webview()->ZoomLevel() - 1);
   }
 }
 
 void EventSender::SetPageZoomFactor(double zoom_factor) {
-  const std::vector<WebViewTestProxyBase*>& window_list =
+  const std::vector<WebViewTestProxy*>& window_list =
       interfaces()->GetWindowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->web_view()->SetZoomLevel(std::log(zoom_factor) /
-                                                std::log(1.2));
+    window_list.at(i)->webview()->SetZoomLevel(std::log(zoom_factor) /
+                                               std::log(1.2));
   }
 }
 
@@ -1938,7 +1952,7 @@ void EventSender::DumpFilenameBeingDragged() {
 void EventSender::GestureFlingCancel() {
   WebGestureEvent event(WebInputEvent::kGestureFlingCancel,
                         WebInputEvent::kNoModifiers, GetCurrentEventTime(),
-                        blink::kWebGestureDeviceTouchpad);
+                        blink::WebGestureDevice::kTouchpad);
   // Generally it won't matter what device we use here, and since it might
   // be cumbersome to expect all callers to specify a device, we'll just
   // choose Touchpad here.
@@ -1962,9 +1976,9 @@ void EventSender::GestureFlingStart(float x,
     args->GetNext(&device_string);
 
   if (device_string == kSourceDeviceStringTouchpad) {
-    event.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+    event.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
   } else if (device_string == kSourceDeviceStringTouchscreen) {
-    event.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+    event.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
   } else {
     args->ThrowError();
     return;
@@ -2034,27 +2048,30 @@ void EventSender::LeapForward(int milliseconds) {
   }
 }
 
-void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
+void EventSender::BeginDragWithItems(
+    const WebVector<WebDragData::Item>& items) {
   if (!current_drag_data_.IsNull()) {
     // Nested dragging not supported, fuzzer code a likely culprit.
     // Cancel the current drag operation and throw an error.
     KeyDown("Escape", 0, DOMKeyLocationStandard);
     v8::Isolate* isolate = blink::MainThreadIsolate();
     isolate->ThrowException(v8::Exception::Error(gin::StringToV8(
-        isolate, "Nested beginDragWithFiles() not supported.")));
+        isolate,
+        "Nested beginDragWithFiles/beginDragWithStringData() not supported.")));
     return;
   }
+
   current_drag_data_.Initialize();
-  WebVector<WebString> absolute_filenames(files.size());
-  for (size_t i = 0; i < files.size(); ++i) {
-    WebDragData::Item item;
-    item.storage_type = WebDragData::Item::kStorageTypeFilename;
-    item.filename_data = delegate()->GetAbsoluteWebStringFromUTF8Path(files[i]);
-    current_drag_data_.AddItem(item);
-    absolute_filenames[i] = item.filename_data;
+  WebVector<WebString> absolute_filenames;
+  for (size_t i = 0; i < items.size(); ++i) {
+    current_drag_data_.AddItem(items[i]);
+    if (items[i].storage_type == WebDragData::Item::kStorageTypeFilename)
+      absolute_filenames.emplace_back(items[i].filename_data);
   }
-  current_drag_data_.SetFilesystemId(
-      delegate()->RegisterIsolatedFileSystem(absolute_filenames));
+  if (!absolute_filenames.empty()) {
+    current_drag_data_.SetFilesystemId(
+        delegate()->RegisterIsolatedFileSystem(absolute_filenames));
+  }
   current_drag_effects_allowed_ = blink::kWebDragOperationCopy;
 
   const WebPoint& last_pos =
@@ -2076,6 +2093,30 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
   current_pointer_state_[kRawMousePointerId].current_buttons_ |=
       GetWebMouseEventModifierForButton(
           current_pointer_state_[kRawMousePointerId].pressed_button_);
+}
+
+void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
+  WebVector<WebDragData::Item> items;
+  for (size_t i = 0; i < files.size(); ++i) {
+    WebDragData::Item item;
+    item.storage_type = WebDragData::Item::kStorageTypeFilename;
+    item.filename_data = delegate()->GetAbsoluteWebStringFromUTF8Path(files[i]);
+    items.emplace_back(item);
+  }
+
+  BeginDragWithItems(items);
+}
+
+void EventSender::BeginDragWithStringData(const std::string& data,
+                                          const std::string& mime_type) {
+  WebVector<WebDragData::Item> items;
+  WebDragData::Item item;
+  item.storage_type = WebDragData::Item::kStorageTypeString;
+  item.string_data = WebString::FromUTF8(data);
+  item.string_type = WebString::FromUTF8(mime_type);
+  items.emplace_back(item);
+
+  BeginDragWithItems(items);
 }
 
 void EventSender::AddTouchPoint(float x, float y, gin::Arguments* args) {
@@ -2305,7 +2346,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
       HandleInputEventOnViewOrPopup(pointer_event);
     }
   }
-  WebPagePopup* popup = widget()->GetPagePopup();
+  WebPagePopup* popup = view()->GetPagePopup();
   if (popup)
     popup->DispatchBufferedTouchEvents();
   else
@@ -2326,7 +2367,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
 void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
   WebGestureEvent event(type, WebInputEvent::kNoModifiers,
                         GetCurrentEventTime(),
-                        blink::kWebGestureDeviceTouchscreen);
+                        blink::WebGestureDevice::kTouchscreen);
 
   // If the first argument is a string, it is to specify the device, otherwise
   // the device is assumed to be a touchscreen (since most tests were written
@@ -2338,9 +2379,9 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
       return;
     }
     if (device_string == kSourceDeviceStringTouchpad) {
-      event.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+      event.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
     } else if (device_string == kSourceDeviceStringTouchscreen) {
-      event.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+      event.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
     } else {
       args->ThrowError();
       return;
@@ -2783,7 +2824,7 @@ WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
     const WebInputEvent& raw_event) {
   last_event_timestamp_ = raw_event.TimeStamp();
 
-  WebPagePopup* popup = widget()->GetPagePopup();
+  WebPagePopup* popup = view()->GetPagePopup();
   if (popup && !WebInputEvent::IsKeyboardEventType(raw_event.GetType())) {
     // ui::ScaleWebInputEvent returns nullptr when the scale is 1.0f as the
     // event does not have to be converted.
@@ -2807,7 +2848,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
     const WebMouseWheelEvent wheel_event) {
   WebGestureEvent begin_event(WebInputEvent::kGestureScrollBegin,
                               wheel_event.GetModifiers(), GetCurrentEventTime(),
-                              blink::kWebGestureDeviceTouchpad);
+                              blink::WebGestureDevice::kTouchpad);
   InitGestureEventFromMouseWheel(wheel_event, &begin_event);
   begin_event.data.scroll_begin.delta_x_hint = wheel_event.delta_x;
   begin_event.data.scroll_begin.delta_y_hint = wheel_event.delta_y;
@@ -2836,7 +2877,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
 
   WebGestureEvent update_event(
       WebInputEvent::kGestureScrollUpdate, wheel_event.GetModifiers(),
-      GetCurrentEventTime(), blink::kWebGestureDeviceTouchpad);
+      GetCurrentEventTime(), blink::WebGestureDevice::kTouchpad);
   InitGestureEventFromMouseWheel(wheel_event, &update_event);
   update_event.data.scroll_update.delta_x =
       begin_event.data.scroll_begin.delta_x_hint;
@@ -2851,7 +2892,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
 
   WebGestureEvent end_event(WebInputEvent::kGestureScrollEnd,
                             wheel_event.GetModifiers(), GetCurrentEventTime(),
-                            blink::kWebGestureDeviceTouchpad);
+                            blink::WebGestureDevice::kTouchpad);
   InitGestureEventFromMouseWheel(wheel_event, &end_event);
   end_event.data.scroll_end.delta_units =
       begin_event.data.scroll_begin.delta_hint_units;
@@ -2862,34 +2903,36 @@ void EventSender::SendGesturesForMouseWheelEvent(
 }
 
 TestInterfaces* EventSender::interfaces() {
-  return web_widget_test_proxy_base_->web_view_test_proxy_base()
-      ->test_interfaces();
+  return web_widget_test_proxy_->GetWebViewTestProxy()->test_interfaces();
 }
 
 WebTestDelegate* EventSender::delegate() {
-  return web_widget_test_proxy_base_->web_view_test_proxy_base()->delegate();
+  return web_widget_test_proxy_->GetWebViewTestProxy()->delegate();
 }
 
 const blink::WebView* EventSender::view() const {
-  return web_widget_test_proxy_base_->web_view_test_proxy_base()->web_view();
+  return web_widget_test_proxy_->GetWebViewTestProxy()->webview();
 }
 
 blink::WebView* EventSender::view() {
-  return web_widget_test_proxy_base_->web_view_test_proxy_base()->web_view();
+  return web_widget_test_proxy_->GetWebViewTestProxy()->webview();
 }
 
 blink::WebWidget* EventSender::widget() {
-  return web_widget_test_proxy_base_->web_widget();
+  return web_widget_test_proxy_->GetWebWidget();
 }
 
 blink::WebFrameWidget* EventSender::mainFrameWidget() {
+  DCHECK(view()->MainFrame()->IsWebLocalFrame())
+      << "Event Sender doesn't support being run in a remote frame for this "
+         "operation.";
   return view()->MainFrame()->ToWebLocalFrame()->FrameWidget();
 }
 
 std::unique_ptr<WebInputEvent> EventSender::TransformScreenToWidgetCoordinates(
     const WebInputEvent& event) {
-  return delegate()->TransformScreenToWidgetCoordinates(
-      web_widget_test_proxy_base_, event);
+  return delegate()->TransformScreenToWidgetCoordinates(web_widget_test_proxy_,
+                                                        event);
 }
 
 void EventSender::UpdateLifecycleToPrePaint() {

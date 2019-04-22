@@ -16,7 +16,8 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::string json_data(reinterpret_cast<const char*>(data), size);
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json_data);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(json_data);
 
   payments::ErrorLogger log;
   log.DisableInTest();

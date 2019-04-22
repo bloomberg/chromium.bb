@@ -9,14 +9,15 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace {

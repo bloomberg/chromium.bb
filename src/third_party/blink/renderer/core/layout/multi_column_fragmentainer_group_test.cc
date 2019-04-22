@@ -97,32 +97,6 @@ TEST_F(MultiColumnFragmentainerGroupTest,
   EXPECT_EQ(GroupCount(group_list), 1);
 }
 
-// The following test tests that we restrict actual column count, to not run
-// into unnecessary performance problems. The code that applies this limitation
-// is in MultiColumnFragmentainerGroup::ActualColumnCount().
-TEST_F(MultiColumnFragmentainerGroupTest, TallEmptyContent) {
-  SetBodyInnerHTML(R"HTML(
-    <div id="multicol" style="columns:3; column-gap:1px; width:101px; line-height:50px; height:200px;">
-      <div style="height:1000000px;"></div>
-    </div>
-  )HTML");
-  const auto* multicol = GetLayoutObjectByElementId("multicol");
-  ASSERT_TRUE(multicol);
-  ASSERT_TRUE(multicol->IsLayoutBlockFlow());
-  const auto* column_set = multicol->SlowLastChild();
-  ASSERT_TRUE(column_set);
-  ASSERT_TRUE(column_set->IsLayoutMultiColumnSet());
-  const auto& fragmentainer_group =
-      ToLayoutMultiColumnSet(column_set)->FirstFragmentainerGroup();
-  EXPECT_EQ(fragmentainer_group.ActualColumnCount(), 10U);
-  EXPECT_EQ(fragmentainer_group.GroupLogicalHeight(), LayoutUnit(200));
-  auto overflow = ToLayoutBox(multicol)->LayoutOverflowRect();
-  EXPECT_EQ(ToLayoutBox(multicol)->LogicalWidth(), LayoutUnit(101));
-  EXPECT_EQ(ToLayoutBox(multicol)->LogicalHeight(), LayoutUnit(200));
-  EXPECT_EQ(overflow.Width(), LayoutUnit(339));
-  EXPECT_EQ(overflow.Height(), LayoutUnit(998200));
-}
-
 // The following test tests that we DON'T restrict actual column count, when
 // there's a legitimate reason to use many columns. The code that checks the
 // allowance and potentially applies this limitation is in

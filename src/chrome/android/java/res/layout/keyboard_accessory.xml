@@ -3,9 +3,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryView
+<org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/keyboard_accessory"
     android:layout_gravity="start|bottom"
@@ -34,20 +33,17 @@
         android:layout_height="@dimen/keyboard_accessory_height"
         android:layout_gravity="start|bottom"
         android:orientation="horizontal"
-        android:background="@color/modern_grey_100">
+        android:background="@color/modern_secondary_color">
 
-        <android.support.design.widget.TabLayout
-            android:id="@+id/tabs"
-            app:tabIndicatorHeight="0dp"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"/>
+        <include layout="@layout/keyboard_accessory_tabs"
+            android:id="@+id/tabs"/>
 
         <View style="@style/VerticalDivider" />
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/actions_view"
+            android:id="@+id/bar_items_view"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"/>
     </LinearLayout>
 
-</org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryView>
+</org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryView>

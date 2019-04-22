@@ -10,6 +10,8 @@ js_type_check("closure_compile") {
     ":all_sites",
     ":category_default_setting",
     ":category_setting_exceptions",
+    ":chooser_exception_list",
+    ":chooser_exception_list_entry",
     ":constants",
     ":cookie_info",
     ":local_data_browser_proxy",
@@ -25,7 +27,6 @@ js_type_check("closure_compile") {
     ":site_list_entry",
     ":site_settings_behavior",
     ":site_settings_prefs_browser_proxy",
-    ":usb_devices",
     ":website_usage_private_api",
     ":zoom_levels",
   ]
@@ -43,7 +44,7 @@ js_library("all_sites") {
   deps = [
     ":constants",
     ":site_settings_behavior",
-    "../settings_page:settings_subpage_search",
+    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
@@ -70,6 +71,28 @@ js_library("category_setting_exceptions") {
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/settings_private.js" ]
+}
+
+js_library("chooser_exception_list") {
+  deps = [
+    ":chooser_exception_list_entry",
+    ":constants",
+    ":site_settings_behavior",
+    "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:list_property_update_behavior",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+  externs_list = [ "$externs_path/settings_private.js" ]
+}
+
+js_library("chooser_exception_list_entry") {
+  deps = [
+    ":constants",
+    ":site_list_entry",
+    ":site_settings_behavior",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
 }
@@ -114,14 +137,6 @@ js_library("protocol_handlers") {
   ]
 }
 
-js_library("usb_devices") {
-  deps = [
-    ":site_settings_behavior",
-    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
-  ]
-}
-
 js_library("site_data") {
   deps = [
     ":cookie_info",
@@ -129,7 +144,7 @@ js_library("site_data") {
     ":site_data_entry",
     ":site_settings_behavior",
     "..:global_scroll_target_behavior",
-    "../settings_page:settings_subpage_search",
+    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
@@ -153,10 +168,10 @@ js_library("site_data_entry") {
   deps = [
     ":cookie_info",
     ":local_data_browser_proxy",
-    "..:focus_row_behavior",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:icon",
+    "//ui/webui/resources/js/cr/ui:focus_row_behavior",
   ]
 }
 
@@ -223,10 +238,10 @@ js_library("site_list_entry") {
   deps = [
     ":constants",
     ":site_settings_behavior",
-    "..:focus_row_behavior",
     "..:route",
     "//ui/webui/resources/cr_elements/policy:cr_policy_pref_indicator",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr/ui:focus_row_behavior",
   ]
 }
 

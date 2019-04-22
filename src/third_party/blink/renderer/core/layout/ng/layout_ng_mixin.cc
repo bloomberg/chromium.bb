@@ -11,13 +11,15 @@
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_block_flow_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
@@ -28,6 +30,7 @@ LayoutNGMixin<Base>::LayoutNGMixin(Element* element) : Base(element) {
   static_assert(
       std::is_base_of<LayoutBlockFlow, Base>::value,
       "Base class of LayoutNGMixin must be LayoutBlockFlow or derived class.");
+  DCHECK(!element || !element->ShouldForceLegacyLayout());
 }
 
 template <typename Base>
@@ -36,6 +39,18 @@ LayoutNGMixin<Base>::~LayoutNGMixin() = default;
 template <typename Base>
 bool LayoutNGMixin<Base>::IsOfType(LayoutObject::LayoutObjectType type) const {
   return type == LayoutObject::kLayoutObjectNGMixin || Base::IsOfType(type);
+}
+
+template <typename Base>
+void LayoutNGMixin<Base>::StyleDidChange(StyleDifference diff,
+                                         const ComputedStyle* old_style) {
+  Base::StyleDidChange(diff, old_style);
+
+  const ComputedStyle& new_style = Base::StyleRef();
+  if (old_style && Base::ChildrenInline() &&
+      new_style.GetUnicodeBidi() != old_style->GetUnicodeBidi()) {
+    Base::SetNeedsCollectInlines();
+  }
 }
 
 template <typename Base>
@@ -54,6 +69,11 @@ void LayoutNGMixin<Base>::ResetNGInlineNodeData() {
   ng_inline_node_data_ = std::make_unique<NGInlineNodeData>();
 }
 
+template <typename Base>
+void LayoutNGMixin<Base>::ClearNGInlineNodeData() {
+  ng_inline_node_data_.reset();
+}
+
 // The current fragment from the last layout cycle for this box.
 // When pre-NG layout calls functions of this block flow, fragment and/or
 // LayoutResult are required to compute the result.
@@ -61,48 +81,47 @@ void LayoutNGMixin<Base>::ResetNGInlineNodeData() {
 // cache evolves.
 template <typename Base>
 const NGPhysicalBoxFragment* LayoutNGMixin<Base>::CurrentFragment() const {
-  if (cached_result_)
-    return ToNGPhysicalBoxFragment(cached_result_->PhysicalFragment());
-  return nullptr;
+  const NGLayoutResult* cached_layout_result = Base::GetCachedLayoutResult();
+  if (!cached_layout_result)
+    return nullptr;
+
+  return To<NGPhysicalBoxFragment>(cached_layout_result->PhysicalFragment());
 }
 
 template <typename Base>
-void LayoutNGMixin<Base>::ComputeVisualOverflow(
-    const LayoutRect& previous_visual_overflow_rect,
-    bool recompute_floats) {
-  Base::ComputeVisualOverflow(previous_visual_overflow_rect, recompute_floats);
-  AddVisualOverflowFromChildren();
-
-  if (Base::VisualOverflowRect() != previous_visual_overflow_rect) {
-    if (Base::Layer())
-      Base::Layer()->SetNeedsCompositingInputsUpdate();
-    Base::GetFrameView()->SetIntersectionObservationState(
-        LocalFrameView::kDesired);
+void LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths(
+    LayoutUnit& min_logical_width,
+    LayoutUnit& max_logical_width) const {
+  NGBlockNode node(const_cast<LayoutNGMixin<Base>*>(this));
+  if (!node.CanUseNewLayout()) {
+    Base::ComputeIntrinsicLogicalWidths(min_logical_width, max_logical_width);
+    return;
   }
-}
 
-template <typename Base>
-void LayoutNGMixin<Base>::AddVisualOverflowFromChildren() {
-  // |ComputeOverflow()| calls this, which is called from
-  // |CopyFragmentDataToLayoutBox()| and |RecalcOverflowAfterStyleChange()|.
-  // Add overflow from the last layout cycle.
-  if (const NGPhysicalBoxFragment* physical_fragment = CurrentFragment()) {
-    if (Base::ChildrenInline()) {
-      Base::AddSelfVisualOverflow(
-          physical_fragment->SelfInkOverflow().ToLayoutFlippedRect(
-              physical_fragment->Style(), physical_fragment->Size()));
-      // TODO(kojii): If |RecalcOverflowAfterStyleChange()|, we need to
-      // re-compute glyph bounding box. How to detect it and how to re-compute
-      // is TBD.
-      Base::AddContentsVisualOverflow(
-          physical_fragment->ComputeContentsInkOverflow().ToLayoutFlippedRect(
-              physical_fragment->Style(), physical_fragment->Size()));
-      // TODO(kojii): The above code computes visual overflow only, we fallback
-      // to LayoutBlock for AddLayoutOverflow() for now. It doesn't compute
-      // correctly without RootInlineBox though.
+  LayoutUnit available_logical_height =
+      LayoutBoxUtils::AvailableLogicalHeight(*this, Base::ContainingBlock());
+  MinMaxSizeInput input(available_logical_height);
+  // This function returns content-box plus scrollbar.
+  input.size_type = NGMinMaxSizeType::kContentBoxSize;
+  MinMaxSize sizes =
+      node.ComputeMinMaxSize(node.Style().GetWritingMode(), input);
+
+  if (Base::IsTableCell()) {
+    // If a table cell, or the column that it belongs to, has a specified fixed
+    // positive inline-size, and the measured intrinsic max size is less than
+    // that, use specified size as max size.
+    LayoutTableCell* cell = ToLayoutTableCell(node.GetLayoutBox());
+    Length table_cell_width = cell->StyleOrColLogicalWidth();
+    if (table_cell_width.IsFixed() && table_cell_width.Value() > 0) {
+      sizes.max_size = std::max(sizes.min_size,
+                                Base::AdjustContentBoxLogicalWidthForBoxSizing(
+                                    LayoutUnit(table_cell_width.Value())));
     }
   }
-  Base::AddVisualOverflowFromChildren();
+
+  sizes += LayoutUnit(Base::ScrollbarLogicalWidth());
+  min_logical_width = sizes.min_size;
+  max_logical_width = sizes.max_size;
 }
 
 template <typename Base>
@@ -147,12 +166,13 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
     for (const auto& child : physical_fragment->Children()) {
       NGPhysicalOffsetRect child_scrollable_overflow;
       if (child->IsOutOfFlowPositioned()) {
-        child_scrollable_overflow = child->ScrollableOverflow();
+        child_scrollable_overflow =
+            child->ScrollableOverflowForPropagation(this);
       } else if (children_inline && child->IsLineBox()) {
         DCHECK(child->IsLineBox());
         child_scrollable_overflow =
-            ToNGPhysicalLineBoxFragment(*child).ScrollableOverflow(
-                Base::Style(), physical_fragment->Size());
+            To<NGPhysicalLineBoxFragment>(*child).ScrollableOverflow(
+                this, Base::Style(), physical_fragment->Size());
         if (padding_strut)
           child_scrollable_overflow.Expand(*padding_strut);
       } else {
@@ -191,7 +211,7 @@ base::Optional<LayoutUnit> LayoutNGMixin<Base>::FragmentBaseline(
 
   if (const NGPhysicalFragment* physical_fragment = CurrentFragment()) {
     FontBaseline baseline_type = Base::StyleRef().GetFontBaseline();
-    return ToNGPhysicalBoxFragment(physical_fragment)
+    return To<NGPhysicalBoxFragment>(physical_fragment)
         ->Baseline({type, baseline_type});
   }
   return base::nullopt;
@@ -202,7 +222,7 @@ LayoutUnit LayoutNGMixin<Base>::FirstLineBoxBaseline() const {
   if (Base::ChildrenInline()) {
     if (base::Optional<LayoutUnit> offset =
             FragmentBaseline(NGBaselineAlgorithmType::kFirstLine)) {
-      return offset.value();
+      return *offset;
     }
   }
   return Base::FirstLineBoxBaseline();
@@ -214,129 +234,38 @@ LayoutUnit LayoutNGMixin<Base>::InlineBlockBaseline(
   if (Base::ChildrenInline()) {
     if (base::Optional<LayoutUnit> offset =
             FragmentBaseline(NGBaselineAlgorithmType::kAtomicInline)) {
-      return offset.value();
+      return *offset;
     }
   }
   return Base::InlineBlockBaseline(line_direction);
 }
 
 template <typename Base>
-scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
-    const NGConstraintSpace& new_space,
-    const NGBreakToken* break_token) {
-  if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
-    return nullptr;
-  if (!cached_result_ || !Base::cached_constraint_space_ || break_token ||
-      Base::NeedsLayout())
-    return nullptr;
-  const NGConstraintSpace& old_space = *Base::cached_constraint_space_;
-  // If we used to contain abspos items, we can't reuse the fragment, because
-  // we can't be sure that the list of items hasn't changed (as we bubble them
-  // up during layout). In the case of newly-added abspos items to this
-  // containing block, we will handle those by the NeedsLayout check above for
-  // now.
-  // TODO(layout-ng): Come up with a better solution for this
-  if (cached_result_->OutOfFlowPositionedDescendants().size())
-    return nullptr;
-  if (!new_space.MaySkipLayout(old_space))
-    return nullptr;
-
-  // If we have an orthogonal flow root descendant, we don't attempt to cache
-  // our layout result. This is because the initial containing block size may
-  // have changed, having a high likelihood of changing the size of the
-  // orthogonal flow root.
-  if (cached_result_->HasOrthogonalFlowRoots())
-    return nullptr;
-
-  if (!new_space.AreSizesEqual(old_space)) {
-    // We need to descend all the way down into BODY if we're in quirks mode,
-    // since it magically follows the viewport size.
-    if (NGBlockNode(this).IsQuirkyAndFillsViewport())
-      return nullptr;
-
-    // If the available / percentage sizes have changed in a way that may affect
-    // layout, we cannot re-use the previous result.
-    if (SizeMayChange(Base::StyleRef(), new_space, old_space))
-      return nullptr;
-  }
-
-  // Check BFC block offset. Even if they don't match, there're some cases we
-  // can still reuse the fragment.
-  base::Optional<LayoutUnit> bfc_block_offset =
-      cached_result_->BfcBlockOffset();
-  if (new_space.BfcOffset().block_offset !=
-      old_space.BfcOffset().block_offset) {
-    // Earlier floats may affect this box if block offset changes.
-    if (new_space.HasFloats() || old_space.HasFloats())
-      return nullptr;
-
-    // Even for the first fragment, when block fragmentation is enabled, block
-    // offset changes should cause re-layout, since we will fragment at other
-    // locations than before.
-    if (new_space.HasBlockFragmentation() || old_space.HasBlockFragmentation())
-      return nullptr;
-
-    if (bfc_block_offset.has_value()) {
-      bfc_block_offset = bfc_block_offset.value() -
-                         old_space.BfcOffset().block_offset +
-                         new_space.BfcOffset().block_offset;
-    }
-  }
-
-  // The checks above should be enough to bail if layout is incomplete, but
-  // let's verify:
-  DCHECK(IsBlockLayoutComplete(old_space, *cached_result_));
-  return base::AdoptRef(new NGLayoutResult(*cached_result_, bfc_block_offset));
-}
-
-template <typename Base>
-void LayoutNGMixin<Base>::SetCachedLayoutResult(
-    const NGConstraintSpace& constraint_space,
-    const NGBreakToken* break_token,
-    const NGLayoutResult& layout_result) {
-  if (break_token || layout_result.Status() != NGLayoutResult::kSuccess) {
-    // We can't cache these yet
-    return;
-  }
-  if (constraint_space.IsIntermediateLayout())
-    return;
-
-  Base::cached_constraint_space_.reset(new NGConstraintSpace(constraint_space));
-  cached_result_ = &layout_result;
-}
-
-template <typename Base>
-void LayoutNGMixin<Base>::ClearCachedLayoutResult() {
-  cached_result_.reset();
-  Base::cached_constraint_space_.reset();
-}
-
-template <typename Base>
-scoped_refptr<const NGLayoutResult>
-LayoutNGMixin<Base>::CachedLayoutResultForTesting() {
-  return cached_result_;
-}
-
-template <typename Base>
 bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
-    const NGConstraintSpace& constraint_space) const {
-  if (!Base::cached_constraint_space_)
+    const NGConstraintSpace& new_space) const {
+  const NGLayoutResult* cached_layout_result = Base::GetCachedLayoutResult();
+  if (!cached_layout_result)
     return false;
-  const NGConstraintSpace& cached_constraint_space =
-      *Base::cached_constraint_space_;
-  DCHECK(cached_result_);
 
-  if (constraint_space.AvailableSize().inline_size !=
-      cached_constraint_space.AvailableSize().inline_size)
+  const NGConstraintSpace& old_space =
+      cached_layout_result->GetConstraintSpaceForCaching();
+
+  if (new_space.AvailableSize().inline_size !=
+      old_space.AvailableSize().inline_size)
     return false;
 
   // Floats in either cached or new constraint space prevents reusing cached
   // lines.
-  if (constraint_space.HasFloats() || cached_constraint_space.HasFloats())
+  if (new_space.HasFloats() || old_space.HasFloats())
+    return false;
+
+  // Any floats might need to move, causing lines to wrap differently, needing
+  // re-layout.
+  if (!cached_layout_result->ExclusionSpace().IsEmpty())
     return false;
 
   // Propagating OOF needs re-layout.
-  if (!cached_result_->OutOfFlowPositionedDescendants().IsEmpty())
+  if (!cached_layout_result->OutOfFlowPositionedDescendants().IsEmpty())
     return false;
 
   return true;
@@ -344,43 +273,28 @@ bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
 
 template <typename Base>
 void LayoutNGMixin<Base>::SetPaintFragment(
-    scoped_refptr<const NGPhysicalFragment> fragment,
-    NGPhysicalOffset offset,
-    scoped_refptr<NGPaintFragment>* current) {
-  DCHECK(current);
-  *current = fragment ? NGPaintFragment::Create(std::move(fragment), offset,
-                                                std::move(*current))
-                      : nullptr;
-}
+    const NGBlockBreakToken* break_token,
+    scoped_refptr<const NGPhysicalFragment> fragment) {
+  DCHECK(!break_token || break_token->InputNode().GetLayoutBox() == this);
 
-template <typename Base>
-void LayoutNGMixin<Base>::SetPaintFragment(
-    const NGBreakToken* break_token,
-    scoped_refptr<const NGPhysicalFragment> fragment,
-    NGPhysicalOffset offset) {
-  // TODO(kojii): There are cases where the first call has break_token.
-  // Investigate why and handle appropriately.
-  // DCHECK(!break_token || paint_fragment_);
-  scoped_refptr<NGPaintFragment>* current =
-      NGPaintFragment::Find(&paint_fragment_, break_token);
-  SetPaintFragment(std::move(fragment), offset, current);
-}
-
-template <typename Base>
-void LayoutNGMixin<Base>::UpdatePaintFragmentFromCachedLayoutResult(
-    const NGBreakToken* break_token,
-    scoped_refptr<const NGPhysicalFragment> fragment,
-    NGPhysicalOffset fragment_offset) {
-  DCHECK(fragment);
-  // TODO(kojii): There are cases where the first call has break_token.
-  // Investigate why and handle appropriately.
-  // DCHECK(!break_token || paint_fragment_);
   scoped_refptr<NGPaintFragment>* current =
       NGPaintFragment::Find(&paint_fragment_, break_token);
   DCHECK(current);
-  DCHECK(*current);
-  (*current)->UpdateFromCachedLayoutResult(std::move(fragment),
-                                           fragment_offset);
+  const NGPaintFragment* old = current->get();
+  if (fragment) {
+    *current = NGPaintFragment::Create(std::move(fragment), break_token,
+                                       std::move(*current));
+  } else {
+    *current = nullptr;
+  }
+
+  if (old && old != current->get()) {
+    // Painting layer needs repaint when a DisplayItemClient is destroyed.
+    // TODO(kojii): We need this here for now, but this should be handled
+    // differently for better efficiency, in pre-paint tree walk to walk
+    // fragment tree, or before layout. crbug.com/941228
+    ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
+  }
 }
 
 template <typename Base>
@@ -400,8 +314,8 @@ void LayoutNGMixin<Base>::InvalidateDisplayItemClients(
 
 template <typename Base>
 void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info) const {
-  if (PaintFragment())
-    NGBlockFlowPainter(*this).Paint(paint_info);
+  if (const NGPaintFragment* paint_fragment = PaintFragment())
+    NGBoxFragmentPainter(*paint_fragment).Paint(paint_info);
   else
     LayoutBlockFlow::Paint(paint_info);
 }
@@ -412,7 +326,8 @@ bool LayoutNGMixin<Base>::NodeAtPoint(
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
     HitTestAction action) {
-  if (!PaintFragment()) {
+  const NGPaintFragment* paint_fragment = PaintFragment();
+  if (!paint_fragment) {
     return LayoutBlockFlow::NodeAtPoint(result, location_in_container,
                                         accumulated_offset, action);
   }
@@ -436,8 +351,8 @@ bool LayoutNGMixin<Base>::NodeAtPoint(
                                    physical_offset))
     return true;
 
-  return NGBlockFlowPainter(*this).NodeAtPoint(result, location_in_container,
-                                               physical_offset, action);
+  return NGBoxFragmentPainter(*paint_fragment)
+      .NodeAtPoint(result, location_in_container, physical_offset, action);
 }
 
 template <typename Base>

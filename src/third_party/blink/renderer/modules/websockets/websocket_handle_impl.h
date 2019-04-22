@@ -53,12 +53,11 @@ class WebSocketHandleImpl : public WebSocketHandle,
                base::SingleThreadTaskRunner*) override;
   void Send(bool fin, MessageType, const char* data, wtf_size_t) override;
   void FlowControl(int64_t quota) override;
-  void Close(unsigned short code, const String& reason) override;
+  void Close(uint16_t code, const String& reason) override;
 
  private:
   void Disconnect();
-  void OnConnectionError(uint32_t custom_reason,
-                         const std::string& description);
+  void OnConnectionError();
 
   // network::mojom::blink::WebSocketClient methods:
   void OnFailChannel(const String& reason) override;

@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/widget.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -41,7 +43,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"     // nogncheck
-#include "ui/aura/window.h"  // nogncheck
 #endif
 
 namespace views {
@@ -55,8 +56,8 @@ void BuildViewsWithLayers(View* view, View::Views* views) {
   if (view->layer()) {
     views->push_back(view);
   } else {
-    for (int i = 0; i < view->child_count(); ++i)
-      BuildViewsWithLayers(view->child_at(i), views);
+    for (View* child : view->children())
+      BuildViewsWithLayers(child, views);
   }
 }
 
@@ -97,7 +98,7 @@ class DefaultWidgetDelegate : public WidgetDelegate {
  public:
   explicit DefaultWidgetDelegate(Widget* widget) : widget_(widget) {
   }
-  ~DefaultWidgetDelegate() override {}
+  ~DefaultWidgetDelegate() override = default;
 
   // Overridden from WidgetDelegate:
   void DeleteDelegate() override { delete this; }
@@ -146,8 +147,7 @@ Widget::InitParams::InitParams(Type type)
 
 Widget::InitParams::InitParams(const InitParams& other) = default;
 
-Widget::InitParams::~InitParams() {
-}
+Widget::InitParams::~InitParams() = default;
 
 bool Widget::InitParams::CanActivate() const {
   if (activatable != InitParams::ACTIVATABLE_DEFAULT)
@@ -160,28 +160,7 @@ bool Widget::InitParams::CanActivate() const {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 
-Widget::Widget()
-    : native_widget_(nullptr),
-      widget_delegate_(nullptr),
-      non_client_view_(nullptr),
-      dragged_view_(nullptr),
-      ownership_(InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      is_secondary_widget_(true),
-      frame_type_(FRAME_TYPE_DEFAULT),
-      always_render_as_active_(false),
-      widget_closed_(false),
-      saved_show_state_(ui::SHOW_STATE_DEFAULT),
-      focus_on_creation_(true),
-      is_top_level_(false),
-      native_widget_initialized_(false),
-      native_widget_destroyed_(false),
-      is_mouse_button_pressed_(false),
-      ignore_capture_loss_(false),
-      last_mouse_event_was_move_(false),
-      auto_release_capture_(true),
-      views_with_layers_dirty_(false),
-      movement_disabled_(false),
-      observer_manager_(this) {}
+Widget::Widget() = default;
 
 Widget::~Widget() {
   DestroyRootView();
@@ -236,7 +215,7 @@ Widget* Widget::CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
 Widget* Widget::GetWidgetForNativeView(gfx::NativeView native_view) {
   internal::NativeWidgetPrivate* native_widget =
       internal::NativeWidgetPrivate::GetNativeWidgetForNativeView(native_view);
-  return native_widget ? native_widget->GetWidget() : NULL;
+  return native_widget ? native_widget->GetWidget() : nullptr;
 }
 
 // static
@@ -244,14 +223,14 @@ Widget* Widget::GetWidgetForNativeWindow(gfx::NativeWindow native_window) {
   internal::NativeWidgetPrivate* native_widget =
       internal::NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
           native_window);
-  return native_widget ? native_widget->GetWidget() : NULL;
+  return native_widget ? native_widget->GetWidget() : nullptr;
 }
 
 // static
 Widget* Widget::GetTopLevelWidgetForNativeView(gfx::NativeView native_view) {
   internal::NativeWidgetPrivate* native_widget =
       internal::NativeWidgetPrivate::GetTopLevelNativeWidget(native_view);
-  return native_widget ? native_widget->GetWidget() : NULL;
+  return native_widget ? native_widget->GetWidget() : nullptr;
 }
 
 // static
@@ -296,7 +275,6 @@ gfx::Size Widget::GetLocalizedContentsSize(int col_resource_id,
 // static
 bool Widget::RequiresNonClientView(InitParams::Type type) {
   return type == InitParams::TYPE_WINDOW ||
-         type == InitParams::TYPE_PANEL ||
          type == InitParams::TYPE_BUBBLE;
 }
 
@@ -314,9 +292,9 @@ void Widget::Init(const InitParams& in_params) {
   is_top_level_ = !params.child;
 
   if (params.opacity == views::Widget::InitParams::INFER_OPACITY &&
-      params.type != views::Widget::InitParams::TYPE_WINDOW &&
-      params.type != views::Widget::InitParams::TYPE_PANEL)
+      params.type != views::Widget::InitParams::TYPE_WINDOW) {
     params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+  }
 
   if (ViewsDelegate::GetInstance())
     ViewsDelegate::GetInstance()->OnBeforeWidgetInit(&params, this);
@@ -330,7 +308,7 @@ void Widget::Init(const InitParams& in_params) {
 
   widget_delegate_ = params.delegate ?
       params.delegate : new DefaultWidgetDelegate(this);
-  widget_delegate_->set_can_activate(can_activate);
+  widget_delegate_->SetCanActivate(can_activate);
 
   // Henceforth, ensure the delegate outlives the Widget.
   widget_delegate_->can_delete_this_ = false;
@@ -338,7 +316,7 @@ void Widget::Init(const InitParams& in_params) {
   ownership_ = params.ownership;
   native_widget_ = CreateNativeWidget(params, this)->AsNativeWidgetPrivate();
   root_view_.reset(CreateRootView());
-  default_theme_provider_.reset(new ui::DefaultThemeProvider);
+  default_theme_provider_ = std::make_unique<ui::DefaultThemeProvider>();
   native_widget_->InitNativeWidget(params);
   if (params.type == InitParams::TYPE_MENU)
     is_mouse_button_pressed_ = native_widget_->IsMouseButtonDown();
@@ -385,6 +363,10 @@ void Widget::Init(const InitParams& in_params) {
   native_widget_->OnWidgetInitDone();
 }
 
+void Widget::ShowEmojiPanel() {
+  native_widget_->ShowEmojiPanel();
+}
+
 // Unconverted methods (see header) --------------------------------------------
 
 gfx::NativeView Widget::GetNativeView() const {
@@ -425,11 +407,10 @@ bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) const {
   return false;
 }
 
-void Widget::ViewHierarchyChanged(
-    const View::ViewHierarchyChangedDetails& details) {
+void Widget::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
   if (!details.is_add) {
     if (details.child == dragged_view_)
-      dragged_view_ = NULL;
+      dragged_view_ = nullptr;
     FocusManager* focus_manager = GetFocusManager();
     if (focus_manager)
       focus_manager->ViewRemoved(details.child);
@@ -490,7 +471,7 @@ void Widget::SetContentsView(View* view) {
     // |non_client_view_|. If you get this error, either use a different type
     // when initializing the widget, or don't call SetContentsView().
     DCHECK(!non_client_view_);
-    non_client_view_ = NULL;
+    non_client_view_ = nullptr;
   }
 }
 
@@ -569,7 +550,7 @@ void Widget::SetShape(std::unique_ptr<ShapeRects> shape) {
   native_widget_->SetShape(std::move(shape));
 }
 
-void Widget::Close() {
+void Widget::CloseWithReason(ClosedReason closed_reason) {
   if (widget_closed_) {
     // It appears we can hit this code path if you close a modal dialog then
     // close the last browser before the destructor is hit, which triggers
@@ -580,9 +561,14 @@ void Widget::Close() {
   if (non_client_view_ && !non_client_view_->CanClose())
     return;
 
+  // This is the last chance to cancel closing.
+  if (widget_delegate_ && !widget_delegate_->OnCloseRequested(closed_reason))
+    return;
+
   // The actions below can cause this function to be called again, so mark
   // |this| as closed early. See crbug.com/714334
   widget_closed_ = true;
+  closed_reason_ = closed_reason;
   SaveWindowPlacement();
 
   // During tear-down the top-level focus manager becomes unavailable to
@@ -597,6 +583,10 @@ void Widget::Close() {
     observer.OnWidgetClosing(this);
 
   native_widget_->Close();
+}
+
+void Widget::Close() {
+  CloseWithReason(ClosedReason::kUnspecified);
 }
 
 void Widget::CloseNow() {
@@ -655,7 +645,8 @@ void Widget::ShowInactive() {
 }
 
 void Widget::Activate() {
-  native_widget_->Activate();
+  if (CanActivate())
+    native_widget_->Activate();
 }
 
 void Widget::Deactivate() {
@@ -709,11 +700,17 @@ void Widget::SetFullscreen(bool fullscreen) {
   native_widget_->SetFullscreen(fullscreen);
 
   if (non_client_view_)
-    non_client_view_->Layout();
+    non_client_view_->InvalidateLayout();
 }
 
 bool Widget::IsFullscreen() const {
   return native_widget_->IsFullscreen();
+}
+
+void Widget::SetCanAppearInExistingFullscreenSpaces(
+    bool can_appear_in_existing_fullscreen_spaces) {
+  native_widget_->SetCanAppearInExistingFullscreenSpaces(
+      can_appear_in_existing_fullscreen_spaces);
 }
 
 void Widget::SetOpacity(float opacity) {
@@ -760,12 +757,12 @@ const ui::ThemeProvider* Widget::GetThemeProvider() const {
 
 FocusManager* Widget::GetFocusManager() {
   Widget* toplevel_widget = GetTopLevelWidget();
-  return toplevel_widget ? toplevel_widget->focus_manager_.get() : NULL;
+  return toplevel_widget ? toplevel_widget->focus_manager_.get() : nullptr;
 }
 
 const FocusManager* Widget::GetFocusManager() const {
   const Widget* toplevel_widget = GetTopLevelWidget();
-  return toplevel_widget ? toplevel_widget->focus_manager_.get() : NULL;
+  return toplevel_widget ? toplevel_widget->focus_manager_.get() : nullptr;
 }
 
 ui::InputMethod* Widget::GetInputMethod() {
@@ -792,6 +789,9 @@ void Widget::RunShellDrag(View* view,
   dragged_view_ = view;
   OnDragWillStart();
 
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetDragWillStart(this);
+
   WidgetDeletionObserver widget_deletion_observer(this);
   native_widget_->RunShellDrag(view, data, location, operation, source);
 
@@ -802,14 +802,21 @@ void Widget::RunShellDrag(View* view,
   // If the view is removed during the drag operation, dragged_view_ is set to
   // NULL.
   if (view && dragged_view_ == view) {
-    dragged_view_ = NULL;
+    dragged_view_ = nullptr;
     view->OnDragDone();
   }
   OnDragComplete();
+
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetDragComplete(this);
 }
 
 void Widget::SchedulePaintInRect(const gfx::Rect& rect) {
   native_widget_->SchedulePaintInRect(rect);
+}
+
+void Widget::ScheduleLayout() {
+  native_widget_->ScheduleLayout();
 }
 
 void Widget::SetCursor(gfx::NativeCursor cursor) {
@@ -1015,6 +1022,11 @@ void Widget::OnSizeConstraintsChanged() {
 
 void Widget::OnOwnerClosing() {}
 
+void Widget::OnCanActivateChanged() {
+  if (native_widget_)
+    native_widget_->OnCanActivateChanged();
+}
+
 std::string Widget::GetName() const {
   return native_widget_->GetName();
 }
@@ -1031,11 +1043,17 @@ bool Widget::IsDialogBox() const {
 }
 
 bool Widget::CanActivate() const {
-  return widget_delegate_->CanActivate();
+  // This may be called after OnNativeWidgetDestroyed(), which sets
+  // |widget_delegate_| to null.
+  return widget_delegate_ && widget_delegate_->CanActivate();
 }
 
 bool Widget::IsAlwaysRenderAsActive() const {
   return always_render_as_active_;
+}
+
+bool Widget::IsNativeWidgetInitialized() const {
+  return native_widget_initialized_;
 }
 
 bool Widget::OnNativeWidgetActivationChanged(bool active) {
@@ -1082,9 +1100,9 @@ void Widget::OnNativeWidgetVisibilityChanged(bool visible) {
     root->layer()->SetVisible(visible);
 }
 
-void Widget::OnNativeWidgetCreated(bool desktop_widget) {
+void Widget::OnNativeWidgetCreated() {
   if (is_top_level())
-    focus_manager_ = FocusManagerFactory::Create(this, desktop_widget);
+    focus_manager_ = FocusManagerFactory::Create(this);
 
   native_widget_->InitModalType(widget_delegate_->GetModalType());
 
@@ -1109,7 +1127,7 @@ void Widget::OnNativeWidgetDestroyed() {
     observer.OnWidgetDestroyed(this);
   widget_delegate_->can_delete_this_ = true;
   widget_delegate_->DeleteDelegate();
-  widget_delegate_ = NULL;
+  widget_delegate_ = nullptr;
   native_widget_destroyed_ = true;
 }
 
@@ -1313,7 +1331,7 @@ bool Widget::HasHitTestMask() const {
   return widget_delegate_->WidgetHasHitTestMask();
 }
 
-void Widget::GetHitTestMask(gfx::Path* mask) const {
+void Widget::GetHitTestMask(SkPath* mask) const {
   DCHECK(mask);
   widget_delegate_->GetWidgetHitTestMask(mask);
 }
@@ -1399,6 +1417,11 @@ bool Widget::ShouldDescendIntoChildForEventHandling(
   return true;
 }
 
+void Widget::LayoutRootViewIfNecessary() {
+  if (root_view_ && root_view_->needs_layout())
+    root_view_->Layout();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, ui::EventSource implementation:
 ui::EventSink* Widget::GetEventSink() {
@@ -1416,14 +1439,14 @@ FocusTraversable* Widget::GetFocusTraversableParent() {
   // We are a proxy to the root view, so we should be bypassed when traversing
   // up and as a result this should not be called.
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 View* Widget::GetFocusTraversableParentView() {
   // We are a proxy to the root view, so we should be bypassed when traversing
   // up and as a result this should not be called.
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1452,7 +1475,7 @@ void Widget::DestroyRootView() {
   if (is_top_level() && focus_manager_)
     focus_manager_->SetFocusedView(nullptr);
   NotifyWillRemoveView(root_view_.get());
-  non_client_view_ = NULL;
+  non_client_view_ = nullptr;
   root_view_.reset();
 }
 

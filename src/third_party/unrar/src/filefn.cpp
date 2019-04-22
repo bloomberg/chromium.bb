@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 MKDIR_CODE MakeDir(const wchar *Name,bool SetAttr,uint Attr)
 {
 #ifdef _WIN_ALL
@@ -499,12 +501,5 @@ bool SetFileCompression(const wchar *Name,bool State)
 }
 #endif
 
-
-
-
-
-
-
-
-
+}  // namespace third_party_unrar
 

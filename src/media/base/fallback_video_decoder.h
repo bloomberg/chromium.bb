@@ -21,13 +21,12 @@ class MEDIA_EXPORT FallbackVideoDecoder : public VideoDecoder {
 
   // media::VideoDecoder implementation.
   std::string GetDisplayName() const override;
-  void Initialize(
-      const VideoDecoderConfig& config,
-      bool low_delay,
-      CdmContext* cdm_context,
-      const InitCB& init_cb,
-      const OutputCB& output_cb,
-      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) override;
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
+                  CdmContext* cdm_context,
+                  const InitCB& init_cb,
+                  const OutputCB& output_cb,
+                  const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
   void Reset(const base::RepeatingClosure& reset_cb) override;
@@ -39,14 +38,13 @@ class MEDIA_EXPORT FallbackVideoDecoder : public VideoDecoder {
   ~FallbackVideoDecoder() override;
 
  private:
-  void FallbackInitialize(
-      const VideoDecoderConfig& config,
-      bool low_delay,
-      CdmContext* cdm_context,
-      const InitCB& init_cb,
-      const OutputCB& output_cb,
-      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb,
-      bool success);
+  void FallbackInitialize(const VideoDecoderConfig& config,
+                          bool low_delay,
+                          CdmContext* cdm_context,
+                          const InitCB& init_cb,
+                          const OutputCB& output_cb,
+                          const WaitingCB& waiting_cb,
+                          bool success);
 
   std::unique_ptr<media::VideoDecoder> preferred_decoder_;
   std::unique_ptr<media::VideoDecoder> fallback_decoder_;

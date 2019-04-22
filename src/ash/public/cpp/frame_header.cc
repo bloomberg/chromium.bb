@@ -4,7 +4,6 @@
 
 #include "ash/public/cpp/frame_header.h"
 
-#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
@@ -19,6 +18,8 @@
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/caption_button_layout_constants.h"
+#include "ui/views/window/vector_icons/vector_icons.h"
 
 namespace ash {
 
@@ -61,11 +62,10 @@ gfx::Rect GetAvailableTitleBounds(const views::View* left_view,
 // widget's activation changes. Returns false if the header should switch to
 // new visuals instantaneously.
 bool CanAnimateActivation(views::Widget* widget) {
-  // Do not animate the header if the parent (e.g.
-  // kShellWindowId_DefaultContainer) is already animating. All of the
-  // implementers of FrameHeader animate activation by continuously painting
-  // during the animation. This gives the parent's animation a slower frame
-  // rate.
+  // Do not animate the header if the parent (e.g. the active desk container) is
+  // already animating. All of the implementers of FrameHeader animate
+  // activation by continuously painting during the animation. This gives the
+  // parent's animation a slower frame rate.
   // TODO(sky): Expose a better way to determine this rather than assuming the
   // parent is a toplevel container.
   aura::Window* window = widget->GetNativeWindow();
@@ -161,24 +161,18 @@ void FrameHeader::SetLeftHeaderView(views::View* left_header_view) {
   left_header_view_ = left_header_view;
 }
 
-void FrameHeader::SetBackButton(FrameCaptionButton* back_button) {
+void FrameHeader::SetBackButton(views::FrameCaptionButton* back_button) {
   back_button_ = back_button;
   if (back_button_) {
-    back_button_->SetColorMode(button_color_mode_);
     back_button_->SetBackgroundColor(GetCurrentFrameColor());
-    back_button_->SetImage(CAPTION_BUTTON_ICON_BACK,
-                           FrameCaptionButton::ANIMATE_NO,
+    back_button_->SetImage(views::CAPTION_BUTTON_ICON_BACK,
+                           views::FrameCaptionButton::ANIMATE_NO,
                            kWindowControlBackIcon);
   }
 }
 
-FrameCaptionButton* FrameHeader::GetBackButton() const {
+views::FrameCaptionButton* FrameHeader::GetBackButton() const {
   return back_button_;
-}
-
-void FrameHeader::SetFrameColors(SkColor active_frame_color,
-                                 SkColor inactive_frame_color) {
-  DoSetFrameColors(active_frame_color, inactive_frame_color);
 }
 
 void FrameHeader::SetFrameTextOverride(
@@ -208,12 +202,10 @@ gfx::Rect FrameHeader::GetPaintedBounds() const {
 }
 
 void FrameHeader::UpdateCaptionButtonColors() {
-  caption_button_container_->SetColorMode(button_color_mode_);
-  caption_button_container_->SetBackgroundColor(GetCurrentFrameColor());
-  if (back_button_) {
-    back_button_->SetColorMode(button_color_mode_);
-    back_button_->SetBackgroundColor(GetCurrentFrameColor());
-  }
+  const SkColor frame_color = GetCurrentFrameColor();
+  caption_button_container_->SetBackgroundColor(frame_color);
+  if (back_button_)
+    back_button_->SetBackgroundColor(frame_color);
 }
 
 void FrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
@@ -236,16 +228,16 @@ void FrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
 void FrameHeader::SetCaptionButtonContainer(
     FrameCaptionButtonContainerView* caption_button_container) {
   caption_button_container_ = caption_button_container;
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_MINIMIZE,
-                                            kWindowControlMinimizeIcon);
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_MENU,
+  caption_button_container_->SetButtonImage(views::CAPTION_BUTTON_ICON_MINIMIZE,
+                                            views::kWindowControlMinimizeIcon);
+  caption_button_container_->SetButtonImage(views::CAPTION_BUTTON_ICON_MENU,
                                             kWindowControlMenuIcon);
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_CLOSE,
-                                            kWindowControlCloseIcon);
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-                                            kWindowControlLeftSnappedIcon);
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-                                            kWindowControlRightSnappedIcon);
+  caption_button_container_->SetButtonImage(views::CAPTION_BUTTON_ICON_CLOSE,
+                                            views::kWindowControlCloseIcon);
+  caption_button_container_->SetButtonImage(
+      views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, kWindowControlLeftSnappedIcon);
+  caption_button_container_->SetButtonImage(
+      views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED, kWindowControlRightSnappedIcon);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -253,19 +245,21 @@ void FrameHeader::SetCaptionButtonContainer(
 
 void FrameHeader::LayoutHeaderInternal() {
   bool use_zoom_icons = caption_button_container()->model()->InZoomMode();
-  const gfx::VectorIcon& restore_icon =
-      use_zoom_icons ? kWindowControlDezoomIcon : kWindowControlRestoreIcon;
+  const gfx::VectorIcon& restore_icon = use_zoom_icons
+                                            ? kWindowControlDezoomIcon
+                                            : views::kWindowControlRestoreIcon;
   const gfx::VectorIcon& maximize_icon =
-      use_zoom_icons ? kWindowControlZoomIcon : kWindowControlMaximizeIcon;
+      use_zoom_icons ? kWindowControlZoomIcon
+                     : views::kWindowControlMaximizeIcon;
   const gfx::VectorIcon& icon =
       target_widget_->IsMaximized() || target_widget_->IsFullscreen()
           ? restore_icon
           : maximize_icon;
   caption_button_container()->SetButtonImage(
-      CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, icon);
+      views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, icon);
 
   caption_button_container()->SetButtonSize(
-      GetAshLayoutSize(GetButtonLayoutSize()));
+      views::GetCaptionButtonLayoutSize(GetButtonLayoutSize()));
 
   const gfx::Size caption_button_container_size =
       caption_button_container()->GetPreferredSize();

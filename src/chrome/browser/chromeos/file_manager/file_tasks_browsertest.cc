@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
 
+#include "base/bind.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -89,17 +90,20 @@ IN_PROC_BROWSER_TEST_F(FileTasksBrowserTest, DefaultHandlerChangeDetector) {
          std::unique_ptr<std::vector<FullTaskDescriptor>> result) {
         ASSERT_TRUE(result) << file_extension;
 
-        // There can be multiple handlers. The one at index 0 will be picked by
-        // ChooseAndSetDefaultTask() since prefs should be empty in the test.
-        ASSERT_LE(1u, result->size()) << file_extension;
+        auto default_task =
+            std::find_if(result->begin(), result->end(),
+                         [](const auto& task) { return task.is_default(); });
 
-        EXPECT_EQ(expected_app_id, result->at(0).task_descriptor().app_id)
+        ASSERT_TRUE(default_task != result->end()) << file_extension;
+
+        EXPECT_EQ(expected_app_id, default_task->task_descriptor().app_id)
             << " for extension: " << file_extension;
 
-        // Verify expected behavior of ChooseAndSetDefaultTask().
-        EXPECT_TRUE(result->at(0).is_default()) << file_extension;
-        for (size_t i = 1; i < result->size(); ++i)
-          EXPECT_FALSE(result->at(i).is_default()) << file_extension;
+        // Verify no other task is set as default.
+        EXPECT_EQ(1u, std::count_if(
+                          result->begin(), result->end(),
+                          [](const auto& task) { return task.is_default(); }))
+            << file_extension;
 
         if (--*remaining == 0)
           quit.Run();

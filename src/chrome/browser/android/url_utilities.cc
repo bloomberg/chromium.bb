@@ -57,7 +57,6 @@ net::registry_controlled_domains::PrivateRegistryFilter GetRegistryFilter(
 
 static jboolean JNI_UrlUtilities_SameDomainOrHost(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url_1_str,
     const JavaParamRef<jstring>& url_2_str,
     jboolean include_private) {
@@ -74,7 +73,6 @@ static jboolean JNI_UrlUtilities_SameDomainOrHost(
 
 static ScopedJavaLocalRef<jstring> JNI_UrlUtilities_GetDomainAndRegistry(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url,
     jboolean include_private) {
   DCHECK(url);
@@ -90,9 +88,22 @@ static ScopedJavaLocalRef<jstring> JNI_UrlUtilities_GetDomainAndRegistry(
       net::registry_controlled_domains::GetDomainAndRegistry(gurl, filter));
 }
 
+static jboolean JNI_UrlUtilities_IsGoogleDomainUrl(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& url,
+    jboolean allow_non_standard_port) {
+  GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
+  if (gurl.is_empty())
+    return false;
+  return google_util::IsGoogleDomainUrl(
+      gurl, google_util::DISALLOW_SUBDOMAIN,
+      allow_non_standard_port == JNI_TRUE
+          ? google_util::ALLOW_NON_STANDARD_PORTS
+          : google_util::DISALLOW_NON_STANDARD_PORTS);
+}
+
 static jboolean JNI_UrlUtilities_IsGoogleSearchUrl(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
   if (gurl.is_empty())
@@ -102,7 +113,6 @@ static jboolean JNI_UrlUtilities_IsGoogleSearchUrl(
 
 static jboolean JNI_UrlUtilities_IsGoogleHomePageUrl(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
   if (gurl.is_empty())
@@ -112,7 +122,6 @@ static jboolean JNI_UrlUtilities_IsGoogleHomePageUrl(
 
 static jboolean JNI_UrlUtilities_IsUrlWithinScope(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url,
     const JavaParamRef<jstring>& scope_url) {
   GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
@@ -124,7 +133,6 @@ static jboolean JNI_UrlUtilities_IsUrlWithinScope(
 
 static jboolean JNI_UrlUtilities_UrlsMatchIgnoringFragments(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url,
     const JavaParamRef<jstring>& url2) {
   GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
@@ -142,7 +150,6 @@ static jboolean JNI_UrlUtilities_UrlsMatchIgnoringFragments(
 
 static jboolean JNI_UrlUtilities_UrlsFragmentsDiffer(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url,
     const JavaParamRef<jstring>& url2) {
   GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
@@ -156,21 +163,18 @@ static jboolean JNI_UrlUtilities_UrlsFragmentsDiffer(
 
 static jboolean JNI_UrlUtilities_IsAcceptedScheme(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   return CheckSchemeBelongsToList(env, url, g_supported_schemes);
 }
 
 static jboolean JNI_UrlUtilities_IsValidForIntentFallbackNavigation(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   return CheckSchemeBelongsToList(env, url, g_fallback_valid_schemes);
 }
 
 static jboolean JNI_UrlUtilities_IsDownloadable(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   return CheckSchemeBelongsToList(env, url, g_downloadable_schemes);
 }

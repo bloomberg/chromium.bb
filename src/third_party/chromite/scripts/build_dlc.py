@@ -11,10 +11,34 @@ import hashlib
 import json
 import math
 import os
+import shutil
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+
+from chromite.scripts import cros_set_lsb_release
+
+DLC_META_DIR = 'opt/google/dlc/'
+DLC_IMAGE_DIR = 'build/rootfs/dlc/'
+LSB_RELEASE = 'etc/lsb-release'
+
+# This file has major and minor version numbers that the update_engine client
+# supports. These values are needed for generating a delta/full payload.
+UPDATE_ENGINE_CONF = 'etc/update_engine.conf'
+
+_EXTRA_RESOURCES = (
+    UPDATE_ENGINE_CONF,
+)
+
+DLC_ID_KEY = 'DLC_ID'
+DLC_PACKAGE_KEY = 'DLC_PACKAGE'
+DLC_NAME_KEY = 'DLC_NAME'
+DLC_APPID_KEY = 'DLC_RELEASE_APPID'
+
+_SQUASHFS_TYPE = 'squashfs'
+_EXT4_TYPE = 'ext4'
 
 
 def HashFile(file_path):
@@ -33,7 +57,7 @@ def HashFile(file_path):
   return sha256.hexdigest()
 
 
-class DLCGenerator(object):
+class DlcGenerator(object):
   """Object to generate DLC artifacts."""
   # Block size for the DLC image.
   # We use 4K for various reasons:
@@ -45,30 +69,45 @@ class DLCGenerator(object):
   # Version of manifest file.
   _MANIFEST_VERSION = 1
 
-  def __init__(self, img_dir, meta_dir, src_dir, fs_type, pre_allocated_blocks,
-               version, dlc_id, name):
+  # The DLC root path inside the DLC module.
+  _DLC_ROOT_DIR = 'root'
+
+  def __init__(self, src_dir, sysroot, install_root_dir, fs_type,
+               pre_allocated_blocks, version, dlc_id, dlc_package, name):
     """Object initializer.
 
     Args:
-      img_dir: (str) path to the DLC image dest root directory.
-      meta_dir: (str) path to the DLC metadata dest root directory.
       src_dir: (str) path to the DLC source root directory.
+      sysroot: (str) The path to the build root directory.
+      install_root_dir: (str) The path to the root installation directory.
       fs_type: (str) file system type.
       pre_allocated_blocks: (int) number of blocks pre-allocated on device.
       version: (str) DLC version.
       dlc_id: (str) DLC ID.
+      dlc_package: (str) DLC Package.
       name: (str) DLC name.
     """
     self.src_dir = src_dir
+    self.sysroot = sysroot
+    self.install_root_dir = install_root_dir
     self.fs_type = fs_type
     self.pre_allocated_blocks = pre_allocated_blocks
     self.version = version
     self.dlc_id = dlc_id
+    self.dlc_package = dlc_package
     self.name = name
+
+    self.meta_dir = os.path.join(self.install_root_dir, DLC_META_DIR,
+                                 self.dlc_id, self.dlc_package)
+    self.image_dir = os.path.join(self.install_root_dir, DLC_IMAGE_DIR,
+                                  self.dlc_id, self.dlc_package)
+    osutils.SafeMakedirs(self.meta_dir)
+    osutils.SafeMakedirs(self.image_dir)
+
     # Create path for all final artifacts.
-    self.dest_image = os.path.join(img_dir, 'dlc.img')
-    self.dest_table = os.path.join(meta_dir, 'table')
-    self.dest_imageloader_json = os.path.join(meta_dir, 'imageloader.json')
+    self.dest_image = os.path.join(self.image_dir, 'dlc.img')
+    self.dest_table = os.path.join(self.meta_dir, 'table')
+    self.dest_imageloader_json = os.path.join(self.meta_dir, 'imageloader.json')
 
   def SquashOwnerships(self, path):
     """Squash the owernships & permissions for files.
@@ -96,10 +135,9 @@ class DLCGenerator(object):
       osutils.SafeMakedirs(mount_point)
       # Mount the ext4 image.
       osutils.MountDir(self.dest_image, mount_point, mount_opts=('loop', 'rw'))
+
       try:
-        # Copy DLC files over to the image.
-        cros_build_lib.SudoRunCommand(['cp', '-a', self.src_dir, mount_point])
-        self.SquashOwnerships(mount_point)
+        self.SetupDlcImageFiles(mount_point)
       finally:
         # Unmount the ext4 image.
         osutils.UmountDir(mount_point)
@@ -112,17 +150,86 @@ class DLCGenerator(object):
   def CreateSquashfsImage(self):
     """Create a squashfs image."""
     with osutils.TempDir(prefix='dlc_') as temp_dir:
-      cros_build_lib.SudoRunCommand(['cp', '-a', self.src_dir, temp_dir])
-      self.SquashOwnerships(temp_dir)
-      cros_build_lib.SudoRunCommand(
-          ['mksquashfs', temp_dir, self.dest_image, '-4k-align', '-noappend'],
-          capture_output=True)
+      squashfs_root = os.path.join(temp_dir, 'squashfs-root')
+      self.SetupDlcImageFiles(squashfs_root)
+
+      cros_build_lib.RunCommand(['mksquashfs', squashfs_root, self.dest_image,
+                                 '-4k-align', '-noappend'],
+                                capture_output=True)
+
+      # We changed the ownership and permissions of the squashfs_root
+      # directory. Now we need to remove it manually.
+      osutils.RmDir(squashfs_root, sudo=True)
+
+  def SetupDlcImageFiles(self, dlc_dir):
+    """Prepares the directory dlc_dir with all the files a DLC needs.
+
+    Args:
+      dlc_dir: (str) The path to where to setup files inside the DLC.
+    """
+    dlc_root_dir = os.path.join(dlc_dir, self._DLC_ROOT_DIR)
+    osutils.SafeMakedirs(dlc_root_dir)
+    osutils.CopyDirContents(self.src_dir, dlc_root_dir)
+    self.PrepareLsbRelease(dlc_dir)
+    self.CollectExtraResources(dlc_dir)
+    self.SquashOwnerships(dlc_dir)
+
+  def PrepareLsbRelease(self, dlc_dir):
+    """Prepare the file /etc/lsb-release in the DLC module.
+
+    This file is used dropping some identification parameters for the DLC.
+
+    Args:
+      dlc_dir: (str) The path to root directory of the DLC. e.g. mounted point
+          when we are creating the image.
+    """
+    # Reading the platform APPID and creating the DLC APPID.
+    platform_lsb_release = osutils.ReadFile(os.path.join(self.sysroot,
+                                                         LSB_RELEASE))
+    app_id = None
+    for line in platform_lsb_release.split('\n'):
+      if line.startswith(cros_set_lsb_release.LSB_KEY_APPID_RELEASE):
+        app_id = line.split('=')[1]
+    if app_id is None:
+      raise Exception('%s does not have a valid key %s' %
+                      (platform_lsb_release,
+                       cros_set_lsb_release.LSB_KEY_APPID_RELEASE))
+
+    fields = {
+        DLC_ID_KEY: self.dlc_id,
+        DLC_PACKAGE_KEY: self.dlc_package,
+        DLC_NAME_KEY: self.name,
+        # The DLC appid is generated by concatenating the platform appid with
+        # the DLC ID using an underscore. This pattern should never be changed
+        # once set otherwise it can break a lot of things!
+        DLC_APPID_KEY: '%s_%s' % (app_id, self.dlc_id),
+    }
+
+    lsb_release = os.path.join(dlc_dir, LSB_RELEASE)
+    osutils.SafeMakedirs(os.path.dirname(lsb_release))
+    content = ''.join(['%s=%s\n' % (k, v) for k, v in fields.items()])
+    osutils.WriteFile(lsb_release, content)
+
+  def CollectExtraResources(self, dlc_dir):
+    """Collect the extra resources needed by the DLC module.
+
+    Look at the documentation around _EXTRA_RESOURCES.
+
+    Args:
+      dlc_dir: (str) The path to root directory of the DLC. e.g. mounted point
+          when we are creating the image.
+    """
+    for r in _EXTRA_RESOURCES:
+      source_path = os.path.join(self.sysroot, r)
+      target_path = os.path.join(dlc_dir, r)
+      osutils.SafeMakedirs(os.path.dirname(target_path))
+      shutil.copyfile(source_path, target_path)
 
   def CreateImage(self):
     """Create the image and copy the DLC files to it."""
-    if self.fs_type == 'ext4':
+    if self.fs_type == _EXT4_TYPE:
       self.CreateExt4Image()
-    elif self.fs_type == 'squashfs':
+    elif self.fs_type == _SQUASHFS_TYPE:
       self.CreateSquashfsImage()
     else:
       raise ValueError('Wrong fs type: %s used:' % self.fs_type)
@@ -141,6 +248,7 @@ class DLCGenerator(object):
     return {
         'fs-type': self.fs_type,
         'id': self.dlc_id,
+        'package': self.dlc_package,
         'image-sha256-hash': image_hash,
         'image-type': 'dlc',
         'is-removable': True,
@@ -190,44 +298,110 @@ class DLCGenerator(object):
     self.GenerateVerity()
 
 
+def CopyAllDlcs(sysroot, install_root_dir):
+  """Copies all DLC image files into the images directory.
+
+  Copies the DLC image files in the given build directory into the given DLC
+  image directory. If the DLC build directory does not exist, or there is no DLC
+  for that board, this function does nothing.
+
+  Args:
+    sysroot: Path to directory containing DLC images, e.g /build/<board>.
+    install_root_dir: Path to DLC output directory,
+        e.g. src/build/images/<board>/<version>.
+  """
+  output_dir = os.path.join(install_root_dir, 'dlc')
+  build_dir = os.path.join(sysroot, DLC_IMAGE_DIR)
+
+  if not os.path.exists(build_dir) or not os.listdir(build_dir):
+    logging.info('There is no DLC to copy to output, ignoring.')
+    return
+
+  logging.info('Copying all DLC images to their destination path.')
+  logging.info('Detected the following DLCs: %s',
+               ', '.join(os.listdir(build_dir)))
+
+  osutils.SafeMakedirs(output_dir)
+  osutils.CopyDirContents(build_dir, output_dir)
+
+  logging.info('Done copying the DLCs to their destination.')
+
 def GetParser():
+  """Creates an argument parser and returns it."""
   parser = commandline.ArgumentParser(description=__doc__)
-  # Required arguments:
-  required = parser.add_argument_group('Required Arguments')
-  required.add_argument('--src-dir', type='path', metavar='SRC_DIR_PATH',
-                        required=True,
-                        help='Root directory path that contains all DLC files '
-                        'to be packed.')
-  required.add_argument('--img-dir', type='path', metavar='IMG_DIR_PATH',
-                        required=True,
-                        help='Root directory path that contains DLC image file '
-                        'output.')
-  required.add_argument('--meta-dir', type='path', metavar='META_DIR_PATH',
-                        required=True,
-                        help='Root directory path that contains DLC metadata '
-                        'output.')
-  required.add_argument('--fs-type', metavar='FS_TYPE', required=True,
-                        choices=['squashfs', 'ext4'],
-                        help='File system type of the image.')
-  required.add_argument('--pre-allocated-blocks', type=int,
-                        metavar='PREALLOCATEDBLOCKS', required=True,
-                        help='Number of blocks (block size is 4k) that need to'
-                        'be pre-allocated on device.')
-  required.add_argument('--version', metavar='VERSION', required=True,
-                        help='DLC Version.')
-  required.add_argument('--id', metavar='ID', required=True,
-                        help='DLC ID (unique per DLC).')
-  required.add_argument('--name', metavar='NAME', required=True,
-                        help='A human-readable name for the DLC.')
+  # This script is used both for building an individual DLC or copying all final
+  # DLCs images to their final destination nearby chromiumsos_test_image.bin,
+  # etc. These two arguments are required in both cases.
+  parser.add_argument('--sysroot', type='path', metavar='DIR', required=True,
+                      help="The root path to the board's build root, e.g. "
+                      "/build/eve")
+  parser.add_argument('--install-root-dir', type='path', metavar='DIR',
+                      required=True,
+                      help='If building a specific DLC, it is the root path to'
+                      ' install DLC images (%s) and metadata (%s). Otherwise it'
+                      ' is the target directory where the Chrome OS images gets'
+                      ' dropped in build_image, e.g. '
+                      'src/build/images/<board>/latest.' % (DLC_IMAGE_DIR,
+                                                            DLC_META_DIR))
+
+  one_dlc = parser.add_argument_group('Arguments required for building only '
+                                      'one DLC')
+  one_dlc.add_argument('--src-dir', type='path', metavar='SRC_DIR_PATH',
+                       help='Root directory path that contains all DLC files '
+                       'to be packed.')
+  one_dlc.add_argument('--pre-allocated-blocks', type=int,
+                       metavar='PREALLOCATEDBLOCKS',
+                       help='Number of blocks (block size is 4k) that need to'
+                       'be pre-allocated on device.')
+  one_dlc.add_argument('--version', metavar='VERSION', help='DLC Version.')
+  one_dlc.add_argument('--id', metavar='ID', help='DLC ID (unique per DLC).')
+  one_dlc.add_argument('--package', metavar='PACKAGE',
+                       help='The package ID that is unique within a DLC, One'
+                       ' DLC cannot have duplicate package IDs.')
+  one_dlc.add_argument('--name', metavar='NAME',
+                       help='A human-readable name for the DLC.')
+  one_dlc.add_argument('--fs-type', metavar='FS_TYPE', default=_SQUASHFS_TYPE,
+                       choices=(_SQUASHFS_TYPE, _EXT4_TYPE),
+                       help='File system type of the image.')
   return parser
+
+
+def ValidateArguments(opts):
+  """Validates the correctness of the passed arguments.
+
+  Args:
+    opts: Parsed arguments.
+  """
+  # Make sure if the intention is to build one DLC, all the required arguments
+  # are passed.
+  per_dlc_req_args = ('src_dir', 'pre_allocated_blocks', 'version', 'id',
+                      'package', 'name')
+  if (opts.id and
+      not all(vars(opts)[arg] is not None for arg in per_dlc_req_args)):
+    raise Exception('If the intention is to build only one DLC, all the flags'
+                    '%s required for it should be passed .' % per_dlc_req_args)
+
+  if opts.fs_type == _EXT4_TYPE:
+    raise Exception('ext4 unsupported, see https://crbug.com/890060')
 
 
 def main(argv):
   opts = GetParser().parse_args(argv)
   opts.Freeze()
 
-  # Generate final DLC files.
-  dlc_generator = DLCGenerator(opts.img_dir, opts.meta_dir, opts.src_dir,
-                               opts.fs_type, opts.pre_allocated_blocks,
-                               opts.version, opts.id, opts.name)
-  dlc_generator.GenerateDLC()
+  ValidateArguments(opts)
+
+  if opts.id:
+    logging.info('Building DLC %s', opts.id)
+    dlc_generator = DlcGenerator(src_dir=opts.src_dir,
+                                 sysroot=opts.sysroot,
+                                 install_root_dir=opts.install_root_dir,
+                                 fs_type=opts.fs_type,
+                                 pre_allocated_blocks=opts.pre_allocated_blocks,
+                                 version=opts.version,
+                                 dlc_id=opts.id,
+                                 dlc_package=opts.package,
+                                 name=opts.name)
+    dlc_generator.GenerateDLC()
+  else:
+    CopyAllDlcs(opts.sysroot, opts.install_root_dir)

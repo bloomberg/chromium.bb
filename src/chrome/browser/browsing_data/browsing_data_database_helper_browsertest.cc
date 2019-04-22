@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 
@@ -23,10 +24,12 @@ using content::BrowserContext;
 using content::BrowserThread;
 
 namespace {
-typedef BrowsingDataHelperCallback<BrowsingDataDatabaseHelper::DatabaseInfo>
-    TestCompletionCallback;
+using TestCompletionCallback =
+    BrowsingDataHelperCallback<content::StorageUsageInfo>;
 
-const char kTestIdentifier1[] = "http_www.google.com_0";
+const char kTestIdentifier1[] = "http_www.example.com_0";
+const url::Origin kTestOrigin =
+    url::Origin::Create(GURL("http://www.example.com"));
 
 const char kTestIdentifierExtension[] =
   "chrome-extension_behllobkkfkfnphdnhnkndlbkcpglgmj_0";
@@ -70,74 +73,58 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, FetchData) {
   CreateDatabases();
   scoped_refptr<BrowsingDataDatabaseHelper> database_helper(
       new BrowsingDataDatabaseHelper(browser()->profile()));
-  std::list<BrowsingDataDatabaseHelper::DatabaseInfo> database_info_list;
+  std::list<content::StorageUsageInfo> database_info_list;
   base::RunLoop run_loop;
   database_helper->StartFetching(base::BindLambdaForTesting(
-      [&](const std::list<BrowsingDataDatabaseHelper::DatabaseInfo>& list) {
+      [&](const std::list<content::StorageUsageInfo>& list) {
         database_info_list = list;
         run_loop.Quit();
       }));
   run_loop.Run();
   ASSERT_EQ(1UL, database_info_list.size());
-  EXPECT_EQ(std::string(kTestIdentifier1),
-            database_info_list.begin()->identifier.ToString());
+  EXPECT_EQ(kTestOrigin, database_info_list.begin()->origin);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedAddDatabase) {
-  const GURL origin1("http://host1:1/");
-  const GURL origin2("http://host2:1/");
-  const char origin_str1[] = "http_host1_1";
-  const char origin_str2[] = "http_host2_1";
-  const char db1[] = "db1";
-  const char db2[] = "db2";
-  const char db3[] = "db3";
+  const url::Origin origin1 = url::Origin::Create(GURL("http://host1:1/"));
+  const url::Origin origin2 = url::Origin::Create(GURL("http://host2:1/"));
 
   scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
       new CannedBrowsingDataDatabaseHelper(browser()->profile()));
-  helper->AddDatabase(origin1, db1, std::string());
-  helper->AddDatabase(origin1, db2, std::string());
-  helper->AddDatabase(origin2, db3, std::string());
+  helper->Add(origin1);
+  helper->Add(origin1);
+  helper->Add(origin2);
 
   TestCompletionCallback callback;
   helper->StartFetching(
       base::Bind(&TestCompletionCallback::callback,
                  base::Unretained(&callback)));
 
-  std::list<BrowsingDataDatabaseHelper::DatabaseInfo> result =
-      callback.result();
+  std::list<content::StorageUsageInfo> result = callback.result();
 
-  ASSERT_EQ(3u, result.size());
+  ASSERT_EQ(2u, result.size());
   auto info = result.begin();
-  EXPECT_EQ(origin_str1, info->identifier.ToString());
-  EXPECT_STREQ(db1, info->database_name.c_str());
+  EXPECT_EQ(origin1, info->origin);
   info++;
-  EXPECT_EQ(origin_str1, info->identifier.ToString());
-  EXPECT_STREQ(db2, info->database_name.c_str());
-  info++;
-  EXPECT_EQ(origin_str2, info->identifier.ToString());
-  EXPECT_STREQ(db3, info->database_name.c_str());
+  EXPECT_EQ(origin2, info->origin);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedUnique) {
-  const GURL origin("http://host1:1/");
-  const char origin_str[] = "http_host1_1";
-  const char db[] = "db1";
+  const url::Origin origin = url::Origin::Create(GURL("http://host1:1/"));
 
   scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
       new CannedBrowsingDataDatabaseHelper(browser()->profile()));
-  helper->AddDatabase(origin, db, std::string());
-  helper->AddDatabase(origin, db, std::string());
+  helper->Add(origin);
+  helper->Add(origin);
 
   TestCompletionCallback callback;
   helper->StartFetching(
       base::Bind(&TestCompletionCallback::callback,
                  base::Unretained(&callback)));
 
-  std::list<BrowsingDataDatabaseHelper::DatabaseInfo> result =
-      callback.result();
+  std::list<content::StorageUsageInfo> result = callback.result();
 
   ASSERT_EQ(1u, result.size());
-  EXPECT_EQ(origin_str, result.begin()->identifier.ToString());
-  EXPECT_STREQ(db, result.begin()->database_name.c_str());
+  EXPECT_EQ(origin, result.begin()->origin);
 }
 }  // namespace

@@ -92,8 +92,8 @@ V0CustomElementDefinition* V0CustomElementRegistry::RegisterElement(
 
   const V0CustomElementDescriptor descriptor(type, tag_name.NamespaceURI(),
                                              tag_name.LocalName());
-  V0CustomElementDefinition* definition =
-      V0CustomElementDefinition::Create(descriptor, lifecycle_callbacks);
+  auto* definition = MakeGarbageCollected<V0CustomElementDefinition>(
+      descriptor, lifecycle_callbacks);
 
   if (!constructor_builder->CreateConstructor(document, definition,
                                               exception_state))
@@ -140,7 +140,7 @@ bool V0CustomElementRegistry::V1NameIsDefined(const AtomicString& name) const {
   return v1_.Get() && v1_->NameIsDefined(name);
 }
 
-void V0CustomElementRegistry::Trace(blink::Visitor* visitor) {
+void V0CustomElementRegistry::Trace(Visitor* visitor) {
   visitor->Trace(definitions_);
   visitor->Trace(v1_);
 }

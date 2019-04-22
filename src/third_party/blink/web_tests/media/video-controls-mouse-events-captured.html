@@ -14,7 +14,6 @@ async_test(function(t) {
     video.onpointerup = t.unreached_func();
     video.onmousedown = t.unreached_func();
     video.onmouseup = t.unreached_func();
-    video.onkeydown = t.unreached_func();
 
     video.onloadeddata = t.step_func_done(function() {
         // click the play button.
@@ -58,7 +57,6 @@ async_test(function(t) {
     function sendMouseAndKeyEvents() {
         eventSender.mouseDown();
         eventSender.mouseUp();
-        eventSender.keyDown('A');
     }
 
     video.src = "content/test.ogv";

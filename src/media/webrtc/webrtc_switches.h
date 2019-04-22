@@ -12,7 +12,6 @@
 
 namespace switches {
 
-COMPONENT_EXPORT(MEDIA_WEBRTC) extern const char kAecRefinedAdaptiveFilter[];
 COMPONENT_EXPORT(MEDIA_WEBRTC) extern const char kAgcStartupMinVolume[];
 
 }  // namespace switches

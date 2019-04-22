@@ -66,7 +66,7 @@ void HTMLFrameSetElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kBordercolorAttr)
-    AddHTMLColorToStyle(style, CSSPropertyBorderColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyID::kBorderColor, value);
   else
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
 }
@@ -205,6 +205,11 @@ void HTMLFrameSetElement::ParseAttribute(
     GetDocument().SetWindowAttributeEventListener(
         event_type_names::kLanguagechange,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
+  } else if (RuntimeEnabledFeatures::PortalsEnabled() &&
+             name == kOnportalactivateAttr) {
+    GetDocument().SetWindowAttributeEventListener(
+        event_type_names::kPortalactivate,
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else {
     HTMLElement::ParseAttribute(params);
   }
@@ -217,9 +222,10 @@ bool HTMLFrameSetElement::LayoutObjectIsNeeded(
 }
 
 LayoutObject* HTMLFrameSetElement::CreateLayoutObject(
-    const ComputedStyle& style) {
+    const ComputedStyle& style,
+    LegacyLayout legacy) {
   if (style.HasContent())
-    return LayoutObject::CreateObject(this, style);
+    return LayoutObject::CreateObject(this, style, legacy);
   return new LayoutFrameSet(this);
 }
 
@@ -263,8 +269,7 @@ Node::InsertionNotificationRequest HTMLFrameSetElement::InsertedInto(
   }
   return HTMLElement::InsertedInto(insertion_point);
 }
-
-void HTMLFrameSetElement::WillRecalcStyle(StyleRecalcChange) {
+void HTMLFrameSetElement::WillRecalcStyle(const StyleRecalcChange) {
   if (NeedsStyleRecalc() && GetLayoutObject()) {
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kStyleChange);

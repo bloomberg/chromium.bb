@@ -8,6 +8,7 @@
 #include "base/containers/span.h"
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "third_party/blink/public/common/common_export.h"
@@ -17,17 +18,6 @@
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {
-
-template <>
-struct BLINK_COMMON_EXPORT
-    EnumTraits<blink::mojom::NotificationDirection,
-               blink::PlatformNotificationData::Direction> {
-  static blink::mojom::NotificationDirection ToMojom(
-      blink::PlatformNotificationData::Direction input);
-
-  static bool FromMojom(blink::mojom::NotificationDirection input,
-                        blink::PlatformNotificationData::Direction* out);
-};
 
 template <>
 struct BLINK_COMMON_EXPORT EnumTraits<blink::mojom::NotificationActionType,
@@ -80,7 +70,7 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::NotificationDataDataView,
     return data.title;
   }
 
-  static blink::PlatformNotificationData::Direction direction(
+  static blink::mojom::NotificationDirection direction(
       const blink::PlatformNotificationData& data) {
     return data.direction;
   }
@@ -144,6 +134,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::NotificationDataDataView,
   static const std::vector<blink::PlatformNotificationAction>& actions(
       const blink::PlatformNotificationData& data) {
     return data.actions;
+  }
+
+  static base::Optional<base::Time> show_trigger_timestamp(
+      const blink::PlatformNotificationData& data) {
+    return data.show_trigger_timestamp;
   }
 
   static bool Read(blink::mojom::NotificationDataDataView notification_data,

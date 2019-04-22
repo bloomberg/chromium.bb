@@ -33,9 +33,9 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
-#include "services/service_manager/runner/common/client_util.h"
-#include "services/service_manager/tests/catalog_source.h"
-#include "services/service_manager/tests/service_manager/service_manager_unittest.mojom.h"
+#include "services/service_manager/service_process_launcher.h"
+#include "services/service_manager/tests/service_manager/service_manager.test-mojom.h"
+#include "services/service_manager/tests/service_manager/test_manifests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
@@ -151,9 +151,9 @@ class ServiceManagerTest : public testing::Test,
                            public mojom::ServiceManagerListener {
  public:
   ServiceManagerTest()
-      : test_service_manager_(test::CreateTestCatalog()),
-        test_service_(test_service_manager_.RegisterTestInstance(
-            "service_manager_unittest")) {}
+      : test_service_manager_(GetTestManifests()),
+        test_service_(
+            test_service_manager_.RegisterTestInstance(kTestServiceName)) {}
   ~ServiceManagerTest() override = default;
 
  protected:
@@ -243,11 +243,10 @@ class ServiceManagerTest : public testing::Test,
     CHECK(base::PathService::Get(base::DIR_ASSETS, &target_path));
 
 #if defined(OS_WIN)
-    target_path = target_path.Append(
-        FILE_PATH_LITERAL("service_manager_unittest_target.exe"));
+    target_path =
+        target_path.AppendASCII(kTestTargetName).AddExtensionASCII("exe");
 #else
-    target_path = target_path.Append(
-        FILE_PATH_LITERAL("service_manager_unittest_target"));
+    target_path = target_path.Append(FILE_PATH_LITERAL(kTestTargetName));
 #endif
 
     base::CommandLine child_command_line(target_path);
@@ -266,13 +265,12 @@ class ServiceManagerTest : public testing::Test,
 
     mojo::OutgoingInvitation invitation;
     service_manager::mojom::ServicePtr client =
-        service_manager::PassServiceRequestOnCommandLine(&invitation,
-                                                         &child_command_line);
+        ServiceProcessLauncher::PassServiceRequestOnCommandLine(
+            &invitation, &child_command_line);
     service_manager::mojom::PIDReceiverPtr receiver;
     connector()->RegisterServiceInstance(
-        service_manager::Identity("service_manager_unittest_target",
-                                  kSystemInstanceGroup, base::Token{},
-                                  base::Token::CreateRandom()),
+        service_manager::Identity(kTestTargetName, kSystemInstanceGroup,
+                                  base::Token{}, base::Token::CreateRandom()),
         std::move(client), mojo::MakeRequest(&receiver));
 
     target_ = base::LaunchProcess(child_command_line, options);
@@ -294,12 +292,12 @@ class ServiceManagerTest : public testing::Test,
     set_service_failed_to_start_callback(base::BindRepeating(
         &OnServiceFailedToStartCallback, &failed_to_start, loop.QuitClosure()));
 
-    connector()->WarmService(service_manager::ServiceFilter::ByName(
-        "service_manager_unittest_embedder"));
+    connector()->WarmService(
+        service_manager::ServiceFilter::ByName(kTestEmbedderName));
     loop.Run();
     EXPECT_FALSE(failed_to_start);
     EXPECT_EQ(1, start_count);
-    EXPECT_EQ("service_manager_unittest_embedder", service_name);
+    EXPECT_EQ(kTestEmbedderName, service_name);
   }
 
   void StartService(const ServiceFilter& filter, bool expect_service_started) {
@@ -409,7 +407,7 @@ TEST_F(ServiceManagerTest, CreateInstance) {
 
   // 3. Validate that this test suite's name was received from the application
   //    manager.
-  EXPECT_TRUE(ContainsInstanceWithName("service_manager_unittest"));
+  EXPECT_TRUE(ContainsInstanceWithName(kTestServiceName));
 
   // 4. Validate that the right applications/processes were created.
   //    Note that the target process will be created even if the tests are
@@ -419,8 +417,7 @@ TEST_F(ServiceManagerTest, CreateInstance) {
     auto& instance = instances().back();
     // We learn about the target process id via a ping from it.
     EXPECT_EQ(target_identity(), instance.identity);
-    EXPECT_EQ("service_manager_unittest_target",
-              instance.identity.name());
+    EXPECT_EQ(kTestTargetName, instance.identity.name());
     EXPECT_NE(base::kNullProcessId, instance.pid);
   }
 
@@ -431,14 +428,12 @@ TEST_F(ServiceManagerTest, CreateInstance) {
 // the service again, a new service is created unless the same user ID and
 // instance names are used.
 TEST_F(ServiceManagerTest, CreatePackagedRegularInstances) {
-  constexpr char kRegularServiceName[] = "service_manager_unittest_regular";
-
   AddListenerAndWaitForApplications();
 
   // Connect to the embedder service first.
   StartEmbedderService();
 
-  auto filter = ServiceFilter::ByName(kRegularServiceName);
+  auto filter = ServiceFilter::ByName(kTestRegularServiceName);
   StartService(filter, /*expect_service_started=*/true);
 
   // Retstarting with the same identity reuses the existing service.
@@ -446,65 +441,61 @@ TEST_F(ServiceManagerTest, CreatePackagedRegularInstances) {
 
   // Starting with a different instance group creates a new service.
   auto other_group_filter = ServiceFilter::ByNameInGroup(
-      kRegularServiceName, base::Token::CreateRandom());
+      kTestRegularServiceName, base::Token::CreateRandom());
   StartService(other_group_filter, /*expect_service_started=*/true);
 
   // Starting with a different instance ID creates a new service as well.
   auto other_id_filter =
-      ServiceFilter::ByNameWithId(kRegularServiceName, base::Token{1, 2});
+      ServiceFilter::ByNameWithId(kTestRegularServiceName, base::Token{1, 2});
   StartService(other_id_filter, /*expect_service_started=*/true);
 }
 
 // Tests that starting a shared instance packaged service works, and that when
 // starting that service again, a new service is created only when a different
 // instance name is specified.
-TEST_F(ServiceManagerTest, CreatePackagedAllUsersInstances) {
-  constexpr char kAllUsersServiceName[] =
-      "service_manager_unittest_shared_instance_across_users";
-
+TEST_F(ServiceManagerTest, CreatePackagedSharedAcrossGroupsInstances) {
   AddListenerAndWaitForApplications();
 
   // Connect to the embedder service first.
   StartEmbedderService();
 
-  auto filter = ServiceFilter::ByName(kAllUsersServiceName);
+  auto filter = ServiceFilter::ByName(kTestSharedServiceName);
   StartService(filter, /*expect_service_started=*/true);
 
   // Start again with a different instance group. The existing service should be
   // reused.
   auto other_group_filter = ServiceFilter::ByNameInGroup(
-      kAllUsersServiceName, base::Token::CreateRandom());
+      kTestSharedServiceName, base::Token::CreateRandom());
   StartService(other_group_filter, /*expect_service_started=*/false);
 
   // Start again with a difference instance ID. In that case a new service
   // should get created.
   auto other_id_filter = ServiceFilter::ByNameWithIdInGroup(
-      kAllUsersServiceName, base::Token{1, 2}, base::Token::CreateRandom());
+      kTestSharedServiceName, base::Token{1, 2}, base::Token::CreateRandom());
   StartService(other_id_filter, /*expect_service_started=*/true);
 }
 
 // Tests that creating a singleton packaged service works, and that when
 // starting that service again a new service is never created.
 TEST_F(ServiceManagerTest, CreatePackagedSingletonInstances) {
-  constexpr char kSingletonServiceName[] = "service_manager_unittest_singleton";
   AddListenerAndWaitForApplications();
 
   // Connect to the embedder service first.
   StartEmbedderService();
 
-  auto filter = ServiceFilter::ByName(kSingletonServiceName);
+  auto filter = ServiceFilter::ByName(kTestSingletonServiceName);
   StartService(filter, /*expect_service_started=*/true);
 
   // Start again with a different instance group. The existing service should be
   // reused.
   auto other_group_filter = ServiceFilter::ByNameInGroup(
-      kSingletonServiceName, base::Token::CreateRandom());
+      kTestSingletonServiceName, base::Token::CreateRandom());
   StartService(other_group_filter, /*expect_service_started=*/false);
 
   // Start again with the same instance group but a difference instance ID. The
   // existing service should still be reused.
   auto other_id_filter =
-      ServiceFilter::ByNameWithId(kSingletonServiceName, base::Token{3, 4});
+      ServiceFilter::ByNameWithId(kTestSingletonServiceName, base::Token{3, 4});
   StartService(other_id_filter, /*expect_service_started=*/false);
 }
 
@@ -522,11 +513,10 @@ TEST_F(ServiceManagerTest, PIDReceivedCallback) {
     set_service_failed_to_start_callback(base::BindRepeating(
         &OnServiceFailedToStartCallback, &failed_to_start, loop.QuitClosure()));
 
-    connector()->WarmService(
-        ServiceFilter::ByName("service_manager_unittest_embedder"));
+    connector()->WarmService(ServiceFilter::ByName(kTestEmbedderName));
     loop.Run();
     EXPECT_FALSE(failed_to_start);
-    EXPECT_EQ("service_manager_unittest_embedder", service_name);
+    EXPECT_EQ(kTestEmbedderName, service_name);
     EXPECT_NE(pid, 0u);
   }
 }
@@ -534,7 +524,7 @@ TEST_F(ServiceManagerTest, PIDReceivedCallback) {
 TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
   AddListenerAndWaitForApplications();
 
-  const std::string kTestService = "service_manager_unittest_target";
+  const std::string kTestService = kTestTargetName;
   const Identity kInstance1Id(kTestService, kSystemInstanceGroup,
                               base::Token{1, 2}, base::Token::CreateRandom());
   const Identity kInstance2Id(kTestService, kSystemInstanceGroup,
@@ -552,7 +542,7 @@ TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
   pid_receiver1->SetPID(42);
   WaitForInstanceToStart(kInstance1Id);
   EXPECT_EQ(1u, instances().size());
-  EXPECT_TRUE(ContainsInstanceWithName("service_manager_unittest_target"));
+  EXPECT_TRUE(ContainsInstanceWithName(kTestTargetName));
 
   // Now use the new instance (which does not have client_process capability)
   // to attempt introduction of yet another instance. This should fail.

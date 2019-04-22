@@ -42,20 +42,27 @@ Simple usage example:
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
+# pylint: disable=g-statement-before-imports,g-import-not-at-top
 try:
-    from collections import OrderedDict
+  from collections import OrderedDict
 except ImportError:
-    from ordereddict import OrderedDict  #PY26
+  from ordereddict import OrderedDict  # PY26
+# pylint: enable=g-statement-before-imports,g-import-not-at-top
+
 import base64
 import json
 import math
-import re
-import six
-import sys
 
 from operator import methodcaller
+
+import re
+import sys
+
+import six
+
 from google.protobuf import descriptor
 from google.protobuf import symbol_database
+
 
 _TIMESTAMPFOMAT = '%Y-%m-%dT%H:%M:%S'
 _INT_TYPES = frozenset([descriptor.FieldDescriptor.CPPTYPE_INT32,
@@ -74,6 +81,9 @@ _UNPAIRED_SURROGATE_PATTERN = re.compile(six.u(
     r'[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]'
 ))
 
+_VALID_EXTENSION_NAME = re.compile(r'\[[a-zA-Z0-9\._]*\]$')
+
+
 class Error(Exception):
   """Top-level module error for json_format."""
 
@@ -86,7 +96,12 @@ class ParseError(Error):
   """Thrown in case of parsing error."""
 
 
-def MessageToJson(message, including_default_value_fields=False):
+def MessageToJson(message,
+                  including_default_value_fields=False,
+                  preserving_proto_field_name=False,
+                  indent=2,
+                  sort_keys=False,
+                  use_integers_for_enums=False):
   """Converts protobuf message to JSON format.
 
   Args:
@@ -95,12 +110,50 @@ def MessageToJson(message, including_default_value_fields=False):
         repeated fields, and map fields will always be serialized.  If
         False, only serialize non-empty fields.  Singular message fields
         and oneof fields are not affected by this option.
+    preserving_proto_field_name: If True, use the original proto field
+        names as defined in the .proto file. If False, convert the field
+        names to lowerCamelCase.
+    indent: The JSON object will be pretty-printed with this indent level.
+        An indent level of 0 or negative will only insert newlines.
+    sort_keys: If True, then the output will be sorted by field names.
+    use_integers_for_enums: If true, print integers instead of enum names.
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
   """
-  printer = _Printer(including_default_value_fields)
-  return printer.ToJsonString(message)
+  printer = _Printer(including_default_value_fields,
+                     preserving_proto_field_name,
+                     use_integers_for_enums)
+  return printer.ToJsonString(message, indent, sort_keys)
+
+
+def MessageToDict(message,
+                  including_default_value_fields=False,
+                  preserving_proto_field_name=False,
+                  use_integers_for_enums=False):
+  """Converts protobuf message to a dictionary.
+
+  When the dictionary is encoded to JSON, it conforms to proto3 JSON spec.
+
+  Args:
+    message: The protocol buffers message instance to serialize.
+    including_default_value_fields: If True, singular primitive fields,
+        repeated fields, and map fields will always be serialized.  If
+        False, only serialize non-empty fields.  Singular message fields
+        and oneof fields are not affected by this option.
+    preserving_proto_field_name: If True, use the original proto field
+        names as defined in the .proto file. If False, convert the field
+        names to lowerCamelCase.
+    use_integers_for_enums: If true, print integers instead of enum names.
+
+  Returns:
+    A dict representation of the protocol buffer message.
+  """
+  printer = _Printer(including_default_value_fields,
+                     preserving_proto_field_name,
+                     use_integers_for_enums)
+  # pylint: disable=protected-access
+  return printer._MessageToJsonObject(message)
 
 
 def _IsMapEntry(field):
@@ -113,12 +166,16 @@ class _Printer(object):
   """JSON format printer for protocol message."""
 
   def __init__(self,
-               including_default_value_fields=False):
+               including_default_value_fields=False,
+               preserving_proto_field_name=False,
+               use_integers_for_enums=False):
     self.including_default_value_fields = including_default_value_fields
+    self.preserving_proto_field_name = preserving_proto_field_name
+    self.use_integers_for_enums = use_integers_for_enums
 
-  def ToJsonString(self, message):
+  def ToJsonString(self, message, indent, sort_keys):
     js = self._MessageToJsonObject(message)
-    return json.dumps(js, indent=2)
+    return json.dumps(js, indent=indent, sort_keys=sort_keys)
 
   def _MessageToJsonObject(self, message):
     """Converts message to an object according to Proto3 JSON Specification."""
@@ -137,7 +194,10 @@ class _Printer(object):
 
     try:
       for field, value in fields:
-        name = field.camelcase_name
+        if self.preserving_proto_field_name:
+          name = field.name
+        else:
+          name = field.json_name
         if _IsMapEntry(field):
           # Convert a map field.
           v_field = field.message_type.fields_by_name['value']
@@ -157,6 +217,14 @@ class _Printer(object):
           # Convert a repeated field.
           js[name] = [self._FieldToJsonObject(field, k)
                       for k in value]
+        elif field.is_extension:
+          f = field
+          if (f.containing_type.GetOptions().message_set_wire_format and
+              f.type == descriptor.FieldDescriptor.TYPE_MESSAGE and
+              f.label == descriptor.FieldDescriptor.LABEL_OPTIONAL):
+            f = f.message_type
+          name = '[%s.%s]' % (f.full_name, name)
+          js[name] = self._FieldToJsonObject(field, value)
         else:
           js[name] = self._FieldToJsonObject(field, value)
 
@@ -169,7 +237,10 @@ class _Printer(object):
                field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE) or
               field.containing_oneof):
             continue
-          name = field.camelcase_name
+          if self.preserving_proto_field_name:
+            name = field.name
+          else:
+            name = field.json_name
           if name in js:
             # Skip the field which has been serailized already.
             continue
@@ -191,10 +262,14 @@ class _Printer(object):
     if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
       return self._MessageToJsonObject(value)
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
+      if self.use_integers_for_enums:
+        return value
       enum_value = field.enum_type.values_by_number.get(value, None)
       if enum_value is not None:
         return enum_value.name
       else:
+        if field.file.syntax == 'proto3':
+          return value
         raise SerializeToJsonError('Enum field contains an integer value '
                                    'which can not mapped to an enum value.')
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_STRING:
@@ -310,7 +385,7 @@ def Parse(text, message, ignore_unknown_fields=False):
 
   Args:
     text: Message JSON representation.
-    message: A protocol beffer message to merge into.
+    message: A protocol buffer message to merge into.
     ignore_unknown_fields: If True, do not raise errors for unknown fields.
 
   Returns:
@@ -328,8 +403,22 @@ def Parse(text, message, ignore_unknown_fields=False):
       js = json.loads(text, object_pairs_hook=_DuplicateChecker)
   except ValueError as e:
     raise ParseError('Failed to load JSON: {0}.'.format(str(e)))
+  return ParseDict(js, message, ignore_unknown_fields)
+
+
+def ParseDict(js_dict, message, ignore_unknown_fields=False):
+  """Parses a JSON dictionary representation into a message.
+
+  Args:
+    js_dict: Dict representation of a JSON message.
+    message: A protocol buffer message to merge into.
+    ignore_unknown_fields: If True, do not raise errors for unknown fields.
+
+  Returns:
+    The same message passed as argument.
+  """
   parser = _Parser(ignore_unknown_fields)
-  parser.ConvertMessage(js, message)
+  parser.ConvertMessage(js_dict, message)
   return message
 
 
@@ -374,15 +463,30 @@ class _Parser(object):
     """
     names = []
     message_descriptor = message.DESCRIPTOR
+    fields_by_json_name = dict((f.json_name, f)
+                               for f in message_descriptor.fields)
     for name in js:
       try:
-        field = message_descriptor.fields_by_camelcase_name.get(name, None)
+        field = fields_by_json_name.get(name, None)
+        if not field:
+          field = message_descriptor.fields_by_name.get(name, None)
+        if not field and _VALID_EXTENSION_NAME.match(name):
+          if not message_descriptor.is_extendable:
+            raise ParseError('Message type {0} does not have extensions'.format(
+                message_descriptor.full_name))
+          identifier = name[1:-1]  # strip [] brackets
+          identifier = '.'.join(identifier.split('.')[:-1])
+          # pylint: disable=protected-access
+          field = message.Extensions._FindExtensionByName(identifier)
+          # pylint: enable=protected-access
         if not field:
           if self.ignore_unknown_fields:
             continue
           raise ParseError(
-              'Message type "{0}" has no field named "{1}".'.format(
-                  message_descriptor.full_name, name))
+              ('Message type "{0}" has no field named "{1}".\n'
+               ' Available Fields(except extensions): {2}').format(
+                   message_descriptor.full_name, name,
+                   message_descriptor.fields))
         if name in names:
           raise ParseError('Message type "{0}" should not have multiple '
                            '"{1}" fields.'.format(
@@ -399,7 +503,12 @@ class _Parser(object):
 
         value = js[name]
         if value is None:
-          message.ClearField(field.name)
+          if (field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE
+              and field.message_type.full_name == 'google.protobuf.Value'):
+            sub_message = getattr(message, field.name)
+            sub_message.null_value = 0
+          else:
+            message.ClearField(field.name)
           continue
 
         # Parse field value.
@@ -430,7 +539,11 @@ class _Parser(object):
               getattr(message, field.name).append(
                   _ConvertScalarFieldValue(item, field))
         elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
-          sub_message = getattr(message, field.name)
+          if field.is_extension:
+            sub_message = message.Extensions[field]
+          else:
+            sub_message = getattr(message, field.name)
+          sub_message.SetInParent()
           self.ConvertMessage(value, sub_message)
         else:
           setattr(message, field.name, _ConvertScalarFieldValue(value, field))
@@ -470,8 +583,8 @@ class _Parser(object):
 
   def _ConvertGenericMessage(self, value, message):
     """Convert a JSON representation into message with FromJsonString."""
-    # Durantion, Timestamp, FieldMask have FromJsonString method to do the
-    # convert. Users can also call the method directly.
+    # Duration, Timestamp, FieldMask have a FromJsonString method to do the
+    # conversion. Users can also call the method directly.
     message.FromJsonString(value)
 
   def _ConvertValueMessage(self, value, message):
@@ -574,10 +687,18 @@ def _ConvertScalarFieldValue(value, field, require_str=False):
     # Convert an enum value.
     enum_value = field.enum_type.values_by_name.get(value, None)
     if enum_value is None:
-      raise ParseError(
-          'Enum value must be a string literal with double quotes. '
-          'Type "{0}" has no value named {1}.'.format(
-              field.enum_type.full_name, value))
+      try:
+        number = int(value)
+        enum_value = field.enum_type.values_by_number.get(number, None)
+      except ValueError:
+        raise ParseError('Invalid enum value {0} for enum type {1}.'.format(
+            value, field.enum_type.full_name))
+      if enum_value is None:
+        if field.file.syntax == 'proto3':
+          # Proto3 accepts unknown enums.
+          return number
+        raise ParseError('Invalid enum value {0} for enum type {1}.'.format(
+            value, field.enum_type.full_name))
     return enum_value.number
 
 
@@ -593,7 +714,7 @@ def _ConvertInteger(value):
   Raises:
     ParseError: If an integer couldn't be consumed.
   """
-  if isinstance(value, float):
+  if isinstance(value, float) and not value.is_integer():
     raise ParseError('Couldn\'t parse integer: {0}.'.format(value))
 
   if isinstance(value, six.text_type) and value.find(' ') != -1:

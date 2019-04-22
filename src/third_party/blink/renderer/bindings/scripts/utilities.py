@@ -313,7 +313,9 @@ def write_file(new_text, destination_filename):
     destination_dirname = os.path.dirname(destination_filename)
     if not os.path.exists(destination_dirname):
         os.makedirs(destination_dirname)
-    with open(destination_filename, 'w') as destination_file:
+    # Write file in binary so that when run on Windows, line endings are not
+    # converted
+    with open(destination_filename, 'wb') as destination_file:
         destination_file.write(new_text)
 
 
@@ -348,6 +350,12 @@ def is_non_legacy_callback_interface_from_idl(file_contents):
     return bool(match) and not re.search(r'\s+const\b', file_contents)
 
 
+def is_interface_mixin_from_idl(file_contents):
+    """Returns True if the specified IDL is an interface mixin."""
+    match = re.search(r'interface\s+mixin\s+\w+\s*{', file_contents)
+    return bool(match)
+
+
 def should_generate_impl_file_from_idl(file_contents):
     """True when a given IDL file contents could generate .h/.cpp files."""
     # FIXME: This would be error-prone and we should use AST rather than
@@ -366,7 +374,7 @@ def match_interface_extended_attributes_and_name_from_idl(file_contents):
 
     match = re.search(
         r'(?:\[([^{};]*)\]\s*)?'
-        r'(interface|callback\s+interface|partial\s+interface|dictionary)\s+'
+        r'(interface|interface\s+mixin|callback\s+interface|partial\s+interface|dictionary)\s+'
         r'(\w+)\s*'
         r'(:\s*\w+\s*)?'
         r'{',
@@ -422,7 +430,6 @@ def get_interface_exposed_arguments(file_contents):
 
 
 def get_first_interface_name_from_idl(file_contents):
-    # TODO(peria): This function returns 'mixin' for interface mixins.
     match = match_interface_extended_attributes_and_name_from_idl(file_contents)
     if match:
         return match.group(3)
@@ -438,9 +445,9 @@ def shorten_union_name(union_type):
         'CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas': 'CanvasImageSource',
         # modules/canvas/htmlcanvas/html_canvas_element_module_support_webgl2_compute.idl
         # Due to html_canvas_element_module_support_webgl2_compute.idl and html_canvas_element_module.idl are exclusive in modules_idl_files.gni, they have same shorten name.
-        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrXRPresentationContext': 'RenderingContext',
+        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrXRPresentationContextOrGPUCanvasContext': 'RenderingContext',
         # modules/canvas/htmlcanvas/html_canvas_element_module.idl
-        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrXRPresentationContext': 'RenderingContext',
+        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrXRPresentationContextOrGPUCanvasContext': 'RenderingContext',
         # core/frame/window_or_worker_global_scope.idl
         'HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas': 'ImageBitmapSource',
         # bindings/tests/idls/core/TestTypedefs.idl
@@ -471,6 +478,10 @@ def to_snake_case(name):
 
 def to_header_guard(path):
     return NameStyleConverter(path).to_header_guard()
+
+
+def normalize_path(path):
+    return path.replace("\\", "/")
 
 
 def format_remove_duplicates(text, patterns):

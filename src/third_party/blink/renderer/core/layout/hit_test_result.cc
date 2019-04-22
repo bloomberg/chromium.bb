@@ -64,6 +64,7 @@ HitTestResult::HitTestResult(const HitTestResult& other)
     : hit_test_request_(other.hit_test_request_),
       cacheable_(other.cacheable_),
       inner_node_(other.InnerNode()),
+      inner_element_(other.InnerElement()),
       inner_possibly_pseudo_node_(other.inner_possibly_pseudo_node_),
       point_in_inner_node_frame_(other.point_in_inner_node_frame_),
       local_point_(other.LocalPoint()),
@@ -90,6 +91,7 @@ HitTestResult& HitTestResult::operator=(const HitTestResult& other) {
 bool HitTestResult::EqualForCacheability(const HitTestResult& other) const {
   return hit_test_request_.EqualForCacheability(other.hit_test_request_) &&
          inner_node_ == other.InnerNode() &&
+         inner_element_ == other.InnerElement() &&
          inner_possibly_pseudo_node_ == other.InnerPossiblyPseudoNode() &&
          point_in_inner_node_frame_ == other.point_in_inner_node_frame_ &&
          local_point_ == other.LocalPoint() &&
@@ -105,6 +107,7 @@ void HitTestResult::CacheValues(const HitTestResult& other) {
 
 void HitTestResult::PopulateFromCachedResult(const HitTestResult& other) {
   inner_node_ = other.InnerNode();
+  inner_element_ = other.InnerElement();
   inner_possibly_pseudo_node_ = other.InnerPossiblyPseudoNode();
   point_in_inner_node_frame_ = other.point_in_inner_node_frame_;
   local_point_ = other.LocalPoint();
@@ -123,6 +126,7 @@ void HitTestResult::PopulateFromCachedResult(const HitTestResult& other) {
 
 void HitTestResult::Trace(blink::Visitor* visitor) {
   visitor->Trace(inner_node_);
+  visitor->Trace(inner_element_);
   visitor->Trace(inner_possibly_pseudo_node_);
   visitor->Trace(inner_url_element_);
   visitor->Trace(scrollbar_);
@@ -191,11 +195,13 @@ HTMLAreaElement* HitTestResult::ImageAreaForImage() const {
 }
 
 void HitTestResult::SetInnerNode(Node* n) {
-  inner_possibly_pseudo_node_ = n;
   if (!n) {
-    inner_node_ = n;
+    inner_possibly_pseudo_node_ = nullptr;
+    inner_node_ = nullptr;
+    inner_element_ = nullptr;
     return;
   }
+  inner_possibly_pseudo_node_ = n;
   if (n->IsPseudoElement())
     n = ToPseudoElement(n)->InnerNodeForHitTesting();
   inner_node_ = n;
@@ -203,6 +209,10 @@ void HitTestResult::SetInnerNode(Node* n) {
     inner_node_ = area;
     inner_possibly_pseudo_node_ = area;
   }
+  if (inner_node_->IsElementNode())
+    inner_element_ = ToElement(inner_node_);
+  else
+    inner_element_ = FlatTreeTraversal::ParentElement(*inner_node_);
 }
 
 void HitTestResult::SetURLElement(Element* n) {
@@ -428,6 +438,7 @@ void HitTestResult::Append(const HitTestResult& other) {
 
   if (!inner_node_ && other.InnerNode()) {
     inner_node_ = other.InnerNode();
+    inner_element_ = other.InnerElement();
     inner_possibly_pseudo_node_ = other.InnerPossiblyPseudoNode();
     local_point_ = other.LocalPoint();
     point_in_inner_node_frame_ = other.point_in_inner_node_frame_;
@@ -461,8 +472,7 @@ HitTestLocation HitTestResult::ResolveRectBasedTest(
     Node* resolved_inner_node,
     const LayoutPoint& resolved_point_in_main_frame) {
   point_in_inner_node_frame_ = resolved_point_in_main_frame;
-  inner_node_ = nullptr;
-  inner_possibly_pseudo_node_ = nullptr;
+  SetInnerNode(nullptr);
   list_based_test_result_ = nullptr;
 
   // Update the HitTestResult as if the supplied node had been hit in normal
@@ -474,14 +484,6 @@ HitTestLocation HitTestResult::ResolveRectBasedTest(
     layout_object->UpdateHitTestResult(*this, LayoutPoint());
 
   return HitTestLocation(resolved_point_in_main_frame);
-}
-
-Element* HitTestResult::InnerElement() const {
-  if (!inner_node_)
-    return nullptr;
-  if (inner_node_->IsElementNode())
-    return ToElement(inner_node_);
-  return FlatTreeTraversal::ParentElement(*inner_node_);
 }
 
 Node* HitTestResult::InnerNodeOrImageMapImage() const {

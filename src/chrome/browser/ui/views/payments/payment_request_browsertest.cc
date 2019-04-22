@@ -137,19 +137,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, PayWithVisa) {
   WaitForObservedEvent();
 
   // The actual structure of the card response is unit-tested.
-  ExpectBodyContains({card.GetRawInfo(autofill::CREDIT_CARD_NUMBER),
-                      card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL),
-                      card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH),
-                      card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR)});
-  ExpectBodyContains(
-      {billing_address.GetRawInfo(autofill::NAME_FIRST),
-       billing_address.GetRawInfo(autofill::NAME_LAST),
-       billing_address.GetRawInfo(autofill::ADDRESS_HOME_LINE1),
-       billing_address.GetRawInfo(autofill::ADDRESS_HOME_LINE2),
-       billing_address.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY),
-       billing_address.GetRawInfo(autofill::ADDRESS_HOME_ZIP),
-       billing_address.GetRawInfo(autofill::ADDRESS_HOME_CITY),
-       billing_address.GetRawInfo(autofill::ADDRESS_HOME_STATE)});
+  ExpectBodyContains({"4111111111111111", "Test User", "11", "2022"});
+  ExpectBodyContains({"John", "H.", "Doe", "Underworld", "666 Erebus St.",
+                      "Apt 8", "Elysium", "CA", "91111", "US", "16502111111"});
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, InvalidSSL) {

@@ -5,14 +5,15 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_response.h"
@@ -22,6 +23,7 @@
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 namespace {
@@ -138,7 +140,7 @@ class AppCacheServiceImplTest : public testing::Test {
     cache->AddEntry(
         kManifestUrl,
         AppCacheEntry(AppCacheEntry::MANIFEST, kMockResponseId,
-                      kMockInfoSize + kMockBodySize));
+                      kMockInfoSize + kMockBodySize, /*padding_size=*/0));
     cache->set_complete(true);
     group->AddCache(cache.get());
     mock_storage()->AddStoredGroup(group.get());
@@ -162,7 +164,7 @@ class AppCacheServiceImplTest : public testing::Test {
     info->response_time = base::Time::Now();
     info->was_cached = false;
     info->headers = new net::HttpResponseHeaders(
-        std::string(kMockHeaders, arraysize(kMockHeaders)));
+        std::string(kMockHeaders, base::size(kMockHeaders)));
     return info;
   }
 
@@ -215,13 +217,13 @@ TEST_F(AppCacheServiceImplTest, DeleteAppCachesForOrigin) {
   scoped_refptr<AppCacheInfoCollection> info(new AppCacheInfoCollection);
 
   // Should succeed given a non-empty info collection.
-  AppCacheInfo mock_manifest_1;
-  AppCacheInfo mock_manifest_2;
-  AppCacheInfo mock_manifest_3;
+  blink::mojom::AppCacheInfo mock_manifest_1;
+  blink::mojom::AppCacheInfo mock_manifest_2;
+  blink::mojom::AppCacheInfo mock_manifest_3;
   mock_manifest_1.manifest_url = kOriginURL.Resolve("manifest1");
   mock_manifest_2.manifest_url = kOriginURL.Resolve("manifest2");
   mock_manifest_3.manifest_url = kOriginURL.Resolve("manifest3");
-  AppCacheInfoVector info_vector;
+  std::vector<blink::mojom::AppCacheInfo> info_vector;
   info_vector.push_back(mock_manifest_1);
   info_vector.push_back(mock_manifest_2);
   info_vector.push_back(mock_manifest_3);

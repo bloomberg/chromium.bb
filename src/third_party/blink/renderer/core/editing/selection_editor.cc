@@ -171,9 +171,17 @@ static Position ComputePositionForChildrenRemoval(const Position& position,
   if (!node)
     return position;
 #endif
-  if (container.ContainsIncludingHostElements(*node))
-    return Position::FirstPositionInNode(container);
-  return position;
+  if (!container.ContainsIncludingHostElements(*node))
+    return position;
+  if (auto* element = ToElementOrNull(container)) {
+    if (auto* shadow_root = element->GetShadowRoot()) {
+      // Removal of light children does not affect position in the
+      // shadow tree.
+      if (shadow_root->ContainsIncludingHostElements(*node))
+        return position;
+    }
+  }
+  return Position::FirstPositionInNode(container);
 }
 
 void SelectionEditor::NodeChildrenWillBeRemoved(ContainerNode& container) {
@@ -429,7 +437,7 @@ void SelectionEditor::ClearDocumentCachedRange() {
   cached_range_ = nullptr;
 }
 
-void SelectionEditor::Trace(blink::Visitor* visitor) {
+void SelectionEditor::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(selection_);
   visitor->Trace(cached_visible_selection_in_dom_tree_);

@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
@@ -28,7 +27,10 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
                                                   int id) {
     return base::WrapUnique(new TextureLayerImpl(tree_impl, id));
   }
+  TextureLayerImpl(const TextureLayerImpl&) = delete;
   ~TextureLayerImpl() override;
+
+  TextureLayerImpl& operator=(const TextureLayerImpl&) = delete;
 
   std::unique_ptr<LayerImpl> CreateLayerImpl(
       LayerTreeImpl* layer_tree_impl) override;
@@ -123,8 +125,6 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   // As a pending layer, the set of SharedBitmapIds that the active layer should
   // unregister.
   std::vector<viz::SharedBitmapId> to_unregister_bitmap_ids_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextureLayerImpl);
 };
 
 }  // namespace cc

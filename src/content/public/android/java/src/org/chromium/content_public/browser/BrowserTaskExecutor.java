@@ -12,8 +12,12 @@ import org.chromium.base.task.SingleThreadTaskRunnerImpl;
 import org.chromium.base.task.TaskExecutor;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.content.browser.UiThreadTaskTraitsImpl;
 
+import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
+
+import javax.annotation.concurrent.GuardedBy;
 
 /**
  * This {@link TaskExecutor} is for tasks posted with {@link UiThreadTaskTraits}. It maps directly
@@ -40,32 +44,69 @@ public class BrowserTaskExecutor implements TaskExecutor {
     @Override
     public SingleThreadTaskRunner createSingleThreadTaskRunner(TaskTraits taskTraits) {
         synchronized (mTaskRunners) {
-            SingleThreadTaskRunner taskRunner = mTaskRunners.get(taskTraits);
-            if (taskRunner != null) return taskRunner;
+            WeakReference<SingleThreadTaskRunner> weakRef = mTaskRunners.get(taskTraits);
+            if (weakRef != null) {
+                SingleThreadTaskRunner taskRunner = weakRef.get();
+                if (taskRunner != null) return taskRunner;
+            }
 
             // TODO(alexclarke): ThreadUtils.getUiThreadHandler shouldn't be in base.
-            taskRunner =
-                    new SingleThreadTaskRunnerImpl(ThreadUtils.getUiThreadHandler(), taskTraits);
-            mTaskRunners.put(taskTraits, taskRunner);
+            SingleThreadTaskRunner taskRunner =
+                    new SingleThreadTaskRunnerImpl(ThreadUtils.getUiThreadHandler(), taskTraits,
+                            shouldPrioritizeTraits(taskTraits));
+            taskRunner.disableLifetimeCheck();
+            mTaskRunners.put(taskTraits, new WeakReference<>(taskRunner));
             return taskRunner;
         }
     }
 
     @Override
-    public void postTask(TaskTraits taskTraits, Runnable task) {
-        createSingleThreadTaskRunner(taskTraits).postTask(task);
+    public void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay) {
+        createSingleThreadTaskRunner(taskTraits).postDelayedTask(task, delay);
+    }
+
+    @Override
+    public boolean canRunTaskImmediately(TaskTraits traits) {
+        return createSingleThreadTaskRunner(traits).belongsToCurrentThread();
     }
 
     public static void register() {
         // In some tests we will get called multiple times.
         if (sRegistered) return;
-
-        PostTask.registerTaskExecutor(UiThreadTaskTraits.EXTENSION_ID, new BrowserTaskExecutor());
         sRegistered = true;
+
+        PostTask.registerTaskExecutor(
+                UiThreadTaskTraitsImpl.DESCRIPTOR.getId(), new BrowserTaskExecutor());
     }
 
-    private final WeakHashMap<TaskTraits, SingleThreadTaskRunner> mTaskRunners =
+    public static boolean getShouldPrioritizeBootstrapTasks() {
+        return sShouldPrioritizeBootstrapTasks;
+    }
+
+    public static void setShouldPrioritizeBootstrapTasks(boolean shouldPrioritizeBootstrapTasks) {
+        sShouldPrioritizeBootstrapTasks = shouldPrioritizeBootstrapTasks;
+    }
+
+    private static boolean shouldPrioritizeTraits(TaskTraits taskTraits) {
+        if (!sShouldPrioritizeBootstrapTasks) return false;
+
+        UiThreadTaskTraitsImpl impl = taskTraits.getExtension(UiThreadTaskTraitsImpl.DESCRIPTOR);
+        if (impl == null) return false;
+
+        switch (impl.getTaskType()) {
+            case BrowserTaskType.BOOTSTRAP:
+            case BrowserTaskType.NAVIGATION:
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    @GuardedBy("mTaskRunners")
+    private final WeakHashMap<TaskTraits, WeakReference<SingleThreadTaskRunner>> mTaskRunners =
             new WeakHashMap<>();
 
     private static boolean sRegistered;
+    private static boolean sShouldPrioritizeBootstrapTasks;
 }

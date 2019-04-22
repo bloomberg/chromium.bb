@@ -63,7 +63,8 @@ bool AVDAPictureBufferManager::Initialize(
                                                1,  // depth
                                                0,  // border
                                                GL_RGBA, GL_UNSIGNED_BYTE);
-    texture_owner_ = TextureOwner::Create(std::move(texture));
+    texture_owner_ = TextureOwner::Create(
+        std::move(texture), TextureOwner::Mode::kSurfaceTextureInsecure);
     if (!texture_owner_)
       return false;
 

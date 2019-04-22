@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <dlfcn.h>
 #include <fcntl.h>
 #include <stdint.h>
 #include <memory>
 
-#include "base/debug/elf_reader_linux.h"
+#include "base/android/library_loader/anchor_functions.h"
+#include "base/android/library_loader/anchor_functions_buildflags.h"
+#include "base/debug/elf_reader.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/format_macros.h"
@@ -31,7 +34,7 @@ const uint32_t kMaxLineSize = 4096;
 base::ScopedFD OpenStatm(base::ProcessId pid) {
   std::string name =
       "/proc/" +
-      (pid == base::kNullProcessId ? "self" : base::IntToString(pid)) +
+      (pid == base::kNullProcessId ? "self" : base::NumberToString(pid)) +
       "/statm";
   base::ScopedFD fd = base::ScopedFD(open(name.c_str(), O_RDONLY));
   return fd;
@@ -59,7 +62,29 @@ std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
   return base::ProcessMetrics::CreateProcessMetrics(pid);
 }
 
-bool ParseSmapsHeader(const char* header_line, VmRegion* region) {
+struct ModuleData {
+  std::string path;
+  std::string build_id;
+};
+
+ModuleData GetMainModuleData() {
+  ModuleData module_data;
+  Dl_info dl_info;
+  if (dladdr(&__ehdr_start, &dl_info)) {
+    base::debug::ElfBuildIdBuffer build_id;
+    size_t build_id_length =
+        base::debug::ReadElfBuildId(&__ehdr_start, true, build_id);
+    if (build_id_length) {
+      module_data.path = dl_info.dli_fname;
+      module_data.build_id = std::string(build_id, build_id_length);
+    }
+  }
+  return module_data;
+}
+
+bool ParseSmapsHeader(const char* header_line,
+                      const ModuleData& main_module_data,
+                      VmRegion* region) {
   // e.g., "00400000-00421000 r-xp 00000000 fc:01 1234  /foo.so\n"
   bool res = true;  // Whether this region should be appended or skipped.
   uint64_t end_addr = 0;
@@ -102,12 +127,11 @@ bool ParseSmapsHeader(const char* header_line, VmRegion* region) {
   // official builds. Build ID is only added for the current library (chrome)
   // since it is racy to read other libraries which can be unmapped any time.
 #if defined(OFFICIAL_BUILD)
-  uintptr_t addr = reinterpret_cast<uintptr_t>(&ParseSmapsHeader);
-  if (addr >= region->start_address && addr < end_addr) {
-    base::Optional<std::string> buildid =
-        base::debug::ReadElfBuildId(&__ehdr_start);
-    if (buildid)
-      region->module_debugid = buildid.value();
+  if (!region->mapped_file.empty() &&
+      base::StartsWith(main_module_data.path, region->mapped_file,
+                       base::CompareCase::SENSITIVE) &&
+      !main_module_data.build_id.empty()) {
+    region->module_debugid = main_module_data.build_id;
   }
 #endif  // defined(OFFICIAL_BUILD)
 
@@ -160,6 +184,7 @@ uint32_t ReadLinuxProcSmapsFile(FILE* smaps_file,
   uint32_t num_valid_regions = 0;
   bool should_add_current_region = false;
   VmRegion region;
+  ModuleData main_module_data = GetMainModuleData();
   for (;;) {
     line[0] = '\0';
     if (fgets(line, kMaxLineSize, smaps_file) == nullptr || !strlen(line))
@@ -167,17 +192,16 @@ uint32_t ReadLinuxProcSmapsFile(FILE* smaps_file,
     if (isxdigit(line[0]) && !isupper(line[0])) {
       region = VmRegion();
       counters_parsed_for_current_region = 0;
-      should_add_current_region = ParseSmapsHeader(line, &region);
-    } else {
+      should_add_current_region =
+          ParseSmapsHeader(line, main_module_data, &region);
+    } else if (should_add_current_region) {
       counters_parsed_for_current_region += ParseSmapsCounter(line, &region);
       DCHECK_LE(counters_parsed_for_current_region,
                 kNumExpectedCountersPerRegion);
       if (counters_parsed_for_current_region == kNumExpectedCountersPerRegion) {
-        if (should_add_current_region) {
-          maps->push_back(VmRegion::New(region));
-          ++num_valid_regions;
-          should_add_current_region = false;
-        }
+        maps->push_back(VmRegion::New(region));
+        ++num_valid_regions;
+        should_add_current_region = false;
       }
     }
   }
@@ -220,6 +244,28 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
   dump->platform_private_footprint->vm_swap_bytes = vm_swap_bytes;
   dump->resident_set_kb = process_metrics->GetResidentSetSize() / 1024;
 
+#if defined(OS_ANDROID)
+#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
+  if (!base::android::AreAnchorsSane()) {
+    DLOG(WARNING) << "Incorrect code ordering";
+    return false;
+  }
+
+  std::vector<uint8_t> accessed_pages_bitmap;
+  OSMetrics::MappedAndResidentPagesDumpState state =
+      OSMetrics::GetMappedAndResidentPages(base::android::kStartOfText,
+                                           base::android::kEndOfText,
+                                           &accessed_pages_bitmap);
+
+  // MappedAndResidentPagesDumpState |state| can be |kAccessPagemapDenied|
+  // for Android devices running a kernel version < 4.4.
+  if (state != OSMetrics::MappedAndResidentPagesDumpState::kSuccess)
+    return state != OSMetrics::MappedAndResidentPagesDumpState::kFailure;
+
+  dump->native_library_pages_bitmap = std::move(accessed_pages_bitmap);
+#endif  // BUILDFLAG(SUPPORTS_CODE_ORDERING)
+#endif  //  defined(OS_ANDROID)
+
   return true;
 }
 
@@ -232,7 +278,7 @@ std::vector<VmRegionPtr> OSMetrics::GetProcessMemoryMaps(base::ProcessId pid) {
   } else {
     std::string file_name =
         "/proc/" +
-        (pid == base::kNullProcessId ? "self" : base::IntToString(pid)) +
+        (pid == base::kNullProcessId ? "self" : base::NumberToString(pid)) +
         "/smaps";
     base::ScopedFILE smaps_file(fopen(file_name.c_str(), "r"));
     res = ReadLinuxProcSmapsFile(smaps_file.get(), &maps);
@@ -242,6 +288,54 @@ std::vector<VmRegionPtr> OSMetrics::GetProcessMemoryMaps(base::ProcessId pid) {
     return std::vector<VmRegionPtr>();
 
   return maps;
+}
+
+// static
+OSMetrics::MappedAndResidentPagesDumpState OSMetrics::GetMappedAndResidentPages(
+    const size_t start_address,
+    const size_t end_address,
+    std::vector<uint8_t>* accessed_pages_bitmap) {
+  const char* kPagemap = "/proc/self/pagemap";
+
+  base::ScopedFILE pagemap_file(fopen(kPagemap, "r"));
+  if (!pagemap_file.get()) {
+    DLOG(WARNING) << "Could not open " << kPagemap;
+    return OSMetrics::MappedAndResidentPagesDumpState::kAccessPagemapDenied;
+  }
+
+  const size_t kPageSize = base::GetPageSize();
+  const size_t start_page = start_address / kPageSize;
+  // |end_address| is exclusive.
+  const size_t end_page = (end_address - 1) / kPageSize;
+  const size_t total_pages = end_page - start_page + 1;
+
+  // The pagemap has one 64 bit entry per page or 8 bytes.
+  auto offset = static_cast<long>(start_page * 8);
+  if (fseek(pagemap_file.get(), offset, SEEK_SET) != 0) {
+    DLOG(ERROR) << "Error in fseek " << kPagemap;
+    return OSMetrics::MappedAndResidentPagesDumpState::kFailure;
+  }
+
+  // |entries| will be 2kB/MB (if |kPageSize| = 4096),
+  // that would only be ~80kB on Android, and up to 200kB on Linux (for 100MB)
+  std::vector<uint64_t> entries(total_pages);
+  if (fread(&entries[0], sizeof(uint64_t), total_pages, pagemap_file.get()) !=
+      total_pages) {
+    return OSMetrics::MappedAndResidentPagesDumpState::kFailure;
+  }
+
+  accessed_pages_bitmap->resize(1 + (total_pages - 1) / 8);
+  for (size_t page = 0; page < total_pages; page++) {
+    // Bit 63 is "page present" according to
+    // https://www.kernel.org/doc/Documentation/vm/pagemap.txt.
+    if (entries[page] & (1LL << 63)) {
+      auto byte = page / 8;
+      auto bit = page & 0x7;
+      CHECK_LT(byte, accessed_pages_bitmap->size());
+      (*accessed_pages_bitmap)[byte] |= 1 << bit;
+    }
+  }
+  return OSMetrics::MappedAndResidentPagesDumpState::kSuccess;
 }
 
 }  // namespace memory_instrumentation

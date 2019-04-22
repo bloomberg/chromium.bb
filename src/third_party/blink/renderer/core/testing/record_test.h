@@ -21,8 +21,6 @@ class RecordTest final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static RecordTest* Create() { return MakeGarbageCollected<RecordTest>(); }
-
   RecordTest();
   ~RecordTest() override;
 
@@ -52,7 +50,7 @@ class RecordTest final : public ScriptWrappable {
 
   bool unionReceivedARecord(const BooleanOrByteStringByteStringRecord& arg);
 
-  void setFloatOrStringElementRecord(const FloatOrStringElementRecord&){};
+  void setFloatOrStringElementRecord(const FloatOrStringElementRecord&) {}
 
   void Trace(blink::Visitor*) override;
 

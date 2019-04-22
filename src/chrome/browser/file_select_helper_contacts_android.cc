@@ -4,6 +4,7 @@
 
 #include "chrome/browser/file_select_helper_contacts_android.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"

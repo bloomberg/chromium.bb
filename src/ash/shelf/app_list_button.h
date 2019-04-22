@@ -8,94 +8,47 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
-#include "ash/session/session_observer.h"
+#include "ash/shelf/app_list_button_controller.h"
 #include "ash/shelf/shelf_control_button.h"
-#include "ash/shell_observer.h"
 #include "base/macros.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "ui/views/controls/button/image_button.h"
-
-namespace base {
-class OneShotTimer;
-}  // namespace base
 
 namespace ash {
 
-class AssistantOverlay;
-class InkDropButtonListener;
 class Shelf;
 class ShelfView;
 
-// Button used for the AppList icon on the shelf.
-class ASH_EXPORT AppListButton : public ShelfControlButton,
-                                 public ShellObserver,
-                                 public SessionObserver,
-                                 public DefaultVoiceInteractionObserver {
+// Button used for the AppList icon on the shelf. It opens the app list (in
+// clamshell mode) or home screen (in tablet mode). Because the clamshell-mode
+// app list appears like a dismissable overlay, the button is highlighted while
+// the app list is open in clamshell mode.
+//
+// If Assistant is enabled, the button is filled in; long-pressing it will
+// launch Assistant.
+class ASH_EXPORT AppListButton : public ShelfControlButton {
  public:
-  AppListButton(InkDropButtonListener* listener,
-                ShelfView* shelf_view,
-                Shelf* shelf);
+  static const char kViewClassName[];
+
+  AppListButton(ShelfView* shelf_view, Shelf* shelf);
   ~AppListButton() override;
 
-  void OnAppListShown();
-  void OnAppListDismissed();
-
-  bool is_showing_app_list() const { return is_showing_app_list_; }
-
-  // views::ImageButton:
+  // views::Button:
   void OnGestureEvent(ui::GestureEvent* event) override;
+  const char* GetClassName() const override;
+
+  // Called when the availability of a long-press gesture may have changed, e.g.
+  // when Assistant becomes enabled.
+  void OnVoiceInteractionAvailabilityChanged();
+
+  // True if the app list is shown for the display containing this button.
+  bool IsShowingAppList() const;
 
  protected:
-  // views::ImageButton:
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  void OnMouseCaptureLost() override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  void NotifyClick(const ui::Event& event) override;
-  bool ShouldEnterPushedState(const ui::Event& event) override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  // views::Button:
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
-  // ShellObserver:
-  void OnAppListVisibilityChanged(bool shown,
-                                  aura::Window* root_window) override;
-
-  // mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionStatusChanged(
-      mojom::VoiceInteractionState state) override;
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override;
-  void OnVoiceInteractionSetupCompleted(bool completed) override;
-
-  // SessionObserver:
-  void OnActiveUserSessionChanged(const AccountId& account_id) override;
-
-  void StartVoiceInteractionAnimation();
-
-  // Whether the voice interaction style should be used.
-  bool UseVoiceInteractionStyle();
-
-  // Initialize the voice interaction overlay.
-  void InitializeVoiceInteractionOverlay();
-
-  // True if the app list is currently showing for this display.
-  // This is useful because other app_list_visible functions aren't per-display.
-  bool is_showing_app_list_ = false;
-
-  InkDropButtonListener* listener_;
-  ShelfView* shelf_view_;
-  Shelf* shelf_;
-
-  // Owned by the view hierarchy. Null if the voice interaction is not enabled.
-  AssistantOverlay* assistant_overlay_ = nullptr;
-  std::unique_ptr<base::OneShotTimer> assistant_animation_delay_timer_;
-  std::unique_ptr<base::OneShotTimer> assistant_animation_hide_delay_timer_;
-  base::TimeTicks voice_interaction_start_timestamp_;
+  // The controller used to determine the button's behavior.
+  AppListButtonController controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };

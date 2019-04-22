@@ -106,9 +106,9 @@ Here is the instruction how to generate a new result.
 
 #### Generating code coverage ####
 * Build the unit tets target with debug information
-`chromium\src> ninja -C out\Debug webkit_unit_tests`
+`chromium\src> ninja -C out\Debug blink_unittests`
 * Run DynamoRIO with drcov tool
-`chromium\src>DynamoRIO\bin64\drrun.exe -t drcov -- .\out\Debug\webkit_unit_tests.exe --gtest_filter=NG*`
+`chromium\src>DynamoRIO\bin64\drrun.exe -t drcov -- .\out\Debug\blink_unittests.exe --gtest_filter=NG*`
 * Convert the output information to lcov format
 `chromium\src>for %file in (*.log) do DynamoRIO\tools\bin64\drcov2lcov.exe -input %file -output %file.info -src_filter layout/ng -src_skip_filter _test`
 * Merge all lcov files into one file

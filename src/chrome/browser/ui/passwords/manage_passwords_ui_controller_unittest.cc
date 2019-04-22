@@ -37,6 +37,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
@@ -162,7 +163,7 @@ void CreateSmartBubbleFieldTrial() {
   using password_bubble_experiment::kSmartBubbleThresholdParam;
   std::map<std::string, std::string> params;
   params[kSmartBubbleThresholdParam] =
-      base::IntToString(kGreatDissmisalCount / 2);
+      base::NumberToString(kGreatDissmisalCount / 2);
   variations::AssociateVariationParams(kSmartBubbleExperimentName, "A", params);
   ASSERT_TRUE(
       base::FieldTrialList::CreateFieldTrial(kSmartBubbleExperimentName, "A"));
@@ -197,6 +198,13 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
   CreateFormManagerWithBestMatches(
       const autofill::PasswordForm& observed_form,
       const std::vector<const autofill::PasswordForm*>& best_matches,
+      scoped_refptr<password_manager::PasswordFormMetricsRecorder>
+          metrics_recorder);
+
+  std::unique_ptr<password_manager::PasswordFormManager>
+  CreateFormManagerWithBlacklistedMatches(
+      const autofill::PasswordForm& observed_form,
+      const std::vector<const autofill::PasswordForm*>& blacklisted_matches,
       scoped_refptr<password_manager::PasswordFormMetricsRecorder>
           metrics_recorder);
 
@@ -268,12 +276,29 @@ ManagePasswordsUIControllerTest::CreateFormManagerWithBestMatches(
     const std::vector<const autofill::PasswordForm*>& best_matches,
     scoped_refptr<password_manager::PasswordFormMetricsRecorder>
         metrics_recorder) {
-  std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
-      new password_manager::PasswordFormManager(
+  auto test_form_manager =
+      std::make_unique<password_manager::PasswordFormManager>(
           &password_manager_, &client_, driver_.AsWeakPtr(), observed_form,
-          base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));
+          std::make_unique<password_manager::StubFormSaver>(), &fetcher_);
   test_form_manager->Init(metrics_recorder);
-  fetcher_.SetNonFederated(best_matches, 0u);
+  fetcher_.SetNonFederated(best_matches);
+  fetcher_.NotifyFetchCompleted();
+  return test_form_manager;
+}
+
+std::unique_ptr<password_manager::PasswordFormManager>
+ManagePasswordsUIControllerTest::CreateFormManagerWithBlacklistedMatches(
+    const autofill::PasswordForm& observed_form,
+    const std::vector<const autofill::PasswordForm*>& blacklisted_matches,
+    scoped_refptr<password_manager::PasswordFormMetricsRecorder>
+        metrics_recorder) {
+  auto test_form_manager =
+      std::make_unique<password_manager::PasswordFormManager>(
+          &password_manager_, &client_, driver_.AsWeakPtr(), observed_form,
+          std::make_unique<password_manager::StubFormSaver>(), &fetcher_);
+  test_form_manager->Init(metrics_recorder);
+  fetcher_.SetBlacklisted(blacklisted_matches);
+  fetcher_.NotifyFetchCompleted();
   return test_form_manager;
 }
 
@@ -361,8 +386,8 @@ TEST_F(ManagePasswordsUIControllerTest, BlacklistedFormPasswordSubmitted) {
   blacklisted.signon_realm = blacklisted.origin.spec();
   blacklisted.blacklisted_by_user = true;
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager =
-      CreateFormManagerWithBestMatches(test_local_form(), {&blacklisted},
-                                       nullptr);
+      CreateFormManagerWithBlacklistedMatches(test_local_form(), {&blacklisted},
+                                              nullptr);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnPasswordSubmitted(std::move(test_form_manager));
   EXPECT_FALSE(controller()->opened_automatic_bubble());
@@ -494,10 +519,9 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSavedUKMRecording) {
     EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
     controller()->OnBubbleHidden();
     EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-    std::unique_ptr<content::NavigationHandle> navigation_handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(), main_rfh(), true);
-    navigation_handle.reset();  // Calls DidFinishNavigation.
+    content::MockNavigationHandle test_handle(web_contents());
+    test_handle.set_has_committed(true);
+    controller()->DidFinishNavigation(&test_handle);
 
     recorder = nullptr;
     ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
@@ -569,10 +593,9 @@ TEST_F(ManagePasswordsUIControllerTest, NormalNavigations) {
   // Fake-navigate. We expect the bubble's state to persist so a user reasonably
   // has been able to interact with the bubble. This happens on
   // `accounts.google.com`, for instance.
-  std::unique_ptr<content::NavigationHandle> navigation_handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          GURL(), main_rfh(), true);
-  navigation_handle.reset();  // Calls DidFinishNavigation.
+  content::MockNavigationHandle test_handle(web_contents());
+  test_handle.set_has_committed(true);
+  controller()->DidFinishNavigation(&test_handle);
   ExpectIconAndControllerStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
@@ -590,10 +613,9 @@ TEST_F(ManagePasswordsUIControllerTest, NormalNavigationsClosedBubble) {
 
   // Fake-navigate. There is no bubble, reset the state.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  std::unique_ptr<content::NavigationHandle> navigation_handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          GURL(), main_rfh(), true);
-  navigation_handle.reset();  // Calls DidFinishNavigation.
+  content::MockNavigationHandle test_handle(web_contents());
+  test_handle.set_has_committed(true);
+  controller()->DidFinishNavigation(&test_handle);
   ExpectIconAndControllerStateIs(password_manager::ui::INACTIVE_STATE);
 }
 
@@ -843,10 +865,9 @@ TEST_F(ManagePasswordsUIControllerTest, AutoSigninFirstRunAfterNavigation) {
   // The dialog should survive any navigation.
   EXPECT_CALL(dialog_prompt(), ControllerGone()).Times(0);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  std::unique_ptr<content::NavigationHandle> navigation_handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          GURL(), main_rfh(), true);
-  navigation_handle.reset();  // Calls DidFinishNavigation.
+  content::MockNavigationHandle test_handle(web_contents());
+  test_handle.set_has_committed(true);
+  controller()->DidFinishNavigation(&test_handle);
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&dialog_prompt()));
   EXPECT_CALL(dialog_prompt(), ControllerGone());
 }
@@ -976,10 +997,9 @@ TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
     // state is retained on navigation, and the PasswordFormManager is not
     // destroyed.
     controller()->OnBubbleHidden();
-    std::unique_ptr<content::NavigationHandle> navigation_handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(), main_rfh(), true);
-    navigation_handle.reset();  // Calls DidFinishNavigation.
+    content::MockNavigationHandle test_handle(web_contents());
+    test_handle.set_has_committed(true);
+    controller()->DidFinishNavigation(&test_handle);
 
     recorder = nullptr;
     EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
@@ -1078,10 +1098,9 @@ TEST_F(ManagePasswordsUIControllerTest,
     testing::Mock::VerifyAndClearExpectations(controller());
     if (enforce_navigation) {
       // Fake-navigate. The fallback should persist.
-      std::unique_ptr<content::NavigationHandle> navigation_handle =
-          content::NavigationHandle::CreateNavigationHandleForTesting(
-              GURL(), main_rfh(), true);
-      navigation_handle.reset();  // Calls DidFinishNavigation.
+      content::MockNavigationHandle test_handle(web_contents());
+      test_handle.set_has_committed(true);
+      controller()->DidFinishNavigation(&test_handle);
       ExpectIconAndControllerStateIs(
           password_manager::ui::PENDING_PASSWORD_STATE);
     }
@@ -1134,10 +1153,9 @@ TEST_F(ManagePasswordsUIControllerTest,
       // navigation.
       controller()->OnBubbleHidden();
       EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-      std::unique_ptr<content::NavigationHandle> navigation_handle =
-          content::NavigationHandle::CreateNavigationHandleForTesting(
-              GURL(), main_rfh(), true);
-      navigation_handle.reset();  // Calls DidFinishNavigation.
+      content::MockNavigationHandle test_handle(web_contents());
+      test_handle.set_has_committed(true);
+      controller()->DidFinishNavigation(&test_handle);
       ExpectIconAndControllerStateIs(password_manager::ui::INACTIVE_STATE);
     }
     testing::Mock::VerifyAndClearExpectations(controller());

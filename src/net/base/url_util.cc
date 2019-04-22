@@ -21,6 +21,7 @@
 #include "url/gurl.h"
 #include "url/url_canon.h"
 #include "url/url_canon_ip.h"
+#include "url/url_constants.h"
 
 namespace net {
 
@@ -370,6 +371,14 @@ GURL SimplifyUrlForRequest(const GURL& url) {
   replacements.ClearPassword();
   replacements.ClearRef();
   return url.ReplaceComponents(replacements);
+}
+
+GURL ChangeWebSocketSchemeToHttpScheme(const GURL& url) {
+  DCHECK(url.SchemeIsWSOrWSS());
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetSchemeStr(url.SchemeIs(url::kWssScheme) ? url::kHttpsScheme
+                                                            : url::kHttpScheme);
+  return url.ReplaceComponents(replace_scheme);
 }
 
 void GetIdentityFromURL(const GURL& url,

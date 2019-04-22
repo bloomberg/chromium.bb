@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/observer_list_threadsafe.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,8 +23,6 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_activation_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -35,22 +32,15 @@
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
 
+namespace chromeos {
+
 namespace {
-
-// Cellular configuration file path.
-const char kCellularConfigPath[] =
-    "/usr/share/chromeos-assets/mobile/mobile_config.json";
-
-// Cellular config file field names.
-const char kVersionField[] = "version";
-const char kErrorsField[] = "errors";
 
 // Number of times we'll try an OTASP before failing the activation process.
 const int kMaxOTASPTries = 3;
@@ -63,20 +53,6 @@ const int kOTASPRetryDelay = 40000;
 // Maximum amount of time we'll wait for a service to reconnect.
 const int kMaxReconnectTime = 30000;
 
-// Error codes matching codes defined in the cellular config file.
-const char kErrorDefault[] = "default";
-const char kErrorBadConnectionPartial[] = "bad_connection_partial";
-const char kErrorBadConnectionActivated[] = "bad_connection_activated";
-const char kErrorRoamingOnConnection[] = "roaming_connection";
-const char kErrorNoEVDO[] = "no_evdo";
-const char kErrorRoamingActivation[] = "roaming_activation";
-const char kErrorRoamingPartiallyActivated[] = "roaming_partially_activated";
-const char kErrorNoService[] = "no_service";
-const char kErrorDisabled[] = "disabled";
-const char kErrorNoDevice[] = "no_device";
-const char kFailedPaymentError[] = "failed_payment";
-const char kFailedConnectivity[] = "connectivity";
-
 // Returns true if the device follows the simple activation flow.
 bool IsSimpleActivationFlow(const chromeos::NetworkState* network) {
   return (network->activation_type() == shill::kActivationTypeNonCellular ||
@@ -85,91 +61,13 @@ bool IsSimpleActivationFlow(const chromeos::NetworkState* network) {
 
 }  // namespace
 
-namespace chromeos {
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// CellularConfigDocument
-//
-////////////////////////////////////////////////////////////////////////////////
-CellularConfigDocument::CellularConfigDocument() {}
-
-std::string CellularConfigDocument::GetErrorMessage(const std::string& code) {
-  base::AutoLock create(config_lock_);
-  ErrorMap::iterator iter = error_map_.find(code);
-  if (iter == error_map_.end())
-    return code;
-  return iter->second;
-}
-
-void CellularConfigDocument::LoadCellularConfigFile() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-
-  // Load partner customization startup manifest if it is available.
-  base::FilePath config_path(kCellularConfigPath);
-  if (!base::PathExists(config_path))
-    return;
-
-  if (LoadFromFile(config_path))
-    DVLOG(1) << "Cellular config file loaded: " << kCellularConfigPath;
-  else
-    LOG(ERROR) << "Error loading cellular config file: " << kCellularConfigPath;
-}
-
-CellularConfigDocument::~CellularConfigDocument() {}
-
-void CellularConfigDocument::SetErrorMap(
-    const ErrorMap& map) {
-  base::AutoLock create(config_lock_);
-  error_map_.clear();
-  error_map_.insert(map.begin(), map.end());
-}
-
-bool CellularConfigDocument::LoadFromFile(const base::FilePath& config_path) {
-  std::string config;
-  if (!base::ReadFileToString(config_path, &config))
-    return false;
-
-  std::unique_ptr<base::Value> root =
-      base::JSONReader::Read(config, base::JSON_ALLOW_TRAILING_COMMAS);
-  DCHECK(root.get() != NULL);
-  if (!root.get() || !root->is_dict()) {
-    LOG(WARNING) << "Bad cellular config file";
-    return false;
-  }
-
-  base::DictionaryValue* root_dict =
-      static_cast<base::DictionaryValue*>(root.get());
-  if (!root_dict->GetString(kVersionField, &version_)) {
-    LOG(WARNING) << "Cellular config file missing version";
-    return false;
-  }
-  ErrorMap error_map;
-  base::DictionaryValue* errors = NULL;
-  if (!root_dict->GetDictionary(kErrorsField, &errors))
-    return false;
-  for (base::DictionaryValue::Iterator it(*errors);
-      !it.IsAtEnd(); it.Advance()) {
-    std::string value;
-    if (!it.value().GetAsString(&value)) {
-      LOG(WARNING) << "Bad cellular config error value";
-      return false;
-    }
-    error_map.insert(ErrorMap::value_type(it.key(), value));
-  }
-  SetErrorMap(error_map);
-  return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // MobileActivator
 //
 ////////////////////////////////////////////////////////////////////////////////
 MobileActivator::MobileActivator()
-    : cellular_config_(new CellularConfigDocument()),
-      state_(PLAN_ACTIVATION_PAGE_LOADING),
-      reenable_cert_check_(false),
+    : state_(PLAN_ACTIVATION_PAGE_LOADING),
       terminated_(true),
       pending_activation_request_(false),
       connection_retry_count_(0),
@@ -177,8 +75,7 @@ MobileActivator::MobileActivator()
       trying_OTASP_attempts_(0),
       final_OTASP_attempts_(0),
       payment_reconnect_count_(0),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 MobileActivator::~MobileActivator() {
   TerminateActivation();
@@ -197,16 +94,12 @@ void MobileActivator::TerminateActivation() {
     NetworkHandler::Get()->network_state_handler()->
         RemoveObserver(this, FROM_HERE);
   }
-  ReEnableCertRevocationChecking();
   meid_.clear();
   iccid_.clear();
   service_path_.clear();
   device_path_.clear();
   state_ = PLAN_ACTIVATION_PAGE_LOADING;
-  reenable_cert_check_ = false;
   terminated_ = true;
-  // Release the previous cellular config and setup a new empty one.
-  cellular_config_ = new CellularConfigDocument();
 }
 
 void MobileActivator::DefaultNetworkChanged(const NetworkState* network) {
@@ -265,54 +158,15 @@ void MobileActivator::InitiateActivation(const std::string& service_path) {
     return;
   }
 
+  DCHECK(network->Matches(NetworkTypePattern::Cellular()));
+
   terminated_ = false;
   meid_ = device->meid();
   iccid_ = device->iccid();
   service_path_ = service_path;
   device_path_ = network->device_path();
 
-  ChangeState(network, PLAN_ACTIVATION_PAGE_LOADING, "");
-
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-      base::BindOnce(&CellularConfigDocument::LoadCellularConfigFile,
-                     cellular_config_.get()),
-      base::BindOnce(&MobileActivator::ContinueActivation, AsWeakPtr()));
-}
-
-void MobileActivator::ContinueActivation() {
-  NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
-      service_path_,
-      base::Bind(&MobileActivator::GetPropertiesAndContinueActivation,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&MobileActivator::GetPropertiesFailure,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void MobileActivator::GetPropertiesAndContinueActivation(
-    const std::string& service_path,
-    const base::DictionaryValue& properties) {
-  if (service_path != service_path_) {
-    NET_LOG_EVENT("MobileActivator::GetProperties received for stale network",
-                  service_path);
-    return;  // Edge case; abort.
-  }
-  const base::DictionaryValue* payment_dict;
-  std::string usage_url, payment_url;
-  if (!properties.GetStringWithoutPathExpansion(
-          shill::kUsageURLProperty, &usage_url) ||
-      !properties.GetDictionaryWithoutPathExpansion(
-          shill::kPaymentPortalProperty, &payment_dict) ||
-      !payment_dict->GetStringWithoutPathExpansion(
-          shill::kPaymentPortalURL, &payment_url)) {
-    NET_LOG_ERROR("MobileActivator missing properties", service_path_);
-    return;
-  }
-
-  if (payment_url.empty() && usage_url.empty())
-    return;
-
-  DisableCertRevocationChecking();
+  ChangeState(network, PLAN_ACTIVATION_PAGE_LOADING, ActivationError::kNone);
 
   // We want shill to connect us after activations, so enable autoconnect.
   base::DictionaryValue auto_connect_property;
@@ -320,6 +174,7 @@ void MobileActivator::GetPropertiesAndContinueActivation(
   NetworkHandler::Get()->network_configuration_handler()->SetShillProperties(
       service_path_, auto_connect_property, base::DoNothing(),
       network_handler::ErrorCallback());
+
   StartActivation();
 }
 
@@ -333,8 +188,8 @@ void MobileActivator::GetPropertiesFailure(
 void MobileActivator::OnSetTransactionStatus(bool success) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&MobileActivator::HandleSetTransactionStatus, AsWeakPtr(),
-                 success));
+      base::BindOnce(&MobileActivator::HandleSetTransactionStatus,
+                     weak_ptr_factory_.GetWeakPtr(), success));
 }
 
 void MobileActivator::HandleSetTransactionStatus(bool success) {
@@ -359,21 +214,23 @@ void MobileActivator::HandleSetTransactionStatus(bool success) {
 void MobileActivator::OnPortalLoaded(bool success) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&MobileActivator::HandlePortalLoaded, AsWeakPtr(), success));
+      base::BindOnce(&MobileActivator::HandlePortalLoaded,
+                     weak_ptr_factory_.GetWeakPtr(), success));
 }
 
 void MobileActivator::HandlePortalLoaded(bool success) {
   const NetworkState* network = GetNetworkState(service_path_);
   if (!network) {
     ChangeState(NULL, PLAN_ACTIVATION_ERROR,
-                GetErrorMessage(kErrorNoService));
+                ActivationError::kNoCellularService);
     return;
   }
   if (state_ == PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING ||
       state_ == PLAN_ACTIVATION_SHOWING_PAYMENT) {
     if (success) {
       payment_reconnect_count_ = 0;
-      ChangeState(network, PLAN_ACTIVATION_SHOWING_PAYMENT, std::string());
+      ChangeState(network, PLAN_ACTIVATION_SHOWING_PAYMENT,
+                  ActivationError::kNone);
     } else {
       // There is no point in forcing reconnecting the cellular network if the
       // activation should not be done over it.
@@ -383,14 +240,13 @@ void MobileActivator::HandlePortalLoaded(bool success) {
       payment_reconnect_count_++;
       if (payment_reconnect_count_ > kMaxPortalReconnectCount) {
         ChangeState(NULL, PLAN_ACTIVATION_ERROR,
-                    GetErrorMessage(kErrorNoService));
+                    ActivationError::kNoCellularService);
         return;
       }
 
       // Reconnect and try and load the frame again.
-      ChangeState(network,
-                  PLAN_ACTIVATION_RECONNECTING,
-                  GetErrorMessage(kFailedPaymentError));
+      ChangeState(network, PLAN_ACTIVATION_RECONNECTING,
+                  ActivationError::kNone);
     }
   } else {
     NOTREACHED() << "Called paymentPortalLoad while in unexpected state: "
@@ -414,27 +270,28 @@ void MobileActivator::StartActivation() {
     NetworkStateHandler::TechnologyState technology_state =
         NetworkHandler::Get()->network_state_handler()->GetTechnologyState(
             NetworkTypePattern::Cellular());
-    std::string error;
+    ActivationError error = ActivationError::kActivationFailed;
     if (technology_state == NetworkStateHandler::TECHNOLOGY_UNAVAILABLE) {
-      error = kErrorNoDevice;
+      error = ActivationError::kNoCellularDevice;
     } else if (technology_state != NetworkStateHandler::TECHNOLOGY_ENABLED) {
-      error = kErrorDisabled;
+      error = ActivationError::kCellularDisabled;
     } else {
-      error = kErrorNoService;
+      error = ActivationError::kNoCellularService;
     }
-    ChangeState(NULL, PLAN_ACTIVATION_ERROR, GetErrorMessage(error));
+    ChangeState(NULL, PLAN_ACTIVATION_ERROR, error);
     return;
   }
 
   // Start monitoring network property changes.
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
 
-  if (network->activation_type() == shill::kActivationTypeNonCellular)
-      StartActivationOverNonCellularNetwork();
-  else if (network->activation_type() == shill::kActivationTypeOTA)
-      StartActivationOTA();
-  else if (network->activation_type() == shill::kActivationTypeOTASP)
-      StartActivationOTASP();
+  if (network->activation_type() == shill::kActivationTypeNonCellular) {
+    StartActivationOverNonCellularNetwork();
+  } else if (network->activation_type() == shill::kActivationTypeOTA) {
+    StartActivationOTA();
+  } else if (network->activation_type() == shill::kActivationTypeOTASP) {
+    StartActivationOTASP();
+  }
 }
 
 void MobileActivator::StartActivationOverNonCellularNetwork() {
@@ -445,12 +302,11 @@ void MobileActivator::StartActivationOverNonCellularNetwork() {
     return;
   }
 
-  ChangeState(
-      network,
-      (network->activation_state() == shill::kActivationStateActivated) ?
-      PLAN_ACTIVATION_DONE :
-      PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
-      "" /* error_description */);
+  ChangeState(network,
+              (network->activation_state() == shill::kActivationStateActivated)
+                  ? PLAN_ACTIVATION_DONE
+                  : PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
+              ActivationError::kNone);
 
   RefreshCellularNetworks();
 }
@@ -471,7 +327,7 @@ void MobileActivator::StartActivationOTA() {
     ConnectNetwork(network);
 
   ChangeState(network, PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
-              "" /* error_description */);
+              ActivationError::kNone);
   RefreshCellularNetworks();
 }
 
@@ -506,7 +362,7 @@ void MobileActivator::StartOTASP() {
     return;
   }
 
-  ChangeState(network, PLAN_ACTIVATION_START_OTASP, std::string());
+  ChangeState(network, PLAN_ACTIVATION_START_OTASP, ActivationError::kNone);
   EvaluateCellularNetwork(network);
 }
 
@@ -523,35 +379,31 @@ void MobileActivator::HandleOTASPTimeout() {
   if (state_ == PLAN_ACTIVATION_INITIATING_ACTIVATION) {
     ++initial_OTASP_attempts_;
     if (initial_OTASP_attempts_ <= kMaxOTASPTries) {
-      ChangeState(network,
-                  PLAN_ACTIVATION_RECONNECTING,
-                  GetErrorMessage(kErrorDefault));
+      ChangeState(network, PLAN_ACTIVATION_RECONNECTING,
+                  ActivationError::kActivationFailed);
       return;
     }
   } else if (state_ == PLAN_ACTIVATION_TRYING_OTASP) {
     ++trying_OTASP_attempts_;
     if (trying_OTASP_attempts_ <= kMaxOTASPTries) {
-      ChangeState(network,
-                  PLAN_ACTIVATION_RECONNECTING,
-                  GetErrorMessage(kErrorDefault));
+      ChangeState(network, PLAN_ACTIVATION_RECONNECTING,
+                  ActivationError::kActivationFailed);
       return;
     }
   } else if (state_ == PLAN_ACTIVATION_OTASP) {
     ++final_OTASP_attempts_;
     if (final_OTASP_attempts_ <= kMaxOTASPTries) {
       // Give the portal time to propagate all those magic bits.
-      ChangeState(network,
-                  PLAN_ACTIVATION_DELAY_OTASP,
-                  GetErrorMessage(kErrorDefault));
+      ChangeState(network, PLAN_ACTIVATION_DELAY_OTASP,
+                  ActivationError::kActivationFailed);
       return;
     }
   } else {
     LOG(ERROR) << "OTASP timed out from a non-OTASP wait state?";
   }
   LOG(ERROR) << "OTASP failed too many times; aborting.";
-  ChangeState(network,
-              PLAN_ACTIVATION_ERROR,
-              GetErrorMessage(kErrorDefault));
+  ChangeState(network, PLAN_ACTIVATION_ERROR,
+              ActivationError::kActivationFailed);
 }
 
 void MobileActivator::ConnectNetwork(const NetworkState* network) {
@@ -595,9 +447,8 @@ void MobileActivator::ReconnectTimedOut() {
     return;
   }
 
-  ChangeState(network,
-              PLAN_ACTIVATION_ERROR,
-              GetErrorMessage(kFailedConnectivity));
+  ChangeState(network, PLAN_ACTIVATION_ERROR,
+              ActivationError::kActivationFailed);
 }
 
 void MobileActivator::ContinueConnecting() {
@@ -650,9 +501,10 @@ void MobileActivator::RefreshCellularNetworks() {
          (default_network->type() == shill::kTypeCellular &&
           default_network->connection_state() == shill::kStatePortal));
     if (waiting && is_online_or_portal) {
-      ChangeState(network, post_reconnect_state_, "");
+      ChangeState(network, post_reconnect_state_, ActivationError::kNone);
     } else if (!waiting && !is_online_or_portal) {
-      ChangeState(network, PLAN_ACTIVATION_WAITING_FOR_CONNECTION, "");
+      ChangeState(network, PLAN_ACTIVATION_WAITING_FOR_CONNECTION,
+                  ActivationError::kNone);
     }
   }
 
@@ -693,21 +545,23 @@ void MobileActivator::EvaluateCellularNetwork(const NetworkState* network) {
   if (IsSimpleActivationFlow(network))
     return;
 
-  std::string error_description;
-  PlanActivationState new_state = PickNextState(network, &error_description);
-
-  ChangeState(network, new_state, error_description);
+  PlanActivationState new_state = PickNextState(network);
+  ActivationError error = new_state == PLAN_ACTIVATION_ERROR
+                              ? ActivationError::kActivationFailed
+                              : ActivationError::kNone;
+  ChangeState(network, new_state, error);
 }
 
 MobileActivator::PlanActivationState MobileActivator::PickNextState(
-    const NetworkState* network, std::string* error_description) const {
+    const NetworkState* network) const {
   PlanActivationState new_state = state_;
   if (!network->IsConnectedState())
     new_state = PickNextOfflineState(network);
   else
     new_state = PickNextOnlineState(network);
+
   if (new_state != PLAN_ACTIVATION_ERROR &&
-      GotActivationError(network, error_description)) {
+      network->connection_state() == shill::kStateActivationFailure) {
     // Check for this special case when we try to do activate partially
     // activated device. If that attempt failed, try to disconnect to clear the
     // state and reconnect again.
@@ -715,8 +569,7 @@ MobileActivator::PlanActivationState MobileActivator::PickNextState(
     if ((activation == shill::kActivationStatePartiallyActivated ||
          activation == shill::kActivationStateActivating) &&
         (network->error().empty() ||
-         network->error() == shill::kErrorOtaspFailed) &&
-        network->connection_state() == shill::kStateActivationFailure) {
+         network->error() == shill::kErrorOtaspFailed)) {
       NET_LOG_EVENT("Activation failure detected ", network->path());
       switch (state_) {
         case PLAN_ACTIVATION_OTASP:
@@ -744,8 +597,6 @@ MobileActivator::PlanActivationState MobileActivator::PickNextState(
     }
   }
 
-  if (new_state == PLAN_ACTIVATION_ERROR && !error_description->length())
-    *error_description = GetErrorMessage(kErrorDefault);
   return new_state;
 }
 
@@ -906,10 +757,6 @@ void MobileActivator::CompleteActivation() {
   // Remove observers, we are done with this page.
   NetworkHandler::Get()->network_state_handler()->
       RemoveObserver(this, FROM_HERE);
-
-  // Reactivate other types of connections if we have
-  // shut them down previously.
-  ReEnableCertRevocationChecking();
 }
 
 bool MobileActivator::RunningActivation() const {
@@ -932,11 +779,10 @@ void MobileActivator::HandleActivationFailure(
   UMA_HISTOGRAM_COUNTS_1M("Cellular.ActivationFailure", 1);
   NET_LOG_ERROR("Failed to call Activate() on service", service_path);
   if (new_state == PLAN_ACTIVATION_OTASP) {
-    ChangeState(network, PLAN_ACTIVATION_DELAY_OTASP, std::string());
+    ChangeState(network, PLAN_ACTIVATION_DELAY_OTASP, ActivationError::kNone);
   } else {
-    ChangeState(network,
-                PLAN_ACTIVATION_ERROR,
-                GetErrorMessage(kFailedConnectivity));
+    ChangeState(network, PLAN_ACTIVATION_ERROR,
+                ActivationError::kActivationFailed);
   }
 }
 
@@ -957,7 +803,7 @@ void MobileActivator::RequestCellularActivation(
 
 void MobileActivator::ChangeState(const NetworkState* network,
                                   PlanActivationState new_state,
-                                  std::string error_description) {
+                                  ActivationError error) {
   // Report an error, by transitioning into a PLAN_ACTIVATION_ERROR state with
   // a "no service" error instead, if no network state is available (e.g. the
   // cellular service no longer exists) when we are transitioning into certain
@@ -969,7 +815,7 @@ void MobileActivator::ChangeState(const NetworkState* network,
       case PLAN_ACTIVATION_OTASP:
       case PLAN_ACTIVATION_DONE:
         new_state = PLAN_ACTIVATION_ERROR;
-        error_description = GetErrorMessage(kErrorNoService);
+        error = ActivationError::kNoCellularService;
         break;
       default:
         break;
@@ -994,7 +840,7 @@ void MobileActivator::ChangeState(const NetworkState* network,
 
   // Signal to observers layer that the state is changing.
   for (auto& observer : observers_)
-    observer.OnActivationStateChanged(network, state_, error_description);
+    observer.OnActivationStateChanged(network, state_, error);
 
   // Pick action that should happen on entering the new state.
   switch (new_state) {
@@ -1004,7 +850,8 @@ void MobileActivator::ChangeState(const NetworkState* network,
       UMA_HISTOGRAM_COUNTS_1M("Cellular.RetryOTASP", 1);
       base::PostDelayedTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
-          base::Bind(&MobileActivator::RetryOTASP, AsWeakPtr()),
+          base::BindOnce(&MobileActivator::RetryOTASP,
+                         weak_ptr_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kOTASPRetryDelay));
       break;
     }
@@ -1014,13 +861,13 @@ void MobileActivator::ChangeState(const NetworkState* network,
     case PLAN_ACTIVATION_TRYING_OTASP:
     case PLAN_ACTIVATION_OTASP: {
       DCHECK(network);
-      network_handler::ErrorCallback on_activation_error =
-          base::Bind(&MobileActivator::HandleActivationFailure, AsWeakPtr(),
-                     network->path(),
-                     new_state);
+      network_handler::ErrorCallback on_activation_error = base::BindRepeating(
+          &MobileActivator::HandleActivationFailure,
+          weak_ptr_factory_.GetWeakPtr(), network->path(), new_state);
       RequestCellularActivation(
           network,
-          base::Bind(&MobileActivator::StartOTASPTimer, AsWeakPtr()),
+          base::BindRepeating(&MobileActivator::StartOTASPTimer,
+                              weak_ptr_factory_.GetWeakPtr()),
           on_activation_error);
       }
       break;
@@ -1081,76 +928,6 @@ void MobileActivator::ChangeState(const NetworkState* network,
     default:
       break;
   }
-}
-
-void MobileActivator::ReEnableCertRevocationChecking() {
-  // Check that both the browser process and prefs exist before trying to
-  // use them, since this method can be called by the destructor while Chrome
-  // is shutting down, during which either could be NULL.
-  if (!g_browser_process)
-    return;
-  PrefService* prefs = g_browser_process->local_state();
-  if (!prefs)
-    return;
-  if (reenable_cert_check_) {
-    prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled, true);
-    reenable_cert_check_ = false;
-  }
-}
-
-void MobileActivator::DisableCertRevocationChecking() {
-  // Disable SSL cert checks since we might be performing activation in the
-  // restricted pool.
-  // TODO(rkc): We want to do this only if on Cellular.
-  PrefService* prefs = g_browser_process->local_state();
-  if (!reenable_cert_check_ &&
-      prefs->GetBoolean(prefs::kCertRevocationCheckingEnabled)) {
-    reenable_cert_check_ = true;
-    prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled, false);
-  }
-}
-
-bool MobileActivator::GotActivationError(
-    const NetworkState* network, std::string* error) const {
-  DCHECK(network);
-  bool got_error = false;
-  const char* error_code = kErrorDefault;
-  const std::string& activation = network->activation_state();
-
-  // This is the magic for detection of errors in during activation process.
-  if (network->connection_state() == shill::kStateFailure &&
-      network->error() == shill::kErrorAaaFailed) {
-    if (activation == shill::kActivationStatePartiallyActivated) {
-      error_code = kErrorBadConnectionPartial;
-    } else if (activation == shill::kActivationStateActivated) {
-      if (network->roaming() == shill::kRoamingStateHome)
-        error_code = kErrorBadConnectionActivated;
-      else if (network->roaming() == shill::kRoamingStateRoaming)
-        error_code = kErrorRoamingOnConnection;
-    }
-    got_error = true;
-  } else if (network->connection_state() == shill::kStateActivationFailure) {
-    if (network->error() == shill::kErrorNeedEvdo) {
-      if (activation == shill::kActivationStatePartiallyActivated)
-        error_code = kErrorNoEVDO;
-    } else if (network->error() == shill::kErrorNeedHomeNetwork) {
-      if (activation == shill::kActivationStateNotActivated) {
-        error_code = kErrorRoamingActivation;
-      } else if (activation == shill::kActivationStatePartiallyActivated) {
-        error_code = kErrorRoamingPartiallyActivated;
-      }
-    }
-    got_error = true;
-  }
-
-  if (got_error)
-    *error = GetErrorMessage(error_code);
-
-  return got_error;
-}
-
-std::string MobileActivator::GetErrorMessage(const std::string& code) const {
-  return cellular_config_->GetErrorMessage(code);
 }
 
 void MobileActivator::SignalCellularPlanPayment() {

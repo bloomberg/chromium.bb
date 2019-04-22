@@ -84,7 +84,7 @@ static_library("handler") {
   }
 
   if (crashpad_is_fuchsia) {
-    deps += [ "../third_party/fuchsia:zx" ]
+    deps += [ "../third_party/fuchsia" ]
   }
 }
 
@@ -135,29 +135,6 @@ crashpad_executable("crashpad_handler") {
     "../third_party/mini_chromium:base",
   ]
 
-  if (crashpad_is_mac && crashpad_is_in_chromium) {
-    if (is_component_build) {
-      ldflags = [
-        # The handler is in
-        # Chromium.app/Contents/Versions/X/Chromium Framework.framework/Versions/A/Helpers/
-        # so set rpath up to the base.
-        "-rpath",
-        "@loader_path/../../../../../../../..",
-
-        # The handler is also in
-        # Content Shell.app/Contents/Frameworks/Content Shell Framework.framework/Versions/C/Helpers/
-        # so set the rpath for that too.
-        "-rpath",
-        "@loader_path/../../../../../../..",
-
-        # The handler can also be executed in an unbundled framework at
-        # Chromium Framework.framework/Versions/V/Helpers/
-        "-rpath",
-        "@loader_path/../../../..",
-      ]
-    }
-  }
-
   if (crashpad_is_win) {
     if (crashpad_is_in_chromium || crashpad_is_in_dart) {
       remove_configs = [ "//build/config/win:console" ]
@@ -188,6 +165,23 @@ if (crashpad_is_android) {
     outputs = [
       "$root_out_dir/libcrashpad_handler.so",
     ]
+  }
+
+  crashpad_executable("crashpad_handler_trampoline") {
+    set_sources_assignment_filter([])
+    output_name = "libcrashpad_handler_trampoline.so"
+
+    sources = [
+      "linux/handler_trampoline.cc",
+    ]
+
+    ldflags = [ "-llog" ]
+
+    if (crashpad_is_in_chromium) {
+      no_default_deps = true
+    }
+    remove_configs =
+        [ "//build/config/android:default_orderfile_instrumentation" ]
   }
 }
 

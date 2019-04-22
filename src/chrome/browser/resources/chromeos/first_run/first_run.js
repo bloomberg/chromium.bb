@@ -229,8 +229,8 @@ cr.define('cr.FirstRun', function() {
      * |pointWithOffset|: Optional parameter for positioning bubble. Contains
      *     [x, y, offset], where (x, y) - point to which bubble points,
      *     offset - distance between arrow and point.
-     * |voiceInteractionEnabled|: Optional boolean value to indicate if voice
-     *     interaction is enabled by the device.
+     * |assistantEnabled|: Optional boolean value to indicate if Google
+     *     Assistant is enabled.
      */
     showStep: function(stepParams) {
       assert(!this.currentStep_);
@@ -244,8 +244,8 @@ cr.define('cr.FirstRun', function() {
             stepParams.pointWithOffset.slice(0, 2),
             stepParams.pointWithOffset[2]);
       }
-      if (stepParams.voiceInteractionEnabled)
-        step.setVoiceInteractionEnabled();
+      if (stepParams.assistantEnabled)
+        step.setAssistantEnabled();
       step.show(true, function(step) {
         step.focusDefaultControl();
         this.currentStep_ = step;

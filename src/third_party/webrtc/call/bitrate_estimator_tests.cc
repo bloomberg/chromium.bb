@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 
+#include "absl/memory/memory.h"
 #include "call/call.h"
 #include "call/fake_network_pipe.h"
 #include "call/simulated_network.h"
@@ -65,7 +66,7 @@ class LogObserver {
         num_popped++;
         EXPECT_TRUE(a.find(b) != std::string::npos) << a << " != " << b;
       }
-      if (expected_log_lines_.size() <= 0) {
+      if (expected_log_lines_.empty()) {
         if (num_popped > 0) {
           done_.Set();
         }
@@ -183,7 +184,6 @@ class BitrateEstimatorTest : public test::CallTest {
       send_stream_->SetSource(frame_generator_capturer_.get(),
                               DegradationPreference::MAINTAIN_FRAMERATE);
       send_stream_->Start();
-      frame_generator_capturer_->Start();
 
       VideoReceiveStream::Decoder decoder;
       decoder.decoder_factory = &decoder_factory_;
@@ -215,7 +215,6 @@ class BitrateEstimatorTest : public test::CallTest {
 
     void StopSending() {
       if (is_sending_receiving_) {
-        frame_generator_capturer_->Stop();
         send_stream_->Stop();
         if (video_receive_stream_) {
           video_receive_stream_->Stop();

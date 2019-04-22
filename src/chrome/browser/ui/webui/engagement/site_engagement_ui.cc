@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -83,9 +84,9 @@ SiteEngagementUI::SiteEngagementUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUISiteEngagementHost));
   source->AddResourcePath("site_engagement.js", IDR_SITE_ENGAGEMENT_JS);
   source->AddResourcePath(
-      "chrome/browser/engagement/site_engagement_details.mojom.js",
-      IDR_SITE_ENGAGEMENT_MOJO_JS);
-  source->AddResourcePath("url/mojom/url.mojom.js", IDR_URL_MOJO_JS);
+      "chrome/browser/engagement/site_engagement_details.mojom-lite.js",
+      IDR_SITE_ENGAGEMENT_DETAILS_MOJOM_LITE_JS);
+  source->AddResourcePath("url/mojom/url.mojom-lite.js", IDR_URL_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_SITE_ENGAGEMENT_HTML);
   source->UseGzip();
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source.release());

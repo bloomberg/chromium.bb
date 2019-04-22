@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
-#include "ui/gfx/path.h"
 
 ShapedAppWindowTargeter::ShapedAppWindowTargeter(
     ChromeNativeAppWindowViews* app_window)

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 
+#include <memory>
+#include <utility>
+
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
@@ -32,23 +35,22 @@
 using content::BrowserContext;
 using content::WebContents;
 
-ExtensionDialog::ExtensionDialog(extensions::ExtensionViewHost* host,
-                                 ExtensionDialogObserver* observer)
-    : host_(host),
-      observer_(observer) {
+ExtensionDialog::ExtensionDialog(
+    std::unique_ptr<extensions::ExtensionViewHost> host,
+    ExtensionDialogObserver* observer)
+    : host_(std::move(host)), observer_(observer) {
   AddRef();  // Balanced in DeleteDelegate();
 
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
-                 content::Source<BrowserContext>(host->browser_context()));
+                 content::Source<BrowserContext>(host_->browser_context()));
   // Listen for the containing view calling window.close();
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 content::Source<BrowserContext>(host->browser_context()));
+                 content::Source<BrowserContext>(host_->browser_context()));
   // Listen for a crash or other termination of the extension process.
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                 content::Source<BrowserContext>(host->browser_context()));
+  registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+                 content::Source<BrowserContext>(host_->browser_context()));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION);
 }
 
@@ -67,19 +69,20 @@ ExtensionDialog* ExtensionDialog::Show(const GURL& url,
                                        int min_height,
                                        const base::string16& title,
                                        ExtensionDialogObserver* observer) {
-  extensions::ExtensionViewHost* host =
+  std::unique_ptr<extensions::ExtensionViewHost> host =
       extensions::ExtensionViewHostFactory::CreateDialogHost(url, profile);
   if (!host)
     return NULL;
   // Preferred size must be set before views::Widget::CreateWindowWithParent
   // is called because CreateWindowWithParent refers the result of CanResize().
-  ExtensionViewViews* view = GetExtensionView(host);
+  ExtensionViewViews* view = GetExtensionView(host.get());
   view->SetPreferredSize(gfx::Size(width, height));
   view->set_minimum_size(gfx::Size(min_width, min_height));
   host->SetAssociatedWebContents(web_contents);
 
   DCHECK(parent_window);
-  ExtensionDialog* dialog = new ExtensionDialog(host, observer);
+  extensions::ExtensionViewHost* host_ptr = host.get();
+  ExtensionDialog* dialog = new ExtensionDialog(std::move(host), observer);
   dialog->set_title(title);
   dialog->InitWindow(parent_window, is_modal, width, height);
 
@@ -89,7 +92,7 @@ ExtensionDialog* ExtensionDialog::Show(const GURL& url,
   view->SetVisible(true);
 
   // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
-  host->host_contents()->Focus();
+  host_ptr->host_contents()->Focus();
   return dialog;
 }
 

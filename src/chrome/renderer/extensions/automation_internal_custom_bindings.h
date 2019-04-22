@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_EXTENSIONS_AUTOMATION_INTERNAL_CUSTOM_BINDINGS_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -28,7 +29,7 @@ namespace extensions {
 
 class AutomationInternalCustomBindings;
 class AutomationMessageFilter;
-class ExtensionBindingsSystem;
+class NativeExtensionBindingsSystem;
 
 struct TreeChangeObserver {
   int id;
@@ -39,8 +40,9 @@ struct TreeChangeObserver {
 // API.
 class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
  public:
-  AutomationInternalCustomBindings(ScriptContext* context,
-                                   ExtensionBindingsSystem* bindings_system);
+  AutomationInternalCustomBindings(
+      ScriptContext* context,
+      NativeExtensionBindingsSystem* bindings_system);
   ~AutomationInternalCustomBindings() override;
 
   // ObjectBackedNativeHandler:
@@ -200,6 +202,9 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
 
   void SendChildTreeIDEvent(ui::AXTreeID child_tree_id);
 
+  std::string GetLocalizedStringForImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus status) const;
+
   std::map<ui::AXTreeID, std::unique_ptr<AutomationAXTreeWrapper>>
       tree_id_to_tree_wrapper_map_;
   std::map<ui::AXTree*, AutomationAXTreeWrapper*> axtree_to_tree_wrapper_map_;
@@ -208,7 +213,7 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   std::vector<TreeChangeObserver> tree_change_observers_;
   // A bit-map of api::automation::TreeChangeObserverFilter.
   int tree_change_observer_overall_filter_;
-  ExtensionBindingsSystem* bindings_system_;
+  NativeExtensionBindingsSystem* bindings_system_;
   bool should_ignore_context_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInternalCustomBindings);

@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_HANDLER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "net/cookies/canonical_cookie.h"
 
 namespace base {
 class DictionaryValue;
@@ -62,7 +65,8 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
   // from the CookieManager.
   void HandleCompleteLoginMessageWithCookies(
       const base::ListValue& args,
-      const std::vector<net::CanonicalCookie>& cookies);
+      const std::vector<net::CanonicalCookie>& cookies,
+      const net::CookieStatusList& excluded_cookies);
 
   // JS callback to switch the UI from a constrainted dialog to a full tab.
   void HandleSwitchToFullTabMessage(const base::ListValue* args);

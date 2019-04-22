@@ -12,11 +12,10 @@
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1454364489140280055">"<ph name="CTRL" />" <ph name="SEPARATOR1" /> "<ph name="SHIFT1" />" <ph name="SEPARATOR2" /> "<ph name="G" />" oder "<ph name="SHIFT2" />" <ph name="SEPARATOR3" /> "<ph name="ENTER" />"</translation>
 <translation id="1477442857810932985">Zum Zeilenende springen</translation>
-<translation id="1510238584712386396">Übersicht</translation>
+<translation id="1510238584712386396">Launcher</translation>
 <translation id="152892567002884378">Lauter</translation>
 <translation id="1560480564179555003">"<ph name="SHIFT" />" <ph name="SEPARATOR1" /> "<ph name="ALT" />" <ph name="SEPARATOR2" /> "<ph name="L" />", dann "<ph name="ESC" />"</translation>
 <translation id="1652741121070700329">Zum Anfang des vorherigen Wortes springen</translation>
-<translation id="1671169355475348905">Zur Eingabemethode der vorherigen Sprache wechseln</translation>
 <translation id="1679841710523778799">Helligkeit erhöhen</translation>
 <translation id="168356808214100546">"<ph name="ALT" />" gedrückt halten und "<ph name="TAB" />" drücken, bis das gewünschte Fenster angezeigt wird, dann loslassen.</translation>
 <translation id="169515659049020177">Umschalttaste</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Lesezeichenleiste ein- oder ausblenden</translation>
 <translation id="2185166372312820725">Auf den vorherigen Tab klicken</translation>
 <translation id="2194790690264064655">"<ph name="CTRL" />" gedrückt halten und auf einen Link klicken</translation>
+<translation id="2246352309084894470">Vollbild-Launcher öffnen/schließen</translation>
 <translation id="2382644247745281995">Wird nicht vom aktuellen Tastaturlayout unterstützt</translation>
 <translation id="2397416548179033562">Chrome-Menü anzeigen</translation>
 <translation id="2424073332829844142">Feststelltaste aktivieren und deaktivieren</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Zoomfaktor auf der Seite zurücksetzen</translation>
 <translation id="2596078834055697711">Screenshot von Fenster erstellen</translation>
 <translation id="2685170433750953446">"<ph name="SHIFT" />" <ph name="SEPARATOR1" /> "<ph name="ALT" />" <ph name="SEPARATOR2" /> "<ph name="L" />", dann "<ph name="TAB" />" oder "<ph name="RIGHT" />"</translation>
-<translation id="2687057317448262550">Zur Eingabemethode der nächsten Sprache wechseln</translation>
 <translation id="2699509451653686398">Aktuelle Webseite als Lesezeichen speichern</translation>
 <translation id="2750942583782703988">Aktuelle Seite neu laden</translation>
 <translation id="2764005613199379871">Fokus auf Such- und Adressleiste setzen</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Bildschirm sperren</translation>
 <translation id="6727005317916125192">Vorheriger Bereich</translation>
 <translation id="6740781404993465795">Nächstes Wort oder nächsten Buchstaben markieren</translation>
+<translation id="6755851152783057058">Zur zuletzt verwendeten Eingabemethode wechseln</translation>
 <translation id="6760706756348334449">Leiser</translation>
 <translation id="6941333068993625698">Feedback geben</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Webadresse in Adressleiste eingeben und "<ph name="ALT" />" <ph name="SEPARATOR" /> "<ph name="ENTER" />" drücken</translation>
 <translation id="7254764037241667478">Gerät in den Ruhemodus versetzen (sperren)</translation>
 <translation id="7379254767514753910">"<ph name="ALT" />" oder "<ph name="SEARCH" />" <ph name="SEPARATOR" /> "<ph name="UP" />"</translation>
+<translation id="7422707470576323858">Zur nächsten verfügbaren Eingabemethode wechseln</translation>
 <translation id="743754632698445141">App loslösen</translation>
 <translation id="7439718573248533901">Nächsten Buchstaben löschen (vorwärts löschen)</translation>
 <translation id="7611271430932669992">Fokus auf Pop-up-Fenster und Dialogfelder verschieben</translation>

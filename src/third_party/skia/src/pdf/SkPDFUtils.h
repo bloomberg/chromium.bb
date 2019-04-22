@@ -12,6 +12,7 @@
 #include "SkPaint.h"
 #include "SkPath.h"
 #include "SkShader.h"
+#include "SkShaderBase.h"
 #include "SkStream.h"
 #include "SkUtils.h"
 
@@ -44,8 +45,8 @@ namespace SkPDFUtils {
 
 const char* BlendModeName(SkBlendMode);
 
-sk_sp<SkPDFArray> RectToArray(const SkRect& rect);
-sk_sp<SkPDFArray> MatrixToArray(const SkMatrix& matrix);
+std::unique_ptr<SkPDFArray> RectToArray(const SkRect& rect);
+std::unique_ptr<SkPDFArray> MatrixToArray(const SkMatrix& matrix);
 
 void MoveTo(SkScalar x, SkScalar y, SkWStream* content);
 void AppendLine(SkScalar x, SkScalar y, SkWStream* content);
@@ -113,18 +114,24 @@ inline void WriteUTF16beHex(SkDynamicMemoryWStream* wStream, SkUnichar utf32) {
 
 inline SkMatrix GetShaderLocalMatrix(const SkShader* shader) {
     SkMatrix localMatrix;
-    if (sk_sp<SkShader> s = shader->makeAsALocalMatrixShader(&localMatrix)) {
-        return SkMatrix::Concat(s->getLocalMatrix(), localMatrix);
+    if (sk_sp<SkShader> s = as_SB(shader)->makeAsALocalMatrixShader(&localMatrix)) {
+        return SkMatrix::Concat(as_SB(s)->getLocalMatrix(), localMatrix);
     }
-    return shader->getLocalMatrix();
+    return as_SB(shader)->getLocalMatrix();
 }
 bool InverseTransformBBox(const SkMatrix& matrix, SkRect* bbox);
 void PopulateTilingPatternDict(SkPDFDict* pattern,
                                SkRect& bbox,
-                               sk_sp<SkPDFDict> resources,
+                               std::unique_ptr<SkPDFDict> resources,
                                const SkMatrix& matrix);
 
 bool ToBitmap(const SkImage* img, SkBitmap* dst);
+
+#ifdef SK_PDF_BASE85_BINARY
+void Base85Encode(std::unique_ptr<SkStreamAsset> src, SkDynamicMemoryWStream* dst);
+#endif //  SK_PDF_BASE85_BINARY
+
+void AppendTransform(const SkMatrix&, SkWStream*);
 }  // namespace SkPDFUtils
 
 #endif

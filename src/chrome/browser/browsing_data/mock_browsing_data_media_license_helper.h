@@ -21,7 +21,7 @@ class MockBrowsingDataMediaLicenseHelper
   explicit MockBrowsingDataMediaLicenseHelper(Profile* profile);
 
   // BrowsingDataMediaLicenseHelper implementation:
-  void StartFetching(const FetchCallback& callback) override;
+  void StartFetching(FetchCallback callback) override;
   void DeleteMediaLicenseOrigin(const GURL& origin) override;
 
   // Add some MediaLicenseInfo samples.

@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import os
 import sys
 import coverage_helper
@@ -237,12 +239,12 @@ def CoverageProcess(platform, verbose = False):
   if verbose: perfile.output()
 
   # Emit perf dashboard results.
-  print ''
-  print 'Dashboard Results'
-  print '-----------------'
+  print('')
+  print('Dashboard Results')
+  print('-----------------')
   for line in results:
-    print line
-  print ''
+    print(line)
+  print('')
 
   return (global_used * 100) / global_total
 
@@ -258,7 +260,7 @@ def main(argv):
 
   if CoverageProcess(platform) >= coverage_target:
     return 0
-  print 'Coverage bellow %d%%, failed.' % coverage_target
+  print('Coverage bellow %d%%, failed.' % coverage_target)
   return -1
 
 if __name__ == '__main__':

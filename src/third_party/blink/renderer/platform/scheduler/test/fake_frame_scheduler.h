@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 namespace scheduler {
@@ -58,6 +59,8 @@ class FakeFrameScheduler : public FrameSchedulerImpl {
   ~FakeFrameScheduler() override = default;
 
   class Builder {
+    USING_FAST_MALLOC(Builder);
+
    public:
     Builder() = default;
 
@@ -134,13 +137,14 @@ class FakeFrameScheduler : public FrameSchedulerImpl {
     return WebScopedVirtualTimePauser();
   }
   void DidStartProvisionalLoad(bool is_main_frame) override {}
-  void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
-                                bool is_reload,
-                                bool is_main_frame) override {}
+  void DidCommitProvisionalLoad(
+      bool is_web_history_inert_commit,
+      FrameScheduler::NavigationType navigation_type) override {}
   void OnFirstMeaningfulPaint() override {}
-  std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override {
-    return nullptr;
-  }
+  void OnStartedUsingFeature(SchedulingPolicy::Feature feature,
+                             const SchedulingPolicy& policy) override {}
+  void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
+                             const SchedulingPolicy& policy) override {}
   bool IsExemptFromBudgetBasedThrottling() const override {
     return is_exempt_from_throttling_;
   }

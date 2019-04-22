@@ -14,6 +14,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/ws/public/mojom/screen_provider_observer.mojom.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/aura_export.h"
 
 namespace aura {

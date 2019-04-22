@@ -18,6 +18,8 @@
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
+#include "core/fpdfapi/parser/cpdf_stream.h"
+#include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fpdfapi/render/cpdf_pagerendercache.h"
 #include "core/fpdfapi/render/cpdf_renderstatus.h"
@@ -291,10 +293,14 @@ CPDF_DIBBase::LoadState CPDF_DIBBase::ContinueLoadDIBBase(
   if (m_Status == LoadState::kContinue)
     return ContinueLoadMaskDIB(pPause);
 
-  if (m_Status == LoadState::kFail)
+  ByteString decoder = m_pStreamAcc->GetImageDecoder();
+  if (decoder == "JPXDecode")
     return LoadState::kFail;
 
-  if (m_pStreamAcc->GetImageDecoder() == "JPXDecode")
+  if (decoder != "JBIG2Decode")
+    return LoadState::kSuccess;
+
+  if (m_Status == LoadState::kFail)
     return LoadState::kFail;
 
   FXCODEC_STATUS iDecodeStatus;
@@ -358,6 +364,8 @@ bool CPDF_DIBBase::LoadColorInfo(const CPDF_Dictionary* pFormResources,
         if (pFilter->IsName()) {
           filter = pFilter->GetString();
         } else if (const CPDF_Array* pArray = pFilter->AsArray()) {
+          if (!ValidateDecoderPipeline(pArray))
+            return false;
           filter = pArray->GetStringAt(pArray->size() - 1);
         }
 

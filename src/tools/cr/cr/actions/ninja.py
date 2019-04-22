@@ -4,7 +4,6 @@
 
 """A module to add ninja support to cr."""
 
-import multiprocessing
 import os
 
 import cr
@@ -21,11 +20,8 @@ class NinjaBuilder(cr.Builder):
   """An implementation of Builder that uses ninja to do the actual build."""
 
   # Some basic configuration installed if we are enabled.
-  EXTRA_FOR_IO_BOUND_JOBS = 2
   ENABLED = cr.Config.From(
-      NINJA_BINARY=os.path.join('{DEPOT_TOOLS}', 'ninja'),
-      NINJA_JOBS=multiprocessing.cpu_count() + EXTRA_FOR_IO_BOUND_JOBS,
-      NINJA_PROCESSORS=multiprocessing.cpu_count(),
+      NINJA_BINARY=os.path.join('{DEPOT_TOOLS}', 'autoninja'),
       NINJA_BUILD_FILE=os.path.join('{CR_BUILD_DIR}', 'build.ninja'),
       # Don't rename to GOMA_* or Goma will complain: "unknown GOMA_ parameter".
       NINJA_GOMA_LINE='cc = {CR_GOMA_CC} $',
@@ -35,7 +31,6 @@ class NinjaBuilder(cr.Builder):
       CR_GOMA_CC=os.path.join('{GOMA_DIR}', 'gomacc'),
       CR_GOMA_CTL=os.path.join('{GOMA_DIR}', 'goma_ctl.py'),
       GOMA_DIR='{CR_GOMA_DIR}',
-      NINJA_JOBS=multiprocessing.cpu_count() * 10,
   )
   # A placeholder for the system detected configuration
   DETECTED = cr.Config('DETECTED')
@@ -63,8 +58,6 @@ class NinjaBuilder(cr.Builder):
     cr.Host.Execute(
         '{NINJA_BINARY}',
         '-C{CR_BUILD_DIR}',
-        '-j{NINJA_JOBS}',
-        '-l{NINJA_PROCESSORS}',
         *build_arguments
     )
 
@@ -104,7 +97,7 @@ class NinjaBuilder(cr.Builder):
   @classmethod
   def ClassInit(cls):
     # TODO(iancottrell): If we can't detect ninja, we should be disabled.
-    ninja_binaries = cr.Host.SearchPath('ninja')
+    ninja_binaries = cr.Host.SearchPath('autoninja')
     if ninja_binaries:
       cls.DETECTED.Set(NINJA_BINARY=ninja_binaries[0])
 

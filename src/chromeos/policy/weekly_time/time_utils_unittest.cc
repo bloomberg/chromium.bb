@@ -188,7 +188,7 @@ TEST_P(GetIntervalForCurrentTimeTest, Test) {
   EXPECT_EQ(result, expected_result());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SameTimezoneNone,
     GetIntervalForCurrentTimeTest,
     testing::Values(std::make_tuple(
@@ -201,7 +201,7 @@ INSTANTIATE_TEST_CASE_P(
                 WeeklyTime(kSunday, 16 * kMillisecondsInHour, 0))},
         base::nullopt)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SameTimezoneResult,
     GetIntervalForCurrentTimeTest,
     testing::Values(
@@ -228,7 +228,7 @@ INSTANTIATE_TEST_CASE_P(
                 WeeklyTime(kSunday, 5 * kMillisecondsInHour, 0),
                 WeeklyTime(kWednesday, 16 * kMillisecondsInHour, 0)))));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DifferentTimezoneNone,
     GetIntervalForCurrentTimeTest,
     testing::Values(std::make_tuple(
@@ -247,7 +247,7 @@ INSTANTIATE_TEST_CASE_P(
                                           5 * kMillisecondsInHour))},
         base::nullopt)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DifferentTimezoneResult,
     GetIntervalForCurrentTimeTest,
     testing::Values(std::make_tuple(

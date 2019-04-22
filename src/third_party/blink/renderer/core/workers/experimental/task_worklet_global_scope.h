@@ -10,8 +10,10 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
+
 class ExceptionState;
 class TaskDefinition;
+class V8NoArgumentConstructor;
 
 class TaskWorkletGlobalScope : public WorkletGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
@@ -23,14 +25,14 @@ class TaskWorkletGlobalScope : public WorkletGlobalScope {
   void Trace(blink::Visitor*) override;
 
   void registerTask(const String& name,
-                    const ScriptValue& constructor_value,
+                    V8NoArgumentConstructor*,
                     ExceptionState&);
   v8::Local<v8::Value> GetInstanceForName(const String&, v8::Isolate*);
   v8::Local<v8::Function> GetProcessFunctionForName(const String&,
                                                     v8::Isolate*);
 
  private:
-  HeapHashMap<String, TraceWrapperMember<TaskDefinition>> task_definitions_;
+  HeapHashMap<String, Member<TaskDefinition>> task_definitions_;
 };
 
 }  // namespace blink

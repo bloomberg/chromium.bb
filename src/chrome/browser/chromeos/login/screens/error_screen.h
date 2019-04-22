@@ -21,7 +21,6 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
 class CaptivePortalWindowProxy;
 class NetworkErrorView;
 
@@ -42,7 +41,7 @@ class ErrorScreen : public BaseScreen,
   static const char kUserActionRebootButtonClicked[];
   static const char kUserActionShowCaptivePortalClicked[];
 
-  ErrorScreen(BaseScreenDelegate* base_screen_delegate, NetworkErrorView* view);
+  explicit ErrorScreen(NetworkErrorView* view);
   ~ErrorScreen() override;
 
   CaptivePortalWindowProxy* captive_portal_window_proxy() {
@@ -103,11 +102,15 @@ class ErrorScreen : public BaseScreen,
   // been created.
   void MaybeInitCaptivePortalWindowProxy(content::WebContents* web_contents);
 
+  // Actually show or hide the screen. These are called by ErrorScreenHandler;
+  // having two show methods (Show/Hide from BaseScreen below) is confusing
+  // and this should be cleaned up.
+  void DoShow();
+  void DoHide();
+
   // BaseScreen overrides:
   void Show() override;
   void Hide() override;
-  void OnShow() override;
-  void OnHide() override;
   void OnUserAction(const std::string& action_id) override;
 
  private:

@@ -11,6 +11,8 @@
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
+namespace printing {
+
 using PdfPrinterHandlerTest = testing::Test;
 
 TEST_F(PdfPrinterHandlerTest, GetFileNameForPrintJobTitle) {
@@ -102,3 +104,5 @@ TEST_F(PdfPrinterHandlerTest, GetFileName) {
     EXPECT_EQ(data.expected_output, path.value());
   }
 }
+
+}  // namespace printing

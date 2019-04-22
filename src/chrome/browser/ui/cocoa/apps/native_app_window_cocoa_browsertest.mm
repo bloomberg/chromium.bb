@@ -33,6 +33,7 @@
 #import "testing/gtest_mac.h"
 #import "ui/base/test/nswindow_fullscreen_notification_waiter.h"
 #import "ui/base/test/scoped_fake_nswindow_focus.h"
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 
@@ -145,7 +146,10 @@ namespace {
 class MockAppShimHost : public AppShimHost {
  public:
   MockAppShimHost()
-      : AppShimHost("app", base::FilePath("Profile")), weak_factory_(this) {}
+      : AppShimHost("app",
+                    base::FilePath("Profile"),
+                    false /* uses_remote_views */),
+        weak_factory_(this) {}
   ~MockAppShimHost() override {}
 
   MOCK_METHOD0(OnAppUnhideWithoutActivation, void());
@@ -165,7 +169,7 @@ class MockExtensionAppShimHandler : public apps::ExtensionAppShimHandler {
   }
   ~MockExtensionAppShimHandler() override {}
 
-  MOCK_METHOD2(FindHost, AppShimHandler::Host*(Profile*, const std::string&));
+  MOCK_METHOD2(FindHost, AppShimHost*(Profile*, const std::string&));
 };
 
 }  // namespace
@@ -451,6 +455,8 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, MinimizeMaximize) {
 
 // Test Maximize, Fullscreen, Restore combinations.
 IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, MaximizeFullscreen) {
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+
   SetUpAppWithWindows(1);
   AppWindow* app_window = GetFirstAppWindow();
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();

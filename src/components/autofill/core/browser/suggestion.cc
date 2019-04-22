@@ -35,7 +35,7 @@ Suggestion::Suggestion(const std::string& v,
     : frontend_id(fid),
       value(base::UTF8ToUTF16(v)),
       label(base::UTF8ToUTF16(l)),
-      icon(base::UTF8ToUTF16(i)),
+      icon(i),
       match(PREFIX_MATCH),
       is_value_secondary(false) {}
 

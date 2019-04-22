@@ -53,7 +53,7 @@ class V0CustomElementMicrotaskResolutionStep final
                                          const V0CustomElementDescriptor&);
   ~V0CustomElementMicrotaskResolutionStep() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Result Process() override;

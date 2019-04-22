@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "fxjs/cfxjse_value.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cscript_datawindow.h"
 
 const CJX_MethodSpec CJX_DataWindow::MethodSpecs[] = {
@@ -23,6 +23,10 @@ CJX_DataWindow::CJX_DataWindow(CScript_DataWindow* window)
 }
 
 CJX_DataWindow::~CJX_DataWindow() {}
+
+bool CJX_DataWindow::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
 
 CJS_Result CJX_DataWindow::moveCurrentRecord(
     CFX_V8* runtime,

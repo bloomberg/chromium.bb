@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -173,8 +174,7 @@ void RecordFetchValidHistogram(bool valid) {
 
 // static
 void NetworkTimeTracker::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kNetworkTimeMapping,
-                                   std::make_unique<base::DictionaryValue>());
+  registry->RegisterDictionaryPref(prefs::kNetworkTimeMapping);
   registry->RegisterBooleanPref(prefs::kNetworkTimeQueriesEnabled, true);
 }
 
@@ -514,7 +514,7 @@ bool NetworkTimeTracker::UpdateTimeFromResponse(
     return false;
   }
   data = data.substr(5);  // Skips leading )]}'\n
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(data);
   if (!value) {
     DVLOG(1) << "bad JSON";
     RecordFetchValidHistogram(false);

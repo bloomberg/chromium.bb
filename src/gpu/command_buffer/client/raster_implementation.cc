@@ -21,6 +21,7 @@
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/compiler_specific.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
@@ -29,7 +30,6 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_cache.h"
@@ -89,7 +89,22 @@ namespace raster {
 
 namespace {
 
-const size_t kMaxTransferCacheEntrySizeForTransferBuffer = 1024;
+const uint32_t kMaxTransferCacheEntrySizeForTransferBuffer = 1024;
+
+void RecordPaintOpSize(size_t size) {
+  constexpr size_t kMinPaintOpSize = 512 * 1024;
+  constexpr size_t kMaxPaintOpSize = 16 * 1024 * 1024;
+
+  // Serialization failure, record max size.
+  if (size == 0u)
+    size = kMaxPaintOpSize;
+
+  if (size < kMinPaintOpSize)
+    return;
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.OopRaster.PaintOpSerializationSize", size,
+                              kMinPaintOpSize, kMaxPaintOpSize, 50);
+}
 
 }  // namespace
 
@@ -101,7 +116,7 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
       : ri_(ri) {}
   ~TransferCacheSerializeHelperImpl() final = default;
 
-  size_t take_end_offset_of_last_inlined_entry() {
+  uint32_t take_end_offset_of_last_inlined_entry() {
     auto offset = end_offset_of_last_inlined_entry_;
     end_offset_of_last_inlined_entry_ = 0u;
     return offset;
@@ -113,12 +128,12 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
         static_cast<uint32_t>(key.first), key.second);
   }
 
-  size_t CreateEntryInternal(const cc::ClientTransferCacheEntry& entry,
-                             char* memory) final {
-    size_t size = entry.SerializedSize();
+  uint32_t CreateEntryInternal(const cc::ClientTransferCacheEntry& entry,
+                               char* memory) final {
+    uint32_t size = entry.SerializedSize();
     // Cap the entries inlined to a specific size.
     if (size <= ri_->max_inlined_entry_size_ && ri_->raster_mapped_buffer_) {
-      size_t written = InlineEntry(entry, memory);
+      uint32_t written = InlineEntry(entry, memory);
       if (written > 0u)
         return written;
     }
@@ -144,7 +159,8 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
 
   // Writes the entry into |memory| if there is enough space. Returns the number
   // of bytes written on success or 0u on failure due to insufficient size.
-  size_t InlineEntry(const cc::ClientTransferCacheEntry& entry, char* memory) {
+  uint32_t InlineEntry(const cc::ClientTransferCacheEntry& entry,
+                       char* memory) {
     DCHECK(memory);
     DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(memory)));
 
@@ -153,9 +169,12 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
     const auto& buffer = ri_->raster_mapped_buffer_;
     DCHECK(buffer->BelongsToBuffer(memory));
 
-    size_t memory_offset = memory - static_cast<char*>(buffer->address());
-    size_t bytes_to_write = entry.SerializedSize();
-    size_t bytes_remaining = buffer->size() - memory_offset;
+    DCHECK(base::CheckedNumeric<uint32_t>(memory -
+                                          static_cast<char*>(buffer->address()))
+               .IsValid());
+    uint32_t memory_offset = memory - static_cast<char*>(buffer->address());
+    uint32_t bytes_to_write = entry.SerializedSize();
+    uint32_t bytes_remaining = buffer->size() - memory_offset;
     DCHECK_GT(bytes_to_write, 0u);
 
     if (bytes_to_write > bytes_remaining)
@@ -173,7 +192,7 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
   }
 
   RasterImplementation* const ri_;
-  size_t end_offset_of_last_inlined_entry_ = 0u;
+  uint32_t end_offset_of_last_inlined_entry_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(TransferCacheSerializeHelperImpl);
 };
@@ -181,17 +200,20 @@ class RasterImplementation::TransferCacheSerializeHelperImpl
 // Helper to copy PaintOps to the GPU service over the transfer buffer.
 class RasterImplementation::PaintOpSerializer {
  public:
-  PaintOpSerializer(size_t initial_size,
+  PaintOpSerializer(uint32_t initial_size,
                     RasterImplementation* ri,
                     cc::DecodeStashingImageProvider* stashing_image_provider,
                     TransferCacheSerializeHelperImpl* transfer_cache_helper,
-                    ClientFontManager* font_manager)
+                    ClientFontManager* font_manager,
+                    size_t* max_op_size_hint)
       : ri_(ri),
-        buffer_(static_cast<char*>(ri_->MapRasterCHROMIUM(initial_size))),
         stashing_image_provider_(stashing_image_provider),
         transfer_cache_helper_(transfer_cache_helper),
         font_manager_(font_manager),
-        free_bytes_(buffer_ ? initial_size : 0) {}
+        max_op_size_hint_(max_op_size_hint) {
+    buffer_ =
+        static_cast<char*>(ri_->MapRasterCHROMIUM(initial_size, &free_bytes_));
+  }
 
   ~PaintOpSerializer() {
     // Need to call SendSerializedData;
@@ -202,22 +224,49 @@ class RasterImplementation::PaintOpSerializer {
                    const cc::PaintOp::SerializeOptions& options) {
     if (!valid())
       return 0;
+
     size_t size = op->Serialize(buffer_ + written_bytes_, free_bytes_, options);
+    size_t block_size = *max_op_size_hint_;
+
     if (!size) {
       // The entries serialized for |op| above will not be transferred since the
       // op will be re-serialized once the buffer is remapped.
       ri_->paint_cache_->AbortPendingEntries();
-
       SendSerializedData();
-      buffer_ = static_cast<char*>(ri_->MapRasterCHROMIUM(kBlockAlloc));
-      if (!buffer_) {
-        free_bytes_ = 0;
-        return 0;
+
+      const unsigned int max_size = ri_->transfer_buffer_->GetMaxSize();
+      DCHECK_LE(block_size, max_size);
+      while (true) {
+        buffer_ = static_cast<char*>(
+            ri_->MapRasterCHROMIUM(block_size, &free_bytes_));
+        if (!buffer_) {
+          return 0;
+        }
+
+        size = op->Serialize(buffer_ + written_bytes_, free_bytes_, options);
+        if (size) {
+          *max_op_size_hint_ = std::max(size, *max_op_size_hint_);
+          break;
+        }
+
+        ri_->paint_cache_->AbortPendingEntries();
+        ri_->UnmapRasterCHROMIUM(0u, 0u);
+
+        if (block_size == max_size)
+          break;
+        block_size = std::min(block_size * 2, static_cast<size_t>(max_size));
       }
-      free_bytes_ = kBlockAlloc;
-      size = op->Serialize(buffer_ + written_bytes_, free_bytes_, options);
+
+      if (!size) {
+        RecordPaintOpSize(0u);
+        LOG(ERROR) << "Failed to serialize op in " << block_size << " bytes.";
+        return 0u;
+      }
     }
+
+    RecordPaintOpSize(size);
     DCHECK_LE(size, free_bytes_);
+    DCHECK(base::CheckAdd<uint32_t>(written_bytes_, size).IsValid());
 
     ri_->paint_cache_->FinalizePendingEntries();
     written_bytes_ += size;
@@ -235,7 +284,7 @@ class RasterImplementation::PaintOpSerializer {
     // Check the address of the last inlined entry to figured out whether
     // transfer cache entries were written past the last successfully serialized
     // op.
-    size_t total_written_size = std::max(
+    uint32_t total_written_size = std::max(
         written_bytes_,
         transfer_cache_helper_->take_end_offset_of_last_inlined_entry());
 
@@ -256,16 +305,16 @@ class RasterImplementation::PaintOpSerializer {
   bool valid() const { return !!buffer_; }
 
  private:
-  static constexpr GLsizeiptr kBlockAlloc = 512 * 1024;
-
   RasterImplementation* const ri_;
   char* buffer_;
   cc::DecodeStashingImageProvider* const stashing_image_provider_;
   TransferCacheSerializeHelperImpl* const transfer_cache_helper_;
   ClientFontManager* font_manager_;
 
-  size_t written_bytes_ = 0;
-  size_t free_bytes_ = 0;
+  uint32_t written_bytes_ = 0;
+  uint32_t free_bytes_ = 0;
+
+  size_t* max_op_size_hint_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintOpSerializer);
 };
@@ -291,7 +340,6 @@ RasterImplementation::RasterImplementation(
     ImageDecodeAcceleratorInterface* image_decode_accelerator)
     : ImplementationBase(helper, transfer_buffer, gpu_control),
       helper_(helper),
-      active_texture_unit_(0),
       error_bits_(0),
       lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
       use_count_(0),
@@ -320,9 +368,6 @@ gpu::ContextResult RasterImplementation::Initialize(
     return result;
   }
 
-  texture_units_ = std::make_unique<TextureUnit[]>(
-      capabilities_.max_combined_texture_image_units);
-
   return gpu::ContextResult::kSuccess;
 }
 
@@ -344,15 +389,8 @@ RasterCmdHelper* RasterImplementation::helper() const {
 }
 
 IdAllocator* RasterImplementation::GetIdAllocator(IdNamespaces namespace_id) {
-  switch (namespace_id) {
-    case IdNamespaces::kQueries:
-      return &query_id_allocator_;
-    case IdNamespaces::kTextures:
-      return &texture_id_allocator_;
-    default:
-      DCHECK(false);
-      return nullptr;
-  }
+  DCHECK_EQ(namespace_id, IdNamespaces::kQueries);
+  return &query_id_allocator_;
 }
 
 void RasterImplementation::OnGpuControlLostContext() {
@@ -388,6 +426,11 @@ void RasterImplementation::OnSwapBufferPresented(
     uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
   NOTREACHED();
+}
+
+void RasterImplementation::OnGpuControlReturnData(
+    base::span<const uint8_t> data) {
+  NOTIMPLEMENTED();
 }
 
 void RasterImplementation::SetAggressivelyFreeResources(
@@ -481,7 +524,7 @@ bool RasterImplementation::ThreadsafeDiscardableTextureIsDeletedForTracing(
   return false;
 }
 
-void* RasterImplementation::MapTransferCacheEntry(size_t serialized_size) {
+void* RasterImplementation::MapTransferCacheEntry(uint32_t serialized_size) {
   // Prefer to use transfer buffer when possible, since transfer buffer
   // allocations are much cheaper.
   if (raster_mapped_buffer_ ||
@@ -515,6 +558,11 @@ void RasterImplementation::DeleteTransferCacheEntry(uint32_t type,
 
 unsigned int RasterImplementation::GetTransferBufferFreeSize() const {
   return transfer_buffer_->GetFreeSize();
+}
+
+bool RasterImplementation::CanDecodeWithHardwareAcceleration(
+    base::span<const uint8_t> encoded_data) const {
+  return image_decode_accelerator_->IsImageSupported(encoded_data);
 }
 
 const std::string& RasterImplementation::GetLogPrefix() const {
@@ -730,6 +778,22 @@ void RasterImplementation::Flush() {
   FlushHelper();
 }
 
+// InterfaceBase implementation.
+void RasterImplementation::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
+  ImplementationBase::GenSyncToken(sync_token);
+}
+void RasterImplementation::GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) {
+  ImplementationBase::GenUnverifiedSyncToken(sync_token);
+}
+void RasterImplementation::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
+                                                    GLsizei count) {
+  ImplementationBase::VerifySyncTokens(sync_tokens, count);
+}
+void RasterImplementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
+  ImplementationBase::WaitSyncToken(sync_token);
+}
+
+// ImplementationBase implementation.
 void RasterImplementation::IssueShallowFlush() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glShallowFlushCHROMIUM()");
@@ -777,28 +841,6 @@ void RasterImplementation::FinishHelper() {
 
 void RasterImplementation::GenQueriesEXTHelper(GLsizei /* n */,
                                                const GLuint* /* queries */) {}
-
-void RasterImplementation::DeleteTexturesHelper(GLsizei n,
-                                                const GLuint* textures) {
-  helper_->DeleteTexturesImmediate(n, textures);
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    texture_id_allocator_.FreeID(textures[ii]);
-  }
-  UnbindTexturesHelper(n, textures);
-}
-
-void RasterImplementation::UnbindTexturesHelper(GLsizei n,
-                                                const GLuint* textures) {
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    for (GLint tt = 0; tt < capabilities_.max_combined_texture_image_units;
-         ++tt) {
-      TextureUnit& unit = texture_units_[tt];
-      if (textures[ii] == unit.bound_texture_2d) {
-        unit.bound_texture_2d = 0;
-      }
-    }
-  }
-}
 
 GLenum RasterImplementation::GetGraphicsResetStatusKHR() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -879,100 +921,9 @@ void RasterImplementation::GetQueryObjectuivEXT(GLuint id,
     *params = base::saturated_cast<GLuint>(result);
 }
 
-void RasterImplementation::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
-  if (!sync_token) {
-    SetGLError(GL_INVALID_VALUE, "glGenSyncTokenCHROMIUM", "empty sync_token");
-    return;
-  }
-
-  uint64_t fence_sync = gpu_control_->GenerateFenceSyncRelease();
-  helper_->InsertFenceSyncCHROMIUM(fence_sync);
-  helper_->CommandBufferHelper::OrderingBarrier();
-  gpu_control_->EnsureWorkVisible();
-
-  // Copy the data over after setting the data to ensure alignment.
-  SyncToken sync_token_data(gpu_control_->GetNamespaceID(),
-                            gpu_control_->GetCommandBufferID(), fence_sync);
-  sync_token_data.SetVerifyFlush();
-  memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
-}
-
-void RasterImplementation::GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) {
-  if (!sync_token) {
-    SetGLError(GL_INVALID_VALUE, "glGenUnverifiedSyncTokenCHROMIUM",
-               "empty sync_token");
-    return;
-  }
-
-  uint64_t fence_sync = gpu_control_->GenerateFenceSyncRelease();
-  helper_->InsertFenceSyncCHROMIUM(fence_sync);
-  helper_->CommandBufferHelper::OrderingBarrier();
-
-  // Copy the data over after setting the data to ensure alignment.
-  SyncToken sync_token_data(gpu_control_->GetNamespaceID(),
-                            gpu_control_->GetCommandBufferID(), fence_sync);
-  memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
-}
-
-void RasterImplementation::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
-                                                    GLsizei count) {
-  bool requires_synchronization = false;
-  for (GLsizei i = 0; i < count; ++i) {
-    if (sync_tokens[i]) {
-      SyncToken sync_token;
-      memcpy(&sync_token, sync_tokens[i], sizeof(sync_token));
-
-      if (sync_token.HasData() && !sync_token.verified_flush()) {
-        if (!GetVerifiedSyncTokenForIPC(sync_token, &sync_token)) {
-          SetGLError(GL_INVALID_VALUE, "glVerifySyncTokensCHROMIUM",
-                     "Cannot verify sync token using this context.");
-          return;
-        }
-        requires_synchronization = true;
-        DCHECK(sync_token.verified_flush());
-      }
-
-      // Set verify bit on empty sync tokens too.
-      sync_token.SetVerifyFlush();
-
-      memcpy(sync_tokens[i], &sync_token, sizeof(sync_token));
-    }
-  }
-
-  // Ensure all the fence syncs are visible on GPU service.
-  if (requires_synchronization)
-    gpu_control_->EnsureWorkVisible();
-}
-
-void RasterImplementation::WaitSyncTokenCHROMIUM(
-    const GLbyte* sync_token_data) {
-  if (!sync_token_data)
-    return;
-
-  // Copy the data over before data access to ensure alignment.
-  SyncToken sync_token, verified_sync_token;
-  memcpy(&sync_token, sync_token_data, sizeof(SyncToken));
-
-  if (!sync_token.HasData())
-    return;
-
-  if (!GetVerifiedSyncTokenForIPC(sync_token, &verified_sync_token)) {
-    SetGLError(GL_INVALID_VALUE, "glWaitSyncTokenCHROMIUM",
-               "Cannot wait on sync_token which has not been verified");
-    return;
-  }
-
-  helper_->WaitSyncTokenCHROMIUM(
-      static_cast<GLint>(sync_token.namespace_id()),
-      sync_token.command_buffer_id().GetUnsafeValue(),
-      sync_token.release_count());
-
-  // Enqueue sync token in flush after inserting command so that it's not
-  // included in an automatic flush.
-  gpu_control_->WaitSyncTokenHint(verified_sync_token);
-}
-
-void* RasterImplementation::MapRasterCHROMIUM(GLsizeiptr size) {
+void* RasterImplementation::MapRasterCHROMIUM(uint32_t size,
+                                              uint32_t* size_allocated) {
+  *size_allocated = 0u;
   if (size < 0) {
     SetGLError(GL_INVALID_VALUE, "glMapRasterCHROMIUM", "negative size");
     return nullptr;
@@ -987,11 +938,11 @@ void* RasterImplementation::MapRasterCHROMIUM(GLsizeiptr size) {
     raster_mapped_buffer_ = base::nullopt;
     return nullptr;
   }
-
+  *size_allocated = raster_mapped_buffer_->size();
   return raster_mapped_buffer_->address();
 }
 
-void* RasterImplementation::MapFontBuffer(size_t size) {
+void* RasterImplementation::MapFontBuffer(uint32_t size) {
   if (size < 0) {
     SetGLError(GL_INVALID_VALUE, "glMapFontBufferCHROMIUM", "negative size");
     return nullptr;
@@ -1006,11 +957,6 @@ void* RasterImplementation::MapFontBuffer(size_t size) {
                "mapped font buffer with no raster buffer");
     return nullptr;
   }
-  if (size > std::numeric_limits<uint32_t>::max()) {
-    SetGLError(GL_INVALID_OPERATION, "glMapFontBufferCHROMIUM",
-               "trying to map too large font buffer");
-    return nullptr;
-  }
 
   font_mapped_buffer_.emplace(size, helper_, mapped_memory_.get());
   if (!font_mapped_buffer_->valid()) {
@@ -1021,8 +967,8 @@ void* RasterImplementation::MapFontBuffer(size_t size) {
   return font_mapped_buffer_->address();
 }
 
-void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr raster_written_size,
-                                               GLsizeiptr total_written_size) {
+void RasterImplementation::UnmapRasterCHROMIUM(uint32_t raster_written_size,
+                                               uint32_t total_written_size) {
   if (total_written_size < 0) {
     SetGLError(GL_INVALID_VALUE, "glUnmapRasterCHROMIUM",
                "negative written_size");
@@ -1040,9 +986,9 @@ void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr raster_written_size,
   }
   raster_mapped_buffer_->Shrink(total_written_size);
 
-  GLuint font_shm_id = 0u;
-  GLuint font_shm_offset = 0u;
-  GLsizeiptr font_shm_size = 0u;
+  uint32_t font_shm_id = 0u;
+  uint32_t font_shm_offset = 0u;
+  uint32_t font_shm_size = 0u;
   if (font_mapped_buffer_) {
     font_shm_id = font_mapped_buffer_->shm_id();
     font_shm_offset = font_mapped_buffer_->offset();
@@ -1065,52 +1011,51 @@ void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr raster_written_size,
 // instead of having to edit some template or the code generator.
 #include "gpu/command_buffer/client/raster_implementation_impl_autogen.h"
 
-GLuint RasterImplementation::CreateAndConsumeTexture(
-    bool use_buffer,
-    gfx::BufferUsage buffer_usage,
-    viz::ResourceFormat format,
-    const GLbyte* mailbox) {
+void RasterImplementation::CopySubTexture(const gpu::Mailbox& source_mailbox,
+                                          const gpu::Mailbox& dest_mailbox,
+                                          GLenum dest_target,
+                                          GLint xoffset,
+                                          GLint yoffset,
+                                          GLint x,
+                                          GLint y,
+                                          GLsizei width,
+                                          GLsizei height) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCreateAndConsumeTexture("
-                     << use_buffer << ", "
-                     << static_cast<uint32_t>(buffer_usage) << ", "
-                     << static_cast<uint32_t>(format) << ", "
-                     << static_cast<const void*>(mailbox) << ")");
-  GLuint client_id = texture_id_allocator_.AllocateID();
-  helper_->CreateAndConsumeTextureINTERNALImmediate(
-      client_id, use_buffer, buffer_usage, format, mailbox);
-  GPU_CLIENT_LOG("returned " << client_id);
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCopySubTexture("
+                     << source_mailbox.ToDebugString() << ", "
+                     << dest_mailbox.ToDebugString() << ", " << xoffset << ", "
+                     << yoffset << ", " << x << ", " << y << ", " << width
+                     << ", " << height << ")");
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glCopySubTexture", "width < 0");
+    return;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glCopySubTexture", "height < 0");
+    return;
+  }
+  GLbyte mailboxes[sizeof(source_mailbox.name) * 2];
+  memcpy(mailboxes, source_mailbox.name, sizeof(source_mailbox.name));
+  memcpy(mailboxes + sizeof(source_mailbox.name), dest_mailbox.name,
+         sizeof(dest_mailbox.name));
+  helper_->CopySubTextureINTERNALImmediate(xoffset, yoffset, x, y, width,
+                                           height, mailboxes);
   CheckGLError();
-  return client_id;
 }
 
 void RasterImplementation::BeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
-    GLint color_type,
-    const cc::RasterColorSpace& raster_color_space,
+    const gfx::ColorSpace& color_space,
     const GLbyte* mailbox) {
   DCHECK(!raster_properties_);
 
-  TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(this);
-  if (!transfer_cache_serialize_helper.LockEntry(
-          cc::TransferCacheEntryType::kColorSpace,
-          raster_color_space.color_space_id)) {
-    transfer_cache_serialize_helper.CreateEntry(
-        cc::ClientColorSpaceTransferCacheEntry(raster_color_space), nullptr);
-  }
-  transfer_cache_serialize_helper.AssertLocked(
-      cc::TransferCacheEntryType::kColorSpace,
-      raster_color_space.color_space_id);
-
-  helper_->BeginRasterCHROMIUMImmediate(
-      sk_color, msaa_sample_count, can_use_lcd_text, color_type,
-      raster_color_space.color_space_id, mailbox);
-  transfer_cache_serialize_helper.FlushEntries();
+  helper_->BeginRasterCHROMIUMImmediate(sk_color, msaa_sample_count,
+                                        can_use_lcd_text, mailbox);
 
   raster_properties_.emplace(sk_color, can_use_lcd_text,
-                             raster_color_space.color_space.ToSkColorSpace());
+                             color_space.ToSkColorSpace());
 }
 
 void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
@@ -1120,9 +1065,11 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
                                           const gfx::Rect& playback_rect,
                                           const gfx::Vector2dF& post_translate,
                                           GLfloat post_scale,
-                                          bool requires_clear) {
+                                          bool requires_clear,
+                                          size_t* max_op_size_hint) {
   TRACE_EVENT1("gpu", "RasterImplementation::RasterCHROMIUM",
                "raster_chromium_id", ++raster_chromium_id_);
+  DCHECK(max_op_size_hint);
 
   if (std::abs(post_scale) < std::numeric_limits<float>::epsilon())
     return;
@@ -1138,9 +1085,8 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
     return;
 
   // TODO(enne): Tune these numbers
-  // TODO(enne): Convert these types here and in transfer buffer to be size_t.
-  static constexpr unsigned int kMinAlloc = 16 * 1024;
-  unsigned int free_size = std::max(GetTransferBufferFreeSize(), kMinAlloc);
+  static constexpr uint32_t kMinAlloc = 16 * 1024;
+  uint32_t free_size = std::max(GetTransferBufferFreeSize(), kMinAlloc);
 
   // This section duplicates RasterSource::PlaybackToCanvas setup preamble.
   cc::PaintOpBufferSerializer::Preamble preamble;
@@ -1160,7 +1106,7 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(this);
   PaintOpSerializer op_serializer(free_size, this, &stashing_image_provider,
                                   &transfer_cache_serialize_helper,
-                                  &font_manager_);
+                                  &font_manager_, max_op_size_hint);
   cc::PaintOpBufferSerializer::SerializeCallback serialize_cb =
       base::BindRepeating(&PaintOpSerializer::Serialize,
                           base::Unretained(&op_serializer));
@@ -1168,8 +1114,7 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   cc::PaintOpBufferSerializer serializer(
       serialize_cb, &stashing_image_provider, &transfer_cache_serialize_helper,
       GetOrCreatePaintCache(), font_manager_.strike_server(),
-      raster_properties_->color_space.get(),
-      raster_properties_->can_use_lcd_text,
+      raster_properties_->color_space, raster_properties_->can_use_lcd_text,
       capabilities().context_supports_distance_field_text,
       capabilities().max_texture_size,
       capabilities().glyph_cache_max_texture_bytes);
@@ -1222,11 +1167,25 @@ void RasterImplementation::IssueImageDecodeCacheEntryCreation(
   DCHECK(image_decode_accelerator_);
   DCHECK(handle.IsValid());
 
+  // Insert a sync token to signal that |handle|'s buffer has been registered.
+  SyncToken sync_token;
+  GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+
   // Send the decode request to the service.
   *decode_sync_token = image_decode_accelerator_->ScheduleImageDecode(
       encoded_data, output_size, gpu_control_->GetCommandBufferID(),
       transfer_cache_entry_id, handle.shm_id(), handle.byte_offset(),
-      target_color_space, needs_mips);
+      sync_token.release_count(), target_color_space, needs_mips);
+}
+
+GLuint RasterImplementation::CreateAndConsumeForGpuRaster(
+    const GLbyte* mailbox) {
+  NOTREACHED();
+  return 0;
+}
+
+void RasterImplementation::DeleteGpuRasterTexture(GLuint texture) {
+  NOTREACHED();
 }
 
 void RasterImplementation::BeginGpuRaster() {
@@ -1287,8 +1246,14 @@ void RasterImplementation::SetActiveURLCHROMIUM(const char* url) {
 
 cc::ClientPaintCache* RasterImplementation::GetOrCreatePaintCache() {
   if (!paint_cache_) {
-    constexpr size_t kPaintCacheBudget = 4 * 1024 * 1024;
-    paint_cache_ = std::make_unique<cc::ClientPaintCache>(kPaintCacheBudget);
+    constexpr size_t kNormalPaintCacheBudget = 4 * 1024 * 1024;
+    constexpr size_t kLowEndPaintCacheBudget = 256 * 1024;
+    size_t paint_cache_budget = 0u;
+    if (base::SysInfo::IsLowEndDevice())
+      paint_cache_budget = kLowEndPaintCacheBudget;
+    else
+      paint_cache_budget = kNormalPaintCacheBudget;
+    paint_cache_ = std::make_unique<cc::ClientPaintCache>(paint_cache_budget);
   }
   return paint_cache_.get();
 }

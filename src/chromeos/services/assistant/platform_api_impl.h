@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/assistant/platform/audio_input_provider_impl.h"
 #include "chromeos/services/assistant/platform/audio_output_provider_impl.h"
 #include "chromeos/services/assistant/platform/file_provider_impl.h"
@@ -27,12 +28,17 @@ class Connector;
 namespace chromeos {
 namespace assistant {
 
+class AssistantMediaSession;
+
 // Platform API required by the voice assistant.
-class PlatformApiImpl : public assistant_client::PlatformApi {
+class PlatformApiImpl : public assistant_client::PlatformApi,
+                        chromeos::CrasAudioHandler::AudioObserver {
  public:
   PlatformApiImpl(
       service_manager::Connector* connector,
+      AssistantMediaSession* media_session,
       device::mojom::BatteryMonitorPtr battery_monitor,
+      scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
       network::NetworkConnectionTracker* network_connection_tracker);
   ~PlatformApiImpl() override;
@@ -44,6 +50,9 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   assistant_client::FileProvider& GetFileProvider() override;
   assistant_client::NetworkProvider& GetNetworkProvider() override;
   assistant_client::SystemProvider& GetSystemProvider() override;
+
+  // chromeos::CrasAudioHandler::AudioObserver overrides
+  void OnAudioNodesChanged() override;
 
   // Called when the mic state associated with the interaction is changed.
   void SetMicState(bool mic_open);
@@ -89,7 +98,7 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   DummyAuthProvider auth_provider_;
   FileProviderImpl file_provider_;
   NetworkProviderImpl network_provider_;
-  SystemProviderImpl system_provider_;
+  std::unique_ptr<SystemProviderImpl> system_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformApiImpl);
 };

@@ -46,15 +46,17 @@ const automation_helper = (function() {
             (target.offsetHeight > 0);
 
         if (isReady && state_flags & this.DomElementReadyState.on_top) {
+          // The document.elementFromPoint function only acts on an element
+          // inside the viewport. Scroll the element into view first.
+          element.scrollIntoViewIfNeeded(true);
           var rect = target.getBoundingClientRect();
           // Check that the element is not concealed behind another element.
           const topElement = document.elementFromPoint(
               // As coordinates, use the center of the element, minus the
               // window offset in case the element is outside the view.
-              rect.left + rect.width / 2 - window.pageXOffset,
-              rect.top + rect.height / 2 - window.pageYOffset);
-          isReady &= target.contains(topElement) ||
-                     target.isSameNode(topElement);
+              rect.left + rect.width / 2, rect.top + rect.height / 2);
+          isReady = target.contains(topElement) ||
+                      target.isSameNode(topElement);
         }
       }
 

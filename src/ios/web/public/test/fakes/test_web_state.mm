@@ -9,11 +9,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#import "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#import "ios/web/common/crw_content_view.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
 #import "ios/web/public/serializable_user_data_manager.h"
-#import "ios/web/public/web_state/ui/crw_content_view.h"
 #include "ios/web/public/web_state/web_frame.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/web_state/web_frames_manager_impl.h"
@@ -52,7 +53,7 @@ TestWebState::~TestWebState() {
     observer.WebStateDestroyed();
   for (auto& observer : policy_deciders_)
     observer.ResetWebState();
-};
+}
 
 WebStateDelegate* TestWebState::GetDelegate() {
   return nil;
@@ -89,6 +90,8 @@ void TestWebState::WasHidden() {
   for (auto& observer : observers_)
     observer.WasHidden(this);
 }
+
+void TestWebState::SetKeepRenderProcessAlive(bool keep_alive) {}
 
 const NavigationManager* TestWebState::GetNavigationManager() const {
   return navigation_manager_.get();
@@ -143,6 +146,16 @@ void TestWebState::SetWebViewProxy(CRWWebViewProxyType web_view_proxy) {
 
 CRWJSInjectionReceiver* TestWebState::GetJSInjectionReceiver() const {
   return injection_receiver_;
+}
+
+void TestWebState::LoadData(NSData* data,
+                            NSString* mime_type,
+                            const GURL& url) {
+  SetCurrentURL(url);
+  mime_type_ = base::SysNSStringToUTF8(mime_type);
+  last_loaded_data_ = data;
+  // Load Data is always a success. Send the event accordingly.
+  OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
 }
 
 void TestWebState::ExecuteJavaScript(const base::string16& javascript) {
@@ -279,20 +292,6 @@ void TestWebState::OnVisibleSecurityStateChanged() {
   }
 }
 
-void TestWebState::ShowTransientContentView(CRWContentView* content_view) {
-  if (content_view) {
-    transient_content_view_ = content_view;
-  }
-}
-
-void TestWebState::ClearTransientContentView() {
-  transient_content_view_ = nil;
-}
-
-CRWContentView* TestWebState::GetTransientContentView() {
-  return transient_content_view_;
-}
-
 bool TestWebState::ShouldAllowRequest(
     NSURLRequest* request,
     const WebStatePolicyDecider::RequestInfo& request_info) {
@@ -314,6 +313,10 @@ bool TestWebState::ShouldAllowResponse(NSURLResponse* response,
 
 base::string16 TestWebState::GetLastExecutedJavascript() const {
   return last_executed_javascript_;
+}
+
+NSData* TestWebState::GetLastLoadedData() const {
+  return last_loaded_data_;
 }
 
 void TestWebState::SetCurrentURL(const GURL& url) {
@@ -387,7 +390,8 @@ void TestWebState::SetHasOpener(bool has_opener) {
   has_opener_ = has_opener;
 }
 
-void TestWebState::TakeSnapshot(CGRect rect, SnapshotCallback callback) {
+void TestWebState::TakeSnapshot(const gfx::RectF& rect,
+                                SnapshotCallback callback) {
   std::move(callback).Run(gfx::Image([[UIImage alloc] init]));
 }
 

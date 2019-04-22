@@ -8,7 +8,7 @@
  *   overrideCwsContainerOriginForTest: (string|undefined)
  * }}
  */
-var SuggestAppDialogState;
+let SuggestAppDialogState;
 
 /**
  * @param {!Object} unformatted Unformatted option.
@@ -33,7 +33,8 @@ function LaunchParam(unformatted) {
    * @const
    */
   this.currentDirectoryURL = unformatted['currentDirectoryURL'] ?
-      unformatted['currentDirectoryURL'] : '';
+      unformatted['currentDirectoryURL'] :
+      '';
 
   /**
    * @type {string}
@@ -65,14 +66,14 @@ function LaunchParam(unformatted) {
    * @const
    */
   this.allowedPaths = unformatted['allowedPaths'] ?
-      unformatted['allowedPaths'] : AllowedPaths.ANY_PATH;
+      unformatted['allowedPaths'] :
+      AllowedPaths.ANY_PATH_OR_URL;
 
   /**
    * @type {!SuggestAppDialogState}
    * @const
    */
-  this.suggestAppsDialogState =
-      unformatted['suggestAppsDialogState'] ?
+  this.suggestAppsDialogState = unformatted['suggestAppsDialogState'] ?
       unformatted['suggestAppsDialogState'] :
       {
         overrideCwsContainerUrlForTest: '',

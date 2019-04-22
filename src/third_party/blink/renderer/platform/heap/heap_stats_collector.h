@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -23,6 +24,8 @@ namespace blink {
 //   stats_collector.NotifySweepingFinished();
 //   // Previous event is available using stats_collector.previous().
 class PLATFORM_EXPORT ThreadHeapStatsCollector {
+  USING_FAST_MALLOC(ThreadHeapStatsCollector);
+
  public:
   // These ids will form human readable names when used in Scopes.
   enum Id {
@@ -42,6 +45,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     kMarkProcessWorklist,
     kMarkNotFullyConstructedObjects,
     kMarkWeakProcessing,
+    kUnifiedMarkingAtomicPrologue,
+    kUnifiedMarkingStep,
     kVisitCrossThreadPersistents,
     kVisitDOMWrappers,
     kVisitPersistentRoots,
@@ -84,6 +89,10 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
         return "BlinkGC.MarkProcessWorklist";
       case Id::kMarkWeakProcessing:
         return "BlinkGC.MarkWeakProcessing";
+      case kUnifiedMarkingAtomicPrologue:
+        return "BlinkGC.UnifiedMarkingAtomicPrologue";
+      case kUnifiedMarkingStep:
+        return "BlinkGC.UnifiedMarkingStep";
       case Id::kVisitCrossThreadPersistents:
         return "BlinkGC.VisitCrossThreadPersistents";
       case Id::kVisitDOMWrappers:

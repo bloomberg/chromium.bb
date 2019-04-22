@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
@@ -102,8 +103,14 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
     return false;
   }
   if (!dictionary->GetDictionary("args", &args)) {
-    LOG(ERROR) << "args is missing from TraceEvent JSON";
-    return false;
+    std::string stripped_args;
+    // If argument filter is enabled, the arguments field contains a string
+    // value.
+    if (!dictionary->GetString("args", &stripped_args) ||
+        stripped_args != "__stripped__") {
+      LOG(ERROR) << "args is missing from TraceEvent JSON";
+      return false;
+    }
   }
   if (require_id && !dictionary->GetString("id", &id)) {
     LOG(ERROR) << "id is missing from ASYNC_BEGIN/ASYNC_END TraceEvent JSON";
@@ -124,23 +131,25 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
   }
 
   // For each argument, copy the type and create a trace_analyzer::TraceValue.
-  for (base::DictionaryValue::Iterator it(*args); !it.IsAtEnd();
-       it.Advance()) {
-    std::string str;
-    bool boolean = false;
-    int int_num = 0;
-    double double_num = 0.0;
-    if (it.value().GetAsString(&str)) {
-      arg_strings[it.key()] = str;
-    } else if (it.value().GetAsInteger(&int_num)) {
-      arg_numbers[it.key()] = static_cast<double>(int_num);
-    } else if (it.value().GetAsBoolean(&boolean)) {
-      arg_numbers[it.key()] = static_cast<double>(boolean ? 1 : 0);
-    } else if (it.value().GetAsDouble(&double_num)) {
-      arg_numbers[it.key()] = double_num;
+  if (args) {
+    for (base::DictionaryValue::Iterator it(*args); !it.IsAtEnd();
+         it.Advance()) {
+      std::string str;
+      bool boolean = false;
+      int int_num = 0;
+      double double_num = 0.0;
+      if (it.value().GetAsString(&str)) {
+        arg_strings[it.key()] = str;
+      } else if (it.value().GetAsInteger(&int_num)) {
+        arg_numbers[it.key()] = static_cast<double>(int_num);
+      } else if (it.value().GetAsBoolean(&boolean)) {
+        arg_numbers[it.key()] = static_cast<double>(boolean ? 1 : 0);
+      } else if (it.value().GetAsDouble(&double_num)) {
+        arg_numbers[it.key()] = double_num;
+      }
+      // Record all arguments as values.
+      arg_values[it.key()] = it.value().CreateDeepCopy();
     }
-    // Record all arguments as values.
-    arg_values[it.key()] = it.value().CreateDeepCopy();
   }
 
   return true;
@@ -714,21 +723,16 @@ size_t FindMatchingEvents(const std::vector<TraceEvent>& events,
 
 bool ParseEventsFromJson(const std::string& json,
                          std::vector<TraceEvent>* output) {
-  std::unique_ptr<base::Value> root = base::JSONReader::Read(json);
+  base::Optional<base::Value> root = base::JSONReader::Read(json);
 
-  base::ListValue* root_list = nullptr;
-  if (!root.get() || !root->GetAsList(&root_list))
+  if (!root || !root->is_list())
     return false;
 
-  for (size_t i = 0; i < root_list->GetSize(); ++i) {
-    base::Value* item = nullptr;
-    if (root_list->Get(i, &item)) {
-      TraceEvent event;
-      if (event.SetFromJSON(item))
-        output->push_back(std::move(event));
-      else
-        return false;
-    }
+  for (const auto& item : root->GetList()) {
+    TraceEvent event;
+    if (!event.SetFromJSON(&item))
+      return false;
+    output->push_back(std::move(event));
   }
 
   return true;

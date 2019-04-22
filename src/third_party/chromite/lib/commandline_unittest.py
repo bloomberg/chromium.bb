@@ -16,6 +16,7 @@ import sys
 from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import path_util
@@ -533,7 +534,9 @@ class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
 
   SYS_ARGV = ['/cmd', '/cmd', 'arg1', 'arg2']
   CMD_ARGS = ['/cmd', 'arg1', 'arg2']
-  CHROOT_ARGS = ['--workspace', '/work']
+  # The exact flags here don't matter as we don't invoke the underlying script.
+  # Lets pick something specifically invalid just in case we do.
+  CHROOT_ARGS = ['--some-option', 'foo']
 
   def testRestartInChrootPreserveArgs(self):
     """Verify args to ScriptWrapperMain are passed through to chroot.."""
@@ -642,3 +645,75 @@ class TestRunInsideChroot(cros_test_lib.MockTestCase):
 
     # Since we are in the chroot, it should return, doing nothing.
     commandline.RunInsideChroot(self.cmd)
+
+
+class DeprecatedActionTest(cros_test_lib.MockTestCase):
+  """Test the _DeprecatedAction integration."""
+
+  def setUp(self):
+    self.warning_patch = self.PatchObject(logging, 'warning')
+
+    # Setup arguments for a handful of actions.
+    self.argument_parser = commandline.ArgumentParser()
+    self.argument_parser.add_argument('--store')
+    self.argument_parser.add_argument('--store-true', action='store_true')
+    self.argument_parser.add_argument('--append', action='append', type=int)
+    self.argument_parser.add_argument('--dep-store',
+                                      deprecated='Deprecated store')
+    self.argument_parser.add_argument('--dep-store-true', action='store_true',
+                                      deprecated='Deprecated store true')
+    self.argument_parser.add_argument('--dep-append', action='append', type=int,
+                                      deprecated='Deprecated append')
+
+    self.not_deprecated = ['--store', 'a', '--store-true', '--append', '1',
+                           '--append', '2']
+    self.deprecated = ['--dep-store', 'b', '--dep-store-true',
+                       '--dep-append', '3', '--dep-append', '4']
+    self.mixed = self.not_deprecated + self.deprecated
+
+    self.store_expected = 'a'
+    self.append_expected = [1, 2]
+    self.dep_store_expected = 'b'
+    self.dep_append_expected = [3, 4]
+
+  def testNonDeprecatedParsing(self):
+    """Test normal parsing is not affected."""
+    opts = self.argument_parser.parse_args(self.not_deprecated)
+
+    self.assertFalse(self.warning_patch.called)
+
+    self.assertEqual(self.store_expected, opts.store)
+    self.assertTrue(opts.store_true)
+    self.assertEqual(self.append_expected, opts.append)
+
+    self.assertIsNone(opts.dep_store)
+    self.assertFalse(opts.dep_store_true)
+    self.assertIsNone(opts.dep_append)
+
+  def testDeprecatedParsing(self):
+    """Test deprecated parsing logs the warning but parses normally."""
+    opts = self.argument_parser.parse_args(self.deprecated)
+
+    self.assertTrue(self.warning_patch.called)
+
+    self.assertIsNone(opts.store)
+    self.assertFalse(opts.store_true)
+    self.assertIsNone(opts.append)
+
+    self.assertEqual(self.dep_store_expected, opts.dep_store)
+    self.assertTrue(opts.dep_store_true)
+    self.assertEqual(self.dep_append_expected, opts.dep_append)
+
+  def testMixedParsing(self):
+    """Test parsing a mix of arguments."""
+    opts = self.argument_parser.parse_args(self.mixed)
+
+    self.assertTrue(self.warning_patch.called)
+
+    self.assertEqual(self.store_expected, opts.store)
+    self.assertTrue(opts.store_true)
+    self.assertEqual(self.append_expected, opts.append)
+
+    self.assertEqual(self.dep_store_expected, opts.dep_store)
+    self.assertTrue(opts.dep_store_true)
+    self.assertEqual(self.dep_append_expected, opts.dep_append)

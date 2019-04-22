@@ -59,15 +59,15 @@ NinePieceImageData::NinePieceImageData()
       horizontal_rule(kStretchImageRule),
       vertical_rule(kStretchImageRule),
       image(nullptr),
-      image_slices(Length(100, kPercent),
-                   Length(100, kPercent),
-                   Length(100, kPercent),
-                   Length(100, kPercent)),
+      image_slices(Length::Percent(100),
+                   Length::Percent(100),
+                   Length::Percent(100),
+                   Length::Percent(100)),
       border_slices(1.0, 1.0, 1.0, 1.0),
-      outset(Length(0, kFixed),
-             Length(0, kFixed),
-             Length(0, kFixed),
-             Length(0, kFixed)) {}
+      outset(Length::Fixed(0),
+             Length::Fixed(0),
+             Length::Fixed(0),
+             Length::Fixed(0)) {}
 
 bool NinePieceImageData::operator==(const NinePieceImageData& other) const {
   return DataEquivalent(image, other.image) &&

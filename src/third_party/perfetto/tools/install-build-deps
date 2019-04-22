@@ -112,7 +112,7 @@ BUILD_DEPS_HOST = [
   ),
   ('buildtools/libunwind',
    'https://chromium.googlesource.com/external/llvm.org/libunwind.git',
-   '94edd59b16d2084a62699290f9cfdf120d74eedf',
+   '317087cfd8e608bd24e53934d59b5b85e0a9ded6',
    'all'
   ),
 
@@ -170,7 +170,7 @@ BUILD_DEPS_HOST = [
   # These dependencies are for libunwindstack, which is used by src/profiling.
   ('buildtools/android-core',
    'https://android.googlesource.com/platform/system/core.git',
-   'b31badf70f7734d1ef6d1a95ee73dc57ebd2b19d',
+   '9d3310c019839ec342b5c0712f3ba59cfd5ca4a0',
    'all'
   ),
 
@@ -182,14 +182,14 @@ BUILD_DEPS_HOST = [
 
   ('buildtools/bionic',
    'https://android.googlesource.com/platform/bionic.git',
-   '4b7c5cca7fbd0330cdfef41c97f1401824e78fba',
+   'a60488109cda997dfd83832731c8527feaa2825e',
    'all'
   ),
 
   # Example traces for regression tests.
   ('buildtools/test_data.zip',
-   'https://storage.googleapis.com/perfetto/test-data-20180808.zip',
-   '4adec454b60a943dd58603d4be80d42b2db62cbd',
+   'https://storage.googleapis.com/perfetto/test-data-20190403-122506.zip',
+   '5092cabf96cb3fc9335274a296d34cc2ddefa874',
    'all',
   ),
 
@@ -251,6 +251,8 @@ TEST_DEPS_ANDROID = [
 # This variable is updated by tools/roll-catapult-trace-viewer.
 CATAPULT_SHA1 = 'ff5d8fd7244680b4d4456c25d5fdc04c76f9ef66'
 
+TYPEFACES_SHA1 = '756b0a015b8f99f5718f7fdf967d052c1ec55ab3'
+
 UI_DEPS = [
   ('buildtools/nodejs.tgz',
    'https://storage.googleapis.com/perfetto/node-v10.3.0-darwin-x64.tar.gz',
@@ -292,6 +294,11 @@ UI_DEPS = [
     CATAPULT_SHA1,
    'all'
   ),
+  ('buildtools/typefaces.tgz',
+   'https://storage.googleapis.com/perfetto/typefaces-%s.tar.gz' % TYPEFACES_SHA1,
+    TYPEFACES_SHA1,
+   'all'
+  )
 ]
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -335,7 +342,7 @@ def IsGitRepoCheckoutOutAtRevision(path, revision):
 
 def CheckoutGitRepo(path, git_url, revision):
   if IsGitRepoCheckoutOutAtRevision(path, revision):
-    return
+    return False
   if os.path.exists(path):
     shutil.rmtree(path)
   MkdirRecursive(path)
@@ -345,6 +352,7 @@ def CheckoutGitRepo(path, git_url, revision):
     ['git', 'fetch', '--quiet', '--depth', '1', git_url, revision], cwd=path)
   subprocess.check_call(['git', 'checkout', revision, '--quiet'], cwd=path)
   assert(IsGitRepoCheckoutOutAtRevision(path, revision))
+  return True
 
 def InstallNodeModules():
   ui_dir = os.path.join(ROOT_DIR, 'ui')
@@ -363,12 +371,13 @@ def Main():
     deps += BUILD_DEPS_ANDROID + TEST_DEPS_ANDROID
   if args.ui:
     deps += UI_DEPS
+  deps_updated = False
   for rel_path, url, expected_sha1, platform in deps:
     if (platform != 'all' and platform != sys.platform):
       continue
     local_path = os.path.join(ROOT_DIR, rel_path)
     if url.endswith('.git'):
-      CheckoutGitRepo(local_path, url, expected_sha1)
+      deps_updated |= CheckoutGitRepo(local_path, url, expected_sha1)
       continue
     is_zip = local_path.endswith('.zip') or local_path.endswith('.tgz')
     zip_target_dir = local_path[:-4] if is_zip else None
@@ -377,6 +386,7 @@ def Main():
     if ((not is_zip and HashLocalFile(local_path) == expected_sha1) or
         (is_zip and ReadFile(zip_dir_stamp) == expected_sha1)):
       continue
+    deps_updated = True
     MkdirRecursive(os.path.dirname(rel_path))
     if HashLocalFile(local_path) != expected_sha1:
       download_path = local_path + '.tmp'
@@ -426,6 +436,12 @@ def Main():
   if args.ui:
     # Needs to happen after nodejs is installed above.
     InstallNodeModules()
+
+  if deps_updated:
+    # Stale binary files may be compiled against old sysroot headers that aren't
+    # tracked by gn.
+    logging.warn('Remember to run "gn clean <output_directory>" ' +
+                 'to avoid stale binary files.')
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.INFO)

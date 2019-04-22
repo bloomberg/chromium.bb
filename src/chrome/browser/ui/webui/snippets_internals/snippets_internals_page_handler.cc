@@ -4,15 +4,14 @@
 
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals_page_handler.h"
 
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time_to_iso8601.h"
 #include "chrome/browser/android/ntp/android_content_suggestions_notifier.h"
-#include "chrome/browser/ntp_snippets/dependent_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"
@@ -24,13 +23,10 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/variations/variations_associated_data.h"
 
-using ntp_snippets::AreAssetDownloadsEnabled;
-using ntp_snippets::AreOfflinePageDownloadsEnabled;
 using ntp_snippets::Category;
 using ntp_snippets::CategoryInfo;
 using ntp_snippets::CategoryStatus;
 using ntp_snippets::ContentSuggestion;
-using ntp_snippets::IsBookmarkProviderEnabled;
 using ntp_snippets::RemoteSuggestionsProvider;
 using ntp_snippets::RemoteSuggestionsFetcher;
 using ntp_snippets::UserClassifier;
@@ -65,16 +61,6 @@ std::string BooleanToString(bool value) {
   return value ? "True" : "False";
 }
 
-ntp_snippets::BreakingNewsListener* GetBreakingNewsListener(
-    ntp_snippets::ContentSuggestionsService* service) {
-  DCHECK(service);
-  RemoteSuggestionsProvider* provider =
-      service->remote_suggestions_provider_for_debugging();
-  DCHECK(provider);
-  return static_cast<ntp_snippets::RemoteSuggestionsProviderImpl*>(provider)
-      ->breaking_news_listener_for_debugging();
-}
-
 std::string GetCategoryStatusName(CategoryStatus status) {
   switch (status) {
     case CategoryStatus::INITIALIZING:
@@ -101,7 +87,7 @@ snippets_internals::mojom::SuggestionItemPtr PrepareContentSuggestionItem(
   auto item = snippets_internals::mojom::SuggestionItem::New();
   item->suggestionTitle = base::UTF16ToUTF8(suggestion.title());
   item->suggestionIdWithinCategory = suggestion.id().id_within_category();
-  item->suggestionId = "content-suggestion-" + base::IntToString(index);
+  item->suggestionId = "content-suggestion-" + base::NumberToString(index);
   item->url = suggestion.url().spec();
   item->faviconUrl = suggestion.url_with_favicon().spec();
   item->snippet = base::UTF16ToUTF8(suggestion.snippet_text());
@@ -170,12 +156,6 @@ void SnippetsInternalsPageHandler::GetGeneralProperties(
   properties["flag-offlining-recent-pages-feature"] =
       BooleanToString(base::FeatureList::IsEnabled(
           offline_pages::kOffliningRecentPagesFeature));
-  properties["flag-asset-download-suggestions"] =
-      BooleanToString(AreAssetDownloadsEnabled());
-  properties["flag-offline-page-download-suggestions"] =
-      BooleanToString(AreOfflinePageDownloadsEnabled());
-  properties["flag-bookmark-suggestions"] =
-      BooleanToString(IsBookmarkProviderEnabled());
 
   if (remote_suggestions_provider_) {
     const ntp_snippets::RemoteSuggestionsFetcher* fetcher =
@@ -185,8 +165,9 @@ void SnippetsInternalsPageHandler::GetGeneralProperties(
 
   std::set<variations::VariationID> ids = GetSnippetsExperiments();
   std::vector<std::string> string_ids;
-  std::transform(ids.begin(), ids.end(), std::back_inserter(string_ids),
-                 &base::IntToString);
+  std::transform(
+      ids.begin(), ids.end(), std::back_inserter(string_ids),
+      [](variations::VariationID id) { return base::NumberToString(id); });
 
   properties["experiment-ids"] = base::JoinString(string_ids, ", ");
   std::move(callback).Run(properties);
@@ -282,67 +263,6 @@ void SnippetsInternalsPageHandler::FetchSuggestionsInBackgroundImpl(
     FetchSuggestionsInBackgroundCallback callback) {
   remote_suggestions_provider_->RefetchInTheBackground(
       RemoteSuggestionsProvider::FetchStatusCallback());
-
-  std::move(callback).Run();
-}
-
-void SnippetsInternalsPageHandler::IsPushingDummySuggestionPossible(
-    IsPushingDummySuggestionPossibleCallback callback) {
-  ntp_snippets::BreakingNewsListener* listener =
-      GetBreakingNewsListener(content_suggestions_service_);
-
-  std::move(callback).Run(listener != nullptr && listener->IsListening());
-}
-
-void SnippetsInternalsPageHandler::PushDummySuggestionInBackground(
-    int64_t delaySeconds,
-    PushDummySuggestionInBackgroundCallback callback) {
-  DCHECK(delaySeconds >= 0);
-  suggestion_push_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(delaySeconds),
-      base::BindRepeating(
-          &SnippetsInternalsPageHandler::PushDummySuggestionInBackgroundImpl,
-          weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(callback))));
-}
-
-void SnippetsInternalsPageHandler::PushDummySuggestionInBackgroundImpl(
-    PushDummySuggestionInBackgroundCallback callback) {
-  std::string json = R"(
-    {"categories" : [{
-      "id": 1,
-      "localizedTitle": "section title",
-      "suggestions" : [{
-        "ids" : ["http://url.com"],
-        "title" : "Pushed Dummy Title %s",
-        "snippet" : "Pushed Dummy Snippet",
-        "fullPageUrl" : "http://url.com",
-        "creationTime" : "%s",
-        "expirationTime" : "%s",
-        "attribution" : "Pushed Dummy Publisher",
-        "imageUrl" : "https://www.google.com/favicon.ico",
-        "notificationInfo": {
-          "shouldNotify": true,
-          "deadline": "2100-01-01T00:00:01.000Z"
-          }
-      }]
-    }]}
-  )";
-
-  const base::Time now = base::Time::Now();
-  json = base::StringPrintf(
-      json.c_str(), base::UTF16ToUTF8(base::TimeFormatTimeOfDay(now)).c_str(),
-      base::TimeToISO8601(now).c_str(),
-      base::TimeToISO8601(now + base::TimeDelta::FromMinutes(60)).c_str());
-
-  gcm::IncomingMessage message;
-  message.data["payload"] = json;
-
-  ntp_snippets::BreakingNewsListener* listener =
-      GetBreakingNewsListener(content_suggestions_service_);
-  DCHECK(listener);
-  DCHECK(listener->IsListening());
-  static_cast<ntp_snippets::BreakingNewsGCMAppHandler*>(listener)->OnMessage(
-      "com.google.breakingnews.gcm", message);
 
   std::move(callback).Run();
 }

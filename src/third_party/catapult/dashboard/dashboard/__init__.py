@@ -13,27 +13,31 @@ THIRD_PARTY_LIBRARIES = [
     'apiclient',
     'beautifulsoup4',
     'cloudstorage',
+    'flot',
+    'gae_ts_mon',
     'graphy',
     'html5lib-python',
     'httplib2',
+    'ijson',
+    'jquery',
     'mapreduce',
     'mock',
     'oauth2client',
     'pipeline',
+    'polymer',
+    'polymer2/bower_components',
+    'polymer2/bower_components/chopsui',
+    'polymer-svg-template',
+    'redux/redux.min.js',
+    'six',
     'uritemplate',
     'webtest',
-    'flot',
-    'jquery',
-    'polymer',
-    'six',
-    'gae_ts_mon',
 ]
 
 # Files and directories in catapult/dashboard.
 DASHBOARD_FILES = [
     'appengine_config.py',
     'app.yaml',
-    'v2spa.yaml',
     'scripts.yaml',
     'cron.yaml',
     'dashboard',
@@ -45,7 +49,8 @@ DASHBOARD_FILES = [
 TRACING_PATHS = [
     'tracing/tracing',
     'tracing/tracing_build',
-    'tracing/third_party/gl-matrix/dist/gl-matrix-min.js'
+    'tracing/third_party/gl-matrix/dist/gl-matrix-min.js',
+    'tracing/third_party/mannwhitneyu',
 ]
 
 

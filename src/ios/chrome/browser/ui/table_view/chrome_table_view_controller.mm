@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/material_components/chrome_app_bar_view_controller.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
@@ -18,6 +20,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+const CGFloat kTableViewSeparatorInset = 16;
+const CGFloat kTableViewSeparatorInsetWithIcon = 56;
 
 @interface ChromeTableViewController ()
 // The loading displayed by [self startLoadingIndicatorWithLoadingMessage:].
@@ -51,34 +56,16 @@
                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
 }
 
-#pragma mark - Accessors
-
-- (void)setStyler:(ChromeTableViewStyler*)styler {
-  DCHECK(![self isViewLoaded]);
-  _styler = styler;
-}
-
-- (void)setEmptyView:(TableViewEmptyView*)emptyView {
-  if (_emptyView == emptyView)
-    return;
-  _emptyView = emptyView;
-  self.tableView.backgroundView = _emptyView;
-  // Since this would replace any loadingView, set it to nil.
-  self.loadingView = nil;
-}
-
-#pragma mark - Public
-
-- (void)loadModel {
-  _tableViewModel = [[TableViewModel alloc] init];
-}
+#pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
 
   [self.tableView setBackgroundColor:self.styler.tableViewBackgroundColor];
   [self.tableView setSeparatorColor:self.styler.cellSeparatorColor];
-  [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 56, 0, 0)];
+  [self.tableView
+      setSeparatorInset:UIEdgeInsetsMake(0, kTableViewSeparatorInsetWithIcon, 0,
+                                         0)];
 
   // Configure the app bar if needed.
   if (_appBarViewController) {
@@ -94,6 +81,47 @@
     [self.view addSubview:self.appBarViewController.view];
     [self.appBarViewController didMoveToParentViewController:self];
   }
+}
+
+#pragma mark - UITableViewDelegate
+
+- (NSIndexPath*)tableView:(UITableView*)tableView
+    willSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (self.editing && ![self tableView:tableView
+                          canEditRowAtIndexPath:indexPath]) {
+    return nil;
+  }
+  return indexPath;
+}
+
+#pragma mark - Accessors
+
+- (void)setStyler:(ChromeTableViewStyler*)styler {
+  DCHECK(![self isViewLoaded]);
+  _styler = styler;
+}
+
+- (void)setEmptyView:(TableViewEmptyView*)emptyView {
+  if (_emptyView == emptyView)
+    return;
+  _emptyView = emptyView;
+  _emptyView.scrollViewContentInsets = self.view.safeAreaInsets;
+  self.tableView.backgroundView = _emptyView;
+  // Since this would replace any loadingView, set it to nil.
+  self.loadingView = nil;
+}
+
+#pragma mark - Public
+
+- (void)loadModel {
+  _tableViewModel = [[TableViewModel alloc] init];
+}
+
+- (void)viewSafeAreaInsetsDidChange {
+  [super viewSafeAreaInsetsDidChange];
+  // The safe area insets aren't propagated to the inner scroll view. Manually
+  // set the content insets.
+  self.emptyView.scrollViewContentInsets = self.view.safeAreaInsets;
 }
 
 - (void)startLoadingIndicatorWithLoadingMessage:(NSString*)loadingMessage {
@@ -182,7 +210,9 @@
 
     // |cell| may be nil if the row is not currently on screen.
     if (cell) {
-      [item configureCell:cell withStyler:self.styler];
+      TableViewCell* tableViewCell =
+          base::mac::ObjCCastStrict<TableViewCell>(cell);
+      [item configureCell:tableViewCell withStyler:self.styler];
     }
   }
 }
@@ -213,7 +243,8 @@
   UITableViewCell* cell =
       [self.tableView dequeueReusableCellWithIdentifier:reuseIdentifier
                                            forIndexPath:indexPath];
-  [item configureCell:cell withStyler:self.styler];
+  TableViewCell* tableViewCell = base::mac::ObjCCastStrict<TableViewCell>(cell);
+  [item configureCell:tableViewCell withStyler:self.styler];
 
   return cell;
 }

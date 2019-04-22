@@ -53,7 +53,7 @@ std::unique_ptr<TracedValue> GetTraceArgsForScriptElement(
     Document& document,
     const TextPosition& text_position,
     const KURL& url) {
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   if (!url.IsNull())
     value->SetString("url", url.GetString());
   if (document.GetFrame()) {
@@ -92,10 +92,10 @@ void TraceParserBlockingScript(const PendingScript* pending_script,
   // cases:
   // * the script's execution is blocked on the completed load of the script
   //   resource
-  //   (https://html.spec.whatwg.org/multipage/scripting.html#pending-parsing-blocking-script)
+  //   (https://html.spec.whatwg.org/C/#pending-parsing-blocking-script)
   // * the script's execution is blocked on the load of a style sheet or other
   //   resources that are blocking scripts
-  //   (https://html.spec.whatwg.org/multipage/semantics.html#a-style-sheet-that-is-blocking-scripts)
+  //   (https://html.spec.whatwg.org/C/#a-style-sheet-that-is-blocking-scripts)
   //
   // Both of these cases can introduce significant latency when loading a
   // web page, especially for users on slow connections, since the HTML parser
@@ -180,7 +180,7 @@ bool HTMLParserScriptRunner::IsParserBlockingScriptReady() {
 
 // Corresponds to some steps of the "Otherwise" Clause of 'An end tag whose
 // tag name is "script"'
-// <specdef href="https://html.spec.whatwg.org/#scriptEndTag">
+// <specdef href="https://html.spec.whatwg.org/C/#scriptEndTag">
 void HTMLParserScriptRunner::
     ExecutePendingParserBlockingScriptAndDispatchEvent() {
   // Stop watching loads before executeScript to prevent recursion if the script
@@ -237,7 +237,7 @@ void HTMLParserScriptRunner::
 // Should be correspond to
 //
 // <specdef
-// href="https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block">
+// href="https://html.spec.whatwg.org/C/#execute-the-script-block">
 //
 // but currently does more than specced, because historically this and
 // ExecutePendingParserBlockingScriptAndDispatchEvent() was the same method.
@@ -258,7 +258,7 @@ void HTMLParserScriptRunner::ExecutePendingDeferredScriptAndDispatchEvent(
   {
     // The following code corresponds to:
     //
-    // <spec href="https://html.spec.whatwg.org/#scriptEndTag"
+    // <spec href="https://html.spec.whatwg.org/C/#scriptEndTag"
     // step="B.7">Increment the parser's script nesting level by one (it should
     // be zero before this step, so this sets it to one).</spec>
     //
@@ -302,7 +302,7 @@ void HTMLParserScriptRunner::PendingScriptFinished(
   host_->NotifyScriptLoaded(pending_script);
 }
 
-// <specdef href="https://html.spec.whatwg.org/#scriptEndTag">
+// <specdef href="https://html.spec.whatwg.org/C/#scriptEndTag">
 //
 // Script handling lives outside the tree builder to keep each class simple.
 void HTMLParserScriptRunner::ProcessScriptElement(
@@ -357,7 +357,7 @@ bool HTMLParserScriptRunner::HasParserBlockingScript() const {
   return ParserBlockingScript();
 }
 
-// <specdef href="https://html.spec.whatwg.org/#scriptEndTag">
+// <specdef href="https://html.spec.whatwg.org/C/#scriptEndTag">
 //
 // <spec>An end tag whose tag name is "script" ...</spec>
 void HTMLParserScriptRunner::ExecuteParsingBlockingScripts() {
@@ -412,7 +412,7 @@ void HTMLParserScriptRunner::ExecuteScriptsWaitingForResources() {
   ExecuteParsingBlockingScripts();
 }
 
-// <specdef href="https://html.spec.whatwg.org/#stop-parsing">
+// <specdef href="https://html.spec.whatwg.org/C/#stop-parsing">
 //
 // <spec step="3">If the list of scripts that will execute when the document has
 // finished parsing is not empty, run these substeps:</spec>
@@ -462,10 +462,10 @@ bool HTMLParserScriptRunner::ExecuteScriptsWaitingForParsing() {
 
 void HTMLParserScriptRunner::RequestParsingBlockingScript(
     ScriptLoader* script_loader) {
-  // <spec href="https://html.spec.whatwg.org/#prepare-a-script" step="26.B">...
-  // The element is the pending parsing-blocking script of the Document of the
-  // parser that created the element. (There can only be one such script per
-  // Document at a time.) ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#prepare-a-script"
+  // step="26.B">... The element is the pending parsing-blocking script of the
+  // Document of the parser that created the element. (There can only be one
+  // such script per Document at a time.) ...</spec>
   CHECK(!ParserBlockingScript());
   parser_blocking_script_ =
       script_loader->TakePendingScript(ScriptSchedulingType::kParserBlocking);
@@ -478,7 +478,7 @@ void HTMLParserScriptRunner::RequestParsingBlockingScript(
   // Callers will attempt to run the m_parserBlockingScript if possible before
   // returning control to the parser.
   if (!ParserBlockingScript()->IsReady()) {
-    parser_blocking_script_->StartStreamingIfPossible(base::OnceClosure());
+    parser_blocking_script_->StartStreamingIfPossible();
     parser_blocking_script_->WatchForLoad(this);
   }
 }
@@ -491,22 +491,22 @@ void HTMLParserScriptRunner::RequestDeferredScript(
     return;
 
   if (!pending_script->IsReady()) {
-    pending_script->StartStreamingIfPossible(base::OnceClosure());
+    pending_script->StartStreamingIfPossible();
   }
 
   DCHECK(pending_script->IsExternalOrModule());
 
-  // <spec href="https://html.spec.whatwg.org/#prepare-a-script" step="26.A">...
-  // Add the element to the end of the list of scripts that will execute when
-  // the document has finished parsing associated with the Document of the
-  // parser that created the element. ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#prepare-a-script"
+  // step="26.A">... Add the element to the end of the list of scripts that will
+  // execute when the document has finished parsing associated with the Document
+  // of the parser that created the element. ...</spec>
   scripts_to_execute_after_parsing_.push_back(pending_script);
 }
 
 // The initial steps for 'An end tag whose tag name is "script"'
-// <specdef href="https://html.spec.whatwg.org/#scriptEndTag">
+// <specdef href="https://html.spec.whatwg.org/C/#scriptEndTag">
 // <specdef label="prepare-a-script"
-// href="https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script">
+// href="https://html.spec.whatwg.org/C/#prepare-a-script">
 void HTMLParserScriptRunner::ProcessScriptElementInternal(
     Element* script,
     const TextPosition& script_start_position) {

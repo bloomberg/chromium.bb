@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script src="../resources/test-runner-paint-worklet.js"></script>
 <style>
 html, body { margin: 0; padding: 0; }
@@ -35,7 +34,7 @@ registerPaint('geometry', class {
 
 <script>
     document.body.style.zoom = "33%";
-    importPaintWorkletAndTerminateTestAfterAsyncPaint(document.getElementById('code').textContent);
+    importPaintWorkletThenEndTest(document.getElementById('code').textContent);
 </script>
 </body>
 </html>

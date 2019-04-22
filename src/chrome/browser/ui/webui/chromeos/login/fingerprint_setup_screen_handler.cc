@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -19,8 +20,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
-
-const char kJsScreenPath[] = "login.FingerprintSetupScreen";
 
 // The max number of fingerprints that can be stored.
 constexpr int kMaxAllowedFingerprints = 3;
@@ -48,9 +47,10 @@ std::string GetDefaultFingerprintName(int enrolled_finger_count) {
 
 namespace chromeos {
 
-FingerprintSetupScreenHandler::FingerprintSetupScreenHandler()
-    : BaseScreenHandler(kScreenId) {
-  set_call_js_prefix(kJsScreenPath);
+FingerprintSetupScreenHandler::FingerprintSetupScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
+  set_user_acted_method_path("login.FingerprintSetupScreen.userActed");
 
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
@@ -125,22 +125,23 @@ void FingerprintSetupScreenHandler::OnRestarted() {
 }
 
 void FingerprintSetupScreenHandler::OnEnrollScanDone(
-    uint32_t scan_result,
+    device::mojom::ScanResult scan_result,
     bool enroll_session_complete,
     int percent_complete) {
   VLOG(1) << "Receive fingerprint enroll scan result. scan_result="
           << scan_result
           << ", enroll_session_complete=" << enroll_session_complete
           << ", percent_complete=" << percent_complete;
-  CallJSWithPrefix("onEnrollScanDone", static_cast<int>(scan_result),
-                   enroll_session_complete, percent_complete);
+  CallJS("login.FingerprintSetupScreen.onEnrollScanDone",
+         static_cast<int>(scan_result), enroll_session_complete,
+         percent_complete);
 
   if (enroll_session_complete) {
     enroll_session_started_ = false;
 
     ++enrolled_finger_count_;
-    CallJSWithPrefix("enableAddAnotherFinger",
-                     enrolled_finger_count_ < kMaxAllowedFingerprints);
+    CallJS("login.FingerprintSetupScreen.enableAddAnotherFinger",
+           enrolled_finger_count_ < kMaxAllowedFingerprints);
 
     // Update the number of registered fingers, it's fine to override because
     // this is the first time user log in and have no finger registered.
@@ -150,7 +151,7 @@ void FingerprintSetupScreenHandler::OnEnrollScanDone(
 }
 
 void FingerprintSetupScreenHandler::OnAuthScanDone(
-    uint32_t scan_result,
+    device::mojom::ScanResult scan_result,
     const base::flat_map<std::string, std::vector<std::string>>& matches) {}
 
 void FingerprintSetupScreenHandler::OnSessionFailed() {

@@ -28,7 +28,6 @@
 #include "base/compiler_specific.h"
 #include "base/template_util.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace WTF {
 
@@ -222,22 +221,6 @@ template <>
 class IsGarbageCollectedType<void> {
  public:
   static const bool value = false;
-};
-
-template <typename T>
-class IsPersistentReferenceType {
-  typedef char YesType;
-  typedef struct NoType { char padding[8]; } NoType;
-
-  template <typename U>
-  static YesType CheckPersistentReferenceType(
-      typename U::IsPersistentReferenceTypeMarker*);
-  template <typename U>
-  static NoType CheckPersistentReferenceType(...);
-
- public:
-  static const bool value =
-      (sizeof(YesType) == sizeof(CheckPersistentReferenceType<T>(nullptr)));
 };
 
 template <typename T,

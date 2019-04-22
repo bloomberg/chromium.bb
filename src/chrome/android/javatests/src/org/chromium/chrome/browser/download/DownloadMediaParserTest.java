@@ -13,14 +13,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.File;
 
@@ -34,7 +36,7 @@ import java.io.File;
  *
  * Because each media parser call may perform multiple process and thread hops, it can be slow.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 public class DownloadMediaParserTest {
     private static final long MAX_MEDIA_PARSER_POLL_TIME_MS = 10000;
     private static final long MEDIA_PARSER_POLL_INTERVAL_MS = 1000;
@@ -62,7 +64,7 @@ public class DownloadMediaParserTest {
         MediaParserResult result = new MediaParserResult();
 
         // The native DownloadMediaParser needs to be created on UI thread.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             DownloadMediaParserBridge parser = new DownloadMediaParserBridge(
                     mimeType, filePath, (DownloadMediaData mediaData) -> {
                         result.mediaData = mediaData;
@@ -97,6 +99,7 @@ public class DownloadMediaParserTest {
     @LargeTest
     @Feature({"Download"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     /**
      * Verify metadata and thumbnail can be retrieved correctly from h264 video file.
      * @throws InterruptedException

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/platform_util.h"
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -65,6 +66,10 @@ void OpenItem(Profile* profile,
                            {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
                            base::BindOnce(&VerifyAndOpenItemOnBlockingThread,
                                           full_path, item_type, callback));
+}
+
+bool IsBrowserLockedFullscreen(const Browser* browser) {
+  return false;
 }
 
 }  // namespace platform_util

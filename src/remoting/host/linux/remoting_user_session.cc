@@ -43,9 +43,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 
@@ -274,7 +274,7 @@ class PamHandle {
 // executable. Should be called at program start.
 void DetermineExecutablePath() {
   ssize_t path_size =
-      readlink(kExeSymlink, gExecutablePath, arraysize(gExecutablePath));
+      readlink(kExeSymlink, gExecutablePath, base::size(gExecutablePath));
   PCHECK(path_size >= 0) << "Failed to determine executable location";
   CHECK(path_size < PATH_MAX) << "Executable path too long";
   gExecutablePath[path_size] = '\0';
@@ -539,7 +539,7 @@ void HandleInterrupt(int signal) {
       "Interrupted. The daemon is still running in the background.\n";
   // Use write since fputs isn't async-signal-handler safe.
   ignore_result(write(STDERR_FILENO, kInterruptedMessage,
-                      arraysize(kInterruptedMessage) - 1));
+                      base::size(kInterruptedMessage) - 1));
   raise(signal);
 }
 
@@ -549,8 +549,8 @@ void HandleAlarm(int) {
       "Timeout waiting for session to start. It may have crashed, or may still "
       "be running in the background.\n";
   // Use write since fputs isn't async-signal-handler safe.
-  ignore_result(write(STDERR_FILENO, kTimeoutMessage,
-                      arraysize(kTimeoutMessage) - 1));
+  ignore_result(
+      write(STDERR_FILENO, kTimeoutMessage, base::size(kTimeoutMessage) - 1));
   // A slow system or directory replication delay may cause the host to take
   // longer than expected to start. Since it may still succeed, optimistically
   // return success to prevent the host from being automatically unregistered.

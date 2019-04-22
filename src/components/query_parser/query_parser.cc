@@ -72,7 +72,7 @@ class QueryNodeWord : public QueryNode {
 
   const base::string16& word() const { return word_; }
 
-  bool literal() const { return literal_; };
+  bool literal() const { return literal_; }
   void set_literal(bool literal) { literal_ = literal; }
 
   // QueryNode:

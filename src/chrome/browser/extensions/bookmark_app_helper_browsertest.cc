@@ -4,8 +4,10 @@
 
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -93,6 +95,9 @@ class BookmarkAppHelperTest : public DialogBrowserTest,
     // ~WebAppReadyMsgWatcher() is called on the IO thread, but
     // |bookmark_app_helper_| must be destroyed on the UI thread.
     bookmark_app_helper_.reset();
+    // Web contents reparenting happens only after shortcut creation has
+    // completed.
+    quit_closure_.Run();
   }
 
   void Wait() {
@@ -105,7 +110,8 @@ class BookmarkAppHelperTest : public DialogBrowserTest,
   void OnExtensionInstalled(content::BrowserContext* browser_context,
                             const Extension* extension,
                             bool is_update) override {
-    quit_closure_.Run();
+    if (!expected_app_title_.empty())
+      EXPECT_EQ(expected_app_title_, extension->name());
   }
 
   // DialogBrowserTest:
@@ -134,12 +140,17 @@ class BookmarkAppHelperTest : public DialogBrowserTest,
     Wait();
   }
 
+  void SetExpectedAppTitle(const std::string& expected_title) {
+    expected_app_title_ = expected_title;
+  }
+
  protected:
   std::unique_ptr<TestBookmarkAppHelper> bookmark_app_helper_;
 
  private:
   base::Closure quit_closure_;
   content::WebContents* web_contents_ = nullptr;
+  std::string expected_app_title_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppHelperTest);
 };
@@ -158,7 +169,6 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, InvokeUi_CreateWindowedPWA) {
   ShowAndVerifyUi();
 }
 
-#if !defined(OS_MACOSX)
 // Runs through a complete installation of a PWA and ensures the tab is
 // reparented into an app window.
 IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWAIntoAppWindow) {
@@ -166,6 +176,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWAIntoAppWindow) {
   // the PWA check, but the kDesktopPWAWindowing flag must also be enabled.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
+  SetExpectedAppTitle("Manifest test app");
 
   ShowUi("CreateWindowedPWA");
 
@@ -179,6 +190,5 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWAIntoAppWindow) {
   EXPECT_TRUE(app_browser->is_app());
   EXPECT_NE(app_browser, browser());
 }
-#endif
 
 }  // namespace extensions

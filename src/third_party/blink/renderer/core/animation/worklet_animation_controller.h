@@ -55,8 +55,15 @@ class CORE_EXPORT WorkletAnimationController
   base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
   EnsureMainThreadMutatorDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
+
   void SetMutationUpdate(
       std::unique_ptr<AnimationWorkletOutput> output) override;
+
+  void SynchronizeAnimatorName(const String& animator_name) override;
+  // Returns true if the animator with given name is registered in
+  // AnimationWorkletGlobalScope.
+  bool IsAnimatorRegistered(const String& animator_name) const;
+
   void Trace(blink::Visitor*);
 
  private:
@@ -66,6 +73,8 @@ class CORE_EXPORT WorkletAnimationController
 
   HeapHashSet<Member<WorkletAnimationBase>> pending_animations_;
   HeapHashMap<int, Member<WorkletAnimationBase>> animations_;
+
+  WTF::HashSet<String> animator_names_;
 
   // TODO(yigu): The following proxy is needed for platform/ to access this
   // class. We should bypass it eventually.

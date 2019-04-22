@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -431,9 +432,7 @@ bool TouchSelectionControllerClientAura::IsCommandIdEnabled(
     int command_id) const {
   bool editable = rwhva_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
   bool readable = rwhva_->GetTextInputType() != ui::TEXT_INPUT_TYPE_PASSWORD;
-  gfx::Range selection_range;
-  rwhva_->GetSelectionRange(&selection_range);
-  bool has_selection = !selection_range.is_empty();
+  bool has_selection = !rwhva_->GetSelectedText().empty();
   switch (command_id) {
     case IDS_APP_CUT:
       return editable && readable && has_selection;
@@ -494,11 +493,7 @@ bool TouchSelectionControllerClientAura::ShouldShowQuickMenu() {
 }
 
 base::string16 TouchSelectionControllerClientAura::GetSelectedText() {
-  gfx::Range selection_range;
-  rwhva_->GetSelectionRange(&selection_range);
-  base::string16 selection_text;
-  rwhva_->GetTextFromRange(selection_range, &selection_text);
-  return selection_text;
+  return rwhva_->GetSelectedText();
 }
 
 }  // namespace content

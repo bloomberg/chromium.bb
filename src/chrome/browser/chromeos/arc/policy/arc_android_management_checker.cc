@@ -16,10 +16,8 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace arc {
@@ -58,7 +56,7 @@ ArcAndroidManagementChecker::ArcAndroidManagementChecker(Profile* profile,
           g_browser_process->system_network_context_manager()
               ->GetSharedURLLoaderFactory(),
           device_account_id_,
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)),
+          identity_manager_),
       weak_ptr_factory_(this) {}
 
 ArcAndroidManagementChecker::~ArcAndroidManagementChecker() {
@@ -100,8 +98,7 @@ void ArcAndroidManagementChecker::EnsureRefreshTokenLoaded() {
 }
 
 void ArcAndroidManagementChecker::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
+    const CoreAccountInfo& account_info) {
   if (account_info.account_id != device_account_id_)
     return;
   OnRefreshTokensLoaded();

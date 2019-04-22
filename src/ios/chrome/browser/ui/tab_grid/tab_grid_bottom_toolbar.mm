@@ -12,15 +12,32 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation TabGridBottomToolbar
-@synthesize leadingButton = _leadingButton;
-@synthesize trailingButton = _trailingButton;
-@synthesize centerButton = _centerButton;
+@implementation TabGridBottomToolbar {
+  UIBarButtonItem* _spaceItem;
+  UIImage* _transparentBackground;
+  UIImage* _translucentBackground;
+}
+
+- (void)hide {
+  self.newTabButton.button.alpha = 0.0;
+}
+
+- (void)show {
+  self.newTabButton.button.alpha = 1.0;
+}
 
 #pragma mark - UIView
 
-- (CGSize)intrinsicContentSize {
-  return CGSizeMake(UIViewNoIntrinsicMetric, kTabGridBottomToolbarHeight);
+// Controls hit testing of the bottom toolbar. When the toolbar is transparent,
+// only respond to tapping on the new tab button.
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent*)event {
+  // The toolbar is not tranparent under compact layout.
+  if ([self shouldUseCompactLayout]) {
+    return [super pointInside:point withEvent:event];
+  }
+  return [self.newTabButton.button
+      pointInside:[self convertPoint:point toView:self.newTabButton.button]
+        withEvent:event];
 }
 
 - (void)willMoveToSuperview:(UIView*)newSuperview {
@@ -30,66 +47,104 @@
   }
 }
 
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  [self updateLayout];
+}
+
+#pragma mark - Public
+
+- (void)setPage:(TabGridPage)page {
+  // TODO(crbug.com/929981): "traitCollectionDidChange:" method won't get called
+  // when the view is not displayed, and in that case the only chance
+  // TabGridBottomToolbar can update its layout is when the TabGrid sets its
+  // "page" property in the
+  // "viewWillTransitionToSize:withTransitionCoordinator:" method. An early
+  // return for "self.page == page" can be added here once UIKit fixes its
+  // issue or TabGridBottomToolbar is turned into a view controller.
+  _page = page;
+  self.newTabButton.page = page;
+  [self updateLayout];
+}
+
 #pragma mark - Private
 
+- (void)updateLayout {
+  if (self.page == TabGridPageRemoteTabs) {
+    if ([self shouldUseCompactLayout]) {
+      [self setItems:@[ _spaceItem, self.trailingButton ]];
+      [self setBackgroundImage:_translucentBackground
+            forToolbarPosition:UIBarPositionAny
+                    barMetrics:UIBarMetricsDefault];
+    } else {
+      [self setItems:@[]];
+      [self setBackgroundImage:_transparentBackground
+            forToolbarPosition:UIToolbarPositionAny
+                    barMetrics:UIBarMetricsDefault];
+    }
+  } else {
+    if ([self shouldUseCompactLayout]) {
+      self.newTabButton.sizeClass = TabGridNewTabButtonSizeClassSmall;
+      [self setItems:@[
+        self.leadingButton, _spaceItem, _newTabButton, _spaceItem,
+        self.trailingButton
+      ]];
+      [self setBackgroundImage:_translucentBackground
+            forToolbarPosition:UIBarPositionAny
+                    barMetrics:UIBarMetricsDefault];
+    } else {
+      self.newTabButton.sizeClass = TabGridNewTabButtonSizeClassLarge;
+      [self setItems:@[ _spaceItem, _newTabButton ]];
+      [self setBackgroundImage:_transparentBackground
+            forToolbarPosition:UIToolbarPositionAny
+                    barMetrics:UIBarMetricsDefault];
+    }
+  }
+}
+
 - (void)setupViews {
-  self.layoutMargins = UIEdgeInsetsMake(0, kTabGridToolbarHorizontalInset, 0,
-                                        kTabGridToolbarHorizontalInset);
+  self.translatesAutoresizingMaskIntoConstraints = NO;
+  self.barStyle = UIBarStyleBlack;
+  self.translucent = YES;
+  // Remove the border of UIToolbar.
+  [self setShadowImage:[[UIImage alloc] init]
+      forToolbarPosition:UIBarPositionAny];
 
-  UIVisualEffect* blurEffect =
-      [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-  UIVisualEffectView* toolbar =
-      [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-  toolbar.translatesAutoresizingMaskIntoConstraints = NO;
-  [self addSubview:toolbar];
+  _leadingButton = [[UIBarButtonItem alloc] init];
+  _leadingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
 
-  UIButton* leadingButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
-  leadingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
-  leadingButton.titleLabel.lineBreakMode = NSLineBreakByClipping;
-  UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
+  _trailingButton = [[UIBarButtonItem alloc] init];
+  _trailingButton.style = UIBarButtonItemStyleDone;
+  _trailingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
 
-  leadingButton.contentHorizontalAlignment =
-      UIControlContentHorizontalAlignmentLeading;
-  trailingButton.contentHorizontalAlignment =
-      UIControlContentHorizontalAlignmentTrailing;
+  _newTabButton = [[TabGridNewTabButton alloc] init];
 
-  trailingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
-  TabGridNewTabButton* centerButton = [TabGridNewTabButton
-      buttonWithSizeClass:TabGridNewTabButtonSizeClassSmall];
-  centerButton.translatesAutoresizingMaskIntoConstraints = NO;
+  _spaceItem = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
 
-  [toolbar.contentView addSubview:leadingButton];
-  [toolbar.contentView addSubview:trailingButton];
-  [toolbar.contentView addSubview:centerButton];
-  _leadingButton = leadingButton;
-  _trailingButton = trailingButton;
-  _centerButton = centerButton;
+  // Store the translucent background generated by self.translucent=YES.
+  _translucentBackground =
+      [self backgroundImageForToolbarPosition:UIBarPositionAny
+                                   barMetrics:UIBarMetricsDefault];
+  _transparentBackground = [[UIImage alloc] init];
 
-  NSArray* constraints = @[
-    [toolbar.topAnchor constraintEqualToAnchor:self.topAnchor],
-    [toolbar.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-    [toolbar.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-    [toolbar.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-    [leadingButton.heightAnchor
-        constraintEqualToConstant:kTabGridBottomToolbarHeight],
-    [leadingButton.leadingAnchor
-        constraintEqualToAnchor:self.layoutMarginsGuide.leadingAnchor],
-    [leadingButton.topAnchor constraintEqualToAnchor:toolbar.topAnchor],
-    [centerButton.centerXAnchor constraintEqualToAnchor:toolbar.centerXAnchor],
-    [centerButton.centerYAnchor
-        constraintEqualToAnchor:toolbar.topAnchor
-                       constant:kTabGridBottomToolbarHeight / 2.0f],
-    [trailingButton.heightAnchor
-        constraintEqualToConstant:kTabGridBottomToolbarHeight],
-    [trailingButton.leadingAnchor
-        constraintEqualToAnchor:centerButton.trailingAnchor],
-    [trailingButton.trailingAnchor
-        constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-    [trailingButton.topAnchor constraintEqualToAnchor:toolbar.topAnchor],
-  ];
-  [NSLayoutConstraint activateConstraints:constraints];
+  [self updateLayout];
+}
+
+// Returns YES if should use compact bottom toolbar layout.
+- (BOOL)shouldUseCompactLayout {
+  // TODO(crbug.com/929981): UIView's |traitCollection| can be wrong and
+  // contradict the keyWindow's |traitCollection| because UIView's
+  // |-traitCollectionDidChange:| is not properly called when the view rotates
+  // while it is in a ViewController deeper in the ViewController hierarchy. Use
+  // self.traitCollection once this is fixed by UIKit, or remove this function
+  // if TabGridBottomToolbar is turned into a view controller.
+  return UIApplication.sharedApplication.keyWindow.traitCollection
+                 .verticalSizeClass == UIUserInterfaceSizeClassRegular &&
+         UIApplication.sharedApplication.keyWindow.traitCollection
+                 .horizontalSizeClass == UIUserInterfaceSizeClassCompact;
 }
 
 @end

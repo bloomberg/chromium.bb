@@ -13,10 +13,10 @@
 #include "third_party/base/ptr_util.h"
 
 CPDF_AnnotContext::CPDF_AnnotContext(CPDF_Dictionary* pAnnotDict,
-                                     CPDF_Page* pPage,
-                                     CPDF_Stream* pStream)
+                                     CPDF_Page* pPage)
     : m_pAnnotDict(pAnnotDict), m_pPage(pPage) {
-  SetForm(pStream);
+  ASSERT(m_pAnnotDict);
+  ASSERT(m_pPage);
 }
 
 CPDF_AnnotContext::~CPDF_AnnotContext() = default;

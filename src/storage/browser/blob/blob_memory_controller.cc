@@ -28,7 +28,7 @@
 #include "base/system/sys_info.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -71,10 +71,14 @@ File::Error CreateBlobDirectory(const FilePath& blob_storage_dir) {
 // Desktop:
 // * Ram -  20%, or 2 GB if x64.
 // * Disk - 10%
-BlobStorageLimits CalculateBlobStorageLimitsImpl(const FilePath& storage_dir,
-                                                 bool disk_enabled) {
+BlobStorageLimits CalculateBlobStorageLimitsImpl(
+    const FilePath& storage_dir,
+    bool disk_enabled,
+    base::Optional<int64_t> optional_memory_size_for_testing) {
   int64_t disk_size = 0ull;
-  int64_t memory_size = base::SysInfo::AmountOfPhysicalMemory();
+  int64_t memory_size = optional_memory_size_for_testing
+                            ? optional_memory_size_for_testing.value()
+                            : base::SysInfo::AmountOfPhysicalMemory();
   if (disk_enabled && CreateBlobDirectory(storage_dir) == base::File::FILE_OK)
     disk_size = base::SysInfo::AmountOfTotalDiskSpace(storage_dir);
 
@@ -91,6 +95,11 @@ BlobStorageLimits CalculateBlobStorageLimitsImpl(const FilePath& storage_dir,
     limits.max_blob_in_memory_space = static_cast<size_t>(memory_size / 5ll);
 #endif
   }
+  // Devices just on the edge (RAM == 256MB) should not fail because
+  // max_blob_in_memory_space turns out smaller than min_page_file_size
+  // causing the CHECK below to fail.
+  if (limits.max_blob_in_memory_space < limits.min_page_file_size)
+    limits.max_blob_in_memory_space = limits.min_page_file_size;
 
   // Don't do specialty configuration for error size (-1). Allow no disk.
   if (disk_size >= 0) {
@@ -102,8 +111,10 @@ BlobStorageLimits CalculateBlobStorageLimitsImpl(const FilePath& storage_dir,
     limits.desired_max_disk_space = static_cast<uint64_t>(disk_size / 10ll);
 #endif
   }
-  UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.MaxDiskSpace",
-                          limits.desired_max_disk_space / kMegabyte);
+  if (disk_enabled) {
+    UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.MaxDiskSpace2",
+                            limits.desired_max_disk_space / kMegabyte);
+  }
   limits.effective_max_disk_space = limits.desired_max_disk_space;
 
   CHECK(limits.IsValid());
@@ -145,7 +156,8 @@ EmptyFilesResult CreateEmptyFiles(
     DiskSpaceFuncPtr disk_space_function,
     scoped_refptr<base::TaskRunner> file_task_runner,
     std::vector<base::FilePath> file_paths) {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   File::Error dir_create_status = CreateBlobDirectory(blob_storage_dir);
   if (dir_create_status != File::FILE_OK) {
@@ -186,7 +198,8 @@ std::pair<FileCreationInfo, int64_t> CreateFileAndWriteItems(
     size_t total_size_bytes) {
   DCHECK_NE(0u, total_size_bytes);
   UMA_HISTOGRAM_MEMORY_KB("Storage.Blob.PageFileSize", total_size_bytes / 1024);
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   FileCreationInfo creation_info;
   creation_info.file_deletion_runner = std::move(file_task_runner);
@@ -742,12 +755,12 @@ void BlobMemoryController::CalculateBlobStorageLimits() {
     PostTaskAndReplyWithResult(
         file_runner_.get(), FROM_HERE,
         base::BindOnce(&CalculateBlobStorageLimitsImpl, blob_storage_dir_,
-                       true),
+                       true, amount_of_memory_for_testing_),
         base::BindOnce(&BlobMemoryController::OnStorageLimitsCalculated,
                        weak_factory_.GetWeakPtr()));
   } else {
-    OnStorageLimitsCalculated(
-        CalculateBlobStorageLimitsImpl(blob_storage_dir_, false));
+    OnStorageLimitsCalculated(CalculateBlobStorageLimitsImpl(
+        blob_storage_dir_, false, amount_of_memory_for_testing_));
   }
 }
 
@@ -1047,9 +1060,9 @@ void BlobMemoryController::RecordTracingCounters() const {
   TRACE_COUNTER2("Blob", "MemoryUsage", "TotalStorage", blob_memory_used_,
                  "InFlightToDisk", in_flight_memory_used_);
   TRACE_COUNTER1("Blob", "DiskUsage", disk_used_);
-  TRACE_COUNTER1("Blob", "TranfersPendingOnDisk",
+  TRACE_COUNTER1("Blob", "TransfersPendingOnDisk",
                  pending_memory_quota_tasks_.size());
-  TRACE_COUNTER1("Blob", "TranfersBytesPendingOnDisk",
+  TRACE_COUNTER1("Blob", "TransfersBytesPendingOnDisk",
                  pending_memory_quota_total_size_);
 }
 

@@ -68,6 +68,7 @@ function otherStatementsCallback(tx)
     executeStatement(tx, "INSERT INTO Test VALUES (1);", "SQLITE_INSERT");
     executeStatement(tx, "UPDATE Test SET Foo = 2 WHERE Foo = 1;", "SQLITE_UPDATE");
     executeStatement(tx, "PRAGMA cache_size;", "SQLITE_PRAGMA");
+    executeStatement(tx, "SELECT * FROM pragma_busy_timeout();", "SQLITE_PRAGMA_FUNCTION");
 
     executeStatement(tx, "ALTER TABLE Test RENAME TO TestTable;", "SQLITE_ALTER_TABLE");
     // Rename the table back to its original name.

@@ -6,14 +6,15 @@
 
 #include "xfa/fxfa/parser/cxfa_adobeextensionlevel.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kAdobeExtensionLevelAttributeData[] = {
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kAdobeExtensionLevelName[] = L"adobeExtensionLevel";
+};
 
 }  // namespace
 
@@ -24,8 +25,8 @@ CXFA_AdobeExtensionLevel::CXFA_AdobeExtensionLevel(CXFA_Document* doc,
                 XFA_XDPPACKET_Config,
                 XFA_ObjectType::ContentNode,
                 XFA_Element::AdobeExtensionLevel,
-                nullptr,
+                {},
                 kAdobeExtensionLevelAttributeData,
-                kAdobeExtensionLevelName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_AdobeExtensionLevel::~CXFA_AdobeExtensionLevel() {}
+CXFA_AdobeExtensionLevel::~CXFA_AdobeExtensionLevel() = default;

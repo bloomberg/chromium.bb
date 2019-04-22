@@ -26,9 +26,9 @@
 #include "ppapi/thunk/enter.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/public/platform/web_feature.mojom.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -177,12 +177,12 @@ bool CreateWebURLRequest(PP_Instance instance,
     name_version = "internal_testing_only";
   }
 
-  dest->SetURL(
+  dest->SetUrl(
       frame->GetDocument().CompleteURL(WebString::FromUTF8(data->url)));
   dest->SetReportUploadProgress(data->record_upload_progress);
 
   if (!data->method.empty())
-    dest->SetHTTPMethod(WebString::FromUTF8(data->method));
+    dest->SetHttpMethod(WebString::FromUTF8(data->method));
 
   dest->SetSiteForCookies(frame->GetDocument().SiteForCookies());
 
@@ -196,7 +196,7 @@ bool CreateWebURLRequest(PP_Instance instance,
   if (!headers.empty()) {
     net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n\r");
     while (it.GetNext()) {
-      dest->AddHTTPHeaderField(WebString::FromUTF8(it.name()),
+      dest->AddHttpHeaderField(WebString::FromUTF8(it.name()),
                                WebString::FromUTF8(it.values()));
     }
   }
@@ -222,7 +222,7 @@ bool CreateWebURLRequest(PP_Instance instance,
         http_body.AppendData(WebData(item.data));
       }
     }
-    dest->SetHTTPBody(http_body);
+    dest->SetHttpBody(http_body);
   }
 
   // Add the "Referer" header if there is a custom referrer. Such requests
@@ -233,7 +233,7 @@ bool CreateWebURLRequest(PP_Instance instance,
 
   if (data->has_custom_content_transfer_encoding &&
       !data->custom_content_transfer_encoding.empty()) {
-    dest->AddHTTPHeaderField(
+    dest->AddHttpHeaderField(
         WebString::FromUTF8("Content-Transfer-Encoding"),
         WebString::FromUTF8(data->custom_content_transfer_encoding));
   }

@@ -101,6 +101,11 @@ struct Cronet_Engine {
   virtual Cronet_RESULT Shutdown() = 0;
   virtual Cronet_String GetVersionString() = 0;
   virtual Cronet_String GetDefaultUserAgent() = 0;
+  virtual void AddRequestFinishedListener(
+      Cronet_RequestFinishedInfoListenerPtr listener,
+      Cronet_ExecutorPtr executor) = 0;
+  virtual void RemoveRequestFinishedListener(
+      Cronet_RequestFinishedInfoListenerPtr listener) = 0;
 
  private:
   Cronet_ClientContext client_context_ = nullptr;
@@ -223,6 +228,24 @@ struct Cronet_UrlRequest {
   Cronet_ClientContext client_context_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequest);
+};
+
+struct Cronet_RequestFinishedInfoListener {
+  Cronet_RequestFinishedInfoListener() = default;
+  virtual ~Cronet_RequestFinishedInfoListener() = default;
+
+  void set_client_context(Cronet_ClientContext client_context) {
+    client_context_ = client_context;
+  }
+  Cronet_ClientContext client_context() const { return client_context_; }
+
+  virtual void OnRequestFinished(
+      Cronet_RequestFinishedInfoPtr request_info) = 0;
+
+ private:
+  Cronet_ClientContext client_context_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(Cronet_RequestFinishedInfoListener);
 };
 
 #endif  // COMPONENTS_CRONET_NATIVE_GENERATED_CRONET_IDL_IMPL_INTERFACE_H_

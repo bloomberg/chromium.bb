@@ -121,6 +121,8 @@ int MapOpenSSLErrorSSL(uint32_t error_code) {
       }
       return ERR_SSL_PROTOCOL_ERROR;
     }
+    case SSL_R_KEY_USAGE_BIT_INCORRECT:
+      return ERR_SSL_KEY_USAGE_INCOMPATIBLE;
     default:
       return ERR_SSL_PROTOCOL_ERROR;
   }
@@ -138,7 +140,7 @@ std::unique_ptr<base::Value> NetLogOpenSSLErrorCallback(
     dict->SetInteger("error_lib", ERR_GET_LIB(error_info.error_code));
     dict->SetInteger("error_reason", ERR_GET_REASON(error_info.error_code));
   }
-  if (error_info.file != NULL)
+  if (error_info.file != nullptr)
     dict->SetString("file", error_info.file);
   if (error_info.line != 0)
     dict->SetInteger("line", error_info.line);
@@ -176,9 +178,9 @@ int MapOpenSSLErrorWithDetails(int err,
     case SSL_ERROR_EARLY_DATA_REJECTED:
       return ERR_EARLY_DATA_REJECTED;
     case SSL_ERROR_SYSCALL:
-      LOG(ERROR) << "OpenSSL SYSCALL error, earliest error code in "
-                    "error queue: " << ERR_peek_error() << ", errno: "
-                 << errno;
+      PLOG(ERROR) << "OpenSSL SYSCALL error, earliest error code in "
+                     "error queue: "
+                  << ERR_peek_error();
       return ERR_FAILED;
     case SSL_ERROR_SSL:
       // Walk down the error stack to find an SSL or net error.

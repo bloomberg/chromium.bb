@@ -12,23 +12,21 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPrintf;
-using chromeos::disks::Disk;
-using chromeos::disks::DiskMountManager;
-using chromeos::CrosDisksClient;
-using chromeos::DBusThreadManager;
-using chromeos::FakeCrosDisksClient;
-using chromeos::MountError;
-using chromeos::MountType;
-using chromeos::disks::MountCondition;
+
+namespace chromeos {
+
+namespace disks {
 
 namespace {
 
@@ -504,6 +502,7 @@ class DiskMountManagerTest : public testing::Test {
     fake_cros_disks_client_ = new FakeCrosDisksClient;
     DBusThreadManager::GetSetterForTesting()->SetCrosDisksClient(
         std::unique_ptr<CrosDisksClient>(fake_cros_disks_client_));
+    PowerManagerClient::InitializeFake();
 
     DiskMountManager::Initialize();
 
@@ -518,6 +517,7 @@ class DiskMountManagerTest : public testing::Test {
   void TearDown() override {
     DiskMountManager::GetInstance()->RemoveObserver(observer_.get());
     DiskMountManager::Shutdown();
+    PowerManagerClient::Shutdown();
     DBusThreadManager::Shutdown();
   }
 
@@ -574,10 +574,10 @@ class DiskMountManagerTest : public testing::Test {
   void InitDisksAndMountPoints() {
     // Disks should be  added first (when adding device mount points it is
     // expected that the corresponding disk is already added).
-    for (size_t i = 0; i < arraysize(kTestDisks); i++)
+    for (size_t i = 0; i < base::size(kTestDisks); i++)
       AddTestDisk(kTestDisks[i]);
 
-    for (size_t i = 0; i < arraysize(kTestMountPoints); i++)
+    for (size_t i = 0; i < base::size(kTestMountPoints); i++)
       AddTestMountPoint(kTestMountPoints[i]);
   }
 
@@ -1534,3 +1534,6 @@ TEST_F(DiskMountManagerTest, UnmountDeviceRecursively_FailFirst) {
 }
 
 }  // namespace
+
+}  // namespace disks
+}  // namespace chromeos

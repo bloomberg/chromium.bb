@@ -28,8 +28,6 @@ class NSHTTPSystemCookieStoreTestDelegate {
         shared_store_([NSHTTPCookieStorage sharedHTTPCookieStorage]),
         store_(std::make_unique<net::NSHTTPSystemCookieStore>(shared_store_)) {}
 
-  bool IsTestEnabled() { return true; }
-
   bool IsCookieSet(NSHTTPCookie* system_cookie, NSURL* url) {
     // Verify that cookie is set in system storage.
     NSHTTPCookie* result_cookie = nil;
@@ -63,8 +61,8 @@ class NSHTTPSystemCookieStoreTestDelegate {
   std::unique_ptr<net::NSHTTPSystemCookieStore> store_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(NSHTTPSystemCookieStore,
-                              SystemCookieStoreTest,
-                              NSHTTPSystemCookieStoreTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(NSHTTPSystemCookieStore,
+                               SystemCookieStoreTest,
+                               NSHTTPSystemCookieStoreTestDelegate);
 
 }  // namespace net

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -141,8 +142,8 @@ bool ChildWindowWin::Initialize() {
 
   thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&CreateWindowsOnThread, gfx::Rect(window_rect).size(), &event,
-                 &window_, &initial_parent_window_));
+      base::BindOnce(&CreateWindowsOnThread, gfx::Rect(window_rect).size(),
+                     &event, &window_, &initial_parent_window_));
   event.Wait();
 
   delegate_->DidCreateAcceleratedSurfaceChildWindow(parent_window_, window_);

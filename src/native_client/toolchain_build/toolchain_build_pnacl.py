@@ -12,6 +12,8 @@
    The real entry plumbing and CLI flags are also in toolchain_main.py.
 """
 
+from __future__ import print_function
+
 import fnmatch
 import logging
 import multiprocessing
@@ -90,14 +92,18 @@ BUILD_CROSS_MINGW = False
 CROSS_MINGW_LIBPATH = '/usr/lib/gcc/i686-w64-mingw32/4.6'
 # Path and version of the native mingw compiler to be installed on Windows hosts
 MINGW_PATH = os.path.join(NACL_DIR, 'mingw32')
-MINGW_VERSION = 'i686-w64-mingw32-4.8.1'
+
+# It's important that there's no git binary in here that shadows the
+# magic git wrapper binary (also called "git") that cipd installs.
+MINGW_VERSION = 'i686-w64-mingw32-4.8.1-nogit'
 
 CHROME_CLANG_DIR = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
                                 'llvm-build', 'Release+Asserts', 'bin')
 CHROME_CLANG = os.path.join(CHROME_CLANG_DIR, 'clang')
 CHROME_CLANGXX = os.path.join(CHROME_CLANG_DIR, 'clang++')
+CHROME_LLD = os.path.join(CHROME_CLANG_DIR, 'lld')
 CHROME_SYSROOT_DIR = os.path.join(os.path.dirname(NACL_DIR), 'build',
-                                  'linux', 'debian_jessie_amd64-sysroot')
+                                  'linux', 'debian_sid_amd64-sysroot')
 
 try:
   # goma documentation recommends using (10 * cpu count)
@@ -310,6 +316,8 @@ def HostArchToolFlags(host, extra_cflags, opts):
       result['CFLAGS'] += extra_cc_flags
       result['LDFLAGS'] += ['-L%(' + FlavoredName('abs_libcxx',
                                                   host, opts) + ')s/lib']
+      if TripleIsLinux(host) and not opts.gcc:
+        result['LDFLAGS'] += ['-fuse-ld=lld']
       result['CXXFLAGS'] += ([
         '-stdlib=libc++',
         '-nostdinc++',
@@ -387,6 +395,8 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
       # does not pass CFLAGS to its compile tests
       cc_list += ['--sysroot=%s' % CHROME_SYSROOT_DIR]
       cxx_list += ['--sysroot=%s' % CHROME_SYSROOT_DIR]
+      if CHROME_CLANG in cc:
+        configure_args.append('LD=' + CHROME_LLD)
 
     configure_args.append('CC=' + ' '.join(cc_list + extra_cc_args))
     configure_args.append('CXX=' + ' '.join(cxx_list + extra_cxx_args))
@@ -419,12 +429,15 @@ def LibCxxHostArchFlags(host, options):
 
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
   if TripleIsLinux(host):
-    cflags = ['--sysroot=%s' % CHROME_SYSROOT_DIR]
+    # -fuse-lld should be an LDFLAG and not a cflag. See CMake bug link below.
+    # The consequence is just extra warnings during the CMake build.
+    cflags = ['--sysroot=%s' % CHROME_SYSROOT_DIR, '-fuse-ld=lld']
     if not TripleIsX8664(host):
       # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux
       cflags.extend(['-m32'])
     cmake_flags.extend(['-DCMAKE_C_FLAGS=%s' % ' '.join(cflags),
-                        '-DCMAKE_CXX_FLAGS=%s' % ' '.join(cflags)])
+                        '-DCMAKE_CXX_FLAGS=%s' % ' '.join(cflags),
+                        '-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld'])
   elif TripleIsMac(host):
     sdk_flags = ' '.join(MAC_SDK_FLAGS)
     cmake_flags.extend(['-DCMAKE_C_FLAGS=' + sdk_flags,
@@ -474,7 +487,7 @@ def CmakeHostArchFlags(host, options):
 def ConfigureBinutilsCommon(host, options, is_pnacl):
   # Binutils still has some warnings when building with clang
   if not options.gcc:
-    warning_flags = ['-Wno-extended-offsetof', '-Wno-absolute-value',
+    warning_flags = ['-Wno-absolute-value',
                     '-Wno-unused-function', '-Wno-unused-const-variable',
                     '-Wno-unneeded-internal-declaration',
                     '-Wno-unused-private-field', '-Wno-format-security']
@@ -1218,9 +1231,9 @@ def InstallMinGWHostCompiler():
     # If that fails, bail out.
     if (not os.path.isfile(zipfilepath) and
         not downloader.GetSecureFile(zipfilename, zipfilepath)):
-        print >>sys.stderr, 'Failed to install MinGW tools:'
-        print >>sys.stderr, 'could not find or download', zipfilename
-        sys.exit(1)
+      print('Failed to install MinGW tools:', file=sys.stderr)
+      print('could not find or download', zipfilename, file=sys.stderr)
+      sys.exit(1)
     logging.info('Extracting %s' % zipfilename)
     zf = zipfile.ZipFile(zipfilepath)
     if os.path.exists(MINGW_PATH):
@@ -1368,20 +1381,20 @@ def main():
                       help='Compile using goma in given directory')
   args, leftover_args = parser.parse_known_args()
   if '-h' in leftover_args or '--help' in leftover_args:
-    print 'The following arguments are specific to toolchain_build_pnacl.py:'
+    print('The following arguments are specific to toolchain_build_pnacl.py:')
     parser.print_help()
-    print 'The rest of the arguments are generic, in toolchain_main.py'
+    print('The rest of the arguments are generic, in toolchain_main.py')
 
   if args.sanitize and not args.cmake:
-    print 'Use of sanitizers requires a cmake build'
+    print('Use of sanitizers requires a cmake build')
     sys.exit(1)
 
   if args.gcc and args.cmake:
-    print 'gcc build is not supported with cmake'
+    print('gcc build is not supported with cmake')
     sys.exit(1)
 
   if args.afl_fuzz_dir and args.gcc:
-    print '--afl-fuzz-dir not allowed when using gcc'
+    print('--afl-fuzz-dir not allowed when using gcc')
     sys.exit(1)
 
   if args.native_clang_driver:

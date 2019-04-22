@@ -14,14 +14,13 @@
 
 #include "api/audio/audio_frame.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/audio_coding/neteq/mock/mock_external_decoder_pcm16b.h"
 #include "modules/audio_coding/neteq/tools/input_audio_file.h"
 #include "modules/audio_coding/neteq/tools/neteq_external_decoder_test.h"
 #include "modules/audio_coding/neteq/tools/rtp_generator.h"
 #include "rtc_base/strings/string_builder.h"
 #include "test/gmock.h"
-#include "test/testsupport/fileutils.h"
+#include "test/testsupport/file_utils.h"
 
 namespace webrtc {
 

@@ -21,7 +21,8 @@ namespace test {
 class FlingBoosterTest : public testing::Test {
  public:
   FlingBoosterTest() : delta_time_(base::TimeDelta::FromMilliseconds(10)) {
-    gesture_scroll_event_.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+    gesture_scroll_event_.SetSourceDevice(
+        blink::WebGestureDevice::kTouchscreen);
   }
 
   WebGestureEvent CreateFlingStart(base::TimeTicks timestamp,
@@ -45,14 +46,14 @@ class FlingBoosterTest : public testing::Test {
   void StartFirstFling() {
     event_time_ = base::TimeTicks() + delta_time_;
     fling_booster_.reset(new FlingBooster(
-        gfx::Vector2dF(1000, 1000), blink::kWebGestureDeviceTouchscreen, 0));
+        gfx::Vector2dF(1000, 1000), blink::WebGestureDevice::kTouchscreen, 0));
     fling_booster_->set_last_fling_animation_time(
         EventTimeStampToSeconds(event_time_));
   }
 
   void CancelFling() {
     WebGestureEvent fling_cancel_event =
-        CreateFlingCancel(event_time_, blink::kWebGestureDeviceTouchscreen);
+        CreateFlingCancel(event_time_, blink::WebGestureDevice::kTouchscreen);
     bool cancel_current_fling;
     EXPECT_TRUE(fling_booster_->FilterGestureEventForFlingBoosting(
         fling_cancel_event, &cancel_current_fling));
@@ -108,7 +109,7 @@ TEST_F(FlingBoosterTest, FlingBoost) {
   // GestureFlingStart in the same direction and at sufficient speed should
   // boost the active fling.
   WebGestureEvent fling_start_event =
-      CreateFlingStart(event_time_, blink::kWebGestureDeviceTouchscreen,
+      CreateFlingStart(event_time_, blink::WebGestureDevice::kTouchscreen,
                        gfx::Vector2dF(1000, 1000), 0);
   EXPECT_TRUE(fling_booster_->FilterGestureEventForFlingBoosting(
       fling_start_event, &cancel_current_fling));
@@ -199,7 +200,7 @@ TEST_F(FlingBoosterTest, NoFlingBoostIfFlingInDifferentDirection) {
   // If the new fling is orthogonal to the existing fling, no boosting should
   // take place, with the new fling replacing the old.
   WebGestureEvent fling_start_event =
-      CreateFlingStart(event_time_, blink::kWebGestureDeviceTouchscreen,
+      CreateFlingStart(event_time_, blink::WebGestureDevice::kTouchscreen,
                        gfx::Vector2dF(-1000, -1000), 0);
   bool cancel_current_fling;
   EXPECT_TRUE(fling_booster_->FilterGestureEventForFlingBoosting(
@@ -238,7 +239,7 @@ TEST_F(FlingBoosterTest, NoFlingBoostIfFlingTooSlow) {
   // If the new fling velocity is too small, no boosting should take place, with
   // the new fling replacing the old.
   WebGestureEvent fling_start_event =
-      CreateFlingStart(event_time_, blink::kWebGestureDeviceTouchscreen,
+      CreateFlingStart(event_time_, blink::WebGestureDevice::kTouchscreen,
                        gfx::Vector2dF(100, 100), 0);
   bool cancel_current_fling;
   EXPECT_TRUE(fling_booster_->FilterGestureEventForFlingBoosting(
@@ -254,7 +255,7 @@ TEST_F(FlingBoosterTest, NoFlingBoostIfPreventBoostingFlagIsSet) {
   // The fling cancellation should not be deferred because of prevent boosting
   // flag set.
   WebGestureEvent fling_cancel_event =
-      CreateFlingCancel(event_time_, blink::kWebGestureDeviceTouchscreen);
+      CreateFlingCancel(event_time_, blink::WebGestureDevice::kTouchscreen);
   fling_cancel_event.data.fling_cancel.prevent_boosting = true;
   bool cancel_current_fling;
   EXPECT_FALSE(fling_booster_->FilterGestureEventForFlingBoosting(
@@ -272,7 +273,7 @@ TEST_F(FlingBoosterTest, NoFlingBoostIfDifferentFlingModifiers) {
 
   // GestureFlingStart with different modifiers should replace the old fling.
   WebGestureEvent fling_start_event =
-      CreateFlingStart(event_time_, blink::kWebGestureDeviceTouchscreen,
+      CreateFlingStart(event_time_, blink::WebGestureDevice::kTouchscreen,
                        gfx::Vector2dF(500, 500), MODIFIER_SHIFT);
   bool cancel_current_fling;
   EXPECT_TRUE(fling_booster_->FilterGestureEventForFlingBoosting(
@@ -292,7 +293,7 @@ TEST_F(FlingBoosterTest, NoFlingBoostIfDifferentFlingSourceDevices) {
   // GestureFlingStart with different source device should not get filtered by
   // fling_booster.
   WebGestureEvent fling_start_event =
-      CreateFlingStart(event_time_, blink::kWebGestureDeviceTouchpad,
+      CreateFlingStart(event_time_, blink::WebGestureDevice::kTouchpad,
                        gfx::Vector2dF(500, 500), 0);
   bool cancel_current_fling;
   EXPECT_FALSE(fling_booster_->FilterGestureEventForFlingBoosting(

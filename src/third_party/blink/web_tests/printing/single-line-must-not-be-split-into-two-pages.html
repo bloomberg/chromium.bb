@@ -1,50 +1,34 @@
-<html>
-<head>
-</head>
+<!DOCTYPE html>
+<script src="../resources/ahem.js"></script>
 <style>
 /* relative positioning ensures underlying Layer */
 .renderingArea {
     position: relative;
+    font: 70px/1 Ahem;
+    line-height: 100px;
 }
 </style>
-<body>
 <p>
 A single line must not be split into two pages.
 This test checks if a single line is not split into two pages.
-To run this test manually, comment out the last two lines of JavaScript
-(See the comment in JavaScript) and then print this page.
-If no lines are split into two pages, the test passes.
+To run this test manually, print this page.
 </p>
 <div class="renderingArea" id="renderingArea1"></div>
+<h2>And now for some really long unbreakable lines:</h2>
 <div class="renderingArea" id="renderingArea2"></div>
-<p>Non-overflowed lines:</p>
-<pre id="nonOverflowedLines"></pre>
-<p>Overflowed lines:</p>
-<pre id="overflowedLines"></pre>
 <script>
 if (window.testRunner)
-    testRunner.dumpAsText();
+    testRunner.setPrinting();
 
 var str = "";
-for (var i = 0; i < 400; i++) {
+for (var i = 0; i < 30; i++) {
   str += "WWWWWW<br />";
 }
 document.getElementById("renderingArea1").innerHTML = str;
-if (window.internals)
-    document.getElementById("nonOverflowedLines").innerText = internals.elementLayoutTreeAsText(document.getElementById("renderingArea1"));
 
 str = "";
-for (var i = 0; i < 400; i++) {
+for (var i = 0; i < 30; i++) {
   str += "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW<br />";
 }
 document.getElementById("renderingArea2").innerHTML = str;
-if (window.internals)
-    document.getElementById("overflowedLines").innerText = internals.elementLayoutTreeAsText(document.getElementById("renderingArea2"));
-
-// To test manually, comment out the following two lines,
-// print this page, and check if no lines are split across two pages.
-document.getElementById("renderingArea1").innerHTML = "";
-document.getElementById("renderingArea2").innerHTML = "";
 </script>
-</body>
-</html>

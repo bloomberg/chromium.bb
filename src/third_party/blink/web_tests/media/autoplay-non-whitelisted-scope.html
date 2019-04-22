@@ -13,7 +13,7 @@ test(function() {
 }, "Prerequisites to running the rest of the tests");
 
 internals.settings.setAutoplayPolicy('user-gesture-required');
-internals.settings.setMediaPlaybackGestureWhitelistScope(
+internals.settings.setWebAppScope(
     document.URL.substring(0, document.URL.lastIndexOf('/') + 1) + "foo/");
 
 testRunner.setAutoplayAllowed(true);

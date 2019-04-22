@@ -11,15 +11,15 @@ option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
+import "call_stack_profile.proto";
 import "execution_context.proto";
 import "perf_data.proto";
 import "perf_stat.proto";
-import "call_stack_profile.proto";
 
 // Protocol buffer for collected sample-based profiling data.
 // Contains the parameters and data from a single profile collection event.
 
-// Next tag: 13
+// Next tag: 15
 message SampledProfile {
   // Indicates the event that triggered this collection.
   enum TriggerEvent {
@@ -59,6 +59,20 @@ message SampledProfile {
 
   // The thread in which the profile was collected.
   optional Thread thread = 12;
+
+  // Map of Chrome PIDs running on the system when the profile was collected.
+  // Each Chrome PID is mapped to its process type.
+  // This field and the below thread_types field assume that the PID/TID
+  // information are collected in a short duration for a single session such
+  // that, the PID/TID reuse is highly unlikely.
+  // The information from these two fields is used to map chrome samples
+  // collected for a specific PID/TID to the corresponding process type and
+  // thread type.
+  map<uint32, Process> process_types = 13;
+
+  // Map of Chrome TIDs running on the system when the profile was collected.
+  // Each Chrome TID is mapped to its thread type.
+  map<uint32, Thread> thread_types = 14;
 
   // Fields 2-3: Time durations are given in ticks, and represent system uptime
   // rather than wall time.

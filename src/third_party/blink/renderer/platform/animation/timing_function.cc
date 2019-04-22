@@ -106,9 +106,6 @@ String StepsTimingFunction::ToString() const {
     case StepPosition::START:
       position_string = "start";
       break;
-    case StepPosition::MIDDLE:
-      position_string = "middle";
-      break;
     case StepPosition::END:
       // do not specify step position in output
       break;

@@ -44,7 +44,8 @@ class VIZ_COMMON_EXPORT DrawQuad {
     TEXTURE_CONTENT,
     TILED_CONTENT,
     YUV_VIDEO_CONTENT,
-    MATERIAL_LAST = YUV_VIDEO_CONTENT
+    VIDEO_HOLE,
+    MATERIAL_LAST = VIDEO_HOLE
   };
 
   DrawQuad(const DrawQuad& other);
@@ -73,7 +74,9 @@ class VIZ_COMMON_EXPORT DrawQuad {
   bool IsDebugQuad() const { return material == DEBUG_BORDER; }
 
   bool ShouldDrawWithBlending() const {
-    return needs_blending || shared_quad_state->opacity < 1.0f;
+    return needs_blending || shared_quad_state->opacity < 1.0f ||
+           shared_quad_state->blend_mode != SkBlendMode::kSrcOver ||
+           !shared_quad_state->rounded_corner_bounds.IsEmpty();
   }
 
   // Is the left edge of this tile aligned with the originating layer's

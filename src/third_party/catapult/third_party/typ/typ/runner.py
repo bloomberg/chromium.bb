@@ -39,7 +39,7 @@ if dir_above_typ not in sys.path:  # pragma: no cover
 
 from typ import json_results
 from typ.arg_parser import ArgumentParser
-from typ.expectations_parser import TestExpectationParser, ParseError
+from typ.expectations_parser import TestExpectations
 from typ.host import Host
 from typ.pool import make_pool
 from typ.stats import Stats
@@ -72,22 +72,39 @@ class TestInput(object):
 
 class TestSet(object):
 
-    def __init__(self, parallel_tests=None, isolated_tests=None,
-                 tests_to_skip=None):
-
-        def promote(tests):
-            tests = tests or []
-            return [test if isinstance(test, TestInput) else TestInput(test)
-                    for test in tests]
-
-        self.parallel_tests = promote(parallel_tests)
-        self.isolated_tests = promote(isolated_tests)
-        self.tests_to_skip = promote(tests_to_skip)
+    def __init__(self, test_name_prefix=''):
+        self.test_name_prefix = test_name_prefix
+        self.parallel_tests = []
+        self.isolated_tests = []
+        self.tests_to_skip = []
 
     def copy(self):
-        return TestSet(
-            self.parallel_tests[:], self.isolated_tests[:],
-            self.tests_to_skip[:])
+        test_set = TestSet(self.test_name_prefix)
+        test_set.tests_to_skip = self.tests_to_skip[:]
+        test_set.isolated_tests = self.isolated_tests[:]
+        test_set.parallel_tests = self.parallel_tests[:]
+        return test_set
+
+    def _get_test_name(self, test_case):
+        _validate_test_starts_with_prefix(
+            self.test_name_prefix, test_case.id())
+        return test_case.id()[len(self.test_name_prefix):]
+
+    def add_test_to_skip(self, test_case, reason=''):
+        self.tests_to_skip.append(
+            TestInput(self._get_test_name(test_case), reason))
+
+    def add_test_to_run_isolated(self, test_case):
+        self.isolated_tests.append(TestInput(self._get_test_name(test_case)))
+
+    def add_test_to_run_in_parallel(self, test_case):
+        self.parallel_tests.append(TestInput(self._get_test_name(test_case)))
+
+
+def _validate_test_starts_with_prefix(prefix, test_name):
+    assert test_name.startswith(prefix), (
+        'The test prefix passed at the command line does not match the prefix '
+        'of all the tests generated')
 
 
 class WinMultiprocessing(object):
@@ -121,8 +138,9 @@ class Runner(object):
         self.win_multiprocessing = WinMultiprocessing.spawn
         self.final_responses = []
         self.has_expectations = False
-        self.expectations = {}
-        self.tags = set()
+        self.expectations = None
+        self.metadata = {}
+        self.path_delimiter = json_results.DEFAULT_TEST_SEPARATOR
 
         # initialize self.args to the defaults.
         parser = ArgumentParser(self.host)
@@ -192,11 +210,21 @@ class Runner(object):
             _sort_inputs(test_set.parallel_tests +
                          test_set.isolated_tests +
                          test_set.tests_to_skip)]
+            self.metadata = {tup[0]:tup[1]
+                             for  tup in
+                             [md.split('=', 1) for md in self.args.metadata]}
+            if self.args.test_name_prefix:
+                self.metadata['test_name_prefix'] = self.args.test_name_prefix
+            if self.args.tags:
+                self.metadata['tags'] = self.args.tags
+            if self.args.expectations_files:
+                self.metadata[
+                    'expectations_files'] = self.args.expectations_files
             if self.args.list_only:
                 self.print_('\n'.join(all_tests))
             else:
                 for _ in range(self.args.repeat):
-                    current_ret, full_results= self._run_tests(
+                    current_ret, full_results=self._run_tests(
                         result_set, test_set.copy(), all_tests)
                     ret = ret or current_ret
 
@@ -375,6 +403,7 @@ class Runner(object):
 
     def parse_expectations(self):
         args = self.args
+
         if len(args.expectations_files) != 1:
             # TODO(crbug.com/835690): Fix this.
             self.print_(
@@ -382,22 +411,18 @@ class Runner(object):
                 stream=self.host.stderr)
             return 1
         contents = self.host.read_text_file(args.expectations_files[0])
-        try:
-            parser = TestExpectationParser(contents)
-        except ParseError as e:
-            self.print_(e.message, stream=self.host.stderr)
-            return 1
+
+        expectations = TestExpectations(set(args.tags))
+        err, msg = expectations.parse_tagged_list(contents)
+        if err:
+            self.print_(msg, stream=self.host.stderr)
+            return err
+
         self.has_expectations = True
-        for exp in parser.expectations:
-            self.expectations.setdefault(exp.test, [])
-            # TODO(crbug.com/83560) - Add support for multiple policies
-            # for supporting multiple matching lines, e.g., allow/union,
-            # reject, etc.
-            self.expectations[exp.test].append(exp)
-        self.tags = set(args.tags)
+        self.expectations = expectations
 
     def find_tests(self, args):
-        test_set = TestSet()
+        test_set = TestSet(self.args.test_name_prefix)
 
         orig_skip = unittest.skip
         orig_skip_if = unittest.skipIf
@@ -407,7 +432,7 @@ class Runner(object):
 
         try:
             names = self._name_list_from_args(args)
-            classifier = self.classifier or _default_classifier(args)
+            classifier = self.classifier or self.default_classifier
 
             for name in names:
                 try:
@@ -495,7 +520,8 @@ class Runner(object):
                             add_tests(suite)
                 elif not name in found:
                     found.add(name)
-                    add_tests(loader.loadTestsFromName(name))
+                    add_tests(loader.loadTestsFromName(
+                        self.args.test_name_prefix + name))
 
         # pylint: disable=no-member
         if hasattr(loader, 'errors') and loader.errors:  # pragma: python3
@@ -506,13 +532,28 @@ class Runner(object):
 
     def _run_tests(self, result_set, test_set, all_tests):
         h = self.host
+        self.last_runs_retry_on_failure_tests = set()
+
+        def get_tests_to_retry(results):
+            # If the --retry-only-retry-on-failure-tests command line argument
+            # is passed , then a set of test failures with the RetryOnFailure
+            # expectation from the last run of tests will be returned. The
+            # self.last_runs_retry_on_failure_tests will be set to an empty set
+            # for the next run of tests. Otherwise all regressions from the
+            # last run will be returned.
+            if self.args.retry_only_retry_on_failure_tests:
+                ret = self.last_runs_retry_on_failure_tests.copy()
+                self.last_runs_retry_on_failure_tests = set()
+                return ret
+            else:
+                return json_results.regressions(results)
 
         self._run_one_set(self.stats, result_set, test_set)
 
-        failed_tests = sorted(json_results.failed_test_names(result_set))
+        tests_to_retry = sorted(get_tests_to_retry(result_set))
         retry_limit = self.args.retry_limit
 
-        while retry_limit and failed_tests:
+        while retry_limit and tests_to_retry:
             if retry_limit == self.args.retry_limit:
                 self.flush()
                 self.args.overwrite = False
@@ -526,20 +567,24 @@ class Runner(object):
             self.print_('')
 
             stats = Stats(self.args.status_format, h.time, 1)
-            stats.total = len(failed_tests)
-            tests_to_retry = TestSet(isolated_tests=list(failed_tests))
+            stats.total = len(tests_to_retry)
+            test_set = TestSet(self.args.test_name_prefix)
+            test_set.isolated_tests = [
+                TestInput(name) for name in tests_to_retry]
+            tests_to_retry = test_set
             retry_set = ResultSet()
             self._run_one_set(stats, retry_set, tests_to_retry)
             result_set.results.extend(retry_set.results)
-            failed_tests = json_results.failed_test_names(retry_set)
+            tests_to_retry = get_tests_to_retry(retry_set)
             retry_limit -= 1
 
         if retry_limit != self.args.retry_limit:
             self.print_('')
 
-        full_results = json_results.make_full_results(self.args.metadata,
+        full_results = json_results.make_full_results(self.metadata,
                                                       int(h.time()),
-                                                      all_tests, result_set)
+                                                      all_tests, result_set,
+                                                      self.path_delimiter)
 
         return (json_results.exit_code_from_full_results(full_results),
                 full_results)
@@ -578,14 +623,19 @@ class Runner(object):
                          _setup_process, _teardown_process)
         try:
             while test_inputs or running_jobs:
-                while test_inputs and (len(running_jobs) < self.args.jobs):
+                while test_inputs and (len(running_jobs) < jobs):
                     test_input = test_inputs.pop(0)
                     stats.started += 1
                     pool.send(test_input)
                     running_jobs.add(test_input.name)
                     self._print_test_started(stats, test_input)
 
-                result = pool.get()
+                result, should_retry_on_failure = pool.get()
+                if (self.args.retry_only_retry_on_failure_tests and
+                    result.actual == ResultType.Failure and
+                    should_retry_on_failure):
+                    self.last_runs_retry_on_failure_tests.add(result.name)
+
                 running_jobs.remove(result.name)
                 result_set.add(result)
                 stats.finished += 1
@@ -743,9 +793,9 @@ class Runner(object):
         trace = OrderedDict()
         trace['traceEvents'] = []
         trace['otherData'] = {}
-        for m in self.args.metadata:
-            k, v = m.split('=')
-            trace['otherData'][k] = v
+
+        if self.metadata:
+            trace['otherData'] = self.metadata
 
         for result in result_set.results:
             started = int((result.started - self.stats.started_time) * 1000000)
@@ -771,46 +821,72 @@ class Runner(object):
             trace['traceEvents'].append(event)
         return trace
 
+    def expectations_for(self, test_case):
+      if self.has_expectations:
+          return self.expectations.expectations_for(
+              test_case.id()[len(self.args.test_name_prefix):])
+      else:
+          return (set([ResultType.Pass]), False)
 
-def _matches(name, globs):
-    return any(fnmatch.fnmatch(name, glob) for glob in globs)
+    def default_classifier(self, test_set, test):
+        if self.matches_filter(test):
+            if not self.args.all and self.should_skip(test):
+                test_set.add_test_to_skip(test, 'skipped by request')
+            elif self.should_isolate(test):
+                test_set.add_test_to_run_isolated(test)
+            else:
+                test_set.add_test_to_run_in_parallel(test)
 
+    def matches_filter(self, test_case):
+        _validate_test_starts_with_prefix(
+            self.args.test_name_prefix, test_case.id())
+        test_name = test_case.id()[len(self.args.test_name_prefix):]
+        return (not self.args.test_filter or any(
+            fnmatch.fnmatch(test_name, glob)
+            for glob in self.args.test_filter.split('::')))
 
-def _default_classifier(args):
-    def default_classifier(test_set, test):
-        name = test.id()
-        if not args.all and _matches(name, args.skip):
-            test_set.tests_to_skip.append(TestInput(name,
-                                                    'skipped by request'))
-        elif _matches(name, args.isolate):
-            test_set.isolated_tests.append(TestInput(name))
+    def should_isolate(self, test_case):
+        _validate_test_starts_with_prefix(
+            self.args.test_name_prefix, test_case.id())
+        test_name = test_case.id()[len(self.args.test_name_prefix):]
+        return any(fnmatch.fnmatch(test_name, glob)
+                   for glob in self.args.isolate)
+
+    def should_skip(self, test_case):
+        _validate_test_starts_with_prefix(
+            self.args.test_name_prefix, test_case.id())
+        test_name = test_case.id()[len(self.args.test_name_prefix):]
+        if self.has_expectations:
+            expected_results, _ = self.expectations.expectations_for(test_name)
         else:
-            test_set.parallel_tests.append(TestInput(name))
-    return default_classifier
+            expected_results = set([ResultType.Pass])
+        return (
+            ResultType.Skip in expected_results or
+            any(fnmatch.fnmatch(test_name, glob) for glob in self.args.skip))
 
 
 def _test_adder(test_set, classifier):
-    def add_tests(obj):
-        if isinstance(obj, unittest.suite.TestSuite):
-            for el in obj:
-                add_tests(el)
-        elif (obj.id().startswith('unittest.loader.LoadTestsFailure') or
-              obj.id().startswith('unittest.loader.ModuleImportFailure')):
-            # Access to protected member pylint: disable=W0212
-            module_name = obj._testMethodName
-            try:
-                method = getattr(obj, obj._testMethodName)
-                method()
-            except Exception as e:
-                if 'LoadTests' in obj.id():
-                    raise _AddTestsError('%s.load_tests() failed: %s'
-                                         % (module_name, str(e)))
-                else:
-                    raise _AddTestsError(str(e))
-        else:
-            assert isinstance(obj, unittest.TestCase)
-            classifier(test_set, obj)
-    return add_tests
+        def add_tests(obj):
+            if isinstance(obj, unittest.suite.TestSuite):
+                for el in obj:
+                    add_tests(el)
+            elif (obj.id().startswith('unittest.loader.LoadTestsFailure') or
+                  obj.id().startswith('unittest.loader.ModuleImportFailure')):
+                # Access to protected member pylint: disable=W0212
+                module_name = obj._testMethodName
+                try:
+                    method = getattr(obj, obj._testMethodName)
+                    method()
+                except Exception as e:
+                    if 'LoadTests' in obj.id():
+                        raise _AddTestsError('%s.load_tests() failed: %s'
+                                             % (module_name, str(e)))
+                    else:
+                        raise _AddTestsError(str(e))
+            else:
+                assert isinstance(obj, unittest.TestCase)
+                classifier(test_set, obj)
+        return add_tests
 
 
 class _Child(object):
@@ -834,8 +910,8 @@ class _Child(object):
         self.loaded_suites = {}
         self.cov = None
         self.has_expectations = parent.has_expectations
-        self.tags = parent.tags
         self.expectations = parent.expectations
+        self.test_name_prefix = parent.args.test_name_prefix
 
 
 def _setup_process(host, worker_num, child):
@@ -888,7 +964,12 @@ def _run_one_test(child, test_input):
     # This comes up when using the FakeTestLoader and testing typ itself,
     # but could come up when testing non-typ code as well.
     h.capture_output(divert=not child.passthrough)
-    expected_results = expected_results_for(child, test_name)
+    if child.has_expectations:
+      expected_results, should_retry_on_failure = (child.expectations
+                                                   .expectations_for(test_name))
+    else:
+      expected_results, should_retry_on_failure = {ResultType.Pass}, False
+
     ex_str = ''
     try:
         orig_skip = unittest.skip
@@ -901,22 +982,24 @@ def _run_one_test(child, test_input):
             # in find_tests() and run() instead, so that we'd never actually
             # get here with a test we wanted to skip?
             h.restore_output()
-            return Result(test_name, ResultType.Skip, started, 0,
-                          child.worker_num, unexpected=False, pid=pid)
+            return (Result(test_name, ResultType.Skip, started, 0,
+                           child.worker_num, expected=expected_results,
+                           unexpected=False, pid=pid), False)
 
+        test_name_to_load = child.test_name_prefix + test_name
         try:
-            suite = child.loader.loadTestsFromName(test_name)
+            suite = child.loader.loadTestsFromName(test_name_to_load)
         except Exception as e:
             ex_str = ('loadTestsFromName("%s") failed: %s\n%s\n' %
-                      (test_name, e, traceback.format_exc()))
+                      (test_name_to_load, e, traceback.format_exc()))
             try:
-                suite = _load_via_load_tests(child, test_name)
+                suite = _load_via_load_tests(child, test_name_to_load)
                 ex_str += ('\nload_via_load_tests(\"%s\") returned %d tests\n' %
-                           (test_name, len(list(suite))))
+                           (test_name_to_load, len(list(suite))))
             except Exception as e:  # pragma: untested
                 suite = []
                 ex_str += ('\nload_via_load_tests("%s") failed: %s\n%s\n' %
-                           (test_name, e, traceback.format_exc()))
+                           (test_name_to_load, e, traceback.format_exc()))
     finally:
         unittest.skip = orig_skip
         unittest.skipIf = orig_skip_if
@@ -928,9 +1011,9 @@ def _run_one_test(child, test_input):
             err += '\n  ' + '\n  '.join(ex_str.splitlines())
 
         h.restore_output()
-        return Result(test_name, ResultType.Failure, started, took=0,
-                      worker=child.worker_num, unexpected=True, code=1,
-                      err=err, pid=pid)
+        return (Result(test_name, ResultType.Failure, started, took=0,
+                       worker=child.worker_num, unexpected=True, code=1,
+                       err=err, pid=pid), False)
 
     test_case = tests[0]
     if isinstance(test_case, TypTestCase):
@@ -951,32 +1034,10 @@ def _run_one_test(child, test_input):
         out, err = h.restore_output()
 
     took = h.time() - started
-    return _result_from_test_result(test_result, test_name, started, took, out,
+    return (_result_from_test_result(test_result, test_name, started, took, out,
                                     err, child.worker_num, pid,
-                                    expected_results, child.has_expectations)
-
-
-def expected_results_for(child, test):
-    # A TestExpectations file may contain multiple lines of tests with
-    # the same name, each with different sets of tags for the results,
-    # e.g.:
-    #  [ Mac ] TestFoo.test_bar [ Skip ]
-    #  [ Debug Win ] TestFoo.test_bar [ Pass Failure ]
-    #
-    # To determine the expected results for a test, we have to loop over
-    # all of the failures matching a test, find the ones whose tags are
-    # a subset of the ones in effect, and  return the union of all of the
-    # results. For example, if the runner is running with {Debug, Mac, Mac10.12}
-    # then lines with no tags, {Mac}, or {Debug, Mac} would all match, but
-    # {Debug, Win} would not.
-    #
-    # TODO(crbug.com/83560): Handle multiple policies for multiple matching
-    # lines (also see above in parse_expectations()).
-    results = set()
-    for exp in child.expectations.get(test, []):
-        if exp.tags.issubset(child.tags):
-            results.update(exp.results)
-    return results if results else {ResultType.Pass}
+                                    expected_results, child.has_expectations),
+            should_retry_on_failure)
 
 
 def _run_under_debugger(host, test_case, suite,
@@ -1011,6 +1072,7 @@ def _result_from_test_result(test_result, test_name, started, took, out, err,
             unexpected = actual not in expected_results
         else:
             unexpected = False
+            expected_results = {ResultType.Skip}
     elif test_result.expectedFailures:
         actual = ResultType.Failure
         code = 1

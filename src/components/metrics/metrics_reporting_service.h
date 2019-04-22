@@ -46,8 +46,8 @@ class MetricsReportingService : public ReportingService {
  private:
   // ReportingService:
   LogStore* log_store() override;
-  std::string GetUploadUrl() const override;
-  std::string GetInsecureUploadUrl() const override;
+  GURL GetUploadUrl() const override;
+  GURL GetInsecureUploadUrl() const override;
   base::StringPiece upload_mime_type() const override;
   MetricsLogUploader::MetricServiceType service_type() const override;
   void LogActualUploadInterval(base::TimeDelta interval) override;

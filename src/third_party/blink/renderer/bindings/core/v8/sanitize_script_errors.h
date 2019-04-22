@@ -26,7 +26,7 @@ namespace blink {
 enum class SanitizeScriptErrors {
   // "muted errors" is false
   kDoNotSanitize,
-  // *muted errors" is true
+  // "muted errors" is true
   kSanitize
 };
 

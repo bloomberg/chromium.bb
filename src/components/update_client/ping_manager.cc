@@ -23,7 +23,6 @@
 #include "components/update_client/protocol_serializer.h"
 #include "components/update_client/request_sender.h"
 #include "components/update_client/utils.h"
-#include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
 
 namespace update_client {

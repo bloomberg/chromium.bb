@@ -597,7 +597,7 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest, AddToServerOnMultiChange) {
                               sync_pb::WalletMetadataSpecifics::CARD,
                               kCard2Utf8, 7, 8, kAddr2Utf8))));
 
-  local_.AutofillMultipleChanged();
+  local_.AutofillMultipleChangedBySync();
 }
 
 // Verify that higher values of existing metadata are sent to the sync server
@@ -623,7 +623,7 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest,
                               sync_pb::WalletMetadataSpecifics::CARD,
                               kCard1Utf8, 7, 8, kAddr2Utf8))));
 
-  local_.AutofillMultipleChanged();
+  local_.AutofillMultipleChangedBySync();
 }
 
 // Verify that lower values of existing metadata are not sent to the sync server
@@ -641,7 +641,7 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest,
 
   EXPECT_CALL(local_, SendChangesToSyncServer(_)).Times(0);
 
-  local_.AutofillMultipleChanged();
+  local_.AutofillMultipleChangedBySync();
 }
 
 // Verify that erased local metadata is also erased from the sync server when
@@ -663,7 +663,7 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest,
           SyncChangeMatches(syncer::SyncChange::ACTION_DELETE,
                             kCard1SyncTag))));
 
-  local_.AutofillMultipleChanged();
+  local_.AutofillMultipleChangedBySync();
 }
 
 // Verify that erased local metadata is not erased from the sync server when
@@ -682,7 +682,7 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest,
 
   EXPECT_CALL(local_, SendChangesToSyncServer(_)).Times(0);
 
-  local_.AutofillMultipleChanged();
+  local_.AutofillMultipleChangedBySync();
 }
 
 // Verify that erased local metadata is also erased from the sync server when
@@ -706,7 +706,7 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest,
           SyncChangeMatches(syncer::SyncChange::ACTION_DELETE,
                             kCard1SyncTag))));
 
-  local_.AutofillMultipleChanged();
+  local_.AutofillMultipleChangedBySync();
   local_.OnWalletDataTrackingStateChanged(true);
 }
 
@@ -1001,7 +1001,7 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest,
           SyncChangeMatches(syncer::SyncChange::ACTION_DELETE,
                             kCard2SyncTag))));
 
-  local_.AutofillMultipleChanged();
+  local_.AutofillMultipleChangedBySync();
 }
 
 // Verify that Wallet data arriving after metadata will not send lower metadata
@@ -1028,7 +1028,7 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest,
                           AutofillCardMetadataMatches(kCard1, 7, 8, kAddr2)));
   EXPECT_CALL(local_, SendChangesToSyncServer(_)).Times(0);
 
-  local_.AutofillMultipleChanged();
+  local_.AutofillMultipleChangedBySync();
 }
 
 // Verify that processing a small subset of metadata changes before any Wallet
@@ -1072,7 +1072,7 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest,
                           AutofillCardMetadataMatches(kCard2, 15, 16, kAddr1)));
   EXPECT_CALL(local_, SendChangesToSyncServer(_)).Times(0);
 
-  local_.AutofillMultipleChanged();
+  local_.AutofillMultipleChangedBySync();
 }
 
 // Verify that the merge logic keeps the best data on a field by field basis.
@@ -1337,8 +1337,8 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest,
   // Make the backend broadcast back the notifications it receives
   ON_CALL(backend_, NotifyOfMultipleAutofillChanges())
       .WillByDefault(
-          DoAll(Invoke(&local_, &MockService::AutofillMultipleChanged),
-                Invoke(&remote_, &MockService::AutofillMultipleChanged)));
+          DoAll(Invoke(&local_, &MockService::AutofillMultipleChangedBySync),
+                Invoke(&remote_, &MockService::AutofillMultipleChangedBySync)));
 
   // Get initial data from |remote_| into |local_|.
   local_.UpdateAddressStats(BuildAddress(kAddr1, 2, 2, true));

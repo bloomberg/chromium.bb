@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -17,12 +18,13 @@
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/location_bar_model_impl.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,7 +50,7 @@ class LocationBarViewBrowserTest : public InProcessBrowserTest {
   PageActionIconView* GetZoomView() {
     return BrowserView::GetBrowserViewForBrowser(browser())
         ->toolbar_button_provider()
-        ->GetPageActionIconContainerView()
+        ->GetOmniboxPageActionIconContainerView()
         ->GetPageActionIconView(PageActionIconType::kZoom);
   }
 
@@ -298,7 +300,6 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
             {kBothToLockVariation, kMockNonsecureURL, 0, security_state::NONE,
              false, kEmptyString}};
 
-  security_state::SecurityInfo security_info;
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
@@ -319,8 +320,7 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
     }
     SetUpInterceptor(c.cert_status);
     ui_test_utils::NavigateToURL(browser(), c.url);
-    helper->GetSecurityInfo(&security_info);
-    EXPECT_EQ(c.security_level, security_info.security_level);
+    EXPECT_EQ(c.security_level, helper->GetSecurityLevel());
     EXPECT_EQ(c.should_show_text,
               location_bar_view->location_icon_view()->ShouldShowLabel());
     EXPECT_EQ(c.indicator_text,

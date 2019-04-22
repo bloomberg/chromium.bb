@@ -18,14 +18,28 @@ class PrepopulatedComputedStylePropertyMapTest : public PageTestBase {
  public:
   PrepopulatedComputedStylePropertyMapTest() = default;
 
+  void SetElementWithStyle(const String& value) {
+    GetDocument().body()->SetInnerHTMLFromString("<div id='target' style='" +
+                                                 value + "'></div>");
+    UpdateAllLifecyclePhasesForTest();
+  }
+
+  const CSSValue* GetNativeValue(const CSSPropertyID& property_id) {
+    Element* node = GetDocument().getElementById("target");
+    return CSSProperty::Get(property_id)
+        .CSSValueFromComputedStyle(node->ComputedStyleRef(),
+                                   nullptr /* layout_object */, node,
+                                   false /* allow_visited_style */);
+  }
+
   CSSComputedStyleDeclaration* Declaration() const {
     return declaration_.Get();
   }
 
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    declaration_ =
-        CSSComputedStyleDeclaration::Create(GetDocument().documentElement());
+    declaration_ = MakeGarbageCollected<CSSComputedStyleDeclaration>(
+        GetDocument().documentElement());
   }
 
   Node* PageNode() { return GetDocument().documentElement(); }
@@ -36,7 +50,7 @@ class PrepopulatedComputedStylePropertyMapTest : public PageTestBase {
 
 TEST_F(PrepopulatedComputedStylePropertyMapTest, NativePropertyAccessors) {
   Vector<CSSPropertyID> native_properties(
-      {CSSPropertyColor, CSSPropertyAlignItems});
+      {CSSPropertyID::kColor, CSSPropertyID::kAlignItems});
   Vector<AtomicString> empty_custom_properties;
 
   UpdateAllLifecyclePhasesForTest();
@@ -109,6 +123,12 @@ TEST_F(PrepopulatedComputedStylePropertyMapTest, CustomPropertyAccessors) {
   EXPECT_EQ(CSSStyleValueVector(),
             map->getAll(&GetDocument(), "--quix", exception_state));
   EXPECT_FALSE(exception_state.HadException());
+}
+
+TEST_F(PrepopulatedComputedStylePropertyMapTest, WidthBeingAuto) {
+  SetElementWithStyle("width:auto");
+  const CSSValue* value = GetNativeValue(CSSPropertyID::kWidth);
+  EXPECT_EQ("auto", value->CssText());
 }
 
 }  // namespace blink

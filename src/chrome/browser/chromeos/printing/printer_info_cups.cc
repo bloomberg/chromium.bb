@@ -8,6 +8,7 @@
 #include <array>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -97,7 +98,7 @@ void OnPrinterQueried(const chromeos::PrinterInfoCallback& callback,
                       std::unique_ptr<::printing::PrinterInfo> info) {
   if (!info) {
     VLOG(1) << "Could not reach printer";
-    callback.Run(false, std::string(), std::string(), std::string(), false);
+    callback.Run(false, std::string(), std::string(), std::string(), {}, false);
     return;
   }
 
@@ -115,7 +116,7 @@ void OnPrinterQueried(const chromeos::PrinterInfoCallback& callback,
   }
 
   callback.Run(true, make.as_string(), model.as_string(), info->make_and_model,
-               IsAutoconf(*info));
+               info->document_formats, IsAutoconf(*info));
 }
 
 }  // namespace

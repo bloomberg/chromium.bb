@@ -7,8 +7,7 @@
 #include <cmath>
 
 #include "base/no_destructor.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/system_power_source.h"
 
@@ -91,9 +90,7 @@ SystemPowerSourceAPI::GetFactoryInstance() {
 
 SystemPowerSourceAPI::SystemPowerSourceAPI(content::BrowserContext* context)
     : browser_context_(context), power_manager_observer_(this) {
-  chromeos::PowerManagerClient* power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
-  power_manager_observer_.Add(power_manager_client);
+  power_manager_observer_.Add(chromeos::PowerManagerClient::Get());
 }
 
 SystemPowerSourceAPI::~SystemPowerSourceAPI() = default;
@@ -123,9 +120,8 @@ SystemPowerSourceGetPowerSourceInfoFunction::
 ExtensionFunction::ResponseAction
 SystemPowerSourceGetPowerSourceInfoFunction::Run() {
   const base::Optional<power_manager::PowerSupplyProperties>&
-      power_supply_properties = chromeos::DBusThreadManager::Get()
-                                    ->GetPowerManagerClient()
-                                    ->GetLastStatus();
+      power_supply_properties =
+          chromeos::PowerManagerClient::Get()->GetLastStatus();
 
   if (!power_supply_properties.has_value())
     return RespondNow(NoArguments());
@@ -143,9 +139,7 @@ SystemPowerSourceRequestStatusUpdateFunction::
 
 ExtensionFunction::ResponseAction
 SystemPowerSourceRequestStatusUpdateFunction::Run() {
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->RequestStatusUpdate();
+  chromeos::PowerManagerClient::Get()->RequestStatusUpdate();
   return RespondNow(NoArguments());
 }
 

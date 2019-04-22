@@ -143,7 +143,7 @@ void DataUsageStore::StoreCurrentDataUsageBucket(
       base::Time::FromInternalValue(current.last_updated_timestamp());
 
   buckets_to_save.insert(std::pair<std::string, std::string>(
-      kCurrentBucketIndexKey, base::IntToString(current_bucket_index_)));
+      kCurrentBucketIndexKey, base::NumberToString(current_bucket_index_)));
 
   DataStore::Status status = db_->Put(buckets_to_save);
   if (status != DataStore::Status::OK) {

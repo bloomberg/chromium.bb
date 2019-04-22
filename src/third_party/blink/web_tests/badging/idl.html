@@ -5,9 +5,9 @@
 <script src="../resources/webidl2.js"></script>
 <script src="../resources/idlharness.js"></script>
 <script type="text/plain" id="tested">
-    interface Badge {
+    interface ExperimentalBadge {
       [CallWith=ScriptState, RaisesException]
-      static void set(optional (USVString or long) contents);
+      static void set(optional [EnforceRange] unsigned long long contents);
       [CallWith=ScriptState] static void clear();
     };
 </script>

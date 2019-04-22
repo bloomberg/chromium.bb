@@ -56,9 +56,9 @@ class WaylandClientBlurPerfTests
   DISALLOW_COPY_AND_ASSIGN(WaylandClientBlurPerfTests);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        WaylandClientBlurPerfTests,
-                        testing::Values(4.0, 15.0));
+INSTANTIATE_TEST_SUITE_P(,
+                         WaylandClientBlurPerfTests,
+                         testing::Values(4.0, 15.0));
 
 TEST_P(WaylandClientBlurPerfTests, BlurSigma) {
   const int kWarmUpFrames = 20;

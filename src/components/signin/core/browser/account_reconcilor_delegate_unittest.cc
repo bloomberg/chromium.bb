@@ -45,6 +45,8 @@ static const AccountReconcilorDelegateTestParam kReorderParams[] = {
    // Cookie was lost.
    { "A",              "",             'A',         "A"              },
    { "ABCD",           "",             'A',         "ABCD"           },
+   // B kept in place.
+   { "ADB",            "CB",           'A',         "ABD"            },
    // ACEG kept in place.
    { "ABCDEFGH",       "ACEG",         'A',         "ACEGBDFH"       },
    // C kept in place, but not B.
@@ -141,8 +143,8 @@ TEST_P(AccountReconcilorDelegateTest, ReorderChromeAccountsForReconcile) {
                        GaiaAccountsFromString(order_as_string)));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        AccountReconcilorDelegateTest,
-                        ::testing::ValuesIn(kReorderParams));
+INSTANTIATE_TEST_SUITE_P(,
+                         AccountReconcilorDelegateTest,
+                         ::testing::ValuesIn(kReorderParams));
 
 }  // namespace signin

@@ -112,6 +112,19 @@ class ChromeTableViewControllerTest : public BlockCleanupTest {
                           int section,
                           int item);
 
+  // Verifies that the text button cell at |item| in |section| has the given
+  // |buttonText|.
+  void CheckTextButtonCellButtonText(NSString* expected_button_text,
+                                     int section,
+                                     int item);
+
+  // Verifies that the text button cell at |item| in |section| has a
+  // |buttonText| property which matches the l10n string for
+  // |expected_button_text_id|.
+  void CheckTextButtonCellButtonTextWithId(int expected_button_text_id,
+                                           int section,
+                                           int item);
+
   // For |section|, deletes the item at |item|. |completion_block| is called at
   // the end of the call to -performBatchUpdates:completion:.
   void DeleteItem(int section, int item, ProceduralBlock completion_block);

@@ -6,6 +6,7 @@
 
 #include "media/capture/video/shared_memory_handle_provider.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
 
 namespace {
 
@@ -71,6 +72,10 @@ void ReceiverMediaToMojoAdapter::OnStarted() {
 
 void ReceiverMediaToMojoAdapter::OnStartedUsingGpuDecode() {
   receiver_->OnStartedUsingGpuDecode();
+}
+
+void ReceiverMediaToMojoAdapter::OnStopped() {
+  receiver_->OnStopped();
 }
 
 }  // namespace video_capture

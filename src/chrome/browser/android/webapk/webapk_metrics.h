@@ -32,6 +32,6 @@ void TrackRequestTokenDuration(base::TimeDelta delta);
 void TrackInstallDuration(base::TimeDelta delta);
 void TrackInstallEvent(InstallEvent event);
 
-};  // namespace webapk
+}  // namespace webapk
 
 #endif  // CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_METRICS_H_

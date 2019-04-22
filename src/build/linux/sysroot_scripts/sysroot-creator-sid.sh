@@ -14,8 +14,10 @@ DIST=sid
 # like libc6 would take precedence over the sid (released) versions.  While this
 # may be useful for certain kinds of development, the standard sysroots should
 # continue to be shipped only with released packages.
-APT_SOURCES_LIST="http://ftp.us.debian.org/debian/ experimental main
-http://ftp.us.debian.org/debian/ sid main"
+ARCHIVE_URL="https://snapshot.debian.org/archive/debian"
+ARCHIVE_TIMESTAMP=20181214T150526Z
+APT_SOURCES_LIST="${ARCHIVE_URL}/${ARCHIVE_TIMESTAMP}/ experimental main
+${ARCHIVE_URL}/${ARCHIVE_TIMESTAMP}/ sid main"
 
 # gpg keyring file generated using:
 #   export KEYS="518E17E1 46925553 2B90D010 C857C906 F66AEC98 8AE22BA9 1A7B6500"

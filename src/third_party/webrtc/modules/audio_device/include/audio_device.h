@@ -11,9 +11,10 @@
 #ifndef MODULES_AUDIO_DEVICE_INCLUDE_AUDIO_DEVICE_H_
 #define MODULES_AUDIO_DEVICE_INCLUDE_AUDIO_DEVICE_H_
 
+#include "api/scoped_refptr.h"
+#include "api/task_queue/task_queue_factory.h"
 #include "modules/audio_device/include/audio_device_defines.h"
-#include "rtc_base/refcount.h"
-#include "rtc_base/scoped_ref_ptr.h"
+#include "rtc_base/ref_count.h"
 
 namespace webrtc {
 
@@ -21,10 +22,6 @@ class AudioDeviceModuleForTest;
 
 class AudioDeviceModule : public rtc::RefCountInterface {
  public:
-  // Deprecated.
-  // TODO(henrika): to be removed.
-  enum ErrorCode { kAdmErrNone = 0, kAdmErrArgument = 1 };
-
   enum AudioLayer {
     kPlatformDefaultAudio = 0,
     kWindowsCoreAudio,
@@ -44,21 +41,19 @@ class AudioDeviceModule : public rtc::RefCountInterface {
     kDefaultDevice = -2
   };
 
-  // TODO(bugs.webrtc.org/7306): deprecated.
-  enum ChannelType { kChannelLeft = 0, kChannelRight = 1, kChannelBoth = 2 };
-
  public:
+  // TODO(bugs.webrtc.org/10284): Remove when unused.
+  RTC_DEPRECATED
+  static rtc::scoped_refptr<AudioDeviceModule> Create(AudioLayer audio_layer);
   // Creates a default ADM for usage in production code.
   static rtc::scoped_refptr<AudioDeviceModule> Create(
-      const AudioLayer audio_layer);
+      AudioLayer audio_layer,
+      TaskQueueFactory* task_queue_factory);
   // Creates an ADM with support for extra test methods. Don't use this factory
   // in production code.
   static rtc::scoped_refptr<AudioDeviceModuleForTest> CreateForTest(
-      const AudioLayer audio_layer);
-  // TODO(bugs.webrtc.org/7306): deprecated (to be removed).
-  static rtc::scoped_refptr<AudioDeviceModule> Create(
-      const int32_t id,
-      const AudioLayer audio_layer);
+      AudioLayer audio_layer,
+      TaskQueueFactory* task_queue_factory);
 
   // Retrieve the currently utilized audio layer
   virtual int32_t ActiveAudioLayer(AudioLayer* audioLayer) const = 0;

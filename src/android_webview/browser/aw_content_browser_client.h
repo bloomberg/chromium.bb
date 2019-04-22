@@ -34,6 +34,9 @@ namespace android_webview {
 class AwBrowserContext;
 class AwFeatureListCreator;
 
+std::string GetProduct();
+std::string GetUserAgent();
+
 class AwContentBrowserClient : public content::ContentBrowserClient {
  public:
   // This is what AwContentBrowserClient::GetAcceptLangs uses.
@@ -41,6 +44,11 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
 
   // Deprecated: use AwBrowserContext::GetDefault() instead.
   static AwBrowserContext* GetAwBrowserContext();
+
+  // Sets whether the net stack should check the cleartext policy from the
+  // platform. For details, see
+  // https://developer.android.com/reference/android/security/NetworkSecurityPolicy.html#isCleartextTrafficPermitted().
+  static void set_check_cleartext_permitted(bool permitted);
 
   // |aw_feature_list_creator| should not be null.
   explicit AwContentBrowserClient(
@@ -51,10 +59,13 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // moment during startup. AwContentBrowserClient owns the result.
   AwBrowserContext* InitBrowserContext();
 
+  void OnNetworkServiceCreated(
+      network::mojom::NetworkService* network_service) override;
   network::mojom::NetworkContextPtr CreateNetworkContext(
       content::BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
+  network::mojom::NetworkContextParamsPtr GetNetworkContextParams();
 
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
@@ -120,7 +131,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   bool CanCreateWindow(content::RenderFrameHost* opener,
                        const GURL& opener_url,
                        const GURL& opener_top_level_frame_url,
-                       const GURL& source_origin,
+                       const url::Origin& source_origin,
                        content::mojom::WindowContainerType container_type,
                        const GURL& target_url,
                        const content::Referrer& referrer,
@@ -153,7 +164,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   CreateThrottlesForNavigation(
       content::NavigationHandle* navigation_handle) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
-  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
   void BindInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
@@ -183,10 +194,10 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                                 bool is_main_frame,
                                 ui::PageTransition transition,
                                 bool* ignore_navigation) override;
-  bool ShouldCreateTaskScheduler() override;
-  scoped_refptr<content::LoginDelegate> CreateLoginDelegate(
-      net::AuthChallengeInfo* auth_info,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+  bool ShouldCreateThreadPool() override;
+  std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
+      const net::AuthChallengeInfo& auth_info,
+      content::WebContents* web_contents,
       const content::GlobalRequestID& request_id,
       bool is_main_frame,
       const GURL& url,
@@ -202,8 +213,14 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       ui::PageTransition page_transition,
       bool has_user_gesture,
       const std::string& method,
-      const net::HttpRequestHeaders& headers) override;
+      const net::HttpRequestHeaders& headers,
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      network::mojom::URLLoaderFactory*& out_factory) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
+  void RegisterNonNetworkSubresourceURLLoaderFactories(
+      int render_process_id,
+      int render_frame_id,
+      NonNetworkURLLoaderFactoryMap* factories) override;
   bool ShouldIsolateErrorPage(bool in_main_frame) override;
   bool ShouldEnableStrictSiteIsolation() override;
   bool WillCreateURLLoaderFactory(
@@ -211,10 +228,21 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* frame,
       int render_process_id,
       bool is_navigation,
+      bool is_download,
       const url::Origin& request_initiator,
       network::mojom::URLLoaderFactoryRequest* factory_request,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override;
+  void WillCreateWebSocket(
+      content::RenderFrameHost* frame,
+      network::mojom::WebSocketRequest* request,
+      network::mojom::AuthenticationHandlerPtr* authentication_handler,
+      network::mojom::TrustedHeaderClientPtr* header_client,
+      uint32_t* options) override;
+  std::string GetProduct() const override;
+  std::string GetUserAgent() const override;
+  ContentBrowserClient::WideColorGamutHeuristic GetWideColorGamutHeuristic()
+      const override;
 
   AwFeatureListCreator* aw_feature_list_creator() {
     return aw_feature_list_creator_;
@@ -223,7 +251,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   content::SpeechRecognitionManagerDelegate*
   CreateSpeechRecognitionManagerDelegate() override;
 
-  static void DisableCreatingTaskScheduler();
+  static void DisableCreatingThreadPool();
 
  private:
   safe_browsing::UrlCheckerDelegate* GetSafeBrowsingUrlCheckerDelegate();

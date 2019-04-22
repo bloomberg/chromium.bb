@@ -61,17 +61,11 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
     ~MockResolution() override {}
 
     void Start(const net::HostPortPair& address,
-               const ResultCallback& callback) override {
+               ResultCallback callback) override {
       auto privet_http_client = std::make_unique<PrivetHTTPClientImpl>(
           name_, net::HostPortPair("1.2.3.4", 8080), url_loader_factory_);
-      callback.Run(std::move(privet_http_client));
+      std::move(callback).Run(std::move(privet_http_client));
     }
-
-    void Start(const ResultCallback& callback) override {
-      Start(net::HostPortPair(), callback);
-    }
-
-    const std::string& GetName() override { return name_; }
 
    private:
     std::string name_;

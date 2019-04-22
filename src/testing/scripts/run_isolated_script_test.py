@@ -46,10 +46,40 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import xvfb
 
 
+# Some harnesses understand the --isolated-script-test arguments
+# directly and prefer that they be passed through.
+KNOWN_ISOLATED_SCRIPT_TEST_RUNNERS = {'run_web_tests.py'}
+
+
 # Known typ test runners this script wraps. They need a different argument name
 # when selecting which tests to run.
 # TODO(dpranke): Detect if the wrapped test suite uses typ better.
 KNOWN_TYP_TEST_RUNNERS = {'run_blinkpy_tests.py', 'metrics_python_tests.py'}
+
+
+class IsolatedScriptTestAdapter(common.BaseIsolatedScriptArgsAdapter):
+  def __init__(self):
+    super(IsolatedScriptTestAdapter, self).__init__()
+
+  def generate_sharding_args(self, total_shards, shard_index):
+    # This script only uses environment variable for sharding.
+    del total_shards, shard_index  # unused
+    return []
+
+  def generate_test_also_run_disabled_tests_args(self):
+    return ['--isolated-script-test-also-run-disabled-tests']
+
+  def generate_test_filter_args(self, test_filter_str):
+    return ['--isolated-script-test-filter=%s' % test_filter_str]
+
+  def generate_test_output_args(self, output):
+    return ['--isolated-script-test-output=%s' % output]
+
+  def generate_test_launcher_retry_limit_args(self, retry_limit):
+    return ['--isolated-script-test-launcher-retry-limit=%d' % retry_limit]
+
+  def generate_test_repeat_args(self, repeat_count):
+    return ['--isolated-script-test-repeat=%d' % repeat_count]
 
 
 class TypUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
@@ -87,7 +117,10 @@ class TypUnittestAdapter(common.BaseIsolatedScriptArgsAdapter):
 
 
 def main():
-  adapter = TypUnittestAdapter()
+  if any(r in sys.argv[1] for r in KNOWN_ISOLATED_SCRIPT_TEST_RUNNERS):
+    adapter = IsolatedScriptTestAdapter()
+  else:
+    adapter = TypUnittestAdapter()
   return adapter.run_test()
 
 # This is not really a "script test" so does not need to manually add

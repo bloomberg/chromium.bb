@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -120,6 +121,19 @@ LocalSiteCharacteristicsDataImpl::UsesNotificationsInBackground() const {
       site_characteristics_.uses_notifications_in_background(),
       GetSiteCharacteristicsDatabaseParams()
           .notifications_usage_observation_window);
+}
+
+bool LocalSiteCharacteristicsDataImpl::DataLoaded() const {
+  return fully_initialized_;
+}
+
+void LocalSiteCharacteristicsDataImpl::RegisterDataLoadedCallback(
+    base::OnceClosure&& callback) {
+  if (fully_initialized_) {
+    std::move(callback).Run();
+    return;
+  }
+  data_loaded_callbacks_.emplace_back(std::move(callback));
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyUpdatesFaviconInBackground() {
@@ -269,7 +283,7 @@ void LocalSiteCharacteristicsDataImpl::
   }
 
   // This object is now in a valid state and can be written in the database.
-  fully_initialized_ = true;
+  TransitionToFullyInitialized();
 }
 
 SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
@@ -371,7 +385,7 @@ void LocalSiteCharacteristicsDataImpl::OnInitCallback(
     }
   }
 
-  fully_initialized_ = true;
+  TransitionToFullyInitialized();
 }
 
 void LocalSiteCharacteristicsDataImpl::DecrementNumLoadedBackgroundTabs() {
@@ -419,6 +433,13 @@ void LocalSiteCharacteristicsDataImpl::
   // Update the observation duration fields.
   for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
     IncrementFeatureObservationDuration(iter, extra_observation_duration);
+}
+
+void LocalSiteCharacteristicsDataImpl::TransitionToFullyInitialized() {
+  fully_initialized_ = true;
+  for (size_t i = 0; i < data_loaded_callbacks_.size(); ++i)
+    std::move(data_loaded_callbacks_[i]).Run();
+  data_loaded_callbacks_.clear();
 }
 
 }  // namespace internal

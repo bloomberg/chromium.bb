@@ -11,10 +11,11 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -38,20 +39,6 @@ gfx::Rect Intersection(gfx::Rect a, const gfx::Rect& b) {
 
 // Static constexpr class for generating unique identifiers for each VideoFrame.
 static base::AtomicSequenceNumber g_unique_id_generator;
-
-static bool IsPowerOfTwo(size_t x) {
-  return x != 0 && (x & (x - 1)) == 0;
-}
-
-static inline size_t RoundUp(size_t value, size_t alignment) {
-  DCHECK(IsPowerOfTwo(alignment));
-  return ((value + (alignment - 1)) & ~(alignment - 1));
-}
-
-static inline size_t RoundDown(size_t value, size_t alignment) {
-  DCHECK(IsPowerOfTwo(alignment));
-  return value & ~(alignment - 1);
-}
 
 static std::string StorageTypeToString(
     const VideoFrame::StorageType storage_type) {
@@ -78,9 +65,8 @@ static std::string StorageTypeToString(
   return "INVALID";
 }
 
-// Returns true if |frame| is accesible mapped in the VideoFrame memory space.
 // static
-static bool IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
+bool VideoFrame::IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
   return
 #if defined(OS_LINUX)
       // This is not strictly needed but makes explicit that, at VideoFrame
@@ -137,6 +123,7 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_I420A:
     case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_P016LE:
       return true;
     case PIXEL_FORMAT_UNKNOWN:
       break;
@@ -225,7 +212,7 @@ bool VideoFrame::IsValidConfig(VideoPixelFormat format,
     return true;
 
   // Make sure new formats are properly accounted for in the method.
-  static_assert(PIXEL_FORMAT_MAX == 28,
+  static_assert(PIXEL_FORMAT_MAX == 29,
                 "Added pixel format, please review IsValidConfig()");
 
   if (format == PIXEL_FORMAT_UNKNOWN) {
@@ -246,6 +233,20 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(VideoPixelFormat format,
                                                   base::TimeDelta timestamp) {
   return CreateFrameInternal(format, coded_size, visible_rect, natural_size,
                              timestamp, false);
+}
+
+// static
+scoped_refptr<VideoFrame> VideoFrame::CreateVideoHoleFrame(
+    const base::UnguessableToken& overlay_plane_id,
+    const gfx::Size& natural_size,
+    base::TimeDelta timestamp) {
+  auto layout = VideoFrameLayout::Create(PIXEL_FORMAT_UNKNOWN, natural_size);
+  scoped_refptr<VideoFrame> frame =
+      new VideoFrame(*layout, StorageType::STORAGE_OPAQUE,
+                     gfx::Rect(natural_size), natural_size, timestamp);
+  frame->metadata()->SetUnguessableToken(VideoFrameMetadata::OVERLAY_PLANE_ID,
+                                         overlay_plane_id);
+  return frame;
 }
 
 // static
@@ -400,14 +401,6 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     uint8_t* u_data,
     uint8_t* v_data,
     base::TimeDelta timestamp) {
-  const StorageType storage = STORAGE_UNOWNED_MEMORY;
-  if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
-    DLOG(ERROR) << __func__ << " Invalid config."
-                << ConfigToString(format, storage, coded_size, visible_rect,
-                                  natural_size);
-    return nullptr;
-  }
-
   const size_t height = coded_size.height();
   auto layout = VideoFrameLayout::CreateWithStrides(
       format, coded_size, {y_stride, u_stride, v_stride},
@@ -418,8 +411,36 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     return nullptr;
   }
 
+  return WrapExternalYuvDataWithLayout(*layout, visible_rect, natural_size,
+                                       y_data, u_data, v_data, timestamp);
+}
+
+// static
+scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvDataWithLayout(
+    const VideoFrameLayout& layout,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    uint8_t* y_data,
+    uint8_t* u_data,
+    uint8_t* v_data,
+    base::TimeDelta timestamp) {
+  const StorageType storage = STORAGE_UNOWNED_MEMORY;
+  const VideoPixelFormat format = layout.format();
+  if (!IsValidConfig(format, storage, layout.coded_size(), visible_rect,
+                     natural_size)) {
+    DLOG(ERROR) << __func__ << " Invalid config."
+                << ConfigToString(format, storage, layout.coded_size(),
+                                  visible_rect, natural_size);
+    return nullptr;
+  }
+  if (!IsYuvPlanar(format)) {
+    DLOG(ERROR) << __func__ << " Format is not YUV. " << format;
+    return nullptr;
+  }
+
+  DCHECK_LE(NumPlanes(format), 3u);
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(*layout, storage, visible_rect, natural_size, timestamp));
+      new VideoFrame(layout, storage, visible_rect, natural_size, timestamp));
   frame->data_[kYPlane] = y_data;
   frame->data_[kUPlane] = u_data;
   frame->data_[kVPlane] = v_data;
@@ -707,8 +728,8 @@ gfx::Size VideoFrame::PlaneSize(VideoPixelFormat format,
     // Align to multiple-of-two size overall. This ensures that non-subsampled
     // planes can be addressed by pixel with the same scaling as the subsampled
     // planes.
-    width = RoundUp(width, 2);
-    height = RoundUp(height, 2);
+    width = base::bits::Align(width, 2);
+    height = base::bits::Align(height, 2);
   }
 
   const gfx::Size subsample = SampleSize(format, plane);
@@ -765,12 +786,13 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_YUV420P12:
     case PIXEL_FORMAT_YUV422P12:
     case PIXEL_FORMAT_YUV444P12:
+    case PIXEL_FORMAT_P016LE:
       return 2;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
     case PIXEL_FORMAT_MT21: {
       static const int bytes_per_element[] = {1, 2};
-      DCHECK_LT(plane, arraysize(bytes_per_element));
+      DCHECK_LT(plane, base::size(bytes_per_element));
       return bytes_per_element[plane];
     }
     case PIXEL_FORMAT_YV12:
@@ -789,30 +811,45 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
 }
 
 // static
+std::vector<int32_t> VideoFrame::ComputeStrides(VideoPixelFormat format,
+                                                const gfx::Size& coded_size) {
+  std::vector<int32_t> strides;
+  const size_t num_planes = NumPlanes(format);
+  if (num_planes == 1) {
+    strides.push_back(RowBytes(0, format, coded_size.width()));
+  } else {
+    for (size_t plane = 0; plane < num_planes; ++plane) {
+      strides.push_back(base::bits::Align(
+          RowBytes(plane, format, coded_size.width()), kFrameAddressAlignment));
+    }
+  }
+  return strides;
+}
+
+// static
 size_t VideoFrame::Rows(size_t plane, VideoPixelFormat format, int height) {
   DCHECK(IsValidPlane(plane, format));
   const int sample_height = SampleSize(format, plane).height();
-  return RoundUp(height, sample_height) / sample_height;
+  return base::bits::Align(height, sample_height) / sample_height;
 }
 
 // static
 size_t VideoFrame::Columns(size_t plane, VideoPixelFormat format, int width) {
   DCHECK(IsValidPlane(plane, format));
   const int sample_width = SampleSize(format, plane).width();
-  return RoundUp(width, sample_width) / sample_width;
+  return base::bits::Align(width, sample_width) / sample_width;
 }
 
 // static
 void VideoFrame::HashFrameForTesting(base::MD5Context* context,
-                                     const scoped_refptr<VideoFrame>& frame) {
+                                     const VideoFrame& frame) {
   DCHECK(context);
-  for (size_t plane = 0; plane < NumPlanes(frame->format()); ++plane) {
-    for (int row = 0; row < frame->rows(plane); ++row) {
-      base::MD5Update(
-          context,
-          base::StringPiece(reinterpret_cast<char*>(frame->data(plane) +
-                                                    frame->stride(plane) * row),
-                            frame->row_bytes(plane)));
+  for (size_t plane = 0; plane < NumPlanes(frame.format()); ++plane) {
+    for (int row = 0; row < frame.rows(plane); ++row) {
+      base::MD5Update(context, base::StringPiece(reinterpret_cast<const char*>(
+                                                     frame.data(plane) +
+                                                     frame.stride(plane) * row),
+                                                 frame.row_bytes(plane)));
     }
   }
 }
@@ -856,8 +893,9 @@ const uint8_t* VideoFrame::visible_data(size_t plane) const {
 
   // Calculate an offset that is properly aligned for all planes.
   const gfx::Size alignment = CommonAlignment(format());
-  const gfx::Point offset(RoundDown(visible_rect_.x(), alignment.width()),
-                          RoundDown(visible_rect_.y(), alignment.height()));
+  const gfx::Point offset(
+      base::bits::AlignDown(visible_rect_.x(), alignment.width()),
+      base::bits::AlignDown(visible_rect_.y(), alignment.height()));
 
   const gfx::Size subsample = SampleSize(format(), plane);
   DCHECK(offset.x() % subsample.width() == 0);
@@ -980,7 +1018,7 @@ gpu::SyncToken VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
 }
 
 std::string VideoFrame::AsHumanReadableString() {
-  if (metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM))
+  if (metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM))
     return "end of stream";
 
   std::ostringstream s;
@@ -991,7 +1029,7 @@ std::string VideoFrame::AsHumanReadableString() {
 }
 
 size_t VideoFrame::BitDepth() const {
-  return ::media::BitDepth(format());
+  return media::BitDepth(format());
 }
 
 // static
@@ -1109,8 +1147,8 @@ gfx::Size VideoFrame::DetermineAlignedSize(VideoPixelFormat format,
                                            const gfx::Size& dimensions) {
   const gfx::Size alignment = CommonAlignment(format);
   const gfx::Size adjusted =
-      gfx::Size(RoundUp(dimensions.width(), alignment.width()),
-                RoundUp(dimensions.height(), alignment.height()));
+      gfx::Size(base::bits::Align(dimensions.width(), alignment.width()),
+                base::bits::Align(dimensions.height(), alignment.height()));
   DCHECK((adjusted.width() % alignment.width() == 0) &&
          (adjusted.height() % alignment.height() == 0));
   return adjusted;
@@ -1199,6 +1237,7 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_YUV420P9:
         case PIXEL_FORMAT_YUV420P10:
         case PIXEL_FORMAT_YUV420P12:
+        case PIXEL_FORMAT_P016LE:
           return gfx::Size(2, 2);
 
         case PIXEL_FORMAT_UNKNOWN:
@@ -1258,22 +1297,6 @@ void VideoFrame::AllocateMemory(bool zero_initialize_memory) {
   }
 }
 
-// static
-std::vector<int32_t> VideoFrame::ComputeStrides(VideoPixelFormat format,
-                                                const gfx::Size& coded_size) {
-  std::vector<int32_t> strides;
-  const size_t num_planes = NumPlanes(format);
-  if (num_planes == 1) {
-    strides.push_back(RowBytes(0, format, coded_size.width()));
-  } else {
-    for (size_t plane = 0; plane < num_planes; ++plane) {
-      strides.push_back(RoundUp(RowBytes(plane, format, coded_size.width()),
-                                kFrameAddressAlignment));
-    }
-  }
-  return strides;
-}
-
 std::vector<size_t> VideoFrame::CalculatePlaneSize() const {
   const size_t num_planes = NumPlanes(format());
   const size_t num_buffers = layout_.num_buffers();
@@ -1308,7 +1331,8 @@ std::vector<size_t> VideoFrame::CalculatePlaneSize() const {
       // These values were chosen to mirror ffmpeg's get_video_buffer().
       // TODO(dalecurtis): This should be configurable; eventually ffmpeg wants
       // us to use av_cpu_max_align(), but... for now, they just hard-code 32.
-      const size_t height = RoundUp(rows(plane), kFrameAddressAlignment);
+      const size_t height =
+          base::bits::Align(rows(plane), kFrameAddressAlignment);
       const size_t width = std::abs(stride(plane));
       plane_size.push_back(width * height);
     }

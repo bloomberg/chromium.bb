@@ -29,10 +29,9 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
+#include "chrome/browser/ui/webui/bookmarks/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -48,12 +47,16 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/browser/extension_registry.h"
+#else
+#include "chrome/browser/ui/signin_view_controller.h"
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/signin/core/browser/signin_pref_names.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #endif
 
 using base::UserMetricsAction;
@@ -63,16 +66,16 @@ namespace {
 
 const char kHashMark[] = "#";
 
+void FocusWebContents(Browser* browser) {
+  auto* const contents = browser->tab_strip_model()->GetActiveWebContents();
+  if (contents)
+    contents->Focus();
+}
+
 void OpenBookmarkManagerForNode(Browser* browser, int64_t node_id) {
   GURL url = GURL(kChromeUIBookmarksURL)
                  .Resolve(base::StringPrintf(
-                     "/?id=%s", base::Int64ToString(node_id).c_str()));
-  NavigateParams params(GetSingletonTabNavigateParams(browser, url));
-  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, std::move(params));
-}
-
-void NavigateToSingletonTab(Browser* browser, const GURL& url) {
+                     "/?id=%s", base::NumberToString(node_id).c_str()));
   NavigateParams params(GetSingletonTabNavigateParams(browser, url));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, std::move(params));
@@ -279,7 +282,6 @@ bool IsTrustedPopupWindowWithScheme(const Browser* browser,
   return url.SchemeIs(scheme);
 }
 
-
 void ShowSettings(Browser* browser) {
   ShowSettingsSubPage(browser, std::string());
 }
@@ -294,23 +296,35 @@ void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
 
 void ShowSettingsSubPageForProfile(Profile* profile,
                                    const std::string& sub_page) {
-  std::string sub_page_path = sub_page;
-
 #if defined(OS_CHROMEOS)
-  base::RecordAction(base::UserMetricsAction("ShowOptions"));
-  SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-      profile, GetSettingsUrl(sub_page_path));
-#else
+  SettingsWindowManager* settings = SettingsWindowManager::GetInstance();
+  if (!base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
+    base::RecordAction(base::UserMetricsAction("ShowOptions"));
+    settings->ShowChromePageForProfile(profile, GetSettingsUrl(sub_page));
+    return;
+  }
+  // TODO(jamescook): When SplitSettings is close to shipping, change this to
+  // a DCHECK that the |sub_page| is not an OS-specific setting.
+  if (chrome::IsOSSettingsSubPage(sub_page)) {
+    settings->ShowOSSettings(profile, sub_page);
+    return;
+  }
+  // Fall through and open browser settings in a tab.
+#endif
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   if (!browser)
     browser = new Browser(Browser::CreateParams(profile, true));
-  ShowSettingsSubPageInTabbedBrowser(browser, sub_page_path);
-#endif
+  ShowSettingsSubPageInTabbedBrowser(browser, sub_page);
 }
 
 void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
                                         const std::string& sub_page) {
   base::RecordAction(UserMetricsAction("ShowOptions"));
+
+  // Since the user may be triggering navigation from another UI element such as
+  // a menu, ensure the web contents (and therefore the settings page that is
+  // about to be shown) is focused. (See crbug/926492 for motivation.)
+  FocusWebContents(browser);
   GURL gurl = GetSettingsUrl(sub_page);
   NavigateParams params(GetSingletonTabNavigateParams(browser, gurl));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
@@ -380,13 +394,20 @@ void ShowSearchEngineSettings(Browser* browser) {
   ShowSettingsSubPage(browser, kSearchEnginesSubPage);
 }
 
-#if !defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
+void ShowManagementPageForProfile(Profile* profile) {
+  const std::string page_path = "chrome://management";
+  base::RecordAction(base::UserMetricsAction("ShowOptions"));
+  SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
+      profile, GURL(page_path));
+}
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 void ShowBrowserSignin(Browser* browser,
                        signin_metrics::AccessPoint access_point) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
-  SigninManagerBase* manager =
-      SigninManagerFactory::GetForProfile(original_profile);
-  DCHECK(manager->IsSigninAllowed());
+  DCHECK(original_profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
 
   // If the browser's profile is an incognito profile, make sure to use
   // a browser window from the original profile. The user cannot sign in
@@ -395,54 +416,21 @@ void ShowBrowserSignin(Browser* browser,
       std::make_unique<ScopedTabbedBrowserDisplayer>(original_profile);
   browser = displayer->browser();
 
-#if defined(OS_CHROMEOS)
-  // ChromeOS always loads the chrome://chrome-signin in a tab.
-  const bool show_full_tab_chrome_signin_page = true;
-#else
-  // When Desktop Identity Consistency (aka DICE) is not enabled, Chrome uses
-  // a modal sign-in dialog for signing in. This sign-in modal dialog is
-  // presented as a tab-modal dialog (which is automatically dismissed when
-  // the page navigates). Displaying the dialog on a new tab that loads any
-  // page will lead to it being dismissed as soon as the new tab is loaded.
-  // So the sign-in dialog must only be presented on top of an existing tab.
-  //
-  // If ScopedTabbedBrowserDisplayer had to create a (non-incognito) Browser*,
-  // it won't have any tabs yet. Fallback to the full-tab sign-in flow in this
-  // case.
-  const bool show_full_tab_chrome_signin_page =
-      !signin::DiceMethodGreaterOrEqual(
-          AccountConsistencyModeManager::GetMethodForProfile(
-              browser->profile()),
-          signin::AccountConsistencyMethod::kDiceMigration) &&
-      browser->tab_strip_model()->empty();
-#endif  // defined(OS_CHROMEOS)
-  if (show_full_tab_chrome_signin_page) {
-    NavigateToSingletonTab(
-        browser,
-        signin::GetPromoURLForTab(
-            access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-            false));
-    DCHECK_GT(browser->tab_strip_model()->count(), 0);
-  } else {
-#if defined(OS_CHROMEOS)
-    NOTREACHED();
-#else
-    profiles::BubbleViewMode bubble_view_mode =
-        manager->IsAuthenticated() ? profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH
-                                   : profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
-    browser->signin_view_controller()->ShowSignin(bubble_view_mode, browser,
-                                                  access_point);
-#endif
-  }
+  profiles::BubbleViewMode bubble_view_mode =
+      IdentityManagerFactory::GetForProfile(original_profile)
+              ->HasPrimaryAccount()
+          ? profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH
+          : profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
+  browser->signin_view_controller()->ShowSignin(bubble_view_mode, browser,
+                                                access_point);
 }
 
 void ShowBrowserSigninOrSettings(Browser* browser,
                                  signin_metrics::AccessPoint access_point) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
-  SigninManagerBase* manager =
-      SigninManagerFactory::GetForProfile(original_profile);
-  DCHECK(manager->IsSigninAllowed());
-  if (manager->IsAuthenticated())
+  DCHECK(original_profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+  if (IdentityManagerFactory::GetForProfile(original_profile)
+          ->HasPrimaryAccount())
     ShowSettings(browser);
   else
     ShowBrowserSignin(browser, access_point);

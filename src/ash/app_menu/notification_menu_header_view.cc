@@ -53,7 +53,7 @@ void NotificationMenuHeaderView::UpdateCounter(int number_of_notifications) {
 
   number_of_notifications_ = number_of_notifications;
 
-  counter_->SetText(base::IntToString16(number_of_notifications_));
+  counter_->SetText(base::NumberToString16(number_of_notifications_));
 }
 
 gfx::Size NotificationMenuHeaderView::CalculatePreferredSize() const {

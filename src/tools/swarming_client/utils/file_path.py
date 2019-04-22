@@ -36,28 +36,27 @@ HARDLINK, HARDLINK_WITH_FALLBACK, SYMLINK, SYMLINK_WITH_FALLBACK, COPY = range(
 
 if sys.platform == 'win32':
   import locale
-  from ctypes.wintypes import create_unicode_buffer
-  from ctypes.wintypes import windll  # pylint: disable=E0611
-  from ctypes.wintypes import GetLastError  # pylint: disable=E0611
+  from ctypes import wintypes  # pylint: disable=ungrouped-imports
+  from ctypes.wintypes import windll  # pylint: disable=ungrouped-imports
 elif sys.platform == 'darwin':
-  import Carbon.File  #  pylint: disable=F0401
-  import MacOS  # pylint: disable=F0401
+  import Carbon.File
+  import MacOS
 
 
 if sys.platform == 'win32':
   class LUID(ctypes.Structure):
     _fields_ = [
-      ('low_part', ctypes.wintypes.DWORD), ('high_part', ctypes.wintypes.LONG),
+      ('low_part', wintypes.DWORD), ('high_part', wintypes.LONG),
     ]
 
 
   class LUID_AND_ATTRIBUTES(ctypes.Structure):
-    _fields_ = [('LUID', LUID), ('attributes', ctypes.wintypes.DWORD)]
+    _fields_ = [('LUID', LUID), ('attributes', wintypes.DWORD)]
 
 
   class TOKEN_PRIVILEGES(ctypes.Structure):
     _fields_ = [
-      ('count', ctypes.wintypes.DWORD), ('privileges', LUID_AND_ATTRIBUTES*0),
+      ('count', wintypes.DWORD), ('privileges', LUID_AND_ATTRIBUTES*0),
     ]
 
     def get_array(self):
@@ -65,34 +64,28 @@ if sys.platform == 'win32':
       return ctypes.cast(self.privileges, ctypes.POINTER(array_type)).contents
 
 
-  GetCurrentProcess = ctypes.windll.kernel32.GetCurrentProcess
-  GetCurrentProcess.restype = ctypes.wintypes.HANDLE
-  OpenProcessToken = ctypes.windll.advapi32.OpenProcessToken
+  GetCurrentProcess = windll.kernel32.GetCurrentProcess
+  GetCurrentProcess.restype = wintypes.HANDLE
+  OpenProcessToken = windll.advapi32.OpenProcessToken
   OpenProcessToken.argtypes = (
-      ctypes.wintypes.HANDLE, ctypes.wintypes.DWORD,
-      ctypes.POINTER(ctypes.wintypes.HANDLE))
-  OpenProcessToken.restype = ctypes.wintypes.BOOL
-  LookupPrivilegeValue = ctypes.windll.advapi32.LookupPrivilegeValueW
+      wintypes.HANDLE, wintypes.DWORD, ctypes.POINTER(wintypes.HANDLE))
+  OpenProcessToken.restype = wintypes.BOOL
+  LookupPrivilegeValue = windll.advapi32.LookupPrivilegeValueW
   LookupPrivilegeValue.argtypes = (
-      ctypes.wintypes.LPWSTR, ctypes.wintypes.LPWSTR, ctypes.POINTER(LUID))
-  LookupPrivilegeValue.restype = ctypes.wintypes.BOOL
-  LookupPrivilegeName = ctypes.windll.advapi32.LookupPrivilegeNameW
+      wintypes.LPCWSTR, wintypes.LPCWSTR, ctypes.POINTER(LUID))
+  LookupPrivilegeValue.restype = wintypes.BOOL
+  LookupPrivilegeName = windll.advapi32.LookupPrivilegeNameW
   LookupPrivilegeName.argtypes = (
-      ctypes.wintypes.LPWSTR, ctypes.POINTER(LUID), ctypes.wintypes.LPWSTR,
-      ctypes.POINTER(ctypes.wintypes.DWORD))
-  LookupPrivilegeName.restype = ctypes.wintypes.BOOL
+      wintypes.LPCWSTR, ctypes.POINTER(LUID), wintypes.LPWSTR,
+      ctypes.POINTER(wintypes.DWORD))
+  LookupPrivilegeName.restype = wintypes.BOOL
   PTOKEN_PRIVILEGES = ctypes.POINTER(TOKEN_PRIVILEGES)
-  GetTokenInformation = ctypes.windll.advapi32.GetTokenInformation
-  GetTokenInformation.argtypes = (
-      ctypes.wintypes.HANDLE, ctypes.c_uint, ctypes.c_void_p,
-      ctypes.wintypes.DWORD, ctypes.POINTER(ctypes.wintypes.DWORD))
-  GetTokenInformation.restype = ctypes.wintypes.BOOL
-  AdjustTokenPrivileges = ctypes.windll.advapi32.AdjustTokenPrivileges
-  AdjustTokenPrivileges.restype = ctypes.wintypes.BOOL
+  AdjustTokenPrivileges = windll.advapi32.AdjustTokenPrivileges
+  AdjustTokenPrivileges.restype = wintypes.BOOL
   AdjustTokenPrivileges.argtypes = (
-      ctypes.wintypes.HANDLE, ctypes.wintypes.BOOL, PTOKEN_PRIVILEGES,
-      ctypes.wintypes.DWORD, PTOKEN_PRIVILEGES,
-      ctypes.POINTER(ctypes.wintypes.DWORD))
+      wintypes.HANDLE, wintypes.BOOL, PTOKEN_PRIVILEGES,
+      wintypes.DWORD, PTOKEN_PRIVILEGES,
+      ctypes.POINTER(wintypes.DWORD))
 
 
   def FormatError(err):
@@ -109,9 +102,9 @@ if sys.platform == 'win32':
     # Guesswork. QueryDosDeviceW never returns the required number of bytes.
     chars = 1024
     drive_letter = drive_letter
-    p = create_unicode_buffer(chars)
+    p = wintypes.create_unicode_buffer(chars)
     if 0 == windll.kernel32.QueryDosDeviceW(drive_letter, p, chars):
-      err = GetLastError()
+      err = ctypes.GetLastError()
       if err:
         # pylint: disable=undefined-variable
         msg = u'QueryDosDevice(%s): %s (%d)' % (
@@ -125,11 +118,11 @@ if sys.platform == 'win32':
     path = fs.extend(long_path)
     chars = windll.kernel32.GetShortPathNameW(path, None, 0)
     if chars:
-      p = create_unicode_buffer(chars)
+      p = wintypes.create_unicode_buffer(chars)
       if windll.kernel32.GetShortPathNameW(path, p, chars):
         return fs.trim(p.value)
 
-    err = GetLastError()
+    err = ctypes.GetLastError()
     if err:
       # pylint: disable=undefined-variable
       msg = u'GetShortPathName(%s): %s (%d)' % (
@@ -142,11 +135,11 @@ if sys.platform == 'win32':
     path = fs.extend(short_path)
     chars = windll.kernel32.GetLongPathNameW(path, None, 0)
     if chars:
-      p = create_unicode_buffer(chars)
+      p = wintypes.create_unicode_buffer(chars)
       if windll.kernel32.GetLongPathNameW(path, p, chars):
         return fs.trim(p.value)
 
-    err = GetLastError()
+    err = ctypes.GetLastError()
     if err:
       # pylint: disable=undefined-variable
       msg = u'GetLongPathName(%s): %s (%d)' % (
@@ -160,7 +153,7 @@ if sys.platform == 'win32':
     new_p = fs.extend(newpath)
     if not windll.kernel32.MoveFileExW(old_p, new_p, int(flags)):
       # pylint: disable=undefined-variable
-      err = GetLastError()
+      err = ctypes.GetLastError()
       msg = u'MoveFileEx(%s, %s, %d): %s (%d)' % (
             oldpath, newpath, flags, FormatError(err), err)
       raise WindowsError(err, msg.encode('utf-8'))
@@ -352,8 +345,8 @@ if sys.platform == 'win32':
             u'AdjustTokenPrivileges(%r): failed: %s' %
               (name, ctypes.GetLastError()))
     finally:
-      ctypes.windll.kernel32.CloseHandle(token)
-    return ctypes.windll.kernel32.GetLastError() != ERROR_NOT_ALL_ASSIGNED
+      windll.kernel32.CloseHandle(token)
+    return ctypes.GetLastError() != ERROR_NOT_ALL_ASSIGNED
 
 
   def enable_symlink():
@@ -849,7 +842,7 @@ def get_free_space(path):
   """
   if sys.platform == 'win32':
     free_bytes = ctypes.c_ulonglong(0)
-    ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+    windll.kernel32.GetDiskFreeSpaceExW(
         ctypes.c_wchar_p(path), None, None, ctypes.pointer(free_bytes))
     return free_bytes.value
   # For OSes other than Windows.
@@ -868,7 +861,7 @@ def hardlink(source, link_name):
   assert isinstance(source, unicode), source
   assert isinstance(link_name, unicode), link_name
   if sys.platform == 'win32':
-    if not ctypes.windll.kernel32.CreateHardLinkW(
+    if not windll.kernel32.CreateHardLinkW(
         fs.extend(link_name), fs.extend(source), 0):
       raise OSError()
   else:
@@ -1127,7 +1120,7 @@ def make_tree_deleteable(root):
       # to use linux capabilities.
       with open(os.devnull, 'rb') as f:
         if not subprocess42.call(
-            ['sudo', '-n', 'chmod', 'a+rwX', p], stdin=f):
+            ['sudo', '-n', 'chmod', 'a+rwX,-t', p], stdin=f):
           return False
       logging.debug('sudo chmod %s failed', p)
     return True

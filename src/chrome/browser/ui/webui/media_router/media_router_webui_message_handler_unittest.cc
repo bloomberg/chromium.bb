@@ -617,9 +617,9 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnMediaCommandsReceived) {
   args_list.Append(std::make_unique<base::DictionaryValue>());
   args_list.GetDictionary(0, &args);
 
-  const int time = 50;
-  args->SetInteger("time", time);
-  EXPECT_CALL(*controller, Seek(base::TimeDelta::FromSeconds(time)));
+  const double time = 50.1;
+  args->SetDouble("time", time);
+  EXPECT_CALL(*controller, Seek(base::TimeDelta::FromSecondsD(time)));
   handler_->OnSeekCurrentMedia(&args_list);
 
   args->Clear();
@@ -666,9 +666,9 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnInvalidMediaCommandsReceived) {
   args_list.GetDictionary(0, &args);
 
   // Seek positions greater than the duration or negative should be ignored.
-  args->SetInteger("time", 101);
+  args->SetDouble("time", 101);
   handler_->OnSeekCurrentMedia(&args_list);
-  args->SetInteger("time", -10);
+  args->SetDouble("time", -10);
   handler_->OnSeekCurrentMedia(&args_list);
 
   args->Clear();

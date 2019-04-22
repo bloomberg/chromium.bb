@@ -44,7 +44,6 @@ template("webapk_java") {
       "src/org/chromium/webapk/shell_apk/HostBrowserClassLoader.java",
       "src/org/chromium/webapk/shell_apk/HostBrowserLauncher.java",
       "src/org/chromium/webapk/shell_apk/HostBrowserLauncherParams.java",
-      "src/org/chromium/webapk/shell_apk/HostBrowserLauncherActivity.java",
       "src/org/chromium/webapk/shell_apk/ChooseHostBrowserDialog.java",
       "src/org/chromium/webapk/shell_apk/HostBrowserUtils.java",
       "src/org/chromium/webapk/shell_apk/IdentityService.java",
@@ -67,7 +66,9 @@ template("webapk_java") {
       java_files += [
         "src/org/chromium/webapk/shell_apk/h2o/H2OLauncher.java",
         "src/org/chromium/webapk/shell_apk/h2o/H2OMainActivity.java",
+        "src/org/chromium/webapk/shell_apk/h2o/H2OOpaqueMainActivity.java",
         "src/org/chromium/webapk/shell_apk/h2o/H2OTransparentLauncherActivity.java",
+        "src/org/chromium/webapk/shell_apk/h2o/OverlaySplashActivity.java",
         "src/org/chromium/webapk/shell_apk/h2o/SplashActivity.java",
       ]
       deps += [ "//chrome/android/webapk/libs/common:splash_java" ]
@@ -157,6 +158,7 @@ template("webapk_tmpl") {
     android_manifest = _manifest_output
     android_manifest_dep = ":$_manifest_target_name"
     never_incremental = true
+    enable_multidex = false
 
     # Force 32 bit mode on 64 bit devices.
     native_lib_placeholders = [ "libfoo.so" ]
@@ -180,22 +182,24 @@ java_strings_grd("webapk_strings_grd") {
   grd_file = "//chrome/android/webapk/strings/android_webapk_strings.grd"
 
   outputs = [
+    "values/android_webapk_strings.xml",
     "values-am/android_webapk_strings.xml",
     "values-ar/android_webapk_strings.xml",
     "values-bg/android_webapk_strings.xml",
+    "values-bn/android_webapk_strings.xml",
     "values-ca/android_webapk_strings.xml",
     "values-cs/android_webapk_strings.xml",
     "values-da/android_webapk_strings.xml",
     "values-de/android_webapk_strings.xml",
     "values-el/android_webapk_strings.xml",
-    "values/android_webapk_strings.xml",
     "values-en-rGB/android_webapk_strings.xml",
     "values-es/android_webapk_strings.xml",
     "values-es-rUS/android_webapk_strings.xml",
+    "values-et/android_webapk_strings.xml",
     "values-fa/android_webapk_strings.xml",
     "values-fi/android_webapk_strings.xml",
-    "values-tl/android_webapk_strings.xml",
     "values-fr/android_webapk_strings.xml",
+    "values-gu/android_webapk_strings.xml",
     "values-hi/android_webapk_strings.xml",
     "values-hr/android_webapk_strings.xml",
     "values-hu/android_webapk_strings.xml",
@@ -203,11 +207,15 @@ java_strings_grd("webapk_strings_grd") {
     "values-it/android_webapk_strings.xml",
     "values-iw/android_webapk_strings.xml",
     "values-ja/android_webapk_strings.xml",
+    "values-kn/android_webapk_strings.xml",
     "values-ko/android_webapk_strings.xml",
     "values-lt/android_webapk_strings.xml",
     "values-lv/android_webapk_strings.xml",
-    "values-nl/android_webapk_strings.xml",
+    "values-ml/android_webapk_strings.xml",
+    "values-mr/android_webapk_strings.xml",
+    "values-ms/android_webapk_strings.xml",
     "values-nb/android_webapk_strings.xml",
+    "values-nl/android_webapk_strings.xml",
     "values-pl/android_webapk_strings.xml",
     "values-pt-rBR/android_webapk_strings.xml",
     "values-pt-rPT/android_webapk_strings.xml",
@@ -218,7 +226,10 @@ java_strings_grd("webapk_strings_grd") {
     "values-sr/android_webapk_strings.xml",
     "values-sv/android_webapk_strings.xml",
     "values-sw/android_webapk_strings.xml",
+    "values-ta/android_webapk_strings.xml",
+    "values-te/android_webapk_strings.xml",
     "values-th/android_webapk_strings.xml",
+    "values-tl/android_webapk_strings.xml",
     "values-tr/android_webapk_strings.xml",
     "values-uk/android_webapk_strings.xml",
     "values-vi/android_webapk_strings.xml",
@@ -249,18 +260,19 @@ webapk_tmpl("unbound_webapk") {
   apk_package_name = "org.chromium.arbitrarypackage"
 }
 
-webapk_tmpl("http_webapk") {
-  config_file = "manifest/bound_manifest_config.json"
-  delta_config_file = "manifest/http_manifest_config_delta.json"
-  apk_name = "HttpWebApk"
-  apk_package_name = "org.chromium.webapk.http"
-}
-
 webapk_tmpl("new_splash_webapk") {
   use_new_splash = true
   config_file = "manifest/bound_manifest_config.json"
   apk_name = "NewSplashWebApk"
   apk_package_name = "org.chromium.webapk.new.splash"
+}
+
+# Used by javatests
+webapk_tmpl("javatests_webapk") {
+  config_file = "manifest/bound_manifest_config.json"
+  delta_config_file = "manifest/javatest_manifest_config_delta.json"
+  apk_name = "JavatestsWebApk"
+  apk_package_name = "org.chromium.webapk.test"
 }
 
 # Used by webapk_shell_apk_h2o_junit_tests

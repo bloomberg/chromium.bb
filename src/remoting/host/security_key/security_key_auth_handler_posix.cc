@@ -24,7 +24,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
@@ -156,9 +155,9 @@ SecurityKeyAuthHandlerPosix::~SecurityKeyAuthHandlerPosix() {
   if (file_task_runner_) {
     // Attempt to clean up the socket before being destroyed.
     file_task_runner_->PostTask(
-        FROM_HERE, base::Bind(base::IgnoreResult(&base::DeleteFile),
-                              g_security_key_socket_name.Get(),
-                              /*recursive=*/false));
+        FROM_HERE, base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                  g_security_key_socket_name.Get(),
+                                  /*recursive=*/false));
   }
 }
 

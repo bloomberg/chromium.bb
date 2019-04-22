@@ -13,23 +13,8 @@
 #include "third_party/blink/renderer/platform/heap/persistent_node.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 namespace blink {
-
-// Marker used to annotate persistent objects and collections with,
-// so as to enable reliable testing for persistent references via
-// a type trait (see TypeTraits.h's IsPersistentReferenceType<>.)
-#define IS_PERSISTENT_REFERENCE_TYPE()         \
- public:                                       \
-  using IsPersistentReferenceTypeMarker = int; \
-                                               \
- private:
-
-enum WeaknessPersistentConfiguration {
-  kNonWeakPersistentConfiguration,
-  kWeakPersistentConfiguration
-};
 
 enum CrossThreadnessPersistentConfiguration {
   kSingleThreadPersistentConfiguration,
@@ -41,7 +26,6 @@ template <typename T,
           CrossThreadnessPersistentConfiguration crossThreadnessConfiguration>
 class PersistentBase {
   USING_FAST_MALLOC(PersistentBase);
-  IS_PERSISTENT_REFERENCE_TYPE();
 
  public:
   PersistentBase() : raw_(nullptr) {
@@ -172,10 +156,9 @@ class PersistentBase {
   // needing to be cleared out before the thread is terminated.
   PersistentBase* RegisterAsStaticReference() {
     CHECK_EQ(weaknessConfiguration, kNonWeakPersistentConfiguration);
-    if (persistent_node_) {
+    if (PersistentNode* node = persistent_node_.Get()) {
       DCHECK(ThreadState::Current());
-      ThreadState::Current()->RegisterStaticPersistentNode(persistent_node_,
-                                                           nullptr);
+      ThreadState::Current()->RegisterStaticPersistentNode(node, nullptr);
       LEAK_SANITIZER_IGNORE_OBJECT(this);
     }
     return this;
@@ -190,11 +173,7 @@ class PersistentBase {
     ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
 #endif
     raw_ = nullptr;
-    CrossThreadPersistentRegion& region =
-        weaknessConfiguration == kWeakPersistentConfiguration
-            ? ProcessHeap::GetCrossThreadWeakPersistentRegion()
-            : ProcessHeap::GetCrossThreadPersistentRegion();
-    region.FreePersistentNode(persistent_node_);
+    persistent_node_.ClearWithLockHeld();
   }
 
  private:
@@ -208,7 +187,7 @@ class PersistentBase {
     }
     CheckPointer();
     if (raw_) {
-      if (!persistent_node_)
+      if (!persistent_node_.IsInitialized())
         Initialize();
       return;
     }
@@ -229,64 +208,17 @@ class PersistentBase {
 
   NO_SANITIZE_ADDRESS
   void Initialize() {
-    DCHECK(!persistent_node_);
+    DCHECK(!persistent_node_.IsInitialized());
     if (!raw_ || IsHashTableDeletedValue())
       return;
 
     TraceCallback trace_callback =
         TraceMethodDelegate<PersistentBase,
                             &PersistentBase::TracePersistent>::Trampoline;
-    if (crossThreadnessConfiguration == kCrossThreadPersistentConfiguration) {
-      CrossThreadPersistentRegion& region =
-          weaknessConfiguration == kWeakPersistentConfiguration
-              ? ProcessHeap::GetCrossThreadWeakPersistentRegion()
-              : ProcessHeap::GetCrossThreadPersistentRegion();
-      MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
-      region.AllocatePersistentNode(persistent_node_, this, trace_callback);
-      return;
-    }
-    ThreadState* state =
-        ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-    DCHECK(state->CheckThread());
-    PersistentRegion* region =
-        weaknessConfiguration == kWeakPersistentConfiguration
-            ? state->GetWeakPersistentRegion()
-            : state->GetPersistentRegion();
-    persistent_node_ = region->AllocatePersistentNode(this, trace_callback);
-#if DCHECK_IS_ON()
-    state_ = state;
-#endif
+    persistent_node_.Initialize(this, trace_callback);
   }
 
-  void Uninitialize() {
-    if (crossThreadnessConfiguration == kCrossThreadPersistentConfiguration) {
-      if (AcquireLoad(reinterpret_cast<void* volatile*>(&persistent_node_))) {
-        CrossThreadPersistentRegion& region =
-            weaknessConfiguration == kWeakPersistentConfiguration
-                ? ProcessHeap::GetCrossThreadWeakPersistentRegion()
-                : ProcessHeap::GetCrossThreadPersistentRegion();
-        MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
-        region.FreePersistentNode(persistent_node_);
-      }
-      return;
-    }
-
-    if (!persistent_node_)
-      return;
-    ThreadState* state =
-        ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-    DCHECK(state->CheckThread());
-    // Persistent handle must be created and destructed in the same thread.
-#if DCHECK_IS_ON()
-    DCHECK_EQ(state_, state);
-#endif
-    PersistentRegion* region =
-        weaknessConfiguration == kWeakPersistentConfiguration
-            ? state->GetWeakPersistentRegion()
-            : state->GetPersistentRegion();
-    state->FreePersistentNode(region, persistent_node_);
-    persistent_node_ = nullptr;
-  }
+  void Uninitialize() { persistent_node_.Uninitialize(); }
 
   void CheckPointer() const {
 #if DCHECK_IS_ON()
@@ -327,7 +259,7 @@ class PersistentBase {
                        weaknessConfiguration, crossThreadnessConfiguration>;
     Base* persistent = reinterpret_cast<Base*>(persistent_pointer);
     T* object = persistent->Get();
-    if (object && !ObjectAliveTrait<T>::IsHeapObjectAlive(object))
+    if (object && !ThreadHeap::IsHeapObjectAlive(object))
       ClearWeakPersistent(persistent);
   }
 
@@ -353,11 +285,22 @@ class PersistentBase {
     NOTREACHED();
   }
 
-  // m_raw is accessed most, so put it at the first field.
+  // raw_ is accessed most, so put it at the first field.
   T* raw_;
-  PersistentNode* persistent_node_ = nullptr;
+
+  // The pointer to the underlying persistent node.
+  //
+  // Since accesses are atomics in the cross-thread case, a different type is
+  // needed to prevent the compiler producing an error when it encounters
+  // operations that are legal on raw pointers but not on atomics, or
+  // vice-versa.
+  std::conditional_t<
+      crossThreadnessConfiguration == kCrossThreadPersistentConfiguration,
+      CrossThreadPersistentNodePtr<weaknessConfiguration>,
+      PersistentNodePtr<ThreadingTrait<T>::kAffinity, weaknessConfiguration>>
+      persistent_node_;
+
 #if DCHECK_IS_ON()
-  ThreadState* state_ = nullptr;
   const ThreadState* creation_thread_state_;
 #endif
 };

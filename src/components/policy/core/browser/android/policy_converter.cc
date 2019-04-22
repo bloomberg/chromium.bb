@@ -169,16 +169,23 @@ std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
       std::string string_value;
       if (value->GetAsString(&string_value)) {
         std::unique_ptr<base::Value> decoded_value =
-            base::JSONReader::Read(string_value);
+            base::JSONReader::ReadDeprecated(string_value);
         if (decoded_value)
           return decoded_value;
       }
       return value;
     }
+
+    // TODO(crbug.com/859477): Remove after root cause is found.
+    case base::Value::Type::DEAD: {
+      CHECK(false);
+      return nullptr;
+    }
   }
 
-  NOTREACHED();
-  return std::unique_ptr<base::Value>();
+  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
+  CHECK(false);
+  return nullptr;
 }
 
 void PolicyConverter::SetPolicyValue(const std::string& key,

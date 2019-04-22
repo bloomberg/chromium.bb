@@ -59,7 +59,7 @@ class NotificationUIManagerBrowserTest : public InProcessBrowserTest {
                const base::Optional<base::string16>& reply) override {
       if (button_index) {
         log_ += "ButtonClick_";
-        log_ += base::IntToString(*button_index) + "_";
+        log_ += base::NumberToString(*button_index) + "_";
       } else {
         log_ += "Click_";
       }

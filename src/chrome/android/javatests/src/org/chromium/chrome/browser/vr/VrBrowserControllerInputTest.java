@@ -11,6 +11,8 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
 import android.graphics.PointF;
+import android.os.Build;
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -54,7 +56,6 @@ public class VrBrowserControllerInputTest {
     public ChromeTabbedActivityVrTestRule mVrTestRule = new ChromeTabbedActivityVrTestRule();
 
     private VrBrowserTestFramework mVrBrowserTestFramework;
-    private EmulatedVrController mController;
 
     @Before
     public void setUp() throws Exception {
@@ -64,8 +65,6 @@ public class VrBrowserControllerInputTest {
 
         mVrBrowserTestFramework = new VrBrowserTestFramework(mVrTestRule);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
-        mController = new EmulatedVrController(mVrTestRule.getActivity());
-        mController.recenterView();
     }
 
     private void waitForPageToBeScrollable(final RenderCoordinates coord) {
@@ -135,6 +134,18 @@ public class VrBrowserControllerInputTest {
         testControllerScrollingImpl(url, waitScrollable, getYCoord, getXCoord);
     }
 
+    private void waitForScrollQuiescence(final Callable<Integer> getCoord) {
+        final AtomicInteger lastCoord = new AtomicInteger(-1);
+        // Half-second poll period to be sure that the scroll has actually finished instead of
+        // being stuck in flaky scroll jank or taking longer than usual to start.
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Integer curCoord = getCoord.call();
+            if (curCoord.equals(lastCoord.get())) return true;
+            lastCoord.set(curCoord);
+            return false;
+        }, "Did not reach scroll quiescence", POLL_TIMEOUT_LONG_MS, 500);
+    }
+
     private void testControllerScrollingImpl(String url, Runnable waitScrollable,
             Callable<Integer> getYCoord, Callable<Integer> getXCoord)
             throws InterruptedException, Exception {
@@ -143,42 +154,44 @@ public class VrBrowserControllerInputTest {
 
         // Test that scrolling down works.
         int startScrollPoint = getYCoord.call().intValue();
-        // Arbitrary, but valid values to scroll smoothly.
-        int scrollSteps = 20;
-        int scrollSpeed = 60;
-        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
-        // We need this second scroll down, otherwise the horizontal scrolling becomes flaky
-        // This actually seems to not be an issue in this test case anymore, but still occurs in
-        // the fling scroll test, so keep around here as an extra precaution.
-        // TODO(bsheedy): Figure out why this is the case.
-        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
+        NativeUiUtils.scrollNonFling(NativeUiUtils.ScrollDirection.DOWN);
+        NativeUiUtils.waitNumFrames(NativeUiUtils.NUM_FRAMES_NON_FLING_SCROLL);
+        waitForScrollQuiescence(getYCoord);
         int endScrollPoint = getYCoord.call().intValue();
         Assert.assertTrue("Controller failed to scroll down", startScrollPoint < endScrollPoint);
 
         // Test that scrolling up works.
-        startScrollPoint = endScrollPoint;
-        mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
+        startScrollPoint = getYCoord.call().intValue();
+        NativeUiUtils.scrollNonFling(NativeUiUtils.ScrollDirection.UP);
+        NativeUiUtils.waitNumFrames(NativeUiUtils.NUM_FRAMES_NON_FLING_SCROLL);
+        waitForScrollQuiescence(getYCoord);
         endScrollPoint = getYCoord.call().intValue();
         Assert.assertTrue("Controller failed to scroll up", startScrollPoint > endScrollPoint);
 
         // Test that scrolling right works.
         startScrollPoint = getXCoord.call().intValue();
-        mController.scroll(EmulatedVrController.ScrollDirection.RIGHT, scrollSteps, scrollSpeed);
+        NativeUiUtils.scrollNonFling(NativeUiUtils.ScrollDirection.RIGHT);
+        NativeUiUtils.waitNumFrames(NativeUiUtils.NUM_FRAMES_NON_FLING_SCROLL);
+        waitForScrollQuiescence(getXCoord);
         endScrollPoint = getXCoord.call().intValue();
         Assert.assertTrue("Controller failed to scroll right", startScrollPoint < endScrollPoint);
 
         // Test that scrolling left works.
         startScrollPoint = endScrollPoint;
-        mController.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed);
+        NativeUiUtils.scrollNonFling(NativeUiUtils.ScrollDirection.LEFT);
+        NativeUiUtils.waitNumFrames(NativeUiUtils.NUM_FRAMES_NON_FLING_SCROLL);
+        waitForScrollQuiescence(getXCoord);
         endScrollPoint = getXCoord.call().intValue();
         Assert.assertTrue("Controller failed to scroll left", startScrollPoint > endScrollPoint);
     }
 
     /**
-     * Verifies that fling scrolling works on the Daydream controller's touchpad.
+     * Verifies that fling scrolling works on the Daydream controller's touchpad. This is done by
+     * performing a fast non-fling scroll, checking how far it scrolled, and asserting that a fling
+     * scroll of the same speed scrolls further.
      */
     @Test
-    @MediumTest
+    @LargeTest
     public void testControllerFlingScrolling() throws InterruptedException {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
@@ -187,52 +200,124 @@ public class VrBrowserControllerInputTest {
                 RenderCoordinates.fromWebContents(mVrTestRule.getWebContents());
         waitForPageToBeScrollable(coord);
 
-        // Arbitrary, but valid values to trigger fling scrolling.
-        int scrollSteps = 10;
-        int scrollSpeed = 10;
+        Callable<Integer> getYCoord = () -> {
+            return coord.getScrollYPixInt();
+        };
+        Callable<Integer> getXCoord = () -> {
+            return coord.getScrollXPixInt();
+        };
+
+        // Scrolling can be inconsistent on older/slower devices. So, try each direction up to
+        // 3 times to try to work around flakiness. Only enable this on problematic devices (
+        // currently first generation Pixel devices).
+        int numAttempts = 1;
+        if (Build.DEVICE.equals("marlin") || Build.DEVICE.equals("sailfish")) {
+            numAttempts = 3;
+        }
+        final int diffMultiplier = 2;
+
+        int startPoint;
+        int nonFlingEndpoint;
+        int nonFlingDistance;
+        boolean succeeded = false;
 
         // Test fling scrolling down.
-        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
-        final AtomicInteger endScrollPoint = new AtomicInteger(coord.getScrollYPixInt());
-        // Check that we continue to scroll past wherever we were when we let go of the touchpad.
-        CriteriaHelper.pollInstrumentationThread(
-                ()
-                        -> { return coord.getScrollYPixInt() > endScrollPoint.get(); },
-                "Controller failed to fling scroll down", POLL_TIMEOUT_SHORT_MS,
-                POLL_CHECK_INTERVAL_LONG_MS);
-        mController.cancelFlingScroll();
+        for (int i = 0; i < numAttempts; ++i) {
+            startPoint = coord.getScrollYPixInt();
+            // Perform a fast non-fling scroll and record how far it causes the page to scroll.
+            NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.DOWN);
+            waitForScrollQuiescence(getYCoord);
+            nonFlingEndpoint = coord.getScrollYPixInt();
+            nonFlingDistance = nonFlingEndpoint - startPoint;
+            // Perform a fling scroll and check that it goes sufficiently further than the non-fling
+            // scroll.
+            NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.DOWN);
+            waitForScrollQuiescence(getYCoord);
+            if (coord.getScrollYPixInt() - nonFlingEndpoint >= diffMultiplier * nonFlingDistance) {
+                succeeded = true;
+                break;
+            }
+            // Reset to the top of the page to try again.
+            mVrBrowserTestFramework.runJavaScriptOrFail(
+                    "window.scrollTo(0, 0)", POLL_TIMEOUT_SHORT_MS);
+            waitForScrollQuiescence(getYCoord);
+        }
+        Assert.assertTrue(
+                "Fling scroll down was unable to go sufficiently further than non-fling scroll",
+                succeeded);
+        succeeded = false;
 
         // Test fling scrolling up.
-        mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
-        endScrollPoint.set(coord.getScrollYPixInt());
-        CriteriaHelper.pollInstrumentationThread(
-                ()
-                        -> { return coord.getScrollYPixInt() < endScrollPoint.get(); },
-                "Controller failed  to fling scroll up", POLL_TIMEOUT_SHORT_MS,
-                POLL_CHECK_INTERVAL_LONG_MS);
-        mController.cancelFlingScroll();
-        // Horizontal scrolling becomes flaky if the scroll bar is at the top when we try to scroll
-        // horizontally, so scroll down a bit to ensure that isn't the case.
-        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, 10, 60);
+        for (int i = 0; i < numAttempts; ++i) {
+            // Ensure we're at the bottom of the page.
+            mVrBrowserTestFramework.runJavaScriptOrFail(
+                    "window.scrollTo(0, document.documentElement.scrollHeight)",
+                    POLL_TIMEOUT_SHORT_MS);
+            waitForScrollQuiescence(getYCoord);
+            startPoint = coord.getScrollYPixInt();
+            // Perform the actual test.
+            NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.UP);
+            waitForScrollQuiescence(getYCoord);
+            nonFlingEndpoint = coord.getScrollYPixInt();
+            nonFlingDistance = startPoint - nonFlingEndpoint;
+            NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.UP);
+            waitForScrollQuiescence(getYCoord);
+            if (nonFlingEndpoint - coord.getScrollYPixInt() >= diffMultiplier * nonFlingDistance) {
+                succeeded = true;
+                break;
+            }
+        }
+        Assert.assertTrue(
+                "Fling scroll up was unable to go sufficiently further than non-fling scroll",
+                succeeded);
+        succeeded = false;
 
         // Test fling scrolling right.
-        mController.scroll(EmulatedVrController.ScrollDirection.RIGHT, scrollSteps, scrollSpeed);
-        endScrollPoint.set(coord.getScrollXPixInt());
-        CriteriaHelper.pollInstrumentationThread(
-                ()
-                        -> { return coord.getScrollXPixInt() > endScrollPoint.get(); },
-                "Controller failed to fling scroll right", POLL_TIMEOUT_SHORT_MS,
-                POLL_CHECK_INTERVAL_LONG_MS);
-        mController.cancelFlingScroll();
+        for (int i = 0; i < numAttempts; ++i) {
+            startPoint = coord.getScrollXPixInt();
+            NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.RIGHT);
+            waitForScrollQuiescence(getXCoord);
+            nonFlingEndpoint = coord.getScrollXPixInt();
+            nonFlingDistance = nonFlingEndpoint - startPoint;
+            NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.RIGHT);
+            waitForScrollQuiescence(getXCoord);
+            if (coord.getScrollXPixInt() - nonFlingEndpoint >= diffMultiplier * nonFlingDistance) {
+                succeeded = true;
+                break;
+            }
+            // Reset to the left side to try again
+            mVrBrowserTestFramework.runJavaScriptOrFail(
+                    "window.scrollTo(0, 0)", POLL_TIMEOUT_SHORT_MS);
+            waitForScrollQuiescence(getXCoord);
+        }
+        Assert.assertTrue(
+                "Fling scroll right was unable to go sufficiently further than non-fling scroll",
+                succeeded);
+        succeeded = false;
 
         // Test fling scrolling left.
-        mController.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed);
-        endScrollPoint.set(coord.getScrollXPixInt());
-        CriteriaHelper.pollInstrumentationThread(
-                ()
-                        -> { return coord.getScrollXPixInt() < endScrollPoint.get(); },
-                "Controller failed to fling scroll left", POLL_TIMEOUT_SHORT_MS,
-                POLL_CHECK_INTERVAL_LONG_MS);
+        for (int i = 0; i < numAttempts; ++i) {
+            // Ensure we're on the right side of the page.
+            mVrBrowserTestFramework.runJavaScriptOrFail(
+                    "window.scrollTo(document.documentElement.scrollWidth, 0)",
+                    POLL_TIMEOUT_SHORT_MS);
+            waitForScrollQuiescence(getXCoord);
+            startPoint = coord.getScrollXPixInt();
+            // Perform the actual test.
+            NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.LEFT);
+            waitForScrollQuiescence(getXCoord);
+            nonFlingEndpoint = coord.getScrollXPixInt();
+            nonFlingDistance = startPoint - nonFlingEndpoint;
+            NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.LEFT);
+            waitForScrollQuiescence(getXCoord);
+            if (nonFlingEndpoint - coord.getScrollXPixInt() >= diffMultiplier * nonFlingDistance) {
+                succeeded = true;
+                break;
+            }
+        }
+        Assert.assertTrue(
+                "Fling scroll left was unable to go sufficiently further than non-fling scroll",
+                succeeded);
     }
 
     /**
@@ -246,7 +331,7 @@ public class VrBrowserControllerInputTest {
                                     "test_controller_clicks_register_on_webpage"),
                 PAGE_LOAD_TIMEOUT_S);
 
-        mController.performControllerClick();
+        NativeUiUtils.clickElement(UserFriendlyElementName.CONTENT_QUAD, new PointF());
         ChromeTabUtils.waitForTabPageLoaded(mVrTestRule.getActivity().getActivityTab(),
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"));
     }
@@ -262,7 +347,7 @@ public class VrBrowserControllerInputTest {
     public void testControllerClicksRegisterOnIframe() throws InterruptedException {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_iframe_clicks_outer"));
-        mController.performControllerClick();
+        NativeUiUtils.clickElement(UserFriendlyElementName.CONTENT_QUAD, new PointF());
         // Wait until the iframe's current location matches the URL of the page that gets navigated
         // to on click.
         mVrBrowserTestFramework.pollJavaScriptBooleanInFrameOrFail("window.location.href == '"
@@ -309,16 +394,15 @@ public class VrBrowserControllerInputTest {
 
         // Test that scrolling down works
         int startScrollPoint = recyclerView.computeVerticalScrollOffset();
-        // Arbitrary, but valid values to scroll smoothly
-        int scrollSteps = 20;
-        int scrollSpeed = 60;
-        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
+        NativeUiUtils.scrollNonFling(NativeUiUtils.ScrollDirection.DOWN);
+        NativeUiUtils.waitNumFrames(NativeUiUtils.NUM_FRAMES_NON_FLING_SCROLL);
         int endScrollPoint = recyclerView.computeVerticalScrollOffset();
         Assert.assertTrue("Controller failed to scroll down", startScrollPoint < endScrollPoint);
 
         // Test that scrolling up works
         startScrollPoint = endScrollPoint;
-        mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
+        NativeUiUtils.scrollNonFling(NativeUiUtils.ScrollDirection.UP);
+        NativeUiUtils.waitNumFrames(NativeUiUtils.NUM_FRAMES_NON_FLING_SCROLL);
         endScrollPoint = recyclerView.computeVerticalScrollOffset();
         Assert.assertTrue("Controller failed to scroll up", startScrollPoint > endScrollPoint);
     }
@@ -334,11 +418,11 @@ public class VrBrowserControllerInputTest {
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
                 PAGE_LOAD_TIMEOUT_S);
         // Enter fullscreen
-        DOMUtils.clickNode(mVrBrowserTestFramework.getFirstTabWebContents(), "fullscreen",
+        DOMUtils.clickNode(mVrBrowserTestFramework.getCurrentWebContents(), "fullscreen",
                 false /* goThroughRootAndroidView */);
         mVrBrowserTestFramework.waitOnJavaScriptStep();
         Assert.assertTrue("Page did not enter fullscreen",
-                DOMUtils.isFullscreen(mVrBrowserTestFramework.getFirstTabWebContents()));
+                DOMUtils.isFullscreen(mVrBrowserTestFramework.getCurrentWebContents()));
 
         NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         CriteriaHelper.pollInstrumentationThread(
@@ -346,7 +430,7 @@ public class VrBrowserControllerInputTest {
                         -> {
                     try {
                         return !DOMUtils.isFullscreen(
-                                mVrBrowserTestFramework.getFirstTabWebContents());
+                                mVrBrowserTestFramework.getCurrentWebContents());
                     } catch (InterruptedException | TimeoutException e) {
                         return false;
                     }

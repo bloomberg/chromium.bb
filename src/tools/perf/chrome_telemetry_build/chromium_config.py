@@ -19,7 +19,7 @@ class ChromiumConfig(project_config.ProjectConfig):
 
   def __init__(self, top_level_dir=None, benchmark_dirs=None,
                client_configs=None, default_chrome_root=None,
-               expectations_file=None):
+               expectations_files=None):
     if client_configs is None:
       client_configs = [CLIENT_CONFIG_PATH]
     if default_chrome_root is None:
@@ -28,4 +28,4 @@ class ChromiumConfig(project_config.ProjectConfig):
     super(ChromiumConfig, self).__init__(
         top_level_dir=top_level_dir, benchmark_dirs=benchmark_dirs,
         client_configs=client_configs, default_chrome_root=default_chrome_root,
-        expectations_file=expectations_file)
+        expectations_files=expectations_files)

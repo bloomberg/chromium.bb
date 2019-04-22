@@ -54,13 +54,7 @@ class OOPBrowserTest : public ContentBrowserTest {
 
 // This test calls into system GL which is not instrumented with MSAN.
 #if !defined(MEMORY_SANITIZER)
-// TODO(crbug.com/880948) Disabled for crashes on Linux CFI, see bug.
-#if defined(OS_LINUX)
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-IN_PROC_BROWSER_TEST_F(OOPBrowserTest, MAYBE_Basic) {
+IN_PROC_BROWSER_TEST_F(OOPBrowserTest, Basic) {
   // Create a div to ensure we don't use solid color quads.
   GURL url = GURL(
       "data:text/html,"
@@ -96,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(OOPBrowserTest, MAYBE_Basic) {
       ASSERT_EQ(snapshot.getColor(i, j), SK_ColorBLUE);
     }
   }
-};
+}
 #endif
 
 }  // namespace

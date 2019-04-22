@@ -47,10 +47,6 @@
 
 namespace blink {
 
-LinkImport* LinkImport::Create(HTMLLinkElement* owner) {
-  return MakeGarbageCollected<LinkImport>(owner);
-}
-
 LinkImport::LinkImport(HTMLLinkElement* owner)
     : LinkResource(owner), child_(nullptr) {}
 
@@ -132,7 +128,7 @@ void LinkImport::OwnerRemoved() {
     GetDocument().GetStyleEngine().HtmlImportAddedOrRemoved();
 }
 
-void LinkImport::Trace(blink::Visitor* visitor) {
+void LinkImport::Trace(Visitor* visitor) {
   visitor->Trace(child_);
   HTMLImportChildClient::Trace(visitor);
   LinkResource::Trace(visitor);

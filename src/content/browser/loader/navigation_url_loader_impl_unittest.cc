@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
@@ -32,6 +33,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_navigation_url_loader_delegate.h"
 #include "net/base/load_flags.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
@@ -42,7 +44,6 @@
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_owner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 
 namespace content {
 
@@ -98,7 +99,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
   }
 
   bool MaybeCreateLoaderForResponse(
-      const GURL& request_url,
+      const network::ResourceRequest& request,
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
@@ -161,8 +162,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
       const std::string& headers,
       const std::string& method,
       NavigationURLLoaderDelegate* delegate,
-      NavigationDownloadPolicy download_policy =
-          NavigationDownloadPolicy::kAllow,
+      NavigationDownloadPolicy download_policy = NavigationDownloadPolicy(),
       bool is_main_frame = true,
       bool upgrade_if_insecure = false) {
     mojom::BeginNavigationParamsPtr begin_params =
@@ -172,17 +172,19 @@ class NavigationURLLoaderImplTest : public testing::Test {
             blink::WebMixedContentContextType::kBlockable,
             false /* is_form_submission */, GURL() /* searchable_form_url */,
             std::string() /* searchable_form_encoding */,
-            url::Origin::Create(url), GURL() /* client_side_redirect_url */,
+            GURL() /* client_side_redirect_url */,
             base::nullopt /* devtools_initiator_info */);
 
     CommonNavigationParams common_params;
     common_params.url = url;
+    common_params.initiator_origin = url::Origin::Create(url);
     common_params.method = method;
     common_params.download_policy = download_policy;
 
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(
-            common_params, std::move(begin_params), url, is_main_frame,
+            common_params, std::move(begin_params), url,
+            url::Origin::Create(url), is_main_frame,
             false /* parent_is_main_frame */, false /* are_ancestors_secure */,
             -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
             false /* report_raw_headers */, false /* is_prerenering */,
@@ -222,7 +224,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
                            redirect_url.GetOrigin().spec().c_str()),
         request_method, &delegate);
     delegate.WaitForRequestRedirected();
-    loader->FollowRedirect(base::nullopt, base::nullopt);
+    loader->FollowRedirect({}, {}, PREVIEWS_OFF);
 
     EXPECT_EQ(expected_redirect_method, delegate.redirect_info().new_method);
 
@@ -261,9 +263,9 @@ class NavigationURLLoaderImplTest : public testing::Test {
         url,
         base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
                            url.GetOrigin().spec().c_str()),
-        "GET", &delegate, NavigationDownloadPolicy::kAllow, is_main_frame);
+        "GET", &delegate, NavigationDownloadPolicy(), is_main_frame);
     delegate.WaitForRequestRedirected();
-    loader->FollowRedirect(base::nullopt, base::nullopt);
+    loader->FollowRedirect({}, {}, PREVIEWS_OFF);
     delegate.WaitForResponseStarted();
 
     return most_recent_resource_request_.value().priority;
@@ -277,10 +279,10 @@ class NavigationURLLoaderImplTest : public testing::Test {
         url,
         base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
                            url.GetOrigin().spec().c_str()),
-        "GET", &delegate, NavigationDownloadPolicy::kAllow,
-        true /*is_main_frame*/, upgrade_if_insecure);
+        "GET", &delegate, NavigationDownloadPolicy(), true /*is_main_frame*/,
+        upgrade_if_insecure);
     delegate.WaitForRequestRedirected();
-    loader->FollowRedirect(base::nullopt, base::nullopt);
+    loader->FollowRedirect({}, {}, PREVIEWS_OFF);
     if (expect_request_fail) {
       delegate.WaitForRequestFailed();
     } else {
@@ -293,6 +295,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
+  net::test::MockNetworkChangeNotifier network_change_notifier_;
   net::EmbeddedTestServer http_test_server_;
   base::Optional<network::ResourceRequest> most_recent_resource_request_;
 };
@@ -305,6 +308,38 @@ TEST_F(NavigationURLLoaderImplTest, RequestPriority) {
             NavigateAndReturnRequestPriority(url, true /* is_main_frame */));
   EXPECT_EQ(net::LOWEST,
             NavigateAndReturnRequestPriority(url, false /* is_main_frame */));
+}
+
+TEST_F(NavigationURLLoaderImplTest, TopFrameOriginOfMainFrameNavigation) {
+  ASSERT_TRUE(http_test_server_.Start());
+
+  const GURL url = http_test_server_.GetURL("/foo");
+
+  TestNavigationURLLoaderDelegate delegate;
+  std::unique_ptr<NavigationURLLoader> loader = CreateTestLoader(
+      url,
+      base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
+                         url.GetOrigin().spec().c_str()),
+      "GET", &delegate, NavigationDownloadPolicy(), true /*is_main_frame*/,
+      false /*upgrade_if_insecure*/);
+  delegate.WaitForRequestStarted();
+
+  ASSERT_TRUE(most_recent_resource_request_);
+  EXPECT_EQ(url::Origin::Create(url),
+            *most_recent_resource_request_->top_frame_origin);
+}
+
+TEST_F(NavigationURLLoaderImplTest,
+       TopFrameOriginOfRedirectedMainFrameNavigation) {
+  ASSERT_TRUE(http_test_server_.Start());
+
+  const GURL url = http_test_server_.GetURL("/redirect301-to-echo");
+  const GURL final_url = http_test_server_.GetURL("/echo");
+
+  HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
+
+  EXPECT_EQ(url::Origin::Create(final_url),
+            *most_recent_resource_request_->top_frame_origin);
 }
 
 TEST_F(NavigationURLLoaderImplTest, Redirect301Tests) {
@@ -403,7 +438,7 @@ TEST_F(NavigationURLLoaderImplTest, RedirectModifiedHeaders) {
   net::HttpRequestHeaders redirect_headers;
   redirect_headers.SetHeader("Header2", "");
   redirect_headers.SetHeader("Header3", "Value3");
-  loader->FollowRedirect(base::nullopt, redirect_headers);
+  loader->FollowRedirect({}, redirect_headers, PREVIEWS_OFF);
   delegate.WaitForResponseStarted();
 
   // Redirected request should also have modified headers.

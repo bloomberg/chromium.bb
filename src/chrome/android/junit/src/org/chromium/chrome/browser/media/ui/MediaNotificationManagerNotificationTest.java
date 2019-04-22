@@ -26,7 +26,7 @@ import org.robolectric.shadows.ShadowNotification;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.content_public.common.MediaMetadata;
+import org.chromium.services.media_session.MediaMetadata;
 
 /**
  * JUnit tests for checking MediaNotificationManager presents correct notification to Android
@@ -87,7 +87,7 @@ public class MediaNotificationManagerNotificationTest extends MediaNotificationM
                            ChromeFeatureList.HIDE_USER_DATA_FROM_INCOGNITO_NOTIFICATIONS);
         if (userDataIsHidden) {
             assertNotEquals(info.metadata.getTitle(), shadowNotification.getContentTitle());
-            assertNull(shadowNotification.getContentText());
+            assertNotNull(shadowNotification.getContentText());
         } else {
             assertEquals(info.metadata.getTitle(), shadowNotification.getContentTitle());
             assertEquals(info.origin, shadowNotification.getContentText());
@@ -213,7 +213,6 @@ public class MediaNotificationManagerNotificationTest extends MediaNotificationM
             assertTrue((notification.flags & Notification.FLAG_LOCAL_ONLY) != 0);
             assertEquals(NOTIFICATION_GROUP_NAME, notification.getGroup());
             assertTrue(notification.isGroupSummary());
-            assertNull(notification.deleteIntent);
             assertNotNull(notification.contentIntent);
             assertEquals(Notification.VISIBILITY_PRIVATE, notification.visibility);
         }

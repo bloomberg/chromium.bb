@@ -43,47 +43,60 @@ class MemlogBrowserTest : public InProcessBrowserTest,
                           public testing::WithParamInterface<TestParam> {
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
-    if (GetParam().start_profiling_with_command_line_flag) {
-      if (GetParam().mode == Mode::kAllRenderers) {
-        command_line->AppendSwitchASCII(
-            heap_profiling::kMemlog, heap_profiling::kMemlogModeAllRenderers);
-      } else if (GetParam().mode == Mode::kAll) {
-        command_line->AppendSwitchASCII(heap_profiling::kMemlog,
-                                        heap_profiling::kMemlogModeAll);
-      } else {
-        NOTREACHED();
-      }
 
-      if (GetParam().stack_mode == mojom::StackMode::PSEUDO) {
-        command_line->AppendSwitchASCII(heap_profiling::kMemlogStackMode,
-                                        heap_profiling::kMemlogStackModePseudo);
-      } else if (GetParam().stack_mode ==
-                 mojom::StackMode::NATIVE_WITH_THREAD_NAMES) {
-        command_line->AppendSwitchASCII(
-            heap_profiling::kMemlogStackMode,
-            heap_profiling::kMemlogStackModeNativeWithThreadNames);
-      } else if (GetParam().stack_mode ==
-                 mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES) {
-        command_line->AppendSwitchASCII(heap_profiling::kMemlogStackMode,
-                                        heap_profiling::kMemlogStackModeNative);
-      } else if (GetParam().stack_mode == mojom::StackMode::MIXED) {
-        command_line->AppendSwitchASCII(heap_profiling::kMemlogStackMode,
-                                        heap_profiling::kMemlogStackModeMixed);
-      } else {
-        NOTREACHED();
-      }
+    if (!GetParam().start_profiling_with_command_line_flag)
+      return;
+
+    if (GetParam().mode == Mode::kAllRenderers) {
+      command_line->AppendSwitchASCII(heap_profiling::kMemlogMode,
+                                      heap_profiling::kMemlogModeAllRenderers);
+    } else if (GetParam().mode == Mode::kAll) {
+      command_line->AppendSwitchASCII(heap_profiling::kMemlogMode,
+                                      heap_profiling::kMemlogModeAll);
+    } else {
+      NOTREACHED();
+    }
+
+    if (!GetParam().should_sample) {
+      command_line->AppendSwitchASCII(heap_profiling::kMemlogSamplingRate, "1");
+    }
+
+    if (GetParam().stack_mode == mojom::StackMode::PSEUDO) {
+      command_line->AppendSwitchASCII(heap_profiling::kMemlogStackMode,
+                                      heap_profiling::kMemlogStackModePseudo);
+    } else if (GetParam().stack_mode ==
+               mojom::StackMode::NATIVE_WITH_THREAD_NAMES) {
+      command_line->AppendSwitchASCII(
+          heap_profiling::kMemlogStackMode,
+          heap_profiling::kMemlogStackModeNativeWithThreadNames);
+    } else if (GetParam().stack_mode ==
+               mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES) {
+      command_line->AppendSwitchASCII(heap_profiling::kMemlogStackMode,
+                                      heap_profiling::kMemlogStackModeNative);
+    } else if (GetParam().stack_mode == mojom::StackMode::MIXED) {
+      command_line->AppendSwitchASCII(heap_profiling::kMemlogStackMode,
+                                      heap_profiling::kMemlogStackModeMixed);
+    } else {
+      NOTREACHED();
     }
   }
 };
 
 // Ensure invocations via TracingController can generate a valid JSON file with
 // expected data.
-IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
+// https://crbug.com/944429
+#if defined(OS_MACOSX)
+#define MAYBE_EndToEnd DISABLED_EndToEnd
+#else
+#define MAYBE_EndToEnd EndToEnd
+#endif
+IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, MAYBE_EndToEnd) {
   LOG(INFO) << "Memlog mode: " << static_cast<int>(GetParam().mode);
   LOG(INFO) << "Memlog stack mode: " << static_cast<int>(GetParam().stack_mode);
   LOG(INFO) << "Started via command line flag: "
-            << static_cast<int>(
-                   GetParam().start_profiling_with_command_line_flag);
+            << GetParam().start_profiling_with_command_line_flag;
+  LOG(INFO) << "Should sample: " << GetParam().should_sample;
+  LOG(INFO) << "Sample everything: " << GetParam().sample_everything;
   TestDriver driver;
   TestDriver::Options options;
   options.mode = GetParam().mode;
@@ -100,71 +113,43 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
 
 std::vector<TestParam> GetParams() {
   std::vector<TestParam> params;
-  std::vector<Mode> dynamic_start_modes;
-  dynamic_start_modes.push_back(Mode::kNone);
-  dynamic_start_modes.push_back(Mode::kMinimal);
-  dynamic_start_modes.push_back(Mode::kBrowser);
-  dynamic_start_modes.push_back(Mode::kGpu);
+  std::vector<Mode> dynamic_start_modes{Mode::kNone, Mode::kMinimal,
+                                        Mode::kBrowser, Mode::kGpu};
 
-  std::vector<mojom::StackMode> stack_modes;
-  stack_modes.push_back(mojom::StackMode::MIXED);
-  stack_modes.push_back(mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES);
-  stack_modes.push_back(mojom::StackMode::PSEUDO);
+  std::vector<mojom::StackMode> stack_modes{
+      mojom::StackMode::MIXED, mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES,
+      mojom::StackMode::PSEUDO};
 
-  for (const auto& mode : dynamic_start_modes) {
-    for (const auto& stack_mode : stack_modes) {
+  for (const auto& stack_mode : stack_modes) {
+    for (const auto& mode : dynamic_start_modes) {
       params.push_back(
           {mode, stack_mode, false /* start_profiling_with_command_line_flag */,
-           false /* should_sample */, false /* sample_everything*/});
+           true /* should_sample */, false /* sample_everything*/});
     }
-  }
 
 // For unknown reasons, renderer profiling has become flaky on ChromeOS. This is
 // likely happening because the renderers are never being given the signal to
 // start profiling. It's unclear why this happens. https://crbug.com/843843.
 // https://crbug.com/843467.
 #if !defined(OS_CHROMEOS)
-  // Non-browser processes must be profiled with a command line flag, since
-  // otherwise, profiling will start after the relevant processes have been
-  // created, thus that process will be not be profiled.
-  std::vector<Mode> command_line_start_modes;
-  command_line_start_modes.push_back(Mode::kAll);
-  command_line_start_modes.push_back(Mode::kAllRenderers);
-  for (const auto& mode : command_line_start_modes) {
-    for (const auto& stack_mode : stack_modes) {
+    // Non-browser processes must be profiled with a command line flag, since
+    // otherwise, profiling will start after the relevant processes have been
+    // created, thus that process will be not be profiled.
+    std::vector<Mode> command_line_start_modes{Mode::kAll, Mode::kAllRenderers};
+    for (const auto& mode : command_line_start_modes) {
       params.push_back(
           {mode, stack_mode, true /* start_profiling_with_command_line_flag */,
-           false /* should_sample */, false /* sample_everything*/});
+           true /* should_sample */, false /* sample_everything*/});
     }
-  }
 #endif  // defined(OS_CHROMEOS)
+  }
 
-  // Test sampling all allocations.
-  params.push_back({Mode::kBrowser, mojom::StackMode::NATIVE_WITH_THREAD_NAMES,
-                    false /* start_profiling_with_command_line_flag */,
-                    true /* should_sample */, true /* sample_everything*/});
-
-  // Test sampling some allocations.
-  params.push_back({Mode::kBrowser, mojom::StackMode::PSEUDO,
-                    false /* start_profiling_with_command_line_flag */,
-                    true /* should_sample */, false /* sample_everything*/});
-
-  // Test thread names for native profiling.
-  params.push_back(
-      {Mode::kBrowser, mojom::StackMode::NATIVE_WITH_THREAD_NAMES, false});
-
-  // Profile all utility processes and the browser process. The main goal is to
-  // check that there is no deadlock in the profiling process.
-  params.push_back({Mode::kUtilityAndBrowser,
-                    mojom::StackMode::NATIVE_WITH_THREAD_NAMES,
-                    false /* start_profiling_with_command_line_flag */,
-                    true /* should_sample */, false /* sample_everything*/});
   return params;
 }
 
-INSTANTIATE_TEST_CASE_P(Memlog,
-                        MemlogBrowserTest,
-                        ::testing::ValuesIn(GetParams()));
+INSTANTIATE_TEST_SUITE_P(Memlog,
+                         MemlogBrowserTest,
+                         ::testing::ValuesIn(GetParams()));
 
 }  // namespace heap_profiling
 

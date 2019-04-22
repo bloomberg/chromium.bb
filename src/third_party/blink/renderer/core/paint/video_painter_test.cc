@@ -9,12 +9,12 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
-#include "third_party/blink/renderer/core/paint/stub_chrome_client_for_spv2.h"
+#include "third_party/blink/renderer/core/paint/stub_chrome_client_for_cap.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
-// Integration tests of video painting code (in SPv2 mode).
+// Integration tests of video painting code (in CAP mode).
 
 namespace blink {
 namespace {
@@ -33,6 +33,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
     client_->ReadyStateChanged();
     layer_ = cc::Layer::Create();
     layer_->SetIsDrawable(true);
+    layer_->SetHitTestable(true);
     client_->SetCcLayer(layer_.get());
     return LoadTiming::kImmediate;
   }
@@ -58,13 +59,14 @@ class VideoStubLocalFrameClient : public EmptyLocalFrameClient {
   }
 };
 
-class VideoPainterTestForSPv2 : private ScopedSlimmingPaintV2ForTest,
-                                public PaintControllerPaintTestBase {
+class VideoPainterTestForCAP : private ScopedCompositeAfterPaintForTest,
+                               public PaintControllerPaintTestBase {
  public:
-  VideoPainterTestForSPv2()
-      : ScopedSlimmingPaintV2ForTest(true),
-        PaintControllerPaintTestBase(new VideoStubLocalFrameClient),
-        chrome_client_(new StubChromeClientForSPv2) {}
+  VideoPainterTestForCAP()
+      : ScopedCompositeAfterPaintForTest(true),
+        PaintControllerPaintTestBase(
+            MakeGarbageCollected<VideoStubLocalFrameClient>()),
+        chrome_client_(MakeGarbageCollected<StubChromeClientForCAP>()) {}
 
   void SetUp() override {
     PaintControllerPaintTestBase::SetUp();
@@ -79,12 +81,12 @@ class VideoPainterTestForSPv2 : private ScopedSlimmingPaintV2ForTest,
   ChromeClient& GetChromeClient() const override { return *chrome_client_; }
 
  private:
-  Persistent<StubChromeClientForSPv2> chrome_client_;
+  Persistent<StubChromeClientForCAP> chrome_client_;
 };
 
-TEST_F(VideoPainterTestForSPv2, VideoLayerAppearsInLayerTree) {
+TEST_F(VideoPainterTestForCAP, VideoLayerAppearsInLayerTree) {
   // Insert a <video> and allow it to begin loading.
-  SetBodyInnerHTML("<video width=300 height=200 src=test.ogv>");
+  SetBodyInnerHTML("<video width=300 height=300 src=test.ogv>");
   test::RunPendingTasks();
 
   // Force the page to paint.
@@ -99,7 +101,9 @@ TEST_F(VideoPainterTestForSPv2, VideoLayerAppearsInLayerTree) {
   const cc::Layer* layer = player->GetCcLayer();
   ASSERT_TRUE(layer);
   EXPECT_TRUE(HasLayerAttached(*layer));
-  EXPECT_EQ(gfx::Size(300, 200), layer->bounds());
+  // The layer bounds reflects the aspectn ratio and object-fit of the video.
+  EXPECT_EQ(gfx::Vector2dF(8, 83), layer->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(300, 150), layer->bounds());
 }
 
 }  // namespace

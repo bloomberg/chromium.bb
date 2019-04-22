@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 
 #include <string>
 
@@ -36,20 +37,31 @@ CredentialProviderSigninDialogTestDataStorage::
 
 void CredentialProviderSigninDialogTestDataStorage::SetSigninPassword(
     const std::string& password) {
-  expected_success_signin_result_.SetKey("id", base::Value("gaia_user_id"));
-  expected_success_signin_result_.SetKey("password", base::Value(password));
-  expected_success_signin_result_.SetKey("email",
-                                         base::Value("foo_bar@gmail.com"));
-  expected_success_signin_result_.SetKey("access_token",
-                                         base::Value("access_token"));
-  expected_success_signin_result_.SetKey("refresh_token",
-                                         base::Value("refresh_token"));
-  expected_success_fetch_result_.SetKey("token_handle",
+  // Initialize expected successful result from oauth2 fetches.
+  expected_success_fetch_result_.SetKey(credential_provider::kKeyTokenHandle,
                                         base::Value("token_handle"));
-  expected_success_fetch_result_.SetKey("mdm_id_token",
+  expected_success_fetch_result_.SetKey(credential_provider::kKeyMdmIdToken,
                                         base::Value("mdm_token"));
-  expected_success_fetch_result_.SetKey("full_name", base::Value("Foo Bar"));
+  expected_success_fetch_result_.SetKey(credential_provider::kKeyFullname,
+                                        base::Value("Foo Bar"));
 
+  // Initialize expected successful full result sent to the credential provider.
+  expected_success_signin_result_.SetKey(credential_provider::kKeyId,
+                                         base::Value("gaia_user_id"));
+  expected_success_signin_result_.SetKey(credential_provider::kKeyPassword,
+                                         base::Value(password));
+  expected_success_signin_result_.SetKey(credential_provider::kKeyEmail,
+                                         base::Value("foo_bar@gmail.com"));
+  expected_success_signin_result_.SetKey(credential_provider::kKeyAccessToken,
+                                         base::Value("access_token"));
+  expected_success_signin_result_.SetKey(credential_provider::kKeyRefreshToken,
+                                         base::Value("refresh_token"));
+  expected_success_signin_result_.SetKey(
+      credential_provider::kKeyExitCode,
+      base::Value(credential_provider::kUiecSuccess));
+
+  // Merge with results from chrome://inline-signin to form the full
+  // result.
   expected_success_full_result_ = expected_success_signin_result_.Clone();
   expected_success_full_result_.MergeDictionary(
       &expected_success_fetch_result_);
@@ -65,16 +77,20 @@ CredentialProviderSigninDialogTestDataStorage::MakeSignInResponseValue(
     const std::string& refresh_token) {
   base::Value args(base::Value::Type::DICTIONARY);
   if (!email.empty())
-    args.SetKey("email", base::Value(email));
+    args.SetKey(credential_provider::kKeyEmail, base::Value(email));
   if (!password.empty())
-    args.SetKey("password", base::Value(password));
+    args.SetKey(credential_provider::kKeyPassword, base::Value(password));
   if (!id.empty())
-    args.SetKey("id", base::Value(id));
+    args.SetKey(credential_provider::kKeyId, base::Value(id));
   if (!refresh_token.empty())
-    args.SetKey("refresh_token", base::Value(refresh_token));
+    args.SetKey(credential_provider::kKeyRefreshToken,
+                base::Value(refresh_token));
   if (!access_token.empty())
-    args.SetKey("access_token", base::Value(access_token));
+    args.SetKey(credential_provider::kKeyAccessToken,
+                base::Value(access_token));
 
+  args.SetKey(credential_provider::kKeyExitCode,
+              base::Value(credential_provider::kUiecSuccess));
   return args;
 }
 

@@ -72,13 +72,24 @@ class MockLoggingService : public LoggingServiceAPI {
   MOCK_METHOD2(SetWinHttpProxySettings,
                void(const base::string16& config,
                     const base::string16& bypass));
-  MOCK_METHOD2(AddInstalledExtension,
-               void(const base::string16& extension_id,
-                    ExtensionInstallMethod install_method));
+  MOCK_METHOD3(
+      AddInstalledExtension,
+      void(const base::string16& extension_id,
+           ExtensionInstallMethod install_method,
+           const std::vector<internal::FileInformation>& file_information));
   MOCK_METHOD3(AddScheduledTask,
                void(const base::string16& name,
                     const base::string16& description,
                     const std::vector<internal::FileInformation>& actions));
+  MOCK_METHOD4(AddShortcutData,
+               void(const base::string16& lnk_path,
+                    const base::string16& executable_path,
+                    const std::string& executable_hash,
+                    const std::vector<base::string16>& command_line_arguments));
+  MOCK_METHOD1(SetFoundModifiedChromeShortcuts,
+               void(bool found_modified_shortcuts));
+  MOCK_METHOD1(SetScannedLocations,
+               void(const std::vector<UwS::TraceLocation>&));
   MOCK_METHOD2(LogProcessInformation,
                void(SandboxType process_type,
                     const SystemResourceUsage& usage));

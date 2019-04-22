@@ -51,8 +51,8 @@ const size_t kTestLengths[] = {1, 32, 256, 32768, 1 << 20};
 // the results will not be meaningful with sequences containing
 // top-bit-set bytes.
 bool IsString7Bit(const std::string& s) {
-  for (std::string::const_iterator it = s.begin(); it != s.end(); ++it) {
-    if (*it & 0x80)
+  for (auto it : s) {
+    if (it & 0x80)
       return false;
   }
   return true;
@@ -154,8 +154,7 @@ void RunSomeTests(
     base::Callback<std::string(size_t length)> construct_test_string,
     const TestFunctionDescription* test_functions,
     size_t test_count) {
-  for (size_t i = 0; i < arraysize(kTestLengths); ++i) {
-    const size_t length = kTestLengths[i];
+  for (auto length : kTestLengths) {
     const std::string test_string = construct_test_string.Run(length);
     const int real_length = static_cast<int>(test_string.length());
     const int times = (1 << 24) / real_length;

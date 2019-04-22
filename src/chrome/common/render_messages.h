@@ -77,12 +77,10 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_ContentBlocked,
 
 // Sent by the renderer process to check whether access to web databases is
 // granted by content settings.
-IPC_SYNC_MESSAGE_CONTROL5_1(ChromeViewHostMsg_AllowDatabase,
+IPC_SYNC_MESSAGE_CONTROL3_1(ChromeViewHostMsg_AllowDatabase,
                             int /* render_frame_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
-                            base::string16 /* database name */,
-                            base::string16 /* database display name */,
                             bool /* allowed */)
 
 // Sent by the renderer process to check whether access to DOM Storage is
@@ -113,6 +111,14 @@ IPC_MESSAGE_CONTROL4(ChromeViewHostMsg_RequestFileSystemAccessAsync,
 // Sent by the renderer process to check whether access to Indexed DB is
 // granted by content settings.
 IPC_SYNC_MESSAGE_CONTROL3_1(ChromeViewHostMsg_AllowIndexedDB,
+                            int /* render_frame_id */,
+                            GURL /* origin_url */,
+                            GURL /* top origin url */,
+                            bool /* allowed */)
+
+// Sent by the renderer process to check whether access to CacheStorage is
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL3_1(ChromeViewHostMsg_AllowCacheStorage,
                             int /* render_frame_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,

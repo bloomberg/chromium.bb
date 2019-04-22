@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018 The WebRTC project authors. All Rights Reserved.
+ *  Copyright 2019 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -33,18 +33,31 @@ FieldTrialParameterInterface::~FieldTrialParameterInterface() {
   RTC_DCHECK(used_) << "Field trial parameter with key: '" << key_
                     << "' never used.";
 }
-std::string FieldTrialParameterInterface::Key() const {
-  return key_;
-}
 
 void ParseFieldTrial(
     std::initializer_list<FieldTrialParameterInterface*> fields,
     std::string trial_string) {
   std::map<std::string, FieldTrialParameterInterface*> field_map;
+  FieldTrialParameterInterface* keyless_field = nullptr;
   for (FieldTrialParameterInterface* field : fields) {
     field->MarkAsUsed();
-    field_map[field->Key()] = field;
+    if (!field->sub_parameters_.empty()) {
+      for (FieldTrialParameterInterface* sub_field : field->sub_parameters_) {
+        RTC_DCHECK(!sub_field->key_.empty());
+        sub_field->MarkAsUsed();
+        field_map[sub_field->key_] = sub_field;
+      }
+      continue;
+    }
+
+    if (field->key_.empty()) {
+      RTC_DCHECK(!keyless_field);
+      keyless_field = field;
+    } else {
+      field_map[field->key_] = field;
+    }
   }
+
   size_t i = 0;
   while (i < trial_string.length()) {
     int val_end = FindOrEnd(trial_string, i, ',');
@@ -62,10 +75,19 @@ void ParseFieldTrial(
         RTC_LOG(LS_WARNING) << "Failed to read field with key: '" << key
                             << "' in trial: \"" << trial_string << "\"";
       }
+    } else if (!opt_value && keyless_field && !key.empty()) {
+      if (!keyless_field->Parse(key)) {
+        RTC_LOG(LS_WARNING) << "Failed to read empty key field with value '"
+                            << key << "' in trial: \"" << trial_string << "\"";
+      }
     } else {
       RTC_LOG(LS_INFO) << "No field with key: '" << key
                        << "' (found in trial: \"" << trial_string << "\")";
     }
+  }
+
+  for (FieldTrialParameterInterface* field : fields) {
+    field->ParseDone();
   }
 }
 

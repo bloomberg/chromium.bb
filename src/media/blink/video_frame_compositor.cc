@@ -28,30 +28,20 @@ VideoFrameCompositor::VideoFrameCompositor(
     std::unique_ptr<blink::WebVideoFrameSubmitter> submitter)
     : task_runner_(task_runner),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      background_rendering_enabled_(true),
       background_rendering_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kBackgroundRenderingTimeoutMs),
           base::Bind(&VideoFrameCompositor::BackgroundRender,
                      base::Unretained(this))),
-      client_(nullptr),
-      rendering_(false),
-      rendered_last_frame_(false),
-      is_background_rendering_(false),
-      new_background_frame_(false),
-      // Assume 60Hz before the first UpdateCurrentFrame() call.
-      last_interval_(base::TimeDelta::FromSecondsD(1.0 / 60)),
-      callback_(nullptr),
       submitter_(std::move(submitter)),
       weak_ptr_factory_(this) {
-  background_rendering_timer_.SetTaskRunner(task_runner_);
-  if (submitter_.get()) {
+  if (submitter_) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&VideoFrameCompositor::InitializeSubmitter,
                                   weak_ptr_factory_.GetWeakPtr()));
-    update_submission_state_callback_ = media::BindToLoop(
+    update_submission_state_callback_ = BindToLoop(
         task_runner_,
-        base::BindRepeating(&VideoFrameCompositor::UpdateSubmissionState,
+        base::BindRepeating(&VideoFrameCompositor::SetIsSurfaceVisible,
                             weak_ptr_factory_.GetWeakPtr()));
   }
 }
@@ -61,9 +51,9 @@ VideoFrameCompositor::GetUpdateSubmissionStateCallback() {
   return update_submission_state_callback_;
 }
 
-void VideoFrameCompositor::UpdateSubmissionState(bool is_visible) {
+void VideoFrameCompositor::SetIsSurfaceVisible(bool is_visible) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  submitter_->UpdateSubmissionState(is_visible);
+  submitter_->SetIsSurfaceVisible(is_visible);
 }
 
 void VideoFrameCompositor::InitializeSubmitter() {
@@ -82,10 +72,8 @@ VideoFrameCompositor::~VideoFrameCompositor() {
 void VideoFrameCompositor::EnableSubmission(
     const viz::SurfaceId& id,
     base::TimeTicks local_surface_id_allocation_time,
-    media::VideoRotation rotation,
-    bool force_submit,
-    bool is_opaque,
-    blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
+    VideoRotation rotation,
+    bool force_submit) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // If we're switching to |submitter_| from some other client, then tell it.
@@ -94,9 +82,7 @@ void VideoFrameCompositor::EnableSubmission(
 
   submitter_->SetRotation(rotation);
   submitter_->SetForceSubmit(force_submit);
-  submitter_->SetIsOpaque(is_opaque);
-  submitter_->EnableSubmission(id, local_surface_id_allocation_time,
-                               std::move(frame_sink_destroyed_callback));
+  submitter_->EnableSubmission(id, local_surface_id_allocation_time);
   client_ = submitter_.get();
   if (rendering_)
     client_->StartRendering();
@@ -219,8 +205,8 @@ void VideoFrameCompositor::PaintSingleFrame(
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&VideoFrameCompositor::PaintSingleFrame,
-                   base::Unretained(this), frame, repaint_duplicate_frame));
+        base::BindOnce(&VideoFrameCompositor::PaintSingleFrame,
+                       base::Unretained(this), frame, repaint_duplicate_frame));
     return;
   }
   if (ProcessNewFrame(frame, repaint_duplicate_frame) &&
@@ -287,6 +273,22 @@ bool VideoFrameCompositor::ProcessNewFrame(
   return true;
 }
 
+void VideoFrameCompositor::UpdateRotation(VideoRotation rotation) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  submitter_->SetRotation(rotation);
+}
+
+void VideoFrameCompositor::SetIsPageVisible(bool is_visible) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (submitter_)
+    submitter_->SetIsPageVisible(is_visible);
+}
+
+void VideoFrameCompositor::SetForceSubmit(bool force_submit) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  submitter_->SetForceSubmit(force_submit);
+}
+
 void VideoFrameCompositor::BackgroundRender() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   const base::TimeTicks now = tick_clock_->NowTicks();
@@ -337,22 +339,5 @@ bool VideoFrameCompositor::CallRender(base::TimeTicks deadline_min,
   return new_frame || had_new_background_frame;
 }
 
-void VideoFrameCompositor::UpdateRotation(media::VideoRotation rotation) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  submitter_->SetRotation(rotation);
-}
-
-void VideoFrameCompositor::SetForceSubmit(bool force_submit) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  submitter_->SetForceSubmit(force_submit);
-}
-
-void VideoFrameCompositor::UpdateIsOpaque(bool is_opaque) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  submitter_->SetIsOpaque(is_opaque);
-}
 
 }  // namespace media

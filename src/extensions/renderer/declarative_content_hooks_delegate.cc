@@ -5,6 +5,7 @@
 #include "extensions/renderer/declarative_content_hooks_delegate.h"
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "extensions/common/api/declarative/declarative_constants.h"
 #include "extensions/renderer/bindings/api_type_reference_map.h"
 #include "extensions/renderer/bindings/argument_spec.h"
@@ -165,12 +166,13 @@ void DeclarativeContentHooksDelegate::InitializeTemplate(
   } kTypes[] = {
       {declarative_content_constants::kPageStateMatcherType,
        "PageStateMatcher"},
-      {declarative_content_constants::kShowPageAction, "ShowPageAction"},
+      {declarative_content_constants::kShowAction, "ShowAction"},
+      {declarative_content_constants::kShowAction, "ShowPageAction"},
       {declarative_content_constants::kSetIcon, "SetIcon"},
       {declarative_content_constants::kRequestContentScript,
        "RequestContentScript"},
   };
-  callbacks_.reserve(arraysize(kTypes));
+  callbacks_.reserve(base::size(kTypes));
   for (const auto& type : kTypes) {
     const ArgumentSpec* spec = type_refs.GetSpec(type.full_name);
     DCHECK(spec);

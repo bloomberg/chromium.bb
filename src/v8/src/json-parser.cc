@@ -8,6 +8,8 @@
 #include "src/conversions.h"
 #include "src/debug/debug.h"
 #include "src/field-type.h"
+#include "src/hash-seed-inl.h"
+#include "src/heap/heap-inl.h"  // For string_table().
 #include "src/message-template.h"
 #include "src/objects-inl.h"
 #include "src/objects/hash-table-inl.h"
@@ -126,7 +128,7 @@ bool JsonParseInternalizer::RecurseAndApply(Handle<JSReceiver> holder,
     desc.set_enumerable(true);
     desc.set_writable(true);
     change_result = JSReceiver::DefineOwnProperty(isolate_, holder, name, &desc,
-                                                  kDontThrow);
+                                                  Just(kDontThrow));
   }
   MAYBE_RETURN(change_result, false);
   return true;
@@ -143,7 +145,8 @@ JsonParser<seq_one_byte>::JsonParser(Isolate* isolate, Handle<String> source)
       position_(-1),
       properties_(&zone_) {
   source_ = String::Flatten(isolate, source_);
-  pretenure_ = (source_length_ >= kPretenureTreshold) ? TENURED : NOT_TENURED;
+  allocation_ = (source_length_ >= kPretenureTreshold) ? AllocationType::kOld
+                                                       : AllocationType::kYoung;
 
   // Optimized fast case where we only have Latin1 characters.
   if (seq_one_byte) {
@@ -256,10 +259,10 @@ bool JsonParser<seq_one_byte>::ParseJsonString(Handle<String> expected) {
   int length = expected->length();
   if (source_->length() - position_ - 1 > length) {
     DisallowHeapAllocation no_gc;
-    String::FlatContent content = expected->GetFlatContent();
+    String::FlatContent content = expected->GetFlatContent(no_gc);
     if (content.IsOneByte()) {
       DCHECK_EQ('"', c0_);
-      const uint8_t* input_chars = seq_source_->GetChars() + position_ + 1;
+      const uint8_t* input_chars = seq_source_->GetChars(no_gc) + position_ + 1;
       const uint8_t* expected_chars = content.ToOneByteVector().start();
       for (int i = 0; i < length; i++) {
         uint8_t c0 = input_chars[i];
@@ -363,7 +366,7 @@ template <bool seq_one_byte>
 Handle<Object> JsonParser<seq_one_byte>::ParseJsonObject() {
   HandleScope scope(isolate());
   Handle<JSObject> json_object =
-      factory()->NewJSObject(object_constructor(), pretenure_);
+      factory()->NewJSObject(object_constructor(), allocation_);
   Handle<Map> map(json_object->map(), isolate());
   int descriptor = 0;
   VectorSegment<ZoneVector<Handle<Object>>> properties(&properties_);
@@ -520,7 +523,7 @@ void JsonParser<seq_one_byte>::CommitStateToJsonObject(
   DCHECK(!json_object->map()->is_dictionary_map());
 
   DisallowHeapAllocation no_gc;
-  DescriptorArray* descriptors = json_object->map()->instance_descriptors();
+  DescriptorArray descriptors = json_object->map()->instance_descriptors();
   for (int i = 0; i < properties.length(); i++) {
     Handle<Object> value = properties[i];
     // Initializing store.
@@ -601,18 +604,18 @@ Handle<Object> JsonParser<seq_one_byte>::ParseJsonArray() {
     case PACKED_ELEMENTS:
     case PACKED_SMI_ELEMENTS: {
       Handle<FixedArray> elems =
-          factory()->NewFixedArray(elements_size, pretenure_);
+          factory()->NewFixedArray(elements_size, allocation_);
       for (int i = 0; i < elements_size; i++) elems->set(i, *elements[i]);
-      json_array = factory()->NewJSArrayWithElements(elems, kind, pretenure_);
+      json_array = factory()->NewJSArrayWithElements(elems, kind, allocation_);
       break;
     }
     case PACKED_DOUBLE_ELEMENTS: {
       Handle<FixedDoubleArray> elems = Handle<FixedDoubleArray>::cast(
-          factory()->NewFixedDoubleArray(elements_size, pretenure_));
+          factory()->NewFixedDoubleArray(elements_size, allocation_));
       for (int i = 0; i < elements_size; i++) {
         elems->set(i, elements[i]->Number());
       }
-      json_array = factory()->NewJSArrayWithElements(elems, kind, pretenure_);
+      json_array = factory()->NewJSArrayWithElements(elems, kind, allocation_);
       break;
     }
     default:
@@ -636,17 +639,20 @@ Handle<Object> JsonParser<seq_one_byte>::ParseJsonNumber() {
     // a decimal point or exponent.
     if (IsDecimalDigit(c0_)) return ReportUnexpectedCharacter();
   } else {
-    int i = 0;
+    uint32_t i = 0;
     int digits = 0;
     if (c0_ < '1' || c0_ > '9') return ReportUnexpectedCharacter();
     do {
+      // This can overflow. That's OK, the "digits < 10" check below
+      // will discard overflown results.
       i = i * 10 + c0_ - '0';
       digits++;
       Advance();
     } while (IsDecimalDigit(c0_));
     if (c0_ != '.' && c0_ != 'e' && c0_ != 'E' && digits < 10) {
       SkipWhitespace();
-      return Handle<Smi>(Smi::FromInt((negative ? -i : i)), isolate());
+      return Handle<Smi>(Smi::FromInt((negative ? -static_cast<int>(i) : i)),
+                         isolate());
     }
   }
   if (c0_ == '.') {
@@ -668,7 +674,7 @@ Handle<Object> JsonParser<seq_one_byte>::ParseJsonNumber() {
   double number;
   if (seq_one_byte) {
     DisallowHeapAllocation no_gc;
-    Vector<const uint8_t> chars(seq_source_->GetChars() + beg_pos, length);
+    Vector<const uint8_t> chars(seq_source_->GetChars(no_gc) + beg_pos, length);
     number = StringToDouble(chars,
                             NO_FLAGS,  // Hex, octal or trailing junk.
                             std::numeric_limits<double>::quiet_NaN());
@@ -683,7 +689,7 @@ Handle<Object> JsonParser<seq_one_byte>::ParseJsonNumber() {
     buffer.Dispose();
   }
   SkipWhitespace();
-  return factory()->NewNumber(number, pretenure_);
+  return factory()->NewNumber(number, allocation_);
 }
 
 template <typename StringType>
@@ -701,18 +707,18 @@ inline void SeqStringSet(Handle<SeqOneByteString> seq_str, int i, uc32 c) {
 
 template <typename StringType>
 inline Handle<StringType> NewRawString(Factory* factory, int length,
-                                       PretenureFlag pretenure);
+                                       AllocationType allocation);
 
 template <>
 inline Handle<SeqTwoByteString> NewRawString(Factory* factory, int length,
-                                             PretenureFlag pretenure) {
-  return factory->NewRawTwoByteString(length, pretenure).ToHandleChecked();
+                                             AllocationType allocation) {
+  return factory->NewRawTwoByteString(length, allocation).ToHandleChecked();
 }
 
 template <>
 inline Handle<SeqOneByteString> NewRawString(Factory* factory, int length,
-                                             PretenureFlag pretenure) {
-  return factory->NewRawOneByteString(length, pretenure).ToHandleChecked();
+                                             AllocationType allocation) {
+  return factory->NewRawOneByteString(length, allocation).ToHandleChecked();
 }
 
 // Scans the rest of a JSON string starting from position_ and writes
@@ -726,12 +732,12 @@ Handle<String> JsonParser<seq_one_byte>::SlowScanJsonString(
   int max_length = count + source_length_ - position_;
   int length = Min(max_length, Max(kInitialSpecialStringLength, 2 * count));
   Handle<StringType> seq_string =
-      NewRawString<StringType>(factory(), length, pretenure_);
+      NewRawString<StringType>(factory(), length, allocation_);
 
   {
     DisallowHeapAllocation no_gc;
     // Copy prefix into seq_str.
-    SinkChar* dest = seq_string->GetChars();
+    SinkChar* dest = seq_string->GetChars(no_gc);
     String::WriteToFlat(*prefix, dest, start, end);
   }
 
@@ -836,8 +842,7 @@ Handle<String> JsonParser<seq_one_byte>::ScanJsonString() {
 
     int position = position_;
     uc32 c0 = c0_;
-    uint32_t running_hash =
-        static_cast<uint32_t>(isolate()->heap()->HashSeed());
+    uint32_t running_hash = static_cast<uint32_t>(HashSeed(isolate()));
     uint32_t index = 0;
     bool is_array_index = true;
 
@@ -890,7 +895,7 @@ Handle<String> JsonParser<seq_one_byte>::ScanJsonString() {
     uint32_t count = 1;
     Handle<String> result;
     while (true) {
-      Object* element = string_table->KeyAt(entry);
+      Object element = string_table->KeyAt(entry);
       if (element->IsUndefined(isolate())) {
         // Lookup failure.
         result =
@@ -899,8 +904,8 @@ Handle<String> JsonParser<seq_one_byte>::ScanJsonString() {
       }
       if (!element->IsTheHole(isolate())) {
         DisallowHeapAllocation no_gc;
-        Vector<const uint8_t> string_vector(seq_source_->GetChars() + position_,
-                                            length);
+        Vector<const uint8_t> string_vector(
+            seq_source_->GetChars(no_gc) + position_, length);
         if (String::cast(element)->IsOneByteEqualTo(string_vector)) {
           result = Handle<String>(String::cast(element), isolate());
           DCHECK_EQ(result->Hash(),
@@ -935,9 +940,9 @@ Handle<String> JsonParser<seq_one_byte>::ScanJsonString() {
   } while (c0_ != '"');
   int length = position_ - beg_pos;
   Handle<String> result =
-      factory()->NewRawOneByteString(length, pretenure_).ToHandleChecked();
+      factory()->NewRawOneByteString(length, allocation_).ToHandleChecked();
   DisallowHeapAllocation no_gc;
-  uint8_t* dest = SeqOneByteString::cast(*result)->GetChars();
+  uint8_t* dest = SeqOneByteString::cast(*result)->GetChars(no_gc);
   String::WriteToFlat(*source_, dest, beg_pos, position_);
 
   DCHECK_EQ('"', c0_);

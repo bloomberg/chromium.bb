@@ -9,7 +9,8 @@
 
 @implementation NotificationResponseBuilder
 
-+ (NSDictionary*)buildDictionary:(NSUserNotification*)notification {
++ (NSDictionary*)buildDictionary:(NSUserNotification*)notification
+                       dismissed:(BOOL)dismissed {
   NSString* origin =
       [[notification userInfo]
           objectForKey:notification_constants::kNotificationOrigin]
@@ -36,16 +37,18 @@
       objectForKey:notification_constants::kNotificationHasSettingsButton];
 
   // Closed notifications are not activated.
+  NSUserNotificationActivationType activationType =
+      dismissed ? NSUserNotificationActivationTypeNone
+                : notification.activationType;
   NotificationOperation operation =
-      notification.activationType == NSUserNotificationActivationTypeNone
+      activationType == NSUserNotificationActivationTypeNone
           ? NOTIFICATION_CLOSE
           : NOTIFICATION_CLICK;
   int buttonIndex = notification_constants::kNotificationInvalidButtonIndex;
 
   // Determine whether the user clicked on a button, and if they did, whether it
   // was a developer-provided button or the  Settings button.
-  if (notification.activationType ==
-      NSUserNotificationActivationTypeActionButtonClicked) {
+  if (activationType == NSUserNotificationActivationTypeActionButtonClicked) {
     NSArray* alternateButtons = @[];
     if ([notification
             respondsToSelector:@selector(_alternateActionButtonTitles)]) {
@@ -91,6 +94,16 @@
     notification_constants::
     kNotificationButtonIndex : [NSNumber numberWithInt:buttonIndex],
   };
+}
+
++ (NSDictionary*)buildActivatedDictionary:(NSUserNotification*)notification {
+  return [NotificationResponseBuilder buildDictionary:notification
+                                            dismissed:NO];
+}
+
++ (NSDictionary*)buildDismissedDictionary:(NSUserNotification*)notification {
+  return [NotificationResponseBuilder buildDictionary:notification
+                                            dismissed:YES];
 }
 
 @end

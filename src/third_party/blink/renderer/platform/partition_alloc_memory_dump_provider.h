@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PARTITION_ALLOC_MEMORY_DUMP_PROVIDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PARTITION_ALLOC_MEMORY_DUMP_PROVIDER_H_
 
+#include "base/macros.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -15,7 +15,6 @@ class BLINK_PLATFORM_EXPORT PartitionAllocMemoryDumpProvider final
     : public base::trace_event::MemoryDumpProvider {
   // TODO(tasak): PartitionAllocMemoryDumpProvider should be
   // USING_FAST_MALLOC. c.f. crbug.com/584196
-  WTF_MAKE_NONCOPYABLE(PartitionAllocMemoryDumpProvider);
 
  public:
   static PartitionAllocMemoryDumpProvider* Instance();
@@ -27,6 +26,8 @@ class BLINK_PLATFORM_EXPORT PartitionAllocMemoryDumpProvider final
 
  private:
   PartitionAllocMemoryDumpProvider();
+
+  DISALLOW_COPY_AND_ASSIGN(PartitionAllocMemoryDumpProvider);
 };
 
 }  // namespace blink

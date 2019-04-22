@@ -1,3 +1,1 @@
 file://content/browser/loader/OWNERS
-
-per-file data_reduction_proxy_resource_throttle_android.*=ryansturm@chromium.org

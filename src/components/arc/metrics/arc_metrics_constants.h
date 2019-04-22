@@ -7,6 +7,22 @@
 
 namespace arc {
 
+// Native bridge types for UMA recording (Arc.NativeBridge). These values are
+// persisted to logs, and should therefore never be renumbered nor reused.
+// Should be synced with ArcNativeBridgeType in
+// tools/metrics/histograms/enums.xml.
+enum class NativeBridgeType {
+  // Native bridge value has not been received from the container yet.
+  UNKNOWN = 0,
+  // Native bridge is not used.
+  NONE = 1,
+  // Using houdini translator.
+  HOUDINI = 2,
+  // Using ndk-translation translator.
+  NDK_TRANSLATION = 3,
+  kMaxValue = NDK_TRANSLATION,
+};
+
 // Defines ARC App user interaction types to track how users use ARC apps.
 // These enums are used to define the buckets for an enumerated UMA histogram
 // and need to be synced with tools/metrics/histograms/enums.xml.
@@ -70,7 +86,10 @@ enum class UserInteractionType {
   // User started an app from Smart Text Selection context menu.
   APP_STARTED_FROM_SMART_TEXT_SELECTION_CONTEXT_MENU = 17,
 
-  kMaxValue = APP_STARTED_FROM_SMART_TEXT_SELECTION_CONTEXT_MENU,
+  // User started an app from the Kiosk Next Home app.
+  APP_STARTED_FROM_KIOSK_NEXT_HOME = 18,
+
+  kMaxValue = APP_STARTED_FROM_KIOSK_NEXT_HOME,
 };
 
 }  // namespace arc

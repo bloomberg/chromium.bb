@@ -124,9 +124,20 @@ void AvSyncVideo::UpkeepAvSync() {
     return;
   }
 
-  if (new_raw_apts != last_apts_value_recorded_) {
+  // If we remove an AudioRedirector with positive delay while video is playing,
+  // we will end up with new_apts_timestamp < last_apts_timestamp_. We ignore
+  // the audio frames in this gap to avoid DCHECK failure.
+  // Technically the linear regression can be 1 min long, so we may react late
+  // to the audio and video out of sync as the new samples have to offset the
+  // linear regression enough for the estimate values to start showing the
+  // difference. In practice this doesn't seem to happen, because we reset the
+  // linear regression often during AudioRateUpkeep, and hard corrections end up
+  // kicking in at the correct time.
+  if (new_raw_apts != last_apts_value_recorded_ &&
+      new_apts_timestamp > last_apts_timestamp_) {
     audio_pts_->AddSample(new_apts_timestamp, new_raw_apts, 1.0);
     last_apts_value_recorded_ = new_raw_apts;
+    last_apts_timestamp_ = new_apts_timestamp;
   }
 
   if (video_pts_->num_samples() < 10 || audio_pts_->num_samples() < 20) {

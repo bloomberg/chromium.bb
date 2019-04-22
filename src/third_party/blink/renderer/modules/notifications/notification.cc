@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/modules/notifications/notification_manager.h"
 #include "third_party/blink/renderer/modules/notifications/notification_options.h"
 #include "third_party/blink/renderer/modules/notifications/notification_resources_loader.h"
+#include "third_party/blink/renderer/modules/notifications/timestamp_trigger.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
@@ -84,6 +85,13 @@ Notification* Notification::Create(ExecutionContext* context,
     exception_state.ThrowTypeError(
         "Actions are only supported for persistent notifications shown using "
         "ServiceWorkerRegistration.showNotification().");
+    return nullptr;
+  }
+
+  if (options->hasShowTrigger()) {
+    exception_state.ThrowTypeError(
+        "ShowTrigger is only supported for persistent notifications shown "
+        "using ServiceWorkerRegistration.showNotification().");
     return nullptr;
   }
 
@@ -155,21 +163,25 @@ Notification::Notification(ExecutionContext* context,
       type_(type),
       state_(State::kLoading),
       data_(std::move(data)),
-      listener_binding_(this) {}
+      prepare_show_timer_(context->GetTaskRunner(TaskType::kMiscPlatformAPI),
+                          this,
+                          &Notification::PrepareShow),
+      listener_binding_(this) {
+  if (data_->show_trigger_timestamp.has_value()) {
+    show_trigger_ = TimestampTrigger::Create(static_cast<DOMTimeStamp>(
+        data_->show_trigger_timestamp.value().ToJsTime()));
+  }
+}
 
 Notification::~Notification() = default;
 
 void Notification::SchedulePrepareShow() {
   DCHECK_EQ(state_, State::kLoading);
-  DCHECK(!prepare_show_method_runner_);
 
-  prepare_show_method_runner_ = AsyncMethodRunner<Notification>::Create(
-      this, &Notification::PrepareShow,
-      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
-  prepare_show_method_runner_->RunAsync();
+  prepare_show_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
-void Notification::PrepareShow() {
+void Notification::PrepareShow(TimerBase*) {
   DCHECK_EQ(state_, State::kLoading);
   if (!GetExecutionContext()->IsSecureContext()) {
     DispatchErrorEvent();
@@ -423,7 +435,7 @@ ScriptPromise Notification::requestPermission(
   ExecutionContext* context = ExecutionContext::From(script_state);
   Document* doc = DynamicTo<Document>(context);
 
-  probe::breakableLocation(context, "Notification.requestPermission");
+  probe::BreakableLocation(context, "Notification.requestPermission");
   if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
                                                   : nullptr)) {
     PerformanceMonitor::ReportGenericViolation(
@@ -470,8 +482,8 @@ void Notification::ContextDestroyed(ExecutionContext* context) {
 
   state_ = State::kClosed;
 
-  if (prepare_show_method_runner_)
-    prepare_show_method_runner_->Stop();
+  if (prepare_show_timer_.IsActive())
+    prepare_show_timer_.Stop();
 
   if (loader_)
     loader_->Stop();
@@ -487,7 +499,7 @@ bool Notification::HasPendingActivity() const {
 }
 
 void Notification::Trace(blink::Visitor* visitor) {
-  visitor->Trace(prepare_show_method_runner_);
+  visitor->Trace(show_trigger_);
   visitor->Trace(loader_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

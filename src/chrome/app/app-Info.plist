@@ -353,9 +353,9 @@
 			</dict>
 		</dict>
 	</array>
-        <key>NSUserNotificationAlertStyle</key>
-        <string>banner</string>
-        <key>NSRequiresAquaSystemAppearance</key>
-        <true/>
+	<key>NSUserNotificationAlertStyle</key>
+	<string>banner</string>
+	<key>NSRequiresAquaSystemAppearance</key>
+	<false/>
 </dict>
 </plist>

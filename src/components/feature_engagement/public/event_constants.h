@@ -72,6 +72,9 @@ extern const char kClearedBrowsingData[];
 // The user has viewed their reading list.
 extern const char kViewedReadingList[];
 
+// The user has triggered the translate infobar manually.
+extern const char kTriggeredTranslateInfobar[];
+
 // The user has viewed the the BottomToolbar tip.
 extern const char kBottomToolbarOpened[];
 #endif  // defined(OS_IOS)

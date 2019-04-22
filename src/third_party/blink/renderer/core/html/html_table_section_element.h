@@ -38,6 +38,8 @@ class HTMLTableSectionElement final : public HTMLTablePartElement {
  public:
   DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement);
 
+  HTMLTableSectionElement(const QualifiedName& tag_name, Document&);
+
   HTMLElement* insertRow(int index, ExceptionState&);
   void deleteRow(int index, ExceptionState&);
 
@@ -46,8 +48,6 @@ class HTMLTableSectionElement final : public HTMLTablePartElement {
   bool HasNonInBodyInsertionMode() const override { return true; }
 
  private:
-  HTMLTableSectionElement(const QualifiedName& tag_name, Document&);
-
   const CSSPropertyValueSet* AdditionalPresentationAttributeStyle() override;
 };
 

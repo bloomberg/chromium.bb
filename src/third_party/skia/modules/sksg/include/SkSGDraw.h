@@ -8,12 +8,11 @@
 #ifndef SkSGDraw_DEFINED
 #define SkSGDraw_DEFINED
 
+#include "SkSGGeometryNode.h"
+#include "SkSGPaint.h"
 #include "SkSGRenderNode.h"
 
 namespace sksg {
-
-class GeometryNode;
-class PaintNode;
 
 /**
  * Concrete rendering node.
@@ -33,6 +32,7 @@ protected:
     ~Draw() override;
 
     void onRender(SkCanvas*, const RenderContext*) const override;
+    const RenderNode* onNodeAt(const SkPoint&)     const override;
 
     SkRect onRevalidate(InvalidationController*, const SkMatrix&) override;
 

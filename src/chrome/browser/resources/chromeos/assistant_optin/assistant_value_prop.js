@@ -241,6 +241,8 @@ Polymer({
    * Reload the page with the given consent string text data.
    */
   reloadContent: function(data) {
+    this.$['value-prop-dialog'].setAttribute(
+        'aria-label', data['valuePropTitle']);
     this.$['user-image'].src = data['valuePropUserImage'];
     this.$['title-text'].textContent = data['valuePropTitle'];
     this.$['intro-text'].textContent = data['valuePropIntro'];
@@ -260,6 +262,13 @@ Polymer({
    * Add a setting zippy with the provided data.
    */
   addSettingZippy: function(zippy_data) {
+    if (this.settingZippyLoaded_) {
+      if (this.webViewLoaded_ && this.consentStringLoaded_) {
+        this.onPageLoaded();
+      }
+      return;
+    }
+
     for (var i in zippy_data) {
       var data = zippy_data[i];
       var zippy = document.createElement('setting-zippy');

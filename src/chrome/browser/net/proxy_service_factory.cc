@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/proxy_service_factory.h"
 
+#include <utility>
+
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -47,26 +49,27 @@ ProxyServiceFactory::CreateProxyConfigService(PrefProxyConfigTracker* tracker) {
 }
 
 // static
-PrefProxyConfigTracker*
+std::unique_ptr<PrefProxyConfigTracker>
 ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
     PrefService* profile_prefs,
     PrefService* local_state_prefs) {
 #if defined(OS_CHROMEOS)
-  return new chromeos::ProxyConfigServiceImpl(profile_prefs, local_state_prefs,
-                                              nullptr);
+  return std::make_unique<chromeos::ProxyConfigServiceImpl>(
+      profile_prefs, local_state_prefs, nullptr);
 #else
-  return new PrefProxyConfigTrackerImpl(profile_prefs, nullptr);
+  return std::make_unique<PrefProxyConfigTrackerImpl>(profile_prefs, nullptr);
 #endif  // defined(OS_CHROMEOS)
 }
 
 // static
-PrefProxyConfigTracker*
+std::unique_ptr<PrefProxyConfigTracker>
 ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
     PrefService* local_state_prefs) {
 #if defined(OS_CHROMEOS)
-  return new chromeos::ProxyConfigServiceImpl(nullptr, local_state_prefs,
-                                              nullptr);
+  return std::make_unique<chromeos::ProxyConfigServiceImpl>(
+      nullptr, local_state_prefs, nullptr);
 #else
-  return new PrefProxyConfigTrackerImpl(local_state_prefs, nullptr);
+  return std::make_unique<PrefProxyConfigTrackerImpl>(local_state_prefs,
+                                                      nullptr);
 #endif  // defined(OS_CHROMEOS)
 }

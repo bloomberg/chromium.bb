@@ -14,7 +14,8 @@
 
 #include "dawn_native/vulkan/VulkanInfo.h"
 
-#include "dawn_native/vulkan/DeviceVk.h"
+#include "dawn_native/vulkan/AdapterVk.h"
+#include "dawn_native/vulkan/BackendVk.h"
 
 #include <cstring>
 
@@ -34,37 +35,46 @@ namespace dawn_native { namespace vulkan {
     const char kLayerNameLunargVKTrace[] = "VK_LAYER_LUNARG_vktrace";
     const char kLayerNameRenderDocCapture[] = "VK_LAYER_RENDERDOC_Capture";
 
+    const char kExtensionNameExtDebugMarker[] = "VK_EXT_debug_marker";
     const char kExtensionNameExtDebugReport[] = "VK_EXT_debug_report";
+    const char kExtensionNameMvkMacosSurface[] = "VK_MVK_macos_surface";
     const char kExtensionNameKhrSurface[] = "VK_KHR_surface";
     const char kExtensionNameKhrSwapchain[] = "VK_KHR_swapchain";
+    const char kExtensionNameKhrWaylandSurface[] = "VK_KHR_wayland_surface";
+    const char kExtensionNameKhrWin32Surface[] = "VK_KHR_win32_surface";
+    const char kExtensionNameKhrXcbSurface[] = "VK_KHR_xcb_surface";
+    const char kExtensionNameKhrXlibSurface[] = "VK_KHR_xlib_surface";
 
-    bool GatherGlobalInfo(const Device& device, VulkanGlobalInfo* info) {
+    ResultOrError<VulkanGlobalInfo> GatherGlobalInfo(const Backend& backend) {
+        VulkanGlobalInfo info = {};
+        const VulkanFunctions& vkFunctions = backend.GetFunctions();
+
         // Gather the info about the instance layers
         {
             uint32_t count = 0;
-            VkResult result = device.fn.EnumerateInstanceLayerProperties(&count, nullptr);
+            VkResult result = vkFunctions.EnumerateInstanceLayerProperties(&count, nullptr);
             // From the Vulkan spec result should be success if there are 0 layers,
             // incomplete otherwise. This means that both values represent a success.
             // This is the same for all Enumarte functions
             if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateInstanceLayerProperties");
             }
 
-            info->layers.resize(count);
-            result = device.fn.EnumerateInstanceLayerProperties(&count, info->layers.data());
+            info.layers.resize(count);
+            result = vkFunctions.EnumerateInstanceLayerProperties(&count, info.layers.data());
             if (result != VK_SUCCESS) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateInstanceLayerProperties");
             }
 
-            for (const auto& layer : info->layers) {
+            for (const auto& layer : info.layers) {
                 if (IsLayerName(layer, kLayerNameLunargStandardValidation)) {
-                    info->standardValidation = true;
+                    info.standardValidation = true;
                 }
                 if (IsLayerName(layer, kLayerNameLunargVKTrace)) {
-                    info->vktrace = true;
+                    info.vktrace = true;
                 }
                 if (IsLayerName(layer, kLayerNameRenderDocCapture)) {
-                    info->renderDocCapture = true;
+                    info.renderDocCapture = true;
                 }
             }
         }
@@ -73,148 +83,173 @@ namespace dawn_native { namespace vulkan {
         {
             uint32_t count = 0;
             VkResult result =
-                device.fn.EnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
+                vkFunctions.EnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
             if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateInstanceExtensionProperties");
             }
 
-            info->extensions.resize(count);
-            result = device.fn.EnumerateInstanceExtensionProperties(nullptr, &count,
-                                                                    info->extensions.data());
+            info.extensions.resize(count);
+            result = vkFunctions.EnumerateInstanceExtensionProperties(nullptr, &count,
+                                                                      info.extensions.data());
             if (result != VK_SUCCESS) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateInstanceExtensionProperties");
             }
 
-            for (const auto& extension : info->extensions) {
+            for (const auto& extension : info.extensions) {
                 if (IsExtensionName(extension, kExtensionNameExtDebugReport)) {
-                    info->debugReport = true;
+                    info.debugReport = true;
+                }
+                if (IsExtensionName(extension, kExtensionNameMvkMacosSurface)) {
+                    info.macosSurface = true;
                 }
                 if (IsExtensionName(extension, kExtensionNameKhrSurface)) {
-                    info->surface = true;
+                    info.surface = true;
+                }
+                if (IsExtensionName(extension, kExtensionNameKhrWaylandSurface)) {
+                    info.waylandSurface = true;
+                }
+                if (IsExtensionName(extension, kExtensionNameKhrWin32Surface)) {
+                    info.win32Surface = true;
+                }
+                if (IsExtensionName(extension, kExtensionNameKhrXcbSurface)) {
+                    info.xcbSurface = true;
+                }
+                if (IsExtensionName(extension, kExtensionNameKhrXlibSurface)) {
+                    info.xlibSurface = true;
                 }
             }
         }
 
         // TODO(cwallez@chromium:org): Each layer can expose additional extensions, query them?
 
-        return true;
+        return info;
     }
 
-    bool GetPhysicalDevices(const Device& device, std::vector<VkPhysicalDevice>* physicalDevices) {
-        VkInstance instance = device.GetInstance();
+    ResultOrError<std::vector<VkPhysicalDevice>> GetPhysicalDevices(const Backend& backend) {
+        VkInstance instance = backend.GetVkInstance();
+        const VulkanFunctions& vkFunctions = backend.GetFunctions();
 
         uint32_t count = 0;
-        VkResult result = device.fn.EnumeratePhysicalDevices(instance, &count, nullptr);
+        VkResult result = vkFunctions.EnumeratePhysicalDevices(instance, &count, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-            return false;
+            return DAWN_CONTEXT_LOST_ERROR("vkEnumeratePhysicalDevices");
         }
 
-        physicalDevices->resize(count);
-        result = device.fn.EnumeratePhysicalDevices(instance, &count, physicalDevices->data());
+        std::vector<VkPhysicalDevice> physicalDevices(count);
+        result = vkFunctions.EnumeratePhysicalDevices(instance, &count, physicalDevices.data());
         if (result != VK_SUCCESS) {
-            return false;
+            return DAWN_CONTEXT_LOST_ERROR("vkEnumeratePhysicalDevices");
         }
 
-        return true;
+        return physicalDevices;
     }
 
-    bool GatherDeviceInfo(const Device& device,
-                          VkPhysicalDevice physicalDevice,
-                          VulkanDeviceInfo* info) {
+    ResultOrError<VulkanDeviceInfo> GatherDeviceInfo(const Adapter& adapter) {
+        VulkanDeviceInfo info = {};
+        VkPhysicalDevice physicalDevice = adapter.GetPhysicalDevice();
+        const VulkanFunctions& vkFunctions = adapter.GetBackend()->GetFunctions();
+
         // Gather general info about the device
-        device.fn.GetPhysicalDeviceProperties(physicalDevice, &info->properties);
-        device.fn.GetPhysicalDeviceFeatures(physicalDevice, &info->features);
+        vkFunctions.GetPhysicalDeviceProperties(physicalDevice, &info.properties);
+        vkFunctions.GetPhysicalDeviceFeatures(physicalDevice, &info.features);
 
         // Gather info about device memory.
         {
             VkPhysicalDeviceMemoryProperties memory;
-            device.fn.GetPhysicalDeviceMemoryProperties(physicalDevice, &memory);
+            vkFunctions.GetPhysicalDeviceMemoryProperties(physicalDevice, &memory);
 
-            info->memoryTypes.assign(memory.memoryTypes,
-                                     memory.memoryTypes + memory.memoryTypeCount);
-            info->memoryHeaps.assign(memory.memoryHeaps,
-                                     memory.memoryHeaps + memory.memoryHeapCount);
+            info.memoryTypes.assign(memory.memoryTypes,
+                                    memory.memoryTypes + memory.memoryTypeCount);
+            info.memoryHeaps.assign(memory.memoryHeaps,
+                                    memory.memoryHeaps + memory.memoryHeapCount);
         }
 
         // Gather info about device queue families
         {
             uint32_t count = 0;
-            device.fn.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &count, nullptr);
+            vkFunctions.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &count, nullptr);
 
-            info->queueFamilies.resize(count);
-            device.fn.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &count,
-                                                             info->queueFamilies.data());
+            info.queueFamilies.resize(count);
+            vkFunctions.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &count,
+                                                               info.queueFamilies.data());
         }
 
         // Gather the info about the device layers
         {
             uint32_t count = 0;
             VkResult result =
-                device.fn.EnumerateDeviceLayerProperties(physicalDevice, &count, nullptr);
+                vkFunctions.EnumerateDeviceLayerProperties(physicalDevice, &count, nullptr);
             if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateDeviceLayerProperties");
             }
 
-            info->layers.resize(count);
-            result = device.fn.EnumerateDeviceLayerProperties(physicalDevice, &count,
-                                                              info->layers.data());
+            info.layers.resize(count);
+            result = vkFunctions.EnumerateDeviceLayerProperties(physicalDevice, &count,
+                                                                info.layers.data());
             if (result != VK_SUCCESS) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateDeviceLayerProperties");
             }
         }
 
         // Gather the info about the device extensions
         {
             uint32_t count = 0;
-            VkResult result = device.fn.EnumerateDeviceExtensionProperties(physicalDevice, nullptr,
-                                                                           &count, nullptr);
+            VkResult result = vkFunctions.EnumerateDeviceExtensionProperties(
+                physicalDevice, nullptr, &count, nullptr);
             if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateDeviceExtensionProperties");
             }
 
-            info->extensions.resize(count);
-            result = device.fn.EnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count,
-                                                                  info->extensions.data());
+            info.extensions.resize(count);
+            result = vkFunctions.EnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count,
+                                                                    info.extensions.data());
             if (result != VK_SUCCESS) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateDeviceExtensionProperties");
             }
 
-            for (const auto& extension : info->extensions) {
+            for (const auto& extension : info.extensions) {
+                if (IsExtensionName(extension, kExtensionNameExtDebugMarker)) {
+                    info.debugMarker = true;
+                }
+
                 if (IsExtensionName(extension, kExtensionNameKhrSwapchain)) {
-                    info->swapchain = true;
+                    info.swapchain = true;
                 }
             }
         }
 
         // TODO(cwallez@chromium.org): gather info about formats
 
-        return true;
+        return info;
     }
 
-    bool GatherSurfaceInfo(const Device& device, VkSurfaceKHR surface, VulkanSurfaceInfo* info) {
-        VkPhysicalDevice physicalDevice = device.GetPhysicalDevice();
+    MaybeError GatherSurfaceInfo(const Adapter& adapter,
+                                 VkSurfaceKHR surface,
+                                 VulkanSurfaceInfo* info) {
+        VkPhysicalDevice physicalDevice = adapter.GetPhysicalDevice();
+        const VulkanFunctions& vkFunctions = adapter.GetBackend()->GetFunctions();
 
         // Get the surface capabilities
         {
-            VkResult result = device.fn.GetPhysicalDeviceSurfaceCapabilitiesKHR(
+            VkResult result = vkFunctions.GetPhysicalDeviceSurfaceCapabilitiesKHR(
                 physicalDevice, surface, &info->capabilities);
             if (result != VK_SUCCESS) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkGetPhysicalDeviceSurfaceCapabilitiesKHR");
             }
         }
 
         // Query which queue families support presenting this surface
         {
-            size_t nQueueFamilies = device.GetDeviceInfo().queueFamilies.size();
+            size_t nQueueFamilies = adapter.GetDeviceInfo().queueFamilies.size();
             info->supportedQueueFamilies.resize(nQueueFamilies, false);
 
             for (uint32_t i = 0; i < nQueueFamilies; ++i) {
                 VkBool32 supported = VK_FALSE;
-                VkResult result = device.fn.GetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i,
-                                                                               surface, &supported);
+                VkResult result = vkFunctions.GetPhysicalDeviceSurfaceSupportKHR(
+                    physicalDevice, i, surface, &supported);
 
                 if (result != VK_SUCCESS) {
-                    return false;
+                    return DAWN_CONTEXT_LOST_ERROR("vkGetPhysicalDeviceSurfaceSupportKHR");
                 }
 
                 info->supportedQueueFamilies[i] = (supported == VK_TRUE);
@@ -224,38 +259,38 @@ namespace dawn_native { namespace vulkan {
         // Gather supported formats
         {
             uint32_t count = 0;
-            VkResult result = device.fn.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface,
-                                                                           &count, nullptr);
+            VkResult result = vkFunctions.GetPhysicalDeviceSurfaceFormatsKHR(
+                physicalDevice, surface, &count, nullptr);
             if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkGetPhysicalDeviceSurfaceFormatsKHR");
             }
 
             info->formats.resize(count);
-            result = device.fn.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &count,
-                                                                  info->formats.data());
+            result = vkFunctions.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &count,
+                                                                    info->formats.data());
             if (result != VK_SUCCESS) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkGetPhysicalDeviceSurfaceFormatsKHR");
             }
         }
 
         // Gather supported presents modes
         {
             uint32_t count = 0;
-            VkResult result = device.fn.GetPhysicalDeviceSurfacePresentModesKHR(
+            VkResult result = vkFunctions.GetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice, surface, &count, nullptr);
             if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkGetPhysicalDeviceSurfacePresentModesKHR");
             }
 
             info->presentModes.resize(count);
-            result = device.fn.GetPhysicalDeviceSurfacePresentModesKHR(
+            result = vkFunctions.GetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice, surface, &count, info->presentModes.data());
             if (result != VK_SUCCESS) {
-                return false;
+                return DAWN_CONTEXT_LOST_ERROR("vkGetPhysicalDeviceSurfacePresentModesKHR");
             }
         }
 
-        return true;
+        return {};
     }
 
 }}  // namespace dawn_native::vulkan

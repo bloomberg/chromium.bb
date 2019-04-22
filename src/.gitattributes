@@ -5,6 +5,7 @@
 /net/http/*.pins  text eol=lf
 
 # Force LF checkout for all source files
+*.bin binary
 *.c text eol=lf
 *.cc text eol=lf
 *.cpp text eol=lf
@@ -43,3 +44,6 @@ README   text eol=lf
 README.*   text eol=lf
 WATCHLISTS   text eol=lf
 VERSION   text eol=lf
+
+# Skip Tricium by default on files in third_party.
+third_party/** -tricium

@@ -17,4 +17,8 @@ aura::ClientSurfaceEmbedder* ClientRootTestHelper::GetClientSurfaceEmbedder() {
   return client_root_->client_surface_embedder_.get();
 }
 
+bool ClientRootTestHelper::IsWindowForcedVisible() {
+  return client_root_->force_visible_ != nullptr;
+}
+
 }  // namespace ws

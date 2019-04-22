@@ -4,6 +4,8 @@
 
 #include "net/cert/crl_set.h"
 
+#include <algorithm>
+
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/time/time.h"
@@ -54,8 +56,8 @@ base::DictionaryValue* ReadHeader(base::StringPiece* data) {
   const base::StringPiece header_bytes(data->data(), header_len);
   data->remove_prefix(header_len);
 
-  std::unique_ptr<base::Value> header =
-      base::JSONReader::Read(header_bytes, base::JSON_ALLOW_TRAILING_COMMAS);
+  std::unique_ptr<base::Value> header = base::JSONReader::ReadDeprecated(
+      header_bytes, base::JSON_ALLOW_TRAILING_COMMAS);
   if (header.get() == nullptr)
     return nullptr;
 
@@ -252,18 +254,22 @@ bool CRLSet::Parse(base::StringPiece data, scoped_refptr<CRLSet>* out_crl_set) {
     return false;
   }
 
+  // Defines kBlacklistedSPKIs.
+#include "net/cert/cert_verify_proc_blacklist.inc"
+  for (const auto& hash : kBlacklistedSPKIs) {
+    crl_set->blocked_spkis_.push_back(std::string(
+        reinterpret_cast<const char*>(hash), crypto::kSHA256Length));
+  }
+  std::sort(crl_set->blocked_spkis_.begin(), crl_set->blocked_spkis_.end());
+
   *out_crl_set = std::move(crl_set);
   return true;
 }
 
 CRLSet::Result CRLSet::CheckSPKI(const base::StringPiece& spki_hash) const {
-  for (auto i = blocked_spkis_.begin(); i != blocked_spkis_.end(); ++i) {
-    if (spki_hash.size() == i->size() &&
-        memcmp(spki_hash.data(), i->data(), i->size()) == 0) {
-      return REVOKED;
-    }
-  }
-
+  if (std::binary_search(blocked_spkis_.begin(), blocked_spkis_.end(),
+                         spki_hash))
+    return REVOKED;
   return GOOD;
 }
 
@@ -325,6 +331,16 @@ uint32_t CRLSet::sequence() const {
 
 const CRLSet::CRLList& CRLSet::CrlsForTesting() const {
   return crls_;
+}
+
+// static
+scoped_refptr<CRLSet> CRLSet::BuiltinCRLSet() {
+  constexpr char kCRLSet[] =
+      "\x31\x00{\"ContentType\":\"CRLSet\",\"Sequence\":0,\"Version\":0}";
+  scoped_refptr<CRLSet> ret;
+  bool parsed = CRLSet::Parse({kCRLSet, sizeof(kCRLSet) - 1}, &ret);
+  DCHECK(parsed);
+  return ret;
 }
 
 // static

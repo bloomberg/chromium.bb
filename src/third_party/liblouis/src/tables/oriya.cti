@@ -6,7 +6,7 @@
 #
 # liblouis is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as
-# published by the Free Software Foundation, either version 3 of the
+# published by the Free Software Foundation, either version 2.1 of the
 # License, or (at your option) any later version.
 #
 # liblouis is distributed in the hope that it will be useful, but
@@ -23,7 +23,7 @@
 # Last updated on May 5, 2014
 # To report any bugs or any suggestion, please write to d@saksham.org and sreeja.param@gmail.com
 
-include braille-patternsin.cti
+include braille-patterns.cti
   
 replace \X200D
    
@@ -179,6 +179,8 @@ always	\x0B63\x0B4D	4-6-123	# ORIYA VOWEL SIGN VOCALIC LL
 
 always  \x0B15\x0B4D\x0B37\x0B4D 4-12345 #ksha
 always \x0B1C\x0B4D\x0B1E 156 #gya
+always  \x0B15\x0B4D\x0B37 12345 #ksha
+
 
 #consonants followed by vowel not matra
 

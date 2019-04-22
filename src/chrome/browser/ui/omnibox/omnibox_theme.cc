@@ -76,19 +76,20 @@ SkColor GetOmniboxColor(OmniboxPart part,
       return GetSecurityChipColor(tint, state);
     case OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD:
       return dark ? gfx::kGoogleGrey100 : gfx::kGoogleBlue600;
-    case OmniboxPart::LOCATION_BAR_FOCUS_RING:
-      return dark ? gfx::kGoogleBlueDark600 : gfx::kGoogleBlue600;
-    case OmniboxPart::RESULTS_BACKGROUND:
-      // The spec calls for transparent black (or white) overlays for hover (8%)
-      // and select (6%), which can overlap (for 14%). Pre-blend these with the
-      // background for the best text AA result.
+    case OmniboxPart::RESULTS_BACKGROUND: {
       // High contrast mode needs a darker base - Grey 800 with 14% white
       // overlaid on it (see below) is hard to produce good contrast ratios
       // against with colors other than white.
-      return color_utils::BlendTowardOppositeLuma(
-          dark ? (high_contrast ? gfx::kGoogleGrey900 : gfx::kGoogleGrey800)
-               : SK_ColorWHITE,
-          gfx::ToRoundedInt(GetOmniboxStateAlpha(state) * 0xff));
+      const SkColor dark_base_color =
+          high_contrast ? gfx::kGoogleGrey900 : gfx::kGoogleGrey800;
+      const SkColor base_color = dark ? dark_base_color : SK_ColorWHITE;
+      // The spec calls for transparent black (or white) overlays for hover (8%)
+      // and select (6%), which can overlap (for 14%). Pre-blend these with the
+      // background for the best text AA result.
+      return color_utils::BlendTowardMaxContrast(
+          base_color,
+          gfx::ToRoundedInt(GetOmniboxStateOpacity(state) * SK_AlphaOPAQUE));
+    }
     case OmniboxPart::LOCATION_BAR_CLEAR_ALL:
     case OmniboxPart::LOCATION_BAR_TEXT_DEFAULT:
     case OmniboxPart::RESULTS_TEXT_DEFAULT:
@@ -101,16 +102,10 @@ SkColor GetOmniboxColor(OmniboxPart part,
       // This is a pre-lightened (or darkened) variant of the base text color.
       return dark ? gfx::kGoogleGrey400 : gfx::kGoogleGrey700;
 
-    case OmniboxPart::RESULTS_TEXT_INVISIBLE:
-      return SK_ColorTRANSPARENT;
-    case OmniboxPart::RESULTS_TEXT_NEGATIVE:
-      return dark ? gfx::kGoogleRedDark600 : gfx::kGoogleRed600;
-    case OmniboxPart::RESULTS_TEXT_POSITIVE:
-      return dark ? gfx::kGoogleGreenDark600 : gfx::kGoogleGreen600;
     case OmniboxPart::RESULTS_TEXT_URL:
       if (high_contrast)
         return dark ? gfx::kGoogleBlue300 : gfx::kGoogleBlue700;
-      return dark ? gfx::kGoogleBlueDark600 : gfx::kGoogleBlue600;
+      return dark ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600;
 
     case OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE:
       if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled())
@@ -129,7 +124,25 @@ SkColor GetOmniboxColor(OmniboxPart part,
   return gfx::kPlaceholderColor;
 }
 
-float GetOmniboxStateAlpha(OmniboxPartState state) {
+SkColor GetOmniboxSecurityChipColor(
+    OmniboxTint tint,
+    security_state::SecurityLevel security_level) {
+  if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT) {
+    return GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED, tint);
+  }
+
+  OmniboxPartState state = OmniboxPartState::CHIP_DEFAULT;
+  if (security_level == security_state::EV_SECURE ||
+      security_level == security_state::SECURE) {
+    state = OmniboxPartState::CHIP_SECURE;
+  } else if (security_level == security_state::DANGEROUS) {
+    state = OmniboxPartState::CHIP_DANGEROUS;
+  }
+
+  return GetOmniboxColor(OmniboxPart::LOCATION_BAR_SECURITY_CHIP, tint, state);
+}
+
+float GetOmniboxStateOpacity(OmniboxPartState state) {
   switch (state) {
     case OmniboxPartState::NORMAL:
       return 0;
@@ -138,8 +151,8 @@ float GetOmniboxStateAlpha(OmniboxPartState state) {
     case OmniboxPartState::SELECTED:
       return 0.06f;
     case OmniboxPartState::HOVERED_AND_SELECTED:
-      return GetOmniboxStateAlpha(OmniboxPartState::HOVERED) +
-             GetOmniboxStateAlpha(OmniboxPartState::SELECTED);
+      return GetOmniboxStateOpacity(OmniboxPartState::HOVERED) +
+             GetOmniboxStateOpacity(OmniboxPartState::SELECTED);
     default:
       NOTREACHED();
       return 0;

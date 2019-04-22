@@ -61,7 +61,7 @@ int ConvertBlobErrorToNetError(BlobStatus reason) {
     case BlobStatus::DONE:
     case BlobStatus::PENDING_QUOTA:
     case BlobStatus::PENDING_TRANSPORT:
-    case BlobStatus::PENDING_INTERNALS:
+    case BlobStatus::PENDING_REFERENCED_BLOBS:
     case BlobStatus::PENDING_CONSTRUCTION:
       NOTREACHED();
   }
@@ -698,10 +698,9 @@ std::unique_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
             item.offset() + additional_offset,
             item.expected_modification_time());
       }
-      return base::WrapUnique(FileStreamReader::CreateForLocalFile(
+      return FileStreamReader::CreateForLocalFile(
           file_task_runner_.get(), item.path(),
-          item.offset() + additional_offset,
-          item.expected_modification_time()));
+          item.offset() + additional_offset, item.expected_modification_time());
     case BlobDataItem::Type::kFileFilesystem: {
       int64_t max_bytes_to_read =
           item.length() == std::numeric_limits<uint64_t>::max()

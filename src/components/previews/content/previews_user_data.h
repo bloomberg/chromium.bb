@@ -40,6 +40,9 @@ class PreviewsUserData {
 
     // The current state of the preview.
     ServerLitePageStatus status = ServerLitePageStatus::kUnknown;
+
+    // The number of navigation restarts seen by this info instance.
+    size_t restart_count = 0;
   };
 
   ~PreviewsUserData();

@@ -6,7 +6,6 @@
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_DISPLAY_HOST_MANAGER_H_
 
 #include <stdint.h>
-
 #include <map>
 #include <memory>
 
@@ -20,6 +19,7 @@
 #include "ui/events/ozone/device/device_event_observer.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 namespace ui {
 
@@ -38,10 +38,12 @@ struct DisplaySnapshot_Params;
 // This is used from both the IPC and the in-process versions in  MUS.
 class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
  public:
-  DrmDisplayHostManager(GpuThreadAdapter* proxy,
-                        DeviceManager* device_manager,
-                        DrmOverlayManager* overlay_manager,
-                        InputControllerEvdev* input_controller);
+  DrmDisplayHostManager(
+      GpuThreadAdapter* proxy,
+      DeviceManager* device_manager,
+      OzonePlatform::InitializedHostProperties* host_properties,
+      DrmOverlayManager* overlay_manager,
+      InputControllerEvdev* input_controller);
   ~DrmDisplayHostManager() override;
 
   DrmDisplayHost* GetDisplay(int64_t display_id);
@@ -100,6 +102,7 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
 
   GpuThreadAdapter* const proxy_;                 // Not owned.
   DeviceManager* const device_manager_;           // Not owned.
+  // TODO(crbug.com/936425): Remove after VizDisplayCompositor feature launches.
   DrmOverlayManager* const overlay_manager_;      // Not owned.
   InputControllerEvdev* const input_controller_;  // Not owned.
 

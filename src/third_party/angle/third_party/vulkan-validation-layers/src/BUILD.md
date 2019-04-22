@@ -100,6 +100,8 @@ To obtain the framework, change your current directory to the top of your
 Vulkan-ValidationLayers repository and run:
 
     git clone https://github.com/google/googletest.git external/googletest
+    cd external/googletest
+    git checkout tags/release-1.8.1
 
 before configuring your build with CMake.
 
@@ -192,7 +194,6 @@ on/off options currently supported by this repository:
 | BUILD_WSI_XCB_SUPPORT | Linux | `ON` | Build the components with XCB support. |
 | BUILD_WSI_XLIB_SUPPORT | Linux | `ON` | Build the components with Xlib support. |
 | BUILD_WSI_WAYLAND_SUPPORT | Linux | `ON` | Build the components with Wayland support. |
-| BUILD_WSI_MIR_SUPPORT | Linux | `OFF` | Build the components with Mir support. |
 | USE_CCACHE | Linux | `OFF` | Enable caching with the CCache program. |
 
 The following is a table of all string options currently supported by this repository:
@@ -346,7 +347,7 @@ location of the loader's install directory:
 After making any changes to the repository, you should perform some quick
 sanity tests, including the run_all_tests Powershell script. In addition,
 running sample applications such as the
-[cube demo](https://www.github.com/KhronosGroup/Vulkan-Tools.git)
+[vkcube demo](https://www.github.com/KhronosGroup/Vulkan-Tools.git)
 with validation enabled is advised.
 
 To run the validation test script, open a Powershell Console, change to the
@@ -404,7 +405,8 @@ repository to other Linux distributions.
 #### Required Package List
 
     sudo apt-get install git cmake build-essential libx11-xcb-dev \
-        libxkbcommon-dev libmirclient-dev libwayland-dev libxrandr-dev
+        libxkbcommon-dev libwayland-dev libxrandr-dev \
+        libegl1-mesa-dev
 
 ### Linux Build
 
@@ -573,7 +575,7 @@ Finally, rebuild the repository using `cmake` and `make`, as explained above.
 
     export VK_LAYER_PATH=<path to your repository root>/build/layers
 
-You can run the `cube` or `vulkaninfo` applications from the Vulkan-Tools
+You can run the `vkcube` or `vulkaninfo` applications from the Vulkan-Tools
 repository to see which driver, loader and layers are being used.
 
 ## Building On Android
@@ -688,8 +690,8 @@ for VS2013:
 ### Android Tests and Demos
 
 After making any changes to the repository you should perform some quick
-sanity tests, including the layer validation tests and the cube and smoke
-demos with validation enabled.
+sanity tests, including the layer validation tests and the vkcube
+demo with validation enabled.
 
 #### Run Layer Validation Tests
 
@@ -818,7 +820,7 @@ This script will run the following tests:
 
 - `vk_layer_validation_tests`: Test Vulkan validation layers
 
-Further testing and sanity checking can be achieved by running the cube and
+Further testing and sanity checking can be achieved by running the vkcube and
 vulkaninfo applications in the
 [Vulkan-Tools](https://github.com/KhronosGroup/Vulkan-Tools)
 repository.

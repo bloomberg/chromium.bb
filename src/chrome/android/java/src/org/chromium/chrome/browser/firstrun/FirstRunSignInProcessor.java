@@ -6,15 +6,12 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.os.Bundle;
 import android.text.TextUtils;
 
-import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
@@ -37,7 +34,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
  * FirstRunSignInProcessor.start(activity).
  */
 public final class FirstRunSignInProcessor {
-    private static final String TAG = "FirstRunSigninProc";
     /**
      * SharedPreferences preference names to keep the state of the First Run Experience.
      */
@@ -57,19 +53,11 @@ public final class FirstRunSignInProcessor {
         SigninManager signinManager = SigninManager.get();
         signinManager.onFirstRunCheckDone();
 
-        boolean firstRunFlowComplete = FirstRunStatus.getFirstRunFlowComplete();
-        // We skip signin and the FRE if
+        // Skip signin if the first run flow is not complete. Examples of cases where the user
+        // would not have gone through the FRE:
         // - FRE is disabled, or
         // - FRE hasn't been completed, but the user has already seen the ToS in the Setup Wizard.
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-                || ApiCompatibilityUtils.isDemoUser(activity)
-                || (!firstRunFlowComplete && ToSAckedReceiver.checkAnyUserHasSeenToS())) {
-            return;
-        }
-
-        if (!firstRunFlowComplete) {
-            // Force trigger the FRE.
-            requestToFireIntentAndFinish(activity);
+        if (!FirstRunStatus.getFirstRunFlowComplete()) {
             return;
         }
 
@@ -78,7 +66,7 @@ public final class FirstRunSignInProcessor {
             return;
         }
         final String accountName = getFirstRunFlowSignInAccountName();
-        if (!FeatureUtilities.canAllowSync(activity) || !signinManager.isSignInAllowed()
+        if (!FeatureUtilities.canAllowSync() || !signinManager.isSignInAllowed()
                 || TextUtils.isEmpty(accountName)) {
             setFirstRunFlowSignInComplete(true);
             return;
@@ -89,7 +77,7 @@ public final class FirstRunSignInProcessor {
             @Override
             public void onSignInComplete() {
                 if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-                    UnifiedConsentServiceBridge.setUnifiedConsentGiven(true);
+                    UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
                 }
                 // Show sync settings if user pressed the "Settings" button.
                 if (setUp) {
@@ -112,26 +100,15 @@ public final class FirstRunSignInProcessor {
      */
     private static void openSignInSettings(Activity activity) {
         final Class<? extends Fragment> fragment;
+        final Bundle arguments;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
             fragment = SyncAndServicesPreferences.class;
+            arguments = SyncAndServicesPreferences.createArguments(true);
         } else {
             fragment = AccountManagementFragment.class;
+            arguments = null;
         }
-        PreferencesLauncher.launchSettingsPage(activity, fragment);
-    }
-
-    /**
-     * Starts the full FRE and finishes the current activity.
-     */
-    private static void requestToFireIntentAndFinish(Activity activity) {
-        Log.e(TAG, "Attempt to pass-through without completed FRE");
-
-        // Things went wrong -- we want the user to go through the full FRE.
-        FirstRunStatus.setFirstRunFlowComplete(false);
-        setFirstRunFlowSignInComplete(false);
-        setFirstRunFlowSignInAccountName(null);
-        setFirstRunFlowSignInSetup(false);
-        activity.startActivity(FirstRunFlowSequencer.createGenericFirstRunIntent(activity, true));
+        PreferencesLauncher.launchSettingsPage(activity, fragment, arguments);
     }
 
     /**

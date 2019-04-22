@@ -11,10 +11,11 @@
 #include <memory>
 #include <vector>
 
-#include "core/fxcrt/cfx_char.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/fx_dib.h"
+#include "third_party/base/span.h"
 #include "xfa/fde/cfde_data.h"
+#include "xfa/fgas/layout/cfx_char.h"
 
 class CFDE_RenderDevice;
 class CFGAS_GEFont;
@@ -37,8 +38,7 @@ class CFDE_TextOut {
   static bool DrawString(CFX_RenderDevice* device,
                          FX_ARGB color,
                          const RetainPtr<CFGAS_GEFont>& pFont,
-                         FXTEXT_CHARPOS* pCharPos,
-                         int32_t iCount,
+                         pdfium::span<TextCharPos> pCharPos,
                          float fFontSize,
                          const CFX_Matrix* pMatrix);
 
@@ -57,7 +57,7 @@ class CFDE_TextOut {
   void CalcLogicSize(const WideString& str, CFX_SizeF* pSize);
   void CalcLogicSize(const WideString& str, CFX_RectF* pRect);
   void DrawLogicText(CFX_RenderDevice* device,
-                     const WideStringView& str,
+                     WideStringView str,
                      const CFX_RectF& rect);
   int32_t GetTotalLines() const { return m_iTotalLines; }
 
@@ -95,26 +95,26 @@ class CFDE_TextOut {
                       int32_t* pPieceWidths);
   void AppendPiece(const FDE_TTOPIECE& ttoPiece, bool bNeedReload, bool bEnd);
   void DoAlignment(const CFX_RectF& rect);
-  int32_t GetDisplayPos(FDE_TTOPIECE* pPiece);
+  size_t GetDisplayPos(FDE_TTOPIECE* pPiece);
 
-  std::unique_ptr<CFX_TxtBreak> m_pTxtBreak;
+  std::unique_ptr<CFX_TxtBreak> const m_pTxtBreak;
   RetainPtr<CFGAS_GEFont> m_pFont;
-  float m_fFontSize;
-  float m_fLineSpace;
-  float m_fLinePos;
-  float m_fTolerance;
-  FDE_TextAlignment m_iAlignment;
+  float m_fFontSize = 12.0f;
+  float m_fLineSpace = 12.0f;
+  float m_fLinePos = 0.0f;
+  float m_fTolerance = 0.0f;
+  FDE_TextAlignment m_iAlignment = FDE_TextAlignment::kTopLeft;
   FDE_TextStyle m_Styles;
   std::vector<int32_t> m_CharWidths;
-  FX_ARGB m_TxtColor;
-  uint32_t m_dwTxtBkStyles;
+  FX_ARGB m_TxtColor = 0xFF000000;
+  uint32_t m_dwTxtBkStyles = 0;
   WideString m_wsText;
   CFX_Matrix m_Matrix;
   std::deque<CFDE_TTOLine> m_ttoLines;
-  int32_t m_iCurLine;
-  int32_t m_iCurPiece;
-  int32_t m_iTotalLines;
-  std::vector<FXTEXT_CHARPOS> m_CharPos;
+  int32_t m_iCurLine = 0;
+  int32_t m_iCurPiece = 0;
+  int32_t m_iTotalLines = 0;
+  std::vector<TextCharPos> m_CharPos;
 };
 
 #endif  // XFA_FDE_CFDE_TEXTOUT_H_

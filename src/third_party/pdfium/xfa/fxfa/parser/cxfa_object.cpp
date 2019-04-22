@@ -9,39 +9,39 @@
 #include <utility>
 
 #include "core/fxcrt/fx_extension.h"
-#include "fxjs/cfxjse_engine.h"
-#include "fxjs/cfxjse_value.h"
+#include "fxjs/xfa/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "fxjs/xfa/cjx_object.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 #include "xfa/fxfa/parser/cxfa_thisproxy.h"
 #include "xfa/fxfa/parser/cxfa_treelist.h"
+#include "xfa/fxfa/parser/xfa_basic_data.h"
 
 CXFA_Object::CXFA_Object(CXFA_Document* pDocument,
                          XFA_ObjectType objectType,
                          XFA_Element elementType,
-                         const WideStringView& elementName,
                          std::unique_ptr<CJX_Object> jsObject)
     : m_pDocument(pDocument),
       m_objectType(objectType),
       m_elementType(elementType),
-      m_elementNameHash(FX_HashCode_GetW(elementName, false)),
-      m_elementName(elementName),
+      m_elementName(XFA_ElementToName(elementType)),
+      m_elementNameHash(FX_HashCode_GetAsIfW(m_elementName, false)),
       m_pJSObject(std::move(jsObject)) {}
 
-CXFA_Object::~CXFA_Object() = default;
+CXFA_Object::~CXFA_Object() {
+  if (!GetDocument()->IsBeingDestroyed() && GetDocument()->HasScriptContext())
+    GetDocument()->GetScriptContext()->RemoveJSBindingFromMap(this);
+}
 
 CXFA_Object* CXFA_Object::AsCXFAObject() {
   return this;
 }
 
 WideString CXFA_Object::GetSOMExpression() {
-  CFXJSE_Engine* pScriptContext = m_pDocument->GetScriptContext();
-  if (!pScriptContext)
-    return WideString();
-
-  return pScriptContext->GetSomExpression(ToNode(this));
+  CXFA_Node* pNode = AsNode();
+  return pNode ? pNode->GetNameExpression() : WideString();
 }
 
 CXFA_List* CXFA_Object::AsList() {

@@ -393,4 +393,4 @@ bool MiniDisassembler::ProcessSib(unsigned char* start_byte,
   return true;
 }
 
-};  // namespace sidestep
+}  // namespace sidestep

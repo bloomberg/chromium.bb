@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
@@ -24,6 +25,7 @@
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
@@ -35,8 +37,6 @@
 #include "net/net_buildflags.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/quic/quic_stream_factory.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -58,7 +58,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_REPORTING)
-#include "net/network_error_logging/network_error_logging_delegate.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
@@ -147,19 +146,22 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
 // it's not safe to subclass this.
 class ContainerURLRequestContext final : public URLRequestContext {
  public:
-  ContainerURLRequestContext() : storage_(this) {}
+  explicit ContainerURLRequestContext(bool allow_copy)
+      : URLRequestContext(allow_copy), storage_(this) {}
 
   ~ContainerURLRequestContext() override {
 #if BUILDFLAG(ENABLE_REPORTING)
-    // Destroy the NetworkErrorLoggingService so that destroying the
+    // Shut down the NetworkErrorLoggingService so that destroying the
     // ReportingService (which might abort in-flight URLRequests, generating
     // network errors) won't recursively try to queue more network error
     // reports.
-    storage_.set_network_error_logging_service(nullptr);
+    if (network_error_logging_service())
+      network_error_logging_service()->OnShutdown();
 
-    // Destroy the ReportingService before the rest of the URLRequestContext, so
-    // it cancels any pending requests it may have.
-    storage_.set_reporting_service(nullptr);
+    // Shut down the ReportingService before the rest of the URLRequestContext,
+    // so it cancels any pending requests it may have.
+    if (reporting_service())
+      reporting_service()->OnShutdown();
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
     // Shut down the ProxyResolutionService, as it may have pending URLRequests
@@ -195,32 +197,7 @@ URLRequestContextBuilder::HttpCacheParams::HttpCacheParams()
       max_size(0) {}
 URLRequestContextBuilder::HttpCacheParams::~HttpCacheParams() = default;
 
-URLRequestContextBuilder::URLRequestContextBuilder()
-    : enable_brotli_(false),
-      network_quality_estimator_(nullptr),
-      data_enabled_(false),
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-      file_enabled_(false),
-#endif
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-      ftp_enabled_(false),
-#endif
-      http_cache_enabled_(true),
-      throttling_enabled_(false),
-      cookie_store_set_by_client_(false),
-      net_log_(nullptr),
-      shared_host_resolver_(nullptr),
-      pac_quick_check_enabled_(true),
-      pac_sanitize_url_policy_(ProxyResolutionService::SanitizeUrlPolicy::SAFE),
-      shared_proxy_delegate_(nullptr),
-      shared_http_auth_handler_factory_(nullptr),
-#if BUILDFLAG(ENABLE_REPORTING)
-      shared_cert_verifier_(nullptr),
-      network_error_logging_enabled_(false) {
-#else   // !BUILDFLAG(ENABLE_REPORTING)
-      shared_cert_verifier_(nullptr){
-#endif  // !BUILDFLAG(ENABLE_REPORTING)
-}
+URLRequestContextBuilder::URLRequestContextBuilder() = default;
 
 URLRequestContextBuilder::~URLRequestContextBuilder() = default;
 
@@ -236,13 +213,15 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
   session_context->ct_policy_enforcer = request_context->ct_policy_enforcer();
   session_context->proxy_resolution_service =
       request_context->proxy_resolution_service();
+  session_context->proxy_delegate = request_context->proxy_delegate();
+  session_context->http_user_agent_settings =
+      request_context->http_user_agent_settings();
   session_context->ssl_config_service = request_context->ssl_config_service();
   session_context->http_auth_handler_factory =
       request_context->http_auth_handler_factory();
   session_context->http_server_properties =
       request_context->http_server_properties();
   session_context->net_log = request_context->net_log();
-  session_context->channel_id_service = request_context->channel_id_service();
   session_context->network_quality_estimator =
       request_context->network_quality_estimator();
   if (request_context->network_quality_estimator()) {
@@ -329,14 +308,10 @@ void URLRequestContextBuilder::set_create_intercepting_job_factory(
   create_intercepting_job_factory_ = std::move(create_intercepting_job_factory);
 }
 
-void URLRequestContextBuilder::SetCookieAndChannelIdStores(
-    std::unique_ptr<CookieStore> cookie_store,
-    std::unique_ptr<ChannelIDService> channel_id_service) {
+void URLRequestContextBuilder::SetCookieStore(
+    std::unique_ptr<CookieStore> cookie_store) {
   cookie_store_set_by_client_ = true;
-  // If |cookie_store| is NULL, |channel_id_service| must be NULL too.
-  DCHECK(cookie_store || !channel_id_service);
   cookie_store_ = std::move(cookie_store);
-  channel_id_service_ = std::move(channel_id_service);
 }
 
 void URLRequestContextBuilder::SetProtocolHandler(
@@ -351,14 +326,28 @@ void URLRequestContextBuilder::SetProtocolHandler(
 
 void URLRequestContextBuilder::set_host_resolver(
     std::unique_ptr<HostResolver> host_resolver) {
-  DCHECK(!shared_host_resolver_);
+  DCHECK(!host_resolver_manager_);
+  DCHECK(host_mapping_rules_.empty());
+  DCHECK(!host_resolver_factory_);
   host_resolver_ = std::move(host_resolver);
 }
 
-void URLRequestContextBuilder::set_shared_host_resolver(
-    HostResolver* shared_host_resolver) {
+void URLRequestContextBuilder::set_host_mapping_rules(
+    std::string host_mapping_rules) {
   DCHECK(!host_resolver_);
-  shared_host_resolver_ = shared_host_resolver;
+  host_mapping_rules_ = std::move(host_mapping_rules);
+}
+
+void URLRequestContextBuilder::set_host_resolver_manager(
+    HostResolverManager* manager) {
+  DCHECK(!host_resolver_);
+  host_resolver_manager_ = manager;
+}
+
+void URLRequestContextBuilder::set_host_resolver_factory(
+    HostResolver::Factory* factory) {
+  DCHECK(!host_resolver_);
+  host_resolver_factory_ = factory;
 }
 
 void URLRequestContextBuilder::SetCreateLayeredNetworkDelegateCallback(
@@ -405,7 +394,7 @@ void URLRequestContextBuilder::SetCreateHttpTransactionFactoryCallback(
 
 std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   std::unique_ptr<ContainerURLRequestContext> context(
-      new ContainerURLRequestContext());
+      new ContainerURLRequestContext(allow_copy_));
   URLRequestContextStorage* storage = context->storage();
 
   if (!name_.empty())
@@ -438,14 +427,34 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (host_resolver_) {
-    DCHECK(!shared_host_resolver_);
-    storage->set_host_resolver(std::move(host_resolver_));
-  } else if (shared_host_resolver_) {
-    context->set_host_resolver(shared_host_resolver_);
+    DCHECK(host_mapping_rules_.empty());
+    DCHECK(!host_resolver_manager_);
+    DCHECK(!host_resolver_factory_);
+  } else if (host_resolver_manager_) {
+    if (host_resolver_factory_) {
+      host_resolver_ = host_resolver_factory_->CreateResolver(
+          host_resolver_manager_, host_mapping_rules_,
+          true /* enable_caching */);
+    } else {
+      host_resolver_ = HostResolver::CreateResolver(host_resolver_manager_,
+                                                    host_mapping_rules_,
+                                                    true /* enable_caching */);
+    }
   } else {
-    storage->set_host_resolver(
-        HostResolver::CreateDefaultResolver(context->net_log()));
+    // TODO(crbug.com/934402): Make setting a resolver or manager required, so
+    // the builder should never have to create a standalone resolver.
+    if (host_resolver_factory_) {
+      host_resolver_ = host_resolver_factory_->CreateStandaloneResolver(
+          context->net_log(), HostResolver::Options(), host_mapping_rules_,
+          true /* enable_caching */);
+    } else {
+      host_resolver_ = HostResolver::CreateStandaloneResolver(
+          context->net_log(), HostResolver::Options(), host_mapping_rules_,
+          true /* enable_caching */);
+    }
   }
+  host_resolver_->SetRequestContext(context.get());
+  storage->set_host_resolver(std::move(host_resolver_));
 
   if (ssl_config_service_) {
     storage->set_ssl_config_service(std::move(ssl_config_service_));
@@ -462,22 +471,15 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     context->set_http_auth_handler_factory(shared_http_auth_handler_factory_);
   } else {
     storage->set_http_auth_handler_factory(
-        HttpAuthHandlerRegistryFactory::CreateDefault(
-            context->host_resolver()));
+        HttpAuthHandlerRegistryFactory::CreateDefault());
   }
 
   if (cookie_store_set_by_client_) {
     storage->set_cookie_store(std::move(cookie_store_));
-    storage->set_channel_id_service(std::move(channel_id_service_));
   } else {
     std::unique_ptr<CookieStore> cookie_store(
-        new CookieMonster(nullptr /* store */, nullptr /* channel_id_service */,
-                          context->net_log()));
-    std::unique_ptr<ChannelIDService> channel_id_service(
-        new ChannelIDService(new DefaultChannelIDStore(NULL)));
-    cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+        new CookieMonster(nullptr /* store */, context->net_log()));
     storage->set_cookie_store(std::move(cookie_store));
-    storage->set_channel_id_service(std::move(channel_id_service));
   }
 
   storage->set_transport_security_state(
@@ -545,8 +547,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
         std::move(proxy_config_service_), context.get(),
         context->host_resolver(), context->network_delegate(),
         context->net_log());
-    proxy_resolution_service_->set_quick_check_enabled(pac_quick_check_enabled_);
-    proxy_resolution_service_->set_sanitize_url_policy(pac_sanitize_url_policy_);
+    proxy_resolution_service_->set_quick_check_enabled(
+        pac_quick_check_enabled_);
   }
   ProxyResolutionService* proxy_resolution_service =
       proxy_resolution_service_.get();
@@ -562,9 +564,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (network_error_logging_enabled_) {
+    // TODO(chlily): Create this with an actual PersistentNELStore*.
     storage->set_network_error_logging_service(
-        NetworkErrorLoggingService::Create(
-            NetworkErrorLoggingDelegate::Create()));
+        NetworkErrorLoggingService::Create(nullptr /* store */));
   }
 
   // If both Reporting and Network Error Logging are actually enabled, then
@@ -577,9 +579,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-  HttpNetworkSession::Context network_session_context;
-  SetHttpNetworkSessionComponents(context.get(), &network_session_context);
-
   if (proxy_delegate_) {
     DCHECK(!shared_proxy_delegate_);
     proxy_resolution_service->AssertNoProxyDelegate();
@@ -588,7 +587,11 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   } else if (shared_proxy_delegate_) {
     proxy_resolution_service->AssertNoProxyDelegate();
     proxy_resolution_service->SetProxyDelegate(shared_proxy_delegate_);
+    context->set_proxy_delegate(shared_proxy_delegate_);
   }
+
+  HttpNetworkSession::Context network_session_context;
+  SetHttpNetworkSessionComponents(context.get(), &network_session_context);
 
   storage->set_http_network_session(std::make_unique<HttpNetworkSession>(
       http_network_session_params_, network_session_context));

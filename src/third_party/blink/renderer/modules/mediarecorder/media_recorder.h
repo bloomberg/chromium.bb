@@ -10,12 +10,10 @@
 #include "third_party/blink/public/platform/web_media_recorder_handler_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_options.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/async_method_runner.h"
 
 namespace blink {
 
@@ -27,7 +25,7 @@ class MODULES_EXPORT MediaRecorder final
     : public EventTargetWithInlineData,
       public WebMediaRecorderHandlerClient,
       public ActiveScriptWrappable<MediaRecorder>,
-      public PausableObject {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -54,12 +52,12 @@ class MODULES_EXPORT MediaRecorder final
   uint32_t videoBitsPerSecond() const { return video_bits_per_second_; }
   uint32_t audioBitsPerSecond() const { return audio_bits_per_second_; }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(start, kStart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(stop, kStop);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(dataavailable, kDataavailable);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(pause, kPause);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(resume, kResume);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(start, kStart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(stop, kStop)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(dataavailable, kDataavailable)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(pause, kPause)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resume, kResume)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
 
   void start(ExceptionState& exception_state);
   void start(int time_slice, ExceptionState& exception_state);
@@ -74,9 +72,7 @@ class MODULES_EXPORT MediaRecorder final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  // PausableObject
-  void Pause() override;
-  void Unpause() override;
+  // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext* context) override;
 
   // ScriptWrappable
@@ -110,7 +106,6 @@ class MODULES_EXPORT MediaRecorder final
 
   std::unique_ptr<WebMediaRecorderHandler> recorder_handler_;
 
-  Member<AsyncMethodRunner<MediaRecorder>> dispatch_scheduled_event_runner_;
   HeapVector<Member<Event>> scheduled_events_;
 };
 

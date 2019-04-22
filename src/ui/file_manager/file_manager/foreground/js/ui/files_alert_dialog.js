@@ -8,7 +8,7 @@
  * @constructor
  * @extends {cr.ui.dialogs.AlertDialog}
  */
-var FilesAlertDialog = function(parentNode) {
+const FilesAlertDialog = function(parentNode) {
   cr.ui.dialogs.AlertDialog.call(this, parentNode);
 };
 

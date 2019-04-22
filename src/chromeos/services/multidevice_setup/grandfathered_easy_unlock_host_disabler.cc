@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "base/timer/timer.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -18,7 +19,7 @@ namespace multidevice_setup {
 namespace {
 
 // Name of the pref that stores the ID of the device which still potentially
-// needs to have EASY_UNLOCK_HOST disabled on it.
+// needs to have kSmartLockHost disabled on it.
 const char kEasyUnlockHostIdToDisablePrefName[] =
     "multidevice_setup.easy_unlock_host_id_to_disable";
 
@@ -27,10 +28,10 @@ const char kNoDevice[] = "";
 // The number of minutes to wait before retrying a failed attempt.
 const int kNumMinutesBetweenRetries = 5;
 
-bool IsEasyUnlockHost(const cryptauth::RemoteDeviceRef& device) {
+bool IsEasyUnlockHost(const multidevice::RemoteDeviceRef& device) {
   return device.GetSoftwareFeatureState(
-             cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) ==
-         cryptauth::SoftwareFeatureState::kEnabled;
+             multidevice::SoftwareFeature::kSmartLockHost) ==
+         multidevice::SoftwareFeatureState::kEnabled;
 }
 
 }  // namespace
@@ -91,13 +92,13 @@ GrandfatheredEasyUnlockHostDisabler::GrandfatheredEasyUnlockHostDisabler(
           host_backend_delegate_->GetMultiDeviceHostFromBackend()) {
   host_backend_delegate_->AddObserver(this);
 
-  // There might be a device stored in the pref waiting for EASY_UNLOCK_HOST to
+  // There might be a device stored in the pref waiting for kSmartLockHost to
   // be disabled.
   DisableEasyUnlockHostIfNecessary();
 }
 
 void GrandfatheredEasyUnlockHostDisabler::OnHostChangedOnBackend() {
-  // EASY_UNLOCK_HOST possibly needs to be disabled on the previous
+  // kSmartLockHost possibly needs to be disabled on the previous
   // BetterTogether host.
   SetPotentialEasyUnlockHostToDisable(current_better_together_host_);
 
@@ -111,17 +112,17 @@ void GrandfatheredEasyUnlockHostDisabler::OnHostChangedOnBackend() {
 void GrandfatheredEasyUnlockHostDisabler::DisableEasyUnlockHostIfNecessary() {
   timer_->Stop();
 
-  base::Optional<cryptauth::RemoteDeviceRef> host_to_disable =
+  base::Optional<multidevice::RemoteDeviceRef> host_to_disable =
       GetEasyUnlockHostToDisable();
 
   if (!host_to_disable)
     return;
 
-  PA_LOG(VERBOSE) << "Attempting to disable EASY_UNLOCK_HOST on device "
+  PA_LOG(VERBOSE) << "Attempting to disable kSmartLockHost on device "
                   << host_to_disable->GetTruncatedDeviceIdForLogs();
   device_sync_client_->SetSoftwareFeatureState(
       host_to_disable->public_key(),
-      cryptauth::SoftwareFeature::EASY_UNLOCK_HOST, false /* enabled */,
+      multidevice::SoftwareFeature::kSmartLockHost, false /* enabled */,
       false /* is_exclusive */,
       base::BindOnce(
           &GrandfatheredEasyUnlockHostDisabler::OnSetSoftwareFeatureStateResult,
@@ -129,16 +130,16 @@ void GrandfatheredEasyUnlockHostDisabler::DisableEasyUnlockHostIfNecessary() {
 }
 
 void GrandfatheredEasyUnlockHostDisabler::OnSetSoftwareFeatureStateResult(
-    cryptauth::RemoteDeviceRef device,
+    multidevice::RemoteDeviceRef device,
     device_sync::mojom::NetworkRequestResult result_code) {
   bool success =
       result_code == device_sync::mojom::NetworkRequestResult::kSuccess;
 
   if (success) {
-    PA_LOG(VERBOSE) << "Successfully disabled EASY_UNLOCK_HOST on device "
+    PA_LOG(VERBOSE) << "Successfully disabled kSmartLockHost on device "
                     << device.GetTruncatedDeviceIdForLogs();
   } else {
-    PA_LOG(WARNING) << "Failed to disable EASY_UNLOCK_HOST on device "
+    PA_LOG(WARNING) << "Failed to disable kSmartLockHost on device "
                     << device.GetTruncatedDeviceIdForLogs()
                     << ", Error code: " << result_code;
   }
@@ -163,12 +164,12 @@ void GrandfatheredEasyUnlockHostDisabler::OnSetSoftwareFeatureStateResult(
 }
 
 void GrandfatheredEasyUnlockHostDisabler::SetPotentialEasyUnlockHostToDisable(
-    base::Optional<cryptauth::RemoteDeviceRef> device) {
+    base::Optional<multidevice::RemoteDeviceRef> device) {
   pref_service_->SetString(kEasyUnlockHostIdToDisablePrefName,
                            device ? device->GetDeviceId() : kNoDevice);
 }
 
-base::Optional<cryptauth::RemoteDeviceRef>
+base::Optional<multidevice::RemoteDeviceRef>
 GrandfatheredEasyUnlockHostDisabler::GetEasyUnlockHostToDisable() {
   std::string device_id =
       pref_service_->GetString(kEasyUnlockHostIdToDisablePrefName);
@@ -176,14 +177,14 @@ GrandfatheredEasyUnlockHostDisabler::GetEasyUnlockHostToDisable() {
   if (device_id == kNoDevice)
     return base::nullopt;
 
-  cryptauth::RemoteDeviceRefList synced_devices =
+  multidevice::RemoteDeviceRefList synced_devices =
       device_sync_client_->GetSyncedDevices();
   auto it = std::find_if(synced_devices.begin(), synced_devices.end(),
                          [&device_id](const auto& remote_device) {
                            return remote_device.GetDeviceId() == device_id;
                          });
 
-  // The device does not need to have EASY_UNLOCK_HOST disabled if any of the
+  // The device does not need to have kSmartLockHost disabled if any of the
   // following are true:
   //   - the device is not in the list of synced devices anymore,
   //   - the device is not the current EasyUnlock host, or

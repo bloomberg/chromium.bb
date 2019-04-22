@@ -70,6 +70,9 @@ void GetManagePasswordsDialogTitleText(const GURL& user_visible_url,
 // Returns an username in the form that should be shown in the bubble.
 base::string16 GetDisplayUsername(const autofill::PasswordForm& form);
 
+// Returns |federation_origin| in a human-readable format.
+base::string16 GetDisplayFederation(const autofill::PasswordForm& form);
+
 // Check if |profile| syncing the Auto sign-in settings (by checking that user
 // syncs the PRIORITY_PREFERENCE). The view appearance might depend on it.
 bool IsSyncingAutosignSetting(Profile* profile);

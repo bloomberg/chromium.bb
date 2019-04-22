@@ -305,6 +305,7 @@ function gen_config_files {
     fi
   fi
 
+  mkdir -p $BASE_DIR/$LIBVPX_CONFIG_DIR/$1
   cp vpx_config.* $BASE_DIR/$LIBVPX_CONFIG_DIR/$1
   make_clean
   rm -rf vpx_config.*
@@ -348,13 +349,14 @@ gen_config_files linux/arm "--target=armv7-linux-gcc --disable-neon ${all_platfo
 gen_config_files linux/arm-neon "--target=armv7-linux-gcc ${all_platforms}"
 gen_config_files linux/arm-neon-cpu-detect "--target=armv7-linux-gcc --enable-runtime-cpu-detect ${all_platforms}"
 gen_config_files linux/arm64 "--target=armv8-linux-gcc ${all_platforms}"
-gen_config_files linux/chromeos-arm-neon "--target=armv7-linux-gcc ${all_platforms} ${HIGHBD}"
-gen_config_files linux/chromeos-arm64 "--target=armv8-linux-gcc ${all_platforms} ${HIGHBD}"
+gen_config_files linux/arm-neon-highbd "--target=armv7-linux-gcc ${all_platforms} ${HIGHBD}"
+gen_config_files linux/arm64-highbd "--target=armv8-linux-gcc ${all_platforms} ${HIGHBD}"
 gen_config_files linux/mipsel "--target=mips32-linux-gcc ${all_platforms}"
 gen_config_files linux/mips64el "--target=mips64-linux-gcc ${all_platforms}"
 gen_config_files linux/generic "--target=generic-gnu $HIGHBD ${all_platforms}"
-gen_config_files win/ia32 "--target=x86-win32-vs12 ${all_platforms} ${x86_platforms}"
-gen_config_files win/x64 "--target=x86_64-win64-vs12 ${all_platforms} ${x86_platforms}"
+gen_config_files win/arm64 "--target=arm64-win64-vs15 ${all_platforms} ${HIGHBD}"
+gen_config_files win/ia32 "--target=x86-win32-vs14 ${all_platforms} ${x86_platforms}"
+gen_config_files win/x64 "--target=x86_64-win64-vs14 ${all_platforms} ${x86_platforms}"
 gen_config_files mac/ia32 "--target=x86-darwin9-gcc ${all_platforms} ${x86_platforms}"
 gen_config_files mac/x64 "--target=x86_64-darwin9-gcc ${all_platforms} ${x86_platforms}"
 gen_config_files ios/arm-neon "--target=armv7-linux-gcc ${all_platforms}"
@@ -372,11 +374,12 @@ lint_config linux/arm
 lint_config linux/arm-neon
 lint_config linux/arm-neon-cpu-detect
 lint_config linux/arm64
-lint_config linux/chromeos-arm-neon
-lint_config linux/chromeos-arm64
+lint_config linux/arm-neon-highbd
+lint_config linux/arm64-highbd
 lint_config linux/mipsel
 lint_config linux/mips64el
 lint_config linux/generic
+lint_config win/arm64
 lint_config win/ia32
 lint_config win/x64
 lint_config mac/ia32
@@ -400,11 +403,12 @@ gen_rtcd_header linux/arm armv7 "--disable-neon --disable-neon_asm"
 gen_rtcd_header linux/arm-neon armv7
 gen_rtcd_header linux/arm-neon-cpu-detect armv7
 gen_rtcd_header linux/arm64 armv8
-gen_rtcd_header linux/chromeos-arm-neon armv7
-gen_rtcd_header linux/chromeos-arm64 armv8
+gen_rtcd_header linux/arm-neon-highbd armv7
+gen_rtcd_header linux/arm64-highbd armv8
 gen_rtcd_header linux/mipsel mipsel
 gen_rtcd_header linux/mips64el mips64el
 gen_rtcd_header linux/generic generic
+gen_rtcd_header win/arm64 armv8
 gen_rtcd_header win/ia32 x86 "${require_sse2}"
 gen_rtcd_header win/x64 x86_64
 gen_rtcd_header mac/ia32 x86 "${require_sse2}"
@@ -465,17 +469,19 @@ if [ -z $ONLY_CONFIGS ]; then
   make libvpx_srcs.txt target=libs $config > /dev/null
   convert_srcs_to_project_files libvpx_srcs.txt libvpx_srcs_arm64
 
-  echo "Generate ChromeOS ARM NEON source list."
-  config=$(print_config linux/chromeos-arm-neon)
+  echo "Generate ARM NEON HighBD source list."
+  config=$(print_config linux/arm-neon-highbd)
   make_clean
   make libvpx_srcs.txt target=libs $config > /dev/null
-  convert_srcs_to_project_files libvpx_srcs.txt libvpx_srcs_chromeos_arm_neon
+  convert_srcs_to_project_files libvpx_srcs.txt libvpx_srcs_arm_neon_highbd
 
-  echo "Generate ChromeOS ARM64 source list."
-  config=$(print_config linux/chromeos-arm64)
+  echo "Generate ARM64 HighBD source list."
+  config=$(print_config linux/arm64-highbd)
   make_clean
   make libvpx_srcs.txt target=libs $config > /dev/null
-  convert_srcs_to_project_files libvpx_srcs.txt libvpx_srcs_chromeos_arm64
+  convert_srcs_to_project_files libvpx_srcs.txt libvpx_srcs_arm64_highbd
+
+  echo "ARM64 Windows uses the ARM64 Linux HighBD source list. No need to generate it."
 
   echo "Generate MIPS source list."
   config=$(print_config_basic linux/mipsel)

@@ -182,7 +182,8 @@ base::File::Error ReadDirectoryOnBlockingPoolThread(
     const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
     const base::FilePath& root,
     storage::AsyncFileUtil::EntryList* entries) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(!root.empty());
   DCHECK(entries);
   base::File::Info file_info;
@@ -531,9 +532,8 @@ void MTPDeviceDelegateImplWin::CancelPendingTasksAndDeleteDelegate() {
   PortableDeviceMapService::GetInstance()->MarkPortableDeviceForDeletion(
       storage_device_info_.registered_device_path);
   media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DeletePortableDeviceOnBlockingPoolThread,
-                 storage_device_info_.registered_device_path));
+      FROM_HERE, base::BindOnce(&DeletePortableDeviceOnBlockingPoolThread,
+                                storage_device_info_.registered_device_path));
   while (!pending_tasks_.empty())
     pending_tasks_.pop();
   delete this;

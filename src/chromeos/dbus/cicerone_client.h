@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -17,7 +17,7 @@ namespace chromeos {
 
 // CiceroneClient is used to communicate with Cicerone, which is used to
 // communicate with containers running inside VMs.
-class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
  public:
   class Observer {
    public:
@@ -36,10 +36,20 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
         const vm_tools::cicerone::InstallLinuxPackageProgressSignal&
             signal) = 0;
 
+    // This is signaled from the container while a package is being uninstalled
+    // via UninstallPackageOwningFile.
+    virtual void OnUninstallPackageProgress(
+        const vm_tools::cicerone::UninstallPackageProgressSignal& signal) = 0;
+
     // OnLxdContainerCreated is signaled from Cicerone when the long running
     // creation of an Lxd container is complete.
     virtual void OnLxdContainerCreated(
         const vm_tools::cicerone::LxdContainerCreatedSignal& signal) = 0;
+
+    // OnLxdContainerDeleted is signaled from Cicerone when the long running
+    // deletion of an Lxd container is complete.
+    virtual void OnLxdContainerDeleted(
+        const vm_tools::cicerone::LxdContainerDeletedSignal& signal) = 0;
 
     // OnLxdContainerDownloading is signaled from Cicerone giving download
     // progress on the container.
@@ -51,6 +61,22 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
     // and StartLxdContainer.
     virtual void OnTremplinStarted(
         const vm_tools::cicerone::TremplinStartedSignal& signal) = 0;
+
+    // OnLxdContainerStarting is signaled from Cicerone when async container
+    // startup is used. This is necessary if long running file remapping is
+    // required before an old container is safe to use.
+    virtual void OnLxdContainerStarting(
+        const vm_tools::cicerone::LxdContainerStartingSignal& signal) = 0;
+
+    // OnExportLxdContainerProgress is signalled from Cicerone while a container
+    // is being exported via ExportLxdContainer.
+    virtual void OnExportLxdContainerProgress(
+        const vm_tools::cicerone::ExportLxdContainerProgressSignal& signal) = 0;
+
+    // OnImportLxdContainerProgress is signalled from Cicerone while a container
+    // is being imported via ImportLxdContainer.
+    virtual void OnImportLxdContainerProgress(
+        const vm_tools::cicerone::ImportLxdContainerProgressSignal& signal) = 0;
 
    protected:
     virtual ~Observer() = default;
@@ -75,9 +101,15 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   // This should be true prior to calling InstallLinuxPackage.
   virtual bool IsInstallLinuxPackageProgressSignalConnected() = 0;
 
+  // This should be true prior to calling UninstallPackageOwningFile.
+  virtual bool IsUninstallPackageProgressSignalConnected() = 0;
+
   // This should be true prior to calling CreateLxdContainer or
   // StartLxdContainer.
   virtual bool IsLxdContainerCreatedSignalConnected() = 0;
+
+  // This should be true prior to calling DeleteLxdContainer.
+  virtual bool IsLxdContainerDeletedSignalConnected() = 0;
 
   // This should be true prior to calling CreateLxdContainer or
   // StartLxdContainer.
@@ -86,6 +118,15 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   // This should be true prior to calling CreateLxdContainer or
   // StartLxdContainer.
   virtual bool IsTremplinStartedSignalConnected() = 0;
+
+  // This should be true prior to calling StartLxdContainer in async mode.
+  virtual bool IsLxdContainerStartingSignalConnected() = 0;
+
+  // This should be true prior to calling ExportLxdContainer.
+  virtual bool IsExportLxdContainerProgressSignalConnected() = 0;
+
+  // This should be true prior to calling ImportLxdContainer.
+  virtual bool IsImportLxdContainerProgressSignalConnected() = 0;
 
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.
@@ -115,6 +156,13 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
       DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
           callback) = 0;
 
+  // Uninstalls the package that owns the indicated .desktop file.
+  // |callback| is called after the method call finishes.
+  virtual void UninstallPackageOwningFile(
+      const vm_tools::cicerone::UninstallPackageOwningFileRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::UninstallPackageOwningFileResponse>
+          callback) = 0;
+
   // Creates a new Lxd Container.
   // |callback| is called to indicate creation status.
   // |Observer::OnLxdContainerCreated| will be called on completion.
@@ -122,6 +170,14 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   virtual void CreateLxdContainer(
       const vm_tools::cicerone::CreateLxdContainerRequest& request,
       DBusMethodCallback<vm_tools::cicerone::CreateLxdContainerResponse>
+          callback) = 0;
+
+  // Deletes an Lxd Container.
+  // |callback| is called to indicate deletion status.
+  // |Observer::OnLxdContainerDeleted| will be called on completion.
+  virtual void DeleteLxdContainer(
+      const vm_tools::cicerone::DeleteLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::DeleteLxdContainerResponse>
           callback) = 0;
 
   // Starts a new Lxd Container.
@@ -143,6 +199,26 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   virtual void SetUpLxdContainerUser(
       const vm_tools::cicerone::SetUpLxdContainerUserRequest& request,
       DBusMethodCallback<vm_tools::cicerone::SetUpLxdContainerUserResponse>
+          callback) = 0;
+
+  // Searches for not installed Linux packages in a container.
+  // |callback| is called after the method call finishes.
+  virtual void SearchApp(
+      const vm_tools::cicerone::AppSearchRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::AppSearchResponse> callback) = 0;
+
+  // Exports the Lxd container.
+  // |callback| is called when the method completes.
+  virtual void ExportLxdContainer(
+      const vm_tools::cicerone::ExportLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ExportLxdContainerResponse>
+          callback) = 0;
+
+  // Imports the Lxd container.
+  // |callback| is called when the method completes.
+  virtual void ImportLxdContainer(
+      const vm_tools::cicerone::ImportLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ImportLxdContainerResponse>
           callback) = 0;
 
   // Registers |callback| to run when the Cicerone service becomes available.

@@ -35,7 +35,7 @@
 
 #include "third_party/blink/public/platform/web_media_source.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
 #include "third_party/blink/renderer/core/html/media/html_media_source.h"
 #include "third_party/blink/renderer/core/html/time_ranges.h"
@@ -81,9 +81,9 @@ class MediaSource final : public EventTargetWithInlineData,
   void removeSourceBuffer(SourceBuffer*, ExceptionState&);
   void setDuration(double, ExceptionState&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceopen, kSourceopen);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceended, kSourceended);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceclose, kSourceclose);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceopen, kSourceopen)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceended, kSourceended)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceclose, kSourceclose)
 
   const AtomicString& readyState() const { return ready_state_; }
   void endOfStream(const AtomicString& error, ExceptionState&);
@@ -147,8 +147,15 @@ class MediaSource final : public EventTargetWithInlineData,
   std::unique_ptr<WebMediaSource> web_media_source_;
   AtomicString ready_state_;
   Member<EventQueue> async_event_queue_;
-  Member<HTMLMediaElement> attached_element_;
 
+  // Here, using Member, instead of Member, to keep
+  // |attached_element_|, |source_buffers_|, |active_source_buffers_|, and their
+  // wrappers from being collected if we are alive or traceable from a GC root.
+  // Activity by this MediaSource or on references to objects returned by
+  // exercising this MediaSource (such as an app manipulating a SourceBuffer
+  // retrieved via activeSourceBuffers()) may cause events to be dispatched by
+  // these other objects.
+  Member<HTMLMediaElement> attached_element_;
   Member<SourceBufferList> source_buffers_;
   Member<SourceBufferList> active_source_buffers_;
 

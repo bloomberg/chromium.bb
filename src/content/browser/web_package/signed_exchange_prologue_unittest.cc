@@ -40,7 +40,7 @@ TEST(SignedExchangePrologueTest, Parse3BytesEncodedLength) {
 }
 
 TEST(SignedExchangePrologueTest, BeforeFallbackUrl_Success) {
-  uint8_t bytes[] = {'s', 'x', 'g', '1', '-', 'b', '2', '\0', 0x12, 0x34};
+  uint8_t bytes[] = {'s', 'x', 'g', '1', '-', 'b', '3', '\0', 0x12, 0x34};
 
   BeforeFallbackUrl before_fallback_url = BeforeFallbackUrl::Parse(
       base::make_span(bytes), nullptr /* devtools_proxy */);
@@ -48,8 +48,17 @@ TEST(SignedExchangePrologueTest, BeforeFallbackUrl_Success) {
   EXPECT_EQ(0x1234u, before_fallback_url.fallback_url_length());
 }
 
+TEST(SignedExchangePrologueTest, BeforeFallbackUrl_B2) {
+  uint8_t bytes[] = {'s', 'x', 'g', '1', '-', 'b', '2', '\0', 0x12, 0x34};
+
+  BeforeFallbackUrl before_fallback_url = BeforeFallbackUrl::Parse(
+      base::make_span(bytes), nullptr /* devtools_proxy */);
+  EXPECT_FALSE(before_fallback_url.is_valid());
+  EXPECT_EQ(0x1234u, before_fallback_url.fallback_url_length());
+}
+
 TEST(SignedExchangePrologueTest, BeforeFallbackUrl_WrongMagic) {
-  uint8_t bytes[] = {'s', 'x', 'g', '!', '-', 'b', '2', '\0', 0x12, 0x34};
+  uint8_t bytes[] = {'s', 'x', 'g', '!', '-', 'b', '3', '\0', 0x12, 0x34};
 
   BeforeFallbackUrl before_fallback_url = BeforeFallbackUrl::Parse(
       base::make_span(bytes), nullptr /* devtools_proxy */);
@@ -72,7 +81,7 @@ TEST(SignedExchangePrologueTest, FallbackUrlAndAfter_Success) {
 
   EXPECT_TRUE(fallback_url_and_after.is_valid());
   EXPECT_EQ("https://example.com/",
-            fallback_url_and_after.fallback_url().spec());
+            fallback_url_and_after.fallback_url().url.spec());
   EXPECT_EQ(0x1234u, fallback_url_and_after.signature_header_field_length());
   EXPECT_EQ(0x2345u, fallback_url_and_after.cbor_header_length());
 }
@@ -89,7 +98,7 @@ TEST(SignedExchangePrologueTest, FallbackUrlAndAfter_NonHttpsUrl) {
                                  nullptr /* devtools_proxy */);
 
   EXPECT_FALSE(fallback_url_and_after.is_valid());
-  EXPECT_FALSE(fallback_url_and_after.fallback_url().is_valid());
+  EXPECT_FALSE(fallback_url_and_after.fallback_url().url.is_valid());
 }
 
 TEST(SignedExchangePrologueTest, FallbackUrlAndAfter_UrlWithFragment) {
@@ -104,7 +113,7 @@ TEST(SignedExchangePrologueTest, FallbackUrlAndAfter_UrlWithFragment) {
                                  nullptr /* devtools_proxy */);
 
   EXPECT_FALSE(fallback_url_and_after.is_valid());
-  EXPECT_FALSE(fallback_url_and_after.fallback_url().is_valid());
+  EXPECT_FALSE(fallback_url_and_after.fallback_url().url.is_valid());
 }
 
 TEST(SignedExchangePrologueTest, FallbackUrlAndAfter_LongSignatureHeader) {
@@ -120,7 +129,7 @@ TEST(SignedExchangePrologueTest, FallbackUrlAndAfter_LongSignatureHeader) {
 
   EXPECT_FALSE(fallback_url_and_after.is_valid());
   EXPECT_EQ("https://example.com/",
-            fallback_url_and_after.fallback_url().spec());
+            fallback_url_and_after.fallback_url().url.spec());
 }
 
 TEST(SignedExchangePrologueTest, FallbackUrlAndAfter_LongCBORHeader) {
@@ -136,7 +145,7 @@ TEST(SignedExchangePrologueTest, FallbackUrlAndAfter_LongCBORHeader) {
 
   EXPECT_FALSE(fallback_url_and_after.is_valid());
   EXPECT_EQ("https://example.com/",
-            fallback_url_and_after.fallback_url().spec());
+            fallback_url_and_after.fallback_url().url.spec());
 }
 
 }  // namespace signed_exchange_prologue

@@ -10,17 +10,14 @@
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_adopted_callback_reaction.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_attribute_changed_callback_reaction.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_connected_callback_reaction.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_disconnected_callback_reaction.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_factory.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
-#include "third_party/blink/renderer/core/html/custom/custom_element_upgrade_reaction.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_element_factory.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -42,36 +39,36 @@ CustomElementDefinition::CustomElementDefinition(
 
 CustomElementDefinition::~CustomElementDefinition() = default;
 
-void CustomElementDefinition::Trace(blink::Visitor* visitor) {
+void CustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(construction_stack_);
   visitor->Trace(default_style_sheets_);
 }
 
-static String ErrorMessageForConstructorResult(Element* element,
+static String ErrorMessageForConstructorResult(Element& element,
                                                Document& document,
                                                const QualifiedName& tag_name) {
   // https://dom.spec.whatwg.org/#concept-create-element
   // 6.1.4. If result's attribute list is not empty, then throw a
   // NotSupportedError.
-  if (element->hasAttributes())
+  if (element.hasAttributes())
     return "The result must not have attributes";
   // 6.1.5. If result has children, then throw a NotSupportedError.
-  if (element->HasChildren())
+  if (element.HasChildren())
     return "The result must not have children";
   // 6.1.6. If result's parent is not null, then throw a NotSupportedError.
-  if (element->parentNode())
+  if (element.parentNode())
     return "The result must not have a parent";
   // 6.1.7. If result's node document is not document, then throw a
   // NotSupportedError.
-  if (&element->GetDocument() != &document)
+  if (&element.GetDocument() != &document)
     return "The result must be in the same document";
   // 6.1.8. If result's namespace is not the HTML namespace, then throw a
   // NotSupportedError.
-  if (element->namespaceURI() != html_names::xhtmlNamespaceURI)
+  if (element.namespaceURI() != html_names::xhtmlNamespaceURI)
     return "The result must have HTML namespace";
   // 6.1.9. If result's local name is not equal to localName, then throw a
   // NotSupportedError.
-  if (element->localName() != tag_name.LocalName())
+  if (element.localName() != tag_name.LocalName())
     return "The result must have the same localName";
   return String();
 }
@@ -93,7 +90,7 @@ void CustomElementDefinition::CheckConstructorResult(
 
   // 6.1.4. through 6.1.9.
   const String message =
-      ErrorMessageForConstructorResult(element, document, tag_name);
+      ErrorMessageForConstructorResult(*element, document, tag_name);
   if (!message.IsEmpty()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       message);
@@ -108,10 +105,10 @@ HTMLElement* CustomElementDefinition::CreateElementForConstructor(
   if (element) {
     element->SetIsValue(Descriptor().GetName());
   } else {
-    element =
-        HTMLElement::Create(QualifiedName(g_null_atom, Descriptor().LocalName(),
-                                          html_names::xhtmlNamespaceURI),
-                            document);
+    element = MakeGarbageCollected<HTMLElement>(
+        QualifiedName(g_null_atom, Descriptor().LocalName(),
+                      html_names::xhtmlNamespaceURI),
+        document);
   }
   // TODO(davaajav): write this as one call to setCustomElementState instead of
   // two
@@ -149,9 +146,9 @@ HTMLElement* CustomElementDefinition::CreateElement(
     // 5.4. Otherwise, enqueue a custom element upgrade reaction given
     // result and definition.
     if (!flags.IsAsyncCustomElements())
-      Upgrade(result);
+      Upgrade(*result);
     else
-      EnqueueUpgradeReaction(result);
+      EnqueueUpgradeReaction(*result);
     return ToHTMLElement(result);
   }
 
@@ -166,20 +163,20 @@ HTMLElement* CustomElementDefinition::CreateElement(
   // interface, with no attributes, namespace set to the HTML namespace,
   // namespace prefix set to prefix, local name set to localName, custom
   // element state set to "undefined", and node document set to document.
-  HTMLElement* element = HTMLElement::Create(tag_name, document);
+  auto* element = MakeGarbageCollected<HTMLElement>(tag_name, document);
   element->SetCustomElementState(CustomElementState::kUndefined);
   // 6.2.2. Enqueue a custom element upgrade reaction given result and
   // definition.
-  EnqueueUpgradeReaction(element);
+  EnqueueUpgradeReaction(*element);
   return element;
 }
 
 CustomElementDefinition::ConstructionStackScope::ConstructionStackScope(
-    CustomElementDefinition* definition,
-    Element* element)
-    : construction_stack_(definition->construction_stack_), element_(element) {
+    CustomElementDefinition& definition,
+    Element& element)
+    : construction_stack_(definition.construction_stack_), element_(element) {
   // Push the construction stack.
-  construction_stack_.push_back(element);
+  construction_stack_.push_back(&element);
   depth_ = construction_stack_.size();
 }
 
@@ -190,32 +187,32 @@ CustomElementDefinition::ConstructionStackScope::~ConstructionStackScope() {
   construction_stack_.pop_back();
 }
 
-// https://html.spec.whatwg.org/multipage/scripting.html#concept-upgrade-an-element
-void CustomElementDefinition::Upgrade(Element* element) {
-  DCHECK_EQ(element->GetCustomElementState(), CustomElementState::kUndefined);
+// https://html.spec.whatwg.org/C/#concept-upgrade-an-element
+void CustomElementDefinition::Upgrade(Element& element) {
+  DCHECK_EQ(element.GetCustomElementState(), CustomElementState::kUndefined);
 
   if (!observed_attributes_.IsEmpty())
     EnqueueAttributeChangedCallbackForAllAttributes(element);
 
-  if (element->isConnected() && HasConnectedCallback())
+  if (element.isConnected() && HasConnectedCallback())
     EnqueueConnectedCallback(element);
 
   bool succeeded = false;
   {
-    ConstructionStackScope construction_stack_scope(this, element);
+    ConstructionStackScope construction_stack_scope(*this, element);
     succeeded = RunConstructor(element);
   }
   if (!succeeded) {
-    element->SetCustomElementState(CustomElementState::kFailed);
+    element.SetCustomElementState(CustomElementState::kFailed);
     CustomElementReactionStack::Current().ClearQueue(element);
     return;
   }
 
-  element->SetCustomElementDefinition(this);
+  element.SetCustomElementDefinition(this);
 
   if (IsFormAssociated())
-    ToHTMLElement(element)->EnsureElementInternals().DidUpgrade();
-  AddDefaultStylesTo(*element);
+    ToHTMLElement(element).EnsureElementInternals().DidUpgrade();
+  AddDefaultStylesTo(element);
 }
 
 void CustomElementDefinition::AddDefaultStylesTo(Element& element) {
@@ -254,48 +251,47 @@ bool CustomElementDefinition::HasStyleAttributeChangedCallback() const {
 }
 
 void CustomElementDefinition::EnqueueUpgradeReaction(
-    Element* element,
+    Element& element,
     bool upgrade_invisible_elements) {
-  CustomElement::Enqueue(element, new CustomElementUpgradeReaction(
-                                      this, upgrade_invisible_elements));
+  CustomElement::Enqueue(element, CustomElementReactionFactory::CreateUpgrade(
+                                      *this, upgrade_invisible_elements));
 }
 
-void CustomElementDefinition::EnqueueConnectedCallback(Element* element) {
+void CustomElementDefinition::EnqueueConnectedCallback(Element& element) {
   CustomElement::Enqueue(element,
-                         new CustomElementConnectedCallbackReaction(this));
+                         CustomElementReactionFactory::CreateConnected(*this));
 }
 
-void CustomElementDefinition::EnqueueDisconnectedCallback(Element* element) {
-  CustomElement::Enqueue(element,
-                         new CustomElementDisconnectedCallbackReaction(this));
+void CustomElementDefinition::EnqueueDisconnectedCallback(Element& element) {
+  CustomElement::Enqueue(
+      element, CustomElementReactionFactory::CreateDisconnected(*this));
 }
 
-void CustomElementDefinition::EnqueueAdoptedCallback(Element* element,
-                                                     Document* old_document,
-                                                     Document* new_document) {
-  CustomElementReaction* reaction = new CustomElementAdoptedCallbackReaction(
-      this, old_document, new_document);
-  CustomElement::Enqueue(element, reaction);
+void CustomElementDefinition::EnqueueAdoptedCallback(Element& element,
+                                                     Document& old_document,
+                                                     Document& new_document) {
+  CustomElement::Enqueue(element, CustomElementReactionFactory::CreateAdopted(
+                                      *this, old_document, new_document));
 }
 
 void CustomElementDefinition::EnqueueAttributeChangedCallback(
-    Element* element,
+    Element& element,
     const QualifiedName& name,
     const AtomicString& old_value,
     const AtomicString& new_value) {
   CustomElement::Enqueue(element,
-                         new CustomElementAttributeChangedCallbackReaction(
-                             this, name, old_value, new_value));
+                         CustomElementReactionFactory::CreateAttributeChanged(
+                             *this, name, old_value, new_value));
 }
 
 void CustomElementDefinition::EnqueueAttributeChangedCallbackForAllAttributes(
-    Element* element) {
+    Element& element) {
   // Avoid synchronizing all attributes unless it is needed, while enqueing
   // callbacks "in order" as defined in the spec.
-  // https://html.spec.whatwg.org/multipage/scripting.html#concept-upgrade-an-element
+  // https://html.spec.whatwg.org/C/#concept-upgrade-an-element
   for (const AtomicString& name : observed_attributes_)
-    element->SynchronizeAttribute(name);
-  for (const auto& attribute : element->AttributesWithoutUpdate()) {
+    element.SynchronizeAttribute(name);
+  for (const auto& attribute : element.AttributesWithoutUpdate()) {
     if (HasAttributeChangedCallback(attribute.GetName())) {
       EnqueueAttributeChangedCallback(element, attribute.GetName(), g_null_atom,
                                       attribute.Value());

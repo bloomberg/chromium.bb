@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -18,6 +19,7 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/constants.h"
@@ -58,12 +60,8 @@ std::unique_ptr<content::WebContents> CreateWebContentsWithHistory(
       content::WebContentsTester::CreateTestWebContents(profile, nullptr);
 
   for (const auto& url : urls) {
-    web_contents->GetController().LoadURL(
-        url, content::Referrer(),
-        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK), std::string());
-
-    content::RenderFrameHostTester::CommitPendingLoad(
-        &web_contents->GetController());
+    content::NavigationSimulator::NavigateAndCommitFromBrowser(
+        web_contents.get(), url);
     EXPECT_EQ(url, web_contents->GetLastCommittedURL());
     EXPECT_EQ(url, web_contents->GetVisibleURL());
   }
@@ -129,8 +127,8 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
   std::string tab_titles[] = {"", "Sample title", "Sample title"};
 
   // Add 3 web contentses to the browser.
-  content::WebContents* web_contentses[arraysize(tab_urls)];
-  for (size_t i = 0; i < arraysize(tab_urls); ++i) {
+  content::WebContents* web_contentses[base::size(tab_urls)];
+  for (size_t i = 0; i < base::size(tab_urls); ++i) {
     std::unique_ptr<content::WebContents> web_contents =
         content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
     content::WebContents* raw_web_contents = web_contents.get();
@@ -190,8 +188,8 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
   std::string tab_titles[] = {"", "Sample title", "Sample title"};
 
   // Add 3 web contentses to the browser.
-  content::WebContents* web_contentses[arraysize(tab_urls)];
-  for (size_t i = 0; i < arraysize(tab_urls); ++i) {
+  content::WebContents* web_contentses[base::size(tab_urls)];
+  for (size_t i = 0; i < base::size(tab_urls); ++i) {
     std::unique_ptr<content::WebContents> web_contents =
         content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
     content::WebContents* raw_web_contents = web_contents.get();
@@ -303,9 +301,9 @@ TEST_F(TabsApiUnitTest, PDFExtensionNavigation) {
   function->set_extension(extension.get());
   function->set_browser_context(profile());
   std::unique_ptr<base::ListValue> args(
-      extension_function_test_utils::ParseList(base::StringPrintf(
-          "[%d, {\"url\":\"http://example.com\"}]", tab_id)));
-  function->SetArgs(args.get());
+      extension_function_test_utils::ParseList(
+          base::StringPrintf(R"([%d, {"url":"http://example.com"}])", tab_id)));
+  function->SetArgs(base::Value::FromUniquePtrValue(std::move(args)));
   api_test_utils::SendResponseHelper response_helper(function.get());
   function->RunWithValidation()->Execute();
 
@@ -484,7 +482,8 @@ TEST_F(TabsApiUnitTest, TabsGoForwardAndBackWithoutTabId) {
   ASSERT_EQ(2, tab_strip_model->count());
 
   // Activate first tab.
-  tab_strip_model->ActivateTabAt(tab1_index, true);
+  tab_strip_model->ActivateTabAt(tab1_index,
+                                 {TabStripModel::GestureType::kOther});
 
   // Go back without tab_id. But first tab should be navigated since it's
   // activated.
@@ -516,7 +515,8 @@ TEST_F(TabsApiUnitTest, TabsGoForwardAndBackWithoutTabId) {
               controller.GetLastCommittedEntry()->GetTransitionType());
 
   // Activate second tab.
-  tab_strip_model->ActivateTabAt(tab2_index, true);
+  tab_strip_model->ActivateTabAt(tab2_index,
+                                 {TabStripModel::GestureType::kOther});
 
   auto goback_function2 = base::MakeRefCounted<TabsGoBackFunction>();
   goback_function2->set_extension(extension_with_tabs_permission.get());

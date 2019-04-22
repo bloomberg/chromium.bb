@@ -57,7 +57,8 @@ class BLINK_EXPORT WebUserMediaRequest {
     kCapture,
     kTrackStart,
     kFailedDueToShutdown,
-    kKillSwitchOn
+    kKillSwitchOn,
+    kSystemPermissionDenied
   };
 
   enum class MediaType {

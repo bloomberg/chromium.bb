@@ -40,6 +40,7 @@ import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.Client;
 import org.chromium.chromoting.jni.ConnectionListener;
+import org.chromium.chromoting.jni.ConnectionListener.State;
 import org.chromium.chromoting.jni.JniOAuthTokenGetter;
 
 import java.util.ArrayList;
@@ -199,7 +200,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     }
 
     /** Closes any navigation drawer, then shows the Help screen. */
-    public void launchHelp(final HelpContext helpContext) {
+    public void launchHelp(final @HelpContext int helpContext) {
         closeDrawerThenRun(new Runnable() {
             @Override
             public void run() {
@@ -565,13 +566,13 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
             }
 
             @Override
-            public void onError(OAuthTokenFetcher.Error error) {
+            public void onError(@OAuthTokenFetcher.Error int error) {
                 showAuthErrorMessage(error);
             }
         });
     }
 
-    private void showAuthErrorMessage(OAuthTokenFetcher.Error error) {
+    private void showAuthErrorMessage(@OAuthTokenFetcher.Error int error) {
         String explanation = getString(error == OAuthTokenFetcher.Error.NETWORK
                 ? R.string.error_network_error : R.string.error_unexpected);
         Toast.makeText(Chromoting.this, explanation, Toast.LENGTH_LONG).show();
@@ -588,7 +589,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
             }
 
             @Override
-            public void onError(OAuthTokenFetcher.Error error) {
+            public void onError(@OAuthTokenFetcher.Error int error) {
                 showAuthErrorMessage(error);
                 updateHostListView();
             }
@@ -605,7 +606,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
             }
 
             @Override
-            public void onError(OAuthTokenFetcher.Error error) {
+            public void onError(@OAuthTokenFetcher.Error int error) {
                 showAuthErrorMessage(error);
                 updateHostListView();
             }
@@ -667,17 +668,17 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     }
 
     @Override
-    public void onError(HostListManager.Error error) {
+    public void onError(@HostListManager.Error int error) {
         String explanation = null;
         switch (error) {
-            case AUTH_FAILED:
+            case HostListManager.Error.AUTH_FAILED:
                 break;
-            case NETWORK_ERROR:
+            case HostListManager.Error.NETWORK_ERROR:
                 explanation = getString(R.string.error_network_error);
                 break;
-            case UNEXPECTED_RESPONSE:
-            case SERVICE_UNAVAILABLE:
-            case UNKNOWN:
+            case HostListManager.Error.UNEXPECTED_RESPONSE:
+            case HostListManager.Error.SERVICE_UNAVAILABLE:
+            case HostListManager.Error.UNKNOWN:
                 explanation = getString(R.string.error_unexpected);
                 break;
             default:
@@ -713,29 +714,31 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     }
 
     @Override
-    public void onConnectionState(ConnectionListener.State state, ConnectionListener.Error error) {
+    public void onConnectionState(@State int state, @ConnectionListener.Error int error) {
         boolean dismissProgress = false;
         switch (state) {
-            case INITIALIZING:
-            case CONNECTING:
-            case AUTHENTICATED:
+            case State.INITIALIZING:
+            case State.CONNECTING:
+            case State.AUTHENTICATED:
                 // The connection is still being established.
                 break;
 
-            case CONNECTED:
+            case State.CONNECTED:
                 dismissProgress = true;
                 // Display the remote desktop.
                 startActivityForResult(new Intent(this, Desktop.class), DESKTOP_ACTIVITY);
                 break;
 
-            case FAILED:
+            case State.FAILED:
                 dismissProgress = true;
-                Toast.makeText(this, getString(error.message()), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(ConnectionListener.getErrorStringIdFromError(error)),
+                             Toast.LENGTH_LONG)
+                        .show();
                 // Close the Desktop view, if it is currently running.
                 finishActivity(DESKTOP_ACTIVITY);
                 break;
 
-            case CLOSED:
+            case State.CLOSED:
                 // No need to show toast in this case. Either the connection will have failed
                 // because of an error, which will trigger toast already. Or the disconnection will
                 // have been initiated by the user.

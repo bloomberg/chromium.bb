@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_textedit.h"
 
-#include "fxjs/xfa/cjx_textedit.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -16,20 +16,19 @@ const CXFA_Node::PropertyData kTextEditPropertyData[] = {
     {XFA_Element::Border, 1, 0},
     {XFA_Element::Comb, 1, 0},
     {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kTextEditAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::VScrollPolicy, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Auto},
+     (void*)XFA_AttributeValue::Auto},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::AllowRichText, XFA_AttributeType::Boolean, (void*)0},
     {XFA_Attribute::MultiLine, XFA_AttributeType::Boolean, (void*)0},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::HScrollPolicy, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Auto},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kTextEditName[] = L"textEdit";
+     (void*)XFA_AttributeValue::Auto},
+};
 
 }  // namespace
 
@@ -41,10 +40,9 @@ CXFA_TextEdit::CXFA_TextEdit(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::TextEdit,
                 kTextEditPropertyData,
                 kTextEditAttributeData,
-                kTextEditName,
-                pdfium::MakeUnique<CJX_TextEdit>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_TextEdit::~CXFA_TextEdit() {}
+CXFA_TextEdit::~CXFA_TextEdit() = default;
 
 XFA_FFWidgetType CXFA_TextEdit::GetDefaultFFWidgetType() const {
   return XFA_FFWidgetType::kTextEdit;

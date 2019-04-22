@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_rootelement.h"
 
-#include "fxjs/xfa/cjx_rootelement.h"
+#include "fxjs/xfa/cjx_textnode.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -16,9 +16,7 @@ const CXFA_Node::AttributeData kRootElementAttributeData[] = {
     {XFA_Attribute::Name, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kRootElementName[] = L"rootElement";
+};
 
 }  // namespace
 
@@ -28,9 +26,8 @@ CXFA_RootElement::CXFA_RootElement(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_ConnectionSet,
                 XFA_ObjectType::TextNode,
                 XFA_Element::RootElement,
-                nullptr,
+                {},
                 kRootElementAttributeData,
-                kRootElementName,
-                pdfium::MakeUnique<CJX_RootElement>(this)) {}
+                pdfium::MakeUnique<CJX_TextNode>(this)) {}
 
-CXFA_RootElement::~CXFA_RootElement() {}
+CXFA_RootElement::~CXFA_RootElement() = default;

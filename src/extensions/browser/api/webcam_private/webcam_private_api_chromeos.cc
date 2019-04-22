@@ -4,10 +4,12 @@
 
 #include "extensions/browser/api/webcam_private/webcam_private_api.h"
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/resource_context.h"
+#include "extensions/browser/api/serial/serial_port_manager.h"
 #include "extensions/browser/api/webcam_private/v4l2_webcam.h"
 #include "extensions/browser/api/webcam_private/visca_webcam.h"
 #include "extensions/browser/process_manager.h"
@@ -77,9 +79,15 @@ bool WebcamPrivateAPI::OpenSerialWebcam(
   if (webcam_resource)
     return false;
 
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  device::mojom::SerialPortPtrInfo port_ptr_info;
+  auto* port_manager = api::SerialPortManager::Get(browser_context_);
+  DCHECK(port_manager);
+  port_manager->GetPort(device_path, mojo::MakeRequest(&port_ptr_info));
+
   ViscaWebcam* visca_webcam = new ViscaWebcam;
   visca_webcam->Open(
-      device_path, extension_id,
+      extension_id, std::move(port_ptr_info),
       base::Bind(&WebcamPrivateAPI::OnOpenSerialWebcam,
                  weak_ptr_factory_.GetWeakPtr(), extension_id, device_path,
                  base::WrapRefCounted(visca_webcam), callback));
@@ -118,7 +126,7 @@ bool WebcamPrivateAPI::GetDeviceId(const std::string& extension_id,
       extensions::Extension::GetBaseURLFromExtensionId(extension_id));
 
   return content::GetMediaDeviceIDForHMAC(
-      content::MEDIA_DEVICE_VIDEO_CAPTURE,
+      blink::MEDIA_DEVICE_VIDEO_CAPTURE,
       browser_context_->GetMediaDeviceIDSalt(), security_origin, webcam_id,
       device_id);
 }
@@ -137,7 +145,7 @@ WebcamResource* WebcamPrivateAPI::FindWebcamResource(
     const std::string& webcam_id) const {
   DCHECK(webcam_resource_manager_);
 
-  base::hash_set<int>* connection_ids =
+  std::unordered_set<int>* connection_ids =
       webcam_resource_manager_->GetResourceIds(extension_id);
   if (!connection_ids)
     return nullptr;
@@ -156,7 +164,7 @@ bool WebcamPrivateAPI::RemoveWebcamResource(const std::string& extension_id,
                                             const std::string& webcam_id) {
   DCHECK(webcam_resource_manager_);
 
-  base::hash_set<int>* connection_ids =
+  std::unordered_set<int>* connection_ids =
       webcam_resource_manager_->GetResourceIds(extension_id);
   if (!connection_ids)
     return false;

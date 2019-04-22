@@ -62,6 +62,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -72,13 +73,14 @@
 #include "media/base/media_switches.h"
 #include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/models/menu_model.h"
-#include "ui/base/ui_base_features.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/window_properties.h"
@@ -522,10 +524,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, ContextMenuForCanvas) {
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       ContextMenuForEmojiPanel_Enabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
-
+                       ContextMenuForEmojiPanel_Editable) {
   content::ContextMenuParams params;
   params.is_editable = true;
 
@@ -539,10 +538,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       ContextMenuForEmojiPanel_Enabled_NonEditable) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kEnableEmojiContextMenu);
-
+                       ContextMenuForEmojiPanel_NonEditable) {
   content::ContextMenuParams params;
   params.is_editable = false;
 
@@ -555,10 +551,23 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_EMOJI));
 }
 
+// Executing the emoji panel item with no associated browser should not crash.
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       ContextMenuForEmojiPanel_Disabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kEnableEmojiContextMenu);
+                       ContextMenuForEmojiPanel_NullBrowserCrash) {
+  std::unique_ptr<content::WebContents> detached_web_contents =
+      content::WebContents::Create(
+          content::WebContents::CreateParams(browser()->profile()));
+  TestRenderViewContextMenu menu(detached_web_contents->GetMainFrame(), {});
+  menu.Init();
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_EMOJI, 0);
+}
+
+// Only Chrome OS supports emoji panel callbacks.
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       ContextMenuForEmojiPanel_NoCallback) {
+  // Reset the emoji callback.
+  ui::SetShowEmojiKeyboardCallback(base::RepeatingClosure());
 
   content::ContextMenuParams params;
   params.is_editable = true;
@@ -568,9 +577,10 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
       params);
   menu.Init();
 
-  // If the feature is disabled, the emoji context menu should never be present.
+  // If there's no callback, the emoji context menu should not be present.
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_EMOJI));
 }
+#endif  // defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextMouse) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
@@ -1195,8 +1205,11 @@ class LoadImageRequestObserver : public content::WebContentsObserver {
       content::RenderFrameHost* render_frame_host,
       const content::GlobalRequestID& request_id,
       const content::mojom::ResourceLoadInfo& resource_load_info) override {
-    if (resource_load_info.url.path() == path_)
+    if (resource_load_info.url.path() == path_) {
+      ASSERT_GT(resource_load_info.raw_body_bytes, 0);
+      ASSERT_EQ(resource_load_info.mime_type, "image/png");
       run_loop_.Quit();
+    }
   }
 
   void WaitForRequest() { run_loop_.Run(); }
@@ -1208,42 +1221,74 @@ class LoadImageRequestObserver : public content::WebContentsObserver {
 
 class LoadImageBrowserTest : public InProcessBrowserTest {
  protected:
-  void SetupAndLoadImagePage(const std::string& image_path) {
+  void SetupAndLoadImagePage(const std::string& page_path,
+                             const std::string& image_path) {
+    image_path_ = image_path;
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kLoadBrokenImagesFromContextMenu);
+
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &LoadImageBrowserTest::HandleRequest, base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
-    // Go to a page with an image in it. The test server doesn't serve the image
-    // with the right MIME type, so use a data URL to make a page containing it.
-    GURL image_url(embedded_test_server()->GetURL(image_path));
-    GURL page(
-        "data:text/html,<img width=50 height=50 "
-        "src='" +
-        image_url.spec() + "'>");
-    ui_test_utils::NavigateToURL(browser(), page);
+
+    // Go to a page with an image in it
+    GURL page_url(embedded_test_server()->GetURL(page_path));
+    ui_test_utils::NavigateToURL(browser(), page_url);
   }
 
   void AttemptLoadImage() {
-    // Right-click where the image should be.
-    // |menu_observer_| will cause the "Load image" menu item to be clicked.
-    menu_observer_ = std::make_unique<ContextMenuNotificationObserver>(
-        IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE);
-    content::WebContents* tab =
+    WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    content::SimulateMouseClickAt(tab, 0, blink::WebMouseEvent::Button::kRight,
+
+    LoadImageRequestObserver request_observer(web_contents, image_path_);
+
+    // Simulate right click and invoke load image command.
+    ContextMenuWaiter menu_observer(IDC_CONTENT_CONTEXT_LOAD_IMAGE);
+    content::SimulateMouseClickAt(web_contents, 0,
+                                  blink::WebMouseEvent::Button::kRight,
                                   gfx::Point(15, 15));
+    menu_observer.WaitForMenuOpenAndClose();
+
+    ASSERT_EQ(menu_observer.params().media_type,
+              blink::WebContextMenuData::kMediaTypeImage);
+    ASSERT_EQ(menu_observer.params().src_url.path(), image_path_);
+    ASSERT_FALSE(menu_observer.params().has_image_contents);
+
+    request_observer.WaitForRequest();
   }
 
  private:
-  std::unique_ptr<ContextMenuNotificationObserver> menu_observer_;
+  // Returns Not Found on first request for image, pass on to
+  // default handler on second, third, etc.
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    if (request.relative_url != image_path_)
+      return nullptr;
+
+    ++request_attempts_;
+    if (request_attempts_ > 1)
+      return nullptr;
+
+    std::unique_ptr<net::test_server::BasicHttpResponse> not_found_response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    not_found_response->set_code(net::HTTP_NOT_FOUND);
+    return not_found_response;
+  }
+
+  std::string image_path_;
+  size_t request_attempts_ = 0u;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImage) {
-  static const char kValidImage[] = "/load_image/image.png";
-  SetupAndLoadImagePage(kValidImage);
-
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  LoadImageRequestObserver observer(web_contents, kValidImage);
+  SetupAndLoadImagePage("/load_image/image.html", "/load_image/image.png");
   AttemptLoadImage();
-  observer.WaitForRequest();
+}
+
+IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImageWithMap) {
+  SetupAndLoadImagePage("/load_image/image_with_map.html",
+                        "/load_image/image.png");
+  AttemptLoadImage();
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,

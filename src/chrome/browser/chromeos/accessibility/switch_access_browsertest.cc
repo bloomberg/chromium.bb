@@ -2,16 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/accessibility_switches.h"
 
 namespace chromeos {
+
+namespace {
+
+ash::mojom::AccessibilityControllerPtr GetAccessibilityController() {
+  // Connect to the accessibility mojo interface in ash.
+  ash::mojom::AccessibilityControllerPtr controller;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &controller);
+  return controller;
+}
+
+}  // namespace
 
 class SwitchAccessTest : public InProcessBrowserTest {
  public:
@@ -20,14 +36,13 @@ class SwitchAccessTest : public InProcessBrowserTest {
         nullptr, key, false, false, false, false)));
   }
 
-  void EnableSwitchAccess(const std::set<int>& key_codes = {'1', '2', '3',
-                                                            '4'}) {
+  void EnableSwitchAccess(const std::vector<int>& key_codes) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kEnableExperimentalAccessibilitySwitchAccess);
 
     AccessibilityManager* manager = AccessibilityManager::Get();
     manager->SetSwitchAccessEnabled(true);
-    manager->SetSwitchAccessKeys(key_codes);
+    GetAccessibilityController()->SetSwitchAccessKeysToCapture(key_codes);
 
     EXPECT_TRUE(manager->IsSwitchAccessEnabled());
   }

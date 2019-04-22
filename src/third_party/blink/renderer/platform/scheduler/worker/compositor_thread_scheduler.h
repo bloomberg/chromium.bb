@@ -23,8 +23,7 @@ class PLATFORM_EXPORT CompositorThreadScheduler
       public SingleThreadIdleTaskRunner::Delegate {
  public:
   explicit CompositorThreadScheduler(
-      std::unique_ptr<base::sequence_manager::SequenceManager>
-          sequence_manager);
+      base::sequence_manager::SequenceManager* sequence_manager);
 
   ~CompositorThreadScheduler() override;
 
@@ -45,7 +44,8 @@ class PLATFORM_EXPORT CompositorThreadScheduler
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
-  void AddRAILModeObserver(WebRAILModeObserver*) override {}
+  void AddRAILModeObserver(RAILModeObserver*) override {}
+  void RemoveRAILModeObserver(RAILModeObserver const*) override {}
   void Shutdown() override;
 
   // ThreadSchedulerImpl:

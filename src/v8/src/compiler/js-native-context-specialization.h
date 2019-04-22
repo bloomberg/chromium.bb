@@ -48,7 +48,7 @@ class V8_EXPORT_PRIVATE JSNativeContextSpecialization final
     kAccessorInliningEnabled = 1u << 0,
     kBailoutOnUninitialized = 1u << 1
   };
-  typedef base::Flags<Flag> Flags;
+  using Flags = base::Flags<Flag>;
 
   JSNativeContextSpecialization(Editor* editor, JSGraph* jsgraph,
                                 JSHeapBroker* broker, Flags flags,
@@ -84,6 +84,7 @@ class V8_EXPORT_PRIVATE JSNativeContextSpecialization final
   Reduction ReduceJSStoreGlobal(Node* node);
   Reduction ReduceJSLoadNamed(Node* node);
   Reduction ReduceJSStoreNamed(Node* node);
+  Reduction ReduceJSHasProperty(Node* node);
   Reduction ReduceJSLoadProperty(Node* node);
   Reduction ReduceJSStoreProperty(Node* node);
   Reduction ReduceJSStoreNamedOwn(Node* node);
@@ -92,29 +93,42 @@ class V8_EXPORT_PRIVATE JSNativeContextSpecialization final
   Reduction ReduceJSToObject(Node* node);
 
   Reduction ReduceElementAccess(Node* node, Node* index, Node* value,
+                                FeedbackNexus const& nexus,
                                 MapHandles const& receiver_maps,
                                 AccessMode access_mode,
                                 KeyedAccessLoadMode load_mode,
                                 KeyedAccessStoreMode store_mode);
-  Reduction ReduceKeyedAccess(Node* node, Node* index, Node* value,
+  Reduction ReduceKeyedAccess(Node* node, Node* key, Node* value,
                               FeedbackNexus const& nexus,
                               AccessMode access_mode,
                               KeyedAccessLoadMode load_mode,
                               KeyedAccessStoreMode store_mode);
   Reduction ReduceNamedAccessFromNexus(Node* node, Node* value,
                                        FeedbackNexus const& nexus,
-                                       Handle<Name> name,
+                                       NameRef const& name,
                                        AccessMode access_mode);
   Reduction ReduceNamedAccess(Node* node, Node* value,
                               MapHandles const& receiver_maps,
-                              Handle<Name> name, AccessMode access_mode,
-                              Node* index = nullptr);
+                              NameRef const& name, AccessMode access_mode,
+                              Node* key = nullptr);
   Reduction ReduceGlobalAccess(Node* node, Node* receiver, Node* value,
-                               Handle<Name> name, AccessMode access_mode,
-                               Node* index = nullptr);
+                               NameRef const& name, AccessMode access_mode,
+                               Node* key = nullptr);
+  Reduction ReduceGlobalAccess(Node* node, Node* receiver, Node* value,
+                               NameRef const& name, AccessMode access_mode,
+                               Node* key, PropertyCellRef const& property_cell);
+  Reduction ReduceKeyedLoadFromHeapConstant(Node* node, Node* key,
+                                            FeedbackNexus const& nexus,
+                                            AccessMode access_mode,
+                                            KeyedAccessLoadMode load_mode);
+  Reduction ReduceElementAccessOnString(Node* node, Node* index, Node* value,
+                                        AccessMode access_mode,
+                                        KeyedAccessLoadMode load_mode);
 
   Reduction ReduceSoftDeoptimize(Node* node, DeoptimizeReason reason);
   Reduction ReduceJSToString(Node* node);
+
+  Reduction ReduceJSLoadPropertyWithEnumeratedKey(Node* node);
 
   const StringConstantBase* CreateDelayedStringConstant(Node* node);
 
@@ -140,23 +154,26 @@ class V8_EXPORT_PRIVATE JSNativeContextSpecialization final
   ValueEffectControl BuildPropertyAccess(Node* receiver, Node* value,
                                          Node* context, Node* frame_state,
                                          Node* effect, Node* control,
-                                         Handle<Name> name,
+                                         NameRef const& name,
                                          ZoneVector<Node*>* if_exceptions,
                                          PropertyAccessInfo const& access_info,
                                          AccessMode access_mode);
   ValueEffectControl BuildPropertyLoad(Node* receiver, Node* context,
                                        Node* frame_state, Node* effect,
-                                       Node* control, Handle<Name> name,
+                                       Node* control, NameRef const& name,
                                        ZoneVector<Node*>* if_exceptions,
                                        PropertyAccessInfo const& access_info);
 
   ValueEffectControl BuildPropertyStore(Node* receiver, Node* value,
                                         Node* context, Node* frame_state,
                                         Node* effect, Node* control,
-                                        Handle<Name> name,
+                                        NameRef const& name,
                                         ZoneVector<Node*>* if_exceptions,
                                         PropertyAccessInfo const& access_info,
                                         AccessMode access_mode);
+
+  ValueEffectControl BuildPropertyTest(Node* effect, Node* control,
+                                       PropertyAccessInfo const& access_info);
 
   // Helpers for accessor inlining.
   Node* InlinePropertyGetterCall(Node* receiver, Node* context,
@@ -171,8 +188,8 @@ class V8_EXPORT_PRIVATE JSNativeContextSpecialization final
                                 PropertyAccessInfo const& access_info);
   Node* InlineApiCall(Node* receiver, Node* holder, Node* frame_state,
                       Node* value, Node** effect, Node** control,
-                      Handle<SharedFunctionInfo> shared_info,
-                      Handle<FunctionTemplateInfo> function_template_info);
+                      SharedFunctionInfoRef const& shared_info,
+                      FunctionTemplateInfoRef const& function_template_info);
 
   // Construct the appropriate subgraph for element access.
   ValueEffectControl BuildElementAccess(
@@ -186,12 +203,12 @@ class V8_EXPORT_PRIVATE JSNativeContextSpecialization final
                                KeyedAccessLoadMode load_mode);
 
   // Construct appropriate subgraph to extend properties backing store.
-  Node* BuildExtendPropertiesBackingStore(Handle<Map> map, Node* properties,
+  Node* BuildExtendPropertiesBackingStore(const MapRef& map, Node* properties,
                                           Node* effect, Node* control);
 
   // Construct appropriate subgraph to check that the {value} matches
   // the previously recorded {name} feedback.
-  Node* BuildCheckEqualsName(Handle<Name> name, Node* value, Node* effect,
+  Node* BuildCheckEqualsName(NameRef const& name, Node* value, Node* effect,
                              Node* control);
 
   // Checks if we can turn the hole into undefined when loading an element
@@ -206,9 +223,6 @@ class V8_EXPORT_PRIVATE JSNativeContextSpecialization final
                            MapHandles* receiver_maps);
 
   // Try to infer maps for the given {receiver} at the current {effect}.
-  // If maps are returned then you can be sure that the {receiver} definitely
-  // has one of the returned maps at this point in the program (identified
-  // by {effect}).
   bool InferReceiverMaps(Node* receiver, Node* effect,
                          MapHandles* receiver_maps);
   // Try to infer a root map for the {receiver} independent of the current
@@ -251,7 +265,7 @@ class V8_EXPORT_PRIVATE JSNativeContextSpecialization final
   CompilationDependencies* const dependencies_;
   Zone* const zone_;
   Zone* const shared_zone_;
-  TypeCache const& type_cache_;
+  TypeCache const* type_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(JSNativeContextSpecialization);
 };

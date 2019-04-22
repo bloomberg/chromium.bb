@@ -7,8 +7,6 @@
 // EGLDirectCompositionTest.cpp:
 //   Tests pertaining to DirectComposition and WindowsUIComposition.
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
 #include <d3d11.h>
 #include "test_utils/ANGLETest.h"
 
@@ -21,10 +19,10 @@
 #include <wrl.h>
 #include <memory>
 
-#include "OSWindow.h"
-#include "com_utils.h"
 #include "libANGLE/renderer/d3d/d3d11/converged/CompositorNativeWindow11.h"
 #include "test_utils/ANGLETest.h"
+#include "util/OSWindow.h"
+#include "util/com_utils.h"
 
 using namespace angle;
 using namespace ABI::Windows::System;
@@ -49,7 +47,7 @@ class EGLDirectCompositionTest : public ANGLETest
         }
 
         // Create an OS Window
-        mOSWindow = std::unique_ptr<OSWindow>(CreateOSWindow());
+        mOSWindow = OSWindow::New();
 
         mOSWindow->initialize("EGLDirectCompositionTest", WINDOWWIDTH, WINDOWHEIGHT);
         auto nativeWindow = mOSWindow->getNativeWindow();
@@ -85,7 +83,8 @@ class EGLDirectCompositionTest : public ANGLETest
         ComPtr<IVisual> angleVis;
         ASSERT_TRUE(SUCCEEDED(mAngleHost.As(&angleVis)));
 
-        ASSERT_TRUE(SUCCEEDED(angleVis->put_Size({WINDOWWIDTH, WINDOWHEIGHT})));
+        ASSERT_TRUE(SUCCEEDED(angleVis->put_Size(
+            {static_cast<FLOAT>(WINDOWWIDTH), static_cast<FLOAT>(WINDOWHEIGHT)})));
 
         ASSERT_TRUE(SUCCEEDED(angleVis->put_Offset({0, 0, 0})));
 
@@ -200,9 +199,11 @@ class EGLDirectCompositionTest : public ANGLETest
             return;
         }
         ASSERT_EGL_TRUE(eglTerminate(mEglDisplay));
+
+        OSWindow::Delete(&mOSWindow);
     }
 
-    std::unique_ptr<OSWindow> mOSWindow;
+    OSWindow *mOSWindow;
     ComPtr<ICompositor> mCompositor;
     ComPtr<IDispatcherQueueController> mDispatcherController;
     ComPtr<ICompositionColorBrush> mColorBrush;

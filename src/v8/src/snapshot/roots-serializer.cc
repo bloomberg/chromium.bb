@@ -23,12 +23,12 @@ RootsSerializer::RootsSerializer(Isolate* isolate,
   }
 }
 
-int RootsSerializer::SerializeInObjectCache(HeapObject* heap_object) {
+int RootsSerializer::SerializeInObjectCache(HeapObject heap_object) {
   int index;
   if (!object_cache_index_map_.LookupOrInsert(heap_object, &index)) {
     // This object is not part of the object cache yet. Add it to the cache so
     // we can refer to it via cache index from the delegating snapshot.
-    SerializeObject(heap_object, kPlain, kStartOfObject, 0);
+    SerializeObject(heap_object);
   }
   return index;
 }
@@ -38,14 +38,15 @@ void RootsSerializer::Synchronize(VisitorSynchronization::SyncTag tag) {
 }
 
 void RootsSerializer::VisitRootPointers(Root root, const char* description,
-                                        ObjectSlot start, ObjectSlot end) {
-  RootsTable& roots_table = isolate()->heap()->roots_table();
+                                        FullObjectSlot start,
+                                        FullObjectSlot end) {
+  RootsTable& roots_table = isolate()->roots_table();
   if (start ==
       roots_table.begin() + static_cast<int>(first_root_to_be_serialized_)) {
     // Serializing the root list needs special handling:
     // - Only root list elements that have been fully serialized can be
     //   referenced using kRootArray bytecodes.
-    for (ObjectSlot current = start; current < end; ++current) {
+    for (FullObjectSlot current = start; current < end; ++current) {
       SerializeRootObject(*current);
       size_t root_index = current - roots_table.begin();
       root_has_been_serialized_.set(root_index);
@@ -55,7 +56,7 @@ void RootsSerializer::VisitRootPointers(Root root, const char* description,
   }
 }
 
-void RootsSerializer::CheckRehashability(HeapObject* obj) {
+void RootsSerializer::CheckRehashability(HeapObject obj) {
   if (!can_be_rehashed_) return;
   if (!obj->NeedsRehashing()) return;
   if (obj->CanBeRehashed()) return;

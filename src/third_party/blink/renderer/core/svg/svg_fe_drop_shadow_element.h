@@ -34,6 +34,8 @@ class SVGFEDropShadowElement final
  public:
   DECLARE_NODE_FACTORY(SVGFEDropShadowElement);
 
+  explicit SVGFEDropShadowElement(Document&);
+
   void setStdDeviation(float std_deviation_x, float std_deviation_y);
 
   SVGAnimatedNumber* dx() { return dx_.Get(); }
@@ -45,11 +47,10 @@ class SVGFEDropShadowElement final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGFEDropShadowElement(Document&);
-
   void SvgAttributeChanged(const QualifiedName&) override;
   bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
   FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
+  bool TaintsOrigin() const override;
 
   Member<SVGAnimatedNumber> dx_;
   Member<SVGAnimatedNumber> dy_;

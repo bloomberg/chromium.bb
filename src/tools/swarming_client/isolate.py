@@ -206,7 +206,7 @@ def chromium_save_isolated(isolated, data, path_variables, algo):
         isolated_format.hash_file(slavepath, algo))
     files.append(os.path.basename(slavepath))
 
-  files.extend(isolated_format.save_isolated(isolated, data))
+  isolated_format.save_isolated(isolated, data)
   return files
 
 
@@ -309,10 +309,11 @@ class SavedState(Flattenable):
   # files.
   EXPECTED_VERSION = isolated_format.ISOLATED_FILE_VERSION + '.2'
 
-  def __init__(self, isolated_basedir):
+  def __init__(self, algo_name, isolated_basedir):
     """Creates an empty SavedState.
 
     Arguments:
+      algo_name: name of the algorithm used, 'sha-1', 'sha-256' or 'sha-512'.
       isolated_basedir: the directory where the .isolated and .isolated.state
           files are saved.
     """
@@ -323,8 +324,9 @@ class SavedState(Flattenable):
 
     # The default algorithm used.
     self.OS = sys.platform
-    self.algo_name = 'sha-1'
-    self.algo = isolated_format.SUPPORTED_ALGOS[self.algo_name]
+    self.algo_name = algo_name
+    assert algo_name in isolated_format.SUPPORTED_ALGOS, algo_name
+    self.algo = isolated_format.SUPPORTED_ALGOS[algo_name]
     self.child_isolated_files = []
     self.command = []
     self.config_variables = {}
@@ -412,13 +414,13 @@ class SavedState(Flattenable):
 
   # Arguments number differs from overridden method
   @classmethod
-  def load(cls, data, isolated_basedir):  # pylint: disable=W0221
+  def load(cls, data, algo_name, isolated_basedir):  # pylint: disable=W0221
     """Special case loading to disallow different OS.
 
     It is not possible to load a .isolated.state files from a different OS, this
     file is saved in OS-specific format.
     """
-    out = super(SavedState, cls).load(data, isolated_basedir)
+    out = super(SavedState, cls).load(data, algo_name, isolated_basedir)
     if data.get('OS') != sys.platform:
       raise isolated_format.IsolatedError('Unexpected OS %s', data.get('OS'))
 
@@ -426,6 +428,10 @@ class SavedState(Flattenable):
     algo = data.get('algo')
     if not algo in isolated_format.SUPPORTED_ALGOS:
       raise isolated_format.IsolatedError('Unknown algo \'%s\'' % out.algo)
+    if algo_name != algo:
+      # pylint: disable=no-member
+      raise isolated_format.IsolatedError(
+          'Unexpected algo \'%s\', expected %s' % (out.algo, algo_name))
     out.algo = isolated_format.SUPPORTED_ALGOS[algo]
 
     # Refuse the load non-exact version, even minor difference. This is unlike
@@ -482,14 +488,13 @@ class CompleteState(object):
     self.saved_state = saved_state
 
   @classmethod
-  def load_files(cls, isolated_filepath):
+  def load_files(cls, algo_name, isolated_filepath):
     """Loads state from disk."""
     assert os.path.isabs(isolated_filepath), isolated_filepath
     isolated_basedir = os.path.dirname(isolated_filepath)
-    return cls(
-        isolated_filepath,
-        SavedState.load_file(
-            isolatedfile_to_state(isolated_filepath), isolated_basedir))
+    s = SavedState.load_file(
+        isolatedfile_to_state(isolated_filepath), algo_name, isolated_basedir)
+    return cls(isolated_filepath, s)
 
   def load_isolate(
       self, cwd, isolate_file, path_variables, config_variables,
@@ -569,14 +574,12 @@ class CompleteState(object):
       follow_symlinks = sys.platform != 'win32'
     # Expand the directories by listing each file inside. Up to now, trailing
     # os.path.sep must be kept.
-    # TODO(maruel): This code is not smart enough to leverage the generator, so
-    # materialize the list.
-    infiles = list(isolated_format.expand_directories_and_symlinks(
+    infiles = _expand_directories_and_symlinks(
         self.saved_state.root_dir,
         infiles,
         tools.gen_blacklist(blacklist),
         follow_symlinks,
-        ignore_broken_items))
+        ignore_broken_items)
 
     # Finally, update the new data to be able to generate the foo.isolated file,
     # the file that is used by run_isolated.py.
@@ -596,12 +599,16 @@ class CompleteState(object):
         self.saved_state.files.pop(infile)
       else:
         filepath = os.path.join(self.root_dir, infile)
-        self.saved_state.files[infile] = isolated_format.file_to_metadata(
+        # This code used to try to reuse the previous data if possible in
+        # saved_state. This performance optimization is not done anymore. This
+        # code is going away soon and shouldn't be used in new code.
+        meta = isolated_format.file_to_metadata(
             filepath,
-            self.saved_state.files[infile],
             self.saved_state.read_only,
-            self.saved_state.algo,
             collapse_symlinks)
+        if 'l' not in meta:
+          meta['h'] = isolated_format.hash_file(filepath, self.saved_state.algo)
+        self.saved_state.files[infile] = meta
 
   def save_files(self):
     """Saves self.saved_state and creates a .isolated file."""
@@ -655,15 +662,18 @@ def load_complete_state(options, cwd, subdir, skip_update):
   assert not options.isolate or os.path.isabs(options.isolate)
   assert not options.isolated or os.path.isabs(options.isolated)
   cwd = file_path.get_native_path_case(unicode(cwd))
+  # maruel: This is incorrect but it's not worth fixing.
+  namespace = getattr(options, 'namespace', 'default')
+  algo_name = isolate_storage.ServerRef('', namespace).hash_algo_name
   if options.isolated:
     # Load the previous state if it was present. Namely, "foo.isolated.state".
     # Note: this call doesn't load the .isolate file.
-    complete_state = CompleteState.load_files(options.isolated)
+    complete_state = CompleteState.load_files(algo_name, options.isolated)
   else:
     # Constructs a dummy object that cannot be saved. Useful for temporary
     # commands like 'run'. There is no directory containing a .isolated file so
     # specify the current working directory as a valid directory.
-    complete_state = CompleteState(None, SavedState(os.getcwd()))
+    complete_state = CompleteState(None, SavedState(algo_name, os.getcwd()))
 
   if not options.isolate:
     if not complete_state.saved_state.isolate_file:
@@ -687,7 +697,7 @@ def load_complete_state(options, cwd, subdir, skip_update):
             isolatedfile_to_state(options.isolated))
         complete_state = CompleteState(
             options.isolated,
-            SavedState(complete_state.saved_state.isolated_basedir))
+            SavedState(algo_name, complete_state.saved_state.isolated_basedir))
 
   if not skip_update:
     # Then load the .isolate and expands directories.
@@ -800,12 +810,43 @@ def _process_infiles(infiles):
       seen.add(filepath)
       yield isolateserver.FileItem(
           path=filepath,
+          algo=None,
           digest=metadata['h'],
           size=metadata['s'],
           high_priority=metadata.get('priority') == '0')
     else:
       skipped += 1
   logging.info('Skipped %d duplicated entries', skipped)
+
+
+def _expand_directories_and_symlinks(
+    indir, infiles, blacklist, follow_symlinks, ignore_broken_items):
+  """Expands the directories and the symlinks, applies the blacklist and
+  verifies files exist.
+
+  Files are specified in os native path separator.
+
+  Returns:
+    list of relative file path of each file inside every directory specified.
+  """
+  # The calling code is not smart enough to leverage the generator, so
+  # materialize the list.
+  # Since we want to get rid of this tool, it's not a big deal that it's not
+  # optimal.
+  out = []
+  for relfile in infiles:
+    try:
+      # Ignore the symlink hint, this code will be eventually deleted so it is
+      # not worth optimizing.
+      out.extend(
+          relpath for relpath, _is_symlink
+          in isolated_format.expand_directory_and_symlink(
+              indir, relfile, blacklist, follow_symlinks))
+    except isolated_format.MappingError as e:
+      if not ignore_broken_items:
+        raise
+      logging.info('warning: %s', e)
+  return out
 
 
 def isolate_and_archive(trees, server_ref):

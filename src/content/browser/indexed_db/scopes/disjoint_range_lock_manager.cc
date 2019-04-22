@@ -4,6 +4,10 @@
 
 #include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 
+#include "base/barrier_closure.h"
+#include "base/bind.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+
 namespace content {
 
 DisjointRangeLockManager::LockRequest::LockRequest() = default;
@@ -19,14 +23,10 @@ DisjointRangeLockManager::Lock::~Lock() = default;
 DisjointRangeLockManager::Lock& DisjointRangeLockManager::Lock::operator=(
     DisjointRangeLockManager::Lock&&) noexcept = default;
 
-DisjointRangeLockManager::DisjointRangeLockManager(
-    int level_count,
-    const leveldb::Comparator* comparator,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : comparator_(comparator), task_runner_(task_runner), weak_factory_(this) {
-  for (int level = 0; level < level_count; ++level) {
-    locks_.emplace_back(RangeLessThan(comparator));
-  }
+DisjointRangeLockManager::DisjointRangeLockManager(int level_count)
+    : task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      weak_factory_(this) {
+  locks_.resize(level_count);
 }
 
 DisjointRangeLockManager::~DisjointRangeLockManager() = default;
@@ -52,49 +52,44 @@ int64_t DisjointRangeLockManager::RequestsWaitingForTesting() const {
   return requests;
 }
 
-void DisjointRangeLockManager::AcquireLock(int level,
-                                           const LockRange& range,
-                                           LockType type,
-                                           LockAquiredCallback callback) {
+bool DisjointRangeLockManager::AcquireLocks(
+    base::flat_set<ScopeLockRequest> lock_requests,
+    LocksAquiredCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_LT(level, static_cast<int>(locks_.size()));
-  DCHECK_LT(comparator_->Compare(leveldb::Slice(range.begin),
-                                 leveldb::Slice(range.end)),
-            0)
-      << "Range is invalid: " << range;
-
-  auto& level_locks = locks_[level];
-
-  auto it = level_locks.find(range);
-  if (it == level_locks.end()) {
-    it = level_locks
-             .emplace(std::piecewise_construct, std::forward_as_tuple(range),
-                      std::forward_as_tuple())
-             .first;
+  // Since the barrier needs ownership of the locks right away, a simple value
+  // type (that is moved into the barrier) cannot be used as it is impossible to
+  // grab a pointer from inside the barrier callback. So instead a unique_ptr is
+  // used.
+  std::unique_ptr<std::vector<ScopeLock>> locks =
+      std::make_unique<std::vector<ScopeLock>>();
+  auto* locks_ptr = locks.get();
+  size_t size = lock_requests.size();
+  base::RepeatingClosure barrier = base::BarrierClosure(
+      size, base::BindOnce(
+                [](LocksAquiredCallback callback,
+                   std::unique_ptr<std::vector<ScopeLock>> locks) {
+                  std::move(callback).Run(std::move(*locks));
+                },
+                std::move(callback), std::move(locks)));
+  for (ScopeLockRequest& request : lock_requests) {
+    bool success =
+        AcquireLock(std::move(request),
+                    base::BindOnce(
+                        [](std::vector<ScopeLock>* lock_container,
+                           base::OnceClosure barrier_closure, ScopeLock lock) {
+                          // Lock has been acquired.
+                          lock_container->push_back(std::move(lock));
+                          std::move(barrier_closure).Run();
+                        },
+                        base::Unretained(locks_ptr), barrier));
+    if (!success)
+      return false;
   }
-
-  DCHECK_EQ(it->first, range)
-      << range << " does not match what is in the lock map " << it->first;
-#if DCHECK_IS_ON()
-  DCHECK(IsRangeDisjointFromNeighbors(level_locks, range, comparator_))
-      << "Range not discrete: " << range;
-#endif
-  Lock& lock = it->second;
-
-  if (lock.CanBeAcquired(type)) {
-    ++lock.acquired_count;
-    lock.lock_mode = type;
-    std::move(callback).Run(
-        ScopeLock(range, level,
-                  base::BindOnce(&DisjointRangeLockManager::LockReleased,
-                                 weak_factory_.GetWeakPtr(), level, range)));
-  } else {
-    lock.queue.emplace_back(type, std::move(callback));
-  }
+  return true;
 }
 
 void DisjointRangeLockManager::RemoveLockRange(int level,
-                                               const LockRange& range) {
+                                               const ScopeLockRange& range) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LT(level, static_cast<int>(locks_.size()));
   auto& level_locks = locks_[level];
@@ -105,7 +100,48 @@ void DisjointRangeLockManager::RemoveLockRange(int level,
   }
 }
 
-void DisjointRangeLockManager::LockReleased(int level, LockRange range) {
+bool DisjointRangeLockManager::AcquireLock(
+    ScopeLockRequest request,
+    LockAquiredCallback acquired_callback) {
+  if (request.level < 0 || static_cast<size_t>(request.level) >= locks_.size())
+    return false;
+  if (request.range.begin >= request.range.end)
+    return false;
+
+  auto& level_locks = locks_[request.level];
+
+  auto it = level_locks.find(request.range);
+  if (it == level_locks.end()) {
+    it = level_locks
+             .emplace(std::piecewise_construct,
+                      std::forward_as_tuple(std::move(request.range)),
+                      std::forward_as_tuple())
+             .first;
+  }
+
+  if (!IsRangeDisjointFromNeighbors(level_locks, request.range))
+    return false;
+
+  Lock& lock = it->second;
+  if (lock.CanBeAcquired(request.type)) {
+    ++lock.acquired_count;
+    lock.lock_mode = request.type;
+    auto released_callback = base::BindOnce(
+        &DisjointRangeLockManager::LockReleased, weak_factory_.GetWeakPtr(),
+        request.level, std::move(request.range));
+    std::move(acquired_callback)
+        .Run(ScopeLock(std::move(request.range), request.level,
+                       std::move(released_callback)));
+  } else {
+    // The lock cannot be acquired now, so we put it on the queue which will
+    // grant the given callback the lock when it is acquired in the future in
+    // the |LockReleased| method.
+    lock.queue.emplace_back(request.type, std::move(acquired_callback));
+  }
+  return true;
+}
+
+void DisjointRangeLockManager::LockReleased(int level, ScopeLockRange range) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LT(level, static_cast<int>(locks_.size()));
   auto& level_locks = locks_[level];
@@ -120,18 +156,18 @@ void DisjointRangeLockManager::LockReleased(int level, LockRange range) {
     while (!lock.queue.empty() &&
            (lock.acquired_count == 0 ||
             lock.queue.front().requested_type == LockType::kShared)) {
+      // Grant the lock to the next requester.
       LockRequest requester = std::move(lock.queue.front());
       lock.queue.pop_front();
       ++lock.acquired_count;
       lock.lock_mode = requester.requested_type;
+      auto released_callback =
+          base::BindOnce(&DisjointRangeLockManager::LockReleased,
+                         weak_factory_.GetWeakPtr(), level, range);
       task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              std::move(requester.callback),
-              ScopeLock(range, level,
-                        base::BindOnce(&DisjointRangeLockManager::LockReleased,
-                                       weak_factory_.GetWeakPtr(), level,
-                                       std::move(range)))));
+          FROM_HERE, base::BindOnce(std::move(requester.callback),
+                                    ScopeLock(std::move(range), level,
+                                              std::move(released_callback))));
       // This can only happen if acquired_count was 0.
       if (requester.requested_type == LockType::kExclusive)
         return;
@@ -139,28 +175,23 @@ void DisjointRangeLockManager::LockReleased(int level, LockRange range) {
   }
 }
 
-#if DCHECK_IS_ON()
 // static
 bool DisjointRangeLockManager::IsRangeDisjointFromNeighbors(
     const LockLevelMap& map,
-    const LockRange& range,
-    const leveldb::Comparator* const comparator) {
+    const ScopeLockRange& range) {
   DCHECK_EQ(map.count(range), 1ull);
   auto it = map.find(range);
   auto next_it = it;
   ++next_it;
   if (next_it != map.end()) {
-    return comparator->Compare(leveldb::Slice(range.end),
-                               leveldb::Slice(next_it->first.begin)) <= 0;
+    return range.end <= next_it->first.begin;
   }
   auto last_it = it;
   if (last_it != map.begin()) {
     --last_it;
-    return comparator->Compare(leveldb::Slice(last_it->first.end),
-                               leveldb::Slice(range.begin)) <= 0;
+    return last_it->first.end <= range.begin;
   }
   return true;
 }
-#endif
 
 }  // namespace content

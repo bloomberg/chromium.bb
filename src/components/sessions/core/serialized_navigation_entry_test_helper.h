@@ -47,6 +47,10 @@ extern const std::string kExtendedInfoKey1;
 extern const std::string kExtendedInfoKey2;
 extern const std::string kExtendedInfoValue1;
 extern const std::string kExtendedInfoValue2;
+extern const int64_t kParentTaskId;
+extern const int64_t kRootTaskId;
+extern const int64_t kTaskId;
+extern const std::vector<int64_t> kChildrenTaskIds;
 
 }  // namespace test_data
 

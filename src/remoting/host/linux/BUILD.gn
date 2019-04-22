@@ -172,12 +172,12 @@ source_set("unit_tests") {
   configs += [ "//remoting/build/config:version" ]
 
   deps = [
-    "//remoting/host",
+    "//remoting/host:common",
     "//remoting/host:test_support",
     "//remoting/host/it2me:common",
     "//remoting/host/native_messaging",
     "//remoting/host/security_key:unit_tests",
-    "//remoting/host/setup",
+    "//remoting/host/setup:common",
     "//remoting/proto",
     "//remoting/resources",
     "//skia",

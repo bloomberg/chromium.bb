@@ -16,7 +16,10 @@
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
+#include "net/base/network_change_notifier.h"
 #include "services/device/geolocation/location_arbitrator.h"
+#include "services/device/geolocation/position_cache_impl.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -234,9 +237,13 @@ void GeolocationProviderImpl::Init() {
         std::move(g_url_loader_factory_info.Get()));
   }
 
+  DCHECK(net::NetworkChangeNotifier::HasNetworkChangeNotifier())
+      << "PositionCacheImpl needs a global NetworkChangeNotifier";
   arbitrator_ = std::make_unique<LocationArbitrator>(
       g_custom_location_provider_callback.Get(), std::move(url_loader_factory),
-      g_api_key.Get());
+      g_api_key.Get(),
+      std::make_unique<PositionCacheImpl>(
+          base::DefaultTickClock::GetInstance()));
   arbitrator_->SetUpdateCallback(callback);
 }
 

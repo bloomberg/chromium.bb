@@ -181,7 +181,8 @@ void WebUsbAllowDevicesForUrlsPolicyHandler::ApplyPolicySettings(
   if (!value || !value->is_list())
     return;
 
-  prefs->SetValue(prefs::kManagedWebUsbAllowDevicesForUrls, std::move(value));
+  prefs->SetValue(prefs::kManagedWebUsbAllowDevicesForUrls,
+                  base::Value::FromUniquePtrValue(std::move(value)));
 }
 
 }  // namespace policy

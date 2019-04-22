@@ -32,18 +32,12 @@
 
 namespace blink {
 
-V0CustomElementDefinition* V0CustomElementDefinition::Create(
-    const V0CustomElementDescriptor& descriptor,
-    V0CustomElementLifecycleCallbacks* callbacks) {
-  return MakeGarbageCollected<V0CustomElementDefinition>(descriptor, callbacks);
-}
-
 V0CustomElementDefinition::V0CustomElementDefinition(
     const V0CustomElementDescriptor& descriptor,
     V0CustomElementLifecycleCallbacks* callbacks)
     : descriptor_(descriptor), callbacks_(callbacks) {}
 
-void V0CustomElementDefinition::Trace(blink::Visitor* visitor) {
+void V0CustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(callbacks_);
 }
 

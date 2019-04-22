@@ -47,10 +47,6 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
     if (args[i] == "check-base-classes") {
       // TODO(rsleevi): Remove this once http://crbug.com/123295 is fixed.
       options_.check_base_classes = true;
-    } else if (args[i] == "enforce-in-thirdparty-webkit") {
-      // TODO(dcheng): Remove completely.
-    } else if (args[i] == "check-enum-max-value") {
-      // TODO(dcheng): Remove completely.
     } else if (args[i] == "check-ipc") {
       options_.check_ipc = true;
     } else if (args[i] == "check-gmock-objects") {

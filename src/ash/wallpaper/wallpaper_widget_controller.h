@@ -21,6 +21,7 @@ class Widget;
 }
 
 namespace ash {
+class WallpaperView;
 
 // This class manages widget-based wallpapers.
 // WallpaperWidgetController is owned by RootWindowController.
@@ -52,7 +53,9 @@ class ASH_EXPORT WallpaperWidgetController {
   // |animating_widget_|).
   // |blur_sigma| - if non-zero, the blur that should be applied to the
   //     wallpaper widget layer.
-  void SetWallpaperWidget(views::Widget* widget, float blur_sigma);
+  void SetWallpaperWidget(views::Widget* widget,
+                          WallpaperView* wallpaper_view,
+                          float blur_sigma);
 
   // Move the wallpaper for |root_window| to the specified |container|.
   // The lock screen moves the wallpaper container to hides the user's windows.
@@ -61,6 +64,10 @@ class ASH_EXPORT WallpaperWidgetController {
 
   // Blur pixels of the wallpaper layer by 3 * the given amount.
   void SetWallpaperBlur(float blur_sigma);
+
+  // TODO: Get the wallpaper view from |animating_widget_| or |active_widget_|
+  // instead of caching the pointer value.
+  WallpaperView* wallpaper_view() const { return wallpaper_view_; }
 
   // Reset, and closes both |active_widget_| and |animating_widget_|. Can be
   // used in tests to reset the wallpaper widget controller state.
@@ -93,6 +100,10 @@ class ASH_EXPORT WallpaperWidgetController {
   // The pending wallpaper widget, which is currently in process of being
   // shown.
   std::unique_ptr<WidgetHandler> animating_widget_;
+
+  // Pointer to the wallpaper view owned by |animating_widget_| if it exists,
+  // otherwise owned by |active_widget_|.
+  WallpaperView* wallpaper_view_ = nullptr;
 
   // Callbacks to be run when the |animating_widget_| stops animating and gets
   // set as the active widget.

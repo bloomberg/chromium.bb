@@ -25,6 +25,8 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   // Creates an overflow menu element with the given button as a child.
   HTMLElement* CreateOverflowElement(MediaControlInputElement*);
 
+  bool OverflowElementIsWanted();
+
   // Implements MediaControlElementBase.
   void SetOverflowElementIsWanted(bool) final;
   void MaybeRecordDisplayed() final;
@@ -41,7 +43,7 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   bool IsDisabled() const override;
 
  protected:
-  MediaControlInputElement(MediaControlsImpl&, MediaControlElementType);
+  MediaControlInputElement(MediaControlsImpl&);
 
   // Returns a string that represents the button for metrics purposes. This
   // will be used as a suffix for histograms.
@@ -56,7 +58,7 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   void DefaultEventHandler(Event&) override;
 
   // Implements MediaControlElementBase.
-  void UpdateShownState() override;
+  void UpdateShownState() final;
 
   // Updates the value of the Text string shown in the overflow menu.
   void UpdateOverflowString();
@@ -72,6 +74,9 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   void SetClass(const AtomicString& class_name, bool should_have_class);
 
   virtual void UpdateDisplayType();
+
+  // Returns whether element is a button on the control panel.
+  virtual bool IsControlPanelButton() const { return false; }
 
  private:
   friend class MediaControlInputElementTest;
@@ -94,6 +99,9 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   // Remove the subtitle text from the overflow element.
   void RemoveOverflowSubtitleElement();
 
+  // Updates aria label on overflow_label_element_.
+  void UpdateOverflowLabelAriaLabel(String);
+
   // Used for histograms, do not reorder.
   enum class CTREvent {
     kDisplayed = 0,
@@ -108,6 +116,9 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   // Setting this pointer is optional so it may be null.
   Member<MediaControlInputElement> overflow_element_;
 
+  // The overflow label element for the overflow_element_;
+  Member<HTMLLabelElement> overflow_label_element_;
+
   // Contains the overflow text and its subtitle (if exists).
   Member<HTMLDivElement> overflow_menu_container_;
 
@@ -116,6 +127,9 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
 
   // The subtitle of the text within the overflow menu.
   Member<HTMLSpanElement> overflow_menu_subtitle_;
+
+  // The aria label for the overflow element without subtitle text.
+  String aria_label_;
 
   // Keeps track if the button was created for the purpose of the overflow menu.
   bool is_overflow_element_ = false;

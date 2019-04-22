@@ -45,7 +45,7 @@ class IdentityGetAuthTokenFunction : public UIThreadExtensionFunction,
                                      public OAuth2TokenService::Consumer,
                                      public OAuth2MintTokenFlow::Delegate {
  public:
-  DECLARE_EXTENSION_FUNCTION("identity.getAuthToken", UNKNOWN);
+  DECLARE_EXTENSION_FUNCTION("identity.getAuthToken", UNKNOWN)
 
   IdentityGetAuthTokenFunction();
 

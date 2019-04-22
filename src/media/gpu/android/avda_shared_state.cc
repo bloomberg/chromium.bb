@@ -4,6 +4,7 @@
 
 #include "media/gpu/android/avda_shared_state.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "media/gpu/android/avda_codec_image.h"
@@ -47,6 +48,8 @@ void AVDASharedState::WaitForFrameAvailable() {
 
 void AVDASharedState::UpdateTexImage() {
   texture_owner()->UpdateTexImage();
+  if (!texture_owner()->binds_texture_on_update())
+    texture_owner()->EnsureTexImageBound();
   // Helpfully, this is already column major.
   texture_owner()->GetTransformMatrix(gl_matrix_);
 }

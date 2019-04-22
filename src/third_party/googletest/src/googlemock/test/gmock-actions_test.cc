@@ -33,9 +33,9 @@
 // This file tests the built-in actions.
 
 // Silence C4800 (C4800: 'int *const ': forcing value
-// to bool 'true' or 'false') for MSVC 14,15
+// to bool 'true' or 'false') for MSVC 15
 #ifdef _MSC_VER
-#if _MSC_VER <= 1900
+#if _MSC_VER == 1900
 #  pragma warning(push)
 #  pragma warning(disable:4800)
 #endif
@@ -54,12 +54,14 @@
 namespace {
 
 // This list should be kept sorted.
+using testing::_;
 using testing::Action;
 using testing::ActionInterface;
 using testing::Assign;
 using testing::ByMove;
 using testing::ByRef;
 using testing::DefaultValue;
+using testing::DoAll;
 using testing::DoDefault;
 using testing::IgnoreResult;
 using testing::Invoke;
@@ -74,7 +76,7 @@ using testing::ReturnRefOfCopy;
 using testing::SetArgPointee;
 using testing::SetArgumentPointee;
 using testing::Unused;
-using testing::_;
+using testing::WithArgs;
 using testing::internal::BuiltInDefaultValue;
 using testing::internal::Int64;
 using testing::internal::UInt64;
@@ -170,20 +172,12 @@ TEST(BuiltInDefaultValueTest, BoolExists) {
 // Tests that BuiltInDefaultValue<T>::Get() returns "" when T is a
 // string type.
 TEST(BuiltInDefaultValueTest, IsEmptyStringForString) {
-#if GTEST_HAS_GLOBAL_STRING
-  EXPECT_EQ("", BuiltInDefaultValue< ::string>::Get());
-#endif  // GTEST_HAS_GLOBAL_STRING
-
   EXPECT_EQ("", BuiltInDefaultValue< ::std::string>::Get());
 }
 
 // Tests that BuiltInDefaultValue<T>::Exists() returns true when T is a
 // string type.
 TEST(BuiltInDefaultValueTest, ExistsForString) {
-#if GTEST_HAS_GLOBAL_STRING
-  EXPECT_TRUE(BuiltInDefaultValue< ::string>::Exists());
-#endif  // GTEST_HAS_GLOBAL_STRING
-
   EXPECT_TRUE(BuiltInDefaultValue< ::std::string>::Exists());
 }
 
@@ -219,7 +213,6 @@ class MyNonDefaultConstructible {
   int value_;
 };
 
-#if GTEST_LANG_CXX11
 
 TEST(BuiltInDefaultValueTest, ExistsForDefaultConstructibleType) {
   EXPECT_TRUE(BuiltInDefaultValue<MyDefaultConstructible>::Exists());
@@ -229,7 +222,6 @@ TEST(BuiltInDefaultValueTest, IsDefaultConstructedForDefaultConstructibleType) {
   EXPECT_EQ(42, BuiltInDefaultValue<MyDefaultConstructible>::Get().value());
 }
 
-#endif  // GTEST_LANG_CXX11
 
 TEST(BuiltInDefaultValueTest, DoesNotExistForNonDefaultConstructibleType) {
   EXPECT_FALSE(BuiltInDefaultValue<MyNonDefaultConstructible>::Exists());
@@ -299,7 +291,6 @@ TEST(DefaultValueDeathTest, GetReturnsBuiltInDefaultValueWhenUnset) {
   }, "");
 }
 
-#if GTEST_HAS_STD_UNIQUE_PTR_
 TEST(DefaultValueTest, GetWorksForMoveOnlyIfSet) {
   EXPECT_TRUE(DefaultValue<std::unique_ptr<int>>::Exists());
   EXPECT_TRUE(DefaultValue<std::unique_ptr<int>>::Get() == nullptr);
@@ -310,7 +301,6 @@ TEST(DefaultValueTest, GetWorksForMoveOnlyIfSet) {
   std::unique_ptr<int> i = DefaultValue<std::unique_ptr<int>>::Get();
   EXPECT_EQ(42, *i);
 }
-#endif  // GTEST_HAS_STD_UNIQUE_PTR_
 
 // Tests that DefaultValue<void>::Get() returns void.
 TEST(DefaultValueTest, GetWorksForVoid) {
@@ -378,7 +368,7 @@ typedef int MyGlobalFunction(bool, int);
 
 class MyActionImpl : public ActionInterface<MyGlobalFunction> {
  public:
-  virtual int Perform(const std::tuple<bool, int>& args) {
+  int Perform(const std::tuple<bool, int>& args) override {
     return std::get<0>(args) ? std::get<1>(args) : 0;
   }
 };
@@ -442,24 +432,17 @@ TEST(ActionTest, IsCopyable) {
 
 class IsNotZero : public ActionInterface<bool(int)> {  // NOLINT
  public:
-  virtual bool Perform(const std::tuple<int>& arg) {
+  bool Perform(const std::tuple<int>& arg) override {
     return std::get<0>(arg) != 0;
   }
 };
 
-#if !GTEST_OS_SYMBIAN
-// Compiling this test on Nokia's Symbian compiler fails with:
-//  'Result' is not a member of class 'testing::internal::Function<int>'
-//  (point of instantiation: '@unnamed@gmock_actions_test_cc@::
-//      ActionTest_CanBeConvertedToOtherActionType_Test::TestBody()')
-// with no obvious fix.
 TEST(ActionTest, CanBeConvertedToOtherActionType) {
   const Action<bool(int)> a1(new IsNotZero);  // NOLINT
   const Action<int(char)> a2 = Action<int(char)>(a1);  // NOLINT
   EXPECT_EQ(1, a2.Perform(std::make_tuple('a')));
   EXPECT_EQ(0, a2.Perform(std::make_tuple('\0')));
 }
-#endif  // !GTEST_OS_SYMBIAN
 
 // The following two classes are for testing MakePolymorphicAction().
 
@@ -642,7 +625,6 @@ TEST(ReturnNullTest, WorksInPointerReturningFunction) {
   EXPECT_TRUE(a2.Perform(std::make_tuple(true)) == nullptr);
 }
 
-#if GTEST_HAS_STD_UNIQUE_PTR_
 // Tests that ReturnNull() returns NULL for shared_ptr and unique_ptr returning
 // functions.
 TEST(ReturnNullTest, WorksInSmartPointerReturningFunction) {
@@ -652,7 +634,6 @@ TEST(ReturnNullTest, WorksInSmartPointerReturningFunction) {
   const Action<std::shared_ptr<int>(std::string)> a2 = ReturnNull();
   EXPECT_TRUE(a2.Perform(std::make_tuple("foo")) == nullptr);
 }
-#endif  // GTEST_HAS_STD_UNIQUE_PTR_
 
 // Tests that ReturnRef(v) works for reference types.
 TEST(ReturnRefTest, WorksForReference) {
@@ -705,14 +686,12 @@ class MockClass {
 
   MOCK_METHOD1(IntFunc, int(bool flag));  // NOLINT
   MOCK_METHOD0(Foo, MyNonDefaultConstructible());
-#if GTEST_HAS_STD_UNIQUE_PTR_
   MOCK_METHOD0(MakeUnique, std::unique_ptr<int>());
   MOCK_METHOD0(MakeUniqueBase, std::unique_ptr<Base>());
   MOCK_METHOD0(MakeVectorUnique, std::vector<std::unique_ptr<int>>());
   MOCK_METHOD1(TakeUnique, int(std::unique_ptr<int>));
   MOCK_METHOD2(TakeUnique,
                int(const std::unique_ptr<int>&, std::unique_ptr<int>));
-#endif
 
  private:
   GTEST_DISALLOW_COPY_AND_ASSIGN_(MockClass);
@@ -812,9 +791,7 @@ TEST(SetArgPointeeTest, SetsTheNthPointee) {
   EXPECT_EQ('a', ch);
 }
 
-#if !((GTEST_GCC_VER_ && GTEST_GCC_VER_ < 40000) || GTEST_OS_SYMBIAN)
 // Tests that SetArgPointee<N>() accepts a string literal.
-// GCC prior to v4.0 and the Symbian compiler do not support this.
 TEST(SetArgPointeeTest, AcceptsStringLiteral) {
   typedef void MyFunction(std::string*, const char**);
   Action<MyFunction> a = SetArgPointee<0>("hi");
@@ -848,7 +825,6 @@ TEST(SetArgPointeeTest, AcceptsWideStringLiteral) {
 
 # endif
 }
-#endif
 
 // Tests that SetArgPointee<N>() accepts a char pointer.
 TEST(SetArgPointeeTest, AcceptsCharPointer) {
@@ -925,6 +901,21 @@ class VoidNullaryFunctor {
  public:
   void operator()() { g_done = true; }
 };
+
+short Short(short n) { return n; }  // NOLINT
+char Char(char ch) { return ch; }
+
+const char* CharPtr(const char* s) { return s; }
+
+bool Unary(int x) { return x < 0; }
+
+const char* Binary(const char* input, short n) { return input + n; }  // NOLINT
+
+void VoidBinary(int, char) { g_done = true; }
+
+int Ternary(int x, char y, short z) { return x + y + z; }  // NOLINT
+
+int SumOf4(int a, int b, int c, int d) { return a + b + c + d; }
 
 class Foo {
  public:
@@ -1035,12 +1026,112 @@ TEST(AssignTest, CompatibleTypes) {
   EXPECT_DOUBLE_EQ(5, x);
 }
 
+
+// Tests using WithArgs and with an action that takes 1 argument.
+TEST(WithArgsTest, OneArg) {
+  Action<bool(double x, int n)> a = WithArgs<1>(Invoke(Unary));  // NOLINT
+  EXPECT_TRUE(a.Perform(std::make_tuple(1.5, -1)));
+  EXPECT_FALSE(a.Perform(std::make_tuple(1.5, 1)));
+}
+
+// Tests using WithArgs with an action that takes 2 arguments.
+TEST(WithArgsTest, TwoArgs) {
+  Action<const char*(const char* s, double x, short n)> a =  // NOLINT
+      WithArgs<0, 2>(Invoke(Binary));
+  const char s[] = "Hello";
+  EXPECT_EQ(s + 2, a.Perform(std::make_tuple(CharPtr(s), 0.5, Short(2))));
+}
+
+struct ConcatAll {
+  std::string operator()() const { return {}; }
+  template <typename... I>
+  std::string operator()(const char* a, I... i) const {
+    return a + ConcatAll()(i...);
+  }
+};
+
+// Tests using WithArgs with an action that takes 10 arguments.
+TEST(WithArgsTest, TenArgs) {
+  Action<std::string(const char*, const char*, const char*, const char*)> a =
+      WithArgs<0, 1, 2, 3, 2, 1, 0, 1, 2, 3>(Invoke(ConcatAll{}));
+  EXPECT_EQ("0123210123",
+            a.Perform(std::make_tuple(CharPtr("0"), CharPtr("1"), CharPtr("2"),
+                                      CharPtr("3"))));
+}
+
+// Tests using WithArgs with an action that is not Invoke().
+class SubtractAction : public ActionInterface<int(int, int)> {
+ public:
+  int Perform(const std::tuple<int, int>& args) override {
+    return std::get<0>(args) - std::get<1>(args);
+  }
+};
+
+TEST(WithArgsTest, NonInvokeAction) {
+  Action<int(const std::string&, int, int)> a =
+      WithArgs<2, 1>(MakeAction(new SubtractAction));
+  std::tuple<std::string, int, int> dummy =
+      std::make_tuple(std::string("hi"), 2, 10);
+  EXPECT_EQ(8, a.Perform(dummy));
+}
+
+// Tests using WithArgs to pass all original arguments in the original order.
+TEST(WithArgsTest, Identity) {
+  Action<int(int x, char y, short z)> a =  // NOLINT
+      WithArgs<0, 1, 2>(Invoke(Ternary));
+  EXPECT_EQ(123, a.Perform(std::make_tuple(100, Char(20), Short(3))));
+}
+
+// Tests using WithArgs with repeated arguments.
+TEST(WithArgsTest, RepeatedArguments) {
+  Action<int(bool, int m, int n)> a =  // NOLINT
+      WithArgs<1, 1, 1, 1>(Invoke(SumOf4));
+  EXPECT_EQ(4, a.Perform(std::make_tuple(false, 1, 10)));
+}
+
+// Tests using WithArgs with reversed argument order.
+TEST(WithArgsTest, ReversedArgumentOrder) {
+  Action<const char*(short n, const char* input)> a =  // NOLINT
+      WithArgs<1, 0>(Invoke(Binary));
+  const char s[] = "Hello";
+  EXPECT_EQ(s + 2, a.Perform(std::make_tuple(Short(2), CharPtr(s))));
+}
+
+// Tests using WithArgs with compatible, but not identical, argument types.
+TEST(WithArgsTest, ArgsOfCompatibleTypes) {
+  Action<long(short x, char y, double z, char c)> a =  // NOLINT
+      WithArgs<0, 1, 3>(Invoke(Ternary));
+  EXPECT_EQ(123,
+            a.Perform(std::make_tuple(Short(100), Char(20), 5.6, Char(3))));
+}
+
+// Tests using WithArgs with an action that returns void.
+TEST(WithArgsTest, VoidAction) {
+  Action<void(double x, char c, int n)> a = WithArgs<2, 1>(Invoke(VoidBinary));
+  g_done = false;
+  a.Perform(std::make_tuple(1.5, 'a', 3));
+  EXPECT_TRUE(g_done);
+}
+
+TEST(WithArgsTest, ReturnReference) {
+  Action<int&(int&, void*)> aa = WithArgs<0>([](int& a) -> int& { return a; });
+  int i = 0;
+  const int& res = aa.Perform(std::forward_as_tuple(i, nullptr));
+  EXPECT_EQ(&i, &res);
+}
+
+TEST(WithArgsTest, InnerActionWithConversion) {
+  Action<Derived*()> inner = [] { return nullptr; };
+  Action<Base*(double)> a = testing::WithoutArgs(inner);
+  EXPECT_EQ(nullptr, a.Perform(std::make_tuple(1.1)));
+}
+
 #if !GTEST_OS_WINDOWS_MOBILE
 
 class SetErrnoAndReturnTest : public testing::Test {
  protected:
-  virtual void SetUp() { errno = 0; }
-  virtual void TearDown() { errno = 0; }
+  void SetUp() override { errno = 0; }
+  void TearDown() override { errno = 0; }
 };
 
 TEST_F(SetErrnoAndReturnTest, Int) {
@@ -1066,13 +1157,12 @@ TEST_F(SetErrnoAndReturnTest, CompatibleTypes) {
 
 // Tests ByRef().
 
-// Tests that ReferenceWrapper<T> is copyable.
+// Tests that the result of ByRef() is copyable.
 TEST(ByRefTest, IsCopyable) {
   const std::string s1 = "Hi";
   const std::string s2 = "Hello";
 
-  ::testing::internal::ReferenceWrapper<const std::string> ref_wrapper =
-      ByRef(s1);
+  auto ref_wrapper = ByRef(s1);
   const std::string& r1 = ref_wrapper;
   EXPECT_EQ(&s1, &r1);
 
@@ -1081,8 +1171,7 @@ TEST(ByRefTest, IsCopyable) {
   const std::string& r2 = ref_wrapper;
   EXPECT_EQ(&s2, &r2);
 
-  ::testing::internal::ReferenceWrapper<const std::string> ref_wrapper1 =
-      ByRef(s1);
+  auto ref_wrapper1 = ByRef(s1);
   // Copies ref_wrapper1 to ref_wrapper.
   ref_wrapper = ref_wrapper1;
   const std::string& r3 = ref_wrapper;
@@ -1149,7 +1238,6 @@ TEST(ByRefTest, PrintsCorrectly) {
   EXPECT_EQ(expected.str(), actual.str());
 }
 
-#if GTEST_HAS_STD_UNIQUE_PTR_
 
 std::unique_ptr<int> UniquePtrSource() {
   return std::unique_ptr<int>(new int(19));
@@ -1262,9 +1350,7 @@ TEST(MockMethodTest, CanTakeMoveOnlyValue) {
   EXPECT_EQ(42, *saved);
 }
 
-#endif  // GTEST_HAS_STD_UNIQUE_PTR_
 
-#if GTEST_LANG_CXX11
 // Tests for std::function based action.
 
 int Add(int val, int& ref, int* ptr) {  // NOLINT
@@ -1343,10 +1429,6 @@ TEST(FunctorActionTest, UnusedArguments) {
 }
 
 // Test that basic built-in actions work with move-only arguments.
-// FIXME: Currently, almost all ActionInterface-based actions will not
-// work, even if they only try to use other, copyable arguments. Implement them
-// if necessary (but note that DoAll cannot work on non-copyable types anyway -
-// so maybe it's better to make users use lambdas instead.
 TEST(MoveOnlyArgumentsTest, ReturningActions) {
   Action<int(std::unique_ptr<int>)> a = Return(1);
   EXPECT_EQ(1, a.Perform(std::make_tuple(nullptr)));
@@ -1360,7 +1442,6 @@ TEST(MoveOnlyArgumentsTest, ReturningActions) {
   EXPECT_EQ(x, 3);
 }
 
-#endif  // GTEST_LANG_CXX11
 
 }  // Unnamed namespace
 

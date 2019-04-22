@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -101,8 +102,19 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
       return ClientSafeBrowsingReportRequest::URL_SUSPICIOUS;
     case SB_THREAT_TYPE_BILLING:
       return ClientSafeBrowsingReportRequest::BILLING;
-    default:  // Gated by SafeBrowsingBlockingPage::ShouldReportThreatDetails.
-      NOTREACHED() << "We should not send report for threat type "
+    case SB_THREAT_TYPE_APK_DOWNLOAD:
+      return ClientSafeBrowsingReportRequest::APK_DOWNLOAD;
+    case SB_THREAT_TYPE_UNUSED:
+    case SB_THREAT_TYPE_SAFE:
+    case SB_THREAT_TYPE_URL_BINARY_MALWARE:
+    case SB_THREAT_TYPE_EXTENSION:
+    case SB_THREAT_TYPE_BLACKLISTED_RESOURCE:
+    case SB_THREAT_TYPE_API_ABUSE:
+    case SB_THREAT_TYPE_SUBRESOURCE_FILTER:
+    case SB_THREAT_TYPE_CSD_WHITELIST:
+    case DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
+      // Gated by SafeBrowsingBlockingPage::ShouldReportThreatDetails.
+      NOTREACHED() << "We should not send report for threat type: "
                    << threat_type;
       return ClientSafeBrowsingReportRequest::UNKNOWN;
   }
@@ -550,19 +562,33 @@ void ThreatDetails::StartCollection() {
   }
 
   GURL referrer_url;
-  NavigationEntry* nav_entry = resource_.GetNavigationEntryForResource();
-  if (nav_entry) {
-    GURL page_url = nav_entry->GetURL();
-    if (IsReportableUrl(page_url))
-      report_->set_page_url(page_url.spec());
+  GURL page_url;
 
-    referrer_url = nav_entry->GetReferrer().url;
-    if (IsReportableUrl(referrer_url))
-      report_->set_referrer_url(referrer_url.spec());
-
-    // Add the nodes, starting from the page url.
-    AddUrl(page_url, GURL(), std::string(), nullptr);
+  // With committed interstitials, the information is pre-filled into the
+  // UnsafeResource, since the navigation entry we have at this point is for the
+  // navigation to the interstitial, and the entry with the page details get
+  // destroyed when leaving the interstitial.
+  if (!resource_.navigation_url.is_empty()) {
+    DCHECK(
+        base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials));
+    page_url = resource_.navigation_url;
+    referrer_url = resource_.referrer_url;
+  } else {
+    NavigationEntry* nav_entry = resource_.GetNavigationEntryForResource();
+    if (nav_entry) {
+      page_url = nav_entry->GetURL();
+      referrer_url = nav_entry->GetReferrer().url;
+    }
   }
+
+  if (IsReportableUrl(page_url))
+    report_->set_page_url(page_url.spec());
+
+  if (IsReportableUrl(referrer_url))
+    report_->set_referrer_url(referrer_url.spec());
+
+  // Add the nodes, starting from the page url.
+  AddUrl(page_url, GURL(), std::string(), nullptr);
 
   // Add the resource_url and its original url, if non-empty and different.
   if (!resource_.original_url.is_empty() &&
@@ -832,7 +858,8 @@ void ThreatDetails::MaybeFillReferrerChain() {
     return;
 
   if (!report_ ||
-      report_->type() != ClientSafeBrowsingReportRequest::URL_SUSPICIOUS) {
+      (report_->type() != ClientSafeBrowsingReportRequest::URL_SUSPICIOUS &&
+       report_->type() != ClientSafeBrowsingReportRequest::APK_DOWNLOAD)) {
     return;
   }
 

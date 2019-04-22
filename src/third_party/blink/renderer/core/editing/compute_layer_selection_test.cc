@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/use_mock_scrollbar_settings.h"
 
@@ -50,11 +51,13 @@ class ComputeLayerSelectionTest : public EditingTestBase {
 TEST_F(ComputeLayerSelectionTest, ComputeLayerSelection) {
   SetBodyContent(R"HTML(
       <!DOCTYPE html>
-      input {
-        font: 10px/1 Ahem;
-        padding: 0;
-        border: 0;
-      }
+      <style>
+        input {
+          font: 10px/1 Ahem;
+          padding: 0;
+          border: 0;
+        }
+      </style>
       <input id=target width=20 value='test test test test test tes tes test'
       style='width: 100px; height: 20px;'>
   )HTML");
@@ -65,6 +68,35 @@ TEST_F(ComputeLayerSelectionTest, ComputeLayerSelection) {
       ComputeLayerSelection(Selection());
   EXPECT_FALSE(composited_selection.start.hidden);
   EXPECT_TRUE(composited_selection.end.hidden);
+}
+
+TEST_F(ComputeLayerSelectionTest, DontCrashOnLayerCreation) {
+  SetBodyContent(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        input {
+          font: 10px/1 Ahem;
+          padding: 0;
+          border: 0;
+          width: 100px; height: 20px;
+          position: relative;
+        }
+      </style>
+      <input id=target width=20 value='test test test test test tes tes test'>
+  )HTML");
+  Element* target = GetDocument().getElementById("target");
+
+  FocusAndSelectAll(ToHTMLInputElement(target));
+
+  const cc::LayerSelection& composited_selection =
+      ComputeLayerSelection(Selection());
+  EXPECT_FALSE(composited_selection.start.hidden);
+  EXPECT_TRUE(composited_selection.end.hidden);
+
+  target->setAttribute(html_names::kStyleAttr, "will-change: transform");
+
+  UpdateAllLifecyclePhasesForTest();
+  // Passes if no crash.
 }
 
 TEST_F(ComputeLayerSelectionTest, PositionInScrollableRoot) {

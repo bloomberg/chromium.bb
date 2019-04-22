@@ -10,4 +10,8 @@ mojom("mojom") {
   sources = [
     "diagnosticsd.mojom",
   ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+  ]
 }

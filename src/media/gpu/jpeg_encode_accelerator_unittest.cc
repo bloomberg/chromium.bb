@@ -19,6 +19,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -131,6 +132,11 @@ class JpegEncodeAcceleratorTestEnvironment : public ::testing::Environment {
 };
 
 void JpegEncodeAcceleratorTestEnvironment::SetUp() {
+  // Since base::test::ScopedTaskEnvironment will call
+  // TestTimeouts::action_max_timeout(), TestTimeouts::Initialize() needs to be
+  // called in advance.
+  TestTimeouts::Initialize();
+
   if (!log_path_.empty()) {
     log_file_.reset(new base::File(
         log_path_, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE));
@@ -236,7 +242,7 @@ class JpegClient : public JpegEncodeAccelerator::Client {
  public:
   JpegClient(const std::vector<TestImage*>& test_aligned_images,
              const std::vector<TestImage*>& test_images,
-             ClientStateNotification<ClientState>* note);
+             media::test::ClientStateNotification<ClientState>* note);
   ~JpegClient() override;
   void CreateJpegEncoder();
   void DestroyJpegEncoder();
@@ -287,7 +293,7 @@ class JpegClient : public JpegEncodeAccelerator::Client {
 
   // Used to notify another thread about the state. JpegClient does not own
   // this.
-  ClientStateNotification<ClientState>* note_;
+  media::test::ClientStateNotification<ClientState>* note_;
 
   // Output buffer prepared for JpegEncodeAccelerator.
   std::unique_ptr<BitstreamBuffer> encoded_buffer_;
@@ -304,7 +310,7 @@ class JpegClient : public JpegEncodeAccelerator::Client {
 
 JpegClient::JpegClient(const std::vector<TestImage*>& test_aligned_images,
                        const std::vector<TestImage*>& test_images,
-                       ClientStateNotification<ClientState>* note)
+                       media::test::ClientStateNotification<ClientState>* note)
     : test_aligned_images_(test_aligned_images),
       test_images_(test_images),
       state_(ClientState::CREATED),
@@ -365,9 +371,9 @@ void JpegClient::VideoFrameReady(int32_t buffer_id, size_t hw_encoded_size) {
                                      &sw_encoded_size, &elapsed_sw));
 
   g_env->LogToFile("hw_encode_time",
-                   base::Int64ToString(elapsed_hw.InMicroseconds()));
+                   base::NumberToString(elapsed_hw.InMicroseconds()));
   g_env->LogToFile("sw_encode_time",
-                   base::Int64ToString(elapsed_sw.InMicroseconds()));
+                   base::NumberToString(elapsed_sw.InMicroseconds()));
 
   if (g_save_to_file) {
     SaveToFile(test_image, hw_encoded_size, sw_encoded_size);
@@ -590,11 +596,14 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
   base::Thread encoder_thread("EncoderThread");
   ASSERT_TRUE(encoder_thread.Start());
 
-  std::vector<std::unique_ptr<ClientStateNotification<ClientState>>> notes;
+  std::vector<
+      std::unique_ptr<media::test::ClientStateNotification<ClientState>>>
+      notes;
   std::vector<std::unique_ptr<JpegClient>> clients;
 
   for (size_t i = 0; i < num_concurrent_encoders; i++) {
-    notes.push_back(std::make_unique<ClientStateNotification<ClientState>>());
+    notes.push_back(
+        std::make_unique<media::test::ClientStateNotification<ClientState>>());
     clients.push_back(std::make_unique<JpegClient>(
         test_aligned_images_, test_images_, notes.back().get()));
     encoder_thread.task_runner()->PostTask(

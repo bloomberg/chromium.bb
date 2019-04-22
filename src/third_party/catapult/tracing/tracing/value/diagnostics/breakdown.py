@@ -20,11 +20,31 @@ class Breakdown(diagnostic.Diagnostic):
   def __init__(self):
     super(Breakdown, self).__init__()
     self._values = {}
-    self._color_scheme = None
+    self._color_scheme = ''
+
+  def __eq__(self, other):
+    if self._color_scheme != other._color_scheme:
+      return False
+    if len(self._values) != len(other._values):
+      return False
+    for k, v in self:
+      if v != other.Get(k):
+        return False
+    return True
 
   @property
   def color_scheme(self):
     return self._color_scheme
+
+  @staticmethod
+  def Deserialize(data, deserializer):
+    breakdown = Breakdown()
+    breakdown._color_scheme = deserializer.GetObject(data[0])
+    for key, value in zip(deserializer.GetObject(data[1]), data[2:]):
+      if value in ['NaN', 'Infinity', '-Infinity']:
+        value = float(value)
+      breakdown.Set(deserializer.GetObject(key), value)
+    return breakdown
 
   @staticmethod
   def FromDict(d):
@@ -35,6 +55,15 @@ class Breakdown(diagnostic.Diagnostic):
         value = float(value)
       result.Set(name, value)
     return result
+
+  def Serialize(self, serializer):
+    keys = self._values.keys()
+    keys.sort()
+    return [
+        serializer.GetOrAllocateId(self.color_scheme),
+        serializer.GetOrAllocateId([
+            serializer.GetOrAllocateId(k) for k in keys]),
+    ] + [self.Get(k) for k in keys]
 
   def _AsDictInto(self, d):
     d['values'] = {}
@@ -54,6 +83,13 @@ class Breakdown(diagnostic.Diagnostic):
     if self._color_scheme:
       d['colorScheme'] = self._color_scheme
 
+  @staticmethod
+  def FromEntries(entries):
+    b = Breakdown()
+    for name, value in entries.items():
+      b.Set(name, value)
+    return b
+
   def Set(self, name, value):
     assert isinstance(name, StringTypes), (
         'Expected basestring, found %s: "%r"' % (type(name).__name__, name))
@@ -67,3 +103,7 @@ class Breakdown(diagnostic.Diagnostic):
   def __iter__(self):
     for name, value in self._values.items():
       yield name, value
+
+  def __len__(self):
+    return len(self._values)
+

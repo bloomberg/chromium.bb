@@ -5,6 +5,8 @@
 
 """Verifies that a trie is equal to the latest snapshotted one."""
 
+from __future__ import print_function
+
 import argparse
 import os
 import sys
@@ -16,7 +18,7 @@ SNAPSHOTS_DIR = os.path.join(os.path.dirname(NACL_DIR), 'validator_snapshots')
 if os.path.isdir(SNAPSHOTS_DIR):
   sys.path.append(SNAPSHOTS_DIR)
 else:
-  print "couldn't find: ", SNAPSHOTS_DIR
+  print("couldn't find: ", SNAPSHOTS_DIR)
   sys.exit(1)
 
 import latest_trie
@@ -37,7 +39,7 @@ def main():
   golden = latest_trie.LatestRagelTriePath(SNAPSHOTS_DIR, args.bitness)
   diff_list = [diff for diff in trie.DiffTrieFiles(args.trie[0], golden)]
   if diff_list:
-    print 'tries differ: ', diff_list
+    print('tries differ: ', diff_list)
     sys.exit(1)
 
 

@@ -95,7 +95,7 @@ class SharedLibrary {
 
   // Return the ELF symbol entry for a given symbol, if defined by
   // this library, or NULL otherwise.
-  const ELF::Sym* LookupSymbolEntry(const char* symbol_name);
+  const ELF::Sym* LookupSymbolEntry(const char* symbol_name) const;
 
   // Find the nearest symbol near a given |address|. On success, return
   // true and set |*sym_name| to the symbol name, |*sym_addr| to its address
@@ -103,14 +103,14 @@ class SharedLibrary {
   bool FindNearestSymbolForAddress(void* address,
                                    const char** sym_name,
                                    void** sym_addr,
-                                   size_t* sym_size) {
+                                   size_t* sym_size) const {
     return symbols_.LookupNearestByAddress(
         address, load_bias(), sym_name, sym_addr, sym_size);
   }
 
   // Return the address of a given |symbol_name| if it is exported
   // by the library, NULL otherwise.
-  void* FindAddressForSymbol(const char* symbol_name);
+  void* FindAddressForSymbol(const char* symbol_name) const;
 
   // Create a new Ashmem region holding a copy of the library's RELRO section,
   // potentially relocated for a new |load_address|. On success, return true
@@ -137,11 +137,10 @@ class SharedLibrary {
   // function result is less than |minimum_jni_version|, fail with
   // a message in |error|. On success, return true, and record
   // |java_vm| to call 'JNI_OnUnload' at unload time, if present.
-  bool SetJavaVM(void* java_vm, int minimum_jni_version, Error* error);
+  bool CallJniOnLoad(void* java_vm, int minimum_jni_version, Error* error);
 
   // Call 'JNI_OnUnload()' is necessary, i.e. if there was a succesful call
-  // to SetJavaVM() before. This will pass the same |java_vm| value to the
-  // callback, if it is present in the library.
+  // to CallJniOnLoad() before, or nothing otherwise.
   void CallJniOnUnload();
 
   // Release reserved memory mapping. Caller takes ownership. Used to delay
@@ -158,7 +157,7 @@ class SharedLibrary {
   //    }
   class DependencyIterator {
    public:
-    explicit DependencyIterator(SharedLibrary* lib)
+    explicit DependencyIterator(const SharedLibrary* lib)
         : iter_(&lib->view_), symbols_(&lib->symbols_), dep_name_(NULL) {}
 
     bool GetNext();
@@ -166,9 +165,9 @@ class SharedLibrary {
     const char* GetName() const { return dep_name_; }
 
    private:
-    DependencyIterator();
-    DependencyIterator(const DependencyIterator&);
-    DependencyIterator& operator=(const DependencyIterator&);
+    DependencyIterator() = delete;
+    DependencyIterator(const DependencyIterator&) = delete;
+    DependencyIterator& operator=(const DependencyIterator&) = delete;
 
     ElfView::DynamicIterator iter_;
     const ElfSymbols* symbols_;

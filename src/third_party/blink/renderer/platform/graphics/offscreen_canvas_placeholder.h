@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -18,6 +19,8 @@ class CanvasResource;
 class CanvasResourceDispatcher;
 
 class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
+  DISALLOW_NEW();
+
  public:
   ~OffscreenCanvasPlaceholder();
 
@@ -64,6 +67,6 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
   AnimationState animation_state_ = kActiveAnimation;
 };
 
-}  // blink
+}  // namespace blink
 
 #endif

@@ -12,6 +12,6 @@ enum TaskQueueType { "user-interaction", "background" };
     RuntimeEnabled=WorkerTaskQueue,
     SecureContext
 ] interface WorkerTaskQueue {
-    [CallWith=ScriptState] Promise<any> postFunction(CallbackFunctionTreatedAsScriptValue task, optional AbortSignal signal = null, any... arguments);
-    [CallWith=ScriptState] Task postTask(CallbackFunctionTreatedAsScriptValue task, any... arguments);
+    [CallWith=ScriptState, RaisesException] Promise<any> postFunction(Function task, optional AbortSignal signal = null, any... arguments);
+    [CallWith=ScriptState, RaisesException] Task postTask(Function task, any... arguments);
 };

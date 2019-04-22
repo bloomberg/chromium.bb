@@ -14,6 +14,9 @@ namespace device {
 
 class GamepadButton {
  public:
+  // Matches XInput's trigger deadzone.
+  static constexpr float kDefaultButtonPressedThreshold = 30.f / 255.f;
+
   GamepadButton() : pressed(false), touched(false), value(0.) {}
   GamepadButton(bool pressed, bool touched, double value)
       : pressed(pressed), touched(touched), value(value) {}

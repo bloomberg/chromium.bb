@@ -26,6 +26,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "gtest/gtest.h"
@@ -340,7 +341,7 @@ TEST(Signals, WillSignalReraiseAutonomously) {
       {SIGHUP, SEGV_MAPERR, false},
       {SIGINT, SI_USER, false},
   };
-  for (size_t index = 0; index < arraysize(kTestData); ++index) {
+  for (size_t index = 0; index < base::size(kTestData); ++index) {
     const auto test_data = kTestData[index];
     SCOPED_TRACE(base::StringPrintf(
         "index %zu, sig %d, code %d", index, test_data.sig, test_data.code));

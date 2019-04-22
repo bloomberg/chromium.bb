@@ -92,22 +92,22 @@ class BaselineOptimizerTest(unittest.TestCase):
                          ['linux-trusty', 'mac-mac10.10', 'mac-mac10.11', 'mac-mac10.12', 'mac-mac10.13', 'win-win10'])
 
     def _assert_optimization(self, results_by_directory, directory_to_new_results, baseline_dirname='', suffix='txt'):
-        layout_tests_dir = PathFinder(self.fs).layout_tests_dir()
+        web_tests_dir = PathFinder(self.fs).web_tests_dir()
         test_name = 'mock-test.html'
         baseline_name = 'mock-test-expected.' + suffix
         self.fs.write_text_file(
-            self.fs.join(layout_tests_dir, 'VirtualTestSuites'),
+            self.fs.join(web_tests_dir, 'VirtualTestSuites'),
             '[{"prefix": "gpu", "base": "fast/canvas", "args": ["--foo"]}]')
 
         for dirname, contents in results_by_directory.items():
-            self.fs.write_binary_file(self.fs.join(layout_tests_dir, dirname, baseline_name), contents)
+            self.fs.write_binary_file(self.fs.join(web_tests_dir, dirname, baseline_name), contents)
 
         baseline_optimizer = BaselineOptimizer(self.host, self.host.port_factory.get(), self.host.port_factory.all_port_names())
         self.assertTrue(baseline_optimizer.optimize(
             self.fs.join(baseline_dirname, test_name), suffix))
 
         for dirname, contents in directory_to_new_results.items():
-            path = self.fs.join(layout_tests_dir, dirname, baseline_name)
+            path = self.fs.join(web_tests_dir, dirname, baseline_name)
             if contents is None:
                 # Check files that are explicitly marked as absent.
                 self.assertFalse(self.fs.exists(path), '%s should not exist after optimization' % path)
@@ -115,13 +115,13 @@ class BaselineOptimizerTest(unittest.TestCase):
                 self.assertEqual(self.fs.read_binary_file(path), contents, 'Content of %s != "%s"' % (path, contents))
 
         for dirname in results_by_directory:
-            path = self.fs.join(layout_tests_dir, dirname, baseline_name)
+            path = self.fs.join(web_tests_dir, dirname, baseline_name)
             if dirname not in directory_to_new_results or directory_to_new_results[dirname] is None:
                 self.assertFalse(self.fs.exists(path), '%s should not exist after optimization' % path)
 
     def _assert_reftest_optimization(self, results_by_directory, directory_to_new_results, test_path='', baseline_dirname=''):
-        layout_tests_dir = PathFinder(self.fs).layout_tests_dir()
-        self.fs.write_text_file(self.fs.join(layout_tests_dir, test_path, 'mock-test-expected.html'), 'ref')
+        web_tests_dir = PathFinder(self.fs).web_tests_dir()
+        self.fs.write_text_file(self.fs.join(web_tests_dir, test_path, 'mock-test-expected.html'), 'ref')
         self._assert_optimization(results_by_directory, directory_to_new_results, baseline_dirname, suffix='png')
 
     def test_linux_redundant_with_win(self):

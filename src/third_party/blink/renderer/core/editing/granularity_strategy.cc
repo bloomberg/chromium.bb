@@ -46,12 +46,12 @@ static Position NextWordBound(const Position& pos,
   bool next_bound_if_on_bound =
       word_bound_adjust == BoundAdjust::kNextBoundIfOnBound;
   if (direction == SearchDirection::kSearchForward) {
-    EWordSide word_side = next_bound_if_on_bound ? kNextWordIfOnBoundary
-                                                 : kPreviousWordIfOnBoundary;
+    WordSide word_side = next_bound_if_on_bound ? kNextWordIfOnBoundary
+                                                : kPreviousWordIfOnBoundary;
     return EndOfWordPosition(pos, word_side);
   }
-  EWordSide word_side = next_bound_if_on_bound ? kPreviousWordIfOnBoundary
-                                               : kNextWordIfOnBoundary;
+  WordSide word_side = next_bound_if_on_bound ? kPreviousWordIfOnBoundary
+                                              : kNextWordIfOnBoundary;
   return StartOfWordPosition(pos, word_side);
 }
 

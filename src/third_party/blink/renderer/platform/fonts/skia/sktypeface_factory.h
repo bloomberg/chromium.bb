@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SKIA_SKTYPEFACE_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SKIA_SKTYPEFACE_FACTORY_H_
 
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
@@ -15,6 +16,8 @@ namespace blink {
 // benefit of bundling typeface instantiation in one place but needlessly
 // introduces a wrapper for SkTypeface.
 class SkTypeface_Factory {
+  STATIC_ONLY(SkTypeface_Factory);
+
  public:
   static sk_sp<SkTypeface> FromFontConfigInterfaceIdAndTtcIndex(int config_id,
                                                                 int ttc_index);

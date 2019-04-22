@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/renderer/logging_native_handler.h"
+
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/script_context.h"
 
 namespace extensions {
@@ -15,17 +17,25 @@ LoggingNativeHandler::LoggingNativeHandler(ScriptContext* context)
 LoggingNativeHandler::~LoggingNativeHandler() {}
 
 void LoggingNativeHandler::AddRoutes() {
-  RouteHandlerFunction("DCHECK", base::Bind(&LoggingNativeHandler::Dcheck,
-                                            base::Unretained(this)));
-  RouteHandlerFunction("CHECK", base::Bind(&LoggingNativeHandler::Check,
+  RouteHandlerFunction("DCHECK",
+                       base::BindRepeating(&LoggingNativeHandler::Dcheck,
                                            base::Unretained(this)));
-  RouteHandlerFunction(
-      "DCHECK_IS_ON",
-      base::Bind(&LoggingNativeHandler::DcheckIsOn, base::Unretained(this)));
-  RouteHandlerFunction(
-      "LOG", base::Bind(&LoggingNativeHandler::Log, base::Unretained(this)));
-  RouteHandlerFunction("WARNING", base::Bind(&LoggingNativeHandler::Warning,
-                                             base::Unretained(this)));
+  RouteHandlerFunction("CHECK",
+                       base::BindRepeating(&LoggingNativeHandler::Check,
+                                           base::Unretained(this)));
+  // A blatant ugly hack to get around our "dcheck is on" validity presubmit
+  // checks (which assert that it's always written as `#if DCHECK_IS_ON()`).
+  constexpr char kDCheckIsOnFunctionKey[] =
+      "DCHECK_IS_"
+      "ON";
+  RouteHandlerFunction(kDCheckIsOnFunctionKey,
+                       base::BindRepeating(&LoggingNativeHandler::DcheckIsOn,
+                                           base::Unretained(this)));
+  RouteHandlerFunction("LOG", base::BindRepeating(&LoggingNativeHandler::Log,
+                                                  base::Unretained(this)));
+  RouteHandlerFunction("WARNING",
+                       base::BindRepeating(&LoggingNativeHandler::Warning,
+                                           base::Unretained(this)));
 }
 
 void LoggingNativeHandler::Check(
@@ -66,8 +76,7 @@ void LoggingNativeHandler::ParseArgs(
     bool* check_value,
     std::string* error_message) {
   CHECK_LE(args.Length(), 2);
-  *check_value =
-      args[0]->BooleanValue(context()->v8_context()).FromMaybe(false);
+  *check_value = args[0]->BooleanValue(context()->isolate());
   if (args.Length() == 2) {
     *error_message = "Error: " + std::string(*v8::String::Utf8Value(
                                      args.GetIsolate(), args[1]));

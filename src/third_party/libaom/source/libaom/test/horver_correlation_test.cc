@@ -9,27 +9,23 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include <vector>
-
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-#include "test/function_equivalence_test.h"
+#include "test/acm_random.h"
 #include "test/register_state_check.h"
+#include "test/util.h"
 
 #include "config/aom_config.h"
 #include "config/aom_dsp_rtcd.h"
 #include "config/av1_rtcd.h"
 
 #include "aom/aom_integer.h"
-#include "av1/encoder/rdopt.h"
 
-using libaom_test::FunctionEquivalenceTest;
+using libaom_test::ACMRandom;
 
 namespace {
 typedef void (*HorverFunc)(const int16_t *diff, int stride, int w, int h,
                            float *hcorr, float *vcorr);
-
-typedef libaom_test::FuncParam<HorverFunc> TestFuncs;
 
 typedef ::testing::tuple<const HorverFunc> HorverTestParam;
 

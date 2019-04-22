@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TEMPLATE_ELEMENT_H_
 
 #include "third_party/blink/renderer/core/html/html_element.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -44,11 +43,13 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
 
  public:
   DECLARE_NODE_FACTORY(HTMLTemplateElement);
+
+  explicit HTMLTemplateElement(Document&);
   ~HTMLTemplateElement() override;
 
   bool HasNonInBodyInsertionMode() const override { return true; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   DocumentFragment* content() const;
 
@@ -57,9 +58,7 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
                                        CloneChildrenFlag) override;
   void DidMoveToNewDocument(Document& old_document) override;
 
-  explicit HTMLTemplateElement(Document&);
-
-  mutable TraceWrapperMember<TemplateContentDocumentFragment> content_;
+  mutable Member<TemplateContentDocumentFragment> content_;
 };
 
 }  // namespace blink

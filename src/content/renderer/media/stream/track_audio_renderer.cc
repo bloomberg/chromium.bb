@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -13,10 +14,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_shifter.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 
 namespace content {
 
@@ -55,10 +56,9 @@ int TrackAudioRenderer::Render(base::TimeDelta delay,
     return 0;
   }
 
-
   // TODO(miu): Plumbing is needed to determine the actual playout timestamp
   // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
-  // audio/video sync.  http://crbug.com/335335
+  // audio/video sync. https://crbug.com/335335
   const base::TimeTicks playout_time = base::TimeTicks::Now() + delay;
   DVLOG(2) << "Pulling audio out of shifter to be played "
            << delay.InMilliseconds() << " ms from now.";
@@ -71,7 +71,7 @@ void TrackAudioRenderer::OnRenderError() {
   NOTIMPLEMENTED();
 }
 
-// content::MediaStreamAudioSink implementation
+// blink::WebMediaStreamAudioSink implementation
 void TrackAudioRenderer::OnData(const media::AudioBus& audio_bus,
                                 base::TimeTicks reference_time) {
   DCHECK(!reference_time.is_null());
@@ -130,7 +130,7 @@ TrackAudioRenderer::TrackAudioRenderer(
       output_device_id_(device_id),
       volume_(0.0),
       sink_started_(false) {
-  DCHECK(MediaStreamAudioTrack::From(audio_track_));
+  DCHECK(blink::MediaStreamAudioTrack::From(audio_track_));
   DVLOG(1) << "TrackAudioRenderer::TrackAudioRenderer()";
 }
 
@@ -146,7 +146,7 @@ void TrackAudioRenderer::Start() {
   DCHECK_EQ(playing_, false);
 
   // We get audio data from |audio_track_|...
-  MediaStreamAudioSink::AddToAudioTrack(this, audio_track_);
+  blink::WebMediaStreamAudioSink::AddToAudioTrack(this, audio_track_);
   // ...and |sink_| will get audio data from us.
   DCHECK(!sink_);
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
@@ -179,7 +179,7 @@ void TrackAudioRenderer::Stop() {
   sink_started_ = false;
 
   // Ensure that the capturer stops feeding us with captured audio.
-  MediaStreamAudioSink::RemoveFromAudioTrack(this, audio_track_);
+  blink::WebMediaStreamAudioSink::RemoveFromAudioTrack(this, audio_track_);
 }
 
 void TrackAudioRenderer::Play() {
@@ -218,12 +218,7 @@ void TrackAudioRenderer::SetVolume(float volume) {
     sink_->SetVolume(volume);
 }
 
-media::OutputDeviceInfo TrackAudioRenderer::GetOutputDeviceInfo() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return sink_ ? sink_->GetOutputDeviceInfo() : media::OutputDeviceInfo();
-}
-
-base::TimeDelta TrackAudioRenderer::GetCurrentRenderTime() const {
+base::TimeDelta TrackAudioRenderer::GetCurrentRenderTime() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(thread_lock_);
   if (source_params_.IsValid()) {
@@ -234,9 +229,9 @@ base::TimeDelta TrackAudioRenderer::GetCurrentRenderTime() const {
   return prior_elapsed_render_time_;
 }
 
-bool TrackAudioRenderer::IsLocalRenderer() const {
+bool TrackAudioRenderer::IsLocalRenderer() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return MediaStreamAudioTrack::From(audio_track_)->is_local_track();
+  return blink::MediaStreamAudioTrack::From(audio_track_)->is_local_track();
 }
 
 void TrackAudioRenderer::SwitchOutputDevice(

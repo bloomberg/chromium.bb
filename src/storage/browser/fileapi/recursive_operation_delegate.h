@@ -6,6 +6,7 @@
 #define STORAGE_BROWSER_FILEAPI_RECURSIVE_OPERATION_DELEGATE_H_
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/containers/stack.h"
 #include "base/macros.h"
@@ -23,7 +24,7 @@ class FileSystemOperationRunner;
 // In short, each subclass should override ProcessFile and ProcessDirectory
 // to process a directory or a file. To start the recursive operation it
 // should also call StartRecursiveOperation.
-class STORAGE_EXPORT RecursiveOperationDelegate
+class COMPONENT_EXPORT(STORAGE_BROWSER) RecursiveOperationDelegate
     : public base::SupportsWeakPtr<RecursiveOperationDelegate> {
  public:
   using StatusCallback = FileSystemOperation::StatusCallback;

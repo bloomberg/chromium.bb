@@ -60,6 +60,12 @@ namespace dawn_native { namespace vulkan {
                 continue;
             }
 
+            // Mappable must also be host coherent.
+            if (mappable &&
+                (info.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0) {
+                continue;
+            }
+
             // Found the first candidate memory type
             if (bestType == -1) {
                 bestType = static_cast<int>(i);
@@ -80,8 +86,7 @@ namespace dawn_native { namespace vulkan {
             // All things equal favor the memory in the biggest heap
             VkDeviceSize bestTypeHeapSize =
                 info.memoryHeaps[info.memoryTypes[bestType].heapIndex].size;
-            VkDeviceSize candidateHeapSize =
-                info.memoryHeaps[info.memoryTypes[bestType].heapIndex].size;
+            VkDeviceSize candidateHeapSize = info.memoryHeaps[info.memoryTypes[i].heapIndex].size;
             if (candidateHeapSize > bestTypeHeapSize) {
                 bestType = static_cast<int>(i);
                 continue;

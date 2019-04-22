@@ -25,7 +25,6 @@
 
 namespace {
 
-const int kFixedGaiaViewHeight = 612;
 const int kModalDialogWidth = 448;
 const int kModalDialogWidthForUnifiedConsent = 512;
 const int kSyncConfirmationDialogHeight = 487;
@@ -55,12 +54,18 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
     Browser* browser,
     ui::ModalType dialog_modal_type,
     bool wait_for_size)
-    : SigninViewControllerDelegate(signin_view_controller,
-                                   content_view->GetWebContents(),
-                                   browser),
+    : signin_view_controller_(signin_view_controller),
+      web_contents_(content_view->GetWebContents()),
+      browser_(browser),
       content_view_(content_view.release()),
       modal_signin_widget_(nullptr),
       dialog_modal_type_(dialog_modal_type) {
+  DCHECK(web_contents_);
+  DCHECK(browser_);
+  DCHECK(browser_->tab_strip_model()->GetActiveWebContents())
+      << "A tab must be active to present the sign-in modal dialog.";
+  web_contents_->SetDelegate(this);
+
   DCHECK(dialog_modal_type == ui::MODAL_TYPE_CHILD ||
          dialog_modal_type == ui::MODAL_TYPE_WINDOW)
       << "Unsupported dialog modal type " << dialog_modal_type;
@@ -100,11 +105,6 @@ int SigninViewControllerDelegateViews::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-void SigninViewControllerDelegateViews::PerformClose() {
-  if (modal_signin_widget_)
-    modal_signin_widget_->Close();
-}
-
 void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
   int max_height = browser()
                        ->window()
@@ -121,16 +121,14 @@ void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
   }
 }
 
-bool SigninViewControllerDelegateViews::HandleKeyboardEvent(
-    content::WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
-  // If this is a MODAL_TYPE_CHILD, then GetFocusManager() will return the focus
-  // manager of the parent window, which has registered accelerators, and the
-  // accelerators will fire. If this is a MODAL_TYPE_WINDOW, then this will have
-  // no effect, since no accelerators have been registered for this standalone
-  // window.
-  return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
-      event, GetFocusManager());
+content::WebContents* SigninViewControllerDelegateViews::GetWebContents() {
+  return web_contents_;
+}
+
+void SigninViewControllerDelegateViews::CloseModalSignin() {
+  ResetSigninViewControllerDelegate();
+  if (modal_signin_widget_)
+    modal_signin_widget_->Close();
 }
 
 void SigninViewControllerDelegateViews::DisplayModal() {
@@ -162,37 +160,23 @@ void SigninViewControllerDelegateViews::DisplayModal() {
   content_view_->RequestFocus();
 }
 
-// static
-std::unique_ptr<views::WebView>
-SigninViewControllerDelegateViews::CreateGaiaWebView(
-    content::WebContentsDelegate* delegate,
-    profiles::BubbleViewMode mode,
-    Browser* browser,
-    signin_metrics::AccessPoint access_point) {
-  GURL url =
-      signin::GetSigninURLFromBubbleViewMode(
-          browser->profile(), mode, access_point);
+bool SigninViewControllerDelegateViews::HandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  // If this is a MODAL_TYPE_CHILD, then GetFocusManager() will return the focus
+  // manager of the parent window, which has registered accelerators, and the
+  // accelerators will fire. If this is a MODAL_TYPE_WINDOW, then this will have
+  // no effect, since no accelerators have been registered for this standalone
+  // window.
+  return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+      event, GetFocusManager());
+}
 
-  int max_height = browser
-      ->window()
-      ->GetWebContentsModalDialogHost()
-      ->GetMaximumDialogSize().height();
-  // Adds Gaia signin webview.
-  const gfx::Size pref_size(kModalDialogWidth,
-                            std::min(kFixedGaiaViewHeight, max_height));
-  views::WebView* web_view = new views::WebView(browser->profile());
-  web_view->LoadInitialURL(url);
-
-  if (delegate)
-    web_view->GetWebContents()->SetDelegate(delegate);
-
-  web_view->SetPreferredSize(pref_size);
-  content::RenderWidgetHostView* rwhv =
-      web_view->GetWebContents()->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetBackgroundColor(profiles::kAvatarBubbleGaiaBackgroundColor);
-
-  return std::unique_ptr<views::WebView>(web_view);
+bool SigninViewControllerDelegateViews::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
+    const content::ContextMenuParams& params) {
+  // Discard the context menu
+  return true;
 }
 
 std::unique_ptr<views::WebView>
@@ -237,18 +221,21 @@ SigninViewControllerDelegateViews::CreateDialogWebView(
   return std::unique_ptr<views::WebView>(web_view);
 }
 
-SigninViewControllerDelegate*
-SigninViewControllerDelegate::CreateModalSigninDelegate(
-    SigninViewController* signin_view_controller,
-    profiles::BubbleViewMode mode,
-    Browser* browser,
-    signin_metrics::AccessPoint access_point) {
-  return new SigninViewControllerDelegateViews(
-      signin_view_controller,
-      SigninViewControllerDelegateViews::CreateGaiaWebView(
-          nullptr, mode, browser, access_point),
-      browser, ui::MODAL_TYPE_CHILD, false);
+web_modal::WebContentsModalDialogHost*
+SigninViewControllerDelegateViews::GetWebContentsModalDialogHost() {
+  return browser()->window()->GetWebContentsModalDialogHost();
 }
+
+void SigninViewControllerDelegateViews::ResetSigninViewControllerDelegate() {
+  if (signin_view_controller_) {
+    signin_view_controller_->ResetModalSigninDelegate();
+    signin_view_controller_ = nullptr;
+  }
+}
+
+// --------------------------------------------------------------------
+// SigninViewControllerDelegate static methods
+// --------------------------------------------------------------------
 
 SigninViewControllerDelegate*
 SigninViewControllerDelegate::CreateSyncConfirmationDelegate(

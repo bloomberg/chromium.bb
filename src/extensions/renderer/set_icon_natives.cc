@@ -10,10 +10,10 @@
 #include <limits>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/common/common_param_traits.h"
-#include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/script_context.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/blink/public/web/web_array_buffer_converter.h"
@@ -67,9 +67,9 @@ SetIconNatives::SetIconNatives(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {}
 
 void SetIconNatives::AddRoutes() {
-  RouteHandlerFunction(
-      "SetIconCommon",
-      base::Bind(&SetIconNatives::SetIconCommon, base::Unretained(this)));
+  RouteHandlerFunction("SetIconCommon",
+                       base::BindRepeating(&SetIconNatives::SetIconCommon,
+                                           base::Unretained(this)));
 }
 
 bool SetIconNatives::ConvertImageDataToBitmapValue(

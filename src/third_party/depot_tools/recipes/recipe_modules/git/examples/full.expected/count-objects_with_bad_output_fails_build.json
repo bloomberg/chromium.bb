@@ -23,7 +23,7 @@
     ],
     "cwd": "[START_DIR]/src",
     "env": {
-      "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:<PATH>"
+      "PATH": "RECIPE_REPO[depot_tools]:<PATH>"
     },
     "infra_step": true,
     "name": "git fetch"
@@ -107,8 +107,10 @@
   },
   {
     "failure": {
-      "failure": {
-        "step": ""
+      "exception": {
+        "traceback": [
+          "<omitted by recipe engine>"
+        ]
       },
       "humanReason": "count-objects failed: invalid literal for long() with base 10: 'xxx'"
     },

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 
 namespace chromeos {
@@ -19,7 +19,8 @@ namespace chromeos {
 // This configuration comes either from the state before power wash, or from
 // USB stick during USB-based enrollment flow.
 
-class CHROMEOS_EXPORT OobeConfigurationClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) OobeConfigurationClient
+    : public DBusClient {
  public:
   using ConfigurationCallback =
       base::OnceCallback<void(bool has_configuration,

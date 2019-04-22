@@ -9,6 +9,7 @@
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -153,7 +154,6 @@ void RlzPingHandler::OnSimpleLoaderComplete(
 
 void JNI_RlzPingHandler_StartPing(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const base::android::JavaParamRef<jobject>& j_profile,
     const base::android::JavaParamRef<jstring>& j_brand,
     const base::android::JavaParamRef<jstring>& j_language,

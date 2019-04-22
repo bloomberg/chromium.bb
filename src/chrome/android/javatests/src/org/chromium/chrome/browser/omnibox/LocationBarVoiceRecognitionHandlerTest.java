@@ -8,9 +8,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.support.annotation.ColorRes;
 import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
 
@@ -20,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -32,11 +31,13 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionsResult;
 import org.chromium.chrome.test.util.OmniboxTestUtils.TestAutocompleteController;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
@@ -230,11 +231,6 @@ public class LocationBarVoiceRecognitionHandlerTest {
         }
 
         @Override
-        public boolean shouldShowVerboseStatus() {
-            return false;
-        }
-
-        @Override
         public int getSecurityLevel() {
             return 0;
         }
@@ -245,8 +241,8 @@ public class LocationBarVoiceRecognitionHandlerTest {
         }
 
         @Override
-        public ColorStateList getSecurityIconColorStateList() {
-            return null;
+        public @ColorRes int getSecurityIconColorStateList() {
+            return 0;
         }
 
         @Override
@@ -408,16 +404,16 @@ public class LocationBarVoiceRecognitionHandlerTest {
         mActivityTestRule.startMainActivityOnBlankPage();
 
         mDataProvider = new TestDataProvider();
-        mDelegate = ThreadUtils.runOnUiThreadBlocking(() -> new TestDelegate());
+        mDelegate = TestThreadUtils.runOnUiThreadBlocking(() -> new TestDelegate());
         mHandler = new TestLocationBarVoiceRecognitionHandler(mDelegate);
         mPermissionDelegate = new TestAndroidPermissionDelegate();
         mAutocomplete = new TestAutocompleteController(null /* view */, sEmptySuggestionListener,
                 new HashMap<String, List<SuggestionsResult>>());
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mWindowAndroid = new TestWindowAndroid(mActivityTestRule.getActivity());
             mWindowAndroid.setAndroidPermissionDelegate(mPermissionDelegate);
-            mTab = new Tab(0, false /* incognito */, mWindowAndroid);
+            mTab = new TabBuilder().setId(0).setWindow(mWindowAndroid).build();
         });
     }
 
@@ -555,7 +551,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
     @Test
     @SmallTest
     public void testCallback_noVoiceSearchResultWithNoMatch() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mWindowAndroid.setVoiceResults(createDummyBundle("", 1f));
             startVoiceRecognition(VoiceInteractionSource.OMNIBOX);
             Assert.assertEquals(
@@ -567,7 +563,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
     @Test
     @SmallTest
     public void testCallback_successWithLowConfidence() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             float confidence =
                     LocationBarVoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD
                     - 0.01f;
@@ -588,7 +584,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
     @SmallTest
     public void testCallback_successWithHighConfidence() {
         // Needs to run on the UI thread because we use the TemplateUrlService on success.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mWindowAndroid.setVoiceResults(createDummyBundle("testing",
                     LocationBarVoiceRecognitionHandler.VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD));
             startVoiceRecognition(VoiceInteractionSource.OMNIBOX);
@@ -625,7 +621,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
     @Test
     @SmallTest
     public void testParseResults_ValidBundle() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             String[] texts = new String[] {"a", "b", "c"};
             float[] confidences = new float[] {0.8f, 1.0f, 1.0f};
 
@@ -640,7 +636,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
     @Test
     @SmallTest
     public void testParseResults_VoiceResponseURLConversion() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             String[] texts =
                     new String[] {"a", "www. b .co .uk", "engadget .com", "www.google.com"};
             float[] confidences = new float[] {1.0f, 1.0f, 1.0f, 1.0f};

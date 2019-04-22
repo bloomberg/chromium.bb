@@ -5,11 +5,11 @@
 #ifndef GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_IO_SURFACE_H_
 #define GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_IO_SURFACE_H_
 
+#include <unordered_map>
 #include <utility>
 
 #include <IOSurface/IOSurface.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -63,7 +63,8 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryIOSurface
 
  private:
   typedef std::pair<gfx::IOSurfaceId, int> IOSurfaceMapKey;
-  typedef base::hash_map<IOSurfaceMapKey, base::ScopedCFTypeRef<IOSurfaceRef>>
+  typedef std::unordered_map<IOSurfaceMapKey,
+                             base::ScopedCFTypeRef<IOSurfaceRef>>
       IOSurfaceMap;
   // TODO(reveman): Remove |io_surfaces_| and allow IOSurface backed GMBs to be
   // used with any GPU process by passing a mach_port to CreateImageCHROMIUM.

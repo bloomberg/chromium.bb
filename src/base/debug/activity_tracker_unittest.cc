@@ -275,7 +275,7 @@ class SimpleLockThread : public SimpleThread {
 
   bool IsRunning() { return is_running_.load(std::memory_order_relaxed); }
 
-  bool WasDataChanged() { return data_changed_; };
+  bool WasDataChanged() { return data_changed_; }
 
  private:
   Lock* lock_;
@@ -487,7 +487,7 @@ TEST_F(ActivityTrackerTest, ProcessDeathTest) {
 
   // Get callbacks for process exit.
   global->SetProcessExitCallback(
-      Bind(&ActivityTrackerTest::HandleProcessExit, Unretained(this)));
+      BindRepeating(&ActivityTrackerTest::HandleProcessExit, Unretained(this)));
 
   // Pretend than another process has started.
   global->RecordProcessLaunch(other_process_id, FILE_PATH_LITERAL("foo --bar"));

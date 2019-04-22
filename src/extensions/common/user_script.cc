@@ -114,8 +114,8 @@ std::unique_ptr<UserScript> UserScript::CopyMetadataFrom(
   script->version_ = other.version_;
   script->globs_ = other.globs_;
   script->exclude_globs_ = other.exclude_globs_;
-  script->url_set_ = other.url_set_;
-  script->exclude_url_set_ = other.exclude_url_set_;
+  script->url_set_ = other.url_set_.Clone();
+  script->exclude_url_set_ = other.exclude_url_set_.Clone();
 
   // Note: File content is not copied.
   for (const std::unique_ptr<File>& file : other.js_scripts()) {

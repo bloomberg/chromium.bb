@@ -391,6 +391,7 @@ class AppWindow : public content::WebContentsDelegate,
   friend class PlatformAppBrowserTest;
 
   // content::WebContentsDelegate implementation.
+  void ActivateContents(content::WebContents* contents) override;
   void CloseContents(content::WebContents* contents) override;
   bool ShouldSuppressDialogs(content::WebContents* source) override;
   content::ColorChooser* OpenColorChooser(
@@ -420,7 +421,7 @@ class AppWindow : public content::WebContentsDelegate,
       content::MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type) override;
+                                  blink::MediaStreamType type) override;
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
@@ -445,7 +446,8 @@ class AppWindow : public content::WebContentsDelegate,
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
-  gfx::Size EnterPictureInPicture(const viz::SurfaceId& surface_id,
+  gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
+                                  const viz::SurfaceId& surface_id,
                                   const gfx::Size& natural_size) override;
   void ExitPictureInPicture() override;
 

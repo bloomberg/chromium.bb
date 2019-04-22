@@ -148,9 +148,10 @@ void SetBoundsInScreen(aura::Window* window,
       if (active && focused != active)
         tracker.Add(active);
 
-      // Client controlled client will have its own logic on client side
+      // Client controlled window will have its own logic on client side
       // to adjust bounds.
-      if (!wm::GetWindowState(window)->allow_set_bounds_direct()) {
+      auto* window_state = wm::GetWindowState(window);
+      if (!window_state || !window_state->allow_set_bounds_direct()) {
         gfx::Point origin = bounds_in_screen.origin();
         const gfx::Point display_origin = display.bounds().origin();
         origin.Offset(-display_origin.x(), -display_origin.y());

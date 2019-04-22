@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/browser/payments/payment_app_content_unittest_base.h"
@@ -16,7 +17,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -157,10 +158,10 @@ TEST_F(PaymentAppProviderTest, CanMakePaymentTest) {
 
   payments::mojom::CanMakePaymentEventDataPtr event_data =
       payments::mojom::CanMakePaymentEventData::New();
-  payments::mojom::PaymentMethodDataPtr methodData =
+  payments::mojom::PaymentMethodDataPtr method_data =
       payments::mojom::PaymentMethodData::New();
-  methodData->supported_method = "test-method";
-  event_data->method_data.push_back(std::move(methodData));
+  method_data->supported_method = "test-method";
+  event_data->method_data.push_back(std::move(method_data));
 
   bool can_make_payment = false;
   base::RunLoop loop;

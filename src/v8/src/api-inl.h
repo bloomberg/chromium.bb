@@ -8,12 +8,13 @@
 #include "src/api.h"
 #include "src/handles-inl.h"
 #include "src/objects-inl.h"
+#include "src/objects/foreign-inl.h"
 #include "src/objects/stack-frame-info.h"
 
 namespace v8 {
 
 template <typename T>
-inline T ToCData(v8::internal::Object* obj) {
+inline T ToCData(v8::internal::Object obj) {
   STATIC_ASSERT(sizeof(T) == sizeof(v8::internal::Address));
   if (obj == v8::internal::Smi::kZero) return nullptr;
   return reinterpret_cast<T>(
@@ -21,7 +22,7 @@ inline T ToCData(v8::internal::Object* obj) {
 }
 
 template <>
-inline v8::internal::Address ToCData(v8::internal::Object* obj) {
+inline v8::internal::Address ToCData(v8::internal::Object obj) {
   if (obj == v8::internal::Smi::kZero) return v8::internal::kNullAddress;
   return v8::internal::Foreign::cast(obj)->foreign_address();
 }
@@ -93,11 +94,11 @@ MAKE_TO_LOCAL(AccessorSignatureToLocal, FunctionTemplateInfo, AccessorSignature)
 MAKE_TO_LOCAL(MessageToLocal, Object, Message)
 MAKE_TO_LOCAL(PromiseToLocal, JSObject, Promise)
 MAKE_TO_LOCAL(StackTraceToLocal, FixedArray, StackTrace)
-MAKE_TO_LOCAL(StackFrameToLocal, StackFrameInfo, StackFrame)
+MAKE_TO_LOCAL(StackFrameToLocal, StackTraceFrame, StackFrame)
 MAKE_TO_LOCAL(NumberToLocal, Object, Number)
 MAKE_TO_LOCAL(IntegerToLocal, Object, Integer)
 MAKE_TO_LOCAL(Uint32ToLocal, Object, Uint32)
-MAKE_TO_LOCAL(ToLocal, BigInt, BigInt);
+MAKE_TO_LOCAL(ToLocal, BigInt, BigInt)
 MAKE_TO_LOCAL(ExternalToLocal, JSObject, External)
 MAKE_TO_LOCAL(CallableToLocal, JSReceiver, Function)
 MAKE_TO_LOCAL(ToLocalPrimitive, Object, Primitive)
@@ -109,15 +110,17 @@ MAKE_TO_LOCAL(ScriptOrModuleToLocal, Script, ScriptOrModule)
 
 // Implementations of OpenHandle
 
-#define MAKE_OPEN_HANDLE(From, To)                                             \
-  v8::internal::Handle<v8::internal::To> Utils::OpenHandle(                    \
-      const v8::From* that, bool allow_empty_handle) {                         \
-    DCHECK(allow_empty_handle || that != nullptr);                             \
-    DCHECK(that == nullptr ||                                                  \
-           (*reinterpret_cast<v8::internal::Object* const*>(that))->Is##To()); \
-    return v8::internal::Handle<v8::internal::To>(                             \
-        reinterpret_cast<v8::internal::Address*>(                              \
-            const_cast<v8::From*>(that)));                                     \
+#define MAKE_OPEN_HANDLE(From, To)                                    \
+  v8::internal::Handle<v8::internal::To> Utils::OpenHandle(           \
+      const v8::From* that, bool allow_empty_handle) {                \
+    DCHECK(allow_empty_handle || that != nullptr);                    \
+    DCHECK(that == nullptr ||                                         \
+           v8::internal::Object(                                      \
+               *reinterpret_cast<const v8::internal::Address*>(that)) \
+               ->Is##To());                                           \
+    return v8::internal::Handle<v8::internal::To>(                    \
+        reinterpret_cast<v8::internal::Address*>(                     \
+            const_cast<v8::From*>(that)));                            \
   }
 
 OPEN_HANDLE_LIST(MAKE_OPEN_HANDLE)
@@ -127,20 +130,20 @@ OPEN_HANDLE_LIST(MAKE_OPEN_HANDLE)
 
 namespace internal {
 
-Handle<Context> HandleScopeImplementer::MicrotaskContext() {
-  if (!microtask_context_.is_null()) {
-    return Handle<Context>(microtask_context_, isolate_);
+Handle<Context> HandleScopeImplementer::LastEnteredContext() {
+  DCHECK_EQ(entered_contexts_.size(), is_microtask_context_.size());
+
+  for (size_t i = 0; i < entered_contexts_.size(); ++i) {
+    size_t j = entered_contexts_.size() - i - 1;
+    if (!is_microtask_context_.at(j)) {
+      return Handle<Context>(entered_contexts_.at(j), isolate_);
+    }
   }
+
   return Handle<Context>::null();
 }
 
-Handle<Context> HandleScopeImplementer::LastEnteredContext() {
-  if (entered_contexts_.empty()) return Handle<Context>::null();
-  return Handle<Context>(entered_contexts_.back(), isolate_);
-}
-
 Handle<Context> HandleScopeImplementer::LastEnteredOrMicrotaskContext() {
-  if (MicrotaskContextIsLastEnteredContext()) return MicrotaskContext();
   if (entered_contexts_.empty()) return Handle<Context>::null();
   return Handle<Context>(entered_contexts_.back(), isolate_);
 }

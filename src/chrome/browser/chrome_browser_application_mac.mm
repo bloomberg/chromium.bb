@@ -21,7 +21,7 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/native_event_processor_mac.h"
 #include "content/public/browser/native_event_processor_observer_mac.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/cocoa/accessibility_focus_overrider.h"
 
 namespace chrome_browser_application_mac {
 
@@ -32,7 +32,7 @@ void RegisterBrowserCrApp() {
   // will not be a BrowserCrApplication, but will instead be an NSApplication.
   // This is undesirable and we must enforce that this doesn't happen.
   CHECK([NSApp isKindOfClass:[BrowserCrApplication class]]);
-};
+}
 
 void Terminate() {
   [NSApp terminate:nil];
@@ -116,18 +116,6 @@ std::string DescriptionForNSEvent(NSEvent* event) {
   chrome::InstallObjcExceptionPreprocessor();
 
   cocoa_l10n_util::ApplyForcedRTL();
-}
-
-- (id)init {
-  self = [super init];
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceDarkMode)) {
-    if (@available(macOS 10.14, *)) {
-      self.appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
-    }
-  }
-
-  return self;
 }
 
 // Initialize NSApplication using the custom subclass.  Check whether NSApp
@@ -351,6 +339,12 @@ std::string DescriptionForNSEvent(NSEvent* event) {
       accessibility_state->DisableAccessibility();
   }
   return [super accessibilitySetValue:value forAttribute:attribute];
+}
+
+- (id)accessibilityFocusedUIElement {
+  if (id forced_focus = ui::AccessibilityFocusOverrider::GetFocusedUIElement())
+    return forced_focus;
+  return [super accessibilityFocusedUIElement];
 }
 
 - (void)addNativeEventProcessorObserver:

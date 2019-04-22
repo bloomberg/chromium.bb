@@ -61,12 +61,9 @@ std::unique_ptr<web::WebMainParts> WebViewWebClient::CreateWebMainParts() {
   return std::make_unique<WebViewWebMainParts>();
 }
 
-std::string WebViewWebClient::GetProduct() const {
-  return base::SysNSStringToUTF8([CWVWebView userAgentProduct]);
-}
-
 std::string WebViewWebClient::GetUserAgent(web::UserAgentType type) const {
-  return web::BuildUserAgentFromProduct(GetProduct());
+  return web::BuildUserAgentFromProduct(
+      base::SysNSStringToUTF8([CWVWebView userAgentProduct]));
 }
 
 base::StringPiece WebViewWebClient::GetDataResource(

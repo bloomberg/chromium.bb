@@ -20,10 +20,20 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='absolute'",
-      "position": [0, 400],
-      "bounds": [100, 1601],
+      "position": [8, 2000],
+      "bounds": [1, 1],
+      "contentsOpaque": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FF0000",
+      "transform": 1
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV id='fixed'",
+      "position": [0, 400],
+      "bounds": [100, 200],
+      "opacity": 0.990000009536743,
+      "contentsOpaque": true,
+      "backgroundColor": "#008000",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='fixed'",

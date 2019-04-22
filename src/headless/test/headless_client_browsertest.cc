@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "content/public/test/browser_test.h"
 #include "headless/public/devtools/domains/runtime.h"

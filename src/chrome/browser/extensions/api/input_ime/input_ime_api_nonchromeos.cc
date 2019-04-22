@@ -12,6 +12,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/values.h"
@@ -75,6 +76,7 @@ class ImeBridgeObserver : public ui::IMEBridgeObserver {
       return;
     ui::IMEBridge::Get()->SetCurrentEngineHandler(router->active_engine());
   }
+  void OnInputContextHandlerChanged() override {}
 };
 
 class ImeObserverNonChromeOS : public ui::ImeObserver {
@@ -150,7 +152,7 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
   ui::IMEBridge::Initialize();
   if (!observer_) {
     observer_ = std::make_unique<ImeBridgeObserver>();
-    ui::IMEBridge::Get()->SetObserver(observer_.get());
+    ui::IMEBridge::Get()->AddObserver(observer_.get());
   }
 
   // Set the preference kPrefNeverActivatedSinceLoaded true to indicate

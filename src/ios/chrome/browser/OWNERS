@@ -8,8 +8,5 @@ per-file experimental_flags.*=*
 
 per-file ios_chrome_flag_descriptions.*=*
 
-per-file chrome_browser_manifest_overlay.json=set noparent
-per-file chrome_browser_manifest_overlay.json=file://ipc/SECURITY_OWNERS
-
 # TEAM: ios-directory-owners@chromium.org
 # OS: iOS

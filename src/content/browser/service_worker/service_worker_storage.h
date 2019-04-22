@@ -47,10 +47,6 @@ class ServiceWorkerResponseReader;
 class ServiceWorkerResponseWriter;
 struct ServiceWorkerRegistrationInfo;
 
-namespace service_worker_write_to_cache_job_unittest {
-class ServiceWorkerWriteToCacheJobTest;
-}  // namespace service_worker_write_to_cache_job_unittest
-
 namespace service_worker_storage_unittest {
 class ServiceWorkerStorageTest;
 class ServiceWorkerResourceStorageTest;
@@ -177,6 +173,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
                           const GURL& origin,
                           StatusCallback callback);
 
+  // Removes traces of deleted data on disk.
+  void PerformStorageCleanup(base::OnceClosure callback);
+
   // Creates a resource accessor. Never returns nullptr but an accessor may be
   // associated with the disabled disk cache if the storage is disabled.
   std::unique_ptr<ServiceWorkerResponseReader> CreateResponseReader(
@@ -239,6 +238,11 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void GetUserDataForAllRegistrationsByKeyPrefix(
       const std::string& key_prefix,
       GetUserDataForAllRegistrationsCallback callback);
+  // Responds OK if all are successfully deleted or not found in the database.
+  // |key_prefix| cannot be empty.
+  void ClearUserDataForAllRegistrationsByKeyPrefix(
+      const std::string& key_prefix,
+      StatusCallback callback);
 
   // Deletes the storage and starts over.
   void DeleteAndStartOver(StatusCallback callback);
@@ -278,8 +282,6 @@ class CONTENT_EXPORT ServiceWorkerStorage
   friend class service_worker_storage_unittest::ServiceWorkerStorageTest;
   friend class service_worker_storage_unittest::
       ServiceWorkerResourceStorageTest;
-  friend class service_worker_write_to_cache_job_unittest::
-      ServiceWorkerWriteToCacheJobTest;
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_storage_unittest::ServiceWorkerResourceStorageDiskTest,
       CleanupOnRestart);
@@ -536,6 +538,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   static void DeleteAllDataForOriginsFromDB(
       ServiceWorkerDatabase* database,
       const std::set<GURL>& origins);
+  static void PerformStorageCleanupInDB(ServiceWorkerDatabase* database);
 
   bool IsDisabled() const;
   void ScheduleDeleteAndStartOver();

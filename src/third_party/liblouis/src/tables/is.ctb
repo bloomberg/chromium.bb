@@ -1,20 +1,21 @@
-###############################################################################
-# BRLTTY - A background process providing access to the console screen (when in
-#          text mode) for a blind person using a refreshable braille display.
 #
 # Copyright (C) 1995-2008 by The BRLTTY Developers.
 #
-# BRLTTY comes with ABSOLUTELY NO WARRANTY.
+#  This file is part of liblouis.
 #
-# This is free software, placed under the terms of the
-# GNU Lesser General Public License, as published by the Free Software
-# Foundation; either version 2.1 of the License, or (at your option) any
-# later version. Please see the file LICENSE-LGPL for details.
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
 #
-# Web Page: http://mielke.cc/brltty/
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
 #
-# This software is maintained by Dave Mielke <dave@mielke.cc>.
-###############################################################################
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
 
 # BRLTTY Text Table - 8-dot Icelandic
 #
@@ -76,6 +77,8 @@ sign \X00AB 2578 cents
 sign \x00A5 1345678 yen
 math \X00B1 123568 plus or minus
 math \x00F7 2367 divided by
+noback sign \X25CF 35	# 9679 black circle
+
 # English alphabet, Icelandic uses all of these though c, w and z are not used in the Icelandic language
 uppercase A 17		LATIN CAPITAL LETTER A
 uppercase B 127		LATIN CAPITAL LETTER B

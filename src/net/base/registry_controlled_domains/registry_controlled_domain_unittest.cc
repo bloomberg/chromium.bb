@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/utf_string_conversions.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/buildflags.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-#include "url/url_features.h"
 
 namespace {
 

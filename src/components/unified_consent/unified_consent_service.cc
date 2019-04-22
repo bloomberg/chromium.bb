@@ -9,27 +9,25 @@
 #include "base/scoped_observer.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/pref_names.h"
 
 namespace unified_consent {
 
 UnifiedConsentService::UnifiedConsentService(
-    std::unique_ptr<UnifiedConsentServiceClient> service_client,
-    PrefService* pref_service,
+    sync_preferences::PrefServiceSyncable* pref_service,
     identity::IdentityManager* identity_manager,
-    syncer::SyncService* sync_service)
-    : service_client_(std::move(service_client)),
-      pref_service_(pref_service),
+    syncer::SyncService* sync_service,
+    const std::vector<std::string>& service_pref_names)
+    : pref_service_(pref_service),
       identity_manager_(identity_manager),
-      sync_service_(sync_service) {
-  DCHECK(service_client_);
+      sync_service_(sync_service),
+      service_pref_names_(service_pref_names) {
   DCHECK(pref_service_);
   DCHECK(identity_manager_);
   DCHECK(sync_service_);
@@ -37,6 +35,7 @@ UnifiedConsentService::UnifiedConsentService(
   if (GetMigrationState() == MigrationState::kNotInitialized)
     MigrateProfileToUnifiedConsent();
 
+  pref_service_->AddObserver(this);
   identity_manager_->AddObserver(this);
   sync_service_->AddObserver(this);
 }
@@ -51,17 +50,13 @@ void UnifiedConsentService::RegisterPrefs(
   registry->RegisterIntegerPref(
       prefs::kUnifiedConsentMigrationState,
       static_cast<int>(MigrationState::kNotInitialized));
-  registry->RegisterBooleanPref(prefs::kAllUnifiedConsentServicesWereEnabled,
-                                false);
 }
 
 // static
 void UnifiedConsentService::RollbackIfNeeded(
     PrefService* user_pref_service,
-    syncer::SyncService* sync_service,
-    UnifiedConsentServiceClient* service_client) {
+    syncer::SyncService* sync_service) {
   DCHECK(user_pref_service);
-  DCHECK(service_client);
 
   if (user_pref_service->GetInteger(prefs::kUnifiedConsentMigrationState) ==
       static_cast<int>(MigrationState::kNotInitialized)) {
@@ -69,71 +64,48 @@ void UnifiedConsentService::RollbackIfNeeded(
     return;
   }
 
-  // Turn off all off-by-default services if services were enabled due to
-  // unified consent.
-  if (user_pref_service->GetBoolean(
-          prefs::kAllUnifiedConsentServicesWereEnabled)) {
-    service_client->SetServiceEnabled(Service::kSafeBrowsingExtendedReporting,
-                                      false);
-    service_client->SetServiceEnabled(Service::kSpellCheck, false);
-    service_client->SetServiceEnabled(Service::kContextualSearch, false);
-  }
-
   // Clear all unified consent prefs.
   user_pref_service->ClearPref(prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
   user_pref_service->ClearPref(prefs::kUnifiedConsentMigrationState);
-  user_pref_service->ClearPref(prefs::kAllUnifiedConsentServicesWereEnabled);
 }
 
-void UnifiedConsentService::EnableGoogleServices() {
-  DCHECK(identity_manager_->HasPrimaryAccount());
-  DCHECK_LT(MigrationState::kNotInitialized, GetMigrationState());
-
-  if (GetMigrationState() != MigrationState::kCompleted) {
-    // If the user opted into unified consent, the migration is completed.
+void UnifiedConsentService::SetUrlKeyedAnonymizedDataCollectionEnabled(
+    bool enabled) {
+  if (GetMigrationState() != MigrationState::kCompleted)
     SetMigrationState(MigrationState::kCompleted);
-  }
 
-  // Enable all Google services except sync.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-                            true);
-  for (int i = 0; i <= static_cast<int>(Service::kLast); ++i) {
-    Service service = static_cast<Service>(i);
-    if (service_client_->GetServiceState(service) !=
-        ServiceState::kNotSupported) {
-      service_client_->SetServiceEnabled(service, true);
-    }
-  }
-
-  pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled, true);
+                            enabled);
 }
 
 void UnifiedConsentService::Shutdown() {
+  pref_service_->RemoveObserver(this);
   identity_manager_->RemoveObserver(this);
   sync_service_->RemoveObserver(this);
 }
 
 void UnifiedConsentService::OnPrimaryAccountCleared(
-    const AccountInfo& account_info) {
-  pref_service_->SetBoolean(prefs::kAllUnifiedConsentServicesWereEnabled,
-                            false);
-
-  // By design, signing out of Chrome automatically disables off-by-default
-  // services.
-  pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-                            false);
-  service_client_->SetServiceEnabled(Service::kSafeBrowsingExtendedReporting,
-                                     false);
-  service_client_->SetServiceEnabled(Service::kSpellCheck, false);
-  service_client_->SetServiceEnabled(Service::kContextualSearch, false);
-
-  if (GetMigrationState() != MigrationState::kCompleted) {
-    // When the user signs out, the migration is complete.
-    SetMigrationState(MigrationState::kCompleted);
-  }
+    const CoreAccountInfo& account_info) {
+  // By design, clearing the primary account disables URL-keyed data collection.
+  SetUrlKeyedAnonymizedDataCollectionEnabled(false);
 }
 
 void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
+  // Start observing pref changes when the user enters sync setup.
+  // Note: Only |sync->IsSetupInProgress()| is used (i.e. no check for
+  // |IsFirstSetupComplete()|), because on Android |SetFirstSetupComplete()| is
+  // called automatically during the first setup, i.e. the value could change in
+  // the meantime.
+  if (sync->IsSetupInProgress() && !pref_service_->IsSyncing()) {
+    StartObservingServicePrefChanges();
+  } else {
+    StopObservingServicePrefChanges();
+
+    // If the user cancelled the sync setup, clear all observed changes.
+    if (!sync->CanSyncFeatureStart())
+      service_pref_changes_.clear();
+  }
+
   if (!sync_service_->CanSyncFeatureStart() ||
       !sync_service_->IsEngineInitialized()) {
     return;
@@ -141,6 +113,43 @@ void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
 
   if (GetMigrationState() == MigrationState::kInProgressWaitForSyncInit)
     UpdateSettingsForMigration();
+}
+
+void UnifiedConsentService::OnIsSyncingChanged() {
+  if (pref_service_->IsSyncing() && !service_pref_changes_.empty()) {
+    // Re-apply all observed service pref changes.
+    // If any service prefs had a value coming in through Sync, then that
+    // would've overridden any changes that the user made during the first sync
+    // setup. So re-apply the local changes to make sure they stick.
+    for (const auto& pref_change : service_pref_changes_) {
+      pref_service_->Set(pref_change.first, pref_change.second);
+    }
+    service_pref_changes_.clear();
+  }
+}
+
+void UnifiedConsentService::StartObservingServicePrefChanges() {
+  if (!service_pref_change_registrar_.IsEmpty())
+    return;
+
+  service_pref_change_registrar_.Init(pref_service_);
+  for (const std::string& pref_name : service_pref_names_) {
+    service_pref_change_registrar_.Add(
+        pref_name,
+        base::BindRepeating(&UnifiedConsentService::ServicePrefChanged,
+                            base::Unretained(this)));
+  }
+}
+
+void UnifiedConsentService::StopObservingServicePrefChanges() {
+  service_pref_change_registrar_.RemoveAll();
+}
+
+void UnifiedConsentService::ServicePrefChanged(const std::string& name) {
+  DCHECK(sync_service_->IsSetupInProgress());
+  const base::Value* value = pref_service_->Get(name);
+  DCHECK(value);
+  service_pref_changes_[name] = value->Clone();
 }
 
 MigrationState UnifiedConsentService::GetMigrationState() {
@@ -178,13 +187,10 @@ void UnifiedConsentService::UpdateSettingsForMigration() {
   // consent.
   bool url_keyed_metrics_enabled =
       sync_service_->IsSyncFeatureEnabled() &&
-      sync_service_->GetUserSettings()->GetChosenDataTypes().Has(
-          syncer::TYPED_URLS) &&
+      sync_service_->GetUserSettings()->GetSelectedTypes().Has(
+          syncer::UserSelectableType::kHistory) &&
       !sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase();
-  pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-                            url_keyed_metrics_enabled);
-
-  SetMigrationState(MigrationState::kCompleted);
+  SetUrlKeyedAnonymizedDataCollectionEnabled(url_keyed_metrics_enabled);
 }
 
 }  //  namespace unified_consent

@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "components/password_manager/core/browser/http_password_store_migrator.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -24,8 +25,8 @@ HttpCredentialCleaner::HttpCredentialCleaner(
 
 HttpCredentialCleaner::~HttpCredentialCleaner() = default;
 
-bool HttpCredentialCleaner::ShouldRunCleanUp(PrefService* prefs) {
-  auto last = base::Time::FromDoubleT(prefs->GetDouble(
+bool HttpCredentialCleaner::NeedsCleaning() {
+  auto last = base::Time::FromDoubleT(prefs_->GetDouble(
       password_manager::prefs::kLastTimeObsoleteHttpCredentialsRemoved));
   return ((base::Time::Now() - last).InDays() >= kCleanUpDelayInDays);
 }

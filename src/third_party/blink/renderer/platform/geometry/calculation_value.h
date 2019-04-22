@@ -34,11 +34,14 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT CalculationValue : public RefCounted<CalculationValue> {
+  USING_FAST_MALLOC(CalculationValue);
+
  public:
   static scoped_refptr<CalculationValue> Create(PixelsAndPercent value,
                                                 ValueRange range) {

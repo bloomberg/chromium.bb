@@ -17,9 +17,7 @@ namespace mojo {
 mojo_base::BigBuffer StructTraits<mojo_base::mojom::BigStringDataView,
                                   WTF::String>::data(const WTF::String& input) {
   WTF::StringUTF8Adaptor adaptor(input);
-  return mojo_base::BigBuffer(
-      base::make_span(reinterpret_cast<const uint8_t*>(adaptor.Data()),
-                      adaptor.length() * sizeof(char)));
+  return mojo_base::BigBuffer(base::as_bytes(base::make_span(adaptor)));
 }
 
 // static

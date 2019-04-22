@@ -20,7 +20,6 @@ namespace android {
 
 ScopedJavaLocalRef<jobject> JNI_ValidationTestUtil_ParseData(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& data_as_string) {
   std::string input =
       base::android::ConvertJavaStringToUTF8(env, data_as_string);

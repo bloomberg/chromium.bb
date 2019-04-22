@@ -10,29 +10,20 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
+#include "base/values.h"
 #include "chrome/common/buildflags.h"
-
-namespace base {
-class DictionaryValue;
-class ListValue;
-class RefCountedMemory;
-class Value;
-}
 
 namespace content {
 class WebContents;
 }
 
-namespace gfx {
-class Size;
-}
+class Profile;
 
 namespace printing {
-class StickySettings;
-}
 
-class Profile;
+class StickySettings;
 
 // Wrapper around PrinterProviderAPI to be used by print preview.
 // It makes request lifetime management easier, and hides details of more
@@ -45,17 +36,16 @@ class PrinterHandler {
   using AddedPrintersCallback =
       base::RepeatingCallback<void(const base::ListValue& printers)>;
   using GetPrintersDoneCallback = base::OnceClosure;
-  // |capability| should contain a CDD with key printing::kSettingCapabilities.
+  // |capability| should contain a CDD with key |kSettingCapabilities|.
   // It may also contain other information about the printer in a dictionary
-  // with key printing::kPrinter.
+  // with key |kPrinter|.
   // If |capability| is null, empty, or does not contain a dictionary with key
-  // printing::kSettingCapabilities, this indicates a failure to retrieve
-  // capabilities.
-  // If the dictionary with key printing::kSettingCapabilities is
+  // |kSettingCapabilities|, this indicates a failure to retrieve capabilities.
+  // If the dictionary with key |kSettingCapabilities| is
   // empty, this indicates capabilities were retrieved but the printer does
   // not support any of the capability fields in a CDD.
-  using GetCapabilityCallback = base::OnceCallback<void(
-      std::unique_ptr<base::DictionaryValue> capability)>;
+  using GetCapabilityCallback =
+      base::OnceCallback<void(base::Value capability)>;
   using PrintCallback = base::OnceCallback<void(const base::Value& error)>;
   using GetPrinterInfoCallback =
       base::OnceCallback<void(const base::DictionaryValue& printer_info)>;
@@ -72,7 +62,7 @@ class PrinterHandler {
   static std::unique_ptr<PrinterHandler> CreateForPdfPrinter(
       Profile* profile,
       content::WebContents* preview_web_contents,
-      printing::StickySettings* sticky_settings);
+      StickySettings* sticky_settings);
 
   static std::unique_ptr<PrinterHandler> CreateForLocalPrinters(
       content::WebContents* preview_web_contents,
@@ -117,21 +107,16 @@ class PrinterHandler {
                                        GetPrinterInfoCallback callback);
 
   // Starts a print request.
-  // |destination_id|: The printer to which print job should be sent.
-  // |capability|: Capability reported by the printer.
-  // |job_title|: The  title used for print job.
-  // |ticket_json|: The print job ticket as JSON string.
-  // |page_size|: The document page size.
+  // |job_title|: The title used for print job.
+  // |settings|: The print job settings.
   // |print_data|: The document bytes to print.
   // |callback| should be called in the response to the request.
-  virtual void StartPrint(
-      const std::string& destination_id,
-      const std::string& capability,
-      const base::string16& job_title,
-      const std::string& ticket_json,
-      const gfx::Size& page_size,
-      const scoped_refptr<base::RefCountedMemory>& print_data,
-      PrintCallback callback) = 0;
+  virtual void StartPrint(const base::string16& job_title,
+                          base::Value settings,
+                          scoped_refptr<base::RefCountedMemory> print_data,
+                          PrintCallback callback) = 0;
 };
+
+}  // namespace printing
 
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINTER_HANDLER_H_

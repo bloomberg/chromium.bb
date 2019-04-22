@@ -5,6 +5,7 @@
 #include "src/builtins/builtins-utils-inl.h"
 #include "src/builtins/builtins.h"
 #include "src/counters.h"
+#include "src/heap/heap-inl.h"  // For public_symbol_table().
 #include "src/objects-inl.h"
 
 namespace v8 {
@@ -52,7 +53,7 @@ BUILTIN(SymbolKeyFor) {
   }
   Handle<Symbol> symbol = Handle<Symbol>::cast(obj);
   DisallowHeapAllocation no_gc;
-  Object* result;
+  Object result;
   if (symbol->is_public()) {
     result = symbol->name();
     DCHECK(result->IsString());

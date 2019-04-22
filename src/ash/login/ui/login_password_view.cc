@@ -13,8 +13,10 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/timer/timer.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -402,8 +404,8 @@ LoginPasswordView::LoginPasswordView() {
           kLockScreenArrowIcon, kSubmitButtonSizeDp,
           SkColorSetA(login_constants::kButtonEnabledColor,
                       login_constants::kButtonDisabledAlpha)));
-  submit_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_ASH_LOGIN_POD_SUBMIT_BUTTON_ACCESSIBLE_NAME));
+  submit_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME));
   password_row_->AddChildView(submit_button_);
 
   // Separator on bottom.
@@ -474,7 +476,7 @@ void LoginPasswordView::Clear() {
 }
 
 void LoginPasswordView::InsertNumber(int value) {
-  textfield_->InsertOrReplaceText(base::IntToString16(value));
+  textfield_->InsertOrReplaceText(base::NumberToString16(value));
 }
 
 void LoginPasswordView::Backspace() {

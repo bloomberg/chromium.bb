@@ -18,9 +18,9 @@ class PRINTING_EXPORT NupParameters {
   static bool IsSupported(int pages_per_sheet);
 
   // Orientation of the to-be-generated N-up PDF document.
-  bool landscape() const { return landscape_; };
-  int num_pages_on_x_axis() const { return num_pages_on_x_axis_; };
-  int num_pages_on_y_axis() const { return num_pages_on_y_axis_; };
+  bool landscape() const { return landscape_; }
+  int num_pages_on_x_axis() const { return num_pages_on_x_axis_; }
+  int num_pages_on_y_axis() const { return num_pages_on_y_axis_; }
 
   // Calculates the |num_pages_on_x_axis_|, |num_pages_on_y_axis_| and
   // |landscape_| based on the input.  |is_source_landscape| is true if the

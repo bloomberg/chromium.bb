@@ -17,8 +17,8 @@
 
 namespace net {
 
-class HostResolver;
 class NetLog;
+class ProxyHostResolver;
 class ProxyResolverErrorObserver;
 
 // A wrapper for ProxyResolverV8TracingFactory that implements the
@@ -32,7 +32,7 @@ class NET_EXPORT ProxyResolverFactoryV8TracingWrapper
   // ProxyResolverErrorObserver to be used by the ProxyResolver instance
   // returned by that call.
   ProxyResolverFactoryV8TracingWrapper(
-      HostResolver* host_resolver,
+      ProxyHostResolver* host_resolver,
       NetLog* net_log,
       const base::Callback<std::unique_ptr<ProxyResolverErrorObserver>()>&
           error_observer_factory);
@@ -53,7 +53,7 @@ class NET_EXPORT ProxyResolverFactoryV8TracingWrapper
       int error);
 
   std::unique_ptr<ProxyResolverV8TracingFactory> factory_impl_;
-  HostResolver* const host_resolver_;
+  ProxyHostResolver* const host_resolver_;
   NetLog* const net_log_;
   const base::Callback<std::unique_ptr<ProxyResolverErrorObserver>()>
       error_observer_factory_;

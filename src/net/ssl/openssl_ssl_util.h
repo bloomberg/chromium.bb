@@ -48,7 +48,7 @@ NET_EXPORT_PRIVATE int MapOpenSSLError(
 
 // Helper struct to store information about an OpenSSL error stack entry.
 struct OpenSSLErrorInfo {
-  OpenSSLErrorInfo() : error_code(0), file(NULL), line(0) {}
+  OpenSSLErrorInfo() : error_code(0), file(nullptr), line(0) {}
 
   uint32_t error_code;
   const char* file;

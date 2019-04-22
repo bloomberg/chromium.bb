@@ -154,6 +154,9 @@ void ChunkDemuxerStream::Seek(TimeDelta time) {
 }
 
 bool ChunkDemuxerStream::Append(const StreamParser::BufferQueue& buffers) {
+  if (append_observer_cb_)
+    append_observer_cb_.Run(&buffers);
+
   if (buffers.empty())
     return false;
 
@@ -258,6 +261,10 @@ void ChunkDemuxerStream::OnStartOfCodedFrameGroup(DecodeTimestamp start_dts,
   DVLOG(2) << "ChunkDemuxerStream::OnStartOfCodedFrameGroup(dts "
            << start_dts.InSecondsF() << ", pts " << start_pts.InSecondsF()
            << ")";
+
+  if (group_start_observer_cb_)
+    group_start_observer_cb_.Run(start_dts, start_pts);
+
   base::AutoLock auto_lock(lock_);
   SBSTREAM_OP(OnStartOfCodedFrameGroup(start_dts, start_pts));
 }
@@ -1123,6 +1130,10 @@ void ChunkDemuxer::MarkEndOfStream(PipelineStatus status) {
     return;
 
   if (state_ == INITIALIZING) {
+    MEDIA_LOG(ERROR, media_log_)
+        << "MediaSource endOfStream before demuxer initialization completes "
+           "(before HAVE_METADATA) is treated as an error. This may also occur "
+           "as consequence of other MediaSource errors before HAVE_METADATA.";
     ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
   }
@@ -1326,7 +1337,7 @@ void ChunkDemuxer::OnSourceInitDone(
 // static
 MediaTrack::Id ChunkDemuxer::GenerateMediaTrackId() {
   static unsigned g_track_count = 0;
-  return base::UintToString(++g_track_count);
+  return base::NumberToString(++g_track_count);
 }
 
 ChunkDemuxerStream* ChunkDemuxer::CreateDemuxerStream(

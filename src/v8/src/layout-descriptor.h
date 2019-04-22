@@ -27,7 +27,7 @@ namespace internal {
 // to it. GC uses layout descriptors to iterate objects. Avoid heap pointers
 // in a layout descriptor because they can lead to data races in GC when
 // GC moves objects in parallel.
-class LayoutDescriptor : public ByteArray {
+class V8_EXPORT_PRIVATE LayoutDescriptor : public ByteArray {
  public:
   V8_INLINE bool IsTagged(int field_index);
 
@@ -41,14 +41,14 @@ class LayoutDescriptor : public ByteArray {
 
   // Returns true if this is a layout of the object having only tagged fields.
   V8_INLINE bool IsFastPointerLayout();
-  V8_INLINE static bool IsFastPointerLayout(Object* layout_descriptor);
+  V8_INLINE static bool IsFastPointerLayout(Object layout_descriptor);
 
   // Returns true if the layout descriptor is in non-Smi form.
   V8_INLINE bool IsSlowLayout();
 
-  DECL_CAST2(LayoutDescriptor)
+  DECL_CAST(LayoutDescriptor)
 
-  V8_INLINE static LayoutDescriptor cast_gc_safe(Object* object);
+  V8_INLINE static LayoutDescriptor cast_gc_safe(Object object);
 
   // Builds layout descriptor optimized for given |map| by |num_descriptors|
   // elements of given descriptors array. The |map|'s descriptors could be
@@ -80,7 +80,7 @@ class LayoutDescriptor : public ByteArray {
   // only when corresponding descriptors array is trimmed.
   // The layout descriptor could be trimmed if it was slow or it could
   // become fast.
-  LayoutDescriptor Trim(Heap* heap, Map map, DescriptorArray* descriptors,
+  LayoutDescriptor Trim(Heap* heap, Map map, DescriptorArray descriptors,
                         int num_descriptors);
 
 #ifdef OBJECT_PRINT
@@ -116,7 +116,7 @@ class LayoutDescriptor : public ByteArray {
 
   // Calculates minimal layout descriptor capacity required for given
   // |map|, |descriptors| and |num_descriptors|.
-  V8_INLINE static int CalculateCapacity(Map map, DescriptorArray* descriptors,
+  V8_INLINE static int CalculateCapacity(Map map, DescriptorArray descriptors,
                                          int num_descriptors);
 
   // Calculates the length of the slow-mode backing store array by given layout
@@ -126,7 +126,7 @@ class LayoutDescriptor : public ByteArray {
   // Fills in clean |layout_descriptor| according to given |map|, |descriptors|
   // and |num_descriptors|.
   V8_INLINE static LayoutDescriptor Initialize(
-      LayoutDescriptor layout_descriptor, Map map, DescriptorArray* descriptors,
+      LayoutDescriptor layout_descriptor, Map map, DescriptorArray descriptors,
       int num_descriptors);
 
   static Handle<LayoutDescriptor> EnsureCapacity(
@@ -142,9 +142,8 @@ class LayoutDescriptor : public ByteArray {
   V8_INLINE V8_WARN_UNUSED_RESULT LayoutDescriptor SetTagged(int field_index,
                                                              bool tagged);
 
-  OBJECT_CONSTRUCTORS(LayoutDescriptor, ByteArray)
+  OBJECT_CONSTRUCTORS(LayoutDescriptor, ByteArray);
 };
-
 
 // LayoutDescriptorHelper is a helper class for querying layout descriptor
 // about whether the field at given offset is tagged or not.
@@ -160,8 +159,8 @@ class LayoutDescriptorHelper {
   // otherwise and writes the offset of the end of the contiguous region to
   // |out_end_of_contiguous_region_offset|. The |end_offset| value is the
   // upper bound for |out_end_of_contiguous_region_offset|.
-  bool IsTagged(int offset_in_bytes, int end_offset,
-                int* out_end_of_contiguous_region_offset);
+  V8_EXPORT_PRIVATE bool IsTagged(int offset_in_bytes, int end_offset,
+                                  int* out_end_of_contiguous_region_offset);
 
  private:
   bool all_fields_tagged_;

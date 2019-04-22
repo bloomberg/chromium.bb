@@ -48,8 +48,7 @@ void WindowElement::OnWindowHierarchyChanging(
 void WindowElement::OnWindowHierarchyChanged(
     const aura::WindowObserver::HierarchyChangeParams& params) {
   if (window_ == params.new_parent && params.receiver == params.new_parent) {
-    AddChild(new WindowElement(params.target, delegate(), this),
-             children().empty() ? nullptr : children().back());
+    AddChild(new WindowElement(params.target, delegate(), this));
   }
 }
 
@@ -100,8 +99,8 @@ std::unique_ptr<protocol::Array<std::string>> WindowElement::GetAttributes()
   return attributes;
 }
 
-std::pair<gfx::NativeWindow, gfx::Rect> WindowElement::GetNodeWindowAndBounds()
-    const {
+std::pair<gfx::NativeWindow, gfx::Rect>
+WindowElement::GetNodeWindowAndScreenBounds() const {
   return std::make_pair(static_cast<aura::Window*>(window_),
                         window_->GetBoundsInScreen());
 }

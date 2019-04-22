@@ -17,6 +17,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "base/stl_util.h"
 #include "minidump/minidump_context.h"
 
 namespace crashpad {
@@ -85,7 +86,6 @@ bool ThreadSnapshotMinidump::InitializeContext(
   }
 
   if (context_.architecture == CPUArchitecture::kCPUArchitectureX86) {
-    LOG(WARNING) << "Snapshot X86 context support has no unit tests.";
     context_memory_.resize(sizeof(CPUContextX86));
     context_.x86 = reinterpret_cast<CPUContextX86*>(context_memory_.data());
     const MinidumpContextX86* src =
@@ -179,7 +179,6 @@ bool ThreadSnapshotMinidump::InitializeContext(
     context_.x86_64->dr4 = src->dr6;
     context_.x86_64->dr5 = src->dr7;
   } else if (context_.architecture == CPUArchitecture::kCPUArchitectureARM) {
-    LOG(WARNING) << "Snapshot ARM32 context support has no unit tests.";
     context_memory_.resize(sizeof(CPUContextARM));
     context_.arm = reinterpret_cast<CPUContextARM*>(context_memory_.data());
     const MinidumpContextARM* src =
@@ -192,7 +191,7 @@ bool ThreadSnapshotMinidump::InitializeContext(
       return false;
     }
 
-    for (size_t i = 0; i < arraysize(src->regs); i++) {
+    for (size_t i = 0; i < base::size(src->regs); i++) {
       context_.arm->regs[i] = src->regs[i];
     }
 
@@ -204,7 +203,7 @@ bool ThreadSnapshotMinidump::InitializeContext(
     context_.arm->cpsr = src->cpsr;
     context_.arm->vfp_regs.fpscr = src->fpscr;
 
-    for (size_t i = 0; i < arraysize(src->vfp); i++) {
+    for (size_t i = 0; i < base::size(src->vfp); i++) {
       context_.arm->vfp_regs.vfp[i] = src->vfp[i];
     }
 
@@ -224,14 +223,14 @@ bool ThreadSnapshotMinidump::InitializeContext(
       return false;
     }
 
-    for (size_t i = 0; i < arraysize(src->regs); i++) {
+    for (size_t i = 0; i < base::size(src->regs); i++) {
       context_.arm64->regs[i] = src->regs[i];
     }
 
     context_.arm64->regs[29] = src->fp;
     context_.arm64->regs[30] = src->lr;
 
-    for (size_t i = 0; i < arraysize(src->fpsimd); i++) {
+    for (size_t i = 0; i < base::size(src->fpsimd); i++) {
       context_.arm64->fpsimd[i] = src->fpsimd[i];
     }
 
@@ -241,7 +240,6 @@ bool ThreadSnapshotMinidump::InitializeContext(
     context_.arm64->fpsr = src->fpsr;
     context_.arm64->spsr = src->cpsr;
   } else if (context_.architecture == CPUArchitecture::kCPUArchitectureMIPSEL) {
-    LOG(WARNING) << "Snapshot MIPS context support has no unit tests.";
     context_memory_.resize(sizeof(CPUContextMIPS));
     context_.mipsel = reinterpret_cast<CPUContextMIPS*>(context_memory_.data());
     const MinidumpContextMIPS* src =
@@ -254,7 +252,7 @@ bool ThreadSnapshotMinidump::InitializeContext(
       return false;
     }
 
-    for (size_t i = 0; i < arraysize(src->regs); i++) {
+    for (size_t i = 0; i < base::size(src->regs); i++) {
       context_.mipsel->regs[i] = src->regs[i];
     }
 
@@ -262,7 +260,7 @@ bool ThreadSnapshotMinidump::InitializeContext(
     context_.mipsel->mdlo = static_cast<uint32_t>(src->mdlo);
     context_.mipsel->dsp_control = src->dsp_control;
 
-    for (size_t i = 0; i < arraysize(src->hi); i++) {
+    for (size_t i = 0; i < base::size(src->hi); i++) {
       context_.mipsel->hi[i] = src->hi[i];
       context_.mipsel->lo[i] = src->lo[i];
     }
@@ -277,7 +275,6 @@ bool ThreadSnapshotMinidump::InitializeContext(
     memcpy(&context_.mipsel->fpregs, &src->fpregs, sizeof(src->fpregs));
   } else if (context_.architecture ==
              CPUArchitecture::kCPUArchitectureMIPS64EL) {
-    LOG(WARNING) << "Snapshot MIPS64 context support has no unit tests.";
     context_memory_.resize(sizeof(CPUContextMIPS64));
     context_.mips64 =
       reinterpret_cast<CPUContextMIPS64*>(context_memory_.data());
@@ -291,7 +288,7 @@ bool ThreadSnapshotMinidump::InitializeContext(
       return false;
     }
 
-    for (size_t i = 0; i < arraysize(src->regs); i++) {
+    for (size_t i = 0; i < base::size(src->regs); i++) {
       context_.mips64->regs[i] = src->regs[i];
     }
 
@@ -299,7 +296,7 @@ bool ThreadSnapshotMinidump::InitializeContext(
     context_.mips64->mdlo = src->mdlo;
     context_.mips64->dsp_control = src->dsp_control;
 
-    for (size_t i = 0; i < arraysize(src->hi); i++) {
+    for (size_t i = 0; i < base::size(src->hi); i++) {
       context_.mips64->hi[i] = src->hi[i];
       context_.mips64->lo[i] = src->lo[i];
     }

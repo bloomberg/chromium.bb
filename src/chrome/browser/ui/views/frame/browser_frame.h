@@ -56,9 +56,9 @@ class BrowserFrame : public views::Widget,
   // left edge of the window. Used in our Non-Client View's Layout.
   int GetMinimizeButtonOffset() const;
 
-  // Retrieves the bounds, in non-client view coordinates for the specified
-  // TabStrip view.
-  gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const;
+  // Retrieves the bounds in non-client view coordinates for the
+  // TabStripRegionView that contains the specified TabStrip view.
+  gfx::Rect GetBoundsForTabStripRegion(const views::View* tabstrip) const;
 
   // Returns the inset of the topmost view in the client view from the top of
   // the non-client view. The topmost view depends on the window type. The
@@ -100,6 +100,9 @@ class BrowserFrame : public views::Widget,
   // Called when BrowserView creates all it's child views.
   void OnBrowserViewInitViewsComplete();
 
+  // Returns whether this window should be themed with the user's theme or not.
+  bool ShouldUseTheme() const;
+
   // views::Widget:
   views::internal::RootView* CreateRootView() override;
   views::NonClientFrameView* CreateNonClientFrameView() override;
@@ -111,9 +114,9 @@ class BrowserFrame : public views::Widget,
   void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
   // views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& p,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& p,
+                                  ui::MenuSourceType source_type) override;
 
   // Returns the menu model. BrowserFrame owns the returned model.
   // Note that in multi user mode this will upon each call create a new model.

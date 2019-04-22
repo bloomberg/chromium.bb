@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/layout/multi_column_fragmentainer_group.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -17,6 +18,8 @@ class LayoutMultiColumnSet;
 // flow thread. The portion typically corresponds to the bounds of some
 // descendant layout object. The iterator walks in block direction order.
 class FragmentainerIterator {
+  STACK_ALLOCATED();
+
  public:
   // Initialize the iterator, and move to the first fragmentainer of interest.
   // The clip rectangle is optional. If it's empty, it means that no clipping

@@ -23,11 +23,8 @@ namespace gpu {
 namespace gles2 {
 
 class Buffer;
-class ErrorState;
-class ErrorStateClient;
 class FeatureInfo;
 class IndexedBufferBindingHost;
-class Logger;
 class Program;
 class Renderbuffer;
 class TransformFeedback;
@@ -195,8 +192,6 @@ struct GPU_GLES2_EXPORT ContextState {
   enum Dimension { k2D, k3D };
 
   ContextState(FeatureInfo* feature_info,
-               ErrorStateClient* error_state_client,
-               Logger* logger,
                bool track_texture_and_sampler_units = true);
   ~ContextState();
 
@@ -283,8 +278,6 @@ struct GPU_GLES2_EXPORT ContextState {
     }
     api()->glStencilMaskSeparateFn(op, mask);
   }
-
-  ErrorState* GetErrorState();
 
   void SetBoundBuffer(GLenum target, Buffer* buffer);
   void RemoveBoundBuffer(Buffer* buffer);
@@ -430,7 +423,6 @@ struct GPU_GLES2_EXPORT ContextState {
 
   gl::GLApi* api_ = nullptr;
   FeatureInfo* feature_info_;
-  std::unique_ptr<ErrorState> error_state_;
 
   bool context_lost_ = false;
 };

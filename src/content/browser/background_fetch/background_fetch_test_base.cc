@@ -21,7 +21,9 @@
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
@@ -31,7 +33,6 @@ namespace content {
 namespace {
 
 const char kTestOrigin[] = "https://example.com/";
-const char kTestScriptUrl[] = "https://example.com/sw.js";
 
 void DidRegisterServiceWorker(int64_t* out_service_worker_registration_id,
                               base::Closure quit_closure,
@@ -67,8 +68,8 @@ void DidUnregisterServiceWorker(base::Closure quit_closure,
   std::move(quit_closure).Run();
 }
 
-GURL GetScopeForId(int64_t id) {
-  return GURL(kTestOrigin + base::IntToString(id));
+GURL GetScopeForId(const std::string& origin, int64_t id) {
+  return GURL(origin + base::NumberToString(id));
 }
 
 }  // namespace
@@ -78,6 +79,7 @@ BackgroundFetchTestBase::BackgroundFetchTestBase()
     // at time of writing EmbeddedWorkerTestHelper didn't seem to support that.
     : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
       delegate_(browser_context_.GetBackgroundFetchDelegate()),
+      embedded_worker_test_helper_(base::FilePath()),
       origin_(url::Origin::Create(GURL(kTestOrigin))),
       storage_partition_(
           BrowserContext::GetDefaultStoragePartition(browser_context())) {}
@@ -97,13 +99,18 @@ void BackgroundFetchTestBase::TearDown() {
 }
 
 int64_t BackgroundFetchTestBase::RegisterServiceWorker() {
-  GURL script_url(kTestScriptUrl);
+  return RegisterServiceWorkerForOrigin(origin_);
+}
+
+int64_t BackgroundFetchTestBase::RegisterServiceWorkerForOrigin(
+    const url::Origin& origin) {
+  GURL script_url(origin.GetURL().spec() + "sw.js");
   int64_t service_worker_registration_id =
       blink::mojom::kInvalidServiceWorkerRegistrationId;
 
   {
     blink::mojom::ServiceWorkerRegistrationOptions options;
-    options.scope = GetScopeForId(next_pattern_id_++);
+    options.scope = GetScopeForId(origin.GetURL().spec(), next_pattern_id_++);
     base::RunLoop run_loop;
     embedded_worker_test_helper_.context()->RegisterServiceWorker(
         script_url, options,
@@ -125,7 +132,7 @@ int64_t BackgroundFetchTestBase::RegisterServiceWorker() {
   {
     base::RunLoop run_loop;
     embedded_worker_test_helper_.context()->storage()->FindRegistrationForId(
-        service_worker_registration_id, origin_.GetURL(),
+        service_worker_registration_id, origin.GetURL(),
         base::BindOnce(&DidFindServiceWorkerRegistration,
                        &service_worker_registration, run_loop.QuitClosure()));
 
@@ -150,7 +157,7 @@ void BackgroundFetchTestBase::UnregisterServiceWorker(
     int64_t service_worker_registration_id) {
   base::RunLoop run_loop;
   embedded_worker_test_helper_.context()->UnregisterServiceWorker(
-      GetScopeForId(service_worker_registration_id),
+      GetScopeForId(kTestOrigin, service_worker_registration_id),
       base::BindOnce(&DidUnregisterServiceWorker, run_loop.QuitClosure()));
   run_loop.Run();
 }
@@ -170,20 +177,25 @@ BackgroundFetchTestBase::CreateRequestWithProvidedResponse(
   request->method = method;
   request->is_reload = false;
   request->referrer = blink::mojom::Referrer::New();
-  request->headers = base::flat_map<std::string, std::string>();
+  request->headers = {};
   return request;
 }
 
-std::unique_ptr<BackgroundFetchRegistration>
-BackgroundFetchTestBase::CreateBackgroundFetchRegistration(
+blink::mojom::BackgroundFetchRegistrationDataPtr
+BackgroundFetchTestBase::CreateBackgroundFetchRegistrationData(
     const std::string& developer_id,
-    const std::string& unique_id,
     blink::mojom::BackgroundFetchResult result,
     blink::mojom::BackgroundFetchFailureReason failure_reason) {
-  auto registration = std::make_unique<BackgroundFetchRegistration>(
-      developer_id, unique_id, 0 /* upload_total */, 0 /* uploaded */,
-      0 /* download_total */, 0 /* downloaded */, result, failure_reason);
-  return registration;
+  return blink::mojom::BackgroundFetchRegistrationData::New(
+      developer_id, /* upload_total= */ 0, /* uploaded= */ 0,
+      /* download_total= */ 0, /* downloaded= */ 0, result, failure_reason);
+}
+
+scoped_refptr<DevToolsBackgroundServicesContext>
+BackgroundFetchTestBase::devtools_context() const {
+  DCHECK(storage_partition_);
+  return static_cast<StoragePartitionImpl*>(storage_partition_)
+      ->GetDevToolsBackgroundServicesContext();
 }
 
 }  // namespace content

@@ -30,11 +30,24 @@
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 using content::NavigationController;
 using content::WebContents;
 
 namespace {
+
+ScopedJavaLocalRef<jobject> CreateByteBufferDirect(JNIEnv* env, jint size) {
+  ScopedJavaLocalRef<jclass> clazz =
+      base::android::GetClass(env, "java/nio/ByteBuffer");
+  jmethodID method = MethodID::Get<MethodID::TYPE_STATIC>(
+      env, clazz.obj(), "allocateDirect", "(I)Ljava/nio/ByteBuffer;");
+  jobject ret = env->CallStaticObjectMethod(clazz.obj(), method, size);
+  if (base::android::ClearException(env)) {
+    return {};
+  }
+  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+}
 
 void WriteStateHeaderToPickle(bool off_the_record,
                               int entry_count,
@@ -305,21 +318,13 @@ ScopedJavaLocalRef<jobject> WriteSerializedNavigationsAsByteBuffer(
                       tab_navigation_pickle.size());
   }
 
-  void* buffer = malloc(pickle.size());
-  if (buffer == NULL) {
-    // We can run out of memory allocating a large enough buffer.
-    // In that case we'll only save the current entry.
-    // TODO(jcivelli): http://b/issue?id=5869635 we should save more entries.
-    // more TODO(jcivelli): Make this work
-    return ScopedJavaLocalRef<jobject>();
+  ScopedJavaLocalRef<jobject> buffer =
+      CreateByteBufferDirect(env, static_cast<jint>(pickle.size()));
+  if (buffer) {
+    memcpy(env->GetDirectBufferAddress(buffer.obj()), pickle.data(),
+           pickle.size());
   }
-  // TODO(yfriedman): Add a |release| to Pickle and save the copy.
-  memcpy(buffer, pickle.data(), pickle.size());
-  ScopedJavaLocalRef<jobject> jb(env, env->NewDirectByteBuffer(buffer,
-                                                               pickle.size()));
-  if (base::android::ClearException(env) || jb.is_null())
-    free(buffer);
-  return jb;
+  return buffer;
 }
 
 // Common implementation for GetContentsStateAsByteBuffer() and
@@ -334,7 +339,7 @@ ScopedJavaLocalRef<jobject> WriteNavigationsAsByteBuffer(
   for (size_t i = 0; i < navigations.size(); ++i) {
     serialized.push_back(
         sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-            i, *navigations[i]));
+            i, navigations[i]));
   }
   return WriteSerializedNavigationsAsByteBuffer(env, is_off_the_record,
                                                 serialized, current_entry);
@@ -369,7 +374,7 @@ WebContents* RestoreContentsFromByteBuffer(void* data,
   return web_contents.release();
 }
 
-};  // anonymous namespace
+}  // anonymous namespace
 
 ScopedJavaLocalRef<jobject> WebContentsState::GetContentsStateAsByteBuffer(
     JNIEnv* env,
@@ -477,7 +482,6 @@ WebContentsState::GetVirtualUrlFromByteBuffer(JNIEnv* env,
 
 ScopedJavaLocalRef<jobject> WebContentsState::RestoreContentsFromByteBuffer(
     JNIEnv* env,
-    jclass clazz,
     jobject state,
     jint saved_state_version,
     jboolean initially_hidden) {
@@ -523,22 +527,12 @@ ScopedJavaLocalRef<jobject>
 
 // Static JNI methods.
 
-static void JNI_TabState_FreeWebContentsStateBuffer(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
-    const JavaParamRef<jobject>& obj) {
-  void* data = env->GetDirectBufferAddress(obj);
-  free(data);
-}
-
 static ScopedJavaLocalRef<jobject> JNI_TabState_RestoreContentsFromByteBuffer(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& state,
     jint saved_state_version,
     jboolean initially_hidden) {
   return WebContentsState::RestoreContentsFromByteBuffer(env,
-                                                         clazz,
                                                          state,
                                                          saved_state_version,
                                                          initially_hidden);
@@ -546,7 +540,6 @@ static ScopedJavaLocalRef<jobject> JNI_TabState_RestoreContentsFromByteBuffer(
 
 static ScopedJavaLocalRef<jobject> JNI_TabState_GetContentsStateAsByteBuffer(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jtab) {
   TabAndroid* tab_android = TabAndroid::GetNativeTab(env, jtab);
   return WebContentsState::GetContentsStateAsByteBuffer(env, tab_android);
@@ -555,7 +548,6 @@ static ScopedJavaLocalRef<jobject> JNI_TabState_GetContentsStateAsByteBuffer(
 static base::android::ScopedJavaLocalRef<jobject>
 JNI_TabState_DeleteNavigationEntries(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const base::android::JavaParamRef<jobject>& state,
     jint saved_state_version,
     jlong predicate_ptr) {
@@ -571,7 +563,6 @@ JNI_TabState_DeleteNavigationEntries(
 static ScopedJavaLocalRef<jobject>
 JNI_TabState_CreateSingleNavigationStateAsByteBuffer(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url,
     const JavaParamRef<jstring>& referrer_url,
     jint referrer_policy,
@@ -582,7 +573,6 @@ JNI_TabState_CreateSingleNavigationStateAsByteBuffer(
 
 static ScopedJavaLocalRef<jstring> JNI_TabState_GetDisplayTitleFromByteBuffer(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& state,
     jint saved_state_version) {
   void* data = env->GetDirectBufferAddress(state);
@@ -596,7 +586,6 @@ static ScopedJavaLocalRef<jstring> JNI_TabState_GetDisplayTitleFromByteBuffer(
 
 static ScopedJavaLocalRef<jstring> JNI_TabState_GetVirtualUrlFromByteBuffer(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& state,
     jint saved_state_version) {
   void* data = env->GetDirectBufferAddress(state);
@@ -610,12 +599,11 @@ static ScopedJavaLocalRef<jstring> JNI_TabState_GetVirtualUrlFromByteBuffer(
 // Creates a historical tab entry from the serialized tab contents contained
 // within |state|.
 static void JNI_TabState_CreateHistoricalTab(JNIEnv* env,
-                                             const JavaParamRef<jclass>& clazz,
                                              const JavaParamRef<jobject>& state,
                                              jint saved_state_version) {
   std::unique_ptr<WebContents> web_contents(WebContents::FromJavaWebContents(
       WebContentsState::RestoreContentsFromByteBuffer(
-          env, clazz, state, saved_state_version, true)));
+          env, state, saved_state_version, true)));
   if (web_contents.get())
     TabAndroid::CreateHistoricalTabFromContents(web_contents.get());
 }

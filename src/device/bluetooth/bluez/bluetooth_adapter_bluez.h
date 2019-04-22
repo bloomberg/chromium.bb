@@ -25,6 +25,7 @@
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluez/bluetooth_service_record_bluez.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
+#include "device/bluetooth/dbus/bluetooth_agent_manager_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_service_provider.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluetooth_input_client.h"
@@ -72,6 +73,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       public bluez::BluetoothAdapterClient::Observer,
       public bluez::BluetoothDeviceClient::Observer,
       public bluez::BluetoothInputClient::Observer,
+      public bluez::BluetoothAgentManagerClient::Observer,
       public bluez::BluetoothAgentServiceProvider::Delegate {
  public:
   using ErrorCompletionCallback =
@@ -278,6 +280,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void InputPropertyChanged(const dbus::ObjectPath& object_path,
                             const std::string& property_name) override;
 
+  // bluez::BluetoothAgentManagerClient::Observer override.
+  void AgentManagerAdded(const dbus::ObjectPath& object_path) override;
+  void AgentManagerRemoved(const dbus::ObjectPath& object_path) override;
+
   // bluez::BluetoothAgentServiceProvider::Delegate override.
   void Released() override;
   void RequestPinCode(const dbus::ObjectPath& device_path,
@@ -441,6 +447,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       const ServiceRecordErrorCallback& error_callback,
       const std::string& error_name,
       const std::string& error_message);
+
+  // Called by dbus:: on an error while trying to set long term keys.
+  void SetLongTermKeysError(const std::string& error_name,
+                            const std::string& error_message);
 
   InitCallback init_callback_;
 

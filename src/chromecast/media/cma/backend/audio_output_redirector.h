@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -24,32 +25,6 @@ class AudioBus;
 namespace chromecast {
 namespace media {
 class MixerInput;
-
-// Interface used by matching MixerInputs to pass audio data to an output
-// redirector.
-class AudioOutputRedirectorInput {
- public:
-  // Returns the relative order of the output redirector (used if there are
-  // multiple output redirectors that match a given MixerInput).
-  virtual int Order() = 0;
-
-  // Returns any extra delay that the output redirector will add. Used for A/V
-  // sync.
-  virtual int64_t GetDelayMicroseconds() = 0;
-
-  // Called to handle audio from a single input stream. Note that all audio
-  // output redirectors will receive this data, even if they are not first in
-  // the queue of redirectors; this is to allow smooth fading in/out when
-  // redirectors are added or removed.
-  virtual void Redirect(
-      ::media::AudioBus* const buffer,
-      int num_frames,
-      MediaPipelineBackend::AudioDecoder::RenderingDelay rendering_delay,
-      bool redirected) = 0;
-
- protected:
-  virtual ~AudioOutputRedirectorInput() = default;
-};
 
 // Empty interface so we can use a pointer to AudioOutputRedirector as the
 // token.
@@ -86,6 +61,12 @@ class AudioOutputRedirector : public AudioOutputRedirectorToken {
   void AddInput(MixerInput* mixer_input);
   void RemoveInput(MixerInput* mixer_input);
 
+  // Updates the set of patterns used to determine which inputs should be
+  // redirected by this AudioOutputRedirector. Any inputs which no longer match
+  // will stop being redirected.
+  void UpdatePatterns(
+      std::vector<std::pair<AudioContentType, std::string>> patterns);
+
   // Indicates that mixer output is starting at the given sample rate of
   // |output_samples_per_second|.
   void Start(int output_samples_per_second);
@@ -114,7 +95,7 @@ class AudioOutputRedirector : public AudioOutputRedirectorToken {
 
   bool ApplyToInput(MixerInput* mixer_input);
 
-  const AudioOutputRedirectionConfig config_;
+  AudioOutputRedirectionConfig config_;
   const std::unique_ptr<RedirectedAudioOutput> output_;
 
   int next_num_frames_ = 0;
@@ -125,6 +106,7 @@ class AudioOutputRedirector : public AudioOutputRedirectorToken {
   std::vector<float*> channel_data_;
 
   base::flat_map<MixerInput*, std::unique_ptr<InputImpl>> inputs_;
+  base::flat_set<MixerInput*> non_redirected_inputs_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputRedirector);
 };

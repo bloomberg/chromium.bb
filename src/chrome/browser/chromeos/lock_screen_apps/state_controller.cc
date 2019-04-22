@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/base64.h"
@@ -26,7 +25,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -69,14 +68,8 @@ std::string GenerateCryptoKey() {
 }  // namespace
 
 // static
-bool StateController::IsEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDisableLockScreenApps);
-}
-
-// static
 StateController* StateController::Get() {
-  DCHECK(g_state_controller_instance || !IsEnabled());
+  DCHECK(g_state_controller_instance);
   return g_state_controller_instance;
 }
 
@@ -94,7 +87,6 @@ StateController::StateController()
       power_manager_client_observer_(this),
       weak_ptr_factory_(this) {
   DCHECK(!g_state_controller_instance);
-  DCHECK(IsEnabled());
 
   g_state_controller_instance = this;
 }
@@ -259,8 +251,7 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
 void StateController::InitializeWithStylusInputPresent() {
   stylus_input_missing_ = false;
 
-  power_manager_client_observer_.Add(
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+  power_manager_client_observer_.Add(chromeos::PowerManagerClient::Get());
   session_observer_.Add(session_manager::SessionManager::Get());
   OnSessionStateChanged();
 
@@ -307,25 +298,6 @@ void StateController::RequestNewLockScreenNote(LockScreenNoteOrigin origin) {
   // Update state to launching even if app fails to launch - this is to notify
   // listeners that a lock screen note request was handled.
   UpdateLockScreenNoteState(TrayActionState::kLaunching);
-
-  // Defer app launch for stylus eject with Web UI based lock screen until the
-  // note action launch animation finishes. The goal is to ensure the app
-  // window is not shown before the animation completes.
-  // This is not needed for views based lock screen - the views implementation
-  // already ensures UI animation is done before the app window is shown.
-  // This is not needed for requests that come from the lock UI as the lock
-  // screen UI sends these requests *after* the note action launch animation.
-  if (origin == LockScreenNoteOrigin::kStylusEject &&
-      !ash::switches::IsUsingViewsLock()) {
-    app_launch_delayed_for_animation_ = true;
-    return;
-  }
-
-  StartLaunchRequest();
-}
-
-void StateController::StartLaunchRequest() {
-  DCHECK_EQ(lock_screen_note_state_, TrayActionState::kLaunching);
 
   if (!app_manager_->LaunchNoteTaking()) {
     UpdateLockScreenNoteState(TrayActionState::kAvailable);
@@ -378,6 +350,13 @@ void StateController::OnWindowVisibilityChanged(aura::Window* window,
   }
 }
 
+void StateController::OnWindowDestroying(aura::Window* window) {
+  if (window != note_app_window_->GetNativeWindow())
+    return;
+  ResetNoteTakingWindowAndMoveToNextState(
+      false /*close_window*/, CloseLockScreenNoteReason::kAppWindowClosed);
+}
+
 void StateController::OnAppWindowAdded(extensions::AppWindow* app_window) {
   if (note_app_window_ != app_window)
     return;
@@ -393,9 +372,12 @@ void StateController::OnAppWindowRemoved(extensions::AppWindow* app_window) {
       false /*close_window*/, CloseLockScreenNoteReason::kAppWindowClosed);
 }
 
-void StateController::OnTouchscreenDeviceConfigurationChanged() {
-  if (stylus_input_missing_ && ash::stylus_utils::HasStylusInput())
+void StateController::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if ((input_device_types & ui::InputDeviceEventObserver::kTouchscreen) &&
+      stylus_input_missing_ && ash::stylus_utils::HasStylusInput()) {
     InitializeWithStylusInputPresent();
+  }
 }
 
 void StateController::SuspendImminent(
@@ -454,15 +436,6 @@ bool StateController::HandleTakeFocus(content::WebContents* web_contents,
   return true;
 }
 
-void StateController::NewNoteLaunchAnimationDone() {
-  if (!app_launch_delayed_for_animation_)
-    return;
-  DCHECK_EQ(TrayActionState::kLaunching, lock_screen_note_state_);
-
-  app_launch_delayed_for_animation_ = false;
-  StartLaunchRequest();
-}
-
 void StateController::OnNoteTakingAvailabilityChanged() {
   if (!app_manager_->IsNoteTakingAppAvailable() ||
       (note_app_window_ && note_app_window_->GetExtension()->id() !=
@@ -494,7 +467,6 @@ void StateController::ResetNoteTakingWindowAndMoveToNextState(
     CloseLockScreenNoteReason reason) {
   note_window_observer_.RemoveAll();
   app_window_observer_.RemoveAll();
-  app_launch_delayed_for_animation_ = false;
   if (first_app_run_toast_manager_)
     first_app_run_toast_manager_->Reset();
 

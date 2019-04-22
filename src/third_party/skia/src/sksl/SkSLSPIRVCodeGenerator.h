@@ -95,9 +95,15 @@ private:
         kMin_SpecialIntrinsic,
         kMix_SpecialIntrinsic,
         kMod_SpecialIntrinsic,
+        kDFdy_SpecialIntrinsic,
         kSaturate_SpecialIntrinsic,
         kSubpassLoad_SpecialIntrinsic,
         kTexture_SpecialIntrinsic,
+    };
+
+    enum class Precision {
+        kLow,
+        kHigh,
     };
 
     void setupIntrinsics();
@@ -119,7 +125,9 @@ private:
     SpvId getPointerType(const Type& type, const MemoryLayout& layout,
                          SpvStorageClass_ storageClass);
 
-    void writePrecisionModifier(const Modifiers& modifiers, SpvId id);
+    void writePrecisionModifier(Precision precision, SpvId id);
+
+    void writePrecisionModifier(const Type& type, SpvId id);
 
     std::vector<SpvId> getAccessChain(const Expression& expr, OutputStream& out);
 
@@ -190,6 +198,10 @@ private:
      */
     void writeMatrixCopy(SpvId id, SpvId src, const Type& srcType, const Type& dstType,
                          OutputStream& out);
+
+    void addColumnEntry(SpvId columnType, std::vector<SpvId>* currentColumn,
+                        std::vector<SpvId>* columnIds, int* currentCount, int rows, SpvId entry,
+                        OutputStream& out);
 
     SpvId writeMatrixConstructor(const Constructor& c, OutputStream& out);
 
@@ -336,6 +348,8 @@ private:
     std::unordered_map<uint64_t, SpvId> fUIntConstants;
     std::unordered_map<float, SpvId> fFloatConstants;
     std::unordered_map<double, SpvId> fDoubleConstants;
+    // The constant float2(0, 1), used in swizzling
+    SpvId fConstantZeroOneVector = 0;
     bool fSetupFragPosition;
     // label of the current block, or 0 if we are not in a block
     SpvId fCurrentBlock;

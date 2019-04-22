@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 
 namespace blink {
 
@@ -62,6 +63,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
                                                    builder->Direction())),
       padding_(builder->padding_.ConvertToPhysical(builder->GetWritingMode(),
                                                    builder->Direction())) {
+  DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_old_layout_root_ = builder->is_old_layout_root_;
   border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
@@ -70,23 +72,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
 }
 
 bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
-  const LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object);
-  DCHECK(layout_object->IsBoxModelObject());
-  return ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer();
-}
-
-bool NGPhysicalBoxFragment::HasOverflowClip() const {
-  const LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object);
-  return layout_object->HasOverflowClip();
-}
-
-bool NGPhysicalBoxFragment::ShouldClipOverflow() const {
-  const LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object);
-  return layout_object->IsBox() &&
-         ToLayoutBox(layout_object)->ShouldClipOverflow();
+  return GetLayoutBoxModelObject().HasSelfPaintingLayer();
 }
 
 bool NGPhysicalBoxFragment::HasControlClip() const {
@@ -115,9 +101,17 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::ScrollableOverflow() const {
   } else if (layout_object->IsLayoutInline()) {
     // Inline overflow is a union of child overflows.
     NGPhysicalOffsetRect overflow({}, Size());
+    WritingMode container_writing_mode = Style().GetWritingMode();
+    TextDirection container_direction = Style().Direction();
     for (const auto& child_fragment : Children()) {
       NGPhysicalOffsetRect child_overflow =
-          child_fragment->ScrollableOverflow();
+          child_fragment->ScrollableOverflowForPropagation(layout_object);
+      if (child_fragment->Style() != Style()) {
+        NGPhysicalOffset relative_offset = ComputeRelativeOffset(
+            child_fragment->Style(), container_writing_mode,
+            container_direction, Size());
+        child_overflow.offset += relative_offset;
+      }
       child_overflow.offset += child_fragment.Offset();
       overflow.Unite(child_overflow);
     }
@@ -140,7 +134,8 @@ LayoutSize NGPhysicalBoxFragment::ScrollSize() const {
   return LayoutSize(box->ScrollWidth(), box->ScrollHeight());
 }
 
-NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfInkOverflow() const {
+NGPhysicalOffsetRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
+  CheckCanUpdateInkOverflow();
   const ComputedStyle& style = Style();
   LayoutRect ink_overflow({}, Size().ToLayoutSize());
 
@@ -173,30 +168,18 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
   const LayoutObject* layout_object = GetLayoutObject();
   DCHECK(layout_object);
   if (layout_object->IsLayoutInline()) {
-    Vector<LayoutRect> blockflow_outline_rects;
-    ToLayoutInline(layout_object)
-        ->AddOutlineRects(blockflow_outline_rects, LayoutPoint(), outline_type);
+    Vector<LayoutRect> blockflow_outline_rects =
+        layout_object->PhysicalOutlineRects(LayoutPoint(), outline_type);
     // The rectangles returned are offset from the containing block. We need the
-    // offset from this fragment. Additionally, the rectangles are offset
-    // relatively to the block-start of the container (this matters when
-    // writing-mode is vertical-rl). We want them to be purely physical. Apply
-    // correction.
+    // offset from this fragment.
     if (blockflow_outline_rects.size() > 0) {
-      const LayoutBlock* block_for_flipping = nullptr;
       LayoutPoint first_fragment_offset = blockflow_outline_rects[0].Location();
-      if (UNLIKELY(layout_object->HasFlippedBlocksWritingMode())) {
-        block_for_flipping = layout_object->ContainingBlock();
-        first_fragment_offset.SetX(block_for_flipping->FlipForWritingMode(
-            blockflow_outline_rects[0].MaxX()));
-      }
       LayoutSize corrected_offset = additional_offset - first_fragment_offset;
       for (auto& outline : blockflow_outline_rects) {
         // Skip if both width and height are zero. Contaning blocks in empty
         // linebox is one such case.
         if (outline.Size().IsZero())
           continue;
-        if (UNLIKELY(block_for_flipping))
-          block_for_flipping->FlipForWritingMode(outline);
         outline.Move(corrected_offset);
         outline_rects->push_back(outline);
       }
@@ -221,30 +204,6 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
 
   // TODO(kojii): Needs inline_element_continuation logic from
   // LayoutBlockFlow::AddOutlineRects?
-}
-
-NGPhysicalOffsetRect NGPhysicalBoxFragment::InkOverflow(bool apply_clip) const {
-  if ((apply_clip && HasOverflowClip()) || Style().HasMask())
-    return SelfInkOverflow();
-
-  NGPhysicalOffsetRect ink_overflow = SelfInkOverflow();
-  ink_overflow.Unite(ContentsInkOverflow());
-  return ink_overflow;
-}
-
-NGPhysicalOffsetRect NGPhysicalBoxFragment::ContentsInkOverflow() const {
-  if (LayoutBox* layout_box = ToLayoutBoxOrNull(GetLayoutObject())) {
-    return NGPhysicalOffsetRect(layout_box->ContentsVisualOverflowRect());
-  }
-  return ComputeContentsInkOverflow();
-}
-
-NGPhysicalOffsetRect NGPhysicalBoxFragment::ComputeContentsInkOverflow() const {
-  NGPhysicalOffsetRect overflow({}, Size());
-  for (const auto& child : Children()) {
-    child->PropagateContentsInkOverflow(&overflow, child.Offset());
-  }
-  return overflow;
 }
 
 UBiDiLevel NGPhysicalBoxFragment::BidiLevel() const {

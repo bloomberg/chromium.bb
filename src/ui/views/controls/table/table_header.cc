@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -22,19 +24,22 @@ namespace views {
 
 namespace {
 
-const int kVerticalPadding = 4;
-
 // The minimum width we allow a column to go down to.
-const int kMinColumnWidth = 10;
+constexpr int kMinColumnWidth = 10;
+
+// Amount that a column is resized when using the keyboard.
+constexpr int kResizeKeyboardAmount = 5;
+
+constexpr int kVerticalPadding = 4;
 
 // Distace from edge columns can be resized by.
-const int kResizePadding = 5;
+constexpr int kResizePadding = 5;
 
 // Amount of space above/below the separator.
-const int kSeparatorPadding = 4;
+constexpr int kSeparatorPadding = 4;
 
 // Size of the sort indicator (doesn't include padding).
-const int kSortIndicatorSize = 8;
+constexpr int kSortIndicatorSize = 8;
 
 }  // namespace
 
@@ -43,14 +48,14 @@ const char TableHeader::kViewClassName[] = "TableHeader";
 // static
 const int TableHeader::kHorizontalPadding = 7;
 // static
-const int TableHeader::kSortIndicatorWidth = kSortIndicatorSize +
-    TableHeader::kHorizontalPadding * 2;
+const int TableHeader::kSortIndicatorWidth =
+    kSortIndicatorSize + TableHeader::kHorizontalPadding * 2;
 
-typedef std::vector<TableView::VisibleColumn> Columns;
+using Columns = std::vector<TableView::VisibleColumn>;
 
 TableHeader::TableHeader(TableView* table) : table_(table) {}
 
-TableHeader::~TableHeader() {}
+TableHeader::~TableHeader() = default;
 
 void TableHeader::Layout() {
   SetBounds(x(), y(), table_->width(), GetPreferredSize().height());
@@ -191,7 +196,7 @@ bool TableHeader::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void TableHeader::OnMouseReleased(const ui::MouseEvent& event) {
-  const bool was_resizing = resize_details_ != NULL;
+  const bool was_resizing = resize_details_ != nullptr;
   resize_details_.reset();
   if (!was_resizing && event.IsOnlyLeftMouseButton())
     ToggleSortOrder(event);
@@ -231,6 +236,29 @@ void TableHeader::OnNativeThemeChanged(const ui::NativeTheme* theme) {
       theme->GetSystemColor(ui::NativeTheme::kColorId_TableHeaderBackground)));
 }
 
+void TableHeader::ResizeColumnViaKeyboard(
+    int index,
+    TableView::AdvanceDirection direction) {
+  DCHECK_GE(index, 0);
+  const TableView::VisibleColumn& column = table_->GetVisibleColumn(index);
+  const int needed_for_title =
+      gfx::GetStringWidth(column.column.title, font_list_) +
+      2 * kHorizontalPadding;
+
+  int new_width = column.width;
+  switch (direction) {
+    case TableView::ADVANCE_INCREMENT:
+      new_width += kResizeKeyboardAmount;
+      break;
+    case TableView::ADVANCE_DECREMENT:
+      new_width -= kResizeKeyboardAmount;
+      break;
+  }
+
+  table_->SetVisibleColumnWidth(
+      index, std::max({kMinColumnWidth, needed_for_title, new_width}));
+}
+
 bool TableHeader::StartResize(const ui::LocatedEvent& event) {
   if (is_resizing())
     return false;
@@ -239,7 +267,7 @@ bool TableHeader::StartResize(const ui::LocatedEvent& event) {
   if (index == -1)
     return false;
 
-  resize_details_.reset(new ColumnResizeDetails);
+  resize_details_ = std::make_unique<ColumnResizeDetails>();
   resize_details_->column_index = index;
   resize_details_->initial_x = event.root_location().x();
   resize_details_->initial_width = table_->GetVisibleColumn(index).width;

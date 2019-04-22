@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -192,7 +192,7 @@ void BookmarkProviderTest::SetUp() {
 
   provider_ = new BookmarkProvider(provider_client_.get());
   const BookmarkNode* other_node = model_->other_node();
-  for (size_t i = 0; i < arraysize(bookmark_provider_test_data); ++i) {
+  for (size_t i = 0; i < base::size(bookmark_provider_test_data); ++i) {
     const BookmarksTestInfo& cur(bookmark_provider_test_data[i]);
     const GURL url(cur.url);
     model_->AddURL(other_node, other_node->child_count(),
@@ -265,13 +265,13 @@ TEST_F(BookmarkProviderTest, Positions) {
     {"frankly frankly",       1, {{{0, 7}, {8, 15}, {0, 0}}}},
     {"foobar foo",            1, {{{0, 6}, {7, 13}, {0, 0}}}},
     {"foo foobar",            1, {{{0, 6}, {7, 13}, {0, 0}}}},
-    // This ensures that leading whitespace in the title is not removed.
-    {"hello",                 1, {{{1, 6}, {9, 14}, {0, 0}}}},
+    // This ensures that leading whitespace in the title is correctly offset.
+    {"hello",                 1, {{{0, 5}, {8, 13}, {0, 0}}}},
     // This ensures that empty titles yield empty classifications.
     {"emptytitle",            1, {}},
   };
 
-  for (size_t i = 0; i < arraysize(query_data); ++i) {
+  for (size_t i = 0; i < base::size(query_data); ++i) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             metrics::OmniboxEventProto::OTHER,
                             TestSchemeClassifier());
@@ -350,7 +350,7 @@ TEST_F(BookmarkProviderTest, Rankings) {
                       "burning worms #2"}},  // not boosted
   };
 
-  for (size_t i = 0; i < arraysize(query_data); ++i) {
+  for (size_t i = 0; i < base::size(query_data); ++i) {
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             metrics::OmniboxEventProto::OTHER,
                             TestSchemeClassifier());
@@ -403,7 +403,7 @@ TEST_F(BookmarkProviderTest, InlineAutocompletion) {
     // actually bookmarked.
   };
 
-  for (size_t i = 0; i < arraysize(query_data); ++i) {
+  for (size_t i = 0; i < base::size(query_data); ++i) {
     const std::string description = "for query=" + query_data[i].query +
         " and url=" + query_data[i].url;
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
@@ -448,7 +448,7 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
       // clang-format on
   };
 
-  for (size_t i = 0; i < arraysize(query_data); ++i) {
+  for (size_t i = 0; i < base::size(query_data); ++i) {
     std::string description = "for query=" + query_data[i].query;
     AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             metrics::OmniboxEventProto::OTHER,

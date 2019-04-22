@@ -43,7 +43,7 @@
 class NetExportTabHelperTest : public web::WebTestWithWebState {
  public:
   NetExportTabHelperTest()
-      : delegate_([[TestNetExportTabHelperDelegate alloc] init]){};
+      : delegate_([[TestNetExportTabHelperDelegate alloc] init]) {}
 
  protected:
   void SetUp() override {

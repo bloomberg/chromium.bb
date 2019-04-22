@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/base/decrypt_context_impl.h"
@@ -74,7 +75,7 @@ class CastCdmContextForTest : public CastCdmContext {
 
   std::unique_ptr<DecryptContextImpl> GetDecryptContext(
       const std::string& key_id,
-      const EncryptionScheme& encryption_scheme) override {
+      EncryptionScheme encryption_scheme) override {
     if (license_installed_) {
       return std::unique_ptr<DecryptContextImpl>(
           new DecryptContextImpl(KEY_SYSTEM_CLEAR_KEY));
@@ -242,7 +243,7 @@ class PipelineHelper {
     frame_provider->Configure(
         std::vector<bool>(
             provider_delayed_pattern,
-            provider_delayed_pattern + arraysize(provider_delayed_pattern)),
+            provider_delayed_pattern + base::size(provider_delayed_pattern)),
         std::move(frame_generator));
     frame_provider->SetDelayFlush(true);
     return std::move(frame_provider);
@@ -357,10 +358,10 @@ TEST_P(AudioVideoPipelineImplTest, FullCycle) {
       base::BindOnce(&PipelineHelper::Start,
                      base::Unretained(pipeline_helper_.get()), eos_cb));
   base::RunLoop().Run();
-};
+}
 
 // Test all three types of pipeline: audio-only, video-only, audio-video.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MediaPipelineImplTests,
     AudioVideoPipelineImplTest,
     ::testing::Values(AudioVideoTuple(true, false),   // Audio only.

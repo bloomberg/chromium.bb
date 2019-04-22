@@ -20,6 +20,8 @@
    always pass and can get rid of the regression known failures.
 """
 
+from __future__ import print_function
+
 import contextlib
 import datetime
 import os
@@ -129,7 +131,7 @@ The default set is {O3f,O2b}, other options are {O0f,O0b,O2b_sz,O0b_sz}.
 
 def Fatal(text):
   """Prints an error message and exits."""
-  print >> sys.stderr, text
+  print(text, file=sys.stderr)
   sys.exit(1)
 
 
@@ -286,9 +288,9 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
   """
   with remember_cwd():
     if not ToolchainWorkDirExists(testdir):
-      print 'Working directory %s is empty. Not running tests' % testdir
+      print('Working directory %s is empty. Not running tests' % testdir)
       if env['PNACL_BUILDBOT'] != 'false' or options.verbose:
-        print '@@@STEP_TEXT (skipped)@@@'
+        print('@@@STEP_TEXT (skipped)@@@')
       return 0
     os.chdir(testdir)
 
@@ -299,7 +301,7 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
 
     maker = 'ninja' if os.path.isfile('./build.ninja') else 'make'
     cmd = [maker, testarg, '-v' if maker == 'ninja' else 'VERBOSE=1']
-    print 'Running lit test:', ' '.join(cmd)
+    print('Running lit test:', ' '.join(cmd))
     make_pipe = subprocess.Popen(cmd, env=sub_env, stdout=subprocess.PIPE)
 
     lines = []
@@ -316,10 +318,10 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
     for line in iter(make_pipe.stdout.readline, ''):
       if env['PNACL_BUILDBOT'] != 'false' or options.verbose:
         # The buildbots need to be fully verbose and print all output.
-        print str(datetime.datetime.now()) + ' ' + line,
+        print(str(datetime.datetime.now()) + ' ' + line, end=' ')
       lines.append(line)
-    print (str(datetime.datetime.now()) + ' ' +
-           "Waiting for '%s' to complete." % cmd)
+    print(str(datetime.datetime.now()) + ' ' +
+          "Waiting for '%s' to complete." % cmd)
     make_pipe.wait()
     make_stdout = ''.join(lines)
 
@@ -328,8 +330,8 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
     parse_options['excludes'].append(env[lit_failures])
     parse_options['attributes'].append(env['BUILD_PLATFORM'])
     parse_options['attributes'].append(env['HOST_ARCH'])
-    print (str(datetime.datetime.now()) + ' ' +
-           'Parsing LIT test report output.')
+    print(str(datetime.datetime.now()) + ' ' +
+          'Parsing LIT test report output.')
     ret = parse_llvm_test_report.Report(parse_options, filecontents=make_stdout)
   return ret
 
@@ -491,10 +493,10 @@ def TestsuiteReport(env, config, options):
 def RunTestsuiteSteps(env, config, options):
   result = 0
   if not ToolchainWorkDirExists(env['TC_BUILD_LLVM']):
-    print ('LLVM build directory %s is empty. Skipping testsuite' %
-           env['TC_BUILD_LLVM'])
+    print('LLVM build directory %s is empty. Skipping testsuite' %
+          env['TC_BUILD_LLVM'])
     if env['PNACL_BUILDBOT'] != 'false' or options.verbose:
-      print '@@@STEP_TEXT (skipped)@@@'
+      print('@@@STEP_TEXT (skipped)@@@')
     return result
   if options.testsuite_all or options.testsuite_prereq:
     result = result or TestsuitePrereq(env, options)

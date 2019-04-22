@@ -9,6 +9,8 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size.h"
 
+#include <memory>
+
 namespace cc {
 
 namespace {
@@ -27,30 +29,33 @@ ScrollTimeline::ScrollTimeline(base::Optional<ElementId> scroller_id,
                                ScrollDirection direction,
                                base::Optional<double> start_scroll_offset,
                                base::Optional<double> end_scroll_offset,
-                               double time_range)
+                               double time_range,
+                               KeyframeModel::FillMode fill)
     : active_id_(),
       pending_id_(scroller_id),
       direction_(direction),
       start_scroll_offset_(start_scroll_offset),
       end_scroll_offset_(end_scroll_offset),
-      time_range_(time_range) {}
+      time_range_(time_range),
+      fill_(fill) {}
 
 ScrollTimeline::~ScrollTimeline() {}
 
 std::unique_ptr<ScrollTimeline> ScrollTimeline::CreateImplInstance() const {
-  return std::make_unique<ScrollTimeline>(pending_id_, direction_,
-                                          start_scroll_offset_,
-                                          end_scroll_offset_, time_range_);
+  return std::make_unique<ScrollTimeline>(
+      pending_id_, direction_, start_scroll_offset_, end_scroll_offset_,
+      time_range_, fill_);
 }
 
-double ScrollTimeline::CurrentTime(const ScrollTree& scroll_tree,
-                                   bool is_active_tree) const {
+base::Optional<base::TimeTicks> ScrollTimeline::CurrentTime(
+    const ScrollTree& scroll_tree,
+    bool is_active_tree) const {
   // We may be asked for the CurrentTime before the pending tree with our
   // scroller has been activated, or after the scroller has been removed (e.g.
   // if it is no longer composited). In these cases the best we can do is to
   // return an unresolved time value.
   if ((is_active_tree && !active_id_) || (!is_active_tree && !pending_id_))
-    return std::numeric_limits<double>::quiet_NaN();
+    return base::nullopt;
 
   ElementId scroller_id =
       is_active_tree ? active_id_.value() : pending_id_.value();
@@ -60,7 +65,7 @@ double ScrollTimeline::CurrentTime(const ScrollTree& scroll_tree,
   const ScrollNode* scroll_node =
       scroll_tree.FindNodeFromElementId(scroller_id);
   if (!scroll_node)
-    return std::numeric_limits<double>::quiet_NaN();
+    return base::nullopt;
 
   gfx::ScrollOffset offset =
       scroll_tree.GetPixelSnappedScrollOffset(scroll_node->id);
@@ -83,39 +88,47 @@ double ScrollTimeline::CurrentTime(const ScrollTree& scroll_tree,
   double resolved_start_scroll_offset = start_scroll_offset_.value_or(0);
   double resolved_end_scroll_offset = end_scroll_offset_.value_or(max_offset);
 
-  // 3. If current scroll offset is less than startScrollOffset, return an
-  // unresolved time value if fill is none or forwards, or 0 otherwise.
-  // TODO(smcgruer): Implement |fill|.
+  // 3. If current scroll offset is less than startScrollOffset:
   if (current_offset < resolved_start_scroll_offset) {
-    return std::numeric_limits<double>::quiet_NaN();
+    // Return an unresolved time value if fill is none or forwards.
+    if (fill_ == KeyframeModel::FillMode::NONE ||
+        fill_ == KeyframeModel::FillMode::FORWARDS) {
+      return base::nullopt;
+    }
+
+    // Otherwise, return 0.
+    return base::TimeTicks();
   }
 
-  // 4. If current scroll offset is greater than or equal to endScrollOffset,
-  // return an unresolved time value if fill is none or backwards, or the
-  // effective time range otherwise.
-  // TODO(smcgruer): Implement |fill|.
-  //
-  // Note we deliberately break the spec here by only returning if the current
-  // offset is strictly greater, as that is more in line with the web animation
-  // spec. See https://github.com/WICG/scroll-animations/issues/19
-  if (current_offset > resolved_end_scroll_offset) {
-    return std::numeric_limits<double>::quiet_NaN();
+  // 4. If current scroll offset is greater than or equal to endScrollOffset:
+  if (current_offset >= resolved_end_scroll_offset) {
+    // If endScrollOffset is less than the maximum scroll offset of scrollSource
+    // in orientation and fill is none or backwards, return an unresolved time
+    // value.
+    if (resolved_end_scroll_offset < max_offset &&
+        (fill_ == KeyframeModel::FillMode::NONE ||
+         fill_ == KeyframeModel::FillMode::BACKWARDS)) {
+      return base::nullopt;
+    }
+
+    // Otherwise, return the effective time range.
+    return base::TimeTicks() + base::TimeDelta::FromMillisecondsD(time_range_);
   }
 
-  // This is not by the spec, but avoids both negative current time and a
-  // division by zero issue. See
-  // https://github.com/WICG/scroll-animations/issues/20 and
-  // https://github.com/WICG/scroll-animations/issues/21
+  // This is not by the spec, but avoids a negative current time.
+  // See https://github.com/WICG/scroll-animations/issues/20
   if (resolved_start_scroll_offset >= resolved_end_scroll_offset) {
-    return std::numeric_limits<double>::quiet_NaN();
+    return base::nullopt;
   }
 
   // 5. Return the result of evaluating the following expression:
   //   ((current scroll offset - startScrollOffset) /
   //      (endScrollOffset - startScrollOffset)) * effective time range
-  return ((current_offset - resolved_start_scroll_offset) /
-          (resolved_end_scroll_offset - resolved_start_scroll_offset)) *
-         time_range_;
+  return base::TimeTicks() +
+         base::TimeDelta::FromMillisecondsD(
+             ((current_offset - resolved_start_scroll_offset) /
+              (resolved_end_scroll_offset - resolved_start_scroll_offset)) *
+             time_range_);
 }
 
 void ScrollTimeline::PushPropertiesTo(ScrollTimeline* impl_timeline) {

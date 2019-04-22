@@ -7,19 +7,22 @@ SkTextBlob Reference
 ---
 
 <pre style="padding: 1em 1em 1em 1em;width: 62.5em; background-color: #f0f0f0">
-class <a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a> final : public SkNVRefCnt<<a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>> {
-public:
+class <a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a> final : public <a href='undocumented#SkNVRefCnt'>SkNVRefCnt</a><<a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>> {
+
     const <a href='SkRect_Reference#SkRect'>SkRect</a>& <a href='#SkTextBlob_bounds'>bounds()</a> const;
     uint32_t <a href='#SkTextBlob_uniqueID'>uniqueID</a>() const;
-    static <a href='undocumented#sk_sp'>sk_sp</a><<a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>> <a href='#SkTextBlob_MakeFromText'>MakeFromText</a>(const void* <a href='undocumented#Text'>text</a>, size_t byteLength, const <a href='undocumented#SkFont'>SkFont</a>& <a href='undocumented#Font'>font</a>,
-                               <a href='SkPaint_Reference#SkPaint'>SkPaint</a>::<a href='#SkPaint_TextEncoding'>TextEncoding</a> encoding = <a href='SkPaint_Reference#SkPaint'>SkPaint</a>::<a href='#SkPaint_kUTF8_TextEncoding'>kUTF8_TextEncoding</a>);
-    static <a href='undocumented#sk_sp'>sk_sp</a><<a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>> <a href='#SkTextBlob_MakeFromString'>MakeFromString</a>(const char* <a href='undocumented#String'>string</a>, const <a href='undocumented#SkFont'>SkFont</a>& <a href='undocumented#Font'>font</a>,
-                                    <a href='SkPaint_Reference#SkPaint'>SkPaint</a>::<a href='#SkPaint_TextEncoding'>TextEncoding</a> encoding = <a href='SkPaint_Reference#SkPaint'>SkPaint</a>::<a href='#SkPaint_kUTF8_TextEncoding'>kUTF8_TextEncoding</a>);
+    int <a href='#SkTextBlob_getIntercepts'>getIntercepts</a>(const <a href='undocumented#SkScalar'>SkScalar</a> bounds[2], <a href='undocumented#SkScalar'>SkScalar</a> intervals[],
+                      const <a href='SkPaint_Reference#SkPaint'>SkPaint</a>* <a href='SkPaint_Reference#Paint'>paint</a> = nullptr) const;
+    static <a href='undocumented#sk_sp'>sk_sp</a><<a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>> <a href='#SkTextBlob_MakeFromText'>MakeFromText</a>(const void* <a href='undocumented#Text'>text</a>, size_t byteLength, const <a href='SkFont_Reference#SkFont'>SkFont</a>& <a href='SkFont_Reference#Font'>font</a>,
+                                      <a href='undocumented#SkTextEncoding'>SkTextEncoding</a> encoding = <a href='undocumented#kUTF8_SkTextEncoding'>kUTF8_SkTextEncoding</a>);
+    static <a href='undocumented#sk_sp'>sk_sp</a><<a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>> <a href='#SkTextBlob_MakeFromString'>MakeFromString</a>(const char* <a href='undocumented#String'>string</a>, const <a href='SkFont_Reference#SkFont'>SkFont</a>& <a href='SkFont_Reference#Font'>font</a>,
+                                    <a href='undocumented#SkTextEncoding'>SkTextEncoding</a> encoding = <a href='undocumented#kUTF8_SkTextEncoding'>kUTF8_SkTextEncoding</a>);
     size_t <a href='#SkTextBlob_serialize'>serialize</a>(const <a href='undocumented#SkSerialProcs'>SkSerialProcs</a>& procs, void* memory, size_t memory_size) const;
     <a href='undocumented#sk_sp'>sk_sp</a><<a href='undocumented#SkData'>SkData</a>> <a href='#SkTextBlob_serialize'>serialize</a>(const <a href='undocumented#SkSerialProcs'>SkSerialProcs</a>& procs) const;
     static <a href='undocumented#sk_sp'>sk_sp</a><<a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>> <a href='#SkTextBlob_Deserialize'>Deserialize</a>(const void* <a href='undocumented#Data'>data</a>, size_t <a href='undocumented#Size'>size</a>,
                                          const <a href='undocumented#SkDeserialProcs'>SkDeserialProcs</a>& procs);
 };
+
 </pre>
 
 <a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a> combines multiple <a href='undocumented#Text'>text</a> runs into an immutable container. Each <a href='undocumented#Text'>text</a>
@@ -31,7 +34,7 @@ fonts and <a href='undocumented#Text'>text</a> rendering are used by run.
 ---
 
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-const <a href='SkRect_Reference#SkRect'>SkRect</a>& <a href='#SkTextBlob_bounds'>bounds()</a> const
+const <a href='SkRect_Reference#SkRect'>SkRect</a>& <a href='#SkTextBlob_bounds'>bounds()</a>const
 </pre>
 
 Returns conservative bounding box. Uses <a href='SkPaint_Reference#SkPaint'>SkPaint</a> associated with each <a href='undocumented#Glyph'>glyph</a> to
@@ -44,7 +47,7 @@ conservative bounding box
 
 ### Example
 
-<div><fiddle-embed name="a22a490fd43bcc1cd3e26430debfb99e"></fiddle-embed></div>
+<div><fiddle-embed name="fb8b2502bbe52d2029aecdf569dd9fdb"></fiddle-embed></div>
 
 ### See Also
 
@@ -55,7 +58,7 @@ conservative bounding box
 ---
 
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-uint32_t <a href='#SkTextBlob_uniqueID'>uniqueID</a>() const
+uint32_t <a href='#SkTextBlob_uniqueID'>uniqueID</a>()const
 </pre>
 
 Returns a non-zero value unique among all <a href='undocumented#Text'>text</a> blobs.
@@ -66,28 +69,72 @@ identifier for <a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>
 
 ### Example
 
-<div><fiddle-embed name="fdd9c8c4470cc4f725af779e9d6db6e4"></fiddle-embed></div>
+<div><fiddle-embed name="6e12cceca981ddabc0fc18c380543f34"></fiddle-embed></div>
 
 ### See Also
 
 <a href='undocumented#SkRefCnt'>SkRefCnt</a>
+
+<a name='Text_Intercepts'></a>
+
+<a href='#Text_Blob_Text_Intercepts'>Text_Intercepts</a> describe the intersection of drawn <a href='undocumented#Text'>text</a> <a href='undocumented#Glyph'>Glyphs</a> with a pair
+of <a href='undocumented#Line'>lines</a> parallel to the <a href='undocumented#Text'>text</a> advance. <a href='#Text_Blob_Text_Intercepts'>Text_Intercepts</a> permits creating a
+underline that skips Descenders.
+
+<a name='SkTextBlob_getIntercepts'></a>
+
+---
+
+<pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
+int <a href='#SkTextBlob_getIntercepts'>getIntercepts</a>(const <a href='undocumented#SkScalar'>SkScalar</a> bounds[2], <a href='undocumented#SkScalar'>SkScalar</a> intervals[], const <a href='SkPaint_Reference#SkPaint'>SkPaint</a>* <a href='SkPaint_Reference#Paint'>paint</a> = nullptr) const;
+</pre>
+
+Returns the number of <a href='#SkTextBlob_getIntercepts_intervals'>intervals</a> that intersect <a href='#SkTextBlob_getIntercepts_bounds'>bounds</a>.
+<a href='#SkTextBlob_getIntercepts_bounds'>bounds</a> describes a pair of <a href='undocumented#Line'>lines</a> parallel to the <a href='undocumented#Text'>text</a> advance.
+The return count is zero or a multiple of two, and is at most twice the number of <a href='undocumented#Glyph'>glyphs</a> in
+the the blob.
+
+Pass nullptr for <a href='#SkTextBlob_getIntercepts_intervals'>intervals</a> to determine the <a href='undocumented#Size'>size</a> of the interval array.
+
+Runs within the blob that contain <a href='undocumented#SkRSXform'>SkRSXform</a> are ignored when computing intercepts.
+
+### Parameters
+
+<table>  <tr>    <td><a name='SkTextBlob_getIntercepts_bounds'><code><strong>bounds</strong></code></a></td>
+    <td>lower and upper <a href='undocumented#Line'>line</a> parallel to the advance</td>
+  </tr>
+  <tr>    <td><a name='SkTextBlob_getIntercepts_intervals'><code><strong>intervals</strong></code></a></td>
+    <td>returned intersections; may be nullptr</td>
+  </tr>
+  <tr>    <td><a name='SkTextBlob_getIntercepts_paint'><code><strong>paint</strong></code></a></td>
+    <td>specifies stroking, <a href='undocumented#SkPathEffect'>SkPathEffect</a> that affects the result; may be nullptr</td>
+  </tr>
+</table>
+
+### Return Value
+
+number of intersections; may be zero
+
+### Example
+
+<div><fiddle-embed name="e9d4eb8ece521b1329e7433d4b243fdf"></fiddle-embed></div>
 
 <a name='SkTextBlob_MakeFromText'></a>
 
 ---
 
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-static <a href='undocumented#sk_sp'>sk_sp</a>&lt;<a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>&gt; <a href='#SkTextBlob_MakeFromText'>MakeFromText</a>(const void* <a href='undocumented#Text'>text</a>, size_t byteLength, const <a href='undocumented#SkFont'>SkFont</a>& <a href='undocumented#Font'>font</a>,
-                                      <a href='SkPaint_Reference#SkPaint'>SkPaint</a>::<a href='#SkPaint_TextEncoding'>TextEncoding</a> encoding = <a href='SkPaint_Reference#SkPaint'>SkPaint</a>::<a href='#SkPaint_kUTF8_TextEncoding'>kUTF8_TextEncoding</a>)
+static <a href='undocumented#sk_sp'>sk_sp</a>&lt;<a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>&gt; <a href='#SkTextBlob_MakeFromText'>MakeFromText</a>(const void* <a href='undocumented#Text'>text</a>, size_t byteLength, const <a href='SkFont_Reference#SkFont'>SkFont</a>& <a href='SkFont_Reference#Font'>font</a>,
+                                      <a href='undocumented#SkTextEncoding'>SkTextEncoding</a> encoding = <a href='undocumented#kUTF8_SkTextEncoding'>kUTF8_SkTextEncoding</a>)
 </pre>
 
-Creates <a href='#Text_Blob'>Text_Blob</a> with a single run. <a href='#SkTextBlob_MakeFromText_text'>text</a> meaning depends on <a href='#Paint_Text_Encoding'>Paint_Text_Encoding</a>;
+Creates <a href='#Text_Blob'>Text_Blob</a> with a single run. <a href='#SkTextBlob_MakeFromText_text'>text</a> meaning depends on <a href='#Text_Encoding'>Text_Encoding</a>;
 by default, <a href='#SkTextBlob_MakeFromText_text'>text</a> is encoded as UTF-8.
 
-<a href='#SkTextBlob_MakeFromText_font'>font</a> contains attributes used to define the run <a href='#SkTextBlob_MakeFromText_text'>text</a>: <a href='undocumented#Typeface'>Typeface</a>, <a href='#Paint_Text_Size'>Paint_Text_Size</a>, <a href='#Paint_Text_Scale_X'>Paint_Text_Scale_X</a>,
-<a href='#Paint_Text_Skew_X'>Paint_Text_Skew_X</a>, <a href='#Paint_Hinting'>Paint_Hinting</a>, <a href='#Paint_Anti_Alias'>Anti_Alias</a>, <a href='#Paint_Fake_Bold'>Paint_Fake_Bold</a>,
-<a href='#Paint_Font_Embedded_Bitmaps'>Font_Embedded_Bitmaps</a>, <a href='#Paint_Full_Hinting_Spacing'>Full_Hinting_Spacing</a>, <a href='#Paint_LCD_Text'>LCD_Text</a>, <a href='#Paint_Linear_Text'>Linear_Text</a>,
-and <a href='#Paint_Subpixel_Text'>Subpixel_Text</a>
+<a href='#SkTextBlob_MakeFromText_font'>font</a> contains attributes used to define the run <a href='#SkTextBlob_MakeFromText_text'>text</a>: <a href='undocumented#Typeface'>Typeface</a>, <a href='#Font_Size'>Font_Size</a>, <a href='#Font_Scale_X'>Font_Scale_X</a>,
+<a href='#Font_Skew_X'>Font_Skew_X</a>, <a href='#Font_Hinting'>Font_Hinting</a>, <a href='#Paint_Anti_Alias'>Paint_Anti_Alias</a>, <a href='#Font_Embolden'>Font_Embolden</a>, <a href='#Font_Force_Hinting'>Font_Force_Hinting</a>,
+<a href='#Font_Embedded_Bitmaps'>Font_Embedded_Bitmaps</a>, <a href='#Font_Hinting_Spacing'>Font_Hinting_Spacing</a>, <a href='#Font_Anti_Alias'>Font_Anti_Alias</a>, <a href='#Font_Linear'>Font_Linear</a>,
+and <a href='#Font_Subpixel'>Font_Subpixel</a>
 .
 
 ### Parameters
@@ -125,17 +172,17 @@ and <a href='#Paint_Subpixel_Text'>Subpixel_Text</a>
 ---
 
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-static <a href='undocumented#sk_sp'>sk_sp</a>&lt;<a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>&gt; <a href='#SkTextBlob_MakeFromString'>MakeFromString</a>(const char* <a href='undocumented#String'>string</a>, const <a href='undocumented#SkFont'>SkFont</a>& <a href='undocumented#Font'>font</a>,
-                                       <a href='SkPaint_Reference#SkPaint'>SkPaint</a>::<a href='#SkPaint_TextEncoding'>TextEncoding</a> encoding = <a href='SkPaint_Reference#SkPaint'>SkPaint</a>::<a href='#SkPaint_kUTF8_TextEncoding'>kUTF8_TextEncoding</a>)
+static <a href='undocumented#sk_sp'>sk_sp</a>&lt;<a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>&gt; <a href='#SkTextBlob_MakeFromString'>MakeFromString</a>(const char* <a href='undocumented#String'>string</a>, const <a href='SkFont_Reference#SkFont'>SkFont</a>& <a href='SkFont_Reference#Font'>font</a>,
+                                        <a href='undocumented#SkTextEncoding'>SkTextEncoding</a> encoding = <a href='undocumented#kUTF8_SkTextEncoding'>kUTF8_SkTextEncoding</a>)
 </pre>
 
-Creates <a href='#Text_Blob'>Text_Blob</a> with a single run. <a href='#SkTextBlob_MakeFromString_string'>string</a> meaning depends on <a href='#Paint_Text_Encoding'>Paint_Text_Encoding</a>;
+Creates <a href='#Text_Blob'>Text_Blob</a> with a single run. <a href='#SkTextBlob_MakeFromString_string'>string</a> meaning depends on <a href='#Text_Encoding'>Text_Encoding</a>;
 by default, <a href='#SkTextBlob_MakeFromString_string'>string</a> is encoded as UTF-8.
 
-<a href='#SkTextBlob_MakeFromString_font'>font</a> contains <a href='#Paint_Font_Metrics'>Paint_Font_Metrics</a> used to define the run <a href='undocumented#Text'>text</a>: <a href='undocumented#Typeface'>Typeface</a>, <a href='#Paint_Text_Size'>Paint_Text_Size</a>, <a href='#Paint_Text_Scale_X'>Paint_Text_Scale_X</a>,
-<a href='#Paint_Text_Skew_X'>Paint_Text_Skew_X</a>, <a href='#Paint_Hinting'>Paint_Hinting</a>, <a href='#Paint_Anti_Alias'>Anti_Alias</a>, <a href='#Paint_Fake_Bold'>Paint_Fake_Bold</a>,
-<a href='#Paint_Font_Embedded_Bitmaps'>Font_Embedded_Bitmaps</a>, <a href='#Paint_Full_Hinting_Spacing'>Full_Hinting_Spacing</a>, <a href='#Paint_LCD_Text'>LCD_Text</a>, <a href='#Paint_Linear_Text'>Linear_Text</a>,
-and <a href='#Paint_Subpixel_Text'>Subpixel_Text</a>
+<a href='#SkTextBlob_MakeFromString_font'>font</a> contains <a href='#Font_Metrics'>Font_Metrics</a> used to define the run <a href='undocumented#Text'>text</a>: <a href='undocumented#Typeface'>Typeface</a>, <a href='#Font_Size'>Font_Size</a>, <a href='#Font_Scale_X'>Font_Scale_X</a>,
+<a href='#Font_Skew_X'>Font_Skew_X</a>, <a href='#Font_Hinting'>Font_Hinting</a>, <a href='#Paint_Anti_Alias'>Paint_Anti_Alias</a>, <a href='#Font_Embolden'>Font_Embolden</a>, <a href='#Font_Force_Hinting'>Font_Force_Hinting</a>,
+<a href='#Font_Embedded_Bitmaps'>Font_Embedded_Bitmaps</a>, <a href='#Font_Hinting_Spacing'>Font_Hinting_Spacing</a>, <a href='#Font_Anti_Alias'>Font_Anti_Alias</a>, <a href='#Font_Linear'>Font_Linear</a>,
+and <a href='#Font_Subpixel'>Font_Subpixel</a>
 .
 
 ### Parameters
@@ -170,7 +217,7 @@ and <a href='#Paint_Subpixel_Text'>Subpixel_Text</a>
 ---
 
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-size_t <a href='#SkTextBlob_serialize'>serialize</a>(const <a href='undocumented#SkSerialProcs'>SkSerialProcs</a>& procs, void* memory, size_t memory_size) const
+size_t <a href='#SkTextBlob_serialize'>serialize</a>(const <a href='undocumented#SkSerialProcs'>SkSerialProcs</a>& procs, void* memory, size_t memory_size)const
 </pre>
 
 Writes <a href='undocumented#Data'>data</a> to allow later reconstruction of <a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>. <a href='#SkTextBlob_serialize_memory'>memory</a> <a href='SkPoint_Reference#Point'>points</a> to storage
@@ -213,7 +260,7 @@ bytes written, or zero if required storage is larger than <a href='#SkTextBlob_s
 ---
 
 <pre style="padding: 1em 1em 1em 1em; width: 62.5em;background-color: #f0f0f0">
-<a href='undocumented#sk_sp'>sk_sp</a>&lt;<a href='undocumented#SkData'>SkData</a>&gt; <a href='#SkTextBlob_serialize'>serialize</a>(const <a href='undocumented#SkSerialProcs'>SkSerialProcs</a>& procs) const
+<a href='undocumented#sk_sp'>sk_sp</a>&lt;<a href='undocumented#SkData'>SkData</a>&gt; <a href='#SkTextBlob_serialize'>serialize</a>(const <a href='undocumented#SkSerialProcs'>SkSerialProcs</a>& procs)const
 </pre>
 
 Returns storage containing <a href='undocumented#SkData'>SkData</a> describing <a href='SkTextBlob_Reference#SkTextBlob'>SkTextBlob</a>, using optional custom

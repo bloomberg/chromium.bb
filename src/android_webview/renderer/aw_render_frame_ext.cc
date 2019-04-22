@@ -4,13 +4,17 @@
 
 #include "android_webview/renderer/aw_render_frame_ext.h"
 
+#include <map>
 #include <memory>
 
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/render_view_messages.h"
+#include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
+#include "components/content_capture/common/content_capture_features.h"
+#include "components/content_capture/renderer/content_capture_sender.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -79,8 +83,9 @@ bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
 
   if (spec.starts_with(prefix)) {
     url::RawCanonOutputW<1024> output;
-    url::DecodeURLEscapeSequences(spec.data() + prefix.length(),
-                                  spec.length() - prefix.length(), &output);
+    url::DecodeURLEscapeSequences(
+        spec.data() + prefix.length(), spec.length() - prefix.length(),
+        url::DecodeURLMode::kUTF8OrIsomorphic, &output);
     *dest =
         base::UTF16ToUTF8(base::StringPiece16(output.data(), output.length()));
     return true;
@@ -140,6 +145,11 @@ void PopulateHitTestData(const GURL& absolute_link_url,
 
 }  // namespace
 
+// Registry for RenderFrame => AwRenderFrameExt lookups
+typedef std::map<content::RenderFrame*, AwRenderFrameExt*> FrameExtMap;
+base::LazyInstance<FrameExtMap>::Leaky render_frame_ext_map =
+    LAZY_INSTANCE_INITIALIZER;
+
 AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame) {
   // TODO(sgurun) do not create a password autofill agent (change
@@ -148,9 +158,39 @@ AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
       new autofill::PasswordAutofillAgent(render_frame, &registry_);
   new autofill::AutofillAgent(render_frame, password_autofill_agent, nullptr,
                               &registry_);
+  if (content_capture::features::IsContentCaptureEnabled())
+    new content_capture::ContentCaptureSender(render_frame, &registry_);
+
+  // Add myself to the RenderFrame => AwRenderFrameExt register.
+  render_frame_ext_map.Get().emplace(render_frame, this);
 }
 
 AwRenderFrameExt::~AwRenderFrameExt() {
+  // Remove myself from the RenderFrame => AwRenderFrameExt register. Ideally,
+  // we'd just use render_frame() and erase by key. However, by this time the
+  // render_frame has already been cleared so we have to iterate over all
+  // render_frames in the map and wipe the one(s) that point to this
+  // AwRenderFrameExt
+
+  auto& map = render_frame_ext_map.Get();
+  auto it = map.begin();
+  while (it != map.end()) {
+    if (it->second == this) {
+      it = map.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
+
+AwRenderFrameExt* AwRenderFrameExt::FromRenderFrame(
+    content::RenderFrame* render_frame) {
+  DCHECK(render_frame != nullptr);
+  auto iter = render_frame_ext_map.Get().find(render_frame);
+  DCHECK(render_frame_ext_map.Get().end() != iter)
+      << "Should always exist a render_frame_ext for a render_frame";
+  AwRenderFrameExt* render_frame_ext = iter->second;
+  return render_frame_ext;
 }
 
 bool AwRenderFrameExt::OnAssociatedInterfaceRequestForFrame(
@@ -194,6 +234,8 @@ bool AwRenderFrameExt::OnMessageReceived(const IPC::Message& message) {
                         OnResetScrollAndScaleState)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetInitialPageScale, OnSetInitialPageScale)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetBackgroundColor, OnSetBackgroundColor)
+    IPC_MESSAGE_HANDLER(AwViewMsg_WillSuppressErrorPage,
+                        OnSetWillSuppressErrorPage)
     IPC_MESSAGE_HANDLER(AwViewMsg_SmoothScroll, OnSmoothScroll)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -271,7 +313,7 @@ void AwRenderFrameExt::OnSetTextZoomFactor(float zoom_factor) {
     return;
 
   // Hide selection and autofill popups.
-  webview->HidePopups();
+  webview->CancelPagePopup();
   webview->SetTextZoomFactor(zoom_factor);
 }
 
@@ -292,21 +334,29 @@ void AwRenderFrameExt::OnSetInitialPageScale(double page_scale_factor) {
 }
 
 void AwRenderFrameExt::OnSetBackgroundColor(SkColor c) {
-  blink::WebFrameWidget* web_frame_widget = GetWebFrameWidget();
-  if (!web_frame_widget)
-    return;
-
-  web_frame_widget->SetBaseBackgroundColor(c);
-}
-
-void AwRenderFrameExt::OnSmoothScroll(int target_x,
-                                      int target_y,
-                                      int duration_ms) {
   blink::WebView* webview = GetWebView();
   if (!webview)
     return;
 
-  webview->SmoothScroll(target_x, target_y, static_cast<long>(duration_ms));
+  webview->SetBaseBackgroundColor(c);
+}
+
+void AwRenderFrameExt::OnSmoothScroll(int target_x,
+                                      int target_y,
+                                      uint64_t duration_ms) {
+  blink::WebView* webview = GetWebView();
+  if (!webview)
+    return;
+
+  webview->SmoothScroll(target_x, target_y, duration_ms);
+}
+
+void AwRenderFrameExt::OnSetWillSuppressErrorPage(bool suppress) {
+  this->will_suppress_error_page_ = suppress;
+}
+
+bool AwRenderFrameExt::GetWillSuppressErrorPage() {
+  return this->will_suppress_error_page_;
 }
 
 blink::WebView* AwRenderFrameExt::GetWebView() {

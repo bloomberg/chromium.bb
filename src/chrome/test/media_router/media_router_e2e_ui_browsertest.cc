@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest,
   test_ui_->WaitForSinkAvailable(receiver_);
 
   // Mock out file dialog operations, as those can't be simulated.
-  FileDialogSelectsFile(file_url);
+  test_ui_->SetLocalFile(file_url);
   // Click on the desired mode.
   test_ui_->ChooseSourceType(CastDialogView::kLocalFile);
   test_ui_->WaitForSinkAvailable(receiver_);

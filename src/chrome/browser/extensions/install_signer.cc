@@ -176,7 +176,7 @@ void InstallSignature::ToValue(base::DictionaryValue* value) const {
   value->SetString(kSaltKey, salt_base64);
   value->SetString(kSignatureKey, signature_base64);
   value->SetString(kTimestampKey,
-                   base::Int64ToString(timestamp.ToInternalValue()));
+                   base::NumberToString(timestamp.ToInternalValue()));
 }
 
 // static
@@ -316,17 +316,17 @@ void LogRequestStartHistograms() {
 
 }  // namespace
 
-void InstallSigner::GetSignature(const SignatureCallback& callback) {
+void InstallSigner::GetSignature(SignatureCallback callback) {
   CHECK(!simple_loader_.get());
   CHECK(callback_.is_null());
   CHECK(salt_.empty());
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   // If the set of ids is empty, just return an empty signature and skip the
   // call to the server.
   if (ids_.empty()) {
     if (!callback_.is_null())
-      callback_.Run(std::unique_ptr<InstallSignature>(new InstallSignature()));
+      std::move(callback_).Run(std::make_unique<InstallSignature>());
     return;
   }
 
@@ -417,9 +417,8 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
 }
 
 void InstallSigner::ReportErrorViaCallback() {
-  InstallSignature* null_signature = NULL;
   if (!callback_.is_null())
-    callback_.Run(std::unique_ptr<InstallSignature>(null_signature));
+    std::move(callback_).Run(nullptr);
 }
 
 void InstallSigner::ParseFetchResponse(
@@ -444,7 +443,8 @@ void InstallSigner::ParseFetchResponse(
   // could not be verified to be in the webstore.
 
   base::DictionaryValue* dictionary = NULL;
-  std::unique_ptr<base::Value> parsed = base::JSONReader::Read(*response_body);
+  std::unique_ptr<base::Value> parsed =
+      base::JSONReader::ReadDeprecated(*response_body);
   bool json_success = parsed.get() && parsed->GetAsDictionary(&dictionary);
   UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.ParseJsonSuccess",
                         json_success);
@@ -513,7 +513,7 @@ void InstallSigner::HandleSignatureResult(const std::string& signature,
   }
 
   if (!callback_.is_null())
-    callback_.Run(std::move(result));
+    std::move(callback_).Run(std::move(result));
 }
 
 

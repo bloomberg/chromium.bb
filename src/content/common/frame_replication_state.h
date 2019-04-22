@@ -68,7 +68,7 @@ struct CONTENT_EXPORT FrameReplicationState {
   // |unique_name| is used in heuristics that try to identify the same frame
   // across different, unrelated navigations (i.e. to refer to the frame
   // when going back/forward in session history OR when refering to the frame
-  // in layout tests results).
+  // in web tests results).
   //
   // |unique_name| needs to be replicated to ensure that unique name for a given
   // frame is the same across all renderers - without replication a renderer
@@ -101,6 +101,10 @@ struct CONTENT_EXPORT FrameReplicationState {
   // can be inherited properly if a proxy ever becomes a parent of a local
   // frame.
   blink::FramePolicy frame_policy;
+
+  // The state of feature policies in the opener browsing context. This field is
+  // only relevant for a root FrameTreeNode.
+  blink::FeaturePolicy::FeatureState opener_feature_state;
 
   // Accumulated CSP headers - gathered from http headers, <meta> elements,
   // parent frames (in case of about:blank frames).

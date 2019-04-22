@@ -78,6 +78,17 @@ void DeferredTaskHandler::BreakConnections() {
   DCHECK(IsAudioThread());
   AssertGraphOwner();
 
+  // Remove any finished handlers from the active handlers list and break the
+  // connection.
+  wtf_size_t size = finished_source_handlers_.size();
+  if (size > 0) {
+    for (auto* finished : finished_source_handlers_) {
+      active_source_handlers_.erase(finished);
+      finished->BreakConnectionWithLock();
+    }
+    finished_source_handlers_.clear();
+  }
+
   for (unsigned i = 0; i < deferred_break_connection_list_.size(); ++i)
     deferred_break_connection_list_[i]->BreakConnectionWithLock();
   deferred_break_connection_list_.clear();
@@ -321,8 +332,16 @@ void DeferredTaskHandler::AddRenderingOrphanHandler(
 void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {
   DCHECK(IsAudioThread());
   AssertGraphOwner();
-  if (rendering_orphan_handlers_.IsEmpty())
+
+  // Quick exit if there are no handlers that need to be deleted so that we
+  // don't unecessarily post a task.  Be consistent with
+  // |DeleteHandlersOnMainThread()| so we don't accidentally return early when
+  // there are handlers that could be deleted.
+  if (rendering_orphan_handlers_.IsEmpty() &&
+      finished_tail_processing_handlers_.size() == 0) {
     return;
+  }
+
   deletable_orphan_handlers_.AppendVector(rendering_orphan_handlers_);
   rendering_orphan_handlers_.clear();
   PostCrossThreadTask(
@@ -346,12 +365,12 @@ void DeferredTaskHandler::ClearHandlersToBeDeleted() {
   deletable_orphan_handlers_.clear();
   automatic_pull_handlers_.clear();
   rendering_automatic_pull_handlers_.clear();
+  active_source_handlers_.clear();
 }
 
 void DeferredTaskHandler::SetAudioThreadToCurrentThread() {
   DCHECK(!IsMainThread());
-  ThreadIdentifier thread = CurrentThread();
-  ReleaseStore(&audio_thread_, thread);
+  audio_thread_.store(CurrentThread(), std::memory_order_relaxed);
 }
 
 void DeferredTaskHandler::DisableOutputsForTailProcessing() {

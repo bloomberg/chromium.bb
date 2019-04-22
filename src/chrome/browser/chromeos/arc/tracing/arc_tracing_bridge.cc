@@ -4,23 +4,34 @@
 
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_bridge.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/tracing/public/mojom/constants.mojom.h"
+#include "services/tracing/public/mojom/perfetto_service.mojom.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
+#include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
+
+using ChromeEventBundleHandle =
+    protozero::MessageHandle<perfetto::protos::pbzero::ChromeEventBundle>;
 
 namespace arc {
 
@@ -57,6 +68,210 @@ class ArcTracingBridgeFactory
   ~ArcTracingBridgeFactory() override = default;
 };
 
+// Perfetto data source which coordinates ARC tracing sessions with perfetto's
+// ProducerClient when perfetto is used as the tracing backend.
+class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
+ public:
+  static ArcTracingDataSource* GetInstance() {
+    static base::NoDestructor<ArcTracingDataSource> instance;
+    return instance.get();
+  }
+
+  // Called after constructing |bridge|.
+  void RegisterBridgeOnUI(ArcTracingBridge* bridge) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK_EQ(ArcTracingBridge::State::kDisabled, bridge->state());
+    bool success = bridges_.insert(bridge).second;
+    DCHECK(success);
+
+    if (producer_client_ && !stop_complete_callback_) {
+      // We're currently tracing, so start the new bridge, too.
+      // |this| never gets destructed, so it's OK to bind an unretained pointer.
+      bridge->StartTracing(
+          data_source_config_.chrome_config().trace_config(),
+          base::BindOnce(&ArcTracingDataSource::OnTracingStartedOnUI,
+                         base::Unretained(this)));
+    }
+  }
+
+  // Called when destructing |bridge|.
+  void UnregisterBridgeOnUI(ArcTracingBridge* bridge) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    const size_t erase_count = bridges_.erase(bridge);
+    DCHECK_EQ(1u, erase_count);
+
+    // Make sure we don't continue to wait for any of the bridge's callbacks.
+    OnTracingStartedOnUI(false /*success*/);
+    OnTraceDataOnUI(std::string() /*data*/);
+  }
+
+ private:
+  friend class base::NoDestructor<ArcTracingDataSource>;
+
+  ArcTracingDataSource()
+      : DataSourceBase(tracing::mojom::kArcTraceDataSourceName),
+        perfetto_task_runner_(
+            tracing::ProducerClient::Get()->GetTaskRunner()->task_runner()) {
+    tracing::ProducerClient::Get()->AddDataSource(this);
+  }
+
+  // Note that ArcTracingDataSource is a singleton that's never destroyed.
+  ~ArcTracingDataSource() override = default;
+
+  // tracing::ProducerClient::DataSourceBase.
+  void StartTracing(
+      tracing::ProducerClient* producer_client,
+      const perfetto::DataSourceConfig& data_source_config) override {
+    // |this| never gets destructed, so it's OK to bind an unretained pointer.
+    // |producer_client| is a singleton that is never destroyed.
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&ArcTracingDataSource::StartTracingOnUI,
+                       base::Unretained(this), producer_client,
+                       data_source_config));
+  }
+
+  void StopTracing(base::OnceClosure stop_complete_callback) override {
+    // |this| never gets destructed, so it's OK to bind an unretained pointer.
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&ArcTracingDataSource::StopTracingOnUI,
+                       base::Unretained(this),
+                       std::move(stop_complete_callback)));
+  }
+
+  void Flush(base::RepeatingClosure flush_complete_callback) override {
+    // ARC's tracing service doesn't currently support flushing while recording.
+    flush_complete_callback.Run();
+  }
+
+  // Starts all registered bridges.
+  void StartTracingOnUI(tracing::ProducerClient* producer_client,
+                        const perfetto::DataSourceConfig& data_source_config) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    DCHECK(!producer_client_);
+    producer_client_ = producer_client;
+    data_source_config_ = data_source_config;
+
+    for (ArcTracingBridge* bridge : bridges_) {
+      // |this| never gets destructed, so it's OK to bind an unretained pointer.
+      bridge->StartTracing(
+          data_source_config_.chrome_config().trace_config(),
+          base::BindOnce(&ArcTracingDataSource::OnTracingStartedOnUI,
+                         base::Unretained(this)));
+    }
+  }
+
+  // Stops all registered bridges. Calls |stop_complete_callback| when all
+  // bridges have stopped.
+  void StopTracingOnUI(base::OnceClosure stop_complete_callback) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    // We may receive a StopTracing without StartTracing.
+    if (!producer_client_)
+      return;
+
+    // We may still be in startup. In this case, store a callback to rerun
+    // StopTracingOnUI() once startup is complete.
+    if (IsAnyBridgeStarting()) {
+      DCHECK(!pending_stop_tracing_);
+      pending_stop_tracing_ = base::BindOnce(
+          &ArcTracingDataSource::StopTracingOnUI, base::Unretained(this),
+          std::move(stop_complete_callback));
+      return;
+    }
+
+    stop_complete_callback_ = std::move(stop_complete_callback);
+
+    for (ArcTracingBridge* bridge : bridges_) {
+      // StopTracingOnUI should only be called once all bridges have completed
+      // or abandoned startup.
+      DCHECK_NE(ArcTracingBridge::State::kStarting, bridge->state());
+      if (bridge->state() != ArcTracingBridge::State::kEnabled)
+        continue;
+      // |this| never gets destructed, so it's OK to bind an unretained pointer.
+      bridge->StopAndFlush(base::BindOnce(
+          &ArcTracingDataSource::OnTraceDataOnUI, base::Unretained(this)));
+    }
+
+    // There may not have been any bridges left in State::kEnabled. This will
+    // call the callback if all bridges are already stopped.
+    OnTraceDataOnUI(std::string());
+  }
+
+  // Called by each bridge when it has started tracing. Also called when a
+  // bridge is unregisted.
+  void OnTracingStartedOnUI(bool success) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!IsAnyBridgeStarting() && pending_stop_tracing_)
+      std::move(pending_stop_tracing_).Run();
+  }
+
+  // Called by each bridge when it has stopped tracing. Also called when a
+  // bridge is unregisted. Records the supplied |data| into the
+  // |producer_client_|'s buffer.
+  void OnTraceDataOnUI(const std::string& data) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    // When a bridge unregisters, we may not actually be stopping.
+    if (!stop_complete_callback_)
+      return;
+
+    DCHECK(producer_client_);
+
+    if (!data.empty()) {
+      std::unique_ptr<perfetto::TraceWriter> trace_writer =
+          producer_client_->CreateTraceWriter(
+              data_source_config_.target_buffer());
+      DCHECK(trace_writer);
+      perfetto::TraceWriter::TracePacketHandle trace_packet_handle =
+          trace_writer->NewTracePacket();
+      ChromeEventBundleHandle event_bundle =
+          ChromeEventBundleHandle(trace_packet_handle->set_chrome_events());
+      auto* legacy_json_trace = event_bundle->add_legacy_json_trace();
+      legacy_json_trace->set_type(
+          perfetto::protos::pbzero::ChromeLegacyJsonTrace::USER_TRACE);
+      legacy_json_trace->set_data(data.data(), data.length());
+    }
+
+    if (AreAllBridgesStopped()) {
+      producer_client_ = nullptr;
+      perfetto_task_runner_->PostTask(FROM_HERE,
+                                      std::move(stop_complete_callback_));
+    }
+  }
+
+  bool IsAnyBridgeStarting() const {
+    for (ArcTracingBridge* bridge : bridges_) {
+      if (bridge->state() == ArcTracingBridge::State::kStarting)
+        return true;
+    }
+    return false;
+  }
+
+  bool AreAllBridgesStopped() const {
+    for (ArcTracingBridge* bridge : bridges_) {
+      if (bridge->state() != ArcTracingBridge::State::kDisabled)
+        return false;
+    }
+    return true;
+  }
+
+  base::SequencedTaskRunner* perfetto_task_runner_;
+  std::set<ArcTracingBridge*> bridges_;
+  // In case StopTracing() is called before tracing was started for all bridges,
+  // this stores a callback to StopTracing() that's executed when all bridges
+  // have started.
+  base::OnceClosure pending_stop_tracing_;
+  // Called when all bridges have completed stopping, notifying ProducerClient.
+  base::OnceClosure stop_complete_callback_;
+  tracing::ProducerClient* producer_client_ = nullptr;
+  perfetto::DataSourceConfig data_source_config_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcTracingDataSource);
+};
+
 }  // namespace
 
 struct ArcTracingBridge::Category {
@@ -74,19 +289,31 @@ ArcTracingBridge* ArcTracingBridge::GetForBrowserContext(
 
 ArcTracingBridge::ArcTracingBridge(content::BrowserContext* context,
                                    ArcBridgeService* bridge_service)
-    : BaseAgent(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-          kChromeTraceEventLabel,
-          tracing::mojom::TraceDataType::ARRAY,
-          false /* supports_explicit_clock_sync */,
-          base::kNullProcessId),
-      arc_bridge_service_(bridge_service),
+    : arc_bridge_service_(bridge_service),
+      agent_(this),
+      reader_(std::make_unique<ArcTracingReader>()),
       weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   arc_bridge_service_->tracing()->AddObserver(this);
+  ArcTracingDataSource::GetInstance()->RegisterBridgeOnUI(this);
 }
 
 ArcTracingBridge::~ArcTracingBridge() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  ArcTracingDataSource::GetInstance()->UnregisterBridgeOnUI(this);
   arc_bridge_service_->tracing()->RemoveObserver(this);
+
+  // Delete the reader on the IO thread.
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
+      ->DeleteSoon(FROM_HERE, reader_.release());
+}
+
+void ArcTracingBridge::GetCategories(std::set<std::string>* category_set) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  for (const auto& category : categories_) {
+    category_set->insert(category.full_name);
+  }
 }
 
 void ArcTracingBridge::OnConnectionReady() {
@@ -107,18 +334,20 @@ void ArcTracingBridge::OnCategoriesReady(
   // alternative, the old category that is no longer in |categories_| will be
   // ignored when calling |StartTracing|.
   categories_.clear();
-  for (const auto& category : categories) {
+  for (const auto& category : categories)
     categories_.emplace_back(Category{category, kCategoryPrefix + category});
-    // Show the category name in the selection UI.
-    base::trace_event::TraceLog::GetCategoryGroupEnabled(
-        categories_.back().full_name.c_str());
-  }
 }
 
 void ArcTracingBridge::StartTracing(const std::string& config,
-                                    base::TimeTicks coordinator_time,
-                                    Agent::StartTracingCallback callback) {
+                                    SuccessCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (state_ != State::kDisabled) {
+    DLOG(WARNING) << "Cannot start tracing, it is already enabled.";
+    std::move(callback).Run(false /*success*/);
+    return;
+  }
+  state_ = State::kStarting;
 
   base::trace_event::TraceConfig trace_config(config);
 
@@ -127,20 +356,14 @@ void ArcTracingBridge::StartTracing(const std::string& config,
       trace_config.IsSystraceEnabled() && CreateSocketPair(&read_fd, &write_fd);
 
   if (!success) {
-    // Use PostTask as the convention of TracingAgent. The caller expects
-    // callback to be called after this function returns.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false /* success */));
+    OnArcTracingStarted(std::move(callback), false /*success*/);
     return;
   }
 
   mojom::TracingInstance* tracing_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->tracing(), StartTracing);
   if (!tracing_instance) {
-    // Use PostTask as the convention of TracingAgent. The caller expects
-    // callback to be called after this function returns.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false));
+    OnArcTracingStarted(std::move(callback), false /*success*/);
     return;
   }
 
@@ -150,59 +373,118 @@ void ArcTracingBridge::StartTracing(const std::string& config,
       selected_categories.push_back(category.name);
   }
 
-  tracing_instance->StartTracing(selected_categories,
-                                 mojo::WrapPlatformFile(write_fd.release()),
-                                 std::move(callback));
+  tracing_instance->StartTracing(
+      selected_categories, mojo::WrapPlatformFile(write_fd.release()),
+      base::BindOnce(&ArcTracingBridge::OnArcTracingStarted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 
+  // |reader_| will be destroyed after us on the IO thread, so it's OK to use an
+  // unretained pointer.
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&ArcTracingReader::StartTracing, reader_.GetWeakPtr(),
-                     std::move(read_fd)));
+      base::BindOnce(&ArcTracingReader::StartTracing,
+                     base::Unretained(reader_.get()), std::move(read_fd)));
 }
 
-void ArcTracingBridge::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
+void ArcTracingBridge::OnArcTracingStarted(SuccessCallback callback,
+                                           bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(State::kStarting, state_);
+  state_ = success ? State::kEnabled : State::kDisabled;
+  std::move(callback).Run(success);
+}
+
+void ArcTracingBridge::StopAndFlush(TraceDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (is_stopping_) {
-    DLOG(WARNING) << "Already working on stopping ArcTracingAgent.";
+  if (state_ != State::kEnabled) {
+    DLOG(WARNING) << "Cannot stop tracing, it is not enabled.";
+    std::move(callback).Run(std::string());
     return;
   }
-  is_stopping_ = true;
-  recorder_ = std::move(recorder);
+  state_ = State::kStopping;
 
   mojom::TracingInstance* tracing_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->tracing(), StopTracing);
   if (!tracing_instance) {
-    OnArcTracingStopped(false);
+    OnArcTracingStopped(std::move(callback), false);
     return;
   }
-  tracing_instance->StopTracing(base::BindOnce(
-      &ArcTracingBridge::OnArcTracingStopped, weak_ptr_factory_.GetWeakPtr()));
+  tracing_instance->StopTracing(
+      base::BindOnce(&ArcTracingBridge::OnArcTracingStopped,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void ArcTracingBridge::OnArcTracingStopped(bool success) {
+void ArcTracingBridge::OnArcTracingStopped(
+    TraceDataCallback tracing_stopped_callback,
+    bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(State::kStopping, state_);
   if (!success) {
-    DLOG(WARNING) << "Failed to stop ARC tracing.";
-    is_stopping_ = false;
-    return;
+    DLOG(WARNING) << "Failed to stop ARC tracing, closing file anyway.";
   }
-  base::PostTaskWithTraits(
+  // |reader_| will be destroyed after us on the IO thread, so it's OK to use an
+  // unretained pointer.
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&ArcTracingReader::StopTracing, reader_.GetWeakPtr(),
-                     base::BindOnce(&ArcTracingBridge::OnTracingReaderStopped,
-                                    weak_ptr_factory_.GetWeakPtr())));
+      base::BindOnce(&ArcTracingReader::StopTracing,
+                     base::Unretained(reader_.get())),
+      base::BindOnce(&ArcTracingBridge::OnTracingReaderStopped,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(tracing_stopped_callback)));
 }
 
-void ArcTracingBridge::OnTracingReaderStopped(const std::string& data) {
+void ArcTracingBridge::OnTracingReaderStopped(
+    TraceDataCallback tracing_stopped_callback,
+    const std::string& data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(State::kStopping, state_);
+  state_ = State::kDisabled;
+  std::move(tracing_stopped_callback).Run(data);
+}
+
+ArcTracingBridge::ArcTracingAgent::ArcTracingAgent(ArcTracingBridge* bridge)
+    : BaseAgent(
+
+          kChromeTraceEventLabel,
+          tracing::mojom::TraceDataType::ARRAY,
+          base::kNullProcessId),
+      bridge_(bridge) {
+}
+
+ArcTracingBridge::ArcTracingAgent::~ArcTracingAgent() = default;
+
+void ArcTracingBridge::ArcTracingAgent::GetCategories(
+    std::set<std::string>* category_set) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  bridge_->GetCategories(category_set);
+}
+
+void ArcTracingBridge::ArcTracingAgent::StartTracing(
+    const std::string& config,
+    base::TimeTicks coordinator_time,
+    Agent::StartTracingCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  bridge_->StartTracing(config, std::move(callback));
+}
+
+void ArcTracingBridge::ArcTracingAgent::StopAndFlush(
+    tracing::mojom::RecorderPtr recorder) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  recorder_ = std::move(recorder);
+  // |bridge_| owns us, so it's OK to pass an unretained pointer.
+  bridge_->StopAndFlush(
+      base::BindOnce(&ArcTracingAgent::OnTraceData, base::Unretained(this)));
+}
+
+void ArcTracingBridge::ArcTracingAgent::OnTraceData(const std::string& data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(recorder_);
   recorder_->AddChunk(data);
   recorder_.reset();
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  is_stopping_ = false;
 }
 
-ArcTracingBridge::ArcTracingReader::ArcTracingReader()
-    : weak_ptr_factory_(this) {}
+ArcTracingBridge::ArcTracingReader::ArcTracingReader() = default;
 
 ArcTracingBridge::ArcTracingReader::~ArcTracingReader() {
   DCHECK(!fd_watcher_);
@@ -211,9 +493,7 @@ ArcTracingBridge::ArcTracingReader::~ArcTracingReader() {
 void ArcTracingBridge::ArcTracingReader::StartTracing(base::ScopedFD read_fd) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   read_fd_ = std::move(read_fd);
-  // We don't use the weak pointer returned by |GetWeakPtr| to avoid using it
-  // on different task runner. Instead, we use |base::Unretained| here as
-  // |fd_watcher_| is always destroyed before |this| is destroyed.
+  // We own |fd_watcher_|, so it's OK to use an unretained pointer.
   fd_watcher_ = base::FileDescriptorWatcher::WatchReadable(
       read_fd_.get(),
       base::BindRepeating(&ArcTracingReader::OnTraceDataAvailable,
@@ -249,8 +529,7 @@ void ArcTracingBridge::ArcTracingReader::OnTraceDataAvailable() {
   ring_buffer_.SaveToBuffer(std::string(buf, n));
 }
 
-void ArcTracingBridge::ArcTracingReader::StopTracing(
-    base::OnceCallback<void(const std::string&)> callback) {
+std::string ArcTracingBridge::ArcTracingReader::StopTracing() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   fd_watcher_.reset();
   read_fd_.reset();
@@ -266,13 +545,7 @@ void ArcTracingBridge::ArcTracingReader::StopTracing(
   }
   ring_buffer_.Clear();
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(std::move(callback), data));
-}
-
-base::WeakPtr<ArcTracingBridge::ArcTracingReader>
-ArcTracingBridge::ArcTracingReader::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
+  return data;
 }
 
 }  // namespace arc

@@ -47,13 +47,6 @@ bool IsClosingLastIncognitoTabEnabled();
 // TODO (crbug.com/884723): Remove all use of this flag.
 bool IsRefreshLocationBarEnabled();
 
-// Returns whether the first phase of the UI refresh will be displayed.
-// TODO (crbug.com/884725): Remove all use of this flag.
-bool IsUIRefreshPhase1Enabled();
-
-// Returns whether the WKWebView snapshotting API will be used for iOS 11+.
-bool IsWKWebViewSnapshotsEnabled();
-
 // Returns the height of the status bar, accounting for orientation.
 CGFloat StatusBarHeight();
 

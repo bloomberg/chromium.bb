@@ -22,6 +22,8 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 
 #include <algorithm>
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -35,7 +37,6 @@
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/network/network_hints.h"
 
 namespace blink {
 
@@ -85,14 +86,14 @@ bool ChromeClient::CanOpenUIElementIfDuringPageDismissal(
     const String& message) {
   for (Frame* frame = &main_frame; frame;
        frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
-    LocalFrame& local_frame = ToLocalFrame(*frame);
     Document::PageDismissalType dismissal =
-        local_frame.GetDocument()->PageDismissalEventBeingDispatched();
+        local_frame->GetDocument()->PageDismissalEventBeingDispatched();
     if (dismissal != Document::kNoDismissal) {
       return ShouldOpenUIElementDuringPageDismissal(
-          local_frame, ui_element_type, message, dismissal);
+          *local_frame, ui_element_type, message, dismissal);
     }
   }
   return true;
@@ -102,20 +103,17 @@ Page* ChromeClient::CreateWindow(
     LocalFrame* frame,
     const FrameLoadRequest& r,
     const WebWindowFeatures& features,
-    NavigationPolicy navigation_policy,
-    SandboxFlags sandbox_flags,
+    WebSandboxFlags sandbox_flags,
+    const FeaturePolicy::FeatureState& opener_feature_state,
     const SessionStorageNamespaceId& session_storage_namespace_id) {
-// Popups during page unloading is a feature being put behind a policy and
-// needing an easily-mergeable change. See https://crbug.com/936080 .
-#if 0
   if (!CanOpenUIElementIfDuringPageDismissal(
           frame->Tree().Top(), UIElementType::kPopup, g_empty_string)) {
     return nullptr;
   }
-#endif
 
-  return CreateWindowDelegate(frame, r, features, navigation_policy,
-                              sandbox_flags, session_storage_namespace_id);
+  return CreateWindowDelegate(frame, r, features, sandbox_flags,
+                              opener_feature_state,
+                              session_storage_namespace_id);
 }
 
 template <typename Delegate>
@@ -126,9 +124,9 @@ static bool OpenJavaScriptDialog(LocalFrame* frame,
   // otherwise cause the load to continue while we're in the middle of
   // executing JavaScript.
   ScopedPagePauser pauser;
-  probe::willRunJavaScriptDialog(frame);
+  probe::WillRunJavaScriptDialog(frame);
   bool result = delegate();
-  probe::didRunJavaScriptDialog(frame);
+  probe::DidRunJavaScriptDialog(frame);
   return result;
 }
 
@@ -185,8 +183,13 @@ void ChromeClient::MouseDidMoveOverElement(LocalFrame& frame,
                                            const HitTestLocation& location,
                                            const HitTestResult& result) {
   if (!result.GetScrollbar() && result.InnerNode() &&
-      result.InnerNode()->GetDocument().IsDNSPrefetchEnabled())
-    PrefetchDNS(result.AbsoluteLinkURL().Host());
+      result.InnerNode()->GetDocument().IsDNSPrefetchEnabled()) {
+    WebPrescientNetworking* web_prescient_networking =
+        Platform::Current()->PrescientNetworking();
+    if (web_prescient_networking) {
+      web_prescient_networking->PrefetchDNS(result.AbsoluteLinkURL().Host());
+    }
+  }
 
   ShowMouseOverURL(result);
 
@@ -253,10 +256,12 @@ bool ChromeClient::Print(LocalFrame* frame) {
     return false;
   }
 
-  if (frame->GetDocument()->IsSandboxed(kSandboxModals)) {
-    UseCounter::Count(frame, WebFeature::kDialogInSandboxedContext);
+  if (frame->GetDocument()->IsSandboxed(WebSandboxFlags::kModals)) {
+    UseCounter::Count(frame->GetDocument(),
+                      WebFeature::kDialogInSandboxedContext);
     frame->Console().AddMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'print()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return false;

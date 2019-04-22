@@ -5,9 +5,9 @@
 #ifndef IOS_WEB_SHELL_TEST_EARL_GREY_SHELL_MATCHERS_H_
 #define IOS_WEB_SHELL_TEST_EARL_GREY_SHELL_MATCHERS_H_
 
-#include <string>
+#import <Foundation/Foundation.h>
 
-#import <EarlGrey/EarlGrey.h>
+@protocol GREYMatcher;
 
 namespace web {
 
@@ -17,17 +17,11 @@ id<GREYMatcher> WebView();
 // Matcher for WKWebView's scroll view.
 id<GREYMatcher> WebViewScrollView();
 
-// Matcher for web shell address field text property equal to |text|.
-id<GREYMatcher> AddressFieldText(std::string text);
-
 // Matcher for back button in web shell.
 id<GREYMatcher> BackButton();
 
 // Matcher for forward button in web shell.
 id<GREYMatcher> ForwardButton();
-
-// Matcher for address field in web shell.
-id<GREYMatcher> AddressField();
 
 }  // namespace web
 

@@ -356,7 +356,8 @@ void CloseStorageAndDestroyTaskHelperOnUIThread(
 std::pair<int, base::File::Error> OpenFileDescriptor(
     const base::FilePath& file_path,
     const int flags) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   if (base::DirectoryExists(file_path))
     return std::make_pair(-1, base::File::FILE_ERROR_NOT_A_FILE);
@@ -370,7 +371,8 @@ std::pair<int, base::File::Error> OpenFileDescriptor(
 
 // Closes |file_descriptor| on a background task runner.
 void CloseFileDescriptor(const int file_descriptor) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   IGNORE_EINTR(close(file_descriptor));
 }
@@ -379,8 +381,8 @@ void CloseFileDescriptor(const int file_descriptor) {
 void DeleteTemporaryFile(const base::FilePath& file_path) {
   base::PostTaskWithTraits(FROM_HERE,
                            {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-                           base::Bind(base::IgnoreResult(base::DeleteFile),
-                                      file_path, false /* not recursive*/));
+                           base::BindOnce(base::IgnoreResult(base::DeleteFile),
+                                          file_path, false /* not recursive*/));
 }
 
 // A fake callback to be passed as CopyFileProgressCallback.
@@ -850,8 +852,8 @@ void MTPDeviceDelegateImplLinux::CancelPendingTasksAndDeleteDelegate() {
   // To cancel all the pending tasks, destroy the MTPDeviceTaskHelper object.
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&CloseStorageAndDestroyTaskHelperOnUIThread, storage_name_,
-                 read_only_));
+      base::BindOnce(&CloseStorageAndDestroyTaskHelperOnUIThread, storage_name_,
+                     read_only_));
   delete this;
 }
 
@@ -1300,9 +1302,9 @@ void MTPDeviceDelegateImplLinux::EnsureInitAndRunTask(
     task_in_progress_ = true;
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::Bind(&OpenStorageOnUIThread, storage_name_, read_only_,
-                   base::Bind(&MTPDeviceDelegateImplLinux::OnInitCompleted,
-                              weak_ptr_factory_.GetWeakPtr())));
+        base::BindOnce(&OpenStorageOnUIThread, storage_name_, read_only_,
+                       base::Bind(&MTPDeviceDelegateImplLinux::OnInitCompleted,
+                                  weak_ptr_factory_.GetWeakPtr())));
   }
 }
 

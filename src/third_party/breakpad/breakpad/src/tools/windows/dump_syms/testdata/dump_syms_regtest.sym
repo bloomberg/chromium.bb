@@ -290,7 +290,7 @@ FUNC 1000 54 0 main
 102f f 62 1
 103e 12 64 1
 1050 4 65 1
-FUNC 1060 a 0 google_breakpad::i
+FUNC 1060 a 0 static int google_breakpad::i()
 1060 3 51 1
 1063 5 52 1
 1068 2 53 1
@@ -316,14 +316,14 @@ FUNC 117d b 0 operator delete(void *)
 117d 5 20 2875
 1182 1 24 2875
 1183 5 23 2875
-FUNC 1188 29 0 fast_error_exit
+FUNC 1188 29 0 static void fast_error_exit(int)
 1188 5 326 4250
 118d 9 335 4250
 1196 5 337 4250
 119b 8 339 4250
 11a3 c 340 4250
 11af 2 341 4250
-FUNC 11b1 161 0 __tmainCRTStartup
+FUNC 11b1 161 0 static int __tmainCRTStartup()
 11b1 c 196 4250
 11bd a 214 4250
 11c7 b 216 4250
@@ -505,7 +505,7 @@ FUNC 154e 97 0 _cinit
 15d5 c 303 4186
 15e1 2 307 4186
 15e3 2 308 4186
-FUNC 15e5 140 0 doexit
+FUNC 15e5 140 0 static void doexit(int, int, int)
 15e5 c 489 4186
 15f1 8 507 4186
 15f9 4 508 4186
@@ -675,7 +675,7 @@ FUNC 1ae5 dc 0 _setenvp
 1ba8 7 130 3838
 1baf 5 131 3838
 1bb4 d 133 3838
-FUNC 1bc1 19a 0 parse_cmdline
+FUNC 1bc1 19a 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
 1bc1 6 221 3891
 1bc7 9 229 3891
 1bd0 2 232 3891
@@ -1194,7 +1194,7 @@ FUNC 2c8b 94 0 malloc
 2d1a 3 113 504
 2d1d 2 122 504
 FUNC 2d20 90 0 _local_unwind4
-FUNC 2db0 46 0 _unwind_handler4
+FUNC 2db0 46 0 static void _unwind_handler4()
 FUNC 2df6 1c 4 _seh_longjmp_unwind4
 FUNC 2e12 17 0 _EH4_CallFilterFunc
 FUNC 2e29 19 0 _EH4_TransferToHandler
@@ -1242,7 +1242,7 @@ FUNC 2f11 1e 0 _initp_misc_winsig
 2f23 5 60 2311
 2f28 5 61 2311
 2f2d 2 62 2311
-FUNC 2f2f 37 0 siglookup
+FUNC 2f2f 37 0 static struct _XCPT_ACTION * siglookup(int, struct _XCPT_ACTION *)
 2f2f 5 629 2311
 2f34 a 630 2311
 2f3e 14 639 2311
@@ -1328,7 +1328,7 @@ FUNC 3143 28 0 _callnewh
 3165 2 139 2820
 3167 2 136 2820
 3169 2 139 2820
-FUNC 316b b6 0 _onexit_nolock
+FUNC 316b b6 0 static  * _onexit_nolock( *)
 316b 8 100 1969
 3173 f 103 1969
 3182 f 104 1969
@@ -1535,7 +1535,7 @@ FUNC 3827 4e 0 _realloc_crt
 386a 5 79 333
 386f 4 82 333
 3873 2 83 333
-FUNC 3875 2f 0 CPtoLCID
+FUNC 3875 2f 0 static int CPtoLCID(int)
 3875 0 329 3326
 3875 14 330 3326
 3889 2 345 3326
@@ -1548,7 +1548,7 @@ FUNC 3875 2f 0 CPtoLCID
 389d 1 346 3326
 389e 5 333 3326
 38a3 1 346 3326
-FUNC 38a4 64 0 setSBCS
+FUNC 38a4 64 0 static void setSBCS(struct threadmbcinfostruct *)
 38a4 6 363 3326
 38aa 11 368 3326
 38bb 1b 379 3326
@@ -1557,7 +1557,7 @@ FUNC 38a4 64 0 setSBCS
 38f1 b 384 3326
 38fc 9 385 3326
 3905 3 386 3326
-FUNC 3908 190 0 setSBUpLow
+FUNC 3908 190 0 static void setSBUpLow(struct threadmbcinfostruct *)
 3908 17 402 3326
 391f 10 412 3326
 392f f 415 3326
@@ -1623,7 +1623,7 @@ FUNC 3b3c 87 0 _LocaleUpdate::_LocaleUpdate(localeinfo_struct *)
 3bb0 2 255 111
 3bb2 a 257 111
 3bbc 7 259 111
-FUNC 3bc3 7c 0 getSystemCP
+FUNC 3bc3 7c 0 static int getSystemCP(int)
 3bc3 9 282 3326
 3bcc b 284 3326
 3bd7 6 285 3326
@@ -1734,7 +1734,7 @@ FUNC 3fc2 1e 0 __initmbctable
 3fd3 a 853 3326
 3fdd 2 858 3326
 3fdf 1 859 3326
-FUNC 3fe0 53 0 x_ismbbtype_l
+FUNC 3fe0 53 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
 3fe0 8 213 3271
 3fe8 b 214 3271
 3ff3 4 219 3271
@@ -1953,7 +1953,7 @@ FUNC 4410 95 0 _aulldvrm
 44a1 1 180 2806
 44a2 3 182 2806
 FUNC 44b0 20 0 _global_unwind2
-FUNC 44d0 45 0 __unwind_handler
+FUNC 44d0 45 0 static void __unwind_handler()
 FUNC 4515 84 0 _local_unwind2
 FUNC 4599 23 0 _abnormal_termination
 FUNC 45bc 9 0 _NLG_Notify1
@@ -2301,7 +2301,7 @@ FUNC 4b65 ad 0 realloc
 4bf6 2 112 618
 4bf8 16 103 618
 4c0e 4 105 618
-FUNC 4c12 1e7 0 __crtLCMapStringA_stat
+FUNC 4c12 1e7 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
 4c12 12 96 3447
 4c24 c 101 3447
 4c30 17 102 3447
@@ -2338,7 +2338,7 @@ FUNC 4df9 46 0 __crtLCMapStringA
 4e01 b 259 3447
 4e0c 31 271 3447
 4e3d 2 272 3447
-FUNC 4e3f e7 0 __crtGetStringTypeA_stat
+FUNC 4e3f e7 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
 4e3f 12 63 3507
 4e51 7 67 3507
 4e58 5 83 3507

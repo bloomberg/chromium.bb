@@ -45,8 +45,7 @@ from idl_types import IdlTypeBase, IdlUnionType, inherits_interface
 from v8_globals import includes
 import v8_types
 import v8_utilities
-from v8_utilities import (has_extended_attribute_value, is_unforgeable,
-                          is_legacy_interface_type_checking)
+from v8_utilities import (has_extended_attribute_value, is_unforgeable)
 
 
 def method_is_visible(method, interface_is_partial):
@@ -127,7 +126,7 @@ def runtime_call_stats_context(interface, method):
     }
 
 
-def method_context(interface, method, is_visible=True):
+def method_context(interface, method, component_info, is_visible=True):
     arguments = method.arguments
     extended_attributes = method.extended_attributes
     idl_type = method.idl_type
@@ -139,10 +138,6 @@ def method_context(interface, method, is_visible=True):
 
     this_cpp_value = cpp_value(interface, method, len(arguments))
 
-    is_call_with_script_arguments = has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
-    if is_call_with_script_arguments:
-        includes.update(['bindings/core/v8/script_call_stack.h',
-                         'core/inspector/script_arguments.h'])
     is_call_with_script_state = has_extended_attribute_value(method, 'CallWith', 'ScriptState')
     is_call_with_this_value = has_extended_attribute_value(method, 'CallWith', 'ThisValue')
     if is_call_with_script_state or is_call_with_this_value:
@@ -187,14 +182,18 @@ def method_context(interface, method, is_visible=True):
         argument_context(interface, method, argument, index, is_visible=is_visible)
         for index, argument in enumerate(arguments)]
 
+    runtime_features = component_info['runtime_enabled_features']
+
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': argument_contexts,
         'camel_case_name': NameStyleConverter(name).to_upper_camel_case(),
         'cpp_type': (v8_types.cpp_template_type('base::Optional', idl_type.cpp_type)
-                     if idl_type.is_explicit_nullable else idl_type.cpp_type),
+                     if idl_type.is_explicit_nullable
+                     else v8_types.cpp_type(idl_type, extended_attributes=extended_attributes)),
         'cpp_value': this_cpp_value,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
+        'high_entropy': v8_utilities.high_entropy(method),  # [HighEntropy]
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
         'do_not_test_new_object': 'DoNotTestNewObject' in extended_attributes,
         'exposed_test': v8_utilities.exposed(method, interface),  # [Exposed]
@@ -209,7 +208,6 @@ def method_context(interface, method, is_visible=True):
                 if argument_context['is_optional_without_default_value']),
         'idl_type': idl_type.base_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
-        'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
         'is_call_with_this_value': is_call_with_this_value,
         'is_ce_reactions': is_ce_reactions,
@@ -242,11 +240,11 @@ def method_context(interface, method, is_visible=True):
         'on_instance': v8_utilities.on_instance(interface, method),
         'on_interface': v8_utilities.on_interface(interface, method),
         'on_prototype': v8_utilities.on_prototype(interface, method),
-        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(method),  # [OriginTrialEnabled]
+        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(method, runtime_features),  # [OriginTrialEnabled]
         'property_attributes': property_attributes(interface, method),
         'returns_promise': method.returns_promise,
         'runtime_call_stats': runtime_call_stats_context(interface, method),
-        'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(method),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(method, runtime_features),  # [RuntimeEnabled]
         'secure_context_test': v8_utilities.secure_context(method, interface),  # [SecureContext]
         'side_effect_type': side_effect_type,  # [Affects]
         'snake_case_name': NameStyleConverter(name).to_snake_case(),
@@ -267,10 +265,7 @@ def argument_context(interface, method, argument, index, is_visible=True):
     this_cpp_value = cpp_value(interface, method, index)
     is_variadic_wrapper_type = argument.is_variadic and idl_type.is_wrapper_type
 
-    # [LegacyInterfaceTypeChecking]
-    has_type_checking_interface = (
-        not is_legacy_interface_type_checking(interface, method) and
-        idl_type.is_wrapper_type)
+    has_type_checking_interface = idl_type.is_wrapper_type
 
     set_default_value = argument.set_default_value
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes,
@@ -287,8 +282,9 @@ def argument_context(interface, method, argument, index, is_visible=True):
         'enum_type': idl_type.enum_type,
         'enum_values': idl_type.enum_values,
         'handle': '%s_handle' % snake_case_name,
-        # FIXME: remove once [Default] removed and just use argument.default_value
-        'has_default': 'Default' in extended_attributes or set_default_value,
+        # TODO(peria): remove once [DefaultValue] removed and just use
+        # argument.default_value. https://crbug.com/924419
+        'has_default': 'DefaultValue' in extended_attributes or set_default_value,
         'has_type_checking_interface': has_type_checking_interface,
         # Dictionary is special-cased, but arrays and sequences shouldn't be
         'idl_type': idl_type.base_type,
@@ -437,7 +433,7 @@ def v8_value_to_local_cpp_value(interface_name, method, argument, index):
 
     # History.pushState and History.replaceState are explicitly specified as
     # serializing the value for storage. The default is to not serialize for
-    # storage. See https://html.spec.whatwg.org/multipage/browsers.html#dom-history-pushstate
+    # storage. See https://html.spec.whatwg.org/C/#dom-history-pushstate
     if idl_type.name == 'SerializedScriptValue':
         for_storage = (interface_name == 'History' and
                        method.name in ('pushState', 'replaceState'))

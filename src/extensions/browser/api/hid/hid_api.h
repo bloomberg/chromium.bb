@@ -25,7 +25,7 @@ class DevicePermissionsPrompt;
 
 class HidGetDevicesFunction : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("hid.getDevices", HID_GETDEVICES);
+  DECLARE_EXTENSION_FUNCTION("hid.getDevices", HID_GETDEVICES)
 
   HidGetDevicesFunction();
 
@@ -62,7 +62,7 @@ class HidGetUserSelectedDevicesFunction : public UIThreadExtensionFunction {
 
 class HidConnectFunction : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("hid.connect", HID_CONNECT);
+  DECLARE_EXTENSION_FUNCTION("hid.connect", HID_CONNECT)
 
   HidConnectFunction();
 
@@ -81,7 +81,7 @@ class HidConnectFunction : public UIThreadExtensionFunction {
 
 class HidDisconnectFunction : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("hid.disconnect", HID_DISCONNECT);
+  DECLARE_EXTENSION_FUNCTION("hid.disconnect", HID_DISCONNECT)
 
   HidDisconnectFunction();
 
@@ -118,7 +118,7 @@ class HidConnectionIoFunction : public UIThreadExtensionFunction {
 
 class HidReceiveFunction : public HidConnectionIoFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("hid.receive", HID_RECEIVE);
+  DECLARE_EXTENSION_FUNCTION("hid.receive", HID_RECEIVE)
 
   HidReceiveFunction();
 
@@ -140,7 +140,7 @@ class HidReceiveFunction : public HidConnectionIoFunction {
 
 class HidSendFunction : public HidConnectionIoFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("hid.send", HID_SEND);
+  DECLARE_EXTENSION_FUNCTION("hid.send", HID_SEND)
 
   HidSendFunction();
 
@@ -161,7 +161,7 @@ class HidSendFunction : public HidConnectionIoFunction {
 class HidReceiveFeatureReportFunction : public HidConnectionIoFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hid.receiveFeatureReport",
-                             HID_RECEIVEFEATUREREPORT);
+                             HID_RECEIVEFEATUREREPORT)
 
   HidReceiveFeatureReportFunction();
 
@@ -182,7 +182,7 @@ class HidReceiveFeatureReportFunction : public HidConnectionIoFunction {
 
 class HidSendFeatureReportFunction : public HidConnectionIoFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("hid.sendFeatureReport", HID_SENDFEATUREREPORT);
+  DECLARE_EXTENSION_FUNCTION("hid.sendFeatureReport", HID_SENDFEATUREREPORT)
 
   HidSendFeatureReportFunction();
 

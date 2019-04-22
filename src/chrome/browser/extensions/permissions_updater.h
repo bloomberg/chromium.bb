@@ -188,20 +188,21 @@ class PermissionsUpdater {
       std::unique_ptr<const PermissionSet> changed,
       base::OnceClosure completion_callback);
 
+  // Issues the relevant events, messages and notifications when the default
+  // scope management policy have changed.
+  // Specifically, this sends the ExtensionMsg_UpdateDefaultHostRestrictions
+  // IPC message.
+  static void NotifyDefaultPolicyHostRestrictionsUpdated(
+      content::BrowserContext* browser_context,
+      const URLPatternSet default_runtime_blocked_hosts,
+      const URLPatternSet default_runtime_allowed_hosts);
+
   // Sets the |extension|'s active permissions to |active|, and calculates and
   // sets the |extension|'s new withheld permissions. If |update_prefs| is true,
   // also updates the set of active permissions in the extension preferences.
   void SetPermissions(const Extension* extension,
                       std::unique_ptr<const PermissionSet> active,
                       bool update_prefs);
-
-  // Issues the relevant events, messages and notifications when the
-  // default scope management policy have changed.
-  // Specifically, this sends the ExtensionMsg_UpdateDefaultHostRestrictions
-  // IPC message.
-  void NotifyDefaultPolicyHostRestrictionsUpdated(
-      const URLPatternSet& default_runtime_blocked_hosts,
-      const URLPatternSet& default_runtime_allowed_hosts);
 
   // Adds the given |active_permissions_to_add| to |extension|'s current
   // active permissions (i.e., the permissions associated with the |extension|

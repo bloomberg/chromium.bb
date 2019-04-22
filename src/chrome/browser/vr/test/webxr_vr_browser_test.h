@@ -5,11 +5,18 @@
 #ifndef CHROME_BROWSER_VR_TEST_WEBXR_VR_BROWSER_TEST_H_
 #define CHROME_BROWSER_VR_TEST_WEBXR_VR_BROWSER_TEST_H_
 
+#include "build/build_config.h"
 #include "chrome/browser/vr/test/webxr_browser_test.h"
 #include "chrome/browser/vr/test/xr_browser_test.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "device/base/features.h"
+#include "device/vr/buildflags/buildflags.h"
+
+#if defined(OS_WIN)
+#include "services/service_manager/sandbox/features.h"
+#endif
 
 namespace vr {
 
@@ -31,12 +38,49 @@ class WebXrVrBrowserTestBase : public WebXrBrowserTestBase {
   using WebXrBrowserTestBase::EndSessionOrFail;
 };
 
+// Test class with OpenVR disabled.
+class WebXrVrBrowserTestOpenVrDisabled : public WebXrVrBrowserTestBase {
+ public:
+  WebXrVrBrowserTestOpenVrDisabled() {
+    enable_features_.push_back(features::kWebXr);
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    disable_features_.push_back(features::kWindowsMixedReality);
+#endif
+  }
+};
+
+// WebXrOrientationSensorDevice is only defined when the enable_vr flag is set.
+#if BUILDFLAG(ENABLE_VR)
+class WebXrVrBrowserTestSensorless : public WebXrVrBrowserTestBase {
+ public:
+  WebXrVrBrowserTestSensorless() {
+    enable_features_.push_back(features::kWebXr);
+    disable_features_.push_back(device::kWebXrOrientationSensorDevice);
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    disable_features_.push_back(features::kWindowsMixedReality);
+#endif
+
+#if defined(OS_WIN)
+    disable_features_.push_back(service_manager::features::kXRSandbox);
+#endif
+  }
+};
+#endif
+
+// OpenVR feature only defined on Windows.
+#ifdef OS_WIN
 // Test class with standard features enabled: WebXR and OpenVR.
 class WebXrVrBrowserTestStandard : public WebXrVrBrowserTestBase {
  public:
   WebXrVrBrowserTestStandard() {
     enable_features_.push_back(features::kOpenVR);
     enable_features_.push_back(features::kWebXr);
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    disable_features_.push_back(features::kWindowsMixedReality);
+#endif
   }
 };
 
@@ -45,16 +89,13 @@ class WebXrVrBrowserTestWebXrDisabled : public WebXrVrBrowserTestBase {
  public:
   WebXrVrBrowserTestWebXrDisabled() {
     enable_features_.push_back(features::kOpenVR);
-  }
-};
 
-// Test class with OpenVR disabled.
-class WebXrVrBrowserTestOpenVrDisabled : public WebXrVrBrowserTestBase {
- public:
-  WebXrVrBrowserTestOpenVrDisabled() {
-    enable_features_.push_back(features::kWebXr);
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    disable_features_.push_back(features::kWindowsMixedReality);
+#endif
   }
 };
+#endif  // OS_WIN
 
 }  // namespace vr
 

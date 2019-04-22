@@ -19,8 +19,17 @@ config("libdrm_config") {
   # Suppress this warning for now.  This may be removed once
   # https://patchwork.kernel.org/patch/9628231/ lands.
   cflags = [ "-Wno-#pragma-messages" ]
+
+  # glibc version >= 2.25 explicitly include <sys/sysmacros.h>
+  cflags += [ "-DMAJOR_IN_SYSMACROS=1" ]
+
   if (is_clang) {
-    cflags += [ "-Wno-enum-conversion" ]
+    cflags += [
+      "-Wno-enum-conversion",
+
+      # TODO(crbug.com/932060) fix unused result from asprintf in modetest.c.
+      "-Wno-unused-result",
+    ]
   }
 }
 

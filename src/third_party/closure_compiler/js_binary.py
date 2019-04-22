@@ -15,7 +15,7 @@ import argparse
 import os
 import sys
 
-import compile2
+import compiler
 
 
 def ParseDepList(dep):
@@ -121,7 +121,7 @@ def main():
     compiler_args += ['--checks-only']
     open(args.output, 'w').close()
 
-  returncode, errors = compile2.Checker().run_jar(args.compiler, compiler_args)
+  returncode, errors = compiler.Compiler().run_jar(args.compiler, compiler_args)
   if returncode != 0:
     print errors
 

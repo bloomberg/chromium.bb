@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Volume omhoog</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, en dan <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Naar het begin van het vorige woord gaan</translation>
-<translation id="1671169355475348905">Schakelen naar de taalinvoermethode van de vorige taal</translation>
 <translation id="1679841710523778799">Helderheid verhogen</translation>
 <translation id="168356808214100546">Houd <ph name="ALT" /> ingedrukt en tik op <ph name="TAB" /> totdat het venster verschijnt dat je wilt openen. Laat de toetsen vervolgens los.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">De bladwijzerbalk weergeven of verbergen</translation>
 <translation id="2185166372312820725">Naar het vorige tabblad gaan</translation>
 <translation id="2194790690264064655">Druk op <ph name="CTRL" /> en klik op een link</translation>
+<translation id="2246352309084894470">De Launcher op volledig scherm openen/sluiten</translation>
 <translation id="2382644247745281995">Niet ondersteund met de huidige toetsenbordindeling</translation>
 <translation id="2397416548179033562">Chrome-menu weergeven</translation>
 <translation id="2424073332829844142">Caps Lock in- en uitschakelen</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Zoomniveau op de pagina resetten</translation>
 <translation id="2596078834055697711">Een screenshot van het venster maken</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, en dan <ph name="TAB" /> of <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Schakelen naar de taalinvoermethode van de volgende taal</translation>
 <translation id="2699509451653686398">De huidige webpagina als bladwijzer opslaan</translation>
 <translation id="2750942583782703988">De huidige pagina opnieuw laden</translation>
 <translation id="2764005613199379871">De focus in de zoek-/adresbalk plaatsen</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Scherm vergrendelen</translation>
 <translation id="6727005317916125192">Vorig venster</translation>
 <translation id="6740781404993465795">Het volgende woord of de volgende letter selecteren</translation>
+<translation id="6755851152783057058">Overschakelen naar de laatst gebruikte invoermethode</translation>
 <translation id="6760706756348334449">Volume omlaag</translation>
 <translation id="6941333068993625698">Feedback verzenden</translation>
 <translation id="6981982820502123353">Toegankelijkheid</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Typ een webadres in de adresbalk en druk vervolgens op <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Apparaat in de slaapstand zetten (onderbreken)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> of <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Overschakelen naar de volgende beschikbare invoermethode</translation>
 <translation id="743754632698445141">Een app losmaken</translation>
 <translation id="7439718573248533901">De volgende letter verwijderen (vooruit verwijderen)</translation>
 <translation id="7611271430932669992">De focus naar pop-ups en dialoogvensters verplaatsen</translation>

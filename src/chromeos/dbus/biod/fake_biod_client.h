@@ -9,15 +9,11 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "dbus/object_path.h"
-
-namespace dbus {
-class Bus;
-}  // namespace dbus
 
 namespace chromeos {
 
@@ -28,10 +24,13 @@ namespace chromeos {
 // fingerprint, until a completed enroll scan is sent. An attempt scan is also
 // sent with a string. If that string matches any string in the stored
 // fingerprint vector, it is considered a match.
-class CHROMEOS_EXPORT FakeBiodClient : public BiodClient {
+class COMPONENT_EXPORT(BIOD_CLIENT) FakeBiodClient : public BiodClient {
  public:
   FakeBiodClient();
   ~FakeBiodClient() override;
+
+  // Checks that a FakeBiodClient instance was initialized and returns it.
+  static FakeBiodClient* Get();
 
   // Emulates the biod daemon by sending events which the daemon normally sends.
   // Notifies |observers_| about various events. These will be used in tests.
@@ -54,7 +53,6 @@ class CHROMEOS_EXPORT FakeBiodClient : public BiodClient {
   void Reset();
 
   // BiodClient:
-  void Init(dbus::Bus* bus) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   bool HasObserver(const Observer* observer) const override;
@@ -65,7 +63,7 @@ class CHROMEOS_EXPORT FakeBiodClient : public BiodClient {
                          UserRecordsCallback callback) override;
   void DestroyAllRecords(VoidDBusMethodCallback callback) override;
   void StartAuthSession(const ObjectPathCallback& callback) override;
-  void RequestType(const BiometricTypeCallback& callback) override;
+  void RequestType(BiometricTypeCallback callback) override;
   void CancelEnrollSession(VoidDBusMethodCallback callback) override;
   void EndAuthSession(VoidDBusMethodCallback callback) override;
   void SetRecordLabel(const dbus::ObjectPath& record_path,

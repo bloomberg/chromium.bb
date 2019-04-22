@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.signin;
 import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.support.annotation.Nullable;
 
 import com.google.android.gms.auth.AccountChangeEvent;
 import com.google.android.gms.auth.GoogleAuthException;
@@ -16,19 +18,20 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.sync.AndroidSyncSettings;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * A helper for tasks like re-signin.
@@ -114,8 +117,8 @@ public class SigninHelper {
     private SigninHelper() {
         mProfileSyncService = ProfileSyncService.get();
         mSigninManager = SigninManager.get();
-        mAccountTrackerService = AccountTrackerService.get();
-        mOAuth2TokenService = OAuth2TokenService.getForProfile(Profile.getLastUsedProfile());
+        mAccountTrackerService = IdentityServicesProvider.getAccountTrackerService();
+        mOAuth2TokenService = IdentityServicesProvider.getOAuth2TokenService();
         mChromeSigninController = ChromeSigninController.get();
     }
 
@@ -139,8 +142,10 @@ public class SigninHelper {
             return;
         }
 
+        boolean mice_enabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY);
         Account syncAccount = mChromeSigninController.getSignedInUser();
-        if (syncAccount == null) {
+        if (syncAccount == null && !mice_enabled) {
             return;
         }
 
@@ -152,7 +157,7 @@ public class SigninHelper {
         }
 
         // Always check for account deleted.
-        if (!accountExists(syncAccount)) {
+        if (syncAccount != null && !accountExists(syncAccount)) {
             // It is possible that Chrome got to this point without account
             // rename notification. Let us signout before doing a rename.
             AsyncTask<Void> task = new AsyncTask<Void>() {
@@ -181,7 +186,7 @@ public class SigninHelper {
         if (accountsChanged) {
             // Account details have changed so inform the token service that credentials
             // should now be available.
-            mOAuth2TokenService.validateAccounts(false);
+            mOAuth2TokenService.updateAccountList();
         }
 
         if (mProfileSyncService != null && AndroidSyncSettings.get().isSyncEnabled()) {
@@ -229,9 +234,6 @@ public class SigninHelper {
         mSigninManager.signIn(account, null, new SignInCallback() {
             @Override
             public void onSignInComplete() {
-                if (mProfileSyncService != null) {
-                    mProfileSyncService.setSetupInProgress(false);
-                }
                 validateAccountsInternal(true);
             }
 
@@ -347,12 +349,6 @@ public class SigninHelper {
         }
     }
 
-    @VisibleForTesting
-    public static void resetAccountRenameEventIndex() {
-        ContextUtils.getAppSharedPreferences()
-                .edit().putInt(ACCOUNT_RENAME_EVENT_INDEX_PREFS_KEY, 0).apply();
-    }
-
     public static boolean checkAndClearAccountsChangedPref() {
         if (ContextUtils.getAppSharedPreferences()
                 .getBoolean(ACCOUNTS_CHANGED_PREFS_KEY, false)) {
@@ -363,5 +359,14 @@ public class SigninHelper {
         } else {
             return false;
         }
+    }
+
+    @VisibleForTesting
+    public static void resetSharedPrefs() {
+        SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
+        editor.remove(ACCOUNT_RENAME_EVENT_INDEX_PREFS_KEY);
+        editor.remove(ACCOUNT_RENAMED_PREFS_KEY);
+        editor.remove(ACCOUNTS_CHANGED_PREFS_KEY);
+        editor.apply();
     }
 }

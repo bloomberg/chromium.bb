@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/android/config.gni")
-import("//build/config/compiler/compiler.gni")
 import("//build/config/c++/c++.gni")
+import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
 assert(is_android)
@@ -37,12 +37,9 @@ config("compiler") {
   }
 
   ldflags = [
-    "-Wl,--no-undefined",
-
     # Don't allow visible symbols from libgcc or libc++ to be
     # re-exported.
     "-Wl,--exclude-libs=libgcc.a",
-    "-Wl,--exclude-libs=libc++_static.a",
 
     # Don't allow visible symbols from libraries that contain
     # assembly code with symbols that aren't hidden properly.
@@ -108,31 +105,9 @@ config("runtime_library") {
   # arm-linux-androideabi-4.4.3 toolchain (circa Gingerbread) will exhibit
   # strange errors. The include ordering here is important; change with
   # caution.
-  cflags_cc = []
-  if (!use_custom_libcxx) {
-    cflags_cc = []
-    if (android_ndk_major_version >= 13) {
-      libcxx_include_path =
-          rebase_path("$android_libcpp_root/include", root_build_dir)
-      libcxxabi_include_path = rebase_path(
-              "$android_ndk_root/sources/cxx-stl/llvm-libc++abi/include",
-              root_build_dir)
-    } else {
-      libcxx_include_path =
-          rebase_path("$android_libcpp_root/libcxx/include", root_build_dir)
-      libcxxabi_include_path = rebase_path(
-              "$android_ndk_root/sources/cxx-stl/llvm-libc++abi/libcxxabi/include",
-              root_build_dir)
-    }
-    cflags_cc += [
-      "-nostdinc++",
-      "-isystem" + libcxx_include_path,
-      "-isystem" + libcxxabi_include_path,
-    ]
-  }
-  cflags_cc += [ "-isystem" + rebase_path(
-                     "$android_ndk_root/sources/android/support/include",
-                     root_build_dir) ]
+  cflags_cc = [ "-isystem" +
+                rebase_path("$android_ndk_root/sources/android/support/include",
+                            root_build_dir) ]
 
   defines = [
     "__GNU_SOURCE=1",  # Necessary for clone().
@@ -142,17 +117,6 @@ config("runtime_library") {
   lib_dirs = [ android_libcpp_lib_dir ]
 
   libs = []
-  if (!use_custom_libcxx) {
-    # The libc++ runtime library (must come first).
-    # ASan needs to dynamically link to libc++ even in static builds so
-    # that it can interpose operator new.
-    if (is_component_build || is_asan) {
-      libs += [ "c++_shared" ]
-    } else {
-      libs += [ "c++_static" ]
-    }
-    libs += [ "c++abi" ]
-  }
   libs += [ "android_support" ]
 
   # arm builds of libc++ starting in NDK r12 depend on unwind.

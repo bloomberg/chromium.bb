@@ -112,7 +112,7 @@ class XmppLoginHandler {
   };
 
   // Callbacks for XmppStreamParser.
-  void OnStanza(std::unique_ptr<buzz::XmlElement> stanza);
+  void OnStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza);
   void OnParserError();
 
   // Starts authentication handshake in WAIT_STREAM_HEADER_AFTER_TLS state.

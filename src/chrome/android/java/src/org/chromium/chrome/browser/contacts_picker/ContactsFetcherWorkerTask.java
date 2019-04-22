@@ -14,6 +14,7 @@ import org.chromium.base.task.AsyncTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,14 +43,31 @@ class ContactsFetcherWorkerTask extends AsyncTask<ArrayList<ContactDetails>> {
     // The callback to use to communicate the results.
     private ContactsRetrievedCallback mCallback;
 
+    // Whether names were requested by the website.
+    private final boolean mIncludeNames;
+
+    // Whether to include emails in the data fetched.
+    private final boolean mIncludeEmails;
+
+    // Whether to include telephones in the data fetched.
+    private final boolean mIncludeTel;
+
     /**
      * A ContactsFetcherWorkerTask constructor.
+     * @param contentResolver The ContentResolver to use to fetch the contacts data.
      * @param callback The callback to use to communicate back the results.
+     * @param includeNames Whether names were requested by the website.
+     * @param includeEmails Whether to include emails in the data fetched.
+     * @param includeTel Whether to include telephones in the data fetched.
      */
-    public ContactsFetcherWorkerTask(
-            ContentResolver contentResolver, ContactsRetrievedCallback callback) {
+    public ContactsFetcherWorkerTask(ContentResolver contentResolver,
+            ContactsRetrievedCallback callback, boolean includeNames, boolean includeEmails,
+            boolean includeTel) {
         mContentResolver = contentResolver;
         mCallback = callback;
+        mIncludeNames = includeNames;
+        mIncludeEmails = includeEmails;
+        mIncludeTel = includeTel;
     }
 
     /**
@@ -110,19 +128,21 @@ class ContactsFetcherWorkerTask extends AsyncTask<ArrayList<ContactDetails>> {
      * @return The contact list as an array.
      */
     public ArrayList<ContactDetails> getAllContacts() {
-        Map<String, ArrayList<String>> emailMap =
-                getDetails(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+        Map<String, ArrayList<String>> emailMap = mIncludeEmails
+                ? getDetails(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
                         ContactsContract.CommonDataKinds.Email.CONTACT_ID,
                         ContactsContract.CommonDataKinds.Email.DATA,
                         ContactsContract.CommonDataKinds.Email.CONTACT_ID + " ASC, "
-                                + ContactsContract.CommonDataKinds.Email.DATA + " ASC");
+                                + ContactsContract.CommonDataKinds.Email.DATA + " ASC")
+                : null;
 
-        Map<String, ArrayList<String>> phoneMap =
-                getDetails(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+        Map<String, ArrayList<String>> phoneMap = mIncludeTel
+                ? getDetails(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                         ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
                         ContactsContract.CommonDataKinds.Email.DATA,
                         ContactsContract.CommonDataKinds.Email.CONTACT_ID + " ASC, "
-                                + ContactsContract.CommonDataKinds.Phone.NUMBER + " ASC");
+                                + ContactsContract.CommonDataKinds.Phone.NUMBER + " ASC")
+                : null;
 
         // A cursor containing the raw contacts data.
         Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, PROJECTION,
@@ -134,7 +154,10 @@ class ContactsFetcherWorkerTask extends AsyncTask<ArrayList<ContactDetails>> {
             String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
             String name = cursor.getString(
                     cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-            contacts.add(new ContactDetails(id, name, emailMap.get(id), phoneMap.get(id)));
+            List<String> email = mIncludeEmails ? emailMap.get(id) : null;
+            List<String> tel = mIncludeTel ? phoneMap.get(id) : null;
+            if (mIncludeNames || email != null || tel != null)
+                contacts.add(new ContactDetails(id, name, email, tel));
         } while (cursor.moveToNext());
 
         cursor.close();

@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_mapper.h"
 #include "components/onc/onc_constants.h"
 
@@ -56,7 +56,7 @@ struct OncValueSignature;
 //
 // If no error occurred, |result| is set to VALID and an exact DeepCopy is
 // returned.
-class CHROMEOS_EXPORT Validator : public Mapper {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) Validator : public Mapper {
  public:
   enum Result {
     VALID,
@@ -175,7 +175,9 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   bool ValidateToplevelConfiguration(base::DictionaryValue* result);
   bool ValidateNetworkConfiguration(base::DictionaryValue* result);
   bool ValidateEthernet(base::DictionaryValue* result);
-  bool ValidateIPConfig(base::DictionaryValue* result);
+  bool ValidateIPConfig(base::DictionaryValue* result,
+                        bool require_fields = true);
+  bool ValidateNameServersConfig(base::DictionaryValue* result);
   bool ValidateWiFi(base::DictionaryValue* result);
   bool ValidateVPN(base::DictionaryValue* result);
   bool ValidateIPsec(base::DictionaryValue* result);
@@ -209,6 +211,17 @@ class CHROMEOS_EXPORT Validator : public Mapper {
 
   bool FieldExistsAndIsEmpty(const base::DictionaryValue& object,
                              const std::string& field_name);
+
+  // Validates 'StaticIPConfig' field of the given network configuration. This
+  // method takes 'NetworkConfiguration' dict instead of 'StaticIPConfig' dict
+  // because it needs other 'NetworkConfiguration' fields (e.g.
+  // 'IPAddressConfigType' and 'NameServersConfigType') to check correctness of
+  // the 'StaticIPConfig' field.
+  bool NetworkHasCorrectStaticIPConfig(base::DictionaryValue* network);
+
+  // Validates that the given field either exists or is recommended.
+  bool FieldShouldExistOrBeRecommended(const base::DictionaryValue& object,
+                                       const std::string& field_name);
 
   bool OnlyOneFieldSet(const base::DictionaryValue& object,
                        const std::string& field_name1,

@@ -6,4 +6,8 @@ module content.mojom;
 
 // This interface encapsulates a pipe between a child and browser processes
 // that each side uses to monitor the lifetime of the connection.
-interface Child {};
+interface Child {
+  // Force the child process to crash immediately (i.e. a hard crash, no
+  // cleanup, generating a crash report).
+  Crash();
+};

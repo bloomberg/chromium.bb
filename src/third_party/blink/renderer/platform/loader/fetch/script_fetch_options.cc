@@ -9,7 +9,7 @@
 
 namespace blink {
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
+// https://html.spec.whatwg.org/C/#fetch-a-classic-script
 FetchParameters ScriptFetchOptions::CreateFetchParameters(
     const KURL& url,
     const SecurityOrigin* security_origin,
@@ -36,7 +36,7 @@ FetchParameters ScriptFetchOptions::CreateFetchParameters(
   // Step 3. Set up the classic script request given request and options. [spec
   // text]
   //
-  // https://html.spec.whatwg.org/multipage/webappapis.html#set-up-the-classic-script-request
+  // https://html.spec.whatwg.org/C/#set-up-the-classic-script-request
   // Set request's cryptographic nonce metadata to options's cryptographic
   // nonce, [spec text]
   params.SetContentSecurityPolicyNonce(Nonce());
@@ -48,6 +48,11 @@ FetchParameters ScriptFetchOptions::CreateFetchParameters(
 
   // its parser metadata to options's parser metadata, [spec text]
   params.SetParserDisposition(ParserState());
+
+  // Priority Hints is currently non-standard, but we can assume the following
+  // (see https://crbug.com/821464):
+  // its importance to options's importance, [spec text]
+  params.MutableResourceRequest().SetFetchImportanceMode(importance_);
 
   // its referrer policy to options's referrer policy. [spec text]
   params.MutableResourceRequest().SetReferrerPolicy(referrer_policy_);

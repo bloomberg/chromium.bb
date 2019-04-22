@@ -11,7 +11,7 @@ static_library("goobsdiff_sha1_adapter") {
   check_includes = false
 
   sources = [
-    "../../../../../base/sha1.cc",
+    "../../../../../base/hash/sha1.cc",
     "sha1_adapter.cc",
     "sha1_adapter.h",
   ]

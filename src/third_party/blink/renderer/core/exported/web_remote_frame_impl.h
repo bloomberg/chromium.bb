@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace cc {
 class Layer;
@@ -48,18 +47,17 @@ class CORE_EXPORT WebRemoteFrameImpl final
   // WebRemoteFrame methods:
   WebLocalFrame* CreateLocalChild(WebTreeScopeType,
                                   const WebString& name,
-                                  WebSandboxFlags,
+                                  const FramePolicy&,
                                   WebLocalFrameClient*,
                                   blink::InterfaceRegistry*,
+                                  mojo::ScopedMessagePipeHandle,
                                   WebFrame* previous_sibling,
-                                  const ParsedFeaturePolicy&,
                                   const WebFrameOwnerProperties&,
                                   FrameOwnerElementType,
                                   WebFrame* opener) override;
   WebRemoteFrame* CreateRemoteChild(WebTreeScopeType,
                                     const WebString& name,
-                                    WebSandboxFlags,
-                                    const ParsedFeaturePolicy&,
+                                    const FramePolicy&,
                                     FrameOwnerElementType,
                                     WebRemoteFrameClient*,
                                     WebFrame* opener) override;
@@ -71,11 +69,12 @@ class CORE_EXPORT WebRemoteFrameImpl final
       bool is_potentially_trustworthy_opaque_origin) override;
   void SetReplicatedSandboxFlags(WebSandboxFlags) override;
   void SetReplicatedName(const WebString&) override;
-  void SetReplicatedFeaturePolicyHeader(
-      const ParsedFeaturePolicy& parsed_header) override;
+  void SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
+      const ParsedFeaturePolicy& parsed_header,
+      const FeaturePolicy::FeatureState&) override;
   void AddReplicatedContentSecurityPolicyHeader(
       const WebString& header_value,
-      WebContentSecurityPolicyType,
+      mojom::ContentSecurityPolicyType,
       WebContentSecurityPolicySource) override;
   void ResetReplicatedContentSecurityPolicy() override;
   void SetReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) override;
@@ -83,6 +82,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
       const std::vector<unsigned>&) override;
   void ForwardResourceTimingToParent(const WebResourceTimingInfo&) override;
   void DispatchLoadEventForFrameOwner() override;
+  void SetNeedsOcclusionTracking(bool) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
   bool IsIgnoredForHitTest() const override;

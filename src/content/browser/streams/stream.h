@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -75,9 +77,6 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
 
   // Adds the data in |buffer| to the stream.  Takes ownership of |buffer|.
   void AddData(scoped_refptr<net::IOBuffer> buffer, size_t size);
-  // Adds data of |size| at |data| to the stream. This method creates a copy
-  // of the data, and then passes it to |writer_|.
-  void AddData(const char* data, size_t size);
 
   // Flushes contents buffered in the stream to the corresponding reader.
   void Flush();
@@ -123,7 +122,7 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
 
   bool can_add_data_;
 
-  GURL url_;
+  const GURL url_;
 
   // Buffer for storing data read from |reader_| but not yet read out from this
   // Stream by ReadRawData() method.
@@ -149,6 +148,7 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
   std::unique_ptr<StreamMetadata> metadata_;
 
   base::WeakPtrFactory<Stream> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(Stream);
 };
 

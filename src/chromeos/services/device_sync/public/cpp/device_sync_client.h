@@ -12,8 +12,9 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -40,8 +41,8 @@ class DeviceSyncClient {
 
   using FindEligibleDevicesCallback =
       base::OnceCallback<void(mojom::NetworkRequestResult,
-                              cryptauth::RemoteDeviceRefList,
-                              cryptauth::RemoteDeviceRefList)>;
+                              multidevice::RemoteDeviceRefList,
+                              multidevice::RemoteDeviceRefList)>;
 
   DeviceSyncClient();
   virtual ~DeviceSyncClient();
@@ -58,8 +59,8 @@ class DeviceSyncClient {
       mojom::DeviceSync::ForceEnrollmentNowCallback callback) = 0;
   virtual void ForceSyncNow(
       mojom::DeviceSync::ForceSyncNowCallback callback) = 0;
-  virtual cryptauth::RemoteDeviceRefList GetSyncedDevices() = 0;
-  virtual base::Optional<cryptauth::RemoteDeviceRef>
+  virtual multidevice::RemoteDeviceRefList GetSyncedDevices() = 0;
+  virtual base::Optional<multidevice::RemoteDeviceRef>
   GetLocalDeviceMetadata() = 0;
 
   // Note: In the special case of passing |software_feature| =
@@ -67,12 +68,13 @@ class DeviceSyncClient {
   // ignored.
   virtual void SetSoftwareFeatureState(
       const std::string public_key,
-      cryptauth::SoftwareFeature software_feature,
+      multidevice::SoftwareFeature software_feature,
       bool enabled,
       bool is_exclusive,
       mojom::DeviceSync::SetSoftwareFeatureStateCallback callback) = 0;
-  virtual void FindEligibleDevices(cryptauth::SoftwareFeature software_feature,
-                                   FindEligibleDevicesCallback callback) = 0;
+  virtual void FindEligibleDevices(
+      multidevice::SoftwareFeature software_feature,
+      FindEligibleDevicesCallback callback) = 0;
   virtual void GetDebugInfo(
       mojom::DeviceSync::GetDebugInfoCallback callback) = 0;
 

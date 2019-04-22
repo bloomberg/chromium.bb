@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
@@ -210,7 +211,7 @@ class V4DatabaseTest : public PlatformTest {
   DatabaseUpdatedCallback callback_db_updated_;
   NewDatabaseReadyCallback callback_db_ready_;
   StoreStateMap expected_store_state_map_;
-  base::hash_map<ListIdentifier, V4Store*> old_stores_map_;
+  std::unordered_map<ListIdentifier, V4Store*> old_stores_map_;
   const ListIdentifier linux_malware_id_, win_malware_id_;
 };
 

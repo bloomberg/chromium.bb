@@ -41,12 +41,17 @@ class SimpleThreadScheduler : public ThreadScheduler {
                                Thread::IdleTask) override;
 
   // Do nothing (the observer won't get notified).
-  void AddRAILModeObserver(WebRAILModeObserver*) override;
+  void AddRAILModeObserver(RAILModeObserver*) override;
+
+  // Do nothing.
+  void RemoveRAILModeObserver(RAILModeObserver const*) override;
 
   // Return the thread task runner (there's no separate task runner for them).
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
+      override;
 
   // Unsupported. Return nullptr, and it may cause a crash.
   std::unique_ptr<PageScheduler> CreatePageScheduler(
@@ -65,6 +70,8 @@ class SimpleThreadScheduler : public ThreadScheduler {
 
   // Return nullptr.
   NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override;
+
+  void SetV8Isolate(v8::Isolate* isolate) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimpleThreadScheduler);

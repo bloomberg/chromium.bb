@@ -19,6 +19,7 @@ cr.define('print_preview', function() {
         'saveAppState',
         'setupPrinter',
         'showSystemDialog',
+        'signIn',
       ]);
 
       /**
@@ -101,19 +102,20 @@ cr.define('print_preview', function() {
     }
 
     /** @override */
-    getPreview(printTicket, pageCount) {
-      this.methodCalled(
-          'getPreview', {printTicket: printTicket, pageCount: pageCount});
+    getPreview(printTicket) {
+      this.methodCalled('getPreview', {printTicket: printTicket});
       const printTicketParsed = JSON.parse(printTicket);
-      if (printTicketParsed.deviceName == this.badPrinterId_)
+      if (printTicketParsed.deviceName == this.badPrinterId_) {
         return Promise.reject('SETTINGS_INVALID');
+      }
       const pageRanges = printTicketParsed.pageRange;
       const requestId = printTicketParsed.requestID;
       if (pageRanges.length == 0) {  // assume full length document, 1 page.
         cr.webUIListenerCallback(
             'page-count-ready', this.pageCount_, requestId, 100);
-        for (let i = 0; i < this.pageCount_; i++)
+        for (let i = 0; i < this.pageCount_; i++) {
           cr.webUIListenerCallback('page-preview-ready', i, 0, requestId);
+        }
       } else {
         const pages = pageRanges.reduce(function(soFar, range) {
           for (let page = range.from; page <= range.to; page++) {
@@ -142,8 +144,15 @@ cr.define('print_preview', function() {
       this.methodCalled(
           'getPrinterCapabilities',
           {destinationId: printerId, printerType: type});
-      if (type != print_preview.PrinterType.LOCAL_PRINTER)
+      if (printerId == print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+        return Promise.resolve({
+          deviceName: 'Save as PDF',
+          capabilities: print_preview_test_utils.getPdfPrinter(),
+        });
+      }
+      if (type != print_preview.PrinterType.LOCAL_PRINTER) {
         return Promise.reject();
+      }
       return this.localDestinationCapabilities_.get(printerId) ||
           Promise.reject();
     }
@@ -151,6 +160,9 @@ cr.define('print_preview', function() {
     /** @override */
     print(printTicket) {
       this.methodCalled('print', printTicket);
+      if (JSON.parse(printTicket).printWithCloudPrint) {
+        return Promise.resolve('sample data');
+      }
       return Promise.resolve();
     }
 
@@ -181,6 +193,12 @@ cr.define('print_preview', function() {
     /** @override */
     saveAppState(appState) {
       this.methodCalled('saveAppState', appState);
+    }
+
+    /** @override */
+    signIn(addAccount) {
+      this.methodCalled('signIn', addAccount);
+      return Promise.resolve();
     }
 
     /**

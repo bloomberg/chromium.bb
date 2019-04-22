@@ -4,6 +4,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -12,7 +13,7 @@
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/service_manager_connection.h"
 #include "services/identity/public/mojom/constants.mojom.h"
-#include "services/identity/public/mojom/identity_manager.mojom.h"
+#include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -21,8 +22,9 @@
 
 namespace {
 
-// Callback passed to identity::mojom::IdentityManager::GetPrimaryAccountInfo().
-// Sets |echo_callback_called_flag| to true to indicate that the callback was
+// Callback passed to
+// identity::mojom::IdentityAccessor::GetPrimaryAccountInfo(). Sets
+// |echo_callback_called_flag| to true to indicate that the callback was
 // invoked.
 void OnGotPrimaryAccountInfo(
     bool* get_primary_account_info_callback_called_flag,
@@ -59,13 +61,13 @@ void WaitForCallback(const std::string& callback_name,
       chrome_test_util::GetOriginalBrowserState();
 
   // Connect to the Identity Service and bind an IdentityManager instance.
-  identity::mojom::IdentityManagerPtr identityManager;
+  identity::mojom::IdentityAccessorPtr identityAccessor;
   web::BrowserState::GetConnectorFor(browserState)
       ->BindInterface(identity::mojom::kServiceName,
-                      mojo::MakeRequest(&identityManager));
+                      mojo::MakeRequest(&identityAccessor));
 
   bool getPrimaryAccountInfoCallbackCalled = false;
-  identityManager->GetPrimaryAccountInfo(base::BindOnce(
+  identityAccessor->GetPrimaryAccountInfo(base::BindOnce(
       &OnGotPrimaryAccountInfo, &getPrimaryAccountInfoCallbackCalled));
 
   WaitForCallback("GetPrimaryAccountInfo",

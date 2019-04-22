@@ -46,11 +46,10 @@ void TabRestoreServiceHelper::Observer::OnAddEntry() {}
 
 TabRestoreServiceHelper::TabRestoreServiceHelper(
     TabRestoreService* tab_restore_service,
-    Observer* observer,
     TabRestoreServiceClient* client,
     TabRestoreService::TimeFactory* time_factory)
     : tab_restore_service_(tab_restore_service),
-      observer_(observer),
+      observer_(nullptr),
       client_(client),
       restoring_(false),
       time_factory_(time_factory) {
@@ -59,6 +58,10 @@ TabRestoreServiceHelper::TabRestoreServiceHelper(
       this,
       "TabRestoreServiceHelper",
       base::ThreadTaskRunnerHandle::Get());
+}
+
+void TabRestoreServiceHelper::SetHelperObserver(Observer* observer) {
+  observer_ = observer;
 }
 
 TabRestoreServiceHelper::~TabRestoreServiceHelper() {

@@ -8,13 +8,13 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
@@ -23,19 +23,20 @@
 
 namespace app_list {
 
-namespace {
+// TODO(crbug.com/826982): move UMA_HISTOGRAM_ENUMERATION code to
+// built_in_chromeos_apps.cc when the AppService feature is enabled by default.
 
-void RecordShowHistogram(InternalAppName name) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Apps.AppListSearchResultInternalApp.Show", name);
+// static
+void InternalAppResult::RecordShowHistogram(const std::string& app_id) {
+  InternalAppName name = GetInternalAppNameByAppId(app_id);
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Show", name);
 }
 
-void RecordOpenHistogram(InternalAppName name) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Apps.AppListSearchResultInternalApp.Open", name);
+// static
+void InternalAppResult::RecordOpenHistogram(const std::string& app_id) {
+  InternalAppName name = GetInternalAppNameByAppId(app_id);
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchResultInternalApp.Open", name);
 }
-
-}  // namespace
 
 InternalAppResult::InternalAppResult(Profile* profile,
                                      const std::string& app_id,
@@ -60,7 +61,7 @@ InternalAppResult::InternalAppResult(Profile* profile,
     UpdateContinueReadingFavicon(/*continue_to_google_server=*/true);
   }
 
-  RecordShowHistogram(GetInternalAppNameByAppId(app_id));
+  RecordShowHistogram(app_id);
 }
 
 InternalAppResult::~InternalAppResult() = default;
@@ -70,11 +71,7 @@ void InternalAppResult::ExecuteLaunchCommand(int event_flags) {
 }
 
 void InternalAppResult::Open(int event_flags) {
-  // Record the search metric if the result is not a suggested app.
-  if (display_type() != DisplayType::kRecommendation)
-    RecordHistogram(APP_SEARCH_RESULT);
-
-  RecordOpenHistogram(GetInternalAppNameByAppId(id()));
+  RecordOpenHistogram(id());
 
   if (id() == kInternalAppIdContinueReading &&
       url_for_continuous_reading_.is_valid()) {
@@ -91,7 +88,8 @@ void InternalAppResult::UpdateContinueReadingFavicon(
     bool continue_to_google_server) {
   base::string16 title;
   GURL url;
-  if (HasRecommendableForeignTab(profile(), &title, &url)) {
+  if (HasRecommendableForeignTab(profile(), &title, &url,
+                                 /*test_delegate=*/nullptr)) {
     url_for_continuous_reading_ = url;
 
     // Foreign tab could be updated since the title was set the last time.
@@ -103,7 +101,7 @@ void InternalAppResult::UpdateContinueReadingFavicon(
     // Desired size of the icon. If not available, a smaller one will be used.
     constexpr int min_source_size_in_pixel = 16;
     constexpr int desired_size_in_pixel = 32;
-    large_icon_service_->GetLargeIconImageOrFallbackStyle(
+    large_icon_service_->GetLargeIconImageOrFallbackStyleForPageUrl(
         url_for_continuous_reading_, min_source_size_in_pixel,
         desired_size_in_pixel,
         base::BindRepeating(&InternalAppResult::OnGetFaviconFromCacheFinished,
@@ -179,6 +177,10 @@ void InternalAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
                                                      controller());
   }
   context_menu_->GetMenuModel(std::move(callback));
+}
+
+SearchResultType InternalAppResult::GetSearchResultType() const {
+  return INTERNAL_APP;
 }
 
 AppContextMenu* InternalAppResult::GetAppContextMenu() {

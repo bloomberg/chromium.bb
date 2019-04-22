@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -19,8 +20,6 @@ class SimpleURLLoader;
 
 namespace chromeos {
 
-class BaseScreenDelegate;
-
 // A screen that shows Terms of Service which have been configured through
 // policy. The screen is shown during login and requires the user to accept the
 // Terms of Service before proceeding. Currently, Terms of Service are available
@@ -28,8 +27,11 @@ class BaseScreenDelegate;
 class TermsOfServiceScreen : public BaseScreen,
                              public TermsOfServiceScreenView::Delegate {
  public:
-  TermsOfServiceScreen(BaseScreenDelegate* base_screen_delegate,
-                       TermsOfServiceScreenView* view);
+  enum class Result { ACCEPTED, DECLINED };
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
+  TermsOfServiceScreen(TermsOfServiceScreenView* view,
+                       const ScreenExitCallback& exit_callback);
   ~TermsOfServiceScreen() override;
 
   // BaseScreen:
@@ -52,6 +54,7 @@ class TermsOfServiceScreen : public BaseScreen,
   void OnDownloaded(std::unique_ptr<std::string> response_body);
 
   TermsOfServiceScreenView* view_;
+  ScreenExitCallback exit_callback_;
 
   std::unique_ptr<network::SimpleURLLoader> terms_of_service_loader_;
 

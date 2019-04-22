@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
@@ -34,10 +35,11 @@ class Value;
 }
 
 namespace network {
+class SharedURLLoaderFactory;
 namespace mojom {
 class URLLoaderFactory;
 }
-}
+}  // namespace network
 
 namespace chromeos {
 
@@ -57,7 +59,7 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
       base::TimeDelta::FromSeconds(60);
 
   explicit NetworkPortalDetectorImpl(
-      network::mojom::URLLoaderFactory* loader_factory);
+      network::mojom::URLLoaderFactory* loader_factory_for_testing = nullptr);
   ~NetworkPortalDetectorImpl() override;
 
   // Set the URL to be tested for portal state.
@@ -145,9 +147,10 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Stores captive portal state for a |network| and notifies observers.
-  void OnDetectionCompleted(const NetworkState* network,
-                            const CaptivePortalState& results);
+  // Called synchronously from OnAttemptCompleted with the current default
+  // network. Stores the captive portal state and notifies observers.
+  void DetectionCompleted(const NetworkState* network,
+                          const CaptivePortalState& results);
 
   // Notifies observers that portal detection is completed for a |network|.
   void NotifyDetectionCompleted(const NetworkState* network,
@@ -223,6 +226,9 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
 
   base::CancelableClosure attempt_task_;
   base::CancelableClosure attempt_timeout_;
+
+  // Reference to a SharedURLLoaderFactory used to detect portals.
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   // URL that returns a 204 response code when connected to the Internet. Used
   // by tests.

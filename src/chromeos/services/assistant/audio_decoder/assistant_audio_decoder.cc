@@ -4,13 +4,17 @@
 
 #include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder.h"
 
+#include <utility>
+#include <vector>
+
+#include "base/bind.h"
 #include "base/threading/thread.h"
 #include "chromeos/services/assistant/audio_decoder/ipc_data_source.h"
 #include "media/base/audio_bus.h"
 #include "media/base/data_source.h"
 #include "media/filters/audio_file_reader.h"
 #include "media/filters/blocking_url_protocol.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace chromeos {
 namespace assistant {
@@ -27,12 +31,12 @@ void OnError(bool* succeeded) {
 }  // namespace
 
 AssistantAudioDecoder::AssistantAudioDecoder(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref,
+    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref,
     mojom::AssistantAudioDecoderClientPtr client,
     mojom::AssistantMediaDataSourcePtr data_source)
     : service_ref_(std::move(service_ref)),
       client_(std::move(client)),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      task_runner_(base::SequencedTaskRunnerHandle::Get()),
       data_source_(std::make_unique<IPCDataSource>(std::move(data_source))),
       media_thread_(std::make_unique<base::Thread>("media_thread")),
       weak_factory_(this) {
@@ -132,8 +136,8 @@ void AssistantAudioDecoder::OnBufferDecodedOnThread(
     const int bytes_to_alloc =
         audio_bus->frames() * kBytesPerSample * audio_bus->channels();
     std::vector<uint8_t> buffer(bytes_to_alloc);
-    audio_bus->ToInterleaved(audio_bus->frames(), kBytesPerSample,
-                             buffer.data());
+    audio_bus->ToInterleaved<media::SignedInt16SampleTypeTraits>(
+        audio_bus->frames(), reinterpret_cast<int16_t*>(buffer.data()));
     buffers.emplace_back(buffer);
   }
   client_->OnNewBuffers(buffers);

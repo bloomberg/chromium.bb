@@ -68,10 +68,11 @@ bool EphemeralProvider::SetWebsiteSetting(
     return false;
   }
 
-  if (in_value) {
+  std::unique_ptr<base::Value> value(in_value);
+  if (value) {
     content_settings_rules_.SetValue(
         primary_pattern, secondary_pattern, content_type, resource_identifier,
-        store_last_modified_ ? clock_->Now() : base::Time(), in_value);
+        store_last_modified_ ? clock_->Now() : base::Time(), std::move(*value));
     NotifyObservers(primary_pattern, secondary_pattern, content_type,
                     resource_identifier);
   } else {

@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -18,7 +19,6 @@
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/file_writer_delegate.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace storage {
@@ -28,7 +28,8 @@ class FileSystemContext;
 class RecursiveOperationDelegate;
 
 // The default implementation of FileSystemOperation for file systems.
-class STORAGE_EXPORT FileSystemOperationImpl : public FileSystemOperation {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationImpl
+    : public FileSystemOperation {
  public:
   ~FileSystemOperationImpl() override;
 

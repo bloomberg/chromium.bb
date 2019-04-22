@@ -11,11 +11,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/mock_callback.h"
-#include "components/image_fetcher/core/image_fetcher_impl.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
@@ -23,23 +22,16 @@
 #include "components/ntp_snippets/contextual/contextual_suggestions_test_utils.h"
 #include "components/ntp_snippets/contextual/reporting/contextual_suggestions_debugging_reporter.h"
 #include "components/ntp_snippets/contextual/reporting/contextual_suggestions_reporter.h"
-#include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/json_to_categories.h"
-#include "components/ntp_snippets/remote/remote_suggestions_database.h"
+#include "components/ntp_snippets/remote/request_throttler.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_unittest_util.h"
 
-using ntp_snippets::CachedImageFetcher;
 using ntp_snippets::Category;
 using ntp_snippets::ContentSuggestion;
 using ntp_snippets::KnownCategories;
-using ntp_snippets::ImageFetchedCallback;
-using ntp_snippets::ImageDataFetchedCallback;
-using ntp_snippets::RemoteSuggestionsDatabase;
 using ntp_snippets::RequestThrottler;
 
 using testing::_;
@@ -80,26 +72,6 @@ class FakeContextualSuggestionsFetcher : public ContextualSuggestionsFetcher {
   PeekConditions peek_conditions_;
 };
 
-// Always fetches a fake image if the given URL is valid.
-class FakeCachedImageFetcher : public CachedImageFetcher {
- public:
-  explicit FakeCachedImageFetcher(PrefService* pref_service)
-      : CachedImageFetcher(std::unique_ptr<image_fetcher::ImageFetcher>(),
-                           pref_service,
-                           nullptr) {}
-
-  void FetchSuggestionImage(const ContentSuggestion::ID&,
-                            const GURL& image_url,
-                            ImageDataFetchedCallback image_data_callback,
-                            ImageFetchedCallback callback) override {
-    gfx::Image image;
-    if (image_url.is_valid()) {
-      image = gfx::test::CreateImage();
-    }
-    std::move(callback).Run(image);
-  }
-};
-
 }  // namespace
 
 class ContextualContentSuggestionsServiceTest : public testing::Test {
@@ -116,8 +88,6 @@ class ContextualContentSuggestionsServiceTest : public testing::Test {
         std::move(debugging_reporter));
     source_ = std::make_unique<ContextualContentSuggestionsService>(
         std::move(fetcher),
-        std::make_unique<FakeCachedImageFetcher>(&pref_service_),
-        std::unique_ptr<RemoteSuggestionsDatabase>(),
         std::move(reporter_provider));
   }
 
@@ -126,7 +96,7 @@ class ContextualContentSuggestionsServiceTest : public testing::Test {
 
  private:
   FakeContextualSuggestionsFetcher* fetcher_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<ContextualContentSuggestionsService> source_;
 

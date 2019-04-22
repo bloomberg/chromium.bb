@@ -150,11 +150,11 @@ int LayoutProvider::GetCornerRadiusMetric(EmphasisMetric emphasis_metric,
       return 0;
     case EMPHASIS_LOW:
     case EMPHASIS_MEDIUM:
-      return touch_ui ? 4 : 2;
+      return 4;
     case EMPHASIS_HIGH:
-      return touch_ui ? 8 : 4;
+      return 8;
     case EMPHASIS_MAXIMUM:
-      return touch_ui ? std::min(size.width(), size.height()) / 2 : 4;
+      return touch_ui ? std::min(size.width(), size.height()) / 2 : 16;
   }
 }
 

@@ -4,6 +4,7 @@
 
 #include "base/process/process_metrics.h"
 
+#include <libproc.h>
 #include <mach/mach.h>
 #include <mach/mach_vm.h>
 #include <mach/shared_region.h>
@@ -11,7 +12,6 @@
 #include <stdint.h>
 #include <sys/sysctl.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
@@ -192,6 +192,34 @@ int ProcessMetrics::GetIdleWakeupsPerSecond() {
   GetPowerInfo(task, &power_info_data);
 
   return CalculateIdleWakeupsPerSecond(power_info_data.task_interrupt_wakeups);
+}
+
+int ProcessMetrics::GetOpenFdCount() const {
+  // In order to get a true count of the open number of FDs, PROC_PIDLISTFDS
+  // is used. This is done twice: first to get the appropriate size of a
+  // buffer, and then secondly to fill the buffer with the actual FD info.
+  //
+  // The buffer size returned in the first call is an estimate, based on the
+  // number of allocated fileproc structures in the kernel. This number can be
+  // greater than the actual number of open files, since the structures are
+  // allocated in slabs. The value returned in proc_bsdinfo::pbi_nfiles is
+  // also the number of allocated fileprocs, not the number in use.
+  //
+  // However, the buffer size returned in the second call is an accurate count
+  // of the open number of descriptors. The contents of the buffer are unused.
+  int rv = proc_pidinfo(process_, PROC_PIDLISTFDS, 0, nullptr, 0);
+  if (rv < 0)
+    return -1;
+
+  std::unique_ptr<char[]> buffer(new char[rv]);
+  rv = proc_pidinfo(process_, PROC_PIDLISTFDS, 0, buffer.get(), rv);
+  if (rv < 0)
+    return -1;
+  return rv / PROC_PIDLISTFD_SIZE;
+}
+
+int ProcessMetrics::GetOpenFdSoftLimit() const {
+  return GetMaxFds();
 }
 
 bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {

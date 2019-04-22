@@ -210,7 +210,7 @@ bool VulkanSwapChain::InitializeSwapChain(
   swap_chain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   swap_chain_create_info.surface = surface;
   swap_chain_create_info.minImageCount =
-      std::max(2u, surface_caps.minImageCount);
+      std::max(3u, surface_caps.minImageCount);
   swap_chain_create_info.imageFormat = surface_format.format;
   swap_chain_create_info.imageColorSpace = surface_format.colorSpace;
   swap_chain_create_info.imageExtent = surface_caps.currentExtent;

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -28,7 +29,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
@@ -36,9 +36,11 @@
 #include "extensions/test/result_catcher.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 namespace extensions {
@@ -50,113 +52,14 @@ const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestWebSocketPort[] = "testWebSocketPort";
 const char kFtpServerPort[] = "ftpServer.port";
 const char kEmbeddedTestServerPort[] = "testServer.port";
-const char kNativeCrxBindingsEnabled[] = "nativeCrxBindingsEnabled";
 
-std::unique_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
-    const net::test_server::HttpRequest& request) {
-  if (!base::StartsWith(request.relative_url, "/server-redirect?",
-                        base::CompareCase::SENSITIVE))
-    return nullptr;
-
-  size_t query_string_pos = request.relative_url.find('?');
-  std::string redirect_target =
-      request.relative_url.substr(query_string_pos + 1);
-
-  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
-      new net::test_server::BasicHttpResponse);
-  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
-  http_response->AddCustomHeader("Location", redirect_target);
-  return std::move(http_response);
-}
-
-std::unique_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
-    const net::test_server::HttpRequest& request) {
-  if (!base::StartsWith(request.relative_url, "/echoheader?",
-                        base::CompareCase::SENSITIVE))
-    return nullptr;
-
-  size_t query_string_pos = request.relative_url.find('?');
-  std::string header_name =
-      request.relative_url.substr(query_string_pos + 1);
-
-  std::string header_value;
-  auto it = request.headers.find(header_name);
-  if (it != request.headers.end())
-    header_value = it->second;
-
-  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
-      new net::test_server::BasicHttpResponse);
-  http_response->set_code(net::HTTP_OK);
-  http_response->set_content(header_value);
-  return std::move(http_response);
-}
-
-std::unique_ptr<net::test_server::HttpResponse> HandleSetCookieRequest(
-    const net::test_server::HttpRequest& request) {
-  if (!base::StartsWith(request.relative_url, "/set-cookie?",
-                        base::CompareCase::SENSITIVE))
-    return nullptr;
-
-  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
-      new net::test_server::BasicHttpResponse);
-  http_response->set_code(net::HTTP_OK);
-
-  size_t query_string_pos = request.relative_url.find('?');
-  std::string cookie_value =
-      request.relative_url.substr(query_string_pos + 1);
-
-  for (const std::string& cookie : base::SplitString(
-           cookie_value, "&", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
-    http_response->AddCustomHeader("Set-Cookie", cookie);
-
-  return std::move(http_response);
-}
-
-std::unique_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
-    const net::test_server::HttpRequest& request) {
-  if (!base::StartsWith(request.relative_url, "/set-header?",
-                        base::CompareCase::SENSITIVE))
-    return nullptr;
-
-  size_t query_string_pos = request.relative_url.find('?');
-  std::string escaped_header =
-      request.relative_url.substr(query_string_pos + 1);
-
-  std::string header = net::UnescapeURLComponent(
-      escaped_header,
-      net::UnescapeRule::NORMAL | net::UnescapeRule::SPACES |
-          net::UnescapeRule::PATH_SEPARATORS |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
-
-  size_t colon_pos = header.find(':');
-  if (colon_pos == std::string::npos)
-    return std::unique_ptr<net::test_server::HttpResponse>();
-
-  std::string header_name = header.substr(0, colon_pos);
-  // Skip space after colon.
-  std::string header_value = header.substr(colon_pos + 2);
-
-  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
-      new net::test_server::BasicHttpResponse);
-  http_response->set_code(net::HTTP_OK);
-  http_response->AddCustomHeader(header_name, header_value);
-  return std::move(http_response);
-}
-
-};  // namespace
+}  // namespace
 
 ExtensionApiTest::ExtensionApiTest() {
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleServerRedirectRequest));
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleEchoHeaderRequest));
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleSetCookieRequest));
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleSetHeaderRequest));
+  net::test_server::RegisterDefaultHandlers(embedded_test_server());
 }
 
-ExtensionApiTest::~ExtensionApiTest() {}
+ExtensionApiTest::~ExtensionApiTest() = default;
 
 void ExtensionApiTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
@@ -164,15 +67,14 @@ void ExtensionApiTest::SetUpOnMainThread() {
   test_config_.reset(new base::DictionaryValue());
   test_config_->SetString(kTestDataDirectory,
                           net::FilePathToFileURL(test_data_dir_).spec());
+
   if (embedded_test_server()->Started()) {
     // InitializeEmbeddedTestServer was called before |test_config_| was set.
     // Set the missing port key.
     test_config_->SetInteger(kEmbeddedTestServerPort,
                              embedded_test_server()->port());
   }
-  test_config_->SetBoolean(
-      kNativeCrxBindingsEnabled,
-      base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings));
+
   TestGetConfigFunction::set_test_config_state(test_config_.get());
 }
 
@@ -198,6 +100,13 @@ bool ExtensionApiTest::RunExtensionTestWithArg(
     const char* custom_arg) {
   return RunExtensionTestImpl(extension_name, std::string(), custom_arg,
                               kFlagEnableFileAccess);
+}
+
+bool ExtensionApiTest::RunExtensionTestWithFlagsAndArg(
+    const std::string& extension_name,
+    const char* custom_arg,
+    int flag) {
+  return RunExtensionTestImpl(extension_name, std::string(), custom_arg, flag);
 }
 
 bool ExtensionApiTest::RunExtensionTestIncognito(

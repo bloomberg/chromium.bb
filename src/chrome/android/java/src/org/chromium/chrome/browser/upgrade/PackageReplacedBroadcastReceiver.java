@@ -10,7 +10,9 @@ import android.content.Intent;
 import android.os.Build;
 
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 
 /**
  * Triggered when Chrome's package is replaced (e.g. when it is upgraded).
@@ -31,6 +33,7 @@ public final class PackageReplacedBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(final Context context, Intent intent) {
         if (!Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())) return;
         updateChannelsIfNecessary();
+        VrModuleProvider.maybeRequestModuleIfDaydreamReady();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return;
         UpgradeIntentService.startMigrationIfNecessary(context);
     }
@@ -39,14 +42,13 @@ public final class PackageReplacedBroadcastReceiver extends BroadcastReceiver {
         if (!ChannelsUpdater.getInstance().shouldUpdateChannels()) return;
 
         final PendingResult result = goAsync();
-        new AsyncTask<Void>() {
+        new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
                 ChannelsUpdater.getInstance().updateChannels();
                 result.finish();
                 return null;
             }
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 }

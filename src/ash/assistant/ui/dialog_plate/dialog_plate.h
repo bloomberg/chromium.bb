@@ -11,9 +11,8 @@
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query_history.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/assistant/ui/dialog_plate/action_view.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
@@ -28,50 +27,26 @@ class ImageButton;
 
 namespace ash {
 
-class AssistantController;
-class ActionView;
-
-// DialogPlateButtonId ---------------------------------------------------------
-
-enum class DialogPlateButtonId {
-  kKeyboardInputToggle = 1,
-  kVoiceInputToggle,
-  kSettings,
-};
-
-// DialogPlateObserver ---------------------------------------------------------
-
-class DialogPlateObserver : public base::CheckedObserver {
- public:
-  // Invoked when the dialog plate button identified by |id| is pressed.
-  virtual void OnDialogPlateButtonPressed(DialogPlateButtonId id) {}
-
-  // Invoked on dialog plate contents committed event.
-  virtual void OnDialogPlateContentsCommitted(const std::string& text) {}
-
- protected:
-  ~DialogPlateObserver() override = default;
-};
+enum class AssistantButtonId;
+class AssistantViewDelegate;
+class MicView;
 
 // DialogPlate -----------------------------------------------------------------
 
 // DialogPlate is the child of AssistantMainView concerned with providing the
 // means by which a user converses with Assistant. To this end, DialogPlate
-// provides a textfield for use with the keyboard input modality, and an
-// ActionView which serves to either commit a text query, or toggle voice
-// interaction as appropriate for the user's current input modality.
-class DialogPlate : public views::View,
-                    public views::TextfieldController,
-                    public AssistantInteractionModelObserver,
-                    public AssistantUiModelObserver,
-                    public views::ButtonListener {
+// provides a textfield for use with the keyboard input modality, and a MicView
+// which serves to toggle voice interaction as appropriate for use with the
+// voice input modality.
+class COMPONENT_EXPORT(ASSISTANT_UI) DialogPlate
+    : public views::View,
+      public views::TextfieldController,
+      public AssistantInteractionModelObserver,
+      public AssistantUiModelObserver,
+      public views::ButtonListener {
  public:
-  explicit DialogPlate(AssistantController* assistant_controller);
+  explicit DialogPlate(AssistantViewDelegate* delegate);
   ~DialogPlate() override;
-
-  // Adds/removes the specified |observer|.
-  void AddObserver(DialogPlateObserver* observer);
-  void RemoveObserver(DialogPlateObserver* observer);
 
   // views::View:
   const char* GetClassName() const override;
@@ -105,28 +80,26 @@ class DialogPlate : public views::View,
   void InitKeyboardLayoutContainer();
   void InitVoiceLayoutContainer();
 
-  void OnButtonPressed(DialogPlateButtonId id);
+  void OnButtonPressed(AssistantButtonId id);
 
   void OnAnimationStarted(const ui::CallbackLayerAnimationObserver& observer);
   bool OnAnimationEnded(const ui::CallbackLayerAnimationObserver& observer);
 
   void SetFocus(InputModality modality);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantViewDelegate* const delegate_;
 
   views::View* input_modality_layout_container_;     // Owned by view hierarchy.
   views::View* keyboard_layout_container_;           // Owned by view hierarchy.
   views::View* voice_layout_container_;              // Owned by view hierarchy.
   views::ImageButton* keyboard_input_toggle_;        // Owned by view hierarchy.
   views::ImageButton* voice_input_toggle_;           // Owned by view hierarchy.
-  ActionView* animated_voice_input_toggle_;          // Owned by view hierarchy.
+  MicView* animated_voice_input_toggle_;             // Owned by view hierarchy.
   views::ImageButton* settings_button_;              // Owned by view hierarchy.
   views::Textfield* textfield_;                      // Owned by view hierarchy.
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
   std::unique_ptr<AssistantQueryHistory::Iterator> query_history_iterator_;
-
-  base::ObserverList<DialogPlateObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogPlate);
 };

@@ -10,17 +10,20 @@
 // Clients of this interface shouldn't depend on lots of heap internals.
 // Do not include anything from src/heap here!
 #include "src/handles-inl.h"
+#include "src/isolate-inl.h"
 #include "src/objects-inl.h"
+#include "src/objects/feedback-cell.h"
+#include "src/objects/heap-number-inl.h"
+#include "src/objects/oddball.h"
+#include "src/objects/string-inl.h"
 #include "src/string-hasher.h"
 
 namespace v8 {
 namespace internal {
 
-// TODO(jkummerow): Drop std::remove_pointer after the migration to ObjectPtr.
-#define ROOT_ACCESSOR(Type, name, CamelName)                           \
-  Handle<std::remove_pointer<Type>::type> Factory::name() {            \
-    return Handle<std::remove_pointer<Type>::type>(bit_cast<Address*>( \
-        &isolate()->roots_table()[RootIndex::k##CamelName]));          \
+#define ROOT_ACCESSOR(Type, name, CamelName)                                 \
+  Handle<Type> Factory::name() {                                             \
+    return Handle<Type>(&isolate()->roots_table()[RootIndex::k##CamelName]); \
   }
 ROOT_LIST(ROOT_ACCESSOR)
 #undef ROOT_ACCESSOR
@@ -41,64 +44,64 @@ Handle<String> Factory::NewSubString(Handle<String> str, int begin, int end) {
 }
 
 Handle<Object> Factory::NewNumberFromSize(size_t value,
-                                          PretenureFlag pretenure) {
+                                          AllocationType allocation) {
   // We can't use Smi::IsValid() here because that operates on a signed
   // intptr_t, and casting from size_t could create a bogus sign bit.
   if (value <= static_cast<size_t>(Smi::kMaxValue)) {
     return Handle<Object>(Smi::FromIntptr(static_cast<intptr_t>(value)),
                           isolate());
   }
-  return NewNumber(static_cast<double>(value), pretenure);
+  return NewNumber(static_cast<double>(value), allocation);
 }
 
 Handle<Object> Factory::NewNumberFromInt64(int64_t value,
-                                           PretenureFlag pretenure) {
+                                           AllocationType allocation) {
   if (value <= std::numeric_limits<int32_t>::max() &&
       value >= std::numeric_limits<int32_t>::min() &&
       Smi::IsValid(static_cast<int32_t>(value))) {
     return Handle<Object>(Smi::FromInt(static_cast<int32_t>(value)), isolate());
   }
-  return NewNumber(static_cast<double>(value), pretenure);
+  return NewNumber(static_cast<double>(value), allocation);
 }
 
 Handle<HeapNumber> Factory::NewHeapNumber(double value,
-                                          PretenureFlag pretenure) {
-  Handle<HeapNumber> heap_number = NewHeapNumber(pretenure);
+                                          AllocationType allocation) {
+  Handle<HeapNumber> heap_number = NewHeapNumber(allocation);
   heap_number->set_value(value);
   return heap_number;
 }
 
 Handle<MutableHeapNumber> Factory::NewMutableHeapNumber(
-    double value, PretenureFlag pretenure) {
-  Handle<MutableHeapNumber> number = NewMutableHeapNumber(pretenure);
+    double value, AllocationType allocation) {
+  Handle<MutableHeapNumber> number = NewMutableHeapNumber(allocation);
   number->set_value(value);
   return number;
 }
 
 Handle<HeapNumber> Factory::NewHeapNumberFromBits(uint64_t bits,
-                                                  PretenureFlag pretenure) {
-  Handle<HeapNumber> heap_number = NewHeapNumber(pretenure);
+                                                  AllocationType allocation) {
+  Handle<HeapNumber> heap_number = NewHeapNumber(allocation);
   heap_number->set_value_as_bits(bits);
   return heap_number;
 }
 
 Handle<MutableHeapNumber> Factory::NewMutableHeapNumberFromBits(
-    uint64_t bits, PretenureFlag pretenure) {
-  Handle<MutableHeapNumber> number = NewMutableHeapNumber(pretenure);
+    uint64_t bits, AllocationType allocation) {
+  Handle<MutableHeapNumber> number = NewMutableHeapNumber(allocation);
   number->set_value_as_bits(bits);
   return number;
 }
 
 Handle<MutableHeapNumber> Factory::NewMutableHeapNumberWithHoleNaN(
-    PretenureFlag pretenure) {
-  return NewMutableHeapNumberFromBits(kHoleNanInt64, pretenure);
+    AllocationType allocation) {
+  return NewMutableHeapNumberFromBits(kHoleNanInt64, allocation);
 }
 
 Handle<JSArray> Factory::NewJSArrayWithElements(Handle<FixedArrayBase> elements,
                                                 ElementsKind elements_kind,
-                                                PretenureFlag pretenure) {
+                                                AllocationType allocation) {
   return NewJSArrayWithElements(elements, elements_kind, elements->length(),
-                                pretenure);
+                                allocation);
 }
 
 Handle<Object> Factory::NewURIError() {

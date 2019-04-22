@@ -27,9 +27,9 @@
 // ----------------------------------------------------------------------------
 #include <jni.h>
 #include <atomic>
+#include <type_traits>
 
 #include "base/android/jni_generator/jni_generator_helper.h"
-
 #include "base/android/jni_int_wrapper.h"
 
 // Step 1: forward declarations.
@@ -326,7 +326,8 @@ static bool RegisterNativesImpl(JNIEnv* env) {
   if (base::android::IsSelectiveJniRegistrationEnabled(env))
     return true;
 
-  const int kMethodsNativeCallbacksSize = arraysize(kMethodsNativeCallbacks);
+  const int kMethodsNativeCallbacksSize =
+      std::extent<decltype(kMethodsNativeCallbacks)>();
 
   if (env->RegisterNatives(NativeCallbacks_clazz(env), kMethodsNativeCallbacks,
                            kMethodsNativeCallbacksSize) < 0) {

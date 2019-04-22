@@ -90,19 +90,15 @@ class ShortcutHelper {
                                                    const GURL& url,
                                                    bool* is_generated);
 
-  // Returns the package name of the WebAPK if WebAPKs are enabled and there is
-  // an installed WebAPK which can handle |url|. Returns empty string otherwise.
-  static std::string QueryWebApkPackage(const GURL& url);
+  // Returns the package name of one of the WebAPKs which can handle |url|.
+  // Returns an empty string if there are no matches.
+  static std::string QueryFirstWebApkPackage(const GURL& url);
 
   // Returns true if WebAPKs are enabled and there is an installed WebAPK which
   // can handle |start_url|, or there is one is being installed.
   static bool IsWebApkInstalled(content::BrowserContext* browser_context,
                                 const GURL& start_url,
                                 const GURL& manifest_url);
-
-  // Generates a scope URL based on the passed in |url|. It should be used
-  // when the Web Manifest does not specify a scope URL.
-  static GURL GetScopeFromURL(const GURL& url);
 
   // Fetches information on all the WebAPKs installed on the device and returns
   // the info to the |callback|.

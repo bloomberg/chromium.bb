@@ -16,9 +16,9 @@ import android.support.annotation.IntDef;
 import android.util.Log;
 import android.webkit.WebSettings;
 
+import org.chromium.android_webview.settings.ForceDarkMode;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
@@ -53,6 +53,13 @@ public class AwSettings {
     /* See {@link android.webkit.WebSettings}. */
     public static final int LAYOUT_ALGORITHM_NARROW_COLUMNS = 2;
     public static final int LAYOUT_ALGORITHM_TEXT_AUTOSIZING = 3;
+
+    public static final int FORCE_DARK_OFF = ForceDarkMode.FORCE_DARK_OFF;
+    public static final int FORCE_DARK_AUTO = ForceDarkMode.FORCE_DARK_AUTO;
+    public static final int FORCE_DARK_ON = ForceDarkMode.FORCE_DARK_ON;
+
+    @ForceDarkMode
+    private int mForceDarkMode = ForceDarkMode.FORCE_DARK_AUTO;
 
     // This class must be created on the UI thread. Afterwards, it can be
     // used from any thread. Internally, the class uses a message queue
@@ -104,6 +111,7 @@ public class AwSettings {
     private int mMixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW;
     private boolean mCSSHexAlphaColorEnabled;
     private boolean mScrollTopLeftInteropEnabled;
+    private boolean mWillSuppressErrorPage;
 
     private boolean mOffscreenPreRaster;
     private int mDisabledMenuItems = WebSettings.MENU_ITEM_NONE;
@@ -216,6 +224,10 @@ public class AwSettings {
 
         void updateWebkitPreferencesLocked() {
             runOnUiThreadBlockingAndLocked(() -> updateWebkitPreferencesOnUiThreadLocked());
+        }
+
+        void updateCookiePolicyLocked() {
+            runOnUiThreadBlockingAndLocked(() -> updateCookiePolicyOnUiThreadLocked());
         }
     }
 
@@ -344,6 +356,7 @@ public class AwSettings {
         if (TRACE) Log.i(LOGTAG, "setAcceptThirdPartyCookies=" + accept);
         synchronized (mAwSettingsLock) {
             mAcceptThirdPartyCookies = accept;
+            mEventHandler.updateCookiePolicyLocked();
         }
     }
 
@@ -365,6 +378,12 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             return mAcceptThirdPartyCookies;
         }
+    }
+
+    @CalledByNative
+    private boolean getAcceptThirdPartyCookiesLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mAcceptThirdPartyCookies;
     }
 
     /**
@@ -399,6 +418,7 @@ public class AwSettings {
     /**
      * See {@link android.webkit.WebSettings#getAllowFileAccess}.
      */
+    @CalledByNative
     public boolean getAllowFileAccess() {
         synchronized (mAwSettingsLock) {
             return mAllowFileUrlAccess;
@@ -1248,6 +1268,35 @@ public class AwSettings {
     }
 
     @CalledByNative
+    private boolean getWillSuppressErrorPageLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mWillSuppressErrorPage;
+    }
+
+    public boolean getWillSuppressErrorPage() {
+        synchronized (mAwSettingsLock) {
+            return getWillSuppressErrorPageLocked();
+        }
+    }
+
+    public void setWillSuppressErrorPage(boolean suppressed) {
+        synchronized (mAwSettingsLock) {
+            if (mWillSuppressErrorPage == suppressed) return;
+
+            mWillSuppressErrorPage = suppressed;
+            updateWillSuppressErrorStateLocked();
+        }
+    }
+
+    private void updateWillSuppressErrorStateLocked() {
+        mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
+            assert Thread.holdsLock(mAwSettingsLock);
+            assert mNativeAwSettings != 0;
+            nativeUpdateWillSuppressErrorStateLocked(mNativeAwSettings);
+        });
+    }
+
+    @CalledByNative
     private boolean getSupportLegacyQuirksLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
         return mSupportLegacyQuirks;
@@ -1634,6 +1683,29 @@ public class AwSettings {
         }
     }
 
+    @ForceDarkMode
+    public int getForceDarkMode() {
+        synchronized (mAwSettingsLock) {
+            return getForceDarkModeLocked();
+        }
+    }
+
+    @CalledByNative
+    @ForceDarkMode
+    public int getForceDarkModeLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mForceDarkMode;
+    }
+
+    public void setForceDarkMode(@ForceDarkMode int forceDarkMode) {
+        synchronized (mAwSettingsLock) {
+            if (mForceDarkMode != forceDarkMode) {
+                mForceDarkMode = forceDarkMode;
+                mEventHandler.updateWebkitPreferencesLocked();
+            }
+        }
+    }
+
     @CalledByNative
     private boolean getAllowRunningInsecureContentLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
@@ -1694,7 +1766,6 @@ public class AwSettings {
         }
     }
 
-    @VisibleForTesting
     public void updateAcceptLanguages() {
         synchronized (mAwSettingsLock) {
             mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
@@ -1766,6 +1837,14 @@ public class AwSettings {
         }
     }
 
+    private void updateCookiePolicyOnUiThreadLocked() {
+        assert mEventHandler.mHandler != null;
+        ThreadUtils.assertOnUiThread();
+        if (mNativeAwSettings != 0) {
+            nativeUpdateCookiePolicyLocked(mNativeAwSettings);
+        }
+    }
+
     private native long nativeInit(WebContents webContents);
 
     private native void nativeDestroy(long nativeAwSettings);
@@ -1789,4 +1868,8 @@ public class AwSettings {
     private native void nativeUpdateRendererPreferencesLocked(long nativeAwSettings);
 
     private native void nativeUpdateOffscreenPreRasterLocked(long nativeAwSettings);
+
+    private native void nativeUpdateWillSuppressErrorStateLocked(long nativeAwSettings);
+
+    private native void nativeUpdateCookiePolicyLocked(long nativeAwSettings);
 }

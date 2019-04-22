@@ -28,7 +28,7 @@
 
 namespace {
 const int kRSAKeySize = 2048;
-};
+}
 
 namespace extensions {
 

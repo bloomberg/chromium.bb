@@ -44,12 +44,12 @@ class MockWebMediaPlayerDelegateObserver
   MOCK_METHOD0(OnIdleTimeout, void());
   MOCK_METHOD0(OnPlay, void());
   MOCK_METHOD0(OnPause, void());
+  MOCK_METHOD1(OnMuted, void(bool));
   MOCK_METHOD1(OnSeekForward, void(double));
   MOCK_METHOD1(OnSeekBackward, void(double));
   MOCK_METHOD1(OnVolumeMultiplierUpdate, void(double));
   MOCK_METHOD1(OnBecamePersistentVideo, void(bool));
   MOCK_METHOD0(OnPictureInPictureModeEnded, void());
-  MOCK_METHOD1(OnPictureInPictureControlClicked, void(const std::string&));
 };
 
 class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
@@ -80,7 +80,8 @@ class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
   }
 
   void CallOnMediaDelegatePause(int delegate_id) {
-    delegate_manager_->OnMediaDelegatePause(delegate_id);
+    delegate_manager_->OnMediaDelegatePause(delegate_id,
+                                            true /* triggered_by_user */);
   }
 
   void SetIsLowEndDeviceForTesting() {
@@ -206,7 +207,8 @@ TEST_F(RendererWebMediaPlayerDelegateTest, DeliversObserverNotifications) {
   delegate_manager_->WasShown();
 
   EXPECT_CALL(observer_1_, OnPause());
-  MediaPlayerDelegateMsg_Pause pause_msg(0, delegate_id);
+  MediaPlayerDelegateMsg_Pause pause_msg(0, delegate_id,
+                                         true /* triggered_by_user */);
   delegate_manager_->OnMessageReceived(pause_msg);
 
   EXPECT_CALL(observer_1_, OnPlay());

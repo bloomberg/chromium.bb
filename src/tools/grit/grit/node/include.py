@@ -30,22 +30,35 @@ class IncludeNode(base.Node):
   def _IsValidChild(self, child):
     return False
 
-  def _GetFlattenedData(self, allow_external_script=False):
+  def _GetFlattenedData(
+      self, allow_external_script=False, preprocess_only=False):
     if not self._flattened_data:
       filename = self.ToRealPath(self.GetInputPath())
       self._flattened_data = (
           grit.format.html_inline.InlineToString(filename, self,
-              preprocess_only=False,
+              preprocess_only=preprocess_only,
               allow_external_script=allow_external_script))
     return self._flattened_data
   def MandatoryAttributes(self):
     return ['name', 'type', 'file']
 
   def DefaultAttributes(self):
+    """Attributes:
+       translateable:         False if the node has contents that should not be
+                              translated.
+       preprocess:            Takes the same code path as flattenhtml, but it
+                              disables any  processing/inlining outside of <if>
+                              and <include>.
+       compress:              The format to compress the data with, e.g. 'gzip'
+                              or 'false' if data should not be compressed.
+       skip_minify:           If true, skips minifying the node's contents.
+       skip_in_resource_map:  If true, do not add to the resource map.
+    """
     return {'translateable' : 'true',
             'generateid': 'true',
             'filenameonly': 'false',
             'mkoutput': 'false',
+            'preprocess': 'false',
             'flattenhtml': 'false',
             'compress': 'false',
             'allowexternalscript': 'false',
@@ -83,6 +96,8 @@ class IncludeNode(base.Node):
     if self.attrs['flattenhtml'] == 'true':
       allow_external_script = self.attrs['allowexternalscript'] == 'true'
       data = self._GetFlattenedData(allow_external_script=allow_external_script)
+    elif self.attrs['preprocess'] == 'true':
+      data = self._GetFlattenedData(preprocess_only=True)
     else:
       data = util.ReadFile(filename, util.BINARY)
 

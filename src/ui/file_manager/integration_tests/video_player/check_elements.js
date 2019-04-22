@@ -9,20 +9,15 @@
  * @return {Promise} Promise to be fulfilled with on success.
  */
 testcase.checkInitialElements = function() {
-    var test = openSingleVideo('local', 'downloads', ENTRIES.world);
-    return test.then(function(args) {
-      var appId = args[0];
-      var videoPlayer = args[1];
-      return Promise.all([
-        remoteCallVideoPlayer.waitForElement(appId, 'html[i18n-processed]'),
-        remoteCallVideoPlayer.waitForElement(appId, 'div#video-player'),
-        remoteCallVideoPlayer.waitForElement(appId, '#video-container > video'),
-        remoteCallVideoPlayer.waitForElement(appId, 'files-icon-button.play')
-            .then(function(element) {
-              // files-icon-button is a Polymer element and should have a
-              // shadowRoot.
-              chrome.test.assertTrue(element.hasShadowRoot);
-            }),
-      ]);
-    });
+  var test = openVideos('local', 'downloads', [ENTRIES.world]);
+  return test.then(function(args) {
+    var appId = args[0];
+    var videoPlayer = args[1];
+    return Promise.all([
+      remoteCallVideoPlayer.waitForElement(appId, 'html[i18n-processed]'),
+      remoteCallVideoPlayer.waitForElement(appId, 'div#video-player'),
+      remoteCallVideoPlayer.waitForElement(
+          appId, '#video-container > video[autopictureinpicture]'),
+    ]);
+  });
 };

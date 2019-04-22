@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
@@ -92,22 +94,14 @@ BrowserView* GetSourceBrowserViewInTabDragging() {
 class BrowserTabStripController::TabContextMenuContents
     : public ui::SimpleMenuModel::Delegate {
  public:
-  TabContextMenuContents(Tab* tab,
-                         BrowserTabStripController* controller)
-      : tab_(tab),
-        controller_(controller),
-        last_command_(TabStripModel::CommandFirst) {
+  TabContextMenuContents(Tab* tab, BrowserTabStripController* controller)
+      : tab_(tab), controller_(controller) {
     model_.reset(new TabMenuModel(
         this, controller->model_,
         controller->tabstrip_->GetModelIndexOfTab(tab)));
     menu_runner_.reset(new views::MenuRunner(
         model_.get(),
         views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
-  }
-
-  ~TabContextMenuContents() override {
-    if (controller_)
-      controller_->tabstrip_->StopAllHighlighting();
   }
 
   void Cancel() {
@@ -117,7 +111,7 @@ class BrowserTabStripController::TabContextMenuContents
   void RunMenuAt(const gfx::Point& point, ui::MenuSourceType source_type) {
     menu_runner_->RunMenuAt(tab_->GetWidget(), NULL,
                             gfx::Rect(point, gfx::Size()),
-                            views::MENU_ANCHOR_TOPLEFT, source_type);
+                            views::MenuAnchorPosition::kTopLeft, source_type);
   }
 
   // Overridden from ui::SimpleMenuModel::Delegate:
@@ -136,23 +130,12 @@ class BrowserTabStripController::TabContextMenuContents
                                                             accelerator) :
         false;
   }
-  void CommandIdHighlighted(int command_id) override {
-    controller_->StopHighlightTabsForCommand(last_command_, tab_);
-    last_command_ = static_cast<TabStripModel::ContextMenuCommand>(command_id);
-    controller_->StartHighlightTabsForCommand(last_command_, tab_);
-  }
   void ExecuteCommand(int command_id, int event_flags) override {
     // Executing the command destroys |this|, and can also end up destroying
     // |controller_|. So stop the highlights before executing the command.
-    controller_->tabstrip_->StopAllHighlighting();
     controller_->ExecuteCommandForTab(
         static_cast<TabStripModel::ContextMenuCommand>(command_id),
         tab_);
-  }
-
-  void MenuClosed(ui::SimpleMenuModel* /*source*/) override {
-    if (controller_)
-      controller_->tabstrip_->StopAllHighlighting();
   }
 
  private:
@@ -164,10 +147,6 @@ class BrowserTabStripController::TabContextMenuContents
 
   // A pointer back to our hosting controller, for command state information.
   BrowserTabStripController* controller_;
-
-  // The last command that was selected, so that we can start/stop highlighting
-  // appropriately as the user moves through the menu.
-  TabStripModel::ContextMenuCommand last_command_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContextMenuContents);
 };
@@ -260,8 +239,17 @@ bool BrowserTabStripController::IsTabPinned(int model_index) const {
   return model_->ContainsIndex(model_index) && model_->IsTabPinned(model_index);
 }
 
-void BrowserTabStripController::SelectTab(int model_index) {
-  model_->ActivateTabAt(model_index, true);
+void BrowserTabStripController::SelectTab(int model_index,
+                                          const ui::Event& event) {
+  TabStripModel::UserGestureDetails gesture_detail(
+      TabStripModel::GestureType::kOther, event.time_stamp());
+  TabStripModel::GestureType type = TabStripModel::GestureType::kOther;
+  if (event.type() == ui::ET_MOUSE_PRESSED)
+    type = TabStripModel::GestureType::kMouse;
+  else if (event.type() == ui::ET_GESTURE_TAP_DOWN)
+    type = TabStripModel::GestureType::kTouch;
+  gesture_detail.type = type;
+  model_->ActivateTabAt(model_index, gesture_detail);
 }
 
 void BrowserTabStripController::ExtendSelectionTo(int model_index) {
@@ -274,6 +262,27 @@ void BrowserTabStripController::ToggleSelected(int model_index) {
 
 void BrowserTabStripController::AddSelectionFromAnchorTo(int model_index) {
   model_->AddSelectionFromAnchorTo(model_index);
+}
+
+bool BrowserTabStripController::BeforeCloseTab(int model_index,
+                                               CloseTabSource source) {
+  // Only consider pausing the close operation if this is the last remaining
+  // tab (since otherwise closing it won't close the browser window).
+  if (GetCount() > 1)
+    return true;
+
+  // Closing this tab will close the current window. See if the browser wants to
+  // prompt the user before the browser is allowed to close.
+  const Browser::WarnBeforeClosingResult result =
+      browser_view_->browser()->MaybeWarnBeforeClosing(base::BindOnce(
+          [](TabStrip* tab_strip, int model_index, CloseTabSource source,
+             Browser::WarnBeforeClosingResult result) {
+            if (result == Browser::WarnBeforeClosingResult::kOkToClose)
+              tab_strip->CloseTab(tab_strip->tab_at(model_index), source);
+          },
+          base::Unretained(tabstrip_), model_index, source));
+
+  return result == Browser::WarnBeforeClosingResult::kOkToClose;
 }
 
 void BrowserTabStripController::CloseTab(int model_index,
@@ -312,23 +321,6 @@ void BrowserTabStripController::OnDropIndexUpdate(int index,
 bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
   Profile* other_profile = other->controller()->GetProfile();
   return other_profile == GetProfile();
-}
-
-NewTabButtonPosition BrowserTabStripController::GetNewTabButtonPosition()
-    const {
-  const std::string switch_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kNewTabButtonPosition);
-  if (switch_value == switches::kNewTabButtonPositionOppositeCaption)
-    return GetFrameView()->CaptionButtonsOnLeadingEdge() ? TRAILING : LEADING;
-  if (switch_value == switches::kNewTabButtonPositionLeading)
-    return LEADING;
-  if (switch_value == switches::kNewTabButtonPositionAfterTabs)
-    return AFTER_TABS;
-  if (switch_value == switches::kNewTabButtonPositionTrailing)
-    return TRAILING;
-
-  return AFTER_TABS;
 }
 
 void BrowserTabStripController::CreateNewTab() {
@@ -376,10 +368,6 @@ void BrowserTabStripController::StackedLayoutMaybeChanged() {
                                                tabstrip_->stacked_layout());
 }
 
-bool BrowserTabStripController::IsSingleTabModeAvailable() {
-  return GetFrameView()->IsSingleTabModeAvailable();
-}
-
 void BrowserTabStripController::OnStartedDraggingTabs() {
   if (!immersive_reveal_lock_.get()) {
     // The top-of-window views should be revealed while the user is dragging
@@ -409,6 +397,11 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
     browser_view_->TabDraggingStatusChanged(/*is_dragging=*/false);
   if (source_browser_view && !TabDragController::IsActive())
     source_browser_view->TabDraggingStatusChanged(/*is_dragging=*/false);
+}
+
+std::vector<int> BrowserTabStripController::ListTabsInGroup(
+    const TabGroupData* group) const {
+  return model_->ListTabsInGroup(group);
 }
 
 bool BrowserTabStripController::IsFrameCondensed() const {
@@ -504,6 +497,14 @@ void BrowserTabStripController::OnTabStripModelChanged(
         SetTabDataAt(delta.replace.new_contents, delta.replace.index);
       break;
     }
+    case TabStripModelChange::kGroupChanged: {
+      for (const auto& delta : change.deltas()) {
+        tabstrip_->ChangeTabGroup(delta.group_change.index,
+                                  delta.group_change.old_group_data,
+                                  delta.group_change.new_group_data);
+      }
+      break;
+    }
     case TabStripModelChange::kSelectionOnly:
       break;
   }
@@ -564,9 +565,12 @@ TabRendererData BrowserTabStripController::TabRendererDataFromModel(
     int model_index,
     TabStatus tab_status) {
   TabRendererData data;
-  TabUIHelper* tab_ui_helper = TabUIHelper::FromWebContents(contents);
+  TabUIHelper* const tab_ui_helper = TabUIHelper::FromWebContents(contents);
   data.favicon = tab_ui_helper->GetFavicon().AsImageSkia();
-  data.load_progress = contents->GetLoadProgress();
+  ThumbnailTabHelper* const thumbnail_tab_helper =
+      ThumbnailTabHelper::FromWebContents(contents);
+  if (thumbnail_tab_helper)
+    data.thumbnail = thumbnail_tab_helper->thumbnail();
   data.network_state = TabNetworkStateForWebContents(contents);
   data.title = tab_ui_helper->GetTitle();
   data.url = contents->GetURL();
@@ -585,33 +589,6 @@ void BrowserTabStripController::SetTabDataAt(content::WebContents* web_contents,
   tabstrip_->SetTabData(
       model_index,
       TabRendererDataFromModel(web_contents, model_index, EXISTING_TAB));
-}
-
-void BrowserTabStripController::StartHighlightTabsForCommand(
-    TabStripModel::ContextMenuCommand command_id,
-    Tab* tab) {
-  if (command_id == TabStripModel::CommandCloseOtherTabs ||
-      command_id == TabStripModel::CommandCloseTabsToRight) {
-    int model_index = tabstrip_->GetModelIndexOfTab(tab);
-    if (IsValidIndex(model_index)) {
-      std::vector<int> indices =
-          model_->GetIndicesClosedByCommand(model_index, command_id);
-      for (std::vector<int>::const_iterator i(indices.begin());
-           i != indices.end(); ++i) {
-        tabstrip_->StartHighlight(*i);
-      }
-    }
-  }
-}
-
-void BrowserTabStripController::StopHighlightTabsForCommand(
-    TabStripModel::ContextMenuCommand command_id,
-    Tab* tab) {
-  if (command_id == TabStripModel::CommandCloseTabsToRight ||
-      command_id == TabStripModel::CommandCloseOtherTabs) {
-    // Just tell all Tabs to stop pulsing - it's safe.
-    tabstrip_->StopAllHighlighting();
-  }
 }
 
 void BrowserTabStripController::AddTab(WebContents* contents,

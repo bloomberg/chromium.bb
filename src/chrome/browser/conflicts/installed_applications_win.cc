@@ -117,7 +117,8 @@ bool InstalledApplications::GetInstalledApplications(
 
 InstalledApplications::InstalledApplications(
     std::unique_ptr<MsiUtil> msi_util) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   SCOPED_UMA_HISTOGRAM_TIMER(
       "ThirdPartyModules.InstalledApplications.GetDataTime");
@@ -127,7 +128,7 @@ InstalledApplications::InstalledApplications(
       L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
 
   std::vector<std::pair<HKEY, REGSAM>> registry_key_combinations;
-  if (base::win::OSInfo::GetInstance()->architecture() ==
+  if (base::win::OSInfo::GetArchitecture() ==
       base::win::OSInfo::X86_ARCHITECTURE) {
     // On 32-bit Windows, there is only one view of the registry.
     registry_key_combinations.emplace_back(HKEY_CURRENT_USER, 0);

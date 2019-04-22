@@ -53,7 +53,7 @@ class ChildListRecord : public MutationRecord {
         previous_sibling_(previous_sibling),
         next_sibling_(next_sibling) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(target_);
     visitor->Trace(added_nodes_);
     visitor->Trace(removed_nodes_);
@@ -70,9 +70,9 @@ class ChildListRecord : public MutationRecord {
   Node* previousSibling() override { return previous_sibling_.Get(); }
   Node* nextSibling() override { return next_sibling_.Get(); }
 
-  TraceWrapperMember<Node> target_;
-  TraceWrapperMember<StaticNodeList> added_nodes_;
-  TraceWrapperMember<StaticNodeList> removed_nodes_;
+  Member<Node> target_;
+  Member<StaticNodeList> added_nodes_;
+  Member<StaticNodeList> removed_nodes_;
   Member<Node> previous_sibling_;
   Member<Node> next_sibling_;
 };
@@ -82,7 +82,7 @@ class RecordWithEmptyNodeLists : public MutationRecord {
   RecordWithEmptyNodeLists(Node* target, const String& old_value)
       : target_(target), old_value_(old_value) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(target_);
     visitor->Trace(added_nodes_);
     visitor->Trace(removed_nodes_);
@@ -102,14 +102,14 @@ class RecordWithEmptyNodeLists : public MutationRecord {
   static StaticNodeList* LazilyInitializeEmptyNodeList(
       Member<StaticNodeList>& node_list) {
     if (!node_list)
-      node_list = StaticNodeList::CreateEmpty();
+      node_list = MakeGarbageCollected<StaticNodeList>();
     return node_list.Get();
   }
 
-  TraceWrapperMember<Node> target_;
+  Member<Node> target_;
   String old_value_;
-  TraceWrapperMember<StaticNodeList> added_nodes_;
-  TraceWrapperMember<StaticNodeList> removed_nodes_;
+  Member<StaticNodeList> added_nodes_;
+  Member<StaticNodeList> removed_nodes_;
 };
 
 class AttributesRecord : public RecordWithEmptyNodeLists {
@@ -145,7 +145,7 @@ class MutationRecordWithNullOldValue : public MutationRecord {
  public:
   MutationRecordWithNullOldValue(MutationRecord* record) : record_(record) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(record_);
     MutationRecord::Trace(visitor);
   }
@@ -166,7 +166,7 @@ class MutationRecordWithNullOldValue : public MutationRecord {
 
   String oldValue() override { return String(); }
 
-  TraceWrapperMember<MutationRecord> record_;
+  Member<MutationRecord> record_;
 };
 
 const AtomicString& ChildListRecord::type() {
@@ -191,24 +191,24 @@ MutationRecord* MutationRecord::CreateChildList(Node* target,
                                                 StaticNodeList* removed,
                                                 Node* previous_sibling,
                                                 Node* next_sibling) {
-  return new ChildListRecord(target, added, removed, previous_sibling,
-                             next_sibling);
+  return MakeGarbageCollected<ChildListRecord>(target, added, removed,
+                                               previous_sibling, next_sibling);
 }
 
 MutationRecord* MutationRecord::CreateAttributes(
     Node* target,
     const QualifiedName& name,
     const AtomicString& old_value) {
-  return new AttributesRecord(target, name, old_value);
+  return MakeGarbageCollected<AttributesRecord>(target, name, old_value);
 }
 
 MutationRecord* MutationRecord::CreateCharacterData(Node* target,
                                                     const String& old_value) {
-  return new CharacterDataRecord(target, old_value);
+  return MakeGarbageCollected<CharacterDataRecord>(target, old_value);
 }
 
 MutationRecord* MutationRecord::CreateWithNullOldValue(MutationRecord* record) {
-  return new MutationRecordWithNullOldValue(record);
+  return MakeGarbageCollected<MutationRecordWithNullOldValue>(record);
 }
 
 MutationRecord::~MutationRecord() = default;

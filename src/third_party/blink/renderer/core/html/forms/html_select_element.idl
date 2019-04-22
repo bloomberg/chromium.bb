@@ -19,7 +19,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-select-element
+// https://html.spec.whatwg.org/C/#the-select-element
 [HTMLConstructor]
 interface HTMLSelectElement : HTMLElement {
     [CEReactions, ImplementedAs=IDLExposedAutofillValue] attribute DOMString autocomplete;

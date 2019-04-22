@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_ref.h"
 
-#include "fxjs/xfa/cjx_ref.h"
+#include "fxjs/xfa/cjx_textnode.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -15,9 +15,7 @@ const CXFA_Node::AttributeData kRefAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kRefName[] = L"ref";
+};
 
 }  // namespace
 
@@ -27,9 +25,8 @@ CXFA_Ref::CXFA_Ref(CXFA_Document* doc, XFA_PacketType packet)
                 (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
                 XFA_ObjectType::TextNode,
                 XFA_Element::Ref,
-                nullptr,
+                {},
                 kRefAttributeData,
-                kRefName,
-                pdfium::MakeUnique<CJX_Ref>(this)) {}
+                pdfium::MakeUnique<CJX_TextNode>(this)) {}
 
-CXFA_Ref::~CXFA_Ref() {}
+CXFA_Ref::~CXFA_Ref() = default;

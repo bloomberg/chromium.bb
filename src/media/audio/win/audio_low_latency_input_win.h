@@ -144,12 +144,8 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // AudioConverter::InputCallback implementation.
   double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
 
-  // Reports delay stats based on |capture_time|. Detects and counts glitches
-  // based on |frames_in_buffer|, |discontinuity_flagged|, and
-  // |device_position|.
-  void ReportDelayStatsAndUpdateGlitchCount(bool discontinuity_flagged,
-                                            UINT64 device_position,
-                                            base::TimeTicks capture_time);
+  // Detects and counts glitches based on |device_position|.
+  void UpdateGlitchCount(UINT64 device_position);
 
   // Reports glitch stats and resets associated variables.
   void ReportAndResetGlitchStats();
@@ -186,16 +182,18 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // All OnData() callbacks will be called from this thread.
   std::unique_ptr<base::DelegateSimpleThread> capture_thread_;
 
-  // Contains the desired output audio format which is set up at construction,
-  // that is the audio format this class should output data to the sink in, that
-  // is the format after the converter.
-  WAVEFORMATEXTENSIBLE output_format_;
+  // Contains the desired output audio format which is set up at construction
+  // and then never modified. It is the audio format this class will output
+  // data to the sink in, or equivalently, the format after the converter if
+  // such is needed. Does not need the extended version since we only support
+  // max stereo at this stage.
+  WAVEFORMATEX output_format_;
 
-  // Contains the audio format we get data from the audio engine in. Set to
-  // |output_format_| at construction and might be changed to a close match if
-  // the audio engine doesn't support the originally set format. Note that this
-  // is also the format after the fifo, i.e. the input format to the converter
-  // if any.
+  // Contains the audio format we get data from the audio engine in. Initially
+  // set to |output_format_| at construction but it might be changed to a close
+  // match if the audio engine doesn't support the originally set format. Note
+  // that, this is also the format after the FIFO, i.e. the input format to the
+  // converter if any.
   WAVEFORMATEXTENSIBLE input_format_;
 
   bool opened_ = false;
@@ -291,9 +289,6 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // For detecting and reporting glitches.
   UINT64 expected_next_device_position_ = 0;
   int total_glitches_ = 0;
-  int total_device_position_less_than_expected_ = 0;
-  int total_discontinuities_ = 0;
-  int total_concurrent_glitch_and_discontinuities_ = 0;
   UINT64 total_lost_frames_ = 0;
   UINT64 largest_glitch_frames_ = 0;
 

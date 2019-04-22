@@ -64,9 +64,15 @@ FontConfigLocalMatching::FindFontBySpecifiedName(
 
   FcPattern* current = font_set->fonts[0];
 
-  FcChar8* c_filename;
-  if (FcPatternGetString(current, FC_FILE, 0, &c_filename) != FcResultMatch)
+  const char* c_filename;
+  if (FcPatternGetString(current, FC_FILE, 0,
+                         reinterpret_cast<FcChar8**>(const_cast<char**>(
+                             &c_filename))) != FcResultMatch) {
     return base::nullopt;
+  }
+  const char* sysroot =
+      reinterpret_cast<const char*>(FcConfigGetSysRoot(nullptr));
+  const std::string filename = std::string(sysroot ? sysroot : "") + c_filename;
 
   // We only want to return sfnt (TrueType) based fonts. We don't have a
   // very good way of detecting this so we'll filter based on the
@@ -78,8 +84,8 @@ FontConfigLocalMatching::FindFontBySpecifiedName(
       // None of the extensions matched.
       break;
     }
-    if (base::EndsWith(std::string(reinterpret_cast<char*>(c_filename)),
-                       kSFNTExtensions[j], base::CompareCase::SENSITIVE)) {
+    if (base::EndsWith(filename, kSFNTExtensions[j],
+                       base::CompareCase::SENSITIVE)) {
       is_sfnt = true;
       break;
     }
@@ -88,7 +94,7 @@ FontConfigLocalMatching::FindFontBySpecifiedName(
   if (!is_sfnt)
     return base::nullopt;
 
-  base::FilePath font_file_path(reinterpret_cast<const char*>(c_filename));
+  base::FilePath font_file_path(filename);
   base::File verify_file_exists(font_file_path,
                                 base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!verify_file_exists.IsValid())

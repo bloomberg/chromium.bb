@@ -23,7 +23,6 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
-import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -43,8 +42,7 @@ public class CustomTabActivityTestRule extends ChromeActivityTestRule<CustomTabA
         Activity activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
         Assert.assertNotNull("Main activity did not start", activity);
         CriteriaHelper.pollUiThread(() -> {
-            for (WeakReference<Activity> ref : ApplicationStatus.getRunningActivities()) {
-                Activity runningActivity = ref.get();
+            for (Activity runningActivity : ApplicationStatus.getRunningActivities()) {
                 if (runningActivity instanceof CustomTabActivity) {
                     setActivity((CustomTabActivity) runningActivity);
                     return true;

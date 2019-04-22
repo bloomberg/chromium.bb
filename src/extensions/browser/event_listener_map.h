@@ -169,7 +169,7 @@ class EventListenerMap {
   bool RemoveListener(const EventListener* listener);
 
   // Get the map of all EventListeners.
-  const ListenerMap& listeners() const { return listeners_; };
+  const ListenerMap& listeners() const { return listeners_; }
 
   // Returns the set of listeners that want to be notified of |event|.
   std::set<const EventListener*> GetEventListeners(const Event& event);

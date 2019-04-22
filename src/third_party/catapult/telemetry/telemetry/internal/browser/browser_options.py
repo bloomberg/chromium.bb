@@ -12,7 +12,7 @@ import sys
 
 from py_utils import cloud_storage  # pylint: disable=import-error
 
-from telemetry import compact_mode_options
+from telemetry import compat_mode_options
 from telemetry.core import platform
 from telemetry.core import util
 from telemetry.internal.browser import browser_finder
@@ -33,6 +33,8 @@ class BrowserFinderOptions(optparse.Values):
 
     self.browser_type = browser_type
     self.browser_executable = None
+    # The set of possible platforms the browser should run on.
+    self.target_platforms = None
     self.chrome_root = None  # Path to src/
     self.chromium_output_dir = None  # E.g.: out/Debug
     self.device = None
@@ -55,6 +57,7 @@ class BrowserFinderOptions(optparse.Values):
     self.interval_profiling_target = ''
     self.interval_profiling_periods = []
     self.interval_profiling_frequency = 1000
+    self.interval_profiler_options = ''
 
   def __repr__(self):
     return str(sorted(self.__dict__.items()))
@@ -73,7 +76,7 @@ class BrowserFinderOptions(optparse.Values):
         default=None,
         help='Browser type to run, '
         'in order of priority. Supported values: list,%s' %
-        ', '.join(browser_finder.FindAllBrowserTypes(self)))
+        ', '.join(browser_finder.FindAllBrowserTypes()))
     group.add_option(
         '--browser-executable',
         dest='browser_executable',
@@ -99,20 +102,21 @@ class BrowserFinderOptions(optparse.Values):
         default=socket.getservbyname('ssh'),
         dest='cros_remote_ssh_port',
         help='The SSH port of the remote ChromeOS device (requires --remote).')
-    compact_mode_options_list = [
-        compact_mode_options.NO_FIELD_TRIALS,
-        compact_mode_options.IGNORE_CERTIFICATE_ERROR,
-        compact_mode_options.LEGACY_COMMAND_LINE_PATH,
-        compact_mode_options.GPU_BENCHMARKING_FALLBACKS]
+    compat_mode_options_list = [
+        compat_mode_options.NO_FIELD_TRIALS,
+        compat_mode_options.IGNORE_CERTIFICATE_ERROR,
+        compat_mode_options.LEGACY_COMMAND_LINE_PATH,
+        compat_mode_options.GPU_BENCHMARKING_FALLBACKS,
+        compat_mode_options.DONT_REQUIRE_ROOTED_DEVICE]
     parser.add_option(
         '--compatibility-mode',
         action='append',
         dest='compatibility_mode',
-        choices=compact_mode_options_list,
+        choices=compat_mode_options_list,
         default=[],
         help='Select the compatibility change that you want to enforce when '
              'running benchmarks. The options are: %s' % ', '.join(
-                 compact_mode_options_list))
+                 compat_mode_options_list))
     identity = None
     testing_rsa = os.path.join(
         util.GetTelemetryThirdPartyDir(), 'chromite', 'ssh_keys', 'testing_rsa')
@@ -173,32 +177,54 @@ class BrowserFinderOptions(optparse.Values):
         'If not specified, only 0 or 1 connected devices are supported. '
         'If specified as "android", all available Android devices are '
         'used.')
+    group.add_option(
+        '--install-bundle-module', dest='modules_to_install', action='append',
+        default=['base'],
+        help='Specify Android App Bundle modules to install in addition to the '
+             'base module. Ignored on Non-Android platforms or if using a '
+             'standard APK instead of bundles.')
     parser.add_option_group(group)
 
-    # CPU profiling on Android.
+    # CPU profiling on Android/Linux/ChromeOS.
     group = optparse.OptionGroup(parser, (
         'CPU profiling over intervals of interest, '
-        'Android and Linux only'))
+        'Android, Linux, and ChromeOS only'))
     group.add_option(
         '--interval-profiling-target', dest='interval_profiling_target',
-        default='renderer:main', metavar='PROCESS_NAME[:THREAD_NAME]',
-        help='Run the CPU profiler on this process/thread (default=%default).')
+        default='renderer:main',
+        metavar='PROCESS_NAME[:THREAD_NAME]|"system_wide"',
+        help='Run the CPU profiler on this process/thread (default=%default), '
+        'which is supported only on Linux and Android, or system-wide, which '
+        'is supported only on ChromeOS.')
     group.add_option(
         '--interval-profiling-period', dest='interval_profiling_periods',
-        type='choice', choices=('navigation', 'interactions'), action='append',
-        default=[], metavar='PERIOD',
+        type='choice',
+        choices=('navigation', 'interactions', 'story_run'),
+        action='append', default=[], metavar='PERIOD',
         help='Run the CPU profiler during this test period. '
-        'May be specified multiple times; available choices '
-        'are ["navigation", "interactions"]. Profile data will be written to'
-        'artifacts/*.perf.data (Android) or artifacts/*.profile.pb (Linux) '
-        'files in the output directory. See '
+        'May be specified multiple times except when the story_run period is '
+        'used; available choices are ["navigation", "interactions", '
+        '"story_run"]. Profile data will be written to '
+        'artifacts/*.perf.data (Android/ChromeOS) or '
+        'artifacts/*.profile.pb (Linux) files in the output directory. See '
         'https://developer.android.com/ndk/guides/simpleperf for more info on '
         'Android profiling via simpleperf.')
     group.add_option(
         '--interval-profiling-frequency', default=1000, metavar='FREQUENCY',
         type=int,
         help='Frequency of CPU profiling samples, in samples per second '
-        '(default=%default).')
+        '(default=%default). This flag is used only on Android')
+    group.add_option(
+        '--interval-profiler-options',
+        dest='interval_profiler_options', type=str,
+        metavar='"--flag <options> ..."',
+        help='Addtional arguments to pass to the CPU profiler. This is used '
+        'only on ChromeOS. On ChromeOS, pass the linux perf\'s subcommand name '
+        'followed by the options to pass to the perf tool. Supported perf '
+        'subcommands are "record" and "stat". '
+        'Eg: "record -e cycles -c 4000000 -g". Note: "-a" flag is added to the '
+        'perf command by default. Do not pass options that are incompatible '
+        'with the system-wide profile collection.')
     parser.add_option_group(group)
 
     # Browser options.
@@ -264,6 +290,18 @@ class BrowserFinderOptions(optparse.Values):
           if len(browser_types[device_name]) == 0:
             print '     No browsers found for this device'
         sys.exit(0)
+
+      # Profiling other periods along with the story_run period leads to running
+      # multiple profiling processes at the same time. The effects of performing
+      # muliple CPU profiling at the same time is unclear and may generate
+      # incorrect profiles so this will not be supported.
+      if (len(self.interval_profiling_periods) > 1
+          and 'story_run' in self.interval_profiling_periods):
+        print 'Cannot specify other periods along with the story_run period.'
+        sys.exit(1)
+
+      self.interval_profiler_options = shlex.split(
+          self.interval_profiler_options)
 
       # Parse browser options.
       self.browser_options.UpdateFromParseResults(self)
@@ -338,9 +376,11 @@ class BrowserOptions(object):
     self.disable_background_networking = True
     self.browser_user_agent_type = None
 
-    # pylint: disable=invalid-name
-    self.clear_sytem_cache_for_browser_and_profile_on_start = False
-    self.startup_url = 'about:blank'
+    # Some benchmarks (startup, loading, and memory related) need this to get
+    # more representative measurements. Only has an effect for page sets based
+    # on SharedPageState. New clients should probably define their own shared
+    # state and make cache clearing decisions on their own.
+    self.flush_os_page_caches_on_start = False
 
     # Background pages of built-in component extensions can interfere with
     # performance measurements.
@@ -351,16 +391,17 @@ class BrowserOptions(object):
 
     self.logging_verbosity = self._DEFAULT_LOGGING_LEVEL
 
+    # Whether to log verbose browser details like the full commandline used to
+    # start the browser. This variable can be changed from one run to another
+    # in order to cut back on log sizes. See crbug.com/943650.
+    self.trim_logs = False
+
     # The cloud storage bucket & path for uploading logs data produced by the
     # browser to.
     # If logs_cloud_remote_path is None, a random remote path is generated every
     # time the logs data is uploaded.
     self.logs_cloud_bucket = cloud_storage.TELEMETRY_OUTPUT
     self.logs_cloud_remote_path = None
-
-    # TODO(danduong): Find a way to store target_os here instead of
-    # finder_options.
-    self._finder_options = None
 
     # Whether to take screen shot for failed page & put them in telemetry's
     # profiling results.
@@ -377,11 +418,7 @@ class BrowserOptions(object):
     self.compatibility_mode = []
 
   def __repr__(self):
-    # This works around the infinite loop caused by the introduction of a
-    # circular reference with _finder_options.
-    obj = self.__dict__.copy()
-    del obj['_finder_options']
-    return str(sorted(obj.items()))
+    return str(sorted(self.__dict__.items()))
 
   def Copy(self):
     return copy.deepcopy(self)
@@ -465,7 +502,6 @@ class BrowserOptions(object):
         delattr(finder_options, o)
 
     self.browser_type = finder_options.browser_type
-    self._finder_options = finder_options
 
     if hasattr(self, 'extra_browser_args_as_string'):
       tmp = shlex.split(
@@ -505,10 +541,6 @@ class BrowserOptions(object):
     # This deferred import is necessary because browser_options is imported in
     # telemetry/telemetry/__init__.py.
     finder_options.browser_options = CreateChromeBrowserOptions(self)
-
-  @property
-  def finder_options(self):
-    return self._finder_options
 
   @property
   def extra_browser_args(self):
@@ -564,6 +596,8 @@ class CrosBrowserOptions(ChromeBrowserOptions):
     self.expect_policy_fetch = False
     # Disable GAIA/enterprise services.
     self.disable_gaia_services = True
+    # Mute audio.
+    self.mute_audio = True
 
     # TODO(cywang): crbug.com/760414
     # Add login delay for ARC container boot time measurement for now.

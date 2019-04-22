@@ -40,7 +40,7 @@
 #include "services/preferences/public/cpp/tracked/tracked_preference_histogram_names.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 #if defined(OS_WIN)
@@ -157,23 +157,18 @@ bool SupportsRegistryValidation() {
 #endif
 }
 
-#define PREF_HASH_BROWSER_TEST(fixture, test_name)                          \
-  IN_PROC_BROWSER_TEST_P(fixture, PRE_##test_name) {                        \
-    SetupPreferences();                                                     \
-  }                                                                         \
-  IN_PROC_BROWSER_TEST_P(fixture, test_name) {                              \
-    VerifyReactionToPrefAttack();                                           \
-  }                                                                         \
-  INSTANTIATE_TEST_CASE_P(                                                  \
-      fixture##Instance,                                                    \
-      fixture,                                                              \
-      testing::Values(                                                      \
-          chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,  \
-          chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,  \
-          chrome_prefs::internals::                                         \
-              kSettingsEnforcementGroupEnforceAlwaysWithDSE,                \
-          chrome_prefs::internals::                                         \
-              kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE));
+#define PREF_HASH_BROWSER_TEST(fixture, test_name)                             \
+  IN_PROC_BROWSER_TEST_P(fixture, PRE_##test_name) { SetupPreferences(); }     \
+  IN_PROC_BROWSER_TEST_P(fixture, test_name) { VerifyReactionToPrefAttack(); } \
+  INSTANTIATE_TEST_SUITE_P(                                                    \
+      fixture##Instance, fixture,                                              \
+      testing::Values(                                                         \
+          chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,     \
+          chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,     \
+          chrome_prefs::internals::                                            \
+              kSettingsEnforcementGroupEnforceAlwaysWithDSE,                   \
+          chrome_prefs::internals::                                            \
+              kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE))
 
 // A base fixture designed such that implementations do two things:
 //  1) Override all three pure-virtual methods below to setup, attack, and
@@ -377,7 +372,8 @@ class PrefHashBrowserTestBase
 
       num_tracked_prefs_ += num_split_tracked_prefs;
 
-      std::string num_tracked_prefs_str = base::IntToString(num_tracked_prefs_);
+      std::string num_tracked_prefs_str =
+          base::NumberToString(num_tracked_prefs_);
       EXPECT_EQ(static_cast<int>(num_tracked_prefs_str.size()),
                 base::WriteFile(num_tracked_prefs_file,
                                 num_tracked_prefs_str.c_str(),
@@ -1240,9 +1236,9 @@ class PrefHashBrowserTestDefaultSearch : public PrefHashBrowserTestBase {
 
     // Try to override default search in all three of available preferences.
     auto attack1 = base::DictionaryValue::From(
-        base::JSONReader::Read(default_search_provider_data));
+        base::JSONReader::ReadDeprecated(default_search_provider_data));
     auto attack2 = base::DictionaryValue::From(
-        base::JSONReader::Read(search_provider_overrides));
+        base::JSONReader::ReadDeprecated(search_provider_overrides));
     unprotected_preferences->MergeDictionary(attack1.get());
     unprotected_preferences->MergeDictionary(attack2.get());
     if (protected_preferences) {

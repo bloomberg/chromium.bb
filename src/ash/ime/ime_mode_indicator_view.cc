@@ -51,7 +51,7 @@ class ModeIndicatorFrameView : public views::BubbleFrameView {
 ImeModeIndicatorView::ImeModeIndicatorView(const gfx::Rect& cursor_bounds,
                                            const base::string16& label)
     : cursor_bounds_(cursor_bounds), label_view_(new views::Label(label)) {
-  set_can_activate(false);
+  SetCanActivate(false);
   set_accept_events(false);
   set_shadow(views::BubbleBorder::BIG_SHADOW);
   SetArrow(views::BubbleBorder::TOP_CENTER);

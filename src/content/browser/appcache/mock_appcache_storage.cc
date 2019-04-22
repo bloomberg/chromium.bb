@@ -18,6 +18,7 @@
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_service_impl.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 // This is a quick and easy 'mock' implementation of the storage interface
 // that doesn't put anything to disk.
@@ -37,7 +38,7 @@ MockAppCacheStorage::MockAppCacheStorage(AppCacheServiceImpl* service)
       simulate_store_group_and_newest_cache_failure_(false),
       simulate_find_main_resource_(false),
       simulate_find_sub_resource_(false),
-      simulated_found_cache_id_(kAppCacheNoCacheId),
+      simulated_found_cache_id_(blink::mojom::kAppCacheNoCacheId),
       simulated_found_group_id_(0),
       simulated_found_network_namespace_(false),
       weak_factory_(this) {
@@ -270,7 +271,9 @@ struct FoundCandidate {
   bool is_cache_in_use;
 
   FoundCandidate()
-      : cache_id(kAppCacheNoCacheId), group_id(0), is_cache_in_use(false) {}
+      : cache_id(blink::mojom::kAppCacheNoCacheId),
+        group_id(0),
+        is_cache_in_use(false) {}
 };
 
 void MaybeTakeNewNamespaceEntry(
@@ -435,8 +438,8 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
 
   // Didn't find anything.
   delegate_ref->delegate->OnMainResponseFound(
-      url, AppCacheEntry(), GURL(), AppCacheEntry(), kAppCacheNoCacheId, 0,
-      GURL());
+      url, AppCacheEntry(), GURL(), AppCacheEntry(),
+      blink::mojom::kAppCacheNoCacheId, 0, GURL());
 }
 
 void MockAppCacheStorage::ProcessMakeGroupObsolete(

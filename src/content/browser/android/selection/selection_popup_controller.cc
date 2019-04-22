@@ -218,4 +218,13 @@ void SelectionPopupController::HidePopupsAndPreserveSelection() {
   Java_SelectionPopupControllerImpl_hidePopupsAndPreserveSelection(env, obj);
 }
 
+void SelectionPopupController::RestoreSelectionPopupsIfNecessary() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_obj_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_SelectionPopupControllerImpl_restoreSelectionPopupsIfNecessary(env, obj);
+}
+
 }  // namespace content

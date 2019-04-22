@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -37,13 +38,12 @@ void UMABrowsingActivityObserver::Init() {
 
 UMABrowsingActivityObserver::UMABrowsingActivityObserver() {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                  content::NotificationService::AllSources());
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
-                  content::NotificationService::AllSources());
+                 content::NotificationService::AllSources());
 }
 
-UMABrowsingActivityObserver::~UMABrowsingActivityObserver() {
-}
+UMABrowsingActivityObserver::~UMABrowsingActivityObserver() {}
 
 void UMABrowsingActivityObserver::Observe(
     int type,
@@ -54,7 +54,7 @@ void UMABrowsingActivityObserver::Observe(
         *content::Details<content::LoadCommittedDetails>(details).ptr();
 
     content::NavigationController* controller =
-      content::Source<content::NavigationController>(source).ptr();
+        content::Source<content::NavigationController>(source).ptr();
     // Track whether the page loaded is a search results page (SRP). Track
     // the non-SRP navigations as well so there is a control.
     base::RecordAction(base::UserMetricsAction("NavEntryCommitted"));
@@ -64,8 +64,8 @@ void UMABrowsingActivityObserver::Observe(
     // See http://crbug.com/291348.
     CHECK(load.entry);
     if (TemplateURLServiceFactory::GetForProfile(
-            Profile::FromBrowserContext(controller->GetBrowserContext()))->
-            IsSearchResultsPageFromDefaultSearchProvider(
+            Profile::FromBrowserContext(controller->GetBrowserContext()))
+            ->IsSearchResultsPageFromDefaultSearchProvider(
                 load.entry->GetURL())) {
       base::RecordAction(base::UserMetricsAction("NavEntryCommitted.SRP"));
     }
@@ -84,11 +84,10 @@ void UMABrowsingActivityObserver::Observe(
 void UMABrowsingActivityObserver::LogRenderProcessHostCount() const {
   int hosts_count = 0;
   for (content::RenderProcessHost::iterator i(
-          content::RenderProcessHost::AllHostsIterator());
-        !i.IsAtEnd(); i.Advance())
+           content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance())
     ++hosts_count;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("MPArch.RPHCountPerLoad", hosts_count,
-                              1, 50, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("MPArch.RPHCountPerLoad", hosts_count, 1, 50, 50);
 }
 
 void UMABrowsingActivityObserver::LogBrowserTabCount() const {
@@ -99,15 +98,15 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   for (auto* browser : *BrowserList::GetInstance()) {
     // Record how many tabs each window has open.
     UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerWindow",
-                                browser->tab_strip_model()->count(),
-                                1, 200, 50);
+                                browser->tab_strip_model()->count(), 1, 200,
+                                50);
     tab_count += browser->tab_strip_model()->count();
 
     if (browser->window()->IsActive()) {
       // Record how many tabs the active window has open.
       UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountActiveWindow",
-                                  browser->tab_strip_model()->count(),
-                                  1, 200, 50);
+                                  browser->tab_strip_model()->count(), 1, 200,
+                                  50);
     }
 
     if (browser->is_app())

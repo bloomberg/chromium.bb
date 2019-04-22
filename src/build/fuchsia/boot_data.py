@@ -40,14 +40,19 @@ def _TargetCpuToSdkBinPath(target_arch):
   return os.path.join(common.SDK_ROOT, 'target', target_arch)
 
 
-def _ProvisionSSH(output_dir):
-  """Generates a keypair and configuration data for the SSH client.
-  Returns a path to the client public key."""
+def _GetPubKeyPath(output_dir):
+  """Returns a path to the generated SSH public key."""
+
+  return os.path.join(output_dir, 'id_ed25519.pub')
+
+
+def ProvisionSSH(output_dir):
+  """Generates a keypair and config file for SSH."""
 
   host_key_path = os.path.join(output_dir, 'ssh_key')
   host_pubkey_path = host_key_path + '.pub'
   id_key_path = os.path.join(output_dir, 'id_ed25519')
-  id_pubkey_path = id_key_path + '.pub'
+  id_pubkey_path = _GetPubKeyPath(output_dir)
   known_hosts_path = os.path.join(output_dir, 'known_hosts')
   ssh_config_path = os.path.join(output_dir, 'ssh_config')
 
@@ -67,8 +72,6 @@ def _ProvisionSSH(output_dir):
 
   if os.path.exists(known_hosts_path):
     os.remove(known_hosts_path)
-
-  return id_pubkey_path
 
 
 def _MakeQcowDisk(output_dir, disk_path):
@@ -98,7 +101,8 @@ def GetBootImage(output_dir, target_arch):
   """"Gets a path to the Zircon boot image, with the SSH client public key
   added."""
 
-  pubkey_path = _ProvisionSSH(output_dir)
+  ProvisionSSH(output_dir)
+  pubkey_path = _GetPubKeyPath(output_dir)
   zbi_tool = os.path.join(common.SDK_ROOT, 'tools', 'zbi')
   image_source_path = GetTargetFile(target_arch, 'fuchsia.zbi')
   image_dest_path = os.path.join(output_dir, 'gen', 'fuchsia-with-keys.zbi')
@@ -110,24 +114,5 @@ def GetBootImage(output_dir, target_arch):
   return image_dest_path
 
 
-def GetNodeName(output_dir):
-  """Returns the cached Zircon node name, or generates one if it doesn't
-  already exist. The node name is used by Discover to find the prior
-  deployment on the LAN."""
-
-  nodename_file = os.path.join(output_dir, 'nodename')
-  if not os.path.exists(nodename_file):
-    nodename = uuid.uuid4()
-    f = open(nodename_file, 'w')
-    f.write(str(nodename))
-    f.flush()
-    f.close()
-    return str(nodename)
-  else:
-    f = open(nodename_file, 'r')
-    return f.readline()
-
-
 def GetKernelArgs(output_dir):
-  return ['devmgr.epoch=%d' % time.time(),
-          'zircon.nodename=' + GetNodeName(output_dir)]
+  return ['devmgr.epoch=%d' % time.time()]

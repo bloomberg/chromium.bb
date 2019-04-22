@@ -60,12 +60,6 @@ protected:
   void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst,
                         const SkPaint*) override;
 
-  void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y,
-                  const SkPaint&) override;
-  void onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[],
-                     const SkPaint&) override;
-  void onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[],
-                      SkScalar constY, const SkPaint&) override;
   void onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
                       const SkPaint& paint) override;
 

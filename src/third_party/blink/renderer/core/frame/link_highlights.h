@@ -11,23 +11,28 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
-namespace blink {
+namespace cc {
+class AnimationHost;
+}
 
+namespace blink {
+class GraphicsContext;
 class Page;
 class LinkHighlightImpl;
-class CompositorAnimationHost;
 class CompositorAnimationTimeline;
 class WebLayerTreeView;
 class LocalFrame;
 class LayoutObject;
 
+// TODO(wangxianzhu): Since the tap disambiguation feature was removed,
+// (http://crrev.com/c/579263), LinkHighlights no longer needs to manage
+// multiple link highlights. Rename this class to LinkHighlight and move
+// it under core/page, and rename LinkHighlightImpl (core/paint) to
+// LinkHighlightPainter. This will be convenient to do when we remove
+// GraphicsLayer for CompositeAfterPaint.
 class CORE_EXPORT LinkHighlights final
     : public GarbageCollectedFinalized<LinkHighlights> {
  public:
-  static LinkHighlights* Create(Page& page) {
-    return MakeGarbageCollected<LinkHighlights>(page);
-  }
-
   explicit LinkHighlights(Page&);
   virtual ~LinkHighlights();
 
@@ -42,7 +47,7 @@ class CORE_EXPORT LinkHighlights final
 
   void StartHighlightAnimationIfNeeded();
 
-  void LayerTreeViewInitialized(WebLayerTreeView&);
+  void LayerTreeViewInitialized(WebLayerTreeView&, cc::AnimationHost&);
   void WillCloseLayerTreeView(WebLayerTreeView&);
 
   bool IsEmpty() const { return link_highlights_.IsEmpty(); }
@@ -53,14 +58,17 @@ class CORE_EXPORT LinkHighlights final
     return NeedsHighlightEffectInternal(object);
   }
 
-  CompositorElementId element_id(const LayoutObject& object);
+  // For CompositeAfterPaint.
+  void Paint(GraphicsContext&) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, verifyWebViewImplIntegration);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, resetDuringNodeRemoval);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, resetLayerTreeView);
+  FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, HighlightInvalidation);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, multipleHighlights);
   FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, HighlightLayerEffectNode);
+  FRIEND_TEST_ALL_PREFIXES(LinkHighlightImplTest, MultiColumn);
 
   void RemoveAllHighlights();
 
@@ -75,7 +83,7 @@ class CORE_EXPORT LinkHighlights final
 
   Member<Page> page_;
   Vector<std::unique_ptr<LinkHighlightImpl>> link_highlights_;
-  std::unique_ptr<CompositorAnimationHost> animation_host_;
+  cc::AnimationHost* animation_host_ = nullptr;
   std::unique_ptr<CompositorAnimationTimeline> timeline_;
 };
 

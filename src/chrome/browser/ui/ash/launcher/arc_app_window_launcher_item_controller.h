@@ -17,7 +17,7 @@ class ArcAppWindow;
 class ArcAppWindowLauncherItemController
     : public AppWindowLauncherItemController {
  public:
-  explicit ArcAppWindowLauncherItemController(const std::string& arc_app_id);
+  explicit ArcAppWindowLauncherItemController(const ash::ShelfID shelf_id);
 
   ~ArcAppWindowLauncherItemController() override;
 

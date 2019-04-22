@@ -29,7 +29,6 @@
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -42,7 +41,6 @@ using net::test_server::HttpResponse;
 
 enum class CorsTestMode {
   kInBlink,
-  kInBrowserProcess,
   kInNetworkService,
 };
 
@@ -60,19 +58,11 @@ class CorsFileOriginBrowserTest
         scoped_feature_list_.InitWithFeatures(
             {} /* enabled */,
             {network::features::kOutOfBlinkCors,
-             blink::features::kServiceWorkerServicification,
              network::features::kNetworkService} /* disabled */);
-        break;
-      case CorsTestMode::kInBrowserProcess:
-        scoped_feature_list_.InitWithFeatures(
-            {network::features::kOutOfBlinkCors,
-             blink::features::kServiceWorkerServicification} /* enabled */,
-            {network::features::kNetworkService} /* disabled */);
         break;
       case CorsTestMode::kInNetworkService:
         scoped_feature_list_.InitWithFeatures(
             {network::features::kOutOfBlinkCors,
-             blink::features::kServiceWorkerServicification,
              network::features::kNetworkService} /* enabled */,
             {} /*disabled */);
         break;
@@ -370,25 +360,22 @@ IN_PROC_BROWSER_TEST_P(CorsFileOriginBrowserTestWithDisableWebSecurity,
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* No test prefix */,
     CorsFileOriginBrowserTest,
     ::testing::Values(CorsTestMode::kInBlink,
-                      CorsTestMode::kInBrowserProcess,
                       CorsTestMode::kInNetworkService));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* No test prefix */,
     CorsFileOriginBrowserTestWithAllowFileAccessFromFiles,
     ::testing::Values(CorsTestMode::kInBlink,
-                      CorsTestMode::kInBrowserProcess,
                       CorsTestMode::kInNetworkService));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* No test prefix */,
     CorsFileOriginBrowserTestWithDisableWebSecurity,
     ::testing::Values(CorsTestMode::kInBlink,
-                      CorsTestMode::kInBrowserProcess,
                       CorsTestMode::kInNetworkService));
 
 }  // namespace

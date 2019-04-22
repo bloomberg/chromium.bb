@@ -226,7 +226,7 @@ void MirrorWindowController::UpdateWindow(
       host_info->ash_host->SetRootWindowTransformer(std::move(transformer));
       // The accelerated widget is created synchronously.
       DCHECK_NE(gfx::kNullAcceleratedWidget, host->GetAcceleratedWidget());
-      if (!base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+      if (!features::IsVizDisplayCompositorEnabled()) {
         mirror_window->SetBounds(host->window()->bounds());
         mirror_window->Show();
         if (reflector_) {
@@ -248,7 +248,7 @@ void MirrorWindowController::UpdateWindow(
       host->SetBoundsInPixels(display_info.bounds_in_native());
     }
 
-    if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+    if (features::IsVizDisplayCompositorEnabled()) {
       // |mirror_size| is the size of the mirror source in physical pixels.
       // The RootWindowTransformer corrects the scale of the mirrored display
       // and the location of input events.

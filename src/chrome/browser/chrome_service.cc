@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_service.h"
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
@@ -22,10 +23,7 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/launchable.h"
-#if defined(USE_OZONE)
 #include "services/ws/public/cpp/input_devices/input_device_controller.h"
-#endif
 #endif
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
@@ -42,12 +40,7 @@ class ChromeService::IOThreadContext : public service_manager::Service {
             {content::BrowserThread::UI});
 
 #if defined(OS_CHROMEOS)
-#if defined(USE_OZONE)
     input_device_controller_.AddInterface(&registry_, ui_task_runner);
-#endif
-    registry_.AddInterface(base::BindRepeating(&chromeos::Launchable::Bind,
-                                               base::Unretained(&launchable_)),
-                           ui_task_runner);
 #endif
     registry_.AddInterface(base::BindRepeating(
         &startup_metric_utils::StartupMetricHostImpl::Create));
@@ -117,10 +110,7 @@ class ChromeService::IOThreadContext : public service_manager::Service {
       registry_with_source_info_;
 
 #if defined(OS_CHROMEOS)
-  chromeos::Launchable launchable_;
-#if defined(USE_OZONE)
   ws::InputDeviceController input_device_controller_;
-#endif
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadContext);

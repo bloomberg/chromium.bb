@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/win/scoped_bstr.h"
+
 #include <stddef.h>
 
-#include "base/macros.h"
-#include "base/win/scoped_bstr.h"
+#include "base/stl_util.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -13,10 +16,10 @@ namespace win {
 
 namespace {
 
-static const wchar_t kTestString1[] = L"123";
-static const wchar_t kTestString2[] = L"456789";
-size_t test1_len = arraysize(kTestString1) - 1;
-size_t test2_len = arraysize(kTestString2) - 1;
+static const char16 kTestString1[] = STRING16_LITERAL("123");
+static const char16 kTestString2[] = STRING16_LITERAL("456789");
+size_t test1_len = size(kTestString1) - 1;
+size_t test2_len = size(kTestString2) - 1;
 
 void DumbBstrTests() {
   ScopedBstr b;
@@ -32,7 +35,7 @@ void DumbBstrTests() {
 }
 
 void GiveMeABstr(BSTR* ret) {
-  *ret = SysAllocString(kTestString1);
+  *ret = SysAllocString(as_wcstr(kTestString1));
 }
 
 void BasicBstrTests() {
@@ -44,10 +47,10 @@ void BasicBstrTests() {
   b1.Swap(b2);
   EXPECT_EQ(test1_len, b2.Length());
   EXPECT_EQ(0u, b1.Length());
-  EXPECT_EQ(0, lstrcmp(b2, kTestString1));
+  EXPECT_STREQ(b2, as_wcstr(kTestString1));
   BSTR tmp = b2.Release();
   EXPECT_TRUE(tmp != NULL);
-  EXPECT_EQ(0, lstrcmp(tmp, kTestString1));
+  EXPECT_STREQ(tmp, as_wcstr(kTestString1));
   EXPECT_TRUE(b2 == NULL);
   SysFreeString(tmp);
 
@@ -57,7 +60,7 @@ void BasicBstrTests() {
   EXPECT_TRUE(b2.AllocateBytes(100) != NULL);
   EXPECT_EQ(100u, b2.ByteLength());
   EXPECT_EQ(100 / sizeof(kTestString1[0]), b2.Length());
-  lstrcpy(static_cast<BSTR>(b2), kTestString1);
+  lstrcpy(static_cast<BSTR>(b2), as_wcstr(kTestString1));
   EXPECT_EQ(test1_len, static_cast<size_t>(lstrlen(b2)));
   EXPECT_EQ(100 / sizeof(kTestString1[0]), b2.Length());
   b2.SetByteLen(lstrlen(b2) * sizeof(kTestString2[0]));

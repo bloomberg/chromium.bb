@@ -9,7 +9,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/web/worker_content_settings_proxy.mojom.h"
+#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -34,6 +34,7 @@ class ServiceWorkerContentSettingsProxyImpl final
 
   // blink::mojom::WorkerContentSettingsProxy implementation
   void AllowIndexedDB(AllowIndexedDBCallback callback) override;
+  void AllowCacheStorage(AllowCacheStorageCallback callback) override;
   void RequestFileSystemAccessSync(
       RequestFileSystemAccessSyncCallback callback) override;
 

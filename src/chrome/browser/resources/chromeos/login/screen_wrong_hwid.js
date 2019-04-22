@@ -17,10 +17,10 @@ login.createScreen('WrongHWIDScreen', 'wrong-hwid', function() {
     },
 
     /**
-     * Updates state of login header so that necessary buttons are displayed.
+     * Updates state of login shelf so that necessary buttons are displayed.
      */
     onBeforeShow: function(data) {
-      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.WRONG_HWID_WARNING;
+      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.WRONG_HWID_WARNING);
     },
 
     /**

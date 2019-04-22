@@ -41,7 +41,7 @@ class NetworkActivityMontiorTest : public testing::Test {
 
 TEST_F(NetworkActivityMontiorTest, GetInstance) {
   NetworkActivityMonitor* monitor = NetworkActivityMonitor::GetInstance();
-  EXPECT_TRUE(monitor != NULL);
+  EXPECT_TRUE(monitor != nullptr);
   EXPECT_TRUE(monitor == NetworkActivityMonitor::GetInstance());
 }
 
@@ -107,17 +107,14 @@ TEST_F(NetworkActivityMontiorTest, Threading) {
   for (size_t i = 0; i < num_increments; ++i) {
     size_t thread_num = i % threads.size();
     threads[thread_num]->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&IncrementBytesReceived, bytes_received));
+        FROM_HERE, base::BindOnce(&IncrementBytesReceived, bytes_received));
+    threads[thread_num]->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&IncrementBytesSent, bytes_sent));
+    threads[thread_num]->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&VerifyBytesSentIsMultipleOf, bytes_sent));
     threads[thread_num]->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&IncrementBytesSent, bytes_sent));
-    threads[thread_num]->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&VerifyBytesSentIsMultipleOf, bytes_sent));
-    threads[thread_num]->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&VerifyBytesReceivedIsMultipleOf, bytes_received));
+        base::BindOnce(&VerifyBytesReceivedIsMultipleOf, bytes_received));
   }
 
   threads.clear();

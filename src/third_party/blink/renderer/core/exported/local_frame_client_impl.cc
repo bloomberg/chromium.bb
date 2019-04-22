@@ -66,7 +66,6 @@
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/exported/shared_worker_repository_client_impl.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
 #include "third_party/blink/renderer/core/exported/web_document_loader_impl.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
@@ -90,12 +89,12 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
-#include "third_party/blink/renderer/platform/plugins/plugin_data.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -119,10 +118,11 @@ Frame* ToCoreFrame(WebFrame* frame) {
 // parent or when the parent is a remote frame.
 LocalFrame* GetLocalParentFrame(WebLocalFrameImpl* frame) {
   WebFrame* parent = frame->Parent();
-  if (!parent || !parent->IsWebLocalFrame())
+  auto* parent_web_local_frame = DynamicTo<WebLocalFrameImpl>(parent);
+  if (!parent_web_local_frame)
     return nullptr;
 
-  return ToWebLocalFrameImpl(parent)->GetFrame();
+  return parent_web_local_frame->GetFrame();
 }
 
 // Returns whether the |local_frame| has been loaded using an MHTMLArchive. When
@@ -161,11 +161,14 @@ void ResetWheelAndTouchEventHandlerProperties(LocalFrame& frame) {
 
 }  // namespace
 
-LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameImpl* frame)
-    : web_frame_(frame) {}
-
-LocalFrameClientImpl* LocalFrameClientImpl::Create(WebLocalFrameImpl* frame) {
-  return MakeGarbageCollected<LocalFrameClientImpl>(frame);
+LocalFrameClientImpl::LocalFrameClientImpl(
+    WebLocalFrameImpl* frame,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle)
+    : web_frame_(frame) {
+  DCHECK(document_interface_broker_handle.is_valid());
+  document_interface_broker_.Bind(mojom::blink::DocumentInterfaceBrokerPtrInfo(
+      std::move(document_interface_broker_handle),
+      mojom::blink::DocumentInterfaceBroker::Version_));
 }
 
 LocalFrameClientImpl::~LocalFrameClientImpl() = default;
@@ -177,6 +180,11 @@ void LocalFrameClientImpl::Trace(blink::Visitor* visitor) {
 
 WebLocalFrameImpl* LocalFrameClientImpl::GetWebFrame() const {
   return web_frame_.Get();
+}
+
+WebContentCaptureClient* LocalFrameClientImpl::GetWebContentCaptureClient()
+    const {
+  return web_frame_->ContentCaptureClient();
 }
 
 void LocalFrameClientImpl::DidCreateNewDocument() {
@@ -412,18 +420,11 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
   }
 }
 
-void LocalFrameClientImpl::DispatchWillCommitProvisionalLoad() {
-  if (web_frame_->Client())
-    web_frame_->Client()->WillCommitProvisionalLoad();
-}
-
 void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
-    DocumentLoader* loader,
-    const ResourceRequest& request) {
+    DocumentLoader* loader) {
   if (web_frame_->Client()) {
-    WrappedResourceRequest wrapped_request(request);
     web_frame_->Client()->DidStartProvisionalLoad(
-        WebDocumentLoaderImpl::FromDocumentLoader(loader), wrapped_request);
+        WebDocumentLoaderImpl::FromDocumentLoader(loader));
   }
 }
 
@@ -442,15 +443,23 @@ void LocalFrameClientImpl::DispatchDidChangeIcons(IconType type) {
 void LocalFrameClientImpl::DispatchDidCommitLoad(
     HistoryItem* item,
     WebHistoryCommitType commit_type,
-    WebGlobalObjectReusePolicy global_object_reuse_policy) {
+    GlobalObjectReusePolicy global_object_reuse_policy) {
   if (!web_frame_->Parent()) {
     web_frame_->ViewImpl()->DidCommitLoad(commit_type == kWebStandardCommit,
                                           false);
   }
 
   if (web_frame_->Client()) {
+    mojom::blink::DocumentInterfaceBrokerRequest
+        document_interface_broker_request;
+    if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting) {
+      document_interface_broker_request =
+          mojo::MakeRequest(&document_interface_broker_);
+    }
+
     web_frame_->Client()->DidCommitProvisionalLoad(
-        WebHistoryItem(item), commit_type, global_object_reuse_policy);
+        WebHistoryItem(item), commit_type,
+        document_interface_broker_request.PassMessagePipe());
     if (web_frame_->GetFrame()->IsLocalRoot()) {
       // This update should be sent as soon as loading the new document begins
       // so that the browser and compositor could reset their states. However,
@@ -486,6 +495,7 @@ void LocalFrameClientImpl::DispatchDidChangeThemeColor() {
 
 void LocalFrameClientImpl::BeginNavigation(
     const ResourceRequest& request,
+    network::mojom::RequestContextFrameType frame_type,
     Document* origin_document,
     DocumentLoader* document_loader,
     WebNavigationType type,
@@ -500,12 +510,14 @@ void LocalFrameClientImpl::BeginNavigation(
     mojom::blink::BlobURLTokenPtr blob_url_token,
     base::TimeTicks input_start_time,
     const String& href_translate,
+    WebContentSecurityPolicyList initiator_csp,
     mojom::blink::NavigationInitiatorPtr navigation_initiator) {
   if (!web_frame_->Client())
     return;
 
   auto navigation_info = std::make_unique<WebNavigationInfo>();
   navigation_info->url_request = WrappedResourceRequest(request);
+  navigation_info->frame_type = frame_type;
   navigation_info->navigation_type = type;
   navigation_info->navigation_policy = static_cast<WebNavigationPolicy>(policy);
   navigation_info->has_transient_user_activation = has_transient_activation;
@@ -519,6 +531,7 @@ void LocalFrameClientImpl::BeginNavigation(
           : kWebContentSecurityPolicyDispositionDoNotCheck;
   navigation_info->blob_url_token = blob_url_token.PassInterface().PassHandle();
   navigation_info->input_start = input_start_time;
+  navigation_info->initiator_csp = std::move(initiator_csp);
   navigation_info->navigation_initiator_handle =
       navigation_initiator.PassInterface().PassHandle();
 
@@ -545,10 +558,20 @@ void LocalFrameClientImpl::BeginNavigation(
   if (form)
     navigation_info->form = WebFormElement(form);
 
-  navigation_info->is_opener_navigation =
-      origin_document && origin_document->GetFrame() &&
-      origin_document->GetFrame()->Client()->Opener() ==
-          ToCoreFrame(web_frame_);
+  LocalFrame* frame = origin_document ? origin_document->GetFrame() : nullptr;
+  if (frame) {
+    navigation_info->is_opener_navigation =
+        frame->Client()->Opener() == ToCoreFrame(web_frame_);
+    navigation_info->initiator_frame_has_download_sandbox_flag =
+        frame->GetSecurityContext() &&
+        frame->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kDownloads);
+    navigation_info->initiator_frame_is_ad = frame->IsAdSubframe();
+  }
+
+  navigation_info
+      ->blocking_downloads_in_sandbox_without_user_activation_enabled =
+      RuntimeEnabledFeatures::
+          BlockingDownloadsInSandboxWithoutUserActivationEnabled();
 
   // The frame has navigated either by itself or by the action of the
   // |origin_document| when it is defined. |source_location| represents the
@@ -630,8 +653,8 @@ void LocalFrameClientImpl::LoadErrorPage(int reason) {
 
 bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
   WebViewImpl* webview = web_frame_->ViewImpl();
-  if (!webview->Client())
-    return false;
+  DCHECK(webview->Client());
+  DCHECK(web_frame_->Client());
 
   DCHECK(offset);
   if (offset > webview->Client()->HistoryForwardListCount())
@@ -641,7 +664,7 @@ bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
 
   bool has_user_gesture =
       LocalFrame::HasTransientUserActivation(web_frame_->GetFrame());
-  webview->Client()->NavigateBackForwardSoon(offset, has_user_gesture);
+  web_frame_->Client()->NavigateBackForwardSoon(offset, has_user_gesture);
   return true;
 }
 
@@ -683,12 +706,6 @@ void LocalFrameClientImpl::DidRunContentWithCertificateErrors() {
     web_frame_->Client()->DidRunContentWithCertificateErrors();
 }
 
-void LocalFrameClientImpl::ReportLegacySymantecCert(const KURL& url,
-                                                    bool did_fail) {
-  if (web_frame_->Client())
-    web_frame_->Client()->ReportLegacySymantecCert(url, did_fail);
-}
-
 void LocalFrameClientImpl::ReportLegacyTLSVersion(const KURL& url) {
   if (web_frame_->Client())
     web_frame_->Client()->ReportLegacyTLSVersion(url);
@@ -697,6 +714,19 @@ void LocalFrameClientImpl::ReportLegacyTLSVersion(const KURL& url) {
 void LocalFrameClientImpl::DidChangePerformanceTiming() {
   if (web_frame_->Client())
     web_frame_->Client()->DidChangePerformanceTiming();
+}
+
+void LocalFrameClientImpl::DidChangeCpuTiming(base::TimeDelta time) {
+  if (web_frame_->Client())
+    web_frame_->Client()->DidChangeCpuTiming(time);
+}
+
+void LocalFrameClientImpl::DidChangeActiveSchedulerTrackedFeatures(
+    uint64_t features_mask) {
+  if (web_frame_->Client()) {
+    web_frame_->Client()->DidChangeActiveSchedulerTrackedFeatures(
+        features_mask);
+  }
 }
 
 void LocalFrameClientImpl::DidObserveLoadingBehavior(
@@ -724,6 +754,12 @@ void LocalFrameClientImpl::DidObserveLayoutJank(double jank_fraction) {
     client->DidObserveLayoutJank(jank_fraction);
 }
 
+void LocalFrameClientImpl::DidObserveLazyLoadBehavior(
+    WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {
+  if (WebLocalFrameClient* client = web_frame_->Client())
+    client->DidObserveLazyLoadBehavior(lazy_load_behavior);
+}
+
 bool LocalFrameClientImpl::ShouldTrackUseCounter(const KURL& url) {
   if (web_frame_->Client())
     return web_frame_->Client()->ShouldTrackUseCounter(url);
@@ -739,22 +775,21 @@ void LocalFrameClientImpl::SelectorMatchChanged(
   }
 }
 
+void LocalFrameClientImpl::VisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {
+  if (WebLocalFrameClient* client = web_frame_->Client())
+    client->VisibilityChanged(visibility);
+}
+
 DocumentLoader* LocalFrameClientImpl::CreateDocumentLoader(
     LocalFrame* frame,
-    const ResourceRequest& request,
-    const SubstituteData& data,
-    ClientRedirectPolicy client_redirect_policy,
-    const base::UnguessableToken& devtools_navigation_token,
-    WebFrameLoadType load_type,
     WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(frame);
   WebDocumentLoaderImpl* document_loader =
-      MakeGarbageCollected<WebDocumentLoaderImpl>(
-          frame, request, data, client_redirect_policy,
-          devtools_navigation_token, load_type, navigation_type,
-          std::move(navigation_params));
+      MakeGarbageCollected<WebDocumentLoaderImpl>(frame, navigation_type,
+                                                  std::move(navigation_params));
   document_loader->SetExtraData(std::move(extra_data));
   if (web_frame_->Client())
     web_frame_->Client()->DidCreateDocumentLoader(document_loader);
@@ -779,6 +814,13 @@ String LocalFrameClientImpl::UserAgent() {
   return user_agent_;
 }
 
+blink::UserAgentMetadata LocalFrameClientImpl::UserAgentMetadata() {
+  // TODO(mkwst): Support devtools override.
+  if (user_agent_metadata_.brand.empty())
+    user_agent_metadata_ = Platform::Current()->UserAgentMetadata();
+  return user_agent_metadata_;
+}
+
 String LocalFrameClientImpl::DoNotTrackValue() {
   WebString do_not_track = web_frame_->Client()->DoNotTrackValue();
   if (!do_not_track.IsEmpty())
@@ -796,6 +838,17 @@ LocalFrame* LocalFrameClientImpl::CreateFrame(
     const AtomicString& name,
     HTMLFrameOwnerElement* owner_element) {
   return web_frame_->CreateChildFrame(name, owner_element);
+}
+
+std::pair<RemoteFrame*, base::UnguessableToken>
+LocalFrameClientImpl::CreatePortal(
+    HTMLPortalElement* portal,
+    mojom::blink::PortalAssociatedRequest request) {
+  return web_frame_->CreatePortal(portal, std::move(request));
+}
+
+RemoteFrame* LocalFrameClientImpl::AdoptPortal(HTMLPortalElement* portal) {
+  return web_frame_->AdoptPortal(portal);
 }
 
 WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(
@@ -820,8 +873,8 @@ WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(
     return nullptr;
 
   // The container takes ownership of the WebPlugin.
-  WebPluginContainerImpl* container =
-      WebPluginContainerImpl::Create(element, web_plugin);
+  auto* container =
+      MakeGarbageCollected<WebPluginContainerImpl>(element, web_plugin);
 
   if (!web_plugin->Initialize(container))
     return nullptr;
@@ -886,17 +939,15 @@ void LocalFrameClientImpl::DidEnforceInsecureNavigationsSet(
 
 void LocalFrameClientImpl::DidChangeFramePolicy(
     Frame* child_frame,
-    SandboxFlags flags,
-    const ParsedFeaturePolicy& container_policy) {
+    const FramePolicy& frame_policy) {
   if (!web_frame_->Client())
     return;
-  web_frame_->Client()->DidChangeFramePolicy(
-      WebFrame::FromFrame(child_frame), static_cast<WebSandboxFlags>(flags),
-      container_policy);
+  web_frame_->Client()->DidChangeFramePolicy(WebFrame::FromFrame(child_frame),
+                                             frame_policy);
 }
 
 void LocalFrameClientImpl::DidSetFramePolicyHeaders(
-    SandboxFlags sandbox_flags,
+    WebSandboxFlags sandbox_flags,
     const ParsedFeaturePolicy& parsed_header) {
   if (web_frame_->Client()) {
     web_frame_->Client()->DidSetFramePolicyHeaders(
@@ -946,17 +997,14 @@ WebContentSettingsClient* LocalFrameClientImpl::GetContentSettingsClient() {
   return web_frame_->GetContentSettingsClient();
 }
 
-SharedWorkerRepositoryClient*
-LocalFrameClientImpl::GetSharedWorkerRepositoryClient() {
-  return web_frame_->SharedWorkerRepositoryClient();
-}
-
 std::unique_ptr<WebApplicationCacheHost>
 LocalFrameClientImpl::CreateApplicationCacheHost(
+    DocumentLoader* loader,
     WebApplicationCacheHostClient* client) {
   if (!web_frame_->Client())
     return nullptr;
-  return web_frame_->Client()->CreateApplicationCacheHost(client);
+  return web_frame_->Client()->CreateApplicationCacheHost(
+      WebDocumentLoaderImpl::FromDocumentLoader(loader), client);
 }
 
 void LocalFrameClientImpl::DispatchDidChangeManifest() {
@@ -1057,6 +1105,36 @@ LocalFrameClientImpl::GetInterfaceProvider() {
   return web_frame_->Client()->GetInterfaceProvider();
 }
 
+mojom::blink::DocumentInterfaceBroker*
+LocalFrameClientImpl::GetDocumentInterfaceBroker() {
+  DCHECK(document_interface_broker_.is_bound());
+  return document_interface_broker_.get();
+}
+
+void LocalFrameClientImpl::BindDocumentInterfaceBroker(
+    mojo::ScopedMessagePipeHandle js_handle) {
+  document_interface_broker_bindings_.AddBinding(
+      this, mojom::blink::DocumentInterfaceBrokerRequest(std::move(js_handle)));
+}
+
+mojo::ScopedMessagePipeHandle
+LocalFrameClientImpl::SetDocumentInterfaceBrokerForTesting(
+    mojo::ScopedMessagePipeHandle blink_handle) {
+  // Ensure all pending calls get dispatched before the implementation swap
+  document_interface_broker_bindings_.FlushForTesting();
+
+  mojom::blink::DocumentInterfaceBrokerPtr test_broker(
+      mojom::blink::DocumentInterfaceBrokerPtrInfo(
+          std::move(blink_handle),
+          mojom::blink::DocumentInterfaceBroker::Version_));
+
+  mojo::ScopedMessagePipeHandle real_handle =
+      document_interface_broker_.PassInterface().PassHandle();
+  document_interface_broker_ = std::move(test_broker);
+
+  return real_handle;
+}
+
 AssociatedInterfaceProvider*
 LocalFrameClientImpl::GetRemoteNavigationAssociatedInterfaces() {
   return web_frame_->Client()->GetRemoteNavigationAssociatedInterfaces();
@@ -1121,18 +1199,35 @@ void LocalFrameClientImpl::FrameRectsChanged(const IntRect& frame_rect) {
   web_frame_->Client()->FrameRectsChanged(frame_rect);
 }
 
-bool LocalFrameClientImpl::IsPluginHandledExternally(
+bool LocalFrameClientImpl::MaybeCreateMimeHandlerView(
     HTMLPlugInElement& plugin_element,
     const KURL& resource_url,
     const String& suggesed_mime_type) {
-  return web_frame_->Client()->IsPluginHandledExternally(
+  if (!RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled())
+    return false;
+
+  return web_frame_->Client()->MaybeCreateMimeHandlerView(
       &plugin_element, resource_url, suggesed_mime_type);
+}
+
+v8::Local<v8::Object> LocalFrameClientImpl::GetScriptableObject(
+    HTMLPlugInElement& plugin_element,
+    v8::Isolate* isolate) {
+  return web_frame_->Client()->GetScriptableObject(&plugin_element, isolate);
 }
 
 scoped_refptr<WebWorkerFetchContext>
 LocalFrameClientImpl::CreateWorkerFetchContext() {
   DCHECK(web_frame_->Client());
   return web_frame_->Client()->CreateWorkerFetchContext();
+}
+
+scoped_refptr<WebWorkerFetchContext>
+LocalFrameClientImpl::CreateWorkerFetchContextForPlzDedicatedWorker(
+    WebDedicatedWorkerHostFactoryClient* factory_client) {
+  DCHECK(web_frame_->Client());
+  return web_frame_->Client()->CreateWorkerFetchContextForPlzDedicatedWorker(
+      factory_client);
 }
 
 std::unique_ptr<WebContentSettingsClient>

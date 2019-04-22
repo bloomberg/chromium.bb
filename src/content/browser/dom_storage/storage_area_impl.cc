@@ -84,14 +84,21 @@ StorageAreaImpl::StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
       commit_rate_limiter_(options.max_commits_per_hour,
                            base::TimeDelta::FromHours(1)),
       weak_ptr_factory_(this) {
-  bindings_.set_connection_error_handler(
-      base::Bind(&StorageAreaImpl::OnConnectionError, base::Unretained(this)));
+  bindings_.set_connection_error_handler(base::BindRepeating(
+      &StorageAreaImpl::OnConnectionError, weak_ptr_factory_.GetWeakPtr()));
 }
 
 StorageAreaImpl::~StorageAreaImpl() {
   DCHECK(!has_pending_load_tasks());
   if (commit_batch_)
     CommitChanges();
+}
+
+void StorageAreaImpl::InitializeAsEmpty() {
+  DCHECK_EQ(map_state_, MapState::UNLOADED);
+  map_state_ = MapState::LOADING_FROM_DATABASE;
+  OnMapLoaded(leveldb::mojom::DatabaseError::OK,
+              std::vector<leveldb::mojom::KeyValuePtr>());
 }
 
 void StorageAreaImpl::Bind(blink::mojom::StorageAreaRequest request) {
@@ -122,7 +129,11 @@ std::unique_ptr<StorageAreaImpl> StorageAreaImpl::ForkToNewPrefix(
     const Options& options) {
   auto forked_area = std::make_unique<StorageAreaImpl>(
       database_, std::move(new_prefix), delegate, options);
-
+  // If the source map is empty, don't bother hitting disk.
+  if (IsMapLoadedAndEmpty()) {
+    forked_area->InitializeAsEmpty();
+    return forked_area;
+  }
   forked_area->map_state_ = MapState::LOADING_FROM_FORK;
 
   if (IsMapLoaded()) {
@@ -146,7 +157,7 @@ void StorageAreaImpl::EnableAggressiveCommitDelay() {
 void StorageAreaImpl::ScheduleImmediateCommit() {
   if (!on_load_complete_tasks_.empty()) {
     LoadMap(base::BindOnce(&StorageAreaImpl::ScheduleImmediateCommit,
-                           base::Unretained(this)));
+                           weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -240,9 +251,9 @@ void StorageAreaImpl::Put(
     const std::string& source,
     PutCallback callback) {
   if (!IsMapLoaded() || IsMapUpgradeNeeded()) {
-    LoadMap(base::BindOnce(&StorageAreaImpl::Put, base::Unretained(this), key,
-                           value, client_old_value, source,
-                           std::move(callback)));
+    LoadMap(base::BindOnce(&StorageAreaImpl::Put,
+                           weak_ptr_factory_.GetWeakPtr(), key, value,
+                           client_old_value, source, std::move(callback)));
     return;
   }
 
@@ -357,8 +368,9 @@ void StorageAreaImpl::Delete(
   // |client_old_value| can race. Thus any changes require checking for an
   // upgrade.
   if (!IsMapLoaded() || IsMapUpgradeNeeded()) {
-    LoadMap(base::BindOnce(&StorageAreaImpl::Delete, base::Unretained(this),
-                           key, client_old_value, source, std::move(callback)));
+    LoadMap(base::BindOnce(&StorageAreaImpl::Delete,
+                           weak_ptr_factory_.GetWeakPtr(), key,
+                           client_old_value, source, std::move(callback)));
     return;
   }
 
@@ -423,8 +435,9 @@ void StorageAreaImpl::DeleteAll(const std::string& source,
   // Don't check if a map upgrade is needed here and instead just create an
   // empty map ourself.
   if (!IsMapLoaded()) {
-    LoadMap(base::BindOnce(&StorageAreaImpl::DeleteAll, base::Unretained(this),
-                           source, std::move(callback)));
+    LoadMap(base::BindOnce(&StorageAreaImpl::DeleteAll,
+                           weak_ptr_factory_.GetWeakPtr(), source,
+                           std::move(callback)));
     return;
   }
 
@@ -468,7 +481,8 @@ void StorageAreaImpl::Get(const std::vector<uint8_t>& key,
     return;
   }
   if (!IsMapLoaded() || IsMapUpgradeNeeded()) {
-    LoadMap(base::BindOnce(&StorageAreaImpl::Get, base::Unretained(this), key,
+    LoadMap(base::BindOnce(&StorageAreaImpl::Get,
+                           weak_ptr_factory_.GetWeakPtr(), key,
                            std::move(callback)));
     return;
   }
@@ -484,9 +498,21 @@ void StorageAreaImpl::Get(const std::vector<uint8_t>& key,
 void StorageAreaImpl::GetAll(
     blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo complete_callback,
     GetAllCallback callback) {
+  // If the map is keys-only and empty, then no loading is necessary.
+  if (IsMapLoadedAndEmpty()) {
+    std::move(callback).Run(true, std::vector<blink::mojom::KeyValuePtr>());
+    if (complete_callback.is_valid()) {
+      blink::mojom::StorageAreaGetAllCallbackAssociatedPtr complete_ptr;
+      complete_ptr.Bind(std::move(complete_callback));
+      complete_ptr->Complete(true);
+    }
+    return;
+  }
+
   // The map must always be loaded for the KEYS_ONLY_WHEN_POSSIBLE mode.
   if (map_state_ != MapState::LOADED_KEYS_AND_VALUES) {
-    LoadMap(base::BindOnce(&StorageAreaImpl::GetAll, base::Unretained(this),
+    LoadMap(base::BindOnce(&StorageAreaImpl::GetAll,
+                           weak_ptr_factory_.GetWeakPtr(),
                            std::move(complete_callback), std::move(callback)));
     return;
   }
@@ -637,6 +663,7 @@ void StorageAreaImpl::OnGotMigrationData(std::unique_ptr<ValueMap> data) {
   keys_values_map_ = data ? std::move(*data) : ValueMap();
   map_state_ = MapState::LOADED_KEYS_AND_VALUES;
   CalculateStorageAndMemoryUsed();
+  delegate_->OnMapLoaded(leveldb::mojom::DatabaseError::OK);
 
   if (database_ && !empty()) {
     CreateCommitBatchIfNeeded();
@@ -645,7 +672,6 @@ void StorageAreaImpl::OnGotMigrationData(std::unique_ptr<ValueMap> data) {
       commit_batch_->changed_keys.insert(it.first);
     CommitChanges();
   }
-
   OnLoadComplete();
 }
 

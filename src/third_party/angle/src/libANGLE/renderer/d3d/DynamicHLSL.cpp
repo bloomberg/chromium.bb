@@ -28,27 +28,6 @@ namespace rx
 namespace
 {
 
-// This class needs to match OutputHLSL::decorate
-class DecorateVariable final : angle::NonCopyable
-{
-  public:
-    explicit DecorateVariable(const std::string &str) : mName(str) {}
-    const std::string &getName() const { return mName; }
-
-  private:
-    const std::string &mName;
-};
-
-std::ostream &operator<<(std::ostream &o, const DecorateVariable &dv)
-{
-    if (dv.getName().compare(0, 3, "gl_") != 0)
-    {
-        o << "_";
-    }
-    o << dv.getName();
-    return o;
-}
-
 const char *HLSLComponentTypeString(GLenum componentType)
 {
     switch (componentType)
@@ -265,6 +244,12 @@ std::string DynamicHLSL::generateVertexShaderForInputLayout(
                 initStream << "input." << DecorateVariable(shaderAttribute.name);
             }
 
+            if (shaderAttribute.name == "gl_VertexID")
+            {
+                // dx_VertexID contains the firstVertex offset
+                initStream << " + dx_VertexID";
+            }
+
             initStream << ";\n";
 
             inputIndex += VariableRowCount(TransposeMatrixType(shaderAttribute.type));
@@ -362,6 +347,25 @@ std::string DynamicHLSL::generatePixelShaderForOutputSignature(
     ASSERT(success);
 
     return pixelHLSL;
+}
+
+std::string DynamicHLSL::generateComputeShaderForImage2DBindSignature(
+    const d3d::Context *context,
+    ProgramD3D &programD3D,
+    const gl::ProgramState &programData,
+    std::vector<sh::Uniform> &image2DUniforms,
+    const gl::ImageUnitTextureTypeMap &image2DBindLayout) const
+{
+    std::string computeHLSL(
+        programData.getAttachedShader(ShaderType::Compute)->getTranslatedSource());
+
+    if (image2DUniforms.empty())
+    {
+        return computeHLSL;
+    }
+
+    return GenerateComputeShaderForImage2DBindSignature(context, programD3D, programData,
+                                                        image2DUniforms, image2DBindLayout);
 }
 
 void DynamicHLSL::generateVaryingLinkHLSL(const VaryingPacking &varyingPacking,
@@ -1178,7 +1182,7 @@ void DynamicHLSL::GenerateAttributeConversionHLSL(angle::FormatID vertexFormatID
     outStream << "input." << DecorateVariable(shaderAttrib.name);
 }
 
-void DynamicHLSL::getPixelShaderOutputKey(const gl::ContextState &data,
+void DynamicHLSL::getPixelShaderOutputKey(const gl::State &data,
                                           const gl::ProgramState &programData,
                                           const ProgramD3DMetadata &metadata,
                                           std::vector<PixelShaderOutputVariable> *outPixelShaderKey)

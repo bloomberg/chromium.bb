@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 
 namespace base {
@@ -49,6 +50,8 @@ class LoginPolicyTestBase : public chromeos::OobeBaseTest {
   static const char kAccountPassword[];
   static const char kAccountId[];
   static const char kEmptyServices[];
+
+  chromeos::FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
  private:
   void SetUpGaiaServerWithAccessTokens();

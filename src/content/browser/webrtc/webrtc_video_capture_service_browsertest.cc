@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -21,12 +22,17 @@
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/capture/video/shared_memory_handle_provider.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
+#include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
+#include "services/video_capture/public/mojom/producer.mojom.h"
+#include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
+#include "services/video_capture/public/mojom/virtual_device.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/compositor/compositor.h"

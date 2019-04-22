@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/loader/source_stream_to_data_pipe.h"
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
 #include "net/filter/mock_source_stream.h"
@@ -114,7 +115,7 @@ class SourceStreamToDataPipeTest
   base::Optional<int> callback_result_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SourceStreamToDataPipeTests,
     SourceStreamToDataPipeTest,
     ::testing::Values(

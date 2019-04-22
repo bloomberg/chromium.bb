@@ -5,9 +5,9 @@
 import("//build/buildflag_header.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//components/vector_icons/vector_icons.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")
-import("//components/vector_icons/vector_icons.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -22,21 +22,27 @@ aggregate_vector_icons("omnibox_vector_icons") {
   icon_directory = "vector_icons"
 
   icons = [
+    "answer_calculator.icon",
     "answer_currency.icon",
     "answer_default.icon",
     "answer_dictionary.icon",
     "answer_finance.icon",
     "answer_sunrise.icon",
+    "answer_translation.icon",
     "answer_when_is.icon",
     "blank.icon",
     "bookmark.icon",
+    "calculator.icon",
     "clear.icon",
+    "clock.icon",
     "drive_docs.icon",
     "drive_forms.icon",
+    "drive_image.icon",
     "drive_logo.icon",
+    "drive_pdf.icon",
     "drive_sheets.icon",
     "drive_slides.icon",
-    "calculator.icon",
+    "drive_video.icon",
     "extension_app.icon",
     "find_in_page.icon",
     "http.icon",
@@ -48,6 +54,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "open_in_new.icon",
     "page.icon",
     "pedal.icon",
+    "plus.icon",
     "product.icon",
     "star_active.icon",
     "star.icon",
@@ -79,6 +86,8 @@ jumbo_static_library("browser") {
     "autocomplete_input.h",
     "autocomplete_match.cc",
     "autocomplete_match.h",
+    "autocomplete_match_classification.cc",
+    "autocomplete_match_classification.h",
     "autocomplete_match_type.cc",
     "autocomplete_match_type.h",
     "autocomplete_provider.cc",
@@ -94,8 +103,8 @@ jumbo_static_library("browser") {
     "bookmark_provider.h",
     "builtin_provider.cc",
     "builtin_provider.h",
-    "clipboard_url_provider.cc",
-    "clipboard_url_provider.h",
+    "clipboard_provider.cc",
+    "clipboard_provider.h",
     "contextual_suggestions_service.cc",
     "contextual_suggestions_service.h",
     "document_provider.cc",
@@ -130,6 +139,8 @@ jumbo_static_library("browser") {
     "omnibox_client.h",
     "omnibox_controller.cc",
     "omnibox_controller.h",
+    "omnibox_controller_emitter.cc",
+    "omnibox_controller_emitter.h",
     "omnibox_edit_controller.cc",
     "omnibox_edit_controller.h",
     "omnibox_edit_model.cc",
@@ -145,6 +156,7 @@ jumbo_static_library("browser") {
     "omnibox_navigation_observer.h",
     "omnibox_pedal.cc",
     "omnibox_pedal.h",
+    "omnibox_pedal_concepts.h",
     "omnibox_pedal_implementations.cc",
     "omnibox_pedal_implementations.h",
     "omnibox_pedal_provider.cc",
@@ -156,8 +168,8 @@ jumbo_static_library("browser") {
     "omnibox_pref_names.h",
     "omnibox_view.cc",
     "omnibox_view.h",
-    "query_in_omnibox.cc",
-    "query_in_omnibox.h",
+    "on_device_head_serving.cc",
+    "on_device_head_serving.h",
     "scored_history_match.cc",
     "scored_history_match.h",
     "search_provider.cc",
@@ -228,6 +240,8 @@ jumbo_static_library("browser") {
     "//skia",
     "//sql",
     "//third_party/protobuf:protobuf_lite",
+    "//third_party/re2",
+    "//third_party/zlib/google:compression_utils",
     "//ui/base",
     "//ui/gfx",
   ]
@@ -239,6 +253,10 @@ jumbo_static_library("browser") {
   if (is_android) {
     deps += [ ":jni_headers" ]
   }
+
+  if (!is_ios) {
+    deps += [ "//components/keyed_service/content" ]
+  }
 }
 
 if (is_android) {
@@ -249,7 +267,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
-      "//third_party/android_deps:android_support_compat_java",
+      "//third_party/android_deps:com_android_support_support_compat_java",
     ]
 
     srcjar_deps = [ ":browser_java_enums_srcjar" ]
@@ -343,6 +361,7 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/omnibox/Shortcuts.v0.sql",
     "//components/test/data/omnibox/in_memory_url_index_test.sql",
     "//components/test/data/omnibox/in_memory_url_index_test_limited.sql",
+    "//components/test/data/omnibox/on_device_head_test_model.bin",
   ]
   outputs = [
     "{{bundle_resources_dir}}/" +
@@ -362,7 +381,7 @@ source_set("unit_tests") {
     "base_search_provider_unittest.cc",
     "bookmark_provider_unittest.cc",
     "builtin_provider_unittest.cc",
-    "clipboard_url_provider_unittest.cc",
+    "clipboard_provider_unittest.cc",
     "contextual_suggestions_service_unittest.cc",
     "document_provider_unittest.cc",
     "favicon_cache_unittest.cc",
@@ -376,11 +395,12 @@ source_set("unit_tests") {
     "omnibox_controller_unittest.cc",
     "omnibox_edit_model_unittest.cc",
     "omnibox_field_trial_unittest.cc",
+    "omnibox_pedal_implementations_unittest.cc",
     "omnibox_pedal_provider_unittest.cc",
     "omnibox_pedal_unittest.cc",
     "omnibox_popup_model_unittest.cc",
     "omnibox_view_unittest.cc",
-    "query_in_omnibox_unittest.cc",
+    "on_device_head_serving_unittest.cc",
     "scored_history_match_unittest.cc",
     "search_suggestion_parser_unittest.cc",
     "shortcuts_backend_unittest.cc",
@@ -417,6 +437,7 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base:test_support",
+    "//ui/gfx:test_support",
     "//url",
   ]
 }

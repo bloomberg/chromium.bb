@@ -17,6 +17,14 @@
     name2
   };
 
+  enum EnumTypeWithNoDocValue {
+    name1,
+    // comment2
+    [nodoc] name2,
+    // comment3
+    name3
+  };
+
   dictionary MyType1 {
     // This comment tests "double-quotes".
     [legalValues=(1,2)] long x;

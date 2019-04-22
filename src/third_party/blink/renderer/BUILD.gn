@@ -35,10 +35,20 @@ config("features") {
 # inside_blink -----------------------------------------------------------------
 
 config("inside_blink") {
+  cflags = []
   defines = [
     "BLINK_IMPLEMENTATION=1",
     "INSIDE_BLINK",
   ]
+  if (is_clang) {
+    cflags += [
+      "-Wconversion",
+      "-Wno-float-conversion",
+      "-Wno-sign-conversion",
+      "-Wno-implicit-float-conversion",
+      "-Wno-implicit-int-conversion",
+    ]
+  }
 }
 
 # blink_pch --------------------------------------------------------------------
@@ -93,22 +103,8 @@ config("config") {
   }
 
   if (is_clang && blink_gc_plugin && clang_use_chrome_plugins) {
-    # On Windows, the plugin is built directly into clang, so there's
-    # no need to load it dynamically.
-    if (host_os != "win") {
-      _blink_gc_plugin_dll_extension = "so"
-      if (host_os == "mac") {
-        _blink_gc_plugin_dll_extension = "dylib"
-      }
-      cflags += [
-        "-Xclang",
-        "-load",
-        "-Xclang",
-        rebase_path(
-            "${clang_base_path}/lib/libBlinkGCPlugin.${_blink_gc_plugin_dll_extension}",
-            root_build_dir),
-      ]
-    }
+    # The plugin is built directly into clang, so there's no need to load it
+    # dynamically.
     cflags += [
       "-Xclang",
       "-add-plugin",

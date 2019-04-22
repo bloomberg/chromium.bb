@@ -5,8 +5,6 @@
 source_set("itunes_urls") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "itunes_urls_flag.h",
-    "itunes_urls_flag.mm",
     "itunes_urls_handler_tab_helper.h",
     "itunes_urls_handler_tab_helper.mm",
   ]

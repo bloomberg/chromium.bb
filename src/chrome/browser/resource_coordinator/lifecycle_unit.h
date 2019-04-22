@@ -14,7 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/decision_details.h"
-#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-forward.h"
 #include "content/public/browser/visibility.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -60,7 +60,7 @@ class LifecycleUnit {
     // Abstract importance score calculated by the Tab Ranker where a higher
     // score suggests the tab is more likely to be reactivated.
     // kMaxScore if the LifecycleUnit is currently focused.
-    base::Optional<float> score;
+    float score = kMaxScore;
 
     // Last time at which the LifecycleUnit was focused. base::TimeTicks::Max()
     // if the LifecycleUnit is currently focused.
@@ -139,12 +139,6 @@ class LifecycleUnit {
   // accurately for a group of LifecycleUnits that live in the same process(es)
   // than for individual LifecycleUnits. https://crbug.com/775644
   virtual int GetEstimatedMemoryFreedOnDiscardKB() const = 0;
-
-  // Whether memory can be purged in the process hosting this LifecycleUnit.
-  //
-  // TODO(fdoray): This method should be on a class that represents a process,
-  // not on a LifecycleUnit. https://crbug.com/775644
-  virtual bool CanPurge() const = 0;
 
   // Returns true if this LifecycleUnit can be frozen. Full details regarding
   // the policy decision are recorded in |decision_details|, for logging.

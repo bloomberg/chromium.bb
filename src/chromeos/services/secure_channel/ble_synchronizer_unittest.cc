@@ -17,7 +17,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
-#include "components/cryptauth/data_with_timestamp.h"
+#include "chromeos/services/secure_channel/data_with_timestamp.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_advertisement.h"
@@ -450,7 +450,7 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
         new StopDiscoverySessionArgs(callback, error_callback)));
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   const scoped_refptr<FakeBluetoothAdvertisement> fake_advertisement_;
   const std::unique_ptr<device::MockBluetoothDiscoverySession>
       fake_discovery_session_;

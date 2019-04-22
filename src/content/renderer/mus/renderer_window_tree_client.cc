@@ -18,6 +18,7 @@
 #include "content/renderer/mus/mus_embedded_frame.h"
 #include "content/renderer/mus/mus_embedded_frame_delegate.h"
 #include "content/renderer/render_frame_proxy.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/base/ui_base_features.h"
 
 namespace content {
@@ -139,8 +140,6 @@ void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
   params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
-  params.local_surface_id_provider =
-      std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
   if (features::IsVizHitTestingDrawQuadEnabled()) {
     params.hit_test_data_provider =
@@ -178,7 +177,8 @@ void RendererWindowTreeClient::OnEmbedFromToken(
     const base::UnguessableToken& token,
     ws::mojom::WindowDataPtr root,
     int64_t display_id,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {
   // Renderers don't use ScheduleEmbedForExistingClient(), so this path should
   // never be hit.
   NOTREACHED();
@@ -196,7 +196,8 @@ void RendererWindowTreeClient::OnEmbed(
     int64_t display_id,
     ws::Id focused_window_id,
     bool drawn,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {
   const bool is_reembed = tree_.is_bound();
   if (is_reembed) {
     for (MusEmbeddedFrame* frame : embedded_frames_)
@@ -257,19 +258,19 @@ void RendererWindowTreeClient::OnTopLevelCreated(
     ws::mojom::WindowDataPtr data,
     int64_t display_id,
     bool drawn,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   NOTREACHED();
 }
 
 void RendererWindowTreeClient::OnWindowBoundsChanged(
     ws::Id window_id,
-    const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {}
+    ui::WindowShowState state,
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {}
 
 void RendererWindowTreeClient::OnWindowTransformChanged(
     ws::Id window_id,
-    const gfx::Transform& old_transform,
     const gfx::Transform& new_transform) {}
 
 void RendererWindowTreeClient::OnTransientWindowAdded(
@@ -297,10 +298,6 @@ void RendererWindowTreeClient::OnWindowDeleted(ws::Id window_id) {
 
 void RendererWindowTreeClient::OnWindowVisibilityChanged(ws::Id window_id,
                                                          bool visible) {}
-
-void RendererWindowTreeClient::OnWindowOpacityChanged(ws::Id window_id,
-                                                      float old_opacity,
-                                                      float new_opacity) {}
 
 void RendererWindowTreeClient::OnWindowDisplayChanged(ws::Id window_id,
                                                       int64_t display_id) {}
@@ -330,31 +327,34 @@ void RendererWindowTreeClient::OnObservedInputEvent(
 void RendererWindowTreeClient::OnWindowFocused(ws::Id focused_window_id) {}
 
 void RendererWindowTreeClient::OnWindowCursorChanged(ws::Id window_id,
-                                                     ui::CursorData cursor) {}
+                                                     ui::Cursor cursor) {}
 
 void RendererWindowTreeClient::OnDragDropStart(
     const base::flat_map<std::string, std::vector<uint8_t>>& mime_data) {}
 
 void RendererWindowTreeClient::OnDragEnter(ws::Id window_id,
                                            uint32_t event_flags,
-                                           const gfx::Point& position,
+                                           const gfx::PointF& location_in_root,
+                                           const gfx::PointF& location,
                                            uint32_t effect_bitmask,
                                            OnDragEnterCallback callback) {}
 
 void RendererWindowTreeClient::OnDragOver(ws::Id window_id,
                                           uint32_t event_flags,
-                                          const gfx::Point& position,
+                                          const gfx::PointF& location_in_root,
+                                          const gfx::PointF& location,
                                           uint32_t effect_bitmask,
                                           OnDragOverCallback callback) {}
 
 void RendererWindowTreeClient::OnDragLeave(ws::Id window_id) {}
 
-void RendererWindowTreeClient::OnCompleteDrop(ws::Id window_id,
-                                              uint32_t event_flags,
-                                              const gfx::Point& position,
-                                              uint32_t effect_bitmask,
-                                              OnCompleteDropCallback callback) {
-}
+void RendererWindowTreeClient::OnCompleteDrop(
+    ws::Id window_id,
+    uint32_t event_flags,
+    const gfx::PointF& location_in_root,
+    const gfx::PointF& location,
+    uint32_t effect_bitmask,
+    OnCompleteDropCallback callback) {}
 
 void RendererWindowTreeClient::OnPerformDragDropCompleted(
     uint32_t change_id,
@@ -379,8 +379,14 @@ void RendererWindowTreeClient::RequestClose(ws::Id window_id) {}
 void RendererWindowTreeClient::GetScreenProviderObserver(
     ws::mojom::ScreenProviderObserverAssociatedRequest observer) {}
 
-void RendererWindowTreeClient::OnOcclusionStateChanged(
-    ws::Id window_id,
-    ws::mojom::OcclusionState occlusion_state) {}
+void RendererWindowTreeClient::OnOcclusionStatesChanged(
+    const base::flat_map<ws::Id, ws::mojom::OcclusionState>&
+        occlusion_changes) {}
+
+void RendererWindowTreeClient::CleanupGestureState(ws::Id window_id) {}
+
+void RendererWindowTreeClient::OnWindowResizeLoopStarted(ws::Id window_id) {}
+
+void RendererWindowTreeClient::OnWindowResizeLoopEnded(ws::Id window_id) {}
 
 }  // namespace content

@@ -17,7 +17,7 @@ NavigatorContacts& NavigatorContacts::From(Navigator& navigator) {
   NavigatorContacts* supplement =
       Supplement<Navigator>::From<NavigatorContacts>(navigator);
   if (!supplement) {
-    supplement = new NavigatorContacts(navigator);
+    supplement = MakeGarbageCollected<NavigatorContacts>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;
@@ -31,7 +31,7 @@ ContactsManager* NavigatorContacts::contacts(Navigator& navigator) {
 
 ContactsManager* NavigatorContacts::contacts() {
   if (!contacts_manager_)
-    contacts_manager_ = new ContactsManager();
+    contacts_manager_ = MakeGarbageCollected<ContactsManager>();
   return contacts_manager_;
 }
 

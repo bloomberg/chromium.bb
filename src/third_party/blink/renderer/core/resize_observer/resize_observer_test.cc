@@ -59,7 +59,6 @@ TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
 
-  main_resource.Start();
   main_resource.Write(R"HTML(
     <div id='domTarget' style='width:100px;height:100px'>yo</div>
     <svg height='200' width='200'>
@@ -69,7 +68,7 @@ TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
   main_resource.Finish();
 
   ResizeObserver::Delegate* delegate =
-      new TestResizeObserverDelegate(GetDocument());
+      MakeGarbageCollected<TestResizeObserverDelegate>(GetDocument());
   ResizeObserver* observer = ResizeObserver::Create(GetDocument(), delegate);
   Element* dom_target = GetDocument().getElementById("domTarget");
   Element* svg_target = GetDocument().getElementById("svgTarget");

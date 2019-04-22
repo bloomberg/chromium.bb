@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -13,8 +14,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/containers/hash_tables.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -25,8 +27,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
-#include "content/browser/media/android/browser_media_player_manager.h"
-#include "content/browser/media/android/media_web_contents_observer_android.h"
+#include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
@@ -69,14 +70,14 @@ namespace {
 
 // Track all WebContentsAndroid objects here so that we don't deserialize a
 // destroyed WebContents object.
-base::LazyInstance<base::hash_set<WebContentsAndroid*>>::Leaky
+base::LazyInstance<std::unordered_set<WebContentsAndroid*>>::Leaky
     g_allocated_web_contents_androids = LAZY_INSTANCE_INITIALIZER;
 
 void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
-                              const base::Value* result) {
+                              base::Value result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   std::string json;
-  base::JSONWriter::Write(*result, &json);
+  base::JSONWriter::Write(result, &json);
   ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
   Java_WebContentsImpl_onEvaluateJavaScriptResult(env, j_json, callback);
 }
@@ -143,7 +144,8 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
 
 std::string CompressAndSaveBitmap(const std::string& dir,
                                   const SkBitmap& bitmap) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
   std::vector<unsigned char> data;
   if (!gfx::JPEGCodec::Encode(bitmap, 85, &data)) {
@@ -200,7 +202,6 @@ WebContents* WebContents::FromJavaWebContents(
 // static
 static void JNI_WebContentsImpl_DestroyWebContents(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jlong jweb_contents_android_ptr) {
   WebContentsAndroid* web_contents_android =
       reinterpret_cast<WebContentsAndroid*>(jweb_contents_android_ptr);
@@ -217,7 +218,6 @@ static void JNI_WebContentsImpl_DestroyWebContents(
 // static
 ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_FromNativePtr(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jlong web_contents_ptr) {
   WebContentsAndroid* web_contents_android =
       reinterpret_cast<WebContentsAndroid*>(web_contents_ptr);
@@ -244,7 +244,8 @@ WebContentsAndroid::WebContentsAndroid(WebContentsImpl* web_contents)
              Java_WebContentsImpl_create(env, reinterpret_cast<intptr_t>(this),
                                          navigation_controller_.GetJavaObject())
                  .obj());
-  RendererPreferences* prefs = web_contents_->GetMutableRendererPrefs();
+  blink::mojom::RendererPreferences* prefs =
+      web_contents_->GetMutableRendererPrefs();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   prefs->network_contry_iso =
       command_line->HasSwitch(switches::kNetworkCountryIso) ?
@@ -385,8 +386,12 @@ RenderWidgetHostViewAndroid*
 jint WebContentsAndroid::GetBackgroundColor(JNIEnv* env,
                                             const JavaParamRef<jobject>& obj) {
   RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
+
+  // Return transparent as an indicator that the web content background color
+  // is not specified, and a default background color will be used on the Java
+  // side.
   if (!rwhva || !rwhva->GetCachedBackgroundColor())
-    return SK_ColorWHITE;
+    return SK_ColorTRANSPARENT;
   return *rwhva->GetCachedBackgroundColor();
 }
 
@@ -427,8 +432,7 @@ void WebContentsAndroid::SetImportance(
 void WebContentsAndroid::SuspendAllMediaPlayers(
     JNIEnv* env,
     const JavaParamRef<jobject>& jobj) {
-  MediaWebContentsObserverAndroid::FromWebContents(web_contents_)
-      ->SuspendAllMediaPlayers();
+  web_contents_->media_web_contents_observer()->SuspendAllMediaPlayers();
 }
 
 void WebContentsAndroid::SetAudioMuted(JNIEnv* env,
@@ -518,7 +522,7 @@ void WebContentsAndroid::EvaluateJavaScript(
   if (!callback) {
     // No callback requested.
     web_contents_->GetMainFrame()->ExecuteJavaScript(
-        ConvertJavaStringToUTF16(env, script));
+        ConvertJavaStringToUTF16(env, script), base::NullCallback());
     return;
   }
 
@@ -526,11 +530,10 @@ void WebContentsAndroid::EvaluateJavaScript(
   // base::Callback.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
-  RenderFrameHost::JavaScriptResultCallback js_callback =
-      base::Bind(&JavaScriptResultCallback, j_callback);
 
   web_contents_->GetMainFrame()->ExecuteJavaScript(
-      ConvertJavaStringToUTF16(env, script), js_callback);
+      ConvertJavaStringToUTF16(env, script),
+      base::BindOnce(&JavaScriptResultCallback, j_callback));
 }
 
 void WebContentsAndroid::EvaluateJavaScriptForTests(
@@ -552,7 +555,7 @@ void WebContentsAndroid::EvaluateJavaScriptForTests(
   if (!callback) {
     // No callback requested.
     web_contents_->GetMainFrame()->ExecuteJavaScriptForTests(
-        ConvertJavaStringToUTF16(env, script));
+        ConvertJavaStringToUTF16(env, script), base::NullCallback());
     return;
   }
 
@@ -560,11 +563,10 @@ void WebContentsAndroid::EvaluateJavaScriptForTests(
   // base::Callback.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
-  RenderFrameHost::JavaScriptResultCallback js_callback =
-      base::Bind(&JavaScriptResultCallback, j_callback);
 
   web_contents_->GetMainFrame()->ExecuteJavaScriptForTests(
-      ConvertJavaStringToUTF16(env, script), js_callback);
+      ConvertJavaStringToUTF16(env, script),
+      base::BindOnce(&JavaScriptResultCallback, j_callback));
 }
 
 void WebContentsAndroid::AddMessageToDevToolsConsole(
@@ -573,10 +575,10 @@ void WebContentsAndroid::AddMessageToDevToolsConsole(
     jint level,
     const JavaParamRef<jstring>& message) {
   DCHECK_GE(level, 0);
-  DCHECK_LE(level, CONSOLE_MESSAGE_LEVEL_LAST);
+  DCHECK_LE(level, static_cast<int>(blink::mojom::ConsoleMessageLevel::kError));
 
   web_contents_->GetMainFrame()->AddMessageToConsole(
-      static_cast<ConsoleMessageLevel>(level),
+      static_cast<blink::mojom::ConsoleMessageLevel>(level),
       ConvertJavaStringToUTF8(env, message));
 }
 
@@ -601,7 +603,7 @@ jboolean WebContentsAndroid::HasAccessedInitialDocument(
 
 jint WebContentsAndroid::GetThemeColor(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj) {
-  return web_contents_->GetThemeColor();
+  return web_contents_->GetThemeColor().value_or(SK_ColorTRANSPARENT);
 }
 
 void WebContentsAndroid::RequestSmartClipExtract(

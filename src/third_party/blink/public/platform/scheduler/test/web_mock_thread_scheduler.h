@@ -37,6 +37,8 @@ class WebMockThreadScheduler : public WebThreadScheduler {
   MOCK_METHOD0(DidCommitFrameToCompositor, void());
   MOCK_METHOD2(DidHandleInputEventOnCompositorThread,
                void(const WebInputEvent&, InputEventState));
+  MOCK_METHOD1(WillPostInputEventToMainThread, void(WebInputEvent::Type));
+  MOCK_METHOD1(WillHandleInputEventOnMainThread, void(WebInputEvent::Type));
   MOCK_METHOD2(DidHandleInputEventOnMainThread,
                void(const WebInputEvent&, WebInputEventResult));
   MOCK_METHOD0(DidAnimateForInputOnCompositorThread, void());
@@ -56,7 +58,6 @@ class WebMockThreadScheduler : public WebThreadScheduler {
   MOCK_METHOD0(VirtualTimePaused, void());
   MOCK_METHOD0(VirtualTimeResumed, void());
   MOCK_METHOD1(SetTopLevelBlameContext, void(base::trace_event::BlameContext*));
-  MOCK_METHOD1(AddRAILModeObserver, void(WebRAILModeObserver*));
   MOCK_METHOD1(SetRendererProcessType, void(WebRendererProcessType));
   MOCK_METHOD2(CreateWebScopedVirtualTimePauser,
                WebScopedVirtualTimePauser(

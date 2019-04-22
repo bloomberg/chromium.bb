@@ -10,13 +10,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#include <map>
+#include <cstddef>
 #include <string>
 #include <vector>
 
+#include "absl/strings/match.h"
+#include "api/scoped_refptr.h"
 #include "rtc_base/strings/string_builder.h"
-#include "rtc_base/stringutils.h"
 #include "rtc_tools/frame_analyzer/video_color_aligner.h"
 #include "rtc_tools/frame_analyzer/video_geometry_aligner.h"
 #include "rtc_tools/frame_analyzer/video_quality_analysis.h"
@@ -112,8 +112,8 @@ int main(int argc, char* argv[]) {
   const std::string test_file_name = parser.GetFlag("test_file");
 
   // .yuv files require explicit resolution.
-  if ((rtc::ends_with(reference_file_name.c_str(), ".yuv") ||
-       rtc::ends_with(test_file_name.c_str(), ".yuv")) &&
+  if ((absl::EndsWith(reference_file_name, ".yuv") ||
+       absl::EndsWith(test_file_name, ".yuv")) &&
       (width <= 0 || height <= 0)) {
     fprintf(stderr,
             "Error: You need to specify width and height when using .yuv "
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
 
   if (!reference_video || !test_video) {
     fprintf(stderr, "Error opening video files\n");
-    return 0;
+    return 1;
   }
 
   const std::vector<size_t> matching_indices =

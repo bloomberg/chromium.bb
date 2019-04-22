@@ -96,6 +96,7 @@ static const FileParam kFileParamArray[] = {
   {"res/BA_MW_D.264", "afd7a9765961ca241bb4bdf344b31397bec7465a"},
   {"res/BANM_MW_D.264", "92d924a857a1a7d7d9b224eaa3887830f15dee7f"},
   {"res/BASQP1_Sony_C.jsv", "3986c8c9d2876d2f0748b925101b152c6ec8b811"},
+  {"res/Cisco_Men_whisper_640x320_CABAC_Bframe_9.264", "88b8864a69cee7656202bc54d2ffa8b7b6f1f6c5"},
   {"res/CI1_FT_B.264", "cbfec15e17a504678b19a1191992131c92a1ac26"},
   {"res/CI_MW_D.264", "289f29a103c8d95adf2909c646466904be8b06d7"},
   {"res/CVFC1_Sony_C.jsv", "4641abd7419a5580b97f16e83fd1d566339229d0"},
@@ -130,6 +131,7 @@ static const FileParam kFileParamArray[] = {
   {"res/test_scalinglist_jm.264", "f690a3af2896a53360215fb5d35016bfd41499b3"},
   {"res/test_vd_1d.264", "5827d2338b79ff82cd091c707823e466197281d3"},
   {"res/test_vd_rc.264", "eea02e97bfec89d0418593a8abaaf55d02eaa1ca"},
+  {"res/Cisco_Men_whisper_640x320_CABAC_Bframe_9.264", "88b8864a69cee7656202bc54d2ffa8b7b6f1f6c5"},
 };
 
 INSTANTIATE_TEST_CASE_P (DecodeFile, DecoderOutputTest,

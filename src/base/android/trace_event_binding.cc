@@ -19,7 +19,6 @@ namespace {
 
 constexpr const char kJavaCategory[] = "Java";
 constexpr const char kToplevelCategory[] = "toplevel";
-constexpr const char kLooperDispatchMessage[] = "Looper.dispatchMessage";
 
 // Boilerplate for safely converting Java data to TRACE_EVENT data.
 class TraceEventDataConverter {
@@ -61,34 +60,29 @@ class TraceEnabledObserver
 
 }  // namespace
 
-static void JNI_TraceEvent_RegisterEnabledObserver(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static void JNI_TraceEvent_RegisterEnabledObserver(JNIEnv* env) {
   bool enabled = trace_event::TraceLog::GetInstance()->IsEnabled();
   base::android::Java_TraceEvent_setEnabled(env, enabled);
   trace_event::TraceLog::GetInstance()->AddOwnedEnabledStateObserver(
       std::make_unique<TraceEnabledObserver>());
 }
 
-static void JNI_TraceEvent_StartATrace(JNIEnv* env,
-                                       const JavaParamRef<jclass>& clazz) {
+static void JNI_TraceEvent_StartATrace(JNIEnv* env) {
   base::trace_event::TraceLog::GetInstance()->StartATrace();
 }
 
-static void JNI_TraceEvent_StopATrace(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz) {
+static void JNI_TraceEvent_StopATrace(JNIEnv* env) {
   base::trace_event::TraceLog::GetInstance()->StopATrace();
 }
 
 static void JNI_TraceEvent_Instant(JNIEnv* env,
-                                   const JavaParamRef<jclass>& clazz,
                                    const JavaParamRef<jstring>& jname,
                                    const JavaParamRef<jstring>& jarg) {
   TraceEventDataConverter converter(env, jname, jarg);
   if (converter.arg()) {
     TRACE_EVENT_COPY_INSTANT1(kJavaCategory, converter.name(),
-                              TRACE_EVENT_SCOPE_THREAD,
-                              converter.arg_name(), converter.arg());
+                              TRACE_EVENT_SCOPE_THREAD, converter.arg_name(),
+                              converter.arg());
   } else {
     TRACE_EVENT_COPY_INSTANT0(kJavaCategory, converter.name(),
                               TRACE_EVENT_SCOPE_THREAD);
@@ -96,46 +90,42 @@ static void JNI_TraceEvent_Instant(JNIEnv* env,
 }
 
 static void JNI_TraceEvent_Begin(JNIEnv* env,
-                                 const JavaParamRef<jclass>& clazz,
                                  const JavaParamRef<jstring>& jname,
                                  const JavaParamRef<jstring>& jarg) {
   TraceEventDataConverter converter(env, jname, jarg);
   if (converter.arg()) {
     TRACE_EVENT_COPY_BEGIN1(kJavaCategory, converter.name(),
-                       converter.arg_name(), converter.arg());
+                            converter.arg_name(), converter.arg());
   } else {
     TRACE_EVENT_COPY_BEGIN0(kJavaCategory, converter.name());
   }
 }
 
 static void JNI_TraceEvent_End(JNIEnv* env,
-                               const JavaParamRef<jclass>& clazz,
                                const JavaParamRef<jstring>& jname,
                                const JavaParamRef<jstring>& jarg) {
   TraceEventDataConverter converter(env, jname, jarg);
   if (converter.arg()) {
-    TRACE_EVENT_COPY_END1(kJavaCategory, converter.name(),
-                     converter.arg_name(), converter.arg());
+    TRACE_EVENT_COPY_END1(kJavaCategory, converter.name(), converter.arg_name(),
+                          converter.arg());
   } else {
     TRACE_EVENT_COPY_END0(kJavaCategory, converter.name());
   }
 }
 
 static void JNI_TraceEvent_BeginToplevel(JNIEnv* env,
-                                         const JavaParamRef<jclass>& clazz,
                                          const JavaParamRef<jstring>& jtarget) {
   std::string target = ConvertJavaStringToUTF8(env, jtarget);
-  TRACE_EVENT_BEGIN1(kToplevelCategory, kLooperDispatchMessage, "target",
-                     target);
+  TRACE_EVENT_COPY_BEGIN0(kToplevelCategory, target.c_str());
 }
 
 static void JNI_TraceEvent_EndToplevel(JNIEnv* env,
-                                       const JavaParamRef<jclass>& clazz) {
-  TRACE_EVENT_END0(kToplevelCategory, kLooperDispatchMessage);
+                                       const JavaParamRef<jstring>& jtarget) {
+  std::string target = ConvertJavaStringToUTF8(env, jtarget);
+  TRACE_EVENT_COPY_END0(kToplevelCategory, target.c_str());
 }
 
 static void JNI_TraceEvent_StartAsync(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz,
                                       const JavaParamRef<jstring>& jname,
                                       jlong jid) {
   TraceEventDataConverter converter(env, jname, nullptr);
@@ -143,7 +133,6 @@ static void JNI_TraceEvent_StartAsync(JNIEnv* env,
 }
 
 static void JNI_TraceEvent_FinishAsync(JNIEnv* env,
-                                       const JavaParamRef<jclass>& clazz,
                                        const JavaParamRef<jstring>& jname,
                                        jlong jid) {
   TraceEventDataConverter converter(env, jname, nullptr);

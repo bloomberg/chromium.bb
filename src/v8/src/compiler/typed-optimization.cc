@@ -244,7 +244,7 @@ Reduction TypedOptimization::ReduceLoadField(Node* node) {
 Reduction TypedOptimization::ReduceNumberFloor(Node* node) {
   Node* const input = NodeProperties::GetValueInput(node, 0);
   Type const input_type = NodeProperties::GetType(input);
-  if (input_type.Is(type_cache_.kIntegerOrMinusZeroOrNaN)) {
+  if (input_type.Is(type_cache_->kIntegerOrMinusZeroOrNaN)) {
     return Replace(input);
   }
   if (input_type.Is(Type::PlainNumber()) &&
@@ -280,7 +280,7 @@ Reduction TypedOptimization::ReduceNumberFloor(Node* node) {
 Reduction TypedOptimization::ReduceNumberRoundop(Node* node) {
   Node* const input = NodeProperties::GetValueInput(node, 0);
   Type const input_type = NodeProperties::GetType(input);
-  if (input_type.Is(type_cache_.kIntegerOrMinusZeroOrNaN)) {
+  if (input_type.Is(type_cache_->kIntegerOrMinusZeroOrNaN)) {
     return Replace(input);
   }
   return NoChange();
@@ -298,7 +298,7 @@ Reduction TypedOptimization::ReduceNumberSilenceNaN(Node* node) {
 Reduction TypedOptimization::ReduceNumberToUint8Clamped(Node* node) {
   Node* const input = NodeProperties::GetValueInput(node, 0);
   Type const input_type = NodeProperties::GetType(input);
-  if (input_type.Is(type_cache_.kUint8)) {
+  if (input_type.Is(type_cache_->kUint8)) {
     return Replace(input);
   }
   return NoChange();
@@ -402,7 +402,7 @@ TypedOptimization::TryReduceStringComparisonOfStringFromSingleCharCode(
   const Operator* comparison_op = NumberComparisonFor(comparison->op());
   Node* from_char_code_repl = NodeProperties::GetValueInput(from_char_code, 0);
   Type from_char_code_repl_type = NodeProperties::GetType(from_char_code_repl);
-  if (!from_char_code_repl_type.Is(type_cache_.kUint16)) {
+  if (!from_char_code_repl_type.Is(type_cache_->kUint16)) {
     // Convert to signed int32 to satisfy type of {NumberBitwiseAnd}.
     from_char_code_repl =
         graph()->NewNode(simplified()->NumberToInt32(), from_char_code_repl);
@@ -448,14 +448,14 @@ Reduction TypedOptimization::ReduceStringComparison(Node* node) {
       Node* right = NodeProperties::GetValueInput(rhs, 0);
       Type left_type = NodeProperties::GetType(left);
       Type right_type = NodeProperties::GetType(right);
-      if (!left_type.Is(type_cache_.kUint16)) {
+      if (!left_type.Is(type_cache_->kUint16)) {
         // Convert to signed int32 to satisfy type of {NumberBitwiseAnd}.
         left = graph()->NewNode(simplified()->NumberToInt32(), left);
         left = graph()->NewNode(
             simplified()->NumberBitwiseAnd(), left,
             jsgraph()->Constant(std::numeric_limits<uint16_t>::max()));
       }
-      if (!right_type.Is(type_cache_.kUint16)) {
+      if (!right_type.Is(type_cache_->kUint16)) {
         // Convert to signed int32 to satisfy type of {NumberBitwiseAnd}.
         right = graph()->NewNode(simplified()->NumberToInt32(), right);
         right = graph()->NewNode(
@@ -722,14 +722,12 @@ Reduction TypedOptimization::ReduceSpeculativeNumberAdd(Node* node) {
       NeitherCanBe(lhs_type, rhs_type, Type::StringOrReceiver())) {
     // SpeculativeNumberAdd(x:-string, y:-string) =>
     //     NumberAdd(ToNumber(x), ToNumber(y))
-    Node* const toNum_lhs =
-        graph()->NewNode(simplified()->PlainPrimitiveToNumber(), lhs);
-    Node* const toNum_rhs =
-        graph()->NewNode(simplified()->PlainPrimitiveToNumber(), rhs);
+    Node* const toNum_lhs = ConvertPlainPrimitiveToNumber(lhs);
+    Node* const toNum_rhs = ConvertPlainPrimitiveToNumber(rhs);
     Node* const value =
         graph()->NewNode(simplified()->NumberAdd(), toNum_lhs, toNum_rhs);
     ReplaceWithValue(node, value);
-    return Replace(node);
+    return Replace(value);
   }
   return NoChange();
 }
@@ -749,8 +747,9 @@ Reduction TypedOptimization::ReduceJSToNumberInput(Node* input) {
   }
   if (input_type.IsHeapConstant()) {
     HeapObjectRef input_value = input_type.AsHeapConstant()->Ref();
-    if (input_value.map().oddball_type() != OddballType::kNone) {
-      return Replace(jsgraph()->Constant(input_value.OddballToNumber()));
+    double value;
+    if (input_value.OddballToNumber().To(&value)) {
+      return Replace(jsgraph()->Constant(value));
     }
   }
   if (input_type.Is(Type::Number())) {
@@ -797,7 +796,7 @@ Reduction TypedOptimization::ReduceSpeculativeNumberBinop(Node* node) {
         NumberOpFromSpeculativeNumberOp(simplified(), node->op()), toNum_lhs,
         toNum_rhs);
     ReplaceWithValue(node, value);
-    return Replace(node);
+    return Replace(value);
   }
   return NoChange();
 }
@@ -812,7 +811,7 @@ Reduction TypedOptimization::ReduceSpeculativeNumberComparison(Node* node) {
     Node* const value = graph()->NewNode(
         NumberOpFromSpeculativeNumberOp(simplified(), node->op()), lhs, rhs);
     ReplaceWithValue(node, value);
-    return Replace(node);
+    return Replace(value);
   }
   return NoChange();
 }

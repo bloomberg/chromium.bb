@@ -21,6 +21,9 @@ void SyncRecordModelTypeMemoryHistogram(syncer::ModelType model_type,
 void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
                                        size_t count);
 
+// Records that |count| entities have been cleared when disabling sync.
+void SyncWalletDataRecordClearedEntitiesCount(size_t count);
+
 // Helper macro for datatype specific histograms. For each datatype, invokes
 // a pre-defined PER_DATA_TYPE_MACRO(type_str), where |type_str| is the string
 // version of the datatype.
@@ -89,16 +92,16 @@ void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
       case ::syncer::EXTENSION_SETTINGS:                         \
         PER_DATA_TYPE_MACRO("ExtensionSettings");                \
         break;                                                   \
-      case ::syncer::APP_NOTIFICATIONS:                          \
+      case ::syncer::DEPRECATED_APP_NOTIFICATIONS:               \
         PER_DATA_TYPE_MACRO("AppNotifications");                 \
         break;                                                   \
       case ::syncer::HISTORY_DELETE_DIRECTIVES:                  \
         PER_DATA_TYPE_MACRO("HistoryDeleteDirectives");          \
         break;                                                   \
-      case ::syncer::SYNCED_NOTIFICATIONS:                       \
+      case ::syncer::DEPRECATED_SYNCED_NOTIFICATIONS:            \
         PER_DATA_TYPE_MACRO("SyncedNotifications");              \
         break;                                                   \
-      case ::syncer::SYNCED_NOTIFICATION_APP_INFO:               \
+      case ::syncer::DEPRECATED_SYNCED_NOTIFICATION_APP_INFO:    \
         PER_DATA_TYPE_MACRO("SyncedNotificationAppInfo");        \
         break;                                                   \
       case ::syncer::DICTIONARY:                                 \
@@ -158,7 +161,7 @@ void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
       case ::syncer::NIGORI:                                     \
         PER_DATA_TYPE_MACRO("Nigori");                           \
         break;                                                   \
-      case ::syncer::EXPERIMENTS:                                \
+      case ::syncer::DEPRECATED_EXPERIMENTS:                     \
         PER_DATA_TYPE_MACRO("Experiments");                      \
         break;                                                   \
       case ::syncer::MOUNTAIN_SHARES:                            \
@@ -166,6 +169,9 @@ void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
         break;                                                   \
       case ::syncer::SEND_TAB_TO_SELF:                           \
         PER_DATA_TYPE_MACRO("SendTabToSelf");                    \
+        break;                                                   \
+      case ::syncer::SECURITY_EVENTS:                            \
+        PER_DATA_TYPE_MACRO("SecurityEvents");                   \
         break;                                                   \
       default:                                                   \
         NOTREACHED() << "Unknown datatype "                      \

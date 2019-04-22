@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -68,6 +67,10 @@ std::vector<PrefetchItemStats> FetchUrlsSync(sql::Database* db) {
 
   std::vector<PrefetchItemStats> urls;
   while (statement.Step()) {
+    PrefetchItemErrorCode error_code =
+        ToPrefetchItemErrorCode(statement.ColumnInt(6))
+            .value_or(PrefetchItemErrorCode::INVALID_ITEM);
+
     urls.emplace_back(statement.ColumnInt64(0),  // offline_id
                       statement.ColumnInt(1),    // generate_bundle_attempts
                       statement.ColumnInt(2),    // get_operation_attempts
@@ -75,9 +78,8 @@ std::vector<PrefetchItemStats> FetchUrlsSync(sql::Database* db) {
                       statement.ColumnInt64(4),  // archive_body_length
                       store_utils::FromDatabaseTime(
                           statement.ColumnInt64(5)),  // creation_time
-                      static_cast<PrefetchItemErrorCode>(
-                          statement.ColumnInt(6)),  // error_code
-                      statement.ColumnInt64(7));    // file_size
+                      error_code,                     // error_code
+                      statement.ColumnInt64(7));      // file_size
   }
 
   return urls;
@@ -111,10 +113,12 @@ void CountEntriesInEachState(sql::Database* db) {
       "SELECT state, COUNT (*) FROM prefetch_items GROUP BY state";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   while (statement.Step()) {
-    PrefetchItemState state =
-        static_cast<PrefetchItemState>(statement.ColumnInt(0));
+    base::Optional<PrefetchItemState> state =
+        ToPrefetchItemState(statement.ColumnInt(0));
+    if (!state)
+      continue;
     int count = statement.ColumnInt(1);
-    LogStateCountMetrics(state, count);
+    LogStateCountMetrics(state.value(), count);
   }
 }
 
@@ -162,7 +166,7 @@ bool ReportMetricsAndFinalizeSync(sql::Database* db) {
 
   const std::vector<PrefetchItemStats> urls = FetchUrlsSync(db);
 
-  base::Time now = OfflineClock()->Now();
+  base::Time now = OfflineTimeNow();
   for (const auto& url : urls) {
     MarkUrlAsZombie(db, now, url.offline_id);
   }

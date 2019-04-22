@@ -1328,29 +1328,4 @@ TEST_P(GLES2DecoderTest2, Uniform4iValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
-
-TEST_P(GLES2DecoderTest2, Uniform4ivImmediateValidArgs) {
-  cmds::Uniform4ivImmediate& cmd = *GetImmediateAs<cmds::Uniform4ivImmediate>();
-  SpecializedSetup<cmds::Uniform4ivImmediate, 0>(true);
-  GLint temp[4 * 2] = {
-      0,
-  };
-  EXPECT_CALL(*gl_, Uniform4iv(1, 2, PointsToArray(temp, 4)));
-  cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES3DecoderTest2, UniformMatrix2x3fvImmediateValidArgs) {
-  cmds::UniformMatrix2x3fvImmediate& cmd =
-      *GetImmediateAs<cmds::UniformMatrix2x3fvImmediate>();
-  SpecializedSetup<cmds::UniformMatrix2x3fvImmediate, 0>(true);
-  GLfloat temp[6 * 2] = {
-      0,
-  };
-  EXPECT_CALL(*gl_, UniformMatrix2x3fv(1, 2, true, PointsToArray(temp, 6)));
-  cmd.Init(1, 2, true, &temp[0]);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

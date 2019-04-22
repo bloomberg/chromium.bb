@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/containers/mru_cache.h"
@@ -17,6 +18,7 @@
 #include "cc/cc_export.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 
 namespace viz {
@@ -168,6 +170,8 @@ class CC_EXPORT GpuImageDecodeCache
   bool IsInInUseCacheForTesting(const DrawImage& image) const;
   bool IsInPersistentCacheForTesting(const DrawImage& image) const;
   sk_sp<SkImage> GetSWImageDecodeForTesting(const DrawImage& image);
+  sk_sp<SkImage> GetUploadedPlaneForTesting(const DrawImage& draw_image,
+                                            size_t index);
   size_t paint_image_entries_count_for_testing() const {
     return paint_image_entries_.size();
   }
@@ -195,6 +199,8 @@ class CC_EXPORT GpuImageDecodeCache
     scoped_refptr<TileTask> task;
 
    protected:
+    using YUVSkImages = std::array<sk_sp<SkImage>, SkYUVASizeInfo::kMaxCount>;
+
     struct UsageStats {
       int lock_count = 1;
       bool used = false;
@@ -220,6 +226,11 @@ class CC_EXPORT GpuImageDecodeCache
     void SetLockedData(std::unique_ptr<base::DiscardableMemory> data,
                        sk_sp<SkImage> image,
                        bool out_of_raster);
+    void SetLockedData(std::unique_ptr<base::DiscardableMemory> data,
+                       sk_sp<SkImage> image_y,
+                       sk_sp<SkImage> image_u,
+                       sk_sp<SkImage> image_v,
+                       bool out_of_raster);
     void ResetData();
     base::DiscardableMemory* data() const { return data_.get(); }
 
@@ -230,6 +241,20 @@ class CC_EXPORT GpuImageDecodeCache
       DCHECK(is_locked() || is_bitmap_backed_);
       return image_;
     }
+
+    sk_sp<SkImage> y_image() const {
+      return plane_image_internal(SkYUVAIndex::kY_Index);
+    }
+
+    sk_sp<SkImage> u_image() const {
+      return plane_image_internal(SkYUVAIndex::kU_Index);
+    }
+
+    sk_sp<SkImage> v_image() const {
+      return plane_image_internal(SkYUVAIndex::kV_Index);
+    }
+
+    bool is_yuv() const { return image_yuv_planes_.has_value(); }
 
     // Test-only functions.
     sk_sp<SkImage> ImageForTesting() const { return image_; }
@@ -242,9 +267,18 @@ class CC_EXPORT GpuImageDecodeCache
    private:
     void ReportUsageStats() const;
 
+    sk_sp<SkImage> plane_image_internal(const size_t plane_id) const {
+      DCHECK(is_locked());
+      DCHECK(image_yuv_planes_);
+      DCHECK_GT(image_yuv_planes_->size(), plane_id)
+          << "Requested reference to a plane_id that is not set";
+      return image_yuv_planes_->at(plane_id);
+    }
+
     const bool is_bitmap_backed_;
     std::unique_ptr<base::DiscardableMemory> data_;
-    sk_sp<SkImage> image_;
+    sk_sp<SkImage> image_;  // RGBX (or null in YUV decode path)
+    base::Optional<YUVSkImages> image_yuv_planes_;
   };
 
   // Stores the GPU-side image and supporting fields.
@@ -252,7 +286,12 @@ class CC_EXPORT GpuImageDecodeCache
     UploadedImageData();
     ~UploadedImageData();
 
-    void SetImage(sk_sp<SkImage> image);
+    // If |represents_yuv_image| is true, the method knows not to check for a
+    // texture ID for |image|, which would inadvertently flatten it to RGB.
+    void SetImage(sk_sp<SkImage> image, bool represents_yuv_image = false);
+    void SetYuvImage(sk_sp<SkImage> y_image_input,
+                     sk_sp<SkImage> u_image_input,
+                     sk_sp<SkImage> v_image_input);
     void SetTransferCacheId(uint32_t id);
     void Reset();
 
@@ -261,9 +300,49 @@ class CC_EXPORT GpuImageDecodeCache
       DCHECK(mode_ == Mode::kSkImage || mode_ == Mode::kNone);
       return image_;
     }
+    const sk_sp<SkImage>& y_image() const {
+      return plane_image_internal(SkYUVAIndex::kY_Index);
+    }
+    const sk_sp<SkImage>& u_image() const {
+      return plane_image_internal(SkYUVAIndex::kU_Index);
+    }
+    const sk_sp<SkImage>& v_image() const {
+      return plane_image_internal(SkYUVAIndex::kV_Index);
+    }
     GrGLuint gl_id() const {
       DCHECK(mode_ == Mode::kSkImage || mode_ == Mode::kNone);
       return gl_id_;
+    }
+
+    GrGLuint gl_y_id() const {
+      return gl_plane_id_internal(SkYUVAIndex::kY_Index);
+    }
+    GrGLuint gl_u_id() const {
+      return gl_plane_id_internal(SkYUVAIndex::kU_Index);
+    }
+    GrGLuint gl_v_id() const {
+      return gl_plane_id_internal(SkYUVAIndex::kV_Index);
+    }
+
+    // We consider an image to be valid YUV if all planes are non-null.
+    bool has_yuv_planes() const {
+      static_assert(SkYUVAIndex::kLast_Index == SkYUVAIndex::kA_Index,
+                    "Alpha plane isn't last in the YUV plane array");
+      if (!image_yuv_planes_) {
+        return false;
+      }
+      auto yuv_planes_rstart = image_yuv_planes_->crbegin() + !is_alpha_;
+      auto yuv_planes_rend = image_yuv_planes_->crend();
+      // Iterates from end to beginning, skipping alpha plane (verified to be
+      // last) if the image is not alpha.
+      bool has_existing_planes = std::any_of(yuv_planes_rstart, yuv_planes_rend,
+                                             [](auto& it) { return it; });
+      bool has_null_planes = std::any_of(yuv_planes_rstart, yuv_planes_rend,
+                                         [](auto& it) { return !it; });
+      if (has_existing_planes && has_null_planes) {
+        DLOG(ERROR) << "Image has a mix of null and decoded planes";
+      }
+      return has_existing_planes && !has_null_planes;
     }
 
     // If in transfer cache mode.
@@ -280,6 +359,37 @@ class CC_EXPORT GpuImageDecodeCache
       return std::move(unmipped_image_);
     }
 
+    void set_unmipped_yuv_images(sk_sp<SkImage> y_image,
+                                 sk_sp<SkImage> u_image,
+                                 sk_sp<SkImage> v_image) {
+      if (!unmipped_yuv_images_) {
+        unmipped_yuv_images_ = YUVSkImages();
+      }
+      unmipped_yuv_images_->at(SkYUVAIndex::kY_Index) = std::move(y_image);
+      unmipped_yuv_images_->at(SkYUVAIndex::kU_Index) = std::move(u_image);
+      unmipped_yuv_images_->at(SkYUVAIndex::kV_Index) = std::move(v_image);
+    }
+
+    sk_sp<SkImage> take_unmipped_y_image() {
+      return take_unmipped_yuv_image_internal(SkYUVAIndex::kY_Index);
+    }
+
+    sk_sp<SkImage> take_unmipped_u_image() {
+      return take_unmipped_yuv_image_internal(SkYUVAIndex::kU_Index);
+    }
+
+    sk_sp<SkImage> take_unmipped_v_image() {
+      return take_unmipped_yuv_image_internal(SkYUVAIndex::kV_Index);
+    }
+
+    sk_sp<SkImage> take_unmipped_yuv_image_internal(const size_t plane_id) {
+      DCHECK(!is_locked_);
+      if (unmipped_yuv_images_ && unmipped_yuv_images_->size() > plane_id) {
+        return std::move(unmipped_yuv_images_->at(plane_id));
+      }
+      return nullptr;
+    }
+
    private:
     // Used for internal DCHECKs only.
     enum class Mode {
@@ -290,18 +400,43 @@ class CC_EXPORT GpuImageDecodeCache
 
     void ReportUsageStats() const;
 
+    const sk_sp<SkImage>& plane_image_internal(const size_t plane_id) const {
+      DCHECK(mode_ == Mode::kSkImage || mode_ == Mode::kNone);
+      DCHECK(image_yuv_planes_);
+      DCHECK_GT(image_yuv_planes_->size(), plane_id)
+          << "Requested reference to a plane_id that is not set";
+      return image_yuv_planes_->at(plane_id);
+    }
+
+    GrGLuint gl_plane_id_internal(const size_t plane_id) const {
+      DCHECK(mode_ == Mode::kSkImage || mode_ == Mode::kNone);
+      DCHECK(gl_plane_ids_);
+      DCHECK_GT(gl_plane_ids_->size(), plane_id)
+          << "Requested GL id for a plane texture that is not uploaded";
+      return gl_plane_ids_->at(plane_id);
+    }
+
     Mode mode_ = Mode::kNone;
 
     // Used if |mode_| == kSkImage.
     // May be null if image not yet uploaded / prepared.
     sk_sp<SkImage> image_;
+    base::Optional<YUVSkImages> image_yuv_planes_;
+    // TODO(crbug/910276): Change after alpha support.
+    bool is_alpha_ = false;
     GrGLuint gl_id_ = 0;
+    base::Optional<std::array<GrGLuint, SkYUVASizeInfo::kMaxCount>>
+        gl_plane_ids_;
 
     // Used if |mode_| == kTransferCache.
     base::Optional<uint32_t> transfer_cache_id_;
 
-    // The original un-mipped image, retained until it can be safely deleted.
+    // The original un-mipped image, for RGBX, or the representative image
+    // backed by three planes for YUV. It is retained until it can be safely
+    // deleted.
     sk_sp<SkImage> unmipped_image_;
+    // Used for YUV decoding and null otherwise.
+    base::Optional<YUVSkImages> unmipped_yuv_images_;
   };
 
   struct ImageData : public base::RefCountedThreadSafe<ImageData> {
@@ -311,7 +446,8 @@ class CC_EXPORT GpuImageDecodeCache
               SkFilterQuality quality,
               int upload_scale_mip_level,
               bool needs_mips,
-              bool is_bitmap_backed);
+              bool is_bitmap_backed,
+              bool is_yuv_format);
 
     bool IsGpuOrTransferCache() const;
     bool HasUploadedData() const;
@@ -324,6 +460,7 @@ class CC_EXPORT GpuImageDecodeCache
     int upload_scale_mip_level;
     bool needs_mips = false;
     bool is_bitmap_backed;
+    bool is_yuv;
     bool is_budgeted = false;
 
     // If true, this image is no longer in our |persistent_cache_| and will be
@@ -407,6 +544,14 @@ class CC_EXPORT GpuImageDecodeCache
   void DecodeImageIfNecessary(const DrawImage& draw_image,
                               ImageData* image_data,
                               TaskType task_type);
+  sk_sp<SkImage> CreateImageFromYUVATexturesInternal(
+      const SkImage* uploaded_y_image,
+      const SkImage* uploaded_u_image,
+      const SkImage* uploaded_v_image,
+      const size_t image_width,
+      const size_t image_height,
+      const SkYUVColorSpace* yuva_color_space,
+      sk_sp<SkColorSpace> decoded_color_space) const;
 
   scoped_refptr<GpuImageDecodeCache::ImageData> CreateImageData(
       const DrawImage& image);
@@ -510,6 +655,9 @@ class CC_EXPORT GpuImageDecodeCache
   std::vector<SkImage*> images_pending_complete_lock_;
   std::vector<SkImage*> images_pending_unlock_;
   std::vector<sk_sp<SkImage>> images_pending_deletion_;
+  // Images that are backed by planar textures must be handled differently
+  // to avoid inadvertently flattening to RGB and creating additional textures.
+  std::vector<sk_sp<SkImage>> yuv_images_pending_deletion_;
   const sk_sp<SkColorSpace> target_color_space_;
 
   std::vector<uint32_t> ids_pending_unlock_;

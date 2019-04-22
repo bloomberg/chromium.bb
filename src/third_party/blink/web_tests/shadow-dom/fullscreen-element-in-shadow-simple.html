@@ -36,15 +36,6 @@ async_test((test) => {
 
         assert_equals(host0.shadowRoot.fullscreenElement, canvas);
 
-        // TODO(kochi): The 'retargeting' behavior is controlled by
-        // 'FullscreenUnprefixed' runtime flag dynamically.  Until the
-        // flag is turned on, document.webkitFullscreenElement leaks the
-        // fullscreen element under shadow roots.
-        internals.runtimeFlags.fullscreenUnprefixedEnabled = false;
-        assert_false(internals.runtimeFlags.fullscreenUnprefixedEnabled);
-        assert_equals(document.webkitFullscreenElement, canvas);
-        assert_equals(document.webkitCurrentFullScreenElement, canvas);
-
         document.exitFullscreen();
         test.done();
     });

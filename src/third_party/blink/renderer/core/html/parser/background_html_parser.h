@@ -68,7 +68,8 @@ class BackgroundHTMLParser {
       scoped_refptr<base::SingleThreadTaskRunner>);
   void Init(const KURL& document_url,
             std::unique_ptr<CachedDocumentParameters>,
-            const MediaValuesCached::MediaValuesCachedData&);
+            const MediaValuesCached::MediaValuesCachedData&,
+            bool priority_hints_origin_trial_enabled);
 
   struct Checkpoint {
     USING_FAST_MALLOC(Checkpoint);

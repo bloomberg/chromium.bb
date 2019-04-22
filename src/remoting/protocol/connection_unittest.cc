@@ -13,6 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_source.h"
@@ -187,7 +188,7 @@ class FakeAudioPlayer : public AudioStub {
 
   // AudioStub interface.
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
-                          const base::Closure& done) override {
+                          base::OnceClosure done) override {
     EXPECT_TRUE(thread_checker_.CalledOnValidThread());
     EXPECT_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
     EXPECT_EQ(AudioPacket::SAMPLING_RATE_48000, packet->sampling_rate());
@@ -200,7 +201,7 @@ class FakeAudioPlayer : public AudioStub {
       run_loop_->Quit();
 
     if (!done.is_null())
-      done.Run();
+      std::move(done).Run();
   }
 
   void WaitForSamples(size_t samples_expected) {
@@ -464,8 +465,8 @@ class ConnectionTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(ConnectionTest);
 };
 
-INSTANTIATE_TEST_CASE_P(Ice, ConnectionTest, ::testing::Values(false));
-INSTANTIATE_TEST_CASE_P(Webrtc, ConnectionTest, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(Ice, ConnectionTest, ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(Webrtc, ConnectionTest, ::testing::Values(true));
 
 TEST_P(ConnectionTest, RejectConnection) {
   EXPECT_CALL(client_event_handler_,

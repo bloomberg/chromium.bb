@@ -7,13 +7,13 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // Observer class for network connection events.
-class CHROMEOS_EXPORT NetworkConnectionObserver {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionObserver {
  public:
   NetworkConnectionObserver();
 

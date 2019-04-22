@@ -9,13 +9,14 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/alias.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
 #include "content/child/dwrite_font_proxy/font_fallback_win.h"
 #include "content/child/font_warmup_win.h"
 #include "content/public/common/service_names.mojom.h"
-#include "skia/ext/fontmgr_default_win.h"
+#include "skia/ext/fontmgr_default.h"
 #include "third_party/blink/public/web/win/web_font_rendering.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
@@ -30,7 +31,7 @@ namespace {
 DWriteFontCollectionProxy* g_font_collection = nullptr;
 FontFallback* g_font_fallback = nullptr;
 
-base::RepeatingCallback<mojom::DWriteFontProxyPtrInfo(void)>*
+base::RepeatingCallback<blink::mojom::DWriteFontProxyPtrInfo(void)>*
     g_connection_callback_override = nullptr;
 
 // Windows-only DirectWrite support. These warm up the DirectWrite paths
@@ -48,12 +49,13 @@ void CreateDirectWriteFactory(IDWriteFactory** factory) {
 }  // namespace
 
 void InitializeDWriteFontProxy(service_manager::Connector* connector) {
+  TRACE_EVENT0("dwrite,fonts", "InitializeDWriteFontProxy");
   mswr::ComPtr<IDWriteFactory> factory;
 
   CreateDirectWriteFactory(&factory);
 
   if (!g_font_collection) {
-    mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
+    blink::mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
     if (g_connection_callback_override) {
       dwrite_font_proxy = g_connection_callback_override->Run();
     } else if (connector) {
@@ -78,7 +80,7 @@ void InitializeDWriteFontProxy(service_manager::Connector* connector) {
       factory.Get(), g_font_collection, g_font_fallback);
   blink::WebFontRendering::SetSkiaFontManager(skia_font_manager);
 
-  SetDefaultSkiaFactory(std::move(skia_font_manager));
+  skia::OverrideDefaultSkFontMgr(std::move(skia_font_manager));
 
   // When IDWriteFontFallback is not available (prior to Win8.1) Skia will
   // still attempt to use DirectWrite to determine fallback fonts (in
@@ -99,10 +101,11 @@ void UninitializeDWriteFontProxy() {
 }
 
 void SetDWriteFontProxySenderForTesting(
-    base::RepeatingCallback<mojom::DWriteFontProxyPtrInfo(void)> sender) {
+    base::RepeatingCallback<blink::mojom::DWriteFontProxyPtrInfo(void)>
+        sender) {
   DCHECK(!g_connection_callback_override);
   g_connection_callback_override =
-      new base::RepeatingCallback<mojom::DWriteFontProxyPtrInfo(void)>(
+      new base::RepeatingCallback<blink::mojom::DWriteFontProxyPtrInfo(void)>(
           std::move(sender));
 }
 

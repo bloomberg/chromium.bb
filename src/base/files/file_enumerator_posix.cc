@@ -101,7 +101,7 @@ FileEnumerator::FileEnumerator(const FilePath& root_path,
 FileEnumerator::~FileEnumerator() = default;
 
 FilePath FileEnumerator::Next() {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
   ++current_directory_entry_;
 

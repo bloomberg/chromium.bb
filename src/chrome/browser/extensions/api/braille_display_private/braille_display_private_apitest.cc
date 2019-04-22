@@ -9,7 +9,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
@@ -21,19 +20,14 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using chromeos::ProfileHelper;
-using chromeos::ScreenLocker;
-using chromeos::ScreenLockerTester;
-using user_manager::UserManager;
-using content::BrowserThread;
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
 namespace extensions {
 namespace api {
@@ -41,8 +35,7 @@ namespace braille_display_private {
 
 namespace {
 
-constexpr char kTestUserName[] = "owner@invalid.domain";
-constexpr char kTestUserGaiaId[] = "0123456789";
+constexpr char kTestUserEmail[] = "testuser@gmail.com";
 
 // Used to make ReadKeys return an error.
 brlapi_keyCode_t kErrorKeyCode = BRLAPI_KEY_MAX;
@@ -76,7 +69,7 @@ class MockBrlapiConnection : public BrlapiConnection {
     on_data_ready_ = on_data_ready;
     if (!data_->pending_keys.empty()) {
       base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
+          FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(&MockBrlapiConnection::NotifyDataReady,
                          base::Unretained(this)));
     }
@@ -88,7 +81,7 @@ class MockBrlapiConnection : public BrlapiConnection {
     if (data_->reappear_on_disconnect) {
       data_->display_columns *= 2;
       base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
+          FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(
               &BrailleControllerImpl::PokeSocketDirForTesting,
               base::Unretained(BrailleControllerImpl::GetInstance())));
@@ -133,12 +126,11 @@ class MockBrlapiConnection : public BrlapiConnection {
   }
 
  private:
-
   void NotifyDataReady() {
     on_data_ready_.Run();
     if (!data_->pending_keys.empty()) {
       base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
+          FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(&MockBrlapiConnection::NotifyDataReady,
                          base::Unretained(this)));
     }
@@ -276,26 +268,27 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, DisplayStateChanges) {
 
 class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(chromeos::switches::kLoginManager);
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
-                                    TestingProfile::kTestUserProfileDir);
-  }
-
   class MockEventDelegate : public BrailleDisplayPrivateAPI::EventDelegate {
    public:
-    MockEventDelegate() : event_count_(0) {}
+    MockEventDelegate() = default;
+    ~MockEventDelegate() override = default;
 
     int GetEventCount() { return event_count_; }
 
+    // BrailleDisplayPrivateAPI::EventDelegate:
     void BroadcastEvent(std::unique_ptr<Event> event) override {
       ++event_count_;
     }
     bool HasListener() override { return true; }
 
    private:
-    int event_count_;
+    int event_count_ = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(MockEventDelegate);
   };
+
+  BrailleDisplayPrivateAPIUserTest() = default;
+  ~BrailleDisplayPrivateAPIUserTest() override = default;
 
   MockEventDelegate* SetMockEventDelegate(BrailleDisplayPrivateAPI* api) {
     MockEventDelegate* delegate = new MockEventDelegate();
@@ -304,63 +297,41 @@ class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
     return delegate;
   }
 
-  void LockScreen(ScreenLockerTester* tester) {
-    ScreenLocker::Show();
-    content::WindowedNotificationObserver lock_state_observer(
-        chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-        content::NotificationService::AllSources());
-    if (!tester->IsLocked())
-      lock_state_observer.Wait();
-    ASSERT_TRUE(tester->IsLocked());
+  // BrailleDisplayPrivateApiTest:
+  void SetUpInProcessBrowserTestFixture() override {
+    BrailleDisplayPrivateApiTest::SetUpInProcessBrowserTestFixture();
+    zero_duration_mode_ =
+        std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+            ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   }
 
-  void DismissLockScreen(ScreenLockerTester* tester) {
-    ScreenLocker::Hide();
-    content::WindowedNotificationObserver lock_state_observer(
-        chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-        content::NotificationService::AllSources());
-    if (tester->IsLocked())
-      lock_state_observer.Wait();
-    ASSERT_FALSE(tester->IsLocked());
-  }
-
- protected:
+  // BrailleDisplayPrivateApiTest:
   void DisableAccessibilityManagerBraille() override {
     // Let the accessibility manager behave as usual for these tests.
   }
+
+ protected:
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrailleDisplayPrivateAPIUserTest);
 };
 
-// Flakily times out on ChromeOS MSAN bots. See https://crbug.com/592893.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_KeyEventOnLockScreen DISABLED_KeyEventOnLockScreen
-#else
-#define MAYBE_KeyEventOnLockScreen KeyEventOnLockScreen
-#endif
-IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
-                       MAYBE_KeyEventOnLockScreen) {
-  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
-  // Log in.
-  session_manager::SessionManager::Get()->CreateSession(
-      AccountId::FromUserEmailGaiaId(kTestUserName, kTestUserGaiaId),
-      kTestUserName, false);
-  {
-    base::ScopedAllowBlockingForTesting allow_io;
-    g_browser_process->profile_manager()->GetProfile(
-        ProfileHelper::Get()->GetProfilePathByUserIdHash(kTestUserName));
-  }
-  session_manager::SessionManager::Get()->SessionStarted();
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  ASSERT_FALSE(
-      ProfileHelper::GetSigninProfile()->IsSameProfile(profile))
-      << ProfileHelper::GetSigninProfile()->GetDebugName() << " vs. "
-      << profile->GetDebugName();
+IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest, KeyEventOnLockScreen) {
+  chromeos::ScreenLockerTester tester;
 
-  // Create API and event delegate for sign in profile.
-  BrailleDisplayPrivateAPI signin_api(ProfileHelper::GetSigninProfile());
+  // Make sure the signin profile and active profile are different.
+  Profile* signin_profile = chromeos::ProfileHelper::GetSigninProfile();
+  Profile* user_profile = ProfileManager::GetActiveUserProfile();
+  ASSERT_FALSE(signin_profile->IsSameProfile(user_profile))
+      << signin_profile->GetDebugName() << " vs "
+      << user_profile->GetDebugName();
+
+  // Create API and event delegate for the signin profile.
+  BrailleDisplayPrivateAPI signin_api(signin_profile);
   MockEventDelegate* signin_delegate = SetMockEventDelegate(&signin_api);
   EXPECT_EQ(0, signin_delegate->GetEventCount());
-  // Create api and delegate for the logged in user.
-  BrailleDisplayPrivateAPI user_api(profile);
+  // Create API and delegate for the user profile.
+  BrailleDisplayPrivateAPI user_api(user_profile);
   MockEventDelegate* user_delegate = SetMockEventDelegate(&user_api);
 
   // Send key event to both profiles.
@@ -371,16 +342,16 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
   EXPECT_EQ(0, signin_delegate->GetEventCount());
   EXPECT_EQ(1, user_delegate->GetEventCount());
 
-  // Lock screen, and make sure that the key event goes to the
-  // signin profile.
-  LockScreen(tester.get());
+  // Lock screen, and make sure that the key event goes to the signin profile.
+  tester.Lock();
   signin_api.OnBrailleKeyEvent(key_event);
   user_api.OnBrailleKeyEvent(key_event);
   EXPECT_EQ(0, signin_delegate->GetEventCount());
   EXPECT_EQ(2, user_delegate->GetEventCount());
 
-  // Unlock screen, making sur ekey events go to the user profile again.
-  DismissLockScreen(tester.get());
+  // Unlock screen, making sure key events go to the user profile again.
+  tester.SetUnlockPassword(AccountId::FromUserEmail(kTestUserEmail), "pass");
+  tester.UnlockWithPassword(AccountId::FromUserEmail(kTestUserEmail), "pass");
   signin_api.OnBrailleKeyEvent(key_event);
   user_api.OnBrailleKeyEvent(key_event);
   EXPECT_EQ(0, signin_delegate->GetEventCount());

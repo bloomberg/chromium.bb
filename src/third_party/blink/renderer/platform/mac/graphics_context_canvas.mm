@@ -7,10 +7,10 @@
 #import <AppKit/AppKit.h>
 #import <CoreGraphics/CoreGraphics.h>
 
+#include "base/mac/scoped_cftyperef.h"
 #include "cc/paint/paint_canvas.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 
 namespace blink {
 
@@ -51,7 +51,7 @@ CGContextRef GraphicsContextCanvas::CgContext() {
 
   // Allocate an offscreen and draw into that, relying on the
   // compositing step to apply skia's clip.
-  WTF::RetainPtr<CGColorSpace> color_space(
+  base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateWithName(kCGColorSpaceSRGB));
 
   bool result = offscreen_.tryAllocN32Pixels(
@@ -64,7 +64,7 @@ CGContextRef GraphicsContextCanvas::CgContext() {
   int display_height = offscreen_.height();
   cg_context_ = CGBitmapContextCreate(
       offscreen_.getPixels(), offscreen_.width(), offscreen_.height(), 8,
-      offscreen_.rowBytes(), color_space.Get(),
+      offscreen_.rowBytes(), color_space,
       kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
   DCHECK(cg_context_);
 

@@ -15,6 +15,8 @@ from __future__ import print_function
 
 import collections
 
+from chromite.lib import constants
+
 BUILDBUCKET_HOST_KEY = '/buildbucket/host'
 DATASTORE_WRITER_CREDS_KEY = '/datastore/creds_file'
 SWARMING_PROXY_HOST_KEY = '/swarming_proxy/host'
@@ -56,14 +58,7 @@ topology = LockedDefaultDict()
 topology.update(TOPOLOGY_DEFAULTS)
 
 
-def FetchTopologyFromCIDB(db):
-  """Update and unlock topology based on cidb-backed keyval store.
-
-  Args:
-    db: cidb.CIDBConnection instance for database to fetch keyvals from,
-        or None.
-  """
-  if db:
-    topology.update(db.GetKeyVals())
-
+def FetchTopology():
+  """Update and unlock topology based on constant keyval store."""
+  topology.update(constants.TOPOLOGY_DICT)
   topology.unlock()

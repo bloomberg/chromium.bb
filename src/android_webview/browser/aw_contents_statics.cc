@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
-#include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -18,6 +19,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "jni/AwContentsStatics_jni.h"
@@ -53,21 +55,11 @@ void SafeBrowsingWhitelistAssigned(const JavaRef<jobject>& callback,
   Java_AwContentsStatics_safeBrowsingWhitelistAssigned(env, callback, success);
 }
 
-void ProxyOverrideChanged(const JavaRef<jobject>& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (callback.is_null())
-    return;
-  JNIEnv* env = AttachCurrentThread();
-  Java_AwContentsStatics_proxyOverrideChanged(env, callback);
-}
-
 }  // namespace
 
 // static
 ScopedJavaLocalRef<jstring>
-JNI_AwContentsStatics_GetSafeBrowsingPrivacyPolicyUrl(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
+JNI_AwContentsStatics_GetSafeBrowsingPrivacyPolicyUrl(JNIEnv* env) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GURL privacy_policy_url(
       security_interstitials::kSafeBrowsingPrivacyPolicyUrl);
@@ -81,7 +73,6 @@ JNI_AwContentsStatics_GetSafeBrowsingPrivacyPolicyUrl(
 // static
 void JNI_AwContentsStatics_ClearClientCertPreferences(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const JavaParamRef<jobject>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::PostTaskWithTraitsAndReply(
@@ -93,16 +84,14 @@ void JNI_AwContentsStatics_ClearClientCertPreferences(
 
 // static
 ScopedJavaLocalRef<jstring> JNI_AwContentsStatics_GetUnreachableWebDataUrl(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
+    JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(
       env, content::kUnreachableWebDataURL);
 }
 
 // static
 ScopedJavaLocalRef<jstring> JNI_AwContentsStatics_GetProductVersion(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
+    JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(
       env, version_info::GetVersionNumber());
 }
@@ -110,7 +99,6 @@ ScopedJavaLocalRef<jstring> JNI_AwContentsStatics_GetProductVersion(
 // static
 void JNI_AwContentsStatics_SetSafeBrowsingWhitelist(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const JavaParamRef<jobjectArray>& jrules,
     const JavaParamRef<jobject>& callback) {
   std::vector<std::string> rules;
@@ -126,7 +114,6 @@ void JNI_AwContentsStatics_SetSafeBrowsingWhitelist(
 // static
 void JNI_AwContentsStatics_SetServiceWorkerIoThreadClient(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const base::android::JavaParamRef<jobject>& io_thread_client,
     const base::android::JavaParamRef<jobject>& browser_context) {
   AwContentsIoThreadClient::SetServiceWorkerIoThreadClient(io_thread_client,
@@ -136,38 +123,19 @@ void JNI_AwContentsStatics_SetServiceWorkerIoThreadClient(
 // static
 void JNI_AwContentsStatics_SetCheckClearTextPermitted(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     jboolean permitted) {
+  // Notify both the legacy and NS code paths of this setting. We do this
+  // because this method may be called before we initialize the FeatureList
+  // during AwMainDelegate::PostEarlyInitialization (which means we can't
+  // reliably know at this point if we're in the NetworkService or legacy code
+  // path).
+  AwContentBrowserClient::set_check_cleartext_permitted(permitted);
   AwURLRequestContextGetter::set_check_cleartext_permitted(permitted);
 }
 
 // static
-void JNI_AwContentsStatics_SetProxyOverride(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&,
-    const base::android::JavaParamRef<jstring>& jhost,
-    jint port,
-    const base::android::JavaParamRef<jobjectArray>& jexclusion_list,
-    const JavaParamRef<jobject>& callback) {
-  std::string host;
-  base::android::ConvertJavaStringToUTF8(env, jhost, &host);
-  std::vector<std::string> exclusion_list;
-  base::android::AppendJavaStringArrayToStringVector(env, jexclusion_list,
-                                                     &exclusion_list);
-  AwBrowserContext::GetDefault()->GetAwURLRequestContext()->SetProxyOverride(
-      host, port, exclusion_list,
-      base::BindOnce(&ProxyOverrideChanged,
-                     ScopedJavaGlobalRef<jobject>(env, callback)));
-}
-
-// static
-void JNI_AwContentsStatics_ClearProxyOverride(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&,
-    const JavaParamRef<jobject>& callback) {
-  AwBrowserContext::GetDefault()->GetAwURLRequestContext()->ClearProxyOverride(
-      base::BindOnce(&ProxyOverrideChanged,
-                     ScopedJavaGlobalRef<jobject>(env, callback)));
+jboolean JNI_AwContentsStatics_IsMultiProcessEnabled(JNIEnv* env) {
+  return !content::RenderProcessHost::run_renderer_in_process();
 }
 
 }  // namespace android_webview

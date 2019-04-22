@@ -7,20 +7,19 @@
 #ifndef FXBARCODE_QRCODE_BC_QRCODEWRITER_H_
 #define FXBARCODE_QRCODE_BC_QRCODEWRITER_H_
 
+#include <vector>
+
 #include "fxbarcode/BC_TwoDimWriter.h"
 
-class CBC_TwoDimWriter;
 class CBC_QRCodeWriter final : public CBC_TwoDimWriter {
  public:
   CBC_QRCodeWriter();
   ~CBC_QRCodeWriter() override;
 
-  static void ReleaseAll();
-
-  uint8_t* Encode(const WideString& contents,
-                  int32_t ecLevel,
-                  int32_t& outWidth,
-                  int32_t& outHeight);
+  std::vector<uint8_t> Encode(WideStringView contents,
+                              int32_t ecLevel,
+                              int32_t* pOutWidth,
+                              int32_t* pOutHeight);
 
   // CBC_TwoDimWriter
   bool SetErrorCorrectionLevel(int32_t level) override;

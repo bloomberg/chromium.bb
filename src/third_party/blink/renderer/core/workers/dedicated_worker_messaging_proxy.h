@@ -39,12 +39,17 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
       std::unique_ptr<GlobalScopeCreationParams>,
       const WorkerOptions*,
       const KURL& script_url,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       const v8_inspector::V8StackTraceId&,
       const String& source_code);
   void PostMessageToWorkerGlobalScope(BlinkTransferableMessage);
 
   bool HasPendingActivity() const;
+
+  // This is called from DedicatedWorkerObjectProxy when off-the-main-thread
+  // worker script fetch is enabled. Otherwise, this is called from
+  // DedicatedWorker.
+  void DidFailToFetchScript();
 
   // These methods come from worker context thread via
   // DedicatedWorkerObjectProxy and are called on the parent context thread.

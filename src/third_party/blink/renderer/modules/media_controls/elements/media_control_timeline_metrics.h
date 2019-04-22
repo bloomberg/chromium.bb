@@ -7,12 +7,15 @@
 
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
 // Helpers for tracking and reporting media control timeline metrics to UMA.
 class MediaControlTimelineMetrics {
+  DISALLOW_NEW();
+
  public:
   // Start tracking a pointer gesture. |fromThumb| indicates whether the user
   // started dragging from the thumb, as opposed to pressing down their pointer

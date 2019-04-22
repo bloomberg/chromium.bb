@@ -444,6 +444,26 @@ TEST_F(AppListModelFolderTest, UninstallFolderItems) {
   EXPECT_EQ("Item 0", GetModelContents());
 }
 
+TEST_F(AppListModelFolderTest, UninstallPersistentFolderItem) {
+  AppListItem* item0 = model_.CreateAndAddItem("Item 0");
+  AppListItem* item1 = model_.CreateAndAddItem("Item 1");
+  AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(
+      model_.AddItem(new AppListFolderItem("folder1")));
+  folder1->SetIsPersistent(true);
+  EXPECT_EQ("Item 0,Item 1,folder1", GetModelContents());
+
+  // Move all items to folder1.
+  model_.MoveItemToFolderAt(item0, folder1->id(), item0->position());
+  model_.MoveItemToFolderAt(item1, folder1->id(), item1->position());
+  EXPECT_EQ("Item 0,Item 1", GetItemListContents(folder1->item_list()));
+  EXPECT_EQ("folder1", GetModelContents());
+
+  // Delete Item from folder.
+  model_.DeleteUninstalledItem("Item 1");
+  ASSERT_EQ("folder1", GetModelContents());
+  EXPECT_EQ("Item 0", GetItemListContents(folder1->item_list()));
+}
+
 TEST_F(AppListModelFolderTest, UninstallSingleItemFolderItem) {
   AppListItem* item0 = model_.CreateAndAddItem("Item 0");
   AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(

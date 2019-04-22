@@ -327,8 +327,8 @@ TEST_P(UploadFileElementReaderTest, WrongPath) {
   EXPECT_THAT(init_callback.WaitForResult(), IsError(ERR_FILE_NOT_FOUND));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        UploadFileElementReaderTest,
-                        testing::ValuesIn({false, true}));
+INSTANTIATE_TEST_SUITE_P(,
+                         UploadFileElementReaderTest,
+                         testing::ValuesIn({false, true}));
 
 }  // namespace net

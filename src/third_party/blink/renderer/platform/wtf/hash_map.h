@@ -198,7 +198,8 @@ class HashMap {
             typename IncomingMappedType>
   AddResult Insert(IncomingKeyType&&, IncomingMappedType&&);
 
-  static bool IsValidKey(KeyPeekInType);
+  template <typename IncomingKeyType>
+  static bool IsValidKey(const IncomingKeyType&);
 
   template <typename VisitorDispatcher, typename A = Allocator>
   std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher visitor) {
@@ -665,7 +666,8 @@ template <typename T,
           typename W,
           typename X,
           typename Y>
-inline bool HashMap<T, U, V, W, X, Y>::IsValidKey(KeyPeekInType key) {
+template <typename IncomingKeyType>
+inline bool HashMap<T, U, V, W, X, Y>::IsValidKey(const IncomingKeyType& key) {
   if (KeyTraits::IsDeletedValue(key))
     return false;
 

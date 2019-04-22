@@ -6,6 +6,7 @@
 """A git command for managing a local cache of git repositories."""
 
 from __future__ import print_function
+
 import contextlib
 import errno
 import logging
@@ -17,7 +18,12 @@ import threading
 import time
 import subprocess
 import sys
-import urlparse
+
+try:
+  import urlparse
+except ImportError:  # For Py3 compatibility
+  import urllib.parse as urlparse
+
 import zipfile
 
 from download_from_google_storage import Gsutil
@@ -239,9 +245,14 @@ class Mirror(object):
 
   @property
   def bootstrap_bucket(self):
+    b = os.getenv('OVERRIDE_BOOTSTRAP_BUCKET')
+    if b:
+      return b
     u = urlparse.urlparse(self.url)
     if u.netloc == 'chromium.googlesource.com':
       return 'chromium-git-cache'
+    # TODO(tandrii): delete once LUCI migration is completed.
+    # Only public hosts will be supported going forward.
     elif u.netloc == 'chrome-internal.googlesource.com':
       return 'chrome-git-cache'
     # Not recognized.
@@ -258,6 +269,10 @@ class Mirror(object):
     norm_url = parsed.netloc + parsed.path
     if norm_url.endswith('.git'):
       norm_url = norm_url[:-len('.git')]
+
+    # Use the same dir for authenticated URLs and unauthenticated URLs.
+    norm_url = norm_url.replace('googlesource.com/a/', 'googlesource.com/')
+
     return norm_url.replace('-', '--').replace('/', '-').lower()
 
   @staticmethod
@@ -368,7 +383,23 @@ class Mirror(object):
     gsutil = Gsutil(self.gsutil_exe, boto_path=None)
     # Get the most recent version of the zipfile.
     _, ls_out, ls_err = gsutil.check_call('ls', gs_folder)
-    ls_out_sorted = sorted(ls_out.splitlines())
+
+    def compare_filenames(a, b):
+      # |a| and |b| look like gs://.../.../9999.zip. They both have the same
+      # gs://bootstrap_bucket/basedir/ prefix because they come from the same
+      # `gsutil ls`.
+      # This function only compares the numeral parts before .zip.
+      regex_pattern = r'/(\d+)\.zip$'
+      match_a = re.search(regex_pattern, a)
+      match_b = re.search(regex_pattern, b)
+      if (match_a is not None) and (match_b is not None):
+        num_a = int(match_a.group(1))
+        num_b = int(match_b.group(1))
+        return cmp(num_a, num_b)
+      # If it doesn't match the format, fallback to string comparison.
+      return cmp(a, b)
+
+    ls_out_sorted = sorted(ls_out.splitlines(), cmp=compare_filenames)
     if not ls_out_sorted:
       # This repo is not on Google Storage.
       self.print('No bootstrap file for %s found in %s, stderr:\n  %s' %

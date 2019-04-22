@@ -110,4 +110,13 @@ assertNoInterpolation({
   from: "'aaaa' 0, 'bbbb' 10, 'cccc' 20",
   to: "'dddd' 10, 'eeee' 20, 'ffff' 30",
 });
+
+// crbug.com/910118: Test that ApplyStandardPropertyValue doesn't overflow.
+assertInterpolation({
+  property: 'font-variation-settings',
+  from: "'aaaa' 30, 'bbbb' 20",
+  to: "'aaaa' 20, 'bbbb' 30",
+}, [
+  {at: 3.40282e+38, is: "'aaaa' -3.40282e+38, 'bbbb' 3.40282e+38"},
+]);
 </script>

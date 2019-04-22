@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "base/callback.h"
 #include "content/browser/renderer_host/input/synthetic_touchpad_pinch_gesture.h"
 
 namespace content {
@@ -50,6 +51,13 @@ SyntheticGesture::Result SyntheticTouchpadPinchGesture::ForwardInputEvents(
                           : SyntheticGesture::GESTURE_RUNNING;
 }
 
+void SyntheticTouchpadPinchGesture::WaitForTargetAck(
+    base::OnceClosure callback,
+    SyntheticGestureTarget* target) const {
+  target->WaitForTargetAck(params_.GetGestureType(), gesture_source_type_,
+                           std::move(callback));
+}
+
 void SyntheticTouchpadPinchGesture::ForwardGestureEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
@@ -67,7 +75,7 @@ void SyntheticTouchpadPinchGesture::ForwardGestureEvents(
       target->DispatchInputEventToPlatform(
           SyntheticWebGestureEventBuilder::Build(
               blink::WebGestureEvent::kGesturePinchBegin,
-              blink::kWebGestureDeviceTouchpad));
+              blink::WebGestureDevice::kTouchpad));
       state_ = IN_PROGRESS;
       break;
     case IN_PROGRESS: {
@@ -81,13 +89,13 @@ void SyntheticTouchpadPinchGesture::ForwardGestureEvents(
       target->DispatchInputEventToPlatform(
           SyntheticWebGestureEventBuilder::BuildPinchUpdate(
               incremental_scale, params_.anchor.x(), params_.anchor.y(),
-              0 /* modifierFlags */, blink::kWebGestureDeviceTouchpad));
+              0 /* modifierFlags */, blink::WebGestureDevice::kTouchpad));
 
       if (HasReachedTarget(event_timestamp)) {
         target->DispatchInputEventToPlatform(
             SyntheticWebGestureEventBuilder::Build(
                 blink::WebGestureEvent::kGesturePinchEnd,
-                blink::kWebGestureDeviceTouchpad));
+                blink::WebGestureDevice::kTouchpad));
         state_ = DONE;
       }
       break;

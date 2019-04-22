@@ -17,7 +17,7 @@ namespace internal {
 // Fast saturation to a destination type.
 template <typename Dst, typename Src>
 struct SaturateFastAsmOp {
-  static const bool is_supported =
+  static constexpr bool is_supported =
       std::is_signed<Src>::value && std::is_integral<Dst>::value &&
       std::is_integral<Src>::value &&
       IntegerBitsPlusSign<Src>::value <= IntegerBitsPlusSign<int32_t>::value &&

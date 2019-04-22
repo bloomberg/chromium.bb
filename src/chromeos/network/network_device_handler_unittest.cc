@@ -10,8 +10,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_shill_device_client.h"
-#include "chromeos/dbus/fake_shill_manager_client.h"
+#include "chromeos/dbus/shill/fake_shill_device_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/network/network_device_handler_impl.h"
 #include "chromeos/network/network_state_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,9 +39,9 @@ class NetworkDeviceHandlerTest : public testing::Test {
   ~NetworkDeviceHandlerTest() override = default;
 
   void SetUp() override {
-    fake_device_client_ = new FakeShillDeviceClient;
-    DBusThreadManager::GetSetterForTesting()->SetShillDeviceClient(
-        std::unique_ptr<ShillDeviceClient>(fake_device_client_));
+    shill_clients::InitializeFakes();
+    fake_device_client_ = ShillDeviceClient::Get();
+    fake_device_client_->GetTestInterface()->ClearDevices();
 
     success_callback_ = base::Bind(&NetworkDeviceHandlerTest::SuccessCallback,
                                    base::Unretained(this));
@@ -78,7 +79,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
     network_state_handler_->Shutdown();
     network_device_handler_.reset();
     network_state_handler_.reset();
-    DBusThreadManager::Shutdown();
+    shill_clients::Shutdown();
   }
 
   void ErrorCallback(const std::string& error_name,
@@ -105,7 +106,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::string result_;
-  FakeShillDeviceClient* fake_device_client_ = nullptr;
+  ShillDeviceClient* fake_device_client_ = nullptr;
   std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   base::Closure success_callback_;
@@ -374,7 +375,8 @@ TEST_F(NetworkDeviceHandlerTest, ChangePin) {
   const char kNewPin[] = "1234";
   const char kIncorrectPin[] = "9999";
 
-  fake_device_client_->SetSimLocked(kDefaultCellularDevicePath, true);
+  fake_device_client_->GetTestInterface()->SetSimLocked(
+      kDefaultCellularDevicePath, true);
 
   // Test that the success callback gets called.
   network_device_handler_->ChangePin(

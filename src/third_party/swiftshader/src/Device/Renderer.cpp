@@ -15,10 +15,8 @@
 #include "Renderer.hpp"
 
 #include "Clipper.hpp"
-#include "Surface.hpp"
 #include "Primitive.hpp"
 #include "Polygon.hpp"
-#include "WSI/FrameBuffer.hpp"
 #include "Device/SwiftConfig.hpp"
 #include "Reactor/Reactor.hpp"
 #include "Pipeline/Constants.hpp"
@@ -29,7 +27,12 @@
 #include "System/Half.hpp"
 #include "System/Math.hpp"
 #include "System/Timer.hpp"
-#include "System/Debug.hpp"
+#include "Vulkan/VkConfig.h"
+#include "Vulkan/VkDebug.hpp"
+#include "Vulkan/VkImageView.hpp"
+#include "Vulkan/VkQueryPool.hpp"
+#include "Pipeline/SpirvShader.hpp"
+#include "Vertex.hpp"
 
 #undef max
 
@@ -42,16 +45,11 @@ unsigned int maxPrimitives = 1 << 21;
 
 namespace sw
 {
-	extern bool halfIntegerCoordinates;     // Pixel centers are not at integer coordinates
-	extern bool symmetricNormalizedDepth;   // [-1, 1] instead of [0, 1]
 	extern bool booleanFaceRegister;
 	extern bool fullPixelPositionRegister;
-	extern bool leadingVertexFirst;         // Flat shading uses first vertex, else last
-	extern bool secondaryColor;             // Specular lighting is applied after texturing
 	extern bool colorsDefaultToZero;
 
 	extern bool forceWindowed;
-	extern bool complementaryDepthBuffer;
 	extern bool postBlendSRGB;
 	extern bool exactColorRounding;
 	extern TransparencyAntialiasing transparencyAntialiasing;
@@ -78,16 +76,103 @@ namespace sw
 
 		if(!initialized)
 		{
-			sw::halfIntegerCoordinates = conventions.halfIntegerCoordinates;
-			sw::symmetricNormalizedDepth = conventions.symmetricNormalizedDepth;
 			sw::booleanFaceRegister = conventions.booleanFaceRegister;
 			sw::fullPixelPositionRegister = conventions.fullPixelPositionRegister;
-			sw::leadingVertexFirst = conventions.leadingVertexFirst;
-			sw::secondaryColor = conventions.secondaryColor;
 			sw::colorsDefaultToZero = conventions.colorsDefaultToZero;
 			sw::exactColorRounding = exactColorRounding;
 			initialized = true;
 		}
+	}
+
+	template<typename T>
+	inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topology, T indices, unsigned int start, unsigned int triangleCount)
+	{
+		switch(topology)
+		{
+		case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
+		{
+			auto index = start;
+			for(unsigned int i = 0; i < triangleCount; i++)
+			{
+				batch[i][0] = indices[index];
+				batch[i][1] = indices[index];
+				batch[i][2] = indices[index];
+
+				index += 1;
+			}
+			break;
+		}
+		case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
+		{
+			auto index = 2 * start;
+			for(unsigned int i = 0; i < triangleCount; i++)
+			{
+				batch[i][0] = indices[index + 0];
+				batch[i][1] = indices[index + 1];
+				batch[i][2] = indices[index + 1];
+
+				index += 2;
+			}
+			break;
+		}
+		case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
+		{
+			auto index = start;
+			for(unsigned int i = 0; i < triangleCount; i++)
+			{
+				batch[i][0] = indices[index + 0];
+				batch[i][1] = indices[index + 1];
+				batch[i][2] = indices[index + 1];
+
+				index += 1;
+			}
+			break;
+		}
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
+		{
+			auto index = 3 * start;
+			for(unsigned int i = 0; i < triangleCount; i++)
+			{
+				batch[i][0] = indices[index + 0];
+				batch[i][1] = indices[index + 1];
+				batch[i][2] = indices[index + 2];
+
+				index += 3;
+			}
+			break;
+		}
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
+		{
+			auto index = start;
+			for(unsigned int i = 0; i < triangleCount; i++)
+			{
+				batch[i][0] = indices[index + 0];
+				batch[i][1] = indices[index + ((start + i) & 1) + 1];
+				batch[i][2] = indices[index + (~(start + i) & 1) + 1];
+
+				index += 1;
+			}
+			break;
+		}
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
+		{
+			auto index = start + 1;
+			for(unsigned int i = 0; i < triangleCount; i++)
+			{
+				batch[i][0] = indices[index + 0];
+				batch[i][1] = indices[index + 1];
+				batch[i][2] = indices[0];
+
+				index += 1;
+			}
+			break;
+		}
+		default:
+			ASSERT(false);
+			return false;
+		}
+
+		return true;
 	}
 
 	struct Parameters
@@ -99,14 +184,6 @@ namespace sw
 	DrawCall::DrawCall()
 	{
 		queries = 0;
-
-		vsDirtyConstF = VERTEX_UNIFORM_VECTORS + 1;
-		vsDirtyConstI = 16;
-		vsDirtyConstB = 16;
-
-		psDirtyConstF = FRAGMENT_UNIFORM_VECTORS;
-		psDirtyConstI = 16;
-		psDirtyConstB = 16;
 
 		references = -1;
 
@@ -126,10 +203,8 @@ namespace sw
 		setGlobalRenderingSettings(conventions, exactColorRounding);
 
 		setRenderTarget(0, nullptr);
-		clipper = new Clipper(symmetricNormalizedDepth);
+		clipper = new Clipper;
 		blitter = new Blitter;
-
-		updateClipPlanes = true;
 
 		#if PERF_HUD
 			resetTimers();
@@ -185,7 +260,10 @@ namespace sw
 
 	Renderer::~Renderer()
 	{
+		sync->lock(EXCLUSIVE);
 		sync->destruct();
+		terminateThreads();
+		sync->unlock();
 
 		delete clipper;
 		clipper = nullptr;
@@ -193,15 +271,17 @@ namespace sw
 		delete blitter;
 		blitter = nullptr;
 
-		terminateThreads();
 		delete resumeApp;
+		resumeApp = nullptr;
 
 		for(int draw = 0; draw < DRAW_COUNT; draw++)
 		{
 			delete drawCall[draw];
+			drawCall[draw] = nullptr;
 		}
 
 		delete swiftConfig;
+		swiftConfig = nullptr;
 	}
 
 	// This object has to be mem aligned
@@ -216,7 +296,7 @@ namespace sw
 		sw::deallocate(mem);
 	}
 
-	void Renderer::draw(DrawType drawType, unsigned int indexOffset, unsigned int count, bool update)
+	void Renderer::draw(VkPrimitiveTopology topology, VkIndexType indexType, unsigned int count, int baseVertex, bool update)
 	{
 		#ifndef NDEBUG
 			if(count < minPrimitives || count > maxPrimitives)
@@ -225,12 +305,11 @@ namespace sw
 			}
 		#endif
 
-		context->drawType = drawType;
+		context->topology = topology;
 
 		updateConfiguration();
-		updateClipper();
 
-		int ms = context->getMultiSampleCount();
+		int ms = context->sampleCount;
 		unsigned int oldMultiSampleMask = context->multiSampleMask;
 		context->multiSampleMask = context->sampleMask & ((unsigned)0xFFFFFFFF >> (32 - ms));
 
@@ -239,11 +318,21 @@ namespace sw
 			return;
 		}
 
+		context->occlusionEnabled = false;
+		for(auto query : queries)
+		{
+			if(query->type == VK_QUERY_TYPE_OCCLUSION)
+			{
+				context->occlusionEnabled = true;
+				break;
+			}
+		}
+
 		sync->lock(sw::PRIVATE);
 
 		if(update || oldMultiSampleMask != context->multiSampleMask)
 		{
-			vertexState = VertexProcessor::update(drawType);
+			vertexState = VertexProcessor::update(topology);
 			setupState = SetupProcessor::update();
 			pixelState = PixelProcessor::update();
 
@@ -295,19 +384,16 @@ namespace sw
 
 		if(queries.size() != 0)
 		{
-			draw->queries = new std::list<Query*>();
-			bool includePrimitivesWrittenQueries = vertexState.transformFeedbackQueryEnabled && vertexState.transformFeedbackEnabled;
+			draw->queries = new std::list<vk::Query*>();
 			for(auto &query : queries)
 			{
-				if(includePrimitivesWrittenQueries || (query->type != Query::TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN))
-				{
-					++query->reference; // Atomic
-					draw->queries->push_back(query);
-				}
+				++query->reference; // Atomic
+				draw->queries->push_back(query);
 			}
 		}
 
-		draw->drawType = drawType;
+		draw->topology = topology;
+		draw->indexType = indexType;
 		draw->batchSize = batch;
 
 		vertexRoutine->bind();
@@ -323,118 +409,28 @@ namespace sw
 		draw->setupPrimitives = setupPrimitives;
 		draw->setupState = setupState;
 
+		data->descriptorSets = context->descriptorSets;
+		data->descriptorDynamicOffsets = context->descriptorDynamicOffsets;
+
 		for(int i = 0; i < MAX_VERTEX_INPUTS; i++)
 		{
-			draw->vertexStream[i] = context->input[i].resource;
 			data->input[i] = context->input[i].buffer;
-			data->stride[i] = context->input[i].stride;
-
-			if(draw->vertexStream[i])
-			{
-				draw->vertexStream[i]->lock(PUBLIC, PRIVATE);
-			}
+			data->stride[i] = context->input[i].vertexStride;
 		}
 
-		if(context->indexBuffer)
-		{
-			data->indices = (unsigned char*)context->indexBuffer->lock(PUBLIC, PRIVATE) + indexOffset;
-		}
+		data->indices = context->indexBuffer;
 
-		draw->indexBuffer = context->indexBuffer;
-
-		for(int sampler = 0; sampler < TOTAL_IMAGE_UNITS; sampler++)
-		{
-			draw->texture[sampler] = 0;
-		}
-
-		for(int sampler = 0; sampler < TEXTURE_IMAGE_UNITS; sampler++)
-		{
-			if(pixelState.sampler[sampler].textureType != TEXTURE_NULL)
-			{
-				draw->texture[sampler] = context->texture[sampler];
-				draw->texture[sampler]->lock(PUBLIC, isReadWriteTexture(sampler) ? MANAGED : PRIVATE);   // If the texure is both read and written, use the same read/write lock as render targets
-
-				data->mipmap[sampler] = context->sampler[sampler].getTextureData();
-			}
-		}
-
-		if(context->pixelShader)
-		{
-			if(draw->psDirtyConstF)
-			{
-				memcpy(&data->ps.c, PixelProcessor::c, sizeof(float4) * draw->psDirtyConstF);
-				draw->psDirtyConstF = 0;
-			}
-
-			if(draw->psDirtyConstI)
-			{
-				memcpy(&data->ps.i, PixelProcessor::i, sizeof(int4) * draw->psDirtyConstI);
-				draw->psDirtyConstI = 0;
-			}
-
-			if(draw->psDirtyConstB)
-			{
-				memcpy(&data->ps.b, PixelProcessor::b, sizeof(bool) * draw->psDirtyConstB);
-				draw->psDirtyConstB = 0;
-			}
-
-			PixelProcessor::lockUniformBuffers(data->ps.u, draw->pUniformBuffers);
-		}
-		else
-		{
-			for(int i = 0; i < MAX_UNIFORM_BUFFER_BINDINGS; i++)
-			{
-				draw->pUniformBuffers[i] = nullptr;
-			}
-		}
-
-		for(int sampler = 0; sampler < VERTEX_TEXTURE_IMAGE_UNITS; sampler++)
-		{
-			if(vertexState.sampler[sampler].textureType != TEXTURE_NULL)
-			{
-				draw->texture[TEXTURE_IMAGE_UNITS + sampler] = context->texture[TEXTURE_IMAGE_UNITS + sampler];
-				draw->texture[TEXTURE_IMAGE_UNITS + sampler]->lock(PUBLIC, PRIVATE);
-
-				data->mipmap[TEXTURE_IMAGE_UNITS + sampler] = context->sampler[TEXTURE_IMAGE_UNITS + sampler].getTextureData();
-			}
-		}
-
-		if(draw->vsDirtyConstF)
-		{
-			memcpy(&data->vs.c, VertexProcessor::c, sizeof(float4) * draw->vsDirtyConstF);
-			draw->vsDirtyConstF = 0;
-		}
-
-		if(draw->vsDirtyConstI)
-		{
-			memcpy(&data->vs.i, VertexProcessor::i, sizeof(int4) * draw->vsDirtyConstI);
-			draw->vsDirtyConstI = 0;
-		}
-
-		if(draw->vsDirtyConstB)
-		{
-			memcpy(&data->vs.b, VertexProcessor::b, sizeof(bool) * draw->vsDirtyConstB);
-			draw->vsDirtyConstB = 0;
-		}
-
-		if(context->vertexShader->isInstanceIdDeclared())
+		if(context->vertexShader->hasBuiltinInput(spv::BuiltInInstanceIndex))
 		{
 			data->instanceID = context->instanceID;
 		}
 
-		VertexProcessor::lockUniformBuffers(data->vs.u, draw->vUniformBuffers);
-		VertexProcessor::lockTransformFeedbackBuffers(data->vs.t, data->vs.reg, data->vs.row, data->vs.col, data->vs.str, draw->transformFeedbackBuffers);
+		data->baseVertex = baseVertex;
 
 		if(pixelState.stencilActive)
 		{
-			data->stencil[0] = stencil;
-			data->stencil[1] = stencilCCW;
-		}
-
-		if(setupState.isDrawPoint)
-		{
-			data->pointSizeMin = pointSizeMin;
-			data->pointSizeMax = pointSizeMax;
+			data->stencil[0].set(context->frontStencil.reference, context->frontStencil.compareMask, context->frontStencil.writeMask);
+			data->stencil[1].set(context->backStencil.reference, context->backStencil.compareMask, context->backStencil.writeMask);
 		}
 
 		data->lineWidth = context->lineWidth;
@@ -494,12 +490,6 @@ namespace sw
 				N += context->depthBias;
 			}
 
-			if(complementaryDepthBuffer)
-			{
-				Z = -Z;
-				N = 1 - N;
-			}
-
 			data->Wx16 = replicate(W * 16);
 			data->Hx16 = replicate(H * 16);
 			data->X0x16 = replicate(X0 * 16 - 8);
@@ -510,17 +500,6 @@ namespace sw
 			data->slopeDepthBias = context->slopeDepthBias;
 			data->depthRange = Z;
 			data->depthNear = N;
-			draw->clipFlags = clipFlags;
-
-			if(clipFlags)
-			{
-				if(clipFlags & Clipper::CLIP_PLANE0) data->clipPlane[0] = clipPlane[0];
-				if(clipFlags & Clipper::CLIP_PLANE1) data->clipPlane[1] = clipPlane[1];
-				if(clipFlags & Clipper::CLIP_PLANE2) data->clipPlane[2] = clipPlane[2];
-				if(clipFlags & Clipper::CLIP_PLANE3) data->clipPlane[3] = clipPlane[3];
-				if(clipFlags & Clipper::CLIP_PLANE4) data->clipPlane[4] = clipPlane[4];
-				if(clipFlags & Clipper::CLIP_PLANE5) data->clipPlane[5] = clipPlane[5];
-			}
 		}
 
 		// Target
@@ -531,10 +510,10 @@ namespace sw
 
 				if(draw->renderTarget[index])
 				{
-					unsigned int layer = context->renderTargetLayer[index];
-					data->colorBuffer[index] = (unsigned int*)context->renderTarget[index]->lockInternal(0, 0, layer, LOCK_READWRITE, MANAGED);
-					data->colorPitchB[index] = context->renderTarget[index]->getInternalPitchB();
-					data->colorSliceB[index] = context->renderTarget[index]->getInternalSliceB();
+					VkOffset3D offset = { 0, 0, static_cast<int32_t>(context->renderTargetLayer[index]) };
+					data->colorBuffer[index] = (unsigned int*)context->renderTarget[index]->getOffsetPointer(offset, VK_IMAGE_ASPECT_COLOR_BIT);
+					data->colorPitchB[index] = context->renderTarget[index]->rowPitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
+					data->colorSliceB[index] = context->renderTarget[index]->slicePitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
 				}
 			}
 
@@ -543,27 +522,32 @@ namespace sw
 
 			if(draw->depthBuffer)
 			{
-				unsigned int layer = context->depthBufferLayer;
-				data->depthBuffer = (float*)context->depthBuffer->lockInternal(0, 0, layer, LOCK_READWRITE, MANAGED);
-				data->depthPitchB = context->depthBuffer->getInternalPitchB();
-				data->depthSliceB = context->depthBuffer->getInternalSliceB();
+				VkOffset3D offset = { 0, 0, static_cast<int32_t>(context->depthBufferLayer) };
+				data->depthBuffer = (float*)context->depthBuffer->getOffsetPointer(offset, VK_IMAGE_ASPECT_DEPTH_BIT);
+				data->depthPitchB = context->depthBuffer->rowPitchBytes(VK_IMAGE_ASPECT_DEPTH_BIT, 0);
+				data->depthSliceB = context->depthBuffer->slicePitchBytes(VK_IMAGE_ASPECT_DEPTH_BIT, 0);
 			}
 
 			if(draw->stencilBuffer)
 			{
-				unsigned int layer = context->stencilBufferLayer;
-				data->stencilBuffer = (unsigned char*)context->stencilBuffer->lockStencil(0, 0, layer, MANAGED);
-				data->stencilPitchB = context->stencilBuffer->getStencilPitchB();
-				data->stencilSliceB = context->stencilBuffer->getStencilSliceB();
+				VkOffset3D offset = { 0, 0, static_cast<int32_t>(context->stencilBufferLayer) };
+				data->stencilBuffer = (unsigned char*)context->stencilBuffer->getOffsetPointer(offset, VK_IMAGE_ASPECT_STENCIL_BIT);
+				data->stencilPitchB = context->stencilBuffer->rowPitchBytes(VK_IMAGE_ASPECT_STENCIL_BIT, 0);
+				data->stencilSliceB = context->stencilBuffer->slicePitchBytes(VK_IMAGE_ASPECT_STENCIL_BIT, 0);
 			}
 		}
 
 		// Scissor
 		{
-			data->scissorX0 = scissor.x0;
-			data->scissorX1 = scissor.x1;
-			data->scissorY0 = scissor.y0;
-			data->scissorY1 = scissor.y1;
+			data->scissorX0 = scissor.offset.x;
+			data->scissorX1 = scissor.offset.x + scissor.extent.width;
+			data->scissorY0 = scissor.offset.y;
+			data->scissorY1 = scissor.offset.y + scissor.extent.height;
+		}
+
+		// Push constants
+		{
+			data->pushConstants = context->pushConstants;
 		}
 
 		draw->primitive = 0;
@@ -596,21 +580,6 @@ namespace sw
 				resume[0]->signal();
 			}
 		}
-	}
-
-	void Renderer::clear(void *value, VkFormat format, Surface *dest, const Rect &clearRect, unsigned int rgbaMask)
-	{
-		blitter->clear(value, format, dest, clearRect, rgbaMask);
-	}
-
-	void Renderer::blit(Surface *source, const SliceRectF &sRect, Surface *dest, const SliceRect &dRect, bool filter, bool isStencil, bool sRGBconversion)
-	{
-		blitter->blit(source, sRect, dest, dRect, {filter, isStencil, sRGBconversion});
-	}
-
-	void Renderer::blit3D(Surface *source, Surface *dest)
-	{
-		blitter->blit3D(source, dest);
 	}
 
 	void Renderer::threadFunction(void *parameters)
@@ -894,85 +863,34 @@ namespace sw
 				{
 					for(auto &query : *(draw.queries))
 					{
+						std::unique_lock<std::mutex> mutexLock(query->mutex);
+
 						switch(query->type)
 						{
-						case Query::FRAGMENTS_PASSED:
+						case VK_QUERY_TYPE_OCCLUSION:
 							for(int cluster = 0; cluster < clusterCount; cluster++)
 							{
 								query->data += data.occlusion[cluster];
 							}
 							break;
-						case Query::TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
-							query->data += processedPrimitives;
-							break;
 						default:
 							break;
 						}
 
-						--query->reference; // Atomic
+						int queryRef = --query->reference; // Atomic
+						if(queryRef == 0)
+						{
+							query->state = vk::Query::FINISHED;
+						}
+
+						// Manual unlocking is done before notifying, to avoid
+						// waking up the waiting thread only to block again
+						mutexLock.unlock();
+						query->condition.notify_one();
 					}
 
 					delete draw.queries;
 					draw.queries = 0;
-				}
-
-				for(int i = 0; i < RENDERTARGETS; i++)
-				{
-					if(draw.renderTarget[i])
-					{
-						draw.renderTarget[i]->unlockInternal();
-					}
-				}
-
-				if(draw.depthBuffer)
-				{
-					draw.depthBuffer->unlockInternal();
-				}
-
-				if(draw.stencilBuffer)
-				{
-					draw.stencilBuffer->unlockStencil();
-				}
-
-				for(int i = 0; i < TOTAL_IMAGE_UNITS; i++)
-				{
-					if(draw.texture[i])
-					{
-						draw.texture[i]->unlock();
-					}
-				}
-
-				for(int i = 0; i < MAX_VERTEX_INPUTS; i++)
-				{
-					if(draw.vertexStream[i])
-					{
-						draw.vertexStream[i]->unlock();
-					}
-				}
-
-				if(draw.indexBuffer)
-				{
-					draw.indexBuffer->unlock();
-				}
-
-				for(int i = 0; i < MAX_UNIFORM_BUFFER_BINDINGS; i++)
-				{
-					if(draw.pUniformBuffers[i])
-					{
-						draw.pUniformBuffers[i]->unlock();
-					}
-					if(draw.vUniformBuffers[i])
-					{
-						draw.vUniformBuffers[i]->unlock();
-					}
-				}
-
-				for(int i = 0; i < MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS; i++)
-				{
-					if(draw.transformFeedbackBuffers[i])
-					{
-						draw.transformFeedbackBuffers[i]->unlock();
-					}
 				}
 
 				draw.vertexRoutine->unbind();
@@ -1007,278 +925,41 @@ namespace sw
 		}
 
 		unsigned int batch[128][3];   // FIXME: Adjust to dynamic batch size
+		VkPrimitiveTopology topology = static_cast<VkPrimitiveTopology>(static_cast<int>(draw->topology));
 
-		switch(draw->drawType)
+		if(!indices)
 		{
-		case DRAW_POINTLIST:
+			struct LinearIndex
 			{
-				unsigned int index = start;
+				unsigned int operator[](unsigned int i) { return i; }
+			};
 
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index;
-					batch[i][1] = index;
-					batch[i][2] = index;
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_LINELIST:
+			if(!setBatchIndices(batch, topology, LinearIndex(), start, triangleCount))
 			{
-				unsigned int index = 2 * start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index + 0;
-					batch[i][1] = index + 1;
-					batch[i][2] = index + 1;
-
-					index += 2;
-				}
+				return;
 			}
-			break;
-		case DRAW_LINESTRIP:
+		}
+		else
+		{
+			switch(draw->indexType)
 			{
-				unsigned int index = start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
+			case VK_INDEX_TYPE_UINT16:
+				if(!setBatchIndices(batch, topology, static_cast<const uint16_t*>(indices), start, triangleCount))
 				{
-					batch[i][0] = index + 0;
-					batch[i][1] = index + 1;
-					batch[i][2] = index + 1;
-
-					index += 1;
+					return;
 				}
-			}
-			break;
-		case DRAW_TRIANGLELIST:
-			{
-				unsigned int index = 3 * start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
+				break;
+			case VK_INDEX_TYPE_UINT32:
+				if(!setBatchIndices(batch, topology, static_cast<const uint32_t*>(indices), start, triangleCount))
 				{
-					batch[i][0] = index + 0;
-					batch[i][1] = index + 1;
-					batch[i][2] = index + 2;
-
-					index += 3;
+					return;
 				}
-			}
+				break;
 			break;
-		case DRAW_TRIANGLESTRIP:
-			{
-				unsigned int index = start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					if(leadingVertexFirst)
-					{
-						batch[i][0] = index + 0;
-						batch[i][1] = index + (index & 1) + 1;
-						batch[i][2] = index + (~index & 1) + 1;
-					}
-					else
-					{
-						batch[i][0] = index + (index & 1);
-						batch[i][1] = index + (~index & 1);
-						batch[i][2] = index + 2;
-					}
-
-					index += 1;
-				}
+			default:
+				ASSERT(false);
+				return;
 			}
-			break;
-		case DRAW_TRIANGLEFAN:
-			{
-				unsigned int index = start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					if(leadingVertexFirst)
-					{
-						batch[i][0] = index + 1;
-						batch[i][1] = index + 2;
-						batch[i][2] = 0;
-					}
-					else
-					{
-						batch[i][0] = 0;
-						batch[i][1] = index + 1;
-						batch[i][2] = index + 2;
-					}
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDPOINTLIST16:
-			{
-				const unsigned short *index = (const unsigned short*)indices + start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = *index;
-					batch[i][1] = *index;
-					batch[i][2] = *index;
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDPOINTLIST32:
-			{
-				const unsigned int *index = (const unsigned int*)indices + start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = *index;
-					batch[i][1] = *index;
-					batch[i][2] = *index;
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDLINELIST16:
-			{
-				const unsigned short *index = (const unsigned short*)indices + 2 * start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[1];
-					batch[i][2] = index[1];
-
-					index += 2;
-				}
-			}
-			break;
-		case DRAW_INDEXEDLINELIST32:
-			{
-				const unsigned int *index = (const unsigned int*)indices + 2 * start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[1];
-					batch[i][2] = index[1];
-
-					index += 2;
-				}
-			}
-			break;
-		case DRAW_INDEXEDLINESTRIP16:
-			{
-				const unsigned short *index = (const unsigned short*)indices + start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[1];
-					batch[i][2] = index[1];
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDLINESTRIP32:
-			{
-				const unsigned int *index = (const unsigned int*)indices + start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[1];
-					batch[i][2] = index[1];
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDTRIANGLELIST16:
-			{
-				const unsigned short *index = (const unsigned short*)indices + 3 * start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[1];
-					batch[i][2] = index[2];
-
-					index += 3;
-				}
-			}
-			break;
-		case DRAW_INDEXEDTRIANGLELIST32:
-			{
-				const unsigned int *index = (const unsigned int*)indices + 3 * start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[1];
-					batch[i][2] = index[2];
-
-					index += 3;
-				}
-			}
-			break;
-		case DRAW_INDEXEDTRIANGLESTRIP16:
-			{
-				const unsigned short *index = (const unsigned short*)indices + start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[((start + i) & 1) + 1];
-					batch[i][2] = index[(~(start + i) & 1) + 1];
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDTRIANGLESTRIP32:
-			{
-				const unsigned int *index = (const unsigned int*)indices + start;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[0];
-					batch[i][1] = index[((start + i) & 1) + 1];
-					batch[i][2] = index[(~(start + i) & 1) + 1];
-
-					index += 1;
-				}
-			}
-			break;
-		case DRAW_INDEXEDTRIANGLEFAN16:
-			{
-				const unsigned short *index = (const unsigned short*)indices;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[start + i + 1];
-					batch[i][1] = index[start + i + 2];
-					batch[i][2] = index[0];
-				}
-			}
-			break;
-		case DRAW_INDEXEDTRIANGLEFAN32:
-			{
-				const unsigned int *index = (const unsigned int*)indices;
-
-				for(unsigned int i = 0; i < triangleCount; i++)
-				{
-					batch[i][0] = index[start + i + 1];
-					batch[i][1] = index[start + i + 2];
-					batch[i][2] = index[0];
-				}
-			}
-			break;
-		default:
-			ASSERT(false);
-			return;
 		}
 
 		task->primitiveStart = start;
@@ -1296,7 +977,6 @@ namespace sw
 		const SetupProcessor::RoutinePointer &setupRoutine = draw.setupPointer;
 
 		int ms = state.multiSample;
-		int pos = state.positionRegister;
 		const DrawData *data = draw.data;
 		int visible = 0;
 
@@ -1308,9 +988,9 @@ namespace sw
 
 			if((v0.clipFlags & v1.clipFlags & v2.clipFlags) == Clipper::CLIP_FINITE)
 			{
-				Polygon polygon(&v0.v[pos], &v1.v[pos], &v2.v[pos]);
+				Polygon polygon(&v0.builtins.position, &v1.builtins.position, &v2.builtins.position);
 
-				int clipFlagsOr = v0.clipFlags | v1.clipFlags | v2.clipFlags | draw.clipFlags;
+				int clipFlagsOr = v0.clipFlags | v1.clipFlags | v2.clipFlags;
 
 				if(clipFlagsOr != Clipper::CLIP_FINITE)
 				{
@@ -1392,10 +1072,8 @@ namespace sw
 		Vertex &v0 = triangle.v0;
 		Vertex &v1 = triangle.v1;
 
-		int pos = state.positionRegister;
-
-		const float4 &P0 = v0.v[pos];
-		const float4 &P1 = v1.v[pos];
+		const float4 &P0 = v0.builtins.position;
+		const float4 &P1 = v1.builtins.position;
 
 		if(P0.w <= 0 && P1.w <= 0)
 		{
@@ -1454,7 +1132,7 @@ namespace sw
 			{
 				Polygon polygon(P, 4);
 
-				int clipFlagsOr = C[0] | C[1] | C[2] | C[3] | draw.clipFlags;
+				int clipFlagsOr = C[0] | C[1] | C[2] | C[3];
 
 				if(clipFlagsOr != Clipper::CLIP_FINITE)
 				{
@@ -1560,7 +1238,7 @@ namespace sw
 
 				Polygon polygon(L, 6);
 
-				int clipFlagsOr = C[0] | C[1] | C[2] | C[3] | C[4] | C[5] | C[6] | C[7] | draw.clipFlags;
+				int clipFlagsOr = C[0] | C[1] | C[2] | C[3] | C[4] | C[5] | C[6] | C[7];
 
 				if(clipFlagsOr != Clipper::CLIP_FINITE)
 				{
@@ -1580,35 +1258,21 @@ namespace sw
 	bool Renderer::setupPoint(Primitive &primitive, Triangle &triangle, const DrawCall &draw)
 	{
 		const SetupProcessor::RoutinePointer &setupRoutine = draw.setupPointer;
-		const SetupProcessor::State &state = draw.setupState;
 		const DrawData &data = *draw.data;
 
 		Vertex &v = triangle.v0;
 
-		float pSize;
+		float pSize = v.builtins.pointSize;
 
-		int pts = state.pointSizeRegister;
-
-		if(state.pointSizeRegister != Unused)
-		{
-			pSize = v.v[pts].y;
-		}
-		else
-		{
-			pSize = 1.0f;
-		}
-
-		pSize = clamp(pSize, data.pointSizeMin, data.pointSizeMax);
+		pSize = clamp(pSize, 1.0f, static_cast<float>(vk::MAX_POINT_SIZE));
 
 		float4 P[4];
 		int C[4];
 
-		int pos = state.positionRegister;
-
-		P[0] = v.v[pos];
-		P[1] = v.v[pos];
-		P[2] = v.v[pos];
-		P[3] = v.v[pos];
+		P[0] = v.builtins.position;
+		P[1] = v.builtins.position;
+		P[2] = v.builtins.position;
+		P[3] = v.builtins.position;
 
 		const float X = pSize * P[0].w * data.halfPixelX[0];
 		const float Y = pSize * P[0].w * data.halfPixelY[0];
@@ -1632,14 +1296,14 @@ namespace sw
 		triangle.v1 = triangle.v0;
 		triangle.v2 = triangle.v0;
 
-		triangle.v1.X += iround(16 * 0.5f * pSize);
-		triangle.v2.Y -= iround(16 * 0.5f * pSize) * (data.Hx16[0] > 0.0f ? 1 : -1);   // Both Direct3D and OpenGL expect (0, 0) in the top-left corner
+		triangle.v1.projected.x += iround(16 * 0.5f * pSize);
+		triangle.v2.projected.y -= iround(16 * 0.5f * pSize) * (data.Hx16[0] > 0.0f ? 1 : -1);   // Both Direct3D and OpenGL expect (0, 0) in the top-left corner
 
 		Polygon polygon(P, 4);
 
 		if((C[0] & C[1] & C[2] & C[3]) == Clipper::CLIP_FINITE)
 		{
-			int clipFlagsOr = C[0] | C[1] | C[2] | C[3] | draw.clipFlags;
+			int clipFlagsOr = C[0] | C[1] | C[2] | C[3];
 
 			if(clipFlagsOr != Clipper::CLIP_FINITE)
 			{
@@ -1725,97 +1389,6 @@ namespace sw
 		}
 	}
 
-	void Renderer::loadConstants(const VertexShader *vertexShader)
-	{
-		size_t count = vertexShader->getLength();
-
-		for(size_t i = 0; i < count; i++)
-		{
-			const Shader::Instruction *instruction = vertexShader->getInstruction(i);
-
-			if(instruction->opcode == Shader::OPCODE_DEF)
-			{
-				int index = instruction->dst.index;
-				float value[4];
-
-				value[0] = instruction->src[0].value[0];
-				value[1] = instruction->src[0].value[1];
-				value[2] = instruction->src[0].value[2];
-				value[3] = instruction->src[0].value[3];
-
-				setVertexShaderConstantF(index, value);
-			}
-			else if(instruction->opcode == Shader::OPCODE_DEFI)
-			{
-				int index = instruction->dst.index;
-				int integer[4];
-
-				integer[0] = instruction->src[0].integer[0];
-				integer[1] = instruction->src[0].integer[1];
-				integer[2] = instruction->src[0].integer[2];
-				integer[3] = instruction->src[0].integer[3];
-
-				setVertexShaderConstantI(index, integer);
-			}
-			else if(instruction->opcode == Shader::OPCODE_DEFB)
-			{
-				int index = instruction->dst.index;
-				int boolean = instruction->src[0].boolean[0];
-
-				setVertexShaderConstantB(index, &boolean);
-			}
-		}
-	}
-
-	void Renderer::loadConstants(const PixelShader *pixelShader)
-	{
-		if(!pixelShader) return;
-
-		size_t count = pixelShader->getLength();
-
-		for(size_t i = 0; i < count; i++)
-		{
-			const Shader::Instruction *instruction = pixelShader->getInstruction(i);
-
-			if(instruction->opcode == Shader::OPCODE_DEF)
-			{
-				int index = instruction->dst.index;
-				float value[4];
-
-				value[0] = instruction->src[0].value[0];
-				value[1] = instruction->src[0].value[1];
-				value[2] = instruction->src[0].value[2];
-				value[3] = instruction->src[0].value[3];
-
-				setPixelShaderConstantF(index, value);
-			}
-			else if(instruction->opcode == Shader::OPCODE_DEFI)
-			{
-				int index = instruction->dst.index;
-				int integer[4];
-
-				integer[0] = instruction->src[0].integer[0];
-				integer[1] = instruction->src[0].integer[1];
-				integer[2] = instruction->src[0].integer[2];
-				integer[3] = instruction->src[0].integer[3];
-
-				setPixelShaderConstantI(index, integer);
-			}
-			else if(instruction->opcode == Shader::OPCODE_DEFB)
-			{
-				int index = instruction->dst.index;
-				int boolean = instruction->src[0].boolean[0];
-
-				setPixelShaderConstantB(index, &boolean);
-			}
-		}
-	}
-
-	void Renderer::setIndexBuffer(Resource *indexBuffer)
-	{
-		context->indexBuffer = indexBuffer;
-	}
-
 	void Renderer::setMultiSampleMask(unsigned int mask)
 	{
 		context->sampleMask = mask;
@@ -1824,293 +1397,6 @@ namespace sw
 	void Renderer::setTransparencyAntialiasing(TransparencyAntialiasing transparencyAntialiasing)
 	{
 		sw::transparencyAntialiasing = transparencyAntialiasing;
-	}
-
-	bool Renderer::isReadWriteTexture(int sampler)
-	{
-		for(int index = 0; index < RENDERTARGETS; index++)
-		{
-			if(context->renderTarget[index] && context->texture[sampler] == context->renderTarget[index]->getResource())
-			{
-				return true;
-			}
-		}
-
-		if(context->depthBuffer && context->texture[sampler] == context->depthBuffer->getResource())
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	void Renderer::updateClipper()
-	{
-		if(updateClipPlanes)
-		{
-			if(clipFlags & Clipper::CLIP_PLANE0) clipPlane[0] = userPlane[0];
-			if(clipFlags & Clipper::CLIP_PLANE1) clipPlane[1] = userPlane[1];
-			if(clipFlags & Clipper::CLIP_PLANE2) clipPlane[2] = userPlane[2];
-			if(clipFlags & Clipper::CLIP_PLANE3) clipPlane[3] = userPlane[3];
-			if(clipFlags & Clipper::CLIP_PLANE4) clipPlane[4] = userPlane[4];
-			if(clipFlags & Clipper::CLIP_PLANE5) clipPlane[5] = userPlane[5];
-
-			updateClipPlanes = false;
-		}
-	}
-
-	void Renderer::setTextureResource(unsigned int sampler, Resource *resource)
-	{
-		ASSERT(sampler < TOTAL_IMAGE_UNITS);
-
-		context->texture[sampler] = resource;
-	}
-
-	void Renderer::setTextureLevel(unsigned int sampler, unsigned int face, unsigned int level, Surface *surface, TextureType type)
-	{
-		ASSERT(sampler < TOTAL_IMAGE_UNITS && face < 6 && level < MIPMAP_LEVELS);
-
-		context->sampler[sampler].setTextureLevel(face, level, surface, type);
-	}
-
-	void Renderer::setTextureFilter(SamplerType type, int sampler, FilterType textureFilter)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setTextureFilter(sampler, textureFilter);
-		}
-		else
-		{
-			VertexProcessor::setTextureFilter(sampler, textureFilter);
-		}
-	}
-
-	void Renderer::setMipmapFilter(SamplerType type, int sampler, MipmapType mipmapFilter)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setMipmapFilter(sampler, mipmapFilter);
-		}
-		else
-		{
-			VertexProcessor::setMipmapFilter(sampler, mipmapFilter);
-		}
-	}
-
-	void Renderer::setGatherEnable(SamplerType type, int sampler, bool enable)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setGatherEnable(sampler, enable);
-		}
-		else
-		{
-			VertexProcessor::setGatherEnable(sampler, enable);
-		}
-	}
-
-	void Renderer::setAddressingModeU(SamplerType type, int sampler, AddressingMode addressMode)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setAddressingModeU(sampler, addressMode);
-		}
-		else
-		{
-			VertexProcessor::setAddressingModeU(sampler, addressMode);
-		}
-	}
-
-	void Renderer::setAddressingModeV(SamplerType type, int sampler, AddressingMode addressMode)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setAddressingModeV(sampler, addressMode);
-		}
-		else
-		{
-			VertexProcessor::setAddressingModeV(sampler, addressMode);
-		}
-	}
-
-	void Renderer::setAddressingModeW(SamplerType type, int sampler, AddressingMode addressMode)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setAddressingModeW(sampler, addressMode);
-		}
-		else
-		{
-			VertexProcessor::setAddressingModeW(sampler, addressMode);
-		}
-	}
-
-	void Renderer::setReadSRGB(SamplerType type, int sampler, bool sRGB)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setReadSRGB(sampler, sRGB);
-		}
-		else
-		{
-			VertexProcessor::setReadSRGB(sampler, sRGB);
-		}
-	}
-
-	void Renderer::setMipmapLOD(SamplerType type, int sampler, float bias)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setMipmapLOD(sampler, bias);
-		}
-		else
-		{
-			VertexProcessor::setMipmapLOD(sampler, bias);
-		}
-	}
-
-	void Renderer::setBorderColor(SamplerType type, int sampler, const Color<float> &borderColor)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setBorderColor(sampler, borderColor);
-		}
-		else
-		{
-			VertexProcessor::setBorderColor(sampler, borderColor);
-		}
-	}
-
-	void Renderer::setMaxAnisotropy(SamplerType type, int sampler, float maxAnisotropy)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setMaxAnisotropy(sampler, maxAnisotropy);
-		}
-		else
-		{
-			VertexProcessor::setMaxAnisotropy(sampler, maxAnisotropy);
-		}
-	}
-
-	void Renderer::setHighPrecisionFiltering(SamplerType type, int sampler, bool highPrecisionFiltering)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setHighPrecisionFiltering(sampler, highPrecisionFiltering);
-		}
-		else
-		{
-			VertexProcessor::setHighPrecisionFiltering(sampler, highPrecisionFiltering);
-		}
-	}
-
-	void Renderer::setSwizzleR(SamplerType type, int sampler, SwizzleType swizzleR)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setSwizzleR(sampler, swizzleR);
-		}
-		else
-		{
-			VertexProcessor::setSwizzleR(sampler, swizzleR);
-		}
-	}
-
-	void Renderer::setSwizzleG(SamplerType type, int sampler, SwizzleType swizzleG)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setSwizzleG(sampler, swizzleG);
-		}
-		else
-		{
-			VertexProcessor::setSwizzleG(sampler, swizzleG);
-		}
-	}
-
-	void Renderer::setSwizzleB(SamplerType type, int sampler, SwizzleType swizzleB)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setSwizzleB(sampler, swizzleB);
-		}
-		else
-		{
-			VertexProcessor::setSwizzleB(sampler, swizzleB);
-		}
-	}
-
-	void Renderer::setSwizzleA(SamplerType type, int sampler, SwizzleType swizzleA)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setSwizzleA(sampler, swizzleA);
-		}
-		else
-		{
-			VertexProcessor::setSwizzleA(sampler, swizzleA);
-		}
-	}
-
-	void Renderer::setCompareFunc(SamplerType type, int sampler, CompareFunc compFunc)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setCompareFunc(sampler, compFunc);
-		}
-		else
-		{
-			VertexProcessor::setCompareFunc(sampler, compFunc);
-		}
-	}
-
-	void Renderer::setBaseLevel(SamplerType type, int sampler, int baseLevel)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setBaseLevel(sampler, baseLevel);
-		}
-		else
-		{
-			VertexProcessor::setBaseLevel(sampler, baseLevel);
-		}
-	}
-
-	void Renderer::setMaxLevel(SamplerType type, int sampler, int maxLevel)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setMaxLevel(sampler, maxLevel);
-		}
-		else
-		{
-			VertexProcessor::setMaxLevel(sampler, maxLevel);
-		}
-	}
-
-	void Renderer::setMinLod(SamplerType type, int sampler, float minLod)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setMinLod(sampler, minLod);
-		}
-		else
-		{
-			VertexProcessor::setMinLod(sampler, minLod);
-		}
-	}
-
-	void Renderer::setMaxLod(SamplerType type, int sampler, float maxLod)
-	{
-		if(type == SAMPLER_PIXEL)
-		{
-			PixelProcessor::setMaxLod(sampler, maxLod);
-		}
-		else
-		{
-			VertexProcessor::setMaxLod(sampler, maxLod);
-		}
 	}
 
 	void Renderer::setLineWidth(float width)
@@ -2133,130 +1419,37 @@ namespace sw
 		context->rasterizerDiscard = rasterizerDiscard;
 	}
 
-	void Renderer::setPixelShader(const PixelShader *shader)
+	void Renderer::setPixelShader(const SpirvShader *shader)
 	{
 		context->pixelShader = shader;
-
-		loadConstants(shader);
 	}
 
-	void Renderer::setVertexShader(const VertexShader *shader)
+	void Renderer::setVertexShader(const SpirvShader *shader)
 	{
 		context->vertexShader = shader;
-
-		loadConstants(shader);
 	}
 
-	void Renderer::setPixelShaderConstantF(unsigned int index, const float value[4], unsigned int count)
-	{
-		for(unsigned int i = 0; i < DRAW_COUNT; i++)
-		{
-			if(drawCall[i]->psDirtyConstF < index + count)
-			{
-				drawCall[i]->psDirtyConstF = index + count;
-			}
-		}
-
-		for(unsigned int i = 0; i < count; i++)
-		{
-			PixelProcessor::setFloatConstant(index + i, value);
-			value += 4;
-		}
-	}
-
-	void Renderer::setPixelShaderConstantI(unsigned int index, const int value[4], unsigned int count)
-	{
-		for(unsigned int i = 0; i < DRAW_COUNT; i++)
-		{
-			if(drawCall[i]->psDirtyConstI < index + count)
-			{
-				drawCall[i]->psDirtyConstI = index + count;
-			}
-		}
-
-		for(unsigned int i = 0; i < count; i++)
-		{
-			PixelProcessor::setIntegerConstant(index + i, value);
-			value += 4;
-		}
-	}
-
-	void Renderer::setPixelShaderConstantB(unsigned int index, const int *boolean, unsigned int count)
-	{
-		for(unsigned int i = 0; i < DRAW_COUNT; i++)
-		{
-			if(drawCall[i]->psDirtyConstB < index + count)
-			{
-				drawCall[i]->psDirtyConstB = index + count;
-			}
-		}
-
-		for(unsigned int i = 0; i < count; i++)
-		{
-			PixelProcessor::setBooleanConstant(index + i, *boolean);
-			boolean++;
-		}
-	}
-
-	void Renderer::setVertexShaderConstantF(unsigned int index, const float value[4], unsigned int count)
-	{
-		for(unsigned int i = 0; i < DRAW_COUNT; i++)
-		{
-			if(drawCall[i]->vsDirtyConstF < index + count)
-			{
-				drawCall[i]->vsDirtyConstF = index + count;
-			}
-		}
-
-		for(unsigned int i = 0; i < count; i++)
-		{
-			VertexProcessor::setFloatConstant(index + i, value);
-			value += 4;
-		}
-	}
-
-	void Renderer::setVertexShaderConstantI(unsigned int index, const int value[4], unsigned int count)
-	{
-		for(unsigned int i = 0; i < DRAW_COUNT; i++)
-		{
-			if(drawCall[i]->vsDirtyConstI < index + count)
-			{
-				drawCall[i]->vsDirtyConstI = index + count;
-			}
-		}
-
-		for(unsigned int i = 0; i < count; i++)
-		{
-			VertexProcessor::setIntegerConstant(index + i, value);
-			value += 4;
-		}
-	}
-
-	void Renderer::setVertexShaderConstantB(unsigned int index, const int *boolean, unsigned int count)
-	{
-		for(unsigned int i = 0; i < DRAW_COUNT; i++)
-		{
-			if(drawCall[i]->vsDirtyConstB < index + count)
-			{
-				drawCall[i]->vsDirtyConstB = index + count;
-			}
-		}
-
-		for(unsigned int i = 0; i < count; i++)
-		{
-			VertexProcessor::setBooleanConstant(index + i, *boolean);
-			boolean++;
-		}
-	}
-
-	void Renderer::addQuery(Query *query)
+	void Renderer::addQuery(vk::Query *query)
 	{
 		queries.push_back(query);
 	}
 
-	void Renderer::removeQuery(Query *query)
+	void Renderer::removeQuery(vk::Query *query)
 	{
 		queries.remove(query);
+	}
+
+	void Renderer::advanceInstanceAttributes()
+	{
+		for(uint32_t i = 0; i < vk::MAX_VERTEX_INPUT_BINDINGS; i++)
+		{
+			auto &attrib = context->input[i];
+			if (attrib.count && attrib.instanceStride)
+			{
+				// Under the casts: attrib.buffer += attrib.instanceStride
+				attrib.buffer = (void const *)((uintptr_t)attrib.buffer + attrib.instanceStride);
+			}
+		}
 	}
 
 	#if PERF_HUD
@@ -2291,30 +1484,19 @@ namespace sw
 		}
 	#endif
 
+	void Renderer::setContext(const sw::Context& context)
+	{
+		*(this->context) = context;
+	}
+
 	void Renderer::setViewport(const VkViewport &viewport)
 	{
 		this->viewport = viewport;
 	}
 
-	void Renderer::setScissor(const Rect &scissor)
+	void Renderer::setScissor(const VkRect2D &scissor)
 	{
 		this->scissor = scissor;
-	}
-
-	void Renderer::setClipFlags(int flags)
-	{
-		clipFlags = flags << 8;   // Bottom 8 bits used by legacy frustum
-	}
-
-	void Renderer::setClipPlane(unsigned int index, const float plane[4])
-	{
-		if(index < MAX_CLIP_PLANES)
-		{
-			userPlane[index] = plane;
-		}
-		else ASSERT(false);
-
-		updateClipPlanes = true;
 	}
 
 	void Renderer::updateConfiguration(bool initialUpdate)
@@ -2419,7 +1601,6 @@ namespace sw
 			}
 
 			forceWindowed = configuration.forceWindowed;
-			complementaryDepthBuffer = configuration.complementaryDepthBuffer;
 			postBlendSRGB = configuration.postBlendSRGB;
 			exactColorRounding = configuration.exactColorRounding;
 			forceClearRegisters = configuration.forceClearRegisters;

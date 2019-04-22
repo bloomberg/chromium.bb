@@ -42,10 +42,6 @@ class CORE_EXPORT LayoutImageResource
   LayoutImageResource();
   virtual ~LayoutImageResource();
 
-  static LayoutImageResource* Create() {
-    return MakeGarbageCollected<LayoutImageResource>();
-  }
-
   virtual void Initialize(LayoutObject*);
   virtual void Shutdown();
 
@@ -56,7 +52,8 @@ class CORE_EXPORT LayoutImageResource
   void ResetAnimation();
   bool MaybeAnimated() const;
 
-  virtual scoped_refptr<Image> GetImage(const LayoutSize&) const;
+  virtual scoped_refptr<Image> GetImage(const FloatSize&) const;
+  scoped_refptr<Image> GetImage(const IntSize&) const;
   virtual bool ErrorOccurred() const {
     return cached_image_ && cached_image_->ErrorOccurred();
   }
@@ -65,7 +62,7 @@ class CORE_EXPORT LayoutImageResource
   // the "broken image".
   void UseBrokenImage();
 
-  virtual bool ImageHasRelativeSize() const;
+  virtual bool HasIntrinsicSize() const;
 
   virtual FloatSize ImageSize(float multiplier) const;
   // Default size is effective when this is LayoutImageResourceStyleImage.

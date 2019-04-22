@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <map>
 #include <string>
 
@@ -18,6 +19,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/common/extension_id.h"
 
@@ -29,7 +31,6 @@ namespace extensions {
 class Extension;
 class ExtensionHost;
 class ExtensionRegistry;
-class LazyContextId;
 
 // This class maintains a queue of tasks that should execute when an
 // extension's lazy background page is loaded. It is also in charge of loading
@@ -42,8 +43,6 @@ class LazyBackgroundTaskQueue : public KeyedService,
                                 public content::NotificationObserver,
                                 public ExtensionRegistryObserver {
  public:
-  using PendingTask = base::OnceCallback<void(ExtensionHost*)>;
-
   explicit LazyBackgroundTaskQueue(content::BrowserContext* browser_context);
   ~LazyBackgroundTaskQueue() override;
 
@@ -57,30 +56,24 @@ class LazyBackgroundTaskQueue : public KeyedService,
   // cancels that suspension.
   bool ShouldEnqueueTask(content::BrowserContext* context,
                          const Extension* extension) override;
-  // TODO(lazyboy): Find a better way to use AddPendingTask instead of this.
-  // Currently AddPendingTask has lots of consumers that depend on
-  // ExtensionHost.
-  void AddPendingTaskToDispatchEvent(
-      const LazyContextId* context_id,
-      LazyContextTaskQueue::PendingTask task) override;
 
   // Adds a task to the queue for a given extension. If this is the first
   // task added for the extension, its lazy background page will be loaded.
   // The task will be called either when the page is loaded, or when the
   // page fails to load for some reason (e.g. a crash or browser
-  // shutdown). In the latter case, the ExtensionHost parameter is NULL.
-  void AddPendingTask(content::BrowserContext* context,
-                      const std::string& extension_id,
-                      PendingTask task);
+  // shutdown). In the latter case, |task| will be called with an empty
+  // std::unique_ptr<ContextItem> parameter.
+  void AddPendingTask(const LazyContextId& context_id,
+                      PendingTask task) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LazyBackgroundTaskQueueTest, AddPendingTask);
   FRIEND_TEST_ALL_PREFIXES(LazyBackgroundTaskQueueTest, ProcessPendingTasks);
   FRIEND_TEST_ALL_PREFIXES(LazyBackgroundTaskQueueTest,
                            CreateLazyBackgroundPageOnExtensionLoaded);
-  // A map between a BrowserContext/extension_id pair and the queue of tasks
-  // pending the load of its background page.
-  using PendingTasksKey = std::pair<content::BrowserContext*, ExtensionId>;
+  // A map between a LazyContextId and the queue of tasks pending the load of
+  // its background page.
+  using PendingTasksKey = LazyContextId;
   using PendingTasksList = std::vector<PendingTask>;
   using PendingTasksMap =
       std::map<PendingTasksKey, std::unique_ptr<PendingTasksList>>;

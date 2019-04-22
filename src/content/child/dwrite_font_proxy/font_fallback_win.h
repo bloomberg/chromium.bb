@@ -14,7 +14,7 @@
 
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
 #include "content/common/content_export.h"
-#include "content/common/dwrite_font_proxy.mojom.h"
+#include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom.h"
 
 namespace content {
 
@@ -65,7 +65,7 @@ class FontFallback
                        const wchar_t* base_family_name);
 
  private:
-  FontProxyScopeWrapper GetFontProxyScopeWrapper();
+  blink::mojom::DWriteFontProxy& GetFontProxy();
 
   Microsoft::WRL::ComPtr<DWriteFontCollectionProxy> collection_;
 

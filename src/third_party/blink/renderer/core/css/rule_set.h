@@ -41,10 +41,17 @@ enum AddRuleFlags {
   kRuleHasDocumentSecurityOrigin = 1,
 };
 
-enum PropertyWhitelistType {
-  kPropertyWhitelistNone,
-  kPropertyWhitelistCue,
-  kPropertyWhitelistFirstLetter,
+// Some CSS properties do not apply to certain psuedo-elements, and need to be
+// ignored when resolving styles.
+enum class ValidPropertyFilter : unsigned {
+  // All properties are valid. This is the common case.
+  kNoFilter,
+  // Defined in a :cue psuedo-element scope. Only properties listed
+  // in https://w3c.github.io/webvtt/#the-cue-pseudo-element are valid.
+  kCue,
+  // Defined in a :first-letter psuedo-element scope. Only properties listed in
+  // https://drafts.csswg.org/css-pseudo-4/#first-letter-styling are valid.
+  kFirstLetter,
 };
 
 class CSSSelector;
@@ -67,7 +74,7 @@ class MinimalRuleData {
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MinimalRuleData);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MinimalRuleData)
 
 namespace blink {
 
@@ -84,6 +91,11 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
                                unsigned position,
                                AddRuleFlags);
 
+  RuleData(StyleRule*,
+           unsigned selector_index,
+           unsigned position,
+           AddRuleFlags);
+
   unsigned GetPosition() const { return position_; }
   StyleRule* Rule() const { return rule_; }
   const CSSSelector& Selector() const {
@@ -99,11 +111,11 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
   bool HasDocumentSecurityOrigin() const {
     return has_document_security_origin_;
   }
-  PropertyWhitelistType PropertyWhitelist(
+  ValidPropertyFilter GetValidPropertyFilter(
       bool is_matching_ua_rules = false) const {
     return is_matching_ua_rules
-               ? kPropertyWhitelistNone
-               : static_cast<PropertyWhitelistType>(property_whitelist_);
+               ? ValidPropertyFilter::kNoFilter
+               : static_cast<ValidPropertyFilter>(valid_property_filter_);
   }
   // Try to balance between memory usage (there can be lots of RuleData objects)
   // and good filtering performance.
@@ -125,11 +137,6 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
   static constexpr size_t kPositionBits = 18;
 
  private:
-  RuleData(StyleRule*,
-           unsigned selector_index,
-           unsigned position,
-           AddRuleFlags);
-
   Member<StyleRule> rule_;
   unsigned selector_index_ : kSelectorIndexBits;
   unsigned position_ : kPositionBits;
@@ -138,7 +145,7 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
   unsigned specificity_ : 24;
   unsigned link_match_type_ : 2;  //  CSSSelector::LinkMatchMask
   unsigned has_document_security_origin_ : 1;
-  unsigned property_whitelist_ : 2;
+  unsigned valid_property_filter_ : 2;
   // 29 bits above
   // Use plain array instead of a Vector to minimize memory overhead.
   unsigned descendant_selector_identifier_hashes_[kMaximumIdentifierCount];
@@ -146,7 +153,7 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::RuleData);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::RuleData)
 
 namespace blink {
 
@@ -170,8 +177,6 @@ static_assert(sizeof(RuleData) == sizeof(SameSizeAsRuleData),
 // ElementRuleCollector::CollectMatchingRules.
 class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
  public:
-  static RuleSet* Create() { return MakeGarbageCollected<RuleSet>(); }
-
   RuleSet() : rule_count_(0) {}
 
   void AddRulesFromSheet(StyleSheetContents*,
@@ -215,9 +220,9 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
     return &focus_pseudo_class_rules_;
   }
   const HeapVector<Member<const RuleData>>*
-  SpatialNavigationFocusPseudoClassRules() const {
+  SpatialNavigationInterestPseudoClassRules() const {
     DCHECK(!pending_rules_);
-    return &spatial_navigation_focus_class_rules_;
+    return &spatial_navigation_interest_class_rules_;
   }
   const HeapVector<Member<const RuleData>>* UniversalRules() const {
     DCHECK(!pending_rules_);
@@ -307,10 +312,6 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
 
   class PendingRuleMaps : public GarbageCollected<PendingRuleMaps> {
    public:
-    static PendingRuleMaps* Create() {
-      return MakeGarbageCollected<PendingRuleMaps>();
-    }
-
     PendingRuleMaps() = default;
 
     PendingRuleMap id_rules;
@@ -323,7 +324,7 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
 
   PendingRuleMaps* EnsurePendingRules() {
     if (!pending_rules_)
-      pending_rules_ = PendingRuleMaps::Create();
+      pending_rules_ = MakeGarbageCollected<PendingRuleMaps>();
     return pending_rules_.Get();
   }
 
@@ -334,7 +335,7 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   HeapVector<Member<const RuleData>> link_pseudo_class_rules_;
   HeapVector<Member<const RuleData>> cue_pseudo_rules_;
   HeapVector<Member<const RuleData>> focus_pseudo_class_rules_;
-  HeapVector<Member<const RuleData>> spatial_navigation_focus_class_rules_;
+  HeapVector<Member<const RuleData>> spatial_navigation_interest_class_rules_;
   HeapVector<Member<const RuleData>> universal_rules_;
   HeapVector<Member<const RuleData>> shadow_host_rules_;
   HeapVector<Member<const RuleData>> part_pseudo_rules_;

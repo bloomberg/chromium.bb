@@ -17,6 +17,7 @@
 #include "net/base/escape.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
+#include "net/log/net_log.h"
 
 namespace net {
 namespace {
@@ -27,11 +28,10 @@ std::unique_ptr<base::Value> ElideNetLogHeaderCallback(
     base::StringPiece error_message,
     NetLogCaptureMode capture_mode) {
   auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("header_name", EscapeExternalHandlerValue(header_name));
-  dict->SetString(
-      "header_value",
-      EscapeExternalHandlerValue(ElideHeaderValueForNetLog(
-          capture_mode, header_name.as_string(), header_value.as_string())));
+  dict->SetKey("header_name", NetLogStringValue(header_name));
+  dict->SetKey("header_value", NetLogStringValue(ElideHeaderValueForNetLog(
+                                   capture_mode, header_name.as_string(),
+                                   header_value.as_string())));
   dict->SetString("error", error_message);
   return std::move(dict);
 }

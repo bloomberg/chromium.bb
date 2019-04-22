@@ -29,7 +29,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 namespace {
@@ -38,52 +38,12 @@ extern void InitializeLocalState(
     ChromeFeatureListCreator* chrome_feature_list_creator) {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::InitializeLocalState");
 
-  // Load local state. This includes the application locale so we know which
-  // locale dll to load. This also causes local state prefs to be registered.
-  PrefService* local_state = chrome_feature_list_creator->local_state();
-  DCHECK(local_state);
-
-  // If the local state file for the current profile doesn't exist and the
-  // parent profile command line flag is present, then we should inherit some
-  // local state from the parent profile.
-  // Checking that the local state file for the current profile doesn't exist
-  // is the most robust way to determine whether we need to inherit or not
-  // since the parent profile command line flag can be present even when the
-  // current profile is not a new one, and in that case we do not want to
-  // inherit and reset the user's setting.
-  //
-  // TODO(mnissler): We should probably just instantiate a
-  // JSONPrefStore here instead of an entire PrefService. Once this is
-  // addressed, the call to browser_prefs::RegisterLocalState can move
-  // to chrome_prefs::CreateLocalState.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kParentProfile)) {
-    base::FilePath local_state_path;
-    base::PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
-    bool local_state_file_exists = base::PathExists(local_state_path);
-    if (!local_state_file_exists) {
-      base::FilePath parent_profile =
-          command_line->GetSwitchValuePath(switches::kParentProfile);
-      scoped_refptr<PrefRegistrySimple> registry =
-          base::MakeRefCounted<PrefRegistrySimple>();
-      registry->RegisterStringPref(language::prefs::kApplicationLocale,
-                                   std::string());
-      const std::unique_ptr<PrefService> parent_local_state =
-          chrome_prefs::CreateLocalState(
-              parent_profile,
-              chrome_feature_list_creator->browser_policy_connector()
-                  ->GetPolicyService(),
-              std::move(registry), false, nullptr,
-              chrome_feature_list_creator->browser_policy_connector());
-      // Right now, we only inherit the locale setting from the parent profile.
-      local_state->SetString(
-          language::prefs::kApplicationLocale,
-          parent_local_state->GetString(language::prefs::kApplicationLocale));
-    }
-  }
-
 #if defined(OS_CHROMEOS)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kLoginManager)) {
+    PrefService* local_state = chrome_feature_list_creator->local_state();
+    DCHECK(local_state);
+
     std::string owner_locale = local_state->GetString(prefs::kOwnerLocale);
     // Ensure that we start with owner's locale.
     if (!owner_locale.empty() &&

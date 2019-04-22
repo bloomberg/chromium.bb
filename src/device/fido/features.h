@@ -14,14 +14,19 @@ namespace device {
 #if defined(OS_WIN)
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthUseNativeWinApi;
-
-COMPONENT_EXPORT(DEVICE_FIDO)
-extern const base::Feature kWebAuthDisableWinApiVersionCheckForTesting;
 #endif  // defined(OS_WIN)
 
 // Controls the proxying of Cryptotoken requests through WebAuthn.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthProxyCryptotoken;
+
+// Enable support for PIN-based user-verification.
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const base::Feature kWebAuthPINSupport;
+
+// Enable support for resident keys.
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const base::Feature kWebAuthResidentKeys;
 
 }  // namespace device
 

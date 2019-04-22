@@ -25,15 +25,16 @@ ClipEffect::~ClipEffect() {
 }
 
 void ClipEffect::onRender(SkCanvas* canvas, const RenderContext* ctx) const {
-    if (this->bounds().isEmpty())
-        return;
-
     SkAutoCanvasRestore acr(canvas, !fNoop);
     if (!fNoop) {
         fClipNode->clip(canvas, fAntiAlias);
     }
 
     this->INHERITED::onRender(canvas, ctx);
+}
+
+const RenderNode* ClipEffect::onNodeAt(const SkPoint& p) const {
+    return fClipNode->contains(p) ? this->INHERITED::onNodeAt(p) : nullptr;
 }
 
 SkRect ClipEffect::onRevalidate(InvalidationController* ic, const SkMatrix& ctm) {

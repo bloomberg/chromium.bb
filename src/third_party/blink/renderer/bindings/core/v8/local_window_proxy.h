@@ -48,13 +48,6 @@ class SecurityOrigin;
 // Subclass of WindowProxy that only handles LocalFrame.
 class LocalWindowProxy final : public WindowProxy {
  public:
-  static LocalWindowProxy* Create(v8::Isolate* isolate,
-                                  LocalFrame& frame,
-                                  scoped_refptr<DOMWrapperWorld> world) {
-    return MakeGarbageCollected<LocalWindowProxy>(isolate, frame,
-                                                  std::move(world));
-  }
-
   LocalWindowProxy(v8::Isolate*, LocalFrame&, scoped_refptr<DOMWrapperWorld>);
   void Trace(blink::Visitor*) override;
 
@@ -107,7 +100,9 @@ class LocalWindowProxy final : public WindowProxy {
   // Updates Activity Logger for the current context.
   void UpdateActivityLogger();
 
-  LocalFrame* GetFrame() const { return ToLocalFrame(WindowProxy::GetFrame()); }
+  LocalFrame* GetFrame() const {
+    return To<LocalFrame>(WindowProxy::GetFrame());
+  }
 
   Member<ScriptState> script_state_;
 };

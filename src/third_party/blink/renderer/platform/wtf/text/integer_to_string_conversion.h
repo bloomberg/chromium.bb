@@ -24,7 +24,10 @@
 
 #include <limits>
 #include <type_traits>
+
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
@@ -35,12 +38,14 @@ namespace WTF {
 // optimization here instead of base::CheckedNumeric::UnsignedAbs().
 template <typename IntegerType>
 class IntegerToStringConverter {
+  USING_FAST_MALLOC(IntegerToStringConverter);
+
  public:
   static_assert(std::is_integral<IntegerType>::value,
                 "IntegerType must be a type of integer.");
 
   explicit IntegerToStringConverter(IntegerType input) {
-    LChar* end = buffer_ + arraysize(buffer_);
+    LChar* end = buffer_ + base::size(buffer_);
     begin_ = end;
 
     // We need to switch to the unsigned type when negating the value since
@@ -50,14 +55,14 @@ class IntegerToStringConverter {
 
     do {
       --begin_;
-      DCHECK_NE(begin_, buffer_);
+      DCHECK_GE(begin_, buffer_);
       *begin_ = static_cast<LChar>((value % 10) + '0');
       value /= 10;
     } while (value);
 
     if (is_negative) {
       --begin_;
-      DCHECK_NE(begin_, buffer_);
+      DCHECK_GE(begin_, buffer_);
       *begin_ = static_cast<LChar>('-');
     }
 

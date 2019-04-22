@@ -44,12 +44,15 @@ function LRUCacheList() {
  * @param {!LRUCacheNode} node
  */
 LRUCacheList.prototype.remove = function(node) {
-  if (node.prev)
+  if (node.prev) {
     node.prev.next = node.next;
-  if (node.next)
+  }
+  if (node.next) {
     node.next.prev = node.prev;
-  if (node === this.head_)
+  }
+  if (node === this.head_) {
     this.head_ = node.next;
+  }
   node.prev = null;
   node.next = null;
 };
@@ -104,9 +107,10 @@ function LRUCache(maxSize) {
  * @return {T}
  */
 LRUCache.prototype.get = function(key) {
-  var node = this.nodes_[key];
-  if (!node)
+  const node = this.nodes_[key];
+  if (!node) {
     return null;
+  }
 
   this.moveNodeToHead_(node);
   return node.value;
@@ -119,9 +123,10 @@ LRUCache.prototype.get = function(key) {
  * @return {T}
  */
 LRUCache.prototype.peek = function(key) {
-  var node = this.nodes_[key];
-  if (!node)
+  const node = this.nodes_[key];
+  if (!node) {
     return null;
+  }
 
   return node.value;
 };
@@ -147,11 +152,12 @@ LRUCache.prototype.hasKey = function(key) {
  *     will be ignored keeping cache state unchanged.
  */
 LRUCache.prototype.put = function(key, value, opt_size) {
-  var size = opt_size ? opt_size : 1;
-  if (size > this.maxSize_)
+  const size = opt_size ? opt_size : 1;
+  if (size > this.maxSize_) {
     return;
+  }
 
-  var node = this.nodes_[key];
+  let node = this.nodes_[key];
 
   while (this.totalSize_ + size - (node ? node.size : 0) > this.maxSize_) {
     this.evictLastNode_();
@@ -173,9 +179,10 @@ LRUCache.prototype.put = function(key, value, opt_size) {
  * @param {string} key
  */
 LRUCache.prototype.remove = function(key) {
-  var node = this.nodes_[key];
-  if (node)
+  const node = this.nodes_[key];
+  if (node) {
     this.removeNode_(node);
+  }
 };
 
 /**
@@ -210,9 +217,10 @@ LRUCache.prototype.getMaxSize = function() {
  * @private
  */
 LRUCache.prototype.evictLastNode_ = function() {
-  var lastNode = this.list_.lastNode();
-  if (!lastNode)
+  const lastNode = this.list_.lastNode();
+  if (!lastNode) {
     throw new Error('No more nodes to evict.');
+  }
 
   this.removeNode_(lastNode);
 };

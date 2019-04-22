@@ -24,7 +24,18 @@
 
   await dp.DOM.enable();
   await dp.CSS.enable();
+  testRunner.log('finished awaiting for CSS.enable');
 
-  testRunner.log('finished awaiting for css enable');
+  // Also make sure changes from service workers are seen by CSS.enable
+  const getResourceTreeResponse = await dp.Page.getResourceTree();
+  const mainFrameId = getResourceTreeResponse.result.frameTree.frame.id;
+  const getResourceContentResponse = await dp.Page.getResourceContent({
+    frameId: mainFrameId,
+    url:
+        'http://127.0.0.1:8000/inspector-protocol/service-worker/resources/repeat-fetch-service-worker.html'
+  });
+  testRunner.log(
+      'document resource from CSS.enable:\n' +
+      getResourceContentResponse.result.content);
   testRunner.completeTest();
 });

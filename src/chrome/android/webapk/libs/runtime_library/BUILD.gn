@@ -35,7 +35,7 @@ android_library("runtime_library_for_assets_java") {
       [ "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java" ]
   srcjar_deps = [ ":webapk_service_aidl" ]
   deps = [
-    "//third_party/android_deps:android_support_compat_java",
+    "//third_party/android_deps:com_android_support_support_compat_java",
   ]
 }
 
@@ -45,7 +45,7 @@ android_library("runtime_library_for_tests_java") {
       [ "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java" ]
   deps = [
     ":webapk_service_aidl_java",
-    "//third_party/android_deps:android_support_compat_java",
+    "//third_party/android_deps:com_android_support_support_compat_java",
   ]
 }
 

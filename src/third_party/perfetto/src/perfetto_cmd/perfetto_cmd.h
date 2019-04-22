@@ -24,7 +24,7 @@
 #include <time.h>
 
 #include "perfetto/base/build_config.h"
-#include "perfetto/base/pipe.h"
+#include "perfetto/base/event.h"
 #include "perfetto/base/scoped_file.h"
 #include "perfetto/base/unix_task_runner.h"
 #include "perfetto/tracing/core/consumer.h"
@@ -58,8 +58,12 @@ class PerfettoCmd : public Consumer {
   void OnDisconnect() override;
   void OnTracingDisabled() override;
   void OnTraceData(std::vector<TracePacket>, bool has_more) override;
+  void OnDetach(bool) override;
+  void OnAttach(bool, const TraceConfig&) override;
+  void OnTraceStats(bool, const TraceStats&) override;
+  void OnObservableEvents(const ObservableEvents&) override;
 
-  int ctrl_c_pipe_wr() const { return *ctrl_c_pipe_.wr; }
+  void SignalCtrlC() { ctrl_c_evt_.Notify(); }
 
  private:
   bool OpenOutputFile();
@@ -67,6 +71,8 @@ class PerfettoCmd : public Consumer {
   void FinalizeTraceAndExit();
   int PrintUsage(const char* argv0);
   void OnTimeout();
+  bool is_detach() const { return !detach_key_.empty(); }
+  bool is_attach() const { return !attach_key_.empty(); }
 
   PlatformTaskRunner task_runner_;
   std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
@@ -74,10 +80,14 @@ class PerfettoCmd : public Consumer {
   std::unique_ptr<TraceConfig> trace_config_;
   base::ScopedFstream trace_out_stream_;
   std::string trace_out_path_;
-  base::Pipe ctrl_c_pipe_;
+  base::Event ctrl_c_evt_;
   std::string dropbox_tag_;
   bool did_process_full_trace_ = false;
   uint64_t bytes_written_ = 0;
+  std::string detach_key_;
+  std::string attach_key_;
+  bool stop_trace_once_attached_ = false;
+  bool redetach_once_attached_ = false;
 };
 
 }  // namespace perfetto

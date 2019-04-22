@@ -7,55 +7,63 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
 import android.net.Uri;
 import android.view.View;
 
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-
 /**
  * The implementation of {@link IActivityHost}.
  */
 public class ActivityHostImpl extends BaseActivityHost {
-    private final CustomTabActivity mActivity;
+    private final DynamicModuleCoordinator mModuleCoordinator;
 
-    public ActivityHostImpl(CustomTabActivity activity) {
-        mActivity = activity;
+    public ActivityHostImpl(DynamicModuleCoordinator moduleCoordinator) {
+        mModuleCoordinator = moduleCoordinator;
     }
 
     @Override
     public IObjectWrapper getActivityContext() {
-        return ObjectWrapper.wrap(mActivity);
+        return ObjectWrapper.wrap(mModuleCoordinator.getActivityContext());
     }
 
     @Override
     public void setBottomBarView(IObjectWrapper bottomBarView) {
-        mActivity.setBottomBarContentView(ObjectWrapper.unwrap(bottomBarView, View.class));
+        mModuleCoordinator.setBottomBarContentView(ObjectWrapper.unwrap(bottomBarView, View.class));
     }
 
     @Override
     public void setOverlayView(IObjectWrapper overlayView) {
-        mActivity.setOverlayView(ObjectWrapper.unwrap(overlayView, View.class));
+        mModuleCoordinator.setOverlayView(ObjectWrapper.unwrap(overlayView, View.class));
     }
 
     @Override
     public void setBottomBarHeight(int height) {
-        mActivity.setBottomBarHeight(height);
+        mModuleCoordinator.setBottomBarHeight(height);
     }
 
     @Override
     public void loadUri(Uri uri) {
-        mActivity.loadUri(uri);
+        mModuleCoordinator.loadUri(uri);
     }
 
     @Override
     public void setTopBarView(IObjectWrapper topBarView) {
-        mActivity.setTopBarContentView(ObjectWrapper.unwrap(topBarView, View.class));
+        mModuleCoordinator.setTopBarContentView(ObjectWrapper.unwrap(topBarView, View.class));
     }
 
     @Override
     public boolean requestPostMessageChannel(Uri postMessageOrigin) {
-        return mActivity.requestPostMessageChannel(postMessageOrigin);
+        return mModuleCoordinator.requestPostMessageChannel(postMessageOrigin);
     }
 
     @Override
     public int postMessage(String message) {
-        return mActivity.postMessage(message);
+        return mModuleCoordinator.postMessage(message);
+    }
+
+    @Override
+    public void setTopBarHeight(int heightInPx) {
+        mModuleCoordinator.setTopBarHeight(heightInPx);
+    }
+
+    @Override
+    public void setTopBarMinHeight(int heightInPx) {
+        // Do nothing for now.
     }
 }

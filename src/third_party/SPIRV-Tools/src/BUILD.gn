@@ -305,7 +305,6 @@ source_set("spvtools_headers") {
 
 static_library("spvtools") {
   deps = [
-    ":spvtools_core_enums_unified1",
     ":spvtools_core_tables_unified1",
     ":spvtools_generators_inc",
     ":spvtools_glsl_tables_glsl1-0",
@@ -376,6 +375,7 @@ static_library("spvtools") {
   ]
 
   public_deps = [
+    ":spvtools_core_enums_unified1",
     ":spvtools_headers",
   ]
 
@@ -421,6 +421,7 @@ static_library("spvtools_val") {
     "source/val/validate_literals.cpp",
     "source/val/validate_logicals.cpp",
     "source/val/validate_memory.cpp",
+    "source/val/validate_memory_semantics.cpp",
     "source/val/validate_mode_setting.cpp",
     "source/val/validate_non_uniform.cpp",
     "source/val/validate_primitives.cpp",
@@ -451,6 +452,8 @@ static_library("spvtools_opt") {
     "source/opt/basic_block.h",
     "source/opt/block_merge_pass.cpp",
     "source/opt/block_merge_pass.h",
+    "source/opt/block_merge_util.cpp",
+    "source/opt/block_merge_util.h",
     "source/opt/build_module.cpp",
     "source/opt/build_module.h",
     "source/opt/ccp_pass.cpp",
@@ -459,6 +462,8 @@ static_library("spvtools_opt") {
     "source/opt/cfg.h",
     "source/opt/cfg_cleanup_pass.cpp",
     "source/opt/cfg_cleanup_pass.h",
+    "source/opt/code_sink.cpp",
+    "source/opt/code_sink.h",
     "source/opt/combine_access_chains.cpp",
     "source/opt/combine_access_chains.h",
     "source/opt/common_uniform_elim_pass.cpp",
@@ -479,6 +484,8 @@ static_library("spvtools_opt") {
     "source/opt/dead_insert_elim_pass.h",
     "source/opt/dead_variable_elimination.cpp",
     "source/opt/dead_variable_elimination.h",
+    "source/opt/decompose_initialized_variables_pass.cpp",
+    "source/opt/decompose_initialized_variables_pass.h",
     "source/opt/decoration_manager.cpp",
     "source/opt/decoration_manager.h",
     "source/opt/def_use_manager.cpp",
@@ -491,8 +498,14 @@ static_library("spvtools_opt") {
     "source/opt/eliminate_dead_constant_pass.h",
     "source/opt/eliminate_dead_functions_pass.cpp",
     "source/opt/eliminate_dead_functions_pass.h",
+    "source/opt/eliminate_dead_functions_util.cpp",
+    "source/opt/eliminate_dead_functions_util.h",
+    "source/opt/eliminate_dead_members_pass.cpp",
+    "source/opt/eliminate_dead_members_pass.h",
     "source/opt/feature_manager.cpp",
     "source/opt/feature_manager.h",
+    "source/opt/fix_storage_class.cpp",
+    "source/opt/fix_storage_class.h",
     "source/opt/flatten_decoration_pass.cpp",
     "source/opt/flatten_decoration_pass.h",
     "source/opt/fold.cpp",
@@ -505,6 +518,8 @@ static_library("spvtools_opt") {
     "source/opt/freeze_spec_constant_value_pass.h",
     "source/opt/function.cpp",
     "source/opt/function.h",
+    "source/opt/generate_webgpu_initializers_pass.cpp",
+    "source/opt/generate_webgpu_initializers_pass.h",
     "source/opt/if_conversion.cpp",
     "source/opt/if_conversion.h",
     "source/opt/inline_exhaustive_pass.cpp",
@@ -527,6 +542,8 @@ static_library("spvtools_opt") {
     "source/opt/ir_loader.cpp",
     "source/opt/ir_loader.h",
     "source/opt/iterator.h",
+    "source/opt/legalize_vector_shuffle_pass.cpp",
+    "source/opt/legalize_vector_shuffle_pass.h",
     "source/opt/licm_pass.cpp",
     "source/opt/licm_pass.h",
     "source/opt/local_access_chain_convert_pass.cpp",
@@ -603,6 +620,8 @@ static_library("spvtools_opt") {
     "source/opt/ssa_rewrite_pass.h",
     "source/opt/strength_reduction_pass.cpp",
     "source/opt/strength_reduction_pass.h",
+    "source/opt/strip_atomic_counter_memory_pass.cpp",
+    "source/opt/strip_atomic_counter_memory_pass.h",
     "source/opt/strip_debug_info_pass.cpp",
     "source/opt/strip_debug_info_pass.h",
     "source/opt/strip_reflect_info_pass.cpp",
@@ -616,6 +635,8 @@ static_library("spvtools_opt") {
     "source/opt/types.h",
     "source/opt/unify_const_pass.cpp",
     "source/opt/unify_const_pass.h",
+    "source/opt/upgrade_memory_model.cpp",
+    "source/opt/upgrade_memory_model.h",
     "source/opt/value_number_table.cpp",
     "source/opt/value_number_table.h",
     "source/opt/vector_dce.cpp",
@@ -646,132 +667,85 @@ group("SPIRV-Tools") {
   ]
 }
 
-if (!build_with_chromium) {
-  googletest_dir = spirv_tools_googletest_dir
-
-  config("gtest_config") {
-    include_dirs = [
-      "${googletest_dir}/googletest",
-      "${googletest_dir}/googletest/include",
-    ]
-  }
-
-  static_library("gtest") {
-    testonly = true
+# The tests are scoped to Chromium to avoid needing to write gtest integration.
+# See Chromium's third_party/googletest/BUILD.gn for a complete integration.
+if (build_with_chromium) {
+  test("spvtools_test") {
     sources = [
-      "${googletest_dir}/googletest/src/gtest-all.cc",
+      "test/assembly_context_test.cpp",
+      "test/assembly_format_test.cpp",
+      "test/binary_destroy_test.cpp",
+      "test/binary_endianness_test.cpp",
+      "test/binary_header_get_test.cpp",
+      "test/binary_parse_test.cpp",
+      "test/binary_strnlen_s_test.cpp",
+      "test/binary_to_text.literal_test.cpp",
+      "test/binary_to_text_test.cpp",
+      "test/comment_test.cpp",
+      "test/enum_set_test.cpp",
+      "test/enum_string_mapping_test.cpp",
+      "test/ext_inst.debuginfo_test.cpp",
+      "test/ext_inst.glsl_test.cpp",
+      "test/ext_inst.opencl_test.cpp",
+      "test/fix_word_test.cpp",
+      "test/generator_magic_number_test.cpp",
+      "test/hex_float_test.cpp",
+      "test/immediate_int_test.cpp",
+      "test/libspirv_macros_test.cpp",
+      "test/name_mapper_test.cpp",
+      "test/named_id_test.cpp",
+      "test/opcode_make_test.cpp",
+      "test/opcode_require_capabilities_test.cpp",
+      "test/opcode_split_test.cpp",
+      "test/opcode_table_get_test.cpp",
+      "test/operand_capabilities_test.cpp",
+      "test/operand_pattern_test.cpp",
+      "test/operand_test.cpp",
+      "test/target_env_test.cpp",
+      "test/test_fixture.h",
+      "test/text_advance_test.cpp",
+      "test/text_destroy_test.cpp",
+      "test/text_literal_test.cpp",
+      "test/text_start_new_inst_test.cpp",
+      "test/text_to_binary.annotation_test.cpp",
+      "test/text_to_binary.barrier_test.cpp",
+      "test/text_to_binary.constant_test.cpp",
+      "test/text_to_binary.control_flow_test.cpp",
+      "test/text_to_binary.debug_test.cpp",
+      "test/text_to_binary.device_side_enqueue_test.cpp",
+      "test/text_to_binary.extension_test.cpp",
+      "test/text_to_binary.function_test.cpp",
+      "test/text_to_binary.group_test.cpp",
+      "test/text_to_binary.image_test.cpp",
+      "test/text_to_binary.literal_test.cpp",
+      "test/text_to_binary.memory_test.cpp",
+      "test/text_to_binary.misc_test.cpp",
+      "test/text_to_binary.mode_setting_test.cpp",
+      "test/text_to_binary.pipe_storage_test.cpp",
+      "test/text_to_binary.reserved_sampling_test.cpp",
+      "test/text_to_binary.subgroup_dispatch_test.cpp",
+      "test/text_to_binary.type_declaration_test.cpp",
+      "test/text_to_binary_test.cpp",
+      "test/text_word_get_test.cpp",
+      "test/unit_spirv.cpp",
+      "test/unit_spirv.h",
     ]
-    public_configs = [ ":gtest_config" ]
-  }
 
-  config("gmock_config") {
-    include_dirs = [
-      "${googletest_dir}/googlemock",
-      "${googletest_dir}/googlemock/include",
-      "${googletest_dir}/googletest/include",
-    ]
-    if (is_clang) {
-      # TODO: Can remove this if/when the issue is fixed.
-      # https://github.com/google/googletest/issues/533
-      cflags = [ "-Wno-inconsistent-missing-override" ]
-    }
-  }
-
-  static_library("gmock") {
-    testonly = true
-    sources = [
-      "${googletest_dir}/googlemock/src/gmock-all.cc",
-    ]
-    public_configs = [ ":gmock_config" ]
-  }
-}
-
-test("spvtools_test") {
-  sources = [
-    "test/assembly_context_test.cpp",
-    "test/assembly_format_test.cpp",
-    "test/binary_destroy_test.cpp",
-    "test/binary_endianness_test.cpp",
-    "test/binary_header_get_test.cpp",
-    "test/binary_parse_test.cpp",
-    "test/binary_strnlen_s_test.cpp",
-    "test/binary_to_text.literal_test.cpp",
-    "test/binary_to_text_test.cpp",
-    "test/comment_test.cpp",
-    "test/enum_set_test.cpp",
-    "test/enum_string_mapping_test.cpp",
-    "test/ext_inst.debuginfo_test.cpp",
-    "test/ext_inst.glsl_test.cpp",
-    "test/ext_inst.opencl_test.cpp",
-    "test/fix_word_test.cpp",
-    "test/generator_magic_number_test.cpp",
-    "test/hex_float_test.cpp",
-    "test/immediate_int_test.cpp",
-    "test/libspirv_macros_test.cpp",
-    "test/name_mapper_test.cpp",
-    "test/named_id_test.cpp",
-    "test/opcode_make_test.cpp",
-    "test/opcode_require_capabilities_test.cpp",
-    "test/opcode_split_test.cpp",
-    "test/opcode_table_get_test.cpp",
-    "test/operand_capabilities_test.cpp",
-    "test/operand_pattern_test.cpp",
-    "test/operand_test.cpp",
-    "test/target_env_test.cpp",
-    "test/test_fixture.h",
-    "test/text_advance_test.cpp",
-    "test/text_destroy_test.cpp",
-    "test/text_literal_test.cpp",
-    "test/text_start_new_inst_test.cpp",
-    "test/text_to_binary.annotation_test.cpp",
-    "test/text_to_binary.barrier_test.cpp",
-    "test/text_to_binary.constant_test.cpp",
-    "test/text_to_binary.control_flow_test.cpp",
-    "test/text_to_binary.debug_test.cpp",
-    "test/text_to_binary.device_side_enqueue_test.cpp",
-    "test/text_to_binary.extension_test.cpp",
-    "test/text_to_binary.function_test.cpp",
-    "test/text_to_binary.group_test.cpp",
-    "test/text_to_binary.image_test.cpp",
-    "test/text_to_binary.literal_test.cpp",
-    "test/text_to_binary.memory_test.cpp",
-    "test/text_to_binary.misc_test.cpp",
-    "test/text_to_binary.mode_setting_test.cpp",
-    "test/text_to_binary.pipe_storage_test.cpp",
-    "test/text_to_binary.reserved_sampling_test.cpp",
-    "test/text_to_binary.subgroup_dispatch_test.cpp",
-    "test/text_to_binary.type_declaration_test.cpp",
-    "test/text_to_binary_test.cpp",
-    "test/text_word_get_test.cpp",
-    "test/unit_spirv.cpp",
-    "test/unit_spirv.h",
-  ]
-
-  deps = [
-    ":spvtools",
-    ":spvtools_language_header_unified1",
-    ":spvtools_val",
-  ]
-
-  if (build_with_chromium) {
-    deps += [
+    deps = [
       "//testing/gmock",
       "//testing/gtest",
       "//testing/gtest:gtest_main",
+      ":spvtools",
+      ":spvtools_language_header_unified1",
+      ":spvtools_val",
     ]
-  } else {
-    deps += [
-      ":gmock",
-      ":gtest",
-    ]
-    sources += [ "${googletest_dir}/googletest/src/gtest_main.cc" ]
-  }
 
-  if (is_clang) {
-    cflags_cc = [ "-Wno-self-assign" ]
-  }
+    if (is_clang) {
+      cflags_cc = [ "-Wno-self-assign" ]
+    }
 
-  configs += [ ":spvtools_internal_config" ]
+    configs += [ ":spvtools_internal_config" ]
+  }
 }
 
 if (spirv_tools_standalone) {

@@ -22,10 +22,13 @@ All arguments are optional. Most combinations should work, e.g.:
 from __future__ import print_function
 import errno
 import os
-import pty
 import re
 import subprocess
 import sys
+
+USE_PTY = "linux" in sys.platform
+if USE_PTY:
+  import pty
 
 BUILD_TARGETS_TEST = ["d8", "cctest", "unittests"]
 BUILD_TARGETS_ALL = ["all"]
@@ -203,6 +206,16 @@ def GetPath(arch, mode):
   subdir = "%s.%s" % (arch, mode)
   return os.path.join(OUTDIR, subdir)
 
+def PrepareMksnapshotCmdline(orig_cmdline, path):
+  result = "gdb --args %s/mksnapshot " % path
+  for w in orig_cmdline.split(" "):
+    if w.startswith("gen/") or w.startswith("snapshot_blob"):
+      result += ("%(path)s%(sep)s%(arg)s " %
+                 {"path": path, "sep": os.sep, "arg": w})
+    else:
+      result += "%s " % w
+  return result
+
 class Config(object):
   def __init__(self, arch, mode, targets, tests=[]):
     self.arch = arch
@@ -258,37 +271,21 @@ class Config(object):
     targets = " ".join(self.targets)
     # The implementation of mksnapshot failure detection relies on
     # the "pty" module and GDB presence, so skip it on non-Linux.
-    if "linux" not in sys.platform:
+    if not USE_PTY:
       return _Call("autoninja -C %s %s" % (path, targets))
 
     return_code, output = _CallWithOutput("autoninja -C %s %s" %
                                           (path, targets))
-    if return_code != 0 and "FAILED: snapshot_blob.bin" in output:
+    if return_code != 0 and "FAILED:" in output and "snapshot_blob" in output:
       csa_trap = re.compile("Specify option( --csa-trap-on-node=[^ ]*)")
       match = csa_trap.search(output)
       extra_opt = match.group(1) if match else ""
+      cmdline = re.compile("python ../../tools/run.py ./mksnapshot (.*)")
+      orig_cmdline = cmdline.search(output).group(1).strip()
+      cmdline = PrepareMksnapshotCmdline(orig_cmdline, path) + extra_opt
       _Notify("V8 build requires your attention",
               "Detected mksnapshot failure, re-running in GDB...")
-      _Call("gdb -args %(path)s/mksnapshot "
-            "--startup_src %(path)s/gen/snapshot.cc "
-            "--random-seed 314159265 "
-            "--startup-blob %(path)s/snapshot_blob.bin"
-            "%(extra)s"% {"path": path, "extra": extra_opt})
-    if (return_code != 0 and
-        "FAILED: gen/embedded.cc snapshot_blob.bin" in output):
-      csa_trap = re.compile("Specify option( --csa-trap-on-node=[^ ]*)")
-      match = csa_trap.search(output)
-      extra_opt = match.group(1) if match else ""
-      _Notify("V8 build requires your attention",
-              "Detected mksnapshot failure, re-running in GDB...")
-      _Call("gdb -args %(path)s/mksnapshot "
-            "--turbo-instruction-scheduling "
-            "--embedded_src %(path)s/gen/embedded.cc "
-            "--embedded_variant Default "
-            "--startup_src %(path)s/gen/snapshot.cc "
-            "--random-seed 314159265 "
-            "--startup-blob %(path)s/snapshot_blob.bin"
-            "%(extra)s"% {"path": path, "extra": extra_opt})
+      _Call(cmdline)
     return return_code
 
   def RunTests(self):
@@ -297,8 +294,9 @@ class Config(object):
       tests = ""
     else:
       tests = " ".join(self.tests)
-    return _Call("tools/run-tests.py --outdir=%s %s" %
-                   (GetPath(self.arch, self.mode), tests))
+    return _Call('"%s" ' % sys.executable +
+                 os.path.join("tools", "run-tests.py") +
+                 " --outdir=%s %s" % (GetPath(self.arch, self.mode), tests))
 
 def GetTestBinary(argstring):
   for suite in TESTSUITES_TARGETS:

@@ -15,9 +15,15 @@
 #ifndef sw_Sampler_hpp
 #define sw_Sampler_hpp
 
+#include "Device/Color.hpp"
 #include "Device/Config.hpp"
-#include "Device/Surface.hpp"
 #include "System/Types.hpp"
+#include "Vulkan/VkFormat.h"
+
+namespace vk
+{
+	class Image;
+}
 
 namespace sw
 {
@@ -50,13 +56,13 @@ namespace sw
 		float4 heightLOD;
 		float4 depthLOD;
 
-		word4 borderColor4[4];
-		float4 borderColorF[4];
-		float maxAnisotropy;
+		word4 borderColor4[4];   // FIXME(b/129523279): Part of Vulkan sampler.
+		float4 borderColorF[4];  // FIXME(b/129523279): Part of Vulkan sampler.
+		float maxAnisotropy;     // FIXME(b/129523279): Part of Vulkan sampler.
 		int baseLevel;
 		int maxLevel;
-		float minLod;
-		float maxLod;
+		float minLod;  // FIXME(b/129523279): Part of Vulkan sampler.
+		float maxLod;  // FIXME(b/129523279): Part of Vulkan sampler.
 	};
 
 	enum SamplerType
@@ -146,23 +152,23 @@ namespace sw
 		{
 			State();
 
-			TextureType textureType        : BITS(TEXTURE_LAST);
-			VkFormat textureFormat         : BITS(VK_FORMAT_END_RANGE);
-			FilterType textureFilter       : BITS(FILTER_LAST);
-			AddressingMode addressingModeU : BITS(ADDRESSING_LAST);
-			AddressingMode addressingModeV : BITS(ADDRESSING_LAST);
-			AddressingMode addressingModeW : BITS(ADDRESSING_LAST);
-			MipmapType mipmapFilter        : BITS(FILTER_LAST);
-			bool sRGB                      : 1;
-			SwizzleType swizzleR           : BITS(SWIZZLE_LAST);
-			SwizzleType swizzleG           : BITS(SWIZZLE_LAST);
-			SwizzleType swizzleB           : BITS(SWIZZLE_LAST);
-			SwizzleType swizzleA           : BITS(SWIZZLE_LAST);
-			bool highPrecisionFiltering    : 1;
-			CompareFunc compare            : BITS(COMPARE_LAST);
+			TextureType textureType;
+			vk::Format textureFormat;
+			FilterType textureFilter;
+			AddressingMode addressingModeU;
+			AddressingMode addressingModeV;
+			AddressingMode addressingModeW;
+			MipmapType mipmapFilter;
+			bool sRGB;
+			SwizzleType swizzleR;
+			SwizzleType swizzleG;
+			SwizzleType swizzleB;
+			SwizzleType swizzleA;
+			bool highPrecisionFiltering;
+			CompareFunc compare;
 
 			#if PERF_PROFILE
-			bool compressedFormat          : 1;
+			bool compressedFormat;
 			#endif
 		};
 
@@ -172,7 +178,7 @@ namespace sw
 
 		State samplerState() const;
 
-		void setTextureLevel(int face, int level, Surface *surface, TextureType type);
+		void setTextureLevel(int face, int level, vk::Image *image, TextureType type);
 
 		void setTextureFilter(FilterType textureFilter);
 		void setMipmapFilter(MipmapType mipmapFilter);
@@ -214,8 +220,7 @@ namespace sw
 		AddressingMode getAddressingModeW() const;
 		CompareFunc getCompareFunc() const;
 
-		VkFormat externalTextureFormat;
-		VkFormat internalTextureFormat;
+		vk::Format textureFormat;
 		TextureType textureType;
 
 		FilterType textureFilter;

@@ -23,6 +23,11 @@
         width: var(--drawer-width);
       }
 
+      :host-context([dark]) dialog {
+        background: var(--google-grey-900)
+            linear-gradient(rgba(255, 255, 255, .04), rgba(255, 255, 255, .04));
+      }
+
       :host dialog,
       #container {
         height: 100%;
@@ -66,6 +71,10 @@
         min-height: 56px;
         outline: none;
         padding-inline-start: 24px;
+      }
+
+      :host-context([dark]) .drawer-header {
+        color: var(--cr-primary-text-color);
       }
 
       :host ::slotted(.drawer-content) {

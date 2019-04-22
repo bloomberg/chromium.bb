@@ -41,13 +41,15 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #else
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #endif
 
 using testing::InvokeWithoutArgs;
@@ -114,7 +116,7 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    test_server_.RegisterClient(kDMToken, kDeviceID);
+    test_server_.RegisterClient(kDMToken, kDeviceID, {} /* state_keys */);
     EXPECT_TRUE(test_server_.UpdatePolicyData(
         dm_protocol::kChromeExtensionPolicyType, kTestExtension, kTestPolicy));
     ASSERT_TRUE(test_server_.Start());
@@ -181,12 +183,9 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
 #else
     // Mock a signed-in user. This is used by the UserCloudPolicyStore to pass
     // the account id to the UserCloudPolicyValidator.
-    SigninManager* signin_manager =
-        SigninManagerFactory::GetForProfile(browser()->profile());
-    ASSERT_TRUE(signin_manager);
-    signin_manager->StartSignInWithRefreshToken(
-        "", "account_id", "12345", PolicyBuilder::kFakeUsername,
-        SigninManager::OAuthTokenFetchedCallback());
+    identity::SetPrimaryAccount(
+        IdentityManagerFactory::GetForProfile(browser()->profile()),
+        PolicyBuilder::kFakeUsername);
 
     UserCloudPolicyManager* policy_manager =
         UserCloudPolicyManagerFactory::GetForBrowserContext(
@@ -220,11 +219,13 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
 
 #if !defined(OS_CHROMEOS)
   void SignOut() {
-    SigninManager* signin_manager =
-        SigninManagerFactory::GetForProfile(browser()->profile());
-    ASSERT_TRUE(signin_manager);
-    signin_manager->SignOut(signin_metrics::SIGNOUT_TEST,
-                            signin_metrics::SignoutDelete::IGNORE_METRIC);
+    auto* primary_account_mutator =
+        IdentityManagerFactory::GetForProfile(browser()->profile())
+            ->GetPrimaryAccountMutator();
+    primary_account_mutator->ClearPrimaryAccount(
+        identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+        signin_metrics::SIGNOUT_TEST,
+        signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
 #endif
 

@@ -18,12 +18,12 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "ios/net/url_test_util.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/test/url_test_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -34,7 +34,6 @@ using chrome_test_util::ExecuteJavaScript;
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
-using web::test::ElementSelector;
 using web::test::HttpServer;
 using web::WebViewInWebState;
 
@@ -97,7 +96,7 @@ id<GREYMatcher> PopupBlocker() {
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId(ID))];
+                        [ElementSelector selectorWithElementID:ID])];
 
   [ChromeEarlGrey waitForMainTabCount:2];
   [ChromeEarlGrey waitForWebViewContainingText:"Expected result"];
@@ -113,7 +112,7 @@ id<GREYMatcher> PopupBlocker() {
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId(ID))];
+                        [ElementSelector selectorWithElementID:ID])];
   [ChromeEarlGrey waitForMainTabCount:2];
 }
 
@@ -135,7 +134,7 @@ id<GREYMatcher> PopupBlocker() {
   web::WebState* test_page_web_state = GetCurrentWebState();
   id<GREYMatcher> test_page_matcher = WebViewInWebState(test_page_web_state);
   id<GREYAction> link_tap = web::WebViewTapElement(
-      test_page_web_state, ElementSelector::ElementSelectorId(ID));
+      test_page_web_state, [ElementSelector selectorWithElementID:ID]);
   [[EarlGrey selectElementWithMatcher:test_page_matcher]
       performAction:link_tap];
   [ChromeEarlGrey waitForMainTabCount:2];
@@ -167,7 +166,7 @@ id<GREYMatcher> PopupBlocker() {
   const GURL targetURL =
       HttpServer::MakeUrl(std::string(kTestURL) + "#assigned");
   const std::string targetOmniboxText =
-      web::GetContentAndFragmentForUrl(targetURL);
+      net::GetContentAndFragmentForUrl(targetURL);
   [[EarlGrey selectElementWithMatcher:OmniboxText(targetOmniboxText)]
       assertWithMatcher:grey_notNil()];
 }
@@ -184,7 +183,7 @@ id<GREYMatcher> PopupBlocker() {
   const GURL targetURL =
       HttpServer::MakeUrl(std::string(kTestURL) + "#updated");
   const std::string targetOmniboxText =
-      web::GetContentAndFragmentForUrl(targetURL);
+      net::GetContentAndFragmentForUrl(targetURL);
   [[EarlGrey selectElementWithMatcher:OmniboxText(targetOmniboxText)]
       assertWithMatcher:grey_notNil()];
 }
@@ -203,7 +202,7 @@ id<GREYMatcher> PopupBlocker() {
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId(ID))];
+                        [ElementSelector selectorWithElementID:ID])];
   [ChromeEarlGrey waitForMainTabCount:2];
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
   [ChromeEarlGrey waitForMainTabCount:1];

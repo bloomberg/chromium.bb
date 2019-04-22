@@ -5,20 +5,16 @@
 import("//android_webview/system_webview_apk_tmpl.gni")
 import("//android_webview/variables.gni")
 import("//android_webview/webview_repack_locales.gni")
-import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
+import("//chrome/android/chrome_common_shared_library.gni")
+import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/android/trichrome.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//tools/grit/repack.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
-
-declare_args() {
-  # Package name of the system_webview_apk target.
-  system_webview_package_name = "com.android.webview"
-}
 
 if (enable_resource_whitelist_generation) {
   system_webview_pak_whitelist =
@@ -49,24 +45,25 @@ generate_jni("native_jni") {
     "java/src/org/chromium/android_webview/AwDevToolsServer.java",
     "java/src/org/chromium/android_webview/AwFeatureList.java",
     "java/src/org/chromium/android_webview/AwFormDatabase.java",
-    "java/src/org/chromium/android_webview/AwGLFunctor.java",
     "java/src/org/chromium/android_webview/AwHttpAuthHandler.java",
     "java/src/org/chromium/android_webview/AwMetricsLogUploader.java",
     "java/src/org/chromium/android_webview/AwMetricsServiceClient.java",
     "java/src/org/chromium/android_webview/AwPdfExporter.java",
-    "java/src/org/chromium/android_webview/AwPicture.java",
+    "java/src/org/chromium/android_webview/AwProxyController.java",
     "java/src/org/chromium/android_webview/AwQuotaManagerBridge.java",
     "java/src/org/chromium/android_webview/AwRenderProcess.java",
     "java/src/org/chromium/android_webview/AwResource.java",
     "java/src/org/chromium/android_webview/AwSettings.java",
-    "java/src/org/chromium/android_webview/AwTokenBindingManager.java",
     "java/src/org/chromium/android_webview/AwTracingController.java",
     "java/src/org/chromium/android_webview/AwVariationsSeedBridge.java",
     "java/src/org/chromium/android_webview/AwWebContentsDelegate.java",
     "java/src/org/chromium/android_webview/AwWebResourceResponse.java",
     "java/src/org/chromium/android_webview/InputStreamUtil.java",
-    "java/src/org/chromium/android_webview/JavaBrowserViewRendererHelper.java",
     "java/src/org/chromium/android_webview/PopupTouchHandleDrawable.java",
+    "java/src/org/chromium/android_webview/gfx/AwDrawFnImpl.java",
+    "java/src/org/chromium/android_webview/gfx/AwGLFunctor.java",
+    "java/src/org/chromium/android_webview/gfx/AwPicture.java",
+    "java/src/org/chromium/android_webview/gfx/JavaBrowserViewRendererHelper.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
   ]
   jni_package = "android_webview"
@@ -95,13 +92,19 @@ java_cpp_enum("android_webview_java_enums_srcjar") {
 
 java_cpp_enum("aw_error_ui") {
   sources = [
-    "browser/aw_safe_browsing_blocking_page.h",
+    "browser/safe_browsing/aw_safe_browsing_blocking_page.h",
   ]
 }
 
 java_cpp_enum("aw_safe_browsing_action") {
   sources = [
-    "browser/aw_url_checker_delegate_impl.h",
+    "browser/safe_browsing/aw_url_checker_delegate_impl.h",
+  ]
+}
+
+java_cpp_enum("aw_settings_force_dark_mode") {
+  sources = [
+    "browser/aw_settings.h",
   ]
 }
 
@@ -203,7 +206,7 @@ android_assets("pak_file_assets") {
 }
 
 # These assets are needed by both monochrome and stand alone WebView, but not by
-# Chrome.
+# Chrome or TrichromeWebView.
 android_assets("monochrome_webview_assets") {
   deps = [
     "//third_party/icu:icu_assets",
@@ -216,15 +219,6 @@ android_assets("monochrome_webview_assets") {
   if (android_64bit_target_cpu && build_apk_secondary_abi) {
     deps += [ ":v8_snapshot_secondary_abi_assets" ]
   }
-}
-
-java_group("assets") {
-  deps = [
-    ":license_assets",
-    ":locale_pak_assets",
-    ":monochrome_webview_assets",
-    ":pak_file_assets",
-  ]
 }
 
 java_group("stub_assets") {
@@ -341,17 +335,20 @@ grit("generate_components_strings") {
     "java/res/values-am/components_strings.xml",
     "java/res/values-ar/components_strings.xml",
     "java/res/values-bg/components_strings.xml",
+    "java/res/values-bn/components_strings.xml",
     "java/res/values-ca/components_strings.xml",
     "java/res/values-cs/components_strings.xml",
     "java/res/values-da/components_strings.xml",
     "java/res/values-de/components_strings.xml",
     "java/res/values-el/components_strings.xml",
     "java/res/values-en-rGB/components_strings.xml",
-    "java/res/values-es-rUS/components_strings.xml",
     "java/res/values-es/components_strings.xml",
+    "java/res/values-es-rUS/components_strings.xml",
+    "java/res/values-et/components_strings.xml",
     "java/res/values-fa/components_strings.xml",
     "java/res/values-fi/components_strings.xml",
     "java/res/values-fr/components_strings.xml",
+    "java/res/values-gu/components_strings.xml",
     "java/res/values-hi/components_strings.xml",
     "java/res/values-hr/components_strings.xml",
     "java/res/values-hu/components_strings.xml",
@@ -359,9 +356,13 @@ grit("generate_components_strings") {
     "java/res/values-it/components_strings.xml",
     "java/res/values-iw/components_strings.xml",
     "java/res/values-ja/components_strings.xml",
+    "java/res/values-kn/components_strings.xml",
     "java/res/values-ko/components_strings.xml",
     "java/res/values-lt/components_strings.xml",
     "java/res/values-lv/components_strings.xml",
+    "java/res/values-ml/components_strings.xml",
+    "java/res/values-mr/components_strings.xml",
+    "java/res/values-ms/components_strings.xml",
     "java/res/values-nb/components_strings.xml",
     "java/res/values-nl/components_strings.xml",
     "java/res/values-pl/components_strings.xml",
@@ -374,6 +375,8 @@ grit("generate_components_strings") {
     "java/res/values-sr/components_strings.xml",
     "java/res/values-sv/components_strings.xml",
     "java/res/values-sw/components_strings.xml",
+    "java/res/values-ta/components_strings.xml",
+    "java/res/values-te/components_strings.xml",
     "java/res/values-th/components_strings.xml",
     "java/res/values-tl/components_strings.xml",
     "java/res/values-tr/components_strings.xml",
@@ -416,6 +419,9 @@ if (android_64bit_target_cpu) {
       renaming_sources = [ "$_secondary_abi_out_dir/v8_context_snapshot.bin" ]
       renaming_destinations = [ "v8_context_snapshot_$arch_suffix.bin" ]
     } else {
+      sources = [
+        "$root_out_dir/natives_blob.bin",
+      ]
       renaming_sources = [ "$_secondary_abi_out_dir/snapshot_blob.bin" ]
       renaming_destinations = [ "snapshot_blob_$arch_suffix.bin" ]
     }
@@ -425,27 +431,37 @@ if (android_64bit_target_cpu) {
       "//v8($android_secondary_abi_toolchain)",
     ]
   }
+}
 
-  shared_library("monochrome") {
-    deps = [
-      ":webview_entry_point",
-    ]
-    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-    configs += [ "//build/config/android:hide_all_but_jni" ]
-    if (use_lld) {
-      configs += [ "//build/config/android:lld_pack_relocations" ]
+if (defined(android_secondary_abi_toolchain)) {
+  template("webview_library") {
+    chrome_common_shared_library(target_name) {
+      forward_variables_from(invoker, "*")
+      deps = [
+        ":webview_entry_point",
+      ]
+      is_webview = true
     }
+  }
 
-    if (target_cpu != "mipsel" && target_cpu != "mips64el") {
-      # .gnu.hash support added in Android M. Without this flag, library will also
-      # contain an unused .hash section. (http://crbug.com/742525#c28)
-      # Not to be used for MIPS arhitecture since MIPS does not
-      # support hashstyle gnu: http://crbug.com/811306
-      ldflags = [ "-Wl,--hash-style=gnu" ]
+  # Note here that on a given system, the webview-only library needs the same
+  # library name as the browser library, since the system webview factory will
+  # differentiate only by ABI. Each library has an app-bundle ("_base")
+  # variant.
+  if (current_toolchain == android_secondary_abi_toolchain) {
+    # These targets are the 32-bit WebView libraries that pair with a 64-bit
+    # browser. They are suffixed with _64 because their names must mach the
+    # 64-bit browser library.
+    webview_library("monochrome_64") {
     }
-
-    public_configs = extra_chrome_shared_library_configs
-    deps += extra_chrome_shared_library_deps
+    webview_library("monochrome_64_base") {
+    }
+  } else {
+    # Inverse of the others above, for the original 32-bit case.
+    webview_library("monochrome") {
+    }
+    webview_library("monochrome_base") {
+    }
   }
 }
 
@@ -454,7 +470,9 @@ if (enable_resource_whitelist_generation) {
     deps = [
       ":libwebviewchromium",
     ]
-    input = "$root_out_dir/lib.unstripped/libwebviewchromium$shlib_extension"
+    inputs = [
+      "$root_out_dir/lib.unstripped/libwebviewchromium$shlib_extension",
+    ]
     output = system_webview_pak_whitelist
   }
 }
@@ -476,6 +494,12 @@ source_set("common") {
     "browser/aw_browser_terminator.h",
     "browser/aw_content_browser_client.cc",
     "browser/aw_content_browser_client.h",
+    "browser/aw_content_browser_overlay_manifest.cc",
+    "browser/aw_content_browser_overlay_manifest.h",
+    "browser/aw_content_renderer_overlay_manifest.cc",
+    "browser/aw_content_renderer_overlay_manifest.h",
+    "browser/aw_content_utility_overlay_manifest.cc",
+    "browser/aw_content_utility_overlay_manifest.h",
     "browser/aw_contents.cc",
     "browser/aw_contents.h",
     "browser/aw_contents_client_bridge.cc",
@@ -501,16 +525,10 @@ source_set("common") {
     "browser/aw_form_database.cc",
     "browser/aw_form_database_service.cc",
     "browser/aw_form_database_service.h",
-    "browser/aw_gl_functor.cc",
-    "browser/aw_gl_functor.h",
-    "browser/aw_gl_surface.cc",
-    "browser/aw_gl_surface.h",
     "browser/aw_http_auth_handler.cc",
     "browser/aw_http_auth_handler.h",
     "browser/aw_javascript_dialog_manager.cc",
     "browser/aw_javascript_dialog_manager.h",
-    "browser/aw_login_delegate.cc",
-    "browser/aw_login_delegate.h",
     "browser/aw_media_url_interceptor.cc",
     "browser/aw_media_url_interceptor.h",
     "browser/aw_metrics_log_uploader.cc",
@@ -521,14 +539,9 @@ source_set("common") {
     "browser/aw_pdf_exporter.h",
     "browser/aw_permission_manager.cc",
     "browser/aw_permission_manager.h",
-    "browser/aw_picture.cc",
-    "browser/aw_picture.h",
     "browser/aw_print_manager.cc",
     "browser/aw_print_manager.h",
-    "browser/aw_printing_message_filter.cc",
-    "browser/aw_printing_message_filter.h",
-    "browser/aw_proxying_url_loader_factory.cc",
-    "browser/aw_proxying_url_loader_factory.h",
+    "browser/aw_proxy_controller.cc",
     "browser/aw_quota_manager_bridge.cc",
     "browser/aw_quota_manager_bridge.h",
     "browser/aw_quota_permission_context.cc",
@@ -536,27 +549,15 @@ source_set("common") {
     "browser/aw_render_process.cc",
     "browser/aw_render_process.h",
     "browser/aw_render_process_gone_delegate.h",
-    "browser/aw_render_thread_context_provider.cc",
-    "browser/aw_render_thread_context_provider.h",
     "browser/aw_renderer_priority.h",
     "browser/aw_resource_context.cc",
     "browser/aw_resource_context.h",
-    "browser/aw_safe_browsing_blocking_page.cc",
-    "browser/aw_safe_browsing_blocking_page.h",
-    "browser/aw_safe_browsing_resource_throttle.cc",
-    "browser/aw_safe_browsing_resource_throttle.h",
-    "browser/aw_safe_browsing_ui_manager.cc",
-    "browser/aw_safe_browsing_ui_manager.h",
-    "browser/aw_safe_browsing_whitelist_manager.cc",
-    "browser/aw_safe_browsing_whitelist_manager.h",
     "browser/aw_settings.cc",
     "browser/aw_settings.h",
     "browser/aw_speech_recognition_manager_delegate.cc",
     "browser/aw_speech_recognition_manager_delegate.h",
     "browser/aw_ssl_host_state_delegate.cc",
     "browser/aw_ssl_host_state_delegate.h",
-    "browser/aw_url_checker_delegate_impl.cc",
-    "browser/aw_url_checker_delegate_impl.h",
     "browser/aw_variations_seed_bridge.cc",
     "browser/aw_variations_seed_bridge.h",
     "browser/aw_variations_service_client.cc",
@@ -567,32 +568,14 @@ source_set("common") {
     "browser/aw_web_contents_view_delegate.h",
     "browser/aw_web_ui_controller_factory.cc",
     "browser/aw_web_ui_controller_factory.h",
-    "browser/browser_view_renderer.cc",
-    "browser/browser_view_renderer.h",
-    "browser/browser_view_renderer_client.h",
-    "browser/child_frame.cc",
-    "browser/child_frame.h",
-    "browser/command_line_helper.cc",
-    "browser/command_line_helper.h",
-    "browser/compositor_frame_consumer.h",
-    "browser/compositor_frame_producer.h",
-    "browser/compositor_id.cc",
-    "browser/compositor_id.h",
     "browser/cookie_manager.cc",
-    "browser/deferred_gpu_command_service.cc",
-    "browser/deferred_gpu_command_service.h",
+    "browser/cookie_manager.h",
     "browser/find_helper.cc",
     "browser/find_helper.h",
-    "browser/gl_view_renderer_manager.cc",
-    "browser/gl_view_renderer_manager.h",
-    "browser/hardware_renderer.cc",
-    "browser/hardware_renderer.h",
     "browser/icon_helper.cc",
     "browser/icon_helper.h",
     "browser/input_stream.cc",
     "browser/input_stream.h",
-    "browser/java_browser_view_renderer_helper.cc",
-    "browser/java_browser_view_renderer_helper.h",
     "browser/net/android_stream_reader_url_request_job.cc",
     "browser/net/android_stream_reader_url_request_job.h",
     "browser/net/aw_cookie_change_dispatcher_wrapper.cc",
@@ -607,6 +590,8 @@ source_set("common") {
     "browser/net/aw_network_change_notifier_factory.h",
     "browser/net/aw_network_delegate.cc",
     "browser/net/aw_network_delegate.h",
+    "browser/net/aw_proxy_config_monitor.cc",
+    "browser/net/aw_proxy_config_monitor.h",
     "browser/net/aw_request_interceptor.cc",
     "browser/net/aw_request_interceptor.h",
     "browser/net/aw_url_request_context_getter.cc",
@@ -621,14 +606,14 @@ source_set("common") {
     "browser/net/init_native_callback.h",
     "browser/net/input_stream_reader.cc",
     "browser/net/input_stream_reader.h",
-    "browser/net/token_binding_manager.cc",
-    "browser/net/token_binding_manager.h",
-    "browser/net_helpers.cc",
-    "browser/net_helpers.h",
-    "browser/parent_compositor_draw_constraints.cc",
-    "browser/parent_compositor_draw_constraints.h",
-    "browser/parent_output_surface.cc",
-    "browser/parent_output_surface.h",
+    "browser/network_service/android_stream_reader_url_loader.cc",
+    "browser/network_service/android_stream_reader_url_loader.h",
+    "browser/network_service/aw_proxying_url_loader_factory.cc",
+    "browser/network_service/aw_proxying_url_loader_factory.h",
+    "browser/network_service/aw_url_loader_throttle.cc",
+    "browser/network_service/aw_url_loader_throttle.h",
+    "browser/network_service/net_helpers.cc",
+    "browser/network_service/net_helpers.h",
     "browser/permission/aw_permission_request.cc",
     "browser/permission/aw_permission_request.h",
     "browser/permission/aw_permission_request_delegate.cc",
@@ -643,22 +628,26 @@ source_set("common") {
     "browser/permission/simple_permission_request.h",
     "browser/popup_touch_handle_drawable.cc",
     "browser/popup_touch_handle_drawable.h",
-    "browser/render_thread_manager.cc",
-    "browser/render_thread_manager.h",
-    "browser/render_thread_manager_client.h",
     "browser/renderer_host/auto_login_parser.cc",
     "browser/renderer_host/auto_login_parser.h",
     "browser/renderer_host/aw_render_view_host_ext.cc",
     "browser/renderer_host/aw_render_view_host_ext.h",
     "browser/renderer_host/aw_resource_dispatcher_host_delegate.cc",
     "browser/renderer_host/aw_resource_dispatcher_host_delegate.h",
-    "browser/scoped_app_gl_state_restore.cc",
-    "browser/scoped_app_gl_state_restore.h",
+    "browser/safe_browsing/aw_safe_browsing_blocking_page.cc",
+    "browser/safe_browsing/aw_safe_browsing_blocking_page.h",
+    "browser/safe_browsing/aw_safe_browsing_resource_throttle.cc",
+    "browser/safe_browsing/aw_safe_browsing_resource_throttle.h",
+    "browser/safe_browsing/aw_safe_browsing_ui_manager.cc",
+    "browser/safe_browsing/aw_safe_browsing_ui_manager.h",
+    "browser/safe_browsing/aw_safe_browsing_whitelist_manager.cc",
+    "browser/safe_browsing/aw_safe_browsing_whitelist_manager.h",
+    "browser/safe_browsing/aw_url_checker_delegate_impl.cc",
+    "browser/safe_browsing/aw_url_checker_delegate_impl.h",
+    "browser/scoped_add_feature_flags.cc",
+    "browser/scoped_add_feature_flags.h",
     "browser/state_serializer.cc",
     "browser/state_serializer.h",
-    "browser/surfaces_instance.cc",
-    "browser/surfaces_instance.h",
-    "browser/token_binding_manager_bridge.cc",
     "browser/tracing/aw_trace_event_args_whitelist.cc",
     "browser/tracing/aw_trace_event_args_whitelist.h",
     "browser/tracing/aw_tracing_controller.cc",
@@ -667,8 +656,6 @@ source_set("common") {
     "browser/tracing/aw_tracing_delegate.h",
     "common/android_webview_message_generator.cc",
     "common/android_webview_message_generator.h",
-    "common/aw_channel.cc",
-    "common/aw_channel.h",
     "common/aw_content_client.cc",
     "common/aw_content_client.h",
     "common/aw_descriptors.h",
@@ -697,6 +684,7 @@ source_set("common") {
     "lib/aw_main_delegate.h",
     "lib/webview_jni_onload.cc",
     "lib/webview_jni_onload.h",
+    "public/browser/draw_fn.h",
     "public/browser/draw_gl.h",
     "public/browser/draw_sw.h",
     "renderer/aw_content_renderer_client.cc",
@@ -719,8 +707,6 @@ source_set("common") {
     "renderer/aw_websocket_handshake_throttle_provider.h",
     "renderer/print_render_frame_observer.cc",
     "renderer/print_render_frame_observer.h",
-    "utility/aw_content_utility_client.cc",
-    "utility/aw_content_utility_client.h",
   ]
 
   deps = [
@@ -728,15 +714,23 @@ source_set("common") {
     ":generate_aw_strings",
     ":generate_components_strings",
     ":native_jni",
+    "//android_webview/browser/gfx:gfx",
+    "//android_webview/utility",
     "//base",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//components/autofill/android:provider",
     "//components/autofill/content/browser",
+    "//components/autofill/content/common:mojo_interfaces",
     "//components/autofill/content/renderer",
     "//components/cdm/browser",
     "//components/cdm/renderer",
+    "//components/content_capture/android",
+    "//components/content_capture/browser",
+    "//components/content_capture/renderer",
+    "//components/crash/android:crashpad_main",
     "//components/crash/content/app",
     "//components/crash/content/browser",
+    "//components/crash/core/common",
     "//components/download/public/common:public",
     "//components/embedder_support/android:web_contents_delegate",
     "//components/google/core/browser",
@@ -769,6 +763,7 @@ source_set("common") {
     "//components/services/heap_profiling/public/cpp",
     "//components/services/heap_profiling/public/mojom",
     "//components/spellcheck:buildflags",
+    "//components/spellcheck/common:interfaces",
     "//components/supervised_user_error_page",
     "//components/supervised_user_error_page:gin",
     "//components/url_matcher",
@@ -779,17 +774,15 @@ source_set("common") {
     "//components/visitedlink/renderer",
     "//components/viz/service",
     "//components/web_restrictions:browser",
+    "//components/web_restrictions:interfaces",
     "//content",
     "//content/public/app:both",
     "//content/public/browser",
+    "//content/public/common",
     "//content/public/common:content_descriptor_keys",
     "//content/public/common:service_names",
     "//crypto",
     "//gin",
-    "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/command_buffer/service",
-    "//gpu/ipc:gl_in_process_context",
-    "//gpu/skia_bindings",
     "//media",
     "//media/midi",
     "//net",
@@ -797,16 +790,13 @@ source_set("common") {
     "//printing",
     "//services/preferences/tracked:tracked",
     "//services/service_manager/public/cpp",
-    "//services/viz/public/interfaces",
-    "//skia",
     "//storage/browser",
     "//storage/common",
     "//third_party/blink/public:blink",
+    "//third_party/blink/public/common",
+    "//third_party/crashpad/crashpad/client",
     "//ui/base",
     "//ui/events:gesture_detection",
-    "//ui/gfx",
-    "//ui/gl",
-    "//ui/gl/init",
     "//ui/shell_dialogs",
     "//url",
     "//v8",
@@ -823,8 +813,6 @@ source_set("common") {
     "//tools/v8_context_snapshot:use_v8_context_snapshot",
     "//v8:external_startup_data",
   ]
-
-  libs = [ "jnigraphics" ]
 }
 
 android_library("android_webview_java") {
@@ -838,8 +826,8 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwAutofillUMA.java",
     "java/src/org/chromium/android_webview/AwBrowserContext.java",
     "java/src/org/chromium/android_webview/AwBrowserProcess.java",
-    "java/src/org/chromium/android_webview/AwContents.java",
     "java/src/org/chromium/android_webview/AwConsoleMessage.java",
+    "java/src/org/chromium/android_webview/AwContents.java",
     "java/src/org/chromium/android_webview/AwContentsBackgroundThreadClient.java",
     "java/src/org/chromium/android_webview/AwContentsClient.java",
     "java/src/org/chromium/android_webview/AwContentsClientBridge.java",
@@ -852,24 +840,22 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwDevToolsServer.java",
     "java/src/org/chromium/android_webview/AwFeatureList.java",
     "java/src/org/chromium/android_webview/AwFormDatabase.java",
-    "java/src/org/chromium/android_webview/AwFunctor.java",
     "java/src/org/chromium/android_webview/AwGeolocationPermissions.java",
-    "java/src/org/chromium/android_webview/AwGLFunctor.java",
     "java/src/org/chromium/android_webview/AwHttpAuthHandler.java",
     "java/src/org/chromium/android_webview/AwLayoutSizer.java",
     "java/src/org/chromium/android_webview/AwMetricsLogUploader.java",
     "java/src/org/chromium/android_webview/AwMetricsServiceClient.java",
     "java/src/org/chromium/android_webview/AwNetworkChangeNotifierRegistrationPolicy.java",
     "java/src/org/chromium/android_webview/AwPdfExporter.java",
-    "java/src/org/chromium/android_webview/AwPicture.java",
     "java/src/org/chromium/android_webview/AwPrintDocumentAdapter.java",
-    "java/src/org/chromium/android_webview/AwSafeBrowsingConfigHelper.java",
-    "java/src/org/chromium/android_webview/AwSafeBrowsingResponse.java",
+    "java/src/org/chromium/android_webview/AwProxyController.java",
     "java/src/org/chromium/android_webview/AwQuotaManagerBridge.java",
+    "java/src/org/chromium/android_webview/AwRenderProcess.java",
     "java/src/org/chromium/android_webview/AwRenderProcessGoneDetail.java",
     "java/src/org/chromium/android_webview/AwResource.java",
-    "java/src/org/chromium/android_webview/AwRenderProcess.java",
+    "java/src/org/chromium/android_webview/AwSafeBrowsingConfigHelper.java",
     "java/src/org/chromium/android_webview/AwSafeBrowsingConversionHelper.java",
+    "java/src/org/chromium/android_webview/AwSafeBrowsingResponse.java",
     "java/src/org/chromium/android_webview/AwScrollOffsetManager.java",
     "java/src/org/chromium/android_webview/AwServiceWorkerClient.java",
     "java/src/org/chromium/android_webview/AwServiceWorkerController.java",
@@ -877,11 +863,10 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwSettings.java",
     "java/src/org/chromium/android_webview/AwSupportLibIsomorphic.java",
     "java/src/org/chromium/android_webview/AwSwitches.java",
-    "java/src/org/chromium/android_webview/AwTokenBindingManager.java",
     "java/src/org/chromium/android_webview/AwTracingController.java",
-    "java/src/org/chromium/android_webview/AwViewMethods.java",
-    "java/src/org/chromium/android_webview/AwViewAndroidDelegate.java",
     "java/src/org/chromium/android_webview/AwVariationsSeedBridge.java",
+    "java/src/org/chromium/android_webview/AwViewAndroidDelegate.java",
+    "java/src/org/chromium/android_webview/AwViewMethods.java",
     "java/src/org/chromium/android_webview/AwWebContentsDelegate.java",
     "java/src/org/chromium/android_webview/AwWebContentsDelegateAdapter.java",
     "java/src/org/chromium/android_webview/AwWebContentsObserver.java",
@@ -895,7 +880,6 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/FullScreenView.java",
     "java/src/org/chromium/android_webview/HttpAuthDatabase.java",
     "java/src/org/chromium/android_webview/InputStreamUtil.java",
-    "java/src/org/chromium/android_webview/JavaBrowserViewRendererHelper.java",
     "java/src/org/chromium/android_webview/JsPromptResultReceiver.java",
     "java/src/org/chromium/android_webview/JsResultHandler.java",
     "java/src/org/chromium/android_webview/JsResultReceiver.java",
@@ -909,6 +893,11 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/VariationsSeedLoader.java",
     "java/src/org/chromium/android_webview/ViewPositionObserver.java",
     "java/src/org/chromium/android_webview/WebViewChromiumRunQueue.java",
+    "java/src/org/chromium/android_webview/gfx/AwDrawFnImpl.java",
+    "java/src/org/chromium/android_webview/gfx/AwFunctor.java",
+    "java/src/org/chromium/android_webview/gfx/AwGLFunctor.java",
+    "java/src/org/chromium/android_webview/gfx/AwPicture.java",
+    "java/src/org/chromium/android_webview/gfx/JavaBrowserViewRendererHelper.java",
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
@@ -925,6 +914,8 @@ android_library("android_webview_java") {
     "//components/autofill/android:autofill_java",
     "//components/autofill/android:provider_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
+    "//components/content_capture/android:java",
+    "//components/crash/android:handler_java",
     "//components/crash/android:java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/minidump_uploader:minidump_uploader_java",
@@ -939,7 +930,7 @@ android_library("android_webview_java") {
     "//device/gamepad:java",
     "//net/android:net_java",
     "//services/network/public/mojom:mojom_java",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/blink/public:blink_headers_java",
     "//ui/android:ui_java",
   ]
@@ -953,6 +944,7 @@ android_library("android_webview_java") {
     ":android_webview_java_enums_srcjar",
     ":aw_error_ui",
     ":aw_safe_browsing_action",
+    ":aw_settings_force_dark_mode",
     "//components/safe_browsing/db:sb_threat_values",
   ]
 
@@ -965,7 +957,7 @@ android_library("android_webview_variations_utils_java") {
     "//android_webview/proto:aw_variations_seed_proto_java",
     "//base:base_java",
     "//components/variations/android:variations_java",
-    "//third_party/protobuf:protobuf_lite_javalib",
+    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
   ]
 }
 
@@ -975,17 +967,20 @@ java_strings_grd("strings_grd") {
     "values-am/android_webview_strings.xml",
     "values-ar/android_webview_strings.xml",
     "values-bg/android_webview_strings.xml",
+    "values-bn/android_webview_strings.xml",
     "values-ca/android_webview_strings.xml",
     "values-cs/android_webview_strings.xml",
     "values-da/android_webview_strings.xml",
     "values-de/android_webview_strings.xml",
     "values-el/android_webview_strings.xml",
     "values-en-rGB/android_webview_strings.xml",
-    "values-es-rUS/android_webview_strings.xml",
     "values-es/android_webview_strings.xml",
+    "values-es-rUS/android_webview_strings.xml",
+    "values-et/android_webview_strings.xml",
     "values-fa/android_webview_strings.xml",
     "values-fi/android_webview_strings.xml",
     "values-fr/android_webview_strings.xml",
+    "values-gu/android_webview_strings.xml",
     "values-hi/android_webview_strings.xml",
     "values-hr/android_webview_strings.xml",
     "values-hu/android_webview_strings.xml",
@@ -993,9 +988,13 @@ java_strings_grd("strings_grd") {
     "values-it/android_webview_strings.xml",
     "values-iw/android_webview_strings.xml",
     "values-ja/android_webview_strings.xml",
+    "values-kn/android_webview_strings.xml",
     "values-ko/android_webview_strings.xml",
     "values-lt/android_webview_strings.xml",
     "values-lv/android_webview_strings.xml",
+    "values-ml/android_webview_strings.xml",
+    "values-mr/android_webview_strings.xml",
+    "values-ms/android_webview_strings.xml",
     "values-nb/android_webview_strings.xml",
     "values-nl/android_webview_strings.xml",
     "values-pl/android_webview_strings.xml",
@@ -1008,6 +1007,8 @@ java_strings_grd("strings_grd") {
     "values-sr/android_webview_strings.xml",
     "values-sv/android_webview_strings.xml",
     "values-sw/android_webview_strings.xml",
+    "values-ta/android_webview_strings.xml",
+    "values-te/android_webview_strings.xml",
     "values-th/android_webview_strings.xml",
     "values-tl/android_webview_strings.xml",
     "values-tr/android_webview_strings.xml",
@@ -1030,7 +1031,7 @@ android_library("android_webview_platform_services_java") {
 
   deps = [
     "//base:base_java",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
 
   # The appropriate .class file will be loaded via a dependency to a library
@@ -1064,9 +1065,9 @@ android_library("android_webview_services_java") {
   java_files = [
     "java/src/org/chromium/android_webview/services/AwMinidumpUploadJobService.java",
     "java/src/org/chromium/android_webview/services/AwMinidumpUploaderDelegate.java",
+    "java/src/org/chromium/android_webview/services/AwVariationsSeedFetcher.java",
     "java/src/org/chromium/android_webview/services/CrashReceiverService.java",
     "java/src/org/chromium/android_webview/services/ServiceInit.java",
-    "java/src/org/chromium/android_webview/services/AwVariationsSeedFetcher.java",
     "java/src/org/chromium/android_webview/services/VariationsSeedHolder.java",
     "java/src/org/chromium/android_webview/services/VariationsSeedServer.java",
   ]
@@ -1104,7 +1105,6 @@ android_aidl("aw_variations_seed_server_aidl") {
 
 if (public_android_sdk) {
   system_webview_apk_tmpl("system_webview_apk") {
-    version_name = chrome_version_name
     android_manifest = system_webview_android_manifest
     android_manifest_dep = ":system_webview_manifest"
     deps = upstream_only_webview_deps
@@ -1112,11 +1112,11 @@ if (public_android_sdk) {
   }
 
   system_webview_apk_tmpl("trichrome_webview_apk") {
-    version_name = chrome_version_name
     android_manifest = trichrome_webview_android_manifest
     android_manifest_dep = ":trichrome_webview_manifest"
     deps = upstream_only_webview_deps
     apk_name = "TrichromeWebView"
     use_trichrome_library = true
+    uncompress_dex = use_uncompressed_dex
   }
 }

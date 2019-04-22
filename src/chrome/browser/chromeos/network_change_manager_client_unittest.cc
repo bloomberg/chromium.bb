@@ -8,13 +8,16 @@
 
 #include <string>
 
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/network_change_notifier_chromeos.h"
+#include "net/base/network_change_notifier_posix.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -96,7 +99,7 @@ TEST(NetworkChangeManagerClientTest, ConnectionTypeFromShill) {
       {shill::kTypeCellular, "unknown technology",
        NetworkChangeNotifier::CONNECTION_2G}};
 
-  for (size_t i = 0; i < arraysize(type_mappings); ++i) {
+  for (size_t i = 0; i < base::size(type_mappings); ++i) {
     NetworkChangeNotifier::ConnectionType type =
         NetworkChangeManagerClient::ConnectionTypeFromShill(
             type_mappings[i].shill_type, type_mappings[i].technology);
@@ -104,18 +107,65 @@ TEST(NetworkChangeManagerClientTest, ConnectionTypeFromShill) {
   }
 }
 
+TEST(NetworkChangeManagerClientTest,
+     NetworkChangeNotifierConnectionTypeUpdated) {
+  // Create a NetworkChangeNotifier with a non-NONE connection type.
+  content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<net::NetworkChangeNotifierPosix> network_change_notifier(
+      static_cast<net::NetworkChangeNotifierPosix*>(
+          net::NetworkChangeNotifier::Create()));
+  network_change_notifier->OnConnectionChanged(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
+  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+            net::NetworkChangeNotifier::GetConnectionType());
+
+  // Initialize DBus and clear services so NetworkHandler thinks we're offline.
+  DBusThreadManager::Initialize();
+  PowerManagerClient::InitializeFake();
+  NetworkHandler::Initialize();
+  DBusThreadManager::Get()
+      ->GetShillServiceClient()
+      ->GetTestInterface()
+      ->ClearServices();
+
+  auto client = std::make_unique<NetworkChangeManagerClient>(
+      network_change_notifier.get());
+
+  // NetworkChangeManagerClient should have read the network state from DBus
+  // and notified NetworkChangeNotifier that we're offline.
+  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_NONE,
+            client->connection_type_);
+  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_NONE,
+            net::NetworkChangeNotifier::GetConnectionType());
+
+  client.reset();
+  NetworkHandler::Shutdown();
+  PowerManagerClient::Shutdown();
+  DBusThreadManager::Shutdown();
+}
+
 class NetworkChangeManagerClientUpdateTest : public testing::Test {
  protected:
-  NetworkChangeManagerClientUpdateTest() : default_network_("") {
+  NetworkChangeManagerClientUpdateTest() : default_network_("") {}
+  ~NetworkChangeManagerClientUpdateTest() override = default;
+
+  void SetUp() override {
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
     DBusThreadManager::Initialize();
+    PowerManagerClient::InitializeFake();
     NetworkHandler::Initialize();
-    proxy_.reset(new NetworkChangeManagerClient(
-        static_cast<net::NetworkChangeNotifierChromeos*>(
-            network_change_notifier_.get())));
+    proxy_ = std::make_unique<NetworkChangeManagerClient>(
+        static_cast<net::NetworkChangeNotifierPosix*>(
+            network_change_notifier_.get()));
   }
 
-  ~NetworkChangeManagerClientUpdateTest() override = default;
+  void TearDown() override {
+    proxy_.reset();
+    NetworkHandler::Shutdown();
+    PowerManagerClient::Shutdown();
+    DBusThreadManager::Shutdown();
+    network_change_notifier_.reset();
+  }
 
   void SetNotifierState(const NotifierState& notifier_state) {
     proxy_->connection_type_ = notifier_state.type;
@@ -137,10 +187,9 @@ class NetworkChangeManagerClientUpdateTest : public testing::Test {
   void SetDefaultNetworkState(
       const DefaultNetworkState& default_network_state) {
     default_network_.set_visible(true);
-    if (default_network_state.is_connected)
-      default_network_.set_connection_state(shill::kStateOnline);
-    else
-      default_network_.set_connection_state(shill::kStateConfiguration);
+    default_network_.set_connection_state_for_testing(
+        default_network_state.is_connected ? shill::kStateOnline
+                                           : shill::kStateConfiguration);
     default_network_.set_type_for_testing(default_network_state.type);
     default_network_.set_network_technology_for_testing(
         default_network_state.network_technology);
@@ -172,6 +221,8 @@ class NetworkChangeManagerClientUpdateTest : public testing::Test {
   NetworkState default_network_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<NetworkChangeManagerClient> proxy_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkChangeManagerClientUpdateTest);
 };
 
 NotifierUpdateTestCase test_cases[] = {
@@ -347,7 +398,7 @@ NotifierUpdateTestCase test_cases[] = {
      false}};
 
 TEST_F(NetworkChangeManagerClientUpdateTest, UpdateDefaultNetwork) {
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     SCOPED_TRACE(test_cases[i].test_description);
     SetNotifierState(test_cases[i].initial_state);
     SetDefaultNetworkState(test_cases[i].default_network_state);

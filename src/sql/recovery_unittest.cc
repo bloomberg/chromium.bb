@@ -941,7 +941,7 @@ void TestPageSize(const base::FilePath& db_prefix,
   static const char kSelectSql[] = "SELECT * FROM x ORDER BY t";
 
   const base::FilePath db_path = db_prefix.InsertBeforeExtensionASCII(
-      base::IntToString(initial_page_size));
+      base::NumberToString(initial_page_size));
   sql::Database::Delete(db_path);
   sql::Database db;
   db.set_page_size(initial_page_size);

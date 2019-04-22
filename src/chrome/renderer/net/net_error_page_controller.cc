@@ -41,10 +41,6 @@ void NetErrorPageController::Install(content::RenderFrame* render_frame,
       .ToChecked();
 }
 
-bool NetErrorPageController::ShowSavedCopyButtonClick() {
-  return ButtonClick(NetErrorHelperCore::SHOW_SAVED_COPY_BUTTON);
-}
-
 bool NetErrorPageController::DownloadButtonClick() {
   return ButtonClick(NetErrorHelperCore::DOWNLOAD_BUTTON);
 }
@@ -64,6 +60,12 @@ bool NetErrorPageController::TrackEasterEgg() {
 bool NetErrorPageController::UpdateEasterEggHighScore(int high_score) {
   if (delegate_)
     delegate_->UpdateEasterEggHighScore(high_score);
+  return true;
+}
+
+bool NetErrorPageController::ResetEasterEggHighScore() {
+  if (delegate_)
+    delegate_->ResetEasterEggHighScore();
   return true;
 }
 
@@ -133,8 +135,6 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<NetErrorPageController>::GetObjectTemplateBuilder(
              isolate)
-      .SetMethod("showSavedCopyButtonClick",
-                 &NetErrorPageController::ShowSavedCopyButtonClick)
       .SetMethod("downloadButtonClick",
                  &NetErrorPageController::DownloadButtonClick)
       .SetMethod("reloadButtonClick",
@@ -147,6 +147,8 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
       .SetMethod("trackEasterEgg", &NetErrorPageController::TrackEasterEgg)
       .SetMethod("updateEasterEggHighScore",
                  &NetErrorPageController::UpdateEasterEggHighScore)
+      .SetMethod("resetEasterEggHighScore",
+                 &NetErrorPageController::ResetEasterEggHighScore)
       .SetMethod("trackCachedCopyButtonClick",
                  &NetErrorPageController::TrackCachedCopyButtonClick)
       .SetMethod("launchOfflineItem",

@@ -11,10 +11,8 @@ Correct progress event sequencing on abort(), <a href="http://crbug.com/315488">
 // Based on http://w3c-test.org/xhr/abort-during-upload.htm
 
 var expected = [
-    'upload', 'progress',
     'upload', 'abort',
     'upload', 'loadend',
-    'load', 'progress',
     'load', 'abort',
     'load', 'loadend'];
 

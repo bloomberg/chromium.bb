@@ -10,6 +10,8 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/core/v8_test_attributes.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
@@ -20,6 +22,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -30,7 +33,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestAttributes::wrapper_type_info = {
+const WrapperTypeInfo v8_test_attributes_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestAttributes::DomTemplate,
     nullptr,
@@ -47,7 +50,7 @@ const WrapperTypeInfo V8TestAttributes::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestAttributes.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestAttributes::wrapper_type_info_ = V8TestAttributes::wrapper_type_info;
+const WrapperTypeInfo& TestAttributes::wrapper_type_info_ = v8_test_attributes_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -81,9 +84,7 @@ static void StringPromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo
   // This attribute returns a Promise.
   // Per https://heycam.github.io/webidl/#dfn-attribute-getter, all exceptions
   // must be turned into a Promise rejection.
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "TestAttributes", "stringPromiseAttribute");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kGetterContext, "TestAttributes", "stringPromiseAttribute");
   ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
 
   // Returning a Promise type requires us to disable some of V8's type checks,
@@ -118,9 +119,7 @@ static void RaisesExceptionShortPromiseAttributeAttributeGetter(const v8::Functi
   // This attribute returns a Promise.
   // Per https://heycam.github.io/webidl/#dfn-attribute-getter, all exceptions
   // must be turned into a Promise rejection.
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "TestAttributes", "raisesExceptionShortPromiseAttribute");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kGetterContext, "TestAttributes", "raisesExceptionShortPromiseAttribute");
   ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
 
   // Returning a Promise type requires us to disable some of V8's type checks,
@@ -134,9 +133,6 @@ static void RaisesExceptionShortPromiseAttributeAttributeGetter(const v8::Functi
   v8::Local<v8::Object> holder = info.Holder();
 
   TestAttributes* impl = V8TestAttributes::ToImpl(holder);
-
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "TestAttributes", "raisesExceptionShortPromiseAttribute");
 
   ScriptPromise cpp_value(impl->raisesExceptionShortPromiseAttribute(exception_state));
 
@@ -219,7 +215,7 @@ static void InstallV8TestAttributesTemplate(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestAttributes::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestAttributes::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestAttributes::GetWrapperTypeInfo()->interface_name, v8::Local<v8::FunctionTemplate>(), V8TestAttributes::kInternalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
@@ -258,18 +254,18 @@ void V8TestAttributes::InstallRuntimeEnabledFeaturesOnTemplate(
 v8::Local<v8::FunctionTemplate> V8TestAttributes::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestAttributes::GetWrapperTypeInfo()),
       InstallV8TestAttributesTemplate);
 }
 
 bool V8TestAttributes::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestAttributes::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestAttributes::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestAttributes::GetWrapperTypeInfo(), v8_value);
 }
 
 TestAttributes* V8TestAttributes::ToImplWithTypeCheck(

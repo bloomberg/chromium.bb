@@ -65,6 +65,16 @@ NSString* SerializePasswordFormFillData(
                 password:(NSString*)password
        completionHandler:(void (^)(BOOL))completionHandler;
 
+// Fills new password field for (optional) |newPasswordIdentifier| and for
+// (optional) confirm password field |confirmPasswordIdentifier| in the form
+// identified by |formData|. Invokes |completionHandler| with true if any fields
+// were filled, false otherwise.
+- (void)fillPasswordForm:(NSString*)formName
+        newPasswordIdentifier:(NSString*)newPasswordIdentifier
+    confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
+            generatedPassword:(NSString*)generatedPassword
+            completionHandler:(void (^)(BOOL))completionHandler;
+
 // Designated initializer. |receiver| should not be nil.
 - (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
     NS_DESIGNATED_INITIALIZER;

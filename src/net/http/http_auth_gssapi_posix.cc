@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -76,6 +76,8 @@ gss_OID GSS_C_NT_ANONYMOUS = &GSS_C_NT_ANONYMOUS_VAL;
 gss_OID GSS_C_NT_EXPORT_NAME = &GSS_C_NT_EXPORT_NAME_VAL;
 
 namespace net {
+
+using DelegationType = HttpAuth::DelegationType;
 
 // Exported mechanism for GSSAPI. We always use SPNEGO:
 
@@ -378,6 +380,17 @@ std::string DescribeContext(GSSAPILibrary* gssapi_lib,
   return description;
 }
 
+OM_uint32 DelegationTypeToFlag(DelegationType delegation_type) {
+  switch (delegation_type) {
+    case DelegationType::kNone:
+      return 0;
+    case DelegationType::kByKdcPolicy:
+      return GSS_C_DELEG_POLICY_FLAG;
+    case DelegationType::kUnconstrained:
+      return GSS_C_DELEG_FLAG;
+  }
+}
+
 }  // namespace
 
 GSSAPISharedLibrary::GSSAPISharedLibrary(const std::string& gssapi_library_name)
@@ -441,7 +454,7 @@ base::NativeLibrary GSSAPISharedLibrary::LoadSharedLibrary() {
 #endif
     };
     library_names = kDefaultLibraryNames;
-    num_lib_names = arraysize(kDefaultLibraryNames);
+    num_lib_names = base::size(kDefaultLibraryNames);
   }
 
   for (size_t i = 0; i < num_lib_names; ++i) {
@@ -666,8 +679,7 @@ HttpAuthGSSAPI::HttpAuthGSSAPI(GSSAPILibrary* library,
     : scheme_(scheme),
       gss_oid_(gss_oid),
       library_(library),
-      scoped_sec_context_(library),
-      can_delegate_(false) {
+      scoped_sec_context_(library) {
   DCHECK(library_);
 }
 
@@ -687,8 +699,8 @@ bool HttpAuthGSSAPI::AllowsExplicitCredentials() const {
   return false;
 }
 
-void HttpAuthGSSAPI::Delegate() {
-  can_delegate_ = true;
+void HttpAuthGSSAPI::SetDelegation(DelegationType delegation_type) {
+  delegation_type_ = delegation_type;
 }
 
 HttpAuth::AuthorizationResult HttpAuthGSSAPI::ParseChallenge(
@@ -850,9 +862,7 @@ int HttpAuthGSSAPI::GetNextSecurityToken(const std::string& spn,
   ScopedName scoped_name(principal_name, library_);
 
   // Continue creating a security context.
-  OM_uint32 req_flags = 0;
-  if (can_delegate_)
-    req_flags |= GSS_C_DELEG_FLAG;
+  OM_uint32 req_flags = DelegationTypeToFlag(delegation_type_);
   major_status = library_->init_sec_context(
       &minor_status, GSS_C_NO_CREDENTIAL, scoped_sec_context_.receive(),
       principal_name, gss_oid_, req_flags, GSS_C_INDEFINITE,

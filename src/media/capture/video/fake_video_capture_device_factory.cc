@@ -16,8 +16,6 @@
 
 namespace {
 
-static const size_t kDepthDeviceIndex = 1;
-
 // Cap the frame rate command line input to reasonable values.
 static const float kFakeCaptureMinFrameRate = 5.0f;
 static const float kFakeCaptureMaxFrameRate = 60.0f;
@@ -218,18 +216,6 @@ void FakeVideoCaptureDeviceFactory::GetDeviceDescriptors(
         );
     entry_index++;
   }
-
-  // Video device on index |kDepthDeviceIndex| is depth video capture device.
-  // Fill the camera calibration information only for it.
-  if (device_descriptors->size() <= kDepthDeviceIndex)
-    return;
-  VideoCaptureDeviceDescriptor& depth_device(
-      (*device_descriptors)[kDepthDeviceIndex]);
-  depth_device.camera_calibration.emplace();
-  depth_device.camera_calibration->focal_length_x = 135.0;
-  depth_device.camera_calibration->focal_length_y = 135.6;
-  depth_device.camera_calibration->depth_near = 0.0;
-  depth_device.camera_calibration->depth_far = 65.535;
 }
 
 void FakeVideoCaptureDeviceFactory::GetSupportedFormats(

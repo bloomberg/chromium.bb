@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromecast_build.gni")
 import("//build/config/jumbo.gni")
 import("//media/media_options.gni")
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
-import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//testing/test.gni")
 
 jumbo_component("services") {
@@ -46,14 +45,12 @@ jumbo_component("services") {
     "mojo_decryptor_service.h",
     "mojo_demuxer_stream_adapter.cc",
     "mojo_demuxer_stream_adapter.h",
-    "mojo_jpeg_decode_accelerator_service.cc",
-    "mojo_jpeg_decode_accelerator_service.h",
-    "mojo_jpeg_encode_accelerator_service.cc",
-    "mojo_jpeg_encode_accelerator_service.h",
     "mojo_media_client.cc",
     "mojo_media_client.h",
     "mojo_media_log.cc",
     "mojo_media_log.h",
+    "mojo_mjpeg_decode_accelerator_service.cc",
+    "mojo_mjpeg_decode_accelerator_service.h",
     "mojo_provision_fetcher.cc",
     "mojo_provision_fetcher.h",
     "mojo_renderer_service.cc",
@@ -100,6 +97,7 @@ jumbo_component("services") {
     "//media/gpu",
     "//media/gpu:buildflags",
     "//media/gpu/ipc/service",
+    "//media/learning/impl",
     "//media/mojo/common",
     "//media/mojo/common:mojo_shared_buffer_video_frame",
     "//services/metrics/public/cpp:metrics_cpp",
@@ -116,6 +114,14 @@ jumbo_component("services") {
       "mojo_media_drm_storage.cc",
       "mojo_media_drm_storage.h",
     ]
+  }
+
+  if (is_chromeos) {
+    sources += [
+      "cros_mojo_jpeg_encode_accelerator_service.cc",
+      "cros_mojo_jpeg_encode_accelerator_service.h",
+    ]
+    deps += [ "//components/chromeos_camera/common" ]
   }
 
   if (enable_library_cdms) {
@@ -147,14 +153,34 @@ jumbo_component("services") {
   }
 }
 
-service_manifest("cdm_manifest") {
-  name = "cdm"
-  source = "cdm_manifest.json"
+source_set("cdm_manifest") {
+  sources = [
+    "cdm_manifest.cc",
+    "cdm_manifest.h",
+  ]
+  deps = [
+    "//base",
+    "//media/mojo/interfaces",
+    "//media/mojo/interfaces:constants",
+    "//services/service_manager/public/cpp",
+  ]
 }
 
-service_manifest("media_manifest") {
-  name = "media"
-  source = "media_manifest.json"
+source_set("media_manifest") {
+  sources = [
+    "media_manifest.cc",
+    "media_manifest.h",
+  ]
+  deps = [
+    "//base",
+    "//media/mojo/interfaces",
+    "//media/mojo/interfaces:constants",
+    "//services/service_manager/public/cpp",
+  ]
+  if (is_chromecast) {
+    defines = [ "IS_CHROMECAST" ]
+    deps += [ "//chromecast/common/mojom" ]
+  }
 }
 
 # Unit Tests
@@ -168,9 +194,12 @@ source_set("unit_tests") {
     "mojo_audio_input_stream_unittest.cc",
     "mojo_audio_output_stream_provider_unittest.cc",
     "mojo_audio_output_stream_unittest.cc",
-    "mojo_jpeg_decode_accelerator_service_unittest.cc",
+    "mojo_mjpeg_decode_accelerator_service_unittest.cc",
     "mojo_video_encode_accelerator_service_unittest.cc",
+    "test_helpers.cc",
+    "test_helpers.h",
     "video_decode_perf_history_unittest.cc",
+    "video_decode_stats_recorder_unittest.cc",
     "watch_time_recorder_unittest.cc",
   ]
 
@@ -179,6 +208,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/ukm:test_support",
     "//media:test_support",
+    "//media/learning/common",
     "//media/mojo:test_support",
     "//mojo/core/embedder",
     "//mojo/public/interfaces/bindings/tests:test_interfaces",
@@ -205,7 +235,7 @@ source_set("unit_tests") {
 # service out-of-process. While CdmService is tested as a packaged service,
 # which runs the service in-process.
 
-service("media") {
+service_executable("media") {
   testonly = true
 
   sources = [
@@ -236,7 +266,7 @@ test("media_service_unittests") {
   }
 
   deps = [
-    ":service_tests_catalog_source",
+    ":media_manifest",
     ":services",
     "//base",
     "//base/test:test_support",
@@ -247,6 +277,7 @@ test("media_service_unittests") {
     "//media/mojo/interfaces",
     "//media/mojo/interfaces:constants",
     "//mojo/core/test:run_all_unittests",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -255,23 +286,6 @@ test("media_service_unittests") {
   data_deps = [
     ":media",
   ]
-}
-
-service_manifest("media_service_unittest_manifest") {
-  name = "media_service_unittests"
-  source = "test_manifest.json"
-}
-
-catalog("service_tests_catalog") {
-  testonly = true
-  embedded_services = [ ":media_service_unittest_manifest" ]
-  standalone_services = [ ":media_manifest" ]
-}
-
-catalog_cpp_source("service_tests_catalog_source") {
-  testonly = true
-  catalog = ":service_tests_catalog"
-  generated_function_name = "media::test::CreateServiceTestCatalog"
 }
 
 # media_pipeline_integration_unittests is out of date and disabled by default.
@@ -286,20 +300,4 @@ test("media_pipeline_integration_unittests") {
   data_deps = [
     ":media",
   ]
-}
-
-service_manifest("pipeline_test_manifest") {
-  name = "media_pipeline_integration_unittests"
-  source = "pipeline_test_manifest.json"
-}
-
-catalog("media_pipeline_integration_unittests_catalog") {
-  embedded_services = [ ":pipeline_test_manifest" ]
-  standalone_services = [ ":media_manifest" ]
-}
-
-catalog_cpp_source("media_pipeline_integration_unittests_catalog_source") {
-  testonly = true
-  catalog = ":media_pipeline_integration_unittests_catalog"
-  generated_function_name = "media::test::CreatePipelineIntegrationTestCatalog"
 }

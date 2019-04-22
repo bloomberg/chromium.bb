@@ -36,7 +36,7 @@ namespace blink {
 //
 // Used for explicit directions such as in the HTML dir attribute or the CSS
 // 'direction' property.
-// https://html.spec.whatwg.org/multipage/dom.html#the-dir-attribute
+// https://html.spec.whatwg.org/C/#the-dir-attribute
 // https://drafts.csswg.org/css-writing-modes/#direction
 //
 // Also used for resolved directions by UAX#9 UNICODE BIDIRECTIONAL ALGORITHM.

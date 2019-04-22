@@ -5,6 +5,9 @@
 #ifndef CHROME_SERVICES_APP_SERVICE_PUBLIC_CPP_APP_UPDATE_H_
 #define CHROME_SERVICES_APP_SERVICE_PUBLIC_CPP_APP_UPDATE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 
@@ -14,6 +17,10 @@ namespace apps {
 // state. The state is conceptually the "sum" of all of the previous deltas,
 // with "addition" or "merging" simply being that the most recent version of
 // each field "wins".
+//
+// The state may be nullptr, meaning that there are no previous deltas.
+// Alternatively, the delta may be nullptr, meaning that there is no change in
+// state. At least one of state and delta must be non-nullptr.
 //
 // Almost all of an AppPtr's fields are optional. For example, if an app's name
 // hasn't changed, then a delta doesn't necessarily have to contain a copy of
@@ -36,11 +43,16 @@ namespace apps {
 // See //chrome/services/app_service/README.md for more details.
 class AppUpdate {
  public:
-  // Modifies state by copying over all of delta's known fields: those fields
-  // whose values aren't "unknown".
-  static void Merge(apps::mojom::App* state, const apps::mojom::AppPtr& delta);
+  // Modifies |state| by copying over all of |delta|'s known fields: those
+  // fields whose values aren't "unknown". The |state| may not be nullptr.
+  static void Merge(apps::mojom::App* state, const apps::mojom::App* delta);
 
-  AppUpdate(const apps::mojom::AppPtr& state, const apps::mojom::AppPtr& delta);
+  // At most one of |state| or |delta| may be nullptr.
+  AppUpdate(const apps::mojom::App* state, const apps::mojom::App* delta);
+
+  // Returns whether this is the first update for the given AppId.
+  // Equivalently, there are no previous deltas for the AppId.
+  bool StateIsNull() const;
 
   apps::mojom::AppType AppType() const;
 
@@ -52,15 +64,42 @@ class AppUpdate {
   const std::string& Name() const;
   bool NameChanged() const;
 
+  const std::string& ShortName() const;
+  bool ShortNameChanged() const;
+
+  std::vector<std::string> AdditionalSearchTerms() const;
+  bool AdditionalSearchTermsChanged() const;
+
   apps::mojom::IconKeyPtr IconKey() const;
   bool IconKeyChanged() const;
+
+  base::Time LastLaunchTime() const;
+  bool LastLaunchTimeChanged() const;
+
+  base::Time InstallTime() const;
+  bool InstallTimeChanged() const;
+
+  std::vector<apps::mojom::PermissionPtr> Permissions() const;
+  bool PermissionsChanged() const;
+
+  apps::mojom::OptionalBool InstalledInternally() const;
+  bool InstalledInternallyChanged() const;
+
+  apps::mojom::OptionalBool IsPlatformApp() const;
+  bool IsPlatformAppChanged() const;
 
   apps::mojom::OptionalBool ShowInLauncher() const;
   bool ShowInLauncherChanged() const;
 
+  apps::mojom::OptionalBool ShowInSearch() const;
+  bool ShowInSearchChanged() const;
+
+  apps::mojom::OptionalBool ShowInManagement() const;
+  bool ShowInManagementChanged() const;
+
  private:
-  const apps::mojom::AppPtr& state_;
-  const apps::mojom::AppPtr& delta_;
+  const apps::mojom::App* state_;
+  const apps::mojom::App* delta_;
 
   DISALLOW_COPY_AND_ASSIGN(AppUpdate);
 };

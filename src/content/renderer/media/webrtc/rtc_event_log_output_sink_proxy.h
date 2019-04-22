@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_EVENT_LOG_OUTPUT_SINK_PROXY_H_
 
 #include "content/renderer/media/webrtc/rtc_event_log_output_sink.h"
-#include "third_party/webrtc/api/rtceventlogoutput.h"
+#include "third_party/webrtc/api/rtc_event_log_output.h"
 
 namespace content {
 

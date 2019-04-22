@@ -16,10 +16,26 @@ class Oobe(web_contents.WebContents):
   def __init__(self, inspector_backend):
     super(Oobe, self).__init__(inspector_backend)
 
+  @staticmethod
+  def Canonicalize(user, remove_dots=True):
+    """Get rid of dots in |user| and add @gmail.com."""
+    # Canonicalize.
+    user = user.lower()
+    if user.find('@') == -1:
+      username = user
+      domain = 'gmail.com'
+    else:
+      username, domain = user.split('@')
+
+    # Remove dots for gmail.
+    if remove_dots and domain == 'gmail.com':
+      username = username.replace('.', '')
+    return '%s@%s' % (username, domain)
+
   def _GaiaWebviewContext(self):
-    webview_contexts = self.GetWebviewContexts()
-    for webview in webview_contexts:
-      try:
+    try:
+      webview_contexts = self.GetWebviewContexts()
+      for webview in webview_contexts:
         # GAIA webview has base.href accounts.google.com in production, and
         # gaistaging.corp.google.com for QA.
         if webview.EvaluateJavaScript(
@@ -33,10 +49,8 @@ class Oobe(web_contents.WebContents):
             """):
           py_utils.WaitFor(webview.HasReachedQuiescence, 20)
           return webview
-      except (exceptions.DevtoolsTargetCrashException,
-              exceptions.TimeoutException,
-              WebSocketException):
-        pass
+    except (exceptions.Error, WebSocketException):
+      pass
     return None
 
   def _ExecuteOobeApi(self, api, *args):
@@ -100,6 +114,39 @@ class Oobe(web_contents.WebContents):
           'Oobe.isEnrollmentSuccessfulForTest()', timeout=30)
       self._ExecuteOobeApi('Oobe.enterpriseEnrollmentDone')
 
+  def _UnicornObfuscated(self, text):
+    """Converts an email into an obfuscated email.
+
+    So abcdefgh123@gmail.com becomes ****ef****3@gmail.com
+    """
+    obfuscated = ''
+    separator = text.find('@')
+    for i in range(separator-1):
+      if i in [4, 5]:
+        obfuscated += text[i]
+      else:
+        obfuscated += '*'
+    obfuscated += text[separator-1:]
+    return obfuscated
+
+  def NavigateUnicornLogin(self, child_user, child_pass,
+                           parent_user, parent_pass):
+    """Logs into a unicorn account."""
+
+    self._ExecuteOobeApi('Oobe.skipToLoginForTesting')
+    py_utils.WaitFor(self._GaiaWebviewContext, 20)
+    logging.info('Entering child credentials')
+    self._NavigateWebviewLogin(child_user, child_pass, False)
+    logging.info('Clicking on parent button')
+    parent_user = self.Canonicalize(parent_user, remove_dots=False)
+    self._ClickGaiaButton(parent_user, self._UnicornObfuscated(parent_user))
+    logging.info('Entering parent credentials')
+    self._NavigateWebviewEntry('password', parent_pass, 'passwordNext')
+    logging.info('Clicking Yes')
+    self._ClickGaiaButton('Yes', 'Yes')
+    py_utils.WaitFor(lambda: not self._GaiaWebviewContext(), 60)
+    logging.info('Logged in as unicorn user')
+
   def _NavigateWebviewLogin(self, username, password, wait_for_close):
     """Logs into the webview-based GAIA screen."""
     self._NavigateWebviewEntry('identifierId', username, 'identifierNext')
@@ -131,5 +178,26 @@ class Oobe(web_contents.WebContents):
   def _WaitForField(self, field):
     """Wait for username/password field to become available."""
     self._GaiaWebviewContext().WaitForJavaScriptCondition(
-        "document.getElementById({{ field }}) != null",
+        "document.getElementById({{ field }}) != null && "
+        "!document.getElementById({{ field }}).hidden",
         field=field, timeout=20)
+
+  def _ClickGaiaButton(self, button_text, alt_text):
+    """Click the button on the gaia page that matches |button_text|."""
+    get_button_js = '''
+        (function() {
+          var buttons = document.querySelectorAll('[role="button"]');
+          if (buttons == null)
+            return false;
+          for (var i=0; i < buttons.length; ++i) {
+            if ((buttons[i].textContent.indexOf('%s') != -1) ||
+                (buttons[i].textContent.indexOf('%s') != -1)) {
+              buttons[i].click();
+              return true;
+            }
+          }
+          return false;
+        })();
+    ''' % (button_text, alt_text)
+    self._GaiaWebviewContext().WaitForJavaScriptCondition(
+        get_button_js, timeout=20)

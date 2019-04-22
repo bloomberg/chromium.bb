@@ -74,9 +74,10 @@ std::string GetPolicyValue(const std::string& policy_fetch_response_blob) {
 std::unique_ptr<base::DictionaryValue> ParseJsonToDict(
     const std::string& json) {
   std::string json_reader_error_message;
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr /* error_code_out */,
-      &json_reader_error_message);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr /* error_code_out */,
+          &json_reader_error_message);
   if (!value) {
     LOG(ERROR) << "Could not parse policy value as JSON: "
                << json_reader_error_message;

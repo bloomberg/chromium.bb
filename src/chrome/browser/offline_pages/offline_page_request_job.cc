@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <utility>
+
 #include "chrome/browser/offline_pages/offline_page_request_job.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
 #include "net/url_request/url_request.h"
@@ -49,7 +54,7 @@ class OfflinePageRequestInfo : public base::SupportsUserData::Data {
 OfflinePageRequestJob* OfflinePageRequestJob::Create(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
-  const content::ResourceRequestInfo* resource_request_info =
+  content::ResourceRequestInfo* resource_request_info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!resource_request_info)
     return nullptr;
@@ -125,7 +130,7 @@ void OfflinePageRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
   }
 
   info->headers = redirect_headers;
-  info->request_time = base::Time::Now();
+  info->request_time = OfflineTimeNow();
   info->response_time = info->request_time;
 }
 
@@ -183,7 +188,7 @@ void OfflinePageRequestJob::SetOfflinePageNavigationUIData(
   // This method should be called before the response data is received.
   DCHECK(!has_response_started());
 
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request());
   ChromeNavigationUIData* navigation_data =
       static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
@@ -196,7 +201,7 @@ void OfflinePageRequestJob::SetOfflinePageNavigationUIData(
 }
 
 bool OfflinePageRequestJob::ShouldAllowPreview() const {
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request());
 
   bool preview_allowed =
@@ -205,7 +210,7 @@ bool OfflinePageRequestJob::ShouldAllowPreview() const {
 }
 
 int OfflinePageRequestJob::GetPageTransition() const {
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request());
   return info ? static_cast<int>(info->GetPageTransition()) : 0;
 }
@@ -214,7 +219,7 @@ OfflinePageRequestHandler::Delegate::WebContentsGetter
 OfflinePageRequestJob::GetWebContentsGetter() const {
   if (!web_contents_getter_.is_null())
     return web_contents_getter_;
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request());
   return info ? info->GetWebContentsGetterForRequest()
               : OfflinePageRequestHandler::Delegate::WebContentsGetter();

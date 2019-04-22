@@ -13,14 +13,14 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_base_export.h"
 
 class GURL;
 
 namespace ui {
 
-class UI_BASE_EXPORT ClipboardUtil {
+class COMPONENT_EXPORT(BASE_CLIPBOARD) ClipboardUtil {
  public:
   /////////////////////////////////////////////////////////////////////////////
   // These methods check to see if |data_object| has the requested type.
@@ -72,7 +72,6 @@ class UI_BASE_EXPORT ClipboardUtil {
                                     size_t* fragment_start,
                                     size_t* fragment_end);
 };
-
 }
 
 #endif  // UI_BASE_CLIPBOARD_CLIPBOARD_UTIL_WIN_H_

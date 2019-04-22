@@ -82,8 +82,8 @@ password_manager::metrics_util::LinuxBackendMigrationStatus StepForMetrics(
   switch (step) {
     case PasswordStoreX::NOT_ATTEMPTED:
       return LinuxBackendMigrationStatus::kNotAttempted;
-    case PasswordStoreX::FAILED:
-      return LinuxBackendMigrationStatus::kFailed;
+    case PasswordStoreX::DEPRECATED_FAILED:
+      return LinuxBackendMigrationStatus::kDeprecatedFailed;
     case PasswordStoreX::COPIED_ALL:
       return LinuxBackendMigrationStatus::kCopiedAll;
     case PasswordStoreX::LOGIN_DB_REPLACED:
@@ -92,12 +92,18 @@ password_manager::metrics_util::LinuxBackendMigrationStatus StepForMetrics(
       return LinuxBackendMigrationStatus::kStarted;
     case PasswordStoreX::POSTPONED:
       return LinuxBackendMigrationStatus::kPostponed;
-    case PasswordStoreX::FAILED_CREATE_ENCRYPTED:
-      return LinuxBackendMigrationStatus::kFailedCreatedEncrypted;
+    case PasswordStoreX::DEPRECATED_FAILED_CREATE_ENCRYPTED:
+      return LinuxBackendMigrationStatus::kDeprecatedFailedCreatedEncrypted;
     case PasswordStoreX::FAILED_ACCESS_NATIVE:
       return LinuxBackendMigrationStatus::kFailedAccessNative;
     case PasswordStoreX::FAILED_REPLACE:
       return LinuxBackendMigrationStatus::kFailedReplace;
+    case PasswordStoreX::FAILED_INIT_ENCRYPTED:
+      return LinuxBackendMigrationStatus::kFailedInitEncrypted;
+    case PasswordStoreX::FAILED_RECREATE_ENCRYPTED:
+      return LinuxBackendMigrationStatus::kFailedRecreateEncrypted;
+    case PasswordStoreX::FAILED_WRITE_TO_ENCRYPTED:
+      return LinuxBackendMigrationStatus::kFailedWriteToEncrypted;
   }
   NOTREACHED();
   return LinuxBackendMigrationStatus::kNotAttempted;
@@ -301,13 +307,6 @@ std::vector<std::unique_ptr<PasswordForm>> PasswordStoreX::FillMatchingLogins(
   return std::vector<std::unique_ptr<PasswordForm>>();
 }
 
-std::vector<std::unique_ptr<PasswordForm>>
-PasswordStoreX::FillLoginsForSameOrganizationName(
-    const std::string& signon_realm) {
-  // Not available on X.
-  return std::vector<std::unique_ptr<PasswordForm>>();
-}
-
 bool PasswordStoreX::FillAutofillableLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   CheckMigration();
@@ -378,6 +377,10 @@ void PasswordStoreX::CheckMigration() {
     } else {
       UpdateMigrationToLoginDBStep(POSTPONED);
     }
+
+    base::UmaHistogramEnumeration(
+        "PasswordManager.LinuxBackendMigration.AttemptResult",
+        StepForMetrics(migration_to_login_db_step_));
   }
 }
 
@@ -444,7 +447,7 @@ void PasswordStoreX::MigrateToEncryptedLoginDB() {
   if (!encrypted_login_db->Init()) {
     VLOG(1) << "Failed to init the encrypted database file. Migration "
                "aborted.";
-    UpdateMigrationToLoginDBStep(FAILED_CREATE_ENCRYPTED);
+    UpdateMigrationToLoginDBStep(FAILED_INIT_ENCRYPTED);
     return;  // Serve from the native backend.
   }
 
@@ -502,7 +505,7 @@ PasswordStoreX::MigrationToLoginDBStep PasswordStoreX::CopyBackendToLoginDB(
 
   if (!login_db->DeleteAndRecreateDatabaseFile()) {
     LOG(ERROR) << "Failed to create the encrypted login database file";
-    return FAILED_CREATE_ENCRYPTED;
+    return FAILED_RECREATE_ENCRYPTED;
   }
 
   std::vector<std::unique_ptr<PasswordForm>> forms;
@@ -512,7 +515,16 @@ PasswordStoreX::MigrationToLoginDBStep PasswordStoreX::CopyBackendToLoginDB(
   for (auto& form : forms) {
     PasswordStoreChangeList changes = login_db->AddLogin(*form);
     if (changes.empty() || changes.back().type() != PasswordStoreChange::ADD) {
-      return FAILED_CREATE_ENCRYPTED;
+      // AddLogin() would fail if the form has empty |origin|, empty
+      // |signon_realm|, is a duplicate blacklisting or there was an IO error.
+      // All of these cases are not supported and can be dropped.
+      if (form->signon_realm.empty() || form->origin.is_empty() ||
+          form->blacklisted_by_user) {
+        LOG(WARNING) << "Dropped a credential during migration away from the "
+                        "native backend";
+      } else {
+        return FAILED_WRITE_TO_ENCRYPTED;
+      }
     }
   }
 
@@ -534,4 +546,40 @@ void PasswordStoreX::UpdateMigrationPref(MigrationToLoginDBStep step) {
 void PasswordStoreX::ShutdownOnUIThread() {
   migration_step_pref_.Destroy();
   PasswordStoreDefault::ShutdownOnUIThread();
+}
+
+password_manager::FormRetrievalResult PasswordStoreX::ReadAllLogins(
+    password_manager::PrimaryKeyToFormMap* key_to_form_map) {
+  // This method is called from the PasswordSyncBridge which supports only
+  // PasswordStoreDefault. Therefore, on Linux, it should be called only if the
+  // client is using LogainDatabase instead of the NativeBackend's. It's the
+  // responsibility of the caller to guarantee that.
+  if (use_native_backend()) {
+    NOTREACHED();
+  }
+  return PasswordStoreDefault::ReadAllLogins(key_to_form_map);
+}
+
+PasswordStoreChangeList PasswordStoreX::RemoveLoginByPrimaryKeySync(
+    int primary_key) {
+  // This method is called from the PasswordSyncBridge which supports only
+  // PasswordStoreDefault. Therefore, on Linux, it should be called only if the
+  // client is using LogainDatabase instead of the NativeBackend's. It's the
+  // responsibility of the caller to guarantee that.
+  if (use_native_backend()) {
+    NOTREACHED();
+  }
+  return PasswordStoreDefault::RemoveLoginByPrimaryKeySync(primary_key);
+}
+
+password_manager::PasswordStoreSync::MetadataStore*
+PasswordStoreX::GetMetadataStore() {
+  // This method is called from the PasswordSyncBridge which supports only
+  // PasswordStoreDefault. Therefore, on Linux, it should be called only if the
+  // client is using LogainDatabase instead of the NativeBackend's. It's the
+  // responsibility of the caller to guarantee that.
+  if (use_native_backend()) {
+    NOTREACHED();
+  }
+  return PasswordStoreDefault::GetMetadataStore();
 }

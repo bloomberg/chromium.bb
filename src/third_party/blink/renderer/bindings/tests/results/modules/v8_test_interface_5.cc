@@ -10,6 +10,8 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/modules/v8_test_interface_5.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
@@ -23,6 +25,7 @@
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -33,12 +36,12 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterface5::wrapper_type_info = {
+const WrapperTypeInfo v8_test_interface_5_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInterface5::DomTemplate,
     V8TestInterface5::InstallConditionalFeatures,
     "TestInterface5",
-    &V8TestInterfaceEmpty::wrapper_type_info,
+    V8TestInterfaceEmpty::GetWrapperTypeInfo(),
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::kObjectClassId,
     WrapperTypeInfo::kInheritFromActiveScriptWrappable,
@@ -50,7 +53,7 @@ const WrapperTypeInfo V8TestInterface5::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterface5Implementation.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterface5Implementation::wrapper_type_info_ = V8TestInterface5::wrapper_type_info;
+const WrapperTypeInfo& TestInterface5Implementation::wrapper_type_info_ = v8_test_interface_5_wrapper_type_info;
 
 // [ActiveScriptWrappable]
 static_assert(
@@ -647,7 +650,7 @@ void V8TestInterface5::TestInterfaceConstructorAttributeConstructorGetterCallbac
     v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface5Implementation_testInterfaceConstructorAttribute_ConstructorGetterCallback");
 
-  V8ConstructorAttributeGetter(property, info, &V8TestInterface5::wrapper_type_info);
+  V8ConstructorAttributeGetter(property, info, V8TestInterface5::GetWrapperTypeInfo());
 }
 
 void V8TestInterface5::DoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -995,9 +998,9 @@ static void InstallV8TestInterface5Template(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterface5::wrapper_type_info.interface_name, V8TestInterfaceEmpty::DomTemplate(isolate, world), V8TestInterface5::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterface5::GetWrapperTypeInfo()->interface_name, V8TestInterfaceEmpty::DomTemplate(isolate, world), V8TestInterface5::kInternalFieldCount);
 
-  if (!RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (!RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     return;
   }
 
@@ -1064,7 +1067,7 @@ void V8TestInterface5::InstallRuntimeEnabledFeaturesOnTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
-  if (!RuntimeEnabledFeatures::FeatureNameEnabled()) {
+  if (!RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
     return;
   }
 
@@ -1083,18 +1086,18 @@ void V8TestInterface5::InstallRuntimeEnabledFeaturesOnTemplate(
 v8::Local<v8::FunctionTemplate> V8TestInterface5::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestInterface5::GetWrapperTypeInfo()),
       InstallV8TestInterface5Template);
 }
 
 bool V8TestInterface5::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestInterface5::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestInterface5::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestInterface5::GetWrapperTypeInfo(), v8_value);
 }
 
 TestInterface5Implementation* V8TestInterface5::ToImplWithTypeCheck(

@@ -6,13 +6,16 @@
 
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/extension.h"
 
 namespace app_list {
 
 namespace {
-constexpr char kChromeCameraAppId[] = "hfhhnacclhffhdffklopdkcgdhifgngh";
-constexpr char const* kAppIdsHiddenInLauncher[] = {kChromeCameraAppId};
+
+constexpr char const* kAppIdsHiddenInLauncher[] = {
+    extension_misc::kChromeCameraAppId};
+
 }  // namespace
 
 bool ShouldShowInLauncher(const extensions::Extension* extension,

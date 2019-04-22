@@ -71,9 +71,8 @@ bool RestoreOnStartupPolicyHandler::CheckPolicySettings(
         // No error
         break;
       default:
-        errors->AddError(policy_name(),
-                         IDS_POLICY_OUT_OF_RANGE_ERROR,
-                         base::IntToString(restore_value));
+        errors->AddError(policy_name(), IDS_POLICY_OUT_OF_RANGE_ERROR,
+                         base::NumberToString(restore_value));
     }
   }
   return true;

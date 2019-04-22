@@ -642,9 +642,9 @@ void PrivetLocalPrintOperationImpl::SetData(
   data_ = data;
 }
 
-void PrivetLocalPrintOperationImpl::SetTicket(const std::string& ticket) {
+void PrivetLocalPrintOperationImpl::SetTicket(base::Value ticket) {
   DCHECK(!started_);
-  ticket_.InitFromString(ticket);
+  ticket_.InitFromValue(std::move(ticket));
 }
 
 void PrivetLocalPrintOperationImpl::SetCapabilities(
@@ -703,7 +703,7 @@ std::unique_ptr<PrivetURLLoader> PrivetHTTPClientImpl::CreateURLLoader(
   GURL::Replacements replacements;
   std::string host = host_port_.HostForURL();
   replacements.SetHostStr(host);
-  std::string port = base::UintToString(host_port_.port());
+  std::string port = base::NumberToString(host_port_.port());
   replacements.SetPortStr(port);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =

@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/data_use_measurement/core/data_use_recorder.h"
@@ -228,7 +228,8 @@ class DataUseMeasurementTest : public testing::Test {
     context_->Init();
   }
 
-  base::MessageLoopForIO loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
 
   TestDataUseAscriber ascriber_;
   TestURLRequestClassifier* url_request_classifier_;
@@ -274,42 +275,6 @@ TEST_F(DataUseMeasurementTest, DataUseForwarderIsCalled) {
 }
 
 #if defined(OS_ANDROID)
-TEST_F(DataUseMeasurementTest, AppStateUnknown) {
-  base::HistogramTester histogram_tester;
-  std::unique_ptr<net::URLRequest> request = CreateTestRequest(kUserRequest);
-  data_use_measurement_.OnBeforeURLRequest(request.get());
-
-  {
-    base::HistogramTester histogram_tester;
-    data_use_measurement()->OnApplicationStateChangeForTesting(
-        base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
-    data_use_measurement_.OnNetworkBytesSent(*request, 100);
-    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
-    histogram_tester.ExpectTotalCount(
-        "DataUse.TrafficSize.User.Downstream.Foreground." + kConnectionType, 1);
-    histogram_tester.ExpectTotalCount(
-        "DataUse.TrafficSize.User.Upstream.Foreground." + kConnectionType, 1);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    data_use_measurement()->OnApplicationStateChangeForTesting(
-        base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
-    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
-    histogram_tester.ExpectTotalCount(
-        "DataUse.TrafficSize.User.Downstream.Unknown." + kConnectionType, 1);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    data_use_measurement()->OnApplicationStateChangeForTesting(
-        base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
-    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
-    histogram_tester.ExpectTotalCount(
-        "DataUse.TrafficSize.User.Downstream.Background." + kConnectionType, 1);
-  }
-}
-
 TEST_F(DataUseMeasurementTest, TimeOfBackgroundDownstreamBytes) {
   {
     std::unique_ptr<net::URLRequest> request = CreateTestRequest(kUserRequest);

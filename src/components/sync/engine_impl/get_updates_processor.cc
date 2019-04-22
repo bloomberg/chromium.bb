@@ -5,7 +5,7 @@
 #include "components/sync/engine_impl/get_updates_processor.h"
 
 #include <stddef.h>
-
+#include <string>
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
@@ -15,9 +15,9 @@
 #include "components/sync/engine_impl/get_updates_delegate.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/engine_impl/update_handler.h"
-#include "components/sync/syncable/directory.h"
-#include "components/sync/syncable/nigori_handler.h"
+#include "components/sync/nigori/keystore_keys_handler.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
+#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 namespace syncer {
 
@@ -28,24 +28,25 @@ using TypeSyncEntityMap = std::map<ModelType, SyncEntityList>;
 using TypeToIndexMap = std::map<ModelType, size_t>;
 
 bool ShouldRequestEncryptionKey(SyncCycleContext* context) {
-  syncable::Directory* dir = context->directory();
-  syncable::ReadTransaction trans(FROM_HERE, dir);
-  syncable::NigoriHandler* nigori_handler = dir->GetNigoriHandler();
-  return nigori_handler->NeedKeystoreKey(&trans);
+  return context->model_type_registry()
+      ->keystore_keys_handler()
+      ->NeedKeystoreKey();
 }
 
 SyncerError HandleGetEncryptionKeyResponse(
     const sync_pb::ClientToServerResponse& update_response,
-    syncable::Directory* dir) {
+    SyncCycleContext* context) {
   bool success = false;
   if (update_response.get_updates().encryption_keys_size() == 0) {
     LOG(ERROR) << "Failed to receive encryption key from server.";
     return SyncerError(SyncerError::SERVER_RESPONSE_VALIDATION_FAILED);
   }
-  syncable::ReadTransaction trans(FROM_HERE, dir);
-  syncable::NigoriHandler* nigori_handler = dir->GetNigoriHandler();
-  success = nigori_handler->SetKeystoreKeys(
-      update_response.get_updates().encryption_keys(), &trans);
+
+  const google::protobuf::RepeatedPtrField<std::string>& raw_keys =
+      update_response.get_updates().encryption_keys();
+  success =
+      context->model_type_registry()->keystore_keys_handler()->SetKeystoreKeys(
+          std::vector<std::string>(raw_keys.begin(), raw_keys.end()));
 
   DVLOG(1) << "GetUpdates returned "
            << update_response.get_updates().encryption_keys_size()
@@ -136,7 +137,6 @@ void PartitionContextMutationsByType(
 // other of the message-building functions to make the rest of the code easier
 // to test.
 void InitDownloadUpdatesContext(SyncCycle* cycle,
-                                bool create_mobile_bookmarks_folder,
                                 sync_pb::ClientToServerMessage* message) {
   message->set_share(cycle->context()->account_name());
   message->set_message_contents(sync_pb::ClientToServerMessage::GET_UPDATES);
@@ -148,8 +148,10 @@ void InitDownloadUpdatesContext(SyncCycle* cycle,
   // (e.g. Bookmark URLs but not their containing folders).
   get_updates->set_fetch_folders(true);
 
-  get_updates->set_create_mobile_bookmarks_folder(
-      create_mobile_bookmarks_folder);
+  // This is a deprecated field that should be cleaned up after server's
+  // behavior is updated.
+  get_updates->set_create_mobile_bookmarks_folder(true);
+
   bool need_encryption_key = ShouldRequestEncryptionKey(cycle->context());
   get_updates->set_need_encryption_key(need_encryption_key);
 
@@ -165,14 +167,12 @@ GetUpdatesProcessor::GetUpdatesProcessor(UpdateHandlerMap* update_handler_map,
 
 GetUpdatesProcessor::~GetUpdatesProcessor() {}
 
-SyncerError GetUpdatesProcessor::DownloadUpdates(
-    ModelTypeSet* request_types,
-    SyncCycle* cycle,
-    bool create_mobile_bookmarks_folder) {
+SyncerError GetUpdatesProcessor::DownloadUpdates(ModelTypeSet* request_types,
+                                                 SyncCycle* cycle) {
   TRACE_EVENT0("sync", "DownloadUpdates");
 
   sync_pb::ClientToServerMessage message;
-  InitDownloadUpdatesContext(cycle, create_mobile_bookmarks_folder, &message);
+  InitDownloadUpdatesContext(cycle, &message);
   PrepareGetUpdates(*request_types, &message);
 
   SyncerError result = ExecuteDownloadUpdates(request_types, cycle, &message);
@@ -216,13 +216,15 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
     CopyClientDebugInfo(cycle->context()->debug_info_getter(), debug_info);
   }
 
+  SyncerProtoUtil::AddRequiredFieldsToClientToServerMessage(cycle, msg);
+
   cycle->SendProtocolEvent(
       *(delegate_.GetNetworkRequestEvent(base::Time::Now(), *msg)));
 
   ModelTypeSet partial_failure_data_types;
 
   SyncerError result = SyncerProtoUtil::PostClientToServerMessage(
-      msg, &update_response, cycle, &partial_failure_data_types);
+      *msg, &update_response, cycle, &partial_failure_data_types);
 
   DVLOG(2) << SyncerProtoUtil::ClientToServerResponseDebugString(
       update_response);
@@ -258,9 +260,8 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
 
   if (need_encryption_key ||
       update_response.get_updates().encryption_keys_size() > 0) {
-    syncable::Directory* dir = cycle->context()->directory();
     status->set_last_get_key_result(
-        HandleGetEncryptionKeyResponse(update_response, dir));
+        HandleGetEncryptionKeyResponse(update_response, cycle->context()));
   }
 
   SyncerError process_result =

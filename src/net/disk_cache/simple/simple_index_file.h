@@ -18,6 +18,7 @@
 #include "base/pickle.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
+#include "net/disk_cache/simple/simple_backend_version.h"
 #include "net/disk_cache/simple/simple_index.h"
 
 namespace base {
@@ -68,17 +69,21 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
     SimpleIndex::IndexWriteToDiskReason reason() const { return reason_; }
     uint64_t entry_count() const { return entry_count_; }
     bool has_entry_in_memory_data() const { return version_ >= 8; }
+    bool app_cache_has_trailer_prefetch_size() const { return version_ >= 9; }
 
    private:
     FRIEND_TEST_ALL_PREFIXES(IndexMetadataTest, Basics);
     FRIEND_TEST_ALL_PREFIXES(IndexMetadataTest, Serialize);
     FRIEND_TEST_ALL_PREFIXES(IndexMetadataTest, ReadV6Format);
     FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, ReadV7Format);
+    FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, ReadV8Format);
+    FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, ReadV8FormatAppCache);
     friend class V6IndexMetadataForTest;
     friend class V7IndexMetadataForTest;
+    friend class V8IndexMetadataForTest;
 
-    uint64_t magic_number_;
-    uint32_t version_;
+    uint64_t magic_number_ = kSimpleIndexMagicNumber;
+    uint32_t version_ = kSimpleVersion;
     SimpleIndex::IndexWriteToDiskReason reason_;
     uint64_t entry_count_;
     uint64_t cache_size_;  // Total cache storage size in bytes.
@@ -98,7 +103,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                                 SimpleIndexLoadResult* out_result);
 
   // Writes the specified set of entries to disk.
-  virtual void WriteToDisk(SimpleIndex::IndexWriteToDiskReason reason,
+  virtual void WriteToDisk(net::CacheType cache_type,
+                           SimpleIndex::IndexWriteToDiskReason reason,
                            const SimpleIndex::EntrySet& entry_set,
                            uint64_t cache_size,
                            const base::TimeTicks& start,
@@ -126,7 +132,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                                    SimpleIndexLoadResult* out_result);
 
   // Load the index file from disk returning an EntrySet.
-  static void SyncLoadFromDisk(const base::FilePath& index_filename,
+  static void SyncLoadFromDisk(net::CacheType cache_type,
+                               const base::FilePath& index_filename,
                                base::Time* out_last_cache_seen_by_index,
                                SimpleIndexLoadResult* out_result);
 
@@ -136,6 +143,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   // immediately after calling this menthod, one needs to call
   // SerializeFinalData to make it ready to write to a file.
   static std::unique_ptr<base::Pickle> Serialize(
+      net::CacheType cache_type,
       const SimpleIndexFile::IndexMetadata& index_metadata,
       const SimpleIndex::EntrySet& entries);
 
@@ -148,7 +156,9 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
 
   // Given the contents of an index file |data| of length |data_len|, returns
   // the corresponding EntrySet. Returns NULL on error.
-  static void Deserialize(const char* data, int data_len,
+  static void Deserialize(net::CacheType cache_type,
+                          const char* data,
+                          int data_len,
                           base::Time* out_cache_last_modified,
                           SimpleIndexLoadResult* out_result);
 
@@ -172,7 +182,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
 
   // Scan the index directory for entries, returning an EntrySet of all entries
   // found.
-  static void SyncRestoreFromDisk(const base::FilePath& cache_directory,
+  static void SyncRestoreFromDisk(net::CacheType cache_type,
+                                  const base::FilePath& cache_directory,
                                   const base::FilePath& index_file_path,
                                   SimpleIndexLoadResult* out_result);
 

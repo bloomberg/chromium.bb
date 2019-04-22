@@ -1,7 +1,8 @@
 <!DOCTYPE HTML>
 <html>
 <body>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 
 <style>
 myelement {
@@ -37,21 +38,17 @@ myelement {
 
 <div id="console"></div>
 <script>
-description("This test makes sure that focusable elements in canvas fallback content are accessible.");
+  function check(id, expectedRole) {
+      var axElement = accessibilityController.accessibleElementById(id);
+      var element = document.getElementById(id);
+      // TODO(crbug.com/930327): focus() triggers a lifecycle update without updating observers.
+      // Make sure to get the axElement before calling focus(), to trigger a full update cycle.
+      element.focus();
+      assert_equals(document.activeElement, element);
+      assert_equals(axElement.role, expectedRole, id);
+  }
 
-if (window.testRunner && window.accessibilityController) {
-    testRunner.dumpAsText();
-
-    function check(id, expectedRole) {
-        debug(id);
-        window.element = document.getElementById(id);
-        element.focus();
-        shouldBe("document.activeElement == element", "true");
-        window.axElement = accessibilityController.focusedElement;
-        shouldBe("axElement.role", "\"" + expectedRole + "\"");
-        debug("");
-    }
-
+test((t) => {
     var comboBoxRole = (testRunner.platformName == "gtk" || testRunner.platformName == "efl") ? "AXRole: AXComboBox" : "AXRole: AXPopUpButton";
 
     // Check rendered controls.
@@ -72,18 +69,20 @@ if (window.testRunner && window.accessibilityController) {
     check("text2", "AXRole: AXTextField");
     check("checkbox2", "AXRole: AXCheckBox");
     check("radio2", "AXRole: AXRadioButton");
-    check("submit2", "AXRole: AXButton");
-    check("combobox2", comboBoxRole);
-    check("focusable2", "AXRole: AXGenericContainer");
-    check("aria-button2", "AXRole: AXButton");
-    check("aria-link2", "AXRole: AXLink");
+    check("submit2", "AXRole: AXButton", t);
+    check("combobox2", comboBoxRole, t);
+    check("focusable2", "AXRole: AXGenericContainer", t);
+    check("aria-button2", "AXRole: AXButton", t);
+    check("aria-link2", "AXRole: AXLink", t);
 
     // Check that the role is updated when the element changes.
     document.getElementById('focusable1').setAttribute('role', 'button');
-    check("focusable1", "AXRole: AXButton");
+    check("focusable1", "AXRole: AXButton", t);
+
     document.getElementById('focusable2').setAttribute('role', 'button');
-    check("focusable2", "AXRole: AXButton");
-}
+    check("focusable2", "AXRole: AXButton", t, true);
+}, "This test makes sure that focusable elements in canvas fallback content are accessible.");
+
 
 </script>
 

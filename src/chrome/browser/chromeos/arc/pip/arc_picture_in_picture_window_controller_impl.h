@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_PIP_ARC_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_PIP_ARC_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_IMPL_H_
 
-#include <string>
-#include <vector>
-
 #include "base/macros.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "ui/gfx/geometry/size.h"
@@ -35,20 +32,25 @@ class ArcPictureInPictureWindowControllerImpl
   // PictureInPictureWindowController:
   gfx::Size Show() override;
   void Close(bool should_pause_video, bool should_reset_pip_player) override;
+  void CloseAndFocusInitiator() override;
   void OnWindowDestroyed() override;
-  void SetPictureInPictureCustomControls(
-      const std::vector<blink::PictureInPictureControlInfo>& info) override;
   void EmbedSurface(const viz::SurfaceId& surface_id,
                     const gfx::Size& natural_size) override;
   content::OverlayWindow* GetWindowForTesting() override;
   void UpdateLayerBounds() override;
   bool IsPlayerActive() override;
+  bool IsPlayerMuted() override;
   content::WebContents* GetInitiatorWebContents() override;
   bool TogglePlayPause() override;
-  void CustomControlPressed(const std::string& control_id) override;
+  bool ToggleMute() override;
   void UpdatePlaybackState(bool is_playing,
                            bool reached_end_of_stream) override;
+  void UpdateMutedState() override;
   void SetAlwaysHidePlayPauseButton(bool is_visible) override;
+  void SetAlwaysHideMuteButton(bool is_visible) override;
+  void SkipAd() override;
+  void NextTrack() override;
+  void PreviousTrack() override;
 
  private:
   arc::ArcPipBridge* const arc_pip_bridge_;

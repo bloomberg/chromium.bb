@@ -38,6 +38,8 @@ set(DEQP_VK_PROTECTED_MEMORY_SRCS
 	vktProtectedMemWsiSwapchainTests.hpp
 	vktProtectedMemYCbCrConversionTests.cpp
 	vktProtectedMemYCbCrConversionTests.hpp
+	vktProtectedMemWorkgroupStorageTests.cpp
+	vktProtectedMemWorkgroupStorageTests.hpp
 	vktProtectedMemTests.cpp
 	vktProtectedMemTests.hpp
 	)
@@ -46,6 +48,8 @@ set(DEQP_VK_PROTECTED_MEMORY_LIBS
 	tcutil
 	vkutil
 	)
+
+PCH(DEQP_VK_PROTECTED_MEMORY_SRCS ../pch.cpp)
 
 add_library(deqp-vk-protected-memory STATIC ${DEQP_VK_PROTECTED_MEMORY_SRCS})
 target_link_libraries(deqp-vk-protected-memory ${DEQP_VK_PROTECTED_MEMORY_LIBS})

@@ -8,14 +8,12 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
-#import "ios/chrome/browser/ui/url_loader.h"
-#import "ios/web/public/block_types.h"
+#include "url/gurl.h"
 
 @protocol CRWNativeContentDelegate;
 
 namespace web {
 class BrowserState;
-struct Referrer;
 }
 
 // Callback for the HtmlGenerator protocol.
@@ -78,16 +76,12 @@ typedef void (^HtmlCallback)(NSString*);
         allowingReadAccessToURL:(const GURL&)resourcesRoot
                    browserState:(web::BrowserState*)browserState;
 
-// Set the |loader| to use to allow navigation to external URL. The |referrer|
-// is the URL that will be used as referrer for those navigations.
-- (void)setLoader:(id<UrlLoader>)loader referrer:(const web::Referrer&)referrer;
-
 // Asynchronously executes the supplied JavaScript. Calls |completionHandler|
 // with results of the execution. If the controller cannot execute JS at the
 // moment, |completionHandler| is called with an NSError. The
 // |completionHandler| can be nil.
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(web::JavaScriptResultBlock)completionHandler;
+        completionHandler:(void (^)(id, NSError*))completionHandler;
 
 // The web page title. Will return nil if not available.
 - (NSString*)title;

@@ -124,11 +124,27 @@ function ListContainer(element, table, grid) {
   this.element.addEventListener(
       'contextmenu', this.onContextMenu_.bind(this), /* useCapture */ true);
 
-  util.isTouchModeEnabled().then(function(enabled) {
-    if (!enabled)
-      return;
-    this.disableContextMenuByLongTapDuringCheckSelect_();
+  this.element.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 1) {
+      this.allowContextMenuByTouch_ = true;
+    }
+  }.bind(this), {passive: true});
+  this.element.addEventListener('touchend', function(e) {
+    if (e.touches.length == 0) {
+      // contextmenu event will be sent right after touchend.
+      setTimeout(function() {
+        this.allowContextMenuByTouch_ = false;
+      }.bind(this));
+    }
   }.bind(this));
+  this.element.addEventListener('contextmenu', function(e) {
+    // Block context menu triggered by touch event unless it is right after
+    // multi-touch, or we are currently selecting a file.
+    if (this.currentList.selectedItem && !this.allowContextMenuByTouch_ &&
+        e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) {
+      e.stopPropagation();
+    }
+  }.bind(this), true);
 }
 
 /**
@@ -265,36 +281,6 @@ ListContainer.prototype.setCurrentListType = function(listType) {
 };
 
 /**
- * Disables context menu by long-tap when at least one file/folder is selected,
- * while still enabling two-finger tap.
- * @private
- */
-ListContainer.prototype.disableContextMenuByLongTapDuringCheckSelect_ =
-    function() {
-  this.element.addEventListener('touchstart', function(e) {
-    if (e.touches.length > 1) {
-      this.allowContextMenuByTouch_ = true;
-    }
-  }.bind(this));
-  this.element.addEventListener('touchend', function(e) {
-    if (e.touches.length == 0) {
-      // contextmenu event will be sent right after touchend.
-      setTimeout(function() {
-        this.allowContextMenuByTouch_ = false;
-      }.bind(this));
-    }
-  }.bind(this));
-  this.element.addEventListener('contextmenu', function(e) {
-    // Block context menu triggered by touch event unless it is right after
-    // multi-touch, or we are currently selecting a file.
-    if (this.currentList.selectedItem && !this.allowContextMenuByTouch_ &&
-        e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) {
-      e.stopPropagation();
-    }
-  }.bind(this), true);
-};
-
-/**
  * Clears hover highlighting in the list container until next mouse move.
  */
 ListContainer.prototype.clearHover = function() {
@@ -307,10 +293,11 @@ ListContainer.prototype.clearHover = function() {
  * @return {cr.ui.ListItem}
  */
 ListContainer.prototype.findListItemForNode = function(node) {
-  var item = this.currentList.getListItemAncestor(node);
+  const item = this.currentList.getListItemAncestor(node);
   // TODO(serya): list should check that.
   return item && this.currentList.isItem(item) ?
-      assertInstanceof(item, cr.ui.ListItem) : null;
+      assertInstanceof(item, cr.ui.ListItem) :
+      null;
 };
 
 /**
@@ -331,11 +318,36 @@ ListContainer.prototype.focus = function() {
 };
 
 /**
+ * Check if our context menu has any items that can be activated
+ * @return {boolean} True if the menu has action item. Otherwise, false.
+ * @private
+ */
+ListContainer.prototype.contextMenuHasActions_ = () => {
+  const menu = document.querySelector('#file-context-menu');
+  const menuItems = menu.querySelectorAll('cr-menu-item, hr');
+  for (const item of menuItems) {
+    if (!item.hasAttribute('hidden') && !item.hasAttribute('disabled') &&
+        (window.getComputedStyle(item).display != 'none')) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
  * Contextmenu event handler to prevent change of focus on long-tapping the
  * header of the file list.
+ * @param {!Event} e Menu event.
  * @private
  */
 ListContainer.prototype.onContextMenu_ = function(e) {
+  // Inhibit the context menu being shown if it only hosts
+  // disabled items https://crbug.com/917975
+  if (this.contextMenuHasActions_() === false) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
   if (!this.allowContextMenuByTouch_ && e.sourceCapabilities &&
       e.sourceCapabilities.firesTouchEvents) {
     this.focus();
@@ -375,23 +387,22 @@ ListContainer.prototype.onKeyDown_ = function(event) {
  */
 ListContainer.prototype.onKeyPress_ = function(event) {
   // Ignore keypress handler in the rename input box.
-  if (event.srcElement.tagName == 'INPUT' ||
-      event.ctrlKey ||
-      event.metaKey ||
+  if (event.srcElement.tagName == 'INPUT' || event.ctrlKey || event.metaKey ||
       event.altKey) {
     event.stopImmediatePropagation();
     return;
   }
 
-  var now = new Date();
-  var character = String.fromCharCode(event.charCode).toLowerCase();
-  var text = now - this.textSearchState.date > 1000 ? '' :
-      this.textSearchState.text;
+  const now = new Date();
+  const character = String.fromCharCode(event.charCode).toLowerCase();
+  const text =
+      now - this.textSearchState.date > 1000 ? '' : this.textSearchState.text;
   this.textSearchState.text = text + character;
   this.textSearchState.date = now;
 
-  if (this.textSearchState.text)
+  if (this.textSearchState.text) {
     cr.dispatchSimpleEvent(this.element, ListContainer.EventType.TEXT_SEARCH);
+  }
 };
 
 /**

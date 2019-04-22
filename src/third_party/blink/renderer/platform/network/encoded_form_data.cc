@@ -123,8 +123,8 @@ void EncodedFormData::AppendFile(const String& filename) {
 }
 
 void EncodedFormData::AppendFileRange(const String& filename,
-                                      long long start,
-                                      long long length,
+                                      int64_t start,
+                                      int64_t length,
                                       double expected_modification_time) {
   elements_.push_back(
       FormDataElement(filename, start, length, expected_modification_time));
@@ -157,7 +157,7 @@ String EncodedFormData::FlattenToString() const {
                                  bytes.size());
 }
 
-unsigned long long EncodedFormData::SizeInBytes() const {
+uint64_t EncodedFormData::SizeInBytes() const {
   unsigned size = 0;
   for (const FormDataElement& e : elements_) {
     switch (e.type_) {

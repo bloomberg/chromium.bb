@@ -9,9 +9,9 @@
 
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/values.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
@@ -22,7 +22,7 @@ struct GPUInfo;
 
 class GPU_EXPORT GpuControlList {
  public:
-  typedef base::hash_map<int, std::string> FeatureMap;
+  typedef std::unordered_map<int, std::string> FeatureMap;
 
   enum OsType {
     kOsLinux,
@@ -83,6 +83,12 @@ class GPU_EXPORT GpuControlList {
     kVersionStyleNumerical,
     kVersionStyleLexical,
     kVersionStyleUnknown
+  };
+
+  enum SupportedOrNot {
+    kSupported,
+    kUnsupported,
+    kDontCare,
   };
 
   struct GPU_EXPORT Version {
@@ -147,8 +153,9 @@ class GPU_EXPORT GpuControlList {
     Version pixel_shader_version;
     bool in_process_gpu;
     uint32_t gl_reset_notification_strategy;
-    bool direct_rendering;
+    Version direct_rendering_version;
     Version gpu_count;
+    SupportedOrNot hardware_overlay;
 
     uint32_t test_group;
 

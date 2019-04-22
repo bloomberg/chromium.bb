@@ -5,20 +5,17 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import android.os.Bundle;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Class responsible for scheduling and canceling offline page related background tasks.
  */
 public class BackgroundScheduler {
-    static final long ONE_WEEK_IN_MILLISECONDS = TimeUnit.DAYS.toMillis(7);
-    static final long FIVE_MINUTES_IN_MILLISECONDS = TimeUnit.MINUTES.toSeconds(5);
     static final long NO_DELAY = 0;
     private static final boolean OVERWRITE = true;
 
@@ -39,7 +36,7 @@ public class BackgroundScheduler {
 
     /** Schedules a background task for provided triggering conditions. */
     public void schedule(TriggerConditions triggerConditions) {
-        scheduleImpl(triggerConditions, NO_DELAY, ONE_WEEK_IN_MILLISECONDS, OVERWRITE);
+        scheduleImpl(triggerConditions, NO_DELAY, DateUtils.WEEK_IN_MILLIS, OVERWRITE);
     }
 
     /**
@@ -50,7 +47,7 @@ public class BackgroundScheduler {
      * system.
      */
     public void scheduleBackup(TriggerConditions triggerConditions, long delayStartMs) {
-        scheduleImpl(triggerConditions, delayStartMs, ONE_WEEK_IN_MILLISECONDS, !OVERWRITE);
+        scheduleImpl(triggerConditions, delayStartMs, DateUtils.WEEK_IN_MILLIS, !OVERWRITE);
     }
 
     /**
@@ -62,7 +59,7 @@ public class BackgroundScheduler {
      */
     public void reschedule() {
         TriggerConditions triggerConditions = new TriggerConditions(false, 0, false);
-        scheduleBackup(triggerConditions, FIVE_MINUTES_IN_MILLISECONDS);
+        scheduleBackup(triggerConditions, DateUtils.MINUTE_IN_MILLIS * 5);
     }
 
     protected void scheduleImpl(TriggerConditions triggerConditions, long delayStartMs,
@@ -75,8 +72,8 @@ public class BackgroundScheduler {
                 TaskInfo.createOneOffTask(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID,
                                 OfflineBackgroundTask.class, delayStartMs, executionDeadlineMs)
                         .setRequiredNetworkType(triggerConditions.requireUnmeteredNetwork()
-                                        ? TaskInfo.NETWORK_TYPE_UNMETERED
-                                        : TaskInfo.NETWORK_TYPE_ANY)
+                                        ? TaskInfo.NetworkType.UNMETERED
+                                        : TaskInfo.NetworkType.ANY)
                         .setUpdateCurrent(overwrite)
                         .setIsPersisted(true)
                         .setExtras(taskExtras)

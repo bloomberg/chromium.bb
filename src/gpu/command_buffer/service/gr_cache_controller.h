@@ -10,8 +10,10 @@
 #include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
+
+class SharedContextState;
+
 namespace raster {
-struct RasterDecoderContextState;
 
 // Manages clearing the GrContext cache after a period of inactivity.
 // TODO(khushalsagar): This class replicates the ContextCacheController used in
@@ -19,7 +21,7 @@ struct RasterDecoderContextState;
 // gpu::Scheduler, since it can better identify when we are in an idle state.
 class GPU_GLES2_EXPORT GrCacheController {
  public:
-  GrCacheController(RasterDecoderContextState* context_state,
+  GrCacheController(SharedContextState* context_state,
                     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~GrCacheController();
 
@@ -36,7 +38,7 @@ class GPU_GLES2_EXPORT GrCacheController {
   // cache.
   uint64_t current_idle_id_ = 0u;
   base::CancelableOnceClosure purge_gr_cache_cb_;
-  RasterDecoderContextState* context_state_;
+  SharedContextState* context_state_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(GrCacheController);

@@ -36,15 +36,18 @@ namespace {
 
 const char kMetadataTraceLabel[] = "metadata";
 
-const char kGetCategoriesClosureName[] = "GetCategoriesClosure";
 const char kRequestBufferUsageClosureName[] = "RequestBufferUsageClosure";
-const char kRequestClockSyncMarkerClosureName[] =
-    "RequestClockSyncMarkerClosure";
 const char kStartTracingClosureName[] = "StartTracingClosure";
+const int32_t kBeginTracingTimeoutInSeconds = 10;
 
 }  // namespace
 
 namespace tracing {
+
+// static
+const void* Coordinator::GetStartTracingClosureName() {
+  return &kStartTracingClosureName;
+}
 
 class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
  public:
@@ -71,13 +74,16 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
       mojom::TraceDataType type,
       base::WeakPtr<AgentRegistry::AgentEntry> agent_entry) {
     mojom::RecorderPtr ptr;
-    auto recorder = std::make_unique<Recorder>(
-        MakeRequest(&ptr), type,
-        base::BindRepeating(&Coordinator::TraceStreamer::OnRecorderDataChange,
-                            AsWeakPtr(), label));
-    recorders_[label].insert(std::move(recorder));
-    DCHECK(type != mojom::TraceDataType::STRING ||
-           recorders_[label].size() == 1);
+    mojom::RecorderRequest request = MakeRequest(&ptr);
+    if (processed_labels_.count(label) == 0) {
+      auto recorder = std::make_unique<Recorder>(
+          std::move(request), type,
+          base::BindRepeating(&Coordinator::TraceStreamer::OnRecorderDataChange,
+                              AsWeakPtr(), label));
+      recorders_[label].insert(std::move(recorder));
+      DCHECK(type != mojom::TraceDataType::STRING ||
+             recorders_[label].size() == 1);
+    }
 
     // Tracing agent proxies are bound on the main thread and should be called
     // from the main thread.
@@ -85,10 +91,6 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
         FROM_HERE, base::BindOnce(&Coordinator::SendRecorder, coordinator_,
                                   agent_entry, std::move(ptr)));
   }
-
-  // Called from |backend_task_runner_| to close the recorder proxy on the
-  // correct task runner.
-  void CloseRecorder(mojom::RecorderPtr recorder) {}
 
   // Called from |main_task_runner_| either after flushing is complete or at
   // shutdown. We either will not write to the stream afterwards or do not care
@@ -130,7 +132,10 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
       // We are not waiting for data from any particular label now. So, we look
       // at the recorders that have some data available and select the next
       // label to stream.
-      streaming_label_.clear();
+      if (!streaming_label_.empty()) {
+        processed_labels_.insert(streaming_label_);
+        streaming_label_.clear();
+      }
       bool all_finished = true;
       for (const auto& key_value : recorders_) {
         for (const auto& recorder : key_value.second) {
@@ -257,6 +262,7 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
   base::WeakPtr<Coordinator> coordinator_;
 
   std::map<std::string, std::set<std::unique_ptr<Recorder>>> recorders_;
+  std::set<std::string> processed_labels_;
 
   // If |streaming_label_| is not empty, it shows the label for which we are
   // writing chunks to the output stream.
@@ -268,23 +274,35 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
   DISALLOW_COPY_AND_ASSIGN(TraceStreamer);
 };
 
-Coordinator::Coordinator(AgentRegistry* agent_registry)
-    : binding_(this),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      // USER_VISIBLE because the task posted from StopAndFlushAfterClockSync()
-      // is required to stop tracing from the UI.
+Coordinator::Coordinator(AgentRegistry* agent_registry,
+                         const base::RepeatingClosure& on_disconnect_callback)
+    : task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      agent_registry_(agent_registry),
+      on_disconnect_callback_(std::move(on_disconnect_callback)),
+      binding_(this),
+      // USER_VISIBLE because the task posted from StopAndFlushInternal() is
+      // required to stop tracing from the UI.
       // TODO(fdoray): Once we have support for dynamic priorities
       // (https://crbug.com/889029), use BEST_EFFORT initially and increase the
       // priority only when blocking the tracing UI.
       backend_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
            base::WithBaseSyncPrimitives()})),
-      agent_registry_(agent_registry),
       weak_ptr_factory_(this) {
   DCHECK(agent_registry_);
 }
 
 Coordinator::~Coordinator() {
+  Reset();
+}
+
+bool Coordinator::IsConnected() {
+  return !!binding_;
+}
+
+void Coordinator::Reset() {
+  start_tracing_callback_timer_.Stop();
+
   if (!stop_and_flush_callback_.is_null()) {
     base::ResetAndReturn(&stop_and_flush_callback_)
         .Run(base::Value(base::Value::Type::DICTIONARY));
@@ -293,8 +311,6 @@ Coordinator::~Coordinator() {
     base::ResetAndReturn(&start_tracing_callback_).Run(false);
   if (!request_buffer_usage_callback_.is_null())
     base::ResetAndReturn(&request_buffer_usage_callback_).Run(false, 0, 0);
-  if (!get_categories_callback_.is_null())
-    base::ResetAndReturn(&get_categories_callback_).Run(false, "");
 
   if (trace_streamer_) {
     // We are in the middle of flushing trace data. We need to
@@ -308,10 +324,17 @@ Coordinator::~Coordinator() {
   }
 }
 
+void Coordinator::OnClientConnectionError() {
+  Reset();
+  binding_.Close();
+  on_disconnect_callback_.Run();
+}
 void Coordinator::BindCoordinatorRequest(
     mojom::CoordinatorRequest request,
     const service_manager::BindSourceInfo& source_info) {
   binding_.Bind(std::move(request));
+  binding_.set_connection_error_handler(base::BindRepeating(
+      &Coordinator::OnClientConnectionError, base::Unretained(this)));
 }
 
 void Coordinator::StartTracing(const std::string& config,
@@ -325,19 +348,93 @@ void Coordinator::StartTracing(const std::string& config,
   is_tracing_ = true;
   config_ = config;
   parsed_config_ = base::trace_event::TraceConfig(config);
-  agent_registry_->SetAgentInitializationCallback(base::BindRepeating(
-      &Coordinator::SendStartTracingToAgent, weak_ptr_factory_.GetWeakPtr()));
-  if (!agent_registry_->HasDisconnectClosure(&kStartTracingClosureName)) {
-    std::move(callback).Run(true);
-    return;
-  }
+  agent_registry_->SetAgentInitializationCallback(
+      base::BindRepeating(&Coordinator::SendStartTracingToAgent,
+                          weak_ptr_factory_.GetWeakPtr()),
+      false /* call_on_new_agents_only */);
+
+  SetStartTracingCallback(std::move(callback));
+}
+
+void Coordinator::SetStartTracingCallback(StartTracingCallback callback) {
   start_tracing_callback_ = std::move(callback);
+  CallStartTracingCallbackIfNeeded();
+
+  if (!start_tracing_callback_)
+    return;
+
+  // We can't know for sure whether all processses we request
+  // to connect to the tracing service will connect back, or
+  // if all the connected services will ACK our BeginTracing
+  // request eventually, so we'll add a timeout for that case.
+  start_tracing_callback_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kBeginTracingTimeoutInSeconds),
+      this, &Coordinator::OnBeginTracingTimeout);
+}
+
+void Coordinator::OnBeginTracingTimeout() {
+  if (start_tracing_callback_)
+    std::move(start_tracing_callback_).Run(true);
+}
+
+void Coordinator::CallStartTracingCallbackIfNeeded() {
+  // We still have processes we've asked to begin tracing and
+  // need ACKs from.
+  if (agent_registry_->HasDisconnectClosure(&kStartTracingClosureName))
+    return;
+
+  // We're still waiting for the list of PIDs of the currently
+  // running services.
+  if (pending_currently_running_pids_)
+    return;
+
+  // We're still waiting for processes to connect to the
+  // service.
+  for (auto& pid : pending_connected_pids_) {
+    if (parsed_config_.process_filter_config().IsEnabled(pid))
+      return;
+  }
+
+  if (start_tracing_callback_)
+    std::move(start_tracing_callback_).Run(true);
+
+  start_tracing_callback_timer_.Stop();
+}
+
+void Coordinator::AddExpectedPID(base::ProcessId pid) {
+  if (!pid)
+    return;
+
+  bool pid_is_connected = false;
+  agent_registry_->ForAllAgents(
+      [&pid_is_connected, pid](AgentRegistry::AgentEntry* agent_entry) {
+        if (pid == agent_entry->pid())
+          pid_is_connected = true;
+      });
+
+  if (!pid_is_connected)
+    pending_connected_pids_.insert(pid);
+}
+
+void Coordinator::RemoveExpectedPID(base::ProcessId pid) {
+  pending_connected_pids_.erase(pid);
+  CallStartTracingCallbackIfNeeded();
+}
+
+void Coordinator::FinishedReceivingRunningPIDs() {
+  pending_currently_running_pids_ = false;
+  CallStartTracingCallbackIfNeeded();
+}
+
+void Coordinator::ClearConnectedPIDs() {
+  if (!pending_connected_pids_.empty()) {
+    pending_connected_pids_.clear();
+    CallStartTracingCallbackIfNeeded();
+  }
 }
 
 void Coordinator::SendStartTracingToAgent(
     AgentRegistry::AgentEntry* agent_entry) {
-  if (agent_entry->is_tracing())
-    return;
   if (agent_entry->HasDisconnectClosure(&kStartTracingClosureName))
     return;
   if (!parsed_config_.process_filter_config().IsEnabled(agent_entry->pid()))
@@ -347,6 +444,8 @@ void Coordinator::SendStartTracingToAgent(
       base::BindOnce(&Coordinator::OnTracingStarted,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Unretained(agent_entry), false));
+  RemoveExpectedPID(agent_entry->pid());
+
   agent_entry->agent()->StartTracing(
       config_, TRACE_TIME_TICKS_NOW(),
       base::BindRepeating(&Coordinator::OnTracingStarted,
@@ -356,15 +455,10 @@ void Coordinator::SendStartTracingToAgent(
 
 void Coordinator::OnTracingStarted(AgentRegistry::AgentEntry* agent_entry,
                                    bool success) {
-  agent_entry->set_is_tracing(success);
   bool removed =
       agent_entry->RemoveDisconnectClosure(&kStartTracingClosureName);
   DCHECK(removed);
-
-  if (!agent_registry_->HasDisconnectClosure(&kStartTracingClosureName) &&
-      !start_tracing_callback_.is_null()) {
-    std::move(start_tracing_callback_).Run(true);
-  }
+  CallStartTracingCallbackIfNeeded();
 }
 
 void Coordinator::StopAndFlush(mojo::ScopedDataPipeProducerHandle stream,
@@ -383,9 +477,13 @@ void Coordinator::StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
   DCHECK(!trace_streamer_);
   DCHECK(stream.is_valid());
   is_tracing_ = false;
+  // If we get a Stop call and this is non-empty, it means we either
+  // hit a timeout waiting for processes to connect, or the trace
+  // client sent a stop without waiting for the BeginTracing callback
+  // to happen. In either case, we don't want/need to wait for additional
+  // processes to connect anymore.
+  ClearConnectedPIDs();
 
-  // Do not send |StartTracing| to agents that connect from now on.
-  agent_registry_->RemoveAgentInitializationCallback();
   trace_streamer_.reset(new Coordinator::TraceStreamer(
       std::move(stream), agent_label, task_runner_,
       weak_ptr_factory_.GetWeakPtr()));
@@ -394,7 +492,7 @@ void Coordinator::StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
 }
 
 void Coordinator::StopAndFlushInternal() {
-  if (agent_registry_->HasDisconnectClosure(&kStartTracingClosureName)) {
+  if (start_tracing_callback_) {
     // We received a |StopAndFlush| command before receiving |StartTracing| acks
     // from all agents. Let's retry after a delay.
     task_runner_->PostDelayedTask(
@@ -406,66 +504,22 @@ void Coordinator::StopAndFlushInternal() {
     return;
   }
 
-  agent_registry_->ForAllAgents([this](AgentRegistry::AgentEntry* agent_entry) {
-    if (!agent_entry->is_tracing() ||
-        !agent_entry->supports_explicit_clock_sync()) {
-      return;
-    }
-    const std::string sync_id = base::GenerateGUID();
-    agent_entry->AddDisconnectClosure(
-        &kRequestClockSyncMarkerClosureName,
-        base::BindOnce(&Coordinator::OnRequestClockSyncMarkerResponse,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Unretained(agent_entry), sync_id,
-                       base::TimeTicks(), base::TimeTicks()));
-    agent_entry->agent()->RequestClockSyncMarker(
-        sync_id,
-        base::BindRepeating(&Coordinator::OnRequestClockSyncMarkerResponse,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            base::Unretained(agent_entry), sync_id));
-  });
-  if (!agent_registry_->HasDisconnectClosure(
-          &kRequestClockSyncMarkerClosureName)) {
-    StopAndFlushAfterClockSync();
-  }
-}
-
-void Coordinator::OnRequestClockSyncMarkerResponse(
-    AgentRegistry::AgentEntry* agent_entry,
-    const std::string& sync_id,
-    base::TimeTicks issue_ts,
-    base::TimeTicks issue_end_ts) {
-  bool removed =
-      agent_entry->RemoveDisconnectClosure(&kRequestClockSyncMarkerClosureName);
-  DCHECK(removed);
-
-  // TODO(charliea): Change this function so that it can accept a boolean
-  // success indicator instead of having to rely on sentinel issue_ts and
-  // issue_end_ts values to signal failure.
-  if (!(issue_ts == base::TimeTicks() || issue_end_ts == base::TimeTicks()))
-    TRACE_EVENT_CLOCK_SYNC_ISSUER(sync_id, issue_ts, issue_end_ts);
-
-  if (!agent_registry_->HasDisconnectClosure(
-          &kRequestClockSyncMarkerClosureName)) {
-    StopAndFlushAfterClockSync();
-  }
-}
-
-void Coordinator::StopAndFlushAfterClockSync() {
-  bool has_tracing_agents = false;
-  agent_registry_->ForAllAgents(
-      [this, &has_tracing_agents](AgentRegistry::AgentEntry* agent_entry) {
-        if (!agent_entry->is_tracing())
-          return;
-        has_tracing_agents = true;
-        backend_task_runner_->PostTask(
-            FROM_HERE,
-            base::BindOnce(&Coordinator::TraceStreamer::CreateAndSendRecorder,
-                           trace_streamer_->AsWeakPtr(), agent_entry->label(),
-                           agent_entry->type(), agent_entry->AsWeakPtr()));
-      });
-  if (!has_tracing_agents)
+  size_t num_initialized_agents =
+      agent_registry_->SetAgentInitializationCallback(
+          base::BindRepeating(&Coordinator::SendStopTracingToAgent,
+                              weak_ptr_factory_.GetWeakPtr()),
+          false /* call_on_new_agents_only */);
+  if (num_initialized_agents == 0)
     OnFlushDone();
+}
+
+void Coordinator::SendStopTracingToAgent(
+    AgentRegistry::AgentEntry* agent_entry) {
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Coordinator::TraceStreamer::CreateAndSendRecorder,
+                     trace_streamer_->AsWeakPtr(), agent_entry->label(),
+                     agent_entry->type(), agent_entry->AsWeakPtr()));
 }
 
 void Coordinator::SendRecorder(
@@ -477,8 +531,7 @@ void Coordinator::SendRecorder(
     // Recorders are created and closed on |backend_task_runner_|.
     backend_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&Coordinator::TraceStreamer::CloseRecorder,
-                       trace_streamer_->AsWeakPtr(), std::move(recorder)));
+        base::BindOnce([](mojom::RecorderPtr ptr) {}, std::move(recorder)));
   }
 }
 
@@ -486,10 +539,23 @@ void Coordinator::OnFlushDone() {
   std::move(stop_and_flush_callback_)
       .Run(std::move(*trace_streamer_->GetMetadata()));
   backend_task_runner_->DeleteSoon(FROM_HERE, trace_streamer_.release());
-  agent_registry_->ForAllAgents([](AgentRegistry::AgentEntry* agent_entry) {
-    agent_entry->set_is_tracing(false);
-  });
   is_tracing_ = false;
+  agent_registry_->SetAgentInitializationCallback(
+      base::BindRepeating(&Coordinator::SendStopTracingWithNoOpRecorderToAgent,
+                          weak_ptr_factory_.GetWeakPtr()),
+      true /* call_on_new_agents_only */);
+}
+
+void Coordinator::SendStopTracingWithNoOpRecorderToAgent(
+    AgentRegistry::AgentEntry* agent_entry) {
+  mojom::RecorderPtr ptr;
+  // We need to create a message pipe and bind |ptr| to one end of it before
+  // sending |ptr| to the agent; otherwise, the agent will fail as soon as it
+  // tries to invoke a method on |ptr|. We do not have to bind the
+  // implementation end of the message pipe since we are going to ignore the
+  // messages.
+  MakeRequest(&ptr);
+  agent_entry->agent()->StopAndFlush(std::move(ptr));
 }
 
 void Coordinator::IsTracing(IsTracingCallback callback) {
@@ -504,7 +570,7 @@ void Coordinator::RequestBufferUsage(RequestBufferUsageCallback callback) {
 
   maximum_trace_buffer_usage_ = 0;
   approximate_event_count_ = 0;
-  request_buffer_usage_callback_ = std::move(callback);
+
   agent_registry_->ForAllAgents([this](AgentRegistry::AgentEntry* agent_entry) {
     agent_entry->AddDisconnectClosure(
         &kRequestBufferUsageClosureName,
@@ -516,6 +582,12 @@ void Coordinator::RequestBufferUsage(RequestBufferUsageCallback callback) {
         &Coordinator::OnRequestBufferStatusResponse,
         weak_ptr_factory_.GetWeakPtr(), base::Unretained(agent_entry)));
   });
+
+  if (!agent_registry_->HasDisconnectClosure(&kRequestBufferUsageClosureName)) {
+    std::move(callback).Run(true, 0.0f, 0);
+    return;
+  }
+  request_buffer_usage_callback_ = std::move(callback);
 }
 
 void Coordinator::OnRequestBufferStatusResponse(
@@ -537,50 +609,6 @@ void Coordinator::OnRequestBufferStatusResponse(
   if (!agent_registry_->HasDisconnectClosure(&kRequestBufferUsageClosureName)) {
     std::move(request_buffer_usage_callback_)
         .Run(true, maximum_trace_buffer_usage_, approximate_event_count_);
-  }
-}
-
-void Coordinator::GetCategories(GetCategoriesCallback callback) {
-  if (is_tracing_) {
-    std::move(callback).Run(false, "");
-    return;
-  }
-
-  DCHECK(get_categories_callback_.is_null());
-  is_tracing_ = true;
-  category_set_.clear();
-  get_categories_callback_ = std::move(callback);
-  agent_registry_->ForAllAgents([this](AgentRegistry::AgentEntry* agent_entry) {
-    agent_entry->AddDisconnectClosure(
-        &kGetCategoriesClosureName,
-        base::BindOnce(&Coordinator::OnGetCategoriesResponse,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Unretained(agent_entry), ""));
-    agent_entry->agent()->GetCategories(base::BindRepeating(
-        &Coordinator::OnGetCategoriesResponse, weak_ptr_factory_.GetWeakPtr(),
-        base::Unretained(agent_entry)));
-  });
-}
-
-void Coordinator::OnGetCategoriesResponse(
-    AgentRegistry::AgentEntry* agent_entry,
-    const std::string& categories) {
-  bool removed =
-      agent_entry->RemoveDisconnectClosure(&kGetCategoriesClosureName);
-  DCHECK(removed);
-
-  std::vector<std::string> split = base::SplitString(
-      categories, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (const auto& category : split) {
-    category_set_.insert(category);
-  }
-
-  if (!agent_registry_->HasDisconnectClosure(&kGetCategoriesClosureName)) {
-    std::vector<std::string> category_vector(category_set_.begin(),
-                                             category_set_.end());
-    std::move(get_categories_callback_)
-        .Run(true, base::JoinString(category_vector, ","));
-    is_tracing_ = false;
   }
 }
 

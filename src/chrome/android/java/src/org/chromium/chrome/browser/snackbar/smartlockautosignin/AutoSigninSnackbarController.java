@@ -35,8 +35,8 @@ public class AutoSigninSnackbarController
      */
     @CalledByNative
     private static void showSnackbar(Tab tab, String text) {
-        SnackbarManager snackbarManager = tab.getSnackbarManager();
-        if (snackbarManager == null) return;
+        if (tab.getActivity() == null) return;
+        SnackbarManager snackbarManager = tab.getActivity().getSnackbarManager();
         AutoSigninSnackbarController snackbarController =
                 new AutoSigninSnackbarController(snackbarManager, tab);
         Snackbar snackbar = Snackbar.make(text, snackbarController, Snackbar.TYPE_NOTIFICATION,
@@ -48,7 +48,7 @@ public class AutoSigninSnackbarController
         snackbar.setSingleLine(false)
                 .setBackgroundColor(backgroundColor)
                 .setProfileImage(icon)
-                .setTextAppearance(R.style.WhiteBody);
+                .setTextAppearance(R.style.TextAppearance_WhiteBody);
         snackbarManager.showSnackbar(snackbar);
     }
 

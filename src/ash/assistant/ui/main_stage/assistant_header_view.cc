@@ -6,13 +6,11 @@
 
 #include <memory>
 
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/assistant/ui/logo_view/base_logo_view.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "base/time/time.h"
@@ -51,20 +49,18 @@ constexpr base::TimeDelta kResponseAnimationTranslateLeftDuration =
 
 }  // namespace
 
-AssistantHeaderView::AssistantHeaderView(
-    AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller) {
+AssistantHeaderView::AssistantHeaderView(AssistantViewDelegate* delegate)
+    : delegate_(delegate) {
   InitLayout();
 
-  // The Assistant controller indirectly owns the view hierarchy to which
-  // AssistantHeaderView belongs so is guaranteed to outlive it.
-  assistant_controller_->interaction_controller()->AddModelObserver(this);
-  assistant_controller_->ui_controller()->AddModelObserver(this);
+  // The AssistantViewDelegate should outlive AssistantHeaderView.
+  delegate_->AddInteractionModelObserver(this);
+  delegate_->AddUiModelObserver(this);
 }
 
 AssistantHeaderView::~AssistantHeaderView() {
-  assistant_controller_->ui_controller()->RemoveModelObserver(this);
-  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
+  delegate_->RemoveUiModelObserver(this);
+  delegate_->RemoveInteractionModelObserver(this);
 }
 
 const char* AssistantHeaderView::GetClassName() const {
@@ -84,9 +80,9 @@ void AssistantHeaderView::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   // Molecule icon.
-  molecule_icon_ = BaseLogoView::Create();
+  molecule_icon_ = LogoView::Create();
   molecule_icon_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  molecule_icon_->SetState(BaseLogoView::State::kMoleculeWavy,
+  molecule_icon_->SetState(LogoView::State::kMoleculeWavy,
                            /*animate=*/false);
 
   // The molecule icon will be animated on its own layer.

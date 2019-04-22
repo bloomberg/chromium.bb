@@ -469,10 +469,12 @@ SDK.NetworkRequest = class extends Common.Object {
   }
 
   /**
+   * Returns true if the request was intercepted by a service worker and it
+   * provided its own response.
    * @return {boolean}
    */
   get fetchedViaServiceWorker() {
-    return this._fetchedViaServiceWorker;
+    return !!this._fetchedViaServiceWorker;
   }
 
   /**
@@ -480,6 +482,18 @@ SDK.NetworkRequest = class extends Common.Object {
    */
   set fetchedViaServiceWorker(x) {
     this._fetchedViaServiceWorker = x;
+  }
+
+  /**
+   * Returns true if the request was sent by a service worker.
+   * @return {boolean}
+   */
+  initiatedByServiceWorker() {
+    const networkManager = SDK.NetworkManager.forRequest(this);
+    if (!networkManager)
+      return false;
+    return networkManager.target().type() === SDK.Target.Type.Worker && !!networkManager.target().parentTarget() &&
+        networkManager.target().parentTarget().type() === SDK.Target.Type.ServiceWorker;
   }
 
   /**
@@ -552,6 +566,9 @@ SDK.NetworkRequest = class extends Common.Object {
   _parseNameAndPathFromURL() {
     if (this._parsedURL.isDataURL()) {
       this._name = this._parsedURL.dataURLDisplayName();
+      this._path = '';
+    } else if (this._parsedURL.isBlobURL()) {
+      this._name = this._parsedURL.url;
       this._path = '';
     } else if (this._parsedURL.isAboutBlank()) {
       this._name = this._parsedURL.url;

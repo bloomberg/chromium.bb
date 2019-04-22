@@ -10,6 +10,10 @@
 #include <memory>
 #include <utility>
 
+#include "constants/annotation_common.h"
+#include "constants/annotation_flags.h"
+#include "constants/form_fields.h"
+#include "constants/form_flags.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
@@ -65,30 +69,33 @@ bool PopupAppearsForAnnotType(CPDF_Annot::Subtype subtype) {
   }
 }
 
-std::unique_ptr<CPDF_Annot> CreatePopupAnnot(CPDF_Annot* pAnnot,
-                                             CPDF_Document* pDocument,
-                                             CPDF_Page* pPage) {
+std::unique_ptr<CPDF_Annot> CreatePopupAnnot(CPDF_Document* pDocument,
+                                             CPDF_Page* pPage,
+                                             CPDF_Annot* pAnnot) {
   if (!PopupAppearsForAnnotType(pAnnot->GetSubtype()))
     return nullptr;
 
-  CPDF_Dictionary* pParentDict = pAnnot->GetAnnotDict();
+  const CPDF_Dictionary* pParentDict = pAnnot->GetAnnotDict();
   if (!pParentDict)
     return nullptr;
 
   // TODO(jaepark): We shouldn't strip BOM for some strings and not for others.
   // See pdfium:593.
-  WideString sContents = pParentDict->GetUnicodeTextFor("Contents");
+  WideString sContents =
+      pParentDict->GetUnicodeTextFor(pdfium::annotation::kContents);
   if (sContents.IsEmpty())
     return nullptr;
 
   auto pAnnotDict = pDocument->New<CPDF_Dictionary>();
-  pAnnotDict->SetNewFor<CPDF_Name>("Type", "Annot");
-  pAnnotDict->SetNewFor<CPDF_Name>("Subtype", "Popup");
-  pAnnotDict->SetNewFor<CPDF_String>("T", pParentDict->GetStringFor("T"),
-                                     false);
-  pAnnotDict->SetNewFor<CPDF_String>("Contents", sContents.ToUTF8(), false);
+  pAnnotDict->SetNewFor<CPDF_Name>(pdfium::annotation::kType, "Annot");
+  pAnnotDict->SetNewFor<CPDF_Name>(pdfium::annotation::kSubtype, "Popup");
+  pAnnotDict->SetNewFor<CPDF_String>(
+      pdfium::form_fields::kT,
+      pParentDict->GetStringFor(pdfium::form_fields::kT), false);
+  pAnnotDict->SetNewFor<CPDF_String>(pdfium::annotation::kContents,
+                                     sContents.ToUTF8(), false);
 
-  CFX_FloatRect rect = pParentDict->GetRectFor("Rect");
+  CFX_FloatRect rect = pParentDict->GetRectFor(pdfium::annotation::kRect);
   rect.Normalize();
   CFX_FloatRect popupRect(0, 0, 200, 200);
   // Note that if the popup can set its own dimensions, then we will need to
@@ -106,8 +113,8 @@ std::unique_ptr<CPDF_Annot> CreatePopupAnnot(CPDF_Annot* pAnnot,
         std::max(rect.bottom - popupRect.Height(), 0.f));
   }
 
-  pAnnotDict->SetRectFor("Rect", popupRect);
-  pAnnotDict->SetNewFor<CPDF_Number>("F", 0);
+  pAnnotDict->SetRectFor(pdfium::annotation::kRect, popupRect);
+  pAnnotDict->SetNewFor<CPDF_Number>(pdfium::annotation::kF, 0);
 
   auto pPopupAnnot =
       pdfium::MakeUnique<CPDF_Annot>(std::move(pAnnotDict), pDocument);
@@ -116,44 +123,49 @@ std::unique_ptr<CPDF_Annot> CreatePopupAnnot(CPDF_Annot* pAnnot,
 }
 
 void GenerateAP(CPDF_Document* pDoc, CPDF_Dictionary* pAnnotDict) {
-  if (!pAnnotDict || pAnnotDict->GetStringFor("Subtype") != "Widget")
+  if (!pAnnotDict ||
+      pAnnotDict->GetStringFor(pdfium::annotation::kSubtype) != "Widget") {
     return;
+  }
 
-  CPDF_Object* pFieldTypeObj = FPDF_GetFieldAttr(pAnnotDict, "FT");
+  CPDF_Object* pFieldTypeObj =
+      FPDF_GetFieldAttr(pAnnotDict, pdfium::form_fields::kFT);
   if (!pFieldTypeObj)
     return;
 
   ByteString field_type = pFieldTypeObj->GetString();
-  if (field_type == "Tx") {
-    CPVT_GenerateAP::GenerateFormAP(CPVT_GenerateAP::kTextField, pDoc,
-                                    pAnnotDict);
+  if (field_type == pdfium::form_fields::kTx) {
+    CPVT_GenerateAP::GenerateFormAP(pDoc, pAnnotDict,
+                                    CPVT_GenerateAP::kTextField);
     return;
   }
 
-  CPDF_Object* pFieldFlagsObj = FPDF_GetFieldAttr(pAnnotDict, "Ff");
+  CPDF_Object* pFieldFlagsObj =
+      FPDF_GetFieldAttr(pAnnotDict, pdfium::form_fields::kFf);
   uint32_t flags = pFieldFlagsObj ? pFieldFlagsObj->GetInteger() : 0;
-  if (field_type == "Ch") {
-    CPVT_GenerateAP::GenerateFormAP((flags & (1 << 17))
-                                        ? CPVT_GenerateAP::kComboBox
-                                        : CPVT_GenerateAP::kListBox,
-                                    pDoc, pAnnotDict);
+  if (field_type == pdfium::form_fields::kCh) {
+    auto type = (flags & pdfium::form_flags::kChoiceCombo)
+                    ? CPVT_GenerateAP::kComboBox
+                    : CPVT_GenerateAP::kListBox;
+    CPVT_GenerateAP::GenerateFormAP(pDoc, pAnnotDict, type);
     return;
   }
 
-  if (field_type != "Btn")
+  if (field_type != pdfium::form_fields::kBtn)
     return;
-  if (flags & (1 << 16))
+  if (flags & pdfium::form_flags::kButtonPushbutton)
     return;
-  if (pAnnotDict->KeyExist("AS"))
-    return;
-
-  CPDF_Dictionary* pParentDict = pAnnotDict->GetDictFor("Parent");
-  if (!pParentDict || !pParentDict->KeyExist("AS"))
+  if (pAnnotDict->KeyExist(pdfium::annotation::kAS))
     return;
 
-  pAnnotDict->SetNewFor<CPDF_String>("AS", pParentDict->GetStringFor("AS"),
-                                     false);
-  return;
+  CPDF_Dictionary* pParentDict =
+      pAnnotDict->GetDictFor(pdfium::form_fields::kParent);
+  if (!pParentDict || !pParentDict->KeyExist(pdfium::annotation::kAS))
+    return;
+
+  pAnnotDict->SetNewFor<CPDF_String>(
+      pdfium::annotation::kAS,
+      pParentDict->GetStringFor(pdfium::annotation::kAS), false);
 }
 
 }  // namespace
@@ -175,30 +187,42 @@ CPDF_AnnotList::CPDF_AnnotList(CPDF_Page* pPage)
     CPDF_Dictionary* pDict = ToDictionary(pAnnots->GetDirectObjectAt(i));
     if (!pDict)
       continue;
-    const ByteString subtype = pDict->GetStringFor("Subtype");
+    const ByteString subtype =
+        pDict->GetStringFor(pdfium::annotation::kSubtype);
     if (subtype == "Popup") {
       // Skip creating Popup annotations in the PDF document since PDFium
       // provides its own Popup annotations.
       continue;
     }
-    pAnnots->ConvertToIndirectObjectAt(i, m_pDocument);
-    m_AnnotList.push_back(pdfium::MakeUnique<CPDF_Annot>(pDict, m_pDocument));
+    pAnnots->ConvertToIndirectObjectAt(i, m_pDocument.Get());
+    m_AnnotList.push_back(
+        pdfium::MakeUnique<CPDF_Annot>(pDict, m_pDocument.Get()));
     if (bRegenerateAP && subtype == "Widget" &&
-        CPDF_InteractiveForm::IsUpdateAPEnabled() && !pDict->GetDictFor("AP")) {
-      GenerateAP(m_pDocument, pDict);
+        CPDF_InteractiveForm::IsUpdateAPEnabled() &&
+        !pDict->GetDictFor(pdfium::annotation::kAP)) {
+      GenerateAP(m_pDocument.Get(), pDict);
     }
   }
 
-  size_t nAnnotListSize = m_AnnotList.size();
-  for (size_t i = 0; i < nAnnotListSize; ++i) {
-    std::unique_ptr<CPDF_Annot> pPopupAnnot(
-        CreatePopupAnnot(m_AnnotList[i].get(), m_pDocument, pPage));
+  m_nAnnotCount = m_AnnotList.size();
+  for (size_t i = 0; i < m_nAnnotCount; ++i) {
+    std::unique_ptr<CPDF_Annot> pPopupAnnot =
+        CreatePopupAnnot(m_pDocument.Get(), pPage, m_AnnotList[i].get());
     if (pPopupAnnot)
       m_AnnotList.push_back(std::move(pPopupAnnot));
   }
 }
 
-CPDF_AnnotList::~CPDF_AnnotList() {}
+CPDF_AnnotList::~CPDF_AnnotList() {
+  // Move the pop-up annotations out of |m_AnnotList| into |popups|. Then
+  // destroy |m_AnnotList| first. This prevents dangling pointers to the pop-up
+  // annotations.
+  size_t nPopupCount = m_AnnotList.size() - m_nAnnotCount;
+  std::vector<std::unique_ptr<CPDF_Annot>> popups(nPopupCount);
+  for (size_t i = 0; i < nPopupCount; ++i)
+    popups[i] = std::move(m_AnnotList[m_nAnnotCount + i]);
+  m_AnnotList.clear();
+}
 
 void CPDF_AnnotList::DisplayPass(CPDF_Page* pPage,
                                  CFX_RenderDevice* pDevice,
@@ -214,20 +238,21 @@ void CPDF_AnnotList::DisplayPass(CPDF_Page* pPage,
       continue;
 
     uint32_t annot_flags = pAnnot->GetFlags();
-    if (annot_flags & ANNOTFLAG_HIDDEN)
+    if (annot_flags & pdfium::annotation_flags::kHidden)
       continue;
 
-    if (bPrinting && (annot_flags & ANNOTFLAG_PRINT) == 0)
+    if (bPrinting && (annot_flags & pdfium::annotation_flags::kPrint) == 0)
       continue;
 
-    if (!bPrinting && (annot_flags & ANNOTFLAG_NOVIEW))
+    if (!bPrinting && (annot_flags & pdfium::annotation_flags::kNoView))
       continue;
 
     if (pOptions) {
-      CPDF_Dictionary* pAnnotDict = pAnnot->GetAnnotDict();
-      if (pOptions->GetOCContext() && pAnnotDict &&
-          !pOptions->GetOCContext()->CheckOCGVisible(
-              pAnnotDict->GetDictFor("OC"))) {
+      const CPDF_Dictionary* pAnnotDict = pAnnot->GetAnnotDict();
+      const CPDF_OCContext* pOCContext = pOptions->GetOCContext();
+      if (pAnnotDict && pOCContext &&
+          !pOCContext->CheckOCGVisible(
+              pAnnotDict->GetDictFor(pdfium::annotation::kOC))) {
         continue;
       }
     }
@@ -257,11 +282,11 @@ void CPDF_AnnotList::DisplayAnnots(CPDF_Page* pPage,
                                    uint32_t dwAnnotFlags,
                                    CPDF_RenderOptions* pOptions,
                                    FX_RECT* pClipRect) {
-  if (dwAnnotFlags & ANNOTFLAG_INVISIBLE) {
+  if (dwAnnotFlags & pdfium::annotation_flags::kInvisible) {
     DisplayPass(pPage, pDevice, pContext, bPrinting, pUser2Device, false,
                 pOptions, pClipRect);
   }
-  if (dwAnnotFlags & ANNOTFLAG_HIDDEN) {
+  if (dwAnnotFlags & pdfium::annotation_flags::kHidden) {
     DisplayPass(pPage, pDevice, pContext, bPrinting, pUser2Device, true,
                 pOptions, pClipRect);
   }
@@ -273,8 +298,9 @@ void CPDF_AnnotList::DisplayAnnots(CPDF_Page* pPage,
                                    const CFX_Matrix* pMatrix,
                                    bool bShowWidget,
                                    CPDF_RenderOptions* pOptions) {
-  uint32_t dwAnnotFlags = bShowWidget ? ANNOTFLAG_INVISIBLE | ANNOTFLAG_HIDDEN
-                                      : ANNOTFLAG_INVISIBLE;
+  uint32_t dwAnnotFlags = bShowWidget ? pdfium::annotation_flags::kInvisible |
+                                            pdfium::annotation_flags::kHidden
+                                      : pdfium::annotation_flags::kInvisible;
   DisplayAnnots(pPage, nullptr, pContext, bPrinting, pMatrix, dwAnnotFlags,
                 pOptions, nullptr);
 }

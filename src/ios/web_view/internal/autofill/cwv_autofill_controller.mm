@@ -17,14 +17,13 @@
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
-#include "components/autofill/ios/browser/autofill_switches.h"
 #import "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/sync/driver/sync_service.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "ios/web/public/web_state/web_frame.h"
 #include "ios/web/public/web_state/web_frame_util.h"
@@ -36,9 +35,11 @@
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_verifier_internal.h"
+#include "ios/web_view/internal/autofill/web_view_autocomplete_history_manager_factory.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 #include "ios/web_view/internal/autofill/web_view_legacy_strike_database_factory.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
+#include "ios/web_view/internal/autofill/web_view_strike_database_factory.h"
 #import "ios/web_view/internal/passwords/cwv_password_controller.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
@@ -131,10 +132,14 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
         browserState->GetPrefs(),
         ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
             browserState->GetRecordingBrowserState()),
+        ios_web_view::WebViewAutocompleteHistoryManagerFactory::
+            GetForBrowserState(browserState),
         _webState, self,
         ios_web_view::WebViewIdentityManagerFactory::GetForBrowserState(
             browserState->GetRecordingBrowserState()),
         ios_web_view::WebViewLegacyStrikeDatabaseFactory::GetForBrowserState(
+            browserState->GetRecordingBrowserState()),
+        ios_web_view::WebViewStrikeDatabaseFactory::GetForBrowserState(
             browserState->GetRecordingBrowserState()),
         ios_web_view::WebViewWebDataServiceWrapperFactory::
             GetAutofillWebDataForBrowserState(
@@ -380,10 +385,7 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 #pragma mark - Utility Methods
 
 - (autofill::AutofillManager*)autofillManagerForFrame:(web::WebFrame*)frame {
-  if (!_webState) {
-    return nil;
-  }
-  if (autofill::switches::IsAutofillIFrameMessagingEnabled() && !frame) {
+  if (!_webState || !frame) {
     return nil;
   }
   return autofill::AutofillDriverIOS::FromWebStateAndWebFrame(_webState, frame)
@@ -414,18 +416,22 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 }
 
 - (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard
-                            callback:(base::OnceClosure)callback {
+                            callback:(autofill::AutofillClient::
+                                          LocalSaveCardPromptCallback)callback {
   if ([_delegate respondsToSelector:@selector
                  (autofillController:decidePolicyForLocalStorageOfCreditCard
                                        :decisionHandler:)]) {
     CWVCreditCard* card = [[CWVCreditCard alloc] initWithCreditCard:creditCard];
-    __block base::OnceClosure scopedCallback = std::move(callback);
+    __block autofill::AutofillClient::LocalSaveCardPromptCallback
+        scopedCallback = std::move(callback);
     [_delegate autofillController:self
         decidePolicyForLocalStorageOfCreditCard:card
                                 decisionHandler:^(CWVStoragePolicy policy) {
                                   if (policy == CWVStoragePolicyAllow) {
                                     if (scopedCallback)
-                                      std::move(scopedCallback).Run();
+                                      std::move(scopedCallback)
+                                          .Run(autofill::AutofillClient::
+                                                   ACCEPTED);
                                   }
                                 }];
   }

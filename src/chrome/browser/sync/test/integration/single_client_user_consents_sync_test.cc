@@ -38,7 +38,7 @@ std::string GetAccountId() {
 class UserConsentEqualityChecker : public SingleClientStatusChangeChecker {
  public:
   UserConsentEqualityChecker(
-      browser_sync::ProfileSyncService* service,
+      syncer::ProfileSyncService* service,
       FakeServer* fake_server,
       std::vector<UserConsentSpecifics> expected_specifics)
       : SingleClientStatusChangeChecker(service), fake_server_(fake_server) {
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(
   sync_consent.set_status(UserConsentTypes::GIVEN);
   consent_service->RecordSyncConsent(GetAccountId(), sync_consent);
 
-  GetClient(0)->StopSyncService(syncer::SyncService::CLEAR_DATA);
+  GetClient(0)->StopSyncServiceAndClearData();
   ASSERT_TRUE(GetClient(0)->StartSyncService());
 
   EXPECT_TRUE(ExpectUserConsents({specifics}));
@@ -191,9 +191,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
                        ShouldSubmitIfSignedInAlthoughFullSyncNotEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(switches::kSyncStandaloneTransport);
-
   // We avoid calling SetupSync(), because we don't want to turn on full sync,
   // only sign in such that the standalone transport starts.
   ASSERT_TRUE(SetupClients());

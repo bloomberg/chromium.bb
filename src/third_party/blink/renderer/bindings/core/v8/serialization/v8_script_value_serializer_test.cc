@@ -858,7 +858,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageDataV18) {
 
 MessagePort* MakeMessagePort(ExecutionContext* execution_context,
                              ::MojoHandle* unowned_handle_out = nullptr) {
-  MessagePort* port = MessagePort::Create(*execution_context);
+  auto* port = MakeGarbageCollected<MessagePort>(*execution_context);
   mojo::MessagePipe pipe;
   ::MojoHandle unowned_handle = pipe.handle0.get().value();
   port->Entangle(std::move(pipe.handle0));
@@ -894,7 +894,7 @@ TEST(V8ScriptValueSerializerTest, NeuteredMessagePortThrowsDataCloneError) {
                                  ExceptionState::kExecutionContext, "Window",
                                  "postMessage");
 
-  MessagePort* port = MessagePort::Create(*scope.GetExecutionContext());
+  auto* port = MakeGarbageCollected<MessagePort>(*scope.GetExecutionContext());
   EXPECT_TRUE(port->IsNeutered());
   v8::Local<v8::Value> wrapper = ToV8(port, scope.GetScriptState());
   Transferables transferables;
@@ -961,8 +961,8 @@ TEST(V8ScriptValueSerializerTest, RoundTripMojoHandle) {
   V8TestingScope scope;
 
   mojo::MessagePipe pipe;
-  MojoHandle* handle =
-      MojoHandle::Create(mojo::ScopedHandle::From(std::move(pipe.handle0)));
+  auto* handle = MakeGarbageCollected<MojoHandle>(
+      mojo::ScopedHandle::From(std::move(pipe.handle0)));
   v8::Local<v8::Value> wrapper = ToV8(handle, scope.GetScriptState());
   Transferables transferables;
   transferables.mojo_handles.push_back(handle);
@@ -982,8 +982,8 @@ TEST(V8ScriptValueSerializerTest, UntransferredMojoHandleThrowsDataCloneError) {
                                  "postMessage");
 
   mojo::MessagePipe pipe;
-  MojoHandle* handle =
-      MojoHandle::Create(mojo::ScopedHandle::From(std::move(pipe.handle0)));
+  auto* handle = MakeGarbageCollected<MojoHandle>(
+      mojo::ScopedHandle::From(std::move(pipe.handle0)));
   v8::Local<v8::Value> wrapper = ToV8(handle, scope.GetScriptState());
   Transferables transferables;
 
@@ -1031,8 +1031,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
   // Make a 10x7 red ImageBitmap in P3 color space.
   SkImageInfo info = SkImageInfo::Make(
       10, 7, kRGBA_F16_SkColorType, kPremul_SkAlphaType,
-      SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                            SkColorSpace::kDCIP3_D65_Gamut));
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear, SkNamedGamut::kDCIP3));
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
   surface->getCanvas()->clear(SK_ColorRED);
   ImageBitmap* image_bitmap = ImageBitmap::Create(
@@ -1138,8 +1137,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageBitmapV18) {
   uint8_t pixel[8] = {};
   SkImageInfo info = SkImageInfo::Make(
       1, 1, kRGBA_F16_SkColorType, kPremul_SkAlphaType,
-      SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                            SkColorSpace::kDCIP3_D65_Gamut));
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear, SkNamedGamut::kDCIP3));
   ASSERT_TRUE(new_image_bitmap->BitmapImage()
                   ->PaintImageForCurrentFrame()
                   .GetSkImage()
@@ -1307,7 +1305,7 @@ TEST(V8ScriptValueSerializerTest, TransferOffscreenCanvas) {
   OffscreenCanvas* new_canvas =
       V8OffscreenCanvas::ToImpl(result.As<v8::Object>());
   EXPECT_EQ(IntSize(10, 7), new_canvas->Size());
-  EXPECT_EQ(519u, new_canvas->PlaceholderCanvasId());
+  EXPECT_EQ(519, new_canvas->PlaceholderCanvasId());
   EXPECT_TRUE(canvas->IsNeutered());
   EXPECT_FALSE(new_canvas->IsNeutered());
 }
@@ -1682,7 +1680,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndexOutOfRange) {
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileList) {
   V8TestingScope scope;
-  FileList* file_list = FileList::Create();
+  auto* file_list = MakeGarbageCollected<FileList>();
   file_list->Append(File::Create("/native/path"));
   file_list->Append(File::Create("/native/path2"));
   v8::Local<v8::Value> wrapper = ToV8(file_list, scope.GetScriptState());
@@ -1743,7 +1741,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListV8WithoutSnapshot) {
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileListIndex) {
   V8TestingScope scope;
-  FileList* file_list = FileList::Create();
+  auto* file_list = MakeGarbageCollected<FileList>();
   file_list->Append(File::Create("/native/path"));
   file_list->Append(File::Create("/native/path2"));
   v8::Local<v8::Value> wrapper = ToV8(file_list, scope.GetScriptState());
@@ -1843,7 +1841,7 @@ TEST(V8ScriptValueSerializerTest, DecodeWithInefficientVersionEnvelope) {
 }
 
 // Sanity check for transferring ReadableStreams. This is mostly tested via
-// layout tests.
+// web tests.
 TEST(V8ScriptValueSerializerTest, RoundTripReadableStream) {
   ScopedTransferableStreamsForTest enable_transferable_streams(true);
 

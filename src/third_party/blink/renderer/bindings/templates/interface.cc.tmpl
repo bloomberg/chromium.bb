@@ -140,7 +140,7 @@ void {{v8_class_or_partial}}::IndexedPropertySetterCallback(
   {{internal_namespace}}::IndexedPropertySetter(index, v8_value, info);
   {% endif %}
 
-  {% elif named_property_setter %}
+  {% elif not indexed_property_getter and named_property_setter %}
 
   const AtomicString& property_name = AtomicString::Number(index);
 
@@ -787,7 +787,7 @@ void {{v8_class_or_partial}}::{{cpp_class}}OriginSafeMethodSetterCallback(
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo {{v8_class}}Constructor::wrapper_type_info = {
+const WrapperTypeInfo {{snake_case_v8_class}}_constructor_wrapper_type_info = {
     gin::kEmbedderBlink,
     {{v8_class}}Constructor::DomTemplate,
     {{install_conditional_features_func or 'nullptr'}},
@@ -831,7 +831,7 @@ void {{v8_class}}Constructor::NamedConstructorAttributeGetter(
   }
 
   v8::Local<v8::Function> named_constructor =
-      per_context_data->ConstructorForType(&{{v8_class}}Constructor::wrapper_type_info);
+      per_context_data->ConstructorForType({{v8_class}}Constructor::GetWrapperTypeInfo());
 
   // Set the prototype of named constructors to the regular constructor.
   auto private_property =
@@ -842,15 +842,21 @@ void {{v8_class}}Constructor::NamedConstructorAttributeGetter(
   if (!private_property.GetOrUndefined(named_constructor).ToLocal(&private_value) ||
       private_value->IsUndefined()) {
     v8::Local<v8::Function> interface =
-        per_context_data->ConstructorForType(&{{v8_class}}::wrapper_type_info);
-    v8::Local<v8::Value> interfacePrototype =
+        per_context_data->ConstructorForType({{v8_class}}::GetWrapperTypeInfo());
+    v8::Local<v8::Value> interface_prototype =
         interface->Get(current_context, V8AtomicString(info.GetIsolate(), "prototype"))
         .ToLocalChecked();
-    bool result = named_constructor->Set(
+    // https://heycam.github.io/webidl/#named-constructors
+    // 8. Perform ! DefinePropertyOrThrow(F, "prototype",
+    //        PropertyDescriptor{[[Value]]: proto, [[Writable]]: false,
+    //                           [[Enumerable]]: false,
+    //                           [Configurable]]: false}).
+    const v8::PropertyAttribute prototype_attributes =
+        static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum | v8::DontDelete);
+    bool result = named_constructor->DefineOwnProperty(
         current_context, V8AtomicString(info.GetIsolate(), "prototype"),
-        interfacePrototype).ToChecked();
-    if (!result)
-      return;
+        interface_prototype, prototype_attributes).ToChecked();
+    CHECK(result);
     private_property.Set(named_constructor, v8::True(info.GetIsolate()));
   }
 
@@ -915,7 +921,11 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 {{exported}}void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.constructor_counter) }}
   {% if measure_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{measure_as('Constructor')}});
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::k{{measure_as('Constructor')}});
+  {% if high_entropy %}
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::k{{measure_as('Constructor')}});
+  {% endif %}
   {% endif %}
   if (!info.IsConstructCall()) {
     V8ThrowException::ThrowTypeError(
@@ -933,7 +943,7 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {{v8_class}}::ConstructorCustom(info);
   {% elif has_html_constructor %}
   V8HTMLConstructor::HtmlConstructor(
-      info, {{v8_class}}::wrapper_type_info, HTMLElementType::k{{interface_name}});
+      info, *{{v8_class}}::GetWrapperTypeInfo(), HTMLElementType::k{{interface_name}});
   {% else %}
   {{internal_namespace}}::Constructor(info);
   {% endif %}
@@ -1051,7 +1061,7 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   {% set install_template_function = '%s::install_%s_template_function_' % (v8_class, snake_case_v8_class) if has_partial_interface else 'Install%sTemplate' % v8_class %}
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>({{v8_class}}::GetWrapperTypeInfo()),
       {{install_template_function}});
 }
 
@@ -1097,13 +1107,13 @@ v8::Local<v8::FunctionTemplate>
 {% if not is_array_buffer_or_view %}
 
 bool {{v8_class}}::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance({{v8_class}}::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> {{v8_class}}::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      {{v8_class}}::GetWrapperTypeInfo(), v8_value);
 }
 
 {% endif %}
@@ -1277,7 +1287,7 @@ void {{v8_class}}::UpdateWrapperTypeInfo(
   {% endif %}
 
   if (install_conditional_features_function) {
-    {{v8_class}}::wrapper_type_info.install_conditional_features_function =
+    {{v8_class}}::GetWrapperTypeInfo()->install_conditional_features_function =
         install_conditional_features_function;
   }
 }

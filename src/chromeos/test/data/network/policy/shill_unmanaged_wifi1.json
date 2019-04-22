@@ -2,6 +2,7 @@
   "GUID": "{unmanaged_user_wifi1}",
   "Mode": "managed",
   "Passphrase": "user's passphrase",
+  "PassphraseRequired": false,
   "Profile": "/profile/user1/shill",
   "WiFi.HexSSID": "7769666931", // "wifi1"
   "SecurityClass": "psk",

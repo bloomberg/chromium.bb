@@ -11,6 +11,8 @@ Rietveld code review for the update, listing the new Git commits.
 This tool should be run from a Git checkout of native_client.
 """
 
+from __future__ import print_function
+
 import argparse
 import os
 import re
@@ -181,9 +183,9 @@ def Main(args):
     bugs.append('BUG=none\n')
   msg += ''.join(set(bugs))
   msg += 'TEST= PNaCl toolchain trybots\n'
-  print msg
+  print(msg)
   cc_list = ', '.join(sorted(set(authors)))
-  print 'CC:', cc_list
+  print('CC:', cc_list)
 
   if options.list_only:
     return

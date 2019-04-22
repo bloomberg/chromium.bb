@@ -16,6 +16,10 @@ import zipfile
 
 from util import build_utils
 
+sys.path.insert(1, os.path.join(os.path.dirname(__file__), os.path.pardir))
+
+import convert_dex_profile
+
 
 def _CheckFilePathEndsWithJar(parser, file_path):
   if not file_path.endswith(".jar"):
@@ -76,7 +80,12 @@ def _ParseArgs(args):
                     help=('Path to ART dexlayout binary. There should be a '
                           'lib/ directory at the same path containing shared '
                           'libraries (shared with dexlayout).'))
-
+  parser.add_option('--dexdump-path', help='Path to dexdump binary.')
+  parser.add_option(
+      '--proguard-mapping-path',
+      help=('Path to proguard map from obfuscated symbols in the jar to '
+            'unobfuscated symbols present in the code. If not '
+            'present, the jar is assumed not to be obfuscated.'))
 
   options, paths = parser.parse_args(args)
 
@@ -84,8 +93,12 @@ def _ParseArgs(args):
   build_utils.CheckOptions(options, parser, required=required_options)
 
   if options.dexlayout_profile:
-    build_utils.CheckOptions(options, parser, required=('profman_path',
-                                                        'dexlayout_path'))
+    build_utils.CheckOptions(
+        options,
+        parser,
+        required=('profman_path', 'dexlayout_path', 'dexdump_path'))
+  elif options.proguard_mapping_path is not None:
+    raise Exception('Unexpected proguard mapping without dexlayout')
 
   if options.multidex_configuration_path:
     with open(options.multidex_configuration_path) as multidex_config_file:
@@ -274,6 +287,16 @@ def _ZipMultidex(file_dir, dex_files):
   return zip_name
 
 
+def _ZipSingleDex(dex_file, zip_name):
+  """Zip up a single dex file.
+
+  Args:
+    dex_file: A dexfile whose name is ignored.
+    zip_name: The output file in which to write the zip.
+  """
+  build_utils.DoZip([('classes.dex', dex_file)], zip_name)
+
+
 def main(args):
   options, paths = _ParseArgs(args)
   if ((options.proguard_enabled == 'true'
@@ -301,46 +324,61 @@ def main(args):
   if options.release:
     dex_cmd += ['--release']
   if options.min_api:
-    # TODO(mheikal): Actually pass min-api once catapult/devil dexdump has been
-    # updated. see https://crbug.com/892644
-    # dex_cmd += ['--min-api', options.min_api]
-    pass
+    dex_cmd += ['--min-api', options.min_api]
 
   is_dex = options.dex_path.endswith('.dex')
   is_jar = options.dex_path.endswith('.jar')
 
-  if is_jar and _NoClassFiles(paths):
-    # Handle case where no classfiles are specified in inputs
-    # by creating an empty JAR
-    with zipfile.ZipFile(options.dex_path, 'w') as outfile:
-      outfile.comment = 'empty'
-  else:
-    # .dex files can't specify a name for D8. Instead, we output them to a
-    # temp directory then move them after the command has finished running
-    # (see _MoveTempDexFile). For other files, tmp_dex_dir is None.
-    with build_utils.TempDir() as tmp_dex_dir:
+  with build_utils.TempDir() as tmp_dir:
+    tmp_dex_dir = os.path.join(tmp_dir, 'tmp_dex_dir')
+    os.mkdir(tmp_dex_dir)
+    if is_jar and _NoClassFiles(paths):
+      # Handle case where no classfiles are specified in inputs
+      # by creating an empty JAR
+      with zipfile.ZipFile(options.dex_path, 'w') as outfile:
+        outfile.comment = 'empty'
+    else:
+      # .dex files can't specify a name for D8. Instead, we output them to a
+      # temp directory then move them after the command has finished running
+      # (see _MoveTempDexFile). For other files, tmp_dex_dir is None.
       _RunD8(dex_cmd, paths, tmp_dex_dir)
-      if is_dex:
-        _MoveTempDexFile(tmp_dex_dir, options.dex_path)
-      else:
-        # d8 supports outputting to a .zip, but does not have deterministic file
-        # ordering: https://issuetracker.google.com/issues/119945929
-        build_utils.ZipDir(options.dex_path, tmp_dex_dir)
 
-  if options.dexlayout_profile:
-    with build_utils.TempDir() as temp_dir:
-      binary_profile = _CreateBinaryProfile(options.dexlayout_profile,
-                                            options.dex_path,
-                                            options.profman_path, temp_dir)
-      output_files = _LayoutDex(binary_profile, options.dex_path,
-                                options.dexlayout_path, temp_dir)
+    tmp_dex_output = os.path.join(tmp_dir, 'tmp_dex_output')
+    if is_dex:
+      _MoveTempDexFile(tmp_dex_dir, tmp_dex_output)
+    else:
+      # d8 supports outputting to a .zip, but does not have deterministic file
+      # ordering: https://issuetracker.google.com/issues/119945929
+      build_utils.ZipDir(tmp_dex_output, tmp_dex_dir)
+
+    if options.dexlayout_profile:
+      if options.proguard_mapping_path is not None:
+        matching_profile = os.path.join(tmp_dir, 'obfuscated_profile')
+        convert_dex_profile.ObfuscateProfile(
+            options.dexlayout_profile, tmp_dex_output,
+            options.proguard_mapping_path, options.dexdump_path,
+            matching_profile)
+      else:
+        logging.warning('No obfuscation for %s', options.dexlayout_profile)
+        matching_profile = options.dexlayout_profile
+      binary_profile = _CreateBinaryProfile(matching_profile, tmp_dex_output,
+                                            options.profman_path, tmp_dir)
+      output_files = _LayoutDex(binary_profile, tmp_dex_output,
+                                options.dexlayout_path, tmp_dir)
       target = None
       if len(output_files) > 1:
-        target = _ZipMultidex(temp_dir, output_files)
+        target = _ZipMultidex(tmp_dir, output_files)
       else:
-        target = output_files[0]
-      shutil.move(os.path.join(temp_dir, target), options.dex_path)
+        output = output_files[0]
+        if not zipfile.is_zipfile(output):
+          target = os.path.join(tmp_dir, 'dex_classes.zip')
+          _ZipSingleDex(output, target)
+        else:
+          target = output
+      shutil.move(os.path.join(tmp_dir, target), tmp_dex_output)
 
+    # The dex file is complete and can be moved out of tmp_dir.
+    shutil.move(tmp_dex_output, options.dex_path)
 
   build_utils.WriteDepfile(
       options.depfile, options.dex_path, input_paths, add_pydeps=False)

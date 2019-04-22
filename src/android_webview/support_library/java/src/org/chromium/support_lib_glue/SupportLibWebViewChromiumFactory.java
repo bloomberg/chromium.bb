@@ -65,9 +65,13 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.GET_WEB_VIEW_CLIENT,
                     Features.GET_WEB_CHROME_CLIENT,
                     Features.PROXY_OVERRIDE,
+                    Features.SUPPRESS_ERROR_PAGE + Features.DEV_SUFFIX,
                     Features.GET_WEB_VIEW_RENDERER,
                     Features.WEB_VIEW_RENDERER_TERMINATE,
                     Features.TRACING_CONTROLLER_BASIC_USAGE,
+                    Features.WEB_VIEW_RENDERER_CLIENT_BASIC_USAGE,
+                    Features.MULTI_PROCESS_QUERY + Features.DEV_SUFFIX,
+                    Features.FORCE_DARK + Features.DEV_SUFFIX,
             };
     // clang-format on
 
@@ -75,6 +79,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
     private InvocationHandler mStatics;
     private InvocationHandler mServiceWorkerController;
     private InvocationHandler mTracingController;
+    private InvocationHandler mProxyController;
 
     public SupportLibWebViewChromiumFactory() {
         mCompatConverterAdapter = BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
@@ -118,14 +123,8 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
         }
 
         @Override
-        public void setProxyOverride(
-                String host, int port, String[] exclusionList, Runnable callback) {
-            mSharedStatics.setProxyOverride(host, port, exclusionList, callback);
-        }
-
-        @Override
-        public void clearProxyOverride(Runnable callback) {
-            mSharedStatics.clearProxyOverride(callback);
+        public boolean isMultiProcessEnabled() {
+            return mSharedStatics.isMultiProcessEnabled();
         }
     }
 
@@ -169,5 +168,17 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
             }
         }
         return mTracingController;
+    }
+
+    @Override
+    public InvocationHandler getProxyController() {
+        synchronized (mAwInit.getLock()) {
+            if (mProxyController == null) {
+                mProxyController = BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
+                        new SupportLibProxyControllerAdapter(
+                                mAwInit.getRunQueue(), mAwInit.getAwProxyController()));
+            }
+        }
+        return mProxyController;
     }
 }

@@ -4,7 +4,6 @@
 
 import("//build/config/compiler/compiler.gni")
 import("//components/nacl/features.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 # This file builds nacl64.exe, which is a 64-bit x86 Windows executable
 # used only in the 32-bit x86 Windows build.  The :broker code runs both
@@ -175,7 +174,15 @@ if (current_cpu == "x86") {
   }
 }
 
-service_manifest("nacl_broker_manifest") {
-  name = "nacl_broker"
-  source = "nacl_broker_manifest.json"
+source_set("nacl_broker_manifest") {
+  sources = [
+    "nacl_broker_manifest.cc",
+    "nacl_broker_manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/nacl/common",
+    "//services/service_manager/public/cpp",
+  ]
 }

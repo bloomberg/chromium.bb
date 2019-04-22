@@ -28,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.OverlayPanelManagerObserver;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.tab.Tab;
@@ -35,10 +36,13 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 /**
  * Delegate that manages bottom bar area inside of {@link CustomTabActivity}.
  */
-class CustomTabBottomBarDelegate implements FullscreenListener {
+@ActivityScope
+public class CustomTabBottomBarDelegate implements FullscreenListener {
     private static final String TAG = "CustomTab";
     private static final CachedMetrics.ActionEvent REMOTE_VIEWS_SHOWN =
             new CachedMetrics.ActionEvent("CustomTabsRemoteViewsShown");
@@ -70,6 +74,7 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
         }
     };
 
+    @Inject
     public CustomTabBottomBarDelegate(ChromeActivity activity,
             CustomTabIntentDataProvider dataProvider, ChromeFullscreenManager fullscreenManager) {
         mActivity = activity;
@@ -312,13 +317,12 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
 
     // FullscreenListener methods
     @Override
-    public void onControlsOffsetChanged(float topOffset, float bottomOffset,
-            boolean needsAnimate) {
+    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {
         if (mBottomBarView != null) mBottomBarView.setTranslationY(bottomOffset);
         // If the bottom bar is not visible use the top controls as a guide to set state.
-        float offset = getBottomBarHeight() == 0 ? topOffset : bottomOffset;
-        float height = getBottomBarHeight() == 0 ? mFullscreenManager.getTopControlsHeight()
-                                                 : mFullscreenManager.getBottomControlsHeight();
+        int offset = getBottomBarHeight() == 0 ? topOffset : bottomOffset;
+        int height = getBottomBarHeight() == 0 ? mFullscreenManager.getTopControlsHeight()
+                                               : mFullscreenManager.getBottomControlsHeight();
         // Avoid spamming this callback across process boundaries, by only sending messages at
         // absolute transitions.
         if (Math.abs(offset) == height || offset == 0) {
@@ -330,7 +334,10 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
     @Override
     public void onBottomControlsHeightChanged(int bottomControlsHeight) {
         if (!isViewReady()) return;
-        getBottomBarView().setTranslationY(mFullscreenManager.getBottomControlOffset());
+        // Bottom offset might not have been received by FullscreenManager at this point, so
+        // using getBrowserControlHiddenRatio(), http://crbug.com/928903.
+        getBottomBarView().setTranslationY(mFullscreenManager.getBrowserControlHiddenRatio()
+                * bottomControlsHeight);
     }
 
     @Override
@@ -338,9 +345,8 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
         if (mBottomBarView == null) return; // Check bottom bar view but don't inflate it.
         // Hide the container of the bottom bar while the extension is showing. This doesn't
         // affect the content.
-        boolean keyboardExtensionHidesBottomBar = mActivity.getManualFillingController()
-                                                          .getKeyboardExtensionSizeManager()
-                                                          .getKeyboardExtensionHeight()
+        boolean keyboardExtensionHidesBottomBar =
+                mActivity.getManualFillingComponent().getKeyboardExtensionViewResizer().getHeight()
                 > 0;
         if (keyboardExtensionHidesBottomBar) {
             getBottomBarView().setVisibility(View.GONE);
@@ -352,7 +358,7 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
     }
 
     @Override
-    public void onContentOffsetChanged(float offset) { }
+    public void onContentOffsetChanged(int offset) {}
 
     @Override
     public void onToggleOverlayVideoMode(boolean enabled) { }

@@ -20,7 +20,7 @@
  *
  */
 
-// https://html.spec.whatwg.org/#validitystate
+// https://html.spec.whatwg.org/C/#validitystate
 
 interface ValidityState {
     readonly attribute boolean valueMissing;

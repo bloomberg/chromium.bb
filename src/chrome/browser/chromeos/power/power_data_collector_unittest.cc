@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "chrome/browser/chromeos/power/power_data_collector.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,23 +14,22 @@ namespace chromeos {
 
 class PowerDataCollectorTest : public testing::Test {
  public:
-  PowerDataCollectorTest() : power_data_collector_(NULL) {}
-  ~PowerDataCollectorTest() override {}
+  PowerDataCollectorTest() = default;
+  ~PowerDataCollectorTest() override = default;
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
+    PowerManagerClient::InitializeFake();
     PowerDataCollector::InitializeForTesting();
     power_data_collector_ = PowerDataCollector::Get();
   }
 
   void TearDown() override {
     PowerDataCollector::Shutdown();
-    DBusThreadManager::Shutdown();
-    power_data_collector_ = NULL;
+    PowerManagerClient::Shutdown();
   }
 
  protected:
-  PowerDataCollector* power_data_collector_;
+  PowerDataCollector* power_data_collector_ = nullptr;
 };
 
 TEST_F(PowerDataCollectorTest, PowerChanged) {

@@ -16,18 +16,19 @@ import android.util.AttributeSet;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
+import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.widget.ChromeImageButton;
 
 /**
  * The tab switcher new tab button.
  */
-class BottomToolbarNewTabButton
-        extends ChromeImageButton implements IncognitoStateObserver, ThemeColorObserver {
+class BottomToolbarNewTabButton extends ChromeImageButton
+        implements IncognitoStateObserver, ThemeColorObserver, TintObserver {
     /** The gray pill background behind the plus icon. */
     private final Drawable mBackground;
 
@@ -62,14 +63,15 @@ class BottomToolbarNewTabButton
             mIncognitoStateProvider = null;
         }
         if (mThemeColorProvider != null) {
-            mThemeColorProvider.removeObserver(this);
+            mThemeColorProvider.removeThemeColorObserver(this);
+            mThemeColorProvider.removeTintObserver(this);
             mThemeColorProvider = null;
         }
     }
 
     void setIncognitoStateProvider(IncognitoStateProvider incognitoStateProvider) {
         mIncognitoStateProvider = incognitoStateProvider;
-        mIncognitoStateProvider.addObserver((IncognitoStateObserver) this);
+        mIncognitoStateProvider.addIncognitoStateObserverAndTrigger(this);
     }
 
     @Override
@@ -88,14 +90,19 @@ class BottomToolbarNewTabButton
 
     void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
         mThemeColorProvider = themeColorProvider;
-        mThemeColorProvider.addObserver(this);
+        mThemeColorProvider.addThemeColorObserver(this);
+        mThemeColorProvider.addTintObserver(this);
     }
 
     @Override
-    public void onThemeColorChanged(ColorStateList tint, int primaryColor) {
-        ApiCompatibilityUtils.setImageTintList(this, tint);
+    public void onThemeColorChanged(int primaryColor, boolean shouldAnimate) {
         mBackground.setColorFilter(
                 ColorUtils.getTextBoxColorForToolbarBackground(mResources, false, primaryColor),
                 PorterDuff.Mode.SRC_IN);
+    }
+
+    @Override
+    public void onTintChanged(ColorStateList tint, boolean useLight) {
+        ApiCompatibilityUtils.setImageTintList(this, tint);
     }
 }

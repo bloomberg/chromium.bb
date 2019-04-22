@@ -71,9 +71,8 @@ AccessibilityPanel::AccessibilityPanel(content::BrowserContext* browser_context,
   params.delegate = this;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.name = widget_name;
+  params.shadow_elevation = wm::kShadowElevationInactiveWindow;
   widget_->Init(params);
-  wm::SetShadowElevation(widget_->GetNativeWindow(),
-                         wm::kShadowElevationInactiveWindow);
 
   // WebContentsObserver::DidFirstVisuallyNonEmptyPaint is not called under
   // mash. Work around this by showing the window immediately.
@@ -128,6 +127,7 @@ views::View* AccessibilityPanel::GetContentsView() {
 }
 
 bool AccessibilityPanel::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   // Eat all requests as context menus are disallowed.
   return true;

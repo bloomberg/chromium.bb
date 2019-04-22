@@ -12,26 +12,24 @@
 #include <sstream>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/file_descriptor_posix.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "device/bluetooth/dbus/bluetooth_media_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_media_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_media_endpoint_service_provider.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using dbus::ObjectPath;
 
 namespace {
 
-// TODO(mcchou): Remove this constants once it is in cros_system_api.
-const char kBluetoothMediaTransportInterface[] = "org.bluez.MediaTransport1";
 const char kNotImplemented[] = "org.bluez.NotImplemented";
 const char kNotAuthorized[] = "org.bluez.NotAuthorized";
 const char kFailed[] = "org.bluez.Failed";
 const char kNotAvailable[] = "org.bluez.NotAvailable";
-
-const int kInvalidFd = -1;
 
 ObjectPath GenerateTransportPath() {
   static unsigned int sequence_number = 0;
@@ -44,7 +42,7 @@ ObjectPath GenerateTransportPath() {
 }
 
 #define UINT8_VECTOR_FROM_ARRAY(array) \
-  std::vector<uint8_t>(array, array + arraysize(array))
+  std::vector<uint8_t>(array, array + base::size(array))
 
 }  // namespace
 
@@ -57,7 +55,7 @@ const uint8_t FakeBluetoothMediaTransportClient::kTransportCodec = 0x00;
 const uint8_t FakeBluetoothMediaTransportClient::kTransportConfiguration[] = {
     0x21, 0x15, 0x33, 0x2C};
 const uint8_t FakeBluetoothMediaTransportClient::kTransportConfigurationLength =
-    arraysize(FakeBluetoothMediaTransportClient::kTransportConfiguration);
+    base::size(FakeBluetoothMediaTransportClient::kTransportConfiguration);
 const uint16_t FakeBluetoothMediaTransportClient::kTransportDelay = 5;
 const uint16_t FakeBluetoothMediaTransportClient::kTransportVolume = 50;
 const uint16_t FakeBluetoothMediaTransportClient::kDefaultReadMtu = 20;
@@ -67,7 +65,7 @@ FakeBluetoothMediaTransportClient::Properties::Properties(
     const PropertyChangedCallback& callback)
     : BluetoothMediaTransportClient::Properties(
           nullptr,
-          kBluetoothMediaTransportInterface,
+          bluetooth_media_transport::kBluetoothMediaTransportInterface,
           callback) {}
 
 FakeBluetoothMediaTransportClient::Properties::~Properties() = default;
@@ -318,7 +316,8 @@ void FakeBluetoothMediaTransportClient::AcquireInternal(
     error_callback.Run(kFailed, "");
     return;
   }
-  DCHECK((fds[0] > kInvalidFd) && (fds[1] > kInvalidFd));
+  DCHECK(fds[0] > base::kInvalidFd);
+  DCHECK(fds[1] > base::kInvalidFd);
   transport->input_fd.reset(new base::File(fds[0]));
 
   base::ScopedFD out_fd(fds[1]);

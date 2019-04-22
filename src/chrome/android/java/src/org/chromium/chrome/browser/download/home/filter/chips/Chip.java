@@ -7,13 +7,15 @@ package org.chromium.chrome.browser.download.home.filter.chips;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
 
+import org.chromium.ui.widget.ChipView;
+
 /**
  * A generic visual representation of a Chip. Most of the visuals are immutable, but the selection
  * and enable states are not.
  */
 public class Chip {
     /** An id to use for {@link #icon} when there is no icon on the chip. */
-    public static final int INVALID_ICON_ID = -1;
+    public static final int INVALID_ICON_ID = ChipView.INVALID_ICON_ID;
 
     /** An id used to identify this chip. */
     public final int id;
@@ -21,8 +23,8 @@ public class Chip {
     /** The resource id for the text to show in the chip. */
     public final @StringRes int text;
 
-    /** The resource id for the accessibility text to use for the chip. */
-    public final @StringRes int contentDescription;
+    /** The accessibility text to use for the chip. */
+    public String contentDescription;
 
     /** The resource id for the icon to use in the chip. */
     public final @DrawableRes int icon;
@@ -37,11 +39,9 @@ public class Chip {
     public boolean selected;
 
     /** Builds a new {@link Chip} instance.  These properties cannot be changed. */
-    public Chip(int id, @StringRes int text, @StringRes int contentDescription,
-            @DrawableRes int icon, Runnable chipSelectedListener) {
+    public Chip(int id, @StringRes int text, @DrawableRes int icon, Runnable chipSelectedListener) {
         this.id = id;
         this.text = text;
-        this.contentDescription = contentDescription;
         this.icon = icon;
         this.chipSelectedListener = chipSelectedListener;
     }

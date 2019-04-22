@@ -4,9 +4,10 @@
 
 #include "chrome/renderer/safe_browsing/phishing_dom_feature_extractor.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -44,7 +45,7 @@ const int PhishingDOMFeatureExtractor::kMaxTotalTimeMs = 500;
 struct PhishingDOMFeatureExtractor::PageFeatureState {
   // Link related features
   int external_links;
-  base::hash_set<std::string> external_domains;
+  std::unordered_set<std::string> external_domains;
   int secure_links;
   int total_links;
 
@@ -56,7 +57,7 @@ struct PhishingDOMFeatureExtractor::PageFeatureState {
   int num_check_inputs;
   int action_other_domain;
   int total_actions;
-  base::hash_set<std::string> page_action_urls;
+  std::unordered_set<std::string> page_action_urls;
 
   // Image related features
   int img_other_domain;
@@ -113,10 +114,9 @@ PhishingDOMFeatureExtractor::~PhishingDOMFeatureExtractor() {
   CheckNoPendingExtraction();
 }
 
-void PhishingDOMFeatureExtractor::ExtractFeatures(
-    blink::WebDocument document,
-    FeatureMap* features,
-    const DoneCallback& done_callback) {
+void PhishingDOMFeatureExtractor::ExtractFeatures(blink::WebDocument document,
+                                                  FeatureMap* features,
+                                                  DoneCallback done_callback) {
   // The RenderView should have called CancelPendingExtraction() before
   // starting a new extraction, so DCHECK this.
   CheckNoPendingExtraction();
@@ -125,7 +125,7 @@ void PhishingDOMFeatureExtractor::ExtractFeatures(
   CancelPendingExtraction();
 
   features_ = features;
-  done_callback_ = done_callback;
+  done_callback_ = std::move(done_callback);
 
   page_feature_state_.reset(new PageFeatureState(clock_->Now()));
   cur_document_ = document;
@@ -361,7 +361,7 @@ void PhishingDOMFeatureExtractor::RunCallback(bool success) {
                       clock_->Now() - page_feature_state_->start_time);
 
   DCHECK(!done_callback_.is_null());
-  done_callback_.Run(success);
+  std::move(done_callback_).Run(success);
   Clear();
 }
 

@@ -5,10 +5,8 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
 
 namespace safe_browsing {
@@ -31,7 +29,6 @@ AdvancedProtectionStatusManagerFactory::AdvancedProtectionStatusManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "AdvancedProtectionStatusManager",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
 }
 

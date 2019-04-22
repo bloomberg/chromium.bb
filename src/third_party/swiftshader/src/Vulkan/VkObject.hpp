@@ -18,7 +18,9 @@
 #include "VkConfig.h"
 #include "VkDebug.hpp"
 #include "VkMemory.h"
-#include <vulkan/vulkan.h>
+
+#include <new>
+#include <vulkan/vulkan_core.h>
 #include <vulkan/vk_icd.h>
 
 namespace vk
@@ -42,7 +44,14 @@ static VkResult Create(const VkAllocationCallbacks* pAllocator, const CreateInfo
 		}
 	}
 
-	auto object = new (pAllocator) T(pCreateInfo, memory);
+	void* objectMemory = vk::allocate(sizeof(T), alignof(T), pAllocator, T::GetAllocationScope());
+	if(!objectMemory)
+	{
+		vk::deallocate(memory, pAllocator);
+		return VK_ERROR_OUT_OF_HOST_MEMORY;
+	}
+
+	auto object = new (objectMemory) T(pCreateInfo, memory);
 
 	if(!object)
 	{
@@ -62,11 +71,6 @@ public:
 	using VkType = VkT;
 
 	void destroy(const VkAllocationCallbacks* pAllocator) {} // Method defined by objects to delete their content, if necessary
-
-	void* operator new(size_t count, const VkAllocationCallbacks* pAllocator)
-	{
-		return vk::allocate(count, alignof(T), pAllocator, T::GetAllocationScope());
-	}
 
 	void operator delete(void* ptr, const VkAllocationCallbacks* pAllocator)
 	{
@@ -118,11 +122,6 @@ public:
 		object.destroy(pAllocator);
 	}
 
-	void* operator new(size_t count, const VkAllocationCallbacks* pAllocator)
-	{
-		return vk::allocate(count, alignof(T), pAllocator, T::GetAllocationScope());
-	}
-
 	void operator delete(void* ptr, const VkAllocationCallbacks* pAllocator)
 	{
 		// Should never happen
@@ -143,7 +142,8 @@ public:
 
 	static inline T* Cast(VkT vkObject)
 	{
-		return &(reinterpret_cast<DispatchableObject<T, VkT>*>(vkObject)->object);
+		return (vkObject == VK_NULL_HANDLE) ? nullptr :
+		       &(reinterpret_cast<DispatchableObject<T, VkT>*>(vkObject)->object);
 	}
 
 	operator VkT()

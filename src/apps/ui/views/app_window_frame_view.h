@@ -10,7 +10,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/path.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -60,9 +59,7 @@ class AppWindowFrameView : public views::NonClientFrameView,
   void SetResizeSizes(int resize_inside_bounds_size,
                       int resize_outside_bounds_size,
                       int resize_area_corner_size);
-  int resize_inside_bounds_size() const {
-    return resize_inside_bounds_size_;
-  };
+  int resize_inside_bounds_size() const { return resize_inside_bounds_size_; }
 
  private:
   // views::NonClientFrameView implementation.
@@ -70,7 +67,7 @@ class AppWindowFrameView : public views::NonClientFrameView,
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override;
   int NonClientHitTest(const gfx::Point& point) override;
-  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override;
+  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override;
   void ResetWindowControls() override {}
   void UpdateWindowIcon() override {}
   void UpdateWindowTitle() override {}
@@ -99,19 +96,19 @@ class AppWindowFrameView : public views::NonClientFrameView,
   bool draw_frame_;
   SkColor active_frame_color_;
   SkColor inactive_frame_color_;
-  views::ImageButton* close_button_;
-  views::ImageButton* maximize_button_;
-  views::ImageButton* restore_button_;
-  views::ImageButton* minimize_button_;
+  views::ImageButton* close_button_ = nullptr;
+  views::ImageButton* maximize_button_ = nullptr;
+  views::ImageButton* restore_button_ = nullptr;
+  views::ImageButton* minimize_button_ = nullptr;
 
   // Allow resize for clicks this many pixels inside the bounds.
-  int resize_inside_bounds_size_;
+  int resize_inside_bounds_size_ = 5;
 
   // Allow resize for clicks  this many pixels outside the bounds.
-  int resize_outside_bounds_size_;
+  int resize_outside_bounds_size_ = 0;
 
   // Size in pixels of the lower-right corner resize handle.
-  int resize_area_corner_size_;
+  int resize_area_corner_size_ = 16;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowFrameView);
 };

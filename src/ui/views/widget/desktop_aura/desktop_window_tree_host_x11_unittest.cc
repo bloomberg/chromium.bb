@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
@@ -21,7 +22,6 @@
 #include "ui/events/test/platform_event_source_test_api.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/test/views_test_base.h"
@@ -45,7 +45,7 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
         hint_(hint),
         wait_till_set_(wait_till_set) {}
 
-  ~WMStateWaiter() override {}
+  ~WMStateWaiter() override = default;
 
  private:
   // X11PropertyChangeWaiter:
@@ -68,10 +68,9 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
 // A NonClientFrameView with a window mask with the bottom right corner cut out.
 class ShapedNonClientFrameView : public NonClientFrameView {
  public:
-  ShapedNonClientFrameView() {
-  }
+  ShapedNonClientFrameView() = default;
 
-  ~ShapedNonClientFrameView() override {}
+  ~ShapedNonClientFrameView() override = default;
 
   // NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override { return bounds(); }
@@ -85,7 +84,7 @@ class ShapedNonClientFrameView : public NonClientFrameView {
       return HTBOTTOM;
     return HTNOWHERE;
   }
-  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
+  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {
     int right = size.width();
     int bottom = size.height();
 
@@ -108,10 +107,9 @@ class ShapedNonClientFrameView : public NonClientFrameView {
 
 class ShapedWidgetDelegate : public WidgetDelegateView {
  public:
-  ShapedWidgetDelegate() {
-  }
+  ShapedWidgetDelegate() = default;
 
-  ~ShapedWidgetDelegate() override {}
+  ~ShapedWidgetDelegate() override = default;
 
   // WidgetDelegateView:
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override {
@@ -129,7 +127,6 @@ std::unique_ptr<Widget> CreateWidget(WidgetDelegate* delegate) {
   params.delegate = delegate;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.remove_standard_frame = true;
-  params.native_widget = new DesktopNativeWidgetAura(widget.get());
   params.bounds = gfx::Rect(100, 100, 100, 100);
   widget->Init(params);
   return widget;
@@ -146,7 +143,7 @@ std::vector<gfx::Rect> GetShapeRects(XID xid) {
   std::vector<gfx::Rect> shape_vector;
   for (int i = 0; i < shape_rects_size; ++i) {
     const XRectangle& rect = shape_rects[i];
-    shape_vector.push_back(gfx::Rect(rect.x, rect.y, rect.width, rect.height));
+    shape_vector.emplace_back(rect.x, rect.y, rect.width, rect.height);
   }
   return shape_vector;
 }
@@ -163,21 +160,17 @@ bool ShapeRectContainsPoint(const std::vector<gfx::Rect>& shape_rects,
   return false;
 }
 
-// Flush the message loop.
-void RunAllPendingInMessageLoop() {
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-}
-
 }  // namespace
 
 class DesktopWindowTreeHostX11Test : public ViewsTestBase {
  public:
   DesktopWindowTreeHostX11Test()
       : event_source_(ui::PlatformEventSource::GetInstance()) {}
-  ~DesktopWindowTreeHostX11Test() override {}
+  ~DesktopWindowTreeHostX11Test() override = default;
 
   void SetUp() override {
+    set_native_widget_type(NativeWidgetType::kDesktop);
+
     std::vector<int> pointer_devices;
     pointer_devices.push_back(kPointerDeviceId);
     ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(pointer_devices);
@@ -258,7 +251,7 @@ TEST_F(DesktopWindowTreeHostX11Test, DISABLED_Shape) {
     }
 
     // Ensure that the task which is posted when a window is resized is run.
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
 
     // xvfb does not support Xrandr so we cannot check the maximized window's
     // bounds.
@@ -305,7 +298,7 @@ TEST_F(DesktopWindowTreeHostX11Test, DISABLED_Shape) {
 
   // Setting the shape to NULL resets the shape back to the entire
   // window bounds.
-  widget2->SetShape(NULL);
+  widget2->SetShape(nullptr);
   shape_rects = GetShapeRects(xid2);
   ASSERT_FALSE(shape_rects.empty());
   EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 5, 5));
@@ -371,7 +364,6 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
   Widget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.native_widget = new DesktopNativeWidgetAura(&widget);
   widget.Init(params);
   widget.Show();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
@@ -431,7 +423,6 @@ TEST_F(DesktopWindowTreeHostX11Test, ChildWindowDestructionDuringTearDown) {
   Widget::InitParams parent_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  parent_params.native_widget = new DesktopNativeWidgetAura(&parent_widget);
   parent_widget.Init(parent_params);
   parent_widget.Show();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
@@ -440,7 +431,6 @@ TEST_F(DesktopWindowTreeHostX11Test, ChildWindowDestructionDuringTearDown) {
   Widget::InitParams child_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  child_params.native_widget = new DesktopNativeWidgetAura(&child_widget);
   child_params.parent = parent_widget.GetNativeWindow();
   child_widget.Init(child_params);
   child_widget.Show();
@@ -456,8 +446,8 @@ TEST_F(DesktopWindowTreeHostX11Test, ChildWindowDestructionDuringTearDown) {
 // A Widget that allows setting the min/max size for the widget.
 class CustomSizeWidget : public Widget {
  public:
-  CustomSizeWidget() {}
-  ~CustomSizeWidget() override {}
+  CustomSizeWidget() = default;
+  ~CustomSizeWidget() override = default;
 
   void set_min_size(const gfx::Size& size) { min_size_ = size; }
   void set_max_size(const gfx::Size& size) { max_size_ = size; }
@@ -477,7 +467,6 @@ TEST_F(DesktopWindowTreeHostX11Test, SetBoundsWithMinMax) {
   CustomSizeWidget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.native_widget = new DesktopNativeWidgetAura(&widget);
   params.bounds = gfx::Rect(200, 100);
   widget.Init(params);
   widget.Show();
@@ -497,8 +486,8 @@ TEST_F(DesktopWindowTreeHostX11Test, SetBoundsWithMinMax) {
 
 class MouseEventRecorder : public ui::EventHandler {
  public:
-  MouseEventRecorder() {}
-  ~MouseEventRecorder() override {}
+  MouseEventRecorder() = default;
+  ~MouseEventRecorder() override = default;
 
   void Reset() { mouse_events_.clear(); }
 
@@ -520,8 +509,8 @@ class MouseEventRecorder : public ui::EventHandler {
 class DesktopWindowTreeHostX11HighDPITest
     : public DesktopWindowTreeHostX11Test {
  public:
-  DesktopWindowTreeHostX11HighDPITest() {}
-  ~DesktopWindowTreeHostX11HighDPITest() override {}
+  DesktopWindowTreeHostX11HighDPITest() = default;
+  ~DesktopWindowTreeHostX11HighDPITest() override = default;
 
   void PretendCapture(views::Widget* capture_widget) {
     DesktopWindowTreeHostX11* capture_host = nullptr;
@@ -551,7 +540,6 @@ TEST_F(DesktopWindowTreeHostX11HighDPITest,
   Widget first;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.native_widget = new DesktopNativeWidgetAura(&first);
   params.bounds = gfx::Rect(0, 0, 50, 50);
   first.Init(params);
   first.Show();
@@ -559,7 +547,6 @@ TEST_F(DesktopWindowTreeHostX11HighDPITest,
   Widget second;
   params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.native_widget = new DesktopNativeWidgetAura(&second);
   params.bounds = gfx::Rect(50, 50, 50, 50);
   second.Init(params);
   second.Show();

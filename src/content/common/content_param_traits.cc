@@ -17,6 +17,7 @@
 #include "ipc/ipc_mojo_message_helper.h"
 #include "ipc/ipc_mojo_param_traits.h"
 #include "net/base/ip_endpoint.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
@@ -89,6 +90,55 @@ bool ParamTraits<blink::MessagePortChannel>::Read(const base::Pickle* m,
 
 void ParamTraits<blink::MessagePortChannel>::Log(const param_type& p,
                                                  std::string* l) {}
+
+void ParamTraits<blink::PolicyValue>::Write(base::Pickle* m,
+                                            const param_type& p) {
+  blink::mojom::PolicyValueType type = p.Type();
+  WriteParam(m, static_cast<int>(type));
+  switch (type) {
+    case blink::mojom::PolicyValueType::kBool:
+      WriteParam(m, p.BoolValue());
+      break;
+    case blink::mojom::PolicyValueType::kDecDouble:
+      WriteParam(m, p.DoubleValue());
+      break;
+    case blink::mojom::PolicyValueType::kNull:
+      break;
+  }
+}
+
+bool ParamTraits<blink::PolicyValue>::Read(const base::Pickle* m,
+                                           base::PickleIterator* iter,
+                                           param_type* r) {
+  int int_type;
+  if (!ReadParam(m, iter, &int_type))
+    return false;
+  blink::mojom::PolicyValueType type =
+      static_cast<blink::mojom::PolicyValueType>(int_type);
+  r->SetType(type);
+  switch (type) {
+    case blink::mojom::PolicyValueType::kBool: {
+      bool b;
+      if (!ReadParam(m, iter, &b))
+        return false;
+      r->SetBoolValue(b);
+      break;
+    }
+    case blink::mojom::PolicyValueType::kDecDouble: {
+      double d;
+      if (!ReadParam(m, iter, &d))
+        return false;
+      r->SetDoubleValue(d, type);
+      break;
+    }
+    case blink::mojom::PolicyValueType::kNull:
+      break;
+  }
+  return true;
+}
+
+void ParamTraits<blink::PolicyValue>::Log(const param_type& p, std::string* l) {
+}
 
 void ParamTraits<ui::AXMode>::Write(base::Pickle* m, const param_type& p) {
   IPC::WriteParam(m, p.mode());
@@ -214,6 +264,7 @@ void ParamTraits<scoped_refptr<base::RefCountedData<
   WriteParam(m, p->data.stream_channels);
   WriteParam(m, p->data.has_user_gesture);
   WriteParam(m, !!p->data.user_activation);
+  WriteParam(m, p->data.transfer_user_activation);
   if (p->data.user_activation) {
     WriteParam(m, p->data.user_activation->has_been_active);
     WriteParam(m, p->data.user_activation->was_active);
@@ -244,7 +295,8 @@ bool ParamTraits<
       !ReadParam(m, iter, &(*r)->data.ports) ||
       !ReadParam(m, iter, &(*r)->data.stream_channels) ||
       !ReadParam(m, iter, &(*r)->data.has_user_gesture) ||
-      !ReadParam(m, iter, &has_activation)) {
+      !ReadParam(m, iter, &has_activation) ||
+      !ReadParam(m, iter, &(*r)->data.transfer_user_activation)) {
     return false;
   }
 

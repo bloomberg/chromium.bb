@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/field_trial_params.h"
@@ -15,6 +16,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync/base/time.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -40,8 +42,8 @@ void AddVariationHeaders(network::ResourceRequest* request) {
   // Note: It's OK to pass InIncognito::kNo since we are expected to be in
   // non-incognito state here (i.e. contextual sugestions are not served in
   // incognito mode).
-  variations::AppendVariationHeadersUnknownSignedIn(
-      request->url, variations::InIncognito::kNo, &request->headers);
+  variations::AppendVariationsHeaderUnknownSignedIn(
+      request->url, variations::InIncognito::kNo, request);
 }
 
 // Returns API request body. The final result depends on the following input

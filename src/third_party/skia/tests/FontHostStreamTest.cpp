@@ -8,10 +8,11 @@
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "SkColor.h"
+#include "SkFont.h"
 #include "SkFontDescriptor.h"
+#include "SkFontPriv.h"
 #include "SkGraphics.h"
 #include "SkPaint.h"
-#include "SkPaintPriv.h"
 #include "SkPoint.h"
 #include "SkRect.h"
 #include "SkStream.h"
@@ -65,9 +66,9 @@ DEF_TEST(FontHostStream, reporter) {
     {
         SkPaint paint;
         paint.setColor(SK_ColorGRAY);
-        paint.setTextSize(SkIntToScalar(30));
 
-        paint.setTypeface(SkTypeface::MakeFromName("Georgia", SkFontStyle()));
+        SkFont font(SkTypeface::MakeFromName("Georgia", SkFontStyle()), 30);
+        font.setEdging(SkFont::Edging::kAlias);
 
         SkIRect origRect = SkIRect::MakeWH(64, 64);
         SkBitmap origBitmap;
@@ -83,11 +84,11 @@ DEF_TEST(FontHostStream, reporter) {
 
         // Test: origTypeface and streamTypeface from orig data draw the same
         drawBG(&origCanvas);
-        origCanvas.drawString("A", point.fX, point.fY, paint);
+        origCanvas.drawString("A", point.fX, point.fY, font, paint);
 
-        sk_sp<SkTypeface> typeface = SkPaintPriv::RefTypefaceOrDefault(paint);
+        sk_sp<SkTypeface> typeface = font.refTypefaceOrDefault();
         int ttcIndex;
-        std::unique_ptr<SkStreamAsset> fontData(typeface->openStream(&ttcIndex));
+        std::unique_ptr<SkStreamAsset> fontData = typeface->openStream(&ttcIndex);
         if (!fontData) {
             // We're using a SkTypeface that can't give us a stream.
             // This happens with portable or system fonts.  End the test now.
@@ -101,9 +102,9 @@ DEF_TEST(FontHostStream, reporter) {
         streamTypeface->getFontDescriptor(&desc, &isLocalStream);
         REPORTER_ASSERT(reporter, isLocalStream);
 
-        paint.setTypeface(streamTypeface);
+        font.setTypeface(streamTypeface);
         drawBG(&streamCanvas);
-        streamCanvas.drawPosText("A", 1, &point, paint);
+        streamCanvas.drawString("A", point.fX, point.fY, font, paint);
 
         REPORTER_ASSERT(reporter,
                         compare(origBitmap, origRect, streamBitmap, streamRect));

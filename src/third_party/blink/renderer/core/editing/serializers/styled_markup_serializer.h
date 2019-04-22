@@ -44,8 +44,8 @@ class StyledMarkupSerializer final {
   STACK_ALLOCATED();
 
  public:
-  StyledMarkupSerializer(EAbsoluteURLs,
-                         EAnnotateForInterchange,
+  StyledMarkupSerializer(AbsoluteURLs,
+                         AnnotateForInterchange,
                          const PositionTemplate<Strategy>& start,
                          const PositionTemplate<Strategy>& end,
                          Node* highest_node_to_be_serialized,
@@ -60,8 +60,8 @@ class StyledMarkupSerializer final {
 
   const PositionTemplate<Strategy> start_;
   const PositionTemplate<Strategy> end_;
-  const EAbsoluteURLs should_resolve_urls_;
-  const EAnnotateForInterchange should_annotate_;
+  const AbsoluteURLs should_resolve_urls_;
+  const AnnotateForInterchange should_annotate_;
   const Member<Node> highest_node_to_be_serialized_;
   const ConvertBlocksToInlines convert_blocks_to_inlines_;
   Member<Node> last_closed_;

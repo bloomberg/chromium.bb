@@ -202,7 +202,7 @@ TEST(SyncedSessionTest, SetSessionTabFromSyncData) {
   sync_data.set_extension_app_id("app_id");
   for (int i = 0; i < 5; ++i) {
     sync_pb::TabNavigation* navigation = sync_data.add_navigation();
-    navigation->set_virtual_url("http://foo/" + base::IntToString(i));
+    navigation->set_virtual_url("http://foo/" + base::NumberToString(i));
     navigation->set_referrer("referrer");
     navigation->set_title("title");
     navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
@@ -236,7 +236,7 @@ TEST(SyncedSessionTest, SetSessionTabFromSyncData) {
     EXPECT_EQ(base::ASCIIToUTF16("title"), tab.navigations[i].title());
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         tab.navigations[i].transition_type(), ui::PAGE_TRANSITION_TYPED));
-    EXPECT_EQ(GURL("http://foo/" + base::IntToString(i)),
+    EXPECT_EQ(GURL("http://foo/" + base::NumberToString(i)),
               tab.navigations[i].virtual_url());
   }
   EXPECT_TRUE(tab.session_storage_persistent_id.empty());
@@ -255,7 +255,7 @@ TEST(SyncedSessionTest, SessionTabToSyncData) {
   for (int i = 0; i < 5; ++i) {
     tab.navigations.push_back(
         SerializedNavigationEntryTestHelper::CreateNavigation(
-            "http://foo/" + base::IntToString(i), "title"));
+            "http://foo/" + base::NumberToString(i), "title"));
   }
   tab.session_storage_persistent_id = "fake";
 

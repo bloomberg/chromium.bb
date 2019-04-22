@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
@@ -142,10 +143,7 @@ void QuirksManager::RequestIccProfilePath(
 void QuirksManager::ClientFinished(QuirksClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SetLastServerCheck(client->product_id(), base::Time::Now());
-  auto it = std::find_if(clients_.begin(), clients_.end(),
-                         [client](const std::unique_ptr<QuirksClient>& c) {
-                           return c.get() == client;
-                         });
+  auto it = clients_.find(client);
   CHECK(it != clients_.end());
   clients_.erase(it);
 }

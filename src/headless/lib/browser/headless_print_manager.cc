@@ -325,4 +325,6 @@ void HeadlessPrintManager::ReleaseJob(PrintResult result) {
   Reset();
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(HeadlessPrintManager)
+
 }  // namespace headless

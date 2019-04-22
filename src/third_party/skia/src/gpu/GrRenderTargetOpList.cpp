@@ -11,9 +11,12 @@
 #include "GrGpu.h"
 #include "GrGpuCommandBuffer.h"
 #include "GrMemoryPool.h"
+#include "GrRecordingContext.h"
+#include "GrRecordingContextPriv.h"
 #include "GrRect.h"
 #include "GrRenderTargetContext.h"
 #include "GrResourceAllocator.h"
+#include "SkExchange.h"
 #include "SkRectPriv.h"
 #include "SkTraceEvent.h"
 #include "ops/GrClearOp.h"
@@ -114,10 +117,14 @@ inline void GrRenderTargetOpList::OpChain::List::validate() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-GrRenderTargetOpList::OpChain::OpChain(std::unique_ptr<GrOp> op, GrAppliedClip* appliedClip,
-                                       const DstProxy* dstProxy)
-        : fList{std::move(op)}, fAppliedClip(appliedClip) {
-    if (dstProxy) {
+GrRenderTargetOpList::OpChain::OpChain(std::unique_ptr<GrOp> op,
+                                       GrProcessorSet::Analysis processorAnalysis,
+                                       GrAppliedClip* appliedClip, const DstProxy* dstProxy)
+        : fList{std::move(op)}
+        , fProcessorAnalysis(processorAnalysis)
+        , fAppliedClip(appliedClip) {
+    if (fProcessorAnalysis.requiresDstTexture()) {
+        SkASSERT(dstProxy && dstProxy->proxy());
         fDstProxy = *dstProxy;
     }
     fBounds = fList.head()->bounds();
@@ -177,7 +184,7 @@ GrRenderTargetOpList::OpChain::List GrRenderTargetOpList::OpChain::DoConcat(
                 auto result = a->combineIfPossible(chainB.head(), caps);
                 SkASSERT(result != GrOp::CombineResult::kCannotCombine);
                 merged = (result == GrOp::CombineResult::kMerged);
-                GrOP_INFO("\t\t%d: (%s opID: %u) -> Combining with (%s, opID: %u)\n", i,
+                GrOP_INFO("\t\t: (%s opID: %u) -> Combining with (%s, opID: %u)\n",
                           chainB.head()->name(), chainB.head()->uniqueID(), a->name(),
                           a->uniqueID());
             }
@@ -221,66 +228,79 @@ GrRenderTargetOpList::OpChain::List GrRenderTargetOpList::OpChain::DoConcat(
     return chainA;
 }
 
-// Attempts to concatenate two chains and merge ops across the chains. Upon failure the original
-// chain heads and tails are returned. Upon success the new chain's head and tail are returned
-// (and null for the second head/tail).
-std::tuple<GrRenderTargetOpList::OpChain::List, GrRenderTargetOpList::OpChain::List>
-GrRenderTargetOpList::OpChain::TryConcat(List chainA, const DstProxy& dstProxyA,
-                                         const GrAppliedClip* appliedClipA, List chainB,
-                                         const DstProxy& dstProxyB,
-                                         const GrAppliedClip* appliedClipB, const GrCaps& caps,
-                                         GrOpMemoryPool* pool, GrAuditTrail* auditTrail) {
-    SkASSERT(!chainA.empty());
-    SkASSERT(!chainB.empty());
+// Attempts to concatenate the given chain onto our own and merge ops across the chains. Returns
+// whether the operation succeeded. On success, the provided list will be returned empty.
+bool GrRenderTargetOpList::OpChain::tryConcat(
+        List* list, GrProcessorSet::Analysis processorAnalysis, const DstProxy& dstProxy,
+        const GrAppliedClip* appliedClip, const SkRect& bounds, const GrCaps& caps,
+        GrOpMemoryPool* pool, GrAuditTrail* auditTrail) {
+    SkASSERT(!fList.empty());
+    SkASSERT(!list->empty());
+    SkASSERT(fProcessorAnalysis.requiresDstTexture() == SkToBool(fDstProxy.proxy()));
+    SkASSERT(processorAnalysis.requiresDstTexture() == SkToBool(dstProxy.proxy()));
     // All returns use explicit tuple constructor rather than {a, b} to work around old GCC bug.
-    if (chainA.head()->classID() != chainB.head()->classID() ||
-        SkToBool(appliedClipA) != SkToBool(appliedClipB) ||
-        (appliedClipA && *appliedClipA != *appliedClipB) ||
-        SkToBool(dstProxyA.proxy()) != SkToBool(dstProxyB.proxy()) ||
-        (dstProxyA.proxy() && dstProxyA != dstProxyB)) {
-        return std::tuple<List, List>(std::move(chainA), std::move(chainB));
+    if (fList.head()->classID() != list->head()->classID() ||
+        SkToBool(fAppliedClip) != SkToBool(appliedClip) ||
+        (fAppliedClip && *fAppliedClip != *appliedClip) ||
+        (fProcessorAnalysis.requiresNonOverlappingDraws() !=
+                processorAnalysis.requiresNonOverlappingDraws()) ||
+        (fProcessorAnalysis.requiresNonOverlappingDraws() &&
+                // Non-overlaping draws are only required when Ganesh will either insert a barrier,
+                // or read back a new dst texture between draws. In either case, we can neither
+                // chain nor combine overlapping Ops.
+                GrRectsTouchOrOverlap(fBounds, bounds)) ||
+        (fProcessorAnalysis.requiresDstTexture() != processorAnalysis.requiresDstTexture()) ||
+        (fProcessorAnalysis.requiresDstTexture() && fDstProxy != dstProxy)) {
+        return false;
     }
+
     SkDEBUGCODE(bool first = true;)
     do {
-        switch (chainA.tail()->combineIfPossible(chainB.head(), caps)) {
+        switch (fList.tail()->combineIfPossible(list->head(), caps)) {
             case GrOp::CombineResult::kCannotCombine:
                 // If an op supports chaining then it is required that chaining is transitive and
                 // that if any two ops in two different chains can merge then the two chains
                 // may also be chained together. Thus, we should only hit this on the first
                 // iteration.
                 SkASSERT(first);
-                return std::tuple<List, List>(std::move(chainA), std::move(chainB));
+                return false;
             case GrOp::CombineResult::kMayChain:
-                chainA = DoConcat(std::move(chainA), std::move(chainB), caps, pool, auditTrail);
-                return std::tuple<List, List>(std::move(chainA), List());
+                fList = DoConcat(std::move(fList), skstd::exchange(*list, List()), caps, pool,
+                                 auditTrail);
+                // The above exchange cleared out 'list'. The list needs to be empty now for the
+                // loop to terminate.
+                SkASSERT(list->empty());
+                break;
             case GrOp::CombineResult::kMerged: {
-                GrOP_INFO("\t\t%d: (%s opID: %u) -> Combining with (%s, opID: %u)\n", i,
-                          chainB.tail()->name(), chainB.tail()->uniqueID(), chainB.head()->name(),
-                          chainB.head()->uniqueID());
-                GR_AUDIT_TRAIL_OPS_RESULT_COMBINED(auditTrail, chainA.tail(), chainB.head());
-                pool->release(chainB.popHead());
+                GrOP_INFO("\t\t: (%s opID: %u) -> Combining with (%s, opID: %u)\n",
+                          list->tail()->name(), list->tail()->uniqueID(), list->head()->name(),
+                          list->head()->uniqueID());
+                GR_AUDIT_TRAIL_OPS_RESULT_COMBINED(auditTrail, fList.tail(), list->head());
+                pool->release(list->popHead());
                 break;
             }
         }
         SkDEBUGCODE(first = false);
-    } while (!chainB.empty());
-    // All the ops from chain b merged.
-    return std::tuple<List, List>(std::move(chainA), List());
+    } while (!list->empty());
+
+    // The new ops were successfully merged and/or chained onto our own.
+    fBounds.joinPossiblyEmptyRect(bounds);
+    return true;
 }
 
 bool GrRenderTargetOpList::OpChain::prependChain(OpChain* that, const GrCaps& caps,
                                                  GrOpMemoryPool* pool, GrAuditTrail* auditTrail) {
-    std::tie(that->fList, fList) = TryConcat(
-            std::move(that->fList), that->dstProxy(), that->appliedClip(), std::move(fList),
-            this->dstProxy(), this->appliedClip(), caps, pool, auditTrail);
-    if (!fList.empty()) {
+    if (!that->tryConcat(
+            &fList, fProcessorAnalysis, fDstProxy, fAppliedClip, fBounds, caps, pool, auditTrail)) {
         this->validate();
         // append failed
         return false;
     }
+
     // 'that' owns the combined chain. Move it into 'this'.
+    SkASSERT(fList.empty());
     fList = std::move(that->fList);
-    fBounds.joinPossiblyEmptyRect(that->fBounds);
+    fBounds = that->fBounds;
 
     that->fDstProxy.setProxy(nullptr);
     if (that->fAppliedClip) {
@@ -292,12 +312,10 @@ bool GrRenderTargetOpList::OpChain::prependChain(OpChain* that, const GrCaps& ca
     return true;
 }
 
-std::unique_ptr<GrOp> GrRenderTargetOpList::OpChain::appendOp(std::unique_ptr<GrOp> op,
-                                                              const DstProxy* dstProxy,
-                                                              const GrAppliedClip* appliedClip,
-                                                              const GrCaps& caps,
-                                                              GrOpMemoryPool* pool,
-                                                              GrAuditTrail* auditTrail) {
+std::unique_ptr<GrOp> GrRenderTargetOpList::OpChain::appendOp(
+        std::unique_ptr<GrOp> op, GrProcessorSet::Analysis processorAnalysis,
+        const DstProxy* dstProxy, const GrAppliedClip* appliedClip, const GrCaps& caps,
+        GrOpMemoryPool* pool, GrAuditTrail* auditTrail) {
     const GrXferProcessor::DstProxy noDstProxy;
     if (!dstProxy) {
         dstProxy = &noDstProxy;
@@ -305,15 +323,14 @@ std::unique_ptr<GrOp> GrRenderTargetOpList::OpChain::appendOp(std::unique_ptr<Gr
     SkASSERT(op->isChainHead() && op->isChainTail());
     SkRect opBounds = op->bounds();
     List chain(std::move(op));
-    std::tie(fList, chain) =
-            TryConcat(std::move(fList), this->dstProxy(), fAppliedClip, std::move(chain), *dstProxy,
-                      appliedClip, caps, pool, auditTrail);
-    if (!chain.empty()) {
+    if (!this->tryConcat(
+            &chain, processorAnalysis, *dstProxy, appliedClip, opBounds, caps, pool, auditTrail)) {
         // append failed, give the op back to the caller.
         this->validate();
         return chain.popHead();
     }
-    fBounds.joinPossiblyEmptyRect(opBounds);
+
+    SkASSERT(chain.empty());
     this->validate();
     return nullptr;
 }
@@ -333,9 +350,9 @@ inline void GrRenderTargetOpList::OpChain::validate() const {
 
 GrRenderTargetOpList::GrRenderTargetOpList(GrResourceProvider* resourceProvider,
                                            sk_sp<GrOpMemoryPool> opMemoryPool,
-                                           GrRenderTargetProxy* proxy,
+                                           sk_sp<GrRenderTargetProxy> proxy,
                                            GrAuditTrail* auditTrail)
-        : INHERITED(resourceProvider, std::move(opMemoryPool), proxy, auditTrail)
+        : INHERITED(resourceProvider, std::move(opMemoryPool), std::move(proxy), auditTrail)
         , fLastClipStackGenID(SK_InvalidUniqueID)
         SkDEBUGCODE(, fNumClips(0)) {
 }
@@ -458,6 +475,12 @@ bool GrRenderTargetOpList::onExecute(GrOpFlushState* flushState) {
 
     // TODO: at the very least, we want the stencil store op to always be discard (at this
     // level). In Vulkan, sub-command buffers would still need to load & store the stencil buffer.
+
+    // Make sure load ops are not kClear if the GPU needs to use draws for clears
+    SkASSERT(fColorLoadOp != GrLoadOp::kClear ||
+             !flushState->gpu()->caps()->performColorClearsAsDraws());
+    SkASSERT(fStencilLoadOp != GrLoadOp::kClear ||
+             !flushState->gpu()->caps()->performStencilClearsAsDraws());
     GrGpuRTCommandBuffer* commandBuffer = create_command_buffer(
                                                     flushState->gpu(),
                                                     fTarget.get()->peekRenderTarget(),
@@ -513,35 +536,49 @@ void GrRenderTargetOpList::discard() {
     }
 }
 
-void GrRenderTargetOpList::fullClear(GrContext* context, const SkPMColor4f& color) {
+void GrRenderTargetOpList::setStencilLoadOp(GrLoadOp op) {
+    fStencilLoadOp = op;
+}
 
-    // This is conservative. If the opList is marked as needing a stencil buffer then there
-    // may be a prior op that writes to the stencil buffer. Although the clear will ignore the
-    // stencil buffer, following draw ops may not so we can't get rid of all the preceding ops.
-    // Beware! If we ever add any ops that have a side effect beyond modifying the stencil
-    // buffer we will need a more elaborate tracking system (skbug.com/7002).
-    if (this->isEmpty() || !fTarget.get()->asRenderTargetProxy()->needsStencil()) {
+void GrRenderTargetOpList::setColorLoadOp(GrLoadOp op, const SkPMColor4f& color) {
+    fColorLoadOp = op;
+    fLoadClearColor = color;
+}
+
+bool GrRenderTargetOpList::resetForFullscreenClear() {
+    // Mark the color load op as discard (this may be followed by a clearColorOnLoad call to make
+    // the load op kClear, or it may be followed by an explicit op). In the event of an absClear()
+    // after a regular clear(), we could end up with a clear load op and a real clear op in the list
+    // if the load op were not reset here.
+    fColorLoadOp = GrLoadOp::kDiscard;
+
+    // Regardless of how the clear is implemented (native clear or a fullscreen quad), all prior ops
+    // would be overwritten, so discard them entirely. The one exception is if the opList is marked
+    // as needing a stencil buffer then there may be a prior op that writes to the stencil buffer.
+    // Although the clear will ignore the stencil buffer, following draw ops may not so we can't get
+    // rid of all the preceding ops. Beware! If we ever add any ops that have a side effect beyond
+    // modifying the stencil buffer we will need a more elaborate tracking system (skbug.com/7002).
+    // Additionally, if we previously recorded a wait op, we cannot delete the wait op. Until we
+    // track the wait ops separately from normal ops, we have to avoid clearing out any ops.
+    if (this->isEmpty() || (!fTarget.get()->asRenderTargetProxy()->needsStencil() && !fHasWaitOp)) {
         this->deleteOps();
         fDeferredProxies.reset();
-        fColorLoadOp = GrLoadOp::kClear;
-        fLoadClearColor = color;
-        return;
+
+        // If the opList is using a render target which wraps a vulkan command buffer, we can't do a
+        // clear load since we cannot change the render pass that we are using. Thus we fall back to
+        // making a clear op in this case.
+        return !fTarget.get()->asRenderTargetProxy()->wrapsVkSecondaryCB();
     }
 
-    std::unique_ptr<GrClearOp> op(GrClearOp::Make(context, GrFixedClip::Disabled(),
-                                                  color, fTarget.get()));
-    if (!op) {
-        return;
-    }
-
-    this->recordOp(std::move(op), *context->contextPriv().caps());
+    // Could not empty the list, so an op must be added to handle the clear
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // This closely parallels GrTextureOpList::copySurface but renderTargetOpLists
 // also store the applied clip and dest proxy with the op
-bool GrRenderTargetOpList::copySurface(GrContext* context,
+bool GrRenderTargetOpList::copySurface(GrRecordingContext* context,
                                        GrSurfaceProxy* dst,
                                        GrSurfaceProxy* src,
                                        const SkIRect& srcRect,
@@ -552,7 +589,7 @@ bool GrRenderTargetOpList::copySurface(GrContext* context,
         return false;
     }
 
-    this->addOp(std::move(op), *context->contextPriv().caps());
+    this->addOp(std::move(op), *context->priv().caps());
     return true;
 }
 
@@ -573,8 +610,22 @@ void GrRenderTargetOpList::purgeOpsWithUninstantiatedProxies() {
     }
 }
 
+bool GrRenderTargetOpList::onIsUsed(GrSurfaceProxy* proxyToCheck) const {
+    bool used = false;
+
+    auto visit = [ proxyToCheck, &used ] (GrSurfaceProxy* p) {
+        if (p == proxyToCheck) {
+            used = true;
+        }
+    };
+    for (const OpChain& recordedOp : fOpChains) {
+        recordedOp.visitProxies(visit, GrOp::VisitorType::kOther);
+    }
+
+    return used;
+}
+
 void GrRenderTargetOpList::gatherProxyIntervals(GrResourceAllocator* alloc) const {
-    unsigned int cur = alloc->numOps();
 
     for (int i = 0; i < fDeferredProxies.count(); ++i) {
         SkASSERT(!fDeferredProxies[i]->isInstantiated());
@@ -588,33 +639,35 @@ void GrRenderTargetOpList::gatherProxyIntervals(GrResourceAllocator* alloc) cons
 
     // Add the interval for all the writes to this opList's target
     if (fOpChains.count()) {
+        unsigned int cur = alloc->curOp();
+
         alloc->addInterval(fTarget.get(), cur, cur + fOpChains.count() - 1);
     } else {
         // This can happen if there is a loadOp (e.g., a clear) but no other draws. In this case we
         // still need to add an interval for the destination so we create a fake op# for
         // the missing clear op.
-        alloc->addInterval(fTarget.get());
+        alloc->addInterval(fTarget.get(), alloc->curOp(), alloc->curOp());
         alloc->incOps();
     }
 
     auto gather = [ alloc SkDEBUGCODE(, this) ] (GrSurfaceProxy* p) {
-        alloc->addInterval(p SkDEBUGCODE(, fTarget.get() == p));
+        alloc->addInterval(p, alloc->curOp(), alloc->curOp() SkDEBUGCODE(, fTarget.get() == p));
     };
     for (const OpChain& recordedOp : fOpChains) {
         // only diff from the GrTextureOpList version
         recordedOp.visitProxies(gather, GrOp::VisitorType::kAllocatorGather);
 
-        // Even though the op may have been moved we still need to increment the op count to
+        // Even though the op may have been (re)moved we still need to increment the op count to
         // keep all the math consistent.
         alloc->incOps();
     }
 }
 
-void GrRenderTargetOpList::recordOp(std::unique_ptr<GrOp> op,
-                                    const GrCaps& caps,
-                                    GrAppliedClip* clip,
-                                    const DstProxy* dstProxy) {
+void GrRenderTargetOpList::recordOp(
+        std::unique_ptr<GrOp> op, GrProcessorSet::Analysis processorAnalysis, GrAppliedClip* clip,
+        const DstProxy* dstProxy, const GrCaps& caps) {
     SkDEBUGCODE(op->validate();)
+    SkASSERT(processorAnalysis.requiresDstTexture() == (dstProxy && dstProxy->proxy()));
     SkASSERT(fTarget.get());
 
     // A closed GrOpList should never receive new/more ops
@@ -643,8 +696,8 @@ void GrRenderTargetOpList::recordOp(std::unique_ptr<GrOp> op,
         int i = 0;
         while (true) {
             OpChain& candidate = fOpChains.fromBack(i);
-            op = candidate.appendOp(std::move(op), dstProxy, clip, caps, fOpMemoryPool.get(),
-                                    fAuditTrail);
+            op = candidate.appendOp(std::move(op), processorAnalysis, dstProxy, clip, caps,
+                                    fOpMemoryPool.get(), fAuditTrail);
             if (!op) {
                 return;
             }
@@ -666,7 +719,7 @@ void GrRenderTargetOpList::recordOp(std::unique_ptr<GrOp> op,
         clip = fClipAllocator.make<GrAppliedClip>(std::move(*clip));
         SkDEBUGCODE(fNumClips++;)
     }
-    fOpChains.emplace_back(std::move(op), clip, dstProxy);
+    fOpChains.emplace_back(std::move(op), processorAnalysis, clip, dstProxy);
 }
 
 void GrRenderTargetOpList::forwardCombine(const GrCaps& caps) {

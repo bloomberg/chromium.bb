@@ -8,18 +8,30 @@ declare_args() {
   cros_board = ""
   cros_sdk_version = ""
 }
+declare_args() {
+  # Determines if we're running tests on VMs or on devices.
+  # TODO(crbug.com/866062): Is there a better way to do this?
+  cros_is_vm = cros_board == "amd64-generic"
+}
 
 # Ensure that if one is set, the other is as well.
 assert(cros_board == "" == (cros_sdk_version == ""))
 
-is_chromeos_chrome = cros_board != ""
+# The build is using the Simple Chrome "cros chrome-sdk" to target real hardware
+# or a VM, not linux-chromeos.
+# NOTE: Most test targets in Chrome expect to run under linux-chromeos, so some
+# have compile-time asserts that intentionally fail when this build flag is set.
+# Build and run the tests for linux-chromeos instead.
+# https://chromium.googlesource.com/chromium/src/+/master/docs/chromeos_build_instructions.md
+# https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md
+is_cros_chrome_sdk = cros_board != ""
 
 # Creates a script at $generated_script that can be used to launch a cros VM
 # and optionally run a test within it.
 # Args:
 #   test_exe: Name of test binary located in the out dir. This will get copied
 #       to the VM and executed there.
-#   tast_conditional: Tast conditional to pass to local_test_runner on the VM.
+#   tast_attr_expr: Tast expression to pass to local_test_runner on the VM.
 #   tast_tests: List of Tast tests to run on the VM. Note that when this is
 #       specified, the target name used to invoke this template will be
 #       designated as the "name" of this test and will primarly used for test
@@ -29,19 +41,13 @@ is_chromeos_chrome = cros_board != ""
 #       build dir to the VM after launching it.
 #   runtime_deps_file: Path to file listing runtime deps for the test. If set,
 #       all files listed will be copied to the VM before testing.
-template("generate_vm_runner_script") {
-  _cache_path_prefix =
-      "//build/cros_cache/chrome-sdk/tarballs/${cros_board}+${cros_sdk_version}"
-  _vm_image_path = "${_cache_path_prefix}+chromiumos_qemu_image.tar.xz/"
-  _qemu_dir = "${_cache_path_prefix}+app-emulation/"
-  _firmware_dir = "${_cache_path_prefix}+sys-firmware/"
-
+template("generate_runner_script") {
   forward_variables_from(invoker,
                          [
                            "deploy_chrome",
                            "generated_script",
                            "runtime_deps_file",
-                           "tast_conditional",
+                           "tast_attr_expr",
                            "tast_tests",
                            "testonly",
                            "test_exe",
@@ -50,10 +56,16 @@ template("generate_vm_runner_script") {
     deploy_chrome = false
   }
 
+  # These are the only 2 conditions when ${_cache_path_prefix} is used, so
+  # initialize it in a conditional.
+  if (deploy_chrome || cros_is_vm) {
+    _cache_path_prefix = "//build/cros_cache/chrome-sdk/tarballs/${cros_board}+${cros_sdk_version}"
+  }
+
   assert(defined(generated_script),
          "Must specify where to place generated test launcher script via " +
              "'generated_script'")
-  is_tast = defined(tast_conditional) || defined(tast_tests)
+  is_tast = defined(tast_attr_expr) || defined(tast_tests)
   assert(!(is_tast && defined(test_exe)),
          "Tast tests are invoked from binaries shipped with the VM image. " +
              "There should be no locally built binary needed.")
@@ -62,7 +74,7 @@ template("generate_vm_runner_script") {
     if (defined(runtime_deps_file)) {
       write_runtime_deps = runtime_deps_file
     }
-    script = "//build/chromeos/create_vm_test_script.py"
+    script = "//build/chromeos/create_test_runner_script.py"
 
     outputs = [
       generated_script,
@@ -92,10 +104,26 @@ template("generate_vm_runner_script") {
       # as data here so that changes to it will trigger analyze.
       "//chromeos/CHROMEOS_LKGM",
       "//third_party/chromite/",
-      _firmware_dir,
-      _vm_image_path,
-      _qemu_dir,
     ]
+
+    # Add the VM/QEMU-launching bits if needed.
+    if (cros_is_vm) {
+      assert(defined(_cache_path_prefix))
+      _vm_image_path = "${_cache_path_prefix}+chromiumos_qemu_image.tar.xz/"
+      _qemu_dir = "${_cache_path_prefix}+app-emulation/"
+      _firmware_dir = "${_cache_path_prefix}+sys-firmware/"
+      data += [
+        _firmware_dir,
+        _vm_image_path,
+        _qemu_dir,
+      ]
+    }
+    if (is_tast) {
+      data += [
+        "${_cache_path_prefix}+chromeos-base/tast-cmd/",
+        "${_cache_path_prefix}+chromeos-base/tast-remote-tests-cros/",
+      ]
+    }
     if (defined(invoker.data)) {
       deps += invoker.data
     }
@@ -116,17 +144,25 @@ template("generate_vm_runner_script") {
       rebase_path(root_out_dir, root_build_dir),
     ]
 
+    if (cros_is_vm) {
+      args += [ "--use-vm" ]
+    }
+
     if (deploy_chrome) {
       args += [ "--deploy-chrome" ]
 
       # To deploy chrome to the VM, it needs to be stripped down to fit into
       # the VM. This is done by using binutils in the toolchain. So add the
       # toolchain to the data.
-      data += [ "${_cache_path_prefix}+target_toolchain/" ]
+      assert(defined(_cache_path_prefix))
+      data += [
+        "${_cache_path_prefix}+environment_chromeos-base_chromeos-chrome.tar.xz",
+        "${_cache_path_prefix}+target_toolchain/",
+      ]
     }
 
-    # When --test-exe is specified, run_vm_test will push the exe to the VM and
-    # execute it. Otherwise it wraps a host-side command and just takes care
+    # When --test-exe is specified, test_runner.py will push the exe to the VM
+    # and execute it. Otherwise it wraps a host-side command and just takes care
     # launching & tearing-down the VM.
     if (defined(test_exe)) {
       args += [
@@ -140,16 +176,16 @@ template("generate_vm_runner_script") {
         ]
       }
     } else if (is_tast) {
-      # When --tast-tests is specified, run_vm_test will call local_test_runner
-      # on the VM to run the set of tests.
+      # When --tast-tests is specified, test_runner.py will call
+      # local_test_runner on the VM to run the set of tests.
       args += [
         "--suite-name",
         target_name,
       ]
-      if (defined(tast_conditional)) {
+      if (defined(tast_attr_expr)) {
         args += [
-          "--tast-conditional",
-          tast_conditional,
+          "--tast-attr-expr",
+          tast_attr_expr,
         ]
       } else {
         foreach(test, tast_tests) {
@@ -164,16 +200,30 @@ template("generate_vm_runner_script") {
 }
 
 template("tast_test") {
-  assert(defined(invoker.tast_conditional) != defined(invoker.tast_tests),
-         "Specify one of tast_tests or tast_conditional.")
+  forward_variables_from(invoker, "*")
 
-  generate_vm_runner_script(target_name) {
-    testonly = true
-    if (defined(invoker.tast_conditional)) {
-      tast_conditional = invoker.tast_conditional
-    } else if (defined(invoker.tast_tests)) {
-      tast_tests = invoker.tast_tests
+  # Default the expression to match any chrome-related test.
+  if (!defined(tast_attr_expr) && !defined(tast_tests)) {
+    tast_attr_expr = "!disabled && !\"group:*\" && !informational" +
+                     " && (\"dep:chrome\" || \"dep:chrome_login\")"
+  } else {
+    assert(defined(tast_attr_expr) != defined(tast_tests),
+           "Specify one of tast_tests or tast_attr_expr.")
+  }
+
+  # Append any disabled tests to the expression.
+  if (defined(tast_disabled_tests)) {
+    assert(defined(tast_attr_expr),
+           "tast_attr_expr must be used when specifying tast_disabled_tests.")
+    foreach(test, tast_disabled_tests) {
+      tast_attr_expr += " && !\"name:${test}\""
     }
+  }
+  if (defined(tast_attr_expr)) {
+    tast_attr_expr = "( " + tast_attr_expr + " )"
+  }
+  generate_runner_script(target_name) {
+    testonly = true
     generated_script = "$root_build_dir/bin/run_${target_name}"
     runtime_deps_file = "$root_out_dir/${target_name}.runtime_deps"
     deploy_chrome = true

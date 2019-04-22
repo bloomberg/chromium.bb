@@ -319,6 +319,22 @@ CROS_WORKON_LOCALNAME=%s
     self.assertEquals(info.subtrees, [os.path.join(
         self.tempdir, 'platform', fake_localname)])
 
+  def testParseAlwaysLive(self):
+    """Tests if an ebuild which is always live is correctly handled."""
+    fake_project = 'my_project1'
+    fake_localname = 'foo'
+    fake_ebuild_contents = """
+CROS_WORKON_PROJECT=%s
+CROS_WORKON_LOCALNAME=%s
+CROS_WORKON_ALWAYS_LIVE=1
+    """ % (fake_project, fake_localname)
+    info = self._MockParseWorkonVariables(
+        [fake_project], [], [fake_localname], fake_ebuild_contents)
+    self.assertEquals(info.projects, [])
+    self.assertEquals(info.srcdirs, [])
+    self.assertEquals(info.srcdirs, [])
+    self.assertEquals(info.subtrees, [])
+
   def testParseArrayWorkonVariables(self):
     """Tests if ebuilds in an array format are correctly parsed."""
     fake_projects = ['my_project1', 'my_project2', 'my_project3']
@@ -716,7 +732,9 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
-    self.PatchObject(portage_util.EBuild, '_RunCommand', return_value='1122')
+    self.PatchObject(cros_build_lib, 'RunCommand',
+                     return_value=cros_build_lib.CommandResult(
+                         returncode=0, output='1122', error='STDERR'))
     self.assertEqual('1122', self.m_ebuild.GetVersion(None, None, '1234'))
     # Sanity check.
     self.assertEqual(exists.call_count, 1)
@@ -727,20 +745,39 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
-    run = self.PatchObject(portage_util.EBuild, '_RunCommand')
+    run = self.PatchObject(cros_build_lib, 'RunCommand')
+    readfile = self.PatchObject(osutils, 'ReadFile')
 
     # Reject no output.
-    run.return_value = ''
-    self.assertRaises(SystemExit, self.m_ebuild.GetVersion, None, None, '1234')
+    run.return_value = cros_build_lib.CommandResult(
+        returncode=0, output='', error='STDERR')
+    self.assertRaises(portage_util.Error,
+                      self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
-    self.assertEqual(exists.call_count, 1)
+    self.assertEqual(exists.call_count, 2)
     exists.reset_mock()
+    self.assertEqual(readfile.call_count, 1)
+    readfile.reset_mock()
 
     # Reject simple output.
-    run.return_value = '\n'
-    self.assertRaises(SystemExit, self.m_ebuild.GetVersion, None, None, '1234')
+    run.return_value = cros_build_lib.CommandResult(
+        returncode=0, output='\n', error='STDERR')
+    self.assertRaises(portage_util.Error,
+                      self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
-    self.assertEqual(exists.call_count, 1)
+    self.assertEqual(exists.call_count, 2)
+    exists.reset_mock()
+    self.assertEqual(readfile.call_count, 1)
+    readfile.reset_mock()
+
+    # Reject error.
+    run.return_value = cros_build_lib.CommandResult(
+        returncode=1, output='FAIL\n', error='STDERR')
+    self.assertRaises(portage_util.Error,
+                      self.m_ebuild.GetVersion, None, None, '1234')
+    # Sanity check.
+    self.assertEqual(exists.call_count, 2)
+    self.assertEqual(readfile.call_count, 1)
 
   def testVersionScriptTooHighVersion(self):
     """Reject scripts that output high version numbers."""
@@ -748,7 +785,9 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
-    self.PatchObject(portage_util.EBuild, '_RunCommand', return_value='999999')
+    self.PatchObject(cros_build_lib, 'RunCommand',
+                     return_value=cros_build_lib.CommandResult(
+                         returncode=0, output='999999', error='STDERR'))
     self.assertRaises(ValueError, self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
     self.assertEqual(exists.call_count, 1)
@@ -759,7 +798,9 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
-    self.PatchObject(portage_util.EBuild, '_RunCommand', return_value='abcd')
+    self.PatchObject(cros_build_lib, 'RunCommand',
+                     return_value=cros_build_lib.CommandResult(
+                         returncode=0, output='abcd', error='STDERR'))
     self.assertRaises(ValueError, self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
     self.assertEqual(exists.call_count, 1)
@@ -1473,3 +1514,93 @@ class PortageqMatchTest(cros_test_lib.MockTestCase):
 
     self.assertIsInstance(portage_util.PortageqMatch('cat/pkg'),
                           portage_util.CPV)
+
+
+class FindEbuildTest(cros_test_lib.RunCommandTestCase):
+  """Tests for FindEbuildsForPackages and FindEbuildsForPackages."""
+
+  def testFindEbuildsForPackagesReturnResultsSimple(self):
+    equery_output = ('/chromeos-overlay/misc/foo/foo.ebuild\n'
+                     '/chromeos-overlay/misc/bar/bar.ebuild\n')
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which', 'misc/foo', 'misc/bar'],
+        output=equery_output)
+    self.assertEqual(
+        portage_util.FindEbuildsForPackages(['misc/foo', 'misc/bar'],
+                                            sysroot='/build/nami'),
+        {'misc/bar': '/chromeos-overlay/misc/bar/bar.ebuild',
+         'misc/foo': '/chromeos-overlay/misc/foo/foo.ebuild'})
+
+  def testFindEbuildsForPackagesWithoutCategoryReturnResults(self):
+    equery_output = ('/chromeos-overlay/misc/foo/foo.ebuild\n'
+                     '/chromeos-overlay/misc/bar/bar.ebuild\n')
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which', 'misc/foo', 'bar'],
+        output=equery_output)
+    self.assertEqual(
+        portage_util.FindEbuildsForPackages(['misc/foo', 'bar'],
+                                            sysroot='/build/nami'),
+        {'bar': '/chromeos-overlay/misc/bar/bar.ebuild',
+         'misc/foo': '/chromeos-overlay/misc/foo/foo.ebuild'})
+
+  def testFindEbuildsForPackagesReturnResultsComplexPackages(self):
+    ebuild_path = (
+        '/portage-stable/sys-libs/timezone-data/timezone-data-2018i.ebuild')
+    equery_output = '\n'.join([ebuild_path] * 4)
+    packages = [
+        # CATEGORY/PN
+        'sys-libs/timezone-data',
+        # CATEGORY/P
+        'sys-libs/timezone-data-2018i',
+        # CATEGORY/PN:SLOT
+        'sys-libs/timezone-data:0',
+        # CATEGORY/P:SLOT
+        'sys-libs/timezone-data-2018i:0',
+    ]
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which'] + packages,
+        output=equery_output)
+    self.assertEqual(
+        portage_util.FindEbuildsForPackages(packages,
+                                            sysroot='/build/nami'),
+        {'sys-libs/timezone-data': ebuild_path,
+         'sys-libs/timezone-data-2018i:0': ebuild_path,
+         'sys-libs/timezone-data:0': ebuild_path,
+         'sys-libs/timezone-data-2018i': ebuild_path,
+        })
+
+  def testFindEbuildsForPackagesReturnNone(self):
+    # Result for package 'bar' is missing.
+    equery_output = ('/chromeos-overlay/bar/bar.ebuild\n')
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which', 'foo', 'bar'],
+        output=equery_output, returncode=1)
+    self.assertEqual(portage_util.FindEbuildsForPackages(
+        ['foo', 'bar'], sysroot='/build/nami'), {})
+
+  def testFindEbuildsForPackagesInvalidEbuildsOrder(self):
+    equery_output = ('/chromeos-overlay/bar/bar.ebuild\n'
+                     '/chromeos-overlay/foo/foo.ebuild\n')
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which', 'foo', 'bar'],
+        output=equery_output)
+    with self.assertRaises(AssertionError):
+      portage_util.FindEbuildsForPackages(
+          ['foo', 'bar'], sysroot='/build/nami')
+
+  def testFindEbuildForPackageReturnResults(self):
+    equery_output = '/chromeos-overlay/misc/foo/foo-9999.ebuild\n'
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which', 'misc/foo'],
+        output=equery_output)
+    self.assertEqual(
+        portage_util.FindEbuildForPackage('misc/foo', sysroot='/build/nami'),
+        '/chromeos-overlay/misc/foo/foo-9999.ebuild')
+
+  def testFindEbuildForPackageReturnNone(self):
+    equery_output = "Cannot find ebuild for package 'foo'\n"
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which', 'foo'],
+        output=equery_output, returncode=1)
+    self.assertEqual(portage_util.FindEbuildForPackage(
+        'foo', sysroot='/build/nami'), None)

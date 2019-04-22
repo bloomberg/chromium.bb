@@ -18,7 +18,6 @@ Text details for v8.compile: v8-cache-worker.js:1
 v8.compile Properties:
 {
     data : {
-        cacheProduceOptions : "full code"
         columnNumber : 0
         lineNumber : 0
         notStreamedReason : "script has code-cache available"

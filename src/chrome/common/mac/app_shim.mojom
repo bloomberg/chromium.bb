@@ -34,6 +34,11 @@ interface AppShim {
       associated content.mojom.NSViewBridgeFactory&
           content_ns_views_bridge_factory);
 
+  // Initialize the command handler for the specified BridgedNativeWidget. This
+  // method exists at this scope (as opposed to in views_bridge_mac) because it
+  // creates chrome-scoped objects that implement views_bridge_mac interfaces.
+  CreateCommandDispatcherForWidget(uint64 widget_id);
+
   // Instructs the shim to hide the app.
   Hide();
 
@@ -42,6 +47,9 @@ interface AppShim {
 
   // Instructs the shim to request or cancel user attention.
   SetUserAttention(AppShimAttentionType attention_type);
+
+  // Instructs the shim to set its badge label.
+  SetBadgeLabel(string badge_label);
 };
 
 // Interface through which the a process communicates to the browser process.

@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/pickle.h"
@@ -357,7 +358,7 @@ void BrowserPluginGuest::InitInternal(
       new_view->OnGuestAttached(owner_web_contents_->GetView());
   }
 
-  RendererPreferences* renderer_prefs =
+  blink::mojom::RendererPreferences* renderer_prefs =
       GetWebContents()->GetMutableRendererPrefs();
   std::string guest_user_agent_override = renderer_prefs->user_agent_override;
   // Copy renderer preferences (and nothing else) from the embedder's
@@ -1108,10 +1109,10 @@ void BrowserPluginGuest::OnSynchronizeVisualProperties(
   // We could add functionality to set a specific capture sequence number on the
   // |view|, but knowing that it's changed is sufficient for us simply request
   // that our RenderWidgetHostView synchronizes its surfaces. Note that this
-  // should only happen during layout tests, since that is the only call that
+  // should only happen during web tests, since that is the only call that
   // should trigger the capture sequence number to change.
   if (capture_sequence_number_changed)
-    view->EnsureSurfaceSynchronizedForLayoutTest();
+    view->EnsureSurfaceSynchronizedForWebTest();
 
   RenderWidgetHostImpl* render_widget_host =
       RenderWidgetHostImpl::From(view->GetRenderWidgetHost());

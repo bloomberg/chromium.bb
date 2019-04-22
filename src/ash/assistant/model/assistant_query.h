@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -20,24 +21,43 @@ enum class AssistantQueryType {
   kVoice,  // See AssistantVoiceQuery.
 };
 
+// Defines possible source of an Assistant query. These values are persisted
+// to logs. Entries should not be renumbered and numeric values should never
+// be reused. Only append to this enum is allowed if the possible source grows.
+enum class AssistantQuerySource {
+  kUnspecified = 0,
+  kDeepLink = 1,
+  kDialogPlateTextField = 2,
+  kStylus = 3,
+  kSuggestionChip = 4,
+  kVoiceInput = 5,
+  kMaxValue = kVoiceInput
+};
+
 // AssistantQuery --------------------------------------------------------------
 
 // Base class for an Assistant query.
-class AssistantQuery {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantQuery {
  public:
   virtual ~AssistantQuery() = default;
 
   // Returns the type for the query.
   AssistantQueryType type() const { return type_; }
 
+  // Returns the input source for the query.
+  AssistantQuerySource source() const { return source_; }
+
   // Returns true if the query is empty, false otherwise.
   virtual bool Empty() const = 0;
 
  protected:
-  explicit AssistantQuery(AssistantQueryType type) : type_(type) {}
+  AssistantQuery(AssistantQueryType type, AssistantQuerySource source)
+      : type_(type), source_(source) {}
 
  private:
   const AssistantQueryType type_;
+
+  const AssistantQuerySource source_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantQuery);
 };
@@ -45,9 +65,12 @@ class AssistantQuery {
 // AssistantNullQuery ----------------------------------------------------------
 
 // An null Assistant query used to signify the absence of an Assistant query.
-class AssistantNullQuery : public AssistantQuery {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNullQuery
+    : public AssistantQuery {
  public:
-  AssistantNullQuery() : AssistantQuery(AssistantQueryType::kNull) {}
+  AssistantNullQuery()
+      : AssistantQuery(AssistantQueryType::kNull,
+                       AssistantQuerySource::kUnspecified) {}
 
   ~AssistantNullQuery() override = default;
 
@@ -61,10 +84,13 @@ class AssistantNullQuery : public AssistantQuery {
 // AssistantTextQuery ----------------------------------------------------------
 
 // An Assistant text query.
-class AssistantTextQuery : public AssistantQuery {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantTextQuery
+    : public AssistantQuery {
  public:
-  explicit AssistantTextQuery(const std::string& text = std::string())
-      : AssistantQuery(AssistantQueryType::kText), text_(text) {}
+  AssistantTextQuery(
+      const std::string& text = std::string(),
+      AssistantQuerySource source = AssistantQuerySource::kUnspecified)
+      : AssistantQuery(AssistantQueryType::kText, source), text_(text) {}
 
   ~AssistantTextQuery() override = default;
 
@@ -88,13 +114,15 @@ class AssistantTextQuery : public AssistantQuery {
 // recognition improves, both the high and low confidence portions of the query
 // will be non-empty. When speech is fully recognized, only the high confidence
 // portion will be populated.
-class AssistantVoiceQuery : public AssistantQuery {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantVoiceQuery
+    : public AssistantQuery {
  public:
   AssistantVoiceQuery() : AssistantVoiceQuery(std::string(), std::string()) {}
 
   AssistantVoiceQuery(const std::string& high_confidence_speech,
                       const std::string& low_confidence_speech = std::string())
-      : AssistantQuery(AssistantQueryType::kVoice),
+      : AssistantQuery(AssistantQueryType::kVoice,
+                       AssistantQuerySource::kVoiceInput),
         high_confidence_speech_(high_confidence_speech),
         low_confidence_speech_(low_confidence_speech) {}
 

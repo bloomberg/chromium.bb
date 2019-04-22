@@ -29,10 +29,11 @@ BlobNativeHandler::BlobNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {}
 
 void BlobNativeHandler::AddRoutes() {
-  RouteHandlerFunction("GetBlobUuid", base::Bind(&GetBlobUuid));
-  RouteHandlerFunction("TakeBrowserProcessBlob",
-                       base::Bind(&BlobNativeHandler::TakeBrowserProcessBlob,
-                                  base::Unretained(this)));
+  RouteHandlerFunction("GetBlobUuid", base::BindRepeating(&GetBlobUuid));
+  RouteHandlerFunction(
+      "TakeBrowserProcessBlob",
+      base::BindRepeating(&BlobNativeHandler::TakeBrowserProcessBlob,
+                          base::Unretained(this)));
 }
 
 // Take ownership of a Blob created on the browser process. Expects the Blob's

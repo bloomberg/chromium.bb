@@ -22,20 +22,7 @@
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-// Default values for the finch parameters. (used when the corresponding finch
-// parameter does not exist.)
-const int kDefaultAutoAlwaysThreshold = 5;
-const int kDefaultAutoNeverThreshold = 10;
-const int kDefaultMaxNumberOfAutoAlways = 2;
-const int kDefaultMaxNumberOfAutoNever = 2;
-
 // Finch parameter names:
-const char kTranslateAutoAlwaysThreshold[] = "translate_auto_always_threshold";
-const char kTranslateAutoNeverThreshold[] = "translate_auto_never_threshold";
-const char kTranslateMaxNumberOfAutoAlways[] =
-    "translate_max_number_of_auto_always";
-const char kTranslateMaxNumberOfAutoNever[] =
-    "translate_max_number_of_auto_never";
 const char kTranslateTabDefaultTextColor[] = "translate_tab_default_text_color";
 
 // ChromeTranslateClient
@@ -95,17 +82,10 @@ void TranslateCompactInfoBar::ProcessButton(int action) {
   if (action == InfoBarAndroid::ACTION_TRANSLATE) {
     action_flags_ |= FLAG_TRANSLATE;
     delegate->Translate();
-    if (!delegate->ShouldAlwaysTranslate() && ShouldAutoAlwaysTranslate()) {
+    if (delegate->ShouldAutoAlwaysTranslate()) {
       JNIEnv* env = base::android::AttachCurrentThread();
       Java_TranslateCompactInfoBar_setAutoAlwaysTranslate(env,
                                                           GetJavaInfoBar());
-
-      // Auto-always is triggered by the line above.  Need to increment the
-      // auto-always counter.
-      delegate->IncrementTranslationAutoAlwaysCount();
-      // Reset translateAcceptedCount so that auto-always could be triggered
-      // again.
-      delegate->ResetTranslationAcceptedCount();
     }
   } else if (action == InfoBarAndroid::ACTION_TRANSLATE_SHOW_ORIGINAL) {
     action_flags_ |= FLAG_REVERT;
@@ -159,21 +139,17 @@ void TranslateCompactInfoBar::ApplyBoolTranslateOption(
     if (value && delegate->IsTranslatableLanguageByPrefs()) {
       action_flags_ |= FLAG_NEVER_LANGUAGE;
       delegate->ToggleTranslatableLanguageByPrefs();
+      RemoveSelf();
     }
   } else if (option == TranslateUtils::OPTION_NEVER_TRANSLATE_SITE) {
     if (value && !delegate->IsSiteBlacklisted()) {
       action_flags_ |= FLAG_NEVER_SITE;
       delegate->ToggleSiteBlacklist();
+      RemoveSelf();
     }
   } else {
     DCHECK(false);
   }
-}
-
-bool TranslateCompactInfoBar::ShouldAutoAlwaysTranslate() {
-  translate::TranslateInfoBarDelegate* delegate = GetDelegate();
-  return (delegate->GetTranslationAcceptedCount() >= AutoAlwaysThreshold() &&
-          delegate->GetTranslationAutoAlwaysCount() < MaxNumberOfAutoAlways());
 }
 
 jboolean TranslateCompactInfoBar::ShouldAutoNeverTranslate(
@@ -187,30 +163,7 @@ jboolean TranslateCompactInfoBar::ShouldAutoNeverTranslate(
   if (!IsDeclinedByUser())
     return false;
 
-  translate::TranslateInfoBarDelegate* delegate = GetDelegate();
-  // Don't trigger if it's off the record or already blocked.
-  if (delegate->is_off_the_record() ||
-      !delegate->IsTranslatableLanguageByPrefs())
-    return false;
-
-  int auto_never_count = delegate->GetTranslationAutoNeverCount();
-
-  // At the beginning (auto_never_count == 0), deniedCount starts at 0 and is
-  // off-by-one (because this checking is done before increment). However, after
-  // auto-never is triggered once (auto_never_count > 0), deniedCount starts at
-  // 1.  So there is no off-by-one by then.
-  int off_by_one = auto_never_count == 0 ? 1 : 0;
-
-  bool never_translate = (delegate->GetTranslationDeniedCount() + off_by_one >=
-                              AutoNeverThreshold() &&
-                          auto_never_count < MaxNumberOfAutoNever());
-  if (never_translate) {
-    // Auto-never will be triggered.  Need to increment the auto-never counter.
-    delegate->IncrementTranslationAutoNeverCount();
-    // Reset translateDeniedCount so that auto-never could be triggered again.
-    delegate->ResetTranslationDeniedCount();
-  }
-  return never_translate;
+  return GetDelegate()->ShouldAutoNeverTranslate();
 }
 
 // Returns true if the current tab is an incognito tab.
@@ -233,23 +186,6 @@ int TranslateCompactInfoBar::GetParam(const std::string& paramName,
   int value = 0;
   base::StringToInt(params[paramName], &value);
   return value <= 0 ? default_value : value;
-}
-
-int TranslateCompactInfoBar::AutoAlwaysThreshold() {
-  return GetParam(kTranslateAutoAlwaysThreshold, kDefaultAutoAlwaysThreshold);
-}
-
-int TranslateCompactInfoBar::AutoNeverThreshold() {
-  return GetParam(kTranslateAutoNeverThreshold, kDefaultAutoNeverThreshold);
-}
-
-int TranslateCompactInfoBar::MaxNumberOfAutoAlways() {
-  return GetParam(kTranslateMaxNumberOfAutoAlways,
-                  kDefaultMaxNumberOfAutoAlways);
-}
-
-int TranslateCompactInfoBar::MaxNumberOfAutoNever() {
-  return GetParam(kTranslateMaxNumberOfAutoNever, kDefaultMaxNumberOfAutoNever);
 }
 
 int TranslateCompactInfoBar::TabDefaultTextColor() {
@@ -277,4 +213,10 @@ void TranslateCompactInfoBar::OnTranslateStepChanged(
 bool TranslateCompactInfoBar::IsDeclinedByUser() {
   // Whether there is any affirmative action bit.
   return action_flags_ == FLAG_NONE;
+}
+
+void TranslateCompactInfoBar::OnTranslateInfoBarDelegateDestroyed(
+    translate::TranslateInfoBarDelegate* delegate) {
+  DCHECK_EQ(GetDelegate(), delegate);
+  GetDelegate()->SetObserver(nullptr);
 }

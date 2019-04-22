@@ -443,6 +443,30 @@ bool IsImageType(GLenum type)
     return false;
 }
 
+bool IsImage2DType(GLenum type)
+{
+    switch (type)
+    {
+        case GL_IMAGE_2D:
+        case GL_INT_IMAGE_2D:
+        case GL_UNSIGNED_INT_IMAGE_2D:
+            return true;
+        case GL_IMAGE_3D:
+        case GL_INT_IMAGE_3D:
+        case GL_UNSIGNED_INT_IMAGE_3D:
+        case GL_IMAGE_2D_ARRAY:
+        case GL_INT_IMAGE_2D_ARRAY:
+        case GL_UNSIGNED_INT_IMAGE_2D_ARRAY:
+        case GL_IMAGE_CUBE:
+        case GL_INT_IMAGE_CUBE:
+        case GL_UNSIGNED_INT_IMAGE_CUBE:
+            return false;
+        default:
+            UNREACHABLE();
+            return false;
+    }
+}
+
 bool IsAtomicCounterType(GLenum type)
 {
     return type == GL_UNSIGNED_INT_ATOMIC_COUNTER;
@@ -530,22 +554,22 @@ int AllocateFirstFreeBits(unsigned int *bits, unsigned int allocationSize, unsig
     return -1;
 }
 
-IndexRange ComputeIndexRange(GLenum indexType,
+IndexRange ComputeIndexRange(DrawElementsType indexType,
                              const GLvoid *indices,
                              size_t count,
                              bool primitiveRestartEnabled)
 {
     switch (indexType)
     {
-        case GL_UNSIGNED_BYTE:
+        case DrawElementsType::UnsignedByte:
             return ComputeTypedIndexRange(static_cast<const GLubyte *>(indices), count,
                                           primitiveRestartEnabled,
                                           GetPrimitiveRestartIndex(indexType));
-        case GL_UNSIGNED_SHORT:
+        case DrawElementsType::UnsignedShort:
             return ComputeTypedIndexRange(static_cast<const GLushort *>(indices), count,
                                           primitiveRestartEnabled,
                                           GetPrimitiveRestartIndex(indexType));
-        case GL_UNSIGNED_INT:
+        case DrawElementsType::UnsignedInt:
             return ComputeTypedIndexRange(static_cast<const GLuint *>(indices), count,
                                           primitiveRestartEnabled,
                                           GetPrimitiveRestartIndex(indexType));
@@ -555,15 +579,15 @@ IndexRange ComputeIndexRange(GLenum indexType,
     }
 }
 
-GLuint GetPrimitiveRestartIndex(GLenum indexType)
+GLuint GetPrimitiveRestartIndex(DrawElementsType indexType)
 {
     switch (indexType)
     {
-        case GL_UNSIGNED_BYTE:
+        case DrawElementsType::UnsignedByte:
             return 0xFF;
-        case GL_UNSIGNED_SHORT:
+        case DrawElementsType::UnsignedShort:
             return 0xFFFF;
-        case GL_UNSIGNED_INT:
+        case DrawElementsType::UnsignedInt:
             return 0xFFFFFFFF;
         default:
             UNREACHABLE();
@@ -591,20 +615,14 @@ bool IsTriangleMode(PrimitiveMode drawMode)
     return false;
 }
 
-bool IsLineMode(PrimitiveMode primitiveMode)
+namespace priv
 {
-    switch (primitiveMode)
-    {
-        case PrimitiveMode::LineLoop:
-        case PrimitiveMode::LineStrip:
-        case PrimitiveMode::LineStripAdjacency:
-        case PrimitiveMode::Lines:
-            return true;
-
-        default:
-            return false;
-    }
-}
+const angle::PackedEnumMap<PrimitiveMode, bool> gLineModes = {
+    {{PrimitiveMode::LineLoop, true},
+     {PrimitiveMode::LineStrip, true},
+     {PrimitiveMode::LineStripAdjacency, true},
+     {PrimitiveMode::Lines, true}}};
+}  // namespace priv
 
 bool IsIntegerFormat(GLenum unsizedFormat)
 {

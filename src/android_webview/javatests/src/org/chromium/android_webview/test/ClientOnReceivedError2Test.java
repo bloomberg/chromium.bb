@@ -115,8 +115,8 @@ public class ClientOnReceivedError2Test {
         Assert.assertEquals(BAD_HTML_URL, request.url);
         Assert.assertEquals("GET", request.method);
         Assert.assertNotNull(request.requestHeaders);
-        // No actual request has been made, as the host name can't be resolved.
-        Assert.assertTrue(request.requestHeaders.isEmpty());
+        // request headers may or may not be empty, this is an implementation detail,
+        // in the network service code path they may e.g. contain user agent, crbug.com/893573.
         Assert.assertTrue(request.isMainFrame);
         Assert.assertFalse(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
@@ -149,8 +149,8 @@ public class ClientOnReceivedError2Test {
         Assert.assertEquals(BAD_HTML_URL, request.url);
         Assert.assertEquals("GET", request.method);
         Assert.assertNotNull(request.requestHeaders);
-        // No actual request has been made, as the host name can't be resolved.
-        Assert.assertTrue(request.requestHeaders.isEmpty());
+        // request headers may or may not be empty, this is an implementation detail,
+        // in the network service code path they may e.g. contain user agent, crbug.com/893573.
         Assert.assertTrue(request.isMainFrame);
         Assert.assertTrue(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
@@ -176,8 +176,8 @@ public class ClientOnReceivedError2Test {
         Assert.assertEquals(BAD_HTML_URL, request.url);
         Assert.assertEquals("GET", request.method);
         Assert.assertNotNull(request.requestHeaders);
-        // No actual request has been made, as the host name can't be resolved.
-        Assert.assertTrue(request.requestHeaders.isEmpty());
+        // request headers may or may not be empty, this is an implementation detail,
+        // in the network service code path they may e.g. contain user agent, crbug.com/893573.
         Assert.assertFalse(request.isMainFrame);
         Assert.assertFalse(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
@@ -214,8 +214,8 @@ public class ClientOnReceivedError2Test {
         Assert.assertEquals(BAD_HTML_URL, request.url);
         Assert.assertEquals("GET", request.method);
         Assert.assertNotNull(request.requestHeaders);
-        // No actual request has been made, as the host name can't be resolved.
-        Assert.assertTrue(request.requestHeaders.isEmpty());
+        // request headers may or may not be empty, this is an implementation detail,
+        // in the network service code path they may e.g. contain user agent, crbug.com/893573.
         Assert.assertFalse(request.isMainFrame);
         Assert.assertTrue(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
@@ -242,8 +242,8 @@ public class ClientOnReceivedError2Test {
         Assert.assertEquals(imageUrl, request.url);
         Assert.assertEquals("GET", request.method);
         Assert.assertNotNull(request.requestHeaders);
-        // No actual request has been made, as the host name can't be resolved.
-        Assert.assertTrue(request.requestHeaders.isEmpty());
+        // request headers may or may not be empty, this is an implementation detail,
+        // in the network service code path they may e.g. contain user agent, crbug.com/893573.
         Assert.assertFalse(request.isMainFrame);
         Assert.assertFalse(request.hasUserGesture);
         AwWebResourceError error = onReceivedError2Helper.getError();
@@ -400,5 +400,26 @@ public class ClientOnReceivedError2Test {
                 TimeUnit.MILLISECONDS);
         Assert.assertEquals(onReceivedError2CallCount + 1, onReceivedError2Helper.getCallCount());
         Assert.assertEquals(BAD_HTML_URL, onReceivedError2Helper.getRequest().url);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testUnsafeRedirect_FileUrl() throws Throwable {
+        startWebServer();
+        final String redirectUrl = mWebServer.setRedirect("/302.html", "file:///foo");
+
+        TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
+                mContentsClient.getOnReceivedError2Helper();
+        final int onReceivedError2CallCount = onReceivedError2Helper.getCallCount();
+
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), redirectUrl);
+
+        onReceivedError2Helper.waitForCallback(onReceivedError2CallCount,
+                1 /* numberOfCallsToWaitFor */, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        Assert.assertEquals(onReceivedError2CallCount + 1, onReceivedError2Helper.getCallCount());
+        AwWebResourceError error = onReceivedError2Helper.getError();
+        Assert.assertEquals("net::ERR_UNSAFE_REDIRECT", error.description);
     }
 }

@@ -24,6 +24,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="1520828917794284345">Sumažinti darbalaukį, kad tilptų</translation>
 <translation id="154040539590487450">Paleidžiant nuotolinės prieigos paslaugą įvyko klaida.</translation>
 <translation id="1546934824884762070">Įvyko netikėta klaida. Praneškite apie problemą kūrėjams.</translation>
+<translation id="1624185583382384493">„Chrome“ nuotolinis kompiuterio valdymas dabar žiniatinklyje. Išbandykite <ph name="LINK_BEGIN" />žiniatinklio programą<ph name="LINK_END" /> – sparčią ir nemokamą programą su dar daugiau funkcijų, įskaitant patobulintą kelių monitorių palaikymą.</translation>
 <translation id="1643640058022401035">Išėjus iš šio puslapio, baigsis „Chrome“ nuotolinio ryšio sesija.</translation>
 <translation id="1654128982815600832">Įgalinamas nuotolinis ryšys šiame kompiuteryje…</translation>
 <translation id="170207782578677537">Mėginant užregistruoti šį kompiuterį įvyko klaida.</translation>
@@ -138,6 +139,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="3989511127559254552">Jei norite tęsti, pirmiausia turite suteikti išplėstinės prieigos prie kompiuterio leidimus. Tai reikės atlikti tik vieną kartą.</translation>
 <translation id="4006787130661126000">Jei norite naudoti „Chrome“ nuotolinį kompiuterio valdymą šiam kompiuteriui pasiekti, turite įgalinti nuotolinį ryšį.</translation>
 <translation id="405887016757208221">Nuotoliniam kompiuteriui nepavyko inicijuoti sesijos. Jei problema išlieka, pabandykite dar kartą sukonfigūruoti prieglobą.</translation>
+<translation id="4060747889721220580">Atsisiųsti failą</translation>
 <translation id="4068946408131579958">Visi ryšiai</translation>
 <translation id="409800995205263688">PASTABA: pagal politikos nustatymus leidžiama užmegzti ryšį tik tarp tinkle esančių kompiuterių.</translation>
 <translation id="4126409073460786861">Kai sąranka bus baigta, atnaujinkite šį puslapį, tada galėsite pasiekti kompiuterį pasirinkę įrenginį ir įvedę PIN kodą</translation>
@@ -242,6 +244,7 @@ Norėdami įgalinti šias funkcijas, pasirinkite „<ph name="BUTTON_NAME" />“
 <translation id="6198252989419008588">Keisti PIN kodą</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (pasenusi)</translation>
 <translation id="6221358653751391898">Nesate prisijungę prie „Chrome“. Prisijunkite ir bandykite dar kartą.</translation>
+<translation id="6227369581881558336">„Chrome“ nuotolinis kompiuterio valdymas dabar žiniatinklyje su naujomis funkcijomis, įskaitant failų perkėlimą! Žr. <ph name="LINK_BEGIN" />žiniatinklio programą<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Priegloba, veikianti pulto logikos ekrane, išjungta, kad būtų galima palaikyti nerodomo vaizdo režimą perjungus į prieglobą, veikiančią konkretaus naudotojo sesijoje.</translation>
 <translation id="629730747756840877">Paskyra</translation>
 <translation id="6304318647555713317">Klientas</translation>
@@ -289,7 +292,6 @@ Norėdami įgalinti šias funkcijas, pasirinkite „<ph name="BUTTON_NAME" />“
 <translation id="7434397035092923453">Kliento prieiga atmesta: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Prijungtas klientas: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Pakeisti paskyrą</translation>
-<translation id="7589941250119944644">„Chrome“ nuotolinis kompiuterio valdymas perkeliamas į naują vietą – žiniatinklį. Išbandykite mūsų <ph name="LINK_BEGIN" />žiniatinklio programą<ph name="LINK_END" />, dabar ji greita, nemokama ir palaiko visas ankstesnes funkcijas.</translation>
 <translation id="7606912958770842224">Įgalinti nuotolinį ryšį</translation>
 <translation id="7628469622942688817">Prisiminti mano PIN kodą šiame įrenginyje.</translation>
 <translation id="7649070708921625228">Žinynas</translation>

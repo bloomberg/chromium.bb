@@ -21,6 +21,7 @@
 #include <memory>
 
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "gtest/gtest.h"
 #include "minidump/minidump_context.h"
@@ -858,27 +859,27 @@ TEST(ProcessSnapshotMinidump, ThreadContextX86_64) {
   minidump_context.fxsave.fpu_ip_64 = 42;
   minidump_context.fxsave.fpu_dp_64 = 43;
 
-  for (size_t i = 0; i < arraysize(minidump_context.vector_register); i++) {
+  for (size_t i = 0; i < base::size(minidump_context.vector_register); i++) {
     minidump_context.vector_register[i].lo = i * 2 + 44;
     minidump_context.vector_register[i].hi = i * 2 + 45;
   }
 
-  for (uint8_t i = 0; i < arraysize(minidump_context.fxsave.reserved_4); i++) {
+  for (uint8_t i = 0; i < base::size(minidump_context.fxsave.reserved_4); i++) {
     minidump_context.fxsave.reserved_4[i] = i * 2 + 115;
     minidump_context.fxsave.available[i] = i * 2 + 116;
   }
 
-  for (size_t i = 0; i < arraysize(minidump_context.fxsave.st_mm); i++) {
+  for (size_t i = 0; i < base::size(minidump_context.fxsave.st_mm); i++) {
     for (uint8_t j = 0;
-         j < arraysize(minidump_context.fxsave.st_mm[0].mm_value);
+         j < base::size(minidump_context.fxsave.st_mm[0].mm_value);
          j++) {
       minidump_context.fxsave.st_mm[i].mm_value[j] = j + 1;
       minidump_context.fxsave.st_mm[i].mm_reserved[j] = j + 1;
     }
   }
 
-  for (size_t i = 0; i < arraysize(minidump_context.fxsave.xmm); i++) {
-    for (uint8_t j = 0; j < arraysize(minidump_context.fxsave.xmm[0]); j++) {
+  for (size_t i = 0; i < base::size(minidump_context.fxsave.xmm); i++) {
+    for (uint8_t j = 0; j < base::size(minidump_context.fxsave.xmm[0]); j++) {
       minidump_context.fxsave.xmm[i][j] = j + 1;
     }
   }
@@ -961,22 +962,20 @@ TEST(ProcessSnapshotMinidump, ThreadContextX86_64) {
   EXPECT_EQ(ctx->fxsave.fpu_ip_64, 42U);
   EXPECT_EQ(ctx->fxsave.fpu_dp_64, 43U);
 
-  for (uint8_t i = 0; i < arraysize(ctx->fxsave.reserved_4); i++) {
+  for (uint8_t i = 0; i < base::size(ctx->fxsave.reserved_4); i++) {
     EXPECT_EQ(ctx->fxsave.reserved_4[i], i * 2 + 115);
     EXPECT_EQ(ctx->fxsave.available[i], i * 2 + 116);
   }
 
-  for (size_t i = 0; i < arraysize(ctx->fxsave.st_mm); i++) {
-    for (uint8_t j = 0;
-         j < arraysize(ctx->fxsave.st_mm[0].mm_value);
-         j++) {
+  for (size_t i = 0; i < base::size(ctx->fxsave.st_mm); i++) {
+    for (uint8_t j = 0; j < base::size(ctx->fxsave.st_mm[0].mm_value); j++) {
       EXPECT_EQ(ctx->fxsave.st_mm[i].mm_value[j], j + 1);
       EXPECT_EQ(ctx->fxsave.st_mm[i].mm_reserved[j], j + 1);
     }
   }
 
-  for (size_t i = 0; i < arraysize(ctx->fxsave.xmm); i++) {
-    for (uint8_t j = 0; j < arraysize(ctx->fxsave.xmm[0]); j++) {
+  for (size_t i = 0; i < base::size(ctx->fxsave.xmm); i++) {
+    for (uint8_t j = 0; j < base::size(ctx->fxsave.xmm[0]); j++) {
       EXPECT_EQ(ctx->fxsave.xmm[i][j], j + 1);
     }
   }
@@ -1169,6 +1168,83 @@ TEST(ProcessSnapshotMinidump, CustomMinidumpStreams) {
   auto stream_data = custom_streams[0]->data();
   EXPECT_EQ(stream_data.size(), sizeof(kStreamUnreservedData));
   EXPECT_STREQ((char*)&stream_data.front(), kStreamUnreservedData);
+}
+
+TEST(ProcessSnapshotMinidump, Exception) {
+  StringFile string_file;
+
+  MINIDUMP_HEADER header = {};
+  EXPECT_TRUE(string_file.Write(&header, sizeof(header)));
+
+  uint32_t exception_signo =
+      static_cast<uint32_t>(-1);  // crashpad::Signals::kSimulatedSigno
+
+  MINIDUMP_EXCEPTION minidump_exception = {};
+  minidump_exception.ExceptionCode = exception_signo;
+  minidump_exception.ExceptionFlags = 2;
+  minidump_exception.ExceptionRecord = 4;
+  minidump_exception.ExceptionAddress = 0xdeedb00f;
+  minidump_exception.NumberParameters = 2;
+  minidump_exception.ExceptionInformation[0] = 51;
+  minidump_exception.ExceptionInformation[1] = 62;
+
+  MINIDUMP_EXCEPTION_STREAM minidump_exception_stream = {};
+  minidump_exception_stream.ThreadId = 5;
+  minidump_exception_stream.ExceptionRecord = minidump_exception;
+
+  MINIDUMP_DIRECTORY minidump_exception_directory = {};
+  minidump_exception_directory.StreamType = kMinidumpStreamTypeException;
+  minidump_exception_directory.Location.DataSize =
+      sizeof(MINIDUMP_EXCEPTION_STREAM);
+  minidump_exception_directory.Location.Rva =
+      static_cast<RVA>(string_file.SeekGet());
+
+  ASSERT_TRUE(string_file.Write(&minidump_exception_stream,
+                                sizeof(minidump_exception_stream)));
+
+  header.StreamDirectoryRva = static_cast<RVA>(string_file.SeekGet());
+  ASSERT_TRUE(string_file.Write(&minidump_exception_directory,
+                                sizeof(minidump_exception_directory)));
+
+  header.Signature = MINIDUMP_SIGNATURE;
+  header.Version = MINIDUMP_VERSION;
+  header.NumberOfStreams = 1;
+  EXPECT_TRUE(string_file.SeekSet(0));
+  EXPECT_TRUE(string_file.Write(&header, sizeof(header)));
+
+  ProcessSnapshotMinidump process_snapshot;
+  EXPECT_TRUE(process_snapshot.Initialize(&string_file));
+
+  const ExceptionSnapshot* s = process_snapshot.Exception();
+
+  EXPECT_EQ(s->ThreadID(), 5UL);
+  EXPECT_EQ(s->Exception(), exception_signo);
+  EXPECT_EQ(s->ExceptionInfo(), 2U);
+  EXPECT_EQ(s->ExceptionAddress(), 0xdeedb00f);
+
+  const std::vector<uint64_t> codes = s->Codes();
+  EXPECT_EQ(codes.size(), 2UL);
+  EXPECT_EQ(codes[0], 51UL);
+  EXPECT_EQ(codes[1], 62UL);
+}
+
+TEST(ProcessSnapshotMinidump, NoExceptionInMinidump) {
+  StringFile string_file;
+
+  MINIDUMP_HEADER header = {};
+  EXPECT_TRUE(string_file.Write(&header, sizeof(header)));
+
+  header.Signature = MINIDUMP_SIGNATURE;
+  header.Version = MINIDUMP_VERSION;
+  header.NumberOfStreams = 0;
+  EXPECT_TRUE(string_file.SeekSet(0));
+  EXPECT_TRUE(string_file.Write(&header, sizeof(header)));
+
+  ProcessSnapshotMinidump process_snapshot;
+  EXPECT_TRUE(process_snapshot.Initialize(&string_file));
+
+  const ExceptionSnapshot* s = process_snapshot.Exception();
+  EXPECT_EQ(s, nullptr);
 }
 
 }  // namespace

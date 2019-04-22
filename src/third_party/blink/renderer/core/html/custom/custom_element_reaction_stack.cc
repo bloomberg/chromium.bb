@@ -17,7 +17,7 @@ namespace {
 Persistent<CustomElementReactionStack>& GetCustomElementReactionStack() {
   DEFINE_STATIC_LOCAL(Persistent<CustomElementReactionStack>,
                       custom_element_reaction_stack,
-                      (new CustomElementReactionStack));
+                      (MakeGarbageCollected<CustomElementReactionStack>()));
   return custom_element_reaction_stack;
 }
 
@@ -28,7 +28,7 @@ Persistent<CustomElementReactionStack>& GetCustomElementReactionStack() {
 
 CustomElementReactionStack::CustomElementReactionStack() = default;
 
-void CustomElementReactionStack::Trace(blink::Visitor* visitor) {
+void CustomElementReactionStack::Trace(Visitor* visitor) {
   visitor->Trace(map_);
   visitor->Trace(stack_);
   visitor->Trace(backup_queue_);
@@ -49,7 +49,7 @@ void CustomElementReactionStack::InvokeReactions(ElementQueue& queue) {
   for (wtf_size_t i = 0; i < queue.size(); ++i) {
     Element* element = queue[i];
     if (CustomElementReactionQueue* reactions = map_.at(element)) {
-      reactions->InvokeReactions(element);
+      reactions->InvokeReactions(*element);
       CHECK(reactions->IsEmpty());
       map_.erase(element);
     }
@@ -57,31 +57,31 @@ void CustomElementReactionStack::InvokeReactions(ElementQueue& queue) {
 }
 
 void CustomElementReactionStack::EnqueueToCurrentQueue(
-    Element* element,
-    CustomElementReaction* reaction) {
+    Element& element,
+    CustomElementReaction& reaction) {
   Enqueue(stack_.back(), element, reaction);
 }
 
 void CustomElementReactionStack::Enqueue(Member<ElementQueue>& queue,
-                                         Element* element,
-                                         CustomElementReaction* reaction) {
+                                         Element& element,
+                                         CustomElementReaction& reaction) {
   if (!queue)
     queue = MakeGarbageCollected<ElementQueue>();
-  queue->push_back(element);
+  queue->push_back(&element);
 
-  CustomElementReactionQueue* reactions = map_.at(element);
+  CustomElementReactionQueue* reactions = map_.at(&element);
   if (!reactions) {
-    reactions = new CustomElementReactionQueue();
-    map_.insert(element, reactions);
+    reactions = MakeGarbageCollected<CustomElementReactionQueue>();
+    map_.insert(&element, reactions);
   }
 
   reactions->Add(reaction);
 }
 
 void CustomElementReactionStack::EnqueueToBackupQueue(
-    Element* element,
-    CustomElementReaction* reaction) {
-  // https://html.spec.whatwg.org/multipage/scripting.html#backup-element-queue
+    Element& element,
+    CustomElementReaction& reaction) {
+  // https://html.spec.whatwg.org/C/#backup-element-queue
 
   DCHECK(!CEReactionsScope::Current());
   DCHECK(stack_.IsEmpty());
@@ -97,8 +97,8 @@ void CustomElementReactionStack::EnqueueToBackupQueue(
   Enqueue(backup_queue_, element, reaction);
 }
 
-void CustomElementReactionStack::ClearQueue(Element* element) {
-  if (CustomElementReactionQueue* reactions = map_.at(element))
+void CustomElementReactionStack::ClearQueue(Element& element) {
+  if (CustomElementReactionQueue* reactions = map_.at(&element))
     reactions->Clear();
 }
 

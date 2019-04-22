@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "services/network/public/cpp/data_element.h"
+#include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -84,7 +85,8 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequestBody
   void set_identifier(int64_t id) { identifier_ = id; }
   int64_t identifier() const { return identifier_; }
 
-  // Returns paths referred to by |elements| of type DataElement::TYPE_FILE.
+  // Returns paths referred to by |elements| of type
+  // network::mojom::DataElementType::kFile.
   std::vector<base::FilePath> GetReferencedFiles() const;
 
   // Sets the flag which indicates whether the post data contains sensitive
@@ -96,7 +98,8 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequestBody
 
  private:
   friend class base::RefCountedThreadSafe<ResourceRequestBody>;
-
+  friend struct mojo::StructTraits<network::mojom::URLRequestBodyDataView,
+                                   scoped_refptr<network::ResourceRequestBody>>;
   ~ResourceRequestBody();
 
   std::vector<DataElement> elements_;

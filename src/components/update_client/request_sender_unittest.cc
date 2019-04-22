@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -14,8 +15,8 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/update_client/net/url_loader_post_interceptor.h"
 #include "components/update_client/test_configurator.h"
-#include "components/update_client/url_loader_post_interceptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace update_client {
@@ -72,7 +73,7 @@ class RequestSenderTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(RequestSenderTest);
 };
 
-INSTANTIATE_TEST_CASE_P(IsForeground, RequestSenderTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(IsForeground, RequestSenderTest, ::testing::Bool());
 
 RequestSenderTest::RequestSenderTest()
     : scoped_task_environment_(
@@ -129,7 +130,7 @@ void RequestSenderTest::RequestSenderComplete(int error,
 TEST_P(RequestSenderTest, RequestSendSuccess) {
   EXPECT_TRUE(
       post_interceptor_->ExpectRequest(std::make_unique<PartialMatch>("test"),
-                                       test_file("updatecheck_reply_1.xml")));
+                                       test_file("updatecheck_reply_1.json")));
 
   const bool is_foreground = GetParam();
   request_sender_->Send(
@@ -153,10 +154,7 @@ TEST_P(RequestSenderTest, RequestSendSuccess) {
 
   // Check the response post conditions.
   EXPECT_EQ(0, error_);
-  EXPECT_TRUE(base::StartsWith(response_,
-                               "<?xml version='1.0' encoding='UTF-8'?>",
-                               base::CompareCase::SENSITIVE));
-  EXPECT_EQ(505ul, response_.size());
+  EXPECT_EQ(419ul, response_.size());
 
   // Check the interactivity header value.
   const auto extra_request_headers =
@@ -241,7 +239,7 @@ TEST_F(RequestSenderTest, RequestSendFailedNoUrls) {
 TEST_F(RequestSenderTest, RequestSendCupError) {
   EXPECT_TRUE(
       post_interceptor_->ExpectRequest(std::make_unique<PartialMatch>("test"),
-                                       test_file("updatecheck_reply_1.xml")));
+                                       test_file("updatecheck_reply_1.json")));
 
   const std::vector<GURL> urls = {GURL(kUrl1)};
   request_sender_ = std::make_unique<RequestSender>(config_);

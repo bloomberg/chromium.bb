@@ -6,8 +6,9 @@
 
 #include "base/macros.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cert_request_info.h"
-#include "net/url_request/url_request.h"
+#include "net/ssl/ssl_private_key.h"
 
 namespace {
 
@@ -38,7 +39,6 @@ class FakeClientCertificateDelegate
 }  // namespace
 
 SSLClientAuthRequestorMock::SSLClientAuthRequestorMock(
-    net::URLRequest* request,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info)
     : cert_request_info_(cert_request_info) {
 }

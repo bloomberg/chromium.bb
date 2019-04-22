@@ -267,6 +267,8 @@ FPDF_LoadMemDocument(const void* data_buf, int size, FPDF_BYTESTRING password) {
 FPDF_EXPORT FPDF_DOCUMENT FPDF_CALLCONV
 FPDF_LoadCustomDocument(FPDF_FILEACCESS* pFileAccess,
                         FPDF_BYTESTRING password) {
+  if (!pFileAccess)
+    return nullptr;
   return LoadDocumentImpl(pdfium::MakeRetain<CPDFSDK_CustomAccess>(pFileAccess),
                           password);
 }
@@ -289,8 +291,12 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_GetFileVersion(FPDF_DOCUMENT doc,
   return true;
 }
 
-// jabdelmalek: changed return type from uint32_t to build on Linux (and match
-// header).
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDF_DocumentHasValidCrossReferenceTable(FPDF_DOCUMENT document) {
+  CPDF_Document* pDoc = CPDFDocumentFromFPDFDocument(document);
+  return pDoc && pDoc->has_valid_cross_reference_table();
+}
+
 FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDF_GetDocPermissions(FPDF_DOCUMENT document) {
   CPDF_Document* pDoc = CPDFDocumentFromFPDFDocument(document);
@@ -538,7 +544,8 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
       pContext->m_pOptions->GetOptions().bBreakForMasks = true;
     }
   } else {
-    pContext->m_pDevice = pdfium::MakeUnique<CFX_WindowsRenderDevice>(dc);
+    pContext->m_pDevice = pdfium::MakeUnique<CFX_WindowsRenderDevice>(
+        CPDF_ModuleMgr::Get()->GetCodecModule(), dc);
   }
 
   RenderPageWithContext(pContext, page, start_x, start_y, size_x, size_y,
@@ -565,7 +572,8 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
     // pause after each image mask.
     pPage->SetRenderContext(pdfium::MakeUnique<CPDF_PageRenderContext>());
     pContext = pPage->GetRenderContext();
-    pContext->m_pDevice = pdfium::MakeUnique<CFX_WindowsRenderDevice>(dc);
+    pContext->m_pDevice = pdfium::MakeUnique<CFX_WindowsRenderDevice>(
+        CPDF_ModuleMgr::Get()->GetCodecModule(), dc);
     pContext->m_pOptions = pdfium::MakeUnique<CPDF_RenderOptions>();
     pContext->m_pOptions->GetOptions().bBreakForMasks = true;
 
@@ -582,7 +590,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
       pContext->m_pRenderer->Continue(nullptr);
     }
   } else if (bNewBitmap) {
-    CFX_WindowsRenderDevice WinDC(dc);
+    CFX_WindowsRenderDevice WinDC(CPDF_ModuleMgr::Get()->GetCodecModule(), dc);
     bool bitsStretched = false;
     if (WinDC.GetDeviceCaps(FXDC_DEVICE_CLASS) == FXDC_PRINTER) {
       auto pDst = pdfium::MakeRetain<CFX_DIBitmap>();
@@ -666,10 +674,8 @@ FPDF_RenderPageBitmapWithMatrix(FPDF_BITMAP bitmap,
 
   const FX_RECT rect(0, 0, pPage->GetPageWidth(), pPage->GetPageHeight());
   CFX_Matrix transform_matrix = pPage->GetDisplayMatrix(rect, 0);
-  if (matrix) {
-    transform_matrix.Concat(CFX_Matrix(matrix->a, matrix->b, matrix->c,
-                                       matrix->d, matrix->e, matrix->f));
-  }
+  if (matrix)
+    transform_matrix *= CFXMatrixFromFSMatrix(*matrix);
   RenderPageImpl(pContext, pPage, transform_matrix, clip_rect, flags, true,
                  nullptr);
 
@@ -1048,14 +1054,16 @@ FPDF_GetNamedDestByName(FPDF_DOCUMENT document, FPDF_BYTESTRING name) {
     return nullptr;
 
   CPDF_NameTree name_tree(pDoc, "Dests");
+  ByteStringView name_view(name);
   return FPDFDestFromCPDFArray(
-      name_tree.LookupNamedDest(pDoc, PDF_DecodeText(ByteString(name))));
+      name_tree.LookupNamedDest(pDoc, PDF_DecodeText(name_view.raw_span())));
 }
 
 #ifdef PDF_ENABLE_V8
 FPDF_EXPORT const char* FPDF_CALLCONV FPDF_GetRecommendedV8Flags() {
   // Reduce exposure since no PDF should contain web assembly.
-  return "--no-expose-wasm";
+  // Use interpreted JS only to avoid RWX pages in our address space.
+  return "--no-expose-wasm --jitless";
 }
 #endif  // PDF_ENABLE_V8
 
@@ -1141,10 +1149,10 @@ FPDF_EXPORT FPDF_DEST FPDF_CALLCONV FPDF_GetNamedDest(FPDF_DOCUMENT document,
 
     index -= count;
     int i = 0;
-    ByteString bsName;
+    ByteStringView bsName;
     CPDF_DictionaryLocker locker(pDest);
     for (const auto& it : locker) {
-      bsName = it.first;
+      bsName = it.first.AsStringView();
       pDestObj = it.second.get();
       if (!pDestObj)
         continue;
@@ -1152,7 +1160,7 @@ FPDF_EXPORT FPDF_DEST FPDF_CALLCONV FPDF_GetNamedDest(FPDF_DOCUMENT document,
         break;
       i++;
     }
-    wsName = PDF_DecodeText(bsName);
+    wsName = PDF_DecodeText(bsName.raw_span());
   } else {
     pDestObj = nameTree.LookupValueAndName(index, &wsName);
   }

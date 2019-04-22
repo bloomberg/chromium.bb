@@ -38,7 +38,8 @@ class InputPredictor {
   virtual bool HasPrediction() const = 0;
 
   // Generate the prediction based on current points.
-  virtual bool GeneratePrediction(base::TimeTicks frame_time,
+  virtual bool GeneratePrediction(base::TimeTicks predict_time,
+                                  bool is_resampling,
                                   InputData* result) const = 0;
 
  protected:

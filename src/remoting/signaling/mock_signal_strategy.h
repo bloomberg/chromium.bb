@@ -30,8 +30,8 @@ class MockSignalStrategy : public SignalStrategy {
 
   // GMock currently doesn't support move-only arguments, so we have
   // to use this hack here.
-  MOCK_METHOD1(SendStanzaPtr, bool(buzz::XmlElement* stanza));
-  bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza) override {
+  MOCK_METHOD1(SendStanzaPtr, bool(jingle_xmpp::XmlElement* stanza));
+  bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) override {
     return SendStanzaPtr(stanza.release());
   }
 

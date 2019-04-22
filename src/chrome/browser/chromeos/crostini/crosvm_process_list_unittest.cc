@@ -60,7 +60,7 @@ TEST_F(CrosvmProcessListTest, ConciergeIsTheOnlyCrosvmProcess) {
                            .stime = 1333,
                            .rss = 3149}}};
   WriteContentsToFileUnderSubdir(stat_contents,
-                                 base::IntToString(concierge_pid), "stat");
+                                 base::NumberToString(concierge_pid), "stat");
   EXPECT_EQ(expected, GetCrosvmPidStatMap(slash_proc_));
 }
 
@@ -85,7 +85,7 @@ TEST_F(CrosvmProcessListTest, SkipOtherProcess) {
       "0 0 0 0 0 17 2 0 0 0 0 0 96193203229904 96193203257392 96193216815104 "
       "140726650461974 140726650461996 140726650461996 140726650462178 0";
   WriteContentsToFileUnderSubdir(stat_contents,
-                                 base::IntToString(concierge_pid), "stat");
+                                 base::NumberToString(concierge_pid), "stat");
 
   pid_t other_pid = 1111;
   std::string other_stat_contents =
@@ -95,7 +95,7 @@ TEST_F(CrosvmProcessListTest, SkipOtherProcess) {
       "0 0 0 0 0 17 2 0 0 0 0 0 96193203229904 96193203257392 96193216815104 "
       "140726650461974 140726650461996 140726650461996 140726650462178 0";
   WriteContentsToFileUnderSubdir(other_stat_contents,
-                                 base::IntToString(other_pid), "stat");
+                                 base::NumberToString(other_pid), "stat");
 
   PidStatMap expected = {{concierge_pid,
                           {.pid = concierge_pid,
@@ -116,7 +116,7 @@ TEST_F(CrosvmProcessListTest, ChildrenAreIncluded) {
       "0 0 0 0 0 17 2 0 0 0 0 0 96193203229904 96193203257392 96193216815104 "
       "140726650461974 140726650461996 140726650461996 140726650462178 0";
   WriteContentsToFileUnderSubdir(stat_contents,
-                                 base::IntToString(concierge_pid), "stat");
+                                 base::NumberToString(concierge_pid), "stat");
 
   pid_t child_pid = 3333;
   std::string child_stat_contents =
@@ -126,7 +126,7 @@ TEST_F(CrosvmProcessListTest, ChildrenAreIncluded) {
       "0 0 0 0 0 17 2 0 0 0 0 0 96193203229904 96193203257392 96193216815104 "
       "140726650461974 140726650461996 140726650461996 140726650462178 0";
   WriteContentsToFileUnderSubdir(child_stat_contents,
-                                 base::IntToString(child_pid), "stat");
+                                 base::NumberToString(child_pid), "stat");
 
   pid_t grand_child_pid = 4444;
   std::string grand_child_stat_contents =
@@ -137,7 +137,7 @@ TEST_F(CrosvmProcessListTest, ChildrenAreIncluded) {
       "0 0 0 0 0 17 2 0 0 0 0 0 96193203229904 96193203257392 96193216815104 "
       "140726650461974 140726650461996 140726650461996 140726650462178 0";
   WriteContentsToFileUnderSubdir(grand_child_stat_contents,
-                                 base::IntToString(grand_child_pid), "stat");
+                                 base::NumberToString(grand_child_pid), "stat");
 
   PidStatMap expected = {{concierge_pid,
                           {.pid = concierge_pid,

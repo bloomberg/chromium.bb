@@ -12,6 +12,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_validator.h"
@@ -62,13 +63,13 @@ void PrintHelp() {
           "  onc_validator [OPTION]... [TYPE] onc_file\n"
           "\n"
           "Valid TYPEs are:\n");
-  for (size_t i = 0; i < arraysize(kTypes); ++i)
+  for (size_t i = 0; i < base::size(kTypes); ++i)
     fprintf(stderr, "  %s\n", kTypes[i]);
 
   fprintf(stderr,
           "\n"
           "Valid OPTIONs are:\n");
-  for (size_t i = 0; i < arraysize(kSwitches); ++i)
+  for (size_t i = 0; i < base::size(kSwitches); ++i)
     fprintf(stderr, "  --%s\n", kSwitches[i]);
 
   fprintf(stderr,

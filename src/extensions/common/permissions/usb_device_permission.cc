@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "device/usb/usb_descriptors.h"
+#include "device/usb/mojo/type_converters.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_ids.h"
 #include "extensions/common/extension.h"
@@ -46,8 +46,21 @@ bool IsInterfaceClassPermissionAlowed(const Extension* extension) {
 std::unique_ptr<UsbDevicePermission::CheckParam>
 UsbDevicePermission::CheckParam::ForUsbDevice(const Extension* extension,
                                               const device::UsbDevice* device) {
+  DCHECK(device);
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
   return CheckParam::ForUsbDeviceAndInterface(
-      extension, device, UsbDevicePermissionData::SPECIAL_VALUE_UNSPECIFIED);
+      extension, *device_info,
+      UsbDevicePermissionData::SPECIAL_VALUE_UNSPECIFIED);
+}
+
+// static
+std::unique_ptr<UsbDevicePermission::CheckParam>
+UsbDevicePermission::CheckParam::ForUsbDevice(
+    const Extension* extension,
+    const device::mojom::UsbDeviceInfo& device_info) {
+  return CheckParam::ForUsbDeviceAndInterface(
+      extension, device_info,
+      UsbDevicePermissionData::SPECIAL_VALUE_UNSPECIFIED);
 }
 
 // static
@@ -66,22 +79,24 @@ UsbDevicePermission::CheckParam::ForDeviceWithAnyInterfaceClass(
 std::unique_ptr<UsbDevicePermission::CheckParam>
 UsbDevicePermission::CheckParam::ForUsbDeviceAndInterface(
     const Extension* extension,
-    const device::UsbDevice* device,
+    const device::mojom::UsbDeviceInfo& device_info,
     int interface_id) {
   std::unique_ptr<std::set<int>> interface_classes(new std::set<int>());
   // If device class is set, match interface class against it as well. This is
   // to enable filtering devices by device-only class (for example, hubs), which
   // might or might not have an interface with class set to device class value.
-  if (device->device_class())
-    interface_classes->insert(device->device_class());
+  if (device_info.class_code)
+    interface_classes->insert(device_info.class_code);
 
-  for (const auto& configuration : device->configurations()) {
-    for (const auto& interface : configuration.interfaces)
-      interface_classes->insert(interface.interface_class);
+  for (const auto& configuration : device_info.configurations) {
+    for (const auto& interface : configuration->interfaces) {
+      for (const auto& alternate : interface->alternates)
+        interface_classes->insert(alternate->class_code);
+    }
   }
 
   return std::make_unique<CheckParam>(
-      extension, device->vendor_id(), device->product_id(),
+      extension, device_info.vendor_id, device_info.product_id,
       std::move(interface_classes), interface_id);
 }
 

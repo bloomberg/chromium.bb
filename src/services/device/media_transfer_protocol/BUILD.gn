@@ -38,7 +38,7 @@ source_set("media_transfer_protocol") {
     ":mtp_file_entry_proto",
     ":mtp_storage_info_proto",
     "//base",
-    "//chromeos",
+    "//chromeos/dbus",
     "//dbus",
   ]
 }

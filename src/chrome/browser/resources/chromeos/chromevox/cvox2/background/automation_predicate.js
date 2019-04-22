@@ -368,7 +368,8 @@ AutomationPredicate.container = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.structuralContainer = AutomationPredicate.roles([
-  Role.ALERT_DIALOG, Role.CLIENT, Role.DIALOG, Role.ROOT_WEB_AREA,
+  Role.ALERT_DIALOG, Role.CLIENT, Role.DIALOG, Role.LAYOUT_TABLE,
+  Role.LAYOUT_TABLE_CELL, Role.LAYOUT_TABLE_ROW, Role.ROOT_WEB_AREA,
   Role.WEB_VIEW, Role.WINDOW, Role.EMBEDDED_OBJECT, Role.IFRAME,
   Role.IFRAME_PRESENTATIONAL, Role.IGNORED, Role.UNKNOWN
 ]);
@@ -440,12 +441,12 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
 
   // Ignore nodes acting as labels for another control, that don't
   // have actionable descendants.
-  if (!!node.labelFor && node.labelFor.length > 0 &&
+  if (node.labelFor && node.labelFor.length > 0 &&
       !hasActionableDescendant(node))
     return true;
 
   // Similarly, ignore nodes acting as descriptions.
-  if (!!node.descriptionFor && node.descriptionFor.length > 0 &&
+  if (node.descriptionFor && node.descriptionFor.length > 0 &&
       !hasActionableDescendant(node))
     return true;
 
@@ -480,7 +481,13 @@ AutomationPredicate.checkable = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.clickable = AutomationPredicate.match({
-  anyPredicate: [AutomationPredicate.button, AutomationPredicate.link],
+  anyPredicate: [
+    AutomationPredicate.button, AutomationPredicate.link,
+    (node) => {
+      return node.defaultActionVerb ==
+          chrome.automation.DefaultActionVerb.CLICK;
+    }
+  ],
   anyAttribute: {clickable: true}
 });
 
@@ -611,6 +618,10 @@ AutomationPredicate.multiline = function(node) {
  */
 AutomationPredicate.autoScrollable = function(node) {
   return !!node.scrollable &&
+      (node.standardActions.includes(
+           chrome.automation.ActionType.SCROLL_FORWARD) ||
+       node.standardActions.includes(
+           chrome.automation.ActionType.SCROLL_BACKWARD)) &&
       (node.role == Role.GRID || node.role == Role.LIST ||
        node.role == Role.POP_UP_BUTTON || node.role == Role.SCROLL_VIEW);
 };
@@ -634,5 +645,14 @@ AutomationPredicate.shouldOnlyOutputSelectionChangeInBraille = function(node) {
   return node.state[State.RICHLY_EDITABLE] && node.state[State.FOCUSED] &&
       node.role == Role.LOG;
 };
+
+
+/**
+ * Matches against menu item like nodes.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.menuItem = AutomationPredicate.roles(
+    [Role.MENU_ITEM, Role.MENU_ITEM_CHECK_BOX, Role.MENU_ITEM_RADIO]);
 
 });  // goog.scope

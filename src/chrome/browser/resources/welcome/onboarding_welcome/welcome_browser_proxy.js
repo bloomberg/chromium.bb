@@ -14,11 +14,7 @@ cr.define('welcome', function() {
     /** @param {?string} redirectUrl the URL to go to, after signing in. */
     handleActivateSignIn(redirectUrl) {}
 
-    /**
-     * @param {?string} redirectUrl the URL to go to after backend records the
-     *     user declining signin.
-     */
-    handleUserDecline(redirectUrl) {}
+    handleUserDecline() {}
 
     /** @param {boolean=} replace */
     goToNewTabPage(replace) {}
@@ -35,16 +31,17 @@ cr.define('welcome', function() {
     }
 
     /** @override */
-    handleUserDecline(redirectUrl) {
-      chrome.send('handleUserDecline', redirectUrl ? [redirectUrl] : []);
+    handleUserDecline() {
+      chrome.send('handleUserDecline');
     }
 
     /** @override */
     goToNewTabPage(replace) {
-      if (replace)
+      if (replace) {
         window.location.replace('chrome://newtab');
-      else
+      } else {
         window.location.assign('chrome://newtab');
+      }
     }
 
     /** @override */

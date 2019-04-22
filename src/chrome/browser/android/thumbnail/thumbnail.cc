@@ -94,7 +94,7 @@ cc::UIResourceBitmap Thumbnail::GetBitmap(cc::UIResourceId uid,
     // to avoid reentry there.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&Thumbnail::DoInvalidate, weak_factory_.GetWeakPtr()));
+        base::BindOnce(&Thumbnail::DoInvalidate, weak_factory_.GetWeakPtr()));
     return bitmap_;
   }
 

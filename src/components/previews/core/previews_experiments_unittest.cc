@@ -101,19 +101,9 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
   variations::testing::ClearAllVariationParams();
 }
 
-#if defined(OS_ANDROID)
-
-TEST(PreviewsExperimentsTest, TestClientLoFiEnabledByDefaultOnAndroid) {
-  EXPECT_TRUE(params::IsClientLoFiEnabled());
-}
-
-#else  // !defined(OS_ANDROID)
-
-TEST(PreviewsExperimentsTest, TestClientLoFiDisabledByDefaultOnNonAndroid) {
+TEST(PreviewsExperimentsTest, TestClientLoFiDisabledByDefault) {
   EXPECT_FALSE(params::IsClientLoFiEnabled());
 }
-
-#endif  // defined(OS_ANDROID)
 
 TEST(PreviewsExperimentsTest, TestClientLoFiExplicitlyDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
@@ -134,7 +124,7 @@ TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithDefaultParams) {
   EXPECT_TRUE(params::IsClientLoFiEnabled());
   EXPECT_EQ(0, params::ClientLoFiVersion());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::EffectiveConnectionTypeThresholdForClientLoFi());
+            params::GetECTThresholdForPreview(PreviewsType::LOFI));
 }
 
 TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithCustomParams) {
@@ -146,7 +136,7 @@ TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithCustomParams) {
   EXPECT_TRUE(params::IsClientLoFiEnabled());
   EXPECT_EQ(10, params::ClientLoFiVersion());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G,
-            params::EffectiveConnectionTypeThresholdForClientLoFi());
+            params::GetECTThresholdForPreview(PreviewsType::LOFI));
 }
 
 }  // namespace

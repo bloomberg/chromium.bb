@@ -25,6 +25,8 @@ class MockGattClient : public GattClient {
   MOCK_METHOD0(Enable, bool());
   MOCK_METHOD0(Disable, bool());
   MOCK_METHOD1(Disconnect, bool(const Addr&));
+  MOCK_METHOD1(CreateBond, bool(const Addr&));
+  MOCK_METHOD1(RemoveBond, bool(const Addr&));
   MOCK_METHOD3(ReadCharacteristic,
                bool(const Addr&,
                     const Gatt::Characteristic&,

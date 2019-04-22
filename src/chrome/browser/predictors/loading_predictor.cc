@@ -94,6 +94,7 @@ void LoadingPredictor::PrepareForPageLoad(const GURL& url,
   if (!has_preconnect_prediction)
     return;
 
+  ++total_hints_activated_;
   active_hints_.emplace(url, base::TimeTicks::Now());
   if (IsPreconnectAllowed(profile_))
     MaybeAddPreconnect(url, std::move(prediction.requests), origin);
@@ -250,6 +251,7 @@ void LoadingPredictor::PreconnectFinished(
     return;
 
   DCHECK(stats);
+  active_hints_.erase(stats->url);
   stats_collector_->RecordPreconnectStats(std::move(stats));
 }
 

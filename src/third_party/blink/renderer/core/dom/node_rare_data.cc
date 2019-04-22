@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -55,7 +54,7 @@ NodeMutationObserverData* NodeMutationObserverData::Create() {
 static_assert(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData),
               "NodeRareData should stay small");
 
-void NodeMutationObserverData::Trace(blink::Visitor* visitor) {
+void NodeMutationObserverData::Trace(Visitor* visitor) {
   visitor->Trace(registry_);
   visitor->Trace(transient_registry_);
 }
@@ -92,7 +91,7 @@ void NodeRareData::TraceAfterDispatch(blink::Visitor* visitor) {
     visitor->Trace(node_lists_);
 }
 
-void NodeRareData::Trace(blink::Visitor* visitor) {
+void NodeRareData::Trace(Visitor* visitor) {
   if (is_element_rare_data_)
     static_cast<ElementRareData*>(this)->TraceAfterDispatch(visitor);
   else
@@ -112,7 +111,7 @@ void NodeRareData::IncrementConnectedSubframeCount() {
 }
 
 NodeListsNodeData& NodeRareData::CreateNodeLists() {
-  node_lists_ = NodeListsNodeData::Create();
+  node_lists_ = MakeGarbageCollected<NodeListsNodeData>();
   return *node_lists_;
 }
 

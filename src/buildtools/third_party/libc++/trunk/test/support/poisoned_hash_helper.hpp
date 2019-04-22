@@ -1,10 +1,9 @@
 // -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 #ifndef SUPPORT_POISONED_HASH_HELPER_HPP
@@ -147,7 +146,6 @@ void test_hash_enabled(InputKey const& key) {
 #endif
 
   // Hashable requirements
-  using CKey = ConvertibleTo<Key>;
   static_assert(can_hash<Hash(Key&)>(), "");
   static_assert(can_hash<Hash(Key const&)>(), "");
   static_assert(can_hash<Hash(Key&&)>(), "");
@@ -187,7 +185,6 @@ void test_hash_disabled() {
     >::value, "");
 
   // Hashable requirements
-  using CKey = ConvertibleTo<Key>;
   static_assert(!can_hash<Hash(Key&)>(), "");
   static_assert(!can_hash<Hash(Key const&)>(), "");
   static_assert(!can_hash<Hash(Key&&)>(), "");

@@ -54,7 +54,12 @@ bool TestOmniboxView::OnInlineAutocompleteTextMaybeChanged(
   const bool text_changed = text_ != display_text;
   text_ = display_text;
   inline_autocomplete_text_ = display_text.substr(user_text_length);
-  selection_ = gfx::Range(text_.size(), user_text_length);
+
+  // Just like the Views control, only change the selection if the text has
+  // actually changed.
+  if (text_changed)
+    selection_ = gfx::Range(text_.size(), user_text_length);
+
   return text_changed;
 }
 
@@ -72,14 +77,6 @@ gfx::NativeView TestOmniboxView::GetNativeView() const {
 
 gfx::NativeView TestOmniboxView::GetRelativeWindowForPopup() const {
   return nullptr;
-}
-
-int TestOmniboxView::GetTextWidth() const {
-  return 0;
-}
-
-int TestOmniboxView::GetWidth() const {
-  return 0;
 }
 
 bool TestOmniboxView::IsImeComposing() const {

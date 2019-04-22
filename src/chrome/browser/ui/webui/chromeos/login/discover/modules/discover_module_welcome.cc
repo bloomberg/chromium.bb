@@ -15,7 +15,7 @@ namespace {
 
 class DiscoverModuleWelcomeHandler : public DiscoverHandler {
  public:
-  DiscoverModuleWelcomeHandler();
+  explicit DiscoverModuleWelcomeHandler(JSCallsContainer* js_calls_container);
   ~DiscoverModuleWelcomeHandler() override = default;
 
  private:
@@ -28,8 +28,9 @@ class DiscoverModuleWelcomeHandler : public DiscoverHandler {
   DISALLOW_COPY_AND_ASSIGN(DiscoverModuleWelcomeHandler);
 };
 
-DiscoverModuleWelcomeHandler::DiscoverModuleWelcomeHandler()
-    : DiscoverHandler(DiscoverModuleWelcome::kModuleName) {}
+DiscoverModuleWelcomeHandler::DiscoverModuleWelcomeHandler(
+    JSCallsContainer* js_calls_container)
+    : DiscoverHandler(js_calls_container) {}
 
 void DiscoverModuleWelcomeHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -57,8 +58,9 @@ bool DiscoverModuleWelcome::IsCompleted() const {
   return false;
 }
 
-std::unique_ptr<DiscoverHandler> DiscoverModuleWelcome::CreateWebUIHandler() {
-  return std::make_unique<DiscoverModuleWelcomeHandler>();
+std::unique_ptr<DiscoverHandler> DiscoverModuleWelcome::CreateWebUIHandler(
+    JSCallsContainer* js_calls_container) {
+  return std::make_unique<DiscoverModuleWelcomeHandler>(js_calls_container);
 }
 
 }  // namespace chromeos

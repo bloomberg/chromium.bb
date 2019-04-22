@@ -98,7 +98,6 @@ void NestedMessagePumpAndroid::Run(Delegate* delegate) {
         env, g_message_handler_obj.Get());
     CHECK(ret) << "Error running java message loop, tests will likely fail.";
 
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
     if (state_->delayed_work_time.is_null()) {
       state_->waitable_event.TimedWait(max_delay);
     } else {

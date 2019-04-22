@@ -40,12 +40,8 @@ static const size_t kMaximumUndoStackDepth = 1000;
 
 UndoStack::UndoStack() : in_redo_(false) {}
 
-UndoStack* UndoStack::Create() {
-  return MakeGarbageCollected<UndoStack>();
-}
-
 void UndoStack::RegisterUndoStep(UndoStep* step) {
-  if (undo_stack_.size())
+  if (!undo_stack_.empty())
     DCHECK_GE(step->SequenceNumber(), undo_stack_.back()->SequenceNumber());
   if (undo_stack_.size() == kMaximumUndoStackDepth)
     undo_stack_.pop_front();  // drop oldest item off the far end
@@ -94,7 +90,7 @@ void UndoStack::Clear() {
   redo_stack_.clear();
 }
 
-void UndoStack::Trace(blink::Visitor* visitor) {
+void UndoStack::Trace(Visitor* visitor) {
   visitor->Trace(undo_stack_);
   visitor->Trace(redo_stack_);
 }

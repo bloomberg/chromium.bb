@@ -5,17 +5,20 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_SKIA_RENDERER_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_SKIA_RENDERER_H_
 
+#include <map>
+#include <memory>
 #include <tuple>
+#include <vector>
 
 #include "base/macros.h"
 #include "cc/cc_export.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/sync_query_collection.h"
 #include "components/viz/service/viz_service_export.h"
-#include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/latency/latency_info.h"
 
+class SkColorFilter;
 class SkNWayCanvas;
 class SkPictureRecorder;
 
@@ -30,13 +33,15 @@ class SkiaOutputSurface;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
-class VulkanContextProvider;
 class YUVVideoDrawQuad;
 
+// TODO(795132): SkColorSpace is only a subset comparing to gfx::ColorSpace.
+// Need to figure out support for color space that is not covered by
+// SkColorSpace.
 class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
  public:
   // Different draw modes that are supported by SkiaRenderer right now.
-  enum DrawMode { GL, DDL, VULKAN, SKPRECORD };
+  enum DrawMode { DDL, SKPRECORD };
 
   // TODO(penghuang): Remove skia_output_surface when DDL is used everywhere.
   SkiaRenderer(const RendererSettings* settings,
@@ -46,8 +51,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                DrawMode mode);
   ~SkiaRenderer() override;
 
-  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
-                   bool need_presentation_feedback) override;
+  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) override;
 
   void SetDisablePictureQuadImageFiltering(bool disable) {
     disable_picture_quad_image_filtering_ = disable;
@@ -77,55 +81,101 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   bool FlippedFramebuffer() const override;
   void EnsureScissorTestEnabled() override;
   void EnsureScissorTestDisabled() override;
-  void CopyDrawnRenderPass(std::unique_ptr<CopyOutputRequest> request) override;
+  void CopyDrawnRenderPass(const copy_output::RenderPassGeometry& geometry,
+                           std::unique_ptr<CopyOutputRequest> request) override;
   void SetEnableDCLayers(bool enable) override;
   void DidChangeVisibility() override;
   void FinishDrawingQuadList() override;
   void GenerateMipmap() override;
 
  private:
-  struct DrawRenderPassDrawQuadParams;
+  struct DrawQuadParams;
+  struct DrawRPDQParams;
   class ScopedSkImageBuilder;
   class ScopedYUVSkImageBuilder;
 
   void ClearCanvas(SkColor color);
   void ClearFramebuffer();
 
-  void PrepareCanvasForDrawQuads(
-      const gfx::Transform& transform,
-      const gfx::QuadF* draw_region,
-      const gfx::Rect* scissor_rect,
-      base::Optional<SkAutoCanvasRestore>* auto_canvas_restore);
-  void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad, SkPaint* paint);
-  void DrawPictureQuad(const PictureDrawQuad* quad, SkPaint* paint);
-  void DrawRenderPassQuad(const RenderPassDrawQuad* quad, SkPaint* paint);
-  void DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
-                                  sk_sp<SkImage> content_image,
-                                  SkPaint* paint);
+  // Callers should init an SkAutoCanvasRestore before calling this function.
+  // |scissor_rect| and |rounded_corner_bounds| should be in device space,
+  // i.e. same space that |cdt| will transform subsequent draws into.
+  void PrepareCanvas(const base::Optional<gfx::Rect>& scissor_rect,
+                     const base::Optional<gfx::RRectF>& rounded_corner_bounds,
+                     const gfx::Transform* cdt);
 
-  void DrawSolidColorQuad(const SolidColorDrawQuad* quad, SkPaint* paint);
-  void DrawTextureQuad(const TextureDrawQuad* quad, SkPaint* paint);
-  bool MustDrawBatchedTileQuadsBeforeQuad(const DrawQuad* new_quad,
-                                          const gfx::QuadF* draw_region);
-  void AddTileQuadToBatch(const TileDrawQuad* quad,
-                          const gfx::QuadF* draw_region);
-  void DrawBatchedTileQuads();
-  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad, SkPaint* paint);
-  void DrawUnsupportedQuad(const DrawQuad* quad, SkPaint* paint);
-  bool CalculateRPDQParams(sk_sp<SkImage> src_image,
-                           const RenderPassDrawQuad* quad,
-                           DrawRenderPassDrawQuadParams* params);
-  bool ShouldApplyBackgroundFilters(
-      const RenderPassDrawQuad* quad,
-      const cc::FilterOperations* backdrop_filters) const;
-  bool IsUsingVulkan() const;
+  // The returned DrawQuadParams can be modified by the DrawX calls that accept
+  // params so that they can apply explicit data transforms before sending to
+  // Skia in a consistent manner.
+  DrawQuadParams CalculateDrawQuadParams(const DrawQuad* quad,
+                                         const gfx::QuadF* draw_region);
+  DrawRPDQParams CalculateRPDQParams(const SkImage* src_image,
+                                     const RenderPassDrawQuad* quad,
+                                     DrawQuadParams* params);
+
+  SkCanvas::ImageSetEntry MakeEntry(const SkImage* image,
+                                    int matrix_index,
+                                    const DrawQuadParams& params);
+  // Returns overall constraint to pass to Skia, and modifies |params| to
+  // emulate content area clamping different from the provided texture coords.
+  SkCanvas::SrcRectConstraint ResolveTextureConstraints(
+      const SkImage* image,
+      const gfx::RectF& valid_texel_bounds,
+      DrawQuadParams* params);
+
+  bool MustFlushBatchedQuads(const DrawQuad* new_quad,
+                             const DrawQuadParams& params);
+  void AddQuadToBatch(const SkImage* image,
+                      const gfx::RectF& valid_texel_bounds,
+                      DrawQuadParams* params);
+  void FlushBatchedQuads();
+
+  // Utility to draw a single quad as a filled color
+  void DrawColoredQuad(SkColor color, DrawQuadParams* params);
+  // Utility to make a single ImageSetEntry and draw it with the complex paint.
+  void DrawSingleImage(const SkImage* image,
+                       const gfx::RectF& valid_texel_bounds,
+                       const SkPaint& paint,
+                       DrawQuadParams* params);
+
+  // DebugBorder, Picture, RPDQ, and SolidColor quads cannot be batched. They
+  // either are not textures (debug, picture, solid color), or it's very likely
+  // the texture will have advanced paint effects (rpdq)
+  void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
+                           DrawQuadParams* params);
+  void DrawPictureQuad(const PictureDrawQuad* quad, DrawQuadParams* params);
+  void DrawRenderPassQuad(const RenderPassDrawQuad* quad,
+                          DrawQuadParams* params);
+  void DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
+                                  const SkImage* content_image,
+                                  DrawQuadParams* params);
+  void DrawSolidColorQuad(const SolidColorDrawQuad* quad,
+                          DrawQuadParams* params);
+
+  void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
+                           DrawQuadParams* params);
+  void DrawTextureQuad(const TextureDrawQuad* quad, DrawQuadParams* params);
+  void DrawTileDrawQuad(const TileDrawQuad* quad, DrawQuadParams* params);
+  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad, DrawQuadParams* params);
+  void DrawUnsupportedQuad(const DrawQuad* quad, DrawQuadParams* params);
+
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
+  // Get corresponding GrContext. Returns nullptr when there is no GrContext.
+  // TODO(weiliangc): This currently only returns nullptr. If SKPRecord isn't
+  // going to use this later, it should be removed.
+  GrContext* GetGrContext();
+  bool is_using_ddl() const { return draw_mode_ == DrawMode::DDL; }
+
+  sk_sp<SkColorFilter> GetColorFilter(const gfx::ColorSpace& src,
+                                      const gfx::ColorSpace& dst,
+                                      float resource_offset,
+                                      float resource_multiplier);
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   struct RenderPassBacking {
     sk_sp<SkSurface> render_pass_surface;
     gfx::Size size;
-    bool mipmap;
+    bool generate_mipmap;
     gfx::ColorSpace color_space;
     ResourceFormat format;
 
@@ -136,10 +186,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     RenderPassBacking(GrContext* gr_context,
                       const gpu::Capabilities& caps,
                       const gfx::Size& size,
-                      bool mipmap,
+                      bool generate_mipmap,
                       const gfx::ColorSpace& color_space);
     RenderPassBacking(const gfx::Size& size,
-                      bool mipmap,
+                      bool generate_mipmap,
                       const gfx::ColorSpace& color_space);
     ~RenderPassBacking();
     RenderPassBacking(RenderPassBacking&&);
@@ -148,12 +198,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   base::flat_map<RenderPassId, RenderPassBacking> render_pass_backings_;
 
   const DrawMode draw_mode_;
-
-  // Get corresponding GrContext in DrawMode::GL or DrawMode::VULKAN. Returns
-  // nullptr when there is no GrContext.
-  GrContext* GetGrContext();
-  bool is_using_ddl() const { return draw_mode_ == DrawMode::DDL; }
-  bool is_using_vulkan() const { return draw_mode_ == DrawMode::VULKAN; }
 
   // Interface used for drawing. Common among different draw modes.
   sk_sp<SkSurface> root_surface_;
@@ -171,30 +215,30 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   std::unique_ptr<SkCanvas> overdraw_canvas_;
   std::unique_ptr<SkNWayCanvas> nway_canvas_;
 
-  // Specific for GL.
-  ContextProvider* context_provider_ = nullptr;
-  base::Optional<SyncQueryCollection> sync_queries_;
+  // TODO(crbug.com/920344): Use partial swap for SkDDL.
   bool use_swap_with_bounds_ = false;
   gfx::Rect swap_buffer_rect_;
   std::vector<gfx::Rect> swap_content_bounds_;
 
-  // State common to all tile quads in a batch
-  struct BatchedTileState {
-    gfx::Transform transform;
-    gfx::Rect scissor_rect;
-    gfx::QuadF draw_region;
+  // State common to all quads in a batch. Draws that require an SkPaint not
+  // captured by this state cannot be batched.
+  struct BatchedQuadState {
+    base::Optional<gfx::Rect> scissor_rect;
+    base::Optional<gfx::RRectF> rounded_corner_bounds;
     SkBlendMode blend_mode;
-    bool is_nearest_neighbor;
-    bool has_scissor_rect;
-    bool has_draw_region;
-  };
-  BatchedTileState batched_tile_state_;
-  std::vector<SkCanvas::ImageSetEntry> batched_tiles_;
+    SkFilterQuality filter_quality;
+    SkCanvas::SrcRectConstraint constraint;
 
-// Specific for Vulkan.
-#if BUILDFLAG(ENABLE_VULKAN)
-  VulkanContextProvider* vulkan_context_provider_ = nullptr;
-#endif
+    BatchedQuadState();
+  };
+  BatchedQuadState batched_quad_state_;
+  std::vector<SkCanvas::ImageSetEntry> batched_quads_;
+  // Same order as batched_quads_, but only includes draw regions for the
+  // entries that have fHasClip == true. Each draw region is 4 consecutive pts
+  std::vector<SkPoint> batched_draw_regions_;
+  // Each entry of batched_quads_ will have an index into this vector; multiple
+  // entries may point to the same matrix.
+  std::vector<SkMatrix> batched_cdt_matrices_;
 
   // Specific for SkDDL.
   SkiaOutputSurface* const skia_output_surface_ = nullptr;
@@ -204,7 +248,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // the compositor thread. And the sync token will be released when the DDL
   // for the current frame is replayed on the GPU thread.
   // It is only used with DDL.
-  DisplayResourceProvider::LockSetForExternalUse lock_set_for_external_use_;
+  base::Optional<DisplayResourceProvider::LockSetForExternalUse>
+      lock_set_for_external_use_;
 
   // Promise images created from resources used in the current frame. This map
   // will be cleared when the frame is done and before all resources in
@@ -219,6 +264,11 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   sk_sp<SkPicture> root_picture_;
   sk_sp<SkPicture>* current_picture_;
   SkPictureRecorder* current_recorder_;
+  ContextProvider* context_provider_ = nullptr;
+  base::Optional<SyncQueryCollection> sync_queries_;
+
+  std::map<gfx::ColorSpace, std::map<gfx::ColorSpace, sk_sp<SkColorFilter>>>
+      color_filter_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);
 };

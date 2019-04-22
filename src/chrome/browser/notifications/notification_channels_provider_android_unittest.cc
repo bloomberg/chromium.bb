@@ -10,7 +10,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
@@ -70,7 +70,7 @@ class FakeNotificationChannelsBridge
                                     const base::Time& timestamp,
                                     bool enabled) override {
     std::string channel_id =
-        origin + base::Int64ToString(timestamp.ToInternalValue());
+        origin + base::NumberToString(timestamp.ToInternalValue());
     // Note if a channel with this channel ID was already created, this is a
     // no-op. This is intentional, to match the Android Channels API.
     NotificationChannel channel =
@@ -187,7 +187,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
   content_settings::Rule rule = rule_iterator->Next();
   EXPECT_EQ(GetTestPattern(), rule.primary_pattern);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            content_settings::ValueToContentSetting(rule.value.get()));
+            content_settings::ValueToContentSetting(&rule.value));
   EXPECT_FALSE(rule_iterator->HasNext());
 }
 
@@ -208,7 +208,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
   content_settings::Rule rule = rule_iterator->Next();
   EXPECT_EQ(GetTestPattern(), rule.primary_pattern);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            content_settings::ValueToContentSetting(rule.value.get()));
+            content_settings::ValueToContentSetting(&rule.value));
   EXPECT_FALSE(rule_iterator->HasNext());
 }
 
@@ -233,7 +233,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
   content_settings::Rule rule = rule_iterator->Next();
   EXPECT_EQ(GetTestPattern(), rule.primary_pattern);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            content_settings::ValueToContentSetting(rule.value.get()));
+            content_settings::ValueToContentSetting(&rule.value));
   EXPECT_FALSE(rule_iterator->HasNext());
 }
 
@@ -258,7 +258,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
   content_settings::Rule rule = rule_iterator->Next();
   EXPECT_EQ(GetTestPattern(), rule.primary_pattern);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            content_settings::ValueToContentSetting(rule.value.get()));
+            content_settings::ValueToContentSetting(&rule.value));
   EXPECT_FALSE(rule_iterator->HasNext());
 }
 
@@ -331,12 +331,12 @@ TEST_F(NotificationChannelsProviderAndroidTest,
   content_settings::Rule first_rule = rule_iterator->Next();
   EXPECT_EQ(abc_pattern, first_rule.primary_pattern);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            content_settings::ValueToContentSetting(first_rule.value.get()));
+            content_settings::ValueToContentSetting(&first_rule.value));
   EXPECT_TRUE(rule_iterator->HasNext());
   content_settings::Rule second_rule = rule_iterator->Next();
   EXPECT_EQ(xyz_pattern, second_rule.primary_pattern);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            content_settings::ValueToContentSetting(second_rule.value.get()));
+            content_settings::ValueToContentSetting(&second_rule.value));
   EXPECT_FALSE(rule_iterator->HasNext());
 }
 

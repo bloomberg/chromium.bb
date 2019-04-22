@@ -38,7 +38,7 @@ Data collected at this layer:
 ### Task
 
 The entry point for the system resolver is HostResolverImpl::ProcTask. The task
-runs almost entirely on TaskScheduler. Its main implementation is in
+runs almost entirely on ThreadPool. Its main implementation is in
 SystemHostResolverProc. Other implementations of HostResolverProc can be swapped
 in for testing.
 
@@ -50,7 +50,7 @@ Data collected at this layer:
 ### Attempt
 
 Attempts in the system resolver are not a separate class. They're implemented as
-separate tasks posted to TaskScheduler.
+separate tasks posted to ThreadPool.
 
 Data collected at this layer:
 * "DNS.AttemptFirstSuccess"
@@ -83,20 +83,8 @@ The main implementation of the async resolver is in the DnsTransaction. Each
 transaction represents a single query, which might be tried multiple times or in
 different ways.
 
-Data collected at this layer:
-* "AsyncDNS.TransactionFailure"
-* "AsyncDNS.TransactionSuccess" (and by query type)
-
 ### Attempt
 
 Attempts in the async resolver are an explicit layer, implemented by subclasses
 of DnsAttempt. In most cases, DnsUDPAttempt is used. DnsTCPAttempt is used
 instead when the server requests it. DnsHTTPAttempt is experimental.
-
-Data collected at this layer:
-* "AsyncDNS.UDPAttemptSuccess"
-* "AsyncDNS.UDPAttemptFail"
-* "AsyncDNS.TCPAttemptSuccess"
-* "AsyncDNS.TCPAttemptFail"
-* "AsyncDNS.AttemptCountSuccess"
-* "AsyncDNS.AttemptCountFail"

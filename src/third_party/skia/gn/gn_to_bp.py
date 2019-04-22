@@ -128,6 +128,21 @@ cc_library_static {
           "include/config/mac",
         ],
       },
+      windows: {
+        cflags: [
+          "-mssse3",
+          "-Wno-unknown-pragmas",
+        ],
+        srcs: [
+          $win_srcs
+        ],
+        local_include_dirs: [
+          "include/config/win",
+        ],
+        export_include_dirs: [
+          "include/config/win",
+        ],
+      },
     },
 
     defaults: ["skia_deps",
@@ -164,17 +179,15 @@ cc_defaults {
 cc_defaults {
     name: "skia_deps",
     shared_libs: [
+        "libandroidicu",
         "libdng_sdk",
         "libexpat",
         "libft2",
-        "libicui18n",
-        "libicuuc",
         "libjpeg",
         "liblog",
         "libpiex",
         "libpng",
         "libz",
-        "libcutils",
     ],
     static_libs: [
         "libarect",
@@ -186,16 +199,38 @@ cc_defaults {
     target: {
       android: {
         shared_libs: [
+            "libcutils",
             "libEGL",
             "libGLESv2",
             "libheif",
             "libvulkan",
             "libnativewindow",
         ],
+        export_shared_lib_headers: [
+            "libvulkan",
+        ],
+      },
+      host: {
+        static_libs: [
+          "libcutils",
+        ],
       },
       darwin: {
         host_ldlibs: [
             "-framework AppKit",
+        ],
+      },
+      windows: {
+        // clang-r353983 emits error when building Skia for Windows. Do not
+        // build it for now until the compiler issue is addressed.
+        // enabled: true,
+        host_ldlibs: [
+            "-lgdi32",
+            "-loleaut32",
+            "-lole32",
+            "-lopengl32",
+            "-luuid",
+            "-lwindowscodecs",
         ],
       },
     },
@@ -208,7 +243,6 @@ cc_defaults {
         "skia_pgo_no_profile_use"
     ],
     static_libs: [
-        "libjsoncpp",
         "libskia",
     ],
     cflags: [
@@ -260,47 +294,54 @@ cc_test {
 }''')
 
 # We'll run GN to get the main source lists and include directories for Skia.
-gn_args = {
-  'is_official_build':                  'true',
-  'skia_enable_tools':                  'true',
-  'skia_use_libheif':                   'true',
-  'skia_use_vulkan':                    'true',
-  'target_cpu':                         '"none"',
-  'target_os':                          '"android"',
-  'skia_enable_fontmgr_custom':         'false',
-  'skia_enable_fontmgr_custom_empty':   'true',
-  'skia_enable_fontmgr_android':        'false',
-}
+def generate_args(target_os, enable_gpu):
+  d = {
+    'is_official_build':                  'true',
 
-gn_args_linux = {
-  'is_official_build':                  'true',
-  'skia_enable_tools':                  'true',
-  'skia_enable_gpu'  :                  'false',
-  'skia_use_libheif':                   'false',
-  'skia_use_vulkan':                    'false',
-  'target_cpu':                         '"none"',
-  'target_os':                          '"linux"',
-  'skia_enable_fontmgr_custom':         'false',
-  'skia_enable_fontmgr_custom_empty':   'true',
-  'skia_enable_fontmgr_android':        'false',
-  'skia_use_fontconfig':                'false',
-  'skia_use_fixed_gamma_text':          'true',
-}
+    # gn_to_bp_utils' GetArchSources will take care of architecture-specific
+    # files.
+    'target_cpu':                         '"none"',
 
-gn_args_mac = {
-  'is_official_build':                  'true',
-  'skia_enable_tools':                  'true',
-  'skia_enable_gpu'  :                  'false',
-  'skia_use_libheif':                   'false',
-  'skia_use_vulkan':                    'false',
-  'target_cpu':                         '"none"',
-  'target_os':                          '"mac"',
-  'skia_use_fixed_gamma_text':          'true',
-  'skia_enable_fontmgr_custom_empty':   'true',
-  'skia_use_fonthost_mac':              'false',
-  'skia_use_freetype':                  'true',
-  'skia_enable_fontmgr_android':        'false',
-}
+    # Use the custom FontMgr, as the framework will handle fonts.
+    'skia_enable_fontmgr_custom':         'false',
+    'skia_enable_fontmgr_custom_empty':   'true',
+    'skia_enable_fontmgr_android':        'false',
+    'skia_enable_fontmgr_win':            'false',
+    'skia_enable_fontmgr_win_gdi':        'false',
+    'skia_use_fonthost_mac':              'false',
+
+    'skia_use_freetype':                  'true',
+    'skia_use_fontconfig':                'false',
+    'skia_use_fixed_gamma_text':          'true',
+  }
+  d['target_os'] = target_os
+  if target_os == '"android"':
+    d['skia_enable_tools'] = 'true'
+    d['skia_use_libheif']  = 'true'
+  else:
+    d['skia_use_libheif']  = 'false'
+
+  if enable_gpu:
+    d['skia_use_vulkan']   = 'true'
+  else:
+    d['skia_use_vulkan']   = 'false'
+    d['skia_enable_gpu']   = 'false'
+
+  if target_os == '"win"':
+    # The Android Windows build system does not provide FontSub.h
+    d['skia_use_xps'] = 'false'
+
+    # BUILDCONFIG.gn expects these to be set when building for Windows, but
+    # we're just creating Android.bp, so we don't need them. Populate with
+    # some dummy values.
+    d['win_vc'] = '"dummy_version"'
+    d['win_sdk_version'] = '"dummy_version"'
+  return d
+
+gn_args       = generate_args('"android"', True)
+gn_args_linux = generate_args('"linux"',   False)
+gn_args_mac   = generate_args('"mac"',     False)
+gn_args_win   = generate_args('"win"',     False)
 
 js = gn_to_bp_utils.GenerateJSONFromGN(gn_args)
 
@@ -347,10 +388,18 @@ gn_to_bp_utils.GrabDependentValues(js_mac, '//:skia', 'sources', mac_srcs,
                                    None)
 mac_srcs        = strip_headers(mac_srcs)
 
+js_win          = gn_to_bp_utils.GenerateJSONFromGN(gn_args_win)
+win_srcs        = strip_slashes(js_win['targets']['//:skia']['sources'])
+gn_to_bp_utils.GrabDependentValues(js_win, '//:skia', 'sources', win_srcs,
+                                   None)
+win_srcs        = strip_headers(win_srcs)
+
 srcs = android_srcs.intersection(linux_srcs).intersection(mac_srcs)
+srcs = srcs.intersection(win_srcs)
 android_srcs    = android_srcs.difference(srcs)
 linux_srcs      =   linux_srcs.difference(srcs)
-mac_srcs        =   mac_srcs.difference(srcs)
+mac_srcs        =     mac_srcs.difference(srcs)
+win_srcs        =     win_srcs.difference(srcs)
 dm_srcs         = strip_headers(dm_srcs)
 nanobench_srcs  = strip_headers(nanobench_srcs)
 
@@ -365,6 +414,7 @@ def get_defines(json):
 android_defines = get_defines(js)
 linux_defines   = get_defines(js_linux)
 mac_defines     = get_defines(js_mac)
+win_defines     = get_defines(js_win)
 
 def mkdir_if_not_exists(path):
   if not os.path.exists(path):
@@ -372,6 +422,7 @@ def mkdir_if_not_exists(path):
 mkdir_if_not_exists('include/config/android/')
 mkdir_if_not_exists('include/config/linux/')
 mkdir_if_not_exists('include/config/mac/')
+mkdir_if_not_exists('include/config/win/')
 
 platforms = { 'IOS', 'MAC', 'WIN', 'ANDROID', 'UNIX' }
 
@@ -416,6 +467,7 @@ def write_config(config_path, defines, platform):
 
 write_config('include/config/linux/SkUserConfig.h', linux_defines, 'UNIX')
 write_config('include/config/mac/SkUserConfig.h',   mac_defines, 'MAC')
+write_config('include/config/win/SkUserConfig.h',   win_defines, 'WIN')
 
 # Turn a list of strings into the style bpfmt outputs.
 def bpfmt(indent, lst, sort=True):
@@ -453,4 +505,5 @@ with open('Android.bp', 'w') as Android_bp:
     'android_srcs':  bpfmt(10, android_srcs),
     'linux_srcs':    bpfmt(10, linux_srcs),
     'mac_srcs':      bpfmt(10, mac_srcs),
+    'win_srcs':      bpfmt(10, win_srcs),
   })

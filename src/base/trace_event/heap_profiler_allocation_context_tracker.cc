@@ -12,6 +12,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/debug/stack_trace.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
@@ -221,17 +222,17 @@ bool AllocationContextTracker::GetContextSnapshot(AllocationContext* ctx) {
 #if !defined(OS_NACL)  // We don't build base/debug/stack_trace.cc for NaCl.
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE)
         const void* frames[Backtrace::kMaxFrameCount + 1];
-        static_assert(arraysize(frames) >= Backtrace::kMaxFrameCount,
+        static_assert(base::size(frames) >= Backtrace::kMaxFrameCount,
                       "not requesting enough frames to fill Backtrace");
         size_t frame_count =
             CFIBacktraceAndroid::GetInitializedInstance()->Unwind(
-                frames, arraysize(frames));
+                frames, base::size(frames));
 #elif BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
         const void* frames[Backtrace::kMaxFrameCount + 1];
-        static_assert(arraysize(frames) >= Backtrace::kMaxFrameCount,
+        static_assert(base::size(frames) >= Backtrace::kMaxFrameCount,
                       "not requesting enough frames to fill Backtrace");
         size_t frame_count = debug::TraceStackFramePointers(
-            frames, arraysize(frames),
+            frames, base::size(frames),
             1 /* exclude this function from the trace */);
 #else
         // Fall-back to capturing the stack with base::debug::StackTrace,

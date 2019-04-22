@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.annotation.Nullable;
 
-import org.chromium.chrome.browser.modelutil.ListObservableImpl;
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.ui.modelutil.ListObservableImpl;
+import org.chromium.ui.modelutil.RecyclerViewAdapter;
 
 /**
  * A node in the tree that has a parent and can notify it about changes.

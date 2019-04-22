@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/unguessable_token.h"
-#include "components/cryptauth/fake_connection.h"
-#include "components/cryptauth/fake_secure_channel.h"
-#include "components/cryptauth/remote_device_test_util.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
+#include "chromeos/services/secure_channel/fake_connection.h"
+#include "chromeos/services/secure_channel/fake_secure_channel_connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -33,15 +33,14 @@ class SecureChannelSecureChannelDisconnectorImplTest : public testing::Test {
 
   // Returns an ID associated with the request as well as a pointer to the
   // SecureChannel to be disconnected.
-  std::pair<base::UnguessableToken, cryptauth::FakeSecureChannel*>
+  std::pair<base::UnguessableToken, FakeSecureChannelConnection*>
   CallDisconnectSecureChannel() {
-    auto fake_secure_channel = std::make_unique<cryptauth::FakeSecureChannel>(
-        std::make_unique<cryptauth::FakeConnection>(
-            cryptauth::CreateRemoteDeviceRefForTest()));
-    fake_secure_channel->ChangeStatus(
-        cryptauth::SecureChannel::Status::CONNECTED);
+    auto fake_secure_channel = std::make_unique<FakeSecureChannelConnection>(
+        std::make_unique<FakeConnection>(
+            multidevice::CreateRemoteDeviceRefForTest()));
+    fake_secure_channel->ChangeStatus(SecureChannel::Status::CONNECTED);
 
-    cryptauth::FakeSecureChannel* fake_secure_channel_raw =
+    FakeSecureChannelConnection* fake_secure_channel_raw =
         fake_secure_channel.get();
     base::UnguessableToken id = base::UnguessableToken::Create();
 
@@ -82,18 +81,18 @@ TEST_F(SecureChannelSecureChannelDisconnectorImplTest,
 
   // Update to disconnecting. This should not cause the channel to be deleted.
   id_and_channel_pair_1.second->ChangeStatus(
-      cryptauth::SecureChannel::Status::DISCONNECTING);
+      SecureChannel::Status::DISCONNECTING);
   EXPECT_FALSE(HasChannelBeenDeleted(id_and_channel_pair_1.first));
   id_and_channel_pair_2.second->ChangeStatus(
-      cryptauth::SecureChannel::Status::DISCONNECTING);
+      SecureChannel::Status::DISCONNECTING);
   EXPECT_FALSE(HasChannelBeenDeleted(id_and_channel_pair_2.first));
 
   // Update to disconnected. The channels should be deleted.
   id_and_channel_pair_1.second->ChangeStatus(
-      cryptauth::SecureChannel::Status::DISCONNECTED);
+      SecureChannel::Status::DISCONNECTED);
   EXPECT_TRUE(HasChannelBeenDeleted(id_and_channel_pair_1.first));
   id_and_channel_pair_2.second->ChangeStatus(
-      cryptauth::SecureChannel::Status::DISCONNECTED);
+      SecureChannel::Status::DISCONNECTED);
   EXPECT_TRUE(HasChannelBeenDeleted(id_and_channel_pair_2.first));
 }
 

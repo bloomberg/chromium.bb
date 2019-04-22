@@ -31,13 +31,14 @@ class ExtensionIdsMap {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // TODO(nigeltao): delete this after M72 has branched.
-  //
-  // This is public only for testing.
-  static void UpgradeFromM70Format(PrefService* pref_service);
-
   static bool HasExtensionId(const PrefService* pref_service,
                              const std::string& extension_id);
+
+  // Returns true if |extension_id| was added with |install_source| to
+  // |pref_service|.
+  static bool HasExtensionIdWithInstallSource(const PrefService* pref_service,
+                                              const std::string& extension_id,
+                                              InstallSource install_source);
 
   // Returns the URLs of the apps that were installed from |install_source|.
   static std::vector<GURL> GetInstalledAppUrls(Profile* profile,
@@ -48,7 +49,13 @@ class ExtensionIdsMap {
   void Insert(const GURL& url,
               const std::string& extension_id,
               InstallSource install_source);
-  base::Optional<std::string> LookupExtensionId(const GURL& url);
+  base::Optional<std::string> LookupExtensionId(const GURL& url) const;
+
+  // Returns an id if there is a placeholder app for |url|. Note that nullopt
+  // does not mean that there is no app for |url| just that there is no
+  // *placeholder app*.
+  base::Optional<std::string> LookupPlaceholderAppId(const GURL& url) const;
+  void SetIsPlaceholder(const GURL& url, bool is_placeholder);
 
  private:
   PrefService* pref_service_;

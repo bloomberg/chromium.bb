@@ -47,16 +47,9 @@ BASE_EXPORT bool CreateLocalWmiConnection(
 // WMI method that you can fill with parameter values using SetParameter.
 BASE_EXPORT bool CreateWmiClassMethodObject(
     IWbemServices* wmi_services,
-    const StringPiece16& class_name,
-    const StringPiece16& method_name,
+    StringPiece16 class_name,
+    StringPiece16 method_name,
     Microsoft::WRL::ComPtr<IWbemClassObject>* class_instance);
-
-// Fills a single parameter given an instanced |class_method|. Returns true
-// if the operation succeeded. When all the parameters are set the method can
-// be executed using IWbemServices::ExecMethod().
-BASE_EXPORT bool SetWmiClassMethodParameter(IWbemClassObject* class_method,
-                                            const StringPiece16& parameter_name,
-                                            VARIANT* parameter);
 
 // Creates a new process from |command_line|. The advantage over CreateProcess
 // is that it allows you to always break out from a Job object that the caller

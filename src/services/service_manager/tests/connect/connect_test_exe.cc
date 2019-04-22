@@ -4,14 +4,16 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_runner.h"
-#include "services/service_manager/tests/connect/connect_test.mojom.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/tests/connect/connect.test-mojom.h"
 
 using service_manager::test::mojom::ConnectTestService;
 using service_manager::test::mojom::ConnectTestServiceRequest;
@@ -21,11 +23,13 @@ namespace {
 class Target : public service_manager::Service,
                public ConnectTestService {
  public:
-  Target() {
+  explicit Target(service_manager::mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {
     registry_.AddInterface<ConnectTestService>(
         base::Bind(&Target::Create, base::Unretained(this)));
   }
-  ~Target() override {}
+
+  ~Target() override = default;
 
  private:
   // service_manager::Service:
@@ -45,18 +49,19 @@ class Target : public service_manager::Service,
   }
 
   void GetInstanceId(GetInstanceIdCallback callback) override {
-    std::move(callback).Run(context()->identity().instance_id());
+    std::move(callback).Run(service_binding_.identity().instance_id());
   }
 
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<ConnectTestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Target);
 };
 
-}  // namespac
+}  // namespace
 
-MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(new Target);
-  return runner.Run(service_request_handle);
+void ServiceMain(service_manager::mojom::ServiceRequest request) {
+  base::MessageLoop message_loop;
+  Target(std::move(request)).RunUntilTermination();
 }

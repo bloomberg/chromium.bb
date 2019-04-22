@@ -110,7 +110,7 @@ TEST_F(VolumeArchiveLibarchiveReadTest, ReadSuccessForSmallLengths) {
 
 // Similar to above, just that this time we also call
 // VolumeArchiveLibarchive::volume_archive->MaybeDecompressAhead to improve
-// perfomance.
+// performance.
 TEST_F(VolumeArchiveLibarchiveReadTest, ReadSuccessForSmallLengthsWithConsume) {
   fake_lib_archive_config::archive_data = kArchiveData;
   fake_lib_archive_config::archive_data_size = sizeof(kArchiveData);

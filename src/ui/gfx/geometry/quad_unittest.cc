@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -153,7 +153,7 @@ TEST(QuadTest, IsRectilinear) {
     }
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     PointF a_off = tests[i].a_off;
     PointF b_off = tests[i].b_off;
     PointF c_off = tests[i].c_off;

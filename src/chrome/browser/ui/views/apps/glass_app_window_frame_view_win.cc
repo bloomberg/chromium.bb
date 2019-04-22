@@ -127,7 +127,7 @@ int GlassAppWindowFrameViewWin::NonClientHitTest(const gfx::Point& point) {
 }
 
 void GlassAppWindowFrameViewWin::GetWindowMask(const gfx::Size& size,
-                                               gfx::Path* window_mask) {
+                                               SkPath* window_mask) {
   // We got nothing to say about no window mask.
 }
 

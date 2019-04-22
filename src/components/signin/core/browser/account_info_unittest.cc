@@ -47,8 +47,8 @@ TEST_F(AccountInfoTest, IsValid) {
   EXPECT_TRUE(info.IsValid());
 }
 
-// Tests that UpdateWith() correctly ignores parameters with a different account
-// id.
+// Tests that UpdateWith() correctly ignores parameters with a different
+// account / id.
 TEST_F(AccountInfoTest, UpdateWithDifferentAccountId) {
   AccountInfo info;
   info.account_id = "test_id";
@@ -61,7 +61,8 @@ TEST_F(AccountInfoTest, UpdateWithDifferentAccountId) {
   EXPECT_TRUE(info.email.empty());
 }
 
-// Tests that UpdateWith() doesn't update the fields that were already set.
+// Tests that UpdateWith() doesn't update the fields that were already set
+// to the correct value.
 TEST_F(AccountInfoTest, UpdateWithNoModification) {
   AccountInfo info;
   info.account_id = info.gaia = info.email = "test_id";
@@ -69,7 +70,7 @@ TEST_F(AccountInfoTest, UpdateWithNoModification) {
 
   AccountInfo other;
   other.account_id = "test_id";
-  other.gaia = other.email = "test_other_id";
+  other.gaia = other.email = "test_id";
   other.is_child_account = false;
 
   EXPECT_FALSE(info.UpdateWith(other));
@@ -94,4 +95,38 @@ TEST_F(AccountInfoTest, UpdateWithSuccessfulUpdate) {
   EXPECT_EQ("test_name", info.full_name);
   EXPECT_EQ("test_name", info.given_name);
   EXPECT_TRUE(info.is_child_account);
+}
+
+// Tests that UpdateWith() sets default values for hosted_domain and
+// picture_url if the properties are unset.
+TEST_F(AccountInfoTest, UpdateWithDefaultValues) {
+  AccountInfo info;
+  info.account_id = info.gaia = info.email = "test_id";
+
+  AccountInfo other;
+  other.account_id = "test_id";
+  other.hosted_domain = kNoHostedDomainFound;
+  other.picture_url = kNoPictureURLFound;
+
+  EXPECT_TRUE(info.UpdateWith(other));
+  EXPECT_EQ(kNoHostedDomainFound, info.hosted_domain);
+  EXPECT_EQ(kNoPictureURLFound, info.picture_url);
+}
+
+// Tests that UpdateWith() ignores default values for hosted_domain and
+// picture_url if they are already set.
+TEST_F(AccountInfoTest, UpdateWithDefaultValuesNoOverride) {
+  AccountInfo info;
+  info.account_id = info.gaia = info.email = "test_id";
+  info.hosted_domain = "test_domain";
+  info.picture_url = "test_url";
+
+  AccountInfo other;
+  other.account_id = "test_id";
+  other.hosted_domain = kNoHostedDomainFound;
+  other.picture_url = kNoPictureURLFound;
+
+  EXPECT_FALSE(info.UpdateWith(other));
+  EXPECT_EQ("test_domain", info.hosted_domain);
+  EXPECT_EQ("test_url", info.picture_url);
 }

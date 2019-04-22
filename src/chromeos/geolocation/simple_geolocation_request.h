@@ -9,11 +9,11 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/geolocation/geoposition.h"
 #include "chromeos/network/network_util.h"
 #include "net/url_request/url_fetcher.h"
@@ -38,8 +38,8 @@ class SimpleGeolocationRequestTestMonitor;
 // - If request is destroyed while callback has not beed called yet, request
 // is silently cancelled.
 //
-// Note: we need CHROMEOS_EXPORT for tests.
-class CHROMEOS_EXPORT SimpleGeolocationRequest {
+// Note: we need COMPONENT_EXPORT(CHROMEOS_GEOLOCATION) for tests.
+class COMPONENT_EXPORT(CHROMEOS_GEOLOCATION) SimpleGeolocationRequest {
  public:
   // Called when a new geo geolocation information is available.
   // The second argument indicates whether there was a server error or not.

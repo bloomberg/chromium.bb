@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import re
 import subprocess
 
@@ -15,137 +17,166 @@ import filetype
 import pathtools
 
 EXTRA_ENV = {
-  'ALLOW_TRANSLATE': '0',  # Allow bitcode translation before linking.
-                           # It doesn't normally make sense to do this.
+    'ALLOW_TRANSLATE':
+        '0',  # Allow bitcode translation before linking.
+    # It doesn't normally make sense to do this.
+    'ALLOW_NATIVE':
+        '0',  # Allow native objects (.S,.s,.o) to be in the
+    # linker line for .pexe generation.
+    # It doesn't normally make sense to do this.
 
-  'ALLOW_NATIVE'   : '0',  # Allow native objects (.S,.s,.o) to be in the
-                           # linker line for .pexe generation.
-                           # It doesn't normally make sense to do this.
+    # CXX_EH_MODE specifies how to deal with C++ exception handling:
+    #  * 'none':  Strips out use of C++ exception handling.
+    #  * 'sjlj':  Enables the setjmp()+longjmp()-based implementation of
+    #    C++ exception handling.
+    'CXX_EH_MODE':
+        'none',
+    'FORCE_INTERMEDIATE_LL':
+        '0',
+    # Produce an intermediate .ll file
+    # Useful for debugging.
+    # NOTE: potentially different code paths and bugs
+    #       might be triggered by this
+    'LANGUAGE':
+        '',  # C or CXX (set by SetTool)
+    'INCLUDE_CXX_HEADERS':
+        '0',  # This is set by RunCC.
 
-  # CXX_EH_MODE specifies how to deal with C++ exception handling:
-  #  * 'none':  Strips out use of C++ exception handling.
-  #  * 'sjlj':  Enables the setjmp()+longjmp()-based implementation of
-  #    C++ exception handling.
-  'CXX_EH_MODE': 'none',
+    # Command-line options
+    'GCC_MODE':
+        '',  # '' (default), '-E', '-c', or '-S'
+    'SHARED':
+        '0',  # Identify if the target is a shared library.
+    'STDINC':
+        '1',  # Include standard headers (-nostdinc sets to 0)
+    'STDINCCXX':
+        '1',  # Include standard cxx headers (-nostdinc++ sets to 0)
+    'USE_STDLIB':
+        '1',  # Include standard libraries (-nostdlib sets to 0)
+    'STDLIB':
+        'libc++',  # C++ Standard Library.
+    'DEFAULTLIBS':
+        '1',  # Link with default libraries
+    'DIAGNOSTIC':
+        '0',  # Diagnostic flag detected
+    'PIC':
+        '0',  # Generate PIC
+    'NEED_DASH_E':
+        '0',  # Used for stdin inputs, which must have an explicit
+    # type set (using -x) unless -E is specified.
+    'VERBOSE':
+        '0',  # Verbose (-v)
+    'SHOW_VERSION':
+        '0',  # Version (--version)
+    'PTHREAD':
+        '0',  # use pthreads?
+    'INPUTS':
+        '',  # Input files
+    'OUTPUT':
+        '',  # Output file
+    'UNMATCHED':
+        '',  # Unrecognized parameters
+    'BIAS_NONE':
+        '',
+    'BIAS_ARM':
+        '-D__arm__ -D__ARM_ARCH_7A__ -D__ARMEL__',
+    'BIAS_MIPS32':
+        '-D__mips__',
+    'BIAS_X8632':
+        '-D__i386__ -D__i386 -D__i686 -D__i686__ -D__pentium4__',
+    'BIAS_X8664':
+        '-D__amd64__ -D__amd64 -D__x86_64__ -D__x86_64 -D__core2__',
+    'BIAS_ARM_NONSFI':
+        '${BIAS_ARM} -D__native_client_nonsfi__',
+    'BIAS_X8632_NONSFI':
+        '${BIAS_X8632} -D__native_client_nonsfi__',
+    'FRONTEND_TRIPLE':
+        'le32-unknown-nacl',
+    'OPT_LEVEL':
+        '',  # Default for most tools is 0, but we need to know
+    # if it's explicitly set or not when the driver
+    # is only used for linking + translating.
+    'CC_FLAGS':
+        '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0} ' +
+        '-fno-vectorize -fno-slp-vectorize ' +
+        '-fno-common ${PTHREAD ? -pthread} ' + '-nostdinc ${BIAS_%BIAS%} ' +
+        '-fno-gnu-inline-asm ' + '-target ${FRONTEND_TRIPLE} ' +
+        '${IS_CXX ? -fexceptions}',
+    'ISYSTEM':
+        '${ISYSTEM_USER} ${STDINC ? ${ISYSTEM_BUILTIN}}',
+    'ISYSTEM_USER':
+        '',  # System include directories specified by
+    # using the -isystem flag.
+    'ISYSTEM_BUILTIN':
+        '${BASE_USR}/usr/include ' + '${ISYSTEM_CLANG} ' + '${ISYSTEM_CXX} ' +
+        '${BASE_USR}/include ' + '${BASE_SDK}/include ',
+    'ISYSTEM_CLANG':
+        '${BASE_LLVM}/lib/clang/${CLANG_VER}/include',
+    'ISYSTEM_CXX':
+        '${INCLUDE_CXX_HEADERS && STDINCCXX ? ${ISYSTEM_CXX_include_paths}}',
+    'ISYSTEM_CXX_include_paths':
+        '${BASE_USR}/include/c++/v1',
 
-  'FORCE_INTERMEDIATE_LL': '0',
-                          # Produce an intermediate .ll file
-                          # Useful for debugging.
-                          # NOTE: potentially different code paths and bugs
-                          #       might be triggered by this
-  'LANGUAGE'    : '',     # C or CXX (set by SetTool)
-  'INCLUDE_CXX_HEADERS': '0', # This is set by RunCC.
+    # Only propagate opt level to linker if explicitly set, so that the
+    # linker will know if an opt level was explicitly set or not.
+    'LD_FLAGS':
+        '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' + '${SHARED ? -shared : -static} ' +
+        '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS} ' +
+        '--pnacl-exceptions=${CXX_EH_MODE}',
+    'SEARCH_DIRS':
+        '',  # Directories specified using -L
 
-  # Command-line options
-  'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
-  'SHARED'      : '0',    # Identify if the target is a shared library.
-  'STDINC'      : '1',    # Include standard headers (-nostdinc sets to 0)
-  'STDINCCXX'   : '1',    # Include standard cxx headers (-nostdinc++ sets to 0)
-  'USE_STDLIB'  : '1',    # Include standard libraries (-nostdlib sets to 0)
-  'STDLIB'      : 'libc++',     # C++ Standard Library.
-  'DEFAULTLIBS' : '1',    # Link with default libraries
-  'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
-  'PIC'         : '0',    # Generate PIC
-  'NEED_DASH_E' : '0',    # Used for stdin inputs, which must have an explicit
-                          # type set (using -x) unless -E is specified.
-  'VERBOSE'     : '0',    # Verbose (-v)
-  'SHOW_VERSION': '0',    # Version (--version)
+    # Library Strings
+    'EMITMODE':
+        '${!USE_STDLIB || SHARED ? nostdlib : static}',
 
-  'PTHREAD'     : '0',   # use pthreads?
-  'INPUTS'      : '',    # Input files
-  'OUTPUT'      : '',    # Output file
-  'UNMATCHED'   : '',    # Unrecognized parameters
+    # This is setup so that LD_ARGS_xxx is evaluated lazily.
+    'LD_ARGS':
+        '${LD_ARGS_%EMITMODE%}',
 
-  'BIAS_NONE'   : '',
-  'BIAS_ARM'    : '-D__arm__ -D__ARM_ARCH_7A__ -D__ARMEL__',
-  'BIAS_MIPS32' : '-D__mips__',
-  'BIAS_X8632'  : '-D__i386__ -D__i386 -D__i686 -D__i686__ -D__pentium4__',
-  'BIAS_X8664'  : '-D__amd64__ -D__amd64 -D__x86_64__ -D__x86_64 -D__core2__',
-  'BIAS_ARM_NONSFI': '${BIAS_ARM} -D__native_client_nonsfi__',
-  'BIAS_X8632_NONSFI': '${BIAS_X8632} -D__native_client_nonsfi__',
-  'FRONTEND_TRIPLE' : 'le32-unknown-nacl',
+    # ${ld_inputs} signifies where to place the objects and libraries
+    # provided on the command-line.
+    'LD_ARGS_nostdlib':
+        '-nostdlib ${ld_inputs}',
+    'LD_ARGS_static':
+        '-l:crt1.x -l:crti.bc -l:crtbegin.bc '
+        '${CXX_EH_MODE==sjlj ? -l:sjlj_eh_redirect.bc : '
+        '${CXX_EH_MODE==none ? -l:unwind_stubs.bc}} ' + '${ld_inputs} ' +
+        '--start-group ${STDLIBS} --end-group',
+    'LLVM_PASSES_TO_DISABLE':
+        '',
 
-  'OPT_LEVEL'   : '',  # Default for most tools is 0, but we need to know
-                       # if it's explicitly set or not when the driver
-                       # is only used for linking + translating.
-  'CC_FLAGS'    : '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0} ' +
-                  '-fno-vectorize -fno-slp-vectorize ' +
-                  '-fno-common ${PTHREAD ? -pthread} ' +
-                  '-nostdinc ${BIAS_%BIAS%} ' +
-                  '-fno-gnu-inline-asm ' +
-                  '-target ${FRONTEND_TRIPLE} ' +
-                  '${IS_CXX ? -fexceptions}',
+    # Flags for translating to native .o files.
+    'TRANSLATE_FLAGS':
+        '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0}',
+    'STDLIBS':
+        '${DEFAULTLIBS ? '
+        '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC} '
+        '${LIBGCC_BC} ${LIBPNACLMM}}',
+    'LIBSTDCPP':
+        '${IS_CXX ? -lc++ -lm -lpthread }',
+    # The few functions in the bitcode version of compiler-rt unfortunately
+    # depend on libm. TODO(jvoung): try rewriting the compiler-rt functions
+    # to be standalone.
+    'LIBGCC_BC':
+        '-lgcc -lm',
+    'LIBC':
+        '-lc',
+    'LIBNACL':
+        '-lnacl',
+    'LIBPNACLMM':
+        '-lpnaclmm',
+    # Enabled/disabled by -pthreads
+    'LIBPTHREAD':
+        '${PTHREAD ? -lpthread}',
 
-
-  'ISYSTEM'        : '${ISYSTEM_USER} ${STDINC ? ${ISYSTEM_BUILTIN}}',
-
-  'ISYSTEM_USER'   : '',  # System include directories specified by
-                          # using the -isystem flag.
-
-  'ISYSTEM_BUILTIN':
-    '${BASE_USR}/usr/include ' +
-    '${ISYSTEM_CLANG} ' +
-    '${ISYSTEM_CXX} ' +
-    '${BASE_USR}/include ' +
-    '${BASE_SDK}/include ',
-
-  'ISYSTEM_CLANG'  : '${BASE_LLVM}/lib/clang/${CLANG_VER}/include',
-
-  'ISYSTEM_CXX' :
-    '${INCLUDE_CXX_HEADERS && STDINCCXX ? ${ISYSTEM_CXX_include_paths}}',
-
-  'ISYSTEM_CXX_include_paths' : '${BASE_USR}/include/c++/v1',
-
-  # Only propagate opt level to linker if explicitly set, so that the
-  # linker will know if an opt level was explicitly set or not.
-  'LD_FLAGS' : '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
-               '${SHARED ? -shared : -static} ' +
-               '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS} ' +
-               '--pnacl-exceptions=${CXX_EH_MODE}',
-
-  'SEARCH_DIRS' : '', # Directories specified using -L
-
-  # Library Strings
-  'EMITMODE'    : '${!USE_STDLIB || SHARED ? nostdlib : static}',
-
-  # This is setup so that LD_ARGS_xxx is evaluated lazily.
-  'LD_ARGS' : '${LD_ARGS_%EMITMODE%}',
-
-  # ${ld_inputs} signifies where to place the objects and libraries
-  # provided on the command-line.
-  'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
-
-  'LD_ARGS_static':
-    '-l:crt1.x -l:crti.bc -l:crtbegin.bc '
-    '${CXX_EH_MODE==sjlj ? -l:sjlj_eh_redirect.bc : '
-      '${CXX_EH_MODE==none ? -l:unwind_stubs.bc}} ' +
-    '${ld_inputs} ' +
-    '--start-group ${STDLIBS} --end-group',
-
-  'LLVM_PASSES_TO_DISABLE': '',
-
-  # Flags for translating to native .o files.
-  'TRANSLATE_FLAGS' : '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0}',
-
-  'STDLIBS'   : '${DEFAULTLIBS ? '
-                '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC} '
-                '${LIBGCC_BC} ${LIBPNACLMM}}',
-  'LIBSTDCPP' : '${IS_CXX ? -lc++ -lm -lpthread }',
-  # The few functions in the bitcode version of compiler-rt unfortunately
-  # depend on libm. TODO(jvoung): try rewriting the compiler-rt functions
-  # to be standalone.
-  'LIBGCC_BC' : '-lgcc -lm',
-  'LIBC'      : '-lc',
-  'LIBNACL'   : '-lnacl',
-  'LIBPNACLMM': '-lpnaclmm',
-  # Enabled/disabled by -pthreads
-  'LIBPTHREAD': '${PTHREAD ? -lpthread}',
-
-  # IS_CXX is set by pnacl-clang and pnacl-clang++ programmatically
-  'CC' : '${IS_CXX ? ${CLANGXX} : ${CLANG}}',
-  'RUN_CC': '${CC} ${emit_llvm_flag} ${mode} ${CC_FLAGS} ' +
-            '${@AddPrefix:-isystem :ISYSTEM} ' +
-            '-x${typespec} ${infile} -o ${output}',
+    # IS_CXX is set by pnacl-clang and pnacl-clang++ programmatically
+    'CC':
+        '${IS_CXX ? ${CLANGXX} : ${CLANG}}',
+    'RUN_CC':
+        '${CC} ${emit_llvm_flag} ${mode} ${CC_FLAGS} ' +
+        '${@AddPrefix:-isystem :ISYSTEM} ' +
+        '-x${typespec} ${infile} -o ${output}',
 }
 
 def AddLLVMPassDisableFlag(*args):
@@ -457,7 +488,7 @@ def main(argv):
       nacl_version = ReadDriverRevision()
       out[0] += ' nacl-version=%s' % nacl_version
       stdout = '\n'.join(out)
-      print stdout,
+      print(stdout, end=' ')
     else:
       Run(env.get('CC') + env.get('CC_FLAGS'))
     return 0
@@ -617,8 +648,8 @@ def IsFlag(f):
 
 def CompileHeaders(header_inputs, output):
   if output != '' and len(header_inputs) > 1:
-      Log.Fatal('Cannot have -o <out> and compile multiple header files: %s',
-                repr(header_inputs))
+    Log.Fatal('Cannot have -o <out> and compile multiple header files: %s',
+              repr(header_inputs))
   for f in header_inputs:
     f_output = output if output else DefaultPCHOutputName(f)
     RunCC(f, f_output, mode='', emit_llvm_flag='')

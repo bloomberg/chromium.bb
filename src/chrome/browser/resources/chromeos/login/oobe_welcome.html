@@ -64,10 +64,11 @@
         on-accessibility-button-clicked="onWelcomeAccessibilityButtonClicked_"
         on-timezone-button-clicked="onWelcomeTimezoneButtonClicked_"
         on-next-button-clicked="onWelcomeNextButtonClicked_"
+        on-enable-debugging-clicked="onEnableDebuggingClicked_"
         on-launch-advanced-options="onWelcomeLaunchAdvancedOptions_"
         timezone-button-visible=
             "[[isTimezoneButtonVisible_(highlightStrength)]]"
-        debugging-link-visible="[[debuggingLinkVisible]]">
+        debugging-link-visible="[[debuggingLinkVisible_]]">
     </oobe-welcome-dialog>
     <oobe-dialog id="languageScreen" role="dialog" hidden has-buttons
         aria-label$="[[i18nDynamic(locale, 'languageSectionTitle')]]">
@@ -264,17 +265,6 @@
         [[i18nDynamic(locale, 'advancedOptionsSectionTitle')]]
       </h1>
       <div slot="footer" class="layout vertical">
-        <div class="flex layout vertical center-justified
-            advanced-options-entry">
-          <button on-tap="onEEBootstrappingClicked_" class="focus-on-show">
-            <div class="advanced-option-title">
-              [[i18nDynamic(locale, 'advancedOptionsEEBootstrappingTitle')]]
-            </div>
-            <div class="advanced-option-subtitle">
-              [[i18nDynamic(locale, 'advancedOptionsEEBootstrappingSubtitle')]]
-            </div>
-          </button>
-        </div>
         <div class="flex layout vertical center-justified
             advanced-options-entry">
           <button on-tap="onCFMBootstrappingClicked_">

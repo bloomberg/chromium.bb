@@ -16,14 +16,16 @@ namespace device {
 using mojom::BluetoothDeviceInfo;
 using mojom::BluetoothDeviceInfoPtr;
 
-constexpr char kAddress[] = "00:00:00:00:00:00";
+constexpr std::array<uint8_t, 6> kAddress = {0x00, 0x00, 0x00,
+                                             0x00, 0x00, 0x00};
 constexpr char kName[] = "Foo Bar";
 constexpr char kUnicodeName[] = "❤❤❤❤";
 constexpr char kEmptyName[] = "";
 constexpr char kWhitespaceName[] = "    ";
 constexpr char kUnicodeWhitespaceName[] = "　　　　";
 
-TEST(BluetoothUtilsTest, NoNameAndNoUnknownDeviceType) {
+TEST(BluetoothUtilsTest,
+     GetBluetoothDeviceNameForDisplay_NoNameAndNoUnknownDeviceType) {
   BluetoothDeviceInfoPtr info = BluetoothDeviceInfo::New();
   info->address = kAddress;
   info->name = base::nullopt;
@@ -33,7 +35,8 @@ TEST(BluetoothUtilsTest, NoNameAndNoUnknownDeviceType) {
       GetBluetoothDeviceNameForDisplay(info));
 }
 
-TEST(BluetoothUtilsTest, NoNameAndComputerDeviceType) {
+TEST(BluetoothUtilsTest,
+     GetBluetoothDeviceNameForDisplay_NoNameAndComputerDeviceType) {
   BluetoothDeviceInfoPtr info = BluetoothDeviceInfo::New();
   info->address = kAddress;
   info->name = base::nullopt;
@@ -42,7 +45,8 @@ TEST(BluetoothUtilsTest, NoNameAndComputerDeviceType) {
             GetBluetoothDeviceNameForDisplay(info));
 }
 
-TEST(BluetoothUtilsTest, NameAndUnknownDeviceType) {
+TEST(BluetoothUtilsTest,
+     GetBluetoothDeviceNameForDisplay_NameAndUnknownDeviceType) {
   BluetoothDeviceInfoPtr info = BluetoothDeviceInfo::New();
   info->address = kAddress;
   info->name = kName;
@@ -50,7 +54,8 @@ TEST(BluetoothUtilsTest, NameAndUnknownDeviceType) {
   EXPECT_EQ(base::UTF8ToUTF16(kName), GetBluetoothDeviceNameForDisplay(info));
 }
 
-TEST(BluetoothUtilsTest, NameAndComputerDeviceType) {
+TEST(BluetoothUtilsTest,
+     GetBluetoothDeviceNameForDisplay_NameAndComputerDeviceType) {
   BluetoothDeviceInfoPtr info = BluetoothDeviceInfo::New();
   info->address = kAddress;
   info->name = kName;
@@ -58,7 +63,7 @@ TEST(BluetoothUtilsTest, NameAndComputerDeviceType) {
   EXPECT_EQ(base::UTF8ToUTF16(kName), GetBluetoothDeviceNameForDisplay(info));
 }
 
-TEST(BluetoothUtilsTests, UnicodeName) {
+TEST(BluetoothUtilsTest, GetBluetoothDeviceNameForDisplay_UnicodeName) {
   BluetoothDeviceInfoPtr info = BluetoothDeviceInfo::New();
   info->address = kAddress;
   info->name = kUnicodeName;
@@ -67,7 +72,7 @@ TEST(BluetoothUtilsTests, UnicodeName) {
             GetBluetoothDeviceNameForDisplay(info));
 }
 
-TEST(BluetoothUtilsTests, EmptyName) {
+TEST(BluetoothUtilsTest, GetBluetoothDeviceNameForDisplay_EmptyName) {
   BluetoothDeviceInfoPtr info = BluetoothDeviceInfo::New();
   info->address = kAddress;
   info->name = kEmptyName;
@@ -76,7 +81,7 @@ TEST(BluetoothUtilsTests, EmptyName) {
             GetBluetoothDeviceNameForDisplay(info));
 }
 
-TEST(BluetoothUtilsTests, WhitespaceName) {
+TEST(BluetoothUtilsTest, GetBluetoothDeviceNameForDisplay_WhitespaceName) {
   BluetoothDeviceInfoPtr info = BluetoothDeviceInfo::New();
   info->address = kAddress;
   info->name = kWhitespaceName;
@@ -85,13 +90,20 @@ TEST(BluetoothUtilsTests, WhitespaceName) {
             GetBluetoothDeviceNameForDisplay(info));
 }
 
-TEST(BluetoothUtilsTests, UnicodeWhitespaceName) {
+TEST(BluetoothUtilsTest,
+     GetBluetoothDeviceNameForDisplay_UnicodeWhitespaceName) {
   BluetoothDeviceInfoPtr info = BluetoothDeviceInfo::New();
   info->address = kAddress;
   info->name = kUnicodeWhitespaceName;
   info->device_type = BluetoothDeviceInfo::DeviceType::kComputer;
   EXPECT_EQ(base::UTF8ToUTF16("Computer (00:00:00:00:00:00)"),
             GetBluetoothDeviceNameForDisplay(info));
+}
+
+TEST(BluetoothUtilsTest, GetBluetoothAddressForDisplay) {
+  EXPECT_EQ(
+      base::UTF8ToUTF16("AA:BB:CC:00:11:22"),
+      GetBluetoothAddressForDisplay({0xAA, 0xBB, 0xCC, 0x00, 0x11, 0x22}));
 }
 
 }  // namespace device

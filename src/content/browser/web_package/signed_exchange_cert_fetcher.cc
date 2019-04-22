@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/signed_exchange_cert_fetcher.h"
 
+#include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -13,19 +14,24 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
+#include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "services/network/loader_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
 
 namespace {
+
+constexpr char kCertChainMimeType[] = "application/cert-chain+cbor";
 
 // Limit certificate messages to 100k, matching BoringSSL's default limit.
 const size_t kMaxCertSizeForSignedExchange = 100 * 1024;
@@ -69,48 +75,51 @@ SignedExchangeCertFetcher::CreateAndStart(
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     const GURL& cert_url,
-    url::Origin request_initiator,
     bool force_fetch,
-    SignedExchangeVersion version,
     CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy,
+    SignedExchangeReporter* reporter,
     const base::Optional<base::UnguessableToken>& throttling_profile_id) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::CreateAndStart");
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher(
-      new SignedExchangeCertFetcher(
-          std::move(shared_url_loader_factory), std::move(throttles), cert_url,
-          std::move(request_initiator), force_fetch, version,
-          std::move(callback), devtools_proxy, throttling_profile_id));
+      new SignedExchangeCertFetcher(std::move(shared_url_loader_factory),
+                                    std::move(throttles), cert_url, force_fetch,
+                                    std::move(callback), devtools_proxy,
+                                    reporter, throttling_profile_id));
   cert_fetcher->Start();
   return cert_fetcher;
 }
 
+// https://wicg.github.io/webpackage/loading.html#handling-cert-url
 SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     const GURL& cert_url,
-    url::Origin request_initiator,
     bool force_fetch,
-    SignedExchangeVersion version,
     CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy,
+    SignedExchangeReporter* reporter,
     const base::Optional<base::UnguessableToken>& throttling_profile_id)
     : shared_url_loader_factory_(std::move(shared_url_loader_factory)),
       throttles_(std::move(throttles)),
       resource_request_(std::make_unique<network::ResourceRequest>()),
-      version_(version),
       callback_(std::move(callback)),
-      devtools_proxy_(devtools_proxy) {
+      devtools_proxy_(devtools_proxy),
+      reporter_(reporter) {
   // TODO(https://crbug.com/803774): Revisit more ResourceRequest flags.
   resource_request_->url = cert_url;
-  resource_request_->request_initiator = std::move(request_initiator);
+  // |request_initiator| is used for cookie checks, but cert requests don't use
+  // cookies. So just set an opaque Origin.
+  resource_request_->request_initiator = url::Origin();
   resource_request_->resource_type = RESOURCE_TYPE_SUB_RESOURCE;
   // Cert requests should not send credential informartion, because the default
   // credentials mode of Fetch is "omit".
   resource_request_->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA |
                                   net::LOAD_DO_NOT_SAVE_COOKIES |
                                   net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request_->headers.SetHeader(network::kAcceptHeader,
+                                       kCertChainMimeType);
   if (force_fetch) {
     resource_request_->load_flags |=
         net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE;
@@ -142,6 +151,8 @@ void SignedExchangeCertFetcher::Start() {
 void SignedExchangeCertFetcher::Abort() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::Abort");
+  MaybeNotifyCompletionToDevtools(
+      network::URLLoaderCompletionStatus(net::ERR_ABORTED));
   DCHECK(callback_);
   url_loader_ = nullptr;
   body_.reset();
@@ -184,10 +195,13 @@ void SignedExchangeCertFetcher::OnDataComplete() {
   body_.reset();
   handle_watcher_ = nullptr;
 
+  // Notify the completion to the devtools here because |this| may be deleted
+  // before OnComplete() is called.
+  MaybeNotifyCompletionToDevtools(network::URLLoaderCompletionStatus(net::OK));
+
   std::unique_ptr<SignedExchangeCertificateChain> cert_chain =
       SignedExchangeCertificateChain::Parse(
-          version_, base::as_bytes(base::make_span(body_string_)),
-          devtools_proxy_);
+          base::as_bytes(base::make_span(body_string_)), devtools_proxy_);
   body_string_.clear();
   if (!cert_chain) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
@@ -211,6 +225,9 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
                                                  resource_request_->url, head);
   }
 
+  if (reporter_)
+    reporter_->set_cert_server_ip_address(head.remote_endpoint.address());
+
   // |headers| is null when loading data URL.
   if (head.headers && head.headers->response_code() != net::HTTP_OK) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
@@ -223,7 +240,7 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cert-chain-format
   // "The resource at a signature's cert-url MUST have the
   // application/cert-chain+cbor content type" [spec text]
-  if (head.mime_type != "application/cert-chain+cbor") {
+  if (head.mime_type != kCertChainMimeType) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_,
         base::StringPrintf(
@@ -297,12 +314,18 @@ void SignedExchangeCertFetcher::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::OnComplete");
-  if (devtools_proxy_) {
-    DCHECK(cert_request_id_);
-    devtools_proxy_->CertificateRequestCompleted(*cert_request_id_, status);
-  }
+  MaybeNotifyCompletionToDevtools(status);
   if (!handle_watcher_)
     Abort();
+}
+
+void SignedExchangeCertFetcher::MaybeNotifyCompletionToDevtools(
+    const network::URLLoaderCompletionStatus& status) {
+  if (!devtools_proxy_ || has_notified_completion_to_devtools_)
+    return;
+  DCHECK(cert_request_id_);
+  devtools_proxy_->CertificateRequestCompleted(*cert_request_id_, status);
+  has_notified_completion_to_devtools_ = true;
 }
 
 // static

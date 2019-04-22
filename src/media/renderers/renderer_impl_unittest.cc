@@ -126,7 +126,7 @@ class RendererImplTest : public ::testing::Test {
   void InitializeAndExpect(PipelineStatus start_status) {
     EXPECT_CALL(callbacks_, OnInitialize(start_status))
         .WillOnce(SaveArg<0>(&initialization_status_));
-    EXPECT_CALL(callbacks_, OnWaitingForDecryptionKey()).Times(0);
+    EXPECT_CALL(callbacks_, OnWaiting(_)).Times(0);
 
     if (start_status == PIPELINE_OK && audio_stream_) {
       EXPECT_CALL(*audio_renderer_, GetTimeSource())

@@ -25,7 +25,7 @@ class RelaunchRequiredDialogView : views::DialogDelegateView {
   // Shows the dialog in |browser| for a relaunch that will be forced at
   // |deadline|. |on_accept| is run if the user accepts the prompt to restart.
   static views::Widget* Show(Browser* browser,
-                             base::TimeTicks deadline,
+                             base::Time deadline,
                              base::RepeatingClosure on_accept);
 
   ~RelaunchRequiredDialogView() override;
@@ -36,7 +36,7 @@ class RelaunchRequiredDialogView : views::DialogDelegateView {
 
   // Sets the relaunch deadline to |deadline| and refreshes the view's title
   // accordingly.
-  void SetDeadline(base::TimeTicks deadline);
+  void SetDeadline(base::Time deadline);
 
   // views::DialogDelegateView:
   bool Cancel() override;
@@ -56,7 +56,7 @@ class RelaunchRequiredDialogView : views::DialogDelegateView {
   gfx::Size CalculatePreferredSize() const override;
 
  private:
-  RelaunchRequiredDialogView(base::TimeTicks deadline,
+  RelaunchRequiredDialogView(base::Time deadline,
                              base::RepeatingClosure on_accept);
 
   // Invoked when the timer fires to refresh the title text.

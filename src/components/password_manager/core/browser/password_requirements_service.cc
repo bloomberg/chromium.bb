@@ -6,8 +6,12 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-
-#include "components/autofill/core/browser/password_requirements_spec_printer.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
+#include "components/password_manager/core/browser/generation/password_requirements_spec_fetcher_impl.h"
+#include "components/password_manager/core/browser/generation/password_requirements_spec_printer.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 constexpr size_t kCacheSizeForDomainKeyedSpecs = 200;
@@ -105,6 +109,43 @@ void PasswordRequirementsService::AddSpec(
 void PasswordRequirementsService::ClearDataForTestingImpl() {
   specs_for_domains_.Clear();
   specs_for_signatures_.Clear();
+}
+
+std::unique_ptr<PasswordRequirementsService> CreatePasswordRequirementsService(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  // Default parameters.
+  int version = 1;
+  int prefix_length = 0;
+  int timeout_in_ms = 5000;
+
+  // Override defaults with parameters from field trial if defined.
+  std::map<std::string, std::string> field_trial_params;
+  base::GetFieldTrialParams(features::kGenerationRequirementsFieldTrial,
+                            &field_trial_params);
+  // base::StringToInt modifies the target even if it fails to parse the input.
+  // |tmp| is used to protect the default values above.
+  int tmp = 0;
+  if (base::StringToInt(
+          field_trial_params[features::kGenerationRequirementsVersion], &tmp)) {
+    version = tmp;
+  }
+  if (base::StringToInt(
+          field_trial_params[features::kGenerationRequirementsPrefixLength],
+          &tmp)) {
+    prefix_length = tmp;
+  }
+  if (base::StringToInt(
+          field_trial_params[features::kGenerationRequirementsTimeout], &tmp)) {
+    timeout_in_ms = tmp;
+  }
+
+  VLOG(1) << "PasswordGenerationRequirements parameters: " << version << ", "
+          << prefix_length << ", " << timeout_in_ms << " ms";
+
+  std::unique_ptr<autofill::PasswordRequirementsSpecFetcher> fetcher =
+      std::make_unique<autofill::PasswordRequirementsSpecFetcherImpl>(
+          url_loader_factory, version, prefix_length, timeout_in_ms);
+  return std::make_unique<PasswordRequirementsService>(std::move(fetcher));
 }
 
 }  // namespace password_manager

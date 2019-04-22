@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -16,6 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
+#include "base/one_shot_event.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -56,7 +58,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/one_shot_event.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "url/gurl.h"
 
@@ -141,8 +142,9 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
         content::BrowserContext* context =
             content::Source<Profile>(source).ptr();
         extensions::ExtensionSystem::Get(context)->ready().Post(
-            FROM_HERE, base::Bind(&FirstRunDelayedTasks::OnExtensionSystemReady,
-                                  weak_ptr_factory_.GetWeakPtr(), context));
+            FROM_HERE,
+            base::BindOnce(&FirstRunDelayedTasks::OnExtensionSystemReady,
+                           weak_ptr_factory_.GetWeakPtr(), context));
         break;
       }
       case chrome::NOTIFICATION_BROWSER_CLOSED: {

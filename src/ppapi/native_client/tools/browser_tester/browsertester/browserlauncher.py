@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import os.path
 import re
 import shutil
@@ -193,8 +195,8 @@ class BrowserLauncher(object):
                            self.options.nacl_exe_stdout, True)
     self.SetStandardStream(env, 'NACL_EXE_STDERR',
                            self.options.nacl_exe_stderr, True)
-    print 'ENV:', ' '.join(['='.join(pair) for pair in env.iteritems()])
-    print 'LAUNCHING: %s' % ' '.join(cmd)
+    print('ENV:', ' '.join(['='.join(pair) for pair in env.items()]))
+    print('LAUNCHING: %s' % ' '.join(cmd))
     sys.stdout.flush()
     self.browser_process = RunCommand(cmd, env=env)
 

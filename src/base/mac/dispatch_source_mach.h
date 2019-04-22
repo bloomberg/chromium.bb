@@ -40,6 +40,8 @@ class BASE_EXPORT DispatchSourceMach {
   // be received.
   void Resume();
 
+  dispatch_queue_t queue() const { return queue_.get(); }
+
  private:
   // The dispatch queue used to service the source_.
   ScopedDispatchObject<dispatch_queue_t> queue_;

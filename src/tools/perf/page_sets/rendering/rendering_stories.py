@@ -51,21 +51,15 @@ class RenderingStorySet(story.StorySet):
             '--use-fake-ui-for-media-stream',
         ]
 
+      if story_class.TAGS and story_tags.BACKDROP_FILTER in story_class.TAGS:
+        # Experimental web platform features must be enabled in order for the
+        # 'backdrop-filter' CSS property to work.
+        required_args.append('--enable-experimental-web-platform-features')
+
       self.AddStory(story_class(
           page_set=self,
           shared_page_state_class=shared_page_state_class,
           extra_browser_args=required_args))
-
-      if (platform == platforms.MOBILE and
-          story_class.TAGS and
-          story_tags.GPU_RASTERIZATION in story_class.TAGS):
-        self.AddStory(story_class(
-            page_set=self,
-            shared_page_state_class=shared_page_state_class,
-            name_suffix='_desktop_gpu_raster',
-            extra_browser_args=required_args + [
-                '--force-gpu-rasterization',
-            ]))
 
       if (platform == platforms.MOBILE and
           story_class.TAGS and

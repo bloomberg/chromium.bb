@@ -8,11 +8,11 @@
  *   - Has a button to reload these settings.
  *   - Has a button to clear the cached bad proxies.
  */
-var ProxyView = (function() {
+const ProxyView = (function() {
   'use strict';
 
   // We inherit from DivView.
-  var superClass = DivView;
+  const superClass = DivView;
 
   /**
    * @constructor

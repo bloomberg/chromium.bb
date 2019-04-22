@@ -11,9 +11,8 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_profile_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/network/network_profile_observer.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -127,11 +126,10 @@ void NetworkProfileHandler::OnPropertyChanged(const std::string& name,
     pending_profile_creations_.insert(*it);
 
     VLOG(2) << "Requesting properties of profile path " << *it << ".";
-    DBusThreadManager::Get()->GetShillProfileClient()->GetProperties(
+    ShillProfileClient::Get()->GetProperties(
         dbus::ObjectPath(*it),
         base::Bind(&NetworkProfileHandler::GetProfilePropertiesCallback,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   *it),
+                   weak_ptr_factory_.GetWeakPtr(), *it),
         base::Bind(&LogProfileRequestError, *it));
   }
 }
@@ -209,18 +207,16 @@ NetworkProfileHandler::NetworkProfileHandler()
 }
 
 void NetworkProfileHandler::Init() {
-  DBusThreadManager::Get()->GetShillManagerClient()->
-      AddPropertyChangedObserver(this);
+  ShillManagerClient::Get()->AddPropertyChangedObserver(this);
 
   // Request the initial profile list.
-  DBusThreadManager::Get()->GetShillManagerClient()->GetProperties(
+  ShillManagerClient::Get()->GetProperties(
       base::Bind(&NetworkProfileHandler::GetManagerPropertiesCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 NetworkProfileHandler::~NetworkProfileHandler() {
-  DBusThreadManager::Get()->GetShillManagerClient()->
-      RemovePropertyChangedObserver(this);
+  ShillManagerClient::Get()->RemovePropertyChangedObserver(this);
 }
 
 }  // namespace chromeos

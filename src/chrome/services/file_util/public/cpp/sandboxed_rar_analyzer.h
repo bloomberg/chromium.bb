@@ -49,8 +49,9 @@ class SandboxedRarAnalyzer
   // If file preparation failed, analysis has failed: report failure.
   void ReportFileFailure();
 
-  // Starts the utility process and sends it a file analyze request.
-  void AnalyzeFile(base::File file);
+  // Starts the utility process and sends it a request to analyze the file
+  // |file|, given a handle for |temp_file|, where it can extract files.
+  void AnalyzeFile(base::File file, base::File temp_file);
 
   // The response containing the file analyze results.
   void AnalyzeFileDone(const safe_browsing::ArchiveAnalyzerResults& results);

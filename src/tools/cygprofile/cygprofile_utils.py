@@ -34,18 +34,6 @@ class WarningCollector(object):
           self._warnings - self._max_warnings, message))
 
 
-def DetectArchitecture(default='arm'):
-  """Detects the architecture by looking for target_arch in GYP_DEFINES.
-  If not not found, returns default.
-  """
-  gyp_defines = os.environ.get('GYP_DEFINES', '')
-  match = re.match('target_arch=(\S+)', gyp_defines)
-  if match and len(match.groups()) == 1:
-    return match.group(1)
-  else:
-    return default
-
-
 def InvertMapping(x_to_ys):
   """Given a map x -> [y1, y2...] returns inverse mapping y->[x1, x2...]."""
   y_to_xs = {}

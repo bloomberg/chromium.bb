@@ -14,7 +14,7 @@ class DownloadsInternalDetermineFilenameFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloadsInternal.determineFilename",
-                             DOWNLOADSINTERNAL_DETERMINEFILENAME);
+                             DOWNLOADSINTERNAL_DETERMINEFILENAME)
   DownloadsInternalDetermineFilenameFunction();
   ResponseAction Run() override;
 

@@ -4,6 +4,7 @@
 
 #include "storage/browser/blob/blob_builder_from_stream.h"
 
+#include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
@@ -329,6 +330,10 @@ BlobBuilderFromStream::BlobBuilderFromStream(
 }
 
 BlobBuilderFromStream::~BlobBuilderFromStream() {
+  DCHECK(!callback_) << "BlobBuilderFromStream was destroyed before finishing";
+}
+
+void BlobBuilderFromStream::Abort() {
   OnError(Result::kAborted);
 }
 

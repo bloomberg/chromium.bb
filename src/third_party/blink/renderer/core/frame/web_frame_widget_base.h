@@ -16,8 +16,10 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace cc {
+class AnimationHost;
 class Layer;
 }
 
@@ -27,10 +29,10 @@ class Point;
 
 namespace blink {
 class AnimationWorkletMutatorDispatcherImpl;
-class CompositorAnimationHost;
 class GraphicsLayer;
 class HitTestResult;
 class PageWidgetEventHandler;
+class PaintWorkletPaintDispatcher;
 class WebLayerTreeView;
 class WebLocalFrameImpl;
 class WebViewImpl;
@@ -53,14 +55,18 @@ class CORE_EXPORT WebFrameWidgetBase
 
   void BindLocalRoot(WebLocalFrame&);
 
-  // Called once the local root is bound via |BindLocalRoot()|.
-  virtual void Initialize() = 0;
   virtual bool ForSubframe() const = 0;
-  virtual void ScheduleAnimation() = 0;
   virtual void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) {}
-  virtual base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+
+  // Creates or returns cached mutator dispatcher. This usually requires a
+  // round trip to the compositor. The returned WeakPtr must only be
+  // dereferenced on the output |mutator_task_runner|.
+  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
   EnsureCompositorMutatorDispatcher(
-      scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) = 0;
+      scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
+
+  // Creates or returns cached paint dispatcher.
+  scoped_refptr<PaintWorkletPaintDispatcher> EnsureCompositorPaintDispatcher();
 
   // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
   // the root layer.
@@ -71,14 +77,13 @@ class CORE_EXPORT WebFrameWidgetBase
   virtual void SetRootLayer(scoped_refptr<cc::Layer> layer) = 0;
 
   virtual WebLayerTreeView* GetLayerTreeView() const = 0;
-  virtual CompositorAnimationHost* AnimationHost() const = 0;
+  virtual cc::AnimationHost* AnimationHost() const = 0;
 
   virtual HitTestResult CoreHitTestResultAt(const gfx::Point&) = 0;
 
   // WebFrameWidget implementation.
   void Close() override;
   WebLocalFrame* LocalRoot() const override;
-  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   WebDragOperation DragTargetDragEnter(const WebDragData&,
                                        const WebFloatPoint& point_in_viewport,
                                        const WebFloatPoint& screen_point,
@@ -98,6 +103,11 @@ class CORE_EXPORT WebFrameWidgetBase
                          const WebFloatPoint& screen_point,
                          WebDragOperation) override;
   void DragSourceSystemDragEnded() override;
+  void SendOverscrollEventFromImplSide(
+      const gfx::Vector2dF& overscroll_delta,
+      cc::ElementId scroll_latched_element_id) override;
+  void SendScrollEndEventFromImplSide(
+      cc::ElementId scroll_latched_element_id) override;
 
   WebLocalFrame* FocusedWebLocalFrameInWidget() const override;
 
@@ -185,10 +195,23 @@ class CORE_EXPORT WebFrameWidgetBase
   static bool ignore_input_events_;
   scoped_refptr<UserGestureToken> pointer_lock_gesture_token_;
 
+  // This is owned by the LayerTreeHostImpl, and should only be used on the
+  // compositor thread, so we keep the TaskRunner where you post tasks to
+  // make that happen.
+  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher_;
+  scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
+
+  scoped_refptr<PaintWorkletPaintDispatcher> paint_dispatcher_;
+
   friend class WebViewImpl;
 };
 
-DEFINE_TYPE_CASTS(WebFrameWidgetBase, WebFrameWidget, widget, true, true);
+template <>
+struct DowncastTraits<WebFrameWidgetBase> {
+  // All concrete implementations of WebFrameWidget are derived from
+  // WebFrameWidgetBase.
+  static bool AllowFrom(const WebFrameWidget& widget) { return true; }
+};
 
 }  // namespace blink
 

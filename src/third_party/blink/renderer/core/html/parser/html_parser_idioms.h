@@ -38,7 +38,7 @@ class TextEncoding;
 namespace blink {
 
 // Strip leading and trailing whitespace as defined by the HTML specification.
-String StripLeadingAndTrailingHTMLSpaces(const String&);
+CORE_EXPORT String StripLeadingAndTrailingHTMLSpaces(const String&);
 
 // An implementation of the HTML specification's algorithm to convert a number
 // to a string for number and range types.
@@ -63,14 +63,14 @@ CORE_EXPORT bool ParseHTMLInteger(const String&, int&);
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-non-negative-integers
 CORE_EXPORT bool ParseHTMLNonNegativeInteger(const String&, unsigned&);
 
-// https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#clamped-to-the-range
+// https://html.spec.whatwg.org/C/#clamped-to-the-range
 // without default value processing.
 bool ParseHTMLClampedNonNegativeInteger(const String&,
                                         unsigned min,
                                         unsigned max,
                                         unsigned&);
 
-// https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-a-list-of-floating-point-numbers
+// https://html.spec.whatwg.org/C/#rules-for-parsing-a-list-of-floating-point-numbers
 CORE_EXPORT Vector<double> ParseHTMLListOfFloatingPointNumbers(const String&);
 
 typedef Vector<std::pair<String, String>> HTMLAttributeList;

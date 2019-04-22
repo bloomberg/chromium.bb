@@ -7,15 +7,14 @@
 #include <utility>
 #include <vector>
 
-#if defined(OS_CHROMEOS)
+#include "base/logging.h"
+#include "build/build_config.h"
+#include "media/gpu/test/video_frame_helpers.h"
+
+#if defined(OS_LINUX)
 #include <libdrm/drm_fourcc.h>
 
-#include "base/logging.h"
-#include "media/gpu/format_utils.h"
-#include "ui/gfx/buffer_format_util.h"
-#include "ui/gfx/native_pixmap.h"
-#include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #endif
 
 namespace media {
@@ -50,100 +49,30 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
 #if defined(OS_CHROMEOS)
   texture_ref = TextureRef::Create(texture_id, std::move(no_longer_needed_cb));
   LOG_ASSERT(texture_ref);
-
-  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
-  LOG_ASSERT(platform);
-  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
-  LOG_ASSERT(factory);
-  gfx::BufferFormat buffer_format =
-      VideoPixelFormatToGfxBufferFormat(pixel_format);
-  texture_ref->pixmap_ = factory->CreateNativePixmap(
-      gfx::kNullAcceleratedWidget, size, buffer_format, buffer_usage);
-  LOG_ASSERT(texture_ref->pixmap_);
-  texture_ref->coded_size_ = size;
+  // We set visible size to coded_size. The correct visible rectangle is set
+  // later in ExportVideoFrame().
+  texture_ref->frame_ =
+      CreatePlatformVideoFrame(pixel_format, size, gfx::Rect(size), size,
+                               base::TimeDelta(), buffer_usage);
 #endif
-
   return texture_ref;
 }
 
 gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
-  gfx::GpuMemoryBufferHandle handle;
 #if defined(OS_CHROMEOS)
-  CHECK(pixmap_);
-  handle.type = gfx::NATIVE_PIXMAP;
-
-  size_t num_planes =
-      gfx::NumberOfPlanesForBufferFormat(pixmap_->GetBufferFormat());
-  for (size_t i = 0; i < num_planes; ++i) {
-    handle.native_pixmap_handle.planes.emplace_back(
-        pixmap_->GetDmaBufPitch(i), pixmap_->GetDmaBufOffset(i), i,
-        pixmap_->GetDmaBufModifier(i));
-  }
-
-  size_t num_fds = pixmap_->GetDmaBufFdCount();
-  LOG_ASSERT(num_fds == num_planes || num_fds == 1);
-  for (size_t i = 0; i < num_fds; ++i) {
-    int duped_fd = HANDLE_EINTR(dup(pixmap_->GetDmaBufFd(i)));
-    LOG_ASSERT(duped_fd != -1) << "Failed duplicating dmabuf fd";
-    handle.native_pixmap_handle.fds.emplace_back(
-        base::FileDescriptor(duped_fd, true));
-  }
-#endif
-  return handle;
-}
-
-scoped_refptr<VideoFrame> TextureRef::CreateVideoFrame(
-    const gfx::Rect& visible_rect) const {
-  scoped_refptr<VideoFrame> video_frame;
-#if defined(OS_CHROMEOS)
-  VideoPixelFormat pixel_format =
-      GfxBufferFormatToVideoPixelFormat(pixmap_->GetBufferFormat());
-  CHECK_NE(pixel_format, PIXEL_FORMAT_UNKNOWN);
-  size_t num_planes = VideoFrame::NumPlanes(pixel_format);
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
-  std::vector<int> plane_height(num_planes, 0u);
-  for (size_t i = 0; i < num_planes; ++i) {
-    planes[i].stride = pixmap_->GetDmaBufPitch(i);
-    planes[i].offset = pixmap_->GetDmaBufOffset(i);
-    plane_height[i] = VideoFrame::Rows(i, pixel_format, coded_size_.height());
-  }
-
-  std::vector<base::ScopedFD> dmabuf_fds;
-  size_t num_fds = pixmap_->GetDmaBufFdCount();
-  LOG_ASSERT(num_fds <= num_planes);
-  for (size_t i = 0; i < num_fds; ++i) {
-    int duped_fd = HANDLE_EINTR(dup(pixmap_->GetDmaBufFd(i)));
-    LOG_ASSERT(duped_fd != -1) << "Failed duplicating dmabuf fd";
-    dmabuf_fds.emplace_back(duped_fd);
-  }
-
-  std::vector<size_t> buffer_sizes(num_fds, 0u);
-  for (size_t plane = 0, i = 0; plane < num_planes; ++plane) {
-    if (plane + 1 < buffer_sizes.size()) {
-      buffer_sizes[i] =
-          planes[plane].offset + planes[plane].stride * plane_height[plane];
-      ++i;
-    } else {
-      buffer_sizes[i] = std::max(
-          buffer_sizes[i],
-          planes[plane].offset + planes[plane].stride * plane_height[plane]);
-    }
-  }
-  auto layout = VideoFrameLayout::CreateWithPlanes(
-      pixel_format, coded_size_, std::move(planes), std::move(buffer_sizes));
-  LOG_ASSERT(layout.has_value() == true);
-  video_frame = VideoFrame::WrapExternalDmabufs(
-      *layout, visible_rect, visible_rect.size(), std::move(dmabuf_fds),
-      base::TimeDelta());
-#endif
-  return video_frame;
-}
-
-bool TextureRef::IsDirectlyMappable() const {
-#if defined(OS_CHROMEOS)
-  return pixmap_->GetDmaBufModifier(0) == DRM_FORMAT_MOD_LINEAR;
+  return CreateGpuMemoryBufferHandle(frame_.get());
 #else
-  return false;
+  return gfx::GpuMemoryBufferHandle();
+#endif
+}
+
+scoped_refptr<VideoFrame> TextureRef::ExportVideoFrame(
+    gfx::Rect visible_rect) const {
+#if defined(OS_CHROMEOS)
+  return VideoFrame::WrapVideoFrame(frame_, frame_->format(), visible_rect,
+                                    visible_rect.size());
+#else
+  return nullptr;
 #endif
 }
 

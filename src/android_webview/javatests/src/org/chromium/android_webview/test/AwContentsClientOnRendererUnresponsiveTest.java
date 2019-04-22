@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@ import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.MULTI_PROC
 
 import android.support.test.filters.LargeTest;
 import android.view.KeyEvent;
+import android.webkit.JavascriptInterface;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -17,11 +18,13 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwRenderProcess;
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentUrlConstants;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,35 +37,50 @@ public class AwContentsClientOnRendererUnresponsiveTest {
 
     private static final String TAG = "AwRendererUnresponsive";
 
+    private static class JSBlocker {
+        private CountDownLatch mLatch;
+        JSBlocker() {
+            mLatch = new CountDownLatch(1);
+        }
+
+        public void releaseBlock() {
+            mLatch.countDown();
+        }
+
+        @JavascriptInterface
+        public void block() throws Exception {
+            mLatch.await(AwActivityTestRule.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        }
+    }
+
     private static class RendererTransientlyUnresponsiveTestAwContentsClient
             extends TestAwContentsClient {
         private CallbackHelper mUnresponsiveCallbackHelper;
         private CallbackHelper mResponsiveCallbackHelper;
+        private JSBlocker mBlocker;
 
         public RendererTransientlyUnresponsiveTestAwContentsClient() {
             mUnresponsiveCallbackHelper = new CallbackHelper();
             mResponsiveCallbackHelper = new CallbackHelper();
+            mBlocker = new JSBlocker();
         }
 
         void transientlyBlockBlinkThread(final AwContents awContents) {
-            ThreadUtils.runOnUiThread(() -> {
-                // clang-format off
-                awContents.evaluateJavaScript(
-                        "let t0 = performance.now();\n" +
-                        "while(performance.now() < t0 + 6000 /*ms*/) {}",
-                        null);
-                // clang-format on
-            });
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                    () -> { awContents.evaluateJavaScript("blocker.block();", null); });
         }
 
         void awaitRecovery() throws Exception {
-            // unresponsive signal should occur after 5 seconds, so wait for 6.
-            mUnresponsiveCallbackHelper.waitForCallback(0, 1, 6, TimeUnit.SECONDS);
+            mUnresponsiveCallbackHelper.waitForCallback(
+                    0, 1, AwActivityTestRule.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             Assert.assertEquals(1, mUnresponsiveCallbackHelper.getCallCount());
-            // blink main thread is transiently blocked for 6 seconds; wait
-            // an additional 5 seconds.
-            mResponsiveCallbackHelper.waitForCallback(0, 1, 5, TimeUnit.SECONDS);
+            mResponsiveCallbackHelper.waitForCallback(
+                    0, 1, AwActivityTestRule.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             Assert.assertEquals(1, mResponsiveCallbackHelper.getCallCount());
+        }
+
+        JSBlocker getBlocker() {
+            return mBlocker;
         }
 
         @Override
@@ -75,6 +93,7 @@ public class AwContentsClientOnRendererUnresponsiveTest {
             // onRendererResponsive should not have been called yet.
             Assert.assertEquals(0, mResponsiveCallbackHelper.getCallCount());
             mUnresponsiveCallbackHelper.notifyCalled();
+            mBlocker.releaseBlock();
         }
     }
 
@@ -92,18 +111,18 @@ public class AwContentsClientOnRendererUnresponsiveTest {
         }
 
         void permanentlyBlockBlinkThread(final AwContents awContents) {
-            ThreadUtils.runOnUiThread(() -> { awContents.evaluateJavaScript("while(1);", null); });
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                    () -> { awContents.evaluateJavaScript("blocker.block();", null); });
         }
 
         void awaitRendererTermination() throws Exception {
-            // The input ack timeout is 5 seconds, and the unresponsive callback should retrigger at
-            // that interval, so wait for the expected multiple of 5 seconds, plus one second
-            // leeway.
-            mUnresponsiveCallbackHelper.waitForCallback(
-                    0, 2, 5 * UNRESPONSIVE_CALLBACK_COUNT + 1, TimeUnit.SECONDS);
-            Assert.assertEquals(2, mUnresponsiveCallbackHelper.getCallCount());
+            mUnresponsiveCallbackHelper.waitForCallback(0, UNRESPONSIVE_CALLBACK_COUNT,
+                    AwActivityTestRule.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            Assert.assertEquals(
+                    UNRESPONSIVE_CALLBACK_COUNT, mUnresponsiveCallbackHelper.getCallCount());
 
-            mTerminatedCallbackHelper.waitForCallback(0, 1, 5, TimeUnit.SECONDS);
+            mTerminatedCallbackHelper.waitForCallback(
+                    0, 1, AwActivityTestRule.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             Assert.assertEquals(1, mTerminatedCallbackHelper.getCallCount());
         }
 
@@ -123,10 +142,18 @@ public class AwContentsClientOnRendererUnresponsiveTest {
     }
 
     private void sendInputEvent(final AwContents awContents) {
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             awContents.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
         });
     }
+
+    private void addJsBlockerInterface(final AwContents awContents, final JSBlocker blocker) {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> { awContents.addJavascriptInterface(blocker, "blocker"); });
+    }
+
+    // This test requires the ability to terminate the renderer in order to recover from a
+    // permanently stuck blink main thread, so it can only run in multiprocess.
     @Test
     @Feature({"AndroidWebView"})
     @LargeTest
@@ -139,6 +166,7 @@ public class AwContentsClientOnRendererUnresponsiveTest {
         final AwContents awContents = testView.getAwContents();
 
         AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        addJsBlockerInterface(awContents, new JSBlocker());
         mActivityTestRule.loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
@@ -160,6 +188,7 @@ public class AwContentsClientOnRendererUnresponsiveTest {
         final AwContents awContents = testView.getAwContents();
 
         AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        addJsBlockerInterface(awContents, contentsClient.getBlocker());
         mActivityTestRule.loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         contentsClient.transientlyBlockBlinkThread(awContents);

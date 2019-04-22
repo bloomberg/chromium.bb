@@ -160,7 +160,7 @@ namespace webrtcLoggingPrivate {
                                          RecordingDoneCallback callback);
 
     // Start remote-bound event logging for a specific peer connection,
-    // indicated by its ID, for which remote-bound event logging was not active.
+    // indicated by its session description's ID.
     // If successful, the callback will carry the ID of the log.
     // * |webAppId| must be a number between 1 and 99 (inclusive), which will be
     //   incorporated into the uploaded log, so as to help distinugish logs
@@ -171,7 +171,7 @@ namespace webrtcLoggingPrivate {
     //   batched together and emitted approximately every |outputPeriodMs| ms.
     static void startEventLogging(RequestInfo request,
                                   DOMString securityOrigin,
-                                  DOMString peerConnectionId,
+                                  DOMString sessionId,
                                   long maxLogSizeBytes,
                                   long outputPeriodMs,
                                   long webAppId,

@@ -26,13 +26,15 @@ import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
@@ -108,7 +110,8 @@ public class VisualStateTest {
         @Override
         public InputStream getData() {
             final DelayedInputStream stream = (DelayedInputStream) super.getData();
-            ThreadUtils.postOnUiThreadDelayed(() -> stream.allowReads(), IMAGE_LOADING_DELAY_MS);
+            PostTask.postDelayedTask(
+                    UiThreadTaskTraits.DEFAULT, () -> stream.allowReads(), IMAGE_LOADING_DELAY_MS);
             return stream;
         }
     }
@@ -401,7 +404,7 @@ public class VisualStateTest {
 
     private AwTestContainerView createDetachedTestContainerViewOnMainSync(
             final AwContentsClient awContentsClient) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             AwTestContainerView detachedView =
                     mActivityTestRule.createDetachedAwTestContainerView(awContentsClient);
             detachedView.setClipBounds(new Rect(0, 0, 100, 100));
@@ -427,7 +430,7 @@ public class VisualStateTest {
         // JS will notify this observer once it has changed the background color of the page.
         final Object pageChangeNotifier = new Object() {
             public void onPageChanged() {
-                ThreadUtils.postOnUiThread(
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                         () -> awContents.insertVisualStateCallback(20, new VisualStateCallback() {
                             @Override
                             public void onComplete(long id) {

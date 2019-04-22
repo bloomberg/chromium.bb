@@ -9,13 +9,14 @@
   <template>
     <style>
       :host dialog {
-        background-color: white;
+        background-color: var(--cr-menu-background-color);
         border: none;
         border-radius: 4px;
-        box-shadow: 0 2px 6px var(--paper-grey-500);
+        box-shadow: var(--cr-menu-shadow);
         margin: 0;
+        min-width: 128px;
         outline: none;
-        padding: 8px 0;
+        padding: 0;
 
         @apply --cr-action-menu-dialog;
       }
@@ -29,7 +30,7 @@
         border: none;
         border-radius: 0;
         box-sizing: border-box;
-        color: var(--paper-grey-900);
+        color: var(--cr-primary-text-color);
         font: inherit;
         min-height: 32px;
         padding: 0 24px;
@@ -52,18 +53,20 @@
       }
 
       :host ::slotted(.dropdown-item:focus) {
-        background-color: var(--google-grey-200);
+        background-color: var(--cr-menu-background-focus-color);
         outline: none;
       }
 
       .item-wrapper {
+        background: var(--cr-menu-background-sheen);
         outline: none;
+        padding: 8px 0;
       }
     </style>
     <dialog id="dialog" tabindex="0" on-close="onNativeDialogClose_" role="menu"
         aria-label$="[[ariaLabel]]">
       <div class="item-wrapper" tabindex="-1">
-        <slot name="item" id="contentNode"></slot>
+        <slot id="contentNode"></slot>
       </div>
     </dialog>
   </template>

@@ -32,6 +32,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/mac/install_from_dmg.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/mac/staging_watcher.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -58,6 +59,19 @@ const char kRelauncherArgSeparator[] = "---";
 // the relaunched process without bringing it to the foreground.
 const char kRelauncherBackgroundArg[] = "--background";
 
+// When this argument is supplied to the relauncher process, the launcher will
+// wait for a staged update to be applied.
+const char kRelauncherWaitForUpdateArg[] = "--wait-for-update";
+
+// This argument is supplied to the relauncher process whenever the
+// kRelauncherWaitForUpdateArg argument isn't supplied. This flag is not used
+// directly by the relauncher process, but it serves two purposes. First, this
+// flag and the previous flag are used as an indication for the updating process
+// as to whether or not the relauncher will wait for the update, and second, the
+// lack of either flag indicates to the updater that the relauncher process is
+// unaware of the updater process.
+const char kRelauncherDontWaitForUpdateArg[] = "--dont-wait-for-update";
+
 // The beginning of the "process serial number" argument that Launch Services
 // sometimes inserts into command lines. A process serial number is only valid
 // for a single process, so any PSN arguments will be stripped from command
@@ -74,7 +88,8 @@ std::string RelauncherTypeArg() {
 
 }  // namespace
 
-bool RelaunchApp(const std::vector<std::string>& args) {
+bool RelaunchApp(const std::vector<std::string>& args,
+                 bool wait_for_staged_update) {
   // Use the currently-running application's helper process. The automatic
   // update feature is careful to leave the currently-running version alone,
   // so this is safe even if the relaunch is the result of an update having
@@ -88,12 +103,14 @@ bool RelaunchApp(const std::vector<std::string>& args) {
   }
 
   std::vector<std::string> relauncher_args;
-  return RelaunchAppWithHelper(child_path.value(), relauncher_args, args);
+  return RelaunchAppWithHelper(child_path.value(), relauncher_args, args,
+                               wait_for_staged_update);
 }
 
 bool RelaunchAppWithHelper(const std::string& helper,
                            const std::vector<std::string>& relauncher_args,
-                           const std::vector<std::string>& args) {
+                           const std::vector<std::string>& args,
+                           bool wait_for_staged_update) {
   std::vector<std::string> relaunch_args;
   relaunch_args.push_back(helper);
   relaunch_args.push_back(RelauncherTypeArg());
@@ -103,6 +120,11 @@ bool RelaunchAppWithHelper(const std::string& helper,
   if (![NSApp isActive]) {
     relaunch_args.push_back(kRelauncherBackgroundArg);
   }
+
+  if (wait_for_staged_update)
+    relaunch_args.push_back(kRelauncherWaitForUpdateArg);
+  else
+    relaunch_args.push_back(kRelauncherDontWaitForUpdateArg);
 
   relaunch_args.insert(relaunch_args.end(),
                        relauncher_args.begin(), relauncher_args.end());
@@ -288,11 +310,11 @@ int RelauncherMain(const content::MainFunctionParams& main_parameters) {
   // Figure out what to execute, what arguments to pass it, and whether to
   // start it in the background.
   bool background = false;
+  bool wait_for_staged_update = false;
   bool in_relaunch_args = false;
   std::string dmg_bsd_device_name;
   bool seen_relaunch_executable = false;
   std::string relaunch_executable;
-  const std::string relauncher_arg_separator(kRelauncherArgSeparator);
   const std::string relauncher_dmg_device_arg =
       base::StringPrintf("--%s=", switches::kRelauncherProcessDMGDevice);
   for (int argv_index = 2; argv_index < argc; ++argv_index) {
@@ -304,12 +326,13 @@ int RelauncherMain(const content::MainFunctionParams& main_parameters) {
     }
 
     if (!in_relaunch_args) {
-      if (arg == relauncher_arg_separator) {
+      if (arg == kRelauncherArgSeparator) {
         in_relaunch_args = true;
       } else if (arg == kRelauncherBackgroundArg) {
         background = true;
-      } else if (arg.compare(0,
-                             relauncher_dmg_device_arg.size(),
+      } else if (arg == kRelauncherWaitForUpdateArg) {
+        wait_for_staged_update = true;
+      } else if (arg.compare(0, relauncher_dmg_device_arg.size(),
                              relauncher_dmg_device_arg) == 0) {
         dmg_bsd_device_name.assign(
             arg.substr(relauncher_dmg_device_arg.size()));
@@ -337,6 +360,13 @@ int RelauncherMain(const content::MainFunctionParams& main_parameters) {
   if (!seen_relaunch_executable) {
     LOG(ERROR) << "nothing to relaunch";
     return 1;
+  }
+
+  // If an update is staged but not yet installed, wait for it to be installed.
+  if (wait_for_staged_update) {
+    base::scoped_nsobject<CrStagingKeyWatcher> watcher(
+        [[CrStagingKeyWatcher alloc] initWithPollingTime:0.5]);
+    [watcher waitForStagingKeyToClear];
   }
 
   NSString* path = base::SysUTF8ToNSString(relaunch_executable);

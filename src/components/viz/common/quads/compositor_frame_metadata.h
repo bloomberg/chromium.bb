@@ -36,6 +36,20 @@ inline bool FrameTokenGT(uint32_t token1, uint32_t token2) {
   return (token2 - token1) > 0x80000000u;
 }
 
+class VIZ_COMMON_EXPORT FrameTokenGenerator {
+ public:
+  inline uint32_t operator++() {
+    if (++frame_token_ == 0)
+      ++frame_token_;
+    return frame_token_;
+  }
+
+  inline uint32_t operator*() const { return frame_token_; }
+
+ private:
+  uint32_t frame_token_ = 0;
+};
+
 class VIZ_COMMON_EXPORT CompositorFrameMetadata {
  public:
   CompositorFrameMetadata();
@@ -46,7 +60,8 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
 
   CompositorFrameMetadata Clone() const;
 
-  // The device scale factor used to generate this compositor frame.
+  // The device scale factor used to generate this compositor frame. Must be
+  // greater than zero.
   float device_scale_factor = 0.f;
 
   // Scroll offset and scale of the root layer. This can be used for tasks
@@ -71,26 +86,23 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
 
   std::vector<ui::LatencyInfo> latency_info;
 
-  // This is the set of Surfaces that are referenced by this frame.
-  // Note: this includes occluded and clipped surfaces and surfaces that may
-  // be accessed by this CompositorFrame in the future.
-  // TODO(fsamuel): In the future, a generalized frame eviction system will
-  // determine which surfaces to retain and which to evict. It will likely
-  // be unnecessary for the embedder to explicitly specify which surfaces to
-  // retain. Thus, this field will likely go away.
+  // This is the set of surfaces that the client wants to keep alive. It is
+  // guaranteed that the last activated surface in every SurfaceRange will be
+  // kept alive as long as the surface containing this CompositorFrame is alive.
+  // Note: Not every surface in this list might have a corresponding
+  // SurfaceDrawQuad, as this list also includes occluded and clipped surfaces
+  // and surfaces that may be accessed by this CompositorFrame in the future.
+  // However, every SurfaceDrawQuad MUST have a corresponding entry in this
+  // list.
   std::vector<SurfaceRange> referenced_surfaces;
 
   // This is the set of dependent SurfaceIds that should be active in the
-  // display compositor before this CompositorFrame can be activated. Note
-  // that if |can_activate_before_dependencies| then the display compositor
-  // can choose to activate a CompositorFrame before all dependencies are
-  // available.
-  // Note: |activation_dependencies| and |referenced_surfaces| are disjoint
-  //       sets of surface IDs. If a surface ID is known to exist and can be
-  //       used without additional synchronization, then it is placed in
-  //       |referenced_surfaces|. |activation_dependencies| is the set of
-  //       surface IDs that this frame would like to block on until they
-  //       become available or a deadline hits.
+  // display compositor before this CompositorFrame can be activated.
+  // Note: |activation_dependencies| MUST be a subset of |referenced_surfaces|.
+  // TODO(samans): Rather than having a separate list for activation
+  // dependencies, each member of referenced_surfaces can have a boolean flag
+  // that determines whether activation of this particular SurfaceId blocks the
+  // activation of the CompositorFrame. https://crbug.com/938946
   std::vector<SurfaceId> activation_dependencies;
 
   // This specifies a deadline for this CompositorFrame to synchronize with its
@@ -122,11 +134,6 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // frame is sent to embedder of the frame. This is helpful when the embedder
   // wants to do something after a particular frame is processed.
   bool send_frame_token_to_embedder = false;
-
-  // Once the display compositor presents a frame with
-  // |request_presentation_feedback| flag turned on, a presentation feedback
-  // will be provided to CompositorFrameSinkClient.
-  bool request_presentation_feedback = false;
 
   // These limits can be used together with the scroll/scale fields above to
   // determine if scrolling/scaling in a particular direction is possible.

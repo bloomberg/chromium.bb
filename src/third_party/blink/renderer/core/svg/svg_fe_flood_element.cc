@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/style/svg_computed_style.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_flood.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -58,7 +59,15 @@ FilterEffect* SVGFEFloodElement::Build(SVGFilterBuilder*, Filter* filter) {
   Color color = style->VisitedDependentColor(GetCSSPropertyFloodColor());
   float opacity = style->SvgStyle().FloodOpacity();
 
-  return FEFlood::Create(filter, color, opacity);
+  return MakeGarbageCollected<FEFlood>(filter, color, opacity);
+}
+
+bool SVGFEFloodElement::TaintsOrigin() const {
+  const ComputedStyle* style = GetComputedStyle();
+  // TaintsOrigin() is only called after a successful call to Build()
+  // (see above), so we should have a ComputedStyle here.
+  DCHECK(style);
+  return style->SvgStyle().FloodColor().IsCurrentColor();
 }
 
 }  // namespace blink

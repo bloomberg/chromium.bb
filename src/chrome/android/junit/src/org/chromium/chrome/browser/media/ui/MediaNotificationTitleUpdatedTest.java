@@ -23,7 +23,7 @@ import org.robolectric.shadows.ShadowNotification;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
-import org.chromium.content_public.common.MediaMetadata;
+import org.chromium.services.media_session.MediaMetadata;
 
 /**
  * Test of media notifications to see whether the text updates when the tab title changes or the
@@ -51,7 +51,9 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
 
         getManager().mThrottler.mManager = getManager();
         doCallRealMethod().when(getManager()).onServiceStarted(any(ListenerService.class));
-        doCallRealMethod().when(mMockAppHooks).startForegroundService(any(Intent.class));
+        doCallRealMethod()
+                .when(mMockForegroundServiceUtils)
+                .startForegroundService(any(Intent.class));
         mTabHolder = new MediaNotificationTestTabHolder(TAB_ID_1, "about:blank", "title1");
     }
 

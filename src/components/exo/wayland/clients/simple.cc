@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -104,7 +105,7 @@ void Simple::Run(int frames, PresentationFeedback* feedback) {
     SkCanvas* canvas = buffer->sk_surface->getCanvas();
 
     static const SkColor kColors[] = {SK_ColorRED, SK_ColorBLACK};
-    canvas->clear(kColors[++frame_count % arraysize(kColors)]);
+    canvas->clear(kColors[++frame_count % base::size(kColors)]);
 
     if (gr_context_) {
       gr_context_->flush();

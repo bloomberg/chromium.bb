@@ -4,17 +4,16 @@
 
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 
-#include "services/service_manager/background/background_service_manager.h"
-#include "services/service_manager/service_manager.h"
+#include "services/service_manager/background_service_manager.h"
 
 namespace service_manager {
 
-TestServiceManager::TestServiceManager() : TestServiceManager(nullptr) {}
+TestServiceManager::TestServiceManager()
+    : TestServiceManager(std::vector<Manifest>()) {}
 
-TestServiceManager::TestServiceManager(std::unique_ptr<base::Value> catalog)
+TestServiceManager::TestServiceManager(const std::vector<Manifest>& manifests)
     : background_service_manager_(
-          std::make_unique<BackgroundServiceManager>(nullptr,
-                                                     std::move(catalog))) {}
+          std::make_unique<BackgroundServiceManager>(manifests)) {}
 
 TestServiceManager::~TestServiceManager() = default;
 

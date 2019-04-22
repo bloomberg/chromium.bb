@@ -160,7 +160,7 @@ class ParameterSetEx<UNICODE_STRING> : public ParameterSet {
 template <typename T>
 ParameterSet ParamPickerMake(T& parameter) {
   return ParameterSetEx<T>(&parameter);
-};
+}
 
 struct CountedParameterSetBase {
   size_t count;

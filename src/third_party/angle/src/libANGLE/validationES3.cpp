@@ -36,7 +36,7 @@ bool ValidateFramebufferTextureMultiviewBaseANGLE(Context *context,
                                                   GLint level,
                                                   GLsizei numViews)
 {
-    if (!context->getExtensions().multiview)
+    if (!context->getExtensions().multiview2)
     {
         context->validationError(GL_INVALID_OPERATION, kMultiviewNotAvailable);
         return false;
@@ -431,7 +431,7 @@ bool ValidateES3TexImageParametersBase(Context *context,
             return false;
     }
 
-    gl::Texture *texture = context->getTargetTexture(texType);
+    gl::Texture *texture = context->getTextureByType(texType);
     if (!texture)
     {
         context->validationError(GL_INVALID_OPERATION, kMissingTexture);
@@ -449,7 +449,7 @@ bool ValidateES3TexImageParametersBase(Context *context,
         isSubImage ? texture->getFormat(target, level).info->internalFormat : internalformat;
     if (isSubImage && actualInternalFormat == GL_NONE)
     {
-        context->validationError(GL_INVALID_OPERATION, "Texture level does not exist.");
+        context->validationError(GL_INVALID_OPERATION, kInvalidMipLevel);
         return false;
     }
 
@@ -460,8 +460,7 @@ bool ValidateES3TexImageParametersBase(Context *context,
     {
         if (!actualFormatInfo.compressed)
         {
-            context->validationError(
-                GL_INVALID_ENUM, "internalformat is not a supported compressed internal format.");
+            context->validationError(GL_INVALID_ENUM, kCompressedMismatch);
             return false;
         }
 
@@ -471,15 +470,13 @@ bool ValidateES3TexImageParametersBase(Context *context,
                     context, actualFormatInfo.internalFormat, xoffset, yoffset, width, height,
                     texture->getWidth(target, level), texture->getHeight(target, level)))
             {
-                context->validationError(GL_INVALID_OPERATION,
-                                         "Invalid compressed format dimension.");
+                context->validationError(GL_INVALID_OPERATION, kInvalidCompressedImageSize);
                 return false;
             }
 
             if (format != actualInternalFormat)
             {
-                context->validationError(GL_INVALID_OPERATION,
-                                         "Format must match the internal format of the texture.");
+                context->validationError(GL_INVALID_OPERATION, kMismatchedFormat);
                 return false;
             }
 
@@ -493,8 +490,7 @@ bool ValidateES3TexImageParametersBase(Context *context,
         {
             if (!ValidCompressedImageSize(context, actualInternalFormat, level, width, height))
             {
-                context->validationError(GL_INVALID_OPERATION,
-                                         "Invalid compressed format dimension.");
+                context->validationError(GL_INVALID_OPERATION, kInvalidCompressedImageSize);
                 return false;
             }
         }
@@ -552,7 +548,7 @@ bool ValidateES3TexImageParametersBase(Context *context,
         }
 
         if (width > 0 && height > 0 && depth > 0 && pixels == nullptr &&
-            context->getGLState().getTargetBuffer(gl::BufferBinding::PixelUnpack) == nullptr)
+            context->getState().getTargetBuffer(gl::BufferBinding::PixelUnpack) == nullptr)
         {
             context->validationError(GL_INVALID_VALUE, kPixelDataNull);
             return false;
@@ -567,8 +563,7 @@ bool ValidateES3TexImageParametersBase(Context *context,
     }
 
     // Check for pixel unpack buffer related API errors
-    gl::Buffer *pixelUnpackBuffer =
-        context->getGLState().getTargetBuffer(BufferBinding::PixelUnpack);
+    gl::Buffer *pixelUnpackBuffer = context->getState().getTargetBuffer(BufferBinding::PixelUnpack);
     if (pixelUnpackBuffer != nullptr)
     {
         // ...data is not evenly divisible into the number of bytes needed to store in memory a
@@ -581,8 +576,7 @@ bool ValidateES3TexImageParametersBase(Context *context,
 
             if ((offset % dataBytesPerPixel) != 0)
             {
-                context->validationError(GL_INVALID_OPERATION,
-                                         "Reads would overflow the pixel unpack buffer.");
+                context->validationError(GL_INVALID_OPERATION, kDataTypeNotAligned);
                 return false;
             }
         }
@@ -590,7 +584,7 @@ bool ValidateES3TexImageParametersBase(Context *context,
         // ...the buffer object's data store is currently mapped.
         if (pixelUnpackBuffer->isMapped())
         {
-            context->validationError(GL_INVALID_OPERATION, "Pixel unpack buffer is mapped.");
+            context->validationError(GL_INVALID_OPERATION, kBufferMapped);
             return false;
         }
     }
@@ -628,7 +622,7 @@ bool ValidateES3TexImage2DParameters(Context *context,
 }
 
 bool ValidateES3TexImage3DParameters(Context *context,
-                                     TextureType target,
+                                     TextureTarget target,
                                      GLint level,
                                      GLenum internalformat,
                                      bool isCompressed,
@@ -651,17 +645,16 @@ bool ValidateES3TexImage3DParameters(Context *context,
         return false;
     }
 
-    if (IsETC2EACFormat(format) && target != TextureType::_2DArray)
+    if (IsETC2EACFormat(format) && target != TextureTarget::_2DArray)
     {
         // ES 3.1, Section 8.7, page 169.
         context->validationError(GL_INVALID_OPERATION, kInternalFormatRequiresTexture2DArray);
         return false;
     }
 
-    return ValidateES3TexImageParametersBase(context, NonCubeTextureTypeToTarget(target), level,
-                                             internalformat, isCompressed, isSubImage, xoffset,
-                                             yoffset, zoffset, width, height, depth, border, format,
-                                             type, bufSize, pixels);
+    return ValidateES3TexImageParametersBase(context, target, level, internalformat, isCompressed,
+                                             isSubImage, xoffset, yoffset, zoffset, width, height,
+                                             depth, border, format, type, bufSize, pixels);
 }
 
 struct EffectiveInternalFormatInfo
@@ -929,7 +922,7 @@ bool ValidateES3CopyTexImageParametersBase(Context *context,
     }
     ASSERT(textureFormat.valid() || !isSubImage);
 
-    const auto &state            = context->getGLState();
+    const auto &state            = context->getState();
     gl::Framebuffer *framebuffer = state.getReadFramebuffer();
     GLuint readFramebufferID     = framebuffer->id();
 
@@ -1004,7 +997,7 @@ bool ValidateES3CopyTexImage2DParameters(Context *context,
 }
 
 bool ValidateES3CopyTexImage3DParameters(Context *context,
-                                         TextureType target,
+                                         TextureTarget target,
                                          GLint level,
                                          GLenum internalformat,
                                          bool isSubImage,
@@ -1023,9 +1016,9 @@ bool ValidateES3CopyTexImage3DParameters(Context *context,
         return false;
     }
 
-    return ValidateES3CopyTexImageParametersBase(context, NonCubeTextureTypeToTarget(target), level,
-                                                 internalformat, isSubImage, xoffset, yoffset,
-                                                 zoffset, x, y, width, height, border);
+    return ValidateES3CopyTexImageParametersBase(context, target, level, internalformat, isSubImage,
+                                                 xoffset, yoffset, zoffset, x, y, width, height,
+                                                 border);
 }
 
 bool ValidateES3TexStorageParametersBase(Context *context,
@@ -1131,7 +1124,7 @@ bool ValidateES3TexStorageParametersBase(Context *context,
             return false;
     }
 
-    gl::Texture *texture = context->getTargetTexture(target);
+    gl::Texture *texture = context->getTextureByType(target);
     if (!texture || texture->id() == 0)
     {
         context->validationError(GL_INVALID_OPERATION, kMissingTexture);
@@ -1360,10 +1353,10 @@ bool ValidateInvalidateFramebuffer(Context *context,
     {
         case GL_DRAW_FRAMEBUFFER:
         case GL_FRAMEBUFFER:
-            defaultFramebuffer = context->getGLState().getDrawFramebuffer()->id() == 0;
+            defaultFramebuffer = context->getState().getDrawFramebuffer()->id() == 0;
             break;
         case GL_READ_FRAMEBUFFER:
-            defaultFramebuffer = context->getGLState().getReadFramebuffer()->id() == 0;
+            defaultFramebuffer = context->getState().getReadFramebuffer()->id() == 0;
             break;
         default:
             context->validationError(GL_INVALID_ENUM, kInvalidFramebufferTarget);
@@ -1400,7 +1393,7 @@ bool ValidateClearBuffer(Context *context)
         return false;
     }
 
-    if (!ValidateFramebufferComplete(context, context->getGLState().getDrawFramebuffer()))
+    if (!ValidateFramebufferComplete(context, context->getState().getDrawFramebuffer()))
     {
         return false;
     }
@@ -1413,7 +1406,7 @@ bool ValidateDrawRangeElements(Context *context,
                                GLuint start,
                                GLuint end,
                                GLsizei count,
-                               GLenum type,
+                               DrawElementsType type,
                                const void *indices)
 {
     if (context->getClientMajorVersion() < 3)
@@ -1424,7 +1417,7 @@ bool ValidateDrawRangeElements(Context *context,
 
     if (end < start)
     {
-        context->validationError(GL_INVALID_VALUE, "end < start");
+        context->validationError(GL_INVALID_VALUE, kInvalidElementRange);
         return false;
     }
 
@@ -1441,13 +1434,13 @@ bool ValidateDrawRangeElements(Context *context,
 
     // Note that resolving the index range is a bit slow. We should probably optimize this.
     IndexRange indexRange;
-    ANGLE_VALIDATION_TRY(context->getGLState().getVertexArray()->getIndexRange(
-        context, type, count, indices, &indexRange));
+    ANGLE_VALIDATION_TRY(context->getState().getVertexArray()->getIndexRange(context, type, count,
+                                                                             indices, &indexRange));
 
     if (indexRange.end > end || indexRange.start < start)
     {
         // GL spec says that behavior in this case is undefined - generating an error is fine.
-        context->validationError(GL_INVALID_OPERATION, "Indices are out of the start, end range.");
+        context->validationError(GL_INVALID_OPERATION, kExceedsElementRange);
         return false;
     }
     return true;
@@ -1472,11 +1465,11 @@ bool ValidateReadBuffer(Context *context, GLenum src)
         return false;
     }
 
-    const Framebuffer *readFBO = context->getGLState().getReadFramebuffer();
+    const Framebuffer *readFBO = context->getState().getReadFramebuffer();
 
     if (readFBO == nullptr)
     {
-        context->validationError(GL_INVALID_OPERATION, "No active read framebuffer.");
+        context->validationError(GL_INVALID_OPERATION, kNoReadFramebuffer);
         return false;
     }
 
@@ -1487,7 +1480,7 @@ bool ValidateReadBuffer(Context *context, GLenum src)
 
     if (src != GL_BACK && (src < GL_COLOR_ATTACHMENT0 || src > GL_COLOR_ATTACHMENT31))
     {
-        context->validationError(GL_INVALID_ENUM, "Unknown enum for 'src' in ReadBuffer");
+        context->validationError(GL_INVALID_ENUM, kInvalidReadBuffer);
         return false;
     }
 
@@ -1495,9 +1488,7 @@ bool ValidateReadBuffer(Context *context, GLenum src)
     {
         if (src != GL_BACK)
         {
-            context->validationError(
-                GL_INVALID_OPERATION,
-                "'src' must be GL_NONE or GL_BACK when reading from the default framebuffer.");
+            context->validationError(GL_INVALID_OPERATION, kInvalidDefaultReadBuffer);
             return false;
         }
     }
@@ -1507,8 +1498,7 @@ bool ValidateReadBuffer(Context *context, GLenum src)
 
         if (drawBuffer >= context->getCaps().maxDrawBuffers)
         {
-            context->validationError(GL_INVALID_OPERATION,
-                                     "'src' is greater than MAX_DRAW_BUFFERS.");
+            context->validationError(GL_INVALID_OPERATION, kExceedsMaxDrawBuffers);
             return false;
         }
     }
@@ -1517,7 +1507,7 @@ bool ValidateReadBuffer(Context *context, GLenum src)
 }
 
 bool ValidateCompressedTexImage3D(Context *context,
-                                  TextureType target,
+                                  TextureTarget target,
                                   GLint level,
                                   GLenum internalformat,
                                   GLsizei width,
@@ -1533,14 +1523,15 @@ bool ValidateCompressedTexImage3D(Context *context,
         return false;
     }
 
-    if (!ValidTextureTarget(context, target))
+    if (!ValidTextureTarget(context, TextureTargetToType(target)))
     {
         context->validationError(GL_INVALID_ENUM, kInvalidTextureTarget);
         return false;
     }
 
     // Validate image size
-    if (!ValidImageSizeParameters(context, target, level, width, height, depth, false))
+    if (!ValidImageSizeParameters(context, TextureTargetToType(target), level, width, height, depth,
+                                  false))
     {
         // Error already generated.
         return false;
@@ -1567,10 +1558,9 @@ bool ValidateCompressedTexImage3D(Context *context,
     }
 
     // 3D texture target validation
-    if (target != TextureType::_3D && target != TextureType::_2DArray)
+    if (target != TextureTarget::_3D && target != TextureTarget::_2DArray)
     {
-        context->validationError(GL_INVALID_ENUM,
-                                 "Must specify a valid 3D texture destination target");
+        context->validationError(GL_INVALID_ENUM, kInvalidTextureTarget);
         return false;
     }
 
@@ -1586,7 +1576,7 @@ bool ValidateCompressedTexImage3D(Context *context,
 }
 
 bool ValidateCompressedTexImage3DRobustANGLE(Context *context,
-                                             TextureType target,
+                                             TextureTarget target,
                                              GLint level,
                                              GLenum internalformat,
                                              GLsizei width,
@@ -1643,14 +1633,14 @@ static bool ValidateBindBufferCommon(Context *context,
 
     if (buffer != 0 && offset < 0)
     {
-        context->validationError(GL_INVALID_VALUE, "buffer is non-zero and offset is negative.");
+        context->validationError(GL_INVALID_VALUE, kNegativeOffset);
         return false;
     }
 
-    if (!context->getGLState().isBindGeneratesResourceEnabled() &&
+    if (!context->getState().isBindGeneratesResourceEnabled() &&
         !context->isBufferGenerated(buffer))
     {
-        context->validationError(GL_INVALID_OPERATION, "Buffer was not generated.");
+        context->validationError(GL_INVALID_OPERATION, kObjectNotGenerated);
         return false;
     }
 
@@ -1662,25 +1652,20 @@ static bool ValidateBindBufferCommon(Context *context,
             if (index >= caps.maxTransformFeedbackSeparateAttributes)
             {
                 context->validationError(GL_INVALID_VALUE,
-                                         "index is greater than or equal to the "
-                                         "number of TRANSFORM_FEEDBACK_BUFFER "
-                                         "indexed binding points.");
+                                         kIndexExceedsTransformFeedbackBufferBindings);
                 return false;
             }
             if (buffer != 0 && ((offset % 4) != 0 || (size % 4) != 0))
             {
-                context->validationError(GL_INVALID_VALUE,
-                                         "offset and size must be multiple of 4.");
+                context->validationError(GL_INVALID_VALUE, kOffsetAndSizeAlignment);
                 return false;
             }
 
             TransformFeedback *curTransformFeedback =
-                context->getGLState().getCurrentTransformFeedback();
+                context->getState().getCurrentTransformFeedback();
             if (curTransformFeedback && curTransformFeedback->isActive())
             {
-                context->validationError(GL_INVALID_OPERATION,
-                                         "target is TRANSFORM_FEEDBACK_BUFFER and transform "
-                                         "feedback is currently active.");
+                context->validationError(GL_INVALID_OPERATION, kTransformFeedbackTargetActive);
                 return false;
             }
             break;
@@ -1689,19 +1674,14 @@ static bool ValidateBindBufferCommon(Context *context,
         {
             if (index >= caps.maxUniformBufferBindings)
             {
-                context->validationError(GL_INVALID_VALUE,
-                                         "index is greater than or equal to the "
-                                         "number of UNIFORM_BUFFER indexed "
-                                         "binding points.");
+                context->validationError(GL_INVALID_VALUE, kIndexExceedsMaxUniformBufferBindings);
                 return false;
             }
 
             ASSERT(caps.uniformBufferOffsetAlignment);
             if (buffer != 0 && (offset % caps.uniformBufferOffsetAlignment) != 0)
             {
-                context->validationError(
-                    GL_INVALID_VALUE,
-                    "offset must be multiple of value of UNIFORM_BUFFER_OFFSET_ALIGNMENT.");
+                context->validationError(GL_INVALID_VALUE, kUniformBufferOffsetAlignment);
                 return false;
             }
             break;
@@ -1710,21 +1690,18 @@ static bool ValidateBindBufferCommon(Context *context,
         {
             if (context->getClientVersion() < ES_3_1)
             {
-                context->validationError(GL_INVALID_ENUM,
-                                         "ATOMIC_COUNTER_BUFFER is not supported before GLES 3.1");
+                context->validationError(GL_INVALID_ENUM, kEnumRequiresGLES31);
                 return false;
             }
             if (index >= caps.maxAtomicCounterBufferBindings)
             {
                 context->validationError(GL_INVALID_VALUE,
-                                         "index is greater than or equal to the "
-                                         "number of ATOMIC_COUNTER_BUFFER "
-                                         "indexed binding points.");
+                                         kIndexExceedsMaxAtomicCounterBufferBindings);
                 return false;
             }
             if (buffer != 0 && (offset % 4) != 0)
             {
-                context->validationError(GL_INVALID_VALUE, "offset must be a multiple of 4.");
+                context->validationError(GL_INVALID_VALUE, kOffsetAlignment);
                 return false;
             }
             break;
@@ -1733,31 +1710,24 @@ static bool ValidateBindBufferCommon(Context *context,
         {
             if (context->getClientVersion() < ES_3_1)
             {
-                context->validationError(GL_INVALID_ENUM,
-                                         "SHADER_STORAGE_BUFFER is not supported in GLES3.");
+                context->validationError(GL_INVALID_ENUM, kEnumRequiresGLES31);
                 return false;
             }
             if (index >= caps.maxShaderStorageBufferBindings)
             {
-                context->validationError(GL_INVALID_VALUE,
-                                         "index is greater than or equal to the "
-                                         "number of SHADER_STORAGE_BUFFER "
-                                         "indexed binding points.");
+                context->validationError(GL_INVALID_VALUE, kExceedsMaxShaderStorageBufferBindings);
                 return false;
             }
             ASSERT(caps.shaderStorageBufferOffsetAlignment);
             if (buffer != 0 && (offset % caps.shaderStorageBufferOffsetAlignment) != 0)
             {
-                context->validationError(GL_INVALID_VALUE,
-                                         "offset must be multiple of value of "
-                                         "SHADER_STORAGE_BUFFER_OFFSET_"
-                                         "ALIGNMENT.");
+                context->validationError(GL_INVALID_VALUE, kShaderStorageBufferOffsetAlignment);
                 return false;
             }
             break;
         }
         default:
-            context->validationError(GL_INVALID_ENUM, "the target is not supported.");
+            context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
             return false;
     }
 
@@ -1778,8 +1748,7 @@ bool ValidateBindBufferRange(Context *context,
 {
     if (buffer != 0 && size <= 0)
     {
-        context->validationError(GL_INVALID_VALUE,
-                                 "buffer is non-zero and size is less than or equal to zero.");
+        context->validationError(GL_INVALID_VALUE, kInvalidBindBufferSize);
         return false;
     }
     return ValidateBindBufferCommon(context, target, index, buffer, offset, size);
@@ -2026,7 +1995,7 @@ bool ValidateDrawBuffers(Context *context, GLsizei n, const GLenum *bufs)
 }
 
 bool ValidateCopyTexSubImage3D(Context *context,
-                               TextureType target,
+                               TextureTarget target,
                                GLint level,
                                GLint xoffset,
                                GLint yoffset,
@@ -2198,7 +2167,7 @@ bool ValidateCopySubTexture3DANGLE(Context *context,
 }
 
 bool ValidateTexImage3D(Context *context,
-                        TextureType target,
+                        TextureTarget target,
                         GLint level,
                         GLint internalformat,
                         GLsizei width,
@@ -2221,7 +2190,7 @@ bool ValidateTexImage3D(Context *context,
 }
 
 bool ValidateTexImage3DRobustANGLE(Context *context,
-                                   TextureType target,
+                                   TextureTarget target,
                                    GLint level,
                                    GLint internalformat,
                                    GLsizei width,
@@ -2250,7 +2219,7 @@ bool ValidateTexImage3DRobustANGLE(Context *context,
 }
 
 bool ValidateTexSubImage3D(Context *context,
-                           TextureType target,
+                           TextureTarget target,
                            GLint level,
                            GLint xoffset,
                            GLint yoffset,
@@ -2274,7 +2243,7 @@ bool ValidateTexSubImage3D(Context *context,
 }
 
 bool ValidateTexSubImage3DRobustANGLE(Context *context,
-                                      TextureType target,
+                                      TextureTarget target,
                                       GLint level,
                                       GLint xoffset,
                                       GLint yoffset,
@@ -2304,7 +2273,7 @@ bool ValidateTexSubImage3DRobustANGLE(Context *context,
 }
 
 bool ValidateCompressedTexSubImage3D(Context *context,
-                                     TextureType target,
+                                     TextureTarget target,
                                      GLint level,
                                      GLint xoffset,
                                      GLint yoffset,
@@ -2359,7 +2328,7 @@ bool ValidateCompressedTexSubImage3D(Context *context,
 }
 
 bool ValidateCompressedTexSubImage3DRobustANGLE(Context *context,
-                                                TextureType target,
+                                                TextureTarget target,
                                                 GLint level,
                                                 GLint xoffset,
                                                 GLint yoffset,
@@ -2418,8 +2387,7 @@ bool ValidateDeleteTransformFeedbacks(Context *context, GLint n, const GLuint *i
         if (transformFeedback != nullptr && transformFeedback->isActive())
         {
             // ES 3.0.4 section 2.15.1 page 86
-            context->validationError(GL_INVALID_OPERATION,
-                                     "Attempt to delete active transform feedback.");
+            context->validationError(GL_INVALID_OPERATION, kTransformFeedbackActiveDelete);
             return false;
         }
     }
@@ -2451,16 +2419,16 @@ bool ValidateBeginTransformFeedback(Context *context, PrimitiveMode primitiveMod
             break;
 
         default:
-            context->validationError(GL_INVALID_ENUM, "Invalid primitive mode.");
+            context->validationError(GL_INVALID_ENUM, kInvalidPrimitiveMode);
             return false;
     }
 
-    TransformFeedback *transformFeedback = context->getGLState().getCurrentTransformFeedback();
+    TransformFeedback *transformFeedback = context->getState().getCurrentTransformFeedback();
     ASSERT(transformFeedback != nullptr);
 
     if (transformFeedback->isActive())
     {
-        context->validationError(GL_INVALID_OPERATION, "Transform feedback is already active.");
+        context->validationError(GL_INVALID_OPERATION, kTransfomFeedbackAlreadyActive);
         return false;
     }
 
@@ -2471,8 +2439,7 @@ bool ValidateBeginTransformFeedback(Context *context, PrimitiveMode primitiveMod
         {
             if (buffer->isMapped())
             {
-                context->validationError(GL_INVALID_OPERATION,
-                                         "Transform feedback has a mapped buffer.");
+                context->validationError(GL_INVALID_OPERATION, kBufferMapped);
                 return false;
             }
             if ((context->getLimitations().noDoubleBoundTransformFeedbackBuffers ||
@@ -2486,7 +2453,7 @@ bool ValidateBeginTransformFeedback(Context *context, PrimitiveMode primitiveMod
         }
     }
 
-    Program *program = context->getGLState().getLinkedProgram(context);
+    Program *program = context->getState().getLinkedProgram(context);
 
     if (!program)
     {
@@ -2505,6 +2472,12 @@ bool ValidateBeginTransformFeedback(Context *context, PrimitiveMode primitiveMod
 
 bool ValidateGetBufferPointerv(Context *context, BufferBinding target, GLenum pname, void **params)
 {
+    if (context->getClientMajorVersion() < 3)
+    {
+        context->validationError(GL_INVALID_OPERATION, kES3Required);
+        return false;
+    }
+
     return ValidateGetBufferPointervBase(context, target, pname, nullptr, params);
 }
 
@@ -2521,6 +2494,12 @@ bool ValidateGetBufferPointervRobustANGLE(Context *context,
     }
 
     GLsizei numParams = 0;
+
+    if (context->getClientMajorVersion() < 3 && !context->getExtensions().mapBuffer)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
 
     if (!ValidateGetBufferPointervBase(context, target, pname, &numParams, params))
     {
@@ -2651,9 +2630,7 @@ bool ValidateIndexedStateQuery(Context *context, GLenum pname, GLuint index, GLs
             }
             if (index >= caps.maxShaderStorageBufferBindings)
             {
-                context->validationError(
-                    GL_INVALID_VALUE,
-                    "index is outside the valid range for GL_SHADER_STORAGE_BUFFER_BINDING");
+                context->validationError(GL_INVALID_VALUE, kExceedsMaxShaderStorageBufferBindings);
                 return false;
             }
             break;
@@ -2669,9 +2646,7 @@ bool ValidateIndexedStateQuery(Context *context, GLenum pname, GLuint index, GLs
             }
             if (index >= caps.maxVertexAttribBindings)
             {
-                context->validationError(
-                    GL_INVALID_VALUE,
-                    "bindingindex must be smaller than MAX_VERTEX_ATTRIB_BINDINGS.");
+                context->validationError(GL_INVALID_VALUE, kExceedsMaxVertexAttribBindings);
                 return false;
             }
             break;
@@ -2700,7 +2675,7 @@ bool ValidateIndexedStateQuery(Context *context, GLenum pname, GLuint index, GLs
             }
             if (index >= caps.maxImageUnits)
             {
-                context->validationError(GL_INVALID_VALUE, kInvalidImageUnit);
+                context->validationError(GL_INVALID_VALUE, kExceedsMaxImageUnits);
                 return false;
             }
             break;
@@ -2826,20 +2801,19 @@ bool ValidateCopyBufferSubData(Context *context,
         return false;
     }
 
-    Buffer *readBuffer  = context->getGLState().getTargetBuffer(readTarget);
-    Buffer *writeBuffer = context->getGLState().getTargetBuffer(writeTarget);
+    Buffer *readBuffer  = context->getState().getTargetBuffer(readTarget);
+    Buffer *writeBuffer = context->getState().getTargetBuffer(writeTarget);
 
     if (!readBuffer || !writeBuffer)
     {
-        context->validationError(GL_INVALID_OPERATION, "No buffer bound to target");
+        context->validationError(GL_INVALID_OPERATION, kBufferNotBound);
         return false;
     }
 
     // Verify that readBuffer and writeBuffer are not currently mapped
     if (readBuffer->isMapped() || writeBuffer->isMapped())
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "Cannot call CopyBufferSubData on a mapped buffer");
+        context->validationError(GL_INVALID_OPERATION, kBufferMapped);
         return false;
     }
 
@@ -2866,17 +2840,22 @@ bool ValidateCopyBufferSubData(Context *context,
         return false;
     }
 
-    if (readOffset < 0 || writeOffset < 0 || size < 0)
+    if (readOffset < 0 || writeOffset < 0)
     {
-        context->validationError(GL_INVALID_VALUE,
-                                 "readOffset, writeOffset and size must all be non-negative");
+        context->validationError(GL_INVALID_VALUE, kNegativeOffset);
+        return false;
+    }
+
+    if (size < 0)
+    {
+        context->validationError(GL_INVALID_VALUE, kNegativeSize);
         return false;
     }
 
     if (checkedReadSum.ValueOrDie() > readBuffer->getSize() ||
         checkedWriteSum.ValueOrDie() > writeBuffer->getSize())
     {
-        context->validationError(GL_INVALID_VALUE, "Buffer offset overflow in CopyBufferSubData");
+        context->validationError(GL_INVALID_VALUE, kBufferOffsetOverflow);
         return false;
     }
 
@@ -2914,8 +2893,7 @@ bool ValidateGetStringi(Context *context, GLenum name, GLuint index)
         case GL_EXTENSIONS:
             if (index >= context->getExtensionStringCount())
             {
-                context->validationError(
-                    GL_INVALID_VALUE, "index must be less than the number of extension strings.");
+                context->validationError(GL_INVALID_VALUE, kExceedsNumExtensions);
                 return false;
             }
             break;
@@ -2928,9 +2906,7 @@ bool ValidateGetStringi(Context *context, GLenum name, GLuint index)
             }
             if (index >= context->getRequestableExtensionStringCount())
             {
-                context->validationError(
-                    GL_INVALID_VALUE,
-                    "index must be less than the number of requestable extension strings.");
+                context->validationError(GL_INVALID_VALUE, kExceedsNumRequestableExtensions);
                 return false;
             }
             break;
@@ -2990,7 +2966,7 @@ bool ValidateRenderbufferStorageMultisample(Context *context,
 bool ValidateVertexAttribIPointer(Context *context,
                                   GLuint index,
                                   GLint size,
-                                  GLenum type,
+                                  VertexAttribType type,
                                   GLsizei stride,
                                   const void *pointer)
 {
@@ -3000,7 +2976,7 @@ bool ValidateVertexAttribIPointer(Context *context,
         return false;
     }
 
-    if (!ValidateVertexFormatBase(context, index, size, type, true))
+    if (!ValidateIntegerVertexFormat(context, index, size, type))
     {
         return false;
     }
@@ -3016,8 +2992,7 @@ bool ValidateVertexAttribIPointer(Context *context,
     {
         if (stride > caps.maxVertexAttribStride)
         {
-            context->validationError(GL_INVALID_VALUE,
-                                     "stride cannot be greater than MAX_VERTEX_ATTRIB_STRIDE.");
+            context->validationError(GL_INVALID_VALUE, kExceedsMaxVertexAttribStride);
             return false;
         }
 
@@ -3026,8 +3001,7 @@ bool ValidateVertexAttribIPointer(Context *context,
         // validation should be inherited.
         if (index >= caps.maxVertexAttribBindings)
         {
-            context->validationError(GL_INVALID_VALUE,
-                                     "index must be smaller than MAX_VERTEX_ATTRIB_BINDINGS.");
+            context->validationError(GL_INVALID_VALUE, kExceedsMaxVertexAttribBindings);
             return false;
         }
     }
@@ -3036,12 +3010,10 @@ bool ValidateVertexAttribIPointer(Context *context,
     // An INVALID_OPERATION error is generated when a non-zero vertex array object
     // is bound, zero is bound to the ARRAY_BUFFER buffer object binding point,
     // and the pointer argument is not NULL.
-    if (context->getGLState().getVertexArrayId() != 0 &&
-        context->getGLState().getTargetBuffer(BufferBinding::Array) == 0 && pointer != nullptr)
+    if (context->getState().getVertexArrayId() != 0 &&
+        context->getState().getTargetBuffer(BufferBinding::Array) == 0 && pointer != nullptr)
     {
-        context->validationError(
-            GL_INVALID_OPERATION,
-            "Client data cannot be used with a non-default vertex array object.");
+        context->validationError(GL_INVALID_OPERATION, kClientDataInVertexArray);
         return false;
     }
 
@@ -3078,7 +3050,7 @@ bool ValidateGetSynciv(Context *context,
     Sync *syncObject = context->getSync(sync);
     if (!syncObject)
     {
-        context->validationError(GL_INVALID_VALUE, "Invalid sync object.");
+        context->validationError(GL_INVALID_VALUE, kSyncMissing);
         return false;
     }
 
@@ -3101,7 +3073,7 @@ bool ValidateGetSynciv(Context *context,
 bool ValidateDrawElementsInstanced(Context *context,
                                    PrimitiveMode mode,
                                    GLsizei count,
-                                   GLenum type,
+                                   DrawElementsType type,
                                    const void *indices,
                                    GLsizei instanceCount)
 {
@@ -3111,7 +3083,7 @@ bool ValidateDrawElementsInstanced(Context *context,
         return false;
     }
 
-    return ValidateDrawElementsInstancedCommon(context, mode, count, type, indices, instanceCount);
+    return ValidateDrawElementsInstancedBase(context, mode, count, type, indices, instanceCount);
 }
 
 bool ValidateMultiDrawArraysInstancedANGLE(Context *context,
@@ -3128,7 +3100,7 @@ bool ValidateMultiDrawArraysInstancedANGLE(Context *context,
     }
     if (context->getClientMajorVersion() < 3)
     {
-        if (!context->getExtensions().instancedArrays)
+        if (!context->getExtensions().instancedArraysAny())
         {
             context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
             return false;
@@ -3152,7 +3124,7 @@ bool ValidateMultiDrawArraysInstancedANGLE(Context *context,
 bool ValidateMultiDrawElementsInstancedANGLE(Context *context,
                                              PrimitiveMode mode,
                                              const GLsizei *counts,
-                                             GLenum type,
+                                             DrawElementsType type,
                                              const GLvoid *const *indices,
                                              const GLsizei *instanceCounts,
                                              GLsizei drawcount)
@@ -3164,7 +3136,7 @@ bool ValidateMultiDrawElementsInstancedANGLE(Context *context,
     }
     if (context->getClientMajorVersion() < 3)
     {
-        if (!context->getExtensions().instancedArrays)
+        if (!context->getExtensions().instancedArraysAny())
         {
             context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
             return false;
@@ -3176,8 +3148,8 @@ bool ValidateMultiDrawElementsInstancedANGLE(Context *context,
     }
     for (GLsizei drawID = 0; drawID < drawcount; ++drawID)
     {
-        if (!ValidateDrawElementsInstancedCommon(context, mode, counts[drawID], type,
-                                                 indices[drawID], instanceCounts[drawID]))
+        if (!ValidateDrawElementsInstancedBase(context, mode, counts[drawID], type, indices[drawID],
+                                               instanceCounts[drawID]))
         {
             return false;
         }
@@ -3185,13 +3157,13 @@ bool ValidateMultiDrawElementsInstancedANGLE(Context *context,
     return true;
 }
 
-bool ValidateFramebufferTextureMultiviewLayeredANGLE(Context *context,
-                                                     GLenum target,
-                                                     GLenum attachment,
-                                                     GLuint texture,
-                                                     GLint level,
-                                                     GLint baseViewIndex,
-                                                     GLsizei numViews)
+bool ValidateFramebufferTextureMultiviewOVR(Context *context,
+                                            GLenum target,
+                                            GLenum attachment,
+                                            GLuint texture,
+                                            GLint level,
+                                            GLint baseViewIndex,
+                                            GLsizei numViews)
 {
     if (!ValidateFramebufferTextureMultiviewBaseANGLE(context, target, attachment, texture, level,
                                                       numViews))
@@ -3203,7 +3175,7 @@ bool ValidateFramebufferTextureMultiviewLayeredANGLE(Context *context,
     {
         if (baseViewIndex < 0)
         {
-            context->validationError(GL_INVALID_VALUE, "baseViewIndex cannot be less than 0.");
+            context->validationError(GL_INVALID_VALUE, kNegativeBaseViewIndex);
             return false;
         }
 
@@ -3219,8 +3191,7 @@ bool ValidateFramebufferTextureMultiviewLayeredANGLE(Context *context,
                 {
                     if (!context->getExtensions().multiviewMultisample)
                     {
-                        context->validationError(GL_INVALID_OPERATION,
-                                                 "Texture's target must be GL_TEXTURE_2D_ARRAY.");
+                        context->validationError(GL_INVALID_OPERATION, kInvalidTextureType);
                         return false;
                     }
                 }
@@ -3228,67 +3199,14 @@ bool ValidateFramebufferTextureMultiviewLayeredANGLE(Context *context,
                 const Caps &caps = context->getCaps();
                 if (static_cast<GLuint>(baseViewIndex + numViews) > caps.maxArrayTextureLayers)
                 {
-                    context->validationError(GL_INVALID_VALUE,
-                                             "baseViewIndex+numViews cannot be "
-                                             "greater than "
-                                             "GL_MAX_ARRAY_TEXTURE_LAYERS.");
+                    context->validationError(GL_INVALID_VALUE, kViewsExceedMaxArrayLayers);
                     return false;
                 }
 
                 break;
             }
             default:
-                context->validationError(GL_INVALID_OPERATION,
-                                         "Texture's target must be GL_TEXTURE_2D_ARRAY.");
-                return false;
-        }
-
-        if (!ValidateFramebufferTextureMultiviewLevelAndFormat(context, tex, level))
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool ValidateFramebufferTextureMultiviewSideBySideANGLE(Context *context,
-                                                        GLenum target,
-                                                        GLenum attachment,
-                                                        GLuint texture,
-                                                        GLint level,
-                                                        GLsizei numViews,
-                                                        const GLint *viewportOffsets)
-{
-    if (!ValidateFramebufferTextureMultiviewBaseANGLE(context, target, attachment, texture, level,
-                                                      numViews))
-    {
-        return false;
-    }
-
-    if (texture != 0)
-    {
-        const GLsizei numViewportOffsetValues = numViews * 2;
-        for (GLsizei i = 0; i < numViewportOffsetValues; ++i)
-        {
-            if (viewportOffsets[i] < 0)
-            {
-                context->validationError(GL_INVALID_VALUE,
-                                         "viewportOffsets cannot contain negative values.");
-                return false;
-            }
-        }
-
-        Texture *tex = context->getTexture(texture);
-        ASSERT(tex);
-
-        switch (tex->getType())
-        {
-            case TextureType::_2D:
-                break;
-            default:
-                context->validationError(GL_INVALID_OPERATION,
-                                         "Texture's target must be GL_TEXTURE_2D.");
+                context->validationError(GL_INVALID_OPERATION, kInvalidTextureType);
                 return false;
         }
 
@@ -3419,7 +3337,7 @@ bool ValidateEndTransformFeedback(Context *context)
         return false;
     }
 
-    TransformFeedback *transformFeedback = context->getGLState().getCurrentTransformFeedback();
+    TransformFeedback *transformFeedback = context->getState().getCurrentTransformFeedback();
     ASSERT(transformFeedback != nullptr);
 
     if (!transformFeedback->isActive())
@@ -3528,7 +3446,7 @@ bool ValidateBindTransformFeedback(Context *context, GLenum target, GLuint id)
             // Cannot bind a transform feedback object if the current one is started and not
             // paused (3.0.2 pg 85 section 2.14.1)
             TransformFeedback *curTransformFeedback =
-                context->getGLState().getCurrentTransformFeedback();
+                context->getState().getCurrentTransformFeedback();
             if (curTransformFeedback && curTransformFeedback->isActive() &&
                 !curTransformFeedback->isPaused())
             {
@@ -3573,7 +3491,7 @@ bool ValidatePauseTransformFeedback(Context *context)
         return false;
     }
 
-    TransformFeedback *transformFeedback = context->getGLState().getCurrentTransformFeedback();
+    TransformFeedback *transformFeedback = context->getState().getCurrentTransformFeedback();
     ASSERT(transformFeedback != nullptr);
 
     // Current transform feedback must be active and not paused in order to pause (3.0.2 pg 86)
@@ -3600,7 +3518,7 @@ bool ValidateResumeTransformFeedback(Context *context)
         return false;
     }
 
-    TransformFeedback *transformFeedback = context->getGLState().getCurrentTransformFeedback();
+    TransformFeedback *transformFeedback = context->getState().getCurrentTransformFeedback();
     ASSERT(transformFeedback != nullptr);
 
     // Current transform feedback must be active and paused in order to resume (3.0.2 pg 86)

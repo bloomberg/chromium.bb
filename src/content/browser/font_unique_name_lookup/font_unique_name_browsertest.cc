@@ -13,6 +13,11 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 
+#if defined(OS_WIN)
+#include "base/files/scoped_temp_dir.h"
+#include "content/browser/renderer_host/dwrite_font_lookup_table_builder_win.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -98,6 +103,9 @@ const char* kExpectedFontFamilyNames[] = {"American Typewriter",
                                           "Malayalam Sangam MN",
                                           "Hiragino Maru Gothic Pro",
                                           "Hiragino Kaku Gothic StdN"};
+#elif defined(OS_WIN)
+const char* kExpectedFontFamilyNames[] = {"Cambria Math", "MingLiU_HKSCS-ExtB",
+                                          "NSimSun", "Calibri"};
 #endif
 
 }  // namespace
@@ -105,8 +113,22 @@ const char* kExpectedFontFamilyNames[] = {"American Typewriter",
 class FontUniqueNameBrowserTest : public DevToolsProtocolTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    DevToolsProtocolTest::SetUpCommandLine(command_line);
     feature_list_.InitAndEnableFeature(features::kFontSrcLocalMatching);
   }
+
+#if defined(OS_WIN)
+  // The Windows service for font unique name lookup needs a cache directory to
+  // persist the cached information. Configure a temporary one before running
+  // this test.
+  void SetUpInProcessBrowserTestFixture() override {
+    DevToolsProtocolTest::SetUpInProcessBrowserTestFixture();
+    DWriteFontLookupTableBuilder* table_builder =
+        DWriteFontLookupTableBuilder::GetInstance();
+    ASSERT_TRUE(cache_directory_.CreateUniqueTempDir());
+    table_builder->SetCacheDirectoryForTesting(cache_directory_.GetPath());
+  }
+#endif
 
   void LoadAndWait(const std::string& url) {
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -118,10 +140,12 @@ class FontUniqueNameBrowserTest : public DevToolsProtocolTest {
 
  private:
   base::test::ScopedFeatureList feature_list_;
+#if defined(OS_WIN)
+  base::ScopedTempDir cache_directory_;
+#endif
 };
 
-// TODO(drott): Enable this on all platforms.
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if !defined(OS_FUCHSIA)
 IN_PROC_BROWSER_TEST_F(FontUniqueNameBrowserTest, ContentLocalFontsMatching) {
   LoadAndWait("/font_src_local_matching.html");
   Attach();

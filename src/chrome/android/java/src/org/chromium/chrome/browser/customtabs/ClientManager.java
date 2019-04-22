@@ -21,12 +21,13 @@ import android.support.customtabs.CustomTabsService.Relation;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.customtabs.PostMessageServiceConnection;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.util.SparseBooleanArray;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
@@ -34,6 +35,7 @@ import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerifica
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.installedapp.InstalledAppProviderImpl;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 
@@ -47,7 +49,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /** Manages the clients' state for Custom Tabs. This class is threadsafe. */
 class ClientManager {
@@ -184,6 +185,7 @@ class ClientManager {
         private boolean mAllowParallelRequest;
         private boolean mAllowResourcePrefetch;
         private boolean mShouldGetPageLoadMetrics;
+        private boolean mShouldHideTopBar;
 
         public SessionParams(Context context, int uid, CustomTabsCallback customTabsCallback,
                 DisconnectCallback callback, PostMessageHandler postMessageHandler,
@@ -402,7 +404,7 @@ class ClientManager {
             RequestThrottler.getForUid(ContextUtils.getApplicationContext(), params.uid)
                     .registerSuccess(params.mPredictedUrl);
             RecordHistogram.recordCustomTimesHistogram("CustomTabs.PredictionToLaunch",
-                    elapsedTimeMs, 1, TimeUnit.MINUTES.toMillis(3), TimeUnit.MILLISECONDS, 100);
+                    elapsedTimeMs, 1, DateUtils.MINUTE_IN_MILLIS * 3, 100);
         }
         RecordHistogram.recordEnumeratedHistogram("CustomTabs.WarmupStateOnLaunch",
                 getWarmupState(session), CalledWarmup.NUM_ENTRIES);
@@ -476,8 +478,9 @@ class ClientManager {
             }
         };
 
-        params.originVerifier = new OriginVerifier(listener, params.getPackageName(), relation);
-        ThreadUtils.runOnUiThread(() -> { params.originVerifier.start(origin); });
+        params.originVerifier = new OriginVerifier(params.getPackageName(), relation);
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> { params.originVerifier.start(listener, origin); });
         if (relation == CustomTabsService.RELATION_HANDLE_ALL_URLS
                 && InstalledAppProviderImpl.isAppInstalledAndAssociatedWithOrigin(
                            params.getPackageName(), URI.create(origin.toString()),
@@ -621,6 +624,26 @@ class ClientManager {
     }
 
     /**
+     * @return Whether the CCT TopBar should be hidden on dynamic module managed URLs
+     * for a given session.
+     */
+    public synchronized boolean shouldHideTopBarOnModuleManagedUrlsForSession(
+            CustomTabsSessionToken session) {
+        SessionParams params = mSessionParams.get(session);
+        return params != null && params.mShouldHideTopBar;
+    }
+
+    /**
+     * Sets whether the CCT TopBar should be hidden on dynamic module managed URLs
+     * for a given session.
+     */
+    public synchronized void setHideCCTTopBarOnModuleManagedUrls(
+            CustomTabsSessionToken session, boolean hide) {
+        SessionParams params = mSessionParams.get(session);
+        if (params != null) params.mShouldHideTopBar = hide;
+    }
+
+    /**
      * @return Whether the session is using the default parameters (that is, don't ignore
      *         fragments and don't speculate loads on cellular connections).
      */
@@ -704,7 +727,7 @@ class ClientManager {
      */
     public synchronized boolean isFirstPartyOriginForSession(
             CustomTabsSessionToken session, Origin origin) {
-        return OriginVerifier.isValidOrigin(getClientPackageNameForSession(session), origin,
+        return OriginVerifier.wasPreviouslyVerified(getClientPackageNameForSession(session), origin,
                 CustomTabsService.RELATION_USE_AS_ORIGIN);
     }
 

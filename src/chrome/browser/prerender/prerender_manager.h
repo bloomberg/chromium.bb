@@ -80,7 +80,7 @@ class PrerenderManager : public content::NotificationObserver,
  public:
   enum PrerenderManagerMode {
     // Deprecated: Enables all types of prerendering for any origin.
-    PRERENDER_MODE_ENABLED,
+    DEPRECATED_PRERENDER_MODE_ENABLED,
 
     // For each request to prerender performs a NoStatePrefetch for the same URL
     // instead.
@@ -126,7 +126,8 @@ class PrerenderManager : public content::NotificationObserver,
   // child or route id, or a referrer. This method uses sensible values for
   // those. The |session_storage_namespace| matches the namespace of the active
   // tab at the time the prerender is generated from the omnibox. Returns a
-  // PrerenderHandle or NULL.
+  // PrerenderHandle or NULL. If the prerender fails, the prerender manager may
+  // fallback and initiate a preconnect to |url|.
   std::unique_ptr<PrerenderHandle> AddPrerenderFromOmnibox(
       const GURL& url,
       content::SessionStorageNamespace* session_storage_namespace,
@@ -201,17 +202,6 @@ class PrerenderManager : public content::NotificationObserver,
                                          bool is_no_store,
                                          bool was_hidden,
                                          base::TimeDelta time);
-
-  // Records the perceived first contentful paint time for a prerendered page.
-  // The actual load may have started prior to navigation due to prerender
-  // hints. The FCP ticks is in absolute time; this has the disadvantage that
-  // the histogram will mix browser and renderer ticks, but there seems to be no
-  // way around that.
-  void RecordPrerenderFirstContentfulPaint(const GURL& url,
-                                           content::WebContents* web_contents,
-                                           bool is_no_store,
-                                           bool was_hidden,
-                                           base::TimeTicks ticks);
 
   static PrerenderManagerMode GetMode() { return mode_; }
   static void SetMode(PrerenderManagerMode mode) { mode_ = mode; }
@@ -331,6 +321,15 @@ class PrerenderManager : public content::NotificationObserver,
   // content::RenderProcessHostObserver implementation.
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
+  // Cleans up the expired prefetches and then returns true if |url| was
+  // no-state prefetched recently. If so, |prefetch_age|, |final_status| and
+  // |origin| are set based on the no-state prefetch information if they are
+  // non-null.
+  bool GetPrefetchInformation(const GURL& url,
+                              base::TimeDelta* prefetch_age,
+                              FinalStatus* final_status,
+                              Origin* origin);
+
   void SetPrerenderContentsFactoryForTest(
       PrerenderContents::Factory* prerender_contents_factory);
 
@@ -441,7 +440,7 @@ class PrerenderManager : public content::NotificationObserver,
   // prerender was added. If |bounds| is empty, then
   // PrerenderContents::StartPrerendering will instead use a default from
   // PrerenderConfig. Returns a PrerenderHandle or NULL.
-  std::unique_ptr<PrerenderHandle> AddPrerender(
+  std::unique_ptr<PrerenderHandle> AddPrerenderWithPreconnectFallback(
       Origin origin,
       const GURL& url,
       const content::Referrer& referrer,
@@ -500,12 +499,6 @@ class PrerenderManager : public content::NotificationObserver,
   // so cannot immediately be deleted.
   void DeleteOldWebContents();
 
-  // Get information associated with a possible prefetch of |url|.
-  // |origin| may be null, in which case the origin is not returned.
-  void GetPrefetchInformation(const GURL& url,
-                              base::TimeDelta* prefetch_age,
-                              Origin* origin);
-
   // Called when PrerenderContents gets destroyed. Attaches the |final_status|
   // to the most recent prefetch matching the |url|.
   void SetPrefetchFinalStatusForUrl(const GURL& url, FinalStatus final_status);
@@ -535,10 +528,11 @@ class PrerenderManager : public content::NotificationObserver,
   void DestroyAllContents(FinalStatus final_status);
 
   // Records the final status a prerender in the case that a PrerenderContents
-  // was never created, and also adds a PrerenderHistory entry.
-  void RecordFinalStatusWithoutCreatingPrerenderContents(
-      const GURL& url, Origin origin, FinalStatus final_status) const;
-
+  // was never created, adds a PrerenderHistory entry, and may also initiate a
+  // preconnect to |url|.
+  void SkipPrerenderContentsAndMaybePreconnect(const GURL& url,
+                                               Origin origin,
+                                               FinalStatus final_status) const;
 
   // Swaps a prerender |prerender_data| for |url| into the tab, replacing
   // |web_contents|.  Returns the new WebContents that was swapped in, or NULL
@@ -548,6 +542,9 @@ class PrerenderManager : public content::NotificationObserver,
                                      content::WebContents* web_contents,
                                      PrerenderData* prerender_data,
                                      bool should_replace_current_entry);
+
+  // May initiate a preconnect to |url_arg| based on |origin|.
+  void MaybePreconnect(Origin origin, const GURL& url_arg) const;
 
   // The configuration.
   Config config_;

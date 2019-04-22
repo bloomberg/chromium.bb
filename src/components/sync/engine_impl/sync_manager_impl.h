@@ -96,7 +96,6 @@ class SyncManagerImpl
   ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
   const std::string cache_guid() override;
-  bool ReceivedExperiment(Experiments* experiments) override;
   bool HasUnsyncedItemsForTest() override;
   SyncEncryptionHandler* GetEncryptionHandler() override;
   std::vector<std::unique_ptr<ProtocolEvent>> GetBufferedProtocolEvents()
@@ -108,9 +107,9 @@ class SyncManagerImpl
   bool HasDirectoryTypeDebugInfoObserver(
       TypeDebugInfoObserver* observer) override;
   void RequestEmitDebugInfo() override;
-  void ClearServerData(const base::Closure& callback) override;
   void OnCookieJarChanged(bool account_mismatch, bool empty_jar) override;
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
+  void UpdateInvalidationClientId(const std::string& client_id) override;
 
   // SyncEncryptionHandler::Observer implementation.
   void OnPassphraseRequired(
@@ -126,8 +125,6 @@ class SyncManagerImpl
   void OnCryptographerStateChanged(Cryptographer* cryptographer) override;
   void OnPassphraseTypeChanged(PassphraseType type,
                                base::Time explicit_passphrase_time) override;
-  void OnLocalSetPassphraseEncryption(
-      const SyncEncryptionHandler::NigoriState& nigori_state) override;
 
   // SyncEngineEventListener implementation.
   void OnSyncCycleEvent(const SyncCycleEvent& event) override;
@@ -176,8 +173,6 @@ class SyncManagerImpl
 
   const SyncScheduler* scheduler() const;
 
-  bool GetHasInvalidAuthTokenForTest() const;
-
  protected:
   // Helper functions.  Virtual for testing.
   virtual void NotifyInitializationSuccess();
@@ -218,8 +213,8 @@ class SyncManagerImpl
   bool VisiblePropertiesDiffer(const syncable::EntryKernelMutation& mutation,
                                Cryptographer* cryptographer) const;
 
-  // Open the directory named with |username|.
-  bool OpenDirectory(const std::string& username);
+  // Opens the directory.
+  bool OpenDirectory(const InitArgs* args);
 
   void RequestNudgeForDataTypes(const base::Location& nudge_location,
                                 ModelTypeSet type);

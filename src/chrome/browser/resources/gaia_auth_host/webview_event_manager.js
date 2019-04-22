@@ -51,8 +51,9 @@ WebviewEventManager.prototype = {
    * @private
    */
   removeAllListeners: function() {
-    for (var i = 0; i < this.unbindWebviewCleanupFunctions_.length; i++)
+    for (let i = 0; i < this.unbindWebviewCleanupFunctions_.length; i++) {
       this.unbindWebviewCleanupFunctions_[i]();
+    }
     this.unbindWebviewCleanupFunctions_ = [];
   }
 };

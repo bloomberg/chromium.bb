@@ -34,7 +34,7 @@ class BlobSliceTest : public testing::Test {
       bytes[i] = i;
     return scoped_refptr<ShareableBlobDataItem>(new ShareableBlobDataItem(
         BlobDataItem::CreateBytes(bytes), ShareableBlobDataItem::QUOTA_NEEDED));
-  };
+  }
 
   scoped_refptr<ShareableBlobDataItem> CreateFileItem(size_t offset,
                                                       size_t size) {
@@ -42,14 +42,14 @@ class BlobSliceTest : public testing::Test {
         BlobDataItem::CreateFile(base::FilePath(FILE_PATH_LITERAL("kFakePath")),
                                  offset, size, base::Time::Max()),
         ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA));
-  };
+  }
 
   scoped_refptr<ShareableBlobDataItem> CreateTempFileItem(size_t offset,
                                                           size_t size) {
     return scoped_refptr<ShareableBlobDataItem>(new ShareableBlobDataItem(
         BlobDataItem::CreateFutureFile(offset, size, 0),
         ShareableBlobDataItem::QUOTA_NEEDED));
-  };
+  }
 
   void Slice(BlobDataBuilder& builder,
              BlobEntry* source,

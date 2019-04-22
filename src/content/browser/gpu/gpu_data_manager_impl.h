@@ -31,13 +31,8 @@
 
 class GURL;
 
-namespace base {
-class CommandLine;
-}
-
 namespace gpu {
 struct GpuPreferences;
-struct VideoMemoryUsageStats;
 }
 
 namespace content {
@@ -56,8 +51,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void RequestCompleteGpuInfoIfNeeded() override;
   bool IsEssentialGpuInfoAvailable() const override;
   void RequestVideoMemoryUsageStatsUpdate(
-      const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
-          callback) const override;
+      VideoMemoryUsageStatsCallback callback) const override;
   // TODO(kbr): the threading model for the GpuDataManagerObservers is
   // not well defined, and it's impossible for callers to correctly
   // delete observers from anywhere except in one of the observer's
@@ -67,6 +61,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void RemoveObserver(GpuDataManagerObserver* observer) override;
   void DisableHardwareAcceleration() override;
   bool HardwareAccelerationEnabled() const override;
+  void AppendGpuCommandLine(base::CommandLine* command_line) const override;
 
   void RequestGpuSupportedRuntimeVersion() const;
   bool GpuProcessStartAllowed() const;
@@ -92,9 +87,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
 
   gpu::GPUInfo GetGPUInfoForHardwareGpu() const;
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
-
-  // Insert switches into gpu process command line: kUseGL, etc.
-  void AppendGpuCommandLine(base::CommandLine* command_line) const;
 
   // Update GpuPreferences based on blacklisting decisions.
   void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences) const;

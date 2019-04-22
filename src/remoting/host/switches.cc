@@ -20,6 +20,7 @@ const char kProcessTypeDesktop[] = "desktop";
 const char kProcessTypeHost[] = "host";
 const char kProcessTypeRdpDesktopSession[] = "rdp_desktop_session";
 const char kProcessTypeEvaluateCapability[] = "evaluate_capability";
+const char kProcessTypeFileChooser[] = "file_chooser";
 
 const char kEvaluateCapabilitySwitchName[] = "evaluate-type";
 

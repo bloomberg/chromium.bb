@@ -22,9 +22,9 @@
 // ----------------------------------------------------------------------------
 #include <jni.h>
 #include <atomic>
+#include <type_traits>
 
 #include "base/android/jni_generator/jni_generator_helper.h"
-
 #include "base/android/jni_int_wrapper.h"
 
 // Step 1: forward declarations.
@@ -129,7 +129,7 @@ static bool RegisterNativesImpl(JNIEnv* env) {
     return true;
 
   const int kMethodsDisplaySynchronizerSize =
-      arraysize(kMethodsDisplaySynchronizer);
+      std::extent<decltype(kMethodsDisplaySynchronizer)>();
 
   if (env->RegisterNatives(DisplaySynchronizer_clazz(env),
                            kMethodsDisplaySynchronizer,

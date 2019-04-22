@@ -4,6 +4,7 @@
 
 #include "net/socket/websocket_transport_connect_sub_job.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -12,6 +13,105 @@
 #include "net/socket/websocket_endpoint_lock_manager.h"
 
 namespace net {
+
+namespace {
+
+// StreamSocket wrapper that registers/unregisters the wrapped StreamSocket with
+// a WebSocketEndpointLockManager on creation/destruction.
+class WebSocketStreamSocket final : public StreamSocket {
+ public:
+  WebSocketStreamSocket(
+      std::unique_ptr<StreamSocket> wrapped_socket,
+      WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
+      const IPEndPoint& address)
+      : wrapped_socket_(std::move(wrapped_socket)),
+        lock_releaser_(websocket_endpoint_lock_manager, address) {}
+
+  ~WebSocketStreamSocket() override = default;
+
+  // Socket implementation:
+  int Read(IOBuffer* buf,
+           int buf_len,
+           CompletionOnceCallback callback) override {
+    return wrapped_socket_->Read(buf, buf_len, std::move(callback));
+  }
+  int ReadIfReady(IOBuffer* buf,
+                  int buf_len,
+                  CompletionOnceCallback callback) override {
+    return wrapped_socket_->ReadIfReady(buf, buf_len, std::move(callback));
+  }
+  int CancelReadIfReady() override {
+    return wrapped_socket_->CancelReadIfReady();
+  }
+  int Write(IOBuffer* buf,
+            int buf_len,
+            CompletionOnceCallback callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation) override {
+    return wrapped_socket_->Write(buf, buf_len, std::move(callback),
+                                  traffic_annotation);
+  }
+  int SetReceiveBufferSize(int32_t size) override {
+    return wrapped_socket_->SetReceiveBufferSize(size);
+  }
+  int SetSendBufferSize(int32_t size) override {
+    return wrapped_socket_->SetSendBufferSize(size);
+  }
+
+  // StreamSocket implementation:
+  int Connect(CompletionOnceCallback callback) override {
+    return wrapped_socket_->Connect(std::move(callback));
+  }
+  void Disconnect() override { wrapped_socket_->Disconnect(); }
+  bool IsConnected() const override { return wrapped_socket_->IsConnected(); }
+  bool IsConnectedAndIdle() const override {
+    return wrapped_socket_->IsConnectedAndIdle();
+  }
+  int GetPeerAddress(IPEndPoint* address) const override {
+    return wrapped_socket_->GetPeerAddress(address);
+  }
+  int GetLocalAddress(IPEndPoint* address) const override {
+    return wrapped_socket_->GetLocalAddress(address);
+  }
+  const NetLogWithSource& NetLog() const override {
+    return wrapped_socket_->NetLog();
+  }
+  bool WasEverUsed() const override { return wrapped_socket_->WasEverUsed(); }
+  bool WasAlpnNegotiated() const override {
+    return wrapped_socket_->WasAlpnNegotiated();
+  }
+  NextProto GetNegotiatedProtocol() const override {
+    return wrapped_socket_->GetNegotiatedProtocol();
+  }
+  bool GetSSLInfo(SSLInfo* ssl_info) override {
+    return wrapped_socket_->GetSSLInfo(ssl_info);
+  }
+  void GetConnectionAttempts(ConnectionAttempts* out) const override {
+    wrapped_socket_->GetConnectionAttempts(out);
+  }
+  void ClearConnectionAttempts() override {
+    wrapped_socket_->ClearConnectionAttempts();
+  }
+  void AddConnectionAttempts(const ConnectionAttempts& attempts) override {
+    wrapped_socket_->AddConnectionAttempts(attempts);
+  }
+  int64_t GetTotalReceivedBytes() const override {
+    return wrapped_socket_->GetTotalReceivedBytes();
+  }
+  void DumpMemoryStats(SocketMemoryStats* stats) const override {
+    wrapped_socket_->DumpMemoryStats(stats);
+  }
+  void ApplySocketTag(const SocketTag& tag) override {
+    wrapped_socket_->ApplySocketTag(tag);
+  }
+
+ private:
+  std::unique_ptr<StreamSocket> wrapped_socket_;
+  WebSocketEndpointLockManager::LockReleaser lock_releaser_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebSocketStreamSocket);
+};
+
+}  // namespace
 
 WebSocketTransportConnectSubJob::WebSocketTransportConnectSubJob(
     const AddressList& addresses,
@@ -68,7 +168,7 @@ LoadState WebSocketTransportConnectSubJob::GetLoadState() const {
 
 ClientSocketFactory* WebSocketTransportConnectSubJob::client_socket_factory()
     const {
-  return parent_job_->client_socket_factory_;
+  return parent_job_->client_socket_factory();
 }
 
 const NetLogWithSource& WebSocketTransportConnectSubJob::net_log() const {
@@ -160,8 +260,11 @@ int WebSocketTransportConnectSubJob::DoTransportConnectComplete(int result) {
     return result;
   }
 
-  websocket_endpoint_lock_manager_->RememberSocket(transport_socket_.get(),
-                                                   CurrentAddress());
+  // On success, need to register the socket with the
+  // WebSocketEndpointLockManager.
+  transport_socket_ = std::make_unique<WebSocketStreamSocket>(
+      std::move(transport_socket_), websocket_endpoint_lock_manager_,
+      CurrentAddress());
 
   return result;
 }

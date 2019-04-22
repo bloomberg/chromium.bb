@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_PREFS_PREF_VALUE_MAP_H_
 #define COMPONENTS_PREFS_PREF_VALUE_MAP_H_
 
+#include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
@@ -21,7 +21,7 @@ class Value;
 // A generic string to value map used by the PrefStore implementations.
 class COMPONENTS_PREFS_EXPORT PrefValueMap {
  public:
-  using Map = std::unordered_map<std::string, std::unique_ptr<base::Value>>;
+  using Map = std::map<std::string, base::Value>;
   using iterator = Map::iterator;
   using const_iterator = Map::const_iterator;
 
@@ -34,9 +34,8 @@ class COMPONENTS_PREFS_EXPORT PrefValueMap {
   bool GetValue(const std::string& key, const base::Value** value) const;
   bool GetValue(const std::string& key, base::Value** value);
 
-  // Sets a new |value| for |key|. |value| must be non-null. Returns true if the
-  // value changed.
-  bool SetValue(const std::string& key, std::unique_ptr<base::Value> value);
+  // Sets a new |value| for |key|. Returns true if the value changed.
+  bool SetValue(const std::string& key, base::Value value);
 
   // Removes the value for |key| from the map. Returns true if a value was
   // removed.

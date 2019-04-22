@@ -8,9 +8,9 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -32,7 +32,7 @@ class BookmarkExpandedStateTrackerTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   TestingPrefServiceSimple prefs_;
   std::unique_ptr<BookmarkModel> model_;
 
@@ -44,8 +44,7 @@ BookmarkExpandedStateTrackerTest::BookmarkExpandedStateTrackerTest() {}
 BookmarkExpandedStateTrackerTest::~BookmarkExpandedStateTrackerTest() {}
 
 void BookmarkExpandedStateTrackerTest::SetUp() {
-  prefs_.registry()->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
-                                      std::make_unique<base::ListValue>());
+  prefs_.registry()->RegisterListPref(prefs::kBookmarkEditorExpandedNodes);
   prefs_.registry()->RegisterListPref(prefs::kManagedBookmarks);
   model_.reset(new BookmarkModel(std::make_unique<TestBookmarkClient>()));
   model_->Load(&prefs_, base::FilePath(),

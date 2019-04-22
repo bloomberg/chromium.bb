@@ -5,11 +5,16 @@ element.style { ()
     display: none;
 
 [expanded] 
-.foo { (styles-source-l…-helper.html:4 -> styles-source-lines-inline-helper.html:4:7)
+.foo { (styles-sour…lper.html:4 -> styles-source-lines-inline-helper.html:4:7)
     color: blue;
 
 [expanded] 
 div { (user agent stylesheet)
 /-- overloaded --/     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
 
 

@@ -34,7 +34,7 @@ class FirewallManagerAdvancedImpl : public FirewallManager {
   // FirewallManager methods.
   bool CanUseLocalPorts() override {
     return !manager_.IsFirewallEnabled() || manager_.HasAnyRule();
-  };
+  }
 
   bool AddFirewallRules() override {
     return manager_.AddUDPRule(GetMdnsRuleName(), GetMdnsRuleDescription(),

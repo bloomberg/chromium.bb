@@ -22,7 +22,7 @@ namespace chromeos {
 //
 // All methods should be called from the origin thread (UI thread)
 // which initializes the DBusThreadManager instance.
-class CHROMEOS_EXPORT CecServiceClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) CecServiceClient : public DBusClient {
  public:
   ~CecServiceClient() override;
 

@@ -38,16 +38,19 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+
+namespace cc {
+class AnimationHost;
+}
 
 namespace blink {
-
 class EffectPaintPropertyNode;
 class GraphicsContext;
 class GraphicsLayer;
@@ -92,10 +95,6 @@ class CORE_EXPORT VisualViewport final
   USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
 
  public:
-  static VisualViewport* Create(Page& host) {
-    return MakeGarbageCollected<VisualViewport>(host);
-  }
-
   explicit VisualViewport(Page&);
   ~VisualViewport() override;
 
@@ -133,11 +132,6 @@ class CORE_EXPORT VisualViewport final
   // +/- zooming).
   FloatRect VisibleRect(IncludeScrollbarsInRect = kExcludeScrollbars) const;
 
-  // Similar to VisibleRect but this returns the rect relative to the main
-  // document's top-left corner.
-  FloatRect VisibleRectInDocument(
-      IncludeScrollbarsInRect = kExcludeScrollbars) const;
-
   // Resets the viewport to initial state.
   void Reset();
 
@@ -146,14 +140,13 @@ class CORE_EXPORT VisualViewport final
   void MainFrameDidChangeSize();
 
   // Sets scale and location in one operation, preventing intermediate clamping.
-  void SetScaleAndLocation(float scale, const FloatPoint& location);
+  void SetScaleAndLocation(float scale,
+                           bool is_pinch_gesture_active,
+                           const FloatPoint& location);
+
   void SetScale(float);
   float Scale() const { return scale_; }
-
-  // Update scale factor, magnifying or minifying by magnifyDelta, centered
-  // around the point specified by anchor in window coordinates. Returns false
-  // if page scale factor is left unchanged.
-  bool MagnifyScaleAroundAnchor(float magnify_delta, const FloatPoint& anchor);
+  bool IsPinchGestureActive() const { return is_pinch_gesture_active_; }
 
   // Convert the given rect in the main LocalFrameView's coordinates into a rect
   // in the viewport. The given and returned rects are in CSS pixels, meaning
@@ -192,7 +185,8 @@ class CORE_EXPORT VisualViewport final
   ChromeClient* GetChromeClient() const override;
   void SetScrollOffset(const ScrollOffset&,
                        ScrollType,
-                       ScrollBehavior = kScrollBehaviorInstant) override;
+                       ScrollBehavior,
+                       ScrollCallback on_finish) override;
   bool IsThrottled() const override {
     // VisualViewport is always in the main frame, so the frame does not get
     // throttled.
@@ -224,7 +218,7 @@ class CORE_EXPORT VisualViewport final
   GraphicsLayer* LayerForHorizontalScrollbar() const override;
   GraphicsLayer* LayerForVerticalScrollbar() const override;
   bool ScheduleAnimation() override;
-  CompositorAnimationHost* GetCompositorAnimationHost() const override;
+  cc::AnimationHost* GetCompositorAnimationHost() const override;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
   IntRect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
@@ -258,6 +252,7 @@ class CORE_EXPORT VisualViewport final
   ScrollbarTheme& GetPageScrollbarTheme() const override;
   bool VisualViewportSuppliesScrollbars() const override;
 
+  TransformPaintPropertyNode* GetDeviceEmulationTransformNode() const;
   TransformPaintPropertyNode* GetOverscrollElasticityTransformNode() const;
   TransformPaintPropertyNode* GetPageScaleNode() const;
   TransformPaintPropertyNode* GetScrollTranslationNode() const;
@@ -276,10 +271,11 @@ class CORE_EXPORT VisualViewport final
   bool NeedsPaintPropertyUpdate() const { return needs_paint_property_update_; }
 
  private:
-  bool DidSetScaleOrLocation(float scale, const FloatPoint& location);
+  bool DidSetScaleOrLocation(float scale,
+                             bool is_pinch_gesture_active,
+                             const FloatPoint& location);
 
-
-  void UpdateStyleAndLayoutIgnorePendingStylesheets() const;
+  void UpdateStyleAndLayout() const;
 
   void EnqueueScrollEvent();
   void EnqueueResizeEvent();
@@ -296,10 +292,15 @@ class CORE_EXPORT VisualViewport final
                      GraphicsLayerPaintingPhase,
                      const IntRect&) const override;
   void SetOverlayScrollbarsHidden(bool) override;
+  void SetPaintArtifactCompositorNeedsUpdate() const override;
   String DebugName(const GraphicsLayer*) const override;
 
   const ScrollableArea* GetScrollableAreaForTesting(
       const GraphicsLayer*) const override;
+
+  int ScrollbarThickness() const;
+  IntSize ScrollbarSize(ScrollbarOrientation) const;
+  IntPoint ScrollbarOffset(ScrollbarOrientation) const;
 
   void SetupScrollbar(ScrollbarOrientation);
 
@@ -337,6 +338,7 @@ class CORE_EXPORT VisualViewport final
   std::unique_ptr<GraphicsLayer> overlay_scrollbar_horizontal_;
   std::unique_ptr<GraphicsLayer> overlay_scrollbar_vertical_;
 
+  scoped_refptr<TransformPaintPropertyNode> device_emulation_transform_node_;
   scoped_refptr<TransformPaintPropertyNode>
       overscroll_elasticity_transform_node_;
   scoped_refptr<TransformPaintPropertyNode> scale_transform_node_;
@@ -348,6 +350,7 @@ class CORE_EXPORT VisualViewport final
   // Offset of the visual viewport from the main frame's origin, in CSS pixels.
   ScrollOffset offset_;
   float scale_;
+  bool is_pinch_gesture_active_;
 
   // The Blink viewport size. This is effectively the size of the rect Blink is
   // rendering into and includes space consumed by scrollbars. While it will

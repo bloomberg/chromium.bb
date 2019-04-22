@@ -8,10 +8,13 @@
 #include <string>
 
 #include "third_party/blink/renderer/core/css/parser/css.pb.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace css_proto_converter {
 
 class Converter {
+  STACK_ALLOCATED();
+
  public:
   Converter();
   std::string Convert(const StyleSheet&);
@@ -109,6 +112,6 @@ class Converter {
   template <size_t TableSize>
   void AppendTableValue(int id, const std::string (&lookup_table)[TableSize]);
 };
-};  // namespace css_proto_converter
+}  // namespace css_proto_converter
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PROTO_CONVERTER_H_

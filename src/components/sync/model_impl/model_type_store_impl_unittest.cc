@@ -9,10 +9,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
@@ -141,7 +141,7 @@ void VerifyMetadata(
   for (const auto& kv : expected_metadata) {
     auto it = actual_metadata.find(kv.first);
     ASSERT_TRUE(it != actual_metadata.end());
-    EXPECT_EQ(kv.second.SerializeAsString(), it->second.SerializeAsString());
+    EXPECT_EQ(kv.second.SerializeAsString(), it->second->SerializeAsString());
     actual_metadata.erase(it);
   }
   EXPECT_EQ(0U, actual_metadata.size());
@@ -176,7 +176,7 @@ class ModelTypeStoreImplTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<ModelTypeStore> store_;
 };
 
@@ -322,7 +322,7 @@ TEST_F(ModelTypeStoreImplTest, ReadMissingDataRecords) {
 // Test that stores for different types that share the same backend don't
 // interfere with each other's records.
 TEST(ModelTypeStoreImplWithTwoStoreTest, TwoStoresWithSharedBackend) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment task_environment;
 
   std::unique_ptr<ModelTypeStore> store_1 =
       ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(AUTOFILL);
@@ -361,7 +361,7 @@ TEST(ModelTypeStoreImplWithTwoStoreTest, TwoStoresWithSharedBackend) {
 // Test that records that DeleteAllDataAndMetadata() does not delete data from
 // another store when the backend is shared.
 TEST(ModelTypeStoreImplWithTwoStoreTest, DeleteAllWithSharedBackend) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment task_environment;
 
   std::unique_ptr<ModelTypeStore> store_1 =
       ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(AUTOFILL);

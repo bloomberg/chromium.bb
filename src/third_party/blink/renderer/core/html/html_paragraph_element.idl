@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-p-element
+// https://html.spec.whatwg.org/C/#the-p-element
 [HTMLConstructor]
 interface HTMLParagraphElement : HTMLElement {
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLParagraphElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLParagraphElement-partial
     [CEReactions, Reflect] attribute DOMString align;
 };

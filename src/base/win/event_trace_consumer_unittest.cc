@@ -13,8 +13,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/event_trace_controller.h"
 #include "base/win/event_trace_provider.h"
@@ -155,8 +156,8 @@ class EtwTraceConsumerRealtimeTest: public EtwTraceConsumerBaseTest {
       return HRESULT_FROM_WIN32(::GetLastError());
 
     HANDLE events[] = { consumer_ready_.Get(), consumer_thread_.Get() };
-    DWORD result = ::WaitForMultipleObjects(arraysize(events), events,
-                                            FALSE, INFINITE);
+    DWORD result =
+        ::WaitForMultipleObjects(size(events), events, FALSE, INFINITE);
     switch (result) {
       case WAIT_OBJECT_0:
         // The event was set, the consumer_ is ready.
@@ -271,11 +272,11 @@ class EtwTraceConsumerDataTest: public EtwTraceConsumerBaseTest {
     // Create a temp dir for this test.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     // Construct a temp file name in our dir.
-    temp_file_ = temp_dir_.GetPath().Append(L"test.etl");
+    temp_file_ = temp_dir_.GetPath().Append(FILE_PATH_LITERAL("test.etl"));
   }
 
   void TearDown() override {
-    EXPECT_TRUE(base::DeleteFile(temp_file_, false));
+    EXPECT_TRUE(DeleteFile(temp_file_, false));
 
     EtwTraceConsumerBaseTest::TearDown();
   }
@@ -285,7 +286,7 @@ class EtwTraceConsumerDataTest: public EtwTraceConsumerBaseTest {
 
     // Set up a file session.
     HRESULT hr = controller.StartFileSession(session_name_.c_str(),
-                                             temp_file_.value().c_str());
+                                             as_wcstr(temp_file_.value()));
     if (FAILED(hr))
       return hr;
 
@@ -309,7 +310,7 @@ class EtwTraceConsumerDataTest: public EtwTraceConsumerBaseTest {
   HRESULT ConsumeEventFromTempSession() {
     // Now consume the event(s).
     TestConsumer consumer_;
-    HRESULT hr = consumer_.OpenFileSession(temp_file_.value().c_str());
+    HRESULT hr = consumer_.OpenFileSession(as_wcstr(temp_file_.value()));
     if (SUCCEEDED(hr))
       hr = consumer_.Consume();
     consumer_.Close();
@@ -319,7 +320,7 @@ class EtwTraceConsumerDataTest: public EtwTraceConsumerBaseTest {
   }
 
   HRESULT RoundTripEvent(PEVENT_TRACE_HEADER header, PEVENT_TRACE* trace) {
-    base::DeleteFile(temp_file_, false);
+    DeleteFile(temp_file_, false);
 
     HRESULT hr = LogEventToTempSession(header);
     if (SUCCEEDED(hr))

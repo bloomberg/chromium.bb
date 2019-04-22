@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'GoogleToolboxForMac'
-  s.version          = '2.1.1'
+  s.version          = '2.2.0'
   s.author           = 'Google Inc.'
   s.license          = { :type => 'Apache', :file => 'LICENSE' }
   s.homepage         = 'https://github.com/google/google-toolbox-for-mac'
@@ -12,8 +12,8 @@ Pod::Spec.new do |s|
       to developers working on iOS or OS X projects.
                        DESC
 
-  s.osx.deployment_target = '10.6'
-  s.ios.deployment_target = '5.0'
+  s.osx.deployment_target = '10.7'
+  s.ios.deployment_target = '8.0'
   s.tvos.deployment_target = '9.0'
 
   s.requires_arc = false
@@ -40,14 +40,6 @@ Pod::Spec.new do |s|
         'Foundation/GTMLocalizedString.h',
         'Foundation/GTMLogger.h'
     sp.dependency 'GoogleToolboxForMac/Defines', "#{s.version}"
-  end
-
-  s.subspec 'AddressBook' do |sp|
-    sp.source_files = 'AddressBook/GTMABAddressBook.{h,m}'
-    sp.frameworks = 'AddressBook'
-    sp.dependency 'GoogleToolboxForMac/Core', "#{s.version}"
-    sp.dependency 'GoogleToolboxForMac/Defines', "#{s.version}"
-    sp.platforms = { :ios => '5.0', :osx => '10.6' }
   end
 
   s.subspec 'DebugUtils' do |sp|
@@ -157,6 +149,10 @@ Pod::Spec.new do |s|
   s.subspec 'NSThread+Blocks' do |sp|
     sp.source_files = 'Foundation/GTMNSThread+Blocks.{h,m}'
     sp.dependency 'GoogleToolboxForMac/Defines', "#{s.version}"
+  end
+
+  s.subspec 'TimeUtils' do |sp|
+    sp.source_files = 'Foundation/GTMTimeUtils.{h,m}'
   end
 
   s.subspec 'iPhone' do |sp|

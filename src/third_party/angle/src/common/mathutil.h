@@ -718,6 +718,9 @@ typedef Range<unsigned int> RangeUI;
 
 struct IndexRange
 {
+    struct Undefined
+    {};
+    IndexRange(Undefined) {}
     IndexRange() : IndexRange(0, 0, 0) {}
     IndexRange(size_t start_, size_t end_, size_t vertexIndexCount_)
         : start(start_), end(end_), vertexIndexCount(vertexIndexCount_)
@@ -1268,6 +1271,11 @@ inline uint16_t RotR16(uint16_t x, int8_t r)
 #    define ANGLE_ROTR16(x, y) ::rx::RotR16(x, y)
 
 #endif  // namespace rx
+
+constexpr unsigned int Log2(unsigned int bytes)
+{
+    return bytes == 1 ? 0 : (1 + Log2(bytes / 2));
+}
 }  // namespace rx
 
 #endif  // COMMON_MATHUTIL_H_

@@ -62,7 +62,7 @@ chrome.test.runTests([
   },
 
   // Regression test for crbug.com/597698
-  function connectAndDisconnect() {
+  function connectAndDisconnectInIframe() {
     var gotMessage = chrome.test.callbackAdded();
     var gotDisconnect = chrome.test.callbackAdded();
 

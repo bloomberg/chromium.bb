@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
-Found 756 tests; 565 PASS, 191 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught Error: assert_not_equals: overflow-block should be equivalent to not (overflow-block: none) got disallowed value false
+Found 762 tests; 566 PASS, 196 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS subtest_1
 FAIL subtest_2 assert_true: expected true got false
 PASS subtest_3
@@ -756,5 +757,11 @@ PASS subtest_750
 PASS subtest_751
 PASS subtest_752
 PASS subtest_753
+FAIL subtest_754 assert_true: expected true got false
+FAIL subtest_755 assert_true: expected true got false
+FAIL subtest_756 assert_true: expected true got false
+FAIL subtest_757 assert_true: expected true got false
+FAIL subtest_758 assert_true: expected true got false
+PASS subtest_759
 Harness: the test ran to completion.
 

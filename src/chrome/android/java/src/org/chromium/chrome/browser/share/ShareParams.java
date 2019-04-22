@@ -13,6 +13,8 @@ import android.text.TextUtils;
 import org.chromium.chrome.browser.share.ShareHelper.TargetChosenCallback;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 
+import java.util.ArrayList;
+
 /**
  * A container object for passing share parameters to {@link ShareHelper}.
  */
@@ -41,6 +43,12 @@ public class ShareParams {
     /** The URL of the page to be shared. */
     private final String mUrl;
 
+    /** The common MIME type of the files to be shared. A wildcard if they have differing types. */
+    private final String mFileContentType;
+
+    /** The list of Uris of the files to be shared. */
+    private final ArrayList<Uri> mFileUris;
+
     /** The Uri to the offline MHTML file to be shared. */
     private final Uri mOfflineUri;
 
@@ -61,7 +69,8 @@ public class ShareParams {
     private final Runnable mOnDialogDismissed;
 
     private ShareParams(boolean shareDirectly, boolean saveLastUsed, Activity activity,
-            String title, String text, String url, @Nullable Uri offlineUri,
+            String title, String text, String url, @Nullable String fileContentType,
+            @Nullable ArrayList<Uri> fileUris, @Nullable Uri offlineUri,
             @Nullable Uri screenshotUri, @Nullable TargetChosenCallback callback,
             @Nullable String sourcePackageName, @Nullable Runnable onDialogDismissed) {
         mShareDirectly = shareDirectly;
@@ -70,6 +79,8 @@ public class ShareParams {
         mTitle = title;
         mText = text;
         mUrl = url;
+        mFileContentType = fileContentType;
+        mFileUris = fileUris;
         mOfflineUri = offlineUri;
         mScreenshotUri = screenshotUri;
         mCallback = callback;
@@ -121,6 +132,22 @@ public class ShareParams {
     }
 
     /**
+     * @return The MIME type to the arbitrary files to be shared.
+     */
+    @Nullable
+    public String getFileContentType() {
+        return mFileContentType;
+    }
+
+    /**
+     * @return The Uri to the arbitrary files to be shared.
+     */
+    @Nullable
+    public ArrayList<Uri> getFileUris() {
+        return mFileUris;
+    }
+
+    /**
      * @return The Uri to the offline MHTML file to be shared.
      */
     @Nullable
@@ -167,6 +194,8 @@ public class ShareParams {
         private String mTitle;
         private String mText;
         private String mUrl;
+        private String mFileContentType;
+        private ArrayList<Uri> mFileUris;
         private Uri mOfflineUri;
         private Uri mScreenshotUri;
         private TargetChosenCallback mCallback;
@@ -210,6 +239,22 @@ public class ShareParams {
          */
         public Builder setUrl(@NonNull String url) {
             mUrl = url;
+            return this;
+        }
+
+        /**
+         * Sets the MIME type of the arbitrary files to be shared.
+         */
+        public Builder setFileContentType(@NonNull String fileContentType) {
+            mFileContentType = fileContentType;
+            return this;
+        }
+
+        /**
+         * Sets the Uri of the arbitrary files to be shared.
+         */
+        public Builder setFileUris(@Nullable ArrayList<Uri> fileUris) {
+            mFileUris = fileUris;
             return this;
         }
 
@@ -275,7 +320,8 @@ public class ShareParams {
                 }
             }
             return new ShareParams(mShareDirectly, mSaveLastUsed, mActivity, mTitle, mText, mUrl,
-                    mOfflineUri, mScreenshotUri, mCallback, mSourcePackageName, mOnDialogDismissed);
+                    mFileContentType, mFileUris, mOfflineUri, mScreenshotUri, mCallback,
+                    mSourcePackageName, mOnDialogDismissed);
         }
     }
 }

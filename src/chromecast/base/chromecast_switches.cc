@@ -32,6 +32,9 @@ const char kOverrideMetricsUploadUrl[] = "override-metrics-upload-url";
 // Disable features that require WiFi management.
 const char kNoWifi[] = "no-wifi";
 
+// Only connect to WLAN interfaces.
+const char kRequireWlan[] = "require-wlan";
+
 // Pass the app id information to the renderer process, to be used for logging.
 // last-launched-app should be the app that just launched and is spawning the
 // renderer.
@@ -45,20 +48,13 @@ const char kPreviousApp[] = "previous-app";
 // This flag implies --alsa-check-close-timeout=0.
 const char kAcceptResourceProvider[] = "accept-resource-provider";
 
-// Size of the ALSA output buffer in frames. This directly sets the latency of
-// the output device. Latency can be calculated by multiplying the sample rate
-// by the output buffer size.
-const char kAlsaOutputBufferSize[] = "alsa-output-buffer-size";
+// Name of the device the amp mixer should be opened on. If this flag is not
+// specified it will default to the same device as kAlsaVolumeDeviceName.
+const char kAlsaAmpDeviceName[] = "alsa-amp-device-name";
 
-// Size of the ALSA output period in frames. The period of an ALSA output device
-// determines how many frames elapse between hardware interrupts.
-const char kAlsaOutputPeriodSize[] = "alsa-output-period-size";
-
-// How many frames need to be in the output buffer before output starts.
-const char kAlsaOutputStartThreshold[] = "alsa-output-start-threshold";
-
-// Minimum number of available frames for scheduling a transfer.
-const char kAlsaOutputAvailMin[] = "alsa-output-avail-min";
+// Name of the simple mixer control element that the ALSA-based media library
+// should use to toggle powersave mode on the system.
+const char kAlsaAmpElementName[] = "alsa-amp-element-name";
 
 // Time in ms to wait before closing the PCM handle when no more mixer inputs
 // remain. Assumed to be 0 if --accept-resource-provider is present.
@@ -72,9 +68,28 @@ const char kAlsaEnableUpsampling[] = "alsa-enable-upsampling";
 // Deprecated: Use --audio-output-sample-rate instead.
 const char kAlsaFixedOutputSampleRate[] = "alsa-fixed-output-sample-rate";
 
+// Name of the device the mute mixer should be opened on. If this flag is not
+// specified it will default to the same device as kAlsaVolumeDeviceName.
+const char kAlsaMuteDeviceName[] = "alsa-mute-device-name";
+
 // Name of the simple mixer control element that the ALSA-based media library
-// should use to control the volume.
-const char kAlsaVolumeElementName[] = "alsa-volume-element-name";
+// should use to mute the system.
+const char kAlsaMuteElementName[] = "alsa-mute-element-name";
+
+// Minimum number of available frames for scheduling a transfer.
+const char kAlsaOutputAvailMin[] = "alsa-output-avail-min";
+
+// Size of the ALSA output buffer in frames. This directly sets the latency of
+// the output device. Latency can be calculated by multiplying the sample rate
+// by the output buffer size.
+const char kAlsaOutputBufferSize[] = "alsa-output-buffer-size";
+
+// Size of the ALSA output period in frames. The period of an ALSA output device
+// determines how many frames elapse between hardware interrupts.
+const char kAlsaOutputPeriodSize[] = "alsa-output-period-size";
+
+// How many frames need to be in the output buffer before output starts.
+const char kAlsaOutputStartThreshold[] = "alsa-output-start-threshold";
 
 // Name of the device the volume control mixer should be opened on. Will use the
 // same device as kAlsaOutputDevice and fall back to "default" if
@@ -82,23 +97,8 @@ const char kAlsaVolumeElementName[] = "alsa-volume-element-name";
 const char kAlsaVolumeDeviceName[] = "alsa-volume-device-name";
 
 // Name of the simple mixer control element that the ALSA-based media library
-// should use to mute the system.
-const char kAlsaMuteElementName[] = "alsa-mute-element-name";
-
-// Name of the device the mute mixer should be opened on. If this flag is not
-// specified it will default to the same device as kAlsaVolumeDeviceName.
-const char kAlsaMuteDeviceName[] = "alsa-mute-device-name";
-
-// Name of the simple mixer control element that the ALSA-based media library
-// should use to toggle powersave mode on the system.
-const char kAlsaAmpElementName[] = "alsa-amp-element-name";
-
-// Name of the device the amp mixer should be opened on. If this flag is not
-// specified it will default to the same device as kAlsaVolumeDeviceName.
-const char kAlsaAmpDeviceName[] = "alsa-amp-device-name";
-
-// Calibrated max output volume dBa for voice content at 1 meter, if known.
-const char kMaxOutputVolumeDba1m[] = "max-output-volume-dba1m";
+// should use to control the volume.
+const char kAlsaVolumeElementName[] = "alsa-volume-element-name";
 
 // Number of audio output channels. This will be used to send audio buffer with
 // specific number of channels to ALSA and generate loopback audio. Default
@@ -109,6 +109,21 @@ const char kAudioOutputChannels[] = "audio-output-channels";
 // specified the StreamMixer will choose sample rate based on the sample rate of
 // the media stream.
 const char kAudioOutputSampleRate[] = "audio-output-sample-rate";
+
+// Calibrated max output volume dBa for voice content at 1 meter, if known.
+const char kMaxOutputVolumeDba1m[] = "max-output-volume-dba1m";
+
+// Specify the start threshold frames for audio output when using our mixer.
+// This is mostly used to override the default value to a larger value, for
+// platforms that can't handle the default start threshold without running into
+// audio underruns.
+const char kMixerSourceAudioReadyThresholdMs[] =
+    "mixer-source-audio-ready-threshold-ms";
+
+// Specify the buffer size for audio output when using our mixer. This is mostly
+// used to override the default value to a larger value, for platforms that
+// can't handle an audio buffer so small without running into audio underruns.
+const char kMixerSourceInputQueueMs[] = "mixer-source-input-queue-ms";
 
 // Some platforms typically have very little 'free' memory, but plenty is
 // available in buffers+cached.  For such platforms, configure this amount
@@ -174,6 +189,11 @@ extern const char kCastMemoryPressureCriticalFraction[] =
     "memory-pressure-critical-fraction";
 extern const char kCastMemoryPressureModerateFraction[] =
     "memory-pressure-moderate-fraction";
+
+// Rather than use the renderer hosted remotely in the media service, fall back
+// to the default renderer within content_renderer. Does not change the behavior
+// of the media service.
+const char kDisableMojoRenderer[] = "disable-mojo-renderer";
 
 }  // namespace switches
 

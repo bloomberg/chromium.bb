@@ -11,8 +11,9 @@
 #include "src/base/lsan-page-allocator.h"
 #include "src/base/page-allocator.h"
 #include "src/base/platform/platform.h"
-#include "src/utils.h"
+#include "src/memcopy.h"
 #include "src/v8.h"
+#include "src/vector.h"
 
 #if V8_LIBC_BIONIC
 #include <malloc.h>  // NOLINT
@@ -37,32 +38,34 @@ void* AlignedAllocInternal(size_t size, size_t alignment) {
   return ptr;
 }
 
-// TODO(bbudge) Simplify this once all embedders implement a page allocator.
-struct InitializePageAllocator {
-  static void Construct(void* page_allocator_ptr_arg) {
-    auto page_allocator_ptr =
-        reinterpret_cast<v8::PageAllocator**>(page_allocator_ptr_arg);
-    v8::PageAllocator* page_allocator =
-        V8::GetCurrentPlatform()->GetPageAllocator();
-    if (page_allocator == nullptr) {
-      // On the heap and leaked so that no destructor needs to run at exit time.
-      static auto* default_allocator = new v8::base::PageAllocator;
-      page_allocator = default_allocator;
+class PageAllocatorInitializer {
+ public:
+  PageAllocatorInitializer() {
+    page_allocator_ = V8::GetCurrentPlatform()->GetPageAllocator();
+    if (page_allocator_ == nullptr) {
+      static base::LeakyObject<base::PageAllocator> default_page_allocator;
+      page_allocator_ = default_page_allocator.get();
     }
 #if defined(LEAK_SANITIZER)
-    {
-      // On the heap and leaked so that no destructor needs to run at exit time.
-      static auto* lsan_allocator =
-          new v8::base::LsanPageAllocator(page_allocator);
-      page_allocator = lsan_allocator;
-    }
+    static base::LeakyObject<base::LsanPageAllocator> lsan_allocator(
+        page_allocator_);
+    page_allocator_ = lsan_allocator.get();
 #endif
-    *page_allocator_ptr = page_allocator;
   }
+
+  PageAllocator* page_allocator() const { return page_allocator_; }
+
+  void SetPageAllocatorForTesting(PageAllocator* allocator) {
+    page_allocator_ = allocator;
+  }
+
+ private:
+  PageAllocator* page_allocator_;
 };
 
-static base::LazyInstance<v8::PageAllocator*, InitializePageAllocator>::type
-    page_allocator = LAZY_INSTANCE_INITIALIZER;
+DEFINE_LAZY_LEAKY_OBJECT_GETTER(PageAllocatorInitializer,
+                                GetPageTableInitializer)
+
 // We will attempt allocation this many times. After each failure, we call
 // OnCriticalMemoryPressure to try to free some memory.
 const int kAllocationTries = 2;
@@ -70,14 +73,14 @@ const int kAllocationTries = 2;
 }  // namespace
 
 v8::PageAllocator* GetPlatformPageAllocator() {
-  DCHECK_NOT_NULL(page_allocator.Get());
-  return page_allocator.Get();
+  DCHECK_NOT_NULL(GetPageTableInitializer()->page_allocator());
+  return GetPageTableInitializer()->page_allocator();
 }
 
 v8::PageAllocator* SetPlatformPageAllocatorForTesting(
     v8::PageAllocator* new_page_allocator) {
   v8::PageAllocator* old_page_allocator = GetPlatformPageAllocator();
-  *page_allocator.Pointer() = new_page_allocator;
+  GetPageTableInitializer()->SetPageAllocatorForTesting(new_page_allocator);
   return old_page_allocator;
 }
 
@@ -121,7 +124,7 @@ void* AllocWithRetry(size_t size) {
 }
 
 void* AlignedAlloc(size_t size, size_t alignment) {
-  DCHECK_LE(V8_ALIGNOF(void*), alignment);
+  DCHECK_LE(alignof(void*), alignment);
   DCHECK(base::bits::IsPowerOfTwo(alignment));
   void* result = nullptr;
   for (int i = 0; i < kAllocationTries; ++i) {

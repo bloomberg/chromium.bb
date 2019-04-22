@@ -15,38 +15,34 @@
 #ifndef UTILS_BACKENDBINDING_H_
 #define UTILS_BACKENDBINDING_H_
 
-#include <dawn/dawn_wsi.h>
+#include "dawn/dawncpp.h"
+#include "dawn_native/DawnNative.h"
 
 struct GLFWwindow;
-typedef struct dawnProcTable_s dawnProcTable;
-typedef struct dawnDeviceImpl* dawnDevice;
 
 namespace utils {
-
-    enum class BackendType {
-        D3D12,
-        Metal,
-        OpenGL,
-        Null,
-        Vulkan,
-    };
 
     class BackendBinding {
       public:
         virtual ~BackendBinding() = default;
 
-        virtual void SetupGLFWWindowHints() = 0;
-        virtual dawnDevice CreateDevice() = 0;
         virtual uint64_t GetSwapChainImplementation() = 0;
-        virtual dawnTextureFormat GetPreferredSwapChainTextureFormat() = 0;
-
-        void SetWindow(GLFWwindow* window);
+        virtual DawnTextureFormat GetPreferredSwapChainTextureFormat() = 0;
 
       protected:
+        BackendBinding(GLFWwindow* window, DawnDevice device);
+
         GLFWwindow* mWindow = nullptr;
+        DawnDevice mDevice = nullptr;
     };
 
-    BackendBinding* CreateBinding(BackendType type);
+    void SetupGLFWWindowHintsForBackend(dawn_native::BackendType type);
+    void DiscoverAdapter(dawn_native::Instance* instance,
+                         GLFWwindow* window,
+                         dawn_native::BackendType type);
+    BackendBinding* CreateBinding(dawn_native::BackendType type,
+                                  GLFWwindow* window,
+                                  DawnDevice device);
 
 }  // namespace utils
 

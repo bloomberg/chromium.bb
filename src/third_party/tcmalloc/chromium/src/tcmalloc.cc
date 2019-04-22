@@ -126,6 +126,7 @@
 #include "malloc_hook-inl.h"       // for MallocHook::InvokeNewHook, etc
 #include "page_heap.h"         // for PageHeap, PageHeap::Stats
 #include "page_heap_allocator.h"  // for PageHeapAllocator
+#include "sampler.h"              // for Sampler
 #include "span.h"              // for Span, DLL_Prepend, etc
 #include "stack_trace_table.h"  // for StackTraceTable
 #include "static_vars.h"       // for Static
@@ -150,12 +151,13 @@ using STL_NAMESPACE::vector;
 #include "libc_override.h"
 
 using tcmalloc::AlignmentForSize;
-using tcmalloc::kLog;
 using tcmalloc::kCrash;
 using tcmalloc::kCrashWithStats;
+using tcmalloc::kLog;
 using tcmalloc::Log;
 using tcmalloc::PageHeap;
 using tcmalloc::PageHeapAllocator;
+using tcmalloc::Sampler;
 using tcmalloc::SizeMap;
 using tcmalloc::Span;
 using tcmalloc::StackTrace;
@@ -658,7 +660,7 @@ class TCMallocImplementation : public MallocExtension {
 
   // We may print an extra, tcmalloc-specific warning message here.
   virtual void GetHeapSample(MallocExtensionWriter* writer) {
-    if (FLAGS_tcmalloc_sample_parameter == 0) {
+    if (Sampler::GetSamplePeriod() == 0) {
       const char* const kWarningMsg =
           "%warn\n"
           "%warn This heap profile does not have any data in it, because\n"
@@ -843,6 +845,11 @@ class TCMallocImplementation : public MallocExtension {
       return true;
     }
 
+    if (strcmp(name, "tcmalloc.sampling_period_bytes") == 0) {
+      *value = Sampler::GetSamplePeriod();
+      return true;
+    }
+
     return false;
   }
 
@@ -858,6 +865,11 @@ class TCMallocImplementation : public MallocExtension {
     if (strcmp(name, "tcmalloc.aggressive_memory_decommit") == 0) {
       SpinLockHolder l(Static::pageheap_lock());
       Static::pageheap()->SetAggressiveDecommit(value != 0);
+      return true;
+    }
+
+    if (strcmp(name, "tcmalloc.sampling_period_bytes") == 0) {
+      Sampler::SetSamplePeriod(value);
       return true;
     }
 

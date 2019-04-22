@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-#include "chromeos/dbus/shill_property_changed_observer.h"
+#include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_util.h"
 
@@ -34,7 +34,8 @@ namespace chromeos {
 //   GetWifiAccessPoints();  // returns true + same data, requests update
 //   (Delay some amount of time after data did not change, ~2 mins)
 
-class CHROMEOS_EXPORT GeolocationHandler : public ShillPropertyChangedObserver {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) GeolocationHandler
+    : public ShillPropertyChangedObserver {
  public:
   ~GeolocationHandler() override;
 

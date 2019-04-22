@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
@@ -84,10 +85,14 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
 
   aura::Window* app_list_container =
       ash::Shell::GetContainer(root_window, kShellWindowId_AppListContainer);
+  aura::Window* app_list_tablet_mode_container =
+      ash::Shell::GetContainer(root_window, kShellWindowId_HomeScreenContainer);
 
   // Ignore app list to prevent interfering with app list animations.
   if (app_list_container)
     excluded_layers.insert(app_list_container->layer());
+  if (app_list_tablet_mode_container)
+    excluded_layers.insert(app_list_tablet_mode_container->layer());
 
   MruWindowTracker::WindowList windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList();
@@ -165,6 +170,13 @@ void AssistantScreenContextController::RequestScreenshot(
     const gfx::Rect& rect,
     mojom::AssistantScreenContextController::RequestScreenshotCallback
         callback) {
+  // http://crbug.com/941276
+  // We need to avoid requesting screenshot in known situations that will break.
+  if (Shell::Get()->overview_controller()->IsSelecting() ||
+      Shell::Get()->overview_controller()->IsCompletingShutdownAnimations()) {
+    std::move(callback).Run(std::vector<uint8_t>());
+    return;
+  }
   aura::Window* root_window = Shell::Get()->GetRootWindowForNewWindows();
 
   std::unique_ptr<ui::LayerTreeOwner> layer_owner =
@@ -207,6 +219,7 @@ void AssistantScreenContextController::OnUiVisibilityChanged(
   if (new_visibility != AssistantVisibility::kVisible) {
     screen_context_request_factory_.InvalidateWeakPtrs();
     model_.SetRequestState(ScreenContextRequestState::kIdle);
+    assistant_->ClearScreenContextCache();
     return;
   }
 

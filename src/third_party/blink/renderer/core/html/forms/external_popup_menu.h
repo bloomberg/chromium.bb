@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -64,7 +63,7 @@ class CORE_EXPORT ExternalPopupMenu final : public PopupMenu,
   static int ToPopupMenuItemIndex(int index, HTMLSelectElement&);
   static int ToExternalPopupMenuItemIndex(int index, HTMLSelectElement&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // PopupMenu methods:

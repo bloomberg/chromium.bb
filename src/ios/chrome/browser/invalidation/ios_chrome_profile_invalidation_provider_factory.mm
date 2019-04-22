@@ -7,8 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
@@ -45,7 +46,9 @@ IOSChromeProfileInvalidationProviderFactory::GetForBrowserState(
 // static
 IOSChromeProfileInvalidationProviderFactory*
 IOSChromeProfileInvalidationProviderFactory::GetInstance() {
-  return base::Singleton<IOSChromeProfileInvalidationProviderFactory>::get();
+  static base::NoDestructor<IOSChromeProfileInvalidationProviderFactory>
+      instance;
+  return instance.get();
 }
 
 IOSChromeProfileInvalidationProviderFactory::

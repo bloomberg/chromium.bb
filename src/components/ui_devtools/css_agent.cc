@@ -37,7 +37,7 @@ std::unique_ptr<CSS::CSSProperty> BuildCSSProperty(const std::string& name,
   return CSS::CSSProperty::create()
       .setRange(BuildDefaultSourceRange())
       .setName(name)
-      .setValue(base::IntToString(value))
+      .setValue(base::NumberToString(value))
       .build();
 }
 
@@ -78,7 +78,7 @@ std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(UIElement* ui_element) {
 
   return CSS::CSSStyle::create()
       .setRange(BuildDefaultSourceRange())
-      .setStyleSheetId(base::IntToString(ui_element->node_id()))
+      .setStyleSheetId(base::NumberToString(ui_element->node_id()))
       .setCssProperties(std::move(css_properties))
       .setShorthandEntries(Array<protocol::CSS::ShorthandEntry>::create())
       .build();
@@ -191,7 +191,7 @@ std::unique_ptr<CSS::CSSStyle> CSSAgent::GetStylesForUIElement(
 
 void CSSAgent::InvalidateStyleSheet(UIElement* ui_element) {
   // The stylesheetId for each node is equivalent to its node_id (as a string).
-  frontend()->styleSheetChanged(base::IntToString(ui_element->node_id()));
+  frontend()->styleSheetChanged(base::NumberToString(ui_element->node_id()));
 }
 
 bool CSSAgent::GetPropertiesForUIElement(UIElement* ui_element,

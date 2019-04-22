@@ -30,14 +30,13 @@ class SVGAnimateMotionElement final : public SVGAnimationElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit SVGAnimateMotionElement(Document&);
   ~SVGAnimateMotionElement() override;
 
   DECLARE_NODE_FACTORY(SVGAnimateMotionElement);
   void UpdateAnimationPath();
 
  private:
-  explicit SVGAnimateMotionElement(Document&);
-
   bool HasValidTarget() override;
 
   void ParseAttribute(const AttributeModificationParams&) override;

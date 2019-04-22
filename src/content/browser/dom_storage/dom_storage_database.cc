@@ -55,8 +55,8 @@ void DOMStorageDatabase::ReadAllValues(DOMStorageValuesMap* result) {
   }
   known_to_be_empty_ = result->empty();
 
-  // Reduce the size of sqlite caches.
-  db_->TrimMemory(false /* aggressively */);
+  // Drop SQLite's caches.
+  db_->TrimMemory();
 }
 
 bool DOMStorageDatabase::CommitChanges(bool clear_all_first,
@@ -115,8 +115,8 @@ bool DOMStorageDatabase::CommitChanges(bool clear_all_first,
   if (!success)
     known_to_be_empty_ = old_known_to_be_empty;
 
-  // Reduce the size of sqlite caches.
-  db_->TrimMemory(false /* aggressively */);
+  // Drop SQLite's caches.
+  db_->TrimMemory();
 
   return success;
 }

@@ -43,3 +43,10 @@ constants.OBJECT_MAX_CHARCOUNT = 1500;
  * @const
  */
 constants.SYSTEM_VOICE = 'chromeos_system_voice';
+
+/**
+ * Color for the ChromeVox focus ring.
+ * @type {string}
+ * @const
+ */
+constants.FOCUS_COLOR = '#F7983A';

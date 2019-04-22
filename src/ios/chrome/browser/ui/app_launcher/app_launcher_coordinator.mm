@@ -10,16 +10,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
-#import "ios/chrome/browser/mailto/features.h"
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_util.h"
-#import "ios/chrome/browser/ui/app_launcher/open_mail_handler_view_controller.h"
-#import "ios/chrome/browser/web/mailto_handler.h"
-#import "ios/chrome/browser/web/mailto_handler_manager.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
-#include "ios/third_party/material_components_ios/src/components/BottomSheet/src/MDCBottomSheetController.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -29,17 +24,6 @@
 #endif
 
 namespace {
-
-// Launches the mail client app represented by |handler| and records metrics.
-void LaunchMailClientApp(const GURL& url, MailtoHandler* handler) {
-  NSString* launch_url = [handler rewriteMailtoURL:url];
-  UMA_HISTOGRAM_BOOLEAN("IOS.MailtoURLRewritten", launch_url != nil);
-  NSURL* url_to_open = launch_url.length ? [NSURL URLWithString:launch_url]
-                                         : net::NSURLWithGURL(url);
-  [[UIApplication sharedApplication] openURL:url_to_open
-                                     options:@{}
-                           completionHandler:nil];
-}
 
 // Records histogram metric on the user's response when prompted to open another
 // application. |user_accepted| should be YES if the user accepted the prompt to
@@ -121,33 +105,6 @@ void RecordUserAcceptedAppLaunchMetric(BOOL user_accepted) {
            }];
 }
 
-// Launches |URL| in a mailto handler. If a default mailto handler does not
-// exist, then a mail handler chooser is launched before the mailto handler
-// is launched.
-- (void)showAlertIfNeededAndLaunchMailtoURL:(const GURL&)URL {
-  DCHECK(URL.SchemeIs(url::kMailToScheme));
-  MailtoHandlerManager* manager =
-      [MailtoHandlerManager mailtoHandlerManagerWithStandardHandlers];
-  NSString* handlerID = manager.defaultHandlerID;
-  if (handlerID) {
-    MailtoHandler* handler = [manager defaultHandlerByID:handlerID];
-    LaunchMailClientApp(URL, handler);
-    return;
-  }
-  GURL copiedURLToOpen = URL;
-  OpenMailHandlerViewController* mailHandlerChooser =
-      [[OpenMailHandlerViewController alloc]
-          initWithManager:manager
-          selectedHandler:^(MailtoHandler* _Nonnull handler) {
-            LaunchMailClientApp(copiedURLToOpen, handler);
-          }];
-  MDCBottomSheetController* bottomSheet = [[MDCBottomSheetController alloc]
-      initWithContentViewController:mailHandlerChooser];
-  [self.baseViewController presentViewController:bottomSheet
-                                        animated:YES
-                                      completion:nil];
-}
-
 #pragma mark - AppLauncherTabHelperDelegate
 
 - (BOOL)appLauncherTabHelper:(AppLauncherTabHelper*)tabHelper
@@ -165,13 +122,9 @@ void RecordUserAcceptedAppLaunchMetric(BOOL user_accepted) {
 
   // Uses a Mailto Handler to open the appropriate app, if available.
   if (URL.SchemeIs(url::kMailToScheme)) {
-    if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
-      MailtoHandlerProvider* provider =
-          ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
-      provider->HandleMailtoURL(net::NSURLWithGURL(URL));
-    } else {
-      [self showAlertIfNeededAndLaunchMailtoURL:URL];
-    }
+    MailtoHandlerProvider* provider =
+        ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
+    provider->HandleMailtoURL(net::NSURLWithGURL(URL));
     return YES;
   }
 

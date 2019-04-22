@@ -29,7 +29,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLUListElement::HTMLUListElement(Document& document)
+HTMLUListElement::HTMLUListElement(Document& document)
     : HTMLElement(kUlTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLUListElement)
@@ -46,18 +46,19 @@ void HTMLUListElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kTypeAttr) {
-    if (DeprecatedEqualIgnoringCase(value, "disc"))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueDisc);
-    else if (DeprecatedEqualIgnoringCase(value, "circle"))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueCircle);
-    else if (DeprecatedEqualIgnoringCase(value, "square"))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueSquare);
-    else if (DeprecatedEqualIgnoringCase(value, "none"))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueNone);
+    if (DeprecatedEqualIgnoringCase(value, "disc")) {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueID::kDisc);
+    } else if (DeprecatedEqualIgnoringCase(value, "circle")) {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueID::kCircle);
+    } else if (DeprecatedEqualIgnoringCase(value, "square")) {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueID::kSquare);
+    } else if (DeprecatedEqualIgnoringCase(value, "none")) {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueID::kNone);
+    }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

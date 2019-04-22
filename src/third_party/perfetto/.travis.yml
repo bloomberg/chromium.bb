@@ -97,7 +97,7 @@ matrix:
       dist: trusty
       sudo: true
       compiler: clang
-      env: CFG=linux_trusty-clang-x86_64-libfuzzer GN_ARGS="is_clang=true is_debug=false use_libfuzzer=true is_asan=true"
+      env: CFG=linux_trusty-clang-x86_64-libfuzzer GN_ARGS="is_clang=true is_debug=false is_fuzzer=true is_asan=true"
     - os: linux
       dist: trusty
       sudo: false
@@ -116,16 +116,19 @@ matrix:
 cache:
   timeout: 1800  # 30 mins
   directories:
+    - buildtools/android-core
     - buildtools/benchmark
+    - buildtools/bionic
     - buildtools/emulator
     - buildtools/googletest
     - buildtools/jsoncpp
     - buildtools/libbacktrace
-    - buildtools/linenoise
     - buildtools/libcxx
     - buildtools/libcxxabi
     - buildtools/libfuzzer
     - buildtools/libunwind
+    - buildtools/linenoise
+    - buildtools/lzma
 
 before_install:
   - set -e
@@ -152,9 +155,11 @@ script:
   - tools/gn gen out/dist --args="${GN_ARGS}" --check
   - |
     if [[ "$CFG" == ui-* ]]; then
-      tools/ninja -C out/dist -j8 ui 2>&1 | grep -v "no version information available"
+      tools/ninja -C out/dist ui 2>&1 | grep -v "no version information"
+    elif [[ "$CFG" == *-libfuzzer ]]; then
+      tools/ninja -C out/dist fuzzers
     else
-      tools/ninja -C out/dist -j8
+      tools/ninja -C out/dist
     fi
   - |
     TEST_TARGETS="
@@ -163,6 +168,11 @@ script:
     "
     if [[ "$CFG" == ui-* ]]; then
       out/dist/ui_unittests --ci
+    elif [[ "$CFG" == *-libfuzzer ]]; then
+      # Run a single iteration each to make sure they are not crashing.
+      for fuzzer in $(find out/dist -name '*_fuzzer' -executable); do
+        $fuzzer -runs=1
+      done
     elif [[ "$CFG" == android-* ]]; then
       TARGET_ARCH=$(echo $CFG | cut -d- -f3)
       tools/run_android_emulator --pid /tmp/emulator.pid -v &
@@ -176,12 +186,6 @@ script:
       done
       BENCHMARK_FUNCTIONAL_TEST_ONLY=true out/dist/perfetto_benchmarks
       tools/diff_test_trace_processor.py out/dist/trace_processor_shell
-      if [[ "$CFG" == *-libfuzzer ]]; then
-        # Run a single iteration each to make sure they are not crashing.
-        out/dist/end_to_end_shared_memory_fuzzer -runs=1
-        out/dist/buffered_frame_deserializer_fuzzer -runs=1
-        out/dist/unwinding_fuzzer -runs=1
-      fi
     fi
 
 after_script:

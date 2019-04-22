@@ -41,17 +41,18 @@
       var firstTextNode = messageElement.traverseNextTextNode();
       window.getSelection().setBaseAndExtent(firstTextNode, 0, firstTextNode, 1);
 
-      clickObjectInMessage(0);
+      focusMessage(0);
       dumpFocusAndScrollInfo();
       window.getSelection().removeAllRanges();
       next();
     },
 
-    function testClickOnMessageShouldFocusPromptWithoutScrolling(next) {
+    function testKeypressWithFocusedMessageShouldFocusPrompt(next) {
       resetAndDumpFocusAndScrollTop();
 
-      clickObjectInMessage(0);
+      focusMessage(0);
 
+      eventSender.keyDown('A');
       dumpFocusAndScrollInfo();
       next();
     },
@@ -71,7 +72,7 @@
     }
   ];
 
-  function clickObjectInMessage(index) {
+  function focusMessage(index) {
     var previewElement = consoleView._visibleViewMessages[index].element().querySelector('.source-code');
     var previewRect = previewElement.getBoundingClientRect();
     var clientX = previewRect.left + previewRect.width / 2;
@@ -79,12 +80,13 @@
 
     TestRunner.addResult('Clicking message ' + index);
     previewElement.dispatchEvent(new MouseEvent('click', {clientX: clientX, clientY: clientY, bubbles: true}));
+    consoleView._visibleViewMessages[index].element().focus();
   }
 
   function dumpFocusAndScrollInfo() {
     var focusedElement = document.deepActiveElement();
     if (focusedElement)
-      TestRunner.addResult('Focused element: ' + focusedElement.tagName);
+      TestRunner.addResult('Prompt has focus: ' + consoleView._prompt.hasFocus());
     else
       TestRunner.addResult('No focus');
     TestRunner.addResult('Viewport scrolled to top: ' + String(viewport.element.scrollTop === 0));

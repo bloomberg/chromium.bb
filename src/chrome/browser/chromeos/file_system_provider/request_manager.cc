@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/extensions/window_controller_list.h"

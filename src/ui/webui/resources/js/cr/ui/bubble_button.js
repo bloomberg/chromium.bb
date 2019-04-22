@@ -10,7 +10,7 @@ cr.define('cr.ui', function() {
    * @extends {HTMLSpanElement}
    * @implements {EventListener}
    */
-  var BubbleButton = cr.ui.define('span');
+  const BubbleButton = cr.ui.define('span');
 
   BubbleButton.prototype = {
     __proto__: HTMLSpanElement.prototype,
@@ -50,8 +50,9 @@ cr.define('cr.ui', function() {
       switch (event.type) {
         // Toggle the bubble on left click. Let any other clicks propagate.
         case 'click':
-          if (event.button != 0)
+          if (event.button != 0) {
             return;
+          }
           break;
         // Toggle the bubble when <Return> or <Space> is pressed. Let any other
         // key presses propagate.
@@ -67,8 +68,9 @@ cr.define('cr.ui', function() {
         // Blur focus when a mouse button is pressed, matching the behavior of
         // other Web UI elements.
         case 'mousedown':
-          if (document.activeElement)
+          if (document.activeElement) {
             document.activeElement.blur();
+          }
           event.preventDefault();
           return;
       }

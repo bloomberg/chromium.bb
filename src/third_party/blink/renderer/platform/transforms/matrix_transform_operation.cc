@@ -35,10 +35,14 @@ scoped_refptr<TransformOperation> MatrixTransformOperation::Blend(
   // convert the TransformOperations into matrices
   TransformationMatrix from_t;
   TransformationMatrix to_t(a_, b_, c_, d_, e_, f_);
+  if (!to_t.IsInvertible())
+    return nullptr;
   if (from) {
     const MatrixTransformOperation* m =
         static_cast<const MatrixTransformOperation*>(from);
     from_t.SetMatrix(m->a_, m->b_, m->c_, m->d_, m->e_, m->f_);
+    if (!from_t.IsInvertible())
+      return nullptr;
   }
 
   if (blend_to_identity)

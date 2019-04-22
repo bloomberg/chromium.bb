@@ -37,6 +37,7 @@
 #include "vkRefUtil.hpp"
 #include "vkTypeUtil.hpp"
 #include "vkImageUtil.hpp"
+#include "vkBarrierUtil.hpp"
 #include "vkCmdUtil.hpp"
 #include "vkObjUtil.hpp"
 
@@ -524,7 +525,7 @@ tcu::TestStatus ComputeTestInstance::iterate (void)
 	// Verify results
 
 	const Allocation& resultAlloc = resultBuffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, resultAlloc.getMemory(), resultAlloc.getOffset(), m_ssboSize);
+	invalidateAlloc(vk, device, resultAlloc);
 
 	if (verifyValues(m_context.getTestContext().getLog(), resultAlloc.getHostPtr(), m_expectedValues))
 		return tcu::TestStatus::pass("Success");
@@ -592,7 +593,7 @@ tcu::TestStatus GraphicsTestInstance::iterate (void)
 		pVertices[1] = tcu::Vec4(-1.0f,  1.0f,  0.0f,  1.0f);
 		pVertices[2] = tcu::Vec4( 1.0f, -1.0f,  0.0f,  1.0f);
 
-		flushMappedMemoryRange(vk, device, alloc.getMemory(), alloc.getOffset(), vertexBufferSizeBytes);
+		flushAlloc(vk, device, alloc);
 		// No barrier needed, flushed memory is automatically visible
 	}
 
@@ -687,7 +688,7 @@ tcu::TestStatus GraphicsTestInstance::iterate (void)
 	// Verify results
 
 	const Allocation& resultAlloc = resultBuffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, resultAlloc.getMemory(), resultAlloc.getOffset(), m_ssboSize);
+	invalidateAlloc(vk, device, resultAlloc);
 
 	if (verifyValues(m_context.getTestContext().getLog(), resultAlloc.getHostPtr(), m_expectedValues))
 		return tcu::TestStatus::pass("Success");

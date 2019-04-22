@@ -1,28 +1,27 @@
 # liblouis: Estonian braille table
 # Based on the US.English chardef.
-#  Based on the Linux screenreader BRLTTY, copyright (C) 1999-2006 by
-#  The BRLTTY Team
 #
-#  Copyright (C) 2012 liblouis authors, Jürgen Dengo <jyrgen.dengo@gmail.com>
-
+#  Based on the Linux screenreader BRLTTY
 #
-#  This file is free software; you can redistribute it and/or modify it
-#   under the terms of the Lesser or Library GNU General Public License 
-#  as published by the
-#  Free Software Foundation; either version 3, or (at your option) any
-#  later version.
-# 
-#  This file is distributed in the hope that it will be useful, but
-#  WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
-#  Library GNU General Public License for more details.
+#  Copyright (C) 1999-2006 The BRLTTY Team
+#  Copyright (C) 2012 Mesar Hameed <mesar.hameed@gmail.com>
+#  Copyright (C) 2012 Jürgen Dengo <jyrgen.dengo@gmail.com>
 #
-#  You should have received a copy of the Library GNU General Public 
-#  License along with this program; see the file COPYING.  If not, write 
-#  to
-#  the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-#  Boston, MA 02110-1301, USA.
-
+# This file is part of liblouis.
+#
+# liblouis is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# liblouis is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with liblouis. If not, see
+# <http://www.gnu.org/licenses/>.
 
 # Computer braille single-cell characters
 space \s 0 blank
@@ -121,3 +120,6 @@ uppercase \x00D3 3467 LATIN CAPITAL LETTER O WITH ACUTE 004F 0301 LATIN
 lowercase \x00F3 346 LATIN SMALL LETTER O WITH ACUTE 006F 0301 LATIN 
 uppercase \x00DA 123567 LATIN CAPITAL LETTER U WITH ACUTE 0055 0301 LATIN 
 lowercase \x00FA 23456 LATIN SMALL LETTER U WITH ACUTE 0075 0301 LATIN 
+
+# Miscellaneous
+noback sign \x25CF 35 BLACK CIRCLE

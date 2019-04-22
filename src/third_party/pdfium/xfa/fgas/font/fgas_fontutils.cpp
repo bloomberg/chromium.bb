@@ -6,6 +6,7 @@
 
 #include "xfa/fgas/font/fgas_fontutils.h"
 
+#include "build/build_config.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
 #include "xfa/fgas/font/cfgas_fontmgr.h"
@@ -1406,7 +1407,7 @@ const FGAS_FontInfo g_XFAFontsMap[] = {
      "Kokonor,Damascus,STIXNonUnicode,STHeiti,Arial Black", 0, 1252},
     {0xfef135f8, "AdobeHeitiStd-Regular", "Heiti TC,STHeiti", 0, 936},
 };
-#elif _FX_PLATFORM_ == _FX_PLATFORM_ANDROID_
+#elif defined(OS_ANDROID)
 const FGAS_FontInfo g_XFAFontsMap[] = {
     {0x01d5d33e, "SimSun", "Droid Sans Fallback", 0, 936},
     {0x01e4f102, "YouYuan", "Droid Sans Fallback", 1, 936},
@@ -1868,7 +1869,7 @@ const FGAS_FONTUSB* FGAS_GetUnicodeBitField(wchar_t unicode) {
   return nullptr;
 }
 
-WideString FGAS_FontNameToEnglishName(const WideStringView& wsLocalName) {
+WideString FGAS_FontNameToEnglishName(WideStringView wsLocalName) {
   uint32_t dwLocalNameHash = FX_HashCode_GetW(wsLocalName, true);
   const FGAS_FontInfo* pEnd = g_XFAFontsMap + FX_ArraySize(g_XFAFontsMap);
   const FGAS_FontInfo* pFontInfo =
@@ -1881,7 +1882,7 @@ WideString FGAS_FontNameToEnglishName(const WideStringView& wsLocalName) {
   return WideString(wsLocalName);
 }
 
-const FGAS_FontInfo* FGAS_FontInfoByFontName(const WideStringView& wsFontName) {
+const FGAS_FontInfo* FGAS_FontInfoByFontName(WideStringView wsFontName) {
   WideString wsFontNameTemp(wsFontName);
   wsFontNameTemp.Remove(L' ');
   uint32_t dwCurFontNameHash =

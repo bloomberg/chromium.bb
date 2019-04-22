@@ -72,6 +72,12 @@ class FileAnalyzer {
         ClientDownloadRequest::DetachedCodeSignature>
         detached_code_signatures;
 #endif
+
+    // For archive files, the number of contained files.
+    int file_count;
+
+    // For archive files, the number of contained directories.
+    int directory_count;
   };
 
   explicit FileAnalyzer(

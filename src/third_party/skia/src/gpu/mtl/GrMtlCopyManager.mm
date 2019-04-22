@@ -29,8 +29,8 @@ void GrMtlCopyManager::createCopyProgramBuffer() {
         {1, 0},
         {1, 1},
     };
-    sk_sp<GrMtlBuffer> mtlBuffer(GrMtlBuffer::Create(fGpu, sizeof(vdata), kVertex_GrBufferType,
-                                                     kStatic_GrAccessPattern, vdata));
+    sk_sp<GrMtlBuffer> mtlBuffer = GrMtlBuffer::Make(fGpu, sizeof(vdata), GrGpuBufferType::kVertex,
+                                                     kStatic_GrAccessPattern, vdata);
     fVertexAttributeBuffer = mtlBuffer->mtlBuffer();
 }
 
@@ -188,7 +188,7 @@ bool GrMtlCopyManager::copySurfaceAsDraw(GrSurface* dst, GrSurfaceOrigin dstOrig
         {sx1 - sx0, sy1 - sy0, sx0, sy0}, // texCoordXform
     };
 
-    MTLRenderPassDescriptor* renderPassDesc = [[MTLRenderPassDescriptor alloc] init];
+    MTLRenderPassDescriptor* renderPassDesc = [MTLRenderPassDescriptor renderPassDescriptor];
     renderPassDesc.colorAttachments[0].texture = dstTex;
     renderPassDesc.colorAttachments[0].slice = 0;
     renderPassDesc.colorAttachments[0].level = 0;

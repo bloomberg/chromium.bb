@@ -26,9 +26,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Represents a set of builder bots running layout tests.
+"""Represents a set of builder bots running web tests.
 
-This class is used to hold a list of builder bots running layout tests and their
+This class is used to hold a list of builder bots running web tests and their
 corresponding port names and TestExpectations specifiers.
 """
 

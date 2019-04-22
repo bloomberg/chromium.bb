@@ -152,7 +152,7 @@ void PendingAnimations::NotifyCompositorAnimationStarted(
     }
     animation->NotifyCompositorStartTime(
         monotonic_animation_start_time -
-        TimeTicksInSeconds(animation->TimelineInternal()->ZeroTime()));
+        animation->TimelineInternal()->ZeroTime().since_origin().InSecondsF());
   }
 }
 

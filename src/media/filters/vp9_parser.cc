@@ -16,8 +16,8 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "media/filters/vp9_compressed_header_parser.h"
 #include "media/filters/vp9_uncompressed_header_parser.h"
@@ -137,11 +137,13 @@ const int16_t kAcQLookup[][kQIndexRange] = {
 };
 // clang-format on
 
-static_assert(arraysize(kDcQLookup[0]) == arraysize(kAcQLookup[0]),
+static_assert(base::size(kDcQLookup[0]) == base::size(kAcQLookup[0]),
               "quantizer lookup arrays of incorrect size");
 
-size_t ClampQ(size_t q) {
-  return std::min(q, kQIndexRange - 1);
+size_t ClampQ(int64_t q) {
+  return q < 0 ? 0
+               : base::checked_cast<size_t>(
+                     std::min(q, static_cast<int64_t>(kQIndexRange - 1)));
 }
 
 int ClampLf(int lf) {
@@ -485,27 +487,27 @@ void Vp9Parser::Context::Reset() {
 }
 
 void Vp9Parser::Context::MarkFrameContextForUpdate(size_t frame_context_idx) {
-  DCHECK_LT(frame_context_idx, arraysize(frame_context_managers_));
+  DCHECK_LT(frame_context_idx, base::size(frame_context_managers_));
   frame_context_managers_[frame_context_idx].SetNeedsClientUpdate();
 }
 
 void Vp9Parser::Context::UpdateFrameContext(
     size_t frame_context_idx,
     const Vp9FrameContext& frame_context) {
-  DCHECK_LT(frame_context_idx, arraysize(frame_context_managers_));
+  DCHECK_LT(frame_context_idx, base::size(frame_context_managers_));
   frame_context_managers_[frame_context_idx].Update(frame_context);
 }
 
 const Vp9Parser::ReferenceSlot& Vp9Parser::Context::GetRefSlot(
     size_t ref_type) const {
-  DCHECK_LT(ref_type, arraysize(ref_slots_));
+  DCHECK_LT(ref_type, base::size(ref_slots_));
   return ref_slots_[ref_type];
 }
 
 void Vp9Parser::Context::UpdateRefSlot(
     size_t ref_type,
     const Vp9Parser::ReferenceSlot& ref_slot) {
-  DCHECK_LT(ref_type, arraysize(ref_slots_));
+  DCHECK_LT(ref_type, base::size(ref_slots_));
   ref_slots_[ref_type] = ref_slot;
 }
 
@@ -652,10 +654,11 @@ Vp9Parser::Result Vp9Parser::ParseNextFrame(
 
     frame_info = frames_.front();
     frames_.pop_front();
-    if (frame_info.decrypt_config) {
-      *frame_decrypt_config = frame_info.decrypt_config->Clone();
-    } else {
-      *frame_decrypt_config = nullptr;
+    if (frame_decrypt_config) {
+      if (frame_info.decrypt_config)
+        *frame_decrypt_config = frame_info.decrypt_config->Clone();
+      else
+        *frame_decrypt_config = nullptr;
     }
 
     if (ParseUncompressedHeader(frame_info, fhdr, &result))
@@ -680,7 +683,7 @@ Vp9Parser::Result Vp9Parser::ParseNextFrame(
 
 Vp9Parser::ContextRefreshCallback Vp9Parser::GetContextRefreshCb(
     size_t frame_context_idx) {
-  DCHECK_LT(frame_context_idx, arraysize(context_.frame_context_managers_));
+  DCHECK_LT(frame_context_idx, base::size(context_.frame_context_managers_));
   auto& frame_context_manager =
       context_.frame_context_managers_[frame_context_idx];
 
@@ -814,20 +817,19 @@ base::circular_deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
 }
 
 // 8.6.1 Dequantization functions
-size_t Vp9Parser::GetQIndex(const Vp9QuantizationParams& quant,
-                            size_t segid) const {
+int64_t Vp9Parser::GetQIndex(const Vp9QuantizationParams& quant,
+                             size_t segid) const {
   const Vp9SegmentationParams& segmentation = context_.segmentation();
 
   if (segmentation.FeatureEnabled(segid,
                                   Vp9SegmentationParams::SEG_LVL_ALT_Q)) {
     int16_t feature_data =
         segmentation.FeatureData(segid, Vp9SegmentationParams::SEG_LVL_ALT_Q);
-    size_t q_index = segmentation.abs_or_delta_update
-                         ? feature_data
-                         : quant.base_q_idx + feature_data;
+    int64_t q_index = segmentation.abs_or_delta_update
+                          ? feature_data
+                          : quant.base_q_idx + feature_data;
     return ClampQ(q_index);
   }
-
   return quant.base_q_idx;
 }
 
@@ -845,7 +847,7 @@ bool Vp9Parser::SetupSegmentationDequant() {
 
   if (segmentation.enabled) {
     for (size_t i = 0; i < Vp9SegmentationParams::kNumSegments; ++i) {
-      const size_t q_index = GetQIndex(quant, i);
+      const int64_t q_index = GetQIndex(quant, i);
       segmentation.y_dequant[i][0] =
           kDcQLookup[bit_depth_index][ClampQ(q_index + quant.delta_q_y_dc)];
       segmentation.y_dequant[i][1] =
@@ -856,7 +858,7 @@ bool Vp9Parser::SetupSegmentationDequant() {
           kAcQLookup[bit_depth_index][ClampQ(q_index + quant.delta_q_uv_ac)];
     }
   } else {
-    const size_t q_index = quant.base_q_idx;
+    const int64_t q_index = quant.base_q_idx;
     segmentation.y_dequant[0][0] =
         kDcQLookup[bit_depth_index][ClampQ(q_index + quant.delta_q_y_dc)];
     segmentation.y_dequant[0][1] = kAcQLookup[bit_depth_index][ClampQ(q_index)];

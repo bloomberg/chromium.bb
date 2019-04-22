@@ -1,93 +1,71 @@
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-<script src="../../resources/compositor-controls.js"></script>
-<script>
-window.jsTestIsAsync = true;
-if (window.testRunner)
-    testRunner.waitUntilDone()
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/gesture-util.js"></script>
 
-var LeftMouseButton = 0;
-var MiddleMouseButton = 1;
+<style>
+  #container {
+    width:500px;
+    height:100px;
+    overflow:auto;
+    border:2px solid red;
+    padding:0px;
+  }
+  #spacer {
+    height:200px;
+  }
+</style>
 
-var testContainer;
-var didClickLink1 = false;
-
-window.onload = function()
-{
-    testContainer = document.getElementById("test-container");
-    if (window.testRunner)
-        document.body.removeChild(document.getElementById("manual-instructions"));
-    runTest();
-}
-
-function checkIfClickedLink1AndFinish()
-{
-    if (didClickLink1)
-        testFailed("Link 1 was clicked, but shouldn't have been.");
-    else
-        testPassed("Link 1 wasn't clicked.");
-    finished();
-}
-
-function runTest()
-{
-    if (!window.eventSender)
-        return;
-    setAnimationRequiresRaster();
-
-    eventSender.mouseMoveTo(testContainer.offsetLeft + 10, testContainer.offsetTop + 10);
-    eventSender.mouseDown(MiddleMouseButton);
-    eventSender.mouseUp(MiddleMouseButton);
-    eventSender.mouseMoveTo(testContainer.offsetLeft + 10, testContainer.offsetTop + testContainer.offsetHeight);
-    setTimeout(clickHyperlinksIfScrolledToBottomOtherwiseFail, 500); // 500ms should be reasonable to scroll to the bottom of the <div>.
-}
-
-function finished()
-{
-    document.body.removeChild(document.getElementById("test-container"));
-    finishJSTest();
-}
-
-function clickHyperlinksIfScrolledToBottomOtherwiseFail()
-{
-    var didScrollToBottom = testContainer.scrollTop === testContainer.scrollHeight - testContainer.clientHeight;
-    if (!didScrollToBottom) {
-        testFailed("either pan scrolling is disabled or this platform doesn't support pan scrolling.");
-        finished();
-        return;
-    }
-
-    if (!window.eventSender)
-        return;
-
-    var firstLinkBoundingBox = document.getElementById("firstLink").getBoundingClientRect();
-    var secondLinkBoundingBox = document.getElementById("secondLink").getBoundingClientRect();
-    eventSender.mouseMoveTo(firstLinkBoundingBox.left + 10, firstLinkBoundingBox.top);
-    eventSender.mouseDown(LeftMouseButton);
-    eventSender.mouseUp(LeftMouseButton);
-    eventSender.leapForward(100);
-    eventSender.mouseMoveTo(secondLinkBoundingBox.left + 10, secondLinkBoundingBox.top);
-    eventSender.mouseDown(LeftMouseButton);
-    eventSender.mouseUp(LeftMouseButton);
-}
-</script>
-</head>
-<body>
-<p id="description"></p>
-<ol id="manual-instructions">
-    <li>Middle-click inside the &lt;div&gt; with the red border below.</li>
-    <li>Move the mouse such that you scroll the &lt;div&gt; until you see the hyperlinks &quot;Link 1&quot; and &quot;Link 2&quot;.</li>
-    <li>Left-click the hyperlink &quot;Link 1&quot;.</li>
-    <li>Left-click the hyperlink &quot;Link 2&quot;.</li>
+<ol>
+  <li>Middle-click inside the &lt;div&gt; with the red border below to activate pan-mode.</li>
+  <li>Move the mouse such that you scroll the &lt;div&gt; until you see the hyperlinks &quot;Link 1&quot; and &quot;Link 2&quot;.</li>
+  <li>Left-click the hyperlink &quot;Link 1&quot;. Should exit panning but not activate the link.</li>
+  <li>Left-click the hyperlink &quot;Link 2&quot;. Should activate the link.</li>
 </ol>
-<div id="test-container" style="width:500px; height:100px; overflow:auto; border:2px solid red; padding:0px">
-    <div id="dummy" style="height:200px"><!-- dummy element to overflow test-container --></div>
-    <a id="firstLink" href="#" onclick="didClickLink1=true">Link 1</a> <a id="secondLink" href="#" onclick="checkIfClickedLink1AndFinish()">Link 2</a>
+<div id="container">
+  <div id="spacer" ></div>
+  <a id="firstLink" href="#">Link 1</a> <a id="secondLink" href="#">Link 2</a>
 </div>
-<div id="console"></div>
+
 <script>
-    description("This test can be used to verify that clicking on a hyperlink is ignored when in pan scroll mode.");
+
+window.onload = async function()
+{
+    const container = document.getElementById("container");
+    const firstLink = document.getElementById("firstLink");
+    const secondLink = document.getElementById("secondLink");
+
+    const leftButton = 0;
+    const middleButton = 1;
+
+    promise_test (async (t) => {
+      await waitForCompositorCommit();
+      await mouseClickOn(container.offsetLeft + 10, container.offsetTop + 10, middleButton);
+      await mouseMoveTo(container.offsetLeft + 10, container.offsetTop + container.offsetHeight);
+
+      await waitFor(() => {
+        return container.scrollTop === container.scrollHeight - container.clientHeight;
+      }, "Failed to scroll container with middle-click autoscroll.");
+
+      let firstLinkClicked = false;
+      let secondLinkClicked = false;
+
+      firstLink.onclick = e => { firstLinkClicked = true; };
+      secondLink.onclick = e => { secondLinkClicked = true; };
+
+      const firstLinkBoundingBox = firstLink.getBoundingClientRect();
+      const secondLinkBoundingBox = secondLink.getBoundingClientRect();
+
+      await mouseClickOn(firstLinkBoundingBox.left + 10, firstLinkBoundingBox.top, leftButton);
+
+      await mouseClickOn(secondLinkBoundingBox.left + 10, secondLinkBoundingBox.top + 5, leftButton);
+
+      assert_false(firstLinkClicked, "Click over link while in autoscroll mode must not fire click event");
+      assert_true(secondLinkClicked, "Click on second link must have caused click event");
+
+      await mouseClickOn(firstLinkBoundingBox.left + 10, firstLinkBoundingBox.top, leftButton);
+
+      assert_true(firstLinkClicked, "Click over first link should now fire click event");
+    }, "Clicking link while in pan-mode is ignored");
+}
 </script>
-</body>
-</html>

@@ -8,10 +8,12 @@
 #include <string.h>
 
 #include "base/cpu.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+
+namespace metrics {
 
 namespace internal {
 
@@ -63,7 +65,7 @@ const CpuUarchTableEntry kCpuUarchTable[] = {
 };
 
 const CpuUarchTableEntry* kCpuUarchTableEnd =
-    kCpuUarchTable + arraysize(kCpuUarchTable);
+    kCpuUarchTable + base::size(kCpuUarchTable);
 
 bool CpuUarchTableCmp(const CpuUarchTableEntry& a,
                       const CpuUarchTableEntry& b) {
@@ -112,3 +114,4 @@ std::string SimplifyCPUModelName(const std::string& model_name) {
   return base::ToLowerASCII(result);
 }
 
+}  // namespace metrics

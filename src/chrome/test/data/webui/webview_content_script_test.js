@@ -77,8 +77,9 @@ function testAddContentScript(url) {
   });
 
   window.addEventListener('message', function(e) {
-    if (e.source != webview.contentWindow)
+    if (e.source != webview.contentWindow) {
       return;
+    }
     var data = JSON.parse(e.data);
     if (data == RESPONSE_FROM_COMM_CHANNEL_1) {
       console.log(
@@ -128,22 +129,25 @@ function testAddMultiContentScripts(url) {
   var response_1 = false;
   var response_2 = false;
   window.addEventListener('message', function(e) {
-    if (e.source != webview.contentWindow)
+    if (e.source != webview.contentWindow) {
       return;
+    }
     var data = JSON.parse(e.data);
     if (data == RESPONSE_FROM_COMM_CHANNEL_1) {
       console.log(
           'Step 4: A communication channel has been established with webview.');
       response_1 = true;
-      if (response_1 && response_2)
+      if (response_1 && response_2) {
         chrome.send('testResult', [true]);
+      }
       return;
     } else if (data == RESPONSE_FROM_COMM_CHANNEL_2) {
       console.log(
           'Step 5: A communication channel has been established with webview.');
       response_2 = true;
-      if (response_1 && response_2)
+      if (response_1 && response_2) {
         chrome.send('testResult', [true]);
+      }
       return;
     }
     console.log('Unexpected message: \'' + data[0] + '\'');
@@ -187,8 +191,9 @@ function testAddContentScriptWithSameNameShouldOverwriteTheExistingOne(url) {
 
   var should_get_response_from_script_1 = true;
   window.addEventListener('message', function(e) {
-    if (e.source != webview.contentWindow)
+    if (e.source != webview.contentWindow) {
       return;
+    }
     var data = JSON.parse(e.data);
     if (data == RESPONSE_FROM_COMM_CHANNEL_1) {
       if (should_get_response_from_script_1) {
@@ -252,8 +257,9 @@ function testAddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView(url) {
   });
 
   window.addEventListener('message', function(e) {
-    if (e.source != webview2.contentWindow)
+    if (e.source != webview2.contentWindow) {
       return;
+    }
     var data = JSON.parse(e.data);
     if (data == RESPONSE_FROM_COMM_CHANNEL_1) {
       chrome.send('testResult', [false]);
@@ -305,8 +311,9 @@ function testAddAndRemoveContentScripts(url) {
   });
 
   window.addEventListener('message', function(e) {
-    if (e.source != webview.contentWindow)
+    if (e.source != webview.contentWindow) {
       return;
+    }
     var data = JSON.parse(e.data);
     if (data[0] == RESPONSE_FROM_COMM_CHANNEL_1 &&
         should_get_response_from_script_1) {
@@ -360,8 +367,9 @@ function testAddContentScriptsWithNewWindowAPI(url) {
   });
 
   window.addEventListener('message', function(e) {
-    if (!newwebview || e.source != newwebview.contentWindow)
+    if (!newwebview || e.source != newwebview.contentWindow) {
       return;
+    }
     var data = JSON.parse(e.data);
     if (data == RESPONSE_FROM_COMM_CHANNEL_1 &&
         e.source == newwebview.contentWindow) {
@@ -509,8 +517,9 @@ function testDragAndDropToInput() {
   });
 
   webview.addEventListener('loadstop', function(e) {
-    if (webview.src != 'about:blank')
+    if (webview.src != 'about:blank') {
       return;
+    }
     console.log('load stop of src = :' + webview.src);
     webview.executeScript(
         {file: 'test/draganddroptoinput.js'}, function(results) {

@@ -13,8 +13,8 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "chrome/grit/theme_resources.h"
@@ -129,7 +129,7 @@ IconMapper::IconMapper() {
     std::make_pair(".webm", kVideoIdrs),
   };
 
-  const size_t kESize = arraysize(kExtensionIdrBySizeData);
+  const size_t kESize = base::size(kExtensionIdrBySizeData);
   ExtensionIconMap source(&kExtensionIdrBySizeData[0],
                           &kExtensionIdrBySizeData[kESize]);
   extension_icon_map_.swap(source);

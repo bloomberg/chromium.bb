@@ -4,6 +4,7 @@
 
 #include "chromecast/net/connectivity_checker.h"
 
+#include "base/single_thread_task_runner.h"
 #include "chromecast/net/connectivity_checker_impl.h"
 
 namespace chromecast {

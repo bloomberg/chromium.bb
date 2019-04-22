@@ -216,7 +216,13 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
   DISALLOW_COPY_AND_ASSIGN(GalleryWatchManagerTest);
 };
 
-TEST_F(GalleryWatchManagerTest, Basic) {
+// TODO(crbug.com/936065): Flaky on ChromeOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+TEST_F(GalleryWatchManagerTest, MAYBE_Basic) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   MediaGalleryPrefId id = AddGallery(temp_dir.GetPath());

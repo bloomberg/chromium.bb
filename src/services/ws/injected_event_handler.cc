@@ -5,8 +5,8 @@
 #include "services/ws/injected_event_handler.h"
 
 #include "base/memory/ptr_util.h"
-#include "services/ws/event_queue.h"
 #include "services/ws/window_service.h"
+#include "services/ws/window_service_delegate.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -55,14 +55,18 @@ void InjectedEventHandler::Inject(std::unique_ptr<ui::Event> event,
 
   auto this_ref = weak_factory_.GetWeakPtr();
   pre_target_register_ = std::make_unique<ScopedPreTargetRegister>(
-      window_tree_host_->window(), this);
-  EventQueue::DispatchOrQueueEvent(window_service_, window_tree_host_,
-                                   event.get(), /* honors_rewriters */ true);
+      window_service_->delegate()->GetGlobalEventTarget(), this);
+  auto result = window_tree_host_->SendEventToSink(event.get());
   if (!this_ref)
     return;
   // |pre_target_register_| needs to be a member to ensure it's destroyed
   // if |this| is destroyed.
   pre_target_register_.reset();
+
+  if (result.event_discarded) {
+    DCHECK(!event_id_);
+    NotifyCallback();
+  }
 }
 
 void InjectedEventHandler::NotifyCallback() {
@@ -82,8 +86,11 @@ void InjectedEventHandler::RemoveObservers() {
 
 void InjectedEventHandler::OnWindowEventDispatcherFinishedProcessingEvent(
     aura::WindowEventDispatcher* dispatcher) {
-  if (!event_id_ && dispatcher->host() == window_tree_host_ &&
-      event_dispatched_) {
+  // Note that |dispatcher| might be different from the dispatcher in
+  // |window_tree_host_| because event capture allows handling events in a
+  // different dispatcher from the source. See also
+  // WindowServiceDelegateImplTest.MultiDisplayEventInjector test case.
+  if (!event_id_ && event_dispatched_) {
     // The WindowEventDispatcher finished processing and the event was not sent
     // to a remote client, notify the callback. This happens here rather than
     // OnEvent() as during OnEvent() we don't yet know if the event is going to
@@ -94,7 +101,7 @@ void InjectedEventHandler::OnWindowEventDispatcherFinishedProcessingEvent(
 
 void InjectedEventHandler::OnWindowEventDispatcherDispatchedHeldEvents(
     aura::WindowEventDispatcher* dispatcher) {
-  if (!event_id_ && dispatcher->host() == window_tree_host_)
+  if (!event_id_)
     NotifyCallback();
 }
 

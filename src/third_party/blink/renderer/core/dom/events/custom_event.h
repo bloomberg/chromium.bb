@@ -26,11 +26,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_CUSTOM_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_CUSTOM_EVENT_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/world_safe_v8_reference.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/custom_event_init.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 
 namespace blink {
 
@@ -40,13 +39,18 @@ class CORE_EXPORT CustomEvent final : public Event {
  public:
   ~CustomEvent() override;
 
-  static CustomEvent* Create() { return new CustomEvent; }
+  static CustomEvent* Create() { return MakeGarbageCollected<CustomEvent>(); }
 
   static CustomEvent* Create(ScriptState* script_state,
                              const AtomicString& type,
                              const CustomEventInit* initializer) {
-    return new CustomEvent(script_state, type, initializer);
+    return MakeGarbageCollected<CustomEvent>(script_state, type, initializer);
   }
+
+  CustomEvent();
+  CustomEvent(ScriptState*,
+              const AtomicString& type,
+              const CustomEventInit* initializer);
 
   void initCustomEvent(ScriptState*,
                        const AtomicString& type,
@@ -58,16 +62,10 @@ class CORE_EXPORT CustomEvent final : public Event {
 
   ScriptValue detail(ScriptState*) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
-  CustomEvent();
-  CustomEvent(ScriptState*,
-              const AtomicString& type,
-              const CustomEventInit* initializer);
-
-  scoped_refptr<DOMWrapperWorld> world_;
-  TraceWrapperV8Reference<v8::Value> detail_;
+  WorldSafeV8Reference<v8::Value> detail_;
 };
 
 }  // namespace blink

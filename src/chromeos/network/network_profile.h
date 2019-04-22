@@ -7,11 +7,11 @@
 
 #include <string>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace chromeos {
 
-struct CHROMEOS_EXPORT NetworkProfile {
+struct COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkProfile {
   enum Type {
     TYPE_SHARED,  // Shared by all users on the device.
     TYPE_USER     // Not visible to other users.

@@ -8,6 +8,7 @@
 
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,7 +27,8 @@ TEST_F(WebClientTest, PrepareErrorPage) {
                       userInfo:@{NSLocalizedDescriptionKey : description}];
 
   NSString* html = nil;
-  web_client.PrepareErrorPage(error, /*is_post=*/false,
+  web_client.PrepareErrorPage(/*web_state*/ nullptr, GURL::EmptyGURL(), error,
+                              /*is_post=*/false,
                               /*is_off_the_record=*/false, &html);
   EXPECT_NSEQ(description, html);
 }

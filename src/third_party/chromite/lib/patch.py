@@ -473,7 +473,7 @@ class PatchCache(object):
 
 
 def StripPrefix(text):
-  """Strips the leading '*' for internal change names.
+  """Strips the leading host moniker for change names.
 
   Args:
     text: text to examine.
@@ -483,16 +483,21 @@ def StripPrefix(text):
   """
   site_params = config_lib.GetSiteParams()
   remote = site_params.EXTERNAL_REMOTE
-  prefix = site_params.INTERNAL_CHANGE_PREFIX
-  if text.startswith(prefix):
-    text = text[len(prefix):]
+  if text.startswith(site_params.INTERNAL_CHANGE_PREFIX):
+    text = text[len(site_params.INTERNAL_CHANGE_PREFIX):]
+    remote = site_params.INTERNAL_REMOTE
+  elif text.startswith(site_params.EXTERNAL_CHANGE_PREFIX):
+    text = text[len(site_params.EXTERNAL_CHANGE_PREFIX):]
+  # allow legacy syntax
+  elif text.startswith('*'):
+    text = text[1:]
     remote = site_params.INTERNAL_REMOTE
 
   return remote, text
 
 
 def AddPrefix(patch, text):
-  """Add the leading '*' to |text| if applicable.
+  """Add the leading prefix to |text| if applicable.
 
   Examines patch.remote and adds the prefix to text if applicable.
 
@@ -501,7 +506,7 @@ def AddPrefix(patch, text):
     text: The text to add prefix to.
 
   Returns:
-    |text| with an added prefix for internal patches; otherwise, returns text.
+    |text| with an added prefix.
   """
   return '%s%s' % (config_lib.GetSiteParams().CHANGE_PREFIX[patch.remote], text)
 
@@ -613,19 +618,26 @@ def GetPaladinDeps(commit_message):
   PALADIN_DEPENDENCY_RE = re.compile(r'^([ \t]*CQ.?DEPEND.)(.*)$',
                                      re.MULTILINE | re.IGNORECASE)
   PATCH_RE = re.compile('[^, ]+')
-  EXPECTED_PREFIX = 'CQ-DEPEND='
+  EXPECTED_PREFIX = 'Cq-Depend:'
+  WARNING_PREFIX = 'CQ-DEPEND='
   matches = PALADIN_DEPENDENCY_RE.findall(commit_message)
   dependencies = []
   for prefix, match in matches:
-    if prefix != EXPECTED_PREFIX:
-      msg = 'Expected %r, but got %r' % (EXPECTED_PREFIX, prefix)
+    if prefix == EXPECTED_PREFIX or prefix == WARNING_PREFIX:
+      if prefix == WARNING_PREFIX:
+        logging.warning("You are using deprecated CQ-DEPEND syntax that is not"
+                        " supported in Parallel CQ. Please migrate to the new"
+                        " syntax: Cq-Depend: chromium:123,chrome-internal:456")
+      for chunk in PATCH_RE.findall(match):
+        chunk = ParsePatchDep(chunk, no_sha1=True)
+        if chunk not in dependencies:
+          dependencies.append(chunk)
+    else:
+      msg = 'Expected %r or %r, but got %r' % (EXPECTED_PREFIX, WARNING_PREFIX,
+                                               prefix)
       raise ValueError(msg)
-    for chunk in PATCH_RE.findall(match):
-      chunk = ParsePatchDep(chunk, no_sha1=True)
-      if chunk not in dependencies:
-        dependencies.append(chunk)
-  return dependencies
 
+  return dependencies
 
 class PatchQuery(object):
   """Store information about a patch.
@@ -2057,8 +2069,8 @@ class GerritPatch(GerritFetchOnlyPatch):
     return not self.GetMergeException()
 
   def HasReadyFlag(self):
-    """Return true if the trybot-ready or commit-ready flag is set."""
-    return self.HasApproval('COMR', ('1', '2')) or self.HasApproval('TRY', '1')
+    """Return true if the commit-ready flag is set."""
+    return self.HasApproval('COMR', ('1', '2'))
 
   def GetMergeException(self):
     """Return the reason why this change is not mergeable.
@@ -2109,7 +2121,7 @@ class GerritPatch(GerritFetchOnlyPatch):
 
   def PatchLink(self):
     """Return a CL link for this patch."""
-    return 'CL:%s' % (self.gerrit_number_str,)
+    return self.gerrit_number_str
 
   def _AddFooters(self, msg):
     """Ensure that commit messages have necessary Gerrit footers on the end.
@@ -2349,12 +2361,12 @@ def PrepareRemotePatches(patches):
   return patch_info
 
 
-def GetChangesAsString(changes, prefix='CL:', delimiter=' '):
+def GetChangesAsString(changes, prefix='', delimiter=' '):
   """Gets a human readable string listing |changes| in CL:1234 form.
 
   Args:
     changes: A list of GerritPatch objects.
-    prefix: Prefix to use. Defaults to 'CL:'
+    prefix: Prefix to use.
     delimiter: Delimiter to use. Defaults to a space.
   """
   formatted_changes = ['%s%s' % (prefix, AddPrefix(x, x.gerrit_number))

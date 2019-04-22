@@ -7,12 +7,15 @@
 
 from __future__ import print_function
 
+import contextlib
 import os
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
+from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import sysroot_lib
 
 if cros_build_lib.IsInsideChroot():
@@ -22,6 +25,20 @@ if cros_build_lib.IsInsideChroot():
 
 
 _HOST_PKGS = ('virtual/target-sdk', 'world',)
+
+_DEFAULT_MAKE_CONF_USER = """
+# This file is useful for doing global (chroot and all board) changes.
+# Tweak emerge settings, ebuild env, etc...
+#
+# Make sure to append variables unless you really want to clobber all
+# existing settings.  e.g. You most likely want:
+#   FEATURES="${FEATURES} ..."
+#   USE="${USE} foo"
+# and *not*:
+#   USE="foo"
+#
+# This also is a good place to setup ACCEPT_LICENSE.
+"""
 
 
 def _GetToolchainPackages():
@@ -128,8 +145,7 @@ def SetupBoard(board, update_chroot=True,
   if update_chroot:
     UpdateChroot(board=board, update_host_packages=update_host_packages)
 
-  cmd = [os.path.join(constants.CROSUTILS_DIR, 'setup_board'),
-         '--skip_toolchain_update', '--skip_chroot_upgrade',
+  cmd = ['setup_board', '--skip-toolchain-update', '--skip-chroot-upgrade',
          '--board=%s' % board]
 
   if not use_binary:
@@ -175,3 +191,34 @@ def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
   command += list(packages)
 
   cros_build_lib.SudoRunCommand(command, extra_env=env, mute_output=False)
+
+
+@contextlib.contextmanager
+def TempDirInChroot(**kwargs):
+  """A context to create and use a tempdir inside the chroot.
+
+  Args:
+    prefix: See tempfile.mkdtemp documentation.
+    base_dir: The directory to place the temporary directory in the chroot.
+    set_global: See osutils.TempDir documentation.
+    delete: See osutils.TempDir documentation.
+    sudo_rm: See osutils.TempDir documentation.
+
+  Yields:
+    A host path (not chroot path) to a tempdir inside the chroot. This tempdir
+    is cleaned up when exiting the context.
+  """
+  base_dir = kwargs.pop('base_dir', '/tmp')
+  kwargs['base_dir'] = path_util.FromChrootPath(base_dir)
+  tempdir = osutils.TempDir(**kwargs)
+  yield tempdir.tempdir
+
+
+def CreateMakeConfUser():
+  """Create default make.conf.user file in the chroot if it does not exist."""
+  path = '/etc/make.conf.user'
+  if not cros_build_lib.IsInsideChroot():
+    path = path_util.FromChrootPath(path)
+
+  if not os.path.exists(path):
+    osutils.WriteFile(path, _DEFAULT_MAKE_CONF_USER, sudo=True)

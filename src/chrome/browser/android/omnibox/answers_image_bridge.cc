@@ -51,7 +51,6 @@ class AnswersImageObserverAndroid : public BitmapFetcherService::Observer {
 
 static void JNI_AnswersImageFetcher_CancelAnswersImageRequest(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const JavaParamRef<jobject>& java_profile,
     jint java_request_id) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(java_profile);
@@ -63,7 +62,6 @@ static void JNI_AnswersImageFetcher_CancelAnswersImageRequest(
 
 static int JNI_AnswersImageFetcher_RequestAnswersImage(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const JavaParamRef<jobject>& java_profile,
     const JavaParamRef<jstring>& java_url,
     const JavaParamRef<jobject>& java_callback) {

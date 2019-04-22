@@ -57,8 +57,6 @@ DataReductionProxyDataUseObserver::DataReductionProxyDataUseObserver(
     : data_reduction_proxy_io_data_(data_reduction_proxy_io_data),
       data_use_ascriber_(data_use_ascriber) {
   DCHECK(data_reduction_proxy_io_data_);
-  if (!data_reduction_proxy::params::IsDataSaverSiteBreakdownUsingPLMEnabled())
-    data_use_ascriber_->AddObserver(this);
 }
 
 DataReductionProxyDataUseObserver::~DataReductionProxyDataUseObserver() {

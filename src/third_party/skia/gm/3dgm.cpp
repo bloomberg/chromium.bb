@@ -6,13 +6,15 @@
  */
 
 #include "gm.h"
+
 #include "Sk3D.h"
+#include "SkFont.h"
 #include "SkPath.h"
 #include "SkPoint3.h"
 
 #ifdef SK_ENABLE_SKOTTIE
 
-#include "SkAnimTimer.h"
+#include "AnimTimer.h"
 #include "Resources.h"
 #include "SkStream.h"
 #include "Skottie.h"
@@ -99,9 +101,10 @@ protected:
         proc(0xC0FF0000, m4 * tmp);
     }
 
-    void onDraw(SkCanvas* canvas) override {
+    DrawResult onDraw(SkCanvas* canvas, SkString* errorMsg) override {
         if (!fAnim) {
-            return;
+            *errorMsg = "No animation.";
+            return DrawResult::kFail;
         }
         SkMatrix44  camera,
                     perspective,
@@ -128,6 +131,8 @@ protected:
 
         SkPaint paint;
         paint.setStyle(SkPaint::kStroke_Style);
+        SkFont font;
+        font.setEdging(SkFont::Edging::kAlias);
 
         SkPath cube;
 
@@ -158,25 +163,26 @@ protected:
             mv.setConcat(perspective, camera);
             Sk3MapPts(dst, mv, src, 4);
             viewport.mapPoints(dst, 4);
-            const char str[] = "XYZ";
+            const char* str[3] = { "X", "Y", "Z" };
             for (int i = 1; i <= 3; ++i) {
                 canvas->drawLine(dst[0], dst[i], paint);
             }
 
-            for (int i = 1; i <= 3; ++i) {
-                canvas->drawText(&str[i-1], 1, dst[i].fX, dst[i].fY, paint);
+            for (int i = 0; i < 3; ++i) {
+                canvas->drawString(str[i], dst[i + 1].fX, dst[i + 1].fY, font, paint);
             }
         }
 
         fAnim->seek(fAnimT);
         draw_skia(canvas, mv, viewport, fAnim.get());
+        return DrawResult::kOk;
     }
 
     SkISize onISize() override { return { 1024, 768 }; }
 
     SkString onShortName() override { return SkString("3dgm"); }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         if (!fAnim) {
             return false;
         }

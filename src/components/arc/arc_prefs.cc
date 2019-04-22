@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/arc/arc_prefs.h"
-#include "components/arc/arc_supervision_transition.h"
+#include "components/arc/session/arc_supervision_transition.h"
 
 #include <string>
 
@@ -11,6 +11,9 @@
 
 namespace arc {
 namespace prefs {
+
+// ======== PROFILE PREFS ========
+// See below for local state prefs.
 
 // A bool preference indicating whether traffic other than the VPN connection
 // set via kAlwaysOnVpnPackage should be blackholed.
@@ -87,11 +90,8 @@ const char kArcSkippedReportingNotice[] = "arc.skipped.reporting.notice";
 // the user directory (i.e., the user finished required migration.)
 const char kArcCompatibleFilesystemChosen[] =
     "arc.compatible_filesystem.chosen";
-// A preference that indicates that user accepted Voice Interaction Value Prop.
-const char kArcVoiceInteractionValuePropAccepted[] =
-    "arc.voice_interaction_value_prop.accepted";
 // Integer pref indicating the ecryptfs to ext4 migration strategy. One of
-// options: forbidden = 0, migrate = 1, wipe = 2 or ask the user = 3.
+// options: forbidden = 0, migrate = 1, wipe = 2 or minimal migrate = 4.
 const char kEcryptfsMigrationStrategy[] = "ecryptfs_migration_strategy";
 // A preference that persists total engagement time across sessions, which is
 // accumulated and sent to UMA once a day.
@@ -112,19 +112,21 @@ const char kEngagementTimeOsVersion[] =
 // engagement time was last recorded. Accumulated results are sent to UMA if day
 // ID has changed.
 const char kEngagementTimeDayId[] = "arc.metrics.engagement_time.day_id";
-// A preference that indicates the user has accepted voice interaction activity
-// control settings.
-const char kVoiceInteractionActivityControlAccepted[] =
-    "settings.voice_interaction.activity_control.accepted";
 // A preference that indicates the user has allowed voice interaction services
 // to access the "context" (text and graphic content that is currently on
-// screen).
+// screen). This preference can be overridden by the
+// VoiceInteractionContextEnabled administrator policy.
 const char kVoiceInteractionContextEnabled[] =
     "settings.voice_interaction.context.enabled";
 // A preference that indicates the user has enabled voice interaction services.
 const char kVoiceInteractionEnabled[] = "settings.voice_interaction.enabled";
+// A preference that indicates the user has chosen to always keep hotword
+// listening on even withough DSP support.
+const char kVoiceInteractionHotwordAlwaysOn[] =
+    "settings.voice_interaction.hotword.always_on";
 // A preference that indicates the user has allowed voice interaction services
-// to use hotword listening.
+// to use hotword listening. This preference can be overridden by the
+// VoiceInteractionHotwordEnabled administrator policy.
 const char kVoiceInteractionHotwordEnabled[] =
     "settings.voice_interaction.hotword.enabled";
 // A preference that indicates whether microphone should be open when the voice
@@ -135,6 +137,18 @@ const char kVoiceInteractionLaunchWithMicOpen[] =
 // to send notification.
 const char kVoiceInteractionNotificationEnabled[] =
     "settings.voice_interaction.notification.enabled";
+
+// ======== LOCAL STATE PREFS ========
+
+// A dictionary preference that keeps track of stability metric values, which is
+// maintained by StabilityMetricsManager. Persisting values in local state is
+// required to include these metrics in the initial stability log in case of a
+// crash.
+const char kStabilityMetrics[] = "arc.metrics.stability";
+
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kStabilityMetrics);
+}
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // TODO(dspaid): Implement a mechanism to allow this to sync on first boot
@@ -159,8 +173,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
 
   // Sorted in lexicographical order.
-  registry->RegisterBooleanPref(kVoiceInteractionActivityControlAccepted,
-                                false);
   registry->RegisterBooleanPref(kAlwaysOnVpnLockdown, false);
   registry->RegisterStringPref(kAlwaysOnVpnPackage, std::string());
   registry->RegisterBooleanPref(kArcDataRemoveRequested, false);
@@ -175,7 +187,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kArcSkippedReportingNotice, false);
   registry->RegisterBooleanPref(kArcTermsAccepted, false);
   registry->RegisterBooleanPref(kArcTermsShownInOobe, false);
-  registry->RegisterBooleanPref(kArcVoiceInteractionValuePropAccepted, false);
   registry->RegisterTimeDeltaPref(kEngagementTimeBackground, base::TimeDelta());
   registry->RegisterIntegerPref(kEngagementTimeDayId, 0);
   registry->RegisterTimeDeltaPref(kEngagementTimeForeground, base::TimeDelta());
@@ -183,6 +194,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterTimeDeltaPref(kEngagementTimeTotal, base::TimeDelta());
   registry->RegisterBooleanPref(kVoiceInteractionContextEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionEnabled, false);
+  registry->RegisterBooleanPref(kVoiceInteractionHotwordAlwaysOn, false);
   registry->RegisterBooleanPref(kVoiceInteractionHotwordEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionNotificationEnabled, true);
   registry->RegisterBooleanPref(kVoiceInteractionLaunchWithMicOpen, false);

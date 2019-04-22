@@ -11,13 +11,13 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_job.h"
 #include "storage/browser/blob/blob_reader.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace net {
 class HttpResponseHeaders;
@@ -29,7 +29,7 @@ namespace storage {
 class BlobDataHandle;
 
 // A request job that handles reading blob URLs.
-class STORAGE_EXPORT BlobURLRequestJob
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLRequestJob
     : public net::URLRequestJob {
  public:
   BlobURLRequestJob(net::URLRequest* request,

@@ -9,12 +9,12 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
-#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -35,16 +35,10 @@ FetchRequestData* FetchRequestData::Create(
        it != web_request.Headers().end(); ++it)
     request->header_list_->Append(it->key, it->value);
   if (scoped_refptr<EncodedFormData> body = web_request.Body()) {
-    request->SetBuffer(new BodyStreamBuffer(
+    request->SetBuffer(MakeGarbageCollected<BodyStreamBuffer>(
         script_state,
         MakeGarbageCollected<FormDataBytesConsumer>(
             ExecutionContext::From(script_state), std::move(body)),
-        nullptr /* AbortSignal */));
-  } else if (web_request.GetBlobDataHandle()) {
-    request->SetBuffer(new BodyStreamBuffer(
-        script_state,
-        new BlobBytesConsumer(ExecutionContext::From(script_state),
-                              web_request.GetBlobDataHandle()),
         nullptr /* AbortSignal */));
   }
   request->SetContext(web_request.GetRequestContext());
@@ -54,7 +48,7 @@ FetchRequestData* FetchRequestData::Create(
   request->SetCredentials(web_request.CredentialsMode());
   request->SetCacheMode(web_request.CacheMode());
   request->SetRedirect(web_request.RedirectMode());
-  request->SetMIMEType(request->header_list_->ExtractMIMEType());
+  request->SetMimeType(request->header_list_->ExtractMIMEType());
   request->SetIntegrity(web_request.Integrity());
   request->SetPriority(
       static_cast<ResourceLoadPriority>(web_request.Priority()));
@@ -78,10 +72,10 @@ FetchRequestData* FetchRequestData::Create(
     request->header_list_->Append(pair.key, pair.value);
   }
   if (fetch_api_request.blob) {
-    request->SetBuffer(new BodyStreamBuffer(
+    request->SetBuffer(MakeGarbageCollected<BodyStreamBuffer>(
         script_state,
-        new BlobBytesConsumer(ExecutionContext::From(script_state),
-                              fetch_api_request.blob),
+        MakeGarbageCollected<BlobBytesConsumer>(
+            ExecutionContext::From(script_state), fetch_api_request.blob),
         nullptr /* AbortSignal */));
   }
   request->SetContext(fetch_api_request.request_context_type);
@@ -95,7 +89,7 @@ FetchRequestData* FetchRequestData::Create(
   request->SetCredentials(fetch_api_request.credentials_mode);
   request->SetCacheMode(fetch_api_request.cache_mode);
   request->SetRedirect(fetch_api_request.redirect_mode);
-  request->SetMIMEType(request->header_list_->ExtractMIMEType());
+  request->SetMimeType(request->header_list_->ExtractMIMEType());
   request->SetIntegrity(fetch_api_request.integrity);
   request->SetKeepalive(fetch_api_request.keepalive);
   request->SetIsHistoryNavigation(fetch_api_request.is_history_navigation);
@@ -150,8 +144,8 @@ FetchRequestData* FetchRequestData::Pass(ScriptState* script_state,
   FetchRequestData* request = FetchRequestData::CloneExceptBody();
   if (buffer_) {
     request->buffer_ = buffer_;
-    buffer_ = new BodyStreamBuffer(script_state, BytesConsumer::CreateClosed(),
-                                   nullptr /* AbortSignal */);
+    buffer_ = MakeGarbageCollected<BodyStreamBuffer>(
+        script_state, BytesConsumer::CreateClosed(), nullptr /* AbortSignal */);
     buffer_->CloseAndLockAndDisturb(exception_state);
     if (exception_state.HadException())
       return nullptr;
@@ -164,7 +158,7 @@ FetchRequestData::~FetchRequestData() {}
 
 FetchRequestData::FetchRequestData()
     : method_(http_names::kGET),
-      header_list_(FetchHeaderList::Create()),
+      header_list_(MakeGarbageCollected<FetchHeaderList>()),
       context_(mojom::RequestContextType::UNSPECIFIED),
       same_origin_data_url_flag_(false),
       referrer_string_(Referrer::ClientReferrerString()),

@@ -7,8 +7,9 @@
  */
 function requestHistograms() {
   let query = '';
-  if (document.location.pathname)
+  if (document.location.pathname) {
     query = document.location.pathname.substring(1);
+  }
   cr.sendWithPromise('requestHistograms', query).then(addHistograms);
 }
 
@@ -19,8 +20,9 @@ function requestHistograms() {
  */
 function addHistograms(histograms) {
   let htmlOutput = '';
-  for (let histogram of histograms)
+  for (let histogram of histograms) {
     htmlOutput += histogram;
+  }
 
   // NOTE: This is generally unsafe due to XSS attacks. Make sure |htmlOutput|
   // cannot be modified by an external party.

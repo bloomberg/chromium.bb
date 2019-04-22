@@ -11,7 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_switches.h"
@@ -110,7 +110,7 @@ TEST_F(FalseTouchFinderTest, FarApartTaps) {
       {50, 1, true, gfx::PointF(10, 14), 0.35, true, false},
       {50, 2, false, gfx::PointF(2500, 1002), 0.35, true, false},
       {60, 1, false, gfx::PointF(10, 15), 0.35, true, false}};
-  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+  EXPECT_TRUE(FilterAndCheck(kTestData, base::size(kTestData)));
 }
 
 // Test that taps which are far apart but do not occur in quick succession are
@@ -125,7 +125,7 @@ TEST_F(FalseTouchFinderTest, FarApartTapsSlow) {
       {3000, 1, true, gfx::PointF(10, 14), 0.35, false, false},
       {3000, 2, false, gfx::PointF(2500, 1001), 0.35, false, false},
       {3500, 1, false, gfx::PointF(10, 15), 0.35, false, false}};
-  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+  EXPECT_TRUE(FilterAndCheck(kTestData, base::size(kTestData)));
 }
 
 // Test that touches which are horizontally aligned are considered noise.
@@ -137,7 +137,7 @@ TEST_F(FalseTouchFinderTest, HorizontallyAligned) {
       {30, 1, false, gfx::PointF(10, 10), 0.35, false, false},
       {30, 2, true, gfx::PointF(10, 25), 0.35, true, false},
       {40, 2, false, gfx::PointF(10, 25), 0.35, true, false}};
-  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+  EXPECT_TRUE(FilterAndCheck(kTestData, base::size(kTestData)));
 }
 
 // Test that touches in the same position are considered noise.
@@ -154,7 +154,7 @@ TEST_F(FalseTouchFinderTest, SamePosition) {
       {4000, 2, false, gfx::PointF(10, 10), 0.35, true, false},
       {4500, 1, true, gfx::PointF(10, 10), 0.35, true, false},
       {5000, 1, false, gfx::PointF(10, 10), 0.35, true, false}};
-  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+  EXPECT_TRUE(FilterAndCheck(kTestData, base::size(kTestData)));
 }
 
 // Test that a multi-second touch is considered noise.
@@ -166,7 +166,7 @@ TEST_F(FalseTouchFinderTest, MultiSecondTouch) {
       {4000, 1, true, gfx::PointF(10, 11), 0.35, true, false},
       {5000, 1, true, gfx::PointF(10, 10), 0.35, true, false},
       {6000, 1, true, gfx::PointF(10, 11), 0.35, true, false}};
-  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+  EXPECT_TRUE(FilterAndCheck(kTestData, base::size(kTestData)));
 }
 
 // Test that a touch on the edge which never leaves is delayed and never
@@ -187,7 +187,7 @@ TEST_F(FalseTouchFinderTest, EdgeTap) {
       {100, 4, true, gfx::PointF(100, ts_height - 1), 0.35, false, true},
       {110, 4, true, gfx::PointF(100, ts_height - 1), 0.35, false, true},
       {120, 4, false, gfx::PointF(100, ts_height - 1), 0.35, false, true}};
-  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+  EXPECT_TRUE(FilterAndCheck(kTestData, base::size(kTestData)));
 }
 
 // Test that a touch on the edge which starts at an edge is delayed but released
@@ -202,7 +202,7 @@ TEST_F(FalseTouchFinderTest, MoveFromEdge) {
       {60, 1, true, gfx::PointF(0, 100), 0.35, false, true},
       {70, 1, true, gfx::PointF(0, 101), 0.35, false, false},
       {80, 1, false, gfx::PointF(0, 101), 0.35, false, false}};
-  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+  EXPECT_TRUE(FilterAndCheck(kTestData, base::size(kTestData)));
 }
 
 // Test that a touch on the edge which starts away from the edge is not
@@ -213,7 +213,7 @@ TEST_F(FalseTouchFinderTest, MoveToEdge) {
       {20, 1, true, gfx::PointF(100, 100), 0.35, false, false},
       {30, 1, true, gfx::PointF(0, 100), 0.35, false, false},
       {40, 1, false, gfx::PointF(0, 100), 0.35, false, false}};
-  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+  EXPECT_TRUE(FilterAndCheck(kTestData, base::size(kTestData)));
 }
 
 // Test that a pencil with a wide tip should be filtered out. Based on real
@@ -225,7 +225,7 @@ TEST_F(FalseTouchFinderTest, FatPencilPressure) {
       {30, 1, true, gfx::PointF(10, 10), 0.180392, false, true},
       {40, 1, true, gfx::PointF(10, 10), 0.164706, false, true},
       {50, 1, true, gfx::PointF(10, 10), 0.101961, false, true}};
-  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+  EXPECT_TRUE(FilterAndCheck(kTestData, base::size(kTestData)));
 }
 
 // Test that a pinky finger lightly pressed is not filtered out. Based on real
@@ -237,7 +237,7 @@ TEST_F(FalseTouchFinderTest, LightPinkyPressure) {
       {30, 1, true, gfx::PointF(10, 10), 0.215686, false, false},
       {40, 1, true, gfx::PointF(10, 10), 0.211765, false, false},
       {50, 1, true, gfx::PointF(10, 10), 0.203922, false, false}};
-  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+  EXPECT_TRUE(FilterAndCheck(kTestData, base::size(kTestData)));
 }
 
 }  // namespace ui

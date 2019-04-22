@@ -4,6 +4,9 @@
 
 #include "chrome/browser/media/media_engagement_service.h"
 
+#include <functional>
+
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -262,7 +265,7 @@ void MediaEngagementService::Clear(const GURL& url) {
       ->ClearSettingsForOneTypeWithPredicate(
           CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, base::Time(),
           base::Time::Max(),
-          base::Bind(&MediaEngagementFilterAdapter, base::ConstRef(url)));
+          base::Bind(&MediaEngagementFilterAdapter, std::cref(url)));
 }
 
 double MediaEngagementService::GetEngagementScore(const GURL& url) const {

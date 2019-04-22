@@ -15,17 +15,13 @@
 #include <string>
 #include <vector>
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
-#include "EGLWindow.h"
-#include "OSWindow.h"
-#include "Timer.h"
-#include "common/angleutils.h"
-#include "common/debug.h"
 #include "platform/Platform.h"
 #include "test_utils/angle_test_configs.h"
 #include "test_utils/angle_test_instantiate.h"
+#include "util/EGLWindow.h"
+#include "util/OSWindow.h"
+#include "util/Timer.h"
+#include "util/util_gl.h"
 
 class Event;
 
@@ -65,6 +61,8 @@ class ANGLEPerfTest : public testing::Test, angle::NonCopyable
 
     virtual void step() = 0;
 
+    // Called right after the timer starts to let the test initialize other metrics if necessary
+    virtual void startTest() {}
     // Called right before timer is stopped to let the test wait for asynchronous operations.
     virtual void finishTest() {}
 
@@ -95,10 +93,11 @@ class ANGLEPerfTest : public testing::Test, angle::NonCopyable
     std::string mName;
     std::string mSuffix;
     Timer *mTimer;
+    uint64_t mGPUTimeNs;
     bool mSkipTest;
 
   private:
-    void printResults();
+    double printResults();
 
     unsigned int mStepsToRun;
     unsigned int mNumStepsPerformed;
@@ -108,11 +107,14 @@ class ANGLEPerfTest : public testing::Test, angle::NonCopyable
 
 struct RenderTestParams : public angle::PlatformParameters
 {
+    virtual ~RenderTestParams() {}
+
     virtual std::string suffix() const;
 
     EGLint windowWidth             = 64;
     EGLint windowHeight            = 64;
     unsigned int iterationsPerStep = 0;
+    bool trackGpuTime              = false;
 };
 
 class ANGLERenderTest : public ANGLEPerfTest
@@ -142,24 +144,34 @@ class ANGLERenderTest : public ANGLEPerfTest
     void setWebGLCompatibilityEnabled(bool webglCompatibility);
     void setRobustResourceInit(bool enabled);
 
+    void startGpuTimer();
+    void stopGpuTimer();
+
   private:
     void SetUp() override;
     void TearDown() override;
 
     void step() override;
+    void startTest() override;
     void finishTest() override;
 
     bool areExtensionPrerequisitesFulfilled() const;
 
     static EGLWindow *createEGLWindow(const RenderTestParams &testParams);
 
-    EGLWindow *mEGLWindow;
+    GLWindowBase *mGLWindow;
     OSWindow *mOSWindow;
     std::vector<const char *> mExtensionPrerequisites;
     angle::PlatformMethods mPlatformMethods;
+    ConfigParameters mConfigParams;
+
+    GLuint mTimestampQuery;
 
     // Trace event record that can be output.
     std::vector<TraceEvent> mTraceEventBuffer;
+
+    // Handle to the entry point binding library.
+    std::unique_ptr<angle::Library> mEntryPointsLib;
 };
 
 #endif  // PERF_TESTS_ANGLE_PERF_TEST_H_

@@ -15,11 +15,12 @@ namespace blink {
 class PaintAndRasterInvalidationTest : public PaintControllerPaintTest {
  public:
   PaintAndRasterInvalidationTest()
-      : PaintControllerPaintTest(SingleChildLocalFrameClient::Create()) {}
+      : PaintControllerPaintTest(
+            MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  protected:
   ContentLayerClientImpl* GetContentLayerClient(size_t index = 0) const {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     const auto& clients = GetDocument()
                               .View()
                               ->GetPaintArtifactCompositorForTesting()
@@ -29,7 +30,7 @@ class PaintAndRasterInvalidationTest : public PaintControllerPaintTest {
 
   const RasterInvalidationTracking* GetRasterInvalidationTracking(
       size_t index = 0) const {
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       if (auto* client = GetContentLayerClient(index))
         return client->GetRasterInvalidator().GetTracking();
       return nullptr;
@@ -43,7 +44,7 @@ class PaintAndRasterInvalidationTest : public PaintControllerPaintTest {
   void SetUp() override {
     PaintControllerPaintTest::SetUp();
 
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       layer_tree_ = std::make_unique<LayerTreeHostEmbedder>();
       layer_tree_->layer_tree_host()->SetRootLayer(
           GetDocument()

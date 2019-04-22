@@ -133,7 +133,8 @@ void URLSearchParams::RunUpdateSteps() {
 }
 
 static String DecodeString(String input) {
-  return DecodeURLEscapeSequences(input.Replace('+', ' '));
+  return DecodeURLEscapeSequences(input.Replace('+', ' '),
+                                  DecodeURLMode::kUTF8OrIsomorphic);
 }
 
 void URLSearchParams::SetInputWithoutUpdate(const String& query_string) {
@@ -260,7 +261,7 @@ scoped_refptr<EncodedFormData> URLSearchParams::ToEncodedFormData() const {
 PairIterable<String, String>::IterationSource* URLSearchParams::StartIteration(
     ScriptState*,
     ExceptionState&) {
-  return new URLSearchParamsIterationSource(this);
+  return MakeGarbageCollected<URLSearchParamsIterationSource>(this);
 }
 
 }  // namespace blink

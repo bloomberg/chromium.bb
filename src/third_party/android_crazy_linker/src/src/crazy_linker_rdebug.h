@@ -118,10 +118,7 @@
 // outside of its own modifications. In threaded environments where the
 // system linker and the crazy linker are operating simultaneously on
 // different threads this may be a problem; we need these pages to be
-// writable when we have to update the list. We cannot track the system
-// linker's actions, so to avoid clashing with it we may need to try and
-// move 'r_map' updates to a different thread, to serialize them with
-// other system linker activity.
+// writable when we have to update the list.
 //
 // TECHNICAL NOTE: If CRAZY_DISABLE_R_BRK is defined at compile time,
 // then the crazy linker will never try to call the r_brk() GDB Hook
@@ -154,22 +151,6 @@ struct r_debug {
   uintptr_t r_ldbase;
 };
 
-// A callback poster is a function that can be called to request a later
-// callback. Poster arguments are: an opaque pointer to the caller's
-// context, a pointer to a function with a single void* argument that will
-// handle the callback, and the opaque void* argument value to send with
-// the callback.
-typedef void (*crazy_callback_handler_t)(void* opaque);
-typedef bool (*rdebug_callback_poster_t)(void* context,
-                                         crazy_callback_handler_t,
-                                         void* opaque);
-
-// A callback handler is a static function, either AddEntryInternal() or
-// DelEntryInternal(). It calls the appropriate r_map update member
-// function, AddEntryImpl() or DelEntryImpl().
-class RDebug;
-typedef void (*rdebug_callback_handler_t)(RDebug*, link_map_t*);
-
 class RDebug {
  public:
   RDebug() = default;
@@ -178,30 +159,9 @@ class RDebug {
   RDebug(const RDebug&) = delete;
   RDebug& operator=(const RDebug&) = delete;
 
-  // Add entries to and remove entries from the list. If post for later
-  // execution is enabled, schedule callbacks, otherwise action immediately.
-  //
-  // Callbacks may be blocking or non-blocking. On a blocking callback
-  // we wait for the other thread to call the callback before proceeding;
-  // on a non-blocking one, we proceed without waiting. Adding an entry
-  // requires a non-blocking callback, because the loop that invokes the
-  // callback is not started until after libraries are loaded. Deleting an
-  // entry requires a blocking callback, so that the objects referenced
-  // by the callback code are not destroyed before the callback is invoked.
-  void AddEntry(link_map_t* entry) {
-    RunOrDelay(&AddEntryInternal, entry, false);
-  }
-  void DelEntry(link_map_t* entry) {
-    RunOrDelay(&DelEntryInternal, entry, true);
-  }
-
-  // Assign the function used to request a callback from another thread.
-  // The context here is opaque, but is the API's crazy_context.
-  void SetDelayedCallbackPoster(rdebug_callback_poster_t poster,
-                                void* context) {
-    post_for_later_execution_ = poster;
-    post_for_later_execution_context_ = context;
-  }
+  // Add entries to and remove entries from the list.
+  void AddEntry(link_map_t* entry);
+  void DelEntry(link_map_t* entry);
 
   // Return address of current global _r_debug variable, or nullptr if not
   // available.
@@ -212,37 +172,6 @@ class RDebug {
   // though there is no symbol for it. Returns true on success.
   bool Init();
 
-  // Support for scheduling list manipulation through callbacks.
-  // AddEntry() and DelEntry() pass the addresses of static functions to
-  // to RunOrDelay(). This requests a callback if later execution
-  // is enabled, otherwise it runs immediately on the current thread.
-  // AddEntryImpl() and DelEntryImpl() are the member functions called
-  // by the static ones to do the actual work.
-  void AddEntryImpl(link_map_t* entry);
-  void DelEntryImpl(link_map_t* entry);
-  static void AddEntryInternal(RDebug* rdebug, link_map_t* entry) {
-    rdebug->AddEntryImpl(entry);
-  }
-  static void DelEntryInternal(RDebug* rdebug, link_map_t* entry) {
-    rdebug->DelEntryImpl(entry);
-  }
-
-  // Post handler for delayed execution. Return true if delayed execution
-  // is enabled and posting succeeded. If is_blocking, waits until the
-  // callback is received before returning.
-  bool PostCallback(rdebug_callback_handler_t handler,
-                    link_map_t* entry,
-                    bool is_blocking);
-
-  // Run handler as a callback if enabled, otherwise immediately. Posts
-  // either a blocking or a non-blocking callback.
-  void RunOrDelay(rdebug_callback_handler_t handler,
-                  link_map_t* entry,
-                  bool is_blocking) {
-    if (!PostCallback(handler, entry, is_blocking))
-      (*handler)(this, entry);
-  }
-
   // Call the debugger hook function |r_debug_->r_brk|.
   // |state| is the value to write to |r_debug_->r_state|
   // before that. This is done to coordinate with the
@@ -252,8 +181,6 @@ class RDebug {
 
   r_debug* r_debug_ = nullptr;
   bool init_ = false;
-  rdebug_callback_poster_t post_for_later_execution_ = nullptr;
-  void* post_for_later_execution_context_ = nullptr;
 };
 
 }  // namespace crazy

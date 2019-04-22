@@ -80,7 +80,7 @@ class ScrollAnchorTest : public testing::WithParamInterface<bool>,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, ScrollAnchorTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ScrollAnchorTest, testing::Bool());
 
 // TODO(ymalik): Currently, this should be the first test in the file to avoid
 // failure when running with other tests. Dig into this more and fix.

@@ -33,8 +33,7 @@ const std::string GetDisplayName(
 }
 
 const std::string GetMimeType() {
-  return offline_pages::IsOfflinePagesSharingEnabled() ? "multipart/related"
-                                                       : "text/html";
+  return "multipart/related";
 }
 
 }  // namespace
@@ -58,7 +57,7 @@ OfflineItem OfflineItemConversions::CreateOfflineItem(
   item.file_path = page.file_path;
   item.mime_type = GetMimeType();
   item.page_url = page.url;
-  item.original_url = page.original_url;
+  item.original_url = page.original_url_if_different;
   item.progress.value = 100;
   item.progress.max = 100;
   item.progress.unit = OfflineItemProgressUnit::PERCENTAGE;

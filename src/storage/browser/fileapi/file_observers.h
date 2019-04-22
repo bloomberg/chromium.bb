@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "storage/browser/storage_browser_export.h"
 
 // TODO(kinuko): Split this file into per-observer multiple files.
 
@@ -29,7 +29,7 @@ class FileSystemURL;
 //
 // OnUpdate() is called each time the |url| is updated but works only for
 // sandboxed files (where usage is tracked).
-class STORAGE_EXPORT FileUpdateObserver {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileUpdateObserver {
  public:
   FileUpdateObserver() {}
   virtual ~FileUpdateObserver() {}
@@ -46,7 +46,7 @@ class STORAGE_EXPORT FileUpdateObserver {
 // OnAccess is called whenever an operation reads file contents or metadata.
 // (It is called only once per operation regardless of whether the operation
 // is recursive or not)
-class STORAGE_EXPORT FileAccessObserver {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileAccessObserver {
  public:
   FileAccessObserver() {}
   virtual ~FileAccessObserver() {}
@@ -62,7 +62,7 @@ class STORAGE_EXPORT FileAccessObserver {
 // removed or modified.  For recursive operations each method is called for
 // each subdirectory/subfile.  Currently ChangeObserver is only supported
 // by the local sandbox file system.
-class STORAGE_EXPORT FileChangeObserver {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileChangeObserver {
  public:
   FileChangeObserver() {}
   virtual ~FileChangeObserver() {}

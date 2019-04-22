@@ -33,8 +33,6 @@
   F(PPB_Buffer_API)                     \
   F(PPB_CameraCapabilities_API)         \
   F(PPB_CameraDevice_API)               \
-  F(PPB_Compositor_API)                 \
-  F(PPB_CompositorLayer_API)            \
   F(PPB_DeviceRef_API)                  \
   F(PPB_Ext_CrxFileSystem_Private_API)  \
   F(PPB_FileChooser_API)                \
@@ -116,7 +114,8 @@ FOR_ALL_PPAPI_RESOURCE_APIS(DECLARE_RESOURCE_CLASS)
 // cases.
 enum ResourceObjectType { OBJECT_IS_IMPL, OBJECT_IS_PROXY };
 
-class PPAPI_SHARED_EXPORT Resource : public base::RefCounted<Resource> {
+class PPAPI_SHARED_EXPORT Resource
+    : public base::RefCountedThreadSafe<Resource> {
  public:
   // Constructor for impl and non-proxied, instance-only objects.
   //

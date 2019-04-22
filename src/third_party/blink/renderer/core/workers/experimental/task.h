@@ -12,8 +12,10 @@
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
+
 class ResolveTask;
 class SerializedScriptValue;
+class V8Function;
 
 // Runs |function| with |arguments| on a thread from the given ThreadPool.
 // Scans |arguments| for Task objects, and registers those as dependencies,
@@ -32,10 +34,11 @@ class TaskBase : public GarbageCollectedMixin {
 
   enum class State { kPending, kStarted, kCancelPending, kCompleted, kFailed };
 
-  TaskBase(TaskType,
-           ScriptState*,
-           const ScriptValue& function,
-           const String& function_name);
+  TaskBase(v8::Isolate*,
+           TaskType,
+           V8Function* function,
+           const String& function_name,
+           ExceptionState&);
 
   void InitializeArgumentsOnMainThread(ThreadPoolThreadProvider*,
                                        ScriptState*,
@@ -156,25 +159,39 @@ class Task final : public ScriptWrappable, public TaskBase {
 
  public:
   // Called on main thread
-  Task(ThreadPoolThreadProvider* thread_provider,
-       ScriptState* script_state,
-       const ScriptValue& function,
+  Task(ScriptState* script_state,
+       ThreadPoolThreadProvider* thread_provider,
+       V8Function* function,
        const Vector<ScriptValue>& arguments,
-       TaskType task_type)
-      : TaskBase(task_type, script_state, function, String()) {
+       TaskType task_type,
+       ExceptionState& exception_state)
+      : TaskBase(script_state->GetIsolate(),
+                 task_type,
+                 function,
+                 String(),
+                 exception_state) {
+    if (exception_state.HadException())
+      return;
     InitializeArgumentsOnMainThread(thread_provider, script_state, arguments);
   }
-  Task(ThreadPoolThreadProvider* thread_provider,
-       ScriptState* script_state,
+  Task(ScriptState* script_state,
+       ThreadPoolThreadProvider* thread_provider,
        const String& function_name,
        const Vector<ScriptValue>& arguments,
-       TaskType task_type)
-      : TaskBase(task_type, script_state, ScriptValue(), function_name) {
+       TaskType task_type,
+       ExceptionState& exception_state)
+      : TaskBase(script_state->GetIsolate(),
+                 task_type,
+                 nullptr,
+                 function_name,
+                 exception_state) {
+    if (exception_state.HadException())
+      return;
     InitializeArgumentsOnMainThread(thread_provider, script_state, arguments);
   }
 
   // Returns a promise that will be resolved with the result when it completes.
-  ScriptPromise result(ScriptState*);
+  ScriptPromise result(ScriptState*, ExceptionState&);
   void cancel() LOCKS_EXCLUDED(mutex_);
 
   void StartTaskOnWorkerThread() override LOCKS_EXCLUDED(mutex_);
@@ -197,7 +214,7 @@ class ResolveTask final : public GarbageCollectedFinalized<ResolveTask>,
   USING_GARBAGE_COLLECTED_MIXIN(ResolveTask);
 
  public:
-  ResolveTask(ScriptState*, TaskType, Task* prerequisite);
+  ResolveTask(ScriptState*, TaskType, Task* prerequisite, ExceptionState&);
   void StartTaskOnWorkerThread() override LOCKS_EXCLUDED(mutex_);
   bool IsTargetThreadForArguments() override { return IsMainThread(); }
   void TaskCompleted(bool was_successful) override;

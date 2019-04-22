@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "api/rtp_headers.h"
-#include "api/rtpparameters.h"
+#include "api/rtp_parameters.h"
 
 namespace webrtc {
 // Currently only VP8/VP9 specific.
@@ -65,6 +65,14 @@ struct RtpConfig {
   std::string ToString() const;
 
   std::vector<uint32_t> ssrcs;
+
+  // The Rtp Stream Ids (aka RIDs) to send in the RID RTP header extension
+  // if the extension is included in the list of extensions.
+  // If rids are specified, they should correspond to the |ssrcs| vector.
+  // This means that:
+  // 1. rids.size() == 0 || rids.size() == ssrcs.size().
+  // 2. If rids is not empty, then |rids[i]| should use |ssrcs[i]|.
+  std::vector<std::string> rids;
 
   // The value to send in the MID RTP header extension if the extension is
   // included in the list of extensions.

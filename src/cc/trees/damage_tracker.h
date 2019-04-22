@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_collections.h"
 #include "ui/gfx/geometry/rect.h"
@@ -30,7 +29,10 @@ class RenderSurfaceImpl;
 class CC_EXPORT DamageTracker {
  public:
   static std::unique_ptr<DamageTracker> Create();
+  DamageTracker(const DamageTracker&) = delete;
   ~DamageTracker();
+
+  DamageTracker& operator=(const DamageTracker&) = delete;
 
   static void UpdateDamageTracking(
       LayerTreeImpl* layer_tree_impl,
@@ -153,8 +155,6 @@ class CC_EXPORT DamageTracker {
 
   // Damage accumulated since the last call to PrepareForUpdate().
   DamageAccumulator damage_for_this_update_;
-
-  DISALLOW_COPY_AND_ASSIGN(DamageTracker);
 };
 
 }  // namespace cc

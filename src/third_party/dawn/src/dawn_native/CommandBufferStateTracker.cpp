@@ -19,7 +19,6 @@
 #include "dawn_native/BindGroup.h"
 #include "dawn_native/ComputePipeline.h"
 #include "dawn_native/Forward.h"
-#include "dawn_native/InputState.h"
 #include "dawn_native/PipelineLayout.h"
 #include "dawn_native/RenderPipeline.h"
 
@@ -38,11 +37,11 @@ namespace dawn_native {
     static constexpr CommandBufferStateTracker::ValidationAspects kDispatchAspects =
         1 << VALIDATION_ASPECT_PIPELINE | 1 << VALIDATION_ASPECT_BIND_GROUPS;
 
-    static constexpr CommandBufferStateTracker::ValidationAspects kDrawArraysAspects =
+    static constexpr CommandBufferStateTracker::ValidationAspects kDrawAspects =
         1 << VALIDATION_ASPECT_PIPELINE | 1 << VALIDATION_ASPECT_BIND_GROUPS |
         1 << VALIDATION_ASPECT_VERTEX_BUFFERS;
 
-    static constexpr CommandBufferStateTracker::ValidationAspects kDrawElementsAspects =
+    static constexpr CommandBufferStateTracker::ValidationAspects kDrawIndexedAspects =
         1 << VALIDATION_ASPECT_PIPELINE | 1 << VALIDATION_ASPECT_BIND_GROUPS |
         1 << VALIDATION_ASPECT_VERTEX_BUFFERS | 1 << VALIDATION_ASPECT_INDEX_BUFFER;
 
@@ -53,12 +52,12 @@ namespace dawn_native {
         return ValidateOperation(kDispatchAspects);
     }
 
-    MaybeError CommandBufferStateTracker::ValidateCanDrawArrays() {
-        return ValidateOperation(kDrawArraysAspects);
+    MaybeError CommandBufferStateTracker::ValidateCanDraw() {
+        return ValidateOperation(kDrawAspects);
     }
 
-    MaybeError CommandBufferStateTracker::ValidateCanDrawElements() {
-        return ValidateOperation(kDrawElementsAspects);
+    MaybeError CommandBufferStateTracker::ValidateCanDrawIndexed() {
+        return ValidateOperation(kDrawIndexedAspects);
     }
 
     MaybeError CommandBufferStateTracker::ValidateOperation(ValidationAspects requiredAspects) {
@@ -92,7 +91,8 @@ namespace dawn_native {
             bool matches = true;
 
             for (uint32_t i : IterateBitSet(mLastPipelineLayout->GetBindGroupLayoutsMask())) {
-                if (mLastPipelineLayout->GetBindGroupLayout(i) != mBindgroups[i]->GetLayout()) {
+                if (mBindgroups[i] == nullptr ||
+                    mLastPipelineLayout->GetBindGroupLayout(i) != mBindgroups[i]->GetLayout()) {
                     matches = false;
                     break;
                 }
@@ -106,7 +106,7 @@ namespace dawn_native {
         if (aspects[VALIDATION_ASPECT_VERTEX_BUFFERS]) {
             ASSERT(mLastRenderPipeline != nullptr);
 
-            auto requiredInputs = mLastRenderPipeline->GetInputState()->GetInputsSetMask();
+            auto requiredInputs = mLastRenderPipeline->GetInputsSetMask();
             if ((mInputsSet & requiredInputs) == requiredInputs) {
                 mAspects.set(VALIDATION_ASPECT_VERTEX_BUFFERS);
             }

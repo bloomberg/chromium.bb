@@ -121,7 +121,7 @@ class BluetoothLowEnergyEventRouter
   // it and invokes |callback|. Until the first successful call to this method,
   // none of the methods in this class will succeed and no device::Bluetooth*
   // API events will be observed.
-  bool InitializeAdapterAndInvokeCallback(const base::Closure& callback);
+  bool InitializeAdapterAndInvokeCallback(base::OnceClosure callback);
 
   // Returns true, if the BluetoothAdapter was initialized.
   bool HasAdapter() const;
@@ -391,7 +391,7 @@ class BluetoothLowEnergyEventRouter
 
  private:
   // Called by BluetoothAdapterFactory.
-  void OnGetAdapter(const base::Closure& callback,
+  void OnGetAdapter(base::OnceClosure callback,
                     scoped_refptr<device::BluetoothAdapter> adapter);
 
   // Initializes the identifier for all existing GATT objects and devices.

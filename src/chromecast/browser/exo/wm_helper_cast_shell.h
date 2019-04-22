@@ -47,7 +47,9 @@ namespace wm {
 class ActivationChangeObserver;
 }
 
+namespace chromecast {
 class CastScreen;
+}
 
 namespace exo {
 
@@ -57,7 +59,7 @@ class WMHelperCastShell : public WMHelper {
  public:
   WMHelperCastShell(aura::Env* env,
                     chromecast::CastWindowManagerAura* cast_window_manager_aura,
-                    CastScreen* cast_screen);
+                    chromecast::CastScreen* cast_screen);
   ~WMHelperCastShell() override;
 
   // Overridden from WMHelper
@@ -96,6 +98,9 @@ class WMHelperCastShell : public WMHelper {
   bool IsTabletModeWindowManagerEnabled() const override;
   double GetDefaultDeviceScaleFactor() const override;
 
+  LifetimeManager* GetLifetimeManager() override;
+  aura::client::CaptureClient* GetCaptureClient() override;
+
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
@@ -124,8 +129,11 @@ class WMHelperCastShell : public WMHelper {
 
   chromecast::CastWindowManagerAura* cast_window_manager_aura_;
   aura::Env* const env_;
-  CastScreen* cast_screen_;
+  chromecast::CastScreen* cast_screen_;
   CastDisplayObserver display_observer_;
+  LifetimeManager lifetime_manager_;
+  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(WMHelperCastShell);
 };
 

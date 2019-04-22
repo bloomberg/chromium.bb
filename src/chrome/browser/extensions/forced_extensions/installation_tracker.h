@@ -42,6 +42,8 @@ class InstallationTracker : public ExtensionRegistryObserver {
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
 
+  void OnShutdown(ExtensionRegistry*) override;
+
  private:
   // Loads list of force-installed extensions if available.
   void OnForcedExtensionsPrefChanged();

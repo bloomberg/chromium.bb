@@ -4,6 +4,9 @@
 
 #include "third_party/blink/public/common/manifest/manifest_mojom_traits.h"
 
+#include <string>
+#include <utility>
+
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "third_party/blink/public/common/manifest/web_display_mode_mojom_traits.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_mojom_traits.h"
@@ -65,6 +68,9 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
     return false;
 
   if (!data.ReadShareTarget(&out->share_target))
+    return false;
+
+  if (!data.ReadFileHandler(&out->file_handler))
     return false;
 
   if (!data.ReadRelatedApplications(&out->related_applications))
@@ -137,10 +143,10 @@ bool StructTraits<blink::mojom::ManifestRelatedApplicationDataView,
   return !(out->url.is_empty() && out->id.is_null());
 }
 
-bool StructTraits<blink::mojom::ManifestShareTargetFileDataView,
-                  ::blink::Manifest::ShareTargetFile>::
-    Read(blink::mojom::ManifestShareTargetFileDataView data,
-         ::blink::Manifest::ShareTargetFile* out) {
+bool StructTraits<blink::mojom::ManifestFileFilterDataView,
+                  ::blink::Manifest::FileFilter>::
+    Read(blink::mojom::ManifestFileFilterDataView data,
+         ::blink::Manifest::FileFilter* out) {
   TruncatedString16 name;
   if (!data.ReadName(&name))
     return false;

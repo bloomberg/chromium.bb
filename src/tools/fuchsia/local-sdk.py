@@ -33,10 +33,12 @@ def EnsureEmptyDir(path):
 
 def BuildForArch(arch):
   build_dir = 'out/release-' + arch
-  Run('scripts/fx', 'set', arch,
-      '--packages=garnet/packages/sdk/garnet',
-      '--args=is_debug=false', '--args=build_sdk_archives=true', build_dir)
-  Run('scripts/fx', 'full-build')
+  Run('scripts/fx', 'set', 'sdk_image.' + arch,
+      '--with=//topaz/packages/sdk:topaz',
+      '--args=is_debug=false', '--args=build_sdk_archives=true',
+      '--build-dir=' + build_dir)
+  Run('scripts/fx', 'build-zircon')
+  Run('scripts/fx', 'build', 'topaz/public/sdk:topaz')
 
 
 def main(args):
@@ -61,7 +63,7 @@ def main(args):
 
   tempdir = tempfile.mkdtemp()
   sdk_tar = os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk',
-                         'archive', 'garnet.tar.gz')
+                         'archive', 'topaz.tar.gz')
 
   # Nuke the SDK from DEPS, put our just-built one there, and set a fake .hash
   # file. This means that on next gclient runhooks, we'll restore to the

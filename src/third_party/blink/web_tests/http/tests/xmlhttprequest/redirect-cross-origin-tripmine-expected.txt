@@ -23,7 +23,6 @@ Test that a cross-origin redirect does not result in a non-simple request being 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Asynchronous XMLHttpRequest 307 POST redirect:
 PASS tripmineStatus is ""
 Asynchronous XMLHttpRequest 307 GET redirect:

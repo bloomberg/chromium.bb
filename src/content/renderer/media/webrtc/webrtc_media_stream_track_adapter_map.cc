@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 
 namespace content {

@@ -15,8 +15,8 @@ const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
  * @return {Promise} Promise fulfilled with an array containing two window IDs.
  */
 async function openTwoWindows(rootPath1, rootPath2) {
-  const windowIds = await Promise.all(
-      [openNewWindow(null, rootPath1), openNewWindow(null, rootPath2)]);
+  const windowIds =
+      await Promise.all([openNewWindow(rootPath1), openNewWindow(rootPath2)]);
 
   await Promise.all([
     remoteCall.waitForElement(windowIds[0], '#detail-table'),
@@ -34,8 +34,9 @@ async function openTwoWindows(rootPath1, rootPath2) {
  */
 async function copyBetweenWindows(
     window1, window2, file, alreadyPresentFile = null) {
-  if (!file || !file.nameText)
+  if (!file || !file.nameText) {
     chrome.test.assertTrue(false, 'copyBetweenWindows invalid file name');
+  }
 
   const flag = {ignoreLastModifiedTime: true};
   const name = file.nameText;
@@ -54,7 +55,7 @@ async function copyBetweenWindows(
 
   await remoteCall.callRemoteTestUtil('execCommand', window2, ['paste']);
 
-  var expectedFiles = [file.getExpectedRow()];
+  const expectedFiles = [file.getExpectedRow()];
   if (alreadyPresentFile) {
     expectedFiles.push(alreadyPresentFile.getExpectedRow());
   }
@@ -64,7 +65,7 @@ async function copyBetweenWindows(
 /**
  * Tests file copy+paste from Drive to Downloads.
  */
-testcase.copyBetweenWindowsDriveToLocal = async function() {
+testcase.copyBetweenWindowsDriveToLocal = async () => {
   // Open two Files app windows.
   const [window1, window2] =
       await openTwoWindows(RootPath.DOWNLOADS, RootPath.DRIVE);
@@ -85,7 +86,7 @@ testcase.copyBetweenWindowsDriveToLocal = async function() {
 /**
  * Tests file copy+paste from Downloads to Drive.
  */
-testcase.copyBetweenWindowsLocalToDrive = async function() {
+testcase.copyBetweenWindowsLocalToDrive = async () => {
   // Open two Files app windows.
   const [window1, window2] =
       await openTwoWindows(RootPath.DOWNLOADS, RootPath.DRIVE);
@@ -106,7 +107,7 @@ testcase.copyBetweenWindowsLocalToDrive = async function() {
 /**
  * Tests file copy+paste from Drive to USB.
  */
-testcase.copyBetweenWindowsDriveToUsb = async function() {
+testcase.copyBetweenWindowsDriveToUsb = async () => {
   // Add photos to Downloads.
   await addEntries(['local'], [ENTRIES.photos]);
 
@@ -146,7 +147,7 @@ testcase.copyBetweenWindowsDriveToUsb = async function() {
 /**
  * Tests file copy+paste from Downloads to USB.
  */
-testcase.copyBetweenWindowsLocalToUsb = async function() {
+testcase.copyBetweenWindowsLocalToUsb = async () => {
   // Add photos to Drive.
   await addEntries(['drive'], [ENTRIES.photos]);
 
@@ -186,7 +187,7 @@ testcase.copyBetweenWindowsLocalToUsb = async function() {
 /**
  * Tests file copy+paste from USB to Drive.
  */
-testcase.copyBetweenWindowsUsbToDrive = async function() {
+testcase.copyBetweenWindowsUsbToDrive = async () => {
   // Add photos to Downloads.
   await addEntries(['local'], [ENTRIES.photos]);
 
@@ -226,7 +227,7 @@ testcase.copyBetweenWindowsUsbToDrive = async function() {
 /**
  * Tests file copy+paste from USB to Downloads.
  */
-testcase.copyBetweenWindowsUsbToLocal = async function() {
+testcase.copyBetweenWindowsUsbToLocal = async () => {
   // Add photos to Drive.
   await addEntries(['drive'], [ENTRIES.photos]);
 

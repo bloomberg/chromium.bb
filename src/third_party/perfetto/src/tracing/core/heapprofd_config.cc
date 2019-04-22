@@ -38,6 +38,18 @@ HeapprofdConfig& HeapprofdConfig::operator=(const HeapprofdConfig&) = default;
 HeapprofdConfig::HeapprofdConfig(HeapprofdConfig&&) noexcept = default;
 HeapprofdConfig& HeapprofdConfig::operator=(HeapprofdConfig&&) = default;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+bool HeapprofdConfig::operator==(const HeapprofdConfig& other) const {
+  return (sampling_interval_bytes_ == other.sampling_interval_bytes_) &&
+         (process_cmdline_ == other.process_cmdline_) && (pid_ == other.pid_) &&
+         (all_ == other.all_) &&
+         (skip_symbol_prefix_ == other.skip_symbol_prefix_) &&
+         (continuous_dump_config_ == other.continuous_dump_config_) &&
+         (shmem_size_bytes_ == other.shmem_size_bytes_);
+}
+#pragma GCC diagnostic pop
+
 void HeapprofdConfig::FromProto(
     const perfetto::protos::HeapprofdConfig& proto) {
   static_assert(sizeof(sampling_interval_bytes_) ==
@@ -66,7 +78,22 @@ void HeapprofdConfig::FromProto(
   static_assert(sizeof(all_) == sizeof(proto.all()), "size mismatch");
   all_ = static_cast<decltype(all_)>(proto.all());
 
+  skip_symbol_prefix_.clear();
+  for (const auto& field : proto.skip_symbol_prefix()) {
+    skip_symbol_prefix_.emplace_back();
+    static_assert(sizeof(skip_symbol_prefix_.back()) ==
+                      sizeof(proto.skip_symbol_prefix(0)),
+                  "size mismatch");
+    skip_symbol_prefix_.back() =
+        static_cast<decltype(skip_symbol_prefix_)::value_type>(field);
+  }
+
   continuous_dump_config_.FromProto(proto.continuous_dump_config());
+
+  static_assert(sizeof(shmem_size_bytes_) == sizeof(proto.shmem_size_bytes()),
+                "size mismatch");
+  shmem_size_bytes_ =
+      static_cast<decltype(shmem_size_bytes_)>(proto.shmem_size_bytes());
   unknown_fields_ = proto.unknown_fields();
 }
 
@@ -95,23 +122,44 @@ void HeapprofdConfig::ToProto(perfetto::protos::HeapprofdConfig* proto) const {
   static_assert(sizeof(all_) == sizeof(proto->all()), "size mismatch");
   proto->set_all(static_cast<decltype(proto->all())>(all_));
 
+  for (const auto& it : skip_symbol_prefix_) {
+    proto->add_skip_symbol_prefix(
+        static_cast<decltype(proto->skip_symbol_prefix(0))>(it));
+    static_assert(sizeof(it) == sizeof(proto->skip_symbol_prefix(0)),
+                  "size mismatch");
+  }
+
   continuous_dump_config_.ToProto(proto->mutable_continuous_dump_config());
+
+  static_assert(sizeof(shmem_size_bytes_) == sizeof(proto->shmem_size_bytes()),
+                "size mismatch");
+  proto->set_shmem_size_bytes(
+      static_cast<decltype(proto->shmem_size_bytes())>(shmem_size_bytes_));
   *(proto->mutable_unknown_fields()) = unknown_fields_;
 }
 
-HeapprofdConfig::ContinousDumpConfig::ContinousDumpConfig() = default;
-HeapprofdConfig::ContinousDumpConfig::~ContinousDumpConfig() = default;
-HeapprofdConfig::ContinousDumpConfig::ContinousDumpConfig(
-    const HeapprofdConfig::ContinousDumpConfig&) = default;
-HeapprofdConfig::ContinousDumpConfig& HeapprofdConfig::ContinousDumpConfig::
-operator=(const HeapprofdConfig::ContinousDumpConfig&) = default;
-HeapprofdConfig::ContinousDumpConfig::ContinousDumpConfig(
-    HeapprofdConfig::ContinousDumpConfig&&) noexcept = default;
-HeapprofdConfig::ContinousDumpConfig& HeapprofdConfig::ContinousDumpConfig::
-operator=(HeapprofdConfig::ContinousDumpConfig&&) = default;
+HeapprofdConfig::ContinuousDumpConfig::ContinuousDumpConfig() = default;
+HeapprofdConfig::ContinuousDumpConfig::~ContinuousDumpConfig() = default;
+HeapprofdConfig::ContinuousDumpConfig::ContinuousDumpConfig(
+    const HeapprofdConfig::ContinuousDumpConfig&) = default;
+HeapprofdConfig::ContinuousDumpConfig& HeapprofdConfig::ContinuousDumpConfig::
+operator=(const HeapprofdConfig::ContinuousDumpConfig&) = default;
+HeapprofdConfig::ContinuousDumpConfig::ContinuousDumpConfig(
+    HeapprofdConfig::ContinuousDumpConfig&&) noexcept = default;
+HeapprofdConfig::ContinuousDumpConfig& HeapprofdConfig::ContinuousDumpConfig::
+operator=(HeapprofdConfig::ContinuousDumpConfig&&) = default;
 
-void HeapprofdConfig::ContinousDumpConfig::FromProto(
-    const perfetto::protos::HeapprofdConfig_ContinousDumpConfig& proto) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+bool HeapprofdConfig::ContinuousDumpConfig::operator==(
+    const HeapprofdConfig::ContinuousDumpConfig& other) const {
+  return (dump_phase_ms_ == other.dump_phase_ms_) &&
+         (dump_interval_ms_ == other.dump_interval_ms_);
+}
+#pragma GCC diagnostic pop
+
+void HeapprofdConfig::ContinuousDumpConfig::FromProto(
+    const perfetto::protos::HeapprofdConfig_ContinuousDumpConfig& proto) {
   static_assert(sizeof(dump_phase_ms_) == sizeof(proto.dump_phase_ms()),
                 "size mismatch");
   dump_phase_ms_ = static_cast<decltype(dump_phase_ms_)>(proto.dump_phase_ms());
@@ -123,8 +171,8 @@ void HeapprofdConfig::ContinousDumpConfig::FromProto(
   unknown_fields_ = proto.unknown_fields();
 }
 
-void HeapprofdConfig::ContinousDumpConfig::ToProto(
-    perfetto::protos::HeapprofdConfig_ContinousDumpConfig* proto) const {
+void HeapprofdConfig::ContinuousDumpConfig::ToProto(
+    perfetto::protos::HeapprofdConfig_ContinuousDumpConfig* proto) const {
   proto->Clear();
 
   static_assert(sizeof(dump_phase_ms_) == sizeof(proto->dump_phase_ms()),

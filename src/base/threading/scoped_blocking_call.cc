@@ -15,17 +15,6 @@ namespace base {
 
 namespace {
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_64)
-// For a mysterious reason, enabling tracing in ScopedBlockingCall makes
-// telemetry_unittests's
-// telemetry.core.tracing_controller_unittest.
-//     StartupTracingTest.testCloseBrowserBeforeTracingIsStopped
-// timeout only on chromeos-amd64-generic-rel : https://crbug.com/902514.
-const bool kTraceScopedBlockingCall = false;
-#else
-const bool kTraceScopedBlockingCall = true;
-#endif
-
 LazyInstance<ThreadLocalPointer<internal::BlockingObserver>>::Leaky
     tls_blocking_observer = LAZY_INSTANCE_INITIALIZER;
 
@@ -76,7 +65,8 @@ UncheckedScopedBlockingCall::~UncheckedScopedBlockingCall() {
 
 }  // namespace internal
 
-ScopedBlockingCall::ScopedBlockingCall(BlockingType blocking_type)
+ScopedBlockingCall::ScopedBlockingCall(const Location& from_here,
+                                       BlockingType blocking_type)
     : UncheckedScopedBlockingCall(blocking_type) {
 #if DCHECK_IS_ON()
   DCHECK(!tls_construction_in_progress.Get().Get());
@@ -84,25 +74,27 @@ ScopedBlockingCall::ScopedBlockingCall(BlockingType blocking_type)
 #endif
 
   internal::AssertBlockingAllowed();
-  if (kTraceScopedBlockingCall) {
-    TRACE_EVENT_BEGIN1("base", "ScopedBlockingCall", "blocking_type",
-                       static_cast<int>(blocking_type));
-  }
-
+  TRACE_EVENT_BEGIN2("base", "ScopedBlockingCall", "file_name",
+                     from_here.file_name(), "function_name",
+                     from_here.function_name());
 #if DCHECK_IS_ON()
   tls_construction_in_progress.Get().Set(false);
 #endif
 }
 
 ScopedBlockingCall::~ScopedBlockingCall() {
-  if (kTraceScopedBlockingCall)
-    TRACE_EVENT_END0("base", "ScopedBlockingCall");
+  TRACE_EVENT_END0("base", "ScopedBlockingCall");
 }
 
 namespace internal {
 
 ScopedBlockingCallWithBaseSyncPrimitives::
     ScopedBlockingCallWithBaseSyncPrimitives(BlockingType blocking_type)
+    : ScopedBlockingCallWithBaseSyncPrimitives(FROM_HERE, blocking_type) {}
+
+ScopedBlockingCallWithBaseSyncPrimitives::
+    ScopedBlockingCallWithBaseSyncPrimitives(const Location& from_here,
+                                             BlockingType blocking_type)
     : UncheckedScopedBlockingCall(blocking_type) {
 #if DCHECK_IS_ON()
   DCHECK(!tls_construction_in_progress.Get().Get());
@@ -110,10 +102,9 @@ ScopedBlockingCallWithBaseSyncPrimitives::
 #endif
 
   internal::AssertBaseSyncPrimitivesAllowed();
-  if (kTraceScopedBlockingCall) {
-    TRACE_EVENT_BEGIN1("base", "ScopedBlockingCallWithBaseSyncPrimitives",
-                       "blocking_type", static_cast<int>(blocking_type));
-  }
+  TRACE_EVENT_BEGIN2("base", "ScopedBlockingCallWithBaseSyncPrimitives",
+                     "file_name", from_here.file_name(), "function_name",
+                     from_here.function_name());
 
 #if DCHECK_IS_ON()
   tls_construction_in_progress.Get().Set(false);
@@ -122,8 +113,7 @@ ScopedBlockingCallWithBaseSyncPrimitives::
 
 ScopedBlockingCallWithBaseSyncPrimitives::
     ~ScopedBlockingCallWithBaseSyncPrimitives() {
-  if (kTraceScopedBlockingCall)
-    TRACE_EVENT_END0("base", "ScopedBlockingCallWithBaseSyncPrimitives");
+  TRACE_EVENT_END0("base", "ScopedBlockingCallWithBaseSyncPrimitives");
 }
 
 void SetBlockingObserverForCurrentThread(BlockingObserver* blocking_observer) {

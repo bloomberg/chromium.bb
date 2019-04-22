@@ -184,7 +184,7 @@ std::unique_ptr<base::DictionaryValue> DefaultsToValue(
     std::vector<gfx::ImageSkiaRep> image_reps = icon.image_reps();
     for (const gfx::ImageSkiaRep& rep : image_reps) {
       int size = static_cast<int>(rep.scale() * icon.width());
-      std::string size_string = base::IntToString(size);
+      std::string size_string = base::NumberToString(size);
       icon_value->SetString(size_string, BitmapToString(rep.GetBitmap()));
     }
     dict->Set(kIconStorageKey, std::move(icon_value));

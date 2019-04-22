@@ -31,6 +31,8 @@ class RepostFormTabHelper : public web::WebStateUserData<RepostFormTabHelper>,
   void PresentDialog(CGPoint location, base::OnceCallback<void(bool)> callback);
 
  private:
+  friend class web::WebStateUserData<RepostFormTabHelper>;
+
   RepostFormTabHelper(web::WebState* web_state,
                       id<RepostFormTabHelperDelegate> delegate);
 
@@ -50,6 +52,8 @@ class RepostFormTabHelper : public web::WebStateUserData<RepostFormTabHelper>,
 
   // true if form repost dialog is currently being presented.
   bool is_presenting_dialog_ = false;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(RepostFormTabHelper);
 };

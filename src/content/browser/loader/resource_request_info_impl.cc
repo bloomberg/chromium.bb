@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/resource_request_info_impl.h"
 
+#include "base/bind.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -38,12 +39,7 @@ const void* const kResourceRequestInfoImplKey = &kResourceRequestInfoImplKey;
 // ResourceRequestInfo
 
 // static
-ResourceRequestInfo* ResourceRequestInfo::ForRequest(net::URLRequest* request) {
-  return ResourceRequestInfoImpl::ForRequest(request);
-}
-
-// static
-const ResourceRequestInfo* ResourceRequestInfo::ForRequest(
+ResourceRequestInfo* ResourceRequestInfo::ForRequest(
     const net::URLRequest* request) {
   return ResourceRequestInfoImpl::ForRequest(request);
 }
@@ -57,7 +53,7 @@ void ResourceRequestInfo::AllocateForTesting(
     int render_view_id,
     int render_frame_id,
     bool is_main_frame,
-    bool allow_download,
+    ResourceInterceptPolicy resource_intercept_policy,
     bool is_async,
     PreviewsState previews_state,
     std::unique_ptr<NavigationUIData> navigation_ui_data) {
@@ -79,7 +75,7 @@ void ResourceRequestInfo::AllocateForTesting(
       ui::PAGE_TRANSITION_LINK,                  // transition_type
       false,                                     // is_download
       false,                                     // is_stream
-      allow_download,                            // allow_download
+      resource_intercept_policy,                 // resource_intercept_policy
       false,                                     // has_user_gesture
       false,                                     // enable load timing
       request->has_upload(),                     // enable upload progress
@@ -124,15 +120,9 @@ bool ResourceRequestInfo::OriginatedFromServiceWorker(
 
 // static
 ResourceRequestInfoImpl* ResourceRequestInfoImpl::ForRequest(
-    net::URLRequest* request) {
+    const net::URLRequest* request) {
   return static_cast<ResourceRequestInfoImpl*>(
       request->GetUserData(kResourceRequestInfoImplKey));
-}
-
-// static
-const ResourceRequestInfoImpl* ResourceRequestInfoImpl::ForRequest(
-    const net::URLRequest* request) {
-  return ForRequest(const_cast<net::URLRequest*>(request));
 }
 
 ResourceRequestInfoImpl::ResourceRequestInfoImpl(
@@ -148,7 +138,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     ui::PageTransition transition_type,
     bool is_download,
     bool is_stream,
-    bool allow_download,
+    ResourceInterceptPolicy resource_intercept_policy,
     bool has_user_gesture,
     bool enable_load_timing,
     bool enable_upload_progress,
@@ -174,7 +164,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       fetch_window_id_(fetch_window_id),
       is_download_(is_download),
       is_stream_(is_stream),
-      allow_download_(allow_download),
+      resource_intercept_policy_(resource_intercept_policy),
       has_user_gesture_(has_user_gesture),
       enable_load_timing_(enable_load_timing),
       enable_upload_progress_(enable_upload_progress),
@@ -201,7 +191,7 @@ ResourceRequestInfoImpl::~ResourceRequestInfoImpl() {
 }
 
 ResourceRequestInfo::WebContentsGetter
-ResourceRequestInfoImpl::GetWebContentsGetterForRequest() const {
+ResourceRequestInfoImpl::GetWebContentsGetterForRequest() {
   // If we have a window id, try to use that.
   if (fetch_window_id_) {
     ResourceRequestInfo::WebContentsGetter getter =
@@ -214,7 +204,6 @@ ResourceRequestInfoImpl::GetWebContentsGetterForRequest() const {
   // RenderProcessHost and RenderFrameHost IDs. The FrameTreeNode ID should be
   // used to access the WebContents.
   if (frame_tree_node_id_ != RenderFrameHost::kNoFrameTreeNodeId) {
-    DCHECK(IsBrowserSideNavigationEnabled());
     return base::Bind(WebContents::FromFrameTreeNodeId, frame_tree_node_id_);
   }
 
@@ -232,9 +221,8 @@ ResourceRequestInfoImpl::GetWebContentsGetterForRequest() const {
 }
 
 ResourceRequestInfo::FrameTreeNodeIdGetter
-ResourceRequestInfoImpl::GetFrameTreeNodeIdGetterForRequest() const {
+ResourceRequestInfoImpl::GetFrameTreeNodeIdGetterForRequest() {
   if (frame_tree_node_id_ != -1) {
-    DCHECK(IsBrowserSideNavigationEnabled());
     return base::Bind([](int id) { return id; }, frame_tree_node_id_);
   }
 
@@ -249,85 +237,78 @@ ResourceRequestInfoImpl::GetFrameTreeNodeIdGetterForRequest() const {
                     render_frame_host_id);
 }
 
-ResourceContext* ResourceRequestInfoImpl::GetContext() const {
+ResourceContext* ResourceRequestInfoImpl::GetContext() {
   return context_;
 }
 
-int ResourceRequestInfoImpl::GetChildID() const {
+int ResourceRequestInfoImpl::GetChildID() {
   return requester_info_->child_id();
 }
 
-int ResourceRequestInfoImpl::GetRouteID() const {
+int ResourceRequestInfoImpl::GetRouteID() {
   return route_id_;
 }
 
-GlobalRequestID ResourceRequestInfoImpl::GetGlobalRequestID() const {
+GlobalRequestID ResourceRequestInfoImpl::GetGlobalRequestID() {
   return GlobalRequestID(GetChildID(), request_id_);
 }
 
-int ResourceRequestInfoImpl::GetPluginChildID() const {
+int ResourceRequestInfoImpl::GetPluginChildID() {
   return plugin_child_id_;
 }
 
-int ResourceRequestInfoImpl::GetRenderFrameID() const {
+int ResourceRequestInfoImpl::GetRenderFrameID() {
   return render_frame_id_;
 }
 
-int ResourceRequestInfoImpl::GetFrameTreeNodeId() const {
+int ResourceRequestInfoImpl::GetFrameTreeNodeId() {
   return frame_tree_node_id_;
 }
 
-bool ResourceRequestInfoImpl::IsMainFrame() const {
+bool ResourceRequestInfoImpl::IsMainFrame() {
   return is_main_frame_;
 }
 
-ResourceType ResourceRequestInfoImpl::GetResourceType() const {
+ResourceType ResourceRequestInfoImpl::GetResourceType() {
   return resource_type_;
 }
 
-int ResourceRequestInfoImpl::GetProcessType() const {
-  return requester_info_->IsBrowserSideNavigation() ? PROCESS_TYPE_BROWSER
-                                                    : PROCESS_TYPE_RENDERER;
-}
-
-network::mojom::ReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy()
-    const {
+network::mojom::ReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy() {
   return referrer_policy_;
 }
 
-bool ResourceRequestInfoImpl::IsPrerendering() const {
+bool ResourceRequestInfoImpl::IsPrerendering() {
   return is_prerendering_;
 }
 
-ui::PageTransition ResourceRequestInfoImpl::GetPageTransition() const {
+ui::PageTransition ResourceRequestInfoImpl::GetPageTransition() {
   return transition_type_;
 }
 
-bool ResourceRequestInfoImpl::HasUserGesture() const {
+bool ResourceRequestInfoImpl::HasUserGesture() {
   return has_user_gesture_;
 }
 
-bool ResourceRequestInfoImpl::GetAssociatedRenderFrame(
-    int* render_process_id,
-    int* render_frame_id) const {
+bool ResourceRequestInfoImpl::GetAssociatedRenderFrame(int* render_process_id,
+                                                       int* render_frame_id) {
   *render_process_id = GetChildID();
   *render_frame_id = render_frame_id_;
   return true;
 }
 
-bool ResourceRequestInfoImpl::IsAsync() const {
+bool ResourceRequestInfoImpl::IsAsync() {
   return is_async_;
 }
 
-bool ResourceRequestInfoImpl::IsDownload() const {
+bool ResourceRequestInfoImpl::IsDownload() {
   return is_download_;
 }
 
-PreviewsState ResourceRequestInfoImpl::GetPreviewsState() const {
+PreviewsState ResourceRequestInfoImpl::GetPreviewsState() {
   return previews_state_;
 }
 
-NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {
+NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() {
   return navigation_ui_data_.get();
 }
 
@@ -337,11 +318,11 @@ void ResourceRequestInfoImpl::SetResourceRequestBlockedReason(
 }
 
 base::Optional<blink::ResourceRequestBlockedReason>
-ResourceRequestInfoImpl::GetResourceRequestBlockedReason() const {
+ResourceRequestInfoImpl::GetResourceRequestBlockedReason() {
   return resource_request_blocked_reason_;
 }
 
-base::StringPiece ResourceRequestInfoImpl::GetCustomCancelReason() const {
+base::StringPiece ResourceRequestInfoImpl::GetCustomCancelReason() {
   return custom_cancel_reason_;
 }
 
@@ -360,7 +341,7 @@ int ResourceRequestInfoImpl::GetRequestID() const {
   return request_id_;
 }
 
-GlobalRoutingID ResourceRequestInfoImpl::GetGlobalRoutingID() const {
+GlobalRoutingID ResourceRequestInfoImpl::GetGlobalRoutingID() {
   return GlobalRoutingID(GetChildID(), route_id_);
 }
 

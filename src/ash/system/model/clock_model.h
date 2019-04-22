@@ -8,7 +8,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/system_clock_client.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
 
 namespace ash {

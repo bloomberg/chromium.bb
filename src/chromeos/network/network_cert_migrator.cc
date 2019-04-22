@@ -6,13 +6,13 @@
 
 #include <cert.h>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
@@ -37,10 +37,9 @@ namespace chromeos {
 class NetworkCertMigrator::MigrationTask
     : public base::RefCounted<MigrationTask> {
  public:
-  MigrationTask(const net::ScopedCERTCertificateList& certs,
+  MigrationTask(net::ScopedCERTCertificateList certs,
                 const base::WeakPtr<NetworkCertMigrator>& cert_migrator)
-      : certs_(net::x509_util::DupCERTCertificateList(certs)),
-        cert_migrator_(cert_migrator) {}
+      : certs_(std::move(certs)), cert_migrator_(cert_migrator) {}
 
   void Run(const NetworkStateHandler::NetworkStateList& networks) {
     // Request properties for each network that could be configured with a
@@ -62,12 +61,11 @@ class NetworkCertMigrator::MigrationTask
         continue;
       }
 
-      DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
+      ShillServiceClient::Get()->GetProperties(
           dbus::ObjectPath(service_path),
           base::Bind(&network_handler::GetPropertiesCallback,
                      base::Bind(&MigrationTask::MigrateNetwork, this),
-                     network_handler::ErrorCallback(),
-                     service_path));
+                     network_handler::ErrorCallback(), service_path));
     }
   }
 
@@ -145,7 +143,7 @@ class NetworkCertMigrator::MigrationTask
 
   void SendPropertiesToShill(const std::string& service_path,
                              const base::DictionaryValue& properties) {
-    DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
+    ShillServiceClient::Get()->SetProperties(
         dbus::ObjectPath(service_path), properties, base::DoNothing(),
         base::Bind(&LogError, service_path));
   }
@@ -203,8 +201,10 @@ void NetworkCertMigrator::NetworkListChanged() {
   // Run the migration process to fix missing or incorrect slot ids of client
   // certificates.
   VLOG(2) << "Start certificate migration of network configurations.";
-  scoped_refptr<MigrationTask> helper(new MigrationTask(
-      NetworkCertLoader::Get()->all_certs(), weak_ptr_factory_.GetWeakPtr()));
+  scoped_refptr<MigrationTask> helper(base::MakeRefCounted<MigrationTask>(
+      NetworkCertLoader::GetAllCertsFromNetworkCertList(
+          NetworkCertLoader::Get()->client_certs()),
+      weak_ptr_factory_.GetWeakPtr()));
   NetworkStateHandler::NetworkStateList networks;
   network_state_handler_->GetNetworkListByType(
       NetworkTypePattern::Default(),
@@ -215,8 +215,7 @@ void NetworkCertMigrator::NetworkListChanged() {
   helper->Run(networks);
 }
 
-void NetworkCertMigrator::OnCertificatesLoaded(
-    const net::ScopedCERTCertificateList& cert_list) {
+void NetworkCertMigrator::OnCertificatesLoaded() {
   NetworkListChanged();
 }
 

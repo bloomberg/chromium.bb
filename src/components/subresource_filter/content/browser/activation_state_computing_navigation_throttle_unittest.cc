@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -22,7 +23,7 @@
 #include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
-#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -641,11 +642,11 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, SpeculationWithDelay) {
   sub_histogram_tester.ExpectTotalCount(kActivationCPU, ExpectThreadTimers(2));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ActivationStateComputingNavigationThrottleTest,
-                        ::testing::Values(true, false));
-INSTANTIATE_TEST_CASE_P(,
-                        ActivationStateComputingThrottleSubFrameTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(,
+                         ActivationStateComputingNavigationThrottleTest,
+                         ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(,
+                         ActivationStateComputingThrottleSubFrameTest,
+                         ::testing::Values(true, false));
 
 }  // namespace subresource_filter

@@ -63,7 +63,6 @@ content::WebContents* CastBrowserTest::CreateWebView() {
   params.window_params.delegate = this;
   cast_web_view_ =
       web_contents_manager_->CreateWebView(params, nullptr, /* site_instance */
-                                           nullptr,         /* extension */
                                            GURL() /* initial_url */);
 
   return cast_web_view_->web_contents();
@@ -96,18 +95,17 @@ void CastBrowserTest::OnVisibilityChange(VisibilityType visibility_type) {}
 
 bool CastBrowserTest::CanHandleGesture(GestureType gesture_type) {
   return false;
-};
+}
 
 bool CastBrowserTest::ConsumeGesture(GestureType gesture_type) {
   return false;
-};
+}
 
 std::string CastBrowserTest::GetId() {
   return "";
 }
 
 bool CastBrowserTest::OnAddMessageToConsoleReceived(
-    content::WebContents* source,
     int32_t level,
     const base::string16& message,
     int32_t line_no,

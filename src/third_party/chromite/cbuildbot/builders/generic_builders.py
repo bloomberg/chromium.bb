@@ -28,6 +28,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import parallel
+from chromite.lib.buildstore import BuildStore
 
 
 class Builder(object):
@@ -42,9 +43,10 @@ class Builder(object):
     patch_pool: TrybotPatchPool.
   """
 
-  def __init__(self, builder_run):
+  def __init__(self, builder_run, buildstore):
     """Initializes instance variables. Must be called by all subclasses."""
     self._run = builder_run
+    self.buildstore = buildstore
 
     # TODO: all the fields below should not be part of the generic builder.
     # We need to restructure our SimpleBuilder and see about creating a new
@@ -73,7 +75,7 @@ class Builder(object):
     # Normally the default BuilderRun (self._run) is used, but it can
     # be overridden with "builder_run" kwargs (e.g. for child configs).
     builder_run = kwargs.pop('builder_run', self._run)
-    return stage(builder_run, *args, **kwargs)
+    return stage(builder_run, self.buildstore, *args, **kwargs)
 
   def _SetReleaseTag(self):
     """Sets run.attrs.release_tag from the manifest manager used in sync.
@@ -119,8 +121,7 @@ class Builder(object):
     try:
       parallel.RunParallelSteps(steps)
     except BaseException as ex:
-      logging.error('BaseException in _RunParallelStages %s', ex,
-                    exc_info=True)
+      logging.error('BaseException in _RunParallelStages %s', ex, exc_info=True)
       # If a stage threw an exception, it might not have correctly reported
       # results (e.g. because it was killed before it could report the
       # results.) In this case, attribute the exception to any stages that
@@ -133,6 +134,7 @@ class Builder(object):
 
         if cidb.CIDBConnectionFactory.IsCIDBSetup():
           db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+          buildstore = BuildStore()
           for build_stage_id in stage.GetBuildStageIDs():
             stage_status = db.GetBuildStage(build_stage_id)
 
@@ -140,8 +142,8 @@ class Builder(object):
             # has no status or has non-failure status in buildStageTable,
             # report failures to failureTable for this stage.
             if (not db.HasFailureMsgForStage(build_stage_id) and
-                (stage_status is None or stage_status['status']
-                 not in constants.BUILDER_NON_FAILURE_STATUSES)):
+                (stage_status is None or stage_status['status'] not in constants
+                 .BUILDER_NON_FAILURE_STATUSES)):
               metrics_fields = {
                   'branch_name': stage.metrics_branch,
                   'build_config': stage.build_config,
@@ -150,7 +152,7 @@ class Builder(object):
                   'category': stage.category,
               }
               failures_lib.ReportStageFailure(
-                  db, build_stage_id, ex, metrics_fields=metrics_fields)
+                  buildstore, build_stage_id, ex, metrics_fields=metrics_fields)
 
             # If this stage has non_completed status in buildStageTable, mark
             # the stage as 'fail' status in buildStageTable.
@@ -225,8 +227,10 @@ class Builder(object):
     # Specify a buildroot explicitly (just in case, for local trybot).
     # Suppress any timeout options given from the commandline in the
     # invoked cbuildbot; our timeout will enforce it instead.
-    args += ['--resume', '--timeout', '0', '--notee', '--nocgroups',
-             '--buildroot', os.path.abspath(self._run.options.buildroot)]
+    args += [
+        '--resume', '--timeout', '0', '--notee', '--nocgroups', '--buildroot',
+        os.path.abspath(self._run.options.buildroot)
+    ]
 
     # Set --version. Note that --version isn't legal without --buildbot.
     if (self._run.options.buildbot and
@@ -255,7 +259,9 @@ class Builder(object):
       # when something occurs.  It should exit quicker, but the sigterm may
       # hit while the system is particularly busy.
       return_obj = cros_build_lib.RunCommand(
-          args, cwd=self._run.options.buildroot, error_code_ok=True,
+          args,
+          cwd=self._run.options.buildroot,
+          error_code_ok=True,
           kill_timeout=30)
       return return_obj.returncode == 0
 
@@ -286,10 +292,10 @@ class Builder(object):
 
     chromite_branch = git.GetChromiteTrackingBranch()
 
-    if (patches_needed or
-        self._run.options.test_bootstrap or
+    if (patches_needed or self._run.options.test_bootstrap or
         chromite_branch != self._run.options.branch):
-      stage = sync_stages.BootstrapStage(self._run, self.patch_pool)
+      buildstore = BuildStore()
+      stage = sync_stages.BootstrapStage(self._run, buildstore, self.patch_pool)
     return stage
 
   def Run(self):
@@ -340,8 +346,10 @@ class Builder(object):
         raise
 
       exception_thrown = True
-      build_id, db = self._run.GetCIDBHandle()
-      if results_lib.Results.BuildSucceededSoFar(db, build_id):
+      build_identifier, _ = self._run.GetCIDBHandle()
+      buildbucket_id = build_identifier.buildbucket_id
+      if results_lib.Results.BuildSucceededSoFar(self.buildstore,
+                                                 buildbucket_id):
         # If the build is marked as successful, but threw exceptions, that's a
         # problem. Print the traceback for debugging.
         if isinstance(ex, failures_lib.CompoundFailure):
@@ -360,8 +368,10 @@ class Builder(object):
         results_lib.WriteCheckpoint(self._run.options.buildroot)
         completion_instance = self.GetCompletionInstance()
         self._RunStage(report_stages.ReportStage, completion_instance)
-        build_id, db = self._run.GetCIDBHandle()
-        success = results_lib.Results.BuildSucceededSoFar(db, build_id)
+        build_identifier, _ = self._run.GetCIDBHandle()
+        buildbucket_id = build_identifier.buildbucket_id
+        success = results_lib.Results.BuildSucceededSoFar(self.buildstore,
+                                                          buildbucket_id)
         if exception_thrown and success:
           success = False
           logging.PrintBuildbotStepWarnings()
@@ -378,6 +388,7 @@ class ManifestVersionedBuilder(Builder):
   This class uses ManifestVersionedSync, which is appropriate for most builders
   without specific sync requirements.
   """
+
   def GetVersionInfo(self):
     """Returns the CrOS version info from the chromiumos-overlay."""
     return manifest_version.VersionInfo.from_repo(self._run.buildroot)
@@ -421,13 +432,13 @@ class PreCqBuilder(Builder):
     try:
       self.RunTestStages()
     finally:
-      build_id, db = self._run.GetCIDBHandle()
+      build_identifier, _ = self._run.GetCIDBHandle()
+      buildbucket_id = build_identifier.buildbucket_id
       was_build_successful = results_lib.Results.BuildSucceededSoFar(
-          db, build_id)
+          self.buildstore, buildbucket_id)
 
       self.completion_instance = self._GetStageInstance(
-          completion_stages.PreCQCompletionStage,
-          self.sync_stage,
+          completion_stages.PreCQCompletionStage, self.sync_stage,
           was_build_successful)
 
       self.completion_instance.Run()

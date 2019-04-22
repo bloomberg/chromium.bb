@@ -11,7 +11,7 @@ namespace blink {
 
 TEST(KnownPortsTest, IsDefaultPortForProtocol) {
   struct TestCase {
-    const unsigned short port;
+    const uint16_t port;
     const char* protocol;
     const bool is_known;
   } inputs[] = {
@@ -43,7 +43,7 @@ TEST(KnownPortsTest, IsDefaultPortForProtocol) {
 
 TEST(KnownPortsTest, DefaultPortForProtocol) {
   struct TestCase {
-    const unsigned short port;
+    const uint16_t port;
     const char* protocol;
   } inputs[] = {
       // Known ones.

@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 size_t Archive::ReadHeader()
 {
   // Once we failed to decrypt an encrypted block, there is no reason to
@@ -269,6 +271,11 @@ size_t Archive::ReadHeader15()
 
         uint FileTime=Raw.Get4();
         hd->UnpVer=Raw.Get1();
+
+        // RAR15 did not use the special dictionary size to mark dirs.
+        if (hd->UnpVer<20 && (hd->FileAttr & 0x10)!=0)
+          hd->Dir=true;
+
         hd->Method=Raw.Get1()-0x30;
         size_t NameSize=Raw.Get2();
         hd->FileAttr=Raw.Get4();
@@ -338,7 +345,7 @@ size_t Archive::ReadHeader15()
             size_t Length=strlen(FileName);
             Length++;
             if (ReadNameSize>Length)
-              NameCoder.Decode(FileName,(byte *)FileName+Length,
+              NameCoder.Decode(FileName,ReadNameSize,(byte *)FileName+Length,
                                ReadNameSize-Length,hd->FileName,
                                ASIZE(hd->FileName));
           }
@@ -366,17 +373,7 @@ size_t Archive::ReadHeader15()
             // They are stored after the file name and before salt.
             hd->SubData.Alloc(DataSize);
             Raw.GetB(&hd->SubData[0],DataSize);
-            if (hd->CmpName(SUBHEAD_TYPE_RR))
-            {
-              byte *D=&hd->SubData[8];
-              RecoverySize=D[0]+((uint)D[1]<<8)+((uint)D[2]<<16)+((uint)D[3]<<24);
-              RecoverySize*=512; // Sectors to size.
-              int64 CurPos=Tell();
-              RecoveryPercent=ToPercent(RecoverySize,CurPos);
-              // Round fractional percent exceeding .5 to upper value.
-              if (ToPercent(RecoverySize+CurPos/200,CurPos)>RecoveryPercent)
-                RecoveryPercent++;
-            }
+
           }
 
           if (hd->CmpName(SUBHEAD_TYPE_CMT))
@@ -459,19 +456,6 @@ size_t Archive::ReadHeader15()
       CommHead.Method=Raw.Get1();
       CommHead.CommCRC=Raw.Get2();
       break;
-    case HEAD3_SIGN:
-      *(BaseBlock *)&SignHead=ShortBlock;
-      SignHead.CreationTime=Raw.Get4();
-      SignHead.ArcNameSize=Raw.Get2();
-      SignHead.UserNameSize=Raw.Get2();
-      break;
-    case HEAD3_AV:
-      *(BaseBlock *)&AVHead=ShortBlock;
-      AVHead.UnpVer=Raw.Get1();
-      AVHead.Method=Raw.Get1();
-      AVHead.AVVer=Raw.Get1();
-      AVHead.AVInfoCRC=Raw.Get4();
-      break;
     case HEAD3_PROTECT:
       *(BaseBlock *)&ProtectHead=ShortBlock;
       ProtectHead.DataSize=Raw.Get4();
@@ -480,9 +464,8 @@ size_t Archive::ReadHeader15()
       ProtectHead.TotalBlocks=Raw.Get4();
       Raw.GetB(ProtectHead.Mark,8);
       NextBlockPos+=ProtectHead.DataSize;
-      RecoverySize=ProtectHead.RecSectors*512;
       break;
-    case HEAD3_OLDSERVICE:
+    case HEAD3_OLDSERVICE: // RAR 2.9 and earlier.
       *(BaseBlock *)&SubBlockHead=ShortBlock;
       SubBlockHead.DataSize=Raw.Get4();
       NextBlockPos+=SubBlockHead.DataSize;
@@ -503,13 +486,6 @@ size_t Archive::ReadHeader15()
           UOHead.OwnerName[UOHead.OwnerNameSize]=0;
           UOHead.GroupName[UOHead.GroupNameSize]=0;
           break;
-        case MAC_HEAD:
-          *(SubBlockHeader *)&MACHead=SubBlockHead;
-          MACHead.fileType=Raw.Get4();
-          MACHead.fileCreator=Raw.Get4();
-          break;
-        case EA_HEAD:
-        case BEEA_HEAD:
         case NTACL_HEAD:
           *(SubBlockHeader *)&EAHead=SubBlockHead;
           EAHead.UnpSize=Raw.Get4();
@@ -594,6 +570,11 @@ size_t Archive::ReadHeader50()
       return 0;
     }
 
+    // We repeat the password request only for manually entered passwords
+    // and not for -p<pwd>. Wrong password can be intentionally provided
+    // in -p<pwd> to not stop batch processing for encrypted archives.
+    bool GlobalPassword=Cmd->Password.IsSet() || uiIsGlobalPasswordSet();
+
     while (true) // Repeat the password prompt for wrong passwords.
     {
       RequestArcPassword();
@@ -603,12 +584,32 @@ size_t Archive::ReadHeader50()
       // Verify password validity.
       if (CryptHead.UsePswCheck && memcmp(PswCheck,CryptHead.PswCheck,SIZE_PSWCHECK)!=0)
       {
-        // This message is used by Android GUI and Windows GUI and SFX to
-        // reset cached passwords. Update appropriate code if changed.
-        uiMsg(UIWAIT_BADPSW,FileName);
+        if (GlobalPassword) // For -p<pwd> or Ctrl+P.
+        {
+          // This message is used by Android GUI to reset cached passwords.
+          // Update appropriate code if changed.
+          uiMsg(UIERROR_BADPSW,FileName);
+          FailedHeaderDecryption=true;
+          ErrHandler.SetErrorCode(RARX_BADPWD);
+          return 0;
+        }
+        else // For passwords entered manually.
+        {
+          // This message is used by Android GUI and Windows GUI and SFX to
+          // reset cached passwords. Update appropriate code if changed.
+          uiMsg(UIWAIT_BADPSW,FileName);
+          Cmd->Password.Clean();
+        }
 
-        Cmd->Password.Clean();
-        continue;
+#ifdef RARDLL
+        // Avoid new requests for unrar.dll to prevent the infinite loop
+        // if app always returns the same password.
+        ErrHandler.SetErrorCode(RARX_BADPWD);
+        Cmd->DllError=ERAR_BAD_PASSWORD;
+        ErrHandler.Exit(RARX_BADPWD);
+#else
+        continue; // Request a password again.
+#endif
       }
       break;
     }
@@ -618,8 +619,8 @@ size_t Archive::ReadHeader50()
   }
 
   // Header size must not occupy more than 3 variable length integer bytes
-  // resulting in 2 MB maximum header size, so here we read 4 byte CRC32
-  // followed by 3 bytes or less of header size.
+  // resulting in 2 MB maximum header size (MAX_HEADER_SIZE_RAR5),
+  // so here we read 4 byte CRC32 followed by 3 bytes or less of header size.
   const size_t FirstReadSize=7; // Smallest possible block size.
   if (Raw.Read(FirstReadSize)<FirstReadSize)
   {
@@ -821,6 +822,8 @@ size_t Archive::ReadHeader50()
         // but it was already used in RAR 1.5 and Unpack needs to distinguish
         // them.
         hd->UnpVer=(CompInfo & 0x3f) + 50;
+        if (hd->UnpVer!=50) // Only 5.0 compression is known now.
+          hd->UnpVer=VER_UNKNOWN;
 
         hd->HostOS=(byte)Raw.GetV();
         size_t NameSize=(size_t)Raw.GetV();
@@ -933,11 +936,10 @@ void Archive::RequestArcPassword()
       ErrHandler.Exit(RARX_USERBREAK);
     }
 #else
-    if (!uiGetPassword(UIPASSWORD_ARCHIVE,FileName,&Cmd->Password) ||
-        !Cmd->Password.IsSet())
+    if (!uiGetPassword(UIPASSWORD_ARCHIVE,FileName,&Cmd->Password))
     {
       Close();
-      uiMsg(UIERROR_INCERRCOUNT);
+      uiMsg(UIERROR_INCERRCOUNT); // Prevent archive deleting if delete after extraction is on.
       ErrHandler.Exit(RARX_USERBREAK);
     }
 #endif
@@ -1205,6 +1207,8 @@ size_t Archive::ReadHeader14()
     byte Mark[4];
     Raw.GetB(Mark,4);
     uint HeadSize=Raw.Get2();
+    if (HeadSize<7)
+      return false;
     byte Flags=Raw.Get1();
     NextBlockPos=CurBlockPos+HeadSize;
     CurHeaderType=HEAD_MAIN;
@@ -1226,6 +1230,8 @@ size_t Archive::ReadHeader14()
     FileHead.FileHash.Type=HASH_RAR14;
     FileHead.FileHash.CRC32=Raw.Get2();
     FileHead.HeadSize=Raw.Get2();
+    if (FileHead.HeadSize<21)
+      return false;
     uint FileTime=Raw.Get4();
     FileHead.FileAttr=Raw.Get1();
     FileHead.Flags=Raw.Get1()|LONG_BLOCK;
@@ -1240,6 +1246,7 @@ size_t Archive::ReadHeader14()
 
     FileHead.PackSize=FileHead.DataSize;
     FileHead.WinSize=0x10000;
+    FileHead.Dir=(FileHead.FileAttr & 0x10)!=0;
 
     FileHead.HostOS=HOST_MSDOS;
     FileHead.HSType=HSYS_WINDOWS;
@@ -1348,8 +1355,6 @@ void Archive::ConvertAttributes()
 
 void Archive::ConvertFileHeader(FileHeader *hd)
 {
-  if (Format==RARFMT15 && hd->UnpVer<20 && (hd->FileAttr & 0x10))
-    hd->Dir=true;
   if (hd->HSType==HSYS_UNKNOWN)
   {
     if (hd->Dir)
@@ -1479,3 +1484,5 @@ bool Archive::ReadSubData(Array<byte> *UnpData,File *DestFile)
   }
   return true;
 }
+
+}  // namespace third_party_unrar

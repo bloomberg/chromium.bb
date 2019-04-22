@@ -51,7 +51,7 @@ class KeepAliveScheduler : public ActiveHost::Observer,
 
   // KeepAliveOperation::Observer:
   void OnOperationFinished(
-      cryptauth::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       std::unique_ptr<DeviceStatus> device_status) override;
 
  private:
@@ -76,7 +76,7 @@ class KeepAliveScheduler : public ActiveHost::Observer,
   DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
 
   std::unique_ptr<base::RepeatingTimer> timer_;
-  base::Optional<cryptauth::RemoteDeviceRef> active_host_device_;
+  base::Optional<multidevice::RemoteDeviceRef> active_host_device_;
   std::unique_ptr<KeepAliveOperation> keep_alive_operation_;
 
   base::WeakPtrFactory<KeepAliveScheduler> weak_ptr_factory_;

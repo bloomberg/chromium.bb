@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
     <!-- Note: border=1 overrides layout table heuristics -->
     <table id="table1" border=1>
@@ -44,9 +38,4 @@ test(function(t) {
     assert_equals(axTable2.descriptionElementCount(), 1);
     assert_equals(axTable2.descriptionElementAtIndex(0).role, "AXRole: AXCaption");
 }, "Table with caption and aria-label.");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

@@ -12,37 +12,6 @@
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
 
-using TimerCallback = void (*)(int32_t idEvent);
-
-struct FX_SYSTEMTIME {
-  FX_SYSTEMTIME()
-      : wYear(0),
-        wMonth(0),
-        wDayOfWeek(0),
-        wDay(0),
-        wHour(0),
-        wMinute(0),
-        wSecond(0),
-        wMilliseconds(0) {}
-
-  uint16_t wYear;
-  uint16_t wMonth;
-  uint16_t wDayOfWeek;
-  uint16_t wDay;
-  uint16_t wHour;
-  uint16_t wMinute;
-  uint16_t wSecond;
-  uint16_t wMilliseconds;
-};
-
-// Cursor style. These must match the values in public/fpdf_formfill.h
-#define FXCT_ARROW 0
-#define FXCT_NESW 1
-#define FXCT_NWSE 2
-#define FXCT_VBEAM 3
-#define FXCT_HBEAM 4
-#define FXCT_HAND 5
-
 class CFFL_FormFiller;
 class CPDF_Document;
 class CPDF_Font;
@@ -51,11 +20,15 @@ class CPDFSDK_Widget;
 
 class CFX_SystemHandler {
  public:
+  static constexpr int32_t kInvalidTimerID = 0;
+  using TimerCallback = void (*)(int32_t idEvent);
+
   explicit CFX_SystemHandler(CPDFSDK_FormFillEnvironment* pFormFillEnv);
   ~CFX_SystemHandler();
 
   void InvalidateRect(CPDFSDK_Widget* widget, const CFX_FloatRect& rect);
-  void OutputSelectedRect(CFFL_FormFiller* pFormFiller, CFX_FloatRect& rect);
+  void OutputSelectedRect(CFFL_FormFiller* pFormFiller,
+                          const CFX_FloatRect& rect);
   bool IsSelectionImplemented() const;
   void SetCursor(int32_t nCursorType);
   bool FindNativeTrueTypeFont(ByteString sFontFaceName);

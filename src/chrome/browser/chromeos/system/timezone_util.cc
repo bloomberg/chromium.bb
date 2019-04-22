@@ -27,10 +27,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/settings/install_attributes.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/timezone/timezone_request.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
@@ -381,7 +381,9 @@ void SetTimezoneFromUI(Profile* profile, const std::string& timezone_id) {
   Profile* primary_profile = ProfileManager::GetPrimaryUserProfile();
   if (primary_profile && profile->IsSameProfile(primary_profile)) {
     profile->GetPrefs()->SetString(prefs::kUserTimezone, timezone_id);
+    return;
   }
+
   // Time zone UI should be blocked for non-primary users.
   NOTREACHED();
 }

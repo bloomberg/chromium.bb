@@ -19,6 +19,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -189,10 +190,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ(kShellWindowId_UnparentedControlContainer,
             unparented_control->GetNativeView()->parent()->id());
 
-  aura::Window* panel = CreateTestWindowInShellWithDelegateAndType(
-      NULL, aura::client::WINDOW_TYPE_PANEL, 0, gfx::Rect(700, 100, 100, 100));
-  EXPECT_EQ(root_windows[1], panel->GetRootWindow());
-
   // Make sure a window that will delete itself when losing focus
   // will not crash.
   aura::WindowTracker tracker;
@@ -258,9 +255,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
             unparented_control->GetNativeView()->GetRootWindow());
   EXPECT_EQ(kShellWindowId_UnparentedControlContainer,
             unparented_control->GetNativeView()->parent()->id());
-
-  // Test if the panel has moved.
-  EXPECT_EQ(root_windows[0], panel->GetRootWindow());
 }
 
 TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
@@ -751,7 +745,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   keyboard::KeyboardController::Get()->ShowKeyboard(false);
 
   // Make sure no pending mouse events in the queue.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // TODO(oshima|yhanada): This simply make sure that targeting logic works, but
   // doesn't mean it'll deliver the event to the target. Fix this to make this
@@ -775,23 +769,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
     UnblockUserSession();
   }
   root_window->RemovePreTargetHandler(&handler);
-}
-
-// Test for http://crbug.com/299787. RootWindowController should remove
-// the old keyboard window when we activate it elsewhere.
-// TODO(https://crbug.com/849995): This test no longer belongs here, but in
-// KeyboardController.
-TEST_F(VirtualKeyboardRootWindowControllerTest,
-       DeleteOldContainerOnVirtualKeyboardInit) {
-  aura::Window* keyboard_window =
-      keyboard::KeyboardController::Get()->GetKeyboardWindow();
-  // Track the keyboard contents window.
-  aura::WindowTracker tracker;
-  tracker.Add(keyboard_window);
-  // Reinitialize the keyboard.
-  Shell::Get()->EnableKeyboard();
-  // keyboard_window should no longer be present.
-  EXPECT_FALSE(tracker.Contains(keyboard_window));
 }
 
 // Test for crbug.com/342524. After user login, the work space should restore to

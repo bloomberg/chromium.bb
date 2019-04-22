@@ -18,6 +18,7 @@
 #include "base/unguessable_token.h"
 #include "jni/MediaDrmStorageBridge_jni.h"
 #include "media/base/android/android_util.h"
+#include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_drm_key_type.h"
 
 using base::android::AttachCurrentThread;
@@ -38,7 +39,7 @@ MediaDrmStorageBridge::MediaDrmStorageBridge()
 MediaDrmStorageBridge::~MediaDrmStorageBridge() = default;
 
 void MediaDrmStorageBridge::Initialize(const CreateStorageCB& create_storage_cb,
-                                       base::OnceClosure init_cb) {
+                                       InitCB init_cb) {
   DCHECK(create_storage_cb);
   impl_ = create_storage_cb.Run();
 
@@ -147,14 +148,31 @@ void MediaDrmStorageBridge::RunAndroidBoolCallback(JavaObjectPtr j_callback,
 }
 
 void MediaDrmStorageBridge::OnInitialized(
-    base::OnceClosure init_cb,
-    const base::UnguessableToken& origin_id) {
-  DCHECK(origin_id_.empty());
+    InitCB init_cb,
+    bool success,
+    const MediaDrmStorage::MediaDrmOriginId& origin_id) {
+  if (!success) {
+    DCHECK(!origin_id);
+    std::move(init_cb).Run(false);
+    return;
+  }
 
-  if (origin_id)
-    origin_id_ = origin_id.ToString();
+  // Note: It's possible that |success| is true but |origin_id| is empty,
+  // to indicate per-device provisioning. If so, do not set |origin_id_|
+  // so that it remains the empty string.
+  if (origin_id && origin_id.value()) {
+    origin_id_ = origin_id->ToString();
+  } else {
+    // |origin_id| is empty. However, if per-application provisioning is
+    // supported, the empty string is not allowed.
+    DCHECK(origin_id_.empty());
+    if (MediaDrmBridge::IsPerApplicationProvisioningSupported()) {
+      std::move(init_cb).Run(false);
+      return;
+    }
+  }
 
-  std::move(init_cb).Run();
+  std::move(init_cb).Run(true);
 }
 
 void MediaDrmStorageBridge::OnSessionDataLoaded(

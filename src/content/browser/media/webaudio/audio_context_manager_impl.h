@@ -10,6 +10,10 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace content {
 
 class RenderFrameHost;

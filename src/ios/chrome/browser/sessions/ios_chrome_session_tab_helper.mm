@@ -17,3 +17,5 @@ IOSChromeSessionTabHelper::~IOSChromeSessionTabHelper() {}
 void IOSChromeSessionTabHelper::SetWindowID(const SessionID& id) {
   window_id_ = id;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(IOSChromeSessionTabHelper)

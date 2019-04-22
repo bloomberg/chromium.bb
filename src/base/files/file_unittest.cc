@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -575,14 +576,12 @@ TEST(FileTest, GetInfoForDirectory) {
       temp_dir.GetPath().Append(FILE_PATH_LITERAL("gpfi_test"));
   ASSERT_TRUE(CreateDirectory(empty_dir));
 
-  base::File dir(
-      ::CreateFile(empty_dir.value().c_str(),
-                   GENERIC_READ | GENERIC_WRITE,
-                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                   NULL,
-                   OPEN_EXISTING,
-                   FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
-                   NULL));
+  base::File dir(::CreateFile(
+      base::as_wcstr(empty_dir.value()), GENERIC_READ | GENERIC_WRITE,
+      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+      OPEN_EXISTING,
+      FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
+      NULL));
   ASSERT_TRUE(dir.IsValid());
 
   base::File::Info info;

@@ -1,0 +1,23 @@
+<!doctype HTML>
+
+<!--
+Commit a locked element that was previously under a display:none tree.
+-->
+
+<style>
+#container {
+  width: 200px;
+  height: 200px;
+  background: green;
+}
+
+#locked {
+  contain: style layout;
+  width: 150px;
+  height: 150px;
+  background: lightblue;
+}
+</style>
+
+<div id="log">PASS</div>
+<div id="container""><div id="locked"></div></div>

@@ -17,8 +17,8 @@
 #include "third_party/libjingle_xmpp/xmpp/xmppclient.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc/rtc_base/firewallsocketserver.h"
-#include "third_party/webrtc/rtc_base/physicalsocketserver.h"
+#include "third_party/webrtc/rtc_base/firewall_socket_server.h"
+#include "third_party/webrtc/rtc_base/physical_socket_server.h"
 #include "third_party/webrtc_overrides/rtc_base/logging.h"
 
 namespace notifier {
@@ -26,7 +26,7 @@ namespace notifier {
 Login::Delegate::~Delegate() {}
 
 Login::Login(Delegate* delegate,
-             const buzz::XmppClientSettings& user_settings,
+             const jingle_xmpp::XmppClientSettings& user_settings,
              jingle_glue::GetProxyResolvingSocketFactoryCallback
                  get_socket_factory_callback,
              const ServerList& servers,
@@ -58,7 +58,7 @@ void Login::StartConnection() {
   single_attempt_.reset(new SingleLoginAttempt(login_settings_, this));
 }
 
-void Login::UpdateXmppSettings(const buzz::XmppClientSettings& user_settings) {
+void Login::UpdateXmppSettings(const jingle_xmpp::XmppClientSettings& user_settings) {
   DVLOG(1) << "XMPP settings updated";
   login_settings_.set_user_settings(user_settings);
 }
@@ -68,7 +68,7 @@ void Login::UpdateXmppSettings(const buzz::XmppClientSettings& user_settings) {
 //
 // TODO(akalin): Add unit tests to enforce the behavior above.
 
-void Login::OnConnect(base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
+void Login::OnConnect(base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> base_task) {
   DVLOG(1) << "Connected";
   ResetReconnectState();
   delegate_->OnConnect(base_task);

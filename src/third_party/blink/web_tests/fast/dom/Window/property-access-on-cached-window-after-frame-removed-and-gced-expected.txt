@@ -22,7 +22,6 @@ PASS childWindow.navigator.doNotTrack is null
 PASS childWindow.navigator.hardwareConcurrency is window.navigator.hardwareConcurrency
 PASS childWindow.navigator.language is window.navigator.language
 PASS childWindow.navigator.maxTouchPoints is 0
-PASS childWindow.navigator.mediaDevices.ondevicechange is null
 PASS childWindow.navigator.mediaSession.metadata is null
 PASS childWindow.navigator.mediaSession.playbackState is 'none'
 PASS childWindow.navigator.onLine is window.navigator.onLine
@@ -96,6 +95,7 @@ PASS childWindow.onmouseup is null
 PASS childWindow.onmousewheel is null
 PASS childWindow.onoffline is null
 PASS childWindow.ononline is null
+PASS childWindow.onoverscroll is null
 PASS childWindow.onpagehide is null
 PASS childWindow.onpageshow is null
 PASS childWindow.onpause is null
@@ -111,12 +111,14 @@ PASS childWindow.onpointerover is null
 PASS childWindow.onpointerrawmove is null
 PASS childWindow.onpointerup is null
 PASS childWindow.onpopstate is null
+PASS childWindow.onportalactivate is null
 PASS childWindow.onprogress is null
 PASS childWindow.onratechange is null
 PASS childWindow.onrejectionhandled is null
 PASS childWindow.onreset is null
 PASS childWindow.onresize is null
 PASS childWindow.onscroll is null
+PASS childWindow.onscrollend is null
 PASS childWindow.onsearch is null
 PASS childWindow.onseeked is null
 PASS childWindow.onseeking is null
@@ -151,6 +153,7 @@ PASS childWindow.pageXOffset is 0
 PASS childWindow.pageYOffset is 0
 PASS childWindow.performance.onresourcetimingbufferfull is null
 PASS childWindow.personalbar.visible is false
+PASS childWindow.portalHost is null
 PASS childWindow.screen.availHeight is 0
 PASS childWindow.screen.availLeft is 0
 PASS childWindow.screen.availTop is 0

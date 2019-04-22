@@ -26,7 +26,7 @@ void DelegatedFrameHostClientAndroid::DidReceiveCompositorFrameAck(
 }
 
 void DelegatedFrameHostClientAndroid::DidPresentCompositorFrames(
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+    const viz::PresentationFeedbackMap& feedbacks) {
   render_widget_host_view_->DidPresentCompositorFrames(feedbacks);
 }
 

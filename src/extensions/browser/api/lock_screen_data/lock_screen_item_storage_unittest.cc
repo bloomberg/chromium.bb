@@ -22,7 +22,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -1524,7 +1524,7 @@ TEST_F(LockScreenItemStorageTest, AttemptMigrationEvenWhenNoDataRecorded) {
 
   // Update the local state so it seems that lock screen notes have previously
   // been used by the extension, but currently, no items are recorded to exist
-  // for the extnesion.
+  // for the extension.
   InitExtensionLocalState(
       {{extension()->id(), 1 /*storage_version*/, 0 /*item_count*/}});
 

@@ -8,8 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -31,8 +31,8 @@ struct SpellcheckTestCase {
   // A string of text for checking.
   const wchar_t* input;
   // The position and the length of the first misspelled word, if any.
-  int expected_misspelling_start;
-  int expected_misspelling_length;
+  size_t expected_misspelling_start;
+  size_t expected_misspelling_length;
 };
 
 base::FilePath GetHunspellDirectory() {
@@ -82,8 +82,8 @@ class MultilingualSpellCheckTest : public testing::Test {
     ReinitializeSpellCheck(languages);
 
     for (size_t i = 0; i < num_test_cases; ++i) {
-      int misspelling_start = 0;
-      int misspelling_length = 0;
+      size_t misspelling_start = 0;
+      size_t misspelling_length = 0;
       static_cast<blink::WebTextCheckClient*>(provider())
           ->CheckSpelling(blink::WebString::FromUTF16(
                               base::WideToUTF16(test_cases[i].input)),
@@ -150,7 +150,7 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckWord) {
   do {
     std::string reordered_languages = base::JoinString(permuted_languages, ",");
     ExpectSpellCheckWordResults(reordered_languages, kTestCases,
-                                arraysize(kTestCases));
+                                base::size(kTestCases));
   } while (std::next_permutation(permuted_languages.begin(),
                                  permuted_languages.end()));
 }
@@ -181,7 +181,8 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckWordEnglishSpanish) {
       {L"hola sand hola sand hola sand", 0, 0},
       {L"hola:legs", 0, 9},
       {L"legs:hola", 0, 9}};
-  ExpectSpellCheckWordResults("en-US,es-ES", kTestCases, arraysize(kTestCases));
+  ExpectSpellCheckWordResults("en-US,es-ES", kTestCases,
+                              base::size(kTestCases));
 }
 
 // If there are no spellcheck languages, no text should be marked as misspelled.
@@ -224,8 +225,8 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckSuggestions) {
     // A string of text for checking.
     const wchar_t* input;
     // The position and the length of the first invalid word.
-    int expected_misspelling_start;
-    int expected_misspelling_length;
+    size_t expected_misspelling_start;
+    size_t expected_misspelling_length;
     // A comma separated string of suggested words that should occur, in their
     // expected order.
     const wchar_t* expected_suggestions;
@@ -237,10 +238,10 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckSuggestions) {
       {L"asdne", 0, 5, L"sadness,desasne"},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     blink::WebVector<blink::WebString> suggestions;
-    int misspelling_start;
-    int misspelling_length;
+    size_t misspelling_start;
+    size_t misspelling_length;
     static_cast<blink::WebTextCheckClient*>(provider())
         ->CheckSpelling(
             blink::WebString::FromUTF16(base::WideToUTF16(kTestCases[i].input)),

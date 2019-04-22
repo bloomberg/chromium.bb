@@ -1,5 +1,6 @@
 include_rules = [
   "+crypto",
+  "+components/keyed_service/core",
   "+mojo/public/cpp/bindings",
   "+mojo/public/cpp/system",
   "+net/base/io_buffer.h",
@@ -14,6 +15,7 @@ include_rules = [
   "+services/metrics/public/cpp",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
+  "+services/network/test",
   "+storage/browser",
   "+ui/base",
 ]

@@ -9,21 +9,26 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
+#include "components/subresource_filter/content/mojom/subresource_filter_agent.mojom.h"
+#include "components/subresource_filter/core/common/common_features.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
-#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -68,10 +73,12 @@ class FakeSubresourceFilterAgent : public mojom::SubresourceFilterAgent {
   }
 
   // mojom::SubresourceFilterAgent:
-  void ActivateForNextCommittedLoad(mojom::ActivationStatePtr activation_state,
-                                    bool is_ad_subframe) override {
+  void ActivateForNextCommittedLoad(
+      mojom::ActivationStatePtr activation_state,
+      blink::mojom::AdFrameType ad_frame_type =
+          blink::mojom::AdFrameType::kNonAd) override {
     last_activation_ = std::move(activation_state);
-    is_ad_subframe_ = is_ad_subframe;
+    is_ad_subframe_ = ad_frame_type != blink::mojom::AdFrameType::kNonAd;
   }
 
   // These methods reset state back to default when they are called.
@@ -366,10 +373,10 @@ class ContentSubresourceFilterThrottleManagerTest
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterThrottleManagerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        ContentSubresourceFilterThrottleManagerTest,
-                        ::testing::Values(WILL_START_REQUEST,
-                                          WILL_PROCESS_RESPONSE));
+INSTANTIATE_TEST_SUITE_P(,
+                         ContentSubresourceFilterThrottleManagerTest,
+                         ::testing::Values(WILL_START_REQUEST,
+                                           WILL_PROCESS_RESPONSE));
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
        ActivateMainFrameAndFilterSubframeNavigation) {
@@ -387,6 +394,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest, NoPageActivation) {
+  // This test assumes that we're not in DryRun mode.
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndDisableFeature(kAdTagging);
+
   // Commit a navigation that triggers page level activation.
   NavigateAndCommitMainFrame(GURL(kTestURLWithNoActivation));
   ExpectActivationSignalForFrame(main_rfh(), false /* expect_activation */);
@@ -539,6 +550,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
        DoNotFilterForInactiveFrame) {
+  // This test assumes that we're not in DryRun mode.
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndDisableFeature(kAdTagging);
+
   NavigateAndCommitMainFrame(GURL("https://do-not-activate.html"));
   ExpectActivationSignalForFrame(main_rfh(), false /* expect_activation */);
 
@@ -585,6 +600,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, RulesetHandleRegeneration) {
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
        SameSiteNavigation_RulesetGoesAway) {
+  // This test assumes that we're not in DryRun mode.
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndDisableFeature(kAdTagging);
+
   GURL same_site_inactive_url =
       GURL(base::StringPrintf("%sinactive.html", kTestURLWithActivation));
 
@@ -729,6 +748,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation2) {
 // Same-site navigations within a single RFH do not persist activation.
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
        SameSiteNavigationStopsActivation) {
+  // This test assumes that we're not in DryRun mode.
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndDisableFeature(kAdTagging);
+
   NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
 
@@ -749,6 +772,10 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 }
 
 TEST_F(ContentSubresourceFilterThrottleManagerTest, LogActivation) {
+  // This test assumes that we're not in DryRun mode.
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndDisableFeature(kAdTagging);
+
   base::HistogramTester tester;
   const char kActivationStateHistogram[] =
       "SubresourceFilter.PageLoad.ActivationState";
@@ -819,18 +846,18 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAdForTesting(subframe));
 
   SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
-
   subframe =
       SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
   EXPECT_TRUE(subframe);
-
   ExpectActivationSignalForFrame(subframe, true /* expect_activation */,
                                  true /* is_ad_subframe */);
 
   // A non-ad navigation for the same frame should be considered an ad
   // subframe as well.
   CreateTestNavigation(GURL("https://example.com/allowed2.html"), subframe);
-  SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
+  subframe =
+      SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
+  EXPECT_TRUE(subframe);
   ExpectActivationSignalForFrame(subframe, true /* expect_activation */,
                                  true /* is_ad_subframe */);
 }

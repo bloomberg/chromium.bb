@@ -62,7 +62,7 @@ static INLINE void calc_subpel_params(
     subpel_params->xs = sf->x_step_q4;
     subpel_params->ys = sf->y_step_q4;
   } else {
-    const MV32 mv_q4 = clamp_mv_to_umv_border_sb(
+    const MV mv_q4 = clamp_mv_to_umv_border_sb(
         xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
     subpel_params->xs = subpel_params->ys = SCALE_SUBPEL_SHIFTS;
     subpel_params->subpel_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
@@ -138,26 +138,28 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         assert(bw < 8 || bh < 8);
         ConvolveParams conv_params = get_conv_params_no_round(
             0, plane, xd->tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
-        conv_params.use_jnt_comp_avg = 0;
+        conv_params.use_dist_wtd_comp_avg = 0;
         struct buf_2d *const dst_buf = &pd->dst;
         uint8_t *dst = dst_buf->buf + dst_buf->stride * y + x;
 
         ref = 0;
-        const RefBuffer *ref_buf =
-            &cm->frame_refs[this_mbmi->ref_frame[ref] - LAST_FRAME];
+        const RefCntBuffer *ref_buf =
+            get_ref_frame_buf(cm, this_mbmi->ref_frame[ref]);
+        const struct scale_factors *ref_scale_factors =
+            get_ref_scale_factors_const(cm, this_mbmi->ref_frame[ref]);
 
         pd->pre[ref].buf0 =
-            (plane == 1) ? ref_buf->buf->u_buffer : ref_buf->buf->v_buffer;
+            (plane == 1) ? ref_buf->buf.u_buffer : ref_buf->buf.v_buffer;
         pd->pre[ref].buf =
             pd->pre[ref].buf0 + scaled_buffer_offset(pre_x, pre_y,
-                                                     ref_buf->buf->uv_stride,
-                                                     &ref_buf->sf);
-        pd->pre[ref].width = ref_buf->buf->uv_crop_width;
-        pd->pre[ref].height = ref_buf->buf->uv_crop_height;
-        pd->pre[ref].stride = ref_buf->buf->uv_stride;
+                                                     ref_buf->buf.uv_stride,
+                                                     ref_scale_factors);
+        pd->pre[ref].width = ref_buf->buf.uv_crop_width;
+        pd->pre[ref].height = ref_buf->buf.uv_crop_height;
+        pd->pre[ref].stride = ref_buf->buf.uv_stride;
 
         const struct scale_factors *const sf =
-            is_intrabc ? &cm->sf_identity : &ref_buf->sf;
+            is_intrabc ? &cm->sf_identity : ref_scale_factors;
         struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
 
         const MV mv = this_mbmi->mv[ref].as_mv;
@@ -194,15 +196,15 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   {
     ConvolveParams conv_params = get_conv_params_no_round(
         0, plane, xd->tmp_conv_dst, MAX_SB_SIZE, is_compound, xd->bd);
-    av1_jnt_comp_weight_assign(cm, mi, 0, &conv_params.fwd_offset,
-                               &conv_params.bck_offset,
-                               &conv_params.use_jnt_comp_avg, is_compound);
+    av1_dist_wtd_comp_weight_assign(
+        cm, mi, 0, &conv_params.fwd_offset, &conv_params.bck_offset,
+        &conv_params.use_dist_wtd_comp_avg, is_compound);
 
     struct buf_2d *const dst_buf = &pd->dst;
     uint8_t *const dst = dst_buf->buf;
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =
-          is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
+          is_intrabc ? &cm->sf_identity : xd->block_ref_scale_factors[ref];
       struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
       const MV mv = mi->mv[ref].as_mv;
 
@@ -235,46 +237,19 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-static void build_inter_predictors_for_planes(const AV1_COMMON *cm,
-                                              MACROBLOCKD *xd, BLOCK_SIZE bsize,
-                                              int mi_row, int mi_col,
-                                              int plane_from, int plane_to) {
-  int plane;
+static void build_inter_predictors_for_plane(const AV1_COMMON *cm,
+                                             MACROBLOCKD *xd, int mi_row,
+                                             int mi_col, const BUFFER_SET *ctx,
+                                             BLOCK_SIZE bsize, int plane_idx) {
+  const struct macroblockd_plane *pd = &xd->plane[plane_idx];
+  if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
+                           pd->subsampling_y))
+    return;
+
   const int mi_x = mi_col * MI_SIZE;
   const int mi_y = mi_row * MI_SIZE;
-  for (plane = plane_from; plane <= plane_to; ++plane) {
-    const struct macroblockd_plane *pd = &xd->plane[plane];
-    const int bw = pd->width;
-    const int bh = pd->height;
-
-    if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
-                             pd->subsampling_y))
-      continue;
-
-    build_inter_predictors(cm, xd, plane, xd->mi[0], 0, bw, bh, mi_x, mi_y);
-  }
-}
-
-void av1_build_inter_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                    int mi_row, int mi_col, BUFFER_SET *ctx,
-                                    BLOCK_SIZE bsize) {
-  av1_build_inter_predictors_sbp(cm, xd, mi_row, mi_col, ctx, bsize, 0);
-}
-
-void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                     int mi_row, int mi_col, BUFFER_SET *ctx,
-                                     BLOCK_SIZE bsize) {
-  for (int plane_idx = 1; plane_idx < MAX_MB_PLANE; plane_idx++) {
-    av1_build_inter_predictors_sbp(cm, xd, mi_row, mi_col, ctx, bsize,
-                                   plane_idx);
-  }
-}
-
-void av1_build_inter_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                    int mi_row, int mi_col, BUFFER_SET *ctx,
-                                    BLOCK_SIZE bsize, int plane_idx) {
-  build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, plane_idx,
-                                    plane_idx);
+  build_inter_predictors(cm, xd, plane_idx, xd->mi[0], 0, pd->width, pd->height,
+                         mi_x, mi_y);
 
   if (is_interintra_pred(xd->mi[0])) {
     BUFFER_SET default_ctx = { { NULL, NULL, NULL }, { 0, 0, 0 } };
@@ -289,13 +264,14 @@ void av1_build_inter_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                   int mi_row, int mi_col, BUFFER_SET *ctx,
-                                   BLOCK_SIZE bsize) {
-  const int num_planes = av1_num_planes(cm);
-  av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, ctx, bsize);
-  if (num_planes > 1)
-    av1_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, ctx, bsize);
+void av1_enc_build_inter_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                   int mi_row, int mi_col,
+                                   const BUFFER_SET *ctx, BLOCK_SIZE bsize,
+                                   int plane_from, int plane_to) {
+  for (int plane_idx = plane_from; plane_idx <= plane_to; ++plane_idx) {
+    build_inter_predictors_for_plane(cm, xd, mi_row, mi_col, ctx, bsize,
+                                     plane_idx);
+  }
 }
 
 // TODO(sarahparker):
@@ -308,11 +284,11 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                InterpFilters interp_filters,
                                const WarpTypesAllowed *warp_types, int p_col,
                                int p_row, int plane, int ref,
-                               enum mv_precision precision, int x, int y,
+                               mv_precision precision, int x, int y,
                                const MACROBLOCKD *xd, int can_use_previous) {
   const int is_q4 = precision == MV_PRECISION_Q4;
-  const MV32 mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
-                       is_q4 ? src_mv->col : src_mv->col * 2 };
+  const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
+                     is_q4 ? src_mv->col : src_mv->col * 2 };
   MV32 mv = av1_scale_mv(&mv_q4, x, y, sf);
   mv.col += SCALE_EXTRA_OFF;
   mv.row += SCALE_EXTRA_OFF;
@@ -451,7 +427,7 @@ void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
 
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+  if (is_cur_buf_hbd(xd)) {
     int len = sizeof(uint16_t);
     dst_buf1[0] = CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0]);
     dst_buf1[1] =
@@ -475,7 +451,7 @@ void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                       dst_width1, dst_height1, dst_stride1);
   av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col, dst_buf2,
                                      dst_width2, dst_height2, dst_stride2);
-  av1_setup_dst_planes(xd->plane, xd->mi[0]->sb_type, get_frame_new_buffer(cm),
+  av1_setup_dst_planes(xd->plane, xd->mi[0]->sb_type, &cm->cur_frame->buf,
                        mi_row, mi_col, 0, num_planes);
   av1_build_obmc_inter_prediction(cm, xd, mi_row, mi_col, dst_buf1, dst_stride1,
                                   dst_buf2, dst_stride2);
@@ -492,7 +468,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const MB_MODE_INFO *mi = xd->mi[0];
 
-  const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
+  const struct scale_factors *const sf = xd->block_ref_scale_factors[ref];
   struct buf_2d *const pre_buf = &pd->pre[ref];
   uint8_t *const dst = get_buf_by_bd(xd, ext_dst) + ext_dst_stride * y + x;
   const MV mv = mi->mv[ref].as_mv;
@@ -574,37 +550,41 @@ static void build_wedge_inter_predictor_from_buf(
   uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
   mbmi->interinter_comp.seg_mask = xd->seg_mask;
   const INTERINTER_COMPOUND_DATA *comp_data = &mbmi->interinter_comp;
+  const int is_hbd = is_cur_buf_hbd(xd);
 
   if (is_compound && is_masked_compound_type(comp_data->type)) {
     if (!plane && comp_data->type == COMPOUND_DIFFWTD) {
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+      if (is_hbd) {
         av1_build_compound_diffwtd_mask_highbd(
             comp_data->seg_mask, comp_data->mask_type,
             CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
             CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, h, w, xd->bd);
-      else
+      } else {
         av1_build_compound_diffwtd_mask(
             comp_data->seg_mask, comp_data->mask_type, ext_dst0,
             ext_dst_stride0, ext_dst1, ext_dst_stride1, h, w);
+      }
     }
 
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+    if (is_hbd) {
       build_masked_compound_highbd(
           dst, dst_buf->stride, CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
           CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, comp_data,
           mbmi->sb_type, h, w, xd->bd);
-    else
+    } else {
       build_masked_compound(dst, dst_buf->stride, ext_dst0, ext_dst_stride0,
                             ext_dst1, ext_dst_stride1, comp_data, mbmi->sb_type,
                             h, w);
+    }
   } else {
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+    if (is_hbd) {
       aom_highbd_convolve_copy(CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
                                dst, dst_buf->stride, NULL, 0, NULL, 0, w, h,
                                xd->bd);
-    else
+    } else {
       aom_convolve_copy(ext_dst0, ext_dst_stride0, dst, dst_buf->stride, NULL,
                         0, NULL, 0, w, h);
+    }
   }
 }
 

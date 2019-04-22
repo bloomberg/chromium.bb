@@ -90,6 +90,6 @@ struct V8TypeOf<ByteStringSequenceSequenceOrByteStringByteStringRecord> {
 // items that can initialize with memset or have a vtable. It is safe to
 // set canInitializeWithMemset=true for a union type object in practice.
 // See https://codereview.chromium.org/1118993002/#msg5 for more details.
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::ByteStringSequenceSequenceOrByteStringByteStringRecord);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::ByteStringSequenceSequenceOrByteStringByteStringRecord)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_BYTE_STRING_SEQUENCE_SEQUENCE_OR_BYTE_STRING_BYTE_STRING_RECORD_H_

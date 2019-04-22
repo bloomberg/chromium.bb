@@ -30,8 +30,10 @@ EffectNode::EffectNode()
       is_currently_animating_filter(false),
       is_currently_animating_opacity(false),
       has_masking_child(false),
+      is_masked(false),
       effect_changed(false),
       subtree_has_copy_request(false),
+      is_fast_rounded_corner(false),
       transform_id(0),
       clip_id(0),
       target_id(1),
@@ -51,7 +53,10 @@ bool EffectNode::operator==(const EffectNode& other) const {
          has_copy_request == other.has_copy_request &&
          filters == other.filters &&
          backdrop_filters == other.backdrop_filters &&
+         backdrop_filter_bounds == other.backdrop_filter_bounds &&
          filters_origin == other.filters_origin &&
+         rounded_corner_bounds == other.rounded_corner_bounds &&
+         is_fast_rounded_corner == other.is_fast_rounded_corner &&
          blend_mode == other.blend_mode &&
          surface_contents_scale == other.surface_contents_scale &&
          unscaled_mask_target_size == other.unscaled_mask_target_size &&
@@ -67,6 +72,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          is_currently_animating_opacity ==
              other.is_currently_animating_opacity &&
          has_masking_child == other.has_masking_child &&
+         is_masked == other.is_masked &&
          effect_changed == other.effect_changed &&
          subtree_has_copy_request == other.subtree_has_copy_request &&
          transform_id == other.transform_id && clip_id == other.clip_id &&
@@ -83,6 +89,7 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("stable_id", stable_id);
   value->SetDouble("opacity", opacity);
   value->SetDouble("backdrop_filter_quality", backdrop_filter_quality);
+  value->SetBoolean("is_fast_rounded_corner", is_fast_rounded_corner);
   value->SetString("blend_mode", SkBlendMode_Name(blend_mode));
   value->SetBoolean("has_render_surface", has_render_surface);
   value->SetBoolean("cache_render_surface", cache_render_surface);
@@ -94,6 +101,8 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
                     has_potential_filter_animation);
   value->SetBoolean("has_potential_opacity_animation",
                     has_potential_opacity_animation);
+  value->SetBoolean("has_masking_child", has_masking_child);
+  value->SetBoolean("is_masked", is_masked);
   value->SetBoolean("effect_changed", effect_changed);
   value->SetInteger("subtree_has_copy_request", subtree_has_copy_request);
   value->SetInteger("transform_id", transform_id);

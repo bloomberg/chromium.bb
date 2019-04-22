@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/timing/performance_navigation_timing.h"
 
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
@@ -23,7 +22,8 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
     TimeTicks time_origin,
     const WebVector<WebServerTimingInfo>& server_timing)
     : PerformanceResourceTiming(
-          info ? AtomicString(info->FinalResponse().Url().GetString())
+          info ? AtomicString(
+                     info->FinalResponse().CurrentRequestUrl().GetString())
                : g_empty_atom,
           time_origin,
           server_timing),
@@ -84,25 +84,21 @@ bool PerformanceNavigationTiming::DidReuseConnection() const {
   return resource_timing_info_->FinalResponse().ConnectionReused();
 }
 
-unsigned long long PerformanceNavigationTiming::GetTransferSize() const {
+uint64_t PerformanceNavigationTiming::GetTransferSize() const {
   return resource_timing_info_->TransferSize();
 }
 
-unsigned long long PerformanceNavigationTiming::GetEncodedBodySize() const {
+uint64_t PerformanceNavigationTiming::GetEncodedBodySize() const {
   return resource_timing_info_->FinalResponse().EncodedBodyLength();
 }
 
-unsigned long long PerformanceNavigationTiming::GetDecodedBodySize() const {
+uint64_t PerformanceNavigationTiming::GetDecodedBodySize() const {
   return resource_timing_info_->FinalResponse().DecodedBodyLength();
 }
 
 AtomicString PerformanceNavigationTiming::GetNavigationType(
     WebNavigationType type,
     const Document* document) {
-  if (document && document->GetPageVisibilityState() ==
-                      mojom::PageVisibilityState::kPrerender) {
-    return "prerender";
-  }
   switch (type) {
     case kWebNavigationTypeReload:
       return "reload";
@@ -227,7 +223,7 @@ AtomicString PerformanceNavigationTiming::type() const {
   return "navigate";
 }
 
-unsigned short PerformanceNavigationTiming::redirectCount() const {
+uint16_t PerformanceNavigationTiming::redirectCount() const {
   bool allow_redirect_details = GetAllowRedirectDetails();
   DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!allow_redirect_details || !timing)

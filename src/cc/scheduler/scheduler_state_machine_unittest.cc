@@ -161,9 +161,10 @@ class StateMachine : public SchedulerStateMachine {
     return needs_impl_side_invalidation_;
   }
 
+  using SchedulerStateMachine::ProactiveBeginFrameWanted;
+  using SchedulerStateMachine::ShouldDraw;
   using SchedulerStateMachine::ShouldPrepareTiles;
   using SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately;
-  using SchedulerStateMachine::ProactiveBeginFrameWanted;
   using SchedulerStateMachine::WillCommit;
 
  protected:
@@ -184,8 +185,14 @@ void PerformAction(StateMachine* sm, SchedulerStateMachine::Action action) {
       sm->WillSendBeginMainFrame();
       return;
 
-    case SchedulerStateMachine::Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT:
-      sm->WillNotifyBeginMainFrameNotSent();
+    case SchedulerStateMachine::Action::
+        NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL:
+      sm->WillNotifyBeginMainFrameNotExpectedUntil();
+      return;
+
+    case SchedulerStateMachine::Action::
+        NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON:
+      sm->WillNotifyBeginMainFrameNotExpectedSoon();
       return;
 
     case SchedulerStateMachine::Action::COMMIT: {
@@ -270,11 +277,12 @@ TEST(SchedulerStateMachineTest, BeginFrameNeeded) {
   state.SetNeedsRedraw(false);
   state.SetNeedsOneBeginImplFrame(false);
   state.SetNeedsBeginMainFrameForTest(true);
-  state.SetDeferMainFrameUpdate(true);
+  state.SetDeferBeginMainFrame(true);
   EXPECT_FALSE(state.BeginFrameNeeded());
 }
 
-TEST(SchedulerStateMachineTest, TestNextActionNotifyBeginMainFrameNotSent) {
+TEST(SchedulerStateMachineTest,
+     TestNextActionNotifyBeginMainFrameNotExpectedUntil) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetMainThreadWantsBeginMainFrameNotExpectedMessages(true);
@@ -283,14 +291,43 @@ TEST(SchedulerStateMachineTest, TestNextActionNotifyBeginMainFrameNotSent) {
       SchedulerStateMachine::Action::BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
   state.IssueNextBeginImplFrame();
   state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
+  state.SetNeedsOneBeginImplFrame(true);
+  EXPECT_TRUE(state.BeginFrameNeeded());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::
+                                 NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 
   state.SetNeedsRedraw(true);
   state.SetNeedsBeginMainFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+}
+
+TEST(SchedulerStateMachineTest,
+     TestNextActionNotifyBeginMainFrameNotExpectedSoon) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  state.SetMainThreadWantsBeginMainFrameNotExpectedMessages(true);
+  state.SetVisible(true);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
+  state.IssueNextBeginImplFrame();
+  state.CreateAndInitializeLayerTreeFrameSinkWithActivatedCommit();
+  state.SetNeedsOneBeginImplFrame(true);
+  EXPECT_TRUE(state.BeginFrameNeeded());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::
+                                 NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+
+  state.SetNeedsOneBeginImplFrame(false);
+  EXPECT_FALSE(state.BeginFrameNeeded());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+  state.SetBeginImplFrameState(
+      SchedulerStateMachine::BeginImplFrameState::IDLE);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON);
+
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 }
 
@@ -1188,7 +1225,7 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 
   // When commits are deferred, we don't block the deadline.
-  state.SetDeferMainFrameUpdate(true);
+  state.SetDeferBeginMainFrame(true);
   state.OnBeginImplFrame(0, 13, kAnimateOnly);
   EXPECT_NE(SchedulerStateMachine::BeginImplFrameDeadlineMode::BLOCKED,
             state.CurrentBeginImplFrameDeadlineMode());
@@ -2101,12 +2138,12 @@ TEST(SchedulerStateMachineTest,
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 }
 
-TEST(SchedulerStateMachineTest, TestDeferCommit) {
+TEST(SchedulerStateMachineTest, TestDeferBeginMainFrame) {
   SchedulerSettings settings;
   StateMachine state(settings);
   SET_UP_STATE(state)
 
-  state.SetDeferMainFrameUpdate(true);
+  state.SetDeferBeginMainFrame(true);
 
   state.SetNeedsBeginMainFrame();
   EXPECT_FALSE(state.BeginFrameNeeded());
@@ -2118,7 +2155,7 @@ TEST(SchedulerStateMachineTest, TestDeferCommit) {
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 
-  state.SetDeferMainFrameUpdate(false);
+  state.SetDeferBeginMainFrame(false);
   state.IssueNextBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
@@ -2543,10 +2580,10 @@ TEST(SchedulerStateMachineTest, TestFullPipelineMode) {
             state.CurrentBeginImplFrameDeadlineMode());
 
   // Even if main thread defers commits, we still need to wait for it.
-  state.SetDeferMainFrameUpdate(true);
+  state.SetDeferBeginMainFrame(true);
   EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::BLOCKED,
             state.CurrentBeginImplFrameDeadlineMode());
-  state.SetDeferMainFrameUpdate(false);
+  state.SetDeferBeginMainFrame(false);
 
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
@@ -2685,6 +2722,94 @@ TEST(SchedulerStateMachineTest, AllowSkippingActiveTreeFirstDraws) {
 
   // We should be able to activate this tree without drawing the active tree.
   state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
+}
+
+TEST(SchedulerStateMachineTest, BlockDrawIfAnimationWorkletsPending) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  SET_UP_STATE(state)
+
+  // This test verifies that having pending mutations from Animation Worklets on
+  // the active tree will not trigger the deadline early.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame(0, 10, kAnimateOnly);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::COMMIT);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+  EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::IMMEDIATE,
+            state.CurrentBeginImplFrameDeadlineMode());
+  // Started async mutation cycle for animation worklets.
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::PROCESSING,
+      SchedulerStateMachine::TreeType::ACTIVE);
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+  EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::REGULAR,
+            state.CurrentBeginImplFrameDeadlineMode());
+  // Second queued state change.
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::PROCESSING,
+      SchedulerStateMachine::TreeType::ACTIVE);
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+  EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::REGULAR,
+            state.CurrentBeginImplFrameDeadlineMode());
+  // First mutation cycle completes. Still waiting on queued mutation cycle
+  // before being ready to draw.
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::IDLE,
+      SchedulerStateMachine::TreeType::ACTIVE);
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+  EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::REGULAR,
+            state.CurrentBeginImplFrameDeadlineMode());
+  // Queued mutation cycle completes. Now ready to draw.
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::IDLE,
+      SchedulerStateMachine::TreeType::ACTIVE);
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+  EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::IMMEDIATE,
+            state.CurrentBeginImplFrameDeadlineMode());
+
+  state.SetNeedsRedraw(true);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_IMPL_FRAME_STATE(
+      SchedulerStateMachine::BeginImplFrameState::INSIDE_DEADLINE);
+  EXPECT_TRUE(state.ShouldDraw());
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::PROCESSING,
+      SchedulerStateMachine::TreeType::ACTIVE);
+  EXPECT_FALSE(state.ShouldDraw());
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::IDLE,
+      SchedulerStateMachine::TreeType::ACTIVE);
+  EXPECT_TRUE(state.ShouldDraw());
+}
+
+TEST(SchedulerStateMachineTest, BlockActivationIfAnimationWorkletsPending) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state)
+
+  // Verify that pending mutations from Animation Worklets block activation.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame(0, 10, kAnimateOnly);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::COMMIT);
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::PROCESSING,
+      SchedulerStateMachine::TreeType::PENDING);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+  state.NotifyAnimationWorkletStateChange(
+      SchedulerStateMachine::AnimationWorkletState::IDLE,
+      SchedulerStateMachine::TreeType::PENDING);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
 }
 

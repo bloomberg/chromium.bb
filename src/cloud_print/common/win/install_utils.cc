@@ -7,7 +7,7 @@
 #include <windows.h>
 
 #include "base/command_line.h"
-#include "base/file_version_info_win.h"
+#include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -60,12 +60,10 @@ void SetGoogleUpdateKeys(const base::string16& product_id,
 
   // Get the version from the resource file.
   base::string16 version_string;
-  std::unique_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForModule(CURRENT_MODULE()));
-  if (version_info.get()) {
-    FileVersionInfoWin* version_info_win =
-        static_cast<FileVersionInfoWin*>(version_info.get());
-    version_string = version_info_win->product_version();
+  std::unique_ptr<FileVersionInfo> version_info =
+      FileVersionInfo::CreateFileVersionInfoForModule(CURRENT_MODULE());
+  if (version_info) {
+    version_string = version_info->product_version();
   } else {
     LOG(ERROR) << "Unable to get version string";
     // Use a random version string so that Google Update has something to go by.
@@ -149,14 +147,12 @@ void CreateUninstallKey(const base::string16& uninstall_id,
   key.WriteValue(kInstallLocation, unstall_binary.DirName().value().c_str());
 
   // Get the version resource.
-  std::unique_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForModule(CURRENT_MODULE()));
+  std::unique_ptr<FileVersionInfo> version_info =
+      FileVersionInfo::CreateFileVersionInfoForModule(CURRENT_MODULE());
 
-  if (version_info.get()) {
-    FileVersionInfoWin* version_info_win =
-        static_cast<FileVersionInfoWin*>(version_info.get());
-    key.WriteValue(kDisplayVersion, version_info_win->file_version().c_str());
-    key.WriteValue(kPublisher, version_info_win->company_name().c_str());
+  if (version_info) {
+    key.WriteValue(kDisplayVersion, version_info->file_version().c_str());
+    key.WriteValue(kPublisher, version_info->company_name().c_str());
   } else {
     LOG(ERROR) << "Unable to get version string";
   }

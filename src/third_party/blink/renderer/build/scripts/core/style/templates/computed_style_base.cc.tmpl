@@ -11,20 +11,20 @@
 
 namespace blink {
 
-struct SameSizeAsComputedStyleBase {
+struct SameSizeVerifierForComputedStyleBase {
   {% if computed_style.subgroups is defined %}
-  void* dataRefs[{{computed_style.subgroups|length}}];
+  void* data_refs[{{computed_style.subgroups|length}}];
   {% endif %}
   {% for field in computed_style.fields|rejectattr("is_bit_field") %}
   {{field.type_name}} {{field.name}};
   {% endfor %}
-  unsigned m_bit_fields[{{computed_style.num_32_bit_words_for_bit_fields}}];
+  unsigned bit_fields[{{computed_style.num_32_bit_words_for_bit_fields}}];
 };
 
 // If this fails, the packing algorithm in make_computed_style_base.py has
 // failed to produce the optimal packed size. To fix, update the algorithm to
 // ensure that the buckets are placed so that each takes up at most 1 word.
-ASSERT_SIZE(ComputedStyleBase, SameSizeAsComputedStyleBase);
+ASSERT_SIZE(ComputedStyleBase, SameSizeVerifierForComputedStyleBase);
 
 // Constructor and destructor are protected so that only the parent class ComputedStyle
 // can instantiate this class.

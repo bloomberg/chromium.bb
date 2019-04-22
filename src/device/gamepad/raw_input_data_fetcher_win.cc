@@ -6,10 +6,13 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
+#include "device/gamepad/gamepad_uma.h"
+#include "device/gamepad/nintendo_controller.h"
 
 namespace device {
 
@@ -42,7 +45,7 @@ void RawInputDataFetcher::OnAddedToProvider() {
 }
 
 RAWINPUTDEVICE* RawInputDataFetcher::GetRawInputDevices(DWORD flags) {
-  size_t usage_count = arraysize(DeviceUsages);
+  size_t usage_count = base::size(DeviceUsages);
   std::unique_ptr<RAWINPUTDEVICE[]> devices(new RAWINPUTDEVICE[usage_count]);
   for (size_t i = 0; i < usage_count; ++i) {
     devices[i].dwFlags = flags;
@@ -77,7 +80,7 @@ void RawInputDataFetcher::StartMonitor() {
   // Register to receive raw HID input.
   std::unique_ptr<RAWINPUTDEVICE[]> devices(
       GetRawInputDevices(RIDEV_INPUTSINK));
-  if (!::RegisterRawInputDevices(devices.get(), arraysize(DeviceUsages),
+  if (!::RegisterRawInputDevices(devices.get(), base::size(DeviceUsages),
                                  sizeof(RAWINPUTDEVICE))) {
     PLOG(ERROR) << "RegisterRawInputDevices() failed for RIDEV_INPUTSINK";
     window_.reset();
@@ -95,7 +98,7 @@ void RawInputDataFetcher::StopMonitor() {
   DCHECK(window_);
   std::unique_ptr<RAWINPUTDEVICE[]> devices(GetRawInputDevices(RIDEV_REMOVE));
 
-  if (!::RegisterRawInputDevices(devices.get(), arraysize(DeviceUsages),
+  if (!::RegisterRawInputDevices(devices.get(), base::size(DeviceUsages),
                                  sizeof(RAWINPUTDEVICE))) {
     PLOG(INFO) << "RegisterRawInputDevices() failed for RIDEV_REMOVE";
   }
@@ -165,6 +168,22 @@ void RawInputDataFetcher::EnumerateDevices() {
           continue;
         }
 
+        const int vendor_int = new_device->GetVendorId();
+        const int product_int = new_device->GetProductId();
+        const int version_number = new_device->GetVersionNumber();
+        const std::wstring product_string = new_device->GetProductString();
+
+        if (NintendoController::IsNintendoController(vendor_int, product_int)) {
+          // Nintendo devices are handled by the Nintendo data fetcher.
+          new_device->Shutdown();
+          continue;
+        }
+
+        // Record gamepad metrics before excluding XInput devices. This allows
+        // us to recognize XInput devices even though the XInput API masks
+        // the vendor and product IDs.
+        RecordConnectedGamepad(vendor_int, product_int);
+
         // The presence of "IG_" in the device name indicates that this is an
         // XInput Gamepad. Skip enumerating these devices and let the XInput
         // path handle it.
@@ -190,11 +209,6 @@ void RawInputDataFetcher::EnumerateDevices() {
 
         pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
         pad.vibration_actuator.not_null = device->SupportsVibration();
-
-        const int vendor_int = device->GetVendorId();
-        const int product_int = device->GetProductId();
-        const int version_number = device->GetVersionNumber();
-        const std::wstring product_string = device->GetProductString();
 
         state->mapper = GetGamepadStandardMappingFunction(
             vendor_int, product_int, version_number, GAMEPAD_BUS_UNKNOWN);
@@ -242,40 +256,47 @@ void RawInputDataFetcher::PlayEffect(
     int source_id,
     mojom::GamepadHapticEffectType type,
     mojom::GamepadEffectParametersPtr params,
-    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   RawInputGamepadDeviceWin* device = DeviceFromSourceId(source_id);
   if (!device) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
   if (!device->SupportsVibration()) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
     return;
   }
 
-  device->PlayEffect(type, std::move(params), std::move(callback));
+  device->PlayEffect(type, std::move(params), std::move(callback),
+                     std::move(callback_runner));
 }
 
 void RawInputDataFetcher::ResetVibration(
     int source_id,
-    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   RawInputGamepadDeviceWin* device = DeviceFromSourceId(source_id);
   if (!device) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
   if (!device->SupportsVibration()) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
     return;
   }
 
-  device->ResetVibration(std::move(callback));
+  device->ResetVibration(std::move(callback), std::move(callback_runner));
 }
 
 LRESULT RawInputDataFetcher::OnInput(HRAWINPUT input_handle) {

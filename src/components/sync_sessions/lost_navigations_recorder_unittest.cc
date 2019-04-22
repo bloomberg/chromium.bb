@@ -7,8 +7,8 @@
 #include <memory>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
@@ -121,7 +121,7 @@ class LostNavigationsRecorderTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment task_environment_;
   int _id;
   LostNavigationsRecorder recorder_;
   syncer::TestDirectorySetterUpper dir_maker_;
@@ -392,5 +392,5 @@ TEST_F(LostNavigationsRecorderTest, MultipleNavsMultipleLostWithOverlap) {
   histogram_tester.ExpectBucketCount("Sync.LostNavigationCount", 2, 1);
 }
 
-};  // namespace
-};  // namespace sync_sessions
+}  // namespace
+}  // namespace sync_sessions

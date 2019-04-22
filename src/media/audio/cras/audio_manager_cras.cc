@@ -10,6 +10,7 @@
 #include <map>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/logging.h"
@@ -132,29 +133,27 @@ void AudioManagerCras::GetAudioDeviceNamesImpl(bool is_input,
 
   device_names->push_back(AudioDeviceName::CreateDefault());
 
-  if (base::FeatureList::IsEnabled(features::kEnumerateAudioDevices)) {
-    chromeos::AudioDeviceList devices;
-    GetAudioDevices(&devices);
+  chromeos::AudioDeviceList devices;
+  GetAudioDevices(&devices);
 
-    // |dev_idx_map| is a map of dev_index and their audio devices.
-    std::map<int, chromeos::AudioDeviceList> dev_idx_map;
-    for (const auto& device : devices) {
-      if (device.is_input != is_input || !device.is_for_simple_usage())
-        continue;
+  // |dev_idx_map| is a map of dev_index and their audio devices.
+  std::map<int, chromeos::AudioDeviceList> dev_idx_map;
+  for (const auto& device : devices) {
+    if (device.is_input != is_input || !device.is_for_simple_usage())
+      continue;
 
-      dev_idx_map[dev_index_of(device.id)].push_back(device);
-    }
+    dev_idx_map[dev_index_of(device.id)].push_back(device);
+  }
 
-    for (const auto& item : dev_idx_map) {
-      if (1 == item.second.size()) {
-        const chromeos::AudioDevice& device = item.second.front();
-        device_names->emplace_back(device.display_name,
-                                   base::NumberToString(device.id));
-      } else {
-        // Create virtual device name for audio nodes that share the same device
-        // index.
-        ProcessVirtualDeviceName(device_names, item.second);
-      }
+  for (const auto& item : dev_idx_map) {
+    if (1 == item.second.size()) {
+      const chromeos::AudioDevice& device = item.second.front();
+      device_names->emplace_back(device.display_name,
+                                 base::NumberToString(device.id));
+    } else {
+      // Create virtual device name for audio nodes that share the same device
+      // index.
+      ProcessVirtualDeviceName(device_names, item.second);
     }
   }
 }
@@ -215,9 +214,6 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
 
 std::string AudioManagerCras::GetAssociatedOutputDeviceID(
     const std::string& input_device_id) {
-  if (!base::FeatureList::IsEnabled(features::kEnumerateAudioDevices))
-    return "";
-
   chromeos::AudioDeviceList devices;
   GetAudioDevices(&devices);
 
@@ -462,9 +458,8 @@ void AudioManagerCras::GetAudioDevicesOnMainThread(
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   // CrasAudioHandler is shut down before AudioManagerCras.
-  if (chromeos::CrasAudioHandler::IsInitialized()) {
+  if (chromeos::CrasAudioHandler::Get())
     chromeos::CrasAudioHandler::Get()->GetAudioDevices(devices);
-  }
   event->Signal();
 }
 
@@ -509,7 +504,7 @@ void AudioManagerCras::GetPrimaryActiveInputNodeOnMainThread(
     uint64_t* active_input_node_id,
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (chromeos::CrasAudioHandler::IsInitialized()) {
+  if (chromeos::CrasAudioHandler::Get()) {
     *active_input_node_id =
         chromeos::CrasAudioHandler::Get()->GetPrimaryActiveInputNode();
   }
@@ -520,7 +515,7 @@ void AudioManagerCras::GetPrimaryActiveOutputNodeOnMainThread(
     uint64_t* active_output_node_id,
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (chromeos::CrasAudioHandler::IsInitialized()) {
+  if (chromeos::CrasAudioHandler::Get()) {
     *active_output_node_id =
         chromeos::CrasAudioHandler::Get()->GetPrimaryActiveOutputNode();
   }
@@ -531,9 +526,8 @@ void AudioManagerCras::GetDefaultOutputBufferSizeOnMainThread(
     int32_t* buffer_size,
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (chromeos::CrasAudioHandler::IsInitialized()) {
+  if (chromeos::CrasAudioHandler::Get())
     chromeos::CrasAudioHandler::Get()->GetDefaultOutputBufferSize(buffer_size);
-  }
   event->Signal();
 }
 
@@ -541,7 +535,7 @@ void AudioManagerCras::GetSystemAecSupportedOnMainThread(
     bool* system_aec_supported,
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (chromeos::CrasAudioHandler::IsInitialized()) {
+  if (chromeos::CrasAudioHandler::Get()) {
     *system_aec_supported =
         chromeos::CrasAudioHandler::Get()->system_aec_supported();
   }
@@ -552,15 +546,14 @@ void AudioManagerCras::GetSystemAecGroupIdOnMainThread(
     int32_t* group_id,
     base::WaitableEvent* event) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (chromeos::CrasAudioHandler::IsInitialized()) {
+  if (chromeos::CrasAudioHandler::Get())
     *group_id = chromeos::CrasAudioHandler::Get()->system_aec_group_id();
-  }
   event->Signal();
 }
 
 void AudioManagerCras::WaitEventOrShutdown(base::WaitableEvent* event) {
   base::WaitableEvent* waitables[] = {event, &on_shutdown_};
-  base::WaitableEvent::WaitMany(waitables, arraysize(waitables));
+  base::WaitableEvent::WaitMany(waitables, base::size(waitables));
 }
 
 }  // namespace media

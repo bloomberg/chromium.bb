@@ -8,8 +8,8 @@
 #include <stddef.h>
 
 #include <list>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 
 namespace media {
@@ -85,7 +85,7 @@ class LRU {
 
   // Maps element values to positions in the list so that we
   // can quickly remove elements.
-  base::hash_map<T, typename std::list<T>::iterator> pos_;
+  std::unordered_map<T, typename std::list<T>::iterator> pos_;
 
   DISALLOW_COPY_AND_ASSIGN(LRU);
 };

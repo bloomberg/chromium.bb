@@ -11,9 +11,9 @@
 
 namespace base {
 
-#if defined(NCTEST_TASK_TRAITS_EXTENSION_MULTIPLE_BASE_TRAITS)  // [r"Multiple arguments of the same type were provided to the constructor of TaskTraits."]
+#if defined(NCTEST_TASK_TRAITS_EXTENSION_MULTIPLE_BASE_TRAITS)  // [r"The traits bag contains multiple traits of the same type."]
 constexpr TaskTraits traits = {MayBlock(), MayBlock()};
-#elif defined(NCTEST_TASK_TRAITS_EXTENSION_MULTIPLE_EXTENSION_TRAITS)  // [r"Multiple arguments of the same type were provided to the constructor of TaskTraits."]
+#elif defined(NCTEST_TASK_TRAITS_EXTENSION_MULTIPLE_EXTENSION_TRAITS)  // [r"The traits bag contains multiple traits of the same type."]
 constexpr TaskTraits traits = {TestExtensionEnumTrait::kB, TestExtensionEnumTrait::kC};
 #elif defined(NCTEST_TASK_TRAITS_EXTENSION_INVALID_TYPE)  // [r"no matching constructor for initialization of 'const base::TaskTraits'"]
 constexpr TaskTraits traits = {TestExtensionEnumTrait::kB, 123};

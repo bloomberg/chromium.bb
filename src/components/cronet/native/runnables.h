@@ -27,6 +27,6 @@ class OnceClosureRunnable : public Cronet_Runnable {
   DISALLOW_COPY_AND_ASSIGN(OnceClosureRunnable);
 };
 
-};  // namespace cronet
+}  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_NATIVE_RUNNABLES_H_

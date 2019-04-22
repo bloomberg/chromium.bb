@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_insert.h"
 
-#include "fxjs/xfa/cjx_insert.h"
+#include "fxjs/xfa/cjx_textnode.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -16,9 +16,7 @@ const CXFA_Node::AttributeData kInsertAttributeData[] = {
     {XFA_Attribute::Name, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kInsertName[] = L"insert";
+};
 
 }  // namespace
 
@@ -28,9 +26,8 @@ CXFA_Insert::CXFA_Insert(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_SourceSet,
                 XFA_ObjectType::TextNode,
                 XFA_Element::Insert,
-                nullptr,
+                {},
                 kInsertAttributeData,
-                kInsertName,
-                pdfium::MakeUnique<CJX_Insert>(this)) {}
+                pdfium::MakeUnique<CJX_TextNode>(this)) {}
 
-CXFA_Insert::~CXFA_Insert() {}
+CXFA_Insert::~CXFA_Insert() = default;

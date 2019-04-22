@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelAdapter.AccessibilityTabModelAdapterListener;
 import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelWrapper;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * A {@link Layout} that shows the tabs as two {@link ListView}s, one for each {@link TabModel} to
@@ -157,6 +158,18 @@ public class OverviewListLayout extends Layout implements AccessibilityTabModelA
                 parent.removeView(mTabModelWrapper);
             }
         }
+    }
+
+    @Override
+    public boolean canHostBeFocusable() {
+        // TODO(https://crbug.com/918171): Consider fine-tuning accessibility support for the
+        // overview list layout.
+        // We don't allow the host to gain focus for phones so that the CompositorViewHolder doesn't
+        // steal focus when trying to focus the disabled tab switcher button when there are no tabs
+        // open (https://crbug.com/584423). This solution never worked on tablets, however, and
+        // caused a different focus bug, so on tablets we do allow the host to gain focus
+        // (https://crbug.com/925277).
+        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext());
     }
 
     @Override

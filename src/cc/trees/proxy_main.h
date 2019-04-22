@@ -5,11 +5,14 @@
 #ifndef CC_TREES_PROXY_MAIN_H_
 #define CC_TREES_PROXY_MAIN_H_
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_common.h"
+
+namespace viz {
+class LocalSurfaceIdAllocation;
+}
 
 namespace cc {
 
@@ -18,6 +21,7 @@ class CompletionEvent;
 class LayerTreeFrameSink;
 class LayerTreeHost;
 class LayerTreeMutator;
+class PaintWorkletLayerPainter;
 class ProxyImpl;
 class RenderFrameMetadataObserver;
 
@@ -28,8 +32,10 @@ class CC_EXPORT ProxyMain : public Proxy {
  public:
   ProxyMain(LayerTreeHost* layer_tree_host,
             TaskRunnerProvider* task_runner_provider);
-
+  ProxyMain(const ProxyMain&) = delete;
   ~ProxyMain() override;
+
+  ProxyMain& operator=(const ProxyMain&) = delete;
 
   // Commits between the main and impl threads are processed through a pipeline
   // with the following stages. For efficiency we can early out at any stage if
@@ -56,6 +62,8 @@ class CC_EXPORT ProxyMain : public Proxy {
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback);
+  void DidGenerateLocalSurfaceIdAllocation(
+      const viz::LocalSurfaceIdAllocation& allocation);
 
   CommitPipelineStage max_requested_pipeline_stage() const {
     return max_requested_pipeline_stage_;
@@ -80,13 +88,17 @@ class CC_EXPORT ProxyMain : public Proxy {
   void SetNeedsRedraw(const gfx::Rect& damage_rect) override;
   void SetNextCommitWaitsForActivation() override;
   bool RequestedAnimatePending() override;
-  void NotifyInputThrottledUntilCommit() override;
   void SetDeferMainFrameUpdate(bool defer_main_frame_update) override;
+  void StartDeferringCommits(base::TimeDelta timeout) override;
+  void StopDeferringCommits() override;
   bool CommitRequested() const override;
   void Start() override;
   void Stop() override;
   bool SupportsImplScrolling() const override;
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
+  void SetPaintWorkletLayerPainter(
+      std::unique_ptr<PaintWorkletLayerPainter> painter) override;
+  uint32_t GenerateChildSurfaceSequenceNumberSync() override;
   bool MainFrameWillHappenForTesting() override;
   void ReleaseLayerTreeFrameSink() override;
   void UpdateBrowserControlsState(BrowserControlsState constraints,
@@ -134,7 +146,13 @@ class CC_EXPORT ProxyMain : public Proxy {
   // stopped using Proxy::Stop().
   bool started_;
 
+  // defer_main_frame_update_ will also cause commits to be deferred, regardless
+  // of the setting for defer_commits_.
   bool defer_main_frame_update_;
+  bool defer_commits_;
+
+  // Only used when defer_commits_ is active and must be set in such cases.
+  base::TimeTicks commits_restart_time_;
 
   // ProxyImpl is created and destroyed on the impl thread, and should only be
   // accessed on the impl thread.
@@ -148,8 +166,6 @@ class CC_EXPORT ProxyMain : public Proxy {
   base::WeakPtrFactory<ProxyMain> frame_sink_bound_weak_factory_;
 
   base::WeakPtrFactory<ProxyMain> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyMain);
 };
 
 }  // namespace cc

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/stream_handle_input_stream.h"
 #include "components/download/public/common/url_download_request_handle.h"
@@ -137,6 +138,7 @@ void ResourceDownloader::Start(
     std::unique_ptr<DownloadUrlParameters> download_url_parameters,
     bool is_parallel_request) {
   callback_ = download_url_parameters->callback();
+  upload_callback_ = download_url_parameters->upload_callback();
   guid_ = download_url_parameters->guid();
 
   // Set up the URLLoaderClient.
@@ -224,7 +226,9 @@ void ResourceDownloader::OnResponseStarted(
 }
 
 void ResourceDownloader::OnReceiveRedirect() {
-  url_loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  url_loader_->FollowRedirect(std::vector<std::string>() /* removed_headers */,
+                              net::HttpRequestHeaders() /* modified_headers */,
+                              base::nullopt);
 }
 
 void ResourceDownloader::OnResponseCompleted() {
@@ -235,6 +239,14 @@ bool ResourceDownloader::CanRequestURL(const GURL& url) {
   return url_security_policy_
              ? url_security_policy_.Run(render_process_id_, url)
              : true;
+}
+
+void ResourceDownloader::OnUploadProgress(uint64_t bytes_uploaded) {
+  if (!upload_callback_)
+    return;
+
+  delegate_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(upload_callback_, bytes_uploaded));
 }
 
 void ResourceDownloader::CancelRequest() {

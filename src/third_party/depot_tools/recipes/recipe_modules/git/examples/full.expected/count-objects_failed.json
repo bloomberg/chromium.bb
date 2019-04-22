@@ -23,7 +23,7 @@
     ],
     "cwd": "[START_DIR]/src",
     "env": {
-      "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:<PATH>"
+      "PATH": "RECIPE_REPO[depot_tools]:<PATH>"
     },
     "infra_step": true,
     "name": "git fetch"
@@ -100,7 +100,6 @@
     "name": "count-objects",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
-      "step returned non-zero exit code: 1",
       "@@@STEP_EXCEPTION@@@"
     ]
   },
@@ -178,7 +177,7 @@
     ],
     "cwd": "[START_DIR]/src",
     "env": {
-      "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:<PATH>"
+      "PATH": "RECIPE_REPO[depot_tools]:<PATH>"
     },
     "infra_step": true,
     "name": "git new-branch refactor"
@@ -193,7 +192,7 @@
     ],
     "cwd": "[START_DIR]/src",
     "env": {
-      "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:<PATH>"
+      "PATH": "RECIPE_REPO[depot_tools]:<PATH>"
     },
     "infra_step": true,
     "name": "git new-branch feature"

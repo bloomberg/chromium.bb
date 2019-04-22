@@ -39,6 +39,9 @@ const char kDumpRawLogsSwitch[] = "dump-raw-logs";
 // don't try again.
 const char kElevatedSwitch[] = "elevated";
 
+// Limit the size of files the scanning engine is allowed to open.
+const char kFileSizeLimitSwitch[] = "max-file-size";
+
 // Force a logs upload failure to help test the logs upload retry.
 const char kForceLogsUploadFailureSwitch[] = "force-logs-upload-failure";
 
@@ -48,12 +51,6 @@ const char kForceRecoveryComponentSwitch[] = "force-recovery-component";
 
 // Force self-deletion even on non-official builds.
 const char kForceSelfDeleteSwitch[] = "force-self-delete";
-
-// Log all removable UwS that were not detected, but the scanner found some
-// UwS-related footprints.
-// WARNING: this switch is used by internal test systems. Be careful when making
-// changes.
-const char kForceUwsDetectionSwitch[] = "force-uws-detection";
 
 // The handle of an event to signal when the initialization of the main process
 // is complete (including loading all DLL's). This is used by the integration
@@ -114,9 +111,6 @@ const char kQuarantineDirSwitch[] = "quarantine-dir";
 // only.
 const char kRemoveScanOnlyUwS[] = "remove-scan-only-uws";
 
-// Enable reporting of force-installed Chrome extensions.
-const char kReportExtensionsSwitch[] = "report-extensions";
-
 // Mojo pipe token generated in the broker process and passed to the sandbox
 // process to bind with the EngineCommands IPC interface.
 const char kSandboxMojoPipeTokenSwitch[] = "sandbox-mojo-pipe-token";
@@ -135,6 +129,9 @@ const char kScanLocationsSwitch[] = "scan-locations";
 // WARNING: this switch is used by internal test systems. Be careful when making
 // changes.
 const char kScanningTimeoutMinutesSwitch[] = "scanning-timeout";
+
+// Set a path to save logs in while testing.
+const char kTestLoggingPathSwitch[] = "test-logging-path";
 
 // Set a test logging URL, where logs will be uploaded.
 const char kTestLoggingURLSwitch[] = "test-logging-url";
@@ -170,6 +167,12 @@ const char kWithCleanupModeLogsSwitch[] = "with-cleanup-mode-logs";
 // Don't allow EnableSecureDllLoading to run when this is set. This is only to
 // be used in tests.
 const char kAllowUnsecureDLLsSwitch[] = "allow-unsecure-dlls";
+
+// Load the engine outside the sandbox. This is only to be used for manual
+// testing.
+const char kRunWithoutSandboxForTestingSwitch[] =
+    "run-without-sandbox-for-testing";
+
 #endif  // CHROME_CLEANER_OFFICIAL_BUILD
 
 }  // namespace chrome_cleaner

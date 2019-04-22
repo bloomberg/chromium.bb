@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/navigation_entry.h"
@@ -27,11 +28,15 @@ class MockChildProcessLauncherClient
       client_->OnProcessLaunchFailed(content::LAUNCH_RESULT_FAILURE);
     else
       client_->OnProcessLaunched();
-  };
+  }
 
   void OnProcessLaunchFailed(int error_code) override {
     client_->OnProcessLaunchFailed(error_code);
-  };
+  }
+
+#if defined(OS_ANDROID)
+  bool CanUseWarmUpConnection() override { return true; }
+#endif
 
   content::ChildProcessLauncher::Client* client_;
   bool simulate_failure_;

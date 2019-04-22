@@ -71,5 +71,6 @@ chrome.cast.isAvailable = true;
 Object.seal(chrome.cast);
 
 // Invokes the handler.
-if (window['__onGCastApiAvailable'])
+if (window['__onGCastApiAvailable']) {
   window['__onGCastApiAvailable'](true, null);
+}

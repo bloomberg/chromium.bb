@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
@@ -42,30 +43,30 @@ LayoutTextFragment::LayoutTextFragment(Node* node,
       fragment_length_(length),
       is_remaining_text_layout_object_(false),
       content_string_(str),
-      first_letter_pseudo_element_(nullptr) {}
+      first_letter_pseudo_element_(nullptr) {
+  is_text_fragment_ = true;
+}
 
 LayoutTextFragment::~LayoutTextFragment() {
   DCHECK(!first_letter_pseudo_element_);
 }
 
-LayoutTextFragment* LayoutTextFragment::Create(const ComputedStyle& style,
-                                               Node* node,
+LayoutTextFragment* LayoutTextFragment::Create(Node* node,
                                                StringImpl* str,
                                                int start_offset,
-                                               int length) {
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout())
-    return new LayoutNGTextFragment(node, str, start_offset, length);
-  return new LayoutTextFragment(node, str, start_offset, length);
+                                               int length,
+                                               LegacyLayout legacy) {
+  return LayoutObjectFactory::CreateTextFragment(node, str, start_offset,
+                                                 length, legacy);
 }
 
-LayoutTextFragment* LayoutTextFragment::CreateAnonymous(
-    const ComputedStyle& style,
-    PseudoElement& pseudo,
-    StringImpl* text,
-    unsigned start,
-    unsigned length) {
+LayoutTextFragment* LayoutTextFragment::CreateAnonymous(PseudoElement& pseudo,
+                                                        StringImpl* text,
+                                                        unsigned start,
+                                                        unsigned length,
+                                                        LegacyLayout legacy) {
   LayoutTextFragment* fragment =
-      LayoutTextFragment::Create(style, nullptr, text, start, length);
+      LayoutTextFragment::Create(nullptr, text, start, length, legacy);
   fragment->SetDocumentForAnonymous(&pseudo.GetDocument());
   if (length)
     pseudo.GetDocument().View()->IncrementVisuallyNonEmptyCharacterCount(
@@ -73,11 +74,10 @@ LayoutTextFragment* LayoutTextFragment::CreateAnonymous(
   return fragment;
 }
 
-LayoutTextFragment* LayoutTextFragment::CreateAnonymous(
-    const ComputedStyle& style,
-    PseudoElement& pseudo,
-    StringImpl* text) {
-  return CreateAnonymous(style, pseudo, text, 0, text ? text->length() : 0);
+LayoutTextFragment* LayoutTextFragment::CreateAnonymous(PseudoElement& pseudo,
+                                                        StringImpl* text,
+                                                        LegacyLayout legacy) {
+  return CreateAnonymous(pseudo, text, 0, text ? text->length() : 0, legacy);
 }
 
 void LayoutTextFragment::WillBeDestroyed() {
@@ -202,12 +202,18 @@ void LayoutTextFragment::UpdateHitTestResult(HitTestResult& result,
 }
 
 Position LayoutTextFragment::PositionForCaretOffset(unsigned offset) const {
-  DCHECK_LE(offset, FragmentLength());
+  // TODO(layout-dev): Make the following DCHECK always enabled after we
+  // properly support 'text-transform' changing text length.
+#if DCHECK_IS_ON()
+  if (StyleRef().TextTransform() == ETextTransform::kNone)
+    DCHECK_LE(offset, FragmentLength());
+#endif
   const Text* node = AssociatedTextNode();
   if (!node)
     return Position();
-  // TODO(layout-dev): Support offset change due to text-transform.
-  return Position(node, Start() + offset);
+  // TODO(layout-dev): Properly support offset change due to text-transform.
+  const unsigned clamped_offset = std::min(offset, FragmentLength());
+  return Position(node, Start() + clamped_offset);
 }
 
 base::Optional<unsigned> LayoutTextFragment::CaretOffsetForPosition(

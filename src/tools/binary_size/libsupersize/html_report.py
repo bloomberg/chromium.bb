@@ -135,10 +135,10 @@ def _MakeTreeViewList(symbols, include_all_symbols):
     file_node = _GetOrAddFileNode(
         path, symbol.component, file_nodes, components)
 
-    is_dex_method = symbol.section_name == models.SECTION_DEX_METHOD
+    name = symbol.full_name if symbol.IsDex() else symbol.template_name
     symbol_entry = {
       _COMPACT_SYMBOL_BYTE_SIZE_KEY: symbol_size,
-      _COMPACT_SYMBOL_NAME_KEY: symbol.template_name,
+      _COMPACT_SYMBOL_NAME_KEY: name,
       _COMPACT_SYMBOL_TYPE_KEY: symbol.section,
     }
     if symbol.num_aliases != 1:
@@ -149,6 +149,7 @@ def _MakeTreeViewList(symbols, include_all_symbols):
     # count as -1 rather than the default, 1.
     # We don't care about accurate counts for other symbol types currently,
     # so this data is only included for methods.
+    is_dex_method = symbol.section_name == models.SECTION_DEX_METHOD
     if is_dex_method and symbol_count != default_symbol_count:
       symbol_entry[_COMPACT_SYMBOL_COUNT_KEY] = symbol_count
     if symbol.flags:

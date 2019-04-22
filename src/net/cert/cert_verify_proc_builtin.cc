@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
@@ -140,24 +139,22 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
     RevocationPolicy policy =
         ChooseRevocationPolicy(path->certs, &crlset_leaf_coverage_sufficient);
 
-    // Check for revocations using the CRLSet (if available).
-    if (crl_set_) {
-      switch (CheckChainRevocationUsingCRLSet(crl_set_, path->certs,
-                                              &path->errors)) {
-        case CRLSet::Result::REVOKED:
-          return;
-        case CRLSet::Result::GOOD:
-          if (crlset_leaf_coverage_sufficient) {
-            // Weaken the revocation checking requirement as it has been
-            // satisfied. (Don't early-return, since still want to consult
-            // cached OCSP/CRL if available).
-            policy = NoRevocationChecking();
-          }
-          break;
-        case CRLSet::Result::UNKNOWN:
-          // CRLSet was inconclusive.
-          break;
-      }
+    // Check for revocations using the CRLSet.
+    switch (
+        CheckChainRevocationUsingCRLSet(crl_set_, path->certs, &path->errors)) {
+      case CRLSet::Result::REVOKED:
+        return;
+      case CRLSet::Result::GOOD:
+        if (crlset_leaf_coverage_sufficient) {
+          // Weaken the revocation checking requirement as it has been
+          // satisfied. (Don't early-return, since still want to consult
+          // cached OCSP/CRL if available).
+          policy = NoRevocationChecking();
+        }
+        break;
+      case CRLSet::Result::UNKNOWN:
+        // CRLSet was inconclusive.
+        break;
     }
 
     if (policy.check_revocation)

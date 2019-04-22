@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/metrics/previous_session_info_private.h"
 #import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/main/tab_switcher.h"
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
@@ -107,14 +107,14 @@ ios::ChromeBrowserState* GetCurrentIncognitoBrowserState() {
 }
 
 NSUInteger GetRegisteredKeyCommandsCount() {
-  BrowserViewController* mainBVC =
-      GetMainController().browserViewInformation.mainBVC;
-  return mainBVC.keyCommands.count;
+  UIViewController* mainViewController =
+      GetMainController().interfaceProvider.mainInterface.viewController;
+  return mainViewController.keyCommands.count;
 }
 
 id<BrowserCommands> BrowserCommandDispatcherForMainBVC() {
   BrowserViewController* mainBVC =
-      GetMainController().browserViewInformation.mainBVC;
+      GetMainController().interfaceProvider.mainInterface.bvc;
   return mainBVC.dispatcher;
 }
 

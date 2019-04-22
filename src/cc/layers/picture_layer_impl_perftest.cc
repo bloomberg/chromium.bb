@@ -4,9 +4,8 @@
 
 #include "cc/layers/picture_layer_impl.h"
 
-#include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -49,6 +48,9 @@ class PictureLayerImplPerfTest : public testing::Test {
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {}
+
+  PictureLayerImplPerfTest(const PictureLayerImplPerfTest&) = delete;
+  PictureLayerImplPerfTest& operator=(const PictureLayerImplPerfTest&) = delete;
 
   void SetUp() override {
     host_impl_.SetVisible(true);
@@ -174,10 +176,7 @@ class PictureLayerImplPerfTest : public testing::Test {
   std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink_;
   FakeLayerTreeHostImpl host_impl_;
   FakePictureLayerImpl* pending_layer_;
-  LapTimer timer_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PictureLayerImplPerfTest);
+  base::LapTimer timer_;
 };
 
 TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstructAndIterate) {

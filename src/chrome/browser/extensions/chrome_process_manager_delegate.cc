@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/one_shot_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -21,12 +22,12 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/chromeos_switches.h"
+#include "chrome/browser/extensions/component_extensions_whitelist/whitelist.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 namespace extensions {
@@ -82,16 +83,15 @@ bool ChromeProcessManagerDelegate::IsExtensionBackgroundPageAllowed(
             ->GetForceInstallList();
 
     // For the ChromeOS login profile, only allow apps installed by device
-    // policy.
-    return login_screen_apps_list->HasKey(extension.id());
+    // policy or that are explicitly whitelisted.
+    return login_screen_apps_list->HasKey(extension.id()) ||
+           IsComponentExtensionWhitelistedForSignInProfile(extension.id());
   }
 
   if (chromeos::ProfileHelper::IsLockScreenAppProfile(profile) &&
       !profile->IsOffTheRecord()) {
-    return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-               chromeos::switches::kDisableLockScreenApps) &&
-           extension.permissions_data()->HasAPIPermission(
-               APIPermission::kLockScreen);
+    return extension.permissions_data()->HasAPIPermission(
+        APIPermission::kLockScreen);
   }
 #endif
 

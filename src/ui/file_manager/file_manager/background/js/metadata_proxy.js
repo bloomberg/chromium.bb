@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Namespace
-var metadataProxy = {};
+const metadataProxy = {};
 
 /**
  * Maximum number of entries whose metadata can be cached.
@@ -23,13 +23,13 @@ metadataProxy.cache_ = new LRUCache(metadataProxy.MAX_CACHED_METADATA_);
  * @param {!FileEntry} entry
  * @return {!Promise<!Metadata>}
  */
-metadataProxy.getEntryMetadata = function(entry) {
-  var entryURL = entry.toURL();
+metadataProxy.getEntryMetadata = entry => {
+  const entryURL = entry.toURL();
   if (metadataProxy.cache_.hasKey(entryURL)) {
     return Promise.resolve(metadataProxy.cache_.get(entryURL));
   } else {
-    return new Promise(function(resolve, reject) {
-      entry.getMetadata(function(metadata) {
+    return new Promise((resolve, reject) => {
+      entry.getMetadata(metadata => {
         metadataProxy.cache_.put(entryURL, metadata);
         resolve(metadata);
       }, reject);

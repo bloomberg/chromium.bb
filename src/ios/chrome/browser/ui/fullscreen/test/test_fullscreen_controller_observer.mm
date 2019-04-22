@@ -11,6 +11,15 @@
 #error "This file requires ARC support."
 #endif
 
+void TestFullscreenControllerObserver::FullscreenViewportInsetRangeChanged(
+    FullscreenController* controller,
+    UIEdgeInsets min_viewport_insets,
+    UIEdgeInsets max_viewport_insets) {
+  min_viewport_insets_ = min_viewport_insets;
+  max_viewport_insets_ = max_viewport_insets;
+  current_viewport_insets_ = controller->GetCurrentViewportInsets();
+}
+
 void TestFullscreenControllerObserver::FullscreenProgressUpdated(
     FullscreenController* controller,
     CGFloat progress) {

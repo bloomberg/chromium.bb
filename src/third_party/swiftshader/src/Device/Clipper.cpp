@@ -16,19 +16,10 @@
 
 #include "Polygon.hpp"
 #include "Renderer.hpp"
-#include "System/Debug.hpp"
+#include "Vulkan/VkDebug.hpp"
 
 namespace sw
 {
-	Clipper::Clipper(bool symmetricNormalizedDepth)
-	{
-		n = symmetricNormalizedDepth ? -1.0f : 0.0f;
-	}
-
-	Clipper::~Clipper()
-	{
-	}
-
 	unsigned int Clipper::computeClipFlags(const float4 &v)
 	{
 		return ((v.x > v.w)     ? CLIP_RIGHT  : 0) |
@@ -36,7 +27,7 @@ namespace sw
 		       ((v.z > v.w)     ? CLIP_FAR    : 0) |
 		       ((v.x < -v.w)    ? CLIP_LEFT   : 0) |
 		       ((v.y < -v.w)    ? CLIP_BOTTOM : 0) |
-		       ((v.z < n * v.w) ? CLIP_NEAR   : 0) |
+		       ((v.z < 0)       ? CLIP_NEAR   : 0) |
 		       Clipper::CLIP_FINITE;   // FIXME: xyz finite
 	}
 
@@ -58,26 +49,6 @@ namespace sw
 			}}}}}
 		}
 
-		if(clipFlagsOr & CLIP_USER)
-		{
-			int clipFlags = draw.clipFlags;
-			DrawData &data = *draw.data;
-
-			if(polygon.n >= 3) {
-			if(clipFlags & CLIP_PLANE0) clipPlane(polygon, data.clipPlane[0]);
-			if(polygon.n >= 3) {
-			if(clipFlags & CLIP_PLANE1) clipPlane(polygon, data.clipPlane[1]);
-			if(polygon.n >= 3) {
-			if(clipFlags & CLIP_PLANE2) clipPlane(polygon, data.clipPlane[2]);
-			if(polygon.n >= 3) {
-			if(clipFlags & CLIP_PLANE3) clipPlane(polygon, data.clipPlane[3]);
-			if(polygon.n >= 3) {
-			if(clipFlags & CLIP_PLANE4) clipPlane(polygon, data.clipPlane[4]);
-			if(polygon.n >= 3) {
-			if(clipFlags & CLIP_PLANE5) clipPlane(polygon, data.clipPlane[5]);
-			}}}}}}
-		}
-
 		return polygon.n >= 3;
 	}
 
@@ -92,8 +63,8 @@ namespace sw
 		{
 			int j = i == polygon.n - 1 ? 0 : i + 1;
 
-			float di = V[i]->z - n * V[i]->w;
-			float dj = V[j]->z - n * V[j]->w;
+			float di = V[i]->z;
+			float dj = V[j]->z;
 
 			if(di >= 0)
 			{
@@ -284,44 +255,6 @@ namespace sw
 
 			float di = V[i]->w + V[i]->y;
 			float dj = V[j]->w + V[j]->y;
-
-			if(di >= 0)
-			{
-				T[t++] = V[i];
-
-				if(dj < 0)
-				{
-					clipEdge(polygon.B[polygon.b], *V[i], *V[j], di, dj);
-					T[t++] = &polygon.B[polygon.b++];
-				}
-			}
-			else
-			{
-				if(dj > 0)
-				{
-					clipEdge(polygon.B[polygon.b], *V[j], *V[i], dj, di);
-					T[t++] = &polygon.B[polygon.b++];
-				}
-			}
-		}
-
-		polygon.n = t;
-		polygon.i += 1;
-	}
-
-	void Clipper::clipPlane(Polygon &polygon, const Plane &p)
-	{
-		const float4 **V = polygon.P[polygon.i];
-		const float4 **T = polygon.P[polygon.i + 1];
-
-		int t = 0;
-
-		for(int i = 0; i < polygon.n; i++)
-		{
-			int j = i == polygon.n - 1 ? 0 : i + 1;
-
-			float di = p.A * V[i]->x + p.B * V[i]->y + p.C * V[i]->z + p.D * V[i]->w;
-			float dj = p.A * V[j]->x + p.B * V[j]->y + p.C * V[j]->z + p.D * V[j]->w;
 
 			if(di >= 0)
 			{

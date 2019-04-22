@@ -4,6 +4,9 @@
 
 #include "chrome/chrome_cleaner/test/test_extensions.h"
 
+#include "base/files/file.h"
+#include "base/files/file_util.h"
+
 namespace chrome_cleaner {
 
 TestRegistryEntry::TestRegistryEntry(HKEY hkey,
@@ -14,5 +17,32 @@ TestRegistryEntry::TestRegistryEntry(HKEY hkey,
 TestRegistryEntry::TestRegistryEntry(const TestRegistryEntry& other) = default;
 TestRegistryEntry& TestRegistryEntry::operator=(
     const TestRegistryEntry& other) = default;
+
+bool CreateProfileWithExtensionAndFiles(
+    const base::FilePath& profile_path,
+    const base::string16& extension_id,
+    const std::vector<base::string16>& extension_files) {
+  if (!base::CreateDirectory(profile_path))
+    return false;
+
+  base::FilePath extensions_folder_path = profile_path.Append(L"Extensions");
+  if (!base::CreateDirectory(extensions_folder_path))
+    return false;
+
+  base::FilePath extension_path = extensions_folder_path.Append(extension_id);
+  if (!base::CreateDirectory(extension_path))
+    return false;
+
+  for (const base::string16& file_name : extension_files) {
+    base::File extension_file(
+        extension_path.Append(file_name),
+        base::File::Flags::FLAG_CREATE | base::File::Flags::FLAG_READ);
+
+    if (!extension_file.IsValid())
+      return false;
+  }
+
+  return true;
+}
 
 }  // namespace chrome_cleaner

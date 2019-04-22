@@ -55,7 +55,7 @@ class AURA_EXTRA_EXPORT ImageWindowDelegate : public aura::WindowDelegate {
   void OnWindowDestroyed(aura::Window* window) override;
   void OnWindowTargetVisibilityChanged(bool visible) override;
   bool HasHitTestMask() const override;
-  void GetHitTestMask(gfx::Path* mask) const override;
+  void GetHitTestMask(SkPath* mask) const override;
 
  protected:
   SkColor background_color_;

@@ -45,6 +45,16 @@ const int kCheckMissingCallbacksIntervalSeconds = 5;
 // data from the source.
 const int kGotDataCallbackIntervalSeconds = 1;
 
+base::ThreadPriority ThreadPriorityFromPurpose(
+    AudioInputDevice::Purpose purpose) {
+  switch (purpose) {
+    case AudioInputDevice::Purpose::kUserInput:
+      return base::ThreadPriority::REALTIME_AUDIO;
+    case AudioInputDevice::Purpose::kLoopback:
+      return base::ThreadPriority::NORMAL;
+  }
+}
+
 }  // namespace
 
 // Takes care of invoking the capture callback on the audio thread.
@@ -56,6 +66,7 @@ class AudioInputDevice::AudioThreadCallback
   AudioThreadCallback(const AudioParameters& audio_parameters,
                       base::ReadOnlySharedMemoryRegion shared_memory_region,
                       uint32_t total_segments,
+                      bool enable_uma,
                       CaptureCallback* capture_callback,
                       base::RepeatingClosure got_data_callback);
   ~AudioThreadCallback() override;
@@ -66,6 +77,7 @@ class AudioInputDevice::AudioThreadCallback
   void Process(uint32_t pending_data) override;
 
  private:
+  const bool enable_uma_;
   base::ReadOnlySharedMemoryRegion shared_memory_region_;
   base::ReadOnlySharedMemoryMapping shared_memory_mapping_;
   const base::TimeTicks start_time_;
@@ -87,8 +99,9 @@ class AudioInputDevice::AudioThreadCallback
 };
 
 AudioInputDevice::AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc,
-                                   base::ThreadPriority thread_priority)
-    : thread_priority_(thread_priority),
+                                   Purpose purpose)
+    : thread_priority_(ThreadPriorityFromPurpose(purpose)),
+      enable_uma_(purpose == AudioInputDevice::Purpose::kUserInput),
       callback_(nullptr),
       ipc_(std::move(ipc)),
       state_(IDLE),
@@ -129,12 +142,14 @@ void AudioInputDevice::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("audio", "AudioInputDevice::Stop");
 
-  UMA_HISTOGRAM_BOOLEAN(
-      "Media.Audio.Capture.DetectedMissingCallbacks",
-      alive_checker_ ? alive_checker_->DetectedDead() : false);
+  if (enable_uma_) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Media.Audio.Capture.DetectedMissingCallbacks",
+        alive_checker_ ? alive_checker_->DetectedDead() : false);
 
-  UMA_HISTOGRAM_ENUMERATION("Media.Audio.Capture.StreamCallbackError2",
-                            had_error_);
+    UMA_HISTOGRAM_ENUMERATION("Media.Audio.Capture.StreamCallbackError2",
+                              had_error_);
+  }
   had_error_ = kNoError;
 
   // Close the stream, if we haven't already.
@@ -150,7 +165,7 @@ void AudioInputDevice::Stop() {
   // audio_thread_.reset(). In most cases, the thread will already be stopped.
   //
   // |alive_checker_| must outlive |audio_callback_|.
-  base::ScopedAllowBlocking allow_blocking;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
   audio_thread_.reset();
   audio_callback_.reset();
   alive_checker_.reset();
@@ -249,7 +264,7 @@ void AudioInputDevice::OnStreamCreated(
   // Unretained is safe since |alive_checker_| outlives |audio_callback_|.
   audio_callback_ = std::make_unique<AudioInputDevice::AudioThreadCallback>(
       audio_parameters_, std::move(shared_memory_region),
-      kRequestedSharedMemoryCount, callback_,
+      kRequestedSharedMemoryCount, enable_uma_, callback_,
       base::BindRepeating(&AliveChecker::NotifyAlive,
                           base::Unretained(alive_checker_.get())));
   audio_thread_ =
@@ -332,12 +347,14 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
     const AudioParameters& audio_parameters,
     base::ReadOnlySharedMemoryRegion shared_memory_region,
     uint32_t total_segments,
+    bool enable_uma,
     CaptureCallback* capture_callback,
     base::RepeatingClosure got_data_callback_)
     : AudioDeviceThread::Callback(
           audio_parameters,
           ComputeAudioInputBufferSize(audio_parameters, 1u),
           total_segments),
+      enable_uma_(enable_uma),
       shared_memory_region_(std::move(shared_memory_region)),
       start_time_(base::TimeTicks::Now()),
       no_callbacks_received_(true),
@@ -354,8 +371,10 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
 }
 
 AudioInputDevice::AudioThreadCallback::~AudioThreadCallback() {
-  UMA_HISTOGRAM_LONG_TIMES("Media.Audio.Capture.InputStreamDuration",
-                           base::TimeTicks::Now() - start_time_);
+  if (enable_uma_) {
+    UMA_HISTOGRAM_LONG_TIMES("Media.Audio.Capture.InputStreamDuration",
+                             base::TimeTicks::Now() - start_time_);
+  }
 }
 
 void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
@@ -383,8 +402,10 @@ void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   TRACE_EVENT_BEGIN0("audio", "AudioInputDevice::AudioThreadCallback::Process");
 
   if (no_callbacks_received_) {
-    UMA_HISTOGRAM_TIMES("Media.Audio.Render.InputDeviceStartTime",
-                        base::TimeTicks::Now() - start_time_);
+    if (enable_uma_) {
+      UMA_HISTOGRAM_TIMES("Media.Audio.Render.InputDeviceStartTime",
+                          base::TimeTicks::Now() - start_time_);
+    }
     no_callbacks_received_ = false;
   }
 

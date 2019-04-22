@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread.h"
@@ -23,6 +24,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/ping_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -45,7 +47,7 @@ namespace safe_browsing {
 
 SafeBrowsingUIManager::SafeBrowsingUIManager(
     const scoped_refptr<SafeBrowsingService>& service)
-    : sb_service_(service) {}
+    : BaseUIManager(), sb_service_(service) {}
 
 SafeBrowsingUIManager::~SafeBrowsingUIManager() {}
 
@@ -102,6 +104,10 @@ void SafeBrowsingUIManager::CreateAndSendHitReport(
 void SafeBrowsingUIManager::ShowBlockingPageForResource(
     const UnsafeResource& resource) {
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
+}
+
+bool SafeBrowsingUIManager::SafeBrowsingInterstitialsAreCommittedNavigations() {
+  return base::FeatureList::IsEnabled(kCommittedSBInterstitials);
 }
 
 // static
@@ -194,7 +200,7 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
     const GURL& main_frame_url) {
   BaseUIManager::OnBlockingPageDone(resources, proceed, web_contents,
                                     main_frame_url);
-  if (proceed && resources.size() > 0) {
+  if (proceed && !resources.empty()) {
     MaybeTriggerSecurityInterstitialProceededEvent(
         web_contents, main_frame_url,
         GetThreatTypeStringForInterstitial(resources[0].threat_type),

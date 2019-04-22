@@ -49,6 +49,7 @@ using std::string;
 using std::vector;
 using tcu::Float16;
 using tcu::Float32;
+using tcu::Float64;
 using tcu::IVec3;
 using tcu::IVec4;
 using tcu::RGBA;
@@ -64,7 +65,10 @@ deUint32 IFDataType::getElementNumBytes (void) const
 	if (elementType < NUMBERTYPE_END32)
 		return 4;
 
-	return 2;
+	if (elementType < NUMBERTYPE_END16)
+		return 2;
+
+	return 8;
 }
 
 VkFormat IFDataType::getVkFormat (void) const
@@ -73,6 +77,7 @@ VkFormat IFDataType::getVkFormat (void) const
 	{
 		switch (elementType)
 		{
+			case NUMBERTYPE_FLOAT64:	return VK_FORMAT_R64_SFLOAT;
 			case NUMBERTYPE_FLOAT32:	return VK_FORMAT_R32_SFLOAT;
 			case NUMBERTYPE_INT32:		return VK_FORMAT_R32_SINT;
 			case NUMBERTYPE_UINT32:		return VK_FORMAT_R32_UINT;
@@ -86,6 +91,7 @@ VkFormat IFDataType::getVkFormat (void) const
 	{
 		switch (elementType)
 		{
+			case NUMBERTYPE_FLOAT64:	return VK_FORMAT_R64G64_SFLOAT;
 			case NUMBERTYPE_FLOAT32:	return VK_FORMAT_R32G32_SFLOAT;
 			case NUMBERTYPE_INT32:		return VK_FORMAT_R32G32_SINT;
 			case NUMBERTYPE_UINT32:		return VK_FORMAT_R32G32_UINT;
@@ -99,6 +105,7 @@ VkFormat IFDataType::getVkFormat (void) const
 	{
 		switch (elementType)
 		{
+			case NUMBERTYPE_FLOAT64:	return VK_FORMAT_R64G64B64_SFLOAT;
 			case NUMBERTYPE_FLOAT32:	return VK_FORMAT_R32G32B32_SFLOAT;
 			case NUMBERTYPE_INT32:		return VK_FORMAT_R32G32B32_SINT;
 			case NUMBERTYPE_UINT32:		return VK_FORMAT_R32G32B32_UINT;
@@ -112,6 +119,7 @@ VkFormat IFDataType::getVkFormat (void) const
 	{
 		switch (elementType)
 		{
+			case NUMBERTYPE_FLOAT64:	return VK_FORMAT_R64G64B64A64_SFLOAT;
 			case NUMBERTYPE_FLOAT32:	return VK_FORMAT_R32G32B32A32_SFLOAT;
 			case NUMBERTYPE_INT32:		return VK_FORMAT_R32G32B32A32_SINT;
 			case NUMBERTYPE_UINT32:		return VK_FORMAT_R32G32B32A32_UINT;
@@ -133,6 +141,7 @@ tcu::TextureFormat IFDataType::getTextureFormat (void) const
 
 	switch (elementType)
 	{
+		case NUMBERTYPE_FLOAT64:	ct = tcu::TextureFormat::FLOAT64;			break;
 		case NUMBERTYPE_FLOAT32:	ct = tcu::TextureFormat::FLOAT;				break;
 		case NUMBERTYPE_INT32:		ct = tcu::TextureFormat::SIGNED_INT32;		break;
 		case NUMBERTYPE_UINT32:		ct = tcu::TextureFormat::UNSIGNED_INT32;	break;
@@ -160,6 +169,7 @@ string IFDataType::str (void) const
 
 	switch (elementType)
 	{
+		case NUMBERTYPE_FLOAT64:	ret = "f64"; break;
 		case NUMBERTYPE_FLOAT32:	ret = "f32"; break;
 		case NUMBERTYPE_INT32:		ret = "i32"; break;
 		case NUMBERTYPE_UINT32:		ret = "u32"; break;
@@ -377,89 +387,6 @@ void createPipelineShaderStages (const DeviceInterface&						vk,
 	}
 }
 
-#define SPIRV_ASSEMBLY_TYPES																	\
-	"%void = OpTypeVoid\n"																		\
-	"%bool = OpTypeBool\n"																		\
-																								\
-	"%i32 = OpTypeInt 32 1\n"																	\
-	"%u32 = OpTypeInt 32 0\n"																	\
-																								\
-	"%f32 = OpTypeFloat 32\n"																	\
-	"%v2i32 = OpTypeVector %i32 2\n"															\
-	"%v2u32 = OpTypeVector %u32 2\n"															\
-	"%v2f32 = OpTypeVector %f32 2\n"															\
-	"%v3i32 = OpTypeVector %i32 3\n"															\
-	"%v3u32 = OpTypeVector %u32 3\n"															\
-	"%v3f32 = OpTypeVector %f32 3\n"															\
-	"%v4i32 = OpTypeVector %i32 4\n"															\
-	"%v4u32 = OpTypeVector %u32 4\n"															\
-	"%v4f32 = OpTypeVector %f32 4\n"															\
-	"%v4bool = OpTypeVector %bool 4\n"															\
-																								\
-	"%v4f32_v4f32_function = OpTypeFunction %v4f32 %v4f32\n"									\
-	"%bool_function = OpTypeFunction %bool\n"													\
-	"%fun = OpTypeFunction %void\n"																\
-																								\
-	"%ip_f32 = OpTypePointer Input %f32\n"														\
-	"%ip_i32 = OpTypePointer Input %i32\n"														\
-	"%ip_u32 = OpTypePointer Input %u32\n"														\
-	"%ip_v3f32 = OpTypePointer Input %v3f32\n"													\
-	"%ip_v2f32 = OpTypePointer Input %v2f32\n"													\
-	"%ip_v2i32 = OpTypePointer Input %v2i32\n"													\
-	"%ip_v2u32 = OpTypePointer Input %v2u32\n"													\
-	"%ip_v4f32 = OpTypePointer Input %v4f32\n"													\
-	"%ip_v4i32 = OpTypePointer Input %v4i32\n"													\
-	"%ip_v4u32 = OpTypePointer Input %v4u32\n"													\
-																								\
-	"%op_f32 = OpTypePointer Output %f32\n"														\
-	"%op_i32 = OpTypePointer Output %i32\n"														\
-	"%op_u32 = OpTypePointer Output %u32\n"														\
-	"%op_v2f32 = OpTypePointer Output %v2f32\n"													\
-	"%op_v2i32 = OpTypePointer Output %v2i32\n"													\
-	"%op_v2u32 = OpTypePointer Output %v2u32\n"													\
-	"%op_v4f32 = OpTypePointer Output %v4f32\n"													\
-	"%op_v4i32 = OpTypePointer Output %v4i32\n"													\
-	"%op_v4u32 = OpTypePointer Output %v4u32\n"													\
-																								\
-	"%fp_f32   = OpTypePointer Function %f32\n"													\
-	"%fp_i32   = OpTypePointer Function %i32\n"													\
-	"%fp_v4f32 = OpTypePointer Function %v4f32\n"
-
-#define SPIRV_ASSEMBLY_CONSTANTS																\
-	"%c_f32_1 = OpConstant %f32 1.0\n"															\
-	"%c_f32_0 = OpConstant %f32 0.0\n"															\
-	"%c_f32_0_5 = OpConstant %f32 0.5\n"														\
-	"%c_f32_n1  = OpConstant %f32 -1.\n"														\
-	"%c_f32_7 = OpConstant %f32 7.0\n"															\
-	"%c_f32_8 = OpConstant %f32 8.0\n"															\
-	"%c_i32_0 = OpConstant %i32 0\n"															\
-	"%c_i32_1 = OpConstant %i32 1\n"															\
-	"%c_i32_2 = OpConstant %i32 2\n"															\
-	"%c_i32_3 = OpConstant %i32 3\n"															\
-	"%c_i32_4 = OpConstant %i32 4\n"															\
-	"%c_u32_0 = OpConstant %u32 0\n"															\
-	"%c_u32_1 = OpConstant %u32 1\n"															\
-	"%c_u32_2 = OpConstant %u32 2\n"															\
-	"%c_u32_3 = OpConstant %u32 3\n"															\
-	"%c_u32_32 = OpConstant %u32 32\n"															\
-	"%c_u32_4 = OpConstant %u32 4\n"															\
-	"%c_u32_31_bits = OpConstant %u32 0x7FFFFFFF\n"												\
-	"%c_v4f32_1_1_1_1 = OpConstantComposite %v4f32 %c_f32_1 %c_f32_1 %c_f32_1 %c_f32_1\n"		\
-	"%c_v4f32_1_0_0_1 = OpConstantComposite %v4f32 %c_f32_1 %c_f32_0 %c_f32_0 %c_f32_1\n"		\
-	"%c_v4f32_0_5_0_5_0_5_0_5 = OpConstantComposite %v4f32 %c_f32_0_5 %c_f32_0_5 %c_f32_0_5 %c_f32_0_5\n"
-
-#define SPIRV_ASSEMBLY_ARRAYS																	\
-	"%a1f32 = OpTypeArray %f32 %c_u32_1\n"														\
-	"%a2f32 = OpTypeArray %f32 %c_u32_2\n"														\
-	"%a3v4f32 = OpTypeArray %v4f32 %c_u32_3\n"													\
-	"%a4f32 = OpTypeArray %f32 %c_u32_4\n"														\
-	"%a32v4f32 = OpTypeArray %v4f32 %c_u32_32\n"												\
-	"%ip_a3v4f32 = OpTypePointer Input %a3v4f32\n"												\
-	"%ip_a32v4f32 = OpTypePointer Input %a32v4f32\n"											\
-	"%op_a2f32 = OpTypePointer Output %a2f32\n"													\
-	"%op_a3v4f32 = OpTypePointer Output %a3v4f32\n"												\
-	"%op_a4f32 = OpTypePointer Output %a4f32\n"
-
 // Creates vertex-shader assembly by specializing a boilerplate StringTemplate
 // on fragments, which must (at least) map "testfun" to an OpFunction definition
 // for %test_code that takes and returns a %v4f32.  Boilerplate IDs are prefixed
@@ -584,6 +511,7 @@ string makeTessControlShaderAssembly (const map<string, string>& fragments)
 		"OpDecorate %BP_gl_TessLevelInner BuiltIn TessLevelInner\n"
 		"${IF_decoration:opt}\n"
 		"${decoration:opt}\n"
+		"${decoration_tessc:opt}\n"
 		SPIRV_ASSEMBLY_TYPES
 		SPIRV_ASSEMBLY_CONSTANTS
 		SPIRV_ASSEMBLY_ARRAYS
@@ -711,7 +639,7 @@ string makeTessEvalShaderAssembly (const map<string, string>& fragments)
 		"%BP_op_gl_PerVertexOut = OpTypePointer Output %BP_gl_PerVertexOut\n"
 		"%BP_stream = OpVariable %BP_op_gl_PerVertexOut Output\n"
 		"%BP_gl_TessCoord = OpVariable %ip_v3f32 Input\n"
-		"%BP_gl_PrimitiveID = OpVariable %op_i32 Input\n"
+		"%BP_gl_PrimitiveID = OpVariable %ip_i32 Input\n"
 		"%BP_gl_PerVertexIn = OpTypeStruct %v4f32 %f32 %a1f32 %a1f32\n"
 		"%BP_a32_gl_PerVertexIn = OpTypeArray %BP_gl_PerVertexIn %c_u32_32\n"
 		"%BP_ip_a32_gl_PerVertexIn = OpTypePointer Input %BP_a32_gl_PerVertexIn\n"
@@ -1015,21 +943,33 @@ map<string, string> passthruInterface (const IFDataType& data_type)
 
 	if (!data_type.elementIs32bit())
 	{
-		if (data_type.elementType == NUMBERTYPE_FLOAT16)
+		if (data_type.elementType == NUMBERTYPE_FLOAT64)
 		{
+			fragments["capability"]		= "OpCapability Float64\n\n";
+			fragments["pre_main"]	+= "%f64 = OpTypeFloat 64\n";
+		}
+		else if (data_type.elementType == NUMBERTYPE_FLOAT16)
+		{
+			fragments["capability"]		= "OpCapability StorageInputOutput16\n";
+			fragments["extension"]		= "OpExtension \"SPV_KHR_16bit_storage\"\n";
 			fragments["pre_main"]	+= "%f16 = OpTypeFloat 16\n";
 		}
 		else if (data_type.elementType == NUMBERTYPE_INT16)
 		{
+			fragments["capability"]		= "OpCapability StorageInputOutput16\n";
+			fragments["extension"]		= "OpExtension \"SPV_KHR_16bit_storage\"\n";
 			fragments["pre_main"]	+= "%i16 = OpTypeInt 16 1\n";
+		}
+		else if (data_type.elementType == NUMBERTYPE_UINT16)
+		{
+			fragments["capability"]		= "OpCapability StorageInputOutput16\n";
+			fragments["extension"]		= "OpExtension \"SPV_KHR_16bit_storage\"\n";
+			fragments["pre_main"]	+= "%u16 = OpTypeInt 16 0\n";
 		}
 		else
 		{
-			fragments["pre_main"]	+= "%u16 = OpTypeInt 16 0\n";
+			DE_ASSERT(0 && "unhandled type");
 		}
-
-		fragments["capability"]		= "OpCapability StorageInputOutput16\n";
-		fragments["extension"]		= "OpExtension \"SPV_KHR_16bit_storage\"\n";
 
 		if (data_type.isVector())
 		{
@@ -1162,6 +1102,7 @@ map<string, string> fillInterfacePlaceholderTessCtrl (void)
 	fragments["extension"]					= "${extension:opt}";
 	fragments["debug"]						= "${debug:opt}";
 	fragments["decoration"]					= "${decoration:opt}";
+	fragments["decoration_tessc"]			= "${decoration_tessc:opt}";
 	fragments["pre_main"]					= "${pre_main:opt}";
 	fragments["testfun"]					= "${testfun}";
 	fragments["interface_op_func"]			= "${interface_op_func}";
@@ -1399,231 +1340,287 @@ void addShaderCodeCustomFragment (vk::SourceCollections& dst, InstanceContext co
 	addShaderCodeCustomFragment(dst, context, DE_NULL);
 }
 
-void createCombinedModule (vk::SourceCollections& dst, InstanceContext)
+void createCombinedModule (vk::SourceCollections& dst, InstanceContext ctx)
 {
-	// \todo [2015-12-07 awoloszyn] Make tessellation / geometry conditional
-	dst.spirvAsmSources.add("module") <<
-		"OpCapability Shader\n"
-		"OpCapability Geometry\n"
-		"OpCapability Tessellation\n"
-		"OpMemoryModel Logical GLSL450\n"
+	const bool			useTessellation	(ctx.requiredStages & (VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT));
+	const bool			useGeometry		(ctx.requiredStages & VK_SHADER_STAGE_GEOMETRY_BIT);
+	std::stringstream	combinedModule;
+	std::stringstream	opCapabilities;
+	std::stringstream	opEntryPoints;
 
-		"OpEntryPoint Vertex %vert_main \"main\" %vert_Position %vert_vtxColor %vert_color %vert_vtxPosition %vert_vertex_id %vert_instance_id\n"
-		"OpEntryPoint Geometry %geom_main \"main\" %geom_out_gl_position %geom_gl_in %geom_out_color %geom_in_color\n"
-		"OpEntryPoint TessellationControl %tessc_main \"main\" %tessc_out_color %tessc_gl_InvocationID %tessc_in_color %tessc_out_position %tessc_in_position %tessc_gl_TessLevelOuter %tessc_gl_TessLevelInner\n"
-		"OpEntryPoint TessellationEvaluation %tesse_main \"main\" %tesse_stream %tesse_gl_tessCoord %tesse_in_position %tesse_out_color %tesse_in_color \n"
-		"OpEntryPoint Fragment %frag_main \"main\" %frag_vtxColor %frag_fragColor\n"
+	// opCapabilities
+	{
+		opCapabilities << "OpCapability Shader\n";
 
-		"OpExecutionMode %geom_main Triangles\n"
-		"OpExecutionMode %geom_main OutputTriangleStrip\n"
-		"OpExecutionMode %geom_main OutputVertices 3\n"
+		if (useGeometry)
+			opCapabilities << "OpCapability Geometry\n";
 
-		"OpExecutionMode %tessc_main OutputVertices 3\n"
+		if (useTessellation)
+			opCapabilities << "OpCapability Tessellation\n";
+	}
 
-		"OpExecutionMode %tesse_main Triangles\n"
-		"OpExecutionMode %tesse_main SpacingEqual\n"
-		"OpExecutionMode %tesse_main VertexOrderCcw\n"
+	// opEntryPoints
+	{
+		opEntryPoints << "OpEntryPoint Vertex %vert_main \"main\" %vert_Position %vert_vtxColor %vert_color %vert_vtxPosition %vert_vertex_id %vert_instance_id\n";
 
-		"OpExecutionMode %frag_main OriginUpperLeft\n"
+		if (useGeometry)
+			opEntryPoints << "OpEntryPoint Geometry %geom_main \"main\" %geom_out_gl_position %geom_gl_in %geom_out_color %geom_in_color\n";
 
-		"; Vertex decorations\n"
-		"OpDecorate %vert_vtxPosition Location 2\n"
-		"OpDecorate %vert_Position Location 0\n"
-		"OpDecorate %vert_vtxColor Location 1\n"
-		"OpDecorate %vert_color Location 1\n"
-		"OpDecorate %vert_vertex_id BuiltIn VertexIndex\n"
-		"OpDecorate %vert_instance_id BuiltIn InstanceIndex\n"
+		if (useTessellation)
+		{
+			opEntryPoints <<	"OpEntryPoint TessellationControl %tessc_main \"main\" %tessc_out_color %tessc_gl_InvocationID %tessc_in_color %tessc_out_position %tessc_in_position %tessc_gl_TessLevelOuter %tessc_gl_TessLevelInner\n"
+								"OpEntryPoint TessellationEvaluation %tesse_main \"main\" %tesse_stream %tesse_gl_tessCoord %tesse_in_position %tesse_out_color %tesse_in_color \n";
+		}
 
-		"; Geometry decorations\n"
-		"OpDecorate %geom_out_gl_position BuiltIn Position\n"
-		"OpMemberDecorate %geom_per_vertex_in 0 BuiltIn Position\n"
-		"OpMemberDecorate %geom_per_vertex_in 1 BuiltIn PointSize\n"
-		"OpMemberDecorate %geom_per_vertex_in 2 BuiltIn ClipDistance\n"
-		"OpMemberDecorate %geom_per_vertex_in 3 BuiltIn CullDistance\n"
-		"OpDecorate %geom_per_vertex_in Block\n"
-		"OpDecorate %geom_out_color Location 1\n"
-		"OpDecorate %geom_in_color Location 1\n"
+		opEntryPoints << "OpEntryPoint Fragment %frag_main \"main\" %frag_vtxColor %frag_fragColor\n";
+	}
 
-		"; Tessellation Control decorations\n"
-		"OpDecorate %tessc_out_color Location 1\n"
-		"OpDecorate %tessc_gl_InvocationID BuiltIn InvocationId\n"
-		"OpDecorate %tessc_in_color Location 1\n"
-		"OpDecorate %tessc_out_position Location 2\n"
-		"OpDecorate %tessc_in_position Location 2\n"
-		"OpDecorate %tessc_gl_TessLevelOuter Patch\n"
-		"OpDecorate %tessc_gl_TessLevelOuter BuiltIn TessLevelOuter\n"
-		"OpDecorate %tessc_gl_TessLevelInner Patch\n"
-		"OpDecorate %tessc_gl_TessLevelInner BuiltIn TessLevelInner\n"
+	combinedModule	<<	opCapabilities.str()
+					<<	"OpMemoryModel Logical GLSL450\n"
+					<<	opEntryPoints.str();
 
-		"; Tessellation Evaluation decorations\n"
-		"OpMemberDecorate %tesse_per_vertex_out 0 BuiltIn Position\n"
-		"OpMemberDecorate %tesse_per_vertex_out 1 BuiltIn PointSize\n"
-		"OpMemberDecorate %tesse_per_vertex_out 2 BuiltIn ClipDistance\n"
-		"OpMemberDecorate %tesse_per_vertex_out 3 BuiltIn CullDistance\n"
-		"OpDecorate %tesse_per_vertex_out Block\n"
-		"OpDecorate %tesse_gl_tessCoord BuiltIn TessCoord\n"
-		"OpDecorate %tesse_in_position Location 2\n"
-		"OpDecorate %tesse_out_color Location 1\n"
-		"OpDecorate %tesse_in_color Location 1\n"
+	if (useGeometry)
+	{
+		combinedModule <<	"OpExecutionMode %geom_main Triangles\n"
+							"OpExecutionMode %geom_main OutputTriangleStrip\n"
+							"OpExecutionMode %geom_main OutputVertices 3\n";
+	}
 
-		"; Fragment decorations\n"
-		"OpDecorate %frag_fragColor Location 0\n"
-		"OpDecorate %frag_vtxColor Location 1\n"
+	if (useTessellation)
+	{
+		combinedModule <<	"OpExecutionMode %tessc_main OutputVertices 3\n"
+							"OpExecutionMode %tesse_main Triangles\n"
+							"OpExecutionMode %tesse_main SpacingEqual\n"
+							"OpExecutionMode %tesse_main VertexOrderCcw\n";
+	}
 
-		SPIRV_ASSEMBLY_TYPES
-		SPIRV_ASSEMBLY_CONSTANTS
-		SPIRV_ASSEMBLY_ARRAYS
+	combinedModule <<	"OpExecutionMode %frag_main OriginUpperLeft\n"
 
-		"; Vertex Variables\n"
-		"%vert_vtxPosition = OpVariable %op_v4f32 Output\n"
-		"%vert_Position = OpVariable %ip_v4f32 Input\n"
-		"%vert_vtxColor = OpVariable %op_v4f32 Output\n"
-		"%vert_color = OpVariable %ip_v4f32 Input\n"
-		"%vert_vertex_id = OpVariable %ip_i32 Input\n"
-		"%vert_instance_id = OpVariable %ip_i32 Input\n"
+						"; Vertex decorations\n";
 
-		"; Geometry Variables\n"
-		"%geom_per_vertex_in = OpTypeStruct %v4f32 %f32 %a1f32 %a1f32\n"
-		"%geom_a3_per_vertex_in = OpTypeArray %geom_per_vertex_in %c_u32_3\n"
-		"%geom_ip_a3_per_vertex_in = OpTypePointer Input %geom_a3_per_vertex_in\n"
-		"%geom_gl_in = OpVariable %geom_ip_a3_per_vertex_in Input\n"
-		"%geom_out_color = OpVariable %op_v4f32 Output\n"
-		"%geom_in_color = OpVariable %ip_a3v4f32 Input\n"
-		"%geom_out_gl_position = OpVariable %op_v4f32 Output\n"
+	// If tessellation is used, vertex position is written by tessellation stage.
+	// Otherwise it will be written by vertex stage.
+	if (useTessellation)
+		combinedModule <<	"OpDecorate %vert_vtxPosition Location 2\n";
+	else
+		combinedModule <<	"OpDecorate %vert_vtxPosition BuiltIn Position\n";
 
-		"; Tessellation Control Variables\n"
-		"%tessc_out_color = OpVariable %op_a3v4f32 Output\n"
-		"%tessc_gl_InvocationID = OpVariable %ip_i32 Input\n"
-		"%tessc_in_color = OpVariable %ip_a32v4f32 Input\n"
-		"%tessc_out_position = OpVariable %op_a3v4f32 Output\n"
-		"%tessc_in_position = OpVariable %ip_a32v4f32 Input\n"
-		"%tessc_gl_TessLevelOuter = OpVariable %op_a4f32 Output\n"
-		"%tessc_gl_TessLevelInner = OpVariable %op_a2f32 Output\n"
+	combinedModule	<<	"OpDecorate %vert_Position Location 0\n"
+						"OpDecorate %vert_vtxColor Location 1\n"
+						"OpDecorate %vert_color Location 1\n"
+						"OpDecorate %vert_vertex_id BuiltIn VertexIndex\n"
+						"OpDecorate %vert_instance_id BuiltIn InstanceIndex\n";
 
-		"; Tessellation Evaluation Decorations\n"
-		"%tesse_per_vertex_out = OpTypeStruct %v4f32 %f32 %a1f32 %a1f32\n"
-		"%tesse_op_per_vertex_out = OpTypePointer Output %tesse_per_vertex_out\n"
-		"%tesse_stream = OpVariable %tesse_op_per_vertex_out Output\n"
-		"%tesse_gl_tessCoord = OpVariable %ip_v3f32 Input\n"
-		"%tesse_in_position = OpVariable %ip_a32v4f32 Input\n"
-		"%tesse_out_color = OpVariable %op_v4f32 Output\n"
-		"%tesse_in_color = OpVariable %ip_a32v4f32 Input\n"
+	if (useGeometry)
+	{
+		combinedModule <<	"; Geometry decorations\n"
+							"OpDecorate %geom_out_gl_position BuiltIn Position\n"
+							"OpMemberDecorate %geom_per_vertex_in 0 BuiltIn Position\n"
+							"OpMemberDecorate %geom_per_vertex_in 1 BuiltIn PointSize\n"
+							"OpMemberDecorate %geom_per_vertex_in 2 BuiltIn ClipDistance\n"
+							"OpMemberDecorate %geom_per_vertex_in 3 BuiltIn CullDistance\n"
+							"OpDecorate %geom_per_vertex_in Block\n"
+							"OpDecorate %geom_out_color Location 1\n"
+							"OpDecorate %geom_in_color Location 1\n";
+	}
 
-		"; Fragment Variables\n"
-		"%frag_fragColor = OpVariable %op_v4f32 Output\n"
-		"%frag_vtxColor = OpVariable %ip_v4f32 Input\n"
+	if (useTessellation)
+	{
+		combinedModule <<	"; Tessellation Control decorations\n"
+							"OpDecorate %tessc_out_color Location 1\n"
+							"OpDecorate %tessc_gl_InvocationID BuiltIn InvocationId\n"
+							"OpDecorate %tessc_in_color Location 1\n"
+							"OpDecorate %tessc_out_position Location 2\n"
+							"OpDecorate %tessc_in_position Location 2\n"
+							"OpDecorate %tessc_gl_TessLevelOuter Patch\n"
+							"OpDecorate %tessc_gl_TessLevelOuter BuiltIn TessLevelOuter\n"
+							"OpDecorate %tessc_gl_TessLevelInner Patch\n"
+							"OpDecorate %tessc_gl_TessLevelInner BuiltIn TessLevelInner\n"
 
-		"; Vertex Entry\n"
-		"%vert_main = OpFunction %void None %fun\n"
-		"%vert_label = OpLabel\n"
-		"%vert_tmp_position = OpLoad %v4f32 %vert_Position\n"
-		"OpStore %vert_vtxPosition %vert_tmp_position\n"
-		"%vert_tmp_color = OpLoad %v4f32 %vert_color\n"
-		"OpStore %vert_vtxColor %vert_tmp_color\n"
-		"OpReturn\n"
-		"OpFunctionEnd\n"
+							"; Tessellation Evaluation decorations\n"
+							"OpMemberDecorate %tesse_per_vertex_out 0 BuiltIn Position\n"
+							"OpMemberDecorate %tesse_per_vertex_out 1 BuiltIn PointSize\n"
+							"OpMemberDecorate %tesse_per_vertex_out 2 BuiltIn ClipDistance\n"
+							"OpMemberDecorate %tesse_per_vertex_out 3 BuiltIn CullDistance\n"
+							"OpDecorate %tesse_per_vertex_out Block\n"
+							"OpDecorate %tesse_gl_tessCoord BuiltIn TessCoord\n"
+							"OpDecorate %tesse_in_position Location 2\n"
+							"OpDecorate %tesse_out_color Location 1\n"
+							"OpDecorate %tesse_in_color Location 1\n";
+	}
 
-		"; Geometry Entry\n"
-		"%geom_main = OpFunction %void None %fun\n"
-		"%geom_label = OpLabel\n"
-		"%geom_gl_in_0_gl_position = OpAccessChain %ip_v4f32 %geom_gl_in %c_i32_0 %c_i32_0\n"
-		"%geom_gl_in_1_gl_position = OpAccessChain %ip_v4f32 %geom_gl_in %c_i32_1 %c_i32_0\n"
-		"%geom_gl_in_2_gl_position = OpAccessChain %ip_v4f32 %geom_gl_in %c_i32_2 %c_i32_0\n"
-		"%geom_in_position_0 = OpLoad %v4f32 %geom_gl_in_0_gl_position\n"
-		"%geom_in_position_1 = OpLoad %v4f32 %geom_gl_in_1_gl_position\n"
-		"%geom_in_position_2 = OpLoad %v4f32 %geom_gl_in_2_gl_position \n"
-		"%geom_in_color_0_ptr = OpAccessChain %ip_v4f32 %geom_in_color %c_i32_0\n"
-		"%geom_in_color_1_ptr = OpAccessChain %ip_v4f32 %geom_in_color %c_i32_1\n"
-		"%geom_in_color_2_ptr = OpAccessChain %ip_v4f32 %geom_in_color %c_i32_2\n"
-		"%geom_in_color_0 = OpLoad %v4f32 %geom_in_color_0_ptr\n"
-		"%geom_in_color_1 = OpLoad %v4f32 %geom_in_color_1_ptr\n"
-		"%geom_in_color_2 = OpLoad %v4f32 %geom_in_color_2_ptr\n"
-		"OpStore %geom_out_gl_position %geom_in_position_0\n"
-		"OpStore %geom_out_color %geom_in_color_0\n"
-		"OpEmitVertex\n"
-		"OpStore %geom_out_gl_position %geom_in_position_1\n"
-		"OpStore %geom_out_color %geom_in_color_1\n"
-		"OpEmitVertex\n"
-		"OpStore %geom_out_gl_position %geom_in_position_2\n"
-		"OpStore %geom_out_color %geom_in_color_2\n"
-		"OpEmitVertex\n"
-		"OpEndPrimitive\n"
-		"OpReturn\n"
-		"OpFunctionEnd\n"
+	combinedModule <<	"; Fragment decorations\n"
+						"OpDecorate %frag_fragColor Location 0\n"
+						"OpDecorate %frag_vtxColor Location 1\n"
 
-		"; Tessellation Control Entry\n"
-		"%tessc_main = OpFunction %void None %fun\n"
-		"%tessc_label = OpLabel\n"
-		"%tessc_invocation_id = OpLoad %i32 %tessc_gl_InvocationID\n"
-		"%tessc_in_color_ptr = OpAccessChain %ip_v4f32 %tessc_in_color %tessc_invocation_id\n"
-		"%tessc_in_position_ptr = OpAccessChain %ip_v4f32 %tessc_in_position %tessc_invocation_id\n"
-		"%tessc_in_color_val = OpLoad %v4f32 %tessc_in_color_ptr\n"
-		"%tessc_in_position_val = OpLoad %v4f32 %tessc_in_position_ptr\n"
-		"%tessc_out_color_ptr = OpAccessChain %op_v4f32 %tessc_out_color %tessc_invocation_id\n"
-		"%tessc_out_position_ptr = OpAccessChain %op_v4f32 %tessc_out_position %tessc_invocation_id\n"
-		"OpStore %tessc_out_color_ptr %tessc_in_color_val\n"
-		"OpStore %tessc_out_position_ptr %tessc_in_position_val\n"
-		"%tessc_is_first_invocation = OpIEqual %bool %tessc_invocation_id %c_i32_0\n"
-		"OpSelectionMerge %tessc_merge_label None\n"
-		"OpBranchConditional %tessc_is_first_invocation %tessc_first_invocation %tessc_merge_label\n"
-		"%tessc_first_invocation = OpLabel\n"
-		"%tessc_tess_outer_0 = OpAccessChain %op_f32 %tessc_gl_TessLevelOuter %c_i32_0\n"
-		"%tessc_tess_outer_1 = OpAccessChain %op_f32 %tessc_gl_TessLevelOuter %c_i32_1\n"
-		"%tessc_tess_outer_2 = OpAccessChain %op_f32 %tessc_gl_TessLevelOuter %c_i32_2\n"
-		"%tessc_tess_inner = OpAccessChain %op_f32 %tessc_gl_TessLevelInner %c_i32_0\n"
-		"OpStore %tessc_tess_outer_0 %c_f32_1\n"
-		"OpStore %tessc_tess_outer_1 %c_f32_1\n"
-		"OpStore %tessc_tess_outer_2 %c_f32_1\n"
-		"OpStore %tessc_tess_inner %c_f32_1\n"
-		"OpBranch %tessc_merge_label\n"
-		"%tessc_merge_label = OpLabel\n"
-		"OpReturn\n"
-		"OpFunctionEnd\n"
+						SPIRV_ASSEMBLY_TYPES
+						SPIRV_ASSEMBLY_CONSTANTS
+						SPIRV_ASSEMBLY_ARRAYS
 
-		"; Tessellation Evaluation Entry\n"
-		"%tesse_main = OpFunction %void None %fun\n"
-		"%tesse_label = OpLabel\n"
-		"%tesse_tc_0_ptr = OpAccessChain %ip_f32 %tesse_gl_tessCoord %c_u32_0\n"
-		"%tesse_tc_1_ptr = OpAccessChain %ip_f32 %tesse_gl_tessCoord %c_u32_1\n"
-		"%tesse_tc_2_ptr = OpAccessChain %ip_f32 %tesse_gl_tessCoord %c_u32_2\n"
-		"%tesse_tc_0 = OpLoad %f32 %tesse_tc_0_ptr\n"
-		"%tesse_tc_1 = OpLoad %f32 %tesse_tc_1_ptr\n"
-		"%tesse_tc_2 = OpLoad %f32 %tesse_tc_2_ptr\n"
-		"%tesse_in_pos_0_ptr = OpAccessChain %ip_v4f32 %tesse_in_position %c_i32_0\n"
-		"%tesse_in_pos_1_ptr = OpAccessChain %ip_v4f32 %tesse_in_position %c_i32_1\n"
-		"%tesse_in_pos_2_ptr = OpAccessChain %ip_v4f32 %tesse_in_position %c_i32_2\n"
-		"%tesse_in_pos_0 = OpLoad %v4f32 %tesse_in_pos_0_ptr\n"
-		"%tesse_in_pos_1 = OpLoad %v4f32 %tesse_in_pos_1_ptr\n"
-		"%tesse_in_pos_2 = OpLoad %v4f32 %tesse_in_pos_2_ptr\n"
-		"%tesse_in_pos_0_weighted = OpVectorTimesScalar %v4f32 %tesse_in_pos_0 %tesse_tc_0\n"
-		"%tesse_in_pos_1_weighted = OpVectorTimesScalar %v4f32 %tesse_in_pos_1 %tesse_tc_1\n"
-		"%tesse_in_pos_2_weighted = OpVectorTimesScalar %v4f32 %tesse_in_pos_2 %tesse_tc_2\n"
-		"%tesse_out_pos_ptr = OpAccessChain %op_v4f32 %tesse_stream %c_i32_0\n"
-		"%tesse_in_pos_0_plus_pos_1 = OpFAdd %v4f32 %tesse_in_pos_0_weighted %tesse_in_pos_1_weighted\n"
-		"%tesse_computed_out = OpFAdd %v4f32 %tesse_in_pos_0_plus_pos_1 %tesse_in_pos_2_weighted\n"
-		"OpStore %tesse_out_pos_ptr %tesse_computed_out\n"
-		"%tesse_in_clr_0_ptr = OpAccessChain %ip_v4f32 %tesse_in_color %c_i32_0\n"
-		"%tesse_in_clr_1_ptr = OpAccessChain %ip_v4f32 %tesse_in_color %c_i32_1\n"
-		"%tesse_in_clr_2_ptr = OpAccessChain %ip_v4f32 %tesse_in_color %c_i32_2\n"
-		"%tesse_in_clr_0 = OpLoad %v4f32 %tesse_in_clr_0_ptr\n"
-		"%tesse_in_clr_1 = OpLoad %v4f32 %tesse_in_clr_1_ptr\n"
-		"%tesse_in_clr_2 = OpLoad %v4f32 %tesse_in_clr_2_ptr\n"
-		"%tesse_in_clr_0_weighted = OpVectorTimesScalar %v4f32 %tesse_in_clr_0 %tesse_tc_0\n"
-		"%tesse_in_clr_1_weighted = OpVectorTimesScalar %v4f32 %tesse_in_clr_1 %tesse_tc_1\n"
-		"%tesse_in_clr_2_weighted = OpVectorTimesScalar %v4f32 %tesse_in_clr_2 %tesse_tc_2\n"
-		"%tesse_in_clr_0_plus_col_1 = OpFAdd %v4f32 %tesse_in_clr_0_weighted %tesse_in_clr_1_weighted\n"
-		"%tesse_computed_clr = OpFAdd %v4f32 %tesse_in_clr_0_plus_col_1 %tesse_in_clr_2_weighted\n"
-		"OpStore %tesse_out_color %tesse_computed_clr\n"
-		"OpReturn\n"
-		"OpFunctionEnd\n"
+						"; Vertex Variables\n"
+						"%vert_vtxPosition = OpVariable %op_v4f32 Output\n"
+						"%vert_Position = OpVariable %ip_v4f32 Input\n"
+						"%vert_vtxColor = OpVariable %op_v4f32 Output\n"
+						"%vert_color = OpVariable %ip_v4f32 Input\n"
+						"%vert_vertex_id = OpVariable %ip_i32 Input\n"
+						"%vert_instance_id = OpVariable %ip_i32 Input\n";
 
-		"; Fragment Entry\n"
-		"%frag_main = OpFunction %void None %fun\n"
-		"%frag_label_main = OpLabel\n"
-		"%frag_tmp1 = OpLoad %v4f32 %frag_vtxColor\n"
-		"OpStore %frag_fragColor %frag_tmp1\n"
-		"OpReturn\n"
-		"OpFunctionEnd\n";
+	if (useGeometry)
+	{
+		combinedModule <<	"; Geometry Variables\n"
+							"%geom_per_vertex_in = OpTypeStruct %v4f32 %f32 %a1f32 %a1f32\n"
+							"%geom_a3_per_vertex_in = OpTypeArray %geom_per_vertex_in %c_u32_3\n"
+							"%geom_ip_a3_per_vertex_in = OpTypePointer Input %geom_a3_per_vertex_in\n"
+							"%geom_gl_in = OpVariable %geom_ip_a3_per_vertex_in Input\n"
+							"%geom_out_color = OpVariable %op_v4f32 Output\n"
+							"%geom_in_color = OpVariable %ip_a3v4f32 Input\n"
+							"%geom_out_gl_position = OpVariable %op_v4f32 Output\n";
+	}
+
+	if (useTessellation)
+	{
+		combinedModule <<	"; Tessellation Control Variables\n"
+							"%tessc_out_color = OpVariable %op_a3v4f32 Output\n"
+							"%tessc_gl_InvocationID = OpVariable %ip_i32 Input\n"
+							"%tessc_in_color = OpVariable %ip_a32v4f32 Input\n"
+							"%tessc_out_position = OpVariable %op_a3v4f32 Output\n"
+							"%tessc_in_position = OpVariable %ip_a32v4f32 Input\n"
+							"%tessc_gl_TessLevelOuter = OpVariable %op_a4f32 Output\n"
+							"%tessc_gl_TessLevelInner = OpVariable %op_a2f32 Output\n"
+
+							"; Tessellation Evaluation Decorations\n"
+							"%tesse_per_vertex_out = OpTypeStruct %v4f32 %f32 %a1f32 %a1f32\n"
+							"%tesse_op_per_vertex_out = OpTypePointer Output %tesse_per_vertex_out\n"
+							"%tesse_stream = OpVariable %tesse_op_per_vertex_out Output\n"
+							"%tesse_gl_tessCoord = OpVariable %ip_v3f32 Input\n"
+							"%tesse_in_position = OpVariable %ip_a32v4f32 Input\n"
+							"%tesse_out_color = OpVariable %op_v4f32 Output\n"
+							"%tesse_in_color = OpVariable %ip_a32v4f32 Input\n";
+	}
+
+	combinedModule	<<	"; Fragment Variables\n"
+						"%frag_fragColor = OpVariable %op_v4f32 Output\n"
+						"%frag_vtxColor = OpVariable %ip_v4f32 Input\n"
+
+						"; Vertex Entry\n"
+						"%vert_main = OpFunction %void None %fun\n"
+						"%vert_label = OpLabel\n"
+						"%vert_tmp_position = OpLoad %v4f32 %vert_Position\n"
+						"OpStore %vert_vtxPosition %vert_tmp_position\n"
+						"%vert_tmp_color = OpLoad %v4f32 %vert_color\n"
+						"OpStore %vert_vtxColor %vert_tmp_color\n"
+						"OpReturn\n"
+						"OpFunctionEnd\n";
+
+	if (useGeometry)
+	{
+		combinedModule <<	"; Geometry Entry\n"
+							"%geom_main = OpFunction %void None %fun\n"
+							"%geom_label = OpLabel\n"
+							"%geom_gl_in_0_gl_position = OpAccessChain %ip_v4f32 %geom_gl_in %c_i32_0 %c_i32_0\n"
+							"%geom_gl_in_1_gl_position = OpAccessChain %ip_v4f32 %geom_gl_in %c_i32_1 %c_i32_0\n"
+							"%geom_gl_in_2_gl_position = OpAccessChain %ip_v4f32 %geom_gl_in %c_i32_2 %c_i32_0\n"
+							"%geom_in_position_0 = OpLoad %v4f32 %geom_gl_in_0_gl_position\n"
+							"%geom_in_position_1 = OpLoad %v4f32 %geom_gl_in_1_gl_position\n"
+							"%geom_in_position_2 = OpLoad %v4f32 %geom_gl_in_2_gl_position \n"
+							"%geom_in_color_0_ptr = OpAccessChain %ip_v4f32 %geom_in_color %c_i32_0\n"
+							"%geom_in_color_1_ptr = OpAccessChain %ip_v4f32 %geom_in_color %c_i32_1\n"
+							"%geom_in_color_2_ptr = OpAccessChain %ip_v4f32 %geom_in_color %c_i32_2\n"
+							"%geom_in_color_0 = OpLoad %v4f32 %geom_in_color_0_ptr\n"
+							"%geom_in_color_1 = OpLoad %v4f32 %geom_in_color_1_ptr\n"
+							"%geom_in_color_2 = OpLoad %v4f32 %geom_in_color_2_ptr\n"
+							"OpStore %geom_out_gl_position %geom_in_position_0\n"
+							"OpStore %geom_out_color %geom_in_color_0\n"
+							"OpEmitVertex\n"
+							"OpStore %geom_out_gl_position %geom_in_position_1\n"
+							"OpStore %geom_out_color %geom_in_color_1\n"
+							"OpEmitVertex\n"
+							"OpStore %geom_out_gl_position %geom_in_position_2\n"
+							"OpStore %geom_out_color %geom_in_color_2\n"
+							"OpEmitVertex\n"
+							"OpEndPrimitive\n"
+							"OpReturn\n"
+							"OpFunctionEnd\n";
+	}
+
+	if (useTessellation)
+	{
+		combinedModule <<	"; Tessellation Control Entry\n"
+							"%tessc_main = OpFunction %void None %fun\n"
+							"%tessc_label = OpLabel\n"
+							"%tessc_invocation_id = OpLoad %i32 %tessc_gl_InvocationID\n"
+							"%tessc_in_color_ptr = OpAccessChain %ip_v4f32 %tessc_in_color %tessc_invocation_id\n"
+							"%tessc_in_position_ptr = OpAccessChain %ip_v4f32 %tessc_in_position %tessc_invocation_id\n"
+							"%tessc_in_color_val = OpLoad %v4f32 %tessc_in_color_ptr\n"
+							"%tessc_in_position_val = OpLoad %v4f32 %tessc_in_position_ptr\n"
+							"%tessc_out_color_ptr = OpAccessChain %op_v4f32 %tessc_out_color %tessc_invocation_id\n"
+							"%tessc_out_position_ptr = OpAccessChain %op_v4f32 %tessc_out_position %tessc_invocation_id\n"
+							"OpStore %tessc_out_color_ptr %tessc_in_color_val\n"
+							"OpStore %tessc_out_position_ptr %tessc_in_position_val\n"
+							"%tessc_is_first_invocation = OpIEqual %bool %tessc_invocation_id %c_i32_0\n"
+							"OpSelectionMerge %tessc_merge_label None\n"
+							"OpBranchConditional %tessc_is_first_invocation %tessc_first_invocation %tessc_merge_label\n"
+							"%tessc_first_invocation = OpLabel\n"
+							"%tessc_tess_outer_0 = OpAccessChain %op_f32 %tessc_gl_TessLevelOuter %c_i32_0\n"
+							"%tessc_tess_outer_1 = OpAccessChain %op_f32 %tessc_gl_TessLevelOuter %c_i32_1\n"
+							"%tessc_tess_outer_2 = OpAccessChain %op_f32 %tessc_gl_TessLevelOuter %c_i32_2\n"
+							"%tessc_tess_inner = OpAccessChain %op_f32 %tessc_gl_TessLevelInner %c_i32_0\n"
+							"OpStore %tessc_tess_outer_0 %c_f32_1\n"
+							"OpStore %tessc_tess_outer_1 %c_f32_1\n"
+							"OpStore %tessc_tess_outer_2 %c_f32_1\n"
+							"OpStore %tessc_tess_inner %c_f32_1\n"
+							"OpBranch %tessc_merge_label\n"
+							"%tessc_merge_label = OpLabel\n"
+							"OpReturn\n"
+							"OpFunctionEnd\n"
+
+							"; Tessellation Evaluation Entry\n"
+							"%tesse_main = OpFunction %void None %fun\n"
+							"%tesse_label = OpLabel\n"
+							"%tesse_tc_0_ptr = OpAccessChain %ip_f32 %tesse_gl_tessCoord %c_u32_0\n"
+							"%tesse_tc_1_ptr = OpAccessChain %ip_f32 %tesse_gl_tessCoord %c_u32_1\n"
+							"%tesse_tc_2_ptr = OpAccessChain %ip_f32 %tesse_gl_tessCoord %c_u32_2\n"
+							"%tesse_tc_0 = OpLoad %f32 %tesse_tc_0_ptr\n"
+							"%tesse_tc_1 = OpLoad %f32 %tesse_tc_1_ptr\n"
+							"%tesse_tc_2 = OpLoad %f32 %tesse_tc_2_ptr\n"
+							"%tesse_in_pos_0_ptr = OpAccessChain %ip_v4f32 %tesse_in_position %c_i32_0\n"
+							"%tesse_in_pos_1_ptr = OpAccessChain %ip_v4f32 %tesse_in_position %c_i32_1\n"
+							"%tesse_in_pos_2_ptr = OpAccessChain %ip_v4f32 %tesse_in_position %c_i32_2\n"
+							"%tesse_in_pos_0 = OpLoad %v4f32 %tesse_in_pos_0_ptr\n"
+							"%tesse_in_pos_1 = OpLoad %v4f32 %tesse_in_pos_1_ptr\n"
+							"%tesse_in_pos_2 = OpLoad %v4f32 %tesse_in_pos_2_ptr\n"
+							"%tesse_in_pos_0_weighted = OpVectorTimesScalar %v4f32 %tesse_in_pos_0 %tesse_tc_0\n"
+							"%tesse_in_pos_1_weighted = OpVectorTimesScalar %v4f32 %tesse_in_pos_1 %tesse_tc_1\n"
+							"%tesse_in_pos_2_weighted = OpVectorTimesScalar %v4f32 %tesse_in_pos_2 %tesse_tc_2\n"
+							"%tesse_out_pos_ptr = OpAccessChain %op_v4f32 %tesse_stream %c_i32_0\n"
+							"%tesse_in_pos_0_plus_pos_1 = OpFAdd %v4f32 %tesse_in_pos_0_weighted %tesse_in_pos_1_weighted\n"
+							"%tesse_computed_out = OpFAdd %v4f32 %tesse_in_pos_0_plus_pos_1 %tesse_in_pos_2_weighted\n"
+							"OpStore %tesse_out_pos_ptr %tesse_computed_out\n"
+							"%tesse_in_clr_0_ptr = OpAccessChain %ip_v4f32 %tesse_in_color %c_i32_0\n"
+							"%tesse_in_clr_1_ptr = OpAccessChain %ip_v4f32 %tesse_in_color %c_i32_1\n"
+							"%tesse_in_clr_2_ptr = OpAccessChain %ip_v4f32 %tesse_in_color %c_i32_2\n"
+							"%tesse_in_clr_0 = OpLoad %v4f32 %tesse_in_clr_0_ptr\n"
+							"%tesse_in_clr_1 = OpLoad %v4f32 %tesse_in_clr_1_ptr\n"
+							"%tesse_in_clr_2 = OpLoad %v4f32 %tesse_in_clr_2_ptr\n"
+							"%tesse_in_clr_0_weighted = OpVectorTimesScalar %v4f32 %tesse_in_clr_0 %tesse_tc_0\n"
+							"%tesse_in_clr_1_weighted = OpVectorTimesScalar %v4f32 %tesse_in_clr_1 %tesse_tc_1\n"
+							"%tesse_in_clr_2_weighted = OpVectorTimesScalar %v4f32 %tesse_in_clr_2 %tesse_tc_2\n"
+							"%tesse_in_clr_0_plus_col_1 = OpFAdd %v4f32 %tesse_in_clr_0_weighted %tesse_in_clr_1_weighted\n"
+							"%tesse_computed_clr = OpFAdd %v4f32 %tesse_in_clr_0_plus_col_1 %tesse_in_clr_2_weighted\n"
+							"OpStore %tesse_out_color %tesse_computed_clr\n"
+							"OpReturn\n"
+							"OpFunctionEnd\n";
+	}
+
+	combinedModule	<<	"; Fragment Entry\n"
+						"%frag_main = OpFunction %void None %fun\n"
+						"%frag_label_main = OpLabel\n"
+						"%frag_tmp1 = OpLoad %v4f32 %frag_vtxColor\n"
+						"OpStore %frag_fragColor %frag_tmp1\n"
+						"OpReturn\n"
+						"OpFunctionEnd\n";
+
+	dst.spirvAsmSources.add("module") << combinedModule.str();
 }
 
 void createMultipleEntries (vk::SourceCollections& dst, InstanceContext)
@@ -2151,6 +2148,126 @@ bool compare16BitFloat(deUint16 original, float returned, tcu::TestLog & log)
 	return false;
 }
 
+bool compare16BitFloat (deFloat16 original, deFloat16 returned, std::string& error)
+{
+	std::ostringstream	log;
+	const Float16		originalFloat	(original);
+	const Float16		returnedFloat	(returned);
+
+	if (originalFloat.isZero())
+	{
+		if (returnedFloat.isZero())
+			return true;
+
+		log << "Error: expected zero but returned " << std::hex << "0x" << returned << " (" << returnedFloat.asFloat() << ")";
+		error = log.str();
+		return false;
+	}
+
+	// Any denormalized value input into a shader may be flushed to 0.
+	if (originalFloat.isDenorm() && returnedFloat.isZero())
+		return true;
+
+	// Inf are always turned into Inf with the same sign, too.
+	if (originalFloat.isInf())
+	{
+		if (returnedFloat.isInf() && originalFloat.signBit() == returnedFloat.signBit())
+			return true;
+
+		log << "Error: expected Inf but returned " << std::hex << "0x" << returned << " (" << returnedFloat.asFloat() << ")";
+		error = log.str();
+		return false;
+	}
+
+	// NaN are always turned into NaN, too.
+	if (originalFloat.isNaN())
+	{
+		if (returnedFloat.isNaN())
+			return true;
+
+		log << "Error: expected NaN but returned " << std::hex << "0x" << returned << " (" << returnedFloat.asFloat() << ")";
+		error = log.str();
+		return false;
+	}
+
+	// Any denormalized value potentially generated by any instruction in a shader may be flushed to 0.
+	if (originalFloat.isDenorm() && returnedFloat.isZero())
+		return true;
+
+	// If not matched in the above cases, they should have the same bit pattern.
+	if (originalFloat.bits() == returnedFloat.bits())
+		return true;
+
+	log << "Error: found unmatched 16-bit and 16-bit floats: 0x"
+		<< std::hex << original << " <=> 0x" << returned
+		<< " (" << originalFloat.asFloat() << " <=> " << returnedFloat.asFloat() << ")";
+	error = log.str();
+	return false;
+}
+
+bool compare16BitFloat64 (double original, deUint16 returned, RoundingModeFlags flags, tcu::TestLog& log)
+{
+	// We only support RTE, RTZ, or both.
+	DE_ASSERT(static_cast<int>(flags) > 0 && static_cast<int>(flags) < 4);
+
+	const Float64	originalFloat	(original);
+	const Float16	returnedFloat	(returned);
+
+	// Zero are turned into zero under both RTE and RTZ.
+	if (originalFloat.isZero())
+	{
+		if (returnedFloat.isZero())
+			return true;
+
+		log << TestLog::Message << "Error: expected zero but returned " << returned << TestLog::EndMessage;
+		return false;
+	}
+
+	// Any denormalized value input into a shader may be flushed to 0.
+	if (originalFloat.isDenorm() && returnedFloat.isZero())
+		return true;
+
+	// Inf are always turned into Inf with the same sign, too.
+	if (originalFloat.isInf())
+	{
+		if (returnedFloat.isInf() && originalFloat.signBit() == returnedFloat.signBit())
+			return true;
+
+		log << TestLog::Message << "Error: expected Inf but returned " << returned << TestLog::EndMessage;
+		return false;
+	}
+
+	// NaN are always turned into NaN, too.
+	if (originalFloat.isNaN())
+	{
+		if (returnedFloat.isNaN())
+			return true;
+
+		log << TestLog::Message << "Error: expected NaN but returned " << returned << TestLog::EndMessage;
+		return false;
+	}
+
+	// Check all rounding modes
+	for (int bitNdx = 0; bitNdx < 2; ++bitNdx)
+	{
+		if ((flags & (1u << bitNdx)) == 0)
+			continue;	// This rounding mode is not selected.
+
+		const Float16	expectedFloat	(deFloat64To16Round(original, deRoundingMode(bitNdx)));
+
+		// Any denormalized value potentially generated by any instruction in a shader may be flushed to 0.
+		if (expectedFloat.isDenorm() && returnedFloat.isZero())
+			return true;
+
+		// If not matched in the above cases, they should have the same bit pattern.
+		if (expectedFloat.bits() == returnedFloat.bits())
+			return true;
+	}
+
+	log << TestLog::Message << "Error: found unmatched 64-bit and 16-bit floats: " << originalFloat.bits() << " vs " << returned << TestLog::EndMessage;
+	return false;
+}
+
 bool compare32BitFloat (float expected, float returned, tcu::TestLog& log)
 {
 	const Float32	expectedFloat	(expected);
@@ -2181,6 +2298,39 @@ bool compare32BitFloat (float expected, float returned, tcu::TestLog& log)
 		return true;
 
 	log << TestLog::Message << "Error: found unmatched 32-bit float: expected " << expectedFloat.bits() << " vs. returned " << returnedFloat.bits() << TestLog::EndMessage;
+	return false;
+}
+
+bool compare64BitFloat (double expected, double returned, tcu::TestLog& log)
+{
+	const Float64	expectedDouble	(expected);
+	const Float64	returnedDouble	(returned);
+
+	// Any denormalized value potentially generated by any instruction in a shader may be flushed to 0.
+	if (expectedDouble.isDenorm() && returnedDouble.isZero())
+		return true;
+
+	{
+		const Float16	originalDouble	(deFloat64To16(expected));
+
+		// Any denormalized value input into a shader may be flushed to 0.
+		if (originalDouble.isDenorm() && returnedDouble.isZero())
+			return true;
+	}
+
+	if (expectedDouble.isNaN())
+	{
+		if (returnedDouble.isNaN())
+			return true;
+
+		log << TestLog::Message << "Error: expected NaN but returned " << returned << TestLog::EndMessage;
+		return false;
+	}
+
+	if (returned == expected)
+		return true;
+
+	log << TestLog::Message << "Error: found unmatched 64-bit float: expected " << expectedDouble.bits() << " vs. returned " << returnedDouble.bits() << TestLog::EndMessage;
 	return false;
 }
 
@@ -2248,53 +2398,9 @@ void copyBufferToImage (const DeviceInterface& vk, const VkDevice& device, const
 	};
 
 	// Copy buffer to image
-
-	const VkImageMemoryBarrier		imageBarriers[]		=
-	{
-		{
-			VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,		// VkStructureType			sType;
-			DE_NULL,									// const void*				pNext;
-			DE_NULL,									// VkAccessFlags			srcAccessMask;
-			VK_ACCESS_TRANSFER_WRITE_BIT,				// VkAccessFlags			dstAccessMask;
-			VK_IMAGE_LAYOUT_UNDEFINED,					// VkImageLayout			oldLayout;
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,		// VkImageLayout			newLayout;
-			VK_QUEUE_FAMILY_IGNORED,					// deUint32					srcQueueFamilyIndex;
-			VK_QUEUE_FAMILY_IGNORED,					// deUint32					dstQueueFamilyIndex;
-			image,										// VkImage					image;
-			{											// VkImageSubresourceRange	subresourceRange;
-				aspect,							// VkImageAspectFlags	aspectMask;
-				0u,								// deUint32				baseMipLevel;
-				1u,								// deUint32				mipLevels;
-				0u,								// deUint32				baseArraySlice;
-				1u								// deUint32				arraySize;
-			}
-		},
-		{
-			VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,		// VkStructureType			sType;
-			DE_NULL,									// const void*				pNext;
-			VK_ACCESS_TRANSFER_WRITE_BIT,				// VkAccessFlags			srcAccessMask;
-			VK_ACCESS_SHADER_READ_BIT,					// VkAccessFlags			dstAccessMask;
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,		// VkImageLayout			oldLayout;
-			VK_IMAGE_LAYOUT_GENERAL,					// VkImageLayout			newLayout;
-			VK_QUEUE_FAMILY_IGNORED,					// deUint32					srcQueueFamilyIndex;
-			VK_QUEUE_FAMILY_IGNORED,					// deUint32					dstQueueFamilyIndex;
-			image,										// VkImage					image;
-			{											// VkImageSubresourceRange	subresourceRange;
-				aspect,							// VkImageAspectFlags	aspectMask;
-				0u,								// deUint32				baseMipLevel;
-				1u,								// deUint32				mipLevels;
-				0u,								// deUint32				baseArraySlice;
-				1u								// deUint32				arraySize;
-			}
-		},
-	};
-
 	beginCommandBuffer(vk, cmdBuffer);
-	vk.cmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL,
-		0u, DE_NULL, 1u, &imageBarriers[0]);
-	vk.cmdCopyBufferToImage(cmdBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1u, &copyRegion);
-	vk.cmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL,
-		0, (const VkBufferMemoryBarrier*)DE_NULL, 1, &imageBarriers[1]);
+
+	copyBufferToImage(vk, cmdBuffer, buffer, VK_WHOLE_SIZE, vector<VkBufferImageCopy>(1, copyRegion), aspect, 1u, 1u, image, VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
 
 	endCommandBuffer(vk, cmdBuffer);
 
@@ -2339,7 +2445,8 @@ TestStatus runAndVerifyDefaultPipeline (Context& context, InstanceContext instan
 	const int									seed					= context.getTestContext().getCommandLine().getBaseSeed() ^ testSpecificSeed;
 	bool										supportsGeometry		= false;
 	bool										supportsTessellation	= false;
-	bool										hasTessellation         = false;
+	bool										hasGeometry				= false;
+	bool										hasTessellation			= false;
 	const bool									hasPushConstants		= !instance.pushConstants.empty();
 	const deUint32								numResources			= static_cast<deUint32>(instance.resources.inputs.size() + instance.resources.outputs.size());
 	const bool									needInterface			= !instance.interfaces.empty();
@@ -2348,18 +2455,18 @@ TestStatus runAndVerifyDefaultPipeline (Context& context, InstanceContext instan
 
 	supportsGeometry		= features.geometryShader == VK_TRUE;
 	supportsTessellation	= features.tessellationShader == VK_TRUE;
+	hasGeometry				= (instance.requiredStages & VK_SHADER_STAGE_GEOMETRY_BIT);
 	hasTessellation			= (instance.requiredStages & VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT) ||
 								(instance.requiredStages & VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT);
+
+	if (hasGeometry && !supportsGeometry)
+	{
+		TCU_THROW(NotSupportedError, "Geometry not supported");
+	}
 
 	if (hasTessellation && !supportsTessellation)
 	{
 		TCU_THROW(NotSupportedError, "Tessellation not supported");
-	}
-
-	if ((instance.requiredStages & VK_SHADER_STAGE_GEOMETRY_BIT) &&
-		!supportsGeometry)
-	{
-		TCU_THROW(NotSupportedError, "Geometry not supported");
 	}
 
 	// Check all required extensions are supported
@@ -2403,50 +2510,62 @@ TestStatus runAndVerifyDefaultPipeline (Context& context, InstanceContext instan
 
 	// Core features
 	{
-		const char* unsupportedFeature = DE_NULL;
+		const VkShaderStageFlags		vertexPipelineStoresAndAtomicsAffected	= vk::VK_SHADER_STAGE_VERTEX_BIT
+																				| vk::VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT
+																				| vk::VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT
+																				| vk::VK_SHADER_STAGE_GEOMETRY_BIT;
+		const char*						unsupportedFeature						= DE_NULL;
+		vk::VkPhysicalDeviceFeatures	localRequiredCoreFeatures				= instance.requestedFeatures.coreFeatures;
 
-		if (!isCoreFeaturesSupported(context, instance.requestedFeatures.coreFeatures, &unsupportedFeature))
+		// reset fragment stores and atomics feature requirement
+		if ((localRequiredCoreFeatures.fragmentStoresAndAtomics != DE_FALSE) &&
+			(instance.customizedStages & vk::VK_SHADER_STAGE_FRAGMENT_BIT) == 0)
+		{
+			localRequiredCoreFeatures.fragmentStoresAndAtomics = DE_FALSE;
+		}
+
+		// reset vertex pipeline stores and atomics feature requirement
+		if (localRequiredCoreFeatures.vertexPipelineStoresAndAtomics != DE_FALSE &&
+			(instance.customizedStages & vertexPipelineStoresAndAtomicsAffected) == 0)
+		{
+			localRequiredCoreFeatures.vertexPipelineStoresAndAtomics = DE_FALSE;
+		}
+
+		if (!isCoreFeaturesSupported(context, localRequiredCoreFeatures, &unsupportedFeature))
 			TCU_THROW(NotSupportedError, std::string("At least following requested core feature is not supported: ") + unsupportedFeature);
 	}
 
 	// Extension features
 	{
+		// 8bit storage features
+		{
+			if (!is8BitStorageFeaturesSupported(context, instance.requestedFeatures.ext8BitStorage))
+				TCU_THROW(NotSupportedError, "Requested 8bit storage features not supported");
+		}
+
 		// 16bit storage features
 		{
 			if (!is16BitStorageFeaturesSupported(context, instance.requestedFeatures.ext16BitStorage))
 				TCU_THROW(NotSupportedError, "Requested 16bit storage features not supported");
 		}
 
-		// 8bit storage features
+		// Variable Pointers features
 		{
-			if (!is8BitStorageFeaturesSupported(context, instance.requestedFeatures.ext8BitStorage))
-				TCU_THROW(NotSupportedError, "Requested 8bit storage features not supported");
+			if (!isVariablePointersFeaturesSupported(context, instance.requestedFeatures.extVariablePointers))
+				TCU_THROW(NotSupportedError, "Requested Variable Pointer features not supported");
+		}
+
+		// Float16/Int8 shader features
+		{
+			if (!isFloat16Int8FeaturesSupported(context, instance.requestedFeatures.extFloat16Int8))
+				TCU_THROW(NotSupportedError, "Requested 16bit float or 8bit int feature not supported");
 		}
 	}
 
-	// fragment stores and atomics feature
+	// FloatControls features
 	{
-		if (features.fragmentStoresAndAtomics == DE_FALSE &&
-			instance.requestedFeatures.coreFeatures.fragmentStoresAndAtomics == DE_TRUE &&
-			instance.customizedStages & vk::VK_SHADER_STAGE_FRAGMENT_BIT)
-			TCU_THROW(NotSupportedError, "Requested fragmentStoresAndAtomics feature not supported");
-	}
-
-	// vertex pipeline stores and atomics feature
-	{
-		if (features.vertexPipelineStoresAndAtomics == DE_FALSE &&
-			instance.requestedFeatures.coreFeatures.vertexPipelineStoresAndAtomics == DE_TRUE &&
-			(instance.customizedStages & vk::VK_SHADER_STAGE_VERTEX_BIT ||
-			 instance.customizedStages & vk::VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT ||
-			 instance.customizedStages & vk::VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT ||
-			 instance.customizedStages & vk::VK_SHADER_STAGE_GEOMETRY_BIT))
-			TCU_THROW(NotSupportedError, "Requested vertexPipelineStoresAndAtomics feature not supported");
-	}
-
-	// Variable Pointers features
-	{
-		if (!isVariablePointersFeaturesSupported(context, instance.requestedFeatures.extVariablePointers))
-			TCU_THROW(NotSupportedError, "Requested Variable Pointer features not supported");
+		if (!isFloatControlsFeaturesSupported(context, instance.requestedFeatures.floatControlsProperties))
+			TCU_THROW(NotSupportedError, "Requested Float Controls features not supported");
 	}
 
 	de::Random(seed).shuffle(instance.inputColors, instance.inputColors+4);
@@ -3690,18 +3809,9 @@ TestStatus runAndVerifyDefaultPipeline (Context& context, InstanceContext instan
 
 	// Upload vertex data
 	{
-		const VkMappedMemoryRange	range			=
-		{
-			VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,	//	VkStructureType	sType;
-			DE_NULL,								//	const void*		pNext;
-			vertexBufferMemory->getMemory(),		//	VkDeviceMemory	mem;
-			0,										//	VkDeviceSize	offset;
-			(VkDeviceSize)vertexDataSize,			//	VkDeviceSize	size;
-		};
-		void*						vertexBufPtr	= vertexBufferMemory->getHostPtr();
-
+		void* vertexBufPtr = vertexBufferMemory->getHostPtr();
 		deMemcpy(vertexBufPtr, &vertexData[0], vertexDataSize);
-		VK_CHECK(vk.flushMappedMemoryRanges(device, 1u, &range));
+		flushAlloc(vk, device, *vertexBufferMemory);
 	}
 
 	if (needInterface)
@@ -3750,19 +3860,8 @@ TestStatus runAndVerifyDefaultPipeline (Context& context, InstanceContext instan
 	const tcu::ConstPixelBufferAccess pixelBuffer(tcu::TextureFormat(tcu::TextureFormat::RGBA, tcu::TextureFormat::UNORM_INT8),
 												  renderSize.x(), renderSize.y(), 1, imagePtr);
 	// Log image
-	{
-		const VkMappedMemoryRange	range		=
-		{
-			VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,	//	VkStructureType	sType;
-			DE_NULL,								//	const void*		pNext;
-			readImageBufferMemory->getMemory(),		//	VkDeviceMemory	mem;
-			0,										//	VkDeviceSize	offset;
-			imageSizeBytes,							//	VkDeviceSize	size;
-		};
-
-		VK_CHECK(vk.invalidateMappedMemoryRanges(device, 1u, &range));
-		context.getTestContext().getLog() << TestLog::Image("Result", "Result", pixelBuffer);
-	}
+	invalidateAlloc(vk, device, *readImageBufferMemory);
+	context.getTestContext().getLog() << TestLog::Image("Result", "Result", pixelBuffer);
 
 	if (needInterface)
 	{
@@ -3867,7 +3966,16 @@ TestStatus runAndVerifyDefaultPipeline (Context& context, InstanceContext instan
 					if (expected[eleNdx] != actual[eleNdx])
 						equal = false;
 			}
-			else if (outputType.elementType == NUMBERTYPE_FLOAT16)
+			else if (outputType.elementType == NUMBERTYPE_FLOAT16 && inputType.elementType == NUMBERTYPE_FLOAT64)
+			{
+				const double*		original	= static_cast<const double*>(inputData) + posNdx * outputType.numElements;
+				const deFloat16*	actual		= static_cast<const deFloat16*>(fragOutputBufferAccess.getPixelPtr(x, y));
+
+				for (deUint32 eleNdx = 0; eleNdx < outputType.numElements; ++eleNdx)
+					if (!compare16BitFloat64(original[eleNdx], actual[eleNdx], instance.interfaces.getRoundingMode(), context.getTestContext().getLog()))
+						equal = false;
+			}
+			else if (outputType.elementType == NUMBERTYPE_FLOAT16 && inputType.elementType != NUMBERTYPE_FLOAT64)
 			{
 				if (inputType.elementType == NUMBERTYPE_FLOAT16)
 				{
@@ -3906,6 +4014,15 @@ TestStatus runAndVerifyDefaultPipeline (Context& context, InstanceContext instan
 					if (expected[eleNdx] != actual[eleNdx])
 						equal = false;
 			}
+			else if (outputType.elementType == NUMBERTYPE_FLOAT64)
+			{
+				const double*		expected	= static_cast<const double*>(outputData) + posNdx * outputType.numElements;
+				const double*		actual		= static_cast<const double*>(fragOutputBufferAccess.getPixelPtr(x, y));
+
+				for (deUint32 eleNdx = 0; eleNdx < outputType.numElements; ++eleNdx)
+					if (!compare64BitFloat(expected[eleNdx], actual[eleNdx], context.getTestContext().getLog()))
+						equal = false;
+			}
 			else {
 				DE_ASSERT(0 && "unhandled type");
 			}
@@ -3932,6 +4049,7 @@ TestStatus runAndVerifyDefaultPipeline (Context& context, InstanceContext instan
 
 			if (deMemCmp(&expectedBytes.front(), outResourceMemories[outputNdx]->getHostPtr(), expectedBytes.size()))
 				return tcu::TestStatus::fail("Resource returned doesn't match bitwisely with expected");
+
 		}
 	}
 

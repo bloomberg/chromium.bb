@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/service/display/output_surface.h"
 #include "content/common/content_export.h"
-#include "gpu/vulkan/buildflags.h"
 
 namespace cc {
 class SoftwareOutputDevice;
@@ -29,9 +29,6 @@ class ReflectorImpl;
 class CONTENT_EXPORT BrowserCompositorOutputSurface
     : public viz::OutputSurface {
  public:
-  using UpdateVSyncParametersCallback =
-      base::Callback<void(base::TimeTicks timebase, base::TimeDelta interval)>;
-
   ~BrowserCompositorOutputSurface() override;
 
   // viz::OutputSurface implementation.
@@ -48,23 +45,18 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   // Constructor used by the accelerated implementation.
   BrowserCompositorOutputSurface(
       scoped_refptr<viz::ContextProvider> context,
-      const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
+      const viz::UpdateVSyncParametersCallback&
+          update_vsync_parameters_callback,
       std::unique_ptr<viz::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 
   // Constructor used by the software implementation.
   BrowserCompositorOutputSurface(
       std::unique_ptr<viz::SoftwareOutputDevice> software_device,
-      const UpdateVSyncParametersCallback& update_vsync_parameters_callback);
+      const viz::UpdateVSyncParametersCallback&
+          update_vsync_parameters_callback);
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  // Constructor used by the Vulkan implementation.
-  BrowserCompositorOutputSurface(
-      const scoped_refptr<viz::VulkanContextProvider>& vulkan_context_provider,
-      const UpdateVSyncParametersCallback& update_vsync_parameters_callback);
-#endif
-
-  const UpdateVSyncParametersCallback update_vsync_parameters_callback_;
+  const viz::UpdateVSyncParametersCallback update_vsync_parameters_callback_;
   ReflectorImpl* reflector_;
 
  private:

@@ -4,6 +4,7 @@
 
 #include "components/policy/core/common/policy_scheduler.h"
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace policy {

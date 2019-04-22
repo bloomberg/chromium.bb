@@ -58,8 +58,8 @@ class PathBuilderTestDelegate {
 
 }  // namespace
 
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              VerifyCertificateChainSingleRootTest,
-                              PathBuilderTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               VerifyCertificateChainSingleRootTest,
+                               PathBuilderTestDelegate);
 
 }  // namespace net

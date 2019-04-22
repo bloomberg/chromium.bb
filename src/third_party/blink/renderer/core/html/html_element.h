@@ -37,6 +37,7 @@ class ExceptionState;
 class FormAssociated;
 class HTMLFormElement;
 class KeyboardEvent;
+class LabelsNodeList;
 class StringOrTrustedScript;
 class StringTreatNullAsEmptyStringOrTrustedScript;
 
@@ -51,6 +52,8 @@ class CORE_EXPORT HTMLElement : public Element {
 
  public:
   DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
+
+  HTMLElement(const QualifiedName& tag_name, Document&, ConstructionType);
 
   bool HasTagName(const HTMLQualifiedName& name) const {
     return HasLocalName(name.LocalName());
@@ -108,7 +111,11 @@ class CORE_EXPORT HTMLElement : public Element {
   virtual bool IsHTMLUnknownElement() const { return false; }
   virtual bool IsPluginElement() const { return false; }
 
-  virtual bool IsLabelable() const { return false; }
+  // https://html.spec.whatwg.org/C/#category-label
+  virtual bool IsLabelable() const;
+  // |labels| IDL attribute implementation for IsLabelable()==true elements.
+  LabelsNodeList* labels();
+
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#interactive-content
   virtual bool IsInteractiveContent() const;
   void DefaultEventHandler(Event&) override;
@@ -116,8 +123,14 @@ class CORE_EXPORT HTMLElement : public Element {
   static const AtomicString& EventNameForAttributeName(
       const QualifiedName& attr_name);
 
+  bool SupportsFocus() const override;
+  bool IsDisabledFormControl() const override;
+  bool MatchesEnabledPseudoClass() const override;
   bool MatchesReadOnlyPseudoClass() const override;
   bool MatchesReadWritePseudoClass() const override;
+  bool MatchesValidityPseudoClasses() const override;
+  bool willValidate() const override;
+  bool IsValidElement() override;
 
   static const AtomicString& EventParameterName();
 
@@ -135,8 +148,6 @@ class CORE_EXPORT HTMLElement : public Element {
   bool IsFormAssociatedCustomElement() const;
 
  protected:
-  HTMLElement(const QualifiedName& tag_name, Document&, ConstructionType);
-
   enum AllowPercentage { kDontAllowPercentageValues, kAllowPercentageValues };
   void AddHTMLLengthToStyle(MutableCSSPropertyValueSet*,
                             CSSPropertyID,
@@ -168,6 +179,7 @@ class CORE_EXPORT HTMLElement : public Element {
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode& insertion_point) override;
   void DidMoveToNewDocument(Document& old_document) override;
+  void FinishParsingChildren() override;
 
  private:
   String DebugNodeName() const final;
@@ -186,8 +198,7 @@ class CORE_EXPORT HTMLElement : public Element {
   bool SelfOrAncestorHasDirAutoAttribute() const;
   void AdjustDirectionalityIfNeededAfterChildAttributeChanged(Element* child);
   void AdjustDirectionalityIfNeededAfterChildrenChanged(const ChildrenChange&);
-  TextDirection Directionality(
-      Node** strong_directionality_text_node = nullptr) const;
+  TextDirection Directionality() const;
 
   TranslateAttributeMode GetTranslateAttributeMode() const;
 
@@ -197,6 +208,7 @@ class CORE_EXPORT HTMLElement : public Element {
       const QualifiedName& attr_name);
 
   void OnDirAttrChanged(const AttributeModificationParams&);
+  void OnFormAttrChanged(const AttributeModificationParams&);
   void OnInertAttrChanged(const AttributeModificationParams&);
   void OnLangAttrChanged(const AttributeModificationParams&);
   void OnNonceAttrChanged(const AttributeModificationParams&);

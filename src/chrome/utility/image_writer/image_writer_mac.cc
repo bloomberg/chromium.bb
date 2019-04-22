@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <sys/socket.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -107,7 +108,7 @@ bool ImageWriter::OpenDevice() {
   }
 
   // Build the command line.
-  std::string rdwr = base::IntToString(O_RDWR);
+  std::string rdwr = base::NumberToString(O_RDWR);
 
   base::CommandLine cmd_line = base::CommandLine(base::FilePath(kAuthOpenPath));
   cmd_line.AppendSwitch("-stdoutpipe");

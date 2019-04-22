@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -150,9 +151,7 @@ class MainThreadEventQueueTest : public testing::Test,
                                  public MainThreadEventQueueClient {
  public:
   MainThreadEventQueueTest()
-      : main_task_runner_(new base::TestSimpleTaskRunner()),
-        needs_main_frame_(false),
-        closure_count_(0) {
+      : main_task_runner_(new base::TestSimpleTaskRunner()) {
     handler_callback_ = std::make_unique<HandledEventCallbackTracker>();
   }
 
@@ -214,15 +213,18 @@ class MainThreadEventQueueTest : public testing::Test,
     }
   }
 
-  void HandleInputEvent(const blink::WebCoalescedInputEvent& event,
+  // MainThreadEventQueueClient overrides.
+  bool HandleInputEvent(const blink::WebCoalescedInputEvent& event,
                         const ui::LatencyInfo& latency,
                         HandledEventCallback callback) override {
+    if (!handle_input_event_)
+      return false;
     std::unique_ptr<HandledTask> handled_event(new HandledEvent(event));
     handled_tasks_.push_back(std::move(handled_event));
     std::move(callback).Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latency,
                             nullptr, base::nullopt);
+    return true;
   }
-
   void SetNeedsMainFrame() override { needs_main_frame_ = true; }
 
   std::vector<ReceivedCallback> GetAndResetCallbackResults() {
@@ -232,6 +234,8 @@ class MainThreadEventQueueTest : public testing::Test,
     return callback->GetReceivedCallbacks();
   }
 
+  void set_handle_input_event(bool handle) { handle_input_event_ = handle; }
+
  protected:
   scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
   blink::scheduler::WebMockThreadScheduler thread_scheduler_;
@@ -239,11 +243,47 @@ class MainThreadEventQueueTest : public testing::Test,
   std::vector<std::unique_ptr<HandledTask>> handled_tasks_;
   std::unique_ptr<HandledEventCallbackTracker> handler_callback_;
 
-  int raf_aligned_input_setting_;
-  bool needs_main_frame_;
+  bool needs_main_frame_ = false;
+  bool handle_input_event_ = true;
   base::TimeTicks frame_time_;
-  unsigned closure_count_;
+  unsigned closure_count_ = 0;
 };
+
+TEST_F(MainThreadEventQueueTest, ClientDoesntHandleInputEvent) {
+  // Prevent MainThreadEventQueueClient::HandleInputEvent() from handling the
+  // event, and have it return false. Then the MainThreadEventQueue should
+  // call the handled callback.
+  set_handle_input_event(false);
+
+  // The blocking event used in this test is reported to the scheduler.
+  EXPECT_CALL(thread_scheduler_,
+              DidHandleInputEventOnMainThread(testing::_, testing::_))
+      .Times(1);
+
+  // Inject and try to dispatch an input event. This event is not considered
+  // "non-blocking" which means the reply callback gets stored with the queued
+  // event, and will be run when we work through the queue.
+  SyntheticWebTouchEvent event;
+  event.PressPoint(10, 10);
+  event.MovePoint(0, 20, 20);
+  WebMouseWheelEvent event2 =
+      SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, 53, 0, false);
+  HandleEvent(event2, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  RunPendingTasksWithSimulatedRaf();
+
+  std::vector<ReceivedCallback> received = GetAndResetCallbackResults();
+  // We didn't handle the event in the client method.
+  EXPECT_EQ(handled_tasks_.size(), 0u);
+  // There's 1 reply callback for our 1 event.
+  EXPECT_EQ(received.size(), 1u);
+  // The event was queued and disaptched, then the callback was run when
+  // the client failed to handle it. If this fails, the callback was run
+  // by HandleEvent() without dispatching it (kCalledWhileHandlingEvent)
+  // or was not called at all (kPending).
+  EXPECT_THAT(received,
+              testing::Each(ReceivedCallback(
+                  CallbackReceivedState::kCalledAfterHandleEvent, false)));
+}
 
 TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
   WebMouseWheelEvent kEvents[4] = {
@@ -1078,11 +1118,12 @@ class MainThreadEventQueueInitializationTest
  public:
   MainThreadEventQueueInitializationTest() {}
 
-  void HandleInputEvent(const blink::WebCoalescedInputEvent& event,
+  bool HandleInputEvent(const blink::WebCoalescedInputEvent& event,
                         const ui::LatencyInfo& latency,
                         HandledEventCallback callback) override {
     std::move(callback).Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latency,
                             nullptr, base::nullopt);
+    return true;
   }
 
   void SetNeedsMainFrame() override {}

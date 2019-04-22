@@ -10,7 +10,9 @@
 #include <algorithm>
 
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/decoder_client.h"
 
 namespace gpu {
 namespace {
@@ -126,8 +128,10 @@ bool CommonDecoder::Bucket::GetAsStrings(
   return true;
 }
 
-CommonDecoder::CommonDecoder(CommandBufferServiceBase* command_buffer_service)
+CommonDecoder::CommonDecoder(DecoderClient* client,
+                             CommandBufferServiceBase* command_buffer_service)
     : command_buffer_service_(command_buffer_service),
+      client_(client),
       max_bucket_size_(kDefaultMaxBucketSize) {
   DCHECK(command_buffer_service_);
 }
@@ -212,7 +216,7 @@ RETURN_TYPE GetImmediateDataAs(const volatile COMMAND_TYPE& pod) {
 error::Error CommonDecoder::DoCommonCommand(unsigned int command,
                                             unsigned int arg_count,
                                             const volatile void* cmd_data) {
-  if (command < arraysize(command_info)) {
+  if (command < base::size(command_info)) {
     const CommandInfo& info = command_info[command];
     unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
     if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
@@ -359,6 +363,21 @@ error::Error CommonDecoder::HandleGetBucketData(uint32_t immediate_data_size,
       return error::kInvalidArguments;
   }
   memcpy(data, src, size);
+  return error::kNoError;
+}
+
+error::Error CommonDecoder::HandleInsertFenceSync(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile cmd::InsertFenceSync& c =
+      *static_cast<const volatile cmd::InsertFenceSync*>(cmd_data);
+
+  const uint64_t release_count = c.release_count();
+  client_->OnFenceSyncRelease(release_count);
+  // Exit inner command processing loop so that we check the scheduling state
+  // and yield if necessary as we may have unblocked a higher priority
+  // context.
+  ExitCommandProcessingEarly();
   return error::kNoError;
 }
 

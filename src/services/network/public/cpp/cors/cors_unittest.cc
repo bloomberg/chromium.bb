@@ -309,76 +309,6 @@ TEST_F(CorsTest, CheckPreflightDetectsErrors) {
   EXPECT_EQ("TRUE", error3->failed_parameter);
 }
 
-TEST_F(CorsTest, CalculateResponseTainting) {
-  using mojom::FetchResponseType;
-  using mojom::FetchRequestMode;
-
-  const GURL same_origin_url("https://example.com/");
-  const GURL cross_origin_url("https://example2.com/");
-  const url::Origin origin = url::Origin::Create(GURL("https://example.com"));
-  const base::Optional<url::Origin> no_origin;
-
-  // CORS flag is false, same-origin request
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kSameOrigin, origin, false));
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kNoCors, origin, false));
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(same_origin_url, FetchRequestMode::kCors,
-                                      origin, false));
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kCorsWithForcedPreflight,
-                origin, false));
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kNavigate, origin, false));
-
-  // CORS flag is false, cross-origin request
-  EXPECT_EQ(FetchResponseType::kOpaque,
-            CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kNoCors, origin, false));
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kNavigate, origin, false));
-
-  // CORS flag is true, same-origin request
-  EXPECT_EQ(FetchResponseType::kCors,
-            CalculateResponseTainting(same_origin_url, FetchRequestMode::kCors,
-                                      origin, true));
-  EXPECT_EQ(FetchResponseType::kCors,
-            CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kCorsWithForcedPreflight,
-                origin, true));
-
-  // CORS flag is true, cross-origin request
-  EXPECT_EQ(FetchResponseType::kCors,
-            CalculateResponseTainting(cross_origin_url, FetchRequestMode::kCors,
-                                      origin, true));
-  EXPECT_EQ(FetchResponseType::kCors,
-            CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kCorsWithForcedPreflight,
-                origin, true));
-
-  // Origin is not provided.
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kNoCors, no_origin, false));
-  EXPECT_EQ(
-      FetchResponseType::kBasic,
-      CalculateResponseTainting(same_origin_url, FetchRequestMode::kNavigate,
-                                no_origin, false));
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kNoCors, no_origin, false));
-  EXPECT_EQ(
-      FetchResponseType::kBasic,
-      CalculateResponseTainting(cross_origin_url, FetchRequestMode::kNavigate,
-                                no_origin, false));
-}
-
 TEST_F(CorsTest, SafelistedMethod) {
   // Method check should be case-insensitive.
   EXPECT_TRUE(IsCorsSafelistedMethod("get"));
@@ -447,6 +377,23 @@ TEST_F(CorsTest, SafelistedAcceptLanguage) {
   EXPECT_TRUE(IsCorsSafelistedHeader("aCcEPT-lAngUAge", std::string(128, 'a')));
   EXPECT_FALSE(
       IsCorsSafelistedHeader("aCcEPT-lAngUAge", std::string(129, 'a')));
+}
+
+TEST_F(CorsTest, SafelistedSecCHLang) {
+  EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-Lang", "\"en\", \"de\""));
+
+  // TODO(mkwst): Validate that `Sec-CH-Lang` is a structured header.
+  // https://crbug.com/924969
+}
+
+TEST_F(CorsTest, SafelistedSecCHUA) {
+  EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-UA", "\"User Agent!\""));
+  EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-UA-Platform", "\"Platform!\""));
+  EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-UA-Arch", "\"Architecture!\""));
+  EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-UA-Model", "\"Model!\""));
+
+  // TODO(mkwst): Validate that `Sec-CH-UA-*` is a structured header.
+  // https://crbug.com/924969
 }
 
 TEST_F(CorsTest, SafelistedContentLanguage) {
@@ -759,6 +706,29 @@ TEST_F(CorsTest, CorsUnsafeNotForbiddenRequestHeaderNamesWithRevalidating) {
                                                 {"CACHE-ContrOl", "z"}},
                                                false /* is_revalidating */),
       List({"if-modified-since", "if-none-match", "cache-control"}));
+}
+
+TEST_F(CorsTest, NoCorsSafelistedHeaderName) {
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("accept"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("AcCePT"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("accept-language"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("acCEPt-lAnguage"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("content-language"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("coNTENt-lAnguage"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("content-type"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("CONTENT-TYPE"));
+
+  EXPECT_FALSE(IsNoCorsSafelistedHeaderName("range"));
+  EXPECT_FALSE(IsNoCorsSafelistedHeaderName("cookie"));
+  EXPECT_FALSE(IsNoCorsSafelistedHeaderName("foobar"));
+}
+
+TEST_F(CorsTest, PrivilegedNoCorsHeaderName) {
+  EXPECT_TRUE(IsPrivilegedNoCorsHeaderName("range"));
+  EXPECT_TRUE(IsPrivilegedNoCorsHeaderName("RanGe"));
+  EXPECT_FALSE(IsPrivilegedNoCorsHeaderName("content-type"));
+  EXPECT_FALSE(IsPrivilegedNoCorsHeaderName("foobar"));
+  EXPECT_FALSE(IsPrivilegedNoCorsHeaderName("cookie"));
 }
 
 }  // namespace

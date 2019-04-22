@@ -43,7 +43,7 @@ class DataOffer final : public ui::PropertyHandler {
   void RemoveObserver(DataOfferObserver* observer);
 
   // Notifies to the DataOffer that the client can accept |mime type|.
-  void Accept(const std::string& mime_type);
+  void Accept(const std::string* mime_type);
 
   // Notifies to the DataOffer that the client start receiving data of
   // |mime_type|. DataOffer writes the request data to |fd|.

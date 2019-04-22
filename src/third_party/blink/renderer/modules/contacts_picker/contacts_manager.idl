@@ -9,5 +9,5 @@
     SecureContext,
     RuntimeEnabled=ContactsManager
 ] interface ContactsManager {
-    [CallWith=ScriptState] Promise<FrozenArray<ContactInfo>> select(ContactsSelectOptions options);
+    [CallWith=ScriptState] Promise<sequence<ContactInfo>> select(ContactsSelectOptions options);
 };

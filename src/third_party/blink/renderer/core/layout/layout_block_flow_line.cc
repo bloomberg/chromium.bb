@@ -1584,8 +1584,8 @@ static inline void AdjustMarginForInlineReplaced(LayoutObject* child,
                                                  LayoutUnit& child_max) {
   // Inline replaced elts add in their margins to their min/max values.
   const ComputedStyle& child_style = child->StyleRef();
-  Length start_margin = child_style.MarginStart();
-  Length end_margin = child_style.MarginEnd();
+  const Length& start_margin = child_style.MarginStart();
+  const Length& end_margin = child_style.MarginEnd();
   LayoutUnit margins;
   if (start_margin.IsFixed())
     margins += AdjustFloatForSubPixelLayout(start_margin.Value());
@@ -2335,10 +2335,24 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
   if (HasOverflowClip() && !end_padding && GetNode() &&
       IsRootEditableElement(*GetNode()) && StyleRef().IsLeftToRightDirection())
     end_padding = LayoutUnit(1);
-  for (RootInlineBox* curr = FirstRootBox(); curr; curr = curr->NextRootBox()) {
-    LayoutRect visual_overflow =
-        curr->VisualOverflowRect(curr->LineTop(), curr->LineBottom());
-    AddContentsVisualOverflow(visual_overflow);
+
+  if (const NGPaintFragment* paint_fragment = PaintFragment()) {
+    for (const NGPaintFragment* child : paint_fragment->Children()) {
+      if (child->HasSelfPaintingLayer())
+        continue;
+      NGPhysicalOffsetRect child_rect = child->InkOverflow();
+      if (!child_rect.IsEmpty()) {
+        child_rect.offset += child->Offset();
+        AddContentsVisualOverflow(child_rect.ToLayoutRect());
+      }
+    }
+  } else {
+    for (RootInlineBox* curr = FirstRootBox(); curr;
+         curr = curr->NextRootBox()) {
+      LayoutRect visual_overflow =
+          curr->VisualOverflowRect(curr->LineTop(), curr->LineBottom());
+      AddContentsVisualOverflow(visual_overflow);
+    }
   }
 
   if (!ContainsInlineWithOutlineAndContinuation())
@@ -2482,8 +2496,7 @@ void LayoutBlockFlow::CheckLinesForTextOverflow() {
         LogicalRightOffsetForLine(curr->LineTop(), indent_text);
     LayoutUnit block_left_edge =
         LogicalLeftOffsetForLine(curr->LineTop(), indent_text);
-    LayoutUnit line_box_edge = ltr ? curr->LogicalRightLayoutOverflow()
-                                   : curr->LogicalLeftLayoutOverflow();
+    LayoutUnit line_box_edge = ltr ? curr->LogicalRight() : curr->LogicalLeft();
     if ((ltr && line_box_edge > block_right_edge) ||
         (!ltr && line_box_edge < block_left_edge)) {
       // This line spills out of our box in the appropriate direction. Now we

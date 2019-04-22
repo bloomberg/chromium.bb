@@ -31,15 +31,11 @@
 #include <memory>
 #include <utility>
 
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_name_and_version.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -52,10 +48,14 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_name_and_version.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction_impl.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -68,13 +68,6 @@ namespace {
 
 class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
  public:
-  // static
-  static std::unique_ptr<WebIDBGetDBNamesCallbacksImpl> Create(
-      ScriptPromiseResolver* promise_resolver) {
-    return base::WrapUnique(
-        new WebIDBGetDBNamesCallbacksImpl(promise_resolver));
-  }
-
   WebIDBGetDBNamesCallbacksImpl(ScriptPromiseResolver* promise_resolver)
       : promise_resolver_(promise_resolver) {
     probe::AsyncTaskScheduled(
@@ -93,7 +86,10 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     }
   }
 
-  void OnError(const WebIDBDatabaseError& error) override {
+  void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
+                int64_t transaction_id) override {}
+
+  void Error(int32_t code, const String& message) override {
     if (!promise_resolver_)
       return;
 
@@ -106,66 +102,84 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     promise_resolver_.Clear();
   }
 
-  void OnSuccess(const WebVector<WebIDBNameAndVersion>&
-                     web_database_name_and_version_list) override {
+  void SuccessNamesAndVersionsList(
+      Vector<mojom::blink::IDBNameAndVersionPtr> names_and_versions) override {
     if (!promise_resolver_)
       return;
 
-    HeapVector<Member<IDBDatabaseInfo>> database_name_and_version_list;
-    for (size_t i = 0; i < web_database_name_and_version_list.size(); ++i) {
+    HeapVector<Member<IDBDatabaseInfo>> name_and_version_list;
+    name_and_version_list.ReserveInitialCapacity(name_and_version_list.size());
+    for (const mojom::blink::IDBNameAndVersionPtr& name_version :
+         names_and_versions) {
+      const IDBNameAndVersion idb_name_and_version(name_version->name,
+                                                   name_version->version);
       IDBDatabaseInfo* idb_info = IDBDatabaseInfo::Create();
-      idb_info->setName(web_database_name_and_version_list[i].name);
-      idb_info->setVersion(web_database_name_and_version_list[i].version);
-      database_name_and_version_list.push_back(idb_info);
+      idb_info->setName(name_version->name);
+      idb_info->setVersion(name_version->version);
+      name_and_version_list.push_back(idb_info);
     }
+
     probe::AsyncTask async_task(
         ExecutionContext::From(promise_resolver_->GetScriptState()), this,
         "success");
-    promise_resolver_->Resolve(database_name_and_version_list);
+    promise_resolver_->Resolve(name_and_version_list);
     promise_resolver_.Clear();
   }
 
-  void OnSuccess(const WebVector<WebString>&) override { NOTREACHED(); }
+  void SuccessStringList(const Vector<String>&) override { NOTREACHED(); }
 
-  void OnSuccess(WebIDBCursor* cursor,
-                 WebIDBKey key,
-                 WebIDBKey primary_key,
-                 WebIDBValue value) override {
+  void SuccessCursor(
+      mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
+      std::unique_ptr<IDBKey> key,
+      std::unique_ptr<IDBKey> primary_key,
+      base::Optional<std::unique_ptr<IDBValue>> optional_value) override {
     NOTREACHED();
   }
 
-  void OnSuccess(WebIDBDatabase* backend,
-                 const WebIDBMetadata& metadata) override {
+  void SuccessCursorPrefetch(
+      Vector<std::unique_ptr<IDBKey>> keys,
+      Vector<std::unique_ptr<IDBKey>> primary_keys,
+      Vector<std::unique_ptr<IDBValue>> values) override {
     NOTREACHED();
   }
 
-  void OnSuccess(WebIDBKey key) override { NOTREACHED(); }
-
-  void OnSuccess(WebIDBValue value) override { NOTREACHED(); }
-
-  void OnSuccess(WebVector<WebIDBValue> values) override { NOTREACHED(); }
-
-  void OnSuccess(long long value) override { NOTREACHED(); }
-
-  void OnSuccess() override { NOTREACHED(); }
-
-  void OnSuccess(WebIDBKey key,
-                 WebIDBKey primary_key,
-                 WebIDBValue value) override {
+  void SuccessDatabase(mojom::blink::IDBDatabaseAssociatedPtrInfo backend,
+                       const IDBDatabaseMetadata& metadata) override {
     NOTREACHED();
   }
 
-  void OnBlocked(long long old_version) override { NOTREACHED(); }
+  void SuccessKey(std::unique_ptr<IDBKey> key) override { NOTREACHED(); }
 
-  void OnUpgradeNeeded(long long old_version,
-                       WebIDBDatabase* database,
-                       const WebIDBMetadata& metadata,
-                       mojom::IDBDataLoss data_loss,
-                       WebString data_loss_message) override {
+  void SuccessValue(mojom::blink::IDBReturnValuePtr return_value) override {
     NOTREACHED();
   }
 
-  void Detach() override { NOTREACHED(); }
+  void SuccessArray(Vector<mojom::blink::IDBReturnValuePtr> values) override {
+    NOTREACHED();
+  }
+
+  void SuccessInteger(int64_t value) override { NOTREACHED(); }
+
+  void Success() override { NOTREACHED(); }
+
+  void SuccessCursorContinue(
+      std::unique_ptr<IDBKey> key,
+      std::unique_ptr<IDBKey> primary_key,
+      base::Optional<std::unique_ptr<IDBValue>> value) override {
+    NOTREACHED();
+  }
+
+  void Blocked(int64_t old_version) override { NOTREACHED(); }
+
+  void UpgradeNeeded(mojom::blink::IDBDatabaseAssociatedPtrInfo database,
+                     int64_t old_version,
+                     mojom::IDBDataLoss data_loss,
+                     const String& data_loss_message,
+                     const IDBDatabaseMetadata& metadata) override {
+    NOTREACHED();
+  }
+
+  void DetachRequestFromCallback() override { NOTREACHED(); }
 
  private:
   Persistent<ScriptPromiseResolver> promise_resolver_;
@@ -188,20 +202,25 @@ static bool IsContextValid(ExecutionContext* context) {
   return true;
 }
 
-WebIDBFactory* IDBFactory::GetFactory() {
+WebIDBFactory* IDBFactory::GetFactory(ExecutionContext* execution_context) {
   if (!web_idb_factory_) {
     mojom::blink::IDBFactoryPtrInfo web_idb_factory_host_info;
-    Platform::Current()->GetInterfaceProvider()->GetInterface(
+    service_manager::InterfaceProvider* interface_provider =
+        execution_context->GetInterfaceProvider();
+    if (!interface_provider)
+      return nullptr;
+    interface_provider->GetInterface(
         mojo::MakeRequest(&web_idb_factory_host_info));
     web_idb_factory_ = std::make_unique<WebIDBFactoryImpl>(
-        std::move(web_idb_factory_host_info));
+        std::move(web_idb_factory_host_info),
+        execution_context->GetTaskRunner(TaskType::kDatabaseAccess));
   }
   return web_idb_factory_.get();
 }
 
 ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
                                           ExceptionState& exception_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   if (!ExecutionContext::From(script_state)
            ->GetSecurityOrigin()
@@ -212,12 +231,15 @@ ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
     return resolver->Promise();
   }
 
-  GetFactory()->GetDatabaseInfo(
-      WebIDBGetDBNamesCallbacksImpl::Create(resolver).release(),
-      WebSecurityOrigin(
-          ExecutionContext::From(script_state)->GetSecurityOrigin()),
-      ExecutionContext::From(script_state)
-          ->GetTaskRunner(TaskType::kInternalIndexedDB));
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  WebIDBFactory* factory = GetFactory(execution_context);
+  if (!factory) {
+    exception_state.ThrowSecurityError("An internal error occurred.");
+    resolver->Reject();
+    return resolver->Promise();
+  }
+  factory->GetDatabaseInfo(
+      std::make_unique<WebIDBGetDBNamesCallbacksImpl>(resolver));
   ScriptPromise promise = resolver->Promise();
   return promise;
 }
@@ -251,18 +273,19 @@ IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
     return request;
   }
 
-  GetFactory()->GetDatabaseNames(
-      request->CreateWebCallbacks().release(),
-      WebSecurityOrigin(
-          ExecutionContext::From(script_state)->GetSecurityOrigin()),
-      ExecutionContext::From(script_state)
-          ->GetTaskRunner(TaskType::kInternalIndexedDB));
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  WebIDBFactory* factory = GetFactory(execution_context);
+  if (!factory) {
+    exception_state.ThrowSecurityError("An internal error occurred.");
+    return nullptr;
+  }
+  factory->GetDatabaseNames(request->CreateWebCallbacks());
   return request;
 }
 
 IDBOpenDBRequest* IDBFactory::open(ScriptState* script_state,
                                    const String& name,
-                                   unsigned long long version,
+                                   uint64_t version,
                                    ExceptionState& exception_state) {
   if (!version) {
     exception_state.ThrowTypeError("The version provided must not be 0.");
@@ -293,11 +316,18 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
                       WebFeature::kFileAccessedDatabase);
   }
 
-  IDBDatabaseCallbacks* database_callbacks = IDBDatabaseCallbacks::Create();
+  auto* database_callbacks = MakeGarbageCollected<IDBDatabaseCallbacks>();
   int64_t transaction_id = IDBDatabase::NextTransactionId();
-  IDBOpenDBRequest* request =
-      IDBOpenDBRequest::Create(script_state, database_callbacks, transaction_id,
-                               version, std::move(metrics));
+
+  auto transaction_backend = std::make_unique<WebIDBTransactionImpl>(
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(TaskType::kDatabaseAccess),
+      transaction_id);
+  mojom::blink::IDBTransactionAssociatedRequest transaction_request =
+      transaction_backend->CreateRequest();
+  auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
+      script_state, database_callbacks, std::move(transaction_backend),
+      transaction_id, version, std::move(metrics));
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state))) {
@@ -306,13 +336,15 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
     return request;
   }
 
-  GetFactory()->Open(
-      name, version, transaction_id, request->CreateWebCallbacks().release(),
-      database_callbacks->CreateWebCallbacks().release(),
-      WebSecurityOrigin(
-          ExecutionContext::From(script_state)->GetSecurityOrigin()),
-      ExecutionContext::From(script_state)
-          ->GetTaskRunner(TaskType::kInternalIndexedDB));
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  WebIDBFactory* factory = GetFactory(execution_context);
+  if (!factory) {
+    exception_state.ThrowSecurityError("An internal error occurred.");
+    return nullptr;
+  }
+  factory->Open(name, version, std::move(transaction_request), transaction_id,
+                request->CreateWebCallbacks(),
+                database_callbacks->CreateWebCallbacks());
   return request;
 }
 
@@ -361,9 +393,9 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
                       WebFeature::kFileAccessedDatabase);
   }
 
-  IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
-      script_state, nullptr, 0, IDBDatabaseMetadata::kDefaultVersion,
-      std::move(metrics));
+  auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
+      script_state, nullptr, /*IDBTransactionAssociatedPtr=*/nullptr, 0,
+      IDBDatabaseMetadata::kDefaultVersion, std::move(metrics));
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state))) {
@@ -372,20 +404,20 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
     return request;
   }
 
-  GetFactory()->DeleteDatabase(
-      name, request->CreateWebCallbacks().release(),
-      WebSecurityOrigin(
-          ExecutionContext::From(script_state)->GetSecurityOrigin()),
-      force_close,
-      ExecutionContext::From(script_state)
-          ->GetTaskRunner(TaskType::kInternalIndexedDB));
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  WebIDBFactory* factory = GetFactory(execution_context);
+  if (!factory) {
+    exception_state.ThrowSecurityError("An internal error occurred.");
+    return nullptr;
+  }
+  factory->DeleteDatabase(name, request->CreateWebCallbacks(), force_close);
   return request;
 }
 
-short IDBFactory::cmp(ScriptState* script_state,
-                      const ScriptValue& first_value,
-                      const ScriptValue& second_value,
-                      ExceptionState& exception_state) {
+int16_t IDBFactory::cmp(ScriptState* script_state,
+                        const ScriptValue& first_value,
+                        const ScriptValue& second_value,
+                        ExceptionState& exception_state) {
   const std::unique_ptr<IDBKey> first =
       ScriptValue::To<std::unique_ptr<IDBKey>>(script_state->GetIsolate(),
                                                first_value, exception_state);
@@ -410,7 +442,7 @@ short IDBFactory::cmp(ScriptState* script_state,
     return 0;
   }
 
-  return static_cast<short>(first->Compare(second.get()));
+  return static_cast<int16_t>(first->Compare(second.get()));
 }
 
 }  // namespace blink

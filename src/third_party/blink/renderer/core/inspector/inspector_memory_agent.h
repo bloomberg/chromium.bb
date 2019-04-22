@@ -57,6 +57,8 @@ class CORE_EXPORT InspectorMemoryAgent final
                                     int* nodes,
                                     int* js_event_listeners) override;
 
+  protocol::Response forciblyPurgeJavaScriptMemory() override;
+
   // Memory protocol domain:
   protocol::Response startSampling(
       protocol::Maybe<int> in_samplingInterval,

@@ -5,7 +5,13 @@
 #ifndef CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_LOADER_H_
 #define CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_LOADER_H_
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/single_request_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -39,6 +45,10 @@ class ServiceWorkerProviderHost;
 class WorkerScriptLoader : public network::mojom::URLLoader,
                            public network::mojom::URLLoaderClient {
  public:
+  // Returns the resource context, or nullptr during shutdown. Must be called on
+  // the IO thread.
+  using ResourceContextGetter = base::RepeatingCallback<ResourceContext*(void)>;
+
   // |default_loader_factory| is used to load the script if the load is not
   // intercepted by a feature like service worker. Typically it will load the
   // script from the NetworkService. However, it may internally contain
@@ -53,17 +63,15 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       network::mojom::URLLoaderClientPtr client,
       base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
       base::WeakPtr<AppCacheHost> appcache_host,
-      ResourceContext* resource_context,
+      const ResourceContextGetter& resource_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
   ~WorkerScriptLoader() override;
 
   // network::mojom::URLLoader:
-  void FollowRedirect(
-      const base::Optional<std::vector<std::string>>&
-          to_be_removed_request_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
-      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      const base::Optional<GURL>& new_url) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
@@ -110,6 +118,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       NavigationLoaderInterceptor* interceptor,
       SingleRequestURLLoaderFactory::RequestHandler single_request_handler);
   void LoadFromNetwork(bool reset_subresource_loader_params);
+  void CommitCompleted(const network::URLLoaderCompletionStatus& status);
 
   // The order of the interceptors is important. The former interceptor can
   // preferentially get a chance to intercept a network request.
@@ -125,7 +134,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   network::ResourceRequest resource_request_;
   network::mojom::URLLoaderClientPtr client_;
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
-  ResourceContext* resource_context_;
+  ResourceContextGetter resource_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
@@ -138,6 +147,8 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   // |default_loader_factory_| if a service worker or other interceptor didn't
   // elect to handle the request.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  bool completed_ = false;
 
   base::WeakPtrFactory<WorkerScriptLoader> weak_factory_;
 

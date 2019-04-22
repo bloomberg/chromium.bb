@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation.h"
 
-#import "base/logging.h"
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_to_tab_transition_view.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/util/property_animator_group.h"
@@ -365,7 +365,7 @@ const CGFloat kInactiveItemScale = 0.95;
   [self.animations addAnimator:fadeOutCells];
 }
 
-// Perfroms the initial setup for the animation, computing scale based on the
+// Performs the initial setup for the animation, computing scale based on the
 // superview size and adding the transition cells to the view hierarchy.
 - (void)prepareForAnimationInSuperview:(UIView*)newSuperview {
   // Add the selection item first, so it's under ther other views.

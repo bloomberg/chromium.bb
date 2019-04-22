@@ -26,7 +26,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -82,7 +82,7 @@ class GAIAInfoUpdateServiceTestBase : public ProfileInfoCacheTest {
 
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
-  };
+  }
 
   void TearDown() override {
     if (downloader_)
@@ -112,12 +112,12 @@ class GAIAInfoUpdateServiceTestBase : public ProfileInfoCacheTest {
   NiceMock<ProfileDownloaderMock>* downloader() { return downloader_.get(); }
 
   Profile* CreateProfile(const std::string& name) {
-    TestingProfile::TestingFactories testing_factories;
+    TestingProfile::TestingFactories testing_factories =
+        IdentityTestEnvironmentProfileAdaptor::
+            GetIdentityTestEnvironmentFactories();
     testing_factories.emplace_back(
         ChromeSigninClientFactory::GetInstance(),
         base::BindRepeating(&signin::BuildTestSigninClient));
-    IdentityTestEnvironmentProfileAdaptor::
-        AppendIdentityTestEnvironmentFactories(&testing_factories);
     Profile* profile = testing_profile_manager_.CreateTestingProfile(
         name, std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::UTF8ToUTF16(name), 0, std::string(),
@@ -252,9 +252,8 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   EXPECT_EQ(given_name, entry->GetGAIAGivenName());
   EXPECT_TRUE(gfx::test::AreImagesEqual(image, *entry->GetGAIAPicture()));
   EXPECT_EQ(url, service()->GetCachedPictureURL());
-  EXPECT_EQ(
-      AccountTrackerService::kNoHostedDomainFound,
-      profile()->GetPrefs()->GetString(prefs::kGoogleServicesHostedDomain));
+  EXPECT_EQ(kNoHostedDomainFound, profile()->GetPrefs()->GetString(
+                                      prefs::kGoogleServicesHostedDomain));
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {

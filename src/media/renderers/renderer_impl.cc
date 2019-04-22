@@ -48,8 +48,8 @@ class RendererImpl::RendererClientInternal final : public RendererClient {
   void OnBufferingStateChange(BufferingState state) override {
     renderer_->OnBufferingStateChange(type_, state);
   }
-  void OnWaitingForDecryptionKey() override {
-    renderer_->OnWaitingForDecryptionKey();
+  void OnWaiting(WaitingReason reason) override {
+    renderer_->OnWaiting(reason);
   }
   void OnAudioConfigChange(const AudioDecoderConfig& config) override {
     renderer_->OnAudioConfigChange(config);
@@ -65,11 +65,8 @@ class RendererImpl::RendererClientInternal final : public RendererClient {
     DCHECK(type_ == DemuxerStream::VIDEO);
     renderer_->OnVideoOpacityChange(opaque);
   }
-  void OnDurationChange(base::TimeDelta duration) override {
-    // RendererClients should only be notified of duration changes in certain
-    // scenarios, none of which should arise for RendererClientInternal.
-    // Duration changes should be sent to the pipeline by the DemuxerStream, via
-    // the DemuxerHost interface.
+  void OnRemotePlayStateChange(MediaStatus::State state) override {
+    // Only used with FlingingRenderer.
     NOTREACHED();
   }
 
@@ -909,9 +906,9 @@ void RendererImpl::OnError(PipelineStatus error) {
     FinishFlush();
 }
 
-void RendererImpl::OnWaitingForDecryptionKey() {
+void RendererImpl::OnWaiting(WaitingReason reason) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnWaitingForDecryptionKey();
+  client_->OnWaiting(reason);
 }
 
 void RendererImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {

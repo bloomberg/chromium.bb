@@ -8,6 +8,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/feature_list.h"
 #include "base/supports_user_data.h"
+#include "base/timer/timer.h"
 #include "components/safe_browsing/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/sessions/core/session_id.h"
@@ -201,7 +202,7 @@ class SafeBrowsingNavigationObserverManager
   void RecordNewWebContents(content::WebContents* source_web_contents,
                             int source_render_process_id,
                             int source_render_frame_id,
-                            GURL target_url,
+                            const GURL& target_url,
                             ui::PageTransition page_transition,
                             content::WebContents* target_web_contents,
                             bool renderer_initiated);

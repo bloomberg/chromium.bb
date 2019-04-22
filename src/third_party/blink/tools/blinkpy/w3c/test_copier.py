@@ -39,7 +39,7 @@ from blinkpy.w3c.common import is_basename_skipped
 
 _log = logging.getLogger(__name__)
 
-# Directory for imported tests relative to the layout tests base directory.
+# Directory for imported tests relative to the web tests base directory.
 DEST_DIR_NAME = 'external'
 
 class TestCopier(object):
@@ -58,10 +58,10 @@ class TestCopier(object):
 
         self.filesystem = self.host.filesystem
         self.path_finder = PathFinder(self.filesystem)
-        self.layout_tests_dir = self.path_finder.layout_tests_dir()
+        self.web_tests_dir = self.path_finder.web_tests_dir()
         self.destination_directory = self.filesystem.normpath(
             self.filesystem.join(
-                self.layout_tests_dir,
+                self.web_tests_dir,
                 DEST_DIR_NAME,
                 self.filesystem.basename(self.source_repo_path)))
         self.import_in_place = (self.source_repo_path == self.destination_directory)
@@ -112,7 +112,7 @@ class TestCopier(object):
             for filename in files:
                 path_full = self.filesystem.join(root, filename)
                 path_base = path_full.replace(self.source_repo_path + '/', '')
-                path_base = self.destination_directory.replace(self.layout_tests_dir + '/', '') + '/' + path_base
+                path_base = self.destination_directory.replace(self.web_tests_dir + '/', '') + '/' + path_base
                 if path_base in paths_to_skip:
                     if self.import_in_place:
                         _log.debug('Pruning: %s', path_base)
@@ -136,7 +136,7 @@ class TestCopier(object):
     def find_paths_to_skip(self):
         paths_to_skip = set()
         port = self.host.port_factory.get()
-        w3c_import_expectations_path = self.path_finder.path_from_layout_tests('W3CImportExpectations')
+        w3c_import_expectations_path = self.path_finder.path_from_web_tests('W3CImportExpectations')
         w3c_import_expectations = self.filesystem.read_text_file(w3c_import_expectations_path)
         parser = TestExpectationParser(port, all_tests=(), is_lint_mode=False)
         expectation_lines = parser.parse(w3c_import_expectations_path, w3c_import_expectations)
@@ -201,7 +201,7 @@ class TestCopier(object):
             if not self.import_in_place:
                 self.filesystem.maybe_make_directory(self.filesystem.dirname(dest_path))
 
-        relpath = self.filesystem.relpath(dest_path, self.layout_tests_dir)
+        relpath = self.filesystem.relpath(dest_path, self.web_tests_dir)
         # FIXME: Maybe doing a file diff is in order here for existing files?
         # In other words, there's no sense in overwriting identical files, but
         # there's no harm in copying the identical thing.

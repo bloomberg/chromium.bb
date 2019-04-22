@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_WELCOME_SCREEN_HANDLER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/welcome_view.h"
@@ -23,7 +24,8 @@ class CoreOobeView;
 // the welcome screen (part of the page) of the OOBE.
 class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
  public:
-  explicit WelcomeScreenHandler(CoreOobeView* core_oobe_view);
+  WelcomeScreenHandler(JSCallsContainer* js_calls_container,
+                       CoreOobeView* core_oobe_view);
   ~WelcomeScreenHandler() override;
 
  private:
@@ -34,12 +36,19 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   void Unbind() override;
   void StopDemoModeDetection() override;
   void ReloadLocalizedContent() override;
+  void SetInputMethodId(const std::string& input_method_id) override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
+  void DeclareJSCallbacks() override;
   void GetAdditionalParameters(base::DictionaryValue* dict) override;
   void Initialize() override;
+
+  // JS callbacks.
+  void HandleSetLocaleId(const std::string& locale_id);
+  void HandleSetInputMethodId(const std::string& input_method_id);
+  void HandleSetTimezoneId(const std::string& timezone_id);
 
   // Returns available timezones. Caller gets the ownership.
   static std::unique_ptr<base::ListValue> GetTimezoneList();

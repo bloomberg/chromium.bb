@@ -48,7 +48,7 @@ CFX_ImageRenderer::CFX_ImageRenderer(const RetainPtr<CFX_DIBitmap>& pDevice,
                                       m_Matrix.c > 0, m_Matrix.b < 0);
       m_Composer.Compose(pDevice, pClipRgn, bitmap_alpha, mask_color, m_ClipBox,
                          true, m_Matrix.c > 0, m_Matrix.b < 0, m_bRgbByteOrder,
-                         0, BlendMode::kNormal);
+                         BlendMode::kNormal);
       m_Stretcher = pdfium::MakeUnique<CFX_ImageStretcher>(
           &m_Composer, pSource, dest_height, dest_width, bitmap_clip, options);
       if (m_Stretcher->Start())
@@ -75,8 +75,7 @@ CFX_ImageRenderer::CFX_ImageRenderer(const RetainPtr<CFX_DIBitmap>& pDevice,
   FX_RECT bitmap_clip = m_ClipBox;
   bitmap_clip.Offset(-image_rect.left, -image_rect.top);
   m_Composer.Compose(pDevice, pClipRgn, bitmap_alpha, mask_color, m_ClipBox,
-                     false, false, false, m_bRgbByteOrder, 0,
-                     BlendMode::kNormal);
+                     false, false, false, m_bRgbByteOrder, BlendMode::kNormal);
   m_Status = 1;
   m_Stretcher = pdfium::MakeUnique<CFX_ImageStretcher>(
       &m_Composer, pSource, dest_width, dest_height, bitmap_clip, options);
@@ -98,18 +97,12 @@ bool CFX_ImageRenderer::Continue(PauseIndicatorIface* pPause) {
     return false;
 
   if (pBitmap->IsAlphaMask()) {
-    if (m_BitmapAlpha != 255) {
-      if (m_AlphaFlag >> 8) {
-        m_AlphaFlag = (((uint8_t)((m_AlphaFlag & 0xff) * m_BitmapAlpha / 255)) |
-                       ((m_AlphaFlag >> 8) << 8));
-      } else {
-        m_MaskColor = FXARGB_MUL_ALPHA(m_MaskColor, m_BitmapAlpha);
-      }
-    }
+    if (m_BitmapAlpha != 255)
+      m_MaskColor = FXARGB_MUL_ALPHA(m_MaskColor, m_BitmapAlpha);
     m_pDevice->CompositeMask(
         m_pTransformer->result().left, m_pTransformer->result().top,
         pBitmap->GetWidth(), pBitmap->GetHeight(), pBitmap, m_MaskColor, 0, 0,
-        BlendMode::kNormal, m_pClipRgn.Get(), m_bRgbByteOrder, m_AlphaFlag);
+        BlendMode::kNormal, m_pClipRgn.Get(), m_bRgbByteOrder);
   } else {
     if (m_BitmapAlpha != 255)
       pBitmap->MultiplyAlpha(m_BitmapAlpha);

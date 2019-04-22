@@ -25,7 +25,9 @@
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "third_party/blink/public/common/download/download_stats.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -44,48 +46,28 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
-#include "third_party/blink/renderer/platform/network/network_hints.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 
-namespace {
-
-void RecordDownloadMetrics(LocalFrame* frame) {
-  if (frame->IsMainFrame()) {
-    DownloadStats::RecordMainFrameHasGesture(
-        LocalFrame::HasTransientUserActivation(frame));
-    return;
-  }
-
-  unsigned value = 0;
-  if (frame->GetDocument()->IsSandboxed(kSandboxDownloads))
-    value |= DownloadStats::kSandboxBit;
-  if (frame->IsCrossOriginSubframe())
-    value |= DownloadStats::kCrossOriginBit;
-  if (frame->IsAdSubframe())
-    value |= DownloadStats::kAdBit;
-  if (LocalFrame::HasTransientUserActivation(frame))
-    value |= DownloadStats::kGestureBit;
-  DownloadStats::RecordSubframeSandboxOriginAdGesture(value);
-}
-
-}  // namespace
-
 using namespace html_names;
+
+HTMLAnchorElement::HTMLAnchorElement(Document& document)
+    : HTMLAnchorElement(kATag, document) {}
 
 HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tag_name,
                                      Document& document)
     : HTMLElement(tag_name, document),
       link_relations_(0),
       cached_visited_link_hash_(0),
-      rel_list_(RelList::Create(this)) {}
+      rel_list_(MakeGarbageCollected<RelList>(this)) {}
 
 HTMLAnchorElement* HTMLAnchorElement::Create(Document& document) {
   return MakeGarbageCollected<HTMLAnchorElement>(kATag, document);
@@ -198,10 +180,11 @@ void HTMLAnchorElement::SetActive(bool down) {
   ContainerNode::SetActive(down);
 }
 
-const HashSet<AtomicString>& HTMLAnchorElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLAnchorElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"href"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"href", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 void HTMLAnchorElement::AttributeChanged(
@@ -230,8 +213,14 @@ void HTMLAnchorElement::ParseAttribute(
       String parsed_url = StripLeadingAndTrailingHTMLSpaces(params.new_value);
       if (GetDocument().IsDNSPrefetchEnabled()) {
         if (ProtocolIs(parsed_url, "http") || ProtocolIs(parsed_url, "https") ||
-            parsed_url.StartsWith("//"))
-          PrefetchDNS(GetDocument().CompleteURL(parsed_url).Host());
+            parsed_url.StartsWith("//")) {
+          WebPrescientNetworking* web_prescient_networking =
+              Platform::Current()->PrescientNetworking();
+          if (web_prescient_networking) {
+            web_prescient_networking->PrefetchDNS(
+                GetDocument().CompleteURL(parsed_url).Host());
+          }
+        }
       }
     }
     InvalidateCachedVisitedLinkHash();
@@ -403,19 +392,37 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   if (hasAttribute(kDownloadAttr) &&
       NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
       GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
-    if (GetDocument().IsSandboxed(kSandboxDownloads)) {
-      UseCounter::Count(
-          GetDocument(),
-          UserGestureIndicator::ProcessingUserGesture()
-              ? WebFeature::kHTMLAnchorElementDownloadInSandboxWithUserGesture
-              : WebFeature::
-                    kHTMLAnchorElementDownloadInSandboxWithoutUserGesture);
+    UseCounter::Count(GetDocument(), WebFeature::kDownloadPrePolicyCheck);
+    bool has_gesture = LocalFrame::HasTransientUserActivation(frame);
+    if (frame->IsAdSubframe()) {
+      // Note: Here it covers download originated from clicking on <a download>
+      // link that results in direct download. These two features can also be
+      // logged from browser for download due to navigations to
+      // non-web-renderable content.
+      UseCounter::Count(GetDocument(),
+                        has_gesture
+                            ? WebFeature::kDownloadInAdFrameWithUserGesture
+                            : WebFeature::kDownloadInAdFrameWithoutUserGesture);
+      if (!has_gesture &&
+          base::FeatureList::IsEnabled(
+              blink::features::
+                  kBlockingDownloadsInAdFrameWithoutUserActivation))
+        return;
     }
-    RecordDownloadMetrics(frame);
+    if (GetDocument().IsSandboxed(WebSandboxFlags::kDownloads)) {
+      if (!has_gesture) {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kDownloadInSandboxWithoutUserGesture);
+        if (RuntimeEnabledFeatures::
+                BlockingDownloadsInSandboxWithoutUserActivationEnabled())
+          return;
+      }
+    }
+    UseCounter::Count(GetDocument(), WebFeature::kDownloadPostPolicyCheck);
     request.SetSuggestedFilename(
         static_cast<String>(FastGetAttribute(kDownloadAttr)));
     request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
-    request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
+    request.SetRequestorOrigin(GetDocument().GetSecurityOrigin());
     frame->Client()->DownloadURL(request,
                                  DownloadCrossOriginRedirects::kNavigate);
     return;
@@ -424,13 +431,14 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
   FrameLoadRequest frame_request(&GetDocument(), request,
                                  getAttribute(kTargetAttr));
+  frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
   if (HasRel(kRelationNoReferrer)) {
     frame_request.SetShouldSendReferrer(kNeverSendReferrer);
-    frame_request.SetShouldSetOpener(kNeverSetOpener);
+    frame_request.SetNoOpener();
   }
   if (HasRel(kRelationNoOpener))
-    frame_request.SetShouldSetOpener(kNeverSetOpener);
-  if (origin_trials::HrefTranslateEnabled(&GetDocument()) &&
+    frame_request.SetNoOpener();
+  if (RuntimeEnabledFeatures::HrefTranslateEnabled(&GetDocument()) &&
       hasAttribute(kHreftranslateAttr)) {
     frame_request.SetHrefTranslate(FastGetAttribute(kHreftranslateAttr));
     UseCounter::Count(GetDocument(),
@@ -442,8 +450,9 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   frame_request.SetInputStartTime(event.PlatformTimeStamp());
   // TODO(japhet): Link clicks can be emulated via JS without a user gesture.
   // Why doesn't this go through NavigationScheduler?
-  frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard,
-                                  NavigationPolicyFromEvent(&event));
+
+  frame->MaybeLogAdClickNavigation();
+  frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard);
 }
 
 bool IsEnterKeyKeydownEvent(Event& event) {
@@ -459,9 +468,10 @@ bool IsLinkClick(Event& event) {
     return false;
   }
   auto& mouse_event = ToMouseEvent(event);
-  short button = mouse_event.button();
-  return (button == static_cast<short>(WebPointerProperties::Button::kLeft) ||
-          button == static_cast<short>(WebPointerProperties::Button::kMiddle));
+  int16_t button = mouse_event.button();
+  return (button == static_cast<int16_t>(WebPointerProperties::Button::kLeft) ||
+          button ==
+              static_cast<int16_t>(WebPointerProperties::Button::kMiddle));
 }
 
 bool HTMLAnchorElement::WillRespondToMouseClickEvents() {
@@ -485,7 +495,7 @@ Node::InsertionNotificationRequest HTMLAnchorElement::InsertedInto(
   return request;
 }
 
-void HTMLAnchorElement::Trace(blink::Visitor* visitor) {
+void HTMLAnchorElement::Trace(Visitor* visitor) {
   visitor->Trace(rel_list_);
   HTMLElement::Trace(visitor);
 }

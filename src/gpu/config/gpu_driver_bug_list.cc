@@ -5,6 +5,7 @@
 #include "gpu/config/gpu_driver_bug_list.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "gpu/config/gpu_driver_bug_list_autogen.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_switches.h"
@@ -44,7 +45,7 @@ std::unique_ptr<GpuDriverBugList> GpuDriverBugList::Create(
     const GpuControlListData& data) {
   std::unique_ptr<GpuDriverBugList> list(new GpuDriverBugList(data));
 
-  DCHECK_EQ(static_cast<int>(arraysize(kFeatureList)),
+  DCHECK_EQ(static_cast<int>(base::size(kFeatureList)),
             NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES);
   for (int i = 0; i < NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES; ++i) {
     list->AddSupportedFeature(kFeatureList[i].name,

@@ -4,6 +4,7 @@
 
 #import "ios/web_view/internal/cwv_download_task_internal.h"
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
@@ -24,7 +25,8 @@ int64_t const CWVDownloadSizeUnknown = -1;
 NSErrorDomain const CWVDownloadErrorDomain =
     @"org.chromium.chromewebview.DownloadErrorDomain";
 
-NSInteger const CWVDownloadErrorUnknown = -100;
+NSInteger const CWVDownloadErrorFailed = -100;
+NSInteger const CWVDownloadErrorAborted = -101;
 
 @interface CWVDownloadTask ()
 
@@ -131,18 +133,30 @@ class DownloadTaskObserverBridge : public web::DownloadTaskObserver {
 }
 
 - (void)downloadWasUpdated {
-  if (_internalTask->IsDone()) {
-    int errorCode = _internalTask->GetErrorCode();
-    if (errorCode == net::OK) {
-      // The writer deletes the file on its destructor by default. This prevents
-      // the deletion.
-      _internalTask->GetResponseWriter()->AsFileWriter()->DisownFile();
+  switch (_internalTask->GetState()) {
+    case web::DownloadTask::State::kInProgress: {
+      if ([_delegate
+              respondsToSelector:@selector(downloadTaskProgressDidChange:)]) {
+        [_delegate downloadTaskProgressDidChange:self];
+      }
+      break;
     }
-    [self notifyFinishWithErrorCode:errorCode];
-  } else {
-    if ([_delegate
-            respondsToSelector:@selector(downloadTaskProgressDidChange:)]) {
-      [_delegate downloadTaskProgressDidChange:self];
+    case web::DownloadTask::State::kComplete: {
+      int errorCode = _internalTask->GetErrorCode();
+      if (errorCode == net::OK) {
+        // The writer deletes the file on its destructor by default. This
+        // prevents the deletion.
+        _internalTask->GetResponseWriter()->AsFileWriter()->DisownFile();
+      }
+      [self notifyFinishWithErrorCode:errorCode];
+      break;
+    }
+    case web::DownloadTask::State::kNotStarted:
+    case web::DownloadTask::State::kCancelled: {
+      // Nothing to be done in these states.
+      // Note that state kCancelled is immediately followed by state kComplete
+      // with error code net::ERR_ABORTED, which is handled above.
+      break;
     }
   }
 }
@@ -150,14 +164,18 @@ class DownloadTaskObserverBridge : public web::DownloadTaskObserver {
 - (void)notifyFinishWithErrorCode:(int)errorCode {
   NSError* error = nil;
   if (errorCode != net::OK) {
+    // Use CWVDownloadErrorFailed for any errors other than net::ERR_ABORTED
+    // because a detailed error code is likely not very useful. Text
+    // representation of the error is still available via
+    // error.localizedDescription.
+    NSInteger cwvErrorCode = errorCode == net::ERR_ABORTED
+                                 ? CWVDownloadErrorAborted
+                                 : CWVDownloadErrorFailed;
     NSString* errorDescription =
         base::SysUTF8ToNSString(net::ErrorToShortString(errorCode));
-    // Always use CWVDownloadErrorUnknown so far because a detailed error code
-    // is likely not very useful. Text representation of the error is still
-    // available via error.localizedDescription.
     error = [NSError
         errorWithDomain:CWVDownloadErrorDomain
-                   code:CWVDownloadErrorUnknown
+                   code:cwvErrorCode
                userInfo:@{NSLocalizedDescriptionKey : errorDescription}];
   }
   if ([_delegate

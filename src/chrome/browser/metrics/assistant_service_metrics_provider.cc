@@ -5,7 +5,7 @@
 #include "chrome/browser/metrics/assistant_service_metrics_provider.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
@@ -15,7 +15,7 @@ AssistantServiceMetricsProvider::~AssistantServiceMetricsProvider() = default;
 
 void AssistantServiceMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto_unused) {
-  if (arc::IsAssistantAllowedForProfile(
+  if (assistant::IsAssistantAllowedForProfile(
           ProfileManager::GetActiveUserProfile()) !=
       ash::mojom::AssistantAllowedState::ALLOWED) {
     return;

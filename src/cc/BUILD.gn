@@ -1,6 +1,7 @@
-# Copyright 2014 T/e Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import("//gpu/vulkan/features.gni")
 
 import("//cc/cc.gni")
 
@@ -48,6 +49,8 @@ cc_component("cc") {
     "input/scroll_state_data.h",
     "input/scrollbar_animation_controller.cc",
     "input/scrollbar_animation_controller.h",
+    "input/scrollbar_controller.cc",
+    "input/scrollbar_controller.h",
     "input/single_scrollbar_animation_controller_thinning.cc",
     "input/single_scrollbar_animation_controller_thinning.h",
     "input/snap_fling_controller.cc",
@@ -150,6 +153,8 @@ cc_component("cc") {
     "raster/gpu_raster_buffer_provider.h",
     "raster/one_copy_raster_buffer_provider.cc",
     "raster/one_copy_raster_buffer_provider.h",
+    "raster/paint_worklet_image_provider.cc",
+    "raster/paint_worklet_image_provider.h",
     "raster/playback_image_provider.cc",
     "raster/playback_image_provider.h",
     "raster/raster_buffer.cc",
@@ -197,6 +202,10 @@ cc_component("cc") {
     "scheduler/begin_frame_tracker.cc",
     "scheduler/begin_frame_tracker.h",
     "scheduler/commit_earlyout_reason.h",
+    "scheduler/compositor_frame_reporter.cc",
+    "scheduler/compositor_frame_reporter.h",
+    "scheduler/compositor_frame_reporting_controller.cc",
+    "scheduler/compositor_frame_reporting_controller.h",
     "scheduler/compositor_timing_history.cc",
     "scheduler/compositor_timing_history.h",
     "scheduler/draw_result.h",
@@ -225,6 +234,8 @@ cc_component("cc") {
     "tiles/image_decode_cache_utils.h",
     "tiles/mipmap_util.cc",
     "tiles/mipmap_util.h",
+    "tiles/paint_worklet_image_cache.cc",
+    "tiles/paint_worklet_image_cache.h",
     "tiles/picture_layer_tiling.cc",
     "tiles/picture_layer_tiling.h",
     "tiles/picture_layer_tiling_set.cc",
@@ -297,7 +308,6 @@ cc_component("cc") {
     "trees/layer_tree_impl.h",
     "trees/layer_tree_mutator.cc",
     "trees/layer_tree_mutator.h",
-    "trees/layer_tree_painter.h",
     "trees/layer_tree_settings.cc",
     "trees/layer_tree_settings.h",
     "trees/managed_memory_policy.cc",
@@ -344,10 +354,9 @@ cc_component("cc") {
     "trees/tree_synchronizer.h",
     "trees/ukm_manager.cc",
     "trees/ukm_manager.h",
+    "trees/viewport_layers.cc",
+    "trees/viewport_layers.h",
   ]
-
-  # TODO(khushalsagar): Remove once crbug.com/683263 is fixed.
-  configs = [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   public_deps = [
     "//cc/base",
@@ -385,6 +394,8 @@ cc_test_static_library("test_support") {
     "test/animation_test_common.h",
     "test/animation_timelines_test_common.cc",
     "test/animation_timelines_test_common.h",
+    "test/fake_compositor_frame_reporting_controller.cc",
+    "test/fake_compositor_frame_reporting_controller.h",
     "test/fake_content_layer_client.cc",
     "test/fake_content_layer_client.h",
     "test/fake_impl_task_runner_provider.h",
@@ -496,6 +507,10 @@ cc_test_static_library("test_support") {
     "test/test_occlusion_tracker.h",
     "test/test_options_provider.cc",
     "test/test_options_provider.h",
+    "test/test_paint_worklet_input.cc",
+    "test/test_paint_worklet_input.h",
+    "test/test_paint_worklet_layer_painter.cc",
+    "test/test_paint_worklet_layer_painter.h",
     "test/test_skcanvas.cc",
     "test/test_skcanvas.h",
     "test/test_task_graph_runner.cc",
@@ -544,6 +559,9 @@ cc_test_static_library("test_support") {
     "//ui/gl:test_support",
     "//ui/latency",
   ]
+  if (enable_vulkan) {
+    deps += [ "//gpu/vulkan/init" ]
+  }
   if (!is_android) {
     data_deps = [
       "//third_party/mesa_headers",
@@ -632,6 +650,7 @@ cc_test("cc_unittests") {
     "raster/synchronous_task_graph_runner_unittest.cc",
     "raster/task_graph_work_queue_unittest.cc",
     "resources/resource_pool_unittest.cc",
+    "scheduler/compositor_frame_reporting_controller_unittest.cc",
     "scheduler/compositor_timing_history_unittest.cc",
     "scheduler/scheduler_state_machine_unittest.cc",
     "scheduler/scheduler_unittest.cc",
@@ -641,6 +660,7 @@ cc_test("cc_unittests") {
     "tiles/gpu_image_decode_cache_unittest.cc",
     "tiles/image_controller_unittest.cc",
     "tiles/mipmap_util_unittest.cc",
+    "tiles/paint_worklet_image_cache_unittest.cc",
     "tiles/picture_layer_tiling_set_unittest.cc",
     "tiles/picture_layer_tiling_unittest.cc",
     "tiles/software_image_decode_cache_unittest.cc",
@@ -661,6 +681,7 @@ cc_test("cc_unittests") {
     "trees/layer_tree_host_pixeltest_tiles.cc",
     "trees/layer_tree_host_unittest.cc",
     "trees/layer_tree_host_unittest_animation.cc",
+    "trees/layer_tree_host_unittest_capture_content.cc",
     "trees/layer_tree_host_unittest_checkerimaging.cc",
     "trees/layer_tree_host_unittest_context.cc",
     "trees/layer_tree_host_unittest_copyrequest.cc",
@@ -710,9 +731,6 @@ cc_test("cc_unittests") {
     # warnings for now.
     cflags = [ "/wd4250" ]
   }
-
-  # TODO(khushalsagar): Remove once crbug.com/683263 is fixed.
-  configs = [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     ":cc",

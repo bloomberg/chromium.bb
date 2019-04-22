@@ -7,8 +7,6 @@
  */
 
 cr.define('adapter_page', function() {
-  /** @const */ var Page = cr.ui.pageManager.Page;
-
   var PROPERTY_NAMES = {
     address: 'Address',
     name: 'Name',
@@ -21,43 +19,39 @@ cr.define('adapter_page', function() {
 
   /**
    * Page that contains an ObjectFieldSet that displays the latest AdapterInfo.
-   * @constructor
-   * @extends {cr.ui.pageManager.Page}
    */
-  function AdapterPage() {
-    Page.call(this, 'adapter', 'Adapter', 'adapter');
+  class AdapterPage extends cr.ui.pageManager.Page {
+    constructor() {
+      super('adapter', 'Adapter', 'adapter');
 
-    this.adapterFieldSet = new object_fieldset.ObjectFieldSet();
-    this.adapterFieldSet.setPropertyDisplayNames(PROPERTY_NAMES);
-    this.pageDiv.appendChild(this.adapterFieldSet);
+      this.adapterFieldSet = new object_fieldset.ObjectFieldSet();
+      this.adapterFieldSet.setPropertyDisplayNames(PROPERTY_NAMES);
+      this.pageDiv.appendChild(this.adapterFieldSet);
 
-    this.refreshBtn_ = $('adapter-refresh-btn');
-    this.refreshBtn_.addEventListener('click', function() {
-      this.refreshBtn_.disabled = true;
-      this.pageDiv.dispatchEvent(new CustomEvent('refreshpressed'));
-    }.bind(this));
-  }
-
-  AdapterPage.prototype = {
-    __proto__: Page.prototype,
+      this.refreshBtn_ = $('adapter-refresh-btn');
+      this.refreshBtn_.addEventListener('click', event => {
+        this.refreshBtn_.disabled = true;
+        this.pageDiv.dispatchEvent(new CustomEvent('refreshpressed'));
+      });
+    }
 
     /**
      * Sets the information to display in fieldset.
      * @param {!bluetooth.mojom.AdapterInfo} info
      */
-    setAdapterInfo: function(info) {
+    setAdapterInfo(info) {
       this.adapterFieldSet.setObject(info);
       this.refreshBtn_.disabled = false;
-    },
+    }
 
     /**
      * Redraws the fieldset displaying the adapter info.
      */
-    redraw: function() {
+    redraw() {
       this.adapterFieldSet.redraw();
       this.refreshBtn_.disabled = false;
-    },
-  };
+    }
+  }
 
   return {
     AdapterPage: AdapterPage,

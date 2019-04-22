@@ -22,8 +22,8 @@ test(function() {
     assert_equals(response.status, 200,
                   'Default Response.status should be 200');
     assert_true(response.ok, 'Default Response.ok must be true');
-    assert_equals(response.statusText, 'OK',
-                  'Default Response.statusText should be \'OK\'');
+    assert_equals(response.statusText, '',
+                  'Default Response.statusText should be \'\'');
     assert_equals(size(response.headers), 0,
                   'Default Response should not have any header.');
     if (self.internals) {
@@ -38,7 +38,7 @@ test(function() {
     assert_true(response.ok, 'Response.ok must remain unchanged ' +
                              'when Response.status is attempted ' +
                              'unsuccessfully to change');
-    assert_equals(response.statusText, 'OK',
+    assert_equals(response.statusText, '',
                   'Response.statusText should be readonly');
     response.ok = false;
     assert_true(response.ok, 'Response.ok must be readonly');

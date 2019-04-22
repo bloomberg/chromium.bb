@@ -14,31 +14,34 @@
 
 <a id="end" href="a">e</a>
 
-<p>Iframes with no focusable content still scrolls.</p>
+<p>Iframes with no focusable content still scroll.</p>
 
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="resources/snav-testharness.js"></script>
 <script>
   /*
-    Once crbug.com/801162 is fixed, the expectation will change:
     The iframe can only be scrolled when being focused.
   */
   var resultMap = [
-    ["Down", "start"],
-    ["Down", "start"],
-    ["Down", "start"],
-    ["Down", "start"],
-    ["Down", "start"],
-    ["Down", "start"],
+    ["Down", "frameA,frameAbody"],
+    ["Down", "frameA,frameAbody"],
+    ["Down", "frameA,frameAbody"],
+    ["Down", "frameA,frameAbody"],
+    ["Down", "frameA,frameAbody"],
+    ["Down", "frameB,frameBbody"],
+    ["Down", "frameB,frameBbody"],
+    ["Down", "frameB,frameBbody"],
     ["Down", "end"],
-    ["Up"  , "end"],
-    ["Up"  , "end"],
-    ["Up"  , "end"],
-    ["Up"  , "end"],
-    ["Up"  , "end"],
-    ["Up"  , "end"],
-    ["Up"  , "start"],
+    ["Up", "frameB,frameBbody"],
+    ["Up", "frameB,frameBbody"],
+    ["Up", "frameB,frameBbody"],
+    ["Up", "frameA,frameAbody"],
+    ["Up", "frameA,frameAbody"],
+    ["Up", "frameA,frameAbody"],
+    ["Up", "frameA,frameAbody"],
+    ["Up", "frameA,frameAbody"],
+    ["Up", "start"],
   ];
   // Start at a known place.
   document.getElementById("start").focus();

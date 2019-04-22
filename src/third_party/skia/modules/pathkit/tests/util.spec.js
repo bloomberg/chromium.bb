@@ -1,21 +1,5 @@
 // Tests for util-related things
-
 describe('PathKit\'s CubicMap Behavior', function() {
-    // Note, don't try to print the PathKit object - it can cause Karma/Jasmine to lock up.
-    var PathKit = null;
-    const LoadPathKit = new Promise(function(resolve, reject) {
-        if (PathKit) {
-            resolve();
-        } else {
-            PathKitInit({
-                locateFile: (file) => '/pathkit/'+file,
-            }).then((_PathKit) => {
-                PathKit = _PathKit;
-                resolve();
-            });
-        }
-    });
-
     it('computes YFromX correctly', function(done) {
         LoadPathKit.then(catchException(done, () => {
             // Spot check a few points

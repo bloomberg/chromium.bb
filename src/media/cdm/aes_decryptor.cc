@@ -453,8 +453,8 @@ CdmContext* AesDecryptor::GetCdmContext() {
   return this;
 }
 
-std::unique_ptr<CallbackRegistration> AesDecryptor::RegisterNewKeyCB(
-    base::RepeatingClosure new_key_cb) {
+std::unique_ptr<CallbackRegistration> AesDecryptor::RegisterEventCB(
+    EventCB event_cb) {
   NOTIMPLEMENTED();
   return nullptr;
 }
@@ -551,6 +551,10 @@ void AesDecryptor::DeinitializeDecoder(StreamType stream_type) {
   // AesDecryptor does not support audio/video decoding, but since this can be
   // called any time after InitializeAudioDecoder/InitializeVideoDecoder,
   // nothing to be done here.
+}
+
+bool AesDecryptor::CanAlwaysDecrypt() {
+  return true;
 }
 
 bool AesDecryptor::CreateSession(const std::string& session_id,

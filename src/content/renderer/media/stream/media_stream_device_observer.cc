@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "content/child/child_thread_impl.h"
@@ -20,8 +21,8 @@ namespace content {
 
 namespace {
 
-bool RemoveStreamDeviceFromArray(const MediaStreamDevice& device,
-                                 MediaStreamDevices* devices) {
+bool RemoveStreamDeviceFromArray(const blink::MediaStreamDevice& device,
+                                 blink::MediaStreamDevices* devices) {
   for (auto device_it = devices->begin(); device_it != devices->end();
        ++device_it) {
     if (device_it->IsSameDevice(device)) {
@@ -38,8 +39,8 @@ struct MediaStreamDeviceObserver::Stream {
   Stream() {}
   ~Stream() {}
   base::WeakPtr<MediaStreamDispatcherEventHandler> handler;
-  MediaStreamDevices audio_devices;
-  MediaStreamDevices video_devices;
+  blink::MediaStreamDevices audio_devices;
+  blink::MediaStreamDevices video_devices;
 };
 
 MediaStreamDeviceObserver::MediaStreamDeviceObserver(RenderFrame* render_frame)
@@ -51,8 +52,9 @@ MediaStreamDeviceObserver::MediaStreamDeviceObserver(RenderFrame* render_frame)
 
 MediaStreamDeviceObserver::~MediaStreamDeviceObserver() {}
 
-MediaStreamDevices MediaStreamDeviceObserver::GetNonScreenCaptureDevices() {
-  MediaStreamDevices video_devices;
+blink::MediaStreamDevices
+MediaStreamDeviceObserver::GetNonScreenCaptureDevices() {
+  blink::MediaStreamDevices video_devices;
   for (const auto& stream_it : label_stream_map_) {
     for (const auto& video_device : stream_it.second.video_devices) {
       if (!IsScreenCaptureMediaType(video_device.type))
@@ -74,9 +76,9 @@ void MediaStreamDeviceObserver::OnDestruct() {
 
 void MediaStreamDeviceObserver::OnDeviceStopped(
     const std::string& label,
-    const MediaStreamDevice& device) {
+    const blink::MediaStreamDevice& device) {
   DVLOG(1) << __func__ << " label=" << label << " device_id=" << device.id;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end()) {
@@ -96,8 +98,8 @@ void MediaStreamDeviceObserver::OnDeviceStopped(
   // |it| could have already been invalidated in the function call above. So we
   // need to check if |label| is still in |label_stream_map_| again.
   // Note: this is a quick fix to the crash caused by erasing the invalidated
-  // iterator from |label_stream_map_| (crbug.com/616884). Future work needs to
-  // be done to resolve this re-entrancy issue.
+  // iterator from |label_stream_map_| (https://crbug.com/616884). Future work
+  // needs to be done to resolve this re-entrancy issue.
   it = label_stream_map_.find(label);
   if (it == label_stream_map_.end())
     return;
@@ -108,11 +110,11 @@ void MediaStreamDeviceObserver::OnDeviceStopped(
 
 void MediaStreamDeviceObserver::OnDeviceChanged(
     const std::string& label,
-    const MediaStreamDevice& old_device,
-    const MediaStreamDevice& new_device) {
+    const blink::MediaStreamDevice& old_device,
+    const blink::MediaStreamDevice& new_device) {
   DVLOG(1) << __func__ << " old_device_id=" << old_device.id
            << " new_device_id=" << new_device.id;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end()) {
@@ -127,8 +129,8 @@ void MediaStreamDeviceObserver::OnDeviceChanged(
 
   // Update device list only for device changing. Removing device will be
   // handled in its own callback.
-  if (old_device.type != MEDIA_NO_SERVICE &&
-      new_device.type != MEDIA_NO_SERVICE) {
+  if (old_device.type != blink::MEDIA_NO_SERVICE &&
+      new_device.type != blink::MEDIA_NO_SERVICE) {
     if (RemoveStreamDeviceFromArray(old_device, &stream->audio_devices) ||
         RemoveStreamDeviceFromArray(old_device, &stream->video_devices)) {
       if (IsAudioInputMediaType(new_device.type))
@@ -140,16 +142,16 @@ void MediaStreamDeviceObserver::OnDeviceChanged(
 }
 
 void MediaStreamDeviceObserver::BindMediaStreamDeviceObserverRequest(
-    mojom::MediaStreamDeviceObserverRequest request) {
+    blink::mojom::MediaStreamDeviceObserverRequest request) {
   binding_.Bind(std::move(request));
 }
 
 void MediaStreamDeviceObserver::AddStream(
     const std::string& label,
-    const MediaStreamDevices& audio_devices,
-    const MediaStreamDevices& video_devices,
+    const blink::MediaStreamDevices& audio_devices,
+    const blink::MediaStreamDevices& video_devices,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   Stream stream;
   stream.handler = event_handler;
@@ -159,9 +161,10 @@ void MediaStreamDeviceObserver::AddStream(
   label_stream_map_[label] = stream;
 }
 
-void MediaStreamDeviceObserver::AddStream(const std::string& label,
-                                          const MediaStreamDevice& device) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void MediaStreamDeviceObserver::AddStream(
+    const std::string& label,
+    const blink::MediaStreamDevice& device) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   Stream stream;
   if (IsAudioInputMediaType(device.type))
@@ -175,7 +178,7 @@ void MediaStreamDeviceObserver::AddStream(const std::string& label,
 }
 
 bool MediaStreamDeviceObserver::RemoveStream(const std::string& label) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end())
@@ -186,15 +189,15 @@ bool MediaStreamDeviceObserver::RemoveStream(const std::string& label) {
 }
 
 void MediaStreamDeviceObserver::RemoveStreamDevice(
-    const MediaStreamDevice& device) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+    const blink::MediaStreamDevice& device) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Remove |device| from all streams in |label_stream_map_|.
   bool device_found = false;
   auto stream_it = label_stream_map_.begin();
   while (stream_it != label_stream_map_.end()) {
-    MediaStreamDevices& audio_devices = stream_it->second.audio_devices;
-    MediaStreamDevices& video_devices = stream_it->second.video_devices;
+    blink::MediaStreamDevices& audio_devices = stream_it->second.audio_devices;
+    blink::MediaStreamDevices& video_devices = stream_it->second.video_devices;
 
     if (RemoveStreamDeviceFromArray(device, &audio_devices) ||
         RemoveStreamDeviceFromArray(device, &video_devices)) {
@@ -210,21 +213,21 @@ void MediaStreamDeviceObserver::RemoveStreamDevice(
 }
 
 int MediaStreamDeviceObserver::audio_session_id(const std::string& label) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end() || it->second.audio_devices.empty())
-    return MediaStreamDevice::kNoId;
+    return blink::MediaStreamDevice::kNoId;
 
   return it->second.audio_devices[0].session_id;
 }
 
 int MediaStreamDeviceObserver::video_session_id(const std::string& label) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end() || it->second.video_devices.empty())
-    return MediaStreamDevice::kNoId;
+    return blink::MediaStreamDevice::kNoId;
 
   return it->second.video_devices[0].session_id;
 }

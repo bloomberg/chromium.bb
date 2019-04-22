@@ -15,9 +15,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension_messages.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace extensions {
 

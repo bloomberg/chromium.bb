@@ -6,6 +6,7 @@
 
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "components/viz/service/surfaces/latest_local_surface_id_lookup_delegate.h"
+#include "components/viz/service/surfaces/surface.h"
 
 namespace viz {
 
@@ -13,19 +14,21 @@ namespace {
 // TODO(gklassen): Review and select appropriate sizes based on
 // telemetry / UMA.
 constexpr uint32_t kMaxRegionsPerSurface = 1024;
+}  // namespace
 
-HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion() = default;
-HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion(
+HitTestManager::HitTestAsyncQueriedDebugRegion::
+    HitTestAsyncQueriedDebugRegion() = default;
+HitTestManager::HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion(
     base::flat_set<FrameSinkId> regions)
     : regions(std::move(regions)) {}
-HitTestAsyncQueriedDebugRegion::~HitTestAsyncQueriedDebugRegion() = default;
+HitTestManager::HitTestAsyncQueriedDebugRegion::
+    ~HitTestAsyncQueriedDebugRegion() = default;
 
-HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion(
+HitTestManager::HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion(
     HitTestAsyncQueriedDebugRegion&&) = default;
-HitTestAsyncQueriedDebugRegion& HitTestAsyncQueriedDebugRegion::operator=(
+HitTestManager::HitTestAsyncQueriedDebugRegion&
+HitTestManager::HitTestAsyncQueriedDebugRegion::operator=(
     HitTestAsyncQueriedDebugRegion&&) = default;
-
-}  // namespace
 
 HitTestManager::HitTestManager(SurfaceManager* surface_manager)
     : surface_manager_(surface_manager) {}
@@ -37,7 +40,7 @@ bool HitTestManager::OnSurfaceDamaged(const SurfaceId& surface_id,
   return false;
 }
 
-void HitTestManager::OnSurfaceDiscarded(const SurfaceId& surface_id) {
+void HitTestManager::OnSurfaceDestroyed(const SurfaceId& surface_id) {
   hit_test_region_lists_.erase(surface_id);
 }
 
@@ -67,10 +70,24 @@ void HitTestManager::SubmitHitTestRegionList(
     const SurfaceId& surface_id,
     const uint64_t frame_index,
     base::Optional<HitTestRegionList> hit_test_region_list) {
-  if (!hit_test_region_list)
+  if (!hit_test_region_list) {
+    auto& frame_index_map = hit_test_region_lists_[surface_id];
+    if (!frame_index_map.empty()) {
+      // We will reuse the last submitted hit-test data.
+      uint64_t last_frame_index = frame_index_map.rbegin()->first;
+
+      HitTestRegionList last_hit_test_region_list =
+          std::move(frame_index_map[last_frame_index]);
+
+      frame_index_map[frame_index] = std::move(last_hit_test_region_list);
+      frame_index_map.erase(last_frame_index);
+    }
     return;
+  }
   if (!ValidateHitTestRegionList(surface_id, &*hit_test_region_list))
     return;
+  ++submit_hit_test_region_list_index_;
+
   // TODO(gklassen): Runtime validation that hit_test_region_list is valid.
   // TODO(gklassen): Inform FrameSink that the hit_test_region_list is invalid.
   // TODO(gklassen): FrameSink needs to inform the host of a difficult renderer.

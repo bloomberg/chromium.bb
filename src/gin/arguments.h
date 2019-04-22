@@ -13,42 +13,51 @@ namespace gin {
 // Arguments is a wrapper around v8::FunctionCallbackInfo that integrates
 // with Converter to make it easier to marshall arguments and return values
 // between V8 and C++.
+//
+// If constructed instead with a v8::PropertyCallbackInfo, behaves as though a
+// function with no arguments had been called.
 class GIN_EXPORT Arguments {
  public:
   Arguments();
   explicit Arguments(const v8::FunctionCallbackInfo<v8::Value>& info);
+  explicit Arguments(const v8::PropertyCallbackInfo<v8::Value>& info);
   ~Arguments();
 
   template <typename T>
   bool GetHolder(T* out) const {
-    return ConvertFromV8(isolate_, info_->Holder(), out);
+    v8::Local<v8::Object> holder = is_for_property_
+                                       ? info_for_property_->Holder()
+                                       : info_for_function_->Holder();
+    return ConvertFromV8(isolate_, holder, out);
   }
 
   template<typename T>
   bool GetData(T* out) {
-    return ConvertFromV8(isolate_, info_->Data(), out);
+    v8::Local<v8::Value> data = is_for_property_ ? info_for_property_->Data()
+                                                 : info_for_function_->Data();
+    return ConvertFromV8(isolate_, data, out);
   }
 
   template<typename T>
   bool GetNext(T* out) {
-    if (next_ >= info_->Length()) {
+    if (is_for_property_ || next_ >= info_for_function_->Length()) {
       insufficient_arguments_ = true;
       return false;
     }
-    v8::Local<v8::Value> val = (*info_)[next_++];
+    v8::Local<v8::Value> val = (*info_for_function_)[next_++];
     return ConvertFromV8(isolate_, val, out);
   }
 
   template<typename T>
   bool GetRemaining(std::vector<T>* out) {
-    if (next_ >= info_->Length()) {
+    if (is_for_property_ || next_ >= info_for_function_->Length()) {
       insufficient_arguments_ = true;
       return false;
     }
-    int remaining = info_->Length() - next_;
+    int remaining = info_for_function_->Length() - next_;
     out->resize(remaining);
     for (int i = 0; i < remaining; ++i) {
-      v8::Local<v8::Value> val = (*info_)[next_++];
+      v8::Local<v8::Value> val = (*info_for_function_)[next_++];
       if (!ConvertFromV8(isolate_, val, &out->at(i)))
         return false;
     }
@@ -56,14 +65,16 @@ class GIN_EXPORT Arguments {
   }
 
   bool Skip() {
-    if (next_ >= info_->Length())
+    if (is_for_property_)
+      return false;
+    if (next_ >= info_for_function_->Length())
       return false;
     next_++;
     return true;
   }
 
   int Length() const {
-    return info_->Length();
+    return is_for_property_ ? 0 : info_for_function_->Length();
   }
 
   template<typename T>
@@ -71,7 +82,9 @@ class GIN_EXPORT Arguments {
     v8::Local<v8::Value> v8_value;
     if (!TryConvertToV8(isolate_, val, &v8_value))
       return;
-    info_->GetReturnValue().Set(v8_value);
+    (is_for_property_ ? info_for_property_->GetReturnValue()
+                      : info_for_function_->GetReturnValue())
+        .Set(v8_value);
   }
 
   // Returns the creation context of the Holder.
@@ -97,9 +110,13 @@ class GIN_EXPORT Arguments {
 
  private:
   v8::Isolate* isolate_;
-  const v8::FunctionCallbackInfo<v8::Value>* info_;
-  int next_;
-  bool insufficient_arguments_;
+  union {
+    const v8::FunctionCallbackInfo<v8::Value>* info_for_function_;
+    const v8::PropertyCallbackInfo<v8::Value>* info_for_property_;
+  };
+  int next_ = 0;
+  bool insufficient_arguments_ = false;
+  bool is_for_property_ = false;
 };
 
 }  // namespace gin

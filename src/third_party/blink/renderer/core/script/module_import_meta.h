@@ -11,8 +11,10 @@
 namespace blink {
 
 // Represents import.meta data structure, which is the return value of
-// https://html.spec.whatwg.org/multipage/webappapis.html#hostgetimportmetaproperties
+// https://html.spec.whatwg.org/C/#hostgetimportmetaproperties
 class CORE_EXPORT ModuleImportMeta final {
+  STACK_ALLOCATED();
+
  public:
   explicit ModuleImportMeta(const String& url) : url_(url) {}
 

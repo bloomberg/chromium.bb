@@ -30,14 +30,14 @@ namespace trace_processor {
 // their details (only name at the moment).
 class ProcessTable : public Table {
  public:
-  enum Column { kUpid = 0, kName = 1, kPid = 2 };
+  enum Column { kUpid = 0, kName = 1, kPid = 2, kStartTs = 3 };
 
   static void RegisterTable(sqlite3* db, const TraceStorage* storage);
 
   ProcessTable(sqlite3*, const TraceStorage*);
 
   // Table implementation.
-  Table::Schema CreateSchema(int argc, const char* const* argv) override;
+  base::Optional<Table::Schema> Init(int, const char* const*) override;
   std::unique_ptr<Table::Cursor> CreateCursor(const QueryConstraints&,
                                               sqlite3_value**) override;
   int BestIndex(const QueryConstraints&, BestIndexInfo*) override;

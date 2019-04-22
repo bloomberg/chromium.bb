@@ -4,6 +4,7 @@
 
 #include "content/browser/download/byte_stream_input_stream.h"
 
+#include "base/bind.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/byte_stream.h"
 

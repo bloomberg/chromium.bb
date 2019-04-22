@@ -6,6 +6,9 @@
 
 #include <stdint.h>
 
+#include <functional>
+
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/audio_buffer.h"
@@ -64,12 +67,11 @@ std::string FFmpegAudioDecoder::GetDisplayName() const {
   return "FFmpegAudioDecoder";
 }
 
-void FFmpegAudioDecoder::Initialize(
-    const AudioDecoderConfig& config,
-    CdmContext* /* cdm_context */,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
+                                    CdmContext* /* cdm_context */,
+                                    const InitCB& init_cb,
+                                    const OutputCB& output_cb,
+                                    const WaitingCB& /* waiting_cb */) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());
 
@@ -165,12 +167,12 @@ bool FFmpegAudioDecoder::FFmpegDecode(const DecoderBuffer& buffer) {
   }
 
   bool decoded_frame_this_loop = false;
-  // base::Unretained and base::ConstRef are safe to use with the callback given
+  // base::Unretained and std::cref are safe to use with the callback given
   // to DecodePacket() since that callback is only used the function call.
   switch (decoding_loop_->DecodePacket(
-      &packet, base::BindRepeating(
-                   &FFmpegAudioDecoder::OnNewFrame, base::Unretained(this),
-                   base::ConstRef(buffer), &decoded_frame_this_loop))) {
+      &packet, base::BindRepeating(&FFmpegAudioDecoder::OnNewFrame,
+                                   base::Unretained(this), std::cref(buffer),
+                                   &decoded_frame_this_loop))) {
     case FFmpegDecodingLoop::DecodeStatus::kSendPacketFailed:
       MEDIA_LOG(ERROR, media_log_)
           << "Failed to send audio packet for decoding: "

@@ -101,49 +101,41 @@ IN_PROC_BROWSER_TEST_F(IeemSitelistParserTest, V1Full) {
       "exclude=\"false\">/r6</path></domain><domain docMode=\"5\" "
       "exclude=\"false\">howmanydomainz.com<path docMode=\"5\">/r8</path><path "
       "docMode=\"5\" exclude=\"true\">/r9</path><path docMode=\"5\" "
-      "exclude=\"false\">/r10</path></domain><domain doNotTransition=\"true\">"
-      "notransition.com<path>/yestransition</path><path exclude=\"true\" "
-      "doNotTransition=\"true\">/guessnot</path></domain></docMode></rules>";
+      "exclude=\"false\">/r10</path></domain><domain exclude=\"true\" "
+      "doNotTransition=\"true\">maybe.com<path>/yestransition</path>"
+      "<path doNotTransition=\"true\">/guessnot</path></domain><domain>"
+      "yes.com<path doNotTransition=\"true\">/actuallyno</path></domain>"
+      "<domain doNotTransition=\"true\">no.com</domain></docMode></rules>";
   std::vector<std::string> expected_sitelist = {
       "inside.com",
       "inside.com/in_domain",
       "google.com",
-      "!good.com",
       "more.com",
       "e100.com",
       "e100.com/path1",
-      "!e100.com/pa2",
       "e100.com/path3",
-      "!e200.com",
       "e200.com/path1",
-      "!e200.com/pth2",
       "e200.com/path3",
       "e300.com",
       "e300.com/path1",
-      "!e300.com/pt2",
       "e300.com/path3",
-      "!random.com",
-      "!random.com/path1/",
       "random.com/path2",
       "moredomains.com",
       "evenmore.com",
       "evenmore.com/r1",
       "evenmore.com/r2",
-      "!domainz.com",
       "domainz.com/r2",
-      "!domainz.com/r5",
       "domainz.com/r6",
       "howmanydomainz.com",
       "howmanydomainz.com/r8",
-      "!howmanydomainz.com/r9",
       "howmanydomainz.com/r10",
-      "notransition.com/yestransition",
+      "maybe.com/yestransition",
+      "!maybe.com/guessnot",
+      "yes.com",
+      "!yes.com/actuallyno",
+      "!no.com",
   };
-  std::vector<std::string> expected_greylist = {
-      "notransition.com", "!notransition.com/guessnot",
-  };
-  TestParseXml(xml, ParsedXml(std::move(expected_sitelist),
-                              std::move(expected_greylist), base::nullopt));
+  TestParseXml(xml, ParsedXml(std::move(expected_sitelist), {}, base::nullopt));
 }
 
 IN_PROC_BROWSER_TEST_F(IeemSitelistParserTest, V2Full) {

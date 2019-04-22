@@ -29,12 +29,13 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
-#include "third_party/blink/renderer/core/inspector/console_types.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
@@ -62,7 +63,9 @@ class CSPDirectiveList;
 class CSPSource;
 class Document;
 class Element;
+class ExecutionContext;
 class LocalFrameClient;
+class LocalFrame;
 class KURL;
 class ResourceRequest;
 class SecurityOrigin;
@@ -70,11 +73,61 @@ class SecurityPolicyViolationEventInit;
 class SourceLocation;
 enum class ResourceType : uint8_t;
 
-typedef int SandboxFlags;
+using SandboxFlags = WebSandboxFlags;
 typedef HeapVector<Member<CSPDirectiveList>> CSPDirectiveListVector;
 typedef HeapVector<Member<ConsoleMessage>> ConsoleMessageVector;
 typedef std::pair<String, ContentSecurityPolicyHeaderType> CSPHeaderAndType;
 using RedirectStatus = ResourceRequest::RedirectStatus;
+
+//  A delegate interface to implement violation reporting, support for some
+//  directives and other miscellaneous functionality.
+class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
+ public:
+  // Returns the SecurityOrigin this content security policy is bound to. Used
+  // for matching the 'self' keyword. Must return a non-null value.
+  // See https://w3c.github.io/webappsec-csp/#policy-self-origin.
+  virtual const SecurityOrigin* GetSecurityOrigin() = 0;
+
+  // Returns the URL this content security policy is bound to.
+  // Used for https://w3c.github.io/webappsec-csp/#violation-url and so.
+  // Note: Url() is used for several purposes that are specced slightly
+  // differently.
+  // See comments at the callers.
+  virtual const KURL& Url() const = 0;
+
+  // Directives support.
+  virtual void SetSandboxFlags(SandboxFlags) = 0;
+  virtual void SetAddressSpace(mojom::IPAddressSpace) = 0;
+  virtual void SetRequireTrustedTypes() = 0;
+  virtual void AddInsecureRequestPolicy(WebInsecureRequestPolicy) = 0;
+
+  // Violation reporting.
+
+  // See https://w3c.github.io/webappsec-csp/#create-violation-for-global.
+  // These functions are used to create the violation object.
+  virtual std::unique_ptr<SourceLocation> GetSourceLocation() = 0;
+  virtual base::Optional<uint16_t> GetStatusCode() = 0;
+  // If the Delegate is not bound to a document, a null string should be
+  // returned as the referrer.
+  virtual String GetDocumentReferrer() = 0;
+
+  virtual void DispatchViolationEvent(const SecurityPolicyViolationEventInit&,
+                                      Element*) = 0;
+  virtual void PostViolationReport(const SecurityPolicyViolationEventInit&,
+                                   const String& stringified_report,
+                                   bool is_frame_ancestors_violaton,
+                                   const Vector<String>& report_endpoints,
+                                   bool use_reporting_api) = 0;
+
+  virtual void Count(WebFeature) = 0;
+
+  virtual void AddConsoleMessage(ConsoleMessage*) = 0;
+  virtual void DisableEval(const String& error_message) = 0;
+  virtual void ReportBlockedScriptExecutionToInspector(
+      const String& directive_text) = 0;
+  virtual void DidAddContentSecurityPolicies(
+      const blink::WebVector<WebContentSecurityPolicy>&) = 0;
+};
 
 class CORE_EXPORT ContentSecurityPolicy
     : public GarbageCollectedFinalized<ContentSecurityPolicy> {
@@ -85,9 +138,24 @@ class CORE_EXPORT ContentSecurityPolicy
   // https://w3c.github.io/webappsec-csp/#violation-resource. By the time we
   // generate a report, we're guaranteed that the value isn't 'null', so we
   // don't need that state in this enum.
-  enum ViolationType { kInlineViolation, kEvalViolation, kURLViolation };
+  enum ViolationType {
+    kInlineViolation,
+    kEvalViolation,
+    kURLViolation,
+    kTrustedTypesViolation
+  };
 
-  enum class InlineType { kBlock, kAttribute };
+  // The |type| argument given to inline checks, e.g.:
+  // https://w3c.github.io/webappsec-csp/#should-block-inline
+  // Its possible values are listed in:
+  // https://w3c.github.io/webappsec-csp/#effective-directive-for-inline-check
+  enum class InlineType {
+    kNavigation,
+    kScript,
+    kScriptAttribute,
+    kStyle,
+    kStyleAttribute
+  };
 
   enum class DirectiveType {
     kBaseURI,
@@ -139,12 +207,13 @@ class CORE_EXPORT ContentSecurityPolicy
 
   static const size_t kMaxSampleLength = 40;
 
-  static ContentSecurityPolicy* Create() { return new ContentSecurityPolicy(); }
+  ContentSecurityPolicy();
   ~ContentSecurityPolicy();
   void Trace(blink::Visitor*);
 
-  void BindToExecutionContext(ExecutionContext*);
+  void BindToDelegate(ContentSecurityPolicyDelegate&);
   void SetupSelf(const SecurityOrigin&);
+  void SetupSelf(const ContentSecurityPolicy&);
   void CopyStateFrom(const ContentSecurityPolicy*);
   void CopyPluginTypesFrom(const ContentSecurityPolicy*);
 
@@ -159,27 +228,6 @@ class CORE_EXPORT ContentSecurityPolicy
 
   Vector<CSPHeaderAndType> Headers() const;
 
-  // |element| will not be present for navigations to javascript URLs,
-  // as those checks happen in the middle of the navigation algorithm,
-  // and we generally don't have access to the responsible element.
-  bool AllowJavaScriptURLs(Element*,
-                           const String& source,
-                           const String& context_url,
-                           const WTF::OrdinalNumber& context_line,
-                           SecurityViolationReportingPolicy =
-                               SecurityViolationReportingPolicy::kReport) const;
-
-  // |element| will be present almost all of the time, but because of
-  // strangeness around targeting handlers for '<body>', '<svg>', and
-  // '<frameset>', it will be 'nullptr' for handlers on those
-  // elements.
-  bool AllowInlineEventHandler(
-      Element*,
-      const String& source,
-      const String& context_url,
-      const WTF::OrdinalNumber& context_line,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport) const;
   // When the reporting status is |SendReport|, the |ExceptionStatus|
   // should indicate whether the caller will throw a JavaScript
   // exception in the event of a violation. When the caller will throw
@@ -209,100 +257,55 @@ class CORE_EXPORT ContentSecurityPolicy
       SecurityViolationReportingPolicy =
           SecurityViolationReportingPolicy::kReport) const;
 
-  bool AllowObjectFromSource(
-      const KURL&,
-      RedirectStatus = RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport,
-      CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowPrefetchFromSource(
-      const KURL&,
-      RedirectStatus = RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport,
-      CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowFrameFromSource(const KURL&,
-                            RedirectStatus = RedirectStatus::kNoRedirect,
-                            SecurityViolationReportingPolicy =
-                                SecurityViolationReportingPolicy::kReport,
-                            CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowImageFromSource(const KURL&,
-                            RedirectStatus = RedirectStatus::kNoRedirect,
-                            SecurityViolationReportingPolicy =
-                                SecurityViolationReportingPolicy::kReport,
-                            CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowFontFromSource(const KURL&,
-                           RedirectStatus = RedirectStatus::kNoRedirect,
-                           SecurityViolationReportingPolicy =
-                               SecurityViolationReportingPolicy::kReport,
-                           CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowMediaFromSource(const KURL&,
-                            RedirectStatus = RedirectStatus::kNoRedirect,
-                            SecurityViolationReportingPolicy =
-                                SecurityViolationReportingPolicy::kReport,
-                            CheckHeaderType = CheckHeaderType::kCheckAll) const;
+  // AllowFromSource() wrappers.
+  bool AllowBaseURI(const KURL&) const;
   bool AllowConnectToSource(const KURL&,
                             RedirectStatus = RedirectStatus::kNoRedirect,
                             SecurityViolationReportingPolicy =
                                 SecurityViolationReportingPolicy::kReport,
                             CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowFormAction(const KURL&,
-                       RedirectStatus = RedirectStatus::kNoRedirect,
-                       SecurityViolationReportingPolicy =
-                           SecurityViolationReportingPolicy::kReport,
-                       CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowBaseURI(const KURL&,
-                    RedirectStatus = RedirectStatus::kNoRedirect,
-                    SecurityViolationReportingPolicy =
-                        SecurityViolationReportingPolicy::kReport) const;
-  bool AllowTrustedTypePolicy(const String& policy_name) const;
-  bool AllowWorkerContextFromSource(
-      const KURL&,
-      RedirectStatus = RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport,
-      CheckHeaderType = CheckHeaderType::kCheckAll) const;
-
-  bool AllowManifestFromSource(
-      const KURL&,
-      RedirectStatus = RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport,
-      CheckHeaderType = CheckHeaderType::kCheckAll) const;
-
-  // Passing 'String()' into the |nonce| arguments in the following methods
-  // represents an unnonced resource load.
+  bool AllowFormAction(const KURL&) const;
+  bool AllowImageFromSource(const KURL&,
+                            RedirectStatus = RedirectStatus::kNoRedirect,
+                            SecurityViolationReportingPolicy =
+                                SecurityViolationReportingPolicy::kReport,
+                            CheckHeaderType = CheckHeaderType::kCheckAll) const;
+  bool AllowMediaFromSource(const KURL&) const;
+  bool AllowObjectFromSource(const KURL&) const;
   bool AllowScriptFromSource(
       const KURL&,
       const String& nonce,
-      const IntegrityMetadataSet& hashes,
+      const IntegrityMetadataSet&,
       ParserDisposition,
       RedirectStatus = RedirectStatus::kNoRedirect,
       SecurityViolationReportingPolicy =
           SecurityViolationReportingPolicy::kReport,
       CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowStyleFromSource(const KURL&,
-                            const String& nonce,
-                            RedirectStatus = RedirectStatus::kNoRedirect,
-                            SecurityViolationReportingPolicy =
-                                SecurityViolationReportingPolicy::kReport,
-                            CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowInlineScript(Element*,
-                         const String& context_url,
-                         const String& nonce,
-                         const WTF::OrdinalNumber& context_line,
-                         const String& script_content,
-                         InlineType,
-                         SecurityViolationReportingPolicy =
-                             SecurityViolationReportingPolicy::kReport) const;
-  bool AllowInlineStyle(Element*,
-                        const String& context_url,
-                        const String& nonce,
-                        const WTF::OrdinalNumber& context_line,
-                        const String& style_content,
-                        InlineType,
-                        SecurityViolationReportingPolicy =
-                            SecurityViolationReportingPolicy::kReport) const;
+  bool AllowWorkerContextFromSource(const KURL&) const;
+
+  bool AllowTrustedTypePolicy(const String& policy_name) const;
+
+  // Passing 'String()' into the |nonce| arguments in the following methods
+  // represents an unnonced resource load.
+  //
+  // For kJavaScriptURL case, |element| will not be present for navigations to
+  // javascript URLs, as those checks happen in the middle of the navigation
+  // algorithm, and we generally don't have access to the responsible element.
+  //
+  // For kInlineEventHandler case, |element| will be present almost all of the
+  // time, but because of strangeness around targeting handlers for '<body>',
+  // '<svg>', and '<frameset>', it will be 'nullptr' for handlers on those
+  // elements.
+  bool AllowInline(InlineType,
+                   Element*,
+                   const String& content,
+                   const String& nonce,
+                   const String& context_url,
+                   const WTF::OrdinalNumber& context_line,
+                   SecurityViolationReportingPolicy =
+                       SecurityViolationReportingPolicy::kReport) const;
+
+  static bool IsScriptInlineType(InlineType);
 
   // |allowAncestors| does not need to know whether the resource was a
   // result of a redirect. After a redirect, source paths are usually
@@ -333,6 +336,10 @@ class CORE_EXPORT ContentSecurityPolicy
                     SecurityViolationReportingPolicy =
                         SecurityViolationReportingPolicy::kReport,
                     CheckHeaderType = CheckHeaderType::kCheckAll) const;
+
+  // Determine whether to enforce the assignment failure. Also handle reporting.
+  // Returns whether enforcing Trusted Types CSP directives are present.
+  bool AllowTrustedTypeAssignmentFailure(const String& message) const;
 
   void UsesScriptHashAlgorithms(uint8_t content_security_policy_hash_algorithm);
   void UsesStyleHashAlgorithms(uint8_t content_security_policy_hash_algorithm);
@@ -399,10 +406,13 @@ class CORE_EXPORT ContentSecurityPolicy
   void ReportBlockedScriptExecutionToInspector(
       const String& directive_text) const;
 
-  const KURL Url() const;
+  // Used as <object>'s URL when there is no `src` attribute.
+  const KURL FallbackUrlForPlugin() const;
+
   void EnforceSandboxFlags(SandboxFlags);
   void TreatAsPublicAddress();
   void RequireTrustedTypes();
+  bool IsRequireTrustedTypes() const { return require_trusted_types_; }
   String EvalDisabledErrorMessage() const;
 
   // Upgrade-Insecure-Requests and Block-All-Mixed-Content are represented in
@@ -424,10 +434,6 @@ class CORE_EXPORT ContentSecurityPolicy
   CSPSource* GetSelfSource() const { return self_source_; }
 
   static bool ShouldBypassMainWorld(const ExecutionContext*);
-  static bool ShouldBypassContentSecurityPolicy(
-      const KURL&,
-      ExecutionContext*,
-      SchemeRegistry::PolicyAreas = SchemeRegistry::kPolicyAreaAll);
 
   static bool IsNonceableElement(const Element*);
 
@@ -445,8 +451,6 @@ class CORE_EXPORT ContentSecurityPolicy
   // CSPDirectiveList. More information here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy
   bool Subsumes(const ContentSecurityPolicy&) const;
-
-  Document* GetDocument() const;
 
   bool HasHeaderDeliveredPolicy() const { return header_delivered_; }
 
@@ -487,10 +491,13 @@ class CORE_EXPORT ContentSecurityPolicy
         directive_type == ContentSecurityPolicy::DirectiveType::kStyleSrcElem);
   }
 
+  void Count(WebFeature feature) const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceInline);
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceSinglePolicy);
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceMultiplePolicy);
+  FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, EmptyCSPIsNoOp);
   FRIEND_TEST_ALL_PREFIXES(BaseFetchContextTest, CanRequest);
   FRIEND_TEST_ALL_PREFIXES(BaseFetchContextTest, CheckCSPForRequest);
   FRIEND_TEST_ALL_PREFIXES(BaseFetchContextTest,
@@ -498,11 +505,11 @@ class CORE_EXPORT ContentSecurityPolicy
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextTest,
                            PopulateResourceRequestChecksReportOnlyCSP);
 
-  ContentSecurityPolicy();
+  void ApplyPolicySideEffectsToDelegate();
 
-  void ApplyPolicySideEffectsToExecutionContext();
-
-  void LogToConsole(const String& message, MessageLevel = kErrorMessageLevel);
+  void LogToConsole(
+      const String& message,
+      mojom::ConsoleMessageLevel = mojom::ConsoleMessageLevel::kError);
 
   void AddAndReportPolicyFromHeaderValue(const String&,
                                          ContentSecurityPolicyHeaderType,
@@ -510,12 +517,20 @@ class CORE_EXPORT ContentSecurityPolicy
 
   bool ShouldSendViolationReport(const String&) const;
   void DidSendViolationReport(const String&);
-  void DispatchViolationEvents(const SecurityPolicyViolationEventInit*,
-                               Element*);
   void PostViolationReport(const SecurityPolicyViolationEventInit*,
                            LocalFrame*,
                            const Vector<String>& report_endpoints,
                            bool use_reporting_api);
+
+  bool AllowFromSource(ContentSecurityPolicy::DirectiveType,
+                       const KURL&,
+                       RedirectStatus = RedirectStatus::kNoRedirect,
+                       SecurityViolationReportingPolicy =
+                           SecurityViolationReportingPolicy::kReport,
+                       CheckHeaderType = CheckHeaderType::kCheckAll,
+                       const String& = String(),
+                       const IntegrityMetadataSet& = IntegrityMetadataSet(),
+                       ParserDisposition = kParserInserted) const;
 
   static void FillInCSPHashValues(const String& source,
                                   uint8_t hash_algorithms_used,
@@ -523,14 +538,15 @@ class CORE_EXPORT ContentSecurityPolicy
 
   // checks a vector of csp hashes against policy, probably a good idea
   // to use in tandem with FillInCSPHashValues.
-  static bool CheckScriptHashAgainstPolicy(Vector<CSPHashValue>&,
-                                           const Member<CSPDirectiveList>&,
-                                           InlineType);
-  static bool CheckStyleHashAgainstPolicy(Vector<CSPHashValue>&,
-                                          const Member<CSPDirectiveList>&,
-                                          InlineType);
+  static bool CheckHashAgainstPolicy(Vector<CSPHashValue>&,
+                                     const Member<CSPDirectiveList>&,
+                                     InlineType);
 
-  Member<ExecutionContext> execution_context_;
+  bool ShouldBypassContentSecurityPolicy(
+      const KURL&,
+      SchemeRegistry::PolicyAreas = SchemeRegistry::kPolicyAreaAll) const;
+
+  Member<ContentSecurityPolicyDelegate> delegate_;
   bool override_inline_style_allowed_;
   CSPDirectiveListVector policies_;
   ConsoleMessageVector console_messages_;
@@ -547,7 +563,7 @@ class CORE_EXPORT ContentSecurityPolicy
   // State flags used to configure the environment after parsing a policy.
   SandboxFlags sandbox_mask_;
   bool treat_as_public_address_;
-  bool require_safe_types_;
+  bool require_trusted_types_;
   String disable_eval_error_message_;
   WebInsecureRequestPolicy insecure_request_policy_;
 

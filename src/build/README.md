@@ -9,6 +9,10 @@ to files outside of it. Some exceptions exist (`//testing`, select
 `//third_party` subdirectories), but new dependencies tend to break these other
 projects, and so should be avoided.
 
+Changes to //build should be landed in the Chromium repo. They will then be
+replicated to the stand-alone [build repo](https://chromium.googlesource.com/chromium/src/build)
+by the [gsubtreed tool.](https://chromium.googlesource.com/infra/infra/+/master/infra/services/gsubtreed)
+
 ## Contents
  * `//build/config` - Common templates via `.gni` files.
  * `//build/toolchain` - GN toolchain definitions.

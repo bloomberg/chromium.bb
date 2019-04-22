@@ -17,28 +17,23 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/log/net_log_with_source.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_bio_adapter.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/socket/stream_socket.h"
 #include "net/ssl/openssl_ssl_util.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/ssl/ssl_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-
-namespace base {
-namespace trace_event {
-class ProcessMemoryDump;
-}
-}
 
 namespace crypto {
 class OpenSSLErrStackTracer;
@@ -55,20 +50,17 @@ class SSLKeyLogger;
 class SSLClientSocketImpl : public SSLClientSocket,
                             public SocketBIOAdapter::Delegate {
  public:
-  // Takes ownership of the transport_socket, which may already be connected.
+  // Takes ownership of |stream_socket|, which may already be connected.
   // The given hostname will be compared with the name(s) in the server's
-  // certificate during the SSL handshake.  ssl_config specifies the SSL
+  // certificate during the SSL handshake.  |ssl_config| specifies the SSL
   // settings.
-  SSLClientSocketImpl(std::unique_ptr<ClientSocketHandle> transport_socket,
+  SSLClientSocketImpl(std::unique_ptr<StreamSocket> stream_socket,
                       const HostPortPair& host_and_port,
                       const SSLConfig& ssl_config,
                       const SSLClientSocketContext& context);
   ~SSLClientSocketImpl() override;
 
   const HostPortPair& host_and_port() const { return host_and_port_; }
-  const std::string& ssl_session_cache_shard() const {
-    return ssl_session_cache_shard_;
-  }
 
   // Log SSL key material to |logger|. Must be called before any
   // SSLClientSockets are created.
@@ -104,10 +96,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
 
   void ApplySocketTag(const SocketTag& tag) override;
 
-  // Dumps memory allocation stats. |pmd| is the browser process memory dump.
-  static void DumpSSLClientSessionMemoryStats(
-      base::trace_event::ProcessMemoryDump* pmd);
-
   // Socket implementation.
   int Read(IOBuffer* buf,
            int buf_len,
@@ -139,10 +127,9 @@ class SSLClientSocketImpl : public SSLClientSocket,
 
   int DoHandshake();
   int DoHandshakeComplete(int result);
-  int DoVerifyCert(int result);
-  int DoVerifyCertComplete(int result);
   void DoConnectCallback(int result);
 
+  void OnVerifyComplete(int result);
   void OnHandshakeIOComplete(int result);
 
   int DoHandshakeLoop(int last_io_result);
@@ -154,18 +141,17 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // and, if complete, runs the respective callbacks.
   void RetryAllOperations();
 
+  // Callback from the SSL layer when a certificate needs to be verified. This
+  // is called when establishing new (fresh) connections and when evaluating
+  // whether an existing session can be resumed.
+  static ssl_verify_result_t VerifyCertCallback(SSL* ssl, uint8_t* out_alert);
+  ssl_verify_result_t VerifyCert();
+  ssl_verify_result_t HandleVerifyResult();
   int VerifyCT();
 
   // Callback from the SSL layer that indicates the remote server is requesting
   // a certificate for this client.
   int ClientCertRequestCallback(SSL* ssl);
-
-  // Called after the initial handshake completes and after the server
-  // certificate has been verified. The order of handshake completion and
-  // certificate verification depends on whether the connection was false
-  // started. After both have happened (thus calling this twice), the session is
-  // safe to cache and will be cached.
-  void MaybeCacheSession();
 
   // Called from the SSL layer whenever a new session is established.
   int NewSessionCallback(SSL_SESSION* session);
@@ -178,12 +164,14 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // the |ssl_info|.signed_certificate_timestamps list.
   void AddCTInfoToSSLInfo(SSLInfo* ssl_info) const;
 
-  // Returns a unique key string for the SSL session cache for this socket. This
-  // must not be called if |ssl_session_cache_shard_| is empty.
+  // Returns a unique key string for the SSL session cache for this socket.
   std::string GetSessionCacheKey() const;
 
   // Returns true if renegotiations are allowed.
   bool IsRenegotiationAllowed() const;
+
+  // Returns true when we should be using the ssl_client_session_cache_
+  bool IsCachingEnabled() const;
 
   // Callbacks for operations with the private key.
   ssl_private_key_result_t PrivateKeySignCallback(uint8_t* out,
@@ -230,6 +218,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // Used by Write function.
   scoped_refptr<IOBuffer> user_write_buf_;
   int user_write_buf_len_;
+  bool first_post_handshake_write_ = true;
 
   // Used by DoPayloadRead() when attempting to fill the caller's buffer with
   // as much data as possible without blocking.
@@ -259,6 +248,9 @@ class SSLClientSocketImpl : public SSLClientSocket,
   std::unique_ptr<CertVerifier::Request> cert_verifier_request_;
   base::TimeTicks start_cert_verification_time_;
 
+  // Result from Cert Verifier.
+  int cert_verification_result_;
+
   // Certificate Transparency: Verifier and result holder.
   ct::CTVerifyResult ct_verify_result_;
   CTVerifier* cert_transparency_verifier_;
@@ -266,21 +258,17 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // OpenSSL stuff
   bssl::UniquePtr<SSL> ssl_;
 
-  std::unique_ptr<ClientSocketHandle> transport_;
+  std::unique_ptr<StreamSocket> stream_socket_;
   std::unique_ptr<SocketBIOAdapter> transport_adapter_;
   const HostPortPair host_and_port_;
   SSLConfig ssl_config_;
-  // ssl_session_cache_shard_ is an opaque string that partitions the SSL
-  // session cache. i.e. sessions created with one value will not attempt to
-  // resume on the socket with a different value.
-  const std::string ssl_session_cache_shard_;
+  // ssl_client_session_cache_ is a non-owning pointer to session cache
+  SSLClientSessionCache* ssl_client_session_cache_;
 
   enum State {
     STATE_NONE,
     STATE_HANDSHAKE,
     STATE_HANDSHAKE_COMPLETE,
-    STATE_VERIFY_CERT,
-    STATE_VERIFY_CERT_COMPLETE,
   };
   State next_handshake_state_;
 
@@ -291,11 +279,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   bool disconnected_;
 
   NextProto negotiated_protocol_;
-  // If non-null, the newly-established to be inserted into the session cache
-  // once certificate verification is done.
-  bssl::UniquePtr<SSL_SESSION> pending_session_;
-  // True if the initial handshake's certificate has been verified.
-  bool certificate_verified_;
   // Set to true if a CertificateRequest was received.
   bool certificate_requested_;
 

@@ -5,10 +5,9 @@
 package org.chromium.components.gcm_driver;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import java.io.IOException;
-
-import javax.annotation.Nullable;
 
 /**
  * Helper to subscribe to and unsubscribe from Google Cloud Messaging.

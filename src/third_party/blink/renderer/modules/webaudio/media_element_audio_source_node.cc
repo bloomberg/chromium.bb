@@ -36,9 +36,24 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/locker.h"
 
 namespace blink {
+
+class MediaElementAudioSourceHandlerLocker final {
+  STACK_ALLOCATED();
+
+ public:
+  MediaElementAudioSourceHandlerLocker(MediaElementAudioSourceHandler& lockable)
+      : lockable_(lockable) {
+    lockable_.lock();
+  }
+  ~MediaElementAudioSourceHandlerLocker() { lockable_.unlock(); }
+
+ private:
+  MediaElementAudioSourceHandler& lockable_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaElementAudioSourceHandlerLocker);
+};
 
 MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(
     AudioNode& node,
@@ -79,12 +94,12 @@ HTMLMediaElement* MediaElementAudioSourceHandler::MediaElement() const {
 }
 
 void MediaElementAudioSourceHandler::Dispose() {
-  media_element_->SetAudioSourceNode(nullptr);
   AudioHandler::Dispose();
 }
 
 void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
                                                float source_sample_rate) {
+  DCHECK(MediaElement());
   bool is_tainted = WouldTaintOrigin();
 
   if (is_tainted) {
@@ -100,7 +115,7 @@ void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
       DLOG(ERROR) << "setFormat(" << number_of_channels << ", "
                   << source_sample_rate << ") - unhandled format change";
       // Synchronize with process().
-      Locker<MediaElementAudioSourceHandler> locker(*this);
+      MediaElementAudioSourceHandlerLocker locker(*this);
       source_number_of_channels_ = 0;
       source_sample_rate_ = 0;
       is_origin_tainted_ = is_tainted;
@@ -110,7 +125,7 @@ void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
     // Synchronize with process() to protect |source_number_of_channels_|,
     // |source_sample_rate_|, |multi_channel_resampler_|. and
     // |is_origin_tainted_|.
-    Locker<MediaElementAudioSourceHandler> locker(*this);
+    MediaElementAudioSourceHandlerLocker locker(*this);
 
     is_origin_tainted_ = is_tainted;
     source_number_of_channels_ = number_of_channels;
@@ -136,13 +151,15 @@ void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
 }
 
 bool MediaElementAudioSourceHandler::WouldTaintOrigin() {
+  DCHECK(MediaElement());
   return MediaElement()->GetWebMediaPlayer()->WouldTaintOrigin();
 }
 
 void MediaElementAudioSourceHandler::PrintCorsMessage(const String& message) {
   if (Context()->GetExecutionContext()) {
     Context()->GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kSecurityMessageSource, kInfoMessageLevel,
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                               mojom::ConsoleMessageLevel::kInfo,
                                "MediaElementAudioSource outputs zeroes due to "
                                "CORS access restrictions for " +
                                    message));
@@ -207,7 +224,7 @@ void MediaElementAudioSourceHandler::unlock() {
 MediaElementAudioSourceNode::MediaElementAudioSourceNode(
     AudioContext& context,
     HTMLMediaElement& media_element)
-    : AudioNode(context) {
+    : AudioNode(context), media_element_(&media_element) {
   SetHandler(MediaElementAudioSourceHandler::Create(*this, media_element));
 }
 
@@ -216,11 +233,6 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
     HTMLMediaElement& media_element,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
-
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
 
   // First check if this media element already has a source node.
   if (media_element.AudioSourceNode()) {
@@ -256,6 +268,7 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
 }
 
 void MediaElementAudioSourceNode::Trace(blink::Visitor* visitor) {
+  visitor->Trace(media_element_);
   AudioSourceProviderClient::Trace(visitor);
   AudioNode::Trace(visitor);
 }
@@ -266,7 +279,7 @@ MediaElementAudioSourceNode::GetMediaElementAudioSourceHandler() const {
 }
 
 HTMLMediaElement* MediaElementAudioSourceNode::mediaElement() const {
-  return GetMediaElementAudioSourceHandler().MediaElement();
+  return media_element_;
 }
 
 void MediaElementAudioSourceNode::SetFormat(uint32_t number_of_channels,

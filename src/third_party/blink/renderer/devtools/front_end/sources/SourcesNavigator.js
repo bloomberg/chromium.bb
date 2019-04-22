@@ -33,6 +33,9 @@ Sources.NetworkNavigatorView = class extends Sources.NavigatorView {
   constructor() {
     super();
     SDK.targetManager.addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this._inspectedURLChanged, this);
+
+    // Record the sources tool load time after the file navigator has loaded.
+    Host.userMetrics.panelLoaded('sources', 'DevTools.Launch.Sources');
   }
 
   /**
@@ -81,12 +84,10 @@ Sources.FilesNavigatorView = class extends Sources.NavigatorView {
   constructor() {
     super();
     const toolbar = new UI.Toolbar('navigator-toolbar');
-    const title = Common.UIString('Add folder to workspace');
-    const addButton = new UI.ToolbarButton(title, 'largeicon-add', title);
-    addButton.addEventListener(
-        UI.ToolbarButton.Events.Click, () => Persistence.isolatedFileSystemManager.addFileSystem());
-    toolbar.appendToolbarItem(addButton);
-    this.contentElement.insertBefore(toolbar.element, this.contentElement.firstChild);
+    toolbar.appendItemsAtLocation('files-navigator-toolbar').then(() => {
+      if (!toolbar.empty())
+        this.contentElement.insertBefore(toolbar.element, this.contentElement.firstChild);
+    });
   }
 
   /**
@@ -106,7 +107,7 @@ Sources.FilesNavigatorView = class extends Sources.NavigatorView {
    */
   handleContextMenu(event) {
     const contextMenu = new UI.ContextMenu(event);
-    Sources.NavigatorView.appendAddFolderItem(contextMenu);
+    contextMenu.defaultSection().appendAction('sources.add-folder-to-workspace', undefined, true);
     contextMenu.show();
   }
 };
@@ -263,7 +264,7 @@ Sources.SnippetsNavigatorView = class extends Sources.NavigatorView {
 /**
  * @implements {UI.ActionDelegate}
  */
-Sources.SnippetsNavigatorView.CreatingActionDelegate = class {
+Sources.ActionDelegate = class {
   /**
    * @override
    * @param {!UI.Context} context

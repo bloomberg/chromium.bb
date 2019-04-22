@@ -5,6 +5,7 @@
 #include "components/quirks/quirks_client.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
@@ -40,7 +41,7 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
 bool WriteIccFile(const base::FilePath file_path, const std::string& data) {
   int bytes_written = base::WriteFile(file_path, data.data(), data.length());
   if (bytes_written == -1)
-    LOG(ERROR) << "Write failed: " << file_path.value() << ", err = " << errno;
+    PLOG(ERROR) << "Write failed: " << file_path.value();
   else
     VLOG(1) << bytes_written << "bytes written to: " << file_path.value();
 
@@ -188,7 +189,7 @@ void QuirksClient::Retry() {
 bool QuirksClient::ParseResult(const std::string& result, std::string* data) {
   std::string data64;
   const base::DictionaryValue* dict;
-  std::unique_ptr<base::Value> json = base::JSONReader::Read(result);
+  std::unique_ptr<base::Value> json = base::JSONReader::ReadDeprecated(result);
   if (!json || !json->GetAsDictionary(&dict) ||
       !dict->GetString("icc", &data64)) {
     VLOG(1) << "Failed to parse JSON icc data";

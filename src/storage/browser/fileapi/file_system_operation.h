@@ -11,13 +11,13 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/process/process.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class Time;
@@ -56,7 +56,8 @@ class FileWriterDelegate;
 // it gets called.
 class FileSystemOperation {
  public:
-  STORAGE_EXPORT static FileSystemOperation* Create(
+  COMPONENT_EXPORT(STORAGE_BROWSER)
+  static FileSystemOperation* Create(
       const FileSystemURL& url,
       FileSystemContext* file_system_context,
       std::unique_ptr<FileSystemOperationContext> operation_context);
@@ -225,9 +226,18 @@ class FileSystemOperation {
   // Fields requested for the GetMetadata method. Used as a bitmask.
   enum GetMetadataField {
     GET_METADATA_FIELD_NONE = 0,
+
+    // Returns the size of the target. Undefined for directories.
+    // See also GET_METADATA_FIELD_TOTAL_SIZE.
     GET_METADATA_FIELD_SIZE = 1 << 0,
+
     GET_METADATA_FIELD_IS_DIRECTORY = 1 << 1,
-    GET_METADATA_FIELD_LAST_MODIFIED = 1 << 2
+
+    GET_METADATA_FIELD_LAST_MODIFIED = 1 << 2,
+
+    // If the target is directory, then total size of directory contents
+    // is returned, otherwise it's identical to GET_METADATA_FIELD_SIZE.
+    GET_METADATA_FIELD_TOTAL_SIZE = 1 << 3,
   };
 
   // Used for Write().

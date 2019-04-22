@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -132,9 +133,8 @@ void ConnectionHandlerImpl::Login(
           base::Bind(&ConnectionHandlerImpl::OnMessageSent,
                      weak_ptr_factory_.GetWeakPtr())) != net::ERR_IO_PENDING) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&ConnectionHandlerImpl::OnMessageSent,
-                   weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&ConnectionHandlerImpl::OnMessageSent,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 
   read_timeout_timer_.Start(FROM_HERE,
@@ -261,9 +261,8 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
              << " more bytes.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ConnectionHandlerImpl::WaitForData,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   MCS_PROTO_BYTES));
+        base::BindOnce(&ConnectionHandlerImpl::WaitForData,
+                       weak_ptr_factory_.GetWeakPtr(), MCS_PROTO_BYTES));
     return;
   }
 
@@ -382,9 +381,8 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
   // that tag.
   if (protobuf.get() && message_size_ == 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&ConnectionHandlerImpl::GetNextMessage,
-                   weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&ConnectionHandlerImpl::GetNextMessage,
+                                  weak_ptr_factory_.GetWeakPtr()));
     read_callback_.Run(std::move(protobuf));
     return;
   }
@@ -414,7 +412,7 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
     }
   } else {
     // Copy any data in the input stream onto the end of the buffer.
-    const void* data_ptr = NULL;
+    const void* data_ptr = nullptr;
     int size = 0;
     input_stream_->Next(&data_ptr, &size);
     payload_input_buffer_.insert(payload_input_buffer_.end(),
@@ -455,9 +453,8 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
 
   input_stream_->RebuildBuffer();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&ConnectionHandlerImpl::GetNextMessage,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ConnectionHandlerImpl::GetNextMessage,
+                                weak_ptr_factory_.GetWeakPtr()));
   if (message_tag_ == kLoginResponseTag) {
     if (handshake_complete_) {
       LOG(ERROR) << "Unexpected login response.";

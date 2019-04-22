@@ -14,6 +14,7 @@ for cmd in gen-signedexchange gen-certurl; do
     fi
 done
 
+sxg_version=1b3
 certs_dir=../../../../../../../blink/tools/blinkpy/third_party/wpt/certs
 tmpdir=$(mktemp -d)
 
@@ -28,7 +29,7 @@ gen-certurl  \
 
 # Generate the signed exchange file.
 gen-signedexchange \
-  -version 1b2 \
+  -version $sxg_version \
   -uri https://127.0.0.1:8443/loading/sxg/resources/inner-url.html \
   -status 200 \
   -content sxg-location.html \
@@ -43,7 +44,7 @@ gen-signedexchange \
 
 # Generate the signed exchange file which also reports use counter info.
 gen-signedexchange \
-  -version 1b2 \
+  -version $sxg_version \
   -uri https://127.0.0.1:8443/loading/sxg/resources/inner-url.html \
   -status 200 \
   -content sxg-usecounter.html \
@@ -58,7 +59,7 @@ gen-signedexchange \
 
 # Generate the signed exchange file which certificate file is not available.
 gen-signedexchange \
-  -version 1b2 \
+  -version $sxg_version \
   -uri https://127.0.0.1:8443/loading/sxg/resources/inner-url.html \
   -status 200 \
   -content sxg-location.html \
@@ -74,7 +75,7 @@ gen-signedexchange \
 # Generate the signed exchange file which validity URL is different origin from
 # request URL.
 gen-signedexchange \
-  -version 1b2 \
+  -version $sxg_version \
   -uri https://127.0.0.1:8443/loading/sxg/resources/inner-url.html \
   -status 200 \
   -content sxg-location.html \
@@ -85,6 +86,22 @@ gen-signedexchange \
   -date 2018-04-01T00:00:00Z \
   -expire 168h \
   -o sxg-invalid-validity-url.sxg \
+  -miRecordSize 100 \
+  -ignoreErrors true
+
+# Generate the signed exchange file larger than 10KB.
+gen-signedexchange \
+  -version $sxg_version \
+  -uri https://127.0.0.1:8443/loading/sxg/resources/inner-url.html \
+  -status 200 \
+  -content sxg-larger-than-10k.html \
+  -certificate $certs_dir/127.0.0.1.sxg.pem \
+  -certUrl https://127.0.0.1:8443/loading/sxg/resources/127.0.0.1.sxg.pem.cbor \
+  -validityUrl https://127.0.0.1:8443/loading/sxg/resources/resource.validity.msg \
+  -privateKey $certs_dir/127.0.0.1.sxg.key \
+  -date 2018-04-01T00:00:00Z \
+  -expire 168h \
+  -o sxg-larger-than-10k.sxg \
   -miRecordSize 100
 
 rm -fr $tmpdir

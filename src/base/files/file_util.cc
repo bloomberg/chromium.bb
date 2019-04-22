@@ -54,10 +54,15 @@ bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {
   // We open the file in binary format even if they are text files because
   // we are just comparing that bytes are exactly same in both files and not
   // doing anything smart with text formatting.
-  std::ifstream file1(filename1.value().c_str(),
+#if defined(OS_WIN)
+  std::ifstream file1(as_wcstr(filename1.value()),
                       std::ios::in | std::ios::binary);
-  std::ifstream file2(filename2.value().c_str(),
+  std::ifstream file2(as_wcstr(filename2.value()),
                       std::ios::in | std::ios::binary);
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  std::ifstream file1(filename1.value(), std::ios::in | std::ios::binary);
+  std::ifstream file2(filename2.value(), std::ios::in | std::ios::binary);
+#endif  // OS_WIN
 
   // Even if both files aren't openable (and thus, in some sense, "equal"),
   // any unusable file yields a result of "false".
@@ -85,8 +90,13 @@ bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {
 }
 
 bool TextContentsEqual(const FilePath& filename1, const FilePath& filename2) {
-  std::ifstream file1(filename1.value().c_str(), std::ios::in);
-  std::ifstream file2(filename2.value().c_str(), std::ios::in);
+#if defined(OS_WIN)
+  std::ifstream file1(as_wcstr(filename1.value()), std::ios::in);
+  std::ifstream file2(as_wcstr(filename2.value()), std::ios::in);
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  std::ifstream file1(filename1.value(), std::ios::in);
+  std::ifstream file2(filename2.value(), std::ios::in);
+#endif  // OS_WIN
 
   // Even if both files aren't openable (and thus, in some sense, "equal"),
   // any unusable file yields a result of "false".
@@ -157,7 +167,7 @@ bool ReadFileToStringWithMaxSize(const FilePath& path,
   std::string local_contents;
   local_contents.resize(chunk_size);
 
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   while ((bytes_read_this_pass = fread(&local_contents[bytes_read_so_far], 1,
                                        chunk_size, file)) > 0) {
     if ((max_size - bytes_read_so_far) < bytes_read_this_pass) {
@@ -231,7 +241,11 @@ bool TouchFile(const FilePath& path,
   // On Windows, FILE_FLAG_BACKUP_SEMANTICS is needed to open a directory.
   if (DirectoryExists(path))
     flags |= File::FLAG_BACKUP_SEMANTICS;
-#endif  // OS_WIN
+#elif defined(OS_FUCHSIA)
+  // On Fuchsia, we need O_RDONLY for directories, or O_WRONLY for files.
+  // TODO(https://crbug.com/947802): Find a cleaner workaround for this.
+  flags |= (DirectoryExists(path) ? File::FLAG_READ : File::FLAG_WRITE);
+#endif
 
   File file(path, flags);
   if (!file.IsValid())
@@ -284,6 +298,16 @@ int GetUniquePathNumber(const FilePath& path,
   }
 
   return -1;
+}
+
+FilePath GetUniquePath(const FilePath& path) {
+  FilePath unique_path = path;
+  int uniquifier = GetUniquePathNumber(path, FilePath::StringType());
+  if (uniquifier > 0) {
+    unique_path = unique_path.InsertBeforeExtensionASCII(
+        StringPrintf(" (%d)", uniquifier));
+  }
+  return unique_path;
 }
 #endif  // !defined(OS_NACL_NONSFI)
 

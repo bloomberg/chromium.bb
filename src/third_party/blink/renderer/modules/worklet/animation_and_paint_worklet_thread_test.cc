@@ -8,17 +8,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
@@ -26,10 +23,10 @@
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/core/workers/worklet_thread_holder.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
+#include "third_party/blink/renderer/modules/worklet/worklet_thread_test_common.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
@@ -39,8 +36,8 @@ namespace {
 class TestAnimationWorkletProxyClient : public AnimationWorkletProxyClient {
  public:
   TestAnimationWorkletProxyClient()
-      : AnimationWorkletProxyClient(0, nullptr, nullptr, nullptr, nullptr){};
-  void SetGlobalScope(WorkletGlobalScope*) override {}
+      : AnimationWorkletProxyClient(0, nullptr, nullptr, nullptr, nullptr) {}
+  void AddGlobalScope(WorkletGlobalScope*) override {}
 };
 
 }  // namespace
@@ -55,35 +52,10 @@ class AnimationAndPaintWorkletThreadTest : public PageTestBase {
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
-  std::unique_ptr<AnimationAndPaintWorkletThread>
-  CreateAnimationAndPaintWorkletThread() {
-    WorkerClients* clients = WorkerClients::Create();
-    ProvideAnimationWorkletProxyClientTo(clients,
-                                         new TestAnimationWorkletProxyClient());
-
-    std::unique_ptr<AnimationAndPaintWorkletThread> thread =
-        AnimationAndPaintWorkletThread::CreateForAnimationWorklet(
-            *reporting_proxy_);
-    Document* document = &GetDocument();
-    thread->Start(
-        std::make_unique<GlobalScopeCreationParams>(
-            document->Url(), mojom::ScriptType::kModule, document->UserAgent(),
-            nullptr /* web_worker_fetch_context */, Vector<CSPHeaderAndType>(),
-            document->GetReferrerPolicy(), document->GetSecurityOrigin(),
-            document->IsSecureContext(), document->GetHttpsState(), clients,
-            document->AddressSpace(),
-            OriginTrialContext::GetTokens(document).get(),
-            base::UnguessableToken::Create(), nullptr /* worker_settings */,
-            kV8CacheOptionsDefault, new WorkletModuleResponsesMap),
-        base::nullopt, std::make_unique<WorkerDevToolsParams>(),
-        ParentExecutionContextTaskRunners::Create());
-    return thread;
-  }
-
   // Attempts to run some simple script for |thread|.
   void CheckWorkletCanExecuteScript(WorkerThread* thread) {
-    std::unique_ptr<WaitableEvent> wait_event =
-        std::make_unique<WaitableEvent>();
+    std::unique_ptr<base::WaitableEvent> wait_event =
+        std::make_unique<base::WaitableEvent>();
     thread->GetWorkerBackingThread().BackingThread().PostTask(
         FROM_HERE,
         CrossThreadBind(
@@ -93,14 +65,17 @@ class AnimationAndPaintWorkletThreadTest : public PageTestBase {
     wait_event->Wait();
   }
 
+  std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
+
  private:
-  void ExecuteScriptInWorklet(WorkerThread* thread, WaitableEvent* wait_event) {
+  void ExecuteScriptInWorklet(WorkerThread* thread,
+                              base::WaitableEvent* wait_event) {
     ScriptState* script_state =
         thread->GlobalScope()->ScriptController()->GetScriptState();
     EXPECT_TRUE(script_state);
     ScriptState::Scope scope(script_state);
     const KURL js_url("https://example.com/foo.js");
-    ScriptModule module = ScriptModule::Compile(
+    ModuleRecord module = ModuleRecord::Compile(
         script_state->GetIsolate(), "var counter = 0; ++counter;", js_url,
         js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
         ASSERT_NO_EXCEPTION);
@@ -111,13 +86,12 @@ class AnimationAndPaintWorkletThreadTest : public PageTestBase {
     EXPECT_TRUE(value.IsEmpty());
     wait_event->Signal();
   }
-
-  std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 
 TEST_F(AnimationAndPaintWorkletThreadTest, Basic) {
   std::unique_ptr<AnimationAndPaintWorkletThread> worklet =
-      CreateAnimationAndPaintWorkletThread();
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   CheckWorkletCanExecuteScript(worklet.get());
   worklet->Terminate();
   worklet->WaitForShutdownForTesting();
@@ -128,7 +102,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest, Basic) {
 TEST_F(AnimationAndPaintWorkletThreadTest, CreateSecondAndTerminateFirst) {
   // Create the first worklet and wait until it is initialized.
   std::unique_ptr<AnimationAndPaintWorkletThread> first_worklet =
-      CreateAnimationAndPaintWorkletThread();
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   WebThreadSupportingGC* first_thread =
       &first_worklet->GetWorkerBackingThread().BackingThread();
   CheckWorkletCanExecuteScript(first_worklet.get());
@@ -137,7 +112,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest, CreateSecondAndTerminateFirst) {
 
   // Create the second worklet and immediately destroy the first worklet.
   std::unique_ptr<AnimationAndPaintWorkletThread> second_worklet =
-      CreateAnimationAndPaintWorkletThread();
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   // We don't use terminateAndWait here to avoid forcible termination.
   first_worklet->Terminate();
   first_worklet->WaitForShutdownForTesting();
@@ -164,7 +140,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest, CreateSecondAndTerminateFirst) {
 TEST_F(AnimationAndPaintWorkletThreadTest, TerminateFirstAndCreateSecond) {
   // Create the first worklet, wait until it is initialized, and terminate it.
   std::unique_ptr<AnimationAndPaintWorkletThread> worklet =
-      CreateAnimationAndPaintWorkletThread();
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   WebThreadSupportingGC* first_thread =
       &worklet->GetWorkerBackingThread().BackingThread();
   CheckWorkletCanExecuteScript(worklet.get());
@@ -174,7 +151,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest, TerminateFirstAndCreateSecond) {
   worklet->WaitForShutdownForTesting();
 
   // Create the second worklet. The backing thread is same.
-  worklet = CreateAnimationAndPaintWorkletThread();
+  worklet = CreateThreadAndProvideAnimationWorkletProxyClient(
+      &GetDocument(), reporting_proxy_.get());
   WebThreadSupportingGC* second_thread =
       &worklet->GetWorkerBackingThread().BackingThread();
   EXPECT_EQ(first_thread, second_thread);
@@ -189,7 +167,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest, TerminateFirstAndCreateSecond) {
 TEST_F(AnimationAndPaintWorkletThreadTest,
        CreatingSecondDuringTerminationOfFirst) {
   std::unique_ptr<AnimationAndPaintWorkletThread> first_worklet =
-      CreateAnimationAndPaintWorkletThread();
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   CheckWorkletCanExecuteScript(first_worklet.get());
   v8::Isolate* first_isolate = first_worklet->GetIsolate();
   ASSERT_TRUE(first_isolate);
@@ -202,7 +181,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest,
   // on the worklet thread so quickly. This could be a source of flakiness.
 
   std::unique_ptr<AnimationAndPaintWorkletThread> second_worklet =
-      CreateAnimationAndPaintWorkletThread();
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
 
   v8::Isolate* second_isolate = second_worklet->GetIsolate();
   ASSERT_TRUE(second_isolate);
@@ -223,14 +203,16 @@ TEST_F(AnimationAndPaintWorkletThreadTest,
       AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting());
 
   std::unique_ptr<AnimationAndPaintWorkletThread> worklet =
-      CreateAnimationAndPaintWorkletThread();
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   ASSERT_TRUE(worklet.get());
   WorkletThreadHolder<AnimationAndPaintWorkletThread>* holder =
       AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting();
   EXPECT_TRUE(holder);
 
   std::unique_ptr<AnimationAndPaintWorkletThread> worklet2 =
-      CreateAnimationAndPaintWorkletThread();
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   ASSERT_TRUE(worklet2.get());
   WorkletThreadHolder<AnimationAndPaintWorkletThread>* holder2 =
       AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting();
@@ -249,7 +231,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest,
       AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting());
 
   std::unique_ptr<AnimationAndPaintWorkletThread> worklet3 =
-      CreateAnimationAndPaintWorkletThread();
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   ASSERT_TRUE(worklet3.get());
   EXPECT_TRUE(
       AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting());

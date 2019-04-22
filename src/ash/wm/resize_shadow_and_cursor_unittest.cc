@@ -208,8 +208,9 @@ TEST_F(ResizeShadowAndCursorTest, Touch) {
   generator.GestureScrollSequenceWithCallback(
       gfx::Point(start_x, start_y), gfx::Point(start_x + 50, start_y + 50),
       base::TimeDelta::FromMilliseconds(200), 3,
-      base::Bind(&ResizeShadowAndCursorTest::ProcessBottomRightResizeGesture,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &ResizeShadowAndCursorTest::ProcessBottomRightResizeGesture,
+          base::Unretained(this)));
 }
 
 // Test that the resize shadows are not visible and that the default cursor is

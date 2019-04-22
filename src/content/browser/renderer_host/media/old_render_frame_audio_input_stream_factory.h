@@ -25,6 +25,7 @@
 #include "media/audio/audio_input_delegate.h"
 #include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/audio/public/mojom/audio_processing.mojom.h"
 
 namespace media {
 class AudioParameters;

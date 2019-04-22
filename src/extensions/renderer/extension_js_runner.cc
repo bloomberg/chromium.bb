@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/extension_js_runner.h"
 
+#include "base/bind.h"
 #include "content/public/renderer/worker_thread.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_injection_callback.h"

@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -48,12 +49,34 @@
 
 namespace blink {
 
-const WebURLRequest& WebDocumentLoaderImpl::OriginalRequest() const {
-  return original_request_wrapper_;
+// static
+bool WebDocumentLoader::WillLoadUrlAsEmpty(const WebURL& url) {
+  return DocumentLoader::WillLoadUrlAsEmpty(url);
 }
 
-const WebURLRequest& WebDocumentLoaderImpl::GetRequest() const {
-  return request_wrapper_;
+WebURL WebDocumentLoaderImpl::OriginalUrl() const {
+  return DocumentLoader::OriginalUrl();
+}
+
+WebString WebDocumentLoaderImpl::OriginalReferrer() const {
+  return DocumentLoader::OriginalReferrer().referrer;
+}
+
+WebURL WebDocumentLoaderImpl::GetUrl() const {
+  return DocumentLoader::Url();
+}
+
+WebString WebDocumentLoaderImpl::HttpMethod() const {
+  return DocumentLoader::HttpMethod();
+}
+
+WebString WebDocumentLoaderImpl::Referrer() const {
+  return DocumentLoader::GetReferrer().referrer;
+}
+
+network::mojom::ReferrerPolicy WebDocumentLoaderImpl::GetReferrerPolicy()
+    const {
+  return DocumentLoader::GetReferrer().referrer_policy;
 }
 
 const WebURLResponse& WebDocumentLoaderImpl::GetResponse() const {
@@ -68,8 +91,8 @@ WebURL WebDocumentLoaderImpl::UnreachableURL() const {
   return DocumentLoader::UnreachableURL();
 }
 
-void WebDocumentLoaderImpl::AppendRedirect(const WebURL& url) {
-  DocumentLoader::AppendRedirect(url);
+int WebDocumentLoaderImpl::ErrorCode() const {
+  return DocumentLoader::ErrorCode();
 }
 
 void WebDocumentLoaderImpl::RedirectChain(WebVector<WebURL>& result) const {
@@ -99,23 +122,9 @@ void WebDocumentLoaderImpl::SetExtraData(
 
 WebDocumentLoaderImpl::WebDocumentLoaderImpl(
     LocalFrame* frame,
-    const ResourceRequest& request,
-    const SubstituteData& data,
-    ClientRedirectPolicy client_redirect_policy,
-    const base::UnguessableToken& devtools_navigation_token,
-    WebFrameLoadType load_type,
     WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params)
-    : DocumentLoader(frame,
-                     request,
-                     data,
-                     client_redirect_policy,
-                     devtools_navigation_token,
-                     load_type,
-                     navigation_type,
-                     std::move(navigation_params)),
-      original_request_wrapper_(DocumentLoader::OriginalRequest()),
-      request_wrapper_(DocumentLoader::GetRequest()),
+    : DocumentLoader(frame, navigation_type, std::move(navigation_params)),
       response_wrapper_(DocumentLoader::GetResponse()) {}
 
 WebDocumentLoaderImpl::~WebDocumentLoaderImpl() {
@@ -144,10 +153,6 @@ WebDocumentLoaderImpl::GetServiceWorkerNetworkProvider() {
   return DocumentLoader::GetServiceWorkerNetworkProvider();
 }
 
-void WebDocumentLoaderImpl::ResetSourceLocation() {
-  DocumentLoader::ResetSourceLocation();
-}
-
 void WebDocumentLoaderImpl::BlockParser() {
   DocumentLoader::BlockParser();
 }
@@ -156,17 +161,25 @@ void WebDocumentLoaderImpl::ResumeParser() {
   DocumentLoader::ResumeParser();
 }
 
-bool WebDocumentLoaderImpl::IsArchive() const {
-  return Fetcher()->Archive();
+bool WebDocumentLoaderImpl::HasBeenLoadedAsWebArchive() const {
+  return archive_ || (archive_load_result_ != mojom::MHTMLLoadResult::kSuccess);
 }
 
 WebArchiveInfo WebDocumentLoaderImpl::GetArchiveInfo() const {
-  const MHTMLArchive* archive = Fetcher()->Archive();
-  return {archive->MainResource()->Url(), archive->Date()};
+  if (archive_) {
+    DCHECK(archive_->MainResource());
+    return {archive_load_result_, archive_->MainResource()->Url(),
+            archive_->Date()};
+  }
+  return {archive_load_result_, WebURL(), base::Time()};
 }
 
 bool WebDocumentLoaderImpl::HadUserGesture() const {
   return DocumentLoader::had_transient_activation();
+}
+
+bool WebDocumentLoaderImpl::IsListingFtpDirectory() const {
+  return DocumentLoader::IsListingFtpDirectory();
 }
 
 void WebDocumentLoaderImpl::Trace(blink::Visitor* visitor) {

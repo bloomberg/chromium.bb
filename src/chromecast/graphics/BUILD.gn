@@ -62,7 +62,7 @@ cast_source_set("graphics") {
     ]
 
     deps += [
-      "//ui/base/ime",
+      "//ui/base/ime/init",
       "//ui/events:gesture_detection",
       "//ui/views",
       "//ui/wm",

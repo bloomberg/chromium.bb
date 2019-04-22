@@ -18,6 +18,7 @@
 #include "content/public/common/drop_data.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/gfx/native_widget_types.h"
@@ -61,8 +62,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void SetTopControlsShownRatio(
       RenderWidgetHostImpl* render_widget_host,
       float ratio) {}
-  virtual bool DoBrowserControlsShrinkRendererSize() const;
-  virtual int GetTopControlsHeight() const;
   virtual void SetTopControlsGestureScrollInProgress(bool in_progress) {}
 
   // The RenderWidgetHost has just been created.
@@ -201,6 +200,11 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns whether the associated tab is in fullscreen mode.
   virtual bool IsFullscreenForCurrentTab();
 
+  // Returns true if the widget's frame content needs to be stored before
+  // eviction and displayed until a new frame is generated. If false, a white
+  // solid color is displayed instead.
+  virtual bool ShouldShowStaleContentOnEviction();
+
   // Returns the display mode for the view.
   virtual blink::WebDisplayMode GetDisplayMode(
       RenderWidgetHostImpl* render_widget_host) const;
@@ -234,7 +238,8 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // WebContents changes. This method is only called on an inner WebContents and
   // will eventually notify all the RenderWidgetHostViews belonging to that
   // WebContents.
-  virtual void OnRenderFrameProxyVisibilityChanged(bool visible) {}
+  virtual void OnRenderFrameProxyVisibilityChanged(
+      blink::mojom::FrameVisibility visibility) {}
 
   // Update the renderer's cache of the screen rect of the view and window.
   virtual void SendScreenRects() {}
@@ -246,6 +251,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // the RenderWidgetHost to ask the delegate if it can be shown in the event of
   // something other than the WebContents attempting to enable visibility of
   // this RenderWidgetHost.
+  // TODO(nasko): Move this to RenderViewHostDelegate.
   virtual bool IsHidden();
 
   // Returns the associated RenderViewHostDelegateView*, if possible.

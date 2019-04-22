@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.app.Activity;
-import android.os.Handler;
 import android.view.ContextMenu;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -24,7 +23,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -109,19 +108,15 @@ public class ContextualSearchTabHelper
             // This leaves the handling of the hooks to the responsibility of the activity tab.
             // Restoring them will be then done by the tab that was the activity tab when
             // the panel was shown.
-            Tab activityTab = mTab.getActivity().getActivityTabProvider().getActivityTab();
+            Tab activityTab = mTab.getActivity().getActivityTabProvider().get();
             if (activityTab != mTab) return;
 
             // Removes the hooks if the panel other than contextual search panel just got shown.
-            // Post the task on handler since |isSearchPanelShowing| is not reliable right after
-            // this event is invoked because it is based on the panel height which might be
-            // changing for animation effect.
-            new Handler().post(() -> {
-                if (!getContextualSearchManager(mTab).isSearchPanelShowing()) {
-                    mUnhookedTab = activityTab;
-                    updateContextualSearchHooks(mUnhookedTab.getWebContents());
-                }
-            });
+            ContextualSearchManager manager = getContextualSearchManager(mTab);
+            if (manager != null && !manager.isSearchPanelActive()) {
+                mUnhookedTab = activityTab;
+                updateContextualSearchHooks(mUnhookedTab.getWebContents());
+            }
         }
 
         @Override
@@ -337,7 +332,7 @@ public class ContextualSearchTabHelper
             controller.setSelectionClient(
                     mSelectionClientManager.addContextualSearchSelectionClient(
                             contextualSearchManager.getContextualSearchSelectionClient()));
-            contextualSearchManager.suppressContextualSearchForSmartSelection(
+            contextualSearchManager.setCouldSmartSelectionBeActive(
                     mSelectionClientManager.isSmartSelectionEnabledInChrome());
             nativeInstallUnhandledTapNotifierIfNeeded(mNativeHelper, webContents, mPxToDp);
         }

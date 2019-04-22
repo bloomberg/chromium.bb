@@ -95,6 +95,10 @@ class ListOfScalarValues(summarizable.SummarizableValue):
     self._std = std
 
   @property
+  def mean(self):
+    return _Mean(self.values)
+
+  @property
   def std(self):
     return self._std
 
@@ -120,20 +124,6 @@ class ListOfScalarValues(summarizable.SummarizableValue):
                 self.std,
                 self.improvement_direction,
                 self.grouping_keys)
-
-  def GetBuildbotDataType(self, output_context):
-    if self._IsImportantGivenOutputIntent(output_context):
-      return 'default'
-    return 'unimportant'
-
-  def GetBuildbotValue(self):
-    return self.values
-
-  def GetRepresentativeNumber(self):
-    return _Mean(self.values)
-
-  def GetRepresentativeString(self):
-    return repr(self.values)
 
   @staticmethod
   def GetJSONTypeName():

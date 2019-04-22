@@ -17,7 +17,7 @@ class AutomationInternalCustomBindings;
 
 // A class that wraps one AXTree and all of the additional state
 // and helper methods needed to use it for the automation API.
-class AutomationAXTreeWrapper : public ui::AXEventGenerator {
+class AutomationAXTreeWrapper : public ui::AXTreeObserver {
  public:
   AutomationAXTreeWrapper(ui::AXTreeID tree_id,
                           AutomationInternalCustomBindings* owner);
@@ -39,8 +39,11 @@ class AutomationAXTreeWrapper : public ui::AXEventGenerator {
       const ExtensionMsg_AccessibilityEventBundleParams& events,
       bool is_active_profile);
 
+  // Returns true if this is the desktop tree.
+  bool IsDesktopTree() const;
+
  private:
-  // AXEventGenerator overrides.
+  // AXTreeObserver overrides.
   void OnNodeDataWillChange(ui::AXTree* tree,
                             const ui::AXNodeData& old_node_data,
                             const ui::AXNodeData& new_node_data) override;
@@ -59,6 +62,7 @@ class AutomationAXTreeWrapper : public ui::AXEventGenerator {
   AutomationInternalCustomBindings* owner_;
   std::vector<int> deleted_node_ids_;
   std::vector<int> text_changed_node_ids_;
+  ui::AXEventGenerator event_generator_;
 
   // Tracks whether a tree change event was sent during unserialization. Tree
   // changes outside of unserialization do not get reflected here. The value is

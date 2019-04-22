@@ -36,5 +36,5 @@ interface PerformanceEntry {
     readonly attribute DOMString entryType;
     readonly attribute DOMHighResTimeStamp startTime;
     readonly attribute DOMHighResTimeStamp duration;
-    serializer = {attribute};
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

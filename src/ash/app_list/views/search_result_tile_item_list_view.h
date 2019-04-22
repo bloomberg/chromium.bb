@@ -43,9 +43,18 @@ class APP_LIST_EXPORT SearchResultTileItemListView
     return tile_views_;
   }
 
+  // Overridden from SearchResultContainerView:
+  void OnShownChanged() override;
+
+ protected:
+  // View overrides:
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
+
  private:
   // Overridden from SearchResultContainerView:
   int DoUpdate() override;
+
+  std::vector<SearchResult*> GetDisplayResults();
 
   std::vector<SearchResultTileItemView*> tile_views_;
 
@@ -56,6 +65,8 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   views::Textfield* search_box_;
 
   const bool is_play_store_app_search_enabled_;
+
+  const bool is_app_reinstall_recommendation_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemListView);
 };

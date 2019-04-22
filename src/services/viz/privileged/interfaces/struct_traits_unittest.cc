@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/viz/privileged/interfaces/compositing/renderer_settings_struct_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/mojo/color_space_mojom_traits.h"
 
 namespace viz {
 
@@ -27,9 +28,9 @@ TEST_F(StructTraitsTest, RendererSettings) {
   input.should_clear_root_render_pass = false;
   input.release_overlay_resources_after_gpu_query = true;
   input.show_overdraw_feedback = true;
-  input.enable_draw_occlusion = true;
   input.highp_threshold_min = -1;
   input.use_skia_renderer = true;
+  input.use_skia_renderer_non_ddl = true;
 
   RendererSettings output;
   mojom::RendererSettings::Deserialize(
@@ -48,9 +49,9 @@ TEST_F(StructTraitsTest, RendererSettings) {
   EXPECT_EQ(input.tint_gl_composited_content,
             output.tint_gl_composited_content);
   EXPECT_EQ(input.show_overdraw_feedback, output.show_overdraw_feedback);
-  EXPECT_EQ(input.enable_draw_occlusion, output.enable_draw_occlusion);
   EXPECT_EQ(input.highp_threshold_min, output.highp_threshold_min);
   EXPECT_EQ(input.use_skia_renderer, output.use_skia_renderer);
+  EXPECT_EQ(input.use_skia_renderer_non_ddl, output.use_skia_renderer_non_ddl);
 }
 
 }  // namespace

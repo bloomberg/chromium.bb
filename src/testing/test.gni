@@ -8,15 +8,15 @@
 
 if (is_android) {
   import("//build/config/android/config.gni")
+  import("//build/config/android/extract_unwind_tables.gni")
   import("//build/config/android/rules.gni")
   import("//build/config/sanitizers/sanitizers.gni")
-  import("//build/config/android/extract_unwind_tables.gni")
 }
 
 if (is_fuchsia) {
   import("//build/config/chromecast_build.gni")
-  import("//build/config/fuchsia/rules.gni")
   import("//build/config/fuchsia/package.gni")
+  import("//build/config/fuchsia/rules.gni")
 }
 
 if (is_chromeos) {
@@ -76,9 +76,6 @@ template("test") {
 
         # Don't output to the root or else conflict with the group() below.
         output_name = rebase_path(_exec_output, root_out_dir)
-        if (is_component_build || is_asan) {
-          data_deps += [ "//build/android:cpplib_stripped" ]
-        }
       }
 
       create_native_executable_dist(_dist_target) {
@@ -138,12 +135,18 @@ template("test") {
         }
       }
       unittest_apk(_apk_target) {
-        forward_variables_from(invoker, _apk_specific_vars + [ "deps" ])
+        forward_variables_from(invoker, _apk_specific_vars)
         shared_library = ":$_library_target"
         apk_name = invoker.target_name
         if (defined(invoker.output_name)) {
           apk_name = invoker.output_name
           install_script_name = "install_${invoker.output_name}"
+        }
+
+        if (defined(invoker.deps)) {
+          deps = invoker.deps
+        } else {
+          deps = []
         }
 
         # Add the Java classes so that each target does not have to do it.
@@ -257,7 +260,11 @@ template("test") {
 
     fuchsia_package_runner(target_name) {
       testonly = true
-      forward_variables_from(invoker, [ "use_test_server" ])
+      forward_variables_from(invoker,
+                             [
+                               "use_test_server",
+                               "package_deps",
+                             ])
       runner_script = "//build/fuchsia/test_runner.py"
       package = ":$_pkg_target"
       package_name_override = _output_name
@@ -322,7 +329,7 @@ template("test") {
       }
       bundle_deps += [ ":$_resources_bundle_data" ]
     }
-  } else if (is_chromeos && is_chromeos_chrome) {
+  } else if (is_chromeos && is_cros_chrome_sdk) {
     # Building for a cros board (ie: not linux-chromeos).
 
     _gen_runner_target = "${target_name}__runner"
@@ -330,7 +337,7 @@ template("test") {
         "$root_out_dir/gen.runtime/" + get_label_info(target_name, "dir") +
         "/" + get_label_info(target_name, "name") + ".runtime_deps"
 
-    generate_vm_runner_script(_gen_runner_target) {
+    generate_runner_script(_gen_runner_target) {
       testonly = true
       generated_script = "$root_build_dir/bin/run_" + invoker.target_name
       test_exe = invoker.target_name
@@ -345,6 +352,9 @@ template("test") {
       if (!defined(data)) {
         data = []
       }
+
+      # We use a special trigger script for CrOS hardware tests.
+      data += [ "//testing/trigger_scripts/chromeos_device_trigger.py" ]
 
       testonly = true
       output_name = target_name

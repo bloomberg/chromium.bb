@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -100,8 +101,11 @@ TEST_F(CWVDownloadTaskTest, FailedFlow) {
                                                 valid_local_file_path_)];
   ASSERT_TRUE(WaitUntilTaskStarts());
 
-  OCMExpect([mock_delegate_ downloadTask:cwv_task_
-                      didFinishWithError:[OCMArg isNotNil]]);
+  OCMExpect([mock_delegate_
+            downloadTask:cwv_task_
+      didFinishWithError:[OCMArg checkWithBlock:^(NSError* error) {
+        return error.code == CWVDownloadErrorFailed;
+      }]]);
   ASSERT_TRUE(FinishResponseWriter());
   fake_internal_task_->SetErrorCode(net::ERR_FAILED);
   fake_internal_task_->SetDone(true);
@@ -114,10 +118,23 @@ TEST_F(CWVDownloadTaskTest, CancelledFlow) {
                                                 valid_local_file_path_)];
   ASSERT_TRUE(WaitUntilTaskStarts());
 
+  OCMExpect([mock_delegate_
+            downloadTask:cwv_task_
+      didFinishWithError:[OCMArg checkWithBlock:^(NSError* error) {
+        return error.code == CWVDownloadErrorAborted;
+      }]]);
+
   ASSERT_TRUE(FinishResponseWriter());
   [cwv_task_ cancel];
   EXPECT_EQ(web::DownloadTask::State::kCancelled,
             fake_internal_task_->GetState());
+
+  // Simulate behavior of a real web::DownloadTask which transition to state
+  // kComplete with error code net::ERR_ABORTED when cancelled.
+  fake_internal_task_->SetErrorCode(net::ERR_ABORTED);
+  fake_internal_task_->SetDone(true);
+
+  EXPECT_OCMOCK_VERIFY((id)mock_delegate_);
 }
 
 // Tests a case when it fails to write to the specified local file path.

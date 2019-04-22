@@ -22,8 +22,6 @@ GrGLSLShaderBuilder::GrGLSLShaderBuilder(GrGLSLProgramBuilder* program)
     // We push back some dummy pointers which will later become our header
     for (int i = 0; i <= kCode; i++) {
         fShaderStrings.push_back();
-        fCompilerStrings.push_back(nullptr);
-        fCompilerStringLengths.push_back(0);
     }
 
     this->main() = "void main() {";
@@ -46,7 +44,7 @@ void GrGLSLShaderBuilder::emitFunction(GrSLType returnType,
                                        const GrShaderVar* args,
                                        const char* body,
                                        SkString* outName) {
-    this->functions().append(GrGLSLTypeString(fProgramBuilder->shaderCaps(), returnType));
+    this->functions().append(GrGLSLTypeString(returnType));
     fProgramBuilder->nameVariable(outName, '\0', name);
     this->functions().appendf(" %s", outName->c_str());
     this->functions().append("(");
@@ -252,8 +250,7 @@ void GrGLSLShaderBuilder::finalize(uint32_t visibility) {
     this->code().append("}");
 
     for (int i = 0; i <= fCodeIndex; i++) {
-        fCompilerStrings[i] = fShaderStrings[i].c_str();
-        fCompilerStringLengths[i] = (int)fShaderStrings[i].size();
+        fCompilerString.append(fShaderStrings[i].c_str(), fShaderStrings[i].size());
     }
 
     fFinalized = true;

@@ -31,6 +31,7 @@ ResultExpr CdmProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_fdatasync:
     case __NR_fsync:
     case __NR_ftruncate:
+    case __NR_fallocate:
 #if defined(__i386__) || defined(__x86_64__) || defined(__mips__) || \
     defined(__aarch64__)
     case __NR_getrlimit:
@@ -39,7 +40,6 @@ ResultExpr CdmProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_ugetrlimit:
 #endif
     case __NR_mremap:  // https://crbug.com/546204
-    case __NR_pread64:
     case __NR_pwrite64:
     case __NR_sysinfo:
     case __NR_times:

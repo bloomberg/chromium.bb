@@ -12,6 +12,7 @@
 #include "SkSLFloatLiteral.h"
 #include "SkSLIntLiteral.h"
 #include "SkSLIRGenerator.h"
+#include "SkSLPrefixExpression.h"
 
 namespace SkSL {
 
@@ -32,15 +33,13 @@ struct Constructor : public Expression {
     std::unique_ptr<Expression> constantPropagate(const IRGenerator& irGenerator,
                                                   const DefinitionMap& definitions) override {
         if (fArguments.size() == 1 && fArguments[0]->fKind == Expression::kIntLiteral_Kind) {
-            if (fType == *irGenerator.fContext.fFloat_Type ||
-                fType == *irGenerator.fContext.fHalf_Type) {
+            if (fType.isFloat()) {
                 // promote float(1) to 1.0
                 int64_t intValue = ((IntLiteral&) *fArguments[0]).fValue;
                 return std::unique_ptr<Expression>(new FloatLiteral(irGenerator.fContext,
                                                                     fOffset,
                                                                     intValue));
-            } else if (fType == *irGenerator.fContext.fUInt_Type ||
-                       fType == *irGenerator.fContext.fUShort_Type) {
+            } else if (fType.isInteger()) {
                 // promote uint(1) to 1u
                 int64_t intValue = ((IntLiteral&) *fArguments[0]).fValue;
                 return std::unique_ptr<Expression>(new IntLiteral(fOffset,
@@ -104,22 +103,9 @@ struct Constructor : public Expression {
         // a constant scalar constructor should have been collapsed down to the appropriate
         // literal
         SkASSERT(fType.kind() == Type::kMatrix_Kind);
-        const FloatLiteral fzero(context, -1, 0);
-        const IntLiteral izero(context, -1, 0);
-        const Expression* zero;
-        if (fType.componentType() == *context.fFloat_Type) {
-            zero = &fzero;
-        } else {
-            SkASSERT(fType.componentType() == *context.fInt_Type);
-            zero = &izero;
-        }
         for (int col = 0; col < fType.columns(); col++) {
             for (int row = 0; row < fType.rows(); row++) {
-                const Expression* component1 = getMatComponent(col, row);
-                const Expression* component2 = c.getMatComponent(col, row);
-                if (!(component1 ? component1 : zero)->compareConstant(
-                                                                context,
-                                                                component2 ? *component2 : *zero)) {
+                if (getMatComponent(col, row) != c.getMatComponent(col, row)) {
                     return false;
                 }
             }
@@ -141,8 +127,6 @@ struct Constructor : public Expression {
                 }
                 current++;
             } else {
-                SkASSERT(arg->fType.kind() == Type::kVector_Kind);
-                SkASSERT(arg->fKind == Expression::kConstructor_Kind);
                 if (current + arg->fType.columns() > index) {
                     return ((const Constructor&) *arg).getVecComponent(index - current);
                 }
@@ -160,8 +144,7 @@ struct Constructor : public Expression {
         return this->getVecComponent(index).getConstantInt();
     }
 
-    // null return should be interpreted as zero
-    const Expression* getMatComponent(int col, int row) const {
+    double getMatComponent(int col, int row) const {
         SkASSERT(this->isConstant());
         SkASSERT(fType.kind() == Type::kMatrix_Kind);
         SkASSERT(col < fType.columns() && row < fType.rows());
@@ -172,7 +155,7 @@ struct Constructor : public Expression {
                 // 0 x 0
                 // 0 0 x
                 // return x if col == row
-                return col == row ? fArguments[0].get() : nullptr;
+                return col == row ? fArguments[0]->getConstantFloat() : 0.0;
             }
             if (fArguments[0]->fType.kind() == Type::kMatrix_Kind) {
                 SkASSERT(fArguments[0]->fKind == Expression::kConstructor_Kind);
@@ -182,8 +165,8 @@ struct Constructor : public Expression {
                     // within bounds, defer to argument
                     return ((Constructor&) *fArguments[0]).getMatComponent(col, row);
                 }
-                // out of bounds, return 0
-                return nullptr;
+                // out of bounds
+                return 0.0;
             }
         }
         int currentIndex = 0;
@@ -193,11 +176,21 @@ struct Constructor : public Expression {
             SkASSERT(arg->fType.rows() == 1);
             if (currentIndex + arg->fType.columns() > targetIndex) {
                 if (arg->fType.columns() == 1) {
-                    return arg.get();
+                    return arg->getConstantFloat();
                 } else {
-                    SkASSERT(arg->fType.kind() == Type::kVector_Kind);
-                    SkASSERT(arg->fKind == Expression::kConstructor_Kind);
-                    return &((Constructor&) *arg).getVecComponent(targetIndex - currentIndex);
+                    int index = targetIndex - currentIndex;
+                    switch (arg->fKind) {
+                        case Expression::kPrefix_Kind: {
+                            PrefixExpression& p = (PrefixExpression&) *arg;
+                            SkASSERT(p.fOperator == Token::MINUS);
+                            SkASSERT(p.fOperand->fKind == Expression::kConstructor_Kind);
+                            return -((Constructor&) *p.fOperand).getFVecComponent(index);
+                        }
+                        case Expression::kConstructor_Kind:
+                            return ((Constructor&) *arg).getFVecComponent(index);
+                        default:
+                            SkASSERT(false);
+                    }
                 }
             }
             currentIndex += arg->fType.columns();

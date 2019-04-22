@@ -35,10 +35,11 @@ void NamedMessagePipeHandler::Close() {
 }
 
 void NamedMessagePipeHandler::Send(const google::protobuf::MessageLite& message,
-                                   const base::Closure& done) {
+                                   base::OnceClosure done) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(connected());
-  pipe_->Send(const_cast<google::protobuf::MessageLite*>(&message), done);
+  pipe_->Send(const_cast<google::protobuf::MessageLite*>(&message),
+              std::move(done));
 }
 
 void NamedMessagePipeHandler::OnIncomingMessage(

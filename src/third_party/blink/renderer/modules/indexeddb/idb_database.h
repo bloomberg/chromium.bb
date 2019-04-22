@@ -29,11 +29,10 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
@@ -43,9 +42,9 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -53,8 +52,8 @@ namespace blink {
 class DOMException;
 class ExceptionState;
 class ExecutionContext;
+class IDBObservation;
 class IDBObserver;
-struct WebIDBObservation;
 
 class MODULES_EXPORT IDBDatabase final
     : public EventTargetWithInlineData,
@@ -64,11 +63,6 @@ class MODULES_EXPORT IDBDatabase final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBDatabase* Create(ExecutionContext*,
-                             std::unique_ptr<WebIDBDatabase>,
-                             IDBDatabaseCallbacks*,
-                             v8::Isolate*);
-
   IDBDatabase(ExecutionContext*,
               std::unique_ptr<WebIDBDatabase>,
               IDBDatabaseCallbacks*,
@@ -97,7 +91,7 @@ class MODULES_EXPORT IDBDatabase final
 
   // Implement the IDL
   const String& name() const { return metadata_.name; }
-  unsigned long long version() const { return metadata_.version; }
+  uint64_t version() const { return metadata_.version; }
   DOMStringList* objectStoreNames() const;
 
   IDBObjectStore* createObjectStore(const String& name,
@@ -113,17 +107,17 @@ class MODULES_EXPORT IDBDatabase final
   void deleteObjectStore(const String& name, ExceptionState&);
   void close();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(versionchange, kVersionchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(versionchange, kVersionchange)
 
   // IDBDatabaseCallbacks
   void OnVersionChange(int64_t old_version, int64_t new_version);
   void OnAbort(int64_t, DOMException*);
   void OnComplete(int64_t);
   void OnChanges(const WebIDBDatabaseCallbacks::ObservationIndexMap&,
-                 WebVector<WebIDBObservation> observations,
+                 Vector<Persistent<IDBObservation>> observations,
                  const WebIDBDatabaseCallbacks::TransactionMap& transactions);
 
   // ScriptWrappable
@@ -190,7 +184,7 @@ class MODULES_EXPORT IDBDatabase final
   std::unique_ptr<WebIDBDatabase> backend_;
   Member<IDBTransaction> version_change_transaction_;
   HeapHashMap<int64_t, Member<IDBTransaction>> transactions_;
-  HeapHashMap<int32_t, TraceWrapperMember<IDBObserver>> observers_;
+  HeapHashMap<int32_t, Member<IDBObserver>> observers_;
 
   bool close_pending_ = false;
 

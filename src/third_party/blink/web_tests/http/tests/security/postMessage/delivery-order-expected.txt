@@ -1,5 +1,4 @@
 window.location.href = http://127.0.0.1:8000/security/postMessage/delivery-order.html
-
 waiting...
 Before calling postMessage
 After calling postMessage

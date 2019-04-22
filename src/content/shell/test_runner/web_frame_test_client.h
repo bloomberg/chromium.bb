@@ -14,9 +14,9 @@
 namespace test_runner {
 
 class TestRunner;
-class WebFrameTestProxyBase;
+class WebFrameTestProxy;
 class WebTestDelegate;
-class WebViewTestProxyBase;
+class WebViewTestProxy;
 
 // WebFrameTestClient implements WebLocalFrameClient interface, providing
 // behavior expected by tests.  WebFrameTestClient ends up used by
@@ -26,13 +26,13 @@ class WebViewTestProxyBase;
 class WebFrameTestClient : public blink::WebLocalFrameClient {
  public:
   // Caller has to ensure that all arguments (|delegate|,
-  // |web_view_test_proxy_base_| and so forth) live longer than |this|.
+  // |web_view_test_proxy| and so forth) live longer than |this|.
   WebFrameTestClient(WebTestDelegate* delegate,
-                     WebViewTestProxyBase* web_view_test_proxy_base,
-                     WebFrameTestProxyBase* web_frame_test_proxy_base);
+                     WebViewTestProxy* web_view_test_proxy,
+                     WebFrameTestProxy* web_frame_test_proxy);
 
   ~WebFrameTestClient() override;
-  bool ShouldContinueNavigation(const blink::WebNavigationInfo& info);
+  bool ShouldContinueNavigation(blink::WebNavigationInfo* info);
 
   static void PrintFrameDescription(WebTestDelegate* delegate,
                                     blink::WebLocalFrame* frame);
@@ -73,7 +73,7 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
-      std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callbacks) override;
+      blink::WebSetSinkIdCompleteCallback completion_callback) override;
   void DidClearWindowObject() override;
   blink::WebEffectiveConnectionType GetEffectiveConnectionType() override;
 
@@ -82,10 +82,10 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
                                    const char* event_name);
 
-  // Borrowed pointers to other parts of Layout Tests state.
+  // Borrowed pointers to other parts of web tests state.
   WebTestDelegate* delegate_;
-  WebViewTestProxyBase* web_view_test_proxy_base_;
-  WebFrameTestProxyBase* web_frame_test_proxy_base_;
+  WebViewTestProxy* web_view_test_proxy_;
+  WebFrameTestProxy* web_frame_test_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestClient);
 };

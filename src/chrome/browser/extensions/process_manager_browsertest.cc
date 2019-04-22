@@ -7,11 +7,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
@@ -53,7 +55,7 @@
 
 #if defined(CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 namespace extensions {
@@ -864,7 +866,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 
   // Navigate the popup to each nested URL with extension origin.
   GURL nested_urls[] = {blob_url, filesystem_url};
-  for (size_t i = 0; i < arraysize(nested_urls); i++) {
+  for (size_t i = 0; i < base::size(nested_urls); i++) {
     EXPECT_TRUE(ExecuteScript(
         popup, "location.href = '" + nested_urls[i].spec() + "';"));
 
@@ -897,7 +899,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 
   // Navigate second subframe to each nested URL from the main frame (i.e.,
   // from non-extension process).  These should be canceled.
-  for (size_t i = 0; i < arraysize(nested_urls); i++) {
+  for (size_t i = 0; i < base::size(nested_urls); i++) {
     EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame2", nested_urls[i]));
     content::RenderFrameHost* second_frame = ChildFrameAt(main_frame, 1);
 
@@ -1048,7 +1050,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // Navigate second subframe to each nested URL from the main frame (i.e.,
   // from non-extension process).  These should be canceled.
   GURL nested_urls[] = {blob_url, filesystem_url};
-  for (size_t i = 0; i < arraysize(nested_urls); i++) {
+  for (size_t i = 0; i < base::size(nested_urls); i++) {
     EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame2", nested_urls[i]));
     content::RenderFrameHost* second_frame = ChildFrameAt(main_frame, 1);
 
@@ -1095,7 +1097,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // From the main frame, navigate its subframe to each nested URL.  This
   // should be allowed and should stay in the extension process.
   GURL nested_urls[] = {blob_url, filesystem_url};
-  for (size_t i = 0; i < arraysize(nested_urls); i++) {
+  for (size_t i = 0; i < base::size(nested_urls); i++) {
     EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame0", nested_urls[i]));
     content::RenderFrameHost* child = ChildFrameAt(main_frame, 0);
     EXPECT_EQ(nested_urls[i], child->GetLastCommittedURL());
@@ -1161,16 +1163,10 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 // https://crbug.com/656752.  These requests should still be allowed inside
 // actual <webview> guest processes created by a Chrome app; this is checked in
 // WebViewTest.Shim_TestBlobURL.
+// TODO(alexmos): Enable this test once checks are implemented in the
+// extensions NavigationThrottle. See https://crbug.com/919194.
 IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
-                       NestedURLNavigationsToAppBlocked) {
-  // TODO(alexmos):  Re-enable this test for PlzNavigate after tightening
-  // nested URL blocking for apps with the "webview" permission in
-  // ExtensionNavigationThrottle and removing the corresponding check from
-  // ChromeExtensionsNetworkDelegate.  The latter is incompatible with
-  // PlzNavigate.
-  if (content::IsBrowserSideNavigationEnabled())
-    return;
-
+                       DISABLED_NestedURLNavigationsToAppBlocked) {
   // Disabling web security is necessary to test the browser enforcement;
   // without it, the loads in this test would be blocked by
   // SecurityOrigin::canDisplay() as invalid local resource loads.
@@ -1239,7 +1235,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // Try navigating the web tab to each nested URL with the app's origin.  This
   // should be blocked.
   GURL nested_urls[] = {blob_url, filesystem_url};
-  for (size_t i = 0; i < arraysize(nested_urls); i++) {
+  for (size_t i = 0; i < base::size(nested_urls); i++) {
     content::TestNavigationObserver observer(web_tab);
     EXPECT_TRUE(ExecuteScript(
         web_tab, "location.href = '" + nested_urls[i].spec() + "';"));
@@ -1363,7 +1359,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // Attempt opening the nested urls using window.open(url, '', 'noopener').
   // This should not be allowed.
   GURL nested_urls[] = {blob_url, filesystem_url};
-  for (size_t i = 0; i < arraysize(nested_urls); i++) {
+  for (size_t i = 0; i < base::size(nested_urls); i++) {
     content::WebContents* new_popup =
         OpenPopupNoOpener(tab->GetMainFrame(), nested_urls[i]);
 

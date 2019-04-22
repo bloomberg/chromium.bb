@@ -24,6 +24,8 @@ class ExternalProtocolObserver
   explicit ExternalProtocolObserver(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ExternalProtocolObserver>;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ExternalProtocolObserver);
 };
 

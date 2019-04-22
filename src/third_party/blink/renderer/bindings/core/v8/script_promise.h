@@ -67,9 +67,8 @@ class CORE_EXPORT ScriptPromise final {
 
   ~ScriptPromise();
 
-  ScriptPromise Then(
-      v8::Local<v8::Function> on_fulfilled,
-      v8::Local<v8::Function> on_rejected = v8::Local<v8::Function>());
+  ScriptPromise Then(v8::Local<v8::Function> on_fulfilled,
+                     v8::Local<v8::Function> on_rejected = {});
 
   bool IsObject() const { return promise_.IsObject(); }
 
@@ -88,6 +87,9 @@ class CORE_EXPORT ScriptPromise final {
   bool IsEmpty() const { return promise_.IsEmpty(); }
 
   void Clear() { promise_.Clear(); }
+
+  // Marks this promise as handled to avoid reporting unhandled rejections.
+  void MarkAsHandled();
 
   bool operator==(const ScriptPromise& value) const {
     return promise_ == value.promise_;

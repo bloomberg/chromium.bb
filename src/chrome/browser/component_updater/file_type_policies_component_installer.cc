@@ -13,9 +13,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/version.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
@@ -112,7 +112,7 @@ void FileTypePoliciesComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
   hash->assign(kFileTypePoliciesPublicKeySHA256,
                kFileTypePoliciesPublicKeySHA256 +
-                   arraysize(kFileTypePoliciesPublicKeySHA256));
+                   base::size(kFileTypePoliciesPublicKeySHA256));
 }
 
 std::string FileTypePoliciesComponentInstallerPolicy::GetName() const {

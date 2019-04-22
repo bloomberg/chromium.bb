@@ -9,7 +9,11 @@
 #include "base/cancelable_callback.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -18,6 +22,7 @@
 #include "net/dns/dns_config_service_posix.h"
 #include "net/dns/public/dns_protocol.h"
 
+#include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -72,7 +77,7 @@ void InitializeResState(res_state res) {
   res->dnsrch[0] = res->defdname;
   res->dnsrch[1] = res->defdname + sizeof("chromium.org");
 
-  for (unsigned i = 0; i < arraysize(kNameserversIPv4) && i < MAXNS; ++i) {
+  for (unsigned i = 0; i < base::size(kNameserversIPv4) && i < MAXNS; ++i) {
     struct sockaddr_in sa;
     sa.sin_family = AF_INET;
     sa.sin_port = base::HostToNet16(NS_DEFAULTPORT + i);
@@ -84,7 +89,7 @@ void InitializeResState(res_state res) {
 #if defined(OS_LINUX)
   // Install IPv6 addresses, replacing the corresponding IPv4 addresses.
   unsigned nscount6 = 0;
-  for (unsigned i = 0; i < arraysize(kNameserversIPv6) && i < MAXNS; ++i) {
+  for (unsigned i = 0; i < base::size(kNameserversIPv6) && i < MAXNS; ++i) {
     if (!kNameserversIPv6[i])
       continue;
     // Must use malloc to mimick res_ninit.
@@ -121,14 +126,14 @@ void InitializeExpectedConfig(DnsConfig* config) {
   config->search.push_back("example.com");
 
   config->nameservers.clear();
-  for (unsigned i = 0; i < arraysize(kNameserversIPv4) && i < MAXNS; ++i) {
+  for (unsigned i = 0; i < base::size(kNameserversIPv4) && i < MAXNS; ++i) {
     IPAddress ip;
     EXPECT_TRUE(ip.AssignFromIPLiteral(kNameserversIPv4[i]));
     config->nameservers.push_back(IPEndPoint(ip, NS_DEFAULTPORT + i));
   }
 
 #if defined(OS_LINUX)
-  for (unsigned i = 0; i < arraysize(kNameserversIPv6) && i < MAXNS; ++i) {
+  for (unsigned i = 0; i < base::size(kNameserversIPv6) && i < MAXNS; ++i) {
     if (!kNameserversIPv6[i])
       continue;
     IPAddress ip;
@@ -183,14 +188,35 @@ TEST(DnsConfigServicePosixTest, RejectEmptyNameserver) {
 TEST(DnsConfigServicePosixTest, DestroyWhileJobsWorking) {
   // Regression test to verify crash does not occur if DnsConfigServicePosix
   // instance is destroyed while SerialWorker jobs have posted to worker pool.
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
   std::unique_ptr<internal::DnsConfigServicePosix> service(
       new internal::DnsConfigServicePosix());
-  service->ReadConfig(base::Bind(&DummyConfigCallback));
+  // Call WatchConfig() which also tests ReadConfig().
+  service->WatchConfig(base::BindRepeating(&DummyConfigCallback));
   service.reset();
   scoped_task_environment.RunUntilIdle();
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1000));
+}
+
+TEST(DnsConfigServicePosixTest, DestroyOnDifferentThread) {
+  // Regression test to verify crash does not occur if DnsConfigServicePosix
+  // instance is destroyed on another thread.
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
+  scoped_refptr<base::SequencedTaskRunner> runner =
+      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+  std::unique_ptr<internal::DnsConfigServicePosix, base::OnTaskRunnerDeleter>
+      service(new internal::DnsConfigServicePosix(),
+              base::OnTaskRunnerDeleter(runner));
+
+  runner->PostTask(FROM_HERE,
+                   base::BindOnce(&internal::DnsConfigServicePosix::WatchConfig,
+                                  base::Unretained(service.get()),
+                                  base::BindRepeating(&DummyConfigCallback)));
+  service.reset();
+  scoped_task_environment.RunUntilIdle();
 }
 
 }  // namespace

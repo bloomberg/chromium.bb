@@ -5,10 +5,13 @@
 package org.chromium.chromoting;
 
 import android.app.Activity;
+import android.support.annotation.IntDef;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,19 +32,21 @@ public class CapabilityManager {
     }
 
     /** Tracks whether the remote host supports a capability. */
-    public enum HostCapability {
-        UNKNOWN,
-        SUPPORTED,
-        UNSUPPORTED;
+    @IntDef({HostCapability.UNKNOWN, HostCapability.SUPPORTED, HostCapability.UNSUPPORTED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface HostCapability {
+        int UNKNOWN = 0;
+        int SUPPORTED = 1;
+        int UNSUPPORTED = 2;
+    }
 
-        public boolean isSet() {
-            return this != UNKNOWN;
-        }
+    public static boolean hostCapabilityIsSet(@HostCapability int capability) {
+        return capability != HostCapability.UNKNOWN;
+    }
 
-        public boolean isSupported() {
-            assert isSet();
-            return this == SUPPORTED;
-        }
+    public static boolean hostCapabilityIsSupported(@HostCapability int capability) {
+        assert hostCapabilityIsSet(capability);
+        return capability == HostCapability.SUPPORTED;
     }
 
     private static final String TAG = "Chromoting";

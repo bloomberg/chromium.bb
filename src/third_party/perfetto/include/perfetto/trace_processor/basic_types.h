@@ -22,11 +22,30 @@
 namespace perfetto {
 namespace trace_processor {
 
-enum class OptimizationMode { kMaxBandwidth = 0, kMinLatency };
 
 struct Config {
-  OptimizationMode optimization_mode = OptimizationMode::kMaxBandwidth;
-  uint64_t window_size_ns = 60 * 1000 * 1000 * 1000ULL;  // 60 seconds.
+  uint64_t window_size_ns = 180 * 1000 * 1000 * 1000ULL;  // 3 minutes.
+};
+
+// Represents a dynamically typed value returned by SQL.
+struct SqlValue {
+  // Represents the type of the value.
+  enum Type {
+    kNull = 0,
+    kString,
+    kLong,
+    kDouble,
+  };
+
+  // Up to 1 of these fields can be accessed depending on |type|.
+  union {
+    // This string will be owned by the iterator that returned it and is valid
+    // as long until the subsequent call to Next().
+    const char* string_value;
+    int64_t long_value;
+    double double_value;
+  };
+  Type type = kNull;
 };
 
 }  // namespace trace_processor

@@ -23,14 +23,6 @@ const char kInvalidDataTypeError[] =
 const char kUnexpectedJSONFormatError[] =
     "Data from web resource server does not have expected format.";
 
-// Runs |error_callback| with |error| on |task_runner|.
-void PostErrorTask(base::TaskRunner* task_runner,
-                   const WebResourceService::ErrorCallback& error_callback,
-                   const char error[]) {
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(error_callback, std::string(error)));
-}
-
 // Parses |data| as a JSON string and calls back on |task_runner|.
 // Must not be called on the UI thread, for performance reasons.
 void ParseJSONOnBackgroundThread(
@@ -39,24 +31,29 @@ void ParseJSONOnBackgroundThread(
     const WebResourceService::SuccessCallback& success_callback,
     const WebResourceService::ErrorCallback& error_callback) {
   if (data.empty()) {
-    PostErrorTask(task_runner, error_callback, kInvalidDataTypeError);
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(error_callback, kInvalidDataTypeError));
     return;
   }
 
-  std::unique_ptr<base::Value> value(base::JSONReader::Read(data));
-  if (!value.get()) {
+  base::Optional<base::Value> value(base::JSONReader::Read(data));
+  if (!value) {
     // Page information not properly read, or corrupted.
-    PostErrorTask(task_runner, error_callback, kInvalidDataTypeError);
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(error_callback, kInvalidDataTypeError));
     return;
   }
 
   if (!value->is_dict()) {
-    PostErrorTask(task_runner, error_callback, kUnexpectedJSONFormatError);
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(error_callback, kUnexpectedJSONFormatError));
     return;
   }
 
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(success_callback, base::Passed(&value)));
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(success_callback,
+                     base::Value::ToUniquePtrValue(std::move(value).value())));
 }
 
 // Starts the parsing of |data| as a JSON string asynchronously on a background

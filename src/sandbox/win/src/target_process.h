@@ -25,8 +25,8 @@ namespace win {
 
 class StartupInformation;
 
-};  // namespace win
-};  // namespace base
+}  // namespace win
+}  // namespace base
 
 namespace sandbox {
 

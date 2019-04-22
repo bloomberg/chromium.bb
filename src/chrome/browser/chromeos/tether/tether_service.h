@@ -13,14 +13,12 @@
 #include "base/timer/timer.h"
 #include "chromeos/components/tether/tether_component.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
-#include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 class Profile;
@@ -36,10 +34,6 @@ class GmsCoreNotificationsStateTrackerImpl;
 class NotificationPresenter;
 }  // namespace tether
 }  // namespace chromeos
-
-namespace cryptauth {
-class CryptAuthService;
-}  // namespace cryptauth
 
 namespace session_manager {
 class SessionManager;
@@ -68,7 +62,6 @@ class TetherService
   TetherService(
       Profile* profile,
       chromeos::PowerManagerClient* power_manager_client,
-      cryptauth::CryptAuthService* cryptauth_service,
       chromeos::device_sync::DeviceSyncClient* device_sync_client,
       chromeos::secure_channel::SecureChannelClient* secure_channel_client,
       chromeos::multidevice_setup::MultiDeviceSetupClient*
@@ -126,9 +119,6 @@ class TetherService
   void OnFeatureStatesChanged(
       const chromeos::multidevice_setup::MultiDeviceSetupClient::
           FeatureStatesMap& feature_states_map) override;
-
-  // Callback when the controlling pref changes.
-  void OnPrefsChanged();
 
   // Stop the Tether module if it is currently enabled; if it was not enabled,
   // this function is a no-op.
@@ -301,7 +291,6 @@ class TetherService
 
   Profile* profile_;
   chromeos::PowerManagerClient* power_manager_client_;
-  cryptauth::CryptAuthService* cryptauth_service_;
   chromeos::device_sync::DeviceSyncClient* device_sync_client_;
   chromeos::secure_channel::SecureChannelClient* secure_channel_client_;
   chromeos::multidevice_setup::MultiDeviceSetupClient*
@@ -315,7 +304,6 @@ class TetherService
   std::unique_ptr<chromeos::tether::TetherHostFetcher> tether_host_fetcher_;
   std::unique_ptr<chromeos::tether::TetherComponent> tether_component_;
 
-  PrefChangeRegistrar registrar_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
   std::unique_ptr<base::OneShotTimer> timer_;
 

@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_double_or_performance_measure_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_observer_callback.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -122,9 +122,10 @@ TEST_F(PerformanceTest, AddLongTaskTiming) {
   SubTaskAttribution::EntriesVector sub_task_attributions;
 
   // Add a long task entry, but no observer registered.
-  base_->AddLongTaskTiming(TimeTicksFromSeconds(1234),
-                           TimeTicksFromSeconds(5678), "same-origin",
-                           "www.foo.com/bar", "", "", sub_task_attributions);
+  base_->AddLongTaskTiming(
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(1234),
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(5678), "same-origin",
+      "www.foo.com/bar", "", "", sub_task_attributions);
   EXPECT_FALSE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
   EXPECT_EQ(0, NumPerformanceEntriesInObserver());  // has no effect
 
@@ -138,9 +139,10 @@ TEST_F(PerformanceTest, AddLongTaskTiming) {
 
   EXPECT_TRUE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
   // Add a long task entry
-  base_->AddLongTaskTiming(TimeTicksFromSeconds(1234),
-                           TimeTicksFromSeconds(5678), "same-origin",
-                           "www.foo.com/bar", "", "", sub_task_attributions);
+  base_->AddLongTaskTiming(
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(1234),
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(5678), "same-origin",
+      "www.foo.com/bar", "", "", sub_task_attributions);
   EXPECT_EQ(1, NumPerformanceEntriesInObserver());  // added an entry
 }
 
@@ -174,7 +176,7 @@ TEST_F(PerformanceTest, AllowsTimingRedirect) {
                                     GetExecutionContext()));
 
   // When cross-origin redirect opts in.
-  redirect_chain.back().SetHTTPHeaderField(http_names::kTimingAllowOrigin,
+  redirect_chain.back().SetHttpHeaderField(http_names::kTimingAllowOrigin,
                                            origin_domain);
   EXPECT_TRUE(AllowsTimingRedirect(redirect_chain, final_response,
                                    *security_origin.get(),
@@ -201,10 +203,10 @@ TEST_F(PerformanceTest, MeasureParameters_StartProvidedEndUnprovided) {
   DummyExceptionStateForTesting exception_state;
   Initialize(scope.GetScriptState());
   base_->measure(scope.GetScriptState(), "name",
-                 StringOrDoubleOrPerformanceMeasureOptions::FromDouble(1.1),
+                 StringOrPerformanceMeasureOptions::FromString("string"),
                  exception_state);
   histograms.ExpectBucketCount("Performance.MeasureParameter.StartMark",
-                               Performance::MeasureParameterType::kNumber, 1);
+                               Performance::MeasureParameterType::kOther, 1);
   histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",
                                Performance::MeasureParameterType::kUnprovided,
                                1);
@@ -216,12 +218,12 @@ TEST_F(PerformanceTest, MeasureParameters_StartEndBothProvided) {
   DummyExceptionStateForTesting exception_state;
   Initialize(scope.GetScriptState());
   base_->measure(scope.GetScriptState(), "name",
-                 StringOrDoubleOrPerformanceMeasureOptions::FromDouble(1.1),
-                 StringOrDouble::FromDouble(1.1), exception_state);
+                 StringOrPerformanceMeasureOptions::FromString("string"),
+                 "string", exception_state);
   histograms.ExpectBucketCount("Performance.MeasureParameter.StartMark",
-                               Performance::MeasureParameterType::kNumber, 1);
+                               Performance::MeasureParameterType::kOther, 1);
   histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",
-                               Performance::MeasureParameterType::kNumber, 1);
+                               Performance::MeasureParameterType::kOther, 1);
 }
 
 TEST_F(PerformanceTest, MeasureParameters_ObjectType) {
@@ -231,7 +233,7 @@ TEST_F(PerformanceTest, MeasureParameters_ObjectType) {
   Initialize(scope.GetScriptState());
   base_->measure(
       scope.GetScriptState(), "name",
-      StringOrDoubleOrPerformanceMeasureOptions::FromPerformanceMeasureOptions(
+      StringOrPerformanceMeasureOptions::FromPerformanceMeasureOptions(
           PerformanceMeasureOptions::Create()),
       exception_state);
   histograms.ExpectBucketCount("Performance.MeasureParameter.StartMark",
@@ -247,16 +249,47 @@ TEST_F(PerformanceTest, MeasureParameters_NavigationTiming) {
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   Initialize(scope.GetScriptState());
-  base_->measure(
-      scope.GetScriptState(), "name",
-      StringOrDoubleOrPerformanceMeasureOptions::FromString("unloadEventStart"),
-      exception_state);
-  histograms.ExpectBucketCount(
-      "Performance.MeasureParameter.StartMark",
-      Performance::MeasureParameterType::kUnloadEventStart, 1);
-  histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",
-                               Performance::MeasureParameterType::kUnprovided,
-                               1);
+  struct {
+    String keyword;
+    Performance::MeasureParameterType measure_type;
+  } const test_cases[] = {
+      {"unloadEventStart",
+       Performance::MeasureParameterType::kUnloadEventStart},
+      {"unloadEventEnd", Performance::MeasureParameterType::kUnloadEventEnd},
+      {"domInteractive", Performance::MeasureParameterType::kDomInteractive},
+      {"domContentLoadedEventStart",
+       Performance::MeasureParameterType::kDomContentLoadedEventStart},
+      {"domContentLoadedEventEnd",
+       Performance::MeasureParameterType::kDomContentLoadedEventEnd},
+      {"domComplete", Performance::MeasureParameterType::kDomComplete},
+      {"loadEventStart", Performance::MeasureParameterType::kLoadEventStart},
+      {"loadEventEnd", Performance::MeasureParameterType::kLoadEventEnd},
+      {"navigationStart", Performance::MeasureParameterType::kNavigationStart},
+      {"redirectStart", Performance::MeasureParameterType::kRedirectStart},
+      {"fetchStart", Performance::MeasureParameterType::kFetchStart},
+      {"domainLookupStart",
+       Performance::MeasureParameterType::kDomainLookupStart},
+      {"domainLookupEnd", Performance::MeasureParameterType::kDomainLookupEnd},
+      {"connectStart", Performance::MeasureParameterType::kConnectStart},
+      {"connectEnd", Performance::MeasureParameterType::kConnectEnd},
+      {"secureConnectionStart",
+       Performance::MeasureParameterType::kSecureConnectionStart},
+      {"requestStart", Performance::MeasureParameterType::kRequestStart},
+      {"responseStart", Performance::MeasureParameterType::kResponseStart},
+      {"responseEnd", Performance::MeasureParameterType::kResponseEnd},
+      {"domLoading", Performance::MeasureParameterType::kDomLoading},
+  };
+  int count = 0;
+  for (const auto& test : test_cases) {
+    base_->measure(scope.GetScriptState(), "name",
+                   StringOrPerformanceMeasureOptions::FromString(test.keyword),
+                   exception_state);
+    histograms.ExpectBucketCount("Performance.MeasureParameter.StartMark",
+                                 test.measure_type, 1);
+    histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",
+                                 Performance::MeasureParameterType::kUnprovided,
+                                 ++count);
+  }
 }
 
 TEST_F(PerformanceTest, MeasureParameters_Other) {
@@ -264,10 +297,9 @@ TEST_F(PerformanceTest, MeasureParameters_Other) {
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   Initialize(scope.GetScriptState());
-  base_->measure(
-      scope.GetScriptState(), "name",
-      StringOrDoubleOrPerformanceMeasureOptions::FromString("aRandomString"),
-      exception_state);
+  base_->measure(scope.GetScriptState(), "name",
+                 StringOrPerformanceMeasureOptions::FromString("aRandomString"),
+                 exception_state);
   histograms.ExpectBucketCount("Performance.MeasureParameter.StartMark",
                                Performance::MeasureParameterType::kOther, 1);
   histograms.ExpectBucketCount("Performance.MeasureParameter.EndMark",

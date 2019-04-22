@@ -9,13 +9,13 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
 #include "chromeos/components/tether/proto_test_util.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -35,7 +35,7 @@ class OperationDeletedHandler {
 class FakeKeepAliveOperation : public KeepAliveOperation {
  public:
   FakeKeepAliveOperation(
-      cryptauth::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef device_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       OperationDeletedHandler* handler)
@@ -52,11 +52,11 @@ class FakeKeepAliveOperation : public KeepAliveOperation {
     OnOperationFinished();
   }
 
-  cryptauth::RemoteDeviceRef remote_device() { return remote_device_; }
+  multidevice::RemoteDeviceRef remote_device() { return remote_device_; }
 
  private:
   OperationDeletedHandler* handler_;
-  const cryptauth::RemoteDeviceRef remote_device_;
+  const multidevice::RemoteDeviceRef remote_device_;
 };
 
 class FakeKeepAliveOperationFactory final : public KeepAliveOperation::Factory,
@@ -76,7 +76,7 @@ class FakeKeepAliveOperationFactory final : public KeepAliveOperation::Factory,
 
  protected:
   std::unique_ptr<KeepAliveOperation> BuildInstance(
-      cryptauth::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef device_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client) override {
     num_created_++;
@@ -96,7 +96,7 @@ class FakeKeepAliveOperationFactory final : public KeepAliveOperation::Factory,
 class KeepAliveSchedulerTest : public testing::Test {
  protected:
   KeepAliveSchedulerTest()
-      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(2)) {}
+      : test_devices_(multidevice::CreateRemoteDeviceRefListForTest(2)) {}
 
   void SetUp() override {
     fake_device_sync_client_ =
@@ -140,7 +140,7 @@ class KeepAliveSchedulerTest : public testing::Test {
             cell_provider, battery_percentage, connection_strength)));
   }
 
-  void VerifyCacheUpdated(cryptauth::RemoteDeviceRef remote_device,
+  void VerifyCacheUpdated(multidevice::RemoteDeviceRef remote_device,
                           const std::string& carrier,
                           int battery_percentage,
                           int signal_strength) {
@@ -153,7 +153,7 @@ class KeepAliveSchedulerTest : public testing::Test {
     EXPECT_EQ(signal_strength, entry->signal_strength);
   }
 
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  const multidevice::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::SecureChannelClient>

@@ -1,6 +1,8 @@
 #ifndef _RAR_FILEFN_
 #define _RAR_FILEFN_
 
+namespace third_party_unrar {
+
 enum MKDIR_CODE {MKDIR_SUCCESS,MKDIR_ERROR,MKDIR_BADPATH};
 
 MKDIR_CODE MakeDir(const wchar *Name,bool SetAttr,uint Attr);
@@ -43,8 +45,6 @@ bool DelDir(const wchar *Name);
 bool SetFileCompression(const wchar *Name,bool State);
 #endif
 
-
-
-
+}  // namespace third_party_unrar
 
 #endif

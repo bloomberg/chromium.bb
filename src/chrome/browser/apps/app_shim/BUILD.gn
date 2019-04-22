@@ -18,6 +18,8 @@ source_set("app_shim") {
     "apps_page_shim_handler.mm",
     "extension_app_shim_handler_mac.cc",
     "extension_app_shim_handler_mac.h",
+    "mach_bootstrap_acceptor.cc",
+    "mach_bootstrap_acceptor.h",
     "unix_domain_socket_acceptor.cc",
     "unix_domain_socket_acceptor.h",
   ]

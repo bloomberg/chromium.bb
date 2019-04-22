@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -67,6 +67,45 @@ TEST(MakeUniqueTest, Basic) {
   EXPECT_EQ("", *p);
   p = absl::make_unique<std::string>("hi");
   EXPECT_EQ("hi", *p);
+}
+
+// InitializationVerifier fills in a pattern when allocated so we can
+// distinguish between its default and value initialized states (without
+// accessing truly uninitialized memory).
+struct InitializationVerifier {
+  static constexpr int kDefaultScalar = 0x43;
+  static constexpr int kDefaultArray = 0x4B;
+
+  static void* operator new(size_t n) {
+    void* ret = ::operator new(n);
+    memset(ret, kDefaultScalar, n);
+    return ret;
+  }
+
+  static void* operator new[](size_t n) {
+    void* ret = ::operator new[](n);
+    memset(ret, kDefaultArray, n);
+    return ret;
+  }
+
+  int a;
+  int b;
+};
+
+TEST(Initialization, MakeUnique) {
+  auto p = absl::make_unique<InitializationVerifier>();
+
+  EXPECT_EQ(0, p->a);
+  EXPECT_EQ(0, p->b);
+}
+
+TEST(Initialization, MakeUniqueArray) {
+  auto p = absl::make_unique<InitializationVerifier[]>(2);
+
+  EXPECT_EQ(0, p[0].a);
+  EXPECT_EQ(0, p[0].b);
+  EXPECT_EQ(0, p[1].a);
+  EXPECT_EQ(0, p[1].b);
 }
 
 struct MoveOnly {
@@ -145,7 +184,7 @@ TEST(Make_UniqueTest, NotAmbiguousWithStdMakeUnique) {
     explicit TakesStdType(const std::vector<int> &vec) {}
   };
   using absl::make_unique;
-  make_unique<TakesStdType>(std::vector<int>());
+  (void)make_unique<TakesStdType>(std::vector<int>());
 }
 
 #if 0

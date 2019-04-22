@@ -42,12 +42,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventInjector
 
   void OnEventDispatched(InjectedEventHandler* handler);
 
-  aura::WindowTreeHost* GetWindowTreeHostForDisplayId(int64_t display_id);
-
   // Determines the target WindowTreeHost and provides an mapping on |event|
-  // before dispatch. If the returned EventAndHost has a null
-  // |window_tree_host| there was a problem in conversion and the event should
-  // not be dispatched.
+  // before dispatch. If the returned EventAndHost has a null |host|, there was
+  // a problem in conversion and the event should not be dispatched.
   EventAndHost DetermineEventAndHost(int64_t display_id,
                                      std::unique_ptr<ui::Event> event);
 

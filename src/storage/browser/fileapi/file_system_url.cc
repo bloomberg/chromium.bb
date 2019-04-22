@@ -18,15 +18,15 @@ namespace {
 }  // namespace
 
 FileSystemURL::FileSystemURL()
-    : is_valid_(false),
+    : is_null_(true),
+      is_valid_(false),
       mount_type_(kFileSystemTypeUnknown),
       type_(kFileSystemTypeUnknown),
-      mount_option_(FlushPolicy::NO_FLUSH_ON_COMPLETION) {
-}
+      mount_option_(FlushPolicy::NO_FLUSH_ON_COMPLETION) {}
 
 FileSystemURL::FileSystemURL(const FileSystemURL& other) = default;
 
-FileSystemURL::FileSystemURL(FileSystemURL&& other) noexcept = default;
+FileSystemURL::FileSystemURL(FileSystemURL&& other) = default;
 
 FileSystemURL& FileSystemURL::operator=(FileSystemURL&& rhs) = default;
 
@@ -37,14 +37,14 @@ FileSystemURL FileSystemURL::CreateForTest(const GURL& url) {
   return FileSystemURL(url);
 }
 
-FileSystemURL FileSystemURL::CreateForTest(const GURL& origin,
+FileSystemURL FileSystemURL::CreateForTest(const url::Origin& origin,
                                            FileSystemType mount_type,
                                            const base::FilePath& virtual_path) {
   return FileSystemURL(origin, mount_type, virtual_path);
 }
 
 FileSystemURL FileSystemURL::CreateForTest(
-    const GURL& origin,
+    const url::Origin& origin,
     FileSystemType mount_type,
     const base::FilePath& virtual_path,
     const std::string& mount_filesystem_id,
@@ -63,28 +63,31 @@ FileSystemURL FileSystemURL::CreateForTest(
 }
 
 FileSystemURL::FileSystemURL(const GURL& url)
-    : mount_type_(kFileSystemTypeUnknown),
+    : is_null_(false),
+      mount_type_(kFileSystemTypeUnknown),
       type_(kFileSystemTypeUnknown),
       mount_option_(FlushPolicy::NO_FLUSH_ON_COMPLETION) {
-  is_valid_ = ParseFileSystemSchemeURL(url, &origin_, &mount_type_,
-                                       &virtual_path_);
+  GURL origin_url;
+  is_valid_ =
+      ParseFileSystemSchemeURL(url, &origin_url, &mount_type_, &virtual_path_);
+  origin_ = url::Origin::Create(origin_url);
   path_ = virtual_path_;
   type_ = mount_type_;
 }
 
-FileSystemURL::FileSystemURL(const GURL& origin,
+FileSystemURL::FileSystemURL(const url::Origin& origin,
                              FileSystemType mount_type,
                              const base::FilePath& virtual_path)
-    : is_valid_(true),
+    : is_null_(false),
+      is_valid_(true),
       origin_(origin),
       mount_type_(mount_type),
       virtual_path_(virtual_path.NormalizePathSeparators()),
       type_(mount_type),
       path_(virtual_path.NormalizePathSeparators()),
-      mount_option_(FlushPolicy::NO_FLUSH_ON_COMPLETION) {
-}
+      mount_option_(FlushPolicy::NO_FLUSH_ON_COMPLETION) {}
 
-FileSystemURL::FileSystemURL(const GURL& origin,
+FileSystemURL::FileSystemURL(const url::Origin& origin,
                              FileSystemType mount_type,
                              const base::FilePath& virtual_path,
                              const std::string& mount_filesystem_id,
@@ -92,7 +95,8 @@ FileSystemURL::FileSystemURL(const GURL& origin,
                              const base::FilePath& cracked_path,
                              const std::string& filesystem_id,
                              const FileSystemMountOption& mount_option)
-    : is_valid_(true),
+    : is_null_(false),
+      is_valid_(true),
       origin_(origin),
       mount_type_(mount_type),
       virtual_path_(virtual_path.NormalizePathSeparators()),
@@ -100,8 +104,7 @@ FileSystemURL::FileSystemURL(const GURL& origin,
       type_(cracked_type),
       path_(cracked_path.NormalizePathSeparators()),
       filesystem_id_(filesystem_id),
-      mount_option_(mount_option) {
-}
+      mount_option_(mount_option) {}
 
 FileSystemURL::~FileSystemURL() = default;
 
@@ -109,7 +112,7 @@ GURL FileSystemURL::ToGURL() const {
   if (!is_valid_)
     return GURL();
 
-  std::string url = GetFileSystemRootURI(origin_, mount_type_).spec();
+  std::string url = GetFileSystemRootURI(origin_.GetURL(), mount_type_).spec();
   if (url.empty())
     return GURL();
 
@@ -130,7 +133,7 @@ std::string FileSystemURL::DebugString() const {
   if (!is_valid_)
     return "invalid filesystem: URL";
   std::ostringstream ss;
-  ss << GetFileSystemRootURI(origin_, mount_type_);
+  ss << GetFileSystemRootURI(origin_.GetURL(), mount_type_);
 
   // filesystem_id_ will be non empty for (and only for) cracked URLs.
   if (!filesystem_id_.empty()) {
@@ -157,11 +160,13 @@ bool FileSystemURL::IsInSameFileSystem(const FileSystemURL& other) const {
 }
 
 bool FileSystemURL::operator==(const FileSystemURL& that) const {
-  return origin_ == that.origin_ &&
-      type_ == that.type_ &&
-      path_ == that.path_ &&
-      filesystem_id_ == that.filesystem_id_ &&
-      is_valid_ == that.is_valid_;
+  if (is_null_ && that.is_null_) {
+    return true;
+  } else {
+    return origin_ == that.origin_ && type_ == that.type_ &&
+           path_ == that.path_ && filesystem_id_ == that.filesystem_id_ &&
+           is_valid_ == that.is_valid_;
+  }
 }
 
 bool FileSystemURL::Comparator::operator()(const FileSystemURL& lhs,

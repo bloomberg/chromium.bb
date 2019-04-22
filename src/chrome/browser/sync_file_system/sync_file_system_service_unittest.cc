@@ -168,7 +168,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     sync_service_->Shutdown();
     file_system_->TearDown();
     RevokeSyncableFileSystem();
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
   void InitializeApp() {

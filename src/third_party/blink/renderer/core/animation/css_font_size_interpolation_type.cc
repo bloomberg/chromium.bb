@@ -21,12 +21,9 @@ namespace {
 
 class IsMonospaceChecker : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<IsMonospaceChecker> Create(bool is_monospace) {
-    return base::WrapUnique(new IsMonospaceChecker(is_monospace));
-  }
+  IsMonospaceChecker(bool is_monospace) : is_monospace_(is_monospace) {}
 
  private:
-  IsMonospaceChecker(bool is_monospace) : is_monospace_(is_monospace) {}
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
@@ -39,15 +36,10 @@ class IsMonospaceChecker : public CSSInterpolationType::CSSConversionChecker {
 class InheritedFontSizeChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedFontSizeChecker> Create(
-      const FontDescription::Size& inherited_font_size) {
-    return base::WrapUnique(new InheritedFontSizeChecker(inherited_font_size));
-  }
-
- private:
   InheritedFontSizeChecker(const FontDescription::Size& inherited_font_size)
       : inherited_font_size_(inherited_font_size.value) {}
 
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
     return inherited_font_size_ ==
@@ -68,19 +60,20 @@ InterpolationValue MaybeConvertKeyword(
     InterpolationType::ConversionCheckers& conversion_checkers) {
   if (FontSizeFunctions::IsValidValueID(value_id)) {
     bool is_monospace = state.Style()->GetFontDescription().IsMonospace();
-    conversion_checkers.push_back(IsMonospaceChecker::Create(is_monospace));
+    conversion_checkers.push_back(
+        std::make_unique<IsMonospaceChecker>(is_monospace));
     return ConvertFontSize(state.GetFontBuilder().FontSizeForKeyword(
         FontSizeFunctions::KeywordSize(value_id), is_monospace));
   }
 
-  if (value_id != CSSValueSmaller && value_id != CSSValueLarger)
+  if (value_id != CSSValueID::kSmaller && value_id != CSSValueID::kLarger)
     return nullptr;
 
   const FontDescription::Size& inherited_font_size =
       state.ParentFontDescription().GetSize();
   conversion_checkers.push_back(
-      InheritedFontSizeChecker::Create(inherited_font_size));
-  if (value_id == CSSValueSmaller)
+      std::make_unique<InheritedFontSizeChecker>(inherited_font_size));
+  if (value_id == CSSValueID::kSmaller)
     return ConvertFontSize(
         FontDescription::SmallerSize(inherited_font_size).value);
   return ConvertFontSize(
@@ -109,7 +102,7 @@ InterpolationValue CSSFontSizeInterpolationType::MaybeConvertInherit(
   const FontDescription::Size& inherited_font_size =
       state.ParentFontDescription().GetSize();
   conversion_checkers.push_back(
-      InheritedFontSizeChecker::Create(inherited_font_size));
+      std::make_unique<InheritedFontSizeChecker>(inherited_font_size));
   return ConvertFontSize(inherited_font_size.value);
 }
 
@@ -123,11 +116,12 @@ InterpolationValue CSSFontSizeInterpolationType::MaybeConvertValue(
   if (result)
     return InterpolationValue(std::move(result));
 
-  if (!value.IsIdentifierValue())
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return nullptr;
 
   DCHECK(state);
-  return MaybeConvertKeyword(ToCSSIdentifierValue(value).GetValueID(), *state,
+  return MaybeConvertKeyword(identifier_value->GetValueID(), *state,
                              conversion_checkers);
 }
 

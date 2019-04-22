@@ -5,6 +5,7 @@
 #ifndef UI_AURA_MUS_TEXT_INPUT_CLIENT_IMPL_H_
 #define UI_AURA_MUS_TEXT_INPUT_CLIENT_IMPL_H_
 
+#include "base/callback.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 #include "ui/base/ime/composition_text.h"
@@ -20,13 +21,19 @@ namespace aura {
 // notifies the underlying ui::TextInputClient accordingly.
 class TextInputClientImpl : public ws::mojom::TextInputClient {
  public:
+  using OnClientDataChangedCallback =
+      base::RepeatingCallback<void(const ui::TextInputClient*)>;
+
   TextInputClientImpl(ui::TextInputClient* text_input_client,
-                      ui::internal::InputMethodDelegate* delegate);
+                      ui::internal::InputMethodDelegate* delegate,
+                      OnClientDataChangedCallback on_client_data_changed);
   ~TextInputClientImpl() override;
 
   ws::mojom::TextInputClientPtr CreateInterfacePtrAndBind();
 
  private:
+  void NotifyClientDataChanged();
+
   // ws::mojom::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
   void ConfirmCompositionText() override;
@@ -36,10 +43,18 @@ class TextInputClientImpl : public ws::mojom::TextInputClient {
   void DispatchKeyEventPostIME(
       std::unique_ptr<ui::Event> event,
       DispatchKeyEventPostIMECallback callback) override;
+  void EnsureCaretNotInRect(const gfx::Rect& rect) override;
+  void SetEditableSelectionRange(const gfx::Range& range) override;
+  void DeleteRange(const gfx::Range& range) override;
+  void OnInputMethodChanged() override;
+  void ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection direction) override;
+  void ExtendSelectionAndDelete(uint32_t before, uint32_t after) override;
 
   ui::TextInputClient* text_input_client_;
   mojo::Binding<ws::mojom::TextInputClient> binding_;
   ui::internal::InputMethodDelegate* delegate_;
+  OnClientDataChangedCallback on_client_data_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientImpl);
 };

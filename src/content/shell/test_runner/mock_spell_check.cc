@@ -9,7 +9,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "content/shell/test_runner/test_common.h"
 
 namespace test_runner {
@@ -32,8 +32,8 @@ MockSpellCheck::MockSpellCheck() : initialized_(false) {}
 MockSpellCheck::~MockSpellCheck() {}
 
 bool MockSpellCheck::SpellCheckWord(const blink::WebString& text,
-                                    int* misspelled_offset,
-                                    int* misspelled_length) {
+                                    size_t* misspelled_offset,
+                                    size_t* misspelled_length) {
   DCHECK(misspelled_offset);
   DCHECK(misspelled_length);
 
@@ -143,9 +143,8 @@ bool MockSpellCheck::InitializeIfNeeded() {
   if (initialized_)
     return false;
 
-  // Create a table that consists of misspelled words used in WebKit layout
-  // tests.
-  // Since WebKit layout tests don't have so many misspelled words as
+  // Create a table that consists of misspelled words used in Blink web tests.
+  // Since Blink web tests don't have so many misspelled words as
   // well-spelled words, it is easier to compare the given word with misspelled
   // ones than to compare with well-spelled ones.
   static const char* misspelled_words[] = {
@@ -159,7 +158,7 @@ bool MockSpellCheck::InitializeIfNeeded() {
       "ifmmp", "qwertyuiopasd", "qwertyuiopasdf", "upper case", "wellcome"};
 
   misspelled_words_.clear();
-  for (size_t i = 0; i < arraysize(misspelled_words); ++i)
+  for (size_t i = 0; i < base::size(misspelled_words); ++i)
     misspelled_words_.push_back(
         base::string16(misspelled_words[i],
                        misspelled_words[i] + strlen(misspelled_words[i])));

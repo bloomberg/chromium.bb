@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 
@@ -41,12 +42,13 @@ class MediaControlDisplayCutoutFullscreenButtonElementTest
   }
 
   void SetUp() override {
-    chrome_client_ = new MockDisplayCutoutChromeClient();
+    chrome_client_ = MakeGarbageCollected<MockDisplayCutoutChromeClient>();
 
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
-    SetupPageWithClients(&clients, EmptyLocalFrameClient::Create());
+    SetupPageWithClients(&clients,
+                         MakeGarbageCollected<EmptyLocalFrameClient>());
 
     RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
 
@@ -90,6 +92,14 @@ class MediaControlDisplayCutoutFullscreenButtonElementTest
       display_cutout_fullscreen_button_;
   Persistent<MediaControlsImpl> controls_;
 };
+
+TEST_F(MediaControlDisplayCutoutFullscreenButtonElementTest,
+       Fullscreen_ButtonAccessibility) {
+  EXPECT_EQ(display_cutout_fullscreen_button_->GetLocale().QueryString(
+                WebLocalizedString::kAXMediaDisplayCutoutFullscreenButton),
+            display_cutout_fullscreen_button_->getAttribute(
+                html_names::kAriaLabelAttr));
+}
 
 TEST_F(MediaControlDisplayCutoutFullscreenButtonElementTest,
        Fullscreen_ButtonVisiblilty) {

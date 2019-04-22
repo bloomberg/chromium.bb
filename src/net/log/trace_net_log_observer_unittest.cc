@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -107,8 +108,8 @@ class TraceNetLogObserverTest : public TestWithScopedTaskEnvironment {
     trace_buffer_.Finish();
 
     std::unique_ptr<base::Value> trace_value;
-    trace_value =
-        base::JSONReader::Read(json_output_.json_output, base::JSON_PARSE_RFC);
+    trace_value = base::JSONReader::ReadDeprecated(json_output_.json_output,
+                                                   base::JSON_PARSE_RFC);
 
     ASSERT_TRUE(trace_value) << json_output_.json_output;
     base::ListValue* trace_events = nullptr;

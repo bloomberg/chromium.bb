@@ -4,7 +4,7 @@
  *
  *   FreeType API for controlling driver modules (specification only).
  *
- * Copyright 2017-2018 by
+ * Copyright (C) 2017-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -233,7 +233,7 @@ FT_BEGIN_HEADER
    *   achieve some level of glyph symmetry.  To enable reasonable
    *   performance (e.g., not having to run hinting on all glyphs just to get
    *   the widths) there was a bit in the head table indicating if the side
-   *   bearing was hinted, and additional tables, `hdmx` and `LTSH`, to cache
+   *   bearing was hinted, and additional tables, 'hdmx' and 'LTSH', to cache
    *   hinting widths across multiple sizes and device aspect ratios.
    *
    *   _Font Smoothing_
@@ -249,7 +249,7 @@ FT_BEGIN_HEADER
    *   of improving symmetry in glyphs through hinting the right-side bearing
    *   were no longer necessary.  This lead to what GDI calls 'natural
    *   widths' ClearType, see
-   *   http://www.beatstamm.com/typography/RTRCh4.htm#Sec21.  Since hinting
+   *   http://rastertragedy.com/RTRCh4.htm#Sec21.  Since hinting
    *   has extra resolution, most non-linearity went away, but it is still
    *   possible for hints to change the advance widths in this mode.
    *
@@ -262,7 +262,7 @@ FT_BEGIN_HEADER
    *   to determine the width in bi-level rendering, and then re-run in
    *   ClearType, with the difference in widths being absorbed in the font
    *   hints for ClearType (mostly in the white space of hints); see
-   *   http://www.beatstamm.com/typography/RTRCh4.htm#Sec20.  Somewhat by
+   *   http://rastertragedy.com/RTRCh4.htm#Sec20.  Somewhat by
    *   definition, compatible width ClearType allows for non-linear widths,
    *   but only when the bi-level version has non-linear widths.
    *
@@ -275,7 +275,7 @@ FT_BEGIN_HEADER
    *   mode', not to be confused with GDI's 'natural widths'.  Subpixel
    *   positioning, in the current implementation of Direct Write,
    *   unfortunately does not support hinted advance widths, see
-   *   http://www.beatstamm.com/typography/RTRCh4.htm#Sec22.  Note that the
+   *   http://rastertragedy.com/RTRCh4.htm#Sec22.  Note that the
    *   TrueType interpreter fully allows the advance width to be adjusted in
    *   this mode, just the DWrite client will ignore those changes.
    *
@@ -284,7 +284,7 @@ FT_BEGIN_HEADER
    *   This is a set of exceptions made in the TrueType interpreter to
    *   minimize hinting techniques that were problematic with the extra
    *   resolution of ClearType; see
-   *   http://www.beatstamm.com/typography/RTRCh4.htm#Sec1 and
+   *   http://rastertragedy.com/RTRCh4.htm#Sec1 and
    *   https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx.
    *   This technique is not to be confused with ClearType compatible widths.
    *   ClearType backward compatibility has no direct impact on changing
@@ -1070,7 +1070,7 @@ FT_BEGIN_HEADER
    *   coverages, this property sets the (auto-fitter) script to be used for
    *   the default (OpenType) script data of a font's GSUB table.  Features
    *   for the default script are intended for all scripts not explicitly
-   *   handled in GSUB; an example is a `dlig` feature, containing the
+   *   handled in GSUB; an example is a 'dlig' feature, containing the
    *   combination of the characters 'T', 'E', and 'L' to form a 'TEL'
    *   ligature.
    *

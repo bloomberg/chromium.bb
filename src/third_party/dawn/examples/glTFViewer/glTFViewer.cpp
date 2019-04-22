@@ -23,6 +23,7 @@
 #include "common/Assert.h"
 #include "common/Math.h"
 #include "common/Constants.h"
+#include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/DawnHelpers.h"
 #include "utils/SystemUtils.h"
 
@@ -106,13 +107,13 @@ namespace {
     bool techniqueParameterTypeToVertexFormat(int type, dawn::VertexFormat *format) {
         switch (type) {
             case gl::FloatVec2:
-                *format = dawn::VertexFormat::FloatR32G32;
+                *format = dawn::VertexFormat::Float2;
                 return true;
             case gl::FloatVec3:
-                *format = dawn::VertexFormat::FloatR32G32B32;
+                *format = dawn::VertexFormat::Float3;
                 return true;
             case gl::FloatVec4:
-                *format = dawn::VertexFormat::FloatR32G32B32A32;
+                *format = dawn::VertexFormat::Float4;
                 return true;
             default:
                 return false;
@@ -236,7 +237,10 @@ namespace {
 
         auto oFSModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, hasTexture ? oFSSourceTextured : oFSSourceUntextured);
 
-        dawn::InputStateBuilder builder = device.CreateInputStateBuilder();
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.cInputState.indexFormat = dawn::IndexFormat::Uint16;
+        uint32_t numAttributes = 0;
+        uint32_t numInputs = 0;
         std::bitset<3> slotsSet;
         for (const auto& a : iTechnique.attributes) {
             const auto iAttributeName = a.first;
@@ -246,31 +250,48 @@ namespace {
                 fprintf(stderr, "unsupported technique parameter type %d\n", iParameter.type);
                 continue;
             }
+            descriptor.cInputState.cAttributes[numAttributes].format = format;
+
             if (iParameter.semantic == "POSITION") {
-                builder.SetAttribute(0, 0, format, 0);
-                builder.SetInput(0, static_cast<uint32_t>(stridePos), dawn::InputStepMode::Vertex);
+                descriptor.cInputState.cInputs[numInputs].stride = static_cast<uint32_t>(stridePos);
+                numAttributes++;
+                numInputs++;
                 slotsSet.set(0);
             } else if (iParameter.semantic == "NORMAL") {
-                builder.SetAttribute(1, 1, format, 0);
-                builder.SetInput(1, static_cast<uint32_t>(strideNor), dawn::InputStepMode::Vertex);
+                descriptor.cInputState.cAttributes[numAttributes].shaderLocation = 1;
+                descriptor.cInputState.cAttributes[numAttributes].inputSlot = 1;
+                descriptor.cInputState.cInputs[numInputs].inputSlot = 1;
+                descriptor.cInputState.cInputs[numInputs].stride = static_cast<uint32_t>(strideNor);
+                numAttributes++;
+                numInputs++;
                 slotsSet.set(1);
             } else if (iParameter.semantic == "TEXCOORD_0") {
-                builder.SetAttribute(2, 2, format, 0);
-                builder.SetInput(2, static_cast<uint32_t>(strideTxc), dawn::InputStepMode::Vertex);
+                descriptor.cInputState.cAttributes[numAttributes].shaderLocation = 2;
+                descriptor.cInputState.cAttributes[numAttributes].inputSlot = 2;
+                descriptor.cInputState.cInputs[numInputs].inputSlot = 2;
+                descriptor.cInputState.cInputs[numInputs].stride = static_cast<uint32_t>(strideTxc);
+                numAttributes++;
+                numInputs++;
                 slotsSet.set(2);
             } else {
                 fprintf(stderr, "unsupported technique attribute semantic %s\n", iParameter.semantic.c_str());
             }
-            // TODO: use iAttributeParameter.node?
         }
         for (uint32_t i = 0; i < slotsSet.size(); i++) {
             if (slotsSet[i]) {
                 continue;
             }
-            builder.SetAttribute(i, i, dawn::VertexFormat::FloatR32G32B32A32, 0);
-            builder.SetInput(i, 0, dawn::InputStepMode::Vertex);
+            descriptor.cInputState.cAttributes[numAttributes].shaderLocation = i;
+            descriptor.cInputState.cAttributes[numAttributes].inputSlot = i;
+            descriptor.cInputState.cAttributes[numAttributes].format = dawn::VertexFormat::Float4;
+
+            descriptor.cInputState.cInputs[numInputs].inputSlot = i;
+
+            numAttributes++;
+            numInputs++;
         }
-        auto inputState = builder.GetResult();
+        descriptor.cInputState.numAttributes = numAttributes;
+        descriptor.cInputState.numInputs = numInputs;
 
         constexpr dawn::ShaderStageBit kNoStages{};
         dawn::BindGroupLayout bindGroupLayout = utils::MakeBindGroupLayout(
@@ -281,36 +302,35 @@ namespace {
                          dawn::BindingType::SampledTexture},
                     });
 
-        auto depthStencilState = device.CreateDepthStencilStateBuilder()
-            .SetDepthCompareFunction(dawn::CompareFunction::Less)
-            .SetDepthWriteEnabled(true)
-            .GetResult();
-
         auto pipelineLayout = utils::MakeBasicPipelineLayout(device, &bindGroupLayout);
-        auto pipeline = device.CreateRenderPipelineBuilder()
-            .SetColorAttachmentFormat(0, GetPreferredSwapChainTextureFormat())
-            .SetDepthStencilAttachmentFormat(dawn::TextureFormat::D32FloatS8Uint)
-            .SetLayout(pipelineLayout)
-            .SetStage(dawn::ShaderStage::Vertex, oVSModule, "main")
-            .SetStage(dawn::ShaderStage::Fragment, oFSModule, "main")
-            .SetIndexFormat(dawn::IndexFormat::Uint16)
-            .SetInputState(inputState)
-            .SetDepthStencilState(depthStencilState)
-            .GetResult();
 
-        auto bindGroupBuilder = device.CreateBindGroupBuilder();
-        bindGroupBuilder.SetLayout(bindGroupLayout);
+        descriptor.layout = pipelineLayout;
+        descriptor.cVertexStage.module = oVSModule;
+        descriptor.cFragmentStage.module = oFSModule;
+        descriptor.depthStencilState = &descriptor.cDepthStencilState;
+        descriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
+        descriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
+        descriptor.cDepthStencilState.depthWriteEnabled = true;
+        descriptor.cDepthStencilState.depthCompare = dawn::CompareFunction::Less;
+
+        dawn::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+
+        dawn::BindGroup bindGroup;
 
         if (hasTexture) {
             const auto& textureView = textures[iTextureID];
             const auto& iSamplerID = scene.textures[iTextureID].sampler;
-            bindGroupBuilder.SetSamplers(0, 1, &samplers[iSamplerID]);
-            bindGroupBuilder.SetTextureViews(1, 1, &textureView);
+            bindGroup = utils::MakeBindGroup(device, bindGroupLayout, {
+                {0, samplers[iSamplerID]},
+                {1, textureView}
+            });
+        } else {
+            bindGroup = utils::MakeBindGroup(device, bindGroupLayout, {});
         }
 
         MaterialInfo material = {
-            pipeline.Get(),
-            bindGroupBuilder.GetResult(),
+            pipeline,
+            bindGroup,
             std::map<uint32_t, std::string>(),
         };
         materials[key] = std::move(material);
@@ -387,9 +407,10 @@ namespace {
             descriptor.size.width = iImage.width;
             descriptor.size.height = iImage.height;
             descriptor.size.depth = 1;
-            descriptor.arrayLayer = 1;
+            descriptor.arrayLayerCount = 1;
+            descriptor.sampleCount = 1;
             descriptor.format = format;
-            descriptor.levelCount = 1;
+            descriptor.mipLevelCount = 1;
             descriptor.usage = dawn::TextureUsageBit::TransferDst | dawn::TextureUsageBit::Sampled;
             auto oTexture = device.CreateTexture(&descriptor);
                 // TODO: release this texture
@@ -436,14 +457,16 @@ namespace {
             dawn::BufferCopyView bufferCopyView =
                 utils::CreateBufferCopyView(staging, 0, rowPitch, 0);
             dawn::TextureCopyView textureCopyView =
-                utils::CreateTextureCopyView(oTexture, 0, 0, {0, 0, 0}, dawn::TextureAspect::Color);
+                utils::CreateTextureCopyView(oTexture, 0, 0, {0, 0, 0});
             dawn::Extent3D copySize = {iImage.width, iImage.height, 1};
-            auto cmdbuf = device.CreateCommandBufferBuilder()
-                              .CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize)
-                              .GetResult();
+
+            dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+            encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+
+            dawn::CommandBuffer cmdbuf = encoder.Finish();
             queue.Submit(1, &cmdbuf);
 
-            textures[iTextureID] = oTexture.CreateDefaultTextureView();
+            textures[iTextureID] = oTexture.CreateDefaultView();
         }
     }
 
@@ -489,8 +512,8 @@ namespace {
                 }
             }
             const MaterialInfo& material = getMaterial(iPrim.material, strides[0], strides[1], strides[2]);
-            pass.SetRenderPipeline(material.pipeline);
-            pass.SetBindGroup(0, material.bindGroup0);
+            pass.SetPipeline(material.pipeline);
+            pass.SetBindGroup(0, material.bindGroup0, 0, nullptr);
             pass.SetPushConstants(dawn::ShaderStageBit::Vertex,
                     0, sizeof(u_transform_block) / sizeof(uint32_t),
                     reinterpret_cast<const uint32_t*>(&transforms));
@@ -500,7 +523,7 @@ namespace {
                 uint32_t slot = s.first;
                 auto it = iPrim.attributes.find(s.second);
                 if (it == iPrim.attributes.end()) {
-                    uint32_t zero = 0;
+                    uint64_t zero = 0;
                     pass.SetVertexBuffers(slot, 1, &defaultBuffer, &zero);
                     continue;
                 }
@@ -515,7 +538,7 @@ namespace {
                     vertexCount = static_cast<uint32_t>(iAccessor.count);
                 }
                 const auto& oBuffer = buffers.at(iAccessor.bufferView);
-                uint32_t iBufferOffset = static_cast<uint32_t>(iAccessor.byteOffset);
+                uint64_t iBufferOffset = static_cast<uint64_t>(iAccessor.byteOffset);
                 pass.SetVertexBuffers(slot, 1, &oBuffer, &iBufferOffset);
             }
 
@@ -528,10 +551,10 @@ namespace {
                 }
                 const auto& oIndicesBuffer = buffers.at(iIndices.bufferView);
                 pass.SetIndexBuffer(oIndicesBuffer, static_cast<uint32_t>(iIndices.byteOffset));
-                pass.DrawElements(static_cast<uint32_t>(iIndices.count), 1, 0, 0);
+                pass.DrawIndexed(static_cast<uint32_t>(iIndices.count), 1, 0, 0, 0);
             } else {
                 // DrawArrays
-                pass.DrawArrays(vertexCount, 1, 0, 0);
+                pass.Draw(vertexCount, 1, 0, 0);
             }
         }
     }
@@ -565,14 +588,14 @@ namespace {
     }
 
     void frame() {
-        dawn::Texture backbuffer;
-        dawn::RenderPassDescriptor renderPass;
-        GetNextRenderPassDescriptor(device, swapchain, depthStencilView, &backbuffer, &renderPass);
+        dawn::Texture backbuffer = swapchain.GetNextTexture();
 
         const auto& defaultSceneNodes = scene.scenes.at(scene.defaultScene);
-        dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+        dawn::CommandEncoder encoder = device.CreateCommandEncoder();
         {
-            dawn::RenderPassEncoder pass = builder.BeginRenderPass(renderPass);
+            utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateDefaultView()},
+                                                        depthStencilView);
+            dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
             for (const auto& n : defaultSceneNodes) {
                 const auto& node = scene.nodes.at(n);
                 drawNode(pass, node);
@@ -580,7 +603,7 @@ namespace {
             pass.EndPass();
         }
 
-        dawn::CommandBuffer commands = builder.GetResult();
+        dawn::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
 
         swapchain.Present(backbuffer);

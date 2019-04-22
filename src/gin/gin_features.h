@@ -11,6 +11,8 @@
 namespace features {
 
 GIN_EXPORT extern const base::Feature kV8OptimizeJavascript;
+GIN_EXPORT extern const base::Feature kV8FlushBytecode;
+GIN_EXPORT extern const base::Feature kV8MemoryReducerForSmallHeaps;
 
 }  // namespace features
 

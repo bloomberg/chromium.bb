@@ -95,6 +95,10 @@ void SurfaceChooserHelper::SetVideoRotation(VideoRotation video_rotation) {
   surface_chooser_state_.video_rotation = video_rotation;
 }
 
+void SurfaceChooserHelper::SetIsPersistentVideo(bool is_persistent_video) {
+  surface_chooser_state_.is_persistent_video = is_persistent_video;
+}
+
 void SurfaceChooserHelper::UpdateChooserState(
     base::Optional<AndroidOverlayFactoryCB> new_factory) {
   surface_chooser_->UpdateState(std::move(new_factory), surface_chooser_state_);

@@ -91,14 +91,15 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
   # Timeout for the signing process. 2 hours in seconds.
   SIGNING_TIMEOUT = 2 * 60 * 60
 
-  def __init__(self, builder_run, board, **kwargs):
+  def __init__(self, builder_run, buildstore, board, **kwargs):
     """Init that accepts the channels argument, if present.
 
     Args:
       builder_run: See builder_run on ArchivingStage.
+      buildstore: BuildStore instance to make DB calls with.
       board: See board on ArchivingStage.
     """
-    super(SigningStage, self).__init__(builder_run, board, **kwargs)
+    super(SigningStage, self).__init__(builder_run, buildstore, board, **kwargs)
 
     # Used to remember partial results between retries.
     self.signing_results = {}
@@ -237,7 +238,7 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
       ValueError: If the signer result isn't valid json.
       RunCommandError: If we are unable to download signer results.
     """
-    gs_ctx = gs.GSContext(dry_run=self._run.debug)
+    gs_ctx = gs.GSContext(dry_run=self._run.options.debug)
 
     try:
       logging.info('Waiting for signer results.')
@@ -317,18 +318,19 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
   config_name = 'paygen'
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, board, channels=None, **kwargs):
+  def __init__(self, builder_run, buildstore, board, channels=None, **kwargs):
     """Init that accepts the channels argument, if present.
 
     Args:
       builder_run: See builder_run on ArchivingStage.
+      buildstore: BuildStore instance to make DB calls with.
       board: See board on ArchivingStage.
       channels: Explicit list of channels to generate payloads for.
                 If empty, will instead wait on values from push_image.
                 Channels is normally None in release builds, and normally set
                 for trybot 'payloads' builds.
     """
-    super(PaygenStage, self).__init__(builder_run, board, **kwargs)
+    super(PaygenStage, self).__init__(builder_run, buildstore, board, **kwargs)
     self.channels = channels
 
   def _HandleStageException(self, exc_info):
@@ -379,7 +381,7 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
     # failure reason.
     try:
       paygen_build_lib.ValidateBoardConfig(board)
-    except  paygen_build_lib.BoardNotConfigured:
+    except paygen_build_lib.BoardNotConfigured:
       raise PaygenNoPaygenConfigForBoard(
           'Golden Eye (%s) has no entry for board %s. Get a TPM to fix.' %
           (paygen_build_lib.PAYGEN_URI, board))
@@ -394,7 +396,7 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
 
       # If we have an explicit list of channels, use it.
       for channel in self.channels:
-        per_channel.put((channel, board, version, self._run.debug,
+        per_channel.put((channel, board, version, self._run.options.debug,
                          self._run.config.paygen_skip_testing,
                          self._run.config.paygen_skip_delta_payloads,
                          skip_duts_check))
@@ -403,20 +405,22 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
                           disable_tests, skip_delta_payloads,
                           skip_duts_check):
     """Runs the PaygenBuild and PaygenTest stage (if applicable)"""
-    PaygenBuildStage(self._run, board, channel, version, debug, disable_tests,
-                     skip_delta_payloads, skip_duts_check).Run()
+    PaygenBuildStage(self._run, self.buildstore, board, channel, version, debug,
+                     disable_tests, skip_delta_payloads, skip_duts_check).Run()
+
 
 class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
   """Stage that generates payloads and uploads to Google Storage."""
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, board, channel, version, debug,
+  def __init__(self, builder_run, buildstore, board, channel, version, debug,
                skip_testing, skip_delta_payloads, skip_duts_check, **kwargs):
     """Init that accepts the channels argument, if present.
 
     Args:
       builder_run: See builder_run on ArchiveStage
+      buildstore: BuildStore instance to make DB calls with.
       board: Board of payloads to generate ('x86-mario', 'x86-alex-he', etc)
       channel: Channel of payloads to generate ('stable', 'beta', etc)
       version: Version of payloads to generate.
@@ -426,7 +430,7 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
       skip_duts_check: Do not check minimum available DUTs before tests.
     """
     super(PaygenBuildStage, self).__init__(
-        builder_run, board, suffix=channel.capitalize(), **kwargs)
+        builder_run, buildstore, board, suffix=channel.capitalize(), **kwargs)
     self._run = builder_run
     self.board = board
     self.channel = channel
@@ -449,7 +453,11 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
       # Create the definition of the build to generate payloads for.
       build = gspaths.Build(channel=self.channel,
                             board=self.board,
-                            version=self.version)
+                            version=self.version,
+                            bucket=gspaths.ChromeosReleases.BUCKET)
+      payload_build = gspaths.Build(build)
+      if self.debug:
+        payload_build.bucket = gspaths.ChromeosReleases.TEST_BUCKET
 
       try:
         # Generate the payloads.
@@ -457,6 +465,7 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
                                                    self.board))
         paygen = paygen_build_lib.PaygenBuild(
             build,
+            payload_build,
             work_dir=tempdir,
             site_config=self._run.site_config,
             dry_run=self.debug,
@@ -467,7 +476,8 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
 
         # Now, schedule the payload tests if desired.
         if not self.skip_testing:
-          suite_name, archive_board, archive_build = testdata
+          (suite_name, archive_board, archive_build,
+           payload_test_configs) = testdata
 
           # For unified builds, only test against the specified models.
           if self._run.config.models:
@@ -478,40 +488,34 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
                 models.append(model)
 
             if len(models) > 1:
-              stages = [PaygenTestStage(
-                  self._run,
-                  suite_name,
-                  archive_board,
-                  model.name,
-                  model.lab_board_name,
-                  self.channel,
-                  archive_build,
-                  self.skip_duts_check,
-                  self.debug) for model in models]
+              stages = [
+                  PaygenTestStage(
+                      self._run, self.buildstore, suite_name, archive_board,
+                      model.name, model.lab_board_name, self.channel,
+                      archive_build, self.skip_duts_check, self.debug,
+                      payload_test_configs,
+                      config_lib.GetHWTestEnv(self._run.config,
+                                              model_config=model))
+                  for model in models
+              ]
               steps = [stage.Run for stage in stages]
               parallel.RunParallelSteps(steps)
             elif len(models) == 1:
+              model = models[0]
               PaygenTestStage(
-                  self._run,
-                  suite_name,
-                  archive_board,
-                  models[0].name,
-                  models[0].lab_board_name,
-                  self.channel,
-                  archive_build,
-                  self.skip_duts_check,
-                  self.debug).Run()
+                  self._run, self.buildstore, suite_name, archive_board,
+                  model.name, model.lab_board_name, self.channel,
+                  archive_build, self.skip_duts_check, self.debug,
+                  payload_test_configs,
+                  config_lib.GetHWTestEnv(self._run.config,
+                                          model_config=model)).Run()
           else:
-            PaygenTestStage(
-                self._run,
-                suite_name,
-                archive_board,
-                None,
-                archive_board,
-                self.channel,
-                archive_build,
-                self.skip_duts_check,
-                self.debug).Run()
+            PaygenTestStage(self._run, self.buildstore, suite_name,
+                            archive_board, None, archive_board, self.channel,
+                            archive_build, self.skip_duts_check,
+                            self.debug,
+                            payload_test_configs,
+                            config_lib.GetHWTestEnv(self._run.config)).Run()
 
 
 
@@ -527,22 +531,14 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(
-      self,
-      builder_run,
-      suite_name,
-      board,
-      model,
-      lab_board_name,
-      channel,
-      build,
-      skip_duts_check,
-      debug,
-      **kwargs):
+  def __init__(self, builder_run, buildstore, suite_name, board, model,
+               lab_board_name, channel, build, skip_duts_check, debug,
+               payload_test_configs, test_env, **kwargs):
     """Init that accepts the channels argument, if present.
 
     Args:
       builder_run: See builder_run on ArchiveStage
+      buildstore: BuildStore instance to make DB calls with.
       suite_name: See builder_run on ArchiveStage
       board: Board overlay name.
       model: Model that will be tested. ('reef', 'pyro', etc)
@@ -551,6 +547,10 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
       build: Version of payloads to generate.
       skip_duts_check: Do not check minimum available DUTs before tests.
       debug: Boolean indicating if this is a test run or a real run.
+      payload_test_configs: A list of test_params.TestConfig objects. Only used
+                            for scheduling HWTest with skylab tool.
+      test_env: A string to indicate the env that the test should run in. The
+                value could be constants.ENV_SKYLAB or constants.ENV_AUTOTEST.
     """
     self.suite_name = suite_name
     self.board = board
@@ -560,6 +560,9 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
     self.build = build
     self.skip_duts_check = skip_duts_check
     self.debug = debug
+    self.payload_test_configs = payload_test_configs
+    assert test_env in [constants.ENV_SKYLAB, constants.ENV_AUTOTEST]
+    self.test_env = test_env
     # We don't need the '-channel'suffix.
     if channel.endswith('-channel'):
       channel = channel[0:-len('-channel')]
@@ -568,7 +571,7 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
       suffix += ' [%s]' % model
 
     super(PaygenTestStage, self).__init__(
-        builder_run, board, suffix=suffix, **kwargs)
+        builder_run, buildstore, board, suffix=suffix, **kwargs)
 
   def PerformStage(self):
     """Schedule the tests to run."""
@@ -579,6 +582,8 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
                                            self.build,
                                            self.skip_duts_check,
                                            self.debug,
+                                           self.payload_test_configs,
+                                           self.test_env,
                                            job_keyvals=self.GetJobKeyvals())
 
   def _HandleStageException(self, exc_info):

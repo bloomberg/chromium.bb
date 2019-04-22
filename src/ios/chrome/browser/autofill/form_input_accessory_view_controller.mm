@@ -114,10 +114,21 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   return self;
 }
 
+// Returns YES if the keyboard constraint view is present. This view is the one
+// used to constraint any presented view.
+- (BOOL)canPresentView {
+  if (IsIPadIdiom()) {
+    // iPad always presents in a separate popover.
+    return YES;
+  }
+  UIView* keyboardView = [self getKeyboardView];
+  return [self recursiveGetKeyboardConstraintView:keyboardView];
+}
+
 #pragma mark - Public
 
 - (void)presentView:(UIView*)view {
-  if (self.paused) {
+  if (self.paused || ![self canPresentView]) {
     return;
   }
   DCHECK(view);
@@ -127,7 +138,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   [keyboardView.superview addSubview:view];
   UIView* constrainingView =
       [self recursiveGetKeyboardConstraintView:keyboardView];
-  DCHECK(constrainingView);
   view.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(view, constrainingView);
   self.keyboardReplacementView = view;
@@ -147,6 +157,26 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }
 
 #pragma mark - FormInputAccessoryConsumer
+
+- (void)prepareToShowSuggestions {
+  // Hides the Manual Fallback icons when there is no proper keyboard to present
+  // those views. And shows them if there is a keyboard present.
+  // Hidding |manualFillAccessoryViewController|'s view was causing an issue
+  // with the Stack Views and Auto Layout in iOS 11, hidding each icon avoids
+  // it.
+  if ([self canPresentView]) {
+    self.manualFillAccessoryViewController.passwordButtonHidden =
+        self.passwordButtonHidden;
+    self.manualFillAccessoryViewController.addressButtonHidden =
+        self.addressButtonHidden;
+    self.manualFillAccessoryViewController.creditCardButtonHidden =
+        self.creditCardButtonHidden;
+  } else {
+    self.manualFillAccessoryViewController.passwordButtonHidden = YES;
+    self.manualFillAccessoryViewController.addressButtonHidden = YES;
+    self.manualFillAccessoryViewController.creditCardButtonHidden = YES;
+  }
+}
 
 - (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
                 suggestionClient:(id<FormSuggestionClient>)suggestionClient
@@ -188,12 +218,12 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 
   if (!self.inputAccessoryView) {
     self.inputAccessoryView = [[FormInputAccessoryView alloc] init];
-    self.inputAccessoryView.accessibilityViewIsModal = YES;
     if (IsIPadIdiom()) {
       [self.inputAccessoryView
           setUpWithLeadingView:self.formSuggestionView
             customTrailingView:self.manualFillAccessoryViewController.view];
     } else {
+      self.inputAccessoryView.accessibilityViewIsModal = YES;
       self.formSuggestionView.trailingView =
           self.manualFillAccessoryViewController.view;
       [self.inputAccessoryView setUpWithLeadingView:self.formSuggestionView
@@ -217,6 +247,12 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   [self removeCustomInputAccessoryView];
   [self.keyboardReplacementView removeFromSuperview];
   self.keyboardReplacementView = nil;
+}
+
+// TODO:(crbug.com/923857) Merge this method and restoreOriginalKeyboardView.
+- (void)restoreOriginalKeyboardViewAndClearReferences {
+  [self restoreOriginalKeyboardView];
+  self.inputAccessoryView = nil;
 }
 
 - (void)pauseCustomKeyboardView {
@@ -304,7 +340,8 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 
 - (UIView*)getKeyboardView {
   NSArray* windows = [UIApplication sharedApplication].windows;
-  if (windows.count < 2)
+  NSUInteger expectedMinWindows = IsIPadIdiom() ? 2 : 3;
+  if (windows.count < expectedMinWindows)
     return nil;
 
   UIWindow* window;
@@ -368,6 +405,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   if (CGRectContainsRect(windowRect, keyboardFrame)) {
     _keyboardFrame = keyboardFrame;
     // Make sure the input accessory is there if needed.
+    [self prepareToShowSuggestions];
     [self addInputAccessoryViewIfNeeded];
     [self addCustomKeyboardViewIfNeeded];
   } else {
@@ -401,9 +439,22 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   if (self.isPaused) {
     return;
   }
-  if (self.inputAccessoryView && !self.inputAccessoryView.superview) {
+  if (self.inputAccessoryView) {
     if (IsIPadIdiom()) {
+      // On iPad the keyboard view can change so this updates it when needed.
       UIView* keyboardView = [self getKeyboardView];
+      if (!keyboardView) {
+        return;
+      }
+      if (self.inputAccessoryView.superview) {
+        if (keyboardView == self.inputAccessoryView.superview) {
+          return;
+        }
+        // The keyboard view is a different one.
+        [self.manualFillAccessoryViewController resetAnimated:NO];
+        [self.inputAccessoryView removeFromSuperview];
+        [self.grayBackgroundView removeFromSuperview];
+      }
       self.inputAccessoryView.translatesAutoresizingMaskIntoConstraints = NO;
       [keyboardView addSubview:self.inputAccessoryView];
       [NSLayoutConstraint activateConstraints:@[
@@ -421,7 +472,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
         [keyboardView sendSubviewToBack:self.grayBackgroundView];
         AddSameConstraints(self.grayBackgroundView, keyboardView);
       }
-    } else {
+    } else if (!self.inputAccessoryView.superview) {  // Is not an iPad.
       UIResponder* firstResponder = GetFirstResponder();
       if (firstResponder.inputAccessoryView) {
         [firstResponder.inputAccessoryView addSubview:self.inputAccessoryView];

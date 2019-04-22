@@ -48,9 +48,6 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   // Should only be used in tests; otherwise use GetDisplayName().
   const std::string& short_name() const { return short_name_; }
 
-  void set_highlighted(bool highlighted) { highlighted_ = highlighted; }
-  bool highlighted() const { return highlighted_; }
-
   void SetIsInstalling(bool is_installing);
   bool is_installing() const { return is_installing_; }
 
@@ -99,6 +96,9 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   bool is_page_break() const { return metadata_->is_page_break; }
 
  protected:
+  // Subclasses also have mutable access to the metadata ptr.
+  ash::mojom::AppListItemMetadata* metadata() { return metadata_.get(); }
+
   friend class ::FastShowPickler;
   friend class ash::AppListControllerImpl;
   friend class AppListItemList;
@@ -135,7 +135,6 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   // A shortened name for the item, used for display.
   std::string short_name_;
 
-  bool highlighted_;
   bool is_installing_;
   int percent_downloaded_;
 

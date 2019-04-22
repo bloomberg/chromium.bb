@@ -18,33 +18,14 @@
 #include "PixelRoutine.hpp"
 #include "SamplerCore.hpp"
 
+#include <unordered_map>
+
 namespace sw
 {
 	class PixelProgram : public PixelRoutine
 	{
 	public:
-		PixelProgram(const PixelProcessor::State &state, const PixelShader *shader) :
-			PixelRoutine(state, shader), r(shader->indirectAddressableTemporaries)
-		{
-			for(int i = 0; i < 2048; ++i)
-			{
-				labelBlock[i] = 0;
-			}
-
-			loopDepth = -1;
-			enableStack[0] = Int4(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
-
-			if(shader->containsBreakInstruction())
-			{
-				enableBreak = Int4(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
-			}
-
-			if(shader->containsContinueInstruction())
-			{
-				enableContinue = Int4(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
-			}
-		}
-
+		PixelProgram(const PixelProcessor::State &state, const PixelShader *shader);
 		virtual ~PixelProgram() {}
 
 	protected:
@@ -67,17 +48,17 @@ namespace sw
 
 		// DX9 specific variables
 		Vector4f p0;
-		Array<Int, 4> aL;
-		Array<Int, 4> increment;
-		Array<Int, 4> iteration;
+		Array<Int> aL; // loop counter register
+		Array<Int> increment; // increment value per loop
+		Array<Int> iteration; // iteration count
 
 		Int loopDepth;    // FIXME: Add support for switch
 		Int stackIndex;   // FIXME: Inc/decrement callStack
-		Array<UInt, 16> callStack;
+		Array<UInt> callStack;
 
 		// Per pixel based on conditions reached
 		Int enableIndex;
-		Array<Int4, 1 + 24> enableStack;
+		Array<Int4, MAX_SHADER_ENABLE_STACK_SIZE> enableStack;
 		Int4 enableBreak;
 		Int4 enableContinue;
 		Int4 enableLeave;
@@ -158,13 +139,13 @@ namespace sw
 		int currentLabel = -1;
 		bool scalar = false;
 
-		BasicBlock *ifFalseBlock[24 + 24];
-		BasicBlock *loopRepTestBlock[4];
-		BasicBlock *loopRepEndBlock[4];
-		BasicBlock *labelBlock[2048];
-		std::vector<BasicBlock*> callRetBlock[2048];
+		std::vector<BasicBlock*> ifFalseBlock;
+		std::vector<BasicBlock*> loopRepTestBlock;
+		std::vector<BasicBlock*> loopRepEndBlock;
+		std::vector<BasicBlock*> labelBlock;
+		std::unordered_map<unsigned int, std::vector<BasicBlock*>> callRetBlock; // label -> list of call sites
 		BasicBlock *returnBlock;
-		bool isConditionalIf[24 + 24];
+		std::vector<bool> isConditionalIf;
 		std::vector<Int4> restoreContinue;
 	};
 }

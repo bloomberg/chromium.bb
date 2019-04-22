@@ -17,8 +17,7 @@ namespace pp {
 class Instance;
 class Var;
 
-/// The <code>WebSocketAPI</code> class.
-/// This class is deprecated and will be removed in mid-2019.
+/// The <code>WebSocketAPI</code> class
 class WebSocketAPI {
  public:
   /// Constructs a WebSocketAPI object.

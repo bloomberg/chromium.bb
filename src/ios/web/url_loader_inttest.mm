@@ -37,6 +37,12 @@ TEST_F(URLLoaderTest, Basic) {
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = server_.GetURL("/echo");
+  // Adds kCorsExemptHeaderName into the cors_exempt_headers, that use should be
+  // allowed by TestBrowserState. If BrowserState implementation does not
+  // permit to use this header in |cors_exempt_headers| explicitly, the request
+  // fails with net::ERR_INVALID_ARGUMENT.
+  request->cors_exempt_headers.SetHeader(
+      TestBrowserState::kCorsExemptTestHeaderName, "Test");
   auto loader = network::SimpleURLLoader::Create(std::move(request),
                                                  TRAFFIC_ANNOTATION_FOR_TESTS);
   std::string result;

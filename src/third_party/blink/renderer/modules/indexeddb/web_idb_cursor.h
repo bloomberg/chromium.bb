@@ -27,9 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_CURSOR_H_
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
-#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -47,10 +45,10 @@ class MODULES_EXPORT WebIDBCursor {
   // application. When both arguments are null, the cursor advances by one
   // entry.
   //
-  // The keys pointed to by WebIDBKeyView are only guaranteed to be alive for
+  // The keys pointed to by IDBKey* are only guaranteed to be alive for
   // the duration of the call.
-  virtual void CursorContinue(WebIDBKeyView,
-                              WebIDBKeyView primary_key,
+  virtual void CursorContinue(const IDBKey*,
+                              const IDBKey* primary_key,
                               WebIDBCallbacks*) = 0;
 
   // Called after a cursor request's success handler is executed.

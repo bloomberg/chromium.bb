@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-assert(is_win, "GWP-ASan client currently only supports Windows.")
-
 component("client") {
   output_name = "gwp_asan_client"
   sources = [
@@ -17,8 +15,11 @@ component("client") {
     "gwp_asan.h",
     "sampling_allocator_shims.cc",
     "sampling_allocator_shims.h",
-    "sampling_allocator_shims_win.h",
   ]
+
+  if (is_posix) {
+    sources += [ "guarded_page_allocator_posix.cc" ]
+  }
 
   defines = [ "GWP_ASAN_IMPLEMENTATION" ]
 

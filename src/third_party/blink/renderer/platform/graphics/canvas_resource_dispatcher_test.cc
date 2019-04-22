@@ -7,9 +7,10 @@
 #include <memory>
 
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/test/mock_compositor_frame_sink.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/mojo/presentation_feedback.mojom-blink.h"
 
 using testing::_;
 using testing::Mock;
@@ -55,7 +57,7 @@ class CanvasResourceDispatcherTest
       public ::testing::WithParamInterface<TestParams> {
  public:
   void DispatchOneFrame() {
-    dispatcher_->DispatchFrame(resource_provider_->ProduceFrame(),
+    dispatcher_->DispatchFrame(resource_provider_->ProduceCanvasResource(),
                                base::TimeTicks(), SkIRect::MakeEmpty(),
                                false /* needs_vertical_flip */,
                                false /* is-opaque */);
@@ -276,5 +278,5 @@ const TestParams kTestCases[] = {
     {true, false},
     {true, true}};
 
-INSTANTIATE_TEST_CASE_P(, CanvasResourceDispatcherTest, ValuesIn(kTestCases));
+INSTANTIATE_TEST_SUITE_P(, CanvasResourceDispatcherTest, ValuesIn(kTestCases));
 }  // namespace blink

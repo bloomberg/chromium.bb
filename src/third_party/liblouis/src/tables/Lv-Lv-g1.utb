@@ -1,4 +1,25 @@
 # liblouis: Latvian Grade 1 Braille Table
+#
+#  Copyright (C) 2004-2008 ViewPlus Technologies, Inc. www.viewplus.com
+#  Copyright (C) 2004-2006 JJB Software, Inc. www.jjb-software.com
+#  Copyright (C) 2012 Mesar Hameed <mesar.hameed@gmail.com>
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+
 # Created & maintained by Leon Ungier <Leon.Ungier@ViewPlus.com>.
 
 include text_nabcc.dis
@@ -20,12 +41,10 @@ punctuation ( 2356			left parenthesis						x0028
 punctuation ) 2356			right parenthesis						x0029
 sign * 35-35						asterisk										x002A
 math + 56-235						plus												002B
-punctuation , 6					coma												002C
-punctuation - 36-36			hyphen-minus								002D
+punctuation , 2					coma												002C
+punctuation - 36			hyphen-minus								002D
 punctuation . 256				point												002E
 math / 34								solidus											002F
-
-include digits6Dots.uti
 
 punctuation : 25				colon								x003A
 punctuation ; 23				semicolon						x003B
@@ -55,6 +74,8 @@ uplow Uu 34									letter U *** Different from other langs ***
 uplow Vv 2456								letter V *** Different from other langs ***
 uplow Zz 345								letter Z *** Different from other langs ***
 include latinLetterDef6Dots.uti
+include digits6Dots.uti # Must come after letters.
+include litdigits6Dots.uti # Must come after letters.
 
 punctuation [ 6-2356		left square bracket		x005B
 sign \\ 3456-1256				reverse solidus				x005C
@@ -78,7 +99,7 @@ sign ¤ 45-15			currency sign																	x00A4
 sign ¥ 45-13456		yen	sign																			x00A5
 sign § 346				section sign																	x00A7
 sign © 2356-6-14-2356		copyright																x00A9
-punctuation « 45-2356		left-pointing double angle quotation 		x00AB
+punctuation « 236		left-pointing double angle quotation 		x00AB
 punctuation \x00AD 36 soft hyphen
 sign ° 4-356			degree sign																		x00B0
 sign ² 4-6-126		superscript 2 sign														x00B2
@@ -86,7 +107,7 @@ sign ³ 4-6-146		superscript 3 sign														x00B3
 sign µ 46-134			micro sign																		x00B5
 sign ¶ 4-1234-345 pilcrow sign (paragraph)											x00B6
 sign ¹ 1-27				superscript 1 sign														x00B9
-punctuation » 2356-12		right-pointing double angle quotation		x00BB
+punctuation » 356		right-pointing double angle quotation		x00BB
 math ¼ 6-16-34-1456		vulgar fraction one quarter								x00BC
 math ½ 6-16-34-126		vulgar fraction one half									x00BD
 math ¾ 6-126-34-1456	vulgar fraction 3 quarters								x00BE
@@ -123,6 +144,8 @@ uplow \x00DB\x00FB 156				u with circumflex					x00FB
 uplow \x00DC\x00FC 1256				u with diaeresis					x00FC
 uplow \x00DD\x00FD 12346			y with acute							x00DD / 00FD
 
+noback sign \X25CF 35-35			black circle
+
 # the letter a with ogonek -----------------------------------
 uplow \x0104\x0105 16
 
@@ -150,7 +173,6 @@ uplow \x0158\x0159 2456					R with caron
 # the letter s	with acute
 uplow \x015A\x015B 246
 
-uplow \x0160\x0161 156						S with caron
 uplow \x0164\x0165 1256						T with caron
 uplow \x016C\x016D 23456						U with breve
 uplow \x016E\x016F 23456					U with ring above
@@ -162,7 +184,6 @@ uplow \x0179\x017A 2346
 # the letter z with dot above
 uplow \x017B\x017C 12346
 
-uplow \x017D\x017E 2346						Z with caron
 
 punctuation	\x2010 36		 # 8208			hyphen
 punctuation	\x2011 36		 # 8209			non-breaking hyphen
@@ -179,8 +200,8 @@ punctuation  \x2026 3-3-3 # 8230		smart ellipsis
 # ------------------------------------------------------
 
 
-capsign 6				# single capital letter indicator
-begcaps 6-6			# a block of consecutive capital letters indicator
+capsletter 46				# single capital letter indicator
+begcapsword 6-6			# a block of consecutive capital letters indicator
 
 
 numsign 3456		#	number sign, just one operand

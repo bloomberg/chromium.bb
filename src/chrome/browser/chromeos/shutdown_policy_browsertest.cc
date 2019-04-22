@@ -9,7 +9,9 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/system_tray_test_api.mojom.h"
+#include "ash/public/interfaces/system_tray_test_api.test-mojom-test-utils.h"
+#include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -21,7 +23,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
-#include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
+#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -29,10 +31,8 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -48,31 +48,11 @@ namespace em = enterprise_management;
 
 namespace chromeos {
 
-namespace {
-
-const char kWaitForHiddenStateScript[] =
-    "var screenElement = document.getElementById('%s');"
-    "var expectation = %s;"
-    "function SendReplyIfAsExpected() {"
-    "  if (screenElement.hidden != expectation)"
-    "    return false;"
-    "  domAutomationController.send(screenElement.hidden);"
-    "  observer.disconnect();"
-    "  return true;"
-    "}"
-    "var observer = new MutationObserver(SendReplyIfAsExpected);"
-    "if (!SendReplyIfAsExpected()) {"
-    "  var options = { attributes: true };"
-    "  observer.observe(screenElement, options);"
-    "}";
-
-}  // namespace
-
 class ShutdownPolicyBaseTest
     : public policy::DevicePolicyCrosBrowserTest,
       public DeviceSettingsService::Observer {
  protected:
-  ShutdownPolicyBaseTest() : contents_(nullptr) {}
+  ShutdownPolicyBaseTest() {}
   ~ShutdownPolicyBaseTest() override {}
 
   // DeviceSettingsService::Observer:
@@ -88,27 +68,6 @@ class ShutdownPolicyBaseTest
     content::ServiceManagerConnection::GetForProcess()
         ->GetConnector()
         ->BindInterface(ash::mojom::kServiceName, &tray_test_api_);
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    policy::DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
-  }
-
-  // A helper functions which prepares the script by injecting the element_id of
-  // the element whose hiddenness we want to check and the expectation.
-  std::string PrepareScript(const std::string& element_id, bool expectation) {
-    return base::StringPrintf(kWaitForHiddenStateScript, element_id.c_str(),
-                              expectation ? "true" : "false");
-  }
-
-  // Checks whether the element identified by |element_id| is hidden and only
-  // returns if the expectation is fulfilled.
-  void PrepareAndRunScript(const std::string& element_id, bool expectation) {
-    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        contents_, PrepareScript(element_id, expectation),
-        &result_));
   }
 
   // Updates the device shutdown policy and sets it to |reboot_on_shutdown|.
@@ -140,7 +99,6 @@ class ShutdownPolicyBaseTest
       run_loop.Run();
   }
 
-  content::WebContents* contents_;
   bool result_;
   std::unique_ptr<base::RunLoop> run_loop_;
   ash::mojom::SystemTrayTestApiPtr tray_test_api_;
@@ -212,50 +170,20 @@ IN_PROC_BROWSER_TEST_F(ShutdownPolicyInSessionTest, DISABLED_PolicyChange) {
 
 class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
  protected:
-  ShutdownPolicyLockerTest() : fake_session_manager_client_(nullptr) {}
-  ~ShutdownPolicyLockerTest() override {}
-
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kShowWebUiLock);
-    ShutdownPolicyBaseTest::SetUp();
-  }
+  ShutdownPolicyLockerTest() = default;
+  ~ShutdownPolicyLockerTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
-    fake_session_manager_client_ = new FakeSessionManagerClient;
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
-
     ShutdownPolicyBaseTest::SetUpInProcessBrowserTestFixture();
     zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
   }
 
   void SetUpOnMainThread() override {
     ShutdownPolicyBaseTest::SetUpOnMainThread();
 
     // Bring up the locker screen.
-    ScreenLocker::Show();
-    std::unique_ptr<chromeos::ScreenLockerTester> tester =
-        chromeos::ScreenLockerTester::Create();
-    content::WindowedNotificationObserver lock_state_observer(
-        chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-        content::NotificationService::AllSources());
-    if (!tester->IsLocked())
-      lock_state_observer.Wait();
-    ScreenLocker* screen_locker = ScreenLocker::default_screen_locker();
-    WebUIScreenLocker* web_ui_screen_locker =
-        screen_locker->web_ui_for_testing();
-    ASSERT_TRUE(web_ui_screen_locker);
-    content::WebUI* web_ui = web_ui_screen_locker->GetWebUI();
-    ASSERT_TRUE(web_ui);
-    contents_ = web_ui->GetWebContents();
-    ASSERT_TRUE(contents_);
-
-    // Wait for the login UI to be ready.
-    WaitUntilOobeUIIsReady(web_ui_screen_locker->GetOobeUI());
+    chromeos::ScreenLockerTester().Lock();
   }
 
   void TearDownOnMainThread() override {
@@ -265,43 +193,42 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
 
  private:
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
-  FakeSessionManagerClient* fake_session_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownPolicyLockerTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyLockerTest, TestBasic) {
-  PrepareAndRunScript("restart-header-bar-item", true);
-  PrepareAndRunScript("shutdown-header-bar-item", false);
+  ScreenLockerTester tester;
+  EXPECT_FALSE(tester.IsLockRestartButtonShown());
+  EXPECT_TRUE(tester.IsLockShutdownButtonShown());
 }
 
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyLockerTest, PolicyChange) {
+  ScreenLockerTester tester;
+  int ui_update_count = tester.GetUiUpdateCount();
   UpdateRebootOnShutdownPolicy(true);
   RefreshDevicePolicy();
-  PrepareAndRunScript("restart-header-bar-item", false);
-  PrepareAndRunScript("shutdown-header-bar-item", true);
+  tester.WaitForUiUpdate(ui_update_count);
+  EXPECT_TRUE(tester.IsLockRestartButtonShown());
+  EXPECT_FALSE(tester.IsLockShutdownButtonShown());
 
+  ui_update_count = tester.GetUiUpdateCount();
   UpdateRebootOnShutdownPolicy(false);
   RefreshDevicePolicy();
-  PrepareAndRunScript("restart-header-bar-item", true);
-  PrepareAndRunScript("shutdown-header-bar-item", false);
+  tester.WaitForUiUpdate(ui_update_count);
+  EXPECT_FALSE(tester.IsLockRestartButtonShown());
+  EXPECT_TRUE(tester.IsLockShutdownButtonShown());
 }
 
 class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
  protected:
-  ShutdownPolicyLoginTest() {}
-  ~ShutdownPolicyLoginTest() override {}
+  ShutdownPolicyLoginTest() = default;
+  ~ShutdownPolicyLoginTest() override = default;
 
   // ShutdownPolicyBaseTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    ShutdownPolicyBaseTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
   }
 
   void SetUpOnMainThread() override {
@@ -312,8 +239,7 @@ class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
         content::NotificationService::AllSources()).Wait();
     LoginDisplayHost* host = LoginDisplayHost::default_host();
     ASSERT_TRUE(host);
-    contents_ = host->GetOobeWebContents();
-    ASSERT_TRUE(contents_);
+    ASSERT_TRUE(host->GetOobeWebContents());
 
     // Wait for the login UI to be ready.
     WaitUntilOobeUIIsReady(host->GetOobeUI());
@@ -323,7 +249,7 @@ class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
     // If the login display is still showing, exit gracefully.
     if (LoginDisplayHost::default_host()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&chrome::AttemptExit));
+          FROM_HERE, base::BindOnce(&chrome::AttemptExit));
       RunUntilBrowserProcessQuits();
     }
   }
@@ -333,20 +259,26 @@ class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyLoginTest, PolicyNotSet) {
-  PrepareAndRunScript("restart-header-bar-item", true);
-  PrepareAndRunScript("shutdown-header-bar-item", false);
+  test::LoginScreenTester tester;
+  EXPECT_FALSE(tester.IsRestartButtonShown());
+  EXPECT_TRUE(tester.IsShutdownButtonShown());
 }
 
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyLoginTest, PolicyChange) {
+  test::LoginScreenTester tester;
+  int ui_update_count = tester.GetUiUpdateCount();
   UpdateRebootOnShutdownPolicy(true);
   RefreshDevicePolicy();
-  PrepareAndRunScript("restart-header-bar-item", false);
-  PrepareAndRunScript("shutdown-header-bar-item", true);
+  tester.WaitForUiUpdate(ui_update_count);
+  EXPECT_TRUE(tester.IsRestartButtonShown());
+  EXPECT_FALSE(tester.IsShutdownButtonShown());
 
+  ui_update_count = tester.GetUiUpdateCount();
   UpdateRebootOnShutdownPolicy(false);
   RefreshDevicePolicy();
-  PrepareAndRunScript("restart-header-bar-item", true);
-  PrepareAndRunScript("shutdown-header-bar-item", false);
+  tester.WaitForUiUpdate(ui_update_count);
+  EXPECT_FALSE(tester.IsRestartButtonShown());
+  EXPECT_TRUE(tester.IsShutdownButtonShown());
 }
 
 }  // namespace chromeos

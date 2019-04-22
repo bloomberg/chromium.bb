@@ -13,17 +13,17 @@
 #include "base/run_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/browser_sync/test_http_bridge_factory.h"
-#include "components/browser_sync/test_profile_sync_service.h"
-#include "components/sync/driver/glue/sync_backend_host_core.h"
+#include "components/sync/driver/glue/sync_engine_backend.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
+#include "components/sync/driver/test_profile_sync_service.h"
 #include "components/sync/engine/sync_manager_factory_for_profile_sync_test.h"
 #include "components/sync/engine/test_engine_components_factory.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/test_user_share.h"
 #include "services/network/test/test_network_connection_tracker.h"
 
-using syncer::SyncBackendHostImpl;
 using syncer::ModelType;
+using syncer::SyncEngineImpl;
 using testing::_;
 using testing::ByMove;
 using testing::Return;
@@ -37,11 +37,10 @@ std::unique_ptr<syncer::HttpPostProviderFactory> GetHttpPostProviderFactory(
   return std::make_unique<TestHttpBridgeFactory>();
 }
 
-class SyncEngineForProfileSyncTest : public SyncBackendHostImpl {
+class SyncEngineForProfileSyncTest : public SyncEngineImpl {
  public:
   SyncEngineForProfileSyncTest(
       const base::FilePath& temp_dir,
-      syncer::SyncClient* sync_client,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
       base::OnceClosure callback);
@@ -62,13 +61,11 @@ class SyncEngineForProfileSyncTest : public SyncBackendHostImpl {
 
 SyncEngineForProfileSyncTest::SyncEngineForProfileSyncTest(
     const base::FilePath& temp_dir,
-    syncer::SyncClient* sync_client,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
     base::OnceClosure callback)
-    : SyncBackendHostImpl(
+    : SyncEngineImpl(
           "dummy_debug_name",
-          sync_client,
           invalidator,
           sync_prefs,
           temp_dir.Append(base::FilePath(FILE_PATH_LITERAL("test")))),
@@ -82,8 +79,6 @@ void SyncEngineForProfileSyncTest::Initialize(InitParams params) {
       std::make_unique<syncer::SyncManagerFactoryForProfileSyncTest>(
           std::move(callback_),
           network::TestNetworkConnectionTracker::GetInstance());
-  params.credentials.email = "testuser@gmail.com";
-  params.credentials.sync_token = "token";
   params.restored_key_for_bootstrapping.clear();
 
   // It'd be nice if we avoided creating the EngineComponentsFactory in the
@@ -96,7 +91,7 @@ void SyncEngineForProfileSyncTest::Initialize(InitParams params) {
           factory_switches, syncer::EngineComponentsFactory::STORAGE_IN_MEMORY,
           nullptr);
 
-  SyncBackendHostImpl::Initialize(std::move(params));
+  SyncEngineImpl::Initialize(std::move(params));
 }
 
 void SyncEngineForProfileSyncTest::ConfigureDataTypes(ConfigureParams params) {
@@ -113,38 +108,7 @@ void SyncEngineForProfileSyncTest::ConfigureDataTypes(ConfigureParams params) {
           syncer::ModelTypeSet(), params.ready_task));
 }
 
-// Helper function for return-type-upcasting of the callback.
-syncer::SyncService* GetSyncService(
-    base::Callback<TestProfileSyncService*(void)> get_sync_service_callback) {
-  return get_sync_service_callback.Run();
-}
-
 }  // namespace
-
-/* static */
-syncer::ImmutableChangeRecordList
-ProfileSyncServiceTestHelper::MakeSingletonChangeRecordList(
-    int64_t node_id,
-    syncer::ChangeRecord::Action action) {
-  syncer::ChangeRecord record;
-  record.action = action;
-  record.id = node_id;
-  syncer::ChangeRecordList records(1, record);
-  return syncer::ImmutableChangeRecordList(&records);
-}
-
-/* static */
-syncer::ImmutableChangeRecordList
-ProfileSyncServiceTestHelper::MakeSingletonDeletionChangeRecordList(
-    int64_t node_id,
-    const sync_pb::EntitySpecifics& specifics) {
-  syncer::ChangeRecord record;
-  record.action = syncer::ChangeRecord::ACTION_DELETE;
-  record.id = node_id;
-  record.specifics = specifics;
-  syncer::ChangeRecordList records(1, record);
-  return syncer::ImmutableChangeRecordList(&records);
-}
 
 AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()
     : data_type_thread_("Extra thread") {
@@ -164,30 +128,24 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
     std::unique_ptr<syncer::SyncClient> sync_client,
     base::OnceClosure initialization_success_callback) {
   ASSERT_TRUE(sync_client);
-  ProfileSyncService::InitParams init_params =
+  syncer::ProfileSyncService::InitParams init_params =
       profile_sync_service_bundle_.CreateBasicInitParams(
-          ProfileSyncService::AUTO_START, std::move(sync_client));
+          syncer::ProfileSyncService::AUTO_START, std::move(sync_client));
   sync_service_ =
-      std::make_unique<TestProfileSyncService>(std::move(init_params));
+      std::make_unique<syncer::TestProfileSyncService>(std::move(init_params));
 
   syncer::SyncApiComponentFactoryMock* components =
       profile_sync_service_bundle_.component_factory();
   auto engine = std::make_unique<SyncEngineForProfileSyncTest>(
-      temp_dir_.GetPath(), sync_service_->GetSyncClientForTest(),
+      temp_dir_.GetPath(),
       profile_sync_service_bundle_.fake_invalidation_service(),
       sync_service_->sync_prefs()->AsWeakPtr(),
       std::move(initialization_success_callback));
-  EXPECT_CALL(*components, CreateSyncEngine(_, _, _, _))
+  EXPECT_CALL(*components, CreateSyncEngine(_, _, _))
       .WillOnce(Return(ByMove(std::move(engine))));
 
-  sync_service_->GetUserSettings()->SetFirstSetupComplete();
-}
-
-base::Callback<syncer::SyncService*(void)>
-AbstractProfileSyncServiceTest::GetSyncServiceCallback() {
-  return base::Bind(GetSyncService,
-                    base::Bind(&AbstractProfileSyncServiceTest::sync_service,
-                               base::Unretained(this)));
+  sync_service_->sync_prefs()->SetSyncRequested(true);
+  sync_service_->sync_prefs()->SetFirstSetupComplete();
 }
 
 CreateRootHelper::CreateRootHelper(AbstractProfileSyncServiceTest* test,

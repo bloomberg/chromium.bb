@@ -34,7 +34,7 @@
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [9, 10, 179, 18],
+          "rect": [9, 11, 179, 16],
           "reason": "chunk appeared"
         }
       ]

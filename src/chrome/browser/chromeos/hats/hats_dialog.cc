@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/hats/hats_dialog.h"
 
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -17,6 +18,7 @@
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
@@ -54,8 +56,8 @@ enum class DeviceInfoKey : unsigned int {
 
 // Returns the local HaTS HTML file as a string with the correct Hats script
 // URL.
-std::string LoadLocalHtmlAsString(std::string site_id,
-                                  std::string site_context) {
+std::string LoadLocalHtmlAsString(const std::string& site_id,
+                                  const std::string& site_context) {
   std::string html_data;
   ui::ResourceBundle::GetSharedInstance()
       .GetRawDataResource(IDR_HATS_HTML)
@@ -97,7 +99,7 @@ const std::string KeyEnumToString(DeviceInfoKey key) {
 // 'STOP' is used as a token to identify the end of a key value pair. This is
 // done since GCS only allows the use of alphanumeric characters to be passed as
 // a site context.
-std::string GetFormattedSiteContext(std::string user_locale,
+std::string GetFormattedSiteContext(const std::string& user_locale,
                                     base::StringPiece join_keyword) {
   std::vector<std::string> pairs;
   pairs.push_back(KeyEnumToString(DeviceInfoKey::BROWSER) +
@@ -118,6 +120,8 @@ std::string GetFormattedSiteContext(std::string user_locale,
 
 // static
 void HatsDialog::CreateAndShow(bool is_google_account) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::string user_locale =
       profile->GetPrefs()->GetString(language::prefs::kApplicationLocale);
@@ -125,30 +129,36 @@ void HatsDialog::CreateAndShow(bool is_google_account) {
   if (!user_locale.length())
     user_locale = kDefaultProfileLocale;
 
-  std::unique_ptr<HatsDialog> hats_dialog(new HatsDialog);
-
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&GetFormattedSiteContext, user_locale, kDeviceInfoStopKeyword),
-      base::Bind(&HatsDialog::Show, base::Passed(&hats_dialog),
-                 is_google_account ? kGooglerSiteID : kSiteID));
+      base::BindOnce(&GetFormattedSiteContext, user_locale,
+                     kDeviceInfoStopKeyword),
+      base::BindOnce(&HatsDialog::Show, is_google_account));
 }
 
 // static
-void HatsDialog::Show(std::unique_ptr<HatsDialog> hats_dialog,
-                      std::string site_id,
-                      std::string site_context) {
+void HatsDialog::Show(bool is_google_account, const std::string& site_context) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   // Load and set the html data that needs to be displayed in the dialog.
-  hats_dialog->html_data_ = LoadLocalHtmlAsString(site_id, site_context);
+  std::string site_id = is_google_account ? kGooglerSiteID : kSiteID;
+  std::string html_data = LoadLocalHtmlAsString(site_id, site_context);
+
+  // Self deleting.
+  auto* hats_dialog = new HatsDialog(html_data);
 
   chrome::ShowWebDialog(
       nullptr, ProfileManager::GetActiveUserProfile()->GetOffTheRecordProfile(),
-      hats_dialog.release());
+      hats_dialog);
 }
 
-HatsDialog::HatsDialog() {}
+HatsDialog::HatsDialog(const std::string& html_data) : html_data_(html_data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
 
-HatsDialog::~HatsDialog() {}
+HatsDialog::~HatsDialog() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
 
 ui::ModalType HatsDialog::GetDialogModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
@@ -189,7 +199,8 @@ bool HatsDialog::ShouldShowDialogTitle() const {
   return false;
 }
 
-bool HatsDialog::HandleContextMenu(const content::ContextMenuParams& params) {
+bool HatsDialog::HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                                   const content::ContextMenuParams& params) {
   // Disable context menu.
   return true;
 }

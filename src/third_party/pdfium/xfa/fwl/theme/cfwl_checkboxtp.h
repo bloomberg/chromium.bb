@@ -19,11 +19,11 @@ class CFWL_CheckBoxTP final : public CFWL_WidgetTP {
   CFWL_CheckBoxTP();
   ~CFWL_CheckBoxTP() override;
 
-  // CFWL_WidgeTP
+  // CFWL_WidgetTP
   void Initialize() override;
   void Finalize() override;
-  void DrawText(CFWL_ThemeText* pParams) override;
-  void DrawBackground(CFWL_ThemeBackground* pParams) override;
+  void DrawBackground(const CFWL_ThemeBackground& pParams) override;
+  void DrawText(const CFWL_ThemeText& pParams) override;
 
  private:
   struct CKBThemeData {
@@ -41,31 +41,31 @@ class CFWL_CheckBoxTP final : public CFWL_WidgetTP {
                      CXFA_Graphics* pGraphics,
                      const CFX_RectF& pRtBox,
                      int32_t iState,
-                     CFX_Matrix* pMatrix);
+                     const CFX_Matrix& matrix);
   void DrawSignCheck(CXFA_Graphics* pGraphics,
-                     const CFX_RectF* pRtSign,
+                     const CFX_RectF& rtSign,
                      FX_ARGB argbFill,
-                     CFX_Matrix* pMatrix);
+                     const CFX_Matrix& matrix);
   void DrawSignCircle(CXFA_Graphics* pGraphics,
-                      const CFX_RectF* pRtSign,
+                      const CFX_RectF& rtSign,
                       FX_ARGB argbFill,
-                      CFX_Matrix* pMatrix);
+                      const CFX_Matrix& matrix);
   void DrawSignCross(CXFA_Graphics* pGraphics,
-                     const CFX_RectF* pRtSign,
+                     const CFX_RectF& rtSign,
                      FX_ARGB argbFill,
-                     CFX_Matrix* pMatrix);
+                     const CFX_Matrix& matrix);
   void DrawSignDiamond(CXFA_Graphics* pGraphics,
-                       const CFX_RectF* pRtSign,
+                       const CFX_RectF& rtSign,
                        FX_ARGB argbFill,
-                       CFX_Matrix* pMatrix);
+                       const CFX_Matrix& matrix);
   void DrawSignSquare(CXFA_Graphics* pGraphics,
-                      const CFX_RectF* pRtSign,
+                      const CFX_RectF& rtSign,
                       FX_ARGB argbFill,
-                      CFX_Matrix* pMatrix);
+                      const CFX_Matrix& matrix);
   void DrawSignStar(CXFA_Graphics* pGraphics,
-                    const CFX_RectF* pRtSign,
+                    const CFX_RectF& rtSign,
                     FX_ARGB argbFill,
-                    CFX_Matrix* pMatrix);
+                    const CFX_Matrix& matrix);
 
   void InitCheckPath(float fCheckLen);
   void SetThemeData();

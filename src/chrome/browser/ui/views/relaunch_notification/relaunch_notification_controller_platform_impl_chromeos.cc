@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller_platform_impl_chromeos.h"
 
+#include "base/bind.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_metrics.h"
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_recommended_timer.h"
@@ -19,7 +20,7 @@ RelaunchNotificationControllerPlatformImpl::
     ~RelaunchNotificationControllerPlatformImpl() = default;
 
 void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRecommended(
-    base::TimeTicks detection_time) {
+    base::Time detection_time) {
   if (!relaunch_recommended_timer_) {
     relaunch_recommended_timer_ = std::make_unique<RelaunchRecommendedTimer>(
         detection_time,
@@ -35,7 +36,7 @@ void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRecommended(
 }
 
 void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRequired(
-    base::TimeTicks deadline) {
+    base::Time deadline) {
   if (!relaunch_required_timer_) {
     relaunch_required_timer_ = std::make_unique<RelaunchRequiredTimer>(
         deadline,
@@ -60,7 +61,7 @@ void RelaunchNotificationControllerPlatformImpl::CloseRelaunchNotification() {
 }
 
 void RelaunchNotificationControllerPlatformImpl::SetDeadline(
-    base::TimeTicks deadline) {
+    base::Time deadline) {
   relaunch_required_timer_->SetDeadline(deadline);
 }
 

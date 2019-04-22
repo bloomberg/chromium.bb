@@ -355,6 +355,10 @@ void VideoCaptureOracle::SetMinSizeChangePeriod(base::TimeDelta period) {
   min_size_change_period_ = period;
 }
 
+gfx::Size VideoCaptureOracle::capture_size() const {
+  return capture_size_;
+}
+
 // static
 const char* VideoCaptureOracle::EventAsString(Event event) {
   switch (event) {

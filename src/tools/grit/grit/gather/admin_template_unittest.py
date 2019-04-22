@@ -96,22 +96,18 @@ class AdmGathererUnittest(unittest.TestCase):
 
   def testFileIsOutput(self):
     grd = self.MakeGrd()
-    dirname = tempfile.mkdtemp()
+    dirname = util.TempDir({})
     try:
       tool = build.RcBuilder()
       tool.o = grit_runner.Options()
-      tool.output_directory = dirname
+      tool.output_directory = dirname.GetPath()
       tool.res = grd
       tool.Process()
 
-      self.failUnless(os.path.isfile(
-        os.path.join(dirname, 'de_GoogleDesktop.adm')))
-      self.failUnless(os.path.isfile(
-        os.path.join(dirname, 'de_README.txt')))
+      self.failUnless(os.path.isfile(dirname.GetPath('de_GoogleDesktop.adm')))
+      self.failUnless(os.path.isfile(dirname.GetPath('de_README.txt')))
     finally:
-      for f in os.listdir(dirname):
-        os.unlink(os.path.join(dirname, f))
-      os.rmdir(dirname)
+      dirname.CleanUp()
 
 if __name__ == '__main__':
   unittest.main()

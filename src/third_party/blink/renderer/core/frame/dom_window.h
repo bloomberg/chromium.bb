@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -89,17 +88,18 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   DOMWindow* parent() const;
   DOMWindow* top() const;
 
-  void focus(LocalDOMWindow* incumbent_window);
+  void focus(v8::Isolate*);
   virtual void blur() = 0;
-  void close(LocalDOMWindow* incumbent_window);
+  void close(v8::Isolate*);
+  void Close(LocalDOMWindow* incumbent_window);
 
-  void postMessage(LocalDOMWindow* incumbent_window,
+  void postMessage(v8::Isolate*,
                    const ScriptValue& message,
                    const String& target_origin,
                    Vector<ScriptValue>& transfer,
                    ExceptionState&);
 
-  void postMessage(LocalDOMWindow* incumbent_window,
+  void postMessage(v8::Isolate*,
                    const ScriptValue& message,
                    const WindowPostMessageOptions* options,
                    ExceptionState&);
@@ -108,10 +108,10 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   DOMWindow* AnonymousIndexedGetter(uint32_t index) const;
 
   String SanitizedCrossDomainAccessErrorMessage(
-      const LocalDOMWindow* calling_window) const;
+      const LocalDOMWindow* accessing_window) const;
   String CrossDomainAccessErrorMessage(
-      const LocalDOMWindow* calling_window) const;
-  bool IsInsecureScriptAccess(LocalDOMWindow& calling_window, const KURL&);
+      const LocalDOMWindow* accessing_window) const;
+  bool IsInsecureScriptAccess(LocalDOMWindow& accessing_window, const KURL&);
 
   // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
   // when its document is no longer the document that is displayed in its
@@ -152,7 +152,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   // of this object.
   const Member<WindowProxyManager> window_proxy_manager_;
   Member<InputDeviceCapabilitiesConstants> input_capabilities_;
-  mutable TraceWrapperMember<Location> location_;
+  mutable Member<Location> location_;
 
   // Set to true when close() has been called. Needed for
   // |window.closed| determinism; having it return 'true'

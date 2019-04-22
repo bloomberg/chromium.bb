@@ -228,7 +228,7 @@ void TriggerThrottler::WriteTriggerEventsToPref() {
   base::DictionaryValue trigger_dict;
   for (const auto& trigger_item : trigger_events_) {
     base::Value* pref_timestamps = trigger_dict.SetKey(
-        base::IntToString(static_cast<int>(trigger_item.first)),
+        base::NumberToString(static_cast<int>(trigger_item.first)),
         base::Value(base::Value::Type::LIST));
     for (const base::Time timestamp : trigger_item.second) {
       pref_timestamps->GetList().push_back(base::Value(timestamp.ToDoubleT()));
@@ -245,6 +245,7 @@ size_t TriggerThrottler::GetDailyQuotaForTrigger(
   switch (trigger_type) {
     case TriggerType::SECURITY_INTERSTITIAL:
     case TriggerType::GAIA_PASSWORD_REUSE:
+    case TriggerType::APK_DOWNLOAD:
       return kUnlimitedTriggerQuota;
     case TriggerType::AD_SAMPLE:
       // Ad Samples have a non-zero default quota, but it can be overwritten

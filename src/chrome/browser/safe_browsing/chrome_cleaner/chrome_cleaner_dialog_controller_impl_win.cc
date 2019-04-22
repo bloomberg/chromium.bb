@@ -166,14 +166,14 @@ void ChromeCleanerDialogControllerImpl::DetailsButtonClicked(
   base::RecordAction(base::UserMetricsAction(
       "SoftwareReporter.PromptDialog_DetailsButtonClicked"));
 
-  cleaner_controller_->SetLogsEnabled(logs_enabled);
+  cleaner_controller_->SetLogsEnabled(browser_->profile(), logs_enabled);
   chrome_cleaner_util::OpenCleanupPage(
       browser_, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   OnInteractionDone();
 }
 
 void ChromeCleanerDialogControllerImpl::SetLogsEnabled(bool logs_enabled) {
-  cleaner_controller_->SetLogsEnabled(logs_enabled);
+  cleaner_controller_->SetLogsEnabled(browser_->profile(), logs_enabled);
   if (logs_enabled) {
     base::RecordAction(base::UserMetricsAction(
         "SoftwareReporter.PromptDialog.LogsPermissionCheckbox_Enabled"));
@@ -184,11 +184,11 @@ void ChromeCleanerDialogControllerImpl::SetLogsEnabled(bool logs_enabled) {
 }
 
 bool ChromeCleanerDialogControllerImpl::LogsEnabled() {
-  return cleaner_controller_->logs_enabled();
+  return cleaner_controller_->logs_enabled(browser_->profile());
 }
 
 bool ChromeCleanerDialogControllerImpl::LogsManaged() {
-  return cleaner_controller_->IsReportingManagedByPolicy();
+  return cleaner_controller_->IsReportingManagedByPolicy(browser_->profile());
 }
 
 void ChromeCleanerDialogControllerImpl::OnIdle(

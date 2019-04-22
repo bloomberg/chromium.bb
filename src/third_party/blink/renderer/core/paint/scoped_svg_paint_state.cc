@@ -61,9 +61,9 @@ bool ScopedSVGPaintState::ApplyClipMaskAndFilterIfNecessary() {
   DCHECK(!apply_clip_mask_and_filter_if_necessary_called_);
   apply_clip_mask_and_filter_if_necessary_called_ = true;
 #endif
-  // In SPv2 we should early exit once the paint property state has been
+  // In CAP we should early exit once the paint property state has been
   // applied, because all meta (non-drawing) display items are ignored in
-  // SPv2. However we can't simply omit them because there are still
+  // CAP. However we can't simply omit them because there are still
   // non-composited painting (e.g. SVG filters in particular) that rely on
   // these meta display items.
   ApplyPaintPropertyState();
@@ -120,11 +120,11 @@ void ScopedSVGPaintState::ApplyPaintPropertyState() {
   auto& paint_controller = GetPaintInfo().context.GetPaintController();
   PropertyTreeState state = paint_controller.CurrentPaintChunkProperties();
   if (const auto* effect = properties->Effect())
-    state.SetEffect(effect);
+    state.SetEffect(*effect);
   if (const auto* mask_clip = properties->MaskClip())
-    state.SetClip(mask_clip);
+    state.SetClip(*mask_clip);
   else if (const auto* clip_path_clip = properties->ClipPathClip())
-    state.SetClip(clip_path_clip);
+    state.SetClip(*clip_path_clip);
   scoped_paint_chunk_properties_.emplace(
       paint_controller, state, object_,
       DisplayItem::PaintPhaseToSVGEffectType(GetPaintInfo().phase));

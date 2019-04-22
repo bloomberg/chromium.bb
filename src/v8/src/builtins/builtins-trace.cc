@@ -6,6 +6,7 @@
 #include "src/builtins/builtins-utils-inl.h"
 #include "src/builtins/builtins.h"
 #include "src/counters.h"
+#include "src/heap/heap-inl.h"  // For ToBoolean. TODO(jkummerow): Drop.
 #include "src/json-stringifier.h"
 #include "src/objects-inl.h"
 
@@ -35,7 +36,8 @@ class MaybeUtf8 {
         // strings, the bytes we get from SeqOneByteString are not. buf_ is
         // guaranteed to be null terminated.
         DisallowHeapAllocation no_gc;
-        memcpy(buf_, Handle<SeqOneByteString>::cast(string)->GetChars(), len);
+        memcpy(buf_, Handle<SeqOneByteString>::cast(string)->GetChars(no_gc),
+               len);
       }
     } else {
       Local<v8::String> local = Utils::ToLocal(string);

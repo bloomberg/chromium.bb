@@ -7,18 +7,18 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/hash/sha1.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/sha1.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/extensions/fake_arc_support.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_default_negotiator.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -26,10 +26,12 @@
 #include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_store.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,9 +63,13 @@ class ArcTermsOfServiceDefaultNegotiatorTest
     BrowserWithTestWindowTest::SetUp();
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
-    IdentityManagerFactory::GetForProfile(profile())
-        ->SetPrimaryAccountSynchronously("gaia_id", "testing@account.com",
-                                         /*refresh_token=*/std::string());
+    identity::MakePrimaryAccountAvailable(
+        IdentityManagerFactory::GetForProfile(profile()),
+        "testing@account.com");
+
+    chromeos::StatsReportingController::RegisterLocalStatePrefs(
+        local_state_.registry());
+    chromeos::StatsReportingController::Initialize(&local_state_);
 
     support_host_ = std::make_unique<ArcSupportHost>(profile());
     fake_arc_support_ = std::make_unique<FakeArcSupport>(support_host_.get());
@@ -77,6 +83,7 @@ class ArcTermsOfServiceDefaultNegotiatorTest
     support_host_.reset();
     user_manager_enabler_.reset();
 
+    chromeos::StatsReportingController::Shutdown();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -102,6 +109,7 @@ class ArcTermsOfServiceDefaultNegotiatorTest
   }
 
  private:
+  TestingPrefServiceSimple local_state_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<ArcSupportHost> support_host_;
   std::unique_ptr<FakeArcSupport> fake_arc_support_;

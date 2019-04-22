@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_set>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"

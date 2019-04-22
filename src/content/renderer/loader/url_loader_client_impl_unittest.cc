@@ -17,10 +17,33 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
+
+namespace {
+
+constexpr size_t kDataPipeCapacity = 4096;
+
+std::string ReadOneChunk(mojo::ScopedDataPipeConsumerHandle* handle) {
+  char buffer[kDataPipeCapacity];
+  uint32_t read_bytes = kDataPipeCapacity;
+  MojoResult result =
+      (*handle)->ReadData(buffer, &read_bytes, MOJO_READ_DATA_FLAG_NONE);
+  if (result != MOJO_RESULT_OK)
+    return "";
+  return std::string(buffer, read_bytes);
+}
+
+std::string GetRequestPeerContextBody(TestRequestPeer::Context* context) {
+  if (context->body_handle) {
+    context->data += ReadOneChunk(&context->body_handle);
+  }
+  return context->data;
+}
+
+}  // namespace
 
 class URLLoaderClientImplTest : public ::testing::Test,
                                 public network::mojom::URLLoaderFactory {
@@ -40,8 +63,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
                                           &request_peer_context_),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        nullptr /* navigation_response_override_params */,
-        nullptr /* continue_navigation_function */);
+        nullptr /* navigation_response_override_params */);
     request_peer_context_.request_id = request_id_;
 
     base::RunLoop().RunUntilIdle();
@@ -72,7 +94,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
     options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
     options.element_num_bytes = 1;
-    options.capacity_num_bytes = 4096;
+    options.capacity_num_bytes = kDataPipeCapacity;
     return options;
   }
 
@@ -112,7 +134,7 @@ TEST_F(URLLoaderClientImplTest, ResponseBody) {
   EXPECT_EQ(5u, size);
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("hello", request_peer_context_.data);
+  EXPECT_EQ("hello", GetRequestPeerContextBody(&request_peer_context_));
 }
 
 TEST_F(URLLoaderClientImplTest, OnReceiveRedirect) {
@@ -156,20 +178,6 @@ TEST_F(URLLoaderClientImplTest, OnTransferSizeUpdated) {
   EXPECT_EQ(8, request_peer_context_.total_encoded_data_length);
 }
 
-TEST_F(URLLoaderClientImplTest, OnCompleteWithoutResponseBody) {
-  network::ResourceResponseHead response_head;
-  network::URLLoaderCompletionStatus status;
-
-  url_loader_client_->OnReceiveResponse(response_head);
-  url_loader_client_->OnComplete(status);
-
-  EXPECT_FALSE(request_peer_context_.received_response);
-  EXPECT_FALSE(request_peer_context_.complete);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(request_peer_context_.received_response);
-  EXPECT_TRUE(request_peer_context_.complete);
-}
-
 TEST_F(URLLoaderClientImplTest, OnCompleteWithResponseBody) {
   network::ResourceResponseHead response_head;
   network::URLLoaderCompletionStatus status;
@@ -186,10 +194,10 @@ TEST_F(URLLoaderClientImplTest, OnCompleteWithResponseBody) {
   data_pipe.producer_handle.reset();
 
   EXPECT_FALSE(request_peer_context_.received_response);
-  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ("", GetRequestPeerContextBody(&request_peer_context_));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(request_peer_context_.received_response);
-  EXPECT_EQ("hello", request_peer_context_.data);
+  EXPECT_EQ("hello", GetRequestPeerContextBody(&request_peer_context_));
 
   url_loader_client_->OnComplete(status);
 
@@ -197,7 +205,7 @@ TEST_F(URLLoaderClientImplTest, OnCompleteWithResponseBody) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(request_peer_context_.received_response);
-  EXPECT_EQ("hello", request_peer_context_.data);
+  EXPECT_EQ("hello", GetRequestPeerContextBody(&request_peer_context_));
   EXPECT_TRUE(request_peer_context_.complete);
 }
 
@@ -216,7 +224,7 @@ TEST_F(URLLoaderClientImplTest, OnCompleteShouldBeTheLastMessage) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(request_peer_context_.received_response);
-  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_TRUE(request_peer_context_.complete);
 
   uint32_t size = 5;
   MojoResult result = data_pipe.producer_handle->WriteData(
@@ -225,13 +233,7 @@ TEST_F(URLLoaderClientImplTest, OnCompleteShouldBeTheLastMessage) {
   EXPECT_EQ(5u, size);
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("hello", request_peer_context_.data);
-  EXPECT_FALSE(request_peer_context_.complete);
-
-  data_pipe.producer_handle.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ("hello", request_peer_context_.data);
-  EXPECT_TRUE(request_peer_context_.complete);
+  EXPECT_EQ("hello", GetRequestPeerContextBody(&request_peer_context_));
 }
 
 TEST_F(URLLoaderClientImplTest, CancelOnReceiveResponse) {
@@ -256,41 +258,15 @@ TEST_F(URLLoaderClientImplTest, CancelOnReceiveResponse) {
   EXPECT_TRUE(request_peer_context_.cancelled);
 }
 
-TEST_F(URLLoaderClientImplTest, CancelOnReceiveData) {
-  request_peer_context_.cancel_on_receive_data = true;
-
-  network::ResourceResponseHead response_head;
-  network::URLLoaderCompletionStatus status;
-
-  mojo::DataPipe data_pipe(DataPipeOptions());
-  uint32_t size = 5;
-  MojoResult result = data_pipe.producer_handle->WriteData(
-      "hello", &size, MOJO_WRITE_DATA_FLAG_NONE);
-  ASSERT_EQ(MOJO_RESULT_OK, result);
-  EXPECT_EQ(5u, size);
-
-  url_loader_client_->OnReceiveResponse(response_head);
-  url_loader_client_->OnStartLoadingResponseBody(
-      std::move(data_pipe.consumer_handle));
-  url_loader_client_->OnComplete(status);
-
-  EXPECT_FALSE(request_peer_context_.received_response);
-  EXPECT_EQ("", request_peer_context_.data);
-  EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_FALSE(request_peer_context_.cancelled);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(request_peer_context_.received_response);
-  EXPECT_EQ("hello", request_peer_context_.data);
-  EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_TRUE(request_peer_context_.cancelled);
-}
-
 TEST_F(URLLoaderClientImplTest, Defer) {
   network::ResourceResponseHead response_head;
   network::URLLoaderCompletionStatus status;
 
   url_loader_client_->OnReceiveResponse(response_head);
+  mojo::DataPipe data_pipe;
+  data_pipe.producer_handle.reset();  // Empty body.
+  url_loader_client_->OnStartLoadingResponseBody(
+      std::move(data_pipe.consumer_handle));
   url_loader_client_->OnComplete(status);
 
   EXPECT_FALSE(request_peer_context_.received_response);
@@ -330,24 +306,24 @@ TEST_F(URLLoaderClientImplTest, DeferWithResponseBody) {
 
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ("", GetRequestPeerContextBody(&request_peer_context_));
 
   dispatcher_->SetDefersLoading(request_id_, true);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ("", GetRequestPeerContextBody(&request_peer_context_));
 
   dispatcher_->SetDefersLoading(request_id_, false);
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ("", GetRequestPeerContextBody(&request_peer_context_));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(request_peer_context_.received_response);
   EXPECT_TRUE(request_peer_context_.complete);
-  EXPECT_EQ("hello", request_peer_context_.data);
+  EXPECT_EQ("hello", GetRequestPeerContextBody(&request_peer_context_));
 }
 
 // As "transfer size update" message is handled specially in the implementation,
@@ -372,7 +348,7 @@ TEST_F(URLLoaderClientImplTest, DeferWithTransferSizeUpdated) {
 
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ("", GetRequestPeerContextBody(&request_peer_context_));
   EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
 
   dispatcher_->SetDefersLoading(request_id_, true);
@@ -380,19 +356,19 @@ TEST_F(URLLoaderClientImplTest, DeferWithTransferSizeUpdated) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ("", GetRequestPeerContextBody(&request_peer_context_));
   EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
 
   dispatcher_->SetDefersLoading(request_id_, false);
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ("", GetRequestPeerContextBody(&request_peer_context_));
   EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(request_peer_context_.received_response);
   EXPECT_TRUE(request_peer_context_.complete);
-  EXPECT_EQ("hello", request_peer_context_.data);
+  EXPECT_EQ("hello", GetRequestPeerContextBody(&request_peer_context_));
   EXPECT_EQ(4, request_peer_context_.total_encoded_data_length);
 }
 
@@ -421,7 +397,7 @@ TEST_F(URLLoaderClientImplTest, SetDeferredDuringFlushingDeferredMessage) {
   EXPECT_EQ(0, request_peer_context_.seen_redirects);
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ("", GetRequestPeerContextBody(&request_peer_context_));
   EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
 
   dispatcher_->SetDefersLoading(request_id_, true);
@@ -430,21 +406,21 @@ TEST_F(URLLoaderClientImplTest, SetDeferredDuringFlushingDeferredMessage) {
   EXPECT_EQ(0, request_peer_context_.seen_redirects);
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ("", GetRequestPeerContextBody(&request_peer_context_));
   EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
 
   dispatcher_->SetDefersLoading(request_id_, false);
   EXPECT_EQ(0, request_peer_context_.seen_redirects);
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ("", GetRequestPeerContextBody(&request_peer_context_));
   EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, request_peer_context_.seen_redirects);
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ("", GetRequestPeerContextBody(&request_peer_context_));
   EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
   EXPECT_FALSE(request_peer_context_.cancelled);
 
@@ -453,7 +429,7 @@ TEST_F(URLLoaderClientImplTest, SetDeferredDuringFlushingDeferredMessage) {
   EXPECT_EQ(1, request_peer_context_.seen_redirects);
   EXPECT_TRUE(request_peer_context_.received_response);
   EXPECT_TRUE(request_peer_context_.complete);
-  EXPECT_EQ("hello", request_peer_context_.data);
+  EXPECT_EQ("hello", GetRequestPeerContextBody(&request_peer_context_));
   EXPECT_EQ(4, request_peer_context_.total_encoded_data_length);
   EXPECT_FALSE(request_peer_context_.cancelled);
 }
@@ -466,6 +442,10 @@ TEST_F(URLLoaderClientImplTest,
   network::URLLoaderCompletionStatus status;
 
   url_loader_client_->OnReceiveResponse(response_head);
+  mojo::DataPipe data_pipe;
+  data_pipe.producer_handle.reset();  // Empty body.
+  url_loader_client_->OnStartLoadingResponseBody(
+      std::move(data_pipe.consumer_handle));
 
   url_loader_client_->OnTransferSizeUpdated(4);
   url_loader_client_->OnComplete(status);
@@ -498,44 +478,6 @@ TEST_F(URLLoaderClientImplTest,
   EXPECT_TRUE(request_peer_context_.complete);
   EXPECT_EQ(4, request_peer_context_.total_encoded_data_length);
   EXPECT_FALSE(request_peer_context_.cancelled);
-}
-
-TEST_F(URLLoaderClientImplTest, CancelOnReceiveDataWhileFlushing) {
-  request_peer_context_.cancel_on_receive_data = true;
-  dispatcher_->SetDefersLoading(request_id_, true);
-
-  network::ResourceResponseHead response_head;
-  network::URLLoaderCompletionStatus status;
-
-  mojo::DataPipe data_pipe(DataPipeOptions());
-  uint32_t size = 5;
-  MojoResult result = data_pipe.producer_handle->WriteData(
-      "hello", &size, MOJO_WRITE_DATA_FLAG_NONE);
-  ASSERT_EQ(MOJO_RESULT_OK, result);
-  EXPECT_EQ(5u, size);
-
-  url_loader_client_->OnReceiveResponse(response_head);
-  url_loader_client_->OnStartLoadingResponseBody(
-      std::move(data_pipe.consumer_handle));
-  url_loader_client_->OnComplete(status);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(request_peer_context_.received_response);
-  EXPECT_EQ("", request_peer_context_.data);
-  EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_FALSE(request_peer_context_.cancelled);
-
-  dispatcher_->SetDefersLoading(request_id_, false);
-  EXPECT_FALSE(request_peer_context_.received_response);
-  EXPECT_EQ("", request_peer_context_.data);
-  EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_FALSE(request_peer_context_.cancelled);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(request_peer_context_.received_response);
-  EXPECT_EQ("hello", request_peer_context_.data);
-  EXPECT_FALSE(request_peer_context_.complete);
-  EXPECT_TRUE(request_peer_context_.cancelled);
 }
 
 }  // namespace content

@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/xml/xpath_functions.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
@@ -48,7 +49,7 @@ static inline bool IsWhitespace(UChar c) {
 }
 
 #define DEFINE_FUNCTION_CREATOR(Class) \
-  static Function* Create##Class() { return new Class; }
+  static Function* Create##Class() { return MakeGarbageCollected<Class>(); }
 
 class Interval {
  public:
@@ -742,7 +743,7 @@ static void CreateFunctionMap() {
   };
 
   g_function_map = new HashMap<String, FunctionRec>;
-  for (size_t i = 0; i < arraysize(functions); ++i)
+  for (size_t i = 0; i < base::size(functions); ++i)
     g_function_map->Set(functions[i].name, functions[i].function);
 }
 

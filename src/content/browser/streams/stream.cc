@@ -20,7 +20,7 @@
 namespace {
 // Start throttling the connection at about 1MB.
 const size_t kDeferSizeThreshold = 40 * 32768;
-}
+}  // namespace
 
 namespace content {
 
@@ -61,12 +61,12 @@ bool Stream::SetReadObserver(StreamReadObserver* observer) {
 }
 
 void Stream::RemoveReadObserver(StreamReadObserver* observer) {
-  DCHECK(observer == read_observer_);
+  DCHECK_EQ(observer, read_observer_);
   read_observer_ = nullptr;
 }
 
 void Stream::RemoveWriteObserver(StreamWriteObserver* observer) {
-  DCHECK(observer == write_observer_);
+  DCHECK_EQ(observer, write_observer_);
   write_observer_ = nullptr;
 }
 
@@ -112,16 +112,6 @@ void Stream::AddData(scoped_refptr<net::IOBuffer> buffer, size_t size) {
   last_total_buffered_bytes_ = current_buffered_bytes + size;
 
   can_add_data_ = writer_->Write(buffer, size);
-}
-
-void Stream::AddData(const char* data, size_t size) {
-  if (!writer_.get())
-    return;
-
-  scoped_refptr<net::IOBuffer> io_buffer =
-      base::MakeRefCounted<net::IOBuffer>(size);
-  memcpy(io_buffer->data(), data, size);
-  AddData(io_buffer, size);
 }
 
 void Stream::Flush() {

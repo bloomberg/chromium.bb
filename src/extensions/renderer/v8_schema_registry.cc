@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "content/public/renderer/v8_value_converter.h"
@@ -30,9 +31,12 @@ void DeepFreeze(const v8::Local<v8::Object>& object,
   v8::Maybe<bool> maybe =
       object->SetPrototype(context, v8::Null(context->GetIsolate()));
   CHECK(maybe.IsJust() && maybe.FromJust());
-  v8::Local<v8::Array> property_names = object->GetOwnPropertyNames();
+  v8::Local<v8::Array> property_names =
+      object->GetOwnPropertyNames(context).ToLocalChecked();
   for (uint32_t i = 0; i < property_names->Length(); ++i) {
-    v8::Local<v8::Value> child = object->Get(property_names->Get(i));
+    v8::Local<v8::Value> child =
+        object->Get(context, property_names->Get(context, i).ToLocalChecked())
+            .ToLocalChecked();
     if (child->IsObject())
       DeepFreeze(v8::Local<v8::Object>::Cast(child), context);
   }
@@ -49,12 +53,14 @@ class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
 
   // ObjectBackedNativeHandler:
   void AddRoutes() override {
-    RouteHandlerFunction("GetSchema",
-                         base::Bind(&SchemaRegistryNativeHandler::GetSchema,
-                                    base::Unretained(this)));
-    RouteHandlerFunction("GetObjectType",
-                         base::Bind(&SchemaRegistryNativeHandler::GetObjectType,
-                                    base::Unretained(this)));
+    RouteHandlerFunction(
+        "GetSchema",
+        base::BindRepeating(&SchemaRegistryNativeHandler::GetSchema,
+                            base::Unretained(this)));
+    RouteHandlerFunction(
+        "GetObjectType",
+        base::BindRepeating(&SchemaRegistryNativeHandler::GetObjectType,
+                            base::Unretained(this)));
   }
 
   ~SchemaRegistryNativeHandler() override { context_->Invalidate(); }
@@ -106,12 +112,17 @@ v8::Local<v8::Array> V8SchemaRegistry::GetSchemas(
     const std::vector<std::string>& apis) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::EscapableHandleScope handle_scope(isolate);
-  v8::Context::Scope context_scope(GetOrCreateContext(isolate));
+  v8::Local<v8::Context> context = GetOrCreateContext(isolate);
+  v8::Context::Scope context_scope(context);
 
   v8::Local<v8::Array> v8_apis(v8::Array::New(isolate, apis.size()));
   size_t api_index = 0;
   for (auto i = apis.cbegin(); i != apis.cend(); ++i) {
-    v8_apis->Set(api_index++, GetSchema(*i));
+    bool set_result =
+        v8_apis->Set(context, api_index++, GetSchema(*i)).ToChecked();
+    // Set() should never return false without throwing an exception (which
+    // would be caught by the ToChecked() above).
+    DCHECK(set_result);
   }
   return handle_scope.Escape(v8_apis);
 }
@@ -134,9 +145,8 @@ v8::Local<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
   base::StringPiece schema_string =
       ExtensionAPI::GetSharedInstance()->GetSchemaStringPiece(api);
   CHECK(!schema_string.empty());
-  v8::MaybeLocal<v8::String> v8_maybe_string =
-      v8::String::NewExternal(
-          isolate, new StaticV8ExternalOneByteStringResource(schema_string));
+  v8::MaybeLocal<v8::String> v8_maybe_string = v8::String::NewExternalOneByte(
+      isolate, new StaticV8ExternalOneByteStringResource(schema_string));
   v8::Local<v8::String> v8_schema_string;
   CHECK(v8_maybe_string.ToLocal(&v8_schema_string));
 

@@ -93,10 +93,9 @@ std::string JobInfo::ToString() const {
   if (job_type == TYPE_DOWNLOAD_FILE ||
       job_type == TYPE_UPLOAD_NEW_FILE ||
       job_type == TYPE_UPLOAD_EXISTING_FILE) {
-    base::StringAppendF(&output,
-                        " bytes: %s/%s",
-                        base::Int64ToString(num_completed_bytes).c_str(),
-                        base::Int64ToString(num_total_bytes).c_str());
+    base::StringAppendF(&output, " bytes: %s/%s",
+                        base::NumberToString(num_completed_bytes).c_str(),
+                        base::NumberToString(num_total_bytes).c_str());
   }
   return output;
 }

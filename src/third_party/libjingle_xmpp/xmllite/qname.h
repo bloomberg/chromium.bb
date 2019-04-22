@@ -8,12 +8,12 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMLLITE_QNAME_H_
-#define WEBRTC_LIBJINGLE_XMLLITE_QNAME_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_QNAME_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_QNAME_H_
 
 #include <string>
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class QName;
 
@@ -78,6 +78,6 @@ inline bool StaticQName::operator!=(const QName& other) const {
   return other.Compare(*this) != 0;
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
-#endif  // WEBRTC_LIBJINGLE_XMLLITE_QNAME_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_QNAME_H_

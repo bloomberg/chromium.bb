@@ -65,11 +65,8 @@ class EnterpriseEnrollmentHelper {
     // Called when some other error happens.
     virtual void OnOtherError(OtherError error) = 0;
 
-    // Called when enrollment finishes successfully. |additional_token| keeps
-    // the additional access token, if it was requested by setting the
-    // |fetch_additional_token| param of EnrollUsingProfile() to true.
-    // Otherwise, |additional_token| is empty.
-    virtual void OnDeviceEnrolled(const std::string& additional_token) = 0;
+    // Called when enrollment finishes successfully.
+    virtual void OnDeviceEnrolled() = 0;
 
     // Called when device attribute update permission granted,
     // |granted| indicates whether permission granted or not.
@@ -91,28 +88,19 @@ class EnterpriseEnrollmentHelper {
       const policy::EnrollmentConfig& enrollment_config,
       const std::string& enrolling_user_domain);
 
-  using CreateMockEnrollmentHelper =
-      EnterpriseEnrollmentHelper* (*)(EnrollmentStatusConsumer* status_consumer,
-                                      const policy::EnrollmentConfig&
-                                          enrollment_config,
-                                      const std::string& enrolling_user_domain);
-
-  // Use |creator| instead of the default enrollment helper allocator. This
-  // allows tests to substitute in a mock enrollment helper. This function will
-  // only be used once.
-  static void SetupEnrollmentHelperMock(CreateMockEnrollmentHelper creator);
+  // Sets up a mock object that would be returned by next Create call.
+  // This call passes ownership of |mock|.
+  static void SetEnrollmentHelperMock(
+      std::unique_ptr<EnterpriseEnrollmentHelper> mock);
 
   virtual ~EnterpriseEnrollmentHelper();
 
   // Starts enterprise enrollment using |auth_code|. First tries to exchange the
   // auth code to authentication token, then tries to enroll the device with the
   // received token.
-  // If |fetch_additional_token| is true, the helper fetches an additional token
-  // and passes it to the |status_consumer| on successful enrollment.
   // EnrollUsingAuthCode can be called only once during this object's lifetime,
   // and only if none of the EnrollUsing* methods was called before.
-  virtual void EnrollUsingAuthCode(const std::string& auth_code,
-                                   bool fetch_additional_token) = 0;
+  virtual void EnrollUsingAuthCode(const std::string& auth_code) = 0;
 
   // Starts enterprise enrollment using |token|.
   // This flow is used when enrollment is controlled by the paired device.
@@ -162,23 +150,29 @@ class EnterpriseEnrollmentHelper {
   // used) and revokes fetched tokens.
   // Does not revoke the additional token if enrollment finished successfully.
   // Calls |callback| on completion.
-  virtual void ClearAuth(const base::Closure& callback) = 0;
+  virtual void ClearAuth(base::OnceClosure callback) = 0;
 
  protected:
-  // |status_consumer| must outlive |this|. Moreover, the user of this class
-  // is responsible for clearing auth data in some cases (see comment for
-  // EnrollUsingProfile()).
-  explicit EnterpriseEnrollmentHelper(
-      EnrollmentStatusConsumer* status_consumer);
+  // The user of this class is responsible for clearing auth data in some cases
+  // (see comment for EnrollUsingProfile()).
+  EnterpriseEnrollmentHelper();
 
-  EnrollmentStatusConsumer* status_consumer() { return status_consumer_; }
+  // This method is called once from Create method.
+  virtual void Setup(ActiveDirectoryJoinDelegate* ad_join_delegate,
+                     const policy::EnrollmentConfig& enrollment_config,
+                     const std::string& enrolling_user_domain) = 0;
+
+  // This method is used in Create method. |status_consumer| must outlive
+  // |this|.
+  void set_status_consumer(EnrollmentStatusConsumer* status_consumer);
+
+  EnrollmentStatusConsumer* status_consumer() const { return status_consumer_; }
 
  private:
   EnrollmentStatusConsumer* status_consumer_;
 
-  // If this is not nullptr, then it will be used to create the enrollment
-  // helper. |create_mock_enrollment_helper_| needs to outlive this class.
-  static CreateMockEnrollmentHelper create_mock_enrollment_helper_;
+  // If this is not nullptr, then it will be used to as next enrollment helper.
+  static EnterpriseEnrollmentHelper* mock_enrollment_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentHelper);
 };

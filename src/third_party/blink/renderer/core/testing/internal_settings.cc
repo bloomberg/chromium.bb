@@ -538,8 +538,6 @@ void InternalSettings::setAutoplayPolicy(const String& policy_str,
     policy = AutoplayPolicy::Type::kNoUserGestureRequired;
   } else if (policy_str == "user-gesture-required") {
     policy = AutoplayPolicy::Type::kUserGestureRequired;
-  } else if (policy_str == "user-gesture-required-for-cross-origin") {
-    policy = AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin;
   } else if (policy_str == "document-user-activation-required") {
     policy = AutoplayPolicy::Type::kDocumentUserActivationRequired;
   } else {
@@ -549,6 +547,14 @@ void InternalSettings::setAutoplayPolicy(const String& policy_str,
   }
 
   GetSettings()->SetAutoplayPolicy(policy);
+}
+
+void InternalSettings::PrepareForLeakDetection() {
+  // Prepares for leak detection by removing all InternalSetting objects from
+  // Pages.
+  for (Page* page : Page::OrdinaryPages()) {
+    page->RemoveSupplement<InternalSettings>();
+  }
 }
 
 }  // namespace blink

@@ -7,7 +7,6 @@
 #include <lib/fdio/limits.h>
 #include <lib/fdio/namespace.h>
 #include <lib/fdio/spawn.h>
-#include <lib/fdio/util.h>
 #include <lib/zx/job.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -20,6 +19,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/process/environment_internal.h"
 #include "base/scoped_generic.h"
 
 namespace base {
@@ -93,6 +93,15 @@ fdio_spawn_action_t FdioSpawnActionAddHandle(uint32_t id, zx_handle_t handle) {
 
 }  // namespace
 
+// static
+uint32_t LaunchOptions::AddHandleToTransfer(
+    HandlesToTransferVector* handles_to_transfer,
+    zx_handle_t handle) {
+  uint32_t handle_id = PA_HND(PA_USER1, handles_to_transfer->size());
+  handles_to_transfer->push_back({handle_id, handle});
+  return handle_id;
+}
+
 Process LaunchProcess(const CommandLine& cmdline,
                       const LaunchOptions& options) {
   return LaunchProcess(cmdline.argv(), options);
@@ -132,13 +141,13 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     argv_cstr.push_back(arg.c_str());
   argv_cstr.push_back(nullptr);
 
-  // Determine the environment to pass to the new process.
-  // If |clear_environ|, |environ| or |current_directory| are set then we
+  // Determine the environment to pass to the new process. If
+  // |clear_environment|, |environment| or |current_directory| are set then we
   // construct a new (possibly empty) environment, otherwise we let fdio_spawn()
   // clone the caller's environment into the new process.
   uint32_t spawn_flags = FDIO_SPAWN_CLONE_LDSVC | options.spawn_flags;
 
-  EnvironmentMap environ_modifications = options.environ;
+  EnvironmentMap environ_modifications = options.environment;
   if (!options.current_directory.empty()) {
     environ_modifications["PWD"] = options.current_directory.value();
   } else {
@@ -150,9 +159,11 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   std::unique_ptr<char* []> new_environ;
   if (!environ_modifications.empty()) {
     char* const empty_environ = nullptr;
-    char* const* old_environ = options.clear_environ ? &empty_environ : environ;
-    new_environ = AlterEnvironment(old_environ, environ_modifications);
-  } else if (!options.clear_environ) {
+    char* const* old_environ =
+        options.clear_environment ? &empty_environ : environ;
+    new_environ =
+        internal::AlterEnvironment(old_environ, environ_modifications);
+  } else if (!options.clear_environment) {
     spawn_flags |= FDIO_SPAWN_CLONE_ENVIRON;
   }
 
@@ -172,13 +183,14 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     }
 
     for (const auto& path_to_clone : options.paths_to_clone) {
-      zx::handle handle = fuchsia::GetHandleFromFile(
-          base::File(base::FilePath(path_to_clone),
-                     base::File::FLAG_OPEN | base::File::FLAG_READ));
-      if (!handle) {
+      fidl::InterfaceHandle<::fuchsia::io::Directory> directory =
+          base::fuchsia::OpenDirectory(path_to_clone);
+      if (!directory) {
         LOG(WARNING) << "Could not open handle for path: " << path_to_clone;
         return base::Process();
       }
+
+      zx::handle handle = directory.TakeChannel();
 
       spawn_actions.push_back(FdioSpawnActionAddNamespaceEntry(
           path_to_clone.value().c_str(), handle.get()));

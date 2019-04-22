@@ -12,7 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -157,7 +157,7 @@ TranslateLanguageList::TranslateLanguageList()
   // We default to our hard coded list of languages in
   // |kDefaultSupportedLanguages|. This list will be overridden by a server
   // providing supported languages list.
-  for (size_t i = 0; i < arraysize(kDefaultSupportedLanguages); ++i)
+  for (size_t i = 0; i < base::size(kDefaultSupportedLanguages); ++i)
     supported_languages_.insert(kDefaultSupportedLanguages[i]);
 
   if (update_is_disabled)
@@ -300,8 +300,8 @@ bool TranslateLanguageList::SetSupportedLanguages(
   //   "tl": {"XX": "LanguageName", ...}
   // }
   // Where "tl" is set in kTargetLanguagesKey.
-  std::unique_ptr<base::Value> json_value =
-      base::JSONReader::Read(language_list, base::JSON_ALLOW_TRAILING_COMMAS);
+  std::unique_ptr<base::Value> json_value = base::JSONReader::ReadDeprecated(
+      language_list, base::JSON_ALLOW_TRAILING_COMMAS);
 
   if (!json_value || !json_value->is_dict()) {
     NotifyEvent(__LINE__, "Language list is invalid");

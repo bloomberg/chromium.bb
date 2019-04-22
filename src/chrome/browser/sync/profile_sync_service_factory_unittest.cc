@@ -10,24 +10,21 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser_sync_switches.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #endif
-
-using browser_sync::ProfileSyncService;
-using syncer::DataTypeController;
 
 class ProfileSyncServiceFactoryTest : public testing::Test {
  public:
@@ -37,7 +34,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
   }
 
   void TearDown() override {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
  protected:
@@ -45,7 +42,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   std::vector<syncer::ModelType> DefaultDatatypes() {
-    static_assert(43 == syncer::MODEL_TYPE_COUNT,
+    static_assert(44 == syncer::ModelType::NUM_ENTRIES,
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -88,6 +85,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::PRIORITY_PREFERENCES);
     datatypes.push_back(syncer::SESSIONS);
     datatypes.push_back(syncer::PROXY_TABS);
+    datatypes.push_back(syncer::SECURITY_EVENTS);
     datatypes.push_back(syncer::SUPERVISED_USER_SETTINGS);
     datatypes.push_back(syncer::SUPERVISED_USER_WHITELISTS);
     datatypes.push_back(syncer::TYPED_URLS);
@@ -139,7 +137,8 @@ TEST_F(ProfileSyncServiceFactoryTest, DisableSyncFlag) {
 // Verify that a normal (no command line flags) PSS can be created and
 // properly initialized.
 TEST_F(ProfileSyncServiceFactoryTest, CreatePSSDefault) {
-  ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile());
+  syncer::SyncService* pss =
+      ProfileSyncServiceFactory::GetForProfile(profile());
   syncer::ModelTypeSet types = pss->GetRegisteredDataTypes();
   EXPECT_EQ(DefaultDatatypesCount(), types.Size());
   CheckDefaultDatatypesInSetExcept(types, syncer::ModelTypeSet());
@@ -150,7 +149,8 @@ TEST_F(ProfileSyncServiceFactoryTest, CreatePSSDefault) {
 TEST_F(ProfileSyncServiceFactoryTest, CreatePSSDisableOne) {
   syncer::ModelTypeSet disabled_types(syncer::AUTOFILL);
   SetDisabledTypes(disabled_types);
-  ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile());
+  syncer::SyncService* pss =
+      ProfileSyncServiceFactory::GetForProfile(profile());
   syncer::ModelTypeSet types = pss->GetRegisteredDataTypes();
   EXPECT_EQ(DefaultDatatypesCount() - disabled_types.Size(), types.Size());
   CheckDefaultDatatypesInSetExcept(types, disabled_types);
@@ -162,7 +162,8 @@ TEST_F(ProfileSyncServiceFactoryTest, CreatePSSDisableMultiple) {
   syncer::ModelTypeSet disabled_types(syncer::AUTOFILL_PROFILE,
                                       syncer::BOOKMARKS);
   SetDisabledTypes(disabled_types);
-  ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile());
+  syncer::SyncService* pss =
+      ProfileSyncServiceFactory::GetForProfile(profile());
   syncer::ModelTypeSet types = pss->GetRegisteredDataTypes();
   EXPECT_EQ(DefaultDatatypesCount() - disabled_types.Size(), types.Size());
   CheckDefaultDatatypesInSetExcept(types, disabled_types);

@@ -20,12 +20,13 @@ extern "C" {
 #include "third_party/ffmpeg/libavutil/imgutils.h"
 }  // extern "C"
 
+#include "absl/memory/memory.h"
 #include "api/video/color_space.h"
 #include "api/video/i420_buffer.h"
 #include "common_video/include/video_frame_buffer.h"
 #include "modules/video_coding/codecs/h264/h264_color_space.h"
 #include "rtc_base/checks.h"
-#include "rtc_base/criticalsection.h"
+#include "rtc_base/critical_section.h"
 #include "rtc_base/keep_ref_until_done.h"
 #include "rtc_base/logging.h"
 #include "system_wrappers/include/metrics.h"
@@ -120,12 +121,14 @@ int H264DecoderImpl::AVGetBuffer2(
   // TODO(nisse): The VideoFrame's timestamp and rotation info is not used.
   // Refactor to do not use a VideoFrame object at all.
   av_frame->buf[0] = av_buffer_create(
-      av_frame->data[kYPlaneIndex],
-      total_size,
-      AVFreeBuffer2,
-      static_cast<void*>(new VideoFrame(frame_buffer,
-                                        kVideoRotation_0,
-                                        0 /* timestamp_us */)),
+      av_frame->data[kYPlaneIndex], total_size, AVFreeBuffer2,
+      static_cast<void*>(absl::make_unique<VideoFrame>(
+                             VideoFrame::Builder()
+                                 .set_video_frame_buffer(frame_buffer)
+                                 .set_rotation(kVideoRotation_0)
+                                 .set_timestamp_us(0)
+                                 .build())
+                             .release()),
       0);
   RTC_CHECK(av_frame->buf[0]);
   return 0;
@@ -225,7 +228,6 @@ int32_t H264DecoderImpl::RegisterDecodeCompleteCallback(
 
 int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
                                 bool /*missing_frames*/,
-                                const CodecSpecificInfo* codec_specific_info,
                                 int64_t /*render_time_ms*/) {
   if (!IsInitialized()) {
     ReportError();
@@ -238,36 +240,20 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
     ReportError();
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
-  if (!input_image._buffer || !input_image._length) {
+  if (!input_image.data() || !input_image.size()) {
     ReportError();
     return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
   }
-  if (codec_specific_info &&
-      codec_specific_info->codecType != kVideoCodecH264) {
-    ReportError();
-    return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
-  }
-
-  // FFmpeg requires padding due to some optimized bitstream readers reading 32
-  // or 64 bits at once and could read over the end. See avcodec_decode_video2.
-  RTC_CHECK_GE(input_image._size, input_image._length +
-                   EncodedImage::GetBufferPaddingBytes(kVideoCodecH264));
-  // "If the first 23 bits of the additional bytes are not 0, then damaged MPEG
-  // bitstreams could cause overread and segfault." See
-  // AV_INPUT_BUFFER_PADDING_SIZE. We'll zero the entire padding just in case.
-  memset(input_image._buffer + input_image._length,
-         0,
-         EncodedImage::GetBufferPaddingBytes(kVideoCodecH264));
 
   AVPacket packet;
   av_init_packet(&packet);
-  packet.data = input_image._buffer;
-  if (input_image._length >
+  packet.data = input_image.mutable_data();
+  if (input_image.size() >
       static_cast<size_t>(std::numeric_limits<int>::max())) {
     ReportError();
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
-  packet.size = static_cast<int>(input_image._length);
+  packet.size = static_cast<int>(input_image.size());
   int64_t frame_timestamp_us = input_image.ntp_time_ms_ * 1000;  // ms -> μs
   av_context_->reordered_opaque = frame_timestamp_us;
 
@@ -299,7 +285,10 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
   RTC_CHECK_EQ(av_frame_->data[kUPlaneIndex], i420_buffer->DataU());
   RTC_CHECK_EQ(av_frame_->data[kVPlaneIndex], i420_buffer->DataV());
 
-  const ColorSpace& color_space = ExtractH264ColorSpace(av_context_.get());
+  // Pass on color space from input frame if explicitly specified.
+  const ColorSpace& color_space =
+      input_image.ColorSpace() ? *input_image.ColorSpace()
+                               : ExtractH264ColorSpace(av_context_.get());
   VideoFrame decoded_frame =
       VideoFrame::Builder()
           .set_video_frame_buffer(input_frame->video_frame_buffer())
@@ -311,8 +300,7 @@ int32_t H264DecoderImpl::Decode(const EncodedImage& input_image,
 
   absl::optional<uint8_t> qp;
   // TODO(sakal): Maybe it is possible to get QP directly from FFmpeg.
-  h264_bitstream_parser_.ParseBitstream(input_image._buffer,
-                                        input_image._length);
+  h264_bitstream_parser_.ParseBitstream(input_image.data(), input_image.size());
   int qp_int;
   if (h264_bitstream_parser_.GetLastSliceQp(&qp_int)) {
     qp.emplace(qp_int);

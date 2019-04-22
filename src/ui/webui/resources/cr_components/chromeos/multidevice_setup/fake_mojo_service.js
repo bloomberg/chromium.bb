@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @implements {chromeos.multideviceSetup.mojom.MultiDeviceSetupImpl}
+ * @implements {chromeos.multideviceSetup.mojom.MultiDeviceSetupInterface}
  */
 class FakeMojoService {
   constructor() {
@@ -41,7 +41,7 @@ class FakeMojoService {
   /** @override */
   getEligibleHostDevices() {
     const deviceNames = ['Pixel', 'Pixel XL', 'Nexus 5', 'Nexus 6P'];
-    let devices = [];
+    const devices = [];
     for (let i = 0; i < this.deviceCount; i++) {
       const deviceName = deviceNames[i % 4];
       devices.push({deviceName: deviceName, deviceId: deviceName + '--' + i});

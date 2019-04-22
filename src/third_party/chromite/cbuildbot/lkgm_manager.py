@@ -119,7 +119,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   def __init__(self, source_repo, manifest_repo, build_names, build_type,
                incr_type, force, branch, manifest=constants.DEFAULT_MANIFEST,
                dry_run=True, lkgm_path_rel=constants.LKGM_MANIFEST,
-               config=None, metadata=None, buildbucket_client=None):
+               config=None, metadata=None, buildstore=None,
+               buildbucket_client=None):
     """Initialize an LKGM Manager.
 
     Args:
@@ -139,13 +140,14 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       config: Instance of config_lib.BuildConfig. Config dict of this builder.
       metadata: Instance of metadata_lib.CBuildbotMetadata. Metadata of this
                 builder.
+      buildstore: BuildStore instance to make DB calls.
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
     """
     super(LKGMManager, self).__init__(
         source_repo=source_repo, manifest_repo=manifest_repo,
         manifest=manifest, build_names=build_names, incr_type=incr_type,
         force=force, branch=branch, dry_run=dry_run,
-        config=config, metadata=metadata,
+        config=config, metadata=metadata, buildstore=buildstore,
         buildbucket_client=buildbucket_client)
 
     self.lkgm_path = os.path.join(self.manifest_dir, lkgm_path_rel)
@@ -549,8 +551,8 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
   has_chump_cls = False
   handler = git.Manifest(lkgm_path)
   reviewed_on_re = re.compile(r'\s*Reviewed-on:\s*(\S+)')
-  author_re = re.compile(r'\s*Author:.*<(\S+)@\S+>\s*')
-  committer_re = re.compile(r'\s*Commit:.*<(\S+)@\S+>\s*')
+  author_re = re.compile(r'^Author:.*<(\S+)@\S+>\s*')
+  committer_re = re.compile(r'^Commit:.*<(\S+)@\S+>\s*')
   for rel_src_path, checkout in handler.checkouts_by_path.iteritems():
     project = checkout['name']
 

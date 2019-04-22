@@ -19,8 +19,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/settings/install_attributes.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -208,7 +208,7 @@ class BlockingLoginTest
   // Returns the body of the fetch response from the policy server.
   std::string GetPolicyResponse() {
     em::DeviceManagementResponse response;
-    response.mutable_policy_response()->add_response();
+    response.mutable_policy_response()->add_responses();
     std::string data;
     EXPECT_TRUE(response.SerializeToString(&data));
     return data;
@@ -328,8 +328,8 @@ const BlockingLoginTestParam kBlockinLoginTestCases[] = {
 
 // TODO(poromov): Disabled because it has become flaky due to incorrect mock
 // network requests - re-enable this when https://crbug.com/580537 is fixed.
-INSTANTIATE_TEST_CASE_P(DISABLED_BlockingLoginTestInstance,
-                        BlockingLoginTest,
-                        testing::ValuesIn(kBlockinLoginTestCases));
+INSTANTIATE_TEST_SUITE_P(DISABLED_BlockingLoginTestInstance,
+                         BlockingLoginTest,
+                         testing::ValuesIn(kBlockinLoginTestCases));
 
 }  // namespace chromeos

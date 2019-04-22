@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/encryptedmedia/html_media_element_encrypted_media.h"
 
+#include "base/macros.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -28,8 +29,6 @@ namespace blink {
 
 // This class allows MediaKeys to be set asynchronously.
 class SetMediaKeysHandler : public ScriptPromiseResolver {
-  WTF_MAKE_NONCOPYABLE(SetMediaKeysHandler);
-
  public:
   static ScriptPromise Create(ScriptState*, HTMLMediaElement&, MediaKeys*);
 
@@ -55,6 +54,8 @@ class SetMediaKeysHandler : public ScriptPromiseResolver {
   Member<MediaKeys> new_media_keys_;
   bool made_reservation_;
   TaskRunnerTimer<SetMediaKeysHandler> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetMediaKeysHandler);
 };
 
 typedef base::OnceCallback<void()> SuccessCallback;
@@ -101,7 +102,7 @@ class SetContentDecryptionModuleResult final
   }
 
   void CompleteWithError(WebContentDecryptionModuleException code,
-                         unsigned long system_code,
+                         uint32_t system_code,
                          const WebString& message) override {
     // Non-zero |systemCode| is appended to the |message|. If the |message|
     // is empty, we'll report "Rejected with system code (systemCode)".
@@ -132,7 +133,6 @@ ScriptPromise SetMediaKeysHandler::Create(ScriptState* script_state,
                                           MediaKeys* media_keys) {
   SetMediaKeysHandler* handler = MakeGarbageCollected<SetMediaKeysHandler>(
       script_state, element, media_keys);
-  handler->PauseIfNeeded();
   handler->KeepAliveWhilePending();
   return handler->Promise();
 }
@@ -400,7 +400,8 @@ static Event* CreateEncryptedEvent(WebEncryptedMediaInitDataType init_data_type,
   initializer->setBubbles(false);
   initializer->setCancelable(false);
 
-  return MediaEncryptedEvent::Create(event_type_names::kEncrypted, initializer);
+  return MakeGarbageCollected<MediaEncryptedEvent>(event_type_names::kEncrypted,
+                                                   initializer);
 }
 
 void HTMLMediaElementEncryptedMedia::Encrypted(
@@ -418,7 +419,8 @@ void HTMLMediaElementEncryptedMedia::Encrypted(
     event = CreateEncryptedEvent(WebEncryptedMediaInitDataType::kUnknown,
                                  nullptr, 0);
     media_element_->GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning,
                                "Media element must be CORS-same-origin with "
                                "the embedding page. If cross-origin, you "
                                "should use the `crossorigin` attribute and "

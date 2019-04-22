@@ -11,16 +11,17 @@
     [MeasureAs=AsyncClipboardAPIRead,
      CallWith=ScriptState,
      RuntimeEnabled=AsyncClipboard
-    ] Promise<DataTransfer> read();
+    ] Promise<sequence<ClipboardItem>> read();
 
     [MeasureAs=AsyncClipboardAPIReadText,
      CallWith=ScriptState
     ] Promise<DOMString> readText();
 
+
     [MeasureAs=AsyncClipboardAPIWrite,
      CallWith=ScriptState,
      RuntimeEnabled=AsyncClipboard
-    ] Promise<void> write(DataTransfer data);
+    ] Promise<void> write(sequence<ClipboardItem> data);
 
     [MeasureAs=AsyncClipboardAPIWriteText,
      CallWith=ScriptState

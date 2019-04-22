@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/extensions/extension_garbage_collector_chromeos.h"
@@ -78,9 +79,10 @@ void ExtensionGarbageCollectorChromeOS::GarbageCollectSharedExtensions() {
   if (ExtensionAssetsManagerChromeOS::CleanUpSharedExtensions(&paths)) {
     if (!GetExtensionFileTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(&GarbageCollectExtensionsOnFileThread,
-                       ExtensionAssetsManagerChromeOS::GetSharedInstallDir(),
-                       paths))) {
+            base::BindOnce(
+                &GarbageCollectExtensionsOnFileThread,
+                ExtensionAssetsManagerChromeOS::GetSharedInstallDir(),
+                paths))) {
       NOTREACHED();
     }
   }

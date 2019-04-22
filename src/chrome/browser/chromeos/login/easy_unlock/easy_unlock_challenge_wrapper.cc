@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
-#include "components/cryptauth/proto/securemessage.pb.h"
+#include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/services/device_sync/proto/securemessage.pb.h"
 
 namespace chromeos {
 

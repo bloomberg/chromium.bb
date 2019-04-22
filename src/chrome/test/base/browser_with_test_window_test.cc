@@ -22,6 +22,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/views/test/test_views_delegate.h"
@@ -32,7 +33,13 @@
 #include "components/constrained_window/constrained_window_views.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/mus_property_mirror_ash.h"
 #include "ash/test/ash_test_views_delegate.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "content/public/browser/context_factory.h"
+#include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/test/env_test_helper.h"
+#include "ui/views/mus/mus_client.h"
 #else
 #include "ui/views/test/test_views_delegate.h"
 #endif
@@ -43,35 +50,6 @@ using content::RenderFrameHost;
 using content::RenderFrameHostTester;
 using content::WebContents;
 
-BrowserWithTestWindowTest::BrowserWithTestWindowTest()
-    : BrowserWithTestWindowTest(Browser::TYPE_TABBED,
-                                false,
-                                content::TestBrowserThreadBundle::DEFAULT) {}
-
-BrowserWithTestWindowTest::BrowserWithTestWindowTest(
-    content::TestBrowserThreadBundle::Options thread_bundle_options)
-    : BrowserWithTestWindowTest(Browser::TYPE_TABBED,
-                                false,
-                                thread_bundle_options) {}
-
-BrowserWithTestWindowTest::BrowserWithTestWindowTest(Browser::Type browser_type,
-                                                     bool hosted_app)
-    : BrowserWithTestWindowTest(browser_type,
-                                hosted_app,
-                                content::TestBrowserThreadBundle::DEFAULT) {}
-
-BrowserWithTestWindowTest::BrowserWithTestWindowTest(
-    Browser::Type browser_type,
-    bool hosted_app,
-    content::TestBrowserThreadBundle::Options thread_bundle_options)
-    : thread_bundle_(thread_bundle_options),
-#if defined(OS_CHROMEOS)
-      ash_test_helper_(&ash_test_environment_),
-#endif
-      browser_type_(browser_type),
-      hosted_app_(hosted_app) {
-}
-
 BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {}
 
 void BrowserWithTestWindowTest::SetUp() {
@@ -79,6 +57,8 @@ void BrowserWithTestWindowTest::SetUp() {
 #if defined(OS_CHROMEOS)
   ash_test_helper_.SetUp(true);
   ash_test_helper_.SetRunningOutsideAsh();
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
+    ash_test_helper_.CreateMusClient();
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset(new views::ScopedViewsTestHelper());
 #endif
@@ -133,6 +113,11 @@ void BrowserWithTestWindowTest::TearDown() {
   profile_manager_.reset();
 
 #if defined(OS_CHROMEOS)
+  // If initialized, the KioskAppManager will register an observer to
+  // CrosSettings and will need to be destroyed before it. Having it destroyed
+  // as part of the teardown will avoid unexpected test failures.
+  chromeos::KioskAppManager::Shutdown();
+
   ash_test_helper_.TearDown();
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset();
@@ -141,9 +126,7 @@ void BrowserWithTestWindowTest::TearDown() {
   testing::Test::TearDown();
 
   // A Task is leaked if we don't destroy everything, then run the message loop.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
-  base::RunLoop().Run();
+  base::RunLoop().RunUntilIdle();
 }
 
 gfx::NativeWindow BrowserWithTestWindowTest::GetContext() {
@@ -175,9 +158,8 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
 void BrowserWithTestWindowTest::NavigateAndCommit(
     NavigationController* controller,
     const GURL& url) {
-  controller->LoadURL(
-      url, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  CommitPendingLoad(controller);
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      controller->GetWebContents(), url);
 }
 
 void BrowserWithTestWindowTest::NavigateAndCommitActiveTab(const GURL& url) {
@@ -227,3 +209,11 @@ Browser* BrowserWithTestWindowTest::CreateBrowser(
   params.window = browser_window;
   return new Browser(params);
 }
+
+BrowserWithTestWindowTest::BrowserWithTestWindowTest(
+    std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle,
+    Browser::Type browser_type,
+    bool hosted_app)
+    : thread_bundle_(std::move(thread_bundle)),
+      browser_type_(browser_type),
+      hosted_app_(hosted_app) {}

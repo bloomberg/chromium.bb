@@ -4,7 +4,6 @@
 
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -33,7 +32,6 @@ FeaturePodButton* NightLightFeaturePodController::CreateButton() {
   button_ = new FeaturePodButton(this);
   button_->SetVectorIcon(kUnifiedMenuNightLightIcon);
   button_->SetVisible(
-      features::IsNightLightEnabled() &&
       Shell::Get()->session_controller()->ShouldEnableSettings());
   button_->SetLabel(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_BUTTON_LABEL));
@@ -46,7 +44,6 @@ FeaturePodButton* NightLightFeaturePodController::CreateButton() {
 }
 
 void NightLightFeaturePodController::OnIconPressed() {
-  DCHECK(features::IsNightLightEnabled());
   Shell::Get()->night_light_controller()->Toggle();
   UpdateButton();
 
@@ -60,7 +57,6 @@ void NightLightFeaturePodController::OnIconPressed() {
 }
 
 void NightLightFeaturePodController::OnLabelPressed() {
-  DCHECK(features::IsNightLightEnabled());
   if (TrayPopupUtils::CanOpenWebUISettings()) {
     base::RecordAction(
         base::UserMetricsAction("StatusArea_NightLight_Settings"));
@@ -74,10 +70,7 @@ SystemTrayItemUmaType NightLightFeaturePodController::GetUmaType() const {
 }
 
 void NightLightFeaturePodController::UpdateButton() {
-  if (!features::IsNightLightEnabled())
-    return;
-
-  bool is_enabled = Shell::Get()->night_light_controller()->GetEnabled();
+  const bool is_enabled = Shell::Get()->night_light_controller()->GetEnabled();
   button_->SetToggled(is_enabled);
   button_->SetSubLabel(l10n_util::GetStringUTF16(
       is_enabled ? IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_ON_STATE

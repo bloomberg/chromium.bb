@@ -12,9 +12,11 @@
 namespace gwp_asan {
 namespace internal {
 
-// Initialize the guarded allocator with the given number of pages and install
+// Initialize the guarded allocator with the given parameters, and install the
 // sampling allocator shims with the provided sampling frequency.
-GWP_ASAN_EXPORT void InstallAllocatorHooks(size_t num_pages,
+GWP_ASAN_EXPORT void InstallAllocatorHooks(size_t max_allocated_pages,
+                                           size_t num_metadata,
+                                           size_t total_pages,
                                            size_t sampling_frequency);
 
 }  // namespace internal

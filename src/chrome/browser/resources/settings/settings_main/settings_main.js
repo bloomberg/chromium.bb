@@ -64,6 +64,14 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    showingSubpage_: {
+      type: Boolean,
+      // TODO(dpapad): Initial value only needed for Polymer 1, remove once
+      // Polymer 2 migration is done.
+      value: false,
+    },
+
     toolbarSpinnerActive: {
       type: Boolean,
       value: false,
@@ -72,32 +80,13 @@ Polymer({
 
     /**
      * Dictionary defining page visibility.
-     * @type {!GuestModePageVisibility}
+     * @type {!PageVisibility}
      */
     pageVisibility: Object,
 
     showAndroidApps: Boolean,
 
-    showMultidevice: Boolean,
-
     havePlayStoreApp: Boolean,
-  },
-
-  /** @override */
-  attached: function() {
-    this.listen(this, 'freeze-scroll', 'onFreezeScroll_');
-    this.listen(this, 'lazy-loaded', 'onLazyLoaded_');
-  },
-
-  /** @private */
-  onLazyLoaded_: function() {
-    Polymer.dom.flush();
-    this.updateOverscrollForPage_();
-  },
-
-  /** @override */
-  detached: function() {
-    this.unlisten(this, 'freeze-scroll', 'onFreezeScroll_');
   },
 
   /** @private */
@@ -108,8 +97,9 @@ Polymer({
       this.boundScroll_ = null;
     } else if (this.overscroll_ && !this.boundScroll_) {
       this.boundScroll_ = () => {
-        if (!this.ignoreScroll_)
+        if (!this.showingSubpage_) {
           this.setOverscroll_(0);
+        }
       };
       this.offsetParent.addEventListener('scroll', this.boundScroll_);
       window.addEventListener('resize', this.boundScroll_);
@@ -124,8 +114,9 @@ Polymer({
    */
   setOverscroll_: function(opt_minHeight) {
     const scroller = this.offsetParent;
-    if (!scroller)
+    if (!scroller) {
       return;
+    }
     const overscroll = this.$.overscroll;
     const visibleBottom = scroller.scrollTop + scroller.clientHeight;
     const overscrollBottom = overscroll.offsetTop + overscroll.scrollHeight;
@@ -137,104 +128,49 @@ Polymer({
   },
 
   /**
-   * Enables or disables user scrolling, via overscroll: hidden. Room for the
-   * hidden scrollbar is added to prevent the page width from changing back and
-   * forth. Also freezes the overscroll height.
-   * @param {!Event} e |e.detail| is true to freeze, false to unfreeze.
-   * @private
-   */
-  onFreezeScroll_: function(e) {
-    if (e.detail) {
-      // Update the overscroll and ignore scroll events.
-      this.setOverscroll_(this.overscrollHeight_());
-      this.ignoreScroll_ = true;
-
-      // Prevent scrolling the container.
-      const scrollerWidth = this.offsetParent.clientWidth;
-      this.offsetParent.style.overflow = 'hidden';
-      const scrollbarWidth = this.offsetParent.clientWidth - scrollerWidth;
-      this.offsetParent.style.width = 'calc(100% - ' + scrollbarWidth + 'px)';
-    } else {
-      this.ignoreScroll_ = false;
-      this.offsetParent.style.overflow = '';
-      this.offsetParent.style.width = '';
-    }
-  },
-
-  /** @param {!settings.Route} newRoute */
-  currentRouteChanged: function(newRoute) {
-    this.updatePagesShown_();
-  },
-
-  /** @private */
-  onSubpageExpand_: function() {
-    this.updatePagesShown_();
-  },
-
-  /**
    * Updates the hidden state of the about and settings pages based on the
    * current route.
-   * @private
+   * @param {!settings.Route} newRoute
    */
-  updatePagesShown_: function() {
+  currentRouteChanged: function(newRoute) {
     const inAbout = settings.routes.ABOUT.contains(settings.getCurrentRoute());
     this.showPages_ = {about: inAbout, settings: !inAbout};
 
-    document.title = inAbout ?
-        loadTimeData.getStringF(
-            'settingsAltPageTitle', loadTimeData.getString('aboutPageTitle')) :
-        loadTimeData.getString('settings');
-
-
-    // Calculate and set the overflow padding.
-    this.updateOverscrollForPage_();
-
-    // Wait for any other changes, then calculate the overflow padding again.
-    setTimeout(() => {
-      // Ensure any dom-if reflects the current properties.
-      Polymer.dom.flush();
-      this.updateOverscrollForPage_();
-    });
-  },
-
-  /**
-   * Calculates the necessary overscroll and sets the overscroll to that value
-   * (at minimum). For the About page, this just zeroes the overscroll.
-   * @private
-   */
-  updateOverscrollForPage_: function() {
-    if (this.showPages_.about || this.inSearchMode_) {
-      // Set overscroll directly to remove any existing overscroll that
-      // setOverscroll_ would otherwise preserve.
-      this.overscroll_ = 0;
-      return;
+    if (!newRoute.isSubpage()) {
+      document.title = inAbout ? loadTimeData.getStringF(
+                                     'settingsAltPageTitle',
+                                     loadTimeData.getString('aboutPageTitle')) :
+                                 loadTimeData.getString('settings');
     }
-    this.setOverscroll_(this.overscrollHeight_());
+  },
+
+  /** @private */
+  onShowingSubpage_: function() {
+    this.showingSubpage_ = true;
+  },
+
+  /** @private */
+  onShowingMainPage_: function() {
+    this.showingSubpage_ = false;
   },
 
   /**
-   * Return the height that the overscroll padding should be set to.
-   * This is used to determine how much padding to apply to the end of the
-   * content so that the last element may align with the top of the content
-   * area.
-   * @return {number}
+   * A handler for the 'showing-section' event fired from settings-basic-page,
+   * indicating that a section should be scrolled into view as a result of a
+   * navigation.
+   * @param {!CustomEvent<!HTMLElement>} e
    * @private
    */
-  overscrollHeight_: function() {
-    const route = settings.getCurrentRoute();
-    if (!route.section || route.isSubpage() || this.showPages_.about)
-      return 0;
-
-    const page = this.getPage_(route);
-    const section = page && page.getSection(route.section);
-    if (!section || !section.offsetParent)
-      return 0;
-
+  onShowingSection_: function(e) {
+    const section = e.detail;
+    // Calculate the height that the overscroll padding should be set to, so
+    // that the given section is displayed at the top of the viewport.
     // Find the distance from the section's top to the overscroll.
     const sectionTop = section.offsetParent.offsetTop + section.offsetTop;
     const distance = this.$.overscroll.offsetTop - sectionTop;
-
-    return Math.max(0, this.offsetParent.clientHeight - distance);
+    const overscroll = Math.max(0, this.offsetParent.clientHeight - distance);
+    this.setOverscroll_(overscroll);
+    section.scrollIntoView();
   },
 
   /**
@@ -294,11 +230,5 @@ Polymer({
         });
       }, 0);
     });
-  },
-
-  focusSection: function() {
-    this.$$(this.showPages_.settings ? 'settings-basic-page' :
-                                       'settings-about-page')
-        .focusSection();
   },
 });

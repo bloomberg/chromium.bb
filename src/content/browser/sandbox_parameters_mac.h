@@ -26,6 +26,9 @@ CONTENT_EXPORT void SetupCommonSandboxParameters(
 CONTENT_EXPORT void SetupCDMSandboxParameters(
     sandbox::SeatbeltExecClient* client);
 
+CONTENT_EXPORT void SetupNetworkSandboxParameters(
+    sandbox::SeatbeltExecClient* client);
+
 CONTENT_EXPORT void SetupPPAPISandboxParameters(
     sandbox::SeatbeltExecClient* client);
 

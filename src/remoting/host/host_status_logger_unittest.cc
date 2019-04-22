@@ -13,8 +13,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
-using buzz::XmlElement;
-using buzz::QName;
+using jingle_xmpp::XmlElement;
+using jingle_xmpp::QName;
 using testing::_;
 using testing::DeleteArg;
 using testing::InSequence;
@@ -49,14 +49,14 @@ MATCHER_P(IsClientConnected, connection_type, "") {
   if (arg->Name() != QName(kJabberClientNamespace, "iq")) {
     return false;
   }
-  buzz::XmlElement* log_stanza = arg->FirstChild()->AsElement();
+  jingle_xmpp::XmlElement* log_stanza = arg->FirstChild()->AsElement();
   if (log_stanza->Name() != QName(kChromotingNamespace, "log")) {
     return false;
   }
   if (log_stanza->NextChild()) {
     return false;
   }
-  buzz::XmlElement* log_entry = log_stanza->FirstChild()->AsElement();
+  jingle_xmpp::XmlElement* log_entry = log_stanza->FirstChild()->AsElement();
   if (!IsLogEntryForConnection(log_entry, connection_type)) {
     return false;
   }
@@ -70,14 +70,14 @@ MATCHER_P2(IsTwoClientsConnected, connection_type1, connection_type2, "") {
   if (arg->Name() != QName(kJabberClientNamespace, "iq")) {
     return false;
   }
-  buzz::XmlElement* log_stanza = arg->FirstChild()->AsElement();
+  jingle_xmpp::XmlElement* log_stanza = arg->FirstChild()->AsElement();
   if (log_stanza->Name() != QName(kChromotingNamespace, "log")) {
     return false;
   }
   if (log_stanza->NextChild()) {
     return false;
   }
-  buzz::XmlElement* log_entry = log_stanza->FirstChild()->AsElement();
+  jingle_xmpp::XmlElement* log_entry = log_stanza->FirstChild()->AsElement();
   if (!IsLogEntryForConnection(log_entry, connection_type1)) {
     return false;
   }
@@ -103,14 +103,14 @@ MATCHER(IsClientDisconnected, "") {
   if (arg->Name() != QName(kJabberClientNamespace, "iq")) {
     return false;
   }
-  buzz::XmlElement* log_stanza = arg->FirstChild()->AsElement();
+  jingle_xmpp::XmlElement* log_stanza = arg->FirstChild()->AsElement();
   if (log_stanza->Name() !=QName(kChromotingNamespace, "log")) {
     return false;
   }
   if (log_stanza->NextChild()) {
     return false;
   }
-  buzz::XmlElement* log_entry = log_stanza->FirstChild()->AsElement();
+  jingle_xmpp::XmlElement* log_entry = log_stanza->FirstChild()->AsElement();
   if (!IsLogEntryForDisconnection(log_entry)) {
     return false;
   }

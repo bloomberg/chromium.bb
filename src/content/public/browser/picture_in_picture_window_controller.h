@@ -5,13 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_H_
 #define CONTENT_PUBLIC_BROWSER_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_H_
 
-#include <string>
-#include <vector>
 #include "content/common/content_export.h"
-
-namespace blink {
-struct PictureInPictureControlInfo;
-}  // namespace blink
 
 namespace gfx {
 class Size;
@@ -47,29 +41,43 @@ class PictureInPictureWindowController {
   // by the user or the content.
   virtual void Close(bool should_pause_video, bool should_reset_pip_player) = 0;
 
+  // Called to notify the controller that the window was requested to be closed
+  // by the content and that initiator should be focused.
+  virtual void CloseAndFocusInitiator() = 0;
+
   // Called by the window implementation to notify the controller that the
   // window was requested to be closed and destroyed by the system.
   virtual void OnWindowDestroyed() = 0;
 
-  virtual void SetPictureInPictureCustomControls(
-      const std::vector<blink::PictureInPictureControlInfo>&) = 0;
   virtual void EmbedSurface(const viz::SurfaceId& surface_id,
                             const gfx::Size& natural_size) = 0;
   virtual OverlayWindow* GetWindowForTesting() = 0;
   virtual void UpdateLayerBounds() = 0;
   virtual bool IsPlayerActive() = 0;
+  virtual bool IsPlayerMuted() = 0;
   virtual WebContents* GetInitiatorWebContents() = 0;
   virtual void UpdatePlaybackState(bool is_playing,
                                    bool reached_end_of_stream) = 0;
+  virtual void UpdateMutedState() = 0;
   virtual void SetAlwaysHidePlayPauseButton(bool is_visible) = 0;
+  virtual void SetAlwaysHideMuteButton(bool is_visible) = 0;
+
+  // Called when the user interacts with the "Skip Ad" control.
+  virtual void SkipAd() = 0;
+
+  // Called when the user interacts with the "Next Track" control.
+  virtual void NextTrack() = 0;
+
+  // Called when the user interacts with the "Previous Track" control.
+  virtual void PreviousTrack() = 0;
 
   // Commands.
   // Returns true if the player is active (i.e. currently playing) after this
   // call.
   virtual bool TogglePlayPause() = 0;
 
-  // Called when the user interacts with a custom control.
-  virtual void CustomControlPressed(const std::string& control_id) = 0;
+  // Returns true if the player is muted after this call.
+  virtual bool ToggleMute() = 0;
 
  protected:
   // Use PictureInPictureWindowController::GetOrCreateForWebContents() to

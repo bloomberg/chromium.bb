@@ -6,7 +6,7 @@
 
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/test/test_options_provider.h"
@@ -104,7 +104,7 @@ class PaintOpPerfTest : public testing::Test {
   }
 
  protected:
-  LapTimer timer_;
+  base::LapTimer timer_;
   std::unique_ptr<char, base::AlignedFreeDeleter> serialized_data_;
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialized_data_;
 };
@@ -169,8 +169,7 @@ TEST_F(PaintOpPerfTest, TextOps) {
 
   SkTextBlobBuilder builder;
   int glyph_count = 5;
-  SkRect rect = SkRect::MakeXYWH(1, 1, 1, 1);
-  const auto& run = builder.allocRun(font, glyph_count, 1.2f, 2.3f, &rect);
+  const auto& run = builder.allocRun(font, glyph_count, 1.2f, 2.3f);
   std::fill(run.glyphs, run.glyphs + glyph_count, 0);
   auto blob = builder.make();
 

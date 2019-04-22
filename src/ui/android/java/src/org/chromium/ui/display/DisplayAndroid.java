@@ -4,11 +4,13 @@
 
 package org.chromium.ui.display;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Point;
 import android.view.Display;
 import android.view.Surface;
 
+import java.util.List;
 import java.util.WeakHashMap;
 
 /**
@@ -36,6 +38,27 @@ public class DisplayAndroid {
          * @param dipScale Density Independent Pixel scale.
          */
         default void onDIPScaleChanged(float dipScale) {}
+
+        /**
+         * Called whenever the attached display's refresh rate changes.
+         *
+         * @param refreshRate the display's refresh rate in frames per second.
+         */
+        default void onRefreshRateChanged(float refreshRate) {}
+
+        /**
+         * Called whenever the attached display's supported Display.Modes are changed.
+         *
+         * @param supportedModes the array of supported modes.
+         */
+        default void onDisplayModesChanged(List<Display.Mode> supportedModes) {}
+
+        /**
+         * Called whenever the attached display's current mode is changed.
+         *
+         * @param currentMode the current display mode.
+         */
+        default void onCurrentModeChanged(Display.Mode currentMode) {}
     }
 
     private static final DisplayAndroidObserver[] EMPTY_OBSERVER_ARRAY =
@@ -50,6 +73,9 @@ public class DisplayAndroid {
     private int mBitsPerPixel;
     private int mBitsPerComponent;
     private int mRotation;
+    private float mRefreshRate;
+    private Display.Mode mCurrentDisplayMode;
+    private List<Display.Mode> mDisplayModes;
     protected boolean mIsDisplayWideColorGamut;
     protected boolean mIsDisplayServerWideColorGamut;
 
@@ -178,6 +204,27 @@ public class DisplayAndroid {
     }
 
     /**
+     * @return Display's refresh rate in frames per second.
+     */
+    public float getRefreshRate() {
+        return mRefreshRate;
+    }
+
+    /*
+     * @return Display.Modes supported by this Display.
+     */
+    public List<Display.Mode> getSupportedModes() {
+        return mDisplayModes;
+    }
+
+    /*
+     * @return Current Display.Mode for the display.
+     */
+    public Display.Mode getCurrentMode() {
+        return mCurrentDisplayMode;
+    }
+
+    /**
      * Add observer. Note repeat observers will be called only one.
      * Observers are held only weakly by Display.
      */
@@ -192,22 +239,6 @@ public class DisplayAndroid {
         mObservers.remove(observer);
     }
 
-    /**
-     * Toggle the accurate mode if it wasn't already doing so. The backend will
-     * keep track of the number of times this has been called.
-     */
-    public static void startAccurateListening() {
-        getManager().startAccurateListening();
-    }
-
-    /**
-     * Request to stop the accurate mode. It will effectively be stopped only if
-     * this method is called as many times as startAccurateListening().
-     */
-    public static void stopAccurateListening() {
-        getManager().stopAccurateListening();
-    }
-
     protected DisplayAndroid(int displayId) {
         mDisplayId = displayId;
         mObservers = new WeakHashMap<>();
@@ -220,15 +251,17 @@ public class DisplayAndroid {
     }
 
     public void updateIsDisplayServerWideColorGamut(Boolean isDisplayServerWideColorGamut) {
-        update(null, null, null, null, null, null, isDisplayServerWideColorGamut);
+        update(null, null, null, null, null, null, isDisplayServerWideColorGamut, null, null, null);
     }
 
     /**
      * Update the display to the provided parameters. Null values leave the parameter unchanged.
      */
+    @SuppressLint("NewApi")
     protected void update(Point size, Float dipScale, Integer bitsPerPixel,
             Integer bitsPerComponent, Integer rotation, Boolean isDisplayWideColorGamut,
-            Boolean isDisplayServerWideColorGamut) {
+            Boolean isDisplayServerWideColorGamut, Float refreshRate, Display.Mode currentMode,
+            List<Display.Mode> supportedModes) {
         boolean sizeChanged = size != null && !mSize.equals(size);
         // Intentional comparison of floats: we assume that if scales differ, they differ
         // significantly.
@@ -241,10 +274,16 @@ public class DisplayAndroid {
                 && mIsDisplayWideColorGamut != isDisplayWideColorGamut;
         boolean isDisplayServerWideColorGamutChanged = isDisplayServerWideColorGamut != null
                 && mIsDisplayServerWideColorGamut != isDisplayServerWideColorGamut;
+        boolean isRefreshRateChanged = refreshRate != null && mRefreshRate != refreshRate;
+        boolean displayModesChanged = supportedModes != null
+                && (mDisplayModes == null ? true : mDisplayModes.equals(supportedModes));
+        boolean currentModeChanged =
+                currentMode != null && !currentMode.equals(mCurrentDisplayMode);
 
         boolean changed = sizeChanged || dipScaleChanged || bitsPerPixelChanged
                 || bitsPerComponentChanged || rotationChanged || isDisplayWideColorGamutChanged
-                || isDisplayServerWideColorGamutChanged;
+                || isDisplayServerWideColorGamutChanged || isRefreshRateChanged
+                || displayModesChanged || currentModeChanged;
         if (!changed) return;
 
         if (sizeChanged) mSize = size;
@@ -256,6 +295,9 @@ public class DisplayAndroid {
         if (isDisplayServerWideColorGamutChanged) {
             mIsDisplayServerWideColorGamut = isDisplayServerWideColorGamut;
         }
+        if (isRefreshRateChanged) mRefreshRate = refreshRate;
+        if (displayModesChanged) mDisplayModes = supportedModes;
+        if (currentModeChanged) mCurrentDisplayMode = currentMode;
 
         getManager().updateDisplayOnNativeSide(this);
         if (rotationChanged) {
@@ -268,6 +310,24 @@ public class DisplayAndroid {
             DisplayAndroidObserver[] observers = getObservers();
             for (DisplayAndroidObserver o : observers) {
                 o.onDIPScaleChanged(mDipScale);
+            }
+        }
+        if (isRefreshRateChanged) {
+            DisplayAndroidObserver[] observers = getObservers();
+            for (DisplayAndroidObserver o : observers) {
+                o.onRefreshRateChanged(mRefreshRate);
+            }
+        }
+        if (displayModesChanged) {
+            DisplayAndroidObserver[] observers = getObservers();
+            for (DisplayAndroidObserver o : observers) {
+                o.onDisplayModesChanged(mDisplayModes);
+            }
+        }
+        if (currentModeChanged) {
+            DisplayAndroidObserver[] observers = getObservers();
+            for (DisplayAndroidObserver o : observers) {
+                o.onCurrentModeChanged(mCurrentDisplayMode);
             }
         }
     }

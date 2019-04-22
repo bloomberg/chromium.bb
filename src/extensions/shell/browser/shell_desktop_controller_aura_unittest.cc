@@ -24,8 +24,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/input_method_minimal.h"
 #include "ui/display/display.h"
 #include "ui/display/screen_base.h"
@@ -36,30 +36,17 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #endif
 
 namespace extensions {
 
 class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
  public:
-  ShellDesktopControllerAuraTest()
-#if defined(OS_CHROMEOS)
-      : power_manager_client_(NULL)
-#endif
-      {
-  }
-  ~ShellDesktopControllerAuraTest() override {}
+  ShellDesktopControllerAuraTest() = default;
+  ~ShellDesktopControllerAuraTest() override = default;
 
   void SetUp() override {
-#if defined(OS_CHROMEOS)
-    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-    power_manager_client_ = new chromeos::FakePowerManagerClient();
-    dbus_setter->SetPowerManagerClient(base::WrapUnique(power_manager_client_));
-#endif
-
     ShellTestBaseAura::SetUp();
 
     // Set up a screen with 2 displays.
@@ -72,18 +59,22 @@ class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
         display::Display(200, gfx::Rect(1920, 1080, 800, 600)),
         display::DisplayList::Type::NOT_PRIMARY);
 
+#if defined(OS_CHROMEOS)
+    chromeos::PowerManagerClient::InitializeFake();
+#endif
+
     controller_ =
         std::make_unique<ShellDesktopControllerAura>(browser_context());
   }
 
   void TearDown() override {
     controller_.reset();
+#if defined(OS_CHROMEOS)
+    chromeos::PowerManagerClient::Shutdown();
+#endif
     screen_.reset();
     display::Screen::SetScreenInstance(nullptr);
     ShellTestBaseAura::TearDown();
-#if defined(OS_CHROMEOS)
-    chromeos::DBusThreadManager::Shutdown();
-#endif
   }
 
  protected:
@@ -98,10 +89,6 @@ class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
   std::unique_ptr<display::ScreenBase> screen_;
   std::unique_ptr<ShellDesktopControllerAura> controller_;
 
-#if defined(OS_CHROMEOS)
-  chromeos::FakePowerManagerClient* power_manager_client_;  // Not owned.
-#endif
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellDesktopControllerAuraTest);
 };
@@ -111,14 +98,15 @@ class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
 // button is pressed.
 TEST_F(ShellDesktopControllerAuraTest, PowerButton) {
   // Ignore button releases.
-  power_manager_client_->SendPowerButtonEvent(false /* down */,
-                                              base::TimeTicks());
-  EXPECT_EQ(0, power_manager_client_->num_request_shutdown_calls());
+  auto* power_manager_client = chromeos::FakePowerManagerClient::Get();
+  power_manager_client->SendPowerButtonEvent(false /* down */,
+                                             base::TimeTicks());
+  EXPECT_EQ(0, power_manager_client->num_request_shutdown_calls());
 
   // A button press should trigger a shutdown request.
-  power_manager_client_->SendPowerButtonEvent(true /* down */,
-                                              base::TimeTicks());
-  EXPECT_EQ(1, power_manager_client_->num_request_shutdown_calls());
+  power_manager_client->SendPowerButtonEvent(true /* down */,
+                                             base::TimeTicks());
+  EXPECT_EQ(1, power_manager_client->num_request_shutdown_calls());
 }
 #endif
 

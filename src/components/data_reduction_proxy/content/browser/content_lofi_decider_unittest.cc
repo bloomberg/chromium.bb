@@ -9,9 +9,10 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -104,7 +105,7 @@ class ContentLoFiDeciderTest : public testing::Test {
     content::ResourceRequestInfo::AllocateForTesting(
         request, resource_type, nullptr, -1, -1, -1,
         resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
-        false,  // allow_download
+        content::ResourceInterceptPolicy::kAllowNone,
         false,  // is_async
         previews_state,
         nullptr);  // navigation_ui_data
@@ -346,7 +347,7 @@ TEST_F(ContentLoFiDeciderTest, AcceptTransformPerResourceType) {
                {content::RESOURCE_TYPE_CSP_REPORT},
                {content::RESOURCE_TYPE_PLUGIN_RESOURCE}};
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::unique_ptr<net::URLRequest> request = CreateRequestByType(
         tests[i].resource_type, false,
         content::SERVER_LOFI_ON | content::SERVER_LITE_PAGE_ON);
@@ -375,7 +376,7 @@ TEST_F(ContentLoFiDeciderTest, ProxyIsNotDataReductionProxy) {
       {content::PREVIEWS_OFF}, {content::SERVER_LOFI_ON},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::unique_ptr<net::URLRequest> request =
         CreateRequest(false, tests[i].previews_state);
     net::HttpRequestHeaders headers;

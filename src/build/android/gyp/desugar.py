@@ -14,6 +14,7 @@ from util import build_utils
 def main():
   args = build_utils.ExpandFileArgs(sys.argv[1:])
   parser = argparse.ArgumentParser()
+  build_utils.AddDepfileOption(parser)
   parser.add_argument('--desugar-jar', required=True,
                       help='Path to Desugar.jar.')
   parser.add_argument('--input-jar', required=True,
@@ -46,6 +47,13 @@ def main():
   for path in options.classpath:
     cmd += ['--classpath_entry', path]
   build_utils.CheckOutput(cmd, print_stdout=False)
+
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile,
+        options.output_jar,
+        inputs=options.bootclasspath + options.classpath,
+        add_pydeps=False)
 
 
 if __name__ == '__main__':

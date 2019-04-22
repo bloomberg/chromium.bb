@@ -54,6 +54,28 @@ extern const size_t kNintendoSwitchProControllerSize;
 extern const uint8_t kMicrosoftXboxAdaptiveController[];
 extern const size_t kMicrosoftXboxAdaptiveControllerSize;
 
+// Nexus Player Controller descriptor
+extern const uint8_t kNexusPlayerController[];
+extern const size_t kNexusPlayerControllerSize;
+
+// Steam Controller descriptors
+extern const uint8_t kSteamControllerKeyboard[];
+extern const size_t kSteamControllerKeyboardSize;
+extern const uint8_t kSteamControllerMouse[];
+extern const size_t kSteamControllerMouseSize;
+extern const uint8_t kSteamControllerVendor[];
+extern const size_t kSteamControllerVendorSize;
+
+// XSkills Gamecube USB controller adapter descriptor
+extern const uint8_t kXSkillsUsbAdapter[];
+extern const size_t kXSkillsUsbAdapterSize;
+
+// Belkin Nostromo SpeedPad descriptors
+extern const uint8_t kBelkinNostromoKeyboard[];
+extern const size_t kBelkinNostromoKeyboardSize;
+extern const uint8_t kBelkinNostromoMouseAndExtra[];
+extern const size_t kBelkinNostromoMouseAndExtraSize;
+
 }  // namespace device
 
 #endif  // SERVICES_DEVICE_HID_TEST_REPORT_DESCRIPTORS_H_

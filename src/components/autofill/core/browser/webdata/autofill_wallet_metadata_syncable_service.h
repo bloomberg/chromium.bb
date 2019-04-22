@@ -49,6 +49,10 @@ class AutofillWalletMetadataSyncableService
       public syncer::SyncableService,
       public AutofillWebDataServiceObserverOnDBSequence {
  public:
+  AutofillWalletMetadataSyncableService(
+      AutofillWebDataBackend* web_data_backend,
+      const std::string& app_locale);
+
   ~AutofillWalletMetadataSyncableService() override;
 
   // Determines whether this bridge should be monitoring the Wallet data. This
@@ -60,6 +64,7 @@ class AutofillWalletMetadataSyncableService
   }
 
   // syncer::SyncableService implementation.
+  void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
@@ -74,7 +79,7 @@ class AutofillWalletMetadataSyncableService
   // AutofillWebDataServiceObserverOnDBSequence implementation.
   void AutofillProfileChanged(const AutofillProfileChange& change) override;
   void CreditCardChanged(const CreditCardChange& change) override;
-  void AutofillMultipleChanged() override;
+  void AutofillMultipleChangedBySync() override;
 
   // Creates a new AutofillWalletMetadataSyncableService and hangs it off of
   // |web_data_service|, which takes ownership. This method should only be
@@ -91,10 +96,6 @@ class AutofillWalletMetadataSyncableService
       AutofillWebDataService* web_data_service);
 
  protected:
-  AutofillWalletMetadataSyncableService(
-      AutofillWebDataBackend* web_data_backend,
-      const std::string& app_locale);
-
   // Populates the provided |profiles| and |cards| with mappings from server ID
   // to server profiles and server cards read from disk. This data contains the
   // usage stats. Returns true on success.

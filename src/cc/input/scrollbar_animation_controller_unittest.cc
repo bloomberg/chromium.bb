@@ -37,9 +37,9 @@ class MockScrollbarAnimationControllerClient
       : host_impl_(host_impl) {}
   ~MockScrollbarAnimationControllerClient() override = default;
 
-  void PostDelayedScrollbarAnimationTask(const base::Closure& start_fade,
+  void PostDelayedScrollbarAnimationTask(base::OnceClosure start_fade,
                                          base::TimeDelta delay) override {
-    start_fade_ = start_fade;
+    start_fade_ = std::move(start_fade);
     delay_ = delay;
   }
   void SetNeedsRedrawForScrollbarAnimation() override {}
@@ -49,11 +49,11 @@ class MockScrollbarAnimationControllerClient
   }
   MOCK_METHOD0(DidChangeScrollbarVisibility, void());
 
-  base::Closure& start_fade() { return start_fade_; }
+  base::OnceClosure& start_fade() { return start_fade_; }
   base::TimeDelta& delay() { return delay_; }
 
  private:
-  base::Closure start_fade_;
+  base::OnceClosure start_fade_;
   base::TimeDelta delay_;
   LayerTreeHostImpl* host_impl_;
 };
@@ -108,12 +108,12 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
     host_impl_.active_tree()->SetRootLayerForTesting(std::move(clip));
 
     v_scrollbar_layer_->SetBounds(gfx::Size(kThumbThickness, kTrackLength));
-    v_scrollbar_layer_->SetPosition(gfx::PointF(90, 0));
+    v_scrollbar_layer_->test_properties()->position = gfx::PointF(90, 0);
     v_scrollbar_layer_->SetScrollElementId(scroll_layer_ptr->element_id());
     v_scrollbar_layer_->test_properties()->opacity_can_animate = true;
 
     h_scrollbar_layer_->SetBounds(gfx::Size(kTrackLength, kThumbThickness));
-    h_scrollbar_layer_->SetPosition(gfx::PointF(0, 90));
+    h_scrollbar_layer_->test_properties()->position = gfx::PointF(0, 90);
     h_scrollbar_layer_->SetScrollElementId(scroll_layer_ptr->element_id());
     h_scrollbar_layer_->test_properties()->opacity_can_animate = true;
 
@@ -261,7 +261,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, BasicAppearAndFadeOut) {
   // An fade out animation should have been enqueued.
   EXPECT_EQ(kFadeDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
-  client_.start_fade().Run();
+  std::move(client_.start_fade()).Run();
 
   // Scrollbar should fade out over kFadeDuration.
   scrollbar_controller_->Animate(time);
@@ -290,7 +290,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   // An fade out animation should have been enqueued.
   EXPECT_EQ(kFadeDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
-  client_.start_fade().Run();
+  std::move(client_.start_fade()).Run();
 
   // Scrollbar should fade out over kFadeDuration.
   scrollbar_controller_->Animate(time);
@@ -651,7 +651,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   // A fade out animation should have been enqueued. Start it.
   EXPECT_EQ(kFadeDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
-  client_.start_fade().Run();
+  std::move(client_.start_fade()).Run();
 
   scrollbar_controller_->Animate(time);
   ExpectScrollbarsOpacity(1);
@@ -691,7 +691,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, TestCantCaptureWhenFaded) {
   EXPECT_EQ(kFadeDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
   EXPECT_FALSE(client_.start_fade().IsCancelled());
-  client_.start_fade().Run();
+  std::move(client_.start_fade()).Run();
   scrollbar_controller_->Animate(time);
   ExpectScrollbarsOpacity(1);
 
@@ -736,8 +736,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, TestCantCaptureWhenFaded) {
   EXPECT_EQ(kFadeDelay, client_.delay());
 
   // Play the delay animation.
-  client_.start_fade().Run();
-  EXPECT_TRUE(client_.start_fade().IsCancelled());
+  std::move(client_.start_fade()).Run();
 
   scrollbar_controller_->Animate(time);
   time += kFadeDuration;
@@ -831,7 +830,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, FadeAnimated) {
   // An fade out animation should have been enqueued.
   EXPECT_EQ(kFadeDelay, client_.delay());
   EXPECT_FALSE(client_.start_fade().is_null());
-  client_.start_fade().Run();
+  std::move(client_.start_fade()).Run();
 
   // Test that at half the fade duration time, the opacity is at half.
   scrollbar_controller_->Animate(time);
@@ -865,7 +864,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, NotifyChangedVisibility) {
   // to) notify during the animation that the scrollbars are still visible.
   EXPECT_CALL(client_, DidChangeScrollbarVisibility()).Times(0);
   ASSERT_FALSE(client_.start_fade().is_null());
-  client_.start_fade().Run();
+  std::move(client_.start_fade()).Run();
   scrollbar_controller_->Animate(time);
   time += kFadeDuration / 4;
   EXPECT_FALSE(scrollbar_controller_->ScrollbarsHidden());
@@ -1123,8 +1122,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, BasicMouseHoverFadeIn) {
   EXPECT_EQ(kFadeDelay, client_.delay());
 
   // Play the delay animation.
-  client_.start_fade().Run();
-  EXPECT_TRUE(client_.start_fade().IsCancelled());
+  std::move(client_.start_fade()).Run();
 
   scrollbar_controller_->Animate(time);
   time += kFadeDuration / 2;
@@ -1156,13 +1154,13 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   EXPECT_FALSE(client_.start_fade().IsCancelled());
   EXPECT_EQ(kFadeDelay, client_.delay());
 
-  base::Closure& fade = client_.start_fade();
+  client_.start_fade().Reset();
   // Move mouse still hover the fade in region of scrollbar should not
   // post a new fade in.
   scrollbar_controller_->DidMouseMove(
       NearVerticalScrollbarBegin(-kMouseMoveDistanceToTriggerFadeIn + 2, 0));
 
-  EXPECT_TRUE(fade.Equals(client_.start_fade()));
+  EXPECT_TRUE(client_.start_fade().is_null());
 }
 
 // Scrollbars should cancel delay fade in when mouse hover hidden scrollbar then
@@ -1220,8 +1218,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   EXPECT_EQ(kFadeDelay, client_.delay());
 
   // Play the delay animation.
-  client_.start_fade().Run();
-  EXPECT_TRUE(client_.start_fade().IsCancelled());
+  std::move(client_.start_fade()).Run();
 
   scrollbar_controller_->Animate(time);
   time += kFadeDuration;
@@ -1269,8 +1266,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   EXPECT_EQ(kFadeDelay, client_.delay());
 
   // Play the delay animation.
-  client_.start_fade().Run();
-  EXPECT_TRUE(client_.start_fade().IsCancelled());
+  std::move(client_.start_fade()).Run();
 
   scrollbar_controller_->Animate(time);
   time += kFadeDuration;
@@ -1375,9 +1371,9 @@ class ScrollbarAnimationControllerAndroidTest
         did_request_redraw_(false),
         did_request_animate_(false) {}
 
-  void PostDelayedScrollbarAnimationTask(const base::Closure& start_fade,
+  void PostDelayedScrollbarAnimationTask(base::OnceClosure start_fade,
                                          base::TimeDelta delay) override {
-    start_fade_ = start_fade;
+    start_fade_ = std::move(start_fade);
     delay_ = delay;
   }
   void SetNeedsRedrawForScrollbarAnimation() override {
@@ -1438,7 +1434,7 @@ class ScrollbarAnimationControllerAndroidTest
   std::unique_ptr<ScrollbarAnimationController> scrollbar_controller_;
   SolidColorScrollbarLayerImpl* scrollbar_layer_;
 
-  base::Closure start_fade_;
+  base::OnceClosure start_fade_;
   base::TimeDelta delay_;
   bool did_request_redraw_;
   bool did_request_animate_;
@@ -1467,7 +1463,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest,
   EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
   scrollbar_controller_->DidScrollEnd();
 
-  EXPECT_TRUE(start_fade_.Equals(base::Closure()));
+  EXPECT_TRUE(start_fade_.is_null());
 
   time += base::TimeDelta::FromSeconds(100);
   scrollbar_controller_->Animate(time);
@@ -1490,7 +1486,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest,
   EXPECT_TRUE(scrollbar_controller_->ScrollbarsHidden());
 
   // No fade out animation should have been enqueued.
-  EXPECT_TRUE(start_fade_.Equals(base::Closure()));
+  EXPECT_TRUE(start_fade_.is_null());
 }
 
 TEST_F(ScrollbarAnimationControllerAndroidTest, HideOnResize) {
@@ -1626,7 +1622,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest, AwakenByScrollingGesture) {
   EXPECT_FALSE(did_request_animate_);
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
-  EXPECT_TRUE(start_fade_.Equals(base::Closure()));
+  EXPECT_TRUE(start_fade_.is_null());
 
   time += base::TimeDelta::FromSeconds(100);
 
@@ -1635,7 +1631,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest, AwakenByScrollingGesture) {
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   scrollbar_controller_->DidScrollEnd();
   EXPECT_FALSE(did_request_animate_);
-  start_fade_.Run();
+  std::move(start_fade_).Run();
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
 
@@ -1663,7 +1659,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest, AwakenByScrollingGesture) {
   scrollbar_controller_->DidScrollUpdate();
   scrollbar_controller_->DidScrollEnd();
 
-  start_fade_.Run();
+  std::move(start_fade_).Run();
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
 
@@ -1697,7 +1693,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest, AwakenByProgrammaticScroll) {
   scrollbar_controller_->DidScrollUpdate();
   EXPECT_FALSE(did_request_animate_);
 
-  start_fade_.Run();
+  std::move(start_fade_).Run();
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
   scrollbar_controller_->Animate(time);
@@ -1713,7 +1709,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest, AwakenByProgrammaticScroll) {
   scrollbar_controller_->DidScrollUpdate();
   EXPECT_FALSE(did_request_animate_);
 
-  start_fade_.Run();
+  std::move(start_fade_).Run();
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
   time += base::TimeDelta::FromSeconds(2);
@@ -1736,7 +1732,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest, AwakenByProgrammaticScroll) {
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->DidScrollUpdate();
-  start_fade_.Run();
+  std::move(start_fade_).Run();
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
@@ -1766,7 +1762,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest,
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->DidScrollUpdate();
-  start_fade_.Run();
+  std::move(start_fade_).Run();
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
   scrollbar_controller_->Animate(time);
@@ -1806,7 +1802,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest,
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->DidScrollUpdate();
   EXPECT_FALSE(did_request_animate_);
-  start_fade_.Run();
+  std::move(start_fade_).Run();
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
   scrollbar_controller_->Animate(time);

@@ -122,7 +122,7 @@ class NET_EXPORT ChannelIDService {
   int GetUniqueID() const { return id_; }
 
   // Public only for unit testing.
-  int channel_id_count();
+  size_t channel_id_count();
   uint64_t requests() const { return requests_; }
   uint64_t key_store_hits() const { return key_store_hits_; }
   uint64_t inflight_joins() const { return inflight_joins_; }

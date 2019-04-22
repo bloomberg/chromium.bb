@@ -98,7 +98,6 @@ class TestBrowsingDataRemoverDelegate : public MockBrowsingDataRemoverDelegate {
     if (cookies) {
       int data_type_mask =
           BrowsingDataRemover::DATA_TYPE_COOKIES |
-          BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
           BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS;
 
       BrowsingDataFilterBuilderImpl filter_builder(
@@ -208,17 +207,6 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
         base::BindRepeating(&ClearSiteDataHandlerBrowserTest::HandleRequest,
                             base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
-
-    // Initialize the cookie store pointer on the IO thread.
-    base::RunLoop run_loop;
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ClearSiteDataHandlerBrowserTest::InitializeCookieStore,
-            base::Unretained(this),
-            base::Unretained(storage_partition()->GetURLRequestContext()),
-            run_loop.QuitClosure()));
-    run_loop.Run();
   }
 
   BrowserContext* browser_context() {
@@ -229,26 +217,19 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     return BrowserContext::GetDefaultStoragePartition(browser_context());
   }
 
-  void InitializeCookieStore(
-      net::URLRequestContextGetter* request_context_getter,
-      base::Closure callback) {
-    cookie_store_ =
-        request_context_getter->GetURLRequestContext()->cookie_store();
-    std::move(callback).Run();
-  }
-
   // Adds a cookie for the |url|. Used in the cookie integration tests.
   void AddCookie(const GURL& url) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     network::mojom::CookieManager* cookie_manager =
         storage_partition()->GetCookieManagerForBrowserProcess();
 
-    std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
-        url, "A=1", base::Time::Now(), net::CookieOptions()));
+    net::CookieOptions options;
+    std::unique_ptr<net::CanonicalCookie> cookie(
+        net::CanonicalCookie::Create(url, "A=1", base::Time::Now(), options));
 
     base::RunLoop run_loop;
     cookie_manager->SetCanonicalCookie(
-        *cookie, true /* secure_source */, false /* modify_http_only */,
+        *cookie, url.scheme(), options,
         base::BindOnce(&ClearSiteDataHandlerBrowserTest::AddCookieCallback,
                        run_loop.QuitClosure()));
     run_loop.Run();
@@ -476,19 +457,21 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   }
 
   // Callback handler for AddCookie().
-  static void AddCookieCallback(const base::Closure& callback, bool success) {
+  static void AddCookieCallback(
+      base::OnceClosure callback,
+      net::CanonicalCookie::CookieInclusionStatus success) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    ASSERT_TRUE(success);
-    callback.Run();
+    ASSERT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE, success);
+    std::move(callback).Run();
   }
 
   // Callback handler for GetCookies().
-  static void GetCookiesCallback(const base::Closure& callback,
+  static void GetCookiesCallback(base::OnceClosure callback,
                                  net::CookieList* out_cookie_list,
                                  const net::CookieList& cookie_list) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     *out_cookie_list = cookie_list;
-    callback.Run();
+    std::move(callback).Run();
   }
 
   // Callback handler for AddServiceWorker().
@@ -496,11 +479,11 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
   // Callback handler for GetServiceWorkers().
   void GetServiceWorkersCallback(
-      const base::Closure& callback,
+      base::OnceClosure callback,
       std::vector<StorageUsageInfo>* out_service_workers,
       const std::vector<StorageUsageInfo>& service_workers) {
     *out_service_workers = service_workers;
-    callback.Run();
+    std::move(callback).Run();
   }
 
   // We can only use |MockCertVerifier| when Network Service was enabled.
@@ -514,8 +497,6 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   TestBrowsingDataRemoverDelegate embedder_delegate_;
-
-  net::CookieStore* cookie_store_;
 };
 
 // Tests that the header is recognized on the beginning, in the middle, and on
@@ -944,7 +925,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   // Only "origin2.com" now has a service worker.
   service_workers = GetServiceWorkers();
   ASSERT_EQ(1u, service_workers.size());
-  EXPECT_EQ(service_workers[0].origin,
+  EXPECT_EQ(service_workers[0].origin.GetURL(),
             https_server()->GetURL("origin2.com", "/"));
 
   // TODO(msramek): Test that the service worker update ping also deletes
@@ -1030,7 +1011,14 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   // Expect the update to fail and the service worker to be removed.
   EXPECT_FALSE(RunScriptAndGetBool("updateServiceWorker()"));
   delegate()->VerifyAndClearExpectations();
-  EXPECT_FALSE(RunScriptAndGetBool("hasServiceWorker()"));
+  // The service worker should be gone but a few tests are flaky and fail
+  // because it hasn't been removed. To find out if this is just a
+  // timing issue, add some delay if the first call returns true.
+  // TODO(crbug.com/912313): Check if this worked and find out why.
+  if (RunScriptAndGetBool("hasServiceWorker()")) {
+    LOG(ERROR) << "There was a service worker, checking again in a second";
+    EXPECT_FALSE(RunScriptAndGetBool("setTimeout(hasServiceWorker, 1000)"));
+  }
 }
 
 }  // namespace content

@@ -38,7 +38,9 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
   ~ClipboardRecentContentIOS() override;
 
   // ClipboardRecentContent implementation.
-  bool GetRecentURLFromClipboard(GURL* url) override;
+  base::Optional<GURL> GetRecentURLFromClipboard() override;
+  base::Optional<base::string16> GetRecentTextFromClipboard() override;
+  base::Optional<gfx::Image> GetRecentImageFromClipboard() override;
   base::TimeDelta GetClipboardContentAge() const override;
   void SuppressClipboardContent() override;
 

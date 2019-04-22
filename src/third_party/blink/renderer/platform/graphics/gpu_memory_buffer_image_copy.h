@@ -4,6 +4,7 @@
 #include <memory>
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace blink {
@@ -11,6 +12,8 @@ namespace blink {
 class Image;
 
 class PLATFORM_EXPORT GpuMemoryBufferImageCopy {
+  USING_FAST_MALLOC(GpuMemoryBufferImageCopy);
+
  public:
   GpuMemoryBufferImageCopy(gpu::gles2::GLES2Interface*);
   ~GpuMemoryBufferImageCopy();

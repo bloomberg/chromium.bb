@@ -7,9 +7,9 @@
 	<key>CFBundleExecutable</key>
 	<string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Cubepp</string>
+	<string>VkCubepp</string>
 	<key>CFBundleIconFile</key>
-	<string>LunarGIcon.icns</string>
+	<string>VulkanIcon.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.lunarg.cubepp</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -17,7 +17,7 @@
 	<key>CFBundleLongVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleName</key>
-	<string>Cubepp</string>
+	<string>VkCubepp</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

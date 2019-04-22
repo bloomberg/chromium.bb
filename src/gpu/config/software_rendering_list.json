@@ -735,7 +735,10 @@
       "os": {
         "type": "linux"
       },
-      "direct_rendering": false,
+      "direct_rendering_version": {
+        "op": "<",
+        "value": "2"
+      },
       "features": [
         "all"
       ]
@@ -822,6 +825,12 @@
             "type": "android"
           },
           "gl_renderer": ".*Google.*"
+        },
+        {
+          "os": {
+            "type": "android"
+          },
+          "gl_renderer": "ANGLE.*"
         }
       ],
       "features": [
@@ -1650,7 +1659,7 @@
       ]
     },
     {
-      "id":156,
+      "id": 156,
       "cr_bugs": [870964],
       "description": "Frequent crashes on Adreno (TM) on L and below",
       "os": {
@@ -1680,6 +1689,50 @@
       "features": [
         "accelerated_webgl",
         "accelerated_webgl2"
+      ]
+    },
+    {
+      "id": 159,
+      "cr_bugs": [902247],
+      "description": "Disallow OpenGL use on Mac with old NVIDIA GPUs",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x0861", "0x0866", "0x0867", "0x0869", "0x08a0", "0x08a2",
+                    "0x08a4", "0x0a29"],
+      "features": [
+        "all"
+      ]
+    },
+    {
+      "id": 160,
+      "cr_bugs": [902247],
+      "description": "Disallow OpenGL use on Mac with old AMD GPUs",
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x944a", "0x9488", "0x94c8", "0x9583"],
+      "features": [
+        "all"
+      ]
+    },
+    {
+      "id": 161,
+      "cr_bugs": [890688],
+      "description": "Newer Mesa drivers experience visual corruption on very old hardware",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x2a42"],
+      "driver_version": {
+        "op": "=",
+        "value": "18.1.7"
+      },
+      "features": [
+        "all"
       ]
     }
   ]

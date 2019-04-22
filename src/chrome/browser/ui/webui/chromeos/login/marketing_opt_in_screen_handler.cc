@@ -8,17 +8,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.MarketingOptInScreen";
-
-}  // namespace
-
 namespace chromeos {
 
-MarketingOptInScreenHandler::MarketingOptInScreenHandler()
-    : BaseScreenHandler(kScreenId) {
-  set_call_js_prefix(kJsScreenPath);
+MarketingOptInScreenHandler::MarketingOptInScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
 }
 
 MarketingOptInScreenHandler::~MarketingOptInScreenHandler() {}
@@ -51,7 +45,8 @@ void MarketingOptInScreenHandler::Hide() {}
 void MarketingOptInScreenHandler::Initialize() {}
 
 void MarketingOptInScreenHandler::RegisterMessages() {
-  AddPrefixedCallback("allSet", &MarketingOptInScreenHandler::HandleAllSet);
+  AddCallback("login.MarketingOptInScreen.allSet",
+              &MarketingOptInScreenHandler::HandleAllSet);
 }
 
 void MarketingOptInScreenHandler::HandleAllSet(

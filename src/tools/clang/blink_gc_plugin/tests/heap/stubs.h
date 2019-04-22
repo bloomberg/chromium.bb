@@ -196,7 +196,13 @@ using namespace WTF;
  public:                                                                \
   virtual void AdjustAndMark(Visitor*) const override {}                \
   virtual bool IsHeapObjectAlive(Visitor*) const override { return 0; } \
-  void* mixin_constructor_marker_;
+  void* mixin_constructor_marker_
+
+#define USING_GARBAGE_COLLECTED_MIXIN_NEW(type)                         \
+ public:                                                                \
+  virtual void AdjustAndMark(Visitor*) const override {}                \
+  virtual bool IsHeapObjectAlive(Visitor*) const override { return 0; } \
+  typedef int HasUsingGarbageCollectedMixinMacro
 
 #define EAGERLY_FINALIZED() typedef int IsEagerlyFinalizedMarker
 
@@ -248,6 +254,17 @@ public:
     operator T*() const { return 0; }
     T* operator->() { return 0; }
     bool operator!() const { return false; }
+};
+
+template <class T>
+class TraceWrapperMember : public Member<T> {};
+
+template <typename T>
+class TraceWrapperV8Reference {
+ public:
+  operator T*() const { return 0; }
+  T* operator->() { return 0; }
+  bool operator!() const { return false; }
 };
 
 class HeapAllocator {

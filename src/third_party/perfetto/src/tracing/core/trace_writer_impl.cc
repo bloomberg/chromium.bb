@@ -93,14 +93,27 @@ TraceWriterImpl::TracePacketHandle TraceWriterImpl::NewTracePacket() {
   // It doesn't make sense to begin a packet that is going to fragment
   // immediately after (8 is just an arbitrary estimation on the minimum size of
   // a realistic packet).
-  if (protobuf_stream_writer_.bytes_available() < kPacketHeaderSize + 8)
+  bool chunk_too_full =
+      protobuf_stream_writer_.bytes_available() < kPacketHeaderSize + 8;
+  if (chunk_too_full || reached_max_packets_per_chunk_) {
     protobuf_stream_writer_.Reset(GetNewBuffer());
+  }
+
+  // Send any completed patches to the service to facilitate trace data
+  // recovery by the service. This should only happen when we're completing
+  // the first packet in a chunk which was a continuation from the previous
+  // chunk, i.e. at most once per chunk.
+  if (!patch_list_.empty() && patch_list_.front().is_patched()) {
+    shmem_arbiter_->SendPatches(id_, target_buffer_, &patch_list_);
+  }
 
   cur_packet_->Reset(&protobuf_stream_writer_);
   uint8_t* header = protobuf_stream_writer_.ReserveBytes(kPacketHeaderSize);
   memset(header, 0, kPacketHeaderSize);
   cur_packet_->set_size_field(header);
-  cur_chunk_.IncrementPacketCount();
+  uint16_t new_packet_count = cur_chunk_.IncrementPacketCount();
+  reached_max_packets_per_chunk_ =
+      new_packet_count == ChunkHeader::Packets::kMaxCount;
   TracePacketHandle handle(cur_packet_.get());
   cur_fragment_start_ = protobuf_stream_writer_.write_ptr();
   fragmenting_packet_ = true;
@@ -132,6 +145,7 @@ protozero::ContiguousMemoryRange TraceWriterImpl::GetNewBuffer() {
     // detour their |size_field| into the |patch_list_|. At this point we have
     // to release the chunk and they cannot write anymore into that.
     // TODO(primiano): add tests to cover this logic.
+    bool chunk_needs_patching = false;
     for (auto* nested_msg = cur_packet_->nested_message(); nested_msg;
          nested_msg = nested_msg->nested_message()) {
       uint8_t* const cur_hdr = nested_msg->size_field();
@@ -149,6 +163,7 @@ protozero::ContiguousMemoryRange TraceWriterImpl::GetNewBuffer() {
             cur_chunk_.header()->chunk_id.load(std::memory_order_relaxed);
         Patch* patch = patch_list_.emplace_back(cur_chunk_id, offset);
         nested_msg->set_size_field(&patch->size_field[0]);
+        chunk_needs_patching = true;
       } else {
 #if PERFETTO_DCHECK_IS_ON()
         // Ensure that the size field of the message points to an element of the
@@ -160,7 +175,10 @@ protozero::ContiguousMemoryRange TraceWriterImpl::GetNewBuffer() {
 #endif
       }
     }  // for(nested_msg
-  }    // if(fragmenting_packet)
+
+    if (chunk_needs_patching)
+      cur_chunk_.SetFlag(ChunkHeader::kChunkNeedsPatching);
+  }  // if(fragmenting_packet)
 
   if (cur_chunk_.is_valid()) {
     // ReturnCompletedChunk will consume the first patched entries from
@@ -186,6 +204,7 @@ protozero::ContiguousMemoryRange TraceWriterImpl::GetNewBuffer() {
   header.packets.store(packets, std::memory_order_relaxed);
 
   cur_chunk_ = shmem_arbiter_->GetNewChunk(header);
+  reached_max_packets_per_chunk_ = false;
   uint8_t* payload_begin = cur_chunk_.payload_begin();
   if (fragmenting_packet_) {
     cur_packet_->set_size_field(payload_begin);
@@ -201,8 +220,19 @@ WriterID TraceWriterImpl::writer_id() const {
   return id_;
 }
 
-// Base class ctor/dtor definition.
+bool TraceWriterImpl::SetFirstChunkId(ChunkID chunk_id) {
+  if (next_chunk_id_ > 0)
+    return false;
+  next_chunk_id_ = chunk_id;
+  return true;
+}
+
+// Base class definitions.
 TraceWriter::TraceWriter() = default;
 TraceWriter::~TraceWriter() = default;
+
+bool TraceWriter::SetFirstChunkId(ChunkID) {
+  return false;
+}
 
 }  // namespace perfetto

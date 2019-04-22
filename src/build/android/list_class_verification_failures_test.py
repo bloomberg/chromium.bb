@@ -11,6 +11,7 @@ from pylib.constants import host_paths
 import devil_chromium  # pylint: disable=unused-import
 from devil.android import device_errors
 from devil.android import device_utils
+from devil.android.ndk import abis
 from devil.android.sdk import version_codes
 
 with host_paths.SysPath(host_paths.PYMOCK_PATH):
@@ -66,7 +67,7 @@ class _ListClassVerificationFailuresTest(unittest.TestCase):
     sdk_int = version_codes.LOLLIPOP
     paths_to_apk = []
     package_name = 'package.name'
-    arch = 'arm64-v8a'
+    arch = abis.ARM_64
 
     device = mock.Mock(build_version_sdk=sdk_int, product_cpu_abi=arch)
     device.GetApplicationPaths = mock.MagicMock(return_value=paths_to_apk)
@@ -80,7 +81,7 @@ class _ListClassVerificationFailuresTest(unittest.TestCase):
     sdk_int = version_codes.LOLLIPOP
     paths_to_apk = ['/first/path', '/second/path']
     package_name = 'package.name'
-    arch = 'arm64-v8a'
+    arch = abis.ARM_64
 
     device = mock.Mock(build_version_sdk=sdk_int, product_cpu_abi=arch)
     device.GetApplicationPaths = mock.MagicMock(return_value=paths_to_apk)
@@ -94,7 +95,7 @@ class _ListClassVerificationFailuresTest(unittest.TestCase):
     sdk_int = version_codes.KITKAT
     paths_to_apk = ['/some/path']
     package_name = 'package.name'
-    arch = 'arm64-v8a'
+    arch = abis.ARM_64
 
     device = mock.Mock(build_version_sdk=sdk_int, product_cpu_abi=arch)
     device.GetApplicationPaths = mock.MagicMock(return_value=paths_to_apk)
@@ -137,7 +138,7 @@ class _ListClassVerificationFailuresTest(unittest.TestCase):
     sdk_int = version_codes.MARSHMALLOW
     package_name = 'package.name'
     paths_to_apk = ['/some/path/{}-1/base.apk'.format(package_name)]
-    arch = 'arm64-v8a'
+    arch = abis.ARM_64
 
     device = mock.Mock(build_version_sdk=sdk_int, product_cpu_abi=arch)
     device.GetApplicationPaths = mock.MagicMock(return_value=paths_to_apk)
@@ -152,7 +153,7 @@ class _ListClassVerificationFailuresTest(unittest.TestCase):
     sdk_int = version_codes.PIE
     package_name = 'package.name'
     paths_to_apk = ['/some/path/{}-1/base.apk'.format(package_name)]
-    arch = 'arm64-v8a'
+    arch = abis.ARM_64
 
     device = mock.Mock(build_version_sdk=sdk_int, product_cpu_abi=arch)
     device.GetApplicationPaths = mock.MagicMock(return_value=paths_to_apk)
@@ -167,7 +168,7 @@ class _ListClassVerificationFailuresTest(unittest.TestCase):
     sdk_int = version_codes.MARSHMALLOW
     package_name = 'package.name'
     paths_to_apk = ['/some/path/{}-1/base.apk'.format(package_name)]
-    arch = 'arm64-v8a'
+    arch = abis.ARM_64
 
     device = mock.Mock(build_version_sdk=sdk_int, product_cpu_abi=arch)
     device.GetApplicationPaths = mock.MagicMock(return_value=paths_to_apk)

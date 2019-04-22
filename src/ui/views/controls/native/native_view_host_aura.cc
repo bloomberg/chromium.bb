@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/native/native_view_host_aura.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/optional.h"
 #include "build/build_config.h"
@@ -12,13 +14,15 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_occlusion_tracker.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/painter.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/view_constants_aura.h"
-#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
@@ -26,8 +30,8 @@ namespace views {
 
 class NativeViewHostAura::ClippingWindowDelegate : public aura::WindowDelegate {
  public:
-  ClippingWindowDelegate() : native_view_(NULL) {}
-  ~ClippingWindowDelegate() override {}
+  ClippingWindowDelegate() = default;
+  ~ClippingWindowDelegate() override = default;
 
   void set_native_view(aura::Window* native_view) {
     native_view_ = native_view;
@@ -64,10 +68,10 @@ class NativeViewHostAura::ClippingWindowDelegate : public aura::WindowDelegate {
   void OnWindowDestroyed(aura::Window* window) override {}
   void OnWindowTargetVisibilityChanged(bool visible) override {}
   bool HasHitTestMask() const override { return false; }
-  void GetHitTestMask(gfx::Path* mask) const override {}
+  void GetHitTestMask(SkPath* mask) const override {}
 
  private:
-  aura::Window* native_view_;
+  aura::Window* native_view_ = nullptr;
 };
 
 NativeViewHostAura::NativeViewHostAura(NativeViewHost* host) : host_(host) {}
@@ -77,6 +81,8 @@ NativeViewHostAura::~NativeViewHostAura() {
     host_->native_view()->RemoveObserver(this);
     host_->native_view()->ClearProperty(views::kHostViewKey);
     host_->native_view()->ClearProperty(aura::client::kHostWindowKey);
+    host_->native_view()->ClearProperty(
+        aura::client::kParentNativeViewAccessibleKey);
     clipping_window_->ClearProperty(views::kHostViewKey);
     if (host_->native_view()->parent() == clipping_window_.get())
       clipping_window_->RemoveChild(host_->native_view());
@@ -92,10 +98,17 @@ void NativeViewHostAura::AttachNativeView() {
   host_->native_view()->AddObserver(this);
   host_->native_view()->SetProperty(views::kHostViewKey,
       static_cast<View*>(host_));
+
   original_transform_ = host_->native_view()->transform();
   original_transform_changed_ = false;
   AddClippingWindow();
   InstallMask();
+}
+
+void NativeViewHostAura::SetParentAccessible(
+    gfx::NativeViewAccessible accessible) {
+  host_->native_view()->SetProperty(
+      aura::client::kParentNativeViewAccessibleKey, accessible);
 }
 
 void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
@@ -106,17 +119,19 @@ void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
   if (clipping_window_)
     pause_occlusion.emplace(clipping_window_->env());
 
-  clipping_window_delegate_->set_native_view(NULL);
+  clipping_window_delegate_->set_native_view(nullptr);
   RemoveClippingWindow();
   if (!destroyed) {
     host_->native_view()->RemoveObserver(this);
     host_->native_view()->ClearProperty(views::kHostViewKey);
     host_->native_view()->ClearProperty(aura::client::kHostWindowKey);
+    host_->native_view()->ClearProperty(
+        aura::client::kParentNativeViewAccessibleKey);
     if (original_transform_changed_)
       host_->native_view()->SetTransform(original_transform_);
     host_->native_view()->Hide();
     if (host_->native_view()->parent())
-      Widget::ReparentNativeView(host_->native_view(), NULL);
+      Widget::ReparentNativeView(host_->native_view(), nullptr);
   }
 }
 
@@ -129,7 +144,7 @@ void NativeViewHostAura::AddedToWidget() {
     host_->native_view()->Show();
   else
     host_->native_view()->Hide();
-  host_->Layout();
+  host_->InvalidateLayout();
 }
 
 void NativeViewHostAura::RemovedFromWidget() {
@@ -161,9 +176,20 @@ bool NativeViewHostAura::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {
 #endif
 }
 
+void NativeViewHostAura::SetHitTestTopInset(int top_inset) {
+  if (top_inset_ == top_inset)
+    return;
+  top_inset_ = top_inset;
+  UpdateInsets();
+}
+
 void NativeViewHostAura::InstallClip(int x, int y, int w, int h) {
-  clip_rect_.reset(
-      new gfx::Rect(host_->ConvertRectToWidget(gfx::Rect(x, y, w, h))));
+  clip_rect_ = std::make_unique<gfx::Rect>(
+      host_->ConvertRectToWidget(gfx::Rect(x, y, w, h)));
+}
+
+int NativeViewHostAura::GetHitTestTopInset() const {
+  return top_inset_;
 }
 
 bool NativeViewHostAura::HasInstalledClip() {
@@ -224,7 +250,7 @@ gfx::NativeView NativeViewHostAura::GetNativeViewContainer() const {
 }
 
 gfx::NativeViewAccessible NativeViewHostAura::GetNativeViewAccessible() {
-  return NULL;
+  return nullptr;
 }
 
 gfx::NativeCursor NativeViewHostAura::GetCursor(int x, int y) {
@@ -258,7 +284,7 @@ void NativeViewHostAura::OnWindowBoundsChanged(
 
 void NativeViewHostAura::OnWindowDestroying(aura::Window* window) {
   DCHECK(window == host_->native_view());
-  clipping_window_delegate_->set_native_view(NULL);
+  clipping_window_delegate_->set_native_view(nullptr);
 }
 
 void NativeViewHostAura::OnWindowDestroyed(aura::Window* window) {
@@ -284,6 +310,7 @@ void NativeViewHostAura::CreateClippingWindow() {
   clipping_window_->SetName("NativeViewHostAuraClip");
   clipping_window_->layer()->SetMasksToBounds(true);
   clipping_window_->SetProperty(views::kHostViewKey, static_cast<View*>(host_));
+  UpdateInsets();
 }
 
 void NativeViewHostAura::AddClippingWindow() {
@@ -338,6 +365,25 @@ void NativeViewHostAura::UninstallMask() {
 
   host_->native_view()->layer()->SetMaskLayer(nullptr);
   mask_.reset();
+}
+
+void NativeViewHostAura::UpdateInsets() {
+  if (!clipping_window_)
+    return;
+
+  if (top_inset_ == 0) {
+    // The window targeter needs to be uninstalled when not used; keeping empty
+    // targeter here actually conflicts with ash::ImmersiveWindowTargeter on
+    // immersive mode in Ash.
+    // TODO(mukai): fix this.
+    clipping_window_->SetEventTargeter(nullptr);
+  } else {
+    if (!clipping_window_->targeter()) {
+      clipping_window_->SetEventTargeter(
+          std::make_unique<aura::WindowTargeter>());
+    }
+    clipping_window_->targeter()->SetInsets(gfx::Insets(top_inset_, 0, 0, 0));
+  }
 }
 
 }  // namespace views

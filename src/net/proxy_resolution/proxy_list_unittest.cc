@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/stl_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/proxy_server.h"
 #include "net/log/net_log_with_source.h"
@@ -64,7 +65,7 @@ TEST(ProxyListTest, SetFromPacString) {
     },
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ProxyList list;
     list.SetFromPacString(tests[i].pac_input);
     EXPECT_EQ(tests[i].pac_output, list.ToPacString());
@@ -90,7 +91,7 @@ TEST(ProxyListTest, RemoveProxiesWithoutScheme) {
     },
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ProxyList list;
     list.SetFromPacString(tests[i].pac_input);
     list.RemoveProxiesWithoutScheme(tests[i].filter);

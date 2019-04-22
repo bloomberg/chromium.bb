@@ -43,7 +43,7 @@ wtf_size_t V0CustomElementProcessingStack::element_queue_end_ = kNumSentinels;
 
 V0CustomElementProcessingStack& V0CustomElementProcessingStack::Instance() {
   DEFINE_STATIC_LOCAL(Persistent<V0CustomElementProcessingStack>, instance,
-                      (new V0CustomElementProcessingStack));
+                      (MakeGarbageCollected<V0CustomElementProcessingStack>()));
   return *instance;
 }
 
@@ -92,7 +92,7 @@ void V0CustomElementProcessingStack::Enqueue(
   ++element_queue_end_;
 }
 
-void V0CustomElementProcessingStack::Trace(blink::Visitor* visitor) {
+void V0CustomElementProcessingStack::Trace(Visitor* visitor) {
   visitor->Trace(flattened_processing_stack_);
 }
 

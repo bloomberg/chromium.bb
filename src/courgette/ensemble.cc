@@ -24,7 +24,7 @@ Element::Element(ExecutableType kind,
 Element::~Element() = default;
 
 std::string Element::Name() const {
-  return ensemble_->name() + "(" + base::IntToString(kind()) + "," +
+  return ensemble_->name() + "(" + base::NumberToString(kind()) + "," +
          base::NumberToString(offset_in_ensemble()) + "," +
          base::NumberToString(region().length()) + ")";
 }

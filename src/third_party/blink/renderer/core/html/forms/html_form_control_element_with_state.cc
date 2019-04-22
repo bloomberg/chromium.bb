@@ -24,12 +24,8 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
 
-#include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/local_frame_client.h"
-#include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
-#include "third_party/blink/renderer/core/page/chrome_client.h"
 
 namespace blink {
 
@@ -120,21 +116,6 @@ HTMLFormControlElementWithState::HTMLFormControlElementWithState(
 
 HTMLFormControlElementWithState::~HTMLFormControlElementWithState() = default;
 
-Node::InsertionNotificationRequest
-HTMLFormControlElementWithState::InsertedInto(ContainerNode& insertion_point) {
-  if (insertion_point.isConnected() && !ContainingShadowRoot())
-    GetDocument().GetFormController().RegisterStatefulFormControl(*this);
-  return HTMLFormControlElement::InsertedInto(insertion_point);
-}
-
-void HTMLFormControlElementWithState::RemovedFrom(
-    ContainerNode& insertion_point) {
-  if (insertion_point.isConnected() && !ContainingShadowRoot() &&
-      !insertion_point.ContainingShadowRoot())
-    GetDocument().GetFormController().UnregisterStatefulFormControl(*this);
-  HTMLFormControlElement::RemovedFrom(insertion_point);
-}
-
 bool HTMLFormControlElementWithState::ShouldAutocomplete() const {
   if (!Form())
     return true;
@@ -149,7 +130,7 @@ String HTMLFormControlElementWithState::IDLExposedAutofillValue() const {
   // TODO(tkent): Share the code with autofill::FormStructure::
   // ParseFieldTypesFromAutocompleteAttributes().
 
-  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofill-processing-model
+  // https://html.spec.whatwg.org/C/#autofill-processing-model
   // 1. If the element has no autocomplete attribute, then jump to the step
   // labeled default.
   const AtomicString& value = FastGetAttribute(html_names::kAutocompleteAttr);
@@ -284,12 +265,8 @@ void HTMLFormControlElementWithState::setIDLExposedAutofillValue(
   setAttribute(html_names::kAutocompleteAttr, AtomicString(autocomplete_value));
 }
 
-void HTMLFormControlElementWithState::NotifyFormStateChanged() {
-  // This can be called during fragment parsing as a result of option
-  // selection before the document is active (or even in a frame).
-  if (!GetDocument().IsActive())
-    return;
-  GetDocument().GetFrame()->Client()->DidUpdateCurrentHistoryItem();
+bool HTMLFormControlElementWithState::ClassSupportsStateRestore() const {
+  return true;
 }
 
 bool HTMLFormControlElementWithState::ShouldSaveAndRestoreFormControlState()
@@ -298,23 +275,13 @@ bool HTMLFormControlElementWithState::ShouldSaveAndRestoreFormControlState()
   return isConnected() && ShouldAutocomplete();
 }
 
-FormControlState HTMLFormControlElementWithState::SaveFormControlState() const {
-  return FormControlState();
-}
-
 void HTMLFormControlElementWithState::FinishParsingChildren() {
   HTMLFormControlElement::FinishParsingChildren();
-  GetDocument().GetFormController().RestoreControlStateFor(*this);
+  ListedElement::TakeStateAndRestore();
 }
 
 bool HTMLFormControlElementWithState::IsFormControlElementWithState() const {
   return true;
-}
-
-void HTMLFormControlElementWithState::Trace(Visitor* visitor) {
-  visitor->Trace(prev_);
-  visitor->Trace(next_);
-  HTMLFormControlElement::Trace(visitor);
 }
 
 }  // namespace blink

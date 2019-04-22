@@ -31,15 +31,14 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SHARED_WORKER_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SHARED_WORKER_CLIENT_H_
 
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
-#include "third_party/blink/public/platform/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 
 namespace blink {
 
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
-class WebNotificationPresenter;
 class WebServiceWorkerNetworkProvider;
 
 // Provides an interface back to the in-page script object for a worker.
@@ -56,11 +55,8 @@ class WebSharedWorkerClient {
   virtual void WorkerReadyForInspection() {}
   virtual void WorkerScriptLoaded() = 0;
   virtual void WorkerScriptLoadFailed() = 0;
-  virtual void SelectAppCacheID(long long) = 0;
-
-  // Returns the notification presenter for this worker context. Pointer
-  // is owned by the object implementing WebSharedWorkerClient.
-  virtual WebNotificationPresenter* NotificationPresenter() = 0;
+  virtual void WorkerScriptEvaluated(bool success) = 0;
+  virtual void SelectAppCacheID(int64_t) = 0;
 
   // Called on the main webkit thread in the worker process during
   // initialization.
@@ -68,9 +64,9 @@ class WebSharedWorkerClient {
       WebApplicationCacheHostClient*) = 0;
 
   // Called on the main thread during initialization, before requesting the main
-  // script resource. Creates the ServiceWorkerNetworkProvider which is used for
-  // script loading (i.e., the main script and importScripts). Other requests
-  // (e.g., fetch and XHR) go through WebWorkerFetchContext.
+  // script resource. Creates the WebServiceWorkerNetworkProvider which is used
+  // for script loading (i.e., the main script and importScripts). Other
+  // requests (e.g., fetch and XHR) go through WebWorkerFetchContext.
   virtual std::unique_ptr<WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProvider() = 0;
 

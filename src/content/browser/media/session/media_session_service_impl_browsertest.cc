@@ -5,7 +5,7 @@
 #include "content/browser/media/session/media_session_service_impl.h"
 
 #include "base/command_line.h"
-#include "base/run_loop.h"
+#include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -14,32 +14,12 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_content_type.h"
+#include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 namespace {
-
-class MockMediaSessionObserver : public MediaSessionObserver {
- public:
-  explicit MockMediaSessionObserver(
-      MediaSession* session,
-      const base::Closure& closure_on_actions_change)
-      : MediaSessionObserver(session),
-        closure_on_actions_change_(closure_on_actions_change) {}
-
-  void MediaSessionActionsChanged(
-      const std::set<media_session::mojom::MediaSessionAction>& actions)
-      override {
-    // The actions might be empty when the service becomes routed for the first
-    // time.
-    if (actions.size() == 1)
-      closure_on_actions_change_.Run();
-  }
-
- private:
-  base::Closure closure_on_actions_change_;
-};
 
 class MockWebContentsObserver : public WebContentsObserver {
  public:
@@ -90,7 +70,7 @@ void NavigateToURLAndWaitForFinish(Shell* window, const GURL& url) {
 char kSetUpMediaSessionScript[] =
     "navigator.mediaSession.playbackState = \"playing\";\n"
     "navigator.mediaSession.metadata = new MediaMetadata({ title: \"foo\" });\n"
-    "navigator.mediaSession.setActionHandler(\"play\", _ => {});";
+    "navigator.mediaSession.setActionHandler(\"seekforward\", _ => {});";
 
 const int kPlayerId = 0;
 
@@ -128,11 +108,17 @@ class MediaSessionServiceImplBrowserTest : public ContentBrowserTest {
   }
 
   bool ExecuteScriptToSetUpMediaSessionSync() {
-    // Using the actions change as the signal of completion.
-    base::RunLoop run_loop;
-    MockMediaSessionObserver observer(GetSession(), run_loop.QuitClosure());
     bool result = ExecuteScript(shell(), kSetUpMediaSessionScript);
-    run_loop.Run();
+    media_session::test::MockMediaSessionMojoObserver observer(*GetSession());
+
+    std::set<media_session::mojom::MediaSessionAction> expected_actions;
+    expected_actions.insert(media_session::mojom::MediaSessionAction::kPlay);
+    expected_actions.insert(media_session::mojom::MediaSessionAction::kPause);
+    expected_actions.insert(media_session::mojom::MediaSessionAction::kStop);
+    expected_actions.insert(
+        media_session::mojom::MediaSessionAction::kSeekForward);
+
+    observer.WaitForExpectedActions(expected_actions);
     return result;
   }
 
@@ -165,6 +151,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 // TODO(crbug.com/850870) Plug the leaks.
 #define MAYBE_ResetServiceWhenNavigatingAway \
   DISABLED_ResetServiceWhenNavigatingAway
+#elif defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_ANDROID)
+// crbug.com/927234.
+#define MAYBE_ResetServiceWhenNavigatingAway \
+  DISABLED_ResetServiceWhenNavigatingAway
 #else
 #define MAYBE_ResetServiceWhenNavigatingAway ResetServiceWhenNavigatingAway
 #endif
@@ -177,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 
   EXPECT_EQ(blink::mojom::MediaSessionPlaybackState::PLAYING,
             GetService()->playback_state());
-  EXPECT_TRUE(GetService()->metadata().has_value());
+  EXPECT_TRUE(GetService()->metadata());
   EXPECT_EQ(1u, GetService()->actions().size());
 
   // Start a non-same-page navigation and check the playback state, metadata,
@@ -186,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 
   EXPECT_EQ(blink::mojom::MediaSessionPlaybackState::NONE,
             GetService()->playback_state());
-  EXPECT_FALSE(GetService()->metadata().has_value());
+  EXPECT_FALSE(GetService()->metadata());
   EXPECT_EQ(0u, GetService()->actions().size());
 }
 
@@ -195,8 +185,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 #define MAYBE_DontResetServiceForSameDocumentNavigation \
   DISABLED_DontResetServiceForSameDocumentNavigation
 #else
+// crbug.com/927234.
 #define MAYBE_DontResetServiceForSameDocumentNavigation \
-  DontResetServiceForSameDocumentNavigation
+  DISABLED_DontResetServiceForSameDocumentNavigation
 #endif
 IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
                        MAYBE_DontResetServiceForSameDocumentNavigation) {
@@ -213,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 
   EXPECT_EQ(blink::mojom::MediaSessionPlaybackState::PLAYING,
             GetService()->playback_state());
-  EXPECT_TRUE(GetService()->metadata().has_value());
+  EXPECT_TRUE(GetService()->metadata());
   EXPECT_EQ(1u, GetService()->actions().size());
 }
 

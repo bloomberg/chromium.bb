@@ -6,17 +6,15 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "components/autofill/ios/form_util/form_activity_observer.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
-#include "ios/web/public/features.h"
 #include "ios/web/public/web_state/web_frame.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-DEFINE_WEB_STATE_USER_DATA_KEY(autofill::FormActivityTabHelper);
 
 namespace autofill {
 
@@ -100,13 +98,10 @@ bool FormActivityTabHelper::HandleFormActivity(
   }
 
   params.is_main_frame = form_in_main_frame;
-  if (!sender_frame &&
-      base::FeatureList::IsEnabled(web::features::kWebFrameMessaging)) {
+  if (!sender_frame) {
     return false;
   }
-  if (sender_frame) {
-    params.frame_id = sender_frame->GetFrameId();
-  }
+  params.frame_id = sender_frame->GetFrameId();
   for (auto& observer : observers_)
     observer.FormActivityRegistered(web_state_, sender_frame, params);
   return true;
@@ -145,5 +140,7 @@ void FormActivityTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state_->RemoveObserver(this);
   web_state_ = nullptr;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(FormActivityTabHelper)
 
 }  // namespace autofill

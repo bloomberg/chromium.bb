@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
-#include "components/policy/core/common/cloud/dm_auth.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace network {
@@ -37,7 +36,7 @@ class MockCloudPolicyClient : public CloudPolicyClient {
            enterprise_management::DeviceRegisterRequest::Flavor flavor,
            enterprise_management::DeviceRegisterRequest::Lifetime lifetime,
            enterprise_management::LicenseType::LicenseTypeEnum license_type,
-           std::unique_ptr<DMAuth>,
+           const std::string&,
            const std::string&,
            const std::string&,
            const std::string&));
@@ -49,9 +48,10 @@ class MockCloudPolicyClient : public CloudPolicyClient {
                void(const std::string&, const StatusCallback&));
   MOCK_METHOD2(UploadEnterpriseEnrollmentId,
                void(const std::string&, const StatusCallback&));
-  MOCK_METHOD3(UploadDeviceStatus,
+  MOCK_METHOD4(UploadDeviceStatus,
                void(const enterprise_management::DeviceStatusReportRequest*,
                     const enterprise_management::SessionStatusReportRequest*,
+                    const enterprise_management::ChildStatusReportRequest*,
                     const StatusCallback&));
   MOCK_METHOD2(UploadAppInstallReport,
                void(const enterprise_management::AppInstallReportRequest*,

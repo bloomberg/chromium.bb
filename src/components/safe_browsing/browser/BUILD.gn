@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 
-source_set("browser") {
+jumbo_source_set("browser") {
   sources = [
     "base_parallel_resource_throttle.cc",
     "base_parallel_resource_throttle.h",

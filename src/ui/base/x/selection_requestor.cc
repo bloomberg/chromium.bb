@@ -38,16 +38,15 @@ scoped_refptr<base::RefCountedMemory> CombineRefCountedMemory(
   if (data.size() == 1u)
     return data[0];
 
-  size_t length = 0;
-  for (size_t i = 0; i < data.size(); ++i)
-    length += data[i]->size();
+  size_t combined_length = 0;
+  for (const auto& datum : data)
+    combined_length += datum->size();
   std::vector<unsigned char> combined_data;
-  combined_data.reserve(length);
+  combined_data.reserve(combined_length);
 
-  for (size_t i = 0; i < data.size(); ++i) {
-    combined_data.insert(combined_data.end(),
-                         data[i]->front(),
-                         data[i]->front() + data[i]->size());
+  for (const auto& datum : data) {
+    combined_data.insert(combined_data.end(), datum->front(),
+                         datum->front() + datum->size());
   }
   return base::RefCountedBytes::TakeVector(&combined_data);
 }
@@ -109,21 +108,17 @@ void SelectionRequestor::PerformBlockingConvertSelectionWithParameter(
     XAtom target,
     const std::vector<XAtom>& parameter) {
   SetAtomArrayProperty(x_window_, kChromeSelection, "ATOM", parameter);
-  PerformBlockingConvertSelection(selection, target, NULL, NULL, NULL);
+  PerformBlockingConvertSelection(selection, target, nullptr, nullptr, nullptr);
 }
 
 SelectionData SelectionRequestor::RequestAndWaitForTypes(
     XAtom selection,
     const std::vector<XAtom>& types) {
-  for (auto it = types.begin(); it != types.end(); ++it) {
+  for (const XAtom& item : types) {
     scoped_refptr<base::RefCountedMemory> data;
     XAtom type = x11::None;
-    if (PerformBlockingConvertSelection(selection,
-                                        *it,
-                                        &data,
-                                        NULL,
-                                        &type) &&
-        type == *it) {
+    if (PerformBlockingConvertSelection(selection, item, &data, nullptr,
+                                        &type) && type == item) {
       return SelectionData(type, data);
     }
   }
@@ -283,8 +278,9 @@ void SelectionRequestor::BlockTillSelectionNotifyForRequest(Request* request) {
 }
 
 SelectionRequestor::Request* SelectionRequestor::GetCurrentRequest() {
-  return current_request_index_ == requests_.size() ?
-      NULL : requests_[current_request_index_];
+  return current_request_index_ == requests_.size()
+             ? nullptr
+             : requests_[current_request_index_];
 }
 
 SelectionRequestor::Request::Request(XAtom selection,

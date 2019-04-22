@@ -64,8 +64,8 @@ TEST(EventQueueTest, Basic) {
   EXPECT_EQ(CHANGE_TYPE_INPUT_EVENT, (*setup.changes())[0].type);
   setup.changes()->clear();
 
-  // Generator another key event. As still waiting for a response from the
-  // client this event should be queued.
+  // Generate another key event. As the client has not yet responded to the
+  // first event, this event should be queued.
   event_generator.PressKey(ui::VKEY_B, ui::EF_NONE);
   EXPECT_TRUE(event_queue_test_helper.HasInFlightEvent());
   EXPECT_TRUE(setup.changes()->empty());
@@ -143,6 +143,45 @@ TEST(EventQueueTest, Timeout) {
 
   event_queue_test_helper.RunAckTimer();
   EXPECT_TRUE(was_dispatch_closure_run);
+}
+
+TEST(EventQueueTest, HostDestroyedWhileEventQueued) {
+  WindowServiceTestSetup setup;
+  setup.set_ack_events_immediately(false);
+
+  // Events are only queued if they target a window with a remote client.
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  top_level->Focus();
+  EXPECT_TRUE(top_level->HasFocus());
+
+  // Generate a single key event.
+  setup.changes()->clear();
+  EventQueueTestHelper event_queue_test_helper(setup.service()->event_queue());
+  ui::test::EventGenerator event_generator(setup.root());
+  event_generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_TRUE(event_queue_test_helper.HasInFlightEvent());
+  ASSERT_EQ(1u, setup.changes()->size());
+  EXPECT_EQ(CHANGE_TYPE_INPUT_EVENT, (*setup.changes())[0].type);
+  setup.changes()->clear();
+
+  // Generate another key event. As the client has not yet responded to the
+  // first event, this event should be queued.
+  event_generator.PressKey(ui::VKEY_B, ui::EF_NONE);
+  EXPECT_TRUE(event_queue_test_helper.HasInFlightEvent());
+  EXPECT_TRUE(setup.changes()->empty());
+
+  // Destroy the window and its host.
+  setup.window_tree_test_helper()->DeleteWindow(top_level);
+  setup.changes()->clear();
+
+  // Ack the first event, the second event should be safely ignored.
+  event_queue_test_helper.AckInFlightEvent();
+  EXPECT_FALSE(event_queue_test_helper.HasInFlightEvent());
+  auto iter = FirstChangeOfType(*setup.changes(), CHANGE_TYPE_INPUT_EVENT);
+  EXPECT_EQ(iter, setup.changes()->end());
 }
 
 }  // namespace

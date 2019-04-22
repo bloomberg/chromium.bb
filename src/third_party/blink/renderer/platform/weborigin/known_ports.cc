@@ -33,8 +33,7 @@
 
 namespace blink {
 
-bool IsDefaultPortForProtocol(unsigned short port,
-                              const WTF::String& protocol) {
+bool IsDefaultPortForProtocol(uint16_t port, const WTF::String& protocol) {
   if (protocol.IsEmpty())
     return false;
 
@@ -53,7 +52,7 @@ bool IsDefaultPortForProtocol(unsigned short port,
   return false;
 }
 
-unsigned short DefaultPortForProtocol(const WTF::String& protocol) {
+uint16_t DefaultPortForProtocol(const WTF::String& protocol) {
   if (protocol == "http" || protocol == "ws")
     return 80;
   if (protocol == "https" || protocol == "wss")
@@ -76,12 +75,11 @@ bool IsPortAllowedForScheme(const KURL& url) {
   String protocol = url.Protocol();
   if (protocol.IsNull())
     protocol = g_empty_string;
-  unsigned short effective_port = url.Port();
+  uint16_t effective_port = url.Port();
   if (!effective_port)
     effective_port = DefaultPortForProtocol(protocol);
   StringUTF8Adaptor utf8(protocol);
-  return net::IsPortAllowedForScheme(effective_port,
-                                     std::string(utf8.Data(), utf8.length()));
+  return net::IsPortAllowedForScheme(effective_port, utf8.AsStringPiece());
 }
 
 }  // namespace blink

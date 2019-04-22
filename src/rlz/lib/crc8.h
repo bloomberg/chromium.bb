@@ -19,6 +19,6 @@ class Crc8 {
                      unsigned char checksum,
                      bool * matches);
 };
-};  // namespace rlz_lib
+}  // namespace rlz_lib
 
 #endif  // RLZ_LIB_CRC8_H_

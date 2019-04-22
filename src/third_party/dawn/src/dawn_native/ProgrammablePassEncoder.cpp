@@ -17,27 +17,88 @@
 #include "dawn_native/BindGroup.h"
 #include "dawn_native/CommandBuffer.h"
 #include "dawn_native/Commands.h"
+#include "dawn_native/Device.h"
+#include "dawn_native/ValidationUtils_autogen.h"
+
+#include <string.h>
 
 namespace dawn_native {
 
     ProgrammablePassEncoder::ProgrammablePassEncoder(DeviceBase* device,
-                                                     CommandBufferBuilder* topLevelBuilder,
+                                                     CommandEncoderBase* topLevelEncoder,
                                                      CommandAllocator* allocator)
-        : ObjectBase(device), mTopLevelBuilder(topLevelBuilder), mAllocator(allocator) {
+        : ObjectBase(device), mTopLevelEncoder(topLevelEncoder), mAllocator(allocator) {
+        DAWN_ASSERT(allocator != nullptr);
+    }
+
+    ProgrammablePassEncoder::ProgrammablePassEncoder(DeviceBase* device,
+                                                     CommandEncoderBase* topLevelEncoder,
+                                                     ErrorTag errorTag)
+        : ObjectBase(device, errorTag), mTopLevelEncoder(topLevelEncoder), mAllocator(nullptr) {
     }
 
     void ProgrammablePassEncoder::EndPass() {
-        mTopLevelBuilder->PassEnded();
+        if (mTopLevelEncoder->ConsumedError(ValidateCanRecordCommands())) {
+            return;
+        }
+
+        mTopLevelEncoder->PassEnded();
         mAllocator = nullptr;
     }
 
-    void ProgrammablePassEncoder::SetBindGroup(uint32_t groupIndex, BindGroupBase* group) {
-        if (mTopLevelBuilder->ConsumedError(ValidateCanRecordCommands())) {
+    void ProgrammablePassEncoder::InsertDebugMarker(const char* groupLabel) {
+        if (mTopLevelEncoder->ConsumedError(ValidateCanRecordCommands())) {
+            return;
+        }
+
+        InsertDebugMarkerCmd* cmd =
+            mAllocator->Allocate<InsertDebugMarkerCmd>(Command::InsertDebugMarker);
+        new (cmd) InsertDebugMarkerCmd;
+        cmd->length = strlen(groupLabel);
+
+        char* label = mAllocator->AllocateData<char>(cmd->length + 1);
+        memcpy(label, groupLabel, cmd->length + 1);
+    }
+
+    void ProgrammablePassEncoder::PopDebugGroup() {
+        if (mTopLevelEncoder->ConsumedError(ValidateCanRecordCommands())) {
+            return;
+        }
+
+        PopDebugGroupCmd* cmd = mAllocator->Allocate<PopDebugGroupCmd>(Command::PopDebugGroup);
+        new (cmd) PopDebugGroupCmd;
+    }
+
+    void ProgrammablePassEncoder::PushDebugGroup(const char* groupLabel) {
+        if (mTopLevelEncoder->ConsumedError(ValidateCanRecordCommands())) {
+            return;
+        }
+
+        PushDebugGroupCmd* cmd = mAllocator->Allocate<PushDebugGroupCmd>(Command::PushDebugGroup);
+        new (cmd) PushDebugGroupCmd;
+        cmd->length = strlen(groupLabel);
+
+        char* label = mAllocator->AllocateData<char>(cmd->length + 1);
+        memcpy(label, groupLabel, cmd->length + 1);
+    }
+
+    void ProgrammablePassEncoder::SetBindGroup(uint32_t groupIndex,
+                                               BindGroupBase* group,
+                                               uint32_t dynamicOffsetCount,
+                                               const uint64_t* dynamicOffsets) {
+        if (mTopLevelEncoder->ConsumedError(ValidateCanRecordCommands()) ||
+            mTopLevelEncoder->ConsumedError(GetDevice()->ValidateObject(group))) {
             return;
         }
 
         if (groupIndex >= kMaxBindGroups) {
-            mTopLevelBuilder->HandleError("Setting bind group over the max");
+            mTopLevelEncoder->HandleError("Setting bind group over the max");
+            return;
+        }
+
+        // TODO(shaobo.yan@intel.com): Implement dynamic buffer offset.
+        if (dynamicOffsetCount != 0) {
+            mTopLevelEncoder->HandleError("Dynamic Buffer Offset not supported yet");
             return;
         }
 
@@ -51,13 +112,17 @@ namespace dawn_native {
                                                    uint32_t offset,
                                                    uint32_t count,
                                                    const void* data) {
-        if (mTopLevelBuilder->ConsumedError(ValidateCanRecordCommands())) {
+        if (mTopLevelEncoder->ConsumedError(ValidateCanRecordCommands())) {
+            return;
+        }
+
+        if (mTopLevelEncoder->ConsumedError(ValidateShaderStageBit(stages))) {
             return;
         }
 
         // TODO(cwallez@chromium.org): check for overflows
         if (offset + count > kMaxPushConstants) {
-            mTopLevelBuilder->HandleError("Setting too many push constants");
+            mTopLevelEncoder->HandleError("Setting too many push constants");
             return;
         }
 
@@ -74,7 +139,7 @@ namespace dawn_native {
 
     MaybeError ProgrammablePassEncoder::ValidateCanRecordCommands() const {
         if (mAllocator == nullptr) {
-            return DAWN_VALIDATION_ERROR("Recording in an already ended pass encoder");
+            return DAWN_VALIDATION_ERROR("Recording in an error or already ended pass encoder");
         }
 
         return nullptr;

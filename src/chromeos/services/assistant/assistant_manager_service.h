@@ -31,10 +31,11 @@ class AssistantManagerService : public mojom::Assistant {
 
   ~AssistantManagerService() override = default;
 
-  // Start the assistant in the background with |access_token|. When the service
-  // is fully started |callback| will be called on the thread where ctor was
-  // run.
-  virtual void Start(const std::string& access_token,
+  // Start the assistant in the background with |access_token|, where the
+  // token can be nullopt when the service is being started under the signed
+  // out mode. When the service is fully started |callback| will be called on
+  // the thread where ctor was run.
+  virtual void Start(const base::Optional<std::string>& access_token,
                      bool enable_hotword,
                      base::OnceClosure callback) = 0;
 
@@ -47,34 +48,16 @@ class AssistantManagerService : public mojom::Assistant {
   // Set access token for assistant.
   virtual void SetAccessToken(const std::string& access_token) = 0;
 
-  // Turn on / off hotword listening.
+  // Turn on / off all listening, including hotword and voice query.
   virtual void EnableListening(bool enable) = 0;
+
+  // Turn on / off hotword listening.
+  virtual void EnableHotword(bool enable) = 0;
+
+  virtual void SetArcPlayStoreEnabled(bool enabled) = 0;
 
   // Returns a pointer of AssistantSettingsManager.
   virtual AssistantSettingsManager* GetAssistantSettingsManager() = 0;
-
-  using GetSettingsUiResponseCallback =
-      base::OnceCallback<void(const std::string&)>;
-  // Send request for getting settings ui.
-  virtual void SendGetSettingsUiRequest(
-      const std::string& selector,
-      GetSettingsUiResponseCallback callback) = 0;
-
-  using UpdateSettingsUiResponseCallback =
-      base::OnceCallback<void(const std::string&)>;
-  // Send request for updating settings ui.
-  virtual void SendUpdateSettingsUiRequest(
-      const std::string& update,
-      UpdateSettingsUiResponseCallback callback) = 0;
-
-  // Starts speaker id enrollment.
-  virtual void StartSpeakerIdEnrollment(
-      bool skip_cloud_enrollment,
-      mojom::SpeakerIdEnrollmentClientPtr client) = 0;
-
-  // Stops speaker id enrollment (if one is active).
-  virtual void StopSpeakerIdEnrollment(
-      AssistantSettingsManager::StopSpeakerIdEnrollmentCallback callback) = 0;
 };
 
 }  // namespace assistant

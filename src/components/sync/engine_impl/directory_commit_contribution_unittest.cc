@@ -7,8 +7,8 @@
 #include <set>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
@@ -92,7 +92,8 @@ class DirectoryCommitContributionTest : public ::testing::Test {
   base::ObserverList<TypeDebugInfoObserver>::Unchecked type_observers_;
 
  private:
-  base::MessageLoop loop_;  // Neeed to initialize the directory.
+  // Neeed to initialize the directory.
+  base::test::ScopedTaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
 };
 

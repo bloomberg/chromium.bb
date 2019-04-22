@@ -6,6 +6,7 @@
 
 #include <UIKit/UIKit.h>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/sys_string_conversions.h"

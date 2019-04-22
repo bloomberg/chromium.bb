@@ -232,15 +232,15 @@ class DatabaseTracker_TestHelper_Test {
     // Delete db1. Should also delete origin1.
     TestObserver observer;
     tracker->AddObserver(&observer);
-    net::TestCompletionCallback callback;
-    int result = tracker->DeleteDatabase(kOrigin1, kDB1, callback.callback());
+    net::TestCompletionCallback callback1;
+    int result = tracker->DeleteDatabase(kOrigin1, kDB1, callback1.callback());
     EXPECT_EQ(net::ERR_IO_PENDING, result);
-    ASSERT_FALSE(callback.have_result());
+    ASSERT_FALSE(callback1.have_result());
     EXPECT_TRUE(observer.DidReceiveNewNotification());
     EXPECT_EQ(kOrigin1, observer.GetNotificationOriginIdentifier());
     EXPECT_EQ(kDB1, observer.GetNotificationDatabaseName());
     tracker->DatabaseClosed(kOrigin1, kDB1);
-    result = callback.GetResult(result);
+    result = callback1.GetResult(result);
     EXPECT_EQ(net::OK, result);
     EXPECT_FALSE(base::PathExists(tracker->GetOriginDirectory(kOrigin1)));
 
@@ -265,13 +265,15 @@ class DatabaseTracker_TestHelper_Test {
     // Delete databases modified since yesterday. db2 is whitelisted.
     base::Time yesterday = base::Time::Now();
     yesterday -= base::TimeDelta::FromDays(1);
-    result = tracker->DeleteDataModifiedSince(yesterday, callback.callback());
+
+    net::TestCompletionCallback callback2;
+    result = tracker->DeleteDataModifiedSince(yesterday, callback2.callback());
     EXPECT_EQ(net::ERR_IO_PENDING, result);
-    ASSERT_FALSE(callback.have_result());
+    ASSERT_FALSE(callback2.have_result());
     EXPECT_TRUE(observer.DidReceiveNewNotification());
     tracker->DatabaseClosed(kOrigin1, kDB1);
     tracker->DatabaseClosed(kOrigin2, kDB2);
-    result = callback.GetResult(result);
+    result = callback2.GetResult(result);
     EXPECT_EQ(net::OK, result);
     EXPECT_FALSE(base::PathExists(tracker->GetOriginDirectory(kOrigin1)));
     EXPECT_TRUE(base::PathExists(tracker->GetFullDBFilePath(kOrigin2, kDB2)));

@@ -208,7 +208,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
                original_payload_dir=None, do_rootfs_update=True,
                do_stateful_update=True, reboot=True, disable_verification=False,
                clobber_stateful=False, yes=False, payload_filename=None,
-               send_payload_in_parallel=False):
+               send_payload_in_parallel=False, experimental_au=False):
     """Initialize a ChromiumOSFlashUpdater for auto-update a chromium OS device.
 
     Args:
@@ -241,6 +241,8 @@ class ChromiumOSFlashUpdater(BaseUpdater):
           only if you staged a payload by filename (i.e not artifact) first.
       send_payload_in_parallel: whether to transfer payload in chunks
           in parallel. The default is False.
+      experimental_au: Use experimental features of auto updater instead. It
+          should be deprecated once crbug.com/872441 is fixed.
     """
     super(ChromiumOSFlashUpdater, self).__init__(device, payload_dir)
     if tempdir is not None:
@@ -272,6 +274,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     else:
       self.payload_mode = self.PAYLOAD_MODE_SCP
     self.perf_id = None
+    self.experimental_au = experimental_au
 
   @property
   def is_au_endtoendtest(self):
@@ -989,9 +992,11 @@ class ChromiumOSFlashUpdater(BaseUpdater):
               self.REMOTE_HOSTLOG_FILE_PATH), partial_filename])),
           **self._cmd_kwargs_omit_error)
 
-  def _Reboot(self, error_stage):
+  def _Reboot(self, error_stage, timeout=None):
     try:
-      self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
+      if timeout is None:
+        timeout = self.REBOOT_TIMEOUT
+      self.device.Reboot(timeout_sec=timeout)
     except cros_build_lib.DieSystemExit:
       raise ChromiumOSUpdateError('%s cannot recover from reboot at %s' % (
           self.device.hostname, error_stage))
@@ -1021,7 +1026,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   def __init__(self, device, build_name, payload_dir, dev_dir='',
                log_file=None, tempdir=None, original_payload_dir=None,
                clobber_stateful=True, local_devserver=False, yes=False,
-               payload_filename=None):
+               payload_filename=None, experimental_au=False):
     """Initialize a ChromiumOSUpdater for auto-update a chromium OS device.
 
     Args:
@@ -1048,12 +1053,14 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
           auto-update.
       payload_filename: Filename of exact payload file to use for
           update instead of the default: update.gz.
+      experimental_au: Use experimental features of auto updater instead. It
+          should be deprecated once crbug.com/872441 is fixed.
     """
     super(ChromiumOSUpdater, self).__init__(
         device, payload_dir, dev_dir=dev_dir, tempdir=tempdir,
         original_payload_dir=original_payload_dir,
         clobber_stateful=clobber_stateful, yes=yes,
-        payload_filename=payload_filename)
+        payload_filename=payload_filename, experimental_au=experimental_au)
 
     if log_file:
       self._cmd_kwargs['log_stdout_to_file'] = log_file
@@ -1400,7 +1407,14 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       # all; this change is just papering over the real bug.
       self._RetryCommand('crossystem clear_tpm_owner_request=1',
                          **self._cmd_kwargs_omit_error)
-    self._Reboot('post check of rootfs update')
+
+    # If the source image during an AU test is old, the device will powerwash
+    # after applying rootfs. On older devices this is taking longer than the
+    # allowed time to reboot. So double reboot timeout for this step only.
+    timeout = self.REBOOT_TIMEOUT
+    if self.is_au_endtoendtest:
+      timeout = self.REBOOT_TIMEOUT * 2
+    self._Reboot('post check of rootfs update', timeout=timeout)
 
   def PostCheckCrOSUpdate(self):
     """Post check for the whole auto-update process."""

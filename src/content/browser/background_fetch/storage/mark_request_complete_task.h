@@ -14,7 +14,6 @@
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
-
 namespace background_fetch {
 
 // Moves the request from an active state to a complete state. Stores the
@@ -26,7 +25,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
 
   MarkRequestCompleteTask(
       DatabaseTaskHost* host,
-      BackgroundFetchRegistrationId registration_id,
+      const BackgroundFetchRegistrationId& registration_id,
       scoped_refptr<BackgroundFetchRequestInfo> request_info,
       MarkRequestCompleteCallback callback);
 
@@ -40,12 +39,11 @@ class MarkRequestCompleteTask : public DatabaseTask {
 
   void PopulateResponseBody(blink::mojom::FetchAPIResponse* response);
 
-  void DidGetIsQuotaAvailable(blink::mojom::FetchAPIResponsePtr response,
-                              base::OnceClosure done_closure,
+  void DidGetIsQuotaAvailable(base::OnceClosure done_closure,
                               bool is_available);
 
-  void DidOpenCache(blink::mojom::FetchAPIResponsePtr response,
-                    base::OnceClosure done_closure,
+  void DidOpenCache(base::OnceClosure done_closure,
+                    int64_t trace_id,
                     CacheStorageCacheHandle handle,
                     blink::mojom::CacheStorageError error);
 
@@ -76,6 +74,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
 
   BackgroundFetchRegistrationId registration_id_;
   scoped_refptr<BackgroundFetchRequestInfo> request_info_;
+  blink::mojom::FetchAPIResponsePtr response_;
   MarkRequestCompleteCallback callback_;
 
   proto::BackgroundFetchCompletedRequest completed_request_;
@@ -88,7 +87,6 @@ class MarkRequestCompleteTask : public DatabaseTask {
 };
 
 }  // namespace background_fetch
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_MARK_REQUEST_COMPLETE_TASK_H_

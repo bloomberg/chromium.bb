@@ -20,12 +20,12 @@
         {
           "object": "NGPhysicalTextFragment 'Second cell'",
           "rect": [11, 35, 74, 20],
-          "reason": "selection"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'First cell'",
           "rect": [11, 11, 58, 20],
-          "reason": "selection"
+          "reason": "geometry"
         }
       ]
     }

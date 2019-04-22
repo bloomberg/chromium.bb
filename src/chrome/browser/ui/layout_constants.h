@@ -40,10 +40,6 @@ enum LayoutConstant {
   // The size of page action icons in a hosted app title bar.
   HOSTED_APP_PAGE_ACTION_ICON_SIZE,
 
-  // The vertical padding (additional to TOOLBAR_ELEMENT_PADDING) above and
-  // below location bar bubbles.
-  LOCATION_BAR_BUBBLE_VERTICAL_PADDING,
-
   // The vertical padding between the edge of a location bar bubble and its
   // contained text.
   LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING,
@@ -56,6 +52,9 @@ enum LayoutConstant {
   // space between the bottoms of most such views and the visible bottoms of the
   // images inside.
   LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET,
+
+  // The internal padding to use inside children of the location bar.
+  LOCATION_BAR_CHILD_INTERIOR_PADDING,
 
   // The vertical and horizontal padding inside the border.
   LOCATION_BAR_ELEMENT_PADDING,
@@ -116,6 +115,9 @@ enum LayoutInset {
 
   // The padding inside the border of a toolbar action view button.
   TOOLBAR_ACTION_VIEW,
+
+  // The padding between the edges of the toolbar and its content.
+  TOOLBAR_INTERIOR_MARGIN,
 };
 
 int GetLayoutConstant(LayoutConstant constant);

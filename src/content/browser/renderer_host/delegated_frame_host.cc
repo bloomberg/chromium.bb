@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -26,12 +27,20 @@
 #include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/common/tab_switching_time_callback.h"
 #include "content/public/common/content_switches.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace content {
+namespace {
+
+// Normalized value [0..1] where 1 is full quality and 0 is empty. This sets
+// the quality of the captured texture by reducing its dimensions by this
+// factor.
+constexpr float kFrameContentCaptureQuality = 0.4f;
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost
@@ -41,8 +50,7 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
                                        bool should_register_frame_sink_id)
     : frame_sink_id_(frame_sink_id),
       client_(client),
-      enable_viz_(
-          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
+      enable_viz_(features::IsVizDisplayCompositorEnabled()),
       should_register_frame_sink_id_(should_register_frame_sink_id),
       host_frame_sink_manager_(GetHostFrameSinkManager()),
       frame_evictor_(std::make_unique<viz::FrameEvictor>(this)),
@@ -64,6 +72,11 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
                                                    "DelegatedFrameHost");
   CreateCompositorFrameSinkSupport();
   frame_evictor_->SetVisible(client_->DelegatedFrameHostIsVisible());
+
+  stale_content_layer_ =
+      std::make_unique<ui::Layer>(ui::LayerType::LAYER_SOLID_COLOR);
+  stale_content_layer_->SetVisible(false);
+  stale_content_layer_->SetColor(SK_ColorTRANSPARENT);
 }
 
 DelegatedFrameHost::~DelegatedFrameHost() {
@@ -79,19 +92,30 @@ DelegatedFrameHost::~DelegatedFrameHost() {
 void DelegatedFrameHost::WasShown(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Size& new_dip_size,
-    bool record_presentation_time) {
-  frame_evictor_->SetVisible(true);
-  if (record_presentation_time && compositor_) {
-    compositor_->RequestPresentationTimeForNextFrame(
-        CreateTabSwitchingTimeRecorder(base::TimeTicks::Now()));
-  }
+    bool record_presentation_time,
+    base::TimeTicks tab_switch_start_time) {
+  // Cancel any pending frame eviction and unpause it if paused.
+  frame_eviction_state_ = FrameEvictionState::kNotStarted;
 
   frame_evictor_->SetVisible(true);
+  if (record_presentation_time && compositor_ &&
+      !tab_switch_start_time.is_null()) {
+    compositor_->RequestPresentationTimeForNextFrame(
+        tab_switch_time_recorder_.BeginTimeRecording(
+            tab_switch_start_time, true /* has_saved_frames */,
+            base::TimeTicks::Now()));
+  }
 
   // Use the default deadline to synchronize web content with browser UI.
   // TODO(fsamuel): Investigate if there is a better deadline to use here.
   EmbedSurface(new_local_surface_id, new_dip_size,
                cc::DeadlinePolicy::UseDefaultDeadline());
+
+  // Remove stale content that might be displayed.
+  if (stale_content_layer_->has_external_content()) {
+    stale_content_layer_->SetShowSolidColorContent();
+    stale_content_layer_->SetVisible(false);
+  }
 }
 
 bool DelegatedFrameHost::HasSavedFrame() const {
@@ -106,17 +130,35 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
     base::OnceCallback<void(const SkBitmap&)> callback) {
+  CopyFromCompositingSurfaceInternal(
+      src_subrect, output_size,
+      viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+      base::BindOnce(
+          [](base::OnceCallback<void(const SkBitmap&)> callback,
+             std::unique_ptr<viz::CopyOutputResult> result) {
+            std::move(callback).Run(result->AsSkBitmap());
+          },
+          std::move(callback)));
+}
+
+void DelegatedFrameHost::CopyFromCompositingSurfaceAsTexture(
+    const gfx::Rect& src_subrect,
+    const gfx::Size& output_size,
+    viz::CopyOutputRequest::CopyOutputRequestCallback callback) {
+  CopyFromCompositingSurfaceInternal(
+      src_subrect, output_size,
+      viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE, std::move(callback));
+}
+
+void DelegatedFrameHost::CopyFromCompositingSurfaceInternal(
+    const gfx::Rect& src_subrect,
+    const gfx::Size& output_size,
+    viz::CopyOutputRequest::ResultFormat format,
+    viz::CopyOutputRequest::CopyOutputRequestCallback callback) {
   DCHECK(CanCopyFromCompositingSurface());
 
-  std::unique_ptr<viz::CopyOutputRequest> request =
-      std::make_unique<viz::CopyOutputRequest>(
-          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-          base::BindOnce(
-              [](base::OnceCallback<void(const SkBitmap&)> callback,
-                 std::unique_ptr<viz::CopyOutputResult> result) {
-                std::move(callback).Run(result->AsSkBitmap());
-              },
-              std::move(callback)));
+  auto request =
+      std::make_unique<viz::CopyOutputRequest>(format, std::move(callback));
 
   if (!src_subrect.IsEmpty()) {
     request->set_area(
@@ -126,8 +168,10 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     // The CopyOutputRequest API does not allow fixing the output size. Instead
     // we have the set area and scale in such a way that it would result in the
     // desired output size.
-    if (!request->has_area())
-      request->set_area(gfx::Rect(surface_dip_size_));
+    if (!request->has_area()) {
+      request->set_area(gfx::Rect(gfx::ScaleToRoundedSize(
+          surface_dip_size_, client_->GetDeviceScaleFactor())));
+    }
     request->set_result_selection(gfx::Rect(output_size));
     const gfx::Rect& area = request->area();
     if (area.IsEmpty()) {
@@ -320,7 +364,7 @@ void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
 
 void DelegatedFrameHost::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+    const viz::PresentationFeedbackMap& feedbacks) {
   if (renderer_compositor_frame_sink_)
     renderer_compositor_frame_sink_->OnBeginFrame(args, feedbacks);
   client_->OnBeginFrame(args.frame_time);
@@ -344,6 +388,70 @@ void DelegatedFrameHost::ResetFallbackToFirstNavigationSurface() {
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
+  // There is already an eviction request pending.
+  if (frame_eviction_state_ == FrameEvictionState::kPendingEvictionRequests) {
+    frame_evictor_->OnSurfaceDiscarded();
+    return;
+  }
+
+  if (!HasSavedFrame()) {
+    ContinueDelegatedFrameEviction();
+    return;
+  }
+
+  // Requests a copy of the compositing surface of the frame if one doesn't
+  // already exist. The copy (stale content) will be set on the surface until
+  // a new compositor frame is submitted. Setting a stale content prevents blank
+  // white screens from being displayed during various animations such as the
+  // CrOS overview mode.
+  if (client_->ShouldShowStaleContentOnEviction() &&
+      !stale_content_layer_->has_external_content()) {
+    frame_eviction_state_ = FrameEvictionState::kPendingEvictionRequests;
+    auto callback =
+        base::BindOnce(&DelegatedFrameHost::DidCopyStaleContent, GetWeakPtr());
+
+    // NOTE: This will not return any texture on non CrOS platforms as hiding
+    // the window on non CrOS platform disables drawing all together.
+    CopyFromCompositingSurfaceAsTexture(
+        gfx::Rect(),
+        gfx::ScaleToRoundedSize(surface_dip_size_, kFrameContentCaptureQuality),
+        std::move(callback));
+  } else {
+    ContinueDelegatedFrameEviction();
+  }
+  frame_evictor_->OnSurfaceDiscarded();
+}
+
+void DelegatedFrameHost::DidCopyStaleContent(
+    std::unique_ptr<viz::CopyOutputResult> result) {
+  // host may have become visible by the time the request to capture surface is
+  // completed.
+  if (frame_evictor_->visible() || result->IsEmpty())
+    return;
+
+  DCHECK_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
+
+  DCHECK_NE(frame_eviction_state_, FrameEvictionState::kNotStarted);
+  frame_eviction_state_ = FrameEvictionState::kNotStarted;
+  ContinueDelegatedFrameEviction();
+
+  auto transfer_resource = viz::TransferableResource::MakeGL(
+      result->GetTextureResult()->mailbox, GL_LINEAR, GL_TEXTURE_2D,
+      result->GetTextureResult()->sync_token);
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback =
+      result->TakeTextureOwnership();
+
+  if (stale_content_layer_->parent() != client_->DelegatedFrameHostGetLayer())
+    client_->DelegatedFrameHostGetLayer()->Add(stale_content_layer_.get());
+
+  DCHECK(!stale_content_layer_->has_external_content());
+  stale_content_layer_->SetVisible(true);
+  stale_content_layer_->SetBounds(gfx::Rect(surface_dip_size_));
+  stale_content_layer_->SetTransferableResource(
+      transfer_resource, std::move(release_callback), surface_dip_size_);
+}
+
+void DelegatedFrameHost::ContinueDelegatedFrameEviction() {
   // Reset primary surface.
   if (HasPrimarySurface()) {
     client_->DelegatedFrameHostGetLayer()->SetShowSurface(
@@ -365,23 +473,11 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
     DCHECK(host_frame_sink_manager_);
     host_frame_sink_manager_->EvictSurfaces(surface_ids);
   }
-  frame_evictor_->OnSurfaceDiscarded();
   client_->InvalidateLocalSurfaceIdOnEviction();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, ui::CompositorObserver implementation:
-
-void DelegatedFrameHost::OnCompositingDidCommit(ui::Compositor* compositor) {
-}
-
-void DelegatedFrameHost::OnCompositingStarted(ui::Compositor* compositor,
-                                              base::TimeTicks start_time) {}
-
-void DelegatedFrameHost::OnCompositingEnded(ui::Compositor* compositor) {}
-
-void DelegatedFrameHost::OnCompositingChildResizing(
-    ui::Compositor* compositor) {}
 
 void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
   DCHECK_EQ(compositor, compositor_);
@@ -393,11 +489,6 @@ void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
 // DelegatedFrameHost, ContextFactoryObserver implementation:
 
 void DelegatedFrameHost::OnLostSharedContext() {}
-
-void DelegatedFrameHost::OnLostVizProcess() {
-  if (HasSavedFrame())
-    frame_evictor_->OnSurfaceDiscarded();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, private:

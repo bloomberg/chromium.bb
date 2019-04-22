@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 namespace {
@@ -143,7 +144,7 @@ TEST_P(PaymentRequestDetailsTest, ValidatesDetails) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     EmptyData,
     PaymentRequestDetailsTest,
     testing::Values(DetailsTestCase(kPaymentTestDetailTotal,
@@ -207,7 +208,7 @@ INSTANTIATE_TEST_CASE_P(
                                     "",
                                     false)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ValidCurrencyCodeFormat,
     PaymentRequestDetailsTest,
     testing::Values(DetailsTestCase(kPaymentTestDetailTotal,
@@ -231,7 +232,7 @@ INSTANTIATE_TEST_CASE_P(
                                     kPaymentTestOverwriteValue,
                                     "USD")));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ValidValueFormat,
     PaymentRequestDetailsTest,
     testing::Values(DetailsTestCase(kPaymentTestDetailTotal,
@@ -367,7 +368,7 @@ INSTANTIATE_TEST_CASE_P(
                                     kPaymentTestOverwriteValue,
                                     "-012345678901234567890123456789")));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ValidValueFormatForModifier,
     PaymentRequestDetailsTest,
     testing::Values(DetailsTestCase(kPaymentTestDetailModifierTotal,
@@ -451,7 +452,7 @@ INSTANTIATE_TEST_CASE_P(
                                     kPaymentTestOverwriteValue,
                                     "-012345678901234567890123456789")));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     InvalidValueFormat,
     PaymentRequestDetailsTest,
     testing::Values(DetailsTestCase(kPaymentTestDetailTotal,
@@ -689,7 +690,7 @@ INSTANTIATE_TEST_CASE_P(
                                     true,
                                     ESErrorType::kTypeError)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     InvalidValueFormatForModifier,
     PaymentRequestDetailsTest,
     testing::Values(DetailsTestCase(kPaymentTestDetailModifierTotal,

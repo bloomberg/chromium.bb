@@ -12,11 +12,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.view.View;
@@ -56,18 +55,11 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     /** Wraps up all things that a {@link SearchWidgetProvider} can request things from. */
     static class SearchWidgetProviderDelegate {
         private final Context mContext;
-        private final AppWidgetManager mManager;
+        private final @Nullable AppWidgetManager mManager;
 
         public SearchWidgetProviderDelegate(Context context) {
             mContext = context == null ? ContextUtils.getApplicationContext() : context;
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
-                    && !mContext.getPackageManager().hasSystemFeature(
-                               PackageManager.FEATURE_APP_WIDGETS)) {
-                mManager = null;
-            } else {
-                mManager = AppWidgetManager.getInstance(mContext);
-            }
+            mManager = AppWidgetManager.getInstance(mContext);
         }
 
         /** Returns the Context to pull resources from. */

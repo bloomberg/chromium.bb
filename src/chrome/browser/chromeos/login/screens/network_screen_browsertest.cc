@@ -6,23 +6,21 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/mock_network_state_helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -56,19 +54,17 @@ class NetworkScreenTest : public InProcessBrowserTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        std::make_unique<FakeSessionManagerClient>());
   }
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     ShowLoginWizard(OobeScreen::SCREEN_OOBE_NETWORK);
-    mock_base_screen_delegate_ = std::make_unique<MockBaseScreenDelegate>();
     network_screen_ = NetworkScreen::Get(
         WizardController::default_controller()->screen_manager());
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               network_screen_);
-    network_screen_->base_screen_delegate_ = mock_base_screen_delegate_.get();
+    network_screen_->set_exit_callback_for_testing(base::BindRepeating(
+        &NetworkScreenTest::HandleScreenExit, base::Unretained(this)));
     ASSERT_TRUE(network_screen_->view_ != nullptr);
 
     mock_network_state_helper_ = new login::MockNetworkStateHelper;
@@ -77,12 +73,12 @@ class NetworkScreenTest : public InProcessBrowserTest {
   }
 
   void EmulateContinueButtonExit(NetworkScreen* network_screen) {
-    EXPECT_CALL(*mock_base_screen_delegate_,
-                OnExit(ScreenExitCode::NETWORK_CONNECTED))
-        .Times(1);
     EXPECT_CALL(*network_state_helper(), IsConnected()).WillOnce(Return(true));
     network_screen->OnContinueButtonClicked();
     base::RunLoop().RunUntilIdle();
+
+    ASSERT_TRUE(last_screen_result_.has_value());
+    EXPECT_EQ(NetworkScreen::Result::CONNECTED, last_screen_result_.value());
   }
 
   void SetDefaultNetworkStateHelperExpectations() {
@@ -103,9 +99,14 @@ class NetworkScreenTest : public InProcessBrowserTest {
   NetworkScreen* network_screen() { return network_screen_; }
 
  private:
-  std::unique_ptr<MockBaseScreenDelegate> mock_base_screen_delegate_;
+  void HandleScreenExit(NetworkScreen::Result result) {
+    EXPECT_FALSE(last_screen_result_.has_value());
+    last_screen_result_ = result;
+  }
+
   login::MockNetworkStateHelper* mock_network_state_helper_;
   NetworkScreen* network_screen_;
+  base::Optional<NetworkScreen::Result> last_screen_result_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenTest);
 };

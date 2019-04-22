@@ -1,6 +1,7 @@
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS All correct nodes found for rect
 PASS All correct nodes found for rect
 PASS All correct nodes found for rect
@@ -45,4 +46,3 @@ FAIL Unexpected node #2 for rect [39,202], [16,41] - DIV#d2
 PASS All correct nodes found for rect
 PASS All correct nodes found for rect
 PASS All correct nodes found for rect
-

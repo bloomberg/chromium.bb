@@ -5,6 +5,7 @@
 import common
 from common import TestDriver
 from common import IntegrationTest
+from decorators import ChromeVersionBetweenInclusiveM
 from decorators import ChromeVersionEqualOrAfterM
 from emulation_server import BlackHoleHandler
 from emulation_server import InvalidTLSHandler
@@ -25,6 +26,8 @@ class ProxyConnection(IntegrationTest):
         '--data-reduction-proxy-http-proxies=https://127.0.0.1:%d' % port)
       t.AddChromeArg(
         '--force-fieldtrials=DataReductionProxyConfigService/Disabled')
+      t.AddChromeArg(
+        '--enable-features=NetworkService,DataReductionProxyEnabledWithNetworkService')
       t.UseEmulationServer(InvalidTLSHandler, port=port)
 
       t.LoadURL('http://check.googlezip.net/test.html')
@@ -50,6 +53,8 @@ class ProxyConnection(IntegrationTest):
         '--data-reduction-proxy-http-proxies=http://127.0.0.1:%d' % port)
       t.AddChromeArg(
         '--force-fieldtrials=DataReductionProxyConfigService/Disabled')
+      t.AddChromeArg(
+        '--enable-features=NetworkService,DataReductionProxyEnabledWithNetworkService')
       t.UseEmulationServer(TCPResetHandler, port=port)
 
       t.LoadURL('http://check.googlezip.net/test.html')
@@ -75,6 +80,8 @@ class ProxyConnection(IntegrationTest):
         '--data-reduction-proxy-http-proxies=https://127.0.0.1:%d' % port)
       t.AddChromeArg(
         '--force-fieldtrials=DataReductionProxyConfigService/Disabled')
+      t.AddChromeArg(
+        '--enable-features=NetworkService,DataReductionProxyEnabledWithNetworkService')
       t.UseEmulationServer(TLSResetHandler, port=port)
 
       t.LoadURL('http://check.googlezip.net/test.html')
@@ -85,7 +92,7 @@ class ProxyConnection(IntegrationTest):
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)
 
-  @ChromeVersionEqualOrAfterM(66)
+  @ChromeVersionBetweenInclusiveM(66, 71)
   def testTCPBlackhole(self):
     port = common.GetOpenPort()
     with TestDriver() as t:

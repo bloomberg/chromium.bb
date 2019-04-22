@@ -16,8 +16,8 @@
 #include "base/optional.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys_private.h"
 #include "chromeos/attestation/attestation_flow.h"
-#include "chromeos/dbus/attestation_constants.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/constants/attestation_constants.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "components/account_id/account_id.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/extension.h"
@@ -272,7 +272,7 @@ class EnterprisePlatformKeysPrivateChallengeMachineKeyFunction
 
   DECLARE_EXTENSION_FUNCTION(
       "enterprise.platformKeysPrivate.challengeMachineKey",
-      ENTERPRISE_PLATFORMKEYSPRIVATE_CHALLENGEMACHINEKEY);
+      ENTERPRISE_PLATFORMKEYSPRIVATE_CHALLENGEMACHINEKEY)
 };
 
 class EnterprisePlatformKeysPrivateChallengeUserKeyFunction
@@ -294,9 +294,8 @@ class EnterprisePlatformKeysPrivateChallengeUserKeyFunction
   std::unique_ptr<EPKPChallengeUserKey> default_impl_;
   EPKPChallengeUserKey* impl_;
 
-  DECLARE_EXTENSION_FUNCTION(
-      "enterprise.platformKeysPrivate.challengeUserKey",
-      ENTERPRISE_PLATFORMKEYSPRIVATE_CHALLENGEUSERKEY);
+  DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysPrivate.challengeUserKey",
+                             ENTERPRISE_PLATFORMKEYSPRIVATE_CHALLENGEUSERKEY)
 };
 
 }  // namespace extensions

@@ -12,8 +12,6 @@
 
 namespace {
 
-const char kJsScreenPath[] = "login.SyncConsentScreen";
-
 // This helper function gets strings from WebUI and a set of known string
 // resource ids, and converts strings back to IDs. It CHECKs if string is not
 // found in resources.
@@ -57,9 +55,10 @@ void GetConsentIDs(const std::unordered_set<int>& known_ids,
 
 namespace chromeos {
 
-SyncConsentScreenHandler::SyncConsentScreenHandler()
-    : BaseScreenHandler(kScreenId) {
-  set_call_js_prefix(kJsScreenPath);
+SyncConsentScreenHandler::SyncConsentScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
+  set_user_acted_method_path("login.SyncConsentScreen.userActed");
 }
 
 SyncConsentScreenHandler::~SyncConsentScreenHandler() {}
@@ -150,16 +149,16 @@ void SyncConsentScreenHandler::Show() {
 void SyncConsentScreenHandler::Hide() {}
 
 void SyncConsentScreenHandler::SetThrobberVisible(bool visible) {
-  CallJSWithPrefix("setThrobberVisible", visible);
+  CallJS("login.SyncConsentScreen.setThrobberVisible", visible);
 }
 
 void SyncConsentScreenHandler::Initialize() {}
 
 void SyncConsentScreenHandler::RegisterMessages() {
-  AddPrefixedCallback("continueAndReview",
-                      &SyncConsentScreenHandler::HandleContinueAndReview);
-  AddPrefixedCallback("continueWithDefaults",
-                      &SyncConsentScreenHandler::HandleContinueWithDefaults);
+  AddCallback("login.SyncConsentScreen.continueAndReview",
+              &SyncConsentScreenHandler::HandleContinueAndReview);
+  AddCallback("login.SyncConsentScreen.continueWithDefaults",
+              &SyncConsentScreenHandler::HandleContinueWithDefaults);
 }
 
 void SyncConsentScreenHandler::GetAdditionalParameters(

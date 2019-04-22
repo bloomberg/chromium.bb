@@ -29,16 +29,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_FFT_CONVOLVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_FFT_CONVOLVER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/audio/fft_frame.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT FFTConvolver {
   USING_FAST_MALLOC(FFTConvolver);
-  WTF_MAKE_NONCOPYABLE(FFTConvolver);
 
  public:
   // fftSize must be a power of two
@@ -75,6 +74,8 @@ class PLATFORM_EXPORT FFTConvolver {
   // Saves the 2nd half of the FFT buffer, so we can do an overlap-add with the
   // 1st half of the next one
   AudioFloatArray last_overlap_buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(FFTConvolver);
 };
 
 }  // namespace blink

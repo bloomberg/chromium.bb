@@ -9,11 +9,8 @@
 
 let s:script = expand('<sfile>:p:h') .
   \'/../../buildtools/clang_format/script/clang-format.py'
+let s:shortcut = has('mac') ? "<D-I>" : "<C-I>"
+let s:pyf = has("python3") ? ":py3f" : ":pyf"
 
-if has('mac')
-  execute "map <D-I> :pyf " . s:script . "<CR>"
-  execute "imap <D-I> <ESC>:pyf " . s:script . "<CR>i"
-else
-  execute "map <C-I> :pyf " . s:script . "<CR>"
-  execute "imap <C-I> <ESC>:pyf " . s:script . "<CR>i"
-endif
+execute "map" s:shortcut s:pyf s:script . "<CR>"
+execute "imap" s:shortcut "<ESC>" s:pyf s:script . "<CR>i"

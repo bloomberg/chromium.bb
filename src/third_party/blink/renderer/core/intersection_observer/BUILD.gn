@@ -8,6 +8,8 @@ blink_core_sources("intersection_observer") {
   sources = [
     "element_intersection_observer_data.cc",
     "element_intersection_observer_data.h",
+    "intersection_geometry.cc",
+    "intersection_geometry.h",
     "intersection_observation.cc",
     "intersection_observation.h",
     "intersection_observer.cc",

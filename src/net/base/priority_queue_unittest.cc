@@ -6,6 +6,7 @@
 
 #include <cstddef>
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -238,9 +239,9 @@ TEST_P(PriorityQueueTest, FindIf) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(PriorityQueues,
-                        PriorityQueueTest,
-                        testing::Range(static_cast<size_t>(0), kNumQueues));
+INSTANTIATE_TEST_SUITE_P(PriorityQueues,
+                         PriorityQueueTest,
+                         testing::Range(static_cast<size_t>(0), kNumQueues));
 
 }  // namespace
 

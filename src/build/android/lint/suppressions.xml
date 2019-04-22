@@ -107,8 +107,6 @@ Still reading?
     <ignore regexp="tools/android/audio_focus_grabber/java/res/drawable-xxxhdpi/notification_icon.png"/>
   </issue>
   <issue id="IconDensities">
-    <!-- The large assets below only include a few densities to reduce APK size. -->
-    <ignore regexp="data_reduction_illustration.png"/>
     <!-- This is intentional to save on WebAPKs' size. -->
     <ignore regexp="chrome/android/webapk/shell_apk/res/drawable-*"/>
     <!-- crbug.com/457918 is tracking missing assets -->
@@ -120,7 +118,7 @@ Still reading?
     <ignore regexp="ui/android/java/res/drawable-xxhdpi"/>
     <ignore regexp="ui/android/java/res/drawable-xxxhdpi"/>
     <!-- This is intentional to reduce APK size. See: http://crrev/c/1352161 -->
-    <ignore regexp="chrome/android/java/res_autofill_assistant/drawable-*"/>
+    <ignore regexp="chrome/android/features/autofill_assistant/java/res/drawable-*"/>
   </issue>
   <issue id="IconDipSize">
     <ignore regexp="chromecast/internal"/>
@@ -167,6 +165,7 @@ Still reading?
   <issue id="InconsistentArrays" severity="Error">
     <ignore regexp="android_webview/locale_paks.resources.zip/values/locale-paks.xml"/>
     <ignore regexp="chrome/android/chrome_locale_paks.resources.zip/values/locale-paks.xml"/>
+    <ignore regexp="preloaded_fonts.xml"/>
   </issue>
   <issue id="InconsistentLayout" severity="ignore"/>
   <issue id="InefficientWeight" severity="Error">
@@ -234,6 +233,8 @@ Still reading?
     <ignore regexp="Static interface  method requires API level 24"/>
     <!-- 1 This is for testonly target android_support_chromium_java. -->
     <ignore regexp="third_party/android_tools/sdk/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java"/>
+    <!-- 1 This is for testonly target android_support_chromium_java in android_sdk. -->
+    <ignore regexp="third_party/android_sdk/public/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <!-- This warning just adds a lot of false positives. -->
@@ -289,12 +290,14 @@ Still reading?
   </issue>
   <issue id="StringFormatCount" severity="Error">
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-cs/android_chrome_strings.xml"/>
+    <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-fr/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-pl/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values/android_chrome_strings.xml"/>
   </issue>
   <issue id="StringFormatInvalid" severity="Error">
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-cs/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-da/android_chrome_strings.xml"/>
+    <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-et/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-pl/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-pt-rBR/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-sv/android_chrome_strings.xml"/>
@@ -318,6 +321,7 @@ Still reading?
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-ja/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-ko/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-lt/android_chrome_strings.xml"/>
+    <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-ms/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-sk/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-th/android_chrome_strings.xml"/>
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values-vi/android_chrome_strings.xml"/>
@@ -346,6 +350,13 @@ Still reading?
     <!-- 2 resource sets used by clank widgets for each channel -->
     <ignore regexp="The resource `R.string.bookmark_widget_title.*` appears to be unused"/>
     <ignore regexp="The resource `R.string.search_widget_title.*` appears to be unused"/>
+    <!-- 1 resource used by android tv to generate resources.zip file -->
+    <ignore regexp="chromecast/internal/shell/browser/android/java/res/drawable-hdpi/ic_settings_cast.png"/>
+    <!-- TODO(crbug.com/909915): Remove this after full Lite mode launch. -->
+    <!-- 12 resources used by Data Saver during rebranding to Lite mode -->
+    <ignore regexp="The resource `R.string..*lite_mode` appears to be unused"/>
+    <!-- Module titles may only be used by the Play Store. -->
+    <ignore regexp="The resource `R.string.*_module_title` appears to be unused"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <issue id="UseCompoundDrawables">

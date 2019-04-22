@@ -7,16 +7,19 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <ostream>
+#include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_data.h"
 
 namespace ui {
 
 class AXTableInfo;
-class AXLanguageInfo;
+struct AXLanguageInfo;
 
 // One node in an AXTree.
 class AX_EXPORT AXNode final {
@@ -31,6 +34,12 @@ class AX_EXPORT AXNode final {
     virtual AXTableInfo* GetTableInfo(const AXNode* table_node) const = 0;
     // See AXTree.
     virtual AXNode* GetFromId(int32_t id) const = 0;
+
+    virtual int32_t GetPosInSet(const AXNode& node,
+                                const AXNode* ordered_set) = 0;
+    virtual int32_t GetSetSize(const AXNode& node,
+                               const AXNode* ordered_set) = 0;
+    virtual bool GetTreeUpdateInProgressState() const = 0;
   };
 
   // The constructor requires a parent, id, and index in parent, but
@@ -48,6 +57,9 @@ class AX_EXPORT AXNode final {
   const std::vector<AXNode*>& children() const { return children_; }
   int index_in_parent() const { return index_in_parent_; }
 
+  // Returns ownership of |data_| to the caller; effectively clearing |data_|.
+  AXNodeData&& TakeData();
+
   // Get the child at the given index.
   AXNode* ChildAtIndex(int index) const { return children_[index]; }
 
@@ -58,7 +70,11 @@ class AX_EXPORT AXNode final {
   int GetUnignoredIndexInParent() const;
 
   // Returns true if the node has any of the text related roles.
-  bool IsTextNode() const;
+  bool IsText() const;
+
+  // Returns true if the node has any line break related roles or is the child a
+  // node with line break related roles.
+  bool IsLineBreak() const;
 
   // Set the node's accessibility data. This may be done during initialization
   // or later when the node data changes.
@@ -182,9 +198,16 @@ class AX_EXPORT AXNode final {
     return data().GetHtmlAttribute(attribute, value);
   }
 
-  // PosInSet and SetSize public methods
+  // PosInSet and SetSize public methods.
+  bool IsOrderedSetItem() const;
+  bool IsOrderedSet() const;
   int32_t GetPosInSet();
   int32_t GetSetSize();
+
+  // Helpers for GetPosInSet and GetSetSize.
+  // Returns true if the role of ordered set matches the role of item.
+  // Returns false otherwise.
+  bool SetRoleMatchesItemRole(const AXNode* ordered_set) const;
 
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
@@ -219,9 +242,10 @@ class AX_EXPORT AXNode final {
   bool IsTable() const;
   int32_t GetTableColCount() const;
   int32_t GetTableRowCount() const;
-  int32_t GetTableAriaColCount() const;
-  int32_t GetTableAriaRowCount() const;
+  base::Optional<int32_t> GetTableAriaColCount() const;
+  base::Optional<int32_t> GetTableAriaRowCount() const;
   int32_t GetTableCellCount() const;
+  AXNode* GetTableCaption() const;
   AXNode* GetTableCellFromIndex(int32_t index) const;
   AXNode* GetTableCellFromCoords(int32_t row_index, int32_t col_index) const;
   void GetTableColHeaderNodeIds(int32_t col_index,
@@ -238,6 +262,12 @@ class AX_EXPORT AXNode final {
   bool IsTableRow() const;
   int32_t GetTableRowRowIndex() const;
 
+#if defined(OS_MACOSX)
+  // Table column-like nodes. These nodes are only present on macOS.
+  bool IsTableColumn() const;
+  int32_t GetTableColColIndex() const;
+#endif  // defined(OS_MACOSX)
+
   // Table cell-like nodes.
   bool IsTableCellOrHeader() const;
   int32_t GetTableCellIndex() const;
@@ -252,6 +282,23 @@ class AX_EXPORT AXNode final {
   void GetTableCellColHeaders(std::vector<AXNode*>* col_headers) const;
   void GetTableCellRowHeaders(std::vector<AXNode*>* row_headers) const;
 
+  // Helper methods to check if a cell is an ARIA-1.1+ 'cell' or 'gridcell'
+  bool IsCellOrHeaderOfARIATable() const;
+  bool IsCellOrHeaderOfARIAGrid() const;
+
+  // Return an object containing information about the languages used.
+  // Callers should not retain this pointer, instead they should request it
+  // every time it is needed.
+  //
+  // Clients likely want to use GetLanguage instead.
+  //
+  // Returns nullptr if the node has no language info.
+  AXLanguageInfo* GetLanguageInfo();
+
+  // This should only be called by the LabelLanguageForSubtree and is used as
+  // part of the language detection feature.
+  void SetLanguageInfo(AXLanguageInfo* lang_info);
+
  private:
   // Computes the text offset where each line starts by traversing all child
   // leaf nodes.
@@ -261,21 +308,8 @@ class AX_EXPORT AXNode final {
   void IdVectorToNodeVector(std::vector<int32_t>& ids,
                             std::vector<AXNode*>* nodes) const;
 
-  // Helpers for GetPosInSet and GetSetSize.
-  // Returns true if the role of parent container matches the role of node.
-  // Returns false otherwise.
-  bool ContainerRoleMatches(AXNode* parent) const;
-  // Returns true if the node's role uses PosInSet and SetSize
-  // Returns false otherwise.
-  bool IsSetSizePosInSetUsedInRole() const;
-  // Finds and returns a pointer to node's container.
-  AXNode* GetContainer() const;
-  // Populates items vector with all nodes within container whose roles match.
-  void PopulateContainerItems(AXNode* container,
-                              AXNode* local_parent,
-                              std::vector<AXNode*>& items) const;
-  // Computes pos_in_set and set_size values for this node.
-  void ComputeSetSizePosInSet(int32_t* out_pos_in_set, int32_t* out_set_size);
+  // Finds and returns a pointer to ordered set containing node.
+  AXNode* GetOrderedSet() const;
 
   OwnerTree* tree_;  // Owns this.
   int index_in_parent_;
@@ -283,16 +317,7 @@ class AX_EXPORT AXNode final {
   std::vector<AXNode*> children_;
   AXNodeData data_;
 
-  AXLanguageInfo* language_info_;
-
-  // Return an object containing information about the languages used.
-  // Will walk up tree if needed to determine language.
-  //
-  // Clients should not retain this pointer, instead they should request it
-  // every time it is needed.
-  //
-  // Returns nullptr if the node has no detectable language.
-  const AXLanguageInfo* GetLanguageInfo();
+  std::unique_ptr<AXLanguageInfo> language_info_;
 };
 
 AX_EXPORT std::ostream& operator<<(std::ostream& stream, const AXNode& node);

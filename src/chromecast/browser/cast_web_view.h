@@ -36,7 +36,6 @@ class CastWebView {
     // Returning true indicates that the delegate handled the message.
     // If false is returned the default logging mechanism will be used.
     virtual bool OnAddMessageToConsoleReceived(
-        content::WebContents* source,
         int32_t level,
         const base::string16& message,
         int32_t line_no,
@@ -81,6 +80,9 @@ class CastWebView {
     // Whether this CastWebView is granted media access.
     bool allow_media_access = false;
 
+    // Whether this CastWebView will use CMA for media playback.
+    bool use_cma_renderer = true;
+
     // Enable development mode for this CastWebView. Whitelists certain
     // functionality for the WebContents, like remote debugging and debugging
     // interfaces.
@@ -102,6 +104,8 @@ class CastWebView {
 
   virtual content::WebContents* web_contents() const = 0;
 
+  virtual CastWebContents* cast_web_contents() = 0;
+
   // Navigates to |url|. The loaded page will be preloaded if MakeVisible has
   // not been called on the object.
   virtual void LoadUrl(GURL url) = 0;
@@ -118,10 +122,6 @@ class CastWebView {
   virtual void InitializeWindow(CastWindowManager* window_manager,
                                 CastWindowManager::WindowId z_order,
                                 VisibilityPriority initial_priority) = 0;
-
-  // Sets the activity context exposed to web view and content window. The exact
-  // format of context is defined by each activity.
-  virtual void SetContext(base::Value context) = 0;
 
   // Allows the page to be shown on the screen. The page cannot be shown on the
   // screen until this is called.

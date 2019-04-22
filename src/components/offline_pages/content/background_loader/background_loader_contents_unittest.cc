@@ -4,8 +4,12 @@
 
 #include "components/offline_pages/content/background_loader/background_loader_contents.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/window_container_type.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -20,7 +24,7 @@ class BackgroundLoaderContentsTest : public testing::Test,
   void SetUp() override;
   void TearDown() override;
 
-  void CanDownload(const base::Callback<void(bool)>& callback) override;
+  void CanDownload(base::OnceCallback<void(bool)> callback) override;
 
   BackgroundLoaderContents* contents() { return contents_.get(); }
 
@@ -31,11 +35,11 @@ class BackgroundLoaderContentsTest : public testing::Test,
   bool download() { return download_; }
   bool can_download_delegate_called() { return delegate_called_; }
 
-  void MediaAccessCallback(const content::MediaStreamDevices& devices,
-                           content::MediaStreamRequestResult result,
+  void MediaAccessCallback(const blink::MediaStreamDevices& devices,
+                           blink::MediaStreamRequestResult result,
                            std::unique_ptr<content::MediaStreamUI> ui);
-  content::MediaStreamDevices devices() { return devices_; }
-  content::MediaStreamRequestResult request_result() { return request_result_; }
+  blink::MediaStreamDevices devices() { return devices_; }
+  blink::MediaStreamRequestResult request_result() { return request_result_; }
   content::MediaStreamUI* media_stream_ui() { return media_stream_ui_.get(); }
 
   void WaitForSignal() { waiter_.Wait(); }
@@ -44,8 +48,8 @@ class BackgroundLoaderContentsTest : public testing::Test,
   std::unique_ptr<BackgroundLoaderContents> contents_;
   bool download_;
   bool delegate_called_;
-  content::MediaStreamDevices devices_;
-  content::MediaStreamRequestResult request_result_;
+  blink::MediaStreamDevices devices_;
+  blink::MediaStreamRequestResult request_result_;
   std::unique_ptr<content::MediaStreamUI> media_stream_ui_;
   base::WaitableEvent waiter_;
 };
@@ -54,9 +58,9 @@ BackgroundLoaderContentsTest::BackgroundLoaderContentsTest()
     : download_(false),
       delegate_called_(false),
       waiter_(base::WaitableEvent::ResetPolicy::MANUAL,
-              base::WaitableEvent::InitialState::NOT_SIGNALED){};
+              base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
-BackgroundLoaderContentsTest::~BackgroundLoaderContentsTest(){};
+BackgroundLoaderContentsTest::~BackgroundLoaderContentsTest() {}
 
 void BackgroundLoaderContentsTest::SetUp() {
   contents_.reset(new BackgroundLoaderContents());
@@ -69,9 +73,9 @@ void BackgroundLoaderContentsTest::TearDown() {
 }
 
 void BackgroundLoaderContentsTest::CanDownload(
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   delegate_called_ = true;
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void BackgroundLoaderContentsTest::DownloadCallback(bool download) {
@@ -84,8 +88,8 @@ void BackgroundLoaderContentsTest::SetDelegate() {
 }
 
 void BackgroundLoaderContentsTest::MediaAccessCallback(
-    const content::MediaStreamDevices& devices,
-    content::MediaStreamRequestResult result,
+    const blink::MediaStreamDevices& devices,
+    blink::MediaStreamRequestResult result,
     std::unique_ptr<content::MediaStreamUI> ui) {
   devices_ = devices;
   request_result_ = result;
@@ -108,8 +112,8 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotFocusAfterCrash) {
 TEST_F(BackgroundLoaderContentsTest, CannotDownloadNoDelegate) {
   contents()->CanDownload(
       GURL::EmptyGURL(), std::string(),
-      base::BindRepeating(&BackgroundLoaderContentsTest::DownloadCallback,
-                          base::Unretained(this)));
+      base::BindOnce(&BackgroundLoaderContentsTest::DownloadCallback,
+                     base::Unretained(this)));
   WaitForSignal();
   ASSERT_FALSE(download());
   ASSERT_FALSE(can_download_delegate_called());
@@ -119,8 +123,8 @@ TEST_F(BackgroundLoaderContentsTest, CanDownload_DelegateCalledWhenSet) {
   SetDelegate();
   contents()->CanDownload(
       GURL::EmptyGURL(), std::string(),
-      base::BindRepeating(&BackgroundLoaderContentsTest::DownloadCallback,
-                          base::Unretained(this)));
+      base::BindOnce(&BackgroundLoaderContentsTest::DownloadCallback,
+                     base::Unretained(this)));
   WaitForSignal();
   ASSERT_TRUE(download());
   ASSERT_TRUE(can_download_delegate_called());
@@ -153,11 +157,11 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotGiveMediaAccessPermission) {
       0 /* render_process_id */, 0 /* render_frame_id */,
       0 /* page_request_id */, GURL::EmptyGURL() /* security_origin */,
       false /* user_gesture */,
-      content::MediaStreamRequestType::MEDIA_DEVICE_ACCESS /* request_type */,
+      blink::MediaStreamRequestType::MEDIA_DEVICE_ACCESS /* request_type */,
       std::string() /* requested_audio_device_id */,
       std::string() /* requested_video_device_id */,
-      content::MediaStreamType::MEDIA_GUM_TAB_AUDIO_CAPTURE /* audio_type */,
-      content::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE /* video_type */,
+      blink::MediaStreamType::MEDIA_GUM_TAB_AUDIO_CAPTURE /* audio_type */,
+      blink::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE /* video_type */,
       false /* disable_local_echo */);
   contents()->RequestMediaAccessPermission(
       nullptr /* contents */, request /* request */,
@@ -167,16 +171,15 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotGiveMediaAccessPermission) {
   // No devices allowed.
   ASSERT_TRUE(devices().empty());
   // Permission has been dismissed rather than denied.
-  ASSERT_EQ(
-      content::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DISMISSED,
-      request_result());
+  ASSERT_EQ(blink::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DISMISSED,
+            request_result());
   ASSERT_EQ(nullptr, media_stream_ui());
 }
 
 TEST_F(BackgroundLoaderContentsTest, CheckMediaAccessPermissionFalse) {
   ASSERT_FALSE(contents()->CheckMediaAccessPermission(
       nullptr /* contents */, GURL::EmptyGURL() /* security_origin */,
-      content::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE /* type */));
+      blink::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE /* type */));
 }
 
 TEST_F(BackgroundLoaderContentsTest, AdjustPreviewsState) {

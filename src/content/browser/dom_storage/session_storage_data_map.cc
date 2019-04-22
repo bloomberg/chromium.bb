@@ -12,21 +12,30 @@
 namespace content {
 
 // static
-scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::Create(
+scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateFromDisk(
+    Listener* listener,
+    scoped_refptr<SessionStorageMetadata::MapData> map_data,
+    leveldb::mojom::LevelDBDatabase* database) {
+  return base::WrapRefCounted(new SessionStorageDataMap(
+      listener, std::move(map_data), database, false));
+}
+
+// static
+scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateEmpty(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
     leveldb::mojom::LevelDBDatabase* database) {
   return base::WrapRefCounted(
-      new SessionStorageDataMap(listener, std::move(map_data), database));
+      new SessionStorageDataMap(listener, std::move(map_data), database, true));
 }
 
 // static
 scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateClone(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    StorageAreaImpl* clone_from) {
-  return base::WrapRefCounted(
-      new SessionStorageDataMap(listener, std::move(map_data), clone_from));
+    scoped_refptr<SessionStorageDataMap> clone_from) {
+  return base::WrapRefCounted(new SessionStorageDataMap(
+      listener, std::move(map_data), std::move(clone_from)));
 }
 
 std::vector<leveldb::mojom::BatchedOperationPtr>
@@ -41,7 +50,8 @@ void SessionStorageDataMap::DidCommit(leveldb::mojom::DatabaseError error) {
 SessionStorageDataMap::SessionStorageDataMap(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    leveldb::mojom::LevelDBDatabase* database)
+    leveldb::mojom::LevelDBDatabase* database,
+    bool is_empty)
     : listener_(listener),
       map_data_(std::move(map_data)),
       storage_area_impl_(
@@ -50,6 +60,8 @@ SessionStorageDataMap::SessionStorageDataMap(
                                             this,
                                             GetOptions())),
       storage_area_ptr_(storage_area_impl_.get()) {
+  if (is_empty)
+    storage_area_impl_->InitializeAsEmpty();
   DCHECK(listener_);
   DCHECK(map_data_);
   listener_->OnDataMapCreation(map_data_->MapNumberAsBytes(), this);
@@ -58,12 +70,14 @@ SessionStorageDataMap::SessionStorageDataMap(
 SessionStorageDataMap::SessionStorageDataMap(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    StorageAreaImpl* forking_from)
+    scoped_refptr<SessionStorageDataMap> forking_from)
     : listener_(listener),
+      clone_from_data_map_(std::move(forking_from)),
       map_data_(std::move(map_data)),
-      storage_area_impl_(forking_from->ForkToNewPrefix(map_data_->KeyPrefix(),
-                                                       this,
-                                                       GetOptions())),
+      storage_area_impl_(clone_from_data_map_->storage_area()->ForkToNewPrefix(
+          map_data_->KeyPrefix(),
+          this,
+          GetOptions())),
       storage_area_ptr_(storage_area_impl_.get()) {
   DCHECK(listener_);
   DCHECK(map_data_);
@@ -83,6 +97,10 @@ void SessionStorageDataMap::RemoveBindingReference() {
   // deletion will happen under memory pressure or when another sessionstorage
   // area is opened.
   storage_area()->ScheduleImmediateCommit();
+}
+
+void SessionStorageDataMap::OnMapLoaded(leveldb::mojom::DatabaseError) {
+  clone_from_data_map_.reset();
 }
 
 // static

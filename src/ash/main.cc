@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/public/c/main.h"
 #include "ash/ash_service.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "services/service_manager/public/cpp/service_runner.h"
+#include "base/run_loop.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 
 // This path is only hit in testing, not production. Production launches ash by
 // way of the utility process, which does not use this.
-MojoResult ServiceMain(MojoHandle service_request_handle) {
+void ServiceMain(service_manager::mojom::ServiceRequest request) {
   logging::SetLogPrefix("ash");
   // Load ash resources and strings.
   // TODO: investigate nuking ash_service_resources and use the same resources
@@ -45,16 +45,20 @@ MojoResult ServiceMain(MojoHandle service_request_handle) {
   if (!enabled_features.empty())
     enabled_features += ",";
   enabled_features += features::kMash.name;
+  // Disable SingleProcessMash, even if it's on by default in the test suite.
+  if (!disabled_features.empty())
+    disabled_features += ",";
+  disabled_features += features::kSingleProcessMash.name;
   // This code path is really only for testing (production code uses the utility
   // process to launch AshService), so it's ok to use a for-testing function.
   base::FeatureList::ClearInstanceForTesting();
   CHECK(base::FeatureList::InitializeInstance(enabled_features,
                                               disabled_features));
   CHECK(base::FeatureList::IsEnabled(features::kMash));
+  CHECK(!base::FeatureList::IsEnabled(features::kSingleProcessMash));
 
   ui::MaterialDesignController::Initialize();
 
-  service_manager::ServiceRunner runner(new ash::AshService);
-  runner.set_message_loop_type(base::MessageLoop::TYPE_UI);
-  return runner.Run(service_request_handle);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  ash::AshService(std::move(request)).RunUntilTermination();
 }

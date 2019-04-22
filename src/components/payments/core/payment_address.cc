@@ -16,7 +16,6 @@ static const char kAddressAddressLine[] = "addressLine";
 static const char kAddressCity[] = "city";
 static const char kAddressCountry[] = "country";
 static const char kAddressDependentLocality[] = "dependentLocality";
-static const char kAddressLanguageCode[] = "languageCode";
 static const char kAddressOrganization[] = "organization";
 static const char kAddressPhone[] = "phone";
 static const char kAddressPostalCode[] = "postalCode";
@@ -41,7 +40,6 @@ std::unique_ptr<base::DictionaryValue> PaymentAddressToDictionaryValue(
   result->SetString(kAddressDependentLocality, address.dependent_locality);
   result->SetString(kAddressPostalCode, address.postal_code);
   result->SetString(kAddressSortingCode, address.sorting_code);
-  result->SetString(kAddressLanguageCode, address.language_code);
   result->SetString(kAddressOrganization, address.organization);
   result->SetString(kAddressRecipient, address.recipient);
   result->SetString(kAddressPhone, address.phone);

@@ -33,10 +33,10 @@ void ForceYouTubeSafetyModePolicyHandler::ApplyPolicySettings(
   const base::Value* value = policies.GetValue(policy_name());
   bool enabled;
   if (value && value->GetAsBoolean(&enabled)) {
-    prefs->SetValue(prefs::kForceYouTubeRestrict,
-                    std::make_unique<base::Value>(
-                        enabled ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
-                                : safe_search_util::YOUTUBE_RESTRICT_OFF));
+    prefs->SetValue(
+        prefs::kForceYouTubeRestrict,
+        base::Value(enabled ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
+                            : safe_search_util::YOUTUBE_RESTRICT_OFF));
   }
 }
 

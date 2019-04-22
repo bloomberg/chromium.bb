@@ -32,25 +32,25 @@ ChromeVoxE2ETest.prototype = {
 
   /** @override */
   testGenCppIncludes: function() {
-    GEN_BLOCK(function() { /*!
+    GEN(`
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
-    */ });
+    `);
   },
 
   /** @override */
   testGenPreamble: function() {
-    GEN_BLOCK(function() { /*!
+    GEN(`
   base::Closure load_cb =
       base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,
           base::Unretained(chromeos::AccessibilityManager::Get()),
           true);
   WaitForExtension(extension_misc::kChromeVoxExtensionId, load_cb);
-    */ });
+    `);
   },
 
   /**

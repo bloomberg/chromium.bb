@@ -383,8 +383,9 @@ TEST_P(UrlUtilNonUniqueNameTest, IsHostnameNonUnique) {
   EXPECT_EQ(test_data.is_unique, IsUnique(test_data.hostname));
 }
 
-INSTANTIATE_TEST_CASE_P(, UrlUtilNonUniqueNameTest,
-                        testing::ValuesIn(kNonUniqueNameTestData));
+INSTANTIATE_TEST_SUITE_P(,
+                         UrlUtilNonUniqueNameTest,
+                         testing::ValuesIn(kNonUniqueNameTestData));
 
 TEST(UrlUtilTest, IsLocalhost) {
   EXPECT_TRUE(HostStringIsLocalhost("localhost"));
@@ -475,6 +476,21 @@ TEST(UrlUtilTest, SimplifyUrlForRequest) {
     GURL input_url(GURL(test.input_url));
     GURL expected_url(GURL(test.expected_simplified_url));
     EXPECT_EQ(expected_url, SimplifyUrlForRequest(input_url));
+  }
+}
+
+TEST(UrlUtilTest, ChangeWebSocketSchemeToHttpScheme) {
+  struct {
+    const char* const input_url;
+    const char* const expected_output_url;
+  } tests[] = {
+      {"ws://google.com:78/path?query=1", "http://google.com:78/path?query=1"},
+      {"wss://google.com:441/path?q=1", "https://google.com:441/path?q=1"}};
+  for (const auto& test : tests) {
+    GURL input_url(test.input_url);
+    GURL expected_output_url(test.expected_output_url);
+    EXPECT_EQ(expected_output_url,
+              ChangeWebSocketSchemeToHttpScheme(input_url));
   }
 }
 

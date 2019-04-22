@@ -37,86 +37,92 @@ class CommonStringPieceTest<string16> : public ::testing::Test {
 
 typedef ::testing::Types<std::string, string16> SupportedStringTypes;
 
-TYPED_TEST_CASE(CommonStringPieceTest, SupportedStringTypes);
+TYPED_TEST_SUITE(CommonStringPieceTest, SupportedStringTypes);
 
 TYPED_TEST(CommonStringPieceTest, CheckComparisonOperators) {
-#define CMP_Y(op, x, y)                                                    \
-  {                                                                        \
-    TypeParam lhs(TestFixture::as_string(x));                              \
-    TypeParam rhs(TestFixture::as_string(y));                              \
-    ASSERT_TRUE( (BasicStringPiece<TypeParam>((lhs.c_str())) op            \
-                  BasicStringPiece<TypeParam>((rhs.c_str()))));            \
-    ASSERT_TRUE( (BasicStringPiece<TypeParam>((lhs.c_str())).compare(      \
-                      BasicStringPiece<TypeParam>((rhs.c_str()))) op 0));  \
+#define CMP_Y(op, x, y)                                                   \
+  {                                                                       \
+    TypeParam lhs(TestFixture::as_string(x));                             \
+    TypeParam rhs(TestFixture::as_string(y));                             \
+    ASSERT_TRUE((BasicStringPiece<TypeParam>((lhs.c_str()))               \
+                     op BasicStringPiece<TypeParam>((rhs.c_str()))));     \
+    ASSERT_TRUE(BasicStringPiece<TypeParam>(lhs) op rhs);                 \
+    ASSERT_TRUE(lhs op BasicStringPiece<TypeParam>(rhs));                 \
+    ASSERT_TRUE((BasicStringPiece<TypeParam>((lhs.c_str()))               \
+                     .compare(BasicStringPiece<TypeParam>((rhs.c_str()))) \
+                         op 0));                                          \
   }
 
 #define CMP_N(op, x, y)                                                    \
   {                                                                        \
     TypeParam lhs(TestFixture::as_string(x));                              \
     TypeParam rhs(TestFixture::as_string(y));                              \
-    ASSERT_FALSE( (BasicStringPiece<TypeParam>((lhs.c_str())) op           \
-                  BasicStringPiece<TypeParam>((rhs.c_str()))));            \
-    ASSERT_FALSE( (BasicStringPiece<TypeParam>((lhs.c_str())).compare(     \
-                      BasicStringPiece<TypeParam>((rhs.c_str()))) op 0));  \
+    ASSERT_FALSE((BasicStringPiece<TypeParam>((lhs.c_str()))               \
+                      op BasicStringPiece<TypeParam>((rhs.c_str()))));     \
+    ASSERT_FALSE(BasicStringPiece<TypeParam>(lhs) op rhs);                 \
+    ASSERT_FALSE(lhs op BasicStringPiece<TypeParam>(rhs));                 \
+    ASSERT_FALSE((BasicStringPiece<TypeParam>((lhs.c_str()))               \
+                      .compare(BasicStringPiece<TypeParam>((rhs.c_str()))) \
+                          op 0));                                          \
   }
 
-  CMP_Y(==, "",   "");
-  CMP_Y(==, "a",  "a");
-  CMP_Y(==, "aa", "aa");
-  CMP_N(==, "a",  "");
-  CMP_N(==, "",   "a");
-  CMP_N(==, "a",  "b");
-  CMP_N(==, "a",  "aa");
-  CMP_N(==, "aa", "a");
+  CMP_Y(==, "", "")
+  CMP_Y(==, "a", "a")
+  CMP_Y(==, "aa", "aa")
+  CMP_N(==, "a", "")
+  CMP_N(==, "", "a")
+  CMP_N(==, "a", "b")
+  CMP_N(==, "a", "aa")
+  CMP_N(==, "aa", "a")
 
-  CMP_N(!=, "",   "");
-  CMP_N(!=, "a",  "a");
-  CMP_N(!=, "aa", "aa");
-  CMP_Y(!=, "a",  "");
-  CMP_Y(!=, "",   "a");
-  CMP_Y(!=, "a",  "b");
-  CMP_Y(!=, "a",  "aa");
-  CMP_Y(!=, "aa", "a");
+  CMP_N(!=, "", "")
+  CMP_N(!=, "a", "a")
+  CMP_N(!=, "aa", "aa")
+  CMP_Y(!=, "a", "")
+  CMP_Y(!=, "", "a")
+  CMP_Y(!=, "a", "b")
+  CMP_Y(!=, "a", "aa")
+  CMP_Y(!=, "aa", "a")
 
-  CMP_Y(<, "a",  "b");
-  CMP_Y(<, "a",  "aa");
-  CMP_Y(<, "aa", "b");
-  CMP_Y(<, "aa", "bb");
-  CMP_N(<, "a",  "a");
-  CMP_N(<, "b",  "a");
-  CMP_N(<, "aa", "a");
-  CMP_N(<, "b",  "aa");
-  CMP_N(<, "bb", "aa");
+  CMP_Y(<, "a", "b")
+  CMP_Y(<, "a", "aa")
+  CMP_Y(<, "aa", "b")
+  CMP_Y(<, "aa", "bb")
+  CMP_N(<, "a", "a")
+  CMP_N(<, "b", "a")
+  CMP_N(<, "aa", "a")
+  CMP_N(<, "b", "aa")
+  CMP_N(<, "bb", "aa")
 
-  CMP_Y(<=, "a",  "a");
-  CMP_Y(<=, "a",  "b");
-  CMP_Y(<=, "a",  "aa");
-  CMP_Y(<=, "aa", "b");
-  CMP_Y(<=, "aa", "bb");
-  CMP_N(<=, "b",  "a");
-  CMP_N(<=, "aa", "a");
-  CMP_N(<=, "b",  "aa");
-  CMP_N(<=, "bb", "aa");
+  CMP_Y(<=, "a", "a")
+  CMP_Y(<=, "a", "b")
+  CMP_Y(<=, "a", "aa")
+  CMP_Y(<=, "aa", "b")
+  CMP_Y(<=, "aa", "bb")
+  CMP_N(<=, "b", "a")
+  CMP_N(<=, "aa", "a")
+  CMP_N(<=, "b", "aa")
+  CMP_N(<=, "bb", "aa")
 
-  CMP_N(>=, "a",  "b");
-  CMP_N(>=, "a",  "aa");
-  CMP_N(>=, "aa", "b");
-  CMP_N(>=, "aa", "bb");
-  CMP_Y(>=, "a",  "a");
-  CMP_Y(>=, "b",  "a");
-  CMP_Y(>=, "aa", "a");
-  CMP_Y(>=, "b",  "aa");
-  CMP_Y(>=, "bb", "aa");
+  CMP_N(>=, "a", "b")
+  CMP_N(>=, "a", "aa")
+  CMP_N(>=, "aa", "b")
+  CMP_N(>=, "aa", "bb")
+  CMP_Y(>=, "a", "a")
+  CMP_Y(>=, "b", "a")
+  CMP_Y(>=, "aa", "a")
+  CMP_Y(>=, "b", "aa")
+  CMP_Y(>=, "bb", "aa")
 
-  CMP_N(>, "a",  "a");
-  CMP_N(>, "a",  "b");
-  CMP_N(>, "a",  "aa");
-  CMP_N(>, "aa", "b");
-  CMP_N(>, "aa", "bb");
-  CMP_Y(>, "b",  "a");
-  CMP_Y(>, "aa", "a");
-  CMP_Y(>, "b",  "aa");
-  CMP_Y(>, "bb", "aa");
+  CMP_N(>, "a", "a")
+  CMP_N(>, "a", "b")
+  CMP_N(>, "a", "aa")
+  CMP_N(>, "aa", "b")
+  CMP_N(>, "aa", "bb")
+  CMP_Y(>, "b", "a")
+  CMP_Y(>, "aa", "a")
+  CMP_Y(>, "b", "aa")
+  CMP_Y(>, "bb", "aa")
 
   std::string x;
   for (int i = 0; i < 256; i++) {

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/message_loop/message_loop.h"
@@ -23,6 +24,10 @@
 #include "services/audio/audio_sandbox_hook_linux.h"
 #include "services/network/network_sandbox_hook_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/services/ime/ime_sandbox_hook.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -73,12 +78,19 @@ int UtilityMain(const MainFunctionParams& parameters) {
       service_manager::SandboxTypeFromCommandLine(parameters.command_line);
   if (parameters.zygote_child ||
       sandbox_type == service_manager::SANDBOX_TYPE_NETWORK ||
+#if defined(OS_CHROMEOS)
+      sandbox_type == service_manager::SANDBOX_TYPE_IME ||
+#endif  // OS_CHROMEOS
       sandbox_type == service_manager::SANDBOX_TYPE_AUDIO) {
     service_manager::SandboxLinux::PreSandboxHook pre_sandbox_hook;
     if (sandbox_type == service_manager::SANDBOX_TYPE_NETWORK)
       pre_sandbox_hook = base::BindOnce(&network::NetworkPreSandboxHook);
     else if (sandbox_type == service_manager::SANDBOX_TYPE_AUDIO)
       pre_sandbox_hook = base::BindOnce(&audio::AudioPreSandboxHook);
+#if defined(OS_CHROMEOS)
+    else if (sandbox_type == service_manager::SANDBOX_TYPE_IME)
+      pre_sandbox_hook = base::BindOnce(&chromeos::ime::ImePreSandboxHook);
+#endif  // OS_CHROMEOS
 
     service_manager::Sandbox::Initialize(
         sandbox_type, std::move(pre_sandbox_hook),

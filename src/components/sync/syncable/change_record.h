@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
+#include "base/optional.h"
 #include "components/sync/base/immutable.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -28,9 +28,9 @@ class ExtraPasswordChangeRecordData {
   ExtraPasswordChangeRecordData();
   explicit ExtraPasswordChangeRecordData(
       const sync_pb::PasswordSpecificsData& data);
-  virtual ~ExtraPasswordChangeRecordData();
+  ~ExtraPasswordChangeRecordData();
 
-  virtual std::unique_ptr<base::DictionaryValue> ToValue() const;
+  std::unique_ptr<base::DictionaryValue> ToValue() const;
 
   const sync_pb::PasswordSpecificsData& unencrypted() const;
 
@@ -57,7 +57,7 @@ struct ChangeRecord {
   int64_t id;
   Action action;
   sync_pb::EntitySpecifics specifics;
-  linked_ptr<ExtraPasswordChangeRecordData> extra;
+  base::Optional<ExtraPasswordChangeRecordData> extra;
 };
 
 using ChangeRecordList = std::vector<ChangeRecord>;

@@ -9,13 +9,13 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/mojo_embedder/mojo_embedder_export.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -102,8 +102,10 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
       scoped_refptr<viz::ContextProvider> context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider,
       InitParams* params);
-
+  AsyncLayerTreeFrameSink(const AsyncLayerTreeFrameSink&) = delete;
   ~AsyncLayerTreeFrameSink() override;
+
+  AsyncLayerTreeFrameSink& operator=(const AsyncLayerTreeFrameSink&) = delete;
 
   const viz::HitTestDataProvider* hit_test_data_provider() const {
     return hit_test_data_provider_.get();
@@ -118,6 +120,7 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   void DetachFromClient() override;
   void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id) override;
   void SubmitCompositorFrame(viz::CompositorFrame frame,
+                             bool hit_test_data_changed,
                              bool show_hit_test_borders) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
@@ -125,13 +128,16 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
   void ForceAllocateNewId() override;
 
+  const viz::HitTestRegionList& get_last_hit_test_data_for_testing() const {
+    return last_hit_test_data_;
+  }
+
  private:
   // mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args,
-                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
-                        feedbacks) override;
+                    const viz::PresentationFeedbackMap& feedbacks) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
@@ -166,6 +172,8 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   const bool enable_surface_synchronization_;
   const bool wants_animate_only_begin_frames_;
 
+  viz::HitTestRegionList last_hit_test_data_;
+
   viz::LocalSurfaceId last_submitted_local_surface_id_;
   float last_submitted_device_scale_factor_ = 1.f;
   gfx::Size last_submitted_size_in_pixels_;
@@ -180,8 +188,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   // GraphicsPipeline.ClientName.SubmitCompositorFrameAfterBeginFrame
   base::HistogramBase* const submit_begin_frame_histogram_;
   base::WeakPtrFactory<AsyncLayerTreeFrameSink> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncLayerTreeFrameSink);
 };
 
 }  // namespace mojo_embedder

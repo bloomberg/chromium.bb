@@ -6,6 +6,8 @@
 # It runs pnacl-bccompress multiple times, using a hill-climbing solution
 # to try and find a good local minima for file size.
 
+from __future__ import print_function
+
 from driver_env import env
 from driver_log import Log
 import driver_tools
@@ -14,12 +16,12 @@ import os
 import shutil
 
 EXTRA_ENV = {
-  'INPUTS'             : '',
-  'OUTPUT'             : '',
-  'MAX_ATTEMPTS'       : '25',
-  'RETRIES'            : '3',
-  'SUFFIX'             :'-c',
-  'VERBOSE'            : '0',
+    'INPUTS': '',
+    'OUTPUT': '',
+    'MAX_ATTEMPTS': '25',
+    'RETRIES': '3',
+    'SUFFIX': '-c',
+    'VERBOSE': '0',
 }
 
 PrepPatterns = [
@@ -91,7 +93,7 @@ def Compress(f_input, f_output):
 
     next_file = f_input + test_suffix + str(test_index)
     if verbose:
-      print "Compressing %s: %s bytes" % (last_file, last_size)
+      print("Compressing %s: %s bytes" % (last_file, last_size))
 
     driver_tools.Run('"${PNACL_COMPRESS}" ' + last_file + ' -o ' + next_file)
     next_size = pathtools.getsize(next_file)
@@ -117,9 +119,9 @@ def Compress(f_input, f_output):
 
   # Install results.
   if verbose:
-    print "Compressed  %s: %s bytes" % (last_file, last_size)
-    print "Best        %s: %s bytes" % (current_smallest_file,
-                                        current_smallest_size)
+    print("Compressed  %s: %s bytes" % (last_file, last_size))
+    print("Best        %s: %s bytes" % (current_smallest_file,
+                                        current_smallest_size))
   if not last_saved:
     os.remove(last_file)
 

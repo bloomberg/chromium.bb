@@ -20,10 +20,10 @@ import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
+import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.ui.base.LocalizationUtils;
@@ -252,7 +252,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         Runnable onNativeFinished = new Runnable() {
             @Override
             public void run() {
-                if (isActivityDestroyed()) return;
+                if (isActivityFinishingOrDestroyed()) return;
 
                 onNativeDependenciesFullyInitialized();
             }
@@ -354,7 +354,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     public void abortFirstRunExperience() {
         finish();
 
-        sendPendingIntentIfNecessary(false);
+        notifyCustomTabCallbackFirstRunIfNecessary(getIntent(), false);
         if (sObserver != null) sObserver.onAbortFirstRunExperience();
     }
 
@@ -398,7 +398,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         SearchWidgetProvider.updateCachedEngineName();
         if (sObserver != null) sObserver.onUpdateCachedEngineName();
 
-        if (!sendPendingIntentIfNecessary(true)) {
+        if (!sendFirstRunCompletePendingIntent()) {
             finish();
         } else {
             ApplicationStatus.registerStateListenerForAllActivities(new ActivityStateListener() {
@@ -428,14 +428,10 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     }
 
     @Override
-    public void acceptSignIn(String accountName, boolean isDefaultAccount) {
+    public void acceptSignIn(String accountName, boolean isDefaultAccount, boolean openSettings) {
         mResultSignInAccountName = accountName;
         mResultIsDefaultAccount = isDefaultAccount;
-    }
-
-    @Override
-    public void askToOpenSignInSettings() {
-        mResultShowSignInSettings = true;
+        mResultShowSignInSettings = openSettings;
     }
 
     @Override

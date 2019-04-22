@@ -9,12 +9,10 @@ dictionary AddressErrors {
     DOMString city;
     DOMString country;
     DOMString dependentLocality;
-    DOMString languageCode;
     DOMString organization;
     DOMString phone;
     DOMString postalCode;
     DOMString recipient;
     DOMString region;
-    DOMString regionCode;
     DOMString sortingCode;
 };

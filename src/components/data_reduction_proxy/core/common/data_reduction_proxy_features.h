@@ -12,12 +12,11 @@ namespace features {
 
 extern const base::Feature kDataReductionProxyDecidesTransform;
 extern const base::Feature kDataReductionProxyLowMemoryDevicePromo;
-extern const base::Feature kDataReductionProxyRobustConnection;
 extern const base::Feature kDogfood;
-extern const base::Feature kDataSaverSiteBreakdownUsingPageLoadMetrics;
-extern const base::Feature kDataReductionProxyBrotliHoldback;
 extern const base::Feature kDataReductionProxyEnabledWithNetworkService;
 extern const base::Feature kDataSaverUseOnDeviceSafeBrowsing;
+extern const base::Feature kDataReductionProxyBlockOnBadGatewayResponse;
+extern const base::Feature kDataReductionProxyPopulatePreviewsPageIDToPingback;
 
 }  // namespace features
 }  // namespace data_reduction_proxy

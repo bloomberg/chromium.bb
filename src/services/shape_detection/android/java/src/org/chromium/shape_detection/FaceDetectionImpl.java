@@ -11,7 +11,8 @@ import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
 
 import org.chromium.base.Log;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.shape_detection.mojom.FaceDetection;
@@ -70,36 +71,33 @@ public class FaceDetectionImpl implements FaceDetection {
 
         // FaceDetector creation and findFaces() might take a long time and trigger a
         // "StrictMode policy violation": they should happen in a background thread.
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
-            @Override
-            public void run() {
-                final FaceDetector detector = new FaceDetector(width, height, mMaxFaces);
-                Face[] detectedFaces = new Face[mMaxFaces];
-                // findFaces() will stop at |mMaxFaces|.
-                final int numberOfFaces = detector.findFaces(unPremultipliedBitmap, detectedFaces);
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            final FaceDetector detector = new FaceDetector(width, height, mMaxFaces);
+            Face[] detectedFaces = new Face[mMaxFaces];
+            // findFaces() will stop at |mMaxFaces|.
+            final int numberOfFaces = detector.findFaces(unPremultipliedBitmap, detectedFaces);
 
-                FaceDetectionResult[] faceArray = new FaceDetectionResult[numberOfFaces];
+            FaceDetectionResult[] faceArray = new FaceDetectionResult[numberOfFaces];
 
-                for (int i = 0; i < numberOfFaces; i++) {
-                    faceArray[i] = new FaceDetectionResult();
+            for (int i = 0; i < numberOfFaces; i++) {
+                faceArray[i] = new FaceDetectionResult();
 
-                    final Face face = detectedFaces[i];
-                    final PointF midPoint = new PointF();
-                    face.getMidPoint(midPoint);
-                    final float eyesDistance = face.eyesDistance();
+                final Face face = detectedFaces[i];
+                final PointF midPoint = new PointF();
+                face.getMidPoint(midPoint);
+                final float eyesDistance = face.eyesDistance();
 
-                    faceArray[i].boundingBox = new RectF();
-                    faceArray[i].boundingBox.x = midPoint.x - eyesDistance;
-                    faceArray[i].boundingBox.y = midPoint.y - eyesDistance;
-                    faceArray[i].boundingBox.width = 2 * eyesDistance;
-                    faceArray[i].boundingBox.height = 2 * eyesDistance;
-                    // TODO(xianglu): Consider adding Face.confidence and Face.pose.
+                faceArray[i].boundingBox = new RectF();
+                faceArray[i].boundingBox.x = midPoint.x - eyesDistance;
+                faceArray[i].boundingBox.y = midPoint.y - eyesDistance;
+                faceArray[i].boundingBox.width = 2 * eyesDistance;
+                faceArray[i].boundingBox.height = 2 * eyesDistance;
+                // TODO(xianglu): Consider adding Face.confidence and Face.pose.
 
-                    faceArray[i].landmarks = new Landmark[0];
-                }
-
-                callback.call(faceArray);
+                faceArray[i].landmarks = new Landmark[0];
             }
+
+            callback.call(faceArray);
         });
     }
 

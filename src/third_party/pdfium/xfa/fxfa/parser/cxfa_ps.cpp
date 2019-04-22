@@ -6,6 +6,9 @@
 
 #include "xfa/fxfa/parser/cxfa_ps.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::PropertyData kPsPropertyData[] = {
@@ -13,14 +16,13 @@ const CXFA_Node::PropertyData kPsPropertyData[] = {
     {XFA_Element::Xdc, 1, 0},       {XFA_Element::BatchOutput, 1, 0},
     {XFA_Element::OutputBin, 1, 0}, {XFA_Element::Compress, 1, 0},
     {XFA_Element::Staple, 1, 0},    {XFA_Element::MediumInfo, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kPsAttributeData[] = {
     {XFA_Attribute::Name, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kPsName[] = L"ps";
+};
 
 }  // namespace
 
@@ -32,6 +34,6 @@ CXFA_Ps::CXFA_Ps(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Ps,
                 kPsPropertyData,
                 kPsAttributeData,
-                kPsName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Ps::~CXFA_Ps() {}
+CXFA_Ps::~CXFA_Ps() = default;

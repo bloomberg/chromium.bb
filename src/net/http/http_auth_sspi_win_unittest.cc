@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/http/http_auth_sspi_win.h"
+#include "base/bind.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
-#include "net/http/http_auth_sspi_win.h"
 #include "net/http/mock_sspi_library_win.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,11 +18,11 @@ namespace net {
 
 namespace {
 
-void MatchDomainUserAfterSplit(const std::wstring& combined,
-                               const std::wstring& expected_domain,
-                               const std::wstring& expected_user) {
-  std::wstring actual_domain;
-  std::wstring actual_user;
+void MatchDomainUserAfterSplit(const base::string16& combined,
+                               const base::string16& expected_domain,
+                               const base::string16& expected_user) {
+  base::string16 actual_domain;
+  base::string16 actual_user;
   SplitDomainAndUser(combined, &actual_domain, &actual_user);
   EXPECT_EQ(expected_domain, actual_domain);
   EXPECT_EQ(expected_user, actual_user);
@@ -38,8 +39,10 @@ void UnexpectedCallback(int result) {
 }  // namespace
 
 TEST(HttpAuthSSPITest, SplitUserAndDomain) {
-  MatchDomainUserAfterSplit(L"foobar", L"", L"foobar");
-  MatchDomainUserAfterSplit(L"FOO\\bar", L"FOO", L"bar");
+  MatchDomainUserAfterSplit(STRING16_LITERAL("foobar"), STRING16_LITERAL(""),
+                            STRING16_LITERAL("foobar"));
+  MatchDomainUserAfterSplit(STRING16_LITERAL("FOO\\bar"),
+                            STRING16_LITERAL("FOO"), STRING16_LITERAL("bar"));
 }
 
 TEST(HttpAuthSSPITest, DetermineMaxTokenLength_Normal) {
@@ -58,7 +61,7 @@ TEST(HttpAuthSSPITest, DetermineMaxTokenLength_Normal) {
 TEST(HttpAuthSSPITest, DetermineMaxTokenLength_InvalidPackage) {
   MockSSPILibrary mock_library;
   mock_library.ExpectQuerySecurityPackageInfo(L"Foo", SEC_E_SECPKG_NOT_FOUND,
-                                              NULL);
+                                              nullptr);
   ULONG max_token_length = kMaxTokenLength;
   int rv = DetermineMaxTokenLength(&mock_library, L"Foo", &max_token_length);
   EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
@@ -94,7 +97,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_TwoRounds) {
   // Generate an auth token and create another thing.
   std::string auth_token;
   EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(
-                    NULL, "HTTP/intranet.google.com", std::string(),
+                    nullptr, "HTTP/intranet.google.com", std::string(),
                     &auth_token, base::BindOnce(&UnexpectedCallback)));
 
   std::string second_challenge_text = "Negotiate Zm9vYmFy";
@@ -131,7 +134,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_MissingTokenSecondRound) {
 
   std::string auth_token;
   EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(
-                    NULL, "HTTP/intranet.google.com", std::string(),
+                    nullptr, "HTTP/intranet.google.com", std::string(),
                     &auth_token, base::BindOnce(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
@@ -154,7 +157,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_NonBase64EncodedToken) {
 
   std::string auth_token;
   EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(
-                    NULL, "HTTP/intranet.google.com", std::string(),
+                    nullptr, "HTTP/intranet.google.com", std::string(),
                     &auth_token, base::BindOnce(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate =happyjoy=";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),

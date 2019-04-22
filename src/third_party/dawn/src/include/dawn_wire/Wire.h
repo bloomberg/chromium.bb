@@ -35,13 +35,6 @@ namespace dawn_wire {
         virtual const char* HandleCommands(const char* commands, size_t size) = 0;
     };
 
-    DAWN_WIRE_EXPORT CommandHandler* NewClientDevice(dawnProcTable* procs,
-                                                     dawnDevice* device,
-                                                     CommandSerializer* serializer);
-    DAWN_WIRE_EXPORT CommandHandler* NewServerCommandHandler(dawnDevice device,
-                                                             const dawnProcTable& procs,
-                                                             CommandSerializer* serializer);
-
 }  // namespace dawn_wire
 
 #endif  // DAWNWIRE_WIRE_H_

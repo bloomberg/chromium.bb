@@ -112,9 +112,13 @@ void DownloadShelfUIControllerDelegate::OnNewDownloadReady(
 DownloadUIController::Delegate::~Delegate() {
 }
 
-DownloadUIController::DownloadUIController(content::DownloadManager* manager,
-                                           std::unique_ptr<Delegate> delegate)
-    : download_notifier_(manager, this), delegate_(std::move(delegate)) {
+DownloadUIController::DownloadUIController(
+    content::DownloadManager* manager,
+    std::unique_ptr<Delegate> delegate,
+    DownloadOfflineContentProvider* provider)
+    : download_notifier_(manager, this),
+      delegate_(std::move(delegate)),
+      download_provider_(provider) {
 #if defined(OS_ANDROID)
   if (!delegate_)
     delegate_.reset(new AndroidUIControllerDelegate());
@@ -150,10 +154,8 @@ void DownloadUIController::OnDownloadCreated(content::DownloadManager* manager,
     auto* security_state_tab_helper =
         SecurityStateTabHelper::FromWebContents(web_contents);
     if (security_state_tab_helper) {
-      security_state::SecurityInfo security_info;
-      security_state_tab_helper->GetSecurityInfo(&security_info);
       UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.DownloadStarted",
-                                security_info.security_level,
+                                security_state_tab_helper->GetSecurityLevel(),
                                 security_state::SECURITY_LEVEL_COUNT);
     }
   }
@@ -202,4 +204,6 @@ void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
 
   DownloadItemModel(item).SetWasUINotified(true);
   delegate_->OnNewDownloadReady(item);
+  if (download_provider_)
+    download_provider_->OnDownloadStarted(item);
 }

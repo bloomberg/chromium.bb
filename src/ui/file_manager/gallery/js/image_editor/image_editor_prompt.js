@@ -32,7 +32,7 @@ function ImageEditorPrompt(container, displayStringFunction) {
    * @private
    */
   this.timer_ = 0;
-};
+}
 
 /**
  * Reset the prompt.
@@ -106,8 +106,9 @@ ImageEditorPrompt.prototype.showAt = function(pos, text, timeout, var_args) {
  */
 ImageEditorPrompt.prototype.showStringAt = function(pos, text, opt_timeout) {
   this.reset();
-  if (!text)
+  if (!text) {
     return;
+  }
 
   var document = this.container_.ownerDocument;
   this.wrapper_ =
@@ -136,16 +137,18 @@ ImageEditorPrompt.prototype.showStringAt = function(pos, text, opt_timeout) {
   setTimeout(
       this.prompt_.setAttribute.bind(this.prompt_, 'state', 'fadein'), 0);
 
-  if (opt_timeout)
+  if (opt_timeout) {
     this.setTimer(this.hide.bind(this), opt_timeout);
+  }
 };
 
 /**
  * Hide the prompt.
  */
 ImageEditorPrompt.prototype.hide = function() {
-  if (!this.prompt_)
+  if (!this.prompt_) {
     return;
+  }
   this.prompt_.setAttribute('state', 'fadeout');
   // Allow some time for the animation to play out.
   this.setTimer(this.reset.bind(this), 500);

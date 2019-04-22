@@ -43,7 +43,8 @@ class DisplayAndroid : public DisplayEGL
                                      NativePixmapType nativePixmap,
                                      const egl::AttributeMap &attribs) override;
 
-    ContextImpl *createContext(const gl::ContextState &state,
+    ContextImpl *createContext(const gl::State &state,
+                               gl::ErrorSet *errorSet,
                                const egl::Config *configuration,
                                const gl::Context *shareContext,
                                const egl::AttributeMap &attribs) override;
@@ -76,6 +77,10 @@ class DisplayAndroid : public DisplayEGL
     gl::Version getMaxSupportedESVersion() const override;
 
     void destroyNativeContext(EGLContext context) override;
+
+    WorkerContext *createWorkerContext(std::string *infoLog,
+                                       EGLContext sharedContext,
+                                       const native_egl::AttributeVector workerAttribs) override;
 
   private:
     void generateExtensions(egl::DisplayExtensions *outExtensions) const override;

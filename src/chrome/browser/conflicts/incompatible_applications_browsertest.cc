@@ -10,10 +10,12 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/scoped_native_library.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
@@ -79,14 +81,15 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
   // The name of the application deemed incompatible.
   static constexpr wchar_t kApplicationName[] = L"FooBar123";
 
-  IncompatibleApplicationsBrowserTest() = default;
+  IncompatibleApplicationsBrowserTest() : scoped_domain_(true) {}
+
   ~IncompatibleApplicationsBrowserTest() override = default;
 
   void SetUp() override {
     // TODO(crbug.com/850517): Don't do test-specific setup if the test isn't
     // going to do anything. It seems to conflict with the VizDisplayCompositor
     // feature.
-    if (!base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+    if (!features::IsVizDisplayCompositorEnabled()) {
       ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
 
       ASSERT_NO_FATAL_FAILURE(
@@ -169,6 +172,9 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(base::CopyFile(test_dll_path, dll_path));
   }
 
+  // The feature is always disabled on domain-joined machines.
+  base::win::ScopedDomainStateForTesting scoped_domain_;
+
   // Temp directory used to host the install directory and the module list.
   base::ScopedTempDir scoped_temp_dir_;
 
@@ -199,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(IncompatibleApplicationsBrowserTest,
     return;
 
   // TODO(crbug.com/850517) This fails in viz_browser_tests in official builds.
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+  if (features::IsVizDisplayCompositorEnabled())
     return;
 
   ModuleDatabase* module_database = ModuleDatabase::GetInstance();

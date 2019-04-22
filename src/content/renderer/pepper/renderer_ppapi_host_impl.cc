@@ -139,7 +139,7 @@ ppapi::host::PpapiHost* RendererPpapiHostImpl::GetPpapiHost() {
 }
 
 RenderFrame* RendererPpapiHostImpl::GetRenderFrameForInstance(
-    PP_Instance instance) const {
+    PP_Instance instance) {
   PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
     return nullptr;
@@ -150,7 +150,7 @@ RenderFrame* RendererPpapiHostImpl::GetRenderFrameForInstance(
 }
 
 RenderView* RendererPpapiHostImpl::GetRenderViewForInstance(
-    PP_Instance instance) const {
+    PP_Instance instance) {
   PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
     return nullptr;
@@ -160,24 +160,24 @@ RenderView* RendererPpapiHostImpl::GetRenderViewForInstance(
   return instance_object->render_frame()->render_view();
 }
 
-bool RendererPpapiHostImpl::IsValidInstance(PP_Instance instance) const {
+bool RendererPpapiHostImpl::IsValidInstance(PP_Instance instance) {
   return !!GetAndValidateInstance(instance);
 }
 
 PepperPluginInstance* RendererPpapiHostImpl::GetPluginInstance(
-    PP_Instance instance) const {
+    PP_Instance instance) {
   return GetAndValidateInstance(instance);
 }
 
 blink::WebPluginContainer* RendererPpapiHostImpl::GetContainerForInstance(
-    PP_Instance instance) const {
+    PP_Instance instance) {
   PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
     return nullptr;
   return instance_object->container();
 }
 
-bool RendererPpapiHostImpl::HasUserGesture(PP_Instance instance) const {
+bool RendererPpapiHostImpl::HasUserGesture(PP_Instance instance) {
   PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
     return false;
@@ -188,7 +188,7 @@ bool RendererPpapiHostImpl::HasUserGesture(PP_Instance instance) const {
   return instance_object->IsProcessingUserGesture();
 }
 
-int RendererPpapiHostImpl::GetRoutingIDForWidget(PP_Instance instance) const {
+int RendererPpapiHostImpl::GetRoutingIDForWidget(PP_Instance instance) {
   PepperPluginInstanceImpl* plugin_instance = GetAndValidateInstance(instance);
   if (!plugin_instance)
     return 0;
@@ -201,7 +201,7 @@ int RendererPpapiHostImpl::GetRoutingIDForWidget(PP_Instance instance) const {
 
 gfx::Point RendererPpapiHostImpl::PluginPointToRenderFrame(
     PP_Instance instance,
-    const gfx::Point& pt) const {
+    const gfx::Point& pt) {
   PepperPluginInstanceImpl* plugin_instance = GetAndValidateInstance(instance);
   if (!plugin_instance || plugin_instance->flash_fullscreen()) {
     // Flash fullscreen is special in that it renders into its own separate,
@@ -257,11 +257,11 @@ RendererPpapiHostImpl::ShareReadOnlySharedMemoryRegionWithRemote(
   return dispatcher_->ShareReadOnlySharedMemoryRegionWithRemote(region);
 }
 
-bool RendererPpapiHostImpl::IsRunningInProcess() const {
+bool RendererPpapiHostImpl::IsRunningInProcess() {
   return is_running_in_process_;
 }
 
-std::string RendererPpapiHostImpl::GetPluginName() const {
+std::string RendererPpapiHostImpl::GetPluginName() {
   return module_->name();
 }
 
@@ -272,21 +272,21 @@ void RendererPpapiHostImpl::SetToExternalPluginHost() {
 void RendererPpapiHostImpl::CreateBrowserResourceHosts(
     PP_Instance instance,
     const std::vector<IPC::Message>& nested_msgs,
-    const base::Callback<void(const std::vector<int>&)>& callback) const {
+    base::OnceCallback<void(const std::vector<int>&)> callback) {
   RenderFrame* render_frame = GetRenderFrameForInstance(instance);
   PepperBrowserConnection* browser_connection =
       PepperBrowserConnection::Get(render_frame);
   if (!browser_connection) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, std::vector<int>(nested_msgs.size(), 0)));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  std::vector<int>(nested_msgs.size(), 0)));
   } else {
-    browser_connection->SendBrowserCreate(
-        module_->GetPluginChildId(), instance, nested_msgs, callback);
+    browser_connection->SendBrowserCreate(module_->GetPluginChildId(), instance,
+                                          nested_msgs, std::move(callback));
   }
 }
 
-GURL RendererPpapiHostImpl::GetDocumentURL(PP_Instance pp_instance) const {
+GURL RendererPpapiHostImpl::GetDocumentURL(PP_Instance pp_instance) {
   PepperPluginInstanceImpl* instance = GetAndValidateInstance(pp_instance);
   if (!instance)
     return GURL();

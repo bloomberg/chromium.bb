@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/modules/webdatabase/database_client.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_context.h"
 #include "third_party/blink/renderer/modules/webdatabase/quota_tracker.h"
-#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_file_system.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -67,18 +66,13 @@ DatabaseTracker& DatabaseTracker::Tracker() {
 }
 
 DatabaseTracker::DatabaseTracker() {
-  SQLiteFileSystem::InitializeSQLite();
 }
 
 bool DatabaseTracker::CanEstablishDatabase(DatabaseContext* database_context,
-                                           const String& name,
-                                           const String& display_name,
-                                           unsigned estimated_size,
                                            DatabaseError& error) {
   ExecutionContext* execution_context = database_context->GetExecutionContext();
-  bool success = DatabaseClient::From(execution_context)
-                     ->AllowDatabase(execution_context, name, display_name,
-                                     estimated_size);
+  bool success =
+      DatabaseClient::From(execution_context)->AllowDatabase(execution_context);
   if (!success)
     error = DatabaseError::kGenericSecurityError;
   return success;
@@ -171,10 +165,9 @@ void DatabaseTracker::FailedToOpenDatabase(Database* database) {
   DatabaseClosed(database);
 }
 
-unsigned long long DatabaseTracker::GetMaxSizeForDatabase(
-    const Database* database) {
-  unsigned long long space_available = 0;
-  unsigned long long database_size = 0;
+uint64_t DatabaseTracker::GetMaxSizeForDatabase(const Database* database) {
+  uint64_t space_available = 0;
+  uint64_t database_size = 0;
   QuotaTracker::Instance().GetDatabaseSizeAndSpaceAvailableToOrigin(
       database->GetSecurityOrigin(), database->StringIdentifier(),
       &database_size, &space_available);
@@ -239,8 +232,7 @@ void DatabaseTracker::CloseOneDatabaseImmediately(const String& origin_string,
     if (!database_set)
       return;
 
-    DatabaseSet::iterator found = database_set->find(database);
-    if (found == database_set->end())
+    if (!database_set->Contains(database))
       return;
   }
 

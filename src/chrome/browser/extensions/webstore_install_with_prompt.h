@@ -35,14 +35,14 @@ class WebstoreInstallWithPrompt : public WebstoreStandaloneInstaller {
   // will be centered on the screen.
   WebstoreInstallWithPrompt(const std::string& webstore_item_id,
                             Profile* profile,
-                            const Callback& callback);
+                            Callback callback);
 
   // If this constructor is used, the parent of the install dialog will be
   // |parent_window|.
   WebstoreInstallWithPrompt(const std::string& webstore_item_id,
                             Profile* profile,
                             gfx::NativeWindow parent_window,
-                            const Callback& callback);
+                            Callback callback);
 
  protected:
   friend class base::RefCountedThreadSafe<WebstoreInstallWithPrompt>;

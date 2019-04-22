@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,10 +19,10 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/system/devicetype.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/common/page_importance_signals.h"
 
@@ -49,6 +50,14 @@ void LogPowerMLModelDimResult(FinalResult result) {
 
 void LogPowerMLModelNoDimResult(FinalResult result) {
   UMA_HISTOGRAM_ENUMERATION("PowerML.ModelNoDim.Result", result);
+}
+
+void LogPowerMLSmartDimModelRequestCancel(base::TimeDelta time) {
+  UMA_HISTOGRAM_TIMES("PowerML.SmartDimModel.RequestCanceledDuration", time);
+}
+
+void LogPowerMLSmartDimModelRequestComplete(base::TimeDelta time) {
+  UMA_HISTOGRAM_TIMES("PowerML.SmartDimModel.RequestCompleteDuration", time);
 }
 
 void LogMetricsToUMA(const UserActivityEvent& event) {
@@ -148,11 +157,13 @@ void UserActivityManager::OnUserActivity(const ui::Event* /* event */) {
 void UserActivityManager::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
     const base::TimeTicks& /* timestamp */) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   lid_state_ = state;
 }
 
 void UserActivityManager::PowerChanged(
     const power_manager::PowerSupplyProperties& proto) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (external_power_.has_value()) {
     bool power_source_changed = (*external_power_ != proto.external_power());
 
@@ -172,11 +183,13 @@ void UserActivityManager::PowerChanged(
 void UserActivityManager::TabletModeEventReceived(
     chromeos::PowerManagerClient::TabletMode mode,
     const base::TimeTicks& /* timestamp */) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   tablet_mode_ = mode;
 }
 
 void UserActivityManager::ScreenIdleStateChanged(
     const power_manager::ScreenIdleState& proto) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!screen_dimmed_ && proto.dimmed()) {
     screen_dim_occurred_ = true;
   }
@@ -215,6 +228,7 @@ void UserActivityManager::SuspendImminent(
 
 void UserActivityManager::InactivityDelaysChanged(
     const power_manager::PowerManagementPolicy::Delays& delays) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnReceiveInactivityDelays(delays);
 }
 
@@ -225,11 +239,16 @@ void UserActivityManager::OnVideoActivityStarted() {
 
 void UserActivityManager::OnIdleEventObserved(
     const IdleEventNotifier::ActivityData& activity_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::TimeDelta now = boot_clock_->GetTimeSinceBoot();
   if (waiting_for_final_action_) {
-    // ScreenDimImminent is received again after an earlier ScreenDimImminent
-    // event without any user action/suspend in between.
-    PopulatePreviousEventData(now);
+    if (waiting_for_model_decision_) {
+      CancelDimDecisionRequest();
+    } else {
+      // ScreenDimImminent is received again after an earlier ScreenDimImminent
+      // event without any user action/suspend in between.
+      PopulatePreviousEventData(now);
+    }
   }
 
   idle_event_start_since_boot_ = now;
@@ -251,33 +270,44 @@ void UserActivityManager::OnIdleEventObserved(
   if (smart_dim_enabled &&
       base::FeatureList::IsEnabled(features::kUserActivityPrediction) &&
       smart_dim_model_) {
-    // Decide whether to defer the imminent screen dim.
-    UserActivityEvent::ModelPrediction model_prediction =
-        smart_dim_model_->ShouldDim(features_);
-
-    // Only defer the dim if the model predicts so and also if the dim was not
-    // previously deferred.
-    if (model_prediction.response() ==
-            UserActivityEvent::ModelPrediction::NO_DIM &&
-        !dim_deferred_) {
-      power_manager_client_->DeferScreenDim();
-      dim_deferred_ = true;
-      model_prediction.set_model_applied(true);
-    } else {
-      // Either model predicts dim or model fails, or it was previously dimmed.
-      dim_deferred_ = false;
-      model_prediction.set_model_applied(
-          model_prediction.response() ==
-              UserActivityEvent::ModelPrediction::DIM &&
-          !dim_deferred_);
-    }
-    model_prediction_ = model_prediction;
+    waiting_for_model_decision_ = true;
+    time_dim_decision_requested_ = base::TimeTicks::Now();
+    smart_dim_model_->RequestDimDecision(
+        features_, base::Bind(&UserActivityManager::ApplyDimDecision,
+                              weak_ptr_factory_.GetWeakPtr()));
   }
   waiting_for_final_action_ = true;
 }
 
+void UserActivityManager::ApplyDimDecision(
+    UserActivityEvent::ModelPrediction prediction) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  waiting_for_model_decision_ = false;
+  const base::TimeDelta wait_time =
+      base::TimeTicks::Now() - time_dim_decision_requested_;
+  LogPowerMLSmartDimModelRequestComplete(wait_time);
+  time_dim_decision_requested_ = base::TimeTicks();
+  // Only defer the dim if the model predicts so and also if the dim was not
+  // previously deferred.
+  if (prediction.response() == UserActivityEvent::ModelPrediction::NO_DIM &&
+      !dim_deferred_) {
+    power_manager_client_->DeferScreenDim();
+    dim_deferred_ = true;
+    prediction.set_model_applied(true);
+  } else {
+    // Either model predicts dim or model fails, or it was previously dimmed.
+    dim_deferred_ = false;
+    prediction.set_model_applied(prediction.response() ==
+                                     UserActivityEvent::ModelPrediction::DIM &&
+                                 !dim_deferred_);
+  }
+
+  model_prediction_ = prediction;
+}
+
 void UserActivityManager::OnSessionStateChanged() {
   DCHECK(session_manager_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const bool was_locked = screen_is_locked_;
   screen_is_locked_ = session_manager_->IsScreenLocked();
   if (!was_locked && screen_is_locked_) {
@@ -287,6 +317,7 @@ void UserActivityManager::OnSessionStateChanged() {
 
 void UserActivityManager::OnReceiveSwitchStates(
     base::Optional<chromeos::PowerManagerClient::SwitchStates> switch_states) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (switch_states.has_value()) {
     lid_state_ = switch_states->lid_state;
     tablet_mode_ = switch_states->tablet_mode;
@@ -462,8 +493,14 @@ TabProperty UserActivityManager::UpdateOpenTabURL() {
 void UserActivityManager::MaybeLogEvent(
     UserActivityEvent::Event::Type type,
     UserActivityEvent::Event::Reason reason) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!waiting_for_final_action_)
     return;
+
+  if (waiting_for_model_decision_) {
+    CancelDimDecisionRequest();
+    return;
+  }
   UserActivityEvent activity_event;
 
   UserActivityEvent::Event* event = activity_event.mutable_event();
@@ -568,6 +605,16 @@ void UserActivityManager::ResetAfterLogging() {
   model_prediction_ = base::nullopt;
 
   previous_idle_event_data_.reset();
+}
+
+void UserActivityManager::CancelDimDecisionRequest() {
+  LOG(WARNING) << "Cancelling pending Smart Dim decision request.";
+  smart_dim_model_->CancelPreviousRequest();
+  waiting_for_model_decision_ = false;
+  const base::TimeDelta wait_time =
+      base::TimeTicks::Now() - time_dim_decision_requested_;
+  LogPowerMLSmartDimModelRequestCancel(wait_time);
+  time_dim_decision_requested_ = base::TimeTicks();
 }
 
 }  // namespace ml

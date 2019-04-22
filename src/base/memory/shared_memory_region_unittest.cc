@@ -50,7 +50,7 @@ typedef ::testing::Types<WritableSharedMemoryRegion,
                          UnsafeSharedMemoryRegion,
                          ReadOnlySharedMemoryRegion>
     AllRegionTypes;
-TYPED_TEST_CASE(SharedMemoryRegionTest, AllRegionTypes);
+TYPED_TEST_SUITE(SharedMemoryRegionTest, AllRegionTypes);
 
 TYPED_TEST(SharedMemoryRegionTest, NonValidRegion) {
   TypeParam region;
@@ -213,7 +213,7 @@ class DuplicatableSharedMemoryRegionTest
 
 typedef ::testing::Types<UnsafeSharedMemoryRegion, ReadOnlySharedMemoryRegion>
     DuplicatableRegionTypes;
-TYPED_TEST_CASE(DuplicatableSharedMemoryRegionTest, DuplicatableRegionTypes);
+TYPED_TEST_SUITE(DuplicatableSharedMemoryRegionTest, DuplicatableRegionTypes);
 
 TYPED_TEST(DuplicatableSharedMemoryRegionTest, Duplicate) {
   TypeParam dup_region = this->region_.Duplicate();

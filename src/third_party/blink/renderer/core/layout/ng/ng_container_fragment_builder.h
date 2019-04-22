@@ -31,8 +31,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
-  typedef Vector<scoped_refptr<const NGPhysicalFragment>, 16> ChildrenVector;
-  typedef Vector<NGLogicalOffset, 16> OffsetVector;
+  typedef Vector<scoped_refptr<const NGPhysicalFragment>, 4> ChildrenVector;
+  typedef Vector<NGLogicalOffset, 4> OffsetVector;
 
   LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
   NGContainerFragmentBuilder& SetBfcLineOffset(LayoutUnit bfc_line_offset) {
@@ -86,6 +86,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   const ChildrenVector& Children() const { return children_; }
 
+  // Returns offset for given child. DCHECK if child not found.
+  // Warning: Do not call unless necessary.
+  NGLogicalOffset GetChildOffset(const LayoutObject* child) const;
+
   // Builder has non-trivial out-of-flow descendant methods.
   // These methods are building blocks for implementation of
   // out-of-flow descendants by layout algorithms.
@@ -116,14 +120,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // Pass in direction if candidates direction does not match.
   NGContainerFragmentBuilder& AddOutOfFlowChildCandidate(
       NGBlockNode,
-      const NGLogicalOffset& child_offset);
-
-  // Inline candidates are laid out line-relative, not fragment-relative.
-  NGContainerFragmentBuilder& AddInlineOutOfFlowChildCandidate(
-      NGBlockNode,
-      const NGLogicalOffset& child_line_offset,
-      TextDirection line_direction,
-      LayoutObject* inline_container);
+      const NGLogicalOffset& child_offset,
+      base::Optional<TextDirection> container_direction = base::nullopt);
 
   NGContainerFragmentBuilder& AddOutOfFlowDescendant(
       NGOutOfFlowPositionedDescendant descendant);
@@ -143,13 +141,18 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // position OOF candidates yet, (as a containing box may be split over
   // multiple lines), instead we bubble all the descendants up to the parent
   // block layout algorithm, to perform the final OOF layout and positioning.
-  void MoveOutOfFlowDescendantCandidatesToDescendants();
+  void MoveOutOfFlowDescendantCandidatesToDescendants() {
+    GetAndClearOutOfFlowDescendantCandidates(&oof_positioned_descendants_,
+                                             nullptr);
+  }
 
   NGContainerFragmentBuilder& SetIsPushedByFloats() {
     is_pushed_by_floats_ = true;
     return *this;
   }
   bool IsPushedByFloats() const { return is_pushed_by_floats_; }
+
+  bool HasFloatingDescendants() const { return has_floating_descendants_; }
 
   NGContainerFragmentBuilder& ResetAdjoiningFloatTypes() {
     adjoining_floats_ = kFloatTypeNone;
@@ -161,11 +164,21 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   }
   NGFloatTypes AdjoiningFloatTypes() const { return adjoining_floats_; }
 
+  NGContainerFragmentBuilder& SetHasBlockFragmentation() {
+    has_block_fragmentation_ = true;
+    return *this;
+  }
+
+  const NGConstraintSpace* ConstraintSpace() const { return space_; }
+
 #ifndef NDEBUG
   String ToString() const;
 #endif
 
  protected:
+  friend class NGPhysicalContainerFragment;
+  friend class NGLayoutResult;
+
   // An out-of-flow positioned-candidate is a temporary data structure used
   // within the NGBoxFragmentBuilder.
   //
@@ -184,30 +197,23 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   struct NGOutOfFlowPositionedCandidate {
     NGOutOfFlowPositionedDescendant descendant;
     NGLogicalOffset child_offset;  // Logical offset of child's top left vertex.
-    bool is_line_relative;  // True if offset is relative to line, not fragment.
-    TextDirection line_direction;
 
-    NGOutOfFlowPositionedCandidate(
-        NGOutOfFlowPositionedDescendant descendant_arg,
-        NGLogicalOffset child_offset_arg)
-        : descendant(descendant_arg),
-          child_offset(child_offset_arg),
-          is_line_relative(false) {}
-
-    NGOutOfFlowPositionedCandidate(
-        NGOutOfFlowPositionedDescendant descendant_arg,
-        NGLogicalOffset child_offset_arg,
-        TextDirection line_direction_arg)
-        : descendant(descendant_arg),
-          child_offset(child_offset_arg),
-          is_line_relative(true),
-          line_direction(line_direction_arg) {}
+    NGOutOfFlowPositionedCandidate(NGOutOfFlowPositionedDescendant descendant,
+                                   NGLogicalOffset child_offset)
+        : descendant(descendant), child_offset(child_offset) {}
   };
 
-  NGContainerFragmentBuilder(scoped_refptr<const ComputedStyle> style,
+  NGContainerFragmentBuilder(NGLayoutInputNode node,
+                             scoped_refptr<const ComputedStyle> style,
+                             const NGConstraintSpace* space,
                              WritingMode writing_mode,
                              TextDirection direction)
-      : NGFragmentBuilder(std::move(style), writing_mode, direction) {}
+      : NGFragmentBuilder(std::move(style), writing_mode, direction),
+        node_(node),
+        space_(space) {}
+
+  NGLayoutInputNode node_;
+  const NGConstraintSpace* space_;
 
   LayoutUnit bfc_line_offset_;
   base::Optional<LayoutUnit> bfc_block_offset_;
@@ -233,13 +239,15 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;
 
-  bool has_last_resort_break_ = false;
-
   bool is_pushed_by_floats_ = false;
+  bool is_old_layout_root_ = false;
 
+  bool has_last_resort_break_ = false;
+  bool has_floating_descendants_ = false;
   bool has_orthogonal_flow_roots_ = false;
-
-  friend class NGPhysicalContainerFragment;
+  bool has_child_that_depends_on_percentage_block_size_ = false;
+  bool has_block_fragmentation_ = false;
+  bool may_have_descendant_above_block_start_ = false;
 };
 
 }  // namespace blink

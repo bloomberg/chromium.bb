@@ -64,12 +64,4 @@ std::string GetCertTitle(CERTCertificate* cert) {
   return rv;
 }
 
-std::string GetCertTokenName(CERTCertificate* cert) {
-  std::string token;
-  if (cert->slot) {
-    token = PK11_GetTokenName(cert->slot);
-  }
-  return token;
-}
-
 }  // namespace mozilla_security_manager

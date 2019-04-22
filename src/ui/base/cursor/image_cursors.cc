@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
@@ -111,7 +111,7 @@ void ImageCursors::ReloadCursors() {
 
   cursor_loader_->UnloadAll();
 
-  for (size_t i = 0; i < arraysize(kImageCursorIds); ++i) {
+  for (size_t i = 0; i < base::size(kImageCursorIds); ++i) {
     int resource_id = -1;
     gfx::Point hot_point;
     bool success =
@@ -120,7 +120,7 @@ void ImageCursors::ReloadCursors() {
     DCHECK(success);
     cursor_loader_->LoadImageCursor(kImageCursorIds[i], resource_id, hot_point);
   }
-  for (size_t i = 0; i < arraysize(kAnimatedCursorIds); ++i) {
+  for (size_t i = 0; i < base::size(kAnimatedCursorIds); ++i) {
     int resource_id = -1;
     gfx::Point hot_point;
     bool success =

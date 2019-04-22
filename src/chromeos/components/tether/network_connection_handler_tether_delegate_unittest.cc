@@ -78,12 +78,6 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
       const base::Closure& success_callback,
       const network_handler::ErrorCallback& error_callback) override {}
 
-  bool HasConnectingNetwork(const std::string& service_path) override {
-    return false;
-  }
-
-  bool HasPendingConnectRequest() override { return false; }
-
   void Init(NetworkStateHandler* network_state_handler,
             NetworkConfigurationHandler* network_configuration_handler,
             ManagedNetworkConfigurationHandler*

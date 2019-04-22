@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
@@ -68,7 +68,7 @@ void BuildWebCryptoRSAAlgorithmDictionary(const PublicKeyInfo& key_info,
       "publicExponent",
       base::Value::CreateWithCopiedBuffer(
           reinterpret_cast<const char*>(defaultPublicExponent),
-          arraysize(defaultPublicExponent)));
+          base::size(defaultPublicExponent)));
 }
 
 const struct NameValuePair {
@@ -389,7 +389,7 @@ void PlatformKeysVerifyTLSServerCertificateFunction::FinishedVerification(
   if (net::IsCertificateError(verify_result)) {
     // Only report errors, not internal informational statuses.
     const int masked_cert_status = cert_status & net::CERT_STATUS_ALL_ERRORS;
-    for (size_t i = 0; i < arraysize(kCertStatusErrors); ++i) {
+    for (size_t i = 0; i < base::size(kCertStatusErrors); ++i) {
       if ((masked_cert_status & kCertStatusErrors[i].value) ==
           kCertStatusErrors[i].value) {
         result.debug_errors.push_back(kCertStatusErrors[i].name);

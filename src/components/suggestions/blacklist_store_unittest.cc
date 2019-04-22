@@ -43,8 +43,6 @@ void ValidateSuggestions(const SuggestionsProfile& expected,
     EXPECT_EQ(expected.suggestions(i).title(), actual.suggestions(i).title());
     EXPECT_EQ(expected.suggestions(i).favicon_url(),
               actual.suggestions(i).favicon_url());
-    EXPECT_EQ(expected.suggestions(i).thumbnail(),
-              actual.suggestions(i).thumbnail());
   }
 }
 

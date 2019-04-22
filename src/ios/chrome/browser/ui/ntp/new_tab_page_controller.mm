@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
@@ -34,7 +35,6 @@ using base::UserMetricsAction;
 
 @interface NewTabPageController () {
   ios::ChromeBrowserState* _browserState;  // weak.
-  __weak id<UrlLoader> _loader;
   IncognitoViewController* _incognitoController;
   // The currently visible controller, one of the above.
   __weak id<CRWNativeContent> _currentController;
@@ -64,8 +64,7 @@ using base::UserMetricsAction;
                               BrowserCommands,
                               OmniboxFocuser,
                               FakeboxFocuser,
-                              SnackbarCommands,
-                              UrlLoader>
+                              SnackbarCommands>
     dispatcher;
 
 // Coordinator for the ContentSuggestions.
@@ -88,7 +87,6 @@ using base::UserMetricsAction;
 @synthesize headerController = _headerController;
 
 - (id)initWithUrl:(const GURL&)url
-                  loader:(id<UrlLoader>)loader
                  focuser:(id<OmniboxFocuser>)focuser
             browserState:(ios::ChromeBrowserState*)browserState
          toolbarDelegate:(id<NewTabPageControllerDelegate>)toolbarDelegate
@@ -98,14 +96,12 @@ using base::UserMetricsAction;
                              BrowserCommands,
                              OmniboxFocuser,
                              FakeboxFocuser,
-                             SnackbarCommands,
-                             UrlLoader>)dispatcher
+                             SnackbarCommands>)dispatcher
            safeAreaInset:(UIEdgeInsets)safeAreaInset {
   self = [super initWithNibName:nil url:url];
   if (self) {
     DCHECK(browserState);
     _browserState = browserState;
-    _loader = loader;
     _parentViewController = parentViewController;
     _dispatcher = dispatcher;
     _focuser = focuser;
@@ -116,17 +112,18 @@ using base::UserMetricsAction;
     _view = [[UIView alloc] initWithFrame:CGRectZero];
 
     bool isIncognito = _browserState->IsOffTheRecord();
+    UrlLoadingService* urlLoadingService =
+        UrlLoadingServiceFactory::GetForBrowserState(_browserState);
 
     UIViewController* panelController = nil;
     if (isIncognito) {
-      _incognitoController =
-          [[IncognitoViewController alloc] initWithLoader:_loader];
+      _incognitoController = [[IncognitoViewController alloc]
+          initWithUrlLoadingService:urlLoadingService];
       panelController = _incognitoController;
       _currentController = self.incognitoController;
     } else {
       self.contentSuggestionsCoordinator = [
           [ContentSuggestionsCoordinator alloc] initWithBaseViewController:nil];
-      self.contentSuggestionsCoordinator.URLLoader = _loader;
       self.contentSuggestionsCoordinator.browserState = _browserState;
       self.contentSuggestionsCoordinator.dispatcher = self.dispatcher;
       self.contentSuggestionsCoordinator.webStateList =
@@ -233,8 +230,8 @@ using base::UserMetricsAction;
   [_currentController willUpdateSnapshot];
 }
 
-- (CGPoint)scrollOffset {
-  return [_currentController scrollOffset];
+- (CGPoint)contentOffset {
+  return [_currentController contentOffset];
 }
 
 #pragma mark - LogoAnimationControllerOwnerOwner

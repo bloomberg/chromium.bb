@@ -127,3 +127,8 @@ To upload the change for review, use 'repo start' to start making changes
 in this package, then commit the change to git, ensuring that you're
 changing both the ebuild and manifest file and adding appropriate BUG=
 and TEST= lines, then use 'repo upload' to upload the change for review.
+
+## Running on Chrome OS on Desktop Linux
+
+See [Chromevox on Desktop Linux](chromevox_on_desktop_linux.md#speech) for more
+how to use eSpeak's speech engine on Chrome OS emulated on desktop Linux.

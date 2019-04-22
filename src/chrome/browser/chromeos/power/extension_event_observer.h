@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -124,7 +124,7 @@ class ExtensionEventObserver : public content::NotificationObserver,
   bool should_delay_suspend_;
   bool suspend_is_pending_;
   int suspend_keepalive_count_;
-  base::Closure power_manager_callback_;
+  base::OnceClosure power_manager_callback_;
   base::CancelableClosure suspend_readiness_callback_;
 
   content::NotificationRegistrar registrar_;

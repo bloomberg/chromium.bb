@@ -80,6 +80,29 @@ test_subset_glyf (void)
 }
 
 static void
+test_subset_glyf_with_input_glyphs (void)
+{
+  hb_face_t *face_abc = hb_test_open_font_file ("fonts/Roboto-Regular.abc.ttf");
+  hb_face_t *face_ac = hb_test_open_font_file ("fonts/Roboto-Regular.ac.ttf");
+
+  hb_set_t *glyphs = hb_set_create();
+  hb_face_t *face_abc_subset;
+  hb_set_add (glyphs, 1);
+  hb_set_add (glyphs, 3);
+  face_abc_subset =
+      hb_subset_test_create_subset (face_abc, hb_subset_test_create_input_from_glyphs (glyphs));
+  hb_set_destroy (glyphs);
+
+  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('g','l','y','f'));
+  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('l','o','c', 'a'));
+  check_maxp_num_glyphs(face_abc_subset, 3, true);
+
+  hb_face_destroy (face_abc_subset);
+  hb_face_destroy (face_abc);
+  hb_face_destroy (face_ac);
+}
+
+static void
 test_subset_glyf_with_components (void)
 {
   hb_face_t *face_components = hb_test_open_font_file ("fonts/Roboto-Regular.components.ttf");
@@ -257,6 +280,31 @@ test_subset_glyf_strip_hints_invalid (void)
   hb_face_destroy (face);
 }
 
+static void
+test_subset_glyf_retain_gids (void)
+{
+  hb_face_t *face_abc = hb_test_open_font_file ("fonts/Roboto-Regular.abc.ttf");
+  hb_face_t *face_ac = hb_test_open_font_file ("fonts/Roboto-Regular.ac.retaingids.ttf");
+
+  hb_set_t *codepoints = hb_set_create();
+  hb_face_t *face_abc_subset;
+  hb_set_add (codepoints, 97);
+  hb_set_add (codepoints, 99);
+
+  hb_subset_input_t *input = hb_subset_test_create_input (codepoints);
+  hb_subset_input_set_retain_gids (input, true);
+  face_abc_subset = hb_subset_test_create_subset (face_abc, input);
+  hb_set_destroy (codepoints);
+
+  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('g','l','y','f'));
+  hb_subset_test_check (face_ac, face_abc_subset, HB_TAG ('l','o','c', 'a'));
+  check_maxp_num_glyphs(face_abc_subset, 4, true);
+
+  hb_face_destroy (face_abc_subset);
+  hb_face_destroy (face_abc);
+  hb_face_destroy (face_ac);
+}
+
 // TODO(grieger): test for long loca generation.
 
 int
@@ -266,12 +314,14 @@ main (int argc, char **argv)
 
   hb_test_add (test_subset_glyf_noop);
   hb_test_add (test_subset_glyf);
+  hb_test_add (test_subset_glyf_with_input_glyphs);
   hb_test_add (test_subset_glyf_strip_hints_simple);
   hb_test_add (test_subset_glyf_strip_hints_composite);
   hb_test_add (test_subset_glyf_strip_hints_invalid);
   hb_test_add (test_subset_glyf_with_components);
   hb_test_add (test_subset_glyf_with_gsub);
   hb_test_add (test_subset_glyf_without_gsub);
+  hb_test_add (test_subset_glyf_retain_gids);
 
   return hb_test_run();
 }

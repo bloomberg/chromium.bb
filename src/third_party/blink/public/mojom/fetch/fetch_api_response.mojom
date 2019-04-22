@@ -26,7 +26,7 @@ struct FetchAPIResponse {
   // Status code as number, e.g.: 200, 404.
   // Zero status code indicates an error happened and the request was not
   // handled.
-  int32 status_code = 0;
+  uint16 status_code = 0;
 
   // Status code as text. e.g.: "OK", "Not Found".
   string status_text;
@@ -35,6 +35,10 @@ struct FetchAPIResponse {
   // https://fetch.spec.whatwg.org/#concept-response-type
   network.mojom.FetchResponseType response_type =
     network.mojom.FetchResponseType.kOpaque;
+
+  // The source of this response, e.g. network, CacheStorage.
+  network.mojom.FetchResponseSource response_source =
+    network.mojom.FetchResponseSource.kUnspecified;
 
   // The response headers. It's case insensitive for header name as key.
   map<string, string> headers;
@@ -56,9 +60,6 @@ struct FetchAPIResponse {
   // In case this is a CORS response fetched by a ServiceWorker, this is the
   // set of headers that should be exposed.
   array<string> cors_exposed_header_names;
-
-  // True when the response was retrieved from Cache Storage.
-  bool is_in_cache_storage;
 
   // Side data is used to pass the metadata of the response (eg. V8 code cache).
   SerializedBlob? side_data_blob;

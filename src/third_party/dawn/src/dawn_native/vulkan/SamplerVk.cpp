@@ -16,6 +16,7 @@
 
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
+#include "dawn_native/vulkan/UtilsVulkan.h"
 
 namespace dawn_native { namespace vulkan {
 
@@ -58,7 +59,7 @@ namespace dawn_native { namespace vulkan {
 
     Sampler::Sampler(Device* device, const SamplerDescriptor* descriptor)
         : SamplerBase(device, descriptor), mDevice(device) {
-        VkSamplerCreateInfo createInfo;
+        VkSamplerCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
@@ -71,11 +72,10 @@ namespace dawn_native { namespace vulkan {
         createInfo.mipLodBias = 0.0f;
         createInfo.anisotropyEnable = VK_FALSE;
         createInfo.maxAnisotropy = 1.0f;
-        createInfo.compareEnable = VK_FALSE;
-        createInfo.compareOp = VK_COMPARE_OP_NEVER;
-        createInfo.minLod = 0.0f;
-        createInfo.maxLod = 1000.0f;
-        createInfo.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+        createInfo.compareOp = ToVulkanCompareOp(descriptor->compareFunction);
+        createInfo.compareEnable = createInfo.compareOp == VK_COMPARE_OP_NEVER ? VK_FALSE : VK_TRUE;
+        createInfo.minLod = descriptor->lodMinClamp;
+        createInfo.maxLod = descriptor->lodMaxClamp;
         createInfo.unnormalizedCoordinates = VK_FALSE;
 
         if (device->fn.CreateSampler(device->GetVkDevice(), &createInfo, nullptr, &mHandle) !=

@@ -170,8 +170,6 @@ class InputMethodPrivateShowInputViewFunction
   ResponseAction Run() override;
 
  private:
-  void OnGetIsEnabled(bool enabled);
-
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.showInputView",
                              INPUTMETHODPRIVATE_SHOWINPUTVIEW)
   DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateShowInputViewFunction);

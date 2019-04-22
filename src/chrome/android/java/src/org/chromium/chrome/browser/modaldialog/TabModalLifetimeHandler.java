@@ -7,13 +7,15 @@ package org.chromium.chrome.browser.modaldialog;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager.ModalDialogType;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 
 /**
  * Class responsible for handling dismissal of a tab modal dialog on user actions outside the tab
@@ -87,7 +89,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
         TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
         mTabModelObserver = new TabModelSelectorTabModelObserver(tabModelSelector) {
             @Override
-            public void didSelectTab(Tab tab, @TabModel.TabSelectionType int type, int lastId) {
+            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
                 handleTabChanged(tab);
             }
         };
@@ -111,6 +113,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
     @Override
     public void destroy() {
         if (mTabModelObserver != null) mTabModelObserver.destroy();
+        if (mPresenter != null) mPresenter.destroy();
     }
 
     /** Update whether the {@link ModalDialogManager} should suspend tab modal dialogs. */

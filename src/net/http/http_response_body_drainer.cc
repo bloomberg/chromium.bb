@@ -4,6 +4,7 @@
 
 #include "net/http/http_response_body_drainer.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -21,7 +22,7 @@ HttpResponseBodyDrainer::HttpResponseBodyDrainer(HttpStream* stream)
     : stream_(stream),
       next_state_(STATE_NONE),
       total_read_(0),
-      session_(NULL) {}
+      session_(nullptr) {}
 
 HttpResponseBodyDrainer::~HttpResponseBodyDrainer() = default;
 

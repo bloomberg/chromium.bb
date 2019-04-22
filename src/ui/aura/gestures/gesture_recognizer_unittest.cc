@@ -41,8 +41,8 @@ namespace test {
 namespace {
 
 std::string WindowIDAsString(ui::GestureConsumer* consumer) {
-  return consumer ?
-      base::IntToString(static_cast<Window*>(consumer)->id()) : "?";
+  return consumer ? base::NumberToString(static_cast<Window*>(consumer)->id())
+                  : "?";
 }
 
 #define EXPECT_0_EVENTS(events) \
@@ -146,7 +146,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     flags_ = 0;
   }
 
-  const std::vector<ui::EventType>& events() const { return events_; };
+  const std::vector<ui::EventType>& events() const { return events_; }
 
   bool tap() const { return tap_; }
   bool tap_down() const { return tap_down_; }

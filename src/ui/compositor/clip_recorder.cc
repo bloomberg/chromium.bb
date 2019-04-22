@@ -6,11 +6,11 @@
 
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 
 namespace ui {
@@ -38,7 +38,7 @@ void ClipRecorder::ClipRect(const gfx::Rect& clip_rect) {
   ++num_closers_;
 }
 
-void ClipRecorder::ClipPath(const gfx::Path& clip_path) {
+void ClipRecorder::ClipPath(const SkPath& clip_path) {
   bool antialias = false;
 
   context_.list_->StartPaint();
@@ -49,7 +49,7 @@ void ClipRecorder::ClipPath(const gfx::Path& clip_path) {
   ++num_closers_;
 }
 
-void ClipRecorder::ClipPathWithAntiAliasing(const gfx::Path& clip_path) {
+void ClipRecorder::ClipPathWithAntiAliasing(const SkPath& clip_path) {
   bool antialias = true;
 
   context_.list_->StartPaint();

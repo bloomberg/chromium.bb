@@ -20,9 +20,35 @@ from grit import util
 # Matches exactly three dots ending a line or followed by whitespace.
 _ELLIPSIS_PATTERN = lazy_re.compile(r'(?<!\.)\.\.\.(?=$|\s)')
 _ELLIPSIS_SYMBOL = u'\u2026'  # Ellipsis
+
 # Finds whitespace at the start and end of a string which can be multiline.
-_WHITESPACE = lazy_re.compile('(?P<start>\s*)(?P<body>.+?)(?P<end>\s*)\Z',
+_WHITESPACE = lazy_re.compile(r'(?P<start>\s*)(?P<body>.+?)(?P<end>\s*)\Z',
                               re.DOTALL | re.MULTILINE)
+
+# <ph> placeholder elements should contain the special character formatters
+# used to format <ph> element content.
+# Android format.
+_ANDROID_FORMAT = (r'%[1-9]+\$'
+                   r'([-#+ 0,(]*)([0-9]+)?(\.[0-9]+)?'
+                   r'([bBhHsScCdoxXeEfgGaAtT%n])')
+# Chrome l10n format.
+_CHROME_FORMAT = r'\$+\d'
+# Windows EWT numeric and GRIT %s %d formats.
+_OTHER_FORMAT = r'%[0-9sd]'
+
+# Finds formatters that must be in a placeholder (<ph>) element.
+_FORMATTERS = lazy_re.compile(
+    '(%s)|(%s)|(%s)' % (_ANDROID_FORMAT, _CHROME_FORMAT, _OTHER_FORMAT))
+_BAD_PLACEHOLDER_MSG = ('ERROR: Placeholder formatter found outside of <ph> '
+                        'tag in message "%s" in %s.')
+_INVALID_PH_CHAR_MSG = ('ERROR: Invalid format characters found in message '
+                        '"%s" <ph> tag in %s.')
+
+# Finds HTML tag tokens.
+_HTMLTOKEN = lazy_re.compile(r'<[/]?[a-z][a-z0-9]*[^>]*>', re.I)
+
+# Finds HTML entities.
+_HTMLENTITY = lazy_re.compile(r'&[^\s]*;')
 
 
 class MessageNode(base.ContentNode):
@@ -95,12 +121,14 @@ class MessageNode(base.ContentNode):
 
   def HandleAttribute(self, attrib, value):
     base.ContentNode.HandleAttribute(self, attrib, value)
-    if attrib == 'formatter_data':
-      # Parse value, a space-separated list of defines, into a dict.
-      # Example: "foo=5 bar" -> {'foo':'5', 'bar':''}
-      for item in value.split():
-        name, sep, val = item.partition('=')
-        self.formatter_data[name] = val
+    if attrib != 'formatter_data':
+      return
+
+    # Parse value, a space-separated list of defines, into a dict.
+    # Example: "foo=5 bar" -> {'foo':'5', 'bar':''}
+    for item in value.split():
+      name, _, val = item.partition('=')
+      self.formatter_data[name] = val
 
   def GetTextualIds(self):
     '''
@@ -108,19 +136,19 @@ class MessageNode(base.ContentNode):
     this node's offset if it has one, otherwise just call the
     superclass' implementation
     '''
-    if 'offset' in self.attrs:
-      # we search for the first grouping node in the parents' list
-      # to take care of the case where the first parent is an <if> node
-      grouping_parent = self.parent
-      import grit.node.empty
-      while grouping_parent and not isinstance(grouping_parent,
-                                               grit.node.empty.GroupingNode):
-        grouping_parent = grouping_parent.parent
-
-      assert 'first_id' in grouping_parent.attrs
-      return [grouping_parent.attrs['first_id'] + '_' + self.attrs['offset']]
-    else:
+    if 'offset' not in self.attrs:
       return super(MessageNode, self).GetTextualIds()
+
+    # we search for the first grouping node in the parents' list
+    # to take care of the case where the first parent is an <if> node
+    grouping_parent = self.parent
+    import grit.node.empty
+    while grouping_parent and not isinstance(grouping_parent,
+                                             grit.node.empty.GroupingNode):
+      grouping_parent = grouping_parent.parent
+
+    assert 'first_id' in grouping_parent.attrs
+    return [grouping_parent.attrs['first_id'] + '_' + self.attrs['offset']]
 
   def IsTranslateable(self):
     return self.attrs['translateable'] == 'true'
@@ -129,21 +157,51 @@ class MessageNode(base.ContentNode):
     super(MessageNode, self).EndParsing()
 
     # Make the text (including placeholder references) and list of placeholders,
-    # then strip and store leading and trailing whitespace and create the
-    # tclib.Message() and a clique to contain it.
+    # verify placeholder formats, then strip and store leading and trailing
+    # whitespace and create the tclib.Message() and a clique to contain it.
 
     text = ''
     placeholders = []
+
     for item in self.mixed_content:
       if isinstance(item, types.StringTypes):
+        # Not a <ph> element: fail if any <ph> formatters are detected.
+        if _FORMATTERS.search(item):
+          print _BAD_PLACEHOLDER_MSG % (item, self.source)
+          raise exception.PlaceholderNotInsidePhNode
         text += item
       else:
+        # Extract the <ph> element components.
         presentation = item.attrs['name'].upper()
         text += presentation
-        ex = ' '
+        ex = ' '  # <ex> example element cdata if present.
         if len(item.children):
           ex = item.children[0].GetCdata()
         original = item.GetCdata()
+
+        # Sanity check the <ph> element content.
+        cdata = original
+        # Replace all HTML tag tokens in cdata.
+        match = _HTMLTOKEN.search(cdata)
+        while match:
+          cdata = cdata.replace(match.group(0), '_')
+          match = _HTMLTOKEN.search(cdata)
+        # Replace all HTML entities in cdata.
+        match = _HTMLENTITY.search(cdata)
+        while match:
+          cdata = cdata.replace(match.group(0), '_')
+          match = _HTMLENTITY.search(cdata)
+        # Remove first matching formatter from cdata.
+        match = _FORMATTERS.search(cdata)
+        if match:
+          cdata = cdata.replace(match.group(0), '')
+        # Fail if <ph> special chars remain in cdata.
+        if re.search(r'[%\$]', cdata):
+          message_id = self.attrs['name'] + ' ' + original;
+          print _INVALID_PH_CHAR_MSG % (message_id, self.source)
+          raise exception.InvalidCharactersInsidePhNode
+
+        # Otherwise, accept this <ph> placeholder.
         placeholders.append(tclib.Placeholder(presentation, original, ex))
 
     m = _WHITESPACE.match(text)
@@ -195,10 +253,7 @@ class MessageNode(base.ContentNode):
       self.InstallMessage(message)
 
   def GetCliques(self):
-    if self.clique:
-      return [self.clique]
-    else:
-      return []
+    return [self.clique] if self.clique else []
 
   def Translate(self, lang):
     '''Returns a translated version of this message.
@@ -213,10 +268,8 @@ class MessageNode(base.ContentNode):
     return msg.replace('[GRITLANGCODE]', lang)
 
   def NameOrOffset(self):
-    if 'name' in self.attrs:
-      return self.attrs['name']
-    else:
-      return self.attrs['offset']
+    key = 'name' if 'name' in self.attrs else 'offset'
+    return self.attrs[key]
 
   def ExpandVariables(self):
     '''We always expand variables on Messages.'''
@@ -274,6 +327,7 @@ class MessageNode(base.ContentNode):
 
     node.EndParsing()
     return node
+
 
 class PhNode(base.ContentNode):
   '''A <ph> element.'''

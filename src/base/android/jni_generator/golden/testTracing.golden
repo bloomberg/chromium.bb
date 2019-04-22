@@ -48,13 +48,13 @@ JNI_GENERATOR_EXPORT void Java_org_chromium_foo_Foo_nativeInstanceMethod(
   return native->InstanceMethod(env, base::android::JavaParamRef<jobject>(env, jcaller));
 }
 
-static void JNI_Foo_StaticMethod(JNIEnv* env, const base::android::JavaParamRef<jclass>& jcaller);
+static void JNI_Foo_StaticMethod(JNIEnv* env);
 
 JNI_GENERATOR_EXPORT void Java_org_chromium_foo_Foo_nativeStaticMethod(
     JNIEnv* env,
     jclass jcaller) {
   TRACE_EVENT0("jni", "org::chromium_foo::JNI_Foo_StaticMethod");
-  return JNI_Foo_StaticMethod(env, base::android::JavaParamRef<jclass>(env, jcaller));
+  return JNI_Foo_StaticMethod(env);
 }
 
 

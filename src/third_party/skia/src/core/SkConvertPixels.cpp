@@ -132,6 +132,7 @@ static bool convert_to_alpha8(const SkImageInfo& dstInfo,       void* vdst, size
             return true;
         }
 
+        case kRGBA_F16Norm_SkColorType:
         case kRGBA_F16_SkColorType: {
             auto src64 = (const uint64_t*) src;
             for (int y = 0; y < srcInfo.height(); y++) {
@@ -172,19 +173,6 @@ static void convert_with_pipeline(const SkImageInfo& dstInfo, void* dstRow, size
     steps.apply(&pipeline, srcInfo.colorType());
 
     pipeline.append_gamut_clamp_if_normalized(dstInfo);
-
-    // We'll dither if we're decreasing precision below 32-bit.
-    float dither_rate = 0.0f;
-    if (srcInfo.bytesPerPixel() > dstInfo.bytesPerPixel()) {
-        switch (dstInfo.colorType()) {
-            case   kRGB_565_SkColorType: dither_rate = 1/63.0f; break;
-            case kARGB_4444_SkColorType: dither_rate = 1/15.0f; break;
-            default:                     dither_rate =    0.0f; break;
-        }
-    }
-    if (dither_rate > 0) {
-        pipeline.append(SkRasterPipeline::dither, &dither_rate);
-    }
 
     pipeline.append_store(dstInfo.colorType(), &dst);
     pipeline.run(0,0, srcInfo.width(), srcInfo.height());

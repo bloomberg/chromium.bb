@@ -73,7 +73,7 @@ void FakeRemoteChangeProcessor::ApplyRemoteChange(
   base::FilePath ancestor = storage::VirtualPath::DirName(url.path());
   while (true) {
     storage::FileSystemURL ancestor_url =
-        CreateSyncableFileSystemURL(url.origin(), ancestor);
+        CreateSyncableFileSystemURL(url.origin().GetURL(), ancestor);
     if (!ancestor_url.is_valid())
       break;
 

@@ -4,6 +4,8 @@
 
 #include "extensions/common/common_manifest_handlers.h"
 
+#include <memory>
+
 #include "components/nacl/common/buildflags.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_handler.h"
 #include "extensions/common/api/declarative/declarative_manifest_handler.h"
@@ -25,6 +27,7 @@
 #include "extensions/common/manifest_handlers/nacl_modules_handler.h"
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
+#include "extensions/common/manifest_handlers/replacement_web_app.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
@@ -39,38 +42,42 @@
 namespace extensions {
 
 void RegisterCommonManifestHandlers() {
+  // TODO(devlin): Pass in |registry| rather than Get()ing it.
+  ManifestHandlerRegistry* registry = ManifestHandlerRegistry::Get();
+
   DCHECK(!ManifestHandler::IsRegistrationFinalized());
 #if defined(OS_CHROMEOS)
-  (new ActionHandlersHandler)->Register();
+  registry->RegisterHandler(std::make_unique<ActionHandlersHandler>());
 #endif
-  (new BackgroundManifestHandler)->Register();
-  (new BluetoothManifestHandler)->Register();
-  (new ContentCapabilitiesHandler)->Register();
-  (new ContentScriptsHandler)->Register();
-  (new CSPHandler(false))->Register();
-  (new CSPHandler(true))->Register();
-  (new declarative_net_request::DNRManifestHandler)->Register();
-  (new DeclarativeManifestHandler)->Register();
-  (new DefaultLocaleHandler)->Register();
-  (new ExternallyConnectableHandler)->Register();
-  (new FileHandlersParser)->Register();
-  (new IconsHandler)->Register();
-  (new IncognitoHandler)->Register();
-  (new KioskModeHandler)->Register();
-  (new MimeTypesHandlerParser)->Register();
+  registry->RegisterHandler(std::make_unique<BackgroundManifestHandler>());
+  registry->RegisterHandler(std::make_unique<BluetoothManifestHandler>());
+  registry->RegisterHandler(std::make_unique<ContentCapabilitiesHandler>());
+  registry->RegisterHandler(std::make_unique<ContentScriptsHandler>());
+  registry->RegisterHandler(std::make_unique<CSPHandler>());
+  registry->RegisterHandler(
+      std::make_unique<declarative_net_request::DNRManifestHandler>());
+  registry->RegisterHandler(std::make_unique<DeclarativeManifestHandler>());
+  registry->RegisterHandler(std::make_unique<DefaultLocaleHandler>());
+  registry->RegisterHandler(std::make_unique<ExternallyConnectableHandler>());
+  registry->RegisterHandler(std::make_unique<FileHandlersParser>());
+  registry->RegisterHandler(std::make_unique<IconsHandler>());
+  registry->RegisterHandler(std::make_unique<IncognitoHandler>());
+  registry->RegisterHandler(std::make_unique<KioskModeHandler>());
+  registry->RegisterHandler(std::make_unique<MimeTypesHandlerParser>());
 #if BUILDFLAG(ENABLE_NACL)
-  (new NaClModulesHandler)->Register();
+  registry->RegisterHandler(std::make_unique<NaClModulesHandler>());
 #endif
-  (new OAuth2ManifestHandler)->Register();
-  (new OfflineEnabledHandler)->Register();
-  (new RequirementsHandler)->Register();
-  (new SandboxedPageHandler)->Register();
-  (new SharedModuleHandler)->Register();
-  (new SocketsManifestHandler)->Register();
-  (new UpdateURLHandler)->Register();
-  (new UsbPrinterManifestHandler)->Register();
-  (new WebAccessibleResourcesHandler)->Register();
-  (new WebviewHandler)->Register();
+  registry->RegisterHandler(std::make_unique<OAuth2ManifestHandler>());
+  registry->RegisterHandler(std::make_unique<OfflineEnabledHandler>());
+  registry->RegisterHandler(std::make_unique<ReplacementWebAppHandler>());
+  registry->RegisterHandler(std::make_unique<RequirementsHandler>());
+  registry->RegisterHandler(std::make_unique<SandboxedPageHandler>());
+  registry->RegisterHandler(std::make_unique<SharedModuleHandler>());
+  registry->RegisterHandler(std::make_unique<SocketsManifestHandler>());
+  registry->RegisterHandler(std::make_unique<UpdateURLHandler>());
+  registry->RegisterHandler(std::make_unique<UsbPrinterManifestHandler>());
+  registry->RegisterHandler(std::make_unique<WebAccessibleResourcesHandler>());
+  registry->RegisterHandler(std::make_unique<WebviewHandler>());
 }
 
 }  // namespace extensions

@@ -46,25 +46,23 @@ class AudioListener : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AudioListener* Create(BaseAudioContext& context) {
-    return new AudioListener(context);
-  }
+  explicit AudioListener(BaseAudioContext&);
   ~AudioListener() override;
 
   // Location of the listener
-  AudioParam* positionX() const { return position_x_; };
-  AudioParam* positionY() const { return position_y_; };
-  AudioParam* positionZ() const { return position_z_; };
+  AudioParam* positionX() const { return position_x_; }
+  AudioParam* positionY() const { return position_y_; }
+  AudioParam* positionZ() const { return position_z_; }
 
   // Forward direction vector of the listener
-  AudioParam* forwardX() const { return forward_x_; };
-  AudioParam* forwardY() const { return forward_y_; };
-  AudioParam* forwardZ() const { return forward_z_; };
+  AudioParam* forwardX() const { return forward_x_; }
+  AudioParam* forwardY() const { return forward_y_; }
+  AudioParam* forwardZ() const { return forward_z_; }
 
   // Up direction vector for the listener
-  AudioParam* upX() const { return up_x_; };
-  AudioParam* upY() const { return up_y_; };
-  AudioParam* upZ() const { return up_z_; };
+  AudioParam* upX() const { return up_x_; }
+  AudioParam* upY() const { return up_y_; }
+  AudioParam* upZ() const { return up_z_; }
 
   // True if any of AudioParams have automations.
   bool HasSampleAccurateValues() const;
@@ -131,8 +129,6 @@ class AudioListener : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  AudioListener(BaseAudioContext&);
-
   void setPosition(const FloatPoint3D&, ExceptionState&);
   void setOrientation(const FloatPoint3D&, ExceptionState&);
   void SetUpVector(const FloatPoint3D&, ExceptionState&);

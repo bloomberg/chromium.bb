@@ -5,7 +5,7 @@
 #
 #  liblouis is free software: you can redistribute it and/or modify it
 #  under the terms of the GNU Lesser General Public License as
-#  published by the Free Software Foundation, either version 3 of the
+#  published by the Free Software Foundation, either version 2.1 of the
 #  License, or (at your option) any later version.
 #
 #  liblouis is distributed in the hope that it will be useful, but
@@ -51,7 +51,7 @@ space       \x000C        0                                       <control> FORM
 space       \x000D        0                                       <control> CARRIAGE RETURN
 space       \x001B        1b                                      <control> ESCAPE
 space       \x0020        0                                       SPACE
-punctuation \x0021        256                 !                   EXCLAMATION MARK
+punctuation \x0021        235                 !                   EXCLAMATION MARK
 punctuation \x0022        236                 "                   QUOTATION MARK
 punctuation \x0027        3                   '                   APOSTROPHE
 punctuation \x0028        126                 (                   LEFT PARENTHESIS
@@ -85,8 +85,7 @@ punctuation \x0096        36                  –                   <control> ST
 space       \x00A0        a                                       NO-BREAK SPACE
 punctuation \x00A1        235                 ¡                   INVERTED EXCLAMATION MARK
 punctuation \x00AB        236                 «                   LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-punctuation \x00AD        36                  ­                   SOFT HYPHEN
-sign        \x00B8        2                   ¸                   CEDILLA
+punctuation \x00AD        36                  ­                    SOFT HYPHEN
 punctuation \x00BB        236                 »                   RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
 punctuation \x00BF        26                  ¿                   INVERTED QUESTION MARK
 math        \x00D7        236                 ×                   MULTIPLICATION SIGN
@@ -120,11 +119,11 @@ punctuation \x2043        36                  ⁃                   HYPHEN BULLE
 # Unicode 0000..007F  C0 Controls and Basic Latin
 # ----------------------------------------------------------------------------------------------
 
-sign        \x0024        345-234             $                   DOLLAR SIGN
+sign        \x0024        456-234             $                   DOLLAR SIGN
 math        \x0025        456-356             %                   PERCENT SIGN
 sign        \x0026        6-12346             &                   AMPERSAND
 math        \x002F        6-2                 /                   SOLIDUS
-sign        \x0040        56-16               @                   COMMERCIAL AT
+sign        \x0040        5                   @                   COMMERCIAL AT
 sign        \x005C        5-3                 \                   REVERSE SOLIDUS
 math        \x007B        5-123               {                   LEFT CURLY BRACKET
 math        \x007D        456-2               }                   RIGHT CURLY BRACKET
@@ -142,15 +141,14 @@ sign        \x00A2        45-14               ¢                   CENT SIGN
 sign        \x00A3        5-2346              £                   POUND SIGN
 sign        \x00A5        456-13456           ¥                   YEN SIGN
 sign        \x00A9        126-46-14-345       ©                   COPYRIGHT SIGN
-sign        \x00AA        56-16               ª                   FEMININE ORDINAL INDICATOR
 sign        \x00AE        126-46-1235-345     ®                   REGISTERED SIGN
 math        \x00B1        235-25-36           ±                   PLUS-MINUS SIGN
 sign        \x00B2        16-3456-12          ²                   SUPERSCRIPT TWO
 sign        \x00B3        16-3456-14          ³                   SUPERSCRIPT THREE
 sign        \x00B5        4-134               µ                   MICRO SIGN
-math        \x00BC        1456-2-145          ¼                   VULGAR FRACTION ONE QUARTER
-math        \x00BD        1456-2-12           ½                   VULGAR FRACTION ONE HALF
-math        \x00BE        1456-25-145         ¾                   VULGAR FRACTION THREE QUARTERS
+math        \x00BC        3456-2-145          ¼                   VULGAR FRACTION ONE QUARTER
+math        \x00BD        3456-2-12           ½                   VULGAR FRACTION ONE HALF
+math        \x00BE        3456-25-145         ¾                   VULGAR FRACTION THREE QUARTERS
 
 
 # ----------------------------------------------------------------------------------------------

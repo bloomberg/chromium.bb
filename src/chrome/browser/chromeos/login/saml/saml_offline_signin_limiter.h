@@ -20,10 +20,6 @@ namespace base {
 class Clock;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace chromeos {
 
 // Enforces a limit on the length of time for which a user authenticated via
@@ -31,9 +27,6 @@ namespace chromeos {
 // forced to go through online authentication against GAIA again.
 class SAMLOfflineSigninLimiter : public KeyedService {
  public:
-  // Registers preferences.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
   // Called when the user successfully authenticates. |auth_flow| indicates
   // the type of authentication flow that the user went through.
   void SignedIn(UserContext::AuthFlow auth_flow);

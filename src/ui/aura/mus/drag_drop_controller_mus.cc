@@ -15,12 +15,14 @@
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/drag_drop_client_observer.h"
 #include "ui/aura/client/drag_drop_delegate.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/drag_drop_controller_host.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/os_exchange_data_provider_mus.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 
@@ -53,6 +55,14 @@ struct DragDropControllerMus::CurrentDragState {
   // StartDragDrop() runs a nested run loop. This closure is used to quit
   // the run loop when the drag completes.
   base::Closure runloop_quit_closure;
+
+  // The starting location of the drag gesture in screen coordinates.
+  gfx::Point start_screen_location;
+
+  // A tracker for the window that received the initial drag and drop events,
+  // used to send ET_GESTURE_LONG_TAP when the user presses, pauses, and
+  // releases a touch without any movement; it is reset if movement is detected.
+  WindowTracker source_window_tracker;
 };
 
 DragDropControllerMus::DragDropControllerMus(
@@ -75,17 +85,19 @@ void DragDropControllerMus::OnDragDropStart(
 
 uint32_t DragDropControllerMus::OnDragEnter(WindowMus* window,
                                             uint32_t event_flags,
-                                            const gfx::Point& screen_location,
+                                            const gfx::PointF& location_in_root,
+                                            const gfx::PointF& location,
                                             uint32_t effect_bitmask) {
-  return HandleDragEnterOrOver(window, event_flags, screen_location,
+  return HandleDragEnterOrOver(window, event_flags, location_in_root, location,
                                effect_bitmask, true);
 }
 
 uint32_t DragDropControllerMus::OnDragOver(WindowMus* window,
                                            uint32_t event_flags,
-                                           const gfx::Point& screen_location,
+                                           const gfx::PointF& location_in_root,
+                                           const gfx::PointF& location,
                                            uint32_t effect_bitmask) {
-  return HandleDragEnterOrOver(window, event_flags, screen_location,
+  return HandleDragEnterOrOver(window, event_flags, location_in_root, location,
                                effect_bitmask, false);
 }
 
@@ -101,7 +113,8 @@ void DragDropControllerMus::OnDragLeave(WindowMus* window) {
 uint32_t DragDropControllerMus::OnCompleteDrop(
     WindowMus* window,
     uint32_t event_flags,
-    const gfx::Point& screen_location,
+    const gfx::PointF& location_in_root,
+    const gfx::PointF& location,
     uint32_t effect_bitmask) {
   if (drop_target_window_tracker_.windows().empty())
     return ws::mojom::kDropEffectNone;
@@ -109,8 +122,9 @@ uint32_t DragDropControllerMus::OnCompleteDrop(
   DCHECK(window);
   Window* current_target = drop_target_window_tracker_.Pop();
   DCHECK_EQ(window->GetWindow(), current_target);
-  std::unique_ptr<ui::DropTargetEvent> event = CreateDropTargetEvent(
-      window->GetWindow(), event_flags, screen_location, effect_bitmask);
+  std::unique_ptr<ui::DropTargetEvent> event =
+      CreateDropTargetEvent(window->GetWindow(), event_flags, location_in_root,
+                            location, effect_bitmask);
   return client::GetDragDropDelegate(current_target)->OnPerformDrop(*event);
 }
 
@@ -118,6 +132,23 @@ void DragDropControllerMus::OnPerformDragDropCompleted(uint32_t action_taken) {
   DCHECK(current_drag_state_);
   for (client::DragDropClientObserver& observer : observers_)
     observer.OnDragEnded();
+
+  // When the user presses, pauses, and releases a touch without any movement,
+  // that gesture should be interpreted as a long tap and show a menu, etc.
+  // See Classic Ash's long tap event handling in ash::DragDropController.
+  if (action_taken == ws::mojom::kDropEffectNone &&
+      !current_drag_state_->source_window_tracker.windows().empty()) {
+    auto* window = current_drag_state_->source_window_tracker.windows()[0];
+    gfx::Point location = current_drag_state_->start_screen_location;
+    if (auto* client = client::GetScreenPositionClient(window->GetRootWindow()))
+      client->ConvertPointFromScreen(window, &location);
+    ui::GestureEventDetails details(ui::ET_GESTURE_LONG_TAP);
+    details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+    ui::GestureEvent long_tap(location.x(), location.y(), ui::EF_NONE,
+                              base::TimeTicks::Now(), details);
+    window->delegate()->OnEvent(&long_tap);
+  }
+
   current_drag_state_->completed_action = action_taken;
   current_drag_state_->runloop_quit_closure.Run();
   current_drag_state_ = nullptr;
@@ -137,12 +168,13 @@ int DragDropControllerMus::StartDragAndDrop(
   DCHECK(!current_drag_state_);
 
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  WindowMus* root_window_mus = WindowMus::Get(root_window);
+  WindowMus* source_window_mus = WindowMus::Get(source_window);
   const uint32_t change_id =
-      drag_drop_controller_host_->CreateChangeIdForDrag(root_window_mus);
-  CurrentDragState current_drag_state = {root_window_mus->server_id(),
-                                         change_id, ws::mojom::kDropEffectNone,
-                                         data, run_loop.QuitClosure()};
+      drag_drop_controller_host_->CreateChangeIdForDrag(source_window_mus);
+  CurrentDragState current_drag_state = {
+      source_window_mus->server_id(), change_id,
+      ws::mojom::kDropEffectNone,     data,
+      run_loop.QuitClosure(),         screen_location};
 
   // current_drag_state_ will be reset in |OnPerformDragDropCompleted| before
   // run_loop.Run() quits.
@@ -152,6 +184,8 @@ int DragDropControllerMus::StartDragAndDrop(
   if (source != ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE) {
     // TODO(erg): This collapses both touch and pen events to touch.
     mojo_source = ui::mojom::PointerKind::TOUCH;
+    // Track the source window, to possibly send ET_GESTURE_LONG_TAP later.
+    current_drag_state.source_window_tracker.Add(source_window);
   }
 
   std::map<std::string, std::vector<uint8_t>> drag_data =
@@ -162,7 +196,7 @@ int DragDropControllerMus::StartDragAndDrop(
     observer.OnDragStarted();
 
   window_tree_->PerformDragDrop(
-      change_id, root_window_mus->server_id(), screen_location,
+      change_id, source_window_mus->server_id(), screen_location,
       mojo::MapToFlatMap(drag_data), data.provider().GetDragImage(),
       data.provider().GetDragImageOffset(), drag_operations, mojo_source);
 
@@ -193,9 +227,16 @@ void DragDropControllerMus::RemoveObserver(
 uint32_t DragDropControllerMus::HandleDragEnterOrOver(
     WindowMus* window,
     uint32_t event_flags,
-    const gfx::Point& screen_location,
+    const gfx::PointF& location_in_root,
+    const gfx::PointF& location,
     uint32_t effect_bitmask,
     bool is_enter) {
+  if (current_drag_state_) {
+    // Reset the tracker on drag movement, ET_GESTURE_LONG_TAP will not be
+    // needed.
+    current_drag_state_->source_window_tracker.RemoveAll();
+  }
+
   client::DragDropDelegate* drag_drop_delegate =
       window ? client::GetDragDropDelegate(window->GetWindow()) : nullptr;
   WindowTreeHost* window_tree_host =
@@ -207,28 +248,26 @@ uint32_t DragDropControllerMus::HandleDragEnterOrOver(
   }
   drop_target_window_tracker_.Add(window->GetWindow());
 
-  std::unique_ptr<ui::DropTargetEvent> event = CreateDropTargetEvent(
-      window->GetWindow(), event_flags, screen_location, effect_bitmask);
+  std::unique_ptr<ui::DropTargetEvent> event =
+      CreateDropTargetEvent(window->GetWindow(), event_flags, location_in_root,
+                            location, effect_bitmask);
   if (is_enter)
     drag_drop_delegate->OnDragEntered(*event);
   return drag_drop_delegate->OnDragUpdated(*event);
 }
 
 std::unique_ptr<ui::DropTargetEvent>
-DragDropControllerMus::CreateDropTargetEvent(Window* window,
-                                             uint32_t event_flags,
-                                             const gfx::Point& screen_location,
-                                             uint32_t effect_bitmask) {
-  DCHECK(window->GetHost());
-  gfx::Point root_location = screen_location;
-  window->GetHost()->ConvertScreenInPixelsToDIP(&root_location);
-  gfx::PointF location(root_location);
-  Window::ConvertPointToTarget(window->GetRootWindow(), window, &location);
+DragDropControllerMus::CreateDropTargetEvent(
+    Window* window,
+    uint32_t event_flags,
+    const gfx::PointF& location_in_root,
+    const gfx::PointF& location,
+    uint32_t effect_bitmask) {
   std::unique_ptr<ui::DropTargetEvent> event =
       std::make_unique<ui::DropTargetEvent>(
           current_drag_state_ ? current_drag_state_->drag_data
                               : *(os_exchange_data_.get()),
-          location, gfx::PointF(root_location), effect_bitmask);
+          location, location_in_root, effect_bitmask);
   event->set_flags(event_flags);
   ui::Event::DispatcherApi(event.get()).set_target(window);
   return event;

@@ -14,10 +14,11 @@ namespace views {
 DesktopFocusRules::DesktopFocusRules(aura::Window* content_window)
     : content_window_(content_window) {}
 
-DesktopFocusRules::~DesktopFocusRules() {}
+DesktopFocusRules::~DesktopFocusRules() = default;
 
-bool DesktopFocusRules::CanActivateWindow(aura::Window* window) const {
-  if (window && content_window_->GetRootWindow()->Contains(window) &&
+bool DesktopFocusRules::CanActivateWindow(const aura::Window* window) const {
+  if (window && IsToplevelWindow(window) &&
+      content_window_->GetRootWindow()->Contains(window) &&
       wm::WindowStateIs(window->GetRootWindow(), ui::SHOW_STATE_MINIMIZED)) {
     return true;
   }
@@ -28,29 +29,30 @@ bool DesktopFocusRules::CanActivateWindow(aura::Window* window) const {
   return !window || content_window_->GetRootWindow()->Contains(window);
 }
 
-bool DesktopFocusRules::CanFocusWindow(aura::Window* window,
+bool DesktopFocusRules::CanFocusWindow(const aura::Window* window,
                                        const ui::Event* event) const {
   return BaseFocusRules::CanFocusWindow(window, event) ||
          wm::WindowStateIs(window->GetRootWindow(), ui::SHOW_STATE_MINIMIZED);
 }
 
-bool DesktopFocusRules::SupportsChildActivation(aura::Window* window) const {
+bool DesktopFocusRules::SupportsChildActivation(
+    const aura::Window* window) const {
   // In Desktop-Aura, only the content_window or children of the RootWindow are
   // activatable.
   return window->IsRootWindow();
 }
 
 bool DesktopFocusRules::IsWindowConsideredVisibleForActivation(
-    aura::Window* window) const {
+    const aura::Window* window) const {
   // |content_window_| is initially hidden and made visible from Show(). Even in
-  // this state we still want it to be active.
+  // this state we still want it to be activatable.
   return BaseFocusRules::IsWindowConsideredVisibleForActivation(window) ||
       (window == content_window_);
 }
 
-aura::Window* DesktopFocusRules::GetToplevelWindow(
-    aura::Window* window) const {
-  aura::Window* top_level_window =
+const aura::Window* DesktopFocusRules::GetToplevelWindow(
+    const aura::Window* window) const {
+  const aura::Window* top_level_window =
       wm::BaseFocusRules::GetToplevelWindow(window);
   // In Desktop-Aura, only the content_window or children of the RootWindow are
   // considered as top level windows.

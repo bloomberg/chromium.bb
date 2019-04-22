@@ -69,7 +69,7 @@ class TemplateWriter(object):
       return False
 
     for supported_on in policy['supported_on']:
-      if not self._IsVersionSupported(supported_on):
+      if not self.IsVersionSupported(policy, supported_on):
         continue
       if '*' in self.platforms:
         return True
@@ -111,7 +111,7 @@ class TemplateWriter(object):
     for supported_on in policy['supported_on']:
       if (platform in supported_on['platforms'] and
           (not product or product in supported_on['product']) and
-          self._IsVersionSupported(supported_on)):
+          self.IsVersionSupported(policy, supported_on)):
         return True
     return False
 
@@ -128,6 +128,18 @@ class TemplateWriter(object):
     return management in policy.get('supported_chrome_os_management',
                                     ['active_directory', 'google_cloud'])
 
+  def IsVersionSupported(self, policy, supported_on):
+    '''Checks whether the policy is supported on current version'''
+    major_version = self._GetChromiumMajorVersion()
+    if not major_version:
+      return True
+
+    since_version = supported_on.get('since_version', None)
+    until_version = supported_on.get('until_version', None)
+
+    return ((not since_version or int(since_version) <= major_version) and
+            (not until_version or int(until_version) >= major_version))
+
   def _GetChromiumVersionString(self):
     '''Returns the Chromium version string stored in the environment variable
     version (if it is set).
@@ -141,18 +153,6 @@ class TemplateWriter(object):
     in config.
     '''
     return self.config.get('major_version', None)
-
-  def _IsVersionSupported(self, supported_on):
-    '''Checks whether the policy is supoorted on current version'''
-    major_version = self._GetChromiumMajorVersion()
-    if not major_version:
-      return True
-
-    since_version = supported_on.get('since_version', None)
-    until_version = supported_on.get('until_version', None)
-
-    return ((not since_version or int(since_version) <= major_version) and
-            (not until_version or int(until_version) >= major_version))
 
   def _GetPoliciesForWriter(self, group):
     '''Filters the list of policies in the passed group that are supported by

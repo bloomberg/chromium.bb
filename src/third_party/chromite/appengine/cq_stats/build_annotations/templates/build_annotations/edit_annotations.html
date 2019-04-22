@@ -110,8 +110,12 @@
            Finalize messages cannot be unfinalized (yet?), so disable the
            checkbox if there already exists a finalize message for this build.
          {% endcomment %}
-         {% if finalize_form.finalize.value %} checked disabled {% endif %}
-         title="Check this when you want to assert that all failures have been annotated."/>
+         {% if finalize_form.finalize.value %} disabled {% endif %}
+         title="Check this when you want to assert that all failures have been annotated."
+         {% comment %}
+           Checked by default to avoid *much* confusion with sheriffs.
+         {% endcomment %}
+         checked />
   <label for="finalize">
     {% if not finalize_form.finalize.value %}
       Finalize annotations?

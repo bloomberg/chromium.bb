@@ -7,11 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/main/browser_view_information.h"
+#import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 
 @protocol ApplicationCommands;
+@class BrowserCoordinator;
 @class DeviceSharingManager;
 @protocol TabModelObserver;
+
+class AppUrlLoadingService;
 
 namespace ios {
 class ChromeBrowserState;
@@ -26,39 +29,40 @@ class ChromeBrowserState;
 // Wrangler (a class in need of further refactoring) for handling the creation
 // and ownership of BrowserViewController instances and their associated
 // TabModels, and a few related methods.
-@interface BrowserViewWrangler : NSObject<BrowserViewInformation>
+@interface BrowserViewWrangler : NSObject <BrowserInterfaceProvider>
 
 // Initialize a new instance of this class using |browserState| as the primary
 // browser state for the tab models and BVCs, and setting |tabModelObserver|, if
 // not nil, as the tab model delegate for any tab models that are created.
 // |applicationCommandEndpoint| is the object that methods in the
 // ApplicationCommands protocol should be dispatched to by any BVCs that are
-// created.
+// created. |storageSwitcher| is used to manage changing any storage associated
+// with the interfaces when the current interface changes; this is handled in
+// the implementation of -setCurrentInterface:.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                     tabModelObserver:(id<TabModelObserver>)tabModelObserver
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
+                appURLLoadingService:(AppUrlLoadingService*)appURLLoadingService
+                     storageSwitcher:
+                         (id<BrowserStateStorageSwitching>)storageSwitcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Set the current BVC to be |bvc|, and use |storageSwitcher| to handle the
-// storage switch. |bvc| should be one of the view controller instances already
-// owned by the receiver (either |mainBVC| or |otrBVBC|), and this method does
-// not retain or take ownership of |bvc|.
-// Note that the BrowserViewInformation protocol defines
-// |currentBVC| as a readwrite property, so users of this class can directly
-// call -setCurrentBVC: and bypass the logic in this method; that should only be
-// done on BVC instances who do not yet have a browser state.
-- (void)setCurrentBVC:(BrowserViewController*)bvc
-      storageSwitcher:(id<BrowserStateStorageSwitching>)storageSwitcher;
+// Creates the main Browser used by the receiver, using the browser state
+// and tab model observer it was configured with. The main interface is then
+// created; until this method is called, the main and incognito interfaces will
+// be nil. This should be done before the main interface is accessed, usually
+// immediately after initialization.
+- (void)createMainBrowser;
 
 // Update the device sharing manager. This should be done after updates to the
 // tab model. This class creates and manages the state of the sharing manager.
 - (void)updateDeviceSharingManager;
 
-// Destroy and rebuild the incognito tab model.
-- (void)destroyAndRebuildIncognitoTabModel;
+// Destroy and rebuild the incognito Browser.
+- (void)destroyAndRebuildIncognitoBrowser;
 
 // Called before the instance is deallocated.
 - (void)shutdown;

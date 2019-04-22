@@ -8,9 +8,9 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "base/callback_forward.h"
-#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
@@ -55,7 +55,7 @@ class CONTENT_EXPORT StoragePartitionImplMap
   // The |done| closure is executed on the calling thread when garbage
   // collection is complete.
   void GarbageCollect(
-      std::unique_ptr<base::hash_set<base::FilePath>> active_paths,
+      std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
       const base::Closure& done);
 
   void ForEach(const BrowserContext::StoragePartitionCallback& callback);

@@ -58,8 +58,8 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
 
     // Grab a pointer to the adapter.
     device::BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&BluetoothAdapterProfileBlueZTest::AdapterCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&BluetoothAdapterProfileBlueZTest::AdapterCallback,
+                       base::Unretained(this)));
     base::RunLoop().Run();
     ASSERT_TRUE(adapter_.get() != nullptr);
     ASSERT_TRUE(adapter_->IsInitialized());

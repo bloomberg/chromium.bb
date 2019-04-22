@@ -9,12 +9,12 @@
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "gpu/command_buffer/client/interface_base.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
 namespace cc {
 class DisplayItemList;
 class ImageProvider;
-struct RasterColorSpace;
 }  // namespace cc
 
 namespace gfx {
@@ -29,23 +29,35 @@ extern "C" typedef struct _ClientBuffer* ClientBuffer;
 extern "C" typedef struct _GLColorSpace* GLColorSpace;
 
 namespace gpu {
+
+struct Mailbox;
+
 namespace raster {
 
 enum RasterTexStorageFlags { kNone = 0, kOverlay = (1 << 0) };
 
-class RasterInterface {
+class RasterInterface : public InterfaceBase {
  public:
   RasterInterface() {}
   virtual ~RasterInterface() {}
 
+  virtual void CopySubTexture(const gpu::Mailbox& source_mailbox,
+                              const gpu::Mailbox& dest_mailbox,
+                              GLenum dest_target,
+                              GLint xoffset,
+                              GLint yoffset,
+                              GLint x,
+                              GLint y,
+                              GLsizei width,
+                              GLsizei height) = 0;
   // OOP-Raster
-  virtual void BeginRasterCHROMIUM(
-      GLuint sk_color,
-      GLuint msaa_sample_count,
-      GLboolean can_use_lcd_text,
-      GLint pixel_config,
-      const cc::RasterColorSpace& raster_color_space,
-      const GLbyte* mailbox) = 0;
+  virtual void BeginRasterCHROMIUM(GLuint sk_color,
+                                   GLuint msaa_sample_count,
+                                   GLboolean can_use_lcd_text,
+                                   const gfx::ColorSpace& color_space,
+                                   const GLbyte* mailbox) = 0;
+
+  static constexpr size_t kDefaultMaxOpSizeHint = 512 * 1024;
   virtual void RasterCHROMIUM(const cc::DisplayItemList* list,
                               cc::ImageProvider* provider,
                               const gfx::Size& content_size,
@@ -53,11 +65,13 @@ class RasterInterface {
                               const gfx::Rect& playback_rect,
                               const gfx::Vector2dF& post_translate,
                               GLfloat post_scale,
-                              bool requires_clear) = 0;
+                              bool requires_clear,
+                              size_t* max_op_size_hint) = 0;
 
   // Schedules a hardware-accelerated image decode and a sync token that's
   // released when the image decode is complete. If the decode could not be
-  // scheduled, an empty sync token is returned.
+  // scheduled, an empty sync token is returned. This method should only be
+  // called if ContextSupport::CanDecodeWithHardwareAcceleration() returns true.
   virtual SyncToken ScheduleImageDecode(
       base::span<const uint8_t> encoded_data,
       const gfx::Size& output_size,
@@ -66,6 +80,8 @@ class RasterInterface {
       bool needs_mips) = 0;
 
   // Raster via GrContext.
+  virtual GLuint CreateAndConsumeForGpuRaster(const GLbyte* mailbox) = 0;
+  virtual void DeleteGpuRasterTexture(GLuint texture) = 0;
   virtual void BeginGpuRaster() = 0;
   virtual void EndGpuRaster() = 0;
 

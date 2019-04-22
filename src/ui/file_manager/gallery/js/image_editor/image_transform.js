@@ -155,8 +155,9 @@ ImageEditorMode.Crop.prototype.createTools = function(toolbar) {
     // Prevent from cropping by Enter key if the button is focused.
     button.addEventListener('keydown', function(event) {
       var key = util.getKeyModifiers(event) + event.key;
-      if (key === 'Enter')
+      if (key === 'Enter') {
         event.stopPropagation();
+      }
     });
   }
 };
@@ -295,8 +296,9 @@ ImageEditorMode.Crop.prototype.getCursorStyle = function(x, y, mouseDown) {
  */
 ImageEditorMode.Crop.prototype.getDragHandler = function(x, y, touch) {
   var cropDragHandler = this.cropRect_.getDragHandler(x, y, touch);
-  if (!cropDragHandler)
+  if (!cropDragHandler) {
     return null;
+  }
 
   return function(x, y, shiftKey) {
     cropDragHandler(x, y, shiftKey);
@@ -511,10 +513,12 @@ DraggableRect.prototype.getCursorStyle = function(x, y, mouseDown) {
     mode = this.getDragMode(
         this.viewport_.screenToImageX(x), this.viewport_.screenToImageY(y));
   }
-  if (mode.whole)
+  if (mode.whole) {
     return 'move';
-  if (mode.newcrop)
+  }
+  if (mode.newcrop) {
     return 'crop';
+  }
 
   var xSymbol = '';
   switch (mode.xSide) {
@@ -635,10 +639,11 @@ DraggableRect.prototype.getDragHandler = function(
       }
 
       // Update aspect ratio.
-      if (this.fixedAspectRatio)
+      if (this.fixedAspectRatio) {
         this.forceAspectRatio(this.fixedAspectRatio, clipRect);
-      else if (shiftKey)
+      } else if (shiftKey) {
         this.forceAspectRatio(initialWidth / initialHeight, clipRect);
+      }
     }.bind(this);
   }
 };
@@ -652,10 +657,11 @@ DraggableRect.prototype.getDragHandler = function(
  */
 DraggableRect.prototype.getDoubleTapAction = function(x, y) {
   var clipRect = this.viewport_.getImageBoundsOnScreenClipped();
-  if (clipRect.inside(x, y))
+  if (clipRect.inside(x, y)) {
     return ImageBuffer.DoubleTapAction.COMMIT;
-  else
+  } else {
     return ImageBuffer.DoubleTapAction.NOTHING;
+  }
 };
 
 /**
@@ -669,14 +675,15 @@ DraggableRect.prototype.forceAspectRatio = function(aspectRatio, clipRect) {
   var width = this.bounds_.right - this.bounds_.left;
   var height = this.bounds_.bottom - this.bounds_.top;
   var currentScale;
-  if (!this.dragMode_)
+  if (!this.dragMode_) {
     currentScale = ((width / aspectRatio) + height) / 2;
-  else if (this.dragMode_.xSide === 'none')
+  } else if (this.dragMode_.xSide === 'none') {
     currentScale = height;
-  else if (this.dragMode_.ySide === 'none')
+  } else if (this.dragMode_.ySide === 'none') {
     currentScale = width / aspectRatio;
-  else
+  } else {
     currentScale = Math.max(width / aspectRatio, height);
+  }
 
   // Get maximum width/height scale.
   var maxWidth;

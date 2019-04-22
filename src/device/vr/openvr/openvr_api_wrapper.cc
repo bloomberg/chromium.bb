@@ -6,7 +6,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/vr/openvr/test/test_hook.h"
+#include "device/vr/test/test_hook.h"
 
 namespace device {
 
@@ -29,13 +29,13 @@ vr::IVRSystem* OpenVRWrapper::GetSystem() {
   return system_;
 }
 
-void OpenVRWrapper::SetTestHook(OpenVRTestHook* hook) {
+void OpenVRWrapper::SetTestHook(VRTestHook* hook) {
   // This may be called from any thread - tests are responsible for
   // maintaining thread safety, typically by not changing the test hook
   // while presenting.
   test_hook_ = hook;
-  if (test_hook_registration_) {
-    test_hook_registration_->SetTestHook(test_hook_);
+  if (service_test_hook_) {
+    service_test_hook_->SetTestHook(test_hook_);
   }
 }
 
@@ -63,15 +63,15 @@ bool OpenVRWrapper::Initialize(bool for_rendering) {
   if (test_hook_) {
     // Allow our mock implementation of OpenVR to be controlled by tests.
     // Note that SetTestHook must be called before CreateDevice, or
-    // test_hook_registration_s will remain null.  This is a good pattern for
+    // service_test_hook_s will remain null.  This is a good pattern for
     // tests anyway, since the alternative is we start mocking part-way through
     // using the device, and end up with race conditions for when we started
     // controlling things.
     vr::EVRInitError eError;
-    test_hook_registration_ = reinterpret_cast<TestHookRegistration*>(
+    service_test_hook_ = static_cast<ServiceTestHook*>(
         vr::VR_GetGenericInterface(kChromeOpenVRTestHookAPI, &eError));
-    if (test_hook_registration_) {
-      test_hook_registration_->SetTestHook(test_hook_);
+    if (service_test_hook_) {
+      service_test_hook_->SetTestHook(test_hook_);
       test_hook_->AttachCurrentThread();
     }
   }
@@ -84,7 +84,7 @@ void OpenVRWrapper::Uninitialize() {
   initialized_ = false;
   system_ = nullptr;
   compositor_ = nullptr;
-  test_hook_registration_ = nullptr;
+  service_test_hook_ = nullptr;
   current_task_runner_ = nullptr;
   if (test_hook_)
     test_hook_->DetachCurrentThread();
@@ -93,9 +93,9 @@ void OpenVRWrapper::Uninitialize() {
   any_initialized_ = false;
 }
 
-OpenVRTestHook* OpenVRWrapper::test_hook_ = nullptr;
+VRTestHook* OpenVRWrapper::test_hook_ = nullptr;
 bool OpenVRWrapper::any_initialized_ = false;
-TestHookRegistration* OpenVRWrapper::test_hook_registration_ = nullptr;
+ServiceTestHook* OpenVRWrapper::service_test_hook_ = nullptr;
 
 std::string GetOpenVRString(vr::IVRSystem* vr_system,
                             vr::TrackedDeviceProperty prop) {

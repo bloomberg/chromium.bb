@@ -12,6 +12,7 @@
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -151,7 +152,7 @@ void VulkanDemo::Draw(SkCanvas* canvas, float fraction) {
     SkPoint linearPoints[] = {{0, 0}, {300, 300}};
     SkColor linearColors[] = {SK_ColorGREEN, SK_ColorBLACK};
     paint.setShader(SkGradientShader::MakeLinear(
-        linearPoints, linearColors, nullptr, 2, SkShader::kMirror_TileMode));
+        linearPoints, linearColors, nullptr, 2, SkTileMode::kMirror));
     paint.setAntiAlias(true);
 
     canvas->drawCircle(200, 200, 64, paint);
@@ -161,9 +162,11 @@ void VulkanDemo::Draw(SkCanvas* canvas, float fraction) {
   }
 
   // Draw a message with a nice black paint
-  paint.setSubpixelText(true);
   paint.setColor(SK_ColorBLACK);
-  paint.setTextSize(32);
+
+  SkFont font;
+  font.setSize(32);
+  font.setSubpixel(true);
 
   static const char message[] = "Hello Vulkan";
 
@@ -176,7 +179,7 @@ void VulkanDemo::Draw(SkCanvas* canvas, float fraction) {
   canvas->rotate(rotation_angle_);
 
   // Draw the text
-  canvas->drawText(message, strlen(message), 0, 0, paint);
+  canvas->drawString(message, 0, 0, font, paint);
 
   canvas->restore();
   canvas->flush();

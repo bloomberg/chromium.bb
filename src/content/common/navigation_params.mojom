@@ -5,7 +5,7 @@
 module content.mojom;
 
 import "mojo/public/mojom/base/values.mojom";
-import "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom";
+import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -44,14 +44,6 @@ struct BeginNavigationParams {
   // See WebSearchableFormData for a description of these.
   url.mojom.Url searchable_form_url;
   string searchable_form_encoding;
-
-  // Indicates the initiator of the request. In auxilliary navigations, this is
-  // the origin of the document that triggered the navigation. This parameter
-  // can be null during browser-initiated navigations.
-  // TODO(ahemery): Remove optional when BeginNav is used only for
-  // renderer-initiated navigations. For details see comments from dcheng@ in
-  // review 763529.
-  url.mojom.Origin? initiator_origin;
 
   // If the transition type is a client side redirect, then this holds the URL
   // of the page that had the client side redirect.

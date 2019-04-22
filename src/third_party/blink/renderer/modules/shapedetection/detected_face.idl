@@ -7,11 +7,12 @@
 [
     Constructor,
     Serializable,
-    OriginTrialEnabled=ShapeDetection
+    RuntimeEnabled=ShapeDetection
 ] interface DetectedFace {
     // TODO(xianglu): Implement any other fields. https://crbug.com/646083
     [SameObject] readonly attribute DOMRectReadOnly boundingBox;
     [SameObject, SaveSameObject] readonly attribute FrozenArray<Landmark> landmarks;
 
-    serializer = { attribute };
+    // TODO(peria): toJSON is not in spec. https://crbug.com/736332
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

@@ -33,6 +33,7 @@
 #include "vkPrograms.hpp"
 #include "vkRefUtil.hpp"
 #include "vkMemUtil.hpp"
+#include "vkBarrierUtil.hpp"
 #include "vkQueryUtil.hpp"
 #include "vkBuilderUtil.hpp"
 #include "vkTypeUtil.hpp"
@@ -454,7 +455,7 @@ tcu::TestStatus ImageSparseMemoryAliasingInstance::iterate (void)
 
 		deMemcpy(inputBufferAlloc->getHostPtr(), &referenceData[0], imageSizeInBytes);
 
-		flushMappedMemoryRange(deviceInterface, getDevice(), inputBufferAlloc->getMemory(), inputBufferAlloc->getOffset(), imageSizeInBytes);
+		flushAlloc(deviceInterface, getDevice(), *inputBufferAlloc);
 
 		{
 			const VkBufferMemoryBarrier inputBufferBarrier = makeBufferMemoryBarrier
@@ -476,11 +477,11 @@ tcu::TestStatus ImageSparseMemoryAliasingInstance::iterate (void)
 				VK_ACCESS_TRANSFER_WRITE_BIT,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				sparseQueue.queueFamilyIndex != computeQueue.queueFamilyIndex ? sparseQueue.queueFamilyIndex  : VK_QUEUE_FAMILY_IGNORED,
-				sparseQueue.queueFamilyIndex != computeQueue.queueFamilyIndex ? computeQueue.queueFamilyIndex : VK_QUEUE_FAMILY_IGNORED,
 				*imageRead,
-				makeImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0u, imageSparseInfo.mipLevels, 0u, imageSparseInfo.arrayLayers)
-			);
+				makeImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0u, imageSparseInfo.mipLevels, 0u, imageSparseInfo.arrayLayers),
+				sparseQueue.queueFamilyIndex != computeQueue.queueFamilyIndex ? sparseQueue.queueFamilyIndex : VK_QUEUE_FAMILY_IGNORED,
+				sparseQueue.queueFamilyIndex != computeQueue.queueFamilyIndex ? computeQueue.queueFamilyIndex : VK_QUEUE_FAMILY_IGNORED
+				);
 
 			deviceInterface.cmdPipelineBarrier(*commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0u, 0u, DE_NULL, 0u, DE_NULL, 1u, &imageSparseTransferDstBarrier);
 		}
@@ -623,7 +624,7 @@ tcu::TestStatus ImageSparseMemoryAliasingInstance::iterate (void)
 								0, DE_NULL, m_useDeviceGroups, firstDeviceID);
 
 		// Retrieve data from buffer to host memory
-		invalidateMappedMemoryRange(deviceInterface, getDevice(), outputBufferAlloc->getMemory(), outputBufferAlloc->getOffset(), imageSizeInBytes);
+		invalidateAlloc(deviceInterface, getDevice(), *outputBufferAlloc);
 
 		const deUint8* outputData = static_cast<const deUint8*>(outputBufferAlloc->getHostPtr());
 

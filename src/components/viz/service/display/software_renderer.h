@@ -29,8 +29,7 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
 
   ~SoftwareRenderer() override;
 
-  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
-                   bool need_presentation_feedback) override;
+  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) override;
 
   void SetDisablePictureQuadImageFiltering(bool disable) {
     disable_picture_quad_image_filtering_ = disable;
@@ -60,7 +59,8 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   bool FlippedFramebuffer() const override;
   void EnsureScissorTestEnabled() override;
   void EnsureScissorTestDisabled() override;
-  void CopyDrawnRenderPass(std::unique_ptr<CopyOutputRequest> request) override;
+  void CopyDrawnRenderPass(const copy_output::RenderPassGeometry& geometry,
+                           std::unique_ptr<CopyOutputRequest> request) override;
   void SetEnableDCLayers(bool enable) override;
   void DidChangeVisibility() override;
   void GenerateMipmap() override;
@@ -69,6 +69,7 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   void ClearCanvas(SkColor color);
   void ClearFramebuffer();
   void SetClipRect(const gfx::Rect& rect);
+  void SetClipRRect(const gfx::RRectF& rrect);
   bool IsSoftwareResource(ResourceId resource_id) const;
 
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad);
@@ -78,8 +79,7 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   void DrawTextureQuad(const TextureDrawQuad* quad);
   void DrawTileQuad(const TileDrawQuad* quad);
   void DrawUnsupportedQuad(const DrawQuad* quad);
-  bool ShouldApplyBackgroundFilters(
-      const RenderPassDrawQuad* quad,
+  bool ShouldApplyBackdropFilters(
       const cc::FilterOperations* backdrop_filters) const;
   sk_sp<SkImage> ApplyImageFilter(SkImageFilter* filter,
                                   const RenderPassDrawQuad* quad,
@@ -91,9 +91,8 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
       const cc::FilterOperations* backdrop_filters,
       gfx::Rect* unclipped_rect) const;
   SkBitmap GetBackdropBitmap(const gfx::Rect& bounding_rect) const;
-  sk_sp<SkShader> GetBackgroundFilterShader(
-      const RenderPassDrawQuad* quad,
-      SkShader::TileMode content_tile_mode) const;
+  sk_sp<SkShader> GetBackdropFilterShader(const RenderPassDrawQuad* quad,
+                                          SkTileMode content_tile_mode) const;
 
   // A map from RenderPass id to the bitmap used to draw the RenderPass from.
   base::flat_map<RenderPassId, SkBitmap> render_pass_bitmaps_;

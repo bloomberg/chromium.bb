@@ -12,12 +12,12 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "net/base/completion_once_callback.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
 
 class GURL;
@@ -46,9 +46,12 @@ class FileStreamReader;
 //  * If a status of Status::NET_ERROR is returned, that means there was an
 //    error and the net_error() variable contains the error code.
 // Use a BlobDataHandle to create an instance.
-class STORAGE_EXPORT BlobReader {
+//
+// For more information on how to read Blobs in your specific situation, see:
+// https://chromium.googlesource.com/chromium/src/+/HEAD/storage/browser/blob/README.md#accessing-reading
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobReader {
  public:
-  class STORAGE_EXPORT FileStreamReaderProvider {
+  class COMPONENT_EXPORT(STORAGE_BROWSER) FileStreamReaderProvider {
    public:
     virtual ~FileStreamReaderProvider();
 

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "chrome/chrome_cleaner/os/disk_util_types.h"
 
 namespace chrome_cleaner {
 
@@ -91,12 +92,25 @@ void NoOpLoggingService::SetWinHttpProxySettings(
 
 void NoOpLoggingService::AddInstalledExtension(
     const base::string16& extension_id,
-    ExtensionInstallMethod install_method) {}
+    ExtensionInstallMethod install_method,
+    const std::vector<internal::FileInformation>& extension_files) {}
 
 void NoOpLoggingService::AddScheduledTask(
     const base::string16& /*name*/,
     const base::string16& /*description*/,
     const std::vector<internal::FileInformation>& /*actions*/) {}
+
+void NoOpLoggingService::AddShortcutData(
+    const base::string16& /*lnk_path*/,
+    const base::string16& /*executable_path*/,
+    const std::string& /*executable _hash*/,
+    const std::vector<base::string16>& /*command_line_arguments*/) {}
+
+void NoOpLoggingService::SetFoundModifiedChromeShortcuts(
+    bool /*found_modified_shortcuts*/) {}
+
+void NoOpLoggingService::SetScannedLocations(
+    const std::vector<UwS::TraceLocation>& /*scanned_locations*/) {}
 
 void NoOpLoggingService::LogProcessInformation(
     SandboxType /*process_type*/,

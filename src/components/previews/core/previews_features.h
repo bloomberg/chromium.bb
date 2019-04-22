@@ -14,7 +14,6 @@ extern const base::Feature kPreviews;
 extern const base::Feature kOfflinePreviews;
 extern const base::Feature kClientLoFi;
 extern const base::Feature kNoScriptPreviews;
-extern const base::Feature kNoScriptPreviewsUsesTopLevelHints;
 extern const base::Feature kStalePreviewsTimestamp;
 extern const base::Feature kOptimizationHints;
 extern const base::Feature kOptimizationHintsExperiments;
@@ -23,7 +22,10 @@ extern const base::Feature kResourceLoadingHints;
 extern const base::Feature kLitePageServerPreviews;
 extern const base::Feature kAndroidOmniboxPreviewsBadge;
 extern const base::Feature kSlowPageTriggering;
-extern const base::Feature kPreviewsDisallowedOnReloads;
+extern const base::Feature kHTTPSServerPreviewsUsingURLLoader;
+extern const base::Feature kDataSaverLiteModeRebranding;
+extern const base::Feature kPreviewsReloadsAreSoftOptOuts;
+extern const base::Feature kOptimizationHintsFetching;
 
 }  // namespace features
 }  // namespace previews

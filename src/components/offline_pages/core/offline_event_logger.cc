@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/offline_pages/core/offline_event_logger.h"
+
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "components/offline_pages/core/offline_event_logger.h"
+#include "components/offline_pages/core/offline_clock.h"
 
 namespace offline_pages {
 
@@ -36,7 +38,7 @@ void OfflineEventLogger::RecordActivity(const std::string& activity) {
     return;
 
   base::Time::Exploded current_time;
-  base::Time::Now().LocalExplode(&current_time);
+  OfflineTimeNow().LocalExplode(&current_time);
 
   std::string date_string = base::StringPrintf(
       "%d %02d %02d %02d:%02d:%02d", current_time.year, current_time.month,

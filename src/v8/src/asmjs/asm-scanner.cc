@@ -16,7 +16,7 @@ namespace {
 // Cap number of identifiers to ensure we can assign both global and
 // local ones a token id in the range of an int32_t.
 static const int kMaxIdentifierCount = 0xF000000;
-};
+}  // namespace
 
 AsmJsScanner::AsmJsScanner(Utf16CharacterStream* stream)
     : stream_(stream),
@@ -271,7 +271,7 @@ void AsmJsScanner::ConsumeIdentifier(uc32 ch) {
 
 void AsmJsScanner::ConsumeNumber(uc32 ch) {
   std::string number;
-  number = ch;
+  number.assign(1, ch);
   bool has_dot = ch == '.';
   bool has_prefix = false;
   for (;;) {

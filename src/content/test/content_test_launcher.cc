@@ -6,7 +6,6 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
-#include "base/debug/stack_trace.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -22,8 +21,8 @@
 #include "content/shell/common/shell_switches.h"
 #include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/base/ui_features.h"
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
 #include "gin/v8_initializer.h"
@@ -45,7 +44,7 @@ namespace content {
 #if defined(OS_ANDROID)
 std::unique_ptr<base::MessagePump> CreateMessagePumpForUI() {
   return std::unique_ptr<base::MessagePump>(new NestedMessagePumpAndroid());
-};
+}
 #endif
 
 class ContentBrowserTestSuite : public ContentTestSuiteBase {

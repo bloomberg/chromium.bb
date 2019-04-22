@@ -311,6 +311,21 @@ void SandboxOriginDatabase::DropDatabase() {
   db_.reset();
 }
 
+void SandboxOriginDatabase::RewriteDatabase() {
+  if (!Init(FAIL_IF_NONEXISTENT, FAIL_ON_CORRUPTION))
+    return;
+  base::FilePath db_path = GetDatabasePath();
+  std::string path = FilePathToString(db_path);
+  leveldb_env::Options options;
+  options.max_open_files = 0;  // Use minimum.
+  options.create_if_missing = true;
+  if (env_override_)
+    options.env = env_override_;
+  // There is a possibility that |db_| is null after this call. This case
+  // will be handled by the |!Init(...)| checks above each method.
+  leveldb_env::RewriteDB(options, path, &db_);
+}
+
 base::FilePath SandboxOriginDatabase::GetDatabasePath() const {
   return file_system_directory_.Append(kOriginDatabaseName);
 }

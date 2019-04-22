@@ -48,7 +48,7 @@ AssistantCacheModel::GetConversationStarters() const {
     conversation_starters[id++] = starter.get();
 
   return conversation_starters;
-};
+}
 
 void AssistantCacheModel::NotifyConversationStartersChanged() {
   const std::map<int, const AssistantSuggestion*> conversation_starters =

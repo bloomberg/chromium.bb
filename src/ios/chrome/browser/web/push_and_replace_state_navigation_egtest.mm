@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include "base/strings/sys_string_conversions.h"
@@ -11,9 +12,9 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "ios/net/url_test_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/test/url_test_util.h"
 #import "ios/web/public/web_client.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -52,15 +53,15 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const GURL pushStateHashWithObjectURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/history.html#pushWithObject");
   const std::string pushStateHashWithObjectOmniboxText =
-      web::GetContentAndFragmentForUrl(pushStateHashWithObjectURL);
+      net::GetContentAndFragmentForUrl(pushStateHashWithObjectURL);
   const GURL pushStateRootPathURL =
       web::test::HttpServer::MakeUrl("http://ios/rootpath");
   const std::string pushStateRootPathOmniboxText =
-      web::GetContentAndFragmentForUrl(pushStateRootPathURL);
+      net::GetContentAndFragmentForUrl(pushStateRootPathURL);
   const GURL pushStatePathSpaceURL =
       web::test::HttpServer::MakeUrl("http://ios/pa%20th");
   const std::string pushStatePathSpaceOmniboxText =
-      web::GetContentAndFragmentForUrl(pushStatePathSpaceURL);
+      net::GetContentAndFragmentForUrl(pushStatePathSpaceURL);
   web::test::SetUpFileBasedHttpServer();
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kHistoryTestUrl)];
 
@@ -95,7 +96,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   [ChromeEarlGrey tapWebViewElementWithID:@"goBack"];
   const GURL historyTestURL = web::test::HttpServer::MakeUrl(kHistoryTestUrl);
   [self assertStatusText:nil
-         withOmniboxText:web::GetContentAndFragmentForUrl(historyTestURL)
+         withOmniboxText:net::GetContentAndFragmentForUrl(historyTestURL)
               pageLoaded:NO];
 
   // Go forward 2 pages and check that the page doesn't load and the status text
@@ -111,7 +112,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   web::test::SetUpFileBasedHttpServer();
   const GURL initialURL = web::test::HttpServer::MakeUrl(kNonPushedUrl);
   const std::string initialOmniboxText =
-      web::GetContentAndFragmentForUrl(initialURL);
+      net::GetContentAndFragmentForUrl(initialURL);
   [ChromeEarlGrey loadURL:initialURL];
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kHistoryTestUrl)];
 
@@ -119,7 +120,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const GURL replaceStateHashWithObjectURL =
       web::test::HttpServer::MakeUrl(kReplaceStateHashWithObjectURL);
   const std::string replaceStateHashWithObjectOmniboxText =
-      web::GetContentAndFragmentForUrl(replaceStateHashWithObjectURL);
+      net::GetContentAndFragmentForUrl(replaceStateHashWithObjectURL);
   [ChromeEarlGrey tapWebViewElementWithID:@"replaceStateHashWithObject"];
   [self assertStatusText:@"replaceStateHashWithObject"
          withOmniboxText:replaceStateHashWithObjectOmniboxText
@@ -143,7 +144,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const GURL pushStateHashStringURL =
       web::test::HttpServer::MakeUrl(kPushStateHashStringURL);
   const std::string pushStateHashStringOmniboxText =
-      web::GetContentAndFragmentForUrl(pushStateHashStringURL);
+      net::GetContentAndFragmentForUrl(pushStateHashStringURL);
   [ChromeEarlGrey tapWebViewElementWithID:@"pushStateHashString"];
   [self assertStatusText:@"pushStateHashString"
          withOmniboxText:pushStateHashStringOmniboxText
@@ -152,7 +153,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const GURL replaceStateHashStringURL =
       web::test::HttpServer::MakeUrl(kReplaceStateHashStringURL);
   const std::string replaceStateHashStringOmniboxText =
-      web::GetContentAndFragmentForUrl(replaceStateHashStringURL);
+      net::GetContentAndFragmentForUrl(replaceStateHashStringURL);
   [ChromeEarlGrey tapWebViewElementWithID:@"replaceStateHashString"];
   [self assertStatusText:@"replaceStateHashString"
          withOmniboxText:replaceStateHashStringOmniboxText
@@ -161,7 +162,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const GURL pushStatePathURL =
       web::test::HttpServer::MakeUrl(kPushStatePathURL);
   const std::string pushStatePathOmniboxText =
-      web::GetContentAndFragmentForUrl(pushStatePathURL);
+      net::GetContentAndFragmentForUrl(pushStatePathURL);
   [ChromeEarlGrey tapWebViewElementWithID:@"pushStatePath"];
   [self assertStatusText:@"pushStatePath"
          withOmniboxText:pushStatePathOmniboxText
@@ -170,7 +171,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const GURL replaceStateRootPathSpaceURL =
       web::test::HttpServer::MakeUrl(kReplaceStateRootPathSpaceURL);
   const std::string replaceStateRootPathSpaceOmniboxText =
-      web::GetContentAndFragmentForUrl(replaceStateRootPathSpaceURL);
+      net::GetContentAndFragmentForUrl(replaceStateRootPathSpaceURL);
   [ChromeEarlGrey tapWebViewElementWithID:@"replaceStateRootPathSpace"];
   [self assertStatusText:@"replaceStateRootPathSpace"
          withOmniboxText:replaceStateRootPathSpaceOmniboxText
@@ -200,13 +201,13 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const GURL historyTestURL = web::test::HttpServer::MakeUrl(kHistoryTestUrl);
   [ChromeEarlGrey loadURL:historyTestURL];
   const std::string historyTestOmniboxText =
-      web::GetContentAndFragmentForUrl(historyTestURL);
+      net::GetContentAndFragmentForUrl(historyTestURL);
 
   // Push same URL twice. Verify that URL changed and the status was updated.
   const GURL pushStateHashStringURL =
       web::test::HttpServer::MakeUrl(kPushStateHashStringURL);
   const std::string pushStateHashStringOmniboxText =
-      web::GetContentAndFragmentForUrl(pushStateHashStringURL);
+      net::GetContentAndFragmentForUrl(pushStateHashStringURL);
   [ChromeEarlGrey tapWebViewElementWithID:@"pushStateHashString"];
   [self assertStatusText:@"pushStateHashString"
          withOmniboxText:pushStateHashStringOmniboxText
@@ -271,12 +272,12 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   // The GURL object %-escapes Unicode characters in the URL's fragment,
   // but the omnibox decodes them back to Unicode for display.
   std::string pushStateUnicode =
-      web::GetContentAndFragmentForUrl(web::test::HttpServer::MakeUrl(
+      net::GetContentAndFragmentForUrl(web::test::HttpServer::MakeUrl(
           "http://ios/testing/data/http_server_files/"
           "history.html#unicode")) +
       "\xe1\x84\x91";
   std::string pushStateUnicode2 =
-      web::GetContentAndFragmentForUrl(web::test::HttpServer::MakeUrl(
+      net::GetContentAndFragmentForUrl(web::test::HttpServer::MakeUrl(
           "http://ios/testing/data/http_server_files/"
           "history.html#unicode2")) +
       "\xe2\x88\xa2";
@@ -305,7 +306,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const GURL pushStatePathURL =
       web::test::HttpServer::MakeUrl(kPushStatePathURL);
   const std::string pushStatePathOmniboxText =
-      web::GetContentAndFragmentForUrl(pushStatePathURL);
+      net::GetContentAndFragmentForUrl(pushStatePathURL);
   [ChromeEarlGrey tapWebViewElementWithID:@"pushStatePath"];
 
   [self assertStatusText:@"pushStatePath"
@@ -331,11 +332,11 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
       web::test::HttpServer::MakeUrl("http://foo.com/foo/bar.html");
   GURL pushResultURL = originURL.GetOrigin().Resolve("pushed/relative/url");
   const std::string pushResultOmniboxText =
-      web::GetContentAndFragmentForUrl(pushResultURL);
+      net::GetContentAndFragmentForUrl(pushResultURL);
   GURL replaceResultURL =
       originURL.GetOrigin().Resolve("replaced/relative/url");
   const std::string replaceResultOmniboxText =
-      web::GetContentAndFragmentForUrl(replaceResultURL);
+      net::GetContentAndFragmentForUrl(replaceResultURL);
 
   // A simple HTML page with a base tag that makes all relative URLs
   // domain-relative, a button to trigger a relative pushState, and a button

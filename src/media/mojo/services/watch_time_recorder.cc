@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "media/base/limits.h"

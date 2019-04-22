@@ -12,7 +12,8 @@
 
 namespace webrtc {
 
-StreamsConfig::StreamsConfig() = default;
+// TODO(srte): Revert to using default after removing union member.
+StreamsConfig::StreamsConfig() {}
 StreamsConfig::StreamsConfig(const StreamsConfig&) = default;
 StreamsConfig::~StreamsConfig() = default;
 
@@ -80,5 +81,9 @@ bool PacedPacketInfo::operator==(const PacedPacketInfo& rhs) const {
          probe_cluster_min_probes == rhs.probe_cluster_min_probes &&
          probe_cluster_min_bytes == rhs.probe_cluster_min_bytes;
 }
+
+ProcessInterval::ProcessInterval() = default;
+ProcessInterval::ProcessInterval(const ProcessInterval&) = default;
+ProcessInterval::~ProcessInterval() = default;
 
 }  // namespace webrtc

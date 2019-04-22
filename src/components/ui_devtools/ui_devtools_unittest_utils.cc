@@ -31,7 +31,8 @@ int FakeFrontendChannel::CountProtocolNotificationMessage(
 
 void FakeFrontendChannel::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> message) {
-  protocol_notification_messages_.push_back(message->serialize());
+  EXPECT_TRUE(allow_notifications_);
+  protocol_notification_messages_.push_back(message->serialize(false));
 }
 
 }  // namespace ui_devtools

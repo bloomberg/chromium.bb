@@ -18,6 +18,7 @@ class WindowServiceDelegateImpl : public ws::WindowServiceDelegate {
 
   // ws::WindowServiceDelegate:
   std::unique_ptr<aura::Window> NewTopLevel(
+      ws::TopLevelProxyWindow* top_level_proxy_window,
       aura::PropertyConverter* property_converter,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
@@ -26,6 +27,7 @@ class WindowServiceDelegateImpl : public ws::WindowServiceDelegate {
   void RunWindowMoveLoop(aura::Window* window,
                          ws::mojom::MoveLoopSource source,
                          const gfx::Point& cursor,
+                         int window_component,
                          DoneCallback callback) override;
   void CancelWindowMoveLoop() override;
   void RunDragLoop(aura::Window* window,
@@ -35,6 +37,7 @@ class WindowServiceDelegateImpl : public ws::WindowServiceDelegate {
                    ui::DragDropTypes::DragEventSource source,
                    DragDropCompletedCallback callback) override;
   void CancelDragLoop(aura::Window* window) override;
+  void SetWindowResizeShadow(aura::Window* window, int hit_test) override;
   void UpdateTextInputState(aura::Window* window,
                             ui::mojom::TextInputStatePtr state) override;
   void UpdateImeVisibility(aura::Window* window,
@@ -42,6 +45,8 @@ class WindowServiceDelegateImpl : public ws::WindowServiceDelegate {
                            ui::mojom::TextInputStatePtr state) override;
   void SetModalType(aura::Window* window, ui::ModalType type) override;
   ui::SystemInputInjector* GetSystemInputInjector() override;
+  ui::EventTarget* GetGlobalEventTarget() override;
+  aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
   aura::Window* GetTopmostWindowAtPoint(const gfx::Point& location_in_screen,
                                         const std::set<aura::Window*>& ignores,
                                         aura::Window** real_topmost) override;
@@ -49,6 +54,8 @@ class WindowServiceDelegateImpl : public ws::WindowServiceDelegate {
       ws::WindowTree* tree,
       const std::string& name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
+  void ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
+                          ime::mojom::ImeEngineClientPtr client) override;
 
  private:
   std::unique_ptr<ui::SystemInputInjector> system_input_injector_;

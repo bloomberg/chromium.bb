@@ -16,12 +16,6 @@
 
 @implementation RemotingTheme
 
-+ (void)applyColorSchemes {
-  MDCBasicColorScheme* colorScheme = [[MDCBasicColorScheme alloc]
-      initWithPrimaryColor:RemotingTheme.flatButtonTextColor];
-  [MDCAlertColorThemer applyColorScheme:colorScheme];
-}
-
 #pragma mark - Colors
 
 + (UIColor*)firstLaunchViewBackgroundColor {

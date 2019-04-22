@@ -31,8 +31,8 @@ WebThreadScheduler* WebThreadScheduler::CompositorThreadScheduler() {
 }
 
 CompositorThreadScheduler::CompositorThreadScheduler(
-    std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager)
-    : NonMainThreadSchedulerImpl(std::move(sequence_manager),
+    base::sequence_manager::SequenceManager* sequence_manager)
+    : NonMainThreadSchedulerImpl(sequence_manager,
                                  TaskType::kCompositorThreadTaskQueueDefault),
       input_task_queue_(
           base::FeatureList::IsEnabled(kHighPriorityInputOnCompositorThread)

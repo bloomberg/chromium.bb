@@ -46,44 +46,45 @@ class KeysetMock(keys.Keyset):
           'recovery_key',
           'root_key')
 
-  KEYS_WITH_BUILDTARGET_ALIASES = keys.Keyset._per_buildtarget_key_names
+  KEYS_WITH_ROOT_OF_TRUST_ALIASES = keys.Keyset._root_of_trust_key_names
 
-  BUILDTARGET_ALIASES = ('loem1', 'loem2', 'loem3', 'loem4')
+  ROOT_OF_TRUST_ALIASES = ('loem1', 'loem2', 'loem3', 'loem4')
 
-  BUILDTARGET_NAMES = ('ACME', 'SHINRA', 'WILE', 'COYOTE')
+  ROOT_OF_TRUST_NAMES = ('ACME', 'SHINRA', 'WILE', 'COYOTE')
 
   def __init__(self, key_dir, has_loem_ini=True):
-    """Create a Keyset with buildtarget-specific keys, and populate it."""
+    """Create a Keyset with root_of_trust-specific keys, and populate it."""
 
-    # This will create the Keyset without buildtarget-specific keys, since that
-    # is determined by having loem.ini, and the directory does not exist yet,
-    # let alone loem.ini.
+    # This will create the Keyset without root_of_trust-specific keys, since
+    # that is determined by having loem.ini, and the directory does not exist
+    # yet, let alone loem.ini.
     # We do not actually create files for the KeyPairs, since the tests care.
     super(KeysetMock, self).__init__(key_dir)
 
     osutils.SafeMakedirs(key_dir)
     self.has_loem_ini = has_loem_ini
 
-    # By default, we have buildtarget-specific keys.  If not, don't create them.
+    # By default, we have root_of_trust-specific keys.  If not, don't create
+    # them.
     if not has_loem_ini:
-      self.KEYS_WITH_BUILDTARGET_ALIASES = ()
-      self.BUILDTARGET_ALIASES = ()
-      self.BUILDTARGET_NAMES = ()
+      self.KEYS_WITH_ROOT_OF_TRUST_ALIASES = ()
+      self.ROOT_OF_TRUST_ALIASES = ()
+      self.ROOT_OF_TRUST_NAMES = ()
 
     # Create KeyPairs as appropriate for the Keyset we are mocking.
     for key_name in KeysetMock.KEYS:
-      if key_name not in self.KEYS_WITH_BUILDTARGET_ALIASES:
+      if key_name not in self.KEYS_WITH_ROOT_OF_TRUST_ALIASES:
         self.AddKey(keys.KeyPair(key_name, key_dir))
 
-    for name in self.KEYS_WITH_BUILDTARGET_ALIASES:
-      for buildtarget in self.BUILDTARGET_ALIASES:
-        key = keys.KeyPair("%s.%s" % (name, buildtarget), key_dir)
-        self.AddBuildtargetKey(name, buildtarget, key)
+    for name in self.KEYS_WITH_ROOT_OF_TRUST_ALIASES:
+      for root_of_trust in self.ROOT_OF_TRUST_ALIASES:
+        key = keys.KeyPair("%s.%s" % (name, root_of_trust), key_dir)
+        self.AddRootOfTrustKey(name, root_of_trust, key)
 
-    for alias, buildtarget in zip(
-        self.BUILDTARGET_NAMES, self.BUILDTARGET_ALIASES):
-      self.buildtarget_map[alias] = buildtarget
-      self.buildtarget_map[buildtarget] = buildtarget
+    for alias, root_of_trust in zip(
+        self.ROOT_OF_TRUST_NAMES, self.ROOT_OF_TRUST_ALIASES):
+      self.root_of_trust_map[alias] = root_of_trust
+      self.root_of_trust_map[root_of_trust] = root_of_trust
     self.WriteIniFile()
 
   # TODO(lamontjones): This may eventually make sense to move into
@@ -95,7 +96,7 @@ class KeysetMock(keys.Keyset):
       return
     lines = ['[loem]']
     lines += ['%d = %s' % (i, name)
-              for i, name in enumerate(self.BUILDTARGET_NAMES, 1)]
+              for i, name in enumerate(self.ROOT_OF_TRUST_NAMES, 1)]
     contents = '\n'.join(lines) + '\n'
     osutils.WriteFile(os.path.join(self.key_dir, 'loem.ini'), contents)
 
@@ -103,7 +104,7 @@ class KeysetMock(keys.Keyset):
     """Creates dummy keys from stored keys."""
     for key in self.keys.values():
       CreateDummyKeys(key)
-    for loem in self._buildtarget_keys.values():
+    for loem in self._root_of_trust_keys.values():
       for key in loem.values():
         CreateDummyKeys(key)
 
@@ -444,15 +445,15 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
   def testInit(self):
     ks = keys.Keyset()
     self.assertIsInstance(ks.keys, dict)
-    self.assertIsInstance(ks._buildtarget_keys, dict)
-    self.assertIsInstance(ks.buildtarget_map, dict)
+    self.assertIsInstance(ks._root_of_trust_keys, dict)
+    self.assertIsInstance(ks.root_of_trust_map, dict)
 
   def testInitWithEmptyDir(self):
     """Call Keyset() with an uncreated directory."""
     ks = keys.Keyset(self.tempdir)
     self.assertIsInstance(ks, keys.Keyset)
-    self.assertIsInstance(ks._buildtarget_keys, dict)
-    self.assertIsInstance(ks.buildtarget_map, dict)
+    self.assertIsInstance(ks._root_of_trust_keys, dict)
+    self.assertIsInstance(ks.root_of_trust_map, dict)
 
   def testInitWithPopulatedDirectory(self):
     """Keyset() loads a populated keyset directory correctly."""
@@ -460,15 +461,11 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
     ks0.CreateDummyKeys()
 
     ks1 = keys.Keyset(self.tempdir)
-
     self.assertDictEqual(ks0.keys, ks1.keys, msg='Incorrect keys')
-
-    self.assertDictEqual(ks0._buildtarget_keys, ks1._buildtarget_keys,
-                         msg='Incorrect buildtarget_keys')
-
-    self.assertDictEqual(ks0.buildtarget_map, ks1.buildtarget_map,
+    self.assertDictEqual(ks0._root_of_trust_keys, ks1._root_of_trust_keys,
+                         msg='Incorrect root_of_trust_keys')
+    self.assertDictEqual(ks0.root_of_trust_map, ks1.root_of_trust_map,
                          msg='Incorrect key aliases')
-
     self.assertEqual(ks0, ks1)
 
   def testEqSame(self):
@@ -491,29 +488,29 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
     ks0.AddKey(key0)
     self.assertEqual(ks0.keys['key0'], key0)
 
-  def testAddBuildtargetKey(self):
+  def testAddRootOfTrustKey(self):
     k9 = keys.KeyPair('root_key.loem9', self.tempdir)
     ks0 = self._get_keyset()
-    ks0.AddBuildtargetKey('root_key', 'loem9', k9)
+    ks0.AddRootOfTrustKey('root_key', 'loem9', k9)
 
-    self.assertEqual(ks0._buildtarget_keys['loem9']['root_key'], k9)
+    self.assertEqual(ks0._root_of_trust_keys['loem9']['root_key'], k9)
 
-  def testGetBuildtargetKeysWithLoemIni(self):
+  def testGetRootOfTrustKeysWithLoemIni(self):
     ks0 = self._get_keyset()
-    expected_keys = ks0.GetBuildtargetKeys('root_key')
-    expected = {k: ks0._buildtarget_keys[k]['root_key']
-                for k in ks0._buildtarget_keys.keys()}
+    expected_keys = ks0.GetRootOfTrustKeys('root_key')
+    expected = {k: ks0._root_of_trust_keys[k]['root_key']
+                for k in ks0._root_of_trust_keys.keys()}
     self.assertDictEqual(expected, expected_keys)
 
-  def testGetBuildtargetKeysWithoutLoemIni(self):
+  def testGetRootOfTrustKeysWithoutLoemIni(self):
     ks0 = self._get_keyset(has_loem_ini=False)
-    expected_keys = ks0.GetBuildtargetKeys('root_key')
+    expected_keys = ks0.GetRootOfTrustKeys('root_key')
     self.assertDictEqual({'root_key': ks0.keys['root_key']}, expected_keys)
 
   def testGetBuildKeysetMissmatch(self):
     ks0 = self._get_keyset()
 
-    with self.assertRaises(keys.SignerBuildtargetKeyMissingError):
+    with self.assertRaises(keys.SignerRootOfTrustKeyMissingError):
       ks0.GetBuildKeyset('foo')
 
   def testGetBuildKeyset(self):
@@ -521,30 +518,30 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
     ks1 = ks0.GetBuildKeyset('ACME')
 
     expected_keys = {name: k for name, k in ks0.keys.items()}
-    for name, k in ks0._buildtarget_keys[
-        ks0.buildtarget_map['ACME']].items():
+    for name, k in ks0._root_of_trust_keys[
+        ks0.root_of_trust_map['ACME']].items():
       expected_keys[k.name] = k
       k1 = k.Copy()
       k1.name = name
       expected_keys[name] = k1
     actual_keys = {name: k for name, k in ks1.keys.items()}
     self.assertEqual(expected_keys, actual_keys)
-    self.assertEqual(ks1._buildtarget_keys, {})
+    self.assertEqual(ks1._root_of_trust_keys, {})
 
   def testGetBuildKeysetWithAliasSucceeds(self):
     ks0 = self._get_keyset()
     ks1 = ks0.GetBuildKeyset('loem3')
-    self.assertEqual(ks0._buildtarget_keys['loem3']['root_key'],
+    self.assertEqual(ks0._root_of_trust_keys['loem3']['root_key'],
                      ks1.keys['root_key.loem3'])
     self.assertEqual('root_key', ks1.keys['root_key'].name)
     # The rest of the fields should be equal.
     ks1.keys['root_key'].name = 'root_key.loem3'
-    self.assertEqual(ks0._buildtarget_keys['loem3']['root_key'],
+    self.assertEqual(ks0._root_of_trust_keys['loem3']['root_key'],
                      ks1.keys['root_key'])
 
   def testGetBuildKeysetWithMissingName(self):
     ks0 = self._get_keyset()
-    with self.assertRaises(keys.SignerBuildtargetKeyMissingError):
+    with self.assertRaises(keys.SignerRootOfTrustKeyMissingError):
       ks0.GetBuildKeyset('loem99')
 
   def testPrune(self):
@@ -628,7 +625,7 @@ def CreateDummyKeyblock(key):
 
 
 def CreateDummyKeys(key):
-  """Create empty key files for given key (or buildtarget_keys if exist)."""
+  """Create empty key files for given key (or root_of_trust_keys if exist)."""
   CreateDummyPublic(key)
   CreateDummyPrivateKey(key)
   CreateDummyKeyblock(key)

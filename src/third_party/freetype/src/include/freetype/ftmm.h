@@ -4,7 +4,7 @@
  *
  *   FreeType Multiple Master font interface (specification).
  *
- * Copyright 1996-2018 by
+ * Copyright (C) 1996-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -144,7 +144,7 @@ FT_BEGIN_HEADER
    *     Adobe MM fonts if possible.
    *
    *   strid ::
-   *     The axis name entry in the font's `name` table.  This is another
+   *     The axis name entry in the font's 'name' table.  This is another
    *     (and often better) version of the 'name' field for TrueType GX or
    *     OpenType variation fonts.  Not meaningful for Adobe MM fonts.
    *
@@ -184,10 +184,10 @@ FT_BEGIN_HEADER
    *     entry for each axis.
    *
    *   strid ::
-   *     The entry in `name` table identifying this instance.
+   *     The entry in 'name' table identifying this instance.
    *
    *   psid ::
-   *     The entry in `name` table identifying a PostScript name for this
+   *     The entry in 'name' table identifying a PostScript name for this
    *     instance.  Value 0xFFFF indicates a missing entry.
    */
   typedef struct  FT_Var_Named_Style_
@@ -222,7 +222,7 @@ FT_BEGIN_HEADER
    *
    *   num_namedstyles ::
    *     The number of named styles; a 'named style' is a tuple of design
-   *     coordinates that has a string ID (in the `name` table) associated
+   *     coordinates that has a string ID (in the 'name' table) associated
    *     with it.  The font can tell the user that, for example,
    *     [Weight=1.5,Width=1.1] is 'Bold'.  Another name for 'named style' is
    *     'named instance'.
@@ -356,7 +356,7 @@ FT_BEGIN_HEADER
    *
    * @note:
    *   [Since 2.8.1] To reset all axes to the default values, call the
-   *   function with `num_coords` set to zero and `coords` set to NULL.
+   *   function with `num_coords` set to zero and `coords` set to `NULL`.
    *
    *   [Since 2.9] If `num_coords` is larger than zero, this function sets
    *   the @FT_FACE_FLAG_VARIATION bit in @FT_Face's `face_flags` field
@@ -397,7 +397,7 @@ FT_BEGIN_HEADER
    *
    * @note:
    *   [Since 2.8.1] To reset all axes to the default values, call the
-   *   function with `num_coords` set to zero and `coords` set to NULL.
+   *   function with `num_coords` set to zero and `coords` set to `NULL`.
    *   [Since 2.9] 'Default values' means the currently selected named
    *   instance (or the base font if no named instance is selected).
    *
@@ -478,7 +478,7 @@ FT_BEGIN_HEADER
    *
    * @note:
    *   [Since 2.8.1] To reset all axes to the default values, call the
-   *   function with `num_coords` set to zero and `coords` set to NULL.
+   *   function with `num_coords` set to zero and `coords` set to `NULL`.
    *   [Since 2.9] 'Default values' means the currently selected named
    *   instance (or the base font if no named instance is selected).
    *
@@ -593,7 +593,7 @@ FT_BEGIN_HEADER
    *   Adobe Multiple Master fonts limit the number of designs, and thus the
    *   length of the weight vector to~16.
    *
-   *   If `len` is zero and `weightvector` is NULL, the weight vector array
+   *   If `len` is zero and `weightvector` is `NULL`, the weight vector array
    *   is reset to the default values.
    *
    *   The Adobe documentation also states that the values in the
@@ -633,7 +633,7 @@ FT_BEGIN_HEADER
    *     completion, `len` is set to the number of designs (i.e., the number
    *     of values written to the array).
    *
-   * @utput:
+   * @output:
    *   weightvector ::
    *     An array to be filled.
    *

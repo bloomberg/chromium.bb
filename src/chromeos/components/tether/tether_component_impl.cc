@@ -7,8 +7,9 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/asynchronous_shutdown_object_container_impl.h"
 #include "chromeos/components/tether/crash_recovery_manager_impl.h"
@@ -228,7 +229,7 @@ void TetherComponentImpl::InitiateShutdown() {
       ActiveHost::ActiveHostStatus::DISCONNECTED) {
     PA_LOG(VERBOSE) << "There was an active connection during Tether shutdown. "
                     << "Initiating disconnection from device ID \""
-                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                    << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            active_host->GetActiveHostDeviceId())
                     << "\".";
     tether_disconnector->DisconnectFromNetwork(

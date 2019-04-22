@@ -40,6 +40,7 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
 #if !defined(OS_CHROMEOS)
     case __NR_ftruncate:
+    case __NR_fallocate:
 #endif
     case __NR_ioctl:
       return Allow();
@@ -58,6 +59,8 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_sched_getaffinity:
     case __NR_sched_setaffinity:
       return sandbox::RestrictSchedTarget(GetPolicyPid(), sysno);
+    case __NR_prlimit64:
+      return sandbox::RestrictPrlimit64(GetPolicyPid());
     default:
       if (SyscallSets::IsEventFd(sysno))
         return Allow();

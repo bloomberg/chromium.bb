@@ -66,6 +66,8 @@ enum TBasicType {
     EbtAccStructNV,
 #endif
 
+    EbtReference,
+
     // HLSL types that live only temporarily.
     EbtString,
 
@@ -96,6 +98,8 @@ enum TStorageQualifier {
     EvqPayloadNV,
     EvqPayloadInNV,
     EvqHitAttrNV,
+    EvqCallableDataNV,
+    EvqCallableDataInNV,
 #endif
 
     // parameters
@@ -230,6 +234,9 @@ enum TBuiltInVariable {
     EbvViewIndex,
     EbvDeviceIndex,
 
+    EbvFragSizeEXT,
+    EbvFragInvocationCountEXT,
+
 #ifdef NV_EXTENSIONS
     EbvViewportMaskNV,
     EbvSecondaryPositionNV,
@@ -253,6 +260,7 @@ enum TBuiltInVariable {
     EbvHitKindNV,
     EbvObjectToWorldNV,
     EbvWorldToObjectNV,
+    EbvIncomingRayFlagsNV,
     EbvBaryCoordNV,
     EbvBaryCoordNoPerspNV,
     EbvTaskCountNV,
@@ -310,9 +318,11 @@ __inline const char* GetStorageQualifierString(TStorageQualifier q)
     case EvqFragColor:      return "fragColor";      break;
     case EvqFragDepth:      return "gl_FragDepth";   break;
 #ifdef NV_EXTENSIONS
-    case EvqPayloadNV:      return "rayPayloadNVX";   break;
-    case EvqPayloadInNV:    return "rayPayloadInNVX"; break;
-    case EvqHitAttrNV:      return "hitAttributeNVX"; break;
+    case EvqPayloadNV:        return "rayPayloadNV";     break;
+    case EvqPayloadInNV:      return "rayPayloadInNV";   break;
+    case EvqHitAttrNV:        return "hitAttributeNV";   break;
+    case EvqCallableDataNV:   return "callableDataNV";   break;
+    case EvqCallableDataInNV: return "callableDataInNV"; break;
 #endif
     default:                return "unknown qualifier";
     }
@@ -399,6 +409,9 @@ __inline const char* GetBuiltInVariableString(TBuiltInVariable v)
     case EbvViewIndex:                  return "ViewIndex";
     case EbvDeviceIndex:                return "DeviceIndex";
 
+    case EbvFragSizeEXT:                return "FragSizeEXT";
+    case EbvFragInvocationCountEXT:     return "FragInvocationCountEXT";
+
 #ifdef NV_EXTENSIONS
     case EbvViewportMaskNV:             return "ViewportMaskNV";
     case EbvSecondaryPositionNV:        return "SecondaryPositionNV";
@@ -408,19 +421,21 @@ __inline const char* GetBuiltInVariableString(TBuiltInVariable v)
     case EbvFragFullyCoveredNV:         return "FragFullyCoveredNV";
     case EbvFragmentSizeNV:             return "FragmentSizeNV";
     case EbvInvocationsPerPixelNV:      return "InvocationsPerPixelNV";
-    case EbvLaunchIdNV:                 return "LaunchIdNVX";
-    case EbvLaunchSizeNV:               return "LaunchSizeNVX";
-    case EbvInstanceCustomIndexNV:      return "InstanceCustomIndexNVX";
-    case EbvWorldRayOriginNV:           return "WorldRayOriginNVX";
-    case EbvWorldRayDirectionNV:        return "WorldRayDirectionNVX";
-    case EbvObjectRayOriginNV:          return "ObjectRayOriginNVX";
-    case EbvObjectRayDirectionNV:       return "ObjectRayDirectionNVX";
-    case EbvRayTminNV:                  return "ObjectRayTminNVX";
-    case EbvRayTmaxNV:                  return "ObjectRayTmaxNVX";
-    case EbvHitTNV:                     return "HitTNVX";
-    case EbvHitKindNV:                  return "HitKindNVX";
-    case EbvObjectToWorldNV:            return "ObjectToWorldNVX";
-    case EbvWorldToObjectNV:            return "WorldToObjectNVX";
+    case EbvLaunchIdNV:                 return "LaunchIdNV";
+    case EbvLaunchSizeNV:               return "LaunchSizeNV";
+    case EbvInstanceCustomIndexNV:      return "InstanceCustomIndexNV";
+    case EbvWorldRayOriginNV:           return "WorldRayOriginNV";
+    case EbvWorldRayDirectionNV:        return "WorldRayDirectionNV";
+    case EbvObjectRayOriginNV:          return "ObjectRayOriginNV";
+    case EbvObjectRayDirectionNV:       return "ObjectRayDirectionNV";
+    case EbvRayTminNV:                  return "ObjectRayTminNV";
+    case EbvRayTmaxNV:                  return "ObjectRayTmaxNV";
+    case EbvHitTNV:                     return "HitTNV";
+    case EbvHitKindNV:                  return "HitKindNV";
+    case EbvIncomingRayFlagsNV:         return "IncomingRayFlagsNV";
+    case EbvObjectToWorldNV:            return "ObjectToWorldNV";
+    case EbvWorldToObjectNV:            return "WorldToObjectNV";
+
     case EbvBaryCoordNV:                return "BaryCoordNV";
     case EbvBaryCoordNoPerspNV:         return "BaryCoordNoPerspNV";
     case EbvTaskCountNV:                return "TaskCountNV";

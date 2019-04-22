@@ -41,6 +41,7 @@
 
 #include "src/assembler.h"
 #include "src/ia32/constants-ia32.h"
+#include "src/ia32/register-ia32.h"
 #include "src/ia32/sse-instr.h"
 #include "src/isolate.h"
 #include "src/label.h"
@@ -50,113 +51,7 @@
 namespace v8 {
 namespace internal {
 
-#define GENERAL_REGISTERS(V) \
-  V(eax)                     \
-  V(ecx)                     \
-  V(edx)                     \
-  V(ebx)                     \
-  V(esp)                     \
-  V(ebp)                     \
-  V(esi)                     \
-  V(edi)
-
-#define ALLOCATABLE_GENERAL_REGISTERS(V) \
-  V(eax)                                 \
-  V(ecx)                                 \
-  V(edx)                                 \
-  V(esi)                                 \
-  V(edi)
-
-#define DOUBLE_REGISTERS(V) \
-  V(xmm0)                   \
-  V(xmm1)                   \
-  V(xmm2)                   \
-  V(xmm3)                   \
-  V(xmm4)                   \
-  V(xmm5)                   \
-  V(xmm6)                   \
-  V(xmm7)
-
-#define FLOAT_REGISTERS DOUBLE_REGISTERS
-#define SIMD128_REGISTERS DOUBLE_REGISTERS
-
-#define ALLOCATABLE_DOUBLE_REGISTERS(V) \
-  V(xmm1)                               \
-  V(xmm2)                               \
-  V(xmm3)                               \
-  V(xmm4)                               \
-  V(xmm5)                               \
-  V(xmm6)                               \
-  V(xmm7)
-
-enum RegisterCode {
-#define REGISTER_CODE(R) kRegCode_##R,
-  GENERAL_REGISTERS(REGISTER_CODE)
-#undef REGISTER_CODE
-      kRegAfterLast
-};
-
-class Register : public RegisterBase<Register, kRegAfterLast> {
- public:
-  bool is_byte_register() const { return reg_code_ <= 3; }
-
- private:
-  friend class RegisterBase<Register, kRegAfterLast>;
-  explicit constexpr Register(int code) : RegisterBase(code) {}
-};
-
-ASSERT_TRIVIALLY_COPYABLE(Register);
-static_assert(sizeof(Register) == sizeof(int),
-              "Register can efficiently be passed by value");
-
-#define DEFINE_REGISTER(R) \
-  constexpr Register R = Register::from_code<kRegCode_##R>();
-GENERAL_REGISTERS(DEFINE_REGISTER)
-#undef DEFINE_REGISTER
-constexpr Register no_reg = Register::no_reg();
-
-constexpr bool kPadArguments = false;
-constexpr bool kSimpleFPAliasing = true;
-constexpr bool kSimdMaskRegisters = false;
-
-enum DoubleCode {
-#define REGISTER_CODE(R) kDoubleCode_##R,
-  DOUBLE_REGISTERS(REGISTER_CODE)
-#undef REGISTER_CODE
-      kDoubleAfterLast
-};
-
-class XMMRegister : public RegisterBase<XMMRegister, kDoubleAfterLast> {
-  friend class RegisterBase<XMMRegister, kDoubleAfterLast>;
-  explicit constexpr XMMRegister(int code) : RegisterBase(code) {}
-};
-
-typedef XMMRegister FloatRegister;
-
-typedef XMMRegister DoubleRegister;
-
-typedef XMMRegister Simd128Register;
-
-#define DEFINE_REGISTER(R) \
-  constexpr DoubleRegister R = DoubleRegister::from_code<kDoubleCode_##R>();
-DOUBLE_REGISTERS(DEFINE_REGISTER)
-#undef DEFINE_REGISTER
-constexpr DoubleRegister no_dreg = DoubleRegister::no_reg();
-
-// Note that the bit values must match those used in actual instruction encoding
-constexpr int kNumRegs = 8;
-
-// Caller-saved registers
-constexpr RegList kJSCallerSaved =
-    Register::ListOf<eax, ecx, edx,
-                     ebx,  // used as a caller-saved register in JavaScript code
-                     edi   // callee function
-                     >();
-
-constexpr int kNumJSCallerSaved = 5;
-
-// Number of registers for which space is reserved in safepoints.
-constexpr int kNumSafepointRegisters = 8;
+class SafepointTableBuilder;
 
 enum Condition {
   // any value < 0 is considered no_condition
@@ -223,7 +118,6 @@ class Immediate {
       : Immediate(static_cast<intptr_t>(value.ptr())) {}
 
   static Immediate EmbeddedNumber(double number);  // Smi or HeapNumber.
-  static Immediate EmbeddedCode(CodeStub* code);
   static Immediate EmbeddedStringConstant(const StringConstantBase* str);
 
   static Immediate CodeRelativeOffset(Label* label) {
@@ -310,9 +204,11 @@ enum ScaleFactor {
   times_4 = 2,
   times_8 = 3,
   times_int_size = times_4,
-  times_half_pointer_size = times_2,
-  times_pointer_size = times_4,
-  times_twice_pointer_size = times_8
+
+  times_half_system_pointer_size = times_2,
+  times_system_pointer_size = times_4,
+
+  times_tagged_size = times_4,
 };
 
 class V8_EXPORT_PRIVATE Operand {
@@ -383,8 +279,8 @@ class V8_EXPORT_PRIVATE Operand {
   inline void set_disp8(int8_t disp);
   inline void set_dispr(int32_t disp, RelocInfo::Mode rmode) {
     DCHECK(len_ == 1 || len_ == 2);
-    int32_t* p = reinterpret_cast<int32_t*>(&buf_[len_]);
-    *p = disp;
+    Address p = reinterpret_cast<Address>(&buf_[len_]);
+    WriteUnalignedValue(p, disp);
     len_ += sizeof(int32_t);
     rmode_ = rmode;
   }
@@ -404,7 +300,7 @@ class V8_EXPORT_PRIVATE Operand {
   friend class Assembler;
 };
 ASSERT_TRIVIALLY_COPYABLE(Operand);
-static_assert(sizeof(Operand) <= 2 * kPointerSize,
+static_assert(sizeof(Operand) <= 2 * kSystemPointerSize,
               "Operand must be small enough to pass it by value");
 
 // -----------------------------------------------------------------------------
@@ -476,21 +372,27 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   // for a detailed comment on the layout (globals.h).
   //
   // If the provided buffer is nullptr, the assembler allocates and grows its
-  // own buffer, and buffer_size determines the initial buffer size. The buffer
-  // is owned by the assembler and deallocated upon destruction of the
-  // assembler.
-  //
-  // If the provided buffer is not nullptr, the assembler uses the provided
-  // buffer for code generation and assumes its size to be buffer_size. If the
-  // buffer is too small, a fatal error occurs. No deallocation of the buffer is
-  // done upon destruction of the assembler.
-  Assembler(const AssemblerOptions& options, void* buffer, int buffer_size);
+  // own buffer. Otherwise it takes ownership of the provided buffer.
+  explicit Assembler(const AssemblerOptions&,
+                     std::unique_ptr<AssemblerBuffer> = {});
   virtual ~Assembler() {}
 
-  // GetCode emits any pending (non-emitted) code and fills the descriptor
-  // desc. GetCode() is idempotent; it returns the same result if no other
-  // Assembler functions are invoked in between GetCode() calls.
-  void GetCode(Isolate* isolate, CodeDesc* desc);
+  // GetCode emits any pending (non-emitted) code and fills the descriptor desc.
+  static constexpr int kNoHandlerTable = 0;
+  static constexpr SafepointTableBuilder* kNoSafepointTable = nullptr;
+  void GetCode(Isolate* isolate, CodeDesc* desc,
+               SafepointTableBuilder* safepoint_table_builder,
+               int handler_table_offset);
+
+  // Convenience wrapper for code without safepoint or handler tables.
+  void GetCode(Isolate* isolate, CodeDesc* desc) {
+    GetCode(isolate, desc, kNoSafepointTable, kNoHandlerTable);
+  }
+
+  void FinalizeJumpOptimizationInfo();
+
+  // Unused on this architecture.
+  void MaybeEmitOutOfLineConstantPool() {}
 
   // Read/Modify the code target in the branch/call instruction at pc.
   // The isolate argument is unused (and may be nullptr) when skipping flushing.
@@ -517,11 +419,11 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
       Address pc, Address target,
       RelocInfo::Mode mode = RelocInfo::INTERNAL_REFERENCE);
 
-  static constexpr int kSpecialTargetSize = kPointerSize;
+  static constexpr int kSpecialTargetSize = kSystemPointerSize;
 
   // Distance between the address of the code target in the call instruction
   // and the return address
-  static constexpr int kCallTargetAddressOffset = kPointerSize;
+  static constexpr int kCallTargetAddressOffset = kSystemPointerSize;
 
   // One byte opcode for test al, 0xXX.
   static constexpr byte kTestAlByte = 0xA8;
@@ -840,7 +742,6 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   void call(Register reg) { call(Operand(reg)); }
   void call(Operand adr);
   void call(Handle<Code> code, RelocInfo::Mode rmode);
-  void call(CodeStub* stub);
   void wasm_call(Address address, RelocInfo::Mode rmode);
 
   // Jumps
@@ -955,8 +856,9 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
   void ucomiss(XMMRegister dst, XMMRegister src) { ucomiss(dst, Operand(src)); }
   void ucomiss(XMMRegister dst, Operand src);
-  void movaps(XMMRegister dst, XMMRegister src);
-  void movups(XMMRegister dst, XMMRegister src);
+  void movaps(XMMRegister dst, XMMRegister src) { movaps(dst, Operand(src)); }
+  void movaps(XMMRegister dst, Operand src);
+  void movups(XMMRegister dst, XMMRegister src) { movups(dst, Operand(src)); }
   void movups(XMMRegister dst, Operand src);
   void movups(Operand dst, XMMRegister src);
   void shufps(XMMRegister dst, XMMRegister src, byte imm8);
@@ -968,6 +870,8 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
   void andps(XMMRegister dst, Operand src);
   void andps(XMMRegister dst, XMMRegister src) { andps(dst, Operand(src)); }
+  void andnps(XMMRegister dst, Operand src);
+  void andnps(XMMRegister dst, XMMRegister src) { andnps(dst, Operand(src)); }
   void xorps(XMMRegister dst, Operand src);
   void xorps(XMMRegister dst, XMMRegister src) { xorps(dst, Operand(src)); }
   void orps(XMMRegister dst, Operand src);
@@ -994,16 +898,19 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   void maxps(XMMRegister dst, XMMRegister src) { maxps(dst, Operand(src)); }
 
   void cmpps(XMMRegister dst, Operand src, uint8_t cmp);
+  void cmpps(XMMRegister dst, XMMRegister src, uint8_t cmp) {
+    cmpps(dst, Operand(src), cmp);
+  }
 #define SSE_CMP_P(instr, imm8)                       \
   void instr##ps(XMMRegister dst, XMMRegister src) { \
     cmpps(dst, Operand(src), imm8);                  \
   }                                                  \
   void instr##ps(XMMRegister dst, Operand src) { cmpps(dst, src, imm8); }
 
-  SSE_CMP_P(cmpeq, 0x0);
-  SSE_CMP_P(cmplt, 0x1);
-  SSE_CMP_P(cmple, 0x2);
-  SSE_CMP_P(cmpneq, 0x4);
+  SSE_CMP_P(cmpeq, 0x0)
+  SSE_CMP_P(cmplt, 0x1)
+  SSE_CMP_P(cmple, 0x2)
+  SSE_CMP_P(cmpneq, 0x4)
 
 #undef SSE_CMP_P
 
@@ -1416,9 +1323,10 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   void vhaddps(XMMRegister dst, XMMRegister src1, Operand src2) {
     vinstr(0x7C, dst, src1, src2, kF2, k0F, kWIG);
   }
-  void vmovaps(XMMRegister dst, XMMRegister src) {
-    vps(0x28, dst, xmm0, Operand(src));
-  }
+  void vmovaps(XMMRegister dst, XMMRegister src) { vmovaps(dst, Operand(src)); }
+  void vmovaps(XMMRegister dst, Operand src) { vps(0x28, dst, xmm0, src); }
+  void vmovups(XMMRegister dst, XMMRegister src) { vmovups(dst, Operand(src)); }
+  void vmovups(XMMRegister dst, Operand src) { vps(0x10, dst, xmm0, src); }
   void vshufps(XMMRegister dst, XMMRegister src1, XMMRegister src2, byte imm8) {
     vshufps(dst, src1, Operand(src2), imm8);
   }
@@ -1596,6 +1504,8 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
 #define PACKED_OP_LIST(V) \
   V(and, 0x54)            \
+  V(andn, 0x55)           \
+  V(or, 0x56)             \
   V(xor, 0x57)            \
   V(add, 0x58)            \
   V(mul, 0x59)            \
@@ -1618,7 +1528,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
     vpd(opcode, dst, src1, src2);                                         \
   }
 
-  PACKED_OP_LIST(AVX_PACKED_OP_DECLARE);
+  PACKED_OP_LIST(AVX_PACKED_OP_DECLARE)
   void vps(byte op, XMMRegister dst, XMMRegister src1, Operand src2);
   void vpd(byte op, XMMRegister dst, XMMRegister src1, Operand src2);
 
@@ -1631,10 +1541,10 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
     vcmpps(dst, src1, src2, imm8);                                      \
   }
 
-  AVX_CMP_P(vcmpeq, 0x0);
-  AVX_CMP_P(vcmplt, 0x1);
-  AVX_CMP_P(vcmple, 0x2);
-  AVX_CMP_P(vcmpneq, 0x4);
+  AVX_CMP_P(vcmpeq, 0x0)
+  AVX_CMP_P(vcmplt, 0x1)
+  AVX_CMP_P(vcmple, 0x2)
+  AVX_CMP_P(vcmpneq, 0x4)
 
 #undef AVX_CMP_P
 
@@ -1722,9 +1632,6 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
     return pc_offset() - label->pos();
   }
 
-  // Use --code-comments to enable.
-  void RecordComment(const char* msg);
-
   // Record a deoptimization reason that can be used by a log or cpu profiler.
   // Use --trace-deopt to enable.
   void RecordDeoptReason(DeoptimizeReason reason, SourcePosition position,
@@ -1751,14 +1658,14 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   static bool IsNop(Address addr);
 
   int relocation_writer_size() {
-    return (buffer_ + buffer_size_) - reloc_info_writer.pos();
+    return (buffer_start_ + buffer_->size()) - reloc_info_writer.pos();
   }
 
   // Avoid overflows for displacements etc.
   static constexpr int kMaximalBufferSize = 512 * MB;
 
-  byte byte_at(int pos) { return buffer_[pos]; }
-  void set_byte_at(int pos, byte value) { buffer_[pos] = value; }
+  byte byte_at(int pos) { return buffer_start_[pos]; }
+  void set_byte_at(int pos, byte value) { buffer_start_[pos] = value; }
 
  protected:
   void emit_sse_operand(XMMRegister reg, Operand adr);
@@ -1766,14 +1673,16 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   void emit_sse_operand(Register dst, XMMRegister src);
   void emit_sse_operand(XMMRegister dst, Register src);
 
-  byte* addr_at(int pos) { return buffer_ + pos; }
+  Address addr_at(int pos) {
+    return reinterpret_cast<Address>(buffer_start_ + pos);
+  }
 
  private:
   uint32_t long_at(int pos)  {
-    return *reinterpret_cast<uint32_t*>(addr_at(pos));
+    return ReadUnalignedValue<uint32_t>(addr_at(pos));
   }
   void long_at_put(int pos, uint32_t x)  {
-    *reinterpret_cast<uint32_t*>(addr_at(pos)) = x;
+    WriteUnalignedValue(addr_at(pos), x);
   }
 
   // code emission
@@ -1849,6 +1758,8 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
   void AllocateAndInstallRequestedHeapObjects(Isolate* isolate);
 
+  int WriteCodeComments();
+
   friend class EnsureSpace;
 
   // Internal reference positions, required for (potential) patching in
@@ -1892,10 +1803,6 @@ class EnsureSpace {
   int space_before_;
 #endif
 };
-
-// Define {RegisterName} methods for the register types.
-DEFINE_REGISTER_NAMES(Register, GENERAL_REGISTERS)
-DEFINE_REGISTER_NAMES(XMMRegister, DOUBLE_REGISTERS)
 
 }  // namespace internal
 }  // namespace v8

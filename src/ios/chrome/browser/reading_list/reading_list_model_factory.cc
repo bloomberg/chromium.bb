@@ -6,8 +6,9 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/time/default_clock.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -19,8 +20,8 @@
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
+#include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 
@@ -40,7 +41,8 @@ ReadingListModel* ReadingListModelFactory::GetForBrowserStateIfExists(
 
 // static
 ReadingListModelFactory* ReadingListModelFactory::GetInstance() {
-  return base::Singleton<ReadingListModelFactory>::get();
+  static base::NoDestructor<ReadingListModelFactory> instance;
+  return instance.get();
 }
 
 ReadingListModelFactory::ReadingListModelFactory()

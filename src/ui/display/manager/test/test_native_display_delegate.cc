@@ -83,14 +83,26 @@ void TestNativeDisplayDelegate::Configure(const DisplaySnapshot& output,
 
 void TestNativeDisplayDelegate::GetHDCPState(const DisplaySnapshot& output,
                                              GetHDCPStateCallback callback) {
-  std::move(callback).Run(get_hdcp_expectation_, hdcp_state_);
+  if (run_async_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), get_hdcp_expectation_,
+                                  hdcp_state_));
+  } else {
+    std::move(callback).Run(get_hdcp_expectation_, hdcp_state_);
+  }
 }
 
 void TestNativeDisplayDelegate::SetHDCPState(const DisplaySnapshot& output,
                                              HDCPState state,
                                              SetHDCPStateCallback callback) {
   log_->AppendAction(GetSetHDCPStateAction(output, state));
-  std::move(callback).Run(set_hdcp_expectation_);
+
+  if (run_async_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), set_hdcp_expectation_));
+  } else {
+    std::move(callback).Run(set_hdcp_expectation_);
+  }
 }
 
 bool TestNativeDisplayDelegate::SetColorMatrix(

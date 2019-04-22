@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_DBUS_SENESCHAL_CLIENT_H_
 #define CHROMEOS_DBUS_SENESCHAL_CLIENT_H_
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/seneschal/seneschal_service.pb.h"
@@ -14,7 +14,7 @@ namespace chromeos {
 
 // SeneschalClient is used to communicate with Seneschal, which manages
 // 9p file servers.
-class CHROMEOS_EXPORT SeneschalClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) SeneschalClient : public DBusClient {
  public:
   ~SeneschalClient() override;
 

@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 void HashValue::Init(HASH_TYPE Type)
 {
   HashValue::Type=Type;
@@ -133,3 +135,5 @@ bool DataHash::Cmp(HashValue *CmpValue,byte *Key)
     ConvertHashToMAC(&Final,Key);
   return Final==*CmpValue;
 }
+
+}  // namespace third_party_unrar

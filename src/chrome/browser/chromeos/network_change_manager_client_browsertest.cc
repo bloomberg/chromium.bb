@@ -5,8 +5,8 @@
 #include "base/run_loop.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_device_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/features.h"
@@ -19,14 +19,17 @@ namespace {
 
 class NetObserver : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
-  NetObserver() { net::NetworkChangeNotifier::AddNetworkChangeObserver(this); }
+  NetObserver() {
+    net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+    last_connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
+  }
 
   ~NetObserver() override {
     net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   }
 
   void WaitForConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
-    while (last_connection_type != type) {
+    while (last_connection_type_ != type) {
       run_loop_.reset(new base::RunLoop());
       run_loop_->Run();
       run_loop_.reset();
@@ -36,15 +39,14 @@ class NetObserver : public net::NetworkChangeNotifier::NetworkChangeObserver {
   // net::NetworkChangeNotifier:NetworkChangeObserver:
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override {
-    change_count++;
-    last_connection_type = type;
+    change_count_++;
+    last_connection_type_ = type;
     if (run_loop_)
       run_loop_->Quit();
   }
 
-  int change_count = 0;
-  net::NetworkChangeNotifier::ConnectionType last_connection_type =
-      net::NetworkChangeNotifier::CONNECTION_UNKNOWN;
+  int change_count_ = 0;
+  net::NetworkChangeNotifier::ConnectionType last_connection_type_;
 
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -53,8 +55,12 @@ class NetObserver : public net::NetworkChangeNotifier::NetworkChangeObserver {
 class NetworkServiceObserver
     : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
-  NetworkServiceObserver() {
+  NetworkServiceObserver() : weak_factory_(this) {
     content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
+    content::GetNetworkConnectionTracker()->GetConnectionType(
+        &last_connection_type_,
+        base::BindOnce(&NetworkServiceObserver::OnConnectionChanged,
+                       weak_factory_.GetWeakPtr()));
   }
 
   ~NetworkServiceObserver() override {
@@ -63,7 +69,7 @@ class NetworkServiceObserver
   }
 
   void WaitForConnectionType(network::mojom::ConnectionType type) {
-    while (last_connection_type != type) {
+    while (last_connection_type_ != type) {
       run_loop_.reset(new base::RunLoop());
       run_loop_->Run();
       run_loop_.reset();
@@ -72,18 +78,18 @@ class NetworkServiceObserver
 
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override {
-    change_count++;
-    last_connection_type = type;
+    change_count_++;
+    last_connection_type_ = type;
     if (run_loop_)
       run_loop_->Quit();
   }
 
-  int change_count = 0;
-  network::mojom::ConnectionType last_connection_type =
-      network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+  int change_count_ = 0;
+  network::mojom::ConnectionType last_connection_type_;
 
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
+  base::WeakPtrFactory<NetworkServiceObserver> weak_factory_;
 };
 
 }  // namespace
@@ -107,8 +113,9 @@ class NetworkChangeManagerClientBrowserTest : public InProcessBrowserTest {
 
 // Tests that network changes from shill are received by both the
 // NetworkChangeNotifier and NetworkConnectionTracker.
+// TODO(crbug.com/934583): Fix the flakiness.
 IN_PROC_BROWSER_TEST_F(NetworkChangeManagerClientBrowserTest,
-                       ReceiveNotifications) {
+                       DISABLED_ReceiveNotifications) {
   NetObserver net_observer;
   NetworkServiceObserver network_service_observer;
 
@@ -119,21 +126,22 @@ IN_PROC_BROWSER_TEST_F(NetworkChangeManagerClientBrowserTest,
       net::NetworkChangeNotifier::CONNECTION_WIFI);
   // NetworkChangeNotifier will send a CONNECTION_NONE notification before
   // the CONNECTION_WIFI one.
-  EXPECT_EQ(2, net_observer.change_count);
+  EXPECT_EQ(2, net_observer.change_count_);
   EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_WIFI,
-            net_observer.last_connection_type);
+            net_observer.last_connection_type_);
 
   network_service_observer.WaitForConnectionType(
       network::mojom::ConnectionType::CONNECTION_WIFI);
-  EXPECT_EQ(2, network_service_observer.change_count);
+  EXPECT_EQ(2, network_service_observer.change_count_);
   EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_WIFI,
-            network_service_observer.last_connection_type);
-};
+            network_service_observer.last_connection_type_);
+}
 
 // Tests that the NetworkChangeManagerClient reconnects to the network service
 // after it gets disconnected.
+// TODO(crbug.com/934583): Fix the flakiness.
 IN_PROC_BROWSER_TEST_F(NetworkChangeManagerClientBrowserTest,
-                       ReconnectToNetworkService) {
+                       DISABLED_ReconnectToNetworkService) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
 
@@ -158,15 +166,15 @@ IN_PROC_BROWSER_TEST_F(NetworkChangeManagerClientBrowserTest,
       net::NetworkChangeNotifier::CONNECTION_WIFI);
   // NetworkChangeNotifier will send a CONNECTION_NONE notification before
   // the CONNECTION_WIFI one.
-  EXPECT_EQ(2, net_observer.change_count);
+  EXPECT_EQ(2, net_observer.change_count_);
   EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_WIFI,
-            net_observer.last_connection_type);
+            net_observer.last_connection_type_);
 
   network_service_observer.WaitForConnectionType(
       network::mojom::ConnectionType::CONNECTION_WIFI);
-  EXPECT_EQ(2, network_service_observer.change_count);
+  EXPECT_EQ(2, network_service_observer.change_count_);
   EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_WIFI,
-            network_service_observer.last_connection_type);
-};
+            network_service_observer.last_connection_type_);
+}
 
 }  // namespace chromeos

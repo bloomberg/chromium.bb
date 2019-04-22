@@ -4,16 +4,14 @@
 
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
-#include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
-#include "ios/chrome/browser/signin/signin_client_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,9 +25,7 @@ AccountConsistencyServiceFactory::AccountConsistencyServiceFactory()
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ios::AccountReconcilorFactory::GetInstance());
   DependsOn(ios::CookieSettingsFactory::GetInstance());
-  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
-  DependsOn(SigninClientFactory::GetInstance());
-  DependsOn(ios::SigninManagerFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 AccountConsistencyServiceFactory::~AccountConsistencyServiceFactory() {}
@@ -44,7 +40,8 @@ AccountConsistencyService* AccountConsistencyServiceFactory::GetForBrowserState(
 // static
 AccountConsistencyServiceFactory*
 AccountConsistencyServiceFactory::GetInstance() {
-  return base::Singleton<AccountConsistencyServiceFactory>::get();
+  static base::NoDestructor<AccountConsistencyServiceFactory> instance;
+  return instance.get();
 }
 
 void AccountConsistencyServiceFactory::RegisterBrowserStatePrefs(
@@ -58,12 +55,10 @@ AccountConsistencyServiceFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<AccountConsistencyService>(
-      chrome_browser_state,
+      chrome_browser_state, chrome_browser_state->GetPrefs(),
       ios::AccountReconcilorFactory::GetForBrowserState(chrome_browser_state),
       ios::CookieSettingsFactory::GetForBrowserState(chrome_browser_state),
-      GaiaCookieManagerServiceFactory::GetForBrowserState(chrome_browser_state),
-      SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state));
+      IdentityManagerFactory::GetForBrowserState(chrome_browser_state));
 }
 
 }  // namespace ios

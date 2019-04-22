@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -35,6 +36,9 @@ class ManagedUiTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ManagedUiTest, ShouldDisplayManagedUiFlagDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitFromCommandLine("", "ShowManagedUi");
+
   PolicyMap policy_map;
   policy_map.Set("test-policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                  POLICY_SOURCE_PLATFORM,

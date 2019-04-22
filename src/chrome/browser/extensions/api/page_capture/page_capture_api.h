@@ -47,6 +47,10 @@ class PageCaptureSaveAsMHTMLFunction : public ChromeAsyncExtensionFunction {
   void ResolvePermissionRequest(const PermissionIDSet& allowed_permissions);
 #endif
 
+  // Returns whether or not the extension has permission to capture the current
+  // page.
+  bool CanCaptureCurrentPage();
+
   // Called on the file thread.
   void CreateTemporaryFile();
 

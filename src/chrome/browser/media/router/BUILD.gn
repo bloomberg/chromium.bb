@@ -66,7 +66,7 @@ static_library("router") {
       "discovery",
       "//extensions/browser",
       "//mojo/public/cpp/bindings",
-      "//ui/base:ui_features",
+      "//ui/base:buildflags",
     ]
     sources += [
       "data_decoder_util.cc",
@@ -103,6 +103,8 @@ static_library("router") {
       "providers/cast/cast_media_route_provider.h",
       "providers/cast/cast_media_route_provider_metrics.cc",
       "providers/cast/cast_media_route_provider_metrics.h",
+      "providers/cast/cast_session_tracker.cc",
+      "providers/cast/cast_session_tracker.h",
       "providers/cast/chrome_cast_message_handler.cc",
       "providers/cast/chrome_cast_message_handler.h",
       "providers/cast/dual_media_sink_service.cc",

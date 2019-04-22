@@ -35,9 +35,6 @@ class ServiceManagerConnectionImpl : public ServiceManagerConnection {
   // ServiceManagerConnection:
   void Start() override;
   service_manager::Connector* GetConnector() override;
-  void AddEmbeddedService(
-      const std::string& name,
-      const service_manager::EmbeddedServiceInfo& info) override;
   void SetDefaultServiceRequestHandler(
       const ServiceRequestHandler& handler) override;
 

@@ -57,6 +57,7 @@ source_set("unit_tests") {
   deps = [
     ":safe_mode",
     "//base",
+    "//base/test:test_support",
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/test/base",
     "//ios/chrome/test/ocmock",

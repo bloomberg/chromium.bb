@@ -54,6 +54,7 @@ function readFloat64(offset, little_endian) {
 }
 
 function warmup(f) {
+  %PrepareFunctionForOptimization(f);
   f(0);
   f(1);
   %OptimizeFunctionOnNextCall(f);
@@ -173,14 +174,14 @@ assertUnoptimized(readFloat64);
   assertUnoptimized(readUint8);
 })();
 
-// TurboFan neutered buffer deopts.
+// TurboFan detached buffer deopts.
 (function() {
   function readInt8Handled(offset) {
     try { return dataview.getInt8(offset); } catch (e) { return e; }
   }
   warmup(readInt8Handled);
   assertOptimized(readInt8Handled);
-  %ArrayBufferNeuter(buffer);
+  %ArrayBufferDetach(buffer);
   assertInstanceof(readInt8Handled(0), TypeError);
   assertUnoptimized(readInt8Handled);
 })();

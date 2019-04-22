@@ -76,7 +76,7 @@ class IgnoreErrorsCertVerifierTest : public ::testing::Test {
   void SetUp() override {
     verifier_.set_whitelist(
         IgnoreErrorsCertVerifier::MakeWhitelist(MakeWhitelist()));
-  };
+  }
 
   // The wrapped CertVerifier. Defaults to returning ERR_CERT_INVALID. Owned by
   // |verifier_|.
@@ -190,8 +190,8 @@ TEST_P(IgnoreCertificateErrorsSPKIListFlagTest, TestUserDataDirSwitchRequired) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(WithUserDataDirSwitchPresent,
-                        IgnoreCertificateErrorsSPKIListFlagTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(WithUserDataDirSwitchPresent,
+                         IgnoreCertificateErrorsSPKIListFlagTest,
+                         ::testing::Bool());
 
 }  // namespace network

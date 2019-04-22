@@ -29,17 +29,23 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/guest_view/extensions_guest_view_messages.h"
+#include "extensions/common/mojo/guest_view.mojom.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/features.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "ui/base/ui_base_features.h"
 #include "url/url_constants.h"
 
 using extensions::ExtensionsAPIClient;
+using extensions::MimeHandlerStreamManager;
 using extensions::MimeHandlerViewGuest;
 using extensions::TestMimeHandlerViewGuest;
 using guest_view::GuestViewManager;
@@ -90,6 +96,10 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
     return manager;
   }
 
+  content::WebContents* GetEmbedderWebContents() {
+    return browser()->tab_strip_model()->GetWebContentsAt(0);
+  }
+
   MimeHandlerViewGuest* GetLastGuestView() const {
     return MimeHandlerViewGuest::FromWebContents(
                GetGuestViewManager()->GetLastGuestCreated())
@@ -116,6 +126,7 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
     ASSERT_TRUE(extension);
 
     extensions::ResultCatcher catcher;
+
     ui_test_utils::NavigateToURL(browser(), url);
 
     if (!catcher.GetNextResult())
@@ -154,6 +165,11 @@ class MimeHandlerViewCrossProcessTest
   void SetUpCommandLine(base::CommandLine* cl) override {
     MimeHandlerViewTest::SetUpCommandLine(cl);
     is_cross_process_mode_ = GetParam();
+    // TODO(ekaramad): All these tests started timing out on ChromeOS (https://
+    // crbug.com/949565).
+#if defined(OS_CHROMEOS)
+    is_cross_process_mode_ = false;
+#endif
     if (is_cross_process_mode_) {
       scoped_feature_list_.InitAndEnableFeature(
           features::kMimeHandlerViewInCrossProcessFrame);
@@ -169,9 +185,9 @@ class MimeHandlerViewCrossProcessTest
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewCrossProcessTest);
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        MimeHandlerViewCrossProcessTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         MimeHandlerViewCrossProcessTest,
+                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Embedded) {
   RunTest("test_embedded.html");
@@ -182,19 +198,12 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Embedded) {
   EXPECT_EQ(1U, gv_manager->num_guests_created());
 }
 
-// TODO(crbug.com/897971): Flaky on Windows 7 debug.
-#if defined(OS_WIN)
-#define MAYBE_EmbedWithInitialCrossOriginFrame \
-  DISABLED_EmbedWithInitialCrossOriginFrame
-#else
-#define MAYBE_EmbedWithInitialCrossOriginFrame EmbedWithInitialCrossOriginFrame
-#endif
 // This test start with an <object> that has a content frame. Then the content
 // frame (plugin frame) is navigated to a cross-origin target page. After the
 // navigation is completed, the <object> is set to render MimeHandlerView by
 // setting its |data| and |type| attributes accordingly.
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
-                       MAYBE_EmbedWithInitialCrossOriginFrame) {
+                       EmbedWithInitialCrossOriginFrame) {
   const std::string kTestName = "test_cross_origin_frame";
   std::string cross_origin_url =
       embedded_test_server()->GetURL("b.com", "/test_page.html").spec();
@@ -235,14 +244,6 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
   RunTestWithUrl(test_url);
 }
 
-// TODO(crbug.com/897971): Flaky on Windows 7 debug.
-#if defined(OS_WIN)
-#define MAYBE_NavigationRaceFromCrossProcessRenderer \
-  DISABLED_NavigationRaceFromCrossProcessRenderer
-#else
-#define MAYBE_NavigationRaceFromCrossProcessRenderer \
-  NavigationRaceFromCrossProcessRenderer
-#endif
 // TODO(ekaramad): Without proper handling of navigation to 'about:blank', this
 // test would be flaky. Use TestNavigationManager class and possibly break the
 // test into more sub-tests for various scenarios (https://crbug.com/659750).
@@ -254,7 +255,7 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
 // the <object> loads some text/csv content to create a MimeHandlerViewGuest.
 // The test passes if MHV loads.
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
-                       MAYBE_NavigationRaceFromCrossProcessRenderer) {
+                       NavigationRaceFromCrossProcessRenderer) {
   if (!is_cross_process_mode()) {
     // Note that this test would pass trivially with BrowserPlugin-based guests
     // because loading a plugin is quite independent from navigating a plugin.
@@ -274,6 +275,38 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
                          kTestName.c_str(), cross_origin_url.c_str(),
                          other_cross_origin_url.c_str(), "testEmbedded.csv"));
   RunTestWithUrl(test_url);
+}
+
+// This test verifies that removing embedder RenderFrame will not crash the
+// renderer (for context see https://crbug.com/930803).
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
+                       EmbedderFrameRemovedNoCrash) {
+  if (!is_cross_process_mode()) {
+    // The associated crash is due to handling an IPC which is only used on the
+    // frame-based MimeHandlerView.
+    return;
+  }
+  RunTest("test_iframe_basic.html");
+  auto* guest_view = GuestViewBase::FromWebContents(
+      GetGuestViewManager()->WaitForSingleGuestCreated());
+  ASSERT_TRUE(guest_view);
+  int32_t element_instance_id = guest_view->element_instance_id();
+  auto* embedder_web_contents = GetEmbedderWebContents();
+  auto* child_frame =
+      content::ChildFrameAt(embedder_web_contents->GetMainFrame(), 0);
+  content::RenderFrameDeletedObserver render_frame_observer(child_frame);
+  ASSERT_TRUE(
+      content::ExecJs(embedder_web_contents,
+                      "document.querySelector('iframe').outerHTML = ''"));
+  render_frame_observer.WaitUntilDeleted();
+  // Send the IPC. During destruction MHVFC would cause a UaF since it was not
+  // removed from the global map.
+  extensions::mojom::MimeHandlerViewContainerManagerPtr container_manager;
+  embedder_web_contents->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
+      &container_manager);
+  container_manager->DestroyFrameContainer(element_instance_id);
+  // Running the following JS code fails if the renderer has crashed.
+  ASSERT_TRUE(content::ExecJs(embedder_web_contents, "window.name = 'foo'"));
 }
 
 // TODO(ekaramad): Somehow canceling a first dialog in a setup similar to the
@@ -332,12 +365,26 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
 // The following tests will eventually converted into a parametric version which
 // will run on both BrowserPlugin-based and cross-process-frame-based
 // MimeHandlerView (https://crbug.com/659750).
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, PostMessage) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, PostMessage) {
   RunTest("test_postmessage.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Basic) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Basic) {
   RunTest("testBasic.csv");
+  // Verify that for a navigation to a MimeHandlerView MIME type, exactly one
+  // stream is intercepted. This means :
+  // a- For BrowserPlugin-based MHV the PluginDocument passes the |view_id| to
+  //    MimeHandlerViewContainer (so a new request is not sent).
+  // b- For frame-based MimeHandlerView we do not create a PluginDocument. If a
+  //    PluginDocument was created here, the |view_id| associated with the
+  //    stream intercepted from navigation response would be lost (
+  //    PluginDocument does not talk to a MimeHandlerViewFrameContainer). Then,
+  //    the newly added <embed> by the PluginDocument would send its own request
+  //    leading to a total of 2 intercepted streams. The first one (from
+  //    navigation) would never be released.
+  EXPECT_EQ(0U, MimeHandlerStreamManager::Get(
+                    GetEmbedderWebContents()->GetBrowserContext())
+                    ->streams_.size());
 }
 
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Iframe) {
@@ -424,9 +471,9 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, TargetBlankAnchor) {
       browser()->tab_strip_model()->GetWebContentsAt(1)->GetLastCommittedURL());
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BeforeUnload_NoDialog) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, BeforeUnload_NoDialog) {
   ASSERT_NO_FATAL_FAILURE(RunTest("testBeforeUnloadNoDialog.csv"));
-  auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
+  auto* web_contents = GetEmbedderWebContents();
   content::PrepContentsForBeforeUnloadTest(web_contents);
 
   // Wait for a round trip to the outer renderer to ensure any beforeunload
@@ -439,9 +486,10 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BeforeUnload_NoDialog) {
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BeforeUnload_ShowDialog) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
+                       BeforeUnload_ShowDialog) {
   ASSERT_NO_FATAL_FAILURE(RunTest("testBeforeUnloadShowDialog.csv"));
-  auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
+  auto* web_contents = GetEmbedderWebContents();
   content::PrepContentsForBeforeUnloadTest(web_contents);
 
   // Wait for a round trip to the outer renderer to ensure the beforeunload
@@ -469,12 +517,6 @@ class MimeHandlerViewBrowserPluginSpecificTest : public MimeHandlerViewTest {
   ~MimeHandlerViewBrowserPluginSpecificTest() override {}
 
  protected:
-  // None of these test create new tabs, so the embedder should be the first
-  // tab.
-  content::WebContents* GetEmbedderWebContents() {
-    return browser()->tab_strip_model()->GetWebContentsAt(0);
-  }
-
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewBrowserPluginSpecificTest);
 };
 

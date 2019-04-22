@@ -11,6 +11,7 @@
 #include <Security/Security.h>
 
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -22,6 +23,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
@@ -360,7 +362,7 @@ ClientCertIdentityList GetClientCertsOnBackgroundThread(
       kSecClassIdentity, kSecMatchLimitAll, kCFBooleanTrue, kCFBooleanTrue,
   };
   ScopedCFTypeRef<CFDictionaryRef> query(CFDictionaryCreate(
-      kCFAllocatorDefault, kKeys, kValues, arraysize(kValues),
+      kCFAllocatorDefault, kKeys, kValues, base::size(kValues),
       &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
   ScopedCFTypeRef<CFArrayRef> result;
   {
@@ -392,21 +394,14 @@ ClientCertStoreMac::ClientCertStoreMac() {}
 
 ClientCertStoreMac::~ClientCertStoreMac() {}
 
-void ClientCertStoreMac::GetClientCerts(
-    const SSLCertRequestInfo& request,
-    const ClientCertListCallback& callback) {
-  if (base::PostTaskAndReplyWithResult(
-          GetSSLPlatformKeyTaskRunner().get(), FROM_HERE,
-          // Caller is responsible for keeping the |request| alive
-          // until the callback is run, so ConstRef is safe.
-          base::Bind(&GetClientCertsOnBackgroundThread,
-                     base::ConstRef(request)),
-          callback)) {
-    return;
-  }
-
-  // If the task could not be posted, behave as if there were no certificates.
-  callback.Run(ClientCertIdentityList());
+void ClientCertStoreMac::GetClientCerts(const SSLCertRequestInfo& request,
+                                        ClientCertListCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      GetSSLPlatformKeyTaskRunner().get(), FROM_HERE,
+      // Caller is responsible for keeping the |request| alive
+      // until the callback is run, so std::cref is safe.
+      base::BindOnce(&GetClientCertsOnBackgroundThread, std::cref(request)),
+      std::move(callback));
 }
 
 bool ClientCertStoreMac::SelectClientCertsForTesting(

@@ -11,28 +11,30 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "content/public/browser/browser_task_traits.h"
-
-#include "base/task/post_task.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/plugins/plugin_data_remover_helper.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 using content::BrowserThread;
 using browsing_data::ClearBrowsingDataTab;
@@ -66,6 +68,8 @@ const char kExtensionsKey[] = "extension";
 const char kOriginTypesKey[] = "originTypes";
 const char kProtectedWebKey[] = "protectedWeb";
 const char kSinceKey[] = "since";
+const char kOriginsKey[] = "origins";
+const char kExcludeOriginsKey[] = "excludeOrigins";
 const char kUnprotectedWebKey[] = "unprotectedWeb";
 
 // Errors!
@@ -75,18 +79,32 @@ const char kBadDataTypeDetails[] = "Invalid value for data type '%s'.";
 const char kDeleteProhibitedError[] =
     "Browsing history and downloads are not "
     "permitted to be removed.";
+const char kNonFilterableError[] =
+    "At least one data type doesn't support filtering by origin.";
+const char kIncompatibleFilterError[] =
+    "Don't set both 'origins' and 'excludeOrigins' at the same time.";
+const char kInvalidOriginError[] = "'%s' is not a valid origin.";
 
 }  // namespace extension_browsing_data_api_constants
 
 namespace {
+
+const int64_t kFilterableDataTypes =
+    ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
+    content::BrowsingDataRemover::DATA_TYPE_CACHE;
+
+static_assert((kFilterableDataTypes &
+               ~ChromeBrowsingDataRemoverDelegate::FILTERABLE_DATA_TYPES) == 0,
+              "kFilterableDataTypes must be a subset of "
+              "ChromeBrowsingDataRemoverDelegate::FILTERABLE_DATA_TYPES");
+
 int MaskForKey(const char* key) {
   if (strcmp(key, extension_browsing_data_api_constants::kAppCacheKey) == 0)
     return content::BrowsingDataRemover::DATA_TYPE_APP_CACHE;
   if (strcmp(key, extension_browsing_data_api_constants::kCacheKey) == 0)
     return content::BrowsingDataRemover::DATA_TYPE_CACHE;
-  if (strcmp(key, extension_browsing_data_api_constants::kCookiesKey) == 0) {
+  if (strcmp(key, extension_browsing_data_api_constants::kCookiesKey) == 0)
     return content::BrowsingDataRemover::DATA_TYPE_COOKIES;
-  }
   if (strcmp(key, extension_browsing_data_api_constants::kDownloadsKey) == 0)
     return content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS;
   if (strcmp(key, extension_browsing_data_api_constants::kFileSystemsKey) == 0)
@@ -131,13 +149,7 @@ bool IsRemovalPermitted(int removal_mask, PrefService* prefs) {
 
 // Returns true if Sync is currently running (i.e. enabled and not in error).
 bool IsSyncRunning(Profile* profile) {
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  sync_ui_util::MessageType sync_status =
-      sync_ui_util::GetStatus(profile, sync_service, *signin_manager);
-  return sync_status == sync_ui_util::SYNCED;
+  return sync_ui_util::GetStatus(profile) == sync_ui_util::SYNCED;
 }
 }  // namespace
 
@@ -268,11 +280,18 @@ void BrowsingDataSettingsFunction::SetDetails(
 BrowsingDataRemoverFunction::BrowsingDataRemoverFunction() : observer_(this) {}
 
 void BrowsingDataRemoverFunction::OnBrowsingDataRemoverDone() {
+  OnTaskFinished();
+}
+
+void BrowsingDataRemoverFunction::OnTaskFinished() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_GT(pending_tasks_, 0);
+  if (--pending_tasks_ > 0)
+    return;
   synced_data_deletion_.reset();
   observer_.RemoveAll();
   this->SendResponse(true);
-  Release();  // Balanced in RunAsync.
+  Release();  // Balanced in StartRemoving.
 }
 
 bool BrowsingDataRemoverFunction::RunAsync() {
@@ -290,18 +309,44 @@ bool BrowsingDataRemoverFunction::RunAsync() {
   // If |ms_since_epoch| isn't set, default it to 0.
   double ms_since_epoch;
   if (!options->GetDouble(extension_browsing_data_api_constants::kSinceKey,
-                          &ms_since_epoch))
+                          &ms_since_epoch)) {
     ms_since_epoch = 0;
-
+  }
   // base::Time takes a double that represents seconds since epoch. JavaScript
   // gives developers milliseconds, so do a quick conversion before populating
-  // the object. Also, Time::FromDoubleT converts double time 0 to empty Time
-  // object. So we need to do special handling here.
-  remove_since_ = (ms_since_epoch == 0) ?
-      base::Time::UnixEpoch() :
-      base::Time::FromDoubleT(ms_since_epoch / 1000.0);
+  // the object.
+  remove_since_ = base::Time::FromJsTime(ms_since_epoch);
 
   EXTENSION_FUNCTION_VALIDATE(GetRemovalMask(&removal_mask_));
+
+  base::Value* origins =
+      options->FindKeyOfType(extension_browsing_data_api_constants::kOriginsKey,
+                             base::Value::Type::LIST);
+  base::Value* exclude_origins = options->FindKeyOfType(
+      extension_browsing_data_api_constants::kExcludeOriginsKey,
+      base::Value::Type::LIST);
+
+  // Check that only |origins| or |excludeOrigins| can be set.
+  if (origins && exclude_origins) {
+    error_ = extension_browsing_data_api_constants::kIncompatibleFilterError;
+    return false;
+  }
+
+  if (origins) {
+    if (!ParseOrigins(*origins, &origins_))
+      return false;
+    mode_ = content::BrowsingDataFilterBuilder::WHITELIST;
+  } else {
+    if (exclude_origins && !ParseOrigins(*exclude_origins, &origins_))
+      return false;
+    mode_ = content::BrowsingDataFilterBuilder::BLACKLIST;
+  }
+
+  // Check if a filter is set but non-filterable types are selected.
+  if ((!origins_.empty() && (removal_mask_ & ~kFilterableDataTypes) != 0)) {
+    error_ = extension_browsing_data_api_constants::kNonFilterableError;
+    return false;
+  }
 
   // Check for prohibited data types.
   if (!IsRemovalPermitted(removal_mask_, GetProfile()->GetPrefs())) {
@@ -349,7 +394,7 @@ void BrowsingDataRemoverFunction::StartRemoving() {
   content::BrowsingDataRemover* remover =
       content::BrowserContext::GetBrowsingDataRemover(profile);
 
-  // Add a ref (Balanced in OnBrowsingDataRemoverDone)
+  // Add a ref (Balanced in OnTaskFinished)
   AddRef();
 
   // Prevent Sync from being paused, if required.
@@ -364,9 +409,42 @@ void BrowsingDataRemoverFunction::StartRemoving() {
   // we've generated above. We can use a raw pointer here, as the browsing data
   // remover is responsible for deleting itself once data removal is complete.
   observer_.Add(remover);
-  remover->RemoveAndReply(
-      remove_since_, base::Time::Max(),
-      removal_mask_, origin_type_mask_, this);
+
+  DCHECK_EQ(pending_tasks_, 0);
+  pending_tasks_ = 1;
+  if (removal_mask_ & content::BrowsingDataRemover::DATA_TYPE_COOKIES &&
+      !origins_.empty()) {
+    pending_tasks_ += 1;
+    removal_mask_ &= ~content::BrowsingDataRemover::DATA_TYPE_COOKIES;
+    // Cookies are scoped more broadly than origins, so we expand the
+    // origin filter to registrable domains in order to match all cookies
+    // that could be applied to an origin. This is the same behavior as
+    // the Clear-Site-Data header.
+    auto filter_builder = content::BrowsingDataFilterBuilder::Create(mode_);
+    for (const auto& origin : origins_) {
+      std::string domain = GetDomainAndRegistry(
+          origin.host(),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+      if (domain.empty())
+        domain = origin.host();  // IP address or internal hostname.
+      filter_builder->AddRegisterableDomain(domain);
+    }
+    remover->RemoveWithFilterAndReply(
+        remove_since_, base::Time::Max(),
+        content::BrowsingDataRemover::DATA_TYPE_COOKIES, origin_type_mask_,
+        std::move(filter_builder), this);
+  }
+  if (removal_mask_) {
+    pending_tasks_ += 1;
+    auto filter_builder = content::BrowsingDataFilterBuilder::Create(mode_);
+    for (const auto& origin : origins_) {
+      filter_builder->AddOrigin(origin);
+    }
+    remover->RemoveWithFilterAndReply(remove_since_, base::Time::Max(),
+                                      removal_mask_, origin_type_mask_,
+                                      std::move(filter_builder), this);
+  }
+  OnTaskFinished();
 }
 
 bool BrowsingDataRemoverFunction::ParseOriginTypeMask(
@@ -420,6 +498,25 @@ bool BrowsingDataRemoverFunction::ParseOriginTypeMask(
     }
   }
 
+  return true;
+}
+
+bool BrowsingDataRemoverFunction::ParseOrigins(
+    const base::Value& list_value,
+    std::vector<url::Origin>* result) {
+  DCHECK(list_value.is_list());
+  result->reserve(list_value.GetList().size());
+  for (const auto& value : list_value.GetList()) {
+    EXTENSION_FUNCTION_VALIDATE(value.is_string());
+    url::Origin origin = url::Origin::Create(GURL(value.GetString()));
+    if (origin.opaque()) {
+      error_ = base::StringPrintf(
+          extension_browsing_data_api_constants::kInvalidOriginError,
+          value.GetString().c_str());
+      return false;
+    }
+    result->push_back(std::move(origin));
+  }
   return true;
 }
 

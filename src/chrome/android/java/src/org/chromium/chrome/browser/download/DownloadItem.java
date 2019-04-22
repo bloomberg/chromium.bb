@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
@@ -44,13 +45,6 @@ public class DownloadItem {
 
         // Update our ContentId in case it changed.
         mContentId.id = getId();
-    }
-
-    /**
-     * @return whether the download item has a valid system download ID.
-     */
-    public boolean hasSystemDownloadId() {
-        return mDownloadId != INVALID_DOWNLOAD_ID;
     }
 
     /**
@@ -160,6 +154,7 @@ public class DownloadItem {
         offlineItem.creationTimeMs = item.getStartTime();
         offlineItem.completionTimeMs = item.getEndTime();
         offlineItem.externallyRemoved = item.hasBeenExternallyRemoved();
+        offlineItem.canRename = item.getDownloadInfo().state() == DownloadState.COMPLETE;
         return offlineItem;
     }
 

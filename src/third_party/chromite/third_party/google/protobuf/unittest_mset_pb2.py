@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -20,10 +19,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='google/protobuf/unittest_mset.proto',
   package='protobuf_unittest',
   syntax='proto2',
+  serialized_options=_b('H\001\370\001\001'),
   serialized_pb=_b('\n#google/protobuf/unittest_mset.proto\x12\x11protobuf_unittest\x1a/google/protobuf/unittest_mset_wire_format.proto\"Z\n\x17TestMessageSetContainer\x12?\n\x0bmessage_set\x18\x01 \x01(\x0b\x32*.proto2_wireformat_unittest.TestMessageSet\"\x9f\x01\n\x18TestMessageSetExtension1\x12\t\n\x01i\x18\x0f \x01(\x05\x32x\n\x15message_set_extension\x12*.proto2_wireformat_unittest.TestMessageSet\x18\xb0\xa6^ \x01(\x0b\x32+.protobuf_unittest.TestMessageSetExtension1\"\xa1\x01\n\x18TestMessageSetExtension2\x12\x0b\n\x03str\x18\x19 \x01(\t2x\n\x15message_set_extension\x12*.proto2_wireformat_unittest.TestMessageSet\x18\xf9\xbb^ \x01(\x0b\x32+.protobuf_unittest.TestMessageSetExtension2\"n\n\rRawMessageSet\x12\x33\n\x04item\x18\x01 \x03(\n2%.protobuf_unittest.RawMessageSet.Item\x1a(\n\x04Item\x12\x0f\n\x07type_id\x18\x02 \x02(\x05\x12\x0f\n\x07message\x18\x03 \x02(\x0c\x42\x05H\x01\xf8\x01\x01')
   ,
   dependencies=[google_dot_protobuf_dot_unittest__mset__wire__format__pb2.DESCRIPTOR,])
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -41,14 +40,14 @@ _TESTMESSAGESETCONTAINER = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto2',
   extension_ranges=[],
@@ -72,7 +71,7 @@ _TESTMESSAGESETEXTENSION1 = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
     _descriptor.FieldDescriptor(
@@ -81,12 +80,12 @@ _TESTMESSAGESETEXTENSION1 = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=True, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto2',
   extension_ranges=[],
@@ -110,7 +109,7 @@ _TESTMESSAGESETEXTENSION2 = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
     _descriptor.FieldDescriptor(
@@ -119,12 +118,12 @@ _TESTMESSAGESETEXTENSION2 = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=True, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto2',
   extension_ranges=[],
@@ -148,21 +147,21 @@ _RAWMESSAGESET_ITEM = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='message', full_name='protobuf_unittest.RawMessageSet.Item.message', index=1,
       number=3, type=12, cpp_type=9, label=2,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto2',
   extension_ranges=[],
@@ -185,14 +184,14 @@ _RAWMESSAGESET = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_RAWMESSAGESET_ITEM, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto2',
   extension_ranges=[],
@@ -209,6 +208,7 @@ DESCRIPTOR.message_types_by_name['TestMessageSetContainer'] = _TESTMESSAGESETCON
 DESCRIPTOR.message_types_by_name['TestMessageSetExtension1'] = _TESTMESSAGESETEXTENSION1
 DESCRIPTOR.message_types_by_name['TestMessageSetExtension2'] = _TESTMESSAGESETEXTENSION2
 DESCRIPTOR.message_types_by_name['RawMessageSet'] = _RAWMESSAGESET
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 TestMessageSetContainer = _reflection.GeneratedProtocolMessageType('TestMessageSetContainer', (_message.Message,), dict(
   DESCRIPTOR = _TESTMESSAGESETCONTAINER,
@@ -251,6 +251,5 @@ google_dot_protobuf_dot_unittest__mset__wire__format__pb2.TestMessageSet.Registe
 _TESTMESSAGESETEXTENSION2.extensions_by_name['message_set_extension'].message_type = _TESTMESSAGESETEXTENSION2
 google_dot_protobuf_dot_unittest__mset__wire__format__pb2.TestMessageSet.RegisterExtension(_TESTMESSAGESETEXTENSION2.extensions_by_name['message_set_extension'])
 
-DESCRIPTOR.has_options = True
-DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('H\001\370\001\001'))
+DESCRIPTOR._options = None
 # @@protoc_insertion_point(module_scope)

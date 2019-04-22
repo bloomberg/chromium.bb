@@ -60,7 +60,7 @@ void TextTrackCueList::CollectActiveCues(TextTrackCueList& active_cues) const {
 
 bool TextTrackCueList::Add(TextTrackCue* cue) {
   // Maintain text track cue order:
-  // https://html.spec.whatwg.org/#text-track-cue-order
+  // https://html.spec.whatwg.org/C/#text-track-cue-order
   wtf_size_t index = FindInsertionIndex(cue);
 
   // FIXME: The cue should not exist in the list in the first place.
@@ -139,7 +139,7 @@ void TextTrackCueList::ValidateCueIndexes() {
   first_invalid_index_ = list_.size();
 }
 
-void TextTrackCueList::Trace(blink::Visitor* visitor) {
+void TextTrackCueList::Trace(Visitor* visitor) {
   visitor->Trace(list_);
   ScriptWrappable::Trace(visitor);
 }

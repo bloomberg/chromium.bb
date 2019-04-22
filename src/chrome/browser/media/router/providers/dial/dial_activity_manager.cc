@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/providers/dial/dial_activity_manager.h"
 
+#include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/media/router/providers/dial/dial_internal_message_util.h"
 #include "chrome/common/media_router/media_source_helper.h"

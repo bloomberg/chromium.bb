@@ -17,7 +17,7 @@ class VirtualKeyboardRestrictFeaturesFunction
   VirtualKeyboardRestrictFeaturesFunction();
 
   DECLARE_EXTENSION_FUNCTION("virtualKeyboard.restrictFeatures",
-                             VIRTUALKEYBOARD_RESTRICTFEATURES);
+                             VIRTUALKEYBOARD_RESTRICTFEATURES)
 
  protected:
   ~VirtualKeyboardRestrictFeaturesFunction() override = default;

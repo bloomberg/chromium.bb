@@ -2340,4 +2340,4 @@ bool Converter::IsBlacklisted(const std::string& field_name) const {
          kMisbehavedFlattenableBlacklist.end();
 #endif  // AVOID_MISBEHAVIOR
 }
-};  // namespace skia_image_filter_proto_converter
+}  // namespace skia_image_filter_proto_converter

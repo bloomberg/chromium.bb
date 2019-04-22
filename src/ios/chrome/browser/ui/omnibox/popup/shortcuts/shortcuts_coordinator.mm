@@ -11,6 +11,8 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_view_controller.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -37,12 +39,15 @@
       IOSMostVisitedSitesFactory::NewForBrowserState(self.browserState);
   ReadingListModel* readingListModel =
       ReadingListModelFactory::GetForBrowserState(self.browserState);
+  UrlLoadingService* loadingService =
+      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
 
   self.mediator = [[ShortcutsMediator alloc]
       initWithLargeIconService:largeIconService
                 largeIconCache:cache
                mostVisitedSite:std::move(mostVisitedSites)
-              readingListModel:readingListModel];
+              readingListModel:readingListModel
+                loadingService:loadingService];
 
   ShortcutsViewController* shortcutsViewController =
       [[ShortcutsViewController alloc] init];

@@ -28,6 +28,16 @@ class RendererTest : public ANGLETest
     }
 };
 
+// Print vendor, renderer, version and extension strings. Useful for debugging.
+TEST_P(RendererTest, Strings)
+{
+    std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
+    std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
+    std::cout << "Version: " << glGetString(GL_VERSION) << std::endl;
+    std::cout << "Extensions: " << glGetString(GL_EXTENSIONS) << std::endl;
+    EXPECT_GL_NO_ERROR();
+}
+
 TEST_P(RendererTest, RequestedRendererCreated)
 {
     std::string rendererString =
@@ -165,7 +175,6 @@ TEST_P(RendererTest, SimpleOperation)
 ANGLE_INSTANTIATE_TEST(RendererTest,
                        // ES2 on top of D3D9
                        ES2_D3D9(),
-                       ES2_D3D9_REFERENCE(),
 
                        // ES2 on top of D3D11 feature level 9.3 to 11.0
                        ES2_D3D11(),
@@ -181,13 +190,6 @@ ANGLE_INSTANTIATE_TEST(RendererTest,
                        ES2_D3D11_FL10_0_WARP(),
                        ES2_D3D11_FL9_3_WARP(),
 
-                       // ES2 on top of D3D11 reference feature level 9.3 to 11.0
-                       ES2_D3D11_REFERENCE(),
-                       ES2_D3D11_FL11_0_REFERENCE(),
-                       ES2_D3D11_FL10_1_REFERENCE(),
-                       ES2_D3D11_FL10_0_REFERENCE(),
-                       ES2_D3D11_FL9_3_REFERENCE(),
-
                        // ES3 on top of D3D11.
                        ES3_D3D11(),
                        ES3_D3D11_FL11_0(),
@@ -197,11 +199,6 @@ ANGLE_INSTANTIATE_TEST(RendererTest,
                        ES3_D3D11_WARP(),
                        ES3_D3D11_FL11_0_WARP(),
                        ES3_D3D11_FL10_1_WARP(),
-
-                       // ES3 on top of the D3D11 reference rasterizer.
-                       ES3_D3D11_REFERENCE(),
-                       ES3_D3D11_FL11_0_REFERENCE(),
-                       ES3_D3D11_FL10_1_REFERENCE(),
 
                        // ES2 on top of desktop OpenGL versions 2.1 to 4.5
                        ES2_OPENGL(),

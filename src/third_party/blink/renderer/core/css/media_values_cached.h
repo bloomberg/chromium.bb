@@ -36,6 +36,8 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     WebDisplayMode display_mode;
     DisplayShape display_shape;
     ColorSpaceGamut color_gamut;
+    PreferredColorScheme preferred_color_scheme;
+    bool prefers_reduced_motion;
 
     MediaValuesCachedData();
     explicit MediaValuesCachedData(Document&);
@@ -61,12 +63,11 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
       data.display_mode = display_mode;
       data.display_shape = display_shape;
       data.color_gamut = color_gamut;
+      data.preferred_color_scheme = preferred_color_scheme;
+      data.prefers_reduced_motion = prefers_reduced_motion;
       return data;
     }
   };
-
-  static MediaValuesCached* Create();
-  static MediaValuesCached* Create(const MediaValuesCachedData&);
 
   MediaValuesCached();
   MediaValuesCached(LocalFrame*);
@@ -100,6 +101,8 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   WebDisplayMode DisplayMode() const override;
   DisplayShape GetDisplayShape() const override;
   ColorSpaceGamut ColorGamut() const override;
+  PreferredColorScheme GetPreferredColorScheme() const override;
+  bool PrefersReducedMotion() const override;
 
   void OverrideViewportDimensions(double width, double height) override;
 

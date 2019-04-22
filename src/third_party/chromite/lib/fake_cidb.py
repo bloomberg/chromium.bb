@@ -55,7 +55,7 @@ class FakeCIDBConnection(object):
     """Gets the current database time."""
     return self.fake_time or datetime.datetime.now()
 
-  def InsertBuild(self, builder_name, waterfall, build_number,
+  def InsertBuild(self, builder_name, build_number,
                   build_config, bot_hostname, master_build_id=None,
                   timeout_seconds=None, status=constants.BUILDER_STATUS_PASSED,
                   important=None, buildbucket_id=None, milestone_version=None,
@@ -78,7 +78,9 @@ class FakeCIDBConnection(object):
     row = {'id': build_id,
            'builder_name': builder_name,
            'buildbot_generation': constants.BUILDBOT_GENERATION,
-           'waterfall': waterfall,
+           # While waterfall is nullable all non waterfall entries show empty
+           # string, sticking to the convention.
+           'waterfall': '',
            'build_number': build_number,
            'build_config' : build_config,
            'bot_hostname': bot_hostname,
@@ -409,7 +411,7 @@ class FakeCIDBConnection(object):
 
   def GetBuildStatuses(self, build_ids):
     """Gets the status of the builds."""
-    return [self._TrimStatus(self.buildTable[x]) for x in build_ids]
+    return [self.GetBuildStatus(x) for x in build_ids]
 
   def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
     """Gets the slaves of given build."""
@@ -433,46 +435,40 @@ class FakeCIDBConnection(object):
     """
     return self.buildStageTable.get(build_stage_id)
 
-  def GetBuildStages(self, build_id):
-    """Gets build stages given the build_id"""
-    return [self.buildStageTable[_id]
-            for _id in self.buildStageTable
-            if self.buildStageTable[_id]['build_id'] == build_id]
-
-  def GetSlaveStages(self, master_build_id, buildbucket_ids=None):
-    """Get the slave stages of the given build.
-
-    Args:
-      master_build_id: The build id (string) of the master build.
-      buildbucket_ids: A list of buildbucket ids (strings) of the slaves.
-
-    Returns:
-      A list of slave stages (in format of dicts).
-    """
-    slave_builds = []
-
-    if buildbucket_ids is None:
-      slave_builds = {b['id']: b for b in self.buildTable
-                      if b['master_build_id'] == master_build_id}
-    else:
-      slave_builds = {b['id']: b for b in self.buildTable
-                      if b['master_build_id'] == master_build_id and
-                      b['buildbucket_id'] in buildbucket_ids}
-
-    slave_stages = []
+  def GetBuildsStages(self, build_ids):
+    """Quick implementation of fake GetBuildsStages."""
+    build_stages = []
+    build_statuses = {b['id']: b for b in self.buildTable
+                      if b['id'] in build_ids}
     for _id in self.buildStageTable:
       build_id = self.buildStageTable[_id]['build_id']
-      if build_id in slave_builds:
+      if build_id in build_ids:
         stage = self.buildStageTable[_id].copy()
-        stage['build_config'] = slave_builds[build_id]['build_config']
-        slave_stages.append(stage)
+        stage['build_config'] = build_statuses[build_id]['build_config']
+        build_stages.append(stage)
 
-    return slave_stages
+    return build_stages
 
+  def GetBuildsStagesWithBuildbucketIds(self, buildbucket_ids):
+    """Quick implementation of fake GetBuildsStagesWithBuildbucketIds."""
+    build_stages = []
+    build_statuses = {b['id']: b for b in self.buildTable
+                      if b['buildbucket_id'] in buildbucket_ids}
+    for _id in self.buildStageTable:
+      build_id = self.buildStageTable[_id]['build_id']
+      if build_id in build_statuses:
+        stage = self.buildStageTable[_id].copy()
+        stage['build_config'] = build_statuses[build_id]['build_config']
+        build_stages.append(stage)
+
+    return build_stages
+
+  #pylint: disable=unused-argument
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
-                      milestone_version=None, platform_version=None,
-                      starting_build_id=None, final=False, reverse=False):
+                      branch=None, milestone_version=None,
+                      platform_version=None, starting_build_id=None,
+                      ending_build_id=None, final=False, reverse=False):
     """Returns the build history for the given |build_config|."""
     return self.GetBuildsHistory(
         build_configs=[build_config], num_results=num_results,
@@ -529,12 +525,14 @@ class FakeCIDBConnection(object):
     """Gets contents of keyvalTable."""
     return self.fake_keyvals
 
-  def GetBuildStatusWithBuildbucketId(self, buildbucket_id):
+  def GetBuildStatusesWithBuildbucketIds(self, buildbucket_ids):
+    rows = []
     for row in self.buildTable:
-      if row['buildbucket_id'] == buildbucket_id:
-        return self._TrimStatus(row)
+      if (row['buildbucket_id'] in buildbucket_ids or
+          str(row['buildbucket_id']) in buildbucket_ids):
+        rows.append(self._TrimStatus(row))
 
-    return None
+    return rows
 
   def GetBuildsFailures(self, build_ids):
     """Gets the failure entries for all listed build_ids.
@@ -755,3 +753,11 @@ class FakeCIDBConnection(object):
       result.append(
           (config, flakes.get(config, 0), len(runs_by_build_config[config])))
     return result
+
+  def UpdateBoardPerBuildMetadata(self, build_id, board, board_metadata):
+    """Update the given board-per-build metadata.
+
+    This function is not being tested. A function stub to spare a
+    unittest error.
+    """
+    pass

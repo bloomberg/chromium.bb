@@ -11,8 +11,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/i18n/message_formatter.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -423,6 +424,13 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
                      views::GridLayout::USE_PREF, 0, 0);
 
+  if (!spec()->retry_error_message().empty()) {
+    std::unique_ptr<views::View> warning_view =
+        CreateWarningView(spec()->retry_error_message(), true /* show_icon */);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
+    layout->AddView(warning_view.release());
+  }
+
   // The shipping address and contact info rows are optional.
   std::unique_ptr<PaymentRequestRowView> summary_row =
       CreatePaymentSheetSummaryRow();
@@ -481,6 +489,7 @@ void PaymentSheetViewController::ButtonPressed(views::Button* sender,
   if (!dialog()->IsInteractive())
     return;
 
+  bool should_reset_retry_error_message = true;
   switch (sender->tag()) {
     case static_cast<int>(
         PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON):
@@ -541,7 +550,14 @@ void PaymentSheetViewController::ButtonPressed(views::Button* sender,
 
     default:
       PaymentRequestSheetController::ButtonPressed(sender, event);
+      should_reset_retry_error_message = false;
       break;
+  }
+
+  if (should_reset_retry_error_message &&
+      !spec()->retry_error_message().empty()) {
+    spec()->reset_retry_error_message();
+    UpdateContentView();
   }
 }
 
@@ -844,7 +860,7 @@ PaymentSheetViewController::CreateContactInfoRow() {
     } else if (state()->contact_profiles().size() == 1) {
       base::string16 truncated_content =
           state()->contact_profiles()[0]->ConstructInferredLabel(
-              kLabelFields, arraysize(kLabelFields), arraysize(kLabelFields),
+              kLabelFields, base::size(kLabelFields), base::size(kLabelFields),
               state()->GetApplicationLocale());
       return builder.CreateWithButton(truncated_content,
                                       l10n_util::GetStringUTF16(IDS_CHOOSE),
@@ -852,7 +868,7 @@ PaymentSheetViewController::CreateContactInfoRow() {
     } else {
       base::string16 preview =
           state()->contact_profiles()[0]->ConstructInferredLabel(
-              kLabelFields, arraysize(kLabelFields), arraysize(kLabelFields),
+              kLabelFields, base::size(kLabelFields), base::size(kLabelFields),
               state()->GetApplicationLocale());
       base::string16 format = l10n_util::GetPluralStringFUTF16(
           IDS_PAYMENT_REQUEST_CONTACTS_PREVIEW,

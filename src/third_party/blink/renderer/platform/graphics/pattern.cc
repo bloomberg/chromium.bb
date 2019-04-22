@@ -56,14 +56,10 @@ Pattern::Pattern(RepeatMode repeat_mode) : repeat_mode_(repeat_mode) {}
 Pattern::~Pattern() = default;
 
 void Pattern::ApplyToFlags(PaintFlags& flags, const SkMatrix& local_matrix) {
-  if (!cached_shader_ || IsLocalMatrixChanged(local_matrix))
+  if (!cached_shader_ || local_matrix != cached_shader_->GetLocalMatrix())
     cached_shader_ = CreateShader(local_matrix);
 
   flags.setShader(cached_shader_);
-}
-
-bool Pattern::IsLocalMatrixChanged(const SkMatrix& local_matrix) const {
-  return local_matrix != cached_shader_->GetLocalMatrix();
 }
 
 }  // namespace blink

@@ -51,9 +51,9 @@ bool BaseNode::DecryptIfNecessary() {
   const sync_pb::EntitySpecifics& specifics = GetEntry()->GetSpecifics();
   if (specifics.has_password()) {
     // Passwords have their own legacy encryption structure.
-    std::unique_ptr<sync_pb::PasswordSpecificsData> data(
+    std::unique_ptr<sync_pb::PasswordSpecificsData> data =
         DecryptPasswordSpecifics(specifics,
-                                 GetTransaction()->GetCryptographer()));
+                                 GetTransaction()->GetCryptographer());
     if (!data) {
       GetTransaction()->GetWrappedTrans()->OnUnrecoverableError(
           FROM_HERE, std::string("Failed to decrypt encrypted node of type ") +
@@ -245,11 +245,6 @@ const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
 const sync_pb::TypedUrlSpecifics& BaseNode::GetTypedUrlSpecifics() const {
   DCHECK_EQ(GetModelType(), TYPED_URLS);
   return GetEntitySpecifics().typed_url();
-}
-
-const sync_pb::ExperimentsSpecifics& BaseNode::GetExperimentsSpecifics() const {
-  DCHECK_EQ(GetModelType(), EXPERIMENTS);
-  return GetEntitySpecifics().experiments();
 }
 
 const sync_pb::EntitySpecifics& BaseNode::GetEntitySpecifics() const {

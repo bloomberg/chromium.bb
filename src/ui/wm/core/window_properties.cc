@@ -13,19 +13,19 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(WM_CORE_EXPORT, float)
 
 namespace wm {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSnapChildrenToPixelBoundary, false);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSnapChildrenToPixelBoundary, false)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(base::TimeDelta,
                              kWindowVisibilityAnimationDurationKey,
-                             base::TimeDelta());
+                             base::TimeDelta())
 DEFINE_UI_CLASS_PROPERTY_KEY(WindowVisibilityAnimationTransition,
                              kWindowVisibilityAnimationTransitionKey,
-                             ANIMATE_BOTH);
+                             ANIMATE_BOTH)
 DEFINE_UI_CLASS_PROPERTY_KEY(int,
                              kWindowVisibilityAnimationTypeKey,
-                             WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+                             WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT)
 DEFINE_UI_CLASS_PROPERTY_KEY(float,
                              kWindowVisibilityAnimationVerticalPositionKey,
-                             15.f);
+                             15.f)
 
 }  // namespace wm

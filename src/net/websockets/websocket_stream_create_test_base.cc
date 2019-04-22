@@ -8,13 +8,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "net/base/ip_endpoint.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log_with_source.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
-#include "net/websockets/websocket_handshake_stream_create_helper.h"
 #include "net/websockets/websocket_stream.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -69,13 +69,13 @@ class WebSocketStreamCreateTestBase::TestConnectDelegate
     owner_->ssl_fatal_ = fatal;
   }
 
-  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+  int OnAuthRequired(const AuthChallengeInfo& auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
-                     const HostPortPair& host_port_pair,
+                     const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override {
     owner_->run_loop_waiting_for_on_auth_required_.Quit();
-    owner_->auth_challenge_info_ = std::move(auth_info);
+    owner_->auth_challenge_info_ = auth_info;
     *credentials = owner_->auth_credentials_;
     owner_->on_auth_required_callback_ = std::move(callback);
     return owner_->on_auth_required_rv_;
@@ -101,13 +101,11 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
     std::unique_ptr<base::OneShotTimer> timer) {
   auto connect_delegate = std::make_unique<TestConnectDelegate>(
       this, connect_run_loop_.QuitClosure());
-  auto create_helper = std::make_unique<WebSocketHandshakeStreamCreateHelper>(
-      connect_delegate.get(), sub_protocols);
   auto api_delegate = std::make_unique<TestWebSocketStreamRequestAPI>();
   stream_request_ = WebSocketStream::CreateAndConnectStreamForTesting(
-      socket_url, std::move(create_helper), origin, site_for_cookies,
-      additional_headers, url_request_context_host_.GetURLRequestContext(),
-      NetLogWithSource(), std::move(connect_delegate),
+      socket_url, sub_protocols, origin, site_for_cookies, additional_headers,
+      url_request_context_host_.GetURLRequestContext(), NetLogWithSource(),
+      std::move(connect_delegate),
       timer ? std::move(timer) : std::make_unique<base::OneShotTimer>(),
       std::move(api_delegate));
 }

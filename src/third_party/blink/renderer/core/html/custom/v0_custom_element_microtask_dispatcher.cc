@@ -20,8 +20,9 @@ V0CustomElementMicrotaskDispatcher::V0CustomElementMicrotaskDispatcher()
 
 V0CustomElementMicrotaskDispatcher&
 V0CustomElementMicrotaskDispatcher::Instance() {
-  DEFINE_STATIC_LOCAL(Persistent<V0CustomElementMicrotaskDispatcher>, instance,
-                      (new V0CustomElementMicrotaskDispatcher));
+  DEFINE_STATIC_LOCAL(
+      Persistent<V0CustomElementMicrotaskDispatcher>, instance,
+      (MakeGarbageCollected<V0CustomElementMicrotaskDispatcher>()));
   return *instance;
 }
 
@@ -75,7 +76,7 @@ void V0CustomElementMicrotaskDispatcher::DoDispatch() {
   phase_ = kQuiescent;
 }
 
-void V0CustomElementMicrotaskDispatcher::Trace(blink::Visitor* visitor) {
+void V0CustomElementMicrotaskDispatcher::Trace(Visitor* visitor) {
   visitor->Trace(elements_);
 }
 

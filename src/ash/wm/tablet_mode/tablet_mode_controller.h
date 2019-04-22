@@ -7,9 +7,12 @@
 
 #include <memory>
 
+#include "ash/accelerometer/accelerometer_reader.h"
+#include "ash/accelerometer/accelerometer_types.h"
 #include "ash/ash_export.h"
 #include "ash/bluetooth_devices_observer.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/interfaces/tablet_mode.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
@@ -20,11 +23,10 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/accelerometer/accelerometer_reader.h"
-#include "chromeos/accelerometer/accelerometer_types.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -54,13 +56,14 @@ class TabletModeWindowManager;
 // enters and exits tablet mode when the lid is opened beyond the triggering
 // angle and rotates the display to match the device when in tablet mode.
 class ASH_EXPORT TabletModeController
-    : public chromeos::AccelerometerReader::Observer,
+    : public AccelerometerReader::Observer,
       public chromeos::PowerManagerClient::Observer,
       public mojom::TabletModeController,
       public ShellObserver,
       public WindowTreeHostManager::Observer,
       public SessionObserver,
-      public ui::InputDeviceEventObserver {
+      public ui::InputDeviceEventObserver,
+      public KioskNextShellObserver {
  public:
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/tablet regardless of hardware orientation.
@@ -123,9 +126,9 @@ class ASH_EXPORT TabletModeController
   // SessionObserver:
   void OnChromeTerminating() override;
 
-  // chromeos::AccelerometerReader::Observer:
+  // AccelerometerReader::Observer:
   void OnAccelerometerUpdated(
-      scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
+      scoped_refptr<const AccelerometerUpdate> update) override;
 
   // chromeos::PowerManagerClient::Observer:
   void LidEventReceived(chromeos::PowerManagerClient::LidState state,
@@ -136,9 +139,20 @@ class ASH_EXPORT TabletModeController
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // ui::InputDeviceEventObserver:
-  void OnMouseDeviceConfigurationChanged() override;
-  void OnTouchpadDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
   void OnDeviceListsComplete() override;
+
+  // KioskNextShellObserver:
+  void OnKioskNextEnabled() override;
+
+  void increment_app_window_drag_count() { ++app_window_drag_count_; }
+  void increment_app_window_drag_in_splitview_count() {
+    ++app_window_drag_in_splitview_count_;
+  }
+  void increment_tab_drag_count() { ++tab_drag_count_; }
+  void increment_tab_drag_in_splitview_count() {
+    ++tab_drag_in_splitview_count_;
+  }
 
  private:
   friend class TabletModeControllerTestApi;
@@ -152,8 +166,7 @@ class ASH_EXPORT TabletModeController
 
   // Detect hinge rotation from base and lid accelerometers and automatically
   // start / stop tablet mode.
-  void HandleHingeRotation(
-      scoped_refptr<const chromeos::AccelerometerUpdate> update);
+  void HandleHingeRotation(scoped_refptr<const AccelerometerUpdate> update);
 
   void OnGetSwitchStates(
       base::Optional<chromeos::PowerManagerClient::SwitchStates> result);
@@ -195,6 +208,9 @@ class ASH_EXPORT TabletModeController
 
   // mojom::TabletModeController:
   void SetClient(mojom::TabletModeClientPtr client) override;
+  void SetTabletModeEnabledForTesting(
+      bool enabled,
+      SetTabletModeEnabledForTestingCallback callback) override;
 
   // Checks whether we want to allow change the current ui mode to tablet mode
   // or clamshell mode. This returns false if the user set a flag for the
@@ -219,6 +235,13 @@ class ASH_EXPORT TabletModeController
   // Returns true if the current lid angle can be detected and is in tablet mode
   // angle range.
   bool LidAngleIsInTabletModeRange();
+
+  // Suspends |occlusion_tracker_pauser_| for the duration of
+  // kOcclusionTrackTimeout.
+  void SuspendOcclusionTracker();
+
+  // Resets |occlusion_tracker_pauser_|.
+  void ResetPauser();
 
   // The maximized window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
@@ -266,6 +289,22 @@ class ASH_EXPORT TabletModeController
   // not enter tablet mode if this is true.
   bool has_external_pointing_device_ = false;
 
+  // Counts the app window drag from top in tablet mode.
+  int app_window_drag_count_ = 0;
+
+  // Counts the app window drag from top when splitview is active.
+  int app_window_drag_in_splitview_count_ = 0;
+
+  // Counts of the tab drag from top in tablet mode, includes both non-source
+  // window and source window drag.
+  int tab_drag_count_ = 0;
+
+  // Counts of the tab drag from top when splitview is active.
+  int tab_drag_in_splitview_count_ = 0;
+
+  // Tracks KioskNext state separately to simplify testing.
+  bool kiosk_next_enabled_ = false;
+
   // Tracks smoothed accelerometer data over time. This is done when the hinge
   // is approaching vertical to remove abrupt acceleration that can lead to
   // incorrect calculations of hinge angles.
@@ -285,6 +324,13 @@ class ASH_EXPORT TabletModeController
   base::RepeatingTimer record_lid_angle_timer_;
 
   ScopedSessionObserver scoped_session_observer_;
+
+  std::unique_ptr<aura::WindowOcclusionTracker::ScopedPause>
+      occlusion_tracker_pauser_;
+
+  // Starts when enter/exit tablet mode. Runs ResetPauser to reset the
+  // occlustion tracker.
+  base::OneShotTimer occlusion_tracker_reset_timer_;
 
   // Observer to observe the bluetooth devices.
   std::unique_ptr<BluetoothDevicesObserver> bluetooth_devices_observer_;

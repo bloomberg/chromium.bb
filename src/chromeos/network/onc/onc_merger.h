@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -27,8 +27,8 @@ struct OncValueSignature;
 // dispensable fields (e.g. in a network with type: "WiFi", the field "VPN" is
 // dispensable) that can be removed by the caller using the ONC normalizer. ONC
 // conformance of the arguments is not checked. Use ONC validator for that.
-CHROMEOS_EXPORT std::unique_ptr<base::DictionaryValue>
-MergeSettingsAndPoliciesToEffective(
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::unique_ptr<base::DictionaryValue> MergeSettingsAndPoliciesToEffective(
     const base::DictionaryValue* user_policy,
     const base::DictionaryValue* device_policy,
     const base::DictionaryValue* user_settings,
@@ -41,8 +41,8 @@ MergeSettingsAndPoliciesToEffective(
 // contains the field name of the field containing the effective field that
 // overrides all other values. Credentials from policies are not written to the
 // result.
-CHROMEOS_EXPORT std::unique_ptr<base::DictionaryValue>
-MergeSettingsAndPoliciesToAugmented(
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::unique_ptr<base::DictionaryValue> MergeSettingsAndPoliciesToAugmented(
     const OncValueSignature& signature,
     const base::DictionaryValue* user_policy,
     const base::DictionaryValue* device_policy,

@@ -17,11 +17,11 @@
 #include "base/containers/stack.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
@@ -38,6 +38,7 @@
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "url/gurl.h"
 
 using net::IOBuffer;
@@ -108,7 +109,7 @@ class MockURLRequestJobFactory : public net::URLRequestJobFactory {
 
   bool IsHandledProtocol(const std::string& scheme) const override {
     return scheme == "http";
-  };
+  }
 
   bool IsSafeRedirectTarget(const GURL& location) const override {
     return false;
@@ -341,7 +342,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void WriteBasicResponse() {
     scoped_refptr<IOBuffer> body =
         base::MakeRefCounted<WrappedIOBuffer>(kHttpBasicBody);
-    std::string raw_headers(kHttpBasicHeaders, arraysize(kHttpBasicHeaders));
+    std::string raw_headers(kHttpBasicHeaders, base::size(kHttpBasicHeaders));
     WriteResponse(
         MakeHttpResponseInfo(raw_headers), body.get(), strlen(kHttpBasicBody));
   }
@@ -483,7 +484,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     EXPECT_FALSE(job->IsStarted());
     EXPECT_FALSE(job->has_been_killed());
     EXPECT_EQ(GURL(), job->manifest_url());
-    EXPECT_EQ(kAppCacheNoCacheId, job->cache_id());
+    EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, job->cache_id());
     EXPECT_FALSE(job->entry().has_response_id());
 
     TestFinished();
@@ -709,7 +710,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     char* p = body->data();
     for (int i = 0; i < 3; ++i, p += kBlockSize)
       FillData(i + 1, p, kBlockSize);
-    std::string raw_headers(kHttpHeaders, arraysize(kHttpHeaders));
+    std::string raw_headers(kHttpHeaders, base::size(kHttpHeaders));
     WriteResponse(
         MakeHttpResponseInfo(raw_headers), body.get(), kBlockSize * 3);
   }

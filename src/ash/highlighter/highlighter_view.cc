@@ -7,7 +7,9 @@
 #include <memory>
 
 #include "ash/highlighter/highlighter_gesture_util.h"
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/aura/window.h"

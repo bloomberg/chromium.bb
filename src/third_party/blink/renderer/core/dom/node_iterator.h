@@ -58,7 +58,7 @@ class NodeIterator final : public ScriptWrappable, public NodeIteratorBase {
   // This function is called before any node is removed from the document tree.
   void NodeWillBeRemoved(Node&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   class NodePointer {
@@ -75,7 +75,7 @@ class NodeIterator final : public ScriptWrappable, public NodeIteratorBase {
     Member<Node> node;
     bool is_pointer_before_node;
 
-    void Trace(blink::Visitor* visitor) { visitor->Trace(node); }
+    void Trace(Visitor* visitor) { visitor->Trace(node); }
   };
 
   void UpdateForNodeRemoval(Node& node_to_be_removed, NodePointer&) const;

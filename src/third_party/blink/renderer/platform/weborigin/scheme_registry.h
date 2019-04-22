@@ -108,6 +108,9 @@ class PLATFORM_EXPORT SchemeRegistry {
   static void RegisterURLSchemeAsSupportingFetchAPI(const String& scheme);
   static bool ShouldTreatURLSchemeAsSupportingFetchAPI(const String& scheme);
 
+  // https://fetch.spec.whatwg.org/#fetch-scheme
+  static bool IsFetchScheme(const String& scheme);
+
   // Schemes which override the first-/third-party checks on a Document.
   static void RegisterURLSchemeAsFirstPartyWhenTopLevel(const String& scheme);
   static void RemoveURLSchemeAsFirstPartyWhenTopLevel(const String& scheme);

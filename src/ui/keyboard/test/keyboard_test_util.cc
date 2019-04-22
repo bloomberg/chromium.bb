@@ -5,7 +5,6 @@
 #include "ui/keyboard/test/keyboard_test_util.h"
 
 #include "base/run_loop.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -49,6 +48,21 @@ bool WaitVisibilityChangesTo(bool wait_until) {
 
 }  // namespace
 
+namespace test {
+
+bool WaitUntilLoaded() {
+  // In tests, the keyboard window is mocked out so it usually "loads" within a
+  // single RunUntilIdle call.
+  base::RunLoop run_loop;
+  while (KeyboardController::Get()->GetStateForTest() ==
+         KeyboardControllerState::LOADING_EXTENSION) {
+    run_loop.RunUntilIdle();
+  }
+  return true;
+}
+
+}  // namespace test
+
 bool WaitUntilShown() {
   // KeyboardController send a visibility update once the show animation
   // finishes.
@@ -86,40 +100,6 @@ gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
                                        int keyboard_height) {
   return gfx::Rect(root_bounds.x(), root_bounds.bottom() - keyboard_height,
                    root_bounds.width(), keyboard_height);
-}
-
-TestKeyboardUI::TestKeyboardUI(ui::InputMethod* input_method)
-    : input_method_(input_method) {}
-
-TestKeyboardUI::~TestKeyboardUI() {
-  // Destroy the window before the delegate.
-  window_.reset();
-}
-
-aura::Window* TestKeyboardUI::LoadKeyboardWindow(LoadCallback callback) {
-  DCHECK(!window_);
-  window_ = std::make_unique<aura::Window>(&delegate_);
-  window_->Init(ui::LAYER_NOT_DRAWN);
-  window_->set_owned_by_parent(false);
-
-  // Set a default size for the keyboard.
-  display::Screen* screen = display::Screen::GetScreen();
-  window_->SetBounds(
-      KeyboardBoundsFromRootBounds(screen->GetPrimaryDisplay().bounds()));
-
-  // Simulate an asynchronous load.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                   std::move(callback));
-
-  return window_.get();
-}
-
-aura::Window* TestKeyboardUI::GetKeyboardWindow() const {
-  return window_.get();
-}
-
-ui::InputMethod* TestKeyboardUI::GetInputMethod() {
-  return input_method_;
 }
 
 }  // namespace keyboard

@@ -5,6 +5,7 @@
 #include "headless/lib/browser/protocol/headless_handler.h"
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "cc/base/switches.h"

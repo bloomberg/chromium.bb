@@ -11,7 +11,6 @@
 
 #include "ANGLEPerfTest.h"
 #include "DrawCallPerfParams.h"
-#include "common/utilities.h"
 #include "test_utils/draw_call_perf_utils.h"
 
 namespace
@@ -96,6 +95,21 @@ DrawElementsPerfBenchmark::DrawElementsPerfBenchmark()
     }
 }
 
+GLsizei ElementTypeSize(GLenum elementType)
+{
+    switch (elementType)
+    {
+        case GL_UNSIGNED_BYTE:
+            return sizeof(GLubyte);
+        case GL_UNSIGNED_SHORT:
+            return sizeof(GLushort);
+        case GL_UNSIGNED_INT:
+            return sizeof(GLuint);
+        default:
+            return 0;
+    }
+}
+
 void DrawElementsPerfBenchmark::initializeBenchmark()
 {
     const auto &params = GetParam();
@@ -117,7 +131,7 @@ void DrawElementsPerfBenchmark::initializeBenchmark()
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
 
-    mBufferSize = gl::ElementTypeSize(params.type) * mCount;
+    mBufferSize = ElementTypeSize(params.type) * mCount;
 
     if (params.type == GL_UNSIGNED_INT)
     {
@@ -218,10 +232,12 @@ DrawElementsPerfParams DrawElementsPerfD3D9Params(bool indexBufferChanged)
     return params;
 }
 
-DrawElementsPerfParams DrawElementsPerfOpenGLOrGLESParams(bool indexBufferChanged, GLenum indexType)
+DrawElementsPerfParams DrawElementsPerfOpenGLOrGLESParams(bool indexBufferChanged,
+                                                          bool useNullDevice,
+                                                          GLenum indexType)
 {
     DrawElementsPerfParams params;
-    params.eglParameters      = angle::egl_platform::OPENGL_OR_GLES(false);
+    params.eglParameters      = angle::egl_platform::OPENGL_OR_GLES(useNullDevice);
     params.indexBufferChanged = indexBufferChanged;
     params.type               = indexType;
 
@@ -249,6 +265,21 @@ DrawElementsPerfParams DrawElementsPerfVulkanParams(bool indexBufferChanged,
     return params;
 }
 
+DrawElementsPerfParams DrawElementsPerfWGLParams(bool indexBufferChanged, GLenum indexType)
+{
+    DrawElementsPerfParams params;
+    params.driver = angle::GLESDriverType::SystemWGL;
+
+    params.indexBufferChanged = indexBufferChanged;
+    params.type               = indexType;
+
+    // Scale down iterations for slower tests.
+    if (indexBufferChanged)
+        params.iterationsPerStep /= 100;
+
+    return params;
+}
+
 TEST_P(DrawElementsPerfBenchmark, Run)
 {
     run();
@@ -263,13 +294,15 @@ ANGLE_INSTANTIATE_TEST(DrawElementsPerfBenchmark,
                        DrawElementsPerfD3D11Params(true, false, GL_UNSIGNED_INT),
                        DrawElementsPerfD3D11Params(false, false, GL_UNSIGNED_SHORT),
                        DrawElementsPerfD3D11Params(false, true, GL_UNSIGNED_SHORT),
-                       DrawElementsPerfOpenGLOrGLESParams(false, GL_UNSIGNED_SHORT),
-                       DrawElementsPerfOpenGLOrGLESParams(true, GL_UNSIGNED_SHORT),
-                       DrawElementsPerfOpenGLOrGLESParams(false, GL_UNSIGNED_INT),
-                       DrawElementsPerfOpenGLOrGLESParams(true, GL_UNSIGNED_INT),
+                       DrawElementsPerfOpenGLOrGLESParams(false, false, GL_UNSIGNED_SHORT),
+                       DrawElementsPerfOpenGLOrGLESParams(false, true, GL_UNSIGNED_SHORT),
+                       DrawElementsPerfOpenGLOrGLESParams(true, false, GL_UNSIGNED_SHORT),
+                       DrawElementsPerfOpenGLOrGLESParams(false, false, GL_UNSIGNED_INT),
+                       DrawElementsPerfOpenGLOrGLESParams(true, false, GL_UNSIGNED_INT),
                        DrawElementsPerfVulkanParams(false, false, GL_UNSIGNED_SHORT),
                        DrawElementsPerfVulkanParams(false, true, GL_UNSIGNED_SHORT),
                        DrawElementsPerfVulkanParams(false, false, GL_UNSIGNED_INT),
-                       DrawElementsPerfVulkanParams(false, true, GL_UNSIGNED_INT));
+                       DrawElementsPerfVulkanParams(false, true, GL_UNSIGNED_INT),
+                       DrawElementsPerfWGLParams(false, GL_UNSIGNED_SHORT));
 
 }  // anonymous namespace

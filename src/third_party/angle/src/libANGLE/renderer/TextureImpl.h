@@ -33,14 +33,14 @@ struct Offset;
 struct Rectangle;
 class Framebuffer;
 struct PixelUnpackState;
-struct TextureState;
+class TextureState;
 }  // namespace gl
 
 namespace rx
 {
 class ContextImpl;
 
-class TextureImpl : public FramebufferAttachmentObjectImpl
+class TextureImpl : public FramebufferAttachmentObjectImpl, public angle::Subject
 {
   public:
     TextureImpl(const gl::TextureState &state);
@@ -164,8 +164,8 @@ class TextureImpl : public FramebufferAttachmentObjectImpl
     virtual angle::Result releaseTexImage(const gl::Context *context)                     = 0;
 
     // Override if accurate native memory size information is available
-    virtual GLint getMemorySize() const { return 0; }
-    virtual GLint getLevelMemorySize(gl::TextureTarget target, GLint level) const { return 0; }
+    virtual GLint getMemorySize() const;
+    virtual GLint getLevelMemorySize(gl::TextureTarget target, GLint level);
 
     virtual angle::Result syncState(const gl::Context *context,
                                     const gl::Texture::DirtyBits &dirtyBits) = 0;
@@ -173,6 +173,7 @@ class TextureImpl : public FramebufferAttachmentObjectImpl
   protected:
     const gl::TextureState &mState;
 };
+
 }  // namespace rx
 
 #endif  // LIBANGLE_RENDERER_TEXTUREIMPL_H_

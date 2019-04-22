@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/stream_socket.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
@@ -92,13 +93,13 @@ class XmppSocketDataProvider : public net::SocketDataProvider {
 class MockClientSocketFactory : public net::MockClientSocketFactory {
  public:
   std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(
-      std::unique_ptr<net::ClientSocketHandle> transport_socket,
+      std::unique_ptr<net::StreamSocket> stream_socket,
       const net::HostPortPair& host_and_port,
       const net::SSLConfig& ssl_config,
       const net::SSLClientSocketContext& context) override {
     ssl_socket_created_ = true;
     return net::MockClientSocketFactory::CreateSSLClientSocket(
-        std::move(transport_socket), host_and_port, ssl_config, context);
+        std::move(stream_socket), host_and_port, ssl_config, context);
   }
 
   bool ssl_socket_created() const { return ssl_socket_created_; }
@@ -148,8 +149,8 @@ class XmppSignalStrategyTest : public testing::Test,
     state_history_.push_back(state);
   }
 
-  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override {
-    received_messages_.push_back(std::make_unique<buzz::XmlElement>(*stanza));
+  bool OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* stanza) override {
+    received_messages_.push_back(std::make_unique<jingle_xmpp::XmlElement>(*stanza));
     return true;
   }
 
@@ -164,7 +165,7 @@ class XmppSignalStrategyTest : public testing::Test,
   std::unique_ptr<XmppSignalStrategy> signal_strategy_;
 
   std::vector<SignalStrategy::State> state_history_;
-  std::vector<std::unique_ptr<buzz::XmlElement>> received_messages_;
+  std::vector<std::unique_ptr<jingle_xmpp::XmlElement>> received_messages_;
 };
 
 void XmppSignalStrategyTest::Connect(bool success) {
@@ -277,7 +278,7 @@ TEST_F(XmppSignalStrategyTest, SendAndReceive) {
   Connect(true);
 
   EXPECT_TRUE(signal_strategy_->SendStanza(
-      std::make_unique<buzz::XmlElement>(buzz::QName(std::string(), "hello"))));
+      std::make_unique<jingle_xmpp::XmlElement>(jingle_xmpp::QName(std::string(), "hello"))));
   EXPECT_EQ("<hello/>", socket_data_provider_->GetAndClearWrittenData());
 
   socket_data_provider_->ReceiveData("<hi xmlns=\"hello\"/>");
@@ -303,7 +304,7 @@ TEST_F(XmppSignalStrategyTest, ConnectionClosed) {
 
   // Can't send messages anymore.
   EXPECT_FALSE(signal_strategy_->SendStanza(
-      std::make_unique<buzz::XmlElement>(buzz::QName(std::string(), "hello"))));
+      std::make_unique<jingle_xmpp::XmlElement>(jingle_xmpp::QName(std::string(), "hello"))));
 
   // Try connecting again.
   Connect(true);
@@ -321,7 +322,7 @@ TEST_F(XmppSignalStrategyTest, NetworkReadError) {
 
   // Can't send messages anymore.
   EXPECT_FALSE(signal_strategy_->SendStanza(
-      std::make_unique<buzz::XmlElement>(buzz::QName(std::string(), "hello"))));
+      std::make_unique<jingle_xmpp::XmlElement>(jingle_xmpp::QName(std::string(), "hello"))));
 
   // Try connecting again.
   Connect(true);
@@ -335,7 +336,7 @@ TEST_F(XmppSignalStrategyTest, NetworkWriteError) {
 
   // Next SendMessage() will call Write() which will fail.
   EXPECT_FALSE(signal_strategy_->SendStanza(
-      std::make_unique<buzz::XmlElement>(buzz::QName(std::string(), "hello"))));
+      std::make_unique<jingle_xmpp::XmlElement>(jingle_xmpp::QName(std::string(), "hello"))));
 
   EXPECT_EQ(3U, state_history_.size());
   EXPECT_EQ(SignalStrategy::DISCONNECTED, state_history_[2]);

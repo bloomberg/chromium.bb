@@ -12,24 +12,10 @@ CJX_Handler::CJX_Handler(CXFA_Handler* node) : CJX_TextNode(node) {}
 
 CJX_Handler::~CJX_Handler() = default;
 
-void CJX_Handler::use(CFXJSE_Value* pValue,
-                      bool bSetting,
-                      XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_Handler::type(CFXJSE_Value* pValue,
-                       bool bSetting,
-                       XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
+bool CJX_Handler::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
 }
 
 void CJX_Handler::version(CFXJSE_Value* pValue,
                           bool bSetting,
                           XFA_Attribute eAttribute) {}
-
-void CJX_Handler::usehref(CFXJSE_Value* pValue,
-                          bool bSetting,
-                          XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}

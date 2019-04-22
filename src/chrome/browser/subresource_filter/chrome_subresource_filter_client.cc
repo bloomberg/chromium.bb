@@ -28,7 +28,7 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
-#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -167,3 +167,5 @@ void ChromeSubresourceFilterClient::ShowUI(const GURL& url) {
   did_show_ui_for_navigation_ = true;
   settings_manager_->OnDidShowUI(url);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeSubresourceFilterClient)

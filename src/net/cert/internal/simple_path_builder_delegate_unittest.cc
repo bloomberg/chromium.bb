@@ -60,9 +60,9 @@ const char* kSuccess1024Filenames[] = {
     "ecdsa-prime256v1-sha512.pem",
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SimplePathBuilderDelegate1024SuccessTest,
-                        ::testing::ValuesIn(kSuccess1024Filenames));
+INSTANTIATE_TEST_SUITE_P(,
+                         SimplePathBuilderDelegate1024SuccessTest,
+                         ::testing::ValuesIn(kSuccess1024Filenames));
 
 TEST_P(SimplePathBuilderDelegate1024SuccessTest, IsAcceptableSignatureAndKey) {
   std::unique_ptr<SignatureAlgorithm> signature_algorithm;
@@ -87,9 +87,9 @@ class SimplePathBuilderDelegate2048FailTest
 const char* kFail2048Filenames[] = {"rsa-pkcs1-sha1.pem",
                                     "rsa-pkcs1-sha256.pem"};
 
-INSTANTIATE_TEST_CASE_P(,
-                        SimplePathBuilderDelegate2048FailTest,
-                        ::testing::ValuesIn(kFail2048Filenames));
+INSTANTIATE_TEST_SUITE_P(,
+                         SimplePathBuilderDelegate2048FailTest,
+                         ::testing::ValuesIn(kFail2048Filenames));
 
 TEST_P(SimplePathBuilderDelegate2048FailTest, RsaKeySmallerThan2048) {
   std::unique_ptr<SignatureAlgorithm> signature_algorithm;

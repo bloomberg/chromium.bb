@@ -10,7 +10,7 @@
 #include "net/base/io_buffer.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/proto/internal.pb.h"
-#include "third_party/webrtc/rtc_base/byteorder.h"
+#include "third_party/webrtc/rtc_base/byte_order.h"
 
 namespace remoting {
 namespace protocol {

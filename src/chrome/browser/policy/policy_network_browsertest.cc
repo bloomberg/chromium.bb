@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -30,6 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/cert/test_root_certs.h"
@@ -40,7 +42,7 @@
 #include "services/network/public/mojom/network_service_test.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 namespace {
@@ -164,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsFalse, QuicDisallowedForSystem) {
 
   // If using the network service, crash the service, and make sure QUIC is
   // still disabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     CrashNetworkServiceAndRestartQuicServer();
     // Make sure the NetworkContext has noticed the pipe was closed.
     g_browser_process->system_network_context_manager()
@@ -179,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsFalse,
 
   // If using the network service, crash the service, and make sure QUIC is
   // still disabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     CrashNetworkServiceAndRestartQuicServer();
     // Make sure the NetworkContext has noticed the pipe was closed.
     g_browser_process->safe_browsing_service()
@@ -193,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsFalse, QuicDisallowedForProfile) {
 
   // If using the network service, crash the service, and make sure QUIC is
   // still disabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     CrashNetworkServiceAndRestartQuicServer();
     // Make sure the NetworkContext has noticed the pipe was closed.
     content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
@@ -223,12 +225,18 @@ class QuicAllowedPolicyIsTrue: public QuicAllowedPolicyTestBase {
 // just crash the network service once, and then test all network contexts in
 // some particular order.
 
-IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsTrue, QuicAllowedForSystem) {
+// TODO(crbug.com/938139): Flaky on ChromeOS with Network Service
+#if defined(OS_CHROMEOS)
+#define MAYBE_QuicAllowedForSystem DISABLED_QuicAllowedForSystem
+#else
+#define MAYBE_QuicAllowedForSystem QuicAllowedForSystem
+#endif
+IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsTrue, MAYBE_QuicAllowedForSystem) {
   EXPECT_TRUE(IsQuicEnabledForSystem());
 
   // If using the network service, crash the service, and make sure QUIC is
   // still enabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     CrashNetworkServiceAndRestartQuicServer();
     // Make sure the NetworkContext has noticed the pipe was closed.
     g_browser_process->system_network_context_manager()
@@ -242,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsTrue, QuicAllowedForSafeBrowsing) {
 
   // If using the network service, crash the service, and make sure QUIC is
   // still enabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     CrashNetworkServiceAndRestartQuicServer();
     // Make sure the NetworkContext has noticed the pipe was closed.
     g_browser_process->safe_browsing_service()
@@ -256,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyIsTrue, QuicAllowedForProfile) {
 
   // If using the network service, crash the service, and make sure QUIC is
   // still enabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (content::IsOutOfProcessNetworkService()) {
     CrashNetworkServiceAndRestartQuicServer();
     // Make sure the NetworkContext has noticed the pipe was closed.
     content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
@@ -444,7 +452,8 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest, QuicAllowedFalseThenTrue) {
 
 // QUIC is allowed, then disallowed by policy after the profile has been
 // initialized.
-IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest, QuicAllowedTrueThenFalse) {
+IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest,
+                       DISABLED_QuicAllowedTrueThenFalse) {
   // After browser start, QuicAllowed=true comes in dynamically
   SetQuicAllowedPolicy(policy_for_profile_1(), true);
   EXPECT_TRUE(IsQuicEnabledForSystem());
@@ -495,8 +504,17 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest,
 // A second Profile is created when no QuicAllowed policy is in effect for the
 // first profile.
 // Then QuicAllowed=false policy is dynamically set for both profiles.
+//
+// Disabled due to flakiness on windows: https://crbug.com/947931.
+#if defined(OS_WIN)
+#define MAYBE_QuicAllowedFalseAfterTwoProfilesCreated \
+  DISABLED_QuicAllowedFalseAfterTwoProfilesCreated
+#else
+#define MAYBE_QuicAllowedFalseAfterTwoProfilesCreated \
+  QuicAllowedFalseAfterTwoProfilesCreated
+#endif
 IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest,
-                       QuicAllowedFalseAfterTwoProfilesCreated) {
+                       MAYBE_QuicAllowedFalseAfterTwoProfilesCreated) {
   // If multiprofile mode is not enabled, you can't switch between profiles.
   if (!profiles::IsMultipleProfilesEnabled())
     return;

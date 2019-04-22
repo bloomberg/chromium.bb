@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
+#include "chrome/browser/ui/views/relaunch_notification/wall_clock_timer.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -19,6 +19,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 namespace base {
+class Clock;
 class TickClock;
 }
 
@@ -59,6 +60,7 @@ class RelaunchNotificationController : public UpgradeObserver {
       base::TimeDelta::FromMinutes(3);
 
   RelaunchNotificationController(UpgradeDetector* upgrade_detector,
+                                 const base::Clock* clock,
                                  const base::TickClock* tick_clock);
 
   // UpgradeObserver:
@@ -90,7 +92,7 @@ class RelaunchNotificationController : public UpgradeObserver {
   // for further details.
   void ShowRelaunchNotification(
       UpgradeDetector::UpgradeNotificationAnnoyanceLevel level,
-      base::TimeTicks high_deadline);
+      base::Time high_deadline);
 
   // Closes any previously-shown notifications. This is safe to call if no
   // notifications have been shown. Notifications may be closed by other means
@@ -113,16 +115,23 @@ class RelaunchNotificationController : public UpgradeObserver {
   // relaunch required notification (if shown), and showing it if needed.
   void HandleRelaunchRequiredState(
       UpgradeDetector::UpgradeNotificationAnnoyanceLevel level,
-      base::TimeTicks high_deadline);
+      base::Time high_deadline);
+
+  // Update |last_relaunch_notification_time_| before calling
+  // DoNotifyRelaunchRecommended.
+  void NotifyRelaunchRecommended();
+
+  // Provide deadline to DoNotifyRelaunchRequired.
+  virtual void NotifyRelaunchRequired();
 
   // The following methods, which are invoked by the controller to show or close
   // notifications, are virtual for the sake of testing.
 
   // Shows the relaunch recommended notification if it is not already open.
-  virtual void NotifyRelaunchRecommended();
+  virtual void DoNotifyRelaunchRecommended();
 
   // Shows the relaunch required notification if it is not already open.
-  virtual void NotifyRelaunchRequired();
+  virtual void DoNotifyRelaunchRequired(base::Time deadline);
 
   // Closes bubble or dialog if either is still open on desktop, or sets the
   // default notification on Chrome OS.
@@ -135,9 +144,9 @@ class RelaunchNotificationController : public UpgradeObserver {
   // The process-wide upgrade detector.
   UpgradeDetector* const upgrade_detector_;
 
-  // A provider of TimeTicks to the controller and its timer for the sake of
+  // A provider of Time to the controller and its timer for the sake of
   // testability.
-  const base::TickClock* const tick_clock_;
+  const base::Clock* const clock_;
 
   // Observes changes to the browser.relaunch_notification Local State pref.
   PrefChangeRegistrar pref_change_registrar_;
@@ -155,12 +164,15 @@ class RelaunchNotificationController : public UpgradeObserver {
   UpgradeDetector::UpgradeNotificationAnnoyanceLevel last_level_;
 
   // The last observed high annoyance deadline.
-  base::TimeTicks last_high_deadline_;
+  base::Time last_high_deadline_;
+
+  // The last time recommended relaunch notification triggered
+  base::Time last_relaunch_notification_time_;
 
   // A timer used either to repeatedly reshow the relaunch recommended bubble
   // once the high annoyance level has been reached, or to trigger browser
   // relaunch once the relaunch required dialog's deadline is reached.
-  base::OneShotTimer timer_;
+  WallClockTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RelaunchNotificationController);
 };

@@ -50,9 +50,9 @@
 #endif
 
 // Silence C4800 (C4800: 'int *const ': forcing value
-// to bool 'true' or 'false') for MSVC 14,15
+// to bool 'true' or 'false') for MSVC 15
 #ifdef _MSC_VER
-#if _MSC_VER <= 1900
+#if _MSC_VER == 1900
 #  pragma warning(push)
 #  pragma warning(disable:4800)
 #endif
@@ -572,7 +572,7 @@ struct MockObjectState {
   // invoked on this mock object.
   const char* first_used_file;
   int first_used_line;
-  ::std::string first_used_test_case;
+  ::std::string first_used_test_suite;
   ::std::string first_used_test;
   bool leakable;  // true iff it's OK to leak the object.
   FunctionMockers function_mockers;  // All registered methods of the object.
@@ -592,9 +592,6 @@ class MockObjectRegistry {
   // object alive.  Therefore we report any living object as test
   // failure, unless the user explicitly asked us to ignore it.
   ~MockObjectRegistry() {
-    // "using ::std::cout;" doesn't work with Symbian's STLport, where cout is
-    // a macro.
-
     if (!GMOCK_FLAG(catch_leaked_mocks))
       return;
 
@@ -612,8 +609,8 @@ class MockObjectRegistry {
                                                 state.first_used_line);
       std::cout << " ERROR: this mock object";
       if (state.first_used_test != "") {
-        std::cout << " (used in test " << state.first_used_test_case << "."
-             << state.first_used_test << ")";
+        std::cout << " (used in test " << state.first_used_test_suite << "."
+                  << state.first_used_test << ")";
       }
       std::cout << " should be deleted but never is. Its address is @"
            << it->first << ".";
@@ -793,10 +790,7 @@ void Mock::RegisterUseByOnCallOrExpectCall(const void* mock_obj,
     const TestInfo* const test_info =
         UnitTest::GetInstance()->current_test_info();
     if (test_info != nullptr) {
-      // FIXME: record the test case name when the
-      // ON_CALL or EXPECT_CALL is invoked from SetUpTestCase() or
-      // TearDownTestCase().
-      state.first_used_test_case = test_info->test_case_name();
+      state.first_used_test_suite = test_info->test_suite_name();
       state.first_used_test = test_info->name();
     }
   }
@@ -887,7 +881,7 @@ InSequence::~InSequence() {
 }  // namespace testing
 
 #ifdef _MSC_VER
-#if _MSC_VER <= 1900
+#if _MSC_VER == 1900
 #  pragma warning(pop)
 #endif
 #endif

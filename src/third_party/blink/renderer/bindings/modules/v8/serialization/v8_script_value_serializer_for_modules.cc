@@ -31,11 +31,11 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     return false;
 
   const WrapperTypeInfo* wrapper_type_info = wrappable->GetWrapperTypeInfo();
-  if (wrapper_type_info == &V8CryptoKey::wrapper_type_info) {
+  if (wrapper_type_info == V8CryptoKey::GetWrapperTypeInfo()) {
     return WriteCryptoKey(wrappable->ToImpl<CryptoKey>()->Key(),
                           exception_state);
   }
-  if (wrapper_type_info == &V8DOMFileSystem::wrapper_type_info) {
+  if (wrapper_type_info == V8DOMFileSystem::GetWrapperTypeInfo()) {
     DOMFileSystem* fs = wrappable->ToImpl<DOMFileSystem>();
     if (!fs->Clonable()) {
       exception_state.ThrowDOMException(
@@ -50,7 +50,7 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteUTF8String(fs->RootURL().GetString());
     return true;
   }
-  if (wrapper_type_info == &V8RTCCertificate::wrapper_type_info) {
+  if (wrapper_type_info == V8RTCCertificate::GetWrapperTypeInfo()) {
     RTCCertificate* certificate = wrappable->ToImpl<RTCCertificate>();
     rtc::RTCCertificatePEM pem = certificate->Certificate()->ToPEM();
     WriteTag(kRTCCertificateTag);
@@ -58,7 +58,7 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteUTF8String(pem.certificate().c_str());
     return true;
   }
-  if (wrapper_type_info == &V8DetectedBarcode::wrapper_type_info) {
+  if (wrapper_type_info == V8DetectedBarcode::GetWrapperTypeInfo()) {
     DetectedBarcode* detected_barcode = wrappable->ToImpl<DetectedBarcode>();
     WriteTag(kDetectedBarcodeTag);
     WriteUTF8String(detected_barcode->rawValue());
@@ -76,7 +76,7 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     }
     return true;
   }
-  if (wrapper_type_info == &V8DetectedFace::wrapper_type_info) {
+  if (wrapper_type_info == V8DetectedFace::GetWrapperTypeInfo()) {
     DetectedFace* detected_face = wrappable->ToImpl<DetectedFace>();
     WriteTag(kDetectedFaceTag);
     DOMRectReadOnly* bounding_box = detected_face->boundingBox();
@@ -97,7 +97,7 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     }
     return true;
   }
-  if (wrapper_type_info == &V8DetectedText::wrapper_type_info) {
+  if (wrapper_type_info == V8DetectedText::GetWrapperTypeInfo()) {
     DetectedText* detected_text = wrappable->ToImpl<DetectedText>();
     WriteTag(kDetectedTextTag);
     WriteUTF8String(detected_text->rawValue());

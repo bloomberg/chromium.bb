@@ -854,7 +854,7 @@ int CFX_DIBBase::FindPalette(uint32_t color) const {
   return -1;
 }
 
-void CFX_DIBBase::GetOverlapRect(int& dest_left,
+bool CFX_DIBBase::GetOverlapRect(int& dest_left,
                                  int& dest_top,
                                  int& width,
                                  int& height,
@@ -864,7 +864,7 @@ void CFX_DIBBase::GetOverlapRect(int& dest_left,
                                  int& src_top,
                                  const CFX_ClipRgn* pClipRgn) {
   if (width == 0 || height == 0)
-    return;
+    return false;
 
   ASSERT(width > 0);
   ASSERT(height > 0);
@@ -872,7 +872,7 @@ void CFX_DIBBase::GetOverlapRect(int& dest_left,
   if (dest_left > m_Width || dest_top > m_Height) {
     width = 0;
     height = 0;
-    return;
+    return false;
   }
   int x_offset = dest_left - src_left;
   int y_offset = dest_top - src_top;
@@ -887,10 +887,22 @@ void CFX_DIBBase::GetOverlapRect(int& dest_left,
     dest_rect.Intersect(pClipRgn->GetBox());
   dest_left = dest_rect.left;
   dest_top = dest_rect.top;
-  src_left = dest_left - x_offset;
-  src_top = dest_top - y_offset;
+
+  pdfium::base::CheckedNumeric<int> safe_src_left = dest_left;
+  safe_src_left -= x_offset;
+  if (!safe_src_left.IsValid())
+    return false;
+  src_left = safe_src_left.ValueOrDie();
+
+  pdfium::base::CheckedNumeric<int> safe_src_top = dest_top;
+  safe_src_top -= y_offset;
+  if (!safe_src_top.IsValid())
+    return false;
+  src_top = safe_src_top.ValueOrDie();
+
   width = dest_rect.right - dest_rect.left;
   height = dest_rect.bottom - dest_rect.top;
+  return width != 0 && height != 0;
 }
 
 void CFX_DIBBase::SetPalette(const uint32_t* pSrc) {
@@ -990,34 +1002,38 @@ RetainPtr<CFX_DIBitmap> CFX_DIBBase::FlipImage(bool bXFlip, bool bYFlip) const {
     }
     if (m_bpp == 1) {
       memset(dest_scan, 0, m_Pitch);
-      for (int col = 0; col < m_Width; ++col)
+      for (int col = 0; col < m_Width; ++col) {
         if (src_scan[col / 8] & (1 << (7 - col % 8))) {
           int dest_col = m_Width - col - 1;
           dest_scan[dest_col / 8] |= (1 << (7 - dest_col % 8));
         }
+      }
+      continue;
+    }
+
+    dest_scan += (m_Width - 1) * Bpp;
+    if (Bpp == 1) {
+      for (int col = 0; col < m_Width; ++col) {
+        *dest_scan = *src_scan;
+        --dest_scan;
+        ++src_scan;
+      }
+    } else if (Bpp == 3) {
+      for (int col = 0; col < m_Width; ++col) {
+        dest_scan[0] = src_scan[0];
+        dest_scan[1] = src_scan[1];
+        dest_scan[2] = src_scan[2];
+        dest_scan -= 3;
+        src_scan += 3;
+      }
     } else {
-      dest_scan += (m_Width - 1) * Bpp;
-      if (Bpp == 1) {
-        for (int col = 0; col < m_Width; ++col) {
-          *dest_scan = *src_scan;
-          --dest_scan;
-          ++src_scan;
-        }
-      } else if (Bpp == 3) {
-        for (int col = 0; col < m_Width; ++col) {
-          dest_scan[0] = src_scan[0];
-          dest_scan[1] = src_scan[1];
-          dest_scan[2] = src_scan[2];
-          dest_scan -= 3;
-          src_scan += 3;
-        }
-      } else {
-        ASSERT(Bpp == 4);
-        for (int col = 0; col < m_Width; ++col) {
-          *(uint32_t*)dest_scan = *(uint32_t*)src_scan;
-          dest_scan -= 4;
-          src_scan += 4;
-        }
+      ASSERT(Bpp == 4);
+      for (int col = 0; col < m_Width; ++col) {
+        const auto* src_scan32 = reinterpret_cast<const uint32_t*>(src_scan);
+        uint32_t* dest_scan32 = reinterpret_cast<uint32_t*>(dest_scan);
+        *dest_scan32 = *src_scan32;
+        dest_scan -= 4;
+        src_scan += 4;
       }
     }
   }
@@ -1057,7 +1073,7 @@ RetainPtr<CFX_DIBitmap> CFX_DIBBase::CloneConvert(FXDIB_Format dest_format) {
     if (!pSrcAlpha)
       return nullptr;
   }
-  if (dest_format & 0x0200) {
+  if (GetIsAlphaFromFormat(dest_format)) {
     bool ret;
     if (dest_format == FXDIB_Argb) {
       ret = pSrcAlpha ? pClone->LoadChannelFromAlpha(FXDIB_Alpha, pSrcAlpha)
@@ -1130,7 +1146,8 @@ RetainPtr<CFX_DIBitmap> CFX_DIBBase::SwapXY(bool bXFlip, bool bYFlip) const {
         const uint32_t* src_scan =
             reinterpret_cast<const uint32_t*>(GetScanline(row)) + col_start;
         for (int col = col_start; col < col_end; ++col) {
-          *(uint32_t*)dest_scan = *src_scan++;
+          uint32_t* dest_scan32 = reinterpret_cast<uint32_t*>(dest_scan);
+          *dest_scan32 = *src_scan++;
           dest_scan += dest_step;
         }
       } else {
@@ -1253,9 +1270,9 @@ bool CFX_DIBBase::ConvertBuffer(
     }
     case FXDIB_Argb:
     case FXDIB_Rgb32: {
-      const bool cmyk = src_format & 0x0400;
-      return ConvertBuffer_Argb(bpp, cmyk, dest_format, dest_buf, dest_pitch,
-                                width, height, pSrcBitmap, src_left, src_top);
+      return ConvertBuffer_Argb(bpp, GetIsCmykFromFormat(src_format),
+                                dest_format, dest_buf, dest_pitch, width,
+                                height, pSrcBitmap, src_left, src_top);
     }
     default:
       NOTREACHED();

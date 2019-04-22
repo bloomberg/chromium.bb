@@ -4,13 +4,23 @@
 
 #include "components/cronet/stale_host_resolver.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/host_resolver_source.h"
+#include "net/log/net_log_with_source.h"
 
 namespace cronet {
 
@@ -38,6 +48,9 @@ enum RequestOutcome {
 
   // Stale data returned; network got ERR_NAME_NOT_RESOLVED.
   STALE_INSTEAD_OF_NETWORK_NAME_NOT_RESOLVED = 6,
+
+  // Stale data is explicitly requested and returned immediately.
+  STALE_SYNCHRONOUS = 7,
 
   MAX_REQUEST_OUTCOME
 };
@@ -68,125 +81,86 @@ void RecordTimeDelta(base::TimeTicks network_time, base::TimeTicks stale_time) {
   }
 }
 
-bool StaleEntryIsUsable(const StaleHostResolver::StaleOptions& options,
-                        const net::HostCache::EntryStaleness& entry) {
-  if (options.max_expired_time != base::TimeDelta() &&
-      entry.expired_by > options.max_expired_time) {
-    return false;
-  }
-  if (options.max_stale_uses > 0 && entry.stale_hits > options.max_stale_uses)
-    return false;
-  if (!options.allow_other_network && entry.network_changes > 0)
-    return false;
-  return true;
-}
-
 }  // namespace
 
 // A request made by the StaleHostResolver. May return fresh cached data,
 // network data, or stale cached data.
-class StaleHostResolver::RequestImpl {
+class StaleHostResolver::RequestImpl
+    : public net::HostResolver::ResolveHostRequest {
  public:
-  // If |use_stale_on_name_not_resolved| and network resolution returns
-  // ERR_NAME_NOT_RESOLVED, use stale result if available.
-  explicit RequestImpl(const base::TickClock* tick_clock,
-                       bool use_stale_on_name_not_resolved);
-  ~RequestImpl();
+  // StaleOptions will be read directly from |resolver|.
+  RequestImpl(base::WeakPtr<StaleHostResolver> resolver,
+              const net::HostPortPair& host,
+              const net::NetLogWithSource& net_log,
+              const ResolveHostParameters& input_parameters,
+              const base::TickClock* tick_clock);
+  ~RequestImpl() override;
 
-  // A callback for the caller to decide whether a stale entry is usable or not.
-  typedef base::Callback<bool(const net::HostCache::EntryStaleness&)>
-      StaleEntryUsableCallback;
+  // net::HostResolver::ResolveHostRequest implementation:
+  int Start(net::CompletionOnceCallback result_callback) override;
+  const base::Optional<net::AddressList>& GetAddressResults() const override;
+  const base::Optional<std::vector<std::string>>& GetTextResults()
+      const override;
+  const base::Optional<std::vector<net::HostPortPair>>& GetHostnameResults()
+      const override;
+  const base::Optional<net::HostCache::EntryStaleness>& GetStaleInfo()
+      const override;
+  void ChangeRequestPriority(net::RequestPriority priority) override;
 
-  // Starts the request. May call |usable_callback| inline if |resolver| returns
-  // stale data to let the caller decide whether the data is usable.
-  //
-  // Returns the result if the request finishes synchronously. Returns
-  // ERR_IO_PENDING and calls |result_callback| with the result if it finishes
-  // asynchronously (unless destroyed first).
-  //
-  // |addresses| must remain valid until the Request completes (synchronously or
-  // via |result_callback|) or is canceled by destroying the Request.
-  int Start(net::HostResolverImpl* resolver,
-            const RequestInfo& info,
-            net::RequestPriority priority,
-            net::AddressList* addresses,
-            net::CompletionOnceCallback result_callback,
-            std::unique_ptr<net::HostResolver::Request>* out_req,
-            const net::NetLogWithSource& net_log,
-            const StaleEntryUsableCallback& usable_callback,
-            base::TimeDelta stale_delay);
-
-  void ChangeRequestPriority(net::RequestPriority priority);
+  // Called on completion of an asynchronous (network) inner request. Expected
+  // to be called by StaleHostResolver::OnNetworkRequestComplete().
+  void OnNetworkRequestComplete(int error);
 
  private:
-  class Handle : public net::HostResolver::Request {
-   public:
-    Handle(RequestImpl* request) : request_(request) {}
-    ~Handle() override { request_->OnHandleDestroyed(); }
-
-    void ChangeRequestPriority(net::RequestPriority priority) override {
-      request_->ChangeRequestPriority(priority);
-    }
-
-   private:
-    RequestImpl* request_;
-  };
-
   bool have_network_request() const { return network_request_ != nullptr; }
-  bool have_stale_data() const {
-    return stale_error_ != net::ERR_DNS_CACHE_MISS;
+  bool have_cache_data() const {
+    return cache_error_ != net::ERR_DNS_CACHE_MISS;
   }
   bool have_returned() const { return result_callback_.is_null(); }
-  bool have_handle() const { return handle_ != nullptr; }
+
+  // Determines if |cache_error_| and |cache_request_| represents a usable entry
+  // per the requirements of |resolver_->options_|.
+  bool CacheDataIsUsable() const;
 
   // Callback for |stale_timer_| that returns stale results.
   void OnStaleDelayElapsed();
-  // Callback for network request that returns fresh results if the request
-  // hasn't already returned stale results, and completes the request.
-  void OnNetworkRequestComplete(int error);
-  void OnHandleDestroyed();
 
-  // Fills |*result_addresses_| if rv is OK and returns rv.
-  int HandleResult(int rv, const net::AddressList& addresses);
-  // Fills |*result_addresses_| if rv is OK and calls |result_callback_| with
-  // rv.
-  void ReturnResult(int rv, const net::AddressList& addresses);
-
-  void MaybeDeleteThis();
-
+  // Logging for when the underlying resolve completes synchronously.
   void RecordSynchronousRequest();
+  // Logging for when the overall result is determined on completion of
+  // |network_request_|.
   void RecordNetworkRequest(
       int error,
-      bool returned_stale_data,
       bool returned_stale_data_instead_of_network_name_not_resolved);
+  // Logging for when |stale_timer_| fires and |stale_request_| is to be used as
+  // the overall result.
+  void RecordLateRequest();
+  // Logging for when the request is cancelled after Start() is called and
+  // before a result is returned.
   void RecordCanceledRequest();
 
-  // The address list passed into |Start()| to be filled in when the request
-  // returns.
-  net::AddressList* result_addresses_;
+  base::WeakPtr<StaleHostResolver> resolver_;
+
+  const net::HostPortPair host_;
+  const net::NetLogWithSource net_log_;
+  const ResolveHostParameters input_parameters_;
+
   // The callback passed into |Start()| to be called when the request returns.
   net::CompletionOnceCallback result_callback_;
-  // Set when |result_callback_| is being called so |OnHandleDestroyed()|
-  // doesn't delete the request.
-  bool returning_result_;
 
   // The error from the stale cache entry, if there was one.
   // If not, net::ERR_DNS_CACHE_MISS.
-  int stale_error_;
-  // The address list from the stale cache entry, if there was one.
-  net::AddressList stale_addresses_;
+  int cache_error_;
+  // Inner local-only/stale-allowed request.
+  std::unique_ptr<ResolveHostRequest> cache_request_;
   // A timer that fires when the |Request| should return stale results, if the
   // underlying network request has not finished yet.
   base::OneShotTimer stale_timer_;
-  // Shared instance of tick clock, overridden for testing.
-  const base::TickClock* tick_clock_;
 
-  // The address list the underlying network request will fill in. (Can't be the
-  // one passed to |Start()|, or else the network request would overwrite stale
-  // results after they are returned.)
-  net::AddressList network_addresses_;
-  // The underlying network request, so the priority can be changed.
-  std::unique_ptr<net::HostResolver::Request> network_request_;
+  // An inner request for network results. Only set if |cache_request_| gave a
+  // stale or unusable result, and unset if the stale result is to be used as
+  // the overall result.
+  std::unique_ptr<ResolveHostRequest> network_request_;
 
   // Statistics used in histograms:
   // Number of HostCache entries that were restored from prefs, recorded at the
@@ -195,171 +169,213 @@ class StaleHostResolver::RequestImpl {
   // Current HostCache size at the time the cache was checked.
   size_t current_size_;
 
-  // Handle that caller can use to cancel the request before it returns.
-  // Owned by the caller; cleared via |OnHandleDestroyed()| when destroyed.
-  Handle* handle_;
-
-  // If |use_stale_on_name_not_resolved| and network resolution returns
-  // ERR_NAME_NOT_RESOLVED, use stale result if available.
-  const bool use_stale_on_name_not_resolved_;
+  base::WeakPtrFactory<RequestImpl> weak_ptr_factory_;
 };
 
-StaleHostResolver::RequestImpl::RequestImpl(const base::TickClock* tick_clock,
-                                            bool use_stale_on_name_not_resolved)
-    : result_addresses_(nullptr),
-      returning_result_(false),
-      stale_error_(net::ERR_DNS_CACHE_MISS),
+StaleHostResolver::RequestImpl::RequestImpl(
+    base::WeakPtr<StaleHostResolver> resolver,
+    const net::HostPortPair& host,
+    const net::NetLogWithSource& net_log,
+    const ResolveHostParameters& input_parameters,
+    const base::TickClock* tick_clock)
+    : resolver_(std::move(resolver)),
+      host_(host),
+      net_log_(net_log),
+      input_parameters_(input_parameters),
+      cache_error_(net::ERR_DNS_CACHE_MISS),
       stale_timer_(tick_clock),
-      tick_clock_(tick_clock),
       restore_size_(0),
       current_size_(0),
-      handle_(nullptr),
-      use_stale_on_name_not_resolved_(use_stale_on_name_not_resolved) {}
+      weak_ptr_factory_(this) {
+  DCHECK(resolver_);
+}
 
-StaleHostResolver::RequestImpl::~RequestImpl() {}
+StaleHostResolver::RequestImpl::~RequestImpl() {
+  if (!have_returned())
+    RecordCanceledRequest();
+}
 
 int StaleHostResolver::RequestImpl::Start(
-    net::HostResolverImpl* resolver,
-    const RequestInfo& info,
-    net::RequestPriority priority,
-    net::AddressList* addresses,
-    net::CompletionOnceCallback result_callback,
-    std::unique_ptr<net::HostResolver::Request>* out_req,
-    const net::NetLogWithSource& net_log,
-    const StaleEntryUsableCallback& usable_callback,
-    base::TimeDelta stale_delay) {
-  DCHECK(resolver);
-  DCHECK(addresses);
+    net::CompletionOnceCallback result_callback) {
+  DCHECK(resolver_);
   DCHECK(!result_callback.is_null());
-  DCHECK(out_req);
-  DCHECK(!usable_callback.is_null());
 
-  result_addresses_ = addresses;
-  restore_size_ = resolver->LastRestoredCacheSize();
-  current_size_ = resolver->CacheSize();
+  restore_size_ = resolver_->inner_resolver_->LastRestoredCacheSize();
+  current_size_ = resolver_->inner_resolver_->CacheSize();
 
-  net::AddressList cache_addresses;
-  net::HostCache::EntryStaleness stale_info;
-  int cache_rv = resolver->ResolveStaleFromCache(info, &cache_addresses,
-                                                 &stale_info, net_log);
+  net::HostResolver::ResolveHostParameters cache_parameters = input_parameters_;
+  cache_parameters.cache_usage =
+      net::HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+  cache_parameters.source = net::HostResolverSource::LOCAL_ONLY;
+  cache_request_ = resolver_->inner_resolver_->CreateRequest(host_, net_log_,
+                                                             cache_parameters);
+  cache_error_ =
+      cache_request_->Start(base::BindOnce([](int error) { NOTREACHED(); }));
+  DCHECK_NE(net::ERR_IO_PENDING, cache_error_);
   // If it's a fresh cache hit (or literal), return it synchronously.
-  if (cache_rv != net::ERR_DNS_CACHE_MISS && !stale_info.is_stale()) {
+  if (cache_error_ != net::ERR_DNS_CACHE_MISS &&
+      (!cache_request_->GetStaleInfo() ||
+       !cache_request_->GetStaleInfo().value().is_stale())) {
     RecordSynchronousRequest();
-    return HandleResult(cache_rv, cache_addresses);
+    return cache_error_;
+  }
+
+  if (cache_error_ != net::ERR_DNS_CACHE_MISS &&
+      input_parameters_.cache_usage ==
+          net::HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED) {
+    RecordRequestOutcome(STALE_SYNCHRONOUS);
+    return cache_error_;
   }
 
   result_callback_ = std::move(result_callback);
-  handle_ = new Handle(this);
-  *out_req = std::unique_ptr<net::HostResolver::Request>(handle_);
 
-  if (cache_rv == net::OK && usable_callback.Run(stale_info)) {
-    stale_error_ = cache_rv;
-    stale_addresses_ = cache_addresses;
+  if (CacheDataIsUsable()) {
     // |stale_timer_| is deleted when the Request is deleted, so it's safe to
     // use Unretained here.
     base::Callback<void()> stale_callback =
         base::Bind(&StaleHostResolver::RequestImpl::OnStaleDelayElapsed,
                    base::Unretained(this));
-    stale_timer_.Start(FROM_HERE, stale_delay, stale_callback);
+    stale_timer_.Start(FROM_HERE, resolver_->options_.delay, stale_callback);
+  } else {
+    cache_error_ = net::ERR_DNS_CACHE_MISS;
+    cache_request_.reset();
   }
 
   // Don't check the cache again.
-  net::HostResolver::RequestInfo no_cache_info(info);
-  no_cache_info.set_allow_cached_response(false);
-  int network_rv = resolver->Resolve(
-      no_cache_info, priority, &network_addresses_,
-      base::BindOnce(&StaleHostResolver::RequestImpl::OnNetworkRequestComplete,
-                     base::Unretained(this)),
-      &network_request_, net_log);
+  net::HostResolver::ResolveHostParameters no_cache_parameters =
+      input_parameters_;
+  no_cache_parameters.cache_usage =
+      net::HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED;
+  network_request_ = resolver_->inner_resolver_->CreateRequest(
+      host_, net_log_, no_cache_parameters);
+  int network_rv = network_request_->Start(
+      base::BindOnce(&StaleHostResolver::OnNetworkRequestComplete, resolver_,
+                     network_request_.get(), weak_ptr_factory_.GetWeakPtr()));
+
   // Network resolver has returned synchronously (for example by resolving from
   // /etc/hosts).
   if (network_rv != net::ERR_IO_PENDING) {
+    stale_timer_.Stop();
     RecordSynchronousRequest();
-    return HandleResult(network_rv, network_addresses_);
   }
   return network_rv;
 }
 
+const base::Optional<net::AddressList>&
+StaleHostResolver::RequestImpl::GetAddressResults() const {
+  if (network_request_)
+    return network_request_->GetAddressResults();
+
+  DCHECK(cache_request_);
+  return cache_request_->GetAddressResults();
+}
+
+const base::Optional<std::vector<std::string>>&
+StaleHostResolver::RequestImpl::GetTextResults() const {
+  if (network_request_)
+    return network_request_->GetTextResults();
+
+  DCHECK(cache_request_);
+  return cache_request_->GetTextResults();
+}
+
+const base::Optional<std::vector<net::HostPortPair>>&
+StaleHostResolver::RequestImpl::GetHostnameResults() const {
+  if (network_request_)
+    return network_request_->GetHostnameResults();
+
+  DCHECK(cache_request_);
+  return cache_request_->GetHostnameResults();
+}
+
+const base::Optional<net::HostCache::EntryStaleness>&
+StaleHostResolver::RequestImpl::GetStaleInfo() const {
+  if (network_request_)
+    return network_request_->GetStaleInfo();
+
+  DCHECK(cache_request_);
+  return cache_request_->GetStaleInfo();
+}
+
 void StaleHostResolver::RequestImpl::ChangeRequestPriority(
     net::RequestPriority priority) {
-  DCHECK(have_network_request());
+  if (network_request_) {
+    network_request_->ChangeRequestPriority(priority);
+  } else {
+    DCHECK(cache_request_);
+    cache_request_->ChangeRequestPriority(priority);
+  }
+}
 
-  network_request_->ChangeRequestPriority(priority);
+void StaleHostResolver::RequestImpl::OnNetworkRequestComplete(int error) {
+  DCHECK(resolver_);
+  DCHECK(have_network_request());
+  DCHECK(!have_returned());
+
+  bool return_stale_data_instead_of_network_name_not_resolved =
+      resolver_->options_.use_stale_on_name_not_resolved &&
+      error == net::ERR_NAME_NOT_RESOLVED && have_cache_data();
+
+  RecordNetworkRequest(error,
+                       return_stale_data_instead_of_network_name_not_resolved);
+
+  stale_timer_.Stop();
+
+  if (return_stale_data_instead_of_network_name_not_resolved) {
+    network_request_.reset();
+    std::move(result_callback_).Run(cache_error_);
+  } else {
+    cache_request_.reset();
+    std::move(result_callback_).Run(error);
+  }
+}
+
+bool StaleHostResolver::RequestImpl::CacheDataIsUsable() const {
+  DCHECK(resolver_);
+  DCHECK(cache_request_);
+
+  if (cache_error_ != net::OK)
+    return false;
+
+  DCHECK(cache_request_->GetStaleInfo());
+  const net::HostCache::EntryStaleness& staleness =
+      cache_request_->GetStaleInfo().value();
+
+  if (resolver_->options_.max_expired_time != base::TimeDelta() &&
+      staleness.expired_by > resolver_->options_.max_expired_time) {
+    return false;
+  }
+  if (resolver_->options_.max_stale_uses > 0 &&
+      staleness.stale_hits > resolver_->options_.max_stale_uses) {
+    return false;
+  }
+  if (!resolver_->options_.allow_other_network &&
+      staleness.network_changes > 0) {
+    return false;
+  }
+  return true;
 }
 
 void StaleHostResolver::RequestImpl::OnStaleDelayElapsed() {
   DCHECK(!have_returned());
-  DCHECK(have_stale_data());
-
-  ReturnResult(stale_error_, stale_addresses_);
-
-  // The request needs to wait for both the network request to complete (to
-  // backfill the cache) and the caller to delete the handle before deleting
-  // itself.
+  DCHECK(have_cache_data());
   DCHECK(have_network_request());
-}
 
-void StaleHostResolver::RequestImpl::OnNetworkRequestComplete(int error) {
-  DCHECK(have_network_request());
-  network_request_.reset();
-
-  bool return_stale_data_instead_of_network_name_not_resolved =
-      !have_returned() && use_stale_on_name_not_resolved_ &&
-      error == net::ERR_NAME_NOT_RESOLVED && have_stale_data();
-
-  RecordNetworkRequest(
-      error, /* returned_stale_data = */ have_returned() ||
-                 return_stale_data_instead_of_network_name_not_resolved,
-      return_stale_data_instead_of_network_name_not_resolved);
-
-  if (!have_returned()) {
-    if (have_stale_data())
-      stale_timer_.Stop();
-    if (return_stale_data_instead_of_network_name_not_resolved) {
-      ReturnResult(stale_error_, stale_addresses_);
-    } else {
-      ReturnResult(error, network_addresses_);
-    }
-  }
-
-  if (!have_handle())
-    delete this;
-}
-
-void StaleHostResolver::RequestImpl::OnHandleDestroyed() {
-  DCHECK(have_handle());
-  handle_ = nullptr;
-
-  // If the caller deletes the handle *before* the request has returned, treat
-  // it as a cancel.
-  if (!have_returned()) {
+  // If resolver is destroyed after starting a request, the request is
+  // considered cancelled and callbacks must not be invoked. Logging the
+  // cancellation will happen on destruction of |this|.
+  if (!resolver_) {
     network_request_.reset();
-    result_callback_ = net::CompletionOnceCallback();
-    RecordCanceledRequest();
+    return;
   }
+  DCHECK(CacheDataIsUsable());
 
-  if (!returning_result_ && !have_handle() && !have_network_request())
-    delete this;
-}
+  // Detach |network_request_| to allow it to complete and backfill the cache
+  // even if |this| is destroyed.
+  resolver_->DetachRequest(std::move(network_request_));
 
-int StaleHostResolver::RequestImpl::HandleResult(
-    int rv,
-    const net::AddressList& addresses) {
-  DCHECK(result_addresses_);
-
-  if (rv == net::OK)
-    *result_addresses_ = addresses;
-  result_addresses_ = nullptr;
-  return rv;
-}
-
-void StaleHostResolver::RequestImpl::ReturnResult(
-    int rv,
-    const net::AddressList& addresses) {
-  DCHECK(result_callback_);
-  returning_result_ = true;
-  std::move(result_callback_).Run(HandleResult(rv, addresses));
-  returning_result_ = false;
+  RecordLateRequest();
+  std::move(result_callback_).Run(cache_error_);
 }
 
 void StaleHostResolver::RequestImpl::RecordSynchronousRequest() {
@@ -368,32 +384,44 @@ void StaleHostResolver::RequestImpl::RecordSynchronousRequest() {
 
 void StaleHostResolver::RequestImpl::RecordNetworkRequest(
     int error,
-    bool returned_stale_data,
     bool returned_stale_data_instead_of_network_name_not_resolved) {
-  if (have_stale_data())
-    RecordTimeDelta(tick_clock_->NowTicks(), stale_timer_.desired_run_time());
+  DCHECK(resolver_);
 
-  if (returned_stale_data && stale_error_ == net::OK && error == net::OK) {
-    RecordAddressListDelta(
-        FindAddressListDeltaType(stale_addresses_, network_addresses_));
-  }
+  if (have_cache_data()) {
+    RecordTimeDelta(resolver_->tick_clock_->NowTicks(),
+                    stale_timer_.desired_run_time());
 
-  if (returned_stale_data) {
+    if (cache_request_->GetAddressResults() && error == net::OK &&
+        network_request_->GetAddressResults()) {
+      RecordAddressListDelta(FindAddressListDeltaType(
+          cache_request_->GetAddressResults().value(),
+          network_request_->GetAddressResults().value()));
+    }
+
     if (returned_stale_data_instead_of_network_name_not_resolved) {
       RecordRequestOutcome(STALE_INSTEAD_OF_NETWORK_NAME_NOT_RESOLVED);
     } else {
-      RecordRequestOutcome(STALE_BEFORE_NETWORK);
+      RecordRequestOutcome(NETWORK_WITH_STALE);
+      RecordCacheSizes(restore_size_, current_size_);
     }
-  } else if (have_stale_data()) {
-    RecordRequestOutcome(NETWORK_WITH_STALE);
-    RecordCacheSizes(restore_size_, current_size_);
   } else {
     RecordRequestOutcome(NETWORK_WITHOUT_STALE);
   }
 }
 
+void StaleHostResolver::RequestImpl::RecordLateRequest() {
+  DCHECK(resolver_);
+  DCHECK(have_cache_data());
+
+  RecordTimeDelta(resolver_->tick_clock_->NowTicks(),
+                  stale_timer_.desired_run_time());
+  RecordRequestOutcome(STALE_BEFORE_NETWORK);
+}
+
 void StaleHostResolver::RequestImpl::RecordCanceledRequest() {
-  if (have_stale_data())
+  DCHECK(!have_returned());
+
+  if (have_cache_data())
     RecordRequestOutcome(CANCELED_WITH_STALE);
   else
     RecordRequestOutcome(CANCELED_WITHOUT_STALE);
@@ -405,9 +433,11 @@ StaleHostResolver::StaleOptions::StaleOptions()
       use_stale_on_name_not_resolved(false) {}
 
 StaleHostResolver::StaleHostResolver(
-    std::unique_ptr<net::HostResolverImpl> inner_resolver,
+    std::unique_ptr<net::ContextHostResolver> inner_resolver,
     const StaleOptions& stale_options)
-    : inner_resolver_(std::move(inner_resolver)), options_(stale_options) {
+    : inner_resolver_(std::move(inner_resolver)),
+      options_(stale_options),
+      weak_ptr_factory_(this) {
   DCHECK_LE(0, stale_options.max_expired_time.InMicroseconds());
   DCHECK_LE(0, stale_options.max_stale_uses);
 }
@@ -419,51 +449,18 @@ StaleHostResolver::CreateRequest(
     const net::HostPortPair& host,
     const net::NetLogWithSource& net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
-  // TODO(crbug.com/821021): Implement.
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-int StaleHostResolver::Resolve(const RequestInfo& info,
-                               net::RequestPriority priority,
-                               net::AddressList* addresses,
-                               net::CompletionOnceCallback callback,
-                               std::unique_ptr<Request>* out_req,
-                               const net::NetLogWithSource& net_log) {
   DCHECK(tick_clock_);
-  StaleHostResolver::RequestImpl::StaleEntryUsableCallback usable_callback =
-      base::Bind(&StaleEntryIsUsable, options_);
-  RequestImpl* request =
-      new RequestImpl(tick_clock_, options_.use_stale_on_name_not_resolved);
-  int rv = request->Start(inner_resolver_.get(), info, priority, addresses,
-                          std::move(callback), out_req, net_log,
-                          usable_callback, options_.delay);
-  if (rv != net::ERR_IO_PENDING)
-    delete request;
-
-  return rv;
+  return std::make_unique<RequestImpl>(
+      weak_ptr_factory_.GetWeakPtr(), host, net_log,
+      optional_parameters.value_or(ResolveHostParameters()), tick_clock_);
 }
 
-int StaleHostResolver::ResolveFromCache(const RequestInfo& info,
-                                        net::AddressList* addresses,
-                                        const net::NetLogWithSource& net_log) {
-  return inner_resolver_->ResolveFromCache(info, addresses, net_log);
-}
-
-int StaleHostResolver::ResolveStaleFromCache(
-    const RequestInfo& info,
-    net::AddressList* addresses,
-    net::HostCache::EntryStaleness* stale_info,
-    const net::NetLogWithSource& net_log) {
-  return inner_resolver_->ResolveStaleFromCache(info, addresses, stale_info,
-                                                net_log);
-}
-
-bool StaleHostResolver::HasCached(
-    base::StringPiece hostname,
-    net::HostCache::Entry::Source* source_out,
-    net::HostCache::EntryStaleness* stale_out) const {
-  return inner_resolver_->HasCached(hostname, source_out, stale_out);
+bool StaleHostResolver::HasCached(base::StringPiece hostname,
+                                  net::HostCache::Entry::Source* source_out,
+                                  net::HostCache::EntryStaleness* stale_out,
+                                  bool* secure_out) const {
+  return inner_resolver_->HasCached(hostname, source_out, stale_out,
+                                    secure_out);
 }
 
 void StaleHostResolver::SetDnsClientEnabled(bool enabled) {
@@ -478,10 +475,36 @@ std::unique_ptr<base::Value> StaleHostResolver::GetDnsConfigAsValue() const {
   return inner_resolver_->GetDnsConfigAsValue();
 }
 
+void StaleHostResolver::SetRequestContext(
+    net::URLRequestContext* request_context) {
+  inner_resolver_->SetRequestContext(request_context);
+}
+
+void StaleHostResolver::OnNetworkRequestComplete(
+    ResolveHostRequest* network_request,
+    base::WeakPtr<RequestImpl> stale_request,
+    int error) {
+  if (detached_requests_.erase(network_request))
+    return;
+
+  // If not a detached request, there should still be an owning RequestImpl.
+  // Otherwise the request should have been cancelled and this method never
+  // called.
+  DCHECK(stale_request);
+
+  stale_request->OnNetworkRequestComplete(error);
+}
+
+void StaleHostResolver::DetachRequest(
+    std::unique_ptr<ResolveHostRequest> request) {
+  DCHECK_EQ(0u, detached_requests_.count(request.get()));
+  detached_requests_[request.get()] = std::move(request);
+}
+
 void StaleHostResolver::SetTickClockForTesting(
     const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
   inner_resolver_->SetTickClockForTesting(tick_clock);
 }
 
-}  // namespace net
+}  // namespace cronet

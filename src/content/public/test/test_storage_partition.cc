@@ -4,6 +4,8 @@
 
 #include "content/public/test/test_storage_partition.h"
 
+#include "services/network/public/mojom/cookie_manager.mojom.h"
+
 namespace content {
 
 TestStoragePartition::TestStoragePartition() {}
@@ -47,6 +49,10 @@ storage::QuotaManager* TestStoragePartition::GetQuotaManager() {
 
 AppCacheService* TestStoragePartition::GetAppCacheService() {
   return app_cache_service_;
+}
+
+BackgroundSyncContext* TestStoragePartition::GetBackgroundSyncContext() {
+  return background_sync_context_;
 }
 
 storage::FileSystemContext* TestStoragePartition::GetFileSystemContext() {
@@ -119,7 +125,7 @@ void TestStoragePartition::ClearData(
     uint32_t quota_storage_remove_mask,
     const OriginMatcherFunction& origin_matcher,
     network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
-    bool perform_cleanup,
+    bool perform_storage_cleanup,
     const base::Time begin,
     const base::Time end,
     base::OnceClosure callback) {}
@@ -130,7 +136,11 @@ void TestStoragePartition::ClearHttpAndMediaCaches(
     const base::Callback<bool(const GURL&)>& url_matcher,
     base::OnceClosure callback) {}
 
-void TestStoragePartition::ClearCodeCaches(base::OnceClosure callback) {}
+void TestStoragePartition::ClearCodeCaches(
+    const base::Time begin,
+    const base::Time end,
+    const base::RepeatingCallback<bool(const GURL&)>& url_matcher,
+    base::OnceClosure callback) {}
 
 void TestStoragePartition::Flush() {}
 

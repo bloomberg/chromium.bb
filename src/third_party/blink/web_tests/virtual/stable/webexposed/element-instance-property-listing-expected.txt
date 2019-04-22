@@ -2,7 +2,6 @@ This test documents all properties on all element instances.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 [HTML NAMESPACE ELEMENT PROPERTIES]
 namespace http://www.w3.org/1999/xhtml
 <common>
@@ -205,6 +204,7 @@ namespace http://www.w3.org/1999/xhtml
     property ownerDocument
     property parentElement
     property parentNode
+    property part
     property prefix
     property prepend
     property previousElementSibling
@@ -569,6 +569,7 @@ html element iframe
     property contentDocument
     property contentWindow
     property csp
+    property featurePolicy
     property frameBorder
     property getSVGDocument
     property height
@@ -688,6 +689,8 @@ html element link
     property disabled
     property href
     property hreflang
+    property imageSizes
+    property imageSrcset
     property import
     property integrity
     property media
@@ -1076,6 +1079,7 @@ html element video
     property play
     property playbackRate
     property played
+    property playsInline
     property poster
     property preload
     property readyState
@@ -1292,6 +1296,7 @@ namespace http://www.w3.org/2000/svg
     property ownerSVGElement
     property parentElement
     property parentNode
+    property part
     property prefix
     property prepend
     property previousElementSibling

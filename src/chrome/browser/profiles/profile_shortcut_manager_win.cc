@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -16,8 +17,8 @@
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -85,10 +86,10 @@ const int kProfileAvatarBadgeSize = kShortcutIconSize / 2;
 // Incrementing this number will cause profile icons to be regenerated on
 // profile startup (it should be incremented whenever the product/avatar icons
 // change, etc).
-const int kCurrentProfileIconVersion = 5;
+const int kCurrentProfileIconVersion = 6;
 
-// 2x sized profile avatar icons. Mirrors |kDefaultAvatarIconResources| in
-// profile_info_cache.cc.
+// 2x sized versions of the old profile avatar icons.
+// TODO(crbug.com/937834): Clean this up.
 const int kProfileAvatarIconResources2x[] = {
     IDR_PROFILE_AVATAR_2X_0,  IDR_PROFILE_AVATAR_2X_1,
     IDR_PROFILE_AVATAR_2X_2,  IDR_PROFILE_AVATAR_2X_3,
@@ -187,7 +188,8 @@ base::FilePath CreateOrUpdateShortcutIconForProfile(
     const base::FilePath& profile_path,
     const SkBitmap& avatar_bitmap_1x,
     const SkBitmap& avatar_bitmap_2x) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   if (!base::PathExists(profile_path))
     return base::FilePath();
@@ -247,7 +249,7 @@ base::FilePath CreateOrUpdateShortcutIconForProfile(
   }
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&OnProfileIconCreateSuccess, profile_path));
+      base::BindOnce(&OnProfileIconCreateSuccess, profile_path));
   return icon_path;
 }
 
@@ -290,7 +292,8 @@ base::FilePath ConvertToLongPath(const base::FilePath& path) {
 bool IsChromeShortcut(const base::FilePath& path,
                       const base::FilePath& chrome_exe,
                       base::string16* command_line) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   if (path.Extension() != installer::kLnkExt)
     return false;
@@ -385,7 +388,8 @@ void RenameChromeDesktopShortcutForProfile(
     std::set<base::FilePath>* desktop_contents) {
   DCHECK(profile_shortcuts);
   DCHECK(desktop_contents);
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::FilePath user_shortcuts_directory;
   base::FilePath system_shortcuts_directory;
@@ -486,7 +490,8 @@ struct CreateOrUpdateShortcutsParams {
 // must be allowed on the calling thread.
 void CreateOrUpdateDesktopShortcutsAndIconForProfile(
     const CreateOrUpdateShortcutsParams& params) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   const base::FilePath shortcut_icon = CreateOrUpdateShortcutIconForProfile(
       params.profile_path, params.avatar_image_1x, params.avatar_image_2x);
@@ -585,7 +590,8 @@ bool ChromeDesktopShortcutsExist(const base::FilePath& chrome_exe) {
 // shortcut(s). File and COM operations must be allowed on the calling thread.
 void DeleteDesktopShortcuts(const base::FilePath& profile_path,
                             bool ensure_shortcuts_remain) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -614,7 +620,6 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
   const bool had_shortcuts = !shortcuts.empty();
   if (ensure_shortcuts_remain && had_shortcuts &&
       !ChromeDesktopShortcutsExist(chrome_exe)) {
-
     ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
     ShellUtil::AddDefaultShortcutProperties(chrome_exe, &properties);
     properties.set_shortcut_name(
@@ -629,7 +634,8 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
 // consider non-profile shortcuts. File and COM operations must be allowed on
 // the calling thread.
 bool HasAnyProfileShortcuts(const base::FilePath& profile_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -794,16 +800,13 @@ bool ProfileShortcutManager::IsFeatureEnabled() {
 }
 
 // static
-ProfileShortcutManager* ProfileShortcutManager::Create(
+std::unique_ptr<ProfileShortcutManager> ProfileShortcutManager::Create(
     ProfileManager* manager) {
-  return new ProfileShortcutManagerWin(manager);
+  return std::make_unique<ProfileShortcutManagerWin>(manager);
 }
 
 ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileManager* manager)
     : profile_manager_(manager) {
-  DCHECK_EQ(arraysize(kProfileAvatarIconResources2x),
-            profiles::GetDefaultAvatarIconCount());
-
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
 
@@ -830,7 +833,7 @@ void ProfileShortcutManagerWin::RemoveProfileShortcuts(
     const base::FilePath& profile_path) {
   base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})
       ->PostTask(FROM_HERE,
-                 base::Bind(&DeleteDesktopShortcuts, profile_path, false));
+                 base::BindOnce(&DeleteDesktopShortcuts, profile_path, false));
 }
 
 void ProfileShortcutManagerWin::HasProfileShortcuts(
@@ -905,8 +908,9 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
   }
 
   base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})
-      ->PostTask(FROM_HERE, base::Bind(&DeleteDesktopShortcuts, profile_path,
-                                       deleting_down_to_last_profile));
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&DeleteDesktopShortcuts, profile_path,
+                                deleting_down_to_last_profile));
 }
 
 void ProfileShortcutManagerWin::OnProfileNameChanged(
@@ -992,17 +996,24 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
       const size_t icon_index = entry->GetAvatarIconIndex();
       const int resource_id_1x =
           profiles::GetDefaultAvatarIconResourceIDAtIndex(icon_index);
-      const int resource_id_2x = kProfileAvatarIconResources2x[icon_index];
-      // Make a copy of the SkBitmaps to ensure that we can safely use the image
-      // data on the thread we post to.
+      // Make a copy of the SkBitmap to ensure that we can safely use the
+      // image data on the thread we post to.
       params.avatar_image_1x = GetImageResourceSkBitmapCopy(resource_id_1x);
-      params.avatar_image_2x = GetImageResourceSkBitmapCopy(resource_id_2x);
+
+      if (profiles::IsModernAvatarIconIndex(icon_index)) {
+        // Modern avatars are large(192px) by default, which makes them big
+        // enough for 2x.
+        params.avatar_image_2x = params.avatar_image_1x;
+      } else {
+        const int resource_id_2x = kProfileAvatarIconResources2x[icon_index];
+        params.avatar_image_2x = GetImageResourceSkBitmapCopy(resource_id_2x);
+      }
     }
   }
   base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})
-      ->PostTask(
-          FROM_HERE,
-          base::Bind(&CreateOrUpdateDesktopShortcutsAndIconForProfile, params));
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(
+                     &CreateOrUpdateDesktopShortcutsAndIconForProfile, params));
 
   entry->SetShortcutName(params.profile_name);
 }

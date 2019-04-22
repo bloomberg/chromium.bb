@@ -80,6 +80,7 @@ TEST_F(ScrollTimelineTest, CurrentTimeIsNullIfScrollSourceIsNotScrollable) {
   bool current_time_is_null = false;
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_TRUE(current_time_is_null);
+  EXPECT_FALSE(scroll_timeline->IsActive());
 }
 
 TEST_F(ScrollTimelineTest,
@@ -124,6 +125,7 @@ TEST_F(ScrollTimelineTest,
   scrollable_area->SetScrollOffset(ScrollOffset(0, 100), kProgrammaticScroll);
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_TRUE(current_time_is_null);
+  EXPECT_TRUE(scroll_timeline->IsActive());
 }
 
 TEST_F(ScrollTimelineTest,
@@ -158,6 +160,7 @@ TEST_F(ScrollTimelineTest,
   scrollable_area->SetScrollOffset(ScrollOffset(0, 50), kProgrammaticScroll);
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_TRUE(current_time_is_null);
+  EXPECT_TRUE(scroll_timeline->IsActive());
 }
 
 TEST_F(ScrollTimelineTest,
@@ -218,6 +221,26 @@ TEST_F(ScrollTimelineTest,
   // is still body element which is no longer the scrolling element. So if we
   // were to re-resolve the scroll source, it would not map to Document.
   EXPECT_EQ(&GetDocument(), scroll_timeline->ResolvedScrollSource());
+}
+
+TEST_F(ScrollTimelineTest, AttachOrDetachAnimationWithNullScrollSource) {
+  // Directly call the constructor to make it easier to pass a null
+  // scrollSource. The alternative approach would require us to remove the
+  // documentElement from the document.
+  Element* scroll_source = nullptr;
+  CSSPrimitiveValue* start_scroll_offset = nullptr;
+  CSSPrimitiveValue* end_scroll_offset = nullptr;
+  ScrollTimeline* scroll_timeline = MakeGarbageCollected<ScrollTimeline>(
+      scroll_source, ScrollTimeline::Block, start_scroll_offset,
+      end_scroll_offset, 100, Timing::FillMode::NONE);
+
+  // Sanity checks.
+  ASSERT_EQ(scroll_timeline->scrollSource(), nullptr);
+  ASSERT_EQ(scroll_timeline->ResolvedScrollSource(), nullptr);
+
+  // These calls should be no-ops in this mode, and shouldn't crash.
+  scroll_timeline->AttachAnimation();
+  scroll_timeline->DetachAnimation();
 }
 
 }  //  namespace blink

@@ -98,6 +98,7 @@ class LocalDeviceEnvironment(environment.Environment):
     self._logcat_output_dir = args.logcat_output_dir
     self._logcat_output_file = args.logcat_output_file
     self._max_tries = 1 + args.num_retries
+    self._preferred_abis = None
     self._recover_devices = args.recover_devices
     self._skip_clear_data = args.skip_clear_data
     self._tool_name = args.tool
@@ -127,15 +128,24 @@ class LocalDeviceEnvironment(environment.Environment):
     elif self.trace_output:
       self.EnableTracing()
 
+  # Must be called before accessing |devices|.
+  def SetPreferredAbis(self, abis):
+    assert self._devices is None
+    self._preferred_abis = abis
+
   def _InitDevices(self):
     device_arg = []
     if self._device_serials:
       device_arg = self._device_serials
 
     self._devices = device_utils.DeviceUtils.HealthyDevices(
-        self._blacklist, retries=5, enable_usb_resets=True,
+        self._blacklist,
+        retries=5,
+        enable_usb_resets=True,
         enable_device_files_cache=self._enable_device_cache,
-        default_retries=self._max_tries - 1, device_arg=device_arg)
+        default_retries=self._max_tries - 1,
+        device_arg=device_arg,
+        abis=self._preferred_abis)
 
     if self._logcat_output_file:
       self._logcat_output_dir = tempfile.mkdtemp()

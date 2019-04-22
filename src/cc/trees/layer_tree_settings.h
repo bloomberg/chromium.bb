@@ -60,6 +60,7 @@ class CC_EXPORT LayerTreeSettings {
   bool scrollbar_flash_after_any_scroll_update = false;
   bool scrollbar_flash_when_mouse_enter = false;
   SkColor solid_color_scrollbar_color = SK_ColorWHITE;
+  base::TimeDelta scroll_animation_duration_for_testing;
   bool timeout_and_draw_when_animation_checkerboards = true;
   bool layer_transforms_should_scale_layer_contents = false;
   bool layers_always_allowed_lcd_text = false;
@@ -131,6 +132,10 @@ class CC_EXPORT LayerTreeSettings {
   // deadlines.
   bool wait_for_all_pipeline_stages_before_draw = false;
 
+  // Determines whether mouse interactions on composited scrollbars are handled
+  // on the compositor thread.
+  bool compositor_threaded_scrollbar_scrolling = false;
+
   // Whether layer tree commits should be made directly to the active
   // tree on the impl thread. If |false| LayerTreeHostImpl creates a
   // pending layer tree and produces that as the 'sync tree' with
@@ -144,10 +149,6 @@ class CC_EXPORT LayerTreeSettings {
 
   // Whether to use edge anti-aliasing for all layer types that supports it.
   bool enable_edge_anti_aliasing = true;
-
-  // Whether to request presentation time regardless if existence of
-  // presentation time callbacks.
-  bool always_request_presentation_time = false;
 
   // Whether SetViewportSizeAndScale should update the painted scale factor or
   // the device scale factor.
@@ -171,6 +172,11 @@ class CC_EXPORT LayerTreeSettings {
   // go away and CC should send Blink fractional values:
   // https://crbug.com/414283.
   bool commit_fractional_scroll_deltas = false;
+
+  // If true, LayerTreeHostImpl automatically allocates LocalSurfaceIds as
+  // necessary. If false, it is clients generate LocalSurfaceIds as necessary.
+  // TODO(sky): remove this once https://crbug.com/921129 is fixed.
+  bool automatically_allocate_surface_ids = true;
 };
 
 }  // namespace cc

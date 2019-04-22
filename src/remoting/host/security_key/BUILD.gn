@@ -102,6 +102,7 @@ source_set("unit_tests") {
   ]
   deps = [
     "//mojo/core/test:test_support",
+    "//remoting:test_support",
   ]
 
   if (is_posix) {

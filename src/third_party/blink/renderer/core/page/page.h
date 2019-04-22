@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/page_visibility_notifier.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
-#include "third_party/blink/renderer/core/page/page_visibility_state.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -44,13 +43,16 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/skia/include/core/SkColor.h"
+
+namespace cc {
+class AnimationHost;
+}
 
 namespace blink {
-
 class AutoscrollController;
 class BrowserControls;
 class ChromeClient;
+class ConsoleMessageStorage;
 class ContextMenuController;
 class Document;
 class DragCaret;
@@ -61,7 +63,6 @@ class LinkHighlights;
 class LocalFrame;
 class LocalFrameView;
 class OverscrollController;
-class PageOverlay;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
 class PluginData;
@@ -72,7 +73,7 @@ class ScrollingCoordinator;
 class ScrollbarTheme;
 class SecurityOrigin;
 class Settings;
-class ConsoleMessageStorage;
+class SpatialNavigationController;
 class TopDocumentRootScrollerController;
 class ValidationMessageClient;
 class VisualViewport;
@@ -104,7 +105,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
     DISALLOW_COPY_AND_ASSIGN(PageClients);
   };
 
-  static Page* Create(PageClients& page_clients);
+  // Any pages not owned by a web view should be created using this method.
+  static Page* CreateNonOrdinary(PageClients& pages_clients);
 
   // An "ordinary" page is a fully-featured page owned by a web view.
   static Page* CreateOrdinary(PageClients&, Page* opener);
@@ -127,7 +129,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   // Returns pages related to the current browsing context (excluding the
   // current page).  See also
-  // https://html.spec.whatwg.org/multipage/browsers.html#unit-of-related-browsing-contexts
+  // https://html.spec.whatwg.org/C/#unit-of-related-browsing-contexts
   HeapVector<Member<Page>> RelatedPages();
 
   static void PlatformColorsChanged();
@@ -172,6 +174,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   DragCaret& GetDragCaret() const { return *drag_caret_; }
   DragController& GetDragController() const { return *drag_controller_; }
   FocusController& GetFocusController() const { return *focus_controller_; }
+  SpatialNavigationController& GetSpatialNavigationController();
   ContextMenuController& GetContextMenuController() const {
     return *context_menu_controller_;
   }
@@ -225,15 +228,12 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   // Pausing is used to implement the "Optionally, pause while waiting for
   // the user to acknowledge the message" step of simple dialog processing:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#simple-dialogs
+  // https://html.spec.whatwg.org/C/#simple-dialogs
   //
-  // Per https://html.spec.whatwg.org/multipage/webappapis.html#pause, no loads
+  // Per https://html.spec.whatwg.org/C/#pause, no loads
   // are allowed to start/continue in this state, and all background processing
   // is also paused.
   bool Paused() const { return paused_; }
-  // This function is public to be used for suspending/resuming Page's tasks.
-  // Refer to |WebContentImpl::PausePageScheduledTasks| and
-  // http://crbug.com/822564 for more details.
   void SetPaused(bool);
 
   void SetPageScaleFactor(float);
@@ -255,8 +255,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   static void AllVisitedStateChanged(bool invalidate_visited_link_hashes);
   static void VisitedStateChanged(LinkHash visited_hash);
 
-  void SetVisibilityState(mojom::PageVisibilityState, bool);
-  mojom::PageVisibilityState VisibilityState() const;
+  void SetIsHidden(bool hidden, bool is_initial_state);
   bool IsPageVisible() const;
 
   PageLifecycleState LifecycleState() const;
@@ -291,7 +290,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   void Trace(blink::Visitor*) override;
 
-  void LayerTreeViewInitialized(WebLayerTreeView&, LocalFrameView*);
+  void LayerTreeViewInitialized(WebLayerTreeView&,
+                                cc::AnimationHost&,
+                                LocalFrameView*);
   void WillCloseLayerTreeView(WebLayerTreeView&, LocalFrameView*);
 
   void WillBeDestroyed();
@@ -303,20 +304,19 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   PageScheduler* GetPageScheduler() const;
 
   // PageScheduler::Delegate implementation.
+  bool IsOrdinary() const override;
   void ReportIntervention(const String& message) override;
   bool RequestBeginMainFrameNotExpected(bool new_state) override;
   void SetLifecycleState(PageLifecycleState) override;
+  bool LocalMainFrameNetworkIsAlmostIdle() const override;
 
   void AddAutoplayFlags(int32_t flags);
   void ClearAutoplayFlags();
 
   int32_t AutoplayFlags() const;
 
-  void SetPageOverlayColor(SkColor);
-
-  void UpdatePageColorOverlay();
-
-  void PaintPageColorOverlay();
+  void SetInsidePortal(bool inside_portal);
+  bool InsidePortal() const;
 
  private:
   friend class ScopedPagePauser;
@@ -362,12 +362,11 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   const Member<VisualViewport> visual_viewport_;
   const Member<OverscrollController> overscroll_controller_;
   const Member<LinkHighlights> link_highlights_;
+  Member<SpatialNavigationController> spatial_navigation_controller_;
 
   Member<PluginData> plugin_data_;
 
   Member<ValidationMessageClient> validation_message_client_;
-
-  std::unique_ptr<PageOverlay> page_color_overlay_;
 
   Deprecation deprecation_;
   HostsUsingFeatures hosts_using_features_;
@@ -386,7 +385,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   float device_scale_factor_;
 
-  mojom::PageVisibilityState visibility_state_;
+  bool is_hidden_;
+
+  bool is_ordinary_;
 
   PageLifecycleState page_lifecycle_state_;
 
@@ -408,6 +409,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   std::unique_ptr<PageScheduler> page_scheduler_;
 
   int32_t autoplay_flags_;
+
+  // Accessed by frames to determine whether to expose the PortalHost object.
+  bool inside_portal_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Page);
 };

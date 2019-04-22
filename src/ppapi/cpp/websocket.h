@@ -27,7 +27,6 @@ class Var;
 
 /// The <code>WebSocket</code> class providing bi-directional,
 /// full-duplex, communications over a single TCP socket.
-/// This class is deprecated and will be removed in mid 2019.
 class WebSocket : public Resource {
  public:
   /// Constructs a WebSocket object.

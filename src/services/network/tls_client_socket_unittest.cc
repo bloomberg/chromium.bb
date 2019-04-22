@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -870,7 +871,7 @@ TEST_P(TLSClientSocketTest, WriteErrorBeforeUpgradeToTLS) {
   EXPECT_TRUE(data_provider.AllWriteDataConsumed());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     TLSClientSocketTest,
     ::testing::Values(TLSClientSocketTestBase::kDirect,
@@ -950,9 +951,9 @@ class TLSClientSocketIoModeTest : public TLSClientSocketTestBase,
   DISALLOW_COPY_AND_ASSIGN(TLSClientSocketIoModeTest);
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        TLSClientSocketIoModeTest,
-                        testing::Values(net::SYNCHRONOUS, net::ASYNC));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         TLSClientSocketIoModeTest,
+                         testing::Values(net::SYNCHRONOUS, net::ASYNC));
 
 TEST_P(TLSClientSocketIoModeTest, MultipleWriteToTLSSocket) {
   const int kNumIterations = 3;
@@ -1177,7 +1178,7 @@ TEST_P(TLSClientSocketTestWithEmbeddedTestServer, ServerCertError) {
   EXPECT_FALSE(post_tls_send_handle()->is_valid());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     TLSClientSocketTestWithEmbeddedTestServer,
     ::testing::Values(TLSClientSocketTestBase::kDirect,

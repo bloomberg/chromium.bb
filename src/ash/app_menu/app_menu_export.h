@@ -9,20 +9,11 @@
 // module can be exported to consumers.
 
 #if defined(COMPONENT_BUILD)
-#if defined(WIN32)
 
-#if defined(APP_MENU_IMPLEMENTATION)
-#define APP_MENU_EXPORT __declspec(dllexport)
-#else
-#define APP_MENU_EXPORT __declspec(dllimport)
-#endif  // defined(APP_MENU_IMPLEMENTATION)
-
-#else  // defined(WIN32)
 #if defined(APP_MENU_IMPLEMENTATION)
 #define APP_MENU_EXPORT __attribute__((visibility("default")))
 #else
 #define APP_MENU_EXPORT
-#endif
 #endif
 
 #else  // defined(COMPONENT_BUILD)

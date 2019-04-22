@@ -19,6 +19,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -70,6 +71,7 @@ const struct {
     {autofill::kUnionPay, IDR_AUTOFILL_CC_UNIONPAY, IDS_AUTOFILL_CC_UNION_PAY},
     {autofill::kVisaCard, IDR_AUTOFILL_CC_VISA, IDS_AUTOFILL_CC_VISA},
     {"googlePay", IDR_AUTOFILL_GOOGLE_PAY, kResourceNotFoundId},
+    {"googlePayDark", IDR_AUTOFILL_GOOGLE_PAY_DARK, kResourceNotFoundId},
 #if defined(OS_ANDROID)
     {"httpWarning", IDR_AUTOFILL_HTTP_WARNING, kResourceNotFoundId},
     {"httpsInvalid", IDR_AUTOFILL_HTTPS_INVALID_WARNING, kResourceNotFoundId},
@@ -137,7 +139,7 @@ int AutofillPopupLayoutModel::RowWidthWithoutText(int row,
     row_size += kNamePadding;
 
   // Add the Autofill icon size, if required.
-  const base::string16& icon = suggestions[row].icon;
+  const std::string& icon = suggestions[row].icon;
   if (!icon.empty()) {
     row_size += GetIconImage(row).width() + kIconPadding;
   }
@@ -213,7 +215,7 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
   if (!suggestions[index].custom_icon.IsEmpty())
     return suggestions[index].custom_icon.AsImageSkia();
 
-  const base::string16& icon_str = suggestions[index].icon;
+  const std::string& icon_str = suggestions[index].icon;
   if (icon_str.empty())
     return gfx::ImageSkia();
 
@@ -221,21 +223,32 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
 
   // For http warning message, get icon images from VectorIcon, which is the
   // same as security indicator icons in location bar.
-  if (icon_str == base::ASCIIToUTF16("httpWarning")) {
+  if (icon_str == "httpWarning") {
     return gfx::CreateVectorIcon(omnibox::kHttpIcon, kIconSize,
                                  gfx::kChromeIconGrey);
   }
-  if (icon_str == base::ASCIIToUTF16("httpsInvalid")) {
+  if (icon_str == "httpsInvalid") {
     return gfx::CreateVectorIcon(omnibox::kHttpsInvalidIcon, kIconSize,
                                  gfx::kGoogleRed700);
   }
-  if (icon_str == base::ASCIIToUTF16("keyIcon"))
+  if (icon_str == "keyIcon") {
     return gfx::CreateVectorIcon(kKeyIcon, kIconSize, gfx::kChromeIconGrey);
-  if (icon_str == base::ASCIIToUTF16("globeIcon"))
+  }
+  if (icon_str == "globeIcon") {
     return gfx::CreateVectorIcon(kGlobeIcon, kIconSize, gfx::kChromeIconGrey);
-  if (icon_str == base::ASCIIToUTF16("google")) {
+  }
+  if (icon_str == "google") {
+#if defined(GOOGLE_CHROME_BUILD)
     return gfx::CreateVectorIcon(kGoogleGLogoIcon, kIconSize,
                                  gfx::kPlaceholderColor);
+#else
+    return gfx::ImageSkia();
+#endif
+  }
+
+  if (icon_str == "accountBoxIcon") {
+    return gfx::CreateVectorIcon(kAccountBoxIcon, kIconSize,
+                                 gfx::kChromeIconGrey);
   }
 
   // For other suggestion entries, get icon from PNG files.
@@ -274,10 +287,10 @@ gfx::Rect AutofillPopupLayoutModel::GetRowBounds(size_t index) const {
 }
 
 int AutofillPopupLayoutModel::GetIconResourceID(
-    const base::string16& resource_name) const {
+    const std::string& resource_name) const {
   int result = kResourceNotFoundId;
   for (size_t i = 0; i < base::size(kDataResources); ++i) {
-    if (resource_name == base::ASCIIToUTF16(kDataResources[i].name)) {
+    if (resource_name == kDataResources[i].name) {
       result = kDataResources[i].icon_id;
       break;
     }
@@ -287,11 +300,9 @@ int AutofillPopupLayoutModel::GetIconResourceID(
 }
 
 int AutofillPopupLayoutModel::GetIconAccessibleNameResourceId(
-    const base::string16& resource_name) const {
+    const std::string& resource_name) const {
   for (size_t i = 0; i < base::size(kDataResources); ++i) {
-    // TODO(crbug.com/850597): Remove UTF conversion once AutofillSuggestion
-    // no longer stores the resource name as a string16.
-    if (resource_name == base::ASCIIToUTF16(kDataResources[i].name))
+    if (resource_name == kDataResources[i].name)
       return kDataResources[i].accessible_string_id;
   }
   return kResourceNotFoundId;

@@ -9,10 +9,6 @@ namespace content {
 
 // This is a list of global descriptor keys to be used with the
 // base::FileDescriptorStore object (see base/file_descriptor_store.h)
-//
-// Note that these keys are also used in
-// content/public/app/mojo/content_renderer_manifest.json and should be kept in
-// sync.
 
 extern const char kV8NativesDataDescriptor[];
 extern const char kV8SnapshotDataDescriptor[];

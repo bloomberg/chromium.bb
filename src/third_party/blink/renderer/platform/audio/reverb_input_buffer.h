@@ -30,10 +30,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_INPUT_BUFFER_H_
 
 #include <atomic>
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -41,7 +41,6 @@ namespace blink {
 // the background threads.
 class PLATFORM_EXPORT ReverbInputBuffer {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(ReverbInputBuffer);
 
  public:
   ReverbInputBuffer(size_t length);
@@ -78,6 +77,8 @@ class PLATFORM_EXPORT ReverbInputBuffer {
   // the getter and setter to access it atomically.  Don't access
   // directly!
   std::atomic_size_t write_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReverbInputBuffer);
 };
 
 }  // namespace blink

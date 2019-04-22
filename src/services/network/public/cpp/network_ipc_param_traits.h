@@ -12,7 +12,7 @@
 #include "ipc/ipc_param_traits.h"
 #include "ipc/param_traits_macros.h"
 #include "net/base/auth.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/cert/cert_verify_result.h"
@@ -27,7 +27,6 @@
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/net_ipc_param_traits.h"
-#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
@@ -64,6 +63,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static void Log(const param_type& p, std::string* l);
 };
 
+// TODO(Richard): Remove this traits after usage of FrameHostMsg_OpenURL_Params
+// disappears.
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<network::DataElement> {
   typedef network::DataElement param_type;
@@ -74,6 +75,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<network::DataElement> {
   static void Log(const param_type& p, std::string* l);
 };
 
+// TODO(Richard): Remove this traits after usage of FrameHostMsg_OpenURL_Params
+// disappears.
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     ParamTraits<scoped_refptr<network::ResourceRequestBody>> {
@@ -114,7 +117,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(network::cors::PreflightTimingInfo)
   IPC_STRUCT_TRAITS_MEMBER(start_time)
-  IPC_STRUCT_TRAITS_MEMBER(finish_time)
+  IPC_STRUCT_TRAITS_MEMBER(response_end)
   IPC_STRUCT_TRAITS_MEMBER(alpn_negotiated_protocol)
   IPC_STRUCT_TRAITS_MEMBER(connection_info)
   IPC_STRUCT_TRAITS_MEMBER(timing_allow_origin)
@@ -133,58 +136,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)
   IPC_STRUCT_TRAITS_MEMBER(cors_error_status)
   IPC_STRUCT_TRAITS_MEMBER(ssl_info)
   IPC_STRUCT_TRAITS_MEMBER(should_report_corb_blocking)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(network::ResourceRequest)
-  IPC_STRUCT_TRAITS_MEMBER(method)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(site_for_cookies)
-  IPC_STRUCT_TRAITS_MEMBER(attach_same_site_cookies)
-  IPC_STRUCT_TRAITS_MEMBER(update_first_party_url_on_redirect)
-  IPC_STRUCT_TRAITS_MEMBER(request_initiator)
-  IPC_STRUCT_TRAITS_MEMBER(referrer)
-  IPC_STRUCT_TRAITS_MEMBER(referrer_policy)
-  IPC_STRUCT_TRAITS_MEMBER(is_prerendering)
-  IPC_STRUCT_TRAITS_MEMBER(headers)
-  IPC_STRUCT_TRAITS_MEMBER(requested_with_header)
-  IPC_STRUCT_TRAITS_MEMBER(client_data_header)
-  IPC_STRUCT_TRAITS_MEMBER(load_flags)
-  IPC_STRUCT_TRAITS_MEMBER(allow_credentials)
-  IPC_STRUCT_TRAITS_MEMBER(plugin_child_id)
-  IPC_STRUCT_TRAITS_MEMBER(resource_type)
-  IPC_STRUCT_TRAITS_MEMBER(priority)
-  IPC_STRUCT_TRAITS_MEMBER(appcache_host_id)
-  IPC_STRUCT_TRAITS_MEMBER(should_reset_appcache)
-  IPC_STRUCT_TRAITS_MEMBER(cors_preflight_policy)
-  IPC_STRUCT_TRAITS_MEMBER(service_worker_provider_id)
-  IPC_STRUCT_TRAITS_MEMBER(originated_from_service_worker)
-  IPC_STRUCT_TRAITS_MEMBER(skip_service_worker)
-  IPC_STRUCT_TRAITS_MEMBER(fetch_request_mode)
-  IPC_STRUCT_TRAITS_MEMBER(fetch_credentials_mode)
-  IPC_STRUCT_TRAITS_MEMBER(fetch_redirect_mode)
-  IPC_STRUCT_TRAITS_MEMBER(fetch_integrity)
-  IPC_STRUCT_TRAITS_MEMBER(fetch_request_context_type)
-  IPC_STRUCT_TRAITS_MEMBER(fetch_frame_type)
-  IPC_STRUCT_TRAITS_MEMBER(request_body)
-  IPC_STRUCT_TRAITS_MEMBER(keepalive)
-  IPC_STRUCT_TRAITS_MEMBER(has_user_gesture)
-  IPC_STRUCT_TRAITS_MEMBER(enable_load_timing)
-  IPC_STRUCT_TRAITS_MEMBER(enable_upload_progress)
-  IPC_STRUCT_TRAITS_MEMBER(do_not_prompt_for_login)
-  IPC_STRUCT_TRAITS_MEMBER(render_frame_id)
-  IPC_STRUCT_TRAITS_MEMBER(is_main_frame)
-  IPC_STRUCT_TRAITS_MEMBER(transition_type)
-  IPC_STRUCT_TRAITS_MEMBER(allow_download)
-  IPC_STRUCT_TRAITS_MEMBER(report_raw_headers)
-  IPC_STRUCT_TRAITS_MEMBER(previews_state)
-  IPC_STRUCT_TRAITS_MEMBER(initiated_in_secure_context)
-  IPC_STRUCT_TRAITS_MEMBER(upgrade_if_insecure)
-  IPC_STRUCT_TRAITS_MEMBER(is_revalidating)
-  IPC_STRUCT_TRAITS_MEMBER(throttling_profile_id)
-  IPC_STRUCT_TRAITS_MEMBER(custom_proxy_pre_cache_headers)
-  IPC_STRUCT_TRAITS_MEMBER(custom_proxy_post_cache_headers)
-  IPC_STRUCT_TRAITS_MEMBER(custom_proxy_use_alternate_proxy_list)
-  IPC_STRUCT_TRAITS_MEMBER(fetch_window_id)
+  IPC_STRUCT_TRAITS_MEMBER(proxy_server)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(network::ResourceResponseInfo)
@@ -194,7 +146,6 @@ IPC_STRUCT_TRAITS_BEGIN(network::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(mime_type)
   IPC_STRUCT_TRAITS_MEMBER(charset)
   IPC_STRUCT_TRAITS_MEMBER(ct_policy_compliance)
-  IPC_STRUCT_TRAITS_MEMBER(is_legacy_symantec_cert)
   IPC_STRUCT_TRAITS_MEMBER(content_length)
   IPC_STRUCT_TRAITS_MEMBER(network_accessed)
   IPC_STRUCT_TRAITS_MEMBER(encoded_data_length)
@@ -208,7 +159,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(was_alternate_protocol_available)
   IPC_STRUCT_TRAITS_MEMBER(connection_info)
   IPC_STRUCT_TRAITS_MEMBER(alpn_negotiated_protocol)
-  IPC_STRUCT_TRAITS_MEMBER(socket_address)
+  IPC_STRUCT_TRAITS_MEMBER(remote_endpoint)
   IPC_STRUCT_TRAITS_MEMBER(was_fetched_via_cache)
   IPC_STRUCT_TRAITS_MEMBER(proxy_server)
   IPC_STRUCT_TRAITS_MEMBER(was_fetched_via_service_worker)

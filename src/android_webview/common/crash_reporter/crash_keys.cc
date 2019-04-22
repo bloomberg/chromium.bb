@@ -4,7 +4,7 @@
 
 #include "android_webview/common/crash_reporter/crash_keys.h"
 
-#include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/core/common/crash_key.h"
 
 namespace android_webview {
 namespace crash_keys {
@@ -20,6 +20,12 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     kAppPackageName,
     kAppPackageVersionCode,
     kAndroidSdkInt,
+
+    // process type
+    "ptype",
+
+    // Java exception stack traces
+    "exception_info",
 
     // gpu
     "gpu-driver",
@@ -55,7 +61,7 @@ const char* const kWebViewCrashKeyWhiteList[] = {
 // clang-format on
 
 void InitCrashKeysForWebViewTesting() {
-  breakpad::InitCrashKeysForTesting();
+  crash_reporter::InitializeCrashKeys();
 }
 
 }  // namespace crash_keys

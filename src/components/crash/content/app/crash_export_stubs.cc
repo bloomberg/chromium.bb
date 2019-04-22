@@ -35,16 +35,9 @@ const wchar_t* GetCrashpadDatabasePath_ExportThunk() {
   return nullptr;
 }
 
+void ClearReportsBetween_ExportThunk(time_t begin, time_t end) {}
+
 bool DumpHungProcessWithPtype_ExportThunk(HANDLE process_handle,
                                           const char* ptype) {
   return false;
 }
-
-#if defined(ARCH_CPU_X86_64)
-
-void RegisterNonABICompliantCodeRange_ExportThunk(void* start,
-                                                  size_t size_in_bytes) {}
-
-void UnregisterNonABICompliantCodeRange_ExportThunk(void* start) {}
-
-#endif  // defined(ARCH_CPU_X86_64)

@@ -8,4 +8,4 @@
  */
 
 /** @type {!Object|undefined} */
-var templateData;
+let templateData;

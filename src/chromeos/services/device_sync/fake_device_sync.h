@@ -35,9 +35,9 @@ class FakeDeviceSync : public DeviceSyncBase {
   }
 
   void InvokePendingGetLocalDeviceMetadataCallback(
-      const base::Optional<cryptauth::RemoteDevice>& local_device_metadata);
+      const base::Optional<multidevice::RemoteDevice>& local_device_metadata);
   void InvokePendingGetSyncedDevicesCallback(
-      const base::Optional<std::vector<cryptauth::RemoteDevice>>&
+      const base::Optional<std::vector<multidevice::RemoteDevice>>&
           remote_devices);
   void InvokePendingSetSoftwareFeatureStateCallback(
       mojom::NetworkRequestResult result_code);
@@ -54,11 +54,11 @@ class FakeDeviceSync : public DeviceSyncBase {
   void GetSyncedDevices(GetSyncedDevicesCallback callback) override;
   void SetSoftwareFeatureState(
       const std::string& device_public_key,
-      cryptauth::SoftwareFeature software_feature,
+      multidevice::SoftwareFeature software_feature,
       bool enabled,
       bool is_exclusive,
       SetSoftwareFeatureStateCallback callback) override;
-  void FindEligibleDevices(cryptauth::SoftwareFeature software_feature,
+  void FindEligibleDevices(multidevice::SoftwareFeature software_feature,
                            FindEligibleDevicesCallback callback) override;
   void GetDebugInfo(GetDebugInfoCallback callback) override;
 

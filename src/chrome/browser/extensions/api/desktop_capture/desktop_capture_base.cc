@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/native_desktop_media_list.h"
 #include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/chromium_strings.h"
@@ -55,11 +57,8 @@ DesktopCaptureChooseDesktopMediaFunctionBase::
 
 DesktopCaptureChooseDesktopMediaFunctionBase::
     ~DesktopCaptureChooseDesktopMediaFunctionBase() {
-  // RenderFrameHost may be already destroyed.
-  if (render_frame_host()) {
-    DesktopCaptureRequestsRegistry::GetInstance()->RemoveRequest(
-        render_frame_host()->GetProcess()->GetID(), request_id_);
-  }
+  DesktopCaptureRequestsRegistry::GetInstance()->RemoveRequest(
+      source_process_id(), request_id_);
 }
 
 void DesktopCaptureChooseDesktopMediaFunctionBase::Cancel() {
@@ -110,10 +109,6 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
         break;
       }
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_TAB: {
-        if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                extensions::switches::kDisableTabForDesktopShare)) {
-          continue;
-        }
         media_types.push_back(content::DesktopMediaID::TYPE_WEB_CONTENTS);
         break;
       }
@@ -215,7 +210,7 @@ DesktopCaptureCancelChooseDesktopMediaFunctionBase::Run() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id));
 
   DesktopCaptureRequestsRegistry::GetInstance()->CancelRequest(
-      render_frame_host()->GetProcess()->GetID(), request_id);
+      source_process_id(), request_id);
   return RespondNow(NoArguments());
 }
 

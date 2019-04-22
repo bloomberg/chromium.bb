@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 class AccountConsistencyService;
 
@@ -37,7 +33,7 @@ class AccountConsistencyServiceFactory
   static AccountConsistencyServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<AccountConsistencyServiceFactory>;
+  friend class base::NoDestructor<AccountConsistencyServiceFactory>;
 
   AccountConsistencyServiceFactory();
   ~AccountConsistencyServiceFactory() override;

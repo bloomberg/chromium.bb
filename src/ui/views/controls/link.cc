@@ -33,8 +33,7 @@ Link::Link(const base::string16& title, int text_context, int text_style)
   Init();
 }
 
-Link::~Link() {
-}
+Link::~Link() = default;
 
 // static
 Link::FocusStyle Link::GetDefaultFocusStyle() {
@@ -50,8 +49,12 @@ Link::FocusStyle Link::GetFocusStyle() const {
 }
 
 void Link::PaintFocusRing(gfx::Canvas* canvas) const {
-  if (GetFocusStyle() == FocusStyle::RING)
-    canvas->DrawFocusRect(GetFocusRingBounds());
+  if (GetFocusStyle() == FocusStyle::RING) {
+    gfx::Rect focus_ring_bounds = GetTextBounds();
+    focus_ring_bounds.Inset(gfx::Insets(-kFocusBorderPadding));
+    focus_ring_bounds.Intersect(GetLocalBounds());
+    canvas->DrawFocusRect(focus_ring_bounds);
+  }
 }
 
 gfx::Insets Link::GetInsets() const {
@@ -163,11 +166,6 @@ void Link::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kLink;
 }
 
-void Link::OnEnabledChanged() {
-  RecalculateFont();
-  View::OnEnabledChanged();  // Jump over Label.
-}
-
 void Link::OnFocus() {
   Label::OnFocus();
   RecalculateFont();
@@ -215,10 +213,13 @@ void Link::SetUnderline(bool underline) {
 }
 
 void Link::Init() {
-  listener_ = NULL;
+  listener_ = nullptr;
   pressed_ = false;
   underline_ = GetDefaultFocusStyle() != FocusStyle::UNDERLINE;
   RecalculateFont();
+
+  enabled_changed_subscription_ = AddEnabledChangedCallback(
+      base::BindRepeating(&Link::RecalculateFont, base::Unretained(this)));
 
   // Label::Init() calls SetText(), but if that's being called from Label(), our
   // SetText() override will not be reached (because the constructed class is

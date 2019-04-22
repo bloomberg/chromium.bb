@@ -48,7 +48,7 @@ class SVGLengthList final
     return MakeGarbageCollected<SVGLengthList>(mode);
   }
 
-  explicit SVGLengthList(SVGLengthMode);
+  explicit SVGLengthList(SVGLengthMode = SVGLengthMode::kOther);
   ~SVGLengthList() override;
 
   SVGParsingError SetValueAsString(const String&);

@@ -122,6 +122,7 @@ type:sandbox::TargetServices
 
 # ANGLE
 src:*third_party/angle/src/libANGLE/*
+src:*third_party/angle/src/libEGL/*
 src:*third_party/angle/src/third_party/libXNVCtrl/NVCtrl.c
 # third_party/angle/src/gpu_info_util/SystemInfo_libpci.cpp
 fun:*GetPCIDevicesWithLibPCI*
@@ -137,12 +138,17 @@ fun:*BrokerProcessDispatcher*
 # Blacklist base::Callback due to https://crbug.com/845855
 fun:*FunctorTraits*
 
+# PipeWire due to https://crbug.com/926115
+src:*/include/spa/*
+src:*third_party/webrtc/modules/desktop_capture/linux/pipewire_stubs.cc
+src:*third_party/webrtc/modules/desktop_capture/linux/base_capturer_pipewire.cc
+
 # Calls to auto-generated stubs by generate_stubs.py
 src:*audio/pulse/pulse_stubs.cc
 src:*media/gpu/vaapi/va_stubs.cc
 
 # Calls to auto-generated stubs by generate_library_loader.py
-src:*chrome/browser/speech/tts_linux.cc
+src:*content/browser/speech/tts_linux.cc
 src:*device/udev_linux/udev0_loader.cc
 src:*device/udev_linux/udev1_loader.cc
 
@@ -158,9 +164,6 @@ src:*ui/accessibility/platform/ax_platform_node_auralinux.cc
 src:*ui/accessibility/platform/ax_platform_atk_hyperlink.cc
 
 src:*chrome/browser/ui/zoom/chrome_zoom_level_prefs.cc
-# Temporary needs both paths until the WebRTC changed is rolled in again
-# see https://bugs.chromium.org/p/chromium/issues/detail?id=901319#c14
-src:*third_party/webrtc/modules/desktop_capture/x11/x_server_pixel_buffer.cc
 src:*third_party/webrtc/modules/desktop_capture/linux/x_server_pixel_buffer.cc
 src:*media/cdm/*
 src:*third_party/swiftshader/*

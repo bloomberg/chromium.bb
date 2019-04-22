@@ -95,10 +95,10 @@ static int init_frames(AVCodecContext *avctx)
     int ret;
 
     av_frame_unref(s->frame1);
+    av_frame_unref(s->frame2);
     if ((ret = ff_get_buffer(avctx, s->frame1, 0)) < 0)
         return ret;
 
-    av_frame_unref(s->frame2);
     if ((ret = ff_get_buffer(avctx, s->frame2, 0)) < 0)
         return ret;
 
@@ -215,7 +215,7 @@ static int decode_move(AVCodecContext *avctx,
     bytestream2_skip(gb, 8);
     compression = bytestream2_get_le32(gb);
 
-    if (nb_moves > INT32_MAX / 16)
+    if (nb_moves > INT32_MAX / 16 || nb_moves > avctx->width * avctx->height)
         return AVERROR_INVALIDDATA;
 
     uncompressed_size = 16 * nb_moves;
@@ -272,9 +272,9 @@ static int decode_move(AVCodecContext *avctx,
         if (!s->frame2->data[0] || !s->frame1->data[0])
             return AVERROR_INVALIDDATA;
 
-        b1 = s->frame1->data[0] + s->frame1->linesize[0] * (start_y + h) + start_x * s->bpp;
-        b2 = s->frame2->data[0] + s->frame2->linesize[0] * (start_y + h) + start_x * s->bpp;
-        e2 = s->frame2->data[0] + s->frame2->linesize[0] * (mov_y + h) + mov_x * s->bpp;
+        b1 = s->frame1->data[0] + s->frame1->linesize[0] * (start_y + h - 1) + start_x * s->bpp;
+        b2 = s->frame2->data[0] + s->frame2->linesize[0] * (start_y + h - 1) + start_x * s->bpp;
+        e2 = s->frame2->data[0] + s->frame2->linesize[0] * (mov_y + h - 1) + mov_x * s->bpp;
 
         if (type == 2) {
             for (int j = 0; j < h; j++) {
@@ -353,6 +353,8 @@ static int decode_dlta(AVCodecContext *avctx,
     compression = bytestream2_get_le32(gb);
 
     if (compression == 1) {
+        if (w * h * s->bpp * 3 < uncompressed_size)
+            return AVERROR_INVALIDDATA;
         ret = decode_zlib(avctx, avpkt, size, uncompressed_size);
         if (ret < 0)
             return ret;
@@ -680,6 +682,9 @@ static int decode_frame(AVCodecContext *avctx,
     while (bytestream2_get_bytes_left(gb) > 0) {
         unsigned type, size = 0;
 
+        if (bytestream2_get_bytes_left(gb) < 8)
+            return AVERROR_INVALIDDATA;
+
         type = bytestream2_get_le32(gb);
         if (type == KBND || type == BNDL) {
             intra = type == KBND;
@@ -718,11 +723,11 @@ static int decode_frame(AVCodecContext *avctx,
             return ret;
     }
 
-    if ((ret = ff_get_buffer(avctx, s->frame, 0)) < 0)
-        return ret;
-
     if (!s->frame2->data[0] || !s->frame1->data[0])
         return AVERROR_INVALIDDATA;
+
+    if ((ret = ff_get_buffer(avctx, s->frame, 0)) < 0)
+        return ret;
 
     copy_plane(avctx, s->frame2, s->frame);
     if (avctx->pix_fmt == AV_PIX_FMT_PAL8)

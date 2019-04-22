@@ -15,6 +15,7 @@
 #include "components/subresource_filter/content/renderer/ad_resource_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 
 class GURL;
 
@@ -41,24 +42,28 @@ class MetricsRenderFrameObserver
 
   // RenderFrameObserver implementation
   void DidChangePerformanceTiming() override;
+  void DidChangeCpuTiming(base::TimeDelta time) override;
   void DidObserveLoadingBehavior(
       blink::WebLoadingBehaviorFlag behavior) override;
   void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature) override;
   void DidObserveNewCssPropertyUsage(int css_property,
                                      bool is_animated) override;
   void DidObserveLayoutJank(double jank_fraction) override;
+  void DidObserveLazyLoadBehavior(
+      blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) override;
   void DidStartResponse(const GURL& response_url,
                         int request_id,
                         const network::ResourceResponseHead& response_head,
-                        content::ResourceType resource_type) override;
+                        content::ResourceType resource_type,
+                        content::PreviewsState previews_state) override;
   void DidReceiveTransferSizeUpdate(int request_id,
                                     int received_data_length) override;
   void DidCompleteResponse(
       int request_id,
       const network::URLLoaderCompletionStatus& status) override;
   void DidCancelResponse(int request_id) override;
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               bool is_content_initiated) override;
+  void ReadyToCommitNavigation(
+      blink::WebDocumentLoader* document_loader) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error) override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;

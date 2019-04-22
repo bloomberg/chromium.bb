@@ -9,7 +9,7 @@
  */
 
 var metrics;  // Needs to be defined in each window which uses metrics.
-var metricsBase = {};
+const metricsBase = {};
 
 /**
  * A map from interval name to interval start timestamp.
@@ -35,7 +35,7 @@ metricsBase.validEnumValues_ = {};
  *
  * @param {string} name Unique interval name.
  */
-metricsBase.startInterval = function(name) {
+metricsBase.startInterval = name => {
   metricsBase.intervals[name] = Date.now();
 };
 
@@ -46,7 +46,7 @@ metricsBase.startInterval = function(name) {
  * @return {string} Full metric name.
  * @private
  */
-metricsBase.convertName_ = function(name) {
+metricsBase.convertName_ = name => {
   throw new Error('metricsBase.convertName_() must be overrideen by subclass.');
 };
 
@@ -56,15 +56,16 @@ metricsBase.convertName_ = function(name) {
  * @param {Array<Object>} args Arguments.
  * @private
  */
-metricsBase.call_ = function(methodName, args) {
+metricsBase.call_ = (methodName, args) => {
   try {
     chrome.metricsPrivate[methodName].apply(chrome.metricsPrivate, args);
   } catch (e) {
     console.error(e.stack);
   }
   // Support writing metrics.log in manual testing to log method calls.
-  if (/** @type{{ log: (boolean|undefined) }} */ (metrics).log)
+  if (/** @type{{ log: (boolean|undefined) }} */ (metrics).log) {
     console.log('chrome.metricsPrivate.' + methodName, args);
+  }
 };
 
 /**
@@ -72,7 +73,7 @@ metricsBase.call_ = function(methodName, args) {
  * @param {string} name Short metric name.
  * @param {number} value Value to be recorded.
  */
-metricsBase.recordMediumCount = function(name, value) {
+metricsBase.recordMediumCount = (name, value) => {
   metrics.call_('recordMediumCount', [metrics.convertName_(name), value]);
 };
 
@@ -81,7 +82,7 @@ metricsBase.recordMediumCount = function(name, value) {
  * @param {string} name Short metric name.
  * @param {number} value Value to be recorded.
  */
-metricsBase.recordSmallCount = function(name, value) {
+metricsBase.recordSmallCount = (name, value) => {
   metrics.call_('recordSmallCount', [metrics.convertName_(name), value]);
 };
 
@@ -90,7 +91,7 @@ metricsBase.recordSmallCount = function(name, value) {
  * @param {string} name Short metric name.
  * @param {number} time Time to be recorded in milliseconds.
  */
-metricsBase.recordTime = function(name, time) {
+metricsBase.recordTime = (name, time) => {
   metrics.call_('recordTime', [metrics.convertName_(name), time]);
 };
 
@@ -99,7 +100,7 @@ metricsBase.recordTime = function(name, time) {
  * @param {string} name Short metric name.
  * @param {boolean} value The value to be recorded.
  */
-metricsBase.recordBoolean = function(name, value) {
+metricsBase.recordBoolean = (name, value) => {
   metrics.call_('recordBoolean', [metrics.convertName_(name), value]);
 };
 
@@ -107,7 +108,7 @@ metricsBase.recordBoolean = function(name, value) {
  * Records an action performed by the user.
  * @param {string} name Short metric name.
  */
-metricsBase.recordUserAction = function(name) {
+metricsBase.recordUserAction = name => {
   metrics.call_('recordUserAction', [metrics.convertName_(name)]);
 };
 
@@ -117,7 +118,7 @@ metricsBase.recordUserAction = function(name) {
  * @param {number} value Numeric value to be recorded in units
  *     that match the histogram definition (in histograms.xml).
  */
-metricsBase.recordValue = function(name, value) {
+metricsBase.recordValue = (name, value) => {
   metrics.call_('recordValue', [metrics.convertName_(name), value]);
 };
 
@@ -128,7 +129,7 @@ metricsBase.recordValue = function(name, value) {
  *
  * @param {string} name Unique interval name.
  */
-metricsBase.recordInterval = function(name) {
+metricsBase.recordInterval = name => {
   if (name in metrics.intervals) {
     metrics.recordTime(name, Date.now() - metrics.intervals[name]);
   } else {
@@ -144,11 +145,11 @@ metricsBase.recordInterval = function(name) {
  * @param {Array<*>|number=} opt_validValues Array of valid values
  *     or a boundary number (one-past-the-end) value.
  */
-metricsBase.recordEnum = function(name, value, opt_validValues) {
-  var boundaryValue;
-  var index;
+metricsBase.recordEnum = (name, value, opt_validValues) => {
+  let boundaryValue;
+  let index;
 
-  var validValues = opt_validValues;
+  let validValues = opt_validValues;
   if (metrics.validEnumValues_ && name in metrics.validEnumValues_) {
     console.assert(validValues === undefined);
     validValues = metrics.validEnumValues_[name];
@@ -163,14 +164,15 @@ metricsBase.recordEnum = function(name, value, opt_validValues) {
     boundaryValue = validValues;
   }
   // Collect invalid values in the overflow bucket at the end.
-  if (index < 0 || index >= boundaryValue)
+  if (index < 0 || index >= boundaryValue) {
     index = boundaryValue - 1;
+  }
 
   // Setting min to 1 looks strange but this is exactly the recommended way
   // of using histograms for enum-like types. Bucket #0 works as a regular
   // bucket AND the underflow bucket.
   // (Source: UMA_HISTOGRAM_ENUMERATION definition in base/metrics/histogram.h)
-  var metricDescr = {
+  const metricDescr = {
     'metricName': metrics.convertName_(name),
     'type': chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
     'min': 1,

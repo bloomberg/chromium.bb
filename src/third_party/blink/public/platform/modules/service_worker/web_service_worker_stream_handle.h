@@ -20,7 +20,7 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerStreamHandle {
   class Listener {
    public:
     virtual ~Listener() = default;
-    ;
+
     virtual void OnAborted() = 0;
     virtual void OnCompleted() = 0;
   };

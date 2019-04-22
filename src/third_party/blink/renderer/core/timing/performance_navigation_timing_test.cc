@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/timing/performance_navigation_timing.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
@@ -18,17 +17,12 @@ class PerformanceNavigationTimingTest : public PageTestBase {
 };
 
 TEST_F(PerformanceNavigationTimingTest, GetNavigationType) {
-  GetPage().SetVisibilityState(mojom::PageVisibilityState::kPrerender, false);
+  GetPage().SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
   AtomicString returned_type =
-      GetNavigationType(kWebNavigationTypeBackForward, &GetDocument());
-  EXPECT_EQ(returned_type, "prerender");
-
-  GetPage().SetVisibilityState(mojom::PageVisibilityState::kHidden, false);
-  returned_type =
       GetNavigationType(kWebNavigationTypeBackForward, &GetDocument());
   EXPECT_EQ(returned_type, "back_forward");
 
-  GetPage().SetVisibilityState(mojom::PageVisibilityState::kVisible, false);
+  GetPage().SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
   returned_type =
       GetNavigationType(kWebNavigationTypeFormResubmitted, &GetDocument());
   EXPECT_EQ(returned_type, "navigate");

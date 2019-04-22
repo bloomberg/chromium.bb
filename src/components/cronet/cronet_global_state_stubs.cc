@@ -7,7 +7,7 @@
 #include "base/at_exit.h"
 #include "base/feature_list.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "url/url_util.h"
@@ -31,11 +31,11 @@ scoped_refptr<base::SingleThreadTaskRunner> InitializeAndCreateTaskRunner() {
 
   url::Initialize();
 
-  // Note that in component builds this TaskScheduler will be shared with the
+  // Note that in component builds this ThreadPool will be shared with the
   // calling process, if it also depends on //base. In particular this means
   // that the Cronet test binaries must avoid initializing or shutting-down the
-  // TaskScheduler themselves.
-  base::TaskScheduler::CreateAndStartWithDefaultParams("cronet");
+  // ThreadPool themselves.
+  base::ThreadPool::CreateAndStartWithDefaultParams("cronet");
 
   return base::CreateSingleThreadTaskRunnerWithTraits({});
 }

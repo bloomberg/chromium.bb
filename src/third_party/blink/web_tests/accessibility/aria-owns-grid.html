@@ -2,10 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container { display: none; }
-</style>
-
 <div class="container">
     <div id="grid" role="grid" aria-owns="row1 row2"></div>
     <div id="row1" role="row">
@@ -27,9 +23,4 @@ test(function(t) {
     assert_equals(axGrid.columnCount, 3);
     assert_equals(axGrid.rowCount, 2);
 }, "Aria-owns works on ARIA grids.");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

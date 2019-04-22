@@ -209,7 +209,8 @@ class UIControlsX11 : public UIControlsAura {
     }
     marker_event->xclient.message_type = MarkerEventAtom();
     PostEventToWindowTreeHost(*marker_event, host_);
-    ui::PlatformEventWaiter::Create(std::move(closure), base::Bind(&Matcher));
+    ui::PlatformEventWaiter::Create(std::move(closure),
+                                    base::BindRepeating(&Matcher));
   }
  private:
   void SetKeycodeAndSendThenMask(XEvent* xevent,

@@ -6,18 +6,18 @@
  * Object to communicate between the renderer and the browser.
  * @type {!BrowserBridge}
  */
-var g_browser = null;
+let g_browser = null;
 
 /**
  * This class is the root view object of the page.  It owns all the other
  * views, and manages switching between them.  It is also responsible for
  * initializing the views and the BrowserBridge.
  */
-var MainView = (function() {
+const MainView = (function() {
   'use strict';
 
   // We inherit from WindowView
-  var superClass = WindowView;
+  const superClass = WindowView;
 
   /**
    * Main entry point. Called once the page has loaded.
@@ -26,8 +26,9 @@ var MainView = (function() {
   function MainView() {
     assertFirstConstructorCall(MainView);
 
-    if (hasTouchScreen())
+    if (hasTouchScreen()) {
       document.body.classList.add('touch');
+    }
 
     // This must be initialized before the tabs, so they can register as
     // observers.
@@ -64,11 +65,11 @@ var MainView = (function() {
       this.tabSwitcher_ = new TabSwitcherView(this.onTabSwitched_.bind(this));
 
       // Helper function to add a tab given the class for a view singleton.
-      var addTab = function(viewClass) {
-        var tabId = viewClass.TAB_ID;
-        var tabHash = viewClass.TAB_HASH;
-        var tabName = viewClass.TAB_NAME;
-        var view = viewClass.getInstance();
+      const addTab = function(viewClass) {
+        const tabId = viewClass.TAB_ID;
+        const tabHash = viewClass.TAB_HASH;
+        const tabName = viewClass.TAB_NAME;
+        const view = viewClass.getInstance();
 
         if (!tabId || !view || !tabHash || !tabName) {
           throw Error('Invalid view class for tab');
@@ -103,18 +104,19 @@ var MainView = (function() {
      */
     onTabSwitched_: function(oldTabId, newTabId) {
       // Change the URL to match the new tab.
-      var newTabHash = this.tabIdToHash_[newTabId];
-      var parsed = parseUrlHash_(window.location.hash);
+      const newTabHash = this.tabIdToHash_[newTabId];
+      const parsed = parseUrlHash_(window.location.hash);
       if (parsed.tabHash != newTabHash) {
         window.location.hash = newTabHash;
       }
     },
 
     onUrlHashChange_: function() {
-      var parsed = parseUrlHash_(window.location.hash);
+      const parsed = parseUrlHash_(window.location.hash);
 
-      if (!parsed)
+      if (!parsed) {
         return;
+      }
 
       // Redirect deleted pages to #events page, which contains instructions
       // about migrating to using net-export and the external netlog_viewer.
@@ -131,12 +133,12 @@ var MainView = (function() {
         parsed.tabHash = EventsView.TAB_HASH;
       }
 
-      var tabId = this.hashToTabId_[parsed.tabHash];
+      const tabId = this.hashToTabId_[parsed.tabHash];
 
       if (tabId) {
         this.tabSwitcher_.switchToTab(tabId);
         if (parsed.parameters) {
-          var view = this.tabSwitcher_.getTabView(tabId);
+          const view = this.tabSwitcher_.getTabView(tabId);
           view.setParameters(parsed.parameters);
         }
       }
@@ -151,23 +153,25 @@ var MainView = (function() {
    * Parameters and values are decoded with decodeURIComponent().
    */
   function parseUrlHash_(hash) {
-    var parameters = hash.split('&');
+    const parameters = hash.split('&');
 
-    var tabHash = parameters[0];
+    let tabHash = parameters[0];
     if (tabHash == '' || tabHash == '#') {
       tabHash = undefined;
     }
 
     // Split each string except the first around the '='.
-    var paramDict = null;
-    for (var i = 1; i < parameters.length; i++) {
-      var paramStrings = parameters[i].split('=');
-      if (paramStrings.length != 2)
+    let paramDict = null;
+    for (let i = 1; i < parameters.length; i++) {
+      const paramStrings = parameters[i].split('=');
+      if (paramStrings.length != 2) {
         continue;
-      if (paramDict == null)
+      }
+      if (paramDict == null) {
         paramDict = {};
-      var key = decodeURIComponent(paramStrings[0]);
-      var value = decodeURIComponent(paramStrings[1]);
+      }
+      const key = decodeURIComponent(paramStrings[0]);
+      const value = decodeURIComponent(paramStrings[1]);
       paramDict[key] = value;
     }
 

@@ -47,8 +47,8 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&ValueStoreFrontend::Backend::RunCallback, this, callback,
-                   base::Passed(&value)));
+        base::BindOnce(&ValueStoreFrontend::Backend::RunCallback, this,
+                       callback, std::move(value)));
   }
 
   void Set(const std::string& key, std::unique_ptr<base::Value> value) {
@@ -127,8 +127,8 @@ void ValueStoreFrontend::Get(const std::string& key,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GetBackendTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ValueStoreFrontend::Backend::Get, backend_, key, callback));
+      FROM_HERE, base::BindOnce(&ValueStoreFrontend::Backend::Get, backend_,
+                                key, callback));
 }
 
 void ValueStoreFrontend::Set(const std::string& key,
@@ -136,8 +136,8 @@ void ValueStoreFrontend::Set(const std::string& key,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GetBackendTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ValueStoreFrontend::Backend::Set, backend_, key,
-                            base::Passed(&value)));
+      FROM_HERE, base::BindOnce(&ValueStoreFrontend::Backend::Set, backend_,
+                                key, std::move(value)));
 }
 
 void ValueStoreFrontend::Remove(const std::string& key) {
@@ -145,5 +145,5 @@ void ValueStoreFrontend::Remove(const std::string& key) {
 
   GetBackendTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&ValueStoreFrontend::Backend::Remove, backend_, key));
+      base::BindOnce(&ValueStoreFrontend::Backend::Remove, backend_, key));
 }

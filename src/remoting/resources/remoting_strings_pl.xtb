@@ -24,6 +24,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="1520828917794284345">Dopasuj pulpit</translation>
 <translation id="154040539590487450">Nie udało się uruchomić usługi dostępu zdalnego.</translation>
 <translation id="1546934824884762070">Wystąpił nieoczekiwany błąd. Zgłoś ten problem programistom.</translation>
+<translation id="1624185583382384493">Pulpit zdalny Chrome jest teraz dostępny w internecie. Wypróbuj naszą <ph name="LINK_BEGIN" />aplikację internetową<ph name="LINK_END" />. Jest bezpłatna, szybka i oferuje jeszcze więcej funkcji, w tym poprawioną obsługę wielu monitorów.</translation>
 <translation id="1643640058022401035">Jeśli opuścisz tę stronę, sesja Chromoting zostanie zakończona.</translation>
 <translation id="1654128982815600832">Włączam połączenia zdalne z tym komputerem…</translation>
 <translation id="170207782578677537">Nie udało się zarejestrować tego komputera.</translation>
@@ -138,6 +139,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="3989511127559254552">Aby przejść dalej, musisz najpierw przyznać rozszerzone uprawnienia dostępu do swojego komputera. Trzeba to zrobić tylko raz.</translation>
 <translation id="4006787130661126000">Jeśli chcesz korzystać z tego komputera przez Pulpit zdalny Chrome, musisz włączyć połączenia zdalne.</translation>
 <translation id="405887016757208221">Komputerowi zdalnemu nie udało się zainicjować sesji. Jeśli problem nie zniknie, spróbuj ponownie skonfigurować hosta.</translation>
+<translation id="4060747889721220580">Pobieranie pliku</translation>
 <translation id="4068946408131579958">Wszystkie połączenia</translation>
 <translation id="409800995205263688">UWAGA: ustawienia zasad zezwalają wyłącznie na połączenia między komputerami w Twojej sieci.</translation>
 <translation id="4126409073460786861">Po zakończeniu konfiguracji odśwież tę stronę. Gdy to zrobisz, dostęp do komputera będzie można uzyskiwać, wybierając urządzenie i wpisując kod PIN.</translation>
@@ -242,6 +244,7 @@ Aby włączyć tę funkcję, kliknij „<ph name="BUTTON_NAME" />” w celu wy�
 <translation id="6198252989419008588">Zmień kod PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (nieaktualne)</translation>
 <translation id="6221358653751391898">Nie jesteś zalogowany do Chrome. Zaloguj się i spróbuj ponownie.</translation>
+<translation id="6227369581881558336">Pulpit zdalny Chrome jest teraz dostępny w internecie i oferuje nowe funkcje, w tym możliwość transferu plików. Wypróbuj naszą <ph name="LINK_BEGIN" />aplikację internetową<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Host uruchomiony na ekranie logowania konsoli został zamknięty, by umożliwić włączenie trybu kurtyny, przełączając się na hosta uruchomionego w sesji danego użytkownika.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Klient</translation>
@@ -289,7 +292,6 @@ Aby włączyć tę funkcję, kliknij „<ph name="BUTTON_NAME" />” w celu wy�
 <translation id="7434397035092923453">Odmowa dostępu dla klienta: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Podłączył się klient: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Zmień konto</translation>
-<translation id="7589941250119944644">Pulpit zdalny Chrome jest teraz dostępny w internecie. Wypróbuj naszą <ph name="LINK_BEGIN" />aplikację internetową<ph name="LINK_END" /> – jest szybka, bezpłatna i oferuje wszystkie funkcje znane z poprzedniej wersji Pulpitu.</translation>
 <translation id="7606912958770842224">Włącz połączenia zdalne</translation>
 <translation id="7628469622942688817">Zapamiętaj mój kod PIN na tym urządzeniu.</translation>
 <translation id="7649070708921625228">Pomoc</translation>

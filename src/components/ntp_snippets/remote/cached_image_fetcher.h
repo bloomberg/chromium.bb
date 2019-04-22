@@ -61,6 +61,10 @@ class CachedImageFetcher {
                            const gfx::Image& image,
                            const image_fetcher::RequestMetadata& metadata);
 
+  void OnImageFetchingDone(ImageFetchedCallback callback,
+                           const gfx::Image& image,
+                           const image_fetcher::RequestMetadata& metadata);
+
   void OnImageFetchedFromDatabase(
       ImageDataFetchedCallback image_data_callback,
       ImageFetchedCallback image_callback,

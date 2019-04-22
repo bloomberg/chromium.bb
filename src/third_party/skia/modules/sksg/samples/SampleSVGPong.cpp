@@ -5,15 +5,14 @@
  * found in the LICENSE file.
  */
 
+#include "AnimTimer.h"
 #include "Sample.h"
-#include "SkAnimTimer.h"
-#include "SkColor.h"
-#include "SkRandom.h"
 #include "SkRRect.h"
+#include "SkRandom.h"
 
-#include "SkSGColor.h"
 #include "SkSGDraw.h"
 #include "SkSGGroup.h"
+#include "SkSGPaint.h"
 #include "SkSGPath.h"
 #include "SkSGRect.h"
 #include "SkSGScene.h"
@@ -140,11 +139,11 @@ protected:
         group->addChild(sksg::Draw::Make(fBall.objectNode, ball_paint));
 
         // Handle everything in a normalized 1x1 space.
-        fContentMatrix = sksg::Matrix::Make(
+        fContentMatrix = sksg::Matrix<SkMatrix>::Make(
             SkMatrix::MakeRectToRect(SkRect::MakeWH(1, 1),
                                      SkRect::MakeIWH(this->width(), this->height()),
                                      SkMatrix::kFill_ScaleToFit));
-        auto root = sksg::Transform::Make(std::move(group), fContentMatrix);
+        auto root = sksg::TransformEffect::Make(std::move(group), fContentMatrix);
         fScene = sksg::Scene::Make(std::move(root), sksg::AnimatorList());
 
         // Off we go.
@@ -192,7 +191,7 @@ protected:
         fScene->render(canvas);
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         // onAnimate may fire before the first draw.
         if (fScene) {
             SkScalar dt = (timer.msec() - fLastTick) * fTimeScale;
@@ -283,14 +282,14 @@ private:
         catcher->spd.fY = (yIntercept - catcher->pos.fY) / t;
     }
 
-    std::unique_ptr<sksg::Scene> fScene;
-    sk_sp<sksg::Matrix>          fContentMatrix;
-    Object                       fPaddle0, fPaddle1, fBall;
-    SkRandom                     fRand;
+    std::unique_ptr<sksg::Scene>  fScene;
+    sk_sp<sksg::Matrix<SkMatrix>> fContentMatrix;
+    Object                        fPaddle0, fPaddle1, fBall;
+    SkRandom                      fRand;
 
-    SkMSec                       fLastTick  = 0;
-    SkScalar                     fTimeScale = 1.0f;
-    bool                         fShowInval = false;
+    SkMSec                        fLastTick  = 0;
+    SkScalar                      fTimeScale = 1.0f;
+    bool                          fShowInval = false;
 
     typedef Sample INHERITED;
 };

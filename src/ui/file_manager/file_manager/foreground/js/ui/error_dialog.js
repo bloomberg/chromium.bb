@@ -22,7 +22,7 @@ ErrorDialog.prototype = {
 ErrorDialog.prototype.initDom_ = function() {
   cr.ui.dialogs.BaseDialog.prototype.initDom_.call(this);
   this.frame_.classList.add('error-dialog-frame');
-  var img = this.document_.createElement('div');
+  const img = this.document_.createElement('div');
   img.className = 'error-dialog-img';
   this.frame_.insertBefore(img, this.text_);
 };

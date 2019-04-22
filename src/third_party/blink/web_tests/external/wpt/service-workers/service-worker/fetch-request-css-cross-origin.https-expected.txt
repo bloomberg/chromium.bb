@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL setup global state assert_unreached: unregister and register should not fail: Failed to register a ServiceWorker: ServiceWorker script evaluation failed Reached unreachable code
+FAIL MIME checking of CSS resources fetched via service worker when Content-Type is not set. assert_equals: The color must be overridden by cross origin CSS. expected "rgb(0, 0, 255)" but got "rgb(255, 0, 0)"
+FAIL Same-origin policy for access to CSS resources fetched via service worker assert_throws: function "() => {
+    f.contentDocument.styleSheets[0].cssRules[0].cssText;
+  }" threw object "TypeError: Cannot read property 'cssText' of undefined" that is not a DOMException SecurityError: property "code" is equal to undefined, expected 18
+FAIL cleanup global state promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'unregister' of undefined"
+Harness: the test ran to completion.
+

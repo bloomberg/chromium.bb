@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -32,33 +33,33 @@ namespace aura {
 
 namespace {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTestPropertyKey0, false);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTestPropertyKey1, true);
-DEFINE_UI_CLASS_PROPERTY_KEY(uint8_t, kTestPropertyKey2, UINT8_MAX / 3);
-DEFINE_UI_CLASS_PROPERTY_KEY(uint16_t, kTestPropertyKey3, UINT16_MAX / 3);
-DEFINE_UI_CLASS_PROPERTY_KEY(uint32_t, kTestPropertyKey4, UINT32_MAX);
-DEFINE_UI_CLASS_PROPERTY_KEY(uint64_t, kTestPropertyKey5, UINT64_MAX);
-DEFINE_UI_CLASS_PROPERTY_KEY(int8_t, kTestPropertyKey6, 0);
-DEFINE_UI_CLASS_PROPERTY_KEY(int16_t, kTestPropertyKey7, 1);
-DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kTestPropertyKey8, -1);
-DEFINE_UI_CLASS_PROPERTY_KEY(int64_t, kTestPropertyKey9, 777);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTestPropertyKey0, false)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTestPropertyKey1, true)
+DEFINE_UI_CLASS_PROPERTY_KEY(uint8_t, kTestPropertyKey2, UINT8_MAX / 3)
+DEFINE_UI_CLASS_PROPERTY_KEY(uint16_t, kTestPropertyKey3, UINT16_MAX / 3)
+DEFINE_UI_CLASS_PROPERTY_KEY(uint32_t, kTestPropertyKey4, UINT32_MAX)
+DEFINE_UI_CLASS_PROPERTY_KEY(uint64_t, kTestPropertyKey5, UINT64_MAX)
+DEFINE_UI_CLASS_PROPERTY_KEY(int8_t, kTestPropertyKey6, 0)
+DEFINE_UI_CLASS_PROPERTY_KEY(int16_t, kTestPropertyKey7, 1)
+DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kTestPropertyKey8, -1)
+DEFINE_UI_CLASS_PROPERTY_KEY(int64_t, kTestPropertyKey9, 777)
 
 DEFINE_UI_CLASS_PROPERTY_KEY(base::TimeDelta,
                              kTestTimeDeltaKey,
-                             base::TimeDelta());
+                             base::TimeDelta())
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia,
                                    kTestImageSkiaPropertyKey,
-                                   nullptr);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kTestRectPropertyKey, nullptr);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Size, kTestSizePropertyKey, nullptr);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(
-     std::string, kTestStringPropertyKey, nullptr);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::string16, kTestString16PropertyKey,
-                                 nullptr);
+                                   nullptr)
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kTestRectPropertyKey, nullptr)
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Size, kTestSizePropertyKey, nullptr)
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kTestStringPropertyKey, nullptr)
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::string16,
+                                   kTestString16PropertyKey,
+                                   nullptr)
 
-DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kTestWindowPtrPropertyKey, nullptr);
-DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kTestWindowPtrUnregisteredKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kTestWindowPtrPropertyKey, nullptr)
+DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kTestWindowPtrUnregisteredKey, nullptr)
 
 const char kTestPropertyServerKey0[] = "test-property-server0";
 const char kTestPropertyServerKey1[] = "test-property-server1";

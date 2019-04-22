@@ -163,7 +163,6 @@ ElementsTestRunner.dumpComputedStyle = function(doNotAutoExpand) {
 
     let dumpText = '';
     dumpText += treeElement.title.querySelector('.property-name').textContent;
-    dumpText += ' ';
     dumpText += treeElement.title.querySelector('.property-value').textContent;
     TestRunner.addResult(dumpText);
 
@@ -613,8 +612,8 @@ ElementsTestRunner.dumpStyleTreeOutline = function(treeItem, depth) {
 };
 
 ElementsTestRunner.dumpStyleTreeItem = function(treeItem, prefix, depth) {
-  if (treeItem.listItemElement.textContent.indexOf(' width:') !== -1 ||
-      treeItem.listItemElement.textContent.indexOf(' height:') !== -1)
+  const textContent = TestRunner.textContentWithoutStyles(treeItem.listItemElement);
+  if (textContent.indexOf(' width:') !== -1 || textContent.indexOf(' height:') !== -1)
     return;
 
   if (treeItem.listItemElement.classList.contains('inherited'))
@@ -630,7 +629,6 @@ ElementsTestRunner.dumpStyleTreeItem = function(treeItem, prefix, depth) {
   if (treeItem.listItemElement.classList.contains('disabled'))
     typePrefix += '/-- disabled --/ ';
 
-  const textContent = treeItem.listItemElement.textContent;
   TestRunner.addResult(prefix + typePrefix + textContent);
 
   if (--depth) {

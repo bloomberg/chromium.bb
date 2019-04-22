@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -20,7 +19,6 @@ namespace blink {
 class BlobDataHandle;
 class SerializedScriptValue;
 class WebBlobInfo;
-class WebIDBValue;
 
 // Represents an IndexedDB Object Store value retrieved from the backing store.
 //
@@ -38,15 +36,7 @@ class WebIDBValue;
 // the values before returning them to the user.
 class MODULES_EXPORT IDBValue final {
  public:
-  // Creates an IDBValue from backing store information.
-  static std::unique_ptr<IDBValue> Create(const WebData&,
-                                          const WebVector<WebBlobInfo>&);
-
-  // Used by IDBValueUnwrapper tests.
-  static std::unique_ptr<IDBValue> Create(
-      scoped_refptr<SharedBuffer> unwrapped_data,
-      Vector<WebBlobInfo>);
-
+  IDBValue(scoped_refptr<SharedBuffer>, Vector<WebBlobInfo>);
   ~IDBValue();
 
   size_t DataSize() const { return data_ ? data_->size() : 0; }
@@ -54,12 +44,16 @@ class MODULES_EXPORT IDBValue final {
   bool IsNull() const;
   scoped_refptr<SerializedScriptValue> CreateSerializedValue() const;
   const Vector<WebBlobInfo>& BlobInfo() const { return blob_info_; }
+  const scoped_refptr<SharedBuffer>& Data() const { return data_; }
   const IDBKey* PrimaryKey() const { return primary_key_.get(); }
   const IDBKeyPath& KeyPath() const { return key_path_; }
 
   // Injects a primary key into a value coming from the backend.
   void SetInjectedPrimaryKey(std::unique_ptr<IDBKey> primary_key,
                              IDBKeyPath primary_key_path) {
+    // If the given key is type Null, ignore it.
+    if (primary_key && primary_key->GetType() == mojom::IDBKeyType::Null)
+      primary_key.reset();
     primary_key_ = std::move(primary_key);
     key_path_ = std::move(primary_key_path);
   }
@@ -84,19 +78,10 @@ class MODULES_EXPORT IDBValue final {
   // last Blob from an IDBValue is used when unwrapping values.
   scoped_refptr<BlobDataHandle> TakeLastBlob();
 
-#if DCHECK_IS_ON()
-  // Called by WebIDBValue to inform IDBValue of owneship changes.
-  void SetIsOwnedByWebIDBValue(bool);
-#endif  // DCHECK_IS_ON()
-
  private:
   DISALLOW_COPY_AND_ASSIGN(IDBValue);
 
   friend class IDBValueUnwrapper;
-
-  IDBValue(const WebData&, const WebVector<WebBlobInfo>&);
-  IDBValue(scoped_refptr<SharedBuffer> unwrapped_data,
-           Vector<WebBlobInfo>);
 
   // Keep this private to prevent new refs because we manually bookkeep the
   // memory to V8.
@@ -107,18 +92,11 @@ class MODULES_EXPORT IDBValue final {
   std::unique_ptr<IDBKey> primary_key_;
   IDBKeyPath key_path_;
 
-  // Used to register memory externally allocated by the WebIDBValue, and to
+  // Used to register memory externally allocated by the IDBValue, and to
   // unregister that memory in the destructor. Unused in other construction
   // paths.
   v8::Isolate* isolate_ = nullptr;
   int64_t external_allocated_size_ = 0;
-#if DCHECK_IS_ON()
-  // True if the IDBValue is owned by a WebIDBValue.
-  //
-  // IDBValue instances that are not owned by WebIDBValue are owned by Blink
-  // objects, and must have a V8 isolate associated with them.
-  bool is_owned_by_web_idb_value_ = false;
-#endif  // DCHECK_IS_ON()
 };
 
 }  // namespace blink

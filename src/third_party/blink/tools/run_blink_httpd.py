@@ -27,18 +27,18 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Runs an Apache HTTP server to manually run layout tests locally.
+"""Runs an Apache HTTP server to manually run web tests locally.
 
 After running this script, you can locally navigate to URLs where
-the path is relative to LayoutTests/http/tests/. For example, to run
-LayoutTests/http/tests/cachestorage/window-cache-add.html, navigate to:
+the path is relative to web_tests/http/tests/. For example, to run
+web_tests/http/tests/cachestorage/window-cache-add.html, navigate to:
     http://127.0.0.1:8000/cachestorage/window/cache-add.html
 
 When using HTTPS, for example:
     https://127.0.0.1:8443/https/verify-ssl-enabled.php
 you will may a certificate warning, which you need to bypass.
 
-After starting the server, you can also run individual layout tests
+After starting the server, you can also run individual web tests
 via content_shell, e.g.
     $ out/Release/content_shell --run-web-tests \
     http://127.0.0.1:8000/security/cross-frame-access-get.html

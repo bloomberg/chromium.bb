@@ -5,6 +5,7 @@
 #include "content/browser/android/overscroll_controller_android.h"
 #include <memory>
 #include "base/macros.h"
+#include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,6 +50,7 @@ class MockCompositor : public WindowAndroidCompositor {
   }
   bool IsDrawingFirstVisibleFrame() const override { return false; }
   void SetVSyncPaused(bool paused) override {}
+  void OnUpdateRefreshRate(float refresh_rate) override {}
 };
 
 class MockGlowClient : public OverscrollGlowClient {
@@ -70,7 +72,7 @@ class MockGlow : public OverscrollGlow {
 class MockRefresh : public OverscrollRefresh {
  public:
   MockRefresh() : OverscrollRefresh() {}
-  MOCK_METHOD0(OnOverscrolled, void());
+  MOCK_METHOD1(OnOverscrolled, void(const cc::OverscrollBehavior& behavior));
   MOCK_METHOD0(Reset, void());
   MOCK_CONST_METHOD0(IsActive, bool());
   MOCK_CONST_METHOD0(IsAwaitingScrollUpdateAck, bool());
@@ -114,12 +116,12 @@ class OverscrollControllerAndroidUnitTest : public testing::Test {
 };
 
 TEST_F(OverscrollControllerAndroidUnitTest,
-       OverscrollBehaviorAutoAllowsGlowAndNavigation) {
+       OverscrollBehaviorYAutoAllowsRefresh) {
   ui::DidOverscrollParams params = CreateVerticalOverscrollParams();
   params.overscroll_behavior.y = cc::OverscrollBehavior::
       OverscrollBehaviorType::kOverscrollBehaviorTypeAuto;
 
-  EXPECT_CALL(*refresh_, OnOverscrolled());
+  // Test that refresh is activated but glow is not rendered.
   EXPECT_CALL(*refresh_, IsActive()).WillOnce(Return(true));
   EXPECT_CALL(*refresh_, IsAwaitingScrollUpdateAck()).Times(0);
   EXPECT_CALL(*glow_, OnOverscrolled(_, _, _, _, _)).Times(0);
@@ -129,13 +131,11 @@ TEST_F(OverscrollControllerAndroidUnitTest,
 }
 
 TEST_F(OverscrollControllerAndroidUnitTest,
-       OverscrollBehaviorContainPreventsNavigation) {
+       OverscrollBehaviorYContainAllowsGlowOnly) {
   ui::DidOverscrollParams params = CreateVerticalOverscrollParams();
   params.overscroll_behavior.y = cc::OverscrollBehavior::
       OverscrollBehaviorType::kOverscrollBehaviorTypeContain;
 
-  EXPECT_CALL(*refresh_, OnOverscrolled()).Times(0);
-  EXPECT_CALL(*refresh_, Reset());
   EXPECT_CALL(*refresh_, IsActive()).WillOnce(Return(false));
   EXPECT_CALL(*refresh_, IsAwaitingScrollUpdateAck()).WillOnce(Return(false));
   EXPECT_CALL(*glow_,
@@ -152,8 +152,6 @@ TEST_F(OverscrollControllerAndroidUnitTest,
   params.overscroll_behavior.x = cc::OverscrollBehavior::
       OverscrollBehaviorType::kOverscrollBehaviorTypeContain;
 
-  EXPECT_CALL(*refresh_, OnOverscrolled());
-  EXPECT_CALL(*refresh_, Reset()).Times(0);
   EXPECT_CALL(*refresh_, IsActive()).WillOnce(Return(true));
   EXPECT_CALL(*refresh_, IsAwaitingScrollUpdateAck()).Times(0);
   EXPECT_CALL(*glow_, OnOverscrolled(_, _, _, _, _)).Times(0);
@@ -164,13 +162,11 @@ TEST_F(OverscrollControllerAndroidUnitTest,
 }
 
 TEST_F(OverscrollControllerAndroidUnitTest,
-       OverscrollBehaviorNonePreventsNavigationAndGlow) {
+       OverscrollBehaviorYNonePreventsGlowAndRefresh) {
   ui::DidOverscrollParams params = CreateVerticalOverscrollParams();
   params.overscroll_behavior.y = cc::OverscrollBehavior::
       OverscrollBehaviorType::kOverscrollBehaviorTypeNone;
 
-  EXPECT_CALL(*refresh_, OnOverscrolled()).Times(0);
-  EXPECT_CALL(*refresh_, Reset());
   EXPECT_CALL(*refresh_, IsActive()).WillOnce(Return(false));
   EXPECT_CALL(*refresh_, IsAwaitingScrollUpdateAck()).WillOnce(Return(false));
   EXPECT_CALL(*glow_, OnOverscrolled(_, gfx::Vector2dF(), gfx::Vector2dF(),
@@ -190,8 +186,6 @@ TEST_F(OverscrollControllerAndroidUnitTest,
     params.current_fling_velocity.Scale(dip_scale_);
   }
 
-  EXPECT_CALL(*refresh_, OnOverscrolled()).Times(0);
-  EXPECT_CALL(*refresh_, Reset());
   EXPECT_CALL(*refresh_, IsActive()).WillOnce(Return(false));
   EXPECT_CALL(*refresh_, IsAwaitingScrollUpdateAck()).WillOnce(Return(false));
   EXPECT_CALL(*glow_,
@@ -209,10 +203,8 @@ TEST_F(OverscrollControllerAndroidUnitTest,
   params.overscroll_behavior.y = cc::OverscrollBehavior::
       OverscrollBehaviorType::kOverscrollBehaviorTypeAuto;
 
-  EXPECT_CALL(*refresh_, OnOverscrolled());
   EXPECT_CALL(*refresh_, IsActive()).WillOnce(Return(true));
   EXPECT_CALL(*refresh_, IsAwaitingScrollUpdateAck()).WillOnce(Return(false));
-  EXPECT_CALL(*refresh_, Reset()).Times(0);
 
   // Enable the refresh effect.
   controller_->OnOverscrolled(params);

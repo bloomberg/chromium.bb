@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -98,9 +97,7 @@ class FakeBackgroundProfilingTriggers : public BackgroundProfilingTriggers {
 class BackgroundProfilingTriggersTest : public testing::Test {
  public:
   BackgroundProfilingTriggersTest()
-      : scoped_task_envrionment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
+      : testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
         triggers_(&host_),
         is_metrics_enabled_(true) {}
 
@@ -118,8 +115,7 @@ class BackgroundProfilingTriggersTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_envrionment_;
-  content::TestBrowserThreadBundle thread_bundle;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager testing_profile_manager_;
 
   ProfilingProcessHost host_;

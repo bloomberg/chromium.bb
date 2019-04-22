@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 static void SetACLPrivileges();
 
 static bool ReadSacl=false;
@@ -54,7 +56,10 @@ void ExtractACL20(Archive &Arc,const wchar *FileName)
   if (!SetCode)
   {
     uiMsg(UIERROR_ACLSET,Arc.FileName,FileName);
+    DWORD LastError=GetLastError();
     ErrHandler.SysErrMsg();
+    if (LastError==ERROR_ACCESS_DENIED && !IsUserAdmin())
+      uiMsg(UIERROR_NEEDADMIN);
     ErrHandler.SetErrorCode(RARX_WARNING);
   }
 }
@@ -86,7 +91,10 @@ void ExtractACL(Archive &Arc,const wchar *FileName)
   if (!SetCode)
   {
     uiMsg(UIERROR_ACLSET,Arc.FileName,FileName);
+    DWORD LastError=GetLastError();
     ErrHandler.SysErrMsg();
+    if (LastError==ERROR_ACCESS_DENIED && !IsUserAdmin())
+      uiMsg(UIERROR_NEEDADMIN);
     ErrHandler.SetErrorCode(RARX_WARNING);
   }
 }
@@ -127,3 +135,5 @@ bool SetPrivilege(LPCTSTR PrivName)
 
   return Success;
 }
+
+}  // namespace third_party_unrar

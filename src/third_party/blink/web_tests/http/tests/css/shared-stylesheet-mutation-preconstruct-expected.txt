@@ -2,10 +2,10 @@ The test loads the same stylesheet to different frames and then mutates them. Th
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Test 0
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(255, 0, 0)'
+
 
 #testdiv { background-color: green; }
 @media all {
@@ -17,11 +17,13 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
   100% { left: 200px; }
 }
 @font-face { font-family: Foo; }
+
 
 Test 1
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
+
 #testdiv { background-color: green; }
 @media all {
   #testdiv { background-color: red; }
@@ -33,11 +35,13 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
   100% { left: 200px; }
 }
 @font-face { font-family: Foo; }
+
 
 Test 2
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
+
 #testdiv { background-color: green; }
 @page :right { margin-left: 3cm; }
 @-webkit-keyframes bounce { 
@@ -46,9 +50,11 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 }
 @font-face { font-family: Foo; }
 
+
 Test 3
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
+
 
 #testdiv { background-color: green; }
 @media all {
@@ -62,9 +68,11 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 }
 @font-face { font-family: Foo; }
 
+
 Test 4
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
+
 
 #testdiv { background-color: green; }
 @media all {
@@ -76,9 +84,11 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 }
 @font-face { font-family: Foo; }
 
+
 Test 5
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
+
 
 #testdiv { background-color: green; }
 @media all {
@@ -91,9 +101,11 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 }
 @font-face { font-family: Foo; }
 
+
 Test 6
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
+
 
 #testdiv { background-color: green; }
 @media all {
@@ -106,9 +118,11 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 }
 @font-face { font-family: Foo; }
 
+
 Test 7
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
+
 
 #testdiv { background-color: green; }
 @media all {
@@ -121,9 +135,11 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 }
 @font-face { font-family: Foo; }
 
+
 Test 8
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
+
 
 #testdiv { background-color: green; }
 @media all {
@@ -136,9 +152,11 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 }
 @font-face { font-family: Foo; }
 
+
 Test 9
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
+
 
 #testdiv { background-color: green; }
 @media print {
@@ -150,11 +168,13 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
   100% { left: 200px; }
 }
 @font-face { font-family: Foo; }
+
 
 Test 10
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
+
 #testdiv { background-color: green; }
 @media print {
   #testdiv { background-color: red; }
@@ -166,15 +186,19 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 }
 @font-face { font-family: Foo; }
 
+
 Test 11
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
+
 #testdiv { background-color: green; }
+
 
 Test 12
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
+
 
 @import url("data:text/css;charset=utf-8,%23testdiv%7Bbackground-color%3Agreen%20!important%7D");
 #testdiv { background-color: green; }
@@ -188,9 +212,11 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 }
 @font-face { font-family: Foo; }
 
+
 Test 13
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(255, 0, 0)'
+
 
 #testdiv { background-color: green; }
 @media all {
@@ -203,9 +229,11 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 }
 @font-face { font-family: Foo; }
 
+
 Test 14
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(255, 0, 0)'
+
 
 #testdiv { background-color: green; }
 @media all {
@@ -219,9 +247,11 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 }
 @font-face { font-family: Foo; }
 
+
 Test 15
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(255, 0, 0)'
+
 
 #testdiv { background-color: green; }
 @media all {
@@ -233,9 +263,11 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 }
 @font-face { font-family: Foo; }
 
+
 Test 16
 --------------------------------------
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(255, 0, 0)'
+
 
 #testdiv { background-color: green; }
 @media all {
@@ -247,6 +279,7 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
   100% { left: 200px; }
 }
 @font-face { font-family: Bar; }
+
 
 PASS successfullyParsed is true
 

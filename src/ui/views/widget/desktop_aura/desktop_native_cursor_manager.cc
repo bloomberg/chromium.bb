@@ -15,8 +15,7 @@ namespace views {
 DesktopNativeCursorManager::DesktopNativeCursorManager()
     : cursor_loader_(ui::CursorLoader::Create()) {}
 
-DesktopNativeCursorManager::~DesktopNativeCursorManager() {
-}
+DesktopNativeCursorManager::~DesktopNativeCursorManager() = default;
 
 gfx::NativeCursor DesktopNativeCursorManager::GetInitializedCursor(
     ui::CursorType type) {

@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import argparse
 import os
 import subprocess
@@ -78,17 +80,19 @@ def SetupEnvironment():
 def PrintBanner(output):
   if not env.quiet:
     lines = output.split('\n')
-    print '*' * 80
+    print('*' * 80)
     for line in lines:
       padding = ' ' * max(0, (80 - len(line)) / 2)
-      print padding + output + padding
-    print '*' * 80
+      print(padding + output + padding)
+    print('*' * 80)
+
 
 def PrintCommand(s):
   if not env.quiet:
-    print
-    print s
-    print
+    print()
+    print(s)
+    print()
+
 
 def SetupArch(arch, allow_build=True):
   '''Setup environment variables that require knowing the
@@ -573,7 +577,7 @@ def ArgSplit(argv):
 def Fatal(msg, *args):
   if len(args) > 0:
     msg = msg % args
-  print msg
+  print(msg)
   sys.exit(1)
 
 

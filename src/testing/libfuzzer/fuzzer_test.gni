@@ -4,7 +4,6 @@
 
 # Defines fuzzer_test.
 #
-import("//build/config/coverage/coverage.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/test.gni")
@@ -36,11 +35,7 @@ import("//testing/test.gni")
 # config (.options file) file would be generated or modified in root output
 # dir (next to test).
 template("fuzzer_test") {
-  assert(!(is_mac && use_clang_coverage && use_fuzzing_engine),
-         "Code Coverage for fuzz targets does not work on Mac until " +
-             "crbug.com/790747 is resolved.")
-
-  if (!disable_libfuzzer && (use_fuzzing_engine || use_drfuzz || is_linux)) {
+  if (!disable_libfuzzer && (use_fuzzing_engine || is_linux)) {
     assert(defined(invoker.sources), "Need sources in $target_name.")
 
     test_deps = [ "//testing/libfuzzer:libfuzzer_main" ]
@@ -86,7 +81,9 @@ template("fuzzer_test") {
         deps = [ "//testing/libfuzzer:seed_corpus" ] + seed_corpus_deps
       }
 
-      test_deps += [ ":" + target_name + "_seed_corpus" ]
+      if (!archive_seed_corpus) {
+        test_deps += [ ":" + target_name + "_seed_corpus" ]
+      }
     }
 
     if (defined(invoker.dict) || defined(invoker.libfuzzer_options) ||
@@ -215,6 +212,11 @@ template("fuzzer_test") {
       if (is_mac) {
         sources += [ "//testing/libfuzzer/libfuzzer_exports.h" ]
       }
+
+      # Used to isolate fuzzer corpus and run fuzzer targets on swarming.
+      data = [
+        "//testing/libfuzzer/fuzzer_corpus_for_bots/${target_name}/",
+      ]
     }
   } else {
     # noop on unsupported platforms.

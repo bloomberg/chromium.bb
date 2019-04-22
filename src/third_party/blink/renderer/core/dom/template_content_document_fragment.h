@@ -33,18 +33,12 @@ namespace blink {
 
 class TemplateContentDocumentFragment final : public DocumentFragment {
  public:
-  static TemplateContentDocumentFragment* Create(Document& document,
-                                                 Element* host) {
-    return MakeGarbageCollected<TemplateContentDocumentFragment>(document,
-                                                                 host);
-  }
-
   TemplateContentDocumentFragment(Document& document, Element* host)
       : DocumentFragment(&document, kCreateDocumentFragment), host_(host) {}
 
   Element* Host() const { return host_; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(host_);
     DocumentFragment::Trace(visitor);
   }

@@ -24,6 +24,13 @@ SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardInputEvents(
   return move_gesture_->ForwardInputEvents(timestamp, target);
 }
 
+void SyntheticSmoothScrollGesture::WaitForTargetAck(
+    base::OnceClosure callback,
+    SyntheticGestureTarget* target) const {
+  target->WaitForTargetAck(params_.GetGestureType(),
+                           params_.gesture_source_type, std::move(callback));
+}
+
 SyntheticSmoothMoveGestureParams::InputType
 SyntheticSmoothScrollGesture::GetInputSourceType(
     SyntheticGestureParams::GestureSourceType gesture_source_type) {

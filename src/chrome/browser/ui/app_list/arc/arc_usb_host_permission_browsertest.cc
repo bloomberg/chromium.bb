@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_usb_host_permission_manager.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -59,7 +60,7 @@ class ArcUsbHostPermissionTest : public InProcessBrowserTest {
     DCHECK(arc_app_list_pref_);
 
     base::RunLoop run_loop;
-    arc_app_list_pref_->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
+    arc_app_list_pref_->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
     run_loop.Run();
 
     app_instance_ = std::make_unique<arc::FakeAppInstance>(arc_app_list_pref_);

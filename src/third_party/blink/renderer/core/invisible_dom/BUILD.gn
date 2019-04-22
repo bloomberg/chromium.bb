@@ -9,5 +9,7 @@ blink_core_sources("invisible_dom") {
     "activate_invisible_event.cc",
     "activate_invisible_event.h",
     "activate_invisible_event.idl",
+    "invisible_dom.cc",
+    "invisible_dom.h",
   ]
 }

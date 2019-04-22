@@ -19,7 +19,6 @@ class ChromeBrowserState;
 @protocol OmniboxFocuser;
 @protocol FakeboxFocuser;
 @protocol SnackbarCommands;
-@protocol UrlLoader;
 class WebStateList;
 
 // Coordinator to manage the Suggestions UI via a
@@ -29,15 +28,13 @@ class WebStateList;
 // BrowserState used to create the ContentSuggestionFactory.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // URLLoader used to open pages.
-@property(nonatomic, weak) id<UrlLoader> URLLoader;
 @property(nonatomic, assign) WebStateList* webStateList;
 @property(nonatomic, weak) id<NewTabPageControllerDelegate> toolbarDelegate;
 @property(nonatomic, weak) id<ApplicationCommands,
                               BrowserCommands,
                               OmniboxFocuser,
                               FakeboxFocuser,
-                              SnackbarCommands,
-                              UrlLoader>
+                              SnackbarCommands>
     dispatcher;
 // Whether the Suggestions UI is displayed. If this is true, start is a no-op.
 @property(nonatomic, readonly) BOOL visible;

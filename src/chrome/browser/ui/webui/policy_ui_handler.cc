@@ -31,7 +31,6 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/cloud/message_util.h"
@@ -70,7 +69,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
-#include "chromeos/settings/install_attributes.h"
 #include "components/user_manager/user_manager.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
@@ -87,16 +85,6 @@
 namespace em = enterprise_management;
 
 namespace {
-
-// Strings that map from PolicySource enum to i18n string keys and their IDs.
-// Their order has to follow the order of the policy::PolicySource enum.
-const PolicyStringMap kPolicySources[policy::POLICY_SOURCE_COUNT] = {
-    {"sourceEnterpriseDefault", IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT},
-    {"sourceCloud", IDS_POLICY_SOURCE_CLOUD},
-    {"sourceActiveDirectory", IDS_POLICY_SOURCE_ACTIVE_DIRECTORY},
-    {"sourcePublicSessionOverride", IDS_POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE},
-    {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM},
-};
 
 // Formats the association state indicated by |data|. If |data| is NULL, the
 // state is considered to be UNMANAGED.
@@ -161,6 +149,8 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
   bool no_error = store->status() == policy::CloudPolicyStore::STATUS_OK &&
                   client && client->status() == policy::DM_STATUS_SUCCESS;
   dict->SetBoolean("error", !no_error);
+  dict->SetBoolean("policiesPushAvailable",
+                   refresh_scheduler->invalidations_available());
   dict->SetString("status", status);
   dict->SetString("clientId", client_id);
   dict->SetString("username", username);
@@ -612,9 +602,10 @@ PolicyUIHandler::PolicyUIHandler()
 PolicyUIHandler::~PolicyUIHandler() {
   GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
   GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
-  policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(
-          Profile::FromWebUI(web_ui())->GetOriginalProfile())->registry();
+  policy::SchemaRegistry* registry = Profile::FromWebUI(web_ui())
+                                         ->GetOriginalProfile()
+                                         ->GetPolicySchemaRegistryService()
+                                         ->registry();
   registry->RemoveObserver(this);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -624,32 +615,38 @@ PolicyUIHandler::~PolicyUIHandler() {
 }
 
 void PolicyUIHandler::AddLocalizedPolicyStrings(
-      content::WebUIDataSource* source,
-      const PolicyStringMap* strings,
-      size_t count) {
+    content::WebUIDataSource* source,
+    const policy::PolicyStringMap* strings,
+    size_t count) {
   for (size_t i = 0; i < count; ++i)
     source->AddLocalizedString(strings[i].key, strings[i].string_id);
 }
 
 void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       content::WebUIDataSource* source) {
-  AddLocalizedPolicyStrings(source, kPolicySources,
+  AddLocalizedPolicyStrings(source, policy::kPolicySources,
                             static_cast<size_t>(policy::POLICY_SOURCE_COUNT));
-  source->AddLocalizedString("title", IDS_POLICY_TITLE);
-  source->AddLocalizedString("headerScope", IDS_POLICY_HEADER_SCOPE);
+  source->AddLocalizedString("conflict", IDS_POLICY_LABEL_CONFLICT);
   source->AddLocalizedString("headerLevel", IDS_POLICY_HEADER_LEVEL);
   source->AddLocalizedString("headerName", IDS_POLICY_HEADER_NAME);
-  source->AddLocalizedString("headerValue", IDS_POLICY_HEADER_VALUE);
-  source->AddLocalizedString("headerStatus", IDS_POLICY_HEADER_STATUS);
+  source->AddLocalizedString("headerScope", IDS_POLICY_HEADER_SCOPE);
   source->AddLocalizedString("headerSource", IDS_POLICY_HEADER_SOURCE);
-  source->AddLocalizedString("scopeUser", IDS_POLICY_SCOPE_USER);
-  source->AddLocalizedString("scopeDevice", IDS_POLICY_SCOPE_DEVICE);
-  source->AddLocalizedString("levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED);
+  source->AddLocalizedString("headerStatus", IDS_POLICY_HEADER_STATUS);
+  source->AddLocalizedString("headerValue", IDS_POLICY_HEADER_VALUE);
+  source->AddLocalizedString("warning", IDS_POLICY_HEADER_WARNING);
   source->AddLocalizedString("levelMandatory", IDS_POLICY_LEVEL_MANDATORY);
-  source->AddLocalizedString("ok", IDS_POLICY_OK);
-  source->AddLocalizedString("unset", IDS_POLICY_UNSET);
-  source->AddLocalizedString("unknown", IDS_POLICY_UNKNOWN);
+  source->AddLocalizedString("levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED);
+  source->AddLocalizedString("messages", IDS_POLICY_LABEL_MESSAGES);
+  source->AddLocalizedString("warningAndConflicts",
+                             IDS_POLICY_LABEL_WARNING_AND_CONFLICT);
   source->AddLocalizedString("notSpecified", IDS_POLICY_NOT_SPECIFIED);
+  source->AddLocalizedString("ok", IDS_POLICY_OK);
+  source->AddLocalizedString("scopeDevice", IDS_POLICY_SCOPE_DEVICE);
+  source->AddLocalizedString("scopeUser", IDS_POLICY_SCOPE_USER);
+  source->AddLocalizedString("title", IDS_POLICY_TITLE);
+  source->AddLocalizedString("unknown", IDS_POLICY_UNKNOWN);
+  source->AddLocalizedString("unset", IDS_POLICY_UNSET);
+  source->AddLocalizedString("value", IDS_POLICY_LABEL_VALUE);
   source->SetJsonPath("strings.js");
 }
 
@@ -724,7 +721,7 @@ void PolicyUIHandler::RegisterMessages() {
   if (!machine_status_provider_.get())
     machine_status_provider_ = std::make_unique<PolicyStatusProvider>();
 
-  base::Closure update_callback(base::Bind(&PolicyUIHandler::SendStatus,
+  auto update_callback(base::BindRepeating(&PolicyUIHandler::SendStatus,
                                            base::Unretained(this)));
   user_status_provider_->SetStatusChangeCallback(update_callback);
   device_status_provider_->SetStatusChangeCallback(update_callback);
@@ -736,21 +733,23 @@ void PolicyUIHandler::RegisterMessages() {
   extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
       ->AddObserver(this);
 #endif
-  policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(
-          Profile::FromWebUI(web_ui())->GetOriginalProfile())->registry();
+  policy::SchemaRegistry* registry = Profile::FromWebUI(web_ui())
+                                         ->GetOriginalProfile()
+                                         ->GetPolicySchemaRegistryService()
+                                         ->registry();
   registry->AddObserver(this);
 
   web_ui()->RegisterMessageCallback(
-      "initialized", base::BindRepeating(&PolicyUIHandler::HandleInitialized,
-                                         base::Unretained(this)));
+      "exportPoliciesJSON",
+      base::BindRepeating(&PolicyUIHandler::HandleExportPoliciesJson,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "listenPoliciesUpdates",
+      base::BindRepeating(&PolicyUIHandler::HandleListenPoliciesUpdates,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "reloadPolicies",
       base::BindRepeating(&PolicyUIHandler::HandleReloadPolicies,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "exportPoliciesJSON",
-      base::BindRepeating(&PolicyUIHandler::HandleExportPoliciesJSON,
                           base::Unretained(this)));
 }
 
@@ -758,61 +757,53 @@ void PolicyUIHandler::RegisterMessages() {
 void PolicyUIHandler::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
-  SendPolicyNames();
-  SendPolicyValues();
+  SendPolicies();
 }
 
 void PolicyUIHandler::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UnloadedExtensionReason reason) {
-  SendPolicyNames();
-  SendPolicyValues();
+  SendPolicies();
 }
 #endif
 
 void PolicyUIHandler::OnSchemaRegistryUpdated(bool has_new_schemas) {
   // Update UI when new schema is added.
   if (has_new_schemas) {
-    SendPolicyNames();
-    SendPolicyValues();
+    SendPolicies();
   }
 }
 
 void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                       const policy::PolicyMap& previous,
                                       const policy::PolicyMap& current) {
-  SendPolicyValues();
+  SendPolicies();
 }
 
-void PolicyUIHandler::AddPolicyName(const std::string& name,
-                                    base::DictionaryValue* names) const {
-  names->SetKey(name, base::Value(true));
-}
-
-void PolicyUIHandler::SendPolicyNames() const {
+base::Value PolicyUIHandler::GetPolicyNames() const {
   base::DictionaryValue names;
-
   Profile* profile = Profile::FromWebUI(web_ui());
-  policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(
-          profile->GetOriginalProfile())->registry();
+  policy::SchemaRegistry* registry = profile->GetOriginalProfile()
+                                         ->GetPolicySchemaRegistryService()
+                                         ->registry();
   scoped_refptr<policy::SchemaMap> schema_map = registry->schema_map();
 
   // Add Chrome policy names.
-  auto chrome_policy_names = std::make_unique<base::DictionaryValue>();
+  auto chrome_policy_names = std::make_unique<base::ListValue>();
   policy::PolicyNamespace chrome_ns(policy::POLICY_DOMAIN_CHROME, "");
   const policy::Schema* chrome_schema = schema_map->GetSchema(chrome_ns);
   for (policy::Schema::Iterator it = chrome_schema->GetPropertiesIterator();
        !it.IsAtEnd(); it.Advance()) {
-    AddPolicyName(it.key(), chrome_policy_names.get());
+    chrome_policy_names->GetList().push_back(base::Value(it.key()));
   }
-  names.Set("chromePolicyNames", std::move(chrome_policy_names));
+  auto chrome_values = std::make_unique<base::DictionaryValue>();
+  chrome_values->SetString("name", "Chrome Policies");
+  chrome_values->SetList("policyNames", std::move(chrome_policy_names));
+  names.Set("chrome", std::move(chrome_values));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Add extension policy names.
-  auto extension_policy_names = std::make_unique<base::DictionaryValue>();
-
   for (const scoped_refptr<const extensions::Extension>& extension :
        extensions::ExtensionRegistry::Get(profile)->enabled_extensions()) {
     // Skip this extension if it's not an enterprise extension.
@@ -824,33 +815,33 @@ void PolicyUIHandler::SendPolicyNames() const {
     const policy::Schema* schema =
         schema_map->GetSchema(policy::PolicyNamespace(
             policy::POLICY_DOMAIN_EXTENSIONS, extension->id()));
-    auto policy_names = std::make_unique<base::DictionaryValue>();
+    auto policy_names = std::make_unique<base::ListValue>();
     if (schema && schema->valid()) {
       // Get policy names from the extension's policy schema.
       // Store in a map, not an array, for faster lookup on JS side.
       for (policy::Schema::Iterator prop = schema->GetPropertiesIterator();
            !prop.IsAtEnd(); prop.Advance()) {
-        policy_names->SetBoolean(prop.key(), true);
+        policy_names->GetList().push_back(base::Value(prop.key()));
       }
     }
     extension_value->Set("policyNames", std::move(policy_names));
-    extension_policy_names->Set(extension->id(), std::move(extension_value));
+    names.Set(extension->id(), std::move(extension_value));
   }
-  names.Set("extensionPolicyNames", std::move(extension_policy_names));
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-  web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setPolicyNames", names);
+  return std::move(names);
 }
 
-void PolicyUIHandler::SendPolicyValues() const {
-  base::Value all_policies = policy::GetAllPolicyValuesAsDictionary(
+base::Value PolicyUIHandler::GetPolicyValues() const {
+  return policy::GetAllPolicyValuesAsArray(
       web_ui()->GetWebContents()->GetBrowserContext(),
-      true /* with_user_policies */, true /* convert_values */);
-  web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setPolicyValues",
-                                         all_policies);
+      true /* with_user_policies */, true /* convert_values */,
+      false /* with_device_data */, true /* is_pretty_print */);
 }
 
-void PolicyUIHandler::SendStatus() const {
+void PolicyUIHandler::SendStatus() {
+  if (!IsJavascriptAllowed())
+    return;
   std::unique_ptr<base::DictionaryValue> device_status(
       new base::DictionaryValue);
   device_status_provider_->GetStatus(device_status.get());
@@ -876,13 +867,42 @@ void PolicyUIHandler::SendStatus() const {
   if (!user_status->empty())
     status.Set("user", std::move(user_status));
 
-  web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setStatus", status);
+  FireWebUIListener("status-updated", status);
 }
 
-void PolicyUIHandler::HandleInitialized(const base::ListValue* args) {
-  SendPolicyNames();
-  SendPolicyValues();
-  SendStatus();
+void PolicyUIHandler::HandleExportPoliciesJson(const base::ListValue* args) {
+  // If the "select file" dialog window is already opened, we don't want to open
+  // it again.
+  if (export_policies_select_file_dialog_)
+    return;
+
+  content::WebContents* webcontents = web_ui()->GetWebContents();
+
+  // Building initial path based on download preferences.
+  base::FilePath initial_dir =
+      DownloadPrefs::FromBrowserContext(webcontents->GetBrowserContext())
+          ->DownloadPath();
+  base::FilePath initial_path =
+      initial_dir.Append(FILE_PATH_LITERAL("policies.json"));
+
+  // Here we overwrite the actual value of SelectFileDialog policy by passing a
+  // nullptr to ui::SelectFileDialog::Create instead of the actual policy value.
+  // This is done for the following reason: the admin might want to set this
+  // policy for the user to forbid the select file dialogs, but this shouldn't
+  // block the possibility to export the policies.
+  export_policies_select_file_dialog_ = ui::SelectFileDialog::Create(
+      this, std::unique_ptr<ui::SelectFilePolicy>());
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
+  file_type_info.extensions = {{FILE_PATH_LITERAL("json")}};
+  gfx::NativeWindow owning_window = webcontents->GetTopLevelNativeWindow();
+  export_policies_select_file_dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(), initial_path,
+      &file_type_info, 0, base::FilePath::StringType(), owning_window, nullptr);
+}
+
+void PolicyUIHandler::HandleListenPoliciesUpdates(const base::ListValue* args) {
+  AllowJavascript();
+  OnRefreshPoliciesDone();
 }
 
 void PolicyUIHandler::HandleReloadPolicies(const base::ListValue* args) {
@@ -922,7 +942,8 @@ void PolicyUIHandler::WritePoliciesToJSONFile(
     const base::FilePath& path) const {
   std::string json_policies = policy::GetAllPolicyValuesAsJSON(
       web_ui()->GetWebContents()->GetBrowserContext(),
-      true /* with_user_policies */, false /* with device identity */);
+      true /* with_user_policies */, false /* with_device_data */,
+      true /* is_pretty_print */);
 
   base::PostTaskWithTraits(
       FROM_HERE,
@@ -946,38 +967,14 @@ void PolicyUIHandler::FileSelectionCanceled(void* params) {
   export_policies_select_file_dialog_ = nullptr;
 }
 
-void PolicyUIHandler::HandleExportPoliciesJSON(const base::ListValue* args) {
-  // If the "select file" dialog window is already opened, we don't want to open
-  // it again.
-  if (export_policies_select_file_dialog_)
-    return;
-
-  content::WebContents* webcontents = web_ui()->GetWebContents();
-
-  // Building initial path based on download preferences.
-  base::FilePath initial_dir =
-      DownloadPrefs::FromBrowserContext(webcontents->GetBrowserContext())
-          ->DownloadPath();
-  base::FilePath initial_path =
-      initial_dir.Append(FILE_PATH_LITERAL("policies.json"));
-
-  // Here we overwrite the actual value of SelectFileDialog policy by passing a
-  // nullptr to ui::SelectFileDialog::Create instead of the actual policy value.
-  // This is done for the following reason: the admin might want to set this
-  // policy for the user to forbid the select file dialogs, but this shouldn't
-  // block the possibility to export the policies.
-  export_policies_select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, std::unique_ptr<ui::SelectFilePolicy>());
-  ui::SelectFileDialog::FileTypeInfo file_type_info;
-  file_type_info.extensions = {{FILE_PATH_LITERAL("json")}};
-  gfx::NativeWindow owning_window = webcontents->GetTopLevelNativeWindow();
-  export_policies_select_file_dialog_->SelectFile(
-      ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(), initial_path,
-      &file_type_info, 0, base::FilePath::StringType(), owning_window, nullptr);
+void PolicyUIHandler::SendPolicies() {
+  if (IsJavascriptAllowed())
+    FireWebUIListener("policies-updated", GetPolicyNames(), GetPolicyValues());
 }
 
-void PolicyUIHandler::OnRefreshPoliciesDone() const {
-  web_ui()->CallJavascriptFunctionUnsafe("policy.Page.reloadPoliciesDone");
+void PolicyUIHandler::OnRefreshPoliciesDone() {
+  SendPolicies();
+  SendStatus();
 }
 
 policy::PolicyService* PolicyUIHandler::GetPolicyService() const {

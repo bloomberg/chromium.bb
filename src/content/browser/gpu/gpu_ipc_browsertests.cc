@@ -90,6 +90,7 @@ class ContextTestBase : public content::ContentBrowserTest {
 
 // Include the shared tests.
 #define CONTEXT_TEST_F IN_PROC_BROWSER_TEST_F
+#include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/ipc/client/gpu_context_tests.h"
 
@@ -108,11 +109,6 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
     // Start all tests without a gpu channel so that the tests exercise a
     // consistent codepath.
     command_line->AppendSwitch(switches::kDisableGpuEarlyInit);
-  }
-
-  void OnContextLost(const base::Closure callback, int* counter) {
-    (*counter)++;
-    callback.Run();
   }
 
   void Signal(bool* event,
@@ -183,34 +179,6 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   EXPECT_EQ(gpu_channel.get(), GetGpuChannel());
 }
 #endif
-
-// Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
-// establishes a GPU channel.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_CallbacksDontRunOnEstablishSync CallbacksDontRunOnEstablishSync
-#else
-#define MAYBE_CallbacksDontRunOnEstablishSync \
-  DISABLED_CallbacksDontRunOnEstablishSync
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
-                       MAYBE_CallbacksDontRunOnEstablishSync) {
-  DCHECK(!IsChannelEstablished());
-  bool event = false;
-  base::RunLoop run_loop;
-  GetFactory()->EstablishGpuChannel(
-      base::BindOnce(&BrowserGpuChannelHostFactoryTest::SignalAndQuitLoop,
-                     base::Unretained(this), &event, &run_loop));
-
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel =
-      GetFactory()->EstablishGpuChannelSync();
-
-  // Expect async callback didn't run yet.
-  EXPECT_FALSE(event);
-
-  run_loop.Run();
-  EXPECT_TRUE(event);
-  EXPECT_EQ(gpu_channel.get(), GetGpuChannel());
-}
 
 // Test fails on Windows because GPU Channel set-up fails.
 #if !defined(OS_WIN)
@@ -286,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   ASSERT_EQ(provider->BindToCurrentThread(), gpu::ContextResult::kSuccess);
   GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                            false /* force_create */,
-                           base::Bind([](GpuProcessHost* host) {
+                           base::BindOnce([](GpuProcessHost* host) {
                              if (host)
                                host->gpu_service()->Crash();
                            }));

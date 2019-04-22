@@ -86,8 +86,9 @@ Polymer({
    * @private
    */
   syncStatusChanged_: function() {
-    if (!this.syncStatus.signedIn && this.$.dialog.open)
+    if (!this.syncStatus.signedIn && this.$.dialog.open) {
       this.$.dialog.close();
+    }
   },
 
   /**

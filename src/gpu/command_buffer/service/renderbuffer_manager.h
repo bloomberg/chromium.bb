@@ -10,9 +10,9 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/containers/flat_set.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -224,7 +224,8 @@ class GPU_GLES2_EXPORT RenderbufferManager
   bool have_context_;
 
   // Info for each renderbuffer in the system.
-  typedef base::hash_map<GLuint, scoped_refptr<Renderbuffer> > RenderbufferMap;
+  typedef std::unordered_map<GLuint, scoped_refptr<Renderbuffer>>
+      RenderbufferMap;
   RenderbufferMap renderbuffers_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderbufferManager);

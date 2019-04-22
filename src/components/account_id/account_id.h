@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <functional>
 #include <ostream>
 #include <string>
 
-#include "base/containers/hash_tables.h"
 
 enum class AccountType { UNKNOWN, GOOGLE, ACTIVE_DIRECTORY };
 
@@ -24,8 +24,6 @@ enum class AccountType { UNKNOWN, GOOGLE, ACTIVE_DIRECTORY };
 // accounts. (see crbug.com/672253)
 class AccountId {
  public:
-  struct EmptyAccountId;
-
   // Creates an empty account id.
   //
   // Note: This constructor is public as it is required for mojo serialization
@@ -116,7 +114,7 @@ std::ostream& operator<<(std::ostream& stream, const AccountId& account_id);
 // Returns a reference to a singleton.
 const AccountId& EmptyAccountId();
 
-namespace BASE_HASH_NAMESPACE {
+namespace std {
 
 // Implement hashing of AccountId, so it can be used as a key in STL containers.
 template <>
@@ -124,6 +122,6 @@ struct hash<AccountId> {
   std::size_t operator()(const AccountId& user_id) const;
 };
 
-}  // namespace BASE_HASH_NAMESPACE
+}  // namespace std
 
 #endif  // COMPONENTS_ACCOUNT_ID_ACCOUNT_ID_H_

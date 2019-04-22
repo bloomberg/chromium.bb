@@ -30,6 +30,10 @@ class GattClientManager {
     virtual void OnConnectChanged(scoped_refptr<RemoteDevice> device,
                                   bool connected) {}
 
+    // Called when the bond state changes for |device|.
+    virtual void OnBondChanged(scoped_refptr<RemoteDevice> device,
+                               bool bonded) {}
+
     // Called when the connection MTU changes for |device|.
     virtual void OnMtuChanged(scoped_refptr<RemoteDevice> device, int mtu) {}
 
@@ -76,7 +80,12 @@ class GattClientManager {
   // TODO(bcf): Deprecated in favor of |GetConnectedDevices|.
   virtual void GetNumConnected(base::OnceCallback<void(size_t)> cb) const = 0;
 
+  // Called when we initiate connection to a remote device.
   virtual void NotifyConnect(const bluetooth_v2_shlib::Addr& addr) = 0;
+
+  // Used to notify |this| of currently bonded devices on initialization.
+  // Note that these devices might not be connected.
+  virtual void NotifyBonded(const bluetooth_v2_shlib::Addr& addr) = 0;
 
   // TODO(bcf): Deprecated. Should be removed now that this class may be used
   // from any thread.

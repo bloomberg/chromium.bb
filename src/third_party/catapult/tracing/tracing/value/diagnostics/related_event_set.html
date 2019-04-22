@@ -48,6 +48,14 @@ tr.exportTo('tr.v.d', function() {
       return clone;
     }
 
+    equals(other) {
+      if (this.length !== other.length) return false;
+      for (const event of this) {
+        if (!other.has(event)) return false;
+      }
+      return true;
+    }
+
     /**
      * @param {!(tr.v.d.EventRef|tr.model.Event)} event
      */
@@ -100,16 +108,34 @@ tr.exportTo('tr.v.d', function() {
       }
     }
 
+    serialize(serializer) {
+      return [...this].map(event => [
+        event.stableId,
+        serializer.getOrAllocateId(event.title),
+        event.start,
+        event.duration,
+      ]);
+    }
+
     asDictInto_(d) {
       d.events = [];
       for (const event of this) {
         d.events.push({
           stableId: event.stableId,
           title: event.title,
-          start: event.start,
-          duration: event.duration
+          start: tr.b.Unit.byName.timeStampInMs.truncate(event.start),
+          duration: tr.b.Unit.byName.timeDurationInMs.truncate(event.duration),
         });
       }
+    }
+
+    static deserialize(data, deserializer) {
+      return new RelatedEventSet(data.map(event => new tr.v.d.EventRef({
+        stableId: event[0],
+        title: deserializer.getObject(event[1]),
+        start: event[2],
+        duration: event[3],
+      })));
     }
 
     static fromDict(d) {

@@ -9,19 +9,20 @@
 #include "base/bind.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
 
 namespace browser_sync {
 
 AutofillProfileModelTypeController::AutofillProfileModelTypeController(
     std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
-    syncer::SyncClient* sync_client)
+    PrefService* pref_service,
+    syncer::SyncService* sync_service)
     : ModelTypeController(syncer::AUTOFILL_PROFILE,
                           std::move(delegate_on_disk)),
-      sync_client_(sync_client),
+      pref_service_(pref_service),
+      sync_service_(sync_service),
       currently_enabled_(IsEnabled()) {
-  pref_registrar_.Init(sync_client_->GetPrefService());
+  pref_registrar_.Init(pref_service_);
   pref_registrar_.Add(
       autofill::prefs::kAutofillProfileEnabled,
       base::BindRepeating(
@@ -45,15 +46,14 @@ void AutofillProfileModelTypeController::OnUserPrefChanged() {
     return;
   currently_enabled_ = new_enabled;
 
-  sync_client_->GetSyncService()->ReadyForStartChanged(type());
+  sync_service_->ReadyForStartChanged(type());
 }
 
 bool AutofillProfileModelTypeController::IsEnabled() {
   DCHECK(CalledOnValidThread());
 
   // Require the user-visible pref to be enabled to sync Autofill Profile data.
-  return autofill::prefs::IsProfileAutofillEnabled(
-      sync_client_->GetPrefService());
+  return autofill::prefs::IsProfileAutofillEnabled(pref_service_);
 }
 
 }  // namespace browser_sync

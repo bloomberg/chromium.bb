@@ -5,7 +5,6 @@
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 
 #include "components/signin/core/browser/cookie_settings_util.h"
-#include "components/signin/core/browser/device_id_helper.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #import "ios/web_view/internal/sync/cwv_sync_controller_internal.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -86,8 +85,8 @@ void IOSWebViewSigninClient::PreSignOut(
   [sync_controller_ didSignoutWithSourceMetric:signout_source_metric];
 }
 
-void IOSWebViewSigninClient::DelayNetworkCall(const base::Closure& callback) {
-  network_callback_helper_->HandleCallback(callback);
+void IOSWebViewSigninClient::DelayNetworkCall(base::OnceClosure callback) {
+  network_callback_helper_->HandleCallback(std::move(callback));
 }
 
 std::unique_ptr<GaiaAuthFetcher> IOSWebViewSigninClient::CreateGaiaAuthFetcher(

@@ -5,12 +5,13 @@
 #include "media/mojo/services/interface_factory_impl.h"
 
 #include <memory>
+#include "base/bind.h"
 #include "base/guid.h"
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/base/media_log.h"
+#include "media/mojo/interfaces/renderer_extensions.mojom.h"
 #include "media/mojo/services/mojo_decryptor_service.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -43,13 +44,9 @@ namespace media {
 
 InterfaceFactoryImpl::InterfaceFactoryImpl(
     service_manager::mojom::InterfaceProviderPtr interfaces,
-    MediaLog* media_log,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref,
     MojoMediaClient* mojo_media_client)
     :
-#if BUILDFLAG(ENABLE_MOJO_RENDERER)
-      media_log_(media_log),
-#endif
 #if BUILDFLAG(ENABLE_MOJO_CDM)
       interfaces_(std::move(interfaces)),
 #endif
@@ -99,24 +96,13 @@ void InterfaceFactoryImpl::CreateVideoDecoder(
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 }
 
-void InterfaceFactoryImpl::CreateRenderer(
-    media::mojom::HostedRendererType type,
-    const std::string& type_specific_id,
+void InterfaceFactoryImpl::CreateDefaultRenderer(
+    const std::string& audio_device_id,
     mojo::InterfaceRequest<mojom::Renderer> request) {
   DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
-  // Creation requests for non default renderers should have already been
-  // handled by now, in a different layer.
-  if (type != media::mojom::HostedRendererType::kDefault) {
-    DLOG(ERROR) << "Creation of specialized renderers is not supported.";
-    return;
-  }
-
-  // For HostedRendererType::kDefault type, |type_specific_id| represents an
-  // audio device ID. See interface_factory.mojom.
-  const std::string& audio_device_id = type_specific_id;
   auto renderer = mojo_media_client_->CreateRenderer(
-      interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), media_log_,
+      interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), &media_log_,
       audio_device_id);
   if (!renderer) {
     DLOG(ERROR) << "Renderer creation failed.";
@@ -124,9 +110,8 @@ void InterfaceFactoryImpl::CreateRenderer(
   }
 
   std::unique_ptr<MojoRendererService> mojo_renderer_service =
-      std::make_unique<MojoRendererService>(
-          &cdm_service_context_, std::move(renderer),
-          MojoRendererService::InitiateSurfaceRequestCB());
+      std::make_unique<MojoRendererService>(&cdm_service_context_,
+                                            std::move(renderer));
 
   MojoRendererService* mojo_renderer_service_ptr = mojo_renderer_service.get();
 
@@ -141,6 +126,54 @@ void InterfaceFactoryImpl::CreateRenderer(
                  base::Unretained(&renderer_bindings_), binding_id));
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 }
+
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+void InterfaceFactoryImpl::CreateCastRenderer(
+    const base::UnguessableToken& overlay_plane_id,
+    media::mojom::RendererRequest request) {
+  DVLOG(2) << __func__;
+#if BUILDFLAG(ENABLE_MOJO_RENDERER)
+  auto renderer = mojo_media_client_->CreateCastRenderer(
+      interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), &media_log_,
+      overlay_plane_id);
+  if (!renderer) {
+    DLOG(ERROR) << "Renderer creation failed.";
+    return;
+  }
+
+  std::unique_ptr<MojoRendererService> mojo_renderer_service =
+      std::make_unique<MojoRendererService>(&cdm_service_context_,
+                                            std::move(renderer));
+
+  MojoRendererService* mojo_renderer_service_ptr = mojo_renderer_service.get();
+
+  mojo::BindingId binding_id = renderer_bindings_.AddBinding(
+      std::move(mojo_renderer_service), std::move(request));
+
+  // base::Unretained() is safe because the callback will be fired by
+  // |mojo_renderer_service|, which is owned by |renderer_bindings_|.
+  mojo_renderer_service_ptr->set_bad_message_cb(base::BindRepeating(
+      base::IgnoreResult(
+          &mojo::StrongBindingSet<mojom::Renderer>::RemoveBinding),
+      base::Unretained(&renderer_bindings_), binding_id));
+#endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
+}
+#endif
+
+#if defined(OS_ANDROID)
+void InterfaceFactoryImpl::CreateMediaPlayerRenderer(
+    mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
+    mojom::RendererRequest request,
+    mojom::MediaPlayerRendererExtensionRequest renderer_extension_request) {
+  NOTREACHED();
+}
+
+void InterfaceFactoryImpl::CreateFlingingRenderer(
+    const std::string& audio_device_id,
+    mojo::InterfaceRequest<mojom::Renderer> request) {
+  NOTREACHED();
+}
+#endif  // defined(OS_ANDROID)
 
 void InterfaceFactoryImpl::CreateCdm(
     const std::string& /* key_system */,

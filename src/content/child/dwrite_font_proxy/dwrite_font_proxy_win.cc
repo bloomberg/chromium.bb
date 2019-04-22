@@ -9,6 +9,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -73,9 +74,10 @@ void LogFontProxyError(FontProxyError error) {
 
 }  // namespace
 
-HRESULT DWriteFontCollectionProxy::Create(DWriteFontCollectionProxy** proxy_out,
-                                          IDWriteFactory* dwrite_factory,
-                                          mojom::DWriteFontProxyPtrInfo proxy) {
+HRESULT DWriteFontCollectionProxy::Create(
+    DWriteFontCollectionProxy** proxy_out,
+    IDWriteFactory* dwrite_factory,
+    blink::mojom::DWriteFontProxyPtrInfo proxy) {
   return Microsoft::WRL::MakeAndInitialize<DWriteFontCollectionProxy>(
       proxy_out, dwrite_factory, std::move(proxy));
 }
@@ -90,7 +92,7 @@ HRESULT DWriteFontCollectionProxy::FindFamilyName(const WCHAR* family_name,
   DCHECK(family_name);
   DCHECK(index);
   DCHECK(exists);
-  TRACE_EVENT0("dwrite", "FontProxy::FindFamilyName");
+  TRACE_EVENT0("dwrite,fonts", "FontProxy::FindFamilyName");
 
   uint32_t family_index = 0;
   base::string16 name(family_name);
@@ -102,8 +104,7 @@ HRESULT DWriteFontCollectionProxy::FindFamilyName(const WCHAR* family_name,
     return S_OK;
   }
 
-  if (!GetFontProxyScopeWrapper().GetFontProxy().FindFamily(name,
-                                                            &family_index)) {
+  if (!GetFontProxy().FindFamily(name, &family_index)) {
     LogFontProxyError(FIND_FAMILY_SEND_FAILED);
     return E_FAIL;
   }
@@ -144,11 +145,10 @@ UINT32 DWriteFontCollectionProxy::GetFontFamilyCount() {
   if (family_count_ != UINT_MAX)
     return family_count_;
 
-  TRACE_EVENT0("dwrite", "FontProxy::GetFontFamilyCount");
+  TRACE_EVENT0("dwrite,fonts", "FontProxy::GetFontFamilyCount");
 
   uint32_t family_count = 0;
-  if (!GetFontProxyScopeWrapper().GetFontProxy().GetFamilyCount(
-          &family_count)) {
+  if (!GetFontProxy().GetFamilyCount(&family_count)) {
     LogFontProxyError(GET_FAMILY_COUNT_SEND_FAILED);
     return 0;
   }
@@ -185,7 +185,7 @@ HRESULT DWriteFontCollectionProxy::CreateEnumeratorFromKey(
     return E_INVALIDARG;
   }
 
-  TRACE_EVENT0("dwrite", "FontProxy::LoadingFontFiles");
+  TRACE_EVENT0("dwrite,fonts", "FontProxy::LoadingFontFiles");
 
   const uint32_t* family_index =
       reinterpret_cast<const uint32_t*>(collection_key);
@@ -200,8 +200,7 @@ HRESULT DWriteFontCollectionProxy::CreateEnumeratorFromKey(
 
   std::vector<base::FilePath> file_names;
   std::vector<base::File> file_handles;
-  if (!GetFontProxyScopeWrapper().GetFontProxy().GetFontFiles(
-          *family_index, &file_names, &file_handles)) {
+  if (!GetFontProxy().GetFontFiles(*family_index, &file_names, &file_handles)) {
     LogFontProxyError(GET_FONT_FILES_SEND_FAILED);
     return E_FAIL;
   }
@@ -242,7 +241,7 @@ HRESULT DWriteFontCollectionProxy::CreateStreamFromKey(
     return E_FAIL;
   }
 
-  TRACE_EVENT0("dwrite", "FontFileEnumerator::CreateStreamFromKey");
+  TRACE_EVENT0("dwrite,fonts", "FontFileEnumerator::CreateStreamFromKey");
 
   HANDLE file_handle =
       *reinterpret_cast<const HANDLE*>(font_file_reference_key);
@@ -264,7 +263,7 @@ HRESULT DWriteFontCollectionProxy::CreateStreamFromKey(
 
 HRESULT DWriteFontCollectionProxy::RuntimeClassInitialize(
     IDWriteFactory* factory,
-    mojom::DWriteFontProxyPtrInfo proxy) {
+    blink::mojom::DWriteFontProxyPtrInfo proxy) {
   DCHECK(factory);
 
   factory_ = factory;
@@ -288,7 +287,7 @@ void DWriteFontCollectionProxy::Unregister() {
 bool DWriteFontCollectionProxy::LoadFamily(
     UINT32 family_index,
     IDWriteFontCollection** containing_collection) {
-  TRACE_EVENT0("dwrite", "FontProxy::LoadFamily");
+  TRACE_EVENT0("dwrite,fonts", "FontProxy::LoadFamily");
 
   uint32_t index = family_index;
   // CreateCustomFontCollection ends up calling
@@ -319,11 +318,10 @@ bool DWriteFontCollectionProxy::GetFontFamily(UINT32 family_index,
 bool DWriteFontCollectionProxy::LoadFamilyNames(
     UINT32 family_index,
     IDWriteLocalizedStrings** localized_strings) {
-  TRACE_EVENT0("dwrite", "FontProxy::LoadFamilyNames");
+  TRACE_EVENT0("dwrite,fonts", "FontProxy::LoadFamilyNames");
 
-  std::vector<mojom::DWriteStringPairPtr> pairs;
-  if (!GetFontProxyScopeWrapper().GetFontProxy().GetFamilyNames(family_index,
-                                                                &pairs)) {
+  std::vector<blink::mojom::DWriteStringPairPtr> pairs;
+  if (!GetFontProxy().GetFamilyNames(family_index, &pairs)) {
     return false;
   }
   std::vector<std::pair<base::string16, base::string16>> strings;
@@ -359,22 +357,23 @@ bool DWriteFontCollectionProxy::CreateFamily(UINT32 family_index) {
   return true;
 }
 
-void DWriteFontCollectionProxy::SetProxy(mojom::DWriteFontProxyPtrInfo proxy) {
-  font_proxy_ = mojom::ThreadSafeDWriteFontProxyPtr::Create(
+void DWriteFontCollectionProxy::SetProxy(
+    blink::mojom::DWriteFontProxyPtrInfo proxy) {
+  font_proxy_ = blink::mojom::ThreadSafeDWriteFontProxyPtr::Create(
       std::move(proxy), base::CreateSequencedTaskRunnerWithTraits(
                             {base::WithBaseSyncPrimitives()}));
 }
 
-FontProxyScopeWrapper DWriteFontCollectionProxy::GetFontProxyScopeWrapper() {
+blink::mojom::DWriteFontProxy& DWriteFontCollectionProxy::GetFontProxy() {
   if (!font_proxy_) {
-    mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
+    blink::mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
     if (main_task_runner_->RunsTasksInCurrentSequence()) {
       ChildThread::Get()->GetConnector()->BindInterface(
           mojom::kBrowserServiceName, mojo::MakeRequest(&dwrite_font_proxy));
     } else {
       main_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(
-                         [](mojom::DWriteFontProxyRequest request) {
+                         [](blink::mojom::DWriteFontProxyRequest request) {
                            ChildThread::Get()->GetConnector()->BindInterface(
                                mojom::kBrowserServiceName, std::move(request));
                          },
@@ -382,10 +381,7 @@ FontProxyScopeWrapper DWriteFontCollectionProxy::GetFontProxyScopeWrapper() {
     }
     SetProxy(std::move(dwrite_font_proxy));
   }
-  static base::NoDestructor<base::ThreadLocalBoolean>
-      font_proxy_method_in_flight;
-  return FontProxyScopeWrapper(font_proxy_.get(),
-                               font_proxy_method_in_flight.get());
+  return **font_proxy_;
 }
 
 DWriteFontFamilyProxy::DWriteFontFamilyProxy() = default;
@@ -438,7 +434,7 @@ HRESULT DWriteFontFamilyProxy::GetFamilyNames(IDWriteLocalizedStrings** names) {
     return S_OK;
   }
 
-  TRACE_EVENT0("dwrite", "FontProxy::GetFamilyNames");
+  TRACE_EVENT0("dwrite,fonts", "FontProxy::GetFamilyNames");
 
   // Otherwise, do the IPC.
   if (!proxy_collection_->LoadFamilyNames(family_index_, &family_names_))
@@ -517,6 +513,7 @@ bool DWriteFontFamilyProxy::LoadFamily() {
     return true;
 
   SCOPED_UMA_HISTOGRAM_TIMER("DirectWrite.Fonts.Proxy.LoadFamilyTime");
+  TRACE_EVENT0("dwrite,fonts", "DWriteFontFamilyProxy::LoadFamily");
 
   auto* font_key_name = base::debug::AllocateCrashKeyString(
       "font_key_name", base::debug::CrashKeySize::Size32);
@@ -573,7 +570,7 @@ HRESULT FontFileEnumerator::GetCurrentFontFile(IDWriteFontFile** file) {
     return E_FAIL;
   }
 
-  TRACE_EVENT0("dwrite", "FontFileEnumerator::GetCurrentFontFile");
+  TRACE_EVENT0("dwrite,fonts", "FontFileEnumerator::GetCurrentFontFile");
 
   // CreateCustomFontFileReference ends up calling
   // DWriteFontCollectionProxy::CreateStreamFromKey.
@@ -588,7 +585,7 @@ HRESULT FontFileEnumerator::GetCurrentFontFile(IDWriteFontFile** file) {
 HRESULT FontFileEnumerator::MoveNext(BOOL* has_current_file) {
   DCHECK(has_current_file);
 
-  TRACE_EVENT0("dwrite", "FontFileEnumerator::MoveNext");
+  TRACE_EVENT0("dwrite,fonts", "FontFileEnumerator::MoveNext");
   if (next_file_ >= files_.size()) {
     *has_current_file = FALSE;
     current_file_ = UINT_MAX;

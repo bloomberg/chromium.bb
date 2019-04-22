@@ -39,55 +39,21 @@
 
 namespace blink {
 
-void FontPlatformData::SetupSkPaint(SkPaint* font, float, const Font*) const {
-  font->setTextSize(SkFloatToScalar(text_size_));
-  font->setTypeface(typeface_);
-  font->setFakeBoldText(synthetic_bold_);
-  font->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
-
-  uint32_t text_flags = PaintTextFlags();
-  uint32_t flags = font->getFlags();
-  static const uint32_t kTextFlagsMask =
-      SkPaint::kAntiAlias_Flag | SkPaint::kLCDRenderText_Flag |
-      SkPaint::kEmbeddedBitmapText_Flag | SkPaint::kSubpixelText_Flag;
-  flags &= ~kTextFlagsMask;
-
-  // Only use sub-pixel positioning if anti aliasing is enabled. Otherwise,
-  // without font smoothing, subpixel text positioning leads to uneven spacing
-  // since subpixel test placement coordinates would be passed to Skia, which
-  // only has non-antialiased glyphs to draw, so they necessarily get clamped at
-  // pixel positions, which leads to uneven spacing, either too close or too far
-  // away from adjacent glyphs. We avoid this by linking the two flags.
-  if (text_flags & SkPaint::kAntiAlias_Flag)
-    flags |= SkPaint::kSubpixelText_Flag;
-
-  if (WebTestSupport::IsRunningWebTest() &&
-      !WebTestSupport::IsTextSubpixelPositioningAllowedForTest())
-    flags &= ~SkPaint::kSubpixelText_Flag;
-
-  SkASSERT(!(text_flags & ~kTextFlagsMask));
-  flags |= text_flags;
-
-  font->setFlags(flags);
-
-  font->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
-}
-
 void FontPlatformData::SetupSkFont(SkFont* font, float, const Font*) const {
   font->setSize(SkFloatToScalar(text_size_));
   font->setTypeface(typeface_);
   font->setEmbolden(synthetic_bold_);
   font->setSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
-  uint32_t text_flags = PaintTextFlags();
-  if (text_flags & SkPaint::kLCDRenderText_Flag) {
+  uint32_t font_flags = FontFlags();
+  if (font_flags & kSubpixelsAntiAlias) {
     font->setEdging(SkFont::Edging::kSubpixelAntiAlias);
-  } else if (text_flags & SkPaint::kAntiAlias_Flag) {
+  } else if (font_flags & kAntiAlias) {
     font->setEdging(SkFont::Edging::kAntiAlias);
   } else {
     font->setEdging(SkFont::Edging::kAlias);
   }
-  font->setSubpixel(SkToBool(text_flags & SkPaint::kSubpixelText_Flag));
+  font->setSubpixel(SkToBool(font_flags & kSubpixelMetrics));
 
   // Only use sub-pixel positioning if anti aliasing is enabled. Otherwise,
   // without font smoothing, subpixel text positioning leads to uneven spacing
@@ -95,7 +61,7 @@ void FontPlatformData::SetupSkFont(SkFont* font, float, const Font*) const {
   // only has non-antialiased glyphs to draw, so they necessarily get clamped at
   // pixel positions, which leads to uneven spacing, either too close or too far
   // away from adjacent glyphs. We avoid this by linking the two flags.
-  if (text_flags & SkPaint::kAntiAlias_Flag)
+  if (font_flags & kAntiAlias)
     font->setSubpixel(true);
 
   if (WebTestSupport::IsRunningWebTest() &&
@@ -113,18 +79,18 @@ static bool IsWebFont(const String& family_name) {
          '=' == family_name[23];
 }
 
-static int ComputePaintTextFlags(String font_family_name) {
+static int ComputeFontFlags(String font_family_name) {
   if (WebTestSupport::IsRunningWebTest())
     return WebTestSupport::IsFontAntialiasingEnabledForTest()
-               ? SkPaint::kAntiAlias_Flag
+               ? FontPlatformData::kAntiAlias
                : 0;
 
-  int text_flags = 0;
+  int font_flags = 0;
   if (FontCache::GetFontCache()->AntialiasedTextEnabled()) {
     int lcd_flag = FontCache::GetFontCache()->LcdTextEnabled()
-                       ? SkPaint::kLCDRenderText_Flag
+                       ? FontPlatformData::kSubpixelsAntiAlias
                        : 0;
-    text_flags = SkPaint::kAntiAlias_Flag | lcd_flag;
+    font_flags = FontPlatformData::kAntiAlias | lcd_flag;
   }
 
   // Many web-fonts are so poorly hinted that they are terrible to read when
@@ -132,13 +98,13 @@ static int ComputePaintTextFlags(String font_family_name) {
   // drawn with at least grayscale AA, even when the System (getSystemTextFlags)
   // tells us to draw only in BW.
   if (IsWebFont(font_family_name))
-    text_flags |= SkPaint::kAntiAlias_Flag;
+    font_flags |= FontPlatformData::kAntiAlias;
 
-  return text_flags;
+  return font_flags;
 }
 
 void FontPlatformData::QuerySystemForRenderStyle() {
-  paint_text_flags_ = ComputePaintTextFlags(FontFamilyName());
+  font_flags_ = ComputeFontFlags(FontFamilyName());
 }
 
 }  // namespace blink

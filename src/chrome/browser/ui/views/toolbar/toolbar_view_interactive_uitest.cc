@@ -6,12 +6,11 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -21,8 +20,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
@@ -36,129 +37,109 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
+#else
+#include "base/threading/thread_task_runner_handle.h"
+#endif
+
 using bookmarks::BookmarkModel;
 
-class ToolbarViewInteractiveUITest : public extensions::ExtensionBrowserTest {
+class ToolbarViewInteractiveUITest : public AppMenuButtonObserver,
+                                     public extensions::ExtensionBrowserTest,
+                                     public views::WidgetObserver {
  public:
-  ToolbarViewInteractiveUITest();
-  ~ToolbarViewInteractiveUITest() override;
+  ToolbarViewInteractiveUITest() = default;
+  ~ToolbarViewInteractiveUITest() override = default;
+
+  // AppMenuButtonObserver:
+  void AppMenuShown() override;
+
+  // views::WidgetObserver:
+  void OnWidgetDragWillStart(views::Widget* widget) override;
+  void OnWidgetDragComplete(views::Widget* widget) override;
+
+  // Starts a drag to the app menu button.
+  void StartDrag();
 
  protected:
-  ToolbarView* toolbar_view() { return toolbar_view_; }
-  BrowserActionsContainer* browser_actions() { return browser_actions_; }
-
-  // Performs a drag-and-drop operation by moving the mouse to |start|, clicking
-  // the left button, moving the mouse to |end|, and releasing the left button.
-  // TestWhileInDragOperation() is called after the mouse has moved to |end|,
-  // but before the click is released.
-  void DoDragAndDrop(const gfx::Point& start, const gfx::Point& end);
-
-  // A function to perform testing actions while in the drag operation from
-  // DoDragAndDrop.
-  void TestWhileInDragOperation();
+  AppMenuButton* GetAppMenuButton() {
+    return BrowserView::GetBrowserViewForBrowser(browser())
+        ->toolbar_button_provider()
+        ->GetAppMenuButton();
+  }
+  BrowserActionsContainer* GetBrowserActions() {
+    return BrowserView::GetBrowserViewForBrowser(browser())
+        ->toolbar_button_provider()
+        ->GetBrowserActionsContainer();
+  }
+  void set_task_runner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    task_runner_ = task_runner;
+  }
+  void set_quit_closure(base::OnceClosure quit_closure) {
+    quit_closure_ = std::move(quit_closure);
+  }
+  bool menu_shown() const { return menu_shown_; }
 
  private:
-  // Finishes the drag-and-drop operation started in DoDragAndDrop().
-  void FinishDragAndDrop(base::Closure quit_closure);
-
   // InProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
-  void TearDownOnMainThread() override;
 
-  ToolbarView* toolbar_view_;
-
-  BrowserActionsContainer* browser_actions_;
-
-  // The drag-and-drop background thread.
-  std::unique_ptr<base::Thread> dnd_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  bool menu_shown_ = false;
+  base::OnceClosure quit_closure_;
 };
 
-ToolbarViewInteractiveUITest::ToolbarViewInteractiveUITest()
-    : toolbar_view_(NULL),
-      browser_actions_(NULL) {
-}
+void ToolbarViewInteractiveUITest::AppMenuShown() {
+  menu_shown_ = true;
 
-ToolbarViewInteractiveUITest::~ToolbarViewInteractiveUITest() {
-}
-
-void ToolbarViewInteractiveUITest::DoDragAndDrop(const gfx::Point& start,
-                                                 const gfx::Point& end) {
-  // Much of this function is modeled after methods in ViewEventTestBase (in
-  // particular, the |dnd_thread_|, but it's easier to move that here than try
-  // to make ViewEventTestBase play nice with a BrowserView (for the toolbar).
-  // TODO(devlin): In a perfect world, this would be factored better.
-
-  // Send the mouse to |start|, and click.
-  ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(start));
-  ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
-                  ui_controls::LEFT, ui_controls::DOWN));
-
-  scoped_refptr<content::MessageLoopRunner> runner =
-      new content::MessageLoopRunner();
-
-  ui_controls::SendMouseMoveNotifyWhenDone(
-      end.x() + 10, end.y(),
-      base::BindOnce(&ToolbarViewInteractiveUITest::FinishDragAndDrop,
-                     base::Unretained(this), runner->QuitClosure()));
-
-  // Also post a move task to the drag and drop thread.
-  if (!dnd_thread_.get()) {
-    dnd_thread_.reset(new base::Thread("mouse_move_thread"));
-    dnd_thread_->Start();
-  }
-
-  dnd_thread_->task_runner()->PostDelayedTask(
+  // Release the mouse button, which should result in calling
+  // OnWidgetDragComplete().
+  task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseMove), end.x(),
-                     end.y()),
-      base::TimeDelta::FromMilliseconds(200));
-  runner->Run();
-
-  // The app menu should have closed once the drag-and-drop completed.
-  EXPECT_FALSE(toolbar_view()->app_menu_button()->IsMenuShowing());
+      base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseEvents),
+                     ui_controls::LEFT, ui_controls::UP,
+                     ui_controls::kNoAccelerator));
 }
 
-void ToolbarViewInteractiveUITest::TestWhileInDragOperation() {
-  EXPECT_TRUE(toolbar_view()->app_menu_button()->IsMenuShowing());
+void ToolbarViewInteractiveUITest::OnWidgetDragWillStart(
+    views::Widget* widget) {
+  // Enqueue an event to move the mouse to the app menu button, which should
+  // result in calling AppMenuShown().
+  const gfx::Point target =
+      ui_test_utils::GetCenterInScreenCoordinates(GetAppMenuButton());
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseMove),
+                                target.x(), target.y()));
 }
 
-void ToolbarViewInteractiveUITest::FinishDragAndDrop(
-    base::Closure quit_closure) {
-  base::ScopedAllowBlockingForTesting allow_thread_join;
-  dnd_thread_.reset();
-  TestWhileInDragOperation();
-  ui_controls::SendMouseEventsNotifyWhenDone(ui_controls::LEFT, ui_controls::UP,
-                                             quit_closure);
+void ToolbarViewInteractiveUITest::OnWidgetDragComplete(views::Widget* widget) {
+  // Return control to the testcase.
+  std::move(quit_closure_).Run();
 }
 
-void ToolbarViewInteractiveUITest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-  ToolbarActionsBar::disable_animations_for_testing_ = true;
-  BrowserAppMenuButton::g_open_app_immediately_for_testing = true;
+void ToolbarViewInteractiveUITest::StartDrag() {
+  // Move the mouse outside the toolbar action, which should result in calling
+  // OnWidgetDragWillStart().
+  const views::View* toolbar_action =
+      GetBrowserActions()->GetToolbarActionViewAt(0);
+  gfx::Point target(toolbar_action->width() + 1, toolbar_action->height() / 2);
+  views::View::ConvertPointToScreen(toolbar_action, &target);
+  EXPECT_TRUE(ui_controls::SendMouseMove(target.x(), target.y()));
 }
 
 void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
   extensions::ExtensionBrowserTest::SetUpOnMainThread();
-  ExtensionToolbarMenuView::set_close_menu_delay_for_testing(0);
 
-  toolbar_view_ = BrowserView::GetBrowserViewForBrowser(browser())->toolbar();
-  browser_actions_ = toolbar_view_->browser_actions();
+  BrowserAppMenuButton::g_open_app_immediately_for_testing = true;
+  ExtensionToolbarMenuView::set_close_menu_delay_for_testing(base::TimeDelta());
+  ToolbarActionsBar::disable_animations_for_testing_ = true;
 }
 
-void ToolbarViewInteractiveUITest::TearDownOnMainThread() {
-  ToolbarActionsBar::disable_animations_for_testing_ = false;
-  BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
-}
-
-// Borrowed from chrome/browser/ui/views/bookmarks/bookmark_bar_view_test.cc,
-// since these are also disabled on Linux for drag and drop.
-// TODO(erg): Fix DND tests on linux_aura. crbug.com/163931
-#if defined(OS_LINUX) && defined(USE_AURA)
-#define MAYBE_TestAppMenuOpensOnDrag DISABLED_TestAppMenuOpensOnDrag
-#elif defined(OS_MACOSX)
-// Illegal thread join on the UI thread, may fix above: http://crbug.com/824570
+// TODO(pkasting): https://crbug.com/939621 Fails on Mac.
+#if defined(OS_MACOSX)
 #define MAYBE_TestAppMenuOpensOnDrag DISABLED_TestAppMenuOpensOnDrag
 #else
 #define MAYBE_TestAppMenuOpensOnDrag TestAppMenuOpensOnDrag
@@ -169,21 +150,56 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")
                                           .AppendASCII("basics")));
-  base::RunLoop().RunUntilIdle();  // Ensure the extension is fully loaded.
+  // Ensure the extension is fully loaded, and that the next steps will happen
+  // with a clean slate.
+  base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(1u, browser_actions()->VisibleBrowserActions());
+  // Set up observers that will drive the test along.
+  AppMenuButton* const app_menu_button = GetAppMenuButton();
+  EXPECT_FALSE(app_menu_button->IsMenuShowing());
+  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer(this);
+  widget_observer.Add(
+      BrowserView::GetBrowserViewForBrowser(browser())->GetWidget());
+  ScopedObserver<AppMenuButton, AppMenuButtonObserver> button_observer(this);
+  button_observer.Add(app_menu_button);
 
-  ToolbarActionView* view = browser_actions()->GetToolbarActionViewAt(0);
-  ASSERT_TRUE(view);
+  // Set up the task runner to use for posting drag actions.
+  // TODO(devlin): This is basically ViewEventTestBase::GetDragTaskRunner().  In
+  // a perfect world, this would be factored better.
+#if defined(OS_WIN)
+  // Drag events must be posted from a background thread, since starting a drag
+  // triggers a nested message loop that filters messages other than mouse
+  // events, so further tasks on the main message loop will be blocked.
+  base::ScopedAllowBaseSyncPrimitivesForTesting allow_thread_join;
+  base::Thread drag_event_thread("drag-event-thread");
+  drag_event_thread.Start();
+  set_task_runner(drag_event_thread.task_runner());
+#else
+  // Drag events must be posted from the current thread, since UI events on many
+  // platforms cannot be posted from background threads.  The nested drag
+  // message loop on non-Windows does not filter out non-input events, so these
+  // tasks will run.
+  set_task_runner(base::ThreadTaskRunnerHandle::Get());
+#endif
 
-  gfx::Point browser_action_view_loc =
-      ui_test_utils::GetCenterInScreenCoordinates(view);
-  gfx::Point app_button_loc = ui_test_utils::GetCenterInScreenCoordinates(
-      toolbar_view()->app_menu_button());
+  // Click on the toolbar action.
+  BrowserActionsContainer* const browser_actions = GetBrowserActions();
+  ASSERT_EQ(1u, browser_actions->VisibleBrowserActions());
+  ToolbarActionView* toolbar_action =
+      browser_actions->GetToolbarActionViewAt(0);
+  ASSERT_TRUE(toolbar_action);
+  ui_test_utils::MoveMouseToCenterAndPress(
+      toolbar_action, ui_controls::LEFT, ui_controls::DOWN,
+      base::BindRepeating(&ToolbarViewInteractiveUITest::StartDrag,
+                          base::Unretained(this)));
+  base::RunLoop run_loop;
+  set_quit_closure(run_loop.QuitWhenIdleClosure());
+  run_loop.Run();
 
-  // Perform a drag and drop from the browser action view to the app button,
-  // which should open the app menu.
-  DoDragAndDrop(browser_action_view_loc, app_button_loc);
+  // Verify postconditions.
+  EXPECT_TRUE(menu_shown());
+  // The app menu should have closed once the drag-and-drop completed.
+  EXPECT_FALSE(app_menu_button->IsMenuShowing());
 }
 
 class ToolbarViewTest : public InProcessBrowserTest {
@@ -199,17 +215,18 @@ class ToolbarViewTest : public InProcessBrowserTest {
 void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
   gfx::NativeWindow window = browser->window()->GetNativeWindow();
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-  views::FocusManager* focus_manager = widget->GetFocusManager();
-  CommandUpdater* updater = browser->command_controller();
-
-  // Send focus to the toolbar as if the user pressed Alt+Shift+T.
-  updater->ExecuteCommand(IDC_FOCUS_TOOLBAR);
 
   // Test relies on browser window activation, while platform such as Linux's
   // window activation is asynchronous.
   views::test::WidgetActivationWaiter waiter(widget, true);
   waiter.Wait();
 
+  // Send focus to the toolbar as if the user pressed Alt+Shift+T. This should
+  // happen after the browser window activation.
+  CommandUpdater* updater = browser->command_controller();
+  updater->ExecuteCommand(IDC_FOCUS_TOOLBAR);
+
+  views::FocusManager* focus_manager = widget->GetFocusManager();
   views::View* first_view = focus_manager->GetFocusedView();
   std::vector<int> ids;
 
@@ -307,6 +324,6 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest, BackButtonUpdate) {
   auto& controller =
       browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   controller.DeleteNavigationEntries(base::BindRepeating(
-      [&](const content::NavigationEntry& entry) { return true; }));
+      [&](content::NavigationEntry* entry) { return true; }));
   EXPECT_FALSE(toolbar->back_button()->enabled());
 }

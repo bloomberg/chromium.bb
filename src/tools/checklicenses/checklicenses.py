@@ -168,12 +168,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
-    # TODO(tkent): Remove this entry after the move is completed.
-    # crbug.com/622551
-    'third_party/WebKit': [
-        'UNKNOWN',
-    ],
-
     # https://bugs.chromium.org/p/swiftshader/issues/detail?id=1
     'third_party/swiftshader': [
         'UNKNOWN',

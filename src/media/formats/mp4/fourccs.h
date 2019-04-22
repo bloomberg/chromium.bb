@@ -8,7 +8,6 @@
 #include <string>
 
 #include "media/media_buildflags.h"
-#include "third_party/libaom/av1_buildflags.h"
 
 namespace media {
 namespace mp4 {
@@ -60,6 +59,7 @@ enum FourCC {
   FOURCC_HVC1 = 0x68766331,
   FOURCC_HVCC = 0x68766343,
 #endif
+  FOURCC_ID32 = 0x49443332,
   FOURCC_IODS = 0x696f6473,
   FOURCC_MDAT = 0x6d646174,
   FOURCC_MDHD = 0x6d646864,

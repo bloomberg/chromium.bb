@@ -17,7 +17,8 @@ namespace blink {
 
 class FontBuilderTest {
  public:
-  FontBuilderTest() : dummy_(DummyPageHolder::Create(IntSize(800, 600))) {
+  FontBuilderTest()
+      : dummy_(std::make_unique<DummyPageHolder>(IntSize(800, 600))) {
     GetSettings().SetDefaultFontSize(16.0f);
   }
 
@@ -190,7 +191,7 @@ static void FontScriptValue(FontBuilder& b) {
   b.SetLocale(LayoutLocale::Get("se"));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AllFields,
     FontBuilderAdditiveTest,
     testing::Values(

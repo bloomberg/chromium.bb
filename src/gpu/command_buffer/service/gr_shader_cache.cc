@@ -4,6 +4,12 @@
 
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 
+#include <inttypes.h>
+
+#include "base/base64.h"
+#include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 
 namespace gpu {
@@ -23,9 +29,17 @@ sk_sp<SkData> MakeData(const std::string& str) {
 GrShaderCache::GrShaderCache(size_t max_cache_size_bytes, Client* client)
     : cache_size_limit_(max_cache_size_bytes),
       store_(Store::NO_AUTO_EVICT),
-      client_(client) {}
+      client_(client) {
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "GrShaderCache", base::ThreadTaskRunnerHandle::Get());
+  }
+}
 
-GrShaderCache::~GrShaderCache() = default;
+GrShaderCache::~GrShaderCache() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
+}
 
 sk_sp<SkData> GrShaderCache::load(const SkData& key) {
   TRACE_EVENT0("gpu", "GrShaderCache::load");
@@ -64,6 +78,7 @@ void GrShaderCache::store(const SkData& key, const SkData& data) {
 
 void GrShaderCache::PopulateCache(const std::string& key,
                                   const std::string& data) {
+  TRACE_EVENT0("gpu", "GrShaderCache::PopulateCache");
   if (data.length() > cache_size_limit_)
     return;
 
@@ -72,7 +87,9 @@ void GrShaderCache::PopulateCache(const std::string& key,
   // If we already have this in the cache, skia may have populated it before it
   // was loaded off the disk cache. Its better to keep the latest version
   // generated version than overwriting it here.
-  CacheKey cache_key(MakeData(key));
+  std::string decoded_key;
+  base::Base64Decode(key, &decoded_key);
+  CacheKey cache_key(MakeData(decoded_key));
   if (store_.Get(cache_key) != store_.end())
     return;
 
@@ -124,6 +141,19 @@ void GrShaderCache::PurgeMemory(
   cache_size_limit_ = original_limit;
 }
 
+bool GrShaderCache::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                                 base::trace_event::ProcessMemoryDump* pmd) {
+  using base::trace_event::MemoryAllocatorDump;
+  std::string dump_name =
+      base::StringPrintf("gpu/gr_shader_cache/cache_0x%" PRIXPTR,
+                         reinterpret_cast<uintptr_t>(this));
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+  dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                  MemoryAllocatorDump::kUnitsBytes, curr_size_bytes_);
+
+  return true;
+}
+
 void GrShaderCache::WriteToDisk(const CacheKey& key, CacheData* data) {
   DCHECK_NE(current_client_id_, kInvalidClientId);
 
@@ -135,8 +165,10 @@ void GrShaderCache::WriteToDisk(const CacheKey& key, CacheData* data) {
     return;
 
   data->pending_disk_write = false;
-  client_->StoreShader(MakeString(key.data.get()),
-                       MakeString(data->data.get()));
+
+  std::string encoded_key;
+  base::Base64Encode(MakeString(key.data.get()), &encoded_key);
+  client_->StoreShader(encoded_key, MakeString(data->data.get()));
 }
 
 void GrShaderCache::EnforceLimits(size_t size_needed) {
@@ -149,6 +181,9 @@ void GrShaderCache::EnforceLimits(size_t size_needed) {
 GrShaderCache::ScopedCacheUse::ScopedCacheUse(GrShaderCache* cache,
                                               int32_t client_id)
     : cache_(cache) {
+  DCHECK_EQ(cache_->current_client_id_, kInvalidClientId);
+  DCHECK_NE(client_id, kInvalidClientId);
+
   cache_->current_client_id_ = client_id;
 }
 

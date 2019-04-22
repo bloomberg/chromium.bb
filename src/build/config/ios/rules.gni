@@ -297,7 +297,6 @@ template("create_signed_bundle") {
     bundle_contents_dir = bundle_root_dir
     bundle_resources_dir = bundle_contents_dir
     bundle_executable_dir = bundle_contents_dir
-    bundle_plugins_dir = "$bundle_contents_dir/PlugIns"
 
     if (!defined(public_deps)) {
       public_deps = []
@@ -1757,7 +1756,7 @@ template("ios_xctest_bundle") {
         "$root_out_dir/$_output_name.xctest",
       ]
       outputs = [
-        "{{bundle_plugins_dir}}/$_output_name.xctest",
+        "{{bundle_contents_dir}}/PlugIns/$_output_name.xctest",
       ]
     }
   }
@@ -1827,19 +1826,10 @@ template("ios_xctest_test") {
     # Xcode needs those two framework installed in the application (and signed)
     # for the XCTest to run, so install them using extra_system_frameworks.
     _ios_platform_library = "$ios_sdk_platform_path/Developer/Library"
-    extra_system_frameworks =
-        [ "$_ios_platform_library/Frameworks/XCTest.framework" ]
-
-    # TODO: Remove this once support for Xcode 9.x is dropped.
-    if (xcode_version_int >= 1000) {
-      extra_system_frameworks += [
-        "$ios_sdk_platform_path/Developer/usr/lib/libXCTestBundleInject.dylib",
-      ]
-    } else {
-      extra_system_frameworks += [
-        "$_ios_platform_library/PrivateFrameworks/IDEBundleInjection.framework",
-      ]
-    }
+    extra_system_frameworks = [
+      "$_ios_platform_library/Frameworks/XCTest.framework",
+      "$ios_sdk_platform_path/Developer/usr/lib/libXCTestBundleInject.dylib",
+    ]
 
     _xctest_bundle = _xctest_target + "_bundle"
     if (current_toolchain == default_toolchain) {
@@ -1988,7 +1978,11 @@ template("ios_xcuitest_test_runner_bundle") {
       "$ios_sdk_platform_path/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework",
     ]
 
-    bundle_deps = [
+    bundle_deps = []
+    if (defined(invoker.bundle_deps)) {
+      bundle_deps += invoker.bundle_deps
+    }
+    bundle_deps += [
       ":$_info_plist_bundle",
       ":$_pkginfo_bundle",
       ":$_xctest_bundle",
@@ -2044,6 +2038,7 @@ template("ios_xcuitest_test") {
   ios_xcuitest_test_runner_bundle(_xcuitest_runner_target) {
     output_name = _xcuitest_runner_output
     xctest_bundle = _xcuitest_module_target + "_bundle"
+    forward_variables_from(invoker, [ "bundle_deps" ])
   }
 }
 

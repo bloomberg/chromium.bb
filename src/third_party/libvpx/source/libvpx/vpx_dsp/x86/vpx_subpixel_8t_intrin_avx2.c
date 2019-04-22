@@ -18,15 +18,15 @@
 #include "vpx_ports/mem.h"
 
 // filters for 16_h8
-DECLARE_ALIGNED(32, static const uint8_t, filt1_global_avx2[32]) = {
-  0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8,
-  0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8
-};
+DECLARE_ALIGNED(32, static const uint8_t,
+                filt1_global_avx2[32]) = { 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5,
+                                           6, 6, 7, 7, 8, 0, 1, 1, 2, 2, 3,
+                                           3, 4, 4, 5, 5, 6, 6, 7, 7, 8 };
 
-DECLARE_ALIGNED(32, static const uint8_t, filt2_global_avx2[32]) = {
-  2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10,
-  2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10
-};
+DECLARE_ALIGNED(32, static const uint8_t,
+                filt2_global_avx2[32]) = { 2, 3, 3, 4, 4,  5, 5, 6, 6, 7, 7,
+                                           8, 8, 9, 9, 10, 2, 3, 3, 4, 4, 5,
+                                           5, 6, 6, 7, 7,  8, 8, 9, 9, 10 };
 
 DECLARE_ALIGNED(32, static const uint8_t, filt3_global_avx2[32]) = {
   4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12,
@@ -328,9 +328,10 @@ static void vpx_filter_block1d16_v8_avg_avx2(
                                  height, filter, 1);
 }
 
-void vpx_filter_block1d16_h4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
-                                  uint8_t *dst_ptr, ptrdiff_t dst_stride,
-                                  uint32_t height, const int16_t *kernel) {
+static void vpx_filter_block1d16_h4_avx2(const uint8_t *src_ptr,
+                                         ptrdiff_t src_stride, uint8_t *dst_ptr,
+                                         ptrdiff_t dst_stride, uint32_t height,
+                                         const int16_t *kernel) {
   // We will cast the kernel from 16-bit words to 8-bit words, and then extract
   // the middle four elements of the kernel into two registers in the form
   // ... k[3] k[2] k[3] k[2]
@@ -432,9 +433,10 @@ void vpx_filter_block1d16_h4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
   }
 }
 
-void vpx_filter_block1d16_v4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
-                                  uint8_t *dst_ptr, ptrdiff_t dst_stride,
-                                  uint32_t height, const int16_t *kernel) {
+static void vpx_filter_block1d16_v4_avx2(const uint8_t *src_ptr,
+                                         ptrdiff_t src_stride, uint8_t *dst_ptr,
+                                         ptrdiff_t dst_stride, uint32_t height,
+                                         const int16_t *kernel) {
   // We will load two rows of pixels as 8-bit words, rearrange them into the
   // form
   // ... s[1,0] s[0,0] s[0,0] s[-1,0]
@@ -461,10 +463,6 @@ void vpx_filter_block1d16_v4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
   const ptrdiff_t src_stride_unrolled = src_stride << 1;
   const ptrdiff_t dst_stride_unrolled = dst_stride << 1;
   int h;
-
-  // We only need to go num_taps/2 - 1 row above the souce, so we move
-  // 3 - (num_taps/2 - 1) = 4 - num_taps/2 = 2 back down
-  src_ptr += src_stride_unrolled;
 
   // Load Kernel
   kernel_reg = _mm_loadu_si128((const __m128i *)kernel);
@@ -537,9 +535,10 @@ void vpx_filter_block1d16_v4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
   }
 }
 
-void vpx_filter_block1d8_h4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
-                                 uint8_t *dst_ptr, ptrdiff_t dst_stride,
-                                 uint32_t height, const int16_t *kernel) {
+static void vpx_filter_block1d8_h4_avx2(const uint8_t *src_ptr,
+                                        ptrdiff_t src_stride, uint8_t *dst_ptr,
+                                        ptrdiff_t dst_stride, uint32_t height,
+                                        const int16_t *kernel) {
   // We will cast the kernel from 16-bit words to 8-bit words, and then extract
   // the middle four elements of the kernel into two registers in the form
   // ... k[3] k[2] k[3] k[2]
@@ -631,9 +630,10 @@ void vpx_filter_block1d8_h4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
   }
 }
 
-void vpx_filter_block1d8_v4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
-                                 uint8_t *dst_ptr, ptrdiff_t dst_stride,
-                                 uint32_t height, const int16_t *kernel) {
+static void vpx_filter_block1d8_v4_avx2(const uint8_t *src_ptr,
+                                        ptrdiff_t src_stride, uint8_t *dst_ptr,
+                                        ptrdiff_t dst_stride, uint32_t height,
+                                        const int16_t *kernel) {
   // We will load two rows of pixels as 8-bit words, rearrange them into the
   // form
   // ... s[1,0] s[0,0] s[0,0] s[-1,0]
@@ -660,10 +660,6 @@ void vpx_filter_block1d8_v4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
   const ptrdiff_t src_stride_unrolled = src_stride << 1;
   const ptrdiff_t dst_stride_unrolled = dst_stride << 1;
   int h;
-
-  // We only need to go num_taps/2 - 1 row above the souce, so we move
-  // 3 - (num_taps/2 - 1) = 4 - num_taps/2 = 2 back down
-  src_ptr += src_stride_unrolled;
 
   // Load Kernel
   kernel_reg_128 = _mm_loadu_si128((const __m128i *)kernel);
@@ -725,9 +721,10 @@ void vpx_filter_block1d8_v4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
   }
 }
 
-void vpx_filter_block1d4_h4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
-                                 uint8_t *dst_ptr, ptrdiff_t dst_stride,
-                                 uint32_t height, const int16_t *kernel) {
+static void vpx_filter_block1d4_h4_avx2(const uint8_t *src_ptr,
+                                        ptrdiff_t src_stride, uint8_t *dst_ptr,
+                                        ptrdiff_t dst_stride, uint32_t height,
+                                        const int16_t *kernel) {
   // We will cast the kernel from 16-bit words to 8-bit words, and then extract
   // the middle four elements of the kernel into a single register in the form
   // k[5:2] k[5:2] k[5:2] k[5:2]
@@ -805,9 +802,10 @@ void vpx_filter_block1d4_h4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
   }
 }
 
-void vpx_filter_block1d4_v4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
-                                 uint8_t *dst_ptr, ptrdiff_t dst_stride,
-                                 uint32_t height, const int16_t *kernel) {
+static void vpx_filter_block1d4_v4_avx2(const uint8_t *src_ptr,
+                                        ptrdiff_t src_stride, uint8_t *dst_ptr,
+                                        ptrdiff_t dst_stride, uint32_t height,
+                                        const int16_t *kernel) {
   // We will load two rows of pixels as 8-bit words, rearrange them into the
   // form
   // ... s[3,0] s[2,0] s[1,0] s[0,0] s[2,0] s[1,0] s[0,0] s[-1,0]
@@ -832,10 +830,6 @@ void vpx_filter_block1d4_v4_avx2(const uint8_t *src_ptr, ptrdiff_t src_stride,
   const ptrdiff_t src_stride_unrolled = src_stride << 1;
   const ptrdiff_t dst_stride_unrolled = dst_stride << 1;
   int h;
-
-  // We only need to go num_taps/2 - 1 row above the souce, so we move
-  // 3 - (num_taps/2 - 1) = 4 - num_taps/2 = 2 back down
-  src_ptr += src_stride_unrolled;
 
   // Load Kernel
   kernel_reg_128 = _mm_loadu_si128((const __m128i *)kernel);
@@ -975,10 +969,12 @@ filter8_1dfunction vpx_filter_block1d4_h2_avg_ssse3;
 //                                   const InterpKernel *filter, int x0_q4,
 //                                   int32_t x_step_q4, int y0_q4,
 //                                   int y_step_q4, int w, int h);
-FUN_CONV_1D(horiz, x0_q4, x_step_q4, h, src, , avx2);
-FUN_CONV_1D(vert, y0_q4, y_step_q4, v, src - src_stride * 3, , avx2);
-FUN_CONV_1D(avg_horiz, x0_q4, x_step_q4, h, src, avg_, avx2);
-FUN_CONV_1D(avg_vert, y0_q4, y_step_q4, v, src - src_stride * 3, avg_, avx2);
+FUN_CONV_1D(horiz, x0_q4, x_step_q4, h, src, , avx2, 0);
+FUN_CONV_1D(vert, y0_q4, y_step_q4, v, src - src_stride * (num_taps / 2 - 1), ,
+            avx2, 0);
+FUN_CONV_1D(avg_horiz, x0_q4, x_step_q4, h, src, avg_, avx2, 1);
+FUN_CONV_1D(avg_vert, y0_q4, y_step_q4, v,
+            src - src_stride * (num_taps / 2 - 1), avg_, avx2, 1);
 
 // void vpx_convolve8_avx2(const uint8_t *src, ptrdiff_t src_stride,
 //                          uint8_t *dst, ptrdiff_t dst_stride,
@@ -990,6 +986,6 @@ FUN_CONV_1D(avg_vert, y0_q4, y_step_q4, v, src - src_stride * 3, avg_, avx2);
 //                              const InterpKernel *filter, int x0_q4,
 //                              int32_t x_step_q4, int y0_q4, int y_step_q4,
 //                              int w, int h);
-FUN_CONV_2D(, avx2);
-FUN_CONV_2D(avg_, avx2);
+FUN_CONV_2D(, avx2, 0);
+FUN_CONV_2D(avg_, avx2, 1);
 #endif  // HAVE_AX2 && HAVE_SSSE3

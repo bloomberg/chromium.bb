@@ -31,23 +31,24 @@ def ConfigureAndBuildFFmpeg(robo_configuration, platform, architecture):
       raise Exception("FFmpeg build failed for %s %s" %
               (platform, architecture))
 
-def ImportFFmpegConfigsIntoChromium(robo_configuration):
+def ImportFFmpegConfigsIntoChromium(robo_configuration, write_git_file = False):
   """Import all FFmpeg configs that have been built so far and build gn files.
 
   Args:
     robo_configuration: RoboConfiguration.
+    write_git_file: if true, then we'll ask generate_gn.py to write a script
+    with the appropriate git commands to add / rm autorenames.
   """
   robo_configuration.chdir_to_ffmpeg_home();
   log("Copying FFmpeg configs")
   if call(["./chromium/scripts/copy_config.sh"]):
       raise Exception("FFmpeg copy_config.sh failed")
   log("Generating GN config for all ffmpeg versions")
-  if call(["./chromium/scripts/generate_gn.py"]):
+  generate_cmd = ["./chromium/scripts/generate_gn.py"]
+  if write_git_file:
+    generate_cmd += ["-i", robo_configuration.autorename_git_file()]
+  if call(generate_cmd):
       raise Exception("FFmpeg generate_gn.sh failed")
-  # TODO(liberato): deal with added / removed autorename files somehow.
-  # Remember that we should only do that when we're building all configs.  If
-  # we're building just for our host, then we expect that some files will be
-  # missing, since they might apply to other platforms.
 
 def BuildAndImportAllFFmpegConfigs(robo_configuration):
   """Build ffmpeg for all platforms that we can, and build the gn files.
@@ -62,7 +63,7 @@ def BuildAndImportAllFFmpegConfigs(robo_configuration):
             robo_configuration.host_operating_system())
 
   # Now that we've built everything, import them and build the gn config.
-  ImportFFmpegConfigsIntoChromium(robo_configuration)
+  ImportFFmpegConfigsIntoChromium(robo_configuration, True)
 
 # Build and import just the single ffmpeg version our host uses for testing.
 def BuildAndImportFFmpegConfigForHost(robo_configuration):
@@ -82,6 +83,9 @@ def BuildAndImportFFmpegConfigForHost(robo_configuration):
           robo_configuration.host_architecture())
 
   # Note that this will import anything that you've built, but that's okay.
+  # Also note that we don't write the command file, since it's going to be
+  # wrong.  Since we've only built some platforms, some autorenames may appear
+  # to be no longer conflicting if they're not built on all platforms.
   ImportFFmpegConfigsIntoChromium(robo_configuration)
 
 def BuildChromeTargetASAN(robo_configuration, target, platform, architecture):

@@ -12,12 +12,12 @@ namespace blink {
 class ActiveSuggestionMarkerListImplTest : public EditingTestBase {
  protected:
   ActiveSuggestionMarkerListImplTest()
-      : marker_list_(new ActiveSuggestionMarkerListImpl()) {}
+      : marker_list_(MakeGarbageCollected<ActiveSuggestionMarkerListImpl>()) {}
 
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
-    return new ActiveSuggestionMarker(
+    return MakeGarbageCollected<ActiveSuggestionMarker>(
         start_offset, end_offset, Color::kTransparent,
-        ws::mojom::ImeTextSpanThickness::kThin, Color::kBlack);
+        ui::mojom::ImeTextSpanThickness::kThin, Color::kBlack);
   }
 
   Persistent<ActiveSuggestionMarkerListImpl> marker_list_;

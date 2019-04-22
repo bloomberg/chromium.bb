@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -22,11 +23,6 @@ const char kFakeIccData[] = {0x00, 0x00, 0x08, 0x90, 0x20, 0x20,
 class DeviceQuirksPolicyTest : public policy::DevicePolicyCrosBrowserTest {
  public:
   DeviceQuirksPolicyTest() {}
-
-  void SetUpInProcessBrowserTestFixture() override {
-    InstallOwnerKey();
-    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
 
   void SetUpOnMainThread() override {
     // NOTE: QuirksManager::Initialize() isn't necessary here, since it'll be

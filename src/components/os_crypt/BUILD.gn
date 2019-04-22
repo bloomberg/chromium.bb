@@ -4,8 +4,8 @@
 
 import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
-import("//build/config/ui.gni")
 import("//build/config/linux/pkg_config.gni")
+import("//build/config/ui.gni")
 import("//components/os_crypt/features.gni")
 
 if (use_gnome_keyring) {
@@ -75,6 +75,7 @@ component("os_crypt") {
 
   if (is_ios || is_mac) {
     sources += [ "encryption_key_creation_util.h" ]
+    libs = [ "CoreFoundation.framework" ]
   }
 
   if (is_win) {

@@ -34,7 +34,7 @@ source_set("download") {
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/ui:network_activity_indicator_manager",
+    "//ios/chrome/browser/network_activity",
     "//ios/web/public",
     "//ios/web/public/download",
   ]
@@ -80,7 +80,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/download:features",
-    "//ios/chrome/browser/ui:network_activity_indicator_manager",
+    "//ios/chrome/browser/network_activity",
     "//ios/chrome/test/fakes",
     "//ios/web/public",
     "//ios/web/public/download",

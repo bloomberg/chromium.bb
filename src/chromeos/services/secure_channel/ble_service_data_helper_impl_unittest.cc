@@ -8,13 +8,14 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
+#include "chromeos/components/multidevice/remote_device_cache.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
+#include "chromeos/services/secure_channel/ble_advertisement_generator.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
-#include "components/cryptauth/ble/ble_advertisement_generator.h"
-#include "components/cryptauth/ble/fake_ble_advertisement_generator.h"
-#include "components/cryptauth/fake_background_eid_generator.h"
-#include "components/cryptauth/mock_foreground_eid_generator.h"
-#include "components/cryptauth/remote_device_cache.h"
-#include "components/cryptauth/remote_device_test_util.h"
+#include "chromeos/services/secure_channel/fake_background_eid_generator.h"
+#include "chromeos/services/secure_channel/fake_ble_advertisement_generator.h"
+#include "chromeos/services/secure_channel/mock_foreground_eid_generator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -44,38 +45,40 @@ const char fake_beacon_seed2_data[] = "fakeBeaconSeed2Data";
 const int64_t fake_beacon_seed2_start_ms = adjacent_eid_start_ms;
 const int64_t fake_beacon_seed2_end_ms = adjacent_eid_end_ms;
 
-std::unique_ptr<cryptauth::ForegroundEidGenerator::EidData>
+std::unique_ptr<ForegroundEidGenerator::EidData>
 CreateFakeBackgroundScanFilter() {
-  cryptauth::DataWithTimestamp current(current_eid_data, current_eid_start_ms,
-                                       current_eid_end_ms);
+  DataWithTimestamp current(current_eid_data, current_eid_start_ms,
+                            current_eid_end_ms);
 
-  std::unique_ptr<cryptauth::DataWithTimestamp> adjacent =
-      std::make_unique<cryptauth::DataWithTimestamp>(
+  std::unique_ptr<DataWithTimestamp> adjacent =
+      std::make_unique<DataWithTimestamp>(
           adjacent_eid_data, adjacent_eid_start_ms, adjacent_eid_end_ms);
 
-  return std::make_unique<cryptauth::ForegroundEidGenerator::EidData>(
-      current, std::move(adjacent));
+  return std::make_unique<ForegroundEidGenerator::EidData>(current,
+                                                           std::move(adjacent));
 }
 
-std::vector<cryptauth::BeaconSeed> CreateFakeBeaconSeeds(int id) {
+std::vector<multidevice::BeaconSeed> CreateFakeBeaconSeeds(int id) {
   std::string id_str = std::to_string(id);
 
-  cryptauth::BeaconSeed seed1;
-  seed1.set_data(fake_beacon_seed1_data + id_str);
-  seed1.set_start_time_millis(fake_beacon_seed1_start_ms * id);
-  seed1.set_start_time_millis(fake_beacon_seed1_end_ms * id);
+  multidevice::BeaconSeed seed1(
+      fake_beacon_seed1_data + id_str /* data */,
+      base::Time::FromJavaTime(fake_beacon_seed1_start_ms *
+                               id) /* start_time */,
+      base::Time::FromJavaTime(fake_beacon_seed1_end_ms * id) /* end_time */);
 
-  cryptauth::BeaconSeed seed2;
-  seed2.set_data(fake_beacon_seed2_data + id_str);
-  seed2.set_start_time_millis(fake_beacon_seed2_start_ms * id);
-  seed2.set_start_time_millis(fake_beacon_seed2_end_ms * id);
+  multidevice::BeaconSeed seed2(
+      fake_beacon_seed2_data + id_str /* data */,
+      base::Time::FromJavaTime(fake_beacon_seed2_start_ms *
+                               id) /* start_time */,
+      base::Time::FromJavaTime(fake_beacon_seed2_end_ms * id) /* end_time */);
 
-  std::vector<cryptauth::BeaconSeed> seeds = {seed1, seed2};
+  std::vector<multidevice::BeaconSeed> seeds = {seed1, seed2};
   return seeds;
 }
 
-cryptauth::RemoteDeviceRef CreateLocalDevice(int id) {
-  return cryptauth::RemoteDeviceRefBuilder()
+multidevice::RemoteDeviceRef CreateLocalDevice(int id) {
+  return multidevice::RemoteDeviceRefBuilder()
       .SetPublicKey("local public key " + std::to_string(id))
       .SetBeaconSeeds(CreateFakeBeaconSeeds(id))
       .Build();
@@ -89,9 +92,8 @@ class SecureChannelBleServiceDataHelperImplTest : public testing::Test {
       : test_local_device_1_(CreateLocalDevice(1)),
         test_local_device_2_(CreateLocalDevice(2)),
         test_remote_devices_(
-            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)),
-        fake_advertisement_(
-            cryptauth::DataWithTimestamp("advertisement1", 1000L, 2000L)) {
+            multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)),
+        fake_advertisement_(DataWithTimestamp("advertisement1", 1000L, 2000L)) {
     device_id_pair_set_.emplace(test_remote_devices_[0].GetDeviceId(),
                                 test_local_device_1_.GetDeviceId());
     device_id_pair_set_.emplace(test_remote_devices_[1].GetDeviceId(),
@@ -105,32 +107,34 @@ class SecureChannelBleServiceDataHelperImplTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     fake_ble_advertisement_generator_ =
-        std::make_unique<cryptauth::FakeBleAdvertisementGenerator>();
-    cryptauth::BleAdvertisementGenerator::SetInstanceForTesting(
+        std::make_unique<FakeBleAdvertisementGenerator>();
+    BleAdvertisementGenerator::SetInstanceForTesting(
         fake_ble_advertisement_generator_.get());
     fake_ble_advertisement_generator_->set_advertisement(
-        std::make_unique<cryptauth::DataWithTimestamp>(fake_advertisement_));
+        std::make_unique<DataWithTimestamp>(fake_advertisement_));
 
     auto mock_foreground_eid_generator =
-        std::make_unique<cryptauth::MockForegroundEidGenerator>();
+        std::make_unique<MockForegroundEidGenerator>();
     mock_foreground_eid_generator_ = mock_foreground_eid_generator.get();
     mock_foreground_eid_generator_->set_background_scan_filter(
         CreateFakeBackgroundScanFilter());
 
     auto fake_background_eid_generator =
-        std::make_unique<cryptauth::FakeBackgroundEidGenerator>();
+        std::make_unique<FakeBackgroundEidGenerator>();
     fake_background_eid_generator_ = fake_background_eid_generator.get();
 
     remote_device_cache_ =
-        cryptauth::RemoteDeviceCache::Factory::Get()->BuildInstance();
+        multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance();
 
-    cryptauth::RemoteDeviceList devices;
-    devices.push_back(*cryptauth::GetMutableRemoteDevice(test_local_device_1_));
-    devices.push_back(*cryptauth::GetMutableRemoteDevice(test_local_device_2_));
+    multidevice::RemoteDeviceList devices;
+    devices.push_back(
+        *multidevice::GetMutableRemoteDevice(test_local_device_1_));
+    devices.push_back(
+        *multidevice::GetMutableRemoteDevice(test_local_device_2_));
     std::transform(
         test_remote_devices_.begin(), test_remote_devices_.end(),
         std::back_inserter(devices), [](auto remote_device_ref) {
-          return *cryptauth::GetMutableRemoteDevice(remote_device_ref);
+          return *multidevice::GetMutableRemoteDevice(remote_device_ref);
         });
     remote_device_cache_->SetRemoteDevices(devices);
 
@@ -143,24 +147,24 @@ class SecureChannelBleServiceDataHelperImplTest : public testing::Test {
   }
 
   void TearDown() override {
-    cryptauth::BleAdvertisementGenerator::SetInstanceForTesting(nullptr);
+    BleAdvertisementGenerator::SetInstanceForTesting(nullptr);
   }
 
-  std::unique_ptr<cryptauth::FakeBleAdvertisementGenerator>
+  std::unique_ptr<FakeBleAdvertisementGenerator>
       fake_ble_advertisement_generator_;
-  cryptauth::MockForegroundEidGenerator* mock_foreground_eid_generator_;
-  cryptauth::FakeBackgroundEidGenerator* fake_background_eid_generator_;
+  MockForegroundEidGenerator* mock_foreground_eid_generator_;
+  FakeBackgroundEidGenerator* fake_background_eid_generator_;
 
-  std::unique_ptr<cryptauth::RemoteDeviceCache> remote_device_cache_;
+  std::unique_ptr<multidevice::RemoteDeviceCache> remote_device_cache_;
 
   std::unique_ptr<BleServiceDataHelper> helper_;
 
-  cryptauth::RemoteDeviceRef test_local_device_1_;
-  cryptauth::RemoteDeviceRef test_local_device_2_;
-  cryptauth::RemoteDeviceRefList test_remote_devices_;
-  secure_channel::DeviceIdPairSet device_id_pair_set_;
+  multidevice::RemoteDeviceRef test_local_device_1_;
+  multidevice::RemoteDeviceRef test_local_device_2_;
+  multidevice::RemoteDeviceRefList test_remote_devices_;
+  DeviceIdPairSet device_id_pair_set_;
 
-  cryptauth::DataWithTimestamp fake_advertisement_;
+  DataWithTimestamp fake_advertisement_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SecureChannelBleServiceDataHelperImplTest);
@@ -169,35 +173,31 @@ class SecureChannelBleServiceDataHelperImplTest : public testing::Test {
 TEST_F(SecureChannelBleServiceDataHelperImplTest,
        TestGenerateForegroundAdvertisement_CannotGenerateAdvertisement) {
   fake_ble_advertisement_generator_->set_advertisement(nullptr);
-  EXPECT_FALSE(
-      helper_->GenerateForegroundAdvertisement(secure_channel::DeviceIdPair(
-          test_remote_devices_[0].GetDeviceId() /* remote_device_id */,
-          test_local_device_1_.GetDeviceId() /* local_device_id */)));
+  EXPECT_FALSE(helper_->GenerateForegroundAdvertisement(
+      DeviceIdPair(test_remote_devices_[0].GetDeviceId() /* remote_device_id */,
+                   test_local_device_1_.GetDeviceId() /* local_device_id */)));
 }
 
 TEST_F(SecureChannelBleServiceDataHelperImplTest,
        TestGenerateForegroundAdvertisement) {
-  auto data_with_timestamp =
-      helper_->GenerateForegroundAdvertisement(secure_channel::DeviceIdPair(
-          test_remote_devices_[0].GetDeviceId() /* remote_device_id */,
-          test_local_device_1_.GetDeviceId() /* local_device_id */));
+  auto data_with_timestamp = helper_->GenerateForegroundAdvertisement(
+      DeviceIdPair(test_remote_devices_[0].GetDeviceId() /* remote_device_id */,
+                   test_local_device_1_.GetDeviceId() /* local_device_id */));
   EXPECT_EQ(fake_advertisement_, *data_with_timestamp);
 }
 
 TEST_F(SecureChannelBleServiceDataHelperImplTest,
        TestGenerateForegroundAdvertisement_InvalidLocalDevice) {
-  EXPECT_FALSE(
-      helper_->GenerateForegroundAdvertisement(secure_channel::DeviceIdPair(
-          test_remote_devices_[0].GetDeviceId() /* remote_device_id */,
-          "invalid local device id" /* local_device_id */)));
+  EXPECT_FALSE(helper_->GenerateForegroundAdvertisement(
+      DeviceIdPair(test_remote_devices_[0].GetDeviceId() /* remote_device_id */,
+                   "invalid local device id" /* local_device_id */)));
 }
 
 TEST_F(SecureChannelBleServiceDataHelperImplTest,
        TestGenerateForegroundAdvertisement_InvalidRemoteDevice) {
-  EXPECT_FALSE(
-      helper_->GenerateForegroundAdvertisement(secure_channel::DeviceIdPair(
-          "invalid remote device id" /* remote_device_id */,
-          test_local_device_1_.GetDeviceId() /* local_device_id */)));
+  EXPECT_FALSE(helper_->GenerateForegroundAdvertisement(
+      DeviceIdPair("invalid remote device id" /* remote_device_id */,
+                   test_local_device_1_.GetDeviceId() /* local_device_id */)));
 }
 
 TEST_F(SecureChannelBleServiceDataHelperImplTest,

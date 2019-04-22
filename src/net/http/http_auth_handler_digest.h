@@ -73,6 +73,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerDigest : public HttpAuthHandler {
                           CreateReason reason,
                           int digest_nonce_count,
                           const NetLogWithSource& net_log,
+                          HostResolver* host_resolver,
                           std::unique_ptr<HttpAuthHandler>* handler) override;
 
    private:

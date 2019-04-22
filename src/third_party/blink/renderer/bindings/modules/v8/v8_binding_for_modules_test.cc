@@ -26,9 +26,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_path.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -118,7 +115,7 @@ void CheckKeyPathStringValue(v8::Isolate* isolate,
   std::unique_ptr<IDBKey> idb_key =
       CheckKeyFromValueAndKeyPathInternal(isolate, value, key_path);
   ASSERT_TRUE(idb_key);
-  ASSERT_EQ(IDBKey::kStringType, idb_key->GetType());
+  ASSERT_EQ(mojom::IDBKeyType::String, idb_key->GetType());
   ASSERT_TRUE(expected == idb_key->GetString());
 }
 
@@ -129,7 +126,7 @@ void CheckKeyPathNumberValue(v8::Isolate* isolate,
   std::unique_ptr<IDBKey> idb_key =
       CheckKeyFromValueAndKeyPathInternal(isolate, value, key_path);
   ASSERT_TRUE(idb_key);
-  ASSERT_EQ(IDBKey::kNumberType, idb_key->GetType());
+  ASSERT_EQ(mojom::IDBKeyType::Number, idb_key->GetType());
   ASSERT_TRUE(expected == idb_key->Number());
 }
 
@@ -179,15 +176,15 @@ void SerializeV8Value(v8::Local<v8::Value> value,
 std::unique_ptr<IDBValue> CreateIDBValue(v8::Isolate* isolate,
                                          Vector<char>& wire_bytes,
                                          double primary_key,
-                                         const WebString& key_path) {
+                                         const String& key_path) {
   WebData web_data(SharedBuffer::AdoptVector(wire_bytes));
-  WebIDBValue web_idb_value(web_data, Vector<WebBlobInfo>());
-  web_idb_value.SetInjectedPrimaryKey(WebIDBKey::CreateNumber(primary_key),
-                                      WebIDBKeyPath(key_path));
+  scoped_refptr<SharedBuffer> data(web_data);
+  auto value = std::make_unique<IDBValue>(data, Vector<WebBlobInfo>());
+  value->SetInjectedPrimaryKey(IDBKey::CreateNumber(primary_key),
+                               IDBKeyPath(key_path));
 
-  std::unique_ptr<IDBValue> idb_value = web_idb_value.ReleaseIdbValue();
-  idb_value->SetIsolate(isolate);
-  return idb_value;
+  value->SetIsolate(isolate);
+  return value;
 }
 
 TEST(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue) {

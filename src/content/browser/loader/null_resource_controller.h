@@ -23,8 +23,9 @@ class NullResourceController : public ResourceController {
   void Cancel() override;
   void CancelWithError(int error_code) override;
   void Resume() override;
-  void ResumeForRedirect(const base::Optional<net::HttpRequestHeaders>&
-                             modified_request_headers) override;
+  void ResumeForRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers) override;
 
  private:
   bool* was_resumed_;

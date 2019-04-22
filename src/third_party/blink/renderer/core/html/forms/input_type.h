@@ -58,7 +58,7 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   static InputType* CreateText(HTMLInputElement&);
   static const AtomicString& NormalizeTypeName(const AtomicString&);
   virtual ~InputType();
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   virtual InputTypeView* CreateView() = 0;
   virtual const AtomicString& FormControlType() const = 0;
@@ -91,7 +91,7 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   // is missing.
   virtual String DefaultLabel() const;
 
-  // https://html.spec.whatwg.org/multipage/forms.html#dom-input-value
+  // https://html.spec.whatwg.org/C/#dom-input-value
   enum class ValueMode { kValue, kDefault, kDefaultOn, kFilename };
   virtual ValueMode GetValueMode() const = 0;
 
@@ -164,7 +164,9 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   virtual void SanitizeValueInResponseToMinOrMaxAttributeChange();
   virtual bool ShouldRespectAlignAttribute();
   virtual FileList* Files();
-  virtual void SetFiles(FileList*);
+  // Should return true if the file list was were changed.
+  virtual bool SetFiles(FileList*);
+  virtual void SetFilesAndDispatchEvents(FileList*);
   virtual void SetFilesFromPaths(const Vector<String>&);
   // Should return true if the given DragData has more than one dropped files.
   virtual bool ReceiveDroppedFiles(const DragData*);
@@ -193,7 +195,6 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   virtual const QualifiedName& SubResourceAttributeName() const;
   virtual void CopyNonAttributeProperties(const HTMLInputElement&);
   virtual void OnAttachWithLayoutObject();
-  virtual void OnDetachWithLayoutObject();
 
   // Parses the specified string for the type, and return
   // the Decimal value for the parsing result if the parsing

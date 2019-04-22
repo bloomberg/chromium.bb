@@ -19,7 +19,7 @@ function requestAutocompleteActionPredictorDb() {
 function updateAutocompleteActionPredictorDb(database) {
   console.debug('Updating Table NAP DB');
 
-  var filter = $('filter');
+  const filter = $('filter');
   filter.disabled = false;
   filter.onchange = function() {
     updateAutocompleteActionPredictorDbView(database);
@@ -35,25 +35,26 @@ function updateAutocompleteActionPredictorDb(database) {
  *     system is enabled and the current hit weight.
  */
 function updateAutocompleteActionPredictorDbView(database) {
-  var databaseSection = $('databaseTableBody');
-  var showEnabled = database.enabled && database.db;
+  const databaseSection = $('databaseTableBody');
+  const showEnabled = database.enabled && database.db;
 
   $('autocompleteActionPredictorEnabledMode').hidden = !showEnabled;
   $('autocompleteActionPredictorDisabledMode').hidden = showEnabled;
 
-  if (!showEnabled)
+  if (!showEnabled) {
     return;
+  }
 
-  var filter = $('filter');
+  const filter = $('filter');
 
   // Clear any previous list.
   databaseSection.textContent = '';
 
-  for (var i = 0; i < database.db.length; ++i) {
-    var entry = database.db[i];
+  for (let i = 0; i < database.db.length; ++i) {
+    const entry = database.db[i];
 
     if (!filter.checked || entry.confidence > 0) {
-      var row = document.createElement('tr');
+      const row = document.createElement('tr');
       row.className =
           (entry.confidence > 0.8 ?
                'action-prerender' :

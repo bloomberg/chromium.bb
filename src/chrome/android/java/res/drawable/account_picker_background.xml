@@ -6,6 +6,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
-    <solid android:color="@color/modern_grey_100"/>
+    <solid android:color="@color/modern_secondary_color"/>
     <corners android:radius="8dp"/>
 </shape>

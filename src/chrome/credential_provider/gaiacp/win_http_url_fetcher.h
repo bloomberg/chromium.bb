@@ -27,7 +27,7 @@ class WinHttpUrlFetcher {
 
   virtual HRESULT SetRequestHeader(const char* name, const char* value);
   virtual HRESULT SetRequestBody(const char* body);
-  virtual HRESULT Fetch(std::string* response);
+  virtual HRESULT Fetch(std::vector<char>* response);
   virtual HRESULT Close();
 
  protected:

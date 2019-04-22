@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -19,6 +20,7 @@
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
 #include "third_party/webrtc/modules/audio_processing/aec_dump/aec_dump_factory.h"
+#include "third_party/webrtc_overrides/task_queue_factory.h"
 
 namespace media {
 
@@ -75,9 +77,6 @@ AudioProcessor::~AudioProcessor() {
   StopEchoCancellationDump();
   if (audio_processing_)
     audio_processing_->UpdateHistogramsOnCallEnd();
-  // EchoInformation does this by itself on destruction, but since the stats are
-  // reset, they won't get doubly reported.
-  echo_information_.ReportAndResetAecDivergentFilterStats();
 }
 
 // Process the audio from source and return a pointer to the processed data.
@@ -137,12 +136,6 @@ void AudioProcessor::AnalyzePlayout(const AudioBus& audio,
   DCHECK_EQ(apm_error, webrtc::AudioProcessing::kNoError);
 }
 
-void AudioProcessor::UpdateInternalStats() {
-  if (audio_processing_)
-    echo_information_.UpdateAecStats(
-        audio_processing_->GetStatistics(has_reverse_stream_));
-}
-
 void AudioProcessor::GetStats(GetStatsCB callback) {
   webrtc::AudioProcessorInterface::AudioProcessorStatistics out = {};
   if (audio_processing_) {
@@ -171,7 +164,7 @@ void AudioProcessor::StartEchoCancellationDump(base::File file) {
   base::PlatformFile stream = file.TakePlatformFile();
   if (!worker_queue_) {
     worker_queue_ = std::make_unique<rtc::TaskQueue>(
-        "aecdump-worker-queue", rtc::TaskQueue::Priority::LOW);
+        CreateWebRtcTaskQueue(rtc::TaskQueue::Priority::LOW));
   }
   auto aec_dump = webrtc::AecDumpFactory::Create(
       stream, -1 /* max_log_size_bytes */, worker_queue_.get());
@@ -198,8 +191,7 @@ void AudioProcessor::InitializeAPM() {
   // 2" in those cases.
 
   // If we use nothing but, possibly, audio mirroring, don't initialize the APM.
-  if (settings_.echo_cancellation != EchoCancellationType::kAec2 &&
-      settings_.echo_cancellation != EchoCancellationType::kAec3 &&
+  if (settings_.echo_cancellation != EchoCancellationType::kAec3 &&
       settings_.noise_suppression == NoiseSuppressionType::kDisabled &&
       settings_.automatic_gain_control == AutomaticGainControlType::kDisabled &&
       !settings_.high_pass_filter && !settings_.typing_detection) {
@@ -211,13 +203,6 @@ void AudioProcessor::InitializeAPM() {
 
   // AEC setup part 1.
 
-  // AEC2 options. Doesn't do anything if AEC2 isn't used.
-  ap_config.Set<webrtc::RefinedAdaptiveFilter>(
-      new webrtc::RefinedAdaptiveFilter(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAecRefinedAdaptiveFilter)));
-  ap_config.Set<webrtc::ExtendedFilter>(new webrtc::ExtendedFilter(true));
-  ap_config.Set<webrtc::DelayAgnostic>(new webrtc::DelayAgnostic(true));
 
   // Echo cancellation is configured both before and after AudioProcessing
   // construction, but before Initialize.
@@ -244,6 +229,8 @@ void AudioProcessor::InitializeAPM() {
         settings_.automatic_gain_control ==
         AutomaticGainControlType::kHybridExperimental;
     ap_config.Set<webrtc::ExperimentalAgc>(experimental_agc);
+  } else {
+    ap_config.Set<webrtc::ExperimentalAgc>(new webrtc::ExperimentalAgc(false));
   }
 
   // Noise suppression setup part 1.
@@ -261,26 +248,8 @@ void AudioProcessor::InitializeAPM() {
     DCHECK_EQ(err, 0);
   }
 
-  // Typing detection setup.
-  if (settings_.typing_detection) {
-    typing_detector_ = std::make_unique<webrtc::TypingDetection>();
-    int err = audio_processing_->voice_detection()->Enable(true);
-    err |= audio_processing_->voice_detection()->set_likelihood(
-        webrtc::VoiceDetection::kVeryLowLikelihood);
-    DCHECK_EQ(err, 0);
-
-    // Configure the update period to 1s (100 * 10ms) in the typing detector.
-    typing_detector_->SetParameters(0, 0, 0, 0, 0, 100);
-  }
-
   // AGC setup part 2.
   if (settings_.automatic_gain_control != AutomaticGainControlType::kDisabled) {
-    int err = audio_processing_->gain_control()->set_mode(
-        webrtc::GainControl::kAdaptiveAnalog);
-    err |= audio_processing_->gain_control()->Enable(true);
-    DCHECK_EQ(err, 0);
-  }
-  if (settings_.automatic_gain_control == AutomaticGainControlType::kDefault) {
     int err = audio_processing_->gain_control()->set_mode(
         webrtc::GainControl::kAdaptiveAnalog);
     err |= audio_processing_->gain_control()->Enable(true);
@@ -289,9 +258,17 @@ void AudioProcessor::InitializeAPM() {
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
 
+  // Typing detection setup.
+  if (settings_.typing_detection) {
+    typing_detector_ = std::make_unique<webrtc::TypingDetection>();
+    // Configure the update period to 1s (100 * 10ms) in the typing detector.
+    typing_detector_->SetParameters(0, 0, 0, 0, 0, 100);
+
+    apm_config.voice_detection.enabled = true;
+  }
+
   // AEC setup part 2.
   apm_config.echo_canceller.enabled =
-      settings_.echo_cancellation == EchoCancellationType::kAec2 ||
       settings_.echo_cancellation == EchoCancellationType::kAec3;
   apm_config.echo_canceller.mobile_mode = false;
 
@@ -370,10 +347,12 @@ void AudioProcessor::FeedDataToAPM(const AudioBus& source) {
 
 void AudioProcessor::UpdateTypingDetected(bool key_pressed) {
   if (typing_detector_) {
-    webrtc::VoiceDetection* vad = audio_processing_->voice_detection();
-    DCHECK(vad->is_enabled());
-    typing_detected_ =
-        typing_detector_->Process(key_pressed, vad->stream_has_voice());
+    // Ignore remote tracks to avoid unnecessary stats computation.
+    auto voice_detected =
+        audio_processing_->GetStatistics(false /* has_remote_tracks */)
+            .voice_detected;
+    DCHECK(voice_detected.has_value());
+    typing_detected_ = typing_detector_->Process(key_pressed, *voice_detected);
   }
 }
 

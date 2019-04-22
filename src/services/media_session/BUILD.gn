@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 # There should be only one media session service. It is currently in the
@@ -26,17 +25,13 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
     "//services/media_session/public/cpp",
     "//services/media_session/public/mojom",
+    "//skia",
   ]
 
   public_deps = [
     "//base",
     "//services/service_manager/public/cpp",
   ]
-}
-
-service_manifest("manifest") {
-  name = "media_session"
-  source = "manifest.json"
 }
 
 source_set("tests") {

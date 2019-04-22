@@ -41,9 +41,9 @@ cr.define('ntp', function() {
      * @private
      */
     nextCardIndex_: function() {
-      var cardSlider = ntp.getCardSlider();
-      var index = cardSlider.currentCard + this.direction_;
-      var numCards = cardSlider.cardCount - 1;
+      const cardSlider = ntp.getCardSlider();
+      const index = cardSlider.currentCard + this.direction_;
+      const numCards = cardSlider.cardCount - 1;
       return Math.max(0, Math.min(index, numCards));
     },
 
@@ -54,33 +54,34 @@ cr.define('ntp', function() {
      *     cards.
      */
     updateButtonAccessibleLabel: function(dots) {
-      var currentIndex = ntp.getCardSlider().currentCard;
-      var nextCardIndex = this.nextCardIndex_();
+      const currentIndex = ntp.getCardSlider().currentCard;
+      const nextCardIndex = this.nextCardIndex_();
       if (nextCardIndex == currentIndex) {
         this.setAttribute('aria-label', '');  // No next card.
         return;
       }
 
-      var currentDot = dots[currentIndex];
-      var nextDot = dots[nextCardIndex];
+      const currentDot = dots[currentIndex];
+      const nextDot = dots[nextCardIndex];
       if (!currentDot || !nextDot) {
         this.setAttribute('aria-label', '');  // Dots not initialised yet.
         return;
       }
 
-      var currentPageTitle = currentDot.displayTitle;
-      var nextPageTitle = nextDot.displayTitle;
-      var msgName = (currentPageTitle == nextPageTitle) ?
+      const currentPageTitle = currentDot.displayTitle;
+      const nextPageTitle = nextDot.displayTitle;
+      const msgName = (currentPageTitle == nextPageTitle) ?
           'page_switcher_same_title' :
           'page_switcher_change_title';
-      var ariaLabel = loadTimeData.getStringF(msgName, nextPageTitle);
+      const ariaLabel = loadTimeData.getStringF(msgName, nextPageTitle);
       this.setAttribute('aria-label', ariaLabel);
     },
 
     shouldAcceptDrag: function(e) {
       // Only allow page switching when a drop could happen on the page being
       // switched to.
-      var nextPage = ntp.getCardSlider().getCardAtIndex(this.nextCardIndex_());
+      const nextPage =
+          ntp.getCardSlider().getCardAtIndex(this.nextCardIndex_());
       return nextPage.shouldAcceptDrag(e);
     },
 
@@ -95,23 +96,26 @@ cr.define('ntp', function() {
 
     doDragOver: function(e) {
       e.preventDefault();
-      var targetPage = ntp.getCardSlider().currentCardValue;
-      if (targetPage.shouldAcceptDrag(e))
+      const targetPage = ntp.getCardSlider().currentCardValue;
+      if (targetPage.shouldAcceptDrag(e)) {
         targetPage.setDropEffect(e.dataTransfer);
+      }
     },
 
     doDrop: function(e) {
       e.stopPropagation();
       this.cancelDelayedSwitch_();
 
-      var tile = ntp.getCurrentlyDraggingTile();
-      if (!tile)
+      const tile = ntp.getCurrentlyDraggingTile();
+      if (!tile) {
         return;
+      }
 
-      var sourcePage = tile.tilePage;
-      var targetPage = ntp.getCardSlider().currentCardValue;
-      if (targetPage == sourcePage || !targetPage.shouldAcceptDrag(e))
+      const sourcePage = tile.tilePage;
+      const targetPage = ntp.getCardSlider().currentCardValue;
+      if (targetPage == sourcePage || !targetPage.shouldAcceptDrag(e)) {
         return;
+      }
 
       targetPage.appendDraggingTile();
     },
@@ -123,11 +127,13 @@ cr.define('ntp', function() {
      */
     scheduleDelayedSwitch_: function(e) {
       // Stop switching when the next page can't be dropped onto.
-      var nextPage = ntp.getCardSlider().getCardAtIndex(this.nextCardIndex_());
-      if (!nextPage.shouldAcceptDrag(e))
+      const nextPage =
+          ntp.getCardSlider().getCardAtIndex(this.nextCardIndex_());
+      if (!nextPage.shouldAcceptDrag(e)) {
         return;
+      }
 
-      var self = this;
+      const self = this;
       function navPageClearTimeout() {
         self.activate_();
         self.dragNavTimeout_ = null;
@@ -150,7 +156,7 @@ cr.define('ntp', function() {
   };
 
   /** @const */
-  var initializePageSwitcher = PageSwitcher.prototype.decorate;
+  const initializePageSwitcher = PageSwitcher.prototype.decorate;
 
   return {
     initializePageSwitcher: initializePageSwitcher,

@@ -4,43 +4,7 @@
 
 module ui.mojom;
 
-// Text input type which is based on blink::WebTextInputType.
-enum TextInputType {
-  NONE,
-  TEXT,
-  PASSWORD,
-  SEARCH,
-  EMAIL,
-  NUMBER,
-  TELEPHONE,
-  URL,
-  DATE,
-  DATE_TIME,
-  DATE_TIME_LOCAL,
-  MONTH,
-  TIME,
-  WEEK,
-  TEXT_AREA,
-  CONTENT_EDITABLE,
-  DATE_TIME_FIELD,
-  MAX = DATE_TIME_FIELD,
-};
-
-// Text input flag which is based on blink::WebTextInputFlags.
-enum TextInputFlag {
-  NONE,
-  AUTOCOMPLETE_ON = 0x001,
-  AUTOCOMPLETE_OFF = 0x002,
-  AUTOCORRECT_ON = 0x004,
-  AUTOCORRECT_OFF = 0x008,
-  SPELLCHECK_ON = 0x010,
-  SPELLCHECK_OFF = 0x020,
-  AUTOCAPITALIZE_NONE = 0x040,
-  AUTOCAPITALIZE_CHARACTERS = 0x080,
-  AUTOCAPITALIZE_WORDS = 0x100,
-  AUTOCAPITALIZE_SENTENCES = 0x200,
-  ALL = 0x3FF,
-};
+import "ui/base/ime/mojo/ime_types.mojom";
 
 // Text input info which is based on blink::WebTextInputInfo.
 struct TextInputState {

@@ -105,10 +105,10 @@ class PrintExpectations(Command):
 
         if options.paths:
             files = default_port.expectations_files()
-            layout_tests_dir = default_port.layout_tests_dir()
+            web_tests_dir = default_port.web_tests_dir()
             for file in files:
-                if file.startswith(layout_tests_dir):
-                    file = file.replace(layout_tests_dir, WEB_TESTS_LAST_COMPONENT)
+                if file.startswith(web_tests_dir):
+                    file = file.replace(web_tests_dir, WEB_TESTS_LAST_COMPONENT)
                 print file
             return
 

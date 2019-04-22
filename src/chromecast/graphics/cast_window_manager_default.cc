@@ -22,8 +22,6 @@ gfx::NativeView CastWindowManagerDefault::GetRootWindow() {
   return nullptr;
 }
 
-void CastWindowManagerDefault::SetColorInversion(bool enable) {}
-
 // Register a new handler for system gesture events.
 void CastWindowManagerDefault::AddGestureHandler(CastGestureHandler* handler) {}
 // Remove the registration of a system gesture events handler.

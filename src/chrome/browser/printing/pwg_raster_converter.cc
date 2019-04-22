@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/cancelable_callback.h"
 #include "base/logging.h"
@@ -202,7 +203,7 @@ PwgRasterSettings PwgRasterConverter::GetBitmapSettings(
     const cloud_devices::CloudDeviceDescription& ticket) {
   cloud_devices::printer::DuplexTicketItem duplex_item;
   cloud_devices::printer::DuplexType duplex_value =
-      cloud_devices::printer::NO_DUPLEX;
+      cloud_devices::printer::DuplexType::NO_DUPLEX;
   if (duplex_item.LoadFrom(ticket))
     duplex_value = duplex_item.value();
 
@@ -219,14 +220,14 @@ PwgRasterSettings PwgRasterConverter::GetBitmapSettings(
   DCHECK(color_value.IsValid());
   bool use_color;
   switch (color_value.type) {
-    case cloud_devices::printer::STANDARD_MONOCHROME:
-    case cloud_devices::printer::CUSTOM_MONOCHROME:
+    case cloud_devices::printer::ColorType::STANDARD_MONOCHROME:
+    case cloud_devices::printer::ColorType::CUSTOM_MONOCHROME:
       use_color = false;
       break;
 
-    case cloud_devices::printer::STANDARD_COLOR:
-    case cloud_devices::printer::CUSTOM_COLOR:
-    case cloud_devices::printer::AUTO_COLOR:
+    case cloud_devices::printer::ColorType::STANDARD_COLOR:
+    case cloud_devices::printer::ColorType::CUSTOM_COLOR:
+    case cloud_devices::printer::ColorType::AUTO_COLOR:
       use_color = true;
       break;
 
@@ -244,21 +245,29 @@ PwgRasterSettings PwgRasterConverter::GetBitmapSettings(
       raster_capability.value().document_sheet_back;
 
   PwgRasterSettings result;
-  result.odd_page_transform = TRANSFORM_NORMAL;
   switch (duplex_value) {
-    case cloud_devices::printer::NO_DUPLEX:
+    case cloud_devices::printer::DuplexType::NO_DUPLEX:
+      result.duplex_mode = DuplexMode::SIMPLEX;
+      result.odd_page_transform = TRANSFORM_NORMAL;
       break;
-    case cloud_devices::printer::LONG_EDGE:
-      if (document_sheet_back == cloud_devices::printer::ROTATED)
+    case cloud_devices::printer::DuplexType::LONG_EDGE:
+      if (document_sheet_back ==
+          cloud_devices::printer::DocumentSheetBack::ROTATED) {
         result.odd_page_transform = TRANSFORM_ROTATE_180;
-      else if (document_sheet_back == cloud_devices::printer::FLIPPED)
+      } else if (document_sheet_back ==
+                 cloud_devices::printer::DocumentSheetBack::FLIPPED) {
         result.odd_page_transform = TRANSFORM_FLIP_VERTICAL;
+      }
       break;
-    case cloud_devices::printer::SHORT_EDGE:
-      if (document_sheet_back == cloud_devices::printer::MANUAL_TUMBLE)
+    case cloud_devices::printer::DuplexType::SHORT_EDGE:
+      result.duplex_mode = DuplexMode::SHORT_EDGE;
+      if (document_sheet_back ==
+          cloud_devices::printer::DocumentSheetBack::MANUAL_TUMBLE) {
         result.odd_page_transform = TRANSFORM_ROTATE_180;
-      else if (document_sheet_back == cloud_devices::printer::FLIPPED)
+      } else if (document_sheet_back ==
+                 cloud_devices::printer::DocumentSheetBack::FLIPPED) {
         result.odd_page_transform = TRANSFORM_FLIP_HORIZONTAL;
+      }
       break;
   }
 
@@ -270,7 +279,9 @@ PwgRasterSettings PwgRasterConverter::GetBitmapSettings(
   // conversion from RGB to grayscale... "
   const auto& types = raster_capability.value().document_types_supported;
   result.use_color =
-      use_color || !base::ContainsValue(types, cloud_devices::printer::SGRAY_8);
+      use_color ||
+      !base::ContainsValue(
+          types, cloud_devices::printer::PwgDocumentTypeSupported::SGRAY_8);
 
   return result;
 }

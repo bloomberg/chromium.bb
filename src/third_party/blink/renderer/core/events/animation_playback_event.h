@@ -15,17 +15,17 @@ class AnimationPlaybackEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnimationPlaybackEvent* Create(const AtomicString& type,
-                                        double current_time,
-                                        double timeline_time) {
-    return new AnimationPlaybackEvent(type, current_time, timeline_time);
-  }
   static AnimationPlaybackEvent* Create(
       const AtomicString& type,
       const AnimationPlaybackEventInit* initializer) {
-    return new AnimationPlaybackEvent(type, initializer);
+    return MakeGarbageCollected<AnimationPlaybackEvent>(type, initializer);
   }
 
+  AnimationPlaybackEvent(const AtomicString& type,
+                         double current_time,
+                         double timeline_time);
+  AnimationPlaybackEvent(const AtomicString&,
+                         const AnimationPlaybackEventInit*);
   ~AnimationPlaybackEvent() override;
 
   double currentTime(bool& is_null) const;
@@ -36,12 +36,6 @@ class AnimationPlaybackEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  AnimationPlaybackEvent(const AtomicString& type,
-                         double current_time,
-                         double timeline_time);
-  AnimationPlaybackEvent(const AtomicString&,
-                         const AnimationPlaybackEventInit*);
-
   base::Optional<double> current_time_;
   base::Optional<double> timeline_time_;
 };

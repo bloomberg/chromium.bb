@@ -19,6 +19,74 @@
             "Authentication": "None"
         }
     },
+    "irrelevant-staticipconfig-fields": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        },
+        "NameServersConfigType": "Static",
+        "StaticIPConfig": {
+            "Gateway":"1.1.1.1",
+            "IPAddress": "127.0.0.1",
+            "NameServers": ["8.8.8.8"]
+        }
+    },
+    "irrelevant-staticipconfig-fields-normalized": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        },
+        "NameServersConfigType": "Static",
+        "StaticIPConfig": {
+            "NameServers": ["8.8.8.8"]
+        }
+    },
+    "irrelevant-nameservers": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        },
+        "NameServersConfigType": "DHCP",
+        "StaticIPConfig": {
+            "NameServers": ["8.8.8.8"]
+        }
+    },
+    "irrelevant-nameservers-normalized": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        },
+        "NameServersConfigType": "DHCP"
+    },
+    "missing-ip-fields": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        },
+        "IPAddressConfigType": "Static",
+        "StaticIPConfig": {
+            "IPAddress": "1.1.1.1",
+            "Gateway": "1.1.1.1"
+        }
+    },
+    "missing-ip-fields-normalized": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
     "ethernet-and-vpn": {
         "Recommended": [],
         "GUID": "guid",

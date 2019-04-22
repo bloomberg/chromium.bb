@@ -11,12 +11,13 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/util_unittest.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 void XmppTestHandler::WriteOutput(const char * bytes, size_t len) {
   output_ << std::string(bytes, len);
@@ -106,4 +107,4 @@ std::string XmppTestHandler::StanzaActivity() {
   return result;
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

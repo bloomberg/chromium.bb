@@ -4,7 +4,7 @@
  *
  *   FreeType API for possible FT_Parameter tags (specification only).
  *
- * Copyright 2017-2018 by
+ * Copyright (C) 2017-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -58,7 +58,7 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   A tag for @FT_Parameter to make @FT_Open_Face ignore typographic
-   *   family names in the `name` table (introduced in OpenType version 1.4).
+   *   family names in the 'name' table (introduced in OpenType version 1.4).
    *   Use this for backward compatibility with legacy systems that have a
    *   four-faces-per-family restriction.
    *
@@ -82,7 +82,7 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   A tag for @FT_Parameter to make @FT_Open_Face ignore typographic
-   *   subfamily names in the `name` table (introduced in OpenType version
+   *   subfamily names in the 'name' table (introduced in OpenType version
    *   1.4).  Use this for backward compatibility with legacy systems that
    *   have a four-faces-per-family restriction.
    *

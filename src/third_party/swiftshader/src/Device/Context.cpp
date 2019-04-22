@@ -15,11 +15,10 @@
 #include "Context.hpp"
 
 #include "Primitive.hpp"
-#include "Surface.hpp"
-#include "Pipeline/PixelShader.hpp"
-#include "Pipeline/VertexShader.hpp"
 #include "System/Memory.hpp"
-#include "System/Debug.hpp"
+#include "Vulkan/VkDebug.hpp"
+#include "Vulkan/VkImageView.hpp"
+#include "Pipeline/SpirvShader.hpp"
 
 #include <string.h>
 
@@ -27,18 +26,12 @@ namespace sw
 {
 	extern bool perspectiveCorrection;
 
-	bool halfIntegerCoordinates = false;     // Pixel centers are not at integer coordinates
-	bool symmetricNormalizedDepth = false;   // [-1, 1] instead of [0, 1]
 	bool booleanFaceRegister = false;
 	bool fullPixelPositionRegister = false;
-	bool leadingVertexFirst = false;         // Flat shading uses first vertex, else last
-	bool secondaryColor = false;             // Specular lighting is applied after texturing
 	bool colorsDefaultToZero = false;
 
 	bool forceWindowed = false;
 	bool quadLayoutEnabled = false;
-	bool veryEarlyDepthTest = true;
-	bool complementaryDepthBuffer = false;
 	bool postBlendSRGB = false;
 	bool exactColorRounding = false;
 	TransparencyAntialiasing transparencyAntialiasing = TRANSPARENCY_NONE;
@@ -65,98 +58,56 @@ namespace sw
 
 	bool Context::isDrawPoint() const
 	{
-		switch(drawType)
+		switch(topology)
 		{
-		case DRAW_POINTLIST:
-		case DRAW_INDEXEDPOINTLIST16:
-		case DRAW_INDEXEDPOINTLIST32:
+		case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
 			return true;
-		case DRAW_LINELIST:
-		case DRAW_LINESTRIP:
-		case DRAW_INDEXEDLINELIST16:
-		case DRAW_INDEXEDLINESTRIP16:
-		case DRAW_INDEXEDLINELIST32:
-		case DRAW_INDEXEDLINESTRIP32:
-			return false;
-		case DRAW_TRIANGLELIST:
-		case DRAW_TRIANGLESTRIP:
-		case DRAW_TRIANGLEFAN:
-		case DRAW_INDEXEDTRIANGLELIST16:
-		case DRAW_INDEXEDTRIANGLESTRIP16:
-		case DRAW_INDEXEDTRIANGLEFAN16:
-		case DRAW_INDEXEDTRIANGLELIST32:
-		case DRAW_INDEXEDTRIANGLESTRIP32:
-		case DRAW_INDEXEDTRIANGLEFAN32:
-			return false;
+		case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
+		case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
+			break;
 		default:
-			ASSERT(false);
+			UNIMPLEMENTED("topology %d", int(topology));
 		}
-
 		return false;
 	}
 
 	bool Context::isDrawLine() const
 	{
-		switch(drawType)
+		switch(topology)
 		{
-		case DRAW_POINTLIST:
-		case DRAW_INDEXEDPOINTLIST16:
-		case DRAW_INDEXEDPOINTLIST32:
-			return false;
-		case DRAW_LINELIST:
-		case DRAW_LINESTRIP:
-		case DRAW_INDEXEDLINELIST16:
-		case DRAW_INDEXEDLINESTRIP16:
-		case DRAW_INDEXEDLINELIST32:
-		case DRAW_INDEXEDLINESTRIP32:
+		case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
+		case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
 			return true;
-		case DRAW_TRIANGLELIST:
-		case DRAW_TRIANGLESTRIP:
-		case DRAW_TRIANGLEFAN:
-		case DRAW_INDEXEDTRIANGLELIST16:
-		case DRAW_INDEXEDTRIANGLESTRIP16:
-		case DRAW_INDEXEDTRIANGLEFAN16:
-		case DRAW_INDEXEDTRIANGLELIST32:
-		case DRAW_INDEXEDTRIANGLESTRIP32:
-		case DRAW_INDEXEDTRIANGLEFAN32:
-			return false;
+		case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
+			break;
 		default:
-			ASSERT(false);
+			UNIMPLEMENTED("topology %d", int(topology));
 		}
-
 		return false;
 	}
 
 	bool Context::isDrawTriangle() const
 	{
-		switch(drawType)
+		switch(topology)
 		{
-		case DRAW_POINTLIST:
-		case DRAW_INDEXEDPOINTLIST16:
-		case DRAW_INDEXEDPOINTLIST32:
-			return false;
-		case DRAW_LINELIST:
-		case DRAW_LINESTRIP:
-		case DRAW_INDEXEDLINELIST16:
-		case DRAW_INDEXEDLINESTRIP16:
-		case DRAW_INDEXEDLINELIST32:
-		case DRAW_INDEXEDLINESTRIP32:
-			return false;
-		case DRAW_TRIANGLELIST:
-		case DRAW_TRIANGLESTRIP:
-		case DRAW_TRIANGLEFAN:
-		case DRAW_INDEXEDTRIANGLELIST16:
-		case DRAW_INDEXEDTRIANGLESTRIP16:
-		case DRAW_INDEXEDTRIANGLEFAN16:
-		case DRAW_INDEXEDTRIANGLELIST32:
-		case DRAW_INDEXEDTRIANGLESTRIP32:
-		case DRAW_INDEXEDTRIANGLEFAN32:
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
+		case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
 			return true;
+		case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
+		case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
+		case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
+			break;
 		default:
-			ASSERT(false);
+			UNIMPLEMENTED("topology %d", int(topology));
 		}
-
-		return true;
+		return false;
 	}
 
 	void Context::init()
@@ -175,31 +126,16 @@ namespace sw
 		stencilBuffer = nullptr;
 
 		stencilEnable = false;
-		stencilCompareMode = VK_COMPARE_OP_ALWAYS;
-		stencilReference = 0;
-		stencilMask = 0xFFFFFFFF;
-		stencilFailOperation = VK_STENCIL_OP_KEEP;
-		stencilPassOperation = VK_STENCIL_OP_KEEP;
-		stencilZFailOperation = VK_STENCIL_OP_KEEP;
-		stencilWriteMask = 0xFFFFFFFF;
-
 		twoSidedStencil = false;
-		stencilCompareModeCCW = VK_COMPARE_OP_ALWAYS;
-		stencilReferenceCCW = 0;
-		stencilMaskCCW = 0xFFFFFFFF;
-		stencilFailOperationCCW = VK_STENCIL_OP_KEEP;
-		stencilPassOperationCCW = VK_STENCIL_OP_KEEP;
-		stencilZFailOperationCCW = VK_STENCIL_OP_KEEP;
-		stencilWriteMaskCCW = 0xFFFFFFFF;
-
-		alphaCompareMode = VK_COMPARE_OP_ALWAYS;
-		alphaTestEnable = false;
+		frontStencil = {};
+		backStencil = {};
 
 		rasterizerDiscard = false;
 
 		depthCompareMode = VK_COMPARE_OP_LESS;
-		depthBufferEnable = true;
-		depthWriteEnable = true;
+		depthBoundsTestEnable = false;
+		depthBufferEnable = false;
+		depthWriteEnable = false;
 
 		alphaBlendEnable = false;
 		sourceBlendFactorState = VK_BLEND_FACTOR_ONE;
@@ -223,22 +159,19 @@ namespace sw
 			colorWriteMask[i] = 0x0000000F;
 		}
 
+		pipelineLayout = nullptr;
+
 		pixelShader = nullptr;
 		vertexShader = nullptr;
 
 		instanceID = 0;
 
 		occlusionEnabled = false;
-		transformFeedbackQueryEnabled = false;
-		transformFeedbackEnabled = 0;
 
 		lineWidth = 1.0f;
 
 		writeSRGB = false;
 		sampleMask = 0xFFFFFFFF;
-
-		colorLogicOpEnabled = false;
-		logicalOperation = VK_LOGIC_OP_COPY;
 	}
 
 	bool Context::setDepthBufferEnable(bool depthBufferEnable)
@@ -318,20 +251,6 @@ namespace sw
 		return modified;
 	}
 
-	bool Context::setColorLogicOpEnabled(bool enabled)
-	{
-		bool modified = (Context::colorLogicOpEnabled != enabled);
-		Context::colorLogicOpEnabled = enabled;
-		return modified;
-	}
-
-	bool Context::setLogicalOperation(VkLogicOp logicalOperation)
-	{
-		bool modified = (Context::logicalOperation != logicalOperation);
-		Context::logicalOperation = logicalOperation;
-		return modified;
-	}
-
 	bool Context::depthWriteActive()
 	{
 		if(!depthBufferActive()) return false;
@@ -341,12 +260,7 @@ namespace sw
 
 	bool Context::alphaTestActive()
 	{
-		if(transparencyAntialiasing != TRANSPARENCY_NONE) return true;
-		if(!alphaTestEnable) return false;
-		if(alphaCompareMode == VK_COMPARE_OP_ALWAYS) return false;
-		if(alphaReference == 0.0f && alphaCompareMode == VK_COMPARE_OP_GREATER_OR_EQUAL) return false;
-
-		return true;
+		return transparencyAntialiasing != TRANSPARENCY_NONE;
 	}
 
 	bool Context::depthBufferActive()
@@ -375,11 +289,6 @@ namespace sw
 		bool alphaBlend = separateAlphaBlendEnable ? !(blendOperationAlpha() == VK_BLEND_OP_SRC_EXT && sourceBlendFactorAlpha() == VK_BLEND_FACTOR_ONE) : colorBlend;
 
 		return colorBlend || alphaBlend;
-	}
-
-	VkLogicOp Context::colorLogicOp()
-	{
-		return colorLogicOpEnabled ? logicalOperation : VK_LOGIC_OP_COPY;
 	}
 
 	VkBlendFactor Context::sourceBlendFactor()
@@ -516,7 +425,7 @@ namespace sw
 			}
 			else
 			{
-				if(destBlendFactor() == VK_BLEND_OP_ZERO_EXT)
+				if(destBlendFactor() == VK_BLEND_FACTOR_ZERO)
 				{
 					return VK_BLEND_OP_ZERO_EXT;   // Negative, clamped to zero
 				}
@@ -684,7 +593,7 @@ namespace sw
 				}
 				else
 				{
-					if(destBlendFactorAlpha() == VK_BLEND_OP_ZERO_EXT)
+					if(destBlendFactorAlpha() == VK_BLEND_FACTOR_ZERO)
 					{
 						return VK_BLEND_OP_ZERO_EXT;   // Negative, clamped to zero
 					}
@@ -725,26 +634,11 @@ namespace sw
 		return true;
 	}
 
-	unsigned short Context::pixelShaderModel() const
-	{
-		return pixelShader ? pixelShader->getShaderModel() : 0x0000;
-	}
-
-	unsigned short Context::vertexShaderModel() const
-	{
-		return vertexShader ? vertexShader->getShaderModel() : 0x0000;
-	}
-
-	int Context::getMultiSampleCount() const
-	{
-		return renderTarget[0] ? renderTarget[0]->getMultiSampleCount() : 1;
-	}
-
 	VkFormat Context::renderTargetInternalFormat(int index)
 	{
 		if(renderTarget[index])
 		{
-			return renderTarget[index]->getInternalFormat();
+			return renderTarget[index]->getFormat();
 		}
 		else
 		{
@@ -752,14 +646,22 @@ namespace sw
 		}
 	}
 
-	int Context::colorWriteActive()
+	bool Context::colorWriteActive()
 	{
-		return colorWriteActive(0) | colorWriteActive(1) | colorWriteActive(2) | colorWriteActive(3);
+		for (int i = 0; i < RENDERTARGETS; i++)
+		{
+			if (colorWriteActive(i))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	int Context::colorWriteActive(int index)
 	{
-		if(!renderTarget[index] || renderTarget[index]->getInternalFormat() == VK_FORMAT_UNDEFINED)
+		if(!renderTarget[index] || renderTarget[index]->getFormat() == VK_FORMAT_UNDEFINED)
 		{
 			return 0;
 		}
@@ -775,6 +677,6 @@ namespace sw
 
 	bool Context::colorUsed()
 	{
-		return colorWriteActive() || alphaTestActive() || (pixelShader && pixelShader->containsKill());
+		return colorWriteActive() || alphaTestActive() || (pixelShader && pixelShader->getModes().ContainsKill);
 	}
 }

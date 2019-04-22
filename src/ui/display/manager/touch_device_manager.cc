@@ -10,7 +10,7 @@
 #include <tuple>
 
 #include "base/files/file_util.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -35,10 +35,17 @@ bool IsDeviceConnectedViaUsb(const base::FilePath& path) {
 
   for (const auto& component : components) {
     if (base::StartsWith(component, "usb",
-                         base::CompareCase::INSENSITIVE_ASCII))
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      return true;
+    }
+
+    // TODO(malaykeshav): When evdi starts registering with the usb subsystem
+    // in the kernel, this would no longer be needed. All evdi displays are USB
+    // right now. This might change in the future however.
+    // See https://crbug.com/923165 for more info.
+    if (base::StartsWith(component, "evdi", base::CompareCase::SENSITIVE))
       return true;
   }
-
   return false;
 }
 
@@ -183,8 +190,8 @@ TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier() {
 uint32_t TouchDeviceIdentifier::GenerateIdentifier(std::string name,
                                                    uint16_t vendor_id,
                                                    uint16_t product_id) {
-  std::string hash_str = name + "-" + base::UintToString(vendor_id) + "-" +
-                         base::UintToString(product_id);
+  std::string hash_str = name + "-" + base::NumberToString(vendor_id) + "-" +
+                         base::NumberToString(product_id);
   return base::PersistentHash(hash_str);
 }
 
@@ -228,11 +235,11 @@ bool TouchDeviceIdentifier::operator!=(const TouchDeviceIdentifier& rhs) const {
 }
 
 std::string TouchDeviceIdentifier::ToString() const {
-  return base::UintToString(id_);
+  return base::NumberToString(id_);
 }
 
 std::string TouchDeviceIdentifier::SecondaryIdToString() const {
-  return base::UintToString(secondary_id_);
+  return base::NumberToString(secondary_id_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,8 @@
 <html>
 <meta charset=utf-8 />
 <title>Event Timing: buffer long-latency events before onload</title>
-<button id='button' onclick='clickDelay()'>Generate a 'click' event</button>
+<meta name="timeout" content="long">
+<button id='button' onmousedown='clickDelay()'>Generate a 'click' event</button>
 <script src=/resources/testharness.js></script>
 <script src=/resources/testharnessreport.js></script>
 <script src=/resources/testdriver.js></script>
@@ -27,7 +28,7 @@
   }
 
   function validateEntries() {
-    const entries = performance.getEntriesByName('click', 'event');
+    const entries = performance.getEntriesByName('mousedown', 'event');
 
     const entriesBeforeOnload = entries.filter(
         e => e.startTime < onloadStart);
@@ -65,12 +66,23 @@
   async_test(function(t) {
     clickTimeMin = performance.now();
     clickAndBlockMain('button');
+    // Use a dummy observer to know when both clicks have been dispatched.
+    const observerPromise = new Promise((resolve, reject) => {
+      let entryCount = 0;
+      new PerformanceObserver(entryList => {
+        entryCount += entryList.getEntries().filter(
+          entry => entry.name === 'mousedown').length;
+        if (entryCount >= 2)
+          resolve();
+      }).observe({ entryTypes: ['event'] });
+    });
     // Event handlers will be dispatched asynchronously, so this will be called
     // before processing begins.
     processingStartMin = performance.now();
     on_event(window, 'load', e => {
       onloadStart = performance.now();
-      clickAndBlockMain('button').then(wait).then(
+      const clickPromise = clickAndBlockMain('button');
+      Promise.all([observerPromise, clickPromise]).then(
           t.step_func_done(validateEntries));
     });
   }, "Event Timing: click, onload.");

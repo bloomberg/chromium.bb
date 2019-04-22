@@ -13,6 +13,11 @@
   const _queue = v8.createPrivateSymbol('[[queue]]');
   const _queueTotalSize = v8.createPrivateSymbol('[[queueTotalSize]]');
 
+  // A symbol to protect against double-resolution of promises. This
+  // functionality is not explicit in the standard, but is implied in the way
+  // the operations are defined.
+  const _isSettled = v8.createPrivateSymbol('isSettled');
+
   // Javascript functions. It is important to use these copies for security and
   // robustness. See "V8 Extras Design Doc", section "Security Considerations".
   // https://docs.google.com/document/d/1AT5-T0aHGp7Lt29vPWFr2-qG8r3l9CByyvKwEuA8Ec0/edit#heading=h.9yixony1a18r
@@ -68,18 +73,74 @@
     throw new RangeError('Stream API Internal Error');
   }
 
+  // For safety, this must always be used in place of calling v8.createPromise()
+  // directly.
+  function createPromise() {
+    const p = v8.createPromise();
+    p[_isSettled] = false;
+    return p;
+  }
+
+  // Calling v8.rejectPromise() directly is very dangerous. Always use this
+  // wrapper.
   function rejectPromise(p, reason) {
     if (!v8.isPromise(p)) {
       streamInternalError();
     }
+
+    // assert(typeof p[_isSettled] === 'boolean',
+    //        'Type(p.[[isSettled]]) is `"boolean"`');
+
+    // Note that this makes the function a no-op for promises that were not
+    // created via createPromise(). This is critical for security.
+    if (p[_isSettled] !== false) {
+      return;
+    }
+    p[_isSettled] = true;
+
     v8.rejectPromise(p, reason);
   }
 
+  // This must always be used instead of Promise.reject().
+  function createRejectedPromise(reason) {
+    const p = createPromise();
+    rejectPromise(p, reason);
+    return p;
+  }
+
+  // Calling v8.resolvePromise() directly is very dangerous. Always use this
+  // wrapper. If |value| is an object this will look up Object.prototype.then
+  // and so may be re-entrant.
   function resolvePromise(p, value) {
     if (!v8.isPromise(p)) {
       streamInternalError();
     }
+
+    // assert(typeof p[_isSettled] === 'boolean',
+    //        'Type(p.[[isSettled]]) is `"boolean"`');
+
+    // Note that this makes the function a no-op for promises that were not
+    // created via createPromise(). This is critical for security.
+    if (p[_isSettled] !== false) {
+      return;
+    }
+    p[_isSettled] = true;
+
     v8.resolvePromise(p, value);
+  }
+
+  // This must always be used instead of Promise.resolve(). If |value| is an
+  // object this will look up Object.prototype.then and so may be re-entrant.
+  function createResolvedPromise(value) {
+    if (v8.isPromise(value)) {
+      // This case applies when an underlying method returns a promise. Promises
+      // that are passed through in this way are not used with resolvePromise()
+      // or rejectPromise().
+      return value;
+    }
+    const p = createPromise();
+    resolvePromise(p, value);
+    return p;
   }
 
   function markPromiseAsHandled(p) {
@@ -190,8 +251,6 @@
   const callFunction = v8.uncurryThis(global.Function.prototype.call);
   const errTmplMustBeFunctionOrUndefined = name =>
       `${name} must be a function or undefined`;
-  const Promise_resolve = Promise.resolve.bind(Promise);
-  const Promise_reject = Promise.reject.bind(Promise);
   const Function_bind = v8.uncurryThis(global.Function.prototype.bind);
 
   function resolveMethod(O, P, nameForError) {
@@ -220,7 +279,7 @@
     // The implementation uses bound functions rather than lambdas where
     // possible to give the compiler the maximum opportunity to optimise.
     if (method === undefined) {
-      return () => Promise_resolve();
+      return () => createResolvedPromise();
     }
 
     if (algoArgCount === 0) {
@@ -246,7 +305,7 @@
     const method =
         resolveMethod(underlyingObject, methodName, methodNameForError);
     if (method === undefined) {
-      return () => Promise_resolve();
+      return () => createResolvedPromise();
     }
 
     if (algoArgCount === 0) {
@@ -271,9 +330,9 @@
     // assert(typeof F === 'function', 'IsCallable(F) is true.');
     // assert(V !== undefined, 'V is not undefined.');
     try {
-      return Promise_resolve(callFunction(F, V));
+      return createResolvedPromise(callFunction(F, V));
     } catch (e) {
-      return Promise_reject(e);
+      return createRejectedPromise(e);
     }
   }
 
@@ -281,9 +340,9 @@
     // assert(typeof F === 'function', 'IsCallable(F) is true.');
     // assert(V !== undefined, 'V is not undefined.');
     try {
-      return Promise_resolve(callFunction(F, V, arg0));
+      return createResolvedPromise(callFunction(F, V, arg0));
     } catch (e) {
-      return Promise_reject(e);
+      return createRejectedPromise(e);
     }
   }
 
@@ -291,9 +350,9 @@
     // assert(typeof F === 'function', 'IsCallable(F) is true.');
     // assert(V !== undefined, 'V is not undefined.');
     try {
-      return Promise_resolve(callFunction(F, V, arg0, arg1));
+      return createResolvedPromise(callFunction(F, V, arg0, arg1));
     } catch (e) {
-      return Promise_reject(e);
+      return createRejectedPromise(e);
     }
   }
 
@@ -310,7 +369,7 @@
   function isATypeError(object) {
     // There doesn't appear to be a 100% reliable way to identify a TypeError
     // from JS.
-    return getPrototypeOf(object) === TypeError_prototype;
+    return object !== null && getPrototypeOf(object) === TypeError_prototype;
   }
 
   function isADOMException(object) {
@@ -329,6 +388,7 @@
     switch (typeof reason) {
       case 'string':
       case 'number':
+      case 'boolean':
         return {encoder: 'json', string: JSON_stringify(reason)};
 
       case 'object':
@@ -390,7 +450,7 @@
   }
 
   function CreateCrossRealmTransformWritable(port) {
-    let backpressurePromise = v8.createPromise();
+    let backpressurePromise = createPromise();
 
     callFunction(binding.EventTarget_addEventListener, port, 'message', evt => {
       const {type, value} = callFunction(binding.MessageEvent_data_get, evt);
@@ -428,7 +488,7 @@
     callFunction(binding.MessagePort_start, port);
 
     function doWrite(chunk) {
-      backpressurePromise = v8.createPromise();
+      backpressurePromise = createPromise();
       try {
         callFunction(
             binding.MessagePort_postMessage, port,
@@ -455,14 +515,14 @@
               binding.MessagePort_postMessage, port,
               {type: kClose, value: undefined});
           callFunction(binding.MessagePort_close, port);
-          return Promise_resolve();
+          return createResolvedPromise();
         },
         reason => {
           callFunction(
               binding.MessagePort_postMessage, port,
               {type: kAbort, value: packReason(reason)});
           callFunction(binding.MessagePort_close, port);
-          return Promise_resolve();
+          return createResolvedPromise();
         });
 
     const controller = binding.getWritableStreamController(stream);
@@ -470,27 +530,24 @@
   }
 
   function CreateCrossRealmTransformReadable(port) {
-    let backpressurePromise = v8.createPromise();
+    let backpressurePromise = createPromise();
     let finished = false;
 
     callFunction(binding.EventTarget_addEventListener, port, 'message', evt => {
       const {type, value} = callFunction(binding.MessageEvent_data_get, evt);
       // assert(type === kChunk || type === kClose || type === kAbort ||
       //        type=kError);
+      if (finished) {
+        return;
+      }
       switch (type) {
         case kChunk:
-          if (finished) {
-            return;
-          }
           binding.ReadableStreamDefaultControllerEnqueue(controller, value);
           resolvePromise(backpressurePromise);
-          backpressurePromise = v8.createPromise();
+          backpressurePromise = createPromise();
           break;
 
         case kClose:
-          if (finished) {
-            return;
-          }
           finished = true;
           binding.ReadableStreamDefaultControllerClose(controller);
           callFunction(binding.MessagePort_close, port);
@@ -498,9 +555,6 @@
 
         case kAbort:
         case kError:
-          if (finished) {
-            return;
-          }
           finished = true;
           binding.ReadableStreamDefaultControllerError(
               controller, unpackReason(value));
@@ -535,7 +589,7 @@
               binding.MessagePort_postMessage, port,
               {type: kCancel, value: packReason(reason)});
           callFunction(binding.MessagePort_close, port);
-          return Promise_resolve();
+          return createResolvedPromise();
         },
         /* highWaterMark = */ 0);
 
@@ -546,6 +600,9 @@
   binding.streamOperations = {
     _queue,
     _queueTotalSize,
+    createPromise,
+    createRejectedPromise,
+    createResolvedPromise,
     hasOwnPropertyNoThrow,
     rejectPromise,
     resolvePromise,

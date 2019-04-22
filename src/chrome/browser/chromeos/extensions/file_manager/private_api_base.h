@@ -8,27 +8,30 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_BASE_H_
 
 #include "base/time/time.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
-// This class adds a logging feature to ChromeAsyncExtensionFunction. Logging is
+// This class adds a logging feature to UIThreadExtensionFunction. Logging is
 // done when sending the response to JavaScript, using drive::util::Log().
-// Async API functions of fileManagerPrivate should inherit this class.
+// API functions of fileManagerPrivate should inherit this class.
 //
 // By default, logging is turned off, hence sub classes should call
 // set_log_on_completion(true) to enable it, if they want. However, even if
 // the logging is turned off, a warning is emitted when a function call is
 // very slow. See the implementation of OnResponded() for details.
-class LoggedAsyncExtensionFunction : public ChromeAsyncExtensionFunction {
+class LoggedUIThreadExtensionFunction : public UIThreadExtensionFunction {
  public:
-  LoggedAsyncExtensionFunction();
+  LoggedUIThreadExtensionFunction();
 
  protected:
-  ~LoggedAsyncExtensionFunction() override;
+  ~LoggedUIThreadExtensionFunction() override;
 
-  // ChromeAsyncExtensionFunction overrides.
+  // UIThreadExtensionFunction overrides.
   void OnResponded() override;
+
+  void SetWarningThresholds(base::TimeDelta slow_threshold,
+                            base::TimeDelta very_slow_threshold);
 
   // Sets the logging on completion flag. By default, logging is turned off.
   void set_log_on_completion(bool log_on_completion) {
@@ -36,8 +39,11 @@ class LoggedAsyncExtensionFunction : public ChromeAsyncExtensionFunction {
   }
 
  private:
-  base::Time start_time_;
+  base::TimeTicks start_time_;
   bool log_on_completion_;
+
+  base::TimeDelta slow_threshold_;
+  base::TimeDelta very_slow_threshold_;
 };
 
 }  // namespace extensions

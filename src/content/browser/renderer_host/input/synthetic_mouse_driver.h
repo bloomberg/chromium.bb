@@ -20,15 +20,34 @@ class CONTENT_EXPORT SyntheticMouseDriver : public SyntheticPointerDriver {
   void DispatchEvent(SyntheticGestureTarget* target,
                      const base::TimeTicks& timestamp) override;
 
-  void Press(float x,
-             float y,
-             int index = 0,
-             SyntheticPointerActionParams::Button button =
-                 SyntheticPointerActionParams::Button::LEFT) override;
-  void Move(float x, float y, int index = 0) override;
+  void Press(
+      float x,
+      float y,
+      int index = 0,
+      SyntheticPointerActionParams::Button button =
+          SyntheticPointerActionParams::Button::LEFT,
+      int key_modifiers = 0,
+      float width = 1.f,
+      float height = 1.f,
+      float rotation_angle = 0.f,
+      float force = 1.f,
+      const base::TimeTicks& timestamp = base::TimeTicks::Now()) override;
+  void Move(float x,
+            float y,
+            int index = 0,
+            int key_modifiers = 0,
+            float width = 1.f,
+            float height = 1.f,
+            float rotation_angle = 0.f,
+            float force = 1.f) override;
   void Release(int index = 0,
                SyntheticPointerActionParams::Button button =
-                   SyntheticPointerActionParams::Button::LEFT) override;
+                   SyntheticPointerActionParams::Button::LEFT,
+               int key_modifiers = 0) override;
+  void Cancel(int index = 0,
+              SyntheticPointerActionParams::Button button =
+                  SyntheticPointerActionParams::Button::LEFT,
+              int key_modifiers = 0) override;
   void Leave(int index = 0) override;
 
   bool UserInputCheck(
@@ -36,9 +55,15 @@ class CONTENT_EXPORT SyntheticMouseDriver : public SyntheticPointerDriver {
 
  protected:
   blink::WebMouseEvent mouse_event_;
-  unsigned last_modifiers_;
+  unsigned last_modifiers_ = 0;
 
  private:
+  bool IsRepeatedClickEvent(const base::TimeTicks& timestamp, float x, float y);
+  int click_count_ = 0;
+  base::TimeTicks last_mouse_click_time_ = base::TimeTicks::Now();
+  float last_x_ = 0;
+  float last_y_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(SyntheticMouseDriver);
 };
 

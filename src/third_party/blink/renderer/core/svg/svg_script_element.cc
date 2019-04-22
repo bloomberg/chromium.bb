@@ -136,23 +136,22 @@ const AtomicString& SVGScriptElement::GetNonceForElement() const {
 bool SVGScriptElement::AllowInlineScriptForCSP(
     const AtomicString& nonce,
     const WTF::OrdinalNumber& context_line,
-    const String& script_content,
-    ContentSecurityPolicy::InlineType inline_type) {
-  return GetDocument().GetContentSecurityPolicy()->AllowInlineScript(
-      this, GetDocument().Url(), nonce, context_line, script_content,
-      inline_type);
+    const String& script_content) {
+  return GetDocument().GetContentSecurityPolicy()->AllowInline(
+      ContentSecurityPolicy::InlineType::kScript, this, script_content, nonce,
+      GetDocument().Url(), context_line);
 }
 
 Document& SVGScriptElement::GetDocument() const {
   return Node::GetDocument();
 }
 
-Element* SVGScriptElement::CloneWithoutAttributesAndChildren(
+Element& SVGScriptElement::CloneWithoutAttributesAndChildren(
     Document& factory) const {
   CreateElementFlags flags =
       CreateElementFlags::ByCloneNode().SetAlreadyStarted(
           loader_->AlreadyStarted());
-  return factory.CreateElement(TagQName(), flags, IsValue());
+  return *factory.CreateElement(TagQName(), flags, IsValue());
 }
 
 void SVGScriptElement::DispatchLoadEvent() {

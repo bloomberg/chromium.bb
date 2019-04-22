@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/shell.h"  // mash-ok
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -26,6 +24,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
@@ -33,20 +32,20 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/url_constants.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/tether_constants.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/net.mojom.h"
-#include "components/arc/connection_holder.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/connection_holder.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
@@ -55,26 +54,21 @@
 #include "net/base/escape.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/cpp/property_type_converters.h"
-#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/event_constants.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_delegate.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::UpdateEngineClient;
 using session_manager::SessionManager;
 using session_manager::SessionState;
-using views::Widget;
 
 namespace {
 
 SystemTrayClient* g_system_tray_client_instance = nullptr;
 
 void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
-  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        sub_page);
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile(), sub_page);
 }
 
 // Returns the severity of a pending Chrome / Chrome OS update.
@@ -165,35 +159,6 @@ SystemTrayClient* SystemTrayClient::Get() {
   return g_system_tray_client_instance;
 }
 
-// static
-int SystemTrayClient::GetDialogParentContainerId() {
-  return SessionManager::Get()->session_state() == SessionState::ACTIVE
-             ? ash::kShellWindowId_SystemModalContainer
-             : ash::kShellWindowId_LockSystemModalContainer;
-}
-
-// static
-Widget* SystemTrayClient::CreateUnownedDialogWidget(
-    views::WidgetDelegate* widget_delegate) {
-  DCHECK(widget_delegate);
-  Widget::InitParams params = views::DialogDelegate::GetDialogWidgetInitParams(
-      widget_delegate, nullptr, nullptr, gfx::Rect());
-  // Place the dialog in the appropriate modal dialog container, either above
-  // or below the lock screen, based on the login state.
-  int container_id = GetDialogParentContainerId();
-  if (features::IsUsingWindowService()) {
-    using ws::mojom::WindowManager;
-    params.mus_properties[WindowManager::kContainerId_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(container_id);
-  } else {
-    params.parent = ash::Shell::GetContainer(
-        ash::Shell::GetRootWindowForNewWindows(), container_id);
-  }
-  Widget* widget = new Widget;  // Owned by native widget.
-  widget->Init(params);
-  return widget;
-}
-
 void SystemTrayClient::SetFlashUpdateAvailable() {
   flash_update_available_ = true;
   HandleUpdateAvailable();
@@ -231,7 +196,10 @@ void SystemTrayClient::SetLocaleList(
 // ash::mojom::SystemTrayClient:
 
 void SystemTrayClient::ShowSettings() {
-  ShowSettingsSubPageForActiveUser(std::string());
+  // TODO(jamescook): Use different metric for OS settings.
+  base::RecordAction(base::UserMetricsAction("ShowOptions"));
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile());
 }
 
 void SystemTrayClient::ShowBluetoothSettings() {
@@ -254,12 +222,11 @@ void SystemTrayClient::ShowBluetoothPairingDialog(
 void SystemTrayClient::ShowDateSettings() {
   base::RecordAction(base::UserMetricsAction("ShowDateOptions"));
   // Everybody can change the time zone (even though it is a device setting).
-  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        chrome::kDateTimeSubPage);
+  ShowSettingsSubPageForActiveUser(chrome::kDateTimeSubPage);
 }
 
 void SystemTrayClient::ShowSetTimeDialog() {
-  chromeos::SetTimeDialog::ShowDialogInContainer(GetDialogParentContainerId());
+  chromeos::SetTimeDialog::ShowDialog();
 }
 
 void SystemTrayClient::ShowDisplaySettings() {
@@ -336,10 +303,8 @@ void SystemTrayClient::ShowEnterpriseInfo() {
     return;
   }
 
-  // Otherwise show enterprise help in a browser tab.
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile());
-  ShowSingletonTab(displayer.browser(), GURL(chrome::kLearnMoreEnterpriseURL));
+  // Otherwise show enterprise special settings subpage.
+  chrome::ShowManagementPageForProfile(ProfileManager::GetActiveUserProfile());
 }
 
 void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {

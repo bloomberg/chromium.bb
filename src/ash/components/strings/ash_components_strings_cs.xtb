@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Zvýšit hlasitost</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> a poté <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Přesunout kurzor na začátek předchozího slova.</translation>
-<translation id="1671169355475348905">Přepnout na metodu zadávání předchozího jazyka</translation>
 <translation id="1679841710523778799">Zvýšit jas</translation>
 <translation id="168356808214100546">Stiskněte a podržte <ph name="ALT" /> a opakovaně stiskněte klávesu <ph name="TAB" />, dokud nepřejdete na okno, které chcete otevřít. Poté klávesy uvolněte.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Zobrazit nebo skrýt lištu záložek</translation>
 <translation id="2185166372312820725">Přejít na předchozí kartu</translation>
 <translation id="2194790690264064655">Stiskněte klávesu <ph name="CTRL" /> a klikněte na odkaz</translation>
+<translation id="2246352309084894470">Otevřít/zavřít celoobrazovkový spouštěč</translation>
 <translation id="2382644247745281995">S tímto rozložením klávesnice není podporováno</translation>
 <translation id="2397416548179033562">Zobrazit nabídku Chrome</translation>
 <translation id="2424073332829844142">Zapnout nebo vypnout režim Caps Lock</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Resetovat úroveň přiblížení na stránce</translation>
 <translation id="2596078834055697711">Pořídit snímek obrazovky okna</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> a poté <ph name="TAB" /> nebo <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Přepnout na metodu zadávání dalšího jazyka</translation>
 <translation id="2699509451653686398">Uložit aktuální webovou stránku jako záložku</translation>
 <translation id="2750942583782703988">Znovu načíst aktuální stránku</translation>
 <translation id="2764005613199379871">Přejít do vyhledávacího adresního řádku</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Zamknout obrazovku</translation>
 <translation id="6727005317916125192">Předchozí podokno</translation>
 <translation id="6740781404993465795">Vybrat další slovo nebo písmeno</translation>
+<translation id="6755851152783057058">Přepnout na naposledy použitou metodu zadávání</translation>
 <translation id="6760706756348334449">Snížit hlasitost</translation>
 <translation id="6941333068993625698">Odeslat zpětnou vazbu</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Zadejte do adresního řádku webovou adresu a poté stiskněte <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Přepnout zařízení do režimu spánku (pozastavit)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> nebo <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Přepnout na další dostupnou metodu zadávání</translation>
 <translation id="743754632698445141">Odepnout aplikaci</translation>
 <translation id="7439718573248533901">Vymazat následující písmeno (odstranění následujícího znaku).</translation>
 <translation id="7611271430932669992">Přesunout zaměření na vyskakovací a dialogová okna</translation>

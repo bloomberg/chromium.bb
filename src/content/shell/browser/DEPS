@@ -3,9 +3,10 @@ include_rules = [
   "+components/keyed_service/content",
   "+components/network_session_configurator/common",
   "+services/device/public/cpp",
+  "+services/network/public",
   "+services/service_manager/public/cpp",
   "+services/service_manager/sandbox",
-  "+services/network/public",
+  "+services/ws/public",
   "+ui/ozone/public",
 ]
 

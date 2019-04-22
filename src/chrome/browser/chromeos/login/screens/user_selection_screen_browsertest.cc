@@ -10,12 +10,14 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
 
 namespace chromeos {
 
@@ -44,35 +46,18 @@ class UserSelectionScreenTest : public LoginManagerTest {
                          true /* should_initialize_webui */) {}
   ~UserSelectionScreenTest() override = default;
 
-  // LoginManagerTest:
-  void SetUpInProcessBrowserTestFixture() override {
-    auto cryptohome_client = std::make_unique<chromeos::FakeCryptohomeClient>();
-    fake_cryptohome_client_ = cryptohome_client.get();
-    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::move(cryptohome_client));
-  }
-
-  FakeCryptohomeClient* fake_cryptohome_client() {
-    return fake_cryptohome_client_;
-  }
-
-  OobeUI* GetOobeUI() {
-    return static_cast<OobeUI*>(web_contents()->GetWebUI()->GetController());
-  }
+  OobeUI* GetOobeUI() { return LoginDisplayHost::default_host()->GetOobeUI(); }
 
   void FocusUserPod(int pod_id) {
     base::RunLoop pod_focus_wait_loop;
     GetOobeUI()->signin_screen_handler()->SetFocusPODCallbackForTesting(
         pod_focus_wait_loop.QuitClosure());
-    js_checker().Evaluate(base::StringPrintf(
+    test::OobeJS().Evaluate(base::StringPrintf(
         "$('pod-row').focusPod($('pod-row').pods[%d])", pod_id));
     pod_focus_wait_loop.Run();
   }
 
  private:
-  // DBusThreadManager owns this.
-  FakeCryptohomeClient* fake_cryptohome_client_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(UserSelectionScreenTest);
 };
 
@@ -93,10 +78,10 @@ IN_PROC_BROWSER_TEST_F(UserSelectionScreenTest, ShowDircryptoMigrationBanner) {
       switches::kArcAvailability, "officially-supported");
 
   // No banner for the first user since default is no migration.
-  JSExpect("!$('signin-banner').classList.contains('message-set')");
+  test::OobeJS().ExpectHasNoClass("message-set", {"signin-banner"});
 
   // Change the needs dircrypto migration response.
-  fake_cryptohome_client()->set_needs_dircrypto_migration(true);
+  FakeCryptohomeClient::Get()->set_needs_dircrypto_migration(true);
 
   // Focus the 2nd user pod (consumer).
   FocusUserPod(1);
@@ -105,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(UserSelectionScreenTest, ShowDircryptoMigrationBanner) {
   base::RunLoop().RunUntilIdle();
 
   // Banner should be shown for the 2nd user (consumer).
-  JSExpect("$('signin-banner').classList.contains('message-set')");
+  test::OobeJS().ExpectHasClass("message-set", {"signin-banner"});
 
   // Focus to the 3rd user pod (enterprise).
   FocusUserPod(2);
@@ -114,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(UserSelectionScreenTest, ShowDircryptoMigrationBanner) {
   base::RunLoop().RunUntilIdle();
 
   // Banner should not be shown for the enterprise user.
-  JSExpect("!$('signin-banner').classList.contains('message-set')");
+  test::OobeJS().ExpectHasNoClass("message-set", {"signin-banner"});
 }
 
 }  // namespace chromeos

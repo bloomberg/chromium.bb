@@ -11,21 +11,22 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/abstract_web_app_database.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 namespace web_app {
 
 class WebApp;
 
-class WebAppRegistrar {
+class WebAppRegistrar : public AppRegistrar {
  public:
   explicit WebAppRegistrar(AbstractWebAppDatabase* database);
-  ~WebAppRegistrar();
+  ~WebAppRegistrar() override;
 
   void RegisterApp(std::unique_ptr<WebApp> web_app);
   std::unique_ptr<WebApp> UnregisterApp(const AppId& app_id);
 
-  WebApp* GetAppById(const AppId& app_id);
+  WebApp* GetAppById(const AppId& app_id) const;
 
   const Registry& registry() const { return registry_; }
 
@@ -34,10 +35,15 @@ class WebAppRegistrar {
   // Clears registry.
   void UnregisterAll();
 
-  void Init(base::OnceClosure closure);
+  // AppRegistrar
+  void Init(base::OnceClosure callback) override;
+  bool IsInstalled(const AppId& app_id) const override;
+  bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
+  bool HasScopeUrl(const AppId& app_id) const override;
+  GURL GetScopeUrlForApp(const AppId& app_id) const override;
 
  private:
-  void OnDatabaseOpened(base::OnceClosure closure, Registry registry);
+  void OnDatabaseOpened(base::OnceClosure callback, Registry registry);
 
   Registry registry_;
 

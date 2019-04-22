@@ -96,6 +96,9 @@ class WMHelperChromeOS : public WMHelper {
   bool IsTabletModeWindowManagerEnabled() const override;
   double GetDefaultDeviceScaleFactor() const override;
 
+  LifetimeManager* GetLifetimeManager() override;
+  aura::client::CaptureClient* GetCaptureClient() override;
+
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
@@ -106,6 +109,7 @@ class WMHelperChromeOS : public WMHelper {
   base::ObserverList<DragDropObserver>::Unchecked drag_drop_observers_;
   scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
   aura::Env* const env_;
+  LifetimeManager lifetime_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WMHelperChromeOS);
 };

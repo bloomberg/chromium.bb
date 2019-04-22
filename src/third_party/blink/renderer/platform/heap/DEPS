@@ -15,7 +15,7 @@ include_rules = [
     "+third_party/blink/renderer/platform/cross_thread_functional.h",
     "+third_party/blink/renderer/platform/histogram.h",
     "+third_party/blink/renderer/platform/instrumentation",
-    "+third_party/blink/renderer/platform/memory_coordinator.h",
+    "+third_party/blink/renderer/platform/memory_pressure_listener.h",
     "+third_party/blink/renderer/platform/platform_export.h",
     "+third_party/blink/renderer/platform/runtime_enabled_features.h",
     "+third_party/blink/renderer/platform/scheduler/public",

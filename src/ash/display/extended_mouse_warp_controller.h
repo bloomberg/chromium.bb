@@ -63,6 +63,7 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
     const gfx::Rect& b_indicator_bounds() { return b_indicator_bounds_; }
 
     const gfx::Rect& GetIndicatorBoundsForTest(int64_t id) const;
+    const gfx::Rect& GetIndicatorNativeBoundsForTest(int64_t id) const;
 
    private:
     friend class ExtendedMouseWarpController;

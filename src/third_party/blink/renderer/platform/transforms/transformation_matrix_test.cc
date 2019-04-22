@@ -4,10 +4,27 @@
 
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
+#include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/gfx/transform.h"
 
 namespace blink {
+// Allow non-zero tolerance when comparing floating point results to
+// accommodate precision errors.
+const double kFloatingPointErrorTolerance = 1e-6;
+
+#define EXPECT_TRANSFORMATION_MATRIX(expected, actual) \
+  do {                                                 \
+    SCOPED_TRACE("");                                  \
+    cc::ExpectTransformationMatrixNear(                \
+        TransformationMatrix::ToTransform(expected),   \
+        TransformationMatrix::ToTransform(actual),     \
+        kFloatingPointErrorTolerance);                 \
+  } while (false)
+
+#define EXPECT_FLOAT(expected, actual) \
+  EXPECT_NEAR(expected, actual, kFloatingPointErrorTolerance)
 
 TEST(TransformationMatrixTest, NonInvertableBlendTest) {
   TransformationMatrix from;
@@ -328,6 +345,138 @@ TEST(TransformationMatrix, IsInvertible) {
   EXPECT_TRUE(TransformationMatrix().Scale(1e-8).IsInvertible());
   EXPECT_TRUE(TransformationMatrix().Scale3d(1e-8, -1e-8, 1).IsInvertible());
   EXPECT_FALSE(TransformationMatrix().Scale(0).IsInvertible());
+}
+
+TEST(TransformationMatrixTest, Blend2dXFlipTest) {
+  // Test 2D x-flip (crbug.com/797472).
+  TransformationMatrix from;
+  from.SetMatrix(1, 0, 0, 1, 100, 150);
+  TransformationMatrix to;
+  to.SetMatrix(-1, 0, 0, 1, 400, 150);
+
+  EXPECT_TRUE(from.Is2dTransform());
+  EXPECT_TRUE(to.Is2dTransform());
+
+  // OK for interpolated transform to be degenerate.
+  TransformationMatrix result = to;
+  result.Blend(from, 0.5);
+  TransformationMatrix expected;
+  expected.SetMatrix(0, 0, 0, 1, 250, 150);
+  EXPECT_TRANSFORMATION_MATRIX(expected, result);
+}
+
+TEST(TransformationMatrixTest, Blend2dRotationDirectionTest) {
+  // Interpolate taking shorter rotation path.
+  TransformationMatrix from;
+  from.SetMatrix(-0.5, 0.86602575498, -0.86602575498, -0.5, 0, 0);
+  TransformationMatrix to;
+  to.SetMatrix(-0.5, -0.86602575498, 0.86602575498, -0.5, 0, 0);
+
+  // Expect clockwise Rotation.
+  TransformationMatrix result = to;
+  result.Blend(from, 0.5);
+  TransformationMatrix expected;
+  expected.SetMatrix(-1, 0, 0, -1, 0, 0);
+  EXPECT_TRANSFORMATION_MATRIX(expected, result);
+
+  // Reverse from and to.
+  // Expect same midpoint with counter-clockwise rotation.
+  result = from;
+  result.Blend(to, 0.5);
+  EXPECT_TRANSFORMATION_MATRIX(expected, result);
+}
+
+TEST(TransformationMatrixTest, Decompose2dShearTest) {
+  // Test that x and y-shear transforms are properly decomposed.
+  // The canonical decomposition is: transform, rotate, x-axis shear, scale.
+  TransformationMatrix transformShearX;
+  transformShearX.SetMatrix(1, 0, 1, 1, 0, 0);
+  TransformationMatrix::Decomposed2dType decompShearX;
+  EXPECT_TRUE(transformShearX.Decompose2D(decompShearX));
+  EXPECT_FLOAT(1, decompShearX.scale_x);
+  EXPECT_FLOAT(1, decompShearX.scale_y);
+  EXPECT_FLOAT(0, decompShearX.translate_x);
+  EXPECT_FLOAT(0, decompShearX.translate_y);
+  EXPECT_FLOAT(0, decompShearX.angle);
+  EXPECT_FLOAT(1, decompShearX.skew_xy);
+  TransformationMatrix recompShearX;
+  recompShearX.Recompose2D(decompShearX);
+  EXPECT_TRANSFORMATION_MATRIX(transformShearX, recompShearX);
+
+  TransformationMatrix transformShearY;
+  transformShearY.SetMatrix(1, 1, 0, 1, 0, 0);
+  TransformationMatrix::Decomposed2dType decompShearY;
+  EXPECT_TRUE(transformShearY.Decompose2D(decompShearY));
+  EXPECT_FLOAT(sqrt(2), decompShearY.scale_x);
+  EXPECT_FLOAT(1 / sqrt(2), decompShearY.scale_y);
+  EXPECT_FLOAT(0, decompShearY.translate_x);
+  EXPECT_FLOAT(0, decompShearY.translate_y);
+  EXPECT_FLOAT(M_PI / 4, decompShearY.angle);
+  EXPECT_FLOAT(1, decompShearY.skew_xy);
+  TransformationMatrix recompShearY;
+  recompShearY.Recompose2D(decompShearY);
+  EXPECT_TRANSFORMATION_MATRIX(transformShearY, recompShearY);
+}
+
+double ComputeDecompRecompError(const TransformationMatrix& transform_matrix) {
+  TransformationMatrix::DecomposedType decomp;
+  EXPECT_TRUE(transform_matrix.Decompose(decomp));
+
+  TransformationMatrix composed;
+  composed.Recompose(decomp);
+
+  float expected[16];
+  float actual[16];
+  transform_matrix.ToColumnMajorFloatArray(expected);
+  composed.ToColumnMajorFloatArray(actual);
+  double sse = 0;
+  for (int i = 0; i < 16; i++) {
+    double diff = expected[i] - actual[i];
+    sse += diff * diff;
+  }
+  return sse;
+}
+
+TEST(TransformationMatrixTest, RoundTripTest) {
+  // rotateZ(90deg)
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(TransformationMatrix(0, 1, -1, 0, 0, 0)),
+              1e-6);
+
+  // rotateZ(180deg)
+  // Edge case where w = 0.
+  EXPECT_NEAR(
+      0, ComputeDecompRecompError(TransformationMatrix(-1, 0, 0, -1, 0, 0)),
+      1e-6);
+
+  // rotateX(90deg) rotateY(90deg) rotateZ(90deg)
+  // [1  0   0][ 0 0 1][0 -1 0]   [0 0 1][0 -1 0]   [0  0 1]
+  // [0  0  -1][ 0 1 0][1  0 0] = [1 0 0][1  0 0] = [0 -1 0]
+  // [0  1   0][-1 0 0][0  0 1]   [0 1 0][0  0 1]   [1  0 0]
+  // This test case leads to Gimbal lock when using Euler angles.
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(TransformationMatrix(
+                  0, 0, 1, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1)),
+              1e-6);
+
+  // Quaternion matrices with 0 off-diagonal elements, and negative trace.
+  // Stress tests handling of degenerate cases in computing quaternions.
+  // Validates fix for https://crbug.com/647554.
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(TransformationMatrix(1, 1, 1, 0, 0, 0)),
+              1e-6);
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(TransformationMatrix(
+                  -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
+              1e-6);
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(TransformationMatrix(
+                  1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
+              1e-6);
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(TransformationMatrix(
+                  1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1)),
+              1e-6);
 }
 
 }  // namespace blink

@@ -31,10 +31,9 @@ class SVGPolygonElement final : public SVGPolyElement {
  public:
   DECLARE_NODE_FACTORY(SVGPolygonElement);
 
-  Path AsPath() const override;
-
- private:
   explicit SVGPolygonElement(Document&);
+
+  Path AsPath() const override;
 };
 
 }  // namespace blink

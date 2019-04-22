@@ -9,13 +9,14 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "components/arc/common/app.mojom.h"
 
 class PrefService;
-
-namespace content {
-class BrowserContext;
-}
+class Profile;
 
 namespace arc {
 
@@ -23,14 +24,12 @@ namespace arc {
 // The Play Store app is ready and there is no lock for PAI flow.
 class ArcPaiStarter : public ArcAppListPrefs::Observer {
  public:
-  ArcPaiStarter(content::BrowserContext* context, PrefService* pref_service);
+  explicit ArcPaiStarter(Profile* profile);
   ~ArcPaiStarter() override;
 
   // Creates PAI starter in case it has not been executed for the requested
   // |context|.
-  static std::unique_ptr<ArcPaiStarter> CreateIfNeeded(
-      content::BrowserContext* context,
-      PrefService* pref_service);
+  static std::unique_ptr<ArcPaiStarter> CreateIfNeeded(Profile* profile);
 
   // Locks PAI to be run on the Play Store app is ready.
   void AcquireLock();
@@ -43,13 +42,28 @@ class ArcPaiStarter : public ArcAppListPrefs::Observer {
   // started already then callback is called immediately.
   void AddOnStartCallback(base::OnceClosure callback);
 
+  // Triggers retry for testing. This fails in case retry is not scheduled.
+  void TriggerRetryForTesting();
+
   // Returns true if lock was acquired.
   bool locked() const { return locked_; }
 
+  // Returns true if PAI request was already started.
   bool started() const { return started_; }
 
  private:
+  // Start PAI request if all conditions are met.
+  //   * PAI is not yet started.
+  //   * PAI is not locked externally.
+  //   * PAI is not explicitly disabled in autotest.
+  //   * Play Store app exists and is ready.
+  //   * Request is not pending.
   void MaybeStartPai();
+  // Called when PAI request completed successfully.
+  void OnPaiDone();
+  // Called when PAI request is done and |state| indicates state of the PAI flow
+  // after the request.
+  void OnPaiRequested(mojom::PaiFlowState state);
 
   // ArcAppListPrefs::Observer:
   void OnAppRegistered(const std::string& app_id,
@@ -57,11 +71,26 @@ class ArcPaiStarter : public ArcAppListPrefs::Observer {
   void OnAppStatesChanged(const std::string& app_id,
                           const ArcAppListPrefs::AppInfo& app_info) override;
 
-  content::BrowserContext* const context_;
+  Profile* const profile_;
   PrefService* const pref_service_;
   std::vector<base::OnceClosure> onstart_callbacks_;
+  // Set to true in case external component (Assistant) wants to lock PAI for
+  // awhile.
   bool locked_ = false;
+  // Set to true once PAI request was successfully processed.
   bool started_ = false;
+  // Indicates that PAI request is pending.
+  bool pending_ = false;
+  // Used in case PAI request returns an error and we have to retry the request
+  // after |retry_interval_seconds_|.
+  base::OneShotTimer retry_timer_;
+  // Contains interval for the next retry. Doubled on next attempt until reached
+  // maximum value.
+  int retry_interval_seconds_;
+  // Used to report PAI flow time uma.
+  base::Time request_start_time_;
+  // Keep last.
+  base::WeakPtrFactory<ArcPaiStarter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPaiStarter);
 };

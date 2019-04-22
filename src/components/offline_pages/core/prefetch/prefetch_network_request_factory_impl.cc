@@ -9,6 +9,7 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/generate_page_bundle_request.h"
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
@@ -43,10 +44,12 @@ void RecordGeneratePageBundleStatusUma(PrefetchRequestStatus status) {
 PrefetchNetworkRequestFactoryImpl::PrefetchNetworkRequestFactoryImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     version_info::Channel channel,
-    const std::string& user_agent)
+    const std::string& user_agent,
+    PrefService* prefs)
     : url_loader_factory_(std::move(url_loader_factory)),
       channel_(channel),
       user_agent_(user_agent),
+      prefs_(prefs),
       weak_factory_(this) {}
 
 PrefetchNetworkRequestFactoryImpl::~PrefetchNetworkRequestFactoryImpl() =
@@ -63,14 +66,16 @@ void PrefetchNetworkRequestFactoryImpl::MakeGeneratePageBundleRequest(
     PrefetchRequestFinishedCallback callback) {
   if (!AddConcurrentRequest())
     return;
-  int max_bundle_size = IsLimitlessPrefetchingEnabled()
+  int max_bundle_size = prefetch_prefs::IsLimitlessPrefetchingEnabled(prefs_)
                             ? kMaxBundleSizeForLimitlessBytes
                             : kMaxBundleSizeBytes;
   uint64_t request_id = GetNextRequestId();
   generate_page_bundle_requests_[request_id] =
       std::make_unique<GeneratePageBundleRequest>(
           user_agent_, gcm_registration_id, max_bundle_size, url_strings,
-          channel_, url_loader_factory_,
+          channel_,
+
+          prefetch_prefs::GetPrefetchTestingHeader(prefs_), url_loader_factory_,
           base::BindOnce(
               &PrefetchNetworkRequestFactoryImpl::GeneratePageBundleRequestDone,
               weak_factory_.GetWeakPtr(), std::move(callback), request_id));
@@ -105,6 +110,10 @@ void PrefetchNetworkRequestFactoryImpl::GeneratePageBundleRequestDone(
     PrefetchRequestStatus status,
     const std::string& operation_name,
     const std::vector<RenderPageInfo>& pages) {
+  if (status == PrefetchRequestStatus::kShouldSuspendForbiddenByOPS ||
+      status == PrefetchRequestStatus::kShouldSuspendNewlyForbiddenByOPS) {
+    prefetch_prefs::SetEnabledByServer(prefs_, false);
+  }
   std::move(callback).Run(status, operation_name, pages);
   generate_page_bundle_requests_.erase(request_id);
   ReleaseConcurrentRequest();

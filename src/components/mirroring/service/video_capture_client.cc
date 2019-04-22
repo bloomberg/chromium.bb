@@ -4,8 +4,10 @@
 
 #include "components/mirroring/service/video_capture_client.h"
 
+#include "base/bind.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 
 namespace mirroring {
 

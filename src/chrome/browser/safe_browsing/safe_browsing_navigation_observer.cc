@@ -20,6 +20,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_type.h"
+#include "net/base/ip_endpoint.h"
 
 using content::WebContents;
 
@@ -227,10 +228,10 @@ void SafeBrowsingNavigationObserver::DidRedirectNavigation(
 void SafeBrowsingNavigationObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if ((navigation_handle->HasCommitted() || navigation_handle->IsDownload()) &&
-      !navigation_handle->GetSocketAddress().IsEmpty()) {
+      !navigation_handle->GetSocketAddress().address().empty()) {
     manager_->RecordHostToIpMapping(
         navigation_handle->GetURL().host(),
-        navigation_handle->GetSocketAddress().host());
+        navigation_handle->GetSocketAddress().ToStringWithoutPort());
   }
 
   if (navigation_handle_map_.find(navigation_handle) ==

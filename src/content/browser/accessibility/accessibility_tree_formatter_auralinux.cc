@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_auralinux.h"
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
@@ -36,6 +37,7 @@ class AccessibilityTreeFormatterAuraLinux
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
+  const std::string GetDenyNodeString() override;
   void AddProperties(const BrowserAccessibility& node,
                      base::DictionaryValue* dict) override;
 
@@ -64,11 +66,18 @@ AccessibilityTreeFormatter::Create() {
   return std::make_unique<AccessibilityTreeFormatterAuraLinux>();
 }
 
-AccessibilityTreeFormatterAuraLinux::AccessibilityTreeFormatterAuraLinux() {
+// static
+std::vector<AccessibilityTreeFormatter::TestPass>
+AccessibilityTreeFormatter::GetTestPasses() {
+  return {
+      {"blink", &AccessibilityTreeFormatterBlink::CreateBlink},
+      {"linux", &AccessibilityTreeFormatter::Create},
+  };
 }
 
-AccessibilityTreeFormatterAuraLinux::~AccessibilityTreeFormatterAuraLinux() {
-}
+AccessibilityTreeFormatterAuraLinux::AccessibilityTreeFormatterAuraLinux() {}
+
+AccessibilityTreeFormatterAuraLinux::~AccessibilityTreeFormatterAuraLinux() {}
 
 std::unique_ptr<base::DictionaryValue>
 AccessibilityTreeFormatterAuraLinux::BuildAccessibilityTreeForPattern(
@@ -248,13 +257,19 @@ const char* const ATK_OBJECT_ATTRIBUTES[] = {
     "class",
     "colcount",
     "colindex",
+    "colspan",
+    "coltext",
     "container-atomic",
     "container-busy",
     "container-live",
     "container-relevant",
+    "current",
+    "dropeffect",
     "display",
     "explicit-name",
+    "grabbed",
     "haspopup",
+    "hidden",
     "id",
     "keyshortcuts",
     "level",
@@ -265,7 +280,10 @@ const char* const ATK_OBJECT_ATTRIBUTES[] = {
     "roledescription",
     "rowcount",
     "rowindex",
+    "rowspan",
+    "rowtext",
     "setsize",
+    "sort",
     "src",
     "table-cell-index",
     "tag",
@@ -303,16 +321,27 @@ base::string16 AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
       &line);
 
   const base::ListValue* states_value;
-  node.GetList("states", &states_value);
-  for (auto it = states_value->begin(); it != states_value->end(); ++it) {
-    std::string state_value;
-    if (it->GetAsString(&state_value))
-      WriteAttribute(false, state_value, &line);
+  if (node.GetList("states", &states_value)) {
+    for (auto it = states_value->begin(); it != states_value->end(); ++it) {
+      std::string state_value;
+      if (it->GetAsString(&state_value))
+        WriteAttribute(false, state_value, &line);
+    }
   }
 
-  int id_value;
-  node.GetInteger("id", &id_value);
-  WriteAttribute(false, base::StringPrintf("id=%d", id_value), &line);
+  const base::ListValue* relations_value;
+  if (node.GetList("relations", &relations_value)) {
+    for (auto it = relations_value->begin(); it != relations_value->end();
+         ++it) {
+      std::string relation_value;
+      if (it->GetAsString(&relation_value)) {
+        // By default, exclude embedded-by because that should appear on every
+        // top-level document object. The other relation types are less common
+        // and thus almost always of interest when testing.
+        WriteAttribute(relation_value != "embedded-by", relation_value, &line);
+      }
+    }
+  }
 
   for (const char* attribute_name : ATK_OBJECT_ATTRIBUTES) {
     std::string attribute_value;
@@ -321,6 +350,33 @@ base::string16 AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
           false,
           base::StringPrintf("%s:%s", attribute_name, attribute_value.c_str()),
           &line);
+    }
+  }
+
+  const base::ListValue* value_info;
+  if (node.GetList("value", &value_info)) {
+    for (auto it = value_info->begin(); it != value_info->end(); ++it) {
+      std::string value_property;
+      if (it->GetAsString(&value_property))
+        WriteAttribute(true, value_property, &line);
+    }
+  }
+
+  const base::ListValue* table_info;
+  if (node.GetList("table", &table_info)) {
+    for (auto it = table_info->begin(); it != table_info->end(); ++it) {
+      std::string table_property;
+      if (it->GetAsString(&table_property))
+        WriteAttribute(true, table_property, &line);
+    }
+  }
+
+  const base::ListValue* cell_info;
+  if (node.GetList("cell", &cell_info)) {
+    for (auto it = cell_info->begin(); it != cell_info->end(); ++it) {
+      std::string cell_property;
+      if (it->GetAsString(&cell_property))
+        WriteAttribute(true, cell_property, &line);
     }
   }
 
@@ -342,6 +398,10 @@ const std::string AccessibilityTreeFormatterAuraLinux::GetAllowString() {
 
 const std::string AccessibilityTreeFormatterAuraLinux::GetDenyString() {
   return "@AURALINUX-DENY:";
+}
+
+const std::string AccessibilityTreeFormatterAuraLinux::GetDenyNodeString() {
+  return "@AURALINUX-DENY-NODE:";
 }
 
 }  // namespace content

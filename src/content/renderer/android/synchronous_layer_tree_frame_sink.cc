@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -28,7 +29,7 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/android/synchronous_compositor_registry.h"
-#include "content/renderer/gpu/frame_swap_message_queue.h"
+#include "content/renderer/frame_swap_message_queue.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -86,12 +87,6 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
   void BindFramebuffer() override {}
   void SetDrawRectangle(const gfx::Rect& rect) override {}
   void SwapBuffers(viz::OutputSurfaceFrame frame) override {}
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* GetVulkanSurface() override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-#endif
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,
@@ -167,9 +162,9 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
                                    ? synthetic_begin_frame_source_.get()
                                    : external_begin_frame_source_.get());
   client_->SetMemoryPolicy(memory_policy_);
-  client_->SetTreeActivationCallback(
-      base::Bind(&SynchronousLayerTreeFrameSink::DidActivatePendingTree,
-                 base::Unretained(this)));
+  client_->SetTreeActivationCallback(base::BindRepeating(
+      &SynchronousLayerTreeFrameSink::DidActivatePendingTree,
+      base::Unretained(this)));
   registry_->RegisterLayerTreeFrameSink(routing_id_, this);
 
   constexpr bool root_support_is_root = true;
@@ -214,7 +209,7 @@ void SynchronousLayerTreeFrameSink::DetachFromClient() {
   if (sync_client_)
     sync_client_->SinkDestroyed();
   registry_->UnregisterLayerTreeFrameSink(routing_id_, this);
-  client_->SetTreeActivationCallback(base::Closure());
+  client_->SetTreeActivationCallback(base::RepeatingClosure());
   root_support_.reset();
   child_support_.reset();
   software_output_surface_ = nullptr;
@@ -226,6 +221,7 @@ void SynchronousLayerTreeFrameSink::DetachFromClient() {
 
 void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
     viz::CompositorFrame frame,
+    bool hit_test_data_changed,
     bool show_hit_test_borders) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_client_);
@@ -313,9 +309,9 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
         embed_render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
     shared_quad_state->SetAll(
         child_transform, gfx::Rect(child_size), gfx::Rect(child_size),
-        gfx::Rect() /* clip_rect */, false /* is_clipped */,
-        are_contents_opaque /* are_contents_opaque */, 1.f /* opacity */,
-        SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
+        gfx::RRectF() /* rounded_corner_bounds */, gfx::Rect() /* clip_rect */,
+        false /* is_clipped */, are_contents_opaque /* are_contents_opaque */,
+        1.f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
     surface_quad->SetNew(
         shared_quad_state, gfx::Rect(child_size), gfx::Rect(child_size),
         viz::SurfaceRange(
@@ -530,7 +526,7 @@ void SynchronousLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 
 void SynchronousLayerTreeFrameSink::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {}
+    const viz::PresentationFeedbackMap& feedbacks) {}
 
 void SynchronousLayerTreeFrameSink::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
@@ -544,6 +540,15 @@ void SynchronousLayerTreeFrameSink::OnNeedsBeginFrames(
     bool needs_begin_frames) {
   if (sync_client_) {
     sync_client_->SetNeedsBeginFrames(needs_begin_frames);
+  }
+}
+
+void SynchronousLayerTreeFrameSink::DidPresentCompositorFrame(
+    const viz::PresentationFeedbackMap& presentation_feedbacks) {
+  if (!client_)
+    return;
+  for (const auto& pair : presentation_feedbacks) {
+    client_->DidPresentCompositorFrame(pair.first, pair.second);
   }
 }
 

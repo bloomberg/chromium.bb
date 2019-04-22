@@ -17,6 +17,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"
+#include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
@@ -24,11 +25,7 @@ namespace content {
 
 class ServiceWorkerUtils {
  public:
-  using RequestHeaderMap = base::flat_map<std::string, std::string>;
-
-  static bool IsMainResourceType(ResourceType type) {
-    return IsResourceTypeFrame(type) || type == RESOURCE_TYPE_SHARED_WORKER;
-  }
+  static bool IsMainResourceType(ResourceType type);
 
   // Returns true if |scope| matches |url|.
   CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
@@ -61,11 +58,6 @@ class ServiceWorkerUtils {
   CONTENT_EXPORT static bool AllOriginsMatchAndCanAccessServiceWorkers(
       const std::vector<GURL>& urls);
 
-  // Returns true if the |provider_id| was assigned by the browser process.
-  static bool IsBrowserAssignedProviderId(int provider_id) {
-    return provider_id < kInvalidServiceWorkerProviderId;
-  }
-
   template <typename T>
   static std::string MojoEnumToString(T mojo_enum) {
     std::ostringstream oss;
@@ -88,10 +80,16 @@ class ServiceWorkerUtils {
   CONTENT_EXPORT static blink::mojom::FetchAPIRequestPtr
   DeserializeFetchRequestFromString(const std::string& serialized);
 
-  // TODO(https://crbug.com/789854) Remove this once ServiceWorkerHeaderMap is
-  // removed.
-  CONTENT_EXPORT static content::ServiceWorkerHeaderMap
-  ToServiceWorkerHeaderMap(const RequestHeaderMap& header_);
+  CONTENT_EXPORT static const char* FetchResponseSourceToSuffix(
+      network::mojom::FetchResponseSource source);
+
+  CONTENT_EXPORT static void SendHttpResponseInfoToClient(
+      const net::HttpResponseInfo* http_info,
+      uint32_t options,
+      base::TimeTicks request_start_time,
+      base::TimeTicks response_start_time,
+      int response_data_size,
+      network::mojom::URLLoaderClientProxy* client_proxy);
 
  private:
   static bool IsPathRestrictionSatisfiedInternal(

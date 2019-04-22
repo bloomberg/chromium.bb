@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -253,8 +252,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   ASSERT_TRUE(app_browser->is_app());
 }
 
-// Disabled: http://crbug.com/230165
-#if defined(OS_WIN)
+// Disabled: crbug.com/230165, crbug.com/915339
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_LaunchTabApp DISABLED_LaunchTabApp
 #else
 #define MAYBE_LaunchTabApp LaunchTabApp
@@ -301,26 +300,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchTabApp) {
   // If the ID changed, then the pref will not apply to the app.
   ASSERT_EQ(app_id, app_id_new);
 
-  unsigned expected_browser_count = 2;
-#if defined(OS_MACOSX)
-  // Without the new Bookmark Apps, Mac has no way of making standalone browser
-  // windows for apps, so it will add to the tabstrip instead.
-  EXPECT_FALSE(extensions::util::IsNewBookmarkAppsEnabled());
-  EXPECT_FALSE(extensions::util::CanHostedAppsOpenInWindows());
-  expected_browser_count = 1;
-  ASSERT_EQ(2, browser()->tab_strip_model()->count());
-#endif
   // Find the app's browser.  Opening in a new window will create
   // a new browser.
-  ASSERT_EQ(expected_browser_count,
-            chrome::GetBrowserCount(browser()->profile()));
-  if (expected_browser_count == 2) {
-    Browser* app_browser = FindOtherBrowser(browser());
-    ASSERT_TRUE(app_browser->is_app());
-  }
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
+  Browser* app_browser = FindOtherBrowser(browser());
+  ASSERT_TRUE(app_browser->is_app());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchType) {
+// Flaky on MacOS: crbug.com/915339
+#if defined(OS_MACOSX)
+#define MAYBE_LaunchType DISABLED_LaunchType
+#else
+#define MAYBE_LaunchType LaunchType
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchType) {
   LoadExtensions();
   base::FilePath basedir = test_data_dir_.AppendASCII("management");
   LoadNamedExtension(basedir, "packaged_app");

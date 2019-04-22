@@ -7,9 +7,10 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/bind.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -25,8 +26,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/constants.mojom.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
@@ -37,6 +38,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 using content::BrowserContext;
 using content::RenderProcessHost;
@@ -138,7 +140,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   }
 
   void SetAcceptLanguages(const std::string& accept_languages) {
-    prefs_->SetString(prefs::kAcceptLanguages, accept_languages);
+    prefs_->SetString(language::prefs::kAcceptLanguages, accept_languages);
   }
 
   bool GetEnableSpellcheckState(bool initial_state = false) {
@@ -461,8 +463,8 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     size_t actual = base::WriteFile(
         bdict_path, reinterpret_cast<const char*>(kCorruptedBDICT),
-        arraysize(kCorruptedBDICT));
-    EXPECT_EQ(arraysize(kCorruptedBDICT), actual);
+        base::size(kCorruptedBDICT));
+    EXPECT_EQ(base::size(kCorruptedBDICT), actual);
   }
 
   // Attach an event to the SpellcheckService object so we can receive its

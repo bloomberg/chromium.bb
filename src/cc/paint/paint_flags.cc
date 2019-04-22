@@ -24,8 +24,6 @@ PaintFlags::PaintFlags() {
   bitfields_.cap_type_ = SkPaint::kDefault_Cap;
   bitfields_.join_type_ = SkPaint::kDefault_Join;
   bitfields_.style_ = SkPaint::kFill_Style;
-  bitfields_.text_encoding_ = SkPaint::kUTF8_TextEncoding;
-  bitfields_.hinting_ = static_cast<unsigned>(SkFontHinting::kNormal);
   bitfields_.filter_quality_ = SkFilterQuality::kNone_SkFilterQuality;
 
   static_assert(sizeof(bitfields_) <= sizeof(bitfields_uint_),
@@ -43,7 +41,6 @@ PaintFlags::~PaintFlags() {
   blend_mode_ = static_cast<uint32_t>(SkBlendMode::kLastMode);
 
   // Free refcounted objects one by one.
-  typeface_.reset();
   path_effect_.reset();
   shader_.reset();
   mask_filter_.reset();
@@ -127,7 +124,6 @@ bool PaintFlags::SupportsFoldingAlpha() const {
 
 SkPaint PaintFlags::ToSkPaint() const {
   SkPaint paint;
-  paint.setTypeface(typeface_);
   paint.setPathEffect(path_effect_);
   if (shader_)
     paint.setShader(shader_->GetSkShader());
@@ -136,38 +132,17 @@ SkPaint PaintFlags::ToSkPaint() const {
   paint.setDrawLooper(draw_looper_);
   if (image_filter_)
     paint.setImageFilter(image_filter_->cached_sk_filter_);
-  paint.setTextSize(text_size_);
   paint.setColor(color_);
   paint.setStrokeWidth(width_);
   paint.setStrokeMiter(miter_limit_);
   paint.setBlendMode(getBlendMode());
-  paint.setFlags(bitfields_.flags_);
+  paint.setAntiAlias(bitfields_.antialias_);
+  paint.setDither(bitfields_.dither_);
   paint.setStrokeCap(static_cast<SkPaint::Cap>(getStrokeCap()));
   paint.setStrokeJoin(static_cast<SkPaint::Join>(getStrokeJoin()));
   paint.setStyle(static_cast<SkPaint::Style>(getStyle()));
-  paint.setTextEncoding(static_cast<SkPaint::TextEncoding>(getTextEncoding()));
-  paint.setHinting(static_cast<SkFontHinting>(getHinting()));
   paint.setFilterQuality(getFilterQuality());
   return paint;
-}
-
-SkFont PaintFlags::ToSkFont() const {
-  SkFont font;
-  font.setTypeface(typeface_);
-  font.setSize(text_size_);
-  font.setHinting(static_cast<SkFontHinting>(getHinting()));
-  font.setForceAutoHinting(isAutohinted());
-  font.setSubpixel(isSubpixelText());
-  if (isAntiAlias()) {
-    if (isLCDRenderText()) {
-      font.setEdging(SkFont::Edging::kSubpixelAntiAlias);
-    } else {
-      font.setEdging(SkFont::Edging::kAntiAlias);
-    }
-  } else {
-    font.setEdging(SkFont::Edging::kAlias);
-  }
-  return font;
 }
 
 bool PaintFlags::IsValid() const {
@@ -178,8 +153,6 @@ bool PaintFlags::operator==(const PaintFlags& other) const {
   // Can't just ToSkPaint and operator== here as SkPaint does pointer
   // comparisons on all the ref'd skia objects on the SkPaint, which
   // is not true after serialization.
-  if (!PaintOp::AreEqualEvenIfNaN(getTextSize(), other.getTextSize()))
-    return false;
   if (getColor() != other.getColor())
     return false;
   if (!PaintOp::AreEqualEvenIfNaN(getStrokeWidth(), other.getStrokeWidth()))
@@ -194,14 +167,9 @@ bool PaintFlags::operator==(const PaintFlags& other) const {
     return false;
   if (getStyle() != other.getStyle())
     return false;
-  if (getTextEncoding() != other.getTextEncoding())
-    return false;
-  if (getHinting() != other.getHinting())
-    return false;
   if (getFilterQuality() != other.getFilterQuality())
     return false;
 
-  // TODO(enne): compare typeface too
   if (!PaintOp::AreSkFlattenablesEqual(getPathEffect().get(),
                                        other.getPathEffect().get())) {
     return false;
@@ -237,8 +205,8 @@ bool PaintFlags::HasDiscardableImages() const {
 }
 
 size_t PaintFlags::GetSerializedSize() const {
-  return sizeof(text_size_) + sizeof(color_) + sizeof(width_) +
-         sizeof(miter_limit_) + sizeof(blend_mode_) + sizeof(bitfields_uint_) +
+  return sizeof(color_) + sizeof(width_) + sizeof(miter_limit_) +
+         sizeof(blend_mode_) + sizeof(bitfields_uint_) +
          PaintOpWriter::GetFlattenableSize(path_effect_.get()) +
          PaintOpWriter::Alignment() +
          PaintOpWriter::GetFlattenableSize(mask_filter_.get()) +

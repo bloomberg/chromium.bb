@@ -8,13 +8,14 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/sync/base/node_ordinal.h"
 #include "components/sync/base/time.h"
@@ -38,7 +39,7 @@ void CatastrophicErrorHandler(bool* catastrophic_error_handler_was_called) {
 // Create a dirty EntryKernel with an ID derived from |id| + |id_suffix|.
 std::unique_ptr<EntryKernel> CreateEntry(int id, const std::string& id_suffix) {
   std::unique_ptr<EntryKernel> entry(new EntryKernel());
-  std::string id_string = base::Int64ToString(id) + id_suffix;
+  std::string id_string = base::NumberToString(id) + id_suffix;
   entry->put(ID, Id::CreateFromClientString(id_string));
   entry->put(META_HANDLE, id);
   entry->mark_dirty(nullptr);
@@ -46,9 +47,6 @@ std::unique_ptr<EntryKernel> CreateEntry(int id, const std::string& id_suffix) {
 }
 
 }  // namespace
-
-extern const int32_t kCurrentPageSizeKB;
-extern const int32_t kCurrentDBVersion;
 
 class MigrationTest : public testing::TestWithParam<int> {
  public:
@@ -68,8 +66,9 @@ class MigrationTest : public testing::TestWithParam<int> {
     JournalIndex delete_journals;
     MetahandleSet metahandles_to_purge;
     Directory::KernelLoadInfo kernel_load_info;
-    return dbs->Load(&tmp_handles_map, &delete_journals, &metahandles_to_purge,
-                     &kernel_load_info) == OPENED;
+    DirOpenResult result = dbs->Load(&tmp_handles_map, &delete_journals,
+                                     &metahandles_to_purge, &kernel_load_info);
+    return result == OPENED_NEW || result == OPENED_EXISTING;
   }
 
   void SetUpCorruptedRootDatabase(sql::Database* connection);
@@ -110,7 +109,7 @@ class MigrationTest : public testing::TestWithParam<int> {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -3597,7 +3596,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion80To81) {
       "SELECT metahandle, server_position_in_parent "
       "FROM metas WHERE unique_server_tag = 'google_chrome'"));
   ASSERT_TRUE(s.Step());
-  ASSERT_EQ(sql::COLUMN_TYPE_INTEGER, s.ColumnType(1));
+  ASSERT_EQ(sql::ColumnType::kInteger, s.GetColumnType(1));
 
   TestDirectoryBackingStore dbs(GetUsername(), &connection);
   EXPECT_TRUE(dbs.MigrateVersion80To81());
@@ -3608,7 +3607,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion80To81) {
       "SELECT metahandle, server_ordinal_in_parent "
       "FROM metas WHERE unique_server_tag = 'google_chrome'"));
   ASSERT_TRUE(new_s.Step());
-  EXPECT_EQ(sql::COLUMN_TYPE_BLOB, new_s.ColumnType(1));
+  EXPECT_EQ(sql::ColumnType::kBlob, new_s.GetColumnType(1));
 
   std::string expected_ordinal = Int64ToNodeOrdinal(1048576).ToInternalValue();
   std::string actual_ordinal;
@@ -3961,8 +3960,8 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
   {
     OnDiskDirectoryBackingStore dbs(GetUsername(), GetDatabasePath());
-    ASSERT_EQ(OPENED, dbs.Load(&handles_map, &delete_journals,
-                               &metahandles_to_purge, &dir_info));
+    ASSERT_EQ(OPENED_EXISTING, dbs.Load(&handles_map, &delete_journals,
+                                        &metahandles_to_purge, &dir_info));
     if (!metahandles_to_purge.empty())
       dbs.DeleteEntries(DirectoryBackingStore::METAS_TABLE,
                         metahandles_to_purge);
@@ -4227,8 +4226,9 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(DirectoryBackingStore, MigrationTest,
-                        testing::Range(67, kCurrentDBVersion + 1));
+INSTANTIATE_TEST_SUITE_P(DirectoryBackingStore,
+                         MigrationTest,
+                         testing::Range(67, kCurrentDBVersion + 1));
 
 TEST_F(DirectoryBackingStoreTest, ModelTypeIds) {
   ModelTypeSet protocol_types = ProtocolTypes();
@@ -4401,7 +4401,7 @@ TEST_F(DirectoryBackingStoreTest, IncreaseDatabasePageSizeFrom4KTo32K) {
 
   DirOpenResult open_result = dbs.Load(
       &handles_map, &delete_journals, &metahandles_to_purge, &kernel_load_info);
-  EXPECT_EQ(open_result, OPENED);
+  EXPECT_EQ(open_result, OPENED_EXISTING);
 
   // Set up database's page size to 4096
   EXPECT_TRUE(dbs.db_->Execute("PRAGMA page_size=4096;"));

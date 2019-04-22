@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -93,7 +92,7 @@ class DomDistillerServiceTest : public testing::Test {
         std::unique_ptr<DistillerFactory>(distiller_factory_),
         std::unique_ptr<DistillerPageFactory>(distiller_page_factory_),
         std::unique_ptr<DistilledPagePrefs>()));
-    fake_db->InitCallback(true);
+    fake_db->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
     fake_db->LoadCallback(true);
   }
 
@@ -411,7 +410,7 @@ TEST_F(DomDistillerServiceTest, TestMultiplePageArticle) {
   std::string base_url("http://www.example.com/p");
   GURL pages_url[kPageCount];
   for (int page_num = 0; page_num < kPageCount; ++page_num) {
-    pages_url[page_num] = GURL(base_url + base::IntToString(page_num));
+    pages_url[page_num] = GURL(base_url + base::NumberToString(page_num));
   }
 
   MockArticleAvailableCallback article_cb;
@@ -530,7 +529,7 @@ TEST_F(DomDistillerServiceTest, TestGetUrlForMultiPageEntry) {
   std::string base_url("http://www.example.com/p");
   GURL pages_url[kPageCount];
   for (int page_num = 0; page_num < kPageCount; ++page_num) {
-    pages_url[page_num] = GURL(base_url + base::IntToString(page_num));
+    pages_url[page_num] = GURL(base_url + base::NumberToString(page_num));
   }
 
   MockArticleAvailableCallback article_cb;

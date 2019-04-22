@@ -8,10 +8,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.base.task.PostTask;
 import org.chromium.components.safe_browsing.SafeBrowsingApiHandler;
 import org.chromium.components.safe_browsing.SafeBrowsingApiHandler.Observer;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +36,11 @@ public class MockSafeBrowsingApiHandler implements SafeBrowsingApiHandler {
     private HashMap<String, String> mResponseMap;
 
     @Override
+    public String getSafetyNetId() {
+        return "";
+    }
+
+    @Override
     public boolean init(Observer observer) {
         return init(observer, false);
     }
@@ -50,9 +56,9 @@ public class MockSafeBrowsingApiHandler implements SafeBrowsingApiHandler {
     public void startUriLookup(final long callbackId, String uri, int[] threatsOfInterest) {
         final String metadata = getMetadata(uri, threatsOfInterest);
         // clang-format off
-        ThreadUtils.runOnUiThread(
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 (Runnable) () -> mObserver.onUrlCheckDone(
-                        callbackId, STATUS_SUCCESS, metadata, DEFAULT_CHECK_DELTA_US));
+                        callbackId, SafeBrowsingResult.SUCCESS, metadata, DEFAULT_CHECK_DELTA_US));
         // clang-format on
     }
 

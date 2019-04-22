@@ -18,7 +18,11 @@
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/web/web_navigation_params.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/weburl_loader_mock.h"
@@ -138,6 +142,55 @@ void WebURLLoaderMockFactoryImpl::ServeAsynchronousRequests() {
     }
   }
   RunUntilIdle();
+}
+
+void WebURLLoaderMockFactoryImpl::FillNavigationParamsResponse(
+    WebNavigationParams* params) {
+  KURL kurl = params->url;
+  if (kurl.ProtocolIsData()) {
+    ResourceResponse response;
+    scoped_refptr<SharedBuffer> buffer;
+    int result;
+    std::tie(result, response, buffer) = network_utils::ParseDataURL(kurl);
+    DCHECK(buffer);
+    DCHECK_EQ(net::OK, result);
+    params->response = WrappedResourceResponse(response);
+    auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
+    body_loader->Write(*buffer);
+    body_loader->Finish();
+    params->body_loader = std::move(body_loader);
+    return;
+  }
+
+  if (delegate_ && delegate_->FillNavigationParamsResponse(params))
+    return;
+
+  base::Optional<WebURLError> error;
+  WebData data;
+
+  size_t redirects = 0;
+  LoadRequest(params->url, &params->response, &error, &data);
+  DCHECK(!error);
+  while (params->response.HttpStatusCode() >= 300 &&
+         params->response.HttpStatusCode() < 400) {
+    WebURL new_url(KURL(params->response.HttpHeaderField("Location")));
+    ++redirects;
+    params->redirects.reserve(redirects);
+    params->redirects.resize(redirects);
+    params->redirects[redirects - 1].redirect_response = params->response;
+    params->redirects[redirects - 1].new_url = new_url;
+    params->redirects[redirects - 1].new_http_method = "GET";
+    LoadRequest(new_url, &params->response, &error, &data);
+    DCHECK(!error);
+  }
+
+  auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
+  if (!data.IsNull()) {
+    scoped_refptr<SharedBuffer> buffer = data;
+    body_loader->Write(*buffer);
+    body_loader->Finish();
+  }
+  params->body_loader = std::move(body_loader);
 }
 
 bool WebURLLoaderMockFactoryImpl::IsMockedURL(const blink::WebURL& url) {

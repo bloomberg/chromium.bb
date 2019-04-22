@@ -29,8 +29,7 @@ void RegisterTestPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kIntPref, 0);
   registry->RegisterDoublePref(kDoublePref, 0.0);
   registry->RegisterStringPref(kStringPref, "default");
-  registry->RegisterListPref(kStringListPref,
-                             std::make_unique<base::ListValue>());
+  registry->RegisterListPref(kStringListPref);
 }
 
 class GetPrefValueHelper

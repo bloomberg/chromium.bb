@@ -50,11 +50,12 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
 
         mMinIconSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_min_size);
         mDisplayedIconSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
-        mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(true);
+        mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(getResources(), true);
         mEndPadding = context.getResources().getDimensionPixelSize(
                 R.dimen.selectable_list_layout_row_padding);
 
-        mIconColorList = AppCompatResources.getColorStateList(context, R.color.white_mode_tint);
+        mIconColorList =
+                AppCompatResources.getColorStateList(context, R.color.default_icon_color_inverse);
     }
 
     @Override
@@ -91,7 +92,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
             }
             setIconDrawable(mBlockedVisitDrawable);
             mTitleView.setTextColor(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.google_red_700));
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_red));
         } else {
             setIconDrawable(
                     mFaviconHelper.getDefaultFaviconDrawable(getContext(), item.getUrl(), true));

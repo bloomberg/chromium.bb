@@ -19,8 +19,7 @@
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/query_in_omnibox.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -111,25 +110,13 @@ bool OmniboxView::IsEditingOrEmpty() const {
 // want to consider reusing the same code for both the popup and omnibox icons.
 gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
                                     SkColor color,
+                                    SkColor search_alternate_color,
                                     IconFetchedCallback on_icon_fetched) const {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   // This is used on desktop only.
   NOTREACHED();
   return gfx::ImageSkia();
 #else
-  if (!IsEditingOrEmpty()) {
-    // Query in Omnibox.
-    if (model_ &&
-        model_->GetQueryInOmniboxSearchTerms(nullptr /* search_terms */)) {
-      gfx::Image icon = model_->client()->GetFaviconForDefaultSearchProvider(
-          std::move(on_icon_fetched));
-      if (!icon.IsEmpty())
-        return model_->client()->GetSizedIcon(icon).AsImageSkia();
-    }
-
-    return gfx::CreateVectorIcon(
-        controller_->GetLocationBarModel()->GetVectorIcon(), dip_size, color);
-  }
 
   // For tests, model_ will be null.
   if (!model_) {
@@ -139,8 +126,21 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
     return gfx::CreateVectorIcon(vector_icon, dip_size, color);
   }
 
-  gfx::Image favicon;
+  if (model_->ShouldShowCurrentPageIcon()) {
+    // Query in Omnibox.
+    LocationBarModel* location_bar_model = controller_->GetLocationBarModel();
+    if (location_bar_model->GetDisplaySearchTerms(nullptr /* search_terms */)) {
+      gfx::Image icon = model_->client()->GetFaviconForDefaultSearchProvider(
+          std::move(on_icon_fetched));
+      if (!icon.IsEmpty())
+        return model_->client()->GetSizedIcon(icon).AsImageSkia();
+    }
 
+    return gfx::CreateVectorIcon(location_bar_model->GetVectorIcon(), dip_size,
+                                 color);
+  }
+
+  gfx::Image favicon;
   AutocompleteMatch match = model_->CurrentMatch(nullptr);
   if (AutocompleteMatch::IsSearchType(match.type)) {
     // For search queries, display default search engine's favicon.
@@ -167,6 +167,16 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
       bookmark_model && bookmark_model->IsBookmarked(match.destination_url);
 
   const gfx::VectorIcon& vector_icon = match.GetVectorIcon(is_bookmarked);
+
+  // When the blue search loop experiment is enabled, the in-omnibox vector
+  // icon for search type matches should be blue as well. This icon is used if
+  // the default search engine favicon has not yet been fetched, or is disabled.
+  if (base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentBlueSearchLoopAndSearchQuery) &&
+      AutocompleteMatch::IsSearchType(match.type)) {
+    return gfx::CreateVectorIcon(vector_icon, dip_size, search_alternate_color);
+  }
+
   return gfx::CreateVectorIcon(vector_icon, dip_size, color);
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
@@ -267,10 +277,15 @@ void OmniboxView::TextChanged() {
     model_->OnChanged();
 }
 
-void OmniboxView::UpdateTextStyle(
+bool OmniboxView::UpdateTextStyle(
     const base::string16& display_text,
     const bool text_is_url,
     const AutocompleteSchemeClassifier& classifier) {
+  if (!text_is_url) {
+    SetEmphasis(true, gfx::Range::InvalidRange());
+    return false;  // Path not eligible for fading if it's not even a URL.
+  }
+
   enum DemphasizeComponents {
     EVERYTHING,
     ALL_BUT_SCHEME,
@@ -282,21 +297,19 @@ void OmniboxView::UpdateTextStyle(
   AutocompleteInput::ParseForEmphasizeComponents(display_text, classifier,
                                                  &scheme, &host);
 
-  if (text_is_url) {
-    const base::string16 url_scheme =
-        display_text.substr(scheme.begin, scheme.len);
-    // Extension IDs are not human-readable, so deemphasize everything to draw
-    // attention to the human-readable name in the location icon text.
-    // Data URLs are rarely human-readable and can be used for spoofing, so draw
-    // attention to the scheme to emphasize "this is just a bunch of data".
-    // For normal URLs, the host is the best proxy for "identity".
-    if (url_scheme == base::UTF8ToUTF16(extensions::kExtensionScheme))
-      deemphasize = EVERYTHING;
-    else if (url_scheme == base::UTF8ToUTF16(url::kDataScheme))
-      deemphasize = ALL_BUT_SCHEME;
-    else if (host.is_nonempty())
-      deemphasize = ALL_BUT_HOST;
-  }
+  const base::string16 url_scheme =
+      display_text.substr(scheme.begin, scheme.len);
+  // Extension IDs are not human-readable, so deemphasize everything to draw
+  // attention to the human-readable name in the location icon text.
+  // Data URLs are rarely human-readable and can be used for spoofing, so draw
+  // attention to the scheme to emphasize "this is just a bunch of data".
+  // For normal URLs, the host is the best proxy for "identity".
+  if (url_scheme == base::UTF8ToUTF16(extensions::kExtensionScheme))
+    deemphasize = EVERYTHING;
+  else if (url_scheme == base::UTF8ToUTF16(url::kDataScheme))
+    deemphasize = ALL_BUT_SCHEME;
+  else if (host.is_nonempty())
+    deemphasize = ALL_BUT_HOST;
 
   gfx::Range scheme_range = scheme.is_nonempty()
                                 ? gfx::Range(scheme.begin, scheme.end())
@@ -322,4 +335,7 @@ void OmniboxView::UpdateTextStyle(
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model()->user_input_in_progress() && scheme_range.IsValid())
     UpdateSchemeStyle(scheme_range);
+
+  // Path is eligible for fading only when the host is the only emphasized part.
+  return deemphasize == ALL_BUT_HOST;
 }

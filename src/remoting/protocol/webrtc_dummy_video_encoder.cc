@@ -104,22 +104,22 @@ int32_t WebrtcDummyVideoEncoder::Release() {
 
 int32_t WebrtcDummyVideoEncoder::Encode(
     const webrtc::VideoFrame& frame,
-    const webrtc::CodecSpecificInfo* codec_specific_info,
-    const std::vector<webrtc::FrameType>* frame_types) {
+    const std::vector<webrtc::VideoFrameType>* frame_types) {
   // WebrtcDummyVideoCapturer doesn't generate any video frames, so Encode() can
   // be called only from VCMGenericEncoder::RequestFrame() to request a key
   // frame.
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoChannelStateObserver::OnKeyFrameRequested,
-                            video_channel_state_observer_));
+      FROM_HERE, base::BindOnce(&VideoChannelStateObserver::OnKeyFrameRequested,
+                                video_channel_state_observer_));
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
 int32_t WebrtcDummyVideoEncoder::SetRates(uint32_t bitrate,
                                           uint32_t framerate) {
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoChannelStateObserver::OnTargetBitrateChanged,
-                            video_channel_state_observer_, bitrate));
+      FROM_HERE,
+      base::BindOnce(&VideoChannelStateObserver::OnTargetBitrateChanged,
+                     video_channel_state_observer_, bitrate));
   // framerate is not expected to be valid given we never report captured
   // frames.
   return WEBRTC_VIDEO_CODEC_OK;
@@ -145,8 +145,9 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
   encoded_image._encodedWidth = frame.size.width();
   encoded_image._encodedHeight = frame.size.height();
   encoded_image._completeFrame = true;
-  encoded_image._frameType =
-      frame.key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta;
+  encoded_image._frameType = frame.key_frame
+                                 ? webrtc::VideoFrameType::kVideoFrameKey
+                                 : webrtc::VideoFrameType::kVideoFrameDelta;
   int64_t capture_time_ms = (capture_time - base::TimeTicks()).InMilliseconds();
   int64_t encode_started_time_ms =
       (encode_started_time - base::TimeTicks()).InMilliseconds();
@@ -161,7 +162,6 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
   encoded_image.content_type_ = webrtc::VideoContentType::SCREENSHARE;
 
   webrtc::CodecSpecificInfo codec_specific_info;
-  memset(&codec_specific_info, 0, sizeof(codec_specific_info));
   codec_specific_info.codecType = frame.codec;
 
   if (frame.codec == webrtc::kVideoCodecVP8) {
@@ -181,6 +181,12 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     vp9_info->num_spatial_layers = 1;
     vp9_info->gof_idx = webrtc::kNoGofIdx;
     vp9_info->temporal_idx = webrtc::kNoTemporalIdx;
+    vp9_info->flexible_mode = false;
+    vp9_info->temporal_up_switch = true;
+    vp9_info->inter_layer_predicted = false;
+    vp9_info->first_frame_in_picture = true;
+    vp9_info->end_of_picture = true;
+    vp9_info->spatial_layer_resolution_present = false;
   } else if (frame.codec == webrtc::kVideoCodecH264) {
 #if defined(USE_H264_ENCODER)
     webrtc::CodecSpecificInfoH264* h264_info =
@@ -217,6 +223,16 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
                                            &header);
 }
 
+webrtc::VideoEncoder::EncoderInfo WebrtcDummyVideoEncoder::GetEncoderInfo()
+    const {
+  EncoderInfo info;
+  // TODO(mirtad): Set this flag correctly per encoder.
+  info.is_hardware_accelerated = true;
+  // Set internal source to true to directly provide encoded frames to webrtc.
+  info.has_internal_source = true;
+  return info;
+}
+
 WebrtcDummyVideoEncoderFactory::WebrtcDummyVideoEncoderFactory()
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   formats_.push_back(webrtc::SdpVideoFormat("VP8"));
@@ -238,8 +254,8 @@ WebrtcDummyVideoEncoderFactory::CreateVideoEncoder(
   base::AutoLock lock(lock_);
   encoders_.push_back(encoder.get());
   if (encoder_created_callback_) {
-    main_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(encoder_created_callback_, type));
+    main_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(encoder_created_callback_, type));
   }
   return encoder;
 }

@@ -4,6 +4,7 @@
 
 #include "storage/browser/fileapi/file_writer_impl.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "storage/browser/blob/blob_data_handle.h"

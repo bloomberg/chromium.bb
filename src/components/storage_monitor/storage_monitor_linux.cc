@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/kill.h"
@@ -115,7 +116,8 @@ uint64_t GetDeviceStorageSize(const base::FilePath& device_path,
 // Gets the device information using udev library.
 std::unique_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
                                            const base::FilePath& mount_point) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(!device_path.empty());
 
   std::unique_ptr<StorageInfo> storage_info;
@@ -189,7 +191,7 @@ void BounceMtabUpdateToStorageMonitorTaskRunner(
     const MtabWatcherLinux::UpdateMtabCallback& callback,
     const MtabWatcherLinux::MountPointDeviceMap& new_mtab) {
   storage_monitor_task_runner->PostTask(FROM_HERE,
-                                        base::Bind(callback, new_mtab));
+                                        base::BindOnce(callback, new_mtab));
 }
 
 MtabWatcherLinux* CreateMtabWatcherLinuxOnMtabWatcherTaskRunner(
@@ -205,7 +207,8 @@ MtabWatcherLinux* CreateMtabWatcherLinuxOnMtabWatcherTaskRunner(
 StorageMonitor::EjectStatus EjectPathOnBlockingTaskRunner(
     const base::FilePath& path,
     const base::FilePath& device) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Note: Linux LSB says umount should exist in /bin.
   static const char kUmountBinary[] = "/bin/umount";

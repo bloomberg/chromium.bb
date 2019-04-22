@@ -36,6 +36,12 @@ class ChromeDataUseMeasurement : public DataUseMeasurement {
   void ReportNetworkServiceDataUse(int32_t network_traffic_annotation_id_hash,
                                    int64_t recv_bytes,
                                    int64_t sent_bytes);
+  void ReportUserTrafficDataUse(bool is_tab_visible, int64_t recv_bytes);
+
+  void RecordContentTypeMetric(const std::string& mime_type,
+                               bool is_main_frame_resource,
+                               bool is_tab_visible,
+                               int64_t recv_bytes);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeDataUseMeasurement);

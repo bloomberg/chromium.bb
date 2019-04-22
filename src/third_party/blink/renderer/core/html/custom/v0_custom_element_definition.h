@@ -39,9 +39,6 @@ namespace blink {
 class V0CustomElementDefinition final
     : public GarbageCollectedFinalized<V0CustomElementDefinition> {
  public:
-  static V0CustomElementDefinition* Create(const V0CustomElementDescriptor&,
-                                           V0CustomElementLifecycleCallbacks*);
-
   V0CustomElementDefinition(const V0CustomElementDescriptor&,
                             V0CustomElementLifecycleCallbacks*);
 
@@ -50,7 +47,7 @@ class V0CustomElementDefinition final
     return callbacks_.Get();
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   V0CustomElementDescriptor descriptor_;

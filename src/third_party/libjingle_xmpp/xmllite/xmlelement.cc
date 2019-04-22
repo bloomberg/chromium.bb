@@ -15,14 +15,14 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlbuilder.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlconstants.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlparser.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlprinter.h"
-#include "third_party/webrtc/rtc_base/checks.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 XmlChild::~XmlChild() {
 }
@@ -358,7 +358,7 @@ void XmlElement::RemoveChildAfter(XmlChild* predecessor) {
 }
 
 void XmlElement::AddAttr(const QName& name, const std::string& value) {
-  RTC_DCHECK(!HasAttr(name));
+  DCHECK(!HasAttr(name));
 
   XmlAttr ** pprev = last_attr_ ? &(last_attr_->next_attr_) : &first_attr_;
   last_attr_ = (*pprev = new XmlAttr(name, value));
@@ -493,4 +493,4 @@ XmlElement::~XmlElement() {
   }
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

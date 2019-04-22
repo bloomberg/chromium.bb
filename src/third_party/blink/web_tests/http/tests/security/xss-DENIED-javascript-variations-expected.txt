@@ -23,5 +23,3 @@ CONSOLE ERROR: line 27: Blocked a frame with origin "http://127.0.0.1:8000" from
 Frame: 'VictimFrame'
 --------
 Inner text should not be replaced.
-
-

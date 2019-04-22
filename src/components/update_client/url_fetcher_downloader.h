@@ -16,20 +16,17 @@
 #include "base/time/time.h"
 #include "components/update_client/crx_downloader.h"
 
-namespace network {
-class SharedURLLoaderFactory;
-class SimpleURLLoader;
-struct ResourceResponseHead;
-}  // namespace network
-
 namespace update_client {
 
-// Implements a CRX downloader in top of the SimpleURLLoader.
+class NetworkFetcher;
+class NetworkFetcherFactory;
+
+// Implements a CRX downloader using a NetworkFetcher object.
 class UrlFetcherDownloader : public CrxDownloader {
  public:
   UrlFetcherDownloader(
       std::unique_ptr<CrxDownloader> successor,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<NetworkFetcherFactory> network_fetcher_factory);
   ~UrlFetcherDownloader() override;
 
  private:
@@ -38,19 +35,26 @@ class UrlFetcherDownloader : public CrxDownloader {
 
   void CreateDownloadDir();
   void StartURLFetch(const GURL& url);
-  void OnURLLoadComplete(base::FilePath file_path);
+  void OnNetworkFetcherComplete(base::FilePath file_path,
+                                int net_error,
+                                int64_t content_size);
   void OnResponseStarted(const GURL& final_url,
-                         const network::ResourceResponseHead& response_head);
+                         int response_code,
+                         int64_t content_length);
+  void OnDownloadProgress(int64_t content_length);
+
   THREAD_CHECKER(thread_checker_);
 
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  scoped_refptr<NetworkFetcherFactory> network_fetcher_factory_;
+  std::unique_ptr<NetworkFetcher> network_fetcher_;
 
   // Contains a temporary download directory for the downloaded file.
   base::FilePath download_dir_;
 
   base::TimeTicks download_start_time_;
 
+  GURL final_url_;
+  int response_code_ = -1;
   int64_t total_bytes_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(UrlFetcherDownloader);

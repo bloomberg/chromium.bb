@@ -223,9 +223,22 @@ TEST(ContentSettingsPatternTest, TrimEndingDotFromHost) {
                Pattern("www.example.com.").ToString().c_str());
 
   EXPECT_TRUE(Pattern("www.example.com.") == Pattern("www.example.com"));
+  EXPECT_TRUE(Pattern("www.example.com.") == Pattern("www.example.com."));
 
   EXPECT_TRUE(Pattern(".").IsValid());
   EXPECT_STREQ(".", Pattern(".").ToString().c_str());
+  EXPECT_TRUE(Pattern("http://.").Matches(GURL("http://.")));
+
+  EXPECT_TRUE(Pattern("a..b").IsValid());
+  EXPECT_STREQ("a..b", Pattern("a..b").ToString().c_str());
+  EXPECT_TRUE(Pattern("a..b").Matches(GURL("http://a..b")));
+
+  EXPECT_TRUE(Pattern("a..b.").IsValid());
+  EXPECT_STREQ("a..b", Pattern("a..b.").ToString().c_str());
+  EXPECT_TRUE(Pattern("a..b.").Matches(GURL("http://a..b.")));
+
+  EXPECT_FALSE(Pattern("..").IsValid());
+  EXPECT_FALSE(Pattern("a..").IsValid());
 }
 
 TEST(ContentSettingsPatternTest, FromString_WithNoWildcards) {
@@ -639,6 +652,31 @@ TEST(ContentSettingsPatternTest, Compare) {
   EXPECT_EQ(ContentSettingsPattern::SUCCESSOR,
             Pattern("https://mail.google.com:*").Compare(
                 Pattern("*://mail.google.com:80")));
+}
+
+TEST(ContentSettingsPatternTest, CompareSubdomains) {
+  EXPECT_EQ(ContentSettingsPattern::IDENTITY,
+            Pattern("https://[*.]a.b").Compare(Pattern("https://[*.]a.b")));
+
+  EXPECT_EQ(ContentSettingsPattern::PREDECESSOR,
+            Pattern("https://[*.]b.a.a.a").Compare(Pattern("https://[*.]a.a")));
+  EXPECT_EQ(ContentSettingsPattern::SUCCESSOR,
+            Pattern("https://[*.]a.a").Compare(Pattern("https://[*.]b.a.a.a")));
+
+  EXPECT_EQ(ContentSettingsPattern::PREDECESSOR,
+            Pattern("https://[*.]a.b.a.b").Compare(Pattern("https://[*.]a.b")));
+  EXPECT_EQ(ContentSettingsPattern::SUCCESSOR,
+            Pattern("https://[*.]a.b").Compare(Pattern("https://[*.]a.b.a.b")));
+
+  EXPECT_EQ(ContentSettingsPattern::DISJOINT_ORDER_PRE,
+            Pattern("https://[*.]a.a").Compare(Pattern("https://[*.]b.a.a.b")));
+  EXPECT_EQ(ContentSettingsPattern::DISJOINT_ORDER_POST,
+            Pattern("https://[*.]b.a.a.b").Compare(Pattern("https://[*.]a.a")));
+
+  EXPECT_EQ(ContentSettingsPattern::DISJOINT_ORDER_PRE,
+            Pattern("https://[*.]a.b").Compare(Pattern("https://[*.]aa.b")));
+  EXPECT_EQ(ContentSettingsPattern::DISJOINT_ORDER_POST,
+            Pattern("https://[*.]aa.b").Compare(Pattern("https://[*.]a.b")));
 }
 
 TEST(ContentSettingsPatternTest, CompareWithWildcard) {

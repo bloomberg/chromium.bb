@@ -41,6 +41,8 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/language/core/common/language_util.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -49,7 +51,6 @@
 #include "components/strings/grit/components_locale_settings.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "components/translate/core/common/translate_util.h"
 #include "components/version_info/version_info.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -1018,7 +1019,8 @@ static void JNI_PrefServiceBridge_ResetAcceptLanguages(
 
   PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(locale_string,
                                                          &accept_languages);
-  GetPrefService()->SetString(prefs::kAcceptLanguages, accept_languages);
+  GetPrefService()->SetString(language::prefs::kAcceptLanguages,
+                              accept_languages);
 }
 
 // Sends all information about the different versions to Java.
@@ -1202,12 +1204,12 @@ static void JNI_PrefServiceBridge_GetChromeAcceptLanguages(
   translate_prefs->GetLanguageInfoList(
       app_locale, translate_prefs->IsTranslateAllowedByPolicy(), &languages);
 
-  translate::ToTranslateLanguageSynonym(&app_locale);
+  language::ToTranslateLanguageSynonym(&app_locale);
   for (const auto& info : languages) {
     // If the language comes from the same language family as the app locale,
     // translate for this language won't be supported on this device.
     std::string lang_code = info.code;
-    translate::ToTranslateLanguageSynonym(&lang_code);
+    language::ToTranslateLanguageSynonym(&lang_code);
     bool supports_translate =
         info.supports_translate && lang_code != app_locale;
 
@@ -1282,11 +1284,11 @@ static jboolean JNI_PrefServiceBridge_IsBlockedLanguage(
       ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
 
   std::string language_code(ConvertJavaStringToUTF8(env, language));
-  translate::ToTranslateLanguageSynonym(&language_code);
+  language::ToTranslateLanguageSynonym(&language_code);
 
   // Application language is always blocked.
   std::string app_locale = g_browser_process->GetApplicationLocale();
-  translate::ToTranslateLanguageSynonym(&app_locale);
+  language::ToTranslateLanguageSynonym(&app_locale);
   if (app_locale == language_code)
     return true;
 

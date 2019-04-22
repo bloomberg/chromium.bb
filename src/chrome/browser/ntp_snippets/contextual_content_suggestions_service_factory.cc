@@ -12,20 +12,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/image_fetcher/core/image_decoder.h"
-#include "components/image_fetcher/core/image_fetcher.h"
-#include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher_impl.h"
 #include "components/ntp_snippets/contextual/reporting/contextual_suggestions_debugging_reporter.h"
 #include "components/ntp_snippets/contextual/reporting/contextual_suggestions_reporter.h"
-#include "components/ntp_snippets/remote/cached_image_fetcher.h"
-#include "components/ntp_snippets/remote/remote_suggestions_database.h"
-#include "components/prefs/pref_service.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -38,9 +31,6 @@
 
 using contextual_suggestions::ContextualSuggestionsFetcherImpl;
 using contextual_suggestions::ContextualContentSuggestionsService;
-
-using ntp_snippets::CachedImageFetcher;
-using ntp_snippets::RemoteSuggestionsDatabase;
 
 namespace {
 
@@ -96,42 +86,18 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     return nullptr;
   }
 
-  PrefService* pref_service = profile->GetPrefs();
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetDefaultStoragePartition(context);
-  std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
-      consent_helper;
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    consent_helper = unified_consent::UrlKeyedDataCollectionConsentHelper::
-        NewPersonalizedDataCollectionConsentHelper(
-            ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
-                profile));
-  }
-
   auto contextual_suggestions_fetcher =
       std::make_unique<ContextualSuggestionsFetcherImpl>(
           storage_partition->GetURLLoaderFactoryForBrowserProcess(),
-          std::move(consent_helper), g_browser_process->GetApplicationLocale());
-  const base::FilePath::CharType kDatabaseFolder[] =
-      FILE_PATH_LITERAL("contextualSuggestionsDatabase");
-  base::FilePath database_dir(profile->GetPath().Append(kDatabaseFolder));
-  auto contextual_suggestions_database =
-      std::make_unique<RemoteSuggestionsDatabase>(database_dir);
-  auto cached_image_fetcher =
-      std::make_unique<ntp_snippets::CachedImageFetcher>(
-          std::make_unique<image_fetcher::ImageFetcherImpl>(
-              std::make_unique<suggestions::ImageDecoderImpl>(),
-              content::BrowserContext::GetDefaultStoragePartition(profile)
-                  ->GetURLLoaderFactoryForBrowserProcess()),
-          pref_service, contextual_suggestions_database.get());
+          g_browser_process->GetApplicationLocale());
   auto reporter_provider = std::make_unique<
       contextual_suggestions::ContextualSuggestionsReporterProvider>(
       std::make_unique<
           contextual_suggestions::ContextualSuggestionsDebuggingReporter>());
   auto* service = new ContextualContentSuggestionsService(
-      std::move(contextual_suggestions_fetcher),
-      std::move(cached_image_fetcher),
-      std::move(contextual_suggestions_database), std::move(reporter_provider));
+      std::move(contextual_suggestions_fetcher), std::move(reporter_provider));
 
   return service;
 }

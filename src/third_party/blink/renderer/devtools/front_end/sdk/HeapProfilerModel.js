@@ -12,6 +12,7 @@ SDK.HeapProfilerModel = class extends SDK.SDKModel {
     this._heapProfilerAgent = target.heapProfilerAgent();
     this._memoryAgent = target.memoryAgent();
     this._runtimeModel = /** @type {!SDK.RuntimeModel} */ (target.model(SDK.RuntimeModel));
+    this._samplingProfilerDepth = 0;
   }
 
   /**
@@ -36,15 +37,24 @@ SDK.HeapProfilerModel = class extends SDK.SDKModel {
     this._heapProfilerAgent.enable();
   }
 
-  startSampling() {
+  /**
+   * @param {number=} samplingRateInBytes
+   */
+  startSampling(samplingRateInBytes) {
+    if (this._samplingProfilerDepth++)
+      return;
     const defaultSamplingIntervalInBytes = 16384;
-    this._heapProfilerAgent.startSampling(defaultSamplingIntervalInBytes);
+    this._heapProfilerAgent.startSampling(samplingRateInBytes || defaultSamplingIntervalInBytes);
   }
 
   /**
    * @return {!Promise<?Protocol.HeapProfiler.SamplingHeapProfile>}
    */
   stopSampling() {
+    if (!this._samplingProfilerDepth)
+      throw new Error('Sampling profiler is not running.');
+    if (--this._samplingProfilerDepth)
+      return this.getSamplingProfile();
     return this._heapProfilerAgent.stopSampling();
   }
 

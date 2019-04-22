@@ -31,14 +31,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -49,10 +46,10 @@ import org.chromium.chrome.browser.tracing.TracingController;
 import org.chromium.chrome.browser.tracing.TracingNotificationManager;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -120,7 +117,7 @@ public class TracingPreferencesTest {
                 fragment.findPreference(TracingPreferences.UI_PREF_START_RECORDING);
 
         CallbackHelper callbackHelper = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             if (TracingController.getInstance().getState()
                     == TracingController.State.INITIALIZING) {
                 // Controls should be disabled while initializing.
@@ -147,7 +144,6 @@ public class TracingPreferencesTest {
     @Test
     @MediumTest
     @Feature({"Preferences"})
-    @Features.EnableFeatures(ChromeFeatureList.DEVELOPER_PREFERENCES)
     @DisableIf.Build(sdk_is_less_than = 21, message = "crbug.com/899894")
     public void testRecordTrace() throws Exception {
         Context context = ContextUtils.getApplicationContext();
@@ -165,12 +161,11 @@ public class TracingPreferencesTest {
         Assert.assertEquals(0, mMockNotificationManager.getNotifications().size());
 
         CallbackHelper callbackHelper = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     TracingController.State.IDLE, TracingController.getInstance().getState());
             Assert.assertTrue(startTracingButton.isEnabled());
-            Assert.assertEquals(
-                    context.getString(R.string.prefs_tracing_start), startTracingButton.getTitle());
+            Assert.assertEquals(TracingPreferences.MSG_START, startTracingButton.getTitle());
 
             // Tap the button to start recording a trace.
             PreferencesTest.clickPreference(fragment, startTracingButton);
@@ -178,8 +173,7 @@ public class TracingPreferencesTest {
             Assert.assertEquals(
                     TracingController.State.STARTING, TracingController.getInstance().getState());
             Assert.assertFalse(startTracingButton.isEnabled());
-            Assert.assertEquals(context.getString(R.string.prefs_tracing_active),
-                    startTracingButton.getTitle());
+            Assert.assertEquals(TracingPreferences.MSG_ACTIVE, startTracingButton.getTitle());
 
             // Observe state changes to RECORDING, STOPPING, STOPPED, and IDLE.
             TracingController.getInstance().addObserver(new TracingController.Observer() {
@@ -250,7 +244,6 @@ public class TracingPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @Features.EnableFeatures(ChromeFeatureList.DEVELOPER_PREFERENCES)
     public void testNotificationsDisabledMessage() throws Exception {
         mMockNotificationManager.setNotificationsEnabled(false);
 
@@ -267,8 +260,8 @@ public class TracingPreferencesTest {
         waitForTracingControllerInitialization(fragment);
 
         Assert.assertFalse(startTracingButton.isEnabled());
-        Assert.assertEquals(context.getString(R.string.tracing_notifications_disabled),
-                statusPreference.getTitle());
+        Assert.assertEquals(
+                TracingPreferences.MSG_NOTIFICATIONS_DISABLED, statusPreference.getTitle());
 
         mMockNotificationManager.setNotificationsEnabled(true);
     }
@@ -276,7 +269,6 @@ public class TracingPreferencesTest {
     @Test
     @MediumTest
     @Feature({"Preferences"})
-    @Features.EnableFeatures(ChromeFeatureList.DEVELOPER_PREFERENCES)
     public void testSelectCategories() throws Exception {
         // We need a renderer so that its tracing categories will be populated.
         mActivityTestRule.startMainActivityOnBlankPage();
@@ -290,7 +282,7 @@ public class TracingPreferencesTest {
 
         waitForTracingControllerInitialization(fragment);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue(defaultCategoriesPref.isEnabled());
             Assert.assertTrue(nonDefaultCategoriesPref.isEnabled());
         });
@@ -327,7 +319,7 @@ public class TracingPreferencesTest {
             Assert.assertEquals(originallyEnabled, sampleCategoryPref.isChecked());
 
             // Simulate selecting / deselecting the category.
-            ThreadUtils.runOnUiThreadBlocking(() -> {
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
                 PreferencesTest.clickPreference(categoriesFragment, sampleCategoryPref);
             });
             Assert.assertNotEquals(originallyEnabled, sampleCategoryPref.isChecked());
@@ -340,7 +332,6 @@ public class TracingPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @Features.EnableFeatures(ChromeFeatureList.DEVELOPER_PREFERENCES)
     public void testSelectMode() throws Exception {
         Context context = ContextUtils.getApplicationContext();
         Preferences activity =
@@ -351,7 +342,7 @@ public class TracingPreferencesTest {
 
         waitForTracingControllerInitialization(fragment);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue(modePref.isEnabled());
 
             // By default, the "record-until-full" mode is selected.

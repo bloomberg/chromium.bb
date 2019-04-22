@@ -11,32 +11,32 @@
 #include "base/stl_util.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/saslcookiemechanism.h"
-#include "third_party/webrtc/rtc_base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/socket_address.h"
 
 namespace notifier {
 
 namespace {
 
-class GaiaCookieMechanism : public buzz::SaslCookieMechanism {
+class GaiaCookieMechanism : public jingle_xmpp::SaslCookieMechanism {
  public:
   GaiaCookieMechanism(const std::string & mechanism,
                       const std::string & username,
                       const std::string & cookie,
                       const std::string & token_service)
-      : buzz::SaslCookieMechanism(
+      : jingle_xmpp::SaslCookieMechanism(
           mechanism, username, cookie, token_service) {}
 
   ~GaiaCookieMechanism() override {}
 
-  buzz::XmlElement* StartSaslAuth() override {
-    buzz::XmlElement* auth = buzz::SaslCookieMechanism::StartSaslAuth();
+  jingle_xmpp::XmlElement* StartSaslAuth() override {
+    jingle_xmpp::XmlElement* auth = jingle_xmpp::SaslCookieMechanism::StartSaslAuth();
     // These attributes are necessary for working with non-gmail gaia
     // accounts.
     const std::string NS_GOOGLE_AUTH_PROTOCOL(
         "http://www.google.com/talk/protocol/auth");
-    const buzz::QName QN_GOOGLE_ALLOW_GENERATED_JID_XMPP_LOGIN(
+    const jingle_xmpp::QName QN_GOOGLE_ALLOW_GENERATED_JID_XMPP_LOGIN(
         NS_GOOGLE_AUTH_PROTOCOL, "allow-generated-jid");
-    const buzz::QName QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT(
+    const jingle_xmpp::QName QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT(
         NS_GOOGLE_AUTH_PROTOCOL, "client-uses-full-bind-result");
     auth->SetAttr(QN_GOOGLE_ALLOW_GENERATED_JID_XMPP_LOGIN, "true");
     auth->SetAttr(QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT, "true");
@@ -64,8 +64,7 @@ GaiaTokenPreXmppAuth::GaiaTokenPreXmppAuth(
 GaiaTokenPreXmppAuth::~GaiaTokenPreXmppAuth() { }
 
 void GaiaTokenPreXmppAuth::StartPreXmppAuth(
-    const buzz::Jid& jid,
-    const rtc::SocketAddress& server,
+    const jingle_xmpp::Jid& jid,
     const std::string& pass,
     const std::string& auth_mechanism,
     const std::string& auth_token) {
@@ -88,8 +87,8 @@ int GaiaTokenPreXmppAuth::GetError() const {
   return 0;
 }
 
-buzz::CaptchaChallenge GaiaTokenPreXmppAuth::GetCaptchaChallenge() const {
-  return buzz::CaptchaChallenge();
+jingle_xmpp::CaptchaChallenge GaiaTokenPreXmppAuth::GetCaptchaChallenge() const {
+  return jingle_xmpp::CaptchaChallenge();
 }
 
 std::string GaiaTokenPreXmppAuth::GetAuthToken() const {
@@ -106,7 +105,7 @@ std::string GaiaTokenPreXmppAuth::ChooseBestSaslMechanism(
                                                           : std::string();
 }
 
-buzz::SaslMechanism* GaiaTokenPreXmppAuth::CreateSaslMechanism(
+jingle_xmpp::SaslMechanism* GaiaTokenPreXmppAuth::CreateSaslMechanism(
     const std::string& mechanism) {
   if (mechanism == auth_mechanism_)
     return new GaiaCookieMechanism(

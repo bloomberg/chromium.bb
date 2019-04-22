@@ -3,20 +3,24 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//build/config/jumbo.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/jumbo.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+import("//testing/test.gni")
 import("//ui/gl/features.gni")
 import("//ui/ozone/ozone.gni")
-import("//testing/test.gni")
 
 declare_args() {
   enable_swiftshader = (is_win || is_linux || (is_mac && use_egl) ||
                         is_chromeos || is_fuchsia) &&
                        (target_cpu == "x86" || target_cpu == "x64" ||
-                        target_cpu == "arm64" || target_cpu == "mipsel" ||
-                        target_cpu == "mips64el")
+                        target_cpu == "arm" || target_cpu == "arm64" ||
+                        target_cpu == "mipsel" || target_cpu == "mips64el")
+
+  # Whether service side logging (actual calls into the GL driver) is enabled
+  # or not.
+  enable_gpu_service_logging = false
 }
 
 use_glx = use_x11 || ozone_platform_x11
@@ -26,11 +30,12 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-buildflag_header("gl_features") {
-  header = "gl_features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
   use_egl_on_mac = use_egl && is_mac
   flags = [
     "ENABLE_SWIFTSHADER=$enable_swiftshader",
+    "USE_DAWN=$use_dawn",
     "USE_EGL_ON_MAC=$use_egl_on_mac",
     "USE_STATIC_ANGLE=$use_static_angle",
   ]
@@ -143,6 +148,9 @@ jumbo_component("gl") {
 
   configs += [ "//build/config:precompiled_headers" ]
   defines = [ "GL_IMPLEMENTATION" ]
+  if (enable_gpu_service_logging) {
+    defines += [ "GPU_ENABLE_SERVICE_LOGGING" ]
+  }
 
   include_dirs = [ "//third_party/mesa_headers" ]
 
@@ -151,7 +159,7 @@ jumbo_component("gl") {
   public_configs = [ "//third_party/khronos:khronos_headers" ]
 
   deps = [
-    ":gl_features",
+    ":buildflags",
     "//base/third_party/dynamic_annotations",
 
     # ANGLE includes are used cross-platform.
@@ -323,8 +331,10 @@ jumbo_component("gl") {
         "//third_party/angle:libEGL",
         "//third_party/angle:libGLESv2",
         "//third_party/mesa_headers",
-        "//third_party/swiftshader",
       ]
+      if (enable_swiftshader) {
+        data_deps += [ "//third_party/swiftshader" ]
+      }
     }
   }
   if (is_android) {
@@ -364,18 +374,20 @@ if (is_mac && use_egl) {
     ]
   }
 
-  copy("swiftshader_library_copy") {
-    sources = [
-      "$root_out_dir/libswiftshader_libEGL.dylib",
-      "$root_out_dir/libswiftshader_libGLESv2.dylib",
-    ]
-    outputs = [
-      "$root_out_dir/egl_intermediates/{{source_file_part}}",
-    ]
-    deps = [
-      "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
-      "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
-    ]
+  if (enable_swiftshader) {
+    copy("swiftshader_library_copy") {
+      sources = [
+        "$root_out_dir/libswiftshader_libEGL.dylib",
+        "$root_out_dir/libswiftshader_libGLESv2.dylib",
+      ]
+      outputs = [
+        "$root_out_dir/egl_intermediates/{{source_file_part}}",
+      ]
+      deps = [
+        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
+        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
+      ]
+    }
   }
 }
 
@@ -459,6 +471,7 @@ source_set("run_all_unittests") {
     deps += [
       "//mojo/core/embedder",
       "//services/service_manager/public/cpp/test:test_support",
+      "//services/ws/public/mojom:constants",
       "//ui/ozone",
     ]
   }
@@ -550,6 +563,7 @@ if (is_android) {
   generate_jar_jni("surface_jni_headers") {
     jni_package = "ui/gl"
     classes = [ "android/view/Surface.class" ]
+    always_mangle = true
   }
 
   generate_jni("gl_jni_headers") {

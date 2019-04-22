@@ -925,9 +925,8 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
         GetImplAnimationHost(&host_impl)
             ->GetElementAnimationsForElementId(layer->element_id());
     DCHECK(element_animations);
-    DCHECK(element_animations->keyframe_effects_list().might_have_observers());
     KeyframeEffect* keyframe_effect =
-        &*element_animations->keyframe_effects_list().begin();
+        &*element_animations->FirstKeyframeEffectForTesting();
     DCHECK(keyframe_effect);
     return *keyframe_effect;
   }
@@ -1061,8 +1060,7 @@ class LayerTreeHostPresentationDuringAnimation
 
   void DisplayReceivedCompositorFrameOnThread(
       const viz::CompositorFrame& frame) override {
-    if (frame.metadata.request_presentation_feedback)
-      received_token_ = frame.metadata.frame_token;
+    received_token_ = frame.metadata.frame_token;
   }
 
   void AfterTest() override {

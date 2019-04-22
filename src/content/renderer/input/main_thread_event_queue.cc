@@ -4,6 +4,9 @@
 
 #include "content/renderer/input/main_thread_event_queue.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/common/input/event_with_latency_info.h"
@@ -115,8 +118,13 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     HandledEventCallback callback =
         base::BindOnce(&QueuedWebInputEvent::HandledEvent,
                        base::Unretained(this), base::RetainedRef(queue));
-    queue->HandleEventOnMainThread(coalesced_event(), latencyInfo(),
-                                   std::move(callback));
+    if (!queue->HandleEventOnMainThread(coalesced_event(), latencyInfo(),
+                                        std::move(callback))) {
+      // The |callback| won't be run, so our stored |callback_| should run
+      // indicating error.
+      HandledEvent(queue, INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latencyInfo(),
+                   nullptr, base::nullopt);
+    }
   }
 
   void HandledEvent(MainThreadEventQueue* queue,
@@ -230,6 +238,7 @@ MainThreadEventQueue::MainThreadEventQueue(
       enable_fling_passive_listener_flag_(base::FeatureList::IsEnabled(
           features::kPassiveEventListenersDueToFling)),
       needs_low_latency_(false),
+      needs_unbuffered_input_for_debugger_(false),
       allow_raf_aligned_input_(allow_raf_aligned_input),
       main_task_runner_(main_task_runner),
       main_thread_scheduler_(main_thread_scheduler),
@@ -357,7 +366,7 @@ void MainThreadEventQueue::QueueClosure(base::OnceClosure closure) {
   std::unique_ptr<QueuedClosure> item(new QueuedClosure(std::move(closure)));
   {
     base::AutoLock lock(shared_state_lock_);
-    shared_state_.events_.Queue(std::move(item));
+    shared_state_.events_.Enqueue(std::move(item));
     needs_post_task = !shared_state_.sent_post_task_;
     shared_state_.sent_post_task_ = true;
   }
@@ -524,19 +533,34 @@ void MainThreadEventQueue::QueueEvent(
   bool is_raf_aligned = IsRafAlignedEvent(event);
   bool needs_main_frame = false;
   bool needs_post_task = false;
+
+  // Record the input event's type prior to enqueueing so that the scheduler
+  // can be notified of its dispatch (if the event is not coalesced).
+  bool is_input_event = event->IsWebInputEvent();
+  WebInputEvent::Type input_event_type = WebInputEvent::kUndefined;
+  if (is_input_event) {
+    auto* queued_input_event =
+        static_cast<const QueuedWebInputEvent*>(event.get());
+    input_event_type = queued_input_event->event().GetType();
+  }
+
   {
     base::AutoLock lock(shared_state_lock_);
-    size_t size_before = shared_state_.events_.size();
-    shared_state_.events_.Queue(std::move(event));
-    size_t size_after = shared_state_.events_.size();
 
-    if (size_before != size_after) {
+    if (shared_state_.events_.Enqueue(std::move(event)) ==
+        MainThreadEventQueueTaskList::EnqueueResult::kEnqueued) {
       if (!is_raf_aligned) {
         needs_post_task = !shared_state_.sent_post_task_;
         shared_state_.sent_post_task_ = true;
       } else {
         needs_main_frame = !shared_state_.sent_main_frame_request_;
         shared_state_.sent_main_frame_request_ = true;
+      }
+
+      // Notify the scheduler that we'll enqueue a task to the main thread.
+      if (is_input_event && main_thread_scheduler_) {
+        main_thread_scheduler_->WillPostInputEventToMainThread(
+            input_event_type);
       }
     }
   }
@@ -573,7 +597,8 @@ bool MainThreadEventQueue::IsRafAlignedEvent(
     case blink::WebInputEvent::kMouseWheel:
     case blink::WebInputEvent::kTouchMove:
       return allow_raf_aligned_input_ && !needs_low_latency_ &&
-             !needs_low_latency_until_pointer_up_;
+             !needs_low_latency_until_pointer_up_ &&
+             !needs_unbuffered_input_for_debugger_;
     default:
       return false;
   }
@@ -588,12 +613,19 @@ void MainThreadEventQueue::HandleEventResampling(
   }
 }
 
-void MainThreadEventQueue::HandleEventOnMainThread(
+bool MainThreadEventQueue::HandleEventOnMainThread(
     const blink::WebCoalescedInputEvent& event,
     const ui::LatencyInfo& latency,
     HandledEventCallback handled_callback) {
-  if (client_)
-    client_->HandleInputEvent(event, latency, std::move(handled_callback));
+  // Notify the scheduler that the main thread is about to execute handlers.
+  if (auto* scheduler = main_thread_scheduler_)
+    scheduler->WillHandleInputEventOnMainThread(event.Event().GetType());
+
+  bool handled = false;
+  if (client_) {
+    handled =
+        client_->HandleInputEvent(event, latency, std::move(handled_callback));
+  }
 
   if (needs_low_latency_until_pointer_up_) {
     // Reset the needs low latency until pointer up mode if necessary.
@@ -609,6 +641,7 @@ void MainThreadEventQueue::HandleEventOnMainThread(
         break;
     }
   }
+  return handled;
 }
 
 void MainThreadEventQueue::SetNeedsMainFrame() {
@@ -637,6 +670,10 @@ void MainThreadEventQueue::ClearClient() {
 
 void MainThreadEventQueue::SetNeedsLowLatency(bool low_latency) {
   needs_low_latency_ = low_latency;
+}
+
+void MainThreadEventQueue::SetNeedsUnbufferedInputForDebugger(bool unbuffered) {
+  needs_unbuffered_input_for_debugger_ = unbuffered;
 }
 
 void MainThreadEventQueue::HasPointerRawMoveEventHandlers(bool has_handlers) {

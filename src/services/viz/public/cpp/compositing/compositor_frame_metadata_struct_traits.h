@@ -21,6 +21,7 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
                     viz::CompositorFrameMetadata> {
   static float device_scale_factor(
       const viz::CompositorFrameMetadata& metadata) {
+    DCHECK_GT(metadata.device_scale_factor, 0);
     return metadata.device_scale_factor;
   }
 
@@ -83,17 +84,13 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   }
 
   static uint32_t frame_token(const viz::CompositorFrameMetadata& metadata) {
+    DCHECK_GT(metadata.frame_token, 0u);
     return metadata.frame_token;
   }
 
   static bool send_frame_token_to_embedder(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.send_frame_token_to_embedder;
-  }
-
-  static bool request_presentation_feedback(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.request_presentation_feedback;
   }
 
   static float min_page_scale_factor(

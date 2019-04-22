@@ -612,13 +612,13 @@
     cf2_arrstack_setCount( &subrStack, CF2_MAX_SUBR + 1 );
 
     charstring  = (CF2_Buffer)cf2_arrstack_getBuffer( &subrStack );
-    *charstring = *buf;    /* structure copy */
-
-    charstringIndex = 0;       /* entry is valid now */
 
     /* catch errors so far */
     if ( *error )
       goto exit;
+
+    *charstring     = *buf;    /* structure copy     */
+    charstringIndex = 0;       /* entry is valid now */
 
     /* main interpreter loop */
     while ( 1 )
@@ -960,10 +960,10 @@
           FT_TRACE4(( " unknown op (%d)\n", op1 ));
         else
         {
-          FT_TRACE4(( " closepath" ));
+          FT_TRACE4(( " closepath\n" ));
 
           /* if there is no path, `closepath' is a no-op */
-          ps_builder_close_contour( &decoder->builder );
+          cf2_glyphpath_closeOpenPath( &glyphPath );
 
           haveWidth = TRUE;
         }
@@ -2420,7 +2420,7 @@
           PS_Builder*  builder;
 
 
-          FT_TRACE4(( " hsbw" ));
+          FT_TRACE4(( " hsbw\n" ));
 
           builder = &decoder->builder;
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
@@ -28,7 +28,7 @@ TEST_F(AppLaunchManifestTest, AppLaunchContainer) {
             AppLaunchInfo::GetLaunchContainer(extension.get()));
 
   extension = LoadAndExpectSuccess("launch_panel.json");
-  EXPECT_EQ(LAUNCH_CONTAINER_PANEL,
+  EXPECT_EQ(LAUNCH_CONTAINER_PANEL_DEPRECATED,
             AppLaunchInfo::GetLaunchContainer(extension.get()));
 
   extension = LoadAndExpectSuccess("launch_default.json");
@@ -66,8 +66,7 @@ TEST_F(AppLaunchManifestTest, AppLaunchContainer) {
                  errors::kInvalidLaunchValue,
                  keys::kLaunchHeight))
   };
-  RunTestcases(testcases, arraysize(testcases),
-      EXPECT_TYPE_ERROR);
+  RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
 }
 
 TEST_F(AppLaunchManifestTest, AppLaunchURL) {
@@ -105,8 +104,7 @@ TEST_F(AppLaunchManifestTest, AppLaunchURL) {
                  errors::kInvalidLaunchValue,
                  keys::kLaunchWebURL))
   };
-  RunTestcases(testcases, arraysize(testcases),
-      EXPECT_TYPE_ERROR);
+  RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
 
   scoped_refptr<Extension> extension;
   extension = LoadAndExpectSuccess("launch_local_path.json");

@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
+#include "content/browser/accessibility/accessibility_event_recorder_uia_win.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
@@ -41,19 +42,21 @@ std::string RoleVariantToString(const base::win::ScopedVariant& role) {
 HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
   Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
-  return SUCCEEDED(hr) ?
-      service_provider->QueryService(IID_IAccessible2, accessible2) : hr;
+  return SUCCEEDED(hr)
+             ? service_provider->QueryService(IID_IAccessible2, accessible2)
+             : hr;
 }
 
 HRESULT QueryIAccessibleText(IAccessible* accessible,
                              IAccessibleText** accessible_text) {
   Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
-  return SUCCEEDED(hr) ?
-      service_provider->QueryService(IID_IAccessibleText, accessible_text) : hr;
+  return SUCCEEDED(hr) ? service_provider->QueryService(IID_IAccessibleText,
+                                                        accessible_text)
+                       : hr;
 }
 
-std::string BstrToUTF8(BSTR bstr) {
+std::string BstrToPrettyUTF8(BSTR bstr) {
   base::string16 str16(bstr, SysStringLen(bstr));
 
   // IAccessibleText returns the text you get by appending all static text
@@ -104,8 +107,10 @@ class AccessibilityEventRecorderWin : public AccessibilityEventRecorder {
 
   // Wrapper around AccessibleObjectFromWindow because the function call
   // inexplicably flakes sometimes on build/trybots.
-  HRESULT AccessibleObjectFromWindowWrapper(
-      HWND hwnd, DWORD dwId, REFIID riid, void **ppvObject);
+  HRESULT AccessibleObjectFromWindowWrapper(HWND hwnd,
+                                            DWORD dwId,
+                                            REFIID riid,
+                                            void** ppvObject);
 
   HWINEVENTHOOK win_event_hook_handle_;
   static AccessibilityEventRecorderWin* instance_;
@@ -129,6 +134,18 @@ std::unique_ptr<AccessibilityEventRecorder> AccessibilityEventRecorder::Create(
 
   return std::make_unique<AccessibilityEventRecorderWin>(
       manager, pid, application_name_match_pattern);
+}
+
+std::vector<AccessibilityEventRecorder::TestPass>
+AccessibilityEventRecorder::GetTestPasses() {
+  // In addition to the 'Blink' pass, Windows includes two accessibility APIs
+  // that need to be tested independently (MSAA & UIA); the Blink pass uses the
+  // same recorder as the MSAA pass.
+  return {
+      {"blink", &AccessibilityEventRecorder::Create},
+      {"win", &AccessibilityEventRecorder::Create},
+      {"uia", &AccessibilityEventRecorderUia::CreateUia},
+  };
 }
 
 // static
@@ -173,14 +190,13 @@ AccessibilityEventRecorderWin::~AccessibilityEventRecorderWin() {
   instance_ = nullptr;
 }
 
-void AccessibilityEventRecorderWin::OnWinEventHook(
-    HWINEVENTHOOK handle,
-    DWORD event,
-    HWND hwnd,
-    LONG obj_id,
-    LONG child_id,
-    DWORD event_thread,
-    DWORD event_time) {
+void AccessibilityEventRecorderWin::OnWinEventHook(HWINEVENTHOOK handle,
+                                                   DWORD event,
+                                                   HWND hwnd,
+                                                   LONG obj_id,
+                                                   LONG child_id,
+                                                   DWORD event_thread,
+                                                   DWORD event_time) {
   Microsoft::WRL::ComPtr<IAccessible> browser_accessible;
   HRESULT hr = AccessibleObjectFromWindowWrapper(
       hwnd, obj_id, IID_IAccessible,
@@ -318,15 +334,17 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
 
   log += base::StringPrintf(" role=%s", RoleVariantToString(role).c_str());
   if (name_bstr.Length() > 0)
-    log += base::StringPrintf(" name=\"%s\"", BstrToUTF8(name_bstr).c_str());
+    log +=
+        base::StringPrintf(" name=\"%s\"", BstrToPrettyUTF8(name_bstr).c_str());
   if (value_bstr.Length() > 0) {
     bool is_document =
         role.type() == VT_I4 && ROLE_SYSTEM_DOCUMENT == V_I4(role.ptr());
     // Don't show actual document value, which is a URL, in order to avoid
     // machine-based differences in tests.
-    log += is_document ? " value~=[doc-url]"
-                       : base::StringPrintf(" value=\"%s\"",
-                                            BstrToUTF8(value_bstr).c_str());
+    log += is_document
+               ? " value~=[doc-url]"
+               : base::StringPrintf(" value=\"%s\"",
+                                    BstrToPrettyUTF8(value_bstr).c_str());
   }
   log += " ";
   log += base::UTF16ToUTF8(IAccessibleStateToString(ia_state));
@@ -340,10 +358,10 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
                                       &position_in_group) == S_OK) {
     if (group_level)
       log += base::StringPrintf(" level=%ld", group_level);
-    if (similar_items_in_group) {
-      log += base::StringPrintf(" %ld of %ld", position_in_group,
-                                similar_items_in_group);
-    }
+    if (position_in_group)
+      log += base::StringPrintf(" PosInSet=%ld", position_in_group);
+    if (similar_items_in_group)
+      log += base::StringPrintf(" SetSize=%ld", similar_items_in_group);
   }
 
   // For TEXT_REMOVED and TEXT_INSERTED events, query the text that was
@@ -355,7 +373,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
       IA2TextSegment old_text;
       if (SUCCEEDED(accessible_text->get_oldText(&old_text))) {
         log += base::StringPrintf(" old_text={'%s' start=%ld end=%ld}",
-                                  BstrToUTF8(old_text.text).c_str(),
+                                  BstrToPrettyUTF8(old_text.text).c_str(),
                                   old_text.start, old_text.end);
       }
     }
@@ -363,19 +381,22 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
       IA2TextSegment new_text;
       if (SUCCEEDED(accessible_text->get_newText(&new_text))) {
         log += base::StringPrintf(" new_text={'%s' start=%ld end=%ld}",
-                                  BstrToUTF8(new_text.text).c_str(),
+                                  BstrToPrettyUTF8(new_text.text).c_str(),
                                   new_text.start, new_text.end);
       }
     }
   }
 
-  log = base::UTF16ToUTF8(
-      base::CollapseWhitespace(base::UTF8ToUTF16(log), true));
+  log =
+      base::UTF16ToUTF8(base::CollapseWhitespace(base::UTF8ToUTF16(log), true));
   OnEvent(log);
 }
 
 HRESULT AccessibilityEventRecorderWin::AccessibleObjectFromWindowWrapper(
-    HWND hwnd, DWORD dw_id, REFIID riid, void** ppv_object) {
+    HWND hwnd,
+    DWORD dw_id,
+    REFIID riid,
+    void** ppv_object) {
   HRESULT hr = ::AccessibleObjectFromWindow(hwnd, dw_id, riid, ppv_object);
   if (SUCCEEDED(hr))
     return hr;

@@ -70,7 +70,9 @@ void GcmInternalsUIMessageHandler::ReturnResults(
     const gcm::GCMClient::GCMStatistics* stats) const {
   base::DictionaryValue results;
   gcm_driver::SetGCMInternalsInfo(stats, profile_service, prefs, &results);
-  web_ui()->CallJavascriptFunction(gcm_driver::kSetGcmInternalsInfo, results);
+
+  std::vector<const base::Value*> args{&results};
+  web_ui()->CallJavascriptFunction(gcm_driver::kSetGcmInternalsInfo, args);
 }
 
 void GcmInternalsUIMessageHandler::RequestAllInfo(const base::ListValue* args) {

@@ -54,7 +54,7 @@ var OriginTrialsHelper = (function() {
             interface_prototype = interface_object.prototype;
           }
         }
-        assert_true(interface_prototype !== undefined, 'Interface ' + interface_name + ' not found');
+        assert_true(interface_prototype !== undefined, 'Interface ' + interface_name + ' exists');
         property_filters[interface_name].forEach(function(property_name) {
           assert_equals(interface_prototype.hasOwnProperty(property_name),
               should_exist,

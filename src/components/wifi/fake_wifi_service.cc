@@ -211,13 +211,14 @@ void FakeWiFiService::NotifyNetworkListChanged(const NetworkList& networks) {
   }
 
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(network_list_changed_observer_, current_networks));
+      FROM_HERE,
+      base::BindOnce(network_list_changed_observer_, current_networks));
 }
 
 void FakeWiFiService::NotifyNetworkChanged(const std::string& network_guid) {
   WiFiService::NetworkGuidList changed_networks(1, network_guid);
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(networks_changed_observer_, changed_networks));
+      FROM_HERE, base::BindOnce(networks_changed_observer_, changed_networks));
 }
 
 }  // namespace wifi

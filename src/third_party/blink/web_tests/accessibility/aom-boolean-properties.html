@@ -25,7 +25,7 @@ test(function(t) {
     assert_equals(axNode.isAtomic, true);
     assert_equals(node.accessibleNode.atomic, null);
     node.accessibleNode.atomic = false;
-    assert_equals(axNode.isAtomic, false);
+    assert_equals(axNode.isAtomic, true);
     node.accessibleNode.atomic = null;
     assert_equals(axNode.isAtomic, true);
     assert_equals(node.accessibleNode.atomic, null);
@@ -40,13 +40,16 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("atomic2");
     assert_equals(axNode.isAtomic, false);
     node.accessibleNode.atomic = true;
-    assert_equals(axNode.isAtomic, true);
+    assert_equals(axNode.isAtomic, false);
 }, "AccessibleNode.atomic");
 </script>
 
 <div role="status" id="busy"></div>
 
 <script>
+// The busy property forms part of the sparse attributes set, so still allows
+// modification of the accessibility tree. This will be fixed in a later CL.
+// TODO(meredithl): Remove AOM reflection for sparse attributes.
 test(function(t) {
     var node = document.getElementById("busy");
     var axNode = accessibilityController.accessibleElementById("busy");
@@ -64,7 +67,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("disabled");
     assert_equals(axNode.restriction, "none");
     node.accessibleNode.disabled = true;
-    assert_equals(axNode.restriction, "disabled");
+    assert_equals(axNode.restriction, "none");
 }, "AccessibleNode.disabled");
 </script>
 
@@ -76,20 +79,22 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("expanded");
     assert_equals(axNode.isExpanded, false);
     node.accessibleNode.expanded = true;
-    assert_equals(axNode.isExpanded, true);
+    assert_equals(axNode.isExpanded, false);
 }, "AccessibleNode.expanded");
 </script>
 
-<div role="region" id="hidden"></div>
+<div role="region" id="will-be-hidden"></div>
 
 <script>
 test(function(t) {
-    var node = document.getElementById("hidden");
-    var axNode = accessibilityController.accessibleElementById("hidden");
+    var node = document.getElementById("will-be-hidden");
+    var axNode = accessibilityController.accessibleElementById("will-be-hidden");
     assert_true(axNode != null);
     node.accessibleNode.hidden = true;
+    node.id = "hidden";
+
     axNode = accessibilityController.accessibleElementById("hidden");
-    assert_true(axNode == null);
+    assert_true(axNode != null);
 }, "AccessibleNode.hidden");
 </script>
 
@@ -101,7 +106,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("modal");
     assert_equals(axNode.isModal, false);
     node.accessibleNode.modal = true;
-    assert_equals(axNode.isModal, true);
+    assert_equals(axNode.isModal, false);
 }, "AccessibleNode.modal");
 </script>
 
@@ -113,7 +118,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("multiline");
     assert_equals(axNode.isMultiLine, false);
     node.accessibleNode.multiline = true;
-    assert_equals(axNode.isMultiLine, true);
+    assert_equals(axNode.isMultiLine, false);
 }, "AccessibleNode.multiline");
 </script>
 
@@ -125,7 +130,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("multiselectable");
     assert_equals(axNode.isMultiSelectable, false);
     node.accessibleNode.multiselectable = true;
-    assert_equals(axNode.isMultiSelectable, true);
+    assert_equals(axNode.isMultiSelectable, false);
 }, "AccessibleNode.multiselectable");
 </script>
 
@@ -137,7 +142,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("readOnly");
     assert_equals(axNode.isAttributeSettable("AXValue"), true);
     node.accessibleNode.readOnly = true;
-    assert_equals(axNode.isAttributeSettable("AXValue"), false);
+    assert_equals(axNode.isAttributeSettable("AXValue"), true);
 }, "AccessibleNode.readOnly");
 </script>
 
@@ -149,7 +154,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("required");
     assert_equals(axNode.isRequired, false);
     node.accessibleNode.required = true;
-    assert_equals(axNode.isRequired, true);
+    assert_equals(axNode.isRequired, false);
 }, "AccessibleNode.required");
 </script>
 
@@ -161,6 +166,6 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("selected");
     assert_equals(axNode.isSelected, false);
     node.accessibleNode.selected = true;
-    assert_equals(axNode.isSelected, true);
+    assert_equals(axNode.isSelected, false);
 }, "AccessibleNode.selected");
 </script>

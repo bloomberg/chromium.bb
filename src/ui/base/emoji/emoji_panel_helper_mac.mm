@@ -7,12 +7,11 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/feature_list.h"
-#include "ui/base/ui_base_features.h"
 
 namespace ui {
 
 bool IsEmojiPanelSupported() {
-  return base::FeatureList::IsEnabled(features::kEnableEmojiContextMenu);
+  return true;
 }
 
 void ShowEmojiPanel() {

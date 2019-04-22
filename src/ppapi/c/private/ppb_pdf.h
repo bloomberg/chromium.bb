@@ -173,6 +173,9 @@ struct PPB_PDF {
                            const struct PP_FloatPoint* right,
                            int32_t right_height);
 
+  // Sets whether the PDF viewer can handle save commands internally.
+  void (*SetPluginCanSave)(PP_Instance instance, bool can_save);
+
   // Displays an alert dialog.
   void (*ShowAlertDialog)(PP_Instance instance, const char* message);
 

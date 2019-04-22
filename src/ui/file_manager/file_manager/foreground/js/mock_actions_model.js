@@ -18,8 +18,7 @@ MockActionModel.prototype.getTitle = function() {
   return this.title;
 };
 
-MockActionModel.prototype.onCanExecute = function() {
-};
+MockActionModel.prototype.onCanExecute = () => {};
 
 MockActionModel.prototype.onExecute = function() {
   cr.dispatchSimpleEvent('invalidated', this.actionsModel);
@@ -39,7 +38,7 @@ MockActionsModel.prototype = {
   __proto__: cr.EventTarget.prototype
 };
 
-MockActionsModel.prototype.initialize = function() {
+MockActionsModel.prototype.initialize = () => {
   return Promise.resolve();
 };
 

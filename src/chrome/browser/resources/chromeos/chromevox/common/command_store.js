@@ -135,14 +135,6 @@ cvox.CommandStore.CMD_WHITELIST = {
   'toggleStickyMode': {
     announce: false,
     msgId: 'toggle_sticky_mode',
-    'disallowOOBE': true,
-    category: 'modifier_keys'
-  },
-  'toggleKeyPrefix': {
-    announce: false,
-    skipInput: true,
-    msgId: 'prefix_key',
-    'disallowOOBE': true,
     category: 'modifier_keys'
   },
   'passThroughMode': {
@@ -161,15 +153,9 @@ cvox.CommandStore.CMD_WHITELIST = {
   'toggleChromeVox': {
     announce: false,
     platformFilter: cvox.PlatformFilter.WML,
-    msgId: 'toggle_chromevox_active',
-    category: 'modifier_keys'
+    msgId: 'toggle_chromevox_active'
   },
   'toggleChromeVoxVersion': {announce: false},
-  'showNextUpdatePage': {
-    msgId: 'show_next_update_description',
-    announce: false,
-    'category': 'help_commands'
-  },
   'openChromeVoxMenus': {announce: false, msgId: 'menus_title'},
   'decreaseTtsRate': {
     announce: false,
@@ -413,7 +399,6 @@ cvox.CommandStore.CMD_WHITELIST = {
   'help': {
     announce: false,
     msgId: 'help',
-    'disallowOOBE': true,
     disallowContinuation: true,
     category: 'help_commands'
   },
@@ -431,6 +416,13 @@ cvox.CommandStore.CMD_WHITELIST = {
     'disallowOOBE': true,
     category: 'help_commands'
   },
+  'showLogPage': {
+    announce: false,
+    disallowContinuation: true,
+    msgId: 'show_log_page',
+    'disallowOOBE': true,
+    category: 'help_commands'
+  },
   'showKbExplorerPage': {
     announce: false,
     disallowContinuation: true,
@@ -438,12 +430,17 @@ cvox.CommandStore.CMD_WHITELIST = {
     'disallowOOBE': true,
     category: 'help_commands'
   },
-  'showTtsSettings':
-      {announce: false, msgId: 'show_tts_settings', category: 'help_commands'},
+  'showTtsSettings': {
+    announce: false,
+    msgId: 'show_tts_settings',
+    category: 'help_commands',
+    disallowOOBE: true
+  },
   'toggleBrailleCaptions':
       {announce: false, msgId: 'braille_captions', category: 'help_commands'},
   'reportIssue': {
     announce: false,
+    disallowOOBE: true,
     msgId: 'panel_menu_item_report_issue',
     category: 'help_commands'
   },

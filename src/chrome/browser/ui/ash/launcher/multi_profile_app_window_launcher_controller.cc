@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -78,7 +78,7 @@ void MultiProfileAppWindowLauncherController::OnAppWindowAdded(
   // app to teleport to the current user's desktop, teleport this window now.
   if (!multi_user_util::IsProfileFromActiveUser(profile) &&
       UserHasAppOnActiveDesktop(app_window)) {
-    MultiUserWindowManager::GetInstance()->ShowWindowForUser(
+    MultiUserWindowManagerClient::GetInstance()->ShowWindowForUser(
         app_window->GetNativeWindow(), multi_user_util::GetCurrentAccountId());
   }
 
@@ -130,11 +130,12 @@ bool MultiProfileAppWindowLauncherController::UserHasAppOnActiveDesktop(
   content::BrowserContext* app_context = app_window->browser_context();
   DCHECK(!app_context->IsOffTheRecord());
   const AccountId current_account_id = multi_user_util::GetCurrentAccountId();
-  MultiUserWindowManager* manager = MultiUserWindowManager::GetInstance();
+  MultiUserWindowManagerClient* client =
+      MultiUserWindowManagerClient::GetInstance();
   for (extensions::AppWindow* other_window : app_window_list_) {
     DCHECK(!other_window->browser_context()->IsOffTheRecord());
-    if (manager->IsWindowOnDesktopOfUser(other_window->GetNativeWindow(),
-                                         current_account_id) &&
+    if (client->IsWindowOnDesktopOfUser(other_window->GetNativeWindow(),
+                                        current_account_id) &&
         app_id == other_window->extension_id() &&
         app_context == other_window->browser_context()) {
       return true;

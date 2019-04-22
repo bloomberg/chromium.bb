@@ -142,17 +142,16 @@ bool KioskModeHandler::Parse(Extension* extension, base::string16* error) {
   std::set<std::string> secondary_app_ids;
   if (manifest->HasKey(keys::kKioskSecondaryApps)) {
     const base::Value* secondary_apps_value = nullptr;
-    const base::ListValue* list = nullptr;
-    if (!manifest->Get(keys::kKioskSecondaryApps, &secondary_apps_value) ||
-        !secondary_apps_value->GetAsList(&list)) {
+    if (!manifest->GetList(keys::kKioskSecondaryApps, &secondary_apps_value)) {
       *error = base::ASCIIToUTF16(manifest_errors::kInvalidKioskSecondaryApps);
       return false;
     }
 
+    const base::Value::ListStorage& list = secondary_apps_value->GetList();
     const bool allow_enabled_on_launch =
         AllowSecondaryAppEnabledOnLaunch(extension);
 
-    for (const auto& value : *list) {
+    for (const auto& value : list) {
       std::unique_ptr<KioskSecondaryAppsType> app =
           KioskSecondaryAppsType::FromValue(value, error);
       if (!app) {

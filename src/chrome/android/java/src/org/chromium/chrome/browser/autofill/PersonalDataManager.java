@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill;
 
 import android.content.Context;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -19,7 +20,6 @@ import org.chromium.content_public.browser.WebContents;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Android wrapper of the PersonalDataManager which provides access from the Java
@@ -455,8 +455,8 @@ public class PersonalDataManager {
 
         public String getFormattedExpirationDate(Context context) {
             return getMonth()
-                    + context.getResources().getString(
-                              R.string.autofill_card_unmask_expiration_date_separator) + getYear();
+                    + context.getResources().getString(R.string.autofill_expiration_date_separator)
+                    + getYear();
         }
 
         @CalledByNative("CreditCard")
@@ -630,14 +630,18 @@ public class PersonalDataManager {
      * Gets the profiles to suggest when associating a billing address to a credit card. The
      * profiles will have been processed to be more relevant to the user.
      *
+     * @param includeOrganizationInLabel Whether the organization name should be included in the
+     *                                   label.
+     *
      * @return The list of billing addresses to suggest to the user.
      */
-    public ArrayList<AutofillProfile> getBillingAddressesToSuggest() {
+    public ArrayList<AutofillProfile> getBillingAddressesToSuggest(
+            boolean includeOrganizationInLabel) {
         ThreadUtils.assertOnUiThread();
         return getProfilesWithLabels(
-                nativeGetProfileLabelsToSuggest(
-                        mPersonalDataManagerAndroid, true /* includeNameInLabel */,
-                        false /* includeOrganizationInLabel */, false /* includeCountryInLabel */),
+                nativeGetProfileLabelsToSuggest(mPersonalDataManagerAndroid,
+                        true /* includeNameInLabel */, includeOrganizationInLabel,
+                        false /* includeCountryInLabel */),
                 nativeGetProfileGUIDsToSuggest(mPersonalDataManagerAndroid));
     }
 
@@ -988,7 +992,7 @@ public class PersonalDataManager {
      * @return The sub-key request timeout in milliseconds.
      */
     public static long getRequestTimeoutMS() {
-        return TimeUnit.SECONDS.toMillis(sRequestTimeoutSeconds);
+        return DateUtils.SECOND_IN_MILLIS * sRequestTimeoutSeconds;
     }
 
     private native long nativeInit();

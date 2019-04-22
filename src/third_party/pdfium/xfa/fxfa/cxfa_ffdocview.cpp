@@ -6,8 +6,11 @@
 
 #include "xfa/fxfa/cxfa_ffdocview.h"
 
+#include <set>
+#include <utility>
+
 #include "core/fxcrt/fx_extension.h"
-#include "fxjs/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
@@ -28,31 +31,31 @@
 #include "xfa/fxfa/cxfa_fwladapterwidgetmgr.h"
 #include "xfa/fxfa/cxfa_readynodeiterator.h"
 #include "xfa/fxfa/cxfa_textprovider.h"
+#include "xfa/fxfa/layout/cxfa_layoutprocessor.h"
 #include "xfa/fxfa/parser/cxfa_acrobat.h"
 #include "xfa/fxfa/parser/cxfa_binditems.h"
 #include "xfa/fxfa/parser/cxfa_calculate.h"
-#include "xfa/fxfa/parser/cxfa_layoutprocessor.h"
 #include "xfa/fxfa/parser/cxfa_pageset.h"
 #include "xfa/fxfa/parser/cxfa_present.h"
 #include "xfa/fxfa/parser/cxfa_subform.h"
 #include "xfa/fxfa/parser/cxfa_validate.h"
 #include "xfa/fxfa/parser/xfa_resolvenode_rs.h"
 
-const XFA_AttributeEnum gs_EventActivity[] = {
-    XFA_AttributeEnum::Click,      XFA_AttributeEnum::Change,
-    XFA_AttributeEnum::DocClose,   XFA_AttributeEnum::DocReady,
-    XFA_AttributeEnum::Enter,      XFA_AttributeEnum::Exit,
-    XFA_AttributeEnum::Full,       XFA_AttributeEnum::IndexChange,
-    XFA_AttributeEnum::Initialize, XFA_AttributeEnum::MouseDown,
-    XFA_AttributeEnum::MouseEnter, XFA_AttributeEnum::MouseExit,
-    XFA_AttributeEnum::MouseUp,    XFA_AttributeEnum::PostExecute,
-    XFA_AttributeEnum::PostOpen,   XFA_AttributeEnum::PostPrint,
-    XFA_AttributeEnum::PostSave,   XFA_AttributeEnum::PostSign,
-    XFA_AttributeEnum::PostSubmit, XFA_AttributeEnum::PreExecute,
-    XFA_AttributeEnum::PreOpen,    XFA_AttributeEnum::PrePrint,
-    XFA_AttributeEnum::PreSave,    XFA_AttributeEnum::PreSign,
-    XFA_AttributeEnum::PreSubmit,  XFA_AttributeEnum::Ready,
-    XFA_AttributeEnum::Unknown,
+const XFA_AttributeValue gs_EventActivity[] = {
+    XFA_AttributeValue::Click,      XFA_AttributeValue::Change,
+    XFA_AttributeValue::DocClose,   XFA_AttributeValue::DocReady,
+    XFA_AttributeValue::Enter,      XFA_AttributeValue::Exit,
+    XFA_AttributeValue::Full,       XFA_AttributeValue::IndexChange,
+    XFA_AttributeValue::Initialize, XFA_AttributeValue::MouseDown,
+    XFA_AttributeValue::MouseEnter, XFA_AttributeValue::MouseExit,
+    XFA_AttributeValue::MouseUp,    XFA_AttributeValue::PostExecute,
+    XFA_AttributeValue::PostOpen,   XFA_AttributeValue::PostPrint,
+    XFA_AttributeValue::PostSave,   XFA_AttributeValue::PostSign,
+    XFA_AttributeValue::PostSubmit, XFA_AttributeValue::PreExecute,
+    XFA_AttributeValue::PreOpen,    XFA_AttributeValue::PrePrint,
+    XFA_AttributeValue::PreSave,    XFA_AttributeValue::PreSign,
+    XFA_AttributeValue::PreSubmit,  XFA_AttributeValue::Ready,
+    XFA_AttributeValue::Unknown,
 };
 
 CXFA_FFDocView::CXFA_FFDocView(CXFA_FFDoc* pDoc) : m_pDoc(pDoc) {}
@@ -168,12 +171,13 @@ void CXFA_FFDocView::UpdateDocView() {
     return;
 
   LockUpdate();
-  for (CXFA_Node* pNode : m_NewAddedNodes) {
+  while (!m_NewAddedNodes.empty()) {
+    CXFA_Node* pNode = m_NewAddedNodes.front();
+    m_NewAddedNodes.pop_front();
     InitCalculate(pNode);
     InitValidate(pNode);
     ExecEventActivityByDeepFirst(pNode, XFA_EVENT_Ready, true, true);
   }
-  m_NewAddedNodes.clear();
 
   RunSubformIndexChange();
   RunCalculateWidgets();
@@ -246,7 +250,7 @@ void CXFA_FFDocView::ResetNode(CXFA_Node* pNode) {
 }
 
 CXFA_FFWidget* CXFA_FFDocView::GetWidgetForNode(CXFA_Node* node) {
-  return ToFFWidget(ToContentLayoutItem(GetXFALayout()->GetLayoutItem(node)));
+  return GetFFWidget(ToContentLayoutItem(GetXFALayout()->GetLayoutItem(node)));
 }
 
 CXFA_FFWidgetHandler* CXFA_FFDocView::GetWidgetHandler() {
@@ -269,25 +273,22 @@ bool CXFA_FFDocView::SetFocus(CXFA_FFWidget* pNewFocus) {
     return false;
 
   if (pOldFocus) {
-    if (!(pOldFocus->GetStatus() & XFA_WidgetStatus_Focused) &&
-        (pOldFocus->GetStatus() & XFA_WidgetStatus_Visible)) {
+    CXFA_ContentLayoutItem* pItem = pOldFocus->GetLayoutItem();
+    if (pItem->TestStatusBits(XFA_WidgetStatus_Visible) &&
+        !pItem->TestStatusBits(XFA_WidgetStatus_Focused)) {
       if (!pOldFocus->IsLoaded())
         pOldFocus->LoadWidget();
-
       pOldFocus->OnSetFocus(pOldFocus);
     }
-
     pOldFocus->OnKillFocus(pNewFocus);
   }
 
   if (pNewFocus) {
-    if (pNewFocus->GetStatus() & XFA_WidgetStatus_Visible) {
+    if (pNewFocus->GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_Visible)) {
       if (!pNewFocus->IsLoaded())
         pNewFocus->LoadWidget();
-
       pNewFocus->OnSetFocus(pOldFocus);
     }
-
     CXFA_Node* node = pNewFocus->GetNode();
     m_pFocusNode = node->IsWidgetReady() ? node : nullptr;
     m_pFocusWidget = pNewFocus;
@@ -405,9 +406,6 @@ int32_t CXFA_FFDocView::ExecEventActivityByDeepFirst(CXFA_Node* pFormNode,
 CXFA_FFWidget* CXFA_FFDocView::GetWidgetByName(const WideString& wsName,
                                                CXFA_FFWidget* pRefWidget) {
   CFXJSE_Engine* pScriptContext = m_pDoc->GetXFADoc()->GetScriptContext();
-  if (!pScriptContext)
-    return nullptr;
-
   CXFA_Node* pRefNode = nullptr;
   if (pRefWidget) {
     CXFA_Node* node = pRefWidget->GetNode();
@@ -431,7 +429,7 @@ CXFA_FFWidget* CXFA_FFDocView::GetWidgetByName(const WideString& wsName,
   return nullptr;
 }
 
-void CXFA_FFDocView::OnPageEvent(CXFA_ContainerLayoutItem* pSender,
+void CXFA_FFDocView::OnPageEvent(CXFA_ViewLayoutItem* pSender,
                                  uint32_t dwEvent) {
   CXFA_FFPageView* pFFPageView = static_cast<CXFA_FFPageView*>(pSender);
   m_pDoc->GetDocEnvironment()->PageViewEvent(pFFPageView, dwEvent);
@@ -463,16 +461,19 @@ bool CXFA_FFDocView::RunLayout() {
 }
 
 void CXFA_FFDocView::RunSubformIndexChange() {
-  for (CXFA_Node* pSubformNode : m_IndexChangedSubforms) {
-    if (!pSubformNode->IsWidgetReady())
+  std::set<CXFA_Node*> seen;
+  while (!m_IndexChangedSubforms.empty()) {
+    CXFA_Node* pSubformNode = m_IndexChangedSubforms.front();
+    m_IndexChangedSubforms.pop_front();
+    bool bInserted = seen.insert(pSubformNode).second;
+    if (!bInserted || !pSubformNode->IsWidgetReady())
       continue;
 
     CXFA_EventParam eParam;
     eParam.m_eType = XFA_EVENT_IndexChange;
     eParam.m_pTarget = pSubformNode;
-    pSubformNode->ProcessEvent(this, XFA_AttributeEnum::IndexChange, &eParam);
+    pSubformNode->ProcessEvent(this, XFA_AttributeValue::IndexChange, &eParam);
   }
-  m_IndexChangedSubforms.clear();
 }
 
 void CXFA_FFDocView::AddNewFormNode(CXFA_Node* pNode) {
@@ -482,7 +483,8 @@ void CXFA_FFDocView::AddNewFormNode(CXFA_Node* pNode) {
 
 void CXFA_FFDocView::AddIndexChangedSubform(CXFA_Node* pNode) {
   ASSERT(pNode->GetElementType() == XFA_Element::Subform);
-  m_IndexChangedSubforms.push_back(pNode);
+  if (!pdfium::ContainsValue(m_IndexChangedSubforms, pNode))
+    m_IndexChangedSubforms.push_back(pNode);
 }
 
 void CXFA_FFDocView::RunDocClose() {
@@ -573,11 +575,12 @@ bool CXFA_FFDocView::RunValidate() {
   if (!m_pDoc->GetDocEnvironment()->IsValidationsEnabled(m_pDoc.Get()))
     return false;
 
-  for (CXFA_Node* node : m_ValidateNodes) {
+  while (!m_ValidateNodes.empty()) {
+    CXFA_Node* node = m_ValidateNodes.front();
+    m_ValidateNodes.pop_front();
     if (!node->HasRemovedChildren())
       node->ProcessValidate(this, 0);
   }
-  m_ValidateNodes.clear();
   return true;
 }
 
@@ -598,7 +601,7 @@ void CXFA_FFDocView::RunBindItems() {
       continue;
 
     CXFA_Node* pWidgetNode = item->GetParent();
-    if (!pWidgetNode->IsWidgetReady())
+    if (!pWidgetNode || !pWidgetNode->IsWidgetReady())
       continue;
 
     CFXJSE_Engine* pScriptContext =
@@ -617,8 +620,10 @@ void CXFA_FFDocView::RunBindItems() {
     WideString wsValueRef = item->GetValueRef();
     WideString wsLabelRef = item->GetLabelRef();
     const bool bUseValue = wsLabelRef.IsEmpty() || wsLabelRef == wsValueRef;
-    const bool bLabelUseContent = wsLabelRef.IsEmpty() || wsLabelRef == L"$";
-    const bool bValueUseContent = wsValueRef.IsEmpty() || wsValueRef == L"$";
+    const bool bLabelUseContent =
+        wsLabelRef.IsEmpty() || wsLabelRef.EqualsASCII("$");
+    const bool bValueUseContent =
+        wsValueRef.IsEmpty() || wsValueRef.EqualsASCII("$");
     WideString wsValue;
     WideString wsLabel;
     uint32_t uValueHash = FX_HashCode_GetW(wsValueRef.AsStringView(), false);

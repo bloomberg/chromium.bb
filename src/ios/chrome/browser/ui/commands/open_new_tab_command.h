@@ -24,6 +24,13 @@ enum OpenPosition {
 @interface OpenNewTabCommand : NSObject
 
 - (instancetype)initWithURL:(const GURL&)URL
+                 virtualURL:(const GURL&)virtualURL
+                   referrer:(const web::Referrer&)referrer
+                inIncognito:(BOOL)inIncognito
+               inBackground:(BOOL)inBackground
+                   appendTo:(OpenPosition)append;
+
+- (instancetype)initWithURL:(const GURL&)URL
                    referrer:(const web::Referrer&)referrer
                 inIncognito:(BOOL)inIncognito
                inBackground:(BOOL)inBackground
@@ -84,6 +91,9 @@ enum OpenPosition {
 
 // URL to open.
 @property(nonatomic, readonly, assign) const GURL& URL;
+
+// VirtualURL to display.
+@property(nonatomic, readonly, assign) const GURL& virtualURL;
 
 // Referrer for the URL.
 @property(nonatomic, readonly, assign) const web::Referrer& referrer;

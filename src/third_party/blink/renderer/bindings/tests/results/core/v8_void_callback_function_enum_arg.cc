@@ -27,8 +27,16 @@ const char* V8VoidCallbackFunctionEnumArg::NameInHeapSnapshot() const {
   return "V8VoidCallbackFunctionEnumArg";
 }
 
-v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_this_value, const String& arg) {
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const String& arg) {
+  ScriptState* callback_relevant_script_state =
+      CallbackRelevantScriptStateOrThrowException(
+          "VoidCallbackFunctionEnumArg",
+          "invoke");
+  if (!callback_relevant_script_state) {
+    return v8::Nothing<void>();
+  }
+
+  if (!IsCallbackFunctionRunnable(callback_relevant_script_state,
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
@@ -48,7 +56,7 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
 
   // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
-      CallbackRelevantScriptState());
+      callback_relevant_script_state);
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
@@ -62,7 +70,12 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
   function = CallbackFunction();
 
   v8::Local<v8::Value> this_arg;
-  this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
+  if (callback_this_value.IsEmpty()) {
+    // step 2. If thisArg was not given, let thisArg be undefined.
+    this_arg = v8::Undefined(GetIsolate());
+  } else {
+    this_arg = callback_this_value.V8Value(callback_relevant_script_state);
+  }
 
   // Enum values provided by Blink must be valid, otherwise typo.
 #if DCHECK_IS_ON()
@@ -89,7 +102,7 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
   v8::Local<v8::Object> argument_creation_context =
-      CallbackRelevantScriptState()->GetContext()->Global();
+      callback_relevant_script_state->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
   v8::Local<v8::Value> v8_arg = V8String(GetIsolate(), arg);
   constexpr int argc = 1;
@@ -100,7 +113,7 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
   // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
-          ExecutionContext::From(CallbackRelevantScriptState()),
+          ExecutionContext::From(callback_relevant_script_state),
           this_arg,
           argc,
           argv,
@@ -115,7 +128,7 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
   return v8::JustVoid();
 }
 
-void V8VoidCallbackFunctionEnumArg::InvokeAndReportException(ScriptWrappable* callback_this_value, const String& arg) {
+void V8VoidCallbackFunctionEnumArg::InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const String& arg) {
   v8::TryCatch try_catch(GetIsolate());
   try_catch.SetVerbose(true);
 
@@ -125,12 +138,12 @@ void V8VoidCallbackFunctionEnumArg::InvokeAndReportException(ScriptWrappable* ca
   ALLOW_UNUSED_LOCAL(maybe_result);
 }
 
-v8::Maybe<void> V8PersistentCallbackFunction<V8VoidCallbackFunctionEnumArg>::Invoke(ScriptWrappable* callback_this_value, const String& arg) {
+v8::Maybe<void> V8PersistentCallbackFunction<V8VoidCallbackFunctionEnumArg>::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const String& arg) {
   return Proxy()->Invoke(
       callback_this_value, arg);
 }
 
-void V8PersistentCallbackFunction<V8VoidCallbackFunctionEnumArg>::InvokeAndReportException(ScriptWrappable* callback_this_value, const String& arg) {
+void V8PersistentCallbackFunction<V8VoidCallbackFunctionEnumArg>::InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const String& arg) {
   Proxy()->InvokeAndReportException(
       callback_this_value, arg);
 }

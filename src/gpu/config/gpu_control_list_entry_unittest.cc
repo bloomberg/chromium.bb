@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include "base/stl_util.h"
+#include "build/build_config.h"
 #include "gpu/config/gpu_control_list.h"
 #include "gpu/config/gpu_control_list_testing_data.h"
 #include "gpu/config/gpu_info.h"
@@ -86,7 +88,7 @@ TEST_F(GpuControlListEntryTest, VendorOnAllOsEntry) {
   EXPECT_EQ(kOsAny, entry.conditions.os_type);
   const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsLinux,
                                             kOsChromeOS, kOsAndroid};
-  for (size_t i = 0; i < arraysize(os_type); ++i)
+  for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_TRUE(entry.Contains(os_type[i], "10.6", gpu_info()));
 }
 
@@ -95,7 +97,7 @@ TEST_F(GpuControlListEntryTest, VendorOnLinuxEntry) {
   EXPECT_EQ(kOsLinux, entry.conditions.os_type);
   const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsChromeOS,
                                             kOsAndroid};
-  for (size_t i = 0; i < arraysize(os_type); ++i)
+  for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
   EXPECT_TRUE(entry.Contains(kOsLinux, "10.6", gpu_info()));
 }
@@ -106,7 +108,7 @@ TEST_F(GpuControlListEntryTest, AllExceptNVidiaOnLinuxEntry) {
   EXPECT_EQ(kOsLinux, entry.conditions.os_type);
   const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsLinux,
                                             kOsChromeOS, kOsAndroid};
-  for (size_t i = 0; i < arraysize(os_type); ++i)
+  for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
 }
 
@@ -116,7 +118,7 @@ TEST_F(GpuControlListEntryTest, AllExceptIntelOnLinuxEntry) {
   EXPECT_EQ(kOsLinux, entry.conditions.os_type);
   const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsChromeOS,
                                             kOsAndroid};
-  for (size_t i = 0; i < arraysize(os_type); ++i)
+  for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
   EXPECT_TRUE(entry.Contains(kOsLinux, "10.6", gpu_info()));
 }
@@ -138,7 +140,7 @@ TEST_F(GpuControlListEntryTest, MultipleDevicesEntry) {
   EXPECT_EQ(kOsAny, entry.conditions.os_type);
   const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsLinux,
                                             kOsChromeOS, kOsAndroid};
-  for (size_t i = 0; i < arraysize(os_type); ++i)
+  for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_TRUE(entry.Contains(os_type[i], "10.6", gpu_info()));
 }
 
@@ -147,7 +149,7 @@ TEST_F(GpuControlListEntryTest, ChromeOSEntry) {
   EXPECT_EQ(kOsChromeOS, entry.conditions.os_type);
   const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsLinux,
                                             kOsAndroid};
-  for (size_t i = 0; i < arraysize(os_type); ++i)
+  for (size_t i = 0; i < base::size(os_type); ++i)
     EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
   EXPECT_TRUE(entry.Contains(kOsChromeOS, "10.6", gpu_info()));
 }
@@ -547,7 +549,7 @@ TEST_F(GpuControlListEntryTest, OsComparison) {
     const Entry& entry = GetEntry(kGpuControlListEntryTest_OsComparisonAny);
     const GpuControlList::OsType os_type[] = {kOsWin, kOsLinux, kOsMacosx,
                                               kOsChromeOS, kOsAndroid};
-    for (size_t i = 0; i < arraysize(os_type); ++i) {
+    for (size_t i = 0; i < base::size(os_type); ++i) {
       EXPECT_TRUE(entry.Contains(os_type[i], std::string(), gpu_info()));
       EXPECT_TRUE(entry.Contains(os_type[i], "7.8", gpu_info()));
     }
@@ -659,9 +661,17 @@ TEST_F(GpuControlListEntryTest, NVidiaNumberingScheme) {
 TEST_F(GpuControlListEntryTest, DirectRendering) {
   const Entry& entry = GetEntry(kGpuControlListEntryTest_DirectRendering);
   GPUInfo gpu_info;
-  gpu_info.direct_rendering = true;
+  // No info does not match.
+  gpu_info.direct_rendering_version = "";
   EXPECT_FALSE(entry.Contains(kOsLinux, "7.0", gpu_info));
-  gpu_info.direct_rendering = false;
+
+  // Indirect rendering does not match.
+  gpu_info.direct_rendering_version = "1";
+  EXPECT_FALSE(entry.Contains(kOsLinux, "7.0", gpu_info));
+
+  gpu_info.direct_rendering_version = "2";
+  EXPECT_TRUE(entry.Contains(kOsLinux, "7.0", gpu_info));
+  gpu_info.direct_rendering_version = "2.3";
   EXPECT_TRUE(entry.Contains(kOsLinux, "7.0", gpu_info));
 }
 
@@ -867,5 +877,18 @@ TEST_F(GpuControlListEntryTest, MultipleDrivers) {
   gpu_info.secondary_gpus[0].active = true;
   EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
 }
+
+#if defined(OS_WIN)
+TEST_F(GpuControlListEntryTest, HardwareOverlay) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_HardwareOverlay);
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+  gpu_info.supports_overlays = true;
+  EXPECT_FALSE(entry.Contains(kOsWin, "10.0", gpu_info));
+
+  gpu_info.supports_overlays = false;
+  EXPECT_TRUE(entry.Contains(kOsWin, "10.0", gpu_info));
+}
+#endif  // OS_WIN
 
 }  // namespace gpu

@@ -6,20 +6,20 @@ package org.chromium.chrome.browser.page_info;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
+import android.support.v4.view.ViewCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.TextAppearanceSpan;
+import android.view.Window;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
@@ -31,17 +31,13 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.page_info.PageInfoView.ConnectionInfoParams;
 import org.chromium.chrome.browser.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
@@ -57,12 +53,16 @@ import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.GURLUtils;
+import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
-import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -75,7 +75,7 @@ import java.util.Date;
  * Java side of Android implementation of the page info UI.
  */
 public class PageInfoController
-        implements ModalDialogView.Controller, SystemSettingsActivityRequiredListener {
+        implements ModalDialogProperties.Controller, SystemSettingsActivityRequiredListener {
     @IntDef({OpenedFromSource.MENU, OpenedFromSource.TOOLBAR, OpenedFromSource.VR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface OpenedFromSource {
@@ -184,13 +184,8 @@ public class PageInfoController
             mView.toggleUrlTruncation();
         };
         // Long press the url text to copy it to the clipboard.
-        viewParams.urlTitleLongClickCallback = () -> {
-            ClipboardManager clipboard =
-                    (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("url", mFullUrl);
-            clipboard.setPrimaryClip(clip);
-            Toast.makeText(mContext, R.string.url_copied, Toast.LENGTH_SHORT).show();
-        };
+        viewParams.urlTitleLongClickCallback =
+                () -> Clipboard.getInstance().copyUrlToClipboard(mFullUrl);
 
         // Work out the URL and connection message and status visibility.
         mFullUrl = isShowingOfflinePage() ? offlinePageUrl : mTab.getOriginalUrl();
@@ -210,18 +205,21 @@ public class PageInfoController
             displayUrl = UrlUtilities.stripScheme(mFullUrl);
         }
         SpannableStringBuilder displayUrlBuilder = new SpannableStringBuilder(displayUrl);
-        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext.getResources(),
-                mTab.getProfile(), mSecurityLevel, mIsInternalPage, true, true);
         if (mSecurityLevel == ConnectionSecurityLevel.SECURE) {
             OmniboxUrlEmphasizer.EmphasizeComponentsResponse emphasizeResponse =
                     OmniboxUrlEmphasizer.parseForEmphasizeComponents(
                             mTab.getProfile(), displayUrlBuilder.toString());
             if (emphasizeResponse.schemeLength > 0) {
                 displayUrlBuilder.setSpan(
-                        new TextAppearanceSpan(mContext, R.style.RobotoMediumStyle), 0,
-                        emphasizeResponse.schemeLength, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+                        new TextAppearanceSpan(mContext, R.style.TextAppearance_RobotoMediumStyle),
+                        0, emphasizeResponse.schemeLength, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
             }
         }
+
+        final boolean useDarkColors =
+                !mTab.getActivity().getNightModeStateProvider().isInNightMode();
+        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext.getResources(),
+                mTab.getProfile(), mSecurityLevel, mIsInternalPage, useDarkColors, true);
         viewParams.url = displayUrlBuilder;
         viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
                 displayUrlBuilder.toString(), mTab.getProfile());
@@ -351,7 +349,7 @@ public class PageInfoController
                             // The callback given to NoUnderlineClickableSpan is overridden in
                             // PageInfoView so use previewShowOriginalClickCallback (above) instead
                             // because the entire TextView will be clickable.
-                            new NoUnderlineClickableSpan((view) -> {})));
+                            new NoUnderlineClickableSpan(mContext.getResources(), (view) -> {})));
             viewParams.previewLoadOriginalMessage = loadOriginalSpan;
 
             viewParams.previewStaleTimestamp =
@@ -363,7 +361,8 @@ public class PageInfoController
      * Whether to show a 'Details' link to the connection info popup.
      */
     private boolean isConnectionDetailsLinkVisible() {
-        return mContentPublisher == null && !isShowingOfflinePage() && !isShowingPreview();
+        return mContentPublisher == null && !isShowingOfflinePage() && !isShowingPreview()
+                && !mIsInternalPage;
     }
 
     /**
@@ -374,9 +373,9 @@ public class PageInfoController
      * @param currentSettingValue The ContentSetting value of the currently selected setting.
      */
     @CalledByNative
-    private void addPermissionSection(String name, int type, int currentSettingValue) {
-        mPermissionParamsListBuilder.addPermissionEntry(
-                name, type, ContentSetting.fromInt(currentSettingValue));
+    private void addPermissionSection(
+            String name, int type, @ContentSettingValues int currentSettingValue) {
+        mPermissionParamsListBuilder.addPermissionEntry(name, type, currentSettingValue);
     }
 
     /**
@@ -544,6 +543,12 @@ public class PageInfoController
      */
     public static void show(final Activity activity, final Tab tab, final String contentPublisher,
             @OpenedFromSource int source) {
+        // If the activity's decor view is not attached to window, we don't show the dialog because
+        // the window manager might have revoked the window token for this activity. See
+        // https://crbug.com/921450.
+        Window window = activity.getWindow();
+        if (window == null || !ViewCompat.isAttachedToWindow(window.getDecorView())) return;
+
         if (source == OpenedFromSource.MENU) {
             RecordUserAction.record("MobileWebsiteSettingsOpenedFromMenu");
         } else if (source == OpenedFromSource.TOOLBAR) {

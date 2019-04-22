@@ -12,3 +12,5 @@ SingleTabModeTabHelper::~SingleTabModeTabHelper() {}
 void SingleTabModeTabHelper::PermanentlyBlockAllNewWindows() {
   block_all_new_windows_ = true;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SingleTabModeTabHelper)

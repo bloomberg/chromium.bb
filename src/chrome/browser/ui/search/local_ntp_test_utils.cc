@@ -27,59 +27,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/base/resource/resource_bundle.h"
-
 namespace local_ntp_test_utils {
-
-namespace {
-
-void WaitUntilTilesLoaded(content::WebContents* active_tab,
-                          content::DOMMessageQueue* msg_queue,
-                          int delay) {
-  // At this point, the MV iframe may or may not have been fully loaded. Once
-  // it loads, it sends a 'loaded' postMessage to the page. Check if the page
-  // has already received that, and if not start listening for it. It's
-  // important that these two things happen in the same JS invocation, since
-  // otherwise we might miss the message.
-  bool mv_tiles_loaded = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, base::StringPrintf(R"js(
-      (function() {
-        if (tilesAreLoaded) {
-          tilesAreLoaded = false;
-          return true;
-        }
-        const loaded = (event) => {
-          if (event.data.cmd == 'loaded') {
-            window.removeEventListener('message', loaded);
-            setTimeout(() => {
-              tilesAreLoaded = false;
-              domAutomationController.send('WaitUntilTilesLoaded');
-            }, %d);
-          }
-        };
-        window.addEventListener('message', loaded);
-        return false;
-      })()
-      )js", delay), &mv_tiles_loaded));
-
-  std::string message;
-  // Get rid of the message that the GetBoolFromJS call produces.
-  ASSERT_TRUE(msg_queue->PopMessage(&message));
-
-  if (mv_tiles_loaded) {
-    // The tiles are already loaded, i.e. we missed the 'loaded' message. All
-    // is well.
-    return;
-  }
-
-  // Not loaded yet. Wait for the "WaitUntilTilesLoaded" message.
-  ASSERT_TRUE(msg_queue->WaitForMessage(&message));
-  ASSERT_EQ("\"WaitUntilTilesLoaded\"", message);
-  // There shouldn't be any other messages.
-  ASSERT_FALSE(msg_queue->PopMessage(&message));
-}
-
-}  // namespace
 
 content::WebContents* OpenNewTab(Browser* browser, const GURL& url) {
   ui_test_utils::NavigateToURLWithDisposition(
@@ -126,6 +74,53 @@ void ExecuteScriptOnNTPAndWaitUntilLoaded(content::RenderFrameHost* host,
   ASSERT_TRUE(msg_queue.PopMessage(&message));
 
   WaitUntilTilesLoaded(contents, &msg_queue, /*delay=*/0);
+}
+
+void WaitUntilTilesLoaded(content::WebContents* active_tab,
+                          content::DOMMessageQueue* msg_queue,
+                          int delay) {
+  // At this point, the MV iframe may or may not have been fully loaded. Once
+  // it loads, it sends a 'loaded' postMessage to the page. Check if the page
+  // has already received that, and if not start listening for it. It's
+  // important that these two things happen in the same JS invocation, since
+  // otherwise we might miss the message.
+  bool mv_tiles_loaded = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, base::StringPrintf(R"js(
+      (function() {
+        if (tilesAreLoaded) {
+          tilesAreLoaded = false;
+          return true;
+        }
+        const loaded = (event) => {
+          if (event.data.cmd == 'loaded') {
+            window.removeEventListener('message', loaded);
+            setTimeout(() => {
+              tilesAreLoaded = false;
+              domAutomationController.send('WaitUntilTilesLoaded');
+            }, %d);
+          }
+        };
+        window.addEventListener('message', loaded);
+        return false;
+      })()
+      )js", delay), &mv_tiles_loaded));
+
+  std::string message;
+  // Get rid of the message that the GetBoolFromJS call produces.
+  ASSERT_TRUE(msg_queue->PopMessage(&message));
+
+  if (mv_tiles_loaded) {
+    // The tiles are already loaded, i.e. we missed the 'loaded' message. All
+    // is well.
+    return;
+  }
+
+  // Not loaded yet. Wait for the "WaitUntilTilesLoaded" message.
+  ASSERT_TRUE(msg_queue->WaitForMessage(&message));
+  ASSERT_EQ("\"WaitUntilTilesLoaded\"", message);
+  // There shouldn't be any other messages.
+  ASSERT_FALSE(msg_queue->PopMessage(&message));
 }
 
 bool SwitchBrowserLanguageToFrench() {

@@ -13,7 +13,6 @@ is active, but resumes afterwards.
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
-      var t = async_test("Non-immersive rAF stops during immersive session");
       let counter = 0;
 
       function stepBeforeImmersive() {
@@ -22,10 +21,8 @@ is active, but resumes afterwards.
           // are not done while there is an immersive session.
           onMagicWindowXRFrameCallback = function() {
             if (sessionInfos[sessionTypes.IMMERSIVE].currentSession !== null) {
-              t.step( () => {
-                assert_unreached(
-                    "Non-immersive rAF called during immersive session");
-              });
+              assert_unreached(
+                  "Non-immersive rAF called during immersive session");
             }
           }
           finishJavaScriptStep();
@@ -49,7 +46,7 @@ is active, but resumes afterwards.
       function stepAfterImmersive() {
         // Make sure we fire at least once after exiting the immersive session
         onMagicWindowXRFrameCallback = function() {
-          t.done();
+          done();
         };
       }
     </script>

@@ -10,8 +10,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "ui/aura/client/cursor_client.h"
@@ -1262,7 +1262,7 @@ TEST_F(TouchExplorationTest, GestureSwipe) {
   // detector test, since it seems to be about the right amount to get a swipe.
   const int kSteps = 15;
 
-  for (size_t i = 0; i < arraysize(gestures_to_test); ++i) {
+  for (size_t i = 0; i < base::size(gestures_to_test); ++i) {
     const float distance = 2 * gesture_detector_config_.touch_slop + 1;
     int move_x = gestures_to_test[i].move_x * distance;
     int move_y = gestures_to_test[i].move_y * distance;

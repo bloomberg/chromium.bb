@@ -28,9 +28,6 @@ class TabbedPaneTest;
 // may require additional polish.
 class VIEWS_EXPORT TabbedPane : public View {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
-
   // The orientation of the tab alignment.
   enum class Orientation {
     kHorizontal,
@@ -43,19 +40,22 @@ class VIEWS_EXPORT TabbedPane : public View {
     kHighlight,  // Highlight background and text of the selected tab.
   };
 
-  TabbedPane(Orientation orientation = Orientation::kHorizontal,
-             TabStripStyle style = TabStripStyle::kBorder);
+  // Internal class name.
+  static const char kViewClassName[];
+
+  explicit TabbedPane(Orientation orientation = Orientation::kHorizontal,
+                      TabStripStyle style = TabStripStyle::kBorder);
   ~TabbedPane() override;
 
   TabbedPaneListener* listener() const { return listener_; }
   void set_listener(TabbedPaneListener* listener) { listener_ = listener; }
 
-  // Returns the index of the currently selected tab, or -1 if no tab is
-  // selected.
-  int GetSelectedTabIndex() const;
+  // Returns the index of the currently selected tab, or
+  // TabStrip::kNoSelectedTab if no tab is selected.
+  size_t GetSelectedTabIndex() const;
 
   // Returns the number of tabs.
-  int GetTabCount();
+  size_t GetTabCount();
 
   // Adds a new tab at the end of this TabbedPane with the specified |title|.
   // |contents| is the view displayed when the tab is selected and is owned by
@@ -65,10 +65,10 @@ class VIEWS_EXPORT TabbedPane : public View {
   // Adds a new tab at |index| with |title|. |contents| is the view displayed
   // when the tab is selected and is owned by the TabbedPane. If the tabbed pane
   // is currently empty, the new tab is selected.
-  void AddTabAtIndex(int index, const base::string16& title, View* contents);
+  void AddTabAtIndex(size_t index, const base::string16& title, View* contents);
 
   // Selects the tab at |index|, which must be valid.
-  void SelectTabAt(int index);
+  void SelectTabAt(size_t index);
 
   // Selects |tab| (the tabstrip view, not its content) if it is valid.
   void SelectTab(Tab* tab);
@@ -110,15 +110,12 @@ class VIEWS_EXPORT TabbedPane : public View {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // A listener notified when tab selection changes. Weak, not owned.
-  TabbedPaneListener* listener_;
+  TabbedPaneListener* listener_ = nullptr;
 
   // The tab strip and contents container. The child indices of these members
   // correspond to match each Tab with its respective content View.
   TabStrip* tab_strip_;
   View* contents_;
-
-  // The selected tab index or -1 if invalid.
-  int selected_tab_index_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedPane);
 };
@@ -155,17 +152,17 @@ class Tab : public View {
 
   TabbedPane* tabbed_pane() { return tabbed_pane_; }
 
-  // Called whenever |tab_state_| changes.
+  // Called whenever |state_| changes.
   virtual void OnStateChanged();
 
  private:
-  enum TabState {
-    TAB_INACTIVE,
-    TAB_ACTIVE,
-    TAB_HOVERED,
+  enum class State {
+    kInactive,
+    kActive,
+    kHovered,
   };
 
-  void SetState(TabState tab_state);
+  void SetState(State state);
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -173,7 +170,7 @@ class Tab : public View {
   TabbedPane* tabbed_pane_;
   Label* title_;
   gfx::Size preferred_title_size_;
-  TabState tab_state_;
+  State state_;
   // The content view associated with this tab.
   View* contents_;
 
@@ -183,6 +180,9 @@ class Tab : public View {
 // The tab strip shown above/left of the tab contents.
 class TabStrip : public View {
  public:
+  // The return value of GetSelectedTabIndex() when no tab is selected.
+  static constexpr size_t kNoSelectedTab = size_t{-1};
+
   // Internal class name.
   static const char kViewClassName[];
 
@@ -201,8 +201,8 @@ class TabStrip : public View {
 
   Tab* GetSelectedTab() const;
   Tab* GetTabAtDeltaFromSelected(int delta) const;
-  Tab* GetTabAtIndex(int index) const;
-  int GetSelectedTabIndex() const;
+  Tab* GetTabAtIndex(size_t index) const;
+  size_t GetSelectedTabIndex() const;
 
   TabbedPane::Orientation orientation() const { return orientation_; }
 

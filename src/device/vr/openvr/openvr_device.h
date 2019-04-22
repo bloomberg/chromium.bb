@@ -27,12 +27,18 @@ class DEVICE_VR_EXPORT OpenVRDevice
   OpenVRDevice();
   ~OpenVRDevice() override;
 
+  static bool IsHwAvailable();
+  static bool IsApiAvailable();
+
   void Shutdown();
 
   // VRDeviceBase
   void RequestSession(
       mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override;
+  void EnsureInitialized(int render_process_id,
+                         int render_frame_id,
+                         EnsureInitializedCallback callback) override;
 
   void OnPollingEvents();
 
@@ -40,16 +46,12 @@ class DEVICE_VR_EXPORT OpenVRDevice
                               bool result,
                               mojom::XRSessionPtr session);
 
-  bool IsInitialized() { return !!openvr_; }
+  bool IsAvailable();
 
   mojom::IsolatedXRGamepadProviderFactoryPtr BindGamepadFactory();
   mojom::XRCompositorHostPtr BindCompositorHost();
 
  private:
-  // VRDeviceBase
-  void OnGetInlineFrameData(
-      mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
-
   // XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
 
@@ -63,7 +65,10 @@ class DEVICE_VR_EXPORT OpenVRDevice
 
   void OnPresentingControllerMojoConnectionError();
   void OnPresentationEnded();
+  bool EnsureValidDisplayInfo();
 
+  int outstanding_session_requests_count_ = 0;
+  bool have_real_display_info_ = false;
   std::unique_ptr<XRCompositorCommon> render_loop_;
   std::unique_ptr<OpenVRWrapper> openvr_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

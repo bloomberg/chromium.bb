@@ -31,10 +31,10 @@ namespace webgpu {
 class WebGPUImplementationTest : public testing::Test {
  protected:
   static const uint8_t kInitialValue = 0xBD;
-  static const int32_t kNumCommandEntries = 500;
-  static const int32_t kCommandBufferSizeBytes =
+  static const uint32_t kNumCommandEntries = 500;
+  static const uint32_t kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
-  static const size_t kTransferBufferSize = 512;
+  static const uint32_t kTransferBufferSize = 512;
 
   static const GLint kMaxCombinedTextureImageUnits = 8;
   static const GLint kMaxTextureImageUnits = 8;
@@ -54,12 +54,23 @@ class WebGPUImplementationTest : public testing::Test {
 
     helper_.reset(new WebGPUCmdHelper(command_buffer_.get()));
     helper_->Initialize(limits.command_buffer_size);
+    gpu_control_.reset(new StrictMock<MockClientGpuControl>());
+
+    EXPECT_CALL(*gpu_control_, GetCapabilities())
+        .WillOnce(ReturnRef(capabilities_));
 
     {
       InSequence sequence;
 
-      gl_.reset(new WebGPUImplementation(helper_.get()));
+      gl_.reset(new WebGPUImplementation(helper_.get(), transfer_buffer_.get(),
+                                         gpu_control_.get()));
     }
+
+    // The client should be set to something non-null.
+    EXPECT_CALL(*gpu_control_, SetGpuControlClient(gl_.get())).Times(1);
+
+    if (gl_->Initialize(limits) != gpu::ContextResult::kSuccess)
+      return false;
 
     helper_->CommandBufferHelper::Finish();
     Mock::VerifyAndClearExpectations(gl_.get());
@@ -82,11 +93,13 @@ class WebGPUImplementationTest : public testing::Test {
   void SetUp() override { ASSERT_TRUE(Initialize()); }
 
   void TearDown() override {
+    gl_->Flush();
     Mock::VerifyAndClear(gl_.get());
     EXPECT_CALL(*command_buffer_, OnFlush()).Times(AnyNumber());
     // For command buffer.
     EXPECT_CALL(*command_buffer_, DestroyTransferBuffer(_)).Times(AtLeast(1));
     // The client should be unset.
+    EXPECT_CALL(*gpu_control_, SetGpuControlClient(nullptr)).Times(1);
     gl_.reset();
   }
 
@@ -101,10 +114,12 @@ class WebGPUImplementationTest : public testing::Test {
   }
 
   std::unique_ptr<MockClientCommandBuffer> command_buffer_;
+  std::unique_ptr<MockClientGpuControl> gpu_control_;
   std::unique_ptr<WebGPUCmdHelper> helper_;
   std::unique_ptr<MockTransferBuffer> transfer_buffer_;
   std::unique_ptr<WebGPUImplementation> gl_;
   CommandBufferEntry* commands_ = nullptr;
+  Capabilities capabilities_;
 };
 
 #include "base/macros.h"

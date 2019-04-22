@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://html.spec.whatwg.org/#language-preferences
+// https://html.spec.whatwg.org/C/#language-preferences
 
 [
-    NoInterfaceObject,
-    Exposed=(Window,Worker)
-] interface NavigatorLanguage {
-    readonly attribute DOMString language;
-    [CachedAttribute=hasLanguagesChanged] readonly attribute FrozenArray<DOMString> languages;
+    Exposed=(Window, Worker)
+] interface mixin NavigatorLanguage {
+    [HighEntropy, MeasureAs=NavigatorLanguage] readonly attribute DOMString language;
+    [CachedAttribute=IsLanguagesDirty, HighEntropy, MeasureAs=NavigatorLanguages] readonly attribute FrozenArray<DOMString> languages;
 };

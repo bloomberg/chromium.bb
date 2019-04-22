@@ -69,11 +69,13 @@ Polymer({
    */
   currentRouteChanged: function(route) {
     if (settings.getCurrentRoute() !=
-        settings.routes.SITE_SETTINGS_DATA_DETAILS)
+        settings.routes.SITE_SETTINGS_DATA_DETAILS) {
       return;
+    }
     const site = settings.getQueryParameters().get('site');
-    if (!site)
+    if (!site) {
       return;
+    }
     this.site_ = site;
     this.pageTitle = loadTimeData.getStringF('siteSettingsCookieSubpage', site);
     this.getCookieDetails_();
@@ -81,8 +83,9 @@ Polymer({
 
   /** @private */
   getCookieDetails_: function() {
-    if (!this.site_)
+    if (!this.site_) {
       return;
+    }
     this.browserProxy_.getCookieDetails(this.site_)
         .then(
             this.onCookiesLoaded_.bind(this),
@@ -130,10 +133,12 @@ Polymer({
     // Frequently there are multiple cookies per site. To avoid showing a list
     // of '1 cookie', '1 cookie', ... etc, it is better to show the title of the
     // cookie to differentiate them.
-    if (item.type == 'cookie')
+    if (item.type == 'cookie') {
       return item.title;
-    if (item.type == 'quota')
+    }
+    if (item.type == 'quota') {
       return item.totalUsage;
+    }
     return categoryLabels[item.type];
   },
 

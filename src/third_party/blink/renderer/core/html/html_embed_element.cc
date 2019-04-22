@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/html/html_image_loader.h"
@@ -55,10 +56,11 @@ HTMLEmbedElement* HTMLEmbedElement::Create(Document& document,
   return element;
 }
 
-const HashSet<AtomicString>& HTMLEmbedElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLEmbedElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedScriptURL}}));
+  return attribute_map;
 }
 
 static inline LayoutEmbeddedContent* FindPartLayoutObject(const Node* n) {
@@ -91,9 +93,11 @@ void HTMLEmbedElement::CollectStyleForPresentationAttribute(
     if (DeprecatedEqualIgnoringCase(value, "yes") ||
         DeprecatedEqualIgnoringCase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyWidth, 0, CSSPrimitiveValue::UnitType::kPixels);
+          style, CSSPropertyID::kWidth, 0,
+          CSSPrimitiveValue::UnitType::kPixels);
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyHeight, 0, CSSPrimitiveValue::UnitType::kPixels);
+          style, CSSPropertyID::kHeight, 0,
+          CSSPrimitiveValue::UnitType::kPixels);
     }
   } else {
     HTMLPlugInElement::CollectStyleForPresentationAttribute(name, value, style);
@@ -120,7 +124,7 @@ void HTMLEmbedElement::ParseAttribute(
     SetUrl(StripLeadingAndTrailingHTMLSpaces(params.new_value));
     if (GetLayoutObject() && IsImageType()) {
       if (!image_loader_)
-        image_loader_ = HTMLImageLoader::Create(this);
+        image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
       image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
     } else if (GetLayoutObject()) {
       // Check if this Embed can transition from potentially-active to active
@@ -179,7 +183,7 @@ bool HTMLEmbedElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   if (IsImageType())
     return HTMLPlugInElement::LayoutObjectIsNeeded(style);
 
-  // https://html.spec.whatwg.org/multipage/embedded-content.html#the-embed-element
+  // https://html.spec.whatwg.org/C/#the-embed-element
   // While any of the following conditions are occurring, any plugin
   // instantiated for the element must be removed, and the embed element
   // represents nothing:

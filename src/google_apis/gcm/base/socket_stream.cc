@@ -170,7 +170,7 @@ void SocketInputStream::RebuildBuffer() {
   DCHECK_NE(GetState(), CLOSED);
 
   int unread_data_size = 0;
-  const void* unread_data_ptr = NULL;
+  const void* unread_data_ptr = nullptr;
   Next(&unread_data_ptr, &unread_data_size);
   ResetInternal();
 

@@ -491,7 +491,7 @@ struct ButtonPaints {
     static const int kMaxStateCount = 3;
     SkPaint fDisabled;
     SkPaint fStates[kMaxStateCount];
-    SkPaint fLabel;
+    SkFont  fLabelFont;
 
     ButtonPaints() {
         fStates[0].setAntiAlias(true);
@@ -501,9 +501,7 @@ struct ButtonPaints {
         fStates[1].setStrokeWidth(3);
         fStates[2] = fStates[1];
         fStates[2].setColor(0xFFcf0000);
-        fLabel.setAntiAlias(true);
-        fLabel.setTextSize(25.0f);
-        fLabel.setStyle(SkPaint::kFill_Style);
+        fLabelFont.setSize(25.0f);
     }
 };
 
@@ -542,8 +540,8 @@ struct Button {
             return;
         }
         canvas->drawRect(fBounds, paints.fStates[fState]);
-        SkTextUtils::DrawText(canvas, &fLabel, 1, fBounds.centerX(), fBounds.fBottom - 5,
-                              paints.fLabel, SkTextUtils::kCenter_Align);
+        SkTextUtils::Draw(canvas, &fLabel, 1, kUTF8_SkTextEncoding, fBounds.centerX(), fBounds.fBottom - 5,
+                          paints.fLabelFont, SkPaint(), SkTextUtils::kCenter_Align);
     }
 
     void toggle() {
@@ -564,6 +562,9 @@ struct ControlPaints {
     SkPaint fLabel;
     SkPaint fValue;
 
+    SkFont fLabelFont;
+    SkFont fValueFont;
+
     ControlPaints() {
         fOutline.setAntiAlias(true);
         fOutline.setStyle(SkPaint::kStroke_Style);
@@ -572,9 +573,9 @@ struct ControlPaints {
         fFill.setAntiAlias(true);
         fFill.setColor(0x7fff0000);
         fLabel.setAntiAlias(true);
-        fLabel.setTextSize(13.0f);
+        fLabelFont.setSize(13.0f);
         fValue.setAntiAlias(true);
-        fValue.setTextSize(11.0f);
+        fValueFont.setSize(11.0f);
     }
 };
 
@@ -610,9 +611,9 @@ struct UniControl {
         canvas->drawLine(fBounds.fLeft - 5, fYLo, fBounds.fRight + 5, fYLo, paints.fIndicator);
         SkString label;
         label.printf("%0.3g", fValLo);
-        canvas->drawString(label, fBounds.fLeft + 5, fYLo - 5, paints.fValue);
-        canvas->drawString(fName, fBounds.fLeft, fBounds.bottom() + 11,
-                paints.fLabel);
+        canvas->drawString(label, fBounds.fLeft + 5, fYLo - 5, paints.fValueFont, paints.fValue);
+        canvas->drawString(fName, fBounds.fLeft, fBounds.bottom() + 11, paints.fLabelFont,
+                           paints.fLabel);
     }
 };
 
@@ -638,7 +639,7 @@ struct BiControl : public UniControl {
         if (yPos < fYLo + 10) {
             yPos = fYLo + 10;
         }
-        canvas->drawString(label, fBounds.fLeft + 5, yPos - 5, paints.fValue);
+        canvas->drawString(label, fBounds.fLeft + 5, yPos - 5, paints.fValueFont, paints.fValue);
         SkRect fill = { fBounds.fLeft, fYLo, fBounds.fRight, yPos };
         canvas->drawRect(fill, paints.fFill);
     }
@@ -787,8 +788,8 @@ class AAGeometryView : public Sample {
     SkPaint fActivePaint;
     SkPaint fComplexPaint;
     SkPaint fCoveragePaint;
-    SkPaint fLegendLeftPaint;
-    SkPaint fLegendRightPaint;
+    SkFont fLegendLeftFont;
+    SkFont fLegendRightFont;
     SkPaint fPointPaint;
     SkPaint fSkeletonPaint;
     SkPaint fLightSkeletonPaint;
@@ -862,9 +863,8 @@ public:
         fActivePaint.setStrokeWidth(5);
         fComplexPaint = fActivePaint;
         fComplexPaint.setColor(SK_ColorBLUE);
-        fLegendLeftPaint.setAntiAlias(true);
-        fLegendLeftPaint.setTextSize(13);
-        fLegendRightPaint = fLegendLeftPaint;
+        fLegendLeftFont.setSize(13);
+        fLegendRightFont = fLegendLeftFont;
         construct_path(fPath);
         fFillButton.fVisible = fSkeletonButton.fVisible = fFilterButton.fVisible
                 = fBisectButton.fVisible = fJoinButton.fVisible = fInOutButton.fVisible = true;
@@ -1811,12 +1811,11 @@ void AAGeometryView::draw_legend(SkCanvas* canvas) {
     SkScalar bottomOffset = this->height() - 10;
     for (int index = kKeyCommandCount - 1; index >= 0; --index) {
         bottomOffset -= 15;
-        SkTextUtils::DrawString(canvas, kKeyCommandList[index].fDescriptionL,
-                this->width() - 160, bottomOffset,
-                fLegendLeftPaint);
+        SkTextUtils::DrawString(canvas, kKeyCommandList[index].fDescriptionL, this->width() - 160, bottomOffset,
+                                fLegendLeftFont, SkPaint());
         SkTextUtils::DrawString(canvas, kKeyCommandList[index].fDescriptionR,
                 this->width() - 20, bottomOffset,
-                fLegendRightPaint, SkTextUtils::kRight_Align);
+                fLegendRightFont, SkPaint(), SkTextUtils::kRight_Align);
     }
 }
 

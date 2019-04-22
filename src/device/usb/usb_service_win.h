@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/sequenced_task_runner.h"
 #include "device/base/device_monitor_win.h"
 #include "device/usb/usb_device_win.h"
 
@@ -24,7 +25,7 @@ class UsbServiceWin : public DeviceMonitorWin::Observer, public UsbService {
   ~UsbServiceWin() override;
 
  private:
-  class BlockingTaskHelper;
+  class BlockingTaskRunnerHelper;
 
   // device::UsbService implementation
   void GetDevices(const GetDevicesCallback& callback) override;
@@ -39,7 +40,7 @@ class UsbServiceWin : public DeviceMonitorWin::Observer, public UsbService {
   void HelperStarted();
   void CreateDeviceObject(const std::string& device_path,
                           const std::string& hub_path,
-                          int port_number,
+                          uint32_t bus_number, uint32_t port_number,
                           const std::string& driver_name);
 
   void DeviceReady(scoped_refptr<UsbDeviceWin> device, bool success);
@@ -53,7 +54,8 @@ class UsbServiceWin : public DeviceMonitorWin::Observer, public UsbService {
   uint32_t first_enumeration_countdown_ = 0;
   std::list<GetDevicesCallback> enumeration_callbacks_;
 
-  std::unique_ptr<BlockingTaskHelper> helper_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  std::unique_ptr<BlockingTaskRunnerHelper, base::OnTaskRunnerDeleter> helper_;
   std::unordered_map<std::string, scoped_refptr<UsbDeviceWin>> devices_by_path_;
 
   ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;

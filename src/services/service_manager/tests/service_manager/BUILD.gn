@@ -3,9 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
-import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//testing/test.gni")
 
 source_set("service_manager") {
@@ -17,6 +15,7 @@ source_set("service_manager") {
 
   deps = [
     ":interfaces",
+    ":test_manifests",
     "//base",
     "//base/test:test_config",
     "//base/test:test_support",
@@ -26,8 +25,6 @@ source_set("service_manager") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/runner/common",
-    "//services/service_manager/tests:catalog_source",
     "//testing/gtest",
   ]
 
@@ -38,8 +35,9 @@ source_set("service_manager") {
 }
 
 mojom("interfaces") {
+  testonly = true
   sources = [
-    "service_manager_unittest.mojom",
+    "service_manager.test-mojom",
   ]
 
   deps = [
@@ -47,9 +45,18 @@ mojom("interfaces") {
   ]
 }
 
-service_manifest("manifest") {
-  name = "service_manager_unittest"
-  source = "service_manager_unittest_manifest.json"
+source_set("test_manifests") {
+  testonly = true
+  sources = [
+    "test_manifests.cc",
+    "test_manifests.h",
+  ]
+  deps = [
+    ":interfaces",
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
+  ]
 }
 
 executable("service_manager_unittest_target") {
@@ -61,67 +68,26 @@ executable("service_manager_unittest_target") {
 
   deps = [
     ":interfaces",
+    ":test_manifests",
     "//base",
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/standalone_service:main",
+    "//services/service_manager/public/cpp/service_executable:main",
   ]
 }
 
-service_manifest("target_manifest") {
-  name = "service_manager_unittest_target"
-  source = "target_manifest.json"
-}
-
-service_manifest("embedder_manifest") {
-  name = "service_manager_unittest_embedder"
-  source = "embedder_manifest.json"
-  packaged_services = [
-    ":shared_instance_across_users_manifest",
-    ":regular_manifest",
-    ":singleton_manifest",
-  ]
-}
-
-service_manifest("shared_instance_across_users_manifest") {
-  name = "service_manager_unittest_shared_instance_across_users"
-  source = "shared_instance_across_users_manifest.json"
-}
-
-service_manifest("singleton_manifest") {
-  name = "service_manager_unittest_singleton"
-  source = "singleton_manifest.json"
-}
-
-service_manifest("regular_manifest") {
-  name = "service_manager_unittest_regular"
-  source = "regular_manifest.json"
-}
-
-service("service_manager_unittest_embedder") {
+service_executable("service_manager_unittest_embedder") {
   testonly = true
-
   sources = [
     "embedder.cc",
   ]
 
   deps = [
     ":interfaces",
+    ":test_manifests",
     "//base",
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/standalone_service:main",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/runner:init",
-    "//services/service_manager/runner/common",
-  ]
-}
-
-catalog("catalog") {
-  embedded_services = [ ":manifest" ]
-
-  standalone_services = [
-    ":embedder_manifest",
-    ":target_manifest",
   ]
 }

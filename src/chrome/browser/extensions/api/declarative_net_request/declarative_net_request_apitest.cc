@@ -50,4 +50,8 @@ IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, ExtensionWithNoRuleset) {
   ASSERT_TRUE(RunExtensionTest("extension_with_no_ruleset")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, DynamicRules) {
+  ASSERT_TRUE(RunExtensionTest("dynamic_rules")) << message_;
+}
+
 }  // namespace

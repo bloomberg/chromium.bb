@@ -12,7 +12,8 @@ namespace chromeos {
 
 // FakeSeneschalClient is a stub implementation of SeneschalClient used for
 // testing.
-class CHROMEOS_EXPORT FakeSeneschalClient : public SeneschalClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSeneschalClient
+    : public SeneschalClient {
  public:
   FakeSeneschalClient();
   ~FakeSeneschalClient() override;

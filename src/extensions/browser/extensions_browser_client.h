@@ -18,7 +18,7 @@
 #include "extensions/browser/extensions_browser_api_provider.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/view_type.h"
-#include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/page_transition_types.h"
 
@@ -57,6 +57,7 @@ class UpdateClient;
 
 namespace extensions {
 
+struct ComponentExtensionResourceInfo;
 class ComponentExtensionResourceManager;
 class Extension;
 class ExtensionCache;
@@ -169,7 +170,7 @@ class ExtensionsBrowserClient {
   virtual base::FilePath GetBundleResourcePath(
       const network::ResourceRequest& request,
       const base::FilePath& extension_resources_path,
-      int* resource_id) const = 0;
+      ComponentExtensionResourceInfo* resource_info) const = 0;
 
   // Creates and starts a URLLoader to load an extension resource from the
   // embedder's resource bundle (.pak) files. Used for component extensions.
@@ -177,7 +178,7 @@ class ExtensionsBrowserClient {
       const network::ResourceRequest& request,
       network::mojom::URLLoaderRequest loader,
       const base::FilePath& resource_relative_path,
-      int resource_id,
+      const ComponentExtensionResourceInfo& resource_info,
       const std::string& content_security_policy,
       network::mojom::URLLoaderClientPtr client,
       bool send_cors_header) = 0;
@@ -361,6 +362,9 @@ class ExtensionsBrowserClient {
   virtual network::mojom::NetworkContext* GetSystemNetworkContext();
 
   virtual UserScriptListener* GetUserScriptListener();
+
+  // Returns the user agent used by the content module.
+  virtual std::string GetUserAgent() const;
 
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;

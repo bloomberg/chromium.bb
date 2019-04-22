@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,34 +8,67 @@
 #include <string>
 
 #include "base/macros.h"
-
-class ProfileOAuth2TokenService;
+#include "base/optional.h"
+#include "components/signin/core/browser/signin_buildflags.h"
+#include "components/signin/core/browser/signin_metrics.h"
 
 namespace identity {
 
-// Supports seeding of account info and mutation of refresh tokens for the
-// user's Gaia accounts.
+// AccountsMutator is the interface to support seeding of account info and
+// mutation of refresh tokens for the user's Gaia accounts.
 class AccountsMutator {
  public:
-  explicit AccountsMutator(ProfileOAuth2TokenService* token_service);
-  ~AccountsMutator();
+  AccountsMutator() = default;
+  virtual ~AccountsMutator() = default;
 
-  // Loads credentials from a backing persistent store to make them available
-  // after service is used between profile restarts.
-  //
-  // The primary account is specified with the |primary_account_id| argument.
-  // For a regular profile, the primary account id comes from IdentityManager.
-  // For a supervised user, the id comes from SupervisedUserService.
-  // NOTE: In normal usage this method SHOULD NOT be called as the loading of
-  // accounts from disk occurs as part of the internal startup flow. The method
-  // is only used in production for a very small number of corner case startup
-  // flows.
-  // TODO(https://crbug.com/740117): Eliminate the need to expose this.
-  void LoadAccountsFromDisk(const std::string& primary_account_id);
+  // Updates the information of the account associated with |gaia_id|, first
+  // adding that account to the system if it is not known.
+  virtual std::string AddOrUpdateAccount(
+      const std::string& gaia_id,
+      const std::string& email,
+      const std::string& refresh_token,
+      bool is_under_advanced_protection,
+      signin_metrics::SourceForRefreshTokenOperation source) = 0;
+
+  // Updates the information about account identified by |account_id|.
+  virtual void UpdateAccountInfo(
+      const std::string& account_id,
+      base::Optional<bool> is_child_account,
+      base::Optional<bool> is_under_advanced_protection) = 0;
+
+  // Removes the account given by |account_id|. Also revokes the token
+  // server-side if needed.
+  virtual void RemoveAccount(
+      const std::string& account_id,
+      signin_metrics::SourceForRefreshTokenOperation source) = 0;
+
+  // Removes all accounts.
+  virtual void RemoveAllAccounts(
+      signin_metrics::SourceForRefreshTokenOperation source) = 0;
+
+  // Invalidates the refresh token of the primary account.
+  // The primary account must necessarily be set by the time this method
+  // is invoked.
+  virtual void InvalidateRefreshTokenForPrimaryAccount(
+      signin_metrics::SourceForRefreshTokenOperation source) = 0;
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  // Removes the credentials associated to account_id from the internal storage,
+  // and moves them to |target|. The credentials are not revoked on the server,
+  // but the IdentityManager::Observer::OnRefreshTokenRemovedForAccount()
+  // notification is sent to the observers. Also recreates a new device ID for
+  // this mutator. The device ID of the current mutator is not moved to the
+  // target mutator.
+  virtual void MoveAccount(AccountsMutator* target,
+                           const std::string& account_id) = 0;
+#endif
+
+  // Updates the refresh token for the supervised user.
+  // TODO(860492): Remove this once supervised user support is removed.
+  virtual void LegacySetRefreshTokenForSupervisedUser(
+      const std::string& refresh_token) = 0;
 
  private:
-  ProfileOAuth2TokenService* token_service_;
-
   DISALLOW_COPY_AND_ASSIGN(AccountsMutator);
 };
 

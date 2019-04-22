@@ -6,11 +6,17 @@
 #include "blake2s_sse.cpp"
 #endif
 
+namespace third_party_unrar {
+
 static void blake2s_init_param( blake2s_state *S, uint32 node_offset, uint32 node_depth);
 static void blake2s_update( blake2s_state *S, const byte *in, size_t inlen );
 static void blake2s_final( blake2s_state *S, byte *digest );
 
+}
+
 #include "blake2sp.cpp"
+
+namespace third_party_unrar {
 
 static const uint32 blake2s_IV[8] =
 {
@@ -181,3 +187,4 @@ void blake2s_final( blake2s_state *S, byte *digest )
     RawPut4( S->h[i], digest + 4 * i );
 }
 
+}  // namespace third_party_unrar

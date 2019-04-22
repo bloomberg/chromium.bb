@@ -129,7 +129,7 @@ void CueTimeline::UpdateActiveCues(double movie_time) {
   if (media_element.GetDocument().IsDetached())
     return;
 
-  // https://html.spec.whatwg.org/#time-marches-on
+  // https://html.spec.whatwg.org/C/#time-marches-on
 
   // 1 - Let current cues be a list of cues, initialized to contain all the
   // cues of all the hidden, showing, or showing by default text tracks of the
@@ -363,7 +363,7 @@ void CueTimeline::EndIgnoringUpdateRequests() {
     UpdateActiveCues(MediaElement().currentTime());
 }
 
-void CueTimeline::Trace(blink::Visitor* visitor) {
+void CueTimeline::Trace(Visitor* visitor) {
   visitor->Trace(media_element_);
 }
 

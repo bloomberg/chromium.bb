@@ -6,15 +6,17 @@
 #define STORAGE_BROWSER_BLOB_BLOB_URL_STORE_IMPL_H_
 
 #include <memory>
+
+#include "base/component_export.h"
 #include "storage/browser/blob/blob_registry_impl.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 
 namespace storage {
 
 class BlobStorageContext;
 
-class STORAGE_EXPORT BlobURLStoreImpl : public blink::mojom::BlobURLStore {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
+    : public blink::mojom::BlobURLStore {
  public:
   BlobURLStoreImpl(base::WeakPtr<BlobStorageContext> context,
                    BlobRegistryImpl::Delegate* delegate);

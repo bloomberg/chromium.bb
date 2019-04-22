@@ -15,6 +15,7 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
@@ -24,7 +25,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -34,19 +35,15 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.WelcomeScreen";
-
-}  // namespace
-
 namespace chromeos {
 
 // WelcomeScreenHandler, public: -----------------------------------------------
 
-WelcomeScreenHandler::WelcomeScreenHandler(CoreOobeView* core_oobe_view)
-    : BaseScreenHandler(kScreenId), core_oobe_view_(core_oobe_view) {
-  set_call_js_prefix(kJsScreenPath);
+WelcomeScreenHandler::WelcomeScreenHandler(JSCallsContainer* js_calls_container,
+                                           CoreOobeView* core_oobe_view)
+    : BaseScreenHandler(kScreenId, js_calls_container),
+      core_oobe_view_(core_oobe_view) {
+  set_user_acted_method_path("login.WelcomeScreen.userActed");
   DCHECK(core_oobe_view_);
 }
 
@@ -106,6 +103,11 @@ void WelcomeScreenHandler::ReloadLocalizedContent() {
   core_oobe_view_->ReloadContent(localized_strings);
 }
 
+void WelcomeScreenHandler::SetInputMethodId(
+    const std::string& input_method_id) {
+  CallJS("login.WelcomeScreen.onInputMethodIdSetFromBackend", input_method_id);
+}
+
 // WelcomeScreenHandler, BaseScreenHandler implementation: --------------------
 
 void WelcomeScreenHandler::DeclareLocalizedValues(
@@ -114,8 +116,6 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
     builder->Add("welcomeScreenGreeting", IDS_REMORA_CONFIRM_MESSAGE);
   else
     builder->Add("welcomeScreenGreeting", IDS_WELCOME_SCREEN_GREETING);
-
-  builder->Add("welcomeScreenTitle", IDS_WELCOME_SCREEN_TITLE);
 
   // MD-OOBE (oobe-welcome-md)
   builder->Add("debuggingFeaturesLink", IDS_WELCOME_ENABLE_DEV_FEATURES_LINK);
@@ -129,10 +129,6 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
   builder->Add("timezoneSectionTitle", IDS_TIMEZONE_SECTION_TITLE);
   builder->Add("advancedOptionsSectionTitle",
                IDS_OOBE_ADVANCED_OPTIONS_SCREEN_TITLE);
-  builder->Add("advancedOptionsEEBootstrappingTitle",
-               IDS_OOBE_ADVANCED_OPTIONS_EE_BOOTSTRAPPING_TITLE);
-  builder->Add("advancedOptionsEEBootstrappingSubtitle",
-               IDS_OOBE_ADVANCED_OPTIONS_EE_BOOTSTRAPPING_SUBTITLE);
   builder->Add("advancedOptionsCFMSetupTitle",
                IDS_OOBE_ADVANCED_OPTIONS_CFM_SETUP_TITLE);
   builder->Add("advancedOptionsCFMSetupSubtitle",
@@ -155,6 +151,15 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
 
   builder->Add("timezoneDropdownTitle", IDS_TIMEZONE_DROPDOWN_TITLE);
   builder->Add("timezoneButtonText", IDS_TIMEZONE_BUTTON_TEXT);
+}
+
+void WelcomeScreenHandler::DeclareJSCallbacks() {
+  AddCallback("WelcomeScreen.setLocaleId",
+              &WelcomeScreenHandler::HandleSetLocaleId);
+  AddCallback("WelcomeScreen.setInputMethodId",
+              &WelcomeScreenHandler::HandleSetInputMethodId);
+  AddCallback("WelcomeScreen.setTimezoneId",
+              &WelcomeScreenHandler::HandleSetTimezoneId);
 }
 
 void WelcomeScreenHandler::GetAdditionalParameters(
@@ -181,7 +186,7 @@ void WelcomeScreenHandler::GetAdditionalParameters(
     language_list = GetMinimalUILanguageList();
 
   // GetAdditionalParameters() is called when OOBE language is updated.
-  // This happens in three different cases:
+  // This happens in two different cases:
   //
   // 1) User selects new locale on OOBE screen. We need to sync active input
   // methods with locale, so EnableLoginLayouts() is needed.
@@ -199,22 +204,16 @@ void WelcomeScreenHandler::GetAdditionalParameters(
   //
   // So we need to disable activation of login layouts if we are already in
   // active user session.
-  //
-  // 3) This is the bootstrapping process for a "Slave" device. The locale &
-  // input of the "Slave" device is set up by a "Master" device. In this case we
-  // don't want EnableLoginLayout() to reset the input method to the hardware
-  // default method.
-  const bool is_slave = g_browser_process->local_state()->GetBoolean(
-      prefs::kOobeControllerDetected);
-
   const bool enable_layouts =
-      !user_manager::UserManager::Get()->IsUserLoggedIn() && !is_slave;
+      !user_manager::UserManager::Get()->IsUserLoggedIn();
 
   dict->Set("languageList", std::move(language_list));
   dict->Set("inputMethodsList",
             GetAndActivateLoginKeyboardLayouts(
                 application_locale, selected_input_method, enable_layouts));
   dict->Set("timezoneList", GetTimezoneList());
+  dict->Set("demoModeCountryList",
+            base::Value::ToUniquePtrValue(DemoSession::GetCountryList()));
 }
 
 void WelcomeScreenHandler::Initialize() {
@@ -226,6 +225,22 @@ void WelcomeScreenHandler::Initialize() {
   // Reload localized strings if they are already resolved.
   if (screen_ && screen_->language_list())
     ReloadLocalizedContent();
+}
+
+void WelcomeScreenHandler::HandleSetLocaleId(const std::string& locale_id) {
+  if (screen_)
+    screen_->SetApplicationLocale(locale_id);
+}
+
+void WelcomeScreenHandler::HandleSetInputMethodId(
+    const std::string& input_method_id) {
+  if (screen_)
+    screen_->SetInputMethod(input_method_id);
+}
+
+void WelcomeScreenHandler::HandleSetTimezoneId(const std::string& timezone_id) {
+  if (screen_)
+    screen_->SetTimezone(timezone_id);
 }
 
 // WelcomeScreenHandler, private: ----------------------------------------------

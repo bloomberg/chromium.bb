@@ -22,9 +22,9 @@ namespace ui {
 
 class XScopedEventSelector;
 
-extern const char kIncr[];
-extern const char kSaveTargets[];
-extern const char kTargets[];
+UI_BASE_EXPORT extern const char kIncr[];
+UI_BASE_EXPORT extern const char kSaveTargets[];
+UI_BASE_EXPORT extern const char kTargets[];
 
 // Owns a specific X11 selection on an X window.
 //

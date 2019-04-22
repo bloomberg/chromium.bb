@@ -9,21 +9,14 @@
 #include "fxjs/xfa/cjx_model.h"
 #include "third_party/base/ptr_util.h"
 
-namespace {
-
-constexpr wchar_t kDataModelName[] = L"dataModel";
-
-}  // namespace
-
 CXFA_DataModel::CXFA_DataModel(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
                 XFA_XDPPACKET_Datasets,
                 XFA_ObjectType::ModelNode,
                 XFA_Element::DataModel,
-                nullptr,
-                nullptr,
-                kDataModelName,
+                {},
+                {},
                 pdfium::MakeUnique<CJX_Model>(this)) {}
 
-CXFA_DataModel::~CXFA_DataModel() {}
+CXFA_DataModel::~CXFA_DataModel() = default;

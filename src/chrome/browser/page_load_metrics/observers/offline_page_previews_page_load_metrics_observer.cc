@@ -4,6 +4,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/offline_page_previews_page_load_metrics_observer.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
@@ -17,6 +18,17 @@
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
 namespace previews {
+
+namespace {
+
+void RecordPageLoadExtraInfoMetrics(
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  UMA_HISTOGRAM_ENUMERATION(
+      internal::kHistogramOfflinePreviewsPageEndReason, info.page_end_reason,
+      page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
+}
+
+}  // namespace
 
 namespace internal {
 
@@ -34,6 +46,8 @@ const char kHistogramOfflinePreviewsFirstContentfulPaint[] =
     "NavigationToFirstContentfulPaint";
 const char kHistogramOfflinePreviewsParseStart[] =
     "PageLoad.Clients.Previews.OfflinePages.ParseTiming.NavigationToParseStart";
+const char kHistogramOfflinePreviewsPageEndReason[] =
+    "Previews.PageEndReason.Offline";
 
 }  // namespace internal
 
@@ -62,6 +76,20 @@ OfflinePagePreviewsPageLoadMetricsObserver::ShouldObserveMimeType(
                  mime_type == "multipart/related"
              ? CONTINUE_OBSERVING
              : STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+OfflinePagePreviewsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  RecordPageLoadExtraInfoMetrics(info);
+  return STOP_OBSERVING;
+}
+
+void OfflinePagePreviewsPageLoadMetricsObserver::OnComplete(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  RecordPageLoadExtraInfoMetrics(info);
 }
 
 void OfflinePagePreviewsPageLoadMetricsObserver::OnDomContentLoadedEventStart(

@@ -9,12 +9,12 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/win/scoped_gdi_object.h"
 #include "skia/ext/skia_utils_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
-#include "ui/gfx/path.h"
 
 namespace gfx {
 
@@ -77,14 +77,14 @@ TEST(CreateHRGNFromSkPathTest, RoundCornerTest) {
       { 16, 49, 34, 50 },
   };
 
-  Path path;
+  SkPath path;
   SkRRect rrect;
   rrect.setRectXY(SkRect::MakeWH(50, 50), 20, 20);
   path.addRRect(rrect);
   base::win::ScopedRegion region(CreateHRGNFromSkPath(path));
   const std::vector<SkIRect>& region_rects = GetRectsFromHRGN(region.get());
-  EXPECT_EQ(arraysize(rects), region_rects.size());
-  for (size_t i = 0; i < arraysize(rects) && i < region_rects.size(); ++i)
+  EXPECT_EQ(base::size(rects), region_rects.size());
+  for (size_t i = 0; i < base::size(rects) && i < region_rects.size(); ++i)
     EXPECT_EQ(rects[i], region_rects[i]);
 }
 
@@ -96,20 +96,20 @@ TEST(CreateHRGNFromSkPathTest, NonContiguousPath) {
       { 100, 100, 150, 150},
   };
 
-  Path path;
+  SkPath path;
   for (const SkIRect& rect : rects) {
     path.addRect(SkRect::Make(rect));
   }
   base::win::ScopedRegion region(CreateHRGNFromSkPath(path));
   const std::vector<SkIRect>& region_rects = GetRectsFromHRGN(region.get());
-  ASSERT_EQ(arraysize(rects), region_rects.size());
-  for (size_t i = 0; i < arraysize(rects); ++i)
+  ASSERT_EQ(base::size(rects), region_rects.size());
+  for (size_t i = 0; i < base::size(rects); ++i)
     EXPECT_EQ(rects[i], region_rects[i]);
 }
 
 // Check that empty region is returned for empty path.
 TEST(CreateHRGNFromSkPathTest, EmptyPath) {
-  Path path;
+  SkPath path;
   base::win::ScopedRegion empty_region(::CreateRectRgn(0, 0, 0, 0));
   base::win::ScopedRegion region(CreateHRGNFromSkPath(path));
   EXPECT_TRUE(::EqualRgn(empty_region.get(), region.get()));

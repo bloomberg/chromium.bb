@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <list>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -24,7 +25,7 @@
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "jingle/glue/utils.h"
 #include "net/base/ip_address.h"
-#include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
+#include "third_party/webrtc/rtc_base/async_packet_socket.h"
 
 namespace content {
 
@@ -600,13 +601,8 @@ void IpcPacketSocket::OnSendComplete(
   in_flight_packet_records_.pop_front();
   TraceSendThrottlingState();
 
-  int64_t send_time_ms = -1;
-  if (send_metrics.rtc_packet_id >= 0) {
-    send_time_ms = (send_metrics.send_time - base::TimeTicks::UnixEpoch())
-                       .InMilliseconds();
-  }
   SignalSentPacket(this, rtc::SentPacket(send_metrics.rtc_packet_id,
-                                         send_time_ms));
+                                         send_metrics.send_time_ms));
 
   if (writable_signal_expected_ && send_bytes_available_ > 0) {
     WebRtcLogMessage(base::StringPrintf(

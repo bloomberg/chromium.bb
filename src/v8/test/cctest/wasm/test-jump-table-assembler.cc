@@ -24,10 +24,6 @@ namespace wasm {
 
 #define __ masm.
 
-// TODO(v8:7424,v8:8018): Extend this test to all architectures.
-#if V8_TARGET_ARCH_X64 || V8_TARGET_ARCH_IA32 || V8_TARGET_ARCH_ARM || \
-    V8_TARGET_ARCH_ARM64
-
 namespace {
 
 static volatile int global_stop_bit = 0;
@@ -36,7 +32,7 @@ constexpr int kJumpTableSlotCount = 128;
 constexpr uint32_t kJumpTableSize =
     JumpTableAssembler::SizeForNumberOfSlots(kJumpTableSlotCount);
 
-#if V8_TARGET_ARCH_ARM64
+#if V8_TARGET_ARCH_ARM64 || V8_TARGET_ARCH_X64
 constexpr uint32_t kAvailableBufferSlots =
     (kMaxWasmCodeMemory - kJumpTableSize) / AssemblerBase::kMinimalBufferSize;
 constexpr uint32_t kBufferSlotStartOffset =
@@ -45,10 +41,11 @@ constexpr uint32_t kBufferSlotStartOffset =
 constexpr uint32_t kAvailableBufferSlots = 0;
 #endif
 
-Address GenerateJumpTableThunk(Address jump_target, byte* thunk_slot_buffer,
-                               std::bitset<kAvailableBufferSlots>* used_slots) {
-  size_t allocated;
-#if V8_TARGET_ARCH_ARM64
+Address GenerateJumpTableThunk(
+    Address jump_target, byte* thunk_slot_buffer,
+    std::bitset<kAvailableBufferSlots>* used_slots,
+    std::vector<std::unique_ptr<TestingAssemblerBuffer>>* thunk_buffers) {
+#if V8_TARGET_ARCH_ARM64 || V8_TARGET_ARCH_X64
   // To guarantee that the branch range lies within the near-call range,
   // generate the thunk in the same (kMaxWasmCodeMemory-sized) buffer as the
   // jump_target itself.
@@ -68,18 +65,17 @@ Address GenerateJumpTableThunk(Address jump_target, byte* thunk_slot_buffer,
   byte* buffer =
       thunk_slot_buffer + buffer_index * AssemblerBase::kMinimalBufferSize;
 
-  DCHECK(TurboAssembler::IsNearCallOffset(
-      (reinterpret_cast<byte*>(jump_target) - buffer) / kInstrSize));
-
-  allocated = AssemblerBase::kMinimalBufferSize;
 #else
   USE(thunk_slot_buffer);
   USE(used_slots);
-  byte* buffer = AllocateAssemblerBuffer(
-      &allocated, AssemblerBase::kMinimalBufferSize, GetRandomMmapAddr());
+  thunk_buffers->emplace_back(AllocateAssemblerBuffer(
+      AssemblerBase::kMinimalBufferSize, GetRandomMmapAddr()));
+  byte* buffer = thunk_buffers->back()->start();
 #endif
-  MacroAssembler masm(nullptr, AssemblerOptions{}, buffer,
-                      static_cast<int>(allocated), CodeObjectRequired::kNo);
+
+  MacroAssembler masm(
+      nullptr, AssemblerOptions{}, CodeObjectRequired::kNo,
+      ExternalAssemblerBuffer(buffer, AssemblerBase::kMinimalBufferSize));
 
   Label exit;
   Register scratch = kReturnRegister0;
@@ -106,6 +102,30 @@ Address GenerateJumpTableThunk(Address jump_target, byte* thunk_slot_buffer,
   __ Tbnz(scratch, 0, &exit);
   __ Mov(scratch, Immediate(jump_target, RelocInfo::NONE));
   __ Br(scratch);
+#elif V8_TARGET_ARCH_PPC64
+  __ mov(scratch, Operand(stop_bit_address, RelocInfo::NONE));
+  __ LoadP(scratch, MemOperand(scratch));
+  __ cmpi(scratch, Operand::Zero());
+  __ bne(&exit);
+  __ mov(scratch, Operand(jump_target, RelocInfo::NONE));
+  __ Jump(scratch);
+#elif V8_TARGET_ARCH_S390X
+  __ mov(scratch, Operand(stop_bit_address, RelocInfo::NONE));
+  __ LoadP(scratch, MemOperand(scratch));
+  __ CmpP(scratch, Operand(0));
+  __ bne(&exit);
+  __ mov(scratch, Operand(jump_target, RelocInfo::NONE));
+  __ Jump(scratch);
+#elif V8_TARGET_ARCH_MIPS64
+  __ li(scratch, Operand(stop_bit_address, RelocInfo::NONE));
+  __ Lw(scratch, MemOperand(scratch, 0));
+  __ Branch(&exit, ne, scratch, Operand(zero_reg));
+  __ Jump(jump_target, RelocInfo::NONE);
+#elif V8_TARGET_ARCH_MIPS
+  __ li(scratch, Operand(stop_bit_address, RelocInfo::NONE));
+  __ lw(scratch, MemOperand(scratch, 0));
+  __ Branch(&exit, ne, scratch, Operand(zero_reg));
+  __ Jump(jump_target, RelocInfo::NONE);
 #else
 #error Unsupported architecture
 #endif
@@ -114,7 +134,6 @@ Address GenerateJumpTableThunk(Address jump_target, byte* thunk_slot_buffer,
 
   CodeDesc desc;
   masm.GetCode(nullptr, &desc);
-  MakeAssemblerBufferExecutable(buffer, allocated);
   return reinterpret_cast<Address>(buffer);
 }
 
@@ -180,8 +199,7 @@ class JumpTablePatcher : public v8::base::Thread {
 TEST(JumpTablePatchingStress) {
   constexpr int kNumberOfRunnerThreads = 5;
 
-  size_t allocated;
-#if V8_TARGET_ARCH_ARM64
+#if V8_TARGET_ARCH_ARM64 || V8_TARGET_ARCH_X64
   // We need the branches (from GenerateJumpTableThunk) to be within near-call
   // range of the jump table slots. The address hint to AllocateAssemblerBuffer
   // is not reliable enough to guarantee that we can always achieve this with
@@ -191,30 +209,35 @@ TEST(JumpTablePatchingStress) {
   // TODO(wasm): Currently {kMaxWasmCodeMemory} limits code sufficiently, so
   // that the jump table only supports {near_call} distances.
   STATIC_ASSERT(kMaxWasmCodeMemory >= kJumpTableSize);
-  byte* buffer = AllocateAssemblerBuffer(&allocated, kMaxWasmCodeMemory);
-  byte* thunk_slot_buffer = buffer + kBufferSlotStartOffset;
+  auto buffer = AllocateAssemblerBuffer(kMaxWasmCodeMemory);
+  byte* thunk_slot_buffer = buffer->start() + kBufferSlotStartOffset;
 #else
-  byte* buffer = AllocateAssemblerBuffer(&allocated, kJumpTableSize);
+  auto buffer = AllocateAssemblerBuffer(kJumpTableSize);
   byte* thunk_slot_buffer = nullptr;
 #endif
+
   std::bitset<kAvailableBufferSlots> used_thunk_slots;
-  MakeAssemblerBufferWritableAndExecutable(buffer, allocated);
+  buffer->MakeWritableAndExecutable();
 
   // Iterate through jump-table slots to hammer at different alignments within
   // the jump-table, thereby increasing stress for variable-length ISAs.
-  Address slot_start = reinterpret_cast<Address>(buffer);
+  Address slot_start = reinterpret_cast<Address>(buffer->start());
   for (int slot = 0; slot < kJumpTableSlotCount; ++slot) {
     TRACE("Hammering on jump table slot #%d ...\n", slot);
     uint32_t slot_offset = JumpTableAssembler::SlotIndexToOffset(slot);
-    Address thunk1 = GenerateJumpTableThunk(
-        slot_start + slot_offset, thunk_slot_buffer, &used_thunk_slots);
-    Address thunk2 = GenerateJumpTableThunk(
-        slot_start + slot_offset, thunk_slot_buffer, &used_thunk_slots);
+    std::vector<std::unique_ptr<TestingAssemblerBuffer>> thunk_buffers;
+    Address thunk1 =
+        GenerateJumpTableThunk(slot_start + slot_offset, thunk_slot_buffer,
+                               &used_thunk_slots, &thunk_buffers);
+    Address thunk2 =
+        GenerateJumpTableThunk(slot_start + slot_offset, thunk_slot_buffer,
+                               &used_thunk_slots, &thunk_buffers);
     TRACE("  generated thunk1: " V8PRIxPTR_FMT "\n", thunk1);
     TRACE("  generated thunk2: " V8PRIxPTR_FMT "\n", thunk2);
     JumpTableAssembler::PatchJumpTableSlot(slot_start, slot, thunk1,
                                            WasmCode::kFlushICache);
 
+    for (auto& buf : thunk_buffers) buf->MakeExecutable();
     // Start multiple runner threads and a patcher thread that hammer on the
     // same jump-table slot concurrently.
     std::list<JumpTableRunner> runners;
@@ -230,9 +253,6 @@ TEST(JumpTablePatchingStress) {
     for (auto& runner : runners) runner.Join();
   }
 }
-
-#endif  // V8_TARGET_ARCH_X64 || V8_TARGET_ARCH_IA32 || V8_TARGET_ARCH_ARM ||
-        // V8_TARGET_ARCH_ARM64
 
 #undef __
 #undef TRACE

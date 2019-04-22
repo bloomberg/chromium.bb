@@ -36,8 +36,8 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
   static ScriptPromise setMediaKeys(ScriptState*,
                                     HTMLMediaElement&,
                                     MediaKeys*);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(encrypted, kEncrypted);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(waitingforkey, kWaitingforkey);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(encrypted, kEncrypted)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(waitingforkey, kWaitingforkey)
 
   // WebMediaPlayerEncryptedMediaClient methods
   void Encrypted(WebEncryptedMediaInitDataType,

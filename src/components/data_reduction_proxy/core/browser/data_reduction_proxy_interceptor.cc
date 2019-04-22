@@ -40,27 +40,6 @@ void MarkProxiesAsBad(net::URLRequest* request,
       proxy_info, bypass_duration, bad_proxies, request->net_log());
 }
 
-class BypassStats : public DataReductionProxyBypassProtocol::Stats {
-  // TODO(http://crbug.com/721403): This interface only exists as an
-  // intermediary step to avoid depending on data_reduction_proxy/core/browser.
-  // The correct dependency is DataReductionProxyBypassStats.
-  void RecordDataReductionProxyBypassInfo(
-      bool is_primary,
-      bool bypass_all,
-      const net::ProxyServer& proxy_server,
-      DataReductionProxyBypassType bypass_type) override {
-    DataReductionProxyBypassStats::RecordDataReductionProxyBypassInfo(
-        is_primary, bypass_all, proxy_server, bypass_type);
-  }
-
-  void DetectAndRecordMissingViaHeaderResponseCode(
-      bool is_primary,
-      const net::HttpResponseHeaders& headers) override {
-    DataReductionProxyBypassStats::DetectAndRecordMissingViaHeaderResponseCode(
-        is_primary, headers);
-  }
-};
-
 }  // namespace
 
 DataReductionProxyInterceptor::DataReductionProxyInterceptor(
@@ -142,8 +121,7 @@ DataReductionProxyInterceptor::MaybeInterceptResponseOrRedirect(
     std::vector<net::ProxyServer> bad_proxies;
     int additional_load_flags_for_restart = 0;
 
-    BypassStats stats;
-    DataReductionProxyBypassProtocol protocol(&stats);
+    DataReductionProxyBypassProtocol protocol;
 
     should_retry = protocol.MaybeBypassProxyAndPrepareToRetry(
         request->method(), request->url_chain(), request->response_headers(),

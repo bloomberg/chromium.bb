@@ -84,7 +84,7 @@ interface TestObject {
     attribute SerializedScriptValue serializedScriptValueAttribute;
     attribute any anyAttribute;
     // Custom type conversions
-    attribute Promise promiseAttribute;
+    attribute Promise<any> promiseAttribute;
     attribute Window windowAttribute;
     // DOM Node types
     attribute Document documentAttribute;
@@ -138,7 +138,7 @@ interface TestObject {
     [CachedAttribute=isStringDirty] attribute DOMString? cachedStringOrNoneAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
     [CallWith=ScriptState] attribute any callWithScriptStateAnyAttribute;
-    [CallWith=(ExecutionContext,ScriptState)] attribute any callWithExecutionContextAndScriptStateAnyAttribute;
+    [CallWith=(ExecutionContext,ScriptState,Isolate)] attribute any callWithExecutionContextAndScriptStateAndIsolateAnyAttribute;
     [CheckSecurity=ReturnValue] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute; // All uses are read only
     // Constructors: FIXME: replace suffix with [ConstructorAttribute]
     attribute TestInterfaceEmptyConstructor testInterfaceEmptyConstructorAttribute;
@@ -157,6 +157,7 @@ interface TestObject {
     [MeasureAs=TestFeature] attribute long measureAsLongAttribute;
     [NotEnumerable] attribute long notEnumerableLongAttribute;
     [OriginTrialEnabled=FeatureName] attribute long originTrialEnabledLongAttribute;
+    [RuntimeEnabled=OriginTrialFeature] attribute long originTrialEnabledLongAttribute2;
     [PerWorldBindings] readonly attribute TestInterfaceEmpty perWorldBindingsReadonlyTestInterfaceEmptyAttribute;
     [LogActivity, LogAllWorlds, PerWorldBindings] attribute long activityLoggingAccessPerWorldBindingsLongAttribute;
     [LogActivity, PerWorldBindings] attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute;
@@ -167,7 +168,6 @@ interface TestObject {
     [PutForwards=hrefCallWith] readonly attribute TestNode locationWithCallWith;
     [PutForwards=hrefByteString] readonly attribute TestNode locationByteString;
     [PerWorldBindings, PutForwards=href] readonly attribute TestNode locationWithPerWorldBindings;
-    [PutForwards=href, LegacyInterfaceTypeChecking] readonly attribute TestNode locationLegacyInterfaceTypeChecking;
     [RaisesException] attribute long raisesExceptionLongAttribute;
     [RaisesException=Getter] attribute long raisesExceptionGetterLongAttribute;
     [RaisesException=Setter] attribute long setterRaisesExceptionLongAttribute;
@@ -201,13 +201,9 @@ interface TestObject {
 
     [Replaceable] readonly attribute long replaceableReadonlyLongAttribute;
     [PutForwards=href] readonly attribute TestNode locationPutForwards;
-    [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
-    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString setterCallWithCurrentWindowAndEnteredWindowStringAttribute;
+    [RuntimeEnabled=RuntimeFeature] attribute long runtimeEnabledLongAttribute;
     [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;
     attribute [TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringStringAttribute;
-    [LegacyInterfaceTypeChecking] attribute float legacyInterfaceTypeCheckingFloatAttribute; // nop for non-interface types
-    [LegacyInterfaceTypeChecking] attribute TestInterface legacyInterfaceTypeCheckingTestInterfaceAttribute;
-    [LegacyInterfaceTypeChecking] attribute TestInterface? legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute;
     [Reflect, URL] attribute DOMString urlStringAttribute;
     [Reflect=reflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
     [Unforgeable] attribute long unforgeableLongAttribute;
@@ -217,9 +213,9 @@ interface TestObject {
     [SameObject, SaveSameObject] static readonly attribute TestInterface staticSaveSameObjectAttribute;
     [Unscopable] attribute long unscopableLongAttribute;
     [Unscopable, OriginTrialEnabled=FeatureName] attribute long unscopableOriginTrialEnabledLongAttribute;
-    [Unscopable, RuntimeEnabled=FeatureName] attribute long unscopableRuntimeEnabledLongAttribute;
+    [Unscopable, RuntimeEnabled=RuntimeFeature] attribute long unscopableRuntimeEnabledLongAttribute;
     [Unscopable] void unscopableVoidMethod();
-    [Unscopable, RuntimeEnabled=FeatureName] void unscopableRuntimeEnabledVoidMethod();
+    [Unscopable, RuntimeEnabled=RuntimeFeature] void unscopableRuntimeEnabledVoidMethod();
 
     // Methods
     //
@@ -347,12 +343,12 @@ interface TestObject {
     void passPermissiveDictionaryMethod([PermissiveDictionaryConversion] optional TestDictionary arg);
     NodeFilter nodeFilterMethod();
     Promise<void> promiseMethod(long arg1, Dictionary arg2, DOMString arg3, DOMString... variadic);
-    Promise promiseMethodWithoutExceptionState(Dictionary arg1);
+    Promise<any> promiseMethodWithoutExceptionState(Dictionary arg1);
     SerializedScriptValue serializedScriptValueMethod();
     XPathNSResolver xPathNSResolverMethod();
     void voidMethodDictionaryArg(Dictionary dictionaryArg);
     void voidMethodNodeFilterArg(NodeFilter nodeFilterArg);
-    void voidMethodPromiseArg(Promise promiseArg);
+    void voidMethodPromiseArg(Promise<any> promiseArg);
     void voidMethodSerializedScriptValueArg(SerializedScriptValue serializedScriptValueArg);
     void voidMethodXPathNSResolverArg(XPathNSResolver xPathNSResolverArg);
     void voidMethodDictionarySequenceArg(sequence<Dictionary> dictionarySequenceArg);
@@ -418,16 +414,14 @@ interface TestObject {
     void overloadedMethodI(double doubleArg);
     void overloadedMethodJ(DOMString stringArg);
     void overloadedMethodJ(TestDictionary testDictionaryArg);
-    void overloadedMethodK(CallbackFunctionTreatedAsScriptValue functionArg);
-    void overloadedMethodK(DOMString stringArg);
     void overloadedMethodL(long longArg, any... restArgs);
     void overloadedMethodL(DOMString stringArg, any... restArgs);
     void overloadedMethodN(TestInterface testInterfaceArg);
     void overloadedMethodN(TestCallbackInterface testCallbackInterfaceArg);
 
-    Promise promiseOverloadMethod();
-    Promise promiseOverloadMethod(Window arg1, double arg2);
-    Promise promiseOverloadMethod(Document arg1, double arg2);
+    Promise<any> promiseOverloadMethod();
+    Promise<any> promiseOverloadMethod(Window arg1, double arg2);
+    Promise<any> promiseOverloadMethod(Document arg1, double arg2);
 
     [PerWorldBindings] void overloadedPerWorldBindingsMethod();
     [PerWorldBindings] void overloadedPerWorldBindingsMethod(long longArg);
@@ -443,29 +437,26 @@ interface TestObject {
     [RaisesException, CallWith=ScriptState] deleter boolean(unsigned long index);
     [CallWith=ScriptState] deleter boolean(DOMString name);
 
-    // Extended attributes for arguments
+    // Annotated types in arguments
     // [Clamp]
-    void voidMethodClampUnsignedShortArg([Clamp] unsigned short clampUnsignedShortArg);
     void voidMethodClampUnsignedLongArg([Clamp] unsigned long clampUnsignedLongArg);
-    // [Default]
-    void voidMethodDefaultUndefinedTestInterfaceEmptyArg([Default=Undefined] optional TestInterfaceEmpty defaultUndefinedTestInterfaceEmptyArg);
-    void voidMethodDefaultUndefinedLongArg([Default=Undefined] optional long defaultUndefinedLongArg);
-    void voidMethodDefaultUndefinedStringArg([Default=Undefined] optional DOMString defaultUndefinedStringArg);
     // [EnforceRange]
     void voidMethodEnforceRangeLongArg([EnforceRange] long enforceRangeLongArg);
     // [TreatNullAs]
     void voidMethodTreatNullAsEmptyStringStringArg([TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringStringArg);
+
+    // Extended attributes for arguments
+    // [DefaultValue]
+    void voidMethodDefaultUndefinedTestInterfaceEmptyArg([DefaultValue=Undefined] optional TestInterfaceEmpty defaultUndefinedTestInterfaceEmptyArg);
+    void voidMethodDefaultUndefinedLongArg([DefaultValue=Undefined] optional long defaultUndefinedLongArg);
+    void voidMethodDefaultUndefinedStringArg([DefaultValue=Undefined] optional DOMString defaultUndefinedStringArg);
 
     // Extended attributes for methods
     [LogActivity, LogAllWorlds] void activityLoggingAccessForAllWorldsMethod();
     [CallWith=ExecutionContext] void callWithExecutionContextVoidMethod();
     [CallWith=ScriptState] void callWithScriptStateVoidMethod();
     [CallWith=ScriptState] long callWithScriptStateLongMethod();
-    [CallWith=(ScriptState,ExecutionContext)] void callWithScriptStateExecutionContextVoidMethod();
-    [CallWith=(ScriptState,ScriptArguments)] void callWithScriptStateScriptArgumentsVoidMethod();
-    [CallWith=(ScriptState,ScriptArguments)] void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg);
-    [CallWith=CurrentWindow] void callWithCurrentWindow();
-    [CallWith=(CurrentWindow,EnteredWindow)] void callWithCurrentWindowScriptWindow();
+    [CallWith=(ScriptState,ExecutionContext,Isolate)] void callWithScriptStateExecutionContextIsolateVoidMethod();
     [CallWith=ThisValue] void callWithThisValue();
     [CheckSecurity=ReturnValue] void checkSecurityForNodeVoidMethod();
     [Custom] void customVoidMethod();
@@ -485,6 +476,16 @@ interface TestObject {
     [MeasureAs=TestFeatureB] void measureAsOverloadedMethod(long arg);
     [MeasureAs=TestFeature] void measureAsSameValueOverloadedMethod();
     [MeasureAs=TestFeature] void measureAsSameValueOverloadedMethod(long arg);
+
+    // [HighEntropy]
+    [HighEntropy,Measure] const DOMString highEntropyConstant = 1;
+    [HighEntropy,MeasureAs=TestFeatureHighEntropyConstant] const DOMString highEntropyConstant = 1;
+    [HighEntropy,Measure] void highEntropyMethodWithMeasure();
+    [HighEntropy,MeasureAs=TestFeatureHighEntropy] void highEntropyMethodWithMeasureAs();
+    [HighEntropy,Measure] attribute DOMString highEntropyAttributeWithMeasure;
+    [HighEntropy,Measure] readonly attribute DOMString highEntropyReadonlyAttributeWithMeasure;
+    [HighEntropy,MeasureAs=TestAttributeHighEntropy] attribute DOMString highEntropyAttributeWithMeasureAs;
+    [HighEntropy,MeasureAs=TestAttributeHighEntropy] readonly attribute DOMString highEntropyReadonlyAttributeWithMeasureAs;
 
     // with [CEReactions] for not overloaded method
     [CEReactions] void ceReactionsNotOverloadedMethod(boolean arg);
@@ -521,31 +522,27 @@ interface TestObject {
     [RaisesException] TestInterfaceEmpty raisesExceptionTestInterfaceEmptyVoidMethod();
     [RaisesException] XPathNSResolver raisesExceptionXPathNSResolverVoidMethod();
     [CallWith=ExecutionContext, RaisesException] void callWithExecutionContextRaisesExceptionVoidMethodLongArg(long longArg);
-    [RuntimeEnabled=FeatureName] void runtimeEnabledVoidMethod();
-    [PerWorldBindings, RuntimeEnabled=FeatureName] void perWorldBindingsRuntimeEnabledVoidMethod();
-    [RuntimeEnabled=FeatureName] void runtimeEnabledOverloadedVoidMethod(DOMString stringArg);
-    [RuntimeEnabled=FeatureName] void runtimeEnabledOverloadedVoidMethod(long longArg);
-    [RuntimeEnabled=FeatureName1] void partiallyRuntimeEnabledOverloadedVoidMethod(DOMString stringArg);
-    [RuntimeEnabled=FeatureName2] void partiallyRuntimeEnabledOverloadedVoidMethod(TestInterface testInterfaceArg);
+    [RuntimeEnabled=RuntimeFeature] void runtimeEnabledVoidMethod();
+    [PerWorldBindings, RuntimeEnabled=RuntimeFeature] void perWorldBindingsRuntimeEnabledVoidMethod();
+    [RuntimeEnabled=RuntimeFeature] void runtimeEnabledOverloadedVoidMethod(DOMString stringArg);
+    [RuntimeEnabled=RuntimeFeature] void runtimeEnabledOverloadedVoidMethod(long longArg);
+    [RuntimeEnabled=RuntimeFeature1] void partiallyRuntimeEnabledOverloadedVoidMethod(DOMString stringArg);
+    [RuntimeEnabled=RuntimeFeature2] void partiallyRuntimeEnabledOverloadedVoidMethod(TestInterface testInterfaceArg);
     void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg, DOMString stringArg);
-    [RuntimeEnabled=FeatureName3] void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg, DOMString stringArg, TestInterface testInterfaceArg);
-    [LegacyInterfaceTypeChecking] void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
-    [LegacyInterfaceTypeChecking] void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg(TestInterfaceEmpty... testInterfaceEmptyArg);
+    [RuntimeEnabled=RuntimeFeature3] void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg, DOMString stringArg, TestInterface testInterfaceArg);
     // Avoid redundant type checking
     void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg(Node node1, optional Node node2);
     void useToImpl4ArgumentsCheckingIfPossibleWithNullableArg(Node node1, Node? node2);
-    void useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg(Node node1, [Default=Undefined] optional Node node2);
+    void useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg(Node node1, [DefaultValue=Undefined] optional Node node2);
     [Unforgeable] void unforgeableVoidMethod();
     [NewObject] TestInterface newObjectTestInterfaceMethod();
     [NewObject] Promise<TestInterface> newObjectTestInterfacePromiseMethod();
     [RuntimeCallStatsCounter=RuntimeCallStatsCounterMethod] void RuntimeCallStatsCounterMethod();
-
-    serializer = { attribute };
 
     // Extended attributes on referenced interfaces
     // (not self; self-reference tests at interface themselves)
     attribute TestInterface testInterfaceAttribute; // [ImplementedAs]
 
     maplike<[EnforceRange] long, DOMStringOrDouble>;
-    [RuntimeEnabled=FeatureName, CallWith=ScriptState, RaisesException, ImplementedAs=myMaplikeClear] boolean clear();
+    [RuntimeEnabled=RuntimeFeature, CallWith=ScriptState, RaisesException, ImplementedAs=myMaplikeClear] boolean clear();
 };

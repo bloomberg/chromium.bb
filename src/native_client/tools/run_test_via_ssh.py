@@ -20,6 +20,8 @@ as follows so that the input files get copied:
       -f test_prog.nexe
 """
 
+from __future__ import print_function
+
 import optparse
 import os
 import subprocess
@@ -94,7 +96,7 @@ def Main():
   # Run the test command on the remote host.
   remote_cmd = ' '.join(command_args)
   if options.verbose:
-    print remote_cmd
+    print(remote_cmd)
   full_remote_cmd = 'cd %s && %s' % (options.subdir, remote_cmd)
   rc = subprocess.call(['ssh', options.host, full_remote_cmd])
   sys.exit(rc)

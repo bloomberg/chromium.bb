@@ -11,7 +11,6 @@
 #include "ui/display/manager/touch_transform_controller.h"
 
 namespace display {
-class DisplayConfigurator;
 class DisplayManager;
 }
 
@@ -24,7 +23,6 @@ class ASH_EXPORT AshTouchTransformController
       public WindowTreeHostManager::Observer {
  public:
   AshTouchTransformController(
-      display::DisplayConfigurator* display_configurator,
       display::DisplayManager* display_manager,
       std::unique_ptr<display::TouchTransformSetter> setter);
   ~AshTouchTransformController() override;

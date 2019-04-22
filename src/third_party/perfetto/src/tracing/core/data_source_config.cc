@@ -27,10 +27,12 @@
 
 #include "perfetto/tracing/core/data_source_config.h"
 
+#include "perfetto/config/android/android_log_config.pb.h"
 #include "perfetto/config/chrome/chrome_config.pb.h"
 #include "perfetto/config/data_source_config.pb.h"
 #include "perfetto/config/ftrace/ftrace_config.pb.h"
 #include "perfetto/config/inode_file/inode_file_config.pb.h"
+#include "perfetto/config/power/android_power_config.pb.h"
 #include "perfetto/config/process_stats/process_stats_config.pb.h"
 #include "perfetto/config/profiling/heapprofd_config.pb.h"
 #include "perfetto/config/sys_stats/sys_stats_config.pb.h"
@@ -46,6 +48,26 @@ DataSourceConfig& DataSourceConfig::operator=(const DataSourceConfig&) =
 DataSourceConfig::DataSourceConfig(DataSourceConfig&&) noexcept = default;
 DataSourceConfig& DataSourceConfig::operator=(DataSourceConfig&&) = default;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+bool DataSourceConfig::operator==(const DataSourceConfig& other) const {
+  return (name_ == other.name_) && (target_buffer_ == other.target_buffer_) &&
+         (trace_duration_ms_ == other.trace_duration_ms_) &&
+         (enable_extra_guardrails_ == other.enable_extra_guardrails_) &&
+         (tracing_session_id_ == other.tracing_session_id_) &&
+         (ftrace_config_ == other.ftrace_config_) &&
+         (chrome_config_ == other.chrome_config_) &&
+         (inode_file_config_ == other.inode_file_config_) &&
+         (process_stats_config_ == other.process_stats_config_) &&
+         (sys_stats_config_ == other.sys_stats_config_) &&
+         (heapprofd_config_ == other.heapprofd_config_) &&
+         (android_power_config_ == other.android_power_config_) &&
+         (android_log_config_ == other.android_log_config_) &&
+         (legacy_config_ == other.legacy_config_) &&
+         (for_testing_ == other.for_testing_);
+}
+#pragma GCC diagnostic pop
+
 void DataSourceConfig::FromProto(
     const perfetto::protos::DataSourceConfig& proto) {
   static_assert(sizeof(name_) == sizeof(proto.name()), "size mismatch");
@@ -59,6 +81,12 @@ void DataSourceConfig::FromProto(
                 "size mismatch");
   trace_duration_ms_ =
       static_cast<decltype(trace_duration_ms_)>(proto.trace_duration_ms());
+
+  static_assert(sizeof(enable_extra_guardrails_) ==
+                    sizeof(proto.enable_extra_guardrails()),
+                "size mismatch");
+  enable_extra_guardrails_ = static_cast<decltype(enable_extra_guardrails_)>(
+      proto.enable_extra_guardrails());
 
   static_assert(
       sizeof(tracing_session_id_) == sizeof(proto.tracing_session_id()),
@@ -77,6 +105,10 @@ void DataSourceConfig::FromProto(
   sys_stats_config_.FromProto(proto.sys_stats_config());
 
   heapprofd_config_.FromProto(proto.heapprofd_config());
+
+  android_power_config_.FromProto(proto.android_power_config());
+
+  android_log_config_.FromProto(proto.android_log_config());
 
   static_assert(sizeof(legacy_config_) == sizeof(proto.legacy_config()),
                 "size mismatch");
@@ -104,6 +136,13 @@ void DataSourceConfig::ToProto(
   proto->set_trace_duration_ms(
       static_cast<decltype(proto->trace_duration_ms())>(trace_duration_ms_));
 
+  static_assert(sizeof(enable_extra_guardrails_) ==
+                    sizeof(proto->enable_extra_guardrails()),
+                "size mismatch");
+  proto->set_enable_extra_guardrails(
+      static_cast<decltype(proto->enable_extra_guardrails())>(
+          enable_extra_guardrails_));
+
   static_assert(
       sizeof(tracing_session_id_) == sizeof(proto->tracing_session_id()),
       "size mismatch");
@@ -121,6 +160,10 @@ void DataSourceConfig::ToProto(
   sys_stats_config_.ToProto(proto->mutable_sys_stats_config());
 
   heapprofd_config_.ToProto(proto->mutable_heapprofd_config());
+
+  android_power_config_.ToProto(proto->mutable_android_power_config());
+
+  android_log_config_.ToProto(proto->mutable_android_log_config());
 
   static_assert(sizeof(legacy_config_) == sizeof(proto->legacy_config()),
                 "size mismatch");

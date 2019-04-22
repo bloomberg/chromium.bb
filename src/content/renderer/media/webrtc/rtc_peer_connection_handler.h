@@ -24,17 +24,17 @@
 #include "content/renderer/media/webrtc/rtc_rtp_sender.h"
 #include "content/renderer/media/webrtc/transceiver_state_surfacer.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
-#include "ipc/ipc_platform_file.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
+#include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats_response.h"
+#include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace blink {
 class WebLocalFrame;
 class WebRTCAnswerOptions;
-class WebRTCDataChannelHandler;
 class WebRTCLegacyStats;
 class WebRTCOfferOptions;
 class WebRTCPeerConnectionHandlerClient;
@@ -44,7 +44,6 @@ namespace content {
 
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
-class RtcDataChannelHandler;
 class SetLocalDescriptionRequest;
 
 // Mockable wrapper for blink::WebRTCStatsResponse
@@ -113,10 +112,12 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                       server_configuration,
                   const blink::WebMediaConstraints& options) override;
 
-  void CreateOffer(const blink::WebRTCSessionDescriptionRequest& request,
-                   const blink::WebMediaConstraints& options) override;
-  void CreateOffer(const blink::WebRTCSessionDescriptionRequest& request,
-                   const blink::WebRTCOfferOptions& options) override;
+  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
+      const blink::WebRTCSessionDescriptionRequest& request,
+      const blink::WebMediaConstraints& options) override;
+  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
+      const blink::WebRTCSessionDescriptionRequest& request,
+      const blink::WebRTCOfferOptions& options) override;
 
   void CreateAnswer(const blink::WebRTCSessionDescriptionRequest& request,
                     const blink::WebMediaConstraints& options) override;
@@ -151,8 +152,9 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                                        bool result);
 
   void GetStats(const blink::WebRTCStatsRequest& request) override;
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
-                blink::RTCStatsFilter) override;
+  void GetStats(blink::WebRTCStatsReportCallback callback,
+                const std::vector<webrtc::NonStandardGroupId>&
+                    exposed_group_ids) override;
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
   AddTransceiverWithTrack(const blink::WebMediaStreamTrack& web_track,
                           const webrtc::RtpTransceiverInit& init) override;
@@ -165,11 +167,17 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>> RemoveTrack(
       blink::WebRTCRtpSender* web_sender) override;
 
-  blink::WebRTCDataChannelHandler* CreateDataChannel(
+  scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const blink::WebString& label,
       const blink::WebRTCDataChannelInit& init) override;
   void Stop() override;
-  blink::WebString Id() const override;
+  webrtc::PeerConnectionInterface* NativePeerConnection() override;
+  void RunSynchronousOnceClosureOnSignalingThread(
+      base::OnceClosure closure,
+      const char* trace_event_name) override;
+  void RunSynchronousRepeatingClosureOnSignalingThread(
+      const base::RepeatingClosure& closure,
+      const char* trace_event_name) override;
 
   // Delegate functions to allow for mocking of WebKit interfaces.
   // getStats takes ownership of request parameter.
@@ -186,10 +194,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   virtual void CloseClientPeerConnection();
 
   // Start recording an event log.
-  // TODO(crbug.com/775415): Remove he version with IPC::PlatformFileForTransit,
-  // since it's no longer used.
-  void StartEventLog(IPC::PlatformFileForTransit file,
-                     int64_t max_file_size_bytes);
   void StartEventLog(int output_period_ms);
   // Stop recording an event log.
   void StopEventLog();
@@ -213,6 +217,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       webrtc::PeerConnectionInterface::SignalingState new_state);
   void OnIceConnectionChange(
       webrtc::PeerConnectionInterface::IceConnectionState new_state);
+  void OnStandardizedIceConnectionChange(
+      webrtc::PeerConnectionInterface::IceConnectionState new_state);
   void OnConnectionChange(
       webrtc::PeerConnectionInterface::PeerConnectionState new_state);
   void OnIceGatheringChange(
@@ -220,9 +226,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnRenegotiationNeeded();
   void OnAddReceiverPlanB(RtpReceiverState receiver_state);
   void OnRemoveReceiverPlanB(uintptr_t receiver_id);
+  void OnModifySctpTransport(blink::WebRTCSctpTransportSnapshot state);
   void OnModifyTransceivers(std::vector<RtpTransceiverState> transceiver_states,
                             bool is_remote_description);
-  void OnDataChannel(std::unique_ptr<RtcDataChannelHandler> handler);
+  void OnDataChannel(scoped_refptr<webrtc::DataChannelInterface> channel);
   void OnIceCandidate(const std::string& sdp,
                       const std::string& sdp_mid,
                       int sdp_mline_index,
@@ -234,7 +241,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // Record info about the first SessionDescription from the local and
   // remote side to record UMA stats once both are set.
   struct FirstSessionDescription {
-    FirstSessionDescription(const webrtc::SessionDescriptionInterface* desc);
+    explicit FirstSessionDescription(
+        const webrtc::SessionDescriptionInterface* desc);
 
     bool audio = false;
     bool video = false;
@@ -290,6 +298,13 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
       TransceiverStateSurfacer* transceiver_state_surfacer,
       bool* result);
+  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOfferInternal(
+      const blink::WebRTCSessionDescriptionRequest& request,
+      webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options);
+  void CreateOfferOnSignalingThread(
+      webrtc::CreateSessionDescriptionObserver* observer,
+      webrtc::PeerConnectionInterface::RTCOfferAnswerOptions offer_options,
+      TransceiverStateSurfacer* transceiver_state_surfacer);
   std::vector<std::unique_ptr<RTCRtpSender>>::iterator FindSender(uintptr_t id);
   std::vector<std::unique_ptr<RTCRtpReceiver>>::iterator FindReceiver(
       uintptr_t id);
@@ -305,17 +320,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   size_t GetTransceiverIndex(
       const blink::WebRTCRtpTransceiver& web_transceiver);
   std::unique_ptr<RTCRtpTransceiver> CreateOrUpdateTransceiver(
-      RtpTransceiverState transceiver_state);
+      RtpTransceiverState transceiver_state,
+      TransceiverStateUpdateMode update_mode);
 
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
-
-  void RunSynchronousClosureOnSignalingThread(const base::Closure& closure,
-                                              const char* trace_event_name);
-  void RunSynchronousOnceClosureOnSignalingThread(base::OnceClosure closure,
-                                                  const char* trace_event_name);
-
-  // Corresponds to the experimental RTCPeerConnection.id read-only attribute.
-  const std::string id_;
 
   // Initialize() is never expected to be called more than once, even if the
   // first call fails.

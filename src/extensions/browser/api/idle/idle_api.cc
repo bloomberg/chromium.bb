@@ -4,8 +4,6 @@
 
 #include "extensions/browser/api/idle/idle_api.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/values.h"
 #include "extensions/browser/api/idle/idle_api_constants.h"
 #include "extensions/browser/api/idle/idle_manager.h"
@@ -33,30 +31,41 @@ int ClampThreshold(int threshold) {
 
 }  // namespace
 
+IdleQueryStateFunction::~IdleQueryStateFunction() = default;
+
 ExtensionFunction::ResponseAction IdleQueryStateFunction::Run() {
   int threshold = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = ClampThreshold(threshold);
 
-  IdleManagerFactory::GetForBrowserContext(context_)->QueryState(
-      threshold, base::Bind(&IdleQueryStateFunction::IdleStateCallback, this));
+  ui::IdleState state =
+      IdleManagerFactory::GetForBrowserContext(context_)->QueryState(threshold);
 
-  return RespondLater();
+  return RespondNow(OneArgument(IdleManager::CreateIdleValue(state)));
 }
 
 void IdleQueryStateFunction::IdleStateCallback(ui::IdleState state) {
-  Respond(OneArgument(IdleManager::CreateIdleValue(state)));
 }
+
+IdleSetDetectionIntervalFunction::~IdleSetDetectionIntervalFunction() = default;
 
 ExtensionFunction::ResponseAction IdleSetDetectionIntervalFunction::Run() {
   int threshold = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = ClampThreshold(threshold);
 
-  IdleManagerFactory::GetForBrowserContext(context_)
-      ->SetThreshold(extension_id(), threshold);
+  IdleManagerFactory::GetForBrowserContext(context_)->SetThreshold(
+      extension_id(), threshold);
 
   return RespondNow(NoArguments());
 }
 
+IdleGetAutoLockDelayFunction::~IdleGetAutoLockDelayFunction() = default;
+
+ExtensionFunction::ResponseAction IdleGetAutoLockDelayFunction::Run() {
+  const int delay = IdleManagerFactory::GetForBrowserContext(context_)
+                        ->GetAutoLockDelay()
+                        .InSeconds();
+  return RespondNow(OneArgument(std::make_unique<base::Value>(delay)));
+}
 }  // namespace extensions

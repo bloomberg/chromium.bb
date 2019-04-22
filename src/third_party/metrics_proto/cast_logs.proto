@@ -163,7 +163,7 @@ message CastLogsProto {
   repeated CastConnectionInfo cast_connection_info = 2;
 
   // Stores Cast-enabled device specific events with a various context data.
-  // Next tag: 21
+  // Next tag: 23
   message CastEventProto {
     // The name of the action, hashed by same logic used to hash user action
     // event and histogram.
@@ -211,6 +211,8 @@ message CastLogsProto {
 
     optional int64 aogh_local_device_id = 18;
 
+    optional string aogh_agent_id = 21;
+
     // Optional value associated with the event. For example, may be used for
     // error codes.
     message Metadata {
@@ -227,6 +229,9 @@ message CastLogsProto {
 
     // Optional value to log ui version.
     optional string ui_version = 20;
+
+    // Optional field to log SELINUX audit detail.
+    optional string selinux_audit_detail = 22;
   }
   repeated CastEventProto cast_event = 3;
 
@@ -238,7 +243,7 @@ message CastLogsProto {
   // Next tag: 9
   message CastDeviceMutableInfo {
     // This is the last type of reboot the device encountered
-    // Next tag: 11
+    // Next tag: 12
     enum RebootType {
       REBOOT_TYPE_UNKNOWN = 0;  // Fail to get reboot type from system property
       REBOOT_TYPE_FORCED = 1;   // Power removed from device
@@ -251,6 +256,7 @@ message CastLogsProto {
       REBOOT_TYPE_FDR = 8;
       REBOOT_TYPE_HW_WATCHDOG = 9;
       REBOOT_TYPE_SW_OTHER = 10;
+      REBOOT_TYPE_OVERHEAT = 11;
     }
     optional RebootType last_reboot_type = 1;
 

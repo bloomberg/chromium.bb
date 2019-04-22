@@ -21,7 +21,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "components/cronet/android/buildflags.h"
 #include "components/cronet/cronet_global_state.h"
@@ -32,7 +32,7 @@
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "third_party/zlib/zlib.h"
-#include "url/url_features.h"
+#include "url/buildflags.h"
 #include "url/url_util.h"
 
 #if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
@@ -71,8 +71,8 @@ void NativeInit() {
   base::FeatureList::InitializeInstance(std::string(), std::string());
 #endif
 
-  if (!base::TaskScheduler::GetInstance())
-    base::TaskScheduler::CreateAndStartWithDefaultParams("Cronet");
+  if (!base::ThreadPool::GetInstance())
+    base::ThreadPool::CreateAndStartWithDefaultParams("Cronet");
   url::Initialize();
 }
 
@@ -100,16 +100,14 @@ jint CronetOnLoad(JavaVM* vm, void* reserved) {
 }
 
 void CronetOnUnLoad(JavaVM* jvm, void* reserved) {
-  if (base::TaskScheduler::GetInstance())
-    base::TaskScheduler::GetInstance()->Shutdown();
+  if (base::ThreadPool::GetInstance())
+    base::ThreadPool::GetInstance()->Shutdown();
 
   base::android::LibraryLoaderExitHook();
 }
 #endif
 
-void JNI_CronetLibraryLoader_CronetInitOnInitThread(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+void JNI_CronetLibraryLoader_CronetInitOnInitThread(JNIEnv* env) {
   // Initialize message loop for init thread.
   DCHECK(!base::MessageLoopCurrent::IsSet());
   DCHECK(!g_init_message_loop);
@@ -132,8 +130,7 @@ void JNI_CronetLibraryLoader_CronetInitOnInitThread(
 }
 
 ScopedJavaLocalRef<jstring> JNI_CronetLibraryLoader_GetCronetVersion(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
+    JNIEnv* env) {
 #if defined(ARCH_CPU_ARM64)
   // Attempt to avoid crashes on some ARM64 Marshmallow devices by
   // prompting zlib ARM feature detection early on. https://crbug.com/853725

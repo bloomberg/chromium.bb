@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 #include "components/download/public/common/base_file.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
@@ -106,6 +107,21 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
 
   virtual void Pause() = 0;
   virtual void Resume() = 0;
+
+#if defined(OS_ANDROID)
+  // Create an intermediate URI to write the download file. Once completes,
+  // |callback| is called with a content URI to be written into.
+  virtual void CreateIntermediateUriForPublish(
+      const GURL& original_url,
+      const GURL& referrer_url,
+      const base::FilePath& file_name,
+      const std::string& mime_type,
+      const RenameCompletionCallback& callback) = 0;
+
+  // Publishes the download to public. Once completes, |callback| is called with
+  // the final content URI.
+  virtual void PublishDownload(const RenameCompletionCallback& callback) = 0;
+#endif  // defined(OS_ANDROID)
 };
 
 }  // namespace download

@@ -24,8 +24,13 @@ AnchorConfiguration GetPageInfoAnchorConfiguration(Browser* browser,
     return {browser_view->GetLocationBarView(),
             browser_view->GetLocationBarView()->location_icon_view(),
             views::BubbleBorder::TOP_LEFT};
-  // Fall back to menu button if no location bar present.
 
+  if (anchor == kCustomTabBar && browser_view->toolbar()->custom_tab_bar())
+    return {browser_view->toolbar()->custom_tab_bar(),
+            browser_view->toolbar()->custom_tab_bar()->location_icon_view(),
+            views::BubbleBorder::TOP_LEFT};
+
+  // Fall back to menu button.
   views::Button* app_menu_button =
       browser_view->toolbar_button_provider()->GetAppMenuButton();
   if (app_menu_button && app_menu_button->IsDrawn())

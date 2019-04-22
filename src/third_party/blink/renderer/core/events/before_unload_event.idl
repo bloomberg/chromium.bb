@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#the-beforeunloadevent-interface
+// https://html.spec.whatwg.org/C/#the-beforeunloadevent-interface
 
 [Exposed=Window]
 interface BeforeUnloadEvent : Event {

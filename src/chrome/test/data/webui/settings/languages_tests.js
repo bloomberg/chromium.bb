@@ -47,8 +47,9 @@ cr.define('settings-languages', function() {
 
       document.body.appendChild(languageHelper);
       return languageHelper.whenReady().then(function() {
-        if (cr.isChromeOS || cr.isWindows)
+        if (cr.isChromeOS || cr.isWindows) {
           return browserProxy.whenCalled('getProspectiveUILanguage');
+        }
       });
     });
 

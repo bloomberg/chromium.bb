@@ -11,8 +11,9 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(wm::ActivationChangeObserver*)
 
 namespace wm {
 
-DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(
-    ActivationChangeObserver*, kActivationChangeObserverKey, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(ActivationChangeObserver*,
+                             kActivationChangeObserverKey,
+                             nullptr)
 
 void SetActivationChangeObserver(aura::Window* window,
                                  ActivationChangeObserver* observer) {

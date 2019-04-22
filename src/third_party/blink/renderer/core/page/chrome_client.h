@@ -28,24 +28,27 @@
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "cc/input/event_listener_properties.h"
+#include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
-#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
@@ -109,7 +112,8 @@ class CORE_EXPORT ChromeClient
 
   virtual void ChromeDestroyed() = 0;
 
-  // Requests the host invalidate the contents.
+  // For non-composited WebViews that exist to contribute to a "parent" WebView
+  // painting. This informs the client of the area that needs to be redrawn.
   virtual void InvalidateRect(const IntRect& update_rect) = 0;
 
   // Converts the rect from the viewport coordinates to screen coordinates.
@@ -121,9 +125,10 @@ class CORE_EXPORT ChromeClient
   // The specified rectangle is adjusted for the minimum window size and the
   // screen, then setWindowRect with the adjusted rectangle is called.
   void SetWindowRectWithAdjustment(const IntRect&, LocalFrame&);
-  virtual IntRect RootWindowRect() = 0;
 
-  virtual IntRect PageRect() = 0;
+  // This gives the rect of the top level window that the given LocalFrame is a
+  // part of.
+  virtual IntRect RootWindowRect(LocalFrame&) = 0;
 
   virtual void Focus(LocalFrame*) = 0;
 
@@ -135,6 +140,8 @@ class CORE_EXPORT ChromeClient
   virtual bool HadFormInteraction() const = 0;
 
   virtual void BeginLifecycleUpdates() = 0;
+  virtual void StartDeferringCommits(base::TimeDelta timeout) = 0;
+  virtual void StopDeferringCommits() = 0;
 
   // Start a system drag and drop operation.
   virtual void StartDragging(LocalFrame*,
@@ -153,26 +160,33 @@ class CORE_EXPORT ChromeClient
   Page* CreateWindow(LocalFrame*,
                      const FrameLoadRequest&,
                      const WebWindowFeatures&,
-                     NavigationPolicy,
-                     SandboxFlags,
+                     WebSandboxFlags,
+                     const FeaturePolicy::FeatureState&,
                      const SessionStorageNamespaceId&);
   virtual void Show(NavigationPolicy) = 0;
 
   // All the parameters should be in viewport space. That is, if an event
   // scrolls by 10 px, but due to a 2X page scale we apply a 5px scroll to the
   // root frame, all of which is handled as overscroll, we should return 10px
-  // as the overscrollDelta.
+  // as the |overscroll_delta|.
   virtual void DidOverscroll(const FloatSize& overscroll_delta,
                              const FloatSize& accumulated_overscroll,
                              const FloatPoint& position_in_viewport,
-                             const FloatSize& velocity_in_viewport,
-                             const cc::OverscrollBehavior&) = 0;
+                             const FloatSize& velocity_in_viewport) = 0;
+
+  // Set the browser's behavior when overscroll happens, e.g. whether to glow
+  // or navigate. This may only be called for the main frame, and takes it as
+  // reference to make it clear that callers may only call this while a local
+  // main frame is present and the values do not persist between instances of
+  // local main frames.
+  virtual void SetOverscrollBehavior(LocalFrame& main_frame,
+                                     const cc::OverscrollBehavior&) = 0;
 
   virtual bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                                     const String& source) = 0;
   virtual void AddMessageToConsole(LocalFrame*,
-                                   MessageSource,
-                                   MessageLevel,
+                                   mojom::ConsoleMessageSource,
+                                   mojom::ConsoleMessageLevel,
                                    const String& message,
                                    unsigned line_number,
                                    const String& source_id,
@@ -211,10 +225,14 @@ class CORE_EXPORT ChromeClient
 
   virtual void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) = 0;
 
-  // Returns a custom visible content rect if a viewport override is active.
-  virtual base::Optional<IntRect> VisibleContentRectForPainting() const {
-    return base::nullopt;
-  }
+  // Returns a custom visible rect if a viewport override is active. Requires
+  // the |frame| being painted, but only supports being used for the main frame.
+  virtual void OverrideVisibleRectForMainFrame(LocalFrame& frame,
+                                               IntRect* paint_rect) const {}
+
+  // Returns the scale used to convert incoming input events while emulating
+  // device metics.
+  virtual float InputEventsScaleForEmulation() const { return 1; }
 
   virtual void DispatchViewportPropertiesDidChange(
       const ViewportDescription&) const {}
@@ -222,6 +240,7 @@ class CORE_EXPORT ChromeClient
   virtual bool DoubleTapToZoomEnabled() const { return false; }
 
   virtual void ContentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
+  // Call during pinch gestures, or when page-scale changes on main-frame load.
   virtual void PageScaleFactorChanged() const {}
   virtual float ClampPageScaleFactorToLimits(float scale) const {
     return scale;
@@ -290,6 +309,7 @@ class CORE_EXPORT ChromeClient
       cc::EventListenerClass) const = 0;
   virtual void SetHasScrollEventHandlers(LocalFrame*, bool) = 0;
   virtual void SetNeedsLowLatencyInput(LocalFrame*, bool) = 0;
+  virtual void SetNeedsUnbufferedInputForDebugger(LocalFrame*, bool) = 0;
   virtual void RequestUnbufferedInputEvents(LocalFrame*) = 0;
   virtual void SetTouchAction(LocalFrame*, TouchAction) = 0;
 
@@ -302,8 +322,8 @@ class CORE_EXPORT ChromeClient
 
   virtual void SetBrowserControlsState(float top_height,
                                        float bottom_height,
-                                       bool shrinks_layout){};
-  virtual void SetBrowserControlsShownRatio(float){};
+                                       bool shrinks_layout) {}
+  virtual void SetBrowserControlsShownRatio(float) {}
 
   virtual String AcceptLanguages() = 0;
 
@@ -346,11 +366,13 @@ class CORE_EXPORT ChromeClient
 
   virtual void RegisterViewportLayers() const {}
 
+  virtual TransformationMatrix GetDeviceEmulationTransform() const {
+    return TransformationMatrix();
+  }
+
   virtual void OnMouseDown(Node&) {}
 
   virtual void DidUpdateBrowserControls() const {}
-
-  virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
 
   virtual void RegisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
   virtual void UnregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
@@ -367,6 +389,21 @@ class CORE_EXPORT ChromeClient
                              base::OnceCallback<void(bool)> callback) {
     std::move(callback).Run(false);
   }
+
+  // The |callback| will be fired when the corresponding renderer frame for the
+  // |frame| is submitted (still called "swapped") to the display compositor
+  // (either with DidSwap or DidNotSwap).
+  virtual void NotifySwapTime(LocalFrame& frame,
+                              WebWidgetClient::ReportTimeCallback callback) {}
+
+  virtual void FallbackCursorModeLockCursor(LocalFrame* frame,
+                                            bool left,
+                                            bool right,
+                                            bool up,
+                                            bool down) = 0;
+
+  virtual void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
+                                                     bool visible) = 0;
 
   virtual void Trace(blink::Visitor*);
 
@@ -387,8 +424,8 @@ class CORE_EXPORT ChromeClient
   virtual Page* CreateWindowDelegate(LocalFrame*,
                                      const FrameLoadRequest&,
                                      const WebWindowFeatures&,
-                                     NavigationPolicy,
-                                     SandboxFlags,
+                                     WebSandboxFlags,
+                                     const FeaturePolicy::FeatureState&,
                                      const SessionStorageNamespaceId&) = 0;
 
  private:

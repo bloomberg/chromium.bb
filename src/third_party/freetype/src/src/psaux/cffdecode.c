@@ -4,7 +4,7 @@
  *
  *   PostScript CFF (Type 2) decoding routines (body).
  *
- * Copyright 2017-2018 by
+ * Copyright (C) 2017-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -235,8 +235,8 @@
       return FT_THROW( Syntax_Error );
     }
 
-    adx += decoder->builder.left_bearing.x;
-    ady += decoder->builder.left_bearing.y;
+    adx = ADD_LONG( adx, decoder->builder.left_bearing.x );
+    ady = ADD_LONG( ady, decoder->builder.left_bearing.y );
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
     /* Incremental fonts don't necessarily have valid charsets.        */
@@ -860,7 +860,7 @@
           case cff_op_flex1:
           case cff_op_callsubr:
           case cff_op_callgsubr:
-            /* depracated opcodes */
+            /* deprecated opcodes */
           case cff_op_dotsection:
             /* invalid Type 1 opcodes */
           case cff_op_hsbw:
@@ -1556,9 +1556,9 @@
             }
 
             if ( dx < 0 )
-              dx = -dx;
+              dx = NEG_LONG( dx );
             if ( dy < 0 )
-              dy = -dy;
+              dy = NEG_LONG( dy );
 
             /* strange test, but here it is... */
             horizontal = ( dx > dy );

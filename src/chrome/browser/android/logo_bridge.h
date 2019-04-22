@@ -38,23 +38,10 @@ class LogoBridge {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_logo_observer);
 
-  // Downloads the animated logo from the given URL and returns it to the
-  // callback. Does not support multiple concurrent requests: A second request
-  // for the same URL will be ignored; a request for a different URL will cancel
-  // any ongoing request. If downloading fails, the callback is not called.
-  void GetAnimatedLogo(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj,
-                       const base::android::JavaParamRef<jobject>& j_callback,
-                       const base::android::JavaParamRef<jstring>& j_url);
-
  private:
-  class AnimatedLogoLoader;
-
   virtual ~LogoBridge();
 
   search_provider_logos::LogoService* logo_service_;
-
-  std::unique_ptr<AnimatedLogoLoader> animated_logo_loader_;
 
   base::WeakPtrFactory<LogoBridge> weak_ptr_factory_;
 

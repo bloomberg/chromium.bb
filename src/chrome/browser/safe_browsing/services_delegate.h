@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_SERVICES_DELEGATE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
@@ -36,6 +37,7 @@ class ResourceRequestDetector;
 struct ResourceRequestInfo;
 class SafeBrowsingService;
 class SafeBrowsingDatabaseManager;
+class TelemetryService;
 struct V4ProtocolConfig;
 
 // Abstraction to help organize code for mobile vs full safe browsing modes.
@@ -117,6 +119,12 @@ class ServicesDelegate {
   virtual void RemovePasswordProtectionService(Profile* profile) = 0;
   virtual PasswordProtectionService* GetPasswordProtectionService(
       Profile* profile) const = 0;
+
+  virtual void CreateTelemetryService(Profile* profile) = 0;
+  virtual void RemoveTelemetryService() = 0;
+  virtual TelemetryService* GetTelemetryService() const = 0;
+
+  virtual std::string GetSafetyNetId() const = 0;
 };
 
 }  // namespace safe_browsing

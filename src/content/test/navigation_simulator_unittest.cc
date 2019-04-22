@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
@@ -266,7 +267,7 @@ TEST_P(CancellingNavigationSimulatorTest, Cancel) {
             simulator_->GetLastThrottleCheckResult());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CancelMethod,
     CancellingNavigationSimulatorTest,
     ::testing::Combine(
@@ -304,7 +305,7 @@ TEST_P(NavigationSimulatorTestCancelFail, FailWithResponseHeaders) {
   EXPECT_EQ(response_headers_, header);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Fail,
     NavigationSimulatorTestCancelFail,
     ::testing::Combine(
@@ -324,7 +325,7 @@ TEST_P(NavigationSimulatorTestCancelFailErrAborted, Fail) {
   EXPECT_FALSE(will_fail_request_called_);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Fail,
     NavigationSimulatorTestCancelFailErrAborted,
     ::testing::Combine(

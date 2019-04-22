@@ -70,7 +70,8 @@ static GoogleServiceAuthError CreateAuthError(
   if (body)
     response_body = std::move(*body);
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(response_body);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(response_body);
   base::DictionaryValue* response;
   if (!value.get() || !value->GetAsDictionary(&response)) {
     int http_response_code = -1;
@@ -191,8 +192,9 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
   std::string response_body;
   if (body)
     response_body = std::move(*body);
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(response_body);
-  base::DictionaryValue* dict = NULL;
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(response_body);
+  base::DictionaryValue* dict = nullptr;
   if (!value.get() || !value->GetAsDictionary(&dict)) {
     ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
         "Not able to parse a JSON object from a service response."));
@@ -253,17 +255,17 @@ bool OAuth2MintTokenFlow::ParseIssueAdviceResponse(
   CHECK(dict);
   CHECK(issue_advice);
 
-  const base::DictionaryValue* consent_dict = NULL;
+  const base::DictionaryValue* consent_dict = nullptr;
   if (!dict->GetDictionary(kConsentKey, &consent_dict))
     return false;
 
-  const base::ListValue* scopes_list = NULL;
+  const base::ListValue* scopes_list = nullptr;
   if (!consent_dict->GetList(kScopesKey, &scopes_list))
     return false;
 
   bool success = true;
   for (size_t index = 0; index < scopes_list->GetSize(); ++index) {
-    const base::DictionaryValue* scopes_entry = NULL;
+    const base::DictionaryValue* scopes_entry = nullptr;
     IssueAdviceInfoEntry entry;
     base::string16 detail;
     if (!scopes_list->GetDictionary(index, &scopes_entry) ||

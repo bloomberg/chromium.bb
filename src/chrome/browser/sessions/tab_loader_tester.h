@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SESSIONS_TAB_LOADER_TESTER_H_
 #define CHROME_BROWSER_SESSIONS_TAB_LOADER_TESTER_H_
 
+#include "base/timer/timer.h"
+#include "chrome/browser/resource_coordinator/session_restore_policy.h"
 #include "chrome/browser/sessions/tab_loader.h"
 
 // Wraps a TabLoader and exposes helper functions for testing. See tab_loader.h
@@ -33,19 +35,23 @@ class TabLoaderTester {
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
   void SetTabLoadingEnabled(bool enabled);
+  bool IsLoadingEnabled() const;
 
   // Accessors to TabLoader internals.
   size_t force_load_delay_multiplier() const;
   base::TimeTicks force_load_time() const;
   base::OneShotTimer& force_load_timer();
-  bool is_loading_enabled() const;
   const TabVector& tabs_to_load() const;
   size_t scheduled_to_load_count() const;
   static TabLoader* shared_tab_loader();
 
+  // Returns the session restore policy engine that is currently being used.
+  resource_coordinator::SessionRestorePolicy* GetPolicy();
+
   // Additional helper functions.
   bool IsSharedTabLoader() const;
   bool HasTimedOutLoads() const;
+  void WaitForTabLoadingEnabled();
 
  private:
   TabLoader* tab_loader_ = nullptr;

@@ -9,8 +9,8 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
 
+import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
@@ -62,12 +62,38 @@ class DateOrderedListMediator {
         void share(Intent intent);
     }
 
+    /**
+     * Helper interface for handling rename requests by the UI, allows implementers of the
+     * RenameController to finish the asynchronous rename operation.
+     */
+    @FunctionalInterface
+    public interface RenameCallback {
+        /**
+         * Calling this will asynchronously attempt to commit a new name.
+         * @param newName String representing the new name user designated to rename the item.
+         * @param callback A callback that will pass to the backend to determine the validation
+         *         result.
+         */
+        void tryToRename(String newName, Callback</*RenameResult*/ Integer> callback);
+    }
+
+    /** Helper interface for handling rename requests by the UI. */
+    @FunctionalInterface
+    public interface RenameController {
+        /**
+         * Will be called whenever {@link OfflineItem}s are being requested to be renamed by the UI.
+         * @param name representing new name user designated to rename the item.
+         */
+        void rename(String name, RenameCallback result);
+    }
+
     private final Handler mHandler = new Handler();
 
     private final OfflineContentProviderGlue mProvider;
     private final ShareController mShareController;
     private final ListItemModel mModel;
     private final DeleteController mDeleteController;
+    private final RenameController mRenameController;
 
     private final OfflineItemSource mSource;
     private final DateOrderedListMutator mListMutator;
@@ -122,9 +148,9 @@ class DateOrderedListMediator {
      * @param model                   The {@link ListItemModel} to push {@code provider} into.
      */
     public DateOrderedListMediator(OfflineContentProvider provider, ShareController shareController,
-            DeleteController deleteController, SelectionDelegate<ListItem> selectionDelegate,
-            DownloadManagerUiConfig config, DateOrderedListObserver dateOrderedListObserver,
-            ListItemModel model) {
+            DeleteController deleteController, RenameController renameController,
+            SelectionDelegate<ListItem> selectionDelegate, DownloadManagerUiConfig config,
+            DateOrderedListObserver dateOrderedListObserver, ListItemModel model) {
         // Build a chain from the data source to the model.  The chain will look like:
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
@@ -140,6 +166,7 @@ class DateOrderedListMediator {
         mShareController = shareController;
         mModel = model;
         mDeleteController = deleteController;
+        mRenameController = renameController;
         mSelectionDelegate = selectionDelegate;
         mUiConfig = config;
 
@@ -155,9 +182,9 @@ class DateOrderedListMediator {
         new OfflineItemStartupLogger(config, mInvalidStateFilter);
 
         mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
-        mThumbnailProvider = new ThumbnailProviderImpl(
-                ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool(),
-                config.inMemoryThumbnailCacheSizeBytes);
+        mThumbnailProvider = new ThumbnailProviderImpl(ChromeApplication.getReferencePool(),
+                config.inMemoryThumbnailCacheSizeBytes,
+                ThumbnailProviderImpl.ClientType.DOWNLOAD_HOME);
         mSelectionObserver = new MediatorSelectionObserver(selectionDelegate);
 
         mModel.getProperties().set(ListProperties.ENABLE_ITEM_ANIMATIONS, true);
@@ -171,6 +198,8 @@ class DateOrderedListMediator {
         mModel.getProperties().set(ListProperties.CALLBACK_REMOVE_ALL, this ::onDeleteItems);
         mModel.getProperties().set(ListProperties.PROVIDER_VISUALS, this ::getVisuals);
         mModel.getProperties().set(ListProperties.CALLBACK_SELECTION, this ::onSelection);
+        mModel.getProperties().set(ListProperties.CALLBACK_RENAME,
+                mUiConfig.isRenameEnabled ? this::onRenameItem : null);
         mModel.getProperties().set(
                 ListProperties.CALLBACK_START_SELECTION, this ::onStartSelection);
     }
@@ -306,6 +335,13 @@ class DateOrderedListMediator {
         // of metrics.
         UmaUtils.recordImagesMenuAction(ImagesMenuAction.MENU_DELETE_ALL);
         deleteItemsInternal(items);
+    }
+
+    private void onRenameItem(OfflineItem item) {
+        UmaUtils.recordItemAction(ViewAction.MENU_RENAME);
+        mRenameController.rename(item.title, (newName, renameCallback) -> {
+            mProvider.renameItem(item, newName, renameCallback);
+        });
     }
 
     /**

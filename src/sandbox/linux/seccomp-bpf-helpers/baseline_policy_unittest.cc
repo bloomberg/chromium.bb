@@ -239,28 +239,28 @@ BPF_DEATH_TEST_C(BaselinePolicy,
     _exit(1);                                                            \
   }
 
-TEST_BASELINE_SIGSYS(__NR_acct);
-TEST_BASELINE_SIGSYS(__NR_chroot);
-TEST_BASELINE_SIGSYS(__NR_fanotify_init);
-TEST_BASELINE_SIGSYS(__NR_fgetxattr);
-TEST_BASELINE_SIGSYS(__NR_getcpu);
-TEST_BASELINE_SIGSYS(__NR_getitimer);
-TEST_BASELINE_SIGSYS(__NR_init_module);
-TEST_BASELINE_SIGSYS(__NR_io_cancel);
-TEST_BASELINE_SIGSYS(__NR_keyctl);
-TEST_BASELINE_SIGSYS(__NR_mq_open);
-TEST_BASELINE_SIGSYS(__NR_ptrace);
-TEST_BASELINE_SIGSYS(__NR_sched_setaffinity);
-TEST_BASELINE_SIGSYS(__NR_setpgid);
-TEST_BASELINE_SIGSYS(__NR_swapon);
-TEST_BASELINE_SIGSYS(__NR_sysinfo);
-TEST_BASELINE_SIGSYS(__NR_syslog);
-TEST_BASELINE_SIGSYS(__NR_timer_create);
+TEST_BASELINE_SIGSYS(__NR_acct)
+TEST_BASELINE_SIGSYS(__NR_chroot)
+TEST_BASELINE_SIGSYS(__NR_fanotify_init)
+TEST_BASELINE_SIGSYS(__NR_fgetxattr)
+TEST_BASELINE_SIGSYS(__NR_getcpu)
+TEST_BASELINE_SIGSYS(__NR_getitimer)
+TEST_BASELINE_SIGSYS(__NR_init_module)
+TEST_BASELINE_SIGSYS(__NR_io_cancel)
+TEST_BASELINE_SIGSYS(__NR_keyctl)
+TEST_BASELINE_SIGSYS(__NR_mq_open)
+TEST_BASELINE_SIGSYS(__NR_ptrace)
+TEST_BASELINE_SIGSYS(__NR_sched_setaffinity)
+TEST_BASELINE_SIGSYS(__NR_setpgid)
+TEST_BASELINE_SIGSYS(__NR_swapon)
+TEST_BASELINE_SIGSYS(__NR_sysinfo)
+TEST_BASELINE_SIGSYS(__NR_syslog)
+TEST_BASELINE_SIGSYS(__NR_timer_create)
 
 #if !defined(__aarch64__)
-TEST_BASELINE_SIGSYS(__NR_eventfd);
-TEST_BASELINE_SIGSYS(__NR_inotify_init);
-TEST_BASELINE_SIGSYS(__NR_vserver);
+TEST_BASELINE_SIGSYS(__NR_eventfd)
+TEST_BASELINE_SIGSYS(__NR_inotify_init)
+TEST_BASELINE_SIGSYS(__NR_vserver)
 #endif
 
 #if defined(LIBC_GLIBC) && !defined(OS_CHROMEOS)

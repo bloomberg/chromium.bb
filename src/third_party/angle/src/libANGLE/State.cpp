@@ -67,6 +67,47 @@ constexpr std::pair<BufferBinding, State::BufferBindingSetter> GetBufferBindingS
                                       ? &State::setGenericBufferBindingWithBit<Target>
                                       : &State::setGenericBufferBinding<Target>);
 }
+
+template <typename T>
+using ContextStateMember = T *(State::*);
+
+template <typename T>
+T *AllocateOrGetSharedResourceManager(const State *shareContextState, ContextStateMember<T> member)
+{
+    if (shareContextState)
+    {
+        T *resourceManager = (*shareContextState).*member;
+        resourceManager->addRef();
+        return resourceManager;
+    }
+    else
+    {
+        return new T();
+    }
+}
+
+TextureManager *AllocateOrGetSharedTextureManager(const State *shareContextState,
+                                                  TextureManager *shareTextures,
+                                                  ContextStateMember<TextureManager> member)
+{
+    if (shareContextState)
+    {
+        TextureManager *textureManager = (*shareContextState).*member;
+        ASSERT(shareTextures == nullptr || textureManager == shareTextures);
+        textureManager->addRef();
+        return textureManager;
+    }
+    else if (shareTextures)
+    {
+        TextureManager *textureManager = shareTextures;
+        textureManager->addRef();
+        return textureManager;
+    }
+    else
+    {
+        return new TextureManager();
+    }
+}
 }  // namespace
 
 template <typename BindingT, typename... ArgsT>
@@ -190,12 +231,34 @@ const angle::PackedEnumMap<BufferBinding, State::BufferBindingSetter> State::kBu
     GetBufferBindingSetter<BufferBinding::Uniform>(),
 }};
 
-State::State(bool debug,
+State::State(ContextID contextIn,
+             const State *shareContextState,
+             TextureManager *shareTextures,
+             const Version &clientVersion,
+             bool debug,
              bool bindGeneratesResource,
              bool clientArraysEnabled,
              bool robustResourceInit,
              bool programBinaryCacheEnabled)
-    : mMaxDrawBuffers(0),
+    : mClientVersion(clientVersion),
+      mContext(contextIn),
+      mBufferManager(AllocateOrGetSharedResourceManager(shareContextState, &State::mBufferManager)),
+      mShaderProgramManager(
+          AllocateOrGetSharedResourceManager(shareContextState, &State::mShaderProgramManager)),
+      mTextureManager(AllocateOrGetSharedTextureManager(shareContextState,
+                                                        shareTextures,
+                                                        &State::mTextureManager)),
+      mRenderbufferManager(
+          AllocateOrGetSharedResourceManager(shareContextState, &State::mRenderbufferManager)),
+      mSamplerManager(
+          AllocateOrGetSharedResourceManager(shareContextState, &State::mSamplerManager)),
+      mSyncManager(AllocateOrGetSharedResourceManager(shareContextState, &State::mSyncManager)),
+      mPathManager(AllocateOrGetSharedResourceManager(shareContextState, &State::mPathManager)),
+      mFramebufferManager(new FramebufferManager()),
+      mProgramPipelineManager(new ProgramPipelineManager()),
+      mMemoryObjectManager(
+          AllocateOrGetSharedResourceManager(shareContextState, &State::mMemoryObjectManager)),
+      mMaxDrawBuffers(0),
       mMaxCombinedTextureImageUnits(0),
       mDepthClearValue(0),
       mStencilClearValue(0),
@@ -217,11 +280,11 @@ State::State(bool debug,
       mReadFramebuffer(nullptr),
       mDrawFramebuffer(nullptr),
       mProgram(nullptr),
+      mProvokingVertex(gl::ProvokingVertex::LastVertexConvention),
       mVertexArray(nullptr),
       mActiveSampler(0),
       mActiveTexturesCache{},
-      mCachedTexturesInitState(InitState::MayNeedInit),
-      mCachedImageTexturesInitState(InitState::MayNeedInit),
+      mTexturesIncompatibleWithSamplers(0),
       mPrimitiveRestart(false),
       mDebug(debug),
       mMultiSampling(false),
@@ -295,7 +358,7 @@ void State::initialize(Context *context)
     // Set all indexes in state attributes type mask to float (default)
     for (int i = 0; i < MAX_VERTEX_ATTRIBS; i++)
     {
-        mCurrentValuesTypeMask.setIndex(GL_FLOAT, i);
+        SetComponentTypeMask(ComponentType::Float, i, &mCurrentValuesTypeMask);
     }
 
     mUniformBuffers.resize(caps.maxUniformBufferBindings);
@@ -330,8 +393,6 @@ void State::initialize(Context *context)
         mSamplerTextures[TextureType::External].resize(caps.maxCombinedTextureImageUnits);
     }
     mCompleteTextureBindings.reserve(caps.maxCombinedTextureImageUnits);
-    mCachedTexturesInitState      = InitState::MayNeedInit;
-    mCachedImageTexturesInitState = InitState::MayNeedInit;
     for (uint32_t textureIndex = 0; textureIndex < caps.maxCombinedTextureImageUnits;
          ++textureIndex)
     {
@@ -455,40 +516,63 @@ ANGLE_INLINE void State::unsetActiveTextures(ActiveTextureMask textureMask)
     }
 }
 
-ANGLE_INLINE angle::Result State::updateActiveTexture(const Context *context,
-                                                      size_t textureIndex,
-                                                      Texture *texture)
+ANGLE_INLINE void State::updateActiveTextureState(const Context *context,
+                                                  size_t textureIndex,
+                                                  const Sampler *sampler,
+                                                  Texture *texture)
+{
+    if (!texture->isSamplerComplete(context, sampler))
+    {
+        mActiveTexturesCache[textureIndex] = nullptr;
+    }
+    else
+    {
+        mActiveTexturesCache[textureIndex] = texture;
+
+        if (texture->hasAnyDirtyBit())
+        {
+            setTextureDirty(textureIndex);
+        }
+
+        if (mRobustResourceInit && texture->initState() == InitState::MayNeedInit)
+        {
+            mDirtyObjects.set(DIRTY_OBJECT_TEXTURES_INIT);
+        }
+    }
+
+    if (mProgram)
+    {
+        const SamplerState &samplerState =
+            sampler ? sampler->getSamplerState() : texture->getSamplerState();
+        mTexturesIncompatibleWithSamplers[textureIndex] =
+            !texture->getTextureState().compatibleWithSamplerFormat(
+                mProgram->getState().getSamplerFormatForTextureUnitIndex(textureIndex),
+                samplerState);
+    }
+    else
+    {
+        mTexturesIncompatibleWithSamplers[textureIndex] = false;
+    }
+
+    mDirtyBits.set(DIRTY_BIT_TEXTURE_BINDINGS);
+}
+
+ANGLE_INLINE void State::updateActiveTexture(const Context *context,
+                                             size_t textureIndex,
+                                             Texture *texture)
 {
     const Sampler *sampler = mSamplers[textureIndex].get();
+
+    mCompleteTextureBindings[textureIndex].bind(texture);
 
     if (!texture)
     {
         mActiveTexturesCache[textureIndex] = nullptr;
-        mCompleteTextureBindings[textureIndex].bind(nullptr);
-        return angle::Result::Continue();
+        mDirtyBits.set(DIRTY_BIT_TEXTURE_BINDINGS);
+        return;
     }
 
-    mCompleteTextureBindings[textureIndex].bind(texture->getImplementation());
-
-    if (!texture->isSamplerComplete(context, sampler))
-    {
-        mActiveTexturesCache[textureIndex] = nullptr;
-        return angle::Result::Continue();
-    }
-
-    mActiveTexturesCache[textureIndex] = texture;
-
-    if (texture->hasAnyDirtyBit())
-    {
-        ANGLE_TRY(texture->syncState(context));
-    }
-
-    if (texture->initState() == InitState::MayNeedInit)
-    {
-        mCachedTexturesInitState = InitState::MayNeedInit;
-    }
-
-    return angle::Result::Continue();
+    updateActiveTextureState(context, textureIndex, sampler, texture);
 }
 
 const RasterizerState &State::getRasterizerState() const
@@ -625,7 +709,7 @@ void State::setStencilTest(bool enabled)
 void State::setStencilParams(GLenum stencilFunc, GLint stencilRef, GLuint stencilMask)
 {
     mDepthStencil.stencilFunc = stencilFunc;
-    mStencilRef               = (stencilRef > 0) ? stencilRef : 0;
+    mStencilRef               = gl::clamp(stencilRef, 0, std::numeric_limits<uint8_t>::max());
     mDepthStencil.stencilMask = stencilMask;
     mDirtyBits.set(DIRTY_BIT_STENCIL_FUNCS_FRONT);
 }
@@ -635,7 +719,7 @@ void State::setStencilBackParams(GLenum stencilBackFunc,
                                  GLuint stencilBackMask)
 {
     mDepthStencil.stencilBackFunc = stencilBackFunc;
-    mStencilBackRef               = (stencilBackRef > 0) ? stencilBackRef : 0;
+    mStencilBackRef = gl::clamp(stencilBackRef, 0, std::numeric_limits<uint8_t>::max());
     mDepthStencil.stencilBackMask = stencilBackMask;
     mDirtyBits.set(DIRTY_BIT_STENCIL_FUNCS_BACK);
 }
@@ -1013,19 +1097,17 @@ void State::setActiveSampler(unsigned int active)
     mActiveSampler = active;
 }
 
-angle::Result State::setSamplerTexture(const Context *context, TextureType type, Texture *texture)
+void State::setSamplerTexture(const Context *context, TextureType type, Texture *texture)
 {
     mSamplerTextures[type][mActiveSampler].set(context, texture);
 
     if (mProgram && mProgram->getActiveSamplersMask()[mActiveSampler] &&
         mProgram->getActiveSamplerTypes()[mActiveSampler] == type)
     {
-        ANGLE_TRY(updateActiveTexture(context, mActiveSampler, texture));
+        updateActiveTexture(context, mActiveSampler, texture);
     }
 
     mDirtyBits.set(DIRTY_BIT_TEXTURE_BINDINGS);
-
-    return angle::Result::Continue();
 }
 
 Texture *State::getTargetTexture(TextureType type) const
@@ -1053,15 +1135,20 @@ void State::detachTexture(const Context *context, const TextureMap &zeroTextures
     for (TextureType type : angle::AllEnums<TextureType>())
     {
         TextureBindingVector &textureVector = mSamplerTextures[type];
-        for (BindingPointer<Texture> &binding : textureVector)
+
+        for (size_t bindingIndex = 0; bindingIndex < textureVector.size(); ++bindingIndex)
         {
+            BindingPointer<Texture> &binding = textureVector[bindingIndex];
             if (binding.id() == texture)
             {
+                // Zero textures are the "default" textures instead of NULL
                 Texture *zeroTexture = zeroTextures[type].get();
                 ASSERT(zeroTexture != nullptr);
-                // Zero textures are the "default" textures instead of NULL
+                if (mCompleteTextureBindings[bindingIndex].getSubject() == binding.get())
+                {
+                    updateActiveTexture(context, bindingIndex, zeroTexture);
+                }
                 binding.set(context, zeroTexture);
-                mDirtyBits.set(DIRTY_BIT_TEXTURE_BINDINGS);
             }
         }
     }
@@ -1092,7 +1179,7 @@ void State::detachTexture(const Context *context, const TextureMap &zeroTextures
 
     if (mDrawFramebuffer && mDrawFramebuffer->detachTexture(context, texture))
     {
-        mDirtyObjects.set(DIRTY_OBJECT_DRAW_FRAMEBUFFER);
+        setDrawFramebufferDirty();
     }
 }
 
@@ -1111,9 +1198,10 @@ void State::setSamplerBinding(const Context *context, GLuint textureUnit, Sample
 {
     mSamplers[textureUnit].set(context, sampler);
     mDirtyBits.set(DIRTY_BIT_SAMPLER_BINDINGS);
-    mDirtyObjects.set(DIRTY_OBJECT_PROGRAM_TEXTURES);
     // This is overly conservative as it assumes the sampler has never been bound.
     setSamplerDirty(textureUnit);
+    onActiveTextureChange(context, textureUnit);
+    onActiveTextureStateChange(context, textureUnit);
 }
 
 void State::detachSampler(const Context *context, GLuint sampler)
@@ -1122,12 +1210,11 @@ void State::detachSampler(const Context *context, GLuint sampler)
     // If a sampler object that is currently bound to one or more texture units is
     // deleted, it is as though BindSampler is called once for each texture unit to
     // which the sampler is bound, with unit set to the texture unit and sampler set to zero.
-    for (BindingPointer<Sampler> &samplerBinding : mSamplers)
+    for (size_t i = 0; i < mSamplers.size(); i++)
     {
-        if (samplerBinding.id() == sampler)
+        if (mSamplers[i].id() == sampler)
         {
-            samplerBinding.set(context, nullptr);
-            mDirtyBits.set(DIRTY_BIT_SAMPLER_BINDINGS);
+            setSamplerBinding(context, i, nullptr);
         }
     }
 }
@@ -1167,7 +1254,7 @@ void State::detachRenderbuffer(const Context *context, GLuint renderbuffer)
     {
         if (drawFramebuffer->detachRenderbuffer(context, renderbuffer))
         {
-            mDirtyObjects.set(DIRTY_OBJECT_DRAW_FRAMEBUFFER);
+            setDrawFramebufferDirty();
         }
     }
 }
@@ -1194,9 +1281,17 @@ void State::setDrawFramebufferBinding(Framebuffer *framebuffer)
     mDrawFramebuffer = framebuffer;
     mDirtyBits.set(DIRTY_BIT_DRAW_FRAMEBUFFER_BINDING);
 
-    if (mDrawFramebuffer && mDrawFramebuffer->hasAnyDirtyBit())
+    if (mDrawFramebuffer)
     {
-        mDirtyObjects.set(DIRTY_OBJECT_DRAW_FRAMEBUFFER);
+        if (mDrawFramebuffer->hasAnyDirtyBit())
+        {
+            mDirtyObjects.set(DIRTY_OBJECT_DRAW_FRAMEBUFFER);
+        }
+
+        if (mRobustResourceInit && mDrawFramebuffer->hasResourceThatNeedsInit())
+        {
+            mDirtyObjects.set(DIRTY_OBJECT_DRAW_ATTACHMENTS);
+        }
     }
 }
 
@@ -1284,15 +1379,9 @@ void State::bindVertexBuffer(const Context *context,
     mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
 }
 
-void State::setVertexAttribBinding(const Context *context, GLuint attribIndex, GLuint bindingIndex)
-{
-    getVertexArray()->setVertexAttribBinding(context, attribIndex, bindingIndex);
-    mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
-}
-
 void State::setVertexAttribFormat(GLuint attribIndex,
                                   GLint size,
-                                  GLenum type,
+                                  VertexAttribType type,
                                   bool normalized,
                                   bool pureInteger,
                                   GLuint relativeOffset)
@@ -1332,7 +1421,7 @@ angle::Result State::setProgram(const Context *context, Program *newProgram)
         mDirtyBits.set(DIRTY_BIT_PROGRAM_BINDING);
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void State::setTransformFeedbackBinding(const Context *context,
@@ -1418,19 +1507,19 @@ Query *State::getActiveQuery(QueryType type) const
     return mActiveQueries[type].get();
 }
 
-void State::setIndexedBufferBinding(const Context *context,
-                                    BufferBinding target,
-                                    GLuint index,
-                                    Buffer *buffer,
-                                    GLintptr offset,
-                                    GLsizeiptr size)
+angle::Result State::setIndexedBufferBinding(const Context *context,
+                                             BufferBinding target,
+                                             GLuint index,
+                                             Buffer *buffer,
+                                             GLintptr offset,
+                                             GLsizeiptr size)
 {
     setBufferBinding(context, target, buffer);
 
     switch (target)
     {
         case BufferBinding::TransformFeedback:
-            mTransformFeedback->bindIndexedBuffer(context, index, buffer, offset, size);
+            ANGLE_TRY(mTransformFeedback->bindIndexedBuffer(context, index, buffer, offset, size));
             setBufferBinding(context, target, buffer);
             break;
         case BufferBinding::Uniform:
@@ -1449,6 +1538,8 @@ void State::setIndexedBufferBinding(const Context *context,
             UNREACHABLE();
             break;
     }
+
+    return angle::Result::Continue;
 }
 
 const OffsetBindingPointer<Buffer> &State::getIndexedUniformBuffer(size_t index) const
@@ -1469,22 +1560,11 @@ const OffsetBindingPointer<Buffer> &State::getIndexedShaderStorageBuffer(size_t 
     return mShaderStorageBuffers[index];
 }
 
-Buffer *State::getTargetBuffer(BufferBinding target) const
-{
-    switch (target)
-    {
-        case BufferBinding::ElementArray:
-            return getVertexArray()->getElementArrayBuffer();
-        default:
-            return mBoundBuffers[target].get();
-    }
-}
-
-void State::detachBuffer(const Context *context, const Buffer *buffer)
+angle::Result State::detachBuffer(Context *context, const Buffer *buffer)
 {
     if (!buffer->isBound())
     {
-        return;
+        return angle::Result::Continue;
     }
     GLuint bufferName = buffer->id();
     for (auto target : angle::AllEnums<BufferBinding>())
@@ -1498,10 +1578,14 @@ void State::detachBuffer(const Context *context, const Buffer *buffer)
     TransformFeedback *curTransformFeedback = getCurrentTransformFeedback();
     if (curTransformFeedback)
     {
-        curTransformFeedback->detachBuffer(context, bufferName);
+        ANGLE_TRY(curTransformFeedback->detachBuffer(context, bufferName));
     }
 
-    getVertexArray()->detachBuffer(context, bufferName);
+    if (getVertexArray()->detachBuffer(context, bufferName))
+    {
+        mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
+        context->getStateCache().onVertexArrayStateChange(context);
+    }
 
     for (auto &buf : mUniformBuffers)
     {
@@ -1526,6 +1610,8 @@ void State::detachBuffer(const Context *context, const Buffer *buffer)
             UpdateIndexedBufferBinding(context, &buf, nullptr, BufferBinding::ShaderStorage, 0, 0);
         }
     }
+
+    return angle::Result::Continue;
 }
 
 void State::setEnableVertexAttribArray(unsigned int attribNum, bool enabled)
@@ -1540,7 +1626,7 @@ void State::setVertexAttribf(GLuint index, const GLfloat values[4])
     mVertexAttribCurrentValues[index].setFloatValues(values);
     mDirtyBits.set(DIRTY_BIT_CURRENT_VALUES);
     mDirtyCurrentValues.set(index);
-    mCurrentValuesTypeMask.setIndex(GL_FLOAT, index);
+    SetComponentTypeMask(ComponentType::Float, index, &mCurrentValuesTypeMask);
 }
 
 void State::setVertexAttribu(GLuint index, const GLuint values[4])
@@ -1549,7 +1635,7 @@ void State::setVertexAttribu(GLuint index, const GLuint values[4])
     mVertexAttribCurrentValues[index].setUnsignedIntValues(values);
     mDirtyBits.set(DIRTY_BIT_CURRENT_VALUES);
     mDirtyCurrentValues.set(index);
-    mCurrentValuesTypeMask.setIndex(GL_UNSIGNED_INT, index);
+    SetComponentTypeMask(ComponentType::UnsignedInt, index, &mCurrentValuesTypeMask);
 }
 
 void State::setVertexAttribi(GLuint index, const GLint values[4])
@@ -1558,22 +1644,7 @@ void State::setVertexAttribi(GLuint index, const GLint values[4])
     mVertexAttribCurrentValues[index].setIntValues(values);
     mDirtyBits.set(DIRTY_BIT_CURRENT_VALUES);
     mDirtyCurrentValues.set(index);
-    mCurrentValuesTypeMask.setIndex(GL_INT, index);
-}
-
-void State::setVertexAttribPointer(const Context *context,
-                                   unsigned int attribNum,
-                                   Buffer *boundBuffer,
-                                   GLint size,
-                                   GLenum type,
-                                   bool normalized,
-                                   bool pureInteger,
-                                   GLsizei stride,
-                                   const void *pointer)
-{
-    getVertexArray()->setVertexAttribPointer(context, attribNum, boundBuffer, size, type,
-                                             normalized, pureInteger, stride, pointer);
-    mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
+    SetComponentTypeMask(ComponentType::Int, index, &mCurrentValuesTypeMask);
 }
 
 void State::setVertexAttribDivisor(const Context *context, GLuint index, GLuint divisor)
@@ -1799,6 +1870,7 @@ void State::getBooleanv(GLenum pname, GLboolean *params)
         case GL_LIGHT_MODEL_TWO_SIDE:
             *params = IsLightModelTwoSided(&mGLES1State);
             break;
+
         default:
             UNREACHABLE();
             break;
@@ -1930,7 +2002,7 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
         *params = drawBuffer < framebuffer->getDrawbufferStateCount()
                       ? framebuffer->getDrawBufferState(drawBuffer)
                       : GL_NONE;
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     // Please note: DEPTH_CLEAR_VALUE is not included in our internal getIntegerv implementation
@@ -2324,12 +2396,18 @@ angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *pa
         case GL_FOG_HINT:
             *params = mGLES1State.getHint(pname);
             break;
+
+        // GL_ANGLE_provoking_vertex
+        case GL_PROVOKING_VERTEX:
+            *params = ToGLenum(mProvokingVertex);
+            break;
+
         default:
             UNREACHABLE();
             break;
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void State::getPointerv(const Context *context, GLenum pname, void **params) const
@@ -2485,10 +2563,55 @@ angle::Result State::syncReadFramebuffer(const Context *context)
     return mReadFramebuffer->syncState(context);
 }
 
-angle::Result State::syncWriteFramebuffer(const Context *context)
+angle::Result State::syncDrawFramebuffer(const Context *context)
 {
     ASSERT(mDrawFramebuffer);
     return mDrawFramebuffer->syncState(context);
+}
+
+angle::Result State::syncDrawAttachments(const Context *context)
+{
+    ASSERT(mDrawFramebuffer);
+    ASSERT(!mDrawFramebuffer->hasAnyDirtyBit());
+    ASSERT(mRobustResourceInit);
+    return mDrawFramebuffer->ensureDrawAttachmentsInitialized(context);
+}
+
+angle::Result State::syncTextures(const Context *context)
+{
+    if (mDirtyTextures.none())
+        return angle::Result::Continue;
+
+    for (size_t textureIndex : mDirtyTextures)
+    {
+        Texture *texture = mActiveTexturesCache[textureIndex];
+        if (texture && texture->hasAnyDirtyBit())
+        {
+            ANGLE_TRY(texture->syncState(context));
+        }
+    }
+
+    mDirtyTextures.reset();
+    return angle::Result::Continue;
+}
+
+angle::Result State::syncSamplers(const Context *context)
+{
+    if (mDirtySamplers.none())
+        return angle::Result::Continue;
+
+    for (size_t samplerIndex : mDirtySamplers)
+    {
+        BindingPointer<Sampler> &sampler = mSamplers[samplerIndex];
+        if (sampler.get())
+        {
+            sampler->syncState(context);
+        }
+    }
+
+    mDirtySamplers.reset();
+
+    return angle::Result::Continue;
 }
 
 angle::Result State::syncVertexArray(const Context *context)
@@ -2502,86 +2625,37 @@ angle::Result State::syncProgram(const Context *context)
     return mProgram->syncState(context);
 }
 
-angle::Result State::syncSamplers(const Context *context)
+angle::Result State::syncTexturesInit(const Context *context)
 {
-    if (mDirtySamplers.none())
-        return angle::Result::Continue();
+    ASSERT(mRobustResourceInit);
 
-    // This could be optimized by tracking which samplers are dirty.
-    for (size_t samplerIndex : mDirtySamplers)
+    if (!mProgram)
+        return angle::Result::Continue;
+
+    for (size_t textureUnitIndex : mProgram->getActiveSamplersMask())
     {
-        BindingPointer<Sampler> &sampler = mSamplers[samplerIndex];
-        if (sampler.get())
+        Texture *texture = mActiveTexturesCache[textureUnitIndex];
+        if (texture)
         {
-            sampler->syncState(context);
+            ANGLE_TRY(texture->ensureInitialized(context));
         }
     }
-
-    mDirtySamplers.reset();
-
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-angle::Result State::syncProgramTextures(const Context *context)
+angle::Result State::syncImagesInit(const Context *context)
 {
-    // TODO(jmadill): Fine-grained updates.
-    if (!mProgram)
-    {
-        return angle::Result::Continue();
-    }
-
-    ASSERT(mDirtyObjects[DIRTY_OBJECT_PROGRAM_TEXTURES]);
-    mDirtyBits.set(DIRTY_BIT_TEXTURE_BINDINGS);
-
-    ActiveTextureMask newActiveTextures;
-
-    // Initialize to the 'Initialized' state and set to 'MayNeedInit' if any texture is not
-    // initialized.
-    mCachedTexturesInitState      = InitState::Initialized;
-    mCachedImageTexturesInitState = InitState::Initialized;
-
-    const ActiveTextureMask &activeTextures             = mProgram->getActiveSamplersMask();
-    const ActiveTextureArray<TextureType> &textureTypes = mProgram->getActiveSamplerTypes();
-
-    for (size_t textureUnitIndex : activeTextures)
-    {
-        TextureType textureType = textureTypes[textureUnitIndex];
-
-        Texture *texture =
-            getSamplerTexture(static_cast<unsigned int>(textureUnitIndex), textureType);
-        ASSERT(static_cast<size_t>(textureUnitIndex) < newActiveTextures.size());
-
-        ASSERT(texture);
-
-        newActiveTextures.set(textureUnitIndex);
-        ANGLE_TRY(updateActiveTexture(context, textureUnitIndex, texture));
-    }
-
-    // Unset now missing textures.
-    ActiveTextureMask negativeMask = activeTextures & ~newActiveTextures;
-    if (negativeMask.any())
-    {
-        unsetActiveTextures(negativeMask);
-    }
-
+    ASSERT(mRobustResourceInit);
+    ASSERT(mProgram);
     for (size_t imageUnitIndex : mProgram->getActiveImagesMask())
     {
         Texture *texture = mImageUnits[imageUnitIndex].texture.get();
-        if (!texture)
+        if (texture)
         {
-            continue;
-        }
-        if (texture->hasAnyDirtyBit())
-        {
-            ANGLE_TRY(texture->syncState(context));
-        }
-        if (texture->initState() == InitState::MayNeedInit)
-        {
-            mCachedImageTexturesInitState = InitState::MayNeedInit;
+            ANGLE_TRY(texture->ensureInitialized(context));
         }
     }
-
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result State::syncDirtyObject(const Context *context, GLenum target)
@@ -2604,14 +2678,12 @@ angle::Result State::syncDirtyObject(const Context *context, GLenum target)
             localSet.set(DIRTY_OBJECT_VERTEX_ARRAY);
             break;
         case GL_TEXTURE:
-            localSet.set(DIRTY_OBJECT_PROGRAM_TEXTURES);
+            localSet.set(DIRTY_OBJECT_TEXTURES);
             break;
         case GL_SAMPLER:
-            localSet.set(DIRTY_OBJECT_PROGRAM_TEXTURES);
             localSet.set(DIRTY_OBJECT_SAMPLERS);
             break;
         case GL_PROGRAM:
-            localSet.set(DIRTY_OBJECT_PROGRAM_TEXTURES);
             localSet.set(DIRTY_OBJECT_PROGRAM);
             break;
     }
@@ -2627,23 +2699,19 @@ void State::setObjectDirty(GLenum target)
             mDirtyObjects.set(DIRTY_OBJECT_READ_FRAMEBUFFER);
             break;
         case GL_DRAW_FRAMEBUFFER:
-            mDirtyObjects.set(DIRTY_OBJECT_DRAW_FRAMEBUFFER);
+            setDrawFramebufferDirty();
             break;
         case GL_FRAMEBUFFER:
             mDirtyObjects.set(DIRTY_OBJECT_READ_FRAMEBUFFER);
-            mDirtyObjects.set(DIRTY_OBJECT_DRAW_FRAMEBUFFER);
+            setDrawFramebufferDirty();
             break;
         case GL_VERTEX_ARRAY:
             mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
             break;
-        case GL_TEXTURE:
-            mDirtyObjects.set(DIRTY_OBJECT_PROGRAM_TEXTURES);
-            mDirtyBits.set(DIRTY_BIT_TEXTURE_BINDINGS);
-            break;
         case GL_PROGRAM:
-            mDirtyObjects.set(DIRTY_OBJECT_PROGRAM_TEXTURES);
             mDirtyObjects.set(DIRTY_OBJECT_PROGRAM);
-            mDirtyBits.set(DIRTY_BIT_TEXTURE_BINDINGS);
+            break;
+        default:
             break;
     }
 }
@@ -2674,7 +2742,7 @@ angle::Result State::onProgramExecutableChange(const Context *context, Program *
             continue;
 
         Texture *texture = mSamplerTextures[type][textureIndex].get();
-        ANGLE_TRY(updateActiveTexture(context, textureIndex, texture));
+        updateActiveTexture(context, textureIndex, texture);
     }
 
     for (size_t imageUnitIndex : program->getActiveImagesMask())
@@ -2688,13 +2756,19 @@ angle::Result State::onProgramExecutableChange(const Context *context, Program *
             ANGLE_TRY(image->syncState(context));
         }
 
-        if (image->initState() == InitState::MayNeedInit)
+        if (mRobustResourceInit && image->initState() == InitState::MayNeedInit)
         {
-            mCachedImageTexturesInitState = InitState::MayNeedInit;
+            mDirtyObjects.set(DIRTY_OBJECT_IMAGES_INIT);
         }
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
+}
+
+void State::setTextureDirty(size_t textureUnitIndex)
+{
+    mDirtyObjects.set(DIRTY_OBJECT_TEXTURES);
+    mDirtyTextures.set(textureUnitIndex);
 }
 
 void State::setSamplerDirty(size_t samplerIndex)
@@ -2719,19 +2793,48 @@ void State::setImageUnit(const Context *context,
     mImageUnits[unit].access  = access;
     mImageUnits[unit].format  = format;
     mDirtyBits.set(DIRTY_BIT_IMAGE_BINDINGS);
+
+    onImageStateChange(context, unit);
 }
 
 // Handle a dirty texture event.
-void State::onActiveTextureStateChange(size_t textureIndex)
+void State::onActiveTextureChange(const Context *context, size_t textureUnit)
 {
-    // Conservatively assume all textures are dirty.
-    // TODO(jmadill): More fine-grained update.
-    mDirtyObjects.set(DIRTY_OBJECT_PROGRAM_TEXTURES);
-
-    if (!mActiveTexturesCache[textureIndex] ||
-        mActiveTexturesCache[textureIndex]->initState() == InitState::MayNeedInit)
+    if (mProgram)
     {
-        mCachedTexturesInitState = InitState::MayNeedInit;
+        TextureType type = mProgram->getActiveSamplerTypes()[textureUnit];
+        if (type != TextureType::InvalidEnum)
+        {
+            Texture *activeTexture = mSamplerTextures[type][textureUnit].get();
+            updateActiveTexture(context, textureUnit, activeTexture);
+        }
+    }
+}
+
+void State::onActiveTextureStateChange(const Context *context, size_t textureUnit)
+{
+    if (mProgram)
+    {
+        TextureType type = mProgram->getActiveSamplerTypes()[textureUnit];
+        if (type != TextureType::InvalidEnum)
+        {
+            Texture *activeTexture = mSamplerTextures[type][textureUnit].get();
+            const Sampler *sampler = mSamplers[textureUnit].get();
+            updateActiveTextureState(context, textureUnit, sampler, activeTexture);
+        }
+    }
+}
+
+void State::onImageStateChange(const Context *context, size_t unit)
+{
+    if (mProgram)
+    {
+        const ImageUnit &image = mImageUnits[unit];
+        ASSERT(image.texture.get());
+        if (mRobustResourceInit && image.texture->initState() == InitState::MayNeedInit)
+        {
+            mDirtyObjects.set(DIRTY_OBJECT_IMAGES_INIT);
+        }
     }
 }
 
@@ -2739,41 +2842,6 @@ void State::onUniformBufferStateChange(size_t uniformBufferIndex)
 {
     // This could be represented by a different dirty bit. Using the same one keeps it simple.
     mDirtyBits.set(DIRTY_BIT_UNIFORM_BUFFER_BINDINGS);
-}
-
-angle::Result State::clearUnclearedActiveTextures(const Context *context)
-{
-    ASSERT(mRobustResourceInit);
-    ASSERT(!mDirtyObjects[DIRTY_OBJECT_PROGRAM_TEXTURES]);
-
-    if (!mProgram)
-        return angle::Result::Continue();
-
-    if (mCachedTexturesInitState != InitState::Initialized)
-    {
-        for (size_t textureUnitIndex : mProgram->getActiveSamplersMask())
-        {
-            Texture *texture = mActiveTexturesCache[textureUnitIndex];
-            if (texture)
-            {
-                ANGLE_TRY(texture->ensureInitialized(context));
-            }
-        }
-        mCachedTexturesInitState = InitState::Initialized;
-    }
-    if (mCachedImageTexturesInitState != InitState::Initialized)
-    {
-        for (size_t imageUnitIndex : mProgram->getActiveImagesMask())
-        {
-            Texture *texture = mImageUnits[imageUnitIndex].texture.get();
-            if (texture)
-            {
-                ANGLE_TRY(texture->ensureInitialized(context));
-            }
-        }
-        mCachedImageTexturesInitState = InitState::Initialized;
-    }
-    return angle::Result::Continue();
 }
 
 AttributesMask State::getAndResetDirtyCurrentValues() const

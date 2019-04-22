@@ -32,15 +32,17 @@ Polymer({
    * @private
    */
   removePatternWildcard_: function(pattern) {
-    if (!pattern || pattern.length === 0)
+    if (!pattern || pattern.length === 0) {
       return pattern;
+    }
 
-    if (pattern.startsWith('http://[*.]'))
+    if (pattern.startsWith('http://[*.]')) {
       return pattern.replace('http://[*.]', 'http://');
-    else if (pattern.startsWith('https://[*.]'))
+    } else if (pattern.startsWith('https://[*.]')) {
       return pattern.replace('https://[*.]', 'https://');
-    else if (pattern.startsWith('[*.]'))
+    } else if (pattern.startsWith('[*.]')) {
       return pattern.substring(4, pattern.length);
+    }
     return pattern;
   },
 
@@ -51,8 +53,9 @@ Polymer({
    * @private
    */
   ensureUrlHasScheme_: function(url) {
-    if (!url || url.length === 0)
+    if (!url || url.length === 0) {
       return url;
+    }
     return url.includes('://') ? url : 'http://' + url;
   },
 });

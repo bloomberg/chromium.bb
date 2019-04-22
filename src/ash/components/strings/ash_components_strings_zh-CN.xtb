@@ -16,7 +16,6 @@
 <translation id="152892567002884378">调高音量</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />，然后按 <ph name="ESC" /> 键</translation>
 <translation id="1652741121070700329">移到上一个字词的开头</translation>
-<translation id="1671169355475348905">切换到上一种语言的输入法</translation>
 <translation id="1679841710523778799">调高亮度</translation>
 <translation id="168356808214100546">在按住 <ph name="ALT" /> 键的同时，多次点按 <ph name="TAB" /> 键直到切换至您要打开的窗口，然后松开手指。</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">显示或隐藏书签栏</translation>
 <translation id="2185166372312820725">转到上一个标签页</translation>
 <translation id="2194790690264064655">在按住 <ph name="CTRL" /> 键的同时点击链接</translation>
+<translation id="2246352309084894470">打开/关闭全屏启动器</translation>
 <translation id="2382644247745281995">当前键盘布局不支持使用此键</translation>
 <translation id="2397416548179033562">显示 Chrome 菜单</translation>
 <translation id="2424073332829844142">开启/关闭大写锁定</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">重置网页的缩放级别</translation>
 <translation id="2596078834055697711">截取窗口屏幕截图</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />，然后按 <ph name="TAB" /> 键或<ph name="RIGHT" />键</translation>
-<translation id="2687057317448262550">切换到下一种语言的输入法</translation>
 <translation id="2699509451653686398">将当前网页保存为书签</translation>
 <translation id="2750942583782703988">重新加载当前网页</translation>
 <translation id="2764005613199379871">将焦点置于搜索地址栏中</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">锁定屏幕</translation>
 <translation id="6727005317916125192">上一个窗格</translation>
 <translation id="6740781404993465795">选择下一个字词或字母</translation>
+<translation id="6755851152783057058">切换到上次使用的输入法</translation>
 <translation id="6760706756348334449">调低音量</translation>
 <translation id="6941333068993625698">提交反馈</translation>
 <translation id="6981982820502123353">无障碍</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">在地址栏中输入网址，然后按 <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">让设备进入睡眠模式（暂停使用）</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> 键或 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">切换到下一种可用的输入法</translation>
 <translation id="743754632698445141">取消固定应用</translation>
 <translation id="7439718573248533901">删除下一个字母（前向删除）</translation>
 <translation id="7611271430932669992">将焦点移至弹出式窗口和对话框</translation>

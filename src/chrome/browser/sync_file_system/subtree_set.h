@@ -9,7 +9,6 @@
 
 #include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 
 namespace base {

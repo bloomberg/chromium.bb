@@ -4,16 +4,16 @@
 
 #include "ios/components/io_thread/ios_io_thread.h"
 
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/pref_service_factory.h"
-#include "components/prefs/testing_pref_store.h"
+#include <memory>
+
+#include "base/test/scoped_task_environment.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
-#include "net/test/url_request/url_request_failed_job.h"
-#include "net/url_request/url_request_filter.h"
+#import "ios/web/public/test/fakes/test_web_client.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
+#include "ios/web/public/test/test_web_thread.h"
+#include "ios/web/web_thread_impl.h"
+#include "net/base/network_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -42,32 +42,43 @@ class TestIOThread : public io_thread::IOSIOThread {
 
 class IOSIOThreadTest : public PlatformTest {
  public:
-  IOSIOThreadTest() : thread_bundle_(web::TestWebThreadBundle::IO_MAINLOOP) {
-    net::URLRequestFailedJob::AddUrlHandler();
+  IOSIOThreadTest() : web_client_(std::make_unique<web::TestWebClient>()) {
+    web::WebThreadImpl::CreateTaskExecutor();
+
+    ui_thread_ = std::make_unique<web::TestWebThread>(
+        web::WebThread::UI, scoped_task_environment_.GetMainThreadTaskRunner());
   }
 
   ~IOSIOThreadTest() override {
-    net::URLRequestFilter::GetInstance()->ClearHandlers();
+    web::WebThreadImpl::ResetTaskExecutorForTesting();
   }
 
- private:
-  web::TestWebThreadBundle thread_bundle_;
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  web::ScopedTestingWebClient web_client_;
+  std::unique_ptr<web::TestWebThread> ui_thread_;
 };
 
 // Tests the creation of an IOSIOThread and verifies that it returns a system
 // url request context.
 TEST_F(IOSIOThreadTest, AssertSystemUrlRequestContext) {
-  PrefServiceFactory pref_service_factory;
-  pref_service_factory.set_user_prefs(base::MakeRefCounted<TestingPrefStore>());
+  std::unique_ptr<TestingPrefServiceSimple> pref_service(
+      std::make_unique<TestingPrefServiceSimple>());
+  PrefProxyConfigTrackerImpl::RegisterPrefs(pref_service->registry());
 
-  scoped_refptr<PrefRegistrySimple> pref_registry = new PrefRegistrySimple;
-  PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());
+  // Create the IO thread but do not register it yet.
+  std::unique_ptr<web::TestWebThread> io_thread(
+      std::make_unique<web::TestWebThread>(web::WebThread::IO));
+  io_thread->StartIOThreadUnregistered();
 
-  std::unique_ptr<PrefService> pref_service(
-      pref_service_factory.Create(pref_registry.get()));
-
-  std::unique_ptr<TestIOThread> test_io_thread(
+  // Create the TestIOThread before the IO thread is registered.
+  std::unique_ptr<TestIOThread> ios_io_thread(
       new TestIOThread(pref_service.get(), nullptr));
+  io_thread->RegisterAsWebThread();
 
-  ASSERT_TRUE(test_io_thread->system_url_request_context_getter());
+  ASSERT_TRUE(ios_io_thread->system_url_request_context_getter());
+
+  // Explicitly destroy the IO thread so that it is unregistered before the
+  // TestIOThread is destroyed.
+  io_thread.reset();
 }

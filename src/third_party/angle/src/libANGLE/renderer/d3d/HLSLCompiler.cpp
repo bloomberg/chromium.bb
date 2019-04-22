@@ -16,9 +16,9 @@
 #include "libANGLE/renderer/d3d/ContextD3D.h"
 #include "third_party/trace_event/trace_event.h"
 
-#if ANGLE_APPEND_ASSEMBLY_TO_SHADER_DEBUG_INFO == ANGLE_ENABLED
 namespace
 {
+#if ANGLE_APPEND_ASSEMBLY_TO_SHADER_DEBUG_INFO == ANGLE_ENABLED
 #    ifdef CREATE_COMPILER_FLAG_INFO
 #        undef CREATE_COMPILER_FLAG_INFO
 #    endif
@@ -81,8 +81,18 @@ bool IsCompilerFlagSet(UINT mask, UINT flag)
             return isFlagSet;
     }
 }
-}  // anonymous namespace
 #endif  // ANGLE_APPEND_ASSEMBLY_TO_SHADER_DEBUG_INFO == ANGLE_ENABLED
+
+constexpr char kOldCompilerLibrary[] = "d3dcompiler_old.dll";
+
+enum D3DCompilerLoadLibraryResult
+{
+    D3DCompilerDefaultLibrarySuccess,
+    D3DCompilerOldLibrarySuccess,
+    D3DCompilerFailure,
+    D3DCompilerEnumBoundary,
+};
+}  // anonymous namespace
 
 namespace rx
 {
@@ -107,7 +117,7 @@ angle::Result HLSLCompiler::ensureInitialized(d3d::Context *context)
 {
     if (mInitialized)
     {
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     TRACE_EVENT0("gpu.angle", "HLSLCompiler::initialize");
@@ -130,13 +140,32 @@ angle::Result HLSLCompiler::ensureInitialized(d3d::Context *context)
     {
         // Load the version of the D3DCompiler DLL associated with the Direct3D version ANGLE was
         // built with.
-        mD3DCompilerModule = LoadLibrary(D3DCOMPILER_DLL);
+        mD3DCompilerModule = LoadLibraryA(D3DCOMPILER_DLL_A);
+
+        if (mD3DCompilerModule)
+        {
+            ANGLE_HISTOGRAM_ENUMERATION("GPU.ANGLE.D3DCompilerLoadLibraryResult",
+                                        D3DCompilerDefaultLibrarySuccess, D3DCompilerEnumBoundary);
+        }
+        else
+        {
+            WARN() << "Failed to load HLSL compiler library. Using 'old' DLL.";
+            mD3DCompilerModule = LoadLibraryA(kOldCompilerLibrary);
+            if (mD3DCompilerModule)
+            {
+                ANGLE_HISTOGRAM_ENUMERATION("GPU.ANGLE.D3DCompilerLoadLibraryResult",
+                                            D3DCompilerOldLibrarySuccess, D3DCompilerEnumBoundary);
+            }
+        }
     }
 
     if (!mD3DCompilerModule)
     {
-        ERR() << "D3D compiler module not found.";
-        ANGLE_TRY_HR(context, E_OUTOFMEMORY, "D3D compiler module not found.");
+        DWORD lastError = GetLastError();
+        ERR() << "D3D Compiler LoadLibrary failed. GetLastError=" << lastError;
+        ANGLE_HISTOGRAM_ENUMERATION("GPU.ANGLE.D3DCompilerLoadLibraryResult", D3DCompilerFailure,
+                                    D3DCompilerEnumBoundary);
+        ANGLE_TRY_HR(context, E_OUTOFMEMORY, "LoadLibrary failed to load D3D Compiler DLL.");
     }
 
     mD3DCompileFunc =
@@ -159,7 +188,7 @@ angle::Result HLSLCompiler::ensureInitialized(d3d::Context *context)
                    E_OUTOFMEMORY);
 
     mInitialized = true;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void HLSLCompiler::release()
@@ -229,22 +258,43 @@ angle::Result HLSLCompiler::compileToBinary(d3d::Context *context,
 
             WARN() << std::endl << message;
 
-            if ((message.find("error X3531:") !=
-                     std::string::npos ||  // "can't unroll loops marked with loop attribute"
-                 message.find("error X4014:") !=
-                     std::string::npos) &&  // "cannot have gradient operations inside loops with
-                                            // divergent flow control", even though it is
-                                            // counter-intuitive to disable unrolling for this
-                                            // error, some very long shaders have trouble deciding
-                                            // which loops to unroll and turning off forced unrolls
-                                            // allows them to compile properly.
-                macros != nullptr)
+            if (macros != nullptr)
             {
-                macros = nullptr;  // Disable [loop] and [flatten]
+                constexpr const char *kLoopRelatedErrors[] = {
+                    // "can't unroll loops marked with loop attribute"
+                    "error X3531:",
 
-                // Retry without changing compiler flags
-                i--;
-                continue;
+                    // "cannot have gradient operations inside loops with divergent flow control",
+                    // even though it is counter-intuitive to disable unrolling for this error, some
+                    // very long shaders have trouble deciding which loops to unroll and turning off
+                    // forced unrolls allows them to compile properly.
+                    "error X4014:",
+
+                    // "array index out of bounds", loop unrolling can result in invalid array
+                    // access if the indices become constant, causing loops that may never be
+                    // executed to generate compilation errors
+                    "error X3504:",
+                };
+
+                bool hasLoopRelatedError = false;
+                for (const char *errorType : kLoopRelatedErrors)
+                {
+                    if (message.find(errorType) != std::string::npos)
+                    {
+                        hasLoopRelatedError = true;
+                        break;
+                    }
+                }
+
+                if (hasLoopRelatedError)
+                {
+                    // Disable [loop] and [flatten]
+                    macros = nullptr;
+
+                    // Retry without changing compiler flags
+                    i--;
+                    continue;
+                }
             }
         }
 
@@ -284,7 +334,7 @@ angle::Result HLSLCompiler::compileToBinary(d3d::Context *context,
             ANGLE_TRY(disassembleBinary(context, binary, &disassembly));
             (*outDebugInfo) += "\n" + disassembly + "\n// ASSEMBLY END\n";
 #endif  // ANGLE_APPEND_ASSEMBLY_TO_SHADER_DEBUG_INFO == ANGLE_ENABLED
-            return angle::Result::Continue();
+            return angle::Result::Continue;
         }
 
         if (result == E_OUTOFMEMORY)
@@ -305,7 +355,7 @@ angle::Result HLSLCompiler::compileToBinary(d3d::Context *context,
     // None of the configurations succeeded in compiling this shader but the compiler is still
     // intact
     *outCompiledBlob = nullptr;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result HLSLCompiler::disassembleBinary(d3d::Context *context,
@@ -333,7 +383,7 @@ angle::Result HLSLCompiler::disassembleBinary(d3d::Context *context,
 
     SafeRelease(disassembly);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 }  // namespace rx

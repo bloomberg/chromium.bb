@@ -80,10 +80,10 @@ class MediaSink {
   }
   MediaRouteProviderId provider_id() const { return provider_id_; }
 
-  // This method only compares IDs.
-  bool Equals(const MediaSink& other) const;
+  // Returns true if the sink is from the Cloud MRP; however, as this is based
+  // solely on the icon type, is not guaranteed to be correct 100% of the time.
+  bool IsMaybeCloudSink() const;
 
-  // This method compares all fields.
   bool operator==(const MediaSink& other) const;
   bool operator!=(const MediaSink& other) const;
 

@@ -62,6 +62,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestAutofillInstrumentUseStatsTest,
   InvokePaymentRequestUI();
   ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
+  WaitForOnPersonalDataChanged();
 
   // Check that the usage of the card was recorded.
   autofill::CreditCard* updated_card =
@@ -111,6 +112,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressUseStatsTest, RecordUse) {
   InvokePaymentRequestUI();
   ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
+  WaitForOnPersonalDataChanged();
 
   // Check that the usage of the profile was recorded.
   autofill::AutofillProfile* updated_shipping =
@@ -159,6 +161,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactAddressUseStatsTest, RecordUse) {
   InvokePaymentRequestUI();
   ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
+  WaitForOnPersonalDataChanged();
 
   // Check that the usage of the profile was recorded.
   autofill::AutofillProfile* updated_contact =
@@ -209,6 +212,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestSameShippingAndContactAddressUseStatsTest,
   InvokePaymentRequestUI();
   ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
+  WaitForOnPersonalDataChanged();
 
   // Check that the usage of the profile was only recorded once.
   autofill::AutofillProfile* updated_multi =

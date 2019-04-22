@@ -51,12 +51,6 @@ bool GetWindowPreferredSize(const InitProperties& properties, gfx::Size* size) {
   return true;
 }
 
-bool ShouldRemoveStandardFrame(const InitProperties& properties) {
-  auto iter = properties.find(
-      ws::mojom::WindowManager::kRemoveStandardFrame_InitProperty);
-  return iter != properties.end() && mojo::ConvertTo<bool>(iter->second);
-}
-
 void ApplyProperties(
     aura::Window* window,
     aura::PropertyConverter* property_converter,

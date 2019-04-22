@@ -7,30 +7,29 @@
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/font_face_set_load_event.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
 const int FontFaceSet::kDefaultFontSize = 10;
 const char FontFaceSet::kDefaultFontFamily[] = "sans-serif";
 
-void FontFaceSet::Pause() {
-  async_runner_->Pause();
-}
-
-void FontFaceSet::Unpause() {
-  async_runner_->Unpause();
-}
-
-void FontFaceSet::ContextDestroyed(ExecutionContext*) {
-  async_runner_->Stop();
-}
-
 void FontFaceSet::HandlePendingEventsAndPromisesSoon() {
-  // async_runner_ will be automatically stopped on destruction.
-  async_runner_->RunAsync();
+  if (!pending_task_queued_) {
+    if (auto* context = GetExecutionContext()) {
+      pending_task_queued_ = true;
+      context->GetTaskRunner(TaskType::kFontLoading)
+          ->PostTask(FROM_HERE,
+                     WTF::Bind(&FontFaceSet::HandlePendingEventsAndPromises,
+                               WrapPersistent(this)));
+    }
+  }
 }
 
 void FontFaceSet::HandlePendingEventsAndPromises() {
+  pending_task_queued_ = false;
+  if (!GetExecutionContext())
+    return;
   FireLoadingEvent();
   FireDoneEventIfPossible();
 }
@@ -112,8 +111,7 @@ void FontFaceSet::Trace(blink::Visitor* visitor) {
   visitor->Trace(loaded_fonts_);
   visitor->Trace(failed_fonts_);
   visitor->Trace(ready_);
-  visitor->Trace(async_runner_);
-  PausableObject::Trace(visitor);
+  ContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
   FontFace::LoadFontCallback::Trace(visitor);
 }
@@ -165,8 +163,7 @@ ScriptPromise FontFaceSet::load(ScriptState* script_state,
 
   Font font;
   if (!ResolveFontStyle(font_string, font)) {
-    ScriptPromiseResolver* resolver =
-        ScriptPromiseResolver::Create(script_state);
+    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     ScriptPromise promise = resolver->Promise();
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kSyntaxError,
@@ -184,8 +181,8 @@ ScriptPromise FontFaceSet::load(ScriptState* script_state,
       segmented_font_face->Match(text, faces);
   }
 
-  LoadFontPromiseResolver* resolver =
-      LoadFontPromiseResolver::Create(faces, script_state);
+  auto* resolver =
+      MakeGarbageCollected<LoadFontPromiseResolver>(faces, script_state);
   ScriptPromise promise = resolver->Promise();
   // After this, resolver->promise() may return null.
   resolver->LoadFonts();

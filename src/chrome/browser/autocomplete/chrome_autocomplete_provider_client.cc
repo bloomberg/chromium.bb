@@ -7,7 +7,8 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/bind_helpers.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -31,13 +32,14 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -88,11 +90,9 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
       url_consent_helper_(
           unified_consent::UrlKeyedDataCollectionConsentHelper::
               NewPersonalizedDataCollectionConsentHelper(
-                  ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
-                      profile_))),
+                  ProfileSyncServiceFactory::GetForProfile(profile_))),
       storage_partition_(nullptr) {
-  if (OmniboxFieldTrial::GetPedalSuggestionMode() !=
-      OmniboxFieldTrial::PedalSuggestionMode::NONE)
+  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled())
     pedal_provider_ = std::make_unique<OmniboxPedalProvider>(*this);
 }
 
@@ -171,8 +171,7 @@ ChromeAutocompleteProviderClient::GetDocumentSuggestionsService(
 OmniboxPedalProvider* ChromeAutocompleteProviderClient::GetPedalProvider()
     const {
   // If Pedals are disabled, we should never get here to use the provider.
-  DCHECK_NE(OmniboxFieldTrial::GetPedalSuggestionMode(),
-            OmniboxFieldTrial::PedalSuggestionMode::NONE);
+  DCHECK(OmniboxFieldTrial::IsPedalSuggestionsEnabled());
   DCHECK(pedal_provider_);
   return pedal_provider_.get();
 }
@@ -199,7 +198,7 @@ ChromeAutocompleteProviderClient::GetKeywordExtensionsDelegate(
 }
 
 std::string ChromeAutocompleteProviderClient::GetAcceptLanguages() const {
-  return profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  return profile_->GetPrefs()->GetString(language::prefs::kAcceptLanguages);
 }
 
 std::string
@@ -222,7 +221,7 @@ std::vector<base::string16> ChromeAutocompleteProviderClient::GetBuiltinURLs() {
 #if !defined(OS_ANDROID)
   base::string16 settings(base::ASCIIToUTF16(chrome::kChromeUISettingsHost) +
                           base::ASCIIToUTF16("/"));
-  for (size_t i = 0; i < arraysize(kChromeSettingsSubPages); i++) {
+  for (size_t i = 0; i < base::size(kChromeSettingsSubPages); i++) {
     builtins.push_back(settings +
                        base::ASCIIToUTF16(kChromeSettingsSubPages[i]));
   }
@@ -258,7 +257,7 @@ base::Time ChromeAutocompleteProviderClient::GetCurrentVisitTimestamp() const {
   if (!active_tab)
     return base::Time();
 
-  const content::NavigationEntry* navigation =
+  content::NavigationEntry* navigation =
       active_tab->GetController().GetLastCommittedEntry();
   if (!navigation)
     return base::Time();
@@ -290,8 +289,7 @@ bool ChromeAutocompleteProviderClient::IsAuthenticated() const {
 
 bool ChromeAutocompleteProviderClient::IsSyncActive() const {
   syncer::SyncService* sync =
-      ProfileSyncServiceFactory::GetInstance()->GetSyncServiceForBrowserContext(
-          profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   return sync && sync->IsSyncFeatureActive();
 }
 
@@ -320,8 +318,9 @@ void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {
   DCHECK(image_service);
 
   // TODO(jdonnelly, rhalavati): Create a helper function with Callback to
-  // create annotation and pass it to image_service, merging this annotation and
-  // chrome/browser/ui/omnibox/chrome_omnibox_client.cc
+  // create annotation and pass it to image_service, merging the annotations
+  // in omnibox_page_handler.cc, chrome_omnibox_client.cc,
+  // and chrome_autocomplete_provider_client.cc.
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("omnibox_prefetch_image", R"(
         semantics {

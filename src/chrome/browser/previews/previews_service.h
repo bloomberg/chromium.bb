@@ -6,10 +6,15 @@
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_SERVICE_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_top_host_provider_impl.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -21,15 +26,18 @@ namespace content {
 class BrowserContext;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace optimization_guide {
 class OptimizationGuideService;
 }
 
 namespace previews {
+class PreviewsTopHostProviderImpl;
 class PreviewsUIService;
 }
-
-class PreviewsLitePageDecider;
 
 // Keyed service that owns a previews::PreviewsUIService. PreviewsService lives
 // on the UI thread.
@@ -65,15 +73,28 @@ class PreviewsService : public KeyedService {
     return previews_lite_page_decider_.get();
   }
 
+  // The https notification infobar decider.
+  PreviewsHTTPSNotificationInfoBarDecider*
+  previews_https_notification_infobar_decider() {
+    return previews_lite_page_decider_.get();
+  }
+
   // Returns the enabled PreviewsTypes with their version.
   static blacklist::BlacklistData::AllowedTypesAndVersions GetAllowedPreviews();
 
  private:
+  // The top site provider for use with previews.
+  std::unique_ptr<previews::PreviewsTopHostProviderImpl>
+      previews_top_host_provider_;
+
   // The previews UI thread service.
   std::unique_ptr<previews::PreviewsUIService> previews_ui_service_;
 
   // The server lite page preview decider.
   std::unique_ptr<PreviewsLitePageDecider> previews_lite_page_decider_;
+
+  // URL Factory for the Previews Optimization Guide's Hints Fetcher.
+  scoped_refptr<network::SharedURLLoaderFactory> previews_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsService);
 };

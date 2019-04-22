@@ -11,12 +11,13 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 
 MediaControlFullscreenButtonElement::MediaControlFullscreenButtonElement(
     MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls, kMediaEnterFullscreenButton) {
+    : MediaControlInputElement(media_controls) {
   setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-fullscreen-button"));
   SetIsFullscreen(MediaElement().IsFullscreen());
@@ -24,8 +25,15 @@ MediaControlFullscreenButtonElement::MediaControlFullscreenButtonElement(
 }
 
 void MediaControlFullscreenButtonElement::SetIsFullscreen(bool is_fullscreen) {
-  SetDisplayType(is_fullscreen ? kMediaExitFullscreenButton
-                               : kMediaEnterFullscreenButton);
+  if (is_fullscreen) {
+    setAttribute(html_names::kAriaLabelAttr,
+                 WTF::AtomicString(GetLocale().QueryString(
+                     WebLocalizedString::kAXMediaExitFullscreenButton)));
+  } else {
+    setAttribute(html_names::kAriaLabelAttr,
+                 WTF::AtomicString(GetLocale().QueryString(
+                     WebLocalizedString::kAXMediaEnterFullscreenButton)));
+  }
   SetClass("fullscreen", is_fullscreen);
 }
 
@@ -44,12 +52,17 @@ bool MediaControlFullscreenButtonElement::HasOverflowButton() const {
   return true;
 }
 
+bool MediaControlFullscreenButtonElement::IsControlPanelButton() const {
+  return true;
+}
+
 const char* MediaControlFullscreenButtonElement::GetNameForHistograms() const {
   return IsOverflowElement() ? "FullscreenOverflowButton" : "FullscreenButton";
 }
 
 void MediaControlFullscreenButtonElement::DefaultEventHandler(Event& event) {
-  if (event.type() == event_type_names::kClick) {
+  if (!IsDisabled() && (event.type() == event_type_names::kClick ||
+                        event.type() == event_type_names::kGesturetap)) {
     RecordClickMetrics();
     if (MediaElement().IsFullscreen())
       GetMediaControls().ExitFullscreen();

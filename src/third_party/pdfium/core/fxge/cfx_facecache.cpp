@@ -15,10 +15,12 @@
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_fontmgr.h"
 #include "core/fxge/cfx_gemodule.h"
+#include "core/fxge/cfx_glyphbitmap.h"
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_substfont.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/fx_freetype.h"
+#include "core/fxge/scoped_font_transform.h"
 #include "third_party/base/numerics/safe_math.h"
 #include "third_party/base/ptr_util.h"
 
@@ -160,15 +162,14 @@ std::unique_ptr<CFX_GlyphBitmap> CFX_FaceCache::RenderGlyph(
   if (bmwidth > kMaxGlyphDimension || bmheight > kMaxGlyphDimension)
     return nullptr;
   int dib_width = bmwidth;
-  auto pGlyphBitmap = pdfium::MakeUnique<CFX_GlyphBitmap>();
-  pGlyphBitmap->m_pBitmap->Create(
+  auto pGlyphBitmap = pdfium::MakeUnique<CFX_GlyphBitmap>(
+      FXFT_Get_Glyph_BitmapLeft(m_Face), FXFT_Get_Glyph_BitmapTop(m_Face));
+  pGlyphBitmap->GetBitmap()->Create(
       dib_width, bmheight,
       anti_alias == FXFT_RENDER_MODE_MONO ? FXDIB_1bppMask : FXDIB_8bppMask);
-  pGlyphBitmap->m_Left = FXFT_Get_Glyph_BitmapLeft(m_Face);
-  pGlyphBitmap->m_Top = FXFT_Get_Glyph_BitmapTop(m_Face);
-  int dest_pitch = pGlyphBitmap->m_pBitmap->GetPitch();
+  int dest_pitch = pGlyphBitmap->GetBitmap()->GetPitch();
   int src_pitch = FXFT_Get_Bitmap_Pitch(FXFT_Get_Glyph_Bitmap(m_Face));
-  uint8_t* pDestBuf = pGlyphBitmap->m_pBitmap->GetBuffer();
+  uint8_t* pDestBuf = pGlyphBitmap->GetBitmap()->GetBuffer();
   uint8_t* pSrcBuf =
       (uint8_t*)FXFT_Get_Bitmap_Buffer(FXFT_Get_Glyph_Bitmap(m_Face));
   if (anti_alias != FXFT_RENDER_MODE_MONO &&

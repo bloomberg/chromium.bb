@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <wincodec.h>
 
+#include "base/bind.h"
 #include "media/capture/video/win/sink_filter_win.h"
 #include "media/capture/video/win/video_capture_device_factory_win.h"
 #include "media/capture/video/win/video_capture_device_mf_win.h"
@@ -52,6 +53,7 @@ class MockClient : public VideoCaptureDevice::Client {
   void OnIncomingCapturedBufferExt(
       Buffer buffer,
       const VideoCaptureFormat& format,
+      const gfx::ColorSpace& color_space,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp,
       gfx::Rect visible_rect,
@@ -779,11 +781,17 @@ class MockMFMediaEvent : public base::RefCountedThreadSafe<MockMFMediaEvent>,
 
   STDMETHOD(CopyAllItems)(IMFAttributes* pDest) override { return E_NOTIMPL; }
 
-  STDMETHOD(GetType)(MediaEventType* pmet) override { return E_NOTIMPL; }
+  STDMETHOD(GetType)(MediaEventType* pmet) override {
+    *pmet = DoGetType();
+    return S_OK;
+  }
+  MOCK_METHOD0(DoGetType, MediaEventType());
 
   STDMETHOD(GetExtendedType)(GUID* pguidExtendedType) override {
-    return E_NOTIMPL;
+    *pguidExtendedType = DoGetExtendedType();
+    return S_OK;
   }
+  MOCK_METHOD0(DoGetExtendedType, GUID());
 
   STDMETHOD(GetStatus)(HRESULT* status) override {
     *status = DoGetStatus();
@@ -1058,7 +1066,7 @@ TEST_F(VideoCaptureDeviceMFWinTest, StartPreviewOnAllocateAndStart) {
   EXPECT_CALL(*(engine_.Get()), OnStopPreview());
 
   device_->AllocateAndStart(VideoCaptureParams(), std::move(client_));
-
+  capture_preview_sink_->sample_callback->OnSample(nullptr);
   device_->StopAndDeAllocate();
 }
 
@@ -1076,6 +1084,7 @@ TEST_F(VideoCaptureDeviceMFWinTest, CallClientOnErrorMediaEvent) {
   EXPECT_CALL(*media_event_error, DoGetStatus()).WillRepeatedly(Return(E_FAIL));
 
   device_->AllocateAndStart(VideoCaptureParams(), std::move(client_));
+  capture_preview_sink_->sample_callback->OnSample(nullptr);
   engine_->event_callback->OnEvent(media_event_error.get());
 }
 
@@ -1117,18 +1126,20 @@ TEST_F(VideoCaptureDeviceMFWinTest, AllocateAndStartWithFlakyInvalidRequest) {
         return S_OK;
       }));
 
+  auto mock_sink = base::MakeRefCounted<MockCapturePreviewSink>();
   EXPECT_CALL(*(engine_.Get()),
               DoGetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW, _))
-      .WillRepeatedly(Invoke(
-          [](MF_CAPTURE_ENGINE_SINK_TYPE sink_type, IMFCaptureSink** sink) {
-            *sink = new MockCapturePreviewSink();
-            (*sink)->AddRef();
-            return S_OK;
-          }));
+      .WillRepeatedly(Invoke([&mock_sink](MF_CAPTURE_ENGINE_SINK_TYPE sink_type,
+                                          IMFCaptureSink** sink) {
+        *sink = mock_sink.get();
+        (*sink)->AddRef();
+        return S_OK;
+      }));
 
   EXPECT_CALL(*(engine_.Get()), OnStartPreview());
   EXPECT_CALL(*client_, OnStarted());
   device_->AllocateAndStart(VideoCaptureParams(), std::move(client_));
+  mock_sink->sample_callback->OnSample(nullptr);
 }
 
 // Allocates device with methods always failing with MF_E_INVALIDREQUEST and
@@ -1144,6 +1155,36 @@ TEST_F(VideoCaptureDeviceMFWinTest, AllocateAndStartWithFailingInvalidRequest) {
   device_->AllocateAndStart(VideoCaptureParams(), std::move(client_));
 }
 
+TEST_F(VideoCaptureDeviceMFWinTest,
+       SendsOnErrorWithoutOnStartedIfDeviceIsBusy) {
+  if (ShouldSkipTest())
+    return;
+
+  PrepareMFDeviceWithOneVideoStream(MFVideoFormat_MJPG);
+
+  EXPECT_CALL(*(engine_.Get()), OnStartPreview());
+  EXPECT_CALL(*client_, OnStarted()).Times(0);
+  EXPECT_CALL(*client_, OnError(_, _, _));
+
+  scoped_refptr<MockMFMediaEvent> media_event_preview_started =
+      new MockMFMediaEvent();
+  ON_CALL(*media_event_preview_started, DoGetStatus())
+      .WillByDefault(Return(S_OK));
+  ON_CALL(*media_event_preview_started, DoGetType())
+      .WillByDefault(Return(MEExtendedType));
+  ON_CALL(*media_event_preview_started, DoGetExtendedType())
+      .WillByDefault(Return(MF_CAPTURE_ENGINE_PREVIEW_STARTED));
+
+  scoped_refptr<MockMFMediaEvent> media_event_error = new MockMFMediaEvent();
+  EXPECT_CALL(*media_event_error, DoGetStatus()).WillRepeatedly(Return(E_FAIL));
+
+  device_->AllocateAndStart(VideoCaptureParams(), std::move(client_));
+  // Even if the device is busy, MediaFoundation sends
+  // MF_CAPTURE_ENGINE_PREVIEW_STARTED before sending an error event.
+  engine_->event_callback->OnEvent(media_event_preview_started.get());
+  engine_->event_callback->OnEvent(media_event_error.get());
+}
+
 // Given an |IMFCaptureSource| offering a video stream without photo stream to
 // |VideoCaptureDevice|, when asking the photo state from |VideoCaptureDevice|
 // then expect the returned state to match the video resolution
@@ -1157,6 +1198,7 @@ TEST_F(VideoCaptureDeviceMFWinTest, GetPhotoStateViaVideoStream) {
   EXPECT_CALL(*client_, OnStarted());
 
   device_->AllocateAndStart(VideoCaptureParams(), std::move(client_));
+  capture_preview_sink_->sample_callback->OnSample(nullptr);
 
   VideoCaptureDevice::GetPhotoStateCallback get_photo_state_callback =
       base::BindOnce(&MockImageCaptureClient::DoOnGetPhotoState,
@@ -1186,6 +1228,8 @@ TEST_F(VideoCaptureDeviceMFWinTest, GetPhotoStateViaPhotoStream) {
   EXPECT_CALL(*client_, OnStarted());
 
   device_->AllocateAndStart(VideoCaptureParams(), std::move(client_));
+  capture_preview_sink_->sample_callback->OnSample(nullptr);
+
   VideoCaptureDevice::GetPhotoStateCallback get_photo_state_callback =
       base::BindOnce(&MockImageCaptureClient::DoOnGetPhotoState,
                      image_capture_client_);
@@ -1216,6 +1260,7 @@ TEST_F(VideoCaptureDeviceMFWinTest, TakePhotoViaPhotoStream) {
   EXPECT_CALL(*(engine_.Get()), OnTakePhoto());
 
   device_->AllocateAndStart(VideoCaptureParams(), std::move(client_));
+  capture_preview_sink_->sample_callback->OnSample(nullptr);
   VideoCaptureDevice::TakePhotoCallback take_photo_callback = base::BindOnce(
       &MockImageCaptureClient::DoOnPhotoTaken, image_capture_client_);
   device_->TakePhoto(std::move(take_photo_callback));
@@ -1231,9 +1276,9 @@ const DepthDeviceParams kDepthCamerasParams[] = {
     {kMediaSubTypeINVZ, true, false},
     {MFVideoFormat_D16, true, true}};
 
-INSTANTIATE_TEST_CASE_P(DepthCameraDeviceMFWinTests,
-                        DepthCameraDeviceMFWinTest,
-                        testing::ValuesIn(kDepthCamerasParams));
+INSTANTIATE_TEST_SUITE_P(DepthCameraDeviceMFWinTests,
+                         DepthCameraDeviceMFWinTest,
+                         testing::ValuesIn(kDepthCamerasParams));
 
 // Given an |IMFCaptureSource| offering a video stream with subtype Y16, Z16,
 // INVZ or D16, when allocating and starting |VideoCaptureDevice| expect the MF
@@ -1276,6 +1321,7 @@ TEST_P(DepthCameraDeviceMFWinTest, AllocateAndStartDepthCamera) {
   VideoCaptureParams video_capture_params;
   video_capture_params.requested_format = format;
   device_->AllocateAndStart(video_capture_params, std::move(client_));
+  capture_preview_sink_->sample_callback->OnSample(nullptr);
 }
 
 }  // namespace media

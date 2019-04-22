@@ -269,12 +269,12 @@ void HTMLTreeBuilder::FragmentParsingContext::Init(DocumentFragment* fragment,
       context_element, HTMLStackItem::kItemForContextElement);
 }
 
-void HTMLTreeBuilder::FragmentParsingContext::Trace(blink::Visitor* visitor) {
+void HTMLTreeBuilder::FragmentParsingContext::Trace(Visitor* visitor) {
   visitor->Trace(fragment_);
   visitor->Trace(context_element_stack_item_);
 }
 
-void HTMLTreeBuilder::Trace(blink::Visitor* visitor) {
+void HTMLTreeBuilder::Trace(Visitor* visitor) {
   visitor->Trace(fragment_context_);
   visitor->Trace(tree_);
   visitor->Trace(parser_);
@@ -459,7 +459,7 @@ static void MapLoweredLocalNameToName(PrefixedNameToQualifiedNameMap* map,
 }
 
 // "Any other start tag" bullet in
-// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inforeign
+// https://html.spec.whatwg.org/C/#parsing-main-inforeign
 static void AdjustSVGTagNameCase(AtomicHTMLToken* token) {
   static PrefixedNameToQualifiedNameMap* case_map = nullptr;
   if (!case_map) {
@@ -490,12 +490,12 @@ static void AdjustAttributes(AtomicHTMLToken* token) {
   }
 }
 
-// https://html.spec.whatwg.org/multipage/parsing.html#adjust-svg-attributes
+// https://html.spec.whatwg.org/C/#adjust-svg-attributes
 static void AdjustSVGAttributes(AtomicHTMLToken* token) {
   AdjustAttributes<svg_names::GetAttrs, svg_names::kAttrsCount>(token);
 }
 
-// https://html.spec.whatwg.org/multipage/parsing.html#adjust-mathml-attributes
+// https://html.spec.whatwg.org/C/#adjust-mathml-attributes
 static void AdjustMathMLAttributes(AtomicHTMLToken* token) {
   AdjustAttributes<mathml_names::GetAttrs, mathml_names::kAttrsCount>(token);
 }
@@ -727,7 +727,7 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
     return;
   }
   if (token->GetName() == kInputTag) {
-    // Per spec https://html.spec.whatwg.org/#parsing-main-inbody,
+    // Per spec https://html.spec.whatwg.org/C/#parsing-main-inbody,
     // section "A start tag whose tag name is "input""
 
     Attribute* type_attribute = token->GetAttributeItem(kTypeAttr);
@@ -775,7 +775,7 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
     ProcessGenericRawTextStartTag(token);
     return;
   }
-  if (token->GetName() == kNoembedTag && options_.plugins_enabled) {
+  if (token->GetName() == kNoembedTag) {
     ProcessGenericRawTextStartTag(token);
     return;
   }
@@ -1461,7 +1461,7 @@ void HTMLTreeBuilder::CallTheAdoptionAgency(AtomicHTMLToken* token) {
     HTMLElementStack::ElementRecord* next_node = node->Next();
     HTMLElementStack::ElementRecord* last_node = furthest_block;
     // 9.1, 9.2, 9.3 and 9.11 are covered by the for() loop.
-    for (int i = 0; i < kInnerIterationLimit; ++i) {
+    for (int j = 0; j < kInnerIterationLimit; ++j) {
       // 9.4
       node = next_node;
       DCHECK(node);

@@ -42,11 +42,9 @@ class IdTargetObserverRegistry final
   friend class IdTargetObserver;
 
  public:
-  static IdTargetObserverRegistry* Create();
-
   IdTargetObserverRegistry() : notifying_observers_in_set_(nullptr) {}
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   void NotifyObservers(const AtomicString& id);
   bool HasObservers(const AtomicString& id) const;
 

@@ -10,14 +10,15 @@
 namespace base {
 namespace mac {
 
-Process OpenApplicationWithPath(const base::FilePath& bundle_path,
-                                const CommandLine& command_line,
-                                NSWorkspaceLaunchOptions launch_options) {
+NSRunningApplication* OpenApplicationWithPath(
+    const base::FilePath& bundle_path,
+    const CommandLine& command_line,
+    NSWorkspaceLaunchOptions launch_options) {
   NSString* bundle_url_spec = base::SysUTF8ToNSString(bundle_path.value());
   NSURL* bundle_url = [NSURL fileURLWithPath:bundle_url_spec isDirectory:YES];
   DCHECK(bundle_url);
   if (!bundle_url) {
-    return Process();
+    return nil;
   }
 
   // NSWorkspace automatically adds the binary path as the first argument and
@@ -42,10 +43,10 @@ Process OpenApplicationWithPath(const base::FilePath& bundle_path,
                                                       error:&launch_error];
   if (launch_error) {
     LOG(ERROR) << base::SysNSStringToUTF8([launch_error localizedDescription]);
-    return Process();
+    return nil;
   }
   DCHECK(app);
-  return Process([app processIdentifier]);
+  return app;
 }
 
 }  // namespace mac

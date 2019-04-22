@@ -24,6 +24,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="1520828917794284345">Anpassa skrivbordets storlek</translation>
 <translation id="154040539590487450">Det gick inte att starta fjärråtkomsttjänsten.</translation>
 <translation id="1546934824884762070">Ett oväntat fel uppstod. Rapportera problemet till utvecklarna.</translation>
+<translation id="1624185583382384493">Nu finns Chrome Remote Desktop på webben. Testa vår <ph name="LINK_BEGIN" />webbapp<ph name="LINK_END" /> – snabb, kostnadsfri och med ännu fler funktioner, däribland stöd för flera skärmar.</translation>
 <translation id="1643640058022401035">Om du lämnar sidan avslutas sessionen i Chromoting.</translation>
 <translation id="1654128982815600832">Fjärranslutningar aktiveras för den här datorn ...</translation>
 <translation id="170207782578677537">Det gick inte att registrera datorn.</translation>
@@ -138,6 +139,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="3989511127559254552">Innan du kan fortsätta måste du bevilja utökad åtkomstbehörighet till datorn. Du behöver bara göra det en gång.</translation>
 <translation id="4006787130661126000">Du måste aktivera fjärranslutningar om du vill använda Chrome Remote Desktop för att få åtkomst till den här datorn.</translation>
 <translation id="405887016757208221">Fjärrdatorn har misslyckats med att starta sessionen. Konfigurera värden på nytt om problemet kvarstår.</translation>
+<translation id="4060747889721220580">Ladda ned fil</translation>
 <translation id="4068946408131579958">Alla anslutningar</translation>
 <translation id="409800995205263688">OBS! Enligt policyinställningarna tillåts endast anslutning mellan datorer i ditt nätverk.</translation>
 <translation id="4126409073460786861">När konfigureringen är klar uppdaterar du den här sidan. Sedan kan du ansluta till datorn genom att välja enheten och ange pinkoden</translation>
@@ -244,6 +246,7 @@ Du aktiverar funktionen genom att öppna inställningspanelen Säkerhet och sekr
 <translation id="6198252989419008588">Byt PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (inaktuellt)</translation>
 <translation id="6221358653751391898">Du är inte inloggad i Chrome. Logga in och försök igen.</translation>
+<translation id="6227369581881558336">Nu finns Chrome Remote Desktop på webben med nya funktioner, däribland filöverföring! Kolla in vår <ph name="LINK_BEGIN" />webbapp<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Värden som kördes på konsolens inloggningsskärm har avslutats för att stödja Curtain Mode genom att byta till en värd som körs i en användarspecifik session.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Klient</translation>
@@ -291,7 +294,6 @@ Du aktiverar funktionen genom att öppna inställningspanelen Säkerhet och sekr
 <translation id="7434397035092923453">Åtkomst nekad för klient: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klient ansluten: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Byt konto</translation>
-<translation id="7589941250119944644">Chrome Remote Desktop har fått ett nytt hem på webben. Testa vår <ph name="LINK_BEGIN" />webbapp<ph name="LINK_END" /> – den är snabb och gratis, och alla de gamla funktionerna finns kvar.</translation>
 <translation id="7606912958770842224">Aktivera fjärranslutningar</translation>
 <translation id="7628469622942688817">Spara pinkoden på den här enheten.</translation>
 <translation id="7649070708921625228">Hjälp</translation>

@@ -29,7 +29,6 @@ extern const char kAccountConsistencyFeatureMethodParameter[];
 
 // Account consistency method feature values.
 extern const char kAccountConsistencyFeatureMethodMirror[];
-extern const char kAccountConsistencyFeatureMethodDiceFixAuthErrors[];
 extern const char kAccountConsistencyFeatureMethodDiceMigration[];
 extern const char kAccountConsistencyFeatureMethodDice[];
 
@@ -69,6 +68,11 @@ class AccountConsistencyModeManager : public KeyedService {
   // By default, Desktop Identity Consistency (aka Dice) is not enabled in
   // builds lacking an API key. For testing, set to have Dice enabled in tests.
   static void SetIgnoreMissingOAuthClientForTesting();
+
+  // Returns true is the AccountConsistencyModeManager should be instantiated
+  // for the profile. Guest, incognito and system sessions do not instantiate
+  // the service.
+  static bool ShouldBuildServiceForProfile(Profile* profile);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,

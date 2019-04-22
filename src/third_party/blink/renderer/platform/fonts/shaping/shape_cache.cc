@@ -29,7 +29,7 @@
  */
 
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_cache.h"
-#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hasher.h"
 #if defined(USE_FUNCTION_CITYHASH)
 #include "third_party/smhasher/src/City.h"
 #endif
@@ -39,7 +39,8 @@ namespace blink {
 void ShapeCache::SmallStringKey::HashString() {
 // TODO(cavalcanti): next add xxhash.
 #if defined(USE_FUNCTION_CITYHASH)
-  hash_ = CityHash64((const char*)characters_, length_ * sizeof(UChar));
+  hash_ = static_cast<unsigned>(
+      CityHash64((const char*)characters_, length_ * sizeof(UChar)));
 #endif
 }
 

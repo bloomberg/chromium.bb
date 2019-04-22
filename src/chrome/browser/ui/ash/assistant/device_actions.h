@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_UI_ASH_ASSISTANT_DEVICE_ACTIONS_H_
 
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 class DeviceActions : public chromeos::assistant::mojom::DeviceActions {
  public:
   DeviceActions();
   ~DeviceActions() override;
+
+  chromeos::assistant::mojom::DeviceActionsPtr AddBinding();
 
   // mojom::DeviceActions overrides:
   void SetWifiEnabled(bool enabled) override;
@@ -20,8 +22,16 @@ class DeviceActions : public chromeos::assistant::mojom::DeviceActions {
       GetScreenBrightnessLevelCallback callback) override;
   void SetScreenBrightnessLevel(double level, bool gradual) override;
   void SetNightLightEnabled(bool enabled) override;
+  void OpenAndroidApp(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
+                      OpenAndroidAppCallback callback) override;
+  void VerifyAndroidApp(
+      std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
+      VerifyAndroidAppCallback callback) override;
+  void LaunchAndroidIntent(const std::string& intent) override;
 
  private:
+  mojo::BindingSet<chromeos::assistant::mojom::DeviceActions> bindings_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceActions);
 };
 

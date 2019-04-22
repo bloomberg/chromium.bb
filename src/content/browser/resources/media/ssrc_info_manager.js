@@ -98,26 +98,30 @@ var SsrcInfoManager = (function() {
       var attributes = sdp.split(this.ATTRIBUTE_SEPARATOR_);
       for (var i = 0; i < attributes.length; ++i) {
         // Check if this is a ssrc attribute.
-        if (attributes[i].indexOf(this.SSRC_ATTRIBUTE_PREFIX_) != 0)
+        if (attributes[i].indexOf(this.SSRC_ATTRIBUTE_PREFIX_) != 0) {
           continue;
+        }
 
         var nextFieldIndex = attributes[i].search(this.FIELD_SEPARATOR_REGEX_);
 
-        if (nextFieldIndex == -1)
+        if (nextFieldIndex == -1) {
           continue;
+        }
 
         var ssrc = attributes[i].substring(
             this.SSRC_ATTRIBUTE_PREFIX_.length, nextFieldIndex);
-        if (!this.streamInfoContainer_[ssrc])
+        if (!this.streamInfoContainer_[ssrc]) {
           this.streamInfoContainer_[ssrc] = {};
+        }
 
         // Make |rest| starting at the next field.
         var rest = attributes[i].substring(nextFieldIndex + 1);
         var name, value;
         while (rest.length > 0) {
           nextFieldIndex = rest.search(this.FIELD_SEPARATOR_REGEX_);
-          if (nextFieldIndex == -1)
+          if (nextFieldIndex == -1) {
             nextFieldIndex = rest.length;
+          }
 
           // The field name is the string before the colon.
           name = rest.substring(0, rest.indexOf(':'));
@@ -147,8 +151,9 @@ var SsrcInfoManager = (function() {
      * @param {string} ssrc The ssrc id.
      */
     populateSsrcInfo: function(parentElement, ssrc) {
-      if (!this.streamInfoContainer_[ssrc])
+      if (!this.streamInfoContainer_[ssrc]) {
         return;
+      }
 
       parentElement.className = this.SSRC_INFO_BLOCK_CLASS;
 

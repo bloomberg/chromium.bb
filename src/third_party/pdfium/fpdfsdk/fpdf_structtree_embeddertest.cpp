@@ -5,12 +5,11 @@
 #include "core/fxcrt/fx_string.h"
 #include "public/fpdf_structtree.h"
 #include "testing/embedder_test.h"
-#include "testing/test_support.h"
 #include "third_party/base/optional.h"
 
-class FPDFStructTreeEmbeddertest : public EmbedderTest {};
+class FPDFStructTreeEmbedderTest : public EmbedderTest {};
 
-TEST_F(FPDFStructTreeEmbeddertest, GetAltText) {
+TEST_F(FPDFStructTreeEmbedderTest, GetAltText) {
   ASSERT_TRUE(OpenDocument("tagged_alt_text.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
@@ -76,7 +75,7 @@ TEST_F(FPDFStructTreeEmbeddertest, GetAltText) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFStructTreeEmbeddertest, GetMarkedContentID) {
+TEST_F(FPDFStructTreeEmbedderTest, GetMarkedContentID) {
   ASSERT_TRUE(OpenDocument("marked_content_id.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
@@ -94,7 +93,7 @@ TEST_F(FPDFStructTreeEmbeddertest, GetMarkedContentID) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFStructTreeEmbeddertest, GetType) {
+TEST_F(FPDFStructTreeEmbedderTest, GetType) {
   ASSERT_TRUE(OpenDocument("tagged_alt_text.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);

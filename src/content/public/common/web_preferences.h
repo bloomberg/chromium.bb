@@ -14,6 +14,8 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "net/nqe/effective_connection_type.h"
+#include "third_party/blink/public/common/css/preferred_color_scheme.h"
+#include "third_party/blink/public/mojom/v8_cache_options.mojom.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "url/gurl.h"
 
@@ -35,16 +37,6 @@ enum EditingBehavior {
   EDITING_BEHAVIOR_LAST = EDITING_BEHAVIOR_ANDROID
 };
 
-// Cache options for V8. See V8CacheOptions.h for information on the options.
-enum V8CacheOptions {
-  V8_CACHE_OPTIONS_DEFAULT,
-  V8_CACHE_OPTIONS_NONE,
-  V8_CACHE_OPTIONS_CODE,
-  V8_CACHE_OPTIONS_CODE_WITHOUT_HEAT_CHECK,
-  V8_CACHE_OPTIONS_FULLCODE_WITHOUT_HEAT_CHECK,
-  V8_CACHE_OPTIONS_LAST = V8_CACHE_OPTIONS_FULLCODE_WITHOUT_HEAT_CHECK
-};
-
 // ImageAnimationPolicy is used for controlling image animation
 // when image frame is rendered for animation.
 // See third_party/WebKit/Source/platform/graphics/ImageAnimationPolicy.h
@@ -57,19 +49,11 @@ enum ImageAnimationPolicy {
 
 enum class ViewportStyle { DEFAULT, MOBILE, TELEVISION, LAST = TELEVISION };
 
-enum class SavePreviousDocumentResources {
-  NEVER,
-  UNTIL_ON_DOM_CONTENT_LOADED,
-  UNTIL_ON_LOAD,
-  LAST = UNTIL_ON_LOAD
-};
-
 // Defines the autoplay policy to be used. Should match the class in
 // WebSettings.h.
 enum class AutoplayPolicy {
   kNoUserGestureRequired,
   kUserGestureRequired,
-  kUserGestureRequiredForCrossOrigin,
   kDocumentUserActivationRequired,
 };
 
@@ -122,10 +106,6 @@ struct CONTENT_EXPORT WebPreferences {
   // appears as disabled to the web consumers even if it has been actually
   // enabled by the user.
   bool data_saver_holdback_web_api_enabled;
-  // Whether data saver holdback is enabled when queried by the media APIs
-  // within Blink. If enabled, data saver appears as disabled to the media APIs
-  // even if it has been actually enabled by the user.
-  bool data_saver_holdback_media_api_enabled;
   bool local_storage_enabled;
   bool databases_enabled;
   bool application_cache_enabled;
@@ -173,6 +153,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool should_print_backgrounds;
   bool should_clear_document_background;
   bool enable_scroll_animator;
+  bool prefers_reduced_motion;
   bool touch_event_feature_detection_enabled;
   bool touch_adjustment_enabled;
   int pointer_events_max_touch_points;
@@ -180,6 +161,7 @@ struct CONTENT_EXPORT WebPreferences {
   ui::PointerType primary_pointer_type;
   int available_hover_types;
   ui::HoverType primary_hover_type;
+  bool dont_send_key_events_to_javascript;
   bool barrel_button_for_drag_enabled = false;
   bool sync_xhr_in_documents_enabled;
   bool should_respect_image_orientation;
@@ -203,9 +185,8 @@ struct CONTENT_EXPORT WebPreferences {
   bool spatial_navigation_enabled;
   bool use_solid_color_scrollbars;
   bool navigate_on_drag_drop;
-  V8CacheOptions v8_cache_options;
+  blink::mojom::V8CacheOptions v8_cache_options;
   bool record_whole_document;
-  SavePreviousDocumentResources save_previous_document_resources;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
   // only controls whether or not the "document.cookie" field is properly
@@ -222,6 +203,20 @@ struct CONTENT_EXPORT WebPreferences {
 
   bool user_gesture_required_for_presentation;
 
+  // These fields specify the foreground and background color for WebVTT text
+  // tracks. Their values can be any legal CSS color descriptor.
+  std::string text_track_background_color;
+  std::string text_track_text_color;
+
+  // These fields specify values for CSS properties used to style WebVTT text
+  // tracks.
+  // Specifies CSS font-size property in percentage.
+  std::string text_track_text_size;
+  std::string text_track_text_shadow;
+  std::string text_track_font_family;
+  // Specifies the value for CSS font-variant property.
+  std::string text_track_font_variant;
+
   // Specifies the margin for WebVTT text tracks as a percentage of media
   // element height/width (for horizontal/vertical text respectively).
   // Cues will not be placed in this margin area.
@@ -233,12 +228,14 @@ struct CONTENT_EXPORT WebPreferences {
 
   bool text_autosizing_enabled;
 
+  // Representation of the Web App Manifest scope if any.
+  GURL web_app_scope;
+
 #if defined(OS_ANDROID)
   float font_scale_factor;
   float device_scale_adjustment;
   bool force_enable_zoom;
   bool fullscreen_supported;
-  GURL media_playback_gesture_whitelist_scope;
   GURL default_video_poster_url;
   bool support_deprecated_target_density_dpi;
   bool use_legacy_background_size_shorthand_behavior;
@@ -269,13 +266,16 @@ struct CONTENT_EXPORT WebPreferences {
   // Enable 8 (#RRGGBBAA) and 4 (#RGBA) value hex colors in CSS Android
   // WebView quirk (http://crbug.com/618472).
   bool css_hex_alpha_color_enabled;
-  bool enable_media_download_in_product_help;
   // Enable support for document.scrollingElement
   // WebView sets this to false to retain old documentElement behaviour
   // (http://crbug.com/761016).
   bool scroll_top_left_interop_enabled;
 #else  // defined(OS_ANDROID)
 #endif  // defined(OS_ANDROID)
+
+  // Enable forcibly modifying content rendering to result in a light on dark
+  // color scheme.
+  bool force_dark_mode_enabled = false;
 
   // Default (used if the page or UA doesn't override these) values for page
   // scale limits. These are set directly on the WebView so there's no analogue
@@ -300,6 +300,12 @@ struct CONTENT_EXPORT WebPreferences {
 
   // Defines the current autoplay policy.
   AutoplayPolicy autoplay_policy;
+
+  // The preferred color scheme for the web content. The scheme is used to
+  // evaluate the prefers-color-scheme media query and resolve UA color scheme
+  // to be used based on the supported-color-schemes META tag and CSS property.
+  blink::PreferredColorScheme preferred_color_scheme =
+      blink::PreferredColorScheme::kNoPreference;
 
   // Network quality threshold below which resources from iframes are assigned
   // either kVeryLow or kVeryLow Blink priority.

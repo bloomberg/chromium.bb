@@ -1003,7 +1003,8 @@ chrome.networkingPrivate.GlobalPolicy;
  *   issuedTo: string,
  *   pem: (string|undefined),
  *   PKCS11Id: (string|undefined),
- *   hardwareBacked: boolean
+ *   hardwareBacked: boolean,
+ *   deviceWide: boolean
  * }}
  */
 chrome.networkingPrivate.Certificate;

@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 
 import java.util.List;
 
@@ -89,11 +87,12 @@ public interface TabModelObserver {
     void tabClosureCommitted(Tab tab);
 
     /**
-     * Called when "all tabs" are pending closure.
+     * Called when multiple tabs are pending closure.
      *
      * @param tabs The tabs that are pending closure.
+     * @param isAllTabs Whether |tabs| are all the tabs.
      */
-    void allTabsPendingClosure(List<Tab> tabs);
+    void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs);
 
     /**
      * Called when an "all tabs" closure has been committed and can't be undone anymore.
@@ -106,4 +105,10 @@ public interface TabModelObserver {
      * @param tab The tab that has been removed.
      */
     void tabRemoved(Tab tab);
+
+    /**
+     * Called after all {@link org.chromium.chrome.browser.tab.TabState}s within {@link TabModel}
+     * are loaded from storage.
+     */
+    void restoreCompleted();
 }

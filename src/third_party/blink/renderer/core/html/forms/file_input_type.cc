@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_data.h"
@@ -69,13 +70,13 @@ Vector<String> CollectAcceptTypes(const HTMLInputElement& input) {
 inline FileInputType::FileInputType(HTMLInputElement& element)
     : InputType(element),
       KeyboardClickableInputTypeView(element),
-      file_list_(FileList::Create()) {}
+      file_list_(MakeGarbageCollected<FileList>()) {}
 
 InputType* FileInputType::Create(HTMLInputElement& element) {
   return MakeGarbageCollected<FileInputType>(element);
 }
 
-void FileInputType::Trace(blink::Visitor* visitor) {
+void FileInputType::Trace(Visitor* visitor) {
   visitor->Trace(file_list_);
   KeyboardClickableInputTypeView::Trace(visitor);
   InputType::Trace(visitor);
@@ -87,25 +88,20 @@ InputTypeView* FileInputType::CreateView() {
 
 template <typename ItemType, typename VectorType>
 VectorType CreateFilesFrom(const FormControlState& state,
-                           ItemType (*factory)(const String&,
-                                               const String&,
-                                               const String&)) {
+                           ItemType (*factory)(const FormControlState&,
+                                               wtf_size_t&)) {
   VectorType files;
   files.ReserveInitialCapacity(state.ValueSize() / 3);
-  for (wtf_size_t i = 0; i < state.ValueSize(); i += 3) {
-    const String& path = state[i];
-    const String& name = state[i + 1];
-    const String& relative_path = state[i + 2];
-    files.push_back(factory(path, name, relative_path));
+  for (wtf_size_t i = 0; i < state.ValueSize();) {
+    files.push_back(factory(state, i));
   }
   return files;
 }
 
 Vector<String> FileInputType::FilesFromFormControlState(
     const FormControlState& state) {
-  return CreateFilesFrom<String, Vector<String>>(
-      state,
-      [](const String& path, const String&, const String&) { return path; });
+  return CreateFilesFrom<String, Vector<String>>(state,
+                                                 &File::PathFromControlState);
 }
 
 const AtomicString& FileInputType::FormControlType() const {
@@ -117,14 +113,8 @@ FormControlState FileInputType::SaveFormControlState() const {
     return FormControlState();
   FormControlState state;
   unsigned num_files = file_list_->length();
-  for (unsigned i = 0; i < num_files; ++i) {
-    if (file_list_->item(i)->HasBackingFile()) {
-      state.Append(file_list_->item(i)->GetPath());
-      state.Append(file_list_->item(i)->name());
-      state.Append(file_list_->item(i)->webkitRelativePath());
-    }
-    // FIXME: handle Blob-backed File instances, see http://crbug.com/394948
-  }
+  for (unsigned i = 0; i < num_files; ++i)
+    file_list_->item(i)->AppendToControlState(state);
   return state;
 }
 
@@ -133,16 +123,11 @@ void FileInputType::RestoreFormControlState(const FormControlState& state) {
     return;
   HeapVector<Member<File>> file_vector =
       CreateFilesFrom<File*, HeapVector<Member<File>>>(
-          state, [](const String& path, const String& name,
-                    const String& relative_path) {
-            if (relative_path.IsEmpty())
-              return File::CreateForUserProvidedFile(path, name);
-            return File::CreateWithRelativePath(path, relative_path);
-          });
-  FileList* file_list = FileList::Create();
+          state, &File::CreateFromControlState);
+  auto* file_list = MakeGarbageCollected<FileList>();
   for (const auto& file : file_vector)
     file_list->Append(file);
-  SetFiles(file_list);
+  SetFilesAndDispatchEvents(file_list);
 }
 
 void FileInputType::AppendToFormData(FormData& form_data) const {
@@ -173,14 +158,20 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
   if (GetElement().IsDisabledFormControl())
     return;
 
-  if (!LocalFrame::HasTransientUserActivation(
-          GetElement().GetDocument().GetFrame()))
+  HTMLInputElement& input = GetElement();
+  Document& document = input.GetDocument();
+
+  if (!LocalFrame::HasTransientUserActivation(document.GetFrame())) {
+    String message =
+        "File chooser dialog can only be shown with a user activation.";
+    document.AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning, message));
     return;
+  }
 
   if (ChromeClient* chrome_client = GetChromeClient()) {
     FileChooserParams params;
-    HTMLInputElement& input = GetElement();
-    Document& document = input.GetDocument();
     bool is_directory = input.FastHasAttribute(kWebkitdirectoryAttr);
     if (is_directory)
       params.mode = FileChooserParams::Mode::kUploadFolder;
@@ -206,7 +197,8 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
   event.SetDefaultHandled();
 }
 
-LayoutObject* FileInputType::CreateLayoutObject(const ComputedStyle&) const {
+LayoutObject* FileInputType::CreateLayoutObject(const ComputedStyle&,
+                                                LegacyLayout) const {
   return new LayoutFileUploadControl(&GetElement());
 }
 
@@ -260,7 +252,7 @@ void FileInputType::SetValue(const String&,
 
 FileList* FileInputType::CreateFileList(const FileChooserFileInfoList& files,
                                         const base::FilePath& base_dir) {
-  FileList* file_list(FileList::Create());
+  auto* file_list(MakeGarbageCollected<FileList>());
   wtf_size_t size = files.size();
 
   // If a directory is being selected, the UI allows a directory to be chosen
@@ -352,9 +344,9 @@ void FileInputType::MultipleAttributeChanged() {
                 : WebLocalizedString::kFileButtonChooseFileLabel)));
 }
 
-void FileInputType::SetFiles(FileList* files) {
+bool FileInputType::SetFiles(FileList* files) {
   if (!files)
-    return;
+    return false;
 
   bool files_changed = false;
   if (files->length() != file_list_->length()) {
@@ -376,7 +368,11 @@ void FileInputType::SetFiles(FileList* files) {
   if (GetElement().GetLayoutObject())
     GetElement().GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 
-  if (files_changed) {
+  return files_changed;
+}
+
+void FileInputType::SetFilesAndDispatchEvents(FileList* files) {
+  if (SetFiles(files)) {
     // This call may cause destruction of this instance.
     // input instance is safe since it is ref-counted.
     GetElement().DispatchInputEvent();
@@ -397,7 +393,7 @@ void FileInputType::FilesChosen(FileChooserFileInfoList files,
     }
     ++i;
   }
-  SetFiles(CreateFileList(files, base_dir));
+  SetFilesAndDispatchEvents(CreateFileList(files, base_dir));
   if (HasConnectedFileChooser())
     DisconnectFileChooser();
 }

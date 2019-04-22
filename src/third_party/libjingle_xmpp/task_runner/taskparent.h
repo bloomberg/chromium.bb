@@ -8,16 +8,16 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_BASE_TASKPARENT_H__
-#define WEBRTC_BASE_TASKPARENT_H__
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKPARENT_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKPARENT_H_
 
 #include <memory>
 #include <set>
 
-#include "third_party/webrtc/rtc_base/checks.h"
-#include "third_party/webrtc/rtc_base/constructormagic.h"
+#include "base/macros.h"
+#include "base/logging.h"
 
-namespace rtc {
+namespace jingle_xmpp {
 
 class Task;
 class TaskRunner;
@@ -33,7 +33,7 @@ class TaskParent {
 
   bool AllChildrenDone();
   bool AnyChildError();
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
   bool IsChildTask(Task *task);
 #endif
 
@@ -54,10 +54,10 @@ class TaskParent {
   bool child_error_;
   typedef std::set<Task *> ChildSet;
   std::unique_ptr<ChildSet> children_;
-  RTC_DISALLOW_COPY_AND_ASSIGN(TaskParent);
+  DISALLOW_COPY_AND_ASSIGN(TaskParent);
 };
 
 
-} // namespace rtc
+} // namespace jingle_xmpp
 
-#endif  // WEBRTC_BASE_TASKPARENT_H__
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKPARENT_H_

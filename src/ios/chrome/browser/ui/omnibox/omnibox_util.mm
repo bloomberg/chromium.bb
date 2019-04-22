@@ -47,7 +47,7 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
 
   switch (type) {
     case AutocompleteMatchType::BOOKMARK_TITLE:
-    case AutocompleteMatchType::CLIPBOARD:
+    case AutocompleteMatchType::CLIPBOARD_URL:
     case AutocompleteMatchType::NAVSUGGEST:
     case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED:
     case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
@@ -72,6 +72,8 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::SEARCH_SUGGEST_TAIL:
     case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
     case AutocompleteMatchType::VOICE_SUGGEST:
+    case AutocompleteMatchType::CLIPBOARD_TEXT:
+    case AutocompleteMatchType::CLIPBOARD_IMAGE:
       return SEARCH;
     case AutocompleteMatchType::CALCULATOR:
       return CALCULATOR;
@@ -152,7 +154,7 @@ int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
 
   switch (type) {
     case AutocompleteMatchType::BOOKMARK_TITLE:
-    case AutocompleteMatchType::CLIPBOARD:
+    case AutocompleteMatchType::CLIPBOARD_URL:
     case AutocompleteMatchType::NAVSUGGEST:
     case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED:
     case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
@@ -177,6 +179,8 @@ int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
     case AutocompleteMatchType::SEARCH_SUGGEST_TAIL:
     case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
     case AutocompleteMatchType::VOICE_SUGGEST:
+    case AutocompleteMatchType::CLIPBOARD_TEXT:
+    case AutocompleteMatchType::CLIPBOARD_IMAGE:
       return is_incognito ? IDR_IOS_OMNIBOX_SEARCH_INCOGNITO
                           : IDR_IOS_OMNIBOX_SEARCH;
     case AutocompleteMatchType::CALCULATOR:

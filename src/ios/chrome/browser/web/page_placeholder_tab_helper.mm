@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -41,6 +42,16 @@ void PagePlaceholderTabHelper::CancelPlaceholderForNextNavigation() {
   }
 }
 
+void PagePlaceholderTabHelper::WasShown(web::WebState* web_state) {
+  if (add_placeholder_for_next_navigation_) {
+    AddPlaceholder();
+  }
+}
+
+void PagePlaceholderTabHelper::WasHidden(web::WebState* web_state) {
+  RemovePlaceholder();
+}
+
 void PagePlaceholderTabHelper::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
@@ -73,34 +84,43 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
   // Lazily create the placeholder view.
   if (!placeholder_view_) {
     placeholder_view_ = [[UIImageView alloc] init];
+    placeholder_view_.backgroundColor = [UIColor whiteColor];
     placeholder_view_.contentMode = UIViewContentModeScaleAspectFit;
     placeholder_view_.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   }
 
   // Update placeholder view's image and display it on top of WebState's view.
-  __weak UIImageView* weak_placeholder_view = placeholder_view_;
-  __weak UIView* weak_web_state_view = web_state_->GetView();
-  __weak id<CRWWebViewProxy> web_view_proxy = web_state_->GetWebViewProxy();
-  SnapshotTabHelper::FromWebState(web_state_)
-      ->RetrieveGreySnapshot(^(UIImage* snapshot) {
-        CGRect frame = weak_web_state_view.frame;
-        UIEdgeInsets inset = web_view_proxy.contentInset;
-        frame.origin.x += inset.left;
-        frame.origin.y += inset.top;
-        frame.size.width -= (inset.right + inset.left);
-        frame.size.height -= (inset.bottom + inset.top);
-        weak_placeholder_view.frame = frame;
-        weak_placeholder_view.image = snapshot;
-        [weak_web_state_view addSubview:weak_placeholder_view];
-      });
+  SnapshotTabHelper* snapshotTabHelper =
+      SnapshotTabHelper::FromWebState(web_state_);
+  if (snapshotTabHelper) {
+    base::WeakPtr<PagePlaceholderTabHelper> weak_tab_helper =
+        weak_factory_.GetWeakPtr();
+    snapshotTabHelper->RetrieveGreySnapshot(^(UIImage* snapshot) {
+      if (weak_tab_helper && weak_tab_helper->displaying_placeholder()) {
+        DisplaySnapshotImage(snapshot);
+      }
+    });
+  }
 
   // Remove placeholder if it takes too long to load the page.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&PagePlaceholderTabHelper::RemovePlaceholder,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&PagePlaceholderTabHelper::RemovePlaceholder,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSecondsD(kPlaceholderMaxDisplayTimeInSeconds));
+}
+
+void PagePlaceholderTabHelper::DisplaySnapshotImage(UIImage* snapshot) {
+  CGRect frame = web_state_->GetView().frame;
+  UIEdgeInsets inset = web_state_->GetWebViewProxy().contentInset;
+  frame.origin.x += inset.left;
+  frame.origin.y += inset.top;
+  frame.size.width -= (inset.right + inset.left);
+  frame.size.height -= (inset.bottom + inset.top);
+  placeholder_view_.frame = frame;
+  placeholder_view_.image = snapshot;
+  [web_state_->GetView() addSubview:placeholder_view_];
 }
 
 void PagePlaceholderTabHelper::RemovePlaceholder() {
@@ -117,5 +137,8 @@ void PagePlaceholderTabHelper::RemovePlaceholder() {
       }
       completion:^(BOOL finished) {
         [weak_placeholder_view removeFromSuperview];
+        weak_placeholder_view.alpha = 1.0f;
       }];
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(PagePlaceholderTabHelper)

@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -50,16 +51,15 @@ HTMLLabelElement* HTMLLabelElement::Create(Document& document) {
   return MakeGarbageCollected<HTMLLabelElement>(document);
 }
 
-LabelableElement* HTMLLabelElement::control() const {
+HTMLElement* HTMLLabelElement::control() const {
+  // https://html.spec.whatwg.org/C/#labeled-control
   const AtomicString& control_id = getAttribute(kForAttr);
   if (control_id.IsNull()) {
-    // Search the children and descendants of the label element for a form
-    // element.
-    // per http://dev.w3.org/html5/spec/Overview.html#the-label-element
-    // the form element must be "labelable form-associated element".
-    for (LabelableElement& element :
-         Traversal<LabelableElement>::DescendantsOf(*this)) {
-      if (element.SupportLabels()) {
+    // "If the for attribute is not specified, but the label element has a
+    // labelable element descendant, then the first such descendant in tree
+    // order is the label element's labeled control."
+    for (HTMLElement& element : Traversal<HTMLElement>::DescendantsOf(*this)) {
+      if (element.IsLabelable()) {
         if (!element.IsFormControlElement()) {
           UseCounter::Count(
               GetDocument(),
@@ -75,14 +75,15 @@ LabelableElement* HTMLLabelElement::control() const {
     return nullptr;
 
   if (Element* element = GetTreeScope().getElementById(control_id)) {
-    if (IsLabelableElement(*element) &&
-        ToLabelableElement(*element).SupportLabels()) {
-      if (!element->IsFormControlElement()) {
-        UseCounter::Count(
-            GetDocument(),
-            WebFeature::kHTMLLabelElementControlForNonFormAssociatedElement);
+    if (auto* html_element = ToHTMLElementOrNull(*element)) {
+      if (html_element->IsLabelable()) {
+        if (!html_element->IsFormControlElement()) {
+          UseCounter::Count(
+              GetDocument(),
+              WebFeature::kHTMLLabelElementControlForNonFormAssociatedElement);
+        }
+        return html_element;
       }
-      return ToLabelableElement(element);
     }
   }
 
@@ -90,10 +91,11 @@ LabelableElement* HTMLLabelElement::control() const {
 }
 
 HTMLFormElement* HTMLLabelElement::form() const {
-  if (LabelableElement* control = this->control()) {
-    return control->IsFormControlElement()
-               ? ToHTMLFormControlElement(control)->Form()
-               : nullptr;
+  if (HTMLElement* control = this->control()) {
+    if (auto* form_control_element = ToHTMLFormControlElementOrNull(control))
+      return form_control_element->Form();
+    if (control->IsFormAssociatedCustomElement())
+      return control->EnsureElementInternals().Form();
   }
   return nullptr;
 }
@@ -193,7 +195,7 @@ void HTMLLabelElement::DefaultEventHandler(Event& evt) {
 
     processing_click_ = true;
 
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
     if (element->IsMouseFocusable()) {
       // If the label is *not* selected, or if the click happened on
       // selection of label, only then focus the control element.
@@ -233,6 +235,10 @@ void HTMLLabelElement::focus(const FocusParams& params) {
     HTMLElement::focus(params);
     return;
   }
+
+  if (params.type == blink::kWebFocusTypeAccessKey)
+    return;
+
   // To match other browsers, always restore previous selection.
   if (HTMLElement* element = control()) {
     element->focus(FocusParams(SelectionBehaviorOnFocus::kRestore, params.type,

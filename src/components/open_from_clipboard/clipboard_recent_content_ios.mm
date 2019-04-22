@@ -10,8 +10,8 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
 #import "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
@@ -30,7 +30,7 @@ const char* kAuthorizedSchemes[] = {
 NSSet<NSString*>* getAuthorizedSchemeList(
     const std::string& application_scheme) {
   NSMutableSet<NSString*>* schemes = [NSMutableSet set];
-  for (size_t i = 0; i < arraysize(kAuthorizedSchemes); ++i) {
+  for (size_t i = 0; i < base::size(kAuthorizedSchemes); ++i) {
     [schemes addObject:base::SysUTF8ToNSString(kAuthorizedSchemes[i])];
   }
   if (!application_scheme.empty()) {
@@ -69,15 +69,34 @@ ClipboardRecentContentIOS::ClipboardRecentContentIOS(
   implementation_.reset(implementation);
 }
 
-bool ClipboardRecentContentIOS::GetRecentURLFromClipboard(GURL* url) {
-  DCHECK(url);
+base::Optional<GURL> ClipboardRecentContentIOS::GetRecentURLFromClipboard() {
   NSURL* url_from_pasteboard = [implementation_ recentURLFromClipboard];
   GURL converted_url = net::GURLWithNSURL(url_from_pasteboard);
-  if (converted_url.is_valid()) {
-    *url = std::move(converted_url);
-    return true;
+  if (!converted_url.is_valid()) {
+    return base::nullopt;
   }
-  return false;
+
+  return converted_url;
+}
+
+base::Optional<base::string16>
+ClipboardRecentContentIOS::GetRecentTextFromClipboard() {
+  NSString* text_from_pasteboard = [implementation_ recentTextFromClipboard];
+  if (!text_from_pasteboard) {
+    return base::nullopt;
+  }
+
+  return base::SysNSStringToUTF16(text_from_pasteboard);
+}
+
+base::Optional<gfx::Image>
+ClipboardRecentContentIOS::GetRecentImageFromClipboard() {
+  UIImage* image_from_pasteboard = [implementation_ recentImageFromClipboard];
+  if (!image_from_pasteboard) {
+    return base::nullopt;
+  }
+
+  return gfx::Image(image_from_pasteboard);
 }
 
 ClipboardRecentContentIOS::~ClipboardRecentContentIOS() {}

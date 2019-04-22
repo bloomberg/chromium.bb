@@ -8,8 +8,12 @@
 #include <map>
 
 #include "base/component_export.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequence_bound.h"
 #include "media/learning/common/learning_session.h"
-#include "media/learning/impl/learning_task_controller.h"
+#include "media/learning/common/learning_task_controller.h"
+#include "media/learning/impl/feature_provider.h"
 
 namespace media {
 namespace learning {
@@ -19,30 +23,41 @@ namespace learning {
 class COMPONENT_EXPORT(LEARNING_IMPL) LearningSessionImpl
     : public LearningSession {
  public:
-  explicit LearningSessionImpl();
+  // We will create LearningTaskControllers that run on |task_runner|.
+  LearningSessionImpl(scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~LearningSessionImpl() override;
 
+  // Create a SequenceBound controller for |task| on |task_runner|.
   using CreateTaskControllerCB =
-      base::RepeatingCallback<std::unique_ptr<LearningTaskController>(
-          const LearningTask&)>;
+      base::RepeatingCallback<base::SequenceBound<LearningTaskController>(
+          scoped_refptr<base::SequencedTaskRunner>,
+          const LearningTask&,
+          SequenceBoundFeatureProvider)>;
 
   void SetTaskControllerFactoryCBForTesting(CreateTaskControllerCB cb);
 
   // LearningSession
-  void AddExample(const std::string& task_name,
-                  const TrainingExample& example) override;
+  std::unique_ptr<LearningTaskController> GetController(
+      const std::string& task_name) override;
 
   // Registers |task|, so that calls to AddExample with |task.name| will work.
   // This will create a new controller for the task.
-  void RegisterTask(const LearningTask& task);
+  void RegisterTask(const LearningTask& task,
+                    SequenceBoundFeatureProvider feature_provider =
+                        SequenceBoundFeatureProvider());
 
  private:
+  // Task runner on which we'll create controllers.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
   // [task_name] = task controller.
   using LearningTaskMap =
-      std::map<std::string, std::unique_ptr<LearningTaskController>>;
+      std::map<std::string, base::SequenceBound<LearningTaskController>>;
   LearningTaskMap task_map_;
 
   CreateTaskControllerCB controller_factory_;
+
+  base::WeakPtrFactory<LearningSessionImpl> weak_factory_;
 };
 
 }  // namespace learning

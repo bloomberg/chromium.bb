@@ -62,7 +62,6 @@ class PLATFORM_EXPORT ImageDecoderFactory {
 
 class PLATFORM_EXPORT ImageFrameGenerator final
     : public ThreadSafeRefCounted<ImageFrameGenerator> {
-
  public:
   static scoped_refptr<ImageFrameGenerator> Create(
       const SkISize& full_size,
@@ -115,6 +114,8 @@ class PLATFORM_EXPORT ImageFrameGenerator final
 
  private:
   class ClientMutexLocker {
+    STACK_ALLOCATED();
+
    public:
     ClientMutexLocker(ImageFrameGenerator* generator,
                       cc::PaintImage::GeneratorClientId client_id);

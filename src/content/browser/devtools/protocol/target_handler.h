@@ -53,15 +53,16 @@ class TargetHandler : public DevToolsDomainHandler,
                    RenderFrameHostImpl* frame_host) override;
   Response Disable() override;
 
-  void DidCommitNavigation();
+  void DidFinishNavigation();
   std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
 
   // Domain implementation.
   Response SetDiscoverTargets(bool discover) override;
-  Response SetAutoAttach(bool auto_attach,
-                         bool wait_for_debugger_on_start,
-                         Maybe<bool> flatten) override;
+  void SetAutoAttach(bool auto_attach,
+                     bool wait_for_debugger_on_start,
+                     Maybe<bool> flatten,
+                     std::unique_ptr<SetAutoAttachCallback> callback) override;
   Response SetRemoteLocations(
       std::unique_ptr<protocol::Array<Target::RemoteLocation>>) override;
   Response AttachToTarget(const std::string& target_id,
@@ -107,6 +108,10 @@ class TargetHandler : public DevToolsDomainHandler,
                        Maybe<std::string> target_id,
                        Session** session);
   void ClearThrottles();
+  void SetAutoAttachInternal(bool auto_attach,
+                             bool wait_for_debugger_on_start,
+                             bool flatten,
+                             base::OnceClosure callback);
 
   // DevToolsAgentHostObserver implementation.
   bool ShouldForceDevToolsAgentHostCreation() override;

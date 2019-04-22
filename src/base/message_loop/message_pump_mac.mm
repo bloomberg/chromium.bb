@@ -13,9 +13,9 @@
 #include "base/logging.h"
 #include "base/mac/call_with_eh_frame.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
@@ -157,7 +157,7 @@ class MessagePumpCFRunLoopBase::ScopedModeEnabler {
         // Process work when AppKit is highlighting an item on the main menubar.
         CFSTR("NSUnhighlightMenuRunLoopMode"),
     };
-    static_assert(arraysize(modes) == kNumModes, "mode size mismatch");
+    static_assert(base::size(modes) == kNumModes, "mode size mismatch");
     static_assert((1 << kNumModes) - 1 == kAllModesMask,
                   "kAllModesMask not large enough");
 
@@ -173,6 +173,7 @@ class MessagePumpCFRunLoopBase::ScopedModeEnabler {
 
 // Must be called on the run loop thread.
 void MessagePumpCFRunLoopBase::Run(Delegate* delegate) {
+  AutoReset<bool> auto_reset_keep_running(&keep_running_, true);
   // nesting_level_ will be incremented in EnterExitRunLoop, so set
   // run_nesting_level_ accordingly.
   int last_run_nesting_level = run_nesting_level_;
@@ -187,6 +188,15 @@ void MessagePumpCFRunLoopBase::Run(Delegate* delegate) {
   // Restore the previous state of the object.
   SetDelegate(last_delegate);
   run_nesting_level_ = last_run_nesting_level;
+}
+
+void MessagePumpCFRunLoopBase::Quit() {
+  if (DoQuit())
+    OnDidQuit();
+}
+
+void MessagePumpCFRunLoopBase::OnDidQuit() {
+  keep_running_ = false;
 }
 
 // May be called on any thread.
@@ -209,14 +219,15 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
   //
   // Please see the comment in RunDelayedWorkTimer() for more info on the whys
   // of invalidation.
-  ChromeCFRunLoopTimerSetValid(delayed_work_timer_, true);
+  SetDelayedWorkTimerValid(true);
 
-  CFRunLoopTimerSetNextFireDate(delayed_work_timer_, delayed_work_fire_time_);
+  // The tolerance needs to be set before the fire date or it may be ignored.
   if (timer_slack_ == TIMER_SLACK_MAXIMUM) {
     CFRunLoopTimerSetTolerance(delayed_work_timer_, delta.InSecondsF() * 0.5);
   } else {
     CFRunLoopTimerSetTolerance(delayed_work_timer_, 0);
   }
+  CFRunLoopTimerSetNextFireDate(delayed_work_timer_, delayed_work_fire_time_);
 }
 
 void MessagePumpCFRunLoopBase::SetTimerSlack(TimerSlack timer_slack) {
@@ -231,8 +242,10 @@ MessagePumpCFRunLoopBase::MessagePumpCFRunLoopBase(int initial_mode_mask)
       nesting_level_(0),
       run_nesting_level_(0),
       deepest_nesting_level_(0),
+      keep_running_(true),
       delegateless_work_(false),
-      delegateless_idle_work_(false) {
+      delegateless_idle_work_(false),
+      allow_timer_invalidation_(true) {
   run_loop_ = CFRunLoopGetCurrent();
   CFRetain(run_loop_);
 
@@ -384,6 +397,24 @@ void MessagePumpCFRunLoopBase::ChromeCFRunLoopTimerSetValid(
 #endif  // !defined(OS_IOS)
 }
 
+void MessagePumpCFRunLoopBase::SetDelayedWorkTimerValid(bool valid) {
+  if (allow_timer_invalidation_) {
+    ChromeCFRunLoopTimerSetValid(delayed_work_timer_, valid);
+  } else {
+    pending_timer_validity_ = valid;
+  }
+}
+
+void MessagePumpCFRunLoopBase::SetTimerInvalidationAllowed(bool allowed) {
+  if (!allowed)
+    ChromeCFRunLoopTimerSetValid(delayed_work_timer_, true);
+  allow_timer_invalidation_ = allowed;
+  if (allowed && pending_timer_validity_.has_value()) {
+    SetDelayedWorkTimerValid(*pending_timer_validity_);
+    pending_timer_validity_ = nullopt;
+  }
+}
+
 // Called from the run loop.
 // static
 void MessagePumpCFRunLoopBase::RunDelayedWorkTimer(CFRunLoopTimerRef timer,
@@ -416,7 +447,7 @@ void MessagePumpCFRunLoopBase::RunDelayedWorkTimer(CFRunLoopTimerRef timer,
   //
   // ScheduleDelayedWork() flips the valid bit back just before setting the
   // timer's new firing time.
-  ChromeCFRunLoopTimerSetValid(self->delayed_work_timer_, false);
+  self->SetDelayedWorkTimerValid(false);
 
   // CFRunLoopTimers fire outside of the priority scheme for CFRunLoopSources.
   // In order to establish the proper priority in which work and delayed work
@@ -443,6 +474,8 @@ bool MessagePumpCFRunLoopBase::RunWork() {
     delegateless_work_ = true;
     return false;
   }
+  if (!keep_running())
+    return false;
 
   // The NSApplication-based run loop only drains the autorelease pool at each
   // UI event (NSEvent).  The autorelease pool is not drained for each
@@ -457,7 +490,8 @@ bool MessagePumpCFRunLoopBase::RunWork() {
   bool resignal_work_source = did_work;
 
   TimeTicks next_time;
-  delegate_->DoDelayedWork(&next_time);
+  if (keep_running())
+    delegate_->DoDelayedWork(&next_time);
   if (!did_work) {
     // Determine whether there's more delayed work, and if so, if it needs to
     // be done at some point in the future or if it's already time to do it.
@@ -504,6 +538,8 @@ bool MessagePumpCFRunLoopBase::RunIdleWork() {
     delegateless_idle_work_ = true;
     return false;
   }
+  if (!keep_running())
+    return false;
 
   // The NSApplication-based run loop only drains the autorelease pool at each
   // UI event (NSEvent).  The autorelease pool is not drained for each
@@ -678,11 +714,12 @@ void MessagePumpCFRunLoop::DoRun(Delegate* delegate) {
 }
 
 // Must be called on the run loop thread.
-void MessagePumpCFRunLoop::Quit() {
+bool MessagePumpCFRunLoop::DoQuit() {
   // Stop the innermost run loop managed by this MessagePumpCFRunLoop object.
   if (nesting_level() == run_nesting_level()) {
     // This object is running the innermost loop, just stop it.
     CFRunLoopStop(run_loop());
+    return true;
   } else {
     // There's another loop running inside the loop managed by this object.
     // In other words, someone else called CFRunLoopRunInMode on the same
@@ -690,6 +727,7 @@ void MessagePumpCFRunLoop::Quit() {
     // other run loops, just mark this object to quit the innermost Run as
     // soon as the other inner loops not managed by Run are done.
     quit_pending_ = true;
+    return false;
   }
 }
 
@@ -704,11 +742,12 @@ void MessagePumpCFRunLoop::EnterExitRunLoop(CFRunLoopActivity activity) {
     // just inside Run.
     CFRunLoopStop(run_loop());
     quit_pending_ = false;
+    OnDidQuit();
   }
 }
 
 MessagePumpNSRunLoop::MessagePumpNSRunLoop()
-    : MessagePumpCFRunLoopBase(kCommonModeMask), keep_running_(true) {
+    : MessagePumpCFRunLoopBase(kCommonModeMask) {
   CFRunLoopSourceContext source_context = CFRunLoopSourceContext();
   source_context.perform = NoOp;
   quit_source_ = CFRunLoopSourceCreate(NULL,  // allocator
@@ -723,19 +762,17 @@ MessagePumpNSRunLoop::~MessagePumpNSRunLoop() {
 }
 
 void MessagePumpNSRunLoop::DoRun(Delegate* delegate) {
-  AutoReset<bool> auto_reset_keep_running(&keep_running_, true);
-
-  while (keep_running_) {
+  while (keep_running()) {
     // NSRunLoop manages autorelease pools itself.
     [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
                              beforeDate:[NSDate distantFuture]];
   }
 }
 
-void MessagePumpNSRunLoop::Quit() {
-  keep_running_ = false;
+bool MessagePumpNSRunLoop::DoQuit() {
   CFRunLoopSourceSignal(quit_source_);
   CFRunLoopWakeUp(run_loop());
+  return true;
 }
 
 #if defined(OS_IOS)
@@ -748,8 +785,9 @@ void MessagePumpUIApplication::DoRun(Delegate* delegate) {
   NOTREACHED();
 }
 
-void MessagePumpUIApplication::Quit() {
+bool MessagePumpUIApplication::DoQuit() {
   NOTREACHED();
+  return false;
 }
 
 void MessagePumpUIApplication::Attach(Delegate* delegate) {
@@ -766,13 +804,17 @@ ScopedPumpMessagesInPrivateModes::ScopedPumpMessagesInPrivateModes() {
   DCHECK_EQ(kNSApplicationModalSafeModeMask, g_app_pump->GetModeMask());
   // Pumping events in private runloop modes is known to interact badly with
   // app modal windows like NSAlert.
-  if (![NSApp modalWindow])
-    g_app_pump->SetModeMask(kAllModesMask);
+  if ([NSApp modalWindow])
+    return;
+  g_app_pump->SetModeMask(kAllModesMask);
+  // Disable timer invalidation to avoid hangs. See crbug.com/912273.
+  g_app_pump->SetTimerInvalidationAllowed(false);
 }
 
 ScopedPumpMessagesInPrivateModes::~ScopedPumpMessagesInPrivateModes() {
   DCHECK(g_app_pump);
   g_app_pump->SetModeMask(kNSApplicationModalSafeModeMask);
+  g_app_pump->SetTimerInvalidationAllowed(true);
 }
 
 int ScopedPumpMessagesInPrivateModes::GetModeMaskForTest() {
@@ -781,8 +823,8 @@ int ScopedPumpMessagesInPrivateModes::GetModeMaskForTest() {
 
 MessagePumpNSApplication::MessagePumpNSApplication()
     : MessagePumpCFRunLoopBase(kNSApplicationModalSafeModeMask),
-      keep_running_(true),
-      running_own_loop_(false) {
+      running_own_loop_(false),
+      quit_pending_(false) {
   DCHECK_EQ(nullptr, g_app_pump);
   g_app_pump = this;
 }
@@ -793,7 +835,6 @@ MessagePumpNSApplication::~MessagePumpNSApplication() {
 }
 
 void MessagePumpNSApplication::DoRun(Delegate* delegate) {
-  AutoReset<bool> auto_reset_keep_running(&keep_running_, true);
   bool last_running_own_loop_ = running_own_loop_;
 
   // NSApp must be initialized by calling:
@@ -810,7 +851,7 @@ void MessagePumpNSApplication::DoRun(Delegate* delegate) {
   } else {
     running_own_loop_ = true;
     NSDate* distant_future = [NSDate distantFuture];
-    while (keep_running_) {
+    while (keep_running()) {
       MessagePumpScopedAutoreleasePool autorelease_pool(this);
       NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
                                           untilDate:distant_future
@@ -825,11 +866,20 @@ void MessagePumpNSApplication::DoRun(Delegate* delegate) {
   running_own_loop_ = last_running_own_loop_;
 }
 
-void MessagePumpNSApplication::Quit() {
+bool MessagePumpNSApplication::DoQuit() {
+  // If the app is displaying a modal window in a native run loop, we can only
+  // quit our run loop after the window is closed. Otherwise the [NSApplication
+  // stop] below will apply to the modal window run loop instead. To work around
+  // this, the quit is applied when we re-enter our own run loop after the
+  // window is gone (see MessagePumpNSApplication::EnterExitRunLoop).
+  if (nesting_level() > run_nesting_level() &&
+      [[NSApplication sharedApplication] modalWindow] != nil) {
+    quit_pending_ = true;
+    return false;
+  }
+
   if (!running_own_loop_) {
     [[NSApplication sharedApplication] stop:nil];
-  } else {
-    keep_running_ = false;
   }
 
   // Send a fake event to wake the loop up.
@@ -843,6 +893,19 @@ void MessagePumpNSApplication::Quit() {
                                          data1:0
                                          data2:0]
            atStart:NO];
+  return true;
+}
+
+void MessagePumpNSApplication::EnterExitRunLoop(CFRunLoopActivity activity) {
+  // If we previously tried quitting while a modal window was active, check if
+  // the window is gone now and we're no longer nested in a system run loop.
+  if (activity == kCFRunLoopEntry && quit_pending_ &&
+      nesting_level() <= run_nesting_level() &&
+      [[NSApplication sharedApplication] modalWindow] == nil) {
+    quit_pending_ = false;
+    if (DoQuit())
+      OnDidQuit();
+  }
 }
 
 MessagePumpCrApplication::MessagePumpCrApplication() {

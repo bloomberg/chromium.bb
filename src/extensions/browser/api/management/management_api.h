@@ -5,6 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_MANAGEMENT_MANAGEMENT_API_H_
 #define EXTENSIONS_BROWSER_API_MANAGEMENT_MANAGEMENT_API_H_
 
+#include <memory>
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -18,9 +21,8 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/preload_check.h"
 
-struct WebApplicationInfo;
-
 namespace extensions {
+
 class ExtensionRegistry;
 class RequirementsChecker;
 
@@ -74,7 +76,7 @@ class ManagementGetPermissionWarningsByManifestFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.getPermissionWarningsByManifest",
-                             MANAGEMENT_GETPERMISSIONWARNINGSBYMANIFEST);
+                             MANAGEMENT_GETPERMISSIONWARNINGSBYMANIFEST)
 
   // Called when utility process finishes.
   void OnParseSuccess(std::unique_ptr<base::Value> value);
@@ -159,7 +161,7 @@ class ManagementUninstallFunction : public ManagementUninstallFunctionBase {
 class ManagementUninstallSelfFunction : public ManagementUninstallFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("management.uninstallSelf",
-                             MANAGEMENT_UNINSTALLSELF);
+                             MANAGEMENT_UNINSTALLSELF)
   ManagementUninstallSelfFunction();
 
  private:
@@ -170,7 +172,7 @@ class ManagementUninstallSelfFunction : public ManagementUninstallFunctionBase {
 class ManagementCreateAppShortcutFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.createAppShortcut",
-                             MANAGEMENT_CREATEAPPSHORTCUT);
+                             MANAGEMENT_CREATEAPPSHORTCUT)
 
   ManagementCreateAppShortcutFunction();
 
@@ -187,7 +189,7 @@ class ManagementCreateAppShortcutFunction : public UIThreadExtensionFunction {
 class ManagementSetLaunchTypeFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.setLaunchType",
-                             MANAGEMENT_SETLAUNCHTYPE);
+                             MANAGEMENT_SETLAUNCHTYPE)
 
  protected:
   ~ManagementSetLaunchTypeFunction() override {}
@@ -198,12 +200,11 @@ class ManagementSetLaunchTypeFunction : public UIThreadExtensionFunction {
 class ManagementGenerateAppForLinkFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.generateAppForLink",
-                             MANAGEMENT_GENERATEAPPFORLINK);
+                             MANAGEMENT_GENERATEAPPFORLINK)
 
   ManagementGenerateAppForLinkFunction();
 
-  void FinishCreateBookmarkApp(const Extension* extension,
-                               const WebApplicationInfo& web_app_info);
+  void FinishCreateWebApp(const std::string& web_app_id, bool install_success);
 
  protected:
   ~ManagementGenerateAppForLinkFunction() override;
@@ -212,6 +213,23 @@ class ManagementGenerateAppForLinkFunction : public UIThreadExtensionFunction {
 
  private:
   std::unique_ptr<AppForLinkDelegate> app_for_link_delegate_;
+};
+
+class ManagementInstallReplacementWebAppFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("management.installReplacementWebApp",
+                             MANAGEMENT_INSTALLREPLACEMENTWEBAPP)
+
+  ManagementInstallReplacementWebAppFunction();
+
+ protected:
+  ~ManagementInstallReplacementWebAppFunction() override;
+
+  ResponseAction Run() override;
+
+ private:
+  void FinishCreateWebApp(ManagementAPIDelegate::InstallWebAppResult result);
 };
 
 class ManagementEventRouter : public ExtensionRegistryObserver {

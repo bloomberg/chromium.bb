@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
@@ -38,11 +39,11 @@ base::LazyInstance<std::map<content::RenderProcessHost*, base::Closure>>::Leaky
 void EnableInternalPDFPluginForContents(int render_process_id,
                                         int render_frame_id) {
   // Always enable the internal PDF plugin for the print preview page.
-  static const base::FilePath pdf_plugin_path(
+  static const base::NoDestructor<base::FilePath> pdf_plugin_path(
       ChromeContentClient::kPDFPluginPath);
   auto* plugin_service = content::PluginService::GetInstance();
   const content::PepperPluginInfo* info =
-      plugin_service->GetRegisteredPpapiPluginInfo(pdf_plugin_path);
+      plugin_service->GetRegisteredPpapiPluginInfo(*pdf_plugin_path);
   if (!info)
     return;
 
@@ -134,6 +135,14 @@ void PrintViewManager::PrintPreviewForWebNode(content::RenderFrameHost* rfh) {
   print_preview_state_ = USER_INITIATED_PREVIEW;
 }
 
+void PrintViewManager::PrintPreviewAlmostDone() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (print_preview_state_ != SCRIPTED_PREVIEW)
+    return;
+
+  MaybeUnblockScriptedPreviewRPH();
+}
+
 void PrintViewManager::PrintPreviewDone() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (print_preview_state_ == NOT_PREVIEWING)
@@ -163,6 +172,10 @@ void PrintViewManager::PrintPreviewDone() {
     CHECK(it != map.end());
     it->second.Run();
     map.erase(it);
+
+    // PrintPreviewAlmostDone() usually already calls this. Calling it again
+    // will likely be a no-op, but do it anyway to reset the state for sure.
+    MaybeUnblockScriptedPreviewRPH();
     scripted_print_preview_rph_ = nullptr;
   }
   print_preview_state_ = NOT_PREVIEWING;
@@ -228,6 +241,11 @@ void PrintViewManager::OnSetupScriptedPrintPreview(
   map[rph] = base::Bind(&PrintViewManager::OnScriptedPrintPreviewReply,
                         base::Unretained(this), reply_msg);
   scripted_print_preview_rph_ = rph;
+  DCHECK(!scripted_print_preview_rph_set_blocked_);
+  if (!scripted_print_preview_rph_->IsBlocked()) {
+    scripted_print_preview_rph_->SetBlocked(true);
+    scripted_print_preview_rph_set_blocked_ = true;
+  }
 }
 
 void PrintViewManager::OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
@@ -278,5 +296,14 @@ bool PrintViewManager::OnMessageReceived(
   return handled ||
          PrintViewManagerBase::OnMessageReceived(message, render_frame_host);
 }
+
+void PrintViewManager::MaybeUnblockScriptedPreviewRPH() {
+  if (scripted_print_preview_rph_set_blocked_) {
+    scripted_print_preview_rph_->SetBlocked(false);
+    scripted_print_preview_rph_set_blocked_ = false;
+  }
+}
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintViewManager)
 
 }  // namespace printing

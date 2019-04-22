@@ -46,18 +46,18 @@ class CodecPerfTest : public testing::Test,
   std::unique_ptr<VideoEncoderVpx> encoder_;
 };
 
-INSTANTIATE_TEST_CASE_P(VP8,
-                        CodecPerfTest,
-                        ::testing::Values(CodecParams(false, false, false)));
-INSTANTIATE_TEST_CASE_P(VP9,
-                        CodecPerfTest,
-                        ::testing::Values(CodecParams(true, false, false)));
-INSTANTIATE_TEST_CASE_P(VP9Lossless,
-                        CodecPerfTest,
-                        ::testing::Values(CodecParams(true, true, false)));
-INSTANTIATE_TEST_CASE_P(VP9LosslessColor,
-                        CodecPerfTest,
-                        ::testing::Values(CodecParams(true, false, true)));
+INSTANTIATE_TEST_SUITE_P(VP8,
+                         CodecPerfTest,
+                         ::testing::Values(CodecParams(false, false, false)));
+INSTANTIATE_TEST_SUITE_P(VP9,
+                         CodecPerfTest,
+                         ::testing::Values(CodecParams(true, false, false)));
+INSTANTIATE_TEST_SUITE_P(VP9Lossless,
+                         CodecPerfTest,
+                         ::testing::Values(CodecParams(true, true, false)));
+INSTANTIATE_TEST_SUITE_P(VP9LosslessColor,
+                         CodecPerfTest,
+                         ::testing::Values(CodecParams(true, false, true)));
 
 TEST_P(CodecPerfTest, EncodeLatency) {
   const int kTotalFrames = 300;

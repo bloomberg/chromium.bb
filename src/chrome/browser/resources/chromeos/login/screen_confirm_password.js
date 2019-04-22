@@ -40,8 +40,8 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
 
     /** @override */
     onBeforeShow: function(data) {
-      $('login-header-bar').signinUIState =
-          SIGNIN_UI_STATE.SAML_PASSWORD_CONFIRM;
+      Oobe.getInstance().setSigninUIState(
+          SIGNIN_UI_STATE.SAML_PASSWORD_CONFIRM);
     },
 
     /** @override */

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "net/base/io_buffer.h"
-#include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
 namespace net {
 
@@ -51,7 +51,7 @@ class SpdyBuffer::SharedFrameIOBuffer : public IOBuffer {
  private:
   ~SharedFrameIOBuffer() override {
     // Prevent ~IOBuffer() from trying to delete |data_|.
-    data_ = NULL;
+    data_ = nullptr;
   }
 
   const scoped_refptr<SharedFrame> shared_frame_;

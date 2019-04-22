@@ -25,6 +25,7 @@ void VersionHandler::RegisterMessages() {
 
 void VersionHandler::HandleRequestVersionInfo(const base::ListValue* args) {
   // Respond with the variations info immediately.
-  web_ui()->CallJavascriptFunction(version_ui::kReturnVariationInfo,
-                                   *version_ui::GetVariationsList());
+  base::Value variations_list = version_ui::GetVariationsList()->Clone();
+  std::vector<const base::Value*> params{&variations_list};
+  web_ui()->CallJavascriptFunction(version_ui::kReturnVariationInfo, params);
 }

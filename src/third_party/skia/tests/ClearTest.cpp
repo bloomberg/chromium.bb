@@ -57,10 +57,9 @@ static bool check_rect(GrRenderTargetContext* rtc, const SkIRect& rect, uint32_t
 
 sk_sp<GrRenderTargetContext> newRTC(GrContext* context, int w, int h) {
     const GrBackendFormat format =
-            context->contextPriv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
-    return context->contextPriv().makeDeferredRenderTargetContext(
-                                                                format, SkBackingFit::kExact, w, h,
-                                                                kRGBA_8888_GrPixelConfig, nullptr);
+            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+    return context->priv().makeDeferredRenderTargetContext(format, SkBackingFit::kExact, w, h,
+                                                           kRGBA_8888_GrPixelConfig, nullptr);
 }
 
 static void clear_op_test(skiatest::Reporter* reporter, GrContext* context) {
@@ -225,13 +224,14 @@ static void clear_op_test(skiatest::Reporter* reporter, GrContext* context) {
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ClearOp, reporter, ctxInfo) {
+    // Regular clear
     clear_op_test(reporter, ctxInfo.grContext());
-    if (ctxInfo.backend() == GrBackendApi::kOpenGL) {
-        GrContextOptions options(ctxInfo.options());
-        options.fUseDrawInsteadOfGLClear = GrContextOptions::Enable::kYes;
-        sk_gpu_test::GrContextFactory workaroundFactory(options);
-        clear_op_test(reporter, workaroundFactory.get(ctxInfo.type()));
-    }
+
+    // Force drawing for clears
+    GrContextOptions options(ctxInfo.options());
+    options.fUseDrawInsteadOfClear = GrContextOptions::Enable::kYes;
+    sk_gpu_test::GrContextFactory workaroundFactory(options);
+    clear_op_test(reporter, workaroundFactory.get(ctxInfo.type()));
 }
 
 void fullscreen_clear_with_layer_test(skiatest::Reporter* reporter, GrContext* context) {
@@ -290,11 +290,12 @@ void fullscreen_clear_with_layer_test(skiatest::Reporter* reporter, GrContext* c
 }
 // From crbug.com/768134
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(FullScreenClearWithLayers, reporter, ctxInfo) {
+    // Regular clear
     fullscreen_clear_with_layer_test(reporter, ctxInfo.grContext());
-    if (ctxInfo.backend() == GrBackendApi::kOpenGL) {
-        GrContextOptions options(ctxInfo.options());
-        options.fUseDrawInsteadOfGLClear = GrContextOptions::Enable::kYes;
-        sk_gpu_test::GrContextFactory workaroundFactory(options);
-        fullscreen_clear_with_layer_test(reporter, workaroundFactory.get(ctxInfo.type()));
-    }
+
+    // Use draws for clears
+    GrContextOptions options(ctxInfo.options());
+    options.fUseDrawInsteadOfClear = GrContextOptions::Enable::kYes;
+    sk_gpu_test::GrContextFactory workaroundFactory(options);
+    fullscreen_clear_with_layer_test(reporter, workaroundFactory.get(ctxInfo.type()));
 }

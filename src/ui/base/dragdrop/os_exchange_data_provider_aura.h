@@ -17,7 +17,7 @@
 
 namespace ui {
 
-class Clipboard;
+struct ClipboardFormatType;
 
 // OSExchangeData::Provider implementation for aura on linux.
 class UI_BASE_EXPORT OSExchangeDataProviderAura
@@ -34,7 +34,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderAura
   void SetURL(const GURL& url, const base::string16& title) override;
   void SetFilename(const base::FilePath& path) override;
   void SetFilenames(const std::vector<FileInfo>& filenames) override;
-  void SetPickledData(const Clipboard::FormatType& format,
+  void SetPickledData(const ClipboardFormatType& format,
                       const base::Pickle& data) override;
   bool GetString(base::string16* data) const override;
   bool GetURLAndTitle(OSExchangeData::FilenameToURLPolicy policy,
@@ -42,13 +42,12 @@ class UI_BASE_EXPORT OSExchangeDataProviderAura
                       base::string16* title) const override;
   bool GetFilename(base::FilePath* path) const override;
   bool GetFilenames(std::vector<FileInfo>* filenames) const override;
-  bool GetPickledData(const Clipboard::FormatType& format,
+  bool GetPickledData(const ClipboardFormatType& format,
                       base::Pickle* data) const override;
   bool HasString() const override;
   bool HasURL(OSExchangeData::FilenameToURLPolicy policy) const override;
   bool HasFile() const override;
-  bool HasCustomFormat(const Clipboard::FormatType& format) const
-      override;
+  bool HasCustomFormat(const ClipboardFormatType& format) const override;
 
   void SetHtml(const base::string16& html, const GURL& base_url) override;
   bool GetHtml(base::string16* html, GURL* base_url) const override;
@@ -59,7 +58,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderAura
   gfx::Vector2d GetDragImageOffset() const override;
 
  private:
-  typedef std::map<Clipboard::FormatType, base::Pickle> PickleData;
+  typedef std::map<ClipboardFormatType, base::Pickle> PickleData;
 
   // Returns true if |formats_| contains a file format and the file name can be
   // parsed as a URL.

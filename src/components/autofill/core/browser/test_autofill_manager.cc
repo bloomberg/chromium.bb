@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
 #include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -14,10 +15,15 @@
 
 namespace autofill {
 
-TestAutofillManager::TestAutofillManager(AutofillDriver* driver,
-                                         AutofillClient* client,
-                                         TestPersonalDataManager* personal_data)
-    : AutofillManager(driver, client, personal_data),
+TestAutofillManager::TestAutofillManager(
+    AutofillDriver* driver,
+    AutofillClient* client,
+    TestPersonalDataManager* personal_data,
+    MockAutocompleteHistoryManager* autocomplete_history_manager)
+    : AutofillManager(driver,
+                      client,
+                      personal_data,
+                      autocomplete_history_manager),
       personal_data_(personal_data) {}
 
 TestAutofillManager::~TestAutofillManager() {}
@@ -44,11 +50,10 @@ void TestAutofillManager::UploadFormData(const FormStructure& submitted_form,
 
 bool TestAutofillManager::MaybeStartVoteUploadProcess(
     std::unique_ptr<FormStructure> form_structure,
-    const base::TimeTicks& timestamp,
     bool observed_submission) {
   run_loop_ = std::make_unique<base::RunLoop>();
-  if (AutofillManager::MaybeStartVoteUploadProcess(
-          std::move(form_structure), timestamp, observed_submission)) {
+  if (AutofillManager::MaybeStartVoteUploadProcess(std::move(form_structure),
+                                                   observed_submission)) {
     run_loop_->Run();
     return true;
   }

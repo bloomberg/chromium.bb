@@ -87,37 +87,42 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
   }
 
   int GetOrientationAngle() {
-    int angle;
-    ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                             "screen.orientation.angle")->GetAsInteger(&angle);
+    int angle =
+        ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                                 "screen.orientation.angle")
+            .GetInt();
     return angle;
   }
 
   std::string GetOrientationType() {
-    std::string type;
-    ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                             "screen.orientation.type")->GetAsString(&type);
+    std::string type =
+        ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                                 "screen.orientation.type")
+            .GetString();
     return type;
   }
 
   bool ScreenOrientationSupported() {
-    bool support;
-    ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                             "'orientation' in screen")->GetAsBoolean(&support);
+    bool support =
+        ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                                 "'orientation' in screen")
+            .GetBool();
     return support;
   }
 
   bool WindowOrientationSupported() {
-    bool support;
-    ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                             "'orientation' in window")->GetAsBoolean(&support);
+    bool support =
+        ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                                 "'orientation' in window")
+            .GetBool();
     return support;
   }
 
   int GetWindowOrientationAngle() {
-    int angle;
-    ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                             "window.orientation")->GetAsInteger(&angle);
+    int angle =
+        ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                                 "window.orientation")
+            .GetInt();
     return angle;
   }
 
@@ -241,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, DISABLED_LockSmoke) {
 
 // Check that using screen orientation after a frame is detached doesn't crash
 // the renderer process.
-// This could be a LayoutTest if they were not using a mock screen orientation
+// This could be a web test if they were not using a mock screen orientation
 // controller.
 IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, CrashTest_UseAfterDetach) {
   GURL test_url = GetTestUrl("screen_orientation",

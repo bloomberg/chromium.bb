@@ -53,14 +53,14 @@ void AffiliationService::Initialize(
 void AffiliationService::GetAffiliationsAndBranding(
     const FacetURI& facet_uri,
     StrategyOnCacheMiss cache_miss_strategy,
-    const ResultCallback& result_callback) {
+    ResultCallback result_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   backend_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&AffiliationBackend::GetAffiliationsAndBranding,
-                     base::Unretained(backend_), facet_uri, cache_miss_strategy,
-                     result_callback, base::SequencedTaskRunnerHandle::Get()));
+      FROM_HERE, base::BindOnce(&AffiliationBackend::GetAffiliationsAndBranding,
+                                base::Unretained(backend_), facet_uri,
+                                cache_miss_strategy, std::move(result_callback),
+                                base::SequencedTaskRunnerHandle::Get()));
 }
 
 void AffiliationService::Prefetch(const FacetURI& facet_uri,

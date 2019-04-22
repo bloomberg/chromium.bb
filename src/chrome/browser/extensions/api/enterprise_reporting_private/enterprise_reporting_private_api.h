@@ -31,7 +31,7 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportFunction
  public:
   DECLARE_EXTENSION_FUNCTION(
       "enterprise.reportingPrivate.uploadChromeDesktopReport",
-      ENTERPRISEREPORTINGPRIVATE_UPLOADCHROMEDESKTOPREPORT);
+      ENTERPRISEREPORTINGPRIVATE_UPLOADCHROMEDESKTOPREPORT)
   EnterpriseReportingPrivateUploadChromeDesktopReportFunction();
 
   // ExtensionFunction
@@ -69,7 +69,7 @@ class EnterpriseReportingPrivateGetDeviceIdFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("enterprise.reportingPrivate.getDeviceId",
-                             ENTERPRISEREPORTINGPRIVATE_GETDEVICEID);
+                             ENTERPRISEREPORTINGPRIVATE_GETDEVICEID)
   EnterpriseReportingPrivateGetDeviceIdFunction();
 
   // ExtensionFunction

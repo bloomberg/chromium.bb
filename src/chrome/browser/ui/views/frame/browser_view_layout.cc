@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -133,7 +133,6 @@ BrowserViewLayout::BrowserViewLayout()
       bookmark_bar_(nullptr),
       infobar_container_(nullptr),
       contents_container_(nullptr),
-      contents_layout_manager_(nullptr),
       download_shelf_(nullptr),
       immersive_mode_controller_(nullptr),
       dialog_host_(new WebContentsModalDialogHostViews(this)),
@@ -147,21 +146,21 @@ void BrowserViewLayout::Init(
     Browser* browser,
     views::ClientView* browser_view,
     views::View* top_container,
+    views::View* tab_strip_region_view,
     TabStrip* tab_strip,
     views::View* toolbar,
     InfoBarContainerView* infobar_container,
     views::View* contents_container,
-    ContentsLayoutManager* contents_layout_manager,
     ImmersiveModeController* immersive_mode_controller) {
   delegate_.reset(delegate);
   browser_ = browser;
   browser_view_ = browser_view;
   top_container_ = top_container;
+  tab_strip_region_view_ = tab_strip_region_view;
   tab_strip_ = tab_strip;
   toolbar_ = toolbar;
   infobar_container_ = infobar_container;
   contents_container_ = contents_container;
-  contents_layout_manager_ = contents_layout_manager;
   immersive_mode_controller_ = immersive_mode_controller;
 }
 
@@ -171,17 +170,38 @@ WebContentsModalDialogHost*
 }
 
 gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
-  gfx::Size tabstrip_size(
-      browser()->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ?
-      tab_strip_->GetMinimumSize() : gfx::Size());
-  gfx::Size toolbar_size(
-      (browser()->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
-       browser()->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR)) ?
-           toolbar_->GetMinimumSize() : gfx::Size());
+  // Prevent having a 0x0 sized-contents as this can allow the window to be
+  // resized down such that it's invisible and can no longer accept events.
+  // Use a very small 1x1 size to allow the user and the web contents to be able
+  // to resize the window as small as possible without introducing bugs.
+  // https://crbug.com/847179.
+  constexpr gfx::Size kContentsMinimumSize(1, 1);
+
+  // This should be wide enough that WebUI pages (e.g. chrome://settings) and
+  // the various associated WebUI dialogs (e.g. Import Bookmarks) can still be
+  // functional. This value provides a trade-off between browser usability and
+  // privacy - specifically, the ability to browse in a very small window, even
+  // on large monitors (which is why a minimum height is not specified). This
+  // value is used for the main browser window only, not for popups.
+  constexpr gfx::Size kMainBrowserContentsMinimumSize(500, 1);
+
+  const bool has_tabstrip =
+      browser()->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
+  const bool has_toolbar =
+      browser()->SupportsWindowFeature(Browser::FEATURE_TOOLBAR);
+  const bool has_location_bar =
+      browser()->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
+  const bool has_bookmarks_bar =
+      bookmark_bar_ && bookmark_bar_->visible() &&
+      browser()->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR);
+
+  gfx::Size tabstrip_size(has_tabstrip ? tab_strip_->GetMinimumSize()
+                                       : gfx::Size());
+  gfx::Size toolbar_size((has_toolbar || has_location_bar)
+                             ? toolbar_->GetMinimumSize()
+                             : gfx::Size());
   gfx::Size bookmark_bar_size;
-  if (bookmark_bar_ &&
-      bookmark_bar_->visible() &&
-      browser()->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)) {
+  if (has_bookmarks_bar) {
     bookmark_bar_size = bookmark_bar_->GetMinimumSize();
     bookmark_bar_size.Enlarge(0, -bookmark_bar_->GetToolbarOverlap());
   }
@@ -189,24 +209,19 @@ gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
   // TODO(pkotwicz): Adjust the minimum height for the find bar.
 
   gfx::Size contents_size(contents_container_->GetMinimumSize());
-  // Prevent having a 0x0 sized-contents as this can allow the window to be
-  // resized down such that it's invisible and can no longer accept events.
-  // Use a very small 1x1 size to allow the user and the web contents to be able
-  // to resize the window as small as possible without introducing bugs.
-  // https://crbug.com/847179.
-  contents_size.SetToMax(gfx::Size(1, 1));
+  contents_size.SetToMax(browser()->is_type_popup()
+                             ? kContentsMinimumSize
+                             : kMainBrowserContentsMinimumSize);
 
-  int min_height = delegate_->GetTopInsetInBrowserView() +
-      tabstrip_size.height() + toolbar_size.height() +
-      bookmark_bar_size.height() + infobar_container_size.height() +
-      contents_size.height();
-  int widths[] = {
-        tabstrip_size.width(),
-        toolbar_size.width(),
-        bookmark_bar_size.width(),
-        infobar_container_size.width(),
-        contents_size.width() };
-  int min_width = *std::max_element(&widths[0], &widths[arraysize(widths)]);
+  const int min_height =
+      delegate_->GetTopInsetInBrowserView() + tabstrip_size.height() +
+      toolbar_size.height() + bookmark_bar_size.height() +
+      infobar_container_size.height() + contents_size.height();
+
+  const int min_width = std::max(
+      {tabstrip_size.width(), toolbar_size.width(), bookmark_bar_size.width(),
+       infobar_container_size.width(), contents_size.width()});
+
   return gfx::Size(min_width, min_height);
 }
 
@@ -375,18 +390,20 @@ gfx::Size BrowserViewLayout::GetPreferredSize(const views::View* host) const {
 
 int BrowserViewLayout::LayoutTabStripRegion(int top) {
   if (!delegate_->IsTabStripVisible()) {
-    tab_strip_->SetVisible(false);
-    tab_strip_->SetBounds(0, 0, 0, 0);
+    tab_strip_region_view_->SetVisible(false);
+    tab_strip_region_view_->SetBounds(0, 0, 0, 0);
     return top;
   }
   // This retrieves the bounds for the tab strip based on whether or not we show
   // anything to the left of it, like the incognito avatar.
-  gfx::Rect tabstrip_bounds(delegate_->GetBoundsForTabStripInBrowserView());
+  gfx::Rect tab_strip_region_bounds(
+      delegate_->GetBoundsForTabStripRegionInBrowserView());
 
-  tab_strip_->SetVisible(true);
-  tab_strip_->SetBoundsRect(tabstrip_bounds);
+  tab_strip_region_view_->SetVisible(true);
+  tab_strip_region_view_->SetBoundsRect(tab_strip_region_bounds);
 
-  return tabstrip_bounds.bottom() - GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
+  return tab_strip_region_bounds.bottom() -
+         GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
 }
 
 int BrowserViewLayout::LayoutToolbar(int top) {
@@ -404,15 +421,6 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
       top + browser_view_y - kConstrainedWindowOverlap;
 
   if (bookmark_bar_) {
-    // If we're showing the Bookmark bar in detached style, then we
-    // need to show any Info bar _above_ the Bookmark bar, since the
-    // Bookmark bar is styled to look like it's part of the page.
-    if (bookmark_bar_->IsDetached()) {
-      web_contents_modal_dialog_top_y_ =
-          top + browser_view_y - kConstrainedWindowOverlap;
-      return LayoutBookmarkBar(LayoutInfoBar(top));
-    }
-    // Otherwise, Bookmark bar first, Info bar second.
     top = std::max(toolbar_->bounds().bottom(), LayoutBookmarkBar(top));
   }
 

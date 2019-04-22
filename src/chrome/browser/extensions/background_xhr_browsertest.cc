@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
@@ -33,6 +34,7 @@
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -40,6 +42,12 @@ namespace extensions {
 namespace {
 
 constexpr const char kWebstoreDomain[] = "cws.com";
+
+enum class TestMode {
+  kWithoutAny,
+  kWithOutOfBlinkCors,
+  kWithOutOfBlinkCorsAndNetworkService,
+};
 
 std::unique_ptr<net::ClientCertStore> CreateNullCertStore() {
   return nullptr;
@@ -113,10 +121,33 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrTest, HttpAuth) {
       "test_http_auth.html", embedded_test_server()->GetURL("/auth-basic")));
 }
 
-class BackgroundXhrWebstoreTest : public ExtensionApiTestWithManagementPolicy {
+class BackgroundXhrWebstoreTest : public ExtensionApiTestWithManagementPolicy,
+                                  public testing::WithParamInterface<TestMode> {
  public:
   BackgroundXhrWebstoreTest() = default;
   ~BackgroundXhrWebstoreTest() override = default;
+
+  void SetUp() override {
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+    switch (GetParam()) {
+      case TestMode::kWithoutAny:
+        disabled_features.push_back(network::features::kOutOfBlinkCors);
+        disabled_features.push_back(network::features::kNetworkService);
+        break;
+      case TestMode::kWithOutOfBlinkCors:
+        enabled_features.push_back(network::features::kOutOfBlinkCors);
+        disabled_features.push_back(network::features::kNetworkService);
+        break;
+      case TestMode::kWithOutOfBlinkCorsAndNetworkService:
+        enabled_features.push_back(network::features::kOutOfBlinkCors);
+        enabled_features.push_back(network::features::kNetworkService);
+        break;
+    }
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+
+    ExtensionApiTestWithManagementPolicy::SetUp();
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -142,7 +173,7 @@ class BackgroundXhrWebstoreTest : public ExtensionApiTestWithManagementPolicy {
     std::string json;
     EXPECT_TRUE(message_queue.WaitForMessage(&json));
     base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
-    std::unique_ptr<base::Value> value = reader.ReadToValue(json);
+    std::unique_ptr<base::Value> value = reader.ReadToValueDeprecated(json);
     std::string result;
     EXPECT_TRUE(value->GetAsString(&result));
     EXPECT_TRUE(result == "true" || result == "false") << result;
@@ -184,11 +215,13 @@ class BackgroundXhrWebstoreTest : public ExtensionApiTestWithManagementPolicy {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(BackgroundXhrWebstoreTest);
 };
 
 // Extensions should not be able to XHR to the webstore.
-IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, XHRToWebstore) {
+IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, XHRToWebstore) {
   const Extension* extension = LoadXhrExtension("<all_urls>");
 
   GURL webstore_launch_url = extension_urls::GetWebstoreLaunchURL();
@@ -204,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, XHRToWebstore) {
 }
 
 // Extensions should not be able to XHR to the webstore regardless of policy.
-IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, XHRToWebstorePolicy) {
+IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, XHRToWebstorePolicy) {
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
     pref.AddPolicyAllowedHost(
@@ -227,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, XHRToWebstorePolicy) {
 
 // Extensions should not be able to bypass same-origin despite declaring
 // <all_urls> for hosts restricted by enterprise policy.
-IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, PolicyBlockedXHR) {
+IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyBlockedXHR) {
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
     pref.AddPolicyBlockedHost("*", "*://*.example.com");
@@ -248,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, PolicyBlockedXHR) {
 }
 
 // Verify that policy blocklists apply to XHRs done from injected scripts.
-IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, PolicyContentScriptXHR) {
+IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyContentScriptXHR) {
   TestExtensionDir test_dir;
   test_dir.WriteManifest(R"(
     {
@@ -303,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, PolicyContentScriptXHR) {
 
 // Make sure the blocklist and allowlist update for both Default and Individual
 // scope policies. Testing with all host permissions granted (<all_urls>).
-IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, PolicyUpdateXHR) {
+IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyUpdateXHR) {
   const Extension* extension = LoadXhrExtension("<all_urls>");
 
   GURL example_url =
@@ -347,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, PolicyUpdateXHR) {
 // Make sure the allowlist entries added due to host permissions are removed
 // when a more generic blocklist policy is updated and contains them.
 // This tests the default policy scope update.
-IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, PolicyUpdateDefaultXHR) {
+IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyUpdateDefaultXHR) {
   const Extension* extension = LoadXhrExtension("*://public.example.com/*");
 
   GURL example_url =
@@ -372,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, PolicyUpdateDefaultXHR) {
 // Make sure the allowlist entries added due to host permissions are removed
 // when a more generic blocklist policy is updated and contains them.
 // This tests an individual policy scope update.
-IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, PolicyUpdateIndividualXHR) {
+IN_PROC_BROWSER_TEST_P(BackgroundXhrWebstoreTest, PolicyUpdateIndividualXHR) {
   const Extension* extension = LoadXhrExtension("*://public.example.com/*");
 
   GURL example_url =
@@ -393,5 +426,16 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrWebstoreTest, PolicyUpdateIndividualXHR) {
   EXPECT_FALSE(CanFetch(extension, example_url));
   EXPECT_FALSE(CanFetch(extension, public_example_url));
 }
+
+INSTANTIATE_TEST_SUITE_P(WithoutAny,
+                         BackgroundXhrWebstoreTest,
+                         testing::Values(TestMode::kWithoutAny));
+INSTANTIATE_TEST_SUITE_P(WithOutOfBlinkCors,
+                         BackgroundXhrWebstoreTest,
+                         testing::Values(TestMode::kWithOutOfBlinkCors));
+INSTANTIATE_TEST_SUITE_P(
+    WithOutOfBlinkCorsAndNetworkService,
+    BackgroundXhrWebstoreTest,
+    testing::Values(TestMode::kWithOutOfBlinkCorsAndNetworkService));
 
 }  // namespace extensions

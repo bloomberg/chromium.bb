@@ -9,6 +9,7 @@
 #include <wrl/client.h>
 
 #include "base/compiler_specific.h"
+#include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ime/win/tsf_bridge.h"
 
@@ -26,6 +27,8 @@ class MockTSFBridge : public TSFBridge {
   void OnTextLayoutChanged() override;
   void SetFocusedClient(HWND focused_window, TextInputClient* client) override;
   void RemoveFocusedClient(TextInputClient* client) override;
+  void SetInputMethodDelegate(internal::InputMethodDelegate* delegate) override;
+  void RemoveInputMethodDelegate() override;
   Microsoft::WRL::ComPtr<ITfThreadMgr> GetThreadManager() override;
   TextInputClient* GetFocusedTextInputClient() const override;
 
@@ -87,6 +90,7 @@ class MockTSFBridge : public TSFBridge {
   unsigned set_focused_client_call_count_ = 0;
   unsigned remove_focused_client_call_count_ = 0;
   TextInputClient* text_input_client_ = nullptr;
+  internal::InputMethodDelegate* input_method_delegate_ = nullptr;
   HWND focused_window_ = nullptr;
   TextInputType latest_text_input_type_ = TEXT_INPUT_TYPE_NONE;
   Microsoft::WRL::ComPtr<ITfThreadMgr> thread_manager_;

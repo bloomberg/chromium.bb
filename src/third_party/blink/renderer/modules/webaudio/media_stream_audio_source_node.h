@@ -77,8 +77,10 @@ class MediaStreamAudioSourceHandler final : public AudioHandler {
   unsigned source_number_of_channels_;
 };
 
-class MediaStreamAudioSourceNode final : public AudioNode,
-                                         public AudioSourceProviderClient {
+class MediaStreamAudioSourceNode final
+    : public AudioNode,
+      public AudioSourceProviderClient,
+      public ActiveScriptWrappable<MediaStreamAudioSourceNode> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
 
@@ -100,6 +102,8 @@ class MediaStreamAudioSourceNode final : public AudioNode,
 
   // AudioSourceProviderClient functions:
   void SetFormat(uint32_t number_of_channels, float sample_rate) override;
+
+  bool HasPendingActivity() const final;
 
  private:
   MediaStreamAudioSourceHandler& GetMediaStreamAudioSourceHandler() const;

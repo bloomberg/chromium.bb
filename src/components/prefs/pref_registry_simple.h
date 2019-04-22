@@ -51,14 +51,14 @@ class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
                         uint32_t flags = NO_REGISTRATION_FLAGS);
 
   void RegisterListPref(const std::string& path,
-                        std::unique_ptr<base::Value> default_value,
+                        base::Value default_value,
                         uint32_t flags = NO_REGISTRATION_FLAGS);
 
   void RegisterDictionaryPref(const std::string& path,
                               uint32_t flags = NO_REGISTRATION_FLAGS);
 
   void RegisterDictionaryPref(const std::string& path,
-                              std::unique_ptr<base::Value> default_value,
+                              base::Value default_value,
                               uint32_t flags = NO_REGISTRATION_FLAGS);
 
   void RegisterInt64Pref(const std::string& path,

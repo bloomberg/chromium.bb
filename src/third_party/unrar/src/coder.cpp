@@ -1,4 +1,4 @@
-
+namespace third_party_unrar {
 
 inline unsigned int RangeCoder::GetChar()
 {
@@ -46,3 +46,5 @@ inline void RangeCoder::Decode()
   low += range*SubRange.LowCount;
   range *= SubRange.HighCount-SubRange.LowCount;
 }
+
+}  // namespace third_party_unrar

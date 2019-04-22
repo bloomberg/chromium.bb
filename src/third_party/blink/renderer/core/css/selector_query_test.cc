@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 // Uncomment to run the SelectorQueryTests for stats in a release build.
 // #define RELEASE_QUERY_STATS
@@ -58,21 +59,20 @@ void RunTests(ContainerNode& scope, const QueryTest (&test_cases)[length]) {
 #endif
   }
 }
-};  // namespace
+}  // namespace
 
 TEST(SelectorQueryTest, NotMatchingPseudoElement) {
   Document* document = Document::CreateForTest();
-  HTMLHtmlElement* html = HTMLHtmlElement::Create(*document);
+  auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document);
   document->AppendChild(html);
   document->documentElement()->SetInnerHTMLFromString(
       "<body><style>span::before { content: 'X' }</style><span></span></body>");
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
-      CSSParserContext::Create(
-          *document, NullURL(),
-          false /* is_opaque_response_from_service_worker */,
-          network::mojom::ReferrerPolicy::kDefault, WTF::TextEncoding(),
-          CSSParserContext::kSnapshotProfile),
+      CSSParserContext::Create(*document, NullURL(), true /* origin_clean */,
+                               network::mojom::ReferrerPolicy::kDefault,
+                               WTF::TextEncoding(),
+                               CSSParserContext::kSnapshotProfile),
       nullptr, "span::before");
   std::unique_ptr<SelectorQuery> query =
       SelectorQuery::Adopt(std::move(selector_list));
@@ -80,11 +80,10 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
   EXPECT_EQ(nullptr, elm);
 
   selector_list = CSSParser::ParseSelector(
-      CSSParserContext::Create(
-          *document, NullURL(),
-          false /* is_opaque_response_from_service_worker */,
-          network::mojom::ReferrerPolicy::kDefault, WTF::TextEncoding(),
-          CSSParserContext::kSnapshotProfile),
+      CSSParserContext::Create(*document, NullURL(), true /* origin_clean */,
+                               network::mojom::ReferrerPolicy::kDefault,
+                               WTF::TextEncoding(),
+                               CSSParserContext::kSnapshotProfile),
       nullptr, "span");
   query = SelectorQuery::Adopt(std::move(selector_list));
   elm = query->QueryFirst(*document);
@@ -93,7 +92,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
 
 TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
   Document* document = HTMLDocument::CreateForTest();
-  HTMLHtmlElement* html = HTMLHtmlElement::Create(*document);
+  auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document);
   document->AppendChild(html);
   document->documentElement()->SetInnerHTMLFromString(
       "<body><p></p><p id=last></p></body>", ASSERT_NO_EXCEPTION);
@@ -101,11 +100,10 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
   document->body()->BeginParsingChildren();
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
-      CSSParserContext::Create(
-          *document, NullURL(),
-          false /* is_opaque_response_from_service_worker */,
-          network::mojom::ReferrerPolicy::kDefault, WTF::TextEncoding(),
-          CSSParserContext::kSnapshotProfile),
+      CSSParserContext::Create(*document, NullURL(), true /* origin_clean */,
+                               network::mojom::ReferrerPolicy::kDefault,
+                               WTF::TextEncoding(),
+                               CSSParserContext::kSnapshotProfile),
       nullptr, "p:last-of-type");
   std::unique_ptr<SelectorQuery> query =
       SelectorQuery::Adopt(std::move(selector_list));
@@ -251,7 +249,7 @@ TEST(SelectorQueryTest, FastPathScoped) {
   ShadowRoot& shadowRoot =
       scope->AttachShadowRootInternal(ShadowRootType::kOpen);
   // Make the inside the shadow root be identical to that of the outer document.
-  shadowRoot.appendChild(document->documentElement()->CloneWithChildren());
+  shadowRoot.appendChild(&document->documentElement()->CloneWithChildren());
   static const struct QueryTest kTestCases[] = {
       // Id in the right most selector.
       {"#first", false, 0, {0, 0, 0, 0, 0, 0, 0}},

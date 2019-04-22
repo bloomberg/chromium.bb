@@ -36,6 +36,13 @@ namespace blink {
 
 class HTMLMetaCharsetParser;
 
+// Implements https://encoding.spec.whatwg.org/#decode or
+// https://encoding.spec.whatwg.org/#utf-8-decode when an appropriate
+// TextResourceDecoderOptions is given.
+// See comments in text_resource_decoder_options.h.
+//
+// To construct a string from known-UTF-8 data without BOM, please use
+// WTF::String::FromUTF8 instead.
 class CORE_EXPORT TextResourceDecoder {
   USING_FAST_MALLOC(TextResourceDecoder);
 
@@ -51,11 +58,7 @@ class CORE_EXPORT TextResourceDecoder {
     kEncodingFromParentFrame
   };
 
-  static std::unique_ptr<TextResourceDecoder> Create(
-      const TextResourceDecoderOptions& options) {
-    return base::WrapUnique(new TextResourceDecoder(options));
-  }
-
+  explicit TextResourceDecoder(const TextResourceDecoderOptions&);
   ~TextResourceDecoder();
 
   void SetEncoding(const WTF::TextEncoding&, EncodingSource);
@@ -70,9 +73,6 @@ class CORE_EXPORT TextResourceDecoder {
 
   bool SawError() const { return saw_error_; }
   wtf_size_t CheckForBOM(const char*, wtf_size_t);
-
- protected:
-  TextResourceDecoder(const TextResourceDecoderOptions&);
 
  private:
   static const WTF::TextEncoding& DefaultEncoding(

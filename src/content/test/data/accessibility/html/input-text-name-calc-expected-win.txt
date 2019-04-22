@@ -8,3 +8,4 @@ ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
 ++ROLE_SYSTEM_TEXT name='Placeholder4b' FOCUSABLE explicit-name:true
 ++ROLE_SYSTEM_TEXT name='Placeholder5' FOCUSABLE explicit-name:true description='Title5'
 ++ROLE_SYSTEM_TEXT name='LabelledBy6' FOCUSABLE explicit-name:true description='DescribedBy6'
+++ROLE_SYSTEM_TEXT name='AriaLabel7' FOCUSABLE explicit-name:true description='DescribedBy7'

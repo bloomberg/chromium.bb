@@ -23,7 +23,10 @@ class TestPreviewsDecider : public previews::PreviewsDecider {
   bool ShouldCommitPreview(PreviewsUserData* previews_data,
                            const GURL& url,
                            PreviewsType type) const override;
-  bool LoadResourceHints(const GURL& url) override;
+  bool LoadPageHints(const GURL& url) override;
+  bool GetResourceLoadingHints(
+      const GURL& url,
+      std::vector<std::string>* out_resource_patterns_to_block) const override;
   void LogHintCacheMatch(const GURL& url, bool is_committed) const override;
 
  private:

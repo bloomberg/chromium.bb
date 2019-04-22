@@ -18,6 +18,7 @@
 @import url(chrome://resources/css/roboto.css);
 
 html {
+  /* TODO(dbeam): remove this soon. Prefer dir= in HTML. */
   direction: $i18n{textDirection};
 }
 

@@ -100,12 +100,12 @@ class CORE_EXPORT EventHandlerRegistry final
                                  EventTarget*);
 
   // Called on the EventHandlerRegistry of the root Document to notify
-  // clients when we have added the first handler or removed the last one for
-  // a given event class. |hasActiveHandlers| can be used to distinguish
-  // between the two cases.
-  void NotifyHasHandlersChanged(EventTarget*,
-                                EventHandlerClass,
-                                bool has_active_handlers);
+  // clients when we have added or remove a handler for a given event class.
+  // |hasActiveHandlers| can be used to distinguish between having and not
+  // having an active handler.
+  void NotifyHandlersChanged(EventTarget*,
+                             EventHandlerClass,
+                             bool has_active_handlers);
 
   // Called to notify clients whenever a single event handler target is
   // registered or unregistered. If several handlers are registered for the

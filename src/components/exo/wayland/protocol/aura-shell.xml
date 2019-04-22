@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zaura_shell" version="7">
+  <interface name="zaura_shell" version="8">
     <description summary="aura_shell">
       The global interface exposing aura shell capabilities is used to
       instantiate an interface extension for a wl_surface object.
@@ -68,7 +68,7 @@
     </request>
   </interface>
 
-  <interface name="zaura_surface" version="7">
+  <interface name="zaura_surface" version="8">
     <description summary="aura shell interface to a wl_surface">
       An additional interface to a wl_surface object, which allows the
       client to access aura shell specific functionality for surface.
@@ -138,6 +138,40 @@
       </description>
       <arg name="client_surface_id" type="int" />
     </request>
+
+    <!-- Version 8 additions -->
+
+    <enum name="occlusion_change_reason">
+      <description summary="occlusion change reason">
+	Enum describing why an occlusion change happened. An occlusion change as a
+	result of a user action could include things like the user moving a window,
+	changing occlusion, or opening/closing a window, changing the occlusion.
+      </description>
+      <entry name="user_action" value="1" summary="occlusion changed as a result of a user action"/>
+    </enum>
+
+    <request name="set_occlusion_tracking" since="8">
+      <description summary="set tracked occlusion region">
+	Sets occlusion tracking on this surface. The client will be updated with a
+	new occlusion fraction when the amount of occlusion of this surface changes.
+      </description>
+    </request>
+
+    <request name="unset_occlusion_tracking" since="8">
+      <description summary="unset tracked occlusion region">
+	Unsets occlusion tracking for this surface.
+      </description>
+    </request>
+
+    <event name="occlusion_changed" since="8">
+      <description summary="Notifies on an occlusion change">
+	Notifies when there is a change in the amount this surface is occluded.
+	The occlusion update is sent as a fixed point number from 0 to 1, representing
+	the proportion of occlusion.
+      </description>
+      <arg name="occlusion_fraction" type="fixed"/>
+      <arg name="occlusion_reason" type="uint"/>
+    </event>
   </interface>
 
   <interface name="zaura_output" version="6">

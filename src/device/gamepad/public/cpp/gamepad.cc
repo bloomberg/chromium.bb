@@ -6,6 +6,8 @@
 
 namespace device {
 
+const float GamepadButton::kDefaultButtonPressedThreshold;
+const double GamepadHapticActuator::kMaxEffectDurationMillis;
 const size_t Gamepad::kIdLengthCap;
 const size_t Gamepad::kMappingLengthCap;
 const size_t Gamepad::kAxesLengthCap;

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-path + os.sep)
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -22,6 +22,18 @@ from chromite.lib import partial_mock
 
 class TestOsutils(cros_test_lib.TempDirTestCase):
   """General unittests for the osutils module."""
+
+  def testIsSubPath(self):
+    self.assertTrue(osutils.IsSubPath('/a', '/a'))
+    self.assertTrue(osutils.IsSubPath('/a', '/a/'))
+
+    self.assertTrue(osutils.IsSubPath('/a/b', '/a'))
+    self.assertTrue(osutils.IsSubPath('/a/b', '/a/'))
+
+    self.assertTrue(osutils.IsSubPath('/a/b/e', '/a/b/c/../../b'))
+
+    self.assertFalse(osutils.IsSubPath('/ab', '/a/b'))
+    self.assertFalse(osutils.IsSubPath('/a/bcde', '/a/b'))
 
   def testAllocateFile(self):
     """Verify we can allocate a file of a certain length."""
@@ -715,9 +727,9 @@ class MountImagePartitionTests(cros_test_lib.MockTestCase):
   """Tests for MountImagePartition."""
 
   def setUp(self):
-    self._gpt_table = {
-        3: cros_build_lib.PartitionInfo(3, 1, 3, 2, 'fs', 'Label', 'flag')
-    }
+    self._gpt_table = [
+        cros_build_lib.PartitionInfo(3, 1, 3, 2, 'fs', 'Label', 'flag')
+    ]
 
   def testWithCacheOkay(self):
     mount_dir = self.PatchObject(osutils, 'MountDir')
@@ -736,6 +748,29 @@ class MountImagePartitionTests(cros_test_lib.MockTestCase):
                      return_value=self._gpt_table)
     mount_dir = self.PatchObject(osutils, 'MountDir')
     osutils.MountImagePartition('image_file', 3, 'destination')
+    opts = ['loop', 'offset=1', 'sizelimit=2', 'ro']
+    mount_dir.assert_called_with(
+        'image_file', 'destination', makedirs=True, skip_mtab=False,
+        sudo=True, mount_opts=opts
+    )
+
+  def testNameWithCacheOkay(self):
+    mount_dir = self.PatchObject(osutils, 'MountDir')
+    osutils.MountImagePartition('image_file', 'Label', 'destination',
+                                self._gpt_table)
+    opts = ['loop', 'offset=1', 'sizelimit=2', 'ro']
+    mount_dir.assert_called_with('image_file', 'destination', makedirs=True,
+                                 skip_mtab=False, sudo=True, mount_opts=opts)
+
+  def testNameWithCacheFail(self):
+    self.assertRaises(ValueError, osutils.MountImagePartition,
+                      'image_file', 'Missing', 'destination', self._gpt_table)
+
+  def testNameWithoutCache(self):
+    self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
+                     return_value=self._gpt_table)
+    mount_dir = self.PatchObject(osutils, 'MountDir')
+    osutils.MountImagePartition('image_file', 'Label', 'destination')
     opts = ['loop', 'offset=1', 'sizelimit=2', 'ro']
     mount_dir.assert_called_with(
         'image_file', 'destination', makedirs=True, skip_mtab=False,
@@ -764,7 +799,7 @@ class MountImageTests(cros_test_lib.MockTempDirTestCase):
     unmount_dir = self.PatchObject(osutils, 'UmountDir')
     rmdir = self.PatchObject(osutils, 'RmDir')
     with osutils.MountImageContext('_ignored', self.tempdir, selectors):
-      for _, part in parts.items():
+      for part in parts:
         mount_point = os.path.join(self.tempdir, 'dir-%d' % part.number)
         mount_dir.assert_any_call(
             '_ignored', mount_point, makedirs=True, skip_mtab=False,
@@ -776,7 +811,7 @@ class MountImageTests(cros_test_lib.MockTempDirTestCase):
           self.assertTrue(os.path.islink(link))
           self.assertEqual(os.path.basename(mount_point),
                            os.readlink(link))
-    for _, part in parts.items():
+    for part in parts:
       mount_point = os.path.join(self.tempdir, 'dir-%d' % part.number)
       unmount_dir.assert_any_call(mount_point, cleanup=False)
       rmdir.assert_any_call(mount_point, sudo=True)
@@ -785,36 +820,36 @@ class MountImageTests(cros_test_lib.MockTempDirTestCase):
         self.assertFalse(os.path.lexists(link))
 
   def testWithPartitionNumber(self):
-    parts = {
-        1: cros_build_lib.PartitionInfo(1, 0, 0, 0, '', 'my-stateful', ''),
-        3: cros_build_lib.PartitionInfo(3, 0, 0, 0, '', 'my-root-a', ''),
-    }
+    parts = [
+        cros_build_lib.PartitionInfo(1, 0, 0, 0, '', 'my-stateful', ''),
+        cros_build_lib.PartitionInfo(3, 0, 0, 0, '', 'my-root-a', ''),
+    ]
     self._testWithParts(parts, [1, 3])
 
   def testWithPartitionLabel(self):
-    parts = {
-        42: cros_build_lib.PartitionInfo(42, 0, 0, 0, '', 'label', ''),
-    }
+    parts = [
+        cros_build_lib.PartitionInfo(42, 0, 0, 0, '', 'label', ''),
+    ]
     self._testWithParts(parts, ['label'])
 
   def testInvalidPartSelector(self):
-    parts = {
-        42: cros_build_lib.PartitionInfo(42, 0, 0, 0, '', 'label', ''),
-    }
+    parts = [
+        cros_build_lib.PartitionInfo(42, 0, 0, 0, '', 'label', ''),
+    ]
     self.assertRaises(ValueError, self._testWithParts, parts, ['label404'])
     self.assertRaises(ValueError, self._testWithParts, parts, [404])
 
   def testFailOnExistingMount(self):
-    parts = {
-        42: cros_build_lib.PartitionInfo(42, 0, 0, 0, '', 'label', ''),
-    }
+    parts = [
+        cros_build_lib.PartitionInfo(42, 0, 0, 0, '', 'label', ''),
+    ]
     os.makedirs(os.path.join(self.tempdir, 'dir-42'))
     self.assertRaises(ValueError, self._testWithParts, parts, [42])
 
   def testExistingLinkNotCleanedUp(self):
-    parts = {
-        42: cros_build_lib.PartitionInfo(42, 0, 0, 0, '', 'label', ''),
-    }
+    parts = [
+        cros_build_lib.PartitionInfo(42, 0, 0, 0, '', 'label', ''),
+    ]
     symlink = os.path.join(self.tempdir, 'dir-label')
     os.symlink('/tmp', symlink)
     self.assertEqual('/tmp', os.readlink(symlink))
@@ -1039,6 +1074,15 @@ class CopyDirContentsTestCase(cros_test_lib.TempDirTestCase):
     osutils.SafeMakedirsNonRoot(os.path.join(out_dir, 'blah'))
     with self.assertRaises(osutils.BadPathsException):
       osutils.CopyDirContents(in_dir, out_dir)
+
+  def testDestinationDirNonEmptyAllowNonEmptySet(self):
+    """Copying to a non-empty destination with allow_nonempty does not raise."""
+    in_dir = os.path.join(self.tempdir, 'input')
+    out_dir = os.path.join(self.tempdir, 'output')
+    osutils.SafeMakedirsNonRoot(in_dir)
+    osutils.SafeMakedirsNonRoot(out_dir)
+    osutils.SafeMakedirsNonRoot(os.path.join(out_dir, 'blah'))
+    osutils.CopyDirContents(in_dir, out_dir, allow_nonempty=True)
 
 
 class WhichTests(cros_test_lib.TempDirTestCase):

@@ -21,7 +21,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -55,8 +55,8 @@ public class OtherFormsOfHistoryDialogFragment extends DialogFragment implements
         // Linkify the <link></link> span in the dialog text.
         TextView textView = (TextView) view.findViewById(R.id.text);
         final SpannableString textWithLink = SpanApplier.applySpans(textView.getText().toString(),
-                new SpanApplier.SpanInfo(
-                        "<link>", "</link>", new NoUnderlineClickableSpan((widget) -> {
+                new SpanApplier.SpanInfo("<link>", "</link>",
+                        new NoUnderlineClickableSpan(getResources(), (widget) -> {
                             new TabDelegate(false /* incognito */)
                                     .launchUrl(UrlConstants.MY_ACTIVITY_URL_IN_CBD_NOTICE,
                                             TabLaunchType.FROM_CHROME_UI);
@@ -66,12 +66,12 @@ public class OtherFormsOfHistoryDialogFragment extends DialogFragment implements
         textView.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Construct the dialog.
-        AlertDialog dialog = new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
-                .setView(view)
-                .setTitle(R.string.clear_browsing_data_history_dialog_title)
-                .setPositiveButton(
-                        R.string.ok_got_it, this)
-                .create();
+        AlertDialog dialog =
+                new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
+                        .setView(view)
+                        .setTitle(R.string.clear_browsing_data_history_dialog_title)
+                        .setPositiveButton(R.string.ok_got_it, this)
+                        .create();
 
         dialog.setCanceledOnTouchOutside(false);
         return dialog;

@@ -83,16 +83,19 @@ Scheduler.prototype.add = function(request) {
  */
 Scheduler.prototype.remove = function(requestId) {
   var request = this.requests_[requestId];
-  if (!request)
+  if (!request) {
     return;
+  }
 
   // Remove from the internal queues with pending tasks.
   var newIndex = this.pendingRequests_.indexOf(request);
-  if (newIndex != -1)
+  if (newIndex != -1) {
     this.newRequests_.splice(newIndex, 1);
+  }
   var pendingIndex = this.pendingRequests_.indexOf(request);
-  if (pendingIndex != -1)
+  if (pendingIndex != -1) {
     this.pendingRequests_.splice(pendingIndex, 1);
+  }
 
   // Cancel the request.
   request.cancel();
@@ -155,12 +158,14 @@ Scheduler.prototype.continue_ = function() {
  */
 Scheduler.prototype.finish_ = function(request) {
   var index = this.activeRequests_.indexOf(request);
-  if (index < 0)
+  if (index < 0) {
     console.warn('Request not found.');
+  }
   this.activeRequests_.splice(index, 1);
   delete this.requests_[request.getId()];
 
   // Continue handling the most important requests (if started).
-  if (this.started_)
+  if (this.started_) {
     this.continue_();
+  }
 };

@@ -34,7 +34,7 @@
             android:ellipsize="end"
             android:includeFontPadding="false"
             android:singleLine="true"
-            android:textAppearance="@style/BlackBodyDefault" />
+            android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
 
         <TextView
             android:id="@+id/dropdown_sublabel"
@@ -44,7 +44,7 @@
             android:includeFontPadding="false"
             android:singleLine="true"
             android:textAlignment="viewStart"
-            android:textAppearance="@style/BlackCaption" />
+            android:textAppearance="@style/TextAppearance.BlackCaption" />
     </LinearLayout>
 
     <ImageView

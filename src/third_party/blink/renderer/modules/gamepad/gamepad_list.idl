@@ -27,5 +27,5 @@
     NoInterfaceObject
 ] interface GamepadList {
     readonly attribute unsigned long length;
-    getter Gamepad item([Default=Undefined] optional unsigned long index);
+    getter Gamepad item([DefaultValue=Undefined] optional unsigned long index);
 };

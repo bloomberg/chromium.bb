@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "components/rlz/rlz_tracker_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/syslog_logging.h"
@@ -302,8 +303,13 @@ bool RLZTracker::Init(bool first_run,
   if (delegate_->IsBrandOrganic(brand_) &&
       delegate_->IsBrandOrganic(reactivation_brand_)) {
     SYSLOG(INFO) << "RLZ is disabled";
-  } else {
-    rlz_lib::UpdateExistingAccessPointRlz(brand_);
+  } else if (delegate_->ShouldUpdateExistingAccessPointRlz()) {
+    background_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](const std::string& brand) {
+                         rlz_lib::UpdateExistingAccessPointRlz(brand);
+                       },
+                       brand_));
   }
 #endif
 

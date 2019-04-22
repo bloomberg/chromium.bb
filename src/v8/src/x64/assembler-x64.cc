@@ -18,7 +18,6 @@
 #include "src/assembler-inl.h"
 #include "src/base/bits.h"
 #include "src/base/cpu.h"
-#include "src/code-stubs.h"
 #include "src/deoptimizer.h"
 #include "src/macro-assembler.h"
 #include "src/string-constants.h"
@@ -32,9 +31,10 @@ namespace internal {
 
 namespace {
 
-#if !V8_LIBC_MSVCRT
-
-V8_INLINE uint64_t _xgetbv(unsigned int xcr) {
+V8_INLINE uint64_t xgetbv(unsigned int xcr) {
+#if V8_LIBC_MSVCRT
+  return _xgetbv(xcr);
+#else
   unsigned eax, edx;
   // Check xgetbv; this uses a .byte sequence instead of the instruction
   // directly because older assemblers do not include support for xgetbv and
@@ -42,12 +42,8 @@ V8_INLINE uint64_t _xgetbv(unsigned int xcr) {
   // used.
   __asm__ volatile(".byte 0x0F, 0x01, 0xD0" : "=a"(eax), "=d"(edx) : "c"(xcr));
   return static_cast<uint64_t>(eax) | (static_cast<uint64_t>(edx) << 32);
+#endif
 }
-
-#define _XCR_XFEATURE_ENABLED_MASK 0
-
-#endif  // !V8_LIBC_MSVCRT
-
 
 bool OSHasAVXSupport() {
 #if V8_OS_MACOSX
@@ -68,7 +64,7 @@ bool OSHasAVXSupport() {
   if (kernel_version_major <= 13) return false;
 #endif  // V8_OS_MACOSX
   // Check whether OS claims to support AVX.
-  uint64_t feature_mask = _xgetbv(_XCR_XFEATURE_ENABLED_MASK);
+  uint64_t feature_mask = xgetbv(0);  // XCR_XFEATURE_ENABLED_MASK
   return (feature_mask & 0x6) == 0x6;
 }
 
@@ -130,7 +126,7 @@ void CpuFeatures::PrintFeatures() {
 
 uint32_t RelocInfo::wasm_call_tag() const {
   DCHECK(rmode_ == WASM_CALL || rmode_ == WASM_STUB_CALL);
-  return Memory<uint32_t>(pc_);
+  return ReadUnalignedValue<uint32_t>(pc_);
 }
 
 // -----------------------------------------------------------------------------
@@ -204,7 +200,8 @@ class OperandBuilder {
     int32_t disp_value = 0;
     if (mode == 0x80 || is_baseless) {
       // Mode 2 or mode 0 with rbp/r13 as base: Word displacement.
-      disp_value = *bit_cast<const int32_t*>(&operand.data().buf[disp_offset]);
+      disp_value = ReadUnalignedValue<int32_t>(
+          reinterpret_cast<Address>(&operand.data().buf[disp_offset]));
     } else if (mode == 0x40) {
       // Mode 1: Byte displacement.
       disp_value = static_cast<signed char>(operand.data().buf[disp_offset]);
@@ -219,8 +216,8 @@ class OperandBuilder {
       // Need 32 bits of displacement, mode 2 or mode 1 with register rbp/r13.
       data_.buf[0] = (modrm & 0x3F) | (is_baseless ? 0x00 : 0x80);
       data_.len = disp_offset + 4;
-      Memory<int32_t>(reinterpret_cast<Address>(&data_.buf[disp_offset])) =
-          disp_value;
+      WriteUnalignedValue(reinterpret_cast<Address>(&data_.buf[disp_offset]),
+                          disp_value);
     } else if (disp_value != 0 || (base_reg == 0x05)) {
       // Need 8 bits of displacement.
       data_.buf[0] = (modrm & 0x3F) | 0x40;  // Mode 1.
@@ -264,15 +261,15 @@ class OperandBuilder {
 
   void set_disp32(int disp) {
     DCHECK(data_.len == 1 || data_.len == 2);
-    int32_t* p = reinterpret_cast<int32_t*>(&data_.buf[data_.len]);
-    *p = disp;
+    Address p = reinterpret_cast<Address>(&data_.buf[data_.len]);
+    WriteUnalignedValue(p, disp);
     data_.len += sizeof(int32_t);
   }
 
   void set_disp64(int64_t disp) {
     DCHECK_EQ(1, data_.len);
-    int64_t* p = reinterpret_cast<int64_t*>(&data_.buf[data_.len]);
-    *p = disp;
+    Address p = reinterpret_cast<Address>(&data_.buf[data_.len]);
+    WriteUnalignedValue(p, disp);
     data_.len += sizeof(disp);
   }
 
@@ -327,24 +324,19 @@ bool Operand::AddressUsesRegister(Register reg) const {
 void Assembler::AllocateAndInstallRequestedHeapObjects(Isolate* isolate) {
   DCHECK_IMPLIES(isolate == nullptr, heap_object_requests_.empty());
   for (auto& request : heap_object_requests_) {
-    Address pc = reinterpret_cast<Address>(buffer_) + request.offset();
+    Address pc = reinterpret_cast<Address>(buffer_start_) + request.offset();
     switch (request.kind()) {
       case HeapObjectRequest::kHeapNumber: {
-        Handle<HeapNumber> object =
-            isolate->factory()->NewHeapNumber(request.heap_number(), TENURED);
-        Memory<Handle<Object>>(pc) = object;
-        break;
-      }
-      case HeapObjectRequest::kCodeStub: {
-        request.code_stub()->set_isolate(isolate);
-        UpdateCodeTarget(Memory<int32_t>(pc), request.code_stub()->GetCode());
+        Handle<HeapNumber> object = isolate->factory()->NewHeapNumber(
+            request.heap_number(), AllocationType::kOld);
+        WriteUnalignedValue(pc, object);
         break;
       }
       case HeapObjectRequest::kStringConstant: {
         const StringConstantBase* str = request.string();
         CHECK_NOT_NULL(str);
         Handle<String> allocated = str->AllocateStringConstant(isolate);
-        Memory<Handle<Object>>(pc) = allocated;
+        WriteUnalignedValue(pc, allocated);
         break;
       }
     }
@@ -381,11 +373,9 @@ bool ConstPool::TryRecordEntry(intptr_t data, RelocInfo::Mode mode) {
   return AddSharedEntry(raw_data, offset);
 }
 
-bool ConstPool::IsMoveRipRelative(byte* instr) {
-  if ((*reinterpret_cast<uint32_t*>(instr) & kMoveRipRelativeMask) ==
-      kMoveRipRelativeInstr)
-    return true;
-  return false;
+bool ConstPool::IsMoveRipRelative(Address instr) {
+  return (ReadUnalignedValue<uint32_t>(instr) & kMoveRipRelativeMask) ==
+         kMoveRipRelativeInstr;
 }
 
 void ConstPool::Clear() { entries_.clear(); }
@@ -406,13 +396,13 @@ void ConstPool::PatchEntries() {
       DCHECK_LT(constant_entry_offset, it->second);
       int32_t disp32 =
           constant_entry_offset - (it->second + kRipRelativeDispSize);
-      byte* disp_addr = assm_->addr_at(it->second);
+      Address disp_addr = assm_->addr_at(it->second);
 
       // Check if the instruction is actually a rip-relative move.
       DCHECK(IsMoveRipRelative(disp_addr - kMoveRipRelativeDispOffset));
       // The displacement of the rip-relative move should be 0 before patching.
-      DCHECK(*reinterpret_cast<uint32_t*>(disp_addr) == 0);
-      *reinterpret_cast<int32_t*>(disp_addr) = disp32;
+      DCHECK(ReadUnalignedValue<uint32_t>(disp_addr) == 0);
+      WriteUnalignedValue(disp_addr, disp32);
     }
   }
   Clear();
@@ -435,26 +425,28 @@ bool Assembler::UseConstPoolFor(RelocInfo::Mode rmode) {
 // -----------------------------------------------------------------------------
 // Implementation of Assembler.
 
-Assembler::Assembler(const AssemblerOptions& options, void* buffer,
-                     int buffer_size)
-    : AssemblerBase(options, buffer, buffer_size), constpool_(this) {
-// Clear the buffer in debug mode unless it was provided by the
-// caller in which case we can't be sure it's okay to overwrite
-// existing code in it.
-#ifdef DEBUG
-  if (own_buffer_) ZapCode(reinterpret_cast<Address>(buffer_), buffer_size_);
-#endif
-
-  ReserveCodeTargetSpace(100);
-  reloc_info_writer.Reposition(buffer_ + buffer_size_, pc_);
+Assembler::Assembler(const AssemblerOptions& options,
+                     std::unique_ptr<AssemblerBuffer> buffer)
+    : AssemblerBase(options, std::move(buffer)), constpool_(this) {
+  reloc_info_writer.Reposition(buffer_start_ + buffer_->size(), pc_);
   if (CpuFeatures::IsSupported(SSE4_1)) {
     EnableCpuFeature(SSSE3);
   }
+
+#if defined(V8_OS_WIN_X64)
+  if (options.collect_win64_unwind_info) {
+    xdata_encoder_ = std::make_unique<win64_unwindinfo::XdataEncoder>(*this);
+  }
+#endif
 }
 
-void Assembler::GetCode(Isolate* isolate, CodeDesc* desc) {
+void Assembler::GetCode(Isolate* isolate, CodeDesc* desc,
+                        SafepointTableBuilder* safepoint_table_builder,
+                        int handler_table_offset) {
   PatchConstPool();
   DCHECK(constpool_.IsEmpty());
+
+  const int code_comments_size = WriteCodeComments();
 
   // At this point overflow() may be true, but the gap ensures
   // that we are still not overlapping instructions and relocation info.
@@ -463,17 +455,28 @@ void Assembler::GetCode(Isolate* isolate, CodeDesc* desc) {
   AllocateAndInstallRequestedHeapObjects(isolate);
 
   // Set up code descriptor.
-  desc->buffer = buffer_;
-  desc->buffer_size = buffer_size_;
-  desc->instr_size = pc_offset();
-  DCHECK_GT(desc->instr_size, 0);  // Zero-size code objects upset the system.
-  desc->reloc_size =
-      static_cast<int>((buffer_ + buffer_size_) - reloc_info_writer.pos());
-  desc->origin = this;
-  desc->constant_pool_size = 0;
-  desc->unwinding_info_size = 0;
-  desc->unwinding_info = nullptr;
+  // TODO(jgruber): Reconsider how these offsets and sizes are maintained up to
+  // this point to make CodeDesc initialization less fiddly.
 
+  static constexpr int kConstantPoolSize = 0;
+  const int instruction_size = pc_offset();
+  const int code_comments_offset = instruction_size - code_comments_size;
+  const int constant_pool_offset = code_comments_offset - kConstantPoolSize;
+  const int handler_table_offset2 = (handler_table_offset == kNoHandlerTable)
+                                        ? constant_pool_offset
+                                        : handler_table_offset;
+  const int safepoint_table_offset =
+      (safepoint_table_builder == kNoSafepointTable)
+          ? handler_table_offset2
+          : safepoint_table_builder->GetCodeOffset();
+  const int reloc_info_offset =
+      static_cast<int>(reloc_info_writer.pos() - buffer_->start());
+  CodeDesc::Initialize(desc, this, safepoint_table_offset,
+                       handler_table_offset2, constant_pool_offset,
+                       code_comments_offset, reloc_info_offset);
+}
+
+void Assembler::FinalizeJumpOptimizationInfo() {
   // Collection stage
   auto jump_opt = jump_optimization_info();
   if (jump_opt && jump_opt->is_collecting()) {
@@ -498,6 +501,13 @@ void Assembler::GetCode(Isolate* isolate, CodeDesc* desc) {
   }
 }
 
+#if defined(V8_OS_WIN_X64)
+win64_unwindinfo::BuiltinUnwindInfo Assembler::GetUnwindInfo() const {
+  DCHECK(options().collect_win64_unwind_info);
+  DCHECK_NOT_NULL(xdata_encoder_);
+  return xdata_encoder_->unwinding_info();
+}
+#endif
 
 void Assembler::Align(int m) {
   DCHECK(base::bits::IsPowerOfTwo(m));
@@ -529,8 +539,8 @@ void Assembler::bind_to(Label* L, int pos) {
     while (next != current) {
       if (current >= 4 && long_at(current - 4) == 0) {
         // Absolute address.
-        intptr_t imm64 = reinterpret_cast<intptr_t>(buffer_ + pos);
-        *reinterpret_cast<intptr_t*>(addr_at(current - 4)) = imm64;
+        intptr_t imm64 = reinterpret_cast<intptr_t>(buffer_start_ + pos);
+        WriteUnalignedValue(addr_at(current - 4), imm64);
         internal_reference_positions_.push_back(current - 4);
       } else {
         // Relative address, relative to point after address.
@@ -543,8 +553,8 @@ void Assembler::bind_to(Label* L, int pos) {
     // Fix up last fixup on linked list.
     if (current >= 4 && long_at(current - 4) == 0) {
       // Absolute address.
-      intptr_t imm64 = reinterpret_cast<intptr_t>(buffer_ + pos);
-      *reinterpret_cast<intptr_t*>(addr_at(current - 4)) = imm64;
+      intptr_t imm64 = reinterpret_cast<intptr_t>(buffer_start_ + pos);
+      WriteUnalignedValue(addr_at(current - 4), imm64);
       internal_reference_positions_.push_back(current - 4);
     } else {
       // Relative address, relative to point after address.
@@ -607,51 +617,42 @@ bool Assembler::is_optimizable_farjmp(int idx) {
 
 void Assembler::GrowBuffer() {
   DCHECK(buffer_overflow());
-  if (!own_buffer_) FATAL("external code buffer is too small");
 
   // Compute new buffer size.
-  CodeDesc desc;  // the new buffer
-  desc.buffer_size = 2 * buffer_size_;
+  DCHECK_EQ(buffer_start_, buffer_->start());
+  int old_size = buffer_->size();
+  int new_size = 2 * old_size;
 
   // Some internal data structures overflow for very large buffers,
   // they must ensure that kMaximalBufferSize is not too large.
-  if (desc.buffer_size > kMaximalBufferSize) {
+  if (new_size > kMaximalBufferSize) {
     V8::FatalProcessOutOfMemory(nullptr, "Assembler::GrowBuffer");
   }
 
   // Set up new buffer.
-  desc.buffer = NewArray<byte>(desc.buffer_size);
-  desc.origin = this;
-  desc.instr_size = pc_offset();
-  desc.reloc_size =
-      static_cast<int>((buffer_ + buffer_size_) - (reloc_info_writer.pos()));
-
-  // Clear the buffer in debug mode. Use 'int3' instructions to make
-  // sure to get into problems if we ever run uninitialized code.
-#ifdef DEBUG
-  ZapCode(reinterpret_cast<Address>(desc.buffer), desc.buffer_size);
-#endif
+  std::unique_ptr<AssemblerBuffer> new_buffer = buffer_->Grow(new_size);
+  DCHECK_EQ(new_size, new_buffer->size());
+  byte* new_start = new_buffer->start();
 
   // Copy the data.
-  intptr_t pc_delta = desc.buffer - buffer_;
-  intptr_t rc_delta = (desc.buffer + desc.buffer_size) -
-      (buffer_ + buffer_size_);
-  MemMove(desc.buffer, buffer_, desc.instr_size);
+  intptr_t pc_delta = new_start - buffer_start_;
+  intptr_t rc_delta = (new_start + new_size) - (buffer_start_ + old_size);
+  size_t reloc_size = (buffer_start_ + old_size) - reloc_info_writer.pos();
+  MemMove(new_start, buffer_start_, pc_offset());
   MemMove(rc_delta + reloc_info_writer.pos(), reloc_info_writer.pos(),
-          desc.reloc_size);
+          reloc_size);
 
   // Switch buffers.
-  DeleteArray(buffer_);
-  buffer_ = desc.buffer;
-  buffer_size_ = desc.buffer_size;
+  buffer_ = std::move(new_buffer);
+  buffer_start_ = new_start;
   pc_ += pc_delta;
   reloc_info_writer.Reposition(reloc_info_writer.pos() + rc_delta,
                                reloc_info_writer.last_pc() + pc_delta);
 
   // Relocate internal references.
   for (auto pos : internal_reference_positions_) {
-    intptr_t* p = reinterpret_cast<intptr_t*>(buffer_ + pos);
-    *p += pc_delta;
+    Address p = reinterpret_cast<Address>(buffer_start_ + pos);
+    WriteUnalignedValue(p, ReadUnalignedValue<intptr_t>(p) + pc_delta);
   }
 
   DCHECK(!buffer_overflow());
@@ -669,7 +670,8 @@ void Assembler::emit_operand(int code, Operand adr) {
   // Recognize RIP relative addressing.
   if (adr.data().buf[0] == 5) {
     DCHECK_EQ(9u, length);
-    Label* label = *bit_cast<Label* const*>(&adr.data().buf[1]);
+    Label* label = ReadUnalignedValue<Label*>(
+        reinterpret_cast<Address>(&adr.data().buf[1]));
     if (label->is_bound()) {
       int offset =
           label->pos() - pc_offset() - sizeof(int32_t) + adr.data().addend;
@@ -1111,16 +1113,6 @@ void Assembler::call(Address entry, RelocInfo::Mode rmode) {
   emit_runtime_entry(entry, rmode);
 }
 
-void Assembler::call(CodeStub* stub) {
-  EnsureSpace ensure_space(this);
-  // 1110 1000 #32-bit disp.
-  emit(0xE8);
-  RequestHeapObject(HeapObjectRequest(stub));
-  RecordRelocInfo(RelocInfo::CODE_TARGET);
-  int code_target_index = AddCodeTarget(Handle<Code>());
-  emitl(code_target_index);
-}
-
 void Assembler::call(Handle<Code> target, RelocInfo::Mode rmode) {
   DCHECK(RelocInfo::IsCodeTarget(rmode));
   EnsureSpace ensure_space(this);
@@ -1131,22 +1123,20 @@ void Assembler::call(Handle<Code> target, RelocInfo::Mode rmode) {
   emitl(code_target_index);
 }
 
-void Assembler::near_call(Address addr, RelocInfo::Mode rmode) {
+void Assembler::near_call(intptr_t disp, RelocInfo::Mode rmode) {
   EnsureSpace ensure_space(this);
   emit(0xE8);
-  intptr_t value = static_cast<intptr_t>(addr);
-  DCHECK(is_int32(value));
+  DCHECK(is_int32(disp));
   RecordRelocInfo(rmode);
-  emitl(static_cast<int32_t>(value));
+  emitl(static_cast<int32_t>(disp));
 }
 
-void Assembler::near_jmp(Address addr, RelocInfo::Mode rmode) {
+void Assembler::near_jmp(intptr_t disp, RelocInfo::Mode rmode) {
   EnsureSpace ensure_space(this);
   emit(0xE9);
-  intptr_t value = static_cast<intptr_t>(addr);
-  DCHECK(is_int32(value));
-  RecordRelocInfo(rmode);
-  emitl(static_cast<int32_t>(value));
+  DCHECK(is_int32(disp));
+  if (!RelocInfo::IsNone(rmode)) RecordRelocInfo(rmode);
+  emitl(static_cast<int32_t>(disp));
 }
 
 void Assembler::call(Register adr) {
@@ -1669,26 +1659,14 @@ void Assembler::emit_lea(Register dst, Operand src, int size) {
 
 void Assembler::load_rax(Address value, RelocInfo::Mode mode) {
   EnsureSpace ensure_space(this);
-  if (kPointerSize == kInt64Size) {
-    emit(0x48);  // REX.W
-    emit(0xA1);
-    emitp(value, mode);
-  } else {
-    DCHECK_EQ(kPointerSize, kInt32Size);
-    emit(0xA1);
-    emitp(value, mode);
-    // In 64-bit mode, need to zero extend the operand to 8 bytes.
-    // See 2.2.1.4 in Intel64 and IA32 Architectures Software
-    // Developer's Manual Volume 2.
-    emitl(0);
-  }
+  emit(0x48);  // REX.W
+  emit(0xA1);
+  emit(Immediate64(value, mode));
 }
-
 
 void Assembler::load_rax(ExternalReference ref) {
   load_rax(ref.address(), RelocInfo::EXTERNAL_REFERENCE);
 }
-
 
 void Assembler::leave() {
   EnsureSpace ensure_space(this);
@@ -1783,6 +1761,12 @@ void Assembler::emit_mov(Register dst, Register src, int size) {
     emit(0x8B);
     emit_modrm(dst, src);
   }
+
+#if defined(V8_OS_WIN_X64)
+  if (xdata_encoder_ && dst == rbp && src == rsp) {
+    xdata_encoder_->onMovRbpRsp();
+  }
+#endif
 }
 
 void Assembler::emit_mov(Operand dst, Register src, int size) {
@@ -1814,55 +1798,35 @@ void Assembler::emit_mov(Operand dst, Immediate value, int size) {
   emit(value);
 }
 
-void Assembler::movp(Register dst, Address value, RelocInfo::Mode rmode) {
-  if (constpool_.TryRecordEntry(value, rmode)) {
+void Assembler::emit_mov(Register dst, Immediate64 value, int size) {
+  DCHECK_EQ(size, kInt64Size);
+  if (constpool_.TryRecordEntry(value.value_, value.rmode_)) {
     // Emit rip-relative move with offset = 0
     Label label;
-    emit_mov(dst, Operand(&label, 0), kPointerSize);
+    emit_mov(dst, Operand(&label, 0), size);
     bind(&label);
   } else {
     EnsureSpace ensure_space(this);
-    emit_rex(dst, kPointerSize);
+    emit_rex(dst, size);
     emit(0xB8 | dst.low_bits());
-    emitp(value, rmode);
+    emit(value);
   }
 }
 
-void Assembler::movp_heap_number(Register dst, double value) {
+void Assembler::movq_heap_number(Register dst, double value) {
   EnsureSpace ensure_space(this);
-  emit_rex(dst, kPointerSize);
+  emit_rex(dst, kInt64Size);
   emit(0xB8 | dst.low_bits());
   RequestHeapObject(HeapObjectRequest(value));
-  emitp(0, RelocInfo::EMBEDDED_OBJECT);
+  emit(Immediate64(kNullAddress, RelocInfo::EMBEDDED_OBJECT));
 }
 
-void Assembler::movp_string(Register dst, const StringConstantBase* str) {
+void Assembler::movq_string(Register dst, const StringConstantBase* str) {
   EnsureSpace ensure_space(this);
-  emit_rex(dst, kPointerSize);
+  emit_rex(dst, kInt64Size);
   emit(0xB8 | dst.low_bits());
   RequestHeapObject(HeapObjectRequest(str));
-  emitp(0, RelocInfo::EMBEDDED_OBJECT);
-}
-
-void Assembler::movq(Register dst, int64_t value, RelocInfo::Mode rmode) {
-  if (constpool_.TryRecordEntry(value, rmode)) {
-    // Emit rip-relative move with offset = 0
-    Label label;
-    emit_mov(dst, Operand(&label, 0), kPointerSize);
-    bind(&label);
-  } else {
-    EnsureSpace ensure_space(this);
-    emit_rex_64(dst);
-    emit(0xB8 | dst.low_bits());
-    if (!RelocInfo::IsNone(rmode)) {
-      RecordRelocInfo(rmode, value);
-    }
-    emitq(value);
-  }
-}
-
-void Assembler::movq(Register dst, uint64_t value, RelocInfo::Mode rmode) {
-  movq(dst, static_cast<int64_t>(value), rmode);
+  emit(Immediate64(kNullAddress, RelocInfo::EMBEDDED_OBJECT));
 }
 
 // Loads the ip-relative location of the src label into the target location
@@ -2207,6 +2171,12 @@ void Assembler::pushq(Register src) {
   EnsureSpace ensure_space(this);
   emit_optional_rex_32(src);
   emit(0x50 | src.low_bits());
+
+#if defined(V8_OS_WIN_X64)
+  if (xdata_encoder_ && src == rbp) {
+    xdata_encoder_->onPushRbp();
+  }
+#endif
 }
 
 void Assembler::pushq(Operand src) {
@@ -2342,21 +2312,10 @@ void Assembler::emit_xchg(Register dst, Operand src, int size) {
 
 void Assembler::store_rax(Address dst, RelocInfo::Mode mode) {
   EnsureSpace ensure_space(this);
-  if (kPointerSize == kInt64Size) {
-    emit(0x48);  // REX.W
-    emit(0xA3);
-    emitp(dst, mode);
-  } else {
-    DCHECK_EQ(kPointerSize, kInt32Size);
-    emit(0xA3);
-    emitp(dst, mode);
-    // In 64-bit mode, need to zero extend the operand to 8 bytes.
-    // See 2.2.1.4 in Intel64 and IA32 Architectures Software
-    // Developer's Manual Volume 2.
-    emitl(0);
-  }
+  emit(0x48);  // REX.W
+  emit(0xA3);
+  emit(Immediate64(dst, mode));
 }
-
 
 void Assembler::store_rax(ExternalReference ref) {
   store_rax(ref.address(), RelocInfo::EXTERNAL_REFERENCE);
@@ -2893,6 +2852,21 @@ void Assembler::andps(XMMRegister dst, Operand src) {
   emit_sse_operand(dst, src);
 }
 
+void Assembler::andnps(XMMRegister dst, XMMRegister src) {
+  EnsureSpace ensure_space(this);
+  emit_optional_rex_32(dst, src);
+  emit(0x0F);
+  emit(0x55);
+  emit_sse_operand(dst, src);
+}
+
+void Assembler::andnps(XMMRegister dst, Operand src) {
+  EnsureSpace ensure_space(this);
+  emit_optional_rex_32(dst, src);
+  emit(0x0F);
+  emit(0x55);
+  emit_sse_operand(dst, src);
+}
 
 void Assembler::orps(XMMRegister dst, XMMRegister src) {
   EnsureSpace ensure_space(this);
@@ -3270,6 +3244,19 @@ void Assembler::pinsrb(XMMRegister dst, Operand src, int8_t imm8) {
 }
 
 void Assembler::insertps(XMMRegister dst, XMMRegister src, byte imm8) {
+  DCHECK(CpuFeatures::IsSupported(SSE4_1));
+  DCHECK(is_uint8(imm8));
+  EnsureSpace ensure_space(this);
+  emit(0x66);
+  emit_optional_rex_32(dst, src);
+  emit(0x0F);
+  emit(0x3A);
+  emit(0x21);
+  emit_sse_operand(dst, src);
+  emit(imm8);
+}
+
+void Assembler::insertps(XMMRegister dst, Operand src, byte imm8) {
   DCHECK(CpuFeatures::IsSupported(SSE4_1));
   DCHECK(is_uint8(imm8));
   EnsureSpace ensure_space(this);
@@ -4887,7 +4874,27 @@ void Assembler::pshufhw(XMMRegister dst, XMMRegister src, uint8_t shuffle) {
   emit(shuffle);
 }
 
+void Assembler::pshufhw(XMMRegister dst, Operand src, uint8_t shuffle) {
+  EnsureSpace ensure_space(this);
+  emit(0xF3);
+  emit_optional_rex_32(dst, src);
+  emit(0x0F);
+  emit(0x70);
+  emit_sse_operand(dst, src);
+  emit(shuffle);
+}
+
 void Assembler::pshuflw(XMMRegister dst, XMMRegister src, uint8_t shuffle) {
+  EnsureSpace ensure_space(this);
+  emit(0xF2);
+  emit_optional_rex_32(dst, src);
+  emit(0x0F);
+  emit(0x70);
+  emit_sse_operand(dst, src);
+  emit(shuffle);
+}
+
+void Assembler::pshuflw(XMMRegister dst, Operand src, uint8_t shuffle) {
   EnsureSpace ensure_space(this);
   emit(0xF2);
   emit_optional_rex_32(dst, src);
@@ -4967,8 +4974,8 @@ void Assembler::dq(Label* label) {
   EnsureSpace ensure_space(this);
   if (label->is_bound()) {
     internal_reference_positions_.push_back(pc_offset());
-    emitp(reinterpret_cast<Address>(buffer_) + label->pos(),
-          RelocInfo::INTERNAL_REFERENCE);
+    emit(Immediate64(reinterpret_cast<Address>(buffer_start_) + label->pos(),
+                     RelocInfo::INTERNAL_REFERENCE));
   } else {
     RecordRelocInfo(RelocInfo::INTERNAL_REFERENCE);
     emitl(0);  // Zero for the first 32bit marks it as 64bit absolute address.
@@ -5006,14 +5013,8 @@ bool RelocInfo::IsCodedSpecially() {
   return (1 << rmode_) & kApplyMask;
 }
 
-
 bool RelocInfo::IsInConstantPool() {
   return false;
-}
-
-int RelocInfo::GetDeoptimizationId(Isolate* isolate, DeoptimizeKind kind) {
-  DCHECK(IsRuntimeEntry(rmode_));
-  return Deoptimizer::GetDeoptimizationId(isolate, target_address(), kind);
 }
 
 }  // namespace internal

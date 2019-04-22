@@ -61,6 +61,7 @@ HOST_PACKAGES = (
     'sys-libs/glibc',
     'sys-libs/libcxx',
     'sys-libs/libcxxabi',
+    'sys-libs/llvm-libunwind',
 )
 
 # These packages are also installed into the host SDK.  However, they require
@@ -70,6 +71,7 @@ HOST_POST_CROSS_PACKAGES = (
     'dev-lang/rust',
     'dev-util/cargo',
     'virtual/target-sdk-post-cross',
+    'dev-embedded/coreboot-sdk',
 )
 
 # New packages that we're in the process of adding to the SDK.  Since the SDK

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -131,6 +132,10 @@ ExtensionContextMenuModel::ContextMenuAction CommandIdToContextMenuAction(
       return ContextMenuAction::kPageAccessRunOnAllSites;
     case ExtensionContextMenuModel::PAGE_ACCESS_LEARN_MORE:
       return ContextMenuAction::kPageAccessLearnMore;
+    case ExtensionContextMenuModel::PAGE_ACCESS_CANT_ACCESS:
+    case ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU:
+      NOTREACHED();
+      break;
     default:
       break;
   }
@@ -156,8 +161,8 @@ class UninstallDialogHelper : public ExtensionUninstallDialog::Delegate {
   ~UninstallDialogHelper() override {}
 
   void BeginUninstall(Browser* browser, const Extension* extension) {
-    uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
-        browser->profile(), browser->window()->GetNativeWindow(), this));
+    uninstall_dialog_ = ExtensionUninstallDialog::Create(
+        browser->profile(), browser->window()->GetNativeWindow(), this);
     uninstall_dialog_->ConfirmUninstall(extension,
                                         UNINSTALL_REASON_USER_INITIATED,
                                         UNINSTALL_SOURCE_TOOLBAR_CONTEXT_MENU);
@@ -249,14 +254,26 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     }
     case UNINSTALL:
       return !IsExtensionRequiredByPolicy(extension, profile_);
-    // The following, if they are present, are always enabled.
-    case TOGGLE_VISIBILITY:
-    case MANAGE_EXTENSIONS:
+    case PAGE_ACCESS_CANT_ACCESS:
     case PAGE_ACCESS_SUBMENU:
     case PAGE_ACCESS_RUN_ON_CLICK:
     case PAGE_ACCESS_RUN_ON_SITE:
     case PAGE_ACCESS_RUN_ON_ALL_SITES:
-    case PAGE_ACCESS_LEARN_MORE:
+    case PAGE_ACCESS_LEARN_MORE: {
+      content::WebContents* web_contents = GetActiveWebContents();
+      if (!web_contents)
+        return false;
+      // TODO(devlin): This can lead to some fun race-like conditions, where the
+      // menu is constructed during navigation. Since we get the URL both here
+      // and in execution of the command, there's a chance we'll find two
+      // different URLs. This would be solved if we maintained the URL that the
+      // menu was showing for.
+      const GURL& url = web_contents->GetLastCommittedURL();
+      return IsPageAccessCommandEnabled(*extension, url, command_id);
+    }
+    // The following, if they are present, are always enabled.
+    case TOGGLE_VISIBILITY:
+    case MANAGE_EXTENSIONS:
       return true;
     default:
       NOTREACHED() << "Unknown command" << command_id;
@@ -391,11 +408,9 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
     AddItemWithStringId(MANAGE_EXTENSIONS, IDS_MANAGE_EXTENSION);
   }
 
-  const ActionInfo* action_info = ActionInfo::GetPageActionInfo(extension);
-  if (!action_info)
-    action_info = ActionInfo::GetBrowserActionInfo(extension);
-  if (profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode) &&
-      delegate_ && !is_component_ && action_info && !action_info->synthesized) {
+  const ActionInfo* action_info = ActionInfo::GetAnyActionInfo(extension);
+  if (delegate_ && !is_component_ && action_info && !action_info->synthesized &&
+      profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode)) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(INSPECT_POPUP, IDS_EXTENSION_ACTION_INSPECT_POPUP);
   }
@@ -436,50 +451,95 @@ ExtensionContextMenuModel::GetCurrentPageAccess(
   return PAGE_ACCESS_RUN_ON_CLICK;
 }
 
+bool ExtensionContextMenuModel::IsPageAccessCommandEnabled(
+    const Extension& extension,
+    const GURL& url,
+    int command_id) const {
+  // The "Can't access this site" entry is, by design, always disabled.
+  if (command_id == PAGE_ACCESS_CANT_ACCESS)
+    return false;
+
+  ScriptingPermissionsModifier modifier(profile_, &extension);
+  DCHECK(modifier.CanAffectExtension());
+
+  ScriptingPermissionsModifier::SiteAccess site_access =
+      modifier.GetSiteAccess(url);
+
+  // Verify the extension wants access to the page - that's the only time these
+  // commands should be shown.
+  DCHECK(site_access.has_site_access || site_access.withheld_site_access ||
+         extension.permissions_data()->HasAPIPermission(
+             APIPermission::kActiveTab));
+
+  switch (command_id) {
+    case PAGE_ACCESS_SUBMENU:
+    case PAGE_ACCESS_LEARN_MORE:
+    case PAGE_ACCESS_RUN_ON_CLICK:
+      // These are always enabled.
+      return true;
+    case PAGE_ACCESS_RUN_ON_SITE:
+      // The "on this site" option is only enabled if the extension wants to
+      // always run on the site without user interaction.
+      return site_access.has_site_access || site_access.withheld_site_access;
+    case PAGE_ACCESS_RUN_ON_ALL_SITES:
+      // The "on all sites" option is only enabled if the extension wants to be
+      // able to run everywhere.
+      return site_access.has_all_sites_access ||
+             site_access.withheld_all_sites_access;
+    default:
+      break;
+  }
+
+  NOTREACHED() << "Unexpected command id: " << command_id;
+  return false;
+}
+
 void ExtensionContextMenuModel::CreatePageAccessSubmenu(
     const Extension* extension) {
   content::WebContents* web_contents = GetActiveWebContents();
   if (!web_contents)
     return;
+
   ScriptingPermissionsModifier modifier(profile_, extension);
   if (!modifier.CanAffectExtension())
     return;
-  page_access_submenu_.reset(new ui::SimpleMenuModel(this));
-  const int kRadioGroup = 0;
 
   const GURL& url = web_contents->GetLastCommittedURL();
   ScriptingPermissionsModifier::SiteAccess site_access =
       modifier.GetSiteAccess(url);
 
-  // Only show the access controls if the extension either has or wants access
-  // to the site.
-  if (site_access.has_site_access || site_access.withheld_site_access) {
-    // Always show at least "on click" and "on this site" options.
-    page_access_submenu_->AddRadioItemWithStringId(
-        PAGE_ACCESS_RUN_ON_CLICK,
-        IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK, kRadioGroup);
-    page_access_submenu_->AddRadioItem(
-        PAGE_ACCESS_RUN_ON_SITE,
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_SITE,
-            url_formatter::StripWWW(base::UTF8ToUTF16(
-                url::Origin::Create(web_contents->GetLastCommittedURL())
-                    .host()))),
-        kRadioGroup);
-
-    // Only show "on all sites" if the extension has or wants an all-sites-like
-    // permission.
-    if (site_access.has_all_sites_access ||
-        site_access.withheld_all_sites_access) {
-      page_access_submenu_->AddRadioItemWithStringId(
-          PAGE_ACCESS_RUN_ON_ALL_SITES,
-          IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES,
-          kRadioGroup);
-    }
-
-    page_access_submenu_->AddSeparator(ui::NORMAL_SEPARATOR);
+  bool has_active_tab = extension->permissions_data()->HasAPIPermission(
+      APIPermission::kActiveTab);
+  bool wants_site_access =
+      site_access.has_site_access || site_access.withheld_site_access;
+  if (!wants_site_access && !has_active_tab) {
+    AddItemWithStringId(PAGE_ACCESS_CANT_ACCESS,
+                        IDS_EXTENSIONS_CONTEXT_MENU_CANT_ACCESS_PAGE);
+    return;
   }
 
+  const int kRadioGroup = 0;
+  page_access_submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
+
+  // Add the three options for "on click", "on this site", "on all sites".
+  // Though we always add these three, some may be disabled.
+  page_access_submenu_->AddRadioItemWithStringId(
+      PAGE_ACCESS_RUN_ON_CLICK,
+      IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK, kRadioGroup);
+  page_access_submenu_->AddRadioItem(
+      PAGE_ACCESS_RUN_ON_SITE,
+      l10n_util::GetStringFUTF16(
+          IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_SITE,
+          url_formatter::StripWWW(base::UTF8ToUTF16(
+              url::Origin::Create(web_contents->GetLastCommittedURL())
+                  .host()))),
+      kRadioGroup);
+  page_access_submenu_->AddRadioItemWithStringId(
+      PAGE_ACCESS_RUN_ON_ALL_SITES,
+      IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES, kRadioGroup);
+
+  // Add the learn more link.
+  page_access_submenu_->AddSeparator(ui::NORMAL_SEPARATOR);
   page_access_submenu_->AddItemWithStringId(
       PAGE_ACCESS_LEARN_MORE,
       IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_LEARN_MORE);

@@ -46,7 +46,9 @@ NavigateParams::~NavigateParams() {}
 
 void NavigateParams::FillNavigateParamsFromOpenURLParams(
     const content::OpenURLParams& params) {
+  this->initiator_origin = params.initiator_origin;
   this->referrer = params.referrer;
+  this->reload_type = params.reload_type;
   this->source_site_instance = params.source_site_instance;
   this->frame_tree_node_id = params.frame_tree_node_id;
   this->redirect_chain = params.redirect_chain;

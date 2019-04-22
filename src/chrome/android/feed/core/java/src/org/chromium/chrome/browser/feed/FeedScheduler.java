@@ -30,6 +30,7 @@ public interface FeedScheduler extends SchedulerApi {
      * To be called when articles are cleared.
      * @param suppressRefreshes whether the scheduler should temporarily avoid kicking off
      * refreshes. This is used, for example, when history data is deleted.
+     * @return If a refresh should be made by the caller.
      */
-    void onArticlesCleared(boolean suppressRefreshes);
+    boolean onArticlesCleared(boolean suppressRefreshes);
 }

@@ -16,7 +16,7 @@ using testing::InvokeWithoutArgs;
 
 namespace video_capture {
 
-MockDeviceTest::MockDeviceTest() : ref_factory_(base::DoNothing()) {}
+MockDeviceTest::MockDeviceTest() : service_keepalive_(nullptr, base::nullopt) {}
 
 MockDeviceTest::~MockDeviceTest() = default;
 
@@ -33,7 +33,7 @@ void MockDeviceTest::SetUp() {
       std::make_unique<DeviceFactoryMediaToMojoAdapter>(
           std::move(video_capture_system), base::DoNothing(),
           base::ThreadTaskRunnerHandle::Get());
-  mock_device_factory_adapter_->SetServiceRef(ref_factory_.CreateRef());
+  mock_device_factory_adapter_->SetServiceRef(service_keepalive_.CreateRef());
 
   mock_factory_binding_ = std::make_unique<mojo::Binding<mojom::DeviceFactory>>(
       mock_device_factory_adapter_.get(), mojo::MakeRequest(&factory_));

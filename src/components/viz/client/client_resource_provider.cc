@@ -4,11 +4,13 @@
 
 #include "components/viz/client/client_resource_provider.h"
 
+#include "base/bind.h"
 #include "base/bits.h"
 #include "base/debug/stack_trace.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/returned_resource.h"
@@ -54,8 +56,8 @@ struct ClientResourceProvider::ImportedResource {
 };
 
 ClientResourceProvider::ClientResourceProvider(
-    bool delegated_sync_points_required)
-    : delegated_sync_points_required_(delegated_sync_points_required) {
+    bool verified_sync_tokens_required)
+    : verified_sync_tokens_required_(verified_sync_tokens_required) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -93,6 +95,35 @@ void ClientResourceProvider::PrepareSendToParent(
     const std::vector<ResourceId>& export_ids,
     std::vector<TransferableResource>* list,
     ContextProvider* context_provider) {
+  auto cb = base::BindOnce(
+      [](scoped_refptr<ContextProvider> context_provider,
+         std::vector<GLbyte*>* tokens) {
+        context_provider->ContextGL()->VerifySyncTokensCHROMIUM(tokens->data(),
+                                                                tokens->size());
+      },
+      base::WrapRefCounted(context_provider));
+  PrepareSendToParentInternal(export_ids, list, std::move(cb));
+}
+
+void ClientResourceProvider::PrepareSendToParent(
+    const std::vector<ResourceId>& export_ids,
+    std::vector<TransferableResource>* list,
+    RasterContextProvider* context_provider) {
+  PrepareSendToParentInternal(
+      export_ids, list,
+      base::BindOnce(
+          [](scoped_refptr<RasterContextProvider> context_provider,
+             std::vector<GLbyte*>* tokens) {
+            context_provider->RasterInterface()->VerifySyncTokensCHROMIUM(
+                tokens->data(), tokens->size());
+          },
+          base::WrapRefCounted(context_provider)));
+}
+
+void ClientResourceProvider::PrepareSendToParentInternal(
+    const std::vector<ResourceId>& export_ids,
+    std::vector<TransferableResource>* list,
+    base::OnceCallback<void(std::vector<GLbyte*>* tokens)> verify_sync_tokens) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // This function goes through the array multiple times, store the resources
@@ -109,7 +140,7 @@ void ClientResourceProvider::PrepareSendToParent(
 
   // Lazily create any mailboxes and verify all unverified sync tokens.
   std::vector<GLbyte*> unverified_sync_tokens;
-  if (delegated_sync_points_required_) {
+  if (verified_sync_tokens_required_) {
     for (ImportedResource* imported : imports) {
       if (!imported->resource.is_software &&
           !imported->resource.mailbox_holder.sync_token.verified_flush()) {
@@ -120,10 +151,9 @@ void ClientResourceProvider::PrepareSendToParent(
   }
 
   if (!unverified_sync_tokens.empty()) {
-    DCHECK(delegated_sync_points_required_);
-    DCHECK(context_provider);
-    context_provider->ContextGL()->VerifySyncTokensCHROMIUM(
-        unverified_sync_tokens.data(), unverified_sync_tokens.size());
+    DCHECK(verified_sync_tokens_required_);
+    DCHECK(verify_sync_tokens);
+    std::move(verify_sync_tokens).Run(&unverified_sync_tokens);
   }
 
   for (ImportedResource* imported : imports) {
@@ -334,6 +364,7 @@ void ClientResourceProvider::ShutdownAndReleaseAllResources() {
 
 ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(
     GrContext* gr_context,
+    sk_sp<SkColorSpace> color_space,
     GLuint texture_id,
     GLenum texture_target,
     const gfx::Size& size,
@@ -351,13 +382,13 @@ ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(
   bool gpu_compositing = true;
   surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
       gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, msaa_sample_count,
-      ResourceFormatToClosestSkColorType(gpu_compositing, format), nullptr,
+      ResourceFormatToClosestSkColorType(gpu_compositing, format), color_space,
       &surface_props);
 }
 
 ClientResourceProvider::ScopedSkSurface::~ScopedSkSurface() {
   if (surface_)
-    surface_->prepareForExternalIO();
+    surface_->flush();
 }
 
 SkSurfaceProps ClientResourceProvider::ScopedSkSurface::ComputeSurfaceProps(

@@ -63,7 +63,9 @@ class BookmarkRemoteUpdatesHandler {
   //    ignored.
   // 3. Otherwise, a new node is created in the local bookmark model and
   //    registered in |bookmark_tracker_|.
-  void ProcessCreate(const syncer::UpdateResponseData& update);
+  // Returns true if a new bookmark has been registered in the
+  // |bookmark_tracker_|, false otherwise.
+  bool ProcessCreate(const syncer::UpdateResponseData& update);
 
   // Processes a remote update of a bookmark node. |update| must not be a
   // deletion, and the server_id must be already tracked, otherwise, it is a
@@ -83,11 +85,11 @@ class BookmarkRemoteUpdatesHandler {
                      const SyncedBookmarkTracker::Entity* tracked_entity);
 
   // Processes a conflict where the bookmark has been changed both locally and
-  // remotely. It applies the general policy the server wins expcet in the case
+  // remotely. It applies the general policy the server wins except in the case
   // of remote deletions in which local wins. |tracked_entity| is the tracked
   // entity for that server_id. It is passed as a dependency instead of
-  // performing a lookup inside ProcessDelete() to avoid wasting CPU
-  // cycles for doing another lookup (this code runs on the UI thread).
+  // performing a lookup inside ProcessDelete() to avoid wasting CPU cycles for
+  // doing another lookup (this code runs on the UI thread).
   void ProcessConflict(const syncer::UpdateResponseData& update,
                        const SyncedBookmarkTracker::Entity* tracked_entity);
 

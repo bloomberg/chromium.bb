@@ -4,6 +4,7 @@
 
 #include "ui/display/manager/update_display_configuration_task.h"
 
+#include "base/bind.h"
 #include "ui/display/manager/configure_displays_task.h"
 #include "ui/display/manager/display_layout_manager.h"
 #include "ui/display/manager/display_util.h"
@@ -104,13 +105,13 @@ void UpdateDisplayConfigurationTask::EnterState(
 void UpdateDisplayConfigurationTask::OnStateEntered(
     ConfigureDisplaysTask::Status status) {
   bool success = status != ConfigureDisplaysTask::ERROR;
-  if (new_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR &&
+  if (new_display_state_ == MULTIPLE_DISPLAY_STATE_MULTI_MIRROR &&
       status == ConfigureDisplaysTask::PARTIAL_SUCCESS)
     success = false;
 
   if (layout_manager_->GetSoftwareMirroringController()) {
     bool enable_software_mirroring = false;
-    if (!success && new_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR) {
+    if (!success && new_display_state_ == MULTIPLE_DISPLAY_STATE_MULTI_MIRROR) {
       if (layout_manager_->GetDisplayState() !=
               MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED ||
           layout_manager_->GetPowerState() != new_power_state_ ||
@@ -145,8 +146,8 @@ void UpdateDisplayConfigurationTask::OnEnableSoftwareMirroring(
 }
 
 void UpdateDisplayConfigurationTask::FinishConfiguration(bool success) {
-  callback_.Run(success, cached_displays_, new_display_state_,
-                new_power_state_);
+  callback_.Run(success, cached_displays_, cached_unassociated_displays_,
+                new_display_state_, new_power_state_);
 }
 
 bool UpdateDisplayConfigurationTask::ShouldForceDpms() const {

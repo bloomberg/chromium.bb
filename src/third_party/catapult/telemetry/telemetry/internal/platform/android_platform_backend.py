@@ -7,14 +7,13 @@ import os
 import posixpath
 import re
 import subprocess
-import tempfile
 
 from telemetry.core import android_platform
 from telemetry.core import exceptions
 from telemetry.core import util
+from telemetry import compat_mode_options
 from telemetry import decorators
 from telemetry.internal.forwarders import android_forwarder
-from telemetry.internal.image_processing import video
 from telemetry.internal.platform import android_device
 from telemetry.internal.platform import linux_based_platform_backend
 from telemetry.internal.platform.power_monitor import android_dumpsys_power_monitor
@@ -34,9 +33,7 @@ from devil.android.perf import cache_control
 from devil.android.perf import perf_control
 from devil.android.perf import thermal_throttle
 from devil.android.sdk import shared_prefs
-from devil.android.sdk import version_codes
 from devil.android.tools import provision_devices
-from devil.android.tools import video_recorder
 
 try:
   # devil.android.forwarder uses fcntl, which doesn't exist on Windows.
@@ -65,23 +62,27 @@ _DEVICE_CLEAR_SYSTEM_CACHE_TOOL_LOCATION = '/data/local/tmp/clear_system_cache'
 
 class AndroidPlatformBackend(
     linux_based_platform_backend.LinuxBasedPlatformBackend):
-  def __init__(self, device):
+  def __init__(self, device, require_root):
     assert device, (
         'AndroidPlatformBackend can only be initialized from remote device')
     super(AndroidPlatformBackend, self).__init__(device)
     self._device = device_utils.DeviceUtils(device.device_id)
-    # Trying to root the device, if possible.
-    if not self._device.HasRoot():
-      try:
-        self._device.EnableRoot()
-      except device_errors.CommandFailedError:
-        logging.warning('Unable to root %s', str(self._device))
-    self._can_elevate_privilege = (
-        self._device.HasRoot() or self._device.NeedsSU())
-    assert self._can_elevate_privilege, (
-        'Android device must have root access to run Telemetry')
+    self._require_root = require_root
+    if self._require_root:
+      # Trying to root the device, if possible.
+      if not self._device.HasRoot():
+        try:
+          self._device.EnableRoot()
+        except device_errors.CommandFailedError:
+          logging.warning('Unable to root %s', str(self._device))
+      self._can_elevate_privilege = (
+          self._device.HasRoot() or self._device.NeedsSU())
+      assert self._can_elevate_privilege, (
+          'Android device must have root access to run Telemetry')
+      self._enable_performance_mode = device.enable_performance_mode
+    else:
+      self._enable_performance_mode = False
     self._battery = battery_utils.BatteryUtils(self._device)
-    self._enable_performance_mode = device.enable_performance_mode
     self._surface_stats_collector = None
     self._perf_tests_setup = perf_control.PerfControl(self._device)
     self._thermal_throttle = thermal_throttle.ThermalThrottle(self._device)
@@ -96,7 +97,6 @@ class AndroidPlatformBackend(
             android_fuelgauge_power_monitor.FuelGaugePowerMonitor(
                 self._battery),
         ], self._battery))
-    self._video_recorder = None
     self._system_ui = None
 
     _FixPossibleAdbInstability()
@@ -112,7 +112,9 @@ class AndroidPlatformBackend(
   @classmethod
   def CreatePlatformForDevice(cls, device, finder_options):
     assert cls.SupportsDevice(device)
-    platform_backend = AndroidPlatformBackend(device)
+    require_root = (compat_mode_options.DONT_REQUIRE_ROOTED_DEVICE not in
+                    finder_options.browser_options.compatibility_mode)
+    platform_backend = AndroidPlatformBackend(device, require_root)
     return android_platform.AndroidPlatform(platform_backend)
 
   def _CreateForwarderFactory(self):
@@ -373,37 +375,9 @@ class AndroidPlatformBackend(
   def CanLaunchApplication(self, application):
     return bool(self._device.GetApplicationPaths(application))
 
-  def InstallApplication(self, application):
-    self._device.Install(application)
-
-  @decorators.Cache
-  def CanCaptureVideo(self):
-    return self.GetOSVersionName() >= 'K'
-
-  def StartVideoCapture(self, min_bitrate_mbps):
-    """Starts the video capture at specified bitrate."""
-    min_bitrate_mbps = max(min_bitrate_mbps, 0.1)
-    if min_bitrate_mbps > 100:
-      raise ValueError('Android video capture cannot capture at %dmbps. '
-                       'Max capture rate is 100mbps.' % min_bitrate_mbps)
-    if self.is_video_capture_running:
-      self._video_recorder.Stop()
-    self._video_recorder = video_recorder.VideoRecorder(
-        self._device, megabits_per_second=min_bitrate_mbps)
-    self._video_recorder.Start(timeout=5)
-
-  @property
-  def is_video_capture_running(self):
-    return self._video_recorder is not None
-
-  def StopVideoCapture(self):
-    assert self.is_video_capture_running, 'Must start video capture first'
-    self._video_recorder.Stop()
-    video_file_obj = tempfile.NamedTemporaryFile()
-    self._video_recorder.Pull(video_file_obj.name)
-    self._video_recorder = None
-
-    return video.Video(video_file_obj)
+  # pylint: disable=arguments-differ
+  def InstallApplication(self, application, modules=None):
+    self._device.Install(application, modules=modules)
 
   def CanMonitorPower(self):
     return self._power_monitor.CanMonitorPower()
@@ -413,12 +387,6 @@ class AndroidPlatformBackend(
 
   def StopMonitoringPower(self):
     return self._power_monitor.StopMonitoringPower()
-
-  def CanMonitorNetworkData(self):
-    return self._device.build_version_sdk >= version_codes.LOLLIPOP
-
-  def GetNetworkData(self, browser):
-    return self._battery.GetNetworkData(browser._browser_backend.package)
 
   def PathExists(self, device_path, **kwargs):
     """ Return whether the given path exists on the device.
@@ -591,7 +559,10 @@ class AndroidPlatformBackend(
     Args:
       package: The full package name string of the application.
     """
-    return '/data/data/%s/' % package
+    if self._require_root:
+      return '/data/data/%s/' % package
+    else:
+      return '/data/local/tmp/%s/' % package
 
   def SetDebugApp(self, package):
     """Set application to debugging.
@@ -605,7 +576,7 @@ class AndroidPlatformBackend(
           ['am', 'set-debug-app', '--persistent', package],
           check_return=True)
 
-  def GetLogCat(self, number_of_lines=500):
+  def GetLogCat(self, number_of_lines=1500):
     """Returns most recent lines of logcat dump.
 
     Args:
@@ -628,12 +599,15 @@ class AndroidPlatformBackend(
     return 'Cannot get standard output on Android'
 
   def GetStackTrace(self):
-    """Returns stack trace.
+    """Returns a recent stack trace from a crash.
 
     The stack trace consists of raw logcat dump, logcat dump with symbols,
-    and stack info from tomstone files.
+    and stack info from tombstone files, all concatenated into one string.
     """
     def Decorate(title, content):
+      if not content or content.isspace():
+        content = ('**EMPTY** - could be explained by log messages '
+                   'preceding the previous python Traceback - best wishes')
       return "%s\n%s\n%s\n" % (title, content, '*' * 80)
 
     # Get the UI nodes that can be found on the screen
@@ -642,25 +616,31 @@ class AndroidPlatformBackend(
     # Get the last lines of logcat (large enough to contain stacktrace)
     logcat = self.GetLogCat()
     ret += Decorate('Logcat', logcat)
-    stack = os.path.join(util.GetChromiumSrcDir(), 'third_party',
-                         'android_platform', 'development', 'scripts', 'stack')
+
+    # Determine the build directory.
+    build_path = None
+    for b in util.GetBuildDirectories():
+      if os.path.exists(b):
+        build_path = b
+        break
+
     # Try to symbolize logcat.
-    if os.path.exists(stack):
+    chromium_src_dir = util.GetChromiumSrcDir()
+    stack = os.path.join(chromium_src_dir, 'third_party', 'android_platform',
+                         'development', 'scripts', 'stack')
+    if _ExecutableExists(stack):
       cmd = [stack]
       arch = self.GetArchName()
       arch = _ARCH_TO_STACK_TOOL_ARCH.get(arch, arch)
       cmd.append('--arch=%s' % arch)
-      for build_path in util.GetBuildDirectories():
-        if os.path.exists(build_path):
-          cmd.append('--output-directory=%s' % build_path)
-          break
+      cmd.append('--output-directory=%s' % build_path)
       p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
       ret += Decorate('Stack from Logcat', p.communicate(input=logcat)[0])
 
     # Try to get tombstones.
-    tombstones = os.path.join(util.GetChromiumSrcDir(), 'build', 'android',
+    tombstones = os.path.join(chromium_src_dir, 'build', 'android',
                               'tombstones.py')
-    if os.path.exists(tombstones):
+    if _ExecutableExists(tombstones):
       tombstones_cmd = [
           tombstones, '-w',
           '--device', self._device.adb.GetDeviceSerial(),
@@ -669,14 +649,70 @@ class AndroidPlatformBackend(
       ret += Decorate('Tombstones',
                       subprocess.Popen(tombstones_cmd,
                                        stdout=subprocess.PIPE).communicate()[0])
-    return (True, ret)
 
-  def GetMinidumpPath(self):
-    return None
+    # Attempt to get detailed stack traces with Crashpad.
+    stackwalker_path = os.path.join(chromium_src_dir, 'build', 'android',
+                                    'stacktrace', 'crashpad_stackwalker.py')
+    minidump_stackwalk_path = os.path.join(build_path, 'minidump_stackwalk')
+    if (_ExecutableExists(stackwalker_path) and
+        _ExecutableExists(minidump_stackwalk_path)):
+      crashpad_cmd = [
+          stackwalker_path,
+          '--device', self._device.adb.GetDeviceSerial(),
+          '--adb-path', self._device.adb.GetAdbPath(),
+          '--build-path', build_path,
+          '--chrome-cache-path',
+          os.path.join(
+              self.GetProfileDir(
+                  self._ExtractLastNativeCrashPackageFromLogcat(logcat)),
+              'cache'),
+      ]
+      ret += Decorate('Crashpad stackwalk',
+                      subprocess.Popen(crashpad_cmd,
+                                       stdout=subprocess.PIPE).communicate()[0])
+    return (True, ret)
 
   def IsScreenOn(self):
     """Determines if device screen is on."""
     return self._device.IsScreenOn()
+
+  @staticmethod
+  def _ExtractLastNativeCrashPackageFromLogcat(
+      logcat, default_package_name='com.google.android.apps.chrome'):
+    # pylint: disable=line-too-long
+    # Match against lines like:
+    # <unimportant prefix> : Fatal signal 5 (SIGTRAP), code -6 in tid NNNNN (oid.apps.chrome)
+    # <a few more lines>
+    # <unimportant prefix>: Build fingerprint: 'google/bullhead/bullhead:7.1.2/N2G47F/3769476:userdebug/dev-keys'
+    # <a few more lines>
+    # <unimportant prefix> : pid: NNNNN, tid: NNNNN, name: oid.apps.chrome  >>> com.google.android.apps.chrome <<<
+    # pylint: enable=line-too-long
+    fatal_signal_re = re.compile(r'.*: Fatal signal [0-9]')
+    build_fingerprint_re = re.compile(r'.*: Build fingerprint: ')
+    package_re = re.compile(r'.*: pid: [0-9]+, tid: [0-9]+, name: .*'
+                            r'>>> (?P<package_name>[^ ]+) <<<')
+    last_package = default_package_name
+    build_fingerprint_found = False
+    lookahead_lines_remaining = 0
+    for line in logcat.splitlines():
+      if fatal_signal_re.match(line):
+        lookahead_lines_remaining = 10
+        continue
+      if not lookahead_lines_remaining:
+        build_fingerprint_found = False
+      else:
+        lookahead_lines_remaining -= 1
+        if build_fingerprint_re.match(line):
+          build_fingerprint_found = True
+          continue
+        if build_fingerprint_found:
+          m = package_re.match(line)
+          if m:
+            last_package = m.group('package_name')
+            # The package name may have a trailing process name in it,
+            # for example: "org.chromium.chrome:privileged_process0".
+            last_package = last_package.split(':')[0]
+    return last_package
 
   @staticmethod
   def _IsScreenLocked(input_methods):
@@ -723,6 +759,7 @@ class AndroidPlatformBackend(
     # Temperature is in tenths of a degree C, so we convert to that scale.
     self._battery.LetBatteryCoolToTemperature(temp * 10)
 
+
 def _FixPossibleAdbInstability():
   """Host side workaround for crbug.com/268450 (adb instability).
 
@@ -741,6 +778,7 @@ def _FixPossibleAdbInstability():
     except (psutil.NoSuchProcess, psutil.AccessDenied):
       logging.warn('Failed to set adb process CPU affinity')
 
+
 def _BuildEvent(cat, name, ph, pid, ts, args):
   event = {
       'cat': cat,
@@ -755,3 +793,7 @@ def _BuildEvent(cat, name, ph, pid, ts, args):
   if ph == 'I':
     event['s'] = 't'
   return event
+
+
+def _ExecutableExists(file_name):
+  return os.access(file_name, os.X_OK)

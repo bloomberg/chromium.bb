@@ -38,8 +38,7 @@ class WallpaperController;
 //
 //  Material Design:
 //    1. Shelf button backgrounds
-//    2. Overlay for the SHELF_BACKGROUND_OVERLAP and SHELF_BACKGROUND_MAXIMIZED
-//       states.
+//    2. Overlay for the SHELF_BACKGROUND_MAXIMIZED state.
 class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
                                            public gfx::AnimationDelegate,
                                            public WallpaperControllerObserver {
@@ -147,8 +146,7 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
   // Sets the target values for |shelf_background_values| and
   // |item_background_values| according to |background_type|.
   void GetTargetValues(ShelfBackgroundType background_type,
-                       AnimationValues* shelf_background_values,
-                       AnimationValues* item_background_values) const;
+                       AnimationValues* shelf_background_values) const;
 
   // Updates the animation values corresponding to the |t| value between 0 and
   // 1.

@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/common/webui_url_constants.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "content/public/browser/web_contents.h"
@@ -21,8 +21,6 @@
 namespace {
 
 // Constants defined for a better formatting of the test tables:
-const signin::AccountConsistencyMethod kDiceFixAuthErrors =
-    signin::AccountConsistencyMethod::kDiceFixAuthErrors;
 const signin::AccountConsistencyMethod kDice =
     signin::AccountConsistencyMethod::kDice;
 const signin::AccountConsistencyMethod kDiceMigration =
@@ -132,14 +130,10 @@ struct TestConfiguration {
 TestConfiguration kEnableSyncTestCases[] = {
     // clang-format off
     // AccountConsistency | signed_in | signin_tab | callback_called | show_ntp
-    {kDiceFixAuthErrors,    false,      false,       false,            false},
-    {kDiceFixAuthErrors,    false,      true,        false,            false},
     {kDiceMigration,        false,      false,       false,            false},
     {kDiceMigration,        false,      true,        true,             true},
     {kDice,                 false,      false,       false,            false},
     {kDice,                 false,      true,        true,             true},
-    {kDiceFixAuthErrors,    true,       false,       false,            false},
-    {kDiceFixAuthErrors,    true,       false,       false,            false},
     {kDiceMigration,        true,       false,       false,            false},
     {kDiceMigration,        true,       false,       false,            false},
     {kDice,                 true,       false,       false,            false},
@@ -167,26 +161,22 @@ TEST_P(ProcessDiceHeaderDelegateImplTestEnableSync, EnableSync) {
   delegate->EnableSync(account_id_);
   EXPECT_EQ(GetParam().callback_called, enable_sync_called_);
   GURL expected_url =
-      GetParam().show_ntp ? GURL(chrome::kChromeUINewTabURL) : kSigninURL;
+      GetParam().show_ntp ? GURL(chrome::kChromeSearchLocalNtpUrl) : kSigninURL;
   EXPECT_EQ(expected_url, web_contents()->GetVisibleURL());
   EXPECT_FALSE(show_error_called_);
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        ProcessDiceHeaderDelegateImplTestEnableSync,
-                        ::testing::ValuesIn(kEnableSyncTestCases));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         ProcessDiceHeaderDelegateImplTestEnableSync,
+                         ::testing::ValuesIn(kEnableSyncTestCases));
 
 TestConfiguration kHandleTokenExchangeFailureTestCases[] = {
     // clang-format off
     // AccountConsistency | signed_in | signin_tab | callback_called | show_ntp
-    {kDiceFixAuthErrors,    false,      false,       false,            false},
-    {kDiceFixAuthErrors,    false,      true,        false,            false},
     {kDiceMigration,        false,      false,       false,            false},
     {kDiceMigration,        false,      true,        true,             true},
     {kDice,                 false,      false,       true,             false},
     {kDice,                 false,      true,        true,             true},
-    {kDiceFixAuthErrors,    true,       false,       false,            false},
-    {kDiceFixAuthErrors,    true,       false,       false,            false},
     {kDiceMigration,        true,       false,       false,            false},
     {kDiceMigration,        true,       false,       false,            false},
     {kDice,                 true,       false,       true,             false},
@@ -216,11 +206,11 @@ TEST_P(ProcessDiceHeaderDelegateImplTestHandleTokenExchangeFailure,
   EXPECT_FALSE(enable_sync_called_);
   EXPECT_EQ(GetParam().callback_called, show_error_called_);
   GURL expected_url =
-      GetParam().show_ntp ? GURL(chrome::kChromeUINewTabURL) : kSigninURL;
+      GetParam().show_ntp ? GURL(chrome::kChromeSearchLocalNtpUrl) : kSigninURL;
   EXPECT_EQ(expected_url, web_contents()->GetVisibleURL());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     ProcessDiceHeaderDelegateImplTestHandleTokenExchangeFailure,
     ::testing::ValuesIn(kHandleTokenExchangeFailureTestCases));

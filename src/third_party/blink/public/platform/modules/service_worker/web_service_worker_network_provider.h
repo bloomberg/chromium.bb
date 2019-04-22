@@ -34,7 +34,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-shared.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 
@@ -42,12 +42,17 @@ namespace blink {
 
 class WebURLRequest;
 
-// This interface is implemented by the embedder and is only called on the main
-// thread. Currently the embedder has implementations for service worker clients
-// (frames and shared workers), and service workers themselves.
+// This interface allows the Blink embedder to implement loading functionality
+// related to service workers. It is consulted whenever a DocumentLoader makes a
+// request.
 //
-// An instance of this class is owned by the associated loading context, e.g.
-// DocumentLoader.
+// It is owned by DocumentLoader and only used on the main thread.
+//
+// Currently the Blink embedder has implementations for service worker clients
+// (frames and shared workers), and service workers themselves. Note that for
+// workers, the interface is only used for requests from the shadow page
+// (WorkerShadowPage). For hooking into off-the-main-thread loading from
+// workers, the embedder can implement WebWorkerFetchContext.
 class WebServiceWorkerNetworkProvider {
  public:
   virtual ~WebServiceWorkerNetworkProvider() = default;
@@ -55,33 +60,25 @@ class WebServiceWorkerNetworkProvider {
   // A request is about to be sent out, and the embedder may modify it. The
   // request is writable, and changes to the URL, for example, will change the
   // request made.
-  virtual void WillSendRequest(WebURLRequest&) {}
+  virtual void WillSendRequest(WebURLRequest&) = 0;
 
-  // Returns an identifier of this provider.
-  virtual int ProviderID() const { return -1; }
+  // Returns a URLLoader for loading |request|. May return nullptr to fall back
+  // to the default loading behavior.
+  virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
+      const WebURLRequest& request,
+      std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>) = 0;
 
   // For service worker clients.
   virtual blink::mojom::ControllerServiceWorkerMode
-  IsControlledByServiceWorker() {
-    return blink::mojom::ControllerServiceWorkerMode::kNoController;
-  }
+  IsControlledByServiceWorker() = 0;
 
   // For service worker clients. Returns an identifier of the controller service
   // worker associated with the loading context.
-  virtual int64_t ControllerServiceWorkerID() { return -1; }
-
-  // S13nServiceWorker:
-  // Returns a URLLoader for the associated context. May return nullptr
-  // if this doesn't provide a ServiceWorker specific URLLoader.
-  virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
-      const WebURLRequest& request,
-      std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>) {
-    return nullptr;
-  }
+  virtual int64_t ControllerServiceWorkerID() = 0;
 
   // For service worker clients. Called when IdlenessDetector emits its network
   // idle signal.
-  virtual void DispatchNetworkQuiet() {}
+  virtual void DispatchNetworkQuiet() = 0;
 };
 
 }  // namespace blink

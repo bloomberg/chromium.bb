@@ -39,7 +39,7 @@
 // Then you simply #include this file as well as gtest.h and add the
 // following statement to my_task_runner_unittest.cc:
 //
-//   INSTANTIATE_TYPED_TEST_CASE_P(
+//   INSTANTIATE_TYPED_TEST_SUITE_P(
 //       MyTaskRunner, TaskRunnerTest, MyTaskRunnerTestDelegate);
 //
 // Easy!
@@ -47,9 +47,8 @@
 // The optional test harnesses TaskRunnerAffinityTest can be
 // instanciated in the same way, using the same delegate:
 //
-//   INSTANTIATE_TYPED_TEST_CASE_P(
+//   INSTANTIATE_TYPED_TEST_SUITE_P(
 //       MyTaskRunner, TaskRunnerAffinityTest, MyTaskRunnerTestDelegate);
-
 
 #ifndef BASE_TEST_TASK_RUNNER_TEST_TEMPLATE_H_
 #define BASE_TEST_TASK_RUNNER_TEST_TEMPLATE_H_
@@ -115,7 +114,7 @@ class TaskRunnerTest : public testing::Test {
   TaskRunnerTestDelegate delegate_;
 };
 
-TYPED_TEST_CASE_P(TaskRunnerTest);
+TYPED_TEST_SUITE_P(TaskRunnerTest);
 
 // We can't really test much, since TaskRunner provides very few
 // guarantees.
@@ -168,7 +167,7 @@ TYPED_TEST_P(TaskRunnerTest, Delayed) {
 
 // The TaskRunnerTest test case verifies behaviour that is expected from a
 // task runner in order to be conformant.
-REGISTER_TYPED_TEST_CASE_P(TaskRunnerTest, Basic, Delayed);
+REGISTER_TYPED_TEST_SUITE_P(TaskRunnerTest, Basic, Delayed);
 
 namespace test {
 
@@ -182,7 +181,7 @@ void ExpectRunsTasksInCurrentSequence(bool expected_value,
 template <typename TaskRunnerTestDelegate>
 class TaskRunnerAffinityTest : public TaskRunnerTest<TaskRunnerTestDelegate> {};
 
-TYPED_TEST_CASE_P(TaskRunnerAffinityTest);
+TYPED_TEST_SUITE_P(TaskRunnerAffinityTest);
 
 // Post a bunch of tasks to the task runner as well as to a separate
 // thread, each checking the value of RunsTasksInCurrentSequence(),
@@ -223,7 +222,7 @@ TYPED_TEST_P(TaskRunnerAffinityTest, RunsTasksInCurrentSequence) {
 
 // TaskRunnerAffinityTest tests that the TaskRunner implementation
 // can determine if tasks will never be run on a specific thread.
-REGISTER_TYPED_TEST_CASE_P(TaskRunnerAffinityTest, RunsTasksInCurrentSequence);
+REGISTER_TYPED_TEST_SUITE_P(TaskRunnerAffinityTest, RunsTasksInCurrentSequence);
 
 }  // namespace base
 

@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -40,10 +41,11 @@ ppapi::PpapiPermissions GetNaClPermissions(
     uint32_t permission_bits,
     content::BrowserContext* browser_context,
     const GURL& document_url) {
-  // Don't grant any special permissions to NaCl plugins. We don't want
-  // a compromised renderer to be able to start a NaCl plugin with Dev or Flash
-  // permissions which may expand the surface area of the sandbox.
-  uint32_t nacl_permissions = ppapi::PERMISSION_NONE;
+  // Default permissions keep NaCl plugins backwards-compatible, but don't
+  // grant any other special permissions. We don't want a compromised renderer
+  // to be able to start a NaCl plugin with Dev or Flash permissions which may
+  // expand the surface area of the sandbox.
+  uint32_t nacl_permissions = ppapi::PERMISSION_DEFAULT;
   if (content::PluginService::GetInstance()->PpapiDevChannelSupported(
           browser_context, document_url))
     nacl_permissions |= ppapi::PERMISSION_DEV_CHANNEL;
@@ -171,12 +173,8 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
     GURL gurl(original_request_list[i].resource_url);
     // Important security check: Do the same check as OpenNaClExecutable()
     // in nacl_file_host.cc.
-    if (!content::SiteInstance::IsSameWebSite(
-            site_instance->GetBrowserContext(),
-            site_instance->GetSiteURL(),
-            gurl)) {
+    if (!site_instance->IsSameSiteWithURL(gurl))
       continue;
-    }
     safe_launch_params.resource_prefetch_request_list.push_back(
         original_request_list[i]);
   }

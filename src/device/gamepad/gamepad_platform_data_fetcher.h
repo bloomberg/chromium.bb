@@ -20,13 +20,16 @@
 #include "device/gamepad/gamepad_platform_data_fetcher_android.h"
 #elif defined(OS_WIN)
 #include "device/gamepad/gamepad_platform_data_fetcher_win.h"
+#include "device/gamepad/nintendo_data_fetcher.h"
 #include "device/gamepad/raw_input_data_fetcher_win.h"
 #elif defined(OS_MACOSX)
 #include "device/gamepad/game_controller_data_fetcher_mac.h"
 #include "device/gamepad/gamepad_platform_data_fetcher_mac.h"
+#include "device/gamepad/nintendo_data_fetcher.h"
 #include "device/gamepad/xbox_data_fetcher_mac.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) && defined(USE_UDEV)
 #include "device/gamepad/gamepad_platform_data_fetcher_linux.h"
+#include "device/gamepad/nintendo_data_fetcher.h"
 #endif
 
 namespace device {
@@ -39,17 +42,21 @@ void AddGamepadPlatformDataFetchers(GamepadDataFetcherManager* manager) {
 #elif defined(OS_WIN)
 
   manager->AddFactory(new GamepadPlatformDataFetcherWin::Factory());
+  manager->AddFactory(new NintendoDataFetcher::Factory());
   manager->AddFactory(new RawInputDataFetcher::Factory());
 
 #elif defined(OS_MACOSX)
 
   manager->AddFactory(new GameControllerDataFetcherMac::Factory());
   manager->AddFactory(new GamepadPlatformDataFetcherMac::Factory());
+  manager->AddFactory(new NintendoDataFetcher::Factory());
   manager->AddFactory(new XboxDataFetcher::Factory());
 
 #elif defined(OS_LINUX) && defined(USE_UDEV)
 
-  manager->AddFactory(new GamepadPlatformDataFetcherLinux::Factory());
+  manager->AddFactory(new GamepadPlatformDataFetcherLinux::Factory(
+      base::SequencedTaskRunnerHandle::Get()));
+  manager->AddFactory(new NintendoDataFetcher::Factory());
 
 #endif
 }

@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/display_layout_manager.h"
-#include "ui/display/manager/fake_display_snapshot.h"
 #include "ui/display/manager/test/action_logger_util.h"
 #include "ui/display/manager/test/test_native_display_delegate.h"
 
@@ -87,7 +87,7 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
     gfx::Point origin;
     for (DisplaySnapshot* display : displays) {
       const DisplayMode* mode = display->native_mode();
-      if (new_display_state == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR)
+      if (new_display_state == MULTIPLE_DISPLAY_STATE_MULTI_MIRROR)
         mode = should_mirror_ ? FindMirrorMode(displays) : nullptr;
 
       if (!mode)
@@ -99,7 +99,7 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
         requests->push_back(DisplayConfigureRequest(display, nullptr, origin));
       }
 
-      if (new_display_state != MULTIPLE_DISPLAY_STATE_DUAL_MIRROR)
+      if (new_display_state != MULTIPLE_DISPLAY_STATE_MULTI_MIRROR)
         origin.Offset(0, mode->size().height());
     }
 
@@ -112,7 +112,7 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
   }
 
   bool IsMirroring() const override {
-    return display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR;
+    return display_state_ == MULTIPLE_DISPLAY_STATE_MULTI_MIRROR;
   }
 
  private:
@@ -172,10 +172,12 @@ class UpdateDisplayConfigurationTaskTest : public testing::Test {
     delegate_.set_outputs(displays);
   }
 
-  void ResponseCallback(bool success,
-                        const std::vector<DisplaySnapshot*>& displays,
-                        MultipleDisplayState new_display_state,
-                        chromeos::DisplayPowerState new_power_state) {
+  void ResponseCallback(
+      bool success,
+      const std::vector<DisplaySnapshot*>& displays,
+      const std::vector<DisplaySnapshot*>& unassociated_displays,
+      MultipleDisplayState new_display_state,
+      chromeos::DisplayPowerState new_power_state) {
     configured_ = true;
     configuration_status_ = success;
     display_states_ = displays;
@@ -281,7 +283,7 @@ TEST_F(UpdateDisplayConfigurationTaskTest, MirrorConfiguration) {
 
   {
     UpdateDisplayConfigurationTask task(
-        &delegate_, &layout_manager_, MULTIPLE_DISPLAY_STATE_DUAL_MIRROR,
+        &delegate_, &layout_manager_, MULTIPLE_DISPLAY_STATE_MULTI_MIRROR,
         chromeos::DISPLAY_POWER_ALL_ON, 0, false,
         base::Bind(&UpdateDisplayConfigurationTaskTest::ResponseCallback,
                    base::Unretained(this)));
@@ -290,7 +292,7 @@ TEST_F(UpdateDisplayConfigurationTaskTest, MirrorConfiguration) {
 
   EXPECT_TRUE(configured_);
   EXPECT_TRUE(configuration_status_);
-  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, display_state_);
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_MIRROR, display_state_);
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, power_state_);
   EXPECT_EQ(
       JoinActions(
@@ -306,7 +308,7 @@ TEST_F(UpdateDisplayConfigurationTaskTest, FailMirrorConfiguration) {
 
   {
     UpdateDisplayConfigurationTask task(
-        &delegate_, &layout_manager_, MULTIPLE_DISPLAY_STATE_DUAL_MIRROR,
+        &delegate_, &layout_manager_, MULTIPLE_DISPLAY_STATE_MULTI_MIRROR,
         chromeos::DISPLAY_POWER_ALL_ON, 0, false,
         base::Bind(&UpdateDisplayConfigurationTaskTest::ResponseCallback,
                    base::Unretained(this)));
@@ -406,7 +408,7 @@ TEST_F(UpdateDisplayConfigurationTaskTest, NoopSoftwareMirrorConfiguration) {
 
   {
     UpdateDisplayConfigurationTask task(
-        &delegate_, &layout_manager_, MULTIPLE_DISPLAY_STATE_DUAL_MIRROR,
+        &delegate_, &layout_manager_, MULTIPLE_DISPLAY_STATE_MULTI_MIRROR,
         chromeos::DISPLAY_POWER_ALL_ON, 0, false,
         base::Bind(&UpdateDisplayConfigurationTaskTest::ResponseCallback,
                    base::Unretained(this)));
@@ -440,7 +442,7 @@ TEST_F(UpdateDisplayConfigurationTaskTest,
 
   {
     UpdateDisplayConfigurationTask task(
-        &delegate_, &layout_manager_, MULTIPLE_DISPLAY_STATE_DUAL_MIRROR,
+        &delegate_, &layout_manager_, MULTIPLE_DISPLAY_STATE_MULTI_MIRROR,
         chromeos::DISPLAY_POWER_ALL_ON, 0, true /* force_configure */,
         base::Bind(&UpdateDisplayConfigurationTaskTest::ResponseCallback,
                    base::Unretained(this)));

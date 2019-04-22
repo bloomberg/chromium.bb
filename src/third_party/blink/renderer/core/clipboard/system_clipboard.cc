@@ -100,14 +100,14 @@ String SystemClipboard::ReadPlainText(mojom::ClipboardBuffer buffer) {
 }
 
 void SystemClipboard::WritePlainText(const String& plain_text,
-                                     SmartReplaceOption) {
-  // FIXME: add support for smart replace
+                                             SmartReplaceOption) {
+  // TODO(https://crbug.com/106449): add support for smart replace, which is
+  // currently under-specified.
   String text = plain_text;
 #if defined(OS_WIN)
   ReplaceNewlinesWithWindowsStyleNewlines(text);
 #endif
   clipboard_->WriteText(mojom::ClipboardBuffer::kStandard, NonNullString(text));
-  clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
 String SystemClipboard::ReadHTML(KURL& url,
@@ -142,7 +142,6 @@ void SystemClipboard::WriteHTML(const String& markup,
   clipboard_->WriteText(mojom::ClipboardBuffer::kStandard, NonNullString(text));
   if (smart_replace_option == kCanSmartReplace)
     clipboard_->WriteSmartPasteMarker(mojom::ClipboardBuffer::kStandard);
-  clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
 String SystemClipboard::ReadRTF() {
@@ -160,22 +159,15 @@ SkBitmap SystemClipboard::ReadImage(mojom::ClipboardBuffer buffer) {
   return image;
 }
 
-void SystemClipboard::WriteImage(Image* image,
-                                 const KURL& url,
-                                 const String& title) {
+void SystemClipboard::WriteImageWithTag(Image* image,
+                                                const KURL& url,
+                                                const String& title) {
   DCHECK(image);
 
   PaintImage paint_image = image->PaintImageForCurrentFrame();
   SkBitmap bitmap;
   if (sk_sp<SkImage> sk_image = paint_image.GetSkImage())
     sk_image->asLegacyBitmap(&bitmap);
-  if (bitmap.isNull())
-    return;
-
-  // TODO(piman): this should not be NULL, but it is. crbug.com/369621
-  if (!bitmap.getPixels())
-    return;
-
   clipboard_->WriteImage(mojom::ClipboardBuffer::kStandard, bitmap);
 
   if (url.IsValid() && !url.IsEmpty()) {
@@ -195,7 +187,10 @@ void SystemClipboard::WriteImage(Image* image,
     clipboard_->WriteHtml(mojom::ClipboardBuffer::kStandard,
                           URLToImageMarkup(url, title), KURL());
   }
-  clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
+}
+
+void SystemClipboard::WriteImage(const SkBitmap& bitmap) {
+  clipboard_->WriteImage(mojom::ClipboardBuffer::kStandard, bitmap);
 }
 
 String SystemClipboard::ReadCustomData(const String& type) {
@@ -220,9 +215,7 @@ void SystemClipboard::WriteDataObject(DataObject* data_object) {
 
   HashMap<String, String> custom_data;
   WebDragData data = data_object->ToWebDragData();
-  const WebVector<WebDragData::Item>& item_list = data.Items();
-  for (size_t i = 0; i < item_list.size(); ++i) {
-    const WebDragData::Item& item = item_list[i];
+  for (const WebDragData::Item& item : data.Items()) {
     if (item.storage_type == WebDragData::Item::kStorageTypeString) {
       if (item.string_type == blink::kMimeTypeTextPlain) {
         clipboard_->WriteText(mojom::ClipboardBuffer::kStandard,
@@ -239,6 +232,9 @@ void SystemClipboard::WriteDataObject(DataObject* data_object) {
     clipboard_->WriteCustomData(mojom::ClipboardBuffer::kStandard,
                                 std::move(custom_data));
   }
+}
+
+void SystemClipboard::CommitWrite() {
   clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
@@ -251,7 +247,7 @@ bool SystemClipboard::IsValidBufferType(mojom::ClipboardBuffer buffer) {
       return true;
 #else
       // Chrome OS and non-X11 unix builds do not support
-      // the X selection clipboad.
+      // the X selection clipboard.
       // TODO: remove the need for this case, see http://crbug.com/361753
       return false;
 #endif

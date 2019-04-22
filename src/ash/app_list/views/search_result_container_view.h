@@ -8,11 +8,14 @@
 #include <stddef.h>
 
 #include "ash/app_list/app_list_export.h"
+#include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 
 namespace app_list {
 
@@ -24,13 +27,19 @@ class SearchResultBaseView;
 // selected at a time; moving off the end of one container view selects the
 // first element of the next container view, and vice versa
 class APP_LIST_EXPORT SearchResultContainerView : public views::View,
+                                                  public views::ViewObserver,
                                                   public ui::ListModelObserver {
  public:
   class Delegate {
    public:
+    // Called whenever results in the container change, i.e. during |Update()|
     virtual void OnSearchResultContainerResultsChanged() = 0;
+
+    // Called whenever a result within the container gains focus.
+    virtual void OnSearchResultContainerResultFocused(
+        SearchResultBaseView* focused_result_view) = 0;
   };
-  SearchResultContainerView();
+  explicit SearchResultContainerView(AppListViewDelegate* view_delegate);
   ~SearchResultContainerView() override;
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
@@ -62,6 +71,13 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   // Overridden from views::View:
   const char* GetClassName() const override;
 
+  // Overridden from views::ViewObserver:
+  void OnViewFocused(View* observed_view) override;
+
+  // Functions to allow derivative classes to add/remove observed result views.
+  void AddObservedResultView(SearchResultBaseView* result_view);
+  void RemoveObservedResultView(SearchResultBaseView* result_view);
+
   // Overridden from ui::ListModelObserver:
   void ListItemsAdded(size_t start, size_t count) override;
   void ListItemsRemoved(size_t start, size_t count) override;
@@ -71,6 +87,14 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   // Returns the first result in the container view. Returns NULL if it does not
   // exist.
   virtual SearchResultBaseView* GetFirstResultView();
+
+  // Called from SearchResultPageView OnShown/OnHidden
+  void SetShown(bool shown);
+  bool shown() const { return shown_; }
+  // Called when SetShowing has changed a result.
+  virtual void OnShownChanged();
+
+  AppListViewDelegate* view_delegate() const { return view_delegate_; }
 
  private:
   // Schedules an Update call using |update_factory_|. Do nothing if there is a
@@ -87,6 +111,13 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   double container_score_;
 
   SearchModel::SearchResults* results_ = nullptr;  // Owned by SearchModel.
+
+  // view delegate for notifications.
+  bool shown_ = false;
+  AppListViewDelegate* const view_delegate_;
+
+  ScopedObserver<SearchResultBaseView, ViewObserver> result_view_observer_{
+      this};
 
   // The factory that consolidates multiple Update calls into one.
   base::WeakPtrFactory<SearchResultContainerView> update_factory_{this};

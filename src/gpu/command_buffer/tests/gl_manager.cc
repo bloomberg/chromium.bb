@@ -22,7 +22,6 @@
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
-#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
@@ -196,11 +195,8 @@ class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
 
 class CommandBufferCheckLostContext : public CommandBufferDirect {
  public:
-  CommandBufferCheckLostContext(TransferBufferManager* transfer_buffer_manager,
-                                SyncPointManager* sync_point_manager,
-                                bool context_lost_allowed)
-      : CommandBufferDirect(transfer_buffer_manager, sync_point_manager),
-        context_lost_allowed_(context_lost_allowed) {}
+  explicit CommandBufferCheckLostContext(bool context_lost_allowed)
+      : context_lost_allowed_(context_lost_allowed) {}
 
   ~CommandBufferCheckLostContext() override = default;
 
@@ -285,7 +281,7 @@ void GLManager::InitializeWithWorkarounds(
 void GLManager::InitializeWithWorkaroundsImpl(
     const GLManager::Options& options,
     const GpuDriverBugWorkarounds& workarounds) {
-  const SharedMemoryLimits limits;
+  const SharedMemoryLimits limits = options.shared_memory_limits;
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   DCHECK(!command_line.HasSwitch(switches::kDisableGLExtensions));
@@ -358,9 +354,8 @@ void GLManager::InitializeWithWorkaroundsImpl(
         &shared_image_manager_);
   }
 
-  command_buffer_.reset(new CommandBufferCheckLostContext(
-      context_group->transfer_buffer_manager(), options.sync_point_manager,
-      options.context_lost_allowed));
+  command_buffer_.reset(
+      new CommandBufferCheckLostContext(options.context_lost_allowed));
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(
       command_buffer_.get(), command_buffer_->service(), &outputter_,
@@ -430,9 +425,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
 }
 
 size_t GLManager::GetSharedMemoryBytesAllocated() const {
-  return decoder_->GetContextGroup()
-      ->transfer_buffer_manager()
-      ->shared_memory_bytes_allocated();
+  return command_buffer_->service()->GetSharedMemoryBytesAllocated();
 }
 
 void GLManager::SetupBaseContext() {
@@ -465,10 +458,6 @@ void GLManager::SetSurface(gl::GLSurface* surface) {
 
 void GLManager::PerformIdleWork() {
   decoder_->PerformIdleWork();
-}
-
-void GLManager::SetCommandsPaused(bool paused) {
-  command_buffer_->SetCommandsPaused(paused);
 }
 
 void GLManager::Destroy() {
@@ -565,56 +554,60 @@ void GLManager::DestroyImage(int32_t id) {
 }
 
 void GLManager::SignalQuery(uint32_t query, base::OnceClosure callback) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void GLManager::CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void GLManager::GetGpuFence(
     uint32_t gpu_fence_id,
     base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void GLManager::SetLock(base::Lock*) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void GLManager::EnsureWorkVisible() {
-  // This is only relevant for out-of-process command buffers.
+  NOTREACHED();
 }
 
 gpu::CommandBufferNamespace GLManager::GetNamespaceID() const {
-  return command_buffer_->GetNamespaceID();
+  return CommandBufferNamespace::INVALID;
 }
 
 CommandBufferId GLManager::GetCommandBufferID() const {
-  return command_buffer_->GetCommandBufferID();
+  return CommandBufferId();
 }
 
 void GLManager::FlushPendingWork() {
-  // This is only relevant for out-of-process command buffers.
+  NOTREACHED();
 }
 
 uint64_t GLManager::GenerateFenceSyncRelease() {
-  return next_fence_sync_release_++;
+  NOTREACHED();
+  return 0;
 }
 
 bool GLManager::IsFenceSyncReleased(uint64_t release) {
-  return release <= command_buffer_->GetLastState().release_count;
+  NOTREACHED();
+  return false;
 }
 
 void GLManager::SignalSyncToken(const gpu::SyncToken& sync_token,
                                 base::OnceClosure callback) {
-  command_buffer_->SignalSyncToken(
-      sync_token, base::AdaptCallbackForRepeating(std::move(callback)));
+  NOTREACHED();
 }
 
-void GLManager::WaitSyncTokenHint(const gpu::SyncToken& sync_token) {}
+void GLManager::WaitSyncToken(const gpu::SyncToken& sync_token) {
+  NOTREACHED();
+}
 
 bool GLManager::CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) {
+  NOTREACHED();
   return false;
 }
 

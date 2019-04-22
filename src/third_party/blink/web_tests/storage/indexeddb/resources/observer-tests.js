@@ -122,43 +122,6 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
   }));
 }, 'IDB Observers: Values');
 
-
-indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callback) {
-  var expectedChanges = {
-    dbName: db1_name,
-    records: {
-      'store2': [{type: 'add', key: 'z'}],
-    }
-  };
-
-  var connection = null;
-  var observedTimes = 0;
-  var observeFunction = function(changes) {
-    assert_true(connection != null, "Observer called before db opened.");
-    observedTimes++;
-    assert_equals(1, observedTimes, "Observer was called after calling unobserve.");
-    assertChangesEqual(changes, expectedChanges);
-    obs.unobserve(connection);
-    assert_true(changes.transaction != null);
-    var store2 = changes.transaction.objectStore('store2');
-    var request = store2.get('z');
-    request.onsuccess = t.step_func(function() {
-      assert_equals(request.result, 'z');
-      t.done();
-    });
-  };
-
-  var obs = new IDBObserver(t.step_func(observeFunction));
-
-  openDB(t, db1_name, t.step_func(function(db) {
-    connection = db;
-    var txn = db.transaction(['store2'], 'readonly');
-    obs.observe(db, txn, {operationTypes: ['add'], transaction: true});
-    txn.oncomplete = observers_added_callback;
-    txn.onerror = t.unreached_func('transaction should not fail')
-  }));
-}, 'IDB Observers: Transaction');
-
 indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callback) {
   var expectedChanges = {
     dbName: db1_name,

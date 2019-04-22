@@ -21,13 +21,10 @@
 namespace gpu {
 namespace raster {
 
-struct Capabilities;
-
 // An implementation of RasterInterface on top of GLES2Interface.
 class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
  public:
-  RasterImplementationGLES(gles2::GLES2Interface* gl,
-                           const gpu::Capabilities& caps);
+  explicit RasterImplementationGLES(gles2::GLES2Interface* gl);
   ~RasterImplementationGLES() override;
 
   // Command buffer Flush / Finish.
@@ -35,12 +32,6 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void Flush() override;
   void ShallowFlushCHROMIUM() override;
   void OrderingBarrierCHROMIUM() override;
-
-  // SyncTokens.
-  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
-  void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
-  void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
-  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
 
   // Command buffer state.
   GLenum GetError() override;
@@ -54,18 +45,10 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void EndQueryEXT(GLenum target) override;
   void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) override;
 
-  // Texture objects.
-  void DeleteTextures(GLsizei n, const GLuint* textures) override;
-
-  // Mailboxes.
-  GLuint CreateAndConsumeTexture(bool use_buffer,
-                                 gfx::BufferUsage buffer_usage,
-                                 viz::ResourceFormat format,
-                                 const GLbyte* mailbox) override;
-
   // Texture copying.
-  void CopySubTexture(GLuint source_id,
-                      GLuint dest_id,
+  void CopySubTexture(const gpu::Mailbox& source_mailbox,
+                      const gpu::Mailbox& dest_mailbox,
+                      GLenum dest_target,
                       GLint xoffset,
                       GLint yoffset,
                       GLint x,
@@ -77,8 +60,7 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void BeginRasterCHROMIUM(GLuint sk_color,
                            GLuint msaa_sample_count,
                            GLboolean can_use_lcd_text,
-                           GLint color_type,
-                           const cc::RasterColorSpace& raster_color_space,
+                           const gfx::ColorSpace& color_space,
                            const GLbyte* mailbox) override;
   void RasterCHROMIUM(const cc::DisplayItemList* list,
                       cc::ImageProvider* provider,
@@ -87,7 +69,8 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                       const gfx::Rect& playback_rect,
                       const gfx::Vector2dF& post_translate,
                       GLfloat post_scale,
-                      bool requires_clear) override;
+                      bool requires_clear,
+                      size_t* max_op_size_hint) override;
   void EndRasterCHROMIUM() override;
 
   // Image decode acceleration.
@@ -98,6 +81,8 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                                 bool needs_mips) override;
 
   // Raster via GrContext.
+  GLuint CreateAndConsumeForGpuRaster(const GLbyte* mailbox) override;
+  void DeleteGpuRasterTexture(GLuint texture) override;
   void BeginGpuRaster() override;
   void EndGpuRaster() override;
 
@@ -107,26 +92,14 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
 
   void SetActiveURLCHROMIUM(const char* url) override;
 
+  // InterfaceBase implementation.
+  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
+  void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
+  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
+
  private:
-  struct Texture {
-    Texture(GLuint id,
-            GLenum target,
-            bool use_buffer,
-            gfx::BufferUsage buffer_usage,
-            viz::ResourceFormat format);
-    GLuint id;
-    GLenum target;
-    bool use_buffer;
-    gfx::BufferUsage buffer_usage;
-    viz::ResourceFormat format;
-  };
-
-  Texture* GetTexture(GLuint texture_id);
-
   gles2::GLES2Interface* gl_;
-  gpu::Capabilities caps_;
-
-  std::unordered_map<GLuint, Texture> texture_info_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterImplementationGLES);
 };

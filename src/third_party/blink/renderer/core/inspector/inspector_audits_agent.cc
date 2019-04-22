@@ -54,8 +54,7 @@ bool EncodeAsImage(char* body,
   if (!image_to_encode)
     return false;
 
-  String mime_type_name = "image/";
-  mime_type_name.append(encoding);
+  String mime_type_name = StringView("image/") + encoding;
   ImageEncodingMimeType mime_type;
   bool valid_mime_type = ParseImageEncodingMimeType(mime_type_name, mime_type);
   DCHECK(valid_mime_type);

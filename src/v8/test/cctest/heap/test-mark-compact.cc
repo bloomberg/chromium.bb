@@ -100,8 +100,8 @@ HEAP_TEST(NoPromotion) {
 // allocation failure.
 AllocationResult HeapTester::AllocateMapForTest(Isolate* isolate) {
   Heap* heap = isolate->heap();
-  HeapObject* obj;
-  AllocationResult alloc = heap->AllocateRaw(Map::kSize, MAP_SPACE);
+  HeapObject obj;
+  AllocationResult alloc = heap->AllocateRaw(Map::kSize, AllocationType::kMap);
   if (!alloc.To(&obj)) return alloc;
   obj->set_map_after_allocation(ReadOnlyRoots(heap).meta_map(),
                                 SKIP_WRITE_BARRIER);
@@ -113,21 +113,20 @@ AllocationResult HeapTester::AllocateMapForTest(Isolate* isolate) {
 // This is the same as Factory::NewFixedArray, except it doesn't retry
 // on allocation failure.
 AllocationResult HeapTester::AllocateFixedArrayForTest(
-    Heap* heap, int length, PretenureFlag pretenure) {
+    Heap* heap, int length, AllocationType allocation) {
   DCHECK(length >= 0 && length <= FixedArray::kMaxLength);
   int size = FixedArray::SizeFor(length);
-  AllocationSpace space = heap->SelectSpace(pretenure);
-  HeapObject* obj;
+  HeapObject obj;
   {
-    AllocationResult result = heap->AllocateRaw(size, space);
+    AllocationResult result = heap->AllocateRaw(size, allocation);
     if (!result.To(&obj)) return result;
   }
   obj->set_map_after_allocation(ReadOnlyRoots(heap).fixed_array_map(),
                                 SKIP_WRITE_BARRIER);
   FixedArray array = FixedArray::cast(obj);
   array->set_length(length);
-  MemsetPointer(array->data_start(), ReadOnlyRoots(heap).undefined_value(),
-                length);
+  MemsetTagged(array->data_start(), ReadOnlyRoots(heap).undefined_value(),
+               length);
   return array;
 }
 
@@ -149,10 +148,12 @@ HEAP_TEST(MarkCompactCollector) {
   const int arraysize = 100;
   AllocationResult allocation;
   do {
-    allocation = AllocateFixedArrayForTest(heap, arraysize, NOT_TENURED);
+    allocation =
+        AllocateFixedArrayForTest(heap, arraysize, AllocationType::kYoung);
   } while (!allocation.IsRetry());
   CcTest::CollectGarbage(NEW_SPACE);
-  AllocateFixedArrayForTest(heap, arraysize, NOT_TENURED).ToObjectChecked();
+  AllocateFixedArrayForTest(heap, arraysize, AllocationType::kYoung)
+      .ToObjectChecked();
 
   // keep allocating maps until it fails
   do {
@@ -165,9 +166,7 @@ HEAP_TEST(MarkCompactCollector) {
     // allocate a garbage
     Handle<String> func_name = factory->InternalizeUtf8String("theFunction");
     Handle<JSFunction> function = factory->NewFunctionForTest(func_name);
-    JSReceiver::SetProperty(isolate, global, func_name, function,
-                            LanguageMode::kSloppy)
-        .Check();
+    Object::SetProperty(isolate, global, func_name, function).Check();
 
     factory->NewJSObject(function);
   }
@@ -184,14 +183,10 @@ HEAP_TEST(MarkCompactCollector) {
     Handle<JSObject> obj = factory->NewJSObject(function);
 
     Handle<String> obj_name = factory->InternalizeUtf8String("theObject");
-    JSReceiver::SetProperty(isolate, global, obj_name, obj,
-                            LanguageMode::kSloppy)
-        .Check();
+    Object::SetProperty(isolate, global, obj_name, obj).Check();
     Handle<String> prop_name = factory->InternalizeUtf8String("theSlot");
     Handle<Smi> twenty_three(Smi::FromInt(23), isolate);
-    JSReceiver::SetProperty(isolate, obj, prop_name, twenty_three,
-                            LanguageMode::kSloppy)
-        .Check();
+    Object::SetProperty(isolate, obj, prop_name, twenty_three).Check();
   }
 
   CcTest::CollectGarbage(OLD_SPACE);
@@ -363,11 +358,12 @@ TEST(Regress5829) {
   }
   CHECK(marking->IsMarking());
   marking->StartBlackAllocationForTesting();
-  Handle<FixedArray> array = isolate->factory()->NewFixedArray(10, TENURED);
+  Handle<FixedArray> array =
+      isolate->factory()->NewFixedArray(10, AllocationType::kOld);
   Address old_end = array->address() + array->Size();
   // Right trim the array without clearing the mark bits.
   array->set_length(9);
-  heap->CreateFillerObjectAt(old_end - kPointerSize, kPointerSize,
+  heap->CreateFillerObjectAt(old_end - kTaggedSize, kTaggedSize,
                              ClearRecordedSlots::kNo);
   heap->old_space()->FreeLinearAllocationArea();
   Page* page = Page::FromAddress(array->address());

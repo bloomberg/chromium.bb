@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -91,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(TemplateURLScraperTest, ScrapeWithOnSubmit) {
 
   EXPECT_EQ(prepopulate_urls.size(), all_urls.size());
 
-  std::string port(base::IntToString(embedded_test_server()->port()));
+  std::string port(base::NumberToString(embedded_test_server()->port()));
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), GURL("http://www.foo.com:" + port + "/"), 1);
 

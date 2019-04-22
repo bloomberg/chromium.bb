@@ -6,11 +6,13 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_device.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_gl.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_install_utils.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_permission_helper.h"
 #include "chrome/browser/android/vr/arcore_device/fake_arcore.h"
@@ -31,7 +33,7 @@ class StubArImageTransport : public ArImageTransport {
 
   // TODO(lincolnfrog): verify this gets called on GL thread.
   // TODO(lincolnfrog): test what happens if this returns false.
-  bool Initialize() override { return true; };
+  bool Initialize() override { return true; }
 
   // TODO(lincolnfrog): test verify this somehow.
   GLuint GetCameraTextureId() override { return CAMERA_TEXTURE_ID; }
@@ -71,10 +73,6 @@ class StubMailboxToSurfaceBridge : public vr::MailboxToSurfaceBridge {
 
   void BindContextProviderToCurrentThread() override {}
 
-  uint32_t CreateMailboxTexture(gpu::Mailbox* mailbox) override {
-    return TEXTURE_ID;
-  };
-
   bool IsConnected() override { return true; }
 
   void CallCallback() { std::move(callback_).Run(); }
@@ -89,14 +87,16 @@ class StubArCoreInstallUtils : public vr::ArCoreInstallUtils {
  public:
   StubArCoreInstallUtils() = default;
 
-  bool ShouldRequestInstallArModule() override { return false; };
+  bool CanRequestInstallArModule() override { return false; }
+  bool ShouldRequestInstallArModule() override { return false; }
 
-  void RequestInstallArModule() override{};
-  bool ShouldRequestInstallSupportedArCore() override { return false; };
+  void RequestInstallArModule(int render_process_id,
+                              int render_frame_id) override {}
+  bool ShouldRequestInstallSupportedArCore() override { return false; }
   void RequestInstallSupportedArCore(int render_process_id,
-                                     int render_frame_id) override{};
+                                     int render_frame_id) override {}
 
-  bool EnsureLoaded() override { return true; };
+  bool EnsureLoaded() override { return true; }
 
   base::android::ScopedJavaLocalRef<jobject> GetApplicationContext() override {
     JNIEnv* env = base::android::AttachCurrentThread();
@@ -145,6 +145,8 @@ class ArCoreDeviceTest : public testing::Test {
  public:
   ArCoreDeviceTest() {}
   ~ArCoreDeviceTest() override {}
+
+  static const gfx::Size kTestFrameSize;
 
   void OnSessionCreated(mojom::XRSessionPtr session,
                         mojom::XRSessionControllerPtr controller) {
@@ -218,15 +220,12 @@ class ArCoreDeviceTest : public testing::Test {
 
     EXPECT_TRUE(environment_provider);
     EXPECT_TRUE(session_);
+
+    environment_provider->UpdateSessionGeometry(kTestFrameSize,
+                                                display::Display::ROTATE_0);
   }
 
-  void GetFrameData() {
-    // TODO(https://crbug.com/837834): verify this fails with no size set.
-    // The default screen size for portrait mode on the Pixel Android phone.
-    gfx::Size frame_size(1080, 1795);
-    environment_provider->UpdateSessionGeometry(frame_size,
-                                                display::Display::ROTATE_0);
-
+  mojom::XRFrameDataPtr GetFrameData() {
     run_loop = std::make_unique<base::RunLoop>();
     quit_closure = run_loop->QuitClosure();
 
@@ -244,6 +243,8 @@ class ArCoreDeviceTest : public testing::Test {
         base::BindOnce(callback, std::move(quit_closure), &frame_data));
     run_loop->Run();
     EXPECT_TRUE(frame_data);
+
+    return frame_data;
   }
 
   VRDeviceBase* device() { return device_.get(); }
@@ -254,6 +255,9 @@ class ArCoreDeviceTest : public testing::Test {
   mojom::XRSessionControllerPtr controller_;
 };
 
+// The default screen size for portrait mode on the Pixel Android phone.
+const gfx::Size ArCoreDeviceTest::kTestFrameSize = {1080, 1795};
+
 TEST_F(ArCoreDeviceTest, RequestSession) {
   CreateSession();
 }
@@ -261,6 +265,20 @@ TEST_F(ArCoreDeviceTest, RequestSession) {
 TEST_F(ArCoreDeviceTest, GetFrameData) {
   CreateSession();
   GetFrameData();
+}
+
+TEST_F(ArCoreDeviceTest, SetDisplayGeometry) {
+  CreateSession();
+
+  auto frame_data = GetFrameData();
+  EXPECT_TRUE(frame_data->buffer_size.value() == kTestFrameSize);
+
+  gfx::Size new_size = {100, 200};
+  environment_provider->UpdateSessionGeometry(new_size,
+                                              display::Display::ROTATE_90);
+
+  frame_data = GetFrameData();
+  EXPECT_TRUE(frame_data->buffer_size.value() == new_size);
 }
 
 TEST_F(ArCoreDeviceTest, RequestHitTest) {
@@ -273,6 +291,7 @@ TEST_F(ArCoreDeviceTest, RequestHitTest) {
          base::Optional<std::vector<mojom::XRHitResultPtr>> results) {
         *hit_results = std::move(results.value());
       };
+
   environment_provider->RequestHitTest(std::move(ray),
                                        base::BindOnce(callback, &hit_results));
   // Have to get frame data to trigger the hit-test calculation.

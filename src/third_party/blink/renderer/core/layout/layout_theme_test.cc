@@ -6,9 +6,11 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -69,6 +71,59 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor) {
   // Check that the focus ring color is updated.
   EXPECT_NE(EBorderStyle::kNone, OutlineStyle(span));
   EXPECT_EQ(custom_color, OutlineColor(span));
+}
+
+TEST_F(LayoutThemeTest, RootElementColor) {
+  EXPECT_EQ(Color::kBlack,
+            LayoutTheme::GetTheme().RootElementColor(ColorScheme::kLight));
+  EXPECT_EQ(Color::kWhite,
+            LayoutTheme::GetTheme().RootElementColor(ColorScheme::kDark));
+}
+
+TEST_F(LayoutThemeTest, RootElementColorChange) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      #initial { color: initial }
+    </style>
+    <div id="initial"></div>
+  )HTML");
+
+  Element* initial = GetDocument().getElementById("initial");
+  ASSERT_TRUE(initial);
+  EXPECT_EQ(ColorScheme::kLight,
+            GetDocument().GetStyleEngine().GetColorScheme());
+
+  ASSERT_TRUE(GetDocument().documentElement());
+  const ComputedStyle* document_element_style =
+      GetDocument().documentElement()->GetComputedStyle();
+  ASSERT_TRUE(document_element_style);
+  EXPECT_EQ(Color::kBlack, document_element_style->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+
+  const ComputedStyle* initial_style = initial->GetComputedStyle();
+  ASSERT_TRUE(initial_style);
+  EXPECT_EQ(Color::kBlack,
+            initial_style->VisitedDependentColor(GetCSSPropertyColor()));
+
+  // Change color scheme to dark.
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+  ColorSchemeSet supported_schemes;
+  supported_schemes.Set(ColorScheme::kDark);
+  GetDocument().GetStyleEngine().SetSupportedColorSchemes(supported_schemes);
+  UpdateAllLifecyclePhasesForTest();
+
+  document_element_style = GetDocument().documentElement()->GetComputedStyle();
+  ASSERT_TRUE(document_element_style);
+  EXPECT_EQ(Color::kWhite, document_element_style->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+
+  initial_style = initial->GetComputedStyle();
+  ASSERT_TRUE(initial_style);
+  // Theming does not change the initial value for color, only the UA style for
+  // the root element.
+  EXPECT_EQ(Color::kBlack,
+            initial_style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
 }  // namespace blink

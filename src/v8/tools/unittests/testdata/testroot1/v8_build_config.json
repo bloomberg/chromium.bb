@@ -4,6 +4,7 @@
   "is_android": false,
   "is_asan": false,
   "is_cfi": false,
+  "is_clang": true,
   "is_component_build": false,
   "is_debug": false,
   "is_gcov_coverage": false,
@@ -18,5 +19,6 @@
   "v8_use_snapshot": true,
   "v8_enable_embedded_builtins": false,
   "v8_enable_verify_csa": false,
-  "v8_enable_lite_mode": false
+  "v8_enable_lite_mode": false,
+  "v8_enable_pointer_compression": true
 }

@@ -15,10 +15,10 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -32,10 +32,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/app_mode/kiosk_oem_manifest_parser.h"
-#include "chromeos/chromeos_constants.h"
-#include "chromeos/chromeos_paths.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_constants.h"
+#include "chromeos/constants/chromeos_paths.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/system/kiosk_oem_manifest_parser.h"
 #include "chromeos/system/name_value_pairs_parser.h"
 
 namespace chromeos {
@@ -523,11 +523,9 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
   NameValuePairsParser parser(&machine_info_);
   if (base::SysInfo::IsRunningOnChromeOS()) {
     // Parse all of the key/value pairs from the crossystem tool.
-    if (!parser.ParseNameValuePairsFromTool(arraysize(kCrosSystemTool),
-                                            kCrosSystemTool,
-                                            kCrosSystemEq,
-                                            kCrosSystemDelim,
-                                            kCrosSystemCommentDelim)) {
+    if (!parser.ParseNameValuePairsFromTool(
+            base::size(kCrosSystemTool), kCrosSystemTool, kCrosSystemEq,
+            kCrosSystemDelim, kCrosSystemCommentDelim)) {
       LOG(ERROR) << "Errors parsing output from: " << kCrosSystemTool;
     }
     // Drop useless "(error)" values so they don't displace valid values
@@ -545,7 +543,7 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     // testing).
     std::string stub_contents =
         "\"serial_number\"=\"stub_" +
-        base::Int64ToString(base::Time::Now().ToJavaTime()) + "\"\n";
+        base::NumberToString(base::Time::Now().ToJavaTime()) + "\"\n";
     int bytes_written = base::WriteFile(
         machine_info_path, stub_contents.c_str(), stub_contents.size());
     if (bytes_written < static_cast<int>(stub_contents.size())) {

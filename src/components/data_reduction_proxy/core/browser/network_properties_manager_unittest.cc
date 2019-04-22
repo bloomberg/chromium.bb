@@ -41,14 +41,6 @@ class TestNetworkPropertiesManager : public NetworkPropertiesManager {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
       : NetworkPropertiesManager(clock, pref_service, ui_task_runner) {}
   ~TestNetworkPropertiesManager() override {}
-
-  static void InitDiscardCanaryCheckResultExperiment(
-      base::test::ScopedFeatureList* scoped_feature_list) {
-    std::map<std::string, std::string> params;
-    params[params::GetDiscardCanaryCheckResultParam()] = "true";
-    scoped_feature_list->InitAndEnableFeatureWithParameters(
-        features::kDataReductionProxyRobustConnection, params);
-  }
 };
 
 TEST(NetworkPropertyTest, TestSetterGetterCaptivePortal) {
@@ -63,20 +55,13 @@ TEST(NetworkPropertyTest, TestSetterGetterCaptivePortal) {
   std::string network_id("test");
   network_properties_manager.OnChangeInNetworkID(network_id);
 
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
 
   network_properties_manager.SetIsCaptivePortal(true);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
-  EXPECT_FALSE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_TRUE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(
-      network_properties_manager.HasWarmupURLProbeFailed(false, false));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
   base::RunLoop().RunUntilIdle();
 
   // Verify the prefs.
@@ -93,14 +78,9 @@ TEST(NetworkPropertyTest, TestSetterGetterCaptivePortal) {
   }
 
   network_properties_manager.SetIsCaptivePortal(false);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(
-      network_properties_manager.HasWarmupURLProbeFailed(false, false));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
   base::RunLoop().RunUntilIdle();
 
   {
@@ -126,28 +106,15 @@ TEST(NetworkPropertyTest, TestSetterGetterDisallowedByCarrier) {
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
-
   network_properties_manager.SetIsSecureProxyDisallowedByCarrier(true);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
-  EXPECT_FALSE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(
-      network_properties_manager.HasWarmupURLProbeFailed(false, false));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
 
   network_properties_manager.SetIsSecureProxyDisallowedByCarrier(false);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(
-      network_properties_manager.HasWarmupURLProbeFailed(false, false));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
 }
 
 TEST(NetworkPropertyTest, TestWarmupURLFailedOnSecureCoreProxy) {
@@ -158,35 +125,22 @@ TEST(NetworkPropertyTest, TestWarmupURLFailedOnSecureCoreProxy) {
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
-
   network_properties_manager.SetHasWarmupURLProbeFailed(
       true /* secure_proxy */, true /* is_core_proxy */,
       true /* warmup_url_probe_failed */);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(
-      false /* secure_proxy */, false /* is_core_proxy */));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
   EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(false, true));
   EXPECT_TRUE(network_properties_manager.HasWarmupURLProbeFailed(true, true));
 
   network_properties_manager.SetHasWarmupURLProbeFailed(true, true, false);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(
-      network_properties_manager.HasWarmupURLProbeFailed(false, false));
   EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(false, true));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
   EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, true));
 }
 
@@ -198,37 +152,25 @@ TEST(NetworkPropertyTest, TestWarmupURLFailedOnInSecureCoreProxy) {
   TestNetworkPropertiesManager network_properties_manager(
       &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
 
   network_properties_manager.SetHasWarmupURLProbeFailed(
       false /* secure_proxy */, true /* is_core_proxy */,
       true /* warmup_url_probe_failed */);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_FALSE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(
-      false /* secure_proxy */, false /* is_core_proxy */));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
   EXPECT_TRUE(network_properties_manager.HasWarmupURLProbeFailed(false, true));
   EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, true));
 
   network_properties_manager.SetHasWarmupURLProbeFailed(false, true, false);
-  EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsInsecureProxyAllowed(true));
-  EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(false));
   EXPECT_TRUE(network_properties_manager.IsSecureProxyAllowed(true));
   EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
   EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-  EXPECT_FALSE(
-      network_properties_manager.HasWarmupURLProbeFailed(false, false));
   EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(false, true));
-  EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, false));
   EXPECT_FALSE(network_properties_manager.HasWarmupURLProbeFailed(true, true));
 }
 
@@ -243,7 +185,7 @@ TEST(NetworkPropertyTest, TestLimitPrefSize) {
   size_t num_network_ids = 100;
 
   for (size_t i = 0; i < num_network_ids; ++i) {
-    std::string network_id("test" + base::IntToString(i));
+    std::string network_id("test" + base::NumberToString(i));
     network_properties_manager.OnChangeInNetworkID(network_id);
 
     // State should be reset when there is a change in the network ID.
@@ -271,14 +213,14 @@ TEST(NetworkPropertyTest, TestLimitPrefSize) {
   // The last 10 network IDs are guaranteed to be present in the prefs.
   for (size_t i = num_network_ids - 10; i < num_network_ids; ++i) {
     EXPECT_TRUE(test_prefs.GetDictionary(prefs::kNetworkProperties)
-                    ->HasKey("test" + base::IntToString(i)));
+                    ->HasKey("test" + base::NumberToString(i)));
   }
 
   {
     TestNetworkPropertiesManager network_properties_manager_2(
         &test_prefs, base::ThreadTaskRunnerHandle::Get());
     for (size_t i = 0; i < num_network_ids; ++i) {
-      std::string network_id("test" + base::IntToString(i));
+      std::string network_id("test" + base::NumberToString(i));
       network_properties_manager_2.OnChangeInNetworkID(network_id);
 
       EXPECT_EQ(test_prefs.GetDictionary(prefs::kNetworkProperties)
@@ -466,7 +408,7 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
       &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
   for (size_t i = 0; i < 5; ++i) {
-    std::string network_id("test" + base::IntToString(i));
+    std::string network_id("test" + base::NumberToString(i));
     network_properties_manager.OnChangeInNetworkID(network_id);
     network_properties_manager.SetIsCaptivePortal(true);
   }
@@ -474,7 +416,7 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
   test_clock.Advance(base::TimeDelta::FromDays(20));
 
   for (size_t i = 5; i < 10; ++i) {
-    std::string network_id("test" + base::IntToString(i));
+    std::string network_id("test" + base::NumberToString(i));
     network_properties_manager.OnChangeInNetworkID(network_id);
     network_properties_manager.SetIsCaptivePortal(true);
   }
@@ -484,7 +426,7 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
   // Verify the prefs.
   EXPECT_EQ(10u, test_prefs.GetDictionary(prefs::kNetworkProperties)->size());
   for (size_t i = 0; i < 10; ++i) {
-    std::string network_id("test" + base::IntToString(i));
+    std::string network_id("test" + base::NumberToString(i));
     EXPECT_TRUE(test_prefs.GetDictionary(prefs::kNetworkProperties)
                     ->HasKey(network_id));
   }
@@ -494,7 +436,7 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
     TestNetworkPropertiesManager network_properties_manager_2(
         &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
     for (size_t i = 0; i < 10; ++i) {
-      std::string network_id("test" + base::IntToString(i));
+      std::string network_id("test" + base::NumberToString(i));
 
       EXPECT_TRUE(test_prefs.GetDictionary(prefs::kNetworkProperties)
                       ->HasKey(network_id));
@@ -507,7 +449,7 @@ TEST(NetworkPropertyTest, TestDeleteOldValues) {
     TestNetworkPropertiesManager network_properties_manager_3(
         &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
     for (size_t i = 0; i < 10; ++i) {
-      std::string network_id("test" + base::IntToString(i));
+      std::string network_id("test" + base::NumberToString(i));
       EXPECT_EQ(i >= 5, test_prefs.GetDictionary(prefs::kNetworkProperties)
                             ->HasKey(network_id));
     }
@@ -518,44 +460,36 @@ TEST(NetworkPropertyTest,
      TestSetterGetterDisallowedByCarrierDiscardingEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
 
-  for (bool discard : {false, true}) {
-    if (discard) {
-      TestNetworkPropertiesManager::InitDiscardCanaryCheckResultExperiment(
-          &scoped_feature_list);
-    }
+  TestingPrefServiceSimple test_prefs;
+  test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  TestNetworkPropertiesManager network_properties_manager(
+      &test_prefs, base::ThreadTaskRunnerHandle::Get());
 
-    TestingPrefServiceSimple test_prefs;
-    test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-    base::test::ScopedTaskEnvironment task_environment(
-        base::test::ScopedTaskEnvironment::MainThreadType::IO);
-    TestNetworkPropertiesManager network_properties_manager(
-        &test_prefs, base::ThreadTaskRunnerHandle::Get());
+  // First network ID has a captive portal and the canary check failed.
+  std::string first_network_id("test1");
+  network_properties_manager.OnChangeInNetworkID(first_network_id);
+  EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
+  network_properties_manager.SetIsSecureProxyDisallowedByCarrier(true);
+  network_properties_manager.SetIsCaptivePortal(true);
+  EXPECT_TRUE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
+  EXPECT_TRUE(network_properties_manager.IsCaptivePortal());
+  base::RunLoop().RunUntilIdle();
 
-    // First network ID has a captive portal and the canary check failed.
-    std::string first_network_id("test1");
-    network_properties_manager.OnChangeInNetworkID(first_network_id);
-    EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-    network_properties_manager.SetIsSecureProxyDisallowedByCarrier(true);
-    network_properties_manager.SetIsCaptivePortal(true);
-    EXPECT_TRUE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
-    EXPECT_TRUE(network_properties_manager.IsCaptivePortal());
-    base::RunLoop().RunUntilIdle();
+  // Change to a different network. State should be reset when there is a
+  // change in the network ID.
+  std::string second_network_id("test2");
+  network_properties_manager.OnChangeInNetworkID(second_network_id);
+  EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
+  EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
+  base::RunLoop().RunUntilIdle();
 
-    // Change to a different network. State should be reset when there is a
-    // change in the network ID.
-    std::string second_network_id("test2");
-    network_properties_manager.OnChangeInNetworkID(second_network_id);
-    EXPECT_FALSE(network_properties_manager.IsCaptivePortal());
-    EXPECT_FALSE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
-    base::RunLoop().RunUntilIdle();
-
-    // Change back to |first_network_id|. Captive portal state should be
-    // persisted but the canary check state should not be.
-    network_properties_manager.OnChangeInNetworkID(first_network_id);
-    EXPECT_NE(discard,
-              network_properties_manager.IsSecureProxyDisallowedByCarrier());
-    EXPECT_TRUE(network_properties_manager.IsCaptivePortal());
-  }
+  // Change back to |first_network_id|. Captive portal state should be
+  // persisted but the canary check state should not be.
+  network_properties_manager.OnChangeInNetworkID(first_network_id);
+  EXPECT_TRUE(network_properties_manager.IsSecureProxyDisallowedByCarrier());
+  EXPECT_TRUE(network_properties_manager.IsCaptivePortal());
 }
 
 }  // namespace

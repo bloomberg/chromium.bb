@@ -9,8 +9,8 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/strings/string_piece.h"
-#include "url/url_export.h"
 
 class GURL;
 
@@ -72,7 +72,7 @@ struct Parsed;
 //
 //     GURL url("https://example.com/");
 //     tuple == url::SchemeHostPort(url); // true
-class URL_EXPORT SchemeHostPort {
+class COMPONENT_EXPORT(URL) SchemeHostPort {
  public:
   // Creates an invalid (scheme, host, port) tuple, which represents an invalid
   // or non-standard URL.
@@ -161,8 +161,9 @@ class URL_EXPORT SchemeHostPort {
   uint16_t port_;
 };
 
-URL_EXPORT std::ostream& operator<<(std::ostream& out,
-                                    const SchemeHostPort& scheme_host_port);
+COMPONENT_EXPORT(URL)
+std::ostream& operator<<(std::ostream& out,
+                         const SchemeHostPort& scheme_host_port);
 
 }  // namespace url
 

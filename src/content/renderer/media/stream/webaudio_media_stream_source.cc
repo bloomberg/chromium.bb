@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/stream/webaudio_media_stream_source.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -11,8 +13,10 @@
 namespace content {
 
 WebAudioMediaStreamSource::WebAudioMediaStreamSource(
-    blink::WebMediaStreamSource* blink_source)
-    : MediaStreamAudioSource(false /* is_remote */),
+    blink::WebMediaStreamSource* blink_source,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : blink::MediaStreamAudioSource(std::move(task_runner),
+                                    false /* is_remote */),
       is_registered_consumer_(false),
       fifo_(base::Bind(&WebAudioMediaStreamSource::DeliverRebufferedAudio,
                        base::Unretained(this))),
@@ -27,7 +31,7 @@ WebAudioMediaStreamSource::~WebAudioMediaStreamSource() {
 
 void WebAudioMediaStreamSource::SetFormat(size_t number_of_channels,
                                           float sample_rate) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG(1) << "WebAudio media stream source changed format to: channels="
           << number_of_channels << ", sample_rate=" << sample_rate;
 
@@ -42,21 +46,21 @@ void WebAudioMediaStreamSource::SetFormat(size_t number_of_channels,
   // running on.
   //
   // TODO(miu): Re-evaluate whether this is needed. For now (this refactoring),
-  // I did not want to change behavior. http://crbug.com/577874
+  // I did not want to change behavior. https://crbug.com/577874
   fifo_.Reset(sample_rate / 100);
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                 channel_layout, sample_rate,
                                 fifo_.frames_per_buffer());
   // Take care of the discrete channel layout case.
   params.set_channels_for_discrete(number_of_channels);
-  MediaStreamAudioSource::SetFormat(params);
+  blink::MediaStreamAudioSource::SetFormat(params);
 
   if (!wrapper_bus_ || wrapper_bus_->channels() != params.channels())
     wrapper_bus_ = media::AudioBus::CreateWrapper(params.channels());
 }
 
 bool WebAudioMediaStreamSource::EnsureSourceIsStarted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_registered_consumer_)
     return true;
   if (blink_source_.IsNull() || !blink_source_.RequiresAudioConsumer())
@@ -68,7 +72,7 @@ bool WebAudioMediaStreamSource::EnsureSourceIsStarted() {
 }
 
 void WebAudioMediaStreamSource::EnsureSourceIsStopped() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!is_registered_consumer_)
     return;
   is_registered_consumer_ = false;
@@ -84,7 +88,7 @@ void WebAudioMediaStreamSource::ConsumeAudio(
     size_t number_of_frames) {
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
   // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
-  // audio/video sync.  http://crbug.com/335335
+  // audio/video sync.  https://crbug.com/335335
   current_reference_time_ = base::TimeTicks::Now();
 
   wrapper_bus_->set_frames(number_of_frames);
@@ -104,8 +108,8 @@ void WebAudioMediaStreamSource::DeliverRebufferedAudio(
       current_reference_time_ +
       base::TimeDelta::FromMicroseconds(
           frame_delay * base::Time::kMicrosecondsPerSecond /
-          MediaStreamAudioSource::GetAudioParameters().sample_rate());
-  MediaStreamAudioSource::DeliverDataToTracks(audio_bus, reference_time);
+          blink::MediaStreamAudioSource::GetAudioParameters().sample_rate());
+  blink::MediaStreamAudioSource::DeliverDataToTracks(audio_bus, reference_time);
 }
 
 }  // namespace content

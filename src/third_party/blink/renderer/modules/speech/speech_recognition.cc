@@ -53,9 +53,12 @@ void SpeechRecognition::start(ExceptionState& exception_state) {
 
   final_results_.clear();
 
+  // See https://bit.ly/2S0zRAS for task types.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI);
   mojom::blink::SpeechRecognitionSessionClientPtrInfo session_client;
   binding_.Bind(mojo::MakeRequest(&session_client),
-                GetExecutionContext()->GetInterfaceInvalidator());
+                GetExecutionContext()->GetInterfaceInvalidator(), task_runner);
   binding_.set_connection_error_handler(WTF::Bind(
       &SpeechRecognition::OnConnectionError, WrapWeakPersistent(this)));
 

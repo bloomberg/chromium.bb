@@ -23,7 +23,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -265,41 +265,6 @@ TEST_F(UserManagerTest, ScreenLockAvailability) {
   EXPECT_EQ(0U, user_manager::UserManager::Get()->GetUnlockUsers().size());
 
   ResetUserManager();
-}
-
-TEST_F(UserManagerTest, ProfileInitialized) {
-  user_manager::UserManager::Get()->UserLoggedIn(
-      owner_account_id_at_invalid_domain_,
-      owner_account_id_at_invalid_domain_.GetUserEmail(),
-      false /* browser_restart */, false /* is_child */);
-  const user_manager::UserList* users =
-      &user_manager::UserManager::Get()->GetUsers();
-  ASSERT_EQ(1U, users->size());
-  EXPECT_FALSE((*users)[0]->profile_ever_initialized());
-  ResetUserManager();
-  users = &user_manager::UserManager::Get()->GetUsers();
-  ASSERT_EQ(1U, users->size());
-  EXPECT_FALSE((*users)[0]->profile_ever_initialized());
-}
-
-TEST_F(UserManagerTest, ProfileInitializedMigration) {
-  user_manager::UserManager::Get()->UserLoggedIn(
-      owner_account_id_at_invalid_domain_,
-      owner_account_id_at_invalid_domain_.GetUserEmail(),
-      false /* browser_restart */, false /* is_child */);
-  const user_manager::UserList* users =
-      &user_manager::UserManager::Get()->GetUsers();
-  ASSERT_EQ(1U, users->size());
-  EXPECT_FALSE((*users)[0]->profile_ever_initialized());
-
-  // Clear the stored user data - when UserManager loads again, it should
-  // migrate existing users by setting session_initialized to true for them.
-  user_manager::known_user::RemoveSetProfileEverInitializedPrefForTesting(
-      (*users)[0]->GetAccountId());
-  ResetUserManager();
-  users = &user_manager::UserManager::Get()->GetUsers();
-  ASSERT_EQ(1U, users->size());
-  EXPECT_TRUE((*users)[0]->profile_ever_initialized());
 }
 
 TEST_F(UserManagerTest, ProfileRequiresPolicyUnknown) {

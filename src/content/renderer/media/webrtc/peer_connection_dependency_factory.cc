@@ -27,19 +27,13 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/webrtc/audio_codec_factory.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
-#include "content/renderer/media/webrtc/rtc_video_decoder_factory.h"
-#include "content/renderer/media/webrtc/rtc_video_encoder_factory.h"
 #include "content/renderer/media/webrtc/stun_field_trial.h"
+#include "content/renderer/media/webrtc/video_codec_factory.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
-#include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
-#include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/p2p/empty_network_manager.h"
 #include "content/renderer/p2p/filtering_network_manager.h"
@@ -55,27 +49,23 @@
 #include "media/base/media_permission.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/webrtc/api/create_peerconnection_factory.h"
-#include "third_party/webrtc/api/mediaconstraintsinterface.h"
-#include "third_party/webrtc/api/video_codecs/video_decoder_factory.h"
-#include "third_party/webrtc/api/video_codecs/video_encoder_factory.h"
-#include "third_party/webrtc/api/videosourceproxy.h"
-#include "third_party/webrtc/media/engine/convert_legacy_video_factory.h"
-#include "third_party/webrtc/media/engine/multiplexcodecfactory.h"
+#include "third_party/webrtc/api/video_track_source_proxy.h"
+#include "third_party/webrtc/media/engine/fake_video_codec_factory.h"
+#include "third_party/webrtc/media/engine/multiplex_codec_factory.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
-#include "third_party/webrtc/rtc_base/refcountedobject.h"
-#include "third_party/webrtc/rtc_base/ssladapter.h"
-
-#if defined(OS_ANDROID)
-#include "media/base/android/media_codec_util.h"
-#endif
+#include "third_party/webrtc/rtc_base/ref_counted_object.h"
+#include "third_party/webrtc/rtc_base/ssl_adapter.h"
 
 namespace content {
 
@@ -212,6 +202,8 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
   std::unique_ptr<MdnsResponderAdapter> mdns_responder;
 #if BUILDFLAG(ENABLE_MDNS)
   if (base::FeatureList::IsEnabled(features::kWebRtcHideLocalIpsWithMdns)) {
+    // Note that MdnsResponderAdapter is created on the main thread to have
+    // access to the connector to the service manager.
     mdns_responder = std::make_unique<MdnsResponderAdapter>();
   }
 #endif  // BUILDFLAG(ENABLE_MDNS)
@@ -299,31 +291,12 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   socket_factory_.reset(new IpcPacketSocketFactory(p2p_socket_dispatcher_.get(),
                                                    traffic_annotation));
 
-  std::unique_ptr<cricket::WebRtcVideoDecoderFactory> decoder_factory;
-  std::unique_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
-
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (gpu_factories && gpu_factories->IsGpuVideoAcceleratorEnabled()) {
-    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding))
-      decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
 
-    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding))
-      encoder_factory.reset(new RTCVideoEncoderFactory(gpu_factories));
-  }
-
-#if defined(OS_ANDROID)
-  if (!media::MediaCodecUtil::SupportsSetParameters())
-    encoder_factory.reset();
-#endif
-
-  // TODO(magjed): Update RTCVideoEncoderFactory/RTCVideoDecoderFactory to new
-  // interface and let Chromium be responsible in what order video codecs are
-  // listed, instead of using
-  // cricket::ConvertVideoEncoderFactory/cricket::ConvertVideoDecoderFactory.
   std::unique_ptr<webrtc::VideoEncoderFactory> webrtc_encoder_factory =
-      ConvertVideoEncoderFactory(std::move(encoder_factory));
+      CreateWebrtcVideoEncoderFactory(gpu_factories);
   std::unique_ptr<webrtc::VideoDecoderFactory> webrtc_decoder_factory =
-      ConvertVideoDecoderFactory(std::move(decoder_factory));
+      CreateWebrtcVideoDecoderFactory(gpu_factories);
 
   // Enable Multiplex codec in SDP optionally.
   if (base::FeatureList::IsEnabled(features::kWebRtcMultiplexCodec)) {
@@ -331,6 +304,13 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
         std::move(webrtc_encoder_factory));
     webrtc_decoder_factory = std::make_unique<webrtc::MultiplexDecoderFactory>(
         std::move(webrtc_decoder_factory));
+  }
+
+  if (cmd_line->HasSwitch(switches::kUseFakeCodecForPeerConnection)) {
+    webrtc_encoder_factory =
+        std::make_unique<webrtc::FakeVideoEncoderFactory>();
+    webrtc_decoder_factory =
+        std::make_unique<webrtc::FakeVideoDecoderFactory>();
   }
 
   pc_factory_ = webrtc::CreatePeerConnectionFactory(
@@ -366,8 +346,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
 
   webrtc::PeerConnectionDependencies dependencies(observer);
   dependencies.allocator = CreatePortAllocator(web_frame);
-  dependencies.async_resolver_factory =
-      std::make_unique<ProxyAsyncResolverFactory>(socket_factory_.get());
+  dependencies.async_resolver_factory = CreateAsyncResolverFactory();
   return GetPcFactory()
       ->CreatePeerConnection(config, std::move(dependencies))
       .get();
@@ -475,12 +454,11 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
 
   std::unique_ptr<rtc::NetworkManager> network_manager;
   if (port_config.enable_multiple_routes) {
-    FilteringNetworkManager* filtering_network_manager =
-        new FilteringNetworkManager(network_manager_.get(), requesting_origin,
-                                    media_permission);
-    network_manager.reset(filtering_network_manager);
+    network_manager = std::make_unique<FilteringNetworkManager>(
+        network_manager_.get(), requesting_origin, media_permission);
   } else {
-    network_manager.reset(new EmptyNetworkManager(network_manager_.get()));
+    network_manager =
+        std::make_unique<EmptyNetworkManager>(network_manager_.get());
   }
   auto port_allocator = std::make_unique<P2PPortAllocator>(
       p2p_socket_dispatcher_, std::move(network_manager), socket_factory_.get(),
@@ -489,6 +467,11 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
     port_allocator->SetPortRange(min_port, max_port);
 
   return port_allocator;
+}
+
+std::unique_ptr<webrtc::AsyncResolverFactory>
+PeerConnectionDependencyFactory::CreateAsyncResolverFactory() {
+  return std::make_unique<ProxyAsyncResolverFactory>(socket_factory_.get());
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>

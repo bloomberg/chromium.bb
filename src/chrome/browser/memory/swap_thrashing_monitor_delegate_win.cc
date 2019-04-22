@@ -7,9 +7,11 @@
 #include <windows.h>
 #include <winternl.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"
 
@@ -87,24 +89,29 @@ base::Optional<int64_t> GetHardFaultCountForChromeProcesses() {
   //       and threads running on the system. The initial guess suffices for
   //       ~100s of processes and ~1000s of threads.
   std::vector<uint8_t> buffer(32 * 1024);
-  for (size_t tries = 0; tries < 3; ++tries) {
-    ULONG return_length = 0;
-    const NTSTATUS status = query_system_information_ptr(
-        SystemProcessInformation, buffer.data(),
-        static_cast<ULONG>(buffer.size()), &return_length);
 
-    if (status == STATUS_SUCCESS)
-      break;
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  {
+    for (size_t tries = 0; tries < 3; ++tries) {
+      ULONG return_length = 0;
+      const NTSTATUS status = query_system_information_ptr(
+          SystemProcessInformation, buffer.data(),
+          static_cast<ULONG>(buffer.size()), &return_length);
 
-    if (status == STATUS_INFO_LENGTH_MISMATCH ||
-        status == STATUS_BUFFER_TOO_SMALL) {
-      // Insufficient buffer. Grow to the returned |return_length| plus 10%
-      // extra to avoid frequent reallocations and try again.
-      DCHECK_GT(return_length, buffer.size());
-      buffer.resize(static_cast<ULONG>(return_length * 1.1));
-    } else {
-      // An error other than the two above.
-      return base::nullopt;
+      if (status == STATUS_SUCCESS)
+        break;
+
+      if (status == STATUS_INFO_LENGTH_MISMATCH ||
+          status == STATUS_BUFFER_TOO_SMALL) {
+        // Insufficient buffer. Grow to the returned |return_length| plus 10%
+        // extra to avoid frequent reallocations and try again.
+        DCHECK_GT(return_length, buffer.size());
+        buffer.resize(static_cast<ULONG>(return_length * 1.1));
+      } else {
+        // An error other than the two above.
+        return base::nullopt;
+      }
     }
   }
 
@@ -135,15 +142,25 @@ const size_t SwapThrashingMonitorDelegateWin::HardFaultDeltasWindow::
     kHardFaultDeltasWindowSize = 12;
 
 SwapThrashingMonitorDelegateWin::SwapThrashingMonitorDelegateWin()
-    : hard_fault_deltas_window_(std::make_unique<HardFaultDeltasWindow>()) {}
+    : hard_fault_deltas_window_(std::make_unique<HardFaultDeltasWindow>()) {
+  // This object can be created on a sequence different than the one where it is
+  // used. In practice this object is created on the UI thread and it is then
+  // used and destroyed on a MayBlock sequence.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
-SwapThrashingMonitorDelegateWin::~SwapThrashingMonitorDelegateWin() {}
+SwapThrashingMonitorDelegateWin::~SwapThrashingMonitorDelegateWin() = default;
 
 SwapThrashingMonitorDelegateWin::HardFaultDeltasWindow::HardFaultDeltasWindow()
-    : latest_hard_fault_count_(), observation_above_threshold_count_(0U) {}
+    : latest_hard_fault_count_(), observation_above_threshold_count_(0U) {
+  // This object will be created as the same time as the
+  // SwapThrashingMonitorDelegateWin object that owns it, after that it might be
+  // used on a different sequence.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 SwapThrashingMonitorDelegateWin::HardFaultDeltasWindow::
-    ~HardFaultDeltasWindow() {}
+    ~HardFaultDeltasWindow() = default;
 
 void SwapThrashingMonitorDelegateWin::HardFaultDeltasWindow::OnObservation(
     uint64_t hard_fault_count) {

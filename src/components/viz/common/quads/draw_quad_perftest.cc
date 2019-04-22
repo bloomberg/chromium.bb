@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/time/time.h"
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
@@ -33,8 +33,8 @@ SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
   SkBlendMode blend_mode = SkBlendMode::kSrcOver;
 
   SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
-  state->SetAll(quad_transform, content_rect, visible_layer_rect, clip_rect,
-                is_clipped, are_contents_opaque, opacity, blend_mode,
+  state->SetAll(quad_transform, content_rect, visible_layer_rect, gfx::RRectF(),
+                clip_rect, is_clipped, are_contents_opaque, opacity, blend_mode,
                 sorting_context_id);
   return state;
 }
@@ -104,7 +104,7 @@ class DrawQuadPerfTest : public testing::Test {
  private:
   std::unique_ptr<RenderPass> render_pass_;
   SharedQuadState* shared_state_;
-  cc::LapTimer timer_;
+  base::LapTimer timer_;
 };
 
 TEST_F(DrawQuadPerfTest, IterateResources) {

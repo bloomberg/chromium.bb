@@ -91,6 +91,7 @@ public class EditorDialog
     private View mLayout;
     private EditorModel mEditorModel;
     private Button mDoneButton;
+    private boolean mFormWasValid;
     private ViewGroup mDataView;
     private View mFooter;
     @Nullable
@@ -111,7 +112,7 @@ public class EditorDialog
      */
     public EditorDialog(
             Activity activity, EditorObserverForTest observerForTest, Runnable deleteRunnable) {
-        super(activity, R.style.FullscreenWhite);
+        super(activity, R.style.Theme_Chromium_Fullscreen);
         // Sets transparent background for animating content view.
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         mContext = activity;
@@ -189,7 +190,7 @@ public class EditorDialog
         EditorDialogToolbar toolbar = (EditorDialogToolbar) mLayout.findViewById(R.id.action_bar);
         toolbar.setBackgroundColor(ApiCompatibilityUtils.getColor(
                 toolbar.getResources(), R.color.modern_primary_color));
-        toolbar.setTitleTextAppearance(toolbar.getContext(), R.style.BlackHeadline);
+        toolbar.setTitleTextAppearance(toolbar.getContext(), R.style.TextAppearance_BlackHeadline);
         toolbar.setTitle(mEditorModel.getTitle());
         toolbar.setShowDeleteMenuItem(mDeleteRunnable != null);
 
@@ -210,7 +211,7 @@ public class EditorDialog
 
         // Cancel editing when the user hits the back arrow.
         toolbar.setNavigationContentDescription(R.string.cancel);
-        toolbar.setNavigationIcon(getBlackTintedBackIcon());
+        toolbar.setNavigationIcon(getTintedBackIcon());
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -239,7 +240,7 @@ public class EditorDialog
      *
      * @return Whether all fields contain valid information.
      */
-    private boolean validateForm() {
+    public boolean validateForm() {
         final List<EditorFieldView> invalidViews = getViewsWithInvalidInformation(true);
 
         // Iterate over all the fields to update what errors are displayed, which is necessary to
@@ -260,6 +261,10 @@ public class EditorDialog
                 // field and focus it.
                 invalidViews.get(0).scrollToAndFocus();
             }
+        }
+
+        if (!invalidViews.isEmpty() && mObserverForTest != null) {
+            mObserverForTest.onEditorValidationError();
         }
 
         return invalidViews.isEmpty();
@@ -284,13 +289,10 @@ public class EditorDialog
 
         if (view.getId() == R.id.editor_dialog_done_button) {
             if (validateForm()) {
-                if (mEditorModel != null) mEditorModel.done();
-                mEditorModel = null;
+                mFormWasValid = true;
                 animateOutDialog();
                 return;
             }
-
-            if (mObserverForTest != null) mObserverForTest.onEditorValidationError();
         } else if (view.getId() == R.id.payments_edit_cancel_button) {
             animateOutDialog();
         }
@@ -330,7 +332,15 @@ public class EditorDialog
     @Override
     public void onDismiss(DialogInterface dialog) {
         mIsDismissed = true;
-        if (mEditorModel != null) mEditorModel.cancel();
+        if (mEditorModel != null) {
+            if (mFormWasValid) {
+                mEditorModel.done();
+                mFormWasValid = false;
+            } else {
+                mEditorModel.cancel();
+            }
+            mEditorModel = null;
+        }
         removeTextChangedListenersAndInputFilters();
     }
 
@@ -612,8 +622,8 @@ public class EditorDialog
         return mDropdownFields;
     }
 
-    private Drawable getBlackTintedBackIcon() {
+    private Drawable getTintedBackIcon() {
         return TintedDrawable.constructTintedDrawable(
-                getContext(), R.drawable.ic_arrow_back_white_24dp, android.R.color.black);
+                getContext(), R.drawable.ic_arrow_back_white_24dp, R.color.default_icon_color);
     }
 }

@@ -132,7 +132,7 @@ void AppInstallEventLog::Store() {
 void AppInstallEventLog::Serialize(em::AppInstallReportRequest* report) {
   report->Clear();
   for (const auto& log : logs_) {
-    em::AppInstallReport* const report_log = report->add_app_install_report();
+    em::AppInstallReport* const report_log = report->add_app_install_reports();
     log.second->Serialize(report_log);
   }
 }

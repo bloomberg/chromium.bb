@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -88,6 +89,10 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
   void BeginVideoEncodeAcceleratorSupportedProfile() override {}
 
   void EndVideoEncodeAcceleratorSupportedProfile() override {}
+
+  void BeginImageDecodeAcceleratorSupportedProfile() override {}
+
+  void EndImageDecodeAcceleratorSupportedProfile() override {}
 
   void BeginOverlayCapability() override {}
 

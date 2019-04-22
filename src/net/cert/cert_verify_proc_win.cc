@@ -183,7 +183,7 @@ bool CertSubjectCommonNameHasNull(PCCERT_CONTEXT cert) {
   decode_para.cbSize = sizeof(decode_para);
   decode_para.pfnAlloc = crypto::CryptAlloc;
   decode_para.pfnFree = crypto::CryptFree;
-  CERT_NAME_INFO* name_info = NULL;
+  CERT_NAME_INFO* name_info = nullptr;
   DWORD name_info_size = 0;
   BOOL rv;
   rv = CryptDecodeObjectEx(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
@@ -279,7 +279,7 @@ void GetCertChainInfo(PCCERT_CHAIN_CONTEXT chain_context,
   DWORD num_elements = first_chain->cElement;
   PCERT_CHAIN_ELEMENT* element = first_chain->rgpElement;
 
-  PCCERT_CONTEXT verified_cert = NULL;
+  PCCERT_CONTEXT verified_cert = nullptr;
   std::vector<PCCERT_CONTEXT> verified_chain;
 
   bool has_root_ca = num_elements > 1 &&
@@ -335,7 +335,7 @@ void GetCertPoliciesInfo(
   decode_para.cbSize = sizeof(decode_para);
   decode_para.pfnAlloc = crypto::CryptAlloc;
   decode_para.pfnFree = crypto::CryptFree;
-  CERT_POLICIES_INFO* policies_info = NULL;
+  CERT_POLICIES_INFO* policies_info = nullptr;
   DWORD policies_info_size = 0;
   BOOL rv;
   rv = CryptDecodeObjectEx(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
@@ -628,7 +628,7 @@ class RevocationInjector {
          reinterpret_cast<void*>(&CertDllVerifyRevocationWithCRLSet)},
     };
     BOOL ok = CryptInstallOIDFunctionAddress(
-        NULL, X509_ASN_ENCODING, CRYPT_OID_VERIFY_REVOCATION_FUNC,
+        nullptr, X509_ASN_ENCODING, CRYPT_OID_VERIFY_REVOCATION_FUNC,
         base::size(kInterceptFunction), kInterceptFunction,
         CRYPT_INSTALL_OID_FUNC_BEFORE_FLAG);
     DCHECK(ok);
@@ -882,7 +882,7 @@ int CertVerifyProcWin::VerifyInternal(
 
   // Get the certificatePolicies extension of the certificate.
   std::unique_ptr<CERT_POLICIES_INFO, base::FreeDeleter> policies_info;
-  LPSTR ev_policy_oid = NULL;
+  LPSTR ev_policy_oid = nullptr;
   GetCertPoliciesInfo(cert_list.get(), &policies_info);
   if (policies_info) {
     EVRootCAMetadata* metadata = EVRootCAMetadata::GetInstance();
@@ -936,7 +936,7 @@ int CertVerifyProcWin::VerifyInternal(
   // and used when in cache-only mode.
   if (!ocsp_response.empty()) {
     CRYPT_DATA_BLOB ocsp_response_blob;
-    ocsp_response_blob.cbData = ocsp_response.size();
+    ocsp_response_blob.cbData = base::checked_cast<DWORD>(ocsp_response.size());
     ocsp_response_blob.pbData =
         reinterpret_cast<BYTE*>(const_cast<char*>(ocsp_response.data()));
     CertSetCertificateContextProperty(
@@ -982,9 +982,9 @@ int CertVerifyProcWin::VerifyInternal(
   // calls will use the fallback path.
   BOOL chain_result =
       CertGetCertificateChain(chain_engine, cert_list.get(),
-                              NULL,  // current system time
+                              nullptr,  // current system time
                               cert_list->hCertStore, &chain_para, chain_flags,
-                              NULL,  // reserved
+                              nullptr,  // reserved
                               &chain_context);
   if (chain_result && chain_context &&
       (chain_context->TrustStatus.dwErrorStatus &
@@ -999,9 +999,9 @@ int CertVerifyProcWin::VerifyInternal(
     chain_para.dwStrongSignFlags = 0;
     chain_result =
         CertGetCertificateChain(chain_engine, cert_list.get(),
-                                NULL,  // current system time
+                                nullptr,  // current system time
                                 cert_list->hCertStore, &chain_para, chain_flags,
-                                NULL,  // reserved
+                                nullptr,  // reserved
                                 &chain_context);
   }
 
@@ -1014,9 +1014,8 @@ int CertVerifyProcWin::VerifyInternal(
   // should have prevented invalid paths from being built, the behaviour and
   // timing of how a Revocation Provider is invoked is not well documented. This
   // is just defense in depth.
-  CRLSetResult crl_set_result = kCRLSetUnknown;
-  if (crl_set)
-    crl_set_result = CheckChainRevocationWithCRLSet(chain_context, crl_set);
+  CRLSetResult crl_set_result =
+      CheckChainRevocationWithCRLSet(chain_context, crl_set);
 
   if (crl_set_result == kCRLSetRevoked) {
     verify_result->cert_status |= CERT_STATUS_REVOKED;
@@ -1029,15 +1028,12 @@ int CertVerifyProcWin::VerifyInternal(
     verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
 
     CertFreeCertificateChain(chain_context);
-    if (!CertGetCertificateChain(
-             chain_engine,
-             cert_list.get(),
-             NULL,  // current system time
-             cert_list->hCertStore,
-             &chain_para,
-             chain_flags,
-             NULL,  // reserved
-             &chain_context)) {
+    if (!CertGetCertificateChain(chain_engine, cert_list.get(),
+                                 nullptr,  // current system time
+                                 cert_list->hCertStore, &chain_para,
+                                 chain_flags,
+                                 nullptr,  // reserved
+                                 &chain_context)) {
       verify_result->cert_status |= CERT_STATUS_INVALID;
       return MapSecurityError(GetLastError());
     }
@@ -1045,19 +1041,16 @@ int CertVerifyProcWin::VerifyInternal(
 
   if (chain_context->TrustStatus.dwErrorStatus &
       CERT_TRUST_IS_NOT_VALID_FOR_USAGE) {
-    ev_policy_oid = NULL;
+    ev_policy_oid = nullptr;
     chain_para.RequestedIssuancePolicy.Usage.cUsageIdentifier = 0;
-    chain_para.RequestedIssuancePolicy.Usage.rgpszUsageIdentifier = NULL;
+    chain_para.RequestedIssuancePolicy.Usage.rgpszUsageIdentifier = nullptr;
     CertFreeCertificateChain(chain_context);
-    if (!CertGetCertificateChain(
-             chain_engine,
-             cert_list.get(),
-             NULL,  // current system time
-             cert_list->hCertStore,
-             &chain_para,
-             chain_flags,
-             NULL,  // reserved
-             &chain_context)) {
+    if (!CertGetCertificateChain(chain_engine, cert_list.get(),
+                                 nullptr,  // current system time
+                                 cert_list->hCertStore, &chain_para,
+                                 chain_flags,
+                                 nullptr,  // reserved
+                                 &chain_context)) {
       verify_result->cert_status |= CERT_STATUS_INVALID;
       return MapSecurityError(GetLastError());
     }
@@ -1074,15 +1067,12 @@ int CertVerifyProcWin::VerifyInternal(
     chain_flags &= ~CERT_CHAIN_REVOCATION_CHECK_CACHE_ONLY;
 
     CertFreeCertificateChain(chain_context);
-    if (!CertGetCertificateChain(
-             chain_engine,
-             cert_list.get(),
-             NULL,  // current system time
-             cert_list->hCertStore,
-             &chain_para,
-             chain_flags,
-             NULL,  // reserved
-             &chain_context)) {
+    if (!CertGetCertificateChain(chain_engine, cert_list.get(),
+                                 nullptr,  // current system time
+                                 cert_list->hCertStore, &chain_para,
+                                 chain_flags,
+                                 nullptr,  // reserved
+                                 &chain_context)) {
       verify_result->cert_status |= CERT_STATUS_INVALID;
       return MapSecurityError(GetLastError());
     }
@@ -1113,8 +1103,7 @@ int CertVerifyProcWin::VerifyInternal(
   // routine that has better support for RFC 6125 name matching.
   extra_policy_para.fdwChecks =
       0x00001000;  // SECURITY_FLAG_IGNORE_CERT_CN_INVALID
-  extra_policy_para.pwszServerName =
-      const_cast<base::char16*>(hostname16.c_str());
+  extra_policy_para.pwszServerName = base::as_writable_wcstr(hostname16);
 
   CERT_CHAIN_POLICY_PARA policy_para;
   memset(&policy_para, 0, sizeof(policy_para));

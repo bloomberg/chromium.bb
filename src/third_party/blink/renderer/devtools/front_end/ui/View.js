@@ -268,6 +268,9 @@ UI.TabbedViewLocation.prototype = {
    */
   tabbedPane() {},
 
+  /**
+   * @return {!UI.ToolbarMenuButton}
+   */
   enableMoreTabsButton() {}
 };
 
@@ -506,7 +509,7 @@ UI.ViewManager._ExpandableContainerWidget = class extends UI.VBox {
     this._titleElement.addEventListener('keydown', this._onTitleKeyDown.bind(this), false);
     this.contentElement.insertBefore(this._titleElement, this.contentElement.firstChild);
 
-    this.contentElement.createChild('content');
+    this.contentElement.createChild('slot');
     this._view = view;
     view[UI.ViewManager._ExpandableContainerWidget._symbol] = this;
   }
@@ -662,10 +665,13 @@ UI.ViewManager._TabbedLocation = class extends UI.ViewManager._Location {
 
   /**
    * @override
+   * @return {!UI.ToolbarMenuButton}
    */
   enableMoreTabsButton() {
-    this._tabbedPane.leftToolbar().appendToolbarItem(new UI.ToolbarMenuButton(this._appendTabsToMenu.bind(this)));
+    const moreTabsButton = new UI.ToolbarMenuButton(this._appendTabsToMenu.bind(this));
+    this._tabbedPane.leftToolbar().appendToolbarItem(moreTabsButton);
     this._tabbedPane.disableOverflowMenu();
+    return moreTabsButton;
   }
 
   /**
@@ -826,6 +832,18 @@ UI.ViewManager._TabbedLocation = class extends UI.ViewManager._Location {
     const tabOrders = {};
     for (let i = 0; i < tabIds.length; i++)
       tabOrders[tabIds[i]] = (i + 1) * UI.ViewManager._TabbedLocation.orderStep;
+
+    const oldTabOrder = this._tabOrderSetting.get();
+    const oldTabArray = Object.keys(oldTabOrder);
+    oldTabArray.sort((a, b) => oldTabOrder[a] - oldTabOrder[b]);
+    let lastOrder = 0;
+    for (const key of oldTabArray) {
+      if (key in tabOrders) {
+        lastOrder = tabOrders[key];
+        continue;
+      }
+      tabOrders[key] = ++lastOrder;
+    }
     this._tabOrderSetting.set(tabOrders);
   }
 };

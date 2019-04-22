@@ -6,7 +6,15 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 visibility = [ "//ui/file_manager/file_manager/foreground/*" ]
 
-js_type_check("closure_compile") {
+group("closure_compile") {
+  testonly = true
+  visibility += [ "//ui/file_manager:closure_compile" ]
+  deps = [
+    ":closure_compile_module",
+  ]
+}
+
+js_type_check("closure_compile_module") {
   deps = [
     ":files_icon_button",
     ":files_metadata_box",

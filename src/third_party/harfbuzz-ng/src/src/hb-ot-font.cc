@@ -34,6 +34,8 @@
 
 #include "hb-ot-cmap-table.hh"
 #include "hb-ot-glyf-table.hh"
+#include "hb-ot-cff1-table.hh"
+#include "hb-ot-cff2-table.hh"
 #include "hb-ot-hmtx-table.hh"
 #include "hb-ot-kern-table.hh"
 #include "hb-ot-os2-table.hh"
@@ -50,7 +52,7 @@
  * @short_description: OpenType font implementation
  * @include: hb-ot.h
  *
- * Functions for using OpenType fonts with hb_shape().  Not that fonts returned
+ * Functions for using OpenType fonts with hb_shape().  Note that fonts returned
  * by hb_font_create() default to using these functions, so most clients would
  * never need to call these functions directly.
  **/
@@ -110,8 +112,8 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
   for (unsigned int i = 0; i < count; i++)
   {
     *first_advance = font->em_scale_x (hmtx.get_advance (*first_glyph, font));
-    first_glyph = &StructAtOffset<hb_codepoint_t> (first_glyph, glyph_stride);
-    first_advance = &StructAtOffset<hb_position_t> (first_advance, advance_stride);
+    first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
+    first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
   }
 }
 
@@ -130,8 +132,8 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
   for (unsigned int i = 0; i < count; i++)
   {
     *first_advance = font->em_scale_y (-(int) vmtx.get_advance (*first_glyph, font));
-    first_glyph = &StructAtOffset<hb_codepoint_t> (first_glyph, glyph_stride);
-    first_advance = &StructAtOffset<hb_position_t> (first_advance, advance_stride);
+    first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
+    first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
   }
 }
 
@@ -181,6 +183,10 @@ hb_ot_get_glyph_extents (hb_font_t *font,
   bool ret = ot_face->sbix->get_extents (font, glyph, extents);
   if (!ret)
     ret = ot_face->glyf->get_extents (glyph, extents);
+  if (!ret)
+    ret = ot_face->cff1->get_extents (glyph, extents);
+  if (!ret)
+    ret = ot_face->cff2->get_extents (font, glyph, extents);
   if (!ret)
     ret = ot_face->CBDT->get_extents (font, glyph, extents);
   // TODO Hook up side-bearings variations.
@@ -244,12 +250,12 @@ hb_ot_get_font_v_extents (hb_font_t *font,
 }
 
 #if HB_USE_ATEXIT
-static void free_static_ot_funcs (void);
+static void free_static_ot_funcs ();
 #endif
 
 static struct hb_ot_font_funcs_lazy_loader_t : hb_font_funcs_lazy_loader_t<hb_ot_font_funcs_lazy_loader_t>
 {
-  static inline hb_font_funcs_t *create (void)
+  static hb_font_funcs_t *create ()
   {
     hb_font_funcs_t *funcs = hb_font_funcs_create ();
 
@@ -279,14 +285,14 @@ static struct hb_ot_font_funcs_lazy_loader_t : hb_font_funcs_lazy_loader_t<hb_ot
 
 #if HB_USE_ATEXIT
 static
-void free_static_ot_funcs (void)
+void free_static_ot_funcs ()
 {
   static_ot_funcs.free_instance ();
 }
 #endif
 
 static hb_font_funcs_t *
-_hb_ot_get_font_funcs (void)
+_hb_ot_get_font_funcs ()
 {
   return static_ot_funcs.get_unconst ();
 }

@@ -18,6 +18,8 @@ namespace chrome_cleaner {
 
 namespace {
 
+using ::testing::ContainerEq;
+
 const char kFileContent[] = "This is the file content.";
 
 const UwSId kFakePupId1 = 10;
@@ -29,8 +31,8 @@ class PUPCleanerUtilTest : public testing::Test {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(base::CreateTemporaryDirInDir(temp_dir_.GetPath(), L"subfolder",
-                                              &subfolder_path_));
+    ASSERT_TRUE(base::CreateTemporaryDirInDir(
+        temp_dir_.GetPath(), L"subfolder", &subfolder_path_));
   }
 
   base::FilePath CreateFileInTopDir(const base::string16& basename,
@@ -55,9 +57,13 @@ class PUPCleanerUtilTest : public testing::Test {
 TEST_F(PUPCleanerUtilTest, CollectRemovablePupFiles_ActiveFiles) {
   PUPData pup_data;
   TestPUPData test_pup_data;
-  test_pup_data.AddPUP(kFakePupId1, PUPData::FLAGS_ACTION_REMOVE, nullptr,
+  test_pup_data.AddPUP(kFakePupId1,
+                       PUPData::FLAGS_ACTION_REMOVE,
+                       nullptr,
                        PUPData::kMaxFilesToRemoveSmallUwS);
-  test_pup_data.AddPUP(kFakePupId2, PUPData::FLAGS_ACTION_REMOVE, nullptr,
+  test_pup_data.AddPUP(kFakePupId2,
+                       PUPData::FLAGS_ACTION_REMOVE,
+                       nullptr,
                        PUPData::kMaxFilesToRemoveSmallUwS);
 
   base::FilePath active_path1 = CreateFileInTopDir(L"file.exe", kFileContent);
@@ -86,69 +92,87 @@ TEST_F(PUPCleanerUtilTest, CollectRemovablePupFiles_ActiveFiles) {
   expected_collected_paths.Insert(lnk_path);
 
   FilePathSet collected_paths;
-  EXPECT_TRUE(CollectRemovablePupFiles(Engine::URZA, {kFakePupId1, kFakePupId2},
-                                       &collected_paths));
-  EXPECT_EQ(expected_collected_paths, collected_paths);
+  EXPECT_TRUE(CollectRemovablePupFiles(
+      {kFakePupId1, kFakePupId2}, nullptr, &collected_paths));
+  EXPECT_THAT(collected_paths.file_paths(),
+              ContainerEq(expected_collected_paths.file_paths()));
 }
 
-TEST_F(PUPCleanerUtilTest, CollectRemovablePupFiles_InactiveFiles) {
-  // Files with inactive extensions should be collected only if they were
-  //  detected as part of UwS service registration.
+TEST_F(PUPCleanerUtilTest, CollectRemovablePupFiles_NonExecutableFiles) {
+  // Files with non-executable extensions should be also collected.
   PUPData pup_data;
   TestPUPData test_pup_data;
-  test_pup_data.AddPUP(kFakePupId1, PUPData::FLAGS_ACTION_REMOVE, nullptr,
+  test_pup_data.AddPUP(kFakePupId1,
+                       PUPData::FLAGS_ACTION_REMOVE,
+                       nullptr,
                        PUPData::kMaxFilesToRemoveSmallUwS);
 
-  base::FilePath inactive_path = CreateFileInTopDir(L"file.jpg", kFileContent);
-  EXPECT_FALSE(PathHasActiveExtension(inactive_path));
-  base::FilePath found_in_service_path =
-      CreateFileInTopDir(L"file.log", kFileContent);
-  EXPECT_FALSE(PathHasActiveExtension(found_in_service_path));
+  base::FilePath jpg_path = CreateFileInTopDir(L"file.jpg", kFileContent);
+  EXPECT_FALSE(PathHasActiveExtension(jpg_path));
+  base::FilePath log_path = CreateFileInTopDir(L"file.log", kFileContent);
+  EXPECT_FALSE(PathHasActiveExtension(log_path));
 
   PUPData::PUP* pup = pup_data.GetPUP(kFakePupId1);
   ASSERT_TRUE(pup);
-  pup->AddDiskFootprint(inactive_path);
-  pup->AddDiskFootprintTraceLocation(inactive_path, UwS::FOUND_IN_MEMORY);
-  pup->AddDiskFootprint(found_in_service_path);
-  pup->AddDiskFootprintTraceLocation(found_in_service_path,
-                                     UwS::FOUND_IN_SERVICE);
+  pup->AddDiskFootprint(jpg_path);
+  pup->AddDiskFootprintTraceLocation(jpg_path, UwS::FOUND_IN_MEMORY);
+  pup->AddDiskFootprint(log_path);
+  pup->AddDiskFootprintTraceLocation(log_path, UwS::FOUND_IN_SERVICE);
 
   FilePathSet expected_collected_paths;
-  expected_collected_paths.Insert(found_in_service_path);
+  expected_collected_paths.Insert(jpg_path);
+  expected_collected_paths.Insert(log_path);
 
   FilePathSet collected_paths;
   EXPECT_TRUE(
-      CollectRemovablePupFiles(Engine::URZA, {kFakePupId1}, &collected_paths));
-  EXPECT_EQ(expected_collected_paths, collected_paths);
+      CollectRemovablePupFiles({kFakePupId1}, nullptr, &collected_paths));
+  EXPECT_THAT(collected_paths.file_paths(),
+              ContainerEq(expected_collected_paths.file_paths()));
 }
 
-TEST_F(PUPCleanerUtilTest, CollectRemovablePupFiles_TooManyFiles) {
-  // CollectRemovablePupFiles() should return false when the number of collected
-  // files for a PUP exceed the PUPs max_files_to_remove threshold.
+TEST_F(PUPCleanerUtilTest, CollectRemovablePupFiles_KnownDigests) {
   PUPData pup_data;
   TestPUPData test_pup_data;
-  test_pup_data.AddPUP(kFakePupId1, PUPData::FLAGS_ACTION_REMOVE, nullptr,
-                       /*max_files_to_remove=*/1);
-  PUPData::PUP* pup = pup_data.GetPUP(kFakePupId1);
-  ASSERT_TRUE(pup);
+  test_pup_data.AddPUP(kFakePupId1,
+                       PUPData::FLAGS_ACTION_REMOVE,
+                       nullptr,
+                       PUPData::kMaxFilesToRemoveSmallUwS);
+  test_pup_data.AddPUP(kFakePupId2,
+                       PUPData::FLAGS_ACTION_REMOVE,
+                       nullptr,
+                       PUPData::kMaxFilesToRemoveSmallUwS);
 
-  base::FilePath active_path1 = CreateFileInTopDir(L"file1.exe", kFileContent);
+  base::FilePath active_path1 = CreateFileInTopDir(L"file.exe", kFileContent);
   EXPECT_TRUE(PathHasActiveExtension(active_path1));
   base::FilePath active_path2 =
-      CreateFileInSubfolder(L"file2.exe", kFileContent);
+      CreateFileInSubfolder(L"file.dll", kFileContent);
   EXPECT_TRUE(PathHasActiveExtension(active_path2));
 
-  pup->AddDiskFootprint(active_path1);
-  pup->AddDiskFootprint(active_path2);
+  PUPData::PUP* pup1 = pup_data.GetPUP(kFakePupId1);
+  ASSERT_TRUE(pup1);
+  PUPData::PUP* pup2 = pup_data.GetPUP(kFakePupId2);
+  ASSERT_TRUE(pup2);
 
+  pup1->AddDiskFootprint(active_path1);
+  pup1->AddDiskFootprint(temp_dir_.GetPath());
+
+  pup2->AddDiskFootprint(active_path2);
+  pup2->AddDiskFootprint(subfolder_path_);
+
+  scoped_refptr<DigestVerifier> digest_verifier =
+      DigestVerifier::CreateFromFile(active_path1);
+
+  // |active_path1| will match the DigestVerifier, so it should not be
+  // collected. |active_path2| has the same digest but a different filename so
+  // the DigestVerifier will not recognize it.
   FilePathSet expected_collected_paths;
-  expected_collected_paths.Insert(active_path1);
   expected_collected_paths.Insert(active_path2);
 
-  FilePathSet collected_paths_unsafe;
-  EXPECT_FALSE(CollectRemovablePupFiles(Engine::URZA, {kFakePupId1},
-                                        &collected_paths_unsafe));
-  EXPECT_EQ(expected_collected_paths, collected_paths_unsafe);
+  FilePathSet collected_paths;
+  EXPECT_TRUE(CollectRemovablePupFiles(
+      {kFakePupId1, kFakePupId2}, digest_verifier, &collected_paths));
+  EXPECT_THAT(collected_paths.file_paths(),
+              ContainerEq(expected_collected_paths.file_paths()));
 }
 
 }  // namespace chrome_cleaner

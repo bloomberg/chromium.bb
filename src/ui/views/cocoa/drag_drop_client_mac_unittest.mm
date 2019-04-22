@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/bind.h"
 #include "base/mac/availability.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -123,14 +124,14 @@ namespace test {
 // View object that will receive and process dropped data from the test.
 class DragDropView : public View {
  public:
-  DragDropView() {}
+  DragDropView() = default;
 
   void set_formats(int formats) { formats_ = formats; }
 
   // View:
   bool GetDropFormats(
       int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) override {
+      std::set<ui::ClipboardFormatType>* format_types) override {
     *formats |= formats_;
     return true;
   }
@@ -176,8 +177,8 @@ class DragDropClientMacTest : public WidgetTest {
   }
 
   void SetData(OSExchangeData& data) {
-    drag_drop_client()->data_source_.reset(
-        [[CocoaDragDropDataProvider alloc] initWithData:data]);
+    drag_drop_client()->exchange_data_ =
+        std::make_unique<ui::OSExchangeData>(data.provider().Clone());
   }
 
   // testing::Test:
@@ -197,7 +198,7 @@ class DragDropClientMacTest : public WidgetTest {
     widget_->GetContentsView()->AddChildView(target_);
     target_->SetBoundsRect(bounds);
 
-    drag_drop_client()->operation_ = ui::DragDropTypes::DRAG_COPY;
+    drag_drop_client()->source_operation_ = ui::DragDropTypes::DRAG_COPY;
   }
 
   void TearDown() override {
@@ -259,8 +260,8 @@ TEST_F(DragDropClientMacTest, ReleaseCapture) {
 
   // Immediately quit drag'n'drop, or we'll hang.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DragDropClientMac::EndDrag,
-                            base::Unretained(drag_drop_client())));
+      FROM_HERE, base::BindOnce(&DragDropClientMac::EndDrag,
+                                base::Unretained(drag_drop_client())));
 
   // It will call ReleaseCapture().
   drag_drop_client()->StartDragAndDrop(

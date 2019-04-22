@@ -9,13 +9,13 @@
 #include <numeric>
 #include <string>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
@@ -32,7 +32,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/browsing_data/content/conditional_cache_counting_helper.h"
@@ -101,6 +101,11 @@ void StorageHandler::RegisterMessages() {
       "clearDriveCache",
       base::BindRepeating(&StorageHandler::HandleClearDriveCache,
                           base::Unretained(this)));
+}
+
+void StorageHandler::OnJavascriptDisallowed() {
+  // Ensure that pending callbacks do not complete and cause JS to be evaluated.
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
@@ -244,12 +249,11 @@ void StorageHandler::UpdateBrowsingDataSize() {
         new BrowsingDataCookieHelper(storage_partition),
         new BrowsingDataDatabaseHelper(profile_),
         new BrowsingDataLocalStorageHelper(profile_),
-        new BrowsingDataAppCacheHelper(profile_),
+        new BrowsingDataAppCacheHelper(storage_partition->GetAppCacheService()),
         new BrowsingDataIndexedDBHelper(
             storage_partition->GetIndexedDBContext()),
         BrowsingDataFileSystemHelper::Create(
             storage_partition->GetFileSystemContext()),
-        BrowsingDataChannelIDHelper::Create(profile_->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(
             storage_partition->GetServiceWorkerContext()),
         new BrowsingDataCacheStorageHelper(
@@ -290,10 +294,8 @@ void StorageHandler::OnGetBrowsingDataSize(bool is_site_data, int64_t size) {
 }
 
 void StorageHandler::UpdateAndroidSize() {
-  if (!arc::IsArcPlayStoreEnabledForProfile(profile_) ||
-      arc::IsArcOptInVerificationDisabled()) {
+  if (!arc::IsArcPlayStoreEnabledForProfile(profile_))
     return;
-  }
 
   if (updating_android_size_)
     return;
@@ -361,7 +363,7 @@ void StorageHandler::UpdateOtherUsersSize() {
     if (user->is_active())
       continue;
     other_users_.push_back(user);
-    DBusThreadManager::Get()->GetCryptohomeClient()->GetAccountDiskUsage(
+    CryptohomeClient::Get()->GetAccountDiskUsage(
         cryptohome::CreateAccountIdentifierFromAccountId(user->GetAccountId()),
         base::BindOnce(&StorageHandler::OnGetOtherUserSize,
                        weak_ptr_factory_.GetWeakPtr()));

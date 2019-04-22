@@ -34,6 +34,8 @@ namespace WTF {
 
 template <class T>
 class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
+  USING_FAST_MALLOC(PODFreeListArena);
+
  public:
   static scoped_refptr<PODFreeListArena> Create() {
     return base::AdoptRef(new PODFreeListArena);

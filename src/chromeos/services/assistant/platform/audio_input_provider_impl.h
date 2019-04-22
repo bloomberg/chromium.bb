@@ -22,7 +22,9 @@ namespace assistant {
 
 class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
  public:
-  explicit AudioInputProviderImpl(service_manager::Connector* connector);
+  AudioInputProviderImpl(service_manager::Connector* connector,
+                         const std::string& input_device_id,
+                         const std::string& hotword_device_id);
   ~AudioInputProviderImpl() override;
 
   // assistant_client::AudioInputProvider overrides:
@@ -34,6 +36,12 @@ class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
 
   // Called when hotword enabled status changed.
   void OnHotwordEnabled(bool enable);
+
+  // Setting the input device to use for audio capture.
+  void SetDeviceId(const std::string& device_id);
+
+  // Setting the hotword input device with hardware based hotword detection.
+  void SetHotwordDeviceId(const std::string& device_id);
 
  private:
   AudioInputImpl audio_input_;

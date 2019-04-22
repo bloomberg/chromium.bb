@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -18,8 +19,9 @@
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -101,17 +103,11 @@ struct FastInkView::Resource {
     // when https://crbug/772562 is fixed
     if (!context_provider)
       return;
-    gpu::gles2::GLES2Interface* gles2 = context_provider->ContextGL();
-    if (sync_token.HasData())
-      gles2->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-    if (texture)
-      gles2->DeleteTextures(1, &texture);
-    if (image)
-      gles2->DestroyImageCHROMIUM(image);
+    gpu::SharedImageInterface* sii = context_provider->SharedImageInterface();
+    DCHECK(!mailbox.IsZero());
+    sii->DestroySharedImage(sync_token, mailbox);
   }
   scoped_refptr<viz::ContextProvider> context_provider;
-  uint32_t texture = 0;
-  uint32_t image = 0;
   gpu::Mailbox mailbox;
   gpu::SyncToken sync_token;
   bool damaged = true;
@@ -156,12 +152,14 @@ class FastInkView::LayerTreeFrameSinkHolder
         holder->last_frame_device_scale_factor_;
     frame.metadata.local_surface_id_allocation_time =
         holder->last_local_surface_id_allocation_time_;
+    frame.metadata.frame_token = ++holder->next_frame_token_;
     std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
     pass->SetNew(1, gfx::Rect(holder->last_frame_size_in_pixels_),
                  gfx::Rect(holder->last_frame_size_in_pixels_),
                  gfx::Transform());
     frame.render_pass_list.push_back(std::move(pass));
     holder->frame_sink_->SubmitCompositorFrame(std::move(frame),
+                                               /*hit_test_data_changed=*/true,
                                                /*show_hit_test_borders=*/false);
 
     // Delete sink holder immediately if not waiting for exported resources to
@@ -193,7 +191,9 @@ class FastInkView::LayerTreeFrameSinkHolder
     last_frame_device_scale_factor_ = frame.metadata.device_scale_factor;
     last_local_surface_id_allocation_time_ =
         frame.metadata.local_surface_id_allocation_time;
+    frame.metadata.frame_token = ++next_frame_token_;
     frame_sink_->SubmitCompositorFrame(std::move(frame),
+                                       /*hit_test_data_changed=*/true,
                                        /*show_hit_test_borders=*/false);
   }
 
@@ -209,6 +209,8 @@ class FastInkView::LayerTreeFrameSinkHolder
   }
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override {
+    if (delete_pending_)
+      return;
     for (auto& entry : resources) {
       auto it = exported_resources_.find(entry.id);
       DCHECK(it != exported_resources_.end());
@@ -222,7 +224,7 @@ class FastInkView::LayerTreeFrameSinkHolder
     if (root_window_ && exported_resources_.empty())
       ScheduleDelete();
   }
-  void SetTreeActivationCallback(const base::Closure& callback) override {}
+  void SetTreeActivationCallback(base::RepeatingClosure callback) override {}
   void DidReceiveCompositorFrameAck() override {
     if (view_)
       view_->DidReceiveCompositorFrameAck();
@@ -270,6 +272,7 @@ class FastInkView::LayerTreeFrameSinkHolder
   std::unique_ptr<cc::LayerTreeFrameSink> frame_sink_;
   base::flat_map<viz::ResourceId, std::unique_ptr<Resource>>
       exported_resources_;
+  viz::FrameTokenGenerator next_frame_token_;
   gfx::Size last_frame_size_in_pixels_;
   float last_frame_device_scale_factor_ = 1.0f;
   base::TimeTicks last_local_surface_id_allocation_time_;
@@ -414,41 +417,23 @@ void FastInkView::SubmitCompositorFrame() {
       }
     }
 
-    gpu::gles2::GLES2Interface* gles2 = resource->context_provider->ContextGL();
-
-    if (resource->sync_token.HasData()) {
-      gles2->WaitSyncTokenCHROMIUM(resource->sync_token.GetConstData());
-      resource->sync_token = gpu::SyncToken();
-    }
-
-    if (resource->texture) {
-      gles2->ActiveTexture(GL_TEXTURE0);
-      gles2->BindTexture(GL_TEXTURE_2D, resource->texture);
+    gpu::SharedImageInterface* sii =
+        resource->context_provider->SharedImageInterface();
+    if (resource->mailbox.IsZero()) {
+      DCHECK(!resource->sync_token.HasData());
+      const uint32_t usage =
+          gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      gpu::GpuMemoryBufferManager* gmb_manager =
+          widget_->GetNativeWindow()
+              ->env()
+              ->context_factory()
+              ->GetGpuMemoryBufferManager();
+      resource->mailbox = sii->CreateSharedImage(
+          gpu_memory_buffer_.get(), gmb_manager, gfx::ColorSpace(), usage);
     } else {
-      gles2->GenTextures(1, &resource->texture);
-      gles2->ActiveTexture(GL_TEXTURE0);
-      gles2->BindTexture(GL_TEXTURE_2D, resource->texture);
-      gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      gles2->ProduceTextureDirectCHROMIUM(resource->texture,
-                                          resource->mailbox.name);
+      sii->UpdateSharedImage(resource->sync_token, resource->mailbox);
     }
-
-    if (resource->image) {
-      gles2->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, resource->image);
-    } else {
-      resource->image = gles2->CreateImageCHROMIUM(
-          gpu_memory_buffer_->AsClientBuffer(), buffer_size_.width(),
-          buffer_size_.height(), SK_B32_SHIFT ? GL_RGBA : GL_BGRA_EXT);
-      if (!resource->image) {
-        LOG(ERROR) << "Failed to create image";
-        return;
-      }
-    }
-    gles2->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, resource->image);
-    gles2->GenSyncTokenCHROMIUM(resource->sync_token.GetData());
+    resource->sync_token = sii->GenVerifiedSyncToken();
 
     resource->damaged = false;
   }
@@ -482,6 +467,7 @@ void FastInkView::SubmitCompositorFrame() {
       buffer_to_target_transform,
       /*quad_layer_rect=*/output_rect,
       /*visible_quad_layer_rect=*/output_rect,
+      /*rounded_corner_bounds=*/gfx::RRectF(),
       /*clip_rect=*/gfx::Rect(),
       /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
       /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
@@ -495,13 +481,7 @@ void FastInkView::SubmitCompositorFrame() {
   frame.metadata.local_surface_id_allocation_time =
       widget_->GetNativeView()->GetLocalSurfaceIdAllocation().allocation_time();
 
-  if (!presentation_callback_.is_null()) {
-    // If overflow happens, we increase it again.
-    if (!++presentation_token_)
-      ++presentation_token_;
-    frame.metadata.frame_token = presentation_token_;
-    frame.metadata.request_presentation_feedback = true;
-  }
+  frame.metadata.frame_token = ++next_frame_token_;
 
   viz::TextureDrawQuad* texture_quad =
       render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
@@ -543,8 +523,8 @@ void FastInkView::DidReceiveCompositorFrameAck() {
 
 void FastInkView::DidPresentCompositorFrame(
     const gfx::PresentationFeedback& feedback) {
-  DCHECK(!presentation_callback_.is_null());
-  presentation_callback_.Run(feedback);
+  if (!presentation_callback_.is_null())
+    presentation_callback_.Run(feedback);
 }
 
 void FastInkView::ReclaimResource(std::unique_ptr<Resource> resource) {

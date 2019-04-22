@@ -24,6 +24,8 @@ base::LazyInstance<base::ThreadLocalPointer<PlatformEventSource>>::Leaky
 
 }  // namespace
 
+bool PlatformEventSource::ignore_native_platform_events_ = false;
+
 PlatformEventSource::PlatformEventSource()
     : overridden_dispatcher_(NULL),
       overridden_dispatcher_restored_(false) {
@@ -39,6 +41,14 @@ PlatformEventSource::~PlatformEventSource() {
 
 PlatformEventSource* PlatformEventSource::GetInstance() {
   return lazy_tls_ptr.Pointer()->Get();
+}
+
+bool PlatformEventSource::ShouldIgnoreNativePlatformEvents() {
+  return ignore_native_platform_events_;
+}
+
+void PlatformEventSource::SetIgnoreNativePlatformEvents(bool ignore_events) {
+  ignore_native_platform_events_ = ignore_events;
 }
 
 void PlatformEventSource::AddPlatformEventDispatcher(

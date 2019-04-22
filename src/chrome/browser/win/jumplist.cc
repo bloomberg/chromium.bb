@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -99,9 +100,8 @@ void AppendCommonSwitches(ShellLinkItem* shell_link) {
   const char* kSwitchNames[] = { switches::kUserDataDir };
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  shell_link->GetCommandLine()->CopySwitchesFrom(command_line,
-                                                 kSwitchNames,
-                                                 arraysize(kSwitchNames));
+  shell_link->GetCommandLine()->CopySwitchesFrom(command_line, kSwitchNames,
+                                                 base::size(kSwitchNames));
 }
 
 // Creates a ShellLinkItem preloaded with common switches.
@@ -387,10 +387,8 @@ void JumpList::ProcessTopSitesNotification() {
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
-    top_sites->GetMostVisitedURLs(
-        base::Bind(&JumpList::OnMostVisitedURLsAvailable,
-                   weak_ptr_factory_.GetWeakPtr()),
-        false);
+    top_sites->GetMostVisitedURLs(base::Bind(
+        &JumpList::OnMostVisitedURLsAvailable, weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -626,14 +624,14 @@ void JumpList::OnRunUpdateCompletion(
     base::FilePath icon_dir =
         GenerateJumplistIconDirName(profile_dir, FILE_PATH_LITERAL(""));
     delete_jumplisticons_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DeleteDirectory, std::move(icon_dir), kFileDeleteLimit));
+        FROM_HERE, base::BindOnce(&DeleteDirectory, std::move(icon_dir),
+                                  kFileDeleteLimit));
 
     base::FilePath icon_dir_old =
         GenerateJumplistIconDirName(profile_dir, FILE_PATH_LITERAL("Old"));
     delete_jumplisticons_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DeleteDirectory, std::move(icon_dir_old),
-                              kFileDeleteLimit));
+        FROM_HERE, base::BindOnce(&DeleteDirectory, std::move(icon_dir_old),
+                                  kFileDeleteLimit));
   }
 }
 

@@ -37,7 +37,7 @@
 namespace blink {
 
 class LocalFrameView;
-class PageOverlay;
+class FrameOverlay;
 class ValidationMessageOverlayDelegate;
 
 class ValidationMessageClientImpl final
@@ -47,9 +47,7 @@ class ValidationMessageClientImpl final
   USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 
  public:
-  static ValidationMessageClientImpl* Create(Page&);
-
-  ValidationMessageClientImpl(Page&);
+  explicit ValidationMessageClientImpl(Page&);
   ~ValidationMessageClientImpl() override;
 
   void Trace(blink::Visitor*) override;
@@ -59,6 +57,7 @@ class ValidationMessageClientImpl final
   LocalFrameView* CurrentView();
   void HideValidationMessageImmediately(const Element& anchor);
   void Reset(TimerBase*);
+  void ValidationMessageVisibilityChanged(const Element& anchor);
 
   void ShowValidationMessage(const Element& anchor,
                              const String& message,
@@ -70,7 +69,8 @@ class ValidationMessageClientImpl final
   void DocumentDetached(const Document&) override;
   void WillBeDestroyed() override;
   void LayoutOverlay() override;
-  void PaintOverlay() override;
+  void UpdatePrePaint() override;
+  void PaintOverlay(GraphicsContext&) override;
 
   // PopupOpeningObserver function
   void WillOpenPopup() override;
@@ -80,9 +80,10 @@ class ValidationMessageClientImpl final
   String message_;
   TimeTicks finish_time_;
   std::unique_ptr<TimerBase> timer_;
-  std::unique_ptr<PageOverlay> overlay_;
+  std::unique_ptr<FrameOverlay> overlay_;
   // Raw pointer. This pointer is valid unless overlay_ is nullptr.
   ValidationMessageOverlayDelegate* overlay_delegate_ = nullptr;
+  bool allow_initial_empty_anchor_ = false;
 };
 
 }  // namespace blink

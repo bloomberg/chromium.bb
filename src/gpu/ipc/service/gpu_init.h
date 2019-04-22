@@ -66,9 +66,7 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
   std::unique_ptr<GpuWatchdogThread> TakeWatchdogThread() {
     return std::move(watchdog_thread_);
   }
-  scoped_refptr<gl::GLSurface> TakeDefaultOffscreenSurface() {
-    return std::move(default_offscreen_surface_);
-  }
+  scoped_refptr<gl::GLSurface> TakeDefaultOffscreenSurface();
   bool init_successful() const { return init_successful_; }
 #if BUILDFLAG(ENABLE_VULKAN)
   VulkanImplementation* vulkan_implementation() {

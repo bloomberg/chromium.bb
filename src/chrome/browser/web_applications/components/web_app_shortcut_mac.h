@@ -11,9 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/process/process.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
 
 // Whether to enable update and launch of app shims in tests. (Normally shims
@@ -23,18 +25,35 @@ extern bool g_app_shims_allow_update_and_launch_in_tests;
 
 namespace web_app {
 
-// Returns the full path of the .app shim that would be created by
-// CreateShortcuts().
-base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info);
+enum class LaunchShimUpdateBehavior {
+  DO_NOT_RECREATE,
+  RECREATE_IF_INSTALLED,
+  RECREATE_UNCONDITIONALLY,
+};
 
-// If necessary, launch the shortcut for an app.
-void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info);
+// Callback type for LaunchShim. If |shim_process| is valid then the
+// app shim was launched.
+using ShimLaunchedCallback =
+    base::OnceCallback<void(base::Process shim_process)>;
 
-// Update the shortcut and launch it.
-void UpdateAndLaunchShim(std::unique_ptr<web_app::ShortcutInfo> shortcut_info);
+// Callback on termination takes no arguments.
+using ShimTerminatedCallback = base::OnceClosure;
+
+// Launch the shim specified by |shortcut_info|. Update the shim prior to launch
+// if requested. Return in |launched_callback| the pid that was launched (or an
+// invalid pid if none was launched). If |launched_callback| returns a valid
+// pid, then |terminated_callback| will be called when that process terminates.
+void LaunchShim(LaunchShimUpdateBehavior update_behavior,
+                ShimLaunchedCallback launched_callback,
+                ShimTerminatedCallback terminated_callback,
+                std::unique_ptr<web_app::ShortcutInfo> shortcut_info);
 
 std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
     const base::FilePath& bundle_path);
+
+// Return true if launching and updating app shims will fail because of the
+// testing environment.
+bool AppShimLaunchDisabled();
 
 // Creates a shortcut for a web application. The shortcut is a stub app
 // that simply loads the browser framework and runs the given app.
@@ -50,32 +69,46 @@ class WebAppShortcutCreator {
 
   virtual ~WebAppShortcutCreator();
 
-  // Returns the base name for the shortcut.
-  base::FilePath GetShortcutBasename() const;
+  // Returns the base name for the shortcut. This will be a sanitized version
+  // of the application title. If |copy_number| is not 1, then append it before
+  // the .app part of the extension.
+  virtual base::FilePath GetShortcutBasename(int copy_number = 1) const;
+
+  // Returns the fallback name for the shortcut. This name will be a combination
+  // of the profile name and extension id. This is used if the app title is
+  // unable to be used for the bundle path (e.g: "...").
+  base::FilePath GetFallbackBasename() const;
 
   // Returns a path to the Chrome Apps folder in the relevant applications
   // folder. E.g. ~/Applications or /Applications.
   virtual base::FilePath GetApplicationsDirname() const;
 
   // The full path to the app bundle under the relevant Applications folder.
-  base::FilePath GetApplicationsShortcutPath() const;
+  // If |avoid_conflicts| is true then return a path that does not yet exist (by
+  // appending " 2", " 3", etc, to the end of the file name).
+  base::FilePath GetApplicationsShortcutPath(bool avoid_conflicts) const;
 
-  // The full path to the app bundle under the profile folder.
-  base::FilePath GetInternalShortcutPath() const;
+  // Returns the paths to app bundles with the given id as found by launch
+  // services, sorted by preference.
+  std::vector<base::FilePath> GetAppBundlesById() const;
 
   bool CreateShortcuts(ShortcutCreationReason creation_reason,
                        ShortcutLocations creation_locations);
   void DeleteShortcuts();
-  bool UpdateShortcuts();
+
+  // Recreate the shortcuts where they are found on disk and in the profile
+  // path. If |create_if_needed| is true, then create the shortcuts if no
+  // matching shortcuts are found on disk. Populate |updated_paths| with the
+  // paths that were updated. Return false if no paths were updated or if there
+  // exist paths that failed to update.
+  bool UpdateShortcuts(bool create_if_needed,
+                       std::vector<base::FilePath>* updated_paths);
 
   // Show the bundle we just generated in the Finder.
   virtual void RevealAppShimInFinder() const;
 
  protected:
-  // Returns a path to an app bundle with the given id. Or an empty path if no
-  // matching bundle was found.
-  // Protected and virtual so it can be mocked out for testing.
-  virtual base::FilePath GetAppBundleById(const std::string& bundle_id) const;
+  virtual std::vector<base::FilePath> GetAppBundlesByIdUnsorted() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, DeleteShortcuts);
@@ -94,9 +127,10 @@ class WebAppShortcutCreator {
   // relevant information.
   bool BuildShortcut(const base::FilePath& staging_path) const;
 
-  // Builds a shortcut and copies it into the given destination folders.
-  // Returns with the number of successful copies. Returns on the first failure.
-  size_t CreateShortcutsIn(const std::vector<base::FilePath>& folders) const;
+  // Builds a shortcut and copies it to the specified app paths. Populates
+  // |updated_paths| with the paths that were successfully updated.
+  void CreateShortcutsAt(const std::vector<base::FilePath>& app_paths,
+                         std::vector<base::FilePath>* updated_paths) const;
 
   // Updates the InfoPlist.string inside |app_path| with the display name for
   // the app.

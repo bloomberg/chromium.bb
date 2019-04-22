@@ -117,10 +117,13 @@ Polymer({
 
   properties: {
     /**
-     * An array of saved credit cards.
+     * An array of all saved credit cards.
      * @type {!Array<!PaymentsManager.CreditCardEntry>}
      */
-    creditCards: Array,
+    creditCards: {
+      type: Array,
+      value: () => [],
+    },
 
     /**
      * The model for any credit card related action menus or dialogs.
@@ -135,12 +138,6 @@ Polymer({
     migratableCreditCardsInfo_: String,
 
     /**
-     * The current sync status, supplied by SyncBrowserProxy.
-     * @type {?settings.SyncStatus}
-     */
-    syncStatus: Object,
-
-    /**
      * Whether migration local card on settings page is enabled.
      * @private
      */
@@ -151,70 +148,12 @@ Polymer({
       },
       readOnly: true,
     },
-
-    /**
-     * Whether user has a Google Payments account.
-     * @private
-     */
-    hasGooglePaymentsAccount_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('hasGooglePaymentsAccount');
-      },
-      readOnly: true,
-    },
-
-    /**
-     * Whether Autofill Upstream is enabled.
-     * @private
-     */
-    upstreamEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('upstreamEnabled');
-      },
-      readOnly: true,
-    },
-
-    /**
-     * Whether the user has a secondary sync passphrase.
-     * @private
-     */
-    isUsingSecondaryPassphrase_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('isUsingSecondaryPassphrase');
-      },
-      readOnly: true,
-    },
-
-    /**
-     * Whether the upload-to-google state is active.
-     * @private
-     */
-    uploadToGoogleActive_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('uploadToGoogleActive');
-      },
-      readOnly: true,
-    },
-
-    /**
-     * Whether the domain of the user's email is allowed.
-     * @private
-     */
-    userEmailDomainAllowed_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('userEmailDomainAllowed');
-      },
-      readOnly: true,
-    },
   },
 
   listeners: {
     'save-credit-card': 'saveCreditCard_',
+    'dots-card-menu-click': 'onCreditCardDotsMenuTap_',
+    'remote-card-menu-click': 'onRemoteEditCreditCardTap_',
   },
 
   /**
@@ -235,9 +174,6 @@ Polymer({
    * @private
    */
   setCreditCardsListener_: null,
-
-  /** @private {?settings.SyncBrowserProxy} */
-  syncBrowserProxy_: null,
 
   /** @override */
   attached: function() {
@@ -260,11 +196,8 @@ Polymer({
     this.paymentsManager_.addCreditCardListChangedListener(
         setCreditCardsListener);
 
-    this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
-    this.syncBrowserProxy_.getSyncStatus().then(
-        this.handleSyncStatus_.bind(this));
-    this.addWebUIListener(
-        'sync-status-changed', this.handleSyncStatus_.bind(this));
+    // Record that the user opened the payments settings.
+    chrome.metricsPrivate.recordUserAction('AutofillCreditCardsViewed');
   },
 
   /** @override */
@@ -275,39 +208,18 @@ Polymer({
   },
 
   /**
-   * Formats the expiration date so it's displayed as MM/YYYY.
-   * @param {!chrome.autofillPrivate.CreditCardEntry} item
-   * @return {string}
-   * @private
-   */
-  expiration_: function(item) {
-    return item.expirationMonth + '/' + item.expirationYear;
-  },
-
-  /**
    * Opens the credit card action menu.
-   * @param {!Event} e The polymer event.
+   * @param {!CustomEvent<{creditCard: !chrome.autofillPrivate.CreditCardEntry,
+   *     anchorElement: !HTMLElement}>} e
    * @private
    */
-  onCreditCardMenuTap_: function(e) {
-    const menuEvent = /** @type {!{model: !{item: !Object}}} */ (e);
-
-    /* TODO(scottchen): drop the [dataHost][dataHost] once this bug is fixed:
-     https://github.com/Polymer/polymer/issues/2574 */
-    // TODO(dpapad): The [dataHost][dataHost] workaround is only necessary for
-    // Polymer 1. Remove once migration to Polymer 2 has completed.
-    const item = Polymer.DomIf ? menuEvent.model.item :
-                                 menuEvent.model['dataHost']['dataHost'].item;
-
+  onCreditCardDotsMenuTap_: function(e) {
     // Copy item so dialog won't update model on cancel.
-    this.activeCreditCard =
-        /** @type {!chrome.autofillPrivate.CreditCardEntry} */ (
-            Object.assign({}, item));
+    this.activeCreditCard = e.detail.creditCard;
 
-    const dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
     /** @type {!CrActionMenuElement} */ (this.$.creditCardSharedMenu)
-        .showAt(dotsButton);
-    this.activeDialogAnchor_ = dotsButton;
+        .showAt(e.detail.anchorElement);
+    this.activeDialogAnchor_ = e.detail.anchorElement;
   },
 
   /**
@@ -343,10 +255,11 @@ Polymer({
   onMenuEditCreditCardTap_: function(e) {
     e.preventDefault();
 
-    if (this.activeCreditCard.metadata.isLocal)
+    if (this.activeCreditCard.metadata.isLocal) {
       this.showCreditCardDialog_ = true;
-    else
+    } else {
       this.onRemoteEditCreditCardTap_();
+    }
 
     this.$.creditCardSharedMenu.close();
   },
@@ -380,31 +293,12 @@ Polymer({
   },
 
   /**
-   * Handles clicking on the "Migrate" button for migrate local credit cards.
+   * Handles clicking on the "Migrate" button for migrate local credit
+   * cards.
    * @private
    */
   onMigrateCreditCardsClick_: function() {
     this.paymentsManager_.migrateCreditCards();
-  },
-
-  /**
-   * The 3-dot menu should not be shown if the card is entirely remote.
-   * @param {!chrome.autofillPrivate.AutofillMetadata} metadata
-   * @return {boolean}
-   * @private
-   */
-  showDots_: function(metadata) {
-    return !!(metadata.isLocal || metadata.isCached);
-  },
-
-  /**
-   * Returns true if the list exists and has items.
-   * @param {Array<Object>} list
-   * @return {boolean}
-   * @private
-   */
-  hasSome_: function(list) {
-    return !!(list && list.length);
   },
 
   /**
@@ -417,70 +311,31 @@ Polymer({
   },
 
   /**
-   * Handler for when the sync state is pushed from the browser.
-   * @param {?settings.SyncStatus} syncStatus
-   * @private
-   */
-  handleSyncStatus_: function(syncStatus) {
-    this.syncStatus = syncStatus;
-  },
-
-  /**
-   * @param {!settings.SyncStatus} syncStatus
    * @param {!Array<!PaymentsManager.CreditCardEntry>} creditCards
    * @param {boolean} creditCardEnabled
-   * @return {boolean} Whether to show the migration button. True iff at least
-   * one valid local card, enable migration, signed-in & synced and credit card
-   * pref enabled.
+   * @return {boolean} Whether to show the migration button.
    * @private
    */
-  checkIfMigratable_: function(syncStatus, creditCards, creditCardEnabled) {
-    if (syncStatus == undefined)
+  checkIfMigratable_: function(creditCards, creditCardEnabled) {
+    // If migration prerequisites are not met, return false.
+    if (!this.migrationEnabled_) {
       return false;
-
-    // If user not enable migration experimental flag, return false.
-    if (!this.migrationEnabled_)
-      return false;
-
-    // If user does not have Google Payments Account, return false.
-    if (!this.hasGooglePaymentsAccount_)
-      return false;
-
-    // If the Autofill Upstream feature is not enabled, return false.
-    if (!this.upstreamEnabled_)
-      return false;
-
-    // Don't offer upload if user has a secondary passphrase. Users who have
-    // enabled a passphrase have chosen to not make their sync information
-    // accessible to Google. Since upload makes credit card data available
-    // to other Google systems, disable it for passphrase users.
-    if (this.isUsingSecondaryPassphrase_)
-      return false;
-
-    // If upload-to-Google state is not active, card cannot be saved to Google
-    // Payments. Return false.
-    if (!this.uploadToGoogleActive_)
-      return false;
-
-    // The domain of the user's email address is not allowed, return false.
-    if (!this.userEmailDomainAllowed_)
-      return false;
+    }
 
     // If credit card enabled pref is false, return false.
-    if (!creditCardEnabled)
+    if (!creditCardEnabled) {
       return false;
+    }
 
-    // If user not signed-in and synced, return false.
-    if (!syncStatus.signedIn || !syncStatus.syncSystemEnabled)
-      return false;
-
-    let numberOfMigratableCreditCard =
+    const numberOfMigratableCreditCard =
         creditCards.filter(card => card.metadata.isMigratable).length;
     // Check whether exist at least one local valid card for migration.
-    if (numberOfMigratableCreditCard == 0)
+    if (numberOfMigratableCreditCard == 0) {
       return false;
+    }
 
-    // Update the display text depends on the number of migratable credit cards.
+    // Update the display text depends on the number of migratable credit
+    // cards.
     this.migratableCreditCardsInfo_ = numberOfMigratableCreditCard == 1 ?
         this.i18n('migratableCardsInfoSingle') :
         this.i18n('migratableCardsInfoMultiple');

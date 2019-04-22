@@ -1,11 +1,14 @@
 # Code Coverage in Chromium
 
-### Coverage Dashboard: [https://chromium-coverage.appspot.com/]
+### Coverage Dashboard: [link](https://analysis.chromium.org/p/chromium/coverage)
 
 Table of contents:
 
-- [Coverage Script](#coverage-script)
-- [Workflow](#workflow)
+- [Coverage Infrastructure](#coverage-infra)
+  * [Coverage Builders](#coverage-builders)
+  * [Coverage Service](#coverage-service)
+  * [Coverage Clients](#coverage-clients)
+- [Local Coverage Script](#local-coverage-script)
   * [Step 0 Download Tooling](#step-0-download-tooling)
   * [Step 1 Build](#step-1-build)
   * [Step 2 Create Raw Profiles](#step-2-create-raw-profiles)
@@ -14,16 +17,106 @@ Table of contents:
 - [Contacts](#contacts)
 - [FAQ](#faq)
 
-Chromium uses Clang source-based code coverage. This [documentation] explains
-how to use Clang’s source-based coverage features in general.
+Chromium uses source-based code coverage for clang-compiled languages such as
+C++. This [documentation] explains how to use Clang’s source-based coverage
+features in general.
 
-In this document, we first introduce a code coverage script that can be used to
-generate code coverage reports for Chromium code in one command, and then
-describe the code coverage reports generation workflow.
+In this document, we first introduce the code coverage infrastructure that
+continuously generates code coverage information for the whole codebase and for
+specific CLs in Gerrit. For the latter, refer to
+[code\_coverage\_in\_gerrit.md](code_coverage_in_gerrit.md).
+We then present a script that can be used to locally generate code coverage
+reports with one command, and finally we provide a description of the
+process of producing these reports.
 
-## Coverage Script
+## Coverage Infrastructure
+
+![coverage infra diagram]
+
+There are 3 layers in the system:
+
+### Coverage Builders
+
+The first layer is the LUCI builders that
+ - build instrumented targets,
+ - run the instrumented tests,
+ - merge the results into single streams,
+ - upload data to cloud storage.
+
+There are two types of builder:
+
+CI Builder
+
+The Code-coverage CI Builders periodically build all the test targets and fuzzer
+targets for a given platform and instrument all available source files. Then
+save the coverage data to a dedicated storage bucket.
+
+CQ Builder
+
+The code coverage CQ builders instrument only the files changed for a given CL.
+more information about per-cl coverage info in [this
+doc](code_coverage_in_gerrit.md).
+
+### Coverage Service
+
+The second layer in the system consists of an AppEngine application that
+consumes the coverage data from the builders above, structures it and stores it
+in cloud datastore. It then serves the information to the clients below.
+
+### Coverage Clients
+
+In the last layer we currently have two clients that consume the service:
+
+#### Coverage Dashboard
+
+The [coverage dashboard] front end is hosted in the same application as the
+service above.
+It shows the full-code coverage reports with links to the builds that generated
+them, as well as per-directory and per-component aggregation, and can be drilled
+down to the single line of code level of detail.
+
+Refer tho the following screenshots, or this [18-second video
+tutorial](https://www.youtube.com/watch?v=eX7im2_3YfA).
+
+##### Project View
+
+![coverage dashboard main view]
+
+##### Directory View
+
+![coverage dashboard directory view]
+
+##### Component View
+
+![coverage dashboard component view]
+
+##### Source View
+
+When you click on a particular source file in one of the views above, you can check
+per-line coverage information such as
+
+- Uncovered / Covered line fragments, lines and code blocks. This information can be
+useful to identify areas of code that lack test coverage.
+- Per-line hit counts indicating how many times this line was hit by all tested targets.
+This information can be useful to determine hot spots in your code.
+- Potentially dead code. See [dead code example].
+
+![coverage dashboard file view]
+
+#### Gerrit Coverage View
+
+The other client supported at the moment is the gerrit plugin for code coverage.
+
+![gerrit coverage view]
+
+See [this doc](code_coverage_in_gerrit.md) for information about the feature
+that allows gerrit to display code coverage information generated for a given CL
+by CQ bot. Or see this
+[15-second video tutorial](https://www.youtube.com/watch?v=cxXlYcSgIPE).
+
+## Local Coverage Script
 The [coverage script] automates the process described below and provides a
-one-stop service to generate code coverage reports in just one command.
+one-stop service to generate code coverage reports locally in just one command.
 
 This script is currently supported on Linux, Mac, iOS and ChromeOS platforms.
 
@@ -46,28 +139,8 @@ is filtered to include only files and sub-directories under `url/` and `crypto/`
 directories.
 
 Aside from automating the process, this script provides visualization features to
-view code coverage breakdown by directories and by components, for example:
-
-### Directory View
-
-![code coverage report directory view]
-
-### Component View
-
-![code coverage report component view]
-
-### Source View
-
-When you click on a particular source file in one of the views above, you can check
-per-line coverage information such as
-
-- Uncovered / Covered line fragments, lines and code blocks. This information can be
-useful to identify areas of code that lack test coverage.
-- Per-line hit counts indicating how many times this line was hit by all tested targets.
-This information can be useful to determine hot spots in your code.
-- Potentially dead code. See [dead code example].
-
-![code coverage source view]
+view code coverage breakdown by directories and by components, similar to the
+views in the [coverage dashboard](#coverage-dashboard) above.
 
 ## Workflow
 This section presents the workflow of generating code coverage reports using two
@@ -81,7 +154,7 @@ process.
 Generating code coverage reports requires llvm-profdata and llvm-cov tools.
 Currently, these two tools are not part of Chromium’s Clang bundle,
 [coverage script] downloads and updates them automatically, you can also
-download the tools manually ([link]).
+download the tools manually ([tools link]).
 
 ### Step 1 Build
 In Chromium, to compile code with coverage enabled, one needs to add
@@ -141,7 +214,7 @@ Finally, `llvm-cov` is used to render code coverage reports. There are different
 report generation modes, and all of them require the following as input:
 - Indexed profile
 - All built target binaries
-- All exercised source files.
+- All exercised source files
 
 For example, the following command can be used to generate per-file line-by-line
 code coverage report:
@@ -223,16 +296,24 @@ reported usually grows after that.
 Source code of the dashboard is not open sourced at the moment, but if you are a
 Googler, you should have access to the code-coverage repository. There is a
 documentation and scripts for running it locally. To get access and report
-issues, ping chrome-code-coverage@ list.
+issues, ping the [code-coverage group].
+
+The code for the service and dashboard currently lives along with findit at
+[this location](https://chromium.googlesource.com/infra/infra/+/master/appengine/findit/)
+because of significant shared logic.
+
+The code used by the bots that generate the coverage data lives (among other
+places) in the
+[clang coverage recipe module](https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/clang_coverage/).
 
 ### Why is coverage for X not reported or unreasonably low, even though there is a test for X?
 
 There are several reasons why coverage reports can be incomplete or incorrect:
 
 * A particular test is not used for code coverage report generation. Please
-check the [test suite], and if the test is missing, upload a CL to add it.
-* A test may have a build failure or a runtime crash. Please check [the logs]
-for that particular test target (rightmost column on the [coverage dashboard]).
+[file a bug].
+* A test may have a build failure or a runtime crash. Please check the build
+for that particular report (rightmost column on the [coverage dashboard]).
 If there is any failure, please upload a CL with the fix. If you can't fix it,
 feel free to [file a bug].
 * A particular test may not be available on a particular platform. As of now,
@@ -249,11 +330,13 @@ information, see [crbug.com/842424].
 [assert]: http://man7.org/linux/man-pages/man3/assert.3.html
 [code-coverage group]: https://groups.google.com/a/chromium.org/forum/#!forum/code-coverage
 [code-coverage repository]: https://chrome-internal.googlesource.com/chrome/tools/code-coverage
-[coverage dashboard]: https://chromium-coverage.appspot.com/
+[coverage dashboard]: https://analysis.chromium.org/p/chromium/coverage
 [coverage script]: https://cs.chromium.org/chromium/src/tools/code_coverage/coverage.py
-[code coverage report directory view]: images/code_coverage_directory_view.png
-[code coverage report component view]: images/code_coverage_component_view.png
-[code coverage source view]: images/code_coverage_source_view.png
+[coverage infra diagram]: images/code_coverage_infra_diagram.png
+[coverage dashboard file view]: images/code_coverage_dashboard_file_view.png
+[coverage dashboard component view]: images/code_coverage_dashboard_component_view.png
+[coverage dashboard directory view]: images/code_coverage_dashboard_directory_view.png
+[coverage dashboard main view]: images/code_coverage_dashboard_main_view.png
 [crbug.com/821617]: https://crbug.com/821617
 [crbug.com/831939]: https://crbug.com/831939
 [crbug.com/834781]: https://crbug.com/834781
@@ -264,10 +347,9 @@ information, see [crbug.com/842424].
 [documentation]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
 [file a new issue]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
+[gerrit coverage view]: images/code_coverage_uncovered_lines.png
 [guide]: http://llvm.org/docs/CommandGuide/llvm-cov.html
 [How do crashes affect code coverage?]: #how-do-crashes-affect-code-coverage
-[https://chromium-coverage.appspot.com/]: https://chromium-coverage.appspot.com/
 [known issues]: https://bugs.chromium.org/p/chromium/issues/list?q=component:Tools%3ECodeCoverage
-[link]: https://storage.googleapis.com/chromium-browser-clang-staging/
+[tools link]: https://storage.googleapis.com/chromium-browser-clang-staging/
 [test suite]: https://cs.chromium.org/chromium/src/tools/code_coverage/test_suite.txt
-[the logs]: https://chromium-coverage.appspot.com/reports/latest/linux/metadata/index.html

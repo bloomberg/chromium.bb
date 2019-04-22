@@ -13,8 +13,7 @@ namespace gpu {
 class SwapBuffersFlags {
  public:
   enum : uint32_t {
-    kPresentationFeedback = 1 << 0,  // Request presentation.
-    kVSyncParams = 1 << 1,           // Request VSYNC parameters update.
+    kVSyncParams = 1 << 0,  // Request VSYNC parameters update.
   };
 };
 

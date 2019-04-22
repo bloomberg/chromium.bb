@@ -130,15 +130,20 @@ void XRFrameTransport::FrameSubmit(
     // for some out-of-memory situations.
     // TODO(billorr): Consider whether we should just drop the frame or exit
     // presentation.
-    if (gpu_memory_buffer) {
-      // We decompose the cloned handle, and use it to create a
-      // mojo::ScopedHandle which will own cleanup of the handle, and will be
-      // passed over IPC.
-      gfx::GpuMemoryBufferHandle gpu_handle = gpu_memory_buffer->CloneHandle();
-      vr_presentation_provider->SubmitFrameWithTextureHandle(
-          vr_frame_id,
-          mojo::WrapPlatformFile(gpu_handle.dxgi_handle.GetHandle()));
+    if (!gpu_memory_buffer) {
+      FrameSubmitMissing(vr_presentation_provider, gl, vr_frame_id);
+      // We didn't actually submit anything, so don't set
+      // the waiting_for_previous_frame_transfer_ and related state.
+      return;
     }
+
+    // We decompose the cloned handle, and use it to create a
+    // mojo::ScopedHandle which will own cleanup of the handle, and will be
+    // passed over IPC.
+    gfx::GpuMemoryBufferHandle gpu_handle = gpu_memory_buffer->CloneHandle();
+    vr_presentation_provider->SubmitFrameWithTextureHandle(
+        vr_frame_id,
+        mojo::WrapPlatformFile(gpu_handle.dxgi_handle.GetHandle()));
 #else
     NOTIMPLEMENTED();
 #endif

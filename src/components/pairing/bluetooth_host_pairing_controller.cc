@@ -7,11 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/hash.h"
+#include "base/bind_helpers.h"
+#include "base/hash/hash.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/system/devicetype.h"
+#include "chromeos/constants/devicetype.h"
 #include "components/pairing/bluetooth_pairing_constants.h"
 #include "components/pairing/pairing_api.pb.h"
 #include "components/pairing/proto_decoder.h"
@@ -471,8 +472,8 @@ void BluetoothHostPairingController::StartPairing() {
   }
 
   device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothHostPairingController::OnGetAdapter,
-                 ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BluetoothHostPairingController::OnGetAdapter,
+                     ptr_factory_.GetWeakPtr()));
 }
 
 std::string BluetoothHostPairingController::GetDeviceName() {

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 
 namespace base {
@@ -18,8 +19,6 @@ class Value;
 }  // namespace base
 
 namespace heap_profiling {
-
-enum class Mode;
 
 // This class runs tests for the Heap Profiling Service, a cross-platform,
 // multi-process component.
@@ -45,23 +44,23 @@ class TestDriver {
  public:
   struct Options {
     // The profiling mode to test.
-    Mode mode;
+    Mode mode = Mode::kBrowser;
 
     // The stack profiling mode to test.
-    mojom::StackMode stack_mode;
+    mojom::StackMode stack_mode = mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES;
 
     // Whether the caller has already started profiling with the given mode.
     // When false, the test driver is responsible for starting profiling.
-    bool profiling_already_started;
+    bool profiling_already_started = false;
 
     // Whether to test sampling.
-    bool should_sample;
+    bool should_sample = true;
 
     // When set to true, the internal sampling_rate is set to 2. While this
     // doesn't record all allocations, it should record all test allocations
     // made in this file with exponentially high probability.
     // When set to false, the internal sampling rate is set to 10000.
-    bool sample_everything;
+    bool sample_everything = false;
   };
 
   TestDriver();
@@ -82,10 +81,6 @@ class TestDriver {
   // Populates |initialization_success_| with the result of
   // |RunInitializationOnUIThread|, and then signals |wait_for_ui_thread_|.
   void CheckOrStartProfilingOnUIThreadAndSignal();
-
-  // Calls Supervisor::SetKeepSmallAllocations() and then signals
-  // |wait_for_ui_thread_|.
-  void SetKeepSmallAllocationsOnUIThreadAndSignal();
 
   // If profiling is expected to already be started, confirm it.
   // Otherwise, start profiling with the given mode.

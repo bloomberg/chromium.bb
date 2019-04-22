@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
+import android.os.Build;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -12,8 +13,8 @@ import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
-import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
@@ -27,6 +28,10 @@ import org.chromium.webapk.lib.client.WebApkNavigationClient;
 public class WebappDelegateFactory extends TabDelegateFactory {
     private static class WebappWebContentsDelegateAndroid extends TabWebContentsDelegateAndroid {
         private final WebappActivity mActivity;
+
+        /** Action for do-nothing activity for activating WebAPK. */
+        private static final String ACTION_ACTIVATE_WEBAPK =
+                "org.chromium.chrome.browser.webapps.ActivateWebApkActivity.ACTIVATE";
 
         public WebappWebContentsDelegateAndroid(WebappActivity activity, Tab tab) {
             super(tab);
@@ -43,9 +48,20 @@ public class WebappDelegateFactory extends TabDelegateFactory {
 
             WebappInfo webappInfo = mActivity.getWebappInfo();
             if (webappInfo.isForWebApk()) {
-                Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
-                        webappInfo.webApkPackageName(), startUrl, false /* forceNavigation */);
-                IntentUtils.safeStartActivity(ContextUtils.getApplicationContext(), intent);
+                Intent activateIntent = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    activateIntent = new Intent(ACTION_ACTIVATE_WEBAPK);
+                    activateIntent.setPackage(
+                            ContextUtils.getApplicationContext().getPackageName());
+                } else {
+                    // For WebAPKs with new-style splash screen we cannot activate the WebAPK by
+                    // sending an intent because that would relaunch the WebAPK.
+                    assert !webappInfo.isSplashProvidedByWebApk();
+
+                    activateIntent = WebApkNavigationClient.createLaunchWebApkIntent(
+                            webappInfo.webApkPackageName(), startUrl, false /* forceNavigation */);
+                }
+                IntentUtils.safeStartActivity(mActivity, activateIntent);
                 return;
             }
 
@@ -54,8 +70,7 @@ public class WebappDelegateFactory extends TabDelegateFactory {
             intent.setPackage(mActivity.getPackageName());
             mActivity.getWebappInfo().setWebappIntentExtras(intent);
 
-            intent.putExtra(
-                    ShortcutHelper.EXTRA_MAC, ShortcutHelper.getEncodedMac(mActivity, startUrl));
+            intent.putExtra(ShortcutHelper.EXTRA_MAC, ShortcutHelper.getEncodedMac(startUrl));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             IntentUtils.safeStartActivity(ContextUtils.getApplicationContext(), intent);
         }
@@ -79,15 +94,16 @@ public class WebappDelegateFactory extends TabDelegateFactory {
     }
 
     @Override
-    public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
-        return new ComposedBrowserControlsVisibilityDelegate(
-                new WebappBrowserControlsDelegate(mActivity, tab),
-                // Ensures browser controls hiding is delayed after activity start.
-                mActivity.getFullscreenManager().getBrowserVisibilityDelegate());
+    public void createBrowserControlsState(Tab tab) {
+        TabBrowserControlsState.create(tab,
+                new ComposedBrowserControlsVisibilityDelegate(
+                        new WebappBrowserControlsDelegate(mActivity, tab),
+                        // Ensures browser controls hiding is delayed after activity start.
+                        mActivity.getFullscreenManager().getBrowserVisibilityDelegate()));
     }
 
     @Override
-    public boolean canShowAppBanners(Tab tab) {
+    public boolean canShowAppBanners() {
         // Do not show banners when we are in a standalone activity.
         return false;
     }

@@ -5,10 +5,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_WEB_RTC_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_WEB_RTC_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace blink {
 
@@ -23,10 +28,12 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   bool Initialize(const webrtc::PeerConnectionInterface::RTCConfiguration&,
                   const WebMediaConstraints&) override;
 
-  void CreateOffer(const WebRTCSessionDescriptionRequest&,
-                   const WebMediaConstraints&) override;
-  void CreateOffer(const WebRTCSessionDescriptionRequest&,
-                   const WebRTCOfferOptions&) override;
+  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+      const WebRTCSessionDescriptionRequest&,
+      const WebMediaConstraints&) override;
+  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+      const WebRTCSessionDescriptionRequest&,
+      const WebRTCOfferOptions&) override;
   void CreateAnswer(const WebRTCSessionDescriptionRequest&,
                     const WebMediaConstraints&) override;
   void CreateAnswer(const WebRTCSessionDescriptionRequest&,
@@ -46,8 +53,8 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   webrtc::RTCErrorType SetConfiguration(
       const webrtc::PeerConnectionInterface::RTCConfiguration&) override;
   void GetStats(const WebRTCStatsRequest&) override;
-  void GetStats(std::unique_ptr<WebRTCStatsReportCallback>,
-                RTCStatsFilter) override;
+  void GetStats(WebRTCStatsReportCallback,
+                const std::vector<webrtc::NonStandardGroupId>&) override;
   webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
   AddTransceiverWithTrack(const WebMediaStreamTrack&,
                           const webrtc::RtpTransceiverInit&) override;
@@ -59,11 +66,22 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
       const WebVector<WebMediaStream>&) override;
   webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> RemoveTrack(
       WebRTCRtpSender*) override;
-  WebRTCDataChannelHandler* CreateDataChannel(
+  scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) override;
   void Stop() override;
-  WebString Id() const override;
+  webrtc::PeerConnectionInterface* NativePeerConnection() override;
+  void RunSynchronousOnceClosureOnSignalingThread(
+      base::OnceClosure closure,
+      const char* trace_event_name) override;
+  void RunSynchronousRepeatingClosureOnSignalingThread(
+      const base::RepeatingClosure& closure,
+      const char* trace_event_name) override;
+
+ private:
+  class DummyWebRTCRtpTransceiver;
+
+  std::vector<std::unique_ptr<DummyWebRTCRtpTransceiver>> transceivers_;
 };
 
 class TestingPlatformSupportWithWebRTC : public TestingPlatformSupport {

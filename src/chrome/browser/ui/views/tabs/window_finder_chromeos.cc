@@ -13,6 +13,8 @@
 
 namespace {
 
+// The class to be used by ash to find an eligible chrome window that we can
+// attach the dragged tabs into.
 class WindowFinderClassic : public WindowFinder {
  public:
   WindowFinderClassic() {}
@@ -27,6 +29,8 @@ class WindowFinderClassic : public WindowFinder {
   DISALLOW_COPY_AND_ASSIGN(WindowFinderClassic);
 };
 
+// The class to be used by mash to find an eligible chrome window that we can
+// attach the dragged tabs into.
 class WindowFinderMus : public WindowFinder {
  public:
   WindowFinderMus(TabDragController::EventSource event_source,
@@ -44,8 +48,11 @@ class WindowFinderMus : public WindowFinder {
       const gfx::Point& screen_point,
       const std::set<gfx::NativeWindow>& ignore) override {
     DCHECK_LE(ignore.size(), 1u);
-    aura::Window* window =
-        ignore.empty() ? tracker_->topmost() : tracker_->second_topmost();
+    aura::Window* window = tracker_->GetTopmost();
+    if (ignore.find(window) != ignore.end())
+      window = tracker_->GetSecondTopmost();
+    if (ignore.find(window) != ignore.end())
+      window = nullptr;
     if (!window)
       return nullptr;
     views::Widget* widget = views::Widget::GetWidgetForNativeView(window);

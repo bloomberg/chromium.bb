@@ -176,6 +176,50 @@ const char kComputeOnlyShaderWithPragma[] =
     "    uvec3 temp = gl_WorkGroupID;\n"
     "}";
 
+// NV mesh shader without #pragma.
+const char kNVMeshShader[] =
+    "#version 450\n"
+    "#extension GL_NV_mesh_shader : enable\n"
+    "layout(local_size_x=8) in;\n"
+    "layout(max_vertices=5) out;\n"
+    "layout(max_primitives=10) out;\n"
+    "layout(triangles) out;\n"
+    "void main() {\n"
+    "  gl_MeshVerticesNV[gl_LocalInvocationID.x].gl_Position = vec4(0.0);\n"
+    "}\n";
+
+// NV mesh shader with #pragma annotation.
+const char kNVMeshShaderWithPragma[] =
+    "#version 450\n"
+    "#extension GL_NV_mesh_shader : enable\n"
+    "#pragma shader_stage(mesh)\n"
+    "layout(local_size_x=8) in;\n"
+    "layout(max_vertices=5) out;\n"
+    "layout(max_primitives=10) out;\n"
+    "layout(triangles) out;\n"
+    "void main() {\n"
+    "  gl_MeshVerticesNV[gl_LocalInvocationID.x].gl_Position = vec4(0.0);\n"
+    "}\n";
+
+// NV task shader without #pragma annotation.
+const char kNVTaskShader[] =
+    "#version 450\n"
+    "#extension GL_NV_mesh_shader : enable\n"
+    "layout(local_size_x=8) in;\n"
+    "void main() {\n"
+    "  gl_TaskCountNV = 2;\n"
+    "}\n";
+
+// NV task shader with #pragma annotation.
+const char kNVTaskShaderWithPragma[] =
+    "#version 450\n"
+    "#extension GL_NV_mesh_shader : enable\n"
+    "#pragma shader_stage(task)\n"
+    "layout(local_size_x=8) in;\n"
+    "void main() {\n"
+    "  gl_TaskCountNV = 2;\n"
+    "}\n";
+
 // Vertex only shader with invalid #pragma annotation.
 const char kVertexOnlyShaderWithInvalidPragma[] =
     "#version 310 es\n"
@@ -194,6 +238,18 @@ const char* kMinimalShaderDisassemblySubstrings[] = {
 
     "               OpCapability Shader\n",
     "          %1 = OpExtInstImport \"GLSL.std.450\"\n",
+    "               OpMemoryModel Logical GLSL450\n",
+    "               OpReturn\n",
+    "               OpFunctionEnd\n"};
+
+const char* kMinimalShaderDebugInfoDisassemblySubstrings[] = {
+    "; SPIR-V\n"
+    "; Version: 1.0\n"
+    "; Generator: Google Shaderc over Glslang; 7\n"
+    "; Bound:",
+
+    "               OpCapability Shader\n",
+    "          %2 = OpExtInstImport \"GLSL.std.450\"\n",
     "               OpMemoryModel Logical GLSL450\n",
     "               OpReturn\n",
     "               OpFunctionEnd\n"};
@@ -313,6 +369,7 @@ const char kHlslShaderWithCounterBuffer[] =
 const char kHlslWaveActiveSumeComputeShader[] =
   R"(struct S { uint val; uint result; };
 
+     [[vk::binding(0,0)]]
      RWStructuredBuffer<S> MyBuffer;
 
      [numthreads(32, 1, 1)]
@@ -323,8 +380,11 @@ const char kHlslWaveActiveSumeComputeShader[] =
 const char kHlslMemLayoutResourceSelect[] =
     R"(cbuffer Foo { float a; float3 b; }
 
+       [[vk::binding(0,0)]]
        Texture2D Tex;
+       [[vk::binding(1,0)]]
        SamplerState Sampler1;
+       [[vk::binding(2,0)]]
        SamplerState Sampler2;
 
        static const int val = 42;

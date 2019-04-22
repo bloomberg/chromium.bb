@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
@@ -248,7 +248,7 @@ void ScopedXI2Event::InitScrollEvent(int deviceid,
     Valuator(DeviceDataManagerX11::DT_CMT_FINGER_COUNT, finger_count)
   };
   SetUpValuators(
-      std::vector<Valuator>(valuators, valuators + arraysize(valuators)));
+      std::vector<Valuator>(valuators, valuators + base::size(valuators)));
 }
 
 void ScopedXI2Event::InitFlingScrollEvent(int deviceid,
@@ -268,7 +268,7 @@ void ScopedXI2Event::InitFlingScrollEvent(int deviceid,
   };
 
   SetUpValuators(
-      std::vector<Valuator>(valuators, valuators + arraysize(valuators)));
+      std::vector<Valuator>(valuators, valuators + base::size(valuators)));
 }
 
 void ScopedXI2Event::InitTouchEvent(int deviceid,

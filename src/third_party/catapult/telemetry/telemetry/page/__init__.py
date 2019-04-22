@@ -18,7 +18,7 @@ from telemetry.internal.actions import action_runner as action_runner_module
 class Page(story.Story):
 
   def __init__(self, url, page_set=None, base_dir=None, name='',
-               tags=None, startup_url='', make_javascript_deterministic=True,
+               tags=None, make_javascript_deterministic=True,
                shared_page_state_class=shared_page_state.SharedPageState,
                grouping_keys=None,
                cache_temperature=cache_temperature_module.ANY,
@@ -26,6 +26,7 @@ class Page(story.Story):
                platform_specific=False,
                extra_browser_args=None):
     self._url = url
+    self._SchemeErrorCheck()
 
     super(Page, self).__init__(
         shared_page_state_class, name=name, tags=tags,
@@ -48,10 +49,8 @@ class Page(story.Story):
 
     # These attributes can be set dynamically by the page.
     self.synthetic_delays = dict()
-    self._startup_url = startup_url
     self.skip_waits = False
     self.script_to_evaluate_on_commit = None
-    self._SchemeErrorCheck()
     self._extra_browser_args = extra_browser_args or []
 
   @property
@@ -63,23 +62,12 @@ class Page(story.Story):
     return self._traffic_setting
 
   @property
-  def startup_url(self):
-    return self._startup_url
-
-  @property
   def extra_browser_args(self):
     return self._extra_browser_args
 
   def _SchemeErrorCheck(self):
     if not self._scheme:
       raise ValueError('Must prepend the URL with scheme (e.g. file://)')
-
-    if self.startup_url:
-      startup_url_scheme = urlparse.urlparse(self.startup_url).scheme
-      if not startup_url_scheme:
-        raise ValueError('Must prepend the URL with scheme (e.g. http://)')
-      if startup_url_scheme == 'file':
-        raise ValueError('startup_url with local file scheme is not supported')
 
   def Run(self, shared_state):
     current_tab = shared_state.current_tab
@@ -89,14 +77,12 @@ class Page(story.Story):
       current_tab.CollectGarbage()
     action_runner = action_runner_module.ActionRunner(
         current_tab, skip_waits=self.skip_waits)
-    shared_state.page_test.WillNavigateToPage(self, current_tab)
     with shared_state.interval_profiling_controller.SamplePeriod(
-        'navigation', action_runner):
-      shared_state.page_test.RunNavigateSteps(self, current_tab)
-    shared_state.page_test.DidNavigateToPage(self, current_tab)
-    with shared_state.interval_profiling_controller.SamplePeriod(
-        'interactions', action_runner):
-      self.RunPageInteractions(action_runner)
+        'story_run', action_runner):
+      shared_state.NavigateToPage(action_runner, self)
+      with shared_state.interval_profiling_controller.SamplePeriod(
+          'interactions', action_runner):
+        self.RunPageInteractions(action_runner)
 
   def RunNavigateSteps(self, action_runner):
     url = self.file_path_url_with_scheme if self.is_file else self.url

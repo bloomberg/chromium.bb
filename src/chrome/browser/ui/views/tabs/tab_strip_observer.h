@@ -31,12 +31,6 @@ class CHROME_VIEWS_EXPORT TabStripObserver {
   // Sent when the tab at |index| has been removed.
   virtual void OnTabRemoved(int index);
 
-  // Sent when the trailing edge of the last tab has changed.
-  virtual void OnTabsMaxXChanged();
-
-  // Sent when the tabstrip enters or exits the special single-tab mode.
-  virtual void OnSingleTabModeChanged();
-
  protected:
   virtual ~TabStripObserver() {}
 };

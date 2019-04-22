@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.download.home;
 
 import android.view.View;
 
+import org.chromium.chrome.browser.tab.Tab;
+
 /**
  * A coordinator that represents the main download manager UI page. This visually shows a list of
  * downloaded items and allows the user to interact with those items.
@@ -46,4 +48,7 @@ public interface DownloadManagerCoordinator {
 
     /** Stops notifying {@code observer} of url state changes. */
     void removeObserver(Observer observer);
+
+    /** Sets the {@link Tab} object that the manager is working on. */
+    void setTab(Tab tab);
 }

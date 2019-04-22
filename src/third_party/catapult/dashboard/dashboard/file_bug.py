@@ -72,6 +72,9 @@ class FileBugHandler(request_handler.RequestHandler):
     labels = self.request.get_all('label')
     components = self.request.get_all('component')
     keys = self.request.get('keys')
+    owner = self.request.get('owner')
+    cc = self.request.get('cc')
+
     if not keys:
       self.RenderHtml('bug_result.html', {
           'error': 'No alerts specified to add bugs to.'
@@ -79,7 +82,7 @@ class FileBugHandler(request_handler.RequestHandler):
       return
 
     if self.request.get('finish'):
-      self._CreateBug(summary, description, labels, components, keys)
+      self._CreateBug(owner, cc, summary, description, labels, components, keys)
     else:
       self._ShowBugDialog(summary, description, keys)
 
@@ -106,10 +109,13 @@ class FileBugHandler(request_handler.RequestHandler):
         'cc': users.get_current_user(),
     })
 
-  def _CreateBug(self, summary, description, labels, components, urlsafe_keys):
+  def _CreateBug(self, owner, cc, summary, description, labels, components,
+                 urlsafe_keys):
     """Creates a bug, associates it with the alerts, sends a HTML response.
 
     Args:
+      owner: string, must end with @chromium.org if not empty.
+      cc: CSV of email addresses to CC on the bug.
       summary: The new bug summary string.
       description: The new bug description string.
       labels: List of label strings for the new bug.
@@ -117,72 +123,16 @@ class FileBugHandler(request_handler.RequestHandler):
       urlsafe_keys: Comma-separated alert keys in urlsafe format.
     """
     # Only project members (@chromium.org accounts) can be owners of bugs.
-    owner = self.request.get('owner')
     if owner and not owner.endswith('@chromium.org'):
       self.RenderHtml('bug_result.html', {
           'error': 'Owner email address must end with @chromium.org.'
       })
       return
 
-    alert_keys = [ndb.Key(urlsafe=k) for k in urlsafe_keys.split(',')]
-    alerts = ndb.get_multi(alert_keys)
-
-    if not description:
-      description = 'See the link to graphs below.'
-
-    milestone_label = _MilestoneLabel(alerts)
-    if milestone_label:
-      labels.append(milestone_label)
-
-    cc = self.request.get('cc')
-
     http = oauth2_decorator.DECORATOR.http()
-    user_issue_tracker_service = issue_tracker_service.IssueTrackerService(http)
-
-    new_bug_response = user_issue_tracker_service.NewBug(
-        summary, description, labels=labels, components=components, owner=owner,
-        cc=cc)
-    if 'error' in new_bug_response:
-      self.RenderHtml('bug_result.html', {'error': new_bug_response['error']})
-      return
-
-    bug_id = new_bug_response['bug_id']
-    bug_data.Bug(id=bug_id).put()
-
-    for a in alerts:
-      a.bug_id = bug_id
-
-    ndb.put_multi(alerts)
-
-    comment_body = _AdditionalDetails(bug_id, alerts)
-    # Add the bug comment with the service account, so that there are no
-    # permissions issues.
-    dashboard_issue_tracker_service = issue_tracker_service.IssueTrackerService(
-        utils.ServiceAccountHttp())
-    dashboard_issue_tracker_service.AddBugComment(bug_id, comment_body)
-
-    template_params = {'bug_id': bug_id}
-    if all(k.kind() == 'Anomaly' for k in alert_keys):
-      logging.info('Kicking bisect for bug ' + str(bug_id))
-      culprit_rev = _GetSingleCLForAnomalies(alerts)
-      if culprit_rev is not None:
-        _AssignBugToCLAuthor(bug_id, alerts[0], dashboard_issue_tracker_service)
-      else:
-        bisect_result = auto_bisect.StartNewBisectForBug(bug_id)
-        if 'error' in bisect_result:
-          logging.info('Failed to kick bisect for ' + str(bug_id))
-          template_params['bisect_error'] = bisect_result['error']
-        else:
-          logging.info('Successfully kicked bisect for ' + str(bug_id))
-          template_params.update(bisect_result)
-    else:
-      kinds = set()
-      for k in alert_keys:
-        kinds.add(k.kind())
-      logging.info(
-          'Didn\'t kick bisect for bug id %s because alerts had kinds %s',
-          bug_id, list(kinds))
-
+    template_params = FileBug(
+        http, owner, cc, summary, description, labels, components,
+        urlsafe_keys.split(','))
     self.RenderHtml('bug_result.html', template_params)
 
 
@@ -388,8 +338,8 @@ def _GetSingleCLForAnomalies(alerts):
     return None
   return revision
 
-def _AssignBugToCLAuthor(bug_id, alert, service):
-  """Assigns the bug to the author of the given revision."""
+
+def _GetCommitInfoForAlert(alert):
   repository_url = None
   repositories = namespaced_stored_object.Get('repositories')
   test_path = utils.TestPath(alert.test)
@@ -399,7 +349,7 @@ def _AssignBugToCLAuthor(bug_id, alert, service):
     repository_url = repositories['clank']['repository_url']
   if not repository_url:
     # Can't get committer info from this repository.
-    return
+    return None
 
   rev = str(auto_bisect.GetRevisionForBisect(alert.end_revision, alert.test))
   # TODO(sullivan, dtu): merge this with similar pinoint code.
@@ -415,22 +365,87 @@ def _AssignBugToCLAuthor(bug_id, alert, service):
     rev = result['git_sha']
   if not re.match(r'[a-fA-F0-9]{40}$', rev):
     # This still isn't a git hash; can't assign bug.
-    return
+    return None
 
-  commit_info = gitiles_service.CommitInfo(repository_url, rev)
+  return gitiles_service.CommitInfo(repository_url, rev)
+
+def _AssignBugToCLAuthor(bug_id, commit_info, service):
+  """Assigns the bug to the author of the given revision."""
   author = commit_info['author']['email']
-  sheriff = utils.GetSheriffForAutorollCommit(commit_info)
-  if sheriff:
-    service.AddBugComment(
-        bug_id,
-        ('Assigning to sheriff %s because this autoroll is '
-         'the only CL in range:\n%s') % (sheriff, commit_info['message']),
-        status='Assigned',
-        owner=sheriff)
+  message = commit_info['message']
+  service.AddBugComment(
+      bug_id,
+      'Assigning to %s because this is the only CL in range:\n%s' % (
+          author, message),
+      status='Assigned',
+      owner=author)
+
+def FileBug(http, owner, cc, summary, description, labels, components,
+            urlsafe_keys):
+  alert_keys = [ndb.Key(urlsafe=k) for k in urlsafe_keys]
+  alerts = ndb.get_multi(alert_keys)
+
+  if not description:
+    description = 'See the link to graphs below.'
+
+  milestone_label = _MilestoneLabel(alerts)
+  if milestone_label:
+    labels.append(milestone_label)
+
+  user_issue_tracker_service = issue_tracker_service.IssueTrackerService(http)
+
+  new_bug_response = user_issue_tracker_service.NewBug(
+      summary, description, labels=labels, components=components, owner=owner,
+      cc=cc)
+  if 'error' in new_bug_response:
+    return {'error': new_bug_response['error']}
+
+  bug_id = new_bug_response['bug_id']
+  bug_data.Bug(id=bug_id).put()
+
+  for a in alerts:
+    a.bug_id = bug_id
+
+  ndb.put_multi(alerts)
+
+  comment_body = _AdditionalDetails(bug_id, alerts)
+  # Add the bug comment with the service account, so that there are no
+  # permissions issues.
+  dashboard_issue_tracker_service = issue_tracker_service.IssueTrackerService(
+      utils.ServiceAccountHttp())
+  dashboard_issue_tracker_service.AddBugComment(bug_id, comment_body)
+
+  template_params = {'bug_id': bug_id}
+  if all(k.kind() == 'Anomaly' for k in alert_keys):
+    logging.info('Kicking bisect for bug ' + str(bug_id))
+    culprit_rev = _GetSingleCLForAnomalies(alerts)
+
+    needs_bisect = True
+    if culprit_rev is not None:
+      commit_info = _GetCommitInfoForAlert(alerts[0])
+      if commit_info:
+        author = commit_info['author']['email']
+        message = commit_info['message']
+        if not utils.GetSheriffForAutorollCommit(author, message):
+          needs_bisect = False
+
+    if needs_bisect:
+      bisect_result = auto_bisect.StartNewBisectForBug(bug_id)
+      if 'error' in bisect_result:
+        logging.info('Failed to kick bisect for ' + str(bug_id))
+        template_params['bisect_error'] = bisect_result['error']
+      else:
+        logging.info('Successfully kicked bisect for ' + str(bug_id))
+        template_params.update(bisect_result)
+    else:
+      _AssignBugToCLAuthor(
+          bug_id, commit_info, dashboard_issue_tracker_service)
+
   else:
-    service.AddBugComment(
-        bug_id,
-        'Assigning to %s because this is the only CL in range:\n%s' % (
-            author, commit_info['message']),
-        status='Assigned',
-        owner=author)
+    kinds = set()
+    for k in alert_keys:
+      kinds.add(k.kind())
+    logging.info(
+        'Didn\'t kick bisect for bug id %s because alerts had kinds %s',
+        bug_id, list(kinds))
+  return template_params

@@ -693,7 +693,7 @@ static int put_flac_codecpriv(AVFormatContext *s,
         snprintf(buf, sizeof(buf), "0x%"PRIx64, par->channel_layout);
         av_dict_set(&dict, "WAVEFORMATEXTENSIBLE_CHANNEL_MASK", buf, 0);
 
-        len = ff_vorbiscomment_length(dict, vendor);
+        len = ff_vorbiscomment_length(dict, vendor, NULL, 0);
         if (len >= ((1<<24) - 4))
             return AVERROR(EINVAL);
 
@@ -707,7 +707,7 @@ static int put_flac_codecpriv(AVFormatContext *s,
         AV_WB24(data + 1, len);
 
         p = data + 4;
-        ff_vorbiscomment_write(&p, &dict, vendor);
+        ff_vorbiscomment_write(&p, &dict, vendor, NULL, 0);
 
         avio_write(pb, data, len + 4);
 
@@ -2012,6 +2012,13 @@ static int mkv_write_header(AVFormatContext *s)
         ret = AVERROR(ENOMEM);
         goto fail;
     }
+
+    if (s->metadata_header_padding > 0) {
+        if (s->metadata_header_padding == 1)
+            s->metadata_header_padding++;
+        put_ebml_void(pb, s->metadata_header_padding);
+    }
+
     if ((pb->seekable & AVIO_SEEKABLE_NORMAL) && mkv->reserve_cues_space) {
         mkv->cues_pos = avio_tell(pb);
         if (mkv->reserve_cues_space == 1)
@@ -2774,6 +2781,7 @@ static const AVCodecTag additional_video_tags[] = {
 
 static const AVCodecTag additional_subtitle_tags[] = {
     { AV_CODEC_ID_DVB_SUBTITLE,      0xFFFFFFFF },
+    { AV_CODEC_ID_DVD_SUBTITLE,      0xFFFFFFFF },
     { AV_CODEC_ID_HDMV_PGS_SUBTITLE, 0xFFFFFFFF },
     { AV_CODEC_ID_NONE,              0xFFFFFFFF }
 };

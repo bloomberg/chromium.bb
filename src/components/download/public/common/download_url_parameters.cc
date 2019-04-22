@@ -32,13 +32,15 @@ DownloadUrlParameters::DownloadUrlParameters(
       render_process_host_id_(render_process_host_id),
       render_view_host_routing_id_(render_view_host_routing_id),
       render_frame_host_routing_id_(render_frame_host_routing_id),
+      frame_tree_node_id_(-1),
       url_(url),
       do_not_prompt_for_login_(false),
       follow_cross_origin_redirects_(true),
       fetch_error_body_(false),
       transient_(false),
       traffic_annotation_(traffic_annotation),
-      download_source_(DownloadSource::UNKNOWN) {}
+      download_source_(DownloadSource::UNKNOWN),
+      require_safety_checks_(true) {}
 
 DownloadUrlParameters::~DownloadUrlParameters() = default;
 

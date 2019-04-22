@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cxfa_source.h"
 
 const CJX_MethodSpec CJX_Source::MethodSpecs[] = {
@@ -36,6 +36,10 @@ CJX_Source::CJX_Source(CXFA_Source* src) : CJX_Node(src) {
 }
 
 CJX_Source::~CJX_Source() {}
+
+bool CJX_Source::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
 
 CJS_Result CJX_Source::next(CFX_V8* runtime,
                             const std::vector<v8::Local<v8::Value>>& params) {
@@ -182,15 +186,3 @@ CJS_Result CJX_Source::hasDataChanged(
 void CJX_Source::db(CFXJSE_Value* pValue,
                     bool bSetting,
                     XFA_Attribute eAttribute) {}
-
-void CJX_Source::use(CFXJSE_Value* pValue,
-                     bool bSetting,
-                     XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_Source::usehref(CFXJSE_Value* pValue,
-                         bool bSetting,
-                         XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}

@@ -5,6 +5,7 @@
 #include "services/tracing/test_util.h"
 
 #include <string>
+#include <utility>
 
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
@@ -34,17 +35,6 @@ void MockAgent::StopAndFlush(mojom::RecorderPtr recorder) {
   for (const auto& chunk : data_) {
     recorder->AddChunk(chunk);
   }
-}
-
-void MockAgent::RequestClockSyncMarker(const std::string& sync_id,
-                                       RequestClockSyncMarkerCallback cb) {
-  call_stat_.push_back("RequestClockSyncMarker");
-  std::move(cb).Run(base::TimeTicks(), base::TimeTicks());
-}
-
-void MockAgent::GetCategories(GetCategoriesCallback cb) {
-  call_stat_.push_back("GetCategories");
-  std::move(cb).Run(categories_);
 }
 
 void MockAgent::RequestBufferStatus(RequestBufferStatusCallback cb) {

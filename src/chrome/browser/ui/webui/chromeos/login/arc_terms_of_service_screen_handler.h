@@ -34,7 +34,7 @@ class ArcTermsOfServiceScreenHandler
       public system::TimezoneSettings::Observer,
       public chromeos::NetworkStateHandlerObserver {
  public:
-  ArcTermsOfServiceScreenHandler();
+  explicit ArcTermsOfServiceScreenHandler(JSCallsContainer* js_calls_container);
   ~ArcTermsOfServiceScreenHandler() override;
 
   // content::WebUIMessageHandler:
@@ -54,7 +54,7 @@ class ArcTermsOfServiceScreenHandler
   // OobeUI::Observer:
   void OnCurrentScreenChanged(OobeScreen current_screen,
                               OobeScreen new_screen) override;
-  void OnScreenInitialized(OobeScreen screen) override{};
+  void OnDestroyingOobeUI() override {}
 
   // system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override;

@@ -22,6 +22,11 @@ MANIFEST_OUTER_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <manifest>%s</manifest>
 """
 
+INCLUDES_XML = """
+  <include name="include.xml"/>
+  <include name="include_me_too.xml"/>
+"""
+
 REMOTES_XML = """
   <remote name="simple_remote"
           fetch="http://simple.example.com"/>
@@ -98,12 +103,25 @@ class ManifestTest(cros_test_lib.TempDirTestCase, XMLTestCase):
       etree = self.ETreeFromString(MANIFEST_OUTER_XML % inner_xml)
       with self.assertRaises(repo_manifest.UnsupportedFeature):
         repo_manifest.Manifest(etree)
+      repo_manifest.Manifest(etree, allow_unsupported_features=True)
 
   def testPickle(self):
     """Test Manifest picklability."""
     pickled = pickle.dumps(self.manifest)
     unpickled = pickle.loads(pickled)
     self.AssertXMLAlmostEqual(ManifestToString(unpickled), MANIFEST_XML)
+    with self.assertRaises(repo_manifest.UnsupportedFeature):
+      unpickled.Includes().next()
+
+  def testPickleUnsupportedFeatures(self):
+    """Test Manifest picklability when unsupported features are allowed."""
+    manifest_xml = MANIFEST_OUTER_XML % INCLUDES_XML
+    manifest = repo_manifest.Manifest.FromString(
+        manifest_xml, allow_unsupported_features=True)
+    pickled = pickle.dumps(manifest)
+    unpickled = pickle.loads(pickled)
+    self.AssertXMLAlmostEqual(ManifestToString(unpickled), manifest_xml)
+    self.assertIsNotNone(unpickled.Includes().next())
 
   def testFromFile(self):
     """Test Manifest.FromFile."""
@@ -131,6 +149,12 @@ class ManifestTest(cros_test_lib.TempDirTestCase, XMLTestCase):
     manifest = repo_manifest.Manifest.FromString(MANIFEST_OUTER_XML % '')
     self.assertIsNone(manifest.Default().remote)
 
+  def testIncludes(self):
+    manifest = repo_manifest.Manifest.FromString(
+        MANIFEST_OUTER_XML % INCLUDES_XML, allow_unsupported_features=True)
+    include_names = [i.name for i in manifest.Includes()]
+    self.assertItemsEqual(include_names, ['include.xml', 'include_me_too.xml'])
+
   def testRemotes(self):
     """Test Manifest.Remotes."""
     remote_names = [x.name for x in self.manifest.Remotes()]
@@ -156,10 +180,20 @@ class ManifestTest(cros_test_lib.TempDirTestCase, XMLTestCase):
     project = self.manifest.GetUniqueProject('simple/project')
     self.assertEqual(project.name, 'simple/project')
 
+  def testGetUniqueProjectBranch(self):
+    """Test Manifest.GetUniqueProject with an explicit branch."""
+    project = self.manifest.GetUniqueProject('complex/project', 'cafe')
+    self.assertEqual(project.name, 'complex/project')
+
   def testGetUniqueProjectMissing(self):
     """Test Manifest.GetUniqueProject without named <project>."""
     with self.assertRaises(ValueError):
       self.manifest.GetUniqueProject('missing/project')
+
+  def testGetUniqueProjectMissingBranch(self):
+    """Test Manifest.GetUniqueProject with valid project, missing <branch>."""
+    with self.assertRaises(ValueError):
+      self.manifest.GetUniqueProject('complex/project', 'wrong_branch')
 
 
 class ManifestElementExample(repo_manifest._ManifestElement):
@@ -202,6 +236,11 @@ class ManifestElementTest(XMLTestCase):
     self.example.other_attr = 'other'
     EXPECTED = '<example name="new" other-attr="other"/>'
     self.AssertXMLAlmostEqual(repr(self.example), EXPECTED)
+
+  def testDel(self):
+    """Test _ManifestElement.__delattr__."""
+    del self.example.name
+    self.assertIsNone(self.example.name)
 
 
 class RemoteTest(cros_test_lib.TestCase):
@@ -249,3 +288,8 @@ class ProjectTest(cros_test_lib.TestCase):
     """Test Project.Revision."""
     self.assertIsNone(self.simple.Revision())
     self.assertEqual(self.complex.Revision(), 'cafe')
+
+  def testAnnotations(self):
+    """Test Project.Annotations."""
+    self.assertEqual(self.simple.Annotations(), {})
+    self.assertEqual(self.complex.Annotations(), {'branch-mode': 'pin'})

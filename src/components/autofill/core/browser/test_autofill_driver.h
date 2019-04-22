@@ -44,14 +44,9 @@ class TestAutofillDriver : public AutofillDriver {
   void PopupHidden() override;
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;
-  void DidInteractWithCreditCardForm() override;
 
   // Methods unique to TestAutofillDriver that tests can use to specialize
   // functionality.
-
-  void ClearDidInteractWithCreditCardForm();
-
-  bool GetDidInteractWithCreditCardForm() const;
 
   void SetIsIncognito(bool is_incognito);
   void SetIsInMainFrame(bool is_in_main_frame);
@@ -68,7 +63,6 @@ class TestAutofillDriver : public AutofillDriver {
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   bool is_incognito_ = false;
   bool is_in_main_frame_ = false;
-  bool did_interact_with_credit_card_form_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDriver);
 };

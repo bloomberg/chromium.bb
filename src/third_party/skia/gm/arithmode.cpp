@@ -5,8 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
+#include <SkFont.h>
 #include "SkArithmeticImageFilter.h"
 #include "SkCanvas.h"
 #include "SkColorPriv.h"
@@ -15,6 +14,8 @@
 #include "SkImageSource.h"
 #include "SkShader.h"
 #include "SkSurface.h"
+#include "ToolUtils.h"
+#include "gm.h"
 
 #define WW  100
 #define HH  32
@@ -30,7 +31,7 @@ static sk_sp<SkImage> make_src() {
         SK_ColorRED, SK_ColorMAGENTA, SK_ColorWHITE,
     };
     paint.setShader(SkGradientShader::MakeLinear(pts, colors, nullptr, SK_ARRAY_COUNT(colors),
-                                                 SkShader::kClamp_TileMode));
+                                                 SkTileMode::kClamp));
     canvas->drawPaint(paint);
     return surface->makeImageSnapshot();
 }
@@ -46,21 +47,21 @@ static sk_sp<SkImage> make_dst() {
         SK_ColorGRAY,
     };
     paint.setShader(SkGradientShader::MakeLinear(pts, colors, nullptr, SK_ARRAY_COUNT(colors),
-                                                 SkShader::kClamp_TileMode));
+                                                 SkTileMode::kClamp));
     canvas->drawPaint(paint);
     return surface->makeImageSnapshot();
 }
 
 static void show_k_text(SkCanvas* canvas, SkScalar x, SkScalar y, const SkScalar k[]) {
+    SkFont font(ToolUtils::create_portable_typeface(), 24);
+    font.setEdging(SkFont::Edging::kAntiAlias);
     SkPaint paint;
-    paint.setTextSize(SkIntToScalar(24));
     paint.setAntiAlias(true);
-    sk_tool_utils::set_portable_typeface(&paint);
     for (int i = 0; i < 4; ++i) {
         SkString str;
         str.appendScalar(k[i]);
-        SkScalar width = paint.measureText(str.c_str(), str.size());
-        canvas->drawString(str, x, y + paint.getTextSize(), paint);
+        SkScalar width = font.measureText(str.c_str(), str.size(), kUTF8_SkTextEncoding);
+        canvas->drawString(str, x, y + font.getSize(), font, paint);
         x += width + SkIntToScalar(10);
     }
 }
@@ -148,12 +149,9 @@ protected:
                 canvas->translate(gap, 0);
 
                 // Label
-                SkPaint paint;
-                paint.setTextSize(SkIntToScalar(24));
-                paint.setAntiAlias(true);
-                sk_tool_utils::set_portable_typeface(&paint);
+                SkFont   font(ToolUtils::create_portable_typeface(), 24);
                 SkString str(enforcePMColor ? "enforcePM" : "no enforcePM");
-                canvas->drawString(str, 0, paint.getTextSize(), paint);
+                canvas->drawString(str, 0, font.getSize(), font, SkPaint());
             }
             canvas->translate(0, HH + 12);
         }

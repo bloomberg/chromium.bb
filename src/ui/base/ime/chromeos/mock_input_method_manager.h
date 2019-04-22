@@ -5,6 +5,7 @@
 #ifndef UI_BASE_IME_CHROMEOS_MOCK_INPUT_METHOD_MANAGER_H_
 #define UI_BASE_IME_CHROMEOS_MOCK_INPUT_METHOD_MANAGER_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
@@ -15,7 +16,7 @@ class InputMethodUtil;
 class ImeKeyboard;
 
 // The mock InputMethodManager for testing.
-class UI_BASE_IME_EXPORT MockInputMethodManager
+class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockInputMethodManager
     : public InputMethodManager,
       public ui::InputMethodKeyboardController {
  public:
@@ -53,7 +54,7 @@ class UI_BASE_IME_EXPORT MockInputMethodManager
     void SetInputMethodLoginDefaultFromVPD(const std::string& locale,
                                            const std::string& layout) override;
     void SwitchToNextInputMethod() override;
-    void SwitchToPreviousInputMethod() override;
+    void SwitchToLastUsedInputMethod() override;
     InputMethodDescriptor GetCurrentInputMethod() const override;
     bool ReplaceEnabledInputMethods(
         const std::vector<std::string>& new_active_input_method_ids) override;

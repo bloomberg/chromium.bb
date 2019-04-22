@@ -53,8 +53,8 @@ class EVENTS_EXPORT EventTarget {
 
   // Updates the states in |event| (e.g. location) to be suitable for |target|,
   // so that |event| can be dispatched to |target|.
-  virtual void ConvertEventToTarget(EventTarget* target,
-                                    LocatedEvent* event);
+  virtual void ConvertEventToTarget(const EventTarget* target,
+                                    LocatedEvent* event) const;
 
   // Get |event|'s screen location, using the EventTarget's screen location.
   virtual gfx::PointF GetScreenLocationF(const LocatedEvent& event) const;

@@ -7,8 +7,9 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
-#include "./vpx_config.h"
 
+#include "./vpx_config.h"
+#include "./vpx_dsp_rtcd.h"
 #include "vpx_ports/mem.h"
 
 typedef uint32_t (*high_variance_fn_t)(const uint16_t *src, int src_stride,
@@ -89,9 +90,9 @@ static void highbd_12_variance_sse2(const uint16_t *src, int src_stride,
 }
 
 #define HIGH_GET_VAR(S)                                                       \
-  void vpx_highbd_get##S##x##S##var_sse2(const uint8_t *src8, int src_stride, \
-                                         const uint8_t *ref8, int ref_stride, \
-                                         uint32_t *sse, int *sum) {           \
+  void vpx_highbd_8_get##S##x##S##var_sse2(                                   \
+      const uint8_t *src8, int src_stride, const uint8_t *ref8,               \
+      int ref_stride, uint32_t *sse, int *sum) {                              \
     uint16_t *src = CONVERT_TO_SHORTPTR(src8);                                \
     uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);                                \
     vpx_highbd_calc##S##x##S##var_sse2(src, src_stride, ref, ref_stride, sse, \
@@ -135,7 +136,7 @@ HIGH_GET_VAR(8);
     highbd_8_variance_sse2(                                                \
         src, src_stride, ref, ref_stride, w, h, sse, &sum,                 \
         vpx_highbd_calc##block_size##x##block_size##var_sse2, block_size); \
-    return *sse - (uint32_t)(((int64_t)sum * sum) >> shift);               \
+    return *sse - (uint32_t)(((int64_t)sum * sum) >> (shift));             \
   }                                                                        \
                                                                            \
   uint32_t vpx_highbd_10_variance##w##x##h##_sse2(                         \
@@ -148,7 +149,7 @@ HIGH_GET_VAR(8);
     highbd_10_variance_sse2(                                               \
         src, src_stride, ref, ref_stride, w, h, sse, &sum,                 \
         vpx_highbd_calc##block_size##x##block_size##var_sse2, block_size); \
-    var = (int64_t)(*sse) - (((int64_t)sum * sum) >> shift);               \
+    var = (int64_t)(*sse) - (((int64_t)sum * sum) >> (shift));             \
     return (var >= 0) ? (uint32_t)var : 0;                                 \
   }                                                                        \
                                                                            \
@@ -162,7 +163,7 @@ HIGH_GET_VAR(8);
     highbd_12_variance_sse2(                                               \
         src, src_stride, ref, ref_stride, w, h, sse, &sum,                 \
         vpx_highbd_calc##block_size##x##block_size##var_sse2, block_size); \
-    var = (int64_t)(*sse) - (((int64_t)sum * sum) >> shift);               \
+    var = (int64_t)(*sse) - (((int64_t)sum * sum) >> (shift));             \
     return (var >= 0) ? (uint32_t)var : 0;                                 \
   }
 

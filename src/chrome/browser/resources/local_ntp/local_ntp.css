@@ -44,6 +44,13 @@ html {
   height: 100%;
 }
 
+html[darkmode=true] body:not(.light-chip) {
+  /* These can be overridden by themes. */
+  --text-color: rgb(var(--GG200-rgb));
+  --text-color-light: rgb(var(--GG200-rgb));
+  --text-color-link: rgb(var(--GB400-dark-rgb));
+}
+
 /* width >= (3 cols * (16px + 154px) - 16px + 200px) */
 @media (min-width: 694px) {
   html {
@@ -58,13 +65,10 @@ html {
   }
 }
 
-/* TODO: Need to discuss with NTP folks before we remove font-family from the
- * body tag. */
 body {
   background-attachment: fixed !important;
   cursor: default;
   display: none;
-  font-family: arial, sans-serif;
   font-size: small;
   margin: 0;
   min-height: 100%;
@@ -81,10 +85,6 @@ button {
   border: 0;
   margin: 0;
   padding: 0;
-}
-
-.mouse-navigation {
-  outline: none;
 }
 
 #ntp-contents {
@@ -117,222 +117,83 @@ body.hide-fakebox #fakebox {
   visibility: hidden;
 }
 
-#logo {
-  height: calc(var(--logo-height) + var(--logo-margin-bottom));
-  margin-top: var(--logo-margin-top);
-  min-height: fit-content;
-  position: relative;
-}
-
-.non-google-page #logo {
-  display: none;
-}
-
-#logo-default,
-#logo-doodle {
-  opacity: 0;
-  visibility: hidden;
-}
-
-#logo-default.show-logo,
-#logo-doodle.show-logo {
-  opacity: 1;
-  visibility: visible;
-}
-
-#logo-doodle-button,
-#logo-doodle-iframe {
-  display: none;
-}
-
-#logo-doodle-button.show-logo,
-#logo-doodle-iframe.show-logo {
-  display: block;
-}
-
-#logo-doodle-image {
-  outline: none;
-}
-
-#logo-default.fade,
-#logo-doodle.fade {
-  transition: opacity 130ms, visibility 130ms;
-}
-
-#logo-default,
-#logo-non-white {
-  background-image: url(../../../../ui/webui/resources/images/google_logo.svg);
-  background-repeat: no-repeat;
-  bottom: var(--logo-margin-bottom);
-  height: 92px;
-  left: calc(50% - 272px/2);
-  position: absolute;
-  width: 272px;
-}
-
-body.alternate-logo #logo-default,
-body.alternate-logo #logo-non-white {
-  -webkit-mask-image:
-      url(../../../../ui/webui/resources/images/google_logo.svg);
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: 100%;
-  background: #eee;
-}
-
-#logo-default,
-.non-white-bg #logo-non-white {
-  display: block;
-}
-#logo-non-white,
-.non-white-bg #logo-default {
-  display: none;
-}
-
-#logo-doodle-button {
-  /* An image logo is allowed to spill into the margin below, so it's not a
-   * real bottom margin. If the image extends further than that margin, it
-   * is cropped. */
-  margin: 0 auto;
-  max-height: calc(var(--logo-height) + var(--logo-margin-bottom));
-  overflow: hidden;
-}
-
-.non-white-bg #logo-doodle-button,
-.non-white-bg #logo-doodle-iframe {
-  display: none;
-}
-
-#logo-doodle-iframe {
-  border: 0;
-  height: var(--logo-iframe-height);
-  margin: 0 auto calc(var(--logo-height) + var(--logo-margin-bottom)
-                      - var(--logo-iframe-initial-height)) auto;
-  transition: width var(--logo-iframe-resize-duration),
-              height var(--logo-iframe-resize-duration);
-  width: var(--logo-iframe-width);
-}
-
-#logo-doodle-notifier {
-  display: none;
-}
-.non-white-bg #logo-doodle-notifier {
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  display: inline-block;
-  height: 24px;
-  left: calc(50% + 148px);
-  padding: 0;
-  position: absolute;
-  top: 100px;
-  width: 24px;
-}
-@keyframes anim-pos {
-  0% { transform: translate(-98%, 0); }
-  100% { transform: translate(98%, 0); }
-}
-@keyframes anim-z-order {
-  0% { z-index: 100; }
-  100% { z-index: 1; }
-}
-.non-white-bg #logo-doodle-notifier .outer {
-  animation: anim-z-order 3520ms linear infinite;
-  height: 37.5%;
-  left: 50%;
-  margin-left: -18.75%;
-  margin-top: -18.75%;
-  position: absolute;
-  top: 50%;
-  width: 37.5%;
-}
-.non-white-bg #logo-doodle-notifier .inner {
-  animation: anim-pos 880ms cubic-bezier(0.445, 0.05, 0.55, 0.95)
-      infinite alternate;
-  border-radius: 50%;
-  height: 100%;
-  position: absolute;
-  transform: rotate(90deg);
-  width: 100%;
-}
-.non-white-bg #logo-doodle-notifier .ball0 {
-  animation-delay: 2640ms;
-  transform: rotate(45deg);
-}
-.non-white-bg #logo-doodle-notifier .ball1 {
-  animation-delay: 1760ms;
-  transform: rotate(135deg);
-}
-.non-white-bg #logo-doodle-notifier .ball2 {
-  transform: rotate(225deg);
-}
-.non-white-bg #logo-doodle-notifier .ball3 {
-  animation-delay: 880ms;
-  transform: rotate(315deg);
-}
-.non-white-bg #logo-doodle-notifier .ball0 .inner {
-  background: linear-gradient(
-      315deg, rgb(0, 85, 221), rgb(0, 119, 255), rgb(0, 119, 255));
-}
-.non-white-bg #logo-doodle-notifier .ball1 .inner {
-  background: linear-gradient(
-      225deg, rgb(221, 0, 0), rgb(238, 51, 51), rgb(255, 119, 85));
-}
-.non-white-bg #logo-doodle-notifier .ball2 .inner {
-  background: linear-gradient(
-      90deg, rgb(0, 119, 68), rgb(0, 153, 68), rgb(85, 187, 85));
-}
-.non-white-bg #logo-doodle-notifier .ball3 .inner {
-  background: linear-gradient(
-      0deg, rgb(255, 170, 51), rgb(255, 204, 0), rgb(255, 221, 102));
-}
-
 #fakebox-container {
   margin: 0 auto 0 auto;
   width: var(--content-width);
 }
 
+body.remove-fakebox #fakebox-container {
+  display: none;
+}
+
+.alternate-fakebox #fakebox-container {
+  /* Increase min-width to account for larger font + increased padding: 341px
+   * min-width + 50px */
+  min-width: 390px;
+}
+
+.show-fakebox-icon.alternate-fakebox #fakebox-container {
+  /* Increase min-width again to account for the search icon: 390px new
+   * min-width + additional 20px */
+  min-width: 410px;
+}
+
 #fakebox {
-  background-color: #fff;
-  border-radius: 2px;
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  background-color: rgb(var(--GG100-rgb));
+  border-radius: 22px;
   cursor: text;
   font-size: 18px;
   height: 44px;
   line-height: 36px;
-  margin: 0 calc(var(--tile-margin) / 2 + 1px) 0 calc(var(--tile-margin) / 2);
-  outline: none;
-  position: relative;
-  transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.md #fakebox {
-  background-color: rgb(241, 243, 244);
-  border-radius: 22px;
-  box-shadow: none;
   margin: 0 auto;
   max-width: 560px;
   opacity: 1;
-  transition: background-color 300ms ease-in-out;
+  position: relative;
   /* Transition should be similar to .mv-tile/.md-tile opacity transition. */
-  transition: opacity 200ms;
+  transition: background-color 300ms ease-in-out, opacity 200ms
 }
 
-.md #fakebox:hover {
-  background-color: rgb(232, 234, 237);
+html[darkmode=true] body:not(.alternate-fakebox):not(.light-chip) #fakebox {
+  background-color: rgb(var(--GG900-rgb));
+}
+
+.alternate-fakebox #fakebox {
+  background: white;
+  border: 1px solid rgb(223, 225, 229);
+  box-sizing: border-box;
+  font-size: 16px;
+  height: 46px;
+  line-height: 21px;
+  max-width: 584px;
+  transition: none;
+}
+
+html[darkmode=true] .alternate-fakebox #fakebox {
+  border-color: transparent;
+}
+
+#fakebox:hover {
+  background-color: rgb(var(--GG200-rgb));
+}
+
+html[darkmode=true] body:not(.alternate-fakebox):not(.light-chip) #fakebox:hover {
+  background-color: rgb(42, 43, 46);
+}
+
+.alternate-fakebox #fakebox:hover,
+.alternate-fakebox.fakebox-focused #fakebox {
+  background: white;
+  border-color: transparent;
+  box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);
+}
+
+html[darkmode=true] .alternate-fakebox #fakebox:hover,
+html[darkmode=true] .alternate-fakebox.fakebox-focused #fakebox {
+  box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .78);
 }
 
 .non-google-page #fakebox-container {
   display: none;
-}
-
-#fakebox:hover,
-body.fakebox-focused #fakebox {
-  box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08);
-}
-
-.md #fakebox:hover,
-body.md.fakebox-focused #fakebox {
-  box-shadow: none;
 }
 
 #fakebox > input {
@@ -341,36 +202,51 @@ body.md.fakebox-focused #fakebox {
   left: 0;
   margin: 0;
   opacity: 0;
-  padding-left: 8px;
+  padding-inline-start: 20px;
   position: absolute;
   top: 0;
   width: 100%;
 }
 
-.md #fakebox > input {
-  padding-left: 20px;
-}
-
 html[dir=rtl] #fakebox > input {
-  padding-left: 0;
-  padding-right: 8px;
   right: 0;
 }
 
-html[dir=rtl] .md  #fakebox > input {
-  padding-right: 20px;
+#fakebox-search-icon {
+  -webkit-mask-image:
+      url(../../../../ui/webui/resources/images/icon_search.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: 24px 24px rgb(117, 117, 117);
+  bottom: 0;
+  display: none;
+  height: 24px;
+  left: 0;
+  margin: auto 0;
+  margin-inline-start: 16px;
+  position: absolute;
+  top: 0;
+  width: 24px;
+}
+
+.show-fakebox-icon #fakebox-search-icon {
+  display: block;
+}
+
+html[dir=rtl] #fakebox-search-icon {
+  right: 0;
 }
 
 #fakebox-text {
   bottom: 4px;
-  color: rgba(0, 0, 0, 0.42);
-  font-family: arial, sans-serif;
-  font-size: 16px;
-  left: 13px;
+  color: rgb(var(--GG700-rgb));
+  font-size: 14px;
+  left: 0;
   margin-top: 1px;
   overflow: hidden;
+  padding-inline-start: 20px;
   position: absolute;
-  right: 13px;
+  right: 44px;
   text-align: initial;
   text-overflow: ellipsis;
   top: 4px;
@@ -379,45 +255,68 @@ html[dir=rtl] .md  #fakebox > input {
   white-space: nowrap;
 }
 
-.md #fakebox-text {
-  color: rgb(128, 134, 139);
-  font-family: 'Roboto', arial, sans-serif;
-  font-size: 14px;
-  left: 0;
-  padding-left: 20px;
+html[darkmode=true] body:not(.alternate-fakebox):not(.light-chip) #fakebox-text {
+  color: rgb(var(--GG200-rgb));
 }
 
 html[dir=rtl] #fakebox-text {
   left: auto;
-  right: 13px;
+  right: 0;
 }
 
-html[dir=rtl] .md #fakebox-text {
-  padding-right: 20px;
+.alternate-fakebox #fakebox-text {
+  bottom: 0;
+  color: rgb(117, 117, 117);
+  font-size: 16px;
+  height: 21px;
+  margin: auto 0;
+  right: 44px;
+  top: 0;
+}
+
+.show-fakebox-icon.alternate-fakebox #fakebox-text {
+  padding-inline-start: 48px;
+}
+
+html[dir=rtl] #fakebox-text {
+  left: 44px;
   right: 0;
 }
 
 #fakebox-cursor {
   background: #333;
+  /* Total 20px height: 44px fakebox height - 12px top - 12px bottom */
   bottom: 12px;
-  left: 13px;
+  left: 20px;
   position: absolute;
   top: 12px;
   visibility: hidden;
   width: 1px;
 }
 
-.md #fakebox-cursor {
-  left: 20px;
-}
-
 html[dir=rtl] #fakebox-cursor {
   left: auto;
-  right: 13px;
+  right: 20px;
 }
 
-html[dir=rtl] .md #fakebox-cursor {
-  right: 20px;
+html[darkmode=true] body:not(.alternate-fakebox):not(.light-chip) #fakebox-cursor {
+  background: rgb(var(--GB300-rgb));
+}
+
+.alternate-fakebox #fakebox-cursor {
+  /* Total 16px height: (46px fakebox height - 2px border) - 14px top - 14px
+   * bottom */
+  bottom: 14px;
+  top: 14px;
+}
+
+.show-fakebox-icon.alternate-fakebox #fakebox-cursor {
+  left: 48px;
+}
+
+html[dir=rtl] .show-fakebox-icon.alternate-fakebox #fakebox-cursor {
+  left: auto;
+  right: 48px;
 }
 
 #fakebox-microphone {
@@ -425,25 +324,23 @@ html[dir=rtl] .md #fakebox-cursor {
   background-size: 24px 24px;
   bottom: 0;
   cursor: pointer;
+  margin-inline-end: 12px;
   padding: 22px 12px 0;
   position: absolute;
   right: 0;
   top: 0;
-  width: 41px;
+  width: 28px;
 }
 
-.md #fakebox-microphone {
-  margin-right: 12px;
-  width: 28px;
+.alternate-fakebox #fakebox-microphone {
+  margin-inline-end: 16px;
+  padding: 11px 0 0;
+  width: 24px;
 }
 
 html[dir=rtl] #fakebox-microphone {
   left: 0;
   right: auto;
-}
-
-html[dir=rtl] .md #fakebox-microphone {
-  margin-left: 12px;
 }
 
 @keyframes blink {
@@ -469,16 +366,23 @@ body.fakebox-focused #fakebox-cursor {
   visibility: inherit;
 }
 
-#most-visited {
-  margin-top: 56px;
-  text-align: -webkit-center;
-  user-select: none;
+.alternate-fakebox #user-content-wrapper {
+  /* Reduce margin by new height of fakebox (46px) - old height (44px) = 2px */
+  margin-top: -2px;
 }
 
-#most-visited.md-icons {
+body.remove-fakebox #user-content {
+  /* Total of 48px margin between the logo and MV tiles/suggestions: 29px logo
+   * margin-bottom + 32px margin (from #most-visited or #suggestions) - 13px */
+  margin-top: -13px;
+}
+
+#most-visited {
   /* Total of 40px margin between fakebox and MV tiles: 8px fakebox
    * margin-bottom + 22px here margin-top + 10px MV margin-top */
   margin-top: 22px;
+  text-align: -webkit-center;
+  user-select: none;
 }
 
 /* Non-Google pages have no Fakebox, so don't need top margin. */
@@ -487,172 +391,117 @@ body.fakebox-focused #fakebox-cursor {
 }
 
 #mv-tiles {
-  /* Two rows of tiles of 128px each, 16px of spacing between the rows, and
-   * 4px/8px of margin on top and bottom respectively. If you change this, also
-   * change the corresponding values in most_visited_single.css. */
-  height: calc(2*var(--tile-height) + var(--tile-margin)  + 4px + 8px);
-  margin: 0;
-  position: relative;
-  text-align: -webkit-auto;
-  width: var(--content-width);
-}
-
-.md-icons #mv-tiles {
   /* Two rows of tiles of 112px each, 16px of spacing after each row, and 10px
    * of margin on top. If you change this, also change the corresponding values
    * in most_visited_single.css. */
   height: calc(2*(var(--md-tile-height) + var(--md-tile-margin)) + 10px);
+  margin: 0;
+  position: relative;
+  text-align: -webkit-auto;
   /* Add 2*5px to account for drop shadow on the tiles. If you change this, also
    * change the corresponding values in most_visited_single.css. */
   width: calc(var(--content-width) + 2*5px);
 }
 
-#mv-notice-x {
-  -webkit-mask-image: -webkit-image-set(
-      url(chrome-search://local-ntp/images/close_3_mask.png) 1x,
-      url(chrome-search://local-ntp/images/close_3_mask.png@2x) 2x);
-  -webkit-mask-position: 3px 3px;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: 10px 10px;
-  background-color: rgba(90,90,90,0.7);
-  cursor: pointer;
-  display: inline-block;
-  filter: var(--theme-filter, 'none');
-  height: 16px;
-  margin-left: 20px;
-  outline: none;
-  vertical-align: middle;
-  width: 16px;
-}
-
-html[dir=rtl] #mv-notice-x {
-  margin-left: 0;
-  margin-right: 20px;
-}
-
-#mv-notice-x:hover {
-  background-color: rgba(90,90,90,1.0);
-}
-
-#mv-notice-x:active {
-  background-color: rgb(66,133,244);
-}
-
-.md-icons #mv-notice-x {
-  display: none;
-}
-
 #mv-notice-container {
-  width: 100%;
-}
-
-.md-icons #mv-notice-container {
   bottom: -50px;
+  left: 0;
   margin-bottom: 16px;
   position: fixed;
   transition: bottom 400ms;
+  width: 100%;
 }
 
 /* Required to allow click events through the wrapping div of the toast
  * notification container. */
-.md-icons #mv-notice-container,
+#mv-notice-container,
 #error-notice-container {
   pointer-events: none;
 }
-.md-icons #mv-notice-container > div,
+#mv-notice-container > div,
 #error-notice-container > div {
   pointer-events: all;
 }
 
-
-.md-icons #mv-notice-container.float-up {
+#mv-notice-container.float-up {
   bottom: 0;
 }
 
-.md-icons #mv-notice-container.notice-hide {
+#mv-notice-container.notice-hide {
   display: none;
 }
 
 /* The notification shown when a tile is blacklisted. */
 #mv-notice {
-  font-size: 12px;
-  font-weight: bold;
-  opacity: 1;
-  padding: 10px 0;
-}
-
-.md-icons #mv-notice {
   background-color: white;
-  border: 1px solid rgb(218, 220, 224);
+  border: 1px solid rgb(var(--GG300-rgb));
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
-  font-family: 'Roboto', arial, sans-serif;
-  font-weight: normal;
+  font-size: 12px;
   height: fit-content;
   margin: 0 auto;
-  padding: 0;
+  opacity: 1;
   width: fit-content;
 }
 
-#mv-notice span {
-  cursor: default;
-  display: inline-block;
-  height: 16px;
-  line-height: 16px;
-  vertical-align: top;
+html[darkmode=true] body:not(.light-chip)  #mv-notice {
+  background-color: rgb(var(--GG900-rgb));
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
-.md-icons #mv-notice span {
-  color: rgb(95,99,104);
+#mv-notice span {
+  color: rgb(var(--GG700-rgb));
+  cursor: default;
+  display: inline-block;
   height: auto;
   line-height: 32px;
   vertical-align: unset;
 }
 
-/* Links in the notification. */
-#mv-notice-links span {
-  color: var(--text-color-link);
-  cursor: pointer;
-  margin-inline-start: 6px;
-  outline: none;
-  padding: 0 4px;
+html[darkmode=true] body:not(.light-chip)  #mv-notice span {
+  color: rgb(var(--GG200-rgb));
 }
 
-.md-icons #mv-notice-links span {
+/* Links in the notification. */
+#mv-notice-links span {
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
-  color: rgb(26, 115, 232);
+  color: rgb(var(--GB600-rgb));
+  cursor: pointer;
   margin-inline-start: 0;
+  outline: none;
   padding: 0 16px;
   position: relative;
 }
 
-#mv-notice-links span:hover,
+html[darkmode=true] body:not(.light-chip)  #mv-notice-links span {
+  color: rgb(var(--GB400-dark-rgb));
+}
+
 #mv-notice-links span:focus {
   text-decoration: underline;
 }
 
-.md-icons #mv-notice-links span:hover,
-.md-icons #mv-notice-links span:active {
-  background-color: rgba(26,115,232, 0.1);
+#mv-notice-links span:hover,
+#mv-notice-links span:active {
+  background-color: rgba(var(--GB600-rgb), 0.1);
   text-decoration: none;
   transition: background-color 200ms;
 }
 
-#mv-msg {
-  color: var(--text-color);
+html[darkmode=true] body:not(.light-chip)  #mv-notice-links span:hover,
+html[darkmode=true] body:not(.light-chip)  #mv-notice-links span:active {
+  background-color: rgba(var(--GB400-dark-rgb), 0.1);
 }
 
-.md-icons #mv-msg {
+#mv-msg {
+  color: var(--text-color);
   padding: 0 16px;
 }
 
-.default-theme.dark #mv-msg :not(.md-icons) {
-  color: #fff;
-}
-
-.default-theme.dark #mv-notice-links :not(.md-icons) span {
-  color: #fff;
+html[darkmode=true] body:not(.light-chip) .default-theme.dark #mv-msg :not(),
+html[darkmode=true] body:not(.light-chip) .default-theme.dark #mv-notice-links :not() span {
+  color: rgb(var(--GG200-rgb));
 }
 
 #mv-notice.mv-notice-delayed-hide:not(:focus-within) {
@@ -674,7 +523,7 @@ html[dir=rtl] #mv-notice-x {
   left: auto;
   position: fixed;
   right: 8px;
-  text-align: left;
+  text-align: start;
   user-select: none;
   z-index: -1;
 }
@@ -683,13 +532,22 @@ html[dir=rtl] #attribution,
 #attribution.left-align-attribution {
   left: 8px;
   right: auto;
-  text-align: right;
+  text-align: end;
 }
 
 #mv-single {
   border: none;
+  display: block;
   height: 100%;
   width: 100%;
+}
+
+.customize-dialog::backdrop {
+  background-color: rgba(255, 255, 255, .75);
+}
+
+html[darkmode=true] .customize-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 #custom-links-edit-dialog {
@@ -700,10 +558,6 @@ html[dir=rtl] #attribution,
   position: fixed;
   top: 0;
   width: 100%;
-}
-
-#custom-links-edit-dialog::backdrop {
-  background-color: rgba(255, 255, 255, .75);
 }
 
 #custom-links-edit {
@@ -779,7 +633,7 @@ html[dir=rtl] #attribution,
 }
 
 input:checked + .toggle {
-  background-color: rgba(26, 115, 232, .5);
+  background-color: rgba(var(--GB600-rgb), .5);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
 }
 
@@ -789,7 +643,7 @@ input:focus + .toggle {
 
 input:checked + .toggle::before {
   -webkit-transform: translateX(26px);
-  background-color: rgb(26, 115, 232);
+  background-color: rgb(var(--GB600-rgb));
   transform: translateX(26px);
 }
 
@@ -808,12 +662,11 @@ input:checked + .toggle::before {
 
 #error-notice {
   background-color: white;
-  border: 1px solid rgb(218, 220, 224);
+  border: 1px solid rgb(var(--GG300-rgb));
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
-  color: rgb(217, 48, 37);
+  color: rgb(var(--GR600-rgb));
   display: flex;
-  font-family: 'Roboto', arial, sans-serif;
   font-size: 12px;
   font-weight: normal;
   height: fit-content;
@@ -822,6 +675,12 @@ input:checked + .toggle::before {
   padding: 0;
   position: relative;
   width: fit-content;
+}
+
+html[darkmode=true] body:not(.light-chip) #error-notice {
+  background-color: rgb(var(--GG900-rgb));
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgb(var(--GR500-dark-rgb));
 }
 
 #error-notice.notice-hide {
@@ -844,16 +703,11 @@ input:checked + .toggle::before {
 
 #error-notice-msg {
   cursor: default;
-  padding-right: 16px;
-}
-
-html[dir=rtl] #error-notice-msg {
-  padding-left: 16px;
-  padding-right: 0;
+  padding-inline-end: 16px;
 }
 
 #error-notice.has-link #error-notice-msg {
-  padding-right: 0;
+  padding-inline-end: 0;
 }
 
 html[dir=rtl] #error-notice.has-link #error-notice-msg {
@@ -863,12 +717,16 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 #error-notice-link {
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
-  color: rgb(26, 115, 232);
+  color: rgb(var(--GB600-rgb));
   cursor: pointer;
   display: none;
   outline: none;
   padding: 0 16px;
   position: relative;
+}
+
+html[darkmode=true] body:not(.light-chip) #error-notice-link {
+  color: rgb(var(--GB400-dark-rgb));
 }
 
 #error-notice:not(.has-link) #error-notice-link {
@@ -882,13 +740,19 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 
 #error-notice-link:hover,
 #error-notice-link:active {
-  background-color: rgba(26,115,232, 0.1);
+  background-color: rgba(var(--GB600-rgb), 0.1);
   text-decoration: none;
   transition: background-color 200ms;
 }
 
+html[darkmode=true] body:not(.light-chip) #error-notice-link:hover,
+html[darkmode=true] body:not(.light-chip) #error-notice-link:active {
+  background-color: rgba(var(--GB400-dark-rgb), 0.1);
+}
+
 #promo {
   bottom: 16px;
+  display: block;
   left: 0;
   pointer-events: none;
   position: fixed;
@@ -903,12 +767,11 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 
 #promo > div {
   background-color: #FFF;
-  border: 1px solid rgb(218, 220, 224);
+  border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 16px;
   box-sizing: border-box;
-  color: rgb(95, 99, 104);
+  color: rgb(var(--GG700-rgb));
   display: inline-block;
-  font-family: 'Roboto', arial, sans-serif;
   font-size: 12px;
   line-height: 32px;
   margin-bottom: 0;
@@ -918,6 +781,12 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   pointer-events: all;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+html[darkmode=true] body:not(.light-chip) #promo > div {
+  background-color: rgb(var(--GG900-rgb));
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgb(var(--GG200-rgb));
 }
 
 /**
@@ -941,15 +810,32 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   color: rgb(51, 103, 214) !important;
 }
 
+html[darkmode=true] body:not(.light-chip) #promo > div > a,
+html[darkmode=true] body:not(.light-chip) #promo > div > a:visited {
+  color: rgb(var(--GB400-dark-rgb)) !important;
+}
+
 #promo > div > img {
   border-radius: 50%;
   height: 24px;
-  margin: 0 8px 0 -12px;
+  margin: 0 8px 2px -12px;
   object-fit: cover;
   vertical-align: middle;
   width: 24px;
 }
 
+html[darkmode=true] body:not(.light-chip) #promo > div > img {
+  background-color: rgb(var(--GG200-rgb));
+}
+
+#promo.hide-promo {
+  display: none;
+}
+
 #promo.notice-hide {
   display: none;
+}
+
+#user-content {
+  z-index: -1;
 }

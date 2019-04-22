@@ -5,13 +5,14 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_WORK_QUEUE_SETS_H_
 #define BASE_TASK_SEQUENCE_MANAGER_WORK_QUEUE_SETS_H_
 
+#include <array>
 #include <map>
-#include <vector>
 
 #include "base/base_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/task/common/intrusive_heap.h"
+#include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/trace_event/traced_value.h"
@@ -28,7 +29,18 @@ namespace internal {
 // values are kept in sorted order.
 class BASE_EXPORT WorkQueueSets {
  public:
-  WorkQueueSets(size_t num_sets, const char* name);
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    virtual void WorkQueueSetBecameEmpty(size_t set_index) = 0;
+
+    virtual void WorkQueueSetBecameNonEmpty(size_t set_index) = 0;
+  };
+
+  WorkQueueSets(const char* name,
+                Observer* observer,
+                const SequenceManager::Settings& settings);
   ~WorkQueueSets();
 
   // O(log num queues)
@@ -41,26 +53,36 @@ class BASE_EXPORT WorkQueueSets {
   void ChangeSetIndex(WorkQueue* queue, size_t set_index);
 
   // O(log num queues)
-  void OnFrontTaskChanged(WorkQueue* queue);
+  void OnQueuesFrontTaskChanged(WorkQueue* queue);
 
   // O(log num queues)
   void OnTaskPushedToEmptyQueue(WorkQueue* work_queue);
 
-  // If empty it's O(1) amortized, otherwise it's O(log num queues)
+  // If empty it's O(1) amortized, otherwise it's O(log num queues). Slightly
+  // faster on average than OnQueuesFrontTaskChanged.
   // Assumes |work_queue| contains the lowest enqueue order in the set.
-  void OnPopQueue(WorkQueue* work_queue);
+  void OnPopMinQueueInSet(WorkQueue* work_queue);
 
   // O(log num queues)
   void OnQueueBlocked(WorkQueue* work_queue);
 
   // O(1)
-  bool GetOldestQueueInSet(size_t set_index, WorkQueue** out_work_queue) const;
+  WorkQueue* GetOldestQueueInSet(size_t set_index) const;
 
   // O(1)
-  bool GetOldestQueueAndEnqueueOrderInSet(
+  WorkQueue* GetOldestQueueAndEnqueueOrderInSet(
       size_t set_index,
-      WorkQueue** out_work_queue,
       EnqueueOrder* out_enqueue_order) const;
+
+#if DCHECK_IS_ON()
+  // O(1)
+  WorkQueue* GetRandomQueueInSet(size_t set_index) const;
+
+  // O(1)
+  WorkQueue* GetRandomQueueAndEnqueueOrderInSet(
+      size_t set_index,
+      EnqueueOrder* out_enqueue_order) const;
+#endif
 
   // O(1)
   bool IsSetEmpty(size_t set_index) const;
@@ -91,11 +113,36 @@ class BASE_EXPORT WorkQueueSets {
     }
   };
 
+  const char* const name_;
+
   // For each set |work_queue_heaps_| has a queue of WorkQueue ordered by the
   // oldest task in each WorkQueue.
-  std::vector<base::internal::IntrusiveHeap<OldestTaskEnqueueOrder>>
+  std::array<base::internal::IntrusiveHeap<OldestTaskEnqueueOrder>,
+             TaskQueue::kQueuePriorityCount>
       work_queue_heaps_;
-  const char* const name_;
+
+#if DCHECK_IS_ON()
+  static inline uint64_t MurmurHash3(uint64_t value) {
+    value ^= value >> 33;
+    value *= uint64_t{0xFF51AFD7ED558CCD};
+    value ^= value >> 33;
+    value *= uint64_t{0xC4CEB9FE1A85EC53};
+    value ^= value >> 33;
+    return value;
+  }
+
+  // This is for a debugging feature which lets us randomize task selection. Its
+  // not for production use.
+  // TODO(alexclarke): Use a seedable PRNG from ::base if one is added.
+  uint64_t Random() const {
+    last_rand_ = MurmurHash3(last_rand_);
+    return last_rand_;
+  }
+
+  mutable uint64_t last_rand_;
+#endif
+
+  Observer* const observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkQueueSets);
 };

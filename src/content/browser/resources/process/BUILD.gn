@@ -12,17 +12,9 @@ js_type_check("closure_compile") {
 
 js_library("process_internals") {
   deps = [
+    "//content/browser/process_internals:mojo_bindings_js_library_for_compile",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr/ui:tree",
-  ]
-  extra_deps = [
-    "//content/browser/process_internals:mojo_bindings_js",
-    "//url/mojom:url_mojom_gurl_js",
-  ]
-  externs_list = [
-    "$root_gen_dir/content/browser/process_internals/process_internals.mojom.externs.js",
-    "$root_gen_dir/url/mojom/url.mojom.externs.js",
-    "$externs_path/mojo.js",
   ]
 }

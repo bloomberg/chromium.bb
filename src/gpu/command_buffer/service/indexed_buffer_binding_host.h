@@ -27,7 +27,8 @@ class GPU_GLES2_EXPORT IndexedBufferBindingHost
   // out-of-bounds buffer accesses.
   IndexedBufferBindingHost(uint32_t max_bindings,
                            GLenum target,
-                           bool needs_emulation);
+                           bool needs_emulation,
+                           bool round_down_uniform_bind_buffer_range_size);
 
   // The following two functions do state update and call the underlying GL
   // function.  All validations have been done already and the GL function is
@@ -111,14 +112,20 @@ class GPU_GLES2_EXPORT IndexedBufferBindingHost
   // This is called when |needs_emulation_| is true, where the range
   // (offset + size) can't go beyond the buffer's size.
   static void DoAdjustedBindBufferRange(
-      GLenum target, GLuint index, GLuint service_id, GLintptr offset,
-      GLsizeiptr size, GLsizeiptr full_buffer_size);
+      GLenum target,
+      GLuint index,
+      GLuint service_id,
+      GLintptr offset,
+      GLsizeiptr size,
+      GLsizeiptr full_buffer_size,
+      bool round_down_uniform_bind_buffer_range_size);
 
   void UpdateMaxNonNullBindingIndex(size_t changed_index);
 
   std::vector<IndexedBufferBinding> buffer_bindings_;
 
   bool needs_emulation_;
+  bool round_down_uniform_bind_buffer_range_size_;
 
   // This is used for optimization purpose in context switching.
   size_t max_non_null_binding_index_plus_one_;

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 2446 tests; 2373 PASS, 73 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 2445 tests; 2365 PASS, 80 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS head.title: 32 tests
 PASS head.lang: 32 tests
 PASS head.dir: 62 tests
@@ -21,9 +21,7 @@ PASS base.className (<base class>): 32 tests
 PASS base.hidden: 33 tests
 PASS base.accessKey: 32 tests
 PASS base.tabIndex: 24 tests
-PASS base.href: typeof IDL attribute
-FAIL base.href: IDL get with DOM attribute unset assert_equals: expected "" but got "http://web-platform.test:8001/html/dom/reflection-metadata.html"
-PASS base.href: 18 tests
+PASS base.href: 19 tests
 PASS base.target: 32 tests
 PASS link.title: 32 tests
 PASS link.lang: 32 tests
@@ -35,7 +33,10 @@ PASS link.tabIndex: 24 tests
 PASS link.href: 38 tests
 PASS link.crossOrigin: 52 tests
 PASS link.rel: 32 tests
-PASS link.as: 27 tests
+PASS link.as: 22 tests
+FAIL link.as: setAttribute() to "audio" assert_equals: IDL get expected "audio" but got ""
+PASS link.as: 3 tests
+FAIL link.as: setAttribute() to "AUDIO" assert_equals: IDL get expected "audio" but got ""
 FAIL link.as: setAttribute() to "document" assert_equals: IDL get expected "document" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "DOCUMENT" assert_equals: IDL get expected "document" but got ""
@@ -56,7 +57,10 @@ PASS link.as: 5 tests
 FAIL link.as: setAttribute() to "sharedworker" assert_equals: IDL get expected "sharedworker" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "SHAREDWORKER" assert_equals: IDL get expected "sharedworker" but got ""
-PASS link.as: 17 tests
+PASS link.as: 12 tests
+FAIL link.as: setAttribute() to "video" assert_equals: IDL get expected "video" but got ""
+PASS link.as: 3 tests
+FAIL link.as: setAttribute() to "VIDEO" assert_equals: IDL get expected "video" but got ""
 FAIL link.as: setAttribute() to "worker" assert_equals: IDL get expected "worker" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "WORKER" assert_equals: IDL get expected "worker" but got ""
@@ -64,7 +68,10 @@ PASS link.as: setAttribute() to "worKer"
 FAIL link.as: setAttribute() to "xslt" assert_equals: IDL get expected "xslt" but got ""
 PASS link.as: 3 tests
 FAIL link.as: setAttribute() to "XSLT" assert_equals: IDL get expected "xslt" but got ""
-PASS link.as: 25 tests
+PASS link.as: 20 tests
+FAIL link.as: IDL set to "audio" assert_equals: IDL get expected "audio" but got ""
+PASS link.as: 3 tests
+FAIL link.as: IDL set to "AUDIO" assert_equals: IDL get expected "audio" but got ""
 FAIL link.as: IDL set to "document" assert_equals: IDL get expected "document" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "DOCUMENT" assert_equals: IDL get expected "document" but got ""
@@ -85,7 +92,10 @@ PASS link.as: 5 tests
 FAIL link.as: IDL set to "sharedworker" assert_equals: IDL get expected "sharedworker" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "SHAREDWORKER" assert_equals: IDL get expected "sharedworker" but got ""
-PASS link.as: 17 tests
+PASS link.as: 12 tests
+FAIL link.as: IDL set to "video" assert_equals: IDL get expected "video" but got ""
+PASS link.as: 3 tests
+FAIL link.as: IDL set to "VIDEO" assert_equals: IDL get expected "video" but got ""
 FAIL link.as: IDL set to "worker" assert_equals: IDL get expected "worker" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "WORKER" assert_equals: IDL get expected "worker" but got ""

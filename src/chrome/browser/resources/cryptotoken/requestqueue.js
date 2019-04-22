@@ -104,8 +104,9 @@ RequestQueue.prototype.insertToken_ = function(token) {
     this.head_ = token;
     this.tail_ = token;
   } else {
-    if (!this.tail_)
+    if (!this.tail_) {
       throw 'Non-empty list missing tail';
+    }
     this.tail_.next = token;
     token.prev = this.tail_;
     this.tail_ = token;

@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 
 namespace chromeos {
@@ -96,7 +96,7 @@ bool ImeKeyboard::CapsLockIsEnabled() {
 }
 
 bool ImeKeyboard::IsISOLevel5ShiftAvailable() const {
-  for (size_t i = 0; i < arraysize(kISOLevel5ShiftLayoutIds); ++i) {
+  for (size_t i = 0; i < base::size(kISOLevel5ShiftLayoutIds); ++i) {
     if (last_layout_ == kISOLevel5ShiftLayoutIds[i])
       return true;
   }
@@ -104,7 +104,7 @@ bool ImeKeyboard::IsISOLevel5ShiftAvailable() const {
 }
 
 bool ImeKeyboard::IsAltGrAvailable() const {
-  for (size_t i = 0; i < arraysize(kAltGrLayoutIds); ++i) {
+  for (size_t i = 0; i < base::size(kAltGrLayoutIds); ++i) {
     if (last_layout_ == kAltGrLayoutIds[i])
       return true;
   }

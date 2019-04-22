@@ -154,8 +154,11 @@ uint32_t GetCharWidth(uint32_t charCode, CPDF_Font* pFont) {
   if (w > 0)
     return w;
 
-  ASSERT(pFont->GetCharBBox(charCode).Width() >= 0);
-  return pFont->GetCharBBox(charCode).Width();
+  FX_RECT rect = pFont->GetCharBBox(charCode);
+  if (!rect.Valid())
+    return 0;
+
+  return std::max(rect.Width(), 0);
 }
 
 bool GenerateSpace(const CFX_PointF& pos,
@@ -453,8 +456,8 @@ WideString CPDF_TextPage::GetTextByObject(
   });
 }
 
-void CPDF_TextPage::GetCharInfo(int index, FPDF_CHAR_INFO* info) const {
-  if (!m_bIsParsed || !pdfium::IndexInBounds(m_CharList, index))
+void CPDF_TextPage::GetCharInfo(size_t index, FPDF_CHAR_INFO* info) const {
+  if (!m_bIsParsed || index >= size())
     return;
 
   const PAGECHAR_INFO& charinfo = m_CharList[index];
@@ -473,7 +476,7 @@ void CPDF_TextPage::GetCharInfo(int index, FPDF_CHAR_INFO* info) const {
 WideString CPDF_TextPage::GetPageText(int start, int count) const {
   if (start < 0 || start >= CountChars() || count <= 0 || !m_bIsParsed ||
       m_CharList.empty() || m_TextBuf.GetLength() == 0) {
-    return L"";
+    return WideString();
   }
 
   const int count_chars = CountChars();
@@ -484,7 +487,7 @@ WideString CPDF_TextPage::GetPageText(int start, int count) const {
   // character.
   while (text_start < 0) {
     if (start >= count_chars)
-      return L"";
+      return WideString();
     start++;
     text_start = TextIndexFromCharIndex(start);
   }
@@ -499,14 +502,14 @@ WideString CPDF_TextPage::GetPageText(int start, int count) const {
   // character.
   while (text_last < 0) {
     if (last < text_start)
-      return L"";
+      return WideString();
 
     last--;
     text_last = TextIndexFromCharIndex(last);
   }
 
   if (text_last < text_start)
-    return L"";
+    return WideString();
 
   int text_count = text_last - text_start + 1;
 
@@ -635,8 +638,7 @@ void CPDF_TextPage::ProcessFormObject(CPDF_FormObject* pFormObj,
   if (pObjectList->empty())
     return;
 
-  CFX_Matrix curFormMatrix = pFormObj->form_matrix();
-  curFormMatrix.Concat(formMatrix);
+  CFX_Matrix curFormMatrix = pFormObj->form_matrix() * formMatrix;
 
   for (auto it = pObjectList->begin(); it != pObjectList->end(); ++it) {
     CPDF_PageObject* pPageObj = it->get();
@@ -778,19 +780,16 @@ void CPDF_TextPage::ProcessTextObject(
       GetCharWidth(item.m_CharCode, prev_Obj.m_pTextObj->GetFont()) *
       prev_Obj.m_pTextObj->GetFontSize() / 1000;
 
-  CFX_Matrix prev_matrix = prev_Obj.m_pTextObj->GetTextMatrix();
-  prev_width = fabs(prev_width);
-  prev_matrix.Concat(prev_Obj.m_formMatrix);
-  prev_width = prev_matrix.TransformDistance(prev_width);
+  CFX_Matrix prev_matrix =
+      prev_Obj.m_pTextObj->GetTextMatrix() * prev_Obj.m_formMatrix;
+  prev_width = prev_matrix.TransformDistance(fabs(prev_width));
   pTextObj->GetItemInfo(0, &item);
   float this_width = GetCharWidth(item.m_CharCode, pTextObj->GetFont()) *
                      pTextObj->GetFontSize() / 1000;
   this_width = fabs(this_width);
 
-  CFX_Matrix this_matrix = pTextObj->GetTextMatrix();
-  this_width = fabs(this_width);
-  this_matrix.Concat(formMatrix);
-  this_width = this_matrix.TransformDistance(this_width);
+  CFX_Matrix this_matrix = pTextObj->GetTextMatrix() * formMatrix;
+  this_width = this_matrix.TransformDistance(fabs(this_width));
 
   float threshold = std::max(prev_width, this_width) / 4;
   CFX_PointF prev_pos = m_DisplayMatrix.Transform(
@@ -895,8 +894,7 @@ void CPDF_TextPage::ProcessMarkedContent(PDFTEXT_Obj Obj) {
     return;
 
   CPDF_Font* pFont = pTextObj->GetFont();
-  CFX_Matrix matrix = pTextObj->GetTextMatrix();
-  matrix.Concat(Obj.m_formMatrix);
+  CFX_Matrix matrix = pTextObj->GetTextMatrix() * Obj.m_formMatrix;
 
   for (size_t k = 0; k < actText.GetLength(); ++k) {
     wchar_t wChar = actText[k];
@@ -949,8 +947,7 @@ void CPDF_TextPage::ProcessTextObject(PDFTEXT_Obj Obj) {
     return;
   CFX_Matrix formMatrix = Obj.m_formMatrix;
   CPDF_Font* pFont = pTextObj->GetFont();
-  CFX_Matrix matrix = pTextObj->GetTextMatrix();
-  matrix.Concat(formMatrix);
+  CFX_Matrix matrix = pTextObj->GetTextMatrix() * formMatrix;
 
   FPDFText_MarkedContent ePreMKC = PreMarkedContent(Obj);
   if (ePreMKC == FPDFText_MarkedContent::Done) {
@@ -1275,9 +1272,7 @@ CPDF_TextPage::GenerateCharacter CPDF_TextPage::ProcessInsertObject(
   float this_width = fabs(nThisWidth * pObj->GetFontSize() / 1000);
   float threshold = std::max(last_width, this_width) / 4;
 
-  CFX_Matrix prev_matrix = m_pPreTextObj->GetTextMatrix();
-  prev_matrix.Concat(m_perMatrix);
-
+  CFX_Matrix prev_matrix = m_pPreTextObj->GetTextMatrix() * m_perMatrix;
   CFX_Matrix prev_reverse = prev_matrix.GetInverse();
 
   CFX_PointF pos = prev_reverse.Transform(formMatrix.Transform(pObj->GetPos()));
@@ -1333,8 +1328,7 @@ CPDF_TextPage::GenerateCharacter CPDF_TextPage::ProcessInsertObject(
   if (preChar == L' ')
     return GenerateCharacter::None;
 
-  CFX_Matrix matrix = pObj->GetTextMatrix();
-  matrix.Concat(formMatrix);
+  CFX_Matrix matrix = pObj->GetTextMatrix() * formMatrix;
   float threshold2 = static_cast<float>(std::max(nLastWidth, nThisWidth));
   threshold2 = NormalizeThreshold(threshold2, 400, 700, 800);
   if (nLastWidth >= nThisWidth) {

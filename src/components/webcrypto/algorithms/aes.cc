@@ -63,7 +63,7 @@ Status AesAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
   if (status.IsError())
     return status;
 
-  unsigned int keylen_bits = algorithm.AesKeyGenParams()->LengthBits();
+  uint16_t keylen_bits = algorithm.AesKeyGenParams()->LengthBits();
 
   // 192-bit AES is intentionally unsupported (http://crbug.com/533699).
   if (keylen_bits == 192)

@@ -47,8 +47,8 @@ SSLCertificateErrorJob::SSLCertificateErrorJob(
 
 void SSLCertificateErrorJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SSLCertificateErrorJob::NotifyError,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&SSLCertificateErrorJob::NotifyError,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void SSLCertificateErrorJob::AddUrlHandler() {

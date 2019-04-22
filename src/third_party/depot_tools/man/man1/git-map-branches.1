@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-map-branches
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 12/15/2016
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 12/04/2018
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools f72f1ad
+.\"    Source: depot_tools 3edf049e
 .\"  Language: English
 .\"
-.TH "GIT\-MAP\-BRANCHES" "1" "12/15/2016" "depot_tools f72f1ad" "Chromium depot_tools Manual"
+.TH "GIT\-MAP\-BRANCHES" "1" "12/04/2018" "depot_tools 3edf049e" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -139,6 +139,17 @@ Branches which have this as their parent are usually misconfigured, and should b
 If multiple branches are on the same commit, they will all be cyan\&.
 .sp .5v
 .RE
+.SH "OPTIONS"
+.PP
+\-\-no\-color
+.RS 4
+Turn off colors\&.
+.RE
+.PP
+\-v
+.RS 4
+Be more verbose\&. Pass once to show tracking info, twice for hash and review URL, thrice for review status\&.
+.RE
 .SH "EXAMPLE"
 .sp
 Given the hypothetical demo repo in \fBgit-map\fR(1)\*(Aqs EXAMPLE section, and assuming that the frozen_changes branch was currently checked out, running \fIgit map\-branches\fR would result in an output like:
@@ -156,7 +167,15 @@ origin/master
   cool_feature
     subfeature
   fixit
-\fB    frozen_branch *\fR
+\fB    frozen_branch *
+$ git map\-branches \-v\fR
+{NO_UPSTREAM}
+  no_upstream
+origin/master
+  cool_feature         [ ahead 4            ]
+    subfeature         [ ahead 2 | behind 1 ]
+  fixit                [ ahead 6            ]
+\fB    frozen_branch *    [ ahead 3            ]\fR
 .fi
 .if n \{\
 .RE

@@ -28,6 +28,7 @@ class ASH_EXPORT LoginMetricsRecorder {
     kImeTray,
     kNotificationTray,
     kLockScreenNoteActionButton,
+    kParentAccessButton,
     kTargetCount,
   };
 
@@ -65,6 +66,7 @@ class ASH_EXPORT LoginMetricsRecorder {
     kAddUserButton,
     kCloseNoteButton,
     kCancelButton,
+    kParentAccessButton,
     kTargetCount,
   };
 

@@ -7,6 +7,15 @@
 // well as feature.h, simple_feature.h, and feature_provider.h.
 
 {
+  "arcAppsPrivate": {
+    "channel": "stable",
+    "extension_types": ["platform_app"],
+    "whitelist": [
+      "46578A13607D38F1DC8E280C4F499FB0A2F9565C", // http://crbug.com/819404
+      "898FB5A39687D210766B8998BA4530B99C9E6586", // http://crbug.com/819404
+      "82F30B65397BC3E4ADE627BBD857AB8A58210648"  // http://crbug.com/819404
+    ]
+  },
   "browser": {
     "channel": "stable",
     "extension_types": ["platform_app"]
@@ -49,6 +58,10 @@
       "A6C87307BBE5886CC5F1393025000E2FE8060BF2",
       "3407516021EA3669C0EC8E65E6B9837E5A521B9C"
     ]
+  },
+  "pointerLock": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
   },
   "syncFileSystem": {
     "channel": "stable",

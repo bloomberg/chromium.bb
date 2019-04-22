@@ -17,6 +17,11 @@
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 
+// This entire file is written in terms of the launch_data_t API, which is
+// deprecated with no replacement, so just ignore the warnings for now.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 namespace {
 
 class ScopedLaunchData {
@@ -64,6 +69,47 @@ int ErrnoFromLaunchData(launch_data_t data) {
   if (launch_data_get_type(data) != LAUNCH_DATA_ERRNO)
     return EINVAL;
   return launch_data_get_errno(data);
+}
+
+bool StringFromLaunchDataDictEntry(launch_data_t dict,
+                                   const char* key,
+                                   std::string* value) {
+  launch_data_t entry = launch_data_dict_lookup(dict, key);
+  if (!entry || launch_data_get_type(entry) != LAUNCH_DATA_STRING)
+    return false;
+  *value = std::string(launch_data_get_string(entry));
+  return true;
+}
+
+bool IntFromLaunchDataDictEntry(launch_data_t dict,
+                                const char* key,
+                                int* value) {
+  launch_data_t entry = launch_data_dict_lookup(dict, key);
+  if (!entry || launch_data_get_type(entry) != LAUNCH_DATA_INTEGER)
+    return false;
+  *value = launch_data_get_integer(entry);
+  return true;
+}
+
+// Extracts the first integer value from |dict[key]|, which is itself an array,
+// and returns it in |*value|. This means that the type of dict is:
+//    map<string, array<int>>
+bool FirstIntFromLaunchDataDictEntry(launch_data_t dict,
+                                     const char* key,
+                                     int* value) {
+  launch_data_t array = launch_data_dict_lookup(dict, key);
+  if (!array || launch_data_get_type(array) != LAUNCH_DATA_ARRAY ||
+      launch_data_array_get_count(array) == 0) {
+    return false;
+  }
+  launch_data_t entry = launch_data_array_get_index(array, 0);
+  if (launch_data_get_type(entry) == LAUNCH_DATA_INTEGER)
+    *value = launch_data_get_integer(entry);
+  else if (launch_data_get_type(entry) == LAUNCH_DATA_FD)
+    *value = launch_data_get_fd(entry);
+  else
+    return false;
+  return true;
 }
 
 ScopedLaunchData DoServiceOp(const char* verb,
@@ -115,6 +161,12 @@ base::scoped_nsobject<NSDictionary> DictionaryForJobOptions(
     [opts setObject:outer_dict forKey:@LAUNCH_JOBKEY_SOCKETS];
   }
 
+  if (!options.mach_service_name.empty()) {
+    NSDictionary* service_entry =
+        @{base::SysUTF8ToNSString(options.mach_service_name) : @YES};
+    [opts setObject:service_entry forKey:@LAUNCH_JOBKEY_MACHSERVICES];
+  }
+
   if (options.run_at_load || options.auto_launch) {
     [opts setObject:@YES forKey:@LAUNCH_JOBKEY_RUNATLOAD];
   }
@@ -135,9 +187,63 @@ base::scoped_nsobject<NSDictionary> DictionaryForJobOptions(
 namespace mac {
 namespace services {
 
+JobInfo::JobInfo() = default;
+JobInfo::JobInfo(const JobInfo& other) = default;
+JobInfo::~JobInfo() = default;
+
+JobCheckinInfo::JobCheckinInfo() = default;
+JobCheckinInfo::JobCheckinInfo(const JobCheckinInfo& other) = default;
+JobCheckinInfo::~JobCheckinInfo() = default;
+
 JobOptions::JobOptions() = default;
 JobOptions::JobOptions(const JobOptions& other) = default;
 JobOptions::~JobOptions() = default;
+
+bool GetJobInfo(const std::string& label, JobInfo* info) {
+  int error = 0;
+  ScopedLaunchData resp = DoServiceOp(LAUNCH_KEY_GETJOB, label, &error);
+
+  if (error)
+    return false;
+
+  std::string program;
+  if (!StringFromLaunchDataDictEntry(resp.get(), LAUNCH_JOBKEY_PROGRAM,
+                                     &program))
+    return false;
+
+  info->program = program;
+  int pid;
+  if (IntFromLaunchDataDictEntry(resp.get(), LAUNCH_JOBKEY_PID, &pid))
+    info->pid = pid;
+
+  return true;
+}
+
+bool CheckIn(const std::string& socket_key, JobCheckinInfo* info) {
+  ScopedLaunchData resp =
+      SendLaunchMessage(LaunchDataFromString(LAUNCH_KEY_CHECKIN));
+
+  if (launch_data_get_type(resp.get()) != LAUNCH_DATA_DICTIONARY)
+    return false;
+
+  std::string program;
+  if (!StringFromLaunchDataDictEntry(resp.get(), LAUNCH_JOBKEY_PROGRAM,
+                                     &program))
+    return false;
+
+  launch_data_t sockets = launch_data_dict_lookup(resp, LAUNCH_JOBKEY_SOCKETS);
+
+  if (launch_data_get_type(sockets) != LAUNCH_DATA_DICTIONARY)
+    return false;
+
+  int socket_fd;
+  if (!FirstIntFromLaunchDataDictEntry(sockets, socket_key.c_str(), &socket_fd))
+    return false;
+
+  info->program = program;
+  info->socket = socket_fd;
+  return true;
+}
 
 bool SubmitJob(const JobOptions& options) {
   base::scoped_nsobject<NSDictionary> options_dict =
@@ -165,3 +271,5 @@ bool RemoveJob(const std::string& label) {
 
 }  // namespace services
 }  // namespace mac
+
+#pragma clang diagnostic pop

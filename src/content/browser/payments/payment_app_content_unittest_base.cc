@@ -9,18 +9,21 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
+#include "content/browser/service_worker/fake_service_worker.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -60,68 +63,90 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
             blink::mojom::kInvalidServiceWorkerRegistrationId) {}
   ~PaymentAppForWorkerTestHelper() override {}
 
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t service_worker_version_id,
-      const GURL& scope,
-      const GURL& script_url,
-      bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
-      mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
-      override {
-    ServiceWorkerVersion* version =
-        context()->GetLiveVersion(service_worker_version_id);
-    last_sw_registration_id_ = version->registration_id();
-    last_sw_scope_ = scope;
-    EmbeddedWorkerTestHelper::OnStartWorker(
-        embedded_worker_id, service_worker_version_id, scope, script_url,
-        pause_after_download, std::move(service_worker_request),
-        std::move(controller_request), std::move(instance_host),
-        std::move(provider_info), std::move(installed_scripts_info));
-  }
+  class EmbeddedWorkerInstanceClient : public FakeEmbeddedWorkerInstanceClient {
+   public:
+    explicit EmbeddedWorkerInstanceClient(
+        PaymentAppForWorkerTestHelper* worker_helper)
+        : FakeEmbeddedWorkerInstanceClient(worker_helper),
+          worker_helper_(worker_helper) {}
+    ~EmbeddedWorkerInstanceClient() override = default;
 
-  void OnPaymentRequestEvent(
-      payments::mojom::PaymentRequestEventDataPtr event_data,
-      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchPaymentRequestEventCallback callback)
-      override {
-    if (respond_payment_request_immediately) {
-      EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
-          std::move(event_data), std::move(response_callback),
-          std::move(callback));
-    } else {
-      pending_response_callback_ = std::move(response_callback);
+    void StartWorker(
+        blink::mojom::EmbeddedWorkerStartParamsPtr params) override {
+      ServiceWorkerVersion* version = worker_helper_->context()->GetLiveVersion(
+          params->service_worker_version_id);
+      worker_helper_->last_sw_registration_id_ = version->registration_id();
+      worker_helper_->last_sw_scope_ = version->scope();
+
+      FakeEmbeddedWorkerInstanceClient::StartWorker(std::move(params));
+    }
+
+   private:
+    PaymentAppForWorkerTestHelper* const worker_helper_;
+
+    DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceClient);
+  };
+
+  class ServiceWorker : public FakeServiceWorker {
+   public:
+    explicit ServiceWorker(PaymentAppForWorkerTestHelper* worker_helper)
+        : FakeServiceWorker(worker_helper), worker_helper_(worker_helper) {}
+    ~ServiceWorker() override = default;
+
+    void DispatchCanMakePaymentEvent(
+        payments::mojom::CanMakePaymentEventDataPtr event_data,
+        payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+        DispatchCanMakePaymentEventCallback callback) override {
+      bool can_make_payment = false;
+      for (const auto& method_data : event_data->method_data) {
+        if (method_data->supported_method == "test-method") {
+          can_make_payment = true;
+          break;
+        }
+      }
+      response_callback->OnResponseForCanMakePayment(can_make_payment);
       std::move(callback).Run(
           blink::mojom::ServiceWorkerEventStatus::COMPLETED);
     }
+
+    void DispatchPaymentRequestEvent(
+        payments::mojom::PaymentRequestEventDataPtr event_data,
+        payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+        DispatchPaymentRequestEventCallback callback) override {
+      if (!worker_helper_)
+        return;
+      if (worker_helper_->respond_payment_request_immediately_) {
+        FakeServiceWorker::DispatchPaymentRequestEvent(
+            std::move(event_data), std::move(response_callback),
+            std::move(callback));
+      } else {
+        worker_helper_->pending_response_callback_ =
+            std::move(response_callback);
+        std::move(callback).Run(
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED);
+      }
+    }
+
+   private:
+    PaymentAppForWorkerTestHelper* const worker_helper_;
+
+    DISALLOW_COPY_AND_ASSIGN(ServiceWorker);
+  };
+
+  std::unique_ptr<FakeEmbeddedWorkerInstanceClient> CreateInstanceClient()
+      override {
+    return std::make_unique<EmbeddedWorkerInstanceClient>(this);
   }
 
-  void OnCanMakePaymentEvent(
-      payments::mojom::CanMakePaymentEventDataPtr event_data,
-      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchCanMakePaymentEventCallback callback)
-      override {
-    EmbeddedWorkerTestHelper::OnCanMakePaymentEvent(
-        std::move(event_data), std::move(response_callback),
-        std::move(callback));
-  }
-
-  void OnAbortPaymentEvent(
-      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      mojom::ServiceWorker::DispatchCanMakePaymentEventCallback callback)
-      override {
-    EmbeddedWorkerTestHelper::OnAbortPaymentEvent(std::move(response_callback),
-                                                  std::move(callback));
+  std::unique_ptr<FakeServiceWorker> CreateServiceWorker() override {
+    return std::make_unique<ServiceWorker>(this);
   }
 
   int64_t last_sw_registration_id_;
   GURL last_sw_scope_;
 
   // Variables to delay payment request response.
-  bool respond_payment_request_immediately = true;
+  bool respond_payment_request_immediately_ = true;
   payments::mojom::PaymentHandlerResponseCallbackPtr pending_response_callback_;
 
  private:
@@ -221,7 +246,7 @@ void PaymentAppContentUnitTestBase::UnregisterServiceWorker(
 }
 
 void PaymentAppContentUnitTestBase::SetNoPaymentRequestResponseImmediately() {
-  worker_helper_->respond_payment_request_immediately = false;
+  worker_helper_->respond_payment_request_immediately_ = false;
 }
 
 void PaymentAppContentUnitTestBase::RespondPendingPaymentRequest() {

@@ -16,14 +16,16 @@
 #include "libANGLE/Framebuffer.h"
 #include "libANGLE/Program.h"
 #include "libANGLE/ProgramPipeline.h"
+#include "libANGLE/Renderbuffer.h"
 #include "libANGLE/Shader.h"
+#include "libANGLE/Texture.h"
 #include "libANGLE/TransformFeedback.h"
 #include "libANGLE/VertexArray.h"
 
 namespace gl
 {
-class ContextState;
-}
+class State;
+}  // namespace gl
 
 namespace rx
 {
@@ -33,6 +35,7 @@ class ContextImpl;
 class FenceNVImpl;
 class SyncImpl;
 class FramebufferImpl;
+class MemoryObjectImpl;
 class PathImpl;
 class ProgramImpl;
 class ProgramPipelineImpl;
@@ -86,6 +89,9 @@ class GLImplFactory : angle::NonCopyable
     virtual ProgramPipelineImpl *createProgramPipeline(const gl::ProgramPipelineState &data) = 0;
 
     virtual std::vector<PathImpl *> createPaths(GLsizei range) = 0;
+
+    // Memory object creation
+    virtual MemoryObjectImpl *createMemoryObject() = 0;
 };
 
 }  // namespace rx

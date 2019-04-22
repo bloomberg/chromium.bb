@@ -70,6 +70,36 @@ ProgramBinary::ProgramBinary (ProgramFormat format, size_t binarySize, const deU
 namespace
 {
 
+bool isNativeSpirVBinaryEndianness (void)
+{
+#if (DE_ENDIANNESS == SPIRV_BINARY_ENDIANNESS)
+	return true;
+#else
+	return false;
+#endif
+}
+
+bool isSaneSpirVBinary (const ProgramBinary& binary)
+{
+	const deUint32	spirvMagicWord	= 0x07230203;
+	const deUint32	spirvMagicBytes	= isNativeSpirVBinaryEndianness()
+									? spirvMagicWord
+									: deReverseBytes32(spirvMagicWord);
+
+	DE_ASSERT(binary.getFormat() == PROGRAM_FORMAT_SPIRV);
+
+	if (binary.getSize() % sizeof(deUint32) != 0)
+		return false;
+
+	if (binary.getSize() < sizeof(deUint32))
+		return false;
+
+	if (*(const deUint32*)binary.getBinary() != spirvMagicBytes)
+		return false;
+
+	return true;
+}
+
 #if defined(DEQP_HAVE_SPIRV_TOOLS)
 
 void optimizeCompiledBinary (vector<deUint32>& binary, int optimizationRecipe, const SpirvVersion spirvVersion)
@@ -291,39 +321,6 @@ void optimizeCompiledBinary (vector<deUint32>& binary, int optimizationRecipe, c
 		TCU_THROW(InternalError, "Optimizer call failed");
 }
 
-#endif // defined(DEQP_HAVE_SPIRV_TOOLS)
-
-
-bool isNativeSpirVBinaryEndianness (void)
-{
-#if (DE_ENDIANNESS == SPIRV_BINARY_ENDIANNESS)
-	return true;
-#else
-	return false;
-#endif
-}
-
-bool isSaneSpirVBinary (const ProgramBinary& binary)
-{
-	const deUint32	spirvMagicWord	= 0x07230203;
-	const deUint32	spirvMagicBytes	= isNativeSpirVBinaryEndianness()
-									? spirvMagicWord
-									: deReverseBytes32(spirvMagicWord);
-
-	DE_ASSERT(binary.getFormat() == PROGRAM_FORMAT_SPIRV);
-
-	if (binary.getSize() % sizeof(deUint32) != 0)
-		return false;
-
-	if (binary.getSize() < sizeof(deUint32))
-		return false;
-
-	if (*(const deUint32*)binary.getBinary() != spirvMagicBytes)
-		return false;
-
-	return true;
-}
-
 ProgramBinary* createProgramBinaryFromSpirV (const vector<deUint32>& binary)
 {
 	DE_ASSERT(!binary.empty());
@@ -334,13 +331,17 @@ ProgramBinary* createProgramBinaryFromSpirV (const vector<deUint32>& binary)
 		TCU_THROW(InternalError, "SPIR-V endianness translation not supported");
 }
 
+#endif // defined(DEQP_HAVE_SPIRV_TOOLS)
+
 } // anonymous
 
-void validateCompiledBinary(const vector<deUint32>& binary, glu::ShaderProgramInfo* buildInfo, deUint32 vulkanVersion, const SpirvVersion spirvVersion, const bool relaxedLayout)
+#if defined(DEQP_HAVE_SPIRV_TOOLS)
+
+void validateCompiledBinary(const vector<deUint32>& binary, glu::ShaderProgramInfo* buildInfo, const SpirvValidatorOptions& options)
 {
 	std::ostringstream validationLog;
 
-	if (!validateSpirV(binary.size(), &binary[0], &validationLog, vulkanVersion, spirvVersion, relaxedLayout))
+	if (!validateSpirV(binary.size(), &binary[0], &validationLog, options))
 	{
 		buildInfo->program.linkOk	 = false;
 		buildInfo->program.infoLog	+= "\n" + validationLog.str();
@@ -348,9 +349,6 @@ void validateCompiledBinary(const vector<deUint32>& binary, glu::ShaderProgramIn
 		TCU_THROW(InternalError, "Validation failed for compiled SPIR-V binary");
 	}
 }
-
-
-#if defined(DEQP_HAVE_SPIRV_TOOLS)
 
 de::Mutex							cacheFileMutex;
 map<deUint32, vector<deUint32> >	cacheFileIndex;
@@ -455,7 +453,9 @@ vk::ProgramBinary* shadercacheLoad (const std::string& shaderstring, const char*
 			delete[] source;
 			if (file) fclose(file);
 			cacheFileMutex.unlock();
-			return new vk::ProgramBinary((vk::ProgramFormat)format, length, bin);
+			vk::ProgramBinary* res = new vk::ProgramBinary((vk::ProgramFormat)format, length, bin);
+			delete[] bin;
+			return res;
 		}
 	}
 	if (file) fclose(file);
@@ -604,8 +604,7 @@ ProgramBinary* buildProgram (const GlslSource& program, glu::ShaderProgramInfo* 
 
 		if (validateBinary)
 		{
-			const bool relaxedLayout = program.buildOptions.flags & ShaderBuildOptions::FLAG_ALLOW_RELAXED_OFFSETS;
-			validateCompiledBinary(binary, buildInfo, program.buildOptions.vulkanVersion, spirvVersion, relaxedLayout);
+			validateCompiledBinary(binary, buildInfo, program.buildOptions.getSpirvValidatorOptions());
 		}
 
 		if (optimizationRecipe != 0)
@@ -687,8 +686,7 @@ ProgramBinary* buildProgram (const HlslSource& program, glu::ShaderProgramInfo* 
 
 		if (validateBinary)
 		{
-			const bool relaxedLayout = program.buildOptions.flags & ShaderBuildOptions::FLAG_ALLOW_RELAXED_OFFSETS;
-			validateCompiledBinary(binary, buildInfo, program.buildOptions.vulkanVersion, spirvVersion, relaxedLayout);
+			validateCompiledBinary(binary, buildInfo, program.buildOptions.getSpirvValidatorOptions());
 		}
 
 		if (optimizationRecipe != 0)
@@ -746,9 +744,8 @@ ProgramBinary* assembleProgram (const SpirVAsmSource& program, SpirVProgramInfo*
 		if (validateBinary)
 		{
 			std::ostringstream	validationLog;
-			const bool			relaxedLayout	= false;
 
-			if (!validateSpirV(binary.size(), &binary[0], &validationLog, program.buildOptions.vulkanVersion, spirvVersion, relaxedLayout))
+			if (!validateSpirV(binary.size(), &binary[0], &validationLog, program.buildOptions.getSpirvValidatorOptions()))
 			{
 				buildInfo->compileOk = false;
 				buildInfo->infoLog += "\n" + validationLog.str();
@@ -801,7 +798,7 @@ void disassembleProgram (const ProgramBinary& program, std::ostream* dst)
 		TCU_THROW(NotSupportedError, "Unsupported program format");
 }
 
-bool validateProgram (const ProgramBinary& program, std::ostream* dst, deUint32 vulkanVersion, bool relaxedLayout)
+bool validateProgram (const ProgramBinary& program, std::ostream* dst, const SpirvValidatorOptions& options)
 {
 	if (program.getFormat() == PROGRAM_FORMAT_SPIRV)
 	{
@@ -812,8 +809,7 @@ bool validateProgram (const ProgramBinary& program, std::ostream* dst, deUint32 
 		}
 
 		if (isNativeSpirVBinaryEndianness())
-			return validateSpirV(program.getSize()/sizeof(deUint32), (const deUint32*)program.getBinary(), dst,
-								 vulkanVersion, extractSpirvVersion(program), relaxedLayout);
+			return validateSpirV(program.getSize()/sizeof(deUint32), (const deUint32*)program.getBinary(), dst, options);
 		else
 			TCU_THROW(InternalError, "SPIR-V endianness translation not supported");
 	}

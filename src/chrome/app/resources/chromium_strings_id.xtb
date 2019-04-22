@@ -30,6 +30,7 @@
 <translation id="1929939181775079593">Chromium tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="1966382378801805537">Chromium tidak dapat menentukan atau menyetel browser default</translation>
 <translation id="2008474315282236005">Tindakan ini akan menghapus 1 item dari perangkat. Untuk mengambil data nanti, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
+<translation id="2037988709973327241"><ph name="FILE_NAME" /> berbahaya, sehingga Chromium memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="2117378023188580026">Administrator meminta Anda meluncurkan ulang Chromium untuk menerapkan update ini</translation>
 <translation id="2119636228670142020">Tentang &amp;Chromium OS</translation>
 <translation id="2178765360243863853">Mulai ulang Chromium sekarang</translation>
@@ -50,7 +51,6 @@
 <translation id="2718390899429598676">Untuk keamanan tambahan, Chromium akan mengenkripsi data Anda.</translation>
 <translation id="2770231113462710648">Ubah browser default ke:</translation>
 <translation id="2799223571221894425">Luncurkan Ulang</translation>
-<translation id="2818397554133737874">Data browsing pengguna ini akan dihapus dari perangkat ini. Untuk memulihkan data, login ke Chromium sebagai $2.</translation>
 <translation id="2847479871509788944">Buang dari Chromium...</translation>
 <translation id="2886012850691518054">Opsional: Bantu menjadikan Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google.</translation>
 <translation id="2898082584336937987">Instal Chromium di ponsel. Kami akan mengirimkan SMS ke ponsel Anda: <ph name="PHONE_NUMBER" /></translation>
@@ -62,6 +62,7 @@
 <translation id="3068515742935458733">Bantu Chromium menjadi lebih baik dengan mengirim laporan kerusakan dan <ph name="UMA_LINK" /> ke Google</translation>
 <translation id="3103660991484857065">Pemasang gagal membatalkan kompresi arsip. Download Chromium lagi.</translation>
 <translation id="3130323860337406239">Chromium menggunakan mikrofon Anda.</translation>
+<translation id="3154325651427862069"><ph name="FILE_NAME" /> mungkin berbahaya, sehingga Chromium memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="3155163173539279776">Luncurkan ulang Chromium</translation>
 <translation id="3179665906251668410">Buka Link di Jendela Sa&amp;maran Chromium</translation>
 <translation id="3190315855212034486">Aduh! Chromium ngadat. Luncurkan ulang sekarang?</translation>
@@ -77,25 +78,28 @@
 <translation id="3479552764303398839">Jangan sekarang</translation>
 <translation id="3509308970982693815">Tutup semua jendela Chromium dan coba lagi.</translation>
 <translation id="352783484088404971">Buang Dari Chromium...</translation>
+<translation id="3575459661164320785">Ada software berbahaya di komputer Anda. Chromium dapat menghapusnya, memulihkan setelan Anda, dan menonaktifkan ekstensi agar browser berfungsi kembali secara normal.</translation>
 <translation id="3582788516608077514">Memperbarui Chromium...</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
+<translation id="3639635944603682591">Data browsing pengguna ini akan dihapus dari perangkat ini. Untuk memulihkan data, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Buka link di &amp;tab Chromium baru</translation>
 <translation id="3728336900324680424">Chromium akan mengakses Drive Anda untuk membuat saran di kolom URL</translation>
-<translation id="3762167353400286894">Chromium OS ditampilkan dalam bahasa ini</translation>
 <translation id="378917192836375108">Chromium memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Sematkan Chromium di bilah tugas</translation>
+<translation id="388648406173476553">Sesuaikan dan kontrol Chromium. Ada sesuatu yang memerlukan perhatian Anda - klik untuk melihat detailnya.</translation>
 <translation id="3889543394854987837">Klik nama Anda untuk membuka Chromium dan mulai menjelajah.</translation>
 <translation id="3898493977366060150">Browsing web dengan fitur smart dari Google</translation>
+<translation id="3931244652999881512">File ini berbahaya, sehingga Chromium memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS akan dimulai ulang dalam 1 jam}other{Chromium OS akan dimulai ulang dalam # jam}}</translation>
 <translation id="4036079820698952681">Bantu Chromium jadi lebih baik dengan melaporkan <ph name="BEGIN_LINK" />setelan saat ini<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Peningkatan keamanan dan fitur baru yang penting tersedia di versi terbaru.</translation>
 <translation id="407254336480250557">Pilih <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Temukan aplikasi, game, ekstensi, dan tema yang hebat untuk Chromium.</translation>
+<translation id="4216212958613226427">Bahasa ini digunakan untuk menampilkan UI Chromium</translation>
 <translation id="4222580632002216401">Sekarang Anda telah masuk ke Chromium! Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>
 <translation id="4224199872375172890">Chromium sudah diperbarui.</translation>
 <translation id="4230135487732243613">Tautkan data Chromium Anda ke akun ini?</translation>
-<translation id="4260985389288095068">Ada software berbahaya di komputer. Chrome dapat menghapusnya dan akan memulihkan setelan agar browser berfungsi normal lagi.</translation>
 <translation id="4271805377592243930">Dapatkan bantuan Chromium</translation>
 <translation id="4285930937574705105">Pemasangan gagal karena kesalahan yang tidak diketahui. Jika Chromium sedang berjalan, tutup, lalu ulang kembali.</translation>
 <translation id="4407044323746248786">Tetap keluar dari Chromium?</translation>
@@ -137,7 +141,8 @@
 <translation id="5680901439334282664">masuk ke Chromium</translation>
 <translation id="5698481217667032250">Tampilkan Chromium dalam bahasa ini</translation>
 <translation id="5712253116097046984">Administrator meminta Anda memulai ulang Chromium OS untuk menerapkan update ini</translation>
-<translation id="5726838626470692954">Pengelola harus menghapus dan menambahkan Anda kembali ke Chromium.</translation>
+<translation id="5726979195371243087">File ini mungkin berbahaya, sehingga Chromium memblokirnya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
+<translation id="5756484659843248772">Bahasa ini digunakan untuk menampilkan UI Chromium OS</translation>
 <translation id="5768914737813585044">Tampilkan Chromium OS dalam bahasa ini</translation>
 <translation id="5796460469508169315">Chromium hampir siap.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -166,6 +171,7 @@
 <translation id="6373523479360886564">Anda yakin ingin meng-uninstal Chromium?</translation>
 <translation id="6400072781405947421">Chromium mungkin tidak berfungsi dengan semestinya karena sudah tidak didukung di Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium adalah browser web yang menjalankan halaman web dan aplikasi dengan kecepatan kilat. Browser ini cepat, stabil, dan mudah digunakan. Jelajahi web lebih aman dengan perlindungan dari software perusak dan phishing yang tertanam di dalam Chromium.</translation>
+<translation id="6434250628340475518">Sistem Chromium OS</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium akan dimulai ulang dalam 1 detik}other{Chromium akan dimulai ulang dalam # detik}}</translation>
 <translation id="6475912303565314141">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chromium.</translation>
 <translation id="6485906693002546646">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyinkronkan barang-barang Chromium. Untuk memperbarui preferensi sinkronisasi atau menggunakan Chromium tanpa akun Google, kunjungi <ph name="SETTINGS_LINK" />.</translation>
@@ -187,7 +193,7 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="6990124437352146030">Chromium memerlukan izin akses ke mikrofon untuk situs ini</translation>
 <translation id="705851970750939768">Perbarui Chromium</translation>
 <translation id="7066436765290594559">Chromium OS tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
-<translation id="7162152143154757523">Chromium dapat memberikan pemeriksa ejaan yang lebih pintar dengan mengirimkan apa yang Anda ketik di browser ke server Google, sehingga memungkinkan Anda menggunakan teknologi pemeriksa ejaan yang sama seperti yang digunakan oleh penelusuran Google.</translation>
+<translation id="7067091210845072982">Jika gambar tidak memiliki deskripsi yang berguna, Chromium akan mencoba memberikan deskripsi untuk Anda. Untuk membuat deskripsi, gambar akan dikirim ke Google.</translation>
 <translation id="7196312274710523067">Tidak dapat meluncurkan Chromium. Harap coba lagi.</translation>
 <translation id="7205698830395646142">Sembunyikan di Menu Chromium</translation>
 <translation id="7223968959479464213">Pengelola Tugas - Chromium</translation>
@@ -206,12 +212,14 @@ Agar <ph name="NEW_PROFILE_NAME" /> tidak dapat mengakses akun Anda, pastikan pr
 <ph name="BEGIN_LINK_2" />Pelajari lebih lanjut<ph name="END_LINK_2" />
 
 Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</translation>
+<translation id="7349591376906416160">Administrator sistem Anda telah mengonfigurasi Chromium untuk membuka <ph name="ALTERNATIVE_BROWSER_NAME" /> guna mengakses <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Mulai ulang Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium memerlukan izin akses ke kamera untuk situs ini</translation>
 <translation id="7471302858145901434">{0,plural, =1{Mulai ulang Chromium OS dalam 1 hari}other{Mulai ulang Chromium OS dalam # hari}}</translation>
 <translation id="7483335560992089831">Tidak dapat memasang Chromium versi yang sama dengan yang sedang Anda jalankan. Tutup Chromium dan coba lagi.</translation>
 <translation id="7549178288319965365">Tentang OS Chromium</translation>
+<translation id="7561906087460245826">Hapus juga data dari Chromium (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium menggunakan kamera dan mikrofon Anda.</translation>
 <translation id="7617377681829253106">Chromium menjadi lebih baik</translation>
 <translation id="7686590090926151193">Chromium bukan browser default</translation>
@@ -229,9 +237,9 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="7979877361127045932">Sembunyikan di menu Chromium</translation>
 <translation id="8013436988911883588">Setelah Chromium memiliki akses, situs dapat meminta akses dari Anda.</translation>
 <translation id="8030318113982266900">Memperbarui perangkat Anda ke saluran <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">Chromium ditampilkan dalam bahasa ini</translation>
 <translation id="81770708095080097">File ini berbahaya, jadi Chromium telah memblokirnya.</translation>
 <translation id="8222496066431494154">Instal Chromium di ponsel. Kami akan mengirimkan SMS ke nomor telepon pemulihan akun Anda: <ph name="PHONE_NUMBER" /></translation>
+<translation id="8248265253516264921">Jika gambar tidak memiliki deskripsi yang berguna, Chromium akan mencoba memberikan deskripsi untuk Anda. Untuk membuat deskripsi, gambar akan dikirim ke Google. Anda dapat menonaktifkannya kapan saja di setelan.</translation>
 <translation id="8269379391216269538">Bantu kami membuat Chromium menjadi lebih baik</translation>
 <translation id="8290862415967981663">File ini mungkin berbahaya, jadi Chromium telah memblokirnya.</translation>
 <translation id="8330519371938183845">Login untuk menyinkronkan dan mempersonalisasi Chromium di perangkat Anda</translation>
@@ -248,6 +256,7 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> Anda sudah diperbarui.</translation>
 <translation id="8697124171261953979">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chromium atau menelusuri dari Omnibox.</translation>
 <translation id="8704119203788522458">Ini Chromium Anda</translation>
+<translation id="8704255848199359374">Tindakan ini akan menggunakan pemeriksaan ejaan yang sama dengan yang digunakan di penelusuran Google. Teks yang Anda ketikkan di browser dikirim ke Google. Anda dapat mengubah perilaku ini di setelan.</translation>
 <translation id="8796602469536043152">Chromium memerlukan izin akses ke kamera dan mikrofon untuk situs ini</translation>
 <translation id="8803635938069941624">Persyaratan Chromium OS</translation>
 <translation id="8821041990367117597">Chromium tidak dapat menyinkronkan data karena detail proses masuk Anda sebelum diperbarui.</translation>
@@ -260,12 +269,13 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 
 Tetap masuk akan menggabungkan informasi Chromium seperti bookmark, histori, dan setelan lain ke <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="9019929317751753759">Agar Chromium lebih aman, kami menonaktifkan ekstensi berikut yang tidak tercantum dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
-<translation id="9022552996538154597">Masuk ke Chromium</translation>
+<translation id="9022552996538154597">Login ke Chromium</translation>
 <translation id="9025992965467895364">Halaman ini menggunakan terlalu banyak memori, sehingga Chromium menjedanya.</translation>
 <translation id="9036189287518468038">Peluncur Aplikasi Chromium</translation>
 <translation id="9089354809943900324">Chromium terlalu lawas</translation>
 <translation id="91086099826398415">Buka Link di &amp;tab Chromium Baru</translation>
 <translation id="911206726377975832">Hapus juga data browsing Anda?</translation>
+<translation id="9158494823179993217">Administrator sistem Anda telah mengonfigurasi Chromium untuk membuka browser alternatif guna mengakses <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Memutus sambungan <ph name="USERNAME" /> akan menghapus histori, bookmark, setelan, dan data Chromium Anda lainnya yang tersimpan di perangkat. Data yang tersimpan di Akun Google tidak akan dihapus dan dapat dikelola di <ph name="GOOGLE_DASHBOARD_LINK" />Google Dasbor<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Kini Anda masuk ke Chromium</translation>

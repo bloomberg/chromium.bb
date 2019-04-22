@@ -53,7 +53,7 @@ TEST_F(NativeMessagingWriterTest, GoodMessage) {
 
   // |content| should now contain serialized |message|.
   std::unique_ptr<base::Value> written_message =
-      base::JSONReader::Read(content);
+      base::JSONReader::ReadDeprecated(content);
   EXPECT_TRUE(message.Equals(written_message.get()));
 
   // Nothing more should have been written. Close the write-end of the pipe,
@@ -86,7 +86,7 @@ TEST_F(NativeMessagingWriterTest, SecondMessage) {
 
   // |content| should now contain serialized |message2|.
   std::unique_ptr<base::Value> written_message2 =
-      base::JSONReader::Read(content);
+      base::JSONReader::ReadDeprecated(content);
   EXPECT_TRUE(message2.Equals(written_message2.get()));
 }
 

@@ -7,7 +7,8 @@
 
 #include <string>
 
-#include "content/public/common/media_stream_request.h"
+#include "content/public/browser/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace content {
@@ -70,7 +71,7 @@ class ExtensionHostDelegate {
   virtual bool CheckMediaAccessPermission(
       content::RenderFrameHost* render_frame_host,
       const GURL& security_origin,
-      content::MediaStreamType type,
+      blink::MediaStreamType type,
       const Extension* extension) = 0;
 
   // Returns the ExtensionHostQueue implementation to use for creating

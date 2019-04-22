@@ -27,10 +27,6 @@ class PaintLayer;
 
 class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
  public:
-  static SingleChildLocalFrameClient* Create() {
-    return MakeGarbageCollected<SingleChildLocalFrameClient>();
-  }
-
   explicit SingleChildLocalFrameClient() = default;
 
   void Trace(blink::Visitor* visitor) override {
@@ -51,10 +47,6 @@ class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
 
 class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
  public:
-  static LocalFrameClientWithParent* Create(LocalFrame* parent) {
-    return MakeGarbageCollected<LocalFrameClientWithParent>(parent);
-  }
-
   explicit LocalFrameClientWithParent(LocalFrame* parent) : parent_(parent) {}
 
   void Trace(blink::Visitor* visitor) override {
@@ -94,7 +86,7 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
   }
 
   LocalFrame& ChildFrame() {
-    return *ToLocalFrame(GetFrame().Tree().FirstChild());
+    return *To<LocalFrame>(GetFrame().Tree().FirstChild());
   }
   Document& ChildDocument() { return *ChildFrame().GetDocument(); }
 

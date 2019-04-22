@@ -7,10 +7,10 @@
 
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context_base.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
+class WebGLProgram;
 class WebGLTexture;
 
 class WebGL2ComputeRenderingContextBase : public WebGL2RenderingContextBase {
@@ -19,6 +19,28 @@ class WebGL2ComputeRenderingContextBase : public WebGL2RenderingContextBase {
 
   /* Launch one or more compute work groups */
   void dispatchCompute(GLuint numGroupsX, GLuint numGroupsY, GLuint numGroupsZ);
+
+  /* Program interface query */
+  ScriptValue getProgramInterfaceParameter(ScriptState*,
+                                           WebGLProgram*,
+                                           GLenum program_interface,
+                                           GLenum pname);
+  GLuint getProgramResourceIndex(WebGLProgram*,
+                                 GLenum program_interface,
+                                 const String& name);
+  String getProgramResourceName(WebGLProgram*,
+                                GLenum program_interface,
+                                GLuint index);
+  base::Optional<Vector<ScriptValue>> getProgramResource(
+      ScriptState*,
+      WebGLProgram*,
+      GLenum program_interface,
+      GLuint index,
+      const Vector<GLenum>& props);
+  ScriptValue getProgramResourceLocation(ScriptState*,
+                                         WebGLProgram*,
+                                         GLenum program_interface,
+                                         const String& name);
 
   /* Bind a level of a texture to an image unit */
   void bindImageTexture(GLuint unit,
@@ -45,6 +67,11 @@ class WebGL2ComputeRenderingContextBase : public WebGL2RenderingContextBase {
       std::unique_ptr<WebGraphicsContext3DProvider>,
       bool using_gpu_compositing,
       const CanvasContextCreationAttributesCore& requested_attributes);
+
+  ScriptValue WrapLocation(ScriptState*,
+                           GLint location,
+                           WebGLProgram* program,
+                           GLenum program_interface);
 };
 
 DEFINE_TYPE_CASTS(WebGL2ComputeRenderingContextBase,

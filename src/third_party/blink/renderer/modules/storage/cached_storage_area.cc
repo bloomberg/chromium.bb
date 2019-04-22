@@ -4,11 +4,16 @@
 
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 
+#include <inttypes.h>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
+#include "base/task/post_task.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
@@ -235,6 +240,10 @@ CachedStorageArea::CachedStorageArea(
   mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info), std::move(ipc_runner));
   mojo_area_->AddObserver(std::move(ptr_info));
+
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "DOMStorage",
+      ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
 }
 
 // SessionStorage constructor.
@@ -253,9 +262,16 @@ CachedStorageArea::CachedStorageArea(
   mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info), std::move(ipc_runner));
   mojo_area_->AddObserver(std::move(ptr_info));
+
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "DOMStorage",
+      ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
 }
 
-CachedStorageArea::~CachedStorageArea() = default;
+CachedStorageArea::~CachedStorageArea() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
+}
 
 void CachedStorageArea::KeyAdded(const Vector<uint8_t>& key,
                                  const Vector<uint8_t>& value,
@@ -341,6 +357,27 @@ void CachedStorageArea::AllDeleted(const String& source) {
 void CachedStorageArea::ShouldSendOldValueOnMutations(bool value) {
   DCHECK(!IsSessionStorage());
   should_send_old_value_on_mutations_ = value;
+}
+
+bool CachedStorageArea::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  using base::trace_event::MemoryAllocatorDump;
+
+  WTF::String dump_name = WTF::String::Format(
+      "site_storage/%s/0x%" PRIXPTR "/cache_size",
+      IsSessionStorage() ? "session_storage" : "local_storage",
+      reinterpret_cast<uintptr_t>(this));
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name.Utf8().data());
+  // TODO(triploblastic@): rename memory_used() to quota_used() and create
+  // memory_used() function to actually count the memory used.
+  dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                  MemoryAllocatorDump::kUnitsBytes,
+                  memory_used() / sizeof(UChar));
+  pmd->AddSuballocation(
+      dump->guid(),
+      String(WTF::Partitions::kAllocatedObjectPoolName).Utf8().data());
+  return true;
 }
 
 void CachedStorageArea::KeyAddedOrChanged(const Vector<uint8_t>& key,

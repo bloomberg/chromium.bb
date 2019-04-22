@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/modules/locks/lock_manager.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -29,11 +28,13 @@ class NavigatorLocksImpl final : public GarbageCollected<NavigatorLocksImpl<T>>,
     NavigatorLocksImpl* supplement = static_cast<NavigatorLocksImpl*>(
         Supplement<T>::template From<NavigatorLocksImpl>(navigator));
     if (!supplement) {
-      supplement = new NavigatorLocksImpl(navigator);
+      supplement = MakeGarbageCollected<NavigatorLocksImpl>(navigator);
       Supplement<T>::ProvideTo(navigator, supplement);
     }
     return *supplement;
   }
+
+  explicit NavigatorLocksImpl(T& navigator) : Supplement<T>(navigator) {}
 
   LockManager* GetLockManager(ExecutionContext* context) const {
     if (!lock_manager_ && context) {
@@ -52,9 +53,7 @@ class NavigatorLocksImpl final : public GarbageCollected<NavigatorLocksImpl<T>>,
   }
 
  private:
-  explicit NavigatorLocksImpl(T& navigator) : Supplement<T>(navigator) {}
-
-  mutable TraceWrapperMember<LockManager> lock_manager_;
+  mutable Member<LockManager> lock_manager_;
 };
 
 // static

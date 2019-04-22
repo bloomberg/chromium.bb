@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
@@ -132,7 +133,7 @@ ResourceRequestInfo ResourceRequestDetector::GetRequestInfo(
     const net::URLRequest* request) {
   ResourceRequestInfo info;
   info.url = request->url();
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
   info.resource_type = request_info->GetResourceType();
   content::ResourceRequestInfo::GetRenderFrameForRequest(

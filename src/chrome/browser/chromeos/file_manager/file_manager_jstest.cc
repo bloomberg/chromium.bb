@@ -15,23 +15,19 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ActionsSubmenuTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ActionsModelTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/actions_model_unittest.html")));
+  RunGeneratedTest("/foreground/js/actions_model_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NavigationListModelTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/navigation_list_model_unittest.html")));
+  RunGeneratedTest("/foreground/js/navigation_list_model_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileOperationHandlerTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("background/js/file_operation_handler_unittest.html")));
+  RunGeneratedTest("/background/js/file_operation_handler_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ProgressCenterItemGroupTest) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/progress_center_item_group_unittest.html")));
+  RunGeneratedTest("/foreground/js/progress_center_item_group_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DeviceHandlerTest) {
@@ -59,8 +55,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, VolumeManagerTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/ui/directory_tree_unittest.html")));
+  RunGeneratedTest("/foreground/js/ui/directory_tree_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTableTest) {
@@ -76,8 +71,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, LRUCacheTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaImportHandlerTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("background/js/media_import_handler_unittest.html")));
+  RunGeneratedTest("/background/js/media_import_handler_unittest.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MountMetricsTest) {
+  RunGeneratedTest("/background/js/mount_metrics_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskQueueTest) {
@@ -89,27 +87,19 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DuplicateFinderTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImportControllerTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/import_controller_unittest.html")));
+  RunGeneratedTest("/foreground/js/import_controller_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, AsyncUtilTest) {
   RunGeneratedTest("/common/js/async_util_unittest.html");
 }
 
-// TODO(sashab): Re-enable when https://crbug.com/842880 is fixed.
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DISABLED_MetricsTest) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL("common/js/metrics_unittest.html")));
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskController) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/task_controller_unittest.html")));
+  RunGeneratedTest("/foreground/js/task_controller_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTasks) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/file_tasks_unittest.html")));
+  RunGeneratedTest("/foreground/js/file_tasks_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailLoader) {
@@ -121,38 +111,35 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataCacheItem) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataCacheSet) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/metadata/metadata_cache_set_unittest.html")));
+  RunGeneratedTest("/foreground/js/metadata/metadata_cache_set_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MultiMetadataProvider) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/metadata/multi_metadata_provider_unittest.html")));
+  RunGeneratedTest(
+      "/foreground/js/metadata/multi_metadata_provider_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ListThumbnailLoader) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/list_thumbnail_loader_unittest.html")));
+  RunGeneratedTest("/foreground/js/list_thumbnail_loader_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileSystemMetadataProvider) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/metadata/file_system_metadata_provider_unittest.html")));
+  RunGeneratedTest(
+      "/foreground/js/metadata/file_system_metadata_provider_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ExternalMetadataProvider) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/metadata/external_metadata_provider_unittest.html")));
+  RunGeneratedTest(
+      "/foreground/js/metadata/external_metadata_provider_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ContentMetadataProvider) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/metadata/content_metadata_provider_unittest.html")));
+  RunGeneratedTest(
+      "/foreground/js/metadata/content_metadata_provider_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MetadataModel) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/metadata/metadata_model_unittest.html")));
+  RunGeneratedTest("/foreground/js/metadata/metadata_model_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailModel) {
@@ -160,8 +147,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailModel) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ExifParser) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/metadata/exif_parser_unittest.html")));
+  RunGeneratedTest("/foreground/js/metadata/exif_parser_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImageOrientation) {
@@ -170,11 +156,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImageOrientation) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ProvidersModel) {
   RunGeneratedTest("/foreground/js/providers_model_unittest.html");
-}
-
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesTooltip) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/elements/files_tooltip_unittest.html")));
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, SpinnerController) {
@@ -193,8 +174,16 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileListSelectionModelTest) {
   RunGeneratedTest("/foreground/js/ui/file_list_selection_model_unittest.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MultiMenu) {
+  RunGeneratedTest("/foreground/js/ui/multi_menu_unittest.html");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesAppEntryTypes) {
   RunGeneratedTest("/common/js/files_app_entry_types_unittest.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileType) {
+  RunGeneratedTest("/common/js/file_type_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, UtilTest) {
@@ -203,4 +192,12 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, UtilTest) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Crostini) {
   RunGeneratedTest("/background/js/crostini_unittest.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ListContainer) {
+  RunGeneratedTest("/foreground/js/ui/list_container_unittest.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTableList) {
+  RunGeneratedTest("/foreground/js/ui/file_table_list_unittest.html");
 }

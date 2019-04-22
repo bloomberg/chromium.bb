@@ -10,7 +10,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -71,7 +71,7 @@ void BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread(
   // hosts.
   PendingHosts* pending_hosts = new PendingHosts();
   base::RepeatingClosure completion = base::BarrierClosure(
-      arraysize(types),
+      base::size(types),
       base::BindOnce(&BrowsingDataQuotaHelperImpl::OnGetOriginsComplete,
                      weak_factory_.GetWeakPtr(), std::move(callback),
                      base::Owned(pending_hosts)));

@@ -10,13 +10,15 @@
 #include <algorithm>
 
 #include "base/strings/string_number_conversions.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom.h"
 
 namespace network {
 
 const uint64_t DataElement::kUnknownSize;
 
 DataElement::DataElement()
-    : type_(TYPE_UNKNOWN),
+    : type_(mojom::DataElementType::kUnknown),
       bytes_(NULL),
       offset_(0),
       length_(std::numeric_limits<uint64_t>::max()) {}
@@ -31,7 +33,7 @@ void DataElement::SetToFilePathRange(
     uint64_t offset,
     uint64_t length,
     const base::Time& expected_modification_time) {
-  type_ = TYPE_FILE;
+  type_ = mojom::DataElementType::kFile;
   path_ = path;
   offset_ = offset;
   length_ = length;
@@ -43,7 +45,7 @@ void DataElement::SetToFileRange(base::File file,
                                  uint64_t offset,
                                  uint64_t length,
                                  const base::Time& expected_modification_time) {
-  type_ = TYPE_RAW_FILE;
+  type_ = mojom::DataElementType::kRawFile;
   file_ = std::move(file);
   path_ = path;
   offset_ = offset;
@@ -54,7 +56,7 @@ void DataElement::SetToFileRange(base::File file,
 void DataElement::SetToBlobRange(const std::string& blob_uuid,
                                  uint64_t offset,
                                  uint64_t length) {
-  type_ = TYPE_BLOB;
+  type_ = mojom::DataElementType::kBlob;
   blob_uuid_ = blob_uuid;
   offset_ = offset;
   length_ = length;
@@ -62,14 +64,14 @@ void DataElement::SetToBlobRange(const std::string& blob_uuid,
 
 void DataElement::SetToDataPipe(mojom::DataPipeGetterPtr data_pipe_getter) {
   DCHECK(data_pipe_getter);
-  type_ = TYPE_DATA_PIPE;
+  type_ = mojom::DataElementType::kDataPipe;
   data_pipe_getter_ = data_pipe_getter.PassInterface();
 }
 
 void DataElement::SetToChunkedDataPipe(
     mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter) {
-  type_ = TYPE_CHUNKED_DATA_PIPE;
-  chunked_data_pipe_getter_ = std::move(chunked_data_pipe_getter);
+  type_ = mojom::DataElementType::kChunkedDataPipe;
+  chunked_data_pipe_getter_ = chunked_data_pipe_getter.PassInterface();
 }
 
 base::File DataElement::ReleaseFile() {
@@ -77,13 +79,13 @@ base::File DataElement::ReleaseFile() {
 }
 
 mojom::DataPipeGetterPtrInfo DataElement::ReleaseDataPipeGetter() {
-  DCHECK_EQ(TYPE_DATA_PIPE, type_);
+  DCHECK_EQ(mojom::DataElementType::kDataPipe, type_);
   DCHECK(data_pipe_getter_.is_valid());
   return std::move(data_pipe_getter_);
 }
 
 mojom::DataPipeGetterPtr DataElement::CloneDataPipeGetter() const {
-  DCHECK_EQ(TYPE_DATA_PIPE, type_);
+  DCHECK_EQ(mojom::DataElementType::kDataPipe, type_);
   DCHECK(data_pipe_getter_.is_valid());
   auto* mutable_this = const_cast<DataElement*>(this);
   mojom::DataPipeGetterPtr owned(std::move(mutable_this->data_pipe_getter_));
@@ -93,8 +95,9 @@ mojom::DataPipeGetterPtr DataElement::CloneDataPipeGetter() const {
   return clone;
 }
 
-mojom::ChunkedDataPipeGetterPtr DataElement::ReleaseChunkedDataPipeGetter() {
-  DCHECK_EQ(TYPE_CHUNKED_DATA_PIPE, type_);
+mojom::ChunkedDataPipeGetterPtrInfo
+DataElement::ReleaseChunkedDataPipeGetter() {
+  DCHECK_EQ(mojom::DataElementType::kChunkedDataPipe, type_);
   return std::move(chunked_data_pipe_getter_);
 }
 
@@ -102,7 +105,7 @@ void PrintTo(const DataElement& x, std::ostream* os) {
   const uint64_t kMaxDataPrintLength = 40;
   *os << "<DataElement>{type: ";
   switch (x.type()) {
-    case DataElement::TYPE_BYTES: {
+    case mojom::DataElementType::kBytes: {
       uint64_t length = std::min(x.length(), kMaxDataPrintLength);
       *os << "TYPE_BYTES, data: ["
           << base::HexEncode(x.bytes(), static_cast<size_t>(length));
@@ -112,24 +115,24 @@ void PrintTo(const DataElement& x, std::ostream* os) {
       *os << "]";
       break;
     }
-    case DataElement::TYPE_FILE:
+    case mojom::DataElementType::kFile:
       *os << "TYPE_FILE, path: " << x.path().AsUTF8Unsafe()
           << ", expected_modification_time: " << x.expected_modification_time();
       break;
-    case DataElement::TYPE_RAW_FILE:
+    case mojom::DataElementType::kRawFile:
       *os << "TYPE_RAW_FILE, path: " << x.path().AsUTF8Unsafe()
           << ", expected_modification_time: " << x.expected_modification_time();
       break;
-    case DataElement::TYPE_BLOB:
+    case mojom::DataElementType::kBlob:
       *os << "TYPE_BLOB, uuid: " << x.blob_uuid();
       break;
-    case DataElement::TYPE_DATA_PIPE:
+    case mojom::DataElementType::kDataPipe:
       *os << "TYPE_DATA_PIPE";
       break;
-    case DataElement::TYPE_CHUNKED_DATA_PIPE:
+    case mojom::DataElementType::kChunkedDataPipe:
       *os << "TYPE_CHUNKED_DATA_PIPE";
       break;
-    case DataElement::TYPE_UNKNOWN:
+    case mojom::DataElementType::kUnknown:
       *os << "TYPE_UNKNOWN";
       break;
   }
@@ -141,21 +144,21 @@ bool operator==(const DataElement& a, const DataElement& b) {
       a.length() != b.length())
     return false;
   switch (a.type()) {
-    case DataElement::TYPE_BYTES:
+    case mojom::DataElementType::kBytes:
       return memcmp(a.bytes(), b.bytes(), b.length()) == 0;
-    case DataElement::TYPE_FILE:
+    case mojom::DataElementType::kFile:
       return a.path() == b.path() &&
              a.expected_modification_time() == b.expected_modification_time();
-    case DataElement::TYPE_RAW_FILE:
+    case mojom::DataElementType::kRawFile:
       return a.path() == b.path() &&
              a.expected_modification_time() == b.expected_modification_time();
-    case DataElement::TYPE_BLOB:
+    case mojom::DataElementType::kBlob:
       return a.blob_uuid() == b.blob_uuid();
-    case DataElement::TYPE_DATA_PIPE:
+    case mojom::DataElementType::kDataPipe:
       return false;
-    case DataElement::TYPE_CHUNKED_DATA_PIPE:
+    case mojom::DataElementType::kChunkedDataPipe:
       return false;
-    case DataElement::TYPE_UNKNOWN:
+    case mojom::DataElementType::kUnknown:
       NOTREACHED();
       return false;
   }

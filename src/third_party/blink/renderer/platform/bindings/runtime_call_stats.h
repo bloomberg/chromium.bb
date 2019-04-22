@@ -9,7 +9,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_RUNTIME_CALL_STATS_H_
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/platform/bindings/runtime_call_stats_count_everything_buildflags.h"
+#include "third_party/blink/renderer/platform/bindings/buildflags.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -33,6 +33,8 @@ class TracedValue;
 // A simple counter used to track total execution count & time for a particular
 // function/scope.
 class PLATFORM_EXPORT RuntimeCallCounter {
+  USING_FAST_MALLOC(RuntimeCallCounter);
+
  public:
   explicit RuntimeCallCounter(const char* name) : count_(0), name_(name) {}
 
@@ -66,9 +68,11 @@ class PLATFORM_EXPORT RuntimeCallCounter {
 // NOTE: Do not use this class directly to track execution times, instead use it
 // with the macros below.
 class PLATFORM_EXPORT RuntimeCallTimer {
+  USING_FAST_MALLOC(RuntimeCallTimer);
+
  public:
   explicit RuntimeCallTimer(const base::TickClock* clock) : clock_(clock) {}
-  ~RuntimeCallTimer() { DCHECK(!IsRunning()); };
+  ~RuntimeCallTimer() { DCHECK(!IsRunning()); }
 
   // Starts recording time for <counter>, and pauses <parent> (if non-null).
   void Start(RuntimeCallCounter*, RuntimeCallTimer* parent);
@@ -166,6 +170,8 @@ class PLATFORM_EXPORT RuntimeCallTimer {
 // by pausing and resuming timers in the chain when entering and leaving a
 // scope.
 class PLATFORM_EXPORT RuntimeCallStats {
+  USING_FAST_MALLOC(RuntimeCallStats);
+
  public:
   explicit RuntimeCallStats(const base::TickClock*);
   // Get RuntimeCallStats object associated with the given isolate.
@@ -199,7 +205,6 @@ class PLATFORM_EXPORT RuntimeCallStats {
 #define BINDINGS_COUNTERS(V)      \
   V(AssociateObjectWithWrapper)   \
   V(CreateWrapper)                \
-  V(GetEventListener)             \
   V(HasInstance)                  \
   V(ToExecutionContext)           \
   V(ToV8DOMWindow)                \
@@ -333,6 +338,8 @@ class PLATFORM_EXPORT RuntimeCallStats {
 // RuntimeCallStats to measure execution time of a C++ scope.
 // Do not use this class directly, use RUNTIME_CALL_TIMER_SCOPE instead.
 class PLATFORM_EXPORT RuntimeCallTimerScope {
+  STACK_ALLOCATED();
+
  public:
   RuntimeCallTimerScope(RuntimeCallStats* stats,
                         RuntimeCallStats::CounterId counter)
@@ -359,6 +366,8 @@ class PLATFORM_EXPORT RuntimeCallTimerScope {
 // NOTE: Nested scoped tracers will not send events of their own, the stats
 // collected in their scopes will be dumped by the root tracer scope.
 class PLATFORM_EXPORT RuntimeCallStatsScopedTracer {
+  STACK_ALLOCATED();
+
  public:
   explicit RuntimeCallStatsScopedTracer(v8::Isolate* isolate) {
     if (UNLIKELY(RuntimeEnabledFeatures::BlinkRuntimeCallStatsEnabled()))

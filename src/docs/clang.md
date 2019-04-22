@@ -102,13 +102,3 @@ If your clang revision is very different from the one currently used in chromium
 
 *   Check `tools/clang/scripts/update.py` to find chromium's clang revision
 *   You might have to tweak warning flags.
-
-## Using LLD
-
-**Experimental!**
-
-LLD is a relatively new linker from LLVM. The current focus is on Windows and
-Linux support, where it can link Chrome approximately twice as fast as gold and
-MSVC's link.exe as of this writing.
-
-Set `use_lld = true` in args.gn.

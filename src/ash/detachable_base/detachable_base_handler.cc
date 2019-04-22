@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -55,9 +54,10 @@ DetachableBaseHandler::DetachableBaseHandler(Shell* shell)
   if (shell_)
     shell_->AddShellObserver(this);
 
-  hammerd_observer_.Add(chromeos::DBusThreadManager::Get()->GetHammerdClient());
+  if (chromeos::HammerdClient::Get())  // May be null in tests
+    hammerd_observer_.Add(chromeos::HammerdClient::Get());
   chromeos::PowerManagerClient* power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+      chromeos::PowerManagerClient::Get();
   power_manager_observer_.Add(power_manager_client);
 
   power_manager_client->GetSwitchStates(

@@ -117,7 +117,7 @@ class DataPipeToSourceStreamTest
   base::StringPiece message_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DataPipeToSourceStreamTests,
     DataPipeToSourceStreamTest,
     ::testing::Values(

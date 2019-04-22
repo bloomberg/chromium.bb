@@ -14,7 +14,6 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
 import org.chromium.base.ActivityState;
@@ -24,11 +23,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.native_page.NativePage;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
-
-import java.util.concurrent.TimeUnit;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * The native recent tabs page. Lists recently closed tabs, open windows and tabs from the user's
@@ -40,11 +39,12 @@ public class RecentTabsPage
                    ExpandableListView.OnGroupCollapseListener,
                    ExpandableListView.OnGroupExpandListener, RecentTabsManager.UpdatedCallback,
                    View.OnAttachStateChangeListener, View.OnCreateContextMenuListener,
-                   InvalidationAwareThumbnailProvider {
+                   InvalidationAwareThumbnailProvider, ChromeFullscreenManager.FullscreenListener {
     private final Activity mActivity;
+    private final ChromeFullscreenManager mFullscreenManager;
     private final ExpandableListView mListView;
     private final String mTitle;
-    private final ViewGroup mView;
+    private final HistoryNavigationLayout mView;
 
     private RecentTabsManager mRecentTabsManager;
     private RecentTabsRowAdapter mAdapter;
@@ -86,7 +86,7 @@ public class RecentTabsPage
         mTitle = resources.getString(R.string.recent_tabs);
         mRecentTabsManager.setUpdatedCallback(this);
         LayoutInflater inflater = LayoutInflater.from(activity);
-        mView = (ViewGroup) inflater.inflate(R.layout.recent_tabs_page, null);
+        mView = (HistoryNavigationLayout) inflater.inflate(R.layout.recent_tabs_page, null);
         mListView = (ExpandableListView) mView.findViewById(R.id.odp_listview);
         mAdapter = new RecentTabsRowAdapter(activity, recentTabsManager);
         mListView.setAdapter(mAdapter);
@@ -100,15 +100,15 @@ public class RecentTabsPage
         ApplicationStatus.registerStateListenerForActivity(this, activity);
         // {@link #mInForeground} will be updated once the view is attached to the window.
 
-        View recentTabsRoot = mView.findViewById(R.id.recent_tabs_root);
-        if (activity.getFullscreenManager().getBottomControlsHeight() != 0) {
-            ViewCompat.setPaddingRelative(recentTabsRoot,
-                    ViewCompat.getPaddingStart(recentTabsRoot),
-                    activity.getFullscreenManager().getTopControlsHeight(),
-                    ViewCompat.getPaddingEnd(recentTabsRoot),
-                    activity.getFullscreenManager().getBottomControlsHeight());
+        if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
+            mFullscreenManager = activity.getFullscreenManager();
+            mFullscreenManager.addListener(this);
+            onBottomControlsHeightChanged(mFullscreenManager.getBottomControlsHeight());
+        } else {
+            mFullscreenManager = null;
         }
 
+        mView.setTab(recentTabsManager.activeTab());
         onUpdated();
     }
 
@@ -130,7 +130,7 @@ public class RecentTabsPage
             mRecentTabsManager.recordRecentTabMetrics();
         } else {
             RecordHistogram.recordLongTimesHistogram("NewTabPage.RecentTabsPage.TimeVisibleAndroid",
-                    SystemClock.elapsedRealtime() - mForegroundTimeMs, TimeUnit.MILLISECONDS);
+                    SystemClock.elapsedRealtime() - mForegroundTimeMs);
         }
     }
 
@@ -149,11 +149,6 @@ public class RecentTabsPage
     @Override
     public int getBackgroundColor() {
         return Color.WHITE;
-    }
-
-    @Override
-    public int getThemeColor() {
-        return ColorUtils.getDefaultThemeColor(mActivity.getResources(), false);
     }
 
     @Override
@@ -182,6 +177,7 @@ public class RecentTabsPage
 
         mView.removeOnAttachStateChangeListener(this);
         ApplicationStatus.unregisterActivityStateListener(this);
+        if (mFullscreenManager != null) mFullscreenManager.removeListener(this);
     }
 
     @Override
@@ -295,5 +291,22 @@ public class RecentTabsPage
         mSnapshotListTop = topItem == null ? 0 : topItem.getTop();
         mSnapshotWidth = mView.getWidth();
         mSnapshotHeight = mView.getHeight();
+    }
+
+    @Override
+    public void onContentOffsetChanged(int offset) {}
+
+    @Override
+    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {}
+
+    @Override
+    public void onToggleOverlayVideoMode(boolean enabled) {}
+
+    @Override
+    public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+        final View recentTabsRoot = mView.findViewById(R.id.recent_tabs_root);
+        ViewCompat.setPaddingRelative(recentTabsRoot, ViewCompat.getPaddingStart(recentTabsRoot),
+                mFullscreenManager.getTopControlsHeight(), ViewCompat.getPaddingEnd(recentTabsRoot),
+                bottomControlsHeight);
     }
 }

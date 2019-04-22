@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 
 /**
@@ -26,14 +27,13 @@ public class LocaleChangedBroadcastReceiver extends BroadcastReceiver {
      */
     private void updateChannels() {
         final PendingResult result = goAsync();
-        new AsyncTask<Void>() {
+        new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
                 ChannelsUpdater.getInstance().updateLocale();
                 result.finish();
                 return null;
             }
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 }

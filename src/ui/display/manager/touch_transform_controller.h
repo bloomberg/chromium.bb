@@ -22,7 +22,6 @@ struct TouchDeviceTransform;
 
 namespace display {
 
-class DisplayConfigurator;
 class DisplayManager;
 class ManagedDisplayInfo;
 class TouchTransformSetter;
@@ -38,8 +37,7 @@ class TouchTransformControllerTestApi;
 // and input-device space.
 class DISPLAY_MANAGER_EXPORT TouchTransformController {
  public:
-  TouchTransformController(DisplayConfigurator* display_configurator,
-                           DisplayManager* display_manager,
+  TouchTransformController(DisplayManager* display_manager,
                            std::unique_ptr<TouchTransformSetter> setter);
   ~TouchTransformController();
 
@@ -103,9 +101,7 @@ class DISPLAY_MANAGER_EXPORT TouchTransformController {
                             const ManagedDisplayInfo& target_display,
                             UpdateData* update_data) const;
 
-  // Both |display_configurator_| and |display_manager_| are not owned and must
-  // outlive TouchTransformController.
-  DisplayConfigurator* display_configurator_;
+  // |display_manager_| are not owned and must outlive TouchTransformController.
   DisplayManager* display_manager_;
 
   bool is_calibrating_ = false;

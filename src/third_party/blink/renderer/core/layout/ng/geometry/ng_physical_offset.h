@@ -57,6 +57,10 @@ struct CORE_EXPORT NGPhysicalOffset {
     return other.left == left && other.top == top;
   }
 
+  bool operator!=(const NGPhysicalOffset& other) const {
+    return !(*this == other);
+  }
+
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
   explicit NGPhysicalOffset(const LayoutPoint& point) {

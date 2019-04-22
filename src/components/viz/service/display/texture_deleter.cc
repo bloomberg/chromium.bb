@@ -13,21 +13,19 @@
 #include "base/single_thread_task_runner.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/single_release_callback.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
 namespace viz {
 
 static void DeleteTextureOnImplThread(
     const scoped_refptr<ContextProvider>& context_provider,
-    unsigned texture_id,
+    const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
-  if (sync_token.HasData()) {
-    context_provider->ContextGL()->WaitSyncTokenCHROMIUM(
-        sync_token.GetConstData());
-  }
-  context_provider->ContextGL()->DeleteTextures(1, &texture_id);
+  context_provider->SharedImageInterface()->DestroySharedImage(sync_token,
+                                                               mailbox);
 }
 
 static void PostTaskFromMainToImplThread(
@@ -52,21 +50,21 @@ TextureDeleter::~TextureDeleter() {
 
 std::unique_ptr<SingleReleaseCallback> TextureDeleter::GetReleaseCallback(
     scoped_refptr<ContextProvider> context_provider,
-    unsigned texture_id) {
+    const gpu::Mailbox& mailbox) {
   // This callback owns the |context_provider|. It must be destroyed on the impl
   // thread. Upon destruction of this class, the callback must immediately be
   // destroyed.
   std::unique_ptr<SingleReleaseCallback> impl_callback =
       SingleReleaseCallback::Create(base::BindOnce(
-          &DeleteTextureOnImplThread, std::move(context_provider), texture_id));
+          &DeleteTextureOnImplThread, std::move(context_provider), mailbox));
 
   impl_callbacks_.push_back(std::move(impl_callback));
 
   // The raw pointer to the impl-side callback is valid as long as this
   // class is alive. So we guard it with a WeakPtr.
-  ReleaseCallback run_impl_callback(
-      base::Bind(&TextureDeleter::RunDeleteTextureOnImplThread,
-                 weak_ptr_factory_.GetWeakPtr(), impl_callbacks_.back().get()));
+  ReleaseCallback run_impl_callback = base::BindOnce(
+      &TextureDeleter::RunDeleteTextureOnImplThread,
+      weak_ptr_factory_.GetWeakPtr(), impl_callbacks_.back().get());
 
   // Provide a callback for the main thread that posts back to the impl
   // thread.

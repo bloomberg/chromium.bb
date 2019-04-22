@@ -26,7 +26,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/extensions/api/identity.h"
@@ -102,7 +101,6 @@ const base::Time& IdentityTokenCacheValue::expiration_time() const {
 
 IdentityAPI::IdentityAPI(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)) {
-  AccountTrackerServiceFactory::GetForProfile(profile_)->AddObserver(this);
   IdentityManagerFactory::GetForProfile(profile_)->AddObserver(this);
 }
 
@@ -145,7 +143,6 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
 
 void IdentityAPI::Shutdown() {
   on_shutdown_callback_list_.Notify();
-  AccountTrackerServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
   IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
@@ -159,11 +156,8 @@ BrowserContextKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
 
 bool IdentityAPI::AreExtensionsRestrictedToPrimaryAccount() {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  if (!signin::DiceMethodGreaterOrEqual(
-          AccountConsistencyModeManager::GetMethodForProfile(profile_),
-          signin::AccountConsistencyMethod::kDiceMigration)) {
+  if (!AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_))
     return true;
-  }
   return !base::FeatureList::IsEnabled(kExtensionsAllAccountsFeature);
 #else
   return true;
@@ -171,8 +165,7 @@ bool IdentityAPI::AreExtensionsRestrictedToPrimaryAccount() {
 }
 
 void IdentityAPI::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
+    const CoreAccountInfo& account_info) {
   // Refresh tokens are sometimes made available in contexts where
   // AccountTrackerService is not tracking the account in question (one example
   // is SupervisedUserService::InitSync()). Bail out in these cases.
@@ -182,7 +175,8 @@ void IdentityAPI::OnRefreshTokenUpdatedForAccount(
   FireOnAccountSignInChanged(account_info.gaia, true);
 }
 
-void IdentityAPI::OnAccountRemoved(const AccountInfo& account_info) {
+void IdentityAPI::OnExtendedAccountInfoRemoved(
+    const AccountInfo& account_info) {
   DCHECK(!account_info.gaia.empty());
   FireOnAccountSignInChanged(account_info.gaia, false);
 }

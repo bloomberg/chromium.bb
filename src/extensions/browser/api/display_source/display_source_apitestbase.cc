@@ -340,8 +340,8 @@ void MockDisplaySourceConnectionDelegate::Connect(
   // on UI thread and call OnSinkConnected() to proceed with the test
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(&MockDisplaySourceConnectionDelegate::BindToUdpSocket,
-                 base::Unretained(this)));
+      base::BindOnce(&MockDisplaySourceConnectionDelegate::BindToUdpSocket,
+                     base::Unretained(this)));
 }
 
 void MockDisplaySourceConnectionDelegate::Disconnect(
@@ -432,7 +432,7 @@ EnqueueSinkMessage(std::string message) {
                         udp_port_, message);
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::Bind(message_received_cb_, message));
+                           base::BindOnce(message_received_cb_, message));
 }
 
 void MockDisplaySourceConnectionDelegate::
@@ -489,8 +489,8 @@ void MockDisplaySourceConnectionDelegate::BindToUdpSocket() {
       // Change sink's status to connected and proceed with the test.
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
-          base::Bind(&MockDisplaySourceConnectionDelegate::OnSinkConnected,
-                     base::Unretained(this)));
+          base::BindOnce(&MockDisplaySourceConnectionDelegate::OnSinkConnected,
+                         base::Unretained(this)));
       break;
     }
   }
@@ -526,8 +526,8 @@ void MockDisplaySourceConnectionDelegate::OnMediaPacketReceived(
     socket_->Close();
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&MockDisplaySourceConnectionDelegate::Disconnect,
-                   base::Unretained(this), StringCallback()));
+        base::BindOnce(&MockDisplaySourceConnectionDelegate::Disconnect,
+                       base::Unretained(this), StringCallback()));
     return;
    }
 

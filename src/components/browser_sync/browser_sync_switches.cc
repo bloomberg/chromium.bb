@@ -6,9 +6,6 @@
 
 namespace switches {
 
-// Disables syncing browser data to a Google Account.
-const char kDisableSync[] = "disable-sync";
-
 // Disables syncing one or more sync data types that are on by default.
 // See sync/base/model_type.h for possible types. Types
 // should be comma separated, and follow the naming convention for string

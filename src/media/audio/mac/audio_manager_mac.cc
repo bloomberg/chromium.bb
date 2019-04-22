@@ -837,12 +837,17 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
   // stream must be able to FIFO requests appropriately when this happens.
   int buffer_size;
   if (has_valid_input_params) {
+    // Ensure the latency asked for is maintained, even if the sample rate is
+    // changed here.
+    const int scaled_buffer_size = input_params.frames_per_buffer() *
+                                   hardware_sample_rate /
+                                   input_params.sample_rate();
     // If passed in via the input_params we allow buffer sizes to go as
     // low as the the kMinAudioBufferSize, ignoring what
     // ChooseBufferSize() normally returns.
     buffer_size =
         std::min(static_cast<int>(limits::kMaxAudioBufferSize),
-                 std::max(input_params.frames_per_buffer(),
+                 std::max(scaled_buffer_size,
                           static_cast<int>(limits::kMinAudioBufferSize)));
   } else {
     buffer_size = ChooseBufferSize(false, hardware_sample_rate);

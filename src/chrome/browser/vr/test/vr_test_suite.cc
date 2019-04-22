@@ -8,8 +8,8 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/core/embedder/embedder.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -24,9 +24,7 @@ VrTestSuite::~VrTestSuite() = default;
 void VrTestSuite::Initialize() {
   base::TestSuite::Initialize();
 
-  scoped_task_environment_ =
-      std::make_unique<base::test::ScopedTaskEnvironment>(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  thread_bundle_ = std::make_unique<content::TestBrowserThreadBundle>();
 
   mojo::core::Init();
 

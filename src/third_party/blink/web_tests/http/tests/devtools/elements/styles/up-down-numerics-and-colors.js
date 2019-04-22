@@ -36,7 +36,7 @@
         colorTreeElement.valueElement.dispatchEvent(
             TestRunner.createKeyEvent('ArrowDown', /*Ctrl*/ true, /*Alt*/ false, /*Shift*/ true, /*Meta*/ false));
 
-      TestRunner.addResult(colorTreeElement.listItemElement.textContent);
+      TestRunner.addResult(TestRunner.textContentWithoutStyles(colorTreeElement.listItemElement));
       next();
     },
 
@@ -51,7 +51,7 @@
       // Shift + PageUp should change to 11.6
       opacityTreeElement.valueElement.dispatchEvent(
           TestRunner.createKeyEvent('PageUp', /*Ctrl*/ false, /*Alt*/ false, /*Shift*/ true));
-      TestRunner.addResult(opacityTreeElement.listItemElement.textContent);
+      TestRunner.addResult(TestRunner.textContentWithoutStyles(opacityTreeElement.listItemElement));
       next();
     },
 
@@ -67,7 +67,7 @@
       selection.addRange(newRange);
       treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('ArrowUp'));
       treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('PageUp'));
-      TestRunner.addResult(treeElement.listItemElement.textContent);
+      TestRunner.addResult(TestRunner.textContentWithoutStyles(treeElement.listItemElement));
       next();
     }
   ]);

@@ -25,61 +25,9 @@ template <class T>
 struct WeakListVisitor;
 
 template <class T>
-Object* VisitWeakList(Heap* heap, Object* list, WeakObjectRetainer* retainer) {
-  Object* undefined = ReadOnlyRoots(heap).undefined_value();
-  Object* head = undefined;
-  T* tail = nullptr;
-  bool record_slots = MustRecordSlots(heap);
-
-  while (list != undefined) {
-    // Check whether to keep the candidate in the list.
-    T* candidate = reinterpret_cast<T*>(list);
-
-    Object* retained = retainer->RetainAs(list);
-
-    // Move to the next element before the WeakNext is cleared.
-    list = WeakListVisitor<T>::WeakNext(candidate);
-
-    if (retained != nullptr) {
-      if (head == undefined) {
-        // First element in the list.
-        head = retained;
-      } else {
-        // Subsequent elements in the list.
-        DCHECK_NOT_NULL(tail);
-        WeakListVisitor<T>::SetWeakNext(tail, retained);
-        if (record_slots) {
-          HeapObject* slot_holder = WeakListVisitor<T>::WeakNextHolder(tail);
-          int slot_offset = WeakListVisitor<T>::WeakNextOffset();
-          ObjectSlot slot = HeapObject::RawField(slot_holder, slot_offset);
-          MarkCompactCollector::RecordSlot(slot_holder, slot,
-                                           HeapObject::cast(retained));
-        }
-      }
-      // Retained object is new tail.
-      DCHECK(!retained->IsUndefined(heap->isolate()));
-      candidate = reinterpret_cast<T*>(retained);
-      tail = candidate;
-
-      // tail is a live object, visit it.
-      WeakListVisitor<T>::VisitLiveObject(heap, tail, retainer);
-
-    } else {
-      WeakListVisitor<T>::VisitPhantomObject(heap, candidate);
-    }
-  }
-
-  // Terminate the list if there is one or more elements.
-  if (tail != nullptr) WeakListVisitor<T>::SetWeakNext(tail, undefined);
-  return head;
-}
-
-// TODO(3770): Replacement for the above, temporarily separate to allow
-// incremental transition. Assumes that T derives from ObjectPtr.
-template <class T>
-Object* VisitWeakList2(Heap* heap, Object* list, WeakObjectRetainer* retainer) {
-  Object* undefined = ReadOnlyRoots(heap).undefined_value();
-  Object* head = undefined;
+Object VisitWeakList(Heap* heap, Object list, WeakObjectRetainer* retainer) {
+  Object undefined = ReadOnlyRoots(heap).undefined_value();
+  Object head = undefined;
   T tail;
   bool record_slots = MustRecordSlots(heap);
 
@@ -87,12 +35,12 @@ Object* VisitWeakList2(Heap* heap, Object* list, WeakObjectRetainer* retainer) {
     // Check whether to keep the candidate in the list.
     T candidate = T::cast(list);
 
-    Object* retained = retainer->RetainAs(list);
+    Object retained = retainer->RetainAs(list);
 
     // Move to the next element before the WeakNext is cleared.
     list = WeakListVisitor<T>::WeakNext(candidate);
 
-    if (retained != nullptr) {
+    if (retained != Object()) {
       if (head == undefined) {
         // First element in the list.
         head = retained;
@@ -101,9 +49,9 @@ Object* VisitWeakList2(Heap* heap, Object* list, WeakObjectRetainer* retainer) {
         DCHECK(!tail.is_null());
         WeakListVisitor<T>::SetWeakNext(tail, retained);
         if (record_slots) {
-          HeapObject* slot_holder = WeakListVisitor<T>::WeakNextHolder(tail);
+          HeapObject slot_holder = WeakListVisitor<T>::WeakNextHolder(tail);
           int slot_offset = WeakListVisitor<T>::WeakNextOffset();
-          ObjectSlot slot = HeapObject::RawField(slot_holder, slot_offset);
+          ObjectSlot slot = slot_holder.RawField(slot_offset);
           MarkCompactCollector::RecordSlot(slot_holder, slot,
                                            HeapObject::cast(retained));
         }
@@ -127,8 +75,8 @@ Object* VisitWeakList2(Heap* heap, Object* list, WeakObjectRetainer* retainer) {
 }
 
 template <class T>
-static void ClearWeakList(Heap* heap, Object* list) {
-  Object* undefined = ReadOnlyRoots(heap).undefined_value();
+static void ClearWeakList(Heap* heap, Object list) {
+  Object undefined = ReadOnlyRoots(heap).undefined_value();
   while (list != undefined) {
     T candidate = T::cast(list);
     list = WeakListVisitor<T>::WeakNext(candidate);
@@ -138,16 +86,16 @@ static void ClearWeakList(Heap* heap, Object* list) {
 
 template <>
 struct WeakListVisitor<Code> {
-  static void SetWeakNext(Code code, Object* next) {
+  static void SetWeakNext(Code code, Object next) {
     code->code_data_container()->set_next_code_link(next,
                                                     UPDATE_WEAK_WRITE_BARRIER);
   }
 
-  static Object* WeakNext(Code code) {
+  static Object WeakNext(Code code) {
     return code->code_data_container()->next_code_link();
   }
 
-  static HeapObject* WeakNextHolder(Code code) {
+  static HeapObject WeakNextHolder(Code code) {
     return code->code_data_container();
   }
 
@@ -165,15 +113,15 @@ struct WeakListVisitor<Code> {
 
 template <>
 struct WeakListVisitor<Context> {
-  static void SetWeakNext(Context context, Object* next) {
+  static void SetWeakNext(Context context, Object next) {
     context->set(Context::NEXT_CONTEXT_LINK, next, UPDATE_WEAK_WRITE_BARRIER);
   }
 
-  static Object* WeakNext(Context context) {
+  static Object WeakNext(Context context) {
     return context->next_context_link();
   }
 
-  static HeapObject* WeakNextHolder(Context context) { return context; }
+  static HeapObject WeakNextHolder(Context context) { return context; }
 
   static int WeakNextOffset() {
     return FixedArray::SizeFor(Context::NEXT_CONTEXT_LINK);
@@ -200,7 +148,7 @@ struct WeakListVisitor<Context> {
   static void DoWeakList(Heap* heap, Context context,
                          WeakObjectRetainer* retainer, int index) {
     // Visit the weak list, removing dead intermediate elements.
-    Object* list_head = VisitWeakList2<T>(heap, context->get(index), retainer);
+    Object list_head = VisitWeakList<T>(heap, context->get(index), retainer);
 
     // Update the list head.
     context->set(index, list_head, UPDATE_WRITE_BARRIER);
@@ -222,25 +170,25 @@ struct WeakListVisitor<Context> {
 
 template <>
 struct WeakListVisitor<AllocationSite> {
-  static void SetWeakNext(AllocationSite* obj, Object* next) {
+  static void SetWeakNext(AllocationSite obj, Object next) {
     obj->set_weak_next(next, UPDATE_WEAK_WRITE_BARRIER);
   }
 
-  static Object* WeakNext(AllocationSite* obj) { return obj->weak_next(); }
+  static Object WeakNext(AllocationSite obj) { return obj->weak_next(); }
 
-  static HeapObject* WeakNextHolder(AllocationSite* obj) { return obj; }
+  static HeapObject WeakNextHolder(AllocationSite obj) { return obj; }
 
   static int WeakNextOffset() { return AllocationSite::kWeakNextOffset; }
 
-  static void VisitLiveObject(Heap*, AllocationSite*, WeakObjectRetainer*) {}
+  static void VisitLiveObject(Heap*, AllocationSite, WeakObjectRetainer*) {}
 
-  static void VisitPhantomObject(Heap*, AllocationSite*) {}
+  static void VisitPhantomObject(Heap*, AllocationSite) {}
 };
 
-template Object* VisitWeakList2<Context>(Heap* heap, Object* list,
-                                         WeakObjectRetainer* retainer);
+template Object VisitWeakList<Context>(Heap* heap, Object list,
+                                       WeakObjectRetainer* retainer);
 
-template Object* VisitWeakList<AllocationSite>(Heap* heap, Object* list,
-                                               WeakObjectRetainer* retainer);
+template Object VisitWeakList<AllocationSite>(Heap* heap, Object list,
+                                              WeakObjectRetainer* retainer);
 }  // namespace internal
 }  // namespace v8

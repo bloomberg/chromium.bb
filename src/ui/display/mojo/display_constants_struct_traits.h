@@ -26,6 +26,6 @@ struct EnumTraits<display::mojom::HDCPState, display::HDCPState> {
                         display::HDCPState* out);
 };
 
-};  // namespace mojo
+}  // namespace mojo
 
 #endif  // UI_DISPLAY_MOJO_DISPLAY_CONSTANTS_STRUCT_TRAITS_H_

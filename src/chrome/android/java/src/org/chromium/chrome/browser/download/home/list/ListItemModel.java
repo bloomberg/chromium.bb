@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.download.home.list;
 
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * This model represents the data required to build a list UI around a set of {@link ListItem}s.

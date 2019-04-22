@@ -9,8 +9,9 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +38,7 @@ TEST(DecoderBufferTest, CreateEOSBuffer) {
 
 TEST(DecoderBufferTest, CopyFrom) {
   const uint8_t kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
 
   scoped_refptr<DecoderBuffer> buffer2(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(&kData), kDataSize));
@@ -64,7 +65,7 @@ TEST(DecoderBufferTest, CopyFrom) {
 
 TEST(DecoderBufferTest, FromSharedMemoryHandle) {
   const uint8_t kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
 
   base::SharedMemory mem;
   ASSERT_TRUE(mem.CreateAndMapAnonymous(kDataSize));
@@ -81,7 +82,7 @@ TEST(DecoderBufferTest, FromSharedMemoryHandle) {
 
 TEST(DecoderBufferTest, FromSharedMemoryHandle_Unaligned) {
   const uint8_t kData[] = "XXXhello";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
   const off_t kDataOffset = 3;
 
   base::SharedMemory mem;
@@ -100,7 +101,7 @@ TEST(DecoderBufferTest, FromSharedMemoryHandle_Unaligned) {
 
 TEST(DecoderBufferTest, FromSharedMemoryHandle_ZeroSize) {
   const uint8_t kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
 
   base::SharedMemory mem;
   ASSERT_TRUE(mem.CreateAndMapAnonymous(kDataSize));
@@ -111,10 +112,61 @@ TEST(DecoderBufferTest, FromSharedMemoryHandle_ZeroSize) {
   ASSERT_FALSE(buffer.get());
 }
 
+TEST(DecoderBufferTest, FromSharedMemoryRegion) {
+  const uint8_t kData[] = "hello";
+  const size_t kDataSize = base::size(kData);
+
+  base::MappedReadOnlyRegion mapping_region =
+      base::ReadOnlySharedMemoryRegion::Create(kDataSize);
+  memcpy(mapping_region.mapping.GetMemoryAs<uint8_t>(), kData, kDataSize);
+
+  scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::FromSharedMemoryRegion(
+      std::move(mapping_region.region), 0, kDataSize));
+  ASSERT_TRUE(buffer.get());
+  EXPECT_EQ(buffer->data_size(), kDataSize);
+  EXPECT_EQ(0, memcmp(buffer->data(), kData, kDataSize));
+  EXPECT_FALSE(buffer->end_of_stream());
+  EXPECT_FALSE(buffer->is_key_frame());
+}
+
+TEST(DecoderBufferTest, FromSharedMemoryRegion_ZeroSize) {
+  const uint8_t kData[] = "hello";
+  const size_t kDataSize = base::size(kData);
+
+  base::MappedReadOnlyRegion mapping_region =
+      base::ReadOnlySharedMemoryRegion::Create(kDataSize);
+  memcpy(mapping_region.mapping.GetMemoryAs<uint8_t>(), kData, kDataSize);
+
+  scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::FromSharedMemoryRegion(
+      std::move(mapping_region.region), 0, 0));
+
+  ASSERT_FALSE(buffer.get());
+}
+
+TEST(DecoderBufferTest, FromSharedMemoryRegion_Unaligned) {
+  const uint8_t kData[] = "XXXhello";
+  const size_t kDataSize = base::size(kData);
+  const off_t kDataOffset = 3;
+
+  base::MappedReadOnlyRegion mapping_region =
+      base::ReadOnlySharedMemoryRegion::Create(kDataSize);
+  memcpy(mapping_region.mapping.GetMemoryAs<uint8_t>(), kData, kDataSize);
+
+  scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::FromSharedMemoryRegion(
+      std::move(mapping_region.region), kDataOffset, kDataSize - kDataOffset));
+
+  ASSERT_TRUE(buffer.get());
+  EXPECT_EQ(buffer->data_size(), kDataSize - kDataOffset);
+  EXPECT_EQ(
+      0, memcmp(buffer->data(), kData + kDataOffset, kDataSize - kDataOffset));
+  EXPECT_FALSE(buffer->end_of_stream());
+  EXPECT_FALSE(buffer->is_key_frame());
+}
+
 #if !defined(OS_ANDROID)
 TEST(DecoderBufferTest, PaddingAlignment) {
   const uint8_t kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
   scoped_refptr<DecoderBuffer> buffer2(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   ASSERT_TRUE(buffer2.get());
@@ -142,7 +194,7 @@ TEST(DecoderBufferTest, PaddingAlignment) {
 
 TEST(DecoderBufferTest, ReadingWriting) {
   const char kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
 
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(kDataSize));
   ASSERT_TRUE(buffer.get());

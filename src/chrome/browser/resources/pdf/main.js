@@ -9,7 +9,7 @@
  *
  * @type Object
  */
-var viewer;
+window.viewer = null;
 
 
 (function() {
@@ -19,7 +19,7 @@ var viewer;
  *
  * @type Array
  */
-var pendingMessages = [];
+const pendingMessages = [];
 
 /**
  * Handles events that are received prior to the PDFViewer being created.
@@ -40,8 +40,9 @@ function initViewer(browserApi) {
   // PDFViewer will handle any messages after it is created.
   window.removeEventListener('message', handleScriptingMessage, false);
   viewer = new PDFViewer(browserApi);
-  while (pendingMessages.length > 0)
+  while (pendingMessages.length > 0) {
     viewer.handleScriptingMessage(pendingMessages.shift());
+  }
 }
 
 /**
@@ -72,13 +73,16 @@ function main() {
   // Set up an event listener to catch scripting messages which are sent prior
   // to the PDFViewer being created.
   window.addEventListener('message', handleScriptingMessage, false);
-  var chain = createBrowserApi();
+  HTMLImports.whenReady(() => {
+    let chain = createBrowserApi();
 
-  // Content settings may not be present in test environments.
-  if (chrome.contentSettings)
-    chain = chain.then(configureJavaScriptContentSetting);
+    // Content settings may not be present in test environments.
+    if (chrome.contentSettings) {
+      chain = chain.then(configureJavaScriptContentSetting);
+    }
 
-  chain.then(initViewer);
+    chain = chain.then(initViewer);
+  });
 }
 
 main();

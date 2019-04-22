@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
+#include "base/hash/sha1.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sha1.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/default_clock.h"
 #include "components/consent_auditor/pref_names.h"
@@ -75,7 +75,7 @@ void LoadEntriesFromLocalConsentRecord(const base::Value* consents,
   *locale = locale_entry->GetString();
 }
 
-class FakeConsentSyncBridge : public syncer::ConsentSyncBridge {
+class FakeConsentSyncBridge : public ConsentSyncBridge {
  public:
   ~FakeConsentSyncBridge() override = default;
 
@@ -135,7 +135,7 @@ class ConsentAuditorImplTest : public testing::Test {
   void SetAppLocale(const std::string& new_app_locale) {
     app_locale_ = new_app_locale;
   }
-  void SetConsentSyncBridge(std::unique_ptr<syncer::ConsentSyncBridge> bridge) {
+  void SetConsentSyncBridge(std::unique_ptr<ConsentSyncBridge> bridge) {
     consent_sync_bridge_ = std::move(bridge);
   }
   void SetClock(base::Clock* clock) { clock_ = clock; }
@@ -150,7 +150,7 @@ class ConsentAuditorImplTest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::string app_version_;
   std::string app_locale_;
-  std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge_;
+  std::unique_ptr<ConsentSyncBridge> consent_sync_bridge_;
 };
 
 TEST_F(ConsentAuditorImplTest, LocalConsentPrefRepresentation) {

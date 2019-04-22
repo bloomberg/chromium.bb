@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "net/base/proxy_server.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -131,7 +131,7 @@ TEST(ProxyServerTest, FromURI) {
        "HTTPS 1.2.3.4:10"},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ProxyServer uri =
         ProxyServer::FromURI(tests[i].input_uri, ProxyServer::SCHEME_HTTP);
     EXPECT_TRUE(uri.is_valid());
@@ -172,7 +172,7 @@ TEST(ProxyServerTest, Invalid) {
     "http:",  // ambiguous, but will fail because of bad port.
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ProxyServer uri = ProxyServer::FromURI(tests[i], ProxyServer::SCHEME_HTTP);
     EXPECT_FALSE(uri.is_valid());
     EXPECT_FALSE(uri.is_direct());
@@ -189,7 +189,7 @@ TEST(ProxyServerTest, Whitespace) {
     "  \tfoopy:80  ",
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ProxyServer uri = ProxyServer::FromURI(tests[i], ProxyServer::SCHEME_HTTP);
     EXPECT_EQ("foopy:80", uri.ToURI());
   }
@@ -247,7 +247,7 @@ TEST(ProxyServerTest, FromPACString) {
     },
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ProxyServer uri = ProxyServer::FromPacString(tests[i].input_pac);
     EXPECT_TRUE(uri.is_valid());
     EXPECT_EQ(tests[i].expected_uri, uri.ToURI());
@@ -263,69 +263,66 @@ TEST(ProxyServerTest, FromPACStringInvalid) {
     "DIRECT foopy:10",  // direct cannot have host/port.
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     ProxyServer uri = ProxyServer::FromPacString(tests[i]);
     EXPECT_FALSE(uri.is_valid());
   }
 }
 
 TEST(ProxyServerTest, ComparatorAndEquality) {
-  struct {
+  const struct {
     // Inputs.
-    const char* const server1;
-    const char* const server2;
+    ProxyServer server1;
+    ProxyServer server2;
 
     // Expectation.
     //   -1 means server1 is less than server2
     //    0 means server1 equals server2
     //    1 means server1 is greater than server2
     int expected_comparison;
-  } tests[] = {
-    { // Equal.
-      "foo:11",
-      "http://foo:11",
-      0
-    },
-    { // Port is different.
-      "foo:333",
-      "foo:444",
-      -1
-    },
-    { // Host is different.
-      "foo:33",
-      "bar:33",
-      1
-    },
-    { // Scheme is different.
-      "socks4://foo:33",
-      "http://foo:33",
-      1
-    },
+  } kTests[] = {
+      {// Equal.
+       ProxyServer::FromURI("foo:11", ProxyServer::SCHEME_HTTP),
+       ProxyServer::FromURI("http://foo:11", ProxyServer::SCHEME_HTTP), 0},
+      {// Port is different.
+       ProxyServer::FromURI("foo:333", ProxyServer::SCHEME_HTTP),
+       ProxyServer::FromURI("foo:444", ProxyServer::SCHEME_HTTP), -1},
+      {// Host is different.
+       ProxyServer::FromURI("foo:33", ProxyServer::SCHEME_HTTP),
+       ProxyServer::FromURI("bar:33", ProxyServer::SCHEME_HTTP), 1},
+      {// Scheme is different.
+       ProxyServer::FromURI("socks4://foo:33", ProxyServer::SCHEME_HTTP),
+       ProxyServer::FromURI("http://foo:33", ProxyServer::SCHEME_HTTP), 1},
+      {// Trusted is different.
+       ProxyServer(ProxyServer::SCHEME_HTTPS, HostPortPair("foo", 33),
+                   false /* is_trusted_proxy */),
+       ProxyServer(ProxyServer::SCHEME_HTTPS, HostPortPair("foo", 33),
+                   true /* is_trusted_proxy */),
+       -1},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    // Parse the expected inputs to ProxyServer instances.
-    const ProxyServer server1 =
-        ProxyServer::FromURI(tests[i].server1, ProxyServer::SCHEME_HTTP);
+  for (const auto& test : kTests) {
+    EXPECT_TRUE(test.server1.is_valid());
+    EXPECT_TRUE(test.server2.is_valid());
 
-    const ProxyServer server2 =
-        ProxyServer::FromURI(tests[i].server2, ProxyServer::SCHEME_HTTP);
-
-    switch (tests[i].expected_comparison) {
+    switch (test.expected_comparison) {
       case -1:
-        EXPECT_TRUE(server1 < server2);
-        EXPECT_FALSE(server2 < server1);
-        EXPECT_FALSE(server2 == server1);
+        EXPECT_TRUE(test.server1 < test.server2);
+        EXPECT_FALSE(test.server2 < test.server1);
+        EXPECT_FALSE(test.server2 == test.server1);
+        EXPECT_FALSE(test.server1 == test.server2);
         break;
       case 0:
-        EXPECT_FALSE(server1 < server2);
-        EXPECT_FALSE(server2 < server1);
-        EXPECT_TRUE(server2 == server1);
+        EXPECT_FALSE(test.server1 < test.server2);
+        EXPECT_FALSE(test.server2 < test.server1);
+        EXPECT_TRUE(test.server2 == test.server1);
+        EXPECT_TRUE(test.server1 == test.server2);
         break;
       case 1:
-        EXPECT_FALSE(server1 < server2);
-        EXPECT_TRUE(server2 < server1);
-        EXPECT_FALSE(server2 == server1);
+        EXPECT_FALSE(test.server1 < test.server2);
+        EXPECT_TRUE(test.server2 < test.server1);
+        EXPECT_FALSE(test.server2 == test.server1);
+        EXPECT_FALSE(test.server1 == test.server2);
         break;
       default:
         FAIL() << "Invalid expectation. Can be only -1, 0, 1";

@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -39,23 +40,10 @@ class CORE_EXPORT ObjectPaintProperties {
   USING_FAST_MALLOC(ObjectPaintProperties);
 
  public:
-  static std::unique_ptr<ObjectPaintProperties> Create() {
-    return base::WrapUnique(new ObjectPaintProperties());
-  }
-
+  ObjectPaintProperties() = default;
+#if DCHECK_IS_ON()
   ~ObjectPaintProperties() { DCHECK(!is_immutable_); }
-
-  class UpdateResult {
-   public:
-    bool Unchanged() const { return result_ == kUnchanged; }
-    bool NewNodeCreated() const { return result_ == kNewNodeCreated; }
-
-   private:
-    friend class ObjectPaintProperties;
-    enum Result { kUnchanged, kValueChanged, kNewNodeCreated };
-    UpdateResult(Result r) : result_(r) {}
-    Result result_;
-  };
+#endif
 
 // The following defines 3 functions and one variable:
 // - Foo(): a getter for the property.
@@ -68,30 +56,33 @@ class CORE_EXPORT ObjectPaintProperties {
 // class-level comment ("update & clear implementation note") for details
 // about why this is needed for efficient updates.
 #define ADD_NODE(type, function, variable)                                   \
+ public:                                                                     \
   const type##PaintPropertyNode* function() const { return variable.get(); } \
-  UpdateResult Update##function(const type##PaintPropertyNode& parent,       \
-                                type##PaintPropertyNode::State&& state,      \
-                                bool is_parent_alias = false) {              \
-    auto result = is_parent_alias                                            \
-                      ? UpdateAlias(variable, parent)                        \
-                      : Update(variable, parent, std::move(state));          \
-    DCHECK(!is_immutable_ || result.Unchanged())                             \
-        << "Value changed while immutable. New state:\n"                     \
-        << *variable;                                                        \
-    return result;                                                           \
+  PaintPropertyChangeType Update##function(                                  \
+      const type##PaintPropertyNode& parent,                                 \
+      type##PaintPropertyNode::State&& state,                                \
+      const type##PaintPropertyNode::AnimationState& animation_state =       \
+          type##PaintPropertyNode::AnimationState()) {                       \
+    return Update(variable, parent, std::move(state), animation_state);      \
   }                                                                          \
-  bool Clear##function() {                                                   \
-    DCHECK(!is_immutable_ || !variable)                                      \
-        << "Value cleared while immutable. Old state:\n"                     \
-        << *variable;                                                        \
-    return Clear(variable);                                                  \
-  }                                                                          \
+  bool Clear##function() { return Clear(variable); }                         \
                                                                              \
  private:                                                                    \
-  scoped_refptr<type##PaintPropertyNode> variable;                           \
+  scoped_refptr<type##PaintPropertyNode> variable
+  // (End of ADD_NODE definition)
+
+#define ADD_ALIAS_NODE(type, function, variable)                             \
+ public:                                                                     \
+  const type##PaintPropertyNode* function() const { return variable.get(); } \
+  PaintPropertyChangeType Update##function(                                  \
+      const type##PaintPropertyNode& parent) {                               \
+    return UpdateAlias(variable, parent);                                    \
+  }                                                                          \
+  bool Clear##function() { return Clear(variable); }                         \
                                                                              \
- public:
-// (End of ADD_NODE definition)
+ private:                                                                    \
+  scoped_refptr<type##PaintPropertyNode> variable
+  // (End of ADD_ALIAS_NODE definition)
 
 #define ADD_TRANSFORM(function, variable) \
   ADD_NODE(Transform, function, variable)
@@ -136,14 +127,14 @@ class CORE_EXPORT ObjectPaintProperties {
   ADD_TRANSFORM(ReplacedContentTransform, replaced_content_transform_);
   ADD_TRANSFORM(ScrollTranslation, scroll_translation_);
   ADD_NODE(Scroll, Scroll, scroll_);
-  ADD_TRANSFORM(TransformIsolationNode, transform_isolation_node_);
+  ADD_ALIAS_NODE(Transform, TransformIsolationNode, transform_isolation_node_);
 
   // The hierarchy of the effect subtree created by a LayoutObject is as
   // follows:
   // [ effect ]
   // |     Isolated group to apply various CSS effects, including opacity,
-  // |     mix-blend-mode, and for isolation if a mask needs to be applied or
-  // |     backdrop-dependent children are present.
+  // |     mix-blend-mode, backdrop-filter, and for isolation if a mask needs
+  // |     to be applied or backdrop-dependent children are present.
   // +-[ filter ]
   // |     Isolated group for CSS filter.
   // +-[ vertical/horizontal scrollbar effect ]
@@ -153,12 +144,9 @@ class CORE_EXPORT ObjectPaintProperties {
   // |     Isolated group for painting the CSS mask. This node will have
   // |     SkBlendMode::kDstIn and shall paint last, i.e. after masked contents.
   // +-[ clip path ]
-  // |     Isolated group for painting the CSS clip-path. This node will have
-  // |     SkBlendMode::kDstIn and shall paint last, i.e. after clipped
-  // |     contents.
-  // +-[ link highlight effect ]
-  //       The link highlight effect is only used for link highlight animations
-  //       and should never have descendants.
+  //       Isolated group for painting the CSS clip-path. This node will have
+  //       SkBlendMode::kDstIn and shall paint last, i.e. after clipped
+  //       contents.
   //
   // ... +-[ effectIsolationNode ]
   //       This serves as a parent to subtree effects on an element with paint
@@ -170,8 +158,7 @@ class CORE_EXPORT ObjectPaintProperties {
   ADD_EFFECT(HorizontalScrollbarEffect, horizontal_scrollbar_effect_);
   ADD_EFFECT(Mask, mask_);
   ADD_EFFECT(ClipPath, clip_path_);
-  ADD_EFFECT(LinkHighlightEffect, link_highlight_effect_);
-  ADD_EFFECT(EffectIsolationNode, effect_isolation_node_);
+  ADD_ALIAS_NODE(Effect, EffectIsolationNode, effect_isolation_node_);
 
   // The hierarchy of the clip subtree created by a LayoutObject is as follows:
   // [ fragment clip ]
@@ -219,8 +206,15 @@ class CORE_EXPORT ObjectPaintProperties {
   ADD_CLIP(OverflowControlsClip, overflow_controls_clip_);
   ADD_CLIP(InnerBorderRadiusClip, inner_border_radius_clip_);
   ADD_CLIP(OverflowClip, overflow_clip_);
-  ADD_CLIP(ClipIsolationNode, clip_isolation_node_);
+  ADD_ALIAS_NODE(Clip, ClipIsolationNode, clip_isolation_node_);
 
+#undef ADD_CLIP
+#undef ADD_EFFECT
+#undef ADD_TRANSFORM
+#undef ADD_NODE
+#undef ADD_ALIAS_NODE
+
+ public:
 #if DCHECK_IS_ON()
   // Used by FindPropertiesNeedingUpdate.h for verifying state doesn't change.
   void SetImmutable() const { is_immutable_ = true; }
@@ -243,8 +237,6 @@ class CORE_EXPORT ObjectPaintProperties {
 #endif
 
  private:
-  ObjectPaintProperties() = default;
-
   // Return true if the property tree structure changes (an existing node was
   // deleted), and false otherwise. See the class-level comment ("update & clear
   // implementation note") for details about why this is needed for efficiency.
@@ -261,32 +253,52 @@ class CORE_EXPORT ObjectPaintProperties {
   // created), and false otherwise. See the class-level comment ("update & clear
   // implementation note") for details about why this is needed for efficiency.
   template <typename PaintPropertyNode>
-  UpdateResult Update(scoped_refptr<PaintPropertyNode>& field,
-                      const PaintPropertyNode& parent,
-                      typename PaintPropertyNode::State&& state) {
+  PaintPropertyChangeType Update(
+      scoped_refptr<PaintPropertyNode>& field,
+      const PaintPropertyNode& parent,
+      typename PaintPropertyNode::State&& state,
+      const typename PaintPropertyNode::AnimationState& animation_state) {
     if (field) {
-      return field->Update(parent, std::move(state))
-                 ? UpdateResult::kValueChanged
-                 : UpdateResult::kUnchanged;
+      auto changed = field->Update(parent, std::move(state), animation_state);
+#if DCHECK_IS_ON()
+      DCHECK(!is_immutable_ || changed == PaintPropertyChangeType::kUnchanged)
+          << "Value changed while immutable. New state:\n"
+          << *field;
+#endif
+      return changed;
     }
     field = PaintPropertyNode::Create(parent, std::move(state));
-    return UpdateResult::kNewNodeCreated;
-  }
-  template <typename PaintPropertyNode>
-  UpdateResult UpdateAlias(scoped_refptr<PaintPropertyNode>& field,
-                           const PaintPropertyNode& parent) {
-    if (field) {
-      DCHECK(field->IsParentAlias());
-      return field->SetParent(&parent) ? UpdateResult::kValueChanged
-                                       : UpdateResult::kUnchanged;
-    }
-    field = PaintPropertyNode::CreateAlias(parent);
-    return UpdateResult::kNewNodeCreated;
+#if DCHECK_IS_ON()
+    DCHECK(!is_immutable_) << "Node added while immutable. New state:\n"
+                           << *field;
+#endif
+    return PaintPropertyChangeType::kNodeAddedOrRemoved;
   }
 
-  // This is used in DCHECKs only, but is not guarded by DCHECK_IS_ON() because
-  // we can't have a similar guard in a macro definition.
+  template <typename PaintPropertyNode>
+  PaintPropertyChangeType UpdateAlias(scoped_refptr<PaintPropertyNode>& field,
+                                      const PaintPropertyNode& parent) {
+    if (field) {
+      DCHECK(field->IsParentAlias());
+      auto changed = field->SetParent(&parent);
+#if DCHECK_IS_ON()
+      DCHECK(!is_immutable_ || changed == PaintPropertyChangeType::kUnchanged)
+          << "Parent changed while immutable. New state:\n"
+          << *field;
+#endif
+      return changed;
+    }
+    field = PaintPropertyNode::CreateAlias(parent);
+#if DCHECK_IS_ON()
+    DCHECK(!is_immutable_) << "Node added while immutable. New state:\n"
+                           << *field;
+#endif
+    return PaintPropertyChangeType::kNodeAddedOrRemoved;
+  }
+
+#if DCHECK_IS_ON()
   mutable bool is_immutable_ = false;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ObjectPaintProperties);
 };

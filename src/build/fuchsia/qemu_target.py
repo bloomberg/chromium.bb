@@ -5,6 +5,7 @@
 """Implements commands for running and interacting with Fuchsia on QEMU."""
 
 import boot_data
+import common
 import logging
 import target
 import os
@@ -12,6 +13,7 @@ import platform
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 
 from common import GetQemuRootForPlatform, EnsurePathExists
@@ -22,15 +24,6 @@ GUEST_NET = '192.168.3.0/24'
 GUEST_IP_ADDRESS = '192.168.3.9'
 HOST_IP_ADDRESS = '192.168.3.2'
 GUEST_MAC_ADDRESS = '52:54:00:63:5e:7b'
-
-
-def _GetAvailableTcpPort():
-  """Finds a (probably) open port by opening and closing a listen socket."""
-  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  sock.bind(("", 0))
-  port = sock.getsockname()[1]
-  sock.close()
-  return port
 
 
 class QemuTarget(target.Target):
@@ -53,9 +46,7 @@ class QemuTarget(target.Target):
   # Used by the context manager to ensure that QEMU is killed when the Python
   # process exits.
   def __exit__(self, exc_type, exc_val, exc_tb):
-    if self._IsQemuStillRunning():
-      logging.info('Shutting down QEMU.')
-      self._qemu_process.kill()
+    self.Shutdown();
 
   def Start(self):
     qemu_path = os.path.join(GetQemuRootForPlatform(), 'bin',
@@ -129,7 +120,7 @@ class QemuTarget(target.Target):
     netdev_config = 'user,id=net0,net=%s,dhcpstart=%s,host=%s' % \
             (GUEST_NET, GUEST_IP_ADDRESS, HOST_IP_ADDRESS)
 
-    self._host_ssh_port = _GetAvailableTcpPort()
+    self._host_ssh_port = common.GetAvailableTcpPort()
     netdev_config += ",hostfwd=tcp::%s-:22" % self._host_ssh_port
     qemu_command.extend([
       '-netdev', netdev_config,
@@ -146,18 +137,32 @@ class QemuTarget(target.Target):
 
     # Zircon sends debug logs to serial port (see kernel.serial=legacy flag
     # above). Serial port is redirected to a file through QEMU stdout.
-    # This approach is used instead of loglistener to debug
-    # https://crbug.com/86975 .
+    # Unless a |_system_log_file| is explicitly set, we output the kernel serial
+    # log to a temporary file, and print that out if we are unable to connect to
+    # the QEMU guest, to make it easier to diagnose connectivity issues.
+    temporary_system_log_file = None
     if self._system_log_file:
       stdout = self._system_log_file
       stderr = subprocess.STDOUT
     else:
-      stdout = open(os.devnull)
+      temporary_system_log_file = tempfile.NamedTemporaryFile('w')
+      stdout = temporary_system_log_file
       stderr = sys.stderr
 
     self._qemu_process = subprocess.Popen(qemu_command, stdin=open(os.devnull),
                                           stdout=stdout, stderr=stderr)
-    self._WaitUntilReady();
+    try:
+      self._WaitUntilReady();
+    except target.FuchsiaTargetException:
+      if temporary_system_log_file:
+        logging.info("Kernel logs:\n" +
+                     open(temporary_system_log_file.name, 'r').read())
+      raise
+
+  def Shutdown(self):
+    if self._IsQemuStillRunning():
+      logging.info('Shutting down QEMU.')
+      self._qemu_process.kill()
 
   def _IsQemuStillRunning(self):
     if not self._qemu_process:

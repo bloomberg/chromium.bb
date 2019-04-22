@@ -4,6 +4,7 @@
 
 #include "components/feed/core/feed_logging_metrics.h"
 
+#include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -149,21 +150,55 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionWindowOpened) {
                   /*count=*/4)));
 }
 
-TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionDismissedIfVisited) {
+TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionDismissedCommitIfVisited) {
   base::HistogramTester histogram_tester;
-  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, kVisitedUrl);
+  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, kVisitedUrl,
+                                                true);
   EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.ContentSuggestions.DismissedVisited"),
+                  "NewTabPage.ContentSuggestions.DismissedVisited.Commit"),
               ElementsAre(base::Bucket(/*min=*/10, /*count=*/1)));
 }
 
-TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionDismissedIfNotVisited) {
+TEST_F(FeedLoggingMetricsTest,
+       ShouldLogOnSuggestionDismissedCommitIfNotVisited) {
   base::HistogramTester histogram_tester;
-  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10,
-                                                GURL("http://non_visited.com"));
+  feed_logging_metrics()->OnSuggestionDismissed(
+      /*position=*/10, GURL("http://non_visited.com"), true);
   EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.ContentSuggestions.DismissedVisited"),
-              IsEmpty());
+                  "NewTabPage.ContentSuggestions.DismissedUnvisited.Commit"),
+              ElementsAre(base::Bucket(/*min=*/10, /*count=*/1)));
+}
+
+TEST_F(FeedLoggingMetricsTest,
+       ShouldLogOnSuggestionDismissedUndoIfUndoDismissAndVisited) {
+  base::HistogramTester histogram_tester;
+  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, kVisitedUrl,
+                                                false);
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.DismissedVisited.Undo"),
+              ElementsAre(base::Bucket(/*min=*/10, /*count=*/1)));
+}
+
+TEST_F(FeedLoggingMetricsTest,
+       ShouldLogOnSuggestionDismissedUndoIfUndoDismissAndNotVisited) {
+  base::HistogramTester histogram_tester;
+  feed_logging_metrics()->OnSuggestionDismissed(
+      /*position=*/10, GURL("http://non_visited.com"), false);
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.DismissedUnvisited.Undo"),
+              ElementsAre(base::Bucket(/*min=*/10, /*count=*/1)));
+}
+
+TEST_F(FeedLoggingMetricsTest, ShouldReportOnPietFrameRenderingEvent) {
+  base::HistogramTester histogram_tester;
+  std::vector<int> error_codes({0, 1, 6, 7});
+  feed_logging_metrics()->OnPietFrameRenderingEvent(error_codes);
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "ContentSuggestions.Feed.Piet.FrameRenderingErrorCode"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
+                          base::Bucket(/*min=*/1, /*count=*/1),
+                          base::Bucket(/*min=*/6, /*count=*/1),
+                          base::Bucket(/*min=*/7, /*count=*/1)));
 }
 
 }  // namespace feed

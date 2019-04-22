@@ -148,13 +148,13 @@ enum vp8e_enc_control_id {
    * speed at the expense of quality.
    *
    * \note Valid range for VP8: -16..16
-   * \note Valid range for VP9: -8..8
+   * \note Valid range for VP9: -9..9
    *
    * Supported in codecs: VP8, VP9
    */
   VP8E_SET_CPUUSED = 13,
 
-  /*!\brief Codec control function to enable automatic set and use alf frames.
+  /*!\brief Codec control function to enable automatic use of arf frames.
    *
    * Supported in codecs: VP8, VP9
    */
@@ -169,7 +169,10 @@ enum vp8e_enc_control_id {
    */
   VP8E_SET_NOISE_SENSITIVITY,
 
-  /*!\brief Codec control function to set sharpness.
+  /*!\brief Codec control function to set higher sharpness at the expense
+   * of a lower PSNR.
+   *
+   * \note Valid range: 0..7
    *
    * Supported in codecs: VP8, VP9
    */
@@ -817,7 +820,7 @@ typedef struct vpx_svc_ref_frame_config {
   int update_last[VPX_SS_MAX_LAYERS];       /**< Update last. */
   int update_golden[VPX_SS_MAX_LAYERS];     /**< Update golden. */
   int update_alt_ref[VPX_SS_MAX_LAYERS];    /**< Update altref. */
-  int reference_last[VPX_SS_MAX_LAYERS];    /**< Last as eference. */
+  int reference_last[VPX_SS_MAX_LAYERS];    /**< Last as reference. */
   int reference_golden[VPX_SS_MAX_LAYERS];  /**< Golden as reference. */
   int reference_alt_ref[VPX_SS_MAX_LAYERS]; /**< Altref as reference. */
   int64_t duration[VPX_SS_MAX_LAYERS];      /**< Duration per spatial layer. */
@@ -837,7 +840,7 @@ typedef enum {
 
 /*!\brief vp9 svc frame dropping parameters.
  *
- * This defines the frame drop thresholds for each spatial layer, and the
+ * This defines the frame drop thresholds for each spatial layer, and
  * the frame dropping mode: 0 = layer based frame dropping (default),
  * 1 = constrained dropping where current layer drop forces all upper
  * spatial layers to drop.
@@ -930,8 +933,8 @@ VPX_CTRL_USE_TYPE(VP9E_GET_SVC_LAYER_ID, vpx_svc_layer_id_t *)
 
 VPX_CTRL_USE_TYPE(VP8E_SET_MAX_INTRA_BITRATE_PCT, unsigned int)
 #define VPX_CTRL_VP8E_SET_MAX_INTRA_BITRATE_PCT
-VPX_CTRL_USE_TYPE(VP8E_SET_MAX_INTER_BITRATE_PCT, unsigned int)
-#define VPX_CTRL_VP8E_SET_MAX_INTER_BITRATE_PCT
+VPX_CTRL_USE_TYPE(VP9E_SET_MAX_INTER_BITRATE_PCT, unsigned int)
+#define VPX_CTRL_VP9E_SET_MAX_INTER_BITRATE_PCT
 
 VPX_CTRL_USE_TYPE(VP8E_SET_GF_CBR_BOOST_PCT, unsigned int)
 #define VPX_CTRL_VP8E_SET_GF_CBR_BOOST_PCT
@@ -1011,6 +1014,9 @@ VPX_CTRL_USE_TYPE(VP9E_SET_SVC_GF_TEMPORAL_REF, unsigned int)
 VPX_CTRL_USE_TYPE(VP9E_SET_SVC_SPATIAL_LAYER_SYNC,
                   vpx_svc_spatial_layer_sync_t *)
 #define VPX_CTRL_VP9E_SET_SVC_SPATIAL_LAYER_SYNC
+
+VPX_CTRL_USE_TYPE(VP9E_SET_POSTENCODE_DROP, unsigned int)
+#define VPX_CTRL_VP9E_SET_POSTENCODE_DROP
 
 /*!\endcond */
 /*! @} - end defgroup vp8_encoder */

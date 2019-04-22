@@ -40,6 +40,8 @@ class GoogleWebSearch2018Page(TopRealWorldDesktopPage):
   BASE_NAME = 'google_web_search'
   YEAR = '2018'
   URL = 'https://www.google.com/#hl=en&q=barack+obama'
+  TAGS = TopRealWorldDesktopPage.TAGS + [
+      story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
   def __init__(self,
                page_set,
@@ -151,6 +153,7 @@ class Wordpress2018Page(TopRealWorldDesktopPage):
   YEAR = '2018'
   # pylint: disable=line-too-long
   URL = 'http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/'
+  TAGS = TopRealWorldDesktopPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
   def __init__(self,
                page_set,
@@ -261,6 +264,7 @@ class Pinterest2018Page(TopRealWorldDesktopPage):
   BASE_NAME = 'pinterest'
   YEAR = '2018'
   URL = 'https://www.pinterest.com/search/pins/?q=flowers&rs=typed'
+  TAGS = TopRealWorldDesktopPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
   def __init__(self,
                page_set,
@@ -466,6 +470,7 @@ class YahooSports2018Page(TopRealWorldDesktopPage):
   BASE_NAME = 'yahoo_sports'
   YEAR = '2018'
   URL = 'http://sports.yahoo.com/'
+  TAGS = TopRealWorldDesktopPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 
 class TechCrunch2018Page(TopRealWorldDesktopPage):

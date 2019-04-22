@@ -4,6 +4,11 @@
 
 #include "chrome/browser/android/compositor/scene_layer/tab_list_scene_layer.h"
 
+#include <vector>
+
+#include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
+#include "cc/layers/picture_image_layer.h"
 #include "chrome/browser/android/compositor/layer/content_layer.h"
 #include "chrome/browser/android/compositor/layer/tab_layer.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
@@ -11,6 +16,7 @@
 #include "content/public/browser/android/compositor.h"
 #include "jni/TabListSceneLayer_jni.h"
 #include "ui/android/resources/resource_manager_impl.h"
+#include "ui/gfx/android/java_bitmap.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;
@@ -86,61 +92,64 @@ void TabListSceneLayer::UpdateLayer(
   own_tree_->SetBounds(gfx::Size(viewport_width, viewport_height));
 }
 
-void TabListSceneLayer::PutTabLayer(JNIEnv* env,
-                                    const JavaParamRef<jobject>& jobj,
-                                    jint id,
-                                    jint toolbar_resource_id,
-                                    jint close_button_resource_id,
-                                    jint shadow_resource_id,
-                                    jint contour_resource_id,
-                                    jint back_logo_resource_id,
-                                    jint border_resource_id,
-                                    jint border_inner_shadow_resource_id,
-                                    jboolean can_use_live_layer,
-                                    jint tab_background_color,
-                                    jint back_logo_color,
-                                    jboolean incognito,
-                                    jboolean close_button_on_right,
-                                    jfloat x,
-                                    jfloat y,
-                                    jfloat width,
-                                    jfloat height,
-                                    jfloat content_width,
-                                    jfloat content_height,
-                                    jfloat visible_content_height,
-                                    jfloat shadow_x,
-                                    jfloat shadow_y,
-                                    jfloat shadow_width,
-                                    jfloat shadow_height,
-                                    jfloat pivot_x,
-                                    jfloat pivot_y,
-                                    jfloat rotation_x,
-                                    jfloat rotation_y,
-                                    jfloat alpha,
-                                    jfloat border_alpha,
-                                    jfloat border_inner_shadow_alpha,
-                                    jfloat contour_alpha,
-                                    jfloat shadow_alpha,
-                                    jfloat close_alpha,
-                                    jfloat close_btn_width,
-                                    jfloat close_btn_asset_size,
-                                    jfloat static_to_view_blend,
-                                    jfloat border_scale,
-                                    jfloat saturation,
-                                    jfloat brightness,
-                                    jboolean show_toolbar,
-                                    jint default_theme_color,
-                                    jint toolbar_background_color,
-                                    jint close_button_color,
-                                    jboolean anonymize_toolbar,
-                                    jboolean show_tab_title,
-                                    jint toolbar_textbox_resource_id,
-                                    jint toolbar_textbox_background_color,
-                                    jfloat toolbar_textbox_alpha,
-                                    jfloat toolbar_alpha,
-                                    jfloat toolbar_y_offset,
-                                    jfloat side_border_scale,
-                                    jboolean inset_border) {
+void TabListSceneLayer::PutTabLayer(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    jint id,
+    const base::android::JavaRef<jintArray>& tab_ids_list,
+    jboolean use_tab_ids_list,
+    jint toolbar_resource_id,
+    jint close_button_resource_id,
+    jint shadow_resource_id,
+    jint contour_resource_id,
+    jint back_logo_resource_id,
+    jint border_resource_id,
+    jint border_inner_shadow_resource_id,
+    jboolean can_use_live_layer,
+    jint tab_background_color,
+    jint back_logo_color,
+    jboolean incognito,
+    jboolean close_button_on_right,
+    jfloat x,
+    jfloat y,
+    jfloat width,
+    jfloat height,
+    jfloat content_width,
+    jfloat content_height,
+    jfloat visible_content_height,
+    jfloat shadow_x,
+    jfloat shadow_y,
+    jfloat shadow_width,
+    jfloat shadow_height,
+    jfloat pivot_x,
+    jfloat pivot_y,
+    jfloat rotation_x,
+    jfloat rotation_y,
+    jfloat alpha,
+    jfloat border_alpha,
+    jfloat border_inner_shadow_alpha,
+    jfloat contour_alpha,
+    jfloat shadow_alpha,
+    jfloat close_alpha,
+    jfloat close_btn_width,
+    jfloat close_btn_asset_size,
+    jfloat static_to_view_blend,
+    jfloat border_scale,
+    jfloat saturation,
+    jfloat brightness,
+    jboolean show_toolbar,
+    jint default_theme_color,
+    jint toolbar_background_color,
+    jint close_button_color,
+    jboolean anonymize_toolbar,
+    jboolean show_tab_title,
+    jint toolbar_textbox_resource_id,
+    jint toolbar_textbox_background_color,
+    jfloat toolbar_textbox_alpha,
+    jfloat toolbar_alpha,
+    jfloat toolbar_y_offset,
+    jfloat side_border_scale,
+    jboolean inset_border) {
   scoped_refptr<TabLayer> layer;
   auto iter = tab_map_.find(id);
   if (iter != tab_map_.end()) {
@@ -162,27 +171,58 @@ void TabListSceneLayer::PutTabLayer(JNIEnv* env,
 
   DCHECK(layer);
   if (layer) {
+    std::vector<int> tab_ids;
+    if (use_tab_ids_list)
+      base::android::JavaIntArrayToIntVector(env, tab_ids_list, &tab_ids);
+
+    // TODO(meiliang): This method pass another argument, a resource that can be
+    // used to indicate the currently selected tab for the TabLayer.
     layer->SetProperties(
-        id, can_use_live_layer, toolbar_resource_id, close_button_resource_id,
-        shadow_resource_id, contour_resource_id, back_logo_resource_id,
-        border_resource_id, border_inner_shadow_resource_id,
-        tab_background_color, back_logo_color, close_button_on_right, x, y,
-        width, height, shadow_x, shadow_y, shadow_width, shadow_height, pivot_x,
-        pivot_y, rotation_x, rotation_y, alpha, border_alpha,
-        border_inner_shadow_alpha, contour_alpha, shadow_alpha, close_alpha,
-        border_scale, saturation, brightness, close_btn_width,
-        close_btn_asset_size, static_to_view_blend, content_width,
-        content_height, content_width, visible_content_height, show_toolbar,
-        default_theme_color, toolbar_background_color, close_button_color,
-        anonymize_toolbar, show_tab_title, toolbar_textbox_resource_id,
-        toolbar_textbox_background_color, toolbar_textbox_alpha, toolbar_alpha,
-        toolbar_y_offset, side_border_scale, inset_border);
+        id, tab_ids, can_use_live_layer, toolbar_resource_id,
+        close_button_resource_id, shadow_resource_id, contour_resource_id,
+        back_logo_resource_id, border_resource_id,
+        border_inner_shadow_resource_id, tab_background_color, back_logo_color,
+        close_button_on_right, x, y, width, height, shadow_x, shadow_y,
+        shadow_width, shadow_height, pivot_x, pivot_y, rotation_x, rotation_y,
+        alpha, border_alpha, border_inner_shadow_alpha, contour_alpha,
+        shadow_alpha, close_alpha, border_scale, saturation, brightness,
+        close_btn_width, close_btn_asset_size, static_to_view_blend,
+        content_width, content_height, content_width, visible_content_height,
+        show_toolbar, default_theme_color, toolbar_background_color,
+        close_button_color, anonymize_toolbar, show_tab_title,
+        toolbar_textbox_resource_id, toolbar_textbox_background_color,
+        toolbar_textbox_alpha, toolbar_alpha, toolbar_y_offset,
+        side_border_scale, inset_border);
   }
 
   gfx::RectF self(own_tree_->position(), gfx::SizeF(own_tree_->bounds()));
   gfx::RectF content(x, y, width, height);
 
   content_obscures_self_ |= content.Contains(self);
+}
+
+void TabListSceneLayer::PutCreateGroupTextButtonLayer(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj,
+    jint text_button_resource_id,
+    jfloat x,
+    jfloat y,
+    jboolean is_visible) {
+  if (!tab_group_layer_) {
+    tab_group_layer_ = cc::UIResourceLayer::Create();
+    tab_group_layer_->SetIsDrawable(true);
+    tab_group_layer_->SetUIResourceId(resource_manager_->GetUIResourceId(
+        ui::ANDROID_RESOURCE_TYPE_DYNAMIC_BITMAP, text_button_resource_id));
+    gfx::Size size = resource_manager_
+                         ->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC_BITMAP,
+                                       text_button_resource_id)
+                         ->size();
+    tab_group_layer_->SetBounds(size);
+    own_tree_->AddChild(tab_group_layer_);
+  }
+  DCHECK(tab_group_layer_);
+  tab_group_layer_->SetHideLayerAndSubtree(!is_visible);
+  tab_group_layer_->SetPosition(gfx::PointF(x, y));
 }
 
 void TabListSceneLayer::OnDetach() {

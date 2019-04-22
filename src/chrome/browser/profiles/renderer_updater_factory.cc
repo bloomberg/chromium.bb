@@ -6,14 +6,14 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/renderer_updater.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 RendererUpdaterFactory::RendererUpdaterFactory()
     : BrowserContextKeyedServiceFactory(
           "RendererUpdater",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 RendererUpdaterFactory::~RendererUpdaterFactory() {}

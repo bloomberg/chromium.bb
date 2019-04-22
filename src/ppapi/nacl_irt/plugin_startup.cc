@@ -94,7 +94,7 @@ void StartUpPlugin() {
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     g_io_thread->task_runner()->PostTask(
-        FROM_HERE, base::Bind(StartUpManifestServiceOnIOThread, &event));
+        FROM_HERE, base::BindOnce(StartUpManifestServiceOnIOThread, &event));
     event.Wait();
   }
 

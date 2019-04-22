@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
@@ -121,7 +122,7 @@ void SSLErrorAssistantComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
   hash->assign(kSslErrorAssistantPublicKeySHA256,
                kSslErrorAssistantPublicKeySHA256 +
-                   arraysize(kSslErrorAssistantPublicKeySHA256));
+                   base::size(kSslErrorAssistantPublicKeySHA256));
 }
 
 std::string SSLErrorAssistantComponentInstallerPolicy::GetName() const {

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/ozone/common/egl_util.h"
 
@@ -41,7 +42,7 @@ bool GLSurfaceEglReadback::IsOffscreen() {
 }
 
 gfx::SwapResult GLSurfaceEglReadback::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   const gfx::Size size = GetSize();
   glReadPixels(0, 0, size.width(), size.height(), GL_BGRA, GL_UNSIGNED_BYTE,
                pixels_.get());

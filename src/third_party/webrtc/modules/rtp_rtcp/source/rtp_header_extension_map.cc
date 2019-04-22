@@ -35,6 +35,7 @@ constexpr ExtensionInfo kExtensions[] = {
     CreateExtensionInfo<AbsoluteSendTime>(),
     CreateExtensionInfo<VideoOrientation>(),
     CreateExtensionInfo<TransportSequenceNumber>(),
+    CreateExtensionInfo<TransportSequenceNumberV2>(),
     CreateExtensionInfo<PlayoutDelayLimits>(),
     CreateExtensionInfo<VideoContentTypeExtension>(),
     CreateExtensionInfo<VideoTimingExtension>(),
@@ -42,8 +43,9 @@ constexpr ExtensionInfo kExtensions[] = {
     CreateExtensionInfo<RtpStreamId>(),
     CreateExtensionInfo<RepairedRtpStreamId>(),
     CreateExtensionInfo<RtpMid>(),
-    CreateExtensionInfo<RtpGenericFrameDescriptorExtension>(),
-    CreateExtensionInfo<HdrMetadataExtension>(),
+    CreateExtensionInfo<RtpGenericFrameDescriptorExtension00>(),
+    CreateExtensionInfo<RtpGenericFrameDescriptorExtension01>(),
+    CreateExtensionInfo<ColorSpaceExtension>(),
 };
 
 // Because of kRtpExtensionNone, NumberOfExtension is 1 bigger than the actual

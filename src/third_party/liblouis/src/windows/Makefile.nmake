@@ -4,40 +4,71 @@
 
 !include configure.mk
 
-SRCDIR = ..\liblouis
-CC = cl.exe
-CFLAGS =  /nologo /O2 /W1 /c
-CFLAGS = $(CFLAGS) /Iinclude
-HEADERS = $(SRCDIR)\louis.h include\liblouis.h include\config.h
-DLLFLAGS = /dll /nologo /DEF:liblouis.def /OUT:liblouis.dll
-OBJ = compileTranslationTable.obj lou_translateString.obj \
-    lou_backTranslateString.obj wrappers.obj logging.obj
+CC = cl
+
+CFLAGS = /nologo /O2 /W3 /c /MD /Iinclude /D_EXPORTING
+# The Visual C++ C Runtime deprecates several standard library functions in
+# preference for _s variants that are specific to Visual C++. This removes
+# those deprecation warnings.
+CFLAGS = $(CFLAGS) /D_CRT_SECURE_NO_WARNINGS
+# The Visual C++ C Runtime deprecates standard POSIX APIs that conflict with
+# reserved ISO C names (like strdup) in favour of non-portable conforming
+# variants that start with an '_'. This removes those deprecation warnings. */
+CFLAGS = $(CFLAGS) /D_CRT_NONSTDC_NO_DEPRECATE
+
 !if "$(UCS)" == "2"
-CFLAGS = $(CFLAGS) /DWIDECHAR_TYPE="unsigned short int"
-CFLAGS = $(CFLAGS) /DUNICODEBITS=16
+WIDECHAR_TYPE = unsigned short int
 !else
-CFLAGS = $(CFLAGS) /DWIDECHAR_TYPE="unsigned int"
-CFLAGS = $(CFLAGS) /DUNICODEBITS=32
+WIDECHAR_TYPE = unsigned int
 !endif
 
-all: liblouis.lib liblouis.def
-    link  $(DLLFLAGS) $(OBJ)  
+DLLFLAGS = /dll /nologo
+LIBFLAGS = /nologo
+
+HEADERS = $(SRCDIR)\internal.h $(SRCDIR)\liblouis.h \
+    include\config.h
+OBJ = commonTranslationFunctions.obj compileTranslationTable.obj \
+    logging.obj lou_backTranslateString.obj lou_translateString.obj \
+    metadata.obj pattern.obj utils.obj
+
+all: liblouis.lib
+    link $(DLLFLAGS) /OUT:liblouis.dll $(OBJ)  
+
+clean:
+    clean.bat
+
 liblouis.lib: $(OBJ)
-    lib /nologo  $(OBJ) /out:liblouis.lib
+    lib $(LIBFLAGS) $(OBJ) /out:liblouis.lib
+
+$(SRCDIR)\liblouis.h: $(SRCDIR)\liblouis.h.in
+    PowerShell -ExecutionPolicy RemoteSigned \
+    -File $(UTILSDIR)\find-replace.ps1 \
+    -InputFile $(SRCDIR)\liblouis.h.in -OutputFile $(SRCDIR)\liblouis.h \
+    -Str1 @WIDECHAR_TYPE@ -Str2 "$(WIDECHAR_TYPE)"
+
+commonTranslationFunctions.obj: $(SRCDIR)\commonTranslationFunctions.c \
+   $(HEADERS)
+   $(CC) $(CFLAGS) $(SRCDIR)\commonTranslationFunctions.c
 
 compileTranslationTable.obj: $(SRCDIR)\compileTranslationTable.c \
     $(HEADERS)
     $(CC) $(CFLAGS) $(SRCDIR)\compileTranslationTable.c
 
-lou_translateString.obj: $(SRCDIR)\lou_translateString.c  $(HEADERS)
-    $(CC) $(CFLAGS) $(SRCDIR)\lou_translateString.c
+logging.obj: $(SRCDIR)\logging.c $(HEADERS)
+    $(CC) $(CFLAGS) $(SRCDIR)\logging.c
 
 lou_backTranslateString.obj: $(SRCDIR)\lou_backTranslateString.c \
     $(HEADERS)
     $(CC) $(CFLAGS) $(SRCDIR)\lou_backTranslateString.c
 
-logging.obj: $(SRCDIR)\logging.c $(HEADERS)
-    $(CC) $(CFLAGS) $(SRCDIR)\logging.c
+lou_translateString.obj: $(SRCDIR)\lou_translateString.c $(HEADERS)
+    $(CC) $(CFLAGS) $(SRCDIR)\lou_translateString.c
 
-wrappers.obj: $(SRCDIR)\wrappers.c $(HEADERS)
-    $(CC) $(CFLAGS) $(SRCDIR)\wrappers.c
+metadata.obj: $(SRCDIR)\metadata.c $(HEADERS)
+    $(CC) $(CFLAGS) $(SRCDIR)\metadata.c
+
+pattern.obj: $(SRCDIR)\pattern.c $(HEADERS)
+    $(CC) $(CFLAGS) $(SRCDIR)\pattern.c
+
+utils.obj: $(SRCDIR)\utils.c $(HEADERS)
+    $(CC) $(CFLAGS) $(SRCDIR)\utils.c

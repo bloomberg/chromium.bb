@@ -11,12 +11,12 @@
 #include <set>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace content {
@@ -32,23 +32,20 @@ namespace storage {
 class QuotaEvictionHandler;
 struct QuotaSettings;
 
-class STORAGE_EXPORT QuotaTemporaryStorageEvictor {
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTemporaryStorageEvictor {
  public:
   struct Statistics {
     Statistics()
-        : num_errors_on_evicting_origin(0),
-          num_errors_on_getting_usage_and_quota(0),
+        : num_errors_on_getting_usage_and_quota(0),
           num_evicted_origins(0),
           num_eviction_rounds(0),
           num_skipped_eviction_rounds(0) {}
-    int64_t num_errors_on_evicting_origin;
     int64_t num_errors_on_getting_usage_and_quota;
     int64_t num_evicted_origins;
     int64_t num_eviction_rounds;
     int64_t num_skipped_eviction_rounds;
 
     void subtract_assign(const Statistics& rhs) {
-      num_errors_on_evicting_origin -= rhs.num_errors_on_evicting_origin;
       num_errors_on_getting_usage_and_quota -=
           rhs.num_errors_on_getting_usage_and_quota;
       num_evicted_origins -= rhs.num_evicted_origins;
@@ -64,7 +61,6 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor {
     bool is_initialized;
 
     base::Time start_time;
-    int64_t usage_overage_at_round;
     int64_t diskspace_shortage_at_round;
 
     int64_t usage_on_beginning_of_round;
@@ -74,7 +70,7 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor {
 
   QuotaTemporaryStorageEvictor(QuotaEvictionHandler* quota_eviction_handler,
                                int64_t interval_ms);
-  virtual ~QuotaTemporaryStorageEvictor();
+  ~QuotaTemporaryStorageEvictor();
 
   void GetStatistics(std::map<std::string, int64_t>* statistics);
   void ReportPerRoundHistogram();
@@ -84,7 +80,7 @@ class STORAGE_EXPORT QuotaTemporaryStorageEvictor {
  private:
   friend class content::QuotaTemporaryStorageEvictorTest;
 
-  void StartEvictionTimerWithDelay(int delay_ms);
+  void StartEvictionTimerWithDelay(int64_t delay_ms);
   void ConsiderEviction();
   void OnGotEvictionRoundInfo(blink::mojom::QuotaStatusCode status,
                               const QuotaSettings& settings,

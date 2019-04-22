@@ -39,15 +39,6 @@ class CORE_EXPORT CSSParserSelector {
  public:
   CSSParserSelector();
   explicit CSSParserSelector(const QualifiedName&, bool is_implicit = false);
-
-  static std::unique_ptr<CSSParserSelector> Create() {
-    return std::make_unique<CSSParserSelector>();
-  }
-  static std::unique_ptr<CSSParserSelector> Create(const QualifiedName& name,
-                                                   bool is_implicit = false) {
-    return std::make_unique<CSSParserSelector>(name, is_implicit);
-  }
-
   ~CSSParserSelector();
 
   std::unique_ptr<CSSSelector> ReleaseSelector() {
@@ -99,6 +90,7 @@ class CORE_EXPORT CSSParserSelector {
   bool IsTreeAbidingPseudoElement() const {
     return selector_->IsTreeAbidingPseudoElement();
   }
+  bool IsAllowedAfterPart() const { return selector_->IsAllowedAfterPart(); }
   const CSSSelectorList* SelectorList() const {
     return selector_->SelectorList();
   }

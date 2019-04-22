@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 """Common code generator for command buffers."""
 
+import errno
 import itertools
+import os
 import os.path
 import re
 import platform
@@ -881,9 +883,14 @@ class CWriter(object):
   """
   def __init__(self, filename, year):
     self.filename = filename
-    self._file = open(filename, 'wb')
     self._ENTER_MSG = _LICENSE % year + _DO_NOT_EDIT_WARNING % _lower_prefix
     self._EXIT_MSG = ""
+    try:
+      os.makedirs(os.path.dirname(filename))
+    except OSError as e:
+      if e.errno == errno.EEXIST:
+        pass
+    self._file = open(filename, 'wb')
 
   def __enter__(self):
     self._file.write(self._ENTER_MSG)
@@ -912,13 +919,8 @@ class CHeaderWriter(CWriter):
 
   def _get_guard(self):
     non_alnum_re = re.compile(r'[^a-zA-Z0-9]')
-    base = os.path.abspath(self.filename)
-    while os.path.basename(base) != 'src':
-      new_base = os.path.dirname(base)
-      assert new_base != base  # Prevent infinite loop.
-      base = new_base
-    hpath = os.path.relpath(self.filename, base)
-    return non_alnum_re.sub('_', hpath).upper() + '_'
+    assert self.filename.startswith("gpu/")
+    return non_alnum_re.sub('_', self.filename).upper() + '_'
 
 
 class TypeHandler(object):
@@ -2209,11 +2211,10 @@ class GENnHandler(TypeHandler):
   def WriteGetDataSizeCode(self, func, arg, f):
     """Overrriden from TypeHandler."""
     code = """  uint32_t %(data_size)s;
-  if (!%(namespace)sSafeMultiplyUint32(n, sizeof(GLuint), &%(data_size)s)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&%(data_size)s)) {
     return error::kOutOfBounds;
   }
-""" % {'data_size': arg.GetReservedSizeId(),
-       'namespace': _Namespace()}
+""" % {'data_size': arg.GetReservedSizeId()}
     f.write(code)
 
   def WriteHandlerImplementation (self, func, f):
@@ -2662,11 +2663,10 @@ class DELnHandler(TypeHandler):
   def WriteGetDataSizeCode(self, func, arg, f):
     """Overrriden from TypeHandler."""
     code = """  uint32_t %(data_size)s;
-  if (!%(namespace)sSafeMultiplyUint32(n, sizeof(GLuint), &%(data_size)s)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&%(data_size)s)) {
     return error::kOutOfBounds;
   }
-""" % {'data_size': arg.GetReservedSizeId(),
-       'namespace': _Namespace()}
+""" % {'data_size': arg.GetReservedSizeId()}
     f.write(code)
 
   def WriteGLES2ImplementationUnitTest(self, func, f):
@@ -3378,7 +3378,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     self.WriteClientGLCallLog(func, f)
 
     if self.__NeedsToCalcDataCount(func):
-      f.write("  size_t count = %sGLES2Util::Calc%sDataCount(%s);\n" %
+      f.write("  uint32_t count = %sGLES2Util::Calc%sDataCount(%s);\n" %
                  (_Namespace(), func.name, func.GetOriginalArgs()[0].name))
       f.write("  DCHECK_LE(count, %du);\n" % self.GetArrayCount(func))
       f.write("  if (count == 0) {\n")
@@ -3388,8 +3388,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       f.write("    return;\n")
       f.write("  }\n")
     else:
-      f.write("  size_t count = %d;" % self.GetArrayCount(func))
-    f.write("  for (size_t ii = 0; ii < count; ++ii)\n")
+      f.write("  uint32_t count = %d;" % self.GetArrayCount(func))
+    f.write("  for (uint32_t ii = 0; ii < count; ++ii)\n")
     f.write('    GPU_CLIENT_LOG("value[" << ii << "]: " << %s[ii]);\n' %
                func.GetLastOriginalArg().name)
     for arg in func.GetOriginalArgs():
@@ -6341,9 +6341,11 @@ class GLGenerator(object):
   _comment_re = re.compile(r'^//.*$')
   _function_re = re.compile(r'^GL_APICALL(.*?)GL_APIENTRY (.*?) \((.*?)\);$')
 
-  def __init__(self, verbose, year, function_info, named_type_info):
+  def __init__(self, verbose, year, function_info, named_type_info,
+               chromium_root_dir):
     self.original_functions = []
     self.functions = []
+    self.chromium_root_dir = chromium_root_dir
     self.verbose = verbose
     self.year = year
     self.errors = 0
@@ -6413,6 +6415,7 @@ class GLGenerator(object):
 
   def ParseGLH(self, filename):
     """Parses the cmd_buffer_functions.txt file and extracts the functions"""
+    filename = os.path.join(self.chromium_root_dir, filename)
     with open(filename, "r") as f:
       functions = f.read()
     for line in functions.splitlines():
@@ -7012,7 +7015,7 @@ namespace gles2 {
           if capability_es3:
             continue
           if 'extension_flag' in capability:
-            f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
+            f.write("  if (feature_info()->feature_flags().%s) {\n" %
                      capability['extension_flag'])
             f.write("  ")
           f.write("  ExpectEnableDisable(GL_%s, %s);\n" %
@@ -7032,7 +7035,7 @@ namespace gles2 {
 """)
       f.write("""
 void %sDecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
-  auto* feature_info_ = group_->feature_info();
+  auto* feature_info_ = feature_info();
 """ % _prefix)
       # We need to sort the keys so the expectations match
       for state_name in sorted(_STATE_INFO.keys()):
@@ -7074,7 +7077,7 @@ void %sDecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
             f.write(guarded_operation)
         elif 'no_init' not in state:
           if 'extension_flag' in state:
-            f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
+            f.write("  if (feature_info()->feature_flags().%s) {\n" %
                        state['extension_flag'])
             f.write("  ")
           args = []
@@ -7386,6 +7389,7 @@ extern const NameToFunc g_gles2_function_table[] = {
                   'third_party/khronos/GLES3/gl31.h',
                   'gpu/GLES2/gl2chromium.h',
                   'gpu/GLES2/gl2extchromium.h']:
+      fname = os.path.join(self.chromium_root_dir, fname)
       lines = open(fname).readlines()
       for line in lines:
         m = enum_re.match(line)
@@ -7617,9 +7621,13 @@ const size_t %(p)sUtil::enum_to_string_table_len_ =
     self.generated_cpp_filenames.append(filename)
 
 
-def Format(generated_files):
+def Format(generated_files, output_dir, chromium_root_dir):
+  """Format generated_files relative to output_dir using clang-format."""
   formatter = "third_party/depot_tools/clang-format"
   if platform.system() == "Windows":
     formatter = "third_party\\depot_tools\\clang-format.bat"
+  formatter = os.path.join(chromium_root_dir, formatter)
+  generated_files = map(lambda filename: os.path.join(output_dir, filename),
+                        generated_files)
   for filename in generated_files:
-    call([formatter, "-i", "-style=chromium", filename])
+    call([formatter, "-i", "-style=chromium", filename], cwd=chromium_root_dir)

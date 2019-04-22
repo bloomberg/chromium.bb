@@ -38,8 +38,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_crypto_key.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_key.h"
@@ -65,11 +65,13 @@ class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
  public:
   static Resolver* Create(ScriptState* script_state, CryptoResultImpl* result) {
     DCHECK(script_state->ContextIsValid());
-    Resolver* resolver = new Resolver(script_state, result);
-    resolver->PauseIfNeeded();
+    Resolver* resolver = MakeGarbageCollected<Resolver>(script_state, result);
     resolver->KeepAliveWhilePending();
     return resolver;
   }
+
+  Resolver(ScriptState* script_state, CryptoResultImpl* result)
+      : ScriptPromiseResolver(script_state), result_(result) {}
 
   void ContextDestroyed(ExecutionContext* destroyed_context) override {
     result_->Cancel();
@@ -83,21 +85,8 @@ class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
   }
 
  private:
-  Resolver(ScriptState* script_state, CryptoResultImpl* result)
-      : ScriptPromiseResolver(script_state), result_(result) {}
-
   Member<CryptoResultImpl> result_;
 };
-
-CryptoResultImpl::ResultCancel::ResultCancel() : cancelled_(0) {}
-
-bool CryptoResultImpl::ResultCancel::Cancelled() const {
-  return AcquireLoad(&cancelled_);
-}
-
-void CryptoResultImpl::ResultCancel::Cancel() {
-  ReleaseStore(&cancelled_, 1);
-}
 
 ExceptionCode WebCryptoErrorToExceptionCode(WebCryptoErrorType error_type) {
   switch (error_type) {
@@ -121,7 +110,7 @@ ExceptionCode WebCryptoErrorToExceptionCode(WebCryptoErrorType error_type) {
 
 CryptoResultImpl::CryptoResultImpl(ScriptState* script_state)
     : resolver_(Resolver::Create(script_state, this)),
-      cancel_(ResultCancel::Create()) {
+      cancel_(base::MakeRefCounted<CryptoResultCancel>()) {
   // Sync cancellation state.
   if (ExecutionContext::From(script_state)->IsContextDestroyed())
     cancel_->Cancel();
@@ -138,10 +127,6 @@ void CryptoResultImpl::Trace(blink::Visitor* visitor) {
 
 void CryptoResultImpl::ClearResolver() {
   resolver_ = nullptr;
-}
-
-CryptoResultImpl* CryptoResultImpl::Create(ScriptState* script_state) {
-  return new CryptoResultImpl(script_state);
 }
 
 void CryptoResultImpl::CompleteWithError(WebCryptoErrorType error_type,
@@ -212,7 +197,7 @@ void CryptoResultImpl::CompleteWithKey(const WebCryptoKey& key) {
   if (!resolver_)
     return;
 
-  resolver_->Resolve(CryptoKey::Create(key));
+  resolver_->Resolve(MakeGarbageCollected<CryptoKey>(key));
   ClearResolver();
 }
 
@@ -227,9 +212,11 @@ void CryptoResultImpl::CompleteWithKeyPair(const WebCryptoKey& public_key,
   V8ObjectBuilder key_pair(script_state);
 
   key_pair.Add("publicKey",
-               ScriptValue::From(script_state, CryptoKey::Create(public_key)));
+               ScriptValue::From(script_state,
+                                 MakeGarbageCollected<CryptoKey>(public_key)));
   key_pair.Add("privateKey",
-               ScriptValue::From(script_state, CryptoKey::Create(private_key)));
+               ScriptValue::From(script_state,
+                                 MakeGarbageCollected<CryptoKey>(private_key)));
 
   resolver_->Resolve(key_pair.V8Value());
   ClearResolver();

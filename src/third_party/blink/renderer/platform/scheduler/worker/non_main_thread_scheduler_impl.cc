@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
@@ -13,19 +14,19 @@ namespace blink {
 namespace scheduler {
 
 NonMainThreadSchedulerImpl::NonMainThreadSchedulerImpl(
-    std::unique_ptr<base::sequence_manager::SequenceManager> manager,
+    base::sequence_manager::SequenceManager* manager,
     TaskType default_task_type)
-    : helper_(std::move(manager), this, default_task_type) {}
+    : helper_(manager, this, default_task_type) {}
 
 NonMainThreadSchedulerImpl::~NonMainThreadSchedulerImpl() = default;
 
 // static
 std::unique_ptr<NonMainThreadSchedulerImpl> NonMainThreadSchedulerImpl::Create(
     WebThreadType thread_type,
+    base::sequence_manager::SequenceManager* sequence_manager,
     WorkerSchedulerProxy* proxy) {
-  return std::make_unique<WorkerThreadScheduler>(
-      thread_type,
-      base::sequence_manager::CreateSequenceManagerOnCurrentThread(), proxy);
+  return std::make_unique<WorkerThreadScheduler>(thread_type, sequence_manager,
+                                                 proxy);
 }
 
 void NonMainThreadSchedulerImpl::Init() {
@@ -101,8 +102,9 @@ const base::TickClock* NonMainThreadSchedulerImpl::GetTickClock() {
   return helper_.GetClock();
 }
 
-SchedulerHelper* NonMainThreadSchedulerImpl::GetHelper() {
-  return &helper_;
+scoped_refptr<base::SingleThreadTaskRunner>
+NonMainThreadSchedulerImpl::DeprecatedDefaultTaskRunner() {
+  return DefaultTaskRunner();
 }
 
 }  // namespace scheduler

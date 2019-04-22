@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/numerics/checked_math.h"
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/timestamp_constants.h"
@@ -36,7 +36,7 @@ enum {
 };
 
 WebMClusterParser::WebMClusterParser(
-    int64_t timecode_scale,
+    int64_t timecode_scale_ns,
     int audio_track_num,
     base::TimeDelta audio_default_duration,
     int video_track_num,
@@ -47,7 +47,7 @@ WebMClusterParser::WebMClusterParser(
     const std::string& video_encryption_key_id,
     const AudioCodec audio_codec,
     MediaLog* media_log)
-    : timecode_multiplier_(timecode_scale / 1000.0),
+    : timecode_multiplier_(timecode_scale_ns / 1000.0),
       ignored_tracks_(ignored_tracks),
       audio_encryption_key_id_(audio_encryption_key_id),
       video_encryption_key_id_(video_encryption_key_id),
@@ -243,7 +243,7 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
 
   int opusConfig = (data[0] & kTocConfigMask) >> 3;
   CHECK_GE(opusConfig, 0);
-  CHECK_LT(opusConfig, static_cast<int>(arraysize(kOpusFrameDurationsMu)));
+  CHECK_LT(opusConfig, static_cast<int>(base::size(kOpusFrameDurationsMu)));
 
   DCHECK_GT(frame_count, 0);
   base::TimeDelta duration = base::TimeDelta::FromMicroseconds(

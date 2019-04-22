@@ -21,13 +21,11 @@ namespace printing {
 
 class PdfCompositorService : public service_manager::Service {
  public:
-  PdfCompositorService(const std::string& creator,
-                       service_manager::mojom::ServiceRequest request);
+  explicit PdfCompositorService(service_manager::mojom::ServiceRequest request);
   ~PdfCompositorService() override;
 
   // Factory function for use as an embedded service.
   static std::unique_ptr<service_manager::Service> Create(
-      const std::string& creator,
       service_manager::mojom::ServiceRequest request);
 
   // service_manager::Service:
@@ -41,11 +39,6 @@ class PdfCompositorService : public service_manager::Service {
   }
 
  private:
-  // The creator of this service.
-  // Currently contains the service creator's user agent string if given,
-  // otherwise just use string "Chromium".
-  const std::string creator_;
-
   service_manager::ServiceBinding binding_;
   service_manager::ServiceKeepalive keepalive_;
   bool skip_initialization_for_testing_ = false;

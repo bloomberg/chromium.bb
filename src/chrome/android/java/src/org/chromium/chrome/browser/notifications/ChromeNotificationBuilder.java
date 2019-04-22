@@ -18,7 +18,10 @@ import android.widget.RemoteViews;
 public interface ChromeNotificationBuilder {
     ChromeNotificationBuilder setAutoCancel(boolean autoCancel);
 
+    @Deprecated
     ChromeNotificationBuilder setContentIntent(PendingIntent contentIntent);
+
+    ChromeNotificationBuilder setContentIntent(PendingIntentProvider contentIntent);
 
     ChromeNotificationBuilder setContentTitle(CharSequence title);
 
@@ -44,11 +47,22 @@ public interface ChromeNotificationBuilder {
 
     ChromeNotificationBuilder setShowWhen(boolean showWhen);
 
+    @Deprecated
     ChromeNotificationBuilder addAction(int icon, CharSequence title, PendingIntent intent);
 
+    ChromeNotificationBuilder addAction(int icon, CharSequence title, PendingIntentProvider intent,
+            @NotificationUmaTracker.ActionType int actionType);
+
+    @Deprecated
     ChromeNotificationBuilder addAction(Notification.Action action);
 
+    ChromeNotificationBuilder addAction(Notification.Action action, int flags,
+            @NotificationUmaTracker.ActionType int actionType);
+
+    @Deprecated
     ChromeNotificationBuilder setDeleteIntent(PendingIntent intent);
+
+    ChromeNotificationBuilder setDeleteIntent(PendingIntentProvider intent);
 
     /**
      * Sets the priority of single notification on Android versions prior to Oreo.
@@ -83,9 +97,14 @@ public interface ChromeNotificationBuilder {
     ChromeNotificationBuilder setMediaStyle(MediaSessionCompat session, int[] actions,
             PendingIntent intent, boolean showCancelButton);
 
-    Notification buildWithBigContentView(RemoteViews bigView);
+    ChromeNotificationBuilder setCategory(String category);
 
-    Notification buildWithBigTextStyle(String bigText);
+    ChromeNotification buildWithBigContentView(RemoteViews bigView);
 
+    ChromeNotification buildWithBigTextStyle(String bigText);
+
+    @Deprecated
     Notification build();
+
+    ChromeNotification buildChromeNotification();
 }

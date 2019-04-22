@@ -140,7 +140,7 @@ class BaseSafeBrowsingErrorUI {
 
   const std::string app_locale() const { return app_locale_; }
 
-  ControllerClient* controller() { return controller_; };
+  ControllerClient* controller() { return controller_; }
 
   GURL request_url() const { return request_url_; }
   GURL main_frame_url() const { return main_frame_url_; }

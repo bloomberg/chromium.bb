@@ -7,16 +7,21 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
-#include "chromeos/components/tether/fake_ble_connection_manager.h"
+#include "base/time/time.h"
+#include "base/timer/mock_timer.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
+#include "chromeos/components/tether/test_timer_factory.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
+#include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "components/cryptauth/remote_device_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -28,124 +33,149 @@ namespace {
 constexpr base::TimeDelta kDisconnectTetheringRequestTime =
     base::TimeDelta::FromSeconds(3);
 
-class TestObserver final : public DisconnectTetheringOperation::Observer {
+// Used to verify the DisonnectTetheringOperation notifies the observer when
+// appropriate.
+class MockOperationObserver : public DisconnectTetheringOperation::Observer {
  public:
-  TestObserver() : success_(false) {}
+  MockOperationObserver() = default;
+  ~MockOperationObserver() = default;
 
-  virtual ~TestObserver() = default;
-
-  std::string last_device_id() { return last_device_id_; }
-
-  bool WasLastOperationSuccessful() {
-    EXPECT_TRUE(!last_device_id_.empty());
-    return success_;
-  }
-
-  // DisconnectTetheringOperation::Observer:
-  void OnOperationFinished(const std::string& device_id,
-                           bool success) override {
-    last_device_id_ = device_id;
-    success_ = success;
-  }
+  MOCK_METHOD2(OnOperationFinished, void(const std::string&, bool));
 
  private:
-  std::string last_device_id_;
-  bool success_;
+  DISALLOW_COPY_AND_ASSIGN(MockOperationObserver);
 };
-
-std::string CreateDisconnectTetheringString() {
-  DisconnectTetheringRequest request;
-  return MessageWrapper(request).ToRawMessage();
-}
 
 }  // namespace
 
 class DisconnectTetheringOperationTest : public testing::Test {
  protected:
   DisconnectTetheringOperationTest()
-      : disconnect_tethering_request_string_(CreateDisconnectTetheringString()),
-        test_device_(cryptauth::CreateRemoteDeviceRefListForTest(1)[0]) {}
+      : local_device_(multidevice::RemoteDeviceRefBuilder()
+                          .SetPublicKey("local device")
+                          .Build()),
+        remote_device_(multidevice::CreateRemoteDeviceRefListForTest(1)[0]) {}
 
   void SetUp() override {
     fake_device_sync_client_ =
         std::make_unique<device_sync::FakeDeviceSyncClient>();
+    fake_device_sync_client_->set_local_device_metadata(local_device_);
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
-    fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
 
-    operation_ = base::WrapUnique(new DisconnectTetheringOperation(
-        test_device_, fake_device_sync_client_.get(),
+    operation_ = ConstructOperation();
+    operation_->Initialize();
+
+    ConnectAuthenticatedChannelForDevice(remote_device_);
+  }
+
+  std::unique_ptr<DisconnectTetheringOperation> ConstructOperation() {
+    auto connection_attempt =
+        std::make_unique<secure_channel::FakeConnectionAttempt>();
+    connection_attempt_ = connection_attempt.get();
+    // remote_device_to_fake_connection_attempt_map_[remote_device_] =
+    //     fake_connection_attempt.get();
+    fake_secure_channel_client_->set_next_listen_connection_attempt(
+        remote_device_, local_device_, std::move(connection_attempt));
+
+    auto operation = base::WrapUnique(new DisconnectTetheringOperation(
+        remote_device_, fake_device_sync_client_.get(),
         fake_secure_channel_client_.get()));
+    operation->AddObserver(&mock_observer_);
 
-    test_observer_ = base::WrapUnique(new TestObserver());
-    operation_->AddObserver(test_observer_.get());
+    // Prepare the disconnection timeout timer to be made for the remote device.
+    auto test_timer_factory = std::make_unique<TestTimerFactory>();
+    test_timer_factory->set_device_id_for_next_timer(
+        remote_device_.GetDeviceId());
+    operation->SetTimerFactoryForTest(std::move(test_timer_factory));
 
     test_clock_.SetNow(base::Time::UnixEpoch());
-    operation_->SetClockForTest(&test_clock_);
+    operation->SetClockForTest(&test_clock_);
 
-    operation_->Initialize();
+    return operation;
   }
 
-  void SimulateDeviceAuthenticationAndVerifyMessageSent() {
-    operation_->OnDeviceAuthenticated(test_device_);
-
-    // Verify that the message was passed to |fake_ble_connection_manager_|
-    // correctly.
-    std::vector<FakeBleConnectionManager::SentMessage>& sent_messages =
-        fake_ble_connection_manager_->sent_messages();
-    ASSERT_EQ(1u, sent_messages.size());
-    EXPECT_EQ(test_device_.GetDeviceId(), sent_messages[0].device_id);
-    EXPECT_EQ(disconnect_tethering_request_string_, sent_messages[0].message);
-
-    test_clock_.Advance(kDisconnectTetheringRequestTime);
-
-    // Now, simulate the message being sent.
-    int last_sequence_number =
-        fake_ble_connection_manager_->last_sequence_number();
-    EXPECT_NE(last_sequence_number, -1);
-    fake_ble_connection_manager_->SetMessageSent(last_sequence_number);
-
-    histogram_tester_.ExpectTimeBucketCount(
-        "InstantTethering.Performance.DisconnectTetheringRequestDuration",
-        kDisconnectTetheringRequestTime, 1);
+  void ConnectAuthenticatedChannelForDevice(
+      multidevice::RemoteDeviceRef remote_device) {
+    auto fake_client_channel =
+        std::make_unique<secure_channel::FakeClientChannel>();
+    connection_attempt_->NotifyConnection(std::move(fake_client_channel));
   }
 
-  void SimulateConnectionTimeout() {
-    operation_->UnregisterDevice(test_device_);
-  }
+  const multidevice::RemoteDeviceRef local_device_;
+  const multidevice::RemoteDeviceRef remote_device_;
 
-  const std::string disconnect_tethering_request_string_;
-  const cryptauth::RemoteDeviceRef test_device_;
-
+  secure_channel::FakeConnectionAttempt* connection_attempt_;
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
-  std::unique_ptr<secure_channel::SecureChannelClient>
+  std::unique_ptr<secure_channel::FakeSecureChannelClient>
       fake_secure_channel_client_;
-  std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
-  std::unique_ptr<TestObserver> test_observer_;
 
   base::SimpleTestClock test_clock_;
+  MockOperationObserver mock_observer_;
+  base::HistogramTester histogram_tester_;
 
   std::unique_ptr<DisconnectTetheringOperation> operation_;
-
-  base::HistogramTester histogram_tester_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisconnectTetheringOperationTest);
 };
 
-TEST_F(DisconnectTetheringOperationTest, DISABLED_TestSuccess) {
-  SimulateDeviceAuthenticationAndVerifyMessageSent();
-  EXPECT_EQ(test_device_.GetDeviceId(), test_observer_->last_device_id());
-  EXPECT_TRUE(test_observer_->WasLastOperationSuccessful());
+TEST_F(DisconnectTetheringOperationTest, TestSuccess) {
+  // Verify that the Observer is called with success and the correct parameters.
+  EXPECT_CALL(mock_observer_, OnOperationFinished(remote_device_.GetDeviceId(),
+                                                  true /* successful */));
+
+  // Advance the clock in order to verify a non-zero request duration is
+  // recorded and verified (below).
+  test_clock_.Advance(kDisconnectTetheringRequestTime);
+
+  // Execute the operation.
+  operation_->OnMessageSent(0 /* sequence_number */);
+
+  // Verify the request duration metric is recorded.
+  histogram_tester_.ExpectTimeBucketCount(
+      "InstantTethering.Performance.DisconnectTetheringRequestDuration",
+      kDisconnectTetheringRequestTime, 1);
 }
 
-TEST_F(DisconnectTetheringOperationTest, DISABLED_TestFailure) {
-  SimulateConnectionTimeout();
-  EXPECT_EQ(test_device_.GetDeviceId(), test_observer_->last_device_id());
-  EXPECT_FALSE(test_observer_->WasLastOperationSuccessful());
+TEST_F(DisconnectTetheringOperationTest, TestFailure) {
+  // Verify that the observer is called with failure and the correct parameters.
+  EXPECT_CALL(mock_observer_, OnOperationFinished(remote_device_.GetDeviceId(),
+                                                  false /* successful */));
+
+  // Finalize the operation; no message has been sent so this represents a
+  // failure case.
+  operation_->UnregisterDevice(remote_device_);
 
   histogram_tester_.ExpectTotalCount(
       "InstantTethering.Performance.DisconnectTetheringRequestDuration", 0);
+}
+
+// Tests that the DisonnectTetheringRequest message is sent to the remote device
+// once the communication channel is connected and authenticated.
+TEST_F(DisconnectTetheringOperationTest,
+       DisconnectRequestSentOnceAuthenticated) {
+  std::unique_ptr<DisconnectTetheringOperation> operation =
+      ConstructOperation();
+  operation->Initialize();
+
+  // Create the client channel for the remote device.
+  auto fake_client_channel =
+      std::make_unique<secure_channel::FakeClientChannel>();
+
+  // No requests as a result of creating the client channel.
+  auto& sent_messages = fake_client_channel->sent_messages();
+  EXPECT_EQ(0u, sent_messages.size());
+
+  // Connect and authenticate the client channel.
+  connection_attempt_->NotifyConnection(std::move(fake_client_channel));
+
+  // Verify the DisconnectTetheringRequest message is sent.
+  auto message_wrapper =
+      std::make_unique<MessageWrapper>(DisconnectTetheringRequest());
+  std::string expected_payload = message_wrapper->ToRawMessage();
+  EXPECT_EQ(1u, sent_messages.size());
+  EXPECT_EQ(expected_payload, sent_messages[0].first);
 }
 
 }  // namespace tether

@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,13 +27,13 @@ class TabScorePredictorTest : public testing::Test {
   float ScoreTab(const TabFeatures& tab) {
     float score = 0;
     EXPECT_EQ(TabRankerResult::kSuccess,
-              tab_score_predictor_.ScoreTab(tab, &score));
+              TabScorePredictor().ScoreTab(tab, &score));
     return score;
   }
 
- private:
-  TabScorePredictor tab_score_predictor_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(TabScorePredictorTest);
 };
 
@@ -41,14 +43,35 @@ class TabScorePredictorTest : public testing::Test {
 // outside of Chrome.
 TEST_F(TabScorePredictorTest, KnownScore) {
   // Pre-calculated score using the generated model outside of Chrome.
-  EXPECT_FLOAT_EQ(-10.076081, ScoreTab(GetFullTabFeaturesForTesting()));
+  EXPECT_FLOAT_EQ(ScoreTab(GetFullTabFeaturesForTesting()), -10.076081);
 }
 
 // Checks the score for a different example that we have calculated a known
 // score for outside of Chrome. This example omits the optional features.
 TEST_F(TabScorePredictorTest, KnownScoreMissingOptionalFeatures) {
   // Pre-calculated score using the generated model outside of Chrome.
-  EXPECT_FLOAT_EQ(5.1401806, ScoreTab(GetPartialTabFeaturesForTesting()));
+  EXPECT_FLOAT_EQ(ScoreTab(GetPartialTabFeaturesForTesting()), 5.1401806);
+}
+
+TEST_F(TabScorePredictorTest, ScoreWithMRUScorer) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kTabRanker,
+      {{"scorer_type", "0"}, {"mru_scorer_penalty", "0.2345"}});
+  // Pre-calculated score using the generated model outside of Chrome.
+  EXPECT_FLOAT_EQ(ScoreTab(GetFullTabFeaturesForTesting()), 0.13639774);
+}
+
+TEST_F(TabScorePredictorTest, ScoreWithDiscardPenalty) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kTabRanker, {{"scorer_type", "0"},
+                             {"mru_scorer_penalty", "0.2345"},
+                             {"discard_count_penalty", "0.2468"}});
+  // Pre-calculated score using the generated model outside of Chrome.
+  auto tab = GetFullTabFeaturesForTesting();
+  EXPECT_FLOAT_EQ(ScoreTab(tab), 0.13639774);
+
+  tab.discard_count = 3;
+  EXPECT_FLOAT_EQ(ScoreTab(tab), 0.28599524);
 }
 
 }  // namespace tab_ranker

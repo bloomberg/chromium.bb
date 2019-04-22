@@ -4,6 +4,7 @@
 
 #include "chrome/browser/plugins/chrome_content_browser_client_plugins_part.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/plugins/plugin_info_host_impl.h"
 #include "chrome/browser/profiles/profile.h"

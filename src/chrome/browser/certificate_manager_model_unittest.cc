@@ -18,7 +18,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
-#include "chromeos/policy_certificate_provider.h"
+#include "chromeos/network/policy_certificate_provider.h"
 #endif
 
 namespace {
@@ -259,12 +259,11 @@ class FakeExtensionCertificateProvider : public chromeos::CertificateProvider {
         extensions_hang_(extensions_hang) {}
 
   void GetCertificates(
-      const base::RepeatingCallback<void(net::ClientCertIdentityList)>&
-          callback) override {
+      base::OnceCallback<void(net::ClientCertIdentityList)> callback) override {
     if (*extensions_hang_)
       return;
 
-    callback.Run(FakeClientCertIdentityListFromCertificateList(
+    std::move(callback).Run(FakeClientCertIdentityListFromCertificateList(
         *extension_client_certificates_));
   }
 

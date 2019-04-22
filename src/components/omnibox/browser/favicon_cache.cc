@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include "base/bind.h"
 #include "base/containers/mru_cache.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"

@@ -1,5 +1,6 @@
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startHTML(`
+    <script src='../../resources/run-after-layout-and-paint.js'></script>
     <div id='node' style='background-color: red; height: 100px; width: 100px'></div>
   `, 'Tests seeking animation past end time.');
 
@@ -16,8 +17,7 @@
     (function rafWidth() {
         var callback;
         var promise = new Promise((fulfill) => callback = fulfill);
-        if (window.testRunner)
-            testRunner.layoutAndPaintAsyncThen(() => callback(node.offsetWidth));
+        runAfterLayoutAndPaint(() => callback(node.offsetWidth));
         return promise;
     })()
   `);

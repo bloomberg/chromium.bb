@@ -35,7 +35,7 @@ const char* kPolicyNewPopup = "new popup";
 
 const char* kIllegalString = "illegal value";
 
-std::string NormalizeLayoutTestURL(const std::string& url) {
+std::string NormalizeWebTestURL(const std::string& url) {
   std::string result = url;
   size_t pos;
   if (!url.find(file_url_pattern) &&

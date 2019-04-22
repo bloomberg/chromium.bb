@@ -97,7 +97,7 @@ class CloudPrintPrivateGetPrintersFunction : public UIThreadExtensionFunction {
 class CloudPrintPrivateGetClientIdFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cloudPrintPrivate.getClientId",
-                             CLOUDPRINTPRIVATE_GETCLIENTID);
+                             CLOUDPRINTPRIVATE_GETCLIENTID)
 
   CloudPrintPrivateGetClientIdFunction();
 

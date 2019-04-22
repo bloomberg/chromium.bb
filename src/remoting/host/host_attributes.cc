@@ -10,7 +10,7 @@
 
 #include "base/atomicops.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -68,7 +68,7 @@ inline constexpr bool IsNonOfficialBuild() {
   return !IsOfficialBuild();
 }
 
-// By using arraysize() macro in base/macros.h, it's illegal to have empty
+// By using base::size() macro in base/macros.h, it's illegal to have empty
 // arrays.
 //
 // error: no matching function for call to 'ArraySizeHelper'
@@ -95,7 +95,7 @@ std::string GetHostAttributes() {
   // By using ranged for-loop, MSVC throws error C3316:
   // 'const remoting::StaticAttribute [0]':
   // an array of unknown size cannot be used in a range-based for statement.
-  for (size_t i = 0; i < arraysize(kAttributes); i++) {
+  for (size_t i = 0; i < base::size(kAttributes); i++) {
     const auto& attribute = kAttributes[i];
     DCHECK_EQ(std::string(attribute.name).find(kSeparator), std::string::npos);
     if (attribute.get_value_func()) {

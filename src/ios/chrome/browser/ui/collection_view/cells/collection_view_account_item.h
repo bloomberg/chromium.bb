@@ -13,6 +13,7 @@
 
 @class ChromeIdentity;
 
+// TODO(crbug.com/894800): Remove this.
 // Item for account avatar, used everywhere an account cell is shown.
 @interface CollectionViewAccountItem : CollectionViewItem
 

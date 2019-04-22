@@ -1,4 +1,4 @@
-
+namespace third_party_unrar {
 
 static bool UnixSymlink(const char *Target,const wchar *LinkName,RarTime *ftm,RarTime *fta)
 {
@@ -103,3 +103,5 @@ bool ExtractUnixLink50(CommandData *Cmd,const wchar *Name,FileHeader *hd)
     return false;
   return UnixSymlink(Target,Name,&hd->mtime,&hd->atime);
 }
+
+}  // namespace third_party_unrar

@@ -21,15 +21,13 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case FrameHostMsg_RenderProcessGone::ID:
     case ViewHostMsg_ClosePage_ACK::ID:
     case ViewHostMsg_Focus::ID:
+    case ViewHostMsg_OpenDateTimeDialog::ID:
     case ViewHostMsg_ShowFullscreenWidget::ID:
     case ViewHostMsg_ShowWidget::ID:
     case ViewHostMsg_UpdateTargetURL::ID:
+    case ViewHostMsg_RouteCloseEvent::ID:
     // Send page scale factor reset notification upon cross-process navigations.
     case ViewHostMsg_PageScaleFactorChanged::ID:
-    // Allow history.back() in OOPIFs - https://crbug.com/845923.
-    case ViewHostMsg_GoToEntryAtOffset::ID:
-    // Allow cross-process JavaScript calls.
-    case WidgetHostMsg_RouteCloseEvent::ID:
       return true;
     default:
       break;

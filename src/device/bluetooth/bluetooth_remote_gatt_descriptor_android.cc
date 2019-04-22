@@ -85,8 +85,8 @@ void BluetoothRemoteGattDescriptorAndroid::ReadRemoteDescriptor(
   if (read_pending_ || write_pending_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(error_callback,
-                   BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
+        base::BindOnce(error_callback,
+                       BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
 
@@ -94,8 +94,8 @@ void BluetoothRemoteGattDescriptorAndroid::ReadRemoteDescriptor(
           AttachCurrentThread(), j_descriptor_)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(error_callback,
-                   BluetoothRemoteGattServiceAndroid::GATT_ERROR_FAILED));
+        base::BindOnce(error_callback,
+                       BluetoothRemoteGattServiceAndroid::GATT_ERROR_FAILED));
     return;
   }
 
@@ -111,8 +111,8 @@ void BluetoothRemoteGattDescriptorAndroid::WriteRemoteDescriptor(
   if (read_pending_ || write_pending_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(error_callback,
-                   BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
+        base::BindOnce(error_callback,
+                       BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
 
@@ -121,8 +121,8 @@ void BluetoothRemoteGattDescriptorAndroid::WriteRemoteDescriptor(
           env, j_descriptor_, base::android::ToJavaByteArray(env, new_value))) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(error_callback,
-                   BluetoothRemoteGattServiceAndroid::GATT_ERROR_FAILED));
+        base::BindOnce(error_callback,
+                       BluetoothRemoteGattServiceAndroid::GATT_ERROR_FAILED));
     return;
   }
 

@@ -87,7 +87,7 @@ HRESULT FontFallback::MapCharacters(IDWriteTextAnalysisSource* source,
     return S_OK;
   }
 
-  TRACE_EVENT0("dwrite", "FontFallback::MapCharacters (IPC)");
+  TRACE_EVENT0("dwrite,fonts", "FontFallback::MapCharacters (IPC)");
 
   const WCHAR* locale = nullptr;
   // |locale_text_length| is actually the length of text with the locale, not
@@ -98,13 +98,14 @@ HRESULT FontFallback::MapCharacters(IDWriteTextAnalysisSource* source,
 
   locale = locale ? locale : L"";
 
-  mojom::MapCharactersResultPtr result;
+  blink::mojom::MapCharactersResultPtr result;
 
-  if (!GetFontProxyScopeWrapper().GetFontProxy().MapCharacters(
-          text_chunk,
-          mojom::DWriteFontStyle::New(base_weight, base_style, base_stretch),
-          locale, source->GetParagraphReadingDirection(), base_family_name,
-          &result)) {
+  if (!GetFontProxy().MapCharacters(text_chunk,
+                                    blink::mojom::DWriteFontStyle::New(
+                                        base_weight, base_style, base_stretch),
+                                    locale,
+                                    source->GetParagraphReadingDirection(),
+                                    base_family_name, &result)) {
     DCHECK(false);
     return E_FAIL;
   }
@@ -167,7 +168,7 @@ bool FontFallback::GetCachedFont(const base::string16& text,
   if (it == fallback_family_cache_.end())
     return false;
 
-  TRACE_EVENT0("dwrite", "FontFallback::GetCachedFont");
+  TRACE_EVENT0("dwrite,fonts", "FontFallback::GetCachedFont");
 
   std::list<mswr::ComPtr<IDWriteFontFamily>>& family_list = it->second;
   std::list<mswr::ComPtr<IDWriteFontFamily>>::iterator family_iterator;
@@ -222,8 +223,8 @@ void FontFallback::AddCachedFamily(
     family_list.pop_back();
 }
 
-FontProxyScopeWrapper FontFallback::GetFontProxyScopeWrapper() {
-  return collection_->GetFontProxyScopeWrapper();
+blink::mojom::DWriteFontProxy& FontFallback::GetFontProxy() {
+  return collection_->GetFontProxy();
 }
 
 }  // namespace content

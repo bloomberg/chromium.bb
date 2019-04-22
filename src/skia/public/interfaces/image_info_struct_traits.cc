@@ -47,17 +47,6 @@ SkAlphaType MojoAlphaTypeToSk(skia::mojom::AlphaType type) {
   return kUnknown_SkAlphaType;
 }
 
-sk_sp<SkColorSpace> MojoProfileTypeToSk(skia::mojom::ColorProfileType type) {
-  switch (type) {
-    case skia::mojom::ColorProfileType::LINEAR:
-      return nullptr;
-    case skia::mojom::ColorProfileType::SRGB:
-      return SkColorSpace::MakeSRGB();
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
 skia::mojom::ColorType SkColorTypeToMojo(SkColorType type) {
   switch (type) {
     case kUnknown_SkColorType:
@@ -97,12 +86,6 @@ skia::mojom::AlphaType SkAlphaTypeToMojo(SkAlphaType type) {
   return skia::mojom::AlphaType::UNKNOWN;
 }
 
-skia::mojom::ColorProfileType SkColorSpaceToMojo(SkColorSpace* cs) {
-  if (cs && cs->gammaCloseToSRGB())
-    return skia::mojom::ColorProfileType::SRGB;
-  return skia::mojom::ColorProfileType::LINEAR;
-}
-
 }  // namespace
 
 // static
@@ -120,10 +103,26 @@ StructTraits<skia::mojom::ImageInfoDataView, SkImageInfo>::alpha_type(
 }
 
 // static
-skia::mojom::ColorProfileType
-StructTraits<skia::mojom::ImageInfoDataView, SkImageInfo>::profile_type(
-    const SkImageInfo& info) {
-  return SkColorSpaceToMojo(info.colorSpace());
+std::vector<uint8_t>
+StructTraits<skia::mojom::ImageInfoDataView,
+             SkImageInfo>::serialized_color_space(const SkImageInfo& info) {
+  std::vector<uint8_t> serialized_color_space;
+  if (auto* sk_color_space = info.colorSpace()) {
+    serialized_color_space.resize(sk_color_space->writeToMemory(nullptr));
+    // Assumption 1: Since a "null" SkColorSpace is represented as an empty byte
+    // array, the serialization of a non-null SkColorSpace should produce at
+    // least one byte.
+    CHECK_GT(serialized_color_space.size(), 0u);
+    // Assumption 2: Serialized data should be reasonably small, since
+    // SkImageInfo should efficiently pass through mojo message pipes. As of
+    // this writing, the max would be 80 bytes. However, that could change in
+    // the future. So, set an upper-bound of 1 KB here.
+    CHECK_LE(serialized_color_space.size(), 1024u);
+    sk_color_space->writeToMemory(serialized_color_space.data());
+  } else {
+    // Represent the "null" color space as an empty byte vector.
+  }
+  return serialized_color_space;
 }
 
 // static
@@ -142,10 +141,22 @@ uint32_t StructTraits<skia::mojom::ImageInfoDataView, SkImageInfo>::height(
 bool StructTraits<skia::mojom::ImageInfoDataView, SkImageInfo>::Read(
     skia::mojom::ImageInfoDataView data,
     SkImageInfo* info) {
-  *info = SkImageInfo::Make(data.width(), data.height(),
-                            MojoColorTypeToSk(data.color_type()),
-                            MojoAlphaTypeToSk(data.alpha_type()),
-                            MojoProfileTypeToSk(data.profile_type()));
+  mojo::ArrayDataView<uint8_t> serialized_color_space;
+  data.GetSerializedColorSpaceDataView(&serialized_color_space);
+  sk_sp<SkColorSpace> sk_color_space;
+  if (serialized_color_space.size() != 0u) {
+    sk_color_space = SkColorSpace::Deserialize(serialized_color_space.data(),
+                                               serialized_color_space.size());
+    // Deserialize() returns nullptr on invalid input.
+    if (!sk_color_space)
+      return false;
+  } else {
+    // Empty byte array is interpreted as "null."
+  }
+
+  *info = SkImageInfo::Make(
+      data.width(), data.height(), MojoColorTypeToSk(data.color_type()),
+      MojoAlphaTypeToSk(data.alpha_type()), std::move(sk_color_space));
   return true;
 }
 

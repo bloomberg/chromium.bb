@@ -8,11 +8,10 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "base/timer/lap_timer.h"
 #include "cc/base/completion_event.h"
-#include "cc/base/lap_timer.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -29,6 +28,8 @@ class PerfTaskImpl : public Task {
   typedef std::vector<scoped_refptr<PerfTaskImpl>> Vector;
 
   PerfTaskImpl() = default;
+  PerfTaskImpl(const PerfTaskImpl&) = delete;
+  PerfTaskImpl& operator=(const PerfTaskImpl&) = delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
@@ -37,8 +38,6 @@ class PerfTaskImpl : public Task {
 
  private:
   ~PerfTaskImpl() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(PerfTaskImpl);
 };
 
 class TaskGraphRunnerPerfTest : public testing::Test {
@@ -274,7 +273,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
   // minimal additional complexity over the TaskGraphWorkQueue helpers.
   std::unique_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
   NamespaceToken namespace_token_;
-  LapTimer timer_;
+  base::LapTimer timer_;
 };
 
 TEST_F(TaskGraphRunnerPerfTest, BuildTaskGraph) {

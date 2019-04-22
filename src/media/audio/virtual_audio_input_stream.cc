@@ -54,8 +54,8 @@ bool VirtualAudioInputStream::Open() {
 void VirtualAudioInputStream::Start(AudioInputCallback* callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   callback_ = callback;
-  fake_worker_.Start(base::Bind(
-      &VirtualAudioInputStream::PumpAudio, base::Unretained(this)));
+  fake_worker_.Start(base::BindRepeating(&VirtualAudioInputStream::PumpAudio,
+                                         base::Unretained(this)));
 }
 
 void VirtualAudioInputStream::Stop() {
@@ -99,7 +99,8 @@ void VirtualAudioInputStream::RemoveInputProvider(
   DCHECK_LE(0, num_attached_output_streams_);
 }
 
-void VirtualAudioInputStream::PumpAudio() {
+void VirtualAudioInputStream::PumpAudio(base::TimeTicks ideal_time,
+                                        base::TimeTicks now) {
   DCHECK(worker_task_runner_->BelongsToCurrentThread());
 
   {
@@ -110,7 +111,7 @@ void VirtualAudioInputStream::PumpAudio() {
   }
   // Because the audio is being looped-back, the delay since since it was
   // recorded is zero.
-  callback_->OnData(audio_bus_.get(), base::TimeTicks::Now(), 1.0);
+  callback_->OnData(audio_bus_.get(), ideal_time, 1.0);
 }
 
 void VirtualAudioInputStream::Close() {

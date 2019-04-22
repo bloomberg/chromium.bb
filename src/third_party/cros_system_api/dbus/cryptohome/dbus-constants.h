@@ -13,6 +13,12 @@ const char kCryptohomeInterface[] = "org.chromium.CryptohomeInterface";
 const char kCryptohomeServicePath[] = "/org/chromium/Cryptohome";
 const char kCryptohomeServiceName[] = "org.chromium.Cryptohome";
 
+const char kUserDataAuthInterface[] = "org.chromium.UserDataAuthInterface";
+// Note that UserDataAuthInterface is only one of the interfaces in the
+// service name org.chromium.UserDataAuth.
+const char kUserDataAuthServiceName[] = "org.chromium.UserDataAuth";
+const char kUserDataAuthServicePath[] = "/org/chromium/UserDataAuth";
+
 // Methods of the |kCryptohomeInterface| interface:
 const char kCryptohomeMigrateKey[] = "MigrateKey";
 const char kCryptohomeMigrateKeyEx[] = "MigrateKeyEx";
@@ -23,7 +29,7 @@ const char kCryptohomeIsMounted[] = "IsMounted";
 const char kCryptohomeMount[] = "Mount";
 const char kCryptohomeMountGuest[] = "MountGuest";
 const char kCryptohomeMountGuestEx[] = "MountGuestEx";
-const char kCryptohomeUnmount[] = "Unmount";
+const char kCryptohomeUnmountEx[] = "UnmountEx";
 const char kCryptohomeTpmIsReady[] = "TpmIsReady";
 const char kCryptohomeTpmIsEnabled[] = "TpmIsEnabled";
 const char kCryptohomeTpmIsOwned[] = "TpmIsOwned";
@@ -35,8 +41,6 @@ const char kCryptohomePkcs11GetTpmTokenInfo[] = "Pkcs11GetTpmTokenInfo";
 const char kCryptohomePkcs11GetTpmTokenInfoForUser[] =
     "Pkcs11GetTpmTokenInfoForUser";
 const char kCryptohomePkcs11IsTpmTokenReady[] = "Pkcs11IsTpmTokenReady";
-const char kCryptohomePkcs11IsTpmTokenReadyForUser[] =
-    "Pkcs11IsTpmTokenReadyForUser";
 const char kCryptohomeAsyncMigrateKey[] = "AsyncMigrateKey";
 const char kCryptohomeAsyncMount[] = "AsyncMount";
 const char kCryptohomeAsyncMountGuest[] = "AsyncMountGuest";
@@ -60,7 +64,11 @@ const char kCryptohomeInstallAttributesIsInvalid[] =
 const char kCryptohomeInstallAttributesIsFirstInstall[] =
     "InstallAttributesIsFirstInstall";
 const char kCryptohomeTpmIsAttestationPrepared[] = "TpmIsAttestationPrepared";
+const char kCryptohomeTpmAttestationGetEnrollmentPreparationsEx[] =
+    "TpmAttestationGetEnrollmentPreparationsEx";
 const char kCryptohomeTpmIsAttestationEnrolled[] = "TpmIsAttestationEnrolled";
+const char kCryptohomeTpmAttestationGetIdentityCertificatesEx[] =
+    "TpmAttestationGetIdentityCertificatesEx";
 const char kCryptohomeTpmAttestationCreateEnrollRequest[] =
     "TpmAttestationCreateEnrollRequest";
 const char kCryptohomeAsyncTpmAttestationCreateEnrollRequest[] =
@@ -134,6 +142,8 @@ const char kCryptohomeGetSupportedKeyPolicies[] = "GetSupportedKeyPolicies";
 const char kCryptohomeIsQuotaSupported[] = "IsQuotaSupported";
 const char kCryptohomeGetCurrentSpaceForUid[] = "GetCurrentSpaceForUid";
 const char kCryptohomeGetCurrentSpaceForGid[] = "GetCurrentSpaceForGid";
+const char kCryptohomeLockToSingleUserMountUntilReboot[] =
+    "LockToSingleUserMountUntilReboot";
 
 // Signals of the |kCryptohomeInterface| interface:
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";

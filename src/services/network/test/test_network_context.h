@@ -82,6 +82,8 @@ class TestNetworkContext : public mojom::NetworkContext {
                    const GURL& url,
                    const base::Optional<std::string>& user_agent,
                    base::Value body) override {}
+  void QueueSignedExchangeReport(
+      mojom::SignedExchangeReportPtr report) override {}
   void CloseAllConnections(CloseAllConnectionsCallback callback) override {}
   void CloseIdleConnections(CloseIdleConnectionsCallback callback) override {}
   void SetNetworkConditions(const base::UnguessableToken& throttling_profile_id,
@@ -135,7 +137,9 @@ class TestNetworkContext : public mojom::NetworkContext {
                        int32_t process_id,
                        int32_t render_frame_id,
                        const url::Origin& origin,
-                       mojom::AuthenticationHandlerPtr auth_handler) override {}
+                       uint32_t options,
+                       mojom::AuthenticationHandlerPtr auth_handler,
+                       mojom::TrustedHeaderClientPtr header_client) override {}
   void LookUpProxyForURL(
       const GURL& url,
       ::network::mojom::ProxyLookupClientPtr proxy_lookup_client) override {}
@@ -146,6 +150,10 @@ class TestNetworkContext : public mojom::NetworkContext {
   void CreateHostResolver(
       const base::Optional<net::DnsConfigOverrides>& config_overrides,
       mojom::HostResolverRequest request) override {}
+  void NotifyExternalCacheHit(
+      const GURL& url,
+      const std::string& http_method,
+      const base::Optional<url::Origin>& top_frame_origin) override {}
   void WriteCacheMetadata(const GURL& url,
                           net::RequestPriority priority,
                           base::Time expected_response_time,
@@ -202,6 +210,9 @@ class TestNetworkContext : public mojom::NetworkContext {
       AddDomainReliabilityContextForTestingCallback callback) override {}
   void ForceDomainReliabilityUploadsForTesting(
       ForceDomainReliabilityUploadsForTestingCallback callback) override {}
+  void SaveHttpAuthCache(SaveHttpAuthCacheCallback callback) override {}
+  void LoadHttpAuthCache(const base::UnguessableToken& cache_key,
+                         LoadHttpAuthCacheCallback callback) override {}
   void LookupBasicAuthCredentials(
       const GURL& url,
       LookupBasicAuthCredentialsCallback callback) override {}

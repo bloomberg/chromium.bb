@@ -335,7 +335,7 @@ TEST_F(TabDesktopMediaListTest, UpdateTitle) {
   WebContents* contents =
       tab_strip_model->GetWebContentsAt(kDefaultSourceCount - 1);
   ASSERT_TRUE(contents);
-  const content::NavigationController& controller = contents->GetController();
+  content::NavigationController& controller = contents->GetController();
   contents->UpdateTitleForEntry(controller.GetTransientEntry(),
                                 base::ASCIIToUTF16("New test tab"));
 

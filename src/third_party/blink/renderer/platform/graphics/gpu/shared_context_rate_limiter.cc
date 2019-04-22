@@ -15,11 +15,6 @@
 
 namespace blink {
 
-std::unique_ptr<SharedContextRateLimiter> SharedContextRateLimiter::Create(
-    unsigned max_pending_ticks) {
-  return base::WrapUnique(new SharedContextRateLimiter(max_pending_ticks));
-}
-
 SharedContextRateLimiter::SharedContextRateLimiter(unsigned max_pending_ticks)
     : max_pending_ticks_(max_pending_ticks), can_use_sync_queries_(false) {
   context_provider_ =
@@ -72,7 +67,7 @@ void SharedContextRateLimiter::Reset() {
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
   if (can_use_sync_queries_ && gl &&
       gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
-    while (queries_.size() > 0) {
+    while (!queries_.empty()) {
       gl->DeleteQueriesEXT(1, &queries_.front());
       queries_.pop_front();
     }

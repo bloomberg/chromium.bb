@@ -20,7 +20,7 @@ ScopedAccountConsistency::ScopedAccountConsistency(
   DCHECK_NE(AccountConsistencyMethod::kDisabled, method);
 #if !BUILDFLAG(ENABLE_DICE_SUPPORT)
   DCHECK_NE(AccountConsistencyMethod::kDice, method);
-  DCHECK_NE(AccountConsistencyMethod::kDiceFixAuthErrors, method);
+  DCHECK_NE(AccountConsistencyMethod::kDiceMigration, method);
 #endif
 
 #if BUILDFLAG(ENABLE_MIRROR)
@@ -36,9 +36,6 @@ ScopedAccountConsistency::ScopedAccountConsistency(
       break;
     case AccountConsistencyMethod::kMirror:
       feature_value = kAccountConsistencyFeatureMethodMirror;
-      break;
-    case AccountConsistencyMethod::kDiceFixAuthErrors:
-      feature_value = kAccountConsistencyFeatureMethodDiceFixAuthErrors;
       break;
     case AccountConsistencyMethod::kDiceMigration:
       feature_value = kAccountConsistencyFeatureMethodDiceMigration;

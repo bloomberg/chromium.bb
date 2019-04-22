@@ -44,6 +44,18 @@ class AccessibilityEventRecorder {
       const base::StringPiece& application_name_match_pattern =
           base::StringPiece());
 
+  // Get a set of factory methods to create event-recorders, one for each test
+  // pass; see |DumpAccessibilityTestBase|.
+  using EventRecorderFactory = std::unique_ptr<AccessibilityEventRecorder> (*)(
+      BrowserAccessibilityManager* manager,
+      base::ProcessId pid,
+      const base::StringPiece& application_name_match_pattern);
+  struct TestPass {
+    const char* name;
+    EventRecorderFactory create_recorder;
+  };
+  static std::vector<TestPass> GetTestPasses();
+
   AccessibilityEventRecorder(BrowserAccessibilityManager* manager);
   virtual ~AccessibilityEventRecorder();
 
@@ -54,6 +66,9 @@ class AccessibilityEventRecorder {
   void ListenToEvents(AccessibilityEventCallback callback) {
     callback_ = std::move(callback);
   }
+
+  // Called to ensure the event recorder has finished recording async events.
+  virtual void FlushAsyncEvents() {}
 
   // Access the vector of human-readable event logs, one string per event.
   const std::vector<std::string>& event_logs() { return event_logs_; }

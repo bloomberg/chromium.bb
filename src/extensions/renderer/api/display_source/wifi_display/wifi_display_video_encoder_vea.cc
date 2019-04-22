@@ -116,8 +116,8 @@ WiFiDisplayVideoEncoderVEA::WiFiDisplayVideoEncoderVEA(
 
 WiFiDisplayVideoEncoderVEA::~WiFiDisplayVideoEncoderVEA() {
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&media::VideoEncodeAccelerator::Destroy,
-                            base::Unretained(vea_)));
+      FROM_HERE, base::BindOnce(&media::VideoEncodeAccelerator::Destroy,
+                                base::Unretained(vea_)));
 }
 
 scoped_refptr<WiFiDisplayVideoEncoder>
@@ -152,8 +152,9 @@ void WiFiDisplayVideoEncoderVEA::RequireBitstreamBuffers(
 void WiFiDisplayVideoEncoderVEA::OnCreateSharedMemory(
     std::unique_ptr<base::SharedMemory> memory) {
   media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&WiFiDisplayVideoEncoderVEA::OnReceivedSharedMemory,
-                            this, base::Passed(&memory)));
+      FROM_HERE,
+      base::BindOnce(&WiFiDisplayVideoEncoderVEA::OnReceivedSharedMemory, this,
+                     std::move(memory)));
 }
 
 void WiFiDisplayVideoEncoderVEA::OnReceivedSharedMemory(

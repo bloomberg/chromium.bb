@@ -67,6 +67,14 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem : public AppListItem,
   size_t ChildItemCount() const override;
   bool CompareForTest(const AppListItem* other) const override;
 
+  // Persistent folders will be retained even if there is 1 app in them.
+  bool IsPersistent() const;
+  void SetIsPersistent(bool is_persistent);
+
+  // Returns true if this folder is a candidate for auto-removal (based on its
+  // type and the number of children it has).
+  bool ShouldAutoRemove() const;
+
   // Returns an id for a new folder.
   static std::string GenerateId();
 

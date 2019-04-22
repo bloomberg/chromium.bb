@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
 
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
@@ -88,7 +88,10 @@ void InspectorResourceContentLoader::Start() {
       resource_request.SetCacheMode(mojom::FetchCacheMode::kOnlyIfCached);
     }
     resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
-    resource_request.SetSkipServiceWorker(true);
+    if (document->Loader() &&
+        document->Loader()->GetResponse().WasFetchedViaServiceWorker()) {
+      resource_request.SetCacheMode(mojom::FetchCacheMode::kDefault);
+    }
 
     if (!resource_request.Url().GetString().IsEmpty()) {
       urls_to_fetch.insert(resource_request.Url().GetString());

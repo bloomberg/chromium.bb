@@ -29,9 +29,9 @@ mojom("mojom") {
     "//media/mojo/interfaces",
     "//mojo/public/mojom/base",
     "//services/viz/public/interfaces",
-    "//services/ws/public/mojom/cursor",
     "//services/ws/public/mojom/ime",
     "//skia/public/interfaces",
+    "//ui/base/ime/mojo",
     "//ui/base/mojo",
     "//ui/display/mojo:interfaces",
     "//ui/events/mojo:interfaces",
@@ -42,7 +42,7 @@ mojom("mojom") {
   ]
 
   if (is_chromeos) {
-    sources += [ "arc.mojom" ]
+    sources += [ "arc_gpu.mojom" ]
     public_deps += [ "//components/arc/common:media" ]
   }
 }
@@ -57,20 +57,14 @@ source_set("tests") {
   testonly = true
 
   sources = [
-    "cursor/cursor_struct_traits_unittest.cc",
     "ime/ime_struct_traits_unittest.cc",
   ]
 
   deps = [
     "//base",
     "//base/test:test_support",
-    "//services/ws/public/mojom/cursor",
-    "//services/ws/public/mojom/ime:test_interfaces",
-    "//skia/public/interfaces",
+    "//services/ws/public/mojom/ime",
     "//testing/gtest",
-    "//ui/display/types",
     "//ui/gfx:test_support",
-    "//ui/gfx/geometry/mojo:struct_traits",
-    "//ui/gfx/range/mojo:struct_traits",
   ]
 }

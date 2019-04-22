@@ -175,4 +175,3 @@ This is groovy.
 
 SECRET ENDING: IT WAS _____ ALL ALONG!
 testing trailing line.
-Hacky hacky mitigation now works in CQ.

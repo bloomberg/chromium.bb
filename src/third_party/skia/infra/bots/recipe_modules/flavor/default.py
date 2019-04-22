@@ -139,6 +139,14 @@ class DefaultFlavor(object):
     self.m.file.ensure_directory(
         'makedirs %s' % self.m.path.basename(path), path)
 
+  def read_file_on_device(self, path, **kwargs):
+    """Reads the specified file."""
+    return self.m.file.read_text('read %s' % path, path)
+
+  def remove_file_on_device(self, path):
+    """Removes the specified file."""
+    return self.m.file.remove('remove %s' % path, path)
+
   def install(self):
     """Run device-specific installation steps."""
     pass
@@ -155,7 +163,7 @@ class DefaultFlavor(object):
     return self.m.run(self.m.python, title, script=script, args=args,
                infra_step=infra_step)
 
-  def step(self, name, cmd):
+  def step(self, name, cmd, **unused_kwargs):
     app = self.device_dirs.bin_dir.join(cmd[0])
     cmd = [app] + cmd[1:]
     env = self.m.context.env
@@ -226,6 +234,8 @@ class DefaultFlavor(object):
       cmd = [procdump, '-accepteula', '-mp', '-e', '1', '-x', dumps_dir] + cmd
 
     if 'ASAN' in extra_tokens or 'UBSAN' in extra_tokens:
+      # Note: if you see "<unknown module>" in stacktraces for xSAN warnings,
+      # try adding "fast_unwind_on_malloc=0" to xSAN_OPTIONS.
       if 'Mac' in self.m.vars.builder_cfg.get('os', ''):
         env['ASAN_OPTIONS'] = 'symbolize=1'  # Mac doesn't support detect_leaks.
       else:

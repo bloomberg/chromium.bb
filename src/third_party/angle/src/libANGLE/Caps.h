@@ -92,6 +92,7 @@ bool DetermineCompressedTextureETCSupport(const TextureCapsMap &textureCaps);
 struct Extensions
 {
     Extensions();
+    Extensions(const Extensions &other);
 
     // Generate a vector of supported extension strings
     std::vector<std::string> getStrings() const;
@@ -283,7 +284,11 @@ struct Extensions
     bool framebufferMultisample;
 
     // GL_ANGLE_instanced_arrays
-    bool instancedArrays;
+    bool instancedArraysANGLE;
+    // GL_EXT_instanced_arrays
+    bool instancedArraysEXT;
+    // Any version of the instanced arrays extension
+    bool instancedArraysAny() const { return (instancedArraysANGLE || instancedArraysEXT); }
 
     // GL_ANGLE_pack_reverse_row_order
     bool packReverseRowOrder;
@@ -297,8 +302,8 @@ struct Extensions
     // GL_EXT_frag_depth
     bool fragDepth;
 
-    // ANGLE_multiview
-    bool multiview;
+    // OVR_multiview2
+    bool multiview2;
     GLuint maxViews;
 
     // GL_ANGLE_texture_usage
@@ -324,6 +329,21 @@ struct Extensions
 
     // GL_OES_EGL_image_external_essl3
     bool eglImageExternalEssl3;
+
+    // GL_OES_EGL_sync
+    bool eglSync;
+
+    // GL_EXT_memory_object
+    bool memoryObject;
+
+    // GL_EXT_memory_object_fd
+    bool memoryObjectFd;
+
+    // GL_EXT_semaphore
+    bool semaphore;
+
+    // GL_EXT_semaphore_fd
+    bool semaphoreFd;
 
     // NV_EGL_stream_consumer_external
     bool eglStreamConsumerExternal;
@@ -458,6 +478,9 @@ struct Extensions
     bool blendFuncExtended;
     GLuint maxDualSourceDrawBuffers;
 
+    // GL_EXT_float_blend
+    bool floatBlend;
+
     // GL_ANGLE_memory_size
     bool memorySize;
 
@@ -466,6 +489,12 @@ struct Extensions
 
     // GL_ANGLE_multi_draw
     bool multiDraw;
+
+    // GL_ANGLE_provoking_vertex
+    bool provokingVertex = false;
+
+    // GL_CHROMIUM_lose_context
+    bool loseContextCHROMIUM = false;
 };
 
 struct ExtensionInfo
@@ -667,6 +696,8 @@ struct Caps
     GLuint maxGeometryTotalOutputComponents;
     GLuint maxGeometryShaderInvocations;
 
+    GLuint subPixelBits;
+
     // GLES1 emulation: Caps for ES 1.1. Taken from Table 6.20 / 6.22 in the OpenGL ES 1.1 spec.
     GLuint maxMultitextureUnits;
     GLuint maxClipPlanes;
@@ -783,6 +814,12 @@ struct DisplayExtensions
     // EGL_ANGLE_stream_producer_d3d_texture
     bool streamProducerD3DTexture;
 
+    // EGL_KHR_fence_sync
+    bool fenceSync;
+
+    // EGL_KHR_wait_sync
+    bool waitSync;
+
     // EGL_ANGLE_create_context_webgl_compatibility
     bool createContextWebGLCompatibility;
 
@@ -830,6 +867,9 @@ struct DisplayExtensions
 
     // EGL_ANDROID_get_frame_timestamps
     bool getFrameTimestamps;
+
+    // EGL_ANDROID_recordable
+    bool recordable;
 };
 
 struct DeviceExtensions

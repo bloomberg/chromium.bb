@@ -45,7 +45,6 @@ class ImageFetcher;
 
 namespace ntp_snippets {
 
-class BreakingNewsListener;
 class CategoryRanker;
 class RemoteSuggestionsDatabase;
 class RemoteSuggestionsScheduler;
@@ -72,7 +71,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
       std::unique_ptr<RemoteSuggestionsDatabase> database,
       std::unique_ptr<RemoteSuggestionsStatusService> status_service,
       std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker,
-      std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider,
       Logger* debug_logger,
       std::unique_ptr<base::OneShotTimer> fetch_timeout_timer);
 
@@ -142,10 +140,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // TODO(tschumann): remove this method as soon as we inject the fetcher into
   // the constructor.
   CachedImageFetcher& GetImageFetcherForTesting() { return image_fetcher_; }
-
-  BreakingNewsListener* breaking_news_listener_for_debugging() {
-    return breaking_news_raw_data_provider_.get();
-  }
 
  private:
   friend class RemoteSuggestionsProviderImplTest;
@@ -382,11 +376,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // SetProviderStatusCallback().
   void NotifyStateChanged();
 
-  // Subscribes or unsubcribes from pushed suggestions depending on the new
-  // status.
-  void UpdatePushedSuggestionsSubscriptionDueToStatusChange(
-      RemoteSuggestionsStatus new_status);
-
   // Converts the given |suggestions| to content suggestions and notifies the
   // observer with them for category |category|.
   void NotifyNewSuggestions(Category category,
@@ -467,10 +456,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // Prefetched pages tracker to query which urls have been prefetched.
   // |nullptr| is handled gracefully and just disables the functionality.
   std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker_;
-
-  // Listens for BreakingNews updates (e.g. through GCM) and notifies the
-  // provider.
-  std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider_;
 
   // Additional logging, accesible through snippets-internals.
   Logger* debug_logger_;

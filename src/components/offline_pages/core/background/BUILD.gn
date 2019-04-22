@@ -8,8 +8,6 @@ if (is_android) {
 
 static_library("background_offliner") {
   sources = [
-    "add_request_task.cc",
-    "add_request_task.h",
     "change_requests_state_task.cc",
     "change_requests_state_task.h",
     "cleanup_task.cc",
@@ -33,6 +31,8 @@ static_library("background_offliner") {
     "mark_attempt_started_task.cc",
     "mark_attempt_started_task.h",
     "offliner.h",
+    "offliner_client.cc",
+    "offliner_client.h",
     "offliner_policy.h",
     "offliner_policy_utils.cc",
     "offliner_policy_utils.h",
@@ -96,7 +96,6 @@ static_library("test_support") {
     "//base",
     "//base/test:test_support",
     "//components/offline_items_collection/core/test_support",
-    "//components/offline_pages/core",
     "//net",
     "//services/network:test_support",
     "//services/network/public/cpp",
@@ -106,7 +105,6 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "add_request_task_unittest.cc",
     "change_requests_state_task_unittest.cc",
     "cleanup_task_unittest.cc",
     "get_requests_task_unittest.cc",
@@ -114,6 +112,7 @@ source_set("unit_tests") {
     "mark_attempt_aborted_task_unittest.cc",
     "mark_attempt_completed_task_unittest.cc",
     "mark_attempt_started_task_unittest.cc",
+    "offliner_client_unittest.cc",
     "pick_request_task_unittest.cc",
     "reconcile_task_unittest.cc",
     "remove_requests_task_unittest.cc",
@@ -135,6 +134,7 @@ source_set("unit_tests") {
     "//services/network:test_support",
     "//services/network/public/cpp",
     "//sql:sql",
+    "//testing/gmock",
     "//testing/gtest",
     "//url",
   ]

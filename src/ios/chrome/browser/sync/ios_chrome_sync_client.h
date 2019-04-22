@@ -6,13 +6,12 @@
 #define IOS_CHROME_BROWSER_SYNC_IOS_CHROME_SYNC_CLIENT_H__
 
 #include <memory>
-#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "components/sync/driver/sync_client.h"
+#include "components/browser_sync/browser_sync_client.h"
 
 namespace autofill {
 class AutofillWebDataService;
@@ -26,32 +25,32 @@ namespace password_manager {
 class PasswordStore;
 }
 
-namespace syncer {
-class DeviceInfoTracker;
-class SyncApiComponentFactory;
-class SyncService;
+namespace browser_sync {
+class ProfileSyncComponentsFactoryImpl;
 }
 
-class IOSChromeSyncClient : public syncer::SyncClient {
+class IOSChromeSyncClient : public browser_sync::BrowserSyncClient {
  public:
   explicit IOSChromeSyncClient(ios::ChromeBrowserState* browser_state);
   ~IOSChromeSyncClient() override;
 
-  // SyncClient implementation.
-  syncer::SyncService* GetSyncService() override;
+  // BrowserSyncClient implementation.
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;
   syncer::ModelTypeStoreService* GetModelTypeStoreService() override;
+  syncer::DeviceInfoSyncService* GetDeviceInfoSyncService() override;
+  send_tab_to_self::SendTabToSelfSyncService* GetSendTabToSelfSyncService()
+      override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
   sync_sessions::SessionSyncService* GetSessionSyncService() override;
-  bool HasPasswordStore() override;
   base::Closure GetPasswordStateChangedCallback() override;
-  syncer::DataTypeController::TypeVector CreateDataTypeControllers() override;
+  syncer::DataTypeController::TypeVector CreateDataTypeControllers(
+      syncer::SyncService* sync_service) override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   invalidation::InvalidationService* GetInvalidationService() override;
-  BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
+  BookmarkUndoService* GetBookmarkUndoService() override;
   scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override;
@@ -60,19 +59,16 @@ class IOSChromeSyncClient : public syncer::SyncClient {
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
       syncer::ModelSafeGroup group) override;
   syncer::SyncApiComponentFactory* GetSyncApiComponentFactory() override;
-
-  void SetSyncApiComponentFactoryForTesting(
-      std::unique_ptr<syncer::SyncApiComponentFactory> component_factory);
-
-  // Iterates over browser states and returns any trackers that can be found.
-  static void GetDeviceInfoTrackers(
-      std::vector<const syncer::DeviceInfoTracker*>* trackers);
+  syncer::SyncTypePreferenceProvider* GetPreferenceProvider() override;
 
  private:
   ios::ChromeBrowserState* const browser_state_;
 
   // The sync api component factory in use by this client.
-  std::unique_ptr<syncer::SyncApiComponentFactory> component_factory_;
+  // TODO(crbug.com/915154): Revert to SyncApiComponentFactory once common
+  // controller creation is moved elsewhere.
+  std::unique_ptr<browser_sync::ProfileSyncComponentsFactoryImpl>
+      component_factory_;
 
   // Members that must be fetched on the UI thread but accessed on their
   // respective backend threads.

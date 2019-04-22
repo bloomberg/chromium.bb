@@ -43,11 +43,11 @@ bool SortTabTimesByRecency(const TitleTimestampPair& t1,
 }
 
 std::string ToSessionTag(SessionID session_id) {
-  return std::string(kBaseSessionTag + base::IntToString(session_id.id()));
+  return std::string(kBaseSessionTag + base::NumberToString(session_id.id()));
 }
 
 std::string ToSessionName(SessionID session_id) {
-  return std::string(kBaseSessionName + base::IntToString(session_id.id()));
+  return std::string(kBaseSessionName + base::NumberToString(session_id.id()));
 }
 
 std::string ToTabTitle(SessionID session_id,
@@ -185,8 +185,7 @@ base::string16 RecentTabsBuilderTestHelper::GetTabTitle(int session_index,
 }
 
 void RecentTabsBuilderTestHelper::ExportToSessionSync(
-    syncer::ModelTypeProcessor* processor,
-    sync_sessions::OpenTabsUIDelegate* verification_delegate) {
+    syncer::ModelTypeProcessor* processor) {
   syncer::UpdateResponseDataList updates;
 
   for (int s = 0; s < GetSessionCount(); ++s) {
@@ -205,15 +204,15 @@ void RecentTabsBuilderTestHelper::ExportToSessionSync(
 
   sync_pb::ModelTypeState model_type_state;
   model_type_state.set_initial_sync_done(true);
-  processor->OnUpdateReceived(model_type_state, updates);
+  processor->OnUpdateReceived(model_type_state, std::move(updates));
   // ClientTagBasedModelTypeProcessor uses ModelTypeProcessorProxy during
   // activation, which involves task posting for receiving updates.
   base::RunLoop().RunUntilIdle();
-  VerifyExport(verification_delegate);
 }
 
 void RecentTabsBuilderTestHelper::VerifyExport(
     sync_sessions::OpenTabsUIDelegate* delegate) {
+  DCHECK(delegate);
   // Make sure data is populated correctly in SessionModelAssociator.
   std::vector<const sync_sessions::SyncedSession*> sessions;
   ASSERT_TRUE(delegate->GetAllForeignSessions(&sessions));
@@ -302,19 +301,20 @@ sync_pb::SessionSpecifics RecentTabsBuilderTestHelper::BuildTabSpecifics(
   return specifics;
 }
 
-syncer::UpdateResponseData RecentTabsBuilderTestHelper::BuildUpdateResponseData(
+std::unique_ptr<syncer::UpdateResponseData>
+RecentTabsBuilderTestHelper::BuildUpdateResponseData(
     const sync_pb::SessionSpecifics& specifics,
     base::Time timestamp) {
-  syncer::EntityData entity;
-  *entity.specifics.mutable_session() = specifics;
-  entity.creation_time = timestamp;
-  entity.modification_time = timestamp;
-  entity.client_tag_hash = syncer::GenerateSyncableHash(
+  auto entity = std::make_unique<syncer::EntityData>();
+  *entity->specifics.mutable_session() = specifics;
+  entity->creation_time = timestamp;
+  entity->modification_time = timestamp;
+  entity->client_tag_hash = syncer::GenerateSyncableHash(
       syncer::SESSIONS, sync_sessions::SessionStore::GetClientTag(specifics));
-  entity.id = entity.client_tag_hash;
+  entity->id = entity->client_tag_hash;
 
-  syncer::UpdateResponseData update;
-  update.entity = entity.PassToPtr();
-  update.response_version = ++next_response_version_;
+  auto update = std::make_unique<syncer::UpdateResponseData>();
+  update->entity = std::move(entity);
+  update->response_version = ++next_response_version_;
   return update;
 }

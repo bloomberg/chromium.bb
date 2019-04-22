@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
@@ -45,8 +46,55 @@ class SendPromotionHintsBeforeReturning {
 
 }  // namespace
 
-OverlayProcessor::StrategyType OverlayProcessor::Strategy::GetUMAEnum() const {
-  return StrategyType::kUnknown;
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class UnderlayDamage {
+  kZeroDamageRect,
+  kNonOccludingDamageOnly,
+  kOccludingDamageOnly,
+  kOccludingAndNonOccludingDamages,
+  kMaxValue = kOccludingAndNonOccludingDamages,
+};
+
+// Record UMA histograms for overlays
+// 1. Underlay vs. Overlay
+// 2. Full screen mode vs. Non Full screen (Windows) mode
+// 3. Overlay zero damage rect vs. non zero damage rect
+// 4. Underlay zero damage rect, non-zero damage rect with non-occluding damage
+//   only, non-zero damage rect with occluding damage, and non-zero damage rect
+//   with both damages
+
+// static
+void OverlayProcessor::RecordOverlayDamageRectHistograms(
+    bool is_overlay,
+    bool has_occluding_surface_damage,
+    bool zero_damage_rect,
+    bool occluding_damage_equal_to_damage_rect) {
+  if (is_overlay) {
+    UMA_HISTOGRAM_BOOLEAN("Viz.DisplayCompositor.RootDamageRect.Overlay",
+                          !zero_damage_rect);
+  } else {  // underlay
+    UnderlayDamage underlay_damage = UnderlayDamage::kZeroDamageRect;
+    if (zero_damage_rect) {
+      underlay_damage = UnderlayDamage::kZeroDamageRect;
+    } else {
+      if (has_occluding_surface_damage) {
+        if (occluding_damage_equal_to_damage_rect) {
+          underlay_damage = UnderlayDamage::kOccludingDamageOnly;
+        } else {
+          underlay_damage = UnderlayDamage::kOccludingAndNonOccludingDamages;
+        }
+      } else {
+        underlay_damage = UnderlayDamage::kNonOccludingDamageOnly;
+      }
+    }
+    UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.RootDamageRect.Underlay",
+                              underlay_damage);
+  }
+}
+
+OverlayStrategy OverlayProcessor::Strategy::GetUMAEnum() const {
+  return OverlayStrategy::kUnknown;
 }
 
 OverlayProcessor::OverlayProcessor(OutputSurface* surface)
@@ -109,9 +157,9 @@ bool OverlayProcessor::ProcessForDCLayers(
   if (!overlay_validator || !overlay_validator->AllowDCLayerOverlays())
     return false;
 
-  dc_processor_.Process(
-      resource_provider, gfx::RectF(render_passes->back()->output_rect),
-      render_passes, &overlay_damage_rect_, damage_rect, dc_layer_overlays);
+  dc_processor_.Process(resource_provider,
+                        gfx::RectF(render_passes->back()->output_rect),
+                        render_passes, damage_rect, dc_layer_overlays);
 
   DCHECK(overlay_candidates->empty());
   return true;
@@ -150,7 +198,12 @@ void OverlayProcessor::ProcessForOverlays(
   // CALayers because the framebuffer would be missing the removed quads'
   // contents.
   if (!render_pass->copy_requests.empty()) {
+    damage_rect->Union(
+        dc_processor_.previous_frame_overlay_damage_contribution());
+    // Update damage rect before calling ClearOverlayState, otherwise
+    // previous_frame_overlay_rect_union will be empty.
     dc_processor_.ClearOverlayState();
+
     return;
   }
 
@@ -170,15 +223,16 @@ void OverlayProcessor::ProcessForOverlays(
   // Only if that fails, attempt hardware overlay strategies.
   Strategy* successful_strategy = nullptr;
   for (const auto& strategy : strategies_) {
-    if (!strategy->Attempt(output_color_matrix, render_pass_backdrop_filters,
-                           resource_provider, render_passes->back().get(),
-                           candidates, content_bounds)) {
-      continue;
+    if (strategy->Attempt(output_color_matrix, render_pass_backdrop_filters,
+                          resource_provider, render_passes, candidates,
+                          content_bounds)) {
+      successful_strategy = strategy.get();
+
+      UpdateDamageRect(candidates, previous_frame_underlay_rect,
+                       previous_frame_underlay_was_unoccluded,
+                       &render_pass->quad_list, damage_rect);
+      break;
     }
-    successful_strategy = strategy.get();
-    UpdateDamageRect(candidates, previous_frame_underlay_rect,
-                     previous_frame_underlay_was_unoccluded, damage_rect);
-    break;
   }
 
   if (!successful_strategy && !previous_frame_underlay_rect.IsEmpty())
@@ -187,7 +241,7 @@ void OverlayProcessor::ProcessForOverlays(
   UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.OverlayStrategy",
                             successful_strategy
                                 ? successful_strategy->GetUMAEnum()
-                                : StrategyType::kNoStrategyUsed);
+                                : OverlayStrategy::kNoStrategyUsed);
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.debug.overlay_planes"),
                  "Scheduled overlay planes", candidates->size());
@@ -204,6 +258,7 @@ void OverlayProcessor::UpdateDamageRect(
     OverlayCandidateList* candidates,
     const gfx::Rect& previous_frame_underlay_rect,
     bool previous_frame_underlay_was_unoccluded,
+    const QuadList* quad_list,
     gfx::Rect* damage_rect) {
   gfx::Rect output_surface_overlay_damage_rect;
   gfx::Rect this_frame_underlay_rect;
@@ -219,27 +274,46 @@ void OverlayProcessor::UpdateDamageRect(
         if (overlay.is_opaque)
           damage_rect->Subtract(overlay_display_rect);
       }
-    } else if (this_frame_underlay_rect.IsEmpty()) {
+    } else {
       // Process underlay candidates:
-      // Track the underlay_rect from frame to frame.  If it is the same
-      // and nothing is on top of it then that rect doesn't need to
-      // be damaged because the drawing is occurring on a different plane.
-      // If it is different then that indicates that a different underlay
-      // has been chosen and the previous underlay rect should be damaged
-      // because it has changed planes from the underlay plane to the
-      // main plane.
+      // Track the underlay_rect from frame to frame. If it is the same and
+      // nothing is on top of it then that rect doesn't need to be damaged
+      // because the drawing is occurring on a different plane. If it is
+      // different then that indicates that a different underlay has been chosen
+      // and the previous underlay rect should be damaged because it has changed
+      // planes from the underlay plane to the main plane.
+      // It then checks that this is not a transition from occluded to
+      // unoccluded.
       //
       // We also insist that the underlay is unoccluded for at leat one frame,
       // else when content above the overlay transitions from not fully
       // transparent to fully transparent, we still need to erase it from the
       // framebuffer.  Otherwise, the last non-transparent frame will remain.
       // https://crbug.com/875879
+      // However, if the underlay is unoccluded, we check if the damage is due
+      // to a solid-opaque-transparent quad. If so, then we subtract this
+      // damage.
       this_frame_underlay_rect = ToEnclosedRect(overlay.display_rect);
-      if ((this_frame_underlay_rect == previous_frame_underlay_rect) &&
-          overlay.is_unoccluded && previous_frame_underlay_was_unoccluded) {
+
+      bool same_underlay_rect =
+          this_frame_underlay_rect == previous_frame_underlay_rect;
+      bool transition_from_occluded_to_unoccluded =
+          overlay.is_unoccluded && !previous_frame_underlay_was_unoccluded;
+      bool always_unoccluded =
+          overlay.is_unoccluded && previous_frame_underlay_was_unoccluded;
+
+      if (same_underlay_rect && !transition_from_occluded_to_unoccluded &&
+          (always_unoccluded || overlay.no_occluding_damage)) {
         damage_rect->Subtract(this_frame_underlay_rect);
       }
       previous_frame_underlay_was_unoccluded_ = overlay.is_unoccluded;
+    }
+
+    if (overlay.plane_z_order) {
+      RecordOverlayDamageRectHistograms(
+          (overlay.plane_z_order > 0), !overlay.no_occluding_damage,
+          damage_rect->IsEmpty(),
+          false /* occluding_damage_equal_to_damage_rect */);
     }
   }
 

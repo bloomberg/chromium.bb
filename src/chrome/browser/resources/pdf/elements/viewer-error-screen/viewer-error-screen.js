@@ -15,7 +15,8 @@ Polymer({
   },
 
   reload: function() {
-    if (this.reloadFn)
+    if (this.reloadFn) {
       this.reloadFn();
+    }
   }
 });

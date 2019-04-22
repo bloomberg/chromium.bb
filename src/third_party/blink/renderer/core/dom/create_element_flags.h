@@ -17,7 +17,7 @@ class CreateElementFlags {
   bool IsCustomElementsV0() const { return custom_elements_v0_; }
   bool WasAlreadyStarted() const { return already_started_; }
 
-  // https://html.spec.whatwg.org/#create-an-element-for-the-token
+  // https://html.spec.whatwg.org/C/#create-an-element-for-the-token
   static CreateElementFlags ByParser() {
     return CreateElementFlags().SetCreatedByParser(true);
   }
@@ -36,7 +36,7 @@ class CreateElementFlags {
     return CreateElementFlags().SetCustomElementsV0Only();
   }
 
-  // https://html.spec.whatwg.org/#create-an-element-for-the-token
+  // https://html.spec.whatwg.org/C/#create-an-element-for-the-token
   static CreateElementFlags ByFragmentParser() {
     return CreateElementFlags()
         .SetCreatedByParser(true)

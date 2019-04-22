@@ -45,8 +45,8 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/mhtml/serialized_resource.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/serialized_resource.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -66,7 +66,7 @@ class FrameSerializerTest : public testing::Test,
  protected:
   void SetUp() override {
     // We want the images to load.
-    helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
+    helper_.InitializeWithSettings(&ConfigureSettings);
   }
 
   void TearDown() override {
@@ -96,8 +96,8 @@ class FrameSerializerTest : public testing::Test,
     ResourceError error = ResourceError::Failure(NullURL());
 
     WebURLResponse response;
-    response.SetMIMEType("text/html");
-    response.SetHTTPStatusCode(status_code);
+    response.SetMimeType("text/html");
+    response.SetHttpStatusCode(status_code);
 
     platform_->GetURLLoaderMockFactory()->RegisterErrorURL(
         KURL(base_url_, file), response, error);
@@ -115,12 +115,16 @@ class FrameSerializerTest : public testing::Test,
     frame_test_helpers::LoadFrame(
         helper_.GetWebView()->MainFrameImpl(),
         KURL(base_url_, url).GetString().Utf8().data());
+    // Sometimes we have iframes created in "onload" handler - wait for them to
+    // load.
+    frame_test_helpers::PumpPendingRequestsForFrameToLoad(
+        helper_.GetWebView()->MainFrameImpl());
     FrameSerializer serializer(resources_, *this);
     Frame* frame = helper_.LocalMainFrame()->GetFrame();
     for (; frame; frame = frame->Tree().TraverseNext()) {
       // This is safe, because tests do not do cross-site navigation
       // (and therefore don't have remote frames).
-      serializer.SerializeFrame(*ToLocalFrame(frame));
+      serializer.SerializeFrame(*To<LocalFrame>(frame));
     }
   }
 

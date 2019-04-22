@@ -4,12 +4,14 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
+#include <limits>
 #include <vector>
 
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
@@ -35,13 +37,14 @@
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/devicemode.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/feedback/tracing_manager.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
@@ -70,8 +73,6 @@ namespace chromeos {
 
 namespace {
 
-static const char kFallbackInputMethodLocale[] = "en-US";
-
 // The keyboard preferences that determine how we remap modifier keys. These
 // preferences will be saved in global user preferences dictionary so that they
 // can be used on signin screen.
@@ -82,7 +83,6 @@ const char* const kLanguageRemapPrefs[] = {
     prefs::kLanguageRemapCapsLockKeyTo,
     prefs::kLanguageRemapEscapeKeyTo,
     prefs::kLanguageRemapBackspaceKeyTo,
-    prefs::kLanguageRemapDiamondKeyTo,
     prefs::kLanguageRemapExternalCommandKeyTo,
     prefs::kLanguageRemapExternalMetaKeyTo};
 
@@ -175,6 +175,9 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kSystemTimezoneAutomaticDetectionPolicy,
       enterprise_management::SystemTimezoneProto::USERS_DECIDE);
   registry->RegisterStringPref(prefs::kMinimumAllowedChromeVersion, "");
+  // TODO(tonydeluna): Remove deprecated pref.
+  // Carrier deal notification shown count defaults to 0.
+  registry->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
 
   AshShellInit::RegisterDisplayPrefs(registry);
 }
@@ -196,7 +199,20 @@ void Preferences::RegisterProfilePrefs(
     hardware_keyboard_id = "xkb:us::eng";  // only for testing.
   }
 
+  registry->RegisterBooleanPref(ash::prefs::kKioskNextShellEnabled,
+                                false /* default_value */,
+                                PrefRegistry::PUBLIC);
+
   registry->RegisterBooleanPref(prefs::kPerformanceTracingEnabled, false);
+
+  // This pref is device specific and must not be synced.
+  registry->RegisterIntegerPref(
+      prefs::kAccountManagerNumTimesMigrationRanSuccessfully,
+      0 /* default_value */);
+
+  // This pref is device specific and must not be synced.
+  registry->RegisterIntegerPref(
+      prefs::kAccountManagerNumTimesWelcomeScreenShown, 0 /* default_value */);
 
   registry->RegisterBooleanPref(
       prefs::kTapToClickEnabled,
@@ -284,6 +300,10 @@ void Preferences::RegisterProfilePrefs(
       ash::prefs::kAccessibilityAutoclickMovementThreshold,
       ash::kDefaultAutoclickMovementThreshold,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(
+      ash::prefs::kAccessibilityAutoclickMenuPosition,
+      static_cast<int>(ash::kDefaultAutoclickMenuPosition),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityVirtualKeyboardEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
@@ -304,7 +324,7 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilitySwitchAccessEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
       ash::prefs::kShouldAlwaysShowAccessibilityMenu, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -336,12 +356,8 @@ void Preferences::RegisterProfilePrefs(
   // because they're just used to track the logout state of the device.
   registry->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");
   registry->RegisterStringPref(prefs::kLanguagePreviousInputMethod, "");
-  registry->RegisterListPref(prefs::kLanguageAllowedInputMethods,
-                             std::make_unique<base::ListValue>());
-  registry->RegisterListPref(prefs::kAllowedLanguages,
-                             std::make_unique<base::ListValue>());
-  registry->RegisterStringPref(prefs::kLanguagePreferredLanguages,
-                               kFallbackInputMethodLocale);
+  registry->RegisterListPref(prefs::kLanguageAllowedInputMethods);
+  registry->RegisterListPref(prefs::kAllowedLanguages);
   registry->RegisterStringPref(prefs::kLanguagePreloadEngines,
                                hardware_keyboard_id);
   registry->RegisterStringPref(prefs::kLanguageEnabledImes, "");
@@ -360,6 +376,10 @@ void Preferences::RegisterProfilePrefs(
       prefs::kLanguageRemapAltKeyTo,
       static_cast<int>(ui::chromeos::ModifierKey::kAltKey),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kLanguageRemapAssistantKeyTo,
+      static_cast<int>(ui::chromeos::ModifierKey::kAssistantKey),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   // We don't sync the CapsLock remapping pref, since the UI hides this pref
   // on certain devices, so syncing a non-default value to a device that
   // doesn't allow changing the pref would be odd. http://crbug.com/167237
@@ -373,10 +393,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapBackspaceKeyTo,
       static_cast<int>(ui::chromeos::ModifierKey::kBackspaceKey),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kLanguageRemapDiamondKeyTo,
-      static_cast<int>(ui::chromeos::ModifierKey::kControlKey),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   // The Command key on external Apple keyboards is remapped by default to Ctrl
   // until the user changes it from the keyboard settings.
@@ -425,8 +441,7 @@ void Preferences::RegisterProfilePrefs(
   // We don't sync wake-on-wifi related prefs because they are device specific.
   registry->RegisterBooleanPref(prefs::kWakeOnWifiDarkConnect, true);
 
-  // 3G first-time usage promo will be shown at least once.
-  registry->RegisterBooleanPref(prefs::kShow3gPromoNotification, true);
+  registry->RegisterBooleanPref(prefs::kShowMobileDataNotification, true);
 
   // Number of times Data Saver prompt has been shown on 3G data network.
   registry->RegisterIntegerPref(
@@ -525,7 +540,6 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kTPMFirmwareUpdateCleanupDismissed,
                                 false);
-  registry->RegisterBooleanPref(prefs::kVpnConfigAllowed, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
@@ -558,12 +572,11 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   allowed_input_methods_.Init(prefs::kLanguageAllowedInputMethods, prefs,
                               callback);
   allowed_languages_.Init(prefs::kAllowedLanguages, prefs, callback);
-  preferred_languages_.Init(prefs::kLanguagePreferredLanguages, prefs,
+  preferred_languages_.Init(language::prefs::kPreferredLanguages, prefs,
                             callback);
   ime_menu_activated_.Init(prefs::kLanguageImeMenuActivated, prefs, callback);
   // Notifies the system tray to remove the IME items.
-  if (base::FeatureList::IsEnabled(features::kOptInImeMenu) &&
-      ime_menu_activated_.GetValue())
+  if (ime_menu_activated_.GetValue())
     input_method::InputMethodManager::Get()->ImeMenuActivationChanged(true);
 
   xkb_auto_repeat_enabled_.Init(
@@ -582,6 +595,7 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   pref_change_registrar_.Add(prefs::kResolveTimezoneByGeolocationMethod,
                              callback);
   pref_change_registrar_.Add(prefs::kUse24HourClock, callback);
+  pref_change_registrar_.Add(prefs::kParentAccessCodeConfig, callback);
   for (auto* remap_pref : kLanguageRemapPrefs)
     pref_change_registrar_.Add(remap_pref, callback);
 }
@@ -834,7 +848,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     locale_util::RemoveDisallowedLanguagesFromPreferred(prefs_);
 
   if (reason != REASON_PREF_CHANGED ||
-      pref_name == prefs::kLanguagePreferredLanguages) {
+      pref_name == language::prefs::kPreferredLanguages) {
     // In case setting has been changed with sync it can contain disallowed
     // values.
     locale_util::RemoveDisallowedLanguagesFromPreferred(prefs_);
@@ -864,8 +878,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
   }
 
   if (pref_name == prefs::kLanguageImeMenuActivated &&
-      (reason == REASON_PREF_CHANGED || reason == REASON_ACTIVE_USER_CHANGED) &&
-      base::FeatureList::IsEnabled(features::kOptInImeMenu)) {
+      (reason == REASON_PREF_CHANGED || reason == REASON_ACTIVE_USER_CHANGED)) {
     const bool activated = ime_menu_activated_.GetValue();
     input_method::InputMethodManager::Get()->ImeMenuActivationChanged(
         activated);
@@ -936,6 +949,20 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool value = prefs_->GetBoolean(prefs::kUse24HourClock);
     user_manager::known_user::SetBooleanPref(user_->GetAccountId(),
                                              prefs::kUse24HourClock, value);
+  }
+
+  if (pref_name == prefs::kParentAccessCodeConfig ||
+      reason != REASON_PREF_CHANGED) {
+    const base::Value* value =
+        prefs_->GetDictionary(prefs::kParentAccessCodeConfig);
+    if (value && prefs_->IsManagedPreference(prefs::kParentAccessCodeConfig)) {
+      user_manager::known_user::SetPref(user_->GetAccountId(),
+                                        prefs::kKnownUserParentAccessCodeConfig,
+                                        value->Clone());
+    } else {
+      user_manager::known_user::RemovePref(
+          user_->GetAccountId(), prefs::kKnownUserParentAccessCodeConfig);
+    }
   }
 
   for (auto* remap_pref : kLanguageRemapPrefs) {

@@ -23,7 +23,7 @@ PASS > [test-4]
 PASS   test-4 : rendered successfully
 PASS < [test-4] All assertions passed. (total 1 assertions)
 PASS > [test-5] 
-PASS   Value setter overlaps setValueCurve threw NotSupportedError: "Failed to set the 'value' property on 'AudioParam': setValueAtTime(99, 0.4986666666666666) overlaps setValueCurveAtTime(..., 0.25, 0.5)".
+PASS   Value setter overlaps setValueCurve threw NotSupportedError: "Failed to set the 'value' property on 'AudioParam': setValueAtTime(99, 0.5013333333333333) overlaps setValueCurveAtTime(..., 0.25, 0.5)".
 PASS   test-5 : rendered successfully
 PASS < [test-5] All assertions passed. (total 2 assertions)
 PASS # AUDIT TASK RUNNER FINISHED: 6 tasks ran successfully.

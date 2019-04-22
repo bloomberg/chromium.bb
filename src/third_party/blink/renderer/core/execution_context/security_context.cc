@@ -49,7 +49,7 @@ std::vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
 }
 
 SecurityContext::SecurityContext()
-    : sandbox_flags_(kSandboxNone),
+    : sandbox_flags_(WebSandboxFlags::kNone),
       address_space_(mojom::IPAddressSpace::kPublic),
       insecure_request_policy_(kLeaveInsecureRequestsAlone),
       require_safe_types_(false) {}
@@ -70,15 +70,56 @@ void SecurityContext::SetContentSecurityPolicy(
   content_security_policy_ = content_security_policy;
 }
 
-void SecurityContext::EnforceSandboxFlags(SandboxFlags mask) {
+bool SecurityContext::IsSandboxed(WebSandboxFlags mask) const {
+  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    switch (mask) {
+      case WebSandboxFlags::kAll:
+        NOTREACHED();
+        break;
+      case WebSandboxFlags::kTopNavigation:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kTopNavigation);
+      case WebSandboxFlags::kForms:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kFormSubmission);
+      case WebSandboxFlags::kScripts:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kScript);
+      case WebSandboxFlags::kPopups:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kPopups);
+      case WebSandboxFlags::kPointerLock:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kPointerLock);
+      case WebSandboxFlags::kOrientationLock:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kOrientationLock);
+      case WebSandboxFlags::kModals:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kModals);
+      case WebSandboxFlags::kPresentationController:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kPresentation);
+      case WebSandboxFlags::kDownloads:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kDownloadsWithoutUserActivation);
+      default:
+        // Any other flags fall through to the bitmask test below
+        break;
+    }
+  }
+  return (sandbox_flags_ & mask) != WebSandboxFlags::kNone;
+}
+
+void SecurityContext::EnforceSandboxFlags(WebSandboxFlags mask) {
   ApplySandboxFlags(mask);
 }
 
-void SecurityContext::ApplySandboxFlags(SandboxFlags mask,
+void SecurityContext::ApplySandboxFlags(WebSandboxFlags mask,
                                         bool is_potentially_trustworthy) {
   sandbox_flags_ |= mask;
 
-  if (IsSandboxed(kSandboxOrigin) && GetSecurityOrigin() &&
+  if (IsSandboxed(WebSandboxFlags::kOrigin) && GetSecurityOrigin() &&
       !GetSecurityOrigin()->IsOpaque()) {
     scoped_refptr<SecurityOrigin> security_origin =
         GetSecurityOrigin()->DeriveNewOpaqueOrigin();
@@ -104,6 +145,20 @@ String SecurityContext::addressSpaceForBindings() const {
   return "public";
 }
 
+void SecurityContext::SetRequireTrustedTypes() {
+  DCHECK(require_safe_types_ ||
+         content_security_policy_->IsRequireTrustedTypes());
+  require_safe_types_ = true;
+}
+
+void SecurityContext::SetRequireTrustedTypesForTesting() {
+  require_safe_types_ = true;
+}
+
+bool SecurityContext::RequireTrustedTypes() const {
+  return require_safe_types_;
+}
+
 void SecurityContext::SetFeaturePolicy(
     std::unique_ptr<FeaturePolicy> feature_policy) {
   // This method should be called before a FeaturePolicy has been created.
@@ -111,13 +166,16 @@ void SecurityContext::SetFeaturePolicy(
   feature_policy_ = std::move(feature_policy);
 }
 
-// Uses the parent enforcing policy; parsed_header and container_policy can
-// both contain report-only directives, which will be used to construct the
-// report-only policy for this context.
 void SecurityContext::InitializeFeaturePolicy(
     const ParsedFeaturePolicy& parsed_header,
     const ParsedFeaturePolicy& container_policy,
-    const FeaturePolicy* parent_feature_policy) {
+    const FeaturePolicy* parent_feature_policy,
+    const FeaturePolicy::FeatureState* opener_feature_state) {
+  // Feature policy should either come from a parent in the case of an embedded
+  // child frame, or from an opener if any when a new window is created by an
+  // opener. A main frame without an opener would not have a parent policy nor
+  // an opener feature state.
+  DCHECK(!parent_feature_policy || !opener_feature_state);
   report_only_feature_policy_ = nullptr;
   if (!HasCustomizedFeaturePolicy()) {
     feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
@@ -125,32 +183,54 @@ void SecurityContext::InitializeFeaturePolicy(
     return;
   }
 
-  feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
-      parent_feature_policy,
-      *DirectivesWithDisposition(mojom::FeaturePolicyDisposition::kEnforce,
-                                 container_policy),
-      security_origin_->ToUrlOrigin());
-  feature_policy_->SetHeaderPolicy(*DirectivesWithDisposition(
-      mojom::FeaturePolicyDisposition::kEnforce, parsed_header));
-  if (RuntimeEnabledFeatures::FeaturePolicyReportingEnabled()) {
-    report_only_feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
-        parent_feature_policy,
-        *DirectivesWithDisposition(mojom::FeaturePolicyDisposition::kReport,
-                                   container_policy),
+  if (!opener_feature_state ||
+      !RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
+        parent_feature_policy, container_policy,
         security_origin_->ToUrlOrigin());
-    report_only_feature_policy_->SetHeaderPolicy(*DirectivesWithDisposition(
-        mojom::FeaturePolicyDisposition::kReport, parsed_header));
+  } else {
+    DCHECK(!parent_feature_policy);
+    feature_policy_ = FeaturePolicy::CreateWithOpenerPolicy(
+        *opener_feature_state, security_origin_->ToUrlOrigin());
   }
+  feature_policy_->SetHeaderPolicy(parsed_header);
+}
+
+// Uses the parent enforcing policy as the basis for the report-only policy.
+void SecurityContext::AddReportOnlyFeaturePolicy(
+    const ParsedFeaturePolicy& parsed_report_only_header,
+    const ParsedFeaturePolicy& container_policy,
+    const FeaturePolicy* parent_feature_policy) {
+  report_only_feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
+      parent_feature_policy, container_policy, security_origin_->ToUrlOrigin());
+  report_only_feature_policy_->SetHeaderPolicy(parsed_report_only_header);
 }
 
 bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
                                        ReportOptions report_on_failure,
                                        const String& message) const {
-  FeatureEnabledState state = GetFeatureEnabledState(feature);
+  return IsFeatureEnabled(
+      feature,
+      PolicyValue::CreateMaxPolicyValue(
+          feature_policy_->GetFeatureList().at(feature).second),
+      report_on_failure, message);
+}
+
+bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
+                                       PolicyValue threshold_value,
+                                       ReportOptions report_on_failure,
+                                       const String& message) const {
+  if (report_on_failure == ReportOptions::kReportOnFailure) {
+    // We are expecting a violation report in case the feature is disabled in
+    // the context. Therefore, this qualifies as a potential violation (i.e.,
+    // if the feature was disabled it would generate a report).
+    CountPotentialFeaturePolicyViolation(feature);
+  }
+
+  FeatureEnabledState state = GetFeatureEnabledState(feature, threshold_value);
   if (state == FeatureEnabledState::kEnabled)
     return true;
-  if (report_on_failure == ReportOptions::kReportOnFailure &&
-      RuntimeEnabledFeatures::FeaturePolicyReportingEnabled()) {
+  if (report_on_failure == ReportOptions::kReportOnFailure) {
     ReportFeaturePolicyViolation(
         feature,
         (state == FeatureEnabledState::kReportOnly
@@ -163,13 +243,22 @@ bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
 
 FeatureEnabledState SecurityContext::GetFeatureEnabledState(
     mojom::FeaturePolicyFeature feature) const {
+  return GetFeatureEnabledState(
+      feature, PolicyValue::CreateMaxPolicyValue(
+                   feature_policy_->GetFeatureList().at(feature).second));
+}
+
+FeatureEnabledState SecurityContext::GetFeatureEnabledState(
+    mojom::FeaturePolicyFeature feature,
+    PolicyValue threshold_value) const {
   // The policy should always be initialized before checking it to ensure we
   // properly inherit the parent policy.
   DCHECK(feature_policy_);
 
-  if (feature_policy_->IsFeatureEnabled(feature)) {
+  if (feature_policy_->IsFeatureEnabled(feature, threshold_value)) {
     if (report_only_feature_policy_ &&
-        !report_only_feature_policy_->IsFeatureEnabled(feature)) {
+        !report_only_feature_policy_->IsFeatureEnabled(feature,
+                                                       threshold_value)) {
       return FeatureEnabledState::kReportOnly;
     }
     return FeatureEnabledState::kEnabled;

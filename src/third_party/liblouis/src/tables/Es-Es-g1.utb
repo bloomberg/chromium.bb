@@ -1,4 +1,25 @@
 # Spanish Grade 1 Braille Table
+#
+#  Copyright (C) 2004-2008 ViewPlus Technologies, Inc. www.viewplus.com
+#  Copyright (C) 2004-2006 JJB Software, Inc. www.jjb-software.com
+#  Copyright (C) 2012 Mesar Hameed <mesar.hameed@gmail.com>
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+
 # Created June 9, 2005 by Leon Ungier <Leon.Ungier@ViewPlus.com>.
 
 locale Spain
@@ -107,10 +128,12 @@ punctuation	\x201F 356					# 8223			double high reverse quotation mark
 
 punctuation \x2026 256-256-256	# 8230	smart ellipsis
 
+noback sign \x25CF 35 					# 9679 			black circle
+
 #-------------- end defintions ------------------------------------------
 
-capsign 46
-begcaps 46-46
+capsletter 46
+begcapsword 46-46
 
 numsign 3456
 midnum , 2

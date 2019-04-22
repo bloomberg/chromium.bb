@@ -19,22 +19,19 @@
 GrPipeline::GrPipeline(const InitArgs& args,
                        GrProcessorSet&& processors,
                        GrAppliedClip&& appliedClip) {
-    SkASSERT(args.fProxy);
     SkASSERT(processors.isFinalized());
 
-    fProxy.reset(args.fProxy);
-
-    fFlags = args.fFlags;
+    fFlags = (Flags)args.fInputFlags;
     if (appliedClip.hasStencilClip()) {
-        fFlags |= kHasStencilClip_Flag;
+        fFlags |= Flags::kHasStencilClip;
     }
     if (appliedClip.scissorState().enabled()) {
-        fFlags |= kScissorEnabled_Flag;
+        fFlags |= Flags::kScissorEnabled;
     }
 
     fWindowRectsState = appliedClip.windowRectsState();
-    if (!args.fUserStencil->isDisabled(fFlags & kHasStencilClip_Flag)) {
-        fFlags |= kStencilEnabled_Flag;
+    if (!args.fUserStencil->isDisabled(fFlags & Flags::kHasStencilClip)) {
+        fFlags |= Flags::kStencilEnabled;
     }
 
     fUserStencilSettings = args.fUserStencil;
@@ -42,7 +39,9 @@ GrPipeline::GrPipeline(const InitArgs& args,
     fXferProcessor = processors.refXferProcessor();
 
     if (args.fDstProxy.proxy()) {
-        if (!args.fDstProxy.proxy()->instantiate(args.fResourceProvider)) {
+        if (args.fResourceProvider->explicitlyAllocateGPUResources()) {
+            SkASSERT(args.fDstProxy.proxy()->isInstantiated());
+        } else if (!args.fDstProxy.proxy()->instantiate(args.fResourceProvider)) {
             this->markAsBad();
         }
 
@@ -91,24 +90,42 @@ void GrPipeline::addDependenciesTo(GrOpList* opList, const GrCaps& caps) const {
 
 }
 
-GrXferBarrierType GrPipeline::xferBarrierType(const GrCaps& caps) const {
-    if (fDstTextureProxy.get() &&
-        fDstTextureProxy.get()->peekTexture() == fProxy.get()->peekTexture()) {
+GrXferBarrierType GrPipeline::xferBarrierType(GrTexture* texture, const GrCaps& caps) const {
+    if (fDstTextureProxy.get() && fDstTextureProxy.get()->peekTexture() == texture) {
         return kTexture_GrXferBarrierType;
     }
     return this->getXferProcessor().xferBarrierType(caps);
 }
 
-GrPipeline::GrPipeline(GrRenderTargetProxy* proxy, GrScissorTest scissorTest, SkBlendMode blendmode)
-        : fProxy(proxy)
-        , fWindowRectsState()
-        , fUserStencilSettings(&GrUserStencilSettings::kUnused)
-        , fFlags()
+GrPipeline::GrPipeline(GrScissorTest scissorTest, SkBlendMode blendmode, InputFlags inputFlags,
+                       const GrUserStencilSettings* userStencil)
+        : fWindowRectsState()
+        , fUserStencilSettings(userStencil)
+        , fFlags((Flags)inputFlags)
         , fXferProcessor(GrPorterDuffXPFactory::MakeNoCoverageXP(blendmode))
         , fFragmentProcessors()
         , fNumColorProcessors(0) {
-    SkASSERT(proxy);
     if (GrScissorTest::kEnabled == scissorTest) {
-        fFlags |= kScissorEnabled_Flag;
+        fFlags |= Flags::kScissorEnabled;
     }
+    if (!userStencil->isDisabled(false)) {
+        fFlags |= Flags::kStencilEnabled;
+    }
+}
+
+uint32_t GrPipeline::getBlendInfoKey() const {
+    GrXferProcessor::BlendInfo blendInfo;
+    this->getXferProcessor().getBlendInfo(&blendInfo);
+
+    static const uint32_t kBlendWriteShift = 1;
+    static const uint32_t kBlendCoeffShift = 5;
+    GR_STATIC_ASSERT(kLast_GrBlendCoeff < (1 << kBlendCoeffShift));
+    GR_STATIC_ASSERT(kFirstAdvancedGrBlendEquation - 1 < 4);
+
+    uint32_t key = blendInfo.fWriteColor;
+    key |= (blendInfo.fSrcBlend << kBlendWriteShift);
+    key |= (blendInfo.fDstBlend << (kBlendWriteShift + kBlendCoeffShift));
+    key |= (blendInfo.fEquation << (kBlendWriteShift + 2 * kBlendCoeffShift));
+
+    return key;
 }

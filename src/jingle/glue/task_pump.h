@@ -16,7 +16,7 @@
 namespace jingle_glue {
 
 // rtc::TaskRunner implementation that works on chromium threads.
-class TaskPump : public rtc::TaskRunner {
+class TaskPump : public jingle_xmpp::TaskRunner {
  public:
   TaskPump();
 
@@ -24,7 +24,6 @@ class TaskPump : public rtc::TaskRunner {
 
   // rtc::TaskRunner implementation.
   void WakeTasks() override;
-  int64_t CurrentTime() override;
 
   // No tasks will be processed after this is called, even if
   // WakeTasks() is called.

@@ -7,9 +7,11 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -53,8 +55,10 @@ class MockTabLifecycleObserver : public TabLifecycleObserver {
  public:
   MockTabLifecycleObserver() = default;
 
-  MOCK_METHOD2(OnDiscardedStateChange,
-               void(content::WebContents* contents, bool is_discarded));
+  MOCK_METHOD3(OnDiscardedStateChange,
+               void(content::WebContents* contents,
+                    LifecycleUnitDiscardReason reason,
+                    bool is_discarded));
   MOCK_METHOD2(OnAutoDiscardableStateChange,
                void(content::WebContents* contents, bool is_auto_discardable));
 
@@ -89,6 +93,8 @@ class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
   class ScopedEnterpriseOptOut;
 
   TabLifecycleUnitTest() : scoped_set_tick_clock_for_testing_(&test_clock_) {
+    // Advance the clock so that it doesn't yield null time ticks.
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
     observers_.AddObserver(&observer_);
   }
 
@@ -259,14 +265,14 @@ TEST_F(TabLifecycleUnitTest, SetFocused) {
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   tab_lifecycle_unit.SetFocused(true);
-  tab_strip_model_->ActivateTabAt(0, false);
+  tab_strip_model_->ActivateTabAt(0);
   web_contents_->WasShown();
   EXPECT_EQ(base::TimeTicks::Max(), tab_lifecycle_unit.GetLastFocusedTime());
   ExpectCanDiscardFalseAllReasons(&tab_lifecycle_unit,
                                   DecisionFailureReason::LIVE_STATE_VISIBLE);
 
   tab_lifecycle_unit.SetFocused(false);
-  tab_strip_model_->ActivateTabAt(1, false);
+  tab_strip_model_->ActivateTabAt(1);
   web_contents_->WasHidden();
   EXPECT_EQ(test_clock_.NowTicks(), tab_lifecycle_unit.GetLastFocusedTime());
   // Advance time enough that the tab is urgent discardable.
@@ -314,7 +320,7 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardActive) {
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
 
-  tab_strip_model_->ActivateTabAt(0, false);
+  tab_strip_model_->ActivateTabAt(0);
 
   // Advance time enough that the tab is urgent discardable.
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
@@ -391,14 +397,14 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardVideoCapture) {
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
-  content::MediaStreamDevices video_devices{
-      content::MediaStreamDevice(content::MEDIA_DEVICE_VIDEO_CAPTURE,
-                                 "fake_media_device", "fake_media_device")};
+  blink::MediaStreamDevices video_devices{
+      blink::MediaStreamDevice(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                               "fake_media_device", "fake_media_device")};
   std::unique_ptr<content::MediaStreamUI> ui =
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator()
           ->RegisterMediaStream(web_contents_, video_devices);
-  ui->OnStarted(base::RepeatingClosure());
+  ui->OnStarted(base::OnceClosure(), base::RepeatingClosure());
   ExpectCanDiscardFalseAllReasons(&tab_lifecycle_unit,
                                   DecisionFailureReason::LIVE_STATE_CAPTURING);
 
@@ -414,14 +420,14 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardDesktopCapture) {
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
-  content::MediaStreamDevices desktop_capture_devices{
-      content::MediaStreamDevice(content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                 "fake_media_device", "fake_media_device")};
+  blink::MediaStreamDevices desktop_capture_devices{
+      blink::MediaStreamDevice(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+                               "fake_media_device", "fake_media_device")};
   std::unique_ptr<content::MediaStreamUI> ui =
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator()
           ->RegisterMediaStream(web_contents_, desktop_capture_devices);
-  ui->OnStarted(base::RepeatingClosure());
+  ui->OnStarted(base::OnceClosure(), base::RepeatingClosure());
   ExpectCanDiscardFalseAllReasons(
       &tab_lifecycle_unit, DecisionFailureReason::LIVE_STATE_DESKTOP_CAPTURE);
 

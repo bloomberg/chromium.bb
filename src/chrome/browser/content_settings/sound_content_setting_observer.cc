@@ -4,6 +4,7 @@
 
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -20,7 +21,7 @@
 #include "media/base/media_switches.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/platform/autoplay.mojom.h"
+#include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -207,3 +208,5 @@ void SoundContentSettingObserver::UpdateAutoplayPolicy() {
   web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
 }
 #endif
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SoundContentSettingObserver)

@@ -11,10 +11,8 @@ async_test(function(t)
 {
     var axImg = accessibilityController.accessibleElementById("img1");
     axImg.addNotificationListener(function(notification) {
-        if (notification == 'Clicked') {
-            document.getElementById("wrapper1").style.display = "none";
+        if (notification == 'Clicked')
             t.done();
-        }
     });
 
     var img = document.getElementById("img1");
@@ -46,10 +44,8 @@ async_test(function(t)
             domEvent = true;
         }
 
-        if (axEvent && domEvent) {
-            document.getElementById("wrapper2").style.display = "none";
+        if (axEvent && domEvent)
             t.done();
-        }
     };
 
     var axImg = accessibilityController.accessibleElementById("img2");
@@ -59,4 +55,3 @@ async_test(function(t)
     axImg.press();
 }, "clicking an image via accessibility sends both an accessible and a DOM click event");
 </script>
-

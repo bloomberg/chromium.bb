@@ -77,12 +77,12 @@ ColorCorrectionTestUtils::ColorSpaceConversionToSkColorSpace(
   if (conversion == kColorSpaceConversion_LinearRGB)
     return SkColorSpace::MakeSRGBLinear();
   if (conversion == kColorSpaceConversion_P3) {
-    return SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                                 SkColorSpace::kDCIP3_D65_Gamut);
+    return SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
+                                 SkNamedGamut::kDCIP3);
   }
   if (conversion == kColorSpaceConversion_Rec2020) {
-    return SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                                 SkColorSpace::kRec2020_Gamut);
+    return SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
+                                 SkNamedGamut::kRec2020);
   }
   return nullptr;
 }
@@ -286,9 +286,12 @@ bool ColorCorrectionTestUtils::MatchSkImages(sk_sp<SkImage> src_image,
     return false;
   // Color type is not checked since the decoded image does not have a specific
   // color type, unless it is drawn onto a surface or readPixels() is called.
-  if (!MatchColorSpace(src_image->refColorSpace(),
-                       dst_image->refColorSpace())) {
-    return false;
+  // Only compare color spaces if both are non-null
+  if (src_image->refColorSpace() && dst_image->refColorSpace()) {
+    if (!MatchColorSpace(src_image->refColorSpace(),
+                         dst_image->refColorSpace())) {
+      return false;
+    }
   }
 
   bool test_passed = true;

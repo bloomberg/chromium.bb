@@ -37,12 +37,24 @@ void LiftoffAssembler::LoadFromInstance(Register dst, uint32_t offset,
   BAILOUT("LoadFromInstance");
 }
 
+void LiftoffAssembler::LoadTaggedPointerFromInstance(Register dst,
+                                                     uint32_t offset) {
+  BAILOUT("LoadTaggedPointerFromInstance");
+}
+
 void LiftoffAssembler::SpillInstance(Register instance) {
   BAILOUT("SpillInstance");
 }
 
 void LiftoffAssembler::FillInstanceInto(Register dst) {
   BAILOUT("FillInstanceInto");
+}
+
+void LiftoffAssembler::LoadTaggedPointer(Register dst, Register src_addr,
+                                         Register offset_reg,
+                                         uint32_t offset_imm,
+                                         LiftoffRegList pinned) {
+  BAILOUT("LoadTaggedPointer");
 }
 
 void LiftoffAssembler::Load(LiftoffRegister dst, Register src_addr,
@@ -93,7 +105,7 @@ void LiftoffAssembler::Fill(LiftoffRegister reg, uint32_t index,
   BAILOUT("Fill");
 }
 
-void LiftoffAssembler::FillI64Half(Register, uint32_t half_index) {
+void LiftoffAssembler::FillI64Half(Register, uint32_t index, RegPairHalf) {
   BAILOUT("FillI64Half");
 }
 
@@ -217,6 +229,15 @@ void LiftoffAssembler::emit_i32_rems(Register dst, Register lhs, Register rhs,
 void LiftoffAssembler::emit_i32_remu(Register dst, Register lhs, Register rhs,
                                      Label* trap_div_by_zero) {
   BAILOUT("i32_remu");
+}
+
+void LiftoffAssembler::emit_i64_add(LiftoffRegister dst, LiftoffRegister lhs,
+                                    int32_t imm) {
+  BAILOUT("i64_add");
+}
+
+void LiftoffAssembler::emit_i32_add(Register dst, Register lhs, int32_t imm) {
+  BAILOUT("i32_add");
 }
 
 void LiftoffAssembler::emit_i32_shr(Register dst, Register lhs, int amount) {

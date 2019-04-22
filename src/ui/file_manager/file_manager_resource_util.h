@@ -9,13 +9,13 @@
 
 #include "ui/file_manager/file_manager_export.h"
 
-struct GritResourceMap;
+struct GzippedGritResourceMap;
 
 namespace file_manager {
 
 // Get the list of resources. |size| is populated with the number of resources
 // in the returned array.
-FILE_MANAGER_EXPORT const GritResourceMap* GetFileManagerResources(
+FILE_MANAGER_EXPORT const GzippedGritResourceMap* GetFileManagerResources(
     size_t* size);
 
 }  // namespace file_manager

@@ -9,27 +9,26 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 
 namespace net {
-class NetworkChangeNotifierChromeos;
+class NetworkChangeNotifierPosix;
 }
 
 namespace chromeos {
 
 // This class listens to Shill for network change events and notifies both
-// the local NetworkChangeNotifierChromeos, and the network service via
+// the local NetworkChangeNotifierPosix, and the network service via
 // the NetworkChangeManager if the network service is enabled.
-class CHROMEOS_EXPORT NetworkChangeManagerClient
+class NetworkChangeManagerClient
     : public chromeos::PowerManagerClient::Observer,
       public chromeos::NetworkStateHandlerObserver {
  public:
   NetworkChangeManagerClient(
-      net::NetworkChangeNotifierChromeos* network_change_notifier);
+      net::NetworkChangeNotifierPosix* network_change_notifier);
   ~NetworkChangeManagerClient() override;
 
   // PowerManagerClient::Observer overrides.
@@ -43,6 +42,8 @@ class CHROMEOS_EXPORT NetworkChangeManagerClient
   friend class NetworkChangeManagerClientUpdateTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkChangeManagerClientTest,
                            ConnectionTypeFromShill);
+  FRIEND_TEST_ALL_PREFIXES(NetworkChangeManagerClientTest,
+                           NetworkChangeNotifierConnectionTypeUpdated);
 
   void ConnectToNetworkChangeManager();
   void ReconnectToNetworkChangeManager();
@@ -85,7 +86,7 @@ class CHROMEOS_EXPORT NetworkChangeManagerClient
   // Service path for the current default network.
   std::string service_path_;
 
-  net::NetworkChangeNotifierChromeos* network_change_notifier_;
+  net::NetworkChangeNotifierPosix* network_change_notifier_;
   network::mojom::NetworkChangeManagerPtr network_change_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeManagerClient);

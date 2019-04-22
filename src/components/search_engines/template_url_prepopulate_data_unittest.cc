@@ -11,7 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/country_codes/country_codes.h"
@@ -106,7 +106,7 @@ TEST_F(TemplateURLPrepopulateDataTest, UniqueIDs) {
       'V'<<8|'N', 'V'<<8|'U', 'W'<<8|'F', 'W'<<8|'S', 'Y'<<8|'E',
       'Y'<<8|'T', 'Z'<<8|'A', 'Z'<<8|'M', 'Z'<<8|'W', -1 };
 
-  for (size_t i = 0; i < arraysize(kCountryIds); ++i) {
+  for (size_t i = 0; i < base::size(kCountryIds); ++i) {
     prefs_.SetInteger(country_codes::kCountryIDAtInstall, kCountryIds[i]);
     std::vector<std::unique_ptr<TemplateURLData>> urls =
         TemplateURLPrepopulateData::GetPrepopulatedEngines(&prefs_, nullptr);
@@ -312,7 +312,7 @@ TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeAdvanced) {
     // Custom with a country TLD and almost no query params:
     "http://www.google.ru/search?q={searchTerms}"
   };
-  for (size_t i = 0; i < arraysize(kGoogleURLs); ++i) {
+  for (size_t i = 0; i < base::size(kGoogleURLs); ++i) {
     EXPECT_EQ(SEARCH_ENGINE_GOOGLE, GetEngineType(kGoogleURLs[i]));
   }
 
@@ -324,7 +324,7 @@ TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeAdvanced) {
       // Aggressively match types by checking just TLD+1.
       "http://someothersite.yahoo.com/",
   };
-  for (size_t i = 0; i < arraysize(kYahooURLs); ++i) {
+  for (size_t i = 0; i < base::size(kYahooURLs); ++i) {
     EXPECT_EQ(SEARCH_ENGINE_YAHOO, GetEngineType(kYahooURLs[i]));
   }
 
@@ -397,8 +397,9 @@ void CheckTemplateUrlRefIsCryptographic(const TemplateURLRef& url_ref) {
 }  // namespace
 
 TEST_F(TemplateURLPrepopulateDataTest, HttpsUrls) {
-  // Preexisting search engines that don't use HTTPS URLs.
-  // Don't add new entries to this list!
+  // Search engines that don't use HTTPS URLs.
+  // Since Chrome and the Internet are trying to transition from HTTP to HTTPS,
+  // please get approval from a PM before entering new HTTP exceptions here.
   std::set<int> exceptions{
       4,  6,  16, 17, 21, 27, 35, 36, 43, 44, 45, 50, 54, 55, 56, 60, 61,
       62, 63, 64, 65, 66, 68, 70, 74, 75, 76, 77, 78, 79, 80, 81, 85, 90,
@@ -436,4 +437,26 @@ TEST_F(TemplateURLPrepopulateDataTest, HttpsUrls) {
     CheckTemplateUrlRefIsCryptographic(
         template_url.contextual_search_url_ref());
   }
+}
+
+TEST_F(TemplateURLPrepopulateDataTest, FindGoogleIndex) {
+  constexpr int kGoogleId = 1;
+  size_t index;
+  std::vector<std::unique_ptr<TemplateURLData>> urls;
+
+  // Google is first in US, so confirm index 0.
+  prefs_.SetInteger(country_codes::kCountryIDAtInstall, 'U' << 8 | 'S');
+  urls = TemplateURLPrepopulateData::GetPrepopulatedEngines(&prefs_, &index);
+  EXPECT_EQ(index, size_t{0});
+  EXPECT_EQ(urls[index]->prepopulate_id, kGoogleId);
+
+  // Google is not first in CN; confirm it is found at index > 0.
+  // If Google ever does reach top in China, this test will need to be adjusted:
+  // check template_url_prepopulate_data.cc reference orders (engines_CN, etc.)
+  // to find a suitable country and index.
+  prefs_.SetInteger(country_codes::kCountryIDAtInstall, 'C' << 8 | 'N');
+  urls = TemplateURLPrepopulateData::GetPrepopulatedEngines(&prefs_, &index);
+  EXPECT_GT(index, size_t{0});
+  EXPECT_LT(index, urls.size());
+  EXPECT_EQ(urls[index]->prepopulate_id, kGoogleId);
 }

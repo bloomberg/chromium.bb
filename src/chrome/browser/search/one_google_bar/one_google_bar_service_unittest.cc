@@ -13,12 +13,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/test_signin_client.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,13 +51,7 @@ class MockOneGoogleBarServiceObserver : public OneGoogleBarServiceObserver {
 
 class OneGoogleBarServiceTest : public testing::Test {
  public:
-  OneGoogleBarServiceTest()
-      : signin_client_(&pref_service_),
-        identity_env_(/*use_fake_url_loader_for_gaia_cookie_manager=*/true) {
-    // GaiaCookieManagerService calls static methods of AccountTrackerService
-    // which access prefs.
-    AccountTrackerService::RegisterPrefs(pref_service_.registry());
-
+  OneGoogleBarServiceTest() : identity_env_(&test_url_loader_factory_) {
     auto loader = std::make_unique<FakeOneGoogleBarLoader>();
     loader_ = loader.get();
     service_ = std::make_unique<OneGoogleBarService>(
@@ -75,20 +65,14 @@ class OneGoogleBarServiceTest : public testing::Test {
     AccountInfo account_info =
         identity_env_.MakeAccountAvailable("test@email.com");
     identity_env_.SetCookieAccounts({{account_info.email, account_info.gaia}});
-    task_environment_.RunUntilIdle();
   }
 
-  void SignOut() {
-    identity_env_.SetCookieAccounts({});
-    task_environment_.RunUntilIdle();
-  }
+  void SignOut() { identity_env_.SetCookieAccounts({}); }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
 
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
-  TestSigninClient signin_client_;
-  FakeOAuth2TokenService token_service_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   identity::IdentityTestEnvironment identity_env_;
 
   // Owned by the service.
@@ -262,4 +246,34 @@ TEST_F(OneGoogleBarServiceTest, DoesNotNotifyObserverOnSignInIfNoCachedData) {
   EXPECT_THAT(service()->one_google_bar_data(), Eq(base::nullopt));
 
   service()->RemoveObserver(&observer);
+}
+
+TEST_F(OneGoogleBarServiceTest, UpdatesLanguageCode) {
+  ASSERT_THAT(service()->one_google_bar_data(), Eq(base::nullopt));
+
+  // Request a refresh. That should arrive at the loader.
+  service()->Refresh();
+  EXPECT_THAT(loader()->GetCallbackCount(), Eq(1u));
+
+  // Fulfill it.
+  OneGoogleBarData data;
+  data.language_code = "en-US";
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK, data);
+  EXPECT_THAT(service()->one_google_bar_data(), Eq(data));
+  EXPECT_THAT(service()->language_code(), "en-US");
+
+  // Request another refresh.
+  service()->Refresh();
+  EXPECT_THAT(loader()->GetCallbackCount(), Eq(1u));
+
+  // For now, the old data should still be there.
+  EXPECT_THAT(service()->one_google_bar_data(), Eq(data));
+  EXPECT_THAT(service()->language_code(), "en-US");
+
+  // Fulfill the second request, the language code should now be updated.
+  OneGoogleBarData other_data;
+  other_data.language_code = "en-UK";
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK, other_data);
+  EXPECT_THAT(service()->one_google_bar_data(), Eq(other_data));
+  EXPECT_THAT(service()->language_code(), "en-UK");
 }

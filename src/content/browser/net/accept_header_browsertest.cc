@@ -96,13 +96,13 @@ IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
   // RESOURCE_TYPE_MAIN_FRAME
   EXPECT_EQ(
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-      "image/apng,*/*;q=0.8",
+      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
       GetFor("/accept-header.html"));
 
   // RESOURCE_TYPE_SUB_FRAME
   EXPECT_EQ(
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-      "image/apng,*/*;q=0.8",
+      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
       GetFor("/iframe.html"));
 
   // RESOURCE_TYPE_STYLESHEET
@@ -131,7 +131,8 @@ IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
 #endif
 
   // RESOURCE_TYPE_PREFETCH
-  EXPECT_EQ("*/*", GetFor("/prefetch"));
+  EXPECT_EQ("application/signed-exchange;v=b3;q=0.9,*/*;q=0.8",
+            GetFor("/prefetch"));
 
   // RESOURCE_TYPE_XHR
   EXPECT_EQ("*/*", GetFor("/xhr"));

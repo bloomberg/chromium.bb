@@ -6,7 +6,6 @@
 #include "public/fpdf_edit.h"
 #include "testing/embedder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/test_support.h"
 
 class FPDFEditPathEmbedderTest : public EmbedderTest {};
 
@@ -31,7 +30,7 @@ TEST_F(FPDFEditPathEmbedderTest, VerifyCorrectColoursReturned) {
   FPDF_ClosePage(page);
   page = nullptr;
 
-  OpenSavedDocument(nullptr);
+  ASSERT_TRUE(OpenSavedDocument());
   page = LoadSavedPage(0);
   ASSERT(page);
 

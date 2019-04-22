@@ -24,11 +24,14 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
+import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.ChannelsInitializer;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction;
@@ -156,18 +159,17 @@ public class ContentSuggestionsNotifier {
 
         // Post notification.
         Context context = ContextUtils.getApplicationContext();
-        NotificationManager manager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManagerProxy manager = new NotificationManagerProxyImpl(context);
 
         int nextId = nextNotificationId();
         Uri uri = Uri.parse(url);
-        PendingIntent contentIntent = PendingIntent.getBroadcast(context, 0,
+        PendingIntentProvider contentIntent = PendingIntentProvider.getBroadcast(context, 0,
                 new Intent(context, OpenUrlReceiver.class)
                         .setData(uri)
                         .putExtra(NOTIFICATION_CATEGORY_EXTRA, category)
                         .putExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA, idWithinCategory),
                 0);
-        PendingIntent deleteIntent = PendingIntent.getBroadcast(context, 0,
+        PendingIntentProvider deleteIntent = PendingIntentProvider.getBroadcast(context, 0,
                 new Intent(context, DeleteReceiver.class)
                         .setData(uri)
                         .putExtra(NOTIFICATION_CATEGORY_EXTRA, category)
@@ -176,7 +178,12 @@ public class ContentSuggestionsNotifier {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
-                                ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS)
+                                ChannelDefinitions.ChannelId.CONTENT_SUGGESTIONS,
+                                null /* remoteAppPackageName */,
+                                new NotificationMetadata(
+                                        NotificationUmaTracker.SystemNotificationType
+                                                .CONTENT_SUGGESTION,
+                                        NOTIFICATION_TAG, nextId))
                         .setContentIntent(contentIntent)
                         .setDeleteIntent(deleteIntent)
                         .setContentTitle(title)
@@ -186,19 +193,20 @@ public class ContentSuggestionsNotifier {
                         .setLargeIcon(image)
                         .setSmallIcon(R.drawable.ic_chrome);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            PendingIntent settingsIntent = PendingIntent.getActivity(context, 0,
+            PendingIntentProvider settingsIntent = PendingIntentProvider.getActivity(context, 0,
                     PreferencesLauncher.createIntentForSettingsPage(
                             context, NotificationsPreferences.class.getName()),
                     0);
             builder.addAction(R.drawable.settings_cog, context.getString(R.string.preferences),
-                    settingsIntent);
+                    settingsIntent, NotificationUmaTracker.ActionType.CONTENT_SUGGESTION_SETTINGS);
         }
         if (priority >= 0) builder.setDefaults(Notification.DEFAULT_ALL);
-        Notification notification = builder.build();
+        ChromeNotification notification = builder.buildChromeNotification();
 
-        manager.notify(NOTIFICATION_TAG, nextId, notification);
+        manager.notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.CONTENT_SUGGESTION, notification);
+                NotificationUmaTracker.SystemNotificationType.CONTENT_SUGGESTION,
+                notification.getNotification());
 
         addActiveNotification(new ActiveNotification(nextId, category, idWithinCategory, uri));
 

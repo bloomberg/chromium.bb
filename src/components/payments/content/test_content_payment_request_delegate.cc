@@ -103,6 +103,10 @@ void TestContentPaymentRequestDelegate::EmbedPaymentHandlerWindow(
     const GURL& url,
     PaymentHandlerOpenWindowCallback callback) {}
 
+bool TestContentPaymentRequestDelegate::IsInteractive() const {
+  return true;
+}
+
 autofill::TestAddressNormalizer*
 TestContentPaymentRequestDelegate::test_address_normalizer() {
   return core_delegate_.test_address_normalizer();

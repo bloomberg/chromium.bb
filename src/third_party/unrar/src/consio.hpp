@@ -1,6 +1,8 @@
 #ifndef _RAR_CONSIO_
 #define _RAR_CONSIO_
 
+namespace third_party_unrar {
+
 void InitConsole();
 void SetConsoleMsgStream(MESSAGE_TYPE MsgStream);
 void SetConsoleRedirectCharset(RAR_CHARSET RedirectCharset);
@@ -23,5 +25,7 @@ bool GetConsolePassword(UIPASSWORD_TYPE Type,const wchar *FileName,SecPassword *
   int Ask(const wchar *AskStr);
   bool getwstr(wchar *str,size_t n);
 #endif
+
+}  // namespace third_party_unrar
 
 #endif

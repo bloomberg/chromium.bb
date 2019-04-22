@@ -4,6 +4,7 @@
 
 #include "content/browser/background_fetch/background_fetch_test_data_manager.h"
 
+#include "base/run_loop.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -34,7 +35,7 @@ class MockBGFQuotaManagerProxy : public MockQuotaManagerProxy {
                         blink::mojom::StorageType type,
                         UsageAndQuotaCallback callback) override {
     DCHECK(original_task_runner);
-    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, 0 /* usage */,
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, /* usage= */ 0,
                             kBackgroundFetchMaxQuotaBytes);
   }
 
@@ -47,15 +48,13 @@ class MockBGFQuotaManagerProxy : public MockQuotaManagerProxy {
 BackgroundFetchTestDataManager::BackgroundFetchTestDataManager(
     BrowserContext* browser_context,
     StoragePartition* storage_partition,
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    bool mock_fill_response)
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : BackgroundFetchDataManager(browser_context,
                                  service_worker_context,
-                                 nullptr /* cache_storage_context */,
-                                 nullptr /* quota_manager_proxy */),
+                                 /* cache_storage_context= */ nullptr,
+                                 /* quota_manager_proxy= */ nullptr),
       browser_context_(browser_context),
-      storage_partition_(storage_partition),
-      mock_fill_response_(mock_fill_response) {}
+      storage_partition_(storage_partition) {}
 
 void BackgroundFetchTestDataManager::InitializeOnIOThread() {
   blob_storage_context_ = ChromeBlobStorageContext::GetFor(browser_context_);

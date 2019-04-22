@@ -47,7 +47,7 @@ cr.ui.AnchorType = {
 
 cr.define('cr.ui', function() {
   /** @const */
-  var AnchorType = cr.ui.AnchorType;
+  const AnchorType = cr.ui.AnchorType;
 
   /**
    * Helper function for positionPopupAroundElement and positionPopupAroundRect.
@@ -59,11 +59,11 @@ cr.define('cr.ui', function() {
    */
   function positionPopupAroundRect(
       anchorRect, popupElement, type, opt_invertLeftRight) {
-    var popupRect = popupElement.getBoundingClientRect();
-    var availRect;
-    var ownerDoc = popupElement.ownerDocument;
-    var cs = ownerDoc.defaultView.getComputedStyle(popupElement);
-    var docElement = ownerDoc.documentElement;
+    const popupRect = popupElement.getBoundingClientRect();
+    let availRect;
+    const ownerDoc = popupElement.ownerDocument;
+    const cs = ownerDoc.defaultView.getComputedStyle(popupElement);
+    const docElement = ownerDoc.documentElement;
 
     if (cs.position == 'fixed') {
       // For 'fixed' positioned popups, the available rectangle should be based
@@ -80,15 +80,17 @@ cr.define('cr.ui', function() {
       availRect = popupElement.offsetParent.getBoundingClientRect();
     }
 
-    if (cs.direction == 'rtl')
+    if (cs.direction == 'rtl') {
       opt_invertLeftRight = !opt_invertLeftRight;
+    }
 
     // Flip BEFORE, AFTER based on alignment.
     if (opt_invertLeftRight) {
-      if (type == AnchorType.BEFORE)
+      if (type == AnchorType.BEFORE) {
         type = AnchorType.AFTER;
-      else if (type == AnchorType.AFTER)
+      } else if (type == AnchorType.AFTER) {
         type = AnchorType.BEFORE;
+      }
     }
 
     // Flip type based on available size
@@ -120,35 +122,39 @@ cr.define('cr.ui', function() {
     }
     // flipping done
 
-    var style = popupElement.style;
+    const style = popupElement.style;
     // Reset all directions.
     style.left = style.right = style.top = style.bottom = 'auto';
 
     // Primary direction
     switch (type) {
       case AnchorType.BELOW:
-        if (anchorRect.bottom + popupRect.height <= availRect.height)
+        if (anchorRect.bottom + popupRect.height <= availRect.height) {
           style.top = anchorRect.bottom + 'px';
-        else
+        } else {
           style.bottom = '0';
+        }
         break;
       case AnchorType.ABOVE:
-        if (availRect.height - anchorRect.top >= 0)
+        if (availRect.height - anchorRect.top >= 0) {
           style.bottom = availRect.height - anchorRect.top + 'px';
-        else
+        } else {
           style.top = '0';
+        }
         break;
       case AnchorType.AFTER:
-        if (anchorRect.right + popupRect.width <= availRect.width)
+        if (anchorRect.right + popupRect.width <= availRect.width) {
           style.left = anchorRect.right + 'px';
-        else
+        } else {
           style.right = '0';
+        }
         break;
       case AnchorType.BEFORE:
-        if (availRect.width - anchorRect.left >= 0)
+        if (availRect.width - anchorRect.left >= 0) {
           style.right = availRect.width - anchorRect.left + 'px';
-        else
+        } else {
           style.left = '0';
+        }
         break;
     }
 
@@ -216,7 +222,7 @@ cr.define('cr.ui', function() {
    */
   function positionPopupAroundElement(
       anchorElement, popupElement, type, opt_invertLeftRight) {
-    var anchorRect = anchorElement.getBoundingClientRect();
+    const anchorRect = anchorElement.getBoundingClientRect();
     positionPopupAroundRect(
         anchorRect, popupElement, type, !!opt_invertLeftRight);
   }
@@ -229,9 +235,9 @@ cr.define('cr.ui', function() {
    * @param {cr.ui.AnchorType=} opt_anchorType The type of anchoring we want.
    */
   function positionPopupAtPoint(x, y, popupElement, opt_anchorType) {
-    var rect = {left: x, top: y, width: 0, height: 0, right: x, bottom: y};
+    const rect = {left: x, top: y, width: 0, height: 0, right: x, bottom: y};
 
-    var anchorType = opt_anchorType || AnchorType.BELOW;
+    const anchorType = opt_anchorType || AnchorType.BELOW;
     positionPopupAroundRect(rect, popupElement, anchorType);
   }
 

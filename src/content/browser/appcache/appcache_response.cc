@@ -24,10 +24,13 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/common/storage_histograms.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
 namespace {
+
+using OnceCompletionCallback = base::OnceCallback<void(int)>;
 
 // Disk cache entry data indices.
 enum { kResponseInfoIndex, kResponseContentIndex, kResponseMetadataIndex };
@@ -53,7 +56,7 @@ class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
 // AppCacheResponseInfo ----------------------------------------------
 
 AppCacheResponseInfo::AppCacheResponseInfo(
-    AppCacheStorage* storage,
+    base::WeakPtr<AppCacheStorage> storage,
     const GURL& manifest_url,
     int64_t response_id,
     std::unique_ptr<net::HttpResponseInfo> http_info,
@@ -62,24 +65,26 @@ AppCacheResponseInfo::AppCacheResponseInfo(
       response_id_(response_id),
       http_response_info_(std::move(http_info)),
       response_data_size_(response_data_size),
-      storage_(storage) {
+      storage_(std::move(storage)) {
   DCHECK(http_response_info_);
-  DCHECK(response_id != kAppCacheNoResponseId);
+  DCHECK(response_id != blink::mojom::kAppCacheNoResponseId);
   storage_->working_set()->AddResponseInfo(this);
 }
 
 AppCacheResponseInfo::~AppCacheResponseInfo() {
-  storage_->working_set()->RemoveResponseInfo(this);
+  if (storage_)
+    storage_->working_set()->RemoveResponseInfo(this);
 }
 
 // HttpResponseInfoIOBuffer ------------------------------------------
 
 HttpResponseInfoIOBuffer::HttpResponseInfoIOBuffer()
-    : response_data_size(kUnkownResponseDataSize) {}
+    : response_data_size(kUnknownResponseDataSize) {}
 
 HttpResponseInfoIOBuffer::HttpResponseInfoIOBuffer(
     std::unique_ptr<net::HttpResponseInfo> info)
-    : http_info(std::move(info)), response_data_size(kUnkownResponseDataSize) {}
+    : http_info(std::move(info)),
+      response_data_size(kUnknownResponseDataSize) {}
 
 HttpResponseInfoIOBuffer::~HttpResponseInfoIOBuffer() = default;
 
@@ -235,11 +240,11 @@ void AppCacheResponseReader::ReadData(net::IOBuffer* buf,
 }
 
 void AppCacheResponseReader::ContinueReadData() {
-  if (read_position_ + buffer_len_ > range_length_) {
-    // TODO(michaeln): What about integer overflows?
-    DCHECK(range_length_ >= read_position_);
+  // Since every read reads at most (range_length_ - read_position_) bytes,
+  // read_position_ can never become larger than range_length_.
+  DCHECK_GE(range_length_, read_position_);
+  if (range_length_ - read_position_ < buffer_len_)
     buffer_len_ = range_length_ - read_position_;
-  }
   ReadRaw(kResponseContentIndex,
           range_offset_ + read_position_,
           buffer_.get(),

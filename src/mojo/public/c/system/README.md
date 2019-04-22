@@ -43,8 +43,8 @@ user-provided notification handlers may be invoked at any time on arbitrary
 threads in the process. It is entirely up to the API user to take appropriate
 measures to synchronize operations against other application state.
 
-The higher level [system](/mojo/README.md#High-Level-System-APIs) and
-[bindings](/mojo/README.md#High-Level-Bindings-APIs) APIs provide helpers to
+The higher-level [system](/mojo/README.md#Higher_Level-System-APIs) and
+[bindings](/mojo/README.md#Bindings-APIs) APIs provide helpers to
 simplify Mojo usage in this regard, at the expense of some flexibility.
 
 ## Result Codes

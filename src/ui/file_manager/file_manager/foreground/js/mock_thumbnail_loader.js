@@ -13,8 +13,9 @@
  * @param {number=} opt_priority Priority.
  * @constructor
  */
-function MockThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
-    opt_loadTargets, opt_priority) {
+function MockThumbnailLoader(
+    entry, opt_loaderType, opt_metadata, opt_mediaType, opt_loadTargets,
+    opt_priority) {
   this.entry_ = entry;
 }
 
@@ -49,8 +50,9 @@ MockThumbnailLoader.errorUrls = [];
  *     promise which is resolved with data url.
  */
 MockThumbnailLoader.prototype.loadAsDataUrl = function() {
-  if (MockThumbnailLoader.errorUrls.indexOf(this.entry_.toURL()) !== -1)
+  if (MockThumbnailLoader.errorUrls.indexOf(this.entry_.toURL()) !== -1) {
     throw new Error('Failed to load thumbnail.');
+  }
 
   return Promise.resolve({
     data: MockThumbnailLoader.testImageDataUrl,

@@ -65,13 +65,12 @@ class RawEventSubscriberBundle {
   StatsEventSubscriber* GetStatsEventSubscriber(bool is_audio);
 
  private:
+  const scoped_refptr<CastEnvironment> cast_environment_;
   // Map from (is_audio) -> RawEventSubscriberBundleForStream.
   // TODO(imcheng): This works because we only have 1 audio and 1 video stream.
   // This needs to scale better.
-  typedef std::map<bool, linked_ptr<RawEventSubscriberBundleForStream> >
-      SubscribersMapByStream;
-  const scoped_refptr<CastEnvironment> cast_environment_;
-  SubscribersMapByStream subscribers_;
+  std::map<bool, std::unique_ptr<RawEventSubscriberBundleForStream>>
+      subscribers_;
   std::unique_ptr<ReceiverTimeOffsetEstimator> receiver_offset_estimator_;
 
   DISALLOW_COPY_AND_ASSIGN(RawEventSubscriberBundle);

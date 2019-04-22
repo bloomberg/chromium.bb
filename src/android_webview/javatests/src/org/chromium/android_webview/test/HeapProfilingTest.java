@@ -31,8 +31,10 @@ public class HeapProfilingTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.Add({"memlog=browser", "memlog-stack-mode=native-include-thread-names"})
-    public void testModeBrowser() throws Exception {
+    @CommandLineFlags.Add({"memlog=browser", "memlog-stack-mode=native-include-thread-names",
+            "memlog-sampling-rate=1"})
+    public void
+    testModeBrowser() throws Exception {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(
                 shim.runTestForMode("browser", false, "native-include-thread-names", false, false));

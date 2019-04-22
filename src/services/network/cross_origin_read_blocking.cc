@@ -12,9 +12,9 @@
 #include <unordered_set>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -24,6 +24,8 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "services/network/cross_origin_resource_policy.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
 
@@ -41,6 +43,7 @@ const char kTextXml[] = "text/xml";
 const char kAppXml[] = "application/xml";
 const char kAppJson[] = "application/json";
 const char kImageSvg[] = "image/svg+xml";
+const char kDashVideo[] = "application/dash+xml";  // https://crbug.com/947498
 const char kTextJson[] = "text/json";
 const char kTextPlain[] = "text/plain";
 // TODO(lukasza): Remove kJsonProtobuf once this MIME type is not used in
@@ -199,14 +202,29 @@ std::set<int>& GetPluginProxyingProcesses() {
   return *set;
 }
 
+bool ShouldEnforceInitiatorLock() {
+  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+         base::FeatureList::IsEnabled(
+             network::features::kEnforceRequestInitiatorLockForCorb);
+}
+
+void RecordCorbResultVsInitiatorLockCompatibility(
+    CrossOriginReadBlocking::CorbResultVsInitiatorLockCompatibility value) {
+  if (ShouldEnforceInitiatorLock()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility", value);
+  }
+}
+
 }  // namespace
 
 MimeType CrossOriginReadBlocking::GetCanonicalMimeType(
     base::StringPiece mime_type) {
-  // Checking for image/svg+xml early ensures that it won't get classified as
-  // MimeType::kXml by the presence of the "+xml"
+  // Checking for image/svg+xml and application/dash+xml early ensures that they
+  // won't get classified as MimeType::kXml by the presence of the "+xml"
   // suffix.
-  if (base::LowerCaseEqualsASCII(mime_type, kImageSvg))
+  if (base::LowerCaseEqualsASCII(mime_type, kImageSvg) ||
+      base::LowerCaseEqualsASCII(mime_type, kDashVideo))
     return MimeType::kOthers;
 
   // See also https://mimesniff.spec.whatwg.org/#html-mime-type
@@ -302,7 +320,7 @@ SniffingResult CrossOriginReadBlocking::SniffForHTML(StringPiece data) {
     AdvancePastWhitespace(&data);
 
     SniffingResult signature_match =
-        MatchesSignature(&data, kHtmlSignatures, arraysize(kHtmlSignatures),
+        MatchesSignature(&data, kHtmlSignatures, base::size(kHtmlSignatures),
                          base::CompareCase::INSENSITIVE_ASCII);
     if (signature_match != kNo)
       return signature_match;
@@ -322,7 +340,7 @@ SniffingResult CrossOriginReadBlocking::SniffForXML(base::StringPiece data) {
   // initializer.
   AdvancePastWhitespace(&data);
   static const StringPiece kXmlSignatures[] = {StringPiece("<?xml")};
-  return MatchesSignature(&data, kXmlSignatures, arraysize(kXmlSignatures),
+  return MatchesSignature(&data, kXmlSignatures, base::size(kXmlSignatures),
                           base::CompareCase::SENSITIVE);
 }
 
@@ -427,7 +445,7 @@ SniffingResult CrossOriginReadBlocking::SniffForFetchOnlyResource(
       StringPiece("while (1);"),
   };
   SniffingResult has_parser_breaker = MatchesSignature(
-      &data, kScriptBreakingPrefixes, arraysize(kScriptBreakingPrefixes),
+      &data, kScriptBreakingPrefixes, base::size(kScriptBreakingPrefixes),
       base::CompareCase::SENSITIVE);
   if (has_parser_breaker != kNo)
     return has_parser_breaker;
@@ -549,12 +567,22 @@ class CrossOriginReadBlocking::ResponseAnalyzer::FetchOnlyResourceSniffer
 
 CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const net::URLRequest& request,
-    const ResourceResponse& response) {
+    const ResourceResponse& response,
+    base::Optional<url::Origin> request_initiator_site_lock,
+    mojom::FetchRequestMode fetch_request_mode) {
+  // TODO(lukasza): Remove |initiator_compatibility_| field once the UMAs
+  // depending on it are expired (e.g. see
+  // SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility).
+  initiator_compatibility_ = VerifyRequestInitiatorLock(
+      request_initiator_site_lock, request.initiator());
+
   content_length_ = response.head.content_length;
   http_response_code_ =
       response.head.headers ? response.head.headers->response_code() : 0;
+  request_initiator_site_lock_ = request_initiator_site_lock;
 
-  should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(request, response);
+  should_block_based_on_headers_ =
+      ShouldBlockBasedOnHeaders(fetch_request_mode, request, response);
   if (should_block_based_on_headers_ == kNeedToSniffMore)
     CreateSniffers();
 }
@@ -563,6 +591,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::~ResponseAnalyzer() = default;
 
 CrossOriginReadBlocking::ResponseAnalyzer::BlockingDecision
 CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
+    mojom::FetchRequestMode fetch_request_mode,
     const net::URLRequest& request,
     const ResourceResponse& response) {
   // The checks in this method are ordered to rule out blocking in most cases as
@@ -570,11 +599,23 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // that are inexpensive should be near the top.
   url::Origin target_origin = url::Origin::Create(request.url());
 
-  // Treat a missing initiator as an empty origin to be safe, though we don't
-  // expect this to happen.  Unfortunately, this requires a copy.
-  url::Origin initiator;
-  if (request.initiator().has_value())
-    initiator = request.initiator().value();
+  // Check if |target_origin| seems to match the factory lock in
+  // |request_initiator_site_lock_|.  If so, then treat this request as
+  // same-origin (even if |request.initiator()| might be cross-origin).  See
+  // also https://crbug.com/918660.
+  if (VerifyRequestInitiatorLock(request_initiator_site_lock_, target_origin) ==
+      InitiatorLockCompatibility::kCompatibleLock) {
+    return kAllow;
+  }
+
+  // Compute the |initiator| of the request, falling back to a unique origin if
+  // there was no initiator or if it was incompatible with the lock. Using a
+  // unique origin makes CORB treat the response as cross-origin and thus
+  // considers it eligible for blocking (based on content-type, sniffing, etc.).
+  url::Origin initiator = GetTrustworthyInitiator(
+      ShouldEnforceInitiatorLock() ? request_initiator_site_lock_
+                                   : base::nullopt,
+      request);
 
   // Don't block same-origin documents.
   if (initiator.IsSameOriginWith(target_origin))
@@ -592,12 +633,22 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   if (initiator.scheme() == url::kFileScheme)
     return kAllow;
 
-  // Allow the response through if it has valid CORS headers.
-  std::string cors_header;
-  response.head.headers->GetNormalizedHeader("access-control-allow-origin",
-                                             &cors_header);
-  if (IsValidCorsHeaderSet(initiator, cors_header)) {
-    return kAllow;
+  // Allow the response through if this is a CORS request and the response has
+  // valid CORS headers.
+  switch (fetch_request_mode) {
+    case mojom::FetchRequestMode::kNavigate:
+    case mojom::FetchRequestMode::kNoCors:
+    case mojom::FetchRequestMode::kSameOrigin:
+      break;
+
+    case mojom::FetchRequestMode::kCors:
+    case mojom::FetchRequestMode::kCorsWithForcedPreflight:
+      std::string cors_header;
+      response.head.headers->GetNormalizedHeader("access-control-allow-origin",
+                                                 &cors_header);
+      if (IsValidCorsHeaderSet(initiator, cors_header))
+        return kAllow;
+      break;
   }
 
   // Requests from foo.example.com will consult foo.example.com's service worker
@@ -648,6 +699,40 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // the checks during the SniffForFetchOnlyResource() phase.
   canonical_mime_type_ =
       network::CrossOriginReadBlocking::GetCanonicalMimeType(mime_type);
+
+  // CORS is currently implemented in the renderer process, so it's useful for
+  // CORB to filter failed "cors" mode fetches to avoid leaking the responses to
+  // the renderer when possible (e.g., depending on MIME type and sniffing).
+  // This will eventually be fixed with OOR-CORS.
+  //
+  // In the mean time, we can try to filter a few additional failed CORS
+  // fetches, treating the Cross-Origin-Resource-Policy (CORP) header as an
+  // opt-in to CORB.  CORP headers are enforced elsewhere and normally only
+  // apply to "no-cors" mode fetches.  If such a header happens to be on the
+  // response during other fetch modes, and if the same-origin and
+  // IsValidCorsHeaderSet checks above have failed (and thus the request will
+  // fail in the renderer), then we can let CORB filter the response without
+  // caring about MIME type or sniffing.
+  //
+  // To make CrossOriginResourcePolicy::Verify apply to all fetch modes in this
+  // case and not just "no-cors", we pass kNoCors as a hard-coded value.  This
+  // does not affect the usual enforcement of CORP headers.
+  //
+  // TODO(lukasza): Once OOR-CORS launches (https://crbug.com/736308), this code
+  // block will no longer be necessary since all failed CORS requests will be
+  // blocked before reaching the renderer process (even without CORB's help).
+  // Of course this assumes that OOR-CORS will use trustworthy
+  // |request_initiator| (i.e. vetted against |request_initiator|site_lock|).
+  constexpr mojom::FetchRequestMode kOverreachingFetchMode =
+      mojom::FetchRequestMode::kNoCors;
+  if (CrossOriginResourcePolicy::kBlock ==
+      CrossOriginResourcePolicy::Verify(request, response,
+                                        kOverreachingFetchMode,
+                                        request_initiator_site_lock_)) {
+    // Ignore mime types and/or sniffing and have CORB block all responses with
+    // COR*P* header.
+    return kBlock;
+  }
 
   // If this is a partial response, sniffing is not possible, so allow the
   // response if it's not a protected mime type.
@@ -843,6 +928,9 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
           : network::CrossOriginReadBlocking::Action::kAllowedWithoutSniffing);
 
   LogBytesReadForSniffing();
+
+  RecordCorbResultVsInitiatorLockCompatibility(
+      CorbResultVsInitiatorLockCompatibility::kNoBlocking);
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
@@ -865,6 +953,27 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
   }
 
   LogBytesReadForSniffing();
+
+  if (!ShouldReportBlockedResponse()) {
+    RecordCorbResultVsInitiatorLockCompatibility(
+        CorbResultVsInitiatorLockCompatibility::kBenignBlocking);
+  } else {
+    switch (initiator_compatibility_) {
+      case InitiatorLockCompatibility::kIncorrectLock:
+        RecordCorbResultVsInitiatorLockCompatibility(
+            CorbResultVsInitiatorLockCompatibility::kBlockingWhenIncorrectLock);
+        break;
+      case InitiatorLockCompatibility::kCompatibleLock:
+        RecordCorbResultVsInitiatorLockCompatibility(
+            CorbResultVsInitiatorLockCompatibility::
+                kBlockingWhenCompatibleLock);
+        break;
+      default:
+        RecordCorbResultVsInitiatorLockCompatibility(
+            CorbResultVsInitiatorLockCompatibility::kBlockingWhenOtherLock);
+        break;
+    }
+  }
 }
 
 // static

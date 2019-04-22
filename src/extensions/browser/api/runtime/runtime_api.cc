@@ -7,10 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/one_shot_event.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -20,8 +22,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/events/lazy_event_dispatch_util.h"
@@ -31,14 +31,14 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/lazy_context_id.h"
+#include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/api/runtime.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
-#include "extensions/common/one_shot_event.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "url/gurl.h"
 
@@ -98,13 +98,14 @@ constexpr int kMinDurationBetweenSuccessiveRestartsHours = 3;
 // API without a kiosk app.
 bool allow_non_kiosk_apps_restart_api_for_test = false;
 
-void DispatchOnStartupEventImpl(BrowserContext* browser_context,
-                                const std::string& extension_id,
-                                bool first_call,
-                                ExtensionHost* host) {
-  // A NULL host from the LazyBackgroundTaskQueue means the page failed to
-  // load. Give up.
-  if (!host && !first_call)
+void DispatchOnStartupEventImpl(
+    BrowserContext* browser_context,
+    const std::string& extension_id,
+    bool first_call,
+    std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
+  // A NULL ContextInfo from the task callback means the page failed
+  // to load. Give up.
+  if (!context_info && !first_call)
     return;
 
   // Don't send onStartup events to incognito browser contexts.
@@ -125,14 +126,15 @@ void DispatchOnStartupEventImpl(BrowserContext* browser_context,
       ExtensionRegistry::Get(browser_context)->enabled_extensions().GetByID(
           extension_id);
   if (extension && BackgroundInfo::HasPersistentBackgroundPage(extension) &&
-      first_call &&
-      LazyBackgroundTaskQueue::Get(browser_context)
-          ->ShouldEnqueueTask(browser_context, extension)) {
-    LazyBackgroundTaskQueue::Get(browser_context)
-        ->AddPendingTask(browser_context, extension_id,
-                         base::BindOnce(&DispatchOnStartupEventImpl,
-                                        browser_context, extension_id, false));
-    return;
+      first_call) {
+    const LazyContextId context_id(browser_context, extension_id);
+    LazyContextTaskQueue* task_queue = context_id.GetTaskQueue();
+    if (task_queue->ShouldEnqueueTask(browser_context, extension)) {
+      task_queue->AddPendingTask(
+          context_id, base::BindOnce(&DispatchOnStartupEventImpl,
+                                     browser_context, extension_id, false));
+      return;
+    }
   }
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue());
@@ -226,8 +228,8 @@ void RuntimeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
   // Dispatch the onInstalled event with reason "chrome_update".
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&RuntimeEventRouter::DispatchOnInstalledEvent,
-                 browser_context_, extension->id(), base::Version(), true));
+      base::BindOnce(&RuntimeEventRouter::DispatchOnInstalledEvent,
+                     browser_context_, extension->id(), base::Version(), true));
 }
 
 void RuntimeAPI::OnExtensionUninstalled(
@@ -427,7 +429,7 @@ void RuntimeAPI::AllowNonKioskAppsInRestartAfterDelayForTesting() {
 void RuntimeEventRouter::DispatchOnStartupEvent(
     content::BrowserContext* context,
     const std::string& extension_id) {
-  DispatchOnStartupEventImpl(context, extension_id, true, NULL);
+  DispatchOnStartupEventImpl(context, extension_id, true, nullptr);
 }
 
 // static
@@ -586,23 +588,22 @@ void RuntimeAPI::OnExtensionInstalledAndLoaded(
     const Extension* extension,
     const base::Version& previous_version) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&RuntimeEventRouter::DispatchOnInstalledEvent,
-                 browser_context_, extension->id(), previous_version, false));
+      FROM_HERE, base::BindOnce(&RuntimeEventRouter::DispatchOnInstalledEvent,
+                                browser_context_, extension->id(),
+                                previous_version, false));
 }
 
 ExtensionFunction::ResponseAction RuntimeGetBackgroundPageFunction::Run() {
   ExtensionHost* host = ProcessManager::Get(browser_context())
                             ->GetBackgroundHostForExtension(extension_id());
-  if (LazyBackgroundTaskQueue::Get(browser_context())
-          ->ShouldEnqueueTask(browser_context(), extension())) {
-    LazyBackgroundTaskQueue::Get(browser_context())
-        ->AddPendingTask(
-            browser_context(), extension_id(),
-            base::BindOnce(&RuntimeGetBackgroundPageFunction::OnPageLoaded,
-                           this));
+  const LazyContextId context_id(browser_context(), extension_id());
+  LazyContextTaskQueue* task_queue = context_id.GetTaskQueue();
+  if (task_queue->ShouldEnqueueTask(browser_context(), extension())) {
+    task_queue->AddPendingTask(
+        context_id,
+        base::BindOnce(&RuntimeGetBackgroundPageFunction::OnPageLoaded, this));
   } else if (host) {
-    OnPageLoaded(host);
+    OnPageLoaded(std::make_unique<LazyContextTaskQueue::ContextInfo>(host));
   } else {
     return RespondNow(Error(kNoBackgroundPageError));
   }
@@ -610,8 +611,9 @@ ExtensionFunction::ResponseAction RuntimeGetBackgroundPageFunction::Run() {
   return RespondLater();
 }
 
-void RuntimeGetBackgroundPageFunction::OnPageLoaded(ExtensionHost* host) {
-  if (host) {
+void RuntimeGetBackgroundPageFunction::OnPageLoaded(
+    std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
+  if (context_info) {
     Respond(NoArguments());
   } else {
     Respond(Error(kPageLoadError));
@@ -691,7 +693,8 @@ ExtensionFunction::ResponseAction RuntimeRestartAfterDelayFunction::Run() {
   int seconds = params->seconds;
 
   if (seconds <= 0 && seconds != -1)
-    return RespondNow(Error(kErrorInvalidArgument, base::IntToString(seconds)));
+    return RespondNow(
+        Error(kErrorInvalidArgument, base::NumberToString(seconds)));
 
   RuntimeAPI::RestartAfterDelayStatus request_status =
       RuntimeAPI::GetFactoryInstance()
@@ -736,10 +739,9 @@ RuntimeGetPackageDirectoryEntryFunction::Run() {
   std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
       storage::kFileSystemTypeNativeLocal, std::string(), path, &relative_path);
 
-  int renderer_id = render_frame_host()->GetProcess()->GetID();
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
-  policy->GrantReadFileSystem(renderer_id, filesystem_id);
+  policy->GrantReadFileSystem(source_process_id(), filesystem_id);
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("fileSystemId", filesystem_id);
   dict->SetString("baseName", relative_path);

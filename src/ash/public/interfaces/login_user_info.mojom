@@ -10,7 +10,7 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/values.mojom";
 
 // Supported multi-profile user behavior values.
-// Keep in sync with the enum in md_user_pod_row.js and user_pod_row.js
+// Keep in sync with the enum in chromeos_user_pod_row.js and user_pod_row.js
 enum MultiProfileUserBehavior {
   UNRESTRICTED = 0,
   PRIMARY_ONLY = 1,

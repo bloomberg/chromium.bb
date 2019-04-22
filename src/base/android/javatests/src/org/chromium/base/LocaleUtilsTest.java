@@ -259,4 +259,16 @@ public class LocaleUtilsTest {
         locale = new Locale("en");
         Assert.assertEquals(locale, LocaleUtils.forLanguageTagCompat(languageTag));
     }
+
+    // Test for toLanguage.
+    @Test
+    @SmallTest
+    public void testToLanguage() {
+        Assert.assertEquals("en", LocaleUtils.toLanguage("en-US"));
+        Assert.assertEquals("en", LocaleUtils.toLanguage("en"));
+        Assert.assertEquals("", LocaleUtils.toLanguage("-"));
+        Assert.assertEquals("", LocaleUtils.toLanguage("-US"));
+        Assert.assertEquals("", LocaleUtils.toLanguage(""));
+        Assert.assertEquals("fil", LocaleUtils.toLanguage("fil"));
+    }
 }

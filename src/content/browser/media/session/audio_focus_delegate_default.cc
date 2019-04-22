@@ -4,12 +4,15 @@
 
 #include "content/browser/media/session/audio_focus_delegate.h"
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "media/base/media_switches.h"
+#include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -22,7 +25,14 @@ namespace {
 
 const char kAudioFocusSourceName[] = "web";
 
-static const base::UnguessableToken& GetBrowserGroupId() {
+base::UnguessableToken GetAudioFocusGroupId(MediaSessionImpl* session) {
+  // Allow the media session to override the group id.
+  if (session->audio_focus_group_id() != base::UnguessableToken::Null())
+    return session->audio_focus_group_id();
+
+  // Use a shared audio focus group id for the whole browser. This will means
+  // that tabs will share audio focus if the enforcement mode is set to
+  // kSingleGroup.
   static const base::NoDestructor<base::UnguessableToken> token(
       base::UnguessableToken::Create());
   return *token;
@@ -46,6 +56,8 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
  private:
   // Finishes an async audio focus request.
   void FinishAudioFocusRequest(AudioFocusType type);
+  void FinishInitialAudioFocusRequest(AudioFocusType type,
+                                      const base::UnguessableToken& request_id);
 
   // Ensures that |audio_focus_ptr_| is connected.
   void EnsureServiceConnection();
@@ -81,7 +93,8 @@ AudioFocusDelegate::AudioFocusResult
 AudioFocusDelegateDefault::RequestAudioFocus(AudioFocusType audio_focus_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!media_session::IsAudioFocusEnabled()) {
+  if (!base::FeatureList::IsEnabled(
+          media_session::features::kMediaSessionService)) {
     audio_focus_type_ = audio_focus_type;
     return AudioFocusDelegate::AudioFocusResult::kSuccess;
   }
@@ -102,11 +115,10 @@ AudioFocusDelegateDefault::RequestAudioFocus(AudioFocusType audio_focus_type) {
     audio_focus_ptr_->RequestGroupedAudioFocus(
         mojo::MakeRequest(&request_client_ptr_), std::move(media_session),
         session_info_.Clone(), audio_focus_type,
-        media_session_->audio_focus_group_id() == base::UnguessableToken::Null()
-            ? GetBrowserGroupId()
-            : media_session_->audio_focus_group_id(),
-        base::BindOnce(&AudioFocusDelegateDefault::FinishAudioFocusRequest,
-                       base::Unretained(this), audio_focus_type));
+        GetAudioFocusGroupId(media_session_),
+        base::BindOnce(
+            &AudioFocusDelegateDefault::FinishInitialAudioFocusRequest,
+            base::Unretained(this), audio_focus_type));
   }
 
   // Return delayed as we make the async call to request audio focus.
@@ -150,11 +162,19 @@ void AudioFocusDelegateDefault::FinishAudioFocusRequest(AudioFocusType type) {
   media_session_->FinishSystemAudioFocusRequest(type, true /* result */);
 }
 
+void AudioFocusDelegateDefault::FinishInitialAudioFocusRequest(
+    AudioFocusType type,
+    const base::UnguessableToken& request_id) {
+  FinishAudioFocusRequest(type);
+}
+
 void AudioFocusDelegateDefault::EnsureServiceConnection() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!media_session::IsAudioFocusEnabled())
+  if (!base::FeatureList::IsEnabled(
+          media_session::features::kMediaSessionService)) {
     return;
+  }
 
   if (audio_focus_ptr_.is_bound() && !audio_focus_ptr_.encountered_error())
     return;

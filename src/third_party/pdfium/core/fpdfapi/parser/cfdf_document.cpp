@@ -10,7 +10,6 @@
 #include <sstream>
 #include <utility>
 
-#include "core/fpdfapi/edit/cpdf_creator.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_syntax_parser.h"
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
@@ -36,9 +35,8 @@ std::unique_ptr<CFDF_Document> CFDF_Document::ParseMemory(
   return pDoc->m_pRootDict ? std::move(pDoc) : nullptr;
 }
 
-void CFDF_Document::ParseStream(
-    const RetainPtr<IFX_SeekableReadStream>& pFile) {
-  m_pFile = pFile;
+void CFDF_Document::ParseStream(RetainPtr<IFX_SeekableReadStream> pFile) {
+  m_pFile = std::move(pFile);
   CPDF_SyntaxParser parser(m_pFile);
   while (1) {
     bool bNumber;

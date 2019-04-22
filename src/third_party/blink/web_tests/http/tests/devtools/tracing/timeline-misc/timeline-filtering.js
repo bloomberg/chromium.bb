@@ -286,7 +286,8 @@
   view.updateContents(Timeline.TimelineSelection.fromRange(
       model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime()));
   function printEventMessage(event, level) {
-    TestRunner.addResult(' '.repeat(level) + event.args['data'].message);
+    const text = event.args['data'] && event.args['data']['message'] || event.name;
+    TestRunner.addResult(' '.repeat(level) + text);
   }
 
   function dumpRecords() {
@@ -298,11 +299,11 @@
   dumpRecords();
 
   TestRunner.addResult(`Filtered by 'bar':`);
-  view._textFilterUI._internalSetValue('bar', true);
+  view._textFilterUI.setValue('bar', true);
   dumpRecords();
 
   TestRunner.addResult(`Filtered by 'foo':`);
-  view._textFilterUI._internalSetValue('foo', true);
+  view._textFilterUI.setValue('foo', true);
   dumpRecords();
 
   TestRunner.completeTest();

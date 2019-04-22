@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -46,7 +47,7 @@ class SVGElementReferenceObserver : public IdTargetObserver {
 }
 
 SVGURIReference::SVGURIReference(SVGElement* element)
-    : href_(SVGAnimatedHref::Create(element)) {
+    : href_(MakeGarbageCollected<SVGAnimatedHref>(element)) {
   DCHECK(element);
   href_->AddToPropertyMap(element);
 }
@@ -90,8 +91,8 @@ bool SVGURLReferenceResolver::IsLocal() const {
 AtomicString SVGURLReferenceResolver::FragmentIdentifier() const {
   // Use KURL's FragmentIdentifier to ensure that we're handling the
   // fragment in a consistent manner.
-  return AtomicString(
-      DecodeURLEscapeSequences(AbsoluteUrl().FragmentIdentifier()));
+  return AtomicString(DecodeURLEscapeSequences(
+      AbsoluteUrl().FragmentIdentifier(), DecodeURLMode::kUTF8OrIsomorphic));
 }
 
 AtomicString SVGURIReference::FragmentIdentifierFromIRIString(
@@ -138,8 +139,8 @@ Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
   DCHECK(!observer);
   if (id.IsEmpty())
     return nullptr;
-  observer =
-      new SVGElementReferenceObserver(tree_scope, id, std::move(closure));
+  observer = MakeGarbageCollected<SVGElementReferenceObserver>(
+      tree_scope, id, std::move(closure));
   return tree_scope.getElementById(id);
 }
 

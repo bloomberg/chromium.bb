@@ -27,6 +27,9 @@
 namespace blink {
 class WebLocalFrame;
 class WebMediaPlayerClient;
+class WebMediaStreamAudioRenderer;
+class WebMediaStreamRendererFactory;
+class WebMediaStreamVideoRenderer;
 class WebString;
 class WebVideoFrameSubmitter;
 }
@@ -52,9 +55,6 @@ using CreateSurfaceLayerBridgeCB =
         blink::WebSurfaceLayerBridgeObserver*,
         cc::UpdateSubmissionStateCB)>;
 
-class MediaStreamAudioRenderer;
-class MediaStreamRendererFactory;
-class MediaStreamVideoRenderer;
 class WebMediaPlayerMSCompositor;
 
 // WebMediaPlayerMS delegates calls from WebCore::MediaPlayerPrivate to
@@ -65,7 +65,7 @@ class WebMediaPlayerMSCompositor;
 //
 // WebMediaPlayerMS works with multiple objects, the most important ones are:
 //
-// MediaStreamVideoRenderer
+// blink::WebMediaStreamVideoRenderer
 //   provides video frames for rendering.
 //
 // blink::WebMediaPlayerClient
@@ -78,15 +78,16 @@ class CONTENT_EXPORT WebMediaPlayerMS
       public base::SupportsWeakPtr<WebMediaPlayerMS> {
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
-  // a MediaStreamClient which provides MediaStreamVideoRenderer.
+  // a MediaStreamClient which provides blink::WebMediaStreamVideoRenderer.
   // |delegate| must not be null.
   WebMediaPlayerMS(
       blink::WebLocalFrame* frame,
       blink::WebMediaPlayerClient* client,
       media::WebMediaPlayerDelegate* delegate,
       std::unique_ptr<media::MediaLog> media_log,
-      std::unique_ptr<MediaStreamRendererFactory> factory,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_,
+      std::unique_ptr<blink::WebMediaStreamRendererFactory> factory,
+      scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       scoped_refptr<base::TaskRunner> worker_task_runner,
@@ -115,17 +116,10 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void Seek(double seconds) override;
   void SetRate(double rate) override;
   void SetVolume(double volume) override;
-  void EnterPictureInPicture(
-      blink::WebMediaPlayer::PipWindowOpenedCallback callback) override;
-  void ExitPictureInPicture(
-      blink::WebMediaPlayer::PipWindowClosedCallback callback) override;
-  void SetPictureInPictureCustomControls(
-      const std::vector<blink::PictureInPictureControlInfo>&) override;
-  void RegisterPictureInPictureWindowResizeCallback(
-      blink::WebMediaPlayer::PipWindowResizedCallback) override;
+  void OnRequestPictureInPicture() override;
   void SetSinkId(
       const blink::WebString& sink_id,
-      std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) override;
+      blink::WebSetSinkIdCompleteCallback completion_callback) override;
   void SetPreload(blink::WebMediaPlayer::Preload preload) override;
   blink::WebTimeRanges Buffered() const override;
   blink::WebTimeRanges Seekable() const override;
@@ -183,12 +177,12 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void OnIdleTimeout() override;
   void OnPlay() override;
   void OnPause() override;
+  void OnMuted(bool muted) override;
   void OnSeekForward(double seconds) override;
   void OnSeekBackward(double seconds) override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
   void OnPictureInPictureModeEnded() override;
-  void OnPictureInPictureControlClicked(const std::string& control_id) override;
 
   void OnFirstFrameReceived(media::VideoRotation video_rotation,
                             bool is_opaque);
@@ -239,6 +233,8 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void TrackAdded(const blink::WebMediaStreamTrack& track) override;
   void TrackRemoved(const blink::WebMediaStreamTrack& track) override;
   void ActiveStateChanged(bool is_active) override;
+  int GetDelegateId() override;
+  base::Optional<viz::SurfaceId> GetSurfaceId() override;
 
   void OnDisplayTypeChanged(WebMediaPlayer::DisplayType) override;
 
@@ -248,11 +244,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
 #if defined(OS_WIN)
   static const gfx::Size kUseGpuMemoryBufferVideoFramesMinResolution;
 #endif  // defined(OS_WIN)
-
-  // When we lose the context_provider, we destroy the CompositorFrameSink to
-  // prevent frames from being submitted. The current surface_ids become
-  // invalid.
-  void OnFrameSinkDestroyed();
 
   bool IsInPictureInPicture() const;
 
@@ -309,11 +300,12 @@ class CONTENT_EXPORT WebMediaPlayerMS
   class FrameDeliverer;
   std::unique_ptr<FrameDeliverer> frame_deliverer_;
 
-  scoped_refptr<MediaStreamVideoRenderer> video_frame_provider_;  // Weak
+  scoped_refptr<blink::WebMediaStreamVideoRenderer>
+      video_frame_provider_;  // Weak
 
   scoped_refptr<cc::VideoLayer> video_layer_;
 
-  scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;  // Weak
+  scoped_refptr<blink::WebMediaStreamAudioRenderer> audio_renderer_;  // Weak
   media::PaintCanvasVideoRenderer video_renderer_;
 
   bool paused_;
@@ -321,8 +313,9 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   std::unique_ptr<media::MediaLog> media_log_;
 
-  std::unique_ptr<MediaStreamRendererFactory> renderer_factory_;
+  std::unique_ptr<blink::WebMediaStreamRendererFactory> renderer_factory_;
 
+  const scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
@@ -331,7 +324,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   media::GpuVideoAcceleratorFactories* gpu_factories_;
 
   // Used for DCHECKs to ensure methods calls executed in the correct thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   scoped_refptr<WebMediaPlayerMSCompositor> compositor_;
 

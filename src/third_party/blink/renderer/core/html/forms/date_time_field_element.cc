@@ -45,7 +45,7 @@ DateTimeFieldElement::DateTimeFieldElement(Document& document,
                                            FieldOwner& field_owner)
     : HTMLSpanElement(document), field_owner_(&field_owner) {}
 
-void DateTimeFieldElement::Trace(blink::Visitor* visitor) {
+void DateTimeFieldElement::Trace(Visitor* visitor) {
   visitor->Trace(field_owner_);
   HTMLSpanElement::Trace(visitor);
 }

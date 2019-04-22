@@ -31,20 +31,15 @@ namespace dawn_native { namespace metal {
 
         id<MTLBuffer> GetMTLBuffer();
 
-        void OnMapCommandSerialFinished(uint32_t mapSerial, uint32_t offset, bool isWrite);
+        void OnMapCommandSerialFinished(uint32_t mapSerial, bool isWrite);
 
       private:
-        void SetSubDataImpl(uint32_t start, uint32_t count, const uint8_t* data) override;
-        void MapReadAsyncImpl(uint32_t serial, uint32_t start, uint32_t count) override;
-        void MapWriteAsyncImpl(uint32_t serial, uint32_t start, uint32_t count) override;
+        void MapReadAsyncImpl(uint32_t serial) override;
+        void MapWriteAsyncImpl(uint32_t serial) override;
         void UnmapImpl() override;
+        void DestroyImpl() override;
 
         id<MTLBuffer> mMtlBuffer = nil;
-    };
-
-    class BufferView : public BufferViewBase {
-      public:
-        BufferView(BufferViewBuilder* builder);
     };
 
     class MapRequestTracker {
@@ -52,7 +47,7 @@ namespace dawn_native { namespace metal {
         MapRequestTracker(Device* device);
         ~MapRequestTracker();
 
-        void Track(Buffer* buffer, uint32_t mapSerial, uint32_t offset, bool isWrite);
+        void Track(Buffer* buffer, uint32_t mapSerial, bool isWrite);
         void Tick(Serial finishedSerial);
 
       private:
@@ -61,7 +56,6 @@ namespace dawn_native { namespace metal {
         struct Request {
             Ref<Buffer> buffer;
             uint32_t mapSerial;
-            uint32_t offset;
             bool isWrite;
         };
         SerialQueue<Request> mInflightRequests;

@@ -42,6 +42,9 @@ class CORE_EXPORT SVGImageElement final
 
  public:
   DECLARE_NODE_FACTORY(SVGImageElement);
+
+  explicit SVGImageElement(Document&);
+
   void Trace(blink::Visitor*) override;
 
   bool CurrentFrameHasSingleSecurityOrigin() const;
@@ -78,8 +81,6 @@ class CORE_EXPORT SVGImageElement final
   }
 
  private:
-  explicit SVGImageElement(Document&);
-
   bool IsStructurallyExternal() const override {
     return !HrefString().IsNull();
   }
@@ -95,7 +96,7 @@ class CORE_EXPORT SVGImageElement final
   void AttachLayoutTree(AttachContext&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   const AtomicString ImageSourceURL() const override;
 

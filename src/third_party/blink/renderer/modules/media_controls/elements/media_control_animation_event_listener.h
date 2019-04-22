@@ -5,9 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_ANIMATION_EVENT_LISTENER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_ANIMATION_EVENT_LISTENER_H_
 
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -24,7 +23,7 @@ class Event;
 // animation has gone through so we can nicely stop the animation at the end of
 // the current one.
 class MODULES_EXPORT MediaControlAnimationEventListener final
-    : public EventListener {
+    : public NativeEventListener {
  public:
   // To use this class you need to use Observer as a mixin and return an element
   // to watch. You then instanitate a MediaControlAnimationEventListener from
@@ -47,13 +46,11 @@ class MODULES_EXPORT MediaControlAnimationEventListener final
   explicit MediaControlAnimationEventListener(Observer*);
   void Detach();
 
-  bool operator==(const EventListener& other) const override;
-
   void Trace(Visitor*) override;
 
- private:
   void Invoke(ExecutionContext*, Event*) override;
 
+ private:
   Member<Observer> observer_;
 };
 

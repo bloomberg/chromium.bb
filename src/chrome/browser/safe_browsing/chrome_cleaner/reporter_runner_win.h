@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 
 namespace base {
@@ -221,7 +222,7 @@ bool SwReporterIsAllowedByPolicy();
 
 // Returns true if the sw_reported is allowed to report back results due to
 // enterprise policies.
-bool SwReporterReportingIsAllowedByPolicy();
+bool SwReporterReportingIsAllowedByPolicy(Profile* profile);
 
 // A delegate used by tests to implement test doubles (e.g., stubs, fakes, or
 // mocks).

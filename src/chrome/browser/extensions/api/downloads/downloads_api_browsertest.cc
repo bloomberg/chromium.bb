@@ -8,14 +8,15 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
@@ -49,6 +50,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -140,7 +142,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
         : profile_(profile),
           event_name_(event_name),
           json_args_(json_args),
-          args_(base::JSONReader::Read(json_args).release()),
+          args_(base::JSONReader::ReadDeprecated(json_args).release()),
           caught_(caught) {}
 
     const base::Time& caught() { return caught_; }
@@ -671,6 +673,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
           current_browser(), url, ui::PAGE_TRANSITION_LINK);
       function->set_extension(extension_);
       function->SetRenderFrameHost(tab->GetMainFrame());
+      function->set_source_process_id(
+          tab->GetMainFrame()->GetProcess()->GetID());
     }
   }
 
@@ -931,9 +935,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   scoped_refptr<DownloadsOpenFunction> scoped_open(new DownloadsOpenFunction());
   scoped_open->set_user_gesture(true);
-  base::ListValue list_value;
-  list_value.GetList().emplace_back(static_cast<int>(download_item->GetId()));
-  scoped_open->SetArgs(&list_value);
+  base::Value args_list(base::Value::Type::LIST);
+  args_list.GetList().emplace_back(static_cast<int>(download_item->GetId()));
+  scoped_open->SetArgs(std::move(args_list));
   scoped_open->set_browser_context(current_browser()->profile());
   scoped_open->set_extension(extension());
   DownloadsOpenFunction::OnPromptCreatedCallback callback =
@@ -1150,7 +1154,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       {FILE_PATH_LITERAL("fake.txt"), DownloadItem::COMPLETE,
        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS}};
   DownloadManager::DownloadVector all_downloads;
-  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
+  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, base::size(kHistoryInfo),
                                      &all_downloads));
 
   base::FilePath real_path = all_downloads[0]->GetTargetFilePath();
@@ -1252,7 +1256,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       {FILE_PATH_LITERAL("baz"), DownloadItem::COMPLETE,
        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS}};
   DownloadManager::DownloadVector all_downloads;
-  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
+  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, base::size(kHistoryInfo),
                                      &all_downloads));
 
   std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
@@ -1328,8 +1332,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       {FILE_PATH_LITERAL("baz"), DownloadItem::COMPLETE,
        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS}};
   DownloadManager::DownloadVector items;
-  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
-                                     &items));
+  ASSERT_TRUE(
+      CreateHistoryDownloads(kHistoryInfo, base::size(kHistoryInfo), &items));
 
   std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
       new DownloadsSearchFunction(), "[{\"orderBy\": [\"filename\"]}]"));
@@ -1358,8 +1362,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       {FILE_PATH_LITERAL("baz"), DownloadItem::COMPLETE,
        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS}};
   DownloadManager::DownloadVector items;
-  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
-                                     &items));
+  ASSERT_TRUE(
+      CreateHistoryDownloads(kHistoryInfo, base::size(kHistoryInfo), &items));
 
   std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
       new DownloadsSearchFunction(), "[{\"orderBy\": []}]"));
@@ -1392,8 +1396,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       {FILE_PATH_LITERAL("baz"), DownloadItem::COMPLETE,
        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS}};
   DownloadManager::DownloadVector items;
-  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
-                                     &items));
+  ASSERT_TRUE(
+      CreateHistoryDownloads(kHistoryInfo, base::size(kHistoryInfo), &items));
 
   std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
       new DownloadsSearchFunction(), "[{\"danger\": \"content\"}]"));
@@ -1478,8 +1482,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
        download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT},
   };
   DownloadManager::DownloadVector items;
-  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
-                                     &items));
+  ASSERT_TRUE(
+      CreateHistoryDownloads(kHistoryInfo, base::size(kHistoryInfo), &items));
 
   std::unique_ptr<base::Value> result(
       RunFunctionAndReturnResult(new DownloadsSearchFunction(),
@@ -1935,7 +1939,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     "Access-Control-Request-Method",
   };
 
-  for (size_t index = 0; index < arraysize(kUnsafeHeaders); ++index) {
+  for (size_t index = 0; index < base::size(kUnsafeHeaders); ++index) {
     std::string download_url = embedded_test_server()->GetURL("/slow?0").spec();
     EXPECT_STREQ(errors::kInvalidHeaderUnsafe,
                   RunFunctionAndReturnError(new DownloadsDownloadFunction(),
@@ -2072,7 +2076,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     "google.com/",
   };
 
-  for (size_t index = 0; index < arraysize(kInvalidURLs); ++index) {
+  for (size_t index = 0; index < base::size(kInvalidURLs); ++index) {
     EXPECT_STREQ(errors::kInvalidURL,
                   RunFunctionAndReturnError(new DownloadsDownloadFunction(),
                                             base::StringPrintf(
@@ -4268,7 +4272,7 @@ IN_PROC_BROWSER_TEST_F(
   // Downloads that are restarted on resumption trigger another download target
   // determination.
   RemoveFilenameDeterminer(host);
-  item->Resume();
+  item->Resume(true);
 
   // Errors caught before filename determination is complete are delayed until
   // after filename determination so that, on resumption, filename determination

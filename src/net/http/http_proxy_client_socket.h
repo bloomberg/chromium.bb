@@ -12,12 +12,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/load_timing_info.h"
 #include "net/base/net_export.h"
+#include "net/base/proxy_server.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
@@ -29,24 +28,26 @@
 
 namespace net {
 
-class ClientSocketHandle;
 class GrowableIOBuffer;
-class HttpStream;
 class HttpStreamParser;
 class IOBuffer;
+class ProxyDelegate;
+class StreamSocket;
 
 class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
  public:
-  // Takes ownership of |transport_socket|, which should already be connected
-  // by the time Connect() is called.  If tunnel is true then on Connect()
-  // this socket will establish an Http tunnel.
-  HttpProxyClientSocket(std::unique_ptr<ClientSocketHandle> transport_socket,
+  // Takes ownership of |socket|, which should already be connected by the time
+  // Connect() is called. |socket| is assumed to be a freash socket. If tunnel
+  // is true then on Connect() this socket will establish an Http tunnel.
+  HttpProxyClientSocket(std::unique_ptr<StreamSocket> socket,
                         const std::string& user_agent,
                         const HostPortPair& endpoint,
+                        const ProxyServer& proxy_server,
                         HttpAuthController* http_auth_controller,
                         bool tunnel,
                         bool using_spdy,
                         NextProto negotiated_protocol,
+                        ProxyDelegate* proxy_delegate,
                         bool is_https_proxy,
                         const NetworkTrafficAnnotationTag& traffic_annotation);
 
@@ -55,7 +56,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
 
   // ProxyClientSocket implementation.
   const HttpResponseInfo* GetConnectResponseInfo() const override;
-  std::unique_ptr<HttpStream> CreateConnectResponseStream() override;
   int RestartWithAuth(CompletionOnceCallback callback) override;
   const scoped_refptr<HttpAuthController>& GetAuthController() const override;
   bool IsUsingSpdy() const override;
@@ -145,8 +145,11 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
   std::unique_ptr<HttpStreamParser> http_stream_parser_;
   scoped_refptr<IOBuffer> drain_buf_;
 
-  // Stores the underlying socket.
-  std::unique_ptr<ClientSocketHandle> transport_;
+  std::unique_ptr<StreamSocket> socket_;
+
+  // Whether or not |socket_| has been previously used. Once auth credentials
+  // are sent, set to true.
+  bool is_reused_;
 
   // The hostname and port of the endpoint.  This is not necessarily the one
   // specified by the URL, due to Alternate-Protocol or fixed testing ports.
@@ -163,9 +166,10 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
   std::string request_line_;
   HttpRequestHeaders request_headers_;
 
-  // Used only for redirects.
-  bool redirect_has_load_timing_info_;
-  LoadTimingInfo redirect_load_timing_info_;
+  const ProxyServer proxy_server_;
+
+  // This delegate must outlive this proxy client socket.
+  ProxyDelegate* proxy_delegate_;
 
   // Network traffic annotation for handshaking and setup.
   const NetworkTrafficAnnotationTag traffic_annotation_;

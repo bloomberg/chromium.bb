@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/compiled_action.gni")
-import("//build/config/ui.gni")
 import("//build/config/nacl/config.gni")
+import("//build/config/ui.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -20,6 +20,7 @@ static_library("test_config") {
   ]
   deps = [
     "//base",
+    "//base:clang_coverage_buildflags",
   ]
 }
 
@@ -30,10 +31,10 @@ static_library("test_support") {
     "../memory/fake_memory_pressure_monitor.h",
     "../task/sequence_manager/test/fake_task.cc",
     "../task/sequence_manager/test/fake_task.h",
-    "../task/sequence_manager/test/lazy_thread_controller_for_test.cc",
-    "../task/sequence_manager/test/lazy_thread_controller_for_test.h",
     "../task/sequence_manager/test/mock_time_domain.cc",
     "../task/sequence_manager/test/mock_time_domain.h",
+    "../task/sequence_manager/test/mock_time_message_pump.cc",
+    "../task/sequence_manager/test/mock_time_message_pump.h",
     "../task/sequence_manager/test/sequence_manager_for_test.cc",
     "../task/sequence_manager/test/sequence_manager_for_test.h",
     "../task/sequence_manager/test/test_task_queue.cc",
@@ -46,7 +47,9 @@ static_library("test_support") {
     "android/java_handler_thread_helpers.h",
     "android/url_utils.cc",
     "android/url_utils.h",
+    "bind_test_util.cc",
     "bind_test_util.h",
+    "copy_only_int.cc",
     "copy_only_int.h",
     "fuzzed_data_provider.h",
     "gtest_util.cc",
@@ -91,6 +94,7 @@ static_library("test_support") {
     "perf_time_logger.h",
     "power_monitor_test_base.cc",
     "power_monitor_test_base.h",
+    "reached_code_profiler_android.cc",
     "scoped_command_line.cc",
     "scoped_command_line.h",
     "scoped_environment_variable_override.cc",
@@ -115,7 +119,6 @@ static_library("test_support") {
     "simple_test_tick_clock.h",
     "task_runner_test_template.cc",
     "task_runner_test_template.h",
-    "task_scheduler_test_helpers_android.cc",
     "test_discardable_memory_allocator.cc",
     "test_discardable_memory_allocator.h",
     "test_file_util.cc",
@@ -148,6 +151,7 @@ static_library("test_support") {
     "test_support_android.h",
     "test_support_ios.h",
     "test_support_ios.mm",
+    "thread_pool_test_helpers_android.cc",
     "thread_test_helper.cc",
     "thread_test_helper.h",
     "trace_event_analyzer.cc",
@@ -273,6 +277,24 @@ static_library("test_support") {
   }
 }
 
+component("test_support_component") {
+  testonly = true
+  sources = [
+    "type_id_test_support_a.cc",
+    "type_id_test_support_a.h",
+    "type_id_test_support_b.cc",
+    "type_id_test_support_b.h",
+  ]
+  deps = [
+    "//base",
+  ]
+  configs += [ ":base_test_implementation" ]
+}
+
+config("base_test_implementation") {
+  defines = [ "IS_BASE_TEST_IMPL" ]
+}
+
 config("perf_test_config") {
   defines = [ "PERF_TEST" ]
 }
@@ -356,9 +378,21 @@ if (is_linux) {
       "fontconfig_util_linux.cc",
       "fontconfig_util_linux.h",
     ]
+    data_deps = [
+      ":fonts_conf",
+    ]
     deps = [
       "//base",
       "//third_party/fontconfig",
+    ]
+  }
+
+  copy("fonts_conf") {
+    sources = [
+      "fonts.conf",
+    ]
+    outputs = [
+      "${root_build_dir}/etc/fonts/{{source_file_part}}",
     ]
   }
 
@@ -377,7 +411,10 @@ if (is_linux) {
     compiled_action("do_generate_fontconfig_caches") {
       testonly = true
       tool = ":generate_fontconfig_caches"
-      data_deps = [
+
+      # The copied test fonts are inputs to generate_fontconfig_caches, so must
+      # be listed in deps, not data_deps (https://crbug.com/919422).
+      deps = [
         "//third_party/test_fonts",
       ]
       args = []
@@ -387,7 +424,9 @@ if (is_linux) {
       ]
     }
   }
+}
 
+if (is_fuchsia || is_linux) {
   shared_library("malloc_wrapper") {
     testonly = true
     sources = [
@@ -412,7 +451,8 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/base/MainReturnCodeResult.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientLauncher.java",
-      "android/javatests/src/org/chromium/base/test/task/TaskSchedulerTestHelpers.java",
+      "android/javatests/src/org/chromium/base/test/ReachedCodeProfiler.java",
+      "android/javatests/src/org/chromium/base/test/task/ThreadPoolTestHelpers.java",
       "android/javatests/src/org/chromium/base/test/util/UrlUtils.java",
     ]
     jni_package = "base"
@@ -424,7 +464,7 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//testing/android/native_test:native_main_runner_java",
-      "//third_party/android_deps:android_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
       "//third_party/jsr-305:jsr_305_javalib",
     ]
     srcjar_deps = [ ":test_support_java_aidl" ]

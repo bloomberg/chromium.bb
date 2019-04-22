@@ -9,10 +9,6 @@
 
 namespace blink {
 
-ModulatorImplBase* WorkletModulatorImpl::Create(ScriptState* script_state) {
-  return MakeGarbageCollected<WorkletModulatorImpl>(script_state);
-}
-
 WorkletModulatorImpl::WorkletModulatorImpl(ScriptState* script_state)
     : ModulatorImplBase(script_state) {}
 
@@ -22,12 +18,17 @@ ModuleScriptFetcher* WorkletModulatorImpl::CreateModuleScriptFetcher(
   WorkletGlobalScope* global_scope =
       To<WorkletGlobalScope>(GetExecutionContext());
   return MakeGarbageCollected<WorkletModuleScriptFetcher>(
-      global_scope->EnsureFetcher(), global_scope->GetModuleResponsesMap());
+      global_scope->GetModuleResponsesMap());
 }
 
 bool WorkletModulatorImpl::IsDynamicImportForbidden(String* reason) {
   *reason = "import() is disallowed on WorkletGlobalScope.";
   return true;
+}
+
+V8CacheOptions WorkletModulatorImpl::GetV8CacheOptions() const {
+  auto* scope = To<WorkletGlobalScope>(GetExecutionContext());
+  return scope->GetV8CacheOptions();
 }
 
 }  // namespace blink

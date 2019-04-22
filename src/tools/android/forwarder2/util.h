@@ -7,6 +7,8 @@
 
 #include "base/logging.h"
 
+#include <utility>
+
 namespace forwarder2 {
 
 // Safely deletes a ref-counted value in a provided map by unlinking the object
@@ -23,11 +25,12 @@ bool DeleteRefCountedValueInMap(const K& key, Map* map) {
   return true;
 }
 
-// See DeleteRefCountedValuetInMap() above.
+// See DeleteRefCountedValueInMap() above.
 template <typename Map, typename Iterator>
 void DeleteRefCountedValueInMapFromIterator(Iterator it, Map* map) {
   DCHECK(it != map->end());
-  const typename Map::value_type::second_type shared_ptr_copy = it->second;
+  const typename Map::value_type::second_type smart_pointer =
+      std::move(it->second);
   map->erase(it);
 }
 

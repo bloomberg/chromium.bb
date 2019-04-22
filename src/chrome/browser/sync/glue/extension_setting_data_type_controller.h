@@ -15,7 +15,8 @@ class Profile;
 
 namespace syncer {
 class SyncClient;
-}
+class SyncService;
+}  // namespace syncer
 
 namespace browser_sync {
 
@@ -26,6 +27,7 @@ class ExtensionSettingDataTypeController
   // |dump_stack| is called when an unrecoverable error occurs.
   ExtensionSettingDataTypeController(syncer::ModelType type,
                                      const base::Closure& dump_stack,
+                                     syncer::SyncService* sync_service,
                                      syncer::SyncClient* sync_client,
                                      Profile* profile);
   ~ExtensionSettingDataTypeController() override;

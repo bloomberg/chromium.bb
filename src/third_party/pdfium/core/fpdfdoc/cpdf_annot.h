@@ -25,11 +25,6 @@ class CPDF_RenderContext;
 class CPDF_RenderOptions;
 class CPDF_Stream;
 
-#define ANNOTFLAG_INVISIBLE 0x0001
-#define ANNOTFLAG_HIDDEN 0x0002
-#define ANNOTFLAG_PRINT 0x0004
-#define ANNOTFLAG_NOVIEW 0x0020
-
 class CPDF_Annot {
  public:
   enum AppearanceMode { Normal, Rollover, Down };
@@ -64,14 +59,13 @@ class CPDF_Annot {
     XFAWIDGET
   };
 
-  static bool IsAnnotationHidden(CPDF_Dictionary* pAnnotDict);
   static CPDF_Annot::Subtype StringToAnnotSubtype(const ByteString& sSubtype);
   static ByteString AnnotSubtypeToString(CPDF_Annot::Subtype nSubtype);
   static CFX_FloatRect RectFromQuadPointsArray(const CPDF_Array* pArray,
                                                size_t nIndex);
   static CFX_FloatRect BoundingRectFromQuadPoints(
       const CPDF_Dictionary* pAnnotDict);
-  static CFX_FloatRect RectFromQuadPoints(CPDF_Dictionary* pAnnotDict,
+  static CFX_FloatRect RectFromQuadPoints(const CPDF_Dictionary* pAnnotDict,
                                           size_t nIndex);
   static size_t QuadPointCount(const CPDF_Array* pArray);
 
@@ -84,7 +78,10 @@ class CPDF_Annot {
   uint32_t GetFlags() const;
   CFX_FloatRect GetRect() const;
   CPDF_Document* GetDocument() const { return m_pDocument.Get(); }
-  CPDF_Dictionary* GetAnnotDict() const { return m_pAnnotDict.Get(); }
+  const CPDF_Dictionary* GetAnnotDict() const { return m_pAnnotDict.Get(); }
+  CPDF_Dictionary* GetAnnotDict() { return m_pAnnotDict.Get(); }
+
+  bool IsHidden() const;
 
   bool DrawAppearance(CPDF_Page* pPage,
                       CFX_RenderDevice* pDevice,
@@ -102,27 +99,27 @@ class CPDF_Annot {
                   const CPDF_RenderOptions* pOptions);
   CPDF_Form* GetAPForm(const CPDF_Page* pPage, AppearanceMode mode);
   void SetOpenState(bool bOpenState) { m_bOpenState = bOpenState; }
-  CPDF_Annot* GetPopupAnnot() const { return m_pPopupAnnot; }
+  CPDF_Annot* GetPopupAnnot() const { return m_pPopupAnnot.Get(); }
   void SetPopupAnnot(CPDF_Annot* pAnnot) { m_pPopupAnnot = pAnnot; }
 
  private:
   void Init();
   void GenerateAPIfNeeded();
-  bool ShouldDrawAnnotation();
+  bool ShouldGenerateAP() const;
+  bool ShouldDrawAnnotation() const;
 
   CFX_FloatRect RectForDrawing() const;
 
-  MaybeOwned<CPDF_Dictionary> m_pAnnotDict;
+  MaybeOwned<CPDF_Dictionary> const m_pAnnotDict;
   UnownedPtr<CPDF_Document> const m_pDocument;
   CPDF_Annot::Subtype m_nSubtype;
   std::map<CPDF_Stream*, std::unique_ptr<CPDF_Form>> m_APMap;
+  // If non-null, then this is not a popup annotation.
+  UnownedPtr<CPDF_Annot> m_pPopupAnnot;
   // |m_bOpenState| is only set for popup annotations.
   bool m_bOpenState = false;
   bool m_bHasGeneratedAP;
   bool m_bIsTextMarkupAnnotation;
-  // Not owned. If there is a valid pointer in |m_pPopupAnnot|,
-  // then this annot is never a popup.
-  CPDF_Annot* m_pPopupAnnot = nullptr;
 };
 
 // Get the AP in an annotation dict for a given appearance mode.

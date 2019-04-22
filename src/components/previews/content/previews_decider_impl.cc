@@ -33,6 +33,7 @@ namespace {
 
 void LogPreviewsEligibilityReason(PreviewsEligibilityReason status,
                                   PreviewsType type) {
+  DCHECK_LT(status, PreviewsEligibilityReason::LAST);
   UMA_HISTOGRAM_ENUMERATION("Previews.EligibilityReason", status,
                             PreviewsEligibilityReason::LAST);
   int32_t max_limit = static_cast<int32_t>(PreviewsEligibilityReason::LAST);
@@ -42,43 +43,6 @@ void LogPreviewsEligibilityReason(PreviewsEligibilityReason status,
       1, max_limit, max_limit + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(static_cast<int>(status));
-}
-
-void LogTriggeredPreviewEffectiveConnectionType(
-    net::EffectiveConnectionType navigation_ect,
-    PreviewsType type) {
-  int32_t max_limit = static_cast<int32_t>(net::EFFECTIVE_CONNECTION_TYPE_LAST);
-  base::LinearHistogram::FactoryGet(
-      base::StringPrintf("Previews.Triggered.EffectiveConnectionType.%s",
-                         GetStringNameForType(type).c_str()),
-      1, max_limit, max_limit + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag)
-      ->Add(static_cast<int>(navigation_ect));
-}
-
-bool AllowedOnReload(PreviewsType type) {
-  if (base::FeatureList::IsEnabled(features::kPreviewsDisallowedOnReloads))
-    return false;
-
-  switch (type) {
-    // These types return new content on refresh.
-    case PreviewsType::LITE_PAGE:
-    case PreviewsType::LITE_PAGE_REDIRECT:
-    case PreviewsType::LOFI:
-    case PreviewsType::NOSCRIPT:
-    case PreviewsType::RESOURCE_LOADING_HINTS:
-      return true;
-    // Loading these types will always be stale when refreshed.
-    case PreviewsType::OFFLINE:
-      return false;
-    case PreviewsType::NONE:
-    case PreviewsType::UNSPECIFIED:
-    case PreviewsType::DEPRECATED_AMP_REDIRECTION:
-    case PreviewsType::LAST:
-      break;
-  }
-  NOTREACHED();
-  return false;
 }
 
 bool ShouldCheckOptimizationHints(PreviewsType type) {
@@ -103,9 +67,40 @@ bool ShouldCheckOptimizationHints(PreviewsType type) {
   return false;
 }
 
+// Returns true if ECT should be checked for |type| only at the commit time. If
+// true is returned, then ECT need not be checked at the navigation time.
+bool CheckECTOnlyAtCommitTime(PreviewsType type) {
+  switch (type) {
+    case PreviewsType::NOSCRIPT:
+    case PreviewsType::RESOURCE_LOADING_HINTS:
+      return true;
+    case PreviewsType::LOFI:
+    case PreviewsType::LITE_PAGE_REDIRECT:
+    case PreviewsType::OFFLINE:
+    case PreviewsType::LITE_PAGE:
+      return false;
+    case PreviewsType::NONE:
+    case PreviewsType::UNSPECIFIED:
+    case PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case PreviewsType::LAST:
+      break;
+  }
+  NOTREACHED();
+  return false;
+}
+
 bool IsPreviewsBlacklistIgnoredViaFlag() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kIgnorePreviewsBlacklist);
+}
+
+// We don't care if the ECT is unknown if the slow page threshold is set to 4G
+// (i.e.: all pages).
+bool ShouldCheckForUnknownECT(net::EffectiveConnectionType ect) {
+  if (!base::FeatureList::IsEnabled(features::kSlowPageTriggering))
+    return true;
+
+  return ect != net::EFFECTIVE_CONNECTION_TYPE_LAST - 1;
 }
 
 }  // namespace
@@ -154,14 +149,6 @@ void PreviewsDeciderImpl::OnBlacklistCleared(base::Time time) {
   previews_ui_service_->OnBlacklistCleared(time);
 }
 
-void PreviewsDeciderImpl::OnResourceLoadingHints(
-    const GURL& document_gurl,
-    const std::vector<std::string>& patterns_to_block) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  previews_ui_service_->SetResourceLoadingHintsResourcePatternsToBlock(
-      document_gurl, patterns_to_block);
-}
-
 void PreviewsDeciderImpl::SetPreviewsBlacklistForTesting(
     std::unique_ptr<PreviewsBlackList> previews_back_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -197,9 +184,6 @@ void PreviewsDeciderImpl::AddPreviewNavigation(const GURL& url,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Time time =
       previews_black_list_->AddPreviewNavigation(url, opt_out, type);
-  if (opt_out) {
-    last_opt_out_time_ = time;
-  }
   LogPreviewNavigation(url, opt_out, type, time, page_id);
 }
 
@@ -262,21 +246,24 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   // eligibility so that it will be available at commit time.
   previews_data->set_navigation_ect(effective_connection_type_);
 
-  // In the case that the user has chosen to ignore the normal blacklist rules
-  // (flags or interventions-internals), a preview should still not be served
-  // for 5 seconds after the last opt out. This allows "show original" to
-  // function correctly as the start of that navigation will be within 5 seconds
-  // (we don't yet re-evaluate on redirects, so this is sufficient).
-  if (blacklist_ignored_) {
-    if (clock_->Now() < last_opt_out_time_ + base::TimeDelta::FromSeconds(5)) {
+  // Do not allow previews on any authenticated pages.
+  if (url.has_username() || url.has_password())
+    return PreviewsEligibilityReason::URL_HAS_BASIC_AUTH;
+
+  // Skip blacklist checks if the blacklist is ignored.
+  if (!blacklist_ignored_) {
+    if (!previews_black_list_)
+      return PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE;
+    passed_reasons->push_back(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
+
+    // Trigger the USER_RECENTLY_OPTED_OUT rule when a reload on a preview has
+    // occurred recently. No need to push_back the eligibility reason as it will
+    // be added in IsLoadedAndAllowed as the first check.
+    if (recent_preview_reload_time_ &&
+        recent_preview_reload_time_.value() + params::SingleOptOutDuration() >
+            clock_->Now()) {
       return PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT;
     }
-    passed_reasons->push_back(
-        PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT);
-  } else if (!previews_black_list_) {
-    return PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE;
-  } else {
-    passed_reasons->push_back(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
 
     // The blacklist will disallow certain hosts for periods of time based on
     // user's opting out of the preview.
@@ -298,17 +285,22 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   // hints. This defers checking ECT for server previews because the server will
   // perform its own ECT check and for previews with hints because the hints may
   // specify variable ECT thresholds for slow page hints.
-  if (!is_drp_server_preview && !ShouldCheckOptimizationHints(type)) {
+  if (!is_drp_server_preview && !CheckECTOnlyAtCommitTime(type)) {
+    if (effective_connection_type_ == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+      return PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE;
+    }
+    passed_reasons->push_back(
+        PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE);
+
     // Network quality estimator may sometimes return effective connection type
     // as offline when the Android APIs incorrectly return device connectivity
     // as null. See https://crbug.com/838969. So, we do not trigger previews
     // when |observed_effective_connection_type| is
     // net::EFFECTIVE_CONNECTION_TYPE_OFFLINE.
-    if (effective_connection_type_ <= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
-      return PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE;
+    if (effective_connection_type_ == net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+      return PreviewsEligibilityReason::DEVICE_OFFLINE;
     }
-    passed_reasons->push_back(
-        PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE);
+    passed_reasons->push_back(PreviewsEligibilityReason::DEVICE_OFFLINE);
 
     if (effective_connection_type_ >
         previews::params::GetECTThresholdForPreview(type)) {
@@ -317,11 +309,10 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
     passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
   }
 
-  // LOAD_VALIDATE_CACHE or LOAD_BYPASS_CACHE mean the user reloaded the page.
-  // If this is a query for offline previews, reloads should be disallowed.
-  if (!AllowedOnReload(type) && is_reload) {
+  if (is_reload) {
     return PreviewsEligibilityReason::RELOAD_DISALLOWED;
   }
+
   passed_reasons->push_back(PreviewsEligibilityReason::RELOAD_DISALLOWED);
 
   // Check server whitelist/blacklist, if provided.
@@ -340,11 +331,22 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   return PreviewsEligibilityReason::ALLOWED;
 }
 
-bool PreviewsDeciderImpl::LoadResourceHints(const GURL& url) {
+bool PreviewsDeciderImpl::LoadPageHints(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return previews_opt_guide_->MaybeLoadOptimizationHints(
-      url, base::BindOnce(&PreviewsDeciderImpl::OnResourceLoadingHints,
-                          weak_factory_.GetWeakPtr()));
+  return previews_opt_guide_->MaybeLoadOptimizationHints(url,
+                                                         base::DoNothing());
+}
+
+bool PreviewsDeciderImpl::GetResourceLoadingHints(
+    const GURL& url,
+    std::vector<std::string>* out_resource_patterns_to_block) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!previews_opt_guide_)
+    return false;
+
+  return previews_opt_guide_->GetResourceLoadingHints(
+      url, out_resource_patterns_to_block);
 }
 
 void PreviewsDeciderImpl::LogHintCacheMatch(const GURL& url,
@@ -389,6 +391,7 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(PreviewsUserData* previews_data,
       return false;
     }
   }
+
   return true;
 }
 
@@ -402,39 +405,22 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
   DCHECK(type == PreviewsType::LITE_PAGE_REDIRECT ||
          type == PreviewsType::NOSCRIPT ||
          type == PreviewsType::RESOURCE_LOADING_HINTS);
-
-  // Per-PreviewsType default if no optimization guide data.
-  if (!previews_opt_guide_) {
-    if (type == PreviewsType::NOSCRIPT) {
-      return PreviewsEligibilityReason::ALLOWED;
-    } else {
-      return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
-    }
-  }
-
-  // For LitePageRedirect, ensure it is not blacklisted for this request.
+  // For LitePageRedirect, ensure it is not blacklisted for this request, and
+  // hints have been fully loaded.
+  //
+  // We allow all other Optimization Hint previews in the hopes that the missing
+  // state will load in before commit.
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
-    if (previews_opt_guide_->IsBlacklisted(url, type)) {
+    if (!previews_opt_guide_ || !previews_opt_guide_->has_hints())
+      return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;
+    passed_reasons->push_back(
+        PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);
+
+    if (previews_opt_guide_->IsBlacklisted(url, type))
       return PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER;
-    }
     passed_reasons->push_back(
         PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER);
   }
-
-  // For NoScript, ensure it is whitelisted for this request.
-  if (type == PreviewsType::NOSCRIPT) {
-    net::EffectiveConnectionType ect_threshold =
-        params::GetECTThresholdForPreview(type);
-    if (!previews_opt_guide_->IsWhitelisted(previews_data, url, type,
-                                            &ect_threshold)) {
-      return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
-    }
-    passed_reasons->push_back(
-        PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER);
-  }
-
-  // Note: allow ResourceLoadingHints since the guide is available. Hints may
-  // need to be loaded from it for commit time detail check.
 
   return PreviewsEligibilityReason::ALLOWED;
 }
@@ -449,10 +435,10 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   DCHECK(type == PreviewsType::NOSCRIPT ||
          type == PreviewsType::RESOURCE_LOADING_HINTS);
 
-  // For NoScript, if optimization guide is not present, assume that all URLs
-  // are ALLOWED.
-  if (!previews_opt_guide_ && type == PreviewsType::NOSCRIPT)
-    return PreviewsEligibilityReason::ALLOWED;
+  if (!previews_opt_guide_ || !previews_opt_guide_->has_hints())
+    return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;
+  passed_reasons->push_back(
+      PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);
 
   // Check if request URL is whitelisted by the optimization guide.
   net::EffectiveConnectionType ect_threshold =
@@ -469,24 +455,35 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   // connection type as offline when the Android APIs incorrectly return device
   // connectivity as null. See https://crbug.com/838969. So, we do not trigger
   // previews when |ect| is net::EFFECTIVE_CONNECTION_TYPE_OFFLINE.
-  if (previews_data->navigation_ect() <=
-      net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+  net::EffectiveConnectionType ect = previews_data->navigation_ect();
+  if (CheckECTOnlyAtCommitTime(type) &&
+      ect == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    // Update the |ect| to the current value.
+    ect = effective_connection_type_;
+  }
+
+  if (ShouldCheckForUnknownECT(params::GetSessionMaxECTThreshold()) &&
+      ect == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
     return PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE;
   }
   passed_reasons->push_back(
       PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE);
-  if (previews_data->navigation_ect() > ect_threshold) {
+
+  if (ect == net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+    return PreviewsEligibilityReason::DEVICE_OFFLINE;
+  }
+  passed_reasons->push_back(PreviewsEligibilityReason::DEVICE_OFFLINE);
+
+  if (ect > ect_threshold) {
     return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
   }
   passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
-  if (previews_data->navigation_ect() > params::GetSessionMaxECTThreshold()) {
+
+  if (ect > params::GetSessionMaxECTThreshold()) {
     return PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION;
   }
   passed_reasons->push_back(
       PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION);
-  LogTriggeredPreviewEffectiveConnectionType(previews_data->navigation_ect(),
-                                             type);
-
   return PreviewsEligibilityReason::ALLOWED;
 }
 
@@ -507,4 +504,10 @@ void PreviewsDeciderImpl::SetEffectiveConnectionType(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   effective_connection_type_ = effective_connection_type;
 }
+
+void PreviewsDeciderImpl::AddPreviewReload() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  recent_preview_reload_time_ = clock_->Now();
+}
+
 }  // namespace previews

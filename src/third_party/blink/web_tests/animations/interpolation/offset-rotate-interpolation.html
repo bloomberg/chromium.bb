@@ -76,6 +76,15 @@ assertInterpolation({
   {at: 1.5, is: '70deg'},
 ]);
 
+// Regression test for crbug.com/918430.
+assertInterpolation({
+  property: 'offset-rotate',
+  from: '800deg',
+  to: '900deg'
+}, [
+  {at: -3.40282e+38, is: '-3.40282e+38deg'},
+]);
+
 // Interpolation between auto angles.
 assertInterpolation({
   property: 'offset-rotate',

@@ -34,19 +34,21 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/settings/install_attributes.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
+#include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/cloud/mock_signing_service.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -67,6 +69,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
 using testing::AnyNumber;
 using testing::AtMost;
 using testing::DoAll;
@@ -77,7 +80,6 @@ using testing::SaveArg;
 using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::WithArgs;
-using testing::_;
 
 namespace em = enterprise_management;
 
@@ -105,9 +107,11 @@ class TestingDeviceCloudPolicyManagerChromeOS
  public:
   TestingDeviceCloudPolicyManagerChromeOS(
       std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store,
+      std::unique_ptr<CloudExternalDataManager> external_data_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       ServerBackedStateKeysBroker* state_keys_broker)
       : DeviceCloudPolicyManagerChromeOS(std::move(store),
+                                         std::move(external_data_manager),
                                          task_runner,
                                          state_keys_broker) {
     set_component_policy_disabled_for_testing(true);
@@ -118,15 +122,11 @@ class TestingDeviceCloudPolicyManagerChromeOS
 
 class DeviceCloudPolicyManagerChromeOSTest
     : public chromeos::DeviceSettingsTestBase,
-      public DeviceCloudPolicyManagerChromeOS::Observer {
+      public DeviceCloudPolicyManagerChromeOS::Observer,
+      public chromeos::SessionManagerClient::Observer {
  protected:
   DeviceCloudPolicyManagerChromeOSTest()
-      : fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
-        state_keys_broker_(&fake_session_manager_client_),
-        store_(nullptr),
-        test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {
+      : state_keys_broker_(&session_manager_client_), store_(nullptr) {
     fake_statistics_provider_.SetMachineStatistic(
         chromeos::system::kSerialNumberKeyForTest, "test_sn");
     fake_statistics_provider_.SetMachineStatistic(
@@ -135,10 +135,12 @@ class DeviceCloudPolicyManagerChromeOSTest
     state_keys.push_back("1");
     state_keys.push_back("2");
     state_keys.push_back("3");
-    fake_session_manager_client_.set_server_backed_state_keys(state_keys);
+    session_manager_client_.set_server_backed_state_keys(state_keys);
+    session_manager_client_.AddObserver(this);
   }
 
   ~DeviceCloudPolicyManagerChromeOSTest() override {
+    session_manager_client_.RemoveObserver(this);
     chromeos::system::StatisticsProvider::SetTestProvider(NULL);
   }
 
@@ -146,19 +148,22 @@ class DeviceCloudPolicyManagerChromeOSTest
 
   void SetUp() override {
     DeviceSettingsTestBase::SetUp();
-    dbus_setter_->SetCryptohomeClient(
-        std::unique_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
-    chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
     cryptohome::AsyncMethodCaller::Initialize();
 
-    install_attributes_ =
-        std::make_unique<chromeos::InstallAttributes>(fake_cryptohome_client_);
+    if (set_empty_system_salt_) {
+      chromeos::FakeCryptohomeClient::Get()->set_system_salt(
+          std::vector<uint8_t>());
+    }
+
+    install_attributes_ = std::make_unique<chromeos::InstallAttributes>(
+        chromeos::FakeCryptohomeClient::Get());
     store_ = new DeviceCloudPolicyStoreChromeOS(
-        &device_settings_service_, install_attributes_.get(),
+        device_settings_service_.get(), install_attributes_.get(),
         base::ThreadTaskRunnerHandle::Get());
     manager_ = std::make_unique<TestingDeviceCloudPolicyManagerChromeOS>(
-        base::WrapUnique(store_), base::ThreadTaskRunnerHandle::Get(),
-        &state_keys_broker_);
+        base::WrapUnique(store_),
+        std::make_unique<MockCloudExternalDataManager>(),
+        base::ThreadTaskRunnerHandle::Get(), &state_keys_broker_);
 
     RegisterLocalState(local_state_.registry());
     manager_->Init(&schema_registry_);
@@ -166,20 +171,38 @@ class DeviceCloudPolicyManagerChromeOSTest
     // SharedURLLoaderFactory and LocalState singletons have to be set since
     // they are accessed by EnrollmentHandlerChromeOS and StartupUtils.
     TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
-        test_shared_loader_factory_);
+        test_url_loader_factory_.GetSafeWeakWrapper());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
 
     // SystemSaltGetter is used in DeviceOAuth2TokenService.
     chromeos::SystemSaltGetter::Initialize();
     chromeos::DeviceOAuth2TokenServiceFactory::Initialize(
-        test_shared_loader_factory_, &local_state_);
+        test_url_loader_factory_.GetSafeWeakWrapper(), &local_state_);
 
     url_fetcher_response_code_ = net::HTTP_OK;
-    url_fetcher_response_string_ = "{\"access_token\":\"accessToken4Test\","
-                                   "\"expires_in\":1234,"
-                                   "\"refresh_token\":\"refreshToken4Test\"}";
+    url_fetcher_response_string_ =
+        "{\"access_token\":\"accessToken4Test\","
+        "\"expires_in\":1234,"
+        "\"refresh_token\":\"refreshToken4Test\"}";
 
     AllowUninterestingRemoteCommandFetches();
+  }
+
+  void TearDown() override {
+    cryptohome::AsyncMethodCaller::Shutdown();
+
+    if (initializer_)
+      initializer_->Shutdown();
+    manager_->RemoveDeviceCloudPolicyManagerObserver(this);
+    manager_->Shutdown();
+    manager_.reset();
+    install_attributes_.reset();
+
+    chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
+    chromeos::SystemSaltGetter::Shutdown();
+    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
+
+    DeviceSettingsTestBase::TearDown();
   }
 
   StrictMock<chromeos::attestation::MockAttestationFlow>*
@@ -192,27 +215,11 @@ class DeviceCloudPolicyManagerChromeOSTest
     return mock_;
   }
 
-  void TearDown() override {
-    cryptohome::AsyncMethodCaller::Shutdown();
-
-    manager_->RemoveDeviceCloudPolicyManagerObserver(this);
-    manager_->Shutdown();
-    if (initializer_)
-      initializer_->Shutdown();
-    DeviceSettingsTestBase::TearDown();
-
-    chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
-    chromeos::SystemSaltGetter::Shutdown();
-    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
-    test_shared_loader_factory_->Detach();
-  }
-
   void LockDevice() {
     base::RunLoop loop;
     chromeos::InstallAttributes::LockResult result;
     install_attributes_->LockDevice(
-        DEVICE_MODE_ENTERPRISE,
-        PolicyBuilder::kFakeDomain,
+        DEVICE_MODE_ENTERPRISE, PolicyBuilder::kFakeDomain,
         std::string(),  // realm
         PolicyBuilder::kFakeDeviceId,
         base::Bind(&CopyLockResult, &loop, &result));
@@ -234,7 +241,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     initializer_->SetSigningServiceForTesting(
         std::make_unique<FakeSigningService>());
     initializer_->SetSystemURLLoaderFactoryForTesting(
-        test_shared_loader_factory_);
+        test_url_loader_factory_.GetSafeWeakWrapper());
     initializer_->Init();
   }
 
@@ -261,8 +268,19 @@ class DeviceCloudPolicyManagerChromeOSTest
         .Times(AnyNumber());
   }
 
+  // DeviceCloudPolicyManagerChromeOS::Observer:
   MOCK_METHOD0(OnDeviceCloudPolicyManagerConnected, void());
   MOCK_METHOD0(OnDeviceCloudPolicyManagerDisconnected, void());
+
+  // SessionManagerClient::Observer:
+  void OwnerKeySet(bool success) override {
+    // Called when the owner key is set in SessionManagerClient. Make it
+    // immediately available to |owner_key_util_| since code that "loads" the
+    // key will load it through that instance.
+    EXPECT_TRUE(success);
+    owner_key_util_->SetPublicKeyFromPrivateKey(
+        *device_policy_->GetNewSigningKey());
+  }
 
   std::unique_ptr<chromeos::InstallAttributes> install_attributes_;
 
@@ -271,8 +289,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   TestingPrefServiceSimple local_state_;
   MockDeviceManagementService device_management_service_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
-  chromeos::FakeSessionManagerClient fake_session_manager_client_;
-  chromeos::FakeCryptohomeClient* fake_cryptohome_client_;
+  bool set_empty_system_salt_ = false;
   ServerBackedStateKeysBroker state_keys_broker_;
   StrictMock<chromeos::attestation::MockAttestationFlow>* mock_;
 
@@ -283,8 +300,6 @@ class DeviceCloudPolicyManagerChromeOSTest
   network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_loader_factory_;
   // This property is required to instantiate the session manager, a singleton
   // which is used by the device status collector.
   session_manager::SessionManager session_manager_;
@@ -335,9 +350,9 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
-  device_policy_.policy_data().set_state(em::PolicyData::UNMANAGED);
-  device_policy_.Build();
-  session_manager_client_.set_device_policy(device_policy_.GetBlob());
+  device_policy_->policy_data().set_state(em::PolicyData::UNMANAGED);
+  device_policy_->Build();
+  session_manager_client_.set_device_policy(device_policy_->GetBlob());
 
   LockDevice();
   FlushDeviceSettings();
@@ -366,12 +381,12 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
   EXPECT_TRUE(manager_->GetStatusUploader());
 
   // Switch back to ACTIVE, service the policy fetch and let it propagate.
-  device_policy_.policy_data().set_state(em::PolicyData::ACTIVE);
-  device_policy_.Build();
-  session_manager_client_.set_device_policy(device_policy_.GetBlob());
+  device_policy_->policy_data().set_state(em::PolicyData::ACTIVE);
+  device_policy_->Build();
+  session_manager_client_.set_device_policy(device_policy_->GetBlob());
   em::DeviceManagementResponse policy_fetch_response;
-  policy_fetch_response.mutable_policy_response()->add_response()->CopyFrom(
-      device_policy_.policy());
+  policy_fetch_response.mutable_policy_response()->add_responses()->CopyFrom(
+      device_policy_->policy());
   policy_fetch_job->SendResponse(DM_STATUS_SUCCESS, policy_fetch_response);
   FlushDeviceSettings();
 
@@ -445,20 +460,19 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     DeviceCloudPolicyManagerChromeOSTest::SetUp();
 
     // Set up test data.
-    device_policy_.SetDefaultNewSigningKey();
-    device_policy_.policy_data().set_timestamp(
+    device_policy_->SetDefaultNewSigningKey();
+    device_policy_->policy_data().set_timestamp(
         base::Time::NowFromSystemTime().ToJavaTime());
-    device_policy_.Build();
+    device_policy_->Build();
 
     register_response_.mutable_register_response()->set_device_management_token(
         PolicyBuilder::kFakeToken);
     register_response_.mutable_register_response()->set_enrollment_type(
         em::DeviceRegisterResponse::ENTERPRISE);
-    policy_fetch_response_.mutable_policy_response()->add_response()->CopyFrom(
-        device_policy_.policy());
+    policy_fetch_response_.mutable_policy_response()->add_responses()->CopyFrom(
+        device_policy_->policy());
     robot_auth_fetch_response_.mutable_service_api_access_response()
         ->set_auth_code("auth_code_for_test");
-    loaded_blob_ = device_policy_.GetBlob();
 
     // Initialize the manager.
     FlushDeviceSettings();
@@ -560,11 +574,12 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
 
     // Process verification.
     MockDeviceManagementJob* robot_auth_fetch_job = NULL;
-    EXPECT_CALL(device_management_service_, CreateJob(
-        DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH, _))
+    EXPECT_CALL(
+        device_management_service_,
+        CreateJob(DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH, _))
         .Times(AtMost(1))
-        .WillOnce(device_management_service_.CreateAsyncJob(
-            &robot_auth_fetch_job));
+        .WillOnce(
+            device_management_service_.CreateAsyncJob(&robot_auth_fetch_job));
     EXPECT_CALL(
         device_management_service_,
         StartJob(dm_protocol::kValueRequestApiAuthorization, _, _, _, _, _, _))
@@ -586,6 +601,18 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     if (done_)
       return;
 
+    // Set expectations for the second policy refresh that happens after the
+    // enrollment completes.
+    MockDeviceManagementJob* component_policy_fetch_job = NULL;
+    EXPECT_CALL(device_management_service_,
+                CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
+        .Times(AtMost(1))
+        .WillOnce(device_management_service_.CreateAsyncJob(
+            &component_policy_fetch_job));
+    EXPECT_CALL(device_management_service_,
+                StartJob(dm_protocol::kValueRequestPolicy, _, _, _, _, _, _))
+        .Times(AtMost(1));
+
     // Process robot refresh token fetch if the auth code fetch succeeded.
     // DeviceCloudPolicyInitializer holds an EnrollmentHandlerChromeOS which
     // holds a GaiaOAuthClient that fetches the refresh token during enrollment.
@@ -601,6 +628,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
 
     // Process robot refresh token store and policy store.
     base::RunLoop().RunUntilIdle();
+
     if (!done_ || status_.status() == EnrollmentStatus::SUCCESS) {
       // Verify the state only if the task is not yet failed.
       // Note that, if the flow is not yet |done_| here, assume that it is
@@ -609,28 +637,13 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
           chromeos::DeviceOAuth2TokenServiceFactory::Get();
       EXPECT_TRUE(token_service->RefreshTokenIsAvailable(
           token_service->GetRobotAccountId()));
-      EXPECT_EQ(device_policy_.GetBlob(),
+      EXPECT_EQ(device_policy_->GetBlob(),
                 session_manager_client_.device_policy());
     }
     if (done_)
       return;
 
-    // Process the second policy refresh that happens after the enrollment
-    // completes.
-    MockDeviceManagementJob* component_policy_fetch_job = NULL;
-    EXPECT_CALL(device_management_service_,
-                CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
-        .Times(AtMost(1))
-        .WillOnce(device_management_service_.CreateAsyncJob(
-            &component_policy_fetch_job));
-    EXPECT_CALL(device_management_service_,
-                StartJob(dm_protocol::kValueRequestPolicy, _, _, _, _, _, _))
-        .Times(AtMost(1));
-
-    // Key installation and policy load.
-    session_manager_client_.set_device_policy(loaded_blob_);
-    owner_key_util_->SetPublicKeyFromPrivateKey(
-        *device_policy_.GetNewSigningKey());
+    // Policy load.
     ReloadDeviceSettings();
 
     // Respond to the second policy refresh.
@@ -658,8 +671,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
                 data.certificate_type());
       req->CopyFrom(data.device_register_request());
     } else {
-      req->CopyFrom(
-          register_request_.register_request());
+      req->CopyFrom(register_request_.register_request());
     }
     return req;
   }
@@ -672,8 +684,6 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
 
   DeviceManagementStatus robot_auth_fetch_status_;
   em::DeviceManagementResponse robot_auth_fetch_response_;
-
-  std::string loaded_blob_;
 
   em::DeviceManagementRequest register_request_;
   std::string client_id_;
@@ -732,9 +742,10 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
   // The encryption lib is a noop for tests, but empty results from encryption
   // is an error, so we simulate an encryption error by returning an empty
   // refresh token.
-  url_fetcher_response_string_ = "{\"access_token\":\"accessToken4Test\","
-                                 "\"expires_in\":1234,"
-                                 "\"refresh_token\":\"\"}";
+  url_fetcher_response_string_ =
+      "{\"access_token\":\"accessToken4Test\","
+      "\"expires_in\":1234,"
+      "\"refresh_token\":\"\"}";
   RunTest();
   ExpectFailedEnrollment(EnrollmentStatus::ROBOT_REFRESH_STORE_FAILED);
 }
@@ -747,10 +758,10 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, PolicyFetchFailed) {
 }
 
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, ValidationFailed) {
-  device_policy_.policy().set_policy_data_signature("bad");
+  device_policy_->policy().set_policy_data_signature("bad");
   policy_fetch_response_.clear_policy_response();
-  policy_fetch_response_.mutable_policy_response()->add_response()->CopyFrom(
-      device_policy_.policy());
+  policy_fetch_response_.mutable_policy_response()->add_responses()->CopyFrom(
+      device_policy_->policy());
   RunTest();
   ExpectFailedEnrollment(EnrollmentStatus::VALIDATION_FAILED);
   EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_INITIAL_SIGNATURE,
@@ -758,19 +769,17 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, ValidationFailed) {
 }
 
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, StoreError) {
-  session_manager_client_.set_store_policy_success(false);
+  session_manager_client_.ForceStorePolicyFailure(true);
   RunTest();
   ExpectFailedEnrollment(EnrollmentStatus::STORE_ERROR);
-  EXPECT_EQ(CloudPolicyStore::STATUS_STORE_ERROR,
-            status_.store_status());
+  EXPECT_EQ(CloudPolicyStore::STATUS_STORE_ERROR, status_.store_status());
 }
 
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, LoadError) {
-  loaded_blob_.clear();
+  session_manager_client_.ForceRetrievePolicyLoadError(true);
   RunTest();
   ExpectFailedEnrollment(EnrollmentStatus::STORE_ERROR);
-  EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR,
-            status_.store_status());
+  EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR, status_.store_status());
 }
 
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, UnregisterSucceeds) {
@@ -832,8 +841,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentBlankSystemSaltTest
     : public DeviceCloudPolicyManagerChromeOSEnrollmentTest {
  protected:
   DeviceCloudPolicyManagerChromeOSEnrollmentBlankSystemSaltTest() {
-    // Set up a FakeCryptohomeClient with a blank system salt.
-    fake_cryptohome_client_->set_system_salt(std::vector<uint8_t>());
+    set_empty_system_salt_ = true;
   }
 };
 
@@ -844,11 +852,11 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentBlankSystemSaltTest,
   ExpectFailedEnrollment(EnrollmentStatus::ROBOT_REFRESH_STORE_FAILED);
 }
 
-INSTANTIATE_TEST_CASE_P(Cert,
-                        DeviceCloudPolicyManagerChromeOSEnrollmentTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(Cert,
+                         DeviceCloudPolicyManagerChromeOSEnrollmentTest,
+                         ::testing::Values(false, true));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Cert,
     DeviceCloudPolicyManagerChromeOSEnrollmentBlankSystemSaltTest,
     ::testing::Values(false, true));

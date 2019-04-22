@@ -232,7 +232,13 @@ bool InstallableMetrics::IsReportableInstallSource(WebappInstallSource source) {
          source == WebappInstallSource::API_CUSTOM_TAB ||
          source == WebappInstallSource::DEVTOOLS ||
          source == WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB ||
-         source == WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB;
+         source == WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB ||
+         source == WebappInstallSource::ARC ||
+         source == WebappInstallSource::INTERNAL_DEFAULT ||
+         source == WebappInstallSource::EXTERNAL_DEFAULT ||
+         source == WebappInstallSource::EXTERNAL_POLICY ||
+         source == WebappInstallSource::SYSTEM_DEFAULT ||
+         source == WebappInstallSource::OMNIBOX_INSTALL_ICON;
 }
 
 // static

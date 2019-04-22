@@ -88,6 +88,7 @@ browser=chrome
 trace_time=10
 cold=false
 url=
+atrace_buffer_size=
 atrace_categories=
 killg=false
 repeat=
@@ -119,6 +120,9 @@ for i in "$@"; do
         --atrace=*)
         atrace_categories="${i#*=}"
         ;;
+        --atrace-buffer-size*)
+        atrace_buffer_size="${i#*=}"
+        ;;
         --killg)
         killg=true
         ;;
@@ -145,6 +149,9 @@ for i in "$@"; do
         ;;
         --webapk=*)
         webapk_package="${i#*=}"
+        ;;
+        --extra_chrome_categories=*)
+        extra_chrome_categories="${i#*=}"
         ;;
         --*)
         echo "Unknown option or missing option argument: $i"
@@ -205,6 +212,9 @@ case $browser in
     stable)
     browser_package="com.android.chrome"
     ;;
+    chromium)
+    browser_package="org.chromium.chrome"
+    ;;
     *)
     echo "Unknown browser $browser"
     exit 1
@@ -222,6 +232,11 @@ profile_options="$profile_options --time=$trace_time"
 if [ ! -z "$atrace_categories" ]; then
     profile_options="$profile_options --atrace-categories=$atrace_categories"
     output_tag="$output_tag-${atrace_categories//,/_}"
+fi
+
+if [ ! -z "$atrace_buffer_size" ]; then
+    profile_options="$profile_options --atrace-buffer-size=$atrace_buffer_size"
+    output_tag="$output_tag-${atrace_buffer_size}"
 fi
 
 if [ $cold = true ]; then
@@ -251,8 +266,13 @@ if [ $checktabs = true ] || [ $killg = true ] || [ ! -z "$taburl" ]; then
 fi
 
 # Make sure Chrome can write the trace file.
-$adb shell "pm grant $browser_package android.permission.READ_EXTERNAL_STORAGE"
-$adb shell "pm grant $browser_package android.permission.WRITE_EXTERNAL_STORAGE"
+# These commands may fail with a security exception on some Android devices that
+# don't allow changing permissions. Chrome likely already has these permissions
+# so the script should still work.
+$adb shell "pm grant $browser_package \
+                android.permission.READ_EXTERNAL_STORAGE" || true
+$adb shell "pm grant $browser_package \
+                android.permission.WRITE_EXTERNAL_STORAGE" || true
 
 if [ ! -z "$taburl" ]; then
     echo "Opening $taburl in a single tab..."
@@ -271,6 +291,11 @@ fi
 repeat_count=1
 if [ ! -z "$repeat" ]; then
     repeat_count="$repeat"
+fi
+
+if [ ! -z "$extra_chrome_categories" ]; then
+    chrome_categories="_DEFAULT_CHROME_CATEGORIES,${extra_chrome_categories}"
+    profile_options="$profile_options --chrome_categories=${chrome_categories}"
 fi
 
 first_iteration=true

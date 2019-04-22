@@ -249,8 +249,8 @@ class TestPatchSeries(PatchSeriesTestCase):
     patch1, patch2, patch3 = patches = self.GetPatches(3)
     patch3.remote = site_params.INTERNAL_REMOTE
 
-    self.SetPatchDeps(patch1, [patch2.sha1])
-    self.SetPatchDeps(patch2, ['*%s' % patch3.sha1])
+    self.SetPatchDeps(patch1, ['chromium:%s' % patch2.sha1])
+    self.SetPatchDeps(patch2, ['chrome-internal:%s' % patch3.sha1])
     self.SetPatchDeps(patch3)
 
     apply_mocks = [self.SetPatchApply(x) for x in patches]
@@ -355,7 +355,7 @@ class TestPatchSeries(PatchSeriesTestCase):
 
     helper = series._helper_pool.GetHelper(patch1.remote)
     def QueryChecker(query, **kwargs):
-      self.assertEqual(query, patch1.id)
+      self.assertEqual(query, patch1.full_change_id)
       self.assertTrue(kwargs['must_match'])
       return patch1
     helper.QuerySingleRecord.side_effect = QueryChecker
@@ -387,9 +387,9 @@ class TestPatchSeries(PatchSeriesTestCase):
     helper = series._helper_pool.GetHelper(patch1.remote)
     def QueryChecker(query, **kwargs):
       self.assertTrue(kwargs['must_match'])
-      if query == patch1.id:
+      if query == patch1.full_change_id:
         return patch1
-      elif query == patch3.id:
+      elif query == patch3.full_change_id:
         return patch3
       else:
         self.fail()

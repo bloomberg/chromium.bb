@@ -59,8 +59,7 @@ class PERFETTO_EXPORT TracingService {
   // The API for the Producer port of the Service.
   // Subclassed by:
   // 1. The tracing_service_impl.cc business logic when returning it in response
-  // to
-  //    the ConnectProducer() method.
+  //    to the ConnectProducer() method.
   // 2. The transport layer (e.g., src/ipc) when the producer and
   //    the service don't talk locally but via some IPC mechanism.
   class PERFETTO_EXPORT ProducerEndpoint {
@@ -72,8 +71,27 @@ class PERFETTO_EXPORT TracingService {
     virtual void RegisterDataSource(const DataSourceDescriptor&) = 0;
     virtual void UnregisterDataSource(const std::string& name) = 0;
 
+    // Associate the trace writer with the given |writer_id| with
+    // |target_buffer|. The service may use this information to retrieve and
+    // copy uncommitted chunks written by the trace writer into its associated
+    // buffer, e.g. when a producer process crashes or when a flush is
+    // necessary.
+    virtual void RegisterTraceWriter(uint32_t writer_id,
+                                     uint32_t target_buffer) = 0;
+
+    // Remove the association of the trace writer previously created via
+    // RegisterTraceWriter.
+    virtual void UnregisterTraceWriter(uint32_t writer_id) = 0;
+
     // Called by the Producer to signal that some pages in the shared memory
     // buffer (shared between Service and Producer) have changed.
+    // When the Producer and the Service are hosted in the same process and
+    // hence potentially live on the same task runner, This method must call
+    // TracingServiceImpl's CommitData synchronously, without any PostTask()s,
+    // if on the same thread. This is to avoid a deadlock where the Producer
+    // exhausts its SMB and stalls waiting for the service to catch up with
+    // reads, but the Service never gets to that because it lives on the same
+    // thread.
     using CommitDataCallback = std::function<void()>;
     virtual void CommitData(const CommitDataRequest&,
                             CommitDataCallback callback = {}) = 0;
@@ -88,7 +106,8 @@ class PERFETTO_EXPORT TracingService {
     // underying shared memory buffer and signalling to the Service. This method
     // is thread-safe but the returned object is not. A TraceWriter should be
     // used only from a single thread, or the caller has to handle sequencing
-    // via a mutex or equivalent.
+    // via a mutex or equivalent. This method can only be called if
+    // TracingService::ConnectProducer was called with |in_process=true|.
     // Args:
     // |target_buffer| is the target buffer ID where the data produced by the
     // writer should be stored by the tracing service. This value is passed
@@ -101,10 +120,19 @@ class PERFETTO_EXPORT TracingService {
     // for the flush request has been committed.
     virtual void NotifyFlushComplete(FlushRequestID) = 0;
 
+    // Called in response to one or more Producer::StartDataSource(),
+    // if the data source registered setting the flag
+    // DataSourceDescriptor.will_notify_on_start.
+    virtual void NotifyDataSourceStarted(DataSourceInstanceID) = 0;
+
     // Called in response to one or more Producer::StopDataSource(),
     // if the data source registered setting the flag
     // DataSourceDescriptor.will_notify_on_stop.
     virtual void NotifyDataSourceStopped(DataSourceInstanceID) = 0;
+
+    // This informs the service to activate any of these triggers if any tracing
+    // session was waiting for them.
+    virtual void ActivateTriggers(const std::vector<std::string>&) = 0;
   };  // class ProducerEndpoint.
 
   // The API for the Consumer port of the Service.
@@ -128,6 +156,12 @@ class PERFETTO_EXPORT TracingService {
     virtual void EnableTracing(const TraceConfig&,
                                base::ScopedFile = base::ScopedFile()) = 0;
 
+    // Update the trace config of an existing tracing session; only a subset
+    // of options can be changed mid-session. Currently the only
+    // supported functionality is expanding the list of producer_name_filters()
+    // (or removing the filter entirely) for existing data sources.
+    virtual void ChangeTraceConfig(const TraceConfig&) = 0;
+
     // Starts all data sources configured in the trace config. This is used only
     // after calling EnableTracing() with TraceConfig.deferred_start=true.
     // It's a no-op if called after a regular EnableTracing(), without setting
@@ -140,6 +174,9 @@ class PERFETTO_EXPORT TracingService {
     // passed callback once all of them have acked the flush (in which case
     // the callback argument |success| will be true) or |timeout_ms| are elapsed
     // (in which case |success| will be false).
+    // If |timeout_ms| is 0 the TraceConfig's flush_timeout_ms is used, or,
+    // if that one is not set (or is set to 0), kDefaultFlushTimeoutMs (5s) is
+    // used.
     using FlushCallback = std::function<void(bool /*success*/)>;
     virtual void Flush(uint32_t timeout_ms, FlushCallback) = 0;
 
@@ -147,6 +184,29 @@ class PERFETTO_EXPORT TracingService {
     virtual void ReadBuffers() = 0;
 
     virtual void FreeBuffers() = 0;
+
+    // Will call OnDetach().
+    virtual void Detach(const std::string& key) = 0;
+
+    // Will call OnAttach().
+    virtual void Attach(const std::string& key) = 0;
+
+    // Will call OnTraceStats().
+    virtual void GetTraceStats() = 0;
+
+    enum ObservableEventType : uint32_t {
+      kNone = 0,
+      kDataSourceInstances = 1 << 0
+    };
+
+    // Start or stop observing events of selected types. |enabled_event_types|
+    // specifies the types of events to observe in a bitmask (see
+    // ObservableEventType enum). To disable observing, pass
+    // ObservableEventType::kNone. Will call OnObservableEvents() repeatedly
+    // whenever an event of an enabled ObservableEventType occurs.
+    //
+    // TODO(eseckler): Extend this to support producers & data sources.
+    virtual void ObserveEvents(uint32_t enabled_event_types) = 0;
   };  // class ConsumerEndpoint.
 
   // Implemented in src/core/tracing_service_impl.cc .
@@ -160,6 +220,12 @@ class PERFETTO_EXPORT TracingService {
   // essentially a 1:1 channel between one Producer and the Service.
   // The caller has to guarantee that the passed Producer will be alive as long
   // as the returned ProducerEndpoint is alive.
+  // Both the passed Prodcer and the returned ProducerEndpint must live on the
+  // same task runner of the service, specifically:
+  // 1) The Service will call Producer::* methods on the Service's task runner.
+  // 2) The Producer should call ProducerEndpoint::* methods only on the
+  //    service's task runner, except for ProducerEndpoint::CreateTraceWriter(),
+  //    which can be called on any thread.
   // To disconnect just destroy the returned ProducerEndpoint object. It is safe
   // to destroy the Producer once the Producer::OnDisconnect() has been invoked.
   // |uid| is the trusted user id of the producer process, used by the consumers
@@ -167,21 +233,35 @@ class PERFETTO_EXPORT TracingService {
   // |shared_memory_size_hint_bytes| is an optional hint on the size of the
   // shared memory buffer. The service can ignore the hint (e.g., if the hint
   // is unreasonably large).
+  // |in_process| enables the ProducerEndpoint to manage its own shared memory
+  // and enables use of |ProducerEndpoint::CreateTraceWriter|.
   // Can return null in the unlikely event that service has too many producers
   // connected.
   virtual std::unique_ptr<ProducerEndpoint> ConnectProducer(
       Producer*,
       uid_t uid,
       const std::string& name,
-      size_t shared_memory_size_hint_bytes = 0) = 0;
+      size_t shared_memory_size_hint_bytes = 0,
+      bool in_process = false) = 0;
 
-  // Coonects a Consumer instance and obtains a ConsumerEndpoint, which is
+  // Connects a Consumer instance and obtains a ConsumerEndpoint, which is
   // essentially a 1:1 channel between one Consumer and the Service.
   // The caller has to guarantee that the passed Consumer will be alive as long
   // as the returned ConsumerEndpoint is alive.
   // To disconnect just destroy the returned ConsumerEndpoint object. It is safe
   // to destroy the Consumer once the Consumer::OnDisconnect() has been invoked.
-  virtual std::unique_ptr<ConsumerEndpoint> ConnectConsumer(Consumer*) = 0;
+  virtual std::unique_ptr<ConsumerEndpoint> ConnectConsumer(Consumer*,
+                                                            uid_t) = 0;
+
+  // Enable/disable scraping of chunks in the shared memory buffer. If enabled,
+  // the service will copy uncommitted but non-empty chunks from the SMB when
+  // flushing (e.g. to handle unresponsive producers or producers unable to
+  // flush their active chunks), on producer disconnect (e.g. to recover data
+  // from crashed producers), and after disabling a tracing session (e.g. to
+  // gather data from producers that didn't stop their data sources in time).
+  //
+  // This feature is currently used by Chrome.
+  virtual void SetSMBScrapingEnabled(bool enabled) = 0;
 };
 
 }  // namespace perfetto

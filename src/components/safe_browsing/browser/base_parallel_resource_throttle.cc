@@ -79,7 +79,7 @@ BaseParallelResourceThrottle::BaseParallelResourceThrottle(
     content::ResourceType resource_type,
     scoped_refptr<UrlCheckerDelegate> url_checker_delegate)
     : request_(request), resource_type_(resource_type) {
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);
   auto throttle = BrowserURLLoaderThrottle::MaybeCreate(
       std::move(url_checker_delegate), info->GetWebContentsGetterForRequest());
@@ -118,7 +118,7 @@ void BaseParallelResourceThrottle::WillStartRequest(bool* defer) {
   resource_request.load_flags = request_->load_flags();
   resource_request.resource_type = resource_type_;
 
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);
   resource_request.has_user_gesture = info && info->HasUserGesture();
 

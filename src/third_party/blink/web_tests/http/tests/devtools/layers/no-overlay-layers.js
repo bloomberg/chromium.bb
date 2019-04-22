@@ -11,6 +11,7 @@
       .layer {
           transform: translateZ(10px);
           opacity: 0.8;
+          background: blue;
       }
       </style>
       <div id="a" style="width: 200px; height: 200px" class="layer">

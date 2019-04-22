@@ -517,7 +517,7 @@ class OfflinePageRequestHandlerTestBase : public testing::Test {
 
  private:
   static std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
-      content::BrowserContext* context);
+      SimpleFactoryKey* key);
 
   // TODO(https://crbug.com/809610): The static members below will be removed
   // once the reference to BuildTestOfflinePageModel in SetUp is converted to a
@@ -602,7 +602,7 @@ void OfflinePageRequestHandlerTestBase::SetUp() {
   public_archives_dir_ = public_archives_temp_base_dir_.GetPath().AppendASCII(
       kPublicOfflineFileDir);
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(),
+      profile()->GetProfileKey(),
       base::BindRepeating(
           &OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel));
 
@@ -672,11 +672,11 @@ void OfflinePageRequestHandlerTestBase::CreateFileWithContentOnIO(
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
   std::string file_name("test");
-  file_name += base::IntToString(file_name_sequence_num_++);
+  file_name += base::NumberToString(file_name_sequence_num_++);
   file_name += ".mht";
   temp_file_path_ = temp_dir_.GetPath().AppendASCII(file_name);
-  ASSERT_TRUE(base::WriteFile(temp_file_path_, content.c_str(),
-                              content.length()) != -1);
+  ASSERT_NE(base::WriteFile(temp_file_path_, content.c_str(), content.length()),
+            -1);
   callback.Run();
 }
 
@@ -877,7 +877,7 @@ std::string OfflinePageRequestHandlerTestBase::UseOfflinePageHeader(
   DCHECK_NE(OfflinePageHeader::Reason::NONE, reason);
   offline_page_header_.reason = reason;
   if (offline_id)
-    offline_page_header_.id = base::Int64ToString(offline_id);
+    offline_page_header_.id = base::NumberToString(offline_id);
   return offline_page_header_.GetCompleteHeaderString();
 }
 
@@ -888,7 +888,7 @@ std::string OfflinePageRequestHandlerTestBase::UseOfflinePageHeaderForIntent(
   DCHECK_NE(OfflinePageHeader::Reason::NONE, reason);
   DCHECK(offline_id);
   offline_page_header_.reason = reason;
-  offline_page_header_.id = base::Int64ToString(offline_id);
+  offline_page_header_.id = base::NumberToString(offline_id);
   offline_page_header_.intent_url = intent_url;
   return offline_page_header_.GetCompleteHeaderString();
 }
@@ -943,7 +943,7 @@ int64_t OfflinePageRequestHandlerTestBase::SavePage(
   OfflinePageModel::SavePageParams save_page_params;
   save_page_params.url = url;
   save_page_params.client_id =
-      ClientId(kDownloadNamespace, base::IntToString(item_counter));
+      ClientId(kDownloadNamespace, base::NumberToString(item_counter));
   save_page_params.original_url = original_url;
   OfflinePageModelFactory::GetForBrowserContext(profile())->SavePage(
       save_page_params, std::move(archiver), nullptr,
@@ -956,12 +956,12 @@ int64_t OfflinePageRequestHandlerTestBase::SavePage(
 // static
 std::unique_ptr<KeyedService>
 OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel(
-    content::BrowserContext* context) {
+    SimpleFactoryKey* key) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
 
   base::FilePath store_path =
-      context->GetPath().Append(chrome::kOfflinePageMetadataDirname);
+      key->GetPath().Append(chrome::kOfflinePageMetadataDirname);
   std::unique_ptr<OfflinePageMetadataStore> metadata_store(
       new OfflinePageMetadataStore(task_runner, store_path));
   std::unique_ptr<SystemDownloadManager> download_manager(
@@ -975,8 +975,7 @@ OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel(
 
   return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(
       std::move(metadata_store), std::move(archive_manager),
-      std::move(download_manager), task_runner,
-      base::DefaultClock::GetInstance()));
+      std::move(download_manager), task_runner));
 }
 
 // static
@@ -1147,8 +1146,7 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobBuilder::CreateRequest(
       /*render_process_id=*/1,
       /*render_view_id=*/-1,
       /*render_frame_id=*/1,
-      /*is_main_frame=*/true,
-      /*allow_download=*/true,
+      /*is_main_frame=*/true, content::ResourceInterceptPolicy::kAllowAll,
       /*is_async=*/true,
       test_base_->allow_preview() ? content::OFFLINE_PAGE_ON
                                   : content::PREVIEWS_OFF,
@@ -1192,7 +1190,7 @@ void OfflinePageRequestJobBuilder::ReadCompletedOnIO(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   bool is_offline_page_set_in_navigation_data = false;
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_.get());
   ChromeNavigationUIData* navigation_data =
       static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
@@ -1430,7 +1428,7 @@ typedef testing::Types<OfflinePageRequestJobBuilder,
                        OfflinePageURLLoaderBuilder>
     MyTypes;
 
-TYPED_TEST_CASE(OfflinePageRequestHandlerTest, MyTypes);
+TYPED_TEST_SUITE(OfflinePageRequestHandlerTest, MyTypes);
 
 TYPED_TEST(OfflinePageRequestHandlerTest, FailedToCreateRequestJob) {
   this->SimulateHasNetworkConnectivity(false);
@@ -1837,7 +1835,7 @@ TYPED_TEST(OfflinePageRequestHandlerTest,
 
   // Check if the original URL is still present.
   OfflinePageItem page = this->GetPage(offline_id);
-  EXPECT_EQ(kUrl, page.original_url);
+  EXPECT_EQ(kUrl, page.original_url_if_different);
 
   // No redirect should be triggered when original URL is same as final URL.
   this->LoadPage(kUrl);
@@ -2076,6 +2074,27 @@ TYPED_TEST(OfflinePageRequestHandlerTest, LoadOtherPageOnDigestMismatch) {
       OfflinePageRequestHandler::AggregatedRequestResult::
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
   this->ExpectOfflinePageAccessCount(offline_id2, 0);
+}
+
+// Disabled due to https://crbug.com/917113.
+TYPED_TEST(OfflinePageRequestHandlerTest, DISABLED_EmptyFile) {
+  this->SimulateHasNetworkConnectivity(false);
+
+  const std::string expected_data("");
+  base::FilePath temp_file_path = this->CreateFileWithContent(expected_data);
+  ArchiveValidator archive_validator;
+  const std::string expected_digest = archive_validator.Finish();
+
+  int64_t offline_id =
+      this->SavePublicPage(kUrl, GURL(), temp_file_path, 0, expected_digest);
+
+  this->LoadPage(kUrl);
+
+  this->ExpectOfflinePageServed(
+      offline_id, 0,
+      OfflinePageRequestHandler::AggregatedRequestResult::
+          SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
+  EXPECT_EQ(expected_data, this->data_received());
 }
 
 TYPED_TEST(OfflinePageRequestHandlerTest, TinyFile) {

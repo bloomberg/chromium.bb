@@ -40,7 +40,7 @@ namespace variations {
 // ChromeContentBrowserClient::CreateURLLoaderThrottles() by also adding a
 // GoogleURLLoaderThrottle to a content::URLLoaderThrottle vector.
 // 3. SimpleURLLoader in browser, it is implemented in a SimpleURLLoader wrapper
-// function variations::CreateSimpleURLLoaderWithVariationsHeaders().
+// function variations::CreateSimpleURLLoaderWithVariationsHeader().
 
 // static
 VariationsHttpHeaderProvider* VariationsHttpHeaderProvider::GetInstance() {
@@ -74,12 +74,34 @@ std::string VariationsHttpHeaderProvider::GetVariationsString() {
     base::AutoLock scoped_lock(lock_);
     for (const VariationIDEntry& entry : GetAllVariationIds()) {
       if (entry.second == GOOGLE_WEB_PROPERTIES) {
-        ids_string.append(base::IntToString(entry.first));
+        ids_string.append(base::NumberToString(entry.first));
         ids_string.push_back(' ');
       }
     }
   }
   return ids_string;
+}
+
+std::vector<VariationID> VariationsHttpHeaderProvider::GetVariationsVector(
+    IDCollectionKey key) {
+  InitVariationIDsCacheIfNeeded();
+
+  // Get all the active variation ids while holding the lock.
+  std::set<VariationIDEntry> all_variation_ids;
+  {
+    base::AutoLock scoped_lock(lock_);
+    all_variation_ids = GetAllVariationIds();
+  }
+
+  // Copy the requested variations to the output vector. Note that the ids will
+  // be in sorted order because they're coming from a std::set.
+  std::vector<VariationID> result;
+  result.reserve(all_variation_ids.size());
+  for (const VariationIDEntry& entry : all_variation_ids) {
+    if (entry.second == key)
+      result.push_back(entry.first);
+  }
+  return result;
 }
 
 VariationsHttpHeaderProvider::ForceIdsResult
@@ -242,10 +264,9 @@ std::string VariationsHttpHeaderProvider::GenerateBase64EncodedProto(
       case GOOGLE_WEB_PROPERTIES_TRIGGER:
         proto.add_trigger_variation_id(entry.first);
         break;
-      case CHROME_SYNC_EVENT_LOGGER:
       case ID_COLLECTION_COUNT:
-        // These cases included to get full enum coverage for switch, so that
-        // new enums introduce compiler warnings. Nothing to do for these.
+        // This case included to get full enum coverage for switch, so that
+        // new enums introduce compiler warnings. Nothing to do for this.
         break;
     }
   }
@@ -259,10 +280,10 @@ std::string VariationsHttpHeaderProvider::GenerateBase64EncodedProto(
   // This is the bottleneck for the creation of the header, so validate the size
   // here. Force a hard maximum on the ID count in case the Variations server
   // returns too many IDs and DOSs receiving servers with large requests.
-  DCHECK_LE(total_id_count, 20U);
+  DCHECK_LE(total_id_count, 35U);
   UMA_HISTOGRAM_COUNTS_100("Variations.Headers.ExperimentCount",
                            total_id_count);
-  if (total_id_count > 30)
+  if (total_id_count > 50)
     return std::string();
 
   std::string serialized;

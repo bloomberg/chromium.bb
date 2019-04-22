@@ -8,15 +8,14 @@
 #include <utility>
 
 #include "src/base/lazy-instance.h"
-#include "src/base/platform/mutex.h"
 #include "src/base/template-utils.h"
 #include "src/debug/debug.h"
-#include "src/deoptimizer.h"
 #include "src/frames-inl.h"
 #include "src/locked-queue-inl.h"
-#include "src/log-inl.h"
+#include "src/log.h"
 #include "src/profiler/cpu-profiler-inl.h"
 #include "src/vm-state-inl.h"
+#include "src/wasm/wasm-engine.h"
 
 namespace v8 {
 namespace internal {
@@ -56,17 +55,16 @@ ProfilerEventsProcessor::ProfilerEventsProcessor(Isolate* isolate,
 
 SamplingEventsProcessor::SamplingEventsProcessor(Isolate* isolate,
                                                  ProfileGenerator* generator,
-                                                 base::TimeDelta period)
+                                                 base::TimeDelta period,
+                                                 bool use_precise_sampling)
     : ProfilerEventsProcessor(isolate, generator),
       sampler_(new CpuSampler(isolate, this)),
-      period_(period) {
-  sampler_->IncreaseProfilingDepth();
+      period_(period),
+      use_precise_sampling_(use_precise_sampling) {
+  sampler_->Start();
 }
 
-SamplingEventsProcessor::~SamplingEventsProcessor() {
-  sampler_->DecreaseProfilingDepth();
-  sampler_->UnregisterIfRegistered();
-}
+SamplingEventsProcessor::~SamplingEventsProcessor() { sampler_->Stop(); }
 
 ProfilerEventsProcessor::~ProfilerEventsProcessor() = default;
 
@@ -110,6 +108,10 @@ void ProfilerEventsProcessor::AddSample(TickSample sample) {
 
 void ProfilerEventsProcessor::StopSynchronously() {
   if (!base::Relaxed_AtomicExchange(&running_, 0)) return;
+  {
+    base::MutexGuard guard(&running_mutex_);
+    running_cond_.NotifyOne();
+  }
   Join();
 }
 
@@ -181,6 +183,7 @@ SamplingEventsProcessor::ProcessOneSample() {
 }
 
 void SamplingEventsProcessor::Run() {
+  base::MutexGuard guard(&running_mutex_);
   while (!!base::Relaxed_Load(&running_)) {
     base::TimeTicks nextSampleTime =
         base::TimeTicks::HighResolutionNow() + period_;
@@ -200,15 +203,29 @@ void SamplingEventsProcessor::Run() {
 
     if (nextSampleTime > now) {
 #if V8_OS_WIN
-      if (nextSampleTime - now < base::TimeDelta::FromMilliseconds(100)) {
+      if (use_precise_sampling_ &&
+          nextSampleTime - now < base::TimeDelta::FromMilliseconds(100)) {
         // Do not use Sleep on Windows as it is very imprecise, with up to 16ms
         // jitter, which is unacceptable for short profile intervals.
         while (base::TimeTicks::HighResolutionNow() < nextSampleTime) {
         }
       } else  // NOLINT
-#endif
+#else
+      USE(use_precise_sampling_);
+#endif  // V8_OS_WIN
       {
-        base::OS::Sleep(nextSampleTime - now);
+        // Allow another thread to interrupt the delay between samples in the
+        // event of profiler shutdown.
+        while (now < nextSampleTime &&
+               running_cond_.WaitFor(&running_mutex_, nextSampleTime - now)) {
+          // If true was returned, we got interrupted before the timeout
+          // elapsed. If this was not due to a change in running state, a
+          // spurious wakeup occurred (thus we should continue to wait).
+          if (!base::Relaxed_Load(&running_)) {
+            break;
+          }
+          now = base::TimeTicks::HighResolutionNow();
+        }
       }
     }
 
@@ -226,7 +243,7 @@ void SamplingEventsProcessor::Run() {
 }
 
 void* SamplingEventsProcessor::operator new(size_t size) {
-  return AlignedAlloc(size, V8_ALIGNOF(SamplingEventsProcessor));
+  return AlignedAlloc(size, alignof(SamplingEventsProcessor));
 }
 
 void SamplingEventsProcessor::operator delete(void* ptr) { AlignedFree(ptr); }
@@ -289,8 +306,7 @@ class CpuProfilersManager {
   base::Mutex mutex_;
 };
 
-base::LazyInstance<CpuProfilersManager>::type g_profilers_manager =
-    LAZY_INSTANCE_INITIALIZER;
+DEFINE_LAZY_LEAKY_OBJECT_GETTER(CpuProfilersManager, GetProfilersManager)
 
 }  // namespace
 
@@ -309,17 +325,22 @@ CpuProfiler::CpuProfiler(Isolate* isolate, CpuProfilesCollection* test_profiles,
       processor_(test_processor),
       is_profiling_(false) {
   profiles_->set_cpu_profiler(this);
-  g_profilers_manager.Pointer()->AddProfiler(isolate, this);
+  GetProfilersManager()->AddProfiler(isolate, this);
 }
 
 CpuProfiler::~CpuProfiler() {
   DCHECK(!is_profiling_);
-  g_profilers_manager.Pointer()->RemoveProfiler(isolate_, this);
+  GetProfilersManager()->RemoveProfiler(isolate_, this);
 }
 
 void CpuProfiler::set_sampling_interval(base::TimeDelta value) {
   DCHECK(!is_profiling_);
   sampling_interval_ = value;
+}
+
+void CpuProfiler::set_use_precise_sampling(bool value) {
+  DCHECK(!is_profiling_);
+  use_precise_sampling_ = value;
 }
 
 void CpuProfiler::ResetProfiles() {
@@ -343,7 +364,7 @@ void CpuProfiler::CreateEntriesForRuntimeCallStats() {
 
 // static
 void CpuProfiler::CollectSample(Isolate* isolate) {
-  g_profilers_manager.Pointer()->CallCollectSample(isolate);
+  GetProfilersManager()->CallCollectSample(isolate);
 }
 
 void CpuProfiler::CollectSample() {
@@ -371,10 +392,11 @@ void CpuProfiler::StartProcessorIfNotStarted() {
     processor_->AddCurrentStack();
     return;
   }
+  isolate_->wasm_engine()->EnableCodeLogging(isolate_);
   Logger* logger = isolate_->logger();
   // Disable logging when using the new implementation.
-  saved_is_logging_ = logger->is_logging_;
-  logger->is_logging_ = false;
+  saved_is_logging_ = logger->is_logging();
+  logger->set_is_logging(false);
 
   bool codemap_needs_initialization = false;
   if (!generator_) {
@@ -382,9 +404,11 @@ void CpuProfiler::StartProcessorIfNotStarted() {
     codemap_needs_initialization = true;
     CreateEntriesForRuntimeCallStats();
   }
-  processor_.reset(new SamplingEventsProcessor(isolate_, generator_.get(),
-                                               sampling_interval_));
-  if (!profiler_listener_) {
+  processor_.reset(new SamplingEventsProcessor(
+      isolate_, generator_.get(), sampling_interval_, use_precise_sampling_));
+  if (profiler_listener_) {
+    profiler_listener_->set_observer(processor_.get());
+  } else {
     profiler_listener_.reset(new ProfilerListener(isolate_, processor_.get()));
   }
   logger->AddCodeEventListener(profiler_listener_.get());
@@ -427,7 +451,7 @@ void CpuProfiler::StopProcessor() {
   logger->RemoveCodeEventListener(profiler_listener_.get());
   processor_->StopSynchronously();
   processor_.reset();
-  logger->is_logging_ = saved_is_logging_;
+  logger->set_is_logging(saved_is_logging_);
 }
 
 

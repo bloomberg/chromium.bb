@@ -17,7 +17,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/completion_once_callback.h"
-#include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data_stream.h"
@@ -39,21 +38,20 @@ ScopedURLFetcherFactory::ScopedURLFetcherFactory(
 ScopedURLFetcherFactory::~ScopedURLFetcherFactory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(URLFetcherImpl::factory());
-  URLFetcherImpl::set_factory(NULL);
+  URLFetcherImpl::set_factory(nullptr);
 }
 
 TestURLFetcher::TestURLFetcher(int id, const GURL& url, URLFetcherDelegate* d)
-    : owner_(NULL),
+    : owner_(nullptr),
       id_(id),
       original_url_(url),
       delegate_(d),
-      delegate_for_tests_(NULL),
+      delegate_for_tests_(nullptr),
       did_receive_last_chunk_(false),
       fake_load_flags_(0),
       fake_response_code_(-1),
       fake_response_destination_(STRING),
       write_response_file_(false),
-      fake_was_fetched_via_proxy_(false),
       fake_was_cached_(false),
       fake_response_bytes_(0),
       fake_max_retries_(0) {
@@ -208,17 +206,13 @@ HttpResponseHeaders* TestURLFetcher::GetResponseHeaders() const {
   return fake_response_headers_.get();
 }
 
-HostPortPair TestURLFetcher::GetSocketAddress() const {
+IPEndPoint TestURLFetcher::GetSocketAddress() const {
   NOTIMPLEMENTED();
-  return HostPortPair();
+  return IPEndPoint();
 }
 
 const ProxyServer& TestURLFetcher::ProxyServerUsed() const {
   return fake_proxy_server_;
-}
-
-bool TestURLFetcher::WasFetchedViaProxy() const {
-  return fake_was_fetched_via_proxy_;
 }
 
 bool TestURLFetcher::WasCached() const {
@@ -295,10 +289,6 @@ void TestURLFetcher::set_status(const URLRequestStatus& status) {
   fake_status_ = status;
 }
 
-void TestURLFetcher::set_was_fetched_via_proxy(bool flag) {
-  fake_was_fetched_via_proxy_ = flag;
-}
-
 void TestURLFetcher::set_was_cached(bool flag) {
   fake_was_cached_ = flag;
 }
@@ -329,9 +319,8 @@ void TestURLFetcher::SetResponseFilePath(const base::FilePath& path) {
 
 TestURLFetcherFactory::TestURLFetcherFactory()
     : ScopedURLFetcherFactory(this),
-      delegate_for_tests_(NULL),
-      remove_fetcher_on_delete_(false) {
-}
+      delegate_for_tests_(nullptr),
+      remove_fetcher_on_delete_(false) {}
 
 TestURLFetcherFactory::~TestURLFetcherFactory() = default;
 
@@ -399,7 +388,7 @@ void FakeURLFetcher::Start() {
   TestURLFetcher::Start();
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeURLFetcher::RunDelegate, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&FakeURLFetcher::RunDelegate, weak_factory_.GetWeakPtr()));
 }
 
 void FakeURLFetcher::RunDelegate() {
@@ -453,10 +442,10 @@ std::unique_ptr<URLFetcher> FakeURLFetcherFactory::CreateURLFetcher(
     NetworkTrafficAnnotationTag traffic_annotation) {
   FakeResponseMap::const_iterator it = fake_responses_.find(url);
   if (it == fake_responses_.end()) {
-    if (default_factory_ == NULL) {
+    if (default_factory_ == nullptr) {
       // If we don't have a baked response for that URL we return NULL.
       DLOG(ERROR) << "No baked response for URL: " << url.spec();
-      return NULL;
+      return nullptr;
     } else {
       return default_factory_->CreateURLFetcher(id, url, request_type, d,
                                                 traffic_annotation);

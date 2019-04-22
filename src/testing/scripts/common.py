@@ -17,6 +17,7 @@ import traceback
 # Add src/testing/ into sys.path for importing xvfb.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import xvfb
+import test_env
 
 # Unfortunately we need to copy these variables from ../test_env.py.
 # Importing it and using its get_sandbox_env breaks test runs on Linux
@@ -79,7 +80,7 @@ def run_script(argv, funcs):
 
 def run_command(argv, env=None, cwd=None):
   print 'Running %r in %r (env: %r)' % (argv, cwd, env)
-  rc = subprocess.call(argv, env=env, cwd=cwd)
+  rc = test_env.run_command(argv, env=env, cwd=cwd)
   print 'Command %r returned exit code %d' % (argv, rc)
   return rc
 
@@ -198,20 +199,6 @@ def extract_filter_list(filter_list):
   return filter_list.split('::')
 
 
-def run_integration_test(script_to_run, extra_args, log_file, output):
-  integration_test_res = subprocess.call(
-      [sys.executable, script_to_run] + extra_args)
-
-  with open(log_file) as f:
-    failures = json.load(f)
-  json.dump({
-      'valid': integration_test_res == 0,
-      'failures': failures,
-  }, output)
-
-  return integration_test_res
-
-
 class BaseIsolatedScriptArgsAdapter(object):
   """The base class for all script adapters that need to translate flags
   set by isolated script test contract into the specific test script's flags.
@@ -300,12 +287,12 @@ class BaseIsolatedScriptArgsAdapter(object):
           self.options.isolated_script_test_filter)
 
     # Augment test repeat if needed
-    if self.options.isolated_script_test_repeat:
+    if self.options.isolated_script_test_repeat is not None:
       isolated_script_cmd += self.generate_test_repeat_args(
           self.options.isolated_script_test_repeat)
 
     # Augment test launcher retry limit args if needed
-    if self.options.isolated_script_test_launcher_retry_limit:
+    if self.options.isolated_script_test_launcher_retry_limit is not None:
       isolated_script_cmd += self.generate_test_launcher_retry_limit_args(
           self.options.isolated_script_test_launcher_retry_limit)
 
@@ -343,16 +330,17 @@ class BaseIsolatedScriptArgsAdapter(object):
     # all the time on Linux.
     env[CHROME_SANDBOX_ENV] = CHROME_SANDBOX_PATH
     valid = True
-    rc = 0
     try:
       env['CHROME_HEADLESS'] = '1'
+      print 'Running command: %s\nwith env: %r' % (
+          ' '.join(cmd), env)
       if self.options.xvfb:
-        return xvfb.run_executable(cmd, env)
+        exit_code = xvfb.run_executable(cmd, env)
       else:
-         return run_command(cmd, env=env)
-
+        exit_code = test_env.run_command(cmd, env=env)
+      print 'Command returned exit code %d' % exit_code
+      return exit_code
     except Exception:
-      rc = 1
       traceback.print_exc()
       valid = False
     finally:
@@ -366,4 +354,4 @@ class BaseIsolatedScriptArgsAdapter(object):
             'failures': failures,
         }, fp)
 
-    return rc
+    return 1

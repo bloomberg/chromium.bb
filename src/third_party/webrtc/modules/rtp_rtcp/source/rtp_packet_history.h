@@ -16,8 +16,8 @@
 #include <vector>
 
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
-#include "rtc_base/constructormagic.h"
-#include "rtc_base/criticalsection.h"
+#include "rtc_base/constructor_magic.h"
+#include "rtc_base/critical_section.h"
 #include "rtc_base/thread_annotations.h"
 
 namespace webrtc {
@@ -44,7 +44,7 @@ class RtpPacketHistory {
     absl::optional<int64_t> send_time_ms;
     int64_t capture_time_ms = 0;
     uint32_t ssrc = 0;
-    size_t payload_size = 0;
+    size_t packet_size = 0;
     // Number of times RE-transmitted, ie not including the first transmission.
     size_t times_retransmitted = 0;
   };

@@ -60,8 +60,8 @@ importer.TestImportHistory.prototype.addHistoryLoadedListener = function(
  * @param {!FileEntry} entry
  * @param {!importer.Destination} destination
  */
-importer.TestImportHistory.prototype.assertCopied =
-    function(entry, destination) {
+importer.TestImportHistory.prototype.assertCopied = function(
+    entry, destination) {
   assertTrue(this.wasCopied_(entry, destination));
 };
 
@@ -71,24 +71,22 @@ importer.TestImportHistory.prototype.assertCopied =
  * @param {!importer.Destination} destination
  * @return {boolean}
  */
-importer.TestImportHistory.prototype.wasCopied_ =
-    function(entry, destination) {
-  var path = entry.fullPath;
+importer.TestImportHistory.prototype.wasCopied_ = function(entry, destination) {
+  const path = entry.fullPath;
   return path in this.copiedPaths &&
       this.copiedPaths[path].indexOf(destination) > -1;
 };
 
 /** @override */
-importer.TestImportHistory.prototype.wasCopied =
-    function(entry, destination) {
-  var path = entry.fullPath;
+importer.TestImportHistory.prototype.wasCopied = function(entry, destination) {
+  const path = entry.fullPath;
   return Promise.resolve(this.wasCopied_(entry, destination));
 };
 
 /** @override */
-importer.TestImportHistory.prototype.markCopied =
-    function(entry, destination, destinationUrl) {
-  var path = entry.fullPath;
+importer.TestImportHistory.prototype.markCopied = function(
+    entry, destination, destinationUrl) {
+  const path = entry.fullPath;
   if (path in this.copiedPaths) {
     this.copiedPaths[path].push(destination);
   } else {
@@ -98,8 +96,7 @@ importer.TestImportHistory.prototype.markCopied =
 };
 
 /** @override */
-importer.TestImportHistory.prototype.listUnimportedUrls =
-    function(destination) {
+importer.TestImportHistory.prototype.listUnimportedUrls = destination => {
   return Promise.resolve([]);
 };
 
@@ -107,8 +104,8 @@ importer.TestImportHistory.prototype.listUnimportedUrls =
  * @param {!FileEntry} entry
  * @param {!importer.Destination} destination
  */
-importer.TestImportHistory.prototype.assertImported =
-    function(entry, destination) {
+importer.TestImportHistory.prototype.assertImported = function(
+    entry, destination) {
   assertTrue(this.wasImported_(entry, destination));
 };
 
@@ -118,24 +115,24 @@ importer.TestImportHistory.prototype.assertImported =
  * @param {!importer.Destination} destination
  * @return {boolean}
  */
-importer.TestImportHistory.prototype.wasImported_ =
-    function(entry, destination) {
-  var path = entry.fullPath;
+importer.TestImportHistory.prototype.wasImported_ = function(
+    entry, destination) {
+  const path = entry.fullPath;
   return path in this.importedPaths &&
       this.importedPaths[path].indexOf(destination) > -1;
 };
 
 /** @override */
-importer.TestImportHistory.prototype.wasImported =
-    function(entry, destination) {
-  var path = entry.fullPath;
+importer.TestImportHistory.prototype.wasImported = function(
+    entry, destination) {
+  const path = entry.fullPath;
   return Promise.resolve(this.wasImported_(entry, destination));
 };
 
 /** @override */
-importer.TestImportHistory.prototype.markImported =
-    function(entry, destination) {
-  var path = entry.fullPath;
+importer.TestImportHistory.prototype.markImported = function(
+    entry, destination) {
+  const path = entry.fullPath;
   if (path in this.importedPaths) {
     this.importedPaths[path].push(destination);
   } else {
@@ -145,13 +142,13 @@ importer.TestImportHistory.prototype.markImported =
 };
 
 /** @override */
-importer.TestImportHistory.prototype.whenReady = function() {};
+importer.TestImportHistory.prototype.whenReady = () => {};
 
 /** @override */
-importer.TestImportHistory.prototype.markImportedByUrl = function() {};
+importer.TestImportHistory.prototype.markImportedByUrl = () => {};
 
 /** @override */
-importer.TestImportHistory.prototype.addObserver = function() {};
+importer.TestImportHistory.prototype.addObserver = () => {};
 
 /** @override */
-importer.TestImportHistory.prototype.removeObserver = function() {};
+importer.TestImportHistory.prototype.removeObserver = () => {};

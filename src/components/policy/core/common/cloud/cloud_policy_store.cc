@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 
@@ -18,6 +19,11 @@ CloudPolicyStore::CloudPolicyStore()
 
 CloudPolicyStore::~CloudPolicyStore() {
   DCHECK(!external_data_manager_);
+}
+
+bool CloudPolicyStore::is_managed() const {
+  return policy_.get() &&
+         policy_->state() == enterprise_management::PolicyData::ACTIVE;
 }
 
 void CloudPolicyStore::Store(

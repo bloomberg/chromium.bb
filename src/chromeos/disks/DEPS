@@ -1,5 +1,10 @@
-specific_include_rules = {
-  "disk_unittest.cc": [
-    "+dbus",
-  ],
-}
+noparent = True
+
+include_rules = [
+  "+base",
+  "+chromeos/constants",
+  "+chromeos/dbus",
+  "+dbus",
+  "+testing",
+  "+third_party/cros_system_api",
+]

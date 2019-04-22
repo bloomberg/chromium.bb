@@ -11,12 +11,20 @@ import multiprocessing
 import os
 
 from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import chroot_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import workon_helper
 from chromite.lib import portage_util
+from chromite.scripts import cros_extract_deps
+
+BOARD_VIRTUAL_PACKAGES = (constants.TARGET_OS_PKG,
+                          constants.TARGET_OS_DEV_PKG,
+                          constants.TARGET_OS_TEST_PKG,
+                          constants.TARGET_OS_FACTORY_PKG)
+IMPLICIT_TEST_DEPS = ('virtual/implicit-system',)
 
 
 def ParseArgs(argv):
@@ -46,10 +54,23 @@ def ParseArgs(argv):
                       help='Space-separated list of packages to test.')
   parser.add_argument('--nowithdebug', action='store_true',
                       help="Don't build the tests with USE=cros-debug")
+  parser.add_argument('--assume-empty-sysroot', default=False,
+                      action='store_true', dest='empty_sysroot',
+                      help='Set up dependencies and run unit tests for all '
+                           'packages that could be installed on target board '
+                           'without assuming that any packages have actually '
+                           'been merged yet.')
 
   options = parser.parse_args(argv)
   options.Freeze()
   return options
+
+
+def determine_board_packages(sysroot, virtual_packages):
+  """Returns a set of the dependencies for the given packages"""
+  deps = cros_extract_deps.ExtractDeps(sysroot, virtual_packages)
+  return set('%s/%s' % (atom['category'], atom['name'])
+             for atom in deps.values())
 
 
 def main(argv):
@@ -73,10 +94,16 @@ def main(argv):
     packages |= set(opts.packages.split())
 
   # If no packages were specified, use all testable packages.
-  if not (opts.packages or opts.package_file):
+  if not (opts.packages or opts.package_file) and not opts.empty_sysroot:
     workon = workon_helper.WorkonHelper(sysroot)
     packages = (workon.InstalledWorkonAtoms() if opts.installed
-                else workon.ListAtoms(use_all=True))
+                else set(workon.ListAtoms(use_all=True)))
+
+  if opts.empty_sysroot:
+    packages |= determine_board_packages(sysroot, BOARD_VIRTUAL_PACKAGES)
+    workon = workon_helper.WorkonHelper(sysroot)
+    workon_packages = set(workon.ListAtoms(use_all=True))
+    packages &= workon_packages
 
   for cp in packages & package_blacklist:
     logging.info('Skipping blacklisted package %s.', cp)
@@ -97,6 +124,16 @@ def main(argv):
     use_flags = os.environ.get('USE', '')
     use_flags += ' -cros-debug'
     env = {'USE': use_flags}
+
+  if opts.empty_sysroot:
+    try:
+      chroot_util.Emerge(list(IMPLICIT_TEST_DEPS), sysroot, rebuild_deps=False,
+                         use_binary=False)
+      chroot_util.Emerge(list(pkg_with_test), sysroot, rebuild_deps=False,
+                         use_binary=False)
+    except cros_build_lib.RunCommandError:
+      logging.error('Failed building dependencies for unittests.')
+      raise
 
   try:
     chroot_util.RunUnittests(sysroot, pkg_with_test, extra_env=env,

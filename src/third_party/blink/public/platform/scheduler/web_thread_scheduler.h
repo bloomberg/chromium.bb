@@ -15,9 +15,9 @@
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
-#include "v8/include/v8.h"
 
 namespace base {
 namespace trace_event {
@@ -27,7 +27,6 @@ class BlameContext;
 
 namespace blink {
 class Thread;
-class WebInputEvent;
 }  // namespace blink
 
 namespace viz {
@@ -85,6 +84,12 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // Returns the cleanup task runner, which is for cleaning up.
   virtual scoped_refptr<base::SingleThreadTaskRunner> CleanupTaskRunner();
 
+  // Returns a default task runner. This is basically same as the default task
+  // runner, but is explicitly allowed to run JavaScript. For the detail, see
+  // the comment at blink::ThreadScheduler::DeprecatedDefaultTaskRunner.
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  DeprecatedDefaultTaskRunner();
+
   // Creates a WebThread implementation for the renderer main thread.
   virtual std::unique_ptr<Thread> CreateMainThread();
 
@@ -126,6 +131,17 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   virtual void DidHandleInputEventOnCompositorThread(
       const WebInputEvent& web_input_event,
       InputEventState event_state);
+
+  // Tells the scheduler that an input event of the given type is about to be
+  // posted to the main thread. Must be followed later by a call to
+  // WillHandleInputEventOnMainThread. Called by the compositor thread.
+  virtual void WillPostInputEventToMainThread(
+      WebInputEvent::Type web_input_event_type);
+
+  // Tells the scheduler the input event of the given type is about to be
+  // handled. Called on the main thread.
+  virtual void WillHandleInputEventOnMainThread(
+      WebInputEvent::Type web_input_event_type);
 
   // Tells the scheduler that the system processed an input event. Must be
   // called from the main thread.
@@ -201,13 +217,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // attributed in this renderer. |blame_context| must outlive this scheduler.
   virtual void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context);
-
-  // The renderer scheduler maintains an estimated RAIL mode[1]. This observer
-  // can be used to get notified when the mode changes. The observer will be
-  // called on the main thread and must outlive this class.
-  // [1]
-  // https://developers.google.com/web/tools/chrome-devtools/profile/evaluate-performance/rail
-  virtual void AddRAILModeObserver(WebRAILModeObserver* observer);
 
   // Sets the kind of renderer process. Should be called on the main thread
   // once.

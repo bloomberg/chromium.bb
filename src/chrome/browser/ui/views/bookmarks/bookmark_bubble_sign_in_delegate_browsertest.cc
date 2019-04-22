@@ -43,7 +43,7 @@ bool IsSigninModal(Profile* profile) {
   return false;
 #else
   return AccountConsistencyModeManager::GetMethodForProfile(profile) ==
-         signin::AccountConsistencyMethod::kDiceFixAuthErrors;
+         signin::AccountConsistencyMethod::kDisabled;
 #endif
 }
 

@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -82,6 +83,10 @@ class SessionServiceTestHelper {
 
   void RunTaskOnBackendThread(const base::Location& from_here,
                               const base::Closure& task);
+
+  void SetAvailableRange(const SessionID& tab_id,
+                         const std::pair<int, int>& range);
+  bool GetAvailableRange(const SessionID& tab_id, std::pair<int, int>* range);
 
  private:
   std::unique_ptr<SessionService> service_;

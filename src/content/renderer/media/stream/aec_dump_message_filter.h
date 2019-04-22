@@ -22,7 +22,8 @@ namespace content {
 
 // MessageFilter that handles AEC dump messages and forwards them to an
 // observer.
-// TODO(hlundin): Rename class to reflect expanded use; http://crbug.com/709919.
+// TODO(hlundin): Rename class to reflect expanded use;
+// https://crbug.com/709919.
 class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
  public:
   class AecDumpDelegate {
@@ -102,7 +103,7 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
 
   // The delgates for this filter. Must only be accessed on
   // |main_task_runner_|.
-  typedef std::map<int, AecDumpMessageFilter::AecDumpDelegate*> DelegateMap;
+  using DelegateMap = std::map<int, AecDumpMessageFilter::AecDumpDelegate*>;
   DelegateMap delegates_;
 
   // Counter for generating unique IDs to delegates. Accessed on

@@ -72,7 +72,7 @@ XSSAuditorDelegate::XSSAuditorDelegate(Document* document)
   DCHECK(document_);
 }
 
-void XSSAuditorDelegate::Trace(blink::Visitor* visitor) {
+void XSSAuditorDelegate::Trace(Visitor* visitor) {
   visitor->Trace(document_);
 }
 
@@ -84,15 +84,15 @@ scoped_refptr<EncodedFormData> XSSAuditorDelegate::GenerateViolationReport(
   String http_body;
   if (frame_loader.GetDocumentLoader()) {
     if (EncodedFormData* form_data =
-            frame_loader.GetDocumentLoader()->OriginalRequest().HttpBody())
+            frame_loader.GetDocumentLoader()->HttpBody())
       http_body = form_data->FlattenToString();
   }
 
-  std::unique_ptr<JSONObject> report_details = JSONObject::Create();
+  auto report_details = std::make_unique<JSONObject>();
   report_details->SetString("request-url", xss_info.original_url_);
   report_details->SetString("request-body", http_body);
 
-  std::unique_ptr<JSONObject> report_object = JSONObject::Create();
+  auto report_object = std::make_unique<JSONObject>();
   report_object->SetObject("xss-report", std::move(report_details));
 
   return EncodedFormData::Create(report_object->ToJSONString().Utf8().data());
@@ -106,7 +106,8 @@ void XSSAuditorDelegate::DidBlockScript(const XSSInfo& xss_info) {
                                    : WebFeature::kXSSAuditorBlockedScript);
 
   document_->AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, kErrorMessageLevel, xss_info.BuildConsoleError()));
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kError, xss_info.BuildConsoleError()));
 
   LocalFrame* local_frame = document_->GetFrame();
   FrameLoader& frame_loader = local_frame->Loader();
@@ -123,8 +124,8 @@ void XSSAuditorDelegate::DidBlockScript(const XSSInfo& xss_info) {
   }
 
   if (xss_info.did_block_entire_page_) {
-    local_frame->GetNavigationScheduler().SchedulePageBlock(
-        document_, ResourceError::BlockedByXSSAuditorErrorCode());
+    local_frame->Client()->LoadErrorPage(
+        ResourceError::BlockedByXSSAuditorErrorCode());
   }
 }
 

@@ -8,8 +8,8 @@
 
 #include <cctype>
 
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 
 namespace ppapi {
 
@@ -27,7 +27,7 @@ const PP_Flash_Clipboard_Format kPredefinedFormats[] = {
 
 // The first custom format ID will be the ID after that max value in
 // PP_Flash_Clipboard_Format.
-const size_t kFirstCustomFormat = arraysize(kPredefinedFormats);
+const size_t kFirstCustomFormat = base::size(kPredefinedFormats);
 
 // Checks the validity of the given format name.
 bool IsValidFormatName(const std::string& format_name) {

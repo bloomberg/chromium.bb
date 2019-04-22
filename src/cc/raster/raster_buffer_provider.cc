@@ -74,7 +74,8 @@ void RasterBufferProvider::PlaybackToMemory(
 
   // Uses kPremul_SkAlphaType since the result is not known to be opaque.
   SkImageInfo info =
-      SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType);
+      SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType,
+                           target_color_space.ToSkColorSpace());
 
   // Use unknown pixel geometry to disable LCD text.
   SkSurfaceProps surface_props(0, kUnknown_SkPixelGeometry);
@@ -100,26 +101,29 @@ void RasterBufferProvider::PlaybackToMemory(
       // invalid content, just crash the renderer and try again.
       // See: http://crbug.com/721744.
       CHECK(surface);
-      raster_source->PlaybackToCanvas(surface->getCanvas(), target_color_space,
-                                      content_size, canvas_bitmap_rect,
-                                      canvas_playback_rect, transform,
-                                      playback_settings);
+      raster_source->PlaybackToCanvas(surface->getCanvas(), content_size,
+                                      canvas_bitmap_rect, canvas_playback_rect,
+                                      transform, playback_settings);
       return;
     }
     case viz::RGBA_4444: {
       sk_sp<SkSurface> surface = SkSurface::MakeRaster(info, &surface_props);
       // TODO(reveman): Improve partial raster support by reducing the size of
       // playback rect passed to PlaybackToCanvas. crbug.com/519070
-      raster_source->PlaybackToCanvas(
-          surface->getCanvas(), target_color_space, content_size,
-          canvas_bitmap_rect, canvas_bitmap_rect, transform, playback_settings);
+      raster_source->PlaybackToCanvas(surface->getCanvas(), content_size,
+                                      canvas_bitmap_rect, canvas_bitmap_rect,
+                                      transform, playback_settings);
 
       TRACE_EVENT0("cc",
                    "RasterBufferProvider::PlaybackToMemory::ConvertRGBA4444");
       SkImageInfo dst_info = info.makeColorType(
           ResourceFormatToClosestSkColorType(gpu_compositing, format));
-      bool rv = surface->readPixels(dst_info, memory, stride, 0, 0);
-      DCHECK(rv);
+      auto dst_canvas = SkCanvas::MakeRasterDirect(dst_info, memory, stride);
+      DCHECK(dst_canvas);
+      SkPaint paint;
+      paint.setDither(true);
+      paint.setBlendMode(SkBlendMode::kSrc);
+      surface->draw(dst_canvas.get(), 0, 0, &paint);
       return;
     }
     case viz::ETC1:

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 
+#include <sys/socket.h>
+#include <sys/un.h>
+
 #include <memory>
 #include <utility>
 
@@ -16,10 +19,31 @@ void AppShimHostBootstrap::CreateForChannel(
   // AppShimHostBootstrap is initially owned by itself until it receives a
   // LaunchApp message or a channel error. In LaunchApp, ownership is
   // transferred to a unique_ptr.
-  (new AppShimHostBootstrap)->ServeChannel(std::move(endpoint));
+  DCHECK(endpoint.platform_handle().is_fd());
+
+  base::ProcessId pid;
+  socklen_t pid_size = sizeof(pid);
+  if (getsockopt(endpoint.platform_handle().GetFD().get(), SOL_LOCAL,
+                 LOCAL_PEERPID, &pid, &pid_size)) {
+    LOG(ERROR) << "Failed to get peer pid for app shim.";
+    return;
+  }
+  (new AppShimHostBootstrap(pid))->ServeChannel(std::move(endpoint));
 }
 
-AppShimHostBootstrap::AppShimHostBootstrap() : host_bootstrap_binding_(this) {}
+// static
+void AppShimHostBootstrap::CreateForChannelAndPeerID(
+    mojo::PlatformChannelEndpoint endpoint,
+    base::ProcessId peer_pid) {
+  // AppShimHostBootstrap is initially owned by itself until it receives a
+  // LaunchApp message or a channel error. In LaunchApp, ownership is
+  // transferred to a unique_ptr.
+  DCHECK(endpoint.platform_handle().is_mach_send());
+  (new AppShimHostBootstrap(peer_pid))->ServeChannel(std::move(endpoint));
+}
+
+AppShimHostBootstrap::AppShimHostBootstrap(base::ProcessId peer_pid)
+    : host_bootstrap_binding_(this), pid_(peer_pid) {}
 
 AppShimHostBootstrap::~AppShimHostBootstrap() {
   DCHECK(!launch_app_callback_);
@@ -28,6 +52,7 @@ AppShimHostBootstrap::~AppShimHostBootstrap() {
 void AppShimHostBootstrap::ServeChannel(
     mojo::PlatformChannelEndpoint endpoint) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   mojo::ScopedMessagePipeHandle message_pipe =
       bootstrap_mojo_connection_.Connect(std::move(endpoint));
   host_bootstrap_binding_.Bind(
@@ -86,18 +111,19 @@ void AppShimHostBootstrap::LaunchApp(
   // |handler| takes ownership of |this| now.
   apps::AppShimHandler* handler = GetHandler();
   if (handler)
-    handler->OnShimLaunch(std::move(deleter));
+    handler->OnShimProcessConnected(std::move(deleter));
   // |handler| can only be NULL after AppShimHostManager is destroyed. Since
   // this only happens at shutdown, do nothing here.
 }
 
-void AppShimHostBootstrap::OnLaunchAppSucceeded(
+void AppShimHostBootstrap::OnConnectedToHost(
     chrome::mojom::AppShimRequest app_shim_request) {
   std::move(launch_app_callback_)
       .Run(apps::APP_SHIM_LAUNCH_SUCCESS, std::move(app_shim_request));
 }
 
-void AppShimHostBootstrap::OnLaunchAppFailed(apps::AppShimLaunchResult result) {
+void AppShimHostBootstrap::OnFailedToConnectToHost(
+    apps::AppShimLaunchResult result) {
   // Because there will be users of the AppShim interface in failure, just
   // return a dummy request.
   chrome::mojom::AppShimPtr dummy_ptr;

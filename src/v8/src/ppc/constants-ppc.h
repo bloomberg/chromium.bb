@@ -20,6 +20,39 @@
 #define UNIMPLEMENTED_PPC()
 #endif
 
+#if V8_HOST_ARCH_PPC && \
+    (V8_OS_AIX || (V8_TARGET_ARCH_PPC64 && V8_TARGET_BIG_ENDIAN && \
+    (!defined(_CALL_ELF) || _CALL_ELF == 1)))
+#define ABI_USES_FUNCTION_DESCRIPTORS 1
+#else
+#define ABI_USES_FUNCTION_DESCRIPTORS 0
+#endif
+
+#if !V8_HOST_ARCH_PPC || V8_OS_AIX || V8_TARGET_ARCH_PPC64
+#define ABI_PASSES_HANDLES_IN_REGS 1
+#else
+#define ABI_PASSES_HANDLES_IN_REGS 0
+#endif
+
+#if !V8_HOST_ARCH_PPC || !V8_TARGET_ARCH_PPC64 || \
+    V8_TARGET_LITTLE_ENDIAN || (defined(_CALL_ELF) && _CALL_ELF == 2)
+#define ABI_RETURNS_OBJECT_PAIRS_IN_REGS 1
+#else
+#define ABI_RETURNS_OBJECT_PAIRS_IN_REGS 0
+#endif
+
+#if !V8_HOST_ARCH_PPC || (V8_TARGET_ARCH_PPC64 && (V8_TARGET_LITTLE_ENDIAN || \
+    (defined(_CALL_ELF) && _CALL_ELF == 2)))
+#define ABI_CALL_VIA_IP 1
+#else
+#define ABI_CALL_VIA_IP 0
+#endif
+
+#if !V8_HOST_ARCH_PPC || V8_OS_AIX || V8_TARGET_ARCH_PPC64
+#define ABI_TOC_REGISTER 2
+#else
+#define ABI_TOC_REGISTER 13
+#endif
 namespace v8 {
 namespace internal {
 
@@ -2799,11 +2832,11 @@ class Instruction {
   inline int RSValue() const { return Bits(25, 21); }
   inline int RTValue() const { return Bits(25, 21); }
   inline int RAValue() const { return Bits(20, 16); }
-  DECLARE_STATIC_ACCESSOR(RAValue);
+  DECLARE_STATIC_ACCESSOR(RAValue)
   inline int RBValue() const { return Bits(15, 11); }
-  DECLARE_STATIC_ACCESSOR(RBValue);
+  DECLARE_STATIC_ACCESSOR(RBValue)
   inline int RCValue() const { return Bits(10, 6); }
-  DECLARE_STATIC_ACCESSOR(RCValue);
+  DECLARE_STATIC_ACCESSOR(RCValue)
 
   inline int OpcodeValue() const { return static_cast<Opcode>(Bits(31, 26)); }
   inline uint32_t OpcodeField() const {

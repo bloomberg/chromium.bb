@@ -32,9 +32,6 @@ namespace media {
 class MediaInitializer {
  public:
   MediaInitializer() {
-    TRACE_EVENT_WARMUP_CATEGORY("audio");
-    TRACE_EVENT_WARMUP_CATEGORY("media");
-
     // Initializing the CPU flags may query /proc for details on the current CPU
     // for NEON, VFP, etc optimizations. If in a sandboxed process, they should
     // have been forced (see InitializeMediaLibraryInSandbox).

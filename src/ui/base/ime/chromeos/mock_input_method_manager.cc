@@ -79,7 +79,7 @@ void MockInputMethodManager::State::SetInputMethodLoginDefaultFromVPD(
 
 void MockInputMethodManager::State::SwitchToNextInputMethod() {}
 
-void MockInputMethodManager::State::SwitchToPreviousInputMethod() {}
+void MockInputMethodManager::State::SwitchToLastUsedInputMethod() {}
 
 InputMethodDescriptor MockInputMethodManager::State::GetCurrentInputMethod()
     const {

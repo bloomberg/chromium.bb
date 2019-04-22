@@ -182,6 +182,11 @@ void AudioDecoderForMixer::RestartPlaybackAt(int64_t timestamp, int64_t pts) {
   mixer_input_->RestartPlaybackAt(timestamp, pts);
 }
 
+AudioDecoderForMixer::RenderingDelay
+AudioDecoderForMixer::GetMixerRenderingDelay() {
+  return mixer_input_->GetMixerRenderingDelay();
+}
+
 void AudioDecoderForMixer::Stop() {
   TRACE_FUNCTION_ENTRY0();
   decoder_.reset();

@@ -5,5 +5,4 @@ include_rules = [
 
   "+components/pref_registry",
   "+components/prefs",
-  "+components/user_prefs",
 ]

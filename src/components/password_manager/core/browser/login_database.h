@@ -17,8 +17,11 @@
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_change.h"
+#include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/sync/model/metadata_batch.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 
@@ -40,10 +43,10 @@ extern const int kCompatibleVersionNumber;
 // Interface to the database storage of login information, intended as a helper
 // for PasswordStore on platforms that need internal storage of some or all of
 // the login information.
-class LoginDatabase {
+class LoginDatabase : public PasswordStoreSync::MetadataStore {
  public:
   explicit LoginDatabase(const base::FilePath& db_path);
-  virtual ~LoginDatabase();
+  ~LoginDatabase() override;
 
   // Actually creates/opens the database. If false is returned, no other method
   // should be called.
@@ -80,20 +83,33 @@ class LoginDatabase {
       WARN_UNUSED_RESULT;
 
   // Removes |form| from the list of remembered password forms. Returns true if
-  // |form| was successfully removed from the database.
-  bool RemoveLogin(const autofill::PasswordForm& form) WARN_UNUSED_RESULT;
+  // |form| was successfully removed from the database. If |changes| is not be
+  // null, it will be used to populate the change list of the removed forms if
+  // any.
+  bool RemoveLogin(const autofill::PasswordForm& form,
+                   PasswordStoreChangeList* changes) WARN_UNUSED_RESULT;
+
+  // Removes the form with |primary_key| from the list of remembered password
+  // forms. Returns true if the form was successfully removed from the database.
+  bool RemoveLoginByPrimaryKey(int primary_key,
+                               PasswordStoreChangeList* changes)
+      WARN_UNUSED_RESULT;
 
   // Removes all logins created from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded
-  // delete in either direction.
+  // delete in either direction. If |changes| is not be null, it will be used to
+  // populate the change list of the removed forms if any.
   bool RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                  base::Time delete_end);
+                                  base::Time delete_end,
+                                  PasswordStoreChangeList* changes);
 
   // Removes all logins synced from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded
-  // delete in either direction.
+  // delete in either direction. If |changes| is not be null, it will be used to
+  // populate the change list of the removed forms if any.
   bool RemoveLoginsSyncedBetween(base::Time delete_begin,
-                                 base::Time delete_end);
+                                 base::Time delete_end,
+                                 PasswordStoreChangeList* changes);
 
   // Sets the 'skip_zero_click' flag on all forms on |origin| to 'true'.
   bool DisableAutoSignInForOrigin(const GURL& origin);
@@ -107,34 +123,17 @@ class LoginDatabase {
                  std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
       WARN_UNUSED_RESULT;
 
-  // Retrieves all stored credentials with SCHEME_HTTP that have a realm whose
-  // organization-identifying name -- that is, the first domain name label below
-  // the effective TLD -- matches that of |signon_realm|. Return value indicates
-  // a successful query (but potentially no results).
-  //
-  // For example, the organization-identifying name of "https://foo.example.org"
-  // is `example`, and logins will be returned for "http://bar.example.co.uk",
-  // but not for "http://notexample.com" or "https://example.foo.com".
-  bool GetLoginsForSameOrganizationName(
-      const std::string& signon_realm,
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms);
-
   // Gets all logins created from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
-  // direction.
-  bool GetLoginsCreatedBetween(
-      base::Time begin,
-      base::Time end,
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
+  // direction. |key_to_form_map| must not be null and will be used to return
+  // the results. The key of the map is the DB primary key.
+  bool GetLoginsCreatedBetween(base::Time begin,
+                               base::Time end,
+                               PrimaryKeyToFormMap* key_to_form_map)
       WARN_UNUSED_RESULT;
 
-  // Gets all logins synced from |begin| onwards (inclusive) and before |end|.
-  // You may use a null Time value to do an unbounded search in either
-  // direction.
-  bool GetLoginsSyncedBetween(
-      base::Time begin,
-      base::Time end,
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
+  // Gets the complete list of all credentials.
+  FormRetrievalResult GetAllLogins(PrimaryKeyToFormMap* key_to_form_map)
       WARN_UNUSED_RESULT;
 
   // Gets the complete list of not blacklisted credentials.
@@ -170,6 +169,27 @@ class LoginDatabase {
   // empty string if the row for this |form| is not found.
   std::string GetEncryptedPassword(const autofill::PasswordForm& form) const;
 
+  // PasswordStoreSync::MetadataStore implementation.
+  std::unique_ptr<syncer::MetadataBatch> GetAllSyncMetadata() override;
+  void DeleteAllSyncMetadata() override;
+  bool UpdateSyncMetadata(syncer::ModelType model_type,
+                          const std::string& storage_key,
+                          const sync_pb::EntityMetadata& metadata) override;
+  bool ClearSyncMetadata(syncer::ModelType model_type,
+                         const std::string& storage_key) override;
+  bool UpdateModelTypeState(
+      syncer::ModelType model_type,
+      const sync_pb::ModelTypeState& model_type_state) override;
+  bool ClearModelTypeState(syncer::ModelType model_type) override;
+
+  // Callers that requires transaction support should call these methods to
+  // begin, rollback and commit transactions. They delegate to the transaction
+  // support of the underlying database. Only one transaction may exist at a
+  // time.
+  bool BeginTransaction();
+  void RollbackTransaction();
+  bool CommitTransaction();
+
   StatisticsTable& stats_table() { return stats_table_; }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -185,6 +205,14 @@ class LoginDatabase {
   // On iOS, removes the keychain item that is used to store the
   // encrypted password for the supplied |form|.
   void DeleteEncryptedPassword(const autofill::PasswordForm& form);
+
+  // Similar to DeleteEncryptedPassword() but uses |id| to look for the
+  // password.
+  void DeleteEncryptedPasswordById(int id);
+
+  // Returns the encrypted password value for the specified |id|.  Returns an
+  // empty string if the row for this |form| is not found.
+  std::string GetEncryptedPasswordById(int id) const;
 #endif
 
   // Result values for encryption/decryption actions.
@@ -217,13 +245,19 @@ class LoginDatabase {
                                    base::string16* plain_text) const
       WARN_UNUSED_RESULT;
 
-  // Fills |form| from the values in the given statement (which is assumed to
-  // be of the form used by the Get*Logins methods).
-  // Returns the EncryptionResult from decrypting the password in |s|; if not
-  // ENCRYPTION_RESULT_SUCCESS, |form| is not filled.
-  EncryptionResult InitPasswordFormFromStatement(autofill::PasswordForm* form,
-                                                 const sql::Statement& s) const
-      WARN_UNUSED_RESULT;
+  // Fills |form| from the values in the given statement (which is assumed to be
+  // of the form used by the Get*Logins methods). Fills the corresponding DB
+  // primary key in |primary_key|. If |decrypt_and_fill_password_value| is set
+  // to true, it tries to decrypt the stored password and returns the
+  // EncryptionResult from decrypting the password in |s|; if not
+  // ENCRYPTION_RESULT_SUCCESS, |form| is not filled. If
+  // |decrypt_and_fill_password_value| is set to false, it always returns
+  // ENCRYPTION_RESULT_SUCCESS.
+  EncryptionResult InitPasswordFormFromStatement(
+      const sql::Statement& s,
+      bool decrypt_and_fill_password_value,
+      int* primary_key,
+      autofill::PasswordForm* form) const WARN_UNUSED_RESULT;
 
   // Gets all blacklisted or all non-blacklisted (depending on |blacklisted|)
   // credentials. On success returns true and overwrites |forms| with the
@@ -232,15 +266,38 @@ class LoginDatabase {
       bool blacklisted,
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms);
 
-  // Overwrites |forms| with credentials retrieved from |statement|. If
-  // |matched_form| is not null, filters out all results but those PSL-matching
+  // Gets all logins synced from |begin| onwards (inclusive) and before |end|.
+  // You may use a null Time value to do an unbounded search in either
+  // direction. |key_to_form_map| must not be null and will be used to return
+  // the results. The key of the map is the DB primary key.
+  bool GetLoginsSyncedBetween(base::Time begin,
+                              base::Time end,
+                              PrimaryKeyToFormMap* key_to_form_map)
+      WARN_UNUSED_RESULT;
+
+  // Returns the DB primary key for the specified |form|.  Returns -1 if the row
+  // for this |form| is not found.
+  int GetPrimaryKey(const autofill::PasswordForm& form) const;
+
+  // Reads all the stored sync entities metadata in a MetadataBatch. Returns
+  // nullptr in case of failure.
+  std::unique_ptr<syncer::MetadataBatch> GetAllSyncEntityMetadata();
+
+  // Reads the stored ModelTypeState. Returns nullptr in case of failure.
+  std::unique_ptr<sync_pb::ModelTypeState> GetModelTypeState();
+
+  // Overwrites |key_to_form_map| with credentials retrieved from |statement|.
+  // If |matched_form| is not null, filters out all results but those
+  // PSL-matching
   // |*matched_form| or federated credentials for it. If feature for recovering
   // passwords is enabled, it removes all passwords that couldn't be decrypted
   // when encryption was available from the database. On success returns true.
-  bool StatementToForms(sql::Statement* statement,
-                        const PasswordStore::FormDigest* matched_form,
-                        std::vector<std::unique_ptr<autofill::PasswordForm>>*
-                            forms) WARN_UNUSED_RESULT;
+  // |key_to_form_map| must not be null and will be used to return the results.
+  // The key of the map is the DB primary key.
+  FormRetrievalResult StatementToForms(
+      sql::Statement* statement,
+      const PasswordStore::FormDigest* matched_form,
+      PrimaryKeyToFormMap* key_to_form_map) WARN_UNUSED_RESULT;
 
   // Initializes all the *_statement_ data members with appropriate SQL
   // fragments based on |builder|.
@@ -260,16 +317,18 @@ class LoginDatabase {
   std::string add_replace_statement_;
   std::string update_statement_;
   std::string delete_statement_;
+  std::string delete_by_id_statement_;
   std::string autosignin_statement_;
   std::string get_statement_;
   std::string get_statement_psl_;
   std::string get_statement_federated_;
   std::string get_statement_psl_federated_;
-  std::string get_same_organization_name_logins_statement_;
   std::string created_statement_;
   std::string synced_statement_;
   std::string blacklisted_statement_;
   std::string encrypted_statement_;
+  std::string encrypted_password_statement_by_id_;
+  std::string id_statement_;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   std::unique_ptr<PasswordRecoveryUtilMac> password_recovery_util_;

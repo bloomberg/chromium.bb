@@ -1,12 +1,9 @@
 include_rules = [
   "+components/data_use_measurement/core",
   "+components/google/core",
-  "+components/image_fetcher",
   "+components/keyed_service/core",
-  "+components/leveldb_proto",
   "+components/pref_registry",
   "+components/prefs",
-  "+components/signin/core/browser",
   "+components/sync/driver",
   "+components/sync_preferences",
   "+components/variations",
@@ -15,7 +12,6 @@ include_rules = [
   "+services/identity/public/cpp",
   "+services/network/public",
   "+services/network/test",
-  "+skia/ext",
   "+ui",
   "+url",
 ]

@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -60,11 +61,13 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   // You must call this function before anything else. Returns true on success.
   // The delegate pointer must outlive this class, ownership is not
   // transferred.
-  virtual bool InitHostWithChannel(Delegate* delegate,
-                                   base::ProcessId peer_pid,
-                                   const IPC::ChannelHandle& channel_handle,
-                                   bool is_client,
-                                   const Preferences& preferences);
+  virtual bool InitHostWithChannel(
+      Delegate* delegate,
+      base::ProcessId peer_pid,
+      const IPC::ChannelHandle& channel_handle,
+      bool is_client,
+      const Preferences& preferences,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // The host side maintains a mapping from PP_Instance to Dispatcher so
   // that we can send the messages to the right channel.
@@ -130,7 +133,7 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
 
   // Maps interface name to whether that interface is supported. If an interface
   // name is not in the map, that implies that we haven't queried for it yet.
-  typedef base::hash_map<std::string, bool> PluginSupportedMap;
+  typedef std::unordered_map<std::string, bool> PluginSupportedMap;
   PluginSupportedMap plugin_supported_;
 
   // Guaranteed non-NULL.

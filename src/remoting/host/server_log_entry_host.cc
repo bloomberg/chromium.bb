@@ -56,7 +56,7 @@ void AddHostFieldsToLogEntry(ServerLogEntry* entry) {
   entry->Set(kKeyOsVersion, GetHostOperatingSystemVersion());
   entry->Set(kKeyHostVersion, STRINGIZE(VERSION));
   entry->AddCpuField();
-};
+}
 
 void AddConnectionTypeToLogEntry(ServerLogEntry* entry,
     protocol::TransportRoute::RouteType type) {

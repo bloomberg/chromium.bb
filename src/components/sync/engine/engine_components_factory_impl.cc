@@ -13,12 +13,6 @@
 #include "components/sync/engine_impl/syncer.h"
 #include "components/sync/syncable/on_disk_directory_backing_store.h"
 
-using base::TimeDelta;
-
-namespace {
-const int kShortNudgeDelayDurationMS = 1;
-}
-
 namespace syncer {
 
 EngineComponentsFactoryImpl::EngineComponentsFactoryImpl(
@@ -43,18 +37,8 @@ std::unique_ptr<SyncScheduler> EngineComponentsFactoryImpl::BuildScheduler(
       std::make_unique<SyncSchedulerImpl>(name, delay.release(), context,
                                           new Syncer(cancelation_signal),
                                           ignore_auth_credentials);
-  if (switches_.nudge_delay == NudgeDelay::SHORT_NUDGE_DELAY) {
-    // Set the default nudge delay to 0 because the default is used as a floor
-    // for override values, and we don't want the below override to be ignored.
-    scheduler->SetDefaultNudgeDelay(TimeDelta::FromMilliseconds(0));
-    // Only protocol types can have their delay customized.
-    ModelTypeSet protocol_types = syncer::ProtocolTypes();
-    std::map<ModelType, base::TimeDelta> nudge_delays;
-    for (ModelType type : protocol_types) {
-      nudge_delays[type] =
-          TimeDelta::FromMilliseconds(kShortNudgeDelayDurationMS);
-    }
-    scheduler->OnReceivedCustomNudgeDelays(nudge_delays);
+  if (switches_.force_short_nudge_delay_for_test) {
+    scheduler->ForceShortNudgeDelayForTest();
   }
   return std::move(scheduler);
 }
@@ -67,15 +51,12 @@ std::unique_ptr<SyncCycleContext> EngineComponentsFactoryImpl::BuildContext(
     DebugInfoGetter* debug_info_getter,
     ModelTypeRegistry* model_type_registry,
     const std::string& invalidation_client_id,
-    base::TimeDelta short_poll_interval,
-    base::TimeDelta long_poll_interval) {
+    base::TimeDelta poll_interval) {
   return std::make_unique<SyncCycleContext>(
       connection_manager, directory, extensions_activity, listeners,
       debug_info_getter, model_type_registry,
       switches_.encryption_method == ENCRYPTION_KEYSTORE,
-      switches_.pre_commit_updates_policy ==
-          FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,
-      invalidation_client_id, short_poll_interval, long_poll_interval);
+      invalidation_client_id, poll_interval);
 }
 
 std::unique_ptr<syncable::DirectoryBackingStore>

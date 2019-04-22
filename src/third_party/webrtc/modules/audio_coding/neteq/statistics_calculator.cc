@@ -216,7 +216,7 @@ void StatisticsCalculator::AddZeros(size_t num_samples) {
 }
 
 void StatisticsCalculator::PacketsDiscarded(size_t num_packets) {
-  discarded_packets_ += num_packets;
+  operations_and_state_.discarded_primary_packets += num_packets;
 }
 
 void StatisticsCalculator::SecondaryPacketsDiscarded(size_t num_packets) {
@@ -246,6 +246,7 @@ void StatisticsCalculator::IncreaseCounter(size_t num_samples, int fs_hz) {
 void StatisticsCalculator::JitterBufferDelay(size_t num_samples,
                                              uint64_t waiting_time_ms) {
   lifetime_stats_.jitter_buffer_delay_ms += waiting_time_ms * num_samples;
+  lifetime_stats_.jitter_buffer_emitted_count += num_samples;
 }
 
 void StatisticsCalculator::SecondaryDecodedSamples(int num_samples) {
@@ -255,6 +256,14 @@ void StatisticsCalculator::SecondaryDecodedSamples(int num_samples) {
 void StatisticsCalculator::FlushedPacketBuffer() {
   operations_and_state_.packet_buffer_flushes++;
   buffer_full_counter_.RegisterSample();
+}
+
+void StatisticsCalculator::ReceivedPacket() {
+  ++lifetime_stats_.jitter_buffer_packets_received;
+}
+
+void StatisticsCalculator::RelativePacketArrivalDelay(size_t delay_ms) {
+  lifetime_stats_.relative_packet_arrival_delay_ms += delay_ms;
 }
 
 void StatisticsCalculator::LogDelayedPacketOutageEvent(int num_samples,

@@ -4,8 +4,9 @@
      found in the LICENSE file. -->
 
 <!-- This single-child FrameLayout is needed for its top padding. -->
-<FrameLayout
+<org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/history_navigation"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingTop="@dimen/tab_strip_height" >
@@ -32,4 +33,4 @@
             android:scrollbarStyle="outsideOverlay" />
 
     </org.chromium.chrome.browser.ntp.NativePageRootFrameLayout>
-</FrameLayout>
+</org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout>

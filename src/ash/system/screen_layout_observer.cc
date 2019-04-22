@@ -219,9 +219,20 @@ void ScreenLayoutObserver::UpdateDisplayInfo(
 
 bool ScreenLayoutObserver::GetDisplayMessageForNotification(
     const ScreenLayoutObserver::DisplayInfoMap& old_info,
+    bool should_notify_has_unassociated_display,
     base::string16* out_message,
     base::string16* out_additional_message) {
   if (old_display_mode_ != current_display_mode_) {
+    // Ensure that user still gets notified of connecting with excessive
+    // displays when display mode changes. For example, for the device which is
+    // in tablet mode and screen layout is in extending mode, user connects one
+    // additional external display to make the number of displays exceed the
+    // maximum that device can support. Display mode changes from extending mode
+    // to mirror mode.
+    if (should_notify_has_unassociated_display)
+      *out_additional_message = l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_REMOVED_EXCEEDED_MAXIMUM);
+
     // Detect changes in the mirror mode status.
     if (current_display_mode_ == DisplayMode::MIRRORING) {
       *out_message = GetEnterMirrorModeMessage();
@@ -261,7 +272,9 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
           GetDisplayRemovedMessage(iter.second, out_additional_message);
       return true;
     }
-  } else if (display_info_.size() > old_info.size()) {
+  }
+
+  if (display_info_.size() > old_info.size()) {
     // A display has been added.
     for (const auto& iter : display_info_) {
       if (old_info.count(iter.first))
@@ -270,6 +283,18 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
       *out_message = GetDisplayAddedMessage(iter.first, out_additional_message);
       return true;
     }
+  }
+
+  DCHECK_EQ(display_info_.size(), old_info.size());
+
+  if (should_notify_has_unassociated_display) {
+    // When user connects more external display than the maximum that device
+    // can support, |display_info_|'s size should be same with |old_info_|
+    // because the displays which have unassociated crtc are not included in
+    // |display_info_|.
+    *out_additional_message = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_DISPLAY_REMOVED_EXCEEDED_MAXIMUM);
+    return true;
   }
 
   for (const auto& iter : display_info_) {
@@ -385,6 +410,20 @@ void ScreenLayoutObserver::OnDisplayConfigurationChanged() {
   DisplayInfoMap old_info;
   UpdateDisplayInfo(&old_info);
 
+  const bool current_has_unassociated_display =
+      ash::Shell::Get()->display_manager()->HasUnassociatedDisplay();
+
+  // Take |has_unassociated_display_| into consideration in order to avoid
+  // showing the notification too frequently. For example, user connects three
+  // displays with device which supports at most two displays. Without checking
+  // |has_unassociated_display_|, if user keeps three displays connected,
+  // any event changing the display configuration would trigger the notification
+  // of the unassociated display.
+  const bool should_notify_has_unassociated_display =
+      !has_unassociated_display_ && current_has_unassociated_display;
+
+  has_unassociated_display_ = current_has_unassociated_display;
+
   old_display_mode_ = current_display_mode_;
   if (GetDisplayManager()->IsInMirrorMode())
     current_display_mode_ = DisplayMode::MIRRORING;
@@ -404,46 +443,18 @@ void ScreenLayoutObserver::OnDisplayConfigurationChanged() {
 
   base::string16 message;
   base::string16 additional_message;
-  if (GetDisplayMessageForNotification(old_info, &message, &additional_message))
+  if (GetDisplayMessageForNotification(old_info,
+                                       should_notify_has_unassociated_display,
+                                       &message, &additional_message))
     CreateOrUpdateNotification(message, additional_message);
 }
 
 bool ScreenLayoutObserver::GetExitMirrorModeMessage(
     base::string16* out_message,
     base::string16* out_additional_message) {
-  if (GetDisplayManager()->is_multi_mirroring_enabled()) {
-    *out_message =
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT);
-    return true;
-  }
-  switch (current_display_mode_) {
-    case DisplayMode::EXTENDED_3_PLUS:
-      // Mirror mode was turned off due to having more than two displays.
-      // Show a message that mirror mode for 3+ displays is not supported.
-      *out_message =
-          l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED);
-      return true;
-
-    case DisplayMode::DOCKED:
-      // Handle disabling mirror mode as a result of going to docked mode
-      // when we only have a single display (this means we actually have two
-      // physical displays, one of which is the internal display, but they
-      // were in mirror mode, and hence considered as one. Closing the
-      // internal display disables mirror mode and we still have a single
-      // active display).
-      // Falls through.
-    case DisplayMode::SINGLE:
-      // We're exiting mirror mode because we removed one of the two
-      // displays.
-      *out_message =
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT);
-      return true;
-
-    default:
-      // Mirror mode was turned off; other messages should be shown e.g.
-      // extended mode is on, ... etc.
-      return false;
-  }
+  *out_message =
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT);
+  return true;
 }
 
 }  // namespace ash

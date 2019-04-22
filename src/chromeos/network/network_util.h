@@ -17,9 +17,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/chromeos_export.h"
 
 namespace base {
 class ListValue;
@@ -31,7 +31,7 @@ class NetworkState;
 class NetworkTypePattern;
 
 // Struct for passing wifi access point data.
-struct CHROMEOS_EXPORT WifiAccessPoint {
+struct COMPONENT_EXPORT(CHROMEOS_NETWORK) WifiAccessPoint {
   WifiAccessPoint();
   WifiAccessPoint(const WifiAccessPoint& other);
   ~WifiAccessPoint();
@@ -46,7 +46,7 @@ struct CHROMEOS_EXPORT WifiAccessPoint {
 // Struct for passing cellular location data
 // The age, signalStrength, and timingAdvance fields are currently unused:
 // https://developers.google.com/maps/documentation/geolocation/intro#cell_tower_object
-struct CHROMEOS_EXPORT CellTower {
+struct COMPONENT_EXPORT(CHROMEOS_NETWORK) CellTower {
   CellTower();
   CellTower(const CellTower& other);
   ~CellTower();
@@ -58,7 +58,7 @@ struct CHROMEOS_EXPORT CellTower {
 };
 
 // Struct for passing network scan result data.
-struct CHROMEOS_EXPORT CellularScanResult {
+struct COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularScanResult {
   CellularScanResult();
   CellularScanResult(const CellularScanResult& other);
   ~CellularScanResult();
@@ -93,34 +93,39 @@ namespace network_util {
 // Converts a |prefix_length| to a netmask. (for IPv4 only)
 // e.g. a |prefix_length| of 24 is converted to a netmask of "255.255.255.0".
 // Invalid prefix lengths will return the empty string.
-CHROMEOS_EXPORT std::string PrefixLengthToNetmask(int32_t prefix_length);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::string PrefixLengthToNetmask(int32_t prefix_length);
 
 // Converts a |netmask| to a prefixlen. (for IPv4 only)
 // e.g. a |netmask| of 255.255.255.0 is converted to a prefixlen of 24
-CHROMEOS_EXPORT int32_t NetmaskToPrefixLength(const std::string& netmask);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+int32_t NetmaskToPrefixLength(const std::string& netmask);
 
 // Returns |shill_mac_address| in aa:bb format.
-CHROMEOS_EXPORT std::string FormattedMacAddress(
-    const std::string& shill_mac_address);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::string FormattedMacAddress(const std::string& shill_mac_address);
 
 // Parses |list|, which contains DictionaryValues and returns a vector of
 // CellularScanResult in |scan_results|. Returns false if parsing fails,
 // in which case the contents of |scan_results| will be undefined.
-CHROMEOS_EXPORT bool ParseCellularScanResults(
-    const base::ListValue& list, std::vector<CellularScanResult>* scan_results);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+bool ParseCellularScanResults(const base::ListValue& list,
+                              std::vector<CellularScanResult>* scan_results);
 
 // Retrieves the ONC state dictionary for |network| using GetStateProperties.
 // This includes properties from the corresponding NetworkState if it exists.
 // Assumed to be called from the primary user profile.
-CHROMEOS_EXPORT std::unique_ptr<base::DictionaryValue>
-TranslateNetworkStateToONC(const NetworkState* network);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::unique_ptr<base::DictionaryValue> TranslateNetworkStateToONC(
+    const NetworkState* network);
 
 // Retrieves the list of network services by passing |pattern|,
 // |configured_only|, and |visible_only| to NetworkStateHandler::
 // GetNetworkListByType(). Translates the result into a list of ONC
 // dictionaries using TranslateShillServiceToONCPart. |limit| is used to limit
 // the number of results.
-CHROMEOS_EXPORT std::unique_ptr<base::ListValue> TranslateNetworkListToONC(
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::unique_ptr<base::ListValue> TranslateNetworkListToONC(
     NetworkTypePattern pattern,
     bool configured_only,
     bool visible_only,
@@ -128,15 +133,17 @@ CHROMEOS_EXPORT std::unique_ptr<base::ListValue> TranslateNetworkListToONC(
 
 // Returns the Shill type corresponding to ONC |type| or an empty string if
 // there is no match. Only valid for ethernet, wifi, wimax, cellular, and vpn.
-CHROMEOS_EXPORT std::string TranslateONCTypeToShill(const std::string& type);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::string TranslateONCTypeToShill(const std::string& type);
 
 // Returns the Shill security type corresponding to ONC |security| or an empty
 // string if there is no match. Only valid for wifi.
-CHROMEOS_EXPORT std::string TranslateONCSecurityToShill(
-    const std::string& security);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::string TranslateONCSecurityToShill(const std::string& security);
 
 // Inverse of TranslateONCTypeToShill.
-CHROMEOS_EXPORT std::string TranslateShillTypeToONC(const std::string& type);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::string TranslateShillTypeToONC(const std::string& type);
 
 }  // namespace network_util
 }  // namespace chromeos

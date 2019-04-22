@@ -78,7 +78,7 @@ angle::Result BufferGL::setData(const gl::Context *context,
 
     mBufferSize = size;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result BufferGL::setSubData(const gl::Context *context,
@@ -95,7 +95,7 @@ angle::Result BufferGL::setSubData(const gl::Context *context,
         memcpy(mShadowCopy.data() + offset, data, size);
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result BufferGL::copySubData(const gl::Context *context,
@@ -119,7 +119,7 @@ angle::Result BufferGL::copySubData(const gl::Context *context,
         memcpy(mShadowCopy.data() + destOffset, sourceGL->mShadowCopy.data() + sourceOffset, size);
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result BufferGL::map(const gl::Context *context, GLenum access, void **mapPtr)
@@ -145,7 +145,7 @@ angle::Result BufferGL::map(const gl::Context *context, GLenum access, void **ma
     mMapOffset = 0;
     mMapSize   = mBufferSize;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result BufferGL::mapRange(const gl::Context *context,
@@ -169,7 +169,7 @@ angle::Result BufferGL::mapRange(const gl::Context *context,
     mMapOffset = offset;
     mMapSize   = length;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result BufferGL::unmap(const gl::Context *context, GLboolean *result)
@@ -191,11 +191,11 @@ angle::Result BufferGL::unmap(const gl::Context *context, GLboolean *result)
     }
 
     mIsMapped = false;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result BufferGL::getIndexRange(const gl::Context *context,
-                                      GLenum type,
+                                      gl::DrawElementsType type,
                                       size_t offset,
                                       size_t count,
                                       bool primitiveRestartEnabled,
@@ -212,15 +212,23 @@ angle::Result BufferGL::getIndexRange(const gl::Context *context,
     {
         mStateManager->bindBuffer(DestBufferOperationTarget, mBufferID);
 
-        const gl::Type &typeInfo = gl::GetTypeInfo(type);
+        const GLuint typeBytes = gl::GetDrawElementsTypeSize(type);
         const uint8_t *bufferData =
             MapBufferRangeWithFallback(mFunctions, gl::ToGLenum(DestBufferOperationTarget), offset,
-                                       count * typeInfo.bytes, GL_MAP_READ_BIT);
-        *outRange = gl::ComputeIndexRange(type, bufferData, count, primitiveRestartEnabled);
-        mFunctions->unmapBuffer(gl::ToGLenum(DestBufferOperationTarget));
+                                       count * typeBytes, GL_MAP_READ_BIT);
+        if (bufferData)
+        {
+            *outRange = gl::ComputeIndexRange(type, bufferData, count, primitiveRestartEnabled);
+            mFunctions->unmapBuffer(gl::ToGLenum(DestBufferOperationTarget));
+        }
+        else
+        {
+            // Workaround the null driver not having map support.
+            *outRange = gl::IndexRange(0, 0, 1);
+        }
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 GLuint BufferGL::getBufferID() const

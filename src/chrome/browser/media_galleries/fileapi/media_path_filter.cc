@@ -172,13 +172,16 @@ void MediaPathFilter::EnsureInitialized() {
   AddExtensionsToMediaFileExtensionMap(GetMediaExtensionList("video/*"),
                                        MEDIA_GALLERY_FILE_TYPE_VIDEO);
   AddAdditionalExtensionsToMediaFileExtensionMap(
-      kExtraSupportedImageExtensions, arraysize(kExtraSupportedImageExtensions),
+      kExtraSupportedImageExtensions,
+      base::size(kExtraSupportedImageExtensions),
       MEDIA_GALLERY_FILE_TYPE_IMAGE);
   AddAdditionalExtensionsToMediaFileExtensionMap(
-      kExtraSupportedAudioExtensions, arraysize(kExtraSupportedAudioExtensions),
+      kExtraSupportedAudioExtensions,
+      base::size(kExtraSupportedAudioExtensions),
       MEDIA_GALLERY_FILE_TYPE_AUDIO);
   AddAdditionalExtensionsToMediaFileExtensionMap(
-      kExtraSupportedVideoExtensions, arraysize(kExtraSupportedVideoExtensions),
+      kExtraSupportedVideoExtensions,
+      base::size(kExtraSupportedVideoExtensions),
       MEDIA_GALLERY_FILE_TYPE_VIDEO);
 
   initialized_ = true;

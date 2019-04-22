@@ -13,6 +13,10 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_port_mus.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/wm/core/ime_util_chromeos.h"
+#endif
+
 namespace views {
 
 RemoteViewHost::RemoteViewHost()
@@ -21,6 +25,11 @@ RemoteViewHost::RemoteViewHost()
   embedding_root_->SetName("RemoteViewHostWindow");
   embedding_root_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   embedding_root_->Init(ui::LAYER_NOT_DRAWN);
+
+#if defined(OS_CHROMEOS)
+  helper_ =
+      std::make_unique<wm::EnsureWindowNotInRectHelper>(embedding_root_.get());
+#endif
 }
 
 RemoteViewHost::~RemoteViewHost() = default;

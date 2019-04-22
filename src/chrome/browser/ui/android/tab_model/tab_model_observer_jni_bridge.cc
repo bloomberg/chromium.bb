@@ -17,22 +17,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
-// Gets the size of the provided enum.
-int GetTabModelStaticIntField(JNIEnv* env, const char* field_name) {
-  jclass clazz =
-      env->FindClass("org/chromium/chrome/browser/tabmodel/TabModel");
-  jfieldID field_id = env->GetStaticFieldID(clazz, field_name, "I");
-  jint value = env->GetStaticIntField(clazz, field_id);
-  return value;
-}
-
-void EnsureEnumSizesConsistent(JNIEnv* env) {
-  DCHECK_EQ(static_cast<int>(TabModel::TabLaunchType::SIZE),
-            GetTabModelStaticIntField(env, "TabLaunchTypeSize"));
-  DCHECK_EQ(static_cast<int>(TabModel::TabSelectionType::SIZE),
-            GetTabModelStaticIntField(env, "TabSelectionTypeSize"));
-}
-
 // Converts from a Java TabModel.TabLaunchType to a C++ TabModel::TabLaunchType.
 TabModel::TabLaunchType GetTabLaunchType(JNIEnv* env, int type) {
   return static_cast<TabModel::TabLaunchType>(type);
@@ -49,11 +33,6 @@ TabModel::TabSelectionType GetTabSelectionType(JNIEnv* env, int type) {
 TabModelObserverJniBridge::TabModelObserverJniBridge(
     JNIEnv* env,
     const JavaRef<jobject>& tab_model) {
-  // TODO(chrisha): Clean up these enums so that the Java ones are generated
-  // from them.
-  // https://chromium.googlesource.com/chromium/src/+/lkcr/docs/android_accessing_cpp_enums_in_java.md
-  EnsureEnumSizesConsistent(env);
-
   // Create the Java object. This immediately adds it as an observer on the
   // corresponding TabModel.
   java_object_.Reset(Java_TabModelObserverJniBridge_create(

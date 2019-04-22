@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/passwords/credential_manager.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ios/chrome/browser/passwords/credential_manager_util.h"
 #include "ios/chrome/browser/passwords/js_credential_manager.h"

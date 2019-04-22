@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"

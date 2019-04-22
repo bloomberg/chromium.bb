@@ -43,13 +43,6 @@ AXInlineTextBox::AXInlineTextBox(
     AXObjectCacheImpl& ax_object_cache)
     : AXObject(ax_object_cache), inline_text_box_(std::move(inline_text_box)) {}
 
-AXInlineTextBox* AXInlineTextBox::Create(
-    scoped_refptr<AbstractInlineTextBox> inline_text_box,
-    AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AXInlineTextBox>(std::move(inline_text_box),
-                                               ax_object_cache);
-}
-
 void AXInlineTextBox::Init() {}
 
 void AXInlineTextBox::Detach() {
@@ -111,20 +104,19 @@ void AXInlineTextBox::TextCharacterOffsets(Vector<int>& offsets) const {
   }
 }
 
-void AXInlineTextBox::GetWordBoundaries(Vector<AXRange>& words) const {
+void AXInlineTextBox::GetWordBoundaries(Vector<int>& word_starts,
+                                        Vector<int>& word_ends) const {
   if (!inline_text_box_ ||
       inline_text_box_->GetText().ContainsOnlyWhitespaceOrEmpty())
     return;
 
   Vector<AbstractInlineTextBox::WordBoundaries> boundaries;
   inline_text_box_->GetWordBoundaries(boundaries);
-  words.ReserveCapacity(boundaries.size());
+  word_starts.ReserveCapacity(boundaries.size());
+  word_ends.ReserveCapacity(boundaries.size());
   for (const auto& boundary : boundaries) {
-    const AXRange range(
-        AXPosition::CreatePositionInTextObject(*this, boundary.start_index),
-        AXPosition::CreatePositionInTextObject(*this, boundary.end_index));
-    if (range.IsValid())
-      words.push_back(range);
+    word_starts.push_back(boundary.start_index);
+    word_ends.push_back(boundary.end_index);
   }
 }
 
@@ -141,8 +133,9 @@ AXObject* AXInlineTextBox::ComputeParent() const {
   DCHECK(!IsDetached());
   if (!inline_text_box_ || !ax_object_cache_)
     return nullptr;
-
   LineLayoutText line_layout_text = inline_text_box_->GetLineLayoutItem();
+  if (!line_layout_text)
+    return nullptr;
   return ax_object_cache_->GetOrCreate(
       LineLayoutAPIShim::LayoutObjectFrom(line_layout_text));
 }

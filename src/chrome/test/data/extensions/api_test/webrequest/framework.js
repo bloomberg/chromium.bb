@@ -132,11 +132,36 @@ function navigateAndWait(url, callback) {
   chrome.tabs.update(tabId, {url: url});
 }
 
-// data: array of extected events, each one is a dictionary:
+function deepCopy(obj) {
+  if (obj === null)
+    return null;
+  if (typeof(obj) != 'object')
+    return obj;
+  if (Array.isArray(obj)) {
+    var tmp_array = new Array;
+    for (var i = 0; i < obj.length; i++) {
+      tmp_array.push(deepCopy(obj[i]));
+    }
+    return tmp_array;
+  }
+
+  var tmp_object = {}
+  for (var p in obj) {
+    tmp_object[p] = deepCopy(obj[p]);
+  }
+  return tmp_object;
+}
+
+// data: array of expected events, each one is a dictionary:
 //     { label: "<unique identifier>",
 //       event: "<webrequest event type>",
 //       details: { <expected details of the webrequest event> },
 //       retval: { <dictionary that the event handler shall return> } (optional)
+//       retval_function: <function to run when the event occurs, this overrides
+//                         any retval handling. The function takes
+//                         (name, details, optional callback). The value it
+//                         returns is returned out of the event
+//                         handler> (optional)
 //     }
 // order: an array of sequences, e.g. [ ["a", "b", "c"], ["d", "e"] ] means that
 //     event with label "a" needs to occur before event with label "b". The
@@ -234,6 +259,7 @@ function checkExpectations() {
     });
   });
 
+  removeListeners();
   eventsCaptured();
 }
 
@@ -288,17 +314,7 @@ function captureEvent(name, details, callback) {
     return;
   }
 
-  // Pull the extra per-event options out of the expected data. These let
-  // us specify special return values per event.
-  var currentIndex = capturedEventData.length;
-  var extraOptions;
-  var retval;
-  if (expectedEventData.length > currentIndex) {
-    retval =
-        expectedEventData[currentIndex].retval_function ?
-        expectedEventData[currentIndex].retval_function(name, details) :
-        expectedEventData[currentIndex].retval;
-  }
+  var originalDetails = deepCopy(details);
 
   // Check that the frameId can be used to reliably determine the URL of the
   // frame that caused requests.
@@ -345,41 +361,62 @@ function captureEvent(name, details, callback) {
     delete details.responseHeaders;
   }
 
-  // find |details| in expectedEventData
-  var found = false;
-  var label = undefined;
+  // Check if the equivalent event is already captured, and issue a unique
+  // |eventCount| to identify each.
+  var eventCount = 0;
+  capturedEventData.forEach(function (event) {
+    if (deepEq(event.event, name) && deepEq(event.details, details)) {
+      eventCount++;
+      // update |details| for the next match.
+      details.eventCount = eventCount;
+    }
+  });
+
+  // find |details| in matchingExpectedEventData
+  var matchingExpectedEvent = undefined;
   expectedEventData.forEach(function (exp) {
     if (deepEq(exp.event, name) && deepEq(exp.details, details)) {
-      if (found) {
-        chrome.test.fail("Received event twice '" + name + "':" +
-            JSON.stringify(details));
+      if (matchingExpectedEvent) {
+        chrome.test.fail("Duplicated expectation entry '" + exp.label +
+        "' should be identified by |eventCount|: " + JSON.stringify(details));
       } else {
-        found = true;
-        label = exp.label;
+        matchingExpectedEvent = exp;
       }
     }
   });
-  if (!found && !ignoreUnexpected) {
+  if (!matchingExpectedEvent && !ignoreUnexpected) {
     console.log("Expected events: " +
         JSON.stringify(expectedEventData, null, 2));
     chrome.test.fail("Received unexpected event '" + name + "':" +
         JSON.stringify(details, null, 2));
   }
 
-  if (found) {
+  var retval;
+  var retval_function;
+  if (matchingExpectedEvent) {
     if (logAllRequests) {
       console.log("Expected: " + name + ": " + JSON.stringify(details));
     }
-    capturedEventData.push({label: label, event: name, details: details});
+    capturedEventData.push(
+        {label: matchingExpectedEvent.label, event: name, details: details});
 
     // checkExpecations decrements the counter of pending events. We may only
     // call it if an expected event has occurred.
     checkExpectations();
+
+    // Pull the extra per-event options out of the expected data. These let us
+    // specify special return values per event.
+    retval = matchingExpectedEvent.retval;
+    retval_function = matchingExpectedEvent.retval_function;
   } else {
     if (logAllRequests) {
-      console.log("NOT Expected: " + name + ": " + JSON.stringify(details));
+      console.log('NOT Expected: ' + name + ': ' + JSON.stringify(details));
     }
-    capturedUnexpectedData.push({label: label, event: name, details: details});
+    capturedUnexpectedData.push({event: name, details: details});
+  }
+
+  if (retval_function) {
+    return retval_function(name, originalDetails, callback);
   }
 
   if (callback) {
@@ -499,4 +536,28 @@ function removeListeners() {
 
 function resetDeclarativeRules() {
   chrome.declarativeWebRequest.onRequest.removeRules();
+}
+
+function checkHeaders(headers, requiredNames, disallowedNames) {
+  var headerMap = {};
+  for (var i = 0; i < headers.length; i++)
+    headerMap[headers[i].name.toLowerCase()] = headers[i].value;
+
+  for (var i = 0; i < requiredNames.length; i++) {
+    chrome.test.assertTrue(!!headerMap[requiredNames[i]],
+        'Missing header: ' + requiredNames[i]);
+  }
+  for (var i = 0; i < disallowedNames.length; i++) {
+    chrome.test.assertFalse(!!headerMap[disallowedNames[i]],
+        'Header should not be present: ' + disallowedNames[i]);
+  }
+}
+
+function removeHeader(headers, name) {
+  for (var i = 0; i < headers.length; i++) {
+    if (headers[i].name.toLowerCase() == name) {
+      headers.splice(i, 1);
+      break;
+    }
+  }
 }

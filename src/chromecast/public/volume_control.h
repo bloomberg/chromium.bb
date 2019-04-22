@@ -24,6 +24,15 @@ enum class AudioContentType {
   kNumTypes,       // Not a valid type; should always be last in the enum.
 };
 
+// Different sources of volume changes. Used to change behaviour (eg feedback
+// sounds) based on the source.
+enum class VolumeChangeSource {
+  kUser,              // User-initiated volume change.
+  kAutomatic,         // Automatic volume change, no user involvement.
+  kAutoWithFeedback,  // Automatic volume change, but we still want to have
+                      // volume feedback UX.
+};
+
 // Observer for volume/mute state changes. This is useful to detect volume
 // changes that occur outside of cast_shell. Add/RemoveVolumeObserver() must not
 // be called synchronously from OnVolumeChange() or OnMuteChange(). Note that
@@ -33,11 +42,15 @@ class VolumeObserver {
  public:
   // Called whenever the volume changes for a given stream |type|. May be called
   // on an arbitrary thread.
-  virtual void OnVolumeChange(AudioContentType type, float new_volume) = 0;
+  virtual void OnVolumeChange(VolumeChangeSource source,
+                              AudioContentType type,
+                              float new_volume) = 0;
 
   // Called whenever the mute state changes for a given stream |type|. May be
   // called on an arbitrary thread.
-  virtual void OnMuteChange(AudioContentType type, bool new_muted) = 0;
+  virtual void OnMuteChange(VolumeChangeSource source,
+                            AudioContentType type,
+                            bool new_muted) = 0;
 
  protected:
   virtual ~VolumeObserver() = default;
@@ -52,54 +65,54 @@ class CHROMECAST_EXPORT VolumeControl {
   // control is in an uninitialized state. The implementation of this method
   // should load previously set volume and mute states from persistent storage,
   // so that the volume and mute are preserved across reboots.
-  static void Initialize(const std::vector<std::string>& argv)
-      __attribute__((__weak__));
+  static void Initialize(const std::vector<std::string>& argv);
 
   // Tears down platform-specific volume control and returns to the
   // uninitialized state.
-  static void Finalize() __attribute__((__weak__));
+  static void Finalize();
 
   // Adds a volume observer.
-  static void AddVolumeObserver(VolumeObserver* observer)
-      __attribute__((__weak__));
+  static void AddVolumeObserver(VolumeObserver* observer);
   // Removes a volume observer. After this is called, the implementation must
   // not call any more methods on the observer.
-  static void RemoveVolumeObserver(VolumeObserver* observer)
-      __attribute__((__weak__));
+  static void RemoveVolumeObserver(VolumeObserver* observer);
 
   // Gets/sets the output volume for a given audio stream |type|. The volume
   // |level| is in the range [0.0, 1.0]. AudioContentType::kOther is not a valid
   // |type| for these methods.
-  static float GetVolume(AudioContentType type) __attribute__((__weak__));
-  static void SetVolume(AudioContentType type, float level)
-      __attribute__((__weak__));
+  static float GetVolume(AudioContentType type);
+  static void SetVolume(VolumeChangeSource source,
+                        AudioContentType type,
+                        float level);
 
   // Gets/sets the mute state for a given audio stream |type|.
   // AudioContentType::kOther is not a valid |type| for these methods.
-  static bool IsMuted(AudioContentType type) __attribute__((__weak__));
-  static void SetMuted(AudioContentType type, bool muted)
-      __attribute__((__weak__));
+  static bool IsMuted(AudioContentType type);
+  static void SetMuted(VolumeChangeSource source,
+                       AudioContentType type,
+                       bool muted);
 
   // Limits the output volume for a given stream |type| to no more than |limit|.
   // This does not affect the logical volume for the stream type; the volume
   // returned by GetVolume() should not change, and no OnVolumeChange() event
   // should be sent to observers. AudioContentType::kOther is not a valid |type|
   // for this method.
-  static void SetOutputLimit(AudioContentType type, float limit)
-      __attribute__((__weak__));
+  static void SetOutputLimit(AudioContentType type, float limit);
 
   // Called to enable power save mode when no audio is being played
   // (|power_save_on| will be true in this case), and to disable power save mode
   // when audio playback resumes (|power_save_on| will be false).
-  static void SetPowerSaveMode(bool power_save_on) __attribute__((__weak__));
+  // NOTE: This is optional (therefore a weak symbol) because most platforms
+  // do not have any need to implement it.
+  static void SetPowerSaveMode(bool power_save_on) __attribute__((weak));
 
   // Converts a volume level in the range [0.0, 1.0] to/from a volume in dB.
   // The volume in dB should be full-scale (so a volume level of 1.0 would be
   // 0.0 dBFS, and any lower volume level would be negative).
   // NOTE: Unlike the other VolumeControl methods, these may be called before
   // Initialize() or after Finalize(). May be called from multiple processes.
-  static float VolumeToDbFS(float volume) __attribute__((__weak__));
-  static float DbFSToVolume(float dbfs) __attribute__((__weak__));
+  static float VolumeToDbFS(float volume);
+  static float DbFSToVolume(float dbfs);
 };
 
 }  // namespace media

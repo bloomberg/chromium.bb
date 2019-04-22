@@ -17,6 +17,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h"
+#include "chrome/browser/ui/views/native_widget_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -41,10 +42,6 @@ namespace {
 class BookmarkBarViewTest : public BrowserWithTestWindowTest {
  public:
   BookmarkBarViewTest() {}
-
-  void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
-  }
 
   void TearDown() override {
     test_helper_.reset();
@@ -213,12 +210,12 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAddedAfterModelHasNodes) {
   EXPECT_EQ(6, test_helper_->GetBookmarkButtonCount());
 
   // Ensure buttons were added in the correct place.
-  int managed_button_index =
-      bookmark_bar_view_->GetIndexOf(test_helper_->managed_bookmarks_button());
+  auto button_iter =
+      bookmark_bar_view_->FindChild(test_helper_->managed_bookmarks_button());
   for (int i = 0; i < test_helper_->GetBookmarkButtonCount(); ++i) {
-    views::View* button = test_helper_->GetBookmarkButton(i);
-    EXPECT_EQ(bookmark_bar_view_->GetIndexOf(button),
-              managed_button_index + 1 + i);
+    ++button_iter;
+    ASSERT_NE(bookmark_bar_view_->children().cend(), button_iter);
+    EXPECT_EQ(test_helper_->GetBookmarkButton(i), *button_iter);
   }
 }
 
@@ -237,12 +234,12 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAdded) {
   bookmark_bar_view_->Layout();
   EXPECT_EQ(6, test_helper_->GetBookmarkButtonCount());
   // Ensure buttons were added in the correct place.
-  int managed_button_index =
-      bookmark_bar_view_->GetIndexOf(test_helper_->managed_bookmarks_button());
+  auto button_iter =
+      bookmark_bar_view_->FindChild(test_helper_->managed_bookmarks_button());
   for (int i = 0; i < test_helper_->GetBookmarkButtonCount(); ++i) {
-    views::View* button = test_helper_->GetBookmarkButton(i);
-    EXPECT_EQ(bookmark_bar_view_->GetIndexOf(button),
-              managed_button_index + 1 + i);
+    ++button_iter;
+    ASSERT_NE(bookmark_bar_view_->children().cend(), button_iter);
+    EXPECT_EQ(test_helper_->GetBookmarkButton(i), *button_iter);
   }
 }
 
@@ -381,8 +378,14 @@ TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
   views::Widget widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.native_widget = views::test::CreatePlatformDesktopNativeWidgetImpl(
-      params, &widget, nullptr);
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+  // On Chrome OS, this always creates a NativeWidgetAura, but it should create
+  // a DesktopNativeWidgetAura for Mash. We can get by without manually creating
+  // it because AshTestViewsDelegate and MusClient will do the right thing
+  // automatically.
+  params.native_widget = CreateNativeWidget(
+      NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA, &params, &widget);
+#endif
   widget.Init(params);
   widget.Show();
   widget.GetRootView()->AddChildView(bookmark_bar_view_.get());
@@ -396,12 +399,9 @@ TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
   views::LabelButton* button = test_helper_->GetBookmarkButton(0);
   ASSERT_TRUE(button);
   gfx::Point p;
-  base::string16 text;
-  button->GetTooltipText(p, &text);
-  EXPECT_EQ(base::ASCIIToUTF16("a\na.com"), text);
+  EXPECT_EQ(base::ASCIIToUTF16("a\na.com"), button->GetTooltipText(p));
   button->SetText(base::ASCIIToUTF16("new title"));
-  button->GetTooltipText(p, &text);
-  EXPECT_EQ(base::ASCIIToUTF16("new title\na.com"), text);
+  EXPECT_EQ(base::ASCIIToUTF16("new title\na.com"), button->GetTooltipText(p));
 
   widget.CloseNow();
 }

@@ -34,6 +34,11 @@ class BackgroundSyncMetrics {
   // Records the result of a single sync event firing.
   static void RecordEventResult(bool result, bool finished_in_foreground);
 
+  // Records, at the completion of a one-shot sync registration, whether the
+  // sync event was successful, and how many attempts it took to get there.
+  static void RecordRegistrationComplete(bool event_succeeded,
+                                         int num_attempts_required);
+
   // Records the result of running a batch of sync events, including the total
   // time spent, and the batch size.
   static void RecordBatchSyncEventComplete(const base::TimeDelta& time,

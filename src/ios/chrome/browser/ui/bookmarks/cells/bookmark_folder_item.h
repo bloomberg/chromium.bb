@@ -43,7 +43,7 @@ typedef NS_ENUM(NSInteger, TableViewBookmarkFolderAccessoryType) {
 
 // TableViewCell that displays BookmarkFolderItem data.
 @interface TableViewBookmarkFolderCell
-    : UITableViewCell<BookmarkTableCellTitleEditing>
+    : TableViewCell <BookmarkTableCellTitleEditing>
 
 // The leading constraint used to set the cell's leading indentation. The
 // default indentationLevel property doesn't affect any custom Cell subviews,

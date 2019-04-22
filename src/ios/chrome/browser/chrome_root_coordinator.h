@@ -14,17 +14,18 @@
 
 @interface ChromeRootCoordinator : ChromeCoordinator
 
-- (nullable instancetype)initWithWindow:(nullable UIWindow*)window
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithWindow:(UIWindow*)window NS_DESIGNATED_INITIALIZER;
 
-- (nullable instancetype)initWithBaseViewController:
-    (nullable UIViewController*)viewController NS_UNAVAILABLE;
-- (nullable instancetype)
-initWithBaseViewController:(nullable UIViewController*)viewController
-              browserState:(nullable ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
-@property(weak, nonatomic, readonly, nullable) UIWindow* window;
+@property(weak, nonatomic, readonly) UIWindow* window;
 
 @end
 

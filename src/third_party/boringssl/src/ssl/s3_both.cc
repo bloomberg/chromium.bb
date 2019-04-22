@@ -188,14 +188,12 @@ bool ssl3_add_message(SSL *ssl, Array<uint8_t> msg) {
   // unnecessary encryption overhead, notably in TLS 1.3 where we send several
   // encrypted messages in a row. For now, we do not do this for the null
   // cipher. The benefit is smaller and there is a risk of breaking buggy
-  // implementations. Additionally, we tie this to draft-28 as a sanity check,
-  // on the off chance middleboxes have fixated on sizes.
+  // implementations.
   //
   // TODO(davidben): See if we can do this uniformly.
   Span<const uint8_t> rest = msg;
-  if (ssl->ctx->quic_method == nullptr &&
-      (ssl->s3->aead_write_ctx->is_null_cipher() ||
-       ssl->version == TLS1_3_DRAFT23_VERSION)) {
+  if (ssl->quic_method == nullptr &&
+      ssl->s3->aead_write_ctx->is_null_cipher()) {
     while (!rest.empty()) {
       Span<const uint8_t> chunk = rest.subspan(0, ssl->max_send_fragment);
       rest = rest.subspan(chunk.size());
@@ -250,9 +248,9 @@ bool tls_flush_pending_hs_data(SSL *ssl) {
   auto data =
       MakeConstSpan(reinterpret_cast<const uint8_t *>(pending_hs_data->data),
                     pending_hs_data->length);
-  if (ssl->ctx->quic_method) {
-    if (!ssl->ctx->quic_method->add_handshake_data(ssl, ssl->s3->write_level,
-                                                   data.data(), data.size())) {
+  if (ssl->quic_method) {
+    if (!ssl->quic_method->add_handshake_data(ssl, ssl->s3->write_level,
+                                              data.data(), data.size())) {
       OPENSSL_PUT_ERROR(SSL, SSL_R_QUIC_INTERNAL_ERROR);
       return false;
     }
@@ -269,7 +267,7 @@ bool ssl3_add_change_cipher_spec(SSL *ssl) {
     return false;
   }
 
-  if (!ssl->ctx->quic_method &&
+  if (!ssl->quic_method &&
       !add_record_to_flight(ssl, SSL3_RT_CHANGE_CIPHER_SPEC,
                             kChangeCipherSpec)) {
     return false;
@@ -285,13 +283,13 @@ int ssl3_flush_flight(SSL *ssl) {
     return -1;
   }
 
-  if (ssl->ctx->quic_method) {
+  if (ssl->quic_method) {
     if (ssl->s3->write_shutdown != ssl_shutdown_none) {
       OPENSSL_PUT_ERROR(SSL, SSL_R_PROTOCOL_IS_SHUTDOWN);
       return -1;
     }
 
-    if (!ssl->ctx->quic_method->flush_flight(ssl)) {
+    if (!ssl->quic_method->flush_flight(ssl)) {
       OPENSSL_PUT_ERROR(SSL, SSL_R_QUIC_INTERNAL_ERROR);
       return -1;
     }

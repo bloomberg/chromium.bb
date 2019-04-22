@@ -9,12 +9,12 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/caption_buttons/frame_size_button_delegate.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
+#include "ui/views/window/frame_caption_button.h"
 
 namespace gfx {
 class SlideAnimation;
@@ -50,19 +50,19 @@ class ASH_PUBLIC_EXPORT FrameCaptionButtonContainerView
 
     void EndAnimations();
 
-    FrameCaptionButton* minimize_button() const {
+    views::FrameCaptionButton* minimize_button() const {
       return container_view_->minimize_button_;
     }
 
-    FrameCaptionButton* size_button() const {
+    views::FrameCaptionButton* size_button() const {
       return container_view_->size_button_;
     }
 
-    FrameCaptionButton* close_button() const {
+    views::FrameCaptionButton* close_button() const {
       return container_view_->close_button_;
     }
 
-    FrameCaptionButton* menu_button() const {
+    views::FrameCaptionButton* menu_button() const {
       return container_view_->menu_button_;
     }
 
@@ -75,15 +75,12 @@ class ASH_PUBLIC_EXPORT FrameCaptionButtonContainerView
   // Sets the id of the vector image to paint the button for |icon|. The
   // FrameCaptionButtonContainerView will keep track of the image to use for
   // |icon| even if none of the buttons currently use |icon|.
-  void SetButtonImage(CaptionButtonIcon icon,
+  void SetButtonImage(views::CaptionButtonIcon icon,
                       const gfx::VectorIcon& icon_definition);
 
   // Sets whether the buttons should be painted as active. Does not schedule
   // a repaint.
   void SetPaintAsActive(bool paint_as_active);
-
-  // Sets whether the buttons should use themed foreground color computation.
-  void SetColorMode(FrameCaptionButton::ColorMode color_mode);
 
   // Sets the background frame color that buttons should compute their color
   // respective to.
@@ -121,8 +118,8 @@ class ASH_PUBLIC_EXPORT FrameCaptionButtonContainerView
   // will crossfade to the new icon. If |animate| is ANIMATE_NO and
   // |icon| == |button|->icon(), the crossfade animation is progressed to the
   // end.
-  void SetButtonIcon(FrameCaptionButton* button,
-                     CaptionButtonIcon icon,
+  void SetButtonIcon(views::FrameCaptionButton* button,
+                     views::CaptionButtonIcon icon,
                      Animate animate);
 
   // views::ButtonListener:
@@ -131,13 +128,15 @@ class ASH_PUBLIC_EXPORT FrameCaptionButtonContainerView
   // FrameSizeButtonDelegate:
   bool IsMinimizeButtonVisible() const override;
   void SetButtonsToNormal(Animate animate) override;
-  void SetButtonIcons(CaptionButtonIcon minimize_button_icon,
-                      CaptionButtonIcon close_button_icon,
+  void SetButtonIcons(views::CaptionButtonIcon minimize_button_icon,
+                      views::CaptionButtonIcon close_button_icon,
                       Animate animate) override;
-  const FrameCaptionButton* GetButtonClosestTo(
+  const views::FrameCaptionButton* GetButtonClosestTo(
       const gfx::Point& position_in_screen) const override;
-  void SetHoveredAndPressedButtons(const FrameCaptionButton* to_hover,
-                                   const FrameCaptionButton* to_press) override;
+  void SetHoveredAndPressedButtons(
+      const views::FrameCaptionButton* to_hover,
+      const views::FrameCaptionButton* to_press) override;
+  aura::Window* GetFrameWindow() override;
   bool CanSnap() override;
   void ShowSnapPreview(mojom::SnapDirection snap) override;
   void CommitSnap(mojom::SnapDirection snap) override;
@@ -150,14 +149,14 @@ class ASH_PUBLIC_EXPORT FrameCaptionButtonContainerView
 
   // The buttons. In the normal button style, at most one of |minimize_button_|
   // and |size_button_| is visible.
-  FrameCaptionButton* menu_button_ = nullptr;
-  FrameCaptionButton* minimize_button_ = nullptr;
-  FrameCaptionButton* size_button_ = nullptr;
-  FrameCaptionButton* close_button_ = nullptr;
+  views::FrameCaptionButton* menu_button_ = nullptr;
+  views::FrameCaptionButton* minimize_button_ = nullptr;
+  views::FrameCaptionButton* size_button_ = nullptr;
+  views::FrameCaptionButton* close_button_ = nullptr;
 
   // Mapping of the image needed to paint a button for each of the values of
   // CaptionButtonIcon.
-  std::map<CaptionButtonIcon, const gfx::VectorIcon*> button_icon_map_;
+  std::map<views::CaptionButtonIcon, const gfx::VectorIcon*> button_icon_map_;
 
   // Animation that affects the visibility of |size_button_| and the position of
   // buttons to the left of it. Usually this is just the minimize button but it

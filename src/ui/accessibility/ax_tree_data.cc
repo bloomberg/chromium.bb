@@ -24,11 +24,11 @@ std::string AXTreeData::ToString() const {
   std::string result;
 
   if (tree_id != AXTreeIDUnknown())
-    result += " tree_id=" + tree_id.ToString();
+    result += " tree_id=" + tree_id.ToString().substr(0, 8);
   if (parent_tree_id != AXTreeIDUnknown())
-    result += " parent_tree_id=" + parent_tree_id.ToString();
+    result += " parent_tree_id=" + parent_tree_id.ToString().substr(0, 8);
   if (focused_tree_id != AXTreeIDUnknown())
-    result += " focused_tree_id=" + focused_tree_id.ToString();
+    result += " focused_tree_id=" + focused_tree_id.ToString().substr(0, 8);
 
   if (!doctype.empty())
     result += " doctype=" + doctype;
@@ -47,6 +47,8 @@ std::string AXTreeData::ToString() const {
     result += " focus_id=" + base::NumberToString(focus_id);
 
   if (sel_anchor_object_id != -1) {
+    result +=
+        (sel_is_backward ? " sel_is_backward=true" : " sel_is_backward=false");
     result +=
         " sel_anchor_object_id=" + base::NumberToString(sel_anchor_object_id);
     result += " sel_anchor_offset=" + base::NumberToString(sel_anchor_offset);

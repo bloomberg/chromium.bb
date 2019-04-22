@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_UI_IN_PRODUCT_HELP_IN_PRODUCT_HELP_H_
 #define CHROME_BROWSER_UI_IN_PRODUCT_HELP_IN_PRODUCT_HELP_H_
 
-// Identifies a feature that has in-product help. This is used for dispatching
-// in-product help promos from a |BrowserWindow| object.
+// Identifies a feature that has in-product help.
 enum class InProductHelpFeature {
-  // For |ReopenTabInProductHelp|
+  kIncognitoWindow,
   kReopenTab,
 };
 

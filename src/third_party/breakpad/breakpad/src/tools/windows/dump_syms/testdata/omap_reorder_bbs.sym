@@ -290,7 +290,7 @@ FUNC 2cec 54 0 main
 2d1b f 62 1
 2d2a 12 64 1
 2d3c 4 65 1
-FUNC 4b70 a 0 google_breakpad::i
+FUNC 4b70 a 0 static int google_breakpad::i()
 4b70 3 51 1
 4b73 5 52 1
 4b78 2 53 1
@@ -320,10 +320,10 @@ FUNC 12a0 b 0 operator delete(void *)
 12a0 5 20 2875
 12a5 1 24 2875
 12a6 5 23 2875
-FUNC 198c 4 0 fast_error_exit
-FUNC 1ff0 18 0 fast_error_exit
-FUNC 455c 12 0 fast_error_exit
-FUNC 4d0c 5 0 fast_error_exit
+FUNC 198c 4 0 static void fast_error_exit(int)
+FUNC 1ff0 18 0 static void fast_error_exit(int)
+FUNC 455c 12 0 static void fast_error_exit(int)
+FUNC 4d0c 5 0 static void fast_error_exit(int)
 1ff0 5 326 4250
 1ff5 13 335 4250
 4d0c 5 337 4250
@@ -331,7 +331,7 @@ FUNC 4d0c 5 0 fast_error_exit
 198c 2 340 4250
 4564 a 340 4250
 198e 2 341 4250
-FUNC 38be 161 0 __tmainCRTStartup
+FUNC 38be 161 0 static int __tmainCRTStartup()
 38be c 196 4250
 38ca a 214 4250
 38d4 b 216 4250
@@ -556,7 +556,7 @@ FUNC 6f60 2 0 _cinit
 1d44 c 303 4186
 4bf8 2 307 4186
 6f60 2 308 4186
-FUNC 35a7 140 0 doexit
+FUNC 35a7 140 0 static void doexit(int, int, int)
 35a7 c 489 4186
 35b3 8 507 4186
 35bb 4 508 4186
@@ -809,61 +809,61 @@ FUNC 4139 dc 0 _setenvp
 41fc 7 130 3838
 4203 5 131 3838
 4208 d 133 3838
-FUNC 1018 8 0 parse_cmdline
-FUNC 19b4 e 0 parse_cmdline
-FUNC 19f4 2 0 parse_cmdline
-FUNC 1dd0 14 0 parse_cmdline
-FUNC 1fac 28 0 parse_cmdline
-FUNC 2058 f 0 parse_cmdline
-FUNC 209c 9 0 parse_cmdline
-FUNC 2364 1a 0 parse_cmdline
-FUNC 253c 4 0 parse_cmdline
-FUNC 2598 9 0 parse_cmdline
-FUNC 25cc 10 0 parse_cmdline
-FUNC 2718 b 0 parse_cmdline
-FUNC 2730 e 0 parse_cmdline
-FUNC 28a8 a 0 parse_cmdline
-FUNC 28fc 2 0 parse_cmdline
-FUNC 290c 14 0 parse_cmdline
-FUNC 2b34 f 0 parse_cmdline
-FUNC 2bfc 10 0 parse_cmdline
-FUNC 2d88 7 0 parse_cmdline
-FUNC 3730 d 0 parse_cmdline
-FUNC 377c 2 0 parse_cmdline
-FUNC 37b0 10 0 parse_cmdline
-FUNC 3c38 24 0 parse_cmdline
-FUNC 3c84 10 0 parse_cmdline
-FUNC 3db8 1b 0 parse_cmdline
-FUNC 3e90 e 0 parse_cmdline
-FUNC 3efc 13 0 parse_cmdline
-FUNC 4110 12 0 parse_cmdline
-FUNC 42dc f 0 parse_cmdline
-FUNC 42f0 10 0 parse_cmdline
-FUNC 4518 6 0 parse_cmdline
-FUNC 4610 7 0 parse_cmdline
-FUNC 4684 11 0 parse_cmdline
-FUNC 46f8 13 0 parse_cmdline
-FUNC 4848 a 0 parse_cmdline
-FUNC 4994 f 0 parse_cmdline
-FUNC 49bc e 0 parse_cmdline
-FUNC 4aac 1 0 parse_cmdline
-FUNC 4cb8 f 0 parse_cmdline
-FUNC 4ed8 24 0 parse_cmdline
-FUNC 4f10 3 0 parse_cmdline
-FUNC 4f30 e 0 parse_cmdline
-FUNC 501c 10 0 parse_cmdline
-FUNC 5518 3 0 parse_cmdline
-FUNC 569c 3 0 parse_cmdline
-FUNC 57bc 12 0 parse_cmdline
-FUNC 5a50 10 0 parse_cmdline
-FUNC 5cc0 14 0 parse_cmdline
-FUNC 5e84 f 0 parse_cmdline
-FUNC 6448 f 0 parse_cmdline
-FUNC 6530 e 0 parse_cmdline
-FUNC 66b0 13 0 parse_cmdline
-FUNC 6970 4 0 parse_cmdline
-FUNC 6aec 7 0 parse_cmdline
-FUNC 6f30 e 0 parse_cmdline
+FUNC 1018 8 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 19b4 e 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 19f4 2 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 1dd0 14 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 1fac 28 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 2058 f 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 209c 9 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 2364 1a 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 253c 4 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 2598 9 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 25cc 10 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 2718 b 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 2730 e 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 28a8 a 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 28fc 2 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 290c 14 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 2b34 f 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 2bfc 10 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 2d88 7 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 3730 d 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 377c 2 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 37b0 10 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 3c38 24 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 3c84 10 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 3db8 1b 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 3e90 e 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 3efc 13 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 4110 12 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 42dc f 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 42f0 10 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 4518 6 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 4610 7 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 4684 11 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 46f8 13 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 4848 a 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 4994 f 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 49bc e 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 4aac 1 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 4cb8 f 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 4ed8 24 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 4f10 3 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 4f30 e 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 501c 10 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 5518 3 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 569c 3 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 57bc 12 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 5a50 10 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 5cc0 14 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 5e84 f 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 6448 f 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 6530 e 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 66b0 13 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 6970 4 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 6aec 7 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
+FUNC 6f30 e 0 static void parse_cmdline(char *, char * *, char *, int *, int *)
 1fac 6 221 3891
 1fb2 9 229 3891
 1fbb 2 232 3891
@@ -1632,7 +1632,7 @@ FUNC 65a0 2 0 malloc
 5b9e 2 113 504
 22f5 2 122 504
 FUNC 297c 90 0 _local_unwind4
-FUNC 2a0c 46 0 _unwind_handler4
+FUNC 2a0c 46 0 static void _unwind_handler4()
 FUNC 2a52 1c 4 _seh_longjmp_unwind4
 FUNC 2a6e 17 0 _EH4_CallFilterFunc
 FUNC 2a85 19 0 _EH4_TransferToHandler
@@ -1687,13 +1687,13 @@ FUNC 15b8 1e 0 _initp_misc_winsig
 15ca 5 60 2311
 15cf 5 61 2311
 15d4 2 62 2311
-FUNC 15d8 18 0 siglookup
-FUNC 3538 f 0 siglookup
-FUNC 42c8 14 0 siglookup
-FUNC 45c8 2 0 siglookup
-FUNC 4e1c f 0 siglookup
-FUNC 55f0 2 0 siglookup
-FUNC 63ac f 0 siglookup
+FUNC 15d8 18 0 static struct _XCPT_ACTION * siglookup(int, struct _XCPT_ACTION *)
+FUNC 3538 f 0 static struct _XCPT_ACTION * siglookup(int, struct _XCPT_ACTION *)
+FUNC 42c8 14 0 static struct _XCPT_ACTION * siglookup(int, struct _XCPT_ACTION *)
+FUNC 45c8 2 0 static struct _XCPT_ACTION * siglookup(int, struct _XCPT_ACTION *)
+FUNC 4e1c f 0 static struct _XCPT_ACTION * siglookup(int, struct _XCPT_ACTION *)
+FUNC 55f0 2 0 static struct _XCPT_ACTION * siglookup(int, struct _XCPT_ACTION *)
+FUNC 63ac f 0 static struct _XCPT_ACTION * siglookup(int, struct _XCPT_ACTION *)
 63ac 5 629 2311
 63b1 a 630 2311
 15d8 18 639 2311
@@ -1785,19 +1785,19 @@ FUNC 6c18 5 0 _callnewh
 6c1b 2 139 2820
 60b0 2 136 2820
 60b2 2 139 2820
-FUNC 2274 12 0 _onexit_nolock
-FUNC 2484 10 0 _onexit_nolock
-FUNC 2640 2 0 _onexit_nolock
-FUNC 2b88 10 0 _onexit_nolock
-FUNC 32ac 13 0 _onexit_nolock
-FUNC 4124 15 0 _onexit_nolock
-FUNC 43e8 33 0 _onexit_nolock
-FUNC 45f8 18 0 _onexit_nolock
-FUNC 4a2c 20 0 _onexit_nolock
-FUNC 4b68 2 0 _onexit_nolock
-FUNC 4bb8 18 0 _onexit_nolock
-FUNC 4d84 5 0 _onexit_nolock
-FUNC 6a0c 1a 0 _onexit_nolock
+FUNC 2274 12 0 static  * _onexit_nolock( *)
+FUNC 2484 10 0 static  * _onexit_nolock( *)
+FUNC 2640 2 0 static  * _onexit_nolock( *)
+FUNC 2b88 10 0 static  * _onexit_nolock( *)
+FUNC 32ac 13 0 static  * _onexit_nolock( *)
+FUNC 4124 15 0 static  * _onexit_nolock( *)
+FUNC 43e8 33 0 static  * _onexit_nolock( *)
+FUNC 45f8 18 0 static  * _onexit_nolock( *)
+FUNC 4a2c 20 0 static  * _onexit_nolock( *)
+FUNC 4b68 2 0 static  * _onexit_nolock( *)
+FUNC 4bb8 18 0 static  * _onexit_nolock( *)
+FUNC 4d84 5 0 static  * _onexit_nolock( *)
+FUNC 6a0c 1a 0 static  * _onexit_nolock( *)
 43e8 8 100 1969
 43f0 f 103 1969
 43ff f 104 1969
@@ -2170,15 +2170,15 @@ FUNC 6f20 9 0 _realloc_crt
 2b5e e 79 333
 38b8 4 82 333
 38bc 2 83 333
-FUNC 28b4 c 0 CPtoLCID
-FUNC 3d08 6 0 CPtoLCID
-FUNC 5510 6 0 CPtoLCID
-FUNC 5600 6 0 CPtoLCID
-FUNC 5f14 3 0 CPtoLCID
-FUNC 6294 f 0 CPtoLCID
-FUNC 68f4 10 0 CPtoLCID
-FUNC 69cc 6 0 CPtoLCID
-FUNC 6fe0 e 0 CPtoLCID
+FUNC 28b4 c 0 static int CPtoLCID(int)
+FUNC 3d08 6 0 static int CPtoLCID(int)
+FUNC 5510 6 0 static int CPtoLCID(int)
+FUNC 5600 6 0 static int CPtoLCID(int)
+FUNC 5f14 3 0 static int CPtoLCID(int)
+FUNC 6294 f 0 static int CPtoLCID(int)
+FUNC 68f4 10 0 static int CPtoLCID(int)
+FUNC 69cc 6 0 static int CPtoLCID(int)
+FUNC 6fe0 e 0 static int CPtoLCID(int)
 68f4 0 329 3326
 28b4 c 330 3326
 6294 f 330 3326
@@ -2194,11 +2194,11 @@ FUNC 6fe0 e 0 CPtoLCID
 69d1 1 346 3326
 5600 5 333 3326
 5605 1 346 3326
-FUNC 2208 f 0 setSBCS
-FUNC 387c 3 0 setSBCS
-FUNC 48ac f 0 setSBCS
-FUNC 5900 44 0 setSBCS
-FUNC 6be0 b 0 setSBCS
+FUNC 2208 f 0 static void setSBCS(struct threadmbcinfostruct *)
+FUNC 387c 3 0 static void setSBCS(struct threadmbcinfostruct *)
+FUNC 48ac f 0 static void setSBCS(struct threadmbcinfostruct *)
+FUNC 5900 44 0 static void setSBCS(struct threadmbcinfostruct *)
+FUNC 6be0 b 0 static void setSBCS(struct threadmbcinfostruct *)
 5900 6 363 3326
 5906 11 368 3326
 5917 1b 379 3326
@@ -2207,32 +2207,32 @@ FUNC 6be0 b 0 setSBCS
 6be0 b 384 3326
 48ac f 385 3326
 387c 3 386 3326
-FUNC 12dc 18 0 setSBUpLow
-FUNC 1794 f 0 setSBUpLow
-FUNC 1b6c 7 0 setSBUpLow
-FUNC 2548 e 0 setSBUpLow
-FUNC 2c0c 39 0 setSBUpLow
-FUNC 3238 8 0 setSBUpLow
-FUNC 3e54 2 0 setSBUpLow
-FUNC 3ee0 16 0 setSBUpLow
-FUNC 445c 20 0 setSBUpLow
-FUNC 4800 f 0 setSBUpLow
-FUNC 4910 8 0 setSBUpLow
-FUNC 4a8c 12 0 setSBUpLow
-FUNC 4d8c e 0 setSBUpLow
-FUNC 566c f 0 setSBUpLow
-FUNC 56fc c 0 setSBUpLow
-FUNC 59e4 14 0 setSBUpLow
-FUNC 5aa8 6 0 setSBUpLow
-FUNC 5b08 17 0 setSBUpLow
-FUNC 5b60 14 0 setSBUpLow
-FUNC 5db4 12 0 setSBUpLow
-FUNC 6060 c 0 setSBUpLow
-FUNC 60b4 6 0 setSBUpLow
-FUNC 6218 f 0 setSBUpLow
-FUNC 62b8 6a 0 setSBUpLow
-FUNC 697c 3 0 setSBUpLow
-FUNC 6b44 1b 0 setSBUpLow
+FUNC 12dc 18 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 1794 f 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 1b6c 7 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 2548 e 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 2c0c 39 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 3238 8 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 3e54 2 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 3ee0 16 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 445c 20 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 4800 f 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 4910 8 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 4a8c 12 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 4d8c e 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 566c f 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 56fc c 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 59e4 14 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 5aa8 6 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 5b08 17 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 5b60 14 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 5db4 12 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 6060 c 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 60b4 6 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 6218 f 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 62b8 6a 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 697c 3 0 static void setSBUpLow(struct threadmbcinfostruct *)
+FUNC 6b44 1b 0 static void setSBUpLow(struct threadmbcinfostruct *)
 2c0c 17 402 3326
 2c23 10 412 3326
 2c33 12 415 3326
@@ -2317,17 +2317,17 @@ FUNC 6cbc 1c 0 _LocaleUpdate::_LocaleUpdate(localeinfo_struct *)
 4d7c 6 255 111
 5f68 a 257 111
 2904 7 259 111
-FUNC 19fc e 0 getSystemCP
-FUNC 2690 7 0 getSystemCP
-FUNC 2b98 3 0 getSystemCP
-FUNC 3b80 28 0 getSystemCP
-FUNC 3e18 c 0 getSystemCP
-FUNC 4710 f 0 getSystemCP
-FUNC 4868 10 0 getSystemCP
-FUNC 56bc 16 0 getSystemCP
-FUNC 5e20 16 0 getSystemCP
-FUNC 6020 1f 0 getSystemCP
-FUNC 6f64 2 0 getSystemCP
+FUNC 19fc e 0 static int getSystemCP(int)
+FUNC 2690 7 0 static int getSystemCP(int)
+FUNC 2b98 3 0 static int getSystemCP(int)
+FUNC 3b80 28 0 static int getSystemCP(int)
+FUNC 3e18 c 0 static int getSystemCP(int)
+FUNC 4710 f 0 static int getSystemCP(int)
+FUNC 4868 10 0 static int getSystemCP(int)
+FUNC 56bc 16 0 static int getSystemCP(int)
+FUNC 5e20 16 0 static int getSystemCP(int)
+FUNC 6020 1f 0 static int getSystemCP(int)
+FUNC 6f64 2 0 static int getSystemCP(int)
 3b80 9 282 3326
 3b89 b 284 3326
 3b94 6 285 3326
@@ -2485,15 +2485,15 @@ FUNC 6234 13 0 __initmbctable
 5ddc a 853 3326
 165c 2 858 3326
 165e 1 859 3326
-FUNC 1674 7 0 x_ismbbtype_l
-FUNC 1c0c 2c 0 x_ismbbtype_l
-FUNC 3d74 2 0 x_ismbbtype_l
-FUNC 4c90 e 0 x_ismbbtype_l
-FUNC 5430 16 0 x_ismbbtype_l
-FUNC 59b0 2 0 x_ismbbtype_l
-FUNC 6254 10 0 x_ismbbtype_l
-FUNC 643c 3 0 x_ismbbtype_l
-FUNC 6498 10 0 x_ismbbtype_l
+FUNC 1674 7 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
+FUNC 1c0c 2c 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
+FUNC 3d74 2 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
+FUNC 4c90 e 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
+FUNC 5430 16 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
+FUNC 59b0 2 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
+FUNC 6254 10 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
+FUNC 643c 3 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
+FUNC 6498 10 0 static int x_ismbbtype_l(struct localeinfo_struct *, unsigned int, int, int)
 1c0c 8 213 3271
 1c14 b 214 3271
 1c1f 4 219 3271
@@ -2804,7 +2804,7 @@ FUNC 33f1 95 0 _aulldvrm
 3482 1 180 2806
 3483 3 182 2806
 FUNC 675b 20 0 _global_unwind2
-FUNC 677b 45 0 __unwind_handler
+FUNC 677b 45 0 static void __unwind_handler()
 FUNC 67c0 84 0 _local_unwind2
 FUNC 6844 23 0 _abnormal_termination
 FUNC 6867 9 0 _NLG_Notify1
@@ -3199,52 +3199,52 @@ FUNC 6734 14 0 realloc
 5976 6 112 618
 1048 16 103 618
 2ae0 8 105 618
-FUNC 1000 7 0 __crtLCMapStringA_stat
-FUNC 11b0 14 0 __crtLCMapStringA_stat
-FUNC 17c4 8 0 __crtLCMapStringA_stat
-FUNC 1ac4 6 0 __crtLCMapStringA_stat
-FUNC 21f4 c 0 __crtLCMapStringA_stat
-FUNC 2234 9 0 __crtLCMapStringA_stat
-FUNC 2354 f 0 __crtLCMapStringA_stat
-FUNC 242c 12 0 __crtLCMapStringA_stat
-FUNC 2710 3 0 __crtLCMapStringA_stat
-FUNC 2794 b 0 __crtLCMapStringA_stat
-FUNC 28d0 13 0 __crtLCMapStringA_stat
-FUNC 31f8 5 0 __crtLCMapStringA_stat
-FUNC 327c 14 0 __crtLCMapStringA_stat
-FUNC 32c0 4a 0 __crtLCMapStringA_stat
-FUNC 336c 20 0 __crtLCMapStringA_stat
-FUNC 36f8 f 0 __crtLCMapStringA_stat
-FUNC 37e0 10 0 __crtLCMapStringA_stat
-FUNC 3c30 1 0 __crtLCMapStringA_stat
-FUNC 3f94 e 0 __crtLCMapStringA_stat
-FUNC 4300 14 0 __crtLCMapStringA_stat
-FUNC 4338 11 0 __crtLCMapStringA_stat
-FUNC 497c 16 0 __crtLCMapStringA_stat
-FUNC 4b10 15 0 __crtLCMapStringA_stat
-FUNC 4c70 14 0 __crtLCMapStringA_stat
-FUNC 4ce8 10 0 __crtLCMapStringA_stat
-FUNC 4db4 1e 0 __crtLCMapStringA_stat
-FUNC 4e68 12 0 __crtLCMapStringA_stat
-FUNC 54e8 3 0 __crtLCMapStringA_stat
-FUNC 5574 14 0 __crtLCMapStringA_stat
-FUNC 55d0 2 0 __crtLCMapStringA_stat
-FUNC 55f8 8 0 __crtLCMapStringA_stat
-FUNC 5628 8 0 __crtLCMapStringA_stat
-FUNC 578c 3 0 __crtLCMapStringA_stat
-FUNC 5838 24 0 __crtLCMapStringA_stat
-FUNC 58f4 c 0 __crtLCMapStringA_stat
-FUNC 5f44 7 0 __crtLCMapStringA_stat
-FUNC 61fc f 0 __crtLCMapStringA_stat
-FUNC 6328 14 0 __crtLCMapStringA_stat
-FUNC 63a0 c 0 __crtLCMapStringA_stat
-FUNC 6404 6 0 __crtLCMapStringA_stat
-FUNC 65e8 28 0 __crtLCMapStringA_stat
-FUNC 6624 10 0 __crtLCMapStringA_stat
-FUNC 6ad4 16 0 __crtLCMapStringA_stat
-FUNC 6d80 e 0 __crtLCMapStringA_stat
-FUNC 6eb4 3 0 __crtLCMapStringA_stat
-FUNC 6f10 f 0 __crtLCMapStringA_stat
+FUNC 1000 7 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 11b0 14 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 17c4 8 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 1ac4 6 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 21f4 c 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 2234 9 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 2354 f 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 242c 12 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 2710 3 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 2794 b 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 28d0 13 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 31f8 5 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 327c 14 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 32c0 4a 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 336c 20 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 36f8 f 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 37e0 10 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 3c30 1 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 3f94 e 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 4300 14 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 4338 11 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 497c 16 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 4b10 15 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 4c70 14 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 4ce8 10 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 4db4 1e 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 4e68 12 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 54e8 3 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 5574 14 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 55d0 2 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 55f8 8 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 5628 8 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 578c 3 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 5838 24 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 58f4 c 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 5f44 7 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 61fc f 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 6328 14 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 63a0 c 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 6404 6 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 65e8 28 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 6624 10 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 6ad4 16 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 6d80 e 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 6eb4 3 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
+FUNC 6f10 f 0 static int __crtLCMapStringA_stat(struct localeinfo_struct *, unsigned long, unsigned long, const char *, int, char *, int, int, int)
 65e8 12 96 3447
 65fa 16 101 3447
 2354 f 102 3447
@@ -3307,24 +3307,24 @@ FUNC 610c 47 0 __crtLCMapStringA
 3c24 7 271 3447
 611f 34 271 3447
 3204 2 272 3447
-FUNC 1198 3 0 __crtGetStringTypeA_stat
-FUNC 17b4 e 0 __crtGetStringTypeA_stat
-FUNC 19ac 2 0 __crtGetStringTypeA_stat
-FUNC 24a4 14 0 __crtGetStringTypeA_stat
-FUNC 3318 33 0 __crtGetStringTypeA_stat
-FUNC 357c 2b 0 __crtGetStringTypeA_stat
-FUNC 43c4 b 0 __crtGetStringTypeA_stat
-FUNC 4624 14 0 __crtGetStringTypeA_stat
-FUNC 4d9c 11 0 __crtGetStringTypeA_stat
-FUNC 5094 a 0 __crtGetStringTypeA_stat
-FUNC 5b4c 12 0 __crtGetStringTypeA_stat
-FUNC 5efc c 0 __crtGetStringTypeA_stat
-FUNC 5f38 6 0 __crtGetStringTypeA_stat
-FUNC 6420 c 0 __crtGetStringTypeA_stat
-FUNC 68c0 14 0 __crtGetStringTypeA_stat
-FUNC 6910 12 0 __crtGetStringTypeA_stat
-FUNC 6bf0 28 0 __crtGetStringTypeA_stat
-FUNC 6c20 8 0 __crtGetStringTypeA_stat
+FUNC 1198 3 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 17b4 e 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 19ac 2 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 24a4 14 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 3318 33 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 357c 2b 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 43c4 b 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 4624 14 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 4d9c 11 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 5094 a 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 5b4c 12 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 5efc c 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 5f38 6 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 6420 c 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 68c0 14 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 6910 12 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 6bf0 28 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
+FUNC 6c20 8 0 static int __crtGetStringTypeA_stat(struct localeinfo_struct *, unsigned long, const char *, int, unsigned short *, int, int, int)
 6bf0 12 63 3507
 6c02 7 67 3507
 6c09 f 83 3507

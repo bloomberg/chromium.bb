@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/devtools_browser_context_manager.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"

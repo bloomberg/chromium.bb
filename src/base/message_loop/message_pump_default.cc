@@ -36,32 +36,25 @@ void MessagePumpDefault::Run(Delegate* delegate) {
     mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
-    bool did_work = delegate->DoWork();
+    Delegate::NextWorkInfo next_work_info = delegate->DoSomeWork();
+    bool has_more_immediate_work = next_work_info.is_immediate();
     if (!keep_running_)
       break;
 
-    did_work |= delegate->DoDelayedWork(&delayed_work_time_);
-    if (!keep_running_)
-      break;
-
-    if (did_work)
+    if (has_more_immediate_work)
       continue;
 
-    did_work = delegate->DoIdleWork();
+    has_more_immediate_work = delegate->DoIdleWork();
     if (!keep_running_)
       break;
 
-    if (did_work)
+    if (has_more_immediate_work)
       continue;
 
-    if (delayed_work_time_.is_null()) {
+    if (next_work_info.delayed_run_time.is_max()) {
       event_.Wait();
     } else {
-      // No need to handle already expired |delayed_work_time_| in any special
-      // way. When |delayed_work_time_| is in the past TimeWaitUntil returns
-      // promptly and |delayed_work_time_| will re-initialized on a next
-      // DoDelayedWork call which has to be called in order to get here again.
-      event_.TimedWaitUntil(delayed_work_time_);
+      event_.TimedWait(next_work_info.remaining_delay());
     }
     // Since event_ is auto-reset, we don't need to do anything special here
     // other than service each delegate method.
@@ -80,10 +73,11 @@ void MessagePumpDefault::ScheduleWork() {
 
 void MessagePumpDefault::ScheduleDelayedWork(
     const TimeTicks& delayed_work_time) {
-  // We know that we can't be blocked on Wait right now since this method can
-  // only be called on the same thread as Run, so we only need to update our
-  // record of how long to sleep when we do sleep.
-  delayed_work_time_ = delayed_work_time;
+  // Since this is always called from the same thread as Run(), there is nothing
+  // to do as the loop is already running. It will wait in Run() with the
+  // correct timeout when it's out of immediate tasks.
+  // TODO(gab): Consider removing ScheduleDelayedWork() when all pumps function
+  // this way (bit.ly/merge-message-pump-do-work).
 }
 
 #if defined(OS_MACOSX)

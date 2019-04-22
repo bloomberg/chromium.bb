@@ -60,8 +60,7 @@ class CONTENT_EXPORT ResourceRequesterInfo
 
   // Creates a ResourceRequesterInfo for a requester that requests resources
   // within the browser process for browser side navigation (aka PlzNavigate).
-  static scoped_refptr<ResourceRequesterInfo> CreateForBrowserSideNavigation(
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
+  static scoped_refptr<ResourceRequesterInfo> CreateForBrowserSideNavigation();
 
   // Creates a ResourceRequesterInfo for a requester that requests resources for
   // download or page save.

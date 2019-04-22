@@ -16,8 +16,9 @@
 #include "src/compiler/frame.h"
 #include "src/compiler/opcodes.h"
 #include "src/double.h"
+#include "src/external-reference.h"
 #include "src/globals.h"
-#include "src/macro-assembler.h"
+#include "src/register-arch.h"
 #include "src/source-position.h"
 #include "src/zone/zone-allocator.h"
 
@@ -134,7 +135,7 @@ class V8_EXPORT_PRIVATE InstructionOperand {
   uint64_t value_;
 };
 
-typedef ZoneVector<InstructionOperand> InstructionOperandVector;
+using InstructionOperandVector = ZoneVector<InstructionOperand>;
 
 std::ostream& operator<<(std::ostream&, const InstructionOperand&);
 
@@ -194,7 +195,8 @@ class UnallocatedOperand final : public InstructionOperand {
       : UnallocatedOperand(virtual_register) {
     DCHECK(policy == FIXED_SLOT);
     value_ |= BasicPolicyField::encode(policy);
-    value_ |= static_cast<int64_t>(index) << FixedSlotIndexField::kShift;
+    value_ |= static_cast<uint64_t>(static_cast<int64_t>(index))
+              << FixedSlotIndexField::kShift;
     DCHECK(this->fixed_slot_index() == index);
   }
 
@@ -305,7 +307,7 @@ class UnallocatedOperand final : public InstructionOperand {
     return LifetimeField::decode(value_) == USED_AT_START;
   }
 
-  INSTRUCTION_OPERAND_CASTS(UnallocatedOperand, UNALLOCATED);
+  INSTRUCTION_OPERAND_CASTS(UnallocatedOperand, UNALLOCATED)
 
   // The encoding used for UnallocatedOperand operands depends on the policy
   // that is
@@ -368,7 +370,7 @@ class ConstantOperand : public InstructionOperand {
     return InstructionOperand::New(zone, ConstantOperand(virtual_register));
   }
 
-  INSTRUCTION_OPERAND_CASTS(ConstantOperand, CONSTANT);
+  INSTRUCTION_OPERAND_CASTS(ConstantOperand, CONSTANT)
 
   STATIC_ASSERT(KindField::kSize == 3);
   class VirtualRegisterField : public BitField64<uint32_t, 3, 32> {};
@@ -381,7 +383,8 @@ class ImmediateOperand : public InstructionOperand {
   explicit ImmediateOperand(ImmediateType type, int32_t value)
       : InstructionOperand(IMMEDIATE) {
     value_ |= TypeField::encode(type);
-    value_ |= static_cast<int64_t>(value) << ValueField::kShift;
+    value_ |= static_cast<uint64_t>(static_cast<int64_t>(value))
+              << ValueField::kShift;
   }
 
   ImmediateType type() const { return TypeField::decode(value_); }
@@ -400,7 +403,7 @@ class ImmediateOperand : public InstructionOperand {
     return InstructionOperand::New(zone, ImmediateOperand(type, value));
   }
 
-  INSTRUCTION_OPERAND_CASTS(ImmediateOperand, IMMEDIATE);
+  INSTRUCTION_OPERAND_CASTS(ImmediateOperand, IMMEDIATE)
 
   STATIC_ASSERT(KindField::kSize == 3);
   class TypeField : public BitField64<ImmediateType, 3, 1> {};
@@ -419,7 +422,8 @@ class LocationOperand : public InstructionOperand {
     DCHECK(IsSupportedRepresentation(rep));
     value_ |= LocationKindField::encode(location_kind);
     value_ |= RepresentationField::encode(rep);
-    value_ |= static_cast<int64_t>(index) << IndexField::kShift;
+    value_ |= static_cast<uint64_t>(static_cast<int64_t>(index))
+              << IndexField::kShift;
   }
 
   int index() const {
@@ -473,6 +477,9 @@ class LocationOperand : public InstructionOperand {
       case MachineRepresentation::kTaggedSigned:
       case MachineRepresentation::kTaggedPointer:
       case MachineRepresentation::kTagged:
+      case MachineRepresentation::kCompressedSigned:
+      case MachineRepresentation::kCompressedPointer:
+      case MachineRepresentation::kCompressed:
         return true;
       case MachineRepresentation::kBit:
       case MachineRepresentation::kWord8:
@@ -517,7 +524,7 @@ class V8_EXPORT_PRIVATE ExplicitOperand
     return InstructionOperand::New(zone, ExplicitOperand(kind, rep, index));
   }
 
-  INSTRUCTION_OPERAND_CASTS(ExplicitOperand, EXPLICIT);
+  INSTRUCTION_OPERAND_CASTS(ExplicitOperand, EXPLICIT)
 };
 
 class AllocatedOperand : public LocationOperand {
@@ -530,7 +537,7 @@ class AllocatedOperand : public LocationOperand {
     return InstructionOperand::New(zone, AllocatedOperand(kind, rep, index));
   }
 
-  INSTRUCTION_OPERAND_CASTS(AllocatedOperand, ALLOCATED);
+  INSTRUCTION_OPERAND_CASTS(AllocatedOperand, ALLOCATED)
 };
 
 #undef INSTRUCTION_OPERAND_CASTS
@@ -698,15 +705,13 @@ class V8_EXPORT_PRIVATE MoveOperands final
   DISALLOW_COPY_AND_ASSIGN(MoveOperands);
 };
 
-std::ostream& operator<<(std::ostream&, const MoveOperands&);
+V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, const MoveOperands&);
 
 class V8_EXPORT_PRIVATE ParallelMove final
     : public NON_EXPORTED_BASE(ZoneVector<MoveOperands*>),
       public NON_EXPORTED_BASE(ZoneObject) {
  public:
-  explicit ParallelMove(Zone* zone) : ZoneVector<MoveOperands*>(zone) {
-    reserve(4);
-  }
+  explicit ParallelMove(Zone* zone) : ZoneVector<MoveOperands*>(zone) {}
 
   MoveOperands* AddMove(const InstructionOperand& from,
                         const InstructionOperand& to) {
@@ -717,7 +722,9 @@ class V8_EXPORT_PRIVATE ParallelMove final
   MoveOperands* AddMove(const InstructionOperand& from,
                         const InstructionOperand& to,
                         Zone* operand_allocation_zone) {
+    if (from.EqualsCanonicalized(to)) return nullptr;
     MoveOperands* move = new (operand_allocation_zone) MoveOperands(from, to);
+    if (empty()) reserve(4);
     push_back(move);
     return move;
   }
@@ -922,9 +929,9 @@ class V8_EXPORT_PRIVATE Instruction final {
   // APIs to aid debugging. For general-stream APIs, use operator<<.
   void Print() const;
 
-  typedef BitField<size_t, 0, 8> OutputCountField;
-  typedef BitField<size_t, 8, 16> InputCountField;
-  typedef BitField<size_t, 24, 6> TempCountField;
+  using OutputCountField = BitField<size_t, 0, 8>;
+  using InputCountField = BitField<size_t, 8, 16>;
+  using TempCountField = BitField<size_t, 24, 6>;
 
   static const size_t kMaxOutputCount = OutputCountField::kMax;
   static const size_t kMaxInputCount = InputCountField::kMax;
@@ -938,7 +945,7 @@ class V8_EXPORT_PRIVATE Instruction final {
               InstructionOperand* inputs, size_t temp_count,
               InstructionOperand* temps);
 
-  typedef BitField<bool, 30, 1> IsCallField;
+  using IsCallField = BitField<bool, 30, 1>;
 
   InstructionCode opcode_;
   uint32_t bit_field_;
@@ -970,6 +977,11 @@ class RpoNumber final {
   bool IsNext(const RpoNumber other) const {
     DCHECK(IsValid());
     return other.index_ == this->index_ + 1;
+  }
+
+  RpoNumber Next() const {
+    DCHECK(IsValid());
+    return RpoNumber(index_ + 1);
   }
 
   // Comparison operators.
@@ -1301,12 +1313,12 @@ class DeoptimizationEntry final {
   VectorSlotPair feedback_ = VectorSlotPair();
 };
 
-typedef ZoneVector<DeoptimizationEntry> DeoptimizationVector;
+using DeoptimizationVector = ZoneVector<DeoptimizationEntry>;
 
 class V8_EXPORT_PRIVATE PhiInstruction final
     : public NON_EXPORTED_BASE(ZoneObject) {
  public:
-  typedef ZoneVector<InstructionOperand> Inputs;
+  using Inputs = ZoneVector<InstructionOperand>;
 
   PhiInstruction(Zone* zone, int virtual_register, size_t input_count);
 
@@ -1365,20 +1377,21 @@ class V8_EXPORT_PRIVATE InstructionBlock final
     return loop_end_;
   }
   inline bool IsLoopHeader() const { return loop_end_.IsValid(); }
+  inline bool IsSwitchTarget() const { return switch_target_; }
   inline bool ShouldAlign() const { return alignment_; }
 
-  typedef ZoneVector<RpoNumber> Predecessors;
+  using Predecessors = ZoneVector<RpoNumber>;
   Predecessors& predecessors() { return predecessors_; }
   const Predecessors& predecessors() const { return predecessors_; }
   size_t PredecessorCount() const { return predecessors_.size(); }
   size_t PredecessorIndexOf(RpoNumber rpo_number) const;
 
-  typedef ZoneVector<RpoNumber> Successors;
+  using Successors = ZoneVector<RpoNumber>;
   Successors& successors() { return successors_; }
   const Successors& successors() const { return successors_; }
   size_t SuccessorCount() const { return successors_.size(); }
 
-  typedef ZoneVector<PhiInstruction*> PhiInstructions;
+  using PhiInstructions = ZoneVector<PhiInstruction*>;
   const PhiInstructions& phis() const { return phis_; }
   PhiInstruction* PhiAt(size_t i) const { return phis_[i]; }
   void AddPhi(PhiInstruction* phi) { phis_.push_back(phi); }
@@ -1386,6 +1399,8 @@ class V8_EXPORT_PRIVATE InstructionBlock final
   void set_ao_number(RpoNumber ao_number) { ao_number_ = ao_number; }
 
   void set_alignment(bool val) { alignment_ = val; }
+
+  void set_switch_target(bool val) { switch_target_ = val; }
 
   bool needs_frame() const { return needs_frame_; }
   void mark_needs_frame() { needs_frame_ = true; }
@@ -1408,6 +1423,7 @@ class V8_EXPORT_PRIVATE InstructionBlock final
   int32_t code_end_ = -1;     // end index of arch-specific code.
   const bool deferred_ = -1;  // Block contains deferred code.
   const bool handler_;   // Block is a handler entry point.
+  bool switch_target_ = false;
   bool alignment_ = false;  // insert alignment before this block
   bool needs_frame_ = false;
   bool must_construct_frame_ = false;
@@ -1423,14 +1439,13 @@ struct PrintableInstructionBlock {
 
 std::ostream& operator<<(std::ostream&, const PrintableInstructionBlock&);
 
-typedef ZoneDeque<Constant> ConstantDeque;
-typedef std::map<int, Constant, std::less<int>,
-                 ZoneAllocator<std::pair<const int, Constant> > >
-    ConstantMap;
+using ConstantDeque = ZoneDeque<Constant>;
+using ConstantMap = std::map<int, Constant, std::less<int>,
+                             ZoneAllocator<std::pair<const int, Constant> > >;
 
-typedef ZoneDeque<Instruction*> InstructionDeque;
-typedef ZoneDeque<ReferenceMap*> ReferenceMapDeque;
-typedef ZoneVector<InstructionBlock*> InstructionBlocks;
+using InstructionDeque = ZoneDeque<Instruction*>;
+using ReferenceMapDeque = ZoneDeque<ReferenceMap*>;
+using InstructionBlocks = ZoneVector<InstructionBlock*>;
 
 // Represents architecture-specific generated code before, during, and after
 // register allocation.
@@ -1477,7 +1492,7 @@ class V8_EXPORT_PRIVATE InstructionSequence final
   void MarkAsRepresentation(MachineRepresentation rep, int virtual_register);
 
   bool IsReference(int virtual_register) const {
-    return CanBeTaggedPointer(GetRepresentation(virtual_register));
+    return CanBeTaggedOrCompressedPointer(GetRepresentation(virtual_register));
   }
   bool IsFP(int virtual_register) const {
     return IsFloatingPoint(GetRepresentation(virtual_register));
@@ -1493,7 +1508,7 @@ class V8_EXPORT_PRIVATE InstructionSequence final
 
   Instruction* GetBlockStart(RpoNumber rpo) const;
 
-  typedef InstructionDeque::const_iterator const_iterator;
+  using const_iterator = InstructionDeque::const_iterator;
   const_iterator begin() const { return instructions_.begin(); }
   const_iterator end() const { return instructions_.end(); }
   const InstructionDeque& instructions() const { return instructions_; }
@@ -1531,7 +1546,7 @@ class V8_EXPORT_PRIVATE InstructionSequence final
     return it->second;
   }
 
-  typedef ZoneVector<Constant> Immediates;
+  using Immediates = ZoneVector<Constant>;
   Immediates& immediates() { return immediates_; }
 
   ImmediateOperand AddImmediate(const Constant& constant) {
@@ -1599,7 +1614,7 @@ class V8_EXPORT_PRIVATE InstructionSequence final
   friend V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&,
                                                     const InstructionSequence&);
 
-  typedef ZoneMap<const Instruction*, SourcePosition> SourcePositionMap;
+  using SourcePositionMap = ZoneMap<const Instruction*, SourcePosition>;
 
   static const RegisterConfiguration* RegisterConfigurationForTesting();
   static const RegisterConfiguration* registerConfigurationForTesting_;

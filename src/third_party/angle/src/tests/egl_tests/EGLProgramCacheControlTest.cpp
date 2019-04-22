@@ -9,6 +9,7 @@
 #include "common/angleutils.h"
 #include "test_utils/ANGLETest.h"
 #include "test_utils/gl_raii.h"
+#include "util/EGLWindow.h"
 
 using namespace angle;
 
@@ -30,25 +31,34 @@ class EGLProgramCacheControlTest : public ANGLETest
     }
 
   protected:
-    EGLProgramCacheControlTest() { setDeferContextInit(true); }
+    EGLProgramCacheControlTest()
+    {
+        // Test flakiness was noticed when reusing displays.
+        forceNewDisplay();
+        setDeferContextInit(true);
+    }
 
     void SetUp() override
     {
-        mPlatformMethods.cacheProgram = &TestCacheProgram;
+        setContextProgramCacheEnabled(true, &TestCacheProgram);
 
         ANGLETest::SetUp();
 
         if (extensionAvailable())
         {
             EGLDisplay display = getEGLWindow()->getDisplay();
-            setContextProgramCacheEnabled(true);
             eglProgramCacheResizeANGLE(display, kEnabledCacheSize, EGL_PROGRAM_CACHE_RESIZE_ANGLE);
+            ASSERT_EGL_SUCCESS();
         }
 
-        getEGLWindow()->initializeContext();
+        ASSERT_TRUE(getEGLWindow()->initializeContext());
     }
 
-    void TearDown() override { ANGLETest::TearDown(); }
+    void TearDown() override
+    {
+        setContextProgramCacheEnabled(false, angle::DefaultCacheProgram);
+        ANGLETest::TearDown();
+    }
 
     bool extensionAvailable()
     {
@@ -176,9 +186,8 @@ TEST_P(EGLProgramCacheControlTest, SaveAndReload)
 {
     ANGLE_SKIP_TEST_IF(!extensionAvailable() || !programBinaryAvailable());
 
-    const std::string vertexShader =
-        "attribute vec4 position; void main() { gl_Position = position; }";
-    const std::string fragmentShader = "void main() { gl_FragColor = vec4(1, 0, 0, 1); }";
+    constexpr char kVS[] = "attribute vec4 position; void main() { gl_Position = position; }";
+    constexpr char kFS[] = "void main() { gl_FragColor = vec4(1, 0, 0, 1); }";
 
     // Link a program, which will miss the cache.
     {
@@ -186,7 +195,7 @@ TEST_P(EGLProgramCacheControlTest, SaveAndReload)
         glClear(GL_COLOR_BUFFER_BIT);
         EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
 
-        ANGLE_GL_PROGRAM(program, vertexShader, fragmentShader);
+        ANGLE_GL_PROGRAM(program, kVS, kFS);
         drawQuad(program, "position", 0.5f);
         EXPECT_GL_NO_ERROR();
         EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
@@ -229,7 +238,7 @@ TEST_P(EGLProgramCacheControlTest, SaveAndReload)
         glClear(GL_COLOR_BUFFER_BIT);
         EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
 
-        ANGLE_GL_PROGRAM(program, vertexShader, fragmentShader);
+        ANGLE_GL_PROGRAM(program, kVS, kFS);
         drawQuad(program, "position", 0.5f);
         EXPECT_GL_NO_ERROR();
         EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);

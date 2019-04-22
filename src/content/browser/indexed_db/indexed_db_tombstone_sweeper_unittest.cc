@@ -5,14 +5,17 @@
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/tick_clock.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/mock_level_db.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -67,7 +70,7 @@ MATCHER_P(SliceEq,
               base::HexEncode(str.data(), str.size())) {
   *result_listener << "which is " << base::HexEncode(arg.data(), arg.size());
   return std::string(arg.data(), arg.size()) == str;
-};
+}
 
 class MockTickClock : public base::TickClock {
  public:
@@ -75,15 +78,6 @@ class MockTickClock : public base::TickClock {
   ~MockTickClock() override {}
 
   MOCK_CONST_METHOD0(NowTicks, base::TimeTicks());
-};
-
-class Comparator : public LevelDBComparator {
- public:
-  int Compare(const base::StringPiece& a,
-              const base::StringPiece& b) const override {
-    return content::Compare(a, b, false /*index_keys*/);
-  }
-  const char* Name() const override { return "idb_cmp1"; }
 };
 
 class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
@@ -143,8 +137,16 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
   }
 
   void SetupRealDB() {
-    comparator_.reset(new Comparator());
-    in_memory_db_ = LevelDBDatabase::OpenInMemory(comparator_.get());
+    scoped_refptr<LevelDBState> level_db_state;
+    leveldb::Status s;
+    std::tie(level_db_state, s, std::ignore) =
+        indexed_db::GetDefaultLevelDBFactory()->OpenLevelDBState(
+            base::FilePath(), indexed_db::GetDefaultIndexedDBComparator(),
+            indexed_db::GetDefaultLevelDBComparator());
+    ASSERT_TRUE(s.ok());
+    in_memory_db_ = std::make_unique<LevelDBDatabase>(
+        std::move(level_db_state), nullptr,
+        LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
     sweeper_ = std::make_unique<IndexedDBTombstoneSweeper>(
         GetParam(), kRoundIterations, kMaxIterations, in_memory_db_->db());
     sweeper_->SetStartSeedsForTesting(0, 0, 0);
@@ -239,7 +241,6 @@ class IndexedDBTombstoneSweeperTest : public testing::TestWithParam<Mode> {
   }
 
  protected:
-  std::unique_ptr<Comparator> comparator_;
   std::unique_ptr<LevelDBDatabase> in_memory_db_;
   leveldb::MockLevelDB mock_db_;
 
@@ -283,18 +284,18 @@ TEST_P(IndexedDBTombstoneSweeperTest, NoTombstonesComplexDB) {
                 Seek(SliceEq(IndexDataKey::EncodeMinKey(kDb1, kOs2, kIndex1))));
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
 
-    ExpectIndexAndExistsEntries(*mock_iterator, kDb1, kOs2, kIndex1,
-                                IndexedDBKey(10, blink::kWebIDBKeyTypeNumber),
-                                IndexedDBKey(20, blink::kWebIDBKeyTypeNumber),
-                                1, 1);
+    ExpectIndexAndExistsEntries(
+        *mock_iterator, kDb1, kOs2, kIndex1,
+        IndexedDBKey(10, blink::mojom::IDBKeyType::Number),
+        IndexedDBKey(20, blink::mojom::IDBKeyType::Number), 1, 1);
     EXPECT_CALL(*mock_iterator, Next());
 
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
     // Return the beginning of the second index, which should cause us to error
     // & go restart our index seek.
     ExpectIndexEntry(*mock_iterator, kDb1, kOs2, kIndex2,
-                     IndexedDBKey(30, blink::kWebIDBKeyTypeNumber),
-                     IndexedDBKey(10, blink::kWebIDBKeyTypeNumber), 1);
+                     IndexedDBKey(30, blink::mojom::IDBKeyType::Number),
+                     IndexedDBKey(10, blink::mojom::IDBKeyType::Number), 1);
   }
 
   // Second index.
@@ -303,17 +304,17 @@ TEST_P(IndexedDBTombstoneSweeperTest, NoTombstonesComplexDB) {
     EXPECT_CALL(*mock_iterator,
                 Seek(SliceEq(IndexDataKey::EncodeMinKey(kDb1, kOs2, kIndex2))));
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
-    ExpectIndexAndExistsEntries(*mock_iterator, kDb1, kOs2, kIndex2,
-                                IndexedDBKey(30, blink::kWebIDBKeyTypeNumber),
-                                IndexedDBKey(10, blink::kWebIDBKeyTypeNumber),
-                                1, 1);
+    ExpectIndexAndExistsEntries(
+        *mock_iterator, kDb1, kOs2, kIndex2,
+        IndexedDBKey(30, blink::mojom::IDBKeyType::Number),
+        IndexedDBKey(10, blink::mojom::IDBKeyType::Number), 1, 1);
     EXPECT_CALL(*mock_iterator, Next());
 
     // Return next key, which should make it error
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
     ExpectIndexEntry(*mock_iterator, kDb2, kOs3, kIndex3,
-                     IndexedDBKey(1501, blink::kWebIDBKeyTypeNumber),
-                     IndexedDBKey(15123, blink::kWebIDBKeyTypeNumber), 12);
+                     IndexedDBKey(1501, blink::mojom::IDBKeyType::Number),
+                     IndexedDBKey(15123, blink::mojom::IDBKeyType::Number), 12);
   }
 
   // Third index.
@@ -324,8 +325,8 @@ TEST_P(IndexedDBTombstoneSweeperTest, NoTombstonesComplexDB) {
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
     ExpectIndexAndExistsEntries(
         *mock_iterator, kDb2, kOs3, kIndex3,
-        IndexedDBKey(1501, blink::kWebIDBKeyTypeNumber),
-        IndexedDBKey(15123, blink::kWebIDBKeyTypeNumber), 12, 12);
+        IndexedDBKey(1501, blink::mojom::IDBKeyType::Number),
+        IndexedDBKey(15123, blink::mojom::IDBKeyType::Number), 12, 12);
     EXPECT_CALL(*mock_iterator, Next());
 
     // Return next key, which should make it error
@@ -359,18 +360,18 @@ TEST_P(IndexedDBTombstoneSweeperTest, AllTombstonesComplexDB) {
                 Seek(SliceEq(IndexDataKey::EncodeMinKey(kDb1, kOs2, kIndex1))));
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
 
-    ExpectIndexAndExistsEntries(*mock_iterator, kDb1, kOs2, kIndex1,
-                                IndexedDBKey(10, blink::kWebIDBKeyTypeNumber),
-                                IndexedDBKey(20, blink::kWebIDBKeyTypeNumber),
-                                1, 2);
+    ExpectIndexAndExistsEntries(
+        *mock_iterator, kDb1, kOs2, kIndex1,
+        IndexedDBKey(10, blink::mojom::IDBKeyType::Number),
+        IndexedDBKey(20, blink::mojom::IDBKeyType::Number), 1, 2);
     EXPECT_CALL(*mock_iterator, Next());
 
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
     // Return the beginning of the second index, which should cause us to error
     // & go restart our index seek.
     ExpectIndexEntry(*mock_iterator, kDb1, kOs2, kIndex2,
-                     IndexedDBKey(30, blink::kWebIDBKeyTypeNumber),
-                     IndexedDBKey(10, blink::kWebIDBKeyTypeNumber), 1);
+                     IndexedDBKey(30, blink::mojom::IDBKeyType::Number),
+                     IndexedDBKey(10, blink::mojom::IDBKeyType::Number), 1);
   }
 
   // Second index.
@@ -379,17 +380,17 @@ TEST_P(IndexedDBTombstoneSweeperTest, AllTombstonesComplexDB) {
     EXPECT_CALL(*mock_iterator,
                 Seek(SliceEq(IndexDataKey::EncodeMinKey(kDb1, kOs2, kIndex2))));
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
-    ExpectIndexAndExistsEntries(*mock_iterator, kDb1, kOs2, kIndex2,
-                                IndexedDBKey(30, blink::kWebIDBKeyTypeNumber),
-                                IndexedDBKey(10, blink::kWebIDBKeyTypeNumber),
-                                1, 2);
+    ExpectIndexAndExistsEntries(
+        *mock_iterator, kDb1, kOs2, kIndex2,
+        IndexedDBKey(30, blink::mojom::IDBKeyType::Number),
+        IndexedDBKey(10, blink::mojom::IDBKeyType::Number), 1, 2);
     EXPECT_CALL(*mock_iterator, Next());
 
     // Return next key, which should make it error
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
     ExpectIndexEntry(*mock_iterator, kDb2, kOs3, kIndex3,
-                     IndexedDBKey(1501, blink::kWebIDBKeyTypeNumber),
-                     IndexedDBKey(15123, blink::kWebIDBKeyTypeNumber), 12);
+                     IndexedDBKey(1501, blink::mojom::IDBKeyType::Number),
+                     IndexedDBKey(15123, blink::mojom::IDBKeyType::Number), 12);
   }
 
   // Third index.
@@ -400,8 +401,8 @@ TEST_P(IndexedDBTombstoneSweeperTest, AllTombstonesComplexDB) {
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
     ExpectIndexAndExistsEntries(
         *mock_iterator, kDb2, kOs3, kIndex3,
-        IndexedDBKey(1501, blink::kWebIDBKeyTypeNumber),
-        IndexedDBKey(15123, blink::kWebIDBKeyTypeNumber), 12, 13);
+        IndexedDBKey(1501, blink::mojom::IDBKeyType::Number),
+        IndexedDBKey(15123, blink::mojom::IDBKeyType::Number), 12, 13);
     EXPECT_CALL(*mock_iterator, Next());
 
     // Return next key, which should make it error
@@ -427,8 +428,8 @@ TEST_P(IndexedDBTombstoneSweeperTest, SimpleRealDBNoTombstones) {
   SetClockExpectations();
 
   for (int i = 0; i < kRoundIterations; i++) {
-    auto index_key = IndexedDBKey(i, blink::kWebIDBKeyTypeNumber);
-    auto primary_key = IndexedDBKey(i + 1, blink::kWebIDBKeyTypeNumber);
+    auto index_key = IndexedDBKey(i, blink::mojom::IDBKeyType::Number);
+    auto primary_key = IndexedDBKey(i + 1, blink::mojom::IDBKeyType::Number);
     std::string value_str;
     EncodeVarInt(1, &value_str);
     EncodeIDBKey(primary_key, &value_str);
@@ -461,8 +462,8 @@ TEST_P(IndexedDBTombstoneSweeperTest, SimpleRealDBWithTombstones) {
 
   int tombstones = 0;
   for (int i = 0; i < kRoundIterations + 1; i++) {
-    auto index_key = IndexedDBKey(i, blink::kWebIDBKeyTypeNumber);
-    auto primary_key = IndexedDBKey(i + 1, blink::kWebIDBKeyTypeNumber);
+    auto index_key = IndexedDBKey(i, blink::mojom::IDBKeyType::Number);
+    auto primary_key = IndexedDBKey(i + 1, blink::mojom::IDBKeyType::Number);
     std::string value_str;
     EncodeVarInt(1, &value_str);
     EncodeIDBKey(primary_key, &value_str);
@@ -492,8 +493,8 @@ TEST_P(IndexedDBTombstoneSweeperTest, SimpleRealDBWithTombstones) {
     if (i % 2 == 1) {
       std::string out;
       bool found = false;
-      auto index_key = IndexedDBKey(i, blink::kWebIDBKeyTypeNumber);
-      auto primary_key = IndexedDBKey(i + 1, blink::kWebIDBKeyTypeNumber);
+      auto index_key = IndexedDBKey(i, blink::mojom::IDBKeyType::Number);
+      auto primary_key = IndexedDBKey(i + 1, blink::mojom::IDBKeyType::Number);
       EXPECT_TRUE(in_memory_db_
                       ->Get(IndexDataKey::Encode(kDb1, kOs1, kIndex1, index_key,
                                                  primary_key),
@@ -511,8 +512,8 @@ TEST_P(IndexedDBTombstoneSweeperTest, HitMaxIters) {
   SetFirstClockExpectation();
 
   for (int i = 0; i < kMaxIterations + 1; i++) {
-    auto index_key = IndexedDBKey(i, blink::kWebIDBKeyTypeNumber);
-    auto primary_key = IndexedDBKey(i + 1, blink::kWebIDBKeyTypeNumber);
+    auto index_key = IndexedDBKey(i, blink::mojom::IDBKeyType::Number);
+    auto primary_key = IndexedDBKey(i + 1, blink::mojom::IDBKeyType::Number);
     std::string value_str;
     EncodeVarInt(1, &value_str);
     EncodeIDBKey(primary_key, &value_str);
@@ -554,18 +555,18 @@ TEST_P(IndexedDBTombstoneSweeperTest, LevelDBError) {
                 Seek(SliceEq(IndexDataKey::EncodeMinKey(kDb1, kOs2, kIndex1))));
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
 
-    ExpectIndexAndExistsEntries(*mock_iterator, kDb1, kOs2, kIndex1,
-                                IndexedDBKey(10, blink::kWebIDBKeyTypeNumber),
-                                IndexedDBKey(20, blink::kWebIDBKeyTypeNumber),
-                                1, 1);
+    ExpectIndexAndExistsEntries(
+        *mock_iterator, kDb1, kOs2, kIndex1,
+        IndexedDBKey(10, blink::mojom::IDBKeyType::Number),
+        IndexedDBKey(20, blink::mojom::IDBKeyType::Number), 1, 1);
     EXPECT_CALL(*mock_iterator, Next());
 
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
     // Return the beginning of the second index, which should cause us to error
     // & go restart our index seek.
     ExpectIndexEntry(*mock_iterator, kDb1, kOs2, kIndex2,
-                     IndexedDBKey(30, blink::kWebIDBKeyTypeNumber),
-                     IndexedDBKey(10, blink::kWebIDBKeyTypeNumber), 1);
+                     IndexedDBKey(30, blink::mojom::IDBKeyType::Number),
+                     IndexedDBKey(10, blink::mojom::IDBKeyType::Number), 1);
   }
 
   // Second index.
@@ -574,10 +575,10 @@ TEST_P(IndexedDBTombstoneSweeperTest, LevelDBError) {
     EXPECT_CALL(*mock_iterator,
                 Seek(SliceEq(IndexDataKey::EncodeMinKey(kDb1, kOs2, kIndex2))));
     EXPECT_CALL(*mock_iterator, Valid()).Times(2).WillRepeatedly(Return(true));
-    ExpectIndexAndExistsEntries(*mock_iterator, kDb1, kOs2, kIndex2,
-                                IndexedDBKey(30, blink::kWebIDBKeyTypeNumber),
-                                IndexedDBKey(10, blink::kWebIDBKeyTypeNumber),
-                                1, 1);
+    ExpectIndexAndExistsEntries(
+        *mock_iterator, kDb1, kOs2, kIndex2,
+        IndexedDBKey(30, blink::mojom::IDBKeyType::Number),
+        IndexedDBKey(10, blink::mojom::IDBKeyType::Number), 1, 1);
     EXPECT_CALL(*mock_iterator, Next());
 
     // Return read error.
@@ -596,9 +597,9 @@ TEST_P(IndexedDBTombstoneSweeperTest, LevelDBError) {
       "WebCore.IndexedDB.TombstoneSweeper.IndexScanPercent", 1 * 20 / 3, 1);
 }
 
-INSTANTIATE_TEST_CASE_P(/* No prefix needed */,
-                        IndexedDBTombstoneSweeperTest,
-                        testing::Values(Mode::STATISTICS, Mode::DELETION));
+INSTANTIATE_TEST_SUITE_P(/* No prefix needed */,
+                         IndexedDBTombstoneSweeperTest,
+                         testing::Values(Mode::STATISTICS, Mode::DELETION));
 
 }  // namespace indexed_db_tombstone_sweeper_unittest
 }  // namespace content

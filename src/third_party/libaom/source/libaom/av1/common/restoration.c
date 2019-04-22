@@ -1099,7 +1099,7 @@ void av1_loop_restoration_filter_frame_init(AV1LrStruct *lr_ctxt,
   const int frame_height = frame->crop_heights[0];
   if (aom_realloc_frame_buffer(
           lr_ctxt->dst, frame_width, frame_height, seq_params->subsampling_x,
-          seq_params->subsampling_y, highbd, AOM_BORDER_IN_PIXELS,
+          seq_params->subsampling_y, highbd, AOM_RESTORATION_FRAME_BORDER,
           cm->byte_alignment, NULL, NULL, NULL) < 0)
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate restoration dst buffer");
@@ -1143,9 +1143,9 @@ void av1_loop_restoration_copy_planes(AV1LrStruct *loop_rest_ctxt,
   typedef void (*copy_fun)(const YV12_BUFFER_CONFIG *src_ybc,
                            YV12_BUFFER_CONFIG *dst_ybc, int hstart, int hend,
                            int vstart, int vend);
-  static const copy_fun copy_funs[3] = {
-    aom_yv12_partial_copy_y, aom_yv12_partial_copy_u, aom_yv12_partial_copy_v
-  };
+  static const copy_fun copy_funs[3] = { aom_yv12_partial_coloc_copy_y,
+                                         aom_yv12_partial_coloc_copy_u,
+                                         aom_yv12_partial_coloc_copy_v };
 
   for (int plane = 0; plane < num_planes; ++plane) {
     if (cm->rst_info[plane].frame_restoration_type == RESTORE_NONE) continue;

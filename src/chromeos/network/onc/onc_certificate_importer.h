@@ -6,8 +6,8 @@
 #define CHROMEOS_NETWORK_ONC_ONC_CERTIFICATE_IMPORTER_H_
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_parsed_certificates.h"
 #include "components/onc/onc_constants.h"
 #include "net/cert/scoped_nss_types.h"
@@ -15,7 +15,7 @@
 namespace chromeos {
 namespace onc {
 
-class CHROMEOS_EXPORT CertificateImporter {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) CertificateImporter {
  public:
   // Called when certificate import is finished. |success| will be true if all
   // certificates which should be imported have been imported (or were already

@@ -5,8 +5,7 @@
 #include <limits>
 
 #include "base/bind.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "extensions/browser/api/system_power_source/system_power_source_api.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/api_unittest.h"
@@ -25,19 +24,17 @@ namespace {
 
 class SystemPowerSourceApiUnitTest : public ApiUnitTest {
  public:
-  SystemPowerSourceApiUnitTest() {
-    auto power_manager_client =
-        std::make_unique<chromeos::FakePowerManagerClient>();
-    power_manager_client_ = power_manager_client.get();
+  SystemPowerSourceApiUnitTest() = default;
+  ~SystemPowerSourceApiUnitTest() override = default;
 
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        std::move(power_manager_client));
-
-    chromeos::DBusThreadManager::Initialize();
+  void SetUp() override {
+    ApiUnitTest::SetUp();
+    chromeos::PowerManagerClient::InitializeFake();
   }
 
-  ~SystemPowerSourceApiUnitTest() override {
-    chromeos::DBusThreadManager::Shutdown();
+  void TearDown() override {
+    chromeos::PowerManagerClient::Shutdown();
+    ApiUnitTest::TearDown();
   }
 
   std::unique_ptr<base::Value> RunGetPowerSourceInfoFunction() {
@@ -63,8 +60,11 @@ class SystemPowerSourceApiUnitTest : public ApiUnitTest {
         request_status_update_function.get(), "[]", browser_context());
   }
 
-  chromeos::FakePowerManagerClient* power_manager_client_;
+  chromeos::FakePowerManagerClient* power_manager_client() {
+    return chromeos::FakePowerManagerClient::Get();
+  }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SystemPowerSourceApiUnitTest);
 };
 
@@ -130,7 +130,7 @@ power_manager::PowerSupplyProperties_PowerSource MakePowerSource(
 
 // Barrel jack connected
 TEST_F(SystemPowerSourceApiUnitTest, GetPowerSourceAc) {
-  power_manager_client_->UpdatePowerProperties(MakePowerSupplyProperties(
+  power_manager_client()->UpdatePowerProperties(MakePowerSupplyProperties(
       "AC",
       {MakePowerSource(
           "AC", power_manager::PowerSupplyProperties_PowerSource_Type_MAINS,
@@ -152,7 +152,7 @@ TEST_F(SystemPowerSourceApiUnitTest, GetPowerSourceAc) {
 
 // USB-C PD charger connected
 TEST_F(SystemPowerSourceApiUnitTest, GetPowerSourceUsb) {
-  power_manager_client_->UpdatePowerProperties(MakePowerSupplyProperties(
+  power_manager_client()->UpdatePowerProperties(MakePowerSupplyProperties(
       "CROS_USB_PD_CHARGER0",
       {{MakePowerSource(
           "CROS_USB_PD_CHARGER0",
@@ -175,7 +175,7 @@ TEST_F(SystemPowerSourceApiUnitTest, GetPowerSourceUsb) {
 
 // Barrel Jack + USB-C PD charger connected; Barrel Jack active
 TEST_F(SystemPowerSourceApiUnitTest, GetPowerSourceAcActiveAndUsbInactive) {
-  power_manager_client_->UpdatePowerProperties(MakePowerSupplyProperties(
+  power_manager_client()->UpdatePowerProperties(MakePowerSupplyProperties(
       "AC",
       {{MakePowerSource(
             "AC", power_manager::PowerSupplyProperties_PowerSource_Type_MAINS,
@@ -206,7 +206,7 @@ TEST_F(SystemPowerSourceApiUnitTest, GetPowerSourceAcActiveAndUsbInactive) {
 
 // Barrel Jack + USB-C PD charger connected; USB-C charger active
 TEST_F(SystemPowerSourceApiUnitTest, GetPowerSourceAcInactiveAndUsbActive) {
-  power_manager_client_->UpdatePowerProperties(MakePowerSupplyProperties(
+  power_manager_client()->UpdatePowerProperties(MakePowerSupplyProperties(
       "CROS_USB_PD_CHARGER0",
       {{MakePowerSource(
             "AC", power_manager::PowerSupplyProperties_PowerSource_Type_MAINS,
@@ -237,7 +237,7 @@ TEST_F(SystemPowerSourceApiUnitTest, GetPowerSourceAcInactiveAndUsbActive) {
 
 // Barrel Jack + USB-C PD charger connected; neither active
 TEST_F(SystemPowerSourceApiUnitTest, GetPowerSourceNoneActive) {
-  power_manager_client_->UpdatePowerProperties(MakePowerSupplyProperties(
+  power_manager_client()->UpdatePowerProperties(MakePowerSupplyProperties(
       base::nullopt,
       {{MakePowerSource(
             "AC", power_manager::PowerSupplyProperties_PowerSource_Type_MAINS,
@@ -271,7 +271,7 @@ TEST_F(SystemPowerSourceApiUnitTest, GetPowerSourceNoneActive) {
 // finger-printing).  Chargers with a max power that is not a normal value
 // larger than zero are reported as not having a max power value.
 TEST_F(SystemPowerSourceApiUnitTest, GetPowerSourceRounding) {
-  power_manager_client_->UpdatePowerProperties(MakePowerSupplyProperties(
+  power_manager_client()->UpdatePowerProperties(MakePowerSupplyProperties(
       "CROS_USB_PD_CHARGER0",
       {{MakePowerSource(
             "CROS_USB_PD_CHARGER0",
@@ -346,7 +346,7 @@ TEST_F(SystemPowerSourceApiUnitTest, OnPowerChangedEvent) {
           base::BindRepeating(&TestEventRouterFactoryFunction)));
   SystemPowerSourceAPI system_power_source_api(browser_context());
 
-  power_manager_client_->UpdatePowerProperties(MakePowerSupplyProperties(
+  power_manager_client()->UpdatePowerProperties(MakePowerSupplyProperties(
       "AC",
       {MakePowerSource(
           "AC", power_manager::PowerSupplyProperties_PowerSource_Type_MAINS,
@@ -371,7 +371,7 @@ TEST_F(SystemPowerSourceApiUnitTest, RequestStatusUpdate) {
           base::BindRepeating(&TestEventRouterFactoryFunction)));
   SystemPowerSourceAPI system_power_source_api(browser_context());
 
-  power_manager_client_->UpdatePowerProperties(MakePowerSupplyProperties(
+  power_manager_client()->UpdatePowerProperties(MakePowerSupplyProperties(
       "AC",
       {MakePowerSource(
           "AC", power_manager::PowerSupplyProperties_PowerSource_Type_MAINS,

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/metrics/daily_event.h"
 
 class PrefRegistrySimple;
@@ -31,8 +31,13 @@ class MetricsReporter : public PowerManagerClient::Observer {
     kNoAls = 0,
     kSupportedAls = 1,
     kUnsupportedAls = 2,
-    kMaxValue = kUnsupportedAls
+    kAtlas = 3,
+    kEve = 4,
+    kMaxValue = kEve
   };
+
+  static constexpr int kNumberAdjustmentTypes =
+      static_cast<int>(UserAdjustment::kMaxValue) + 1;
 
   // A histogram recorded in UMA, showing reasons why daily metrics are
   // reported.
@@ -46,6 +51,10 @@ class MetricsReporter : public PowerManagerClient::Observer {
       "AutoScreenBrightness.DailyUserAdjustment.SupportedAls";
   static constexpr char kUnsupportedAlsUserAdjustmentName[] =
       "AutoScreenBrightness.DailyUserAdjustment.UnsupportedAls";
+  static constexpr char kAtlasUserAdjustmentName[] =
+      "AutoScreenBrightness.DailyUserAdjustment.Atlas";
+  static constexpr char kEveUserAdjustmentName[] =
+      "AutoScreenBrightness.DailyUserAdjustment.Eve";
 
   // Registers prefs used by MetricsReporter in |registry|.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -82,7 +91,7 @@ class MetricsReporter : public PowerManagerClient::Observer {
   base::RepeatingTimer timer_;
 
   // Daily count for each UserAjustment. Ordered by UserAdjustment values.
-  std::array<int, 3> daily_counts_;
+  std::array<int, kNumberAdjustmentTypes> daily_counts_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsReporter);
 };

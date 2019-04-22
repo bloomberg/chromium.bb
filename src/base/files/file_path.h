@@ -104,13 +104,14 @@
 
 #include <stddef.h>
 
+#include <functional>
 #include <iosfwd>
 #include <string>
 #include <vector>
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
@@ -152,7 +153,7 @@ class BASE_EXPORT FilePath {
 #if defined(OS_WIN)
   // On Windows, for Unicode-aware applications, native pathnames are wchar_t
   // arrays encoded in UTF-16.
-  typedef std::wstring StringType;
+  typedef base::string16 StringType;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // On most platforms, native pathnames are char arrays, and the encoding
   // may or may not be specified.  On Mac OS X, native pathnames are encoded
@@ -169,7 +170,7 @@ class BASE_EXPORT FilePath {
   // when composing pathnames.
   static const CharType kSeparators[];
 
-  // arraysize(kSeparators).
+  // base::size(kSeparators).
   static const size_t kSeparatorsLength;
 
   // A special path component meaning "this directory."
@@ -224,11 +225,12 @@ class BASE_EXPORT FilePath {
   // Windows:  "C:\foo\bar"  ->  [ "C:", "\\", "foo", "bar" ]
   void GetComponents(std::vector<FilePath::StringType>* components) const;
 
-  // Returns true if this FilePath is a strict parent of the |child|. Absolute
-  // and relative paths are accepted i.e. is /foo parent to /foo/bar and
-  // is foo parent to foo/bar. Does not convert paths to absolute, follow
-  // symlinks or directory navigation (e.g. ".."). A path is *NOT* its own
-  // parent.
+  // Returns true if this FilePath is a parent or ancestor of the |child|.
+  // Absolute and relative paths are accepted i.e. /foo is a parent to /foo/bar,
+  // and foo is a parent to foo/bar. Any ancestor is considered a parent i.e. /a
+  // is a parent to both /a/b and /a/b/c.  Does not convert paths to absolute,
+  // follow symlinks or directory navigation (e.g. ".."). A path is *NOT* its
+  // own parent.
   bool IsParent(const FilePath& child) const;
 
   // If IsParent(child) holds, appends to path (if non-NULL) the

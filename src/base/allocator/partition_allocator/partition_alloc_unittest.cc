@@ -22,9 +22,7 @@
 
 #if defined(OS_POSIX)
 #include <sys/mman.h>
-#if !defined(OS_FUCHSIA)
 #include <sys/resource.h>
-#endif
 #include <sys/time.h>
 #endif  // defined(OS_POSIX)
 
@@ -74,7 +72,7 @@ bool SetAddressSpaceLimit() {
 }
 
 bool ClearAddressSpaceLimit() {
-#if !defined(ARCH_CPU_64_BITS) || !defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if !defined(ARCH_CPU_64_BITS) || !defined(OS_POSIX)
   return true;
 #elif defined(OS_POSIX)
   struct rlimit limit;
@@ -1352,8 +1350,7 @@ TEST_F(PartitionAllocTest, LostFreePagesBug) {
 // cause flake.
 #if !defined(OS_WIN) &&            \
     (!defined(ARCH_CPU_64_BITS) || \
-     (defined(OS_POSIX) &&         \
-      !(defined(OS_FUCHSIA) || defined(OS_MACOSX) || defined(OS_ANDROID))))
+     (defined(OS_POSIX) && !(defined(OS_MACOSX) || defined(OS_ANDROID))))
 
 // The following four tests wrap a called function in an expect death statement
 // to perform their test, because they are non-hermetic. Specifically they are
@@ -1401,7 +1398,7 @@ TEST_F(PartitionAllocDeathTest, RepeatedTryReallocReturnNull) {
 }
 
 #endif  // !defined(ARCH_CPU_64_BITS) || (defined(OS_POSIX) &&
-        // !(defined(OS_FUCHSIA) || defined(OS_MACOSX) || defined(OS_ANDROID)))
+        // !(defined(OS_MACOSX) || defined(OS_ANDROID)))
 
 // Make sure that malloc(-1) dies.
 // In the past, we had an integer overflow that would alias malloc(-1) to

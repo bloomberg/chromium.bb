@@ -47,8 +47,11 @@ int CheckPDFiumCApi() {
     CHK(FPDFAnnot_GetFormFieldAtPoint);
     CHK(FPDFAnnot_GetFormFieldFlags);
     CHK(FPDFAnnot_GetLinkedAnnot);
+    CHK(FPDFAnnot_GetNumberValue);
     CHK(FPDFAnnot_GetObject);
     CHK(FPDFAnnot_GetObjectCount);
+    CHK(FPDFAnnot_GetOptionCount);
+    CHK(FPDFAnnot_GetOptionLabel);
     CHK(FPDFAnnot_GetRect);
     CHK(FPDFAnnot_GetStringValue);
     CHK(FPDFAnnot_GetSubtype);
@@ -238,6 +241,7 @@ int CheckPDFiumCApi() {
     CHK(FORM_ForceToKillFocus);
     CHK(FORM_GetFocusedText);
     CHK(FORM_GetSelectedText);
+    CHK(FORM_IsIndexSelected);
     CHK(FORM_OnAfterLoadPage);
     CHK(FORM_OnBeforeClosePage);
     CHK(FORM_OnChar);
@@ -254,6 +258,7 @@ int CheckPDFiumCApi() {
 #endif
     CHK(FORM_Redo);
     CHK(FORM_ReplaceSelection);
+    CHK(FORM_SetIndexSelected);
     CHK(FORM_Undo);
     CHK(FPDFDOC_ExitFormFillEnvironment);
     CHK(FPDFDOC_InitFormFillEnvironment);
@@ -372,6 +377,7 @@ int CheckPDFiumCApi() {
     CHK(FPDF_CountNamedDests);
     CHK(FPDF_DestroyLibrary);
     CHK(FPDF_DeviceToPage);
+    CHK(FPDF_DocumentHasValidCrossReferenceTable);
     CHK(FPDF_GetDocPermissions);
     CHK(FPDF_GetFileVersion);
     CHK(FPDF_GetLastError);

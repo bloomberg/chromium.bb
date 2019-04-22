@@ -7,11 +7,14 @@
 
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT TextResourceDecoderOptions final {
+  DISALLOW_NEW();
+
  public:
   enum ContentType {
     kPlainTextContent,
@@ -22,6 +25,13 @@ class PLATFORM_EXPORT TextResourceDecoderOptions final {
     kMaxContentType = kCSSContent
   };  // PlainText only checks for BOM.
 
+  // Implements https://encoding.spec.whatwg.org/#decode
+  // when ContentType is |kPlainTextContent|.
+  // The "fallback encoding" is
+  // - If TextResourceDecoder::SetEncoding(|encoding|) is called and
+  //   |encoding.IsValid()| is true, then |encoding|.
+  // - Else if |default_encoding.IsValid()| is true, then |default_encoding|.
+  // - Else, Latin-1.
   explicit TextResourceDecoderOptions(
       ContentType,
       const WTF::TextEncoding& default_encoding = WTF::TextEncoding());

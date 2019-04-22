@@ -168,8 +168,8 @@ class MiscTests(Base):
     def test_parse_warning(self):
         try:
             filesystem = self._port.host.filesystem
-            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'disabled-test.html-disabled'), 'content')
-            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'test-to-rebaseline.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.web_tests_dir(), 'disabled-test.html-disabled'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.web_tests_dir(), 'test-to-rebaseline.html'), 'content')
             self.parse_exp('Bug(user) [ FOO ] failures/expected/text.html [ Failure ]\n'
                            'Bug(user) non-existent-test.html [ Failure ]\n'
                            'Bug(user) disabled-test.html-disabled [ Failure ]\n',
@@ -242,7 +242,7 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
         self.assert_exp('failures/expected/text.html', FAIL)
         self.assertNotIn(
             self._port.host.filesystem.join(
-                self._port.layout_tests_dir(),
+                self._port.web_tests_dir(),
                 'failures/expected/text.html'),
             self._exp.get_tests_with_result_type(SKIP))
 
@@ -284,7 +284,7 @@ class SkippedTests(Base):
             options=optparse.Values({'ignore_tests': ignore_tests}))
         port.host.filesystem.write_text_file(
             port.host.filesystem.join(
-                port.layout_tests_dir(), 'failures/expected/text.html'),
+                port.web_tests_dir(), 'failures/expected/text.html'),
             'foo')
         expectations_dict = OrderedDict()
         expectations_dict['expectations'] = expectations
@@ -354,7 +354,9 @@ class ExpectationSyntaxTests(Base):
         expectations = expectations or []
         warnings = warnings or []
         line_number = '1'
-        expectation_line = TestExpectationLine.tokenize_line(filename, line, line_number)
+        host = MockHost()
+        expectation_line = TestExpectationLine.tokenize_line(
+            filename, line, line_number, host.port_factory.get('test-win-win7', None))
         self.assertEqual(expectation_line.warnings, warnings)
         self.assertEqual(expectation_line.name, name)
         self.assertEqual(expectation_line.filename, filename)
@@ -386,6 +388,8 @@ class ExpectationSyntaxTests(Base):
         self.assert_tokenize_exp('foo.html [ Slow ]', specifiers=[], expectations=['SLOW'], filename='SlowTests')
         self.assert_tokenize_exp('foo.html [ Timeout Slow ]', specifiers=[], expectations=['SKIP', 'TIMEOUT'], warnings=[
                                  'Only SLOW expectations are allowed in SlowTests'], filename='SlowTests')
+        self.assert_tokenize_exp('external/wpt/foo.html [ Slow ]', name='external/wpt/foo.html', specifiers=[], expectations=['SLOW'], warnings=[
+                                 'WPT should not be added to SlowTests; they should be marked as slow inside the test (see https://web-platform-tests.org/writing-tests/testharness-api.html#harness-timeout)'], filename='SlowTests')
 
     def test_wontfix(self):
         self.assert_tokenize_exp(
@@ -778,7 +782,8 @@ class TestExpectationSerializationTests(unittest.TestCase):
         unittest.TestCase.__init__(self, testFunc)
 
     def _tokenize(self, line):
-        return TestExpectationLine.tokenize_line('path', line, 0)
+        host = MockHost()
+        return TestExpectationLine.tokenize_line('path', line, 0, host.port_factory.get('test-win-win7', None))
 
     def assert_round_trip(self, in_string, expected_string=None):
         expectation = self._tokenize(in_string)

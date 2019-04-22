@@ -31,10 +31,8 @@ bool DefaultSearchProviderIsGoogle(Profile* profile);
 bool DefaultSearchProviderIsGoogle(
     const TemplateURLService* template_url_service);
 
-// Returns true if |url| corresponds to a New Tab page.
-// TODO(treib): This is confusingly named, as it includes URLs that are related
-// to an NTP, but aren't an NTP themselves (such as the NTP's service worker).
-bool IsNTPURL(const GURL& url, Profile* profile);
+// Returns true if |url| corresponds to a New Tab page or its service worker.
+bool IsNTPOrRelatedURL(const GURL& url, Profile* profile);
 
 // Returns true if the active navigation entry of |contents| is a New Tab page
 // rendered in an Instant process. This is the last committed entry if it
@@ -44,7 +42,7 @@ bool IsInstantNTP(content::WebContents* contents);
 // Same as IsInstantNTP but uses |nav_entry| to determine the URL for the page
 // instead of using the visible entry.
 bool NavEntryIsInstantNTP(content::WebContents* contents,
-                          const content::NavigationEntry* nav_entry);
+                          content::NavigationEntry* nav_entry);
 
 // Returns true if |url| corresponds to a New Tab page that would get rendered
 // in an Instant process.

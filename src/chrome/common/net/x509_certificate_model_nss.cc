@@ -127,10 +127,6 @@ string GetCertNameOrNickname(CERTCertificate* cert_handle) {
   return GetNickname(cert_handle);
 }
 
-string GetTokenName(CERTCertificate* cert_handle) {
-  return psm::GetCertTokenName(cert_handle);
-}
-
 string GetVersion(CERTCertificate* cert_handle) {
   // If the version field is omitted from the certificate, the default
   // value is v1(0).

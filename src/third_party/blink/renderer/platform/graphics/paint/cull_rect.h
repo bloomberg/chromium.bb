@@ -33,6 +33,7 @@ class PLATFORM_EXPORT CullRect {
 
   bool Intersects(const IntRect&) const;
   bool Intersects(const LayoutRect&) const;
+  bool Intersects(const LayoutRect&, const LayoutPoint& offset) const;
   bool IntersectsTransformed(const AffineTransform&, const FloatRect&) const;
   bool IntersectsHorizontalRange(LayoutUnit lo, LayoutUnit hi) const;
   bool IntersectsVerticalRange(LayoutUnit lo, LayoutUnit hi) const;
@@ -42,24 +43,24 @@ class PLATFORM_EXPORT CullRect {
 
   // Applies one transform to the cull rect. Before this function is called,
   // the cull rect is in the space of the parent the transform node.
-  // For SlimmingPaintV2, when the transform is a scroll translation, the cull
-  // rect is converted in the following steps:
+  // For CompositeAfterPaint, when the transform is a scroll translation, the
+  // cull rect is converted in the following steps:
   // 1. it's clipped by the container rect,
   // 2. transformed by inverse of the scroll translation,
   // 3. expanded by thousands of pixels for composited scrolling.
-  void ApplyTransform(const TransformPaintPropertyNode* transform) {
+  void ApplyTransform(const TransformPaintPropertyNode& transform) {
     ApplyTransformInternal(transform);
   }
 
-  // For SlimmingPaintV2 only. Applies transforms from |source| (not included)
-  // to |destination| (included). For each scroll translation, the cull rect is
-  // converted as described in ApplyTransform(). If |old_cull_rect| is provided,
-  // and the cull rect converted by the last scroll translation doesn't cover
-  // the whole scrolling contents, and the new cull rect doesn't change enough
-  // (by hundreds of pixels) from |old_cull_rect|, the cull rect will be set to
-  // |old_cull_rect| to avoid repaint on each composited scroll.
-  void ApplyTransforms(const TransformPaintPropertyNode* source,
-                       const TransformPaintPropertyNode* destination,
+  // For CompositeAfterPaint only. Applies transforms from |source| (not
+  // included) to |destination| (included). For each scroll translation, the
+  // cull rect is converted as described in ApplyTransform(). If |old_cull_rect|
+  // is provided, and the cull rect converted by the last scroll translation
+  // doesn't cover the whole scrolling contents, and the new cull rect doesn't
+  // change enough (by hundreds of pixels) from |old_cull_rect|, the cull rect
+  // will be set to |old_cull_rect| to avoid repaint on each composited scroll.
+  void ApplyTransforms(const TransformPaintPropertyNode& source,
+                       const TransformPaintPropertyNode& destination,
                        const base::Optional<CullRect>& old_cull_rect);
 
   const IntRect& Rect() const { return rect_; }
@@ -83,7 +84,7 @@ class PLATFORM_EXPORT CullRect {
     kExpandedForPartialScrollingContents,
   };
   ApplyTransformResult ApplyTransformInternal(
-      const TransformPaintPropertyNode*);
+      const TransformPaintPropertyNode&);
 
   bool ChangedEnough(const CullRect& old_cull_rect) const;
 

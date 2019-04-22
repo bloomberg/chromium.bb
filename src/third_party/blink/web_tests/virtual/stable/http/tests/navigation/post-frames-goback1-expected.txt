@@ -1,8 +1,5 @@
 Tests that a POST targetted to a frame is handled correctly when navigating away and coming back to the page.
 
-
-
-
 --------
 Frame: 'target-frame'
 --------
@@ -11,6 +8,7 @@ This page was requested with the HTTP method POST.
 Parameters:
 
 the-input = input value goes here
+
 Http headers:
 
 HTTP_CACHE_CONTROL = max-age=0

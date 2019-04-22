@@ -28,10 +28,13 @@ class ASH_PUBLIC_EXPORT DefaultVoiceInteractionObserver
   void OnVoiceInteractionSettingsEnabled(bool enabled) override {}
   void OnVoiceInteractionContextEnabled(bool enabled) override {}
   void OnVoiceInteractionHotwordEnabled(bool enabled) override {}
-  void OnVoiceInteractionSetupCompleted(bool completed) override {}
+  void OnVoiceInteractionConsentStatusUpdated(
+      ash::mojom::ConsentStatus consent_status) override {}
+  void OnVoiceInteractionHotwordAlwaysOn(bool always_on) override {}
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}
   void OnLocaleChanged(const std::string& locale) override {}
+  void OnArcPlayStoreEnabledChanged(bool enabled) override {}
 
  protected:
   DefaultVoiceInteractionObserver() = default;

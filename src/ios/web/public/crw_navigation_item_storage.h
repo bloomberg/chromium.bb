@@ -21,8 +21,6 @@ namespace web {
 
 // Current URL (std::string).
 extern NSString* const kNavigationItemStorageURLKey;
-// Current URL. Deprecated, used for backward compatibility (NSURL).
-extern NSString* const kNavigationItemStorageURLDeperecatedKey;
 // Page referrer URL (std::string).
 extern NSString* const kNavigationItemStorageReferrerURLKey;
 // Page referrer URL (NSURL). Deprecated, used for backward compatibility.
@@ -45,10 +43,6 @@ extern NSString* const kNavigationItemStorageHTTPRequestHeadersKey;
 extern NSString* const kNavigationItemStorageSkipRepostFormConfirmationKey;
 // The user agent type (std::string).
 extern NSString* const kNavigationItemStorageUserAgentTypeKey;
-// Should desktop user agent be used (BOOL).  Deprecated, used for backward
-// compatibility.
-// TODO(crbug.com/696125): remove this key.
-extern NSString* const kNavigationItemStorageUseDesktopUserAgentDeprecatedKey;
 
 }  // namespace web
 

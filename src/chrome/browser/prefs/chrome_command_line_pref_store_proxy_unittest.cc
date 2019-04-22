@@ -8,8 +8,8 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -162,7 +162,7 @@ class ChromeCommandLinePrefStoreProxyTest
   net::ProxyConfigWithAnnotation* proxy_config() { return &proxy_config_; }
 
   void SetUp() override {
-    for (size_t i = 0; i < arraysize(GetParam().switches); i++) {
+    for (size_t i = 0; i < base::size(GetParam().switches); i++) {
       const char* name = GetParam().switches[i].name;
       const char* value = GetParam().switches[i].value;
       if (name && value)
@@ -193,6 +193,6 @@ TEST_P(ChromeCommandLinePrefStoreProxyTest, CommandLine) {
       GetParam().proxy_rules.Matches(proxy_config()->value().proxy_rules()));
 }
 
-INSTANTIATE_TEST_CASE_P(ChromeCommandLinePrefStoreProxyTestInstance,
-                        ChromeCommandLinePrefStoreProxyTest,
-                        testing::ValuesIn(kCommandLineTestParams));
+INSTANTIATE_TEST_SUITE_P(ChromeCommandLinePrefStoreProxyTestInstance,
+                         ChromeCommandLinePrefStoreProxyTest,
+                         testing::ValuesIn(kCommandLineTestParams));

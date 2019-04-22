@@ -7,8 +7,10 @@
 #include <map>
 
 #include "base/format_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/engine_impl/syncer.h"
@@ -41,6 +43,24 @@ namespace {
 
 // Time to backoff syncing after receiving a throttled response.
 const int kSyncDelayAfterThrottled = 2 * 60 * 60;  // 2 hours
+
+const char kGetUpdatesTokenHistogramPrefix[] =
+    "Sync.ReceivedDataTypeGetUpdatesResponseWithToken.";
+
+enum class GetUpdatesToken {
+  kNew = 0,
+  kSame = 1,
+  kDifferent = 2,
+  kMaxValue = kDifferent,
+};
+
+void RecordGetUpdatesToken(syncer::ModelType model_type,
+                           GetUpdatesToken token) {
+  std::string type_string = ModelTypeToHistogramSuffix(model_type);
+  std::string full_histogram_name =
+      kGetUpdatesTokenHistogramPrefix + type_string;
+  base::UmaHistogramEnumeration(full_histogram_name, token);
+}
 
 void LogResponseProfilingData(const ClientToServerResponse& response) {
   if (response.has_profiling_data()) {
@@ -84,17 +104,19 @@ void LogResponseProfilingData(const ClientToServerResponse& response) {
 
 SyncerError ServerConnectionErrorAsSyncerError(
     const HttpResponse::ServerConnectionCode server_status,
-    int net_error_code) {
+    int net_error_code,
+    int http_status_code) {
   switch (server_status) {
     case HttpResponse::CONNECTION_UNAVAILABLE:
       return SyncerError::NetworkConnectionUnavailable(net_error_code);
     case HttpResponse::IO_ERROR:
       return SyncerError(SyncerError::NETWORK_IO_ERROR);
     case HttpResponse::SYNC_SERVER_ERROR:
-      // FIXME what does this mean?
-      return SyncerError(SyncerError::SYNC_SERVER_ERROR);
+      // This means the server returned a non-401 HTTP error.
+      return SyncerError::HttpError(http_status_code);
     case HttpResponse::SYNC_AUTH_ERROR:
-      return SyncerError(SyncerError::SYNC_AUTH_ERROR);
+      // This means the server returned an HTTP 401 (unauthorized) error.
+      return SyncerError::HttpError(http_status_code);
     case HttpResponse::SERVER_CONNECTION_OK:
     case HttpResponse::NONE:
     default:
@@ -136,14 +158,10 @@ ClientAction PBActionToClientAction(const sync_pb::SyncEnums::Action& action) {
   switch (action) {
     case sync_pb::SyncEnums::UPGRADE_CLIENT:
       return UPGRADE_CLIENT;
-    case sync_pb::SyncEnums::CLEAR_USER_DATA_AND_RESYNC:
-      return CLEAR_USER_DATA_AND_RESYNC;
-    case sync_pb::SyncEnums::ENABLE_SYNC_ON_ACCOUNT:
-      return ENABLE_SYNC_ON_ACCOUNT;
-    case sync_pb::SyncEnums::STOP_AND_RESTART_SYNC:
-      return STOP_AND_RESTART_SYNC;
-    case sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT:
-      return DISABLE_SYNC_ON_CLIENT;
+    case sync_pb::SyncEnums::DEPRECATED_CLEAR_USER_DATA_AND_RESYNC:
+    case sync_pb::SyncEnums::DEPRECATED_ENABLE_SYNC_ON_ACCOUNT:
+    case sync_pb::SyncEnums::DEPRECATED_STOP_AND_RESTART_SYNC:
+    case sync_pb::SyncEnums::DEPRECATED_DISABLE_SYNC_ON_CLIENT:
     case sync_pb::SyncEnums::UNKNOWN_ACTION:
       return UNKNOWN_ACTION;
     default:
@@ -337,13 +355,62 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
                             msg.message_contents(),
                             ClientToServerMessage::Contents_MAX + 1);
 
+  std::map<int, std::string> progress_marker_token_per_data_type;
+
+  if (msg.has_get_updates()) {
+    UMA_HISTOGRAM_ENUMERATION("Sync.PostedGetUpdatesOrigin",
+                              msg.get_updates().get_updates_origin(),
+                              sync_pb::SyncEnums::GetUpdatesOrigin_ARRAYSIZE);
+
+    for (const sync_pb::DataTypeProgressMarker& progress_marker :
+         msg.get_updates().from_progress_marker()) {
+      progress_marker_token_per_data_type[progress_marker.data_type_id()] =
+          progress_marker.token();
+      UMA_HISTOGRAM_ENUMERATION(
+          "Sync.PostedDataTypeGetUpdatesRequest",
+          ModelTypeToHistogramInt(GetModelTypeFromSpecificsFieldNumber(
+              progress_marker.data_type_id())),
+          static_cast<int>(ModelType::NUM_ENTRIES));
+    }
+  }
+
+  const base::Time start_time = base::Time::Now();
+
   // Fills in params.buffer_out and params.response.
   if (!scm->PostBufferWithCachedAuth(&params)) {
     LOG(WARNING) << "Error posting from syncer:" << params.response;
     return false;
   }
 
-  return response->ParseFromString(params.buffer_out);
+  if (!response->ParseFromString(params.buffer_out)) {
+    DLOG(WARNING) << "Error parsing response from sync server";
+    return false;
+  }
+
+  UMA_HISTOGRAM_MEDIUM_TIMES("Sync.PostedClientToServerMessageLatency",
+                             base::Time::Now() - start_time);
+
+  if (response->error_code() != sync_pb::SyncEnums::SUCCESS) {
+    base::UmaHistogramSparse("Sync.PostedClientToServerMessageError",
+                             response->error_code());
+  }
+
+  for (const sync_pb::DataTypeProgressMarker& progress_marker :
+       response->get_updates().new_progress_marker()) {
+    ModelType type =
+        GetModelTypeFromSpecificsFieldNumber(progress_marker.data_type_id());
+    const std::string& old_token =
+        progress_marker_token_per_data_type[progress_marker.data_type_id()];
+    if (old_token.empty()) {
+      RecordGetUpdatesToken(type, GetUpdatesToken::kNew);
+    } else if (old_token == progress_marker.token()) {
+      RecordGetUpdatesToken(type, GetUpdatesToken::kSame);
+    } else {
+      RecordGetUpdatesToken(type, GetUpdatesToken::kDifferent);
+    }
+  }
+
+  return true;
 }
 
 base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
@@ -361,15 +428,10 @@ base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
 }
 
 // static
-SyncerError SyncerProtoUtil::PostClientToServerMessage(
-    ClientToServerMessage* msg,
-    ClientToServerResponse* response,
-    SyncCycle* cycle,
-    ModelTypeSet* partial_failure_data_types) {
-  DCHECK(response);
-  DCHECK(!msg->get_updates().has_from_timestamp());   // Deprecated.
-
-  // Add must-have fields.
+void SyncerProtoUtil::AddRequiredFieldsToClientToServerMessage(
+    const SyncCycle* cycle,
+    sync_pb::ClientToServerMessage* msg) {
+  DCHECK(msg);
   SetProtocolVersion(msg);
   AddRequestBirthday(cycle->context()->directory(), msg);
   DCHECK(msg->has_store_birthday() || !IsBirthdayRequired(*msg));
@@ -377,12 +439,26 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   msg->set_api_key(google_apis::GetAPIKey());
   msg->mutable_client_status()->CopyFrom(cycle->context()->client_status());
   msg->set_invalidator_client_id(cycle->context()->invalidator_client_id());
+}
 
-  syncable::Directory* dir = cycle->context()->directory();
+// static
+SyncerError SyncerProtoUtil::PostClientToServerMessage(
+    const ClientToServerMessage& msg,
+    ClientToServerResponse* response,
+    SyncCycle* cycle,
+    ModelTypeSet* partial_failure_data_types) {
+  DCHECK(response);
+  DCHECK(msg.has_protocol_version());
+  DCHECK(msg.has_store_birthday() || !IsBirthdayRequired(msg));
+  DCHECK(msg.has_bag_of_chips());
+  DCHECK(msg.has_api_key());
+  DCHECK(msg.has_client_status());
+  DCHECK(msg.has_invalidator_client_id());
+  DCHECK(!msg.get_updates().has_from_timestamp());  // Deprecated.
 
-  LogClientToServerMessage(*msg);
-  if (!PostAndProcessHeaders(cycle->context()->connection_manager(), cycle,
-                             *msg, response)) {
+  LogClientToServerMessage(msg);
+  if (!PostAndProcessHeaders(cycle->context()->connection_manager(), cycle, msg,
+                             response)) {
     // There was an error establishing communication with the server.
     // We can not proceed beyond this point.
     const HttpResponse::ServerConnectionCode server_status =
@@ -392,11 +468,12 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     DCHECK_NE(server_status, HttpResponse::SERVER_CONNECTION_OK);
 
     return ServerConnectionErrorAsSyncerError(
-        server_status,
-        cycle->context()->connection_manager()->net_error_code());
+        server_status, cycle->context()->connection_manager()->net_error_code(),
+        cycle->context()->connection_manager()->http_status_code());
   }
   LogClientToServerResponse(*response);
 
+  syncable::Directory* dir = cycle->context()->directory();
   // Persist a bag of chips if it has been sent by the server.
   PersistBagOfChips(dir, *response);
 
@@ -414,27 +491,14 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
           command.max_commit_batch_size());
     }
 
-    if (command.has_set_sync_long_poll_interval()) {
-      base::TimeDelta interval =
-          base::TimeDelta::FromSeconds(command.set_sync_long_poll_interval());
-      if (interval.is_zero()) {
-        DLOG(WARNING)
-            << "Received zero long poll interval from server. Ignoring.";
-      } else {
-        cycle->context()->set_long_poll_interval(interval);
-        cycle->delegate()->OnReceivedLongPollIntervalUpdate(interval);
-      }
-    }
-
     if (command.has_set_sync_poll_interval()) {
       base::TimeDelta interval =
           base::TimeDelta::FromSeconds(command.set_sync_poll_interval());
       if (interval.is_zero()) {
-        DLOG(WARNING)
-            << "Received zero short poll interval from server. Ignoring.";
+        DLOG(WARNING) << "Received zero poll interval from server. Ignoring.";
       } else {
-        cycle->context()->set_short_poll_interval(interval);
-        cycle->delegate()->OnReceivedShortPollIntervalUpdate(interval);
+        cycle->context()->set_poll_interval(interval);
+        cycle->delegate()->OnReceivedPollIntervalUpdate(interval);
       }
     }
 

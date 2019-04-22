@@ -6,7 +6,7 @@
 
 // Win32_system_utils.cpp: Implementation of OS-specific functions for Win32 (Windows)
 
-#include "system_utils.h"
+#include "util/system_utils.h"
 
 #include <windows.h>
 #include <array>
@@ -36,5 +36,4 @@ bool StabilizeCPUForBenchmarking()
 
     return true;
 }
-
 }  // namespace angle

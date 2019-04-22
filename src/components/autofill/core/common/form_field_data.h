@@ -108,7 +108,7 @@ struct FormFieldData {
   // Returns true if the field is visible to the user.
   bool IsVisible() const {
     return is_focusable && role != ROLE_ATTRIBUTE_PRESENTATION;
-  };
+  }
 
   // Note: operator==() performs a full-field-comparison(byte by byte), this is
   // different from SameFieldAs(), which ignores comparison for those "values"

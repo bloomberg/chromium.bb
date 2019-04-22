@@ -1,4 +1,3 @@
-
 SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
@@ -12,7 +11,7 @@ Frame: '<!--framePath //<!--frame0-->-->'
 
 ----- tests for putting window.history and its properties -----
 
-PASS: window.location.assign should be 'function () { [native code] }' and is.
+PASS: window.location.assign should be 'function assign() { [native code] }' and is.
 PASS: window.location.replace should be 'function () { [native code] }' and is.
 PASS: window.location.reload should be 'function reload() { [native code] }' and is.
 PASS: window.location.toString should be 'function toString() { [native code] }' and is.

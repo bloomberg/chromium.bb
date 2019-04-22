@@ -522,7 +522,7 @@ DateTimeEditElement::DateTimeEditElement(Document& document,
 
 DateTimeEditElement::~DateTimeEditElement() = default;
 
-void DateTimeEditElement::Trace(blink::Visitor* visitor) {
+void DateTimeEditElement::Trace(Visitor* visitor) {
   visitor->Trace(fields_);
   visitor->Trace(edit_control_owner_);
   HTMLDivElement::Trace(visitor);
@@ -586,7 +586,7 @@ scoped_refptr<ComputedStyle> DateTimeEditElement::CustomStyleForLayoutObject() {
           *style, child_element->textContent());
     }
   }
-  style->SetWidth(Length(ceilf(width), kFixed));
+  style->SetWidth(Length::Fixed(ceilf(width)));
   return style;
 }
 
@@ -659,7 +659,7 @@ void DateTimeEditElement::FieldValueChanged() {
 }
 
 bool DateTimeEditElement::FocusOnNextFocusableField(wtf_size_t start_index) {
-  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayoutTree();
   for (wtf_size_t field_index = start_index; field_index < fields_.size();
        ++field_index) {
     if (fields_[field_index]->IsFocusable()) {
@@ -682,7 +682,7 @@ bool DateTimeEditElement::FocusOnPreviousField(
   const wtf_size_t start_field_index = FieldIndexOf(field);
   if (start_field_index == kInvalidFieldIndex)
     return false;
-  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayoutTree();
   wtf_size_t field_index = start_field_index;
   while (field_index > 0) {
     --field_index;

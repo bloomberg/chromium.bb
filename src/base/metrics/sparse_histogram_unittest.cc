@@ -16,6 +16,7 @@
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,10 +86,9 @@ class SparseHistogramTest : public testing::TestWithParam<bool> {
 };
 
 // Run all HistogramTest cases with both heap and persistent memory.
-INSTANTIATE_TEST_CASE_P(HeapAndPersistent,
-                        SparseHistogramTest,
-                        testing::Bool());
-
+INSTANTIATE_TEST_SUITE_P(HeapAndPersistent,
+                         SparseHistogramTest,
+                         testing::Bool());
 
 TEST_P(SparseHistogramTest, BasicTest) {
   std::unique_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));
@@ -354,7 +354,7 @@ TEST_P(SparseHistogramTest, ExtremeValues) {
       {2147483647, 2147483648LL},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     HistogramBase* histogram =
         SparseHistogram::FactoryGet(StringPrintf("ExtremeValues_%zu", i),
                                     HistogramBase::kUmaTargetedHistogramFlag);

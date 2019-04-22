@@ -77,7 +77,7 @@ static IDeckLinkIterator *decklink_create_iterator(AVFormatContext *avctx)
     return iter;
 }
 
-int decklink_get_attr_string(IDeckLink *dl, BMDDeckLinkAttributeID cfg_id, const char **s)
+static int decklink_get_attr_string(IDeckLink *dl, BMDDeckLinkAttributeID cfg_id, const char **s)
 {
     DECKLINK_STR tmp;
     HRESULT hr;
@@ -170,6 +170,11 @@ int ff_decklink_set_configs(AVFormatContext *avctx,
         ret = decklink_select_input(avctx, bmdDeckLinkConfigVideoInputConnection);
         if (ret < 0)
             return ret;
+    }
+    if (direction == DIRECTION_OUT && cctx->timing_offset != INT_MIN) {
+        res = ctx->cfg->SetInt(bmdDeckLinkConfigReferenceInputTimingOffset, cctx->timing_offset);
+        if (res != S_OK)
+            av_log(avctx, AV_LOG_WARNING, "Setting timing offset failed.\n");
     }
     return 0;
 }

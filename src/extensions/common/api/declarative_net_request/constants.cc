@@ -22,6 +22,7 @@ const char kExcludedResourceTypesKey[] = "excludedResourceTypes";
 const char kDomainTypeKey[] = "domainType";
 const char kRuleActionTypeKey[] = "type";
 const char kRedirectUrlKey[] = "redirectUrl";
+const char kRemoveHeadersListKey[] = "removeHeadersList";
 
 }  // namespace declarative_net_request
 }  // namespace extensions

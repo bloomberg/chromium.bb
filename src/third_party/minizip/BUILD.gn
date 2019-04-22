@@ -29,10 +29,10 @@ config("minizip_public_config") {
   ]
 
   defines = [
-    "MZ_VERSION_MADEBY_HOST_SYSTEM=MZ_HOST_SYSTEM_UNIX",
     "HAVE_ZLIB",
     "HAVE_PKCRYPT",
-    "HAVE_AES",
+    "HAVE_WZAES",
+    "HAVE_STDINT_H",
 
     # This isn't actually low entropy. It just allows for an OS-specific
     # random number generator.

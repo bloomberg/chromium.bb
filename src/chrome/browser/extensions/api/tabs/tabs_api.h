@@ -202,7 +202,6 @@ class TabsCaptureVisibleTabFunction
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // ExtensionFunction implementation.
-  bool HasPermission() override;
   ResponseAction Run() override;
 
  protected:

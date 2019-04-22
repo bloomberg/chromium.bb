@@ -69,8 +69,7 @@ class V8ScriptRunnerTest : public testing::Test {
       return false;
     }
     V8CodeCache::ProduceCache(isolate, compiled_script.ToLocalChecked(),
-                              source_code, produce_cache_options,
-                              compile_options);
+                              source_code, produce_cache_options);
     return true;
   }
 
@@ -87,8 +86,7 @@ class V8ScriptRunnerTest : public testing::Test {
       return false;
     }
     V8CodeCache::ProduceCache(isolate, compiled_script.ToLocalChecked(),
-                              source_code, produce_cache_options,
-                              compile_options);
+                              source_code, produce_cache_options);
     return true;
   }
 
@@ -104,7 +102,7 @@ class V8ScriptRunnerTest : public testing::Test {
     resource->SetClientIsWaitingForFinished();
     String code = Code();
     ResourceResponse response(Url());
-    response.SetHTTPStatusCode(200);
+    response.SetHttpStatusCode(200);
     resource->SetResponse(response);
     resource->AppendData(code.Utf8().data(), code.Utf8().length());
     resource->FinishForTest();

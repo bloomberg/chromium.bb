@@ -22,10 +22,10 @@ public class SiteDataCleaner {
         // Clear the permissions.
         for (@ContentSettingException.Type int type = 0;
                 type < ContentSettingException.Type.NUM_ENTRIES; type++) {
-            site.setContentSettingPermission(type, ContentSetting.DEFAULT);
+            site.setContentSettingPermission(type, ContentSettingValues.DEFAULT);
         }
         for (@PermissionInfo.Type int type = 0; type < PermissionInfo.Type.NUM_ENTRIES; type++) {
-            site.setPermission(type, ContentSetting.DEFAULT);
+            site.setPermission(type, ContentSettingValues.DEFAULT);
         }
 
         for (ChosenObjectInfo info : site.getChosenObjectInfo()) {

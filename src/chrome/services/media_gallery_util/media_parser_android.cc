@@ -4,99 +4,30 @@
 
 #include "chrome/services/media_gallery_util/media_parser_android.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
-#include "base/task/task_traits.h"
 #include "chrome/services/media_gallery_util/ipc_data_source.h"
-#include "media/base/bind_to_current_loop.h"
-#include "media/base/video_codecs.h"
-#include "media/base/video_thumbnail_decoder.h"
-#include "media/filters/android/video_frame_extractor.h"
-#include "media/filters/vpx_video_decoder.h"
-#include "media/media_buildflags.h"
-#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
+#include "chrome/services/media_gallery_util/video_thumbnail_parser.h"
 
 namespace {
 
-// Return the video frame back to browser process. A valid |config| is
-// needed for deserialization.
-void OnSoftwareVideoFrameDecoded(
-    std::unique_ptr<media::VideoThumbnailDecoder>,
-    MediaParser::ExtractVideoFrameCallback video_frame_callback,
-    const media::VideoDecoderConfig& config,
-    scoped_refptr<media::VideoFrame> frame) {
-  DCHECK(video_frame_callback);
-
-  if (!frame) {
-    std::move(video_frame_callback)
-        .Run(false, chrome::mojom::VideoFrameData::New(), base::nullopt);
-    return;
-  }
-
-  std::move(video_frame_callback)
-      .Run(true,
-           chrome::mojom::VideoFrameData::NewDecodedFrame(
-               media::MojoSharedBufferVideoFrame::CreateFromYUVFrame(*frame)),
-           config);
-}
-
-void OnEncodedVideoFrameExtracted(
-    std::unique_ptr<media::VideoFrameExtractor> video_frame_extractor,
+void OnVideoFrameExtracted(
+    std::unique_ptr<VideoThumbnailParser>,
     MediaParser::ExtractVideoFrameCallback video_frame_callback,
     bool success,
-    std::vector<uint8_t> data,
-    const media::VideoDecoderConfig& config) {
-  if (!success || data.empty()) {
-    std::move(video_frame_callback)
-        .Run(false, chrome::mojom::VideoFrameData::New(), base::nullopt);
-    return;
-  }
-
-#if BUILDFLAG(USE_PROPRIETARY_CODECS) && \
-    !BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-  // H264 currently needs to be decoded in GPU process when no software decoder
-  // is provided.
-  if (config.codec() == media::VideoCodec::kCodecH264) {
-    std::move(video_frame_callback)
-        .Run(success,
-             chrome::mojom::VideoFrameData::NewEncodedData(std::move(data)),
-             config);
-    return;
-  }
-#endif
-
-  if (config.codec() != media::VideoCodec::kCodecVP8 &&
-      config.codec() != media::VideoCodec::kCodecVP9) {
-    std::move(video_frame_callback)
-        .Run(false, chrome::mojom::VideoFrameData::New(), base::nullopt);
-    return;
-  }
-
-  // Decode with libvpx for vp8, vp9.
-  auto thumbnail_decoder = std::make_unique<media::VideoThumbnailDecoder>(
-      std::make_unique<media::VpxVideoDecoder>(), config, std::move(data));
-
-  thumbnail_decoder->Start(
-      base::BindOnce(&OnSoftwareVideoFrameDecoded, std::move(thumbnail_decoder),
-                     std::move(video_frame_callback), config));
-}
-
-void ExtractVideoFrameOnMediaThread(
-    media::DataSource* data_source,
-    MediaParser::ExtractVideoFrameCallback video_frame_callback) {
-  auto extractor = std::make_unique<media::VideoFrameExtractor>(data_source);
-  extractor->Start(base::BindOnce(&OnEncodedVideoFrameExtracted,
-                                  std::move(extractor),
-                                  std::move(video_frame_callback)));
+    chrome::mojom::VideoFrameDataPtr frame_data,
+    const base::Optional<media::VideoDecoderConfig>& config) {
+  std::move(video_frame_callback).Run(success, std::move(frame_data), config);
 }
 
 }  // namespace
 
 MediaParserAndroid::MediaParserAndroid(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : MediaParser(std::move(service_ref)),
-      media_task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})) {}
+    : MediaParser(std::move(service_ref)) {}
 
 MediaParserAndroid::~MediaParserAndroid() = default;
 
@@ -105,12 +36,14 @@ void MediaParserAndroid::ExtractVideoFrame(
     uint32_t total_size,
     chrome::mojom::MediaDataSourcePtr media_data_source,
     MediaParser::ExtractVideoFrameCallback video_frame_callback) {
-  data_source_ = std::make_unique<IPCDataSource>(
+  auto data_source = std::make_unique<IPCDataSource>(
       std::move(media_data_source), static_cast<int64_t>(total_size));
 
-  media_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &ExtractVideoFrameOnMediaThread, data_source_.get(),
-          media::BindToCurrentLoop(std::move(video_frame_callback))));
+  // Leak |parser| on utility main thread, because |data_source| lives on main
+  // thread and is used on another thread as raw pointer. Leaked |parser| will
+  // be deleted when utility process dies or |OnVideoFrameExtracted| callback
+  // is called.
+  auto parser = std::make_unique<VideoThumbnailParser>(std::move(data_source));
+  parser->Start(base::BindOnce(&OnVideoFrameExtracted, std::move(parser),
+                               std::move(video_frame_callback)));
 }

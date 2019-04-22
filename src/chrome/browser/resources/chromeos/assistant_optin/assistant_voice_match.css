@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 .content {
-  padding-right: 8px;
+  padding-inline-end: 8px;
 }
 
 #title-recording,
@@ -11,28 +11,41 @@
   padding-bottom: 36px;
 }
 
+#no-dsp-message {
+  padding-top: 16px;
+}
+
 #footer-text {
   color: #757575;
-  padding-top: 48px;
 }
 
-#voice-match-img {
-  padding: 48px 0 0 48px;
+#voice-match-video {
+  padding-top: 100px;
+  text-align: center;
 }
 
-#done-button-text {
-  padding: 0 8px 0 8px;
+#already-setup-video-container {
+  text-align: center;
+}
+
+#already-setup-video {
+  height: 450px;
+}
+
+#already-setup-img {
+  display: block;
+  margin: auto;
+  padding-top: 80px;
 }
 
 #intro-container,
 #recording-container,
 #already-setup-container {
   display: none;
+  height: 460px;
 }
 
 .intro #intro-container,
-.recording #recording-container,
-.completed #recording-container,
 .already-setup #already-setup-container {
   display: block;
 }
@@ -42,11 +55,28 @@
   display: none;
 }
 
+.recording #recording-container,
+.completed #recording-container {
+  display: table;
+}
+
+#loading-animation {
+  margin: 80px auto;
+  width: 100px;
+}
+
+#loading-spinner {
+  height: 100px;
+  width: 100px;
+}
+
+#footer-text {
+  display: table-footer-group;
+}
+
 .intro #skip-button,
 .intro #agree-button,
-.recording #later-button,
-.completed #done-button,
-.already-setup #next-button {
+.recording #later-button {
   display: block;
 }
 

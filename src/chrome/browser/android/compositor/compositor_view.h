@@ -15,6 +15,7 @@
 #include "cc/resources/ui_resource_client.h"
 #include "content/public/browser/android/compositor_client.h"
 #include "content/public/browser/browser_child_process_observer.h"
+#include "content/public/browser/gpu_feature_checker.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
@@ -102,6 +103,7 @@ class CompositorView : public content::CompositorClient,
       const content::ChildProcessTerminationInfo& info) override;
 
   void SetBackground(bool visible, SkColor color);
+  void OnSurfaceControlFeatureStatusUpdate(bool available);
 
   base::android::ScopedJavaGlobalRef<jobject> obj_;
   std::unique_ptr<content::Compositor> compositor_;
@@ -115,6 +117,8 @@ class CompositorView : public content::CompositorClient,
   int content_width_;
   int content_height_;
   bool overlay_video_mode_;
+
+  scoped_refptr<content::GpuFeatureChecker> surface_control_feature_checker_;
 
   base::WeakPtrFactory<CompositorView> weak_factory_;
 

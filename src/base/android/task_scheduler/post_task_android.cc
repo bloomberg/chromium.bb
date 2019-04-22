@@ -7,7 +7,7 @@
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "jni/PostTask_jni.h"
 #include "jni/Runnable_jni.h"
 
@@ -15,14 +15,12 @@ namespace base {
 
 // static
 void PostTaskAndroid::SignalNativeSchedulerReady() {
-  Java_PostTask_onNativeTaskSchedulerReady(
-      base::android::AttachCurrentThread());
+  Java_PostTask_onNativeSchedulerReady(base::android::AttachCurrentThread());
 }
 
 // static
 void PostTaskAndroid::SignalNativeSchedulerShutdown() {
-  Java_PostTask_onNativeTaskSchedulerShutdown(
-      base::android::AttachCurrentThread());
+  Java_PostTask_onNativeSchedulerShutdown(base::android::AttachCurrentThread());
 }
 
 namespace {
@@ -61,24 +59,25 @@ TaskTraits PostTaskAndroid::CreateTaskTraits(
                         extension_id, GetExtensionData(env, extension_data)));
 }
 
-void JNI_PostTask_PostTask(
+void JNI_PostTask_PostDelayedTask(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     jboolean priority_set_explicitly,
     jint priority,
     jboolean may_block,
     jbyte extension_id,
     const base::android::JavaParamRef<jbyteArray>& extension_data,
-    const base::android::JavaParamRef<jobject>& task) {
+    const base::android::JavaParamRef<jobject>& task,
+    jlong delay) {
   // This could be run on any java thread, so we can't cache |env| in the
   // BindOnce because JNIEnv is thread specific.
-  PostTaskWithTraits(
+  PostDelayedTaskWithTraits(
       FROM_HERE,
       PostTaskAndroid::CreateTaskTraits(env, priority_set_explicitly, priority,
                                         may_block, extension_id,
                                         extension_data),
       BindOnce(&PostTaskAndroid::RunJavaTask,
-               base::android::ScopedJavaGlobalRef<jobject>(task)));
+               base::android::ScopedJavaGlobalRef<jobject>(task)),
+      TimeDelta::FromMilliseconds(delay));
 }
 
 // static

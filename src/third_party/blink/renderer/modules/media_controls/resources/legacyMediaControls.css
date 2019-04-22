@@ -232,7 +232,7 @@ video::-internal-media-controls-picture-in-picture-button {
 }
 
 audio::-webkit-media-controls-timeline-container, video::-webkit-media-controls-timeline-container {
-    -webkit-appearance: media-controls-background;
+    -webkit-appearance: none;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -245,7 +245,7 @@ audio::-webkit-media-controls-timeline-container, video::-webkit-media-controls-
 }
 
 audio::-webkit-media-controls-current-time-display, video::-webkit-media-controls-current-time-display {
-    -webkit-appearance: media-current-time-display;
+    -webkit-appearance: none;
     -webkit-user-select: none;
     flex: none;
     display: flex;
@@ -268,7 +268,7 @@ audio::-webkit-media-controls-current-time-display, video::-webkit-media-control
 }
 
 audio::-webkit-media-controls-time-remaining-display, video::-webkit-media-controls-time-remaining-display {
-    -webkit-appearance: media-current-time-display;
+    -webkit-appearance: none;
     -webkit-user-select: none;
     flex: none;
     display: flex;
@@ -638,7 +638,6 @@ video::cue {
     display: inline;
 
     background-color: rgba(0, 0, 0, 0.8);
-    padding: 2px 2px;
 }
 
 video::-webkit-media-text-track-region {

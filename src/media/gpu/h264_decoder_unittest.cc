@@ -129,9 +129,6 @@ class MockH264Accelerator : public H264Decoder::H264Accelerator {
   MOCK_METHOD2(SetStream,
                Status(base::span<const uint8_t> stream,
                       const DecryptConfig* decrypt_config));
-  MOCK_METHOD2(ParseSliceHeader,
-               Status(const H264NALU& slice_nalu,
-                      H264SliceHeader* slice_header));
 
   void Reset() override {}
 };
@@ -180,9 +177,6 @@ void H264DecoderTest::SetUp() {
       .With(Args<6, 7>(SubsampleSizeMatches()))
       .WillByDefault(Return(H264Decoder::H264Accelerator::Status::kOk));
   ON_CALL(*accelerator_, SetStream(_, _))
-      .WillByDefault(
-          Return(H264Decoder::H264Accelerator::Status::kNotSupported));
-  ON_CALL(*accelerator_, ParseSliceHeader(_, _))
       .WillByDefault(
           Return(H264Decoder::H264Accelerator::Status::kNotSupported));
 }
@@ -592,41 +586,9 @@ TEST_F(H264DecoderTest, SetStreamRetry) {
   {
     InSequence sequence;
 
-    EXPECT_CALL(*accelerator_, ParseSliceHeader(_, _));
     EXPECT_CALL(*accelerator_, CreateH264Picture());
     EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
     EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
-  }
-  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
-
-  {
-    InSequence sequence;
-    EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(0)));
-    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
-  }
-  ASSERT_TRUE(decoder_->Flush());
-}
-
-TEST_F(H264DecoderTest, ParseSliceHeaderRetry) {
-  SetInputFrameFiles({kBaselineFrame0});
-  ASSERT_EQ(AcceleratedVideoDecoder::kAllocateNewSurfaces, Decode());
-  EXPECT_EQ(gfx::Size(320, 192), decoder_->GetPicSize());
-  EXPECT_LE(9u, decoder_->GetRequiredNumOfPictures());
-
-  EXPECT_CALL(*accelerator_, ParseSliceHeader(_, _))
-      .WillOnce(Return(H264Decoder::H264Accelerator::Status::kTryAgain));
-  ASSERT_EQ(AcceleratedVideoDecoder::kTryAgain, Decode());
-
-  H264SliceHeader slice_header = {};
-  {
-    InSequence sequence;
-
-    EXPECT_CALL(*accelerator_, ParseSliceHeader(_, _))
-        .WillOnce(ComputeSliceHeader(&slice_header));
-    EXPECT_CALL(*accelerator_, CreateH264Picture());
-    EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
-    EXPECT_CALL(*accelerator_, SubmitSlice(_, SliceHeaderMatches(&slice_header),
-                                           _, _, _, _, _, _));
   }
   ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
 

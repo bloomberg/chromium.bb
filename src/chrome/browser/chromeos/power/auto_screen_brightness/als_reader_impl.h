@@ -66,9 +66,6 @@ class AlsReaderImpl : public AlsReader {
   // Called when we've checked whether ALS is enabled.
   void OnAlsEnableCheckDone(bool is_enabled);
 
-  // Called when we've checked whether ALS config is valid.
-  void OnAlsConfigCheckDone(bool is_config_valid);
-
   // Called when we've tried to read ALS path. If |path| is empty, it would
   // reschedule another attempt up to |kMaxInitialAttempts|.
   void OnAlsPathReadAttempted(const std::string& path);

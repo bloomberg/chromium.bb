@@ -6,11 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_
 
 #include "device/usb/public/mojom/device_manager.mojom-blink.h"
+#include "device/usb/public/mojom/device_manager_client.mojom-blink.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -43,8 +44,8 @@ class USB final : public EventTargetWithInlineData,
   // USB.idl
   ScriptPromise getDevices(ScriptState*);
   ScriptPromise requestDevice(ScriptState*, const USBDeviceRequestOptions*);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect)
 
   // EventTarget overrides.
   ExecutionContext* GetExecutionContext() const override;

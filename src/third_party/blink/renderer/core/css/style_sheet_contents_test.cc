@@ -93,7 +93,7 @@ TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertionIntoMediaRule) {
   ASSERT_EQ(1U, style_sheet->RuleCount());
   EXPECT_FALSE(style_sheet->HasViewportRule());
 
-  StyleRuleMedia* media_rule = ToStyleRuleMedia(style_sheet->RuleAt(0));
+  auto* media_rule = To<StyleRuleMedia>(style_sheet->RuleAt(0));
   style_sheet->SetMutable();
   media_rule->WrapperInsertRule(
       0,

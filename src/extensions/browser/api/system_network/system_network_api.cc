@@ -4,21 +4,15 @@
 
 #include "extensions/browser/api/system_network/system_network_api.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace {
+
 const char kNetworkListError[] = "Network lookup failed or unsupported";
-
-std::unique_ptr<net::NetworkInterfaceList> GetListOnBlockingTaskRunner() {
-  auto interface_list = std::make_unique<net::NetworkInterfaceList>();
-  if (net::GetNetworkList(interface_list.get(),
-                          net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
-    return interface_list;
-  }
-
-  return nullptr;
-}
 
 }  // namespace
 
@@ -36,20 +30,18 @@ SystemNetworkGetNetworkInterfacesFunction::
 ExtensionFunction::ResponseAction
 SystemNetworkGetNetworkInterfacesFunction::Run() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  constexpr base::TaskTraits kTraits = {
-      base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
-  using Self = SystemNetworkGetNetworkInterfacesFunction;
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, kTraits, base::BindOnce(&GetListOnBlockingTaskRunner),
-      base::BindOnce(&Self::SendResponseOnUIThread, this));
+  content::GetNetworkService()->GetNetworkList(
+      net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+      base::BindOnce(
+          &SystemNetworkGetNetworkInterfacesFunction::SendResponseOnUIThread,
+          this));
   return RespondLater();
 }
 
 void SystemNetworkGetNetworkInterfacesFunction::SendResponseOnUIThread(
-    std::unique_ptr<net::NetworkInterfaceList> interface_list) {
+    const base::Optional<net::NetworkInterfaceList>& interface_list) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!interface_list) {
+  if (!interface_list.has_value()) {
     Respond(Error(kNetworkListError));
     return;
   }

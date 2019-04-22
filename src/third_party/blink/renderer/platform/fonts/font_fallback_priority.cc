@@ -9,6 +9,6 @@ namespace blink {
 bool IsNonTextFallbackPriority(FontFallbackPriority fallback_priority) {
   return fallback_priority == FontFallbackPriority::kEmojiText ||
          fallback_priority == FontFallbackPriority::kEmojiEmoji;
-};
+}
 
 }  // namespace blink

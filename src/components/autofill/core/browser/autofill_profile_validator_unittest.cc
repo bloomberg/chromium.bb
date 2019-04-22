@@ -87,7 +87,7 @@ class AutofillProfileValidatorTest : public testing::Test {
     for (auto expectation : expected_validity_) {
       EXPECT_EQ(expectation.second,
                 profile->GetValidityState(expectation.first,
-                                          AutofillProfile::CLIENT));
+                                          AutofillDataModel::CLIENT));
     }
   }
 
@@ -101,7 +101,7 @@ class AutofillProfileValidatorTest : public testing::Test {
 
   AutofillProfileValidatorCallback onvalidated_cb_;
 
-  std::vector<std::pair<ServerFieldType, AutofillProfile::ValidityState>>
+  std::vector<std::pair<ServerFieldType, AutofillDataModel::ValidityState>>
       expected_validity_;
 
  private:
@@ -122,11 +122,14 @@ TEST_F(AutofillProfileValidatorTest, ValidateFullValidProfile_RulesNotLoaded) {
   EXPECT_EQ(false, AreRulesLoadedForRegion(country_code));
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::VALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::VALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::VALID},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::VALID},
-                        {EMAIL_ADDRESS, AutofillProfile::VALID}};
+  expected_validity_ = {
+      {ADDRESS_HOME_COUNTRY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_STATE, AutofillDataModel::VALID},
+      {ADDRESS_HOME_ZIP, AutofillDataModel::VALID},
+      {ADDRESS_HOME_CITY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_DEPENDENT_LOCALITY, AutofillDataModel::EMPTY},
+      {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::VALID},
+      {EMAIL_ADDRESS, AutofillDataModel::VALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -143,11 +146,11 @@ TEST_F(AutofillProfileValidatorTest, ValidateAddress_RulesLoaded) {
   EXPECT_EQ(true, AreRulesLoadedForRegion(country_code));
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::VALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::VALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::VALID},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::VALID},
-                        {EMAIL_ADDRESS, AutofillProfile::VALID}};
+  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillDataModel::VALID},
+                        {ADDRESS_HOME_STATE, AutofillDataModel::VALID},
+                        {ADDRESS_HOME_ZIP, AutofillDataModel::VALID},
+                        {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::VALID},
+                        {EMAIL_ADDRESS, AutofillDataModel::VALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -164,11 +167,12 @@ TEST_F(AutofillProfileValidatorTest,
   EXPECT_EQ(false, AreRulesLoadedForRegion(country_code));
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::INVALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::INVALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::INVALID},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::UNVALIDATED},
-                        {EMAIL_ADDRESS, AutofillProfile::VALID}};
+  expected_validity_ = {
+      {ADDRESS_HOME_COUNTRY, AutofillDataModel::INVALID},
+      {ADDRESS_HOME_STATE, AutofillDataModel::INVALID},
+      {ADDRESS_HOME_ZIP, AutofillDataModel::INVALID},
+      {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::UNVALIDATED},
+      {EMAIL_ADDRESS, AutofillDataModel::VALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -184,11 +188,11 @@ TEST_F(AutofillProfileValidatorTest, ValidateAddress_RuleNotExists) {
   EXPECT_EQ(false, AreRulesLoadedForRegion(country_code));
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::VALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::UNVALIDATED},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::UNVALIDATED},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::VALID},
-                        {EMAIL_ADDRESS, AutofillProfile::VALID}};
+  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillDataModel::VALID},
+                        {ADDRESS_HOME_STATE, AutofillDataModel::UNVALIDATED},
+                        {ADDRESS_HOME_ZIP, AutofillDataModel::UNVALIDATED},
+                        {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::VALID},
+                        {EMAIL_ADDRESS, AutofillDataModel::VALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -203,11 +207,12 @@ TEST_F(AutofillProfileValidatorTest, ValidateAddress_EmptyCountryCode) {
 
   // Set up the test expectations.
   // The phone is validated for the US.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::EMPTY},
-                        {ADDRESS_HOME_STATE, AutofillProfile::INVALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::INVALID},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::UNVALIDATED},
-                        {EMAIL_ADDRESS, AutofillProfile::VALID}};
+  expected_validity_ = {
+      {ADDRESS_HOME_COUNTRY, AutofillDataModel::EMPTY},
+      {ADDRESS_HOME_STATE, AutofillDataModel::INVALID},
+      {ADDRESS_HOME_ZIP, AutofillDataModel::INVALID},
+      {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::UNVALIDATED},
+      {EMAIL_ADDRESS, AutofillDataModel::VALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -220,11 +225,14 @@ TEST_F(AutofillProfileValidatorTest, StartProfileValidation_InvalidPhone) {
                      base::UTF8ToUTF16("Invalid Phone"));
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::VALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::VALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::VALID},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::INVALID},
-                        {EMAIL_ADDRESS, AutofillProfile::VALID}};
+  expected_validity_ = {
+      {ADDRESS_HOME_COUNTRY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_STATE, AutofillDataModel::VALID},
+      {ADDRESS_HOME_CITY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_DEPENDENT_LOCALITY, AutofillDataModel::EMPTY},
+      {ADDRESS_HOME_ZIP, AutofillDataModel::VALID},
+      {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::INVALID},
+      {EMAIL_ADDRESS, AutofillDataModel::VALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -236,11 +244,14 @@ TEST_F(AutofillProfileValidatorTest, StartProfileValidation_InvalidAddress) {
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("Invalid State"));
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::VALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::INVALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::VALID},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::VALID},
-                        {EMAIL_ADDRESS, AutofillProfile::VALID}};
+  expected_validity_ = {
+      {ADDRESS_HOME_COUNTRY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_STATE, AutofillDataModel::INVALID},
+      {ADDRESS_HOME_CITY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_DEPENDENT_LOCALITY, AutofillDataModel::EMPTY},
+      {ADDRESS_HOME_ZIP, AutofillDataModel::VALID},
+      {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::VALID},
+      {EMAIL_ADDRESS, AutofillDataModel::VALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -254,11 +265,14 @@ TEST_F(AutofillProfileValidatorTest,
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("Invalid State"));
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::VALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::INVALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::VALID},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::EMPTY},
-                        {EMAIL_ADDRESS, AutofillProfile::VALID}};
+  expected_validity_ = {
+      {ADDRESS_HOME_COUNTRY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_STATE, AutofillDataModel::INVALID},
+      {ADDRESS_HOME_CITY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_DEPENDENT_LOCALITY, AutofillDataModel::EMPTY},
+      {ADDRESS_HOME_ZIP, AutofillDataModel::VALID},
+      {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::EMPTY},
+      {EMAIL_ADDRESS, AutofillDataModel::VALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -272,11 +286,14 @@ TEST_F(AutofillProfileValidatorTest,
   profile.SetRawInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("Invalid Zip"));
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::VALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::VALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::INVALID},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::VALID},
-                        {EMAIL_ADDRESS, AutofillProfile::INVALID}};
+  expected_validity_ = {
+      {ADDRESS_HOME_COUNTRY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_STATE, AutofillDataModel::VALID},
+      {ADDRESS_HOME_CITY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_DEPENDENT_LOCALITY, AutofillDataModel::EMPTY},
+      {ADDRESS_HOME_ZIP, AutofillDataModel::INVALID},
+      {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::VALID},
+      {EMAIL_ADDRESS, AutofillDataModel::INVALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -290,11 +307,14 @@ TEST_F(AutofillProfileValidatorTest,
   profile.SetRawInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("Invalid Zip"));
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::VALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::VALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::INVALID},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::VALID},
-                        {EMAIL_ADDRESS, AutofillProfile::EMPTY}};
+  expected_validity_ = {
+      {ADDRESS_HOME_COUNTRY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_STATE, AutofillDataModel::VALID},
+      {ADDRESS_HOME_CITY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_DEPENDENT_LOCALITY, AutofillDataModel::EMPTY},
+      {ADDRESS_HOME_ZIP, AutofillDataModel::INVALID},
+      {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::VALID},
+      {EMAIL_ADDRESS, AutofillDataModel::EMPTY}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -308,11 +328,14 @@ TEST_F(AutofillProfileValidatorTest,
   profile.SetRawInfo(ADDRESS_HOME_ZIP, base::string16());
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::VALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::VALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::EMPTY},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::VALID},
-                        {EMAIL_ADDRESS, AutofillProfile::INVALID}};
+  expected_validity_ = {
+      {ADDRESS_HOME_COUNTRY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_STATE, AutofillDataModel::VALID},
+      {ADDRESS_HOME_CITY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_DEPENDENT_LOCALITY, AutofillDataModel::EMPTY},
+      {ADDRESS_HOME_ZIP, AutofillDataModel::EMPTY},
+      {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::VALID},
+      {EMAIL_ADDRESS, AutofillDataModel::INVALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -327,11 +350,14 @@ TEST_F(AutofillProfileValidatorTest,
                      base::UTF8ToUTF16("Invalid Phone"));
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::VALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::VALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::VALID},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::INVALID},
-                        {EMAIL_ADDRESS, AutofillProfile::INVALID}};
+  expected_validity_ = {
+      {ADDRESS_HOME_COUNTRY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_STATE, AutofillDataModel::VALID},
+      {ADDRESS_HOME_CITY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_DEPENDENT_LOCALITY, AutofillDataModel::EMPTY},
+      {ADDRESS_HOME_ZIP, AutofillDataModel::VALID},
+      {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::INVALID},
+      {EMAIL_ADDRESS, AutofillDataModel::INVALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -343,11 +369,14 @@ TEST_F(AutofillProfileValidatorTest, StartProfileValidation_InvalidEmail) {
   profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("Invalid Email"));
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::VALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::VALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::VALID},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::VALID},
-                        {EMAIL_ADDRESS, AutofillProfile::INVALID}};
+  expected_validity_ = {
+      {ADDRESS_HOME_COUNTRY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_STATE, AutofillDataModel::VALID},
+      {ADDRESS_HOME_CITY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_DEPENDENT_LOCALITY, AutofillDataModel::EMPTY},
+      {ADDRESS_HOME_ZIP, AutofillDataModel::VALID},
+      {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::VALID},
+      {EMAIL_ADDRESS, AutofillDataModel::INVALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));
@@ -363,11 +392,14 @@ TEST_F(AutofillProfileValidatorTest,
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("Invalid State"));
 
   // Set up the test expectations.
-  expected_validity_ = {{ADDRESS_HOME_COUNTRY, AutofillProfile::VALID},
-                        {ADDRESS_HOME_STATE, AutofillProfile::INVALID},
-                        {ADDRESS_HOME_ZIP, AutofillProfile::VALID},
-                        {PHONE_HOME_WHOLE_NUMBER, AutofillProfile::INVALID},
-                        {EMAIL_ADDRESS, AutofillProfile::INVALID}};
+  expected_validity_ = {
+      {ADDRESS_HOME_COUNTRY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_STATE, AutofillDataModel::INVALID},
+      {ADDRESS_HOME_CITY, AutofillDataModel::VALID},
+      {ADDRESS_HOME_DEPENDENT_LOCALITY, AutofillDataModel::EMPTY},
+      {ADDRESS_HOME_ZIP, AutofillDataModel::VALID},
+      {PHONE_HOME_WHOLE_NUMBER, AutofillDataModel::INVALID},
+      {EMAIL_ADDRESS, AutofillDataModel::INVALID}};
 
   // Start the validator.
   validator_->StartProfileValidation(&profile, std::move(onvalidated_cb_));

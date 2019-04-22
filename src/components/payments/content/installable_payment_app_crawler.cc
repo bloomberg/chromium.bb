@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
@@ -16,10 +17,10 @@
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/console_message_level.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -83,9 +84,30 @@ void InstallablePaymentAppCrawler::Start(
   }
 }
 
+void InstallablePaymentAppCrawler::IgnorePortInOriginComparisonForTesting() {
+  ignore_port_in_origin_comparison_for_testing_ = true;
+}
+
+bool InstallablePaymentAppCrawler::IsSameOriginWith(const GURL& a,
+                                                    const GURL& b) {
+  if (ignore_port_in_origin_comparison_for_testing_) {
+    GURL::Replacements replacements;
+    replacements.ClearPort();
+    return url::IsSameOriginWith(a.ReplaceComponents(replacements),
+                                 b.ReplaceComponents(replacements));
+  }
+  return url::IsSameOriginWith(a, b);
+}
+
 void InstallablePaymentAppCrawler::OnPaymentMethodManifestDownloaded(
     const GURL& method_manifest_url,
+    const GURL& method_manifest_url_after_redirects,
     const std::string& content) {
+  // Enforced in PaymentManifestDownloader.
+  DCHECK(net::registry_controlled_domains::SameDomainOrHost(
+      method_manifest_url, method_manifest_url_after_redirects,
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+
   number_of_payment_method_manifest_to_download_--;
   if (content.empty()) {
     FinishCrawlingPaymentAppsIfReady();
@@ -96,11 +118,13 @@ void InstallablePaymentAppCrawler::OnPaymentMethodManifestDownloaded(
   parser_->ParsePaymentMethodManifest(
       content, base::BindOnce(
                    &InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed,
-                   weak_ptr_factory_.GetWeakPtr(), method_manifest_url));
+                   weak_ptr_factory_.GetWeakPtr(), method_manifest_url,
+                   method_manifest_url_after_redirects));
 }
 
 void InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed(
     const GURL& method_manifest_url,
+    const GURL& method_manifest_url_after_redirects,
     const std::vector<GURL>& default_applications,
     const std::vector<url::Origin>& supported_origins,
     bool all_origins_supported) {
@@ -113,37 +137,41 @@ void InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed(
           web_contents()->GetBrowserContext());
   DCHECK(permission_controller);
 
-  for (const auto& url : default_applications) {
-    if (downloaded_web_app_manifests_.find(url) !=
+  for (const auto& web_app_manifest_url : default_applications) {
+    if (downloaded_web_app_manifests_.find(web_app_manifest_url) !=
         downloaded_web_app_manifests_.end()) {
       // Do not download the same web app manifest again since a web app could
       // be the default application of multiple payment methods.
       continue;
     }
 
-    if (!net::registry_controlled_domains::SameDomainOrHost(
-            method_manifest_url, url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      log_.Warn("Installable payment handler from \"" + url.spec() +
-                "\" is not allowed for the method \"" +
-                method_manifest_url.spec() + "\" because of different domain.");
+    if (!IsSameOriginWith(method_manifest_url_after_redirects,
+                          web_app_manifest_url)) {
+      log_.Error("Installable payment handler from \"" +
+                 web_app_manifest_url.spec() +
+                 "\" is not allowed for the method \"" +
+                 method_manifest_url_after_redirects.spec() +
+                 "\" because of different origin.");
       continue;
     }
 
     if (permission_controller->GetPermissionStatus(
-            content::PermissionType::PAYMENT_HANDLER, url.GetOrigin(),
-            url.GetOrigin()) != blink::mojom::PermissionStatus::GRANTED) {
+            content::PermissionType::PAYMENT_HANDLER,
+            web_app_manifest_url.GetOrigin(),
+            web_app_manifest_url.GetOrigin()) !=
+        blink::mojom::PermissionStatus::GRANTED) {
       // Do not download the web app manifest if it is blocked.
       continue;
     }
 
     number_of_web_app_manifest_to_download_++;
-    downloaded_web_app_manifests_.insert(url);
+    downloaded_web_app_manifests_.insert(web_app_manifest_url);
     downloader_->DownloadWebAppManifest(
-        url,
+        web_app_manifest_url,
         base::BindOnce(
             &InstallablePaymentAppCrawler::OnPaymentWebAppManifestDownloaded,
-            weak_ptr_factory_.GetWeakPtr(), method_manifest_url, url));
+            weak_ptr_factory_.GetWeakPtr(), method_manifest_url,
+            web_app_manifest_url));
   }
 
   FinishCrawlingPaymentAppsIfReady();
@@ -152,7 +180,19 @@ void InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed(
 void InstallablePaymentAppCrawler::OnPaymentWebAppManifestDownloaded(
     const GURL& method_manifest_url,
     const GURL& web_app_manifest_url,
+    const GURL& web_app_manifest_url_after_redirects,
     const std::string& content) {
+#if DCHECK_IS_ON()
+  GURL::Replacements replacements;
+  if (ignore_port_in_origin_comparison_for_testing_)
+    replacements.ClearPort();
+
+  // Enforced in PaymentManifestDownloader.
+  DCHECK_EQ(
+      web_app_manifest_url.ReplaceComponents(replacements),
+      web_app_manifest_url_after_redirects.ReplaceComponents(replacements));
+#endif  // DCHECK_IS_ON()
+
   number_of_web_app_manifest_to_download_--;
   if (content.empty()) {
     FinishCrawlingPaymentAppsIfReady();
@@ -212,18 +252,24 @@ bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
                  app_info->sw_js_url + "\".");
       return false;
     }
-    if (!net::registry_controlled_domains::SameDomainOrHost(
-            method_manifest_url, absolute_url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      log_.Error(log_prefix +
-                 "Installable payment handler's service worker JavaScript file "
-                 "URL \"" +
-                 absolute_url.spec() + "\" is not allowed for the method \"" +
-                 method_manifest_url.spec() +
-                 "\" because of different domain.");
-      return false;
-    }
     app_info->sw_js_url = absolute_url.spec();
+  }
+
+  if (!IsSameOriginWith(web_app_manifest_url, GURL(app_info->sw_js_url))) {
+    log_.Error(log_prefix +
+               "Installable payment handler's service worker JavaScript file "
+               "URL \"" +
+               app_info->sw_js_url +
+               "\" is not allowed for the web app manifest file \"" +
+               web_app_manifest_url.spec() + "\" because of different origin.");
+    return false;
+  }
+
+  if (!app_info->sw_scope.empty() && !base::IsStringUTF8(app_info->sw_scope)) {
+    log_.Error(log_prefix +
+               "The installable payment handler's service worker scope is not "
+               "a UTF8 string.");
+    return false;
   }
 
   if (!GURL(app_info->sw_scope).is_valid()) {
@@ -236,16 +282,16 @@ bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
                  app_info->sw_scope + "\".");
       return false;
     }
-    if (!net::registry_controlled_domains::SameDomainOrHost(
-            method_manifest_url, absolute_scope,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      log_.Error(
-          log_prefix + "Installable payment handler's registration scope \"" +
-          absolute_scope.spec() + "\" is not allowed for the method \"" +
-          method_manifest_url.spec() + "\" because of different domain.");
-      return false;
-    }
     app_info->sw_scope = absolute_scope.spec();
+  }
+
+  if (!IsSameOriginWith(web_app_manifest_url, GURL(app_info->sw_scope))) {
+    log_.Error(log_prefix +
+               "Installable payment handler's registration scope \"" +
+               app_info->sw_scope +
+               "\" is not allowed for the web app manifest file \"" +
+               web_app_manifest_url.spec() + "\" because of different origin.");
+    return false;
   }
 
   std::string error_message;
@@ -261,7 +307,7 @@ bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
   if (installable_apps_.find(method_manifest_url) != installable_apps_.end()) {
     log_.Error(log_prefix +
                "Multiple installable payment handlers from for a single "
-               "payment method: not yet supported.");
+               "payment method are not yet supported.");
     return false;
   }
 
@@ -327,13 +373,12 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
   }
 
   // TODO(crbug.com/782270): Choose appropriate icon size dynamically on
-  // different platforms. Here we choose a large ideal icon size to be big
-  // enough for all platforms. Note that we only scale down for this icon size
-  // but not scale up.
-  const int kPaymentAppIdealIconSize = 0xFFFF;
+  // different platforms.
+  const int kPaymentAppIdealIconSize = 32;
   const int kPaymentAppMinimumIconSize = 0;
   GURL best_icon_url = blink::ManifestIconSelector::FindBestMatchingIcon(
       manifest_icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
+      content::ManifestIconDownloader::kMaxWidthToHeightRatio,
       blink::Manifest::ImageResource::Purpose::ANY);
   if (!best_icon_url.is_valid()) {
     log_.Error("No suitable icon found in web app manifest \"" +
@@ -357,10 +402,11 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
   bool can_download_icon = content::ManifestIconDownloader::Download(
       web_contents(), best_icon_url, kPaymentAppIdealIconSize,
       kPaymentAppMinimumIconSize,
-      base::Bind(
+      base::BindOnce(
           &InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded,
           weak_ptr_factory_.GetWeakPtr(), method_manifest_url,
-          web_app_manifest_url));
+          web_app_manifest_url),
+      false /* square_only */);
   DCHECK(can_download_icon);
 }
 
@@ -377,8 +423,7 @@ void InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded(
   } else {
     auto it = installable_apps_.find(method_manifest_url);
     DCHECK(it != installable_apps_.end());
-    DCHECK(url::IsSameOriginWith(GURL(it->second->sw_scope),
-                                 web_app_manifest_url));
+    DCHECK(IsSameOriginWith(GURL(it->second->sw_scope), web_app_manifest_url));
 
     it->second->icon = std::make_unique<SkBitmap>(icon);
   }

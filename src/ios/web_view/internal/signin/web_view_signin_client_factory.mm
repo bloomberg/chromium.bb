@@ -4,7 +4,7 @@
 
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -28,7 +28,8 @@ IOSWebViewSigninClient* WebViewSigninClientFactory::GetForBrowserState(
 
 // static
 WebViewSigninClientFactory* WebViewSigninClientFactory::GetInstance() {
-  return base::Singleton<WebViewSigninClientFactory>::get();
+  static base::NoDestructor<WebViewSigninClientFactory> instance;
+  return instance.get();
 }
 
 WebViewSigninClientFactory::WebViewSigninClientFactory()

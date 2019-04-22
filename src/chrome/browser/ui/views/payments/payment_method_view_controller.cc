@@ -224,48 +224,34 @@ void PaymentMethodViewController::FillContentView(views::View* content_view) {
   content_view->AddChildView(list_view.release());
 }
 
-std::unique_ptr<views::View>
-PaymentMethodViewController::CreateExtraFooterView() {
-  if (!spec()->supports_basic_card())
-    return nullptr;
-
-  auto extra_view = std::make_unique<views::View>();
-
-  extra_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
-      kPaymentRequestButtonSpacing));
-
-  views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CARD));
-  button->set_tag(static_cast<int>(
-      PaymentMethodViewControllerTags::ADD_CREDIT_CARD_BUTTON));
-  button->set_id(
-      static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CARD_BUTTON));
-  button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  extra_view->AddChildView(button);
-
-  return extra_view;
-}
-
 void PaymentMethodViewController::ButtonPressed(views::Button* sender,
                                                 const ui::Event& event) {
-  switch (sender->tag()) {
-    case static_cast<int>(
-        PaymentMethodViewControllerTags::ADD_CREDIT_CARD_BUTTON):
-      // Only provide the |on_added| callback, in response to this button.
-      dialog()->ShowCreditCardEditor(
-          BackNavigationType::kPaymentSheet,
-          static_cast<int>(PaymentMethodViewControllerTags::MAX_TAG),
-          /*on_edited=*/base::OnceClosure(),
-          /*on_added=*/
-          base::BindOnce(&PaymentRequestState::AddAutofillPaymentInstrument,
-                         base::Unretained(state()), /*selected=*/true),
-          /*credit_card=*/nullptr);
-      break;
-    default:
-      PaymentRequestSheetController::ButtonPressed(sender, event);
-      break;
+  if (sender->tag() == GetSecondaryButtonTag()) {
+    // Only provide the |on_added| callback, in response to this button.
+    dialog()->ShowCreditCardEditor(
+        BackNavigationType::kPaymentSheet,
+        static_cast<int>(PaymentMethodViewControllerTags::MAX_TAG),
+        /*on_edited=*/base::OnceClosure(),
+        /*on_added=*/
+        base::BindOnce(&PaymentRequestState::AddAutofillPaymentInstrument,
+                       base::Unretained(state()), /*selected=*/true),
+        /*credit_card=*/nullptr);
+  } else {
+    PaymentRequestSheetController::ButtonPressed(sender, event);
   }
+}
+
+base::string16 PaymentMethodViewController::GetSecondaryButtonLabel() {
+  return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_CARD);
+}
+
+int PaymentMethodViewController::GetSecondaryButtonTag() {
+  return static_cast<int>(
+      PaymentMethodViewControllerTags::ADD_CREDIT_CARD_BUTTON);
+}
+
+int PaymentMethodViewController::GetSecondaryButtonId() {
+  return static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CARD_BUTTON);
 }
 
 }  // namespace payments

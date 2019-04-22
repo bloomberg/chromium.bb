@@ -10,6 +10,7 @@
 #include "src/compiler/backend/gap-resolver.h"
 #include "src/compiler/node-matchers.h"
 #include "src/compiler/osr.h"
+#include "src/heap/heap-inl.h"  // crbug.com/v8/8499
 #include "src/macro-assembler.h"
 #include "src/optimized-compilation-info.h"
 #include "src/wasm/wasm-code-manager.h"
@@ -216,7 +217,9 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
       // We need to save and restore r14 if the frame was elided.
       __ Push(r14);
     }
-    if (stub_mode_ == StubCallMode::kCallWasmRuntimeStub) {
+    if (mode_ == RecordWriteMode::kValueIsEphemeronKey) {
+      __ CallEphemeronKeyBarrier(object_, scratch1_, save_fp_mode);
+    } else if (stub_mode_ == StubCallMode::kCallWasmRuntimeStub) {
       __ CallRecordWriteStub(object_, scratch1_, remembered_set_action,
                              save_fp_mode, wasm::WasmCode::kWasmRecordWrite);
     } else {
@@ -1232,13 +1235,13 @@ void AdjustStackPointerForTailCall(
     if (pending_pushes != nullptr) {
       FlushPendingPushRegisters(tasm, state, pending_pushes);
     }
-    tasm->AddP(sp, sp, Operand(-stack_slot_delta * kPointerSize));
+    tasm->AddP(sp, sp, Operand(-stack_slot_delta * kSystemPointerSize));
     state->IncreaseSPDelta(stack_slot_delta);
   } else if (allow_shrinkage && stack_slot_delta < 0) {
     if (pending_pushes != nullptr) {
       FlushPendingPushRegisters(tasm, state, pending_pushes);
     }
-    tasm->AddP(sp, sp, Operand(-stack_slot_delta * kPointerSize));
+    tasm->AddP(sp, sp, Operand(-stack_slot_delta * kSystemPointerSize));
     state->IncreaseSPDelta(stack_slot_delta);
   }
 }
@@ -1325,22 +1328,14 @@ void CodeGenerator::BailoutIfDeoptimized() {
   __ LoadW(ip,
            FieldMemOperand(ip, CodeDataContainer::kKindSpecificFlagsOffset));
   __ TestBit(ip, Code::kMarkedForDeoptimizationBit);
-  // Ensure we're not serializing (otherwise we'd need to use an indirection to
-  // access the builtin below).
-  DCHECK(!isolate()->ShouldLoadConstantsFromRootList());
-  Handle<Code> code = isolate()->builtins()->builtin_handle(
-      Builtins::kCompileLazyDeoptimizedCode);
-  __ Jump(code, RelocInfo::CODE_TARGET, ne);
+  __ Jump(BUILTIN_CODE(isolate(), CompileLazyDeoptimizedCode),
+          RelocInfo::CODE_TARGET, ne);
 }
 
 void CodeGenerator::GenerateSpeculationPoisonFromCodeStartRegister() {
   Register scratch = r1;
 
-  Label current_pc;
-  __ larl(scratch, &current_pc);
-
-  __ bind(&current_pc);
-  __ SubP(scratch, Operand(__ pc_offset()));
+  __ ComputeCodeStartAddress(scratch);
 
   // Calculate a mask which has all bits set in the normal case, but has all
   // bits cleared if we are speculatively executing the wrong PC.
@@ -1376,11 +1371,18 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
         DCHECK_IMPLIES(
             HasCallDescriptorFlag(instr, CallDescriptor::kFixedTargetRegister),
             reg == kJavaScriptCallCodeStartRegister);
-        __ AddP(reg, reg, Operand(Code::kHeaderSize - kHeapObjectTag));
-        __ Call(reg);
+        __ CallCodeObject(reg);
       } else {
         __ Call(i.InputCode(0), RelocInfo::CODE_TARGET);
       }
+      RecordCallPosition(instr);
+      frame_access_state()->ClearSPDelta();
+      break;
+    }
+    case kArchCallBuiltinPointer: {
+      DCHECK(!instr->InputAt(0)->IsImmediate());
+      Register builtin_pointer = i.InputRegister(0);
+      __ CallBuiltinPointer(builtin_pointer);
       RecordCallPosition(instr);
       frame_access_state()->ClearSPDelta();
       break;
@@ -1415,8 +1417,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
         DCHECK_IMPLIES(
             HasCallDescriptorFlag(instr, CallDescriptor::kFixedTargetRegister),
             reg == kJavaScriptCallCodeStartRegister);
-        __ AddP(reg, reg, Operand(Code::kHeaderSize - kHeapObjectTag));
-        __ Jump(reg);
+        __ JumpCodeObject(reg);
       } else {
         // We cannot use the constant pool to load the target since
         // we've already restored the caller's frame.
@@ -1467,8 +1468,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       }
       static_assert(kJavaScriptCallCodeStartRegister == r4, "ABI mismatch");
       __ LoadP(r4, FieldMemOperand(func, JSFunction::kCodeOffset));
-      __ AddP(r4, r4, Operand(Code::kHeaderSize - kHeapObjectTag));
-      __ Call(r4);
+      __ CallCodeObject(r4);
       RecordCallPosition(instr);
       frame_access_state()->ClearSPDelta();
       break;
@@ -1486,9 +1486,9 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       DCHECK(fp_mode_ == kDontSaveFPRegs || fp_mode_ == kSaveFPRegs);
       // kReturnRegister0 should have been saved before entering the stub.
       int bytes = __ PushCallerSaved(fp_mode_, kReturnRegister0);
-      DCHECK_EQ(0, bytes % kPointerSize);
+      DCHECK(IsAligned(bytes, kSystemPointerSize));
       DCHECK_EQ(0, frame_access_state()->sp_delta());
-      frame_access_state()->IncreaseSPDelta(bytes / kPointerSize);
+      frame_access_state()->IncreaseSPDelta(bytes / kSystemPointerSize);
       DCHECK(!caller_registers_saved_);
       caller_registers_saved_ = true;
       break;
@@ -1499,7 +1499,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       DCHECK(fp_mode_ == kDontSaveFPRegs || fp_mode_ == kSaveFPRegs);
       // Don't overwrite the returned value.
       int bytes = __ PopCallerSaved(fp_mode_, kReturnRegister0);
-      frame_access_state()->IncreaseSPDelta(-(bytes / kPointerSize));
+      frame_access_state()->IncreaseSPDelta(-(bytes / kSystemPointerSize));
       DCHECK_EQ(0, frame_access_state()->sp_delta());
       DCHECK(caller_registers_saved_);
       caller_registers_saved_ = false;
@@ -1532,7 +1532,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
         //   kArchRestoreCallerRegisters;
         int bytes =
             __ RequiredStackSizeForCallerSaved(fp_mode_, kReturnRegister0);
-        frame_access_state()->IncreaseSPDelta(bytes / kPointerSize);
+        frame_access_state()->IncreaseSPDelta(bytes / kSystemPointerSize);
       }
       break;
     }
@@ -1639,6 +1639,24 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       DCHECK_EQ(i.OutputRegister(), i.InputRegister(0));
       __ AndP(i.InputRegister(0), kSpeculationPoisonRegister);
       break;
+    case kS390_Peek: {
+      // The incoming value is 0-based, but we need a 1-based value.
+      int reverse_slot = i.InputInt32(0) + 1;
+      int offset =
+          FrameSlotToFPOffset(frame()->GetTotalFrameSlotCount() - reverse_slot);
+      if (instr->OutputAt(0)->IsFPRegister()) {
+        LocationOperand* op = LocationOperand::cast(instr->OutputAt(0));
+        if (op->representation() == MachineRepresentation::kFloat64) {
+          __ LoadDouble(i.OutputDoubleRegister(), MemOperand(fp, offset));
+        } else {
+          DCHECK_EQ(MachineRepresentation::kFloat32, op->representation());
+          __ LoadFloat32(i.OutputFloatRegister(), MemOperand(fp, offset));
+        }
+      } else {
+        __ LoadP(i.OutputRegister(), MemOperand(fp, offset));
+      }
+      break;
+    }
     case kS390_Abs32:
       // TODO(john.yan): zero-ext
       __ lpr(i.OutputRegister(0), i.InputRegister(0));
@@ -2069,11 +2087,9 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     case kIeee754Float64Log10:
       ASSEMBLE_IEEE754_UNOP(log10);
       break;
-    case kIeee754Float64Pow: {
-      __ Call(BUILTIN_CODE(isolate(), MathPowInternal), RelocInfo::CODE_TARGET);
-      __ Move(d1, d3);
+    case kIeee754Float64Pow:
+      ASSEMBLE_IEEE754_BINOP(pow);
       break;
-    }
     case kS390_Neg32:
       __ lcr(i.OutputRegister(), i.InputRegister(0));
       CHECK_AND_ZERO_EXT_OUTPUT(1);
@@ -2190,7 +2206,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     }
     case kS390_StackClaim: {
       int num_slots = i.InputInt32(0);
-      __ lay(sp, MemOperand(sp, -num_slots * kPointerSize));
+      __ lay(sp, MemOperand(sp, -num_slots * kSystemPointerSize));
       frame_access_state()->IncreaseSPDelta(num_slots);
       break;
     }
@@ -2200,10 +2216,11 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
         if (op->representation() == MachineRepresentation::kFloat64) {
           __ lay(sp, MemOperand(sp, -kDoubleSize));
           __ StoreDouble(i.InputDoubleRegister(0), MemOperand(sp));
-          frame_access_state()->IncreaseSPDelta(kDoubleSize / kPointerSize);
+          frame_access_state()->IncreaseSPDelta(kDoubleSize /
+                                                kSystemPointerSize);
         } else {
           DCHECK_EQ(MachineRepresentation::kFloat32, op->representation());
-          __ lay(sp, MemOperand(sp, -kPointerSize));
+          __ lay(sp, MemOperand(sp, -kSystemPointerSize));
           __ StoreFloat32(i.InputDoubleRegister(0), MemOperand(sp));
           frame_access_state()->IncreaseSPDelta(1);
         }
@@ -2214,7 +2231,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       break;
     case kS390_PushFrame: {
       int num_slots = i.InputInt32(1);
-      __ lay(sp, MemOperand(sp, -num_slots * kPointerSize));
+      __ lay(sp, MemOperand(sp, -num_slots * kSystemPointerSize));
       if (instr->InputAt(0)->IsFPRegister()) {
         LocationOperand* op = LocationOperand::cast(instr->InputAt(0));
         if (op->representation() == MachineRepresentation::kFloat64) {
@@ -2234,14 +2251,15 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
         LocationOperand* op = LocationOperand::cast(instr->InputAt(0));
         if (op->representation() == MachineRepresentation::kFloat64) {
           __ StoreDouble(i.InputDoubleRegister(0),
-                         MemOperand(sp, slot * kPointerSize));
+                         MemOperand(sp, slot * kSystemPointerSize));
         } else {
           DCHECK_EQ(MachineRepresentation::kFloat32, op->representation());
           __ StoreFloat32(i.InputDoubleRegister(0),
-                          MemOperand(sp, slot * kPointerSize));
+                          MemOperand(sp, slot * kSystemPointerSize));
         }
       } else {
-        __ StoreP(i.InputRegister(0), MemOperand(sp, slot * kPointerSize));
+        __ StoreP(i.InputRegister(0),
+                  MemOperand(sp, slot * kSystemPointerSize));
       }
       break;
     }
@@ -2640,7 +2658,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       Register index = i.InputRegister(1);
       Register value = i.InputRegister(2);
       Register output = i.OutputRegister();
-      Label two, unaligned, done;
+      Label two, done;
       __ la(r1, MemOperand(base, index));
       __ tmll(r1, Operand(3));
       __ b(Condition(2), &two);
@@ -2873,7 +2891,7 @@ void CodeGenerator::AssembleArchTrap(Instruction* instr,
         __ Call(static_cast<Address>(trap_id), RelocInfo::WASM_STUB_CALL);
         ReferenceMap* reference_map =
             new (gen_->zone()) ReferenceMap(gen_->zone());
-        gen_->RecordSafepoint(reference_map, Safepoint::kSimple, 0,
+        gen_->RecordSafepoint(reference_map, Safepoint::kSimple,
                               Safepoint::kNoLazyDeopt);
         if (FLAG_debug_code) {
           __ stop(GetAbortReason(AbortReason::kUnexpectedReturnFromWasmTrap));
@@ -2967,7 +2985,7 @@ void CodeGenerator::AssembleArchTableSwitch(Instruction* instr) {
   __ CmpLogicalP(input, Operand(case_count));
   __ bge(GetLabel(i.InputRpo(1)));
   __ larl(kScratchReg, table);
-  __ ShiftLeftP(r1, input, Operand(kPointerSizeLog2));
+  __ ShiftLeftP(r1, input, Operand(kSystemPointerSizeLog2));
   __ LoadP(kScratchReg, MemOperand(kScratchReg, r1));
   __ Jump(kScratchReg);
 }
@@ -2982,7 +3000,7 @@ void CodeGenerator::FinishFrame(Frame* frame) {
     DCHECK_EQ(kNumCalleeSavedDoubles,
               base::bits::CountPopulation(double_saves));
     frame->AllocateSavedCalleeRegisterSlots(kNumCalleeSavedDoubles *
-                                            (kDoubleSize / kPointerSize));
+                                            (kDoubleSize / kSystemPointerSize));
   }
   // Save callee-saved registers.
   const RegList saves = call_descriptor->CalleeSavedRegisters();
@@ -3027,8 +3045,8 @@ void CodeGenerator::AssembleConstructFrame() {
     }
   }
 
-  int shrink_slots = frame()->GetTotalFrameSlotCount() -
-                     call_descriptor->CalculateFixedFrameSize();
+  int required_slots = frame()->GetTotalFrameSlotCount() -
+                       call_descriptor->CalculateFixedFrameSize();
   if (info()->is_osr()) {
     // TurboFan OSR-compiled functions cannot be entered directly.
     __ Abort(AbortReason::kShouldNotDirectlyEnterOsrFunction);
@@ -3039,15 +3057,15 @@ void CodeGenerator::AssembleConstructFrame() {
     // remaining stack slots.
     if (FLAG_code_comments) __ RecordComment("-- OSR entrypoint --");
     osr_pc_offset_ = __ pc_offset();
-    shrink_slots -= osr_helper()->UnoptimizedFrameSlots();
+    required_slots -= osr_helper()->UnoptimizedFrameSlots();
     ResetSpeculationPoison();
   }
 
   const RegList saves_fp = call_descriptor->CalleeSavedFPRegisters();
   const RegList saves = call_descriptor->CalleeSavedRegisters();
 
-  if (shrink_slots > 0) {
-    if (info()->IsWasm() && shrink_slots > 128) {
+  if (required_slots > 0) {
+    if (info()->IsWasm() && required_slots > 128) {
       // For WebAssembly functions with big frames we have to do the stack
       // overflow check before we construct the frame. Otherwise we may not
       // have enough space on the stack to call the runtime for the stack
@@ -3057,25 +3075,22 @@ void CodeGenerator::AssembleConstructFrame() {
       // If the frame is bigger than the stack, we throw the stack overflow
       // exception unconditionally. Thereby we can avoid the integer overflow
       // check in the condition code.
-      if ((shrink_slots * kPointerSize) < (FLAG_stack_size * 1024)) {
+      if ((required_slots * kSystemPointerSize) < (FLAG_stack_size * 1024)) {
         Register scratch = r1;
         __ LoadP(
             scratch,
             FieldMemOperand(kWasmInstanceRegister,
                             WasmInstanceObject::kRealStackLimitAddressOffset));
         __ LoadP(scratch, MemOperand(scratch));
-        __ AddP(scratch, scratch, Operand(shrink_slots * kPointerSize));
+        __ AddP(scratch, scratch, Operand(required_slots * kSystemPointerSize));
         __ CmpLogicalP(sp, scratch);
         __ bge(&done);
       }
 
-      __ LoadP(r4, FieldMemOperand(kWasmInstanceRegister,
-                                   WasmInstanceObject::kCEntryStubOffset));
-      __ Move(cp, Smi::zero());
-      __ CallRuntimeWithCEntry(Runtime::kThrowWasmStackOverflow, r4);
+      __ Call(wasm::WasmCode::kWasmStackOverflow, RelocInfo::WASM_STUB_CALL);
       // We come from WebAssembly, there are no references for the GC.
       ReferenceMap* reference_map = new (zone()) ReferenceMap(zone());
-      RecordSafepoint(reference_map, Safepoint::kSimple, 0,
+      RecordSafepoint(reference_map, Safepoint::kSimple,
                       Safepoint::kNoLazyDeopt);
       if (FLAG_debug_code) {
         __ stop(GetAbortReason(AbortReason::kUnexpectedReturnFromThrow));
@@ -3085,11 +3100,11 @@ void CodeGenerator::AssembleConstructFrame() {
     }
 
     // Skip callee-saved and return slots, which are pushed below.
-    shrink_slots -= base::bits::CountPopulation(saves);
-    shrink_slots -= frame()->GetReturnSlotCount();
-    shrink_slots -=
-        (kDoubleSize / kPointerSize) * base::bits::CountPopulation(saves_fp);
-    __ lay(sp, MemOperand(sp, -shrink_slots * kPointerSize));
+    required_slots -= base::bits::CountPopulation(saves);
+    required_slots -= frame()->GetReturnSlotCount();
+    required_slots -= (kDoubleSize / kSystemPointerSize) *
+                      base::bits::CountPopulation(saves_fp);
+    __ lay(sp, MemOperand(sp, -required_slots * kSystemPointerSize));
   }
 
   // Save callee-saved Double registers.
@@ -3107,7 +3122,7 @@ void CodeGenerator::AssembleConstructFrame() {
   const int returns = frame()->GetReturnSlotCount();
   if (returns != 0) {
     // Create space for returns.
-    __ lay(sp, MemOperand(sp, -returns * kPointerSize));
+    __ lay(sp, MemOperand(sp, -returns * kSystemPointerSize));
   }
 }
 
@@ -3118,7 +3133,7 @@ void CodeGenerator::AssembleReturn(InstructionOperand* pop) {
   const int returns = frame()->GetReturnSlotCount();
   if (returns != 0) {
     // Create space for returns.
-    __ lay(sp, MemOperand(sp, returns * kPointerSize));
+    __ lay(sp, MemOperand(sp, returns * kSystemPointerSize));
   }
 
   // Restore registers.

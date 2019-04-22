@@ -75,10 +75,7 @@ namespace {
 class UnderlyingIndentModeChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<UnderlyingIndentModeChecker> Create(
-      const IndentMode& mode) {
-    return base::WrapUnique(new UnderlyingIndentModeChecker(mode));
-  }
+  explicit UnderlyingIndentModeChecker(const IndentMode& mode) : mode_(mode) {}
 
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
@@ -88,19 +85,14 @@ class UnderlyingIndentModeChecker
   }
 
  private:
-  UnderlyingIndentModeChecker(const IndentMode& mode) : mode_(mode) {}
-
   const IndentMode mode_;
 };
 
 class InheritedIndentChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedIndentChecker> Create(
-      const Length& length,
-      const IndentMode& mode) {
-    return base::WrapUnique(new InheritedIndentChecker(length, mode));
-  }
+  InheritedIndentChecker(const Length& length, const IndentMode& mode)
+      : length_(length), mode_(mode) {}
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
@@ -109,9 +101,6 @@ class InheritedIndentChecker
   }
 
  private:
-  InheritedIndentChecker(const Length& length, const IndentMode& mode)
-      : length_(length), mode_(mode) {}
-
   const Length length_;
   const IndentMode mode_;
 };
@@ -136,8 +125,9 @@ InterpolationValue CSSTextIndentInterpolationType::MaybeConvertNeutral(
   IndentMode mode =
       ToCSSTextIndentNonInterpolableValue(*underlying.non_interpolable_value)
           .Mode();
-  conversion_checkers.push_back(UnderlyingIndentModeChecker::Create(mode));
-  return CreateValue(Length(0, kFixed), mode, 1);
+  conversion_checkers.push_back(
+      std::make_unique<UnderlyingIndentModeChecker>(mode));
+  return CreateValue(Length::Fixed(0), mode, 1);
 }
 
 InterpolationValue CSSTextIndentInterpolationType::MaybeConvertInitial(
@@ -153,8 +143,8 @@ InterpolationValue CSSTextIndentInterpolationType::MaybeConvertInherit(
     ConversionCheckers& conversion_checkers) const {
   const ComputedStyle& parent_style = *state.ParentStyle();
   IndentMode mode(parent_style);
-  conversion_checkers.push_back(
-      InheritedIndentChecker::Create(parent_style.TextIndent(), mode));
+  conversion_checkers.push_back(std::make_unique<InheritedIndentChecker>(
+      parent_style.TextIndent(), mode));
   return CreateValue(parent_style.TextIndent(), mode,
                      parent_style.EffectiveZoom());
 }
@@ -167,12 +157,13 @@ InterpolationValue CSSTextIndentInterpolationType::MaybeConvertValue(
   TextIndentLine line = ComputedStyleInitialValues::InitialTextIndentLine();
   TextIndentType type = ComputedStyleInitialValues::InitialTextIndentType();
 
-  for (const auto& item : ToCSSValueList(value)) {
-    if (item->IsIdentifierValue() &&
-        ToCSSIdentifierValue(*item).GetValueID() == CSSValueEachLine)
+  for (const auto& item : To<CSSValueList>(value)) {
+    auto* identifier_value = DynamicTo<CSSIdentifierValue>(item.Get());
+    if (identifier_value &&
+        identifier_value->GetValueID() == CSSValueID::kEachLine)
       line = TextIndentLine::kEachLine;
-    else if (item->IsIdentifierValue() &&
-             ToCSSIdentifierValue(*item).GetValueID() == CSSValueHanging)
+    else if (identifier_value &&
+             identifier_value->GetValueID() == CSSValueID::kHanging)
       type = TextIndentType::kHanging;
     else
       length = LengthInterpolationFunctions::MaybeConvertCSSValue(*item);

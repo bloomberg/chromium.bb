@@ -60,6 +60,10 @@ enum
     // Limit active textures so we can use fast bitsets.
     IMPLEMENTATION_MAX_SHADER_TEXTURES = 32,
     IMPLEMENTATION_MAX_ACTIVE_TEXTURES = IMPLEMENTATION_MAX_SHADER_TEXTURES * 2,
+    IMPLEMENTATION_MAX_IMAGE_UNITS     = IMPLEMENTATION_MAX_ACTIVE_TEXTURES,
+
+    // Maximum number of slots allocated for atomic counter buffers.
+    IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS = 8,
 };
 }  // namespace gl
 

@@ -5,14 +5,27 @@
  * found in the LICENSE file.
  */
 
+#include "ToolUtils.h"
 #include "gm.h"
-#include "sk_tool_utils.h"
 
 #include "Resources.h"
 #include "SkCanvas.h"
+#include "SkFontMetrics.h"
 #include "SkStream.h"
+#include "SkTextBlob.h"
 #include "SkTo.h"
 #include "SkTypeface.h"
+
+static sk_sp<SkTextBlob> make_hpos_test_blob_utf8(const char* text, const SkFont& font) {
+    constexpr SkTextEncoding enc = SkTextEncoding::kUTF8;
+    SkTextBlobBuilder builder;
+    size_t len = strlen(text);
+    int glyphCount = font.countText(text, len, enc);
+    const auto& buffer = builder.allocRunPosH(font, glyphCount, 0);
+    (void)font.textToGlyphs(text, len, enc, buffer.glyphs, glyphCount);
+    font.getXPos(buffer.glyphs, glyphCount, buffer.pos);
+    return builder.make();
+}
 
 namespace skiagm {
 
@@ -27,14 +40,12 @@ protected:
     } fEmojiFont;
 
     void onOnceBeforeDraw() override {
-        fEmojiFont.fTypeface = sk_tool_utils::emoji_typeface();
-        fEmojiFont.fText = sk_tool_utils::emoji_sample_text();
+        fEmojiFont.fTypeface = ToolUtils::emoji_typeface();
+        fEmojiFont.fText     = ToolUtils::emoji_sample_text();
     }
 
     SkString onShortName() override {
-        SkString name("scaledemoji");
-        name.append(sk_tool_utils::platform_font_manager());
-        return name;
+        return SkString("scaledemoji");
     }
 
     SkISize onISize() override { return SkISize::Make(1200, 1200); }
@@ -44,7 +55,9 @@ protected:
         canvas->drawColor(SK_ColorGRAY);
 
         SkPaint paint;
-        paint.setTypeface(fEmojiFont.fTypeface);
+        SkFont font(fEmojiFont.fTypeface);
+        font.setEdging(SkFont::Edging::kAlias);
+
         const char* text = fEmojiFont.fText;
 
         // draw text at different point sizes
@@ -53,10 +66,10 @@ protected:
         SkFontMetrics metrics;
         SkScalar y = 0;
         for (SkScalar textSize : { 70, 180, 270, 340 }) {
-            paint.setTextSize(textSize);
-            paint.getFontMetrics(&metrics);
+            font.setSize(textSize);
+            font.getMetrics(&metrics);
             y += -metrics.fAscent;
-            canvas->drawString(text, 10, y, paint);
+            canvas->drawSimpleText(text, strlen(text), kUTF8_SkTextEncoding, 10, y, font, paint);
             y += metrics.fDescent + metrics.fLeading;
         }
 
@@ -77,14 +90,12 @@ protected:
     } fEmojiFont;
 
     void onOnceBeforeDraw() override {
-        fEmojiFont.fTypeface = sk_tool_utils::emoji_typeface();
-        fEmojiFont.fText = sk_tool_utils::emoji_sample_text();
+        fEmojiFont.fTypeface = ToolUtils::emoji_typeface();
+        fEmojiFont.fText     = ToolUtils::emoji_sample_text();
     }
 
     SkString onShortName() override {
-        SkString name("scaledemojipos");
-        name.append(sk_tool_utils::platform_font_manager());
-        return name;
+        return SkString("scaledemojipos");
     }
 
     SkISize onISize() override { return SkISize::Make(1200, 1200); }
@@ -94,7 +105,8 @@ protected:
         canvas->drawColor(SK_ColorGRAY);
 
         SkPaint paint;
-        paint.setTypeface(fEmojiFont.fTypeface);
+        SkFont font;
+        font.setTypeface(fEmojiFont.fTypeface);
         const char* text = fEmojiFont.fText;
 
         // draw text at different point sizes
@@ -103,22 +115,20 @@ protected:
         SkFontMetrics metrics;
         SkScalar y = 0;
         for (SkScalar textSize : { 70, 180, 270, 340 }) {
-            paint.setTextSize(textSize);
-            paint.getFontMetrics(&metrics);
+            font.setSize(textSize);
+            font.getMetrics(&metrics);
             y += -metrics.fAscent;
 
-            int len = SkToInt(strlen(text));
-            SkAutoTArray<SkPoint>  pos(len);
-            SkAutoTArray<SkScalar> widths(len);
-            paint.getTextWidths(text, len, &widths[0]);
+            sk_sp<SkTextBlob> blob = make_hpos_test_blob_utf8(text, font);
+            // Draw with an origin.
+            canvas->drawTextBlob(blob, 10, y, paint);
 
-            SkScalar x = SkIntToScalar(10);
-            for (int i = 0; i < len; ++i) {
-                pos[i].set(x, y);
-                x += widths[i];
-            }
+            // Draw with shifted canvas.
+            canvas->save();
+            canvas->translate(750, 0);
+            canvas->drawTextBlob(blob, 10, y, paint);
+            canvas->restore();
 
-            canvas->drawPosText(text, len, &pos[0], paint);
             y += metrics.fDescent + metrics.fLeading;
         }
 

@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/renderer/script_context.h"
@@ -97,9 +98,10 @@ PlatformKeysNatives::PlatformKeysNatives(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {}
 
 void PlatformKeysNatives::AddRoutes() {
-  RouteHandlerFunction("NormalizeAlgorithm",
-                       base::Bind(&PlatformKeysNatives::NormalizeAlgorithm,
-                                  base::Unretained(this)));
+  RouteHandlerFunction(
+      "NormalizeAlgorithm",
+      base::BindRepeating(&PlatformKeysNatives::NormalizeAlgorithm,
+                          base::Unretained(this)));
 }
 
 void PlatformKeysNatives::NormalizeAlgorithm(

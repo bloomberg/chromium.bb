@@ -22,7 +22,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -207,8 +206,8 @@ public abstract class PathUtils {
             String downloadsPath =
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                             .getPath();
-            RecordHistogram.recordTimesHistogram("Android.StrictMode.DownloadsDir",
-                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
+            RecordHistogram.recordTimesHistogram(
+                    "Android.StrictMode.DownloadsDir", SystemClock.elapsedRealtime() - time);
             return downloadsPath;
         }
     }
@@ -261,14 +260,5 @@ public abstract class PathUtils {
     @CalledByNative
     public static String getExternalStorageDirectory() {
         return Environment.getExternalStorageDirectory().getAbsolutePath();
-    }
-
-    /**
-     * @ return the path to the base apk.
-     */
-    @SuppressWarnings("unused")
-    @CalledByNative
-    public static String getPathToBaseApk() {
-      return ContextUtils.getApplicationContext().getApplicationInfo().sourceDir;
     }
 }

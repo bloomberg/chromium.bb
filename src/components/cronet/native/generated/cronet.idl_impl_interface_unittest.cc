@@ -225,6 +225,8 @@ class Cronet_EngineTest : public ::testing::Test {
   bool Shutdown_called_ = false;
   bool GetVersionString_called_ = false;
   bool GetDefaultUserAgent_called_ = false;
+  bool AddRequestFinishedListener_called_ = false;
+  bool RemoveRequestFinishedListener_called_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Cronet_EngineTest);
@@ -287,6 +289,25 @@ Cronet_String TestCronet_Engine_GetDefaultUserAgent(Cronet_EnginePtr self) {
 
   return static_cast<Cronet_String>(0);
 }
+void TestCronet_Engine_AddRequestFinishedListener(
+    Cronet_EnginePtr self,
+    Cronet_RequestFinishedInfoListenerPtr listener,
+    Cronet_ExecutorPtr executor) {
+  CHECK(self);
+  Cronet_ClientContext client_context = Cronet_Engine_GetClientContext(self);
+  auto* test = static_cast<Cronet_EngineTest*>(client_context);
+  CHECK(test);
+  test->AddRequestFinishedListener_called_ = true;
+}
+void TestCronet_Engine_RemoveRequestFinishedListener(
+    Cronet_EnginePtr self,
+    Cronet_RequestFinishedInfoListenerPtr listener) {
+  CHECK(self);
+  Cronet_ClientContext client_context = Cronet_Engine_GetClientContext(self);
+  auto* test = static_cast<Cronet_EngineTest*>(client_context);
+  CHECK(test);
+  test->RemoveRequestFinishedListener_called_ = true;
+}
 }  // namespace
 
 // Test that Cronet_Engine stub forwards function calls as expected.
@@ -294,8 +315,9 @@ TEST_F(Cronet_EngineTest, TestCreate) {
   Cronet_EnginePtr test = Cronet_Engine_CreateWith(
       TestCronet_Engine_StartWithParams, TestCronet_Engine_StartNetLogToFile,
       TestCronet_Engine_StopNetLog, TestCronet_Engine_Shutdown,
-      TestCronet_Engine_GetVersionString,
-      TestCronet_Engine_GetDefaultUserAgent);
+      TestCronet_Engine_GetVersionString, TestCronet_Engine_GetDefaultUserAgent,
+      TestCronet_Engine_AddRequestFinishedListener,
+      TestCronet_Engine_RemoveRequestFinishedListener);
   CHECK(test);
   Cronet_Engine_SetClientContext(test, this);
   CHECK(!StartWithParams_called_);
@@ -308,6 +330,8 @@ TEST_F(Cronet_EngineTest, TestCreate) {
   CHECK(GetVersionString_called_);
   Cronet_Engine_GetDefaultUserAgent(test);
   CHECK(GetDefaultUserAgent_called_);
+  CHECK(!AddRequestFinishedListener_called_);
+  CHECK(!RemoveRequestFinishedListener_called_);
 
   Cronet_Engine_Destroy(test);
 }
@@ -757,4 +781,49 @@ TEST_F(Cronet_UrlRequestTest, TestCreate) {
   CHECK(!GetStatus_called_);
 
   Cronet_UrlRequest_Destroy(test);
+}
+
+// Test of Cronet_RequestFinishedInfoListener interface.
+class Cronet_RequestFinishedInfoListenerTest : public ::testing::Test {
+ protected:
+  void SetUp() override {}
+
+  void TearDown() override {}
+
+  Cronet_RequestFinishedInfoListenerTest() = default;
+  ~Cronet_RequestFinishedInfoListenerTest() override = default;
+
+ public:
+  bool OnRequestFinished_called_ = false;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Cronet_RequestFinishedInfoListenerTest);
+};
+
+namespace {
+// Implementation of Cronet_RequestFinishedInfoListener methods for testing.
+void TestCronet_RequestFinishedInfoListener_OnRequestFinished(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_RequestFinishedInfoPtr request_info) {
+  CHECK(self);
+  Cronet_ClientContext client_context =
+      Cronet_RequestFinishedInfoListener_GetClientContext(self);
+  auto* test =
+      static_cast<Cronet_RequestFinishedInfoListenerTest*>(client_context);
+  CHECK(test);
+  test->OnRequestFinished_called_ = true;
+}
+}  // namespace
+
+// Test that Cronet_RequestFinishedInfoListener stub forwards function calls as
+// expected.
+TEST_F(Cronet_RequestFinishedInfoListenerTest, TestCreate) {
+  Cronet_RequestFinishedInfoListenerPtr test =
+      Cronet_RequestFinishedInfoListener_CreateWith(
+          TestCronet_RequestFinishedInfoListener_OnRequestFinished);
+  CHECK(test);
+  Cronet_RequestFinishedInfoListener_SetClientContext(test, this);
+  CHECK(!OnRequestFinished_called_);
+
+  Cronet_RequestFinishedInfoListener_Destroy(test);
 }

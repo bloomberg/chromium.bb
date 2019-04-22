@@ -7,15 +7,19 @@
 
 #include "src/objects/maybe-object.h"
 
-#include "src/objects-inl.h"
+#ifdef V8_COMPRESS_POINTERS
+#include "src/isolate.h"
+#endif
+#include "src/objects/heap-object-inl.h"
 #include "src/objects/slots-inl.h"
+#include "src/objects/smi-inl.h"
 
 namespace v8 {
 namespace internal {
 
 bool MaybeObject::ToSmi(Smi* value) {
   if (HAS_SMI_TAG(ptr_)) {
-    *value = Smi::cast(ObjectPtr(ptr_));
+    *value = Smi::cast(Object(ptr_));
     return true;
   }
   return false;
@@ -23,7 +27,7 @@ bool MaybeObject::ToSmi(Smi* value) {
 
 Smi MaybeObject::ToSmi() const {
   DCHECK(HAS_SMI_TAG(ptr_));
-  return Smi::cast(ObjectPtr(ptr_));
+  return Smi::cast(Object(ptr_));
 }
 
 bool MaybeObject::IsStrongOrWeak() const {
@@ -33,7 +37,7 @@ bool MaybeObject::IsStrongOrWeak() const {
   return true;
 }
 
-bool MaybeObject::GetHeapObject(HeapObject** result) const {
+bool MaybeObject::GetHeapObject(HeapObject* result) const {
   if (IsSmi() || IsCleared()) {
     return false;
   }
@@ -41,7 +45,7 @@ bool MaybeObject::GetHeapObject(HeapObject** result) const {
   return true;
 }
 
-bool MaybeObject::GetHeapObject(HeapObject** result,
+bool MaybeObject::GetHeapObject(HeapObject* result,
                                 HeapObjectReferenceType* reference_type) const {
   if (IsSmi() || IsCleared()) {
     return false;
@@ -57,17 +61,17 @@ bool MaybeObject::IsStrong() const {
   return !HasWeakHeapObjectTag(ptr_) && !IsSmi();
 }
 
-bool MaybeObject::GetHeapObjectIfStrong(HeapObject** result) const {
+bool MaybeObject::GetHeapObjectIfStrong(HeapObject* result) const {
   if (!HasWeakHeapObjectTag(ptr_) && !IsSmi()) {
-    *result = reinterpret_cast<HeapObject*>(ptr_);
+    *result = HeapObject::cast(Object(ptr_));
     return true;
   }
   return false;
 }
 
-HeapObject* MaybeObject::GetHeapObjectAssumeStrong() const {
+HeapObject MaybeObject::GetHeapObjectAssumeStrong() const {
   DCHECK(IsStrong());
-  return reinterpret_cast<HeapObject*>(ptr_);
+  return HeapObject::cast(Object(ptr_));
 }
 
 bool MaybeObject::IsWeak() const {
@@ -76,7 +80,7 @@ bool MaybeObject::IsWeak() const {
 
 bool MaybeObject::IsWeakOrCleared() const { return HasWeakHeapObjectTag(ptr_); }
 
-bool MaybeObject::GetHeapObjectIfWeak(HeapObject** result) const {
+bool MaybeObject::GetHeapObjectIfWeak(HeapObject* result) const {
   if (IsWeak()) {
     *result = GetHeapObject();
     return true;
@@ -84,20 +88,20 @@ bool MaybeObject::GetHeapObjectIfWeak(HeapObject** result) const {
   return false;
 }
 
-HeapObject* MaybeObject::GetHeapObjectAssumeWeak() const {
+HeapObject MaybeObject::GetHeapObjectAssumeWeak() const {
   DCHECK(IsWeak());
   return GetHeapObject();
 }
 
-HeapObject* MaybeObject::GetHeapObject() const {
+HeapObject MaybeObject::GetHeapObject() const {
   DCHECK(!IsSmi());
   DCHECK(!IsCleared());
-  return reinterpret_cast<HeapObject*>(ptr_ & ~kWeakHeapObjectMask);
+  return HeapObject::cast(Object(ptr_ & ~kWeakHeapObjectMask));
 }
 
-Object* MaybeObject::GetHeapObjectOrSmi() const {
+Object MaybeObject::GetHeapObjectOrSmi() const {
   if (IsSmi()) {
-    return reinterpret_cast<Object*>(ptr_);
+    return Object(ptr_);
   }
   return GetHeapObject();
 }
@@ -126,7 +130,11 @@ HeapObjectReference HeapObjectReference::ClearedValue(Isolate* isolate) {
   return HeapObjectReference(raw_value);
 }
 
-void HeapObjectReference::Update(HeapObjectSlot slot, HeapObject* value) {
+template <typename THeapObjectSlot>
+void HeapObjectReference::Update(THeapObjectSlot slot, HeapObject value) {
+  static_assert(std::is_same<THeapObjectSlot, FullHeapObjectSlot>::value ||
+                    std::is_same<THeapObjectSlot, HeapObjectSlot>::value,
+                "Only FullHeapObjectSlot and HeapObjectSlot are expected here");
   Address old_value = (*slot).ptr();
   DCHECK(!HAS_SMI_TAG(old_value));
   Address new_value = value->ptr();

@@ -36,7 +36,7 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
-#include "chromeos/policy_certificate_provider.h"
+#include "chromeos/network/policy_certificate_provider.h"
 #endif
 
 using content::BrowserThread;
@@ -236,11 +236,15 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource {
       bool untrusted = cert_db_->IsUntrusted(cert.get());
       bool hardware_backed = cert_db_->IsHardwareBacked(cert.get());
       bool web_trust_anchor = cert_db_->IsWebTrustAnchor(cert.get());
+      bool device_wide = false;
+#if defined(OS_CHROMEOS)
+      device_wide = cert_db_->IsCertificateOnSystemSlot(cert.get());
+#endif
       base::string16 name = GetName(cert.get(), hardware_backed);
       cert_infos.push_back(std::make_unique<CertificateManagerModel::CertInfo>(
           std::move(cert), type, name, read_only, untrusted,
           CertificateManagerModel::CertInfo::Source::kPlatform,
-          web_trust_anchor, hardware_backed));
+          web_trust_anchor, hardware_backed, device_wide));
     }
 
     SetCertInfos(std::move(cert_infos));
@@ -354,7 +358,7 @@ class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
           false /* untrusted */,
           CertificateManagerModel::CertInfo::Source::kPolicy,
           policy_web_trusted /* web_trust_anchor */,
-          false /* hardware_backed */));
+          false /* hardware_backed */, false /* device_wide */));
     }
 
     SetCertInfos(std::move(cert_infos));
@@ -379,10 +383,8 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
 
   void Refresh() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    certificate_provider_service_->GetCertificates(
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&CertsSourceExtensions::DidGetCerts,
-                           weak_ptr_factory_.GetWeakPtr())));
+    certificate_provider_service_->GetCertificates(base::BindOnce(
+        &CertsSourceExtensions::DidGetCerts, weak_ptr_factory_.GetWeakPtr()));
   }
 
   bool SetCertTrust(CERTCertificate* cert,
@@ -422,7 +424,8 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
           std::move(nss_cert), net::CertType::USER_CERT /* type */,
           display_name, true /* read_only */, false /* untrusted */,
           CertificateManagerModel::CertInfo::Source::kExtension,
-          false /* web_trust_anchor */, false /* hardware_backed */));
+          false /* web_trust_anchor */, false /* hardware_backed */,
+          false /* device_wide */));
     }
 
     SetCertInfos(std::move(cert_infos));
@@ -446,7 +449,8 @@ CertificateManagerModel::CertInfo::CertInfo(net::ScopedCERTCertificate cert,
                                             bool untrusted,
                                             Source source,
                                             bool web_trust_anchor,
-                                            bool hardware_backed)
+                                            bool hardware_backed,
+                                            bool device_wide)
     : cert_(std::move(cert)),
       type_(type),
       name_(std::move(name)),
@@ -454,7 +458,8 @@ CertificateManagerModel::CertInfo::CertInfo(net::ScopedCERTCertificate cert,
       untrusted_(untrusted),
       source_(source),
       web_trust_anchor_(web_trust_anchor),
-      hardware_backed_(hardware_backed) {}
+      hardware_backed_(hardware_backed),
+      device_wide_(device_wide) {}
 
 CertificateManagerModel::CertInfo::~CertInfo() {}
 
@@ -465,7 +470,7 @@ CertificateManagerModel::CertInfo::Clone(const CertInfo* cert_info) {
       net::x509_util::DupCERTCertificate(cert_info->cert()), cert_info->type(),
       cert_info->name(), cert_info->read_only(), cert_info->untrusted(),
       cert_info->source(), cert_info->web_trust_anchor(),
-      cert_info->hardware_backed());
+      cert_info->hardware_backed(), cert_info->device_wide());
 }
 
 CertificateManagerModel::Params::Params() = default;

@@ -18,8 +18,8 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/search_result_base_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -28,7 +28,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/window.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
 #include "ui/gfx/geometry/insets.h"
@@ -52,6 +52,11 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
       search_box_view_(nullptr),
       contents_view_(nullptr),
       app_list_view_(app_list_view) {
+  // We need a layer to apply transform to in small display so that the apps
+  // grid fits in the display.
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
   model_->AddObserver(this);
 }
 
@@ -98,7 +103,7 @@ void AppListMainView::ShowAppListWhenReady() {
 }
 
 void AppListMainView::ResetForShow() {
-  contents_view_->SetActiveState(ash::AppListState::kStateStart);
+  contents_view_->SetActiveState(ash::AppListState::kStateApps);
   contents_view_->GetAppsContainerView()->ResetForShowApps();
   // We clear the search when hiding so when app list appears it is not showing
   // search results.
@@ -206,6 +211,22 @@ void AppListMainView::ActiveChanged(search_box::SearchBoxViewBase* sender) {
     // Close the search results page if the search box is inactive.
     contents_view_->ShowSearchResults(false);
   }
+}
+
+void AppListMainView::SearchBoxFocusChanged(
+    search_box::SearchBoxViewBase* sender) {
+  // A fake focus (highlight) is always set on the first search result. When the
+  // user moves focus from the search box textfield (e.g. to close button or
+  // last search result), the fake focus should be removed.
+  if (sender->search_box()->HasFocus())
+    return;
+
+  SearchResultBaseView* first_result_view =
+      contents_view_->search_results_page_view()->first_result_view();
+  if (!first_result_view || !first_result_view->background_highlighted())
+    return;
+
+  first_result_view->SetBackgroundHighlighted(false);
 }
 
 void AppListMainView::AssistantButtonPressed() {

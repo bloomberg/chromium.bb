@@ -44,7 +44,7 @@ TEST_F(BrowserCommandsTest, TabNavigationAccelerators) {
   AddTab(browser(), about_blank);
 
   // Select the second tab.
-  browser()->tab_strip_model()->ActivateTabAt(1, false);
+  browser()->tab_strip_model()->ActivateTabAt(1);
 
   CommandUpdater* updater = browser()->command_controller();
 
@@ -202,7 +202,8 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   EXPECT_TRUE(first->GetController().CanGoForward());
 
   // Select the second tab and make it go forward in a new background tab.
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
   // TODO(brettw) bug 11055: It should not be necessary to commit the load here,
   // but because of this bug, it will assert later if we don't. When the bug is
   // fixed, one of the three commits here related to this bug should be removed
@@ -228,7 +229,8 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
 
   // Now do back in a new foreground tab. Don't bother re-checking every sngle
   // thing above, just validate that it's opening properly.
-  browser()->tab_strip_model()->ActivateTabAt(2, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      2, {TabStripModel::GestureType::kOther});
   // TODO(brettw) bug 11055: see the comment above about why we need this.
   CommitPendingLoad(&second->GetController());
   chrome::GoBack(browser(), WindowOpenDisposition::NEW_FOREGROUND_TAB);
@@ -351,7 +353,7 @@ TEST_F(BrowserCommandsTest, OnZoomChangedForActiveTab) {
   // Add Second tab.
   WebContents* second_tab = tab_strip_model->GetWebContentsAt(1);
 
-  tab_strip_model->ActivateTabAt(1, true);
+  tab_strip_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   EXPECT_TRUE(tab_strip_model->IsTabSelected(1));
   zoom::PageZoom::Zoom(second_tab, content::PAGE_ZOOM_OUT);
 

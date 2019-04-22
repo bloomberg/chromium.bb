@@ -38,14 +38,36 @@ base::FilePath GetMyFilesFolderForProfile(Profile* profile);
 // As of now (M40), the conversion is used only during initialization of
 // download_prefs, where profile unaware initialization precedes profile
 // aware stage. Below are the list of relocations we have made in the past.
+// *Updated in M73 to handle /home/chronos/user to
+// /home/chronos/u-{hash}/MyFiles/Downloads
 //
 // M27: crbug.com/229304, for supporting {offline, recent, shared} folders
 //   in Drive. Migration code for this is removed in M34.
 // M34-35: crbug.com/313539, 356322, for supporting multi profiles.
 //   Migration code is removed in M40.
 bool MigratePathFromOldFormat(Profile* profile,
+                              const base::FilePath& old_base,
                               const base::FilePath& old_path,
                               base::FilePath* new_path);
+
+// Converts |old_path| in <cryptohome>/Downloads[/*] to |new_path| in
+// <cryptohome/MyFiles/Downloads[*].  Returns true if path is changed else
+// returns false if |old_path| was not inside Downloads, and |new_path| is
+// undefined.
+//
+// Introduced in M73.  This code updates values stored in prefs.
+// TODO(crbug.com/911946) Remove this when no users are running M72 or earlier.
+bool MigrateFromDownloadsToMyFiles(Profile* profile,
+                                   const base::FilePath& old_path,
+                                   base::FilePath* new_path);
+
+// Convers |old_path| in /special/drive-<hash> to |new_path| in
+// /media/fuse/drivefs-<id>. Returns true if path is changed else
+// returns false if |old_path| was not inside Drive, and |new_path| is
+// undefined.
+bool MigrateToDriveFs(Profile* profile,
+                      const base::FilePath& old_path,
+                      base::FilePath* new_path);
 
 // The canonical mount point name for "Downloads" folder.
 std::string GetDownloadsMountPointName(Profile* profile);
@@ -101,10 +123,12 @@ void ConvertToContentUrls(
 std::string GetPathDisplayTextForSettings(Profile* profile,
                                           const std::string& path);
 
-// Extracts |mount_name| and |full_path| from given |absolute_path|.
-bool ExtractMountNameAndFullPath(const base::FilePath& absolute_path,
-                                 std::string* mount_name,
-                                 std::string* full_path);
+// Extracts |mount_name|, |file_system_name|, and |full_path| from given
+// |absolute_path|.
+bool ExtractMountNameFileSystemNameFullPath(const base::FilePath& absolute_path,
+                                            std::string* mount_name,
+                                            std::string* file_system_name,
+                                            std::string* full_path);
 }  // namespace util
 }  // namespace file_manager
 

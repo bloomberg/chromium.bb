@@ -8,14 +8,13 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/viz/host/gpu_host_impl.h"
-#include "components/viz/service/main/viz_main_impl.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/ws/public/mojom/gpu.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "services/ws/public/mojom/arc.mojom.h"
+#include "services/ws/public/mojom/arc_gpu.mojom.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace base {
@@ -38,6 +37,7 @@ namespace viz {
 class GpuClient;
 class GpuHostImpl;
 class HostGpuMemoryBufferManager;
+class VizMainImpl;
 }
 
 namespace ws {
@@ -62,15 +62,20 @@ class GpuHost : public viz::GpuHostImpl::Delegate {
   void Add(mojom::GpuRequest request);
 
 #if defined(OS_CHROMEOS)
-  void AddArc(mojom::ArcRequest request);
+  void AddArcGpu(mojom::ArcGpuRequest request);
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(USE_OZONE)
+  void BindOzoneGpuInterface(const std::string& interface_name,
+                             mojo::ScopedMessagePipeHandle interface_pipe);
+#endif
 
  private:
   friend class GpuHostTestApi;
 
   void OnBadMessageFromGpu();
 
-  // TODO(crbug.com/611505): this goes away after the gpu process split in mus.
+  // TODO(crbug.com/912221): This goes away after the gpu process split in mash.
   void InitializeVizMain(viz::mojom::VizMainRequest request);
   void DestroyVizMain();
 
@@ -97,6 +102,9 @@ class GpuHost : public viz::GpuHostImpl::Delegate {
       override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void RunService(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
 #if defined(USE_OZONE)
   void TerminateGpuProcess(const std::string& message) override;
   void SendGpuProcessMessage(IPC::Message* message) override;
@@ -117,12 +125,12 @@ class GpuHost : public viz::GpuHostImpl::Delegate {
 
   std::vector<std::unique_ptr<viz::GpuClient>> gpu_clients_;
 
-  // TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
+  // TODO(crbug.com/912221): This goes away after the gpu process split in mash.
   base::Thread gpu_thread_;
   std::unique_ptr<viz::VizMainImpl> viz_main_impl_;
 
 #if defined(OS_CHROMEOS)
-  mojo::StrongBindingSet<mojom::Arc> arc_bindings_;
+  mojo::StrongBindingSet<mojom::ArcGpu> arc_gpu_bindings_;
 #endif  // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(GpuHost);

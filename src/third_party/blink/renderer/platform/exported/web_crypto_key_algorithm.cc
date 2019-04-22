@@ -69,7 +69,7 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::AdoptParamsAndCreate(
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::CreateAes(
     WebCryptoAlgorithmId id,
-    unsigned short key_length_bits) {
+    uint16_t key_length_bits) {
   // FIXME: Verify that id is an AES algorithm.
   // FIXME: Move this somewhere more general.
   if (key_length_bits != 128 && key_length_bits != 192 &&

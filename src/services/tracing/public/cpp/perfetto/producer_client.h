@@ -23,11 +23,21 @@
 
 namespace perfetto {
 class SharedMemoryArbiter;
+class StartupTraceWriterRegistry;
 }  // namespace perfetto
 
 namespace tracing {
 
 class MojoSharedMemory;
+
+class ScopedPerfettoPostTaskBlocker {
+ public:
+  explicit ScopedPerfettoPostTaskBlocker(bool enable);
+  ~ScopedPerfettoPostTaskBlocker();
+
+ private:
+  const bool enabled_;
+};
 
 // This class is the per-process client side of the Perfetto
 // producer, and is responsible for creating specific kinds
@@ -49,13 +59,14 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
     explicit DataSourceBase(const std::string& name);
     virtual ~DataSourceBase();
 
-    void StartTracingWithID(uint64_t data_source_id,
-                            ProducerClient* producer_client,
-                            const mojom::DataSourceConfig& data_source_config);
+    void StartTracingWithID(
+        uint64_t data_source_id,
+        ProducerClient* producer_client,
+        const perfetto::DataSourceConfig& data_source_config);
 
     virtual void StartTracing(
         ProducerClient* producer_client,
-        const mojom::DataSourceConfig& data_source_config) = 0;
+        const perfetto::DataSourceConfig& data_source_config) = 0;
     virtual void StopTracing(
         base::OnceClosure stop_complete_callback = base::OnceClosure()) = 0;
 
@@ -78,7 +89,9 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   static void DeleteSoonForTesting(std::unique_ptr<ProducerClient>);
 
   // Returns the taskrunner used by Perfetto.
-  static base::SequencedTaskRunner* GetTaskRunner();
+  static PerfettoTaskRunner* GetTaskRunner();
+
+  void Connect(mojom::PerfettoServicePtr perfetto_service);
 
   // Create the messagepipes that'll be used to connect
   // to the service-side ProducerHost, on the correct
@@ -88,6 +101,13 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
       base::OnceCallback<void(mojom::ProducerClientPtr,
                               mojom::ProducerHostRequest)>;
   void CreateMojoMessagepipes(MessagepipesReadyCallback);
+
+  // Binds the registry and its trace writers to the ProducerClient's SMB, to
+  // write into the given target buffer. The ownership of |registry| is
+  // transferred to ProducerClient (and its SharedMemoryArbiter).
+  void BindStartupTraceWriterRegistry(
+      std::unique_ptr<perfetto::StartupTraceWriterRegistry> registry,
+      perfetto::BufferID target_buffer);
 
   // Add a new data source to the ProducerClient; the caller
   // retains ownership and is responsible for making sure
@@ -99,7 +119,8 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   // tracing and toggle specific DataSources.
   void OnTracingStart(mojo::ScopedSharedBufferHandle shared_memory) override;
   void StartDataSource(uint64_t id,
-                       mojom::DataSourceConfigPtr data_source_config) override;
+                       const perfetto::DataSourceConfig& data_source_config,
+                       StartDataSourceCallback callback) override;
 
   void StopDataSource(uint64_t id, StopDataSourceCallback callback) override;
   void Flush(uint64_t flush_request_id,
@@ -117,12 +138,16 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
       perfetto::BufferID target_buffer) override;
   void NotifyFlushComplete(perfetto::FlushRequestID) override;
   perfetto::SharedMemory* shared_memory() const override;
+  void RegisterTraceWriter(uint32_t writer_id, uint32_t target_buffer) override;
+  void UnregisterTraceWriter(uint32_t writer_id) override;
 
   // These ProducerEndpoint functions are only used on the service
   // side and should not be called on the clients.
   void RegisterDataSource(const perfetto::DataSourceDescriptor&) override;
   void UnregisterDataSource(const std::string& name) override;
   void NotifyDataSourceStopped(perfetto::DataSourceInstanceID) override;
+  void NotifyDataSourceStarted(perfetto::DataSourceInstanceID) override;
+  void ActivateTriggers(const std::vector<std::string>&) override;
   size_t shared_buffer_page_size_kb() const override;
 
   static void ResetTaskRunnerForTesting();
@@ -134,7 +159,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
  private:
   friend class base::NoDestructor<ProducerClient>;
 
-  void CommitDataOnSequence(mojom::CommitDataRequestPtr request);
+  void CommitDataOnSequence(const perfetto::CommitDataRequest& request);
   void AddDataSourceOnSequence(DataSourceBase*);
   void RegisterDataSourceWithHost(DataSourceBase* data_source);
 

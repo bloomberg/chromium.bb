@@ -106,7 +106,7 @@ void MockPersistentStore::Load(const LoadedCallback& loaded_callback) {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(loaded_callback, base::Passed(&channel_ids)));
+      FROM_HERE, base::BindOnce(loaded_callback, std::move(channel_ids)));
 }
 
 void MockPersistentStore::AddChannelID(
@@ -148,27 +148,27 @@ TEST_F(DefaultChannelIDStoreTest, TestLoading) {
   // Make sure channel_ids load properly.
   DefaultChannelIDStore store(persistent_store.get());
   // Load has not occurred yet.
-  EXPECT_EQ(0, store.GetChannelIDCount());
+  EXPECT_EQ(0u, store.GetChannelIDCount());
   store.SetChannelID(std::make_unique<ChannelIDStore::ChannelID>(
       "verisign.com", base::Time(), crypto::ECPrivateKey::Create()));
   // Wait for load & queued set task.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, store.GetChannelIDCount());
+  EXPECT_EQ(2u, store.GetChannelIDCount());
   store.SetChannelID(std::make_unique<ChannelIDStore::ChannelID>(
       "twitter.com", base::Time(), crypto::ECPrivateKey::Create()));
   // Set should be synchronous now that load is done.
-  EXPECT_EQ(3, store.GetChannelIDCount());
+  EXPECT_EQ(3u, store.GetChannelIDCount());
 }
 
 //TODO(mattm): add more tests of without a persistent store?
 TEST_F(DefaultChannelIDStoreTest, TestSettingAndGetting) {
   // No persistent store, all calls will be synchronous.
-  DefaultChannelIDStore store(NULL);
+  DefaultChannelIDStore store(nullptr);
   std::unique_ptr<crypto::ECPrivateKey> expected_key(
       crypto::ECPrivateKey::Create());
 
   std::unique_ptr<crypto::ECPrivateKey> key;
-  EXPECT_EQ(0, store.GetChannelIDCount());
+  EXPECT_EQ(0u, store.GetChannelIDCount());
   EXPECT_EQ(ERR_FILE_NOT_FOUND,
             store.GetChannelID("verisign.com", &key,
                                base::Bind(&GetChannelIDCallbackNotCalled)));
@@ -188,7 +188,7 @@ TEST_F(DefaultChannelIDStoreTest, TestDuplicateChannelIds) {
       crypto::ECPrivateKey::Create());
 
   std::unique_ptr<crypto::ECPrivateKey> key;
-  EXPECT_EQ(0, store.GetChannelIDCount());
+  EXPECT_EQ(0u, store.GetChannelIDCount());
   store.SetChannelID(std::make_unique<ChannelIDStore::ChannelID>(
       "verisign.com", base::Time::FromInternalValue(123),
       crypto::ECPrivateKey::Create()));
@@ -198,7 +198,7 @@ TEST_F(DefaultChannelIDStoreTest, TestDuplicateChannelIds) {
 
   // Wait for load & queued set tasks.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, store.GetChannelIDCount());
+  EXPECT_EQ(1u, store.GetChannelIDCount());
   EXPECT_EQ(OK, store.GetChannelID("verisign.com", &key,
                                    base::Bind(&GetChannelIDCallbackNotCalled)));
   EXPECT_TRUE(KeysEqual(expected_key.get(), key.get()));
@@ -215,7 +215,7 @@ TEST_F(DefaultChannelIDStoreTest, TestAsyncGet) {
   DefaultChannelIDStore store(persistent_store.get());
   AsyncGetChannelIDHelper helper;
   std::unique_ptr<crypto::ECPrivateKey> key;
-  EXPECT_EQ(0, store.GetChannelIDCount());
+  EXPECT_EQ(0u, store.GetChannelIDCount());
   EXPECT_EQ(ERR_IO_PENDING,
             store.GetChannelID("verisign.com", &key,
                                base::Bind(&AsyncGetChannelIDHelper::Callback,
@@ -223,7 +223,7 @@ TEST_F(DefaultChannelIDStoreTest, TestAsyncGet) {
 
   // Wait for load & queued get tasks.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, store.GetChannelIDCount());
+  EXPECT_EQ(1u, store.GetChannelIDCount());
   EXPECT_FALSE(key);
   EXPECT_TRUE(helper.called_);
   EXPECT_THAT(helper.err_, IsOk());
@@ -244,11 +244,11 @@ TEST_F(DefaultChannelIDStoreTest, TestDeleteAll) {
   // Wait for load & queued set tasks.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(3, store.GetChannelIDCount());
+  EXPECT_EQ(3u, store.GetChannelIDCount());
   int delete_finished = 0;
   store.DeleteAll(base::Bind(&CallCounter, &delete_finished));
   ASSERT_EQ(1, delete_finished);
-  EXPECT_EQ(0, store.GetChannelIDCount());
+  EXPECT_EQ(0u, store.GetChannelIDCount());
 }
 
 TEST_F(DefaultChannelIDStoreTest, TestDeleteForDomains) {
@@ -263,16 +263,15 @@ TEST_F(DefaultChannelIDStoreTest, TestDeleteForDomains) {
       "harvard.com", base::Time(), crypto::ECPrivateKey::Create()));
   // Wait for load & queued set tasks.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, store.GetChannelIDCount());
+  EXPECT_EQ(3u, store.GetChannelIDCount());
 
   // Whitelist deletion.
   int deletions_finished = 0;
   store.DeleteForDomainsCreatedBetween(
-      base::Bind(&DomainEquals, base::ConstRef(std::string("verisign.com"))),
-      base::Time(), base::Time(),
-      base::Bind(&CallCounter, &deletions_finished));
+      base::Bind(&DomainEquals, std::string("verisign.com")), base::Time(),
+      base::Time(), base::Bind(&CallCounter, &deletions_finished));
   ASSERT_EQ(1, deletions_finished);
-  EXPECT_EQ(2, store.GetChannelIDCount());
+  EXPECT_EQ(2u, store.GetChannelIDCount());
   ChannelIDStore::ChannelIDList channel_ids;
   store.GetAllChannelIDs(base::Bind(GetAllCallback, &channel_ids));
   EXPECT_EQ("google.com", channel_ids.begin()->server_identifier());
@@ -280,11 +279,10 @@ TEST_F(DefaultChannelIDStoreTest, TestDeleteForDomains) {
 
   // Blacklist deletion.
   store.DeleteForDomainsCreatedBetween(
-      base::Bind(&DomainNotEquals, base::ConstRef(std::string("google.com"))),
-      base::Time(), base::Time(),
-      base::Bind(&CallCounter, &deletions_finished));
+      base::Bind(&DomainNotEquals, std::string("google.com")), base::Time(),
+      base::Time(), base::Bind(&CallCounter, &deletions_finished));
   ASSERT_EQ(2, deletions_finished);
-  EXPECT_EQ(1, store.GetChannelIDCount());
+  EXPECT_EQ(1u, store.GetChannelIDCount());
   store.GetAllChannelIDs(base::Bind(GetAllCallback, &channel_ids));
   EXPECT_EQ("google.com", channel_ids.begin()->server_identifier());
 }
@@ -308,7 +306,7 @@ TEST_F(DefaultChannelIDStoreTest, TestAsyncGetAndDeleteAll) {
   EXPECT_EQ(0u, pre_channel_ids.size());
   // Wait for load & queued tasks.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, store.GetChannelIDCount());
+  EXPECT_EQ(0u, store.GetChannelIDCount());
   EXPECT_EQ(2u, pre_channel_ids.size());
   EXPECT_EQ(0u, post_channel_ids.size());
 }
@@ -318,7 +316,7 @@ TEST_F(DefaultChannelIDStoreTest, TestDelete) {
   DefaultChannelIDStore store(persistent_store.get());
 
   std::unique_ptr<crypto::ECPrivateKey> key;
-  EXPECT_EQ(0, store.GetChannelIDCount());
+  EXPECT_EQ(0u, store.GetChannelIDCount());
   store.SetChannelID(std::make_unique<ChannelIDStore::ChannelID>(
       "verisign.com", base::Time(), crypto::ECPrivateKey::Create()));
   // Wait for load & queued set task.
@@ -327,12 +325,12 @@ TEST_F(DefaultChannelIDStoreTest, TestDelete) {
   store.SetChannelID(std::make_unique<ChannelIDStore::ChannelID>(
       "google.com", base::Time(), crypto::ECPrivateKey::Create()));
 
-  EXPECT_EQ(2, store.GetChannelIDCount());
+  EXPECT_EQ(2u, store.GetChannelIDCount());
   int delete_finished = 0;
   store.DeleteChannelID("verisign.com",
                               base::Bind(&CallCounter, &delete_finished));
   ASSERT_EQ(1, delete_finished);
-  EXPECT_EQ(1, store.GetChannelIDCount());
+  EXPECT_EQ(1u, store.GetChannelIDCount());
   EXPECT_EQ(ERR_FILE_NOT_FOUND,
             store.GetChannelID("verisign.com", &key,
                                base::Bind(&GetChannelIDCallbackNotCalled)));
@@ -342,7 +340,7 @@ TEST_F(DefaultChannelIDStoreTest, TestDelete) {
   store.DeleteChannelID("google.com",
                         base::Bind(&CallCounter, &delete2_finished));
   ASSERT_EQ(1, delete2_finished);
-  EXPECT_EQ(0, store.GetChannelIDCount());
+  EXPECT_EQ(0u, store.GetChannelIDCount());
   EXPECT_EQ(ERR_FILE_NOT_FOUND,
             store.GetChannelID("google.com", &key,
                                base::Bind(&GetChannelIDCallbackNotCalled)));
@@ -365,7 +363,7 @@ TEST_F(DefaultChannelIDStoreTest, TestAsyncDelete) {
   AsyncGetChannelIDHelper a_helper;
   AsyncGetChannelIDHelper b_helper;
   std::unique_ptr<crypto::ECPrivateKey> key;
-  EXPECT_EQ(0, store.GetChannelIDCount());
+  EXPECT_EQ(0u, store.GetChannelIDCount());
   EXPECT_EQ(ERR_IO_PENDING,
             store.GetChannelID("a.com", &key,
                                base::Bind(&AsyncGetChannelIDHelper::Callback,
@@ -381,7 +379,7 @@ TEST_F(DefaultChannelIDStoreTest, TestAsyncDelete) {
   // Wait for load & queued tasks.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, delete_finished);
-  EXPECT_EQ(1, store.GetChannelIDCount());
+  EXPECT_EQ(1u, store.GetChannelIDCount());
   EXPECT_FALSE(key);
   EXPECT_TRUE(a_helper.called_);
   EXPECT_THAT(a_helper.err_, IsError(ERR_FILE_NOT_FOUND));
@@ -397,7 +395,7 @@ TEST_F(DefaultChannelIDStoreTest, TestGetAll) {
   scoped_refptr<MockPersistentStore> persistent_store(new MockPersistentStore);
   DefaultChannelIDStore store(persistent_store.get());
 
-  EXPECT_EQ(0, store.GetChannelIDCount());
+  EXPECT_EQ(0u, store.GetChannelIDCount());
   store.SetChannelID(std::make_unique<ChannelIDStore::ChannelID>(
       "verisign.com", base::Time(), crypto::ECPrivateKey::Create()));
   store.SetChannelID(std::make_unique<ChannelIDStore::ChannelID>(
@@ -409,7 +407,7 @@ TEST_F(DefaultChannelIDStoreTest, TestGetAll) {
   // Wait for load & queued set tasks.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(4, store.GetChannelIDCount());
+  EXPECT_EQ(4u, store.GetChannelIDCount());
   ChannelIDStore::ChannelIDList channel_ids;
   store.GetAllChannelIDs(base::Bind(GetAllCallback, &channel_ids));
   EXPECT_EQ(4u, channel_ids.size());

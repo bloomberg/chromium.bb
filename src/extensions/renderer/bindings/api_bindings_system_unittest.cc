@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -110,7 +109,7 @@ void APIBindingsSystemTest::SetUp() {
     api_schemas_[api.name] = std::move(api_schema);
   }
 
-  binding::AddConsoleError add_console_error(base::Bind(
+  binding::AddConsoleError add_console_error(base::BindRepeating(
       &APIBindingsSystemTest::AddConsoleError, base::Unretained(this)));
   auto get_context_owner = [](v8::Local<v8::Context>) {
     return std::string("context");
@@ -126,9 +125,10 @@ void APIBindingsSystemTest::SetUp() {
                           base::Unretained(this)),
       base::BindRepeating(get_context_owner), base::DoNothing(),
       add_console_error,
-      APILastError(base::Bind(&APIBindingsSystemTest::GetLastErrorParent,
+      APILastError(
+          base::BindRepeating(&APIBindingsSystemTest::GetLastErrorParent,
                               base::Unretained(this)),
-                   add_console_error));
+          add_console_error));
 }
 
 void APIBindingsSystemTest::TearDown() {
@@ -271,7 +271,7 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
     v8::Local<v8::Function> function = FunctionFromString(context, kTestCall);
     v8::Local<v8::Value> args[] = {alpha_api};
     RunFunctionAndExpectError(
-        function, context, arraysize(args), args,
+        function, context, base::size(args), args,
         "Uncaught TypeError: " +
             api_errors::InvocationError(
                 "alpha.functionWithEnum", "alpha.enumRef e",
@@ -342,7 +342,7 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
 
   auto test_hooks = std::make_unique<APIBindingHooksTestDelegate>();
   test_hooks->AddHandler("alpha.functionWithCallback",
-                         base::Bind(hook, &did_call));
+                         base::BindRepeating(hook, &did_call));
   APIBindingHooks* binding_hooks =
       bindings_system()->GetHooksForAPI(kAlphaAPIName);
   binding_hooks->SetDelegate(std::move(test_hooks));
@@ -392,7 +392,7 @@ TEST_F(APIBindingsSystemTest, TestSetCustomCallback) {
   v8::Local<v8::Object> js_hooks = hooks->GetJSHookInterface(context);
   v8::Local<v8::Function> function = FunctionFromString(context, kHook);
   v8::Local<v8::Value> args[] = {js_hooks};
-  RunFunctionOnGlobal(function, context, arraysize(args), args);
+  RunFunctionOnGlobal(function, context, base::size(args), args);
 
   {
     const char kTestCall[] =
@@ -456,7 +456,7 @@ TEST_F(APIBindingsSystemTest, TestCustomEvent) {
   };
 
   auto test_hooks = std::make_unique<APIBindingHooksTestDelegate>();
-  test_hooks->SetCustomEvent(base::Bind(create_custom_event));
+  test_hooks->SetCustomEvent(base::BindRepeating(create_custom_event));
   APIBindingHooks* binding_hooks =
       bindings_system()->GetHooksForAPI(kAlphaAPIName);
   binding_hooks->SetDelegate(std::move(test_hooks));

@@ -64,7 +64,8 @@ void FontFaceCache::AddFontFace(FontFace* font_face, bool css_connected) {
           font_face->GetFontSelectionCapabilities(), nullptr);
   if (segmented_font_face_result.is_new_entry) {
     segmented_font_face_result.stored_value->value =
-        CSSSegmentedFontFace::Create(font_face->GetFontSelectionCapabilities());
+        MakeGarbageCollected<CSSSegmentedFontFace>(
+            font_face->GetFontSelectionCapabilities());
   }
 
   segmented_font_face_result.stored_value->value->AddFontFace(font_face,

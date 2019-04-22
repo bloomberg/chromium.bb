@@ -17,7 +17,7 @@
 #include "crazy_linker_library_view.h"
 #include "crazy_linker_memory_mapping.h"
 #include "crazy_linker_system_linker.h"
-#include "crazy_linker_thread.h"
+#include "crazy_linker_thread_data.h"
 #include "crazy_linker_util.h"
 #include "crazy_linker_wrappers.h"
 #include "linker_phdr.h"
@@ -201,8 +201,8 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
       return sym.address;
     }
 
-    if (lib->IsCrazy()) {
-      SharedLibrary* crazy = lib->GetCrazy();
+    const SharedLibrary* crazy = lib->GetCrazy();
+    if (crazy) {
       const ELF::Sym* entry = crazy->LookupSymbolEntry(symbol_name);
       if (entry)
         return reinterpret_cast<void*>(crazy->load_bias() + entry->st_value);
@@ -378,11 +378,12 @@ bool SharedLibrary::Relocate(LibraryList* lib_list,
   return true;
 }
 
-const ELF::Sym* SharedLibrary::LookupSymbolEntry(const char* symbol_name) {
+const ELF::Sym* SharedLibrary::LookupSymbolEntry(
+    const char* symbol_name) const {
   return symbols_.LookupByName(symbol_name);
 }
 
-void* SharedLibrary::FindAddressForSymbol(const char* symbol_name) {
+void* SharedLibrary::FindAddressForSymbol(const char* symbol_name) const {
   return symbols_.LookupAddressByName(symbol_name, view_.load_bias());
 }
 
@@ -469,14 +470,14 @@ void SharedLibrary::CallDestructors() {
   CallFunction(fini_func_, "DT_FINI");
 }
 
-bool SharedLibrary::SetJavaVM(void* java_vm,
-                              int minimum_jni_version,
-                              Error* error) {
-  if (java_vm == NULL)
+bool SharedLibrary::CallJniOnLoad(void* java_vm,
+                                  int minimum_jni_version,
+                                  Error* error) {
+  if (!java_vm)
     return true;
 
   // Lookup for JNI_OnLoad, exit if it doesn't exist.
-  JNI_OnLoadFunctionPtr jni_onload = reinterpret_cast<JNI_OnLoadFunctionPtr>(
+  auto jni_onload = reinterpret_cast<JNI_OnLoadFunctionPtr>(
       FindAddressForSymbol("JNI_OnLoad"));
   if (!jni_onload)
     return true;

@@ -10,21 +10,23 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/common/media_stream_request.h"
-#include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/pepper/pepper_media_stream_track_host_base.h"
 #include "media/base/video_frame.h"
 #include "ppapi/c/ppb_video_frame.h"
 #include "ppapi/shared_impl/media_stream_video_track_shared.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "ui/gfx/geometry/size.h"
+
+namespace blink {
+class WebPlatformMediaStreamSource;
+}  // namespace blink
 
 namespace content {
 
-class MediaStreamSource;
-
 class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
-                                        public MediaStreamVideoSink {
+                                        public blink::MediaStreamVideoSink {
  public:
   // Input mode constructor.
   // In input mode, this class passes video frames from |track| to the
@@ -80,8 +82,8 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
       const ppapi::MediaStreamVideoTrackShared::Attributes& attributes);
 
   void InitBlinkTrack();
-  void OnTrackStarted(MediaStreamSource* source,
-                      MediaStreamRequestResult result,
+  void OnTrackStarted(blink::WebPlatformMediaStreamSource* source,
+                      blink::MediaStreamRequestResult result,
                       const blink::WebString& result_name);
 
   blink::WebMediaStreamTrack track_;

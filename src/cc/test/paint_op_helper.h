@@ -192,7 +192,6 @@ class PaintOpHelper {
         str << "SaveLayerAlphaOp(bounds="
             << PaintOpHelper::SkiaTypeToString(op->bounds)
             << ", alpha=" << static_cast<uint32_t>(op->alpha)
-            << ", preserve_lcd_text_requests=" << op->preserve_lcd_text_requests
             << ")";
         break;
       }
@@ -355,34 +354,6 @@ class PaintOpHelper {
     return "<SkPath>";
   }
 
-  static std::string SkiaTypeToString(PaintFlags::Hinting hinting) {
-    switch (hinting) {
-      case PaintFlags::kNo_Hinting:
-        return "kNo_Hinting";
-      case PaintFlags::kSlight_Hinting:
-        return "kSlight_Hinting";
-      case PaintFlags::kNormal_Hinting:
-        return "kNormal_Hinting";
-      case PaintFlags::kFull_Hinting:
-        return "kFull_Hinting";
-    }
-    return "<unknown PaintFlags::Hinting>";
-  }
-
-  static std::string SkiaTypeToString(PaintFlags::TextEncoding encoding) {
-    switch (encoding) {
-      case PaintFlags::kUTF8_TextEncoding:
-        return "kUTF8_TextEncoding";
-      case PaintFlags::kUTF16_TextEncoding:
-        return "kUTF16_TextEncoding";
-      case PaintFlags::kUTF32_TextEncoding:
-        return "kUTF32_TextEncoding";
-      case PaintFlags::kGlyphID_TextEncoding:
-        return "kGlyphID_TextEncoding";
-    }
-    return "<unknown PaintFlags::TextEncoding>";
-  }
-
   static std::string SkiaTypeToString(SkFilterQuality quality) {
     switch (quality) {
       case kNone_SkFilterQuality:
@@ -419,10 +390,6 @@ class PaintOpHelper {
         return "kBevel_Join";
     }
     return "<unknown PaintFlags::Join>";
-  }
-
-  static std::string SkiaTypeToString(const sk_sp<SkTypeface>& typeface) {
-    return typeface ? "<SkTypeface>" : "(nil)";
   }
 
   static std::string SkiaTypeToString(const sk_sp<SkColorFilter>& filter) {
@@ -547,8 +514,8 @@ class PaintOpHelper {
     str << ", flags=" << shader->flags_;
     str << ", end_radius=" << shader->end_radius_;
     str << ", start_radius=" << shader->start_radius_;
-    str << ", tx=" << shader->tx_;
-    str << ", ty=" << shader->ty_;
+    str << ", tx=" << static_cast<unsigned>(shader->tx_);
+    str << ", ty=" << static_cast<unsigned>(shader->ty_);
     str << ", fallback_color=" << shader->fallback_color_;
     str << ", scaling_behavior=" << EnumToString(shader->scaling_behavior_);
     if (shader->local_matrix_.has_value()) {
@@ -608,15 +575,7 @@ class PaintOpHelper {
     str << ", blendMode="
         << PaintOpHelper::SkiaTypeToString(flags.getBlendMode());
     str << ", isAntiAlias=" << flags.isAntiAlias();
-    str << ", isSubpixelText=" << flags.isSubpixelText();
-    str << ", isLCDRenderText=" << flags.isLCDRenderText();
-    str << ", hinting=" << PaintOpHelper::SkiaTypeToString(flags.getHinting());
-    str << ", isAutohinted=" << flags.isAutohinted();
     str << ", isDither=" << flags.isDither();
-    str << ", textEncoding="
-        << PaintOpHelper::SkiaTypeToString(flags.getTextEncoding());
-    str << ", textSize="
-        << PaintOpHelper::SkiaTypeToString(flags.getTextSize());
     str << ", filterQuality="
         << PaintOpHelper::SkiaTypeToString(flags.getFilterQuality());
     str << ", strokeWidth="
@@ -627,8 +586,6 @@ class PaintOpHelper {
         << PaintOpHelper::SkiaTypeToString(flags.getStrokeCap());
     str << ", strokeJoin="
         << PaintOpHelper::SkiaTypeToString(flags.getStrokeJoin());
-    str << ", typeface="
-        << PaintOpHelper::SkiaTypeToString(flags.getTypeface());
     str << ", colorFilter="
         << PaintOpHelper::SkiaTypeToString(flags.getColorFilter());
     str << ", maskFilter="

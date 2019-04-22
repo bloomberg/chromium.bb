@@ -11,7 +11,6 @@
 
 #include <gmock/gmock.h>
 
-#include "angle_unittests_utils.h"
 #include "common/bitset_utils.h"
 
 using namespace testing;
@@ -53,7 +52,7 @@ using TestTypes = Types<angle::IterableBitSet<32>, angle::BitSet32<32>, angle::B
 #else
 using TestTypes = Types<angle::IterableBitSet<32>, angle::BitSet32<32>>;
 #endif  // defined(ANGLE_IS_64_BIT_CPU)
-TYPED_TEST_CASE(BitSetIteratorPerfTest, TestTypes);
+TYPED_TEST_SUITE(BitSetIteratorPerfTest, TestTypes);
 
 TYPED_TEST(BitSetIteratorPerfTest, Run)
 {

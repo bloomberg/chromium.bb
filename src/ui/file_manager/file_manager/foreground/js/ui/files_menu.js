@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('cr.ui', function() {
+cr.define('cr.ui', () => {
   /**
    * Menu item with ripple animation.
    * @constructor
@@ -10,7 +10,7 @@ cr.define('cr.ui', function() {
    *
    * TODO(mtomasz): Upstream to cr.ui.MenuItem.
    */
-  var FilesMenuItem = cr.ui.define(cr.ui.MenuItem);
+  const FilesMenuItem = cr.ui.define(cr.ui.MenuItem);
 
   FilesMenuItem.prototype = {
     __proto__: cr.ui.MenuItem.prototype,
@@ -74,22 +74,36 @@ cr.define('cr.ui', function() {
      */
     onActivated_: function(event) {
       // Perform ripple animation if it's activated by keyboard.
-      if (event.originalEvent instanceof KeyboardEvent)
+      if (event.originalEvent instanceof KeyboardEvent) {
         this.ripple_.simulatedRipple();
+      }
 
       // Perform fade out animation.
-      var menu = assertInstanceof(this.parentNode, cr.ui.Menu);
+      const menu = assertInstanceof(this.parentNode, cr.ui.Menu);
+      // If activation was on a menu-item that hosts a sub-menu, don't animate
+      const subMenuId = event.target.getAttribute('sub-menu');
+      if (subMenuId !== null) {
+        if (document.querySelector(subMenuId) !== null) {
+          return;
+        }
+      }
       this.setMenuAsAnimating_(menu, true /* animating */);
 
-      var player = menu.animate([{
-        opacity: 1,
-        offset: 0
-      }, {
-        opacity: 0,
-        offset: 1
-      }], 300);
+      const player = menu.animate(
+          [
+            {
+              opacity: 1,
+              offset: 0,
+            },
+            {
+              opacity: 0,
+              offset: 1,
+            },
+          ],
+          300);
 
-      player.addEventListener('finish',
+      player.addEventListener(
+          'finish',
           this.setMenuAsAnimating_.bind(this, menu, false /* not animating */));
     },
 
@@ -102,10 +116,11 @@ cr.define('cr.ui', function() {
     setMenuAsAnimating_: function(menu, value) {
       menu.classList.toggle('animating', value);
 
-      for (var i = 0; i < menu.menuItems.length; i++) {
-        var menuItem = menu.menuItems[i];
-        if (menuItem instanceof cr.ui.FilesMenuItem)
+      for (let i = 0; i < menu.menuItems.length; i++) {
+        const menuItem = menu.menuItems[i];
+        if (menuItem instanceof cr.ui.FilesMenuItem) {
           menuItem.setAnimating_(value);
+        }
       }
 
       if (!value) {
@@ -121,8 +136,9 @@ cr.define('cr.ui', function() {
     setAnimating_: function(value) {
       this.animating_ = value;
 
-      if (this.animating_)
+      if (this.animating_) {
         return;
+      }
 
       // Update hidden property if there is a pending change.
       if (this.hidden_ !== undefined) {
@@ -135,11 +151,12 @@ cr.define('cr.ui', function() {
      * @return {boolean}
      */
     get hidden() {
-      if (this.hidden_ !== undefined)
+      if (this.hidden_ !== undefined) {
         return this.hidden_;
+      }
 
-      return Object.getOwnPropertyDescriptor(
-          HTMLElement.prototype, 'hidden').get.call(this);
+      return Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'hidden')
+          .get.call(this);
     },
 
     /**
@@ -153,8 +170,8 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      Object.getOwnPropertyDescriptor(
-          HTMLElement.prototype, 'hidden').set.call(this, value);
+      Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'hidden')
+          .set.call(this, value);
     },
 
     /**
@@ -187,6 +204,6 @@ cr.define('cr.ui', function() {
   };
 
   return {
-    FilesMenuItem: FilesMenuItem
+    FilesMenuItem: FilesMenuItem,
   };
 });

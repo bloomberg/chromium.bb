@@ -8,7 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.util.BatchingListUpdateCallback;
 import android.support.v7.util.ListUpdateCallback;
 
-import org.chromium.chrome.browser.modelutil.ListModel;
+import org.chromium.ui.modelutil.ListModel;
 
 /**
  * Helper class to batch updates to ListModel before notifying observers.

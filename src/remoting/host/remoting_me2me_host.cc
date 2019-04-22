@@ -26,7 +26,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "components/policy/policy_constants.h"
 #include "ipc/ipc_channel.h"
@@ -100,7 +100,7 @@
 #include "remoting/signaling/push_notification_subscriber.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
+#include "third_party/webrtc/api/scoped_refptr.h"
 
 #if defined(OS_POSIX)
 #include <signal.h>
@@ -316,6 +316,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies);
   bool OnPairingPolicyUpdate(base::DictionaryValue* policies);
   bool OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies);
+  bool OnFileTransferPolicyUpdate(base::DictionaryValue* policies);
 
   void InitializeSignaling();
 
@@ -466,11 +467,6 @@ HostProcess::HostProcess(std::unique_ptr<ChromotingHostContext> context,
   // And remove the same line from me2me_desktop_environment.cc.
 
 
-  // TODO(jarhar): Replace this ifdef with a chrome policy.
-#ifdef CHROME_REMOTE_DESKTOP_FILE_TRANSFER_ENABLED
-  desktop_environment_options_.set_enable_file_transfer(true);
-#endif
-
   StartOnUiThread();
 }
 
@@ -590,8 +586,9 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
 void HostProcess::OnConfigUpdated(
     const std::string& serialized_config) {
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
-    context_->network_task_runner()->PostTask(FROM_HERE,
-        base::Bind(&HostProcess::OnConfigUpdated, this, serialized_config));
+    context_->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HostProcess::OnConfigUpdated, this, serialized_config));
     return;
   }
 
@@ -824,7 +821,7 @@ void HostProcess::OnChannelError() {
   // Shutdown the host if the daemon process disconnects the IPC channel.
   context_->network_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&HostProcess::ShutdownHost, this, kSuccessExitCode));
+      base::BindOnce(&HostProcess::ShutdownHost, this, kSuccessExitCode));
 }
 
 void HostProcess::StartOnUiThread() {
@@ -839,7 +836,7 @@ void HostProcess::StartOnUiThread() {
   if (!report_offline_reason_.empty()) {
     // Don't need to do any UI initialization.
     context_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&HostProcess::StartOnNetworkThread, this));
+        FROM_HERE, base::BindOnce(&HostProcess::StartOnNetworkThread, this));
     return;
   }
 
@@ -898,8 +895,7 @@ void HostProcess::StartOnUiThread() {
   desktop_environment_factory_.reset(desktop_environment_factory);
 
   context_->network_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&HostProcess::StartOnNetworkThread, this));
+      FROM_HERE, base::BindOnce(&HostProcess::StartOnNetworkThread, this));
 }
 
 void HostProcess::ShutdownOnUiThread() {
@@ -954,9 +950,9 @@ void HostProcess::OnInitializePairingRegistry(
   DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
 #if defined(OS_WIN)
-  context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
-      &HostProcess::InitializePairingRegistry,
-      this, privileged_key, unprivileged_key));
+  context_->network_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&HostProcess::InitializePairingRegistry, this,
+                                privileged_key, unprivileged_key));
 #else  // !defined(OS_WIN)
   NOTREACHED();
 #endif  // !defined(OS_WIN)
@@ -1064,8 +1060,8 @@ void HostProcess::OnPolicyUpdate(
     std::unique_ptr<base::DictionaryValue> policies) {
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
     context_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&HostProcess::OnPolicyUpdate, this,
-                              base::Passed(&policies)));
+        FROM_HERE, base::BindOnce(&HostProcess::OnPolicyUpdate, this,
+                                  std::move(policies)));
     return;
   }
 
@@ -1082,6 +1078,7 @@ void HostProcess::OnPolicyUpdate(
   restart_required |= OnHostTokenUrlPolicyUpdate(policies.get());
   restart_required |= OnPairingPolicyUpdate(policies.get());
   restart_required |= OnGnubbyAuthPolicyUpdate(policies.get());
+  restart_required |= OnFileTransferPolicyUpdate(policies.get());
 
   policy_state_ = POLICY_LOADED;
 
@@ -1096,7 +1093,7 @@ void HostProcess::OnPolicyUpdate(
 void HostProcess::OnPolicyError() {
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
     context_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&HostProcess::OnPolicyError, this));
+        FROM_HERE, base::BindOnce(&HostProcess::OnPolicyError, this));
     return;
   }
 
@@ -1407,6 +1404,26 @@ bool HostProcess::OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies) {
   return true;
 }
 
+bool HostProcess::OnFileTransferPolicyUpdate(base::DictionaryValue* policies) {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  bool file_transfer_enabled;
+  if (!policies->GetBoolean(policy::key::kRemoteAccessHostAllowFileTransfer,
+                            &file_transfer_enabled)) {
+    return false;
+  }
+  desktop_environment_options_.set_enable_file_transfer(file_transfer_enabled);
+
+  if (file_transfer_enabled) {
+    HOST_LOG << "Policy enables file transfer.";
+  } else {
+    HOST_LOG << "Policy disables file transfer.";
+  }
+
+  // Restart required.
+  return true;
+}
+
 void HostProcess::InitializeSignaling() {
   DCHECK(!host_id_.empty());  // ApplyConfig() should already have been run.
 
@@ -1697,7 +1714,7 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
 
     // Complete the rest of shutdown on the main thread.
     context_->ui_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&HostProcess::ShutdownOnUiThread, this));
+        FROM_HERE, base::BindOnce(&HostProcess::ShutdownOnUiThread, this));
   } else {
     NOTREACHED();
   }
@@ -1740,7 +1757,7 @@ int HostProcessMain() {
   base::GetLinuxDistro();
 #endif
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("Me2Me");
+  base::ThreadPool::CreateAndStartWithDefaultParams("Me2Me");
 
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;
@@ -1767,7 +1784,7 @@ int HostProcessMain() {
   run_loop.Run();
 
   // Block until tasks blocking shutdown have completed their execution.
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   return exit_code;
 }

@@ -10,6 +10,7 @@
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 
@@ -43,8 +44,9 @@ class BackdropDelegate;
 // 1) Has a aura::client::kHasBackdrop property = true.
 // 2) BackdropDelegate::HasBackdrop(aura::Window* window) returns true.
 // 3) Active ARC window when the spoken feedback is enabled.
-class BackdropController : public ShellObserver,
-                           public AccessibilityObserver,
+class BackdropController : public AccessibilityObserver,
+                           public ShellObserver,
+                           public OverviewObserver,
                            public SplitViewController::Observer,
                            public WallpaperControllerObserver {
  public:
@@ -68,13 +70,13 @@ class BackdropController : public ShellObserver,
   aura::Window* backdrop_window() { return backdrop_window_; }
 
   // ShellObserver:
-  void OnOverviewModeStarting() override;
-  void OnOverviewModeEnding() override;
-  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
-  void OnAppListVisibilityChanged(bool shown,
-                                  aura::Window* root_window) override;
   void OnSplitViewModeStarting() override;
   void OnSplitViewModeEnded() override;
+
+  // OverviewObserver:
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnding(OverviewSession* overview_session) override;
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
@@ -105,7 +107,7 @@ class BackdropController : public ShellObserver,
   void Show();
 
   // Hide the backdrop window.
-  void Hide();
+  void Hide(bool animate = true);
 
   // Returns true if the backdrop window should be fullscreen. It should not be
   // fullscreen only if 1) split view is active and 2) there is only one snapped
@@ -118,6 +120,9 @@ class BackdropController : public ShellObserver,
   // backdrop should not cover the non-snapped side of the screen, thus the
   // backdrop bounds should be the bounds of the snapped window.
   gfx::Rect GetBackdropBounds();
+
+  // Sets the animtion type of |backdrop_window_| to |type|.
+  void SetBackdropAnimationType(int type);
 
   // The backdrop which covers the rest of the screen.
   views::Widget* backdrop_ = nullptr;

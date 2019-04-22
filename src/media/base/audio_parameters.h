@@ -221,7 +221,7 @@ class MEDIA_SHMEM_EXPORT AudioParameters {
   ChannelLayout channel_layout() const { return channel_layout_; }
 
   // The number of channels is usually computed from channel_layout_. Setting
-  // this explictly is only required with CHANNEL_LAYOUT_DISCRETE.
+  // this explicitly is only required with CHANNEL_LAYOUT_DISCRETE.
   void set_channels_for_discrete(int channels) {
     DCHECK(channel_layout_ == CHANNEL_LAYOUT_DISCRETE ||
            channels == ChannelLayoutToChannelCount(channel_layout_));

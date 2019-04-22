@@ -40,3 +40,4 @@ use_kerberos = false
 use_libpci = false
 use_pulseaudio = false
 use_udev = false
+rtc_use_pipewire = false

@@ -5,7 +5,11 @@
 #ifndef CHROME_BROWSER_OFFLINE_PAGES_ANDROID_OFFLINE_PAGE_BRIDGE_H_
 #define CHROME_BROWSER_OFFLINE_PAGES_ANDROID_OFFLINE_PAGE_BRIDGE_H_
 
-#include <stdint.h>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
@@ -14,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/offline_items_collection/core/launch_location.h"
+#include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
 
@@ -38,6 +43,16 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   static base::android::ScopedJavaLocalRef<jobject> ConvertToJavaOfflinePage(
       JNIEnv* env,
       const OfflinePageItem& offline_page);
+
+  static base::android::ScopedJavaLocalRef<jobjectArray>
+  CreateJavaSavePageRequests(
+      JNIEnv* env,
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
+
+  static void AddOfflinePageItemsToJavaList(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& j_result_obj,
+      const std::vector<OfflinePageItem>& offline_pages);
 
   static std::string GetEncodedOriginApp(
       const content::WebContents* web_contents);
@@ -248,7 +263,7 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   void GetPageBySizeAndDigestDone(
       const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,
       const GURL& intent_url,
-      const OfflinePageItem* offline_page);
+      const std::vector<OfflinePageItem>& offline_pages);
 
   void NotifyIfDoneLoading() const;
 
@@ -259,7 +274,12 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   void PublishInternalArchive(
       const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,
       const PublishSource publish_source,
-      const OfflinePageItem* offline_page);
+      const OfflinePageItem* offline_pages);
+
+  void PublishInternalArchiveOfFirstItem(
+      const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,
+      const PublishSource publish_source,
+      const std::vector<OfflinePageItem>& offline_pages);
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   // Not owned.

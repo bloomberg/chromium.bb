@@ -62,6 +62,26 @@ class PlatformHandleInTransit {
 #if defined(OS_WIN)
   HANDLE remote_handle() const { return remote_handle_; }
 
+  // Indicates whether |handle| is a known pseudo handle value. In a fuzzing
+  // environment we merely simulate IPC, so we end up accepting "remote" handle
+  // values from our own process. This means that unlike in production
+  // scenarios, we may end up successfully calling DuplicateHandle on a fuzzed
+  // pseudo handle value (in production if a remote process sent us a pseudo
+  // handle value, DuplicateHandle would always fail).
+  //
+  // For some reason, a small number of special pseudo handle values always
+  // duplicate to the same real handle value when DUPLICATE_CLOSE_SOURCE is
+  // specified, presumably because the returned handle is closed before it's
+  // even returned. For example, duplicating -10 with DUPLICATE_CLOSE_SOURCE
+  // always yields the handle value 0x50. This ends up interacting poorly with
+  // the rest of Mojo's handle deserialization code and eventually crashes
+  // in ScopedHandleVerifier.
+  //
+  // We avoid the issue by explicitly discarding any known pseudo handle values,
+  // since they are always invalid when received from a remote process anyway
+  // and thus always signal a misbehaving client.
+  static bool IsPseudoHandle(HANDLE handle);
+
   // Returns a new local handle, with ownership of |handle| being transferred
   // from |owning_process| to the caller.
   static PlatformHandle TakeIncomingRemoteHandle(

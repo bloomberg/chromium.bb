@@ -76,9 +76,9 @@ void CastMemoryPressureMonitor::PollPressureLevel() {
     // Preferred memory pressure heuristic:
     // 1. Use /proc/meminfo's MemAvailable if possible, fall back to estimate
     // of free + buffers + cached otherwise.
-    const int total_available =
-        (info.available != 0) ? info.available
-        : (info.free + info.buffers + info.cached);
+    const int total_available = (info.available != 0)
+                                    ? info.available
+                                    : (info.free + info.buffers + info.cached);
 
     // 2. Allow some memory to be 'reserved' on command line.
     const int available = total_available - system_reserved_kb_;
@@ -103,14 +103,12 @@ void CastMemoryPressureMonitor::PollPressureLevel() {
 
   UMA_HISTOGRAM_PERCENTAGE("Platform.MeminfoMemFree",
                            (info.free * 100.0) / info.total);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Platform.Cast.MeminfoMemFreeDerived",
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Platform.Cast.MeminfoMemFreeDerived2",
                               (info.free + info.buffers + info.cached) / 1024,
-                              1, 500, 100);
+                              1, 2000, 100);
   if (info.available != 0) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Platform.Cast.MeminfoMemAvailable",
-        info.available / 1024,
-        1, 500, 100);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Platform.Cast.MeminfoMemAvailable2",
+                                info.available / 1024, 1, 2000, 100);
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

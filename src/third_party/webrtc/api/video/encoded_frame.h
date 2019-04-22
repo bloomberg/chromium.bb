@@ -13,6 +13,9 @@
 
 #include "modules/video_coding/encoded_frame.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 namespace webrtc {
 namespace video_coding {
 
@@ -56,8 +59,6 @@ class EncodedFrame : public webrtc::VCMEncodedFrame {
   EncodedFrame() = default;
   virtual ~EncodedFrame() {}
 
-  virtual bool GetBitstream(uint8_t* destination) const = 0;
-
   // When this frame was received.
   virtual int64_t ReceivedTime() const = 0;
 
@@ -68,8 +69,6 @@ class EncodedFrame : public webrtc::VCMEncodedFrame {
   // TODO(philipel): Remove this function when a new timing class has
   //                 been implemented.
   virtual bool delayed_by_retransmission() const;
-
-  size_t size() const { return _length; }
 
   bool is_keyframe() const { return num_references == 0; }
 

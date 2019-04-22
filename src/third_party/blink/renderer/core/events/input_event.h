@@ -124,8 +124,6 @@ class InputEvent final : public UIEvent {
   RangeVector ranges_;
 };
 
-DEFINE_EVENT_TYPE_CASTS(InputEvent);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_INPUT_EVENT_H_

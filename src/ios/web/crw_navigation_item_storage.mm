@@ -17,7 +17,6 @@ namespace web {
 
 // Keys used to serialize navigation properties.
 NSString* const kNavigationItemStorageURLKey = @"virtualUrlString";
-NSString* const kNavigationItemStorageURLDeperecatedKey = @"virtualUrl";
 NSString* const kNavigationItemStorageReferrerURLKey = @"referrerUrlString";
 NSString* const kNavigationItemStorageReferrerURLDeprecatedKey = @"referrer";
 NSString* const kNavigationItemStorageReferrerPolicyKey = @"referrerPolicy";
@@ -29,8 +28,6 @@ NSString* const kNavigationItemStorageHTTPRequestHeadersKey = @"httpHeaders";
 NSString* const kNavigationItemStorageSkipRepostFormConfirmationKey =
     @"skipResubmitDataConfirmation";
 NSString* const kNavigationItemStorageUserAgentTypeKey = @"userAgentType";
-NSString* const kNavigationItemStorageUseDesktopUserAgentDeprecatedKey =
-    @"useDesktopUserAgent";
 
 }  // namespace web
 
@@ -78,10 +75,6 @@ NSString* const kNavigationItemStorageUseDesktopUserAgentDeprecatedKey =
     if ([aDecoder containsValueForKey:web::kNavigationItemStorageURLKey]) {
       _virtualURL = GURL(web::nscoder_util::DecodeString(
           aDecoder, web::kNavigationItemStorageURLKey));
-    } else {
-      // Backward compatibility.
-      _virtualURL = net::GURLWithNSURL([aDecoder
-          decodeObjectForKey:web::kNavigationItemStorageURLDeperecatedKey]);
     }
 
     if ([aDecoder
@@ -119,14 +112,6 @@ NSString* const kNavigationItemStorageUseDesktopUserAgentDeprecatedKey =
       // user agent for app-specific URLs, so check decoded virtual URL before
       // attempting to decode the deprecated key.
       _userAgentType = web::UserAgentType::NONE;
-    } else {
-      // The user agent type was previously recorded as a BOOL, where YES meant
-      // desktop user agent, and NO meant mobile user agent.
-      BOOL useDesktopUA = [aDecoder
-          decodeBoolForKey:
-              web::kNavigationItemStorageUseDesktopUserAgentDeprecatedKey];
-      _userAgentType = useDesktopUA ? web::UserAgentType::DESKTOP
-                                    : web::UserAgentType::MOBILE;
     }
 
     NSString* title =

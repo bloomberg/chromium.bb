@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_STATISTICS_COLLECTOR_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -13,6 +14,8 @@ class Document;
 struct WebDistillabilityFeatures;
 
 class CORE_EXPORT DocumentStatisticsCollector {
+  STATIC_ONLY(DocumentStatisticsCollector);
+
  public:
   static WebDistillabilityFeatures CollectStatistics(Document&);
 };

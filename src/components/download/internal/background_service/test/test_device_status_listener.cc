@@ -6,8 +6,9 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "components/download/internal/background_service/scheduler/battery_status_listener_impl.h"
-#include "components/download/internal/background_service/scheduler/network_status_listener_impl.h"
+#include "components/download/network/network_status_listener_impl.h"
 #include "services/network/test/test_network_connection_tracker.h"
 
 namespace download {
@@ -51,9 +52,11 @@ void TestDeviceStatusListener::SetDeviceStatus(const DeviceStatus& status) {
   status_ = status;
 }
 
-void TestDeviceStatusListener::Start(DeviceStatusListener::Observer* observer) {
+void TestDeviceStatusListener::Start(const base::TimeDelta& start_delay) {
+  if (listening_ || !observer_)
+    return;
+
   listening_ = true;
-  observer_ = observer;
 
   // Simulates the delay after start up.
   base::ThreadTaskRunnerHandle::Get()->PostTask(

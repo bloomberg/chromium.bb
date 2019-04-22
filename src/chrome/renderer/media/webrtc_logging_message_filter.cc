@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/media/webrtc_logging_message_filter.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/common/media/webrtc_logging_messages.h"

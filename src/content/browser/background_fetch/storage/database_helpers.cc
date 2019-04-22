@@ -5,10 +5,9 @@
 #include "content/browser/background_fetch/storage/database_helpers.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 namespace content {
-
 namespace background_fetch {
 
 std::string ActiveRegistrationUniqueIdKey(const std::string& developer_id) {
@@ -53,6 +52,10 @@ std::string CompletedRequestKey(const std::string& unique_id,
   return CompletedRequestKeyPrefix(unique_id) + std::to_string(request_index);
 }
 
+std::string StorageVersionKey(const std::string& unique_id) {
+  return kStorageVersionKeyPrefix + unique_id;
+}
+
 DatabaseStatus ToDatabaseStatus(blink::ServiceWorkerStatusCode status) {
   switch (status) {
     case blink::ServiceWorkerStatusCode::kOk:
@@ -91,32 +94,31 @@ DatabaseStatus ToDatabaseStatus(blink::ServiceWorkerStatusCode status) {
 
 bool ToBackgroundFetchRegistration(
     const proto::BackgroundFetchMetadata& metadata_proto,
-    BackgroundFetchRegistration* registration) {
-  DCHECK(registration);
+    blink::mojom::BackgroundFetchRegistrationData* registration_data) {
+  DCHECK(registration_data);
   const auto& registration_proto = metadata_proto.registration();
 
-  registration->developer_id = registration_proto.developer_id();
-  registration->unique_id = registration_proto.unique_id();
-  registration->upload_total = registration_proto.upload_total();
-  registration->uploaded = registration_proto.uploaded();
-  registration->download_total = registration_proto.download_total();
-  registration->downloaded = registration_proto.downloaded();
+  registration_data->developer_id = registration_proto.developer_id();
+  registration_data->upload_total = registration_proto.upload_total();
+  registration_data->uploaded = registration_proto.uploaded();
+  registration_data->download_total = registration_proto.download_total();
+  registration_data->downloaded = registration_proto.downloaded();
   switch (registration_proto.result()) {
     case proto::BackgroundFetchRegistration_BackgroundFetchResult_UNSET:
-      registration->result = blink::mojom::BackgroundFetchResult::UNSET;
+      registration_data->result = blink::mojom::BackgroundFetchResult::UNSET;
       break;
     case proto::BackgroundFetchRegistration_BackgroundFetchResult_FAILURE:
-      registration->result = blink::mojom::BackgroundFetchResult::FAILURE;
+      registration_data->result = blink::mojom::BackgroundFetchResult::FAILURE;
       break;
     case proto::BackgroundFetchRegistration_BackgroundFetchResult_SUCCESS:
-      registration->result = blink::mojom::BackgroundFetchResult::SUCCESS;
+      registration_data->result = blink::mojom::BackgroundFetchResult::SUCCESS;
       break;
     default:
       NOTREACHED();
   }
 
   bool did_convert = MojoFailureReasonFromRegistrationProto(
-      registration_proto.failure_reason(), &registration->failure_reason);
+      registration_proto.failure_reason(), &registration_data->failure_reason);
   return did_convert;
 }
 
@@ -145,9 +147,9 @@ bool MojoFailureReasonFromRegistrationProto(
       *failure_reason =
           blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED;
       return true;
-    case proto::BackgroundFetchRegistration::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
-      *failure_reason = blink::mojom::BackgroundFetchFailureReason::
-          TOTAL_DOWNLOAD_SIZE_EXCEEDED;
+    case proto::BackgroundFetchRegistration::DOWNLOAD_TOTAL_EXCEEDED:
+      *failure_reason =
+          blink::mojom::BackgroundFetchFailureReason::DOWNLOAD_TOTAL_EXCEEDED;
       return true;
     case proto::BackgroundFetchRegistration::FETCH_ERROR:
       *failure_reason = blink::mojom::BackgroundFetchFailureReason::FETCH_ERROR;
@@ -161,6 +163,33 @@ bool MojoFailureReasonFromRegistrationProto(
   return false;
 }
 
-}  // namespace background_fetch
+GURL MakeCacheUrlUnique(const GURL& url,
+                        const std::string& unique_id,
+                        size_t request_index) {
+  std::string query = url.query();
+  query += unique_id + base::NumberToString(request_index);
 
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(query);
+
+  return url.ReplaceComponents(replacements);
+}
+
+GURL RemoveUniqueParamFromCacheURL(const GURL& url,
+                                   const std::string& unique_id) {
+  std::vector<std::string> split = base::SplitStringUsingSubstr(
+      url.query(), unique_id, base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  GURL::Replacements replacements;
+  if (split.size() == 1u)
+    replacements.ClearQuery();
+  else if (split.size() == 2u)
+    replacements.SetQueryStr(split[0]);
+  else
+    NOTREACHED();
+
+  return url.ReplaceComponents(replacements);
+}
+
+}  // namespace background_fetch
 }  // namespace content

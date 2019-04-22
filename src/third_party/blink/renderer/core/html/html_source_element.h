@@ -42,10 +42,12 @@ class HTMLSourceElement final : public HTMLElement {
   class Listener;
 
   DECLARE_NODE_FACTORY(HTMLSourceElement);
+
+  explicit HTMLSourceElement(Document&);
   ~HTMLSourceElement() override;
 
   // Returns attributes that should be checked against Trusted Types
-  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   const AtomicString& type() const;
   void SetSrc(const String&);
@@ -60,11 +62,9 @@ class HTMLSourceElement final : public HTMLElement {
   void RemoveMediaQueryListListener();
   void AddMediaQueryListListener();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
-  explicit HTMLSourceElement(Document&);
-
   void DispatchPendingEvent();
 
   void DidMoveToNewDocument(Document& old_document) override;

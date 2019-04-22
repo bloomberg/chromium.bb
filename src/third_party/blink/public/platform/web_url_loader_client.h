@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOADER_CLIENT_H_
 
 #include <memory>
+#include "base/callback.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/cors/preflight_timing_info.h"
@@ -58,6 +59,7 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   virtual bool WillFollowRedirect(
       const WebURL& new_url,
       const WebURL& new_site_for_cookies,
+      const base::Optional<WebSecurityOrigin>& new_top_frame_origin,
       const WebString& new_referrer,
       network::mojom::ReferrerPolicy new_referrer_policy,
       const WebString& new_method,
@@ -68,8 +70,8 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
 
   // Called to report upload progress. The bytes reported correspond to
   // the HTTP message body.
-  virtual void DidSendData(unsigned long long bytes_sent,
-                           unsigned long long total_bytes_to_be_sent) {}
+  virtual void DidSendData(uint64_t bytes_sent,
+                           uint64_t total_bytes_to_be_sent) {}
 
   // Called when response headers are received.
   virtual void DidReceiveResponse(const WebURLResponse&) {}

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/big_endian.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -18,6 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "device/usb/public/cpp/usb_utils.h"
+#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 #include "device/usb/usb_device.h"
 #include "ui/base/l10n/l10n_util.h"

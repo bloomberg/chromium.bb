@@ -17,6 +17,7 @@ var importer = importer || {};
  *
  * @constructor
  * @struct
+ * @return undefined
  */
 importer.TaskQueue = function() {
   /** @private {!Array<!importer.TaskQueue.Task>} */
@@ -51,14 +52,14 @@ importer.TaskQueue.UpdateType = {
 importer.TaskQueue.prototype.queueTask = function(task) {
   // The Tasks that are pushed onto the queue aren't required to be inherently
   // asynchronous.  This code force task execution to occur asynchronously.
-  Promise.resolve().then(function() {
+  Promise.resolve().then(() => {
     task.addObserver(this.onTaskUpdate_.bind(this, task));
     this.tasks_.push(task);
     // If more than one task is queued, then the queue is already running.
     if (this.tasks_.length === 1) {
       this.runPending_();
     }
-  }.bind(this));
+  });
 };
 
 /**
@@ -97,16 +98,17 @@ importer.TaskQueue.prototype.setIdleCallback = function(callback) {
  */
 importer.TaskQueue.prototype.onTaskUpdate_ = function(task, updateType) {
   // Send a task update to clients.
-  this.updateCallbacks_.forEach(function(callback) {
+  this.updateCallbacks_.forEach(callback => {
     callback.call(null, updateType, task);
   });
 
   // If the task update is a terminal one, move on to the next task.
-  var UpdateType = importer.TaskQueue.UpdateType;
+  const UpdateType = importer.TaskQueue.UpdateType;
   if (updateType === UpdateType.COMPLETE ||
       updateType === UpdateType.CANCELED) {
     // Assumption: the currently running task is at the head of the queue.
-    console.assert(this.tasks_[0] === task,
+    console.assert(
+        this.tasks_[0] === task,
         'Only tasks that are at the head of the queue should be active');
     // Remove the completed task from the queue.
     this.tasks_.shift();
@@ -124,19 +126,21 @@ importer.TaskQueue.prototype.runPending_ = function() {
   if (this.tasks_.length === 0) {
     // All done - go back to idle.
     this.active_ = false;
-    if (this.idleCallback_)
+    if (this.idleCallback_) {
       this.idleCallback_();
+    }
     return;
   }
 
   if (!this.active_) {
     // If the queue is currently idle, transition to active state.
     this.active_ = true;
-    if (this.activeCallback_)
+    if (this.activeCallback_) {
       this.activeCallback_();
+    }
   }
 
-  var nextTask = this.tasks_[0];
+  const nextTask = this.tasks_[0];
   nextTask.run();
 };
 
@@ -180,6 +184,7 @@ importer.TaskQueue.Task.prototype.run;
 importer.TaskQueue.BaseTask = function(taskId) {
   /** @protected {string} */
   this.taskId_ = taskId;
+
   /** @private {!Array<!importer.TaskQueue.Task.Observer>} */
   this.observers_ = [];
 
@@ -190,11 +195,17 @@ importer.TaskQueue.BaseTask = function(taskId) {
 /** @struct */
 importer.TaskQueue.BaseTask.prototype = {
   /** @return {string} The task ID. */
-  get taskId() { return this.taskId_; },
+  get taskId() {
+    return this.taskId_;
+  },
 
-  /** @return {!Promise<!importer.TaskQueue.UpdateType>} Resolves when task
-      is complete, or cancelled, rejects on error. */
-  get whenFinished() { return this.finishedResolver_.promise; }
+  /**
+   * @return {!Promise<!importer.TaskQueue.UpdateType>} Resolves when task
+   *     is complete, or cancelled, rejects on error.
+   */
+  get whenFinished() {
+    return this.finishedResolver_.promise;
+  }
 };
 
 /** @override */
@@ -203,10 +214,10 @@ importer.TaskQueue.BaseTask.prototype.addObserver = function(observer) {
 };
 
 /** @override */
-importer.TaskQueue.BaseTask.prototype.run = function() {};
+importer.TaskQueue.BaseTask.prototype.run = () => {};
 
 /**
- * @param {string} updateType
+ * @param {importer.TaskQueue.UpdateType} updateType
  * @param {Object=} opt_data
  * @protected
  */
@@ -217,8 +228,7 @@ importer.TaskQueue.BaseTask.prototype.notify = function(updateType, opt_data) {
       this.finishedResolver_.resolve(updateType);
   }
 
-  this.observers_.forEach(
-      function(callback) {
-        callback.call(null, updateType, opt_data);
-      }.bind(this));
+  this.observers_.forEach(callback => {
+    callback.call(null, updateType, opt_data);
+  });
 };

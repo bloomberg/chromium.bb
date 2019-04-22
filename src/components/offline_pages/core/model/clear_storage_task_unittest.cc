@@ -16,6 +16,7 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/model_task_test_base.h"
 #include "components/offline_pages/core/model/offline_page_test_utils.h"
+#include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -87,7 +88,7 @@ class ClearStorageTaskTest : public ModelTaskTestBase {
   }
 
   ArchiveManager* archive_manager() { return archive_manager_.get(); }
-  base::SimpleTestClock* clock() { return &clock_; }
+  TestScopedOfflineClock* clock() { return &clock_; }
   size_t last_cleared_page_count() { return last_cleared_page_count_; }
   int total_cleared_times() { return total_cleared_times_; }
   ClearStorageResult last_clear_storage_result() {
@@ -97,7 +98,7 @@ class ClearStorageTaskTest : public ModelTaskTestBase {
 
  private:
   std::unique_ptr<TestArchiveManager> archive_manager_;
-  base::SimpleTestClock clock_;
+  TestScopedOfflineClock clock_;
 
   size_t last_cleared_page_count_;
   int total_cleared_times_;
@@ -156,16 +157,17 @@ void ClearStorageTaskTest::AddPages(const PageSettings& setting) {
     generator()->SetArchiveDirectory(PrivateDir());
   }
 
+  generator()->SetLastAccessTime(clock_.Now());
   for (int i = 0; i < setting.fresh_page_count; ++i) {
-    generator()->SetLastAccessTime(clock_.Now());
     AddPage();
   }
+
+  generator()->SetLastAccessTime(clock_.Now() -
+                                 policy_controller()
+                                     ->GetPolicy(setting.name_space)
+                                     .lifetime_policy.expiration_period);
   for (int i = 0; i < setting.expired_page_count; ++i) {
     // Make the pages expired.
-    generator()->SetLastAccessTime(clock_.Now() -
-                                   policy_controller()
-                                       ->GetPolicy(setting.name_space)
-                                       .lifetime_policy.expiration_period);
     AddPage();
   }
 }

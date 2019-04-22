@@ -9,6 +9,8 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -16,15 +18,19 @@ namespace blink {
 
 // ModuleScriptCreationParams contains parameters for creating ModuleScript.
 class ModuleScriptCreationParams {
+  DISALLOW_NEW();
+
  public:
   ModuleScriptCreationParams(
       const KURL& response_url,
       const ParkableString& source_text,
+      SingleCachedMetadataHandler* cache_handler,
       network::mojom::FetchCredentialsMode fetch_credentials_mode)
       : response_url_(response_url),
         is_isolated_(false),
         source_text_(source_text),
         isolated_source_text_(),
+        cache_handler_(cache_handler),
         fetch_credentials_mode_(fetch_credentials_mode) {}
 
   ~ModuleScriptCreationParams() = default;
@@ -47,6 +53,7 @@ class ModuleScriptCreationParams {
     }
     return source_text_;
   }
+  SingleCachedMetadataHandler* CacheHandler() const { return cache_handler_; }
   network::mojom::FetchCredentialsMode GetFetchCredentialsMode() const {
     return fetch_credentials_mode_;
   }
@@ -74,6 +81,9 @@ class ModuleScriptCreationParams {
   mutable bool is_isolated_;
   mutable ParkableString source_text_;
   mutable String isolated_source_text_;
+
+  // |cache_handler_| is cleared when crossing thread boundaries.
+  Persistent<SingleCachedMetadataHandler> cache_handler_;
 
   const network::mojom::FetchCredentialsMode fetch_credentials_mode_;
 };

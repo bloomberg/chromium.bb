@@ -33,6 +33,7 @@ class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
+class WebMediaStreamRendererFactory;
 }
 
 namespace cc {
@@ -47,9 +48,6 @@ class MediaObserver;
 class RemotePlaybackClientWrapper;
 class RendererWebMediaPlayerDelegate;
 class WebEncryptedMediaClientImpl;
-#if defined(OS_ANDROID)
-class RendererMediaPlayerManager;
-#endif
 }
 
 namespace service_manager {
@@ -63,11 +61,6 @@ namespace content {
 
 class RenderFrameImpl;
 class MediaInterfaceFactory;
-class MediaStreamRendererFactory;
-
-#if defined(OS_ANDROID)
-class RendererMediaPlayerManager;
-#endif
 
 // Assist to RenderFrameImpl in creating various media clients.
 class MediaFactory {
@@ -126,6 +119,7 @@ class MediaFactory {
   std::unique_ptr<media::RendererFactorySelector> CreateRendererFactorySelector(
       media::MediaLog* media_log,
       bool use_media_player,
+      bool enable_mojo_renderer,
       media::DecoderFactory* decoder_factory,
       std::unique_ptr<media::RemotePlaybackClientWrapper> client_wrapper,
       base::WeakPtr<media::MediaObserver>* out_media_observer);
@@ -142,16 +136,12 @@ class MediaFactory {
   // |media_player_delegate_| is NULL, one is created.
   media::RendererWebMediaPlayerDelegate* GetWebMediaPlayerDelegate();
 
-  // Creates a MediaStreamRendererFactory used for creating audio and video
-  // renderers for WebMediaPlayerMS.
-  std::unique_ptr<MediaStreamRendererFactory>
+  // Creates a blink::WebMediaStreamRendererFactory used for creating audio and
+  // video renderers for WebMediaPlayerMS.
+  std::unique_ptr<blink::WebMediaStreamRendererFactory>
   CreateMediaStreamRendererFactory();
 
   media::DecoderFactory* GetDecoderFactory();
-
-#if defined(OS_ANDROID)
-  RendererMediaPlayerManager* GetMediaPlayerManager();
-#endif
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   media::mojom::RemoterFactory* GetRemoterFactory();
@@ -177,16 +167,6 @@ class MediaFactory {
   // Lifetime matches that of the owning |render_frame_|. Will always be valid
   // once assigned.
   service_manager::InterfaceProvider* remote_interfaces_ = nullptr;
-
-#if defined(OS_ANDROID)
-  // Manages media players and sessions in this render frame for communicating
-  // with the real media player and sessions in the browser process.
-  // Lifetime is tied to the RenderFrame via the RenderFrameObserver interface.
-  // NOTE: This currently only being used in the case where we are casting. See
-  // also WebMediaPlayerCast (renderer side) and RemoteMediaPlayerManager
-  // (browser side).
-  RendererMediaPlayerManager* media_player_manager_ = nullptr;
-#endif
 
   // Manages play, pause notifications for WebMediaPlayer implementations; its
   // lifetime is tied to the RenderFrame via the RenderFrameObserver interface.

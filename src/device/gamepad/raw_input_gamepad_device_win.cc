@@ -85,9 +85,13 @@ RawInputGamepadDeviceWin::RawInputGamepadDeviceWin(
   if (hid_functions_->IsValid())
     is_valid_ = QueryDeviceInfo();
 
-  if (is_valid_ &&
-      Dualshock4ControllerWin::IsDualshock4(vendor_id_, product_id_)) {
-    dualshock4_ = std::make_unique<Dualshock4ControllerWin>(handle_);
+  if (is_valid_) {
+    if (Dualshock4ControllerWin::IsDualshock4(vendor_id_, product_id_)) {
+      dualshock4_ = std::make_unique<Dualshock4ControllerWin>(handle_);
+    } else if (HidHapticGamepadWin::IsHidHaptic(vendor_id_, product_id_)) {
+      hid_haptics_ =
+          HidHapticGamepadWin::Create(vendor_id_, product_id_, handle_);
+    }
   }
 }
 
@@ -102,7 +106,10 @@ bool RawInputGamepadDeviceWin::IsGamepadUsageId(uint16_t usage) {
 void RawInputGamepadDeviceWin::DoShutdown() {
   if (dualshock4_)
     dualshock4_->Shutdown();
-  dualshock4_ = nullptr;
+  dualshock4_.reset();
+  if (hid_haptics_)
+    hid_haptics_->Shutdown();
+  hid_haptics_.reset();
 }
 
 void RawInputGamepadDeviceWin::UpdateGamepad(RAWINPUT* input) {
@@ -204,13 +211,15 @@ void RawInputGamepadDeviceWin::ReadPadState(Gamepad* pad) const {
 }
 
 bool RawInputGamepadDeviceWin::SupportsVibration() const {
-  return dualshock4_ != nullptr;
+  return dualshock4_ || hid_haptics_;
 }
 
 void RawInputGamepadDeviceWin::SetVibration(double strong_magnitude,
                                             double weak_magnitude) {
   if (dualshock4_)
     dualshock4_->SetVibration(strong_magnitude, weak_magnitude);
+  else if (hid_haptics_)
+    hid_haptics_->SetVibration(strong_magnitude, weak_magnitude);
 }
 
 bool RawInputGamepadDeviceWin::QueryDeviceInfo() {

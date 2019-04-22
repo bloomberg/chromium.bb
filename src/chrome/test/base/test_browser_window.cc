@@ -136,8 +136,14 @@ LocationBar* TestBrowserWindow::GetLocationBar() const {
   return const_cast<TestLocationBar*>(&location_bar_);
 }
 
-PageActionIconContainer* TestBrowserWindow::GetPageActionIconContainer() {
-  return &page_action_icon_container_;
+PageActionIconContainer*
+TestBrowserWindow::GetOmniboxPageActionIconContainer() {
+  return &omnibox_page_action_icon_container_;
+}
+
+PageActionIconContainer*
+TestBrowserWindow::GetToolbarPageActionIconContainer() {
+  return nullptr;
 }
 
 ToolbarActionsBar* TestBrowserWindow::GetToolbarActionsBar() {
@@ -178,6 +184,8 @@ bool TestBrowserWindow::IsToolbarShowing() const {
 ShowTranslateBubbleResult TestBrowserWindow::ShowTranslateBubble(
     content::WebContents* contents,
     translate::TranslateStep step,
+    const std::string& source_language,
+    const std::string& target_language,
     translate::TranslateErrors::Type error_type,
     bool is_user_gesture) {
   return ShowTranslateBubbleResult::SUCCESS;
@@ -213,10 +221,6 @@ FindBar* TestBrowserWindow::CreateFindBar() {
 web_modal::WebContentsModalDialogHost*
     TestBrowserWindow::GetWebContentsModalDialogHost() {
   return NULL;
-}
-
-int TestBrowserWindow::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
-  return 0;
 }
 
 void TestBrowserWindow::ExecuteExtensionCommand(

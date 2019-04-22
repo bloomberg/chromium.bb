@@ -36,8 +36,7 @@ h2 {
 }
 
 .container {
-    margin-left: auto;
-    margin-right: auto;
+    margin: auto;
     width: 646px;
 }
 
@@ -64,6 +63,54 @@ h2 {
     margin: 0;
     padding: 0;
     width: 40px;
+}
+
+.option .settings-description {
+  display: block;
+  height: 15px;
+}
+
+.option .settings-sub-description {
+  color: #757575;
+  display: block;
+}
+
+.option .settings-expand-row {
+  display: block;
+  height: 60px;
+  padding-start: 50px;
+}
+
+.option .braille-description-selection {
+  display: inline-block;
+  margin: 0;
+}
+
+.option .developerLog {
+  height: 60px;
+  padding-inline-end: 0;
+  width: 666px;
+}
+
+.option .left {
+  float: left;
+  height: 60px;
+  line-height: 15px;
+}
+
+.option .right {
+  float: right;
+  height: 60px;
+}
+
+.option .developer-option-icon-button {
+  float: right;
+  margin-top: 10px;
+}
+
+.option .change-display-style {
+  margin: 0;
+  padding: 0;
 }
 
 .option input[type='checkbox']:checked {
@@ -96,7 +143,7 @@ h2 {
     border-width: 0;
     font-weight: bold;
     height: 30px;
-    margin-left: 20px;
+    margin-inline-start: 20px;
     padding: 0 20px;
 }
 
@@ -110,4 +157,3 @@ h2 {
     vertical-align: middle;
     width: 646px;
 }
-

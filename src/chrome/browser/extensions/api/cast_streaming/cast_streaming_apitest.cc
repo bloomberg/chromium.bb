@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -93,7 +94,6 @@ struct YUVColor {
   YUVColor() : y(0), u(0), v(0) {}
   YUVColor(int y_val, int u_val, int v_val) : y(y_val), u(u_val), v(v_val) {}
 };
-
 
 media::cast::FrameReceiverConfig WithFakeAesKeyAndIv(
     media::cast::FrameReceiverConfig config) {
@@ -232,16 +232,20 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     VLOG(1) << "Current video color: yuv(" << current_color.y << ", "
             << current_color.u << ", " << current_color.v << ')';
 
-    // TODO(crbug.com/810131): Reduce this back to 10 once color space info is
-    // fully plumbed-through, and all compositors respect color space.
+    // Note: The range of acceptable colors is quite large because there's no
+    // way to know whether software compositing is being used for screen
+    // capture; and, if software compositing is being used, there is no color
+    // space management and color values can be off by a lot. That said, color
+    // accuracy is being tested by a suite of content_browsertests.
     const int kTargetWindow = 50;
     for (auto it = expected_yuv_colors_.begin();
          it != expected_yuv_colors_.end(); ++it) {
       if (abs(current_color.y - it->y) < kTargetWindow &&
           abs(current_color.u - it->u) < kTargetWindow &&
           abs(current_color.v - it->v) < kTargetWindow) {
-        LOG(INFO) << "Saw color yuv(" << it->y << ", " << it->u << ", "
-                  << it->v << ").";
+        LOG(INFO) << "Saw expected color yuv(" << it->y << ", " << it->u << ", "
+                  << it->v << ") as yuv(" << current_color.y << ", "
+                  << current_color.u << ", " << current_color.v << ").";
         expected_yuv_colors_.erase(it);
         MaybeRunDoneCallback();
         break;
@@ -433,14 +437,14 @@ IN_PROC_BROWSER_TEST_P(CastStreamingApiTestWithPixelOutput,
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX) || \
     defined(OS_WIN)
 // Supported platforms.
-INSTANTIATE_TEST_CASE_P(,
-                        CastStreamingApiTestWithPixelOutput,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         CastStreamingApiTestWithPixelOutput,
+                         ::testing::Bool());
 #else
 // Platforms where the out of process audio service isn't supported
-INSTANTIATE_TEST_CASE_P(,
-                        CastStreamingApiTestWithPixelOutput,
-                        ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(,
+                         CastStreamingApiTestWithPixelOutput,
+                         ::testing::Values(false));
 #endif
 
 }  // namespace extensions

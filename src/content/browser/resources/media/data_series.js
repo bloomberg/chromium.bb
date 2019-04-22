@@ -34,8 +34,9 @@ var TimelineDataSeries = (function() {
      * @override
      */
     toJSON: function() {
-      if (this.dataPoints_.length < 1)
+      if (this.dataPoints_.length < 1) {
         return {};
+      }
 
       var values = [];
       for (var i = 0; i < this.dataPoints_.length; ++i) {
@@ -56,8 +57,9 @@ var TimelineDataSeries = (function() {
       var time = new Date(timeTicks);
       this.dataPoints_.push(new DataPoint(time, value));
 
-      if (this.dataPoints_.length > MAX_STATS_DATA_POINT_BUFFER_SIZE)
+      if (this.dataPoints_.length > MAX_STATS_DATA_POINT_BUFFER_SIZE) {
         this.dataPoints_.shift();
+      }
     },
 
     isVisible: function() {

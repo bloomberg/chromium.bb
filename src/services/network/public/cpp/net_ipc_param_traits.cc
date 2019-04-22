@@ -11,38 +11,24 @@
 
 namespace IPC {
 
-void ParamTraits<scoped_refptr<net::AuthChallengeInfo>>::Write(
-    base::Pickle* m,
-    const param_type& p) {
-  WriteParam(m, p != nullptr);
-  if (p) {
-    WriteParam(m, p->is_proxy);
-    WriteParam(m, p->challenger);
-    WriteParam(m, p->scheme);
-    WriteParam(m, p->realm);
-  }
+void ParamTraits<net::AuthChallengeInfo>::Write(base::Pickle* m,
+                                                const param_type& p) {
+  WriteParam(m, p.is_proxy);
+  WriteParam(m, p.challenger);
+  WriteParam(m, p.scheme);
+  WriteParam(m, p.realm);
 }
 
-bool ParamTraits<scoped_refptr<net::AuthChallengeInfo>>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* r) {
-  bool has_object;
-  if (!ReadParam(m, iter, &has_object))
-    return false;
-  if (!has_object) {
-    *r = nullptr;
-    return true;
-  }
-  *r = new net::AuthChallengeInfo();
-  return ReadParam(m, iter, &(*r)->is_proxy) &&
-         ReadParam(m, iter, &(*r)->challenger) &&
-         ReadParam(m, iter, &(*r)->scheme) && ReadParam(m, iter, &(*r)->realm);
+bool ParamTraits<net::AuthChallengeInfo>::Read(const base::Pickle* m,
+                                               base::PickleIterator* iter,
+                                               param_type* r) {
+  return ReadParam(m, iter, &r->is_proxy) &&
+         ReadParam(m, iter, &r->challenger) && ReadParam(m, iter, &r->scheme) &&
+         ReadParam(m, iter, &r->realm);
 }
 
-void ParamTraits<scoped_refptr<net::AuthChallengeInfo>>::Log(
-    const param_type& p,
-    std::string* l) {
+void ParamTraits<net::AuthChallengeInfo>::Log(const param_type& p,
+                                              std::string* l) {
   l->append("<AuthChallengeInfo>");
 }
 
@@ -162,6 +148,50 @@ bool ParamTraits<net::HostPortPair>::Read(const base::Pickle* m,
 
 void ParamTraits<net::HostPortPair>::Log(const param_type& p, std::string* l) {
   l->append(p.ToString());
+}
+
+void ParamTraits<net::IPEndPoint>::Write(base::Pickle* m, const param_type& p) {
+  WriteParam(m, p.address());
+  WriteParam(m, p.port());
+}
+
+bool ParamTraits<net::IPEndPoint>::Read(const base::Pickle* m,
+                                        base::PickleIterator* iter,
+                                        param_type* p) {
+  net::IPAddress address;
+  uint16_t port;
+  if (!ReadParam(m, iter, &address) || !ReadParam(m, iter, &port))
+    return false;
+
+  *p = net::IPEndPoint(address, port);
+  return true;
+}
+
+void ParamTraits<net::IPEndPoint>::Log(const param_type& p, std::string* l) {
+  LogParam("IPEndPoint:" + p.ToString(), l);
+}
+
+void ParamTraits<net::IPAddress>::Write(base::Pickle* m, const param_type& p) {
+  base::StackVector<uint8_t, 16> bytes;
+  for (uint8_t byte : p.bytes())
+    bytes->push_back(byte);
+  WriteParam(m, bytes);
+}
+
+bool ParamTraits<net::IPAddress>::Read(const base::Pickle* m,
+                                       base::PickleIterator* iter,
+                                       param_type* p) {
+  base::StackVector<uint8_t, 16> bytes;
+  if (!ReadParam(m, iter, &bytes))
+    return false;
+  if (bytes->size() > 16)
+    return false;
+  *p = net::IPAddress(bytes->data(), bytes->size());
+  return true;
+}
+
+void ParamTraits<net::IPAddress>::Log(const param_type& p, std::string* l) {
+  LogParam("IPAddress:" + (p.empty() ? "(empty)" : p.ToString()), l);
 }
 
 void ParamTraits<net::HttpRequestHeaders>::Write(base::Pickle* m,
@@ -330,7 +360,6 @@ void ParamTraits<net::SSLInfo>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.is_issued_by_known_root);
   WriteParam(m, p.pkp_bypassed);
   WriteParam(m, p.client_cert_sent);
-  WriteParam(m, p.channel_id_sent);
   WriteParam(m, p.handshake_type);
   WriteParam(m, p.public_key_hashes);
   WriteParam(m, p.pinning_failure_log);
@@ -357,7 +386,6 @@ bool ParamTraits<net::SSLInfo>::Read(const base::Pickle* m,
          ReadParam(m, iter, &r->is_issued_by_known_root) &&
          ReadParam(m, iter, &r->pkp_bypassed) &&
          ReadParam(m, iter, &r->client_cert_sent) &&
-         ReadParam(m, iter, &r->channel_id_sent) &&
          ReadParam(m, iter, &r->handshake_type) &&
          ReadParam(m, iter, &r->public_key_hashes) &&
          ReadParam(m, iter, &r->pinning_failure_log) &&
@@ -449,6 +477,7 @@ void ParamTraits<net::LoadTimingInfo>::Write(base::Pickle* m,
   WriteParam(m, p.connect_timing.ssl_end);
   WriteParam(m, p.send_start);
   WriteParam(m, p.send_end);
+  WriteParam(m, p.receive_headers_start);
   WriteParam(m, p.receive_headers_end);
   WriteParam(m, p.push_start);
   WriteParam(m, p.push_end);
@@ -478,6 +507,7 @@ bool ParamTraits<net::LoadTimingInfo>::Read(const base::Pickle* m,
          ReadParam(m, iter, &r->connect_timing.ssl_end) &&
          ReadParam(m, iter, &r->send_start) &&
          ReadParam(m, iter, &r->send_end) &&
+         ReadParam(m, iter, &r->receive_headers_start) &&
          ReadParam(m, iter, &r->receive_headers_end) &&
          ReadParam(m, iter, &r->push_start) && ReadParam(m, iter, &r->push_end);
 }
@@ -512,6 +542,8 @@ void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
   LogParam(p.send_start, l);
   l->append(", ");
   LogParam(p.send_end, l);
+  l->append(", ");
+  LogParam(p.receive_headers_start, l);
   l->append(", ");
   LogParam(p.receive_headers_end, l);
   l->append(", ");

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 package org.chromium.support_lib_boundary.util;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.os.Build;
 
@@ -16,6 +17,9 @@ import java.util.Collection;
 /**
  * A set of utility methods used for calling across the support library boundary.
  */
+// Although this is not enforced in chromium, this is a requirement enforced when this file is
+// mirrored into AndroidX. See http://b/120770118 for details.
+@SuppressLint("BanTargetApiAnnotation")
 public class BoundaryInterfaceReflectionUtil {
     /**
      * Check if an object is an instance of {@code className}, resolving {@code className} in
@@ -131,8 +135,12 @@ public class BoundaryInterfaceReflectionUtil {
         }
     }
 
+    /**
+     * Check if this is a debuggable build of Android. Note: we copy BuildInfo's method because we
+     * cannot depend on the base-layer here (this folder is mirrored into Android).
+     */
     private static boolean isDebuggable() {
-        return !Build.TYPE.equals("user");
+        return "eng".equals(Build.TYPE) || "userdebug".equals(Build.TYPE);
     }
 
     /**

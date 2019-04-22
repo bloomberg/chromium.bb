@@ -7,7 +7,7 @@
 
 #include "src/objects.h"
 #include "src/objects/hash-table.h"
-#include "src/objects/ordered-hash-table.h"
+#include "src/objects/js-objects.h"
 
 namespace v8 {
 namespace internal {
@@ -52,6 +52,8 @@ class KeyAccumulator final {
                                        Handle<JSObject> object);
   Maybe<bool> CollectOwnPropertyNames(Handle<JSReceiver> receiver,
                                       Handle<JSObject> object);
+  void CollectPrivateNames(Handle<JSReceiver> receiver,
+                           Handle<JSObject> object);
   Maybe<bool> CollectAccessCheckInterceptorKeys(
       Handle<AccessCheckInfo> access_check_info, Handle<JSReceiver> receiver,
       Handle<JSObject> object);
@@ -63,7 +65,7 @@ class KeyAccumulator final {
   static Handle<FixedArray> GetOwnEnumPropertyKeys(Isolate* isolate,
                                                    Handle<JSObject> object);
 
-  void AddKey(Object* key, AddKeyConversion convert = DO_NOT_CONVERT);
+  void AddKey(Object key, AddKeyConversion convert = DO_NOT_CONVERT);
   void AddKey(Handle<Object> key, AddKeyConversion convert = DO_NOT_CONVERT);
   void AddKeys(Handle<FixedArray> array, AddKeyConversion convert);
   void AddKeys(Handle<JSObject> array_like, AddKeyConversion convert);
@@ -89,7 +91,7 @@ class KeyAccumulator final {
   }
   // Shadowing keys are used to filter keys. This happens when non-enumerable
   // keys appear again on the prototype chain.
-  void AddShadowingKey(Object* key);
+  void AddShadowingKey(Object key);
   void AddShadowingKey(Handle<Object> key);
 
  private:

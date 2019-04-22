@@ -58,10 +58,6 @@ void OAuth2TokenServiceDelegate::RemoveObserver(
 
 void OAuth2TokenServiceDelegate::StartBatchChanges() {
   ++batch_change_depth_;
-  if (batch_change_depth_ == 1) {
-    for (auto& observer : observer_list_)
-      observer.OnStartBatchChanges();
-  }
 }
 
 void OAuth2TokenServiceDelegate::EndBatchChanges() {
@@ -125,4 +121,14 @@ void OAuth2TokenServiceDelegate::LoadCredentials(
   NOTREACHED() << "OAuth2TokenServiceDelegate does not load credentials. "
                   "Subclasses that need to load credentials must provide "
                   "an implemenation of this method";
+}
+
+void OAuth2TokenServiceDelegate::ExtractCredentials(
+    OAuth2TokenService* to_service,
+    const std::string& account_id) {
+  NOTREACHED();
+}
+
+bool OAuth2TokenServiceDelegate::FixRequestErrorIfPossible() {
+  return false;
 }

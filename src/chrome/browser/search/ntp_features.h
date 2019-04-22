@@ -12,25 +12,19 @@ namespace features {
 // The features should be documented alongside the definition of their values in
 // the .cc file.
 
+extern const base::Feature kNtpCustomizationMenuV2;
 extern const base::Feature kDoodlesOnLocalNtp;
-extern const base::Feature kNtpBackgrounds;
-extern const base::Feature kNtpIcons;
-extern const base::Feature kNtpUIMd;
 extern const base::Feature kPromosOnLocalNtp;
+extern const base::Feature kRemoveNtpFakebox;
 extern const base::Feature kSearchSuggestionsOnLocalNtp;
 extern const base::Feature kUseGoogleLocalNtp;
 
-// Returns whether New Tab Page custom links are enabled.
-bool IsCustomLinksEnabled();
+extern const base::Feature kFakeboxSearchIconOnNtp;
+extern const base::Feature kUseAlternateFakeboxOnNtp;
+extern const base::Feature kHideShortcutsOnNtp;
 
-// Returns whether New Tab Page Background Selection is enabled.
-bool IsCustomBackgroundsEnabled();
-
-// Returns whether the Material Design UI for Most Visited is enabled.
-bool IsMDIconsEnabled();
-
-// Returns whether the Material Design UI is enabled on the New Tab Page.
-bool IsMDUIEnabled();
+// Returns whether the Google search style fakebox is enabled.
+bool IsUseAlternateFakeboxOnNtpEnabled();
 
 }  // namespace features
 

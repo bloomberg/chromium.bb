@@ -27,7 +27,7 @@
 @interface NativeWidgetMacNSWindow ()
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate;
 - (BOOL)hasViewsMenuActive;
-- (id)rootAccessibilityObject;
+- (id<NSAccessibility>)rootAccessibilityObject;
 
 // Private API on NSWindow, determines whether the title is drawn on the title
 // bar. The title is still visible in menus, Expose, etc.
@@ -141,9 +141,14 @@
   return hasMenuController;
 }
 
-- (id)rootAccessibilityObject {
-  return bridgeImpl_ ? bridgeImpl_->host_helper()->GetNativeViewAccessible()
-                     : nullptr;
+- (id<NSAccessibility>)rootAccessibilityObject {
+  id<NSAccessibility> obj =
+      bridgeImpl_ ? bridgeImpl_->host_helper()->GetNativeViewAccessible() : nil;
+  // We should like to DCHECK that the object returned implemements the
+  // NSAccessibility protocol, but the NSAccessibilityRemoteUIElement interface
+  // does not conform.
+  // TODO(https://crbug.com/944698): Create a sub-class that does.
+  return obj;
 }
 
 // NSWindow overrides.
@@ -200,6 +205,12 @@
 
 // Lets the traffic light buttons on the parent window keep their active state.
 - (BOOL)hasKeyAppearance {
+  // Note that this function is called off of the main thread. In such cases,
+  // it is not safe to access the mojo interface or the ui::Widget, as they are
+  // not reentrant.
+  // https://crbug.com/941506.
+  if (![NSThread isMainThread])
+    return [super hasKeyAppearance];
   if (bridgeImpl_) {
     bool isAlwaysRenderWindowAsKey = NO;
     bridgeImpl_->host()->GetAlwaysRenderWindowAsKey(&isAlwaysRenderWindowAsKey);
@@ -271,6 +282,13 @@
   return touchBarDelegate_ ? [touchBarDelegate_ makeTouchBar] : nil;
 }
 
+// On newer SDKs, _canMiniaturize respects NSMiniaturizableWindowMask in the
+// window's styleMask. Views assumes that Widgets can always be minimized,
+// regardless of their window style, so override that behavior here.
+- (BOOL)_canMiniaturize {
+  return YES;
+}
+
 // CommandDispatchingWindow implementation.
 
 - (void)setCommandHandler:(id<UserInterfaceItemCommandHandler>)commandHandler {
@@ -329,18 +347,13 @@
   return bridgeImpl_->host_helper()->GetNativeViewAccessible();
 }
 
-- (id)accessibilityAttributeValue:(NSString*)attribute {
+- (NSString*)accessibilityTitle {
   // Check when NSWindow is asked for its title to provide the title given by
   // the views::RootView (and WidgetDelegate::GetAccessibleWindowTitle()). For
   // all other attributes, use what NSWindow provides by default since diverging
   // from NSWindow's behavior can easily break VoiceOver integration.
-  if (![attribute isEqualToString:NSAccessibilityTitleAttribute])
-    return [super accessibilityAttributeValue:attribute];
-
-  id viewsValue =
-      [[self rootAccessibilityObject] accessibilityAttributeValue:attribute];
-  return viewsValue ? viewsValue
-                    : [super accessibilityAttributeValue:attribute];
+  NSString* viewsValue = self.rootAccessibilityObject.accessibilityTitle;
+  return viewsValue ? viewsValue : [super accessibilityTitle];
 }
 
 @end

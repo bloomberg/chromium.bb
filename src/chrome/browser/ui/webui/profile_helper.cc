@@ -47,11 +47,10 @@ std::string GetProfileUserName(Profile* profile) {
   return base::UTF16ToUTF8(entry->GetUserName());
 }
 
-void ShowReauthDialog(const std::string& user_name,
+void ShowUnlockDialog(const std::string& user_name,
                       Profile* system_profile,
                       Profile::CreateStatus status) {
-  UserManagerProfileDialog::ShowReauthDialog(
-      system_profile, user_name, signin_metrics::Reason::REASON_UNLOCK);
+  UserManagerProfileDialog::ShowUnlockDialog(system_profile, user_name);
 }
 
 void DeleteProfileCallback(std::unique_ptr<ScopedKeepAlive> keep_alive,
@@ -69,7 +68,7 @@ void OpenNewWindowForProfile(Profile* profile) {
       ShowUserManager(ProfileManager::CreateCallback());
     } else {
       ShowUserManager(
-          base::Bind(&ShowReauthDialog, GetProfileUserName(profile)));
+          base::Bind(&ShowUnlockDialog, GetProfileUserName(profile)));
     }
   } else {
     profiles::FindOrCreateNewWindowForProfile(

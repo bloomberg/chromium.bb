@@ -892,17 +892,17 @@ class TransportClient : public CastTransport::Client {
 
   void OnStatusChanged(media::cast::CastTransportStatus status) final {
     EXPECT_EQ(TRANSPORT_STREAM_INITIALIZED, status);
-  };
+  }
   void OnLoggingEventsReceived(
       std::unique_ptr<std::vector<FrameEvent>> frame_events,
       std::unique_ptr<std::vector<PacketEvent>> packet_events) final {
     log_event_dispatcher_->DispatchBatchOfEvents(std::move(frame_events),
                                                  std::move(packet_events));
-  };
+  }
   void ProcessRtpPacket(std::unique_ptr<Packet> packet) final {
     if (e2e_test_)
       e2e_test_->ReceivePacket(std::move(packet));
-  };
+  }
 
  private:
   LogEventDispatcher* const log_event_dispatcher_;  // Not owned by this class.

@@ -13,7 +13,7 @@
 #include "base/sequence_checker.h"
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "third_party/blink/public/platform/modules/locks/lock_manager.mojom.h"
+#include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -34,7 +34,7 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   void RequestLock(const std::string& name,
                    blink::mojom::LockMode mode,
                    WaitMode wait,
-                   blink::mojom::LockRequestPtr request) override;
+                   blink::mojom::LockRequestAssociatedPtrInfo request) override;
 
   // Called by a LockHandle's implementation when destructed.
   void ReleaseLock(const url::Origin& origin, int64_t lock_id);

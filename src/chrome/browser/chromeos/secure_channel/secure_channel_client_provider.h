@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SECURE_CHANNEL_SECURE_CHANNEL_CLIENT_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_SECURE_CHANNEL_SECURE_CHANNEL_CLIENT_PROVIDER_H_
 
-#include "base/memory/singleton.h"
-#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
+#include <memory>
+
+#include "base/macros.h"
+#include "base/no_destructor.h"
 
 namespace chromeos {
 
@@ -20,11 +22,10 @@ class SecureChannelClientProvider {
  public:
   static SecureChannelClientProvider* GetInstance();
 
-  // Returns null if chromeos::features::kMultiDeviceApi is not enabled.
   SecureChannelClient* GetClient();
 
  private:
-  friend struct base::DefaultSingletonTraits<SecureChannelClientProvider>;
+  friend class base::NoDestructor<SecureChannelClientProvider>;
 
   SecureChannelClientProvider();
   virtual ~SecureChannelClientProvider();

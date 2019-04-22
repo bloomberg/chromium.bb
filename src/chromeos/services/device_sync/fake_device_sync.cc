@@ -8,25 +8,25 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace chromeos {
 
 namespace device_sync {
 
-FakeDeviceSync::FakeDeviceSync() : DeviceSyncBase(nullptr /* gcm_driver */) {}
+FakeDeviceSync::FakeDeviceSync() : DeviceSyncBase() {}
 
 FakeDeviceSync::~FakeDeviceSync() = default;
 
 void FakeDeviceSync::InvokePendingGetLocalDeviceMetadataCallback(
-    const base::Optional<cryptauth::RemoteDevice>& local_device_metadata) {
+    const base::Optional<multidevice::RemoteDevice>& local_device_metadata) {
   std::move(get_local_device_metadata_callback_queue_.front())
       .Run(local_device_metadata);
   get_local_device_metadata_callback_queue_.pop();
 }
 
 void FakeDeviceSync::InvokePendingGetSyncedDevicesCallback(
-    const base::Optional<std::vector<cryptauth::RemoteDevice>>&
+    const base::Optional<std::vector<multidevice::RemoteDevice>>&
         remote_devices) {
   std::move(get_synced_devices_callback_queue_.front()).Run(remote_devices);
   get_synced_devices_callback_queue_.pop();
@@ -73,7 +73,7 @@ void FakeDeviceSync::GetSyncedDevices(GetSyncedDevicesCallback callback) {
 
 void FakeDeviceSync::SetSoftwareFeatureState(
     const std::string& device_public_key,
-    cryptauth::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     bool enabled,
     bool is_exclusive,
     SetSoftwareFeatureStateCallback callback) {
@@ -81,7 +81,7 @@ void FakeDeviceSync::SetSoftwareFeatureState(
 }
 
 void FakeDeviceSync::FindEligibleDevices(
-    cryptauth::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     FindEligibleDevicesCallback callback) {
   find_eligible_devices_callback_queue_.push(std::move(callback));
 }

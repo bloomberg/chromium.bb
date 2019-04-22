@@ -17,14 +17,46 @@ from telemetry.testing import browser_test_runner
 from telemetry.testing import options_for_unittests
 from telemetry.testing import run_browser_tests
 from telemetry.testing import serially_executed_browser_test_case
+from telemetry.testing import fakes
+
+_expectations_template = (
+    '# tags: [ %s ]\n'
+    'crbug.com/123 [ %s ] %s [ %s ]')
+
+
+def _MakeTestExpectations(test_name, tag_list, expectations):
+  tags = ' '.join(tag_list)
+  return _expectations_template % (
+      tags, tags, test_name, expectations)
+
+
+def _MakeTestFilter(tests):
+  return '::'.join(tests)
+
+
+class MockArgs(object):
+  pass
+
+
+class MockTestCase(
+    serially_executed_browser_test_case.SeriallyExecutedBrowserTestCase):
+  _expectations_file = None
+
+  @classmethod
+  def GenerateTags(cls, finder_options, possible_browser):
+    with possible_browser.BrowserSession(finder_options) as browser:
+      return cls.GetPlatformTags(browser)
 
 
 class BrowserTestRunnerTest(unittest.TestCase):
+  def setUp(self):
+    self._test_result = {}
 
   def _ExtractTestResults(self, test_result):
     delimiter = test_result['path_delimiter']
     failures = []
     successes = []
+    skips = []
     def _IsLeafNode(node):
       test_dict = node[1]
       return ('expected' in test_dict and
@@ -39,6 +71,8 @@ class BrowserTestRunnerTest(unittest.TestCase):
         if all(res not in test_dict['expected'].split() for res in
                test_dict['actual'].split()):
           failures.append(full_test_name)
+        elif test_dict['actual'] == 'SKIP':
+          skips.append(full_test_name)
         else:
           successes.append(full_test_name)
       else:
@@ -46,10 +80,15 @@ class BrowserTestRunnerTest(unittest.TestCase):
           node_queues.append(
               ('%s%s%s' % (full_test_name, delimiter, k),
                test_dict[k]))
-    return successes, failures
+    return successes, failures, skips
 
-  def baseTest(self, test_filter,
-               failures, successes, test_name='SimpleTest'):
+  def _RunTest(
+      self, test_filter, expected_failures, expected_successes,
+      expected_skips=None, test_name='SimpleTest',
+      expectations='', tags=None, extra_args=None):
+    expected_skips = expected_skips or []
+    tags = tags or []
+    extra_args = extra_args or []
     config = project_config.ProjectConfig(
         top_level_dir=os.path.join(util.GetTelemetryDir(), 'examples'),
         client_configs=[],
@@ -59,76 +98,310 @@ class BrowserTestRunnerTest(unittest.TestCase):
     temp_file = tempfile.NamedTemporaryFile(delete=False)
     temp_file.close()
     temp_file_name = temp_file.name
+    if expectations:
+      assert tags
+      expectations_file = tempfile.NamedTemporaryFile(delete=False)
+      expectations_file.write(expectations)
+      expectations_file.close()
+      extra_args.extend(['-X', expectations_file.name] +
+                        ['-x=%s' % tag for tag in tags])
     try:
       browser_test_runner.Run(
           config,
           [test_name,
            '--write-full-results-to=%s' % temp_file_name,
-           '--test-filter=%s' % test_filter])
+           '--test-filter=%s' % test_filter] + extra_args)
       with open(temp_file_name) as f:
-        test_result = json.load(f)
-
-      actual_successes, actual_failures = self._ExtractTestResults(test_result)
-      self.assertEquals(set(actual_failures), set(failures))
-      self.assertEquals(set(actual_successes), set(successes))
+        self._test_result = json.load(f)
+      (actual_successes,
+       actual_failures,
+       actual_skips) = self._ExtractTestResults(self._test_result)
+      self.assertEquals(set(actual_failures), set(expected_failures))
+      self.assertEquals(set(actual_successes), set(expected_successes))
+      self.assertEquals(set(actual_skips), set(expected_skips))
     finally:
       os.remove(temp_file_name)
 
+  def testMacExamplePlatformTagsGenerated(self):
+    options = MockArgs()
+    possible_browser = fakes.FakePossibleBrowser(
+        os_name='mac', os_version_name='mojave', browser_type='release')
+    tags = set(MockTestCase.GenerateTags(options, possible_browser))
+    self.assertEqual(tags, set(['mac', 'mojave', 'release']))
+
+  def testAndroidExamplePlatformTagsGenerated(self):
+    options = MockArgs()
+    possible_browser = fakes.FakePossibleBrowser(
+        os_name='android', os_version_name='marshmellow', browser_type='system')
+    tags = set(MockTestCase.GenerateTags(options, possible_browser))
+    self.assertEqual(tags, set(['android', 'marshmellow', 'system']))
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testShortenTestNameUsingTestNamePrefixCommandLineArg(self):
+    self._RunTest(
+        test_filter='', expected_failures=[],
+        expected_successes=['FailingTest'],
+        test_name='ImplementsGenerateTagsFunction',
+        tags=['foo'], expectations=_MakeTestExpectations(
+            'FailingTest', ['foo'], 'Failure'),
+        extra_args=['--test-name-prefix=browser_tests.browser_test.'
+                    'ImplementsGenerateTagsFunction.'])
+    test_result = (
+        self._test_result['tests']['FailingTest'])
+    self.assertEqual(test_result['expected'], 'FAIL')
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testShortenSkipGlobUsingTestNamePrefixCommandLineArg(self):
+    self._RunTest(
+        test_filter='', expected_failures=[], expected_successes=[],
+        expected_skips=['a/b/fail-test.html'],
+        test_name='ImplementsExpectationsFilesFunction',
+        extra_args=[
+            '-x=foo', '--test-name-prefix='
+            'browser_tests.browser_test.ImplementsExpectationsFilesFunction.',
+            '--skip=a/b/fail-test.html'])
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testShortenTestFilterGlobsUsingTestNamePrefixCommandLineArg(self):
+    self._RunTest(
+        'FailingTest', [], ['FailingTest'],
+        test_name='ImplementsGenerateTagsFunction',
+        expectations=_MakeTestExpectations('FailingTest', ['foo'], 'Failure'),
+        tags=['foo'],
+        extra_args=[
+            '-x=foo', '--test-name-prefix='
+            'browser_tests.browser_test.ImplementsGenerateTagsFunction.'])
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testGetExpectationsFromTypWithoutExpectationsFile(self):
+    test_name = ('browser_tests.browser_test.'
+                 'GetsExpectationsFromTyp.HasNoExpectationsFile')
+    self._RunTest(
+        test_filter=test_name, expected_failures=[],
+        expected_successes=[test_name], test_name='GetsExpectationsFromTyp')
+    test_result = (
+        self._test_result['tests']['browser_tests']['browser_test']
+        ['GetsExpectationsFromTyp']['HasNoExpectationsFile'])
+    self.assertEqual(test_result['expected'], 'PASS')
+    self.assertEqual(test_result['actual'], 'PASS')
+    self.assertNotIn('is_unexpected', test_result)
+    self.assertNotIn('is_regression', test_result)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testGetExpectationsFromTypWithExpectationsFile(self):
+    test_name = 'HasExpectationsFile'
+    self._RunTest(
+        test_filter=test_name, expected_failures=[test_name],
+        expected_successes=[], test_name='GetsExpectationsFromTyp',
+        expectations=_MakeTestExpectations(
+            test_name, ['foo'], 'RetryOnFailure Failure'), tags=['foo'],
+        extra_args=[('--test-name-prefix=browser_tests.'
+                     'browser_test.GetsExpectationsFromTyp.')])
+    test_result = self._test_result['tests']['HasExpectationsFile']
+    self.assertEqual(test_result['expected'], 'FAIL')
+    self.assertEqual(test_result['actual'], 'PASS')
+    self.assertIn('is_unexpected', test_result)
+    self.assertNotIn('is_regression', test_result)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testOverrideExpectationsFilesFunction(self):
+    test_name = ('a/b/fail-test.html')
+    self._RunTest(
+        test_filter=test_name, expected_failures=[],
+        expected_successes=[test_name],
+        test_name='ImplementsExpectationsFilesFunction',
+        extra_args=[
+            '-x=foo',
+            '--test-name-prefix=browser_tests.browser_test.'
+            'ImplementsExpectationsFilesFunction.'])
+    test_result = (
+        self._test_result['tests']['a']['b']['fail-test.html'])
+    self.assertEqual(self._test_result['path_delimiter'], '/')
+    self.assertEqual(test_result['expected'], 'FAIL')
+    self.assertEqual(test_result['actual'], 'FAIL')
+    self.assertNotIn('is_unexpected', test_result)
+    self.assertNotIn('is_regression', test_result)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testDoesRetryOnFailureRetriesAndEventuallyPasses(self):
+    test_name = 'a\\b\\c\\flaky-test.html'
+    extra_args = [
+        '--retry-limit=3', '--retry-only-retry-on-failure-tests',
+        '--test-name-prefix', 'browser_tests.browser_test.FlakyTest.']
+    self._RunTest(
+        test_filter=test_name, expected_failures=[],
+        expected_successes=[test_name], test_name='FlakyTest',
+        extra_args=extra_args, expectations=_MakeTestExpectations(
+            test_name, ['foo'], 'RetryOnFailure'), tags=['foo'])
+    results = (
+        self._test_result['tests']['a']['b']['c']['flaky-test.html'])
+    self.assertEqual(self._test_result['path_delimiter'], '\\')
+    self.assertEqual(results['expected'], 'PASS')
+    self.assertEqual(results['actual'], 'FAIL FAIL FAIL PASS')
+    self.assertNotIn('is_unexpected', results)
+    self.assertNotIn('is_regression', results)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testSkipTestWithSkipExpectation(self):
+    test_name = ('browser_tests.browser_test'
+                 '.TestsWillBeDisabled.SupposedToPass')
+    self._RunTest(
+        test_filter=test_name, expected_failures=[], expected_successes=[],
+        expected_skips=[test_name], test_name='TestsWillBeDisabled',
+        expectations=_MakeTestExpectations(
+            test_name, ['foo'], 'Skip'), tags=['foo'])
+    test_result = (
+        self._test_result['tests']['browser_tests']['browser_test']
+        ['TestsWillBeDisabled']['SupposedToPass'])
+    self.assertEqual(test_result['expected'], 'SKIP')
+    self.assertEqual(test_result['actual'], 'SKIP')
+    self.assertNotIn('is_unexpected', test_result)
+    self.assertNotIn('is_regression', test_result)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testSkipTestViaCommandlineArgWhilePassingExpectationsFile(self):
+    test_name = ('browser_tests.browser_test'
+                 '.TestsWillBeDisabled.SupposedToPass')
+    self._RunTest(
+        test_filter=test_name, expected_failures=[], expected_successes=[],
+        expected_skips=[test_name], test_name='TestsWillBeDisabled',
+        expectations=_MakeTestExpectations(
+            test_name, ['foo'], 'Failure'), tags=['foo'],
+        extra_args=['--skip=*SupposedToPass'])
+    test_result = (
+        self._test_result['tests']['browser_tests']['browser_test']
+        ['TestsWillBeDisabled']['SupposedToPass'])
+    self.assertEqual(test_result['expected'], 'SKIP')
+    self.assertEqual(test_result['actual'], 'SKIP')
+    self.assertNotIn('is_unexpected', test_result)
+    self.assertNotIn('is_regression', test_result)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testSkipTestViaCommandLineArgWithoutExpectationsFile(self):
+    test_name = (
+        'browser_tests.browser_test.'
+        'TestsWillBeDisabled.SupposedToPass')
+    self._RunTest(
+        test_filter=test_name, expected_failures=[], expected_successes=[],
+        test_name='TestsWillBeDisabled',
+        expected_skips=[test_name],
+        extra_args=['--skip=*SupposedToPass'])
+    test_result = (
+        self._test_result['tests']['browser_tests']['browser_test']
+        ['TestsWillBeDisabled']['SupposedToPass'])
+    self.assertEqual(test_result['expected'], 'SKIP')
+    self.assertEqual(test_result['actual'], 'SKIP')
+    self.assertNotIn('is_unexpected', test_result)
+    self.assertNotIn('is_regression', test_result)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testSkipTestWithoutExpectationsFile(self):
+    test_name = ('browser_tests.browser_test.'
+                 'TestsWillBeDisabled.ThisTestSkips')
+    self._RunTest(
+        test_filter=test_name, expected_failures=[], expected_successes=[],
+        test_name='TestsWillBeDisabled',
+        expected_skips=[test_name])
+    test_result = (
+        self._test_result['tests']['browser_tests']['browser_test']
+        ['TestsWillBeDisabled']['ThisTestSkips'])
+    self.assertEqual(test_result['expected'], 'SKIP')
+    self.assertEqual(test_result['actual'], 'SKIP')
+    self.assertNotIn('is_unexpected', test_result)
+    self.assertNotIn('is_regression', test_result)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testOverrideGenerateTagsFunctionForFailureExpectations(self):
+    test_name = ('browser_tests.browser_test'
+                 '.ImplementsGenerateTagsFunction.FailingTest')
+    self._RunTest(
+        test_filter=test_name, expected_failures=[],
+        expected_successes=[test_name],
+        test_name='ImplementsGenerateTagsFunction',
+        expectations=_MakeTestExpectations(test_name, ['foo'], 'Failure'),
+        tags=['foo'])
+    test_result = (
+        self._test_result['tests']['browser_tests']['browser_test']
+        ['ImplementsGenerateTagsFunction']['FailingTest'])
+    self.assertEqual(test_result['expected'], 'FAIL')
+    self.assertEqual(test_result['actual'], 'FAIL')
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testOverrideGenerateTagsFunctionForSkipExpectations(self):
+    test_name = ('browser_tests.browser_test'
+                 '.ImplementsGenerateTagsFunction.FailingTest')
+    self._RunTest(
+        test_filter=test_name, expected_failures=[], expected_successes=[],
+        expected_skips=[test_name],
+        test_name='ImplementsGenerateTagsFunction',
+        tags=['foo'], expectations=_MakeTestExpectations(
+            test_name, ['foo'], 'Skip'))
+    test_result = (
+        self._test_result['tests']['browser_tests']['browser_test']
+        ['ImplementsGenerateTagsFunction']['FailingTest'])
+    self.assertEqual(test_result['expected'], 'SKIP')
+    self.assertEqual(test_result['actual'], 'SKIP')
+
   @decorators.Disabled('chromeos')  # crbug.com/696553
   def testJsonOutputFormatNegativeFilter(self):
-    self.baseTest(
-        '^(add|multiplier).*',
-        ['browser_tests.simple_numeric_test.SimpleTest.add_1_and_2',
-         'browser_tests.simple_numeric_test.SimpleTest.add_7_and_3',
-         'browser_tests.simple_numeric_test.SimpleTest.multiplier_simple_2'],
-        ['browser_tests.simple_numeric_test.SimpleTest.add_2_and_3',
-         'browser_tests.simple_numeric_test.SimpleTest.multiplier_simple',
-         'browser_tests.simple_numeric_test.SimpleTest.multiplier_simple_3'])
+    failures = [
+        'browser_tests.simple_numeric_test.SimpleTest.add_1_and_2',
+        'browser_tests.simple_numeric_test.SimpleTest.add_7_and_3',
+        'browser_tests.simple_numeric_test.SimpleTest.multiplier_simple_2']
+    successes = [
+        'browser_tests.simple_numeric_test.SimpleTest.add_2_and_3',
+        'browser_tests.simple_numeric_test.SimpleTest.multiplier_simple',
+        'browser_tests.simple_numeric_test.SimpleTest.multiplier_simple_3']
+    self._RunTest(
+        _MakeTestFilter(failures + successes), failures, successes)
 
   @decorators.Disabled('chromeos')  # crbug.com/696553
   def testJsonOutputWhenSetupClassFailed(self):
-    self.baseTest(
-        '.*',
-        ['browser_tests.failed_tests.SetUpClassFailedTest.dummy_test_0',
-         'browser_tests.failed_tests.SetUpClassFailedTest.dummy_test_1',
-         'browser_tests.failed_tests.SetUpClassFailedTest.dummy_test_2'],
-        [], test_name='SetUpClassFailedTest')
+    failures = [
+        'browser_tests.failed_tests.SetUpClassFailedTest.dummy_test_0',
+        'browser_tests.failed_tests.SetUpClassFailedTest.dummy_test_1',
+        'browser_tests.failed_tests.SetUpClassFailedTest.dummy_test_2']
+    self._RunTest(
+        _MakeTestFilter(failures), failures, [],
+        test_name='SetUpClassFailedTest')
 
   @decorators.Disabled('chromeos')  # crbug.com/696553
   def testJsonOutputWhenTearDownClassFailed(self):
-    self.baseTest(
-        '.*',
-        ['browser_tests.failed_tests.TearDownClassFailedTest.dummy_test_0',
-         'browser_tests.failed_tests.TearDownClassFailedTest.dummy_test_1',
-         'browser_tests.failed_tests.TearDownClassFailedTest.dummy_test_2'],
-        [], test_name='TearDownClassFailedTest')
+    successes = [
+        'browser_tests.failed_tests.TearDownClassFailedTest.dummy_test_0',
+        'browser_tests.failed_tests.TearDownClassFailedTest.dummy_test_1',
+        'browser_tests.failed_tests.TearDownClassFailedTest.dummy_test_2']
+    self._RunTest(
+        _MakeTestFilter(successes), successes, [],
+        test_name='TearDownClassFailedTest')
 
   @decorators.Disabled('chromeos')  # crbug.com/696553
   def testSetUpProcessCalledOnce(self):
-    self.baseTest(
-        '.*',
-        [],
-        ['browser_tests.process_tests.FailIfSetUpProcessCalledTwice.Dummy_0',
-         'browser_tests.process_tests.FailIfSetUpProcessCalledTwice.Dummy_1',
-         'browser_tests.process_tests.FailIfSetUpProcessCalledTwice.Dummy_2'],
+    successes = [
+        'browser_tests.process_tests.FailIfSetUpProcessCalledTwice.Dummy_0',
+        'browser_tests.process_tests.FailIfSetUpProcessCalledTwice.Dummy_1',
+        'browser_tests.process_tests.FailIfSetUpProcessCalledTwice.Dummy_2']
+    self._RunTest(
+        _MakeTestFilter(successes), [], successes,
         test_name='FailIfSetUpProcessCalledTwice')
 
   @decorators.Disabled('chromeos')  # crbug.com/696553
   def testTearDownProcessCalledOnce(self):
-    self.baseTest(
-        '.*',
-        [],
-        ['browser_tests.process_tests.FailIfTearDownProcessCalledTwice.Dummy_0',
-         'browser_tests.process_tests.FailIfTearDownProcessCalledTwice.Dummy_1',
-         'browser_tests.process_tests.FailIfTearDownProcessCalledTwice.Dummy_2'
-        ], test_name='FailIfTearDownProcessCalledTwice')
+    successes = [
+        'browser_tests.process_tests.FailIfTearDownProcessCalledTwice.Dummy_0',
+        'browser_tests.process_tests.FailIfTearDownProcessCalledTwice.Dummy_1',
+        'browser_tests.process_tests.FailIfTearDownProcessCalledTwice.Dummy_2']
+    self._RunTest(
+        _MakeTestFilter(successes), [], successes,
+        test_name='FailIfTearDownProcessCalledTwice')
 
   @decorators.Disabled('chromeos')  # crbug.com/696553
   def testJsonOutputFormatPositiveFilter(self):
-    self.baseTest(
-        '(TestSimple|TestException).*',
-        ['browser_tests.simple_numeric_test.SimpleTest.TestException',
-         'browser_tests.simple_numeric_test.SimpleTest.TestSimple'], [])
+    failures = [
+        'browser_tests.simple_numeric_test.SimpleTest.TestException',
+        'browser_tests.simple_numeric_test.SimpleTest.TestSimple']
+    self._RunTest(
+        _MakeTestFilter(failures), failures, [])
 
   @decorators.Disabled('chromeos')  # crbug.com/696553
   def testExecutingTestsInSortedOrder(self):
@@ -141,8 +414,8 @@ class BrowserTestRunnerTest(unittest.TestCase):
     for c in string.lowercase[:26]:
       alphabetical_tests.append(prefix + c)
     alphabetical_tests.sort()
-    self.baseTest(
-        'Alphabetical', [], alphabetical_tests)
+    self._RunTest(
+        prefix + '*', [], alphabetical_tests)
 
   def shardingRangeTestHelper(self, total_shards, num_tests):
     shard_ranges = []
@@ -181,10 +454,11 @@ class BrowserTestRunnerTest(unittest.TestCase):
     self.shardingRangeTestHelper(1, 1)
     self.shardingRangeTestHelper(2, 1)
 
-  def baseShardingTest(self, total_shards, shard_index, failures, successes,
+  def BaseShardingTest(self, total_shards, shard_index, failures, successes,
                        opt_abbr_input_json_file=None,
                        opt_test_filter='',
-                       opt_filter_tests_after_sharding=False):
+                       opt_filter_tests_after_sharding=False,
+                       opt_test_name_prefix=''):
     config = project_config.ProjectConfig(
         top_level_dir=os.path.join(util.GetTelemetryDir(), 'examples'),
         client_configs=[],
@@ -203,6 +477,8 @@ class BrowserTestRunnerTest(unittest.TestCase):
           '--test-filter=%s' % opt_test_filter]
     if opt_filter_tests_after_sharding:
       opt_args += ['--filter-tests-after-sharding']
+    if opt_test_name_prefix:
+      opt_args += ['--test-name-prefix=%s' % opt_test_name_prefix]
     try:
       browser_test_runner.Run(
           config,
@@ -212,7 +488,8 @@ class BrowserTestRunnerTest(unittest.TestCase):
            '--shard-index=%d' % shard_index] + opt_args)
       with open(temp_file_name) as f:
         test_result = json.load(f)
-      actual_successes, actual_failures = self._ExtractTestResults(test_result)
+      (actual_successes,
+       actual_failures, _) = self._ExtractTestResults(test_result)
       self.assertEquals(set(actual_failures), set(failures))
       self.assertEquals(set(actual_successes), set(successes))
     finally:
@@ -220,20 +497,20 @@ class BrowserTestRunnerTest(unittest.TestCase):
 
   @decorators.Disabled('chromeos')  # crbug.com/696553
   def testShardedTestRun(self):
-    self.baseShardingTest(3, 0, [], [
+    self.BaseShardingTest(3, 0, [], [
         'browser_tests.simple_sharding_test.SimpleShardingTest.Test1',
         'browser_tests.simple_sharding_test.SimpleShardingTest.Test2',
         'browser_tests.simple_sharding_test.SimpleShardingTest.Test3',
         'browser_tests.simple_sharding_test.SimpleShardingTest.passing_test_0',
         'browser_tests.simple_sharding_test.SimpleShardingTest.passing_test_1',
     ])
-    self.baseShardingTest(3, 1, [], [
+    self.BaseShardingTest(3, 1, [], [
         'browser_tests.simple_sharding_test.SimpleShardingTest.passing_test_2',
         'browser_tests.simple_sharding_test.SimpleShardingTest.passing_test_3',
         'browser_tests.simple_sharding_test.SimpleShardingTest.passing_test_4',
         'browser_tests.simple_sharding_test.SimpleShardingTest.passing_test_5',
     ])
-    self.baseShardingTest(3, 2, [], [
+    self.BaseShardingTest(3, 2, [], [
         'browser_tests.simple_sharding_test.SimpleShardingTest.passing_test_6',
         'browser_tests.simple_sharding_test.SimpleShardingTest.passing_test_7',
         'browser_tests.simple_sharding_test.SimpleShardingTest.passing_test_8',
@@ -292,7 +569,7 @@ class BrowserTestRunnerTest(unittest.TestCase):
     # not well defined, and the sorting is stable afterward.  The
     # expectations have been adjusted for this fact.
     try:
-      self.baseShardingTest(4, 0, [], [
+      self.BaseShardingTest(4, 0, [], [
           'browser_tests.simple_sharding_test' +
           '.SimpleShardingTest.passing_test_0',
           'browser_tests.simple_sharding_test' +
@@ -302,7 +579,7 @@ class BrowserTestRunnerTest(unittest.TestCase):
           'browser_tests.simple_sharding_test' +
           '.SimpleShardingTest.passing_test_9'
       ], temp_file_name)
-      self.baseShardingTest(4, 1, [], [
+      self.BaseShardingTest(4, 1, [], [
           'browser_tests.simple_sharding_test' +
           '.SimpleShardingTest.Test1',
           'browser_tests.simple_sharding_test' +
@@ -310,7 +587,7 @@ class BrowserTestRunnerTest(unittest.TestCase):
           'browser_tests.simple_sharding_test' +
           '.SimpleShardingTest.passing_test_6'
       ], temp_file_name)
-      self.baseShardingTest(4, 2, [], [
+      self.BaseShardingTest(4, 2, [], [
           'browser_tests.simple_sharding_test' +
           '.SimpleShardingTest.Test2',
           'browser_tests.simple_sharding_test' +
@@ -318,7 +595,7 @@ class BrowserTestRunnerTest(unittest.TestCase):
           'browser_tests.simple_sharding_test' +
           '.SimpleShardingTest.passing_test_7'
       ], temp_file_name)
-      self.baseShardingTest(4, 3, [], [
+      self.BaseShardingTest(4, 3, [], [
           'browser_tests.simple_sharding_test.SimpleShardingTest.Test3',
           'browser_tests.simple_sharding_test' +
           '.SimpleShardingTest.passing_test_4',
@@ -329,18 +606,38 @@ class BrowserTestRunnerTest(unittest.TestCase):
       os.remove(temp_file_name)
 
   @decorators.Disabled('chromeos')  # crbug.com/696553
-  def testFilteringAfterSharding(self):
+  def testFilterTestShortenedNameAfterShardingWithoutTestTimes(self):
+    self.BaseShardingTest(
+        4, 3, [], ['passing_test_8'],
+        opt_test_name_prefix=('browser_tests.'
+                              'simple_sharding_test.SimpleShardingTest.'),
+        opt_test_filter='passing_test_8',
+        opt_filter_tests_after_sharding=True)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testFilterTestShortenedNameAfterShardingWithTestTimes(self):
     temp_file_name = self.writeMockTestResultsFile()
     try:
-      self.baseShardingTest(
-          4, 1, [],
-          ['browser_tests.simple_sharding_test.SimpleShardingTest.Test1',
-           'browser_tests.simple_sharding_test' +
-           '.SimpleShardingTest.passing_test_2',
-           'browser_tests.simple_sharding_test' +
-           '.SimpleShardingTest.passing_test_6'
-          ], temp_file_name,
-          opt_test_filter='(Test1|passing_test_2|passing_test_6)',
+      self.BaseShardingTest(
+          4, 3, [], ['passing_test_8'], temp_file_name,
+          opt_test_name_prefix=('browser_tests.'
+                                'simple_sharding_test.SimpleShardingTest.'),
+          opt_test_filter='passing_test_8',
+          opt_filter_tests_after_sharding=True)
+    finally:
+      os.remove(temp_file_name)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testFilteringAfterSharding(self):
+    temp_file_name = self.writeMockTestResultsFile()
+    successes = [
+        'browser_tests.simple_sharding_test.SimpleShardingTest.Test1',
+        'browser_tests.simple_sharding_test.SimpleShardingTest.passing_test_2',
+        'browser_tests.simple_sharding_test.SimpleShardingTest.passing_test_6']
+    try:
+      self.BaseShardingTest(
+          4, 1, [], successes, temp_file_name,
+          opt_test_filter=_MakeTestFilter(successes),
           opt_filter_tests_after_sharding=True)
     finally:
       os.remove(temp_file_name)
@@ -385,6 +682,7 @@ class ErrorneousGeometric(
 
   def TestAngle(self):
     self.assertEquals(90, 450)
+
 
 class TestLoadAllTestModules(unittest.TestCase):
   def testLoadAllTestsInModule(self):

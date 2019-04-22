@@ -62,7 +62,6 @@ void APIBindingJSUtil::SendRequest(
     gin::Arguments* arguments,
     const std::string& name,
     const std::vector<v8::Local<v8::Value>>& request_args,
-    v8::Local<v8::Value> schemas_unused,
     v8::Local<v8::Value> options) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
@@ -121,7 +120,6 @@ void APIBindingJSUtil::RegisterEventArgumentMassager(
 
 void APIBindingJSUtil::CreateCustomEvent(gin::Arguments* arguments,
                                          v8::Local<v8::Value> v8_event_name,
-                                         v8::Local<v8::Value> unused_schema,
                                          bool supports_filters,
                                          bool supports_lazy_listeners) {
   v8::Isolate* isolate = arguments->isolate();

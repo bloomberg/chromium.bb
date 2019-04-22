@@ -10,6 +10,7 @@
 #ifndef LIBANGLE_RENDERER_VULKAN_BUFFERVK_H_
 #define LIBANGLE_RENDERER_VULKAN_BUFFERVK_H_
 
+#include "libANGLE/Buffer.h"
 #include "libANGLE/Observer.h"
 #include "libANGLE/renderer/BufferImpl.h"
 #include "libANGLE/renderer/vulkan/vk_helpers.h"
@@ -49,12 +50,13 @@ class BufferVk : public BufferImpl
     angle::Result unmap(const gl::Context *context, GLboolean *result) override;
 
     angle::Result getIndexRange(const gl::Context *context,
-                                GLenum type,
+                                gl::DrawElementsType type,
                                 size_t offset,
                                 size_t count,
                                 bool primitiveRestartEnabled,
                                 gl::IndexRange *outRange) override;
-    GLint64 getSize();
+
+    GLint64 getSize() const { return mState.getSize(); }
 
     const vk::BufferHelper &getBuffer() const
     {
@@ -73,7 +75,7 @@ class BufferVk : public BufferImpl
 
     // Calls copyBuffer internally.
     angle::Result copyToBuffer(ContextVk *contextVk,
-                               VkBuffer destbuffer,
+                               vk::BufferHelper *destBuffer,
                                uint32_t copyCount,
                                const VkBufferCopy *copies);
 

@@ -124,3 +124,58 @@ function testIsDescendantEntry() {
   assertTrue(util.isDescendantEntry(volumeEntry, fakeEntry));
   assertTrue(util.isDescendantEntry(volumeEntry, folder1));
 }
+
+/**
+ * Tests that it doesn't fail with different types of entries and inputs.
+ */
+function testEntryDebugString() {
+  // Check static values.
+  assertEquals('entry is null', util.entryDebugString(null));
+  (/**
+    * @suppress {checkTypes} Closure doesn't allow passing undefined or {} due
+    * to type constraints nor casting to {Entry}.
+    */
+   function() {
+     assertEquals('entry is undefined', util.entryDebugString(undefined));
+     assertEquals('(Object) ', util.entryDebugString({}));
+   })();
+
+  // Construct some types of entries.
+  const root = fileSystem.root;
+  const folder = fileSystem.entries['/dir_a'];
+  const file = fileSystem.entries['/file_a.txt'];
+  const fakeEntry =
+      new FakeEntry('fake-entry-label', VolumeManagerCommon.RootType.CROSTINI);
+  const entryList =
+      new EntryList('entry-list-label', VolumeManagerCommon.RootType.MY_FILES);
+  entryList.addEntry(fakeEntry);
+  const volumeManager = new MockVolumeManager();
+  // Index 1 is Downloads.
+  assertEquals(
+      VolumeManagerCommon.VolumeType.DOWNLOADS,
+      volumeManager.volumeInfoList.item(1).volumeType);
+  const downloadsVolumeInfo = volumeManager.volumeInfoList.item(1);
+  const mockFs = /** @type {MockFileSystem} */ (downloadsVolumeInfo.fileSystem);
+  mockFs.populate(['/folder1/']);
+  const volumeEntry = new VolumeEntry(downloadsVolumeInfo);
+  volumeEntry.addEntry(fakeEntry);
+
+  // Mocked values are identified as Object instead of DirectoryEntry and
+  // FileEntry.
+  assertEquals(
+      '(Object) / filesystem:fake-volume/', util.entryDebugString(root));
+  assertEquals(
+      '(Object) /dir_a filesystem:fake-volume/dir_a',
+      util.entryDebugString(folder));
+  assertEquals(
+      '(Object) /file_a.txt filesystem:fake-volume/file_a.txt',
+      util.entryDebugString(file));
+  // FilesAppEntry types:
+  assertEquals(
+      '(FakeEntry) fake-entry://crostini', util.entryDebugString(fakeEntry));
+  assertEquals(
+      '(EntryList) entry-list://my_files', util.entryDebugString(entryList));
+  assertEquals(
+      '(VolumeEntry) / filesystem:downloads/',
+      util.entryDebugString(volumeEntry));
+}

@@ -172,7 +172,7 @@ class PrivetLocalPrintOperationImpl : public PrivetLocalPrintOperation,
   // PrivetLocalPrintOperation:
   void Start() override;
   void SetData(const scoped_refptr<base::RefCountedMemory>& data) override;
-  void SetTicket(const std::string& ticket) override;
+  void SetTicket(base::Value ticket) override;
   void SetCapabilities(const std::string& capabilities) override;
   void SetUsername(const std::string& user) override;
   void SetJobname(const std::string& jobname) override;

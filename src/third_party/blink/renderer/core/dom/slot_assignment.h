@@ -17,10 +17,6 @@ class ShadowRoot;
 
 class SlotAssignment final : public GarbageCollected<SlotAssignment> {
  public:
-  static SlotAssignment* Create(ShadowRoot& owner) {
-    return MakeGarbageCollected<SlotAssignment>(owner);
-  }
-
   explicit SlotAssignment(ShadowRoot& owner);
 
   // Relevant DOM Standard: https://dom.spec.whatwg.org/#find-a-slot
@@ -55,7 +51,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 
   HTMLSlotElement* FindSlotChange(HTMLSlotElement& slot, Node& child);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   bool NeedsAssignmentRecalc() const { return needs_assignment_recalc_; }
   void SetNeedsAssignmentRecalc();

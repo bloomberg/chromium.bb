@@ -5,15 +5,15 @@
  * found in the LICENSE file.
  */
 
-#include "Test.h"
 #include "Resources.h"
-#include "sk_tool_utils.h"
 #include "SkCanvas.h"
 #include "SkImageSource.h"
 #include "SkPicture.h"
 #include "SkPictureRecorder.h"
 #include "SkSerialProcs.h"
 #include "SkSurface.h"
+#include "Test.h"
+#include "ToolUtils.h"
 
 static sk_sp<SkImage> picture_to_image(sk_sp<SkPicture> pic) {
     SkIRect r = pic->cullRect().round();
@@ -77,7 +77,7 @@ DEF_TEST(serial_procs_image, reporter) {
         REPORTER_ASSERT(reporter, data);
 
         auto dst_img = picture_to_image(new_pic);
-        REPORTER_ASSERT(reporter, sk_tool_utils::equal_pixels(src_img.get(), dst_img.get()));
+        REPORTER_ASSERT(reporter, ToolUtils::equal_pixels(src_img.get(), dst_img.get()));
     }
 }
 
@@ -163,8 +163,8 @@ DEF_TEST(serial_procs_picture, reporter) {
     // test inside effect
     p0 = make_pic([p1](SkCanvas* c) {
         SkPaint paint;
-        SkShader::TileMode tm = SkShader::kClamp_TileMode;
-        paint.setShader(SkShader::MakePictureShader(p1, tm, tm, nullptr, nullptr));
+        SkTileMode tm = SkTileMode::kClamp;
+        paint.setShader(p1->makeShader(tm, tm));
         c->drawPaint(paint);
     });
     test_pictures(reporter, p0, 1, true);
@@ -182,10 +182,11 @@ static sk_sp<SkPicture> make_picture(sk_sp<SkTypeface> tf0, sk_sp<SkTypeface> tf
     SkPictureRecorder rec;
     SkCanvas* canvas = rec.beginRecording(100, 100);
     SkPaint paint;
-    paint.setTypeface(tf0); canvas->drawText("hello", 5, 0, 0, paint);
-    paint.setTypeface(tf1); canvas->drawText("hello", 5, 0, 0, paint);
-    paint.setTypeface(tf0); canvas->drawText("hello", 5, 0, 0, paint);
-    paint.setTypeface(tf1); canvas->drawText("hello", 5, 0, 0, paint);
+    SkFont font;
+    font.setTypeface(tf0); canvas->drawString("hello", 0, 0, font, paint);
+    font.setTypeface(tf1); canvas->drawString("hello", 0, 0, font, paint);
+    font.setTypeface(tf0); canvas->drawString("hello", 0, 0, font, paint);
+    font.setTypeface(tf1); canvas->drawString("hello", 0, 0, font, paint);
     return rec.finishRecordingAsPicture();
 }
 

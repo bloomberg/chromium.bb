@@ -46,9 +46,13 @@ toolchain("msvc") {
     # Toolchain asset includes a script that configures for x86 building.
     # We don't support x86 builds with local MSVC installations.
     env_setup = "cmd /c $win_sdk/bin/SetEnv.cmd /x86 && "
+  } else if (target_cpu == "arm64") {
+    # ARM64 compiler is incomplete - it relies on DLLs located in the host toolchain directory.
+    env_setup = "cmd /C set \"PATH=%PATH%;$win_vc\\Tools\\MSVC\\$win_toolchain_version\\bin\\HostX64\\x64\" && "
   }
 
   cl_m32_flag = ""
+
   if (clang_win != "") {
     if (target_cpu == "x86") {
       # cl.exe knows implicitly by the choice of executable that it's targeting
@@ -56,9 +60,19 @@ toolchain("msvc") {
       # platforms. (All our builders are x86-64, so x86 is always non-host.)
       cl_m32_flag = "-m32"
     }
-    cl = "$clang_win/bin/clang-cl.exe"
+    if (host_os == "win") {
+      cl = "\"$clang_win/bin/clang-cl.exe\""
+      lib = "\"$clang_win/bin/lld-link.exe\" /lib"
+      link = "\"$clang_win/bin/lld-link.exe\""
+    } else {
+      cl = "\"$clang_win/bin/clang-cl\""
+      lib = "\"$clang_win/bin/lld-link\" /lib"
+      link = "\"$clang_win/bin/lld-link\""
+    }
   } else {
-    cl = "$bin/cl.exe"
+    cl = "\"$bin/cl.exe\""
+    lib = "\"$bin/lib.exe\""
+    link = "\"$bin/link.exe\""
   }
 
   tool("asm") {
@@ -66,7 +80,7 @@ toolchain("msvc") {
     if (target_cpu == "x64") {
       _ml += "64"
     }
-    command = "$env_setup $bin/$_ml.exe {{asmflags}} /nologo /c /Fo {{output}} {{source}}"
+    command = "$env_setup \"$bin/$_ml.exe\" {{asmflags}} /nologo /c /Fo {{output}} {{source}}"
     outputs = [
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj",
     ]
@@ -78,7 +92,7 @@ toolchain("msvc") {
     pdbname = "{{target_out_dir}}/{{label_name}}_c.pdb"
 
     # Label names may have spaces so pdbname must be quoted.
-    command = "$env_setup $cc_wrapper \"$cl\" /nologo /showIncludes /FC {{defines}} {{include_dirs}} {{cflags}} $cl_m32_flag {{cflags_c}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+    command = "$env_setup $cc_wrapper $cl /nologo /showIncludes /FC {{defines}} {{include_dirs}} {{cflags}} $cl_m32_flag {{cflags_c}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
     depsformat = "msvc"
     outputs = [
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj",
@@ -91,7 +105,7 @@ toolchain("msvc") {
     pdbname = "{{target_out_dir}}/{{label_name}}_c.pdb"
 
     # Label names may have spaces so pdbname must be quoted.
-    command = "$env_setup $cc_wrapper \"$cl\" /nologo /showIncludes /FC {{defines}} {{include_dirs}} {{cflags}} $cl_m32_flag {{cflags_cc}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+    command = "$env_setup $cc_wrapper $cl /nologo /showIncludes /FC {{defines}} {{include_dirs}} {{cflags}} $cl_m32_flag {{cflags_cc}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
     depsformat = "msvc"
     outputs = [
       "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj",
@@ -102,7 +116,7 @@ toolchain("msvc") {
   tool("alink") {
     rspfile = "{{output}}.rsp"
 
-    command = "$env_setup $bin/lib.exe /nologo /ignore:4221 {{arflags}} /OUT:{{output}} @$rspfile"
+    command = "$env_setup $lib /nologo /ignore:4221 {{arflags}} /OUT:{{output}} @$rspfile"
     outputs = [
       # Ignore {{output_extension}} and always use .lib, there's no reason to
       # allow targets to override this extension on Windows.
@@ -122,7 +136,7 @@ toolchain("msvc") {
     pdbname = "${dllname}.pdb"
     rspfile = "${dllname}.rsp"
 
-    command = "$env_setup $bin/link.exe /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
+    command = "$env_setup $link /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:$pdbname @$rspfile"
     outputs = [
       dllname,
       libname,
@@ -151,9 +165,7 @@ toolchain("msvc") {
     pdbname = "$exename.pdb"
     rspfile = "$exename.rsp"
 
-    command =
-        "$env_setup $bin/link.exe /nologo /OUT:$exename /PDB:$pdbname @$rspfile"
-
+    command = "$env_setup $link /nologo /OUT:$exename /PDB:$pdbname @$rspfile"
     default_output_extension = ".exe"
     default_output_dir = "{{root_out_dir}}"
     outputs = [
@@ -258,7 +270,21 @@ template("gcc_like_toolchain") {
 
       rspfile = "{{output}}.rsp"
       rspfile_content = "{{inputs}}"
-      command = "$cc_wrapper $cxx -shared {{ldflags}} @$rspfile {{solibs}} {{libs}} $rpath -o {{output}}"
+
+      # --start-group/--end-group let us link multiple .a {{inputs}}
+      # without worrying about their relative order on the link line.
+      #
+      # This is mostly important for traditional linkers like GNU ld and Gold.
+      # The Mac/iOS linker neither needs nor accepts these flags.
+      # LLD doesn't need these flags, but accepts and ignores them.
+      _start_group = "-Wl,--start-group"
+      _end_group = "-Wl,--end-group"
+      if (is_mac || is_ios) {
+        _start_group = ""
+        _end_group = ""
+      }
+
+      command = "$cc_wrapper $cxx -shared {{ldflags}} $_start_group @$rspfile {{solibs}} $_end_group {{libs}} $rpath -o {{output}}"
       outputs = [
         "{{root_out_dir}}/$soname",
       ]
@@ -268,7 +294,8 @@ template("gcc_like_toolchain") {
     }
 
     tool("link") {
-      rspfile = "{{output}}.rsp"
+      exe_name = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
+      rspfile = "$exe_name.rsp"
       rspfile_content = "{{inputs}}"
 
       # --start-group/--end-group let us link multiple .a {{inputs}}
@@ -283,10 +310,18 @@ template("gcc_like_toolchain") {
         _start_group = ""
         _end_group = ""
       }
-      command = "$cc_wrapper $cxx {{ldflags}} $_start_group @$rspfile {{solibs}} $_end_group {{libs}} -o {{output}}"
+      if (is_ios) {
+        command = "$cc_wrapper $cxx {{ldflags}} $_start_group @$rspfile {{solibs}} $_end_group {{libs}} -o $exe_name && dsymutil $exe_name"
+      } else {
+        command = "$cc_wrapper $cxx {{ldflags}} $_start_group @$rspfile {{solibs}} $_end_group {{libs}} -o $exe_name"
+      }
+
       outputs = [
-        "{{root_out_dir}}/{{target_output_name}}{{output_extension}}",
+        "$exe_name",
       ]
+      if (is_ios) {
+        outputs += [ "{{root_out_dir}}/{{target_output_name}}.dSYM" ]
+      }
       description = "link {{output}}"
     }
 

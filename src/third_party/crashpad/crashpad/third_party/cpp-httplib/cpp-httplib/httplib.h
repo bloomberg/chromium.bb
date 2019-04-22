@@ -39,7 +39,6 @@
 #endif
 
 typedef SOCKET socket_t;
-constexpr socket_t kInvalidSocket = INVALID_SOCKET;
 #else
 #include <pthread.h>
 #include <unistd.h>

@@ -11,6 +11,7 @@
 #include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/ui_test_input.h"
+#include "chrome/browser/vr/vr_base_export.h"
 
 namespace gfx {
 class Point3F;
@@ -22,7 +23,7 @@ namespace vr {
 class KeyboardUiInterface;
 struct CameraModel;
 
-class KeyboardDelegateForTesting : public KeyboardDelegate {
+class VR_BASE_EXPORT KeyboardDelegateForTesting : public KeyboardDelegate {
  public:
   KeyboardDelegateForTesting();
   ~KeyboardDelegateForTesting() override;

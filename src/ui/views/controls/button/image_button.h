@@ -157,8 +157,7 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   void SetImage(ButtonState state, const gfx::ImageSkia& image) override;
 
   // Overridden from View:
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   bool toggled_for_testing() const;

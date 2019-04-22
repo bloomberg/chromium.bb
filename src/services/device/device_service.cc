@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "device/usb/mojo/device_manager_impl.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/bluetooth/bluetooth_system_factory.h"
 #include "services/device/fingerprint/fingerprint.h"
@@ -22,8 +22,7 @@
 #include "services/device/geolocation/public_ip_address_location_notifier.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
-#include "services/device/serial/serial_device_enumerator_impl.h"
-#include "services/device/serial/serial_io_handler_impl.h"
+#include "services/device/serial/serial_port_manager_impl.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
 #include "services/device/wake_lock/wake_lock_provider.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -97,6 +96,7 @@ DeviceService::DeviceService(
       url_loader_factory_(std::move(url_loader_factory)),
       geolocation_api_key_(geolocation_api_key),
       wake_lock_context_callback_(wake_lock_context_callback),
+      wake_lock_provider_(file_task_runner_, wake_lock_context_callback_),
       java_interface_provider_initialized_(false) {
   java_nfc_delegate_.Reset(java_nfc_delegate);
 }
@@ -111,12 +111,18 @@ DeviceService::DeviceService(
       file_task_runner_(std::move(file_task_runner)),
       io_task_runner_(std::move(io_task_runner)),
       url_loader_factory_(std::move(url_loader_factory)),
-      geolocation_api_key_(geolocation_api_key) {}
+      geolocation_api_key_(geolocation_api_key),
+      wake_lock_provider_(file_task_runner_, wake_lock_context_callback_) {}
 #endif
 
 DeviceService::~DeviceService() {
 #if !defined(OS_ANDROID)
   device::BatteryStatusService::GetInstance()->Shutdown();
+#endif
+#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
+    defined(OS_MACOSX)
+  serial_port_manager_task_runner_->DeleteSoon(FROM_HERE,
+                                               std::move(serial_port_manager_));
 #endif
 }
 
@@ -143,13 +149,10 @@ void DeviceService::OnStart() {
       &DeviceService::BindTimeZoneMonitorRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::WakeLockProvider>(base::Bind(
       &DeviceService::BindWakeLockProviderRequest, base::Unretained(this)));
-  registry_.AddInterface<mojom::SerialDeviceEnumerator>(
-      base::Bind(&DeviceService::BindSerialDeviceEnumeratorRequest,
-                 base::Unretained(this)));
-  registry_.AddInterface<mojom::SerialIoHandler>(base::Bind(
-      &DeviceService::BindSerialIoHandlerRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::UsbDeviceManager>(base::Bind(
       &DeviceService::BindUsbDeviceManagerRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::UsbDeviceManagerTest>(base::Bind(
+      &DeviceService::BindUsbDeviceManagerTestRequest, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
   registry_.AddInterface(GetJavaInterfaceProvider()
@@ -168,6 +171,20 @@ void DeviceService::OnStart() {
       &DeviceService::BindNFCProviderRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::VibrationManager>(base::Bind(
       &DeviceService::BindVibrationManagerRequest, base::Unretained(this)));
+#endif
+
+#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
+    defined(OS_MACOSX)
+  // SerialPortManagerImpl must live on a thread that is allowed to do
+  // blocking IO.
+  serial_port_manager_ = std::make_unique<SerialPortManagerImpl>(
+      io_task_runner_, base::ThreadTaskRunnerHandle::Get());
+  serial_port_manager_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  registry_.AddInterface<mojom::SerialPortManager>(
+      base::BindRepeating(&SerialPortManagerImpl::Bind,
+                          base::Unretained(serial_port_manager_.get())),
+      serial_port_manager_task_runner_);
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -280,8 +297,8 @@ void DeviceService::BindScreenOrientationListenerRequest(
 #if defined(OS_ANDROID)
   if (io_task_runner_) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ScreenOrientationListenerAndroid::Create,
-                              base::Passed(&request)));
+        FROM_HERE, base::BindOnce(&ScreenOrientationListenerAndroid::Create,
+                                  std::move(request)));
   }
 #endif
 }
@@ -290,8 +307,8 @@ void DeviceService::BindSensorProviderRequest(
     mojom::SensorProviderRequest request) {
   if (io_task_runner_) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&device::SensorProviderImpl::Create,
-                              file_task_runner_, base::Passed(&request)));
+        FROM_HERE, base::BindOnce(&device::SensorProviderImpl::Create,
+                                  std::move(request)));
   }
 }
 
@@ -304,29 +321,7 @@ void DeviceService::BindTimeZoneMonitorRequest(
 
 void DeviceService::BindWakeLockProviderRequest(
     mojom::WakeLockProviderRequest request) {
-  WakeLockProvider::Create(std::move(request), file_task_runner_,
-                           wake_lock_context_callback_);
-}
-
-void DeviceService::BindSerialDeviceEnumeratorRequest(
-    mojom::SerialDeviceEnumeratorRequest request) {
-#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
-    defined(OS_MACOSX)
-  SerialDeviceEnumeratorImpl::Create(std::move(request));
-#endif
-}
-
-void DeviceService::BindSerialIoHandlerRequest(
-    mojom::SerialIoHandlerRequest request) {
-#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
-    defined(OS_MACOSX)
-  if (io_task_runner_) {
-    io_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&SerialIoHandlerImpl::Create, base::Passed(&request),
-                   base::ThreadTaskRunnerHandle::Get()));
-  }
-#endif
+  wake_lock_provider_.AddBinding(std::move(request));
 }
 
 void DeviceService::BindUsbDeviceManagerRequest(
@@ -335,6 +330,14 @@ void DeviceService::BindUsbDeviceManagerRequest(
     usb_device_manager_ = std::make_unique<usb::DeviceManagerImpl>();
 
   usb_device_manager_->AddBinding(std::move(request));
+}
+
+void DeviceService::BindUsbDeviceManagerTestRequest(
+    mojom::UsbDeviceManagerTestRequest request) {
+  if (!usb_device_manager_test_)
+    usb_device_manager_test_ = std::make_unique<usb::DeviceManagerTest>();
+
+  usb_device_manager_test_->BindRequest(std::move(request));
 }
 
 #if defined(OS_ANDROID)

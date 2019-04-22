@@ -8,6 +8,9 @@
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 
+#include "ash/ime/ime_controller.h"
+#include "ash/shell.h"
+#include "base/feature_list.h"
 #include "components/exo/keyboard.h"
 #include "components/exo/keyboard_device_configuration_delegate.h"
 #include "components/exo/keyboard_observer.h"
@@ -23,15 +26,21 @@ namespace {
 
 class WaylandKeyboardDeviceConfigurationDelegate
     : public KeyboardDeviceConfigurationDelegate,
-      public KeyboardObserver {
+      public KeyboardObserver,
+      public ash::ImeController::Observer {
  public:
   WaylandKeyboardDeviceConfigurationDelegate(wl_resource* resource,
                                              Keyboard* keyboard)
       : resource_(resource), keyboard_(keyboard) {
     keyboard_->SetDeviceConfigurationDelegate(this);
     keyboard_->AddObserver(this);
+    ash::ImeController* ime_controller = ash::Shell::Get()->ime_controller();
+    ime_controller->AddObserver(this);
+    OnKeyboardLayoutNameChanged(ime_controller->keyboard_layout_name());
   }
+
   ~WaylandKeyboardDeviceConfigurationDelegate() override {
+    ash::Shell::Get()->ime_controller()->RemoveObserver(this);
     if (keyboard_) {
       keyboard_->SetDeviceConfigurationDelegate(nullptr);
       keyboard_->RemoveObserver(this);
@@ -50,6 +59,14 @@ class WaylandKeyboardDeviceConfigurationDelegate
         is_physical
             ? ZCR_KEYBOARD_DEVICE_CONFIGURATION_V1_KEYBOARD_TYPE_PHYSICAL
             : ZCR_KEYBOARD_DEVICE_CONFIGURATION_V1_KEYBOARD_TYPE_VIRTUAL);
+  }
+
+  // Overridden from ImeController::Observer:
+  void OnCapsLockChanged(bool enabled) override {}
+
+  void OnKeyboardLayoutNameChanged(const std::string& layout_name) override {
+    zcr_keyboard_device_configuration_v1_send_layout_change(
+        resource_, layout_name.c_str());
   }
 
  private:

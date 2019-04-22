@@ -13,8 +13,4 @@ CanvasContextCreationAttributesCore::CanvasContextCreationAttributesCore(
 
 CanvasContextCreationAttributesCore::~CanvasContextCreationAttributesCore() {}
 
-void CanvasContextCreationAttributesCore::Trace(blink::Visitor* visitor) {
-  visitor->Trace(compatible_xr_device);
-}
-
 }  // namespace blink

@@ -10,10 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "components/viz/common/surfaces/local_surface_id_allocation.h"
-#include "services/ws/public/mojom/cursor/cursor.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/mus_types.h"
+#include "ui/base/mojo/cursor.mojom.h"
 
 namespace gfx {
 class Rect;
@@ -28,7 +27,7 @@ enum class OrderDirection;
 
 namespace viz {
 class FrameSinkId;
-class LocalSurfaceId;
+class LocalSurfaceIdAllocation;
 }
 
 namespace aura {
@@ -36,7 +35,7 @@ namespace aura {
 class Window;
 class WindowTreeClient;
 
-// See PrepareForServerBoundsChange() for details on this.
+// See PrepareForServerVisibilityChange() for details on this.
 struct AURA_EXPORT WindowMusChangeData {
   virtual ~WindowMusChangeData() {}
 };
@@ -82,19 +81,14 @@ class AURA_EXPORT WindowMus {
   virtual void ReorderFromServer(WindowMus* child,
                                  WindowMus* relative,
                                  ws::mojom::OrderDirection) = 0;
-  virtual void SetBoundsFromServer(
-      const gfx::Rect& bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) = 0;
+  virtual void SetBoundsFromServer(const gfx::Rect& bounds) = 0;
   virtual void SetTransformFromServer(const gfx::Transform& transform) = 0;
   virtual void SetVisibleFromServer(bool visible) = 0;
-  virtual void SetOpacityFromServer(float opacity) = 0;
-  virtual void SetCursorFromServer(const ui::CursorData& cursor) = 0;
+  virtual void SetCursorFromServer(const ui::Cursor& cursor) = 0;
   virtual void SetPropertyFromServer(const std::string& property_name,
                                      const std::vector<uint8_t>* data) = 0;
   virtual void SetFrameSinkIdFromServer(
       const viz::FrameSinkId& frame_sink_id) = 0;
-  virtual const viz::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
-      const gfx::Size& new_size) = 0;
   // The window was deleted on the server side. DestroyFromServer() should
   // result in deleting |this|.
   virtual void DestroyFromServer() = 0;
@@ -110,13 +104,14 @@ class AURA_EXPORT WindowMus {
   virtual const viz::LocalSurfaceIdAllocation&
   GetLocalSurfaceIdAllocation() = 0;
 
+  virtual void UpdateLocalSurfaceIdFromParent(
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) = 0;
+
   // Called in the rare case when WindowTreeClient needs to change state and
   // can't go through one of the SetFooFromServer() functions above. Generally
   // because it needs to call another function that as a side effect changes the
   // window. Once the call to the underlying window has completed the returned
   // object should be destroyed.
-  virtual std::unique_ptr<WindowMusChangeData> PrepareForServerBoundsChange(
-      const gfx::Rect& bounds) = 0;
   virtual std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
       bool value) = 0;
 
@@ -127,9 +122,9 @@ class AURA_EXPORT WindowMus {
 
   virtual void NotifyEmbeddedAppDisconnected() = 0;
 
-  virtual bool HasLocalLayerTreeFrameSink() = 0;
-
   virtual float GetDeviceScaleFactor() = 0;
+
+  virtual void DidSetWindowTreeHostBoundsFromServer() = 0;
 
  private:
   // Just for set_server_id(), which other places should not call.

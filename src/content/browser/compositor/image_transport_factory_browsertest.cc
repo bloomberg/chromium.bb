@@ -21,7 +21,6 @@ using ImageTransportFactoryBrowserTest = ContentBrowserTest;
 class MockContextFactoryObserver : public ui::ContextFactoryObserver {
  public:
   MOCK_METHOD0(OnLostSharedContext, void());
-  MOCK_METHOD0(OnLostVizProcess, void());
 };
 
 // Flaky on ChromeOS: crbug.com/394083

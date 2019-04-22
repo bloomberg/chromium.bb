@@ -11,6 +11,9 @@
 
 namespace app_list {
 
+class SearchResult;
+
+// Base class for views that observe and display a search result
 class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
                                              public views::ButtonListener,
                                              public SearchResultObserver {
@@ -19,6 +22,21 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
 
   // Set or remove the background highlight.
   void SetBackgroundHighlighted(bool enabled);
+
+  SearchResult* result() const { return result_; }
+  void SetResult(SearchResult* result);
+
+  // Invoked before changing |result_| to |new_result|.
+  virtual void OnResultChanging(SearchResult* new_result) {}
+
+  // Invoked after |result_| is updated.
+  virtual void OnResultChanged() {}
+
+  // Overridden from SearchResultObserver:
+  void OnResultDestroying() override;
+
+  // Clears the result without calling |OnResultChanged| or |OnResultChanging|
+  void ClearResult();
 
   bool background_highlighted() const { return background_highlighted_; }
 
@@ -30,6 +48,8 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
 
  private:
   bool background_highlighted_ = false;
+
+  SearchResult* result_ = nullptr;  // Owned by SearchModel::SearchResults.
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultBaseView);
 };

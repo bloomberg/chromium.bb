@@ -10,14 +10,13 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.widget.RemoteViews;
 
 import com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -81,12 +80,9 @@ public class BookmarkWidgetProvider extends AppWidgetProvider {
     /**
      * Refreshes all Chrome Bookmark widgets.
      */
-    public static void refreshAllWidgets(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
-                && !context.getPackageManager().hasSystemFeature(
-                           PackageManager.FEATURE_APP_WIDGETS)) {
-            return;
-        }
+    public static void refreshAllWidgets() {
+        Context context = ContextUtils.getApplicationContext();
+        if (AppWidgetManager.getInstance(context) == null) return;
 
         context.sendBroadcast(new Intent(
                 getBookmarkAppWidgetUpdateAction(context),

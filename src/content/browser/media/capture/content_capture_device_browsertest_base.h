@@ -77,6 +77,17 @@ class ContentCaptureDeviceBrowserTestBase : public ContentBrowserTest {
     return capture_stack_.has_captured_frames();
   }
 
+  // Navigates to the test document using a different domain (host). This will
+  // force a new render process to be spun-up, and that is used to test
+  // re-targetting logic.
+  void NavigateToAlternateSite();
+
+  // Crashes the renderer by asking it to navigate to chrome://crash.
+  void CrashTheRenderer();
+
+  // Executes a page reload, assuming this is for a previously-crashed renderer.
+  void ReloadAfterCrash();
+
  protected:
   // These all return false, but can be overridden for parameterized tests to
   // change the behavior of this base class.
@@ -120,6 +131,8 @@ class ContentCaptureDeviceBrowserTestBase : public ContentBrowserTest {
   static constexpr char kOuterFramePath[] = "/outer.html";
   static constexpr char kSingleFrameHostname[] = "singleframe.com";
   static constexpr char kSingleFramePath[] = "/single.html";
+  static constexpr char kAlternateHostname[] = "alternate.com";
+  static constexpr char kAlternatePath[] = "/alternate.html";
 
   DISALLOW_COPY_AND_ASSIGN(ContentCaptureDeviceBrowserTestBase);
 };

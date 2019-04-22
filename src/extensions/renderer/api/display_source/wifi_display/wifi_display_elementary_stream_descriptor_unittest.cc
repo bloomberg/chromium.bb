@@ -128,7 +128,7 @@ TEST_P(LPCMAudioStreamDescriptorTest, Accessors) {
   EXPECT_EQ(number_of_channels_, descriptor.number_of_channels());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     WiFiDisplayElementaryStreamDescriptorTests,
     LPCMAudioStreamDescriptorTest,
     testing::Values(testing::make_tuple(

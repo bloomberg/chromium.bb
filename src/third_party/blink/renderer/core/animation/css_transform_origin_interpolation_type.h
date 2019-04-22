@@ -23,7 +23,7 @@ class CSSTransformOriginInterpolationType
   InterpolationValue MaybeConvertValue(const CSSValue& value,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final {
-    const CSSValueList& list = ToCSSValueList(value);
+    const CSSValueList& list = To<CSSValueList>(value);
     DCHECK_GE(list.length(), 2u);
     return ListInterpolationFunctions::CreateList(
         3, [&list](wtf_size_t index) {

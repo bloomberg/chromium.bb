@@ -15,6 +15,7 @@ TestLifecycleUnit::TestLifecycleUnit(base::TimeTicks last_focused_time,
     : LifecycleUnitBase(nullptr, content::Visibility::VISIBLE, nullptr),
       last_focused_time_(last_focused_time),
       process_handle_(process_handle),
+      sort_key_(last_focused_time),
       can_discard_(can_discard) {}
 
 TestLifecycleUnit::TestLifecycleUnit(content::Visibility visibility,
@@ -33,7 +34,7 @@ TabLifecycleUnitExternal* TestLifecycleUnit::AsTabLifecycleUnitExternal() {
 }
 
 base::string16 TestLifecycleUnit::GetTitle() const {
-  return base::string16();
+  return title_;
 }
 
 base::TimeTicks TestLifecycleUnit::GetLastFocusedTime() const {
@@ -45,7 +46,7 @@ base::ProcessHandle TestLifecycleUnit::GetProcessHandle() const {
 }
 
 LifecycleUnit::SortKey TestLifecycleUnit::GetSortKey() const {
-  return SortKey(last_focused_time_);
+  return sort_key_;
 }
 
 content::Visibility TestLifecycleUnit::GetVisibility() const {
@@ -62,10 +63,6 @@ bool TestLifecycleUnit::Load() {
 
 int TestLifecycleUnit::GetEstimatedMemoryFreedOnDiscardKB() const {
   return 0;
-}
-
-bool TestLifecycleUnit::CanPurge() const {
-  return false;
 }
 
 bool TestLifecycleUnit::CanFreeze(DecisionDetails* decision_details) const {
@@ -87,6 +84,10 @@ bool TestLifecycleUnit::Unfreeze() {
 
 bool TestLifecycleUnit::Discard(LifecycleUnitDiscardReason discard_reason) {
   return false;
+}
+
+LifecycleUnitDiscardReason TestLifecycleUnit::GetDiscardReason() const {
+  return mojom::LifecycleUnitDiscardReason::EXTERNAL;
 }
 
 void ExpectCanDiscardTrue(const LifecycleUnit* lifecycle_unit,

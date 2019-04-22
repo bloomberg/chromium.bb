@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBAUTHN_OTHER_TRANSPORTS_MENU_MODEL_H_
 #define CHROME_BROWSER_UI_WEBAUTHN_OTHER_TRANSPORTS_MENU_MODEL_H_
 
+#include "build/build_config.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -38,6 +39,10 @@ class OtherTransportsMenuModel
 
   // Appends the item representing using BLE with a not-yet-paired security key.
   void AppendItemForAnotherBluetoothKey();
+
+#if defined(OS_WIN)
+  void AppendItemForNativeWinApi();
+#endif
 
   AuthenticatorRequestDialogModel* dialog_model_;
 

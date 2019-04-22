@@ -28,20 +28,7 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
       signin_metrics::SignoutDelete delete_metric) override;
   bool IsSettingPrimaryAccountAllowed() const override;
   void SetSettingPrimaryAccountAllowed(bool allowed) override;
-  bool IsClearingPrimaryAccountAllowed() const override;
-  void SetClearingPrimaryAccountAllowed(bool allowed) override;
   void SetAllowedPrimaryAccountPattern(const std::string& pattern) override;
-  void LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-      const std::string& refresh_token,
-      const std::string& gaia_id,
-      const std::string& username,
-      const std::string& password,
-      base::OnceCallback<void(const std::string&)> callback) override;
-  void LegacyCompletePendingPrimaryAccountSignin() override;
-  void LegacyMergeSigninCredentialIntoCookieJar() override;
-  bool LegacyIsPrimaryAccountAuthInProgress() const override;
-  AccountInfo LegacyPrimaryAccountForAuthInProgress() const override;
-  void LegacyCopyCredentialsFrom(const PrimaryAccountMutator& source) override;
 
  private:
   // Pointers to the services used by the PrimaryAccountMutatorImpl. They

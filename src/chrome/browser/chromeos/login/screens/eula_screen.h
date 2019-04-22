@@ -7,34 +7,32 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chromeos/tpm/tpm_password_fetcher.h"
-#include "components/login/screens/screen_context.h"
 #include "url/gurl.h"
 
 namespace chromeos {
 
-class BaseScreenDelegate;
 class EulaView;
 
 // Representation independent class that controls OOBE screen showing EULA
 // to users.
 class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
  public:
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    // Whether usage statistics reporting is enabled on EULA screen.
-    virtual void SetUsageStatisticsReporting(bool val) = 0;
-    virtual bool GetUsageStatisticsReporting() const = 0;
+  enum class Result {
+    // The user accepted EULA, and enabled usage stats reporting.
+    ACCEPTED_WITH_USAGE_STATS_REPORTING,
+    // The user accepted EULA, and disabled usage stats reporting.
+    ACCEPTED_WITHOUT_USAGE_STATS_REPORTING,
+    // The usage did not accept EULA - they clicked back button instead.
+    BACK
   };
 
-  EulaScreen(BaseScreenDelegate* base_screen_delegate,
-             Delegate* delegate,
-             EulaView* view);
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
+  EulaScreen(EulaView* view, const ScreenExitCallback& exit_callback);
   ~EulaScreen() override;
 
   // Returns URL of the OEM EULA page that should be displayed using current
@@ -45,6 +43,8 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
   // done.
   void InitiatePasswordFetch();
 
+  void SetUsageStatsEnabled(bool enabled);
+
   // Returns true if usage statistics reporting is enabled.
   bool IsUsageStatsEnabled() const;
 
@@ -52,12 +52,14 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
   // is destroyed earlier then it has to call SetModel(NULL).
   void OnViewDestroyed(EulaView* view);
 
+ protected:
+  ScreenExitCallback* exit_callback() { return &exit_callback_; }
+
  private:
   // BaseScreen implementation:
   void Show() override;
   void Hide() override;
   void OnUserAction(const std::string& action_id) override;
-  void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;
 
   // TpmPasswordFetcherDelegate implementation:
   void OnPasswordFetched(const std::string& tpm_password) override;
@@ -72,9 +74,9 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
   // it's destroyed.
   std::string tpm_password_;
 
-  Delegate* delegate_;
-
   EulaView* view_;
+
+  ScreenExitCallback exit_callback_;
 
   TpmPasswordFetcher password_fetcher_;
 

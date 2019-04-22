@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"

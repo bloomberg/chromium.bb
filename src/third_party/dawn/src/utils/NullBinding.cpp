@@ -14,27 +14,34 @@
 
 #include "utils/BackendBinding.h"
 
+#include "common/Assert.h"
 #include "dawn_native/NullBackend.h"
+
+#include <memory>
 
 namespace utils {
 
     class NullBinding : public BackendBinding {
       public:
-        void SetupGLFWWindowHints() override {
+        NullBinding(GLFWwindow* window, DawnDevice device) : BackendBinding(window, device) {
         }
-        dawnDevice CreateDevice() override {
-            return dawn_native::null::CreateDevice();
-        }
+
         uint64_t GetSwapChainImplementation() override {
-            return 0;
+            if (mSwapchainImpl.userData == nullptr) {
+                mSwapchainImpl = dawn_native::null::CreateNativeSwapChainImpl();
+            }
+            return reinterpret_cast<uint64_t>(&mSwapchainImpl);
         }
-        dawnTextureFormat GetPreferredSwapChainTextureFormat() override {
+        DawnTextureFormat GetPreferredSwapChainTextureFormat() override {
             return DAWN_TEXTURE_FORMAT_R8_G8_B8_A8_UNORM;
         }
+
+      private:
+        DawnSwapChainImplementation mSwapchainImpl = {};
     };
 
-    BackendBinding* CreateNullBinding() {
-        return new NullBinding;
+    BackendBinding* CreateNullBinding(GLFWwindow* window, DawnDevice device) {
+        return new NullBinding(window, device);
     }
 
 }  // namespace utils

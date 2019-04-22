@@ -33,7 +33,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_decode_error_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_decode_success_callback.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -91,7 +91,7 @@ class WorkerThread;
 class MODULES_EXPORT BaseAudioContext
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<BaseAudioContext>,
-      public PausableObject {
+      public ContextLifecycleStateObserver {
   USING_GARBAGE_COLLECTED_MIXIN(BaseAudioContext);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -119,6 +119,7 @@ class MODULES_EXPORT BaseAudioContext
   }
 
   // Document notification
+  void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
   void ContextDestroyed(ExecutionContext*) override;
   bool HasPendingActivity() const override;
 
@@ -135,9 +136,16 @@ class MODULES_EXPORT BaseAudioContext
 
   String state() const;
   AudioContextState ContextState() const { return context_state_; }
-  void ThrowExceptionForClosedState(ExceptionState&);
 
-  AudioBuffer* createBuffer(unsigned number_of_channels,
+  // Warn user when creating a node on a closed context.  The node can't do
+  // anything useful because the context is closed.
+  void WarnIfContextClosed(const AudioHandler*) const;
+
+  // Warn user when connecting two nodes on a closed context. The connection
+  // does nothing useful because the context is closed.
+  void WarnForConnectionIfContextClosed() const;
+
+  AudioBuffer* createBuffer(uint32_t number_of_channels,
                             uint32_t number_of_frames,
                             float sample_rate,
                             ExceptionState&);
@@ -184,21 +192,21 @@ class MODULES_EXPORT BaseAudioContext
   DynamicsCompressorNode* createDynamicsCompressor(ExceptionState&);
   AnalyserNode* createAnalyser(ExceptionState&);
   ScriptProcessorNode* createScriptProcessor(ExceptionState&);
-  ScriptProcessorNode* createScriptProcessor(size_t buffer_size,
+  ScriptProcessorNode* createScriptProcessor(uint32_t buffer_size,
                                              ExceptionState&);
-  ScriptProcessorNode* createScriptProcessor(size_t buffer_size,
-                                             size_t number_of_input_channels,
+  ScriptProcessorNode* createScriptProcessor(uint32_t buffer_size,
+                                             uint32_t number_of_input_channels,
                                              ExceptionState&);
-  ScriptProcessorNode* createScriptProcessor(size_t buffer_size,
-                                             size_t number_of_input_channels,
-                                             size_t number_of_output_channels,
+  ScriptProcessorNode* createScriptProcessor(uint32_t buffer_size,
+                                             uint32_t number_of_input_channels,
+                                             uint32_t number_of_output_channels,
                                              ExceptionState&);
   StereoPannerNode* createStereoPanner(ExceptionState&);
   ChannelSplitterNode* createChannelSplitter(ExceptionState&);
-  ChannelSplitterNode* createChannelSplitter(size_t number_of_outputs,
+  ChannelSplitterNode* createChannelSplitter(uint32_t number_of_outputs,
                                              ExceptionState&);
   ChannelMergerNode* createChannelMerger(ExceptionState&);
-  ChannelMergerNode* createChannelMerger(size_t number_of_inputs,
+  ChannelMergerNode* createChannelMerger(uint32_t number_of_inputs,
                                          ExceptionState&);
   OscillatorNode* createOscillator(ExceptionState&);
   PeriodicWave* createPeriodicWave(const Vector<float>& real,
@@ -229,10 +237,21 @@ class MODULES_EXPORT BaseAudioContext
   void NotifySourceNodeFinishedProcessing(AudioHandler*);
 
   // Called at the start of each render quantum.
-  void HandlePreRenderTasks(const AudioIOPosition& output_position);
+  //
+  // For an AudioContext:
+  //   - |output_position| must be a valid pointer to an AudioIOPosition
+  //   - The return value is ignored.
+  //
+  // For an OfflineAudioContext, we have the following conditions:
+  //   - |output_position| must be nullptr because there is no defined
+  //   AudioIOPosition.
+  //   - The return value indicates whether the context needs to be suspended or
+  //   not after rendering.
+  virtual bool HandlePreRenderTasks(const AudioIOPosition* output_position,
+                                    const AudioIOCallbackMetric* metric) = 0;
 
   // Called at the end of each render quantum.
-  void HandlePostRenderTasks(const AudioBus* destination_bus);
+  virtual void HandlePostRenderTasks() = 0;
 
   DeferredTaskHandler& GetDeferredTaskHandler() const {
     return *deferred_task_handler_;
@@ -255,13 +274,13 @@ class MODULES_EXPORT BaseAudioContext
   using GraphAutoLocker = DeferredTaskHandler::GraphAutoLocker;
 
   // Returns the maximum numuber of channels we can support.
-  static unsigned MaxNumberOfChannels() { return kMaxNumberOfChannels; }
+  static uint32_t MaxNumberOfChannels() { return kMaxNumberOfChannels; }
 
   // EventTarget
   const AtomicString& InterfaceName() const final;
   ExecutionContext* GetExecutionContext() const final;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange)
 
   void StartRendering();
 
@@ -296,8 +315,6 @@ class MODULES_EXPORT BaseAudioContext
   // Does nothing when the worklet global scope does not exist.
   void UpdateWorkletGlobalScopeOnRenderingThread();
 
-  void set_was_audible_for_testing(bool value) { was_audible_ = value; }
-
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 
@@ -324,7 +341,8 @@ class MODULES_EXPORT BaseAudioContext
 
   void RejectPendingDecodeAudioDataResolvers();
 
-  AudioIOPosition OutputPosition() const;
+  // When the context goes away, reject any pending script promise resolvers.
+  virtual void RejectPendingResolvers();
 
   // Returns the Document wich wich the instance is associated.
   Document* GetDocument() const;
@@ -341,9 +359,14 @@ class MODULES_EXPORT BaseAudioContext
   // audio thread making rendering progress.
   void PerformCleanupOnMainThread();
 
- private:
-  friend class AudioContextAutoplayTest;
+  // True if we're in the process of resolving promises for resume().  Resolving
+  // can take some time and the audio context process loop is very fast, so we
+  // don't want to call resolve an excessive number of times.
+  bool is_resolving_resume_promises_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+ private:
   // Unique ID for each context.
   const String uuid_;
 
@@ -356,38 +379,6 @@ class MODULES_EXPORT BaseAudioContext
 
   // Listener for the PannerNodes
   Member<AudioListener> listener_;
-
-  // Accessed by audio thread and main thread, coordinated using
-  // the associated mutex.
-  //
-  // These raw pointers are safe because AudioSourceNodes in
-  // active_source_nodes_ own them.
-  Mutex finished_source_handlers_mutex_;
-  Vector<AudioHandler*> finished_source_handlers_;
-
-  // List of source nodes. This is either accessed when the graph lock is
-  // held, or on the main thread when the audio thread has finished.
-  // Oilpan: This Vector holds connection references. We must call
-  // AudioHandler::makeConnection when we add an AudioNode to this, and must
-  // call AudioHandler::breakConnection() when we remove an AudioNode from
-  // this.
-  HeapVector<Member<AudioNode>> active_source_nodes_;
-
-  // Called by the audio thread to handle Promises for resume() and suspend(),
-  // posting a main thread task to perform the actual resolving, if needed.
-  //
-  // TODO(dominicc): Move to AudioContext because only it creates
-  // these Promises.
-  void ResolvePromisesForUnpause();
-
-  // When the context is going away, reject any pending script promise
-  // resolvers.
-  virtual void RejectPendingResolvers();
-
-  // True if we're in the process of resolving promises for resume().  Resolving
-  // can take some time and the audio context process loop is very fast, so we
-  // don't want to call resolve an excessive number of times.
-  bool is_resolving_resume_promises_;
 
   // Set to |true| by the audio thread when it posts a main-thread task to
   // perform delayed state sync'ing updates that needs to be done on the main
@@ -419,8 +410,6 @@ class MODULES_EXPORT BaseAudioContext
   // It is somewhat arbitrary and could be increased if necessary.
   enum { kMaxNumberOfChannels = 32 };
 
-  AudioIOPosition output_position_;
-
   // The handler associated with the above |destination_node_|.
   scoped_refptr<AudioDestinationHandler> destination_handler_;
 
@@ -432,22 +421,6 @@ class MODULES_EXPORT BaseAudioContext
   // This cannot be nullptr once it is assigned from AudioWorkletThread until
   // the BaseAudioContext goes away.
   WorkerThread* audio_worklet_thread_ = nullptr;
-
-  // Notifies browser when audible audio starts or stops.  This should
-  // only apply for AudioContexts.
-  virtual void NotifyAudibleAudioStarted() { NOTREACHED(); }
-  virtual void NotifyAudibleAudioStopped() { NOTREACHED(); }
-
-  // Keeps track if the output of this destination was audible, before the
-  // current rendering quantum.  Used for recording "playback" time.
-  bool was_audible_ = false;
-
-  // Counts the number of render quanta where audible sound was played.  We
-  // determine audibility on render quantum boundaries, so counting quanta is
-  // all that's needed.
-  size_t total_audible_renders_ = 0;
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink

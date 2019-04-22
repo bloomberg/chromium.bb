@@ -13,11 +13,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/clock.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/version_info/channel.h"
+
+class PrefService;
 
 namespace download {
 class DownloadService;
@@ -31,7 +32,8 @@ class PrefetchService;
 class PrefetchDownloaderImpl : public PrefetchDownloader {
  public:
   PrefetchDownloaderImpl(download::DownloadService* download_service,
-                         version_info::Channel channel);
+                         version_info::Channel channel,
+                         PrefService* prefs);
   ~PrefetchDownloaderImpl() override;
 
   // PrefetchDownloader implementation:
@@ -50,8 +52,7 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
                            const base::FilePath& file_path,
                            int64_t file_size) override;
   void OnDownloadFailed(const std::string& download_id) override;
-
-  void SetClockForTesting(base::Clock* clock);
+  int GetMaxConcurrentDownloads() override;
 
  private:
   enum class DownloadServiceStatus {
@@ -73,8 +74,6 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
       const std::map<std::string, std::pair<base::FilePath, int64_t>>&
           success_downloads);
 
-  base::Clock* clock_;
-
   // Unowned. It is valid until |this| instance is disposed.
   download::DownloadService* download_service_;
 
@@ -93,6 +92,8 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
 
   std::set<std::string> outstanding_download_ids_;
   std::map<std::string, std::pair<base::FilePath, int64_t>> success_downloads_;
+
+  PrefService* prefs_;
 
   base::WeakPtrFactory<PrefetchDownloaderImpl> weak_ptr_factory_;
 

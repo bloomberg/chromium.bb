@@ -20,5 +20,6 @@ enum PushEncryptionKeyName {
     ArrayBuffer? getKey(PushEncryptionKeyName name);
     [CallWith=ScriptState] Promise<boolean> unsubscribe();
 
-    serializer;
+    // TODO(peria): Return type should be PushSubscriptionJSON.
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

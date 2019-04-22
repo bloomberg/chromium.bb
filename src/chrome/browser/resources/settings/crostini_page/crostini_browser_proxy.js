@@ -9,6 +9,13 @@
 let CrostiniSharedPath;
 
 /**
+ * @typedef {{label: string,
+ *            guid: string,
+ *            shared: boolean}}
+ */
+let CrostiniSharedUsbDevice;
+
+/**
  * @fileoverview A helper object used by the "Linux Apps" (Crostini) section
  * to install and uninstall Crostini.
  */
@@ -27,8 +34,32 @@ cr.define('settings', function() {
      */
     getCrostiniSharedPathsDisplayText(paths) {}
 
-    /** @param {string} path Path to stop sharing. */
-    removeCrostiniSharedPath(path) {}
+    /**
+     * @return {!Promise<!Array<CrostiniSharedUsbDevice>>}
+     */
+    getCrostiniSharedUsbDevices() {}
+
+    /**
+     * @param {string} guid Unique device identifier.
+     * @param {boolean} shared Whether device is currently shared with Crostini.
+     */
+    setCrostiniUsbDeviceShared(guid, shared) {}
+
+    /**
+     * @param {string} vmName VM to stop sharing path with.
+     * @param {string} path Path to stop sharing.
+     */
+    removeCrostiniSharedPath(vmName, path) {}
+
+    /* Request chrome send a crostini-installer-status-changed event with the
+    current installer status */
+    requestCrostiniInstallerStatus() {}
+
+    /* Export crostini container. */
+    exportCrostiniContainer() {}
+
+    /* Import crostini container. */
+    importCrostiniContainer() {}
   }
 
   /** @implements {settings.CrostiniBrowserProxy} */
@@ -49,8 +80,33 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    removeCrostiniSharedPath(path) {
-      chrome.send('removeCrostiniSharedPath', [path]);
+    getCrostiniSharedUsbDevices() {
+      return cr.sendWithPromise('getCrostiniSharedUsbDevices');
+    }
+
+    /** @override */
+    setCrostiniUsbDeviceShared(guid, shared) {
+      return chrome.send('setCrostiniUsbDeviceShared', [guid, shared]);
+    }
+
+    /** @override */
+    removeCrostiniSharedPath(vmName, path) {
+      chrome.send('removeCrostiniSharedPath', [vmName, path]);
+    }
+
+    /** @override */
+    requestCrostiniInstallerStatus() {
+      chrome.send('requestCrostiniInstallerStatus');
+    }
+
+    /** @override */
+    exportCrostiniContainer() {
+      chrome.send('exportCrostiniContainer');
+    }
+
+    /** @override */
+    importCrostiniContainer() {
+      chrome.send('importCrostiniContainer');
     }
   }
 

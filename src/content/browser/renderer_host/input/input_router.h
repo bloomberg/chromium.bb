@@ -79,6 +79,9 @@ class InputRouter {
   // Return the currently allowed touch-action.
   virtual base::Optional<cc::TouchAction> AllowedTouchAction() = 0;
 
+  // Return the currently active touch-action.
+  virtual base::Optional<cc::TouchAction> ActiveTouchAction() = 0;
+
   virtual void SetForceEnableZoom(bool enabled) = 0;
 
   // Associate this InputRouter with a remote host channel.
@@ -103,6 +106,13 @@ class InputRouter {
   // Called when the renderer notifies a change in whether or not it has touch
   // event handlers registered.
   virtual void OnHasTouchEventHandlers(bool has_handlers) = 0;
+
+  // Will resolve the given callback once all prior input has been fully
+  // propagated through the system such that subsequent input will be subject
+  // to its effects. e.g. Input that follows a scroll gesture that affects
+  // OOPIF hit-testing will need to wait until updated CompositorFrames have
+  // been submitted to the browser.
+  virtual void WaitForInputProcessed(base::OnceClosure callback) = 0;
 };
 
 }  // namespace content

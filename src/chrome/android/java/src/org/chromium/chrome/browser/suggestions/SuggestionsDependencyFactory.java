@@ -62,7 +62,8 @@ public class SuggestionsDependencyFactory {
     }
 
     public ThumbnailProvider createThumbnailProvider(DiscardableReferencePool referencePool) {
-        return new ThumbnailProviderImpl(referencePool);
+        return new ThumbnailProviderImpl(
+                referencePool, ThumbnailProviderImpl.ClientType.NTP_SUGGESTIONS);
     }
 
     public FaviconHelper createFaviconHelper() {

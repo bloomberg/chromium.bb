@@ -9,11 +9,11 @@
 
 #include <map>
 
-#include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fxcrt/cfx_widetextbuf.h"
 #include "core/fxcrt/unowned_ptr.h"
 
 class CPDF_CID2UnicodeMap;
+class CPDF_Stream;
 
 class CPDF_ToUnicodeMap {
  public:
@@ -29,8 +29,8 @@ class CPDF_ToUnicodeMap {
   friend class cpdf_tounicodemap_StringToCode_Test;
   friend class cpdf_tounicodemap_StringToWideString_Test;
 
-  static uint32_t StringToCode(const ByteStringView& str);
-  static WideString StringToWideString(const ByteStringView& str);
+  static uint32_t StringToCode(ByteStringView str);
+  static WideString StringToWideString(ByteStringView str);
 
   uint32_t GetUnicode();
 

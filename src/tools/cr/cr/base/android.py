@@ -13,7 +13,7 @@ class AndroidPlatform(cr.Platform):
   """The implementation of Platform for the android target."""
 
   ACTIVE = cr.Config.From(
-      CR_ADB=os.path.join('{CR_SRC}', 'third_party', 'android_tools', 'sdk',
+      CR_ADB=os.path.join('{CR_SRC}', 'third_party', 'android_sdk', 'public',
           'platform-tools', 'adb'),
       CR_TARGET_SUFFIX='_apk',
       CR_BINARY=os.path.join('{CR_BUILD_DIR}', 'apks', '{CR_TARGET_NAME}.apk'),

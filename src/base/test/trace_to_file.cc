@@ -9,7 +9,9 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_log.h"
 
@@ -74,13 +76,13 @@ void TraceToFile::TraceOutputCallback(const std::string& data) {
 }
 
 static void OnTraceDataCollected(
-    Closure quit_closure,
+    OnceClosure quit_closure,
     trace_event::TraceResultBuffer* buffer,
     const scoped_refptr<RefCountedString>& json_events_str,
     bool has_more_events) {
   buffer->AddFragment(json_events_str->data());
   if (!has_more_events)
-    quit_closure.Run();
+    std::move(quit_closure).Run();
 }
 
 void TraceToFile::EndTracingIfNeeded() {
@@ -93,6 +95,11 @@ void TraceToFile::EndTracingIfNeeded() {
   trace_event::TraceResultBuffer buffer;
   buffer.SetOutputCallback(
       Bind(&TraceToFile::TraceOutputCallback, Unretained(this)));
+
+  // In tests we might not have a MessageLoop, create one if needed.
+  std::unique_ptr<MessageLoop> message_loop;
+  if (!ThreadTaskRunnerHandle::IsSet())
+    message_loop = std::make_unique<MessageLoop>();
 
   RunLoop run_loop;
   trace_event::TraceLog::GetInstance()->Flush(

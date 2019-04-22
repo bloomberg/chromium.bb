@@ -6,16 +6,19 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/viz_utils.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
@@ -54,10 +57,9 @@ bool ShouldEnableAndroidSurfaceControl(const base::CommandLine& cmd_line) {
 #if !defined(OS_ANDROID)
   return false;
 #else
-  if (!base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+  if (viz::PreferRGB565ResourcesForDisplay())
     return false;
-
-  return base::FeatureList::IsEnabled(features::kAndroidSurfaceControl);
+  return features::IsAndroidSurfaceControlEnabled();
 #endif
 }
 
@@ -67,10 +69,6 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       base::CommandLine::ForCurrentProcess();
   gpu::GpuPreferences gpu_preferences =
       gpu::gles2::ParseGpuPreferences(command_line);
-  gpu_preferences.single_process =
-      command_line->HasSwitch(switches::kSingleProcess);
-  gpu_preferences.in_process_gpu =
-      command_line->HasSwitch(switches::kInProcessGPU);
   gpu_preferences.disable_accelerated_video_decode =
       command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
   gpu_preferences.disable_accelerated_video_encode =
@@ -101,7 +99,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kGpuStartupDialog);
   gpu_preferences.disable_gpu_watchdog =
       command_line->HasSwitch(switches::kDisableGpuWatchdog) ||
-      (gpu_preferences.single_process || gpu_preferences.in_process_gpu);
+      command_line->HasSwitch(switches::kSingleProcess) ||
+      command_line->HasSwitch(switches::kInProcessGPU);
   gpu_preferences.gpu_sandbox_start_early =
       command_line->HasSwitch(switches::kGpuSandboxStartEarly);
 
@@ -115,6 +114,9 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 
   gpu_preferences.enable_vulkan =
       command_line->HasSwitch(switches::kEnableVulkan);
+
+  gpu_preferences.disable_vulkan_fallback_to_gl_for_testing =
+      command_line->HasSwitch(switches::kDisableVulkanFallbackToGLForTesting);
 
   gpu_preferences.enable_gpu_benchmarking_extension =
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking);

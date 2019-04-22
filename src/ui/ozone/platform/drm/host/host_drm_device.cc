@@ -4,6 +4,9 @@
 
 #include "ui/ozone/platform/drm/host/host_drm_device.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -15,7 +18,7 @@
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/host/drm_device_connector.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
-#include "ui/ozone/platform/drm/host/drm_overlay_manager.h"
+#include "ui/ozone/platform/drm/host/drm_overlay_manager_host.h"
 #include "ui/ozone/platform/drm/host/host_cursor_proxy.h"
 
 namespace ui {
@@ -91,7 +94,7 @@ void HostDrmDevice::OnDrmServiceStartedCallback(bool success) {
 }
 
 void HostDrmDevice::ProvideManagers(DrmDisplayHostManager* display_manager,
-                                    DrmOverlayManager* overlay_manager) {
+                                    DrmOverlayManagerHost* overlay_manager) {
   display_manager_ = display_manager;
   overlay_manager_ = overlay_manager;
 }
@@ -174,9 +177,9 @@ bool HostDrmDevice::GpuWindowBoundsChanged(gfx::AcceleratedWidget widget,
   return true;
 }
 
-// Services needed for DrmOverlayManager.
+// Services needed for DrmOverlayManagerHost.
 void HostDrmDevice::RegisterHandlerForDrmOverlayManager(
-    DrmOverlayManager* handler) {
+    DrmOverlayManagerHost* handler) {
   // TODO(rjkroege): Permit overlay manager to run in Viz when the display
   // compositor runs in Viz.
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);

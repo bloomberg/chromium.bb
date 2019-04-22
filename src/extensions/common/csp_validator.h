@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
 #include "extensions/common/manifest.h"
 
@@ -105,6 +106,7 @@ class CSPParser {
 // Returns the sanitized policy.
 std::string SanitizeContentSecurityPolicy(
     const std::string& policy,
+    std::string manifest_key,
     int options,
     std::vector<InstallWarning>* warnings);
 
@@ -118,6 +120,7 @@ std::string SanitizeContentSecurityPolicy(
 // If |warnings| is not nullptr, any validation errors are appended to
 // |warnings|.
 std::string GetEffectiveSandoxedPageCSP(const std::string& policy,
+                                        std::string manifest_key,
                                         std::vector<InstallWarning>* warnings);
 
 // Checks whether the given |policy| enforces a unique origin sandbox as
@@ -128,6 +131,11 @@ std::string GetEffectiveSandoxedPageCSP(const std::string& policy,
 // |type|.
 bool ContentSecurityPolicyIsSandboxed(
     const std::string& policy, Manifest::Type type);
+
+// Returns whether the given |isolated_world_csp| is secure. If not, populates
+// |error|.
+bool IsSecureIsolatedWorldCSP(const std::string& isolated_world_csp,
+                              base::string16* error);
 
 }  // namespace csp_validator
 

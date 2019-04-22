@@ -15,10 +15,10 @@
 #include "base/i18n/unicodestring.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -370,7 +370,7 @@ TimezoneSettingsBaseImpl::GetTimezoneList() const {
 }
 
 TimezoneSettingsBaseImpl::TimezoneSettingsBaseImpl() {
-  for (size_t i = 0; i < arraysize(kTimeZones); ++i) {
+  for (size_t i = 0; i < base::size(kTimeZones); ++i) {
     timezones_.push_back(base::WrapUnique(icu::TimeZone::createTimeZone(
         icu::UnicodeString(kTimeZones[i], -1, US_INV))));
   }

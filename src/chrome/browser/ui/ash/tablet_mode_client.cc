@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -57,6 +58,14 @@ void TabletModeClient::InitForTesting(
 // static
 TabletModeClient* TabletModeClient::Get() {
   return g_tablet_mode_client_instance;
+}
+
+void TabletModeClient::SetTabletModeEnabledForTesting(
+    bool enabled,
+    ash::mojom::TabletModeController::SetTabletModeEnabledForTestingCallback
+        callback) {
+  tablet_mode_controller_->SetTabletModeEnabledForTesting(enabled,
+                                                          std::move(callback));
 }
 
 void TabletModeClient::AddObserver(TabletModeClientObserver* observer) {

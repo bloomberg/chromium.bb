@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/values.h"

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "ui/display/manager/touch_device_manager.h"
 
@@ -21,16 +20,13 @@ BacklightsForcedOffSetter::BacklightsForcedOffSetter()
     : power_manager_observer_(this), weak_ptr_factory_(this) {
   InitDisableTouchscreenWhileScreenOff();
 
-  power_manager_observer_.Add(
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+  power_manager_observer_.Add(chromeos::PowerManagerClient::Get());
   GetInitialBacklightsForcedOff();
 }
 
 BacklightsForcedOffSetter::~BacklightsForcedOffSetter() {
   if (active_backlights_forced_off_count_ > 0) {
-    chromeos::DBusThreadManager::Get()
-        ->GetPowerManagerClient()
-        ->SetBacklightsForcedOff(false);
+    chromeos::PowerManagerClient::Get()->SetBacklightsForcedOff(false);
   }
 }
 
@@ -81,9 +77,8 @@ void BacklightsForcedOffSetter::ScreenBrightnessChanged(
 
 void BacklightsForcedOffSetter::PowerManagerRestarted() {
   if (backlights_forced_off_.has_value()) {
-    chromeos::DBusThreadManager::Get()
-        ->GetPowerManagerClient()
-        ->SetBacklightsForcedOff(backlights_forced_off_.value());
+    chromeos::PowerManagerClient::Get()->SetBacklightsForcedOff(
+        backlights_forced_off_.value());
   } else {
     GetInitialBacklightsForcedOff();
   }
@@ -91,9 +86,7 @@ void BacklightsForcedOffSetter::PowerManagerRestarted() {
 
 void BacklightsForcedOffSetter::ResetForTest() {
   if (active_backlights_forced_off_count_ > 0) {
-    chromeos::DBusThreadManager::Get()
-        ->GetPowerManagerClient()
-        ->SetBacklightsForcedOff(false);
+    chromeos::PowerManagerClient::Get()->SetBacklightsForcedOff(false);
   }
 
   // Cancel all backlights forced off requests.
@@ -113,11 +106,9 @@ void BacklightsForcedOffSetter::InitDisableTouchscreenWhileScreenOff() {
 }
 
 void BacklightsForcedOffSetter::GetInitialBacklightsForcedOff() {
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->GetBacklightsForcedOff(base::BindOnce(
-          &BacklightsForcedOffSetter::OnGotInitialBacklightsForcedOff,
-          weak_ptr_factory_.GetWeakPtr()));
+  chromeos::PowerManagerClient::Get()->GetBacklightsForcedOff(base::BindOnce(
+      &BacklightsForcedOffSetter::OnGotInitialBacklightsForcedOff,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BacklightsForcedOffSetter::OnGotInitialBacklightsForcedOff(
@@ -147,9 +138,7 @@ void BacklightsForcedOffSetter::SetBacklightsForcedOff(bool forced_off) {
   }
 
   backlights_forced_off_ = forced_off;
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->SetBacklightsForcedOff(forced_off);
+  chromeos::PowerManagerClient::Get()->SetBacklightsForcedOff(forced_off);
 
   UpdateTouchscreenStatus();
 

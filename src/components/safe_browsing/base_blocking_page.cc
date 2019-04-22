@@ -7,10 +7,12 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/features.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/safe_browsing_loud_error_ui.h"
@@ -145,47 +147,22 @@ void BaseBlockingPage::SetThreatDetailsProceedDelayForTesting(int64_t delay) {
 }
 
 void BaseBlockingPage::OnDontProceed() {
+  // With committed interstitials we shouldn't hit this code.
+  DCHECK(
+      !base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials));
+
   // We could have already called Proceed(), in which case we must not notify
   // the SafeBrowsingUIManager again, as the client has been deleted.
   if (proceeded_)
     return;
 
   OnInterstitialClosing();
-  if (!sb_error_ui_->is_proceed_anyway_disabled()) {
-    controller()->metrics_helper()->RecordUserDecision(
-        security_interstitials::MetricsHelper::DONT_PROCEED);
-  }
 
   // Send the malware details, if we opted to.
   FinishThreatDetails(base::TimeDelta(), false /* did_proceed */,
                       controller()->metrics_helper()->NumVisits());  // No delay
 
-  ui_manager_->OnBlockingPageDone(unsafe_resources_, false /* proceed */,
-                                  web_contents(), main_frame_url_);
-
-  // The user does not want to proceed, clear the queued unsafe resources
-  // notifications we received while the interstitial was showing.
-  UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
-  auto iter = unsafe_resource_map->find(web_contents());
-  if (iter != unsafe_resource_map->end() && !iter->second.empty()) {
-    ui_manager_->OnBlockingPageDone(iter->second, false, web_contents(),
-                                    main_frame_url_);
-    unsafe_resource_map->erase(iter);
-  }
-
-  // We don't remove the navigation entry if the tab is being destroyed as this
-  // would trigger a navigation that would cause trouble as the render view host
-  // for the tab has by then already been destroyed.  We also don't delete the
-  // current entry if it has been committed again, which is possible on a page
-  // that had a subresource warning.
-  const int last_committed_index =
-      web_contents()->GetController().GetLastCommittedEntryIndex();
-  if (navigation_entry_index_to_remove_ != -1 &&
-      navigation_entry_index_to_remove_ != last_committed_index &&
-      !web_contents()->IsBeingDestroyed()) {
-    CHECK(web_contents()->GetController().RemoveEntryAtIndex(
-        navigation_entry_index_to_remove_));
-  }
+  OnDontProceedDone();
 }
 
 void BaseBlockingPage::CommandReceived(
@@ -326,6 +303,14 @@ BaseBlockingPage::unsafe_resources() const {
   return unsafe_resources_;
 }
 
+bool BaseBlockingPage::proceeded() const {
+  return proceeded_;
+}
+
+int64_t BaseBlockingPage::threat_details_proceed_delay() const {
+  return threat_details_proceed_delay_ms_;
+}
+
 BaseSafeBrowsingErrorUI* BaseBlockingPage::sb_error_ui() const {
   return sb_error_ui_.get();
 }
@@ -374,6 +359,40 @@ int BaseBlockingPage::GetHTMLTemplateId() {
 void BaseBlockingPage::set_sb_error_ui(
     std::unique_ptr<BaseSafeBrowsingErrorUI> sb_error_ui) {
   sb_error_ui_ = std::move(sb_error_ui);
+}
+
+void BaseBlockingPage::OnDontProceedDone() {
+  if (!sb_error_ui_->is_proceed_anyway_disabled()) {
+    controller()->metrics_helper()->RecordUserDecision(
+        security_interstitials::MetricsHelper::DONT_PROCEED);
+  }
+
+  ui_manager_->OnBlockingPageDone(unsafe_resources_, false /* proceed */,
+                                  web_contents(), main_frame_url_);
+
+  // The user does not want to proceed, clear the queued unsafe resources
+  // notifications we received while the interstitial was showing.
+  UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
+  auto iter = unsafe_resource_map->find(web_contents());
+  if (iter != unsafe_resource_map->end() && !iter->second.empty()) {
+    ui_manager_->OnBlockingPageDone(iter->second, false, web_contents(),
+                                    main_frame_url_);
+    unsafe_resource_map->erase(iter);
+  }
+
+  // We don't remove the navigation entry if the tab is being destroyed as this
+  // would trigger a navigation that would cause trouble as the render view host
+  // for the tab has by then already been destroyed.  We also don't delete the
+  // current entry if it has been committed again, which is possible on a page
+  // that had a subresource warning.
+  const int last_committed_index =
+      web_contents()->GetController().GetLastCommittedEntryIndex();
+  if (navigation_entry_index_to_remove_ != -1 &&
+      navigation_entry_index_to_remove_ != last_committed_index &&
+      !web_contents()->IsBeingDestroyed()) {
+    CHECK(web_contents()->GetController().RemoveEntryAtIndex(
+        navigation_entry_index_to_remove_));
+  }
 }
 
 // static

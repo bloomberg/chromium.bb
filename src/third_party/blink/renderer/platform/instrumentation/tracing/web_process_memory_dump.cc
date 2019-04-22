@@ -36,10 +36,9 @@ WebProcessMemoryDump::~WebProcessMemoryDump() = default;
 blink::WebMemoryAllocatorDump* WebProcessMemoryDump::CreateMemoryAllocatorDump(
     const String& absolute_name) {
   StringUTF8Adaptor adapter(absolute_name);
-  std::string name(adapter.Data(), adapter.length());
   // Get a MemoryAllocatorDump from the base/ object.
   base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
-      process_memory_dump_->CreateAllocatorDump(name);
+      process_memory_dump_->CreateAllocatorDump(adapter.AsStdString());
 
   return CreateWebMemoryAllocatorDump(memory_allocator_dump);
 }
@@ -48,11 +47,11 @@ blink::WebMemoryAllocatorDump* WebProcessMemoryDump::CreateMemoryAllocatorDump(
     const String& absolute_name,
     blink::WebMemoryAllocatorDumpGuid guid) {
   StringUTF8Adaptor adapter(absolute_name);
-  std::string name(adapter.Data(), adapter.length());
   // Get a MemoryAllocatorDump from the base/ object with given guid.
   base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
       process_memory_dump_->CreateAllocatorDump(
-          name, base::trace_event::MemoryAllocatorDumpGuid(guid));
+          adapter.AsStdString(),
+          base::trace_event::MemoryAllocatorDumpGuid(guid));
   return CreateWebMemoryAllocatorDump(memory_allocator_dump);
 }
 
@@ -76,11 +75,10 @@ WebProcessMemoryDump::CreateWebMemoryAllocatorDump(
 blink::WebMemoryAllocatorDump* WebProcessMemoryDump::GetMemoryAllocatorDump(
     const String& absolute_name) const {
   StringUTF8Adaptor adapter(absolute_name);
-  std::string name(adapter.Data(), adapter.length());
   // Retrieve the base MemoryAllocatorDump object and then reverse lookup
   // its wrapper.
   base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
-      process_memory_dump_->GetAllocatorDump(name);
+      process_memory_dump_->GetAllocatorDump(adapter.AsStdString());
   if (!memory_allocator_dump)
     return nullptr;
 
@@ -148,17 +146,16 @@ void WebProcessMemoryDump::AddSuballocation(
     blink::WebMemoryAllocatorDumpGuid source,
     const String& target_node_name) {
   StringUTF8Adaptor adapter(target_node_name);
-  std::string target_node(adapter.Data(), adapter.length());
   process_memory_dump_->AddSuballocation(
-      base::trace_event::MemoryAllocatorDumpGuid(source), target_node);
+      base::trace_event::MemoryAllocatorDumpGuid(source),
+      adapter.AsStdString());
 }
 
 SkTraceMemoryDump* WebProcessMemoryDump::CreateDumpAdapterForSkia(
     const String& dump_name_prefix) {
   StringUTF8Adaptor adapter(dump_name_prefix);
-  std::string prefix(adapter.Data(), adapter.length());
   sk_trace_dump_list_.push_back(std::make_unique<skia::SkiaTraceMemoryDumpImpl>(
-      prefix, level_of_detail_, process_memory_dump_));
+      adapter.AsStdString(), level_of_detail_, process_memory_dump_));
   return sk_trace_dump_list_.back().get();
 }
 

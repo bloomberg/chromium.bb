@@ -8,15 +8,21 @@
 #include "ash/ime/mode_indicator_observer.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "base/bind_helpers.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/display/manager/display_manager.h"
 
 namespace ash {
 
 ImeController::ImeController()
     : mode_indicator_observer_(std::make_unique<ModeIndicatorObserver>()) {}
 
-ImeController::~ImeController() = default;
+ImeController::~ImeController() {
+  Shell* shell = Shell::Get();
+  shell->cast_config()->RemoveObserver(this);
+  shell->display_manager()->RemoveObserver(this);
+}
 
 void ImeController::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
@@ -32,6 +38,11 @@ void ImeController::BindRequest(mojom::ImeControllerRequest request) {
 
 void ImeController::SetClient(mojom::ImeControllerClientPtr client) {
   client_ = std::move(client);
+
+  // Initializes some observers for client.
+  Shell* shell = Shell::Get();
+  shell->cast_config()->AddObserver(this);
+  shell->display_manager()->AddObserver(this);
 }
 
 bool ImeController::CanSwitchIme() const {
@@ -49,9 +60,9 @@ void ImeController::SwitchToNextIme() {
     client_->SwitchToNextIme();
 }
 
-void ImeController::SwitchToPreviousIme() {
+void ImeController::SwitchToLastUsedIme() {
   if (client_)
-    client_->SwitchToPreviousIme();
+    client_->SwitchToLastUsedIme();
 }
 
 void ImeController::SwitchImeById(const std::string& ime_id,
@@ -166,6 +177,27 @@ void ImeController::ShowModeIndicator(const gfx::Rect& anchor_bounds,
   views::BubbleDialogDelegateView::CreateBubble(mi_view);
   mode_indicator_observer_->AddModeIndicatorWidget(mi_view->GetWidget());
   mi_view->ShowAndFadeOut();
+}
+
+void ImeController::OnDisplayMetricsChanged(const display::Display& display,
+                                            uint32_t changed_metrics) {
+  bool is_mirroring =
+      (changed_metrics & display::DisplayObserver::DISPLAY_METRIC_MIRROR_STATE);
+  client_->UpdateMirroringState(is_mirroring);
+}
+
+void ImeController::OnDevicesUpdated(
+    std::vector<mojom::SinkAndRoutePtr> devices) {
+  DCHECK(client_);
+
+  bool casting_desktop = false;
+  for (auto& receiver : devices) {
+    if (receiver->route->content_source == mojom::ContentSource::DESKTOP) {
+      casting_desktop = true;
+      break;
+    }
+  }
+  client_->UpdateCastingState(casting_desktop);
 }
 
 void ImeController::SetCapsLockEnabled(bool caps_enabled) {

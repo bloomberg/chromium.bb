@@ -8,7 +8,6 @@
 
 #include <ostream>
 
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/strcat.h"
@@ -45,7 +44,7 @@ const int kValidSchemeMasks[] = {
     URLPattern::SCHEME_WSS,        URLPattern::SCHEME_DATA,
 };
 
-static_assert(arraysize(kValidSchemes) == arraysize(kValidSchemeMasks),
+static_assert(base::size(kValidSchemes) == base::size(kValidSchemeMasks),
               "must keep these arrays in sync");
 
 const char kParseSuccess[] = "Success.";
@@ -126,7 +125,7 @@ base::StringPiece CanonicalizeHostForMatching(base::StringPiece host_piece) {
 
 // static
 bool URLPattern::IsValidSchemeForExtensions(base::StringPiece scheme) {
-  for (size_t i = 0; i < arraysize(kValidSchemes); ++i) {
+  for (size_t i = 0; i < base::size(kValidSchemes); ++i) {
     if (scheme == kValidSchemes[i])
       return true;
   }
@@ -136,7 +135,7 @@ bool URLPattern::IsValidSchemeForExtensions(base::StringPiece scheme) {
 // static
 int URLPattern::GetValidSchemeMaskForExtensions() {
   int result = 0;
-  for (size_t i = 0; i < arraysize(kValidSchemeMasks); ++i)
+  for (size_t i = 0; i < base::size(kValidSchemeMasks); ++i)
     result |= kValidSchemeMasks[i];
   return result;
 }
@@ -177,8 +176,14 @@ URLPattern::URLPattern(int valid_schemes, base::StringPiece pattern)
 
 URLPattern::URLPattern(const URLPattern& other) = default;
 
+URLPattern::URLPattern(URLPattern&& other) = default;
+
 URLPattern::~URLPattern() {
 }
+
+URLPattern& URLPattern::operator=(const URLPattern& other) = default;
+
+URLPattern& URLPattern::operator=(URLPattern&& other) = default;
 
 bool URLPattern::operator<(const URLPattern& other) const {
   return GetAsString() < other.GetAsString();
@@ -403,7 +408,7 @@ bool URLPattern::IsValidScheme(base::StringPiece scheme) const {
   if (valid_schemes_ == SCHEME_ALL)
     return true;
 
-  for (size_t i = 0; i < arraysize(kValidSchemes); ++i) {
+  for (size_t i = 0; i < base::size(kValidSchemes); ++i) {
     if (scheme == kValidSchemes[i] && (valid_schemes_ & kValidSchemeMasks[i]))
       return true;
   }
@@ -783,7 +788,7 @@ bool URLPattern::MatchesSecurityOriginHelper(const GURL& test) const {
   if (scheme_ != url::kFileScheme && !MatchesHost(test))
     return false;
 
-  if (!MatchesPortPattern(base::IntToString(test.EffectiveIntPort())))
+  if (!MatchesPortPattern(base::NumberToString(test.EffectiveIntPort())))
     return false;
 
   return true;
@@ -801,7 +806,7 @@ std::vector<std::string> URLPattern::GetExplicitSchemes() const {
     return result;
   }
 
-  for (size_t i = 0; i < arraysize(kValidSchemes); ++i) {
+  for (size_t i = 0; i < base::size(kValidSchemes); ++i) {
     if (MatchesScheme(kValidSchemes[i])) {
       result.push_back(kValidSchemes[i]);
     }

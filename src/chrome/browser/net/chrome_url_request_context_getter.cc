@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 
 using content::BrowserThread;
 
@@ -69,7 +70,6 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
   FactoryForIsolatedApp(
       const ProfileIOData* profile_io_data,
       const StoragePartitionDescriptor& partition_descriptor,
-      ChromeURLRequestContextGetter* main_context,
       std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
@@ -79,7 +79,6 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
       : profile_io_data_(profile_io_data),
         partition_descriptor_(partition_descriptor),
         io_thread_(g_browser_process->io_thread()),
-        main_request_context_getter_(main_context),
         protocol_handler_interceptor_(std::move(protocol_handler_interceptor)),
         request_interceptors_(std::move(request_interceptors)),
         network_context_request_(std::move(network_context_request)),
@@ -94,10 +93,9 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
     // factory is actually destroyed. Thus it is safe to destructively pass
     // state onwards.
     return profile_io_data_->GetIsolatedAppRequestContext(
-        io_thread_, main_request_context_getter_->GetURLRequestContext(),
-        partition_descriptor_, std::move(protocol_handler_interceptor_),
-        &protocol_handlers_, std::move(request_interceptors_),
-        std::move(network_context_request_),
+        io_thread_, partition_descriptor_,
+        std::move(protocol_handler_interceptor_), &protocol_handlers_,
+        std::move(request_interceptors_), std::move(network_context_request_),
         std::move(network_context_params_));
   }
 
@@ -105,8 +103,6 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
   const ProfileIOData* const profile_io_data_;
   const StoragePartitionDescriptor partition_descriptor_;
   IOThread* io_thread_;
-  scoped_refptr<ChromeURLRequestContextGetter>
-      main_request_context_getter_;
   std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
       protocol_handler_interceptor_;
   content::ProtocolHandlerMap protocol_handlers_;
@@ -250,11 +246,9 @@ ChromeURLRequestContextGetter::CreateForIsolatedApp(
     content::URLRequestInterceptorScopedVector request_interceptors,
     network::mojom::NetworkContextRequest network_context_request,
     network::mojom::NetworkContextParamsPtr network_context_params) {
-  ChromeURLRequestContextGetter* main_context =
-      static_cast<ChromeURLRequestContextGetter*>(profile->GetRequestContext());
   return ChromeURLRequestContextGetter::CreateAndInit(
       std::make_unique<FactoryForIsolatedApp>(
-          profile_io_data, partition_descriptor, main_context,
+          profile_io_data, partition_descriptor,
           std::move(protocol_handler_interceptor), protocol_handlers,
           std::move(request_interceptors), std::move(network_context_request),
           std::move(network_context_params)));

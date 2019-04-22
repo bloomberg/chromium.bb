@@ -138,5 +138,14 @@ assertInterpolation({
   {at: 1, is: 'drop-shadow(20px 10px green)'},
   {at: 1.5, is: 'drop-shadow(30px 15px #004100)'}
 ]);
+
+// crbug.com/904333: Test that ResolveInterpolableColor doesn't overflow.
+assertInterpolation({
+  property: '-webkit-filter',
+  from: 'drop-shadow(20px 10px blue)',
+  to: 'drop-shadow(20px 10px green)'
+}, [
+  {at: 2147483648, is: 'drop-shadow(20px 10px #00FF00'}
+]);
 </script>
 </body>

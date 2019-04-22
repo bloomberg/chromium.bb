@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -16,6 +17,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
@@ -106,6 +108,8 @@ class TabManagerStatsCollectorTest
 
   std::unique_ptr<WebContents> CreateWebContentsForUKM(ukm::SourceId id) {
     std::unique_ptr<WebContents> contents(CreateTestWebContents());
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        contents.get());
     ResourceCoordinatorTabHelper::CreateForWebContents(contents.get());
     ResourceCoordinatorTabHelper::FromWebContents(contents.get())
         ->SetUkmSourceIdForTest(id);
@@ -463,7 +467,7 @@ TEST_P(TabManagerStatsCollectorParameterizedTest, HistogramsTabCount) {
                                                                            : 0);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     TabManagerStatsCollectorTabSwitchTest,
     ::testing::Values(std::make_pair(false,   // Session restore
@@ -471,7 +475,7 @@ INSTANTIATE_TEST_CASE_P(
                       std::make_pair(true, false),
                       std::make_pair(false, true),
                       std::make_pair(true, true)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     TabManagerStatsCollectorParameterizedTest,
     ::testing::Values(std::make_pair(false,   // Session restore

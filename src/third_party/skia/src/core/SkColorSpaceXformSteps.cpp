@@ -10,7 +10,15 @@
 #include "SkRasterPipeline.h"
 #include "../../third_party/skcms/skcms.h"
 
-// TODO: explain
+// TODO(mtklein): explain the logic of this file
+
+bool SkColorSpaceXformSteps::Required(SkColorSpace* src, SkColorSpace* dst) {
+    // Any SkAlphaType will work fine here as long as we use the same one.
+    SkAlphaType at = kPremul_SkAlphaType;
+    return 0 != SkColorSpaceXformSteps(src, at,
+                                       dst, at).flags.mask();
+    // TODO(mtklein): quicker impl. that doesn't construct an SkColorSpaceXformSteps?
+}
 
 SkColorSpaceXformSteps::SkColorSpaceXformSteps(SkColorSpace* src, SkAlphaType srcAT,
                                                SkColorSpace* dst, SkAlphaType dstAT) {
@@ -53,16 +61,16 @@ SkColorSpaceXformSteps::SkColorSpaceXformSteps(SkColorSpace* src, SkAlphaType sr
         this->src_to_dst_matrix[8] = row_major[8];
     } else {
     #ifdef SK_DEBUG
-        SkMatrix44 srcM, dstM;
+        skcms_Matrix3x3 srcM, dstM;
         src->toXYZD50(&srcM);
         dst->toXYZD50(&dstM);
-        SkASSERT(0 == memcmp(&srcM, &dstM, 16*sizeof(SkMScalar)) && "Hash collision");
+        SkASSERT(0 == memcmp(&srcM, &dstM, 9*sizeof(float)) && "Hash collision");
     #endif
     }
 
     // Fill out all the transfer functions we'll use.
-    src->   transferFn(&this->srcTF   .fG);
-    dst->invTransferFn(&this->dstTFInv.fG);
+    src->   transferFn(&this->srcTF   .g);
+    dst->invTransferFn(&this->dstTFInv.g);
 
     this->srcTF_is_sRGB = src->gammaCloseToSRGB();
     this->dstTF_is_sRGB = dst->gammaCloseToSRGB();
@@ -77,7 +85,7 @@ SkColorSpaceXformSteps::SkColorSpaceXformSteps(SkColorSpace* src, SkAlphaType sr
         float dstTF[7];
         dst->transferFn(dstTF);
         for (int i = 0; i < 7; i++) {
-            SkASSERT( (&srcTF.fG)[i] == dstTF[i] && "Hash collision" );
+            SkASSERT( (&srcTF.g)[i] == dstTF[i] && "Hash collision" );
         }
     #endif
         this->flags.linearize  = false;
@@ -144,13 +152,13 @@ void SkColorSpaceXformSteps::apply(SkRasterPipeline* p, bool src_is_normalized) 
     if (flags.linearize) {
         if (src_is_normalized && srcTF_is_sRGB) {
             p->append(SkRasterPipeline::from_srgb);
-        } else if (srcTF.fA == 1 &&
-                   srcTF.fB == 0 &&
-                   srcTF.fC == 0 &&
-                   srcTF.fD == 0 &&
-                   srcTF.fE == 0 &&
-                   srcTF.fF == 0) {
-            p->append(SkRasterPipeline::gamma, &srcTF.fG);
+        } else if (srcTF.a == 1 &&
+                   srcTF.b == 0 &&
+                   srcTF.c == 0 &&
+                   srcTF.d == 0 &&
+                   srcTF.e == 0 &&
+                   srcTF.f == 0) {
+            p->append(SkRasterPipeline::gamma, &srcTF.g);
         } else {
             p->append(SkRasterPipeline::parametric, &srcTF);
         }
@@ -161,16 +169,17 @@ void SkColorSpaceXformSteps::apply(SkRasterPipeline* p, bool src_is_normalized) 
     if (flags.encode) {
         if (src_is_normalized && dstTF_is_sRGB) {
             p->append(SkRasterPipeline::to_srgb);
-        } else if (dstTFInv.fA == 1 &&
-                   dstTFInv.fB == 0 &&
-                   dstTFInv.fC == 0 &&
-                   dstTFInv.fD == 0 &&
-                   dstTFInv.fE == 0 &&
-                   dstTFInv.fF == 0) {
-            p->append(SkRasterPipeline::gamma, &dstTFInv.fG);
+        } else if (dstTFInv.a == 1 &&
+                   dstTFInv.b == 0 &&
+                   dstTFInv.c == 0 &&
+                   dstTFInv.d == 0 &&
+                   dstTFInv.e == 0 &&
+                   dstTFInv.f == 0) {
+            p->append(SkRasterPipeline::gamma, &dstTFInv.g);
         } else {
             p->append(SkRasterPipeline::parametric, &dstTFInv);
         }
     }
     if (flags.premul) { p->append(SkRasterPipeline::premul); }
 }
+

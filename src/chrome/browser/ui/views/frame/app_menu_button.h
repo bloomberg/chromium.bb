@@ -7,15 +7,16 @@
 
 #include <memory>
 
+#include "base/observer_list.h"
 #include "ui/views/controls/button/menu_button.h"
 
 class AppMenu;
+class AppMenuButtonObserver;
 class AppMenuModel;
 class Browser;
 
 namespace views {
 class MenuButtonListener;
-class MenuListener;
 }  // namespace views
 
 // The app menu button lives in the top right of browser windows. It shows three
@@ -29,31 +30,30 @@ class AppMenuButton : public views::MenuButton {
   ~AppMenuButton() override;
 
   // views::MenuButton:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   SkColor GetInkDropBaseColor() const override;
+
+  void AddObserver(AppMenuButtonObserver* observer);
+  void RemoveObserver(AppMenuButtonObserver* observer);
 
   // Closes the app menu, if it's open.
   void CloseMenu();
 
+  // Called by the app menu when it closes.
+  void OnMenuClosed();
+
   // Whether the app menu is currently showing.
   bool IsMenuShowing() const;
-
-  // Adds a listener to receive a callback when the menu opens.
-  void AddMenuListener(views::MenuListener* listener);
-
-  // Removes a menu listener.
-  void RemoveMenuListener(views::MenuListener* listener);
 
   AppMenu* app_menu() { return menu_.get(); }
 
  protected:
-  // Create (but don't show) the menu. |menu_model| should be a newly created
-  // AppMenuModel.
-  void InitMenu(std::unique_ptr<AppMenuModel> menu_model,
-                Browser* browser,
-                int run_flags);
-
-  AppMenu* menu() { return menu_.get(); }
-  const AppMenu* menu() const { return menu_.get(); }
+  // Show the menu. |menu_model| should be a newly created AppMenuModel.  The
+  // other params are forwarded to the created AppMenu.
+  void RunMenu(std::unique_ptr<AppMenuModel> menu_model,
+               Browser* browser,
+               int run_flags,
+               bool alert_reopen_tab_items);
 
  private:
   // App model and menu.
@@ -64,8 +64,7 @@ class AppMenuButton : public views::MenuButton {
   std::unique_ptr<AppMenuModel> menu_model_;
   std::unique_ptr<AppMenu> menu_;
 
-  // Listeners to call when the menu opens.
-  base::ObserverList<views::MenuListener>::Unchecked menu_listeners_;
+  base::ObserverList<AppMenuButtonObserver>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuButton);
 };

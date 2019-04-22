@@ -36,21 +36,29 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
     // Neither started nor failed.
     NOT_ATTEMPTED = 0,
     // The last attempt was not completed.
-    FAILED,
+    DEPRECATED_FAILED,
     // All the data is in the temporary encrypted loginDB.
     COPIED_ALL,
     // The standard login database is encrypted.
     LOGIN_DB_REPLACED,
-    // The migration is about to be attempted.
+    // The migration is about to be attempted. This value was deprecated and
+    // replaced by more price entries. It may still be store in users'
+    // preferences.
     STARTED,
     // No access to the native backend.
     POSTPONED,
     // Could not create or write into the temporary file.
-    FAILED_CREATE_ENCRYPTED,
+    DEPRECATED_FAILED_CREATE_ENCRYPTED,
     // Could not read from the native backend.
     FAILED_ACCESS_NATIVE,
     // Could not replace old database.
     FAILED_REPLACE,
+    // Could not initialise the temporary encrypted database.
+    FAILED_INIT_ENCRYPTED,
+    // Could not reset th temporary encrypted database.
+    FAILED_RECREATE_ENCRYPTED,
+    // Could not add entries into the temporary encrypted database.
+    FAILED_WRITE_TO_ENCRYPTED,
   };
 
   // NativeBackends more or less implement the PaswordStore interface, but
@@ -129,6 +137,15 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;
 
+ protected:
+  // Implements PasswordStoreSync interface.
+  password_manager::FormRetrievalResult ReadAllLogins(
+      password_manager::PrimaryKeyToFormMap* key_to_form_map) override;
+  password_manager::PasswordStoreChangeList RemoveLoginByPrimaryKeySync(
+      int primary_key) override;
+  password_manager::PasswordStoreSync::MetadataStore* GetMetadataStore()
+      override;
+
  private:
   friend class PasswordStoreXTest;
 
@@ -157,8 +174,6 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
       const base::Callback<bool(const GURL&)>& origin_filter) override;
   std::vector<std::unique_ptr<autofill::PasswordForm>> FillMatchingLogins(
       const FormDigest& form) override;
-  std::vector<std::unique_ptr<autofill::PasswordForm>>
-  FillLoginsForSameOrganizationName(const std::string& signon_realm) override;
   bool FillAutofillableLogins(
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
   bool FillBlacklistLogins(

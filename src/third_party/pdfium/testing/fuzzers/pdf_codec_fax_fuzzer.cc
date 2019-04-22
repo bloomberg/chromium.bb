@@ -7,14 +7,16 @@
 
 #include "core/fxcodec/codec/ccodec_faxmodule.h"
 #include "core/fxcodec/codec/ccodec_scanlinedecoder.h"
-
-static int GetInteger(const uint8_t* data) {
-  return data[0] | data[1] << 8 | data[2] << 16 | data[3] << 24;
-}
+#include "testing/fuzzers/pdfium_fuzzer_util.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  const int kParameterSize = 21;
+  static constexpr size_t kParameterSize = 21;
   if (size < kParameterSize)
+    return 0;
+
+  // Limit data size to prevent fuzzer timeout.
+  static constexpr size_t kMaxDataSize = 256 * 1024;
+  if (size > kParameterSize + kMaxDataSize)
     return 0;
 
   int width = GetInteger(data);
@@ -24,14 +26,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   int Rows = GetInteger(data + 16);
   bool EndOfLine = !(data[20] & 0x01);
   bool ByteAlign = !(data[20] & 0x02);
-  bool BlackIs1 = !(data[20] & 0x04);
+  // This controls if CCodec_FaxDecoder::InvertBuffer() gets called. The method
+  // is not interesting, and calling it doubles the runtime.
+  const bool kBlackIs1 = false;
   data += kParameterSize;
   size -= kParameterSize;
 
   CCodec_FaxModule fax_module;
   std::unique_ptr<CCodec_ScanlineDecoder> decoder(
       fax_module.CreateDecoder({data, size}, width, height, K, EndOfLine,
-                               ByteAlign, BlackIs1, Columns, Rows));
+                               ByteAlign, kBlackIs1, Columns, Rows));
 
   if (decoder) {
     int line = 0;

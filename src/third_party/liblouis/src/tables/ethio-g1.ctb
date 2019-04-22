@@ -1,13 +1,18 @@
 # Ethiopic-G1
 # The Ethiopic Letters and punctuation Braille Table.
+#
+# Copyright (C) 2012 Dr. Tamru E. Belay <tamru@sympatico.ca>
+# Copyright (C) 2012, 2015 Mesar Hameed <mesar.hameed@gmail.com>
+#
+# This file is part of liblouis.
+#
+
 # Developed by:
 # Dr. Tamru E. Belay
 # Adaptive Technology Specialist
 # Ethiopic Braille Programmer
 #	 E-mail: <tamru@sympatico.ca <g.braille@sympatico.ca
-# Supervised by mesar Hameed <mhameed@src.gnome.org>
-# Copyright: 2012
-# This file is part of liblouis.
+# Supervised by mesar Hameed <mesar.hameed@gmail.com>
 
 # this table superseeds gez*.*
 # remove comment when this table has been completely debugged and verified.

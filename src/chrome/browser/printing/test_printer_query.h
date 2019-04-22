@@ -9,13 +9,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace printing {
 
@@ -60,7 +57,7 @@ class TestPrinterQuery : public PrinterQuery {
   // Updates the current settings with |new_settings| dictionary values. Also
   // fills in the settings with values from |offsets_| and |printer_type_| that
   // would normally be filled in by the PrintingContext.
-  void SetSettings(std::unique_ptr<base::DictionaryValue> new_settings,
+  void SetSettings(base::Value new_settings,
                    base::OnceClosure callback) override;
 
 #if defined(OS_WIN)

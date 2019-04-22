@@ -4,7 +4,7 @@
      found in the LICENSE file. -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Used by Chrome and Content -->
-    <style name="RobotoMediumStyle" tools:ignore="UnusedResources">
+    <style name="TextAppearance.RobotoMediumStyle" tools:ignore="UnusedResources">
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 </resources>

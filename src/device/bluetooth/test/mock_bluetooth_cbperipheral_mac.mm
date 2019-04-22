@@ -139,7 +139,7 @@ using base::scoped_nsobject;
   }
 }
 
-- (void)didDiscoverServicesWithError:(NSError*)error {
+- (void)mockDidDiscoverServicesWithError:(NSError*)error {
   [_delegate peripheral:self.peripheral didDiscoverServices:error];
 }
 
@@ -161,11 +161,26 @@ using base::scoped_nsobject;
                                      error:nil];
 }
 
+- (void)mockDidDiscoverCharacteristicsForService:(CBService*)service
+                                       WithError:(NSError*)error {
+  [_delegate peripheral:self.peripheral
+      didDiscoverCharacteristicsForService:service
+                                     error:error];
+}
+
 - (void)mockDidDiscoverDescriptorsForCharacteristic:
     (CBCharacteristic*)characteristic {
   [_delegate peripheral:self.peripheral
       didDiscoverDescriptorsForCharacteristic:characteristic
                                         error:nil];
+}
+
+- (void)mockDidDiscoverDescriptorsForCharacteristic:
+            (CBCharacteristic*)characteristic
+                                          WithError:(NSError*)error {
+  [_delegate peripheral:self.peripheral
+      didDiscoverDescriptorsForCharacteristic:characteristic
+                                        error:error];
 }
 
 - (void)mockDidDiscoverEvents {

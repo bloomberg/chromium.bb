@@ -11,7 +11,6 @@
 #include "components/network_time/network_time_tracker.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -28,16 +27,12 @@ TestingApplicationContext::TestingApplicationContext()
       test_url_loader_factory_(
           std::make_unique<network::TestURLLoaderFactory>()),
       test_network_connection_tracker_(
-          network::TestNetworkConnectionTracker::CreateInstance()),
-      system_shared_url_loader_factory_(
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              test_url_loader_factory_.get())) {
+          network::TestNetworkConnectionTracker::CreateInstance()) {
   DCHECK(!GetApplicationContext());
   SetApplicationContext(this);
 }
 
 TestingApplicationContext::~TestingApplicationContext() {
-  system_shared_url_loader_factory_->Detach();
   DCHECK_EQ(this, GetApplicationContext());
   DCHECK(!local_state_);
   SetApplicationContext(nullptr);
@@ -101,7 +96,7 @@ TestingApplicationContext::GetSystemURLRequestContext() {
 scoped_refptr<network::SharedURLLoaderFactory>
 TestingApplicationContext::GetSharedURLLoaderFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return system_shared_url_loader_factory_;
+  return test_url_loader_factory_->GetSafeWeakWrapper();
 }
 
 network::mojom::NetworkContext*

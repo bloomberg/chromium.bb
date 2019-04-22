@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "build/build_config.h"
 #include "chrome/installer/mini_installer/mini_installer.h"
 
 // http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
@@ -26,6 +27,10 @@ extern "C" int WINAPI wWinMain(HINSTANCE /* instance */,
   return MainEntryPoint();
 }
 #endif
+
+// We don't link with the CRT (this is enforced through use of the /ENTRY linker
+// flag) so we have to implement CRT functions that the compiler generates calls
+// to.
 
 // VC Express editions don't come with the memset CRT obj file and linking to
 // the obj files between versions becomes a bit problematic. Therefore,
@@ -56,4 +61,22 @@ void* memset(void* dest, int c, size_t count) {
     *scan++ = static_cast<uint8_t>(c);
   return dest;
 }
+
+#if defined(_DEBUG) && defined(ARCH_CPU_ARM64)
+// The compiler generates calls to memcpy for ARM64 debug builds so we need to
+// supply a memcpy implementation in that configuration.
+// See comments above for why we do this incantation.
+#ifdef __clang__
+__attribute__((used))
+#else
+#pragma function(memcpy)
+#endif
+void* memcpy(void* destination, const void* source, size_t count) {
+  auto* dst = reinterpret_cast<uint8_t*>(destination);
+  auto* src = reinterpret_cast<const uint8_t*>(source);
+  while (count--)
+    *dst++ = *src++;
+  return destination;
+}
+#endif
 }  // extern "C"

@@ -103,6 +103,26 @@ FlagMetadataMap LoadFlagMetadata() {
   return metadata;
 }
 
+std::vector<std::string> LoadFlagNeverExpireList() {
+  base::FilePath list_path;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &list_path);
+  JSONFileValueDeserializer deserializer(
+      list_path.AppendASCII("chrome").AppendASCII("browser").AppendASCII(
+          "flag-never-expire-list.json"));
+  int error_code;
+  std::string error_message;
+  std::unique_ptr<base::Value> list_json =
+      deserializer.Deserialize(&error_code, &error_message);
+  DCHECK(list_json) << "Failed to load flag never expire list: " << error_code
+                    << " " << error_message;
+
+  std::vector<std::string> result;
+  for (const auto& entry : list_json->GetList()) {
+    result.push_back(entry.GetString());
+  }
+  return result;
+}
+
 }  // anonymous namespace
 
 // Makes sure there are no separators in any of the entry names.
@@ -134,6 +154,26 @@ TEST(AboutFlagsTest, EveryFlagHasMetadata) {
 
   EXPECT_EQ(0u, missing_flags.size())
       << "Missing flags: " << base::JoinString(missing_flags, "\n  ");
+}
+
+TEST(AboutFlagsTest, OnlyPermittedFlagsNeverExpire) {
+  FlagMetadataMap metadata = LoadFlagMetadata();
+  std::vector<std::string> listed_flags = LoadFlagNeverExpireList();
+  std::vector<std::string> missing_flags;
+
+  for (const auto& entry : metadata) {
+    if (entry.second.expiry_milestone == -1 &&
+        std::find(listed_flags.begin(), listed_flags.end(), entry.first) ==
+            listed_flags.end()) {
+      missing_flags.push_back(entry.first);
+    }
+  }
+
+  std::sort(missing_flags.begin(), missing_flags.end());
+
+  EXPECT_EQ(0u, missing_flags.size())
+      << "Flags not listed for no-expire: "
+      << base::JoinString(missing_flags, "\n  ");
 }
 
 TEST(AboutFlagsTest, DISABLED_EveryFlagHasNonEmptyOwners) {

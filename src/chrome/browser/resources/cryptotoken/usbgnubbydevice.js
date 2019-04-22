@@ -65,8 +65,9 @@ UsbGnubbyDevice.prototype.destroy = function() {
     });
   }
 
-  if (!this.dev)
-    return;  // Already dead.
+  if (!this.dev) {
+    return;
+  }  // Already dead.
 
   this.gnubbies_.removeOpenDevice(
       {namespace: UsbGnubbyDevice.NAMESPACE, device: this.id});
@@ -87,8 +88,9 @@ UsbGnubbyDevice.prototype.destroy = function() {
   // Set all clients to closed status and remove them.
   while (this.clients.length != 0) {
     var client = this.clients.shift();
-    if (client)
+    if (client) {
       client.closed = true;
+    }
   }
 
   if (this.lockTID) {
@@ -141,8 +143,9 @@ UsbGnubbyDevice.prototype.publishFrame_ = function(f) {
       console.log(UTIL_fmt('[' + Gnubby.hexCid(client.cid) + '] left?'));
     }
   }
-  if (changes)
+  if (changes) {
     this.clients = remaining;
+  }
 };
 
 /**
@@ -150,10 +153,12 @@ UsbGnubbyDevice.prototype.publishFrame_ = function(f) {
  * @private
  */
 UsbGnubbyDevice.prototype.readyToUse_ = function() {
-  if (this.closing)
+  if (this.closing) {
     return false;
-  if (!this.dev)
+  }
+  if (!this.dev) {
     return false;
+  }
 
   return true;
 };
@@ -163,18 +168,21 @@ UsbGnubbyDevice.prototype.readyToUse_ = function() {
  * @private
  */
 UsbGnubbyDevice.prototype.readOneReply_ = function() {
-  if (!this.readyToUse_())
-    return;  // No point in continuing.
-  if (this.updating)
-    return;  // Do not bother waiting for final update reply.
+  if (!this.readyToUse_()) {
+    return;
+  }  // No point in continuing.
+  if (this.updating) {
+    return;
+  }  // Do not bother waiting for final update reply.
 
   var self = this;
 
   function inTransferComplete(x) {
     self.inTransferPending = false;
 
-    if (!self.readyToUse_())
-      return;  // No point in continuing.
+    if (!self.readyToUse_()) {
+      return;
+    }  // No point in continuing.
 
     if (chrome.runtime.lastError) {
       console.warn(UTIL_fmt('in bulkTransfer got lastError: '));
@@ -222,8 +230,9 @@ UsbGnubbyDevice.prototype.readOneReply_ = function() {
  */
 UsbGnubbyDevice.prototype.registerClient = function(who) {
   for (var i = 0; i < this.clients.length; ++i) {
-    if (this.clients[i] === who)
-      return;  // Already registered.
+    if (this.clients[i] === who) {
+      return;
+    }  // Already registered.
   }
   this.clients.push(who);
 };
@@ -237,13 +246,15 @@ UsbGnubbyDevice.prototype.registerClient = function(who) {
  */
 UsbGnubbyDevice.prototype.deregisterClient = function(who) {
   var current = this.clients;
-  if (current.length == 0)
+  if (current.length == 0) {
     return -1;
+  }
   this.clients = [];
   for (var i = 0; i < current.length; ++i) {
     var client = current[i];
-    if (client !== who)
+    if (client !== who) {
       this.clients.push(client);
+    }
   }
   return this.clients.length;
 };
@@ -253,11 +264,13 @@ UsbGnubbyDevice.prototype.deregisterClient = function(who) {
  * @return {boolean} Whether this device has who as a client.
  */
 UsbGnubbyDevice.prototype.hasClient = function(who) {
-  if (this.clients.length == 0)
+  if (this.clients.length == 0) {
     return false;
+  }
   for (var i = 0; i < this.clients.length; ++i) {
-    if (who === this.clients[i])
+    if (who === this.clients[i]) {
       return true;
+    }
   }
   return false;
 };
@@ -267,11 +280,13 @@ UsbGnubbyDevice.prototype.hasClient = function(who) {
  * @private
  */
 UsbGnubbyDevice.prototype.writeOneRequest_ = function() {
-  if (!this.readyToUse_())
-    return;  // No point in continuing.
+  if (!this.readyToUse_()) {
+    return;
+  }  // No point in continuing.
 
-  if (this.txqueue.length == 0)
-    return;  // Nothing to send.
+  if (this.txqueue.length == 0) {
+    return;
+  }  // Nothing to send.
 
   var frame = this.txqueue[0];
 
@@ -279,8 +294,9 @@ UsbGnubbyDevice.prototype.writeOneRequest_ = function() {
   var OutTransferComplete = function(x) {
     self.outTransferPending = false;
 
-    if (!self.readyToUse_())
-      return;  // No point in continuing.
+    if (!self.readyToUse_()) {
+      return;
+    }  // No point in continuing.
 
     if (chrome.runtime.lastError) {
       console.warn(UTIL_fmt('out bulkTransfer lastError: '));
@@ -400,10 +416,12 @@ UsbGnubbyDevice.prototype.updateLock_ = function(cid, cmd, arg) {
  * @param {ArrayBuffer|Uint8Array} data Command argument data
  */
 UsbGnubbyDevice.prototype.queueCommand = function(cid, cmd, data) {
-  if (!this.dev)
+  if (!this.dev) {
     return;
-  if (!this.checkLock_(cid, cmd))
+  }
+  if (!this.checkLock_(cid, cmd)) {
     return;
+  }
 
   var u8 = new Uint8Array(data);
   var frame = new Uint8Array(u8.length + 7);
@@ -423,8 +441,9 @@ UsbGnubbyDevice.prototype.queueCommand = function(cid, cmd, data) {
 
   var wasEmpty = (this.txqueue.length == 0);
   this.txqueue.push(frame.buffer);
-  if (wasEmpty)
+  if (wasEmpty) {
     this.writeOneRequest_();
+  }
 };
 
 /**

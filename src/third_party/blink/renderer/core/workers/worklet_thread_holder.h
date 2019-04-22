@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_THREAD_HOLDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_THREAD_HOLDER_H_
 
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
@@ -30,7 +30,8 @@ class WorkletThreadHolder {
     if (thread_holder_instance_)
       return;
     thread_holder_instance_ = new WorkletThreadHolder<DerivedWorkletThread>;
-    thread_holder_instance_->Initialize(WorkerBackingThread::Create(params));
+    thread_holder_instance_->Initialize(
+        std::make_unique<WorkerBackingThread>(params));
   }
 
   static void ClearInstance() {
@@ -70,7 +71,7 @@ class WorkletThreadHolder {
 
   void ShutdownAndWait() {
     DCHECK(IsMainThread());
-    WaitableEvent waitable_event;
+    base::WaitableEvent waitable_event;
     thread_->BackingThread().PostTask(
         FROM_HERE,
         CrossThreadBind(&WorkletThreadHolder::ShutdownOnWorkletThread,
@@ -79,7 +80,7 @@ class WorkletThreadHolder {
     waitable_event.Wait();
   }
 
-  void ShutdownOnWorkletThread(WaitableEvent* waitable_event) {
+  void ShutdownOnWorkletThread(base::WaitableEvent* waitable_event) {
     thread_->ShutdownOnBackingThread();
     waitable_event->Signal();
   }

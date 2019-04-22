@@ -47,7 +47,7 @@ class MutationEvent final : public Event {
                                const String& prev_value = String(),
                                const String& new_value = String(),
                                const String& attr_name = String(),
-                               unsigned short attr_change = 0) {
+                               uint16_t attr_change = 0) {
     return MakeGarbageCollected<MutationEvent>(
         type, bubbles, Cancelable::kNo, related_node, prev_value, new_value,
         attr_name, attr_change);
@@ -61,7 +61,7 @@ class MutationEvent final : public Event {
                 const String& prev_value,
                 const String& new_value,
                 const String& attr_name,
-                unsigned short attr_change);
+                uint16_t attr_change);
 
   void initMutationEvent(const AtomicString& type,
                          bool bubbles,
@@ -70,13 +70,13 @@ class MutationEvent final : public Event {
                          const String& prev_value,
                          const String& new_value,
                          const String& attr_name,
-                         unsigned short attr_change);
+                         uint16_t attr_change);
 
   Node* relatedNode() const { return related_node_.Get(); }
   String prevValue() const { return prev_value_; }
   String newValue() const { return new_value_; }
   String attrName() const { return attr_name_; }
-  unsigned short attrChange() const { return attr_change_; }
+  uint16_t attrChange() const { return attr_change_; }
 
   const AtomicString& InterfaceName() const override;
 
@@ -87,7 +87,7 @@ class MutationEvent final : public Event {
   String prev_value_;
   String new_value_;
   String attr_name_;
-  unsigned short attr_change_;
+  uint16_t attr_change_;
 };
 
 }  // namespace blink

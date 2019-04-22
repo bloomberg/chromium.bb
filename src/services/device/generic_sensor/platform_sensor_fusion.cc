@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "services/device/generic_sensor/platform_sensor_fusion_algorithm.h"

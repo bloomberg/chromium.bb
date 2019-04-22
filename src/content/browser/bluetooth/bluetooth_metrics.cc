@@ -11,7 +11,7 @@
 #include <set>
 #include <unordered_set>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "device/bluetooth/bluetooth_uuid.h"

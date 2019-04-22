@@ -14,9 +14,11 @@ namespace vr {
 
 class PlatformControllerForTesting : public PlatformController {
  public:
-  explicit PlatformControllerForTesting(ControllerModel* prev_model,
-                                        ControllerModel* cur_model);
-  ~PlatformControllerForTesting() override{};
+  explicit PlatformControllerForTesting(
+      ControllerModel* prev_model,
+      ControllerModel* cur_model,
+      base::TimeTicks last_touchpad_timestamp);
+  ~PlatformControllerForTesting() override {}
 
   bool IsButtonDown(PlatformController::ButtonType type) const override;
   bool ButtonUpHappened(PlatformController::ButtonType type) const override;
@@ -33,6 +35,7 @@ class PlatformControllerForTesting : public PlatformController {
  private:
   ControllerModel* prev_model_;
   ControllerModel* cur_model_;
+  base::TimeTicks last_touchpad_timestamp_;
   DISALLOW_COPY_AND_ASSIGN(PlatformControllerForTesting);
 };
 

@@ -56,6 +56,7 @@ const Button::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
 const Button::KeyClickAction PlatformStyle::kKeyClickActionOnSpace =
     Button::CLICK_ON_KEY_RELEASE;
 const bool PlatformStyle::kReturnClicksFocusedControl = true;
+const bool PlatformStyle::kTableViewSupportsKeyboardNavigationByCell = true;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = false;
 const bool PlatformStyle::kUseRipples = true;
 const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = false;

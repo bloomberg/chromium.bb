@@ -5,10 +5,10 @@
 /**
  * WebUI to monitor the Sync File System Service.
  */
-var SyncService = (function() {
+const SyncService = (function() {
   'use strict';
 
-  var SyncService = {};
+  const SyncService = {};
 
   /**
    * Request Sync Service Status.
@@ -41,7 +41,7 @@ var SyncService = (function() {
   };
 
   // Keeps track of the last log event seen so it's not reprinted.
-  var lastLogEventId = -1;
+  let lastLogEventId = -1;
 
   /**
    * Request debug log.
@@ -63,11 +63,11 @@ var SyncService = (function() {
    * @param {Array} list List of dictionaries containing 'id', 'time', 'logEvent'.
    */
   SyncService.onGetLog = function(logEntries) {
-    var itemContainer = $('log-entries');
-    for (var i = 0; i < logEntries.length; i++) {
-      var logEntry = logEntries[i];
-      var tr = document.createElement('tr');
-      var error = /ERROR/.test(logEntry.logEvent) ? ' error' : '';
+    const itemContainer = $('log-entries');
+    for (let i = 0; i < logEntries.length; i++) {
+      const logEntry = logEntries[i];
+      const tr = document.createElement('tr');
+      const error = /ERROR/.test(logEntry.logEvent) ? ' error' : '';
       tr.appendChild(
           createElementFromText('td', logEntry.time, {'class': 'log-time'}));
       tr.appendChild(createElementFromText(

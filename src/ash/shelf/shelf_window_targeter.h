@@ -27,6 +27,9 @@ class ShelfWindowTargeter : public ::wm::EasyResizeWindowTargeter,
  private:
   // ::wm::EasyResizeWindowTargeter:
   bool ShouldUseExtendedBounds(const aura::Window* window) const override;
+  bool GetHitTestRects(aura::Window* target,
+                       gfx::Rect* hit_test_rect_mouse,
+                       gfx::Rect* hit_test_rect_touch) const override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

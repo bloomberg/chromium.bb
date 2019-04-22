@@ -168,8 +168,8 @@ TEST_F(SyncPointManagerTest, BasicFenceSyncWaitRelease) {
   wait_stream.BeginProcessing();
   int test_num = 10;
   bool valid_wait = wait_stream.client_state->Wait(
-      sync_token,
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+      sync_token, base::BindOnce(&SyncPointManagerTest::SetIntegerFunction,
+                                 &test_num, 123));
   EXPECT_TRUE(valid_wait);
   EXPECT_EQ(10, test_num);
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token));
@@ -199,8 +199,8 @@ TEST_F(SyncPointManagerTest, WaitOnSelfFails) {
   wait_stream.BeginProcessing();
   int test_num = 10;
   bool valid_wait = wait_stream.client_state->Wait(
-      sync_token,
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+      sync_token, base::BindOnce(&SyncPointManagerTest::SetIntegerFunction,
+                                 &test_num, 123));
   EXPECT_FALSE(valid_wait);
   EXPECT_EQ(10, test_num);
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token));
@@ -226,8 +226,8 @@ TEST_F(SyncPointManagerTest, OutOfOrderRelease) {
   wait_stream.BeginProcessing();
   int test_num = 10;
   bool valid_wait = wait_stream.client_state->Wait(
-      sync_token,
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+      sync_token, base::BindOnce(&SyncPointManagerTest::SetIntegerFunction,
+                                 &test_num, 123));
   EXPECT_FALSE(valid_wait);
   EXPECT_EQ(10, test_num);
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token));
@@ -259,8 +259,8 @@ TEST_F(SyncPointManagerTest, HigherOrderNumberRelease) {
   wait_stream.BeginProcessing();
   int test_num = 10;
   bool valid_wait = wait_stream.client_state->Wait(
-      sync_token,
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+      sync_token, base::BindOnce(&SyncPointManagerTest::SetIntegerFunction,
+                                 &test_num, 123));
   EXPECT_FALSE(valid_wait);
   EXPECT_EQ(10, test_num);
   EXPECT_TRUE(sync_point_manager_->IsSyncTokenReleased(sync_token));
@@ -286,8 +286,8 @@ TEST_F(SyncPointManagerTest, DestroyedClientRelease) {
 
   int test_num = 10;
   bool valid_wait = wait_stream.client_state->Wait(
-      sync_token,
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+      sync_token, base::BindOnce(&SyncPointManagerTest::SetIntegerFunction,
+                                 &test_num, 123));
   EXPECT_TRUE(valid_wait);
   EXPECT_EQ(10, test_num);
 
@@ -322,8 +322,8 @@ TEST_F(SyncPointManagerTest, NonExistentRelease) {
   wait_stream.BeginProcessing();
   int test_num = 10;
   bool valid_wait = wait_stream.client_state->Wait(
-      sync_token,
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+      sync_token, base::BindOnce(&SyncPointManagerTest::SetIntegerFunction,
+                                 &test_num, 123));
   EXPECT_TRUE(valid_wait);
   EXPECT_EQ(10, test_num);
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token));
@@ -368,8 +368,8 @@ TEST_F(SyncPointManagerTest, NonExistentRelease2) {
   EXPECT_EQ(3u, wait_stream.order_data->current_order_num());
   int test_num = 10;
   bool valid_wait = wait_stream.client_state->Wait(
-      sync_token,
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+      sync_token, base::BindOnce(&SyncPointManagerTest::SetIntegerFunction,
+                                 &test_num, 123));
   EXPECT_TRUE(valid_wait);
   EXPECT_EQ(10, test_num);
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token));
@@ -425,8 +425,8 @@ TEST_F(SyncPointManagerTest, NonExistentOrderNumRelease) {
   EXPECT_EQ(3u, wait_stream.order_data->current_order_num());
   int test_num = 10;
   bool valid_wait = wait_stream.client_state->Wait(
-      sync_token,
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+      sync_token, base::BindOnce(&SyncPointManagerTest::SetIntegerFunction,
+                                 &test_num, 123));
   EXPECT_TRUE(valid_wait);
   EXPECT_EQ(10, test_num);
 
@@ -467,7 +467,8 @@ TEST_F(SyncPointManagerTest, WaitOnSameSequenceFails) {
   bool valid_wait = sync_point_manager_->Wait(
       sync_token, stream.order_data->sequence_id(),
       stream.order_data->unprocessed_order_num(),
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+      base::BindOnce(&SyncPointManagerTest::SetIntegerFunction, &test_num,
+                     123));
   EXPECT_FALSE(valid_wait);
   EXPECT_EQ(10, test_num);
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token));
@@ -498,7 +499,8 @@ TEST_F(SyncPointManagerTest, HandleInvalidWaitOrderNumber) {
   bool valid_wait = sync_point_manager_->Wait(
       SyncToken(kNamespaceId, kCmdBufferId1, 1),
       stream2.order_data->sequence_id(), 3,
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+      base::BindOnce(&SyncPointManagerTest::SetIntegerFunction, &test_num,
+                     123));
   EXPECT_FALSE(valid_wait);
   EXPECT_EQ(10, test_num);
 }
@@ -522,7 +524,8 @@ TEST_F(SyncPointManagerTest, RetireInvalidWaitAfterOrderNumberPasses) {
   bool valid_wait = sync_point_manager_->Wait(
       SyncToken(kNamespaceId, kCmdBufferId1, 1),
       stream2.order_data->sequence_id(), 3,
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+      base::BindOnce(&SyncPointManagerTest::SetIntegerFunction, &test_num,
+                     123));
   EXPECT_TRUE(valid_wait);
   EXPECT_EQ(10, test_num);
 
@@ -560,7 +563,8 @@ TEST_F(SyncPointManagerTest, HandleInvalidCyclicWaits) {
   bool valid_wait = sync_point_manager_->Wait(
       SyncToken(kNamespaceId, kCmdBufferId1, 1),
       stream2.order_data->sequence_id(), 2,
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num1, 123));
+      base::BindOnce(&SyncPointManagerTest::SetIntegerFunction, &test_num1,
+                     123));
   EXPECT_TRUE(valid_wait);
   EXPECT_EQ(10, test_num1);
 
@@ -569,7 +573,8 @@ TEST_F(SyncPointManagerTest, HandleInvalidCyclicWaits) {
   valid_wait = sync_point_manager_->Wait(
       SyncToken(kNamespaceId, kCmdBufferId2, 1),
       stream1.order_data->sequence_id(), 3,
-      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num2, 123));
+      base::BindOnce(&SyncPointManagerTest::SetIntegerFunction, &test_num2,
+                     123));
   EXPECT_TRUE(valid_wait);
   EXPECT_EQ(10, test_num2);
 

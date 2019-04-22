@@ -8,7 +8,6 @@
 
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
-#include "third_party/blink/renderer/platform/wtf/wtf_thread_data.h"
 
 #if defined(OS_WIN)
 #include <stddef.h>
@@ -33,7 +32,7 @@ size_t GetUnderestimatedStackSize() {
 #if defined(__GLIBC__) || defined(OS_ANDROID) || defined(OS_FREEBSD) || \
     defined(OS_FUCHSIA)
   // pthread_getattr_np() can fail if the thread is not invoked by
-  // pthread_create() (e.g., the main thread of webkit_unit_tests).
+  // pthread_create() (e.g., the main thread of blink_unittests).
   // If so, a conservative size estimate is returned.
 
   pthread_attr_t attr;
@@ -90,7 +89,7 @@ size_t GetUnderestimatedStackSize() {
   }
   return pthread_get_stacksize_np(pthread_self());
 #elif defined(OS_WIN) && defined(COMPILER_MSVC)
-  return WTFThreadData::ThreadStackSize();
+return Threading::ThreadStackSize();
 #else
 #error "Stack frame size estimation not supported on this platform."
   return 0;

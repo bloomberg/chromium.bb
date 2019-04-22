@@ -18,14 +18,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-form-element
+// https://html.spec.whatwg.org/C/#the-form-element
 
 [
     HTMLConstructor,
     OverrideBuiltins
 ] interface HTMLFormElement : HTMLElement {
     [CEReactions, Reflect=accept_charset] attribute DOMString acceptCharset;
-    [CEReactions, URL] attribute DOMString action;
+    [CEReactions, URL, RaisesException=Setter] attribute URLString action;
     [CEReactions, Reflect, ReflectOnly=("on","off"), ReflectMissing="on", ReflectInvalid="on"] attribute DOMString autocomplete;
     [CEReactions, CustomElementCallbacks] attribute DOMString enctype;
     [CEReactions, CustomElementCallbacks] attribute DOMString encoding;

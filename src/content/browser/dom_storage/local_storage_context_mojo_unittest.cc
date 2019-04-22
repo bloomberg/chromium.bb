@@ -4,6 +4,8 @@
 
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -33,11 +35,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "services/file/file_service.h"
 #include "services/file/public/mojom/constants.mojom.h"
 #include "services/file/user_id_map.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/test/test_service_decorator.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -362,10 +361,10 @@ TEST_F(LocalStorageContextMojoTest, GetStorageUsage_Data) {
   // that used localstorage with zero size.
   std::vector<StorageUsageInfo> info = GetStorageUsageSync();
   ASSERT_EQ(2u, info.size());
-  if (url::Origin::Create(info[0].origin) == origin2)
+  if (info[0].origin == origin2)
     std::swap(info[0], info[1]);
-  EXPECT_EQ(origin1, url::Origin::Create(info[0].origin));
-  EXPECT_EQ(origin2, url::Origin::Create(info[1].origin));
+  EXPECT_EQ(origin1, info[0].origin);
+  EXPECT_EQ(origin2, info[1].origin);
   EXPECT_LE(before_write, info[0].last_modified);
   EXPECT_LE(before_write, info[1].last_modified);
   EXPECT_EQ(0u, info[0].total_size_bytes);
@@ -378,10 +377,10 @@ TEST_F(LocalStorageContextMojoTest, GetStorageUsage_Data) {
 
   info = GetStorageUsageSync();
   ASSERT_EQ(2u, info.size());
-  if (url::Origin::Create(info[0].origin) == origin2)
+  if (info[0].origin == origin2)
     std::swap(info[0], info[1]);
-  EXPECT_EQ(origin1, url::Origin::Create(info[0].origin));
-  EXPECT_EQ(origin2, url::Origin::Create(info[1].origin));
+  EXPECT_EQ(origin1, info[0].origin);
+  EXPECT_EQ(origin2, info[1].origin);
   EXPECT_LE(before_write, info[0].last_modified);
   EXPECT_LE(before_write, info[1].last_modified);
   EXPECT_GE(after_write, info[0].last_modified);
@@ -1038,13 +1037,10 @@ TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
 
 TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
   FakeLevelDBService mock_leveldb_service;
-  ResetFileServiceAndConnector(
-      service_manager::TestServiceDecorator::CreateServiceWithUniqueOverride(
-          file::CreateFileService(),
-
-          leveldb::mojom::LevelDBService::Name_,
-          base::BindRepeating(&test::FakeLevelDBService::Bind,
-                              base::Unretained(&mock_leveldb_service))));
+  file_service()->GetBinderRegistryForTesting()->AddInterface(
+      leveldb::mojom::LevelDBService::Name_,
+      base::BindRepeating(&test::FakeLevelDBService::Bind,
+                          base::Unretained(&mock_leveldb_service)));
 
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> test_data;
 
@@ -1190,11 +1186,10 @@ TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
 TEST_F(LocalStorageContextMojoTestWithService,
        DontRecreateOnRepeatedCommitFailure) {
   FakeLevelDBService mock_leveldb_service;
-  ResetFileServiceAndConnector(
-      service_manager::TestServiceDecorator::CreateServiceWithUniqueOverride(
-          file::CreateFileService(), leveldb::mojom::LevelDBService::Name_,
-          base::BindRepeating(&test::FakeLevelDBService::Bind,
-                              base::Unretained(&mock_leveldb_service))));
+  file_service()->GetBinderRegistryForTesting()->AddInterface(
+      leveldb::mojom::LevelDBService::Name_,
+      base::BindRepeating(&test::FakeLevelDBService::Bind,
+                          base::Unretained(&mock_leveldb_service)));
 
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> test_data;
 

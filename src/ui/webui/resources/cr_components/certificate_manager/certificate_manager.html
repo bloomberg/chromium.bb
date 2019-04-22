@@ -63,14 +63,16 @@
       <div>
         <certificate-list id="personalCerts"
             certificates="[[personalCerts]]"
-            certificate-type="[[certificateTypeEnum_.PERSONAL]]">
+            certificate-type="[[certificateTypeEnum_.PERSONAL]]"
+            import-allowed="[[importAllowed]]">
         </certificate-list>
       </div>
       <div>
         <template is="dom-if" if="[[isTabSelected_(selected, 1)]]">
           <certificate-list id="serverCerts"
               certificates="[[serverCerts]]"
-              certificate-type="[[certificateTypeEnum_.SERVER]]">
+              certificate-type="[[certificateTypeEnum_.SERVER]]"
+              import-allowed="[[importAllowed]]">
           </certificate-list>
         </template>
       </div>
@@ -78,7 +80,8 @@
         <template is="dom-if" if="[[isTabSelected_(selected, 2)]]">
           <certificate-list id="caCerts"
               certificates="[[caCerts]]"
-              certificate-type="[[certificateTypeEnum_.CA]]">
+              certificate-type="[[certificateTypeEnum_.CA]]"
+              import-allowed="[[importAllowed]]">
           </certificate-list>
         </template>
       </div>
@@ -86,7 +89,8 @@
         <template is="dom-if" if="[[isTabSelected_(selected, 3)]]">
           <certificate-list id="otherCerts"
               certificates="[[otherCerts]]"
-              certificate-type="[[certificateTypeEnum_.OTHER]]">
+              certificate-type="[[certificateTypeEnum_.OTHER]]"
+              import-allowed="[[importAllowed]]">
           </certificate-list>
         </template>
       </div>

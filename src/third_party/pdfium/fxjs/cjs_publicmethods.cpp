@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fpdfdoc/cpdf_formcontrol.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fxcrt/fx_extension.h"
@@ -63,7 +64,7 @@ const JSMethodSpec CJS_PublicMethods::GlobalFunctionSpecs[] = {
 
 namespace {
 
-#if _FX_OS_ != _FX_OS_ANDROID_
+#if !defined(OS_ANDROID)
 constexpr double kDoubleCorrect = 0.000000000000001;
 #endif
 
@@ -99,7 +100,7 @@ void AlertIfPossible(CJS_EventContext* pContext, const WideString& swMsg) {
                               JSPLATFORM_ALERT_ICON_STATUS);
 }
 
-#if _FX_OS_ != _FX_OS_ANDROID_
+#if !defined(OS_ANDROID)
 ByteString CalculateString(double dValue,
                            int iDec,
                            int* iDec2,
@@ -170,7 +171,7 @@ bool IsDigitSeparatorOrDecimalMark(int c) {
   return c == '.' || c == ',';
 }
 
-#if _FX_OS_ != _FX_OS_ANDROID_
+#if !defined(OS_ANDROID)
 bool IsStyleWithDigitSeparator(int style) {
   return style == 0 || style == 2;
 }
@@ -179,17 +180,21 @@ char DigitSeparatorForStyle(int style) {
   ASSERT(IsStyleWithDigitSeparator(style));
   return style == 0 ? ',' : '.';
 }
+
+bool IsStyleWithApostropheSeparator(int style) {
+  return style >= 4;
+}
 #endif
 
 bool IsStyleWithCommaDecimalMark(int style) {
-  return style >= 2;
+  return style == 2 || style == 3;
 }
 
 char DecimalMarkForStyle(int style) {
   return IsStyleWithCommaDecimalMark(style) ? ',' : '.';
 }
 
-#if _FX_OS_ != _FX_OS_ANDROID_
+#if !defined(OS_ANDROID)
 void NormalizeDecimalMark(ByteString* str) {
   str->Replace(",", ".");
 }
@@ -229,28 +234,28 @@ void CJS_PublicMethods::DefineJSObjects(CFXJS_Engine* pEngine) {
     JSGlobalFunc<fun_name>(#fun_name, info);             \
   }
 
-JS_STATIC_GLOBAL_FUN(AFNumber_Format);
-JS_STATIC_GLOBAL_FUN(AFNumber_Keystroke);
-JS_STATIC_GLOBAL_FUN(AFPercent_Format);
-JS_STATIC_GLOBAL_FUN(AFPercent_Keystroke);
-JS_STATIC_GLOBAL_FUN(AFDate_FormatEx);
-JS_STATIC_GLOBAL_FUN(AFDate_KeystrokeEx);
-JS_STATIC_GLOBAL_FUN(AFDate_Format);
-JS_STATIC_GLOBAL_FUN(AFDate_Keystroke);
-JS_STATIC_GLOBAL_FUN(AFTime_FormatEx);
-JS_STATIC_GLOBAL_FUN(AFTime_KeystrokeEx);
-JS_STATIC_GLOBAL_FUN(AFTime_Format);
-JS_STATIC_GLOBAL_FUN(AFTime_Keystroke);
-JS_STATIC_GLOBAL_FUN(AFSpecial_Format);
-JS_STATIC_GLOBAL_FUN(AFSpecial_Keystroke);
-JS_STATIC_GLOBAL_FUN(AFSpecial_KeystrokeEx);
-JS_STATIC_GLOBAL_FUN(AFSimple);
-JS_STATIC_GLOBAL_FUN(AFMakeNumber);
-JS_STATIC_GLOBAL_FUN(AFSimple_Calculate);
-JS_STATIC_GLOBAL_FUN(AFRange_Validate);
-JS_STATIC_GLOBAL_FUN(AFMergeChange);
-JS_STATIC_GLOBAL_FUN(AFParseDateEx);
-JS_STATIC_GLOBAL_FUN(AFExtractNums);
+JS_STATIC_GLOBAL_FUN(AFNumber_Format)
+JS_STATIC_GLOBAL_FUN(AFNumber_Keystroke)
+JS_STATIC_GLOBAL_FUN(AFPercent_Format)
+JS_STATIC_GLOBAL_FUN(AFPercent_Keystroke)
+JS_STATIC_GLOBAL_FUN(AFDate_FormatEx)
+JS_STATIC_GLOBAL_FUN(AFDate_KeystrokeEx)
+JS_STATIC_GLOBAL_FUN(AFDate_Format)
+JS_STATIC_GLOBAL_FUN(AFDate_Keystroke)
+JS_STATIC_GLOBAL_FUN(AFTime_FormatEx)
+JS_STATIC_GLOBAL_FUN(AFTime_KeystrokeEx)
+JS_STATIC_GLOBAL_FUN(AFTime_Format)
+JS_STATIC_GLOBAL_FUN(AFTime_Keystroke)
+JS_STATIC_GLOBAL_FUN(AFSpecial_Format)
+JS_STATIC_GLOBAL_FUN(AFSpecial_Keystroke)
+JS_STATIC_GLOBAL_FUN(AFSpecial_KeystrokeEx)
+JS_STATIC_GLOBAL_FUN(AFSimple)
+JS_STATIC_GLOBAL_FUN(AFMakeNumber)
+JS_STATIC_GLOBAL_FUN(AFSimple_Calculate)
+JS_STATIC_GLOBAL_FUN(AFRange_Validate)
+JS_STATIC_GLOBAL_FUN(AFMergeChange)
+JS_STATIC_GLOBAL_FUN(AFParseDateEx)
+JS_STATIC_GLOBAL_FUN(AFExtractNums)
 
 bool CJS_PublicMethods::IsNumber(const WideString& str) {
   WideString sTrim = StrTrim(str);
@@ -277,7 +282,7 @@ bool CJS_PublicMethods::IsNumber(const WideString& str) {
       if (c != L'+' && c != L'-')
         return false;
       bKXJS = true;
-    } else if (!std::iswdigit(c)) {
+    } else if (!FXSYS_IsDecimalDigit(c)) {
       return false;
     }
     p++;
@@ -289,7 +294,7 @@ bool CJS_PublicMethods::IsNumber(const WideString& str) {
 bool CJS_PublicMethods::MaskSatisfied(wchar_t c_Change, wchar_t c_Mask) {
   switch (c_Mask) {
     case L'9':
-      return !!std::iswdigit(c_Change);
+      return !!FXSYS_IsDecimalDigit(c_Change);
     case L'A':
       return isascii(c_Change) && isalpha(c_Change);
     case L'O':
@@ -360,7 +365,7 @@ double CJS_PublicMethods::ParseDate(const WideString& value,
       break;
 
     wchar_t c = value[i];
-    if (std::iswdigit(c)) {
+    if (FXSYS_IsDecimalDigit(c)) {
       number[nIndex++] = FX_ParseStringInteger(value, i, &nSkip, 4);
       i += nSkip;
     } else {
@@ -578,14 +583,14 @@ WideString CJS_PublicMethods::PrintDateUsingFormat(double dDate,
 CJS_Result CJS_PublicMethods::AFNumber_Format(
     CJS_Runtime* pRuntime,
     const std::vector<v8::Local<v8::Value>>& params) {
-#if _FX_OS_ != _FX_OS_ANDROID_
+#if !defined(OS_ANDROID)
   if (params.size() != 6)
     return CJS_Result::Failure(JSMessage::kParamError);
 
   CJS_EventHandler* pEvent =
       pRuntime->GetCurrentEventContext()->GetEventHandler();
   if (!pEvent->m_pValue)
-    return CJS_Result::Failure(L"No event handler");
+    return CJS_Result::Failure(WideString::FromASCII("No event handler"));
 
   WideString& Value = pEvent->Value();
   ByteString strValue = StrTrim(Value.ToDefANSI());
@@ -760,7 +765,7 @@ CJS_Result CJS_PublicMethods::AFNumber_Keystroke(
       continue;
     }
 
-    if (!std::iswdigit(wstrChange[i])) {
+    if (!FXSYS_IsDecimalDigit(wstrChange[i])) {
       pEvent->Rc() = false;
       return CJS_Result::Success();
     }
@@ -770,12 +775,12 @@ CJS_Result CJS_PublicMethods::AFNumber_Keystroke(
   return CJS_Result::Success();
 }
 
-// function AFPercent_Format(nDec, sepStyle)
+// function AFPercent_Format(nDec, sepStyle, bPercentPrepend)
 CJS_Result CJS_PublicMethods::AFPercent_Format(
     CJS_Runtime* pRuntime,
     const std::vector<v8::Local<v8::Value>>& params) {
-#if _FX_OS_ != _FX_OS_ANDROID_
-  if (params.size() != 2)
+#if !defined(OS_ANDROID)
+  if (params.size() < 2)
     return CJS_Result::Failure(JSMessage::kParamError);
 
   CJS_EventHandler* pEvent =
@@ -783,68 +788,78 @@ CJS_Result CJS_PublicMethods::AFPercent_Format(
   if (!pEvent->m_pValue)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
+  // Acrobat will accept this. Anything larger causes it to throw an error.
+  static constexpr int kMaxSepStyle = 49;
+
+  int iDec = pRuntime->ToInt32(params[0]);
+  int iSepStyle = pRuntime->ToInt32(params[1]);
+  // TODO(thestig): How do we handle negative raw |bPercentPrepend| values?
+  bool bPercentPrepend = params.size() > 2 && pRuntime->ToBoolean(params[2]);
+  if (iDec < 0 || iSepStyle < 0 || iSepStyle > kMaxSepStyle)
+    return CJS_Result::Failure(JSMessage::kValueError);
+
+  // When the |iDec| value is too big, Acrobat will just return "%".
+  static constexpr int kDecLimit = 512;
+  // TODO(thestig): Calculate this once C++14 can be used to declare variables
+  // in constexpr functions.
+  static constexpr size_t kDigitsInDecLimit = 3;
   WideString& Value = pEvent->Value();
+  if (iDec > kDecLimit) {
+    Value = L"%";
+    return CJS_Result::Success();
+  }
+
   ByteString strValue = StrTrim(Value.ToDefANSI());
   if (strValue.IsEmpty())
-    return CJS_Result::Success();
-
-  int iDec = abs(pRuntime->ToInt32(params[0]));
-  int iSepStyle = ValidStyleOrZero(pRuntime->ToInt32(params[1]));
+    strValue = "0";
 
   // for processing decimal places
   double dValue = atof(strValue.c_str());
   dValue *= 100;
-  if (iDec > 0)
-    dValue += kDoubleCorrect;
 
-  int iDec2;
-  int iNegative = 0;
-  strValue = fcvt(dValue, iDec, &iDec2, &iNegative);
-  if (strValue.IsEmpty()) {
-    dValue = 0;
-    strValue = fcvt(dValue, iDec, &iDec2, &iNegative);
-  }
+  size_t szNewSize;
+  {
+    // Figure out the format to use with FXSYS_snprintf() below.
+    // |format| is small because |iDec| is limited in size.
+    char format[sizeof("%.f") + kDigitsInDecLimit];  // e.g. "%.512f"
+    FXSYS_snprintf(format, sizeof(format), "%%.%df", iDec);
 
-  if (iDec2 < 0) {
-    ByteString zeros;
-    {
-      pdfium::span<char> zeros_ptr = zeros.GetBuffer(abs(iDec2));
-      std::fill(std::begin(zeros_ptr), std::end(zeros_ptr), '0');
+    // Calculate the new size for |strValue| and get a span.
+    size_t szBufferSize = iDec + 3;  // Negative sign, decimal point, and NUL.
+    double dValueCopy = fabs(dValue);
+    while (dValueCopy > 1) {
+      dValueCopy /= 10;
+      ++szBufferSize;
     }
-    zeros.ReleaseBuffer(abs(iDec2));
-    strValue = zeros + strValue;
-    iDec2 = 0;
-  }
-  int iMax = strValue.GetLength();
-  if (iDec2 > iMax) {
-    for (int iNum = 0; iNum <= iDec2 - iMax; iNum++)
-      strValue += '0';
 
-    iMax = iDec2 + 1;
+    // Write into |strValue|.
+    pdfium::span<char> span = strValue.GetBuffer(szBufferSize);
+    FXSYS_snprintf(span.data(), szBufferSize, format, dValue);
+    szNewSize = strlen(span.data());
   }
+  strValue.ReleaseBuffer(szNewSize);
 
-  // for processing seperator style
-  if (iDec2 < iMax) {
+  // for processing separator style
+  Optional<size_t> mark_pos = strValue.Find('.');
+  if (mark_pos.has_value()) {
     char mark = DecimalMarkForStyle(iSepStyle);
-    strValue.Insert(iDec2, mark);
-    iMax++;
-
-    if (iDec2 == 0)
-      strValue.Insert(iDec2, '0');
+    if (mark != '.')
+      strValue.SetAt(mark_pos.value(), mark);
   }
-  if (IsStyleWithDigitSeparator(iSepStyle)) {
-    char cSeparator = DigitSeparatorForStyle(iSepStyle);
-    for (int iDecPositive = iDec2 - 3; iDecPositive > 0; iDecPositive -= 3) {
-      strValue.Insert(iDecPositive, cSeparator);
-      iMax++;
-    }
+  bool bUseDigitSeparator = IsStyleWithDigitSeparator(iSepStyle);
+  if (bUseDigitSeparator || IsStyleWithApostropheSeparator(iSepStyle)) {
+    char cSeparator =
+        bUseDigitSeparator ? DigitSeparatorForStyle(iSepStyle) : '\'';
+    int iEnd = mark_pos.value_or(strValue.GetLength());
+    int iStop = dValue < 0 ? 1 : 0;
+    for (int i = iEnd - 3; i > iStop; i -= 3)
+      strValue.Insert(i, cSeparator);
   }
 
-  // negative mark
-  if (iNegative)
-    strValue.InsertAtFront('-');
-
-  strValue += '%';
+  if (bPercentPrepend)
+    strValue.InsertAtFront('%');
+  else
+    strValue.InsertAtBack('%');
   Value = WideString::FromDefANSI(strValue.AsStringView());
 #endif
   return CJS_Result::Success();
@@ -917,11 +932,11 @@ double CJS_PublicMethods::ParseDateAsGMT(const WideString& strValue) {
     }
   }
 
-  int nDay = FX_atof(wsArray[2].AsStringView());
-  int nHour = FX_atof(wsArray[3].AsStringView());
-  int nMin = FX_atof(wsArray[4].AsStringView());
-  int nSec = FX_atof(wsArray[5].AsStringView());
-  int nYear = FX_atof(wsArray[7].AsStringView());
+  int nDay = StringToFloat(wsArray[2].AsStringView());
+  int nHour = StringToFloat(wsArray[3].AsStringView());
+  int nMin = StringToFloat(wsArray[4].AsStringView());
+  int nSec = StringToFloat(wsArray[5].AsStringView());
+  int nYear = StringToFloat(wsArray[7].AsStringView());
   double dRet = FX_MakeDate(FX_MakeDay(nYear, nMonth - 1, nDay),
                             FX_MakeTime(nHour, nMin, nSec, 0));
   if (std::isnan(dRet))
@@ -935,8 +950,8 @@ CJS_Result CJS_PublicMethods::AFDate_KeystrokeEx(
     CJS_Runtime* pRuntime,
     const std::vector<v8::Local<v8::Value>>& params) {
   if (params.size() != 1) {
-    return CJS_Result::Failure(
-        WideString(L"AFDate_KeystrokeEx's parameter size not correct"));
+    return CJS_Result::Failure(WideString::FromASCII(
+        "AFDate_KeystrokeEx's parameter size not correct"));
   }
 
   CJS_EventContext* pContext = pRuntime->GetCurrentEventContext();
@@ -1297,7 +1312,7 @@ CJS_Result CJS_PublicMethods::AFSimple_Calculate(
           WideString trimmed = pFormField->GetValue();
           trimmed.TrimRight();
           trimmed.TrimLeft();
-          dTemp = FX_atof(trimmed.AsStringView());
+          dTemp = StringToFloat(trimmed.AsStringView());
           break;
         }
         case FormFieldType::kPushButton:
@@ -1312,7 +1327,7 @@ CJS_Result CJS_PublicMethods::AFSimple_Calculate(
             WideString trimmed = pFormCtrl->GetExportValue();
             trimmed.TrimRight();
             trimmed.TrimLeft();
-            dTemp = FX_atof(trimmed.AsStringView());
+            dTemp = StringToFloat(trimmed.AsStringView());
             break;
           }
           break;
@@ -1321,7 +1336,7 @@ CJS_Result CJS_PublicMethods::AFSimple_Calculate(
             WideString trimmed = pFormField->GetValue();
             trimmed.TrimRight();
             trimmed.TrimLeft();
-            dTemp = FX_atof(trimmed.AsStringView());
+            dTemp = StringToFloat(trimmed.AsStringView());
           }
           break;
         default:
@@ -1419,7 +1434,7 @@ CJS_Result CJS_PublicMethods::AFExtractNums(
   v8::Local<v8::Array> nums = pRuntime->NewArray();
   int nIndex = 0;
   for (const auto& wc : str) {
-    if (std::iswdigit(wc)) {
+    if (FXSYS_IsDecimalDigit(wc)) {
       sPart += wc;
     } else if (sPart.GetLength() > 0) {
       pRuntime->PutArrayElement(nums, nIndex,

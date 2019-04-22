@@ -5,28 +5,29 @@
 /**
  * Returns a mock of metadata model.
  *
- * @constructor
  * @extends {MetadataModel}
- * @param {Object} initial_properties
  */
-function MockMetadataModel(initial_properties) {
-  /**
-   * Dummy properties, which can be overwritten by a test.
-   * @public {Object}
-   * @const
-   */
-  this.properties = initial_properties;
+class MockMetadataModel {
+  /** @param {Object} initial_properties */
+  constructor(initial_properties) {
+    /**
+     * Dummy properties, which can be overwritten by a test.
+     * @public {Object}
+     * @const
+     */
+    this.properties = initial_properties;
+  }
+
+  /** @override */
+  get() {
+    return Promise.resolve([this.properties]);
+  }
+
+  /** @override */
+  getCache() {
+    return [this.properties];
+  }
+
+  /** @override */
+  notifyEntriesChanged() {}
 }
-
-/** @override */
-MockMetadataModel.prototype.get = function() {
-  return Promise.resolve([this.properties]);
-};
-
-/** @override */
-MockMetadataModel.prototype.getCache = function() {
-  return [this.properties];
-};
-
-/** @override */
-MockMetadataModel.prototype.notifyEntriesChanged = function() {};

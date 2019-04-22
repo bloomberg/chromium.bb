@@ -5,8 +5,8 @@
 #include <array>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/desktop_capture/desktop_capture_api.h"
@@ -59,7 +59,7 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
 
  protected:
   GURL GetURLForPath(const std::string& host, const std::string& path) {
-    std::string port = base::UintToString(embedded_test_server()->port());
+    std::string port = base::NumberToString(embedded_test_server()->port());
     GURL::Replacements replacements;
     replacements.SetHostStr(host);
     replacements.SetPortStr(port);
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
     {true, false, false, true,
      DesktopMediaID(DesktopMediaID::TYPE_SCREEN, webrtc::kFullDesktopScreenId)},
   };
-  picker_factory_.SetTestFlags(test_flags, arraysize(test_flags));
+  picker_factory_.SetTestFlags(test_flags, base::size(test_flags));
   ASSERT_TRUE(RunExtensionTest("desktop_capture")) << message_;
 }
 
@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, DISABLED_Delegation) {
        DesktopMediaID(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId),
        true},
   };
-  picker_factory_.SetTestFlags(test_flags, arraysize(test_flags));
+  picker_factory_.SetTestFlags(test_flags, base::size(test_flags));
 
   bool result;
 

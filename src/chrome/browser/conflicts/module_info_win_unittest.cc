@@ -27,32 +27,26 @@ base::FilePath GetKernel32DllFilePath() {
 }  // namespace
 
 TEST(ModuleInfoTest, InspectModule) {
-  ModuleInfoKey module_key = {GetKernel32DllFilePath(), 0, 0, 1};
-  StringMapping path_mapping = GetEnvironmentVariablesMapping({
-      L"SystemRoot",
-  });
+  ModuleInspectionResult inspection_result =
+      InspectModule(GetKernel32DllFilePath());
 
-  std::unique_ptr<ModuleInspectionResult> inspection_result =
-      InspectModule(path_mapping, module_key);
-
-  EXPECT_STREQ(L"%systemroot%\\system32\\",
-               inspection_result->location.c_str());
-  EXPECT_STREQ(L"kernel32.dll", inspection_result->basename.c_str());
+  EXPECT_STREQ(L"c:\\windows\\system32\\", inspection_result.location.c_str());
+  EXPECT_STREQ(L"kernel32.dll", inspection_result.basename.c_str());
   EXPECT_STREQ(L"Microsoft\xAE Windows\xAE Operating System",
-               inspection_result->product_name.c_str());
+               inspection_result.product_name.c_str());
   EXPECT_STREQ(L"Windows NT BASE API Client DLL",
-               inspection_result->description.c_str());
-  EXPECT_FALSE(inspection_result->version.empty());
-  EXPECT_EQ(inspection_result->certificate_info.type,
-            CertificateType::CERTIFICATE_IN_CATALOG);
-  EXPECT_FALSE(inspection_result->certificate_info.path.empty());
+               inspection_result.description.c_str());
+  EXPECT_FALSE(inspection_result.version.empty());
+  EXPECT_EQ(inspection_result.certificate_info.type,
+            CertificateInfo::Type::CERTIFICATE_IN_CATALOG);
+  EXPECT_FALSE(inspection_result.certificate_info.path.empty());
   EXPECT_STREQ(L"Microsoft Windows",
-               inspection_result->certificate_info.subject.c_str());
+               inspection_result.certificate_info.subject.c_str());
 }
 
 TEST(ModuleInfoTest, GenerateCodeId) {
   static const char kExpected[] = "00000BADf00d";
-  ModuleInfoKey module_key = {base::FilePath(), 0xf00d, 0xbad, 1};
+  ModuleInfoKey module_key = {base::FilePath(), 0xf00d, 0xbad};
   EXPECT_STREQ(kExpected, GenerateCodeId(module_key).c_str());
 }
 

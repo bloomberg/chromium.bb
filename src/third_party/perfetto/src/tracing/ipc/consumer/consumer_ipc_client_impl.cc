@@ -22,7 +22,9 @@
 #include "perfetto/base/task_runner.h"
 #include "perfetto/ipc/client.h"
 #include "perfetto/tracing/core/consumer.h"
+#include "perfetto/tracing/core/observable_events.h"
 #include "perfetto/tracing/core/trace_config.h"
+#include "perfetto/tracing/core/trace_stats.h"
 
 // TODO(fmayer): Add a test to check to what happens when ConsumerIPCClientImpl
 // gets destroyed w.r.t. the Consumer pointer. Also think to lifetime of the
@@ -76,15 +78,30 @@ void ConsumerIPCClientImpl::EnableTracing(const TraceConfig& trace_config,
   auto weak_this = weak_ptr_factory_.GetWeakPtr();
   async_response.Bind(
       [weak_this](ipc::AsyncResult<protos::EnableTracingResponse> response) {
-        if (!weak_this)
-          return;
-        if (!response || response->disabled())
-          weak_this->consumer_->OnTracingDisabled();
+        if (weak_this)
+          weak_this->OnEnableTracingResponse(std::move(response));
       });
 
   // |fd| will be closed when this function returns, but it's fine because the
   // IPC layer dup()'s it when sending the IPC.
   consumer_port_.EnableTracing(req, std::move(async_response), *fd);
+}
+
+void ConsumerIPCClientImpl::ChangeTraceConfig(const TraceConfig&) {
+  if (!connected_) {
+    PERFETTO_DLOG(
+        "Cannot ChangeTraceConfig(), not connected to tracing service");
+    return;
+  }
+
+  ipc::Deferred<protos::ChangeTraceConfigResponse> async_response;
+  async_response.Bind(
+      [](ipc::AsyncResult<protos::ChangeTraceConfigResponse> response) {
+        if (!response)
+          PERFETTO_DLOG("ChangeTraceConfig() failed");
+      });
+  protos::ChangeTraceConfigRequest req;
+  consumer_port_.ChangeTraceConfig(req, std::move(async_response));
 }
 
 void ConsumerIPCClientImpl::StartTracing() {
@@ -156,6 +173,12 @@ void ConsumerIPCClientImpl::OnReadBuffersResponse(
     consumer_->OnTraceData(std::move(trace_packets), response.has_more());
 }
 
+void ConsumerIPCClientImpl::OnEnableTracingResponse(
+    ipc::AsyncResult<protos::EnableTracingResponse> response) {
+  if (!response || response->disabled())
+    consumer_->OnTracingDisabled();
+}
+
 void ConsumerIPCClientImpl::FreeBuffers() {
   if (!connected_) {
     PERFETTO_DLOG("Cannot FreeBuffers(), not connected to tracing service");
@@ -186,6 +209,123 @@ void ConsumerIPCClientImpl::Flush(uint32_t timeout_ms, FlushCallback callback) {
         callback(!!response);
       });
   consumer_port_.Flush(req, std::move(async_response));
+}
+
+void ConsumerIPCClientImpl::Detach(const std::string& key) {
+  if (!connected_) {
+    PERFETTO_DLOG("Cannot Detach(), not connected to tracing service");
+    return;
+  }
+
+  protos::DetachRequest req;
+  req.set_key(key);
+  ipc::Deferred<protos::DetachResponse> async_response;
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
+
+  async_response.Bind(
+      [weak_this](ipc::AsyncResult<protos::DetachResponse> response) {
+        if (weak_this)
+          weak_this->consumer_->OnDetach(!!response);
+      });
+  consumer_port_.Detach(req, std::move(async_response));
+}
+
+void ConsumerIPCClientImpl::Attach(const std::string& key) {
+  if (!connected_) {
+    PERFETTO_DLOG("Cannot Attach(), not connected to tracing service");
+    return;
+  }
+
+  {
+    protos::AttachRequest req;
+    req.set_key(key);
+    ipc::Deferred<protos::AttachResponse> async_response;
+    auto weak_this = weak_ptr_factory_.GetWeakPtr();
+
+    async_response.Bind([weak_this](
+                            ipc::AsyncResult<protos::AttachResponse> response) {
+      if (!weak_this)
+        return;
+      TraceConfig trace_config;
+      if (!response) {
+        weak_this->consumer_->OnAttach(/*success=*/false, trace_config);
+        return;
+      }
+      trace_config.FromProto(response->trace_config());
+
+      // If attached succesfully, also attach to the end-of-trace
+      // notificaton callback, via EnableTracing(attach_notification_only).
+      protos::EnableTracingRequest enable_req;
+      enable_req.set_attach_notification_only(true);
+      ipc::Deferred<protos::EnableTracingResponse> enable_resp;
+      enable_resp.Bind(
+          [weak_this](ipc::AsyncResult<protos::EnableTracingResponse> resp) {
+            if (weak_this)
+              weak_this->OnEnableTracingResponse(std::move(resp));
+          });
+      weak_this->consumer_port_.EnableTracing(enable_req,
+                                              std::move(enable_resp));
+
+      weak_this->consumer_->OnAttach(/*success=*/true, trace_config);
+    });
+    consumer_port_.Attach(req, std::move(async_response));
+  }
+}
+
+void ConsumerIPCClientImpl::GetTraceStats() {
+  if (!connected_) {
+    PERFETTO_DLOG("Cannot GetTraceStats(), not connected to tracing service");
+    return;
+  }
+
+  protos::GetTraceStatsRequest req;
+  ipc::Deferred<protos::GetTraceStatsResponse> async_response;
+
+  // The IPC layer guarantees that callbacks are destroyed after this object
+  // is destroyed (by virtue of destroying the |consumer_port_|). In turn the
+  // contract of this class expects the caller to not destroy the Consumer class
+  // before having destroyed this class. Hence binding |this| here is safe.
+  async_response.Bind(
+      [this](ipc::AsyncResult<protos::GetTraceStatsResponse> response) {
+        TraceStats trace_stats;
+        if (!response) {
+          consumer_->OnTraceStats(/*success=*/false, trace_stats);
+          return;
+        }
+        trace_stats.FromProto(response->trace_stats());
+        consumer_->OnTraceStats(/*success=*/true, trace_stats);
+      });
+  consumer_port_.GetTraceStats(req, std::move(async_response));
+}
+
+void ConsumerIPCClientImpl::ObserveEvents(uint32_t enabled_event_types) {
+  if (!connected_) {
+    PERFETTO_DLOG("Cannot ObserveEvents(), not connected to tracing service");
+    return;
+  }
+
+  protos::ObserveEventsRequest req;
+  if (enabled_event_types & ObservableEventType::kDataSourceInstances) {
+    req.add_events_to_observe(
+        protos::ObservableEvents::TYPE_DATA_SOURCES_INSTANCES);
+  }
+  ipc::Deferred<protos::ObserveEventsResponse> async_response;
+  // The IPC layer guarantees that callbacks are destroyed after this object
+  // is destroyed (by virtue of destroying the |consumer_port_|). In turn the
+  // contract of this class expects the caller to not destroy the Consumer class
+  // before having destroyed this class. Hence binding |this| here is safe.
+  async_response.Bind(
+      [this](ipc::AsyncResult<protos::ObserveEventsResponse> response) {
+        // Skip empty response, which the service sends to close the stream.
+        if (!response->events().instance_state_changes().size()) {
+          PERFETTO_DCHECK(!response.has_more());
+          return;
+        }
+        ObservableEvents events;
+        events.FromProto(response->events());
+        consumer_->OnObservableEvents(events);
+      });
+  consumer_port_.ObserveEvents(req, std::move(async_response));
 }
 
 }  // namespace perfetto

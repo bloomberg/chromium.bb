@@ -69,7 +69,7 @@ class CompositeEditCommandTest : public EditingTestBase {};
 
 TEST_F(CompositeEditCommandTest, insertNodeBefore) {
   SetBodyContent("<div contenteditable><b></b></div>");
-  SampleCommand& sample = *new SampleCommand(GetDocument());
+  SampleCommand& sample = *MakeGarbageCollected<SampleCommand>(GetDocument());
   Node* insert_child = GetDocument().createTextNode("foo");
   Element* ref_child = GetDocument().QuerySelector("b");
   Element* div = GetDocument().QuerySelector("div");
@@ -82,7 +82,7 @@ TEST_F(CompositeEditCommandTest, insertNodeBefore) {
 
 TEST_F(CompositeEditCommandTest, insertNodeBeforeInUneditable) {
   SetBodyContent("<div><b></b></div>");
-  SampleCommand& sample = *new SampleCommand(GetDocument());
+  SampleCommand& sample = *MakeGarbageCollected<SampleCommand>(GetDocument());
   Node* insert_child = GetDocument().createTextNode("foo");
   Element* ref_child = GetDocument().QuerySelector("b");
 
@@ -93,7 +93,7 @@ TEST_F(CompositeEditCommandTest, insertNodeBeforeInUneditable) {
 
 TEST_F(CompositeEditCommandTest, insertNodeBeforeDisconnectedNode) {
   SetBodyContent("<div><b></b></div>");
-  SampleCommand& sample = *new SampleCommand(GetDocument());
+  SampleCommand& sample = *MakeGarbageCollected<SampleCommand>(GetDocument());
   Node* insert_child = GetDocument().createTextNode("foo");
   Element* ref_child = GetDocument().QuerySelector("b");
   Element* div = GetDocument().QuerySelector("div");
@@ -108,7 +108,7 @@ TEST_F(CompositeEditCommandTest, insertNodeBeforeDisconnectedNode) {
 
 TEST_F(CompositeEditCommandTest, insertNodeBeforeWithDirtyLayoutTree) {
   SetBodyContent("<div><b></b></div>");
-  SampleCommand& sample = *new SampleCommand(GetDocument());
+  SampleCommand& sample = *MakeGarbageCollected<SampleCommand>(GetDocument());
   Node* insert_child = GetDocument().createTextNode("foo");
   Element* ref_child = GetDocument().QuerySelector("b");
   Element* div = GetDocument().QuerySelector("div");
@@ -125,7 +125,7 @@ TEST_F(CompositeEditCommandTest,
   SetBodyContent(
       "<style>div{-webkit-user-modify:read-only;user-select:none;}</style>"
       "foo");
-  SampleCommand& sample = *new SampleCommand(GetDocument());
+  SampleCommand& sample = *MakeGarbageCollected<SampleCommand>(GetDocument());
   Element* body = GetDocument().body();
   Node* text = body->lastChild();
   body->setAttribute(html_names::kContenteditableAttr, "true");
@@ -144,7 +144,7 @@ TEST_F(CompositeEditCommandTest,
 
 TEST_F(CompositeEditCommandTest, InsertNodeOnDisconnectedParent) {
   SetBodyContent("<p><b></b></p>");
-  SampleCommand& sample = *new SampleCommand(GetDocument());
+  SampleCommand& sample = *MakeGarbageCollected<SampleCommand>(GetDocument());
   Node* insert_child = GetDocument().QuerySelector("b");
   Element* ref_child = GetDocument().QuerySelector("p");
   ref_child->remove();

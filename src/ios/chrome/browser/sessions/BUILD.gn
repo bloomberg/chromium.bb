@@ -46,6 +46,7 @@ source_set("serialisation") {
     "session_util.mm",
     "session_window_ios.h",
     "session_window_ios.mm",
+    "session_window_restoring.h",
   ]
   deps = [
     "//base",

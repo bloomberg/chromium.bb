@@ -24,7 +24,9 @@ InputEventsBlocker::InputEventsBlocker() {
 
 InputEventsBlocker::~InputEventsBlocker() {
   if (!features::IsMultiProcessMash()) {
-    ash::Shell::Get()->RemovePreTargetHandler(this);
+    if (ash::Shell::HasInstance())
+      ash::Shell::Get()->RemovePreTargetHandler(this);
+
     VLOG(1) << "InputEventsBlocker " << this << " destroyed.";
   } else {
     NOTIMPLEMENTED();

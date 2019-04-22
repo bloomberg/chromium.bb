@@ -42,14 +42,14 @@ interface ExternalNavigationDelegate {
      * Returns the number of specialized intent handlers in {@params infos}. Specialized intent
      * handlers are intent handlers which handle only a few URLs (e.g. google maps or youtube).
      */
-    int countSpecializedHandlers(List<ResolveInfo> infos, Intent intent);
+    int countSpecializedHandlers(List<ResolveInfo> infos);
 
     /**
      * Returns the package name of the first valid WebAPK in {@link infos}.
      * @param infos ResolveInfos to search.
      * @return The package name of the first valid WebAPK. Null if no valid WebAPK was found.
      */
-    String findWebApkPackageName(List<ResolveInfo> infos);
+    String findFirstWebApkPackageName(List<ResolveInfo> infos);
 
     /**
      * Start an activity for the intent. Used for intents that must be handled externally.

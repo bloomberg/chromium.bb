@@ -16,26 +16,25 @@ namespace {
 const uint64_t kSignatureHeaderDate = 1517892341;
 const uint64_t kSignatureHeaderExpires = 1517895941;
 
-// See content/testdata/sxg/README on how to generate these data.
+// See content/test/data/sxg/README on how to generate these data.
 // clang-format off
-constexpr char kSignatureHeaderECDSAP256[] = R"(label; sig=*MEUCIQC7tM/B6YxVgrJmgfFawtwBKPev2vFCh7amR+JTDBMgTQIga9LkS51vteYr8NWPTCSZRy10lcLaFNN9m1G3OBS9lBs=*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; date=1517892341; expires=1517895941)";
+constexpr char kSignatureHeaderECDSAP256[] = R"(label; sig=*MEUCIQCG/Oyo2geBPXXVRy6aN44z9Zn/B/6y/2MBwJfgltYjzAIgXIL1cdNfyHb8pC9efCsSqhVDCuMAS2XwYMLpvfJ0lCo=*; validity-url="https://test.example.org/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; date=1517892341; expires=1517895941)";
 constexpr uint8_t kCborHeadersECDSAP256[] = {
-  0x82, 0xa1, 0x47, 0x3a, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x43, 0x47,
-  0x45, 0x54, 0xa4, 0x46, 0x64, 0x69, 0x67, 0x65, 0x73, 0x74, 0x58, 0x39,
-  0x6d, 0x69, 0x2d, 0x73, 0x68, 0x61, 0x32, 0x35, 0x36, 0x2d, 0x30, 0x33,
-  0x3d, 0x77, 0x6d, 0x70, 0x34, 0x64, 0x52, 0x4d, 0x59, 0x67, 0x78, 0x50,
-  0x33, 0x74, 0x53, 0x4d, 0x43, 0x77, 0x56, 0x2f, 0x49, 0x30, 0x43, 0x57,
-  0x4f, 0x43, 0x69, 0x48, 0x5a, 0x70, 0x41, 0x69, 0x68, 0x4b, 0x5a, 0x6b,
-  0x31, 0x39, 0x62, 0x73, 0x4e, 0x39, 0x52, 0x49, 0x3d, 0x47, 0x3a, 0x73,
-  0x74, 0x61, 0x74, 0x75, 0x73, 0x43, 0x32, 0x30, 0x30, 0x4c, 0x63, 0x6f,
-  0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2d, 0x74, 0x79, 0x70, 0x65, 0x58, 0x18,
-  0x74, 0x65, 0x78, 0x74, 0x2f, 0x68, 0x74, 0x6d, 0x6c, 0x3b, 0x20, 0x63,
-  0x68, 0x61, 0x72, 0x73, 0x65, 0x74, 0x3d, 0x75, 0x74, 0x66, 0x2d, 0x38,
-  0x50, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2d, 0x65, 0x6e, 0x63,
-  0x6f, 0x64, 0x69, 0x6e, 0x67, 0x4c, 0x6d, 0x69, 0x2d, 0x73, 0x68, 0x61,
-  0x32, 0x35, 0x36, 0x2d, 0x30, 0x33
+  0xa4, 0x46, 0x64, 0x69, 0x67, 0x65, 0x73, 0x74, 0x58, 0x39, 0x6d, 0x69,
+  0x2d, 0x73, 0x68, 0x61, 0x32, 0x35, 0x36, 0x2d, 0x30, 0x33, 0x3d, 0x77,
+  0x6d, 0x70, 0x34, 0x64, 0x52, 0x4d, 0x59, 0x67, 0x78, 0x50, 0x33, 0x74,
+  0x53, 0x4d, 0x43, 0x77, 0x56, 0x2f, 0x49, 0x30, 0x43, 0x57, 0x4f, 0x43,
+  0x69, 0x48, 0x5a, 0x70, 0x41, 0x69, 0x68, 0x4b, 0x5a, 0x6b, 0x31, 0x39,
+  0x62, 0x73, 0x4e, 0x39, 0x52, 0x49, 0x3d, 0x47, 0x3a, 0x73, 0x74, 0x61,
+  0x74, 0x75, 0x73, 0x43, 0x32, 0x30, 0x30, 0x4c, 0x63, 0x6f, 0x6e, 0x74,
+  0x65, 0x6e, 0x74, 0x2d, 0x74, 0x79, 0x70, 0x65, 0x58, 0x18, 0x74, 0x65,
+  0x78, 0x74, 0x2f, 0x68, 0x74, 0x6d, 0x6c, 0x3b, 0x20, 0x63, 0x68, 0x61,
+  0x72, 0x73, 0x65, 0x74, 0x3d, 0x75, 0x74, 0x66, 0x2d, 0x38, 0x50, 0x63,
+  0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2d, 0x65, 0x6e, 0x63, 0x6f, 0x64,
+  0x69, 0x6e, 0x67, 0x4c, 0x6d, 0x69, 0x2d, 0x73, 0x68, 0x61, 0x32, 0x35,
+  0x36, 0x2d, 0x30, 0x33
 };
-constexpr char kSignatureHeaderECDSAP384[] = R"(label; sig=*MGUCMQDm3+Mf3ymTQOF2EUFk+NDIpOIqbFCboYsPD9YOV9rpayKTmAXzUD7Hxtp+XP/8mQECMEfTRcJmvL9QMAMKuDIzQqy/ib8MPeJHap9kQVQT1OdROaYj4EISngkJeT5om9/YlA==*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; date=1517892341; expires=1517895941)";
+constexpr char kSignatureHeaderECDSAP384[] = R"(label; sig=*MGUCMEeJujTLUifd561fwNZEzDptyEkXIKzkMOzbQFwlUpU3SWjY//58aRr6w6+V1jFa9wIxAPVlX3ia5a0wRYLfAXHO0Jm9bRKPoPUk7o9H/95eroC7BUL7ow+4H1W+20MuO1wbkw==*; validity-url="https://test.example.org/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; date=1517892341; expires=1517895941)";
 // clang-format on
 
 // |expires| (1518497142) is more than 7 days (604800 seconds) after |date|
@@ -99,7 +98,8 @@ constexpr char kPEMECDSAP384SPKIHash[] =
 
 }  // namespace
 
-class SignedExchangeSignatureVerifierTest : public ::testing::Test {
+class SignedExchangeSignatureVerifierTest
+    : public ::testing::TestWithParam<SignedExchangeVersion> {
  protected:
   SignedExchangeSignatureVerifierTest() {}
 
@@ -115,7 +115,7 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
       base::HistogramTester histogram_tester;
       EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
                 SignedExchangeSignatureVerifier::Verify(
-                    envelope, certificate, VerificationTime(),
+                    GetParam(), envelope, certificate, VerificationTime(),
                     nullptr /* devtools_proxy */));
       histogram_tester.ExpectUniqueSample(
           "SignedExchange.TimeUntilExpiration",
@@ -127,9 +127,9 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
     }
     {
       base::HistogramTester histogram_tester;
-      EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
+      EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrFutureDate,
                 SignedExchangeSignatureVerifier::Verify(
-                    envelope, certificate,
+                    GetParam(), envelope, certificate,
                     base::Time::UnixEpoch() +
                         base::TimeDelta::FromSeconds(kSignatureHeaderDate - 1),
                     nullptr /* devtools_proxy */
@@ -146,7 +146,7 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
       base::HistogramTester histogram_tester;
       EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
                 SignedExchangeSignatureVerifier::Verify(
-                    envelope, certificate,
+                    GetParam(), envelope, certificate,
                     base::Time::UnixEpoch() +
                         base::TimeDelta::FromSeconds(kSignatureHeaderExpires),
                     nullptr /* devtools_proxy */
@@ -160,9 +160,9 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
     }
     {
       base::HistogramTester histogram_tester;
-      EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
+      EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrExpired,
                 SignedExchangeSignatureVerifier::Verify(
-                    envelope, certificate,
+                    GetParam(), envelope, certificate,
                     base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(
                                                   kSignatureHeaderExpires + 1),
                     nullptr /* devtools_proxy */
@@ -183,19 +183,21 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
     ASSERT_EQ(1u, invalid_expires_signature->size());
     invalid_expires_envelope.SetSignatureForTesting(
         (*invalid_expires_signature)[0]);
-    EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
-              SignedExchangeSignatureVerifier::Verify(
-                  invalid_expires_envelope, certificate, VerificationTime(),
-                  nullptr /* devtools_proxy */
-                  ));
+    EXPECT_EQ(
+        SignedExchangeSignatureVerifier::Result::kErrValidityPeriodTooLong,
+        SignedExchangeSignatureVerifier::Verify(
+            GetParam(), invalid_expires_envelope, certificate,
+            VerificationTime(), nullptr /* devtools_proxy */
+            ));
 
     SignedExchangeEnvelope corrupted_envelope(envelope);
-    corrupted_envelope.set_request_url(GURL("https://example.com/bad.html"));
+    corrupted_envelope.set_request_url(signed_exchange_utils::URLWithRawString(
+        "https://example.com/bad.html"));
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::
                   kErrSignatureVerificationFailed,
               SignedExchangeSignatureVerifier::Verify(
-                  corrupted_envelope, certificate, VerificationTime(),
-                  nullptr /* devtools_proxy */
+                  GetParam(), corrupted_envelope, certificate,
+                  VerificationTime(), nullptr /* devtools_proxy */
                   ));
 
     SignedExchangeEnvelope badsig_envelope(envelope);
@@ -205,7 +207,7 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::
                   kErrSignatureVerificationFailed,
               SignedExchangeSignatureVerifier::Verify(
-                  badsig_envelope, certificate, VerificationTime(),
+                  GetParam(), badsig_envelope, certificate, VerificationTime(),
                   nullptr /* devtools_proxy */
                   ));
 
@@ -216,14 +218,14 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
     badsigsha256_envelope.SetSignatureForTesting(badsigsha256);
     EXPECT_EQ(
         SignedExchangeSignatureVerifier::Result::kErrCertificateSHA256Mismatch,
-        SignedExchangeSignatureVerifier::Verify(badsigsha256_envelope,
-                                                certificate, VerificationTime(),
-                                                nullptr /* devtools_proxy */
-                                                ));
+        SignedExchangeSignatureVerifier::Verify(
+            GetParam(), badsigsha256_envelope, certificate, VerificationTime(),
+            nullptr /* devtools_proxy */
+            ));
   }
 };
 
-TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
+TEST_P(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
   auto signature = SignedExchangeSignatureHeaderField::ParseSignature(
       kSignatureHeaderECDSAP256, nullptr /* devtools_proxy */);
   ASSERT_TRUE(signature.has_value());
@@ -236,8 +238,8 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
   ASSERT_EQ(1u, certlist.size());
 
   SignedExchangeEnvelope envelope;
-  envelope.set_request_method("GET");
-  envelope.set_request_url(GURL("https://test.example.org/test/"));
+  envelope.set_request_url(signed_exchange_utils::URLWithRawString(
+      "https://test.example.org/test/"));
   envelope.set_response_code(net::HTTP_OK);
   envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
   envelope.AddResponseHeader("content-encoding", "mi-sha256-03");
@@ -250,7 +252,7 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
   TestVerifierGivenValidInput(envelope, certlist[0]);
 }
 
-TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
+TEST_P(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
   auto signature = SignedExchangeSignatureHeaderField::ParseSignature(
       kSignatureHeaderECDSAP384, nullptr /* devtools_proxy */);
   ASSERT_TRUE(signature.has_value());
@@ -263,8 +265,8 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
   ASSERT_EQ(1u, certlist.size());
 
   SignedExchangeEnvelope envelope;
-  envelope.set_request_method("GET");
-  envelope.set_request_url(GURL("https://test.example.org/test/"));
+  envelope.set_request_url(signed_exchange_utils::URLWithRawString(
+      "https://test.example.org/test/"));
   envelope.set_response_code(net::HTTP_OK);
   envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
   envelope.AddResponseHeader("content-encoding", "mi-sha256-03");
@@ -275,11 +277,11 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
 
   EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrUnsupportedCertType,
             SignedExchangeSignatureVerifier::Verify(
-                envelope, certlist[0], VerificationTime(),
+                GetParam(), envelope, certlist[0], VerificationTime(),
                 nullptr /* devtools_proxy */));
 }
 
-TEST_F(SignedExchangeSignatureVerifierTest, IgnoreErrorsSPKIList) {
+TEST_P(SignedExchangeSignatureVerifierTest, IgnoreErrorsSPKIList) {
   SignedExchangeSignatureVerifier::IgnoreErrorsSPKIList ignore_nothing("");
   SignedExchangeSignatureVerifier::IgnoreErrorsSPKIList ignore_ecdsap256(
       kPEMECDSAP256SPKIHash);
@@ -306,5 +308,9 @@ TEST_F(SignedExchangeSignatureVerifierTest, IgnoreErrorsSPKIList) {
   EXPECT_TRUE(ignore_both.ShouldIgnoreError(cert_ecdsap256));
   EXPECT_TRUE(ignore_both.ShouldIgnoreError(cert_ecdsap384));
 }
+
+INSTANTIATE_TEST_SUITE_P(SignedExchangeSignatureVerifierTests,
+                         SignedExchangeSignatureVerifierTest,
+                         ::testing::Values(SignedExchangeVersion::kB3));
 
 }  // namespace content

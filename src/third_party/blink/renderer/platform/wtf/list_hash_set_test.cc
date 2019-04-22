@@ -43,7 +43,7 @@ class ListOrLinkedHashSetTest : public testing::Test {};
 
 using SetTypes =
     testing::Types<ListHashSet<int>, ListHashSet<int, 1>, LinkedHashSet<int>>;
-TYPED_TEST_CASE(ListOrLinkedHashSetTest, SetTypes);
+TYPED_TEST_SUITE(ListOrLinkedHashSetTest, SetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetTest, RemoveFirst) {
   using Set = TypeParam;
@@ -410,7 +410,7 @@ using RefPtrSetTypes =
     testing::Types<ListHashSet<scoped_refptr<DummyRefCounted>>,
                    ListHashSet<scoped_refptr<DummyRefCounted>, 1>,
                    LinkedHashSet<scoped_refptr<DummyRefCounted>>>;
-TYPED_TEST_CASE(ListOrLinkedHashSetRefPtrTest, RefPtrSetTypes);
+TYPED_TEST_SUITE(ListOrLinkedHashSetRefPtrTest, RefPtrSetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr) {
   using Set = TypeParam;
@@ -482,7 +482,7 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, ExerciseValuePeekInType) {
 }
 
 struct Simple {
-  Simple(int value) : value_(value){};
+  Simple(int value) : value_(value) {}
   int value_;
 };
 
@@ -522,7 +522,7 @@ using TranslatorSetTypes =
     testing::Types<ListHashSet<Complicated, 256, ComplicatedHashFunctions>,
                    ListHashSet<Complicated, 1, ComplicatedHashFunctions>,
                    LinkedHashSet<Complicated, ComplicatedHashFunctions>>;
-TYPED_TEST_CASE(ListOrLinkedHashSetTranslatorTest, TranslatorSetTypes);
+TYPED_TEST_SUITE(ListOrLinkedHashSetTranslatorTest, TranslatorSetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetTranslatorTest, ComplexityTranslator) {
   using Set = TypeParam;
@@ -628,7 +628,7 @@ class ListOrLinkedHashSetCountCopyTest : public testing::Test {};
 using CountCopySetTypes = testing::Types<ListHashSet<CountCopy>,
                                          ListHashSet<CountCopy, 1>,
                                          LinkedHashSet<CountCopy>>;
-TYPED_TEST_CASE(ListOrLinkedHashSetCountCopyTest, CountCopySetTypes);
+TYPED_TEST_SUITE(ListOrLinkedHashSetCountCopyTest, CountCopySetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetCountCopyTest,
            MoveConstructionShouldNotMakeCopy) {
@@ -660,7 +660,7 @@ class ListOrLinkedHashSetMoveOnlyTest : public testing::Test {};
 using MoveOnlySetTypes = testing::Types<ListHashSet<MoveOnlyHashValue>,
                                         ListHashSet<MoveOnlyHashValue, 1>,
                                         LinkedHashSet<MoveOnlyHashValue>>;
-TYPED_TEST_CASE(ListOrLinkedHashSetMoveOnlyTest, MoveOnlySetTypes);
+TYPED_TEST_SUITE(ListOrLinkedHashSetMoveOnlyTest, MoveOnlySetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
   using Set = TypeParam;

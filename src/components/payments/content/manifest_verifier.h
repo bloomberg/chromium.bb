@@ -78,9 +78,12 @@ class ManifestVerifier final : public WebDataServiceConsumer {
       WebDataServiceBase::Handle h,
       std::unique_ptr<WDTypedResult> result) override;
 
-  // Called when a manifest is downloaded.
-  void OnPaymentMethodManifestDownloaded(const GURL& method_manifest_url,
-                                         const std::string& content);
+  // Called when a manifest is downloaded. The "method manifest URL after
+  // redirects" is intentionally not used.
+  void OnPaymentMethodManifestDownloaded(
+      const GURL& method_manifest_url,
+      const GURL& unused_method_manifest_url_after_redirects,
+      const std::string& content);
 
   // Called when a manifest is parsed.
   void OnPaymentMethodManifestParsed(

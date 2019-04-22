@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <array>
 #include <memory>
 
 #include "base/files/scoped_file.h"
@@ -25,7 +26,7 @@ class ClientNativePixmapDmaBuf : public gfx::ClientNativePixmap {
                                                   gfx::BufferUsage usage);
 
   static std::unique_ptr<gfx::ClientNativePixmap> ImportFromDmabuf(
-      const gfx::NativePixmapHandle& handle,
+      gfx::NativePixmapHandle handle,
       const gfx::Size& size);
 
   ~ClientNativePixmapDmaBuf() override;
@@ -38,13 +39,24 @@ class ClientNativePixmapDmaBuf : public gfx::ClientNativePixmap {
   int GetStride(size_t plane) const override;
 
  private:
-  ClientNativePixmapDmaBuf(const gfx::NativePixmapHandle& handle,
-                           const gfx::Size& size);
+  static constexpr size_t kMaxPlanes = 4;
+
+  struct PlaneInfo {
+    PlaneInfo();
+    PlaneInfo(PlaneInfo&& plane_info);
+    ~PlaneInfo();
+
+    void* data = nullptr;
+    size_t offset = 0;
+    size_t size = 0;
+  };
+  ClientNativePixmapDmaBuf(gfx::NativePixmapHandle handle,
+                           const gfx::Size& size,
+                           std::array<PlaneInfo, kMaxPlanes> plane_info);
 
   const gfx::NativePixmapHandle pixmap_handle_;
   const gfx::Size size_;
-  base::ScopedFD dmabuf_fd_;
-  void* data_;
+  const std::array<PlaneInfo, kMaxPlanes> plane_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientNativePixmapDmaBuf);
 };

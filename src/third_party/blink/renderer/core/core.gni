@@ -120,10 +120,36 @@ set_defaults("blink_core_sources") {
   # is defined. The default_compiler_configs comes from BUILDCONFIG.gn and
   # is the list normally applied to static libraries and source sets.
   configs = default_compiler_configs - core_config_remove + core_config_add
-
-  # Compile each of the core sources targets with (core) precompiled header
-  # support, for lower Windows build times.
   configs += [ "//third_party/blink/renderer/core:blink_core_pch" ]
+}
+
+template("blink_core_tests") {
+  jumbo_source_set(target_name) {
+    # The visibility will get overridden by forward_variables_from below if the
+    # invoker defined it.
+    visibility = [ "//third_party/blink/renderer/core/*" ]
+    testonly = true
+
+    deps = [
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party/blink/renderer/core",
+    ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+
+    # Take everything else not handled above from the invoker.
+    forward_variables_from(invoker, "*", [ "deps" ])
+  }
+}
+set_defaults("blink_core_tests") {
+  configs = default_compiler_configs
+  configs += [
+    "//third_party/blink/renderer:config",
+    "//third_party/blink/renderer/core:blink_core_pch",
+    "//third_party/blink/renderer:inside_blink",
+  ]
 }
 
 declare_args() {

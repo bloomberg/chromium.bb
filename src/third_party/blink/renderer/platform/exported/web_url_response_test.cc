@@ -36,41 +36,6 @@
 
 namespace blink {
 
-namespace {
-
-class ResponseTestExtraData : public WebURLResponse::ExtraData {
- public:
-  explicit ResponseTestExtraData(bool* alive) : alive_(alive) { *alive = true; }
-
-  ~ResponseTestExtraData() override { *alive_ = false; }
-
- private:
-  bool* alive_;
-};
-
-}  // anonymous namespace
-
-TEST(WebURLResponseTest, ExtraData) {
-  bool alive = false;
-  {
-    WebURLResponse url_response;
-    ResponseTestExtraData* extra_data = new ResponseTestExtraData(&alive);
-    EXPECT_TRUE(alive);
-
-    url_response.SetExtraData(extra_data);
-    EXPECT_EQ(extra_data, url_response.GetExtraData());
-    {
-      WebURLResponse other_url_response = url_response;
-      EXPECT_TRUE(alive);
-      EXPECT_EQ(extra_data, other_url_response.GetExtraData());
-      EXPECT_EQ(extra_data, url_response.GetExtraData());
-    }
-    EXPECT_TRUE(alive);
-    EXPECT_EQ(extra_data, url_response.GetExtraData());
-  }
-  EXPECT_FALSE(alive);
-}
-
 TEST(WebURLResponseTest, NewInstanceIsNull) {
   WebURLResponse instance;
   EXPECT_TRUE(instance.IsNull());
@@ -78,7 +43,7 @@ TEST(WebURLResponseTest, NewInstanceIsNull) {
 
 TEST(WebURLResponseTest, NotNullAfterSetURL) {
   WebURLResponse instance;
-  instance.SetURL(KURL("http://localhost/"));
+  instance.SetCurrentRequestUrl(KURL("http://localhost/"));
   EXPECT_FALSE(instance.IsNull());
 }
 

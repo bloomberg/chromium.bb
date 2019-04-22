@@ -4,9 +4,12 @@
 
 #include "test/fuzzer/wasm-fuzzer-common.h"
 
+#include <ctime>
+
 #include "include/v8.h"
 #include "src/isolate.h"
 #include "src/objects-inl.h"
+#include "src/ostreams.h"
 #include "src/wasm/wasm-engine.h"
 #include "src/wasm/wasm-module-builder.h"
 #include "src/wasm/wasm-module.h"
@@ -21,49 +24,6 @@ namespace v8 {
 namespace internal {
 namespace wasm {
 namespace fuzzer {
-
-static constexpr const char* kNameString = "name";
-static constexpr size_t kNameStringLength = 4;
-
-int FuzzWasmSection(SectionCode section, const uint8_t* data, size_t size) {
-  v8_fuzzer::FuzzerSupport* support = v8_fuzzer::FuzzerSupport::Get();
-  v8::Isolate* isolate = support->GetIsolate();
-  i::Isolate* i_isolate = reinterpret_cast<Isolate*>(isolate);
-
-  // Clear any pending exceptions from a prior run.
-  i_isolate->clear_pending_exception();
-
-  v8::Isolate::Scope isolate_scope(isolate);
-  v8::HandleScope handle_scope(isolate);
-  v8::Context::Scope context_scope(support->GetContext());
-  v8::TryCatch try_catch(isolate);
-
-  AccountingAllocator allocator;
-  Zone zone(&allocator, ZONE_NAME);
-
-  ZoneBuffer buffer(&zone);
-  buffer.write_u32(kWasmMagic);
-  buffer.write_u32(kWasmVersion);
-  if (section == kNameSectionCode) {
-    buffer.write_u8(kUnknownSectionCode);
-    buffer.write_size(size + kNameStringLength + 1);
-    buffer.write_u8(kNameStringLength);
-    buffer.write(reinterpret_cast<const uint8_t*>(kNameString),
-                 kNameStringLength);
-    buffer.write(data, size);
-  } else {
-    buffer.write_u8(section);
-    buffer.write_size(size);
-    buffer.write(data, size);
-  }
-
-  ErrorThrower thrower(i_isolate, "decoder");
-
-  testing::DecodeWasmModuleForTesting(i_isolate, &thrower, buffer.begin(),
-                                      buffer.end(), kWasmOrigin);
-
-  return 0;
-}
 
 void InterpretAndExecuteModule(i::Isolate* isolate,
                                Handle<WasmModuleObject> module_object) {
@@ -156,19 +116,30 @@ void GenerateTestCase(Isolate* isolate, ModuleWireBytes wire_bytes,
   auto enabled_features = i::wasm::WasmFeaturesFromIsolate(isolate);
   ModuleResult module_res = DecodeWasmModule(
       enabled_features, wire_bytes.start(), wire_bytes.end(), kVerifyFunctions,
-      ModuleOrigin::kWasmOrigin, isolate->counters(), isolate->allocator());
+      ModuleOrigin::kWasmOrigin, isolate->counters(),
+      isolate->wasm_engine()->allocator());
   CHECK(module_res.ok());
   WasmModule* module = module_res.value().get();
   CHECK_NOT_NULL(module);
 
   StdoutStream os;
 
-  os << "// Copyright 2018 the V8 project authors. All rights reserved.\n"
+  tzset();
+  time_t current_time = time(nullptr);
+  struct tm current_localtime;
+#ifdef V8_OS_WIN
+  localtime_s(&current_localtime, &current_time);
+#else
+  localtime_r(&current_time, &current_localtime);
+#endif
+  int year = 1900 + current_localtime.tm_year;
+
+  os << "// Copyright " << year
+     << " the V8 project authors. All rights reserved.\n"
         "// Use of this source code is governed by a BSD-style license that "
         "can be\n"
         "// found in the LICENSE file.\n"
         "\n"
-        "load('test/mjsunit/wasm/wasm-constants.js');\n"
         "load('test/mjsunit/wasm/wasm-module-builder.js');\n"
         "\n"
         "(function() {\n"
@@ -210,19 +181,19 @@ void GenerateTestCase(Isolate* isolate, ModuleWireBytes wire_bytes,
       os << "undefined);\n";
     }
   }
-  for (const WasmTableInit& table_init : module->table_inits) {
+  for (const WasmElemSegment& elem_segment : module->elem_segments) {
     os << "  builder.addElementSegment(";
-    switch (table_init.offset.kind) {
+    switch (elem_segment.offset.kind) {
       case WasmInitExpr::kGlobalIndex:
-        os << table_init.offset.val.global_index << ", true";
+        os << elem_segment.offset.val.global_index << ", true";
         break;
       case WasmInitExpr::kI32Const:
-        os << table_init.offset.val.i32_const << ", false";
+        os << elem_segment.offset.val.i32_const << ", false";
         break;
       default:
         UNREACHABLE();
     }
-    os << ", " << PrintCollection(table_init.entries) << ");\n";
+    os << ", " << PrintCollection(elem_segment.entries) << ");\n";
   }
 
   for (const WasmFunction& func : module->functions) {
@@ -305,8 +276,8 @@ void WasmExecutionFuzzer::FuzzWasmModule(Vector<const uint8_t> data,
   std::unique_ptr<Handle<Object>[]> compiler_args;
   // The first byte builds the bitmask to control which function will be
   // compiled with Turbofan and which one with Liftoff.
-  uint8_t tier_mask = data.is_empty() ? 0 : data[0];
-  if (!data.is_empty()) data += 1;
+  uint8_t tier_mask = data.empty() ? 0 : data[0];
+  if (!data.empty()) data += 1;
   if (!GenerateModule(i_isolate, &zone, data, buffer, num_args,
                       interpreter_args, compiler_args)) {
     return;

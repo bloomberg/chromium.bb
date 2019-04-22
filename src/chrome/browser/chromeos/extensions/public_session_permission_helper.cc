@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/extensions/public_session_permission_helper.h"
 
-#include <algorithm>
 #include <map>
 #include <memory>
 #include <utility>
@@ -12,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
@@ -79,7 +79,8 @@ class PublicSessionPermissionHelper {
   };
   using RequestCallbackList = std::vector<RequestCallback>;
 
-  std::set<std::unique_ptr<ExtensionInstallPrompt>> prompts_;
+  std::set<std::unique_ptr<ExtensionInstallPrompt>, base::UniquePtrComparator>
+      prompts_;
   PermissionIDSet prompted_permission_set_;
   PermissionIDSet allowed_permission_set_;
   PermissionIDSet denied_permission_set_;
@@ -139,7 +140,8 @@ bool PublicSessionPermissionHelper::HandlePermissionRequestImpl(
     new_apis.insert(permission.id());
   }
   auto permission_set = std::make_unique<PermissionSet>(
-      new_apis, ManifestPermissionSet(), URLPatternSet(), URLPatternSet());
+      std::move(new_apis), ManifestPermissionSet(), URLPatternSet(),
+      URLPatternSet());
   auto prompt = prompt_factory.Run(web_contents);
 
   auto permissions_prompt = std::make_unique<ExtensionInstallPrompt::Prompt>(
@@ -209,11 +211,7 @@ void PublicSessionPermissionHelper::ResolvePermissionPrompt(
   }
 
   // Dispose of the prompt as it's not needed anymore.
-  auto iter = std::find_if(
-      prompts_.begin(), prompts_.end(),
-      [prompt](const std::unique_ptr<ExtensionInstallPrompt>& check) {
-        return check.get() == prompt;
-      });
+  auto iter = prompts_.find(prompt);
   DCHECK(iter != prompts_.end());
   prompts_.erase(iter);
 }

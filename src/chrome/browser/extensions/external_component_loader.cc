@@ -8,17 +8,15 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_extensions_whitelist/whitelist.h"
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 namespace extensions {

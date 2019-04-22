@@ -7,12 +7,18 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "modules/video_coding/jitter_estimator.h"
+#include <stdint.h>
+#include <memory>
+#include <vector>
 
+#include "absl/memory/memory.h"
+#include "absl/types/optional.h"
+#include "api/array_view.h"
+#include "modules/video_coding/jitter_estimator.h"
 #include "rtc_base/experiments/jitter_upper_bound_experiment.h"
-#include "rtc_base/logging.h"
 #include "rtc_base/numerics/histogram_percentile_counter.h"
-#include "rtc_base/timeutils.h"
+#include "rtc_base/strings/string_builder.h"
+#include "rtc_base/time_utils.h"
 #include "system_wrappers/include/clock.h"
 #include "test/field_trial.h"
 #include "test/gtest.h"
@@ -24,7 +30,7 @@ class TestVCMJitterEstimator : public ::testing::Test {
   TestVCMJitterEstimator() : fake_clock_(0) {}
 
   virtual void SetUp() {
-    estimator_ = absl::make_unique<VCMJitterEstimator>(&fake_clock_, 0, 0);
+    estimator_ = absl::make_unique<VCMJitterEstimator>(&fake_clock_);
   }
 
   void AdvanceClock(int64_t microseconds) {
@@ -42,9 +48,9 @@ class ValueGenerator {
       : amplitude_(amplitude), counter_(0) {}
   virtual ~ValueGenerator() {}
 
-  int64_t Delay() { return ((counter_ % 11) - 5) * amplitude_; }
+  int64_t Delay() const { return ((counter_ % 11) - 5) * amplitude_; }
 
-  uint32_t FrameSize() { return 1000 + Delay(); }
+  uint32_t FrameSize() const { return 1000 + Delay(); }
 
   void Advance() { ++counter_; }
 

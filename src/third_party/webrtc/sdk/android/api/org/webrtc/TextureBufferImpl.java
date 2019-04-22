@@ -11,8 +11,8 @@
 package org.webrtc;
 
 import android.graphics.Matrix;
-import javax.annotation.Nullable;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 
 /**
  * Android texture buffer that glues together the necessary information together with a generic
@@ -133,6 +133,14 @@ public class TextureBufferImpl implements VideoFrame.TextureBuffer {
    */
   public int getUnscaledHeight() {
     return unscaledHeight;
+  }
+
+  public Handler getToI420Handler() {
+    return toI420Handler;
+  }
+
+  public YuvConverter getYuvConverter() {
+    return yuvConverter;
   }
 
   /**

@@ -38,8 +38,7 @@ void BrowserSigninPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     }
     switch (static_cast<BrowserSigninMode>(int_value)) {
       case BrowserSigninMode::kForced:
-        prefs->SetValue(prefs::kForceBrowserSignin,
-                        std::make_unique<base::Value>(true));
+        prefs->SetValue(prefs::kForceBrowserSignin, base::Value(true));
         FALLTHROUGH;
       case BrowserSigninMode::kEnabled:
         prefs->SetValue(
@@ -51,7 +50,7 @@ void BrowserSigninPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 #else
             prefs::kSigninAllowedOnNextStartup,
 #endif
-            std::make_unique<base::Value>(true));
+            base::Value(true));
         break;
       case BrowserSigninMode::kDisabled:
         prefs->SetValue(
@@ -63,7 +62,7 @@ void BrowserSigninPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 #else
             prefs::kSigninAllowedOnNextStartup,
 #endif
-            std::make_unique<base::Value>(false));
+            base::Value(false));
         break;
     }
   }

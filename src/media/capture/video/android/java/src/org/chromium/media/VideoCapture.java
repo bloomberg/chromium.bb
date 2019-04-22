@@ -102,7 +102,7 @@ public abstract class VideoCapture {
      */
     @CalledByNative
     public abstract void setPhotoOptions(double zoom, int focusMode, double focusDistance,
-            int exposureMode, double width, double height, float[] pointsOfInterest2D,
+            int exposureMode, double width, double height, double[] pointsOfInterest2D,
             boolean hasExposureCompensation, double exposureCompensation, double exposureTime,
             int whiteBalanceMode, double iso, boolean hasRedEyeReduction, boolean redEyeReduction,
             int fillLightMode, boolean hasTorch, boolean torch, double colorTemperature);

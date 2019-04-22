@@ -172,11 +172,4 @@ test(() => {
   assert_array_equals(lineText, ['1. ', 'List item', '1. ']);
 }, 'Test |NextOnLine| and |PreviousOnLine| on list markers.');
 
-if (window.testRunner) {
-  document.getElementById('paragraph').style.display = 'none';
-  document.getElementById('contentEditable').style.display = 'none';
-  document.getElementById('paragraphWithLink').style.display = 'none';
-  document.getElementById('paragraphWithAnonymousBlock').style.display = 'none';
-  document.getElementById('list').style.display = 'none';
-}
 </script>

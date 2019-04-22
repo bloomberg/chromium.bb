@@ -153,6 +153,10 @@ const FilterOperations& RenderSurfaceImpl::BackdropFilters() const {
   return OwningEffectNode()->backdrop_filters;
 }
 
+const gfx::RRectF& RenderSurfaceImpl::BackdropFilterBounds() const {
+  return OwningEffectNode()->backdrop_filter_bounds;
+}
+
 bool RenderSurfaceImpl::TrilinearFiltering() const {
   return OwningEffectNode()->trilinear_filtering;
 }
@@ -375,6 +379,7 @@ std::unique_ptr<viz::RenderPass> RenderSurfaceImpl::CreateRenderPass() {
                draw_properties_.screen_space_transform);
   pass->filters = Filters();
   pass->backdrop_filters = BackdropFilters();
+  pass->backdrop_filter_bounds = BackdropFilterBounds();
   pass->generate_mipmap = TrilinearFiltering();
   pass->cache_render_pass = ShouldCacheRenderSurface();
   pass->has_damage_from_contributing_content =
@@ -398,7 +403,7 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(
-      draw_transform(), content_rect(), content_rect(),
+      draw_transform(), content_rect(), content_rect(), rounded_corner_bounds(),
       draw_properties_.clip_rect, draw_properties_.is_clipped, contents_opaque,
       draw_properties_.draw_opacity, BlendMode(), sorting_context_id);
 
@@ -429,17 +434,6 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
     TRACE_EVENT1("cc", "RenderSurfaceImpl::AppendQuads",
                  "mask_layer_gpu_memory_usage",
                  mask_layer->GPUMemoryUsageInBytes());
-
-    int64_t visible_geometry_area =
-        static_cast<int64_t>(unoccluded_content_rect.width()) *
-        unoccluded_content_rect.height();
-    append_quads_data->num_mask_layers++;
-    append_quads_data->visible_mask_layer_area += visible_geometry_area;
-    if (mask_layer->is_rounded_corner_mask()) {
-      append_quads_data->num_rounded_corner_mask_layers++;
-      append_quads_data->visible_rounded_corner_mask_layer_area +=
-          visible_geometry_area;
-    }
 
     if (mask_layer->mask_type() == Layer::LayerMaskType::MULTI_TEXTURE_MASK) {
       TileMaskLayer(render_pass, shared_quad_state, unoccluded_content_rect);

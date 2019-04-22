@@ -6,11 +6,8 @@
 
 #include "xfa/fxfa/parser/cxfa_era.h"
 
-namespace {
-
-constexpr wchar_t kEraName[] = L"era";
-
-}  // namespace
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
 
 CXFA_Era::CXFA_Era(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
@@ -18,8 +15,8 @@ CXFA_Era::CXFA_Era(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_LocaleSet,
                 XFA_ObjectType::ContentNode,
                 XFA_Element::Era,
-                nullptr,
-                nullptr,
-                kEraName) {}
+                {},
+                {},
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Era::~CXFA_Era() {}
+CXFA_Era::~CXFA_Era() = default;

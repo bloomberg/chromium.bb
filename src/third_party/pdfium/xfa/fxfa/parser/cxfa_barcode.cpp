@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_barcode.h"
 
-#include "fxjs/xfa/cjx_barcode.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 #include "xfa/fxfa/parser/cxfa_measurement.h"
 
@@ -17,10 +17,10 @@ const CXFA_Node::AttributeData kBarcodeAttributeData[] = {
     {XFA_Attribute::DataRowCount, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::DataPrep, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::None},
+     (void*)XFA_AttributeValue::None},
     {XFA_Attribute::Type, XFA_AttributeType::CData, (void*)nullptr},
     {XFA_Attribute::TextLocation, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Below},
+     (void*)XFA_AttributeValue::Below},
     {XFA_Attribute::ModuleWidth, XFA_AttributeType::Measure, (void*)L"0.25mm"},
     {XFA_Attribute::PrintCheckDigit, XFA_AttributeType::Boolean, (void*)0},
     {XFA_Attribute::ModuleHeight, XFA_AttributeType::Measure, (void*)L"5mm"},
@@ -29,18 +29,16 @@ const CXFA_Node::AttributeData kBarcodeAttributeData[] = {
     {XFA_Attribute::WideNarrowRatio, XFA_AttributeType::CData, (void*)L"3:1"},
     {XFA_Attribute::ErrorCorrectionLevel, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::UpsMode, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::UsCarrier},
+     (void*)XFA_AttributeValue::UsCarrier},
     {XFA_Attribute::Checksum, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::None},
+     (void*)XFA_AttributeValue::None},
     {XFA_Attribute::CharEncoding, XFA_AttributeType::CData, (void*)L"UTF-8"},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::DataColumnCount, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::RowColumnRatio, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::DataLength, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::EndChar, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kBarcodeName[] = L"barcode";
+};
 
 }  // namespace
 
@@ -50,12 +48,11 @@ CXFA_Barcode::CXFA_Barcode(CXFA_Document* doc, XFA_PacketType packet)
                 (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
                 XFA_ObjectType::Node,
                 XFA_Element::Barcode,
-                nullptr,
+                {},
                 kBarcodeAttributeData,
-                kBarcodeName,
-                pdfium::MakeUnique<CJX_Barcode>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Barcode::~CXFA_Barcode() {}
+CXFA_Barcode::~CXFA_Barcode() = default;
 
 XFA_FFWidgetType CXFA_Barcode::GetDefaultFFWidgetType() const {
   return XFA_FFWidgetType::kBarcode;
@@ -78,19 +75,19 @@ Optional<BC_CHAR_ENCODING> CXFA_Barcode::GetCharEncoding() {
 }
 
 Optional<bool> CXFA_Barcode::GetChecksum() {
-  Optional<XFA_AttributeEnum> checksum =
+  Optional<XFA_AttributeValue> checksum =
       JSObject()->TryEnum(XFA_Attribute::Checksum, true);
   if (!checksum)
     return {};
 
   switch (*checksum) {
-    case XFA_AttributeEnum::None:
+    case XFA_AttributeValue::None:
       return {false};
-    case XFA_AttributeEnum::Auto:
+    case XFA_AttributeValue::Auto:
       return {true};
-    case XFA_AttributeEnum::Checksum_1mod10:
-    case XFA_AttributeEnum::Checksum_1mod10_1mod11:
-    case XFA_AttributeEnum::Checksum_2mod10:
+    case XFA_AttributeValue::Checksum_1mod10:
+    case XFA_AttributeValue::Checksum_1mod10_1mod11:
+    case XFA_AttributeValue::Checksum_2mod10:
     default:
       break;
   }
@@ -155,21 +152,21 @@ Optional<bool> CXFA_Barcode::GetPrintChecksum() {
 }
 
 Optional<BC_TEXT_LOC> CXFA_Barcode::GetTextLocation() {
-  Optional<XFA_AttributeEnum> textLocation =
+  Optional<XFA_AttributeValue> textLocation =
       JSObject()->TryEnum(XFA_Attribute::TextLocation, true);
   if (!textLocation)
     return {};
 
   switch (*textLocation) {
-    case XFA_AttributeEnum::None:
+    case XFA_AttributeValue::None:
       return {BC_TEXT_LOC_NONE};
-    case XFA_AttributeEnum::Above:
+    case XFA_AttributeValue::Above:
       return {BC_TEXT_LOC_ABOVE};
-    case XFA_AttributeEnum::Below:
+    case XFA_AttributeValue::Below:
       return {BC_TEXT_LOC_BELOW};
-    case XFA_AttributeEnum::AboveEmbedded:
+    case XFA_AttributeValue::AboveEmbedded:
       return {BC_TEXT_LOC_ABOVEEMBED};
-    case XFA_AttributeEnum::BelowEmbedded:
+    case XFA_AttributeValue::BelowEmbedded:
       return {BC_TEXT_LOC_BELOWEMBED};
     default:
       break;

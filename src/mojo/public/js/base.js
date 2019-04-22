@@ -121,8 +121,23 @@ if (typeof mojo.config.autoLoadMojomDeps === 'undefined') {
 
     markMojomPendingLoad(id);
     var url = new URL(relativePath, document.currentScript.src).href;
-    config.global.document.write('<script type="text/javascript" src="' +
-                                 url + '"><' + '/script>');
+
+    if (config.global.document.readyState === 'loading') {
+      // We can't use dynamic script loading here (such as
+      // `document.createElement(...)` because the loaded script will be
+      // evaluated after the following scripts (if they exist). Thus
+      // `document.write` guarantees the proper evaluation order.
+      config.global.document.write('<script type="text/javascript" src="' +
+                                   url + '"><' + '/script>');
+    } else {
+      // If the parent script is being loaded lazily, we can't use
+      // `document.write` because the document has already been loaded.
+      var scriptElement = document.createElement('script');
+      scriptElement.type = 'text/javascript';
+      scriptElement.async = false;
+      scriptElement.src = url;
+      document.currentScript.parentElement.appendChild(scriptElement);
+    }
   }
 
   internal.exposeNamespace = exposeNamespace;

@@ -7,15 +7,18 @@
 #include "base/feature_list.h"
 #import "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/omnibox/browser/autocomplete_result.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_view_controller.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_coordinator.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -28,7 +31,8 @@
   std::unique_ptr<OmniboxPopupViewIOS> _popupView;
 }
 
-@property(nonatomic, strong) OmniboxPopupViewController* popupViewController;
+@property(nonatomic, strong)
+    OmniboxPopupBaseViewController* popupViewController;
 @property(nonatomic, strong) OmniboxPopupMediator* mediator;
 @property(nonatomic, strong) ShortcutsCoordinator* shortcutsCoordinator;
 
@@ -39,7 +43,6 @@
 @synthesize browserState = _browserState;
 @synthesize mediator = _mediator;
 @synthesize popupViewController = _popupViewController;
-@synthesize positioner = _positioner;
 @synthesize dispatcher = _dispatcher;
 
 #pragma mark - Public
@@ -58,22 +61,29 @@
       std::make_unique<image_fetcher::IOSImageDataFetcherWrapper>(
           self.browserState->GetSharedURLLoaderFactory());
 
-  self.mediator =
-      [[OmniboxPopupMediator alloc] initWithFetcher:std::move(imageFetcher)
-                                           delegate:_popupView.get()];
+  self.mediator = [[OmniboxPopupMediator alloc]
+      initWithFetcher:std::move(imageFetcher)
+        faviconLoader:IOSChromeFaviconLoaderFactory::GetForBrowserState(
+                          self.browserState)
+             delegate:_popupView.get()];
   self.mediator.dispatcher = (id<BrowserCommands>)self.dispatcher;
   self.mediator.webStateList = self.webStateList;
-  self.popupViewController = [[OmniboxPopupViewController alloc] init];
+  if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
+    self.popupViewController = [[OmniboxPopupViewController alloc] init];
+  } else {
+    self.popupViewController = [[OmniboxPopupLegacyViewController alloc] init];
+  }
   self.popupViewController.incognito = self.browserState->IsOffTheRecord();
 
   BOOL isIncognito = self.browserState->IsOffTheRecord();
   self.mediator.incognito = isIncognito;
   self.mediator.consumer = self.popupViewController;
-    self.mediator.presenter = [[OmniboxPopupPresenter alloc]
-        initWithPopupPositioner:self.positioner
-            popupViewController:self.popupViewController
-                      incognito:isIncognito];
+  self.mediator.presenter = [[OmniboxPopupPresenter alloc]
+      initWithPopupPresenterDelegate:self.presenterDelegate
+                 popupViewController:self.popupViewController
+                           incognito:isIncognito];
   self.popupViewController.imageRetriever = self.mediator;
+  self.popupViewController.faviconRetriever = self.mediator;
   self.popupViewController.delegate = self.mediator;
   [self.dispatcher
       startDispatchingToTarget:self.popupViewController
@@ -93,7 +103,7 @@
   return self.mediator.isOpen;
 }
 
-- (void)openPopup {
+- (void)presentShortcutsIfNecessary {
   // Initialize the shortcuts feature when necessary.
   if (base::FeatureList::IsEnabled(
           omnibox::kOmniboxPopupShortcutIconsInZeroState) &&
@@ -102,7 +112,7 @@
         initWithBaseViewController:self.popupViewController
                       browserState:self.browserState];
     self.shortcutsCoordinator.dispatcher =
-        (id<ApplicationCommands, BrowserCommands, UrlLoader,
+        (id<ApplicationCommands, BrowserCommands,
             OmniboxFocuser>)(self.dispatcher);
     [self.shortcutsCoordinator start];
     self.popupViewController.shortcutsViewController =
@@ -118,14 +128,14 @@
     self.popupViewController.shortcutsEnabled = YES;
   }
 
-  [self.mediator.presenter updateHeightAndAnimateAppearanceIfNecessary];
-  self.mediator.open = YES;
+  [self.mediator.presenter updatePopup];
+  self.mediator.open = self.mediator.presenter.isOpen;
 }
 
-- (void)closePopup {
-  self.mediator.open = NO;
+- (void)dismissShortcuts {
   self.popupViewController.shortcutsEnabled = NO;
-  [self.mediator.presenter animateCollapse];
+  [self.mediator.presenter updatePopup];
+  self.mediator.open = self.mediator.presenter.isOpen;
 }
 
 #pragma mark - Property accessor

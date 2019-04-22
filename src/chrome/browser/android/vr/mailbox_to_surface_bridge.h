@@ -20,12 +20,12 @@ class SurfaceTexture;
 }  // namespace gl
 
 namespace gfx {
-class GpuMemoryBuffer;
+class ColorSpace;
 }
 
 namespace gpu {
 class ContextSupport;
-struct Mailbox;
+class GpuMemoryBufferImplAndroidHardwareBuffer;
 struct MailboxHolder;
 struct SyncToken;
 namespace gles2 {
@@ -58,13 +58,13 @@ class MailboxToSurfaceBridge {
   //
   // To use entirely on the GL thread:
   // Call CreateAndBindContextProvider(callback) from your thread.
-  // When the callback is invoked, the object is ready for GL calls
-  // such as CreateMailboxTexture().
+  // When the callback is invoked, the object is ready for calls that use the
+  // context, such as CreateSharedImage().
   //
   // To create on one thread and use GL on another:
   // Call CreateUnboundContextProvider(callback) and then make sure
   // to call BindContextProviderToCurrentThread() from your GL
-  // thread afterwards before making an GL-related calls.
+  // thread afterwards before making a context-related calls.
 
   // Asynchronously create the context using the surface provided by an earlier
   // CreateSurface call, or an offscreen context if that wasn't called. Also
@@ -77,9 +77,9 @@ class MailboxToSurfaceBridge {
   // wasn't run on the GL thread. The provided callback is run on the
   // constructor thread. After that, you can pass the MailboxToSurfaceBridge
   // to another thread. You must call BindContextProviderToCurrentThread()
-  // on the target GL thread before using any GL methods.
-  // The GL methods check that they are called on this thread, so there
-  // will be a DCHECK error if they are not used consistently.
+  // on the target GL thread before using any context-related methods.
+  // The context-related methods check that they are called on this thread, so
+  // there will be a DCHECK error if they are not used consistently.
   virtual void CreateUnboundContextProvider(base::OnceClosure callback);
 
   // Client must call this on the target (GL) thread after
@@ -112,21 +112,19 @@ class MailboxToSurfaceBridge {
       const gpu::SyncToken& sync_token,
       base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback);
 
-  // Creates a texture and binds it to a newly created mailbox. Returns its
-  // mailbox and texture ID in the command buffer context. (Don't use that
-  // in the local GL context, it's not valid there.)
-  virtual uint32_t CreateMailboxTexture(gpu::Mailbox* mailbox);
-
-  // Creates a GLImage from the |buffer| and binds it to the supplied texture_id
-  // in the GPU process. Returns the image ID in the command buffer context.
+  // Creates a shared image bound to |buffer|. Returns a mailbox holder that
+  // references the shared image with a sync token representing a point after
+  // the creation. Caller must call DestroySharedImage to free the shared image.
   // Does not take ownership of |buffer| or retain any references to it.
-  uint32_t BindSharedBufferImage(gfx::GpuMemoryBuffer* buffer,
-                                 const gfx::Size& size,
-                                 gfx::BufferFormat format,
-                                 gfx::BufferUsage usage,
-                                 uint32_t texture_id);
+  gpu::MailboxHolder CreateSharedImage(
+      gpu::GpuMemoryBufferImplAndroidHardwareBuffer* buffer,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage);
 
-  void UnbindSharedBuffer(uint32_t image_id, uint32_t texture_id);
+  // Destroys a shared image created by CreateSharedImage. The mailbox_holder's
+  // sync_token must have been updated to a sync token after the last use of the
+  // shared image.
+  void DestroySharedImage(const gpu::MailboxHolder& mailbox_holder);
 
  private:
   void CreateContextProviderInternal();

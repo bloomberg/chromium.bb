@@ -4,8 +4,9 @@
 
 #include "ui/gl/gl_surface_glx.h"
 
-#include <memory>
+#include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -265,8 +266,7 @@ class SGIVideoSyncProviderThreadShim {
     }
   }
 
-  void GetVSyncParameters(
-      const gfx::VSyncProvider::UpdateVSyncCallback& callback) {
+  void GetVSyncParameters(gfx::VSyncProvider::UpdateVSyncCallback callback) {
     base::TimeTicks now;
     {
       // Don't allow |window_| destruction while we're probing vsync.
@@ -290,8 +290,8 @@ class SGIVideoSyncProviderThreadShim {
     const base::TimeDelta kDefaultInterval =
         base::TimeDelta::FromSeconds(1) / 60;
 
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(callback, now, kDefaultInterval));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), now, kDefaultInterval));
   }
 
  private:
@@ -343,11 +343,11 @@ class SGIVideoSyncVSyncProvider
   }
 
   void GetVSyncParameters(
-      const gfx::VSyncProvider::UpdateVSyncCallback& callback) override {
+      gfx::VSyncProvider::UpdateVSyncCallback callback) override {
     // Only one outstanding request per surface.
     if (!pending_callback_) {
       DCHECK(callback);
-      pending_callback_ = callback;
+      pending_callback_ = std::move(callback);
       vsync_thread_->task_runner()->PostTask(
           FROM_HERE,
           base::BindOnce(&SGIVideoSyncProviderThreadShim::GetVSyncParameters,
@@ -431,13 +431,12 @@ bool GLSurfaceGLX::InitializeOneOff() {
   }
 
   const XVisualInfo& visual_info =
-      gl::GLVisualPickerGLX::GetInstance()->system_visual();
+      gl::GLVisualPickerGLX::GetInstance()->rgba_visual();
   g_visual = visual_info.visual;
   g_depth = visual_info.depth;
   g_colormap =
       XCreateColormap(gfx::GetXDisplay(), DefaultRootWindow(gfx::GetXDisplay()),
                       visual_info.visual, AllocNone);
-
   // We create a dummy unmapped window for both the main Display and the video
   // sync Display so that the Nvidia driver can initialize itself before the
   // sandbox is set up.
@@ -571,7 +570,6 @@ NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window)
       window_(0),
       glx_window_(0),
       config_(nullptr),
-      visual_id_(CopyFromParent),
       has_swapped_buffers_(false) {}
 
 bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
@@ -582,19 +580,19 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
     return false;
   }
   size_ = gfx::Size(attributes.width, attributes.height);
-  visual_id_ = XVisualIDFromVisual(attributes.visual);
-  // Create a child window, with a CopyFromParent visual (to avoid inducing
-  // extra blits in the driver), that we can resize exactly in Resize(),
-  // correctly ordered with GL, so that we don't have invalid transient states.
-  // See https://crbug.com/326995.
+
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = 0;
   swa.bit_gravity = NorthWestGravity;
-  window_ =
-      XCreateWindow(gfx::GetXDisplay(), parent_window_, 0, 0, size_.width(),
-                    size_.height(), 0, CopyFromParent, InputOutput,
-                    CopyFromParent, CWBackPixmap | CWBitGravity, &swa);
+  swa.colormap = g_colormap;
+  swa.background_pixel = 0;
+  swa.border_pixel = 0;
+  window_ = XCreateWindow(
+      gfx::GetXDisplay(), parent_window_, 0 /* x */, 0 /* y */, size_.width(),
+      size_.height(), 0 /* border_width */, g_depth, InputOutput, g_visual,
+      CWBackPixmap | CWBitGravity | CWColormap | CWBackPixel | CWBorderPixel,
+      &swa);
   if (!window_) {
     LOG(ERROR) << "XCreateWindow failed";
     return false;
@@ -674,11 +672,11 @@ bool NativeViewGLSurfaceGLX::IsOffscreen() {
 }
 
 gfx::SwapResult NativeViewGLSurfaceGLX::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   TRACE_EVENT2("gpu", "NativeViewGLSurfaceGLX:RealSwapBuffers", "width",
                GetSize().width(), "height", GetSize().height());
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
-      presentation_helper_.get(), callback);
+      presentation_helper_.get(), std::move(callback));
 
   XDisplay* display = gfx::GetXDisplay();
   glXSwapBuffers(display, GetDrawableHandle());
@@ -722,7 +720,7 @@ GLSurfaceFormat NativeViewGLSurfaceGLX::GetFormat() {
 }
 
 unsigned long NativeViewGLSurfaceGLX::GetCompatibilityKey() {
-  return visual_id_;
+  return XVisualIDFromVisual(g_visual);
 }
 
 gfx::SwapResult NativeViewGLSurfaceGLX::PostSubBuffer(
@@ -730,11 +728,11 @@ gfx::SwapResult NativeViewGLSurfaceGLX::PostSubBuffer(
     int y,
     int width,
     int height,
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   DCHECK(g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer);
 
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
-      presentation_helper_.get(), callback);
+      presentation_helper_.get(), std::move(callback));
   glXCopySubBufferMESA(gfx::GetXDisplay(), GetDrawableHandle(), x, y, width,
                        height);
   return scoped_swap_buffers.result();
@@ -836,7 +834,7 @@ bool UnmappedNativeViewGLSurfaceGLX::IsOffscreen() {
 }
 
 gfx::SwapResult UnmappedNativeViewGLSurfaceGLX::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   NOTREACHED() << "Attempted to call SwapBuffers on an unmapped window.";
   return gfx::SwapResult::SWAP_FAILED;
 }

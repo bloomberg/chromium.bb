@@ -19,7 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/dbus_switches.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 
 namespace {
 
@@ -31,7 +31,7 @@ const char kCrOSTraceLabel[] = "systemTraceEvents";
 namespace chromeos {
 
 FakeDebugDaemonClient::FakeDebugDaemonClient()
-    : featues_mask_(DebugDaemonClient::DEV_FEATURE_NONE),
+    : features_mask_(DebugDaemonClient::DEV_FEATURE_NONE),
       service_is_available_(true) {
 }
 
@@ -112,36 +112,35 @@ void FakeDebugDaemonClient::GetPerfOutput(
     base::TimeDelta duration,
     const std::vector<std::string>& perf_args,
     int file_descriptor,
-    VoidDBusMethodCallback error_callback) {}
+    DBusMethodCallback<uint64_t> error_callback) {}
 
-void FakeDebugDaemonClient::GetScrubbedLogs(const GetLogsCallback& callback) {
+void FakeDebugDaemonClient::GetScrubbedLogs(GetLogsCallback callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Scrubbed Log"] = "Your email address is xxxxxxxx";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, false, sample));
+      FROM_HERE, base::BindOnce(std::move(callback), false, sample));
 }
 
-void FakeDebugDaemonClient::GetScrubbedBigLogs(
-    const GetLogsCallback& callback) {
+void FakeDebugDaemonClient::GetScrubbedBigLogs(GetLogsCallback callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Scrubbed Big Log"] = "Your email address is xxxxxxxx";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, false, sample));
+      FROM_HERE, base::BindOnce(std::move(callback), false, sample));
 }
 
-void FakeDebugDaemonClient::GetAllLogs(const GetLogsCallback& callback) {
+void FakeDebugDaemonClient::GetAllLogs(GetLogsCallback callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Log"] = "Your email address is abc@abc.com";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, false, sample));
+      FROM_HERE, base::BindOnce(std::move(callback), false, sample));
 }
 
-void FakeDebugDaemonClient::GetUserLogFiles(const GetLogsCallback& callback) {
+void FakeDebugDaemonClient::GetUserLogFiles(GetLogsCallback callback) {
   std::map<std::string, std::string> user_logs;
   user_logs["preferences"] = "Preferences";
   user_logs["invalid_file"] = "Invalid File";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, true, user_logs));
+      FROM_HERE, base::BindOnce(std::move(callback), true, user_logs));
 }
 
 void FakeDebugDaemonClient::GetLog(const std::string& log_name,
@@ -184,7 +183,7 @@ void FakeDebugDaemonClient::QueryDebuggingFeatures(
       base::BindOnce(
           callback, true,
           static_cast<int>(
-              supported ? featues_mask_
+              supported ? features_mask_
                         : debugd::DevFeatureFlag::DEV_FEATURES_DISABLED)));
 }
 
@@ -212,8 +211,8 @@ void FakeDebugDaemonClient::SetOomScoreAdj(
       FROM_HERE, base::BindOnce(callback, true, ""));
 }
 
-void FakeDebugDaemonClient::SetDebuggingFeaturesStatus(int featues_mask) {
-  featues_mask_ = featues_mask;
+void FakeDebugDaemonClient::SetDebuggingFeaturesStatus(int features_mask) {
+  features_mask_ = features_mask;
 }
 
 void FakeDebugDaemonClient::SetServiceIsAvailable(bool is_available) {
@@ -248,14 +247,14 @@ void FakeDebugDaemonClient::CupsAddAutoConfiguredPrinter(
 
 void FakeDebugDaemonClient::CupsRemovePrinter(
     const std::string& name,
-    const DebugDaemonClient::CupsRemovePrinterCallback& callback,
+    DebugDaemonClient::CupsRemovePrinterCallback callback,
     const base::Closure& error_callback) {
   const bool has_printer = base::ContainsKey(printers_, name);
   if (has_printer)
     printers_.erase(name);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, has_printer));
+      FROM_HERE, base::BindOnce(std::move(callback), has_printer));
 }
 
 void FakeDebugDaemonClient::StartConcierge(ConciergeCallback callback) {
@@ -268,7 +267,27 @@ void FakeDebugDaemonClient::StopConcierge(ConciergeCallback callback) {
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
+void FakeDebugDaemonClient::StartPluginVmDispatcher(
+    PluginVmDispatcherCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeDebugDaemonClient::StopPluginVmDispatcher(
+    PluginVmDispatcherCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
 void FakeDebugDaemonClient::SetRlzPingSent(SetRlzPingSentCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeDebugDaemonClient::SetSchedulerConfiguration(
+    const std::string& config_name,
+    VoidDBusMethodCallback callback) {
+  scheduler_configuration_name_ = config_name;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }

@@ -2,10 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container { display: none; }
-</style>
-
 <div class="container">
     <ul id="list1" role="listbox" aria-owns="item3">
         <li role="option">One</li>
@@ -21,6 +17,7 @@
 test(function(t)
 {
     var axList1 = accessibilityController.accessibleElementById("list1");
+    console.log('axList1: ' + axList1);
     assert_equals(axList1.role, "AXRole: AXListBox");
     assert_equals(axList1.childrenCount, 3);
 
@@ -179,9 +176,4 @@ test(function(t)
     orphan.setAttribute("id", "o2");
     orphan.setAttribute("id", "orphan");
 }, "No crash if an aria-owns parent is deleted and the child is re-added.");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

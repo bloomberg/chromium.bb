@@ -96,23 +96,29 @@ function deleteImage(testVolumeName, volumeType) {
   var launchedPromise = launch(
       testVolumeName, volumeType, [ENTRIES.desktop]);
   var appId;
-  return launchedPromise.then(function(args) {
-    appId = args.appId;
-    return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
-  }).then(function() {
-    return gallery.waitAndClickElement(appId, 'button.delete');
-  }).then(function() {
-    return gallery.waitAndClickElement(appId, '.cr-dialog-ok');
-  }).then(function() {
-    return repeatUntil(function() {
-      return gallery.getFilesUnderVolume(volumeType, ['New Image Name.png'])
-      .then(function(urls) {
-        if (urls.length == 0)
-          return true;
-        return pending('"New Image Name.png" is still there.');
+  return launchedPromise
+      .then(function(args) {
+        appId = args.appId;
+        return gallery.waitForSlideImage(
+            appId, 800, 600, 'My Desktop Background');
+      })
+      .then(function() {
+        return gallery.waitAndClickElement(appId, 'button.delete');
+      })
+      .then(function() {
+        return gallery.waitAndClickElement(appId, '.cr-dialog-ok');
+      })
+      .then(function() {
+        return repeatUntil(function() {
+          return gallery.getFilesUnderVolume(volumeType, ['New Image Name.png'])
+              .then(function(urls) {
+                if (urls.length == 0) {
+                  return true;
+                }
+                return pending('"New Image Name.png" is still there.');
+              });
+        });
       });
-    });
-  });
 }
 
 /**

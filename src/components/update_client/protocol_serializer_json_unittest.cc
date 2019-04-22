@@ -51,7 +51,7 @@ TEST(SerializeRequestJSON, Serialize) {
       MakeProtocolApp("id2", base::Version("2.0"), std::move(events)));
 
   const auto request = std::make_unique<ProtocolSerializerJSON>()->Serialize(
-      MakeProtocolRequest("15160585-8ADE-4D3C-839B-1281A6035D1F", "prod_id",
+      MakeProtocolRequest("{15160585-8ADE-4D3C-839B-1281A6035D1F}", "prod_id",
                           "1.0", "lang", "channel", "OS", "cacheable",
                           {{"extra", "params"}}, nullptr, std::move(apps)));
   constexpr char regex[] =
@@ -79,13 +79,13 @@ TEST(SerializeRequestJSON, DownloadPreference) {
   // Verifies that an empty |download_preference| is not serialized.
   const auto serializer = std::make_unique<ProtocolSerializerJSON>();
   auto request = serializer->Serialize(
-      MakeProtocolRequest("15160585-8ADE-4D3C-839B-1281A6035D1F", "", "", "",
+      MakeProtocolRequest("{15160585-8ADE-4D3C-839B-1281A6035D1F}", "", "", "",
                           "", "", "", {}, nullptr, {}));
   EXPECT_FALSE(RE2::PartialMatch(request, R"("dlpref":)")) << request;
 
   // Verifies that |download_preference| is serialized.
   request = serializer->Serialize(
-      MakeProtocolRequest("15160585-8ADE-4D3C-839B-1281A6035D1F", "", "", "",
+      MakeProtocolRequest("{15160585-8ADE-4D3C-839B-1281A6035D1F}", "", "", "",
                           "", "", "cacheable", {}, nullptr, {}));
   EXPECT_TRUE(RE2::PartialMatch(request, R"("dlpref":"cacheable")")) << request;
 }
@@ -104,7 +104,7 @@ TEST(SerializeRequestJSON, UpdaterStateAttributes) {
   attributes["autoupdatecheckenabled"] = "0";
   attributes["updatepolicy"] = "-1";
   const auto request = serializer->Serialize(MakeProtocolRequest(
-      "15160585-8ADE-4D3C-839B-1281A6035D1F", "prod_id", "1.0", "lang",
+      "{15160585-8ADE-4D3C-839B-1281A6035D1F}", "prod_id", "1.0", "lang",
       "channel", "OS", "cacheable", {{"extra", "params"}}, &attributes, {}));
   constexpr char regex[] =
       R"({"request":{"@os":"\w+","@updater":"prod_id",)"

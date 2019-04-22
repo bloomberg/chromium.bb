@@ -27,12 +27,14 @@ const base::TimeDelta LocationArbitrator::kFixStaleTimeoutTimeDelta =
 LocationArbitrator::LocationArbitrator(
     const CustomLocationProviderCallback& custom_location_provider_getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const std::string& api_key)
+    const std::string& api_key,
+    std::unique_ptr<PositionCache> position_cache)
     : custom_location_provider_getter_(custom_location_provider_getter),
       url_loader_factory_(url_loader_factory),
       api_key_(api_key),
       position_provider_(nullptr),
       is_permission_granted_(false),
+      position_cache_(std::move(position_cache)),
       is_running_(false) {}
 
 LocationArbitrator::~LocationArbitrator() {
@@ -48,15 +50,6 @@ void LocationArbitrator::OnPermissionGranted() {
   is_permission_granted_ = true;
   for (const auto& provider : providers_)
     provider->OnPermissionGranted();
-}
-
-void LocationArbitrator::SetLastNetworkPosition(
-    const mojom::Geoposition& position) {
-  last_network_position_ = position;
-}
-
-const mojom::Geoposition& LocationArbitrator::GetLastNetworkPosition() {
-  return last_network_position_;
 }
 
 void LocationArbitrator::StartProvider(bool enable_high_accuracy) {
@@ -157,7 +150,7 @@ LocationArbitrator::NewNetworkLocationProvider(
   return nullptr;
 #else
   return std::make_unique<NetworkLocationProvider>(
-      std::move(url_loader_factory), api_key, this);
+      std::move(url_loader_factory), api_key, position_cache_.get());
 #endif
 }
 

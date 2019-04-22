@@ -71,8 +71,8 @@
 #include "chrome/browser/chromeos/extensions/signin_screen_policy_provider.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -411,7 +411,7 @@ scoped_refptr<ValueStoreFactory> ExtensionSystemImpl::store_factory() {
 
 InfoMap* ExtensionSystemImpl::info_map() { return shared_->info_map(); }
 
-const OneShotEvent& ExtensionSystemImpl::ready() const {
+const base::OneShotEvent& ExtensionSystemImpl::ready() const {
   return shared_->ready();
 }
 

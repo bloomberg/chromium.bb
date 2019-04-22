@@ -25,8 +25,8 @@ class SignerKeyMissingError(SignerKeyError):
   """Raise if key is missing from subset"""
 
 
-class SignerBuildtargetKeyMissingError(SignerKeyMissingError):
-  """Raise if a buildtarget-specific key is missing"""
+class SignerRootOfTrustKeyMissingError(SignerKeyMissingError):
+  """Raise if a root_of_trust-specific key is missing"""
 
 
 class VersionOverflowError(SignerKeyError):
@@ -200,7 +200,7 @@ class KeyVersions(object):
     # We want to be idempotent.
     if key.endswith('_version'):
       key = key[:-8]
-    # strip anything after a '.', since those are buildtarget names.
+    # Strip anything after a '.', since those are root-of-trust names.
     key = key.split('.')[0]
     if key.endswith('_data_key'):
       key = key[:-9]
@@ -258,23 +258,23 @@ class Keyset(object):
     - kernel_subkey
     - recovery
     - recovery_kernel_data_key
-  as well as Build Target specific keys (self._buildtarget_keys):
+  as well as keys specific to the artifact (self._root_of_trust_keys):
     - root_key
     - firmware_data_key
 
   Attributes:
     keys: dict of keypairs, indexed on key's name
-    buildtarget_map: dict of buildtarget alias (e.g., 'loem1') to use for each
-        buildtarget name (e.g. 'ACME').  Keys in the table are both buildtarget
-        names and buildtarget aliases, so that
-        buildtarget_map[buildtarget_map[buildtarget_name]] works.
+    root_of_trust_map: dict of root_of_trust alias (e.g., 'loem1') to use for
+        each root_of_trust name (e.g.  'ACME').  Keys in the table are both
+        root_of_trust names and root_of_trust aliases, so that
+        root_of_trust_map[root_of_trust_map[root_of_trust_name]] works.
   """
 
-  # If we have a buildtarget name, it is of the form 'name\.buildtarget', so we
-  # will simply split('.') the name to get the components.
-  # If this is a unified buildtarget, then there are per-buildtarget keys, and
-  # self.buildtarget_key_prefixes will be set to this.
-  _per_buildtarget_key_names = set(('firmware_data_key', 'root_key'))
+  # If we have a root_of_trust name, it is of the form 'name.root_of_trust', so
+  # we will simply split('.') the name to get the components.  If this is a
+  # unified root_of_trust, then there are per-root_of_trust keys, and
+  # self.root_of_trust_key_prefixes will be set to this.
+  _root_of_trust_key_names = set(('firmware_data_key', 'root_key'))
 
   def __init__(self, key_dir=None):
     """Initialize the Keyset from key_dir, if given.
@@ -286,12 +286,12 @@ class Keyset(object):
     """
     self.keys = {}
     self.key_dir = key_dir
-    self.buildtarget_map = {}
-    self._buildtarget_key_prefixes = set()
-    self._buildtarget_keys = collections.defaultdict(dict)
+    self.root_of_trust_map = {}
+    self._root_of_trust_key_prefixes = set()
+    self._root_of_trust_keys = collections.defaultdict(dict)
     if key_dir and os.path.exists(key_dir):
-      # Get all buildtarget aliases.  The legacy code base refers to
-      # 'buildtarget' as 'loem'. We need to support the on-disk structures
+      # Get all root_of_trust aliases.  The legacy code base refers to
+      # 'root_of_trust' as 'loem'. We need to support the on-disk structures
       # which have a table of 'XX = ALIAS', with the implied name 'loemXX'.
       loem_config_filename = os.path.join(key_dir, 'loem.ini')
       if os.path.exists(loem_config_filename):
@@ -299,16 +299,16 @@ class Keyset(object):
         loem_config = ConfigParser.ConfigParser()
         if loem_config.read(loem_config_filename):
           if loem_config.has_section('loem'):
-            self._buildtarget_key_prefixes = self._per_buildtarget_key_names
+            self._root_of_trust_key_prefixes = self._root_of_trust_key_names
             for idx, loem in loem_config.items('loem'):
               alias = 'loem' + idx
               logging.debug('Adding loem alias %s %s', loem, alias)
-              self.buildtarget_map[loem] = alias
+              self.root_of_trust_map[loem] = alias
               # We also want loemXX to point to loemXX, since our callers tend
               # to use both name and alias interchangably.
               # TODO(lamontjones) evaluate whether or not we should force it to
               # be indexed by only name, instead of both.
-              self.buildtarget_map[alias] = alias
+              self.root_of_trust_map[alias] = alias
         else:
           logging.warning("Error reading loem.ini file")
 
@@ -328,13 +328,13 @@ class Keyset(object):
                 key_dir,
                 version=self._versions.Get(key_name),
                 priv_ext=match.group('ext'))
-            # AddKey will detect whether or not this is a buildtarget-specific
+            # AddKey will detect whether or not this is a root_of_trust-specific
             # key and do the right thing.
             self.AddKey(key)
 
   def __eq__(self, other):
     return (isinstance(other, Keyset)
-            and self.buildtarget_map == other.buildtarget_map
+            and self.root_of_trust_map == other.root_of_trust_map
             and self.keys == other.keys)
 
   def Prune(self):
@@ -342,41 +342,41 @@ class Keyset(object):
     for k, key in self.keys.items():
       if not key.Exists():
         self.keys.pop(k)
-    for buildtarget, keys in self._buildtarget_keys.items():
+    for root_of_trust, keys in self._root_of_trust_keys.items():
       for k, key in keys.items():
         if not key.Exists():
-          self._buildtarget_keys[buildtarget].pop(k)
+          self._root_of_trust_keys[root_of_trust].pop(k)
 
   def AddKey(self, key):
     """Add key to Keyset.
 
     Args:
       key: The KeyPair to add.  key.name is checked to see if it is
-          buildtarget-specific, and the correct group is used.
+          root_of_trust-specific, and the correct group is used.
     """
     if '.' in key.name:
-      key_name, buildtarget_name = key.name.split('.')
+      key_name, root_of_trust_name = key.name.split('.')
       # Some of the legacy keyfiles have .vN.vprivk suffixes, even though they
-      # are not buildtarget keys. (They are backup keys for older versions of
-      # the key.)  Restricting the buildtarget_keys to those in
-      # _buildtarget_key_prefixes helps with that.
-      if key_name in self._buildtarget_key_prefixes:
-        logging.debug('Found buildtarget %s.%s', key_name, buildtarget_name)
-        self.AddBuildtargetKey(key_name, buildtarget_name, key)
+      # are not root_of_trust keys. (They are backup keys for older versions of
+      # the key.) Restricting the root_of_trust_keys to those in
+      # _root_of_trust_key_prefixes helps with that.
+      if key_name in self._root_of_trust_key_prefixes:
+        logging.debug('Found root_of_trust %s.%s', key_name, root_of_trust_name)
+        self.AddRootOfTrustKey(key_name, root_of_trust_name, key)
         return
     self.keys[key.name] = key
 
-  def AddBuildtargetKey(self, key_name, buildtarget_alias, key):
-    """Attach the buildtarget-specific key to the base key."""
-    # _buildtarget_keys['loem2']['root_key'] = KeyPair('root_key.loem2', ...)
-    self._buildtarget_keys[buildtarget_alias][key_name] = key
+  def AddRootOfTrustKey(self, key_name, root_of_trust_alias, key):
+    """Attach the root_of_trust-specific key to the base key."""
+    # _root_of_trust_keys['loem2']['root_key'] = KeyPair('root_key.loem2', ...)
+    self._root_of_trust_keys[root_of_trust_alias][key_name] = key
 
   def KeyExists(self, key_name, require_public=False, require_private=False):
     """Returns if key is in Keyset and exists.
 
-    If this Keyset has buildtarget-specific keys, then buildtarget-specific keys
-    will only be found if GetBuildKeyset() has been called to get the
-    buildtarget-specific Keyset.
+    If this Keyset has root_of_trust-specific keys, then root_of_trust-specific
+    keys will only be found if GetBuildKeyset() has been called to get the
+    root_of_trust-specific Keyset.
     """
     return (key_name in self.keys and
             self.keys[key_name].Exists(require_public=require_public,
@@ -385,53 +385,53 @@ class Keyset(object):
   def KeyblockExists(self, key_name):
     """Returns if keyblock exists
 
-    If this Keyset has buildtarget-specific keys, then keyblocks for
-    buildtarget-specific keys will only be found if GetBuildKeyset() has
-    been called to get the buildtarget-specific Keyset.
+    If this Keyset has root_of_trust-specific keys, then keyblocks for
+    root_of_trust-specific keys will only be found if GetBuildKeyset() has been
+    called to get the root_of_trust-specific Keyset.
     """
     return (key_name in self.keys and
             self.keys[key_name].KeyblockExists())
 
-  def GetBuildtargetKeys(self, key_name):
-    """Get buildtarget-specific keys by keyname.
+  def GetRootOfTrustKeys(self, key_name):
+    """Get root_of_trust-specific keys by keyname.
 
     Args:
-      key_name: name of buildtarget-specific key.  e.g., 'root_key'
+      key_name: name of root_of_trust-specific key.  e.g., 'root_key'
 
     Returns:
-      dict of buildtarget_alias: key
+      dict of root_of_trust_alias: key
     """
     ret = {}
-    for k, v in self._buildtarget_keys.items():
+    for k, v in self._root_of_trust_keys.items():
       if key_name in v:
         ret[k] = v[key_name]
     if key_name in self.keys:
       ret[key_name] = self.keys[key_name]
     return ret
 
-  def GetBuildKeyset(self, buildtarget_name):
-    """Returns new Keyset containing keys based on the buildtarget_name given.
+  def GetBuildKeyset(self, root_of_trust_name):
+    """Returns new Keyset containing keys based on the root_of_trust_name given.
 
     The following keys are included:
-    * This buildtarget's buildtarget-specific keys
-    * Any non-buildtarget-specific keys.
+    * This root_of_trust's root_of_trust-specific keys
+    * Any non-root_of_trust-specific keys.
 
     Args:
-      buildtarget_name: either the buildtarget name (e.g., 'acme') or alias
+      root_of_trust_name: either the root_of_trust name (e.g., 'acme') or alias
           (e.g., 'loem1').
 
-    Raises SignerBuildtargetKeyMissingError if subkey not found
+    Raises SignerRootOfTrustKeyMissingError if subkey not found
     """
     ks = Keyset()
 
     found = False
 
     # Use alias if exists
-    buildtarget_alias = self.buildtarget_map.get(buildtarget_name, '')
+    root_of_trust_alias = self.root_of_trust_map.get(root_of_trust_name, '')
 
     for key in self.keys.values():
       ks.AddKey(key)
-    for key in self._buildtarget_keys[buildtarget_alias].values():
+    for key in self._root_of_trust_keys[root_of_trust_alias].values():
       found = True
       ks.AddKey(key)
       # Also add the key as its base name.
@@ -440,7 +440,7 @@ class Keyset(object):
       ks.AddKey(key)
 
     if not found:
-      raise SignerBuildtargetKeyMissingError(
-          "Unable to find %s", buildtarget_name)
+      raise SignerRootOfTrustKeyMissingError(
+          "Unable to find %s", root_of_trust_name)
 
     return ks

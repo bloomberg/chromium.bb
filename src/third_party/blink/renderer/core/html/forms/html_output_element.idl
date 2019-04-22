@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#the-output-element
+// https://html.spec.whatwg.org/C/#the-output-element
 [HTMLConstructor]
 interface HTMLOutputElement : HTMLElement {
     [PutForwards=value] readonly attribute DOMTokenList htmlFor;

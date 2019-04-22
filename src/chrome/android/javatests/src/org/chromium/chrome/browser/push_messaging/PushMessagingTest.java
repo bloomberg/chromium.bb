@@ -22,7 +22,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -34,7 +33,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationTestRule;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarUtil;
@@ -46,6 +45,7 @@ import org.chromium.components.gcm_driver.instance_id.FakeInstanceIDWithSubtype;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServerRule;
 
 import java.util.List;
@@ -81,12 +81,9 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     @Before
     public void setUp() throws Exception {
         final PushMessagingServiceObserver.Listener listener = this;
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FakeInstanceIDWithSubtype.clearDataAndSetEnabled(true);
-                PushMessagingServiceObserver.setListenerForTesting(listener);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            FakeInstanceIDWithSubtype.clearDataAndSetEnabled(true);
+            PushMessagingServiceObserver.setListenerForTesting(listener);
         });
         mPushTestPage = mEmbeddedTestServerRule.getServer().getURL(PUSH_TEST_PAGE);
         mNotificationTestRule.loadUrl(mPushTestPage);
@@ -94,12 +91,9 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
 
     @After
     public void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PushMessagingServiceObserver.setListenerForTesting(null);
-                FakeInstanceIDWithSubtype.clearDataAndSetEnabled(false);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PushMessagingServiceObserver.setListenerForTesting(null);
+            FakeInstanceIDWithSubtype.clearDataAndSetEnabled(false);
         });
     }
 
@@ -117,7 +111,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     public void testNotificationsPermissionDenied() throws InterruptedException, TimeoutException {
         // Deny Notifications permission before trying to subscribe Push.
         mNotificationTestRule.setNotificationContentSettingForOrigin(
-                ContentSetting.BLOCK, mEmbeddedTestServerRule.getOrigin());
+                ContentSettingValues.BLOCK, mEmbeddedTestServerRule.getOrigin());
         Assert.assertEquals("\"denied\"", runScriptBlocking("Notification.permission"));
 
         // Reload page to ensure the block is persisted.
@@ -220,7 +214,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     @RetryOnFailure
     public void testPushAndShowNotification() throws InterruptedException, TimeoutException {
         mNotificationTestRule.setNotificationContentSettingForOrigin(
-                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
+                ContentSettingValues.ALLOW, mEmbeddedTestServerRule.getOrigin());
         runScriptAndWaitForTitle("subscribePush()", "subscribe ok");
 
         Pair<String, String> appIdAndSenderId =
@@ -248,7 +242,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
 
         // Set up the push subscription and capture its details.
         mNotificationTestRule.setNotificationContentSettingForOrigin(
-                ContentSetting.ALLOW, mEmbeddedTestServerRule.getOrigin());
+                ContentSettingValues.ALLOW, mEmbeddedTestServerRule.getOrigin());
         runScriptAndWaitForTitle("subscribePush()", "subscribe ok");
         Pair<String, String> appIdAndSenderId =
                 FakeInstanceIDWithSubtype.getSubtypeAndAuthorizedEntityOfOnlyToken();
@@ -320,23 +314,20 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
             throws InterruptedException, TimeoutException {
         final String appId = appIdAndSenderId.first;
         final String senderId = appIdAndSenderId.second;
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Context context = InstrumentationRegistry.getInstrumentation()
-                                          .getTargetContext()
-                                          .getApplicationContext();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Context context = InstrumentationRegistry.getInstrumentation()
+                                      .getTargetContext()
+                                      .getApplicationContext();
 
-                Bundle extras = new Bundle();
-                extras.putString("subtype", appId);
+            Bundle extras = new Bundle();
+            extras.putString("subtype", appId);
 
-                GCMMessage message = new GCMMessage(senderId, extras);
-                try {
-                    ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
-                    GCMDriver.dispatchMessage(message);
-                } catch (ProcessInitException e) {
-                    Assert.fail("Chrome browser failed to initialize.");
-                }
+            GCMMessage message = new GCMMessage(senderId, extras);
+            try {
+                ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
+                GCMDriver.dispatchMessage(message);
+            } catch (ProcessInitException e) {
+                Assert.fail("Chrome browser failed to initialize.");
             }
         });
         mMessageHandledHelper.waitForCallback(mMessageHandledHelper.getCallCount());

@@ -13,10 +13,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VERIFICATION_FAILURE;
-import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VERIFICATION_PENDING;
-import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VERIFICATION_SUCCESS;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -194,16 +190,16 @@ public class TrustedWebActivityOpenTimeRecorderTest {
     private void launchTwa() {
         advanceTime(1000);
         mRecorder.onResumeWithNative();
-        setVerificationStatus(VERIFICATION_PENDING);
-        setVerificationStatus(VERIFICATION_SUCCESS);
+        setVerificationStatus(VerificationStatus.PENDING);
+        setVerificationStatus(VerificationStatus.SUCCESS);
     }
 
     private void leaveVerifiedOrigin() {
-        setVerificationStatus(VERIFICATION_FAILURE);
+        setVerificationStatus(VerificationStatus.FAILURE);
     }
 
     private void returnToVerifiedOrigin() {
-        setVerificationStatus(VERIFICATION_SUCCESS);
+        setVerificationStatus(VerificationStatus.SUCCESS);
     }
 
     private void setVerificationStatus(@VerificationStatus int status) {

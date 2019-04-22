@@ -75,7 +75,7 @@ void AppendReferencedFilesFromHttpBody(
     const std::vector<network::DataElement>& elements,
     std::vector<base::Optional<base::string16>>* referenced_files) {
   for (size_t i = 0; i < elements.size(); ++i) {
-    if (elements[i].type() == network::DataElement::TYPE_FILE)
+    if (elements[i].type() == network::mojom::DataElementType::kFile)
       referenced_files->emplace_back(elements[i].path().AsUTF16Unsafe());
   }
 }
@@ -413,22 +413,22 @@ void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
   WriteAndValidateVectorSize(*request_body.elements(), obj);
   for (const auto& element : *request_body.elements()) {
     switch (element.type()) {
-      case network::DataElement::TYPE_BYTES:
+      case network::mojom::DataElementType::kBytes:
         WriteInteger(blink::WebHTTPBody::Element::kTypeData, obj);
         WriteData(element.bytes(), static_cast<int>(element.length()), obj);
         break;
-      case network::DataElement::TYPE_FILE:
+      case network::mojom::DataElementType::kFile:
         WriteInteger(blink::WebHTTPBody::Element::kTypeFile, obj);
         WriteString(element.path().AsUTF16Unsafe(), obj);
         WriteInteger64(static_cast<int64_t>(element.offset()), obj);
         WriteInteger64(static_cast<int64_t>(element.length()), obj);
         WriteReal(element.expected_modification_time().ToDoubleT(), obj);
         break;
-      case network::DataElement::TYPE_BLOB:
+      case network::mojom::DataElementType::kBlob:
         WriteInteger(blink::WebHTTPBody::Element::kTypeBlob, obj);
         WriteStdString(element.blob_uuid(), obj);
         break;
-      case network::DataElement::TYPE_RAW_FILE:
+      case network::mojom::DataElementType::kRawFile:
       default:
         NOTREACHED();
         continue;
@@ -687,28 +687,28 @@ void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
   for (const auto& element : *request_body.elements()) {
     history::mojom::ElementPtr data_element = history::mojom::Element::New();
     switch (element.type()) {
-      case network::DataElement::TYPE_BYTES: {
+      case network::mojom::DataElementType::kBytes: {
         data_element->set_bytes(std::vector<unsigned char>(
             reinterpret_cast<const char*>(element.bytes()),
             element.bytes() + element.length()));
         break;
       }
-      case network::DataElement::TYPE_FILE: {
+      case network::mojom::DataElementType::kFile: {
         history::mojom::FilePtr file = history::mojom::File::New(
             element.path().AsUTF16Unsafe(), element.offset(), element.length(),
             element.expected_modification_time());
         data_element->set_file(std::move(file));
         break;
       }
-      case network::DataElement::TYPE_BLOB:
+      case network::mojom::DataElementType::kBlob:
         data_element->set_blob_uuid(element.blob_uuid());
         break;
-      case network::DataElement::TYPE_DATA_PIPE:
+      case network::mojom::DataElementType::kDataPipe:
         NOTIMPLEMENTED();
         break;
-      case network::DataElement::TYPE_RAW_FILE:
-      case network::DataElement::TYPE_CHUNKED_DATA_PIPE:
-      case network::DataElement::TYPE_UNKNOWN:
+      case network::mojom::DataElementType::kRawFile:
+      case network::mojom::DataElementType::kChunkedDataPipe:
+      case network::mojom::DataElementType::kUnknown:
         NOTREACHED();
         continue;
     }

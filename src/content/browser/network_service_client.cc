@@ -4,6 +4,7 @@
 
 #include "content/browser/network_service_client.h"
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
@@ -27,11 +28,13 @@
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/ssl/client_cert_store.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
+#include "net/android/http_auth_negotiate_android.h"
 #endif
 
 namespace content {
@@ -78,7 +81,7 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
           callback,
       ResourceRequestInfo::WebContentsGetter web_contents_getter,
       scoped_refptr<net::SSLCertRequestInfo> cert_info)
-      : callback_(std::move(callback)), cert_info_(cert_info) {
+      : callback_(std::move(callback)), cert_info_(std::move(cert_info)) {
     content::WebContents* web_contents = web_contents_getter.Run();
     content::BrowserContext* browser_context =
         web_contents->GetBrowserContext();
@@ -165,106 +168,14 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
   std::unique_ptr<SSLClientAuthHandler> ssl_client_auth_handler_;
 };
 
-// LoginHandlerDelegateIO handles HTTP auth on the IO thread.
-//
-// TODO(https://crbug.com/908926): This can be folded into LoginHandlerDelegate
-// with the thread-hops simplified once CreateLoginDelegate is moved to the UI
-// thread.
-class LoginHandlerDelegateIO {
- public:
-  LoginHandlerDelegateIO(
-      LoginAuthRequiredCallback callback,
-      ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      scoped_refptr<net::AuthChallengeInfo> auth_info,
-      bool is_request_for_main_frame,
-      uint32_t process_id,
-      uint32_t routing_id,
-      uint32_t request_id,
-      const GURL& url,
-      scoped_refptr<net::HttpResponseHeaders> response_headers,
-      bool first_auth_attempt)
-      : callback_(std::move(callback)),
-        auth_info_(auth_info),
-        request_id_(process_id, request_id),
-        routing_id_(routing_id),
-        is_request_for_main_frame_(is_request_for_main_frame),
-        url_(url),
-        response_headers_(std::move(response_headers)),
-        first_auth_attempt_(first_auth_attempt),
-        web_contents_getter_(web_contents_getter),
-        weak_factory_(this) {
-    // This object may be created on any thread, but it must be destroyed and
-    // otherwise accessed on the IO thread.
-  }
-
-  ~LoginHandlerDelegateIO() {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    if (login_delegate_)
-      login_delegate_->OnRequestCancelled();
-  }
-
-  void Start() {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    DevToolsURLLoaderInterceptor::HandleAuthRequest(
-        request_id_.child_id, routing_id_, request_id_.request_id, auth_info_,
-        base::BindOnce(&LoginHandlerDelegateIO::ContinueAfterInterceptor,
-                       weak_factory_.GetWeakPtr()));
-  }
-
- private:
-  void ContinueAfterInterceptor(
-      bool use_fallback,
-      const base::Optional<net::AuthCredentials>& auth_credentials) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    DCHECK(!(use_fallback && auth_credentials.has_value()));
-    if (!use_fallback) {
-      RunAuthCredentials(auth_credentials);
-      return;
-    }
-
-    // WeakPtr is not strictly necessary here due to OnRequestCancelled.
-    login_delegate_ = GetContentClient()->browser()->CreateLoginDelegate(
-        auth_info_.get(), web_contents_getter_, request_id_,
-        is_request_for_main_frame_, url_, response_headers_,
-        first_auth_attempt_,
-        base::BindOnce(&LoginHandlerDelegateIO::RunAuthCredentials,
-                       weak_factory_.GetWeakPtr()));
-    if (!login_delegate_) {
-      RunAuthCredentials(base::nullopt);
-      return;
-    }
-  }
-
-  void RunAuthCredentials(
-      const base::Optional<net::AuthCredentials>& auth_credentials) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    std::move(callback_).Run(auth_credentials);
-    // There is no need to call OnRequestCancelled in the destructor.
-    login_delegate_ = nullptr;
-  }
-
-  LoginAuthRequiredCallback callback_;
-  scoped_refptr<net::AuthChallengeInfo> auth_info_;
-  const content::GlobalRequestID request_id_;
-  const uint32_t routing_id_;
-  bool is_request_for_main_frame_;
-  GURL url_;
-  const scoped_refptr<net::HttpResponseHeaders> response_headers_;
-  bool first_auth_attempt_;
-  ResourceRequestInfo::WebContentsGetter web_contents_getter_;
-  scoped_refptr<LoginDelegate> login_delegate_;
-  base::WeakPtrFactory<LoginHandlerDelegateIO> weak_factory_;
-};
-
-// LoginHanderDelegate manages LoginHandlerDelegateIO from the UI thread. It is
-// self-owning and deletes itself when the credentials are resolved or the
-// AuthChallengeResponder is cancelled.
+// LoginHandlerDelegate manages HTTP auth. It is self-owning and deletes itself
+// when the credentials are resolved or the AuthChallengeResponder is cancelled.
 class LoginHandlerDelegate {
  public:
   LoginHandlerDelegate(
       network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
       ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      scoped_refptr<net::AuthChallengeInfo> auth_info,
+      const net::AuthChallengeInfo& auth_info,
       bool is_request_for_main_frame,
       uint32_t process_id,
       uint32_t routing_id,
@@ -273,22 +184,29 @@ class LoginHandlerDelegate {
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       bool first_auth_attempt)
       : auth_challenge_responder_(std::move(auth_challenge_responder)),
+        auth_info_(auth_info),
+        request_id_(process_id, request_id),
+        routing_id_(routing_id),
+        is_request_for_main_frame_(is_request_for_main_frame),
+        creating_login_delegate_(false),
+        url_(url),
+        response_headers_(std::move(response_headers)),
+        first_auth_attempt_(first_auth_attempt),
+        web_contents_getter_(web_contents_getter),
         weak_factory_(this) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     auth_challenge_responder_.set_connection_error_handler(base::BindOnce(
         &LoginHandlerDelegate::OnRequestCancelled, base::Unretained(this)));
 
-    login_handler_io_.reset(new LoginHandlerDelegateIO(
-        base::BindOnce(&LoginHandlerDelegate::OnAuthCredentialsIO,
-                       weak_factory_.GetWeakPtr()),
-        std::move(web_contents_getter), std::move(auth_info),
-        is_request_for_main_frame, process_id, routing_id, request_id, url,
-        std::move(response_headers), first_auth_attempt));
-
+    auto continue_after_inteceptor_io =
+        base::BindOnce(&LoginHandlerDelegate::ContinueAfterInterceptorIO,
+                       weak_factory_.GetWeakPtr());
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&LoginHandlerDelegateIO::Start,
-                       base::Unretained(login_handler_io_.get())));
+        base::BindOnce(&DevToolsURLLoaderInterceptor::HandleAuthRequest,
+                       request_id_.child_id, routing_id_,
+                       request_id_.request_id, auth_info_,
+                       std::move(continue_after_inteceptor_io)));
   }
 
  private:
@@ -299,26 +217,68 @@ class LoginHandlerDelegate {
     delete this;
   }
 
-  static void OnAuthCredentialsIO(
-      base::WeakPtr<LoginHandlerDelegate> handler,
+  static void ContinueAfterInterceptorIO(
+      base::WeakPtr<LoginHandlerDelegate> self_weak,
+      bool use_fallback,
       const base::Optional<net::AuthCredentials>& auth_credentials) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&LoginHandlerDelegate::OnAuthCredentials, handler,
-                       auth_credentials));
+        base::BindOnce(&LoginHandlerDelegate::ContinueAfterInterceptorUI,
+                       std::move(self_weak), use_fallback, auth_credentials));
+  }
+
+  void ContinueAfterInterceptorUI(
+      bool use_fallback,
+      const base::Optional<net::AuthCredentials>& auth_credentials) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(!(use_fallback && auth_credentials.has_value()));
+    if (!use_fallback) {
+      OnAuthCredentials(auth_credentials);
+      return;
+    }
+
+    WebContents* web_contents = web_contents_getter_.Run();
+    if (!web_contents) {
+      OnAuthCredentials(base::nullopt);
+      return;
+    }
+
+    // WeakPtr is not strictly necessary here due to OnRequestCancelled.
+    creating_login_delegate_ = true;
+    login_delegate_ = GetContentClient()->browser()->CreateLoginDelegate(
+        auth_info_, web_contents, request_id_, is_request_for_main_frame_, url_,
+        response_headers_, first_auth_attempt_,
+        base::BindOnce(&LoginHandlerDelegate::OnAuthCredentials,
+                       weak_factory_.GetWeakPtr()));
+    creating_login_delegate_ = false;
+    if (!login_delegate_) {
+      OnAuthCredentials(base::nullopt);
+      return;
+    }
   }
 
   void OnAuthCredentials(
       const base::Optional<net::AuthCredentials>& auth_credentials) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    // CreateLoginDelegate must not call the callback reentrantly. For
+    // robustness, detect this mistake.
+    CHECK(!creating_login_delegate_);
     auth_challenge_responder_->OnAuthCredentials(auth_credentials);
     delete this;
   }
 
   network::mojom::AuthChallengeResponderPtr auth_challenge_responder_;
-  std::unique_ptr<LoginHandlerDelegateIO, BrowserThread::DeleteOnIOThread>
-      login_handler_io_;
+  net::AuthChallengeInfo auth_info_;
+  const content::GlobalRequestID request_id_;
+  const uint32_t routing_id_;
+  bool is_request_for_main_frame_;
+  bool creating_login_delegate_;
+  GURL url_;
+  const scoped_refptr<net::HttpResponseHeaders> response_headers_;
+  bool first_auth_attempt_;
+  ResourceRequestInfo::WebContentsGetter web_contents_getter_;
+  std::unique_ptr<LoginDelegate> login_delegate_;
   base::WeakPtrFactory<LoginHandlerDelegate> weak_factory_;
 };
 
@@ -374,7 +334,7 @@ WebContents* GetWebContents(int process_id, int routing_id) {
   return WebContents::FromFrameTreeNodeId(routing_id);
 }
 
-BrowserContext* GetBrowserContext(int process_id, int routing_id) {
+BrowserContext* GetBrowserContextFromIds(int process_id, int routing_id) {
   WebContents* web_contents = GetWebContents(process_id, routing_id);
   if (web_contents)
     return web_contents->GetBrowserContext();
@@ -412,6 +372,17 @@ void OnCertificateRequestedContinuation(
                             cert_info);  // deletes self
 }
 
+#if defined(OS_ANDROID)
+void FinishGenerateNegotiateAuthToken(
+    std::unique_ptr<net::android::HttpAuthNegotiateAndroid> auth_negotiate,
+    std::unique_ptr<std::string> auth_token,
+    std::unique_ptr<net::HttpAuthPreferences> prefs,
+    NetworkServiceClient::OnGenerateHttpNegotiateAuthTokenCallback callback,
+    int result) {
+  std::move(callback).Run(result, *auth_token);
+}
+#endif
+
 }  // namespace
 
 NetworkServiceClient::NetworkServiceClient(
@@ -429,12 +400,29 @@ NetworkServiceClient::NetworkServiceClient(
     memory_pressure_listener_ =
         std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
             &NetworkServiceClient::OnMemoryPressure, base::Unretained(this)));
+
+#if defined(OS_ANDROID)
+    DCHECK(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
+    GetNetworkService()->GetNetworkChangeManager(
+        mojo::MakeRequest(&network_change_manager_));
+    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+    net::NetworkChangeNotifier::AddMaxBandwidthObserver(this);
+    net::NetworkChangeNotifier::AddIPAddressObserver(this);
+    net::NetworkChangeNotifier::AddDNSObserver(this);
+#endif
   }
 }
 
 NetworkServiceClient::~NetworkServiceClient() {
-  if (IsOutOfProcessNetworkService())
+  if (IsOutOfProcessNetworkService()) {
     net::CertDatabase::GetInstance()->RemoveObserver(this);
+#if defined(OS_ANDROID)
+    net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+    net::NetworkChangeNotifier::RemoveMaxBandwidthObserver(this);
+    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+    net::NetworkChangeNotifier::RemoveDNSObserver(this);
+#endif
+  }
 }
 
 void NetworkServiceClient::OnAuthRequired(
@@ -444,7 +432,7 @@ void NetworkServiceClient::OnAuthRequired(
     const GURL& url,
     const GURL& site_for_cookies,
     bool first_auth_attempt,
-    const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+    const net::AuthChallengeInfo& auth_info,
     int32_t resource_type,
     const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
@@ -479,8 +467,6 @@ void NetworkServiceClient::OnCertificateRequested(
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
     network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
         callback) {
-  base::RepeatingCallback<WebContents*(void)> web_contents_getter;
-
   // Use |window_id| if it's provided.
   if (window_id) {
     base::PostTaskWithTraitsAndReplyWithResult(
@@ -585,7 +571,7 @@ void NetworkServiceClient::OnClearSiteData(int process_id,
                                            int load_flags,
                                            OnClearSiteDataCallback callback) {
   auto browser_context_getter =
-      base::BindRepeating(GetBrowserContext, process_id, routing_id);
+      base::BindRepeating(GetBrowserContextFromIds, process_id, routing_id);
   auto web_contents_getter =
       base::BindRepeating(GetWebContents, process_id, routing_id);
   ClearSiteDataHandler::HandleHeader(browser_context_getter,
@@ -607,6 +593,62 @@ void NetworkServiceClient::OnApplicationStateChange(
     base::android::ApplicationState state) {
   GetNetworkService()->OnApplicationStateChange(state);
 }
+
+void NetworkServiceClient::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  network_change_manager_->OnNetworkChanged(
+      false /* dns_changed */, false /* ip_address_changed */,
+      true /* connection_type_changed */, network::mojom::ConnectionType(type),
+      false /* connection_subtype_changed */,
+      network::mojom::ConnectionSubtype(
+          net::NetworkChangeNotifier::GetConnectionSubtype()));
+}
+
+void NetworkServiceClient::OnMaxBandwidthChanged(
+    double max_bandwidth_mbps,
+    net::NetworkChangeNotifier::ConnectionType type) {
+  // The connection subtype change will trigger a max bandwidth change in the
+  // network service notifier.
+  network_change_manager_->OnNetworkChanged(
+      false /* dns_changed */, false /* ip_address_changed */,
+      false /* connection_type_changed */, network::mojom::ConnectionType(type),
+      true /* connection_subtype_changed */,
+      network::mojom::ConnectionSubtype(
+          net::NetworkChangeNotifier::GetConnectionSubtype()));
+}
+
+void NetworkServiceClient::OnIPAddressChanged() {
+  network_change_manager_->OnNetworkChanged(
+      false /* dns_changed */, true /* ip_address_changed */,
+      false /* connection_type_changed */,
+      network::mojom::ConnectionType(
+          net::NetworkChangeNotifier::GetConnectionType()),
+      false /* connection_subtype_changed */,
+      network::mojom::ConnectionSubtype(
+          net::NetworkChangeNotifier::GetConnectionSubtype()));
+}
+
+void NetworkServiceClient::OnDNSChanged() {
+  network_change_manager_->OnNetworkChanged(
+      true /* dns_changed */, false /* ip_address_changed */,
+      false /* connection_type_changed */,
+      network::mojom::ConnectionType(
+          net::NetworkChangeNotifier::GetConnectionType()),
+      false /* connection_subtype_changed */,
+      network::mojom::ConnectionSubtype(
+          net::NetworkChangeNotifier::GetConnectionSubtype()));
+}
+
+void NetworkServiceClient::OnInitialDNSConfigRead() {
+  network_change_manager_->OnNetworkChanged(
+      true /* dns_changed */, false /* ip_address_changed */,
+      false /* connection_type_changed */,
+      network::mojom::ConnectionType(
+          net::NetworkChangeNotifier::GetConnectionType()),
+      false /* connection_subtype_changed */,
+      network::mojom::ConnectionSubtype(
+          net::NetworkChangeNotifier::GetConnectionSubtype()));
+}
 #endif
 
 void NetworkServiceClient::OnDataUseUpdate(
@@ -616,5 +658,34 @@ void NetworkServiceClient::OnDataUseUpdate(
   GetContentClient()->browser()->OnNetworkServiceDataUseUpdate(
       network_traffic_annotation_id_hash, recv_bytes, sent_bytes);
 }
+
+#if defined(OS_ANDROID)
+void NetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
+    const std::string& server_auth_token,
+    bool can_delegate,
+    const std::string& auth_negotiate_android_account_type,
+    const std::string& spn,
+    OnGenerateHttpNegotiateAuthTokenCallback callback) {
+  // The callback takes ownership of these unique_ptrs and destroys them when
+  // run.
+  auto prefs = std::make_unique<net::HttpAuthPreferences>();
+  prefs->set_auth_android_negotiate_account_type(
+      auth_negotiate_android_account_type);
+
+  auto auth_negotiate =
+      std::make_unique<net::android::HttpAuthNegotiateAndroid>(prefs.get());
+  net::android::HttpAuthNegotiateAndroid* auth_negotiate_raw =
+      auth_negotiate.get();
+  auth_negotiate->set_server_auth_token(server_auth_token);
+  auth_negotiate->set_can_delegate(can_delegate);
+
+  auto auth_token = std::make_unique<std::string>();
+  auth_negotiate_raw->GenerateAuthToken(
+      nullptr, spn, std::string(), auth_token.get(),
+      base::BindOnce(&FinishGenerateNegotiateAuthToken,
+                     std::move(auth_negotiate), std::move(auth_token),
+                     std::move(prefs), std::move(callback)));
+}
+#endif
 
 }  // namespace content

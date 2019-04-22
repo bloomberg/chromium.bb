@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
@@ -71,7 +72,6 @@ class PreviewsPageLoadMetricsObserverTest
     timing_.paint_timing->first_meaningful_paint =
         base::TimeDelta::FromSeconds(8);
     timing_.paint_timing->first_image_paint = base::TimeDelta::FromSeconds(5);
-    timing_.paint_timing->first_text_paint = base::TimeDelta::FromSeconds(6);
     timing_.document_timing->load_event_start = base::TimeDelta::FromSeconds(7);
     timing_.parse_timing->parse_stop = base::TimeDelta::FromSeconds(4);
     timing_.parse_timing->parse_blocked_on_script_load_duration =
@@ -147,17 +147,17 @@ class PreviewsPageLoadMetricsObserverTest
           network_resources, 1);
       histogram_tester().ExpectUniqueSample(
           "PageLoad.Clients." + preview_type_name +
-              ".Experimental.Bytes.Network",
+              ".Experimental.Bytes.NetworkIncludingHeaders",
           static_cast<int>(network_bytes / 1024), 1);
     } else {
       histogram_tester().ExpectTotalCount(
           "PageLoad.Clients." + preview_type_name +
               ".Experimental.CompletedResources.Network",
           0);
-      histogram_tester().ExpectTotalCount("PageLoad.Clients." +
-                                              preview_type_name +
-                                              ".Experimental.Bytes.Network",
-                                          0);
+      histogram_tester().ExpectTotalCount(
+          "PageLoad.Clients." + preview_type_name +
+              ".Experimental.Bytes.NetworkIncludingHeaders",
+          0);
     }
   }
 
@@ -193,26 +193,11 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, NoActivePreview) {
       previews::features::kNoScriptPreviews);
   ResetTest();
 
-  content::GlobalRequestID request_id =
-      NavigateAndCommitWithPreviewsState(content::PREVIEWS_OFF);
+  NavigateAndCommitWithPreviewsState(content::PREVIEWS_OFF);
 
-  page_load_metrics::ExtraRequestCompleteInfo main_frame_info(
-      GURL(kResourceUrl), net::HostPortPair(), -1 /* frame_tree_node_id */,
-      false, /* cached */
-      5 * 1024 /* size */, 0 /* original_network_content_length */,
-      nullptr
-      /* data_reduction_proxy_data */,
-      content::RESOURCE_TYPE_MAIN_FRAME, 0, nullptr /* load_timing_info */);
-  SimulateLoadedResource(main_frame_info, request_id);
-
-  page_load_metrics::ExtraRequestCompleteInfo network_resource_info(
-      GURL(kResourceUrl), net::HostPortPair(), -1 /* frame_tree_node_id */,
-      false, /* cached */
-      20 * 1024 /* size */, 0 /* original_network_content_length */,
-      nullptr
-      /* data_reduction_proxy_data */,
-      content::RESOURCE_TYPE_IMAGE, 0, nullptr /* load_timing_info */);
-  SimulateLoadedResource(network_resource_info);
+  auto resources =
+      GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
+  SimulateResourceDataUseUpdate(resources);
 
   SimulateTimingUpdate(timing_);
   NavigateToUntrackedUrl();
@@ -232,42 +217,18 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, NoScriptPreviewActive) {
       previews::features::kNoScriptPreviews);
   ResetTest();
 
-  content::GlobalRequestID request_id =
-      NavigateAndCommitWithPreviewsState(content::NOSCRIPT_ON);
+  NavigateAndCommitWithPreviewsState(content::NOSCRIPT_ON);
 
-  page_load_metrics::ExtraRequestCompleteInfo main_frame_info(
-      GURL(kResourceUrl), net::HostPortPair(), -1 /* frame_tree_node_id */,
-      false, /* cached */
-      5 * 1024 /* size */, 0 /* original_network_content_length */,
-      nullptr
-      /* data_reduction_proxy_data */,
-      content::RESOURCE_TYPE_MAIN_FRAME, 0, nullptr /* load_timing_info */);
-  SimulateLoadedResource(main_frame_info, request_id);
-
-  page_load_metrics::ExtraRequestCompleteInfo cached_resource_info(
-      GURL(kResourceUrl), net::HostPortPair(), -1 /* frame_tree_node_id */,
-      true, /* cached */
-      13 * 1024 /* size */, 0 /* original_network_content_length */,
-      nullptr
-      /* data_reduction_proxy_data */,
-      content::RESOURCE_TYPE_IMAGE, 0, nullptr /* load_timing_info */);
-  SimulateLoadedResource(cached_resource_info);
-
-  page_load_metrics::ExtraRequestCompleteInfo network_resource_info(
-      GURL(kResourceUrl), net::HostPortPair(), -1 /* frame_tree_node_id */,
-      false, /* cached */
-      20 * 1024 /* size */, 0 /* original_network_content_length */,
-      nullptr
-      /* data_reduction_proxy_data */,
-      content::RESOURCE_TYPE_IMAGE, 0, nullptr /* load_timing_info */);
-  SimulateLoadedResource(network_resource_info);
+  auto resources =
+      GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
+  SimulateResourceDataUseUpdate(resources);
 
   SimulateTimingUpdate(timing_);
   NavigateToUntrackedUrl();
 
   ValidateTimingHistograms("NoScriptPreview", true /* preview_was_active */);
-  ValidateDataHistograms("NoScriptPreview", 2 /* network_resources */,
-                         25 * 1024 /* network_bytes */);
+  ValidateDataHistograms("NoScriptPreview", 1 /* network_resources */,
+                         20 * 1024 /* network_bytes */);
 }
 
 TEST_F(PreviewsPageLoadMetricsObserverTest, ResourceLoadingHintsPreviewActive) {
@@ -276,35 +237,11 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, ResourceLoadingHintsPreviewActive) {
       previews::features::kResourceLoadingHints);
   ResetTest();
 
-  content::GlobalRequestID request_id =
-      NavigateAndCommitWithPreviewsState(content::RESOURCE_LOADING_HINTS_ON);
+  NavigateAndCommitWithPreviewsState(content::RESOURCE_LOADING_HINTS_ON);
 
-  page_load_metrics::ExtraRequestCompleteInfo main_frame_info(
-      GURL(kResourceUrl), net::HostPortPair(), -1 /* frame_tree_node_id */,
-      false, /* cached */
-      5 * 1024 /* size */, 0 /* original_network_content_length */,
-      nullptr
-      /* data_reduction_proxy_data */,
-      content::RESOURCE_TYPE_MAIN_FRAME, 0, nullptr /* load_timing_info */);
-  SimulateLoadedResource(main_frame_info, request_id);
-
-  page_load_metrics::ExtraRequestCompleteInfo cached_resource_info(
-      GURL(kResourceUrl), net::HostPortPair(), -1 /* frame_tree_node_id */,
-      true, /* cached */
-      13 * 1024 /* size */, 0 /* original_network_content_length */,
-      nullptr
-      /* data_reduction_proxy_data */,
-      content::RESOURCE_TYPE_IMAGE, 0, nullptr /* load_timing_info */);
-  SimulateLoadedResource(cached_resource_info);
-
-  page_load_metrics::ExtraRequestCompleteInfo network_resource_info(
-      GURL(kResourceUrl), net::HostPortPair(), -1 /* frame_tree_node_id */,
-      false, /* cached */
-      20 * 1024 /* size */, 0 /* original_network_content_length */,
-      nullptr
-      /* data_reduction_proxy_data */,
-      content::RESOURCE_TYPE_IMAGE, 0, nullptr /* load_timing_info */);
-  SimulateLoadedResource(network_resource_info);
+  auto resources =
+      GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
+  SimulateResourceDataUseUpdate(resources);
 
   SimulateTimingUpdate(timing_);
   NavigateToUntrackedUrl();
@@ -312,8 +249,8 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, ResourceLoadingHintsPreviewActive) {
   ValidateTimingHistograms("ResourceLoadingHintsPreview",
                            true /* preview_was_active */);
   ValidateDataHistograms("ResourceLoadingHintsPreview",
-                         2 /* network_resources */,
-                         25 * 1024 /* network_bytes */);
+                         1 /* network_resources */,
+                         20 * 1024 /* network_bytes */);
 }
 
 TEST_F(PreviewsPageLoadMetricsObserverTest, NoScriptDataSavings) {
@@ -322,8 +259,8 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, NoScriptDataSavings) {
   base::test::ScopedFeatureList scoped_feature_list;
 
   std::map<std::string, std::string> parameters = {
-      {"NoScriptInflationPercent", base::IntToString(inflation)},
-      {"NoScriptInflationBytes", base::IntToString(constant_savings)}};
+      {"NoScriptInflationPercent", base::NumberToString(inflation)},
+      {"NoScriptInflationBytes", base::NumberToString(constant_savings)}};
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       previews::features::kNoScriptPreviews, parameters);
 
@@ -360,9 +297,9 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, ResourceLoadingHintsDataSavings) {
   base::test::ScopedFeatureList scoped_feature_list;
 
   std::map<std::string, std::string> parameters = {
-      {"ResourceLoadingHintsInflationPercent", base::IntToString(inflation)},
+      {"ResourceLoadingHintsInflationPercent", base::NumberToString(inflation)},
       {"ResourceLoadingHintsInflationBytes",
-       base::IntToString(constant_savings)}};
+       base::NumberToString(constant_savings)}};
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       previews::features::kResourceLoadingHints, parameters);
 

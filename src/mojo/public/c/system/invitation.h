@@ -48,7 +48,7 @@ struct MOJO_ALIGNAS(8) MojoProcessErrorDetails {
   // See |MojoProcessErrorFlags|.
   MojoProcessErrorFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoProcessErrorDetails) == 24,
+MOJO_STATIC_ASSERT(sizeof(struct MojoProcessErrorDetails) == 24,
                    "MojoProcessErrorDetails has wrong size.");
 
 // An opaque process handle value which must be provided when sending an
@@ -63,7 +63,7 @@ struct MOJO_ALIGNAS(8) MojoPlatformProcessHandle {
   // POSIX systems, it's a PID.
   uint64_t value;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoPlatformProcessHandle) == 16,
+MOJO_STATIC_ASSERT(sizeof(struct MojoPlatformProcessHandle) == 16,
                    "MojoPlatformProcesHandle has wrong size.");
 
 // Enumeration indicating the type of transport over which an invitation will be
@@ -110,7 +110,7 @@ struct MOJO_ALIGNAS(8) MojoInvitationTransportEndpoint {
   //     descriptor.
   MOJO_POINTER_FIELD(const struct MojoPlatformHandle*, platform_handles);
 };
-MOJO_STATIC_ASSERT(sizeof(MojoInvitationTransportEndpoint) == 24,
+MOJO_STATIC_ASSERT(sizeof(struct MojoInvitationTransportEndpoint) == 24,
                    "MojoInvitationTransportEndpoint has wrong size.");
 
 // Flags passed to |MojoCreateInvitation()| via |MojoCreateInvitationOptions|.
@@ -127,7 +127,7 @@ struct MOJO_ALIGNAS(8) MojoCreateInvitationOptions {
   // See |MojoCreateInvitationFlags|.
   MojoCreateInvitationFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoCreateInvitationOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoCreateInvitationOptions) == 8,
                    "MojoCreateInvitationOptions has wrong size");
 
 // Flags passed to |MojoAttachMessagePipeToInvitation()| via
@@ -146,7 +146,7 @@ struct MOJO_ALIGNAS(8) MojoAttachMessagePipeToInvitationOptions {
   // See |MojoAttachMessagePipeToInvitationFlags|.
   MojoAttachMessagePipeToInvitationFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoAttachMessagePipeToInvitationOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoAttachMessagePipeToInvitationOptions) == 8,
                    "MojoAttachMessagePipeToInvitationOptions has wrong size");
 
 // Flags passed to |MojoExtractMessagePipeFromInvitation()| via
@@ -166,7 +166,7 @@ struct MOJO_ALIGNAS(8) MojoExtractMessagePipeFromInvitationOptions {
   MojoExtractMessagePipeFromInvitationFlags flags;
 };
 MOJO_STATIC_ASSERT(
-    sizeof(MojoExtractMessagePipeFromInvitationOptions) == 8,
+    sizeof(struct MojoExtractMessagePipeFromInvitationOptions) == 8,
     "MojoExtractMessagePipeFromInvitationOptions has wrong size");
 
 // Flags passed to |MojoSendInvitation()| via |MojoSendInvitationOptions|.
@@ -202,7 +202,7 @@ struct MOJO_ALIGNAS(8) MojoSendInvitationOptions {
   MOJO_POINTER_FIELD(const char*, isolated_connection_name);
   uint32_t isolated_connection_name_length;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoSendInvitationOptions) == 24,
+MOJO_STATIC_ASSERT(sizeof(struct MojoSendInvitationOptions) == 24,
                    "MojoSendInvitationOptions has wrong size");
 
 // Flags passed to |MojoAcceptInvitation()| via |MojoAcceptInvitationOptions|.
@@ -223,7 +223,7 @@ struct MOJO_ALIGNAS(8) MojoAcceptInvitationOptions {
   // See |MojoAcceptInvitationFlags|.
   MojoAcceptInvitationFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoAcceptInvitationOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoAcceptInvitationOptions) == 8,
                    "MojoAcceptInvitationOptions has wrong size");
 
 #ifdef __cplusplus

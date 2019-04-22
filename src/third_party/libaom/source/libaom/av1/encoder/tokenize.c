@@ -29,10 +29,9 @@
 
 static int cost_and_tokenize_map(Av1ColorMapParam *param, TOKENEXTRA **t,
                                  int plane, int calc_rate, int allow_update_cdf,
-                                 FRAME_COUNTS *counts) {
+                                 FRAME_COUNTS *counts, MapCdf map_pb_cdf) {
   const uint8_t *const color_map = param->color_map;
   MapCdf map_cdf = param->map_cdf;
-  MapCdf map_pb_cdf = param->map_pb_cdf;
   ColorCost color_cost = param->color_cost;
   const int plane_block_width = param->plane_width;
   const int rows = param->rows;
@@ -84,8 +83,6 @@ static void get_palette_params(const MACROBLOCK *const x, int plane,
   params->color_map = xd->plane[plane].color_index_map;
   params->map_cdf = plane ? xd->tile_ctx->palette_uv_color_index_cdf
                           : xd->tile_ctx->palette_y_color_index_cdf;
-  params->map_pb_cdf = plane ? x->tile_pb_ctx->palette_uv_color_index_cdf
-                             : x->tile_pb_ctx->palette_y_color_index_cdf;
   params->color_cost =
       plane ? &x->palette_uv_color_cost : &x->palette_y_color_cost;
   params->n_colors = pmi->palette_size[plane];
@@ -110,7 +107,10 @@ int av1_cost_color_map(const MACROBLOCK *const x, int plane, BLOCK_SIZE bsize,
   assert(plane == 0 || plane == 1);
   Av1ColorMapParam color_map_params;
   get_color_map_params(x, plane, bsize, tx_size, type, &color_map_params);
-  return cost_and_tokenize_map(&color_map_params, NULL, plane, 1, 0, NULL);
+  MapCdf map_pb_cdf = plane ? x->tile_pb_ctx->palette_uv_color_index_cdf
+                            : x->tile_pb_ctx->palette_y_color_index_cdf;
+  return cost_and_tokenize_map(&color_map_params, NULL, plane, 1, 0, NULL,
+                               map_pb_cdf);
 }
 
 void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
@@ -124,8 +124,10 @@ void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
   (*t)->token = color_map_params.color_map[0];
   (*t)->color_map_cdf = NULL;
   ++(*t);
+  MapCdf map_pb_cdf = plane ? x->tile_pb_ctx->palette_uv_color_index_cdf
+                            : x->tile_pb_ctx->palette_y_color_index_cdf;
   cost_and_tokenize_map(&color_map_params, t, plane, 0, allow_update_cdf,
-                        counts);
+                        counts, map_pb_cdf);
 }
 
 static void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,

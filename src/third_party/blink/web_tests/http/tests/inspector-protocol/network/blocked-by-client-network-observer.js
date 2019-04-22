@@ -7,15 +7,24 @@
   await dp.Network.setRequestInterception({
     patterns: [{ urlPattern: '*' }]
   });
+  const messagesByURL = new Map();
+  function addMessage(url, message) {
+    let messages = messagesByURL.get(url);
+    if (!messages) {
+      messages = [];
+      messagesByURL.set(url, messages);
+    }
+    messages.push(message);
+  }
   dp.Network.onRequestIntercepted(event => {
     const url = event.params.request.url;
     if (url.endsWith('page-with-subresource.html')) {
-      testRunner.log(`continuing to load ${url}`);
+      addMessage(url, '2 - continuing to load');
       dp.Network.continueInterceptedRequest({
         interceptionId: event.params.interceptionId,
       });
     } else {
-      testRunner.log(`blocking ${url}`);
+      addMessage(url, '2 - blocking');
       dp.Network.continueInterceptedRequest({
         interceptionId: event.params.interceptionId,
         errorReason: 'BlockedByClient'
@@ -28,10 +37,9 @@
   // continue.
   const urlByRequestId = new Map();
   dp.Network.onRequestWillBeSent(event => {
-    const requestId = event.params.requestId;
     const url = event.params.request.url;
-    testRunner.log(`request will be sent for ${url}`);
-    urlByRequestId.set(event.params.requestId, event.params.request.url);
+    addMessage(url, '1 - request will be sent');
+    urlByRequestId.set(event.params.requestId, url);
   });
 
   // Log the requests that are blocked, with the blockedReason indicating
@@ -39,7 +47,7 @@
   dp.Network.onLoadingFailed(event => {
     const url = urlByRequestId.get(event.params.requestId);
     const blockedReason = event.params.blockedReason;
-    testRunner.log(`loading failed for ${url}: blockedReason = ${blockedReason}`);
+    addMessage(url, `3 - loading failed, blockedReason = ${blockedReason}`);
   });
 
   await dp.Runtime.enable();
@@ -50,5 +58,10 @@
   // This page will not be blocked so it just passes through in the interception.
   // The resource exists, and references to-be-blocked.jpg, a subresource.
   await page.navigate('./resources/page-with-subresource.html');
+  for (const url of Array.from(messagesByURL.keys()).sort()) {
+    testRunner.log(url);
+    for (const message of messagesByURL.get(url).sort())
+      testRunner.log(` ${message}`);
+  }
   testRunner.completeTest();
 })

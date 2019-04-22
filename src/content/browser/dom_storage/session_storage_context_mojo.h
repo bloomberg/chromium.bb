@@ -104,7 +104,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
                      base::OnceClosure callback);
 
   // Ensure that no traces of data are left in the backing storage.
-  void PerformCleanup(base::OnceClosure callback);
+  void PerformStorageCleanup(base::OnceClosure callback);
 
   // Called when the owning BrowserContext is ending. Schedules the commit of
   // any unsaved changes then deletes this object. All data on disk (where there

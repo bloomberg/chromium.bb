@@ -7,16 +7,11 @@
 #include <unordered_map>
 #include <utility>
 
-#include "third_party/blink/public/platform/modules/indexeddb/indexed_db_key_builder.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_observation.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
-
-using blink::WebVector;
-using blink::WebIDBDatabaseCallbacks;
-using blink::WebIDBObservation;
+#include "third_party/blink/renderer/modules/indexeddb/idb_observation.h"
+#include "third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 
 namespace blink {
 
@@ -38,8 +33,7 @@ void IndexedDBDatabaseCallbacksImpl::VersionChange(int64_t old_version,
 void IndexedDBDatabaseCallbacksImpl::Abort(int64_t transaction_id,
                                            int32_t code,
                                            const String& message) {
-  callbacks_->OnAbort(transaction_id,
-                      blink::WebIDBDatabaseError(code, message));
+  callbacks_->OnAbort(transaction_id, IDBDatabaseError(code, message));
 }
 
 void IndexedDBDatabaseCallbacksImpl::Complete(int64_t transaction_id) {
@@ -48,21 +42,29 @@ void IndexedDBDatabaseCallbacksImpl::Complete(int64_t transaction_id) {
 
 void IndexedDBDatabaseCallbacksImpl::Changes(
     mojom::blink::IDBObserverChangesPtr changes) {
-  WebVector<WebIDBObservation> web_observations;
-  web_observations.reserve(changes->observations.size());
+  Vector<Persistent<IDBObservation>> observations;
+  observations.ReserveInitialCapacity(changes->observations.size());
   for (const auto& observation : changes->observations) {
-    web_observations.emplace_back(
-        observation->object_store_id, observation->type, observation->key_range,
-        IndexedDBCallbacksImpl::ConvertValue(observation->value));
+    IDBKeyRange* key_range = observation->key_range.To<IDBKeyRange*>();
+    std::unique_ptr<IDBValue> value;
+    if (observation->value.has_value())
+      value = std::move(observation->value.value());
+    if (!value || value->Data()->IsEmpty()) {
+      value = std::make_unique<IDBValue>(scoped_refptr<SharedBuffer>(),
+                                         Vector<WebBlobInfo>());
+    }
+    observations.emplace_back(MakeGarbageCollected<IDBObservation>(
+        observation->object_store_id, observation->type, key_range,
+        std::move(value)));
   }
 
-  std::unordered_map<int32_t, WebVector<int32_t>> observation_index_map;
+  std::unordered_map<int32_t, Vector<int32_t>> observation_index_map;
   for (const auto& observation_pair : changes->observation_index_map) {
     observation_index_map[observation_pair.key] =
-        WebVector<int32_t>(observation_pair.value);
+        Vector<int32_t>(observation_pair.value);
   }
 
-  std::unordered_map<int32_t, std::pair<int64_t, WebVector<int64_t>>>
+  std::unordered_map<int32_t, std::pair<int64_t, Vector<int64_t>>>
       observer_transactions;
   for (const auto& transaction_pair : changes->transaction_map) {
     // Moving an int64_t is rather silly. Sadly, std::make_pair's overloads
@@ -73,7 +75,7 @@ void IndexedDBDatabaseCallbacksImpl::Changes(
             std::move(transaction_pair.value->scope));
   }
 
-  callbacks_->OnChanges(observation_index_map, std::move(web_observations),
+  callbacks_->OnChanges(observation_index_map, std::move(observations),
                         observer_transactions);
 }
 

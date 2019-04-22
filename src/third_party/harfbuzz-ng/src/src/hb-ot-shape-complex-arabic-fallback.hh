@@ -66,8 +66,8 @@ arabic_fallback_synthesize_lookup_single (const hb_ot_shape_plan_t *plan HB_UNUS
 	u_glyph > 0xFFFFu || s_glyph > 0xFFFFu)
       continue;
 
-    glyphs[num_glyphs].set (u_glyph);
-    substitutes[num_glyphs].set (s_glyph);
+    glyphs[num_glyphs] = u_glyph;
+    substitutes[num_glyphs] = s_glyph;
 
     num_glyphs++;
   }
@@ -77,10 +77,10 @@ arabic_fallback_synthesize_lookup_single (const hb_ot_shape_plan_t *plan HB_UNUS
 
   /* Bubble-sort or something equally good!
    * May not be good-enough for presidential candidate interviews, but good-enough for us... */
-  hb_stable_sort (&glyphs[0], num_glyphs, (int(*)(const OT::GlyphID*, const OT::GlyphID *)) OT::GlyphID::cmp, &substitutes[0]);
+  hb_stable_sort (&glyphs[0], num_glyphs,
+		  (int(*)(const OT::HBUINT16*, const OT::HBUINT16 *)) OT::GlyphID::cmp,
+		  &substitutes[0]);
 
-  Supplier<OT::GlyphID> glyphs_supplier      (glyphs, num_glyphs);
-  Supplier<OT::GlyphID> substitutes_supplier (substitutes, num_glyphs);
 
   /* Each glyph takes four bytes max, and there's some overhead. */
   char buf[(SHAPING_TABLE_LAST - SHAPING_TABLE_FIRST + 1) * 4 + 128];
@@ -88,9 +88,8 @@ arabic_fallback_synthesize_lookup_single (const hb_ot_shape_plan_t *plan HB_UNUS
   OT::SubstLookup *lookup = c.start_serialize<OT::SubstLookup> ();
   bool ret = lookup->serialize_single (&c,
 				       OT::LookupFlag::IgnoreMarks,
-				       glyphs_supplier,
-				       substitutes_supplier,
-				       num_glyphs);
+				       hb_sorted_array (glyphs, num_glyphs),
+				       hb_array (substitutes, num_glyphs));
   c.end_serialize ();
   /* TODO sanitize the results? */
 
@@ -121,12 +120,14 @@ arabic_fallback_synthesize_lookup_ligature (const hb_ot_shape_plan_t *plan HB_UN
     hb_codepoint_t first_glyph;
     if (!hb_font_get_glyph (font, first_u, 0, &first_glyph))
       continue;
-    first_glyphs[num_first_glyphs].set (first_glyph);
+    first_glyphs[num_first_glyphs] = first_glyph;
     ligature_per_first_glyph_count_list[num_first_glyphs] = 0;
     first_glyphs_indirection[num_first_glyphs] = first_glyph_idx;
     num_first_glyphs++;
   }
-  hb_stable_sort (&first_glyphs[0], num_first_glyphs, (int(*)(const OT::GlyphID*, const OT::GlyphID *)) OT::GlyphID::cmp, &first_glyphs_indirection[0]);
+  hb_stable_sort (&first_glyphs[0], num_first_glyphs,
+		  (int(*)(const OT::HBUINT16*, const OT::HBUINT16 *)) OT::GlyphID::cmp,
+		  &first_glyphs_indirection[0]);
 
   /* Now that the first-glyphs are sorted, walk again, populate ligatures. */
   for (unsigned int i = 0; i < num_first_glyphs; i++)
@@ -145,9 +146,9 @@ arabic_fallback_synthesize_lookup_ligature (const hb_ot_shape_plan_t *plan HB_UN
 
       ligature_per_first_glyph_count_list[i]++;
 
-      ligature_list[num_ligatures].set (ligature_glyph);
+      ligature_list[num_ligatures] = ligature_glyph;
       component_count_list[num_ligatures] = 2;
-      component_list[num_ligatures].set (second_glyph);
+      component_list[num_ligatures] = second_glyph;
       num_ligatures++;
     }
   }
@@ -155,11 +156,6 @@ arabic_fallback_synthesize_lookup_ligature (const hb_ot_shape_plan_t *plan HB_UN
   if (!num_ligatures)
     return nullptr;
 
-  Supplier<OT::GlyphID>   first_glyphs_supplier                      (first_glyphs, num_first_glyphs);
-  Supplier<unsigned int > ligature_per_first_glyph_count_supplier    (ligature_per_first_glyph_count_list, num_first_glyphs);
-  Supplier<OT::GlyphID>   ligatures_supplier                         (ligature_list, num_ligatures);
-  Supplier<unsigned int > component_count_supplier                   (component_count_list, num_ligatures);
-  Supplier<OT::GlyphID>   component_supplier                         (component_list, num_ligatures);
 
   /* 16 bytes per ligature ought to be enough... */
   char buf[ARRAY_LENGTH_CONST (ligature_list) * 16 + 128];
@@ -167,12 +163,11 @@ arabic_fallback_synthesize_lookup_ligature (const hb_ot_shape_plan_t *plan HB_UN
   OT::SubstLookup *lookup = c.start_serialize<OT::SubstLookup> ();
   bool ret = lookup->serialize_ligature (&c,
 					 OT::LookupFlag::IgnoreMarks,
-					 first_glyphs_supplier,
-					 ligature_per_first_glyph_count_supplier,
-					 num_first_glyphs,
-					 ligatures_supplier,
-					 component_count_supplier,
-					 component_supplier);
+					 hb_sorted_array (first_glyphs, num_first_glyphs),
+					 hb_array (ligature_per_first_glyph_count_list, num_first_glyphs),
+					 hb_array (ligature_list, num_ligatures),
+					 hb_array (component_count_list, num_ligatures),
+					 hb_array (component_list, num_ligatures));
   c.end_serialize ();
   /* TODO sanitize the results? */
 

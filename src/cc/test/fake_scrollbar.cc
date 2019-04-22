@@ -54,6 +54,14 @@ int FakeScrollbar::ThumbThickness() const {
   return thumb_thickness_;
 }
 
+gfx::Rect FakeScrollbar::BackButtonRect() const {
+  return back_button_rect_;
+}
+
+gfx::Rect FakeScrollbar::ForwardButtonRect() const {
+  return forward_button_rect_;
+}
+
 int FakeScrollbar::ThumbLength() const {
   return thumb_length_;
 }

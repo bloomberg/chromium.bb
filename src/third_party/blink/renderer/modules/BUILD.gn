@@ -2,14 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/split_static_library.gni")
 import("//build/config/chromecast_build.gni")
+import("//build/split_static_library.gni")
 import("//third_party/blink/renderer/bindings/bindings.gni")
 import("//third_party/blink/renderer/bindings/modules/v8/generated.gni")
 import("//third_party/blink/renderer/bindings/modules/v8/v8.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/modules/modules.gni")
 import("//third_party/blink/renderer/modules/modules_idl_files.gni")
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
 
 visibility = [ "//third_party/blink/renderer/*" ]
 
@@ -25,13 +29,10 @@ if (!is_component_build && is_win) {
 
 config("modules_implementation") {
   defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
+}
 
-  if (is_chromecast) {
-    defines += [
-      "BLINK_MSLOG=LOG(INFO)",
-      "BLINK_SBLOG=LOG(INFO)",
-    ]
-  }
+config("notouch_config") {
+  defines = [ "TOUCHLESS_MEDIA_CONTROLS" ]
 }
 
 make_names("module_names") {
@@ -80,14 +81,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//tools/v8_context_snapshot:use_v8_context_snapshot",
   ]
 
-  deps = [
-    ":make_modules_generated",
-    ":module_names",
-    "//net:net",
-    "//third_party/blink/renderer/bindings/modules:generated",
-    "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_impl",
-    "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_origin_trial_features",
-    "//third_party/blink/renderer/core",
+  sub_modules = [
     "//third_party/blink/renderer/modules/accessibility",
     "//third_party/blink/renderer/modules/animationworklet",
     "//third_party/blink/renderer/modules/app_banner",
@@ -117,6 +111,8 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/filesystem",
     "//third_party/blink/renderer/modules/gamepad",
     "//third_party/blink/renderer/modules/geolocation",
+    "//third_party/blink/renderer/modules/hid",
+    "//third_party/blink/renderer/modules/idle",
     "//third_party/blink/renderer/modules/imagecapture",
     "//third_party/blink/renderer/modules/indexeddb",
     "//third_party/blink/renderer/modules/installation",
@@ -146,7 +142,6 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/remoteplayback",
     "//third_party/blink/renderer/modules/screen_orientation",
     "//third_party/blink/renderer/modules/sensor",
-    "//third_party/blink/renderer/modules/serial",
     "//third_party/blink/renderer/modules/service_worker",
     "//third_party/blink/renderer/modules/shapedetection",
     "//third_party/blink/renderer/modules/speech",
@@ -166,6 +161,16 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/webusb",
     "//third_party/blink/renderer/modules/worklet",
     "//third_party/blink/renderer/modules/xr",
+  ]
+
+  deps = [
+    ":make_modules_generated",
+    ":module_names",
+    "//net:net",
+    "//third_party/blink/renderer/bindings/modules:generated",
+    "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_impl",
+    "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_origin_trial_features",
+    "//third_party/blink/renderer/core",
     "//third_party/icu",
     "//third_party/webrtc/pc:libjingle_peerconnection",
     "//third_party/webrtc/rtc_base:rtc_base",
@@ -173,12 +178,23 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/zlib",
   ]
 
+  public_deps = sub_modules
+  allow_circular_includes_from = sub_modules
+
+  if (!is_android) {
+    deps += [ "//third_party/blink/renderer/modules/serial" ]
+  }
+
   if (is_win) {
     cflags = [ "/wd4334" ]  # Result of 32-bit shift implicitly converted to 64 bits.
   }
 
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += blink_symbols_config
+
+  if (is_android && notouch_build) {
+    configs += [ ":notouch_config" ]
+  }
 }
 
 jumbo_source_set("modules_testing") {
@@ -189,10 +205,8 @@ jumbo_source_set("modules_testing") {
     "accessibility/testing/internals_accessibility.h",
     "mediastream/testing/internals_media_stream.cc",
     "mediastream/testing/internals_media_stream.h",
-    "navigatorcontentutils/testing/internals_navigator_content_utils.cc",
-    "navigatorcontentutils/testing/internals_navigator_content_utils.h",
-    "navigatorcontentutils/testing/navigator_content_utils_client_mock.cc",
-    "navigatorcontentutils/testing/navigator_content_utils_client_mock.h",
+    "netinfo/testing/internals_net_info.cc",
+    "netinfo/testing/internals_net_info.h",
     "peerconnection/adapters/test/mock_ice_transport_adapter.h",
     "peerconnection/adapters/test/mock_ice_transport_adapter_cross_thread_factory.h",
     "peerconnection/adapters/test/mock_p2p_quic_packet_transport.h",
@@ -252,6 +266,7 @@ jumbo_source_set("unit_tests") {
     "accessibility/testing/accessibility_test.cc",
     "accessibility/testing/accessibility_test.h",
     "animationworklet/animation_worklet_global_scope_test.cc",
+    "animationworklet/animation_worklet_proxy_client_test.cc",
     "animationworklet/worklet_animation_test.cc",
     "background_fetch/background_fetch_icon_loader_test.cc",
     "background_fetch/background_fetch_manager_test.cc",
@@ -264,6 +279,7 @@ jumbo_source_set("unit_tests") {
     "credentialmanager/password_credential_test.cc",
     "csspaint/paint_rendering_context_2d_test.cc",
     "csspaint/paint_worklet_global_scope_test.cc",
+    "csspaint/paint_worklet_proxy_client_test.cc",
     "csspaint/paint_worklet_test.cc",
     "device_orientation/device_motion_event_pump_unittest.cc",
     "device_orientation/device_orientation_event_pump_unittest.cc",
@@ -277,15 +293,19 @@ jumbo_source_set("unit_tests") {
     "indexeddb/idb_test_helper.cc",
     "indexeddb/idb_transaction_test.cc",
     "indexeddb/idb_value_wrapping_test.cc",
+    "indexeddb/indexed_db_blink_mojom_traits_test.cc",
     "indexeddb/mock_web_idb_callbacks.cc",
     "indexeddb/mock_web_idb_callbacks.h",
     "indexeddb/mock_web_idb_database.cc",
     "indexeddb/mock_web_idb_database.h",
     "indexeddb/mock_web_idb_factory.cc",
     "indexeddb/mock_web_idb_factory.h",
+    "indexeddb/mock_web_idb_transaction.cc",
+    "indexeddb/mock_web_idb_transaction.h",
     "indexeddb/web_idb_cursor_impl_unittest.cc",
-    "indexeddb/web_idb_database_impl_unittest.cc",
+    "indexeddb/web_idb_transaction_impl_unittest.cc",
     "manifest/image_resource_type_converters_test.cc",
+    "manifest/manifest_parser_unittest.cc",
     "media_controls/elements/media_control_animated_arrow_container_element_test.cc",
     "media_controls/elements/media_control_display_cutout_fullscreen_button_element_test.cc",
     "media_controls/elements/media_control_input_element_test.cc",
@@ -300,12 +320,17 @@ jumbo_source_set("unit_tests") {
     "media_controls/media_controls_rotate_to_fullscreen_delegate_test.cc",
     "mediastream/media_constraints_test.cc",
     "mediastream/media_devices_test.cc",
+    "mediastream/media_stream_video_capturer_source_test.cc",
+    "mediastream/mock_mojo_media_stream_dispatcher_host.cc",
+    "mediastream/mock_mojo_media_stream_dispatcher_host.h",
+    "mediastream/video_track_adapter_unittest.cc",
     "notifications/notification_data_test.cc",
     "notifications/notification_image_loader_test.cc",
     "notifications/notification_resources_loader_test.cc",
     "payments/abort_test.cc",
     "payments/can_make_payment_test.cc",
     "payments/complete_test.cc",
+    "payments/merchant_validation_event_test.cc",
     "payments/on_payment_response_test.cc",
     "payments/payment_address_test.cc",
     "payments/payment_event_data_conversion_test.cc",
@@ -318,6 +343,7 @@ jumbo_source_set("unit_tests") {
     "payments/payments_validators_test.cc",
     "peerconnection/adapters/p2p_quic_stream_unittest.cc",
     "peerconnection/adapters/p2p_quic_transport_test.cc",
+    "peerconnection/adapters/quic_packet_transport_adapter_test.cc",
     "peerconnection/byte_buffer_queue_test.cc",
     "peerconnection/call_setup_state_tracker_unittest.cc",
     "peerconnection/rtc_data_channel_test.cc",
@@ -327,7 +353,8 @@ jumbo_source_set("unit_tests") {
     "peerconnection/rtc_quic_stream_test.cc",
     "peerconnection/rtc_quic_transport_test.cc",
     "peerconnection/rtc_quic_transport_test.h",
-    "picture_in_picture/html_video_element_picture_in_picture_test.cc",
+    "peerconnection/rtc_sctp_transport_test.cc",
+    "picture_in_picture/picture_in_picture_controller_test.cc",
     "presentation/mock_presentation_service.h",
     "presentation/presentation_availability_state_test.cc",
     "presentation/presentation_availability_test.cc",
@@ -346,6 +373,7 @@ jumbo_source_set("unit_tests") {
     "webaudio/audio_basic_processor_handler_test.cc",
     "webaudio/audio_context_autoplay_test.cc",
     "webaudio/audio_context_test.cc",
+    "webaudio/audio_node_input_test.cc",
     "webaudio/audio_worklet_global_scope_test.cc",
     "webaudio/audio_worklet_thread_test.cc",
     "webaudio/convolver_node_test.cc",
@@ -353,10 +381,21 @@ jumbo_source_set("unit_tests") {
     "webaudio/script_processor_node_test.cc",
     "webaudio/stereo_panner_node_test.cc",
     "webdatabase/quota_tracker_test.cc",
+    "webshare/navigator_share_test.cc",
     "websockets/dom_websocket_test.cc",
     "websockets/websocket_channel_impl_test.cc",
     "worklet/animation_and_paint_worklet_thread_test.cc",
+    "worklet/worklet_thread_test_common.cc",
+    "worklet/worklet_thread_test_common.h",
+    "xr/xr_rigid_transform_test.cc",
+    "xr/xr_test_utils.cc",
+    "xr/xr_view_test.cc",
   ]
+
+  if (is_android && notouch_build) {
+    sources +=
+        [ "media_controls/touchless/media_controls_touchless_impl_test.cc" ]
+  }
 
   configs += [
     "//third_party/blink/renderer:config",
@@ -373,8 +412,8 @@ jumbo_source_set("unit_tests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/blink/public:media_devices_mojo_bindings_blink",
     "//third_party/blink/renderer/core",
+    "//third_party/blink/renderer/modules/gamepad:unit_tests",
     "//third_party/blink/renderer/modules/storage:unit_tests",
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",

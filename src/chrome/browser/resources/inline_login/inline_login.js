@@ -13,17 +13,17 @@ cr.define('inline.login', function() {
    * The auth extension host instance.
    * @type {cr.login.GaiaAuthHost}
    */
-  var authExtHost;
+  let authExtHost;
 
   /**
    * Whether the auth ready event has been fired, for testing purpose.
    */
-  var authReadyFired;
+  let authReadyFired;
 
   /**
    * Whether the login UI is loaded for signing in primary account.
    */
-  var isLoginPrimaryAccount;
+  let isLoginPrimaryAccount;
 
   function onResize(e) {
     chrome.send('switchToFullTab', [e.detail]);
@@ -32,8 +32,9 @@ cr.define('inline.login', function() {
   function onAuthReady(e) {
     $('contents').classList.toggle('loading', false);
     authReadyFired = true;
-    if (isLoginPrimaryAccount)
+    if (isLoginPrimaryAccount) {
       chrome.send('metricsHandler:recordAction', ['Signin_SigninPage_Shown']);
+    }
   }
 
   function onDropLink(e) {
@@ -55,6 +56,10 @@ cr.define('inline.login', function() {
     $('contents').classList.toggle('loading', true);
   }
 
+  function onShowIncognito() {
+    chrome.send('showIncognito');
+  }
+
   /**
    * Initialize the UI.
    */
@@ -66,6 +71,7 @@ cr.define('inline.login', function() {
     authExtHost.addEventListener('newWindow', onNewWindow);
     authExtHost.addEventListener('resize', onResize);
     authExtHost.addEventListener('authCompleted', onAuthCompleted);
+    authExtHost.addEventListener('showIncognito', onShowIncognito);
     chrome.send('initialize');
   }
 
@@ -128,7 +134,7 @@ cr.define('inline.login', function() {
   }
 
   function showBackButton() {
-    $('navigation-button').icon =
+    $('navigation-button').ironIcon =
         isRTL() ? 'cr:arrow-forward' : 'cr:arrow-back';
 
     $('navigation-button')
@@ -137,7 +143,7 @@ cr.define('inline.login', function() {
   }
 
   function showCloseButton() {
-    $('navigation-button').icon = 'cr:close';
+    $('navigation-button').ironIcon = 'cr:close';
     $('navigation-button').classList.add('enabled');
     $('navigation-button')
         .setAttribute(

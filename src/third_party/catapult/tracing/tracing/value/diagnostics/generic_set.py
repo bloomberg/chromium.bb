@@ -7,13 +7,14 @@ import json
 from tracing.value.diagnostics import diagnostic
 
 
-# TODO(#4143): Make this comment a docstring.
-# A GenericSet diagnostic can contain any Plain-Ol'-Data objects that can be
-# serialized using json.dumps(): None, boolean, number, string, list, dict.
-# Dicts, lists, and booleans are deduplicated by their JSON representation.
-# Dicts and lists are not hashable.
-# (1 == True) and (0 == False) in Python, but not in JSON.
 class GenericSet(diagnostic.Diagnostic):
+  """Contains any Plain-Ol'-Data objects.
+
+  Contents are serialized using json.dumps(): None, boolean, number, string,
+  list, dict. Dicts, lists, and booleans are deduplicated by their JSON
+  representation. Dicts and lists are not hashable.  (1 == True) and (0 ==
+  False) in Python, but not in JSON.
+  """
   __slots__ = '_values', '_comparable_set'
 
   def __init__(self, values):
@@ -21,6 +22,9 @@ class GenericSet(diagnostic.Diagnostic):
 
     self._values = list(values)
     self._comparable_set = None
+
+  def __contains__(self, value):
+    return value in self._values
 
   def __iter__(self):
     for value in self._values:
@@ -69,8 +73,19 @@ class GenericSet(diagnostic.Diagnostic):
         self._values.append(value)
         self._comparable_set.add(value)
 
+  def Serialize(self, serializer):
+    if len(self) == 1:
+      return serializer.GetOrAllocateId(self._values[0])
+    return [serializer.GetOrAllocateId(v) for v in self]
+
   def _AsDictInto(self, dct):
     dct['values'] = list(self)
+
+  @staticmethod
+  def Deserialize(data, deserializer):
+    if not isinstance(data, list):
+      data = [data]
+    return GenericSet([deserializer.GetObject(i) for i in data])
 
   @staticmethod
   def FromDict(dct):

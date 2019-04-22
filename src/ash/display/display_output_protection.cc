@@ -24,11 +24,13 @@ class DisplayOutputProtection::BindingContext {
     display_configurator_->UnregisterContentProtectionClient(client_id_);
   }
 
-  uint64_t client_id() const { return client_id_; }
+  DisplayConfigurator::ContentProtectionClientId client_id() const {
+    return client_id_;
+  }
 
  private:
-  display::DisplayConfigurator* const display_configurator_;
-  const uint64_t client_id_;
+  DisplayConfigurator* const display_configurator_;
+  const DisplayConfigurator::ContentProtectionClientId client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BindingContext);
 };
@@ -49,7 +51,7 @@ void DisplayOutputProtection::BindRequest(
 void DisplayOutputProtection::QueryContentProtectionStatus(
     int64_t display_id,
     QueryContentProtectionStatusCallback callback) {
-  display_configurator_->QueryContentProtectionStatus(
+  display_configurator_->QueryContentProtection(
       bindings_.dispatch_context()->client_id(), display_id,
       std::move(callback));
 }
@@ -58,7 +60,7 @@ void DisplayOutputProtection::SetContentProtection(
     int64_t display_id,
     uint32_t desired_method_mask,
     SetContentProtectionCallback callback) {
-  display_configurator_->SetContentProtection(
+  display_configurator_->ApplyContentProtection(
       bindings_.dispatch_context()->client_id(), display_id,
       desired_method_mask, std::move(callback));
 }

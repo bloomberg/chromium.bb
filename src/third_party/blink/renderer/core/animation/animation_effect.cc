@@ -180,20 +180,44 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
   double time_to_next_iteration = std::numeric_limits<double>::infinity();
   if (needs_update) {
     const double active_duration = RepeatedDuration();
+    // TODO(yigu): Direction of WorkletAnimation is always forwards based on
+    // the calculation. Need to unify the logic to handle it correctly.
+    // https://crbug.com/896249.
+    const AnimationDirection direction =
+        (GetAnimation() && GetAnimation()->playbackRate() < 0) ? kBackwards
+                                                               : kForwards;
 
     const Phase current_phase =
-        CalculatePhase(active_duration, local_time, timing_);
-    // FIXME: parentPhase depends on groups being implemented.
-    const AnimationEffect::Phase kParentPhase = AnimationEffect::kPhaseActive;
+        CalculatePhase(active_duration, local_time, direction, timing_);
     const double active_time = CalculateActiveTime(
         active_duration,
         ResolvedFillMode(timing_.fill_mode, IsKeyframeEffect()), local_time,
-        kParentPhase, current_phase, timing_);
+        current_phase, timing_);
 
-    double current_iteration;
     base::Optional<double> progress;
-    if (!IterationDuration().is_zero()) {
-      const double iteration_duration = IterationDuration().InSecondsF();
+    const double iteration_duration = IterationDuration().InSecondsF();
+
+    const double overall_progress = CalculateOverallProgress(
+        current_phase, active_time, iteration_duration, timing_.iteration_count,
+        timing_.iteration_start);
+    const double simple_iteration_progress = CalculateSimpleIterationProgress(
+        current_phase, overall_progress, timing_.iteration_start, active_time,
+        active_duration, timing_.iteration_count);
+    const double current_iteration = CalculateCurrentIteration(
+        current_phase, active_time, timing_.iteration_count, overall_progress,
+        simple_iteration_progress);
+
+    const double directed_progress = CalculateDirectedProgress(
+        simple_iteration_progress, current_iteration, timing_.direction);
+    progress = CalculateTransformedProgress(
+        directed_progress, iteration_duration, timing_.timing_function);
+    if (IsNull(progress.value())) {
+      progress.reset();
+    }
+
+    // Conditionally compute the time to next iteration, which is only
+    // applicable if the iteration duration is non-zero.
+    if (iteration_duration) {
       const double start_offset = MultiplyZeroAlwaysGivesZero(
           timing_.iteration_start, iteration_duration);
       DCHECK_GE(start_offset, 0);
@@ -202,60 +226,24 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
       const double iteration_time = CalculateIterationTime(
           iteration_duration, active_duration, offset_active_time, start_offset,
           current_phase, timing_);
-
-      current_iteration = CalculateCurrentIteration(
-          iteration_duration, iteration_time, offset_active_time, timing_);
-      const base::Optional<double> transformed_time = CalculateTransformedTime(
-          current_iteration, iteration_duration, iteration_time, timing_);
-
-      // The infinite iterationDuration case here is a workaround because
-      // the specified behaviour does not handle infinite durations well.
-      // There is an open issue against the spec to fix this:
-      // https://github.com/w3c/web-animations/issues/142
-      if (!std::isfinite(iteration_duration))
-        progress = fmod(timing_.iteration_start, 1.0);
-      else if (transformed_time)
-        progress = transformed_time.value() / iteration_duration;
-
       if (!IsNull(iteration_time)) {
         time_to_next_iteration = iteration_duration - iteration_time;
         if (active_duration - active_time < time_to_next_iteration)
           time_to_next_iteration = std::numeric_limits<double>::infinity();
       }
-    } else {
-      const double kLocalIterationDuration = 1;
-      const double local_active_duration =
-          kLocalIterationDuration * timing_.iteration_count;
-      DCHECK_GE(local_active_duration, 0);
-      const double local_local_time =
-          local_time < timing_.start_delay
-              ? local_time
-              : local_active_duration + timing_.start_delay;
-      const AnimationEffect::Phase local_current_phase =
-          CalculatePhase(local_active_duration, local_local_time, timing_);
-      const double local_active_time = CalculateActiveTime(
-          local_active_duration,
-          ResolvedFillMode(timing_.fill_mode, IsKeyframeEffect()),
-          local_local_time, kParentPhase, local_current_phase, timing_);
-      const double start_offset =
-          timing_.iteration_start * kLocalIterationDuration;
-      DCHECK_GE(start_offset, 0);
-      const double offset_active_time = CalculateOffsetActiveTime(
-          local_active_duration, local_active_time, start_offset);
-      const double iteration_time = CalculateIterationTime(
-          kLocalIterationDuration, local_active_duration, offset_active_time,
-          start_offset, current_phase, timing_);
-
-      current_iteration = CalculateCurrentIteration(
-          kLocalIterationDuration, iteration_time, offset_active_time, timing_);
-      progress = CalculateTransformedTime(
-          current_iteration, kLocalIterationDuration, iteration_time, timing_);
     }
+
+    const bool was_canceled = current_phase != calculated_.phase &&
+                              current_phase == AnimationEffect::kPhaseNone;
+    calculated_.phase = current_phase;
+    // If the animation was canceled, we need to fire the event condition before
+    // updating the timing so that the cancelation time can be determined.
+    if (was_canceled && event_delegate_)
+      event_delegate_->OnEventCondition(*this);
 
     calculated_.current_iteration = current_iteration;
     calculated_.progress = progress;
 
-    calculated_.phase = current_phase;
     calculated_.is_in_effect = !IsNull(active_time);
     calculated_.is_in_play = GetPhase() == kPhaseActive;
     calculated_.is_current = GetPhase() == kPhaseBefore || IsInPlay();

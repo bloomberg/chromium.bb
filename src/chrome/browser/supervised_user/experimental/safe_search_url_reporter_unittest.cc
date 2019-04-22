@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -32,11 +33,11 @@ class SafeSearchURLReporterTest : public testing::Test {
       : test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {
-    AccountInfo account_info = identity_test_env_.MakeAccountAvailable(kEmail);
+    AccountInfo account_info =
+        identity_test_env_.MakePrimaryAccountAvailable(kEmail);
     account_id_ = account_info.account_id;
     report_url_ = std::make_unique<SafeSearchURLReporter>(
-        identity_test_env_.identity_manager(), account_id_,
-        test_shared_loader_factory_);
+        identity_test_env_.identity_manager(), test_shared_loader_factory_);
   }
 
  protected:

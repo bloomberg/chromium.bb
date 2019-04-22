@@ -48,10 +48,8 @@ class SyncCycleContext {
                    DebugInfoGetter* debug_info_getter,
                    ModelTypeRegistry* model_type_registry,
                    bool keystore_encryption_enabled,
-                   bool client_enabled_pre_commit_update_avoidance,
                    const std::string& invalidator_client_id,
-                   base::TimeDelta short_poll_interval,
-                   base::TimeDelta long_poll_interval);
+                   base::TimeDelta poll_interval);
 
   ~SyncCycleContext();
 
@@ -103,13 +101,8 @@ class SyncCycleContext {
     return invalidator_client_id_;
   }
 
-  bool ShouldFetchUpdatesBeforeCommit() const {
-    return !(server_enabled_pre_commit_update_avoidance_ ||
-             client_enabled_pre_commit_update_avoidance_);
-  }
-
-  void set_server_enabled_pre_commit_update_avoidance(bool value) {
-    server_enabled_pre_commit_update_avoidance_ = value;
+  void set_invalidator_client_id(const std::string& id) {
+    invalidator_client_id_ = id;
   }
 
   ModelTypeRegistry* model_type_registry() { return model_type_registry_; }
@@ -124,16 +117,10 @@ class SyncCycleContext {
 
   void set_cookie_jar_empty(bool empty_jar) { cookie_jar_empty_ = empty_jar; }
 
-  base::TimeDelta short_poll_interval() const { return short_poll_interval_; }
-  void set_short_poll_interval(base::TimeDelta interval) {
+  base::TimeDelta poll_interval() const { return poll_interval_; }
+  void set_poll_interval(base::TimeDelta interval) {
     DCHECK(!interval.is_zero());
-    short_poll_interval_ = interval;
-  }
-
-  base::TimeDelta long_poll_interval() const { return long_poll_interval_; }
-  void set_long_poll_interval(base::TimeDelta interval) {
-    DCHECK(!interval.is_zero());
-    long_poll_interval_ = interval;
+    poll_interval_ = interval;
   }
 
  private:
@@ -174,16 +161,7 @@ class SyncCycleContext {
   // register itself with the invalidations server during startup.  We need to
   // provide this to the sync server when we make changes to enable it to
   // prevent us from receiving notifications of changes we make ourselves.
-  const std::string invalidator_client_id_;
-
-  // Flag to enable or disable the no pre-commit GetUpdates experiment.  When
-  // this flag is set to false, the syncer has the option of not performing at
-  // GetUpdates request when there is nothing to fetch.
-  bool server_enabled_pre_commit_update_avoidance_;
-
-  // If true, indicates that we've been passed a command-line flag to force
-  // enable the pre-commit update avoidance experiment described above.
-  const bool client_enabled_pre_commit_update_avoidance_;
+  std::string invalidator_client_id_;
 
   // Whether the account(s) present in the content area's cookie jar match the
   // chrome account. If multiple accounts are present in the cookie jar, a
@@ -193,8 +171,7 @@ class SyncCycleContext {
   // If there's a cookie jar mismatch, whether the cookie jar was empty or not.
   bool cookie_jar_empty_;
 
-  base::TimeDelta short_poll_interval_;
-  base::TimeDelta long_poll_interval_;
+  base::TimeDelta poll_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncCycleContext);
 };

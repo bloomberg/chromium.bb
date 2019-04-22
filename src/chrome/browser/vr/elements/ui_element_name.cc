@@ -5,7 +5,7 @@
 #include "chrome/browser/vr/elements/ui_element_name.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace vr {
 
@@ -147,10 +147,15 @@ static const char* g_ui_element_name_strings[] = {
     "kControllerBatteryDot4",
     "kContentRepositionHitPlane",
     "kContentRepositionVisibilityToggle",
+    "kWebXrExternalPromptNotification",
+    "kUsbConnectedIndicator",
+    "kWebXrUsbConnectedIndicator",
+    "kMidiConnectedIndicator",
+    "kWebXrMidiConnectedIndicator",
 };
 
 static_assert(
-    kNumUiElementNames == arraysize(g_ui_element_name_strings),
+    kNumUiElementNames == base::size(g_ui_element_name_strings),
     "Mismatch between the kUiElementName enum and the corresponding array "
     "of strings.");
 

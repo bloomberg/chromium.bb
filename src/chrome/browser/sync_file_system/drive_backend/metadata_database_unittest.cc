@@ -12,10 +12,11 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
@@ -204,7 +205,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
 
  protected:
   std::string GenerateFileID() {
-    return "file_id_" + base::Int64ToString(next_file_id_number_++);
+    return "file_id_" + base::NumberToString(next_file_id_number_++);
   }
 
   int64_t GetTrackerIDByFileID(const std::string& file_id) {
@@ -286,7 +287,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
 
     std::unique_ptr<LevelDBWrapper> wrapper(new LevelDBWrapper(std::move(db)));
 
-    wrapper->Put(kDatabaseVersionKey, base::Int64ToString(3));
+    wrapper->Put(kDatabaseVersionKey, base::NumberToString(3));
     SetUpServiceMetadata(wrapper.get());
 
     return wrapper;
@@ -319,8 +320,8 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
     details->add_parent_folder_ids(parent.file_id());
     details->set_title(title);
     details->set_file_kind(FILE_KIND_FILE);
-    details->set_md5(
-        "md5_value_" + base::Int64ToString(next_md5_sequence_number_++));
+    details->set_md5("md5_value_" +
+                     base::NumberToString(next_md5_sequence_number_++));
     details->set_change_id(current_change_id_);
     return file;
   }
@@ -457,8 +458,8 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
 
   void ApplyContentChangeToMetadata(FileMetadata* file) {
     FileDetails* details = file->mutable_details();
-    details->set_md5(
-        "md5_value_" + base::Int64ToString(next_md5_sequence_number_++));
+    details->set_md5("md5_value_" +
+                     base::NumberToString(next_md5_sequence_number_++));
     details->set_change_id(++current_change_id_);
   }
 
@@ -569,7 +570,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
         tracker.tracker_id(), &tracker_in_metadata_database));
 
     SCOPED_TRACE("Expect equivalent tracker[" +
-                 base::Int64ToString(tracker.tracker_id()) + "]");
+                 base::NumberToString(tracker.tracker_id()) + "]");
     ExpectEquivalent(&tracker, &tracker_in_metadata_database);
   }
 
@@ -624,7 +625,7 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
 
  private:
   base::ScopedTempDir database_dir_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<leveldb::Env> in_memory_env_;
   std::unique_ptr<MetadataDatabase> metadata_database_;
@@ -637,9 +638,9 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(MetadataDatabaseTest);
 };
 
-INSTANTIATE_TEST_CASE_P(MetadataDatabaseTestWithIndexesOnDisk,
-                        MetadataDatabaseTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(MetadataDatabaseTestWithIndexesOnDisk,
+                         MetadataDatabaseTest,
+                         ::testing::Values(true, false));
 
 TEST_P(MetadataDatabaseTest, InitializationTest_Empty) {
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
@@ -673,11 +674,11 @@ TEST_P(MetadataDatabaseTest, InitializationTest_SimpleTree) {
     &sync_root, &app_root, &file, &folder, &file_in_folder, &orphaned_file
   };
 
-  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  SetUpDatabaseByTrackedFiles(tracked_files, base::size(tracked_files));
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
 
   orphaned_file.should_be_absent = true;
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
 }
 
 TEST_P(MetadataDatabaseTest, AppManagementTest) {
@@ -693,9 +694,9 @@ TEST_P(MetadataDatabaseTest, AppManagementTest) {
   const TrackedFile* tracked_files[] = {
     &sync_root, &app_root, &file, &folder,
   };
-  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  SetUpDatabaseByTrackedFiles(tracked_files, base::size(tracked_files));
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
 
   folder.tracker.set_app_id("foo");
   EXPECT_EQ(SYNC_STATUS_OK, RegisterApp(
@@ -910,7 +911,7 @@ TEST_P(MetadataDatabaseTest, UpdateByChangeListTest) {
     &new_file,
   };
 
-  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  SetUpDatabaseByTrackedFiles(tracked_files, base::size(tracked_files));
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
 
   ApplyRenameChangeToMetadata("renamed", &renamed_file.metadata);
@@ -947,7 +948,7 @@ TEST_P(MetadataDatabaseTest, UpdateByChangeListTest) {
 
   new_file.should_be_absent = false;
 
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
   VerifyReloadConsistency();
 }
 
@@ -969,9 +970,9 @@ TEST_P(MetadataDatabaseTest, PopulateFolderTest_RegularFolder) {
     &sync_root, &app_root, &folder_to_populate, &known_file, &new_file
   };
 
-  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  SetUpDatabaseByTrackedFiles(tracked_files, base::size(tracked_files));
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
 
   FileIDList listed_children;
   listed_children.push_back(known_file.metadata.file_id());
@@ -989,7 +990,7 @@ TEST_P(MetadataDatabaseTest, PopulateFolderTest_RegularFolder) {
   new_file.tracker.clear_synced_details();
   new_file.should_be_absent = false;
   new_file.tracker_only = true;
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
   VerifyReloadConsistency();
 }
 
@@ -1009,9 +1010,9 @@ TEST_P(MetadataDatabaseTest, PopulateFolderTest_InactiveFolder) {
     &sync_root, &app_root, &inactive_folder, &new_file,
   };
 
-  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  SetUpDatabaseByTrackedFiles(tracked_files, base::size(tracked_files));
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
 
   FileIDList listed_children;
   listed_children.push_back(new_file.metadata.file_id());
@@ -1019,7 +1020,7 @@ TEST_P(MetadataDatabaseTest, PopulateFolderTest_InactiveFolder) {
   EXPECT_EQ(SYNC_STATUS_OK,
             PopulateFolder(inactive_folder.metadata.file_id(),
                            listed_children));
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
   VerifyReloadConsistency();
 }
 
@@ -1038,9 +1039,9 @@ TEST_P(MetadataDatabaseTest, PopulateFolderTest_DisabledAppRoot) {
     &sync_root, &disabled_app_root, &disabled_app_root, &known_file, &file,
   };
 
-  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  SetUpDatabaseByTrackedFiles(tracked_files, base::size(tracked_files));
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
 
   FileIDList disabled_app_children;
   disabled_app_children.push_back(file.metadata.file_id());
@@ -1055,7 +1056,7 @@ TEST_P(MetadataDatabaseTest, PopulateFolderTest_DisabledAppRoot) {
 
   disabled_app_root.tracker.set_dirty(false);
   disabled_app_root.tracker.set_needs_folder_listing(false);
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
   VerifyReloadConsistency();
 }
 
@@ -1081,15 +1082,15 @@ TEST_P(MetadataDatabaseTest, DISABLED_UpdateTrackerTest) {
     &sync_root, &app_root, &file, &inactive_file, &new_conflict
   };
 
-  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  SetUpDatabaseByTrackedFiles(tracked_files, base::size(tracked_files));
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
   VerifyReloadConsistency();
 
   *file.tracker.mutable_synced_details() = file.metadata.details();
   file.tracker.set_dirty(false);
   EXPECT_EQ(SYNC_STATUS_OK, UpdateTracker(file.tracker));
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
   VerifyReloadConsistency();
 
   *inactive_file.tracker.mutable_synced_details() =
@@ -1097,7 +1098,7 @@ TEST_P(MetadataDatabaseTest, DISABLED_UpdateTrackerTest) {
   inactive_file.tracker.set_dirty(false);
   inactive_file.tracker.set_active(true);
   EXPECT_EQ(SYNC_STATUS_OK, UpdateTracker(inactive_file.tracker));
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
   VerifyReloadConsistency();
 
   *new_conflict.tracker.mutable_synced_details() =
@@ -1107,7 +1108,7 @@ TEST_P(MetadataDatabaseTest, DISABLED_UpdateTrackerTest) {
   file.tracker.set_dirty(true);
   file.tracker.set_active(false);
   EXPECT_EQ(SYNC_STATUS_OK, UpdateTracker(new_conflict.tracker));
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
   VerifyReloadConsistency();
 }
 
@@ -1138,7 +1139,7 @@ TEST_P(MetadataDatabaseTest, PopulateInitialDataTest) {
   ResetTrackerID(&app_root.tracker);
   app_root.tracker.set_parent_tracker_id(sync_root.tracker.tracker_id());
 
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
   VerifyReloadConsistency();
 }
 
@@ -1154,9 +1155,9 @@ TEST_P(MetadataDatabaseTest, DumpFiles) {
     &sync_root, &app_root, &folder_0, &file_0
   };
 
-  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  SetUpDatabaseByTrackedFiles(tracked_files, base::size(tracked_files));
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
-  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+  VerifyTrackedFiles(tracked_files, base::size(tracked_files));
 
   std::unique_ptr<base::ListValue> files =
       metadata_database()->DumpFiles(app_root.tracker.app_id());

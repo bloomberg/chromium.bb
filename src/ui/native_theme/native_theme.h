@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/native_theme/caption_style.h"
 #include "ui/native_theme/native_theme_export.h"
 
 namespace gfx {
@@ -295,6 +296,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     // Dialogs
     kColorId_DialogBackground,
     kColorId_BubbleBackground,
+    kColorId_BubbleFooterBackground,
     // FocusableBorder
     kColorId_FocusedBorderColor,
     kColorId_UnfocusedBorderColor,
@@ -304,7 +306,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_ButtonHoverColor,
     kColorId_ButtonPressedShade,
     kColorId_ProminentButtonColor,
+    kColorId_ProminentButtonFocusedColor,
+    kColorId_ProminentButtonDisabledColor,
     kColorId_TextOnProminentButtonColor,
+    kColorId_ButtonBorderColor,
     // MenuItem
     kColorId_TouchableMenuItemLabelColor,
     kColorId_ActionableSubmenuVerticalSeparatorColor,
@@ -319,6 +324,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_HighlightedMenuItemBackgroundColor,
     kColorId_HighlightedMenuItemForegroundColor,
     kColorId_FocusedHighlightedMenuItemBackgroundColor,
+    kColorId_MenuItemAlertBackgroundColorMax,  // Animation color at max
+                                               // intensity
+    kColorId_MenuItemAlertBackgroundColorMin,  // Animation color at min
+                                               // intensity
     // Label
     kColorId_LabelEnabledColor,
     kColorId_LabelDisabledColor,
@@ -376,6 +385,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_AlertSeverityLow,
     kColorId_AlertSeverityMedium,
     kColorId_AlertSeverityHigh,
+    // Colors for icons in secondary UI (content settings, help button, etc).
+    kColorId_DefaultIconColor,
     // TODO(benrg): move other hardcoded colors here.
 
     kColorId_NumColors,
@@ -408,6 +419,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   // Whether OS-level dark mode (as in macOS Mojave or Windows 10) is enabled.
   virtual bool SystemDarkModeEnabled() const;
+
+  // Returns the system's caption style.
+  virtual CaptionStyle GetSystemCaptionStyle() const;
 
  protected:
   NativeTheme();

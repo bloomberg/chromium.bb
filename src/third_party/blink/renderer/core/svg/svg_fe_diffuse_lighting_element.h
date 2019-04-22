@@ -35,6 +35,9 @@ class SVGFEDiffuseLightingElement final
 
  public:
   DECLARE_NODE_FACTORY(SVGFEDiffuseLightingElement);
+
+  explicit SVGFEDiffuseLightingElement(Document&);
+
   void LightElementAttributeChanged(const SVGFELightElement*,
                                     const QualifiedName&);
 
@@ -51,11 +54,10 @@ class SVGFEDiffuseLightingElement final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGFEDiffuseLightingElement(Document&);
-
   bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
   void SvgAttributeChanged(const QualifiedName&) override;
   FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
+  bool TaintsOrigin() const override;
 
   Member<SVGAnimatedNumber> diffuse_constant_;
   Member<SVGAnimatedNumber> surface_scale_;

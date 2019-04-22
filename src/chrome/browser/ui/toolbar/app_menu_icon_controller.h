@@ -8,15 +8,23 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image_skia.h"
 
 class Profile;
 class UpgradeDetector;
+
+namespace ui {
+class NativeTheme;
+class ThemeProvider;
+}  // namespace ui
 
 // AppMenuIconController encapsulates the logic for badging the app menu icon
 // as a result of various events - such as available updates, errors, etc.
@@ -49,6 +57,10 @@ class AppMenuIconController :
     // |type_and_severity|.
     virtual void UpdateTypeAndSeverity(TypeAndSeverity type_and_severity) = 0;
 
+    // Accessors for properties of the View hosting the controller.
+    virtual const ui::ThemeProvider* GetViewThemeProvider() const = 0;
+    virtual ui::NativeTheme* GetViewNativeTheme() = 0;
+
    protected:
     virtual ~Delegate() {}
   };
@@ -69,6 +81,15 @@ class AppMenuIconController :
 
   // Returns the icon type and severity based on the current state.
   TypeAndSeverity GetTypeAndSeverity() const;
+
+  // Returns the image to be used for the app menu's icon and the upgrade item
+  // in the app menu (when the IconType is UPGRADE_NOTIFICATION). |touch_ui|
+  // indicates whether the touch-friendly variant is requested.
+  // |promo_highlight_color|, if provided, overrides the basic color when the
+  // app menu icon's Severity is NONE.
+  gfx::ImageSkia GetIconImage(
+      bool touch_ui,
+      base::Optional<SkColor> promo_highlight_color = base::nullopt) const;
 
  private:
   // content::NotificationObserver:

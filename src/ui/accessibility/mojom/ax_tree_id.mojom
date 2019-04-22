@@ -4,7 +4,13 @@
 
 module ax.mojom;
 
-struct AXTreeID {
-  // Eventually this may become a base::UnguessableToken.
-  string id;
+import "ui/accessibility/ax_enums.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
+
+union AXTreeID {
+  // Placeholder for an unknown AXTreeID. The value of this field is not used.
+  uint8 unknown;
+
+  // Any AXTreeID that's not unknown must be an UnguessableToken.
+  mojo_base.mojom.UnguessableToken token;
 };

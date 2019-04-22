@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
@@ -266,7 +266,8 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
 TEST(TextEliderTest, TestElisionSpecialCases) {
 #if defined(OS_WIN)
   // Needed to bypass DCHECK in GetFallbackFont.
-  base::MessageLoopForUI message_loop;
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::UI);
 #endif
   const std::string kEllipsisStr(gfx::kEllipsis);
   const std::vector<Testcase> testcases = {
@@ -381,7 +382,7 @@ TEST(TextEliderTest, TestHostEliding) {
      kEllipsisStr + ".\xCE\xB5.\xCE\xB6.com"},
   };
 
-  for (size_t i = 0; i < arraysize(testcases); ++i) {
+  for (size_t i = 0; i < base::size(testcases); ++i) {
     // Note this does not use GetWidth(), so typesetting will be done with
     // gfx::Typesetter::DEFAULT. ElideHost() supports either typesetter on Mac.
     const float available_width = gfx::GetStringWidthF(
@@ -488,7 +489,7 @@ const OriginTestData common_tests[] = {
      L"https://www.example.com.", L"www.example.com.", L"www.example.com."}};
 
 TEST(TextEliderTest, FormatUrlForSecurityDisplay) {
-  for (size_t i = 0; i < arraysize(common_tests); ++i) {
+  for (size_t i = 0; i < base::size(common_tests); ++i) {
     base::string16 formatted =
         url_formatter::FormatUrlForSecurityDisplay(GURL(common_tests[i].input));
     EXPECT_EQ(base::WideToUTF16(common_tests[i].output), formatted)
@@ -561,7 +562,7 @@ TEST(TextEliderTest, FormatUrlForSecurityDisplay) {
        L"blob:http://www.html5rocks.com/"
        L"4d4ff040-6d61-4446-86d3-13ca07ec9ab9"}};
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     base::string16 formatted =
         url_formatter::FormatUrlForSecurityDisplay(GURL(tests[i].input));
     EXPECT_EQ(base::WideToUTF16(tests[i].output), formatted)
@@ -601,7 +602,7 @@ TEST(TextEliderTest, FormatUrlForSecurityDisplay) {
 }
 
 TEST(TextEliderTest, FormatOriginForSecurityDisplay) {
-  for (size_t i = 0; i < arraysize(common_tests); ++i) {
+  for (size_t i = 0; i < base::size(common_tests); ++i) {
     base::string16 formatted = url_formatter::FormatOriginForSecurityDisplay(
         url::Origin::Create(GURL(common_tests[i].input)));
     EXPECT_EQ(base::WideToUTF16(common_tests[i].output), formatted)
@@ -651,7 +652,7 @@ TEST(TextEliderTest, FormatOriginForSecurityDisplay) {
        L"http://www.html5rocks.com", L"www.html5rocks.com",
        L"http://www.html5rocks.com"}};
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     base::string16 formatted = url_formatter::FormatOriginForSecurityDisplay(
         url::Origin::Create(GURL(tests[i].input)));
     EXPECT_EQ(base::WideToUTF16(tests[i].output), formatted)

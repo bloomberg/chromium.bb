@@ -4,6 +4,7 @@
 
 #include "services/viz/public/cpp/compositing/quads_struct_traits.h"
 
+#include "ui/gfx/mojo/color_space_mojom_traits.h"
 #include "ui/gfx/mojo/transform_struct_traits.h"
 
 namespace mojo {
@@ -40,6 +41,10 @@ viz::DrawQuad* AllocateAndConstruct(
     case viz::mojom::DrawQuadStateDataView::Tag::TILE_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::TileDrawQuad>();
       quad->material = viz::DrawQuad::TILED_CONTENT;
+      return quad;
+    case viz::mojom::DrawQuadStateDataView::Tag::VIDEO_HOLE_QUAD_STATE:
+      quad = list->AllocateAndConstruct<viz::VideoHoleDrawQuad>();
+      quad->material = viz::DrawQuad::VIDEO_HOLE;
       return quad;
     case viz::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::YUVVideoDrawQuad>();
@@ -103,7 +108,8 @@ bool StructTraits<viz::mojom::StreamVideoQuadStateDataView, viz::DrawQuad>::
   return data.ReadResourceSizeInPixels(
              &quad->overlay_resources.size_in_pixels
                   [viz::StreamVideoDrawQuad::kResourceIdIndex]) &&
-         data.ReadMatrix(&quad->matrix);
+         data.ReadUvTopLeft(&quad->uv_top_left) &&
+         data.ReadUvBottomRight(&quad->uv_bottom_right);
 }
 
 // static
@@ -165,6 +171,15 @@ bool StructTraits<viz::mojom::TileQuadStateDataView, viz::DrawQuad>::Read(
   quad->resources.ids[viz::TileDrawQuad::kResourceIdIndex] = data.resource_id();
   quad->resources.count = 1;
   return true;
+}
+
+// static
+bool StructTraits<viz::mojom::VideoHoleQuadStateDataView, viz::DrawQuad>::Read(
+    viz::mojom::VideoHoleQuadStateDataView data,
+    viz::DrawQuad* out) {
+  viz::VideoHoleDrawQuad* video_hole_quad =
+      static_cast<viz::VideoHoleDrawQuad*>(out);
+  return data.ReadOverlayPlaneId(&video_hole_quad->overlay_plane_id);
 }
 
 // static

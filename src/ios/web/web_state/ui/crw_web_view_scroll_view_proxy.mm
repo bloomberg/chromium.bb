@@ -80,11 +80,9 @@
 
   // Assigns |contentInsetAdjustmentBehavior| which was set before setting the
   // scroll view.
-  if (@available(iOS 11, *)) {
-    if (_storedContentInsetAdjustmentBehavior) {
-      _scrollView.contentInsetAdjustmentBehavior =
-          *_storedContentInsetAdjustmentBehavior;
-    }
+  if (_storedContentInsetAdjustmentBehavior) {
+    _scrollView.contentInsetAdjustmentBehavior =
+        *_storedContentInsetAdjustmentBehavior;
   }
 
   [_observers webViewScrollViewProxyDidSetScrollView:self];

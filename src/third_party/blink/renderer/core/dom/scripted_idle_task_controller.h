@@ -7,9 +7,8 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_callback.h"
 #include "third_party/blink/renderer/core/dom/idle_deadline.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -25,19 +24,22 @@ class ThreadScheduler;
 
 class CORE_EXPORT ScriptedIdleTaskController
     : public GarbageCollectedFinalized<ScriptedIdleTaskController>,
-      public PausableObject,
+      public ContextLifecycleStateObserver,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
 
  public:
   static ScriptedIdleTaskController* Create(ExecutionContext* context) {
-    return MakeGarbageCollected<ScriptedIdleTaskController>(context);
+    ScriptedIdleTaskController* controller =
+        MakeGarbageCollected<ScriptedIdleTaskController>(context);
+    controller->UpdateStateIfNeeded();
+    return controller;
   }
 
   explicit ScriptedIdleTaskController(ExecutionContext*);
   ~ScriptedIdleTaskController() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override {
     return "ScriptedIdleTaskController";
   }
@@ -49,7 +51,7 @@ class CORE_EXPORT ScriptedIdleTaskController
   class IdleTask : public GarbageCollectedFinalized<IdleTask>,
                    public NameClient {
    public:
-    virtual void Trace(blink::Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) {}
     const char* NameInHeapSnapshot() const override { return "IdleTask"; }
     virtual ~IdleTask() = default;
     virtual void invoke(IdleDeadline*) = 0;
@@ -67,29 +69,49 @@ class CORE_EXPORT ScriptedIdleTaskController
     ~V8IdleTask() override = default;
 
     void invoke(IdleDeadline*) override;
-    void Trace(blink::Visitor*) override;
+    void Trace(Visitor*) override;
 
    private:
-    TraceWrapperMember<V8IdleRequestCallback> callback_;
+    Member<V8IdleRequestCallback> callback_;
   };
 
   int RegisterCallback(IdleTask*, const IdleRequestOptions*);
   void CancelCallback(CallbackId);
 
-  // PausableObject interface.
+  // ContextLifecycleStateObserver interface.
   void ContextDestroyed(ExecutionContext*) override;
-  void Pause() override;
-  void Unpause() override;
+  void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
 
   void CallbackFired(CallbackId,
                      TimeTicks deadline,
                      IdleDeadline::CallbackType);
 
  private:
+  class QueuedIdleTask : public GarbageCollectedFinalized<QueuedIdleTask> {
+   public:
+    QueuedIdleTask(IdleTask*,
+                   TimeTicks queue_timestamp,
+                   uint32_t timeout_millis);
+    virtual ~QueuedIdleTask() = default;
+
+    virtual void Trace(Visitor*);
+
+    IdleTask* task() { return task_; }
+    TimeTicks queue_timestamp() const { return queue_timestamp_; }
+    uint32_t timeout_millis() const { return timeout_millis_; }
+
+   private:
+    Member<IdleTask> task_;
+    TimeTicks queue_timestamp_;
+    uint32_t timeout_millis_;
+  };
+
   friend class internal::IdleRequestCallbackWrapper;
 
+  void ContextPaused();
+  void ContextUnpaused();
   void ScheduleCallback(scoped_refptr<internal::IdleRequestCallbackWrapper>,
-                        long long timeout_millis);
+                        uint32_t timeout_millis);
 
   int NextCallbackId();
 
@@ -101,8 +123,12 @@ class CORE_EXPORT ScriptedIdleTaskController
 
   void RunCallback(CallbackId, TimeTicks deadline, IdleDeadline::CallbackType);
 
+  void RecordIdleTaskMetrics(QueuedIdleTask*,
+                             TimeTicks run_timestamp,
+                             IdleDeadline::CallbackType);
+
   ThreadScheduler* scheduler_;  // Not owned.
-  HeapHashMap<CallbackId, TraceWrapperMember<IdleTask>> idle_tasks_;
+  HeapHashMap<CallbackId, Member<QueuedIdleTask>> idle_tasks_;
   Vector<CallbackId> pending_timeouts_;
   CallbackId next_callback_id_;
   bool paused_;

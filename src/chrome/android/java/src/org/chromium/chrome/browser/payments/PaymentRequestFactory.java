@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
+import org.chromium.payments.mojom.HasEnrolledInstrumentQueryResult;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentErrorReason;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -37,7 +38,7 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         }
 
         @Override
-        public void show(boolean isUserGesture) {
+        public void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
             if (mClient != null) {
                 mClient.onError(PaymentErrorReason.USER_CANCEL);
                 mClient.close();
@@ -60,9 +61,17 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         public void retry(PaymentValidationErrors errors) {}
 
         @Override
-        public void canMakePayment() {
+        public void canMakePayment(boolean legacyMode) {
             if (mClient != null) {
                 mClient.onCanMakePayment(CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
+            }
+        }
+
+        @Override
+        public void hasEnrolledInstrument(boolean perMethodQuota) {
+            if (mClient != null) {
+                mClient.onHasEnrolledInstrument(
+                        HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);
             }
         }
 

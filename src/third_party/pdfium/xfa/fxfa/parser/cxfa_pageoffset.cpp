@@ -6,6 +6,9 @@
 
 #include "xfa/fxfa/parser/cxfa_pageoffset.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kPageOffsetAttributeData[] = {
@@ -13,9 +16,7 @@ const CXFA_Node::AttributeData kPageOffsetAttributeData[] = {
     {XFA_Attribute::Y, XFA_AttributeType::Measure, (void*)L"0in"},
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kPageOffsetName[] = L"pageOffset";
+};
 
 }  // namespace
 
@@ -25,8 +26,8 @@ CXFA_PageOffset::CXFA_PageOffset(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_Config,
                 XFA_ObjectType::Node,
                 XFA_Element::PageOffset,
-                nullptr,
+                {},
                 kPageOffsetAttributeData,
-                kPageOffsetName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_PageOffset::~CXFA_PageOffset() {}
+CXFA_PageOffset::~CXFA_PageOffset() = default;

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "apps/launcher.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
@@ -153,7 +154,7 @@ void ShellExtensionSystem::UnregisterExtensionWithRequestContexts(
     const std::string& extension_id,
     const UnloadedExtensionReason reason) {}
 
-const OneShotEvent& ShellExtensionSystem::ready() const {
+const base::OneShotEvent& ShellExtensionSystem::ready() const {
   return ready_;
 }
 

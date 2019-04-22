@@ -15,10 +15,10 @@ build/android/generate_emma_html.py script.
 
 1. Use the following GN build arguments:
 
-```
-    target_os = "android"
-    emma_coverage = true
-    emma_filter = "org.chromium.chrome.browser.ntp.*,-*Test*,-*Fake*,-*Mock*"
+```gn
+target_os = "android"
+emma_coverage = true
+emma_filter = "org.chromium.chrome.browser.ntp.*,-*Test*,-*Fake*,-*Mock*"
 ```
 
 The filter syntax is as documented for the [EMMA coverage
@@ -43,14 +43,14 @@ Now when building, **.em** files will be created in the build directory.
 6. Now we have both .em and .ec files. We can create a html report using
    `generate_emma_html.py`, for example:
 
-```
+   ```shell
    build/android/generate_emma_html.py \
        --coverage-dir /tmp/coverage/ \
        --metadata-dir out/Debug/ \
        --output example.html
-```
+   ```
    Then an example.html containing coverage info will be created:
 
-```
+   ```
    EMMA: writing [html] report to [<your_current_directory>/example.html] ...
-```
+   ```

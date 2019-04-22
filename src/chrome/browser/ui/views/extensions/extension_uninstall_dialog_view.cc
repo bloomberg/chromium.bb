@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -70,7 +71,7 @@ class ExtensionUninstallDialogViews
   void DialogDelegateDestroyed();
 
   // Forwards the accept and cancels to the delegate.
-  void DialogAccepted(bool handle_report_abuse);
+  void DialogAccepted(bool checkbox_checked);
   void DialogCanceled();
 
  private:
@@ -118,7 +119,7 @@ class ExtensionUninstallDialogDelegateView
   const bool is_bubble_;
 
   views::Label* heading_;
-  views::Checkbox* report_abuse_checkbox_;
+  views::Checkbox* checkbox_;
   gfx::ImageSkia image_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialogDelegateView);
@@ -158,13 +159,14 @@ void ExtensionUninstallDialogViews::DialogDelegateDestroyed() {
   }
 }
 
-void ExtensionUninstallDialogViews::DialogAccepted(bool report_abuse_checked) {
+void ExtensionUninstallDialogViews::DialogAccepted(bool checkbox_checked) {
   // The widget gets destroyed when the dialog is accepted.
   DCHECK(view_);
   view_->DialogDestroyed();
   view_ = nullptr;
-  OnDialogClosed(report_abuse_checked ?
-      CLOSE_ACTION_UNINSTALL_AND_REPORT_ABUSE : CLOSE_ACTION_UNINSTALL);
+
+  OnDialogClosed(checkbox_checked ? CLOSE_ACTION_UNINSTALL_AND_CHECKBOX_CHECKED
+                                  : CLOSE_ACTION_UNINSTALL);
 }
 
 void ExtensionUninstallDialogViews::DialogCanceled() {
@@ -187,7 +189,7 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
       dialog_(dialog_view),
       extension_name_(base::UTF8ToUTF16(extension->name())),
       is_bubble_(anchor_view != nullptr),
-      report_abuse_checkbox_(nullptr),
+      checkbox_(nullptr),
       image_(gfx::ImageSkiaOperations::CreateResizedImage(
           *image,
           skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
@@ -217,16 +219,10 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     AddChildView(heading_);
   }
 
-  if (dialog_->ShouldShowReportAbuseCheckbox()) {
-    if (triggering_extension) {
-      report_abuse_checkbox_ = new views::Checkbox(l10n_util::GetStringFUTF16(
-          IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE_FROM_EXTENSION,
-          extension_name_));
-    } else {
-      report_abuse_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
-          IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE));
-    }
-    AddChildView(report_abuse_checkbox_);
+  if (dialog_->ShouldShowCheckbox()) {
+    checkbox_ = new views::Checkbox(dialog_->GetCheckboxLabel());
+    checkbox_->SetMultiLine(true);
+    AddChildView(checkbox_);
   }
 
   if (anchor_view)
@@ -262,10 +258,8 @@ base::string16 ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(
 }
 
 bool ExtensionUninstallDialogDelegateView::Accept() {
-  if (dialog_) {
-    dialog_->DialogAccepted(report_abuse_checkbox_ &&
-                            report_abuse_checkbox_->checked());
-  }
+  if (dialog_)
+    dialog_->DialogAccepted(checkbox_ && checkbox_->checked());
   return true;
 }
 
@@ -291,7 +285,7 @@ base::string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
 }  // namespace
 
 // static
-extensions::ExtensionUninstallDialog*
+std::unique_ptr<extensions::ExtensionUninstallDialog>
 extensions::ExtensionUninstallDialog::Create(Profile* profile,
                                              gfx::NativeWindow parent,
                                              Delegate* delegate) {
@@ -299,9 +293,10 @@ extensions::ExtensionUninstallDialog::Create(Profile* profile,
 }
 
 // static
-extensions::ExtensionUninstallDialog*
+std::unique_ptr<extensions::ExtensionUninstallDialog>
 extensions::ExtensionUninstallDialog::CreateViews(Profile* profile,
                                                   gfx::NativeWindow parent,
                                                   Delegate* delegate) {
-  return new ExtensionUninstallDialogViews(profile, parent, delegate);
+  return std::make_unique<ExtensionUninstallDialogViews>(profile, parent,
+                                                         delegate);
 }

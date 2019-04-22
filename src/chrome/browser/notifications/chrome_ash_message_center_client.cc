@@ -14,7 +14,7 @@
 #include "chrome/browser/notifications/web_page_notifier_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
@@ -183,8 +183,8 @@ void ChromeAshMessageCenterClient::GetArcAppIdByPackageName(
 }
 
 void ChromeAshMessageCenterClient::ShowLockScreenNotificationSettings() {
-  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        chrome::kLockScreenSubPage);
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile(), chrome::kLockScreenSubPage);
 }
 
 void ChromeAshMessageCenterClient::OnIconImageUpdated(

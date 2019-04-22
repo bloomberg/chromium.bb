@@ -18,7 +18,7 @@
     Boston, MA 02110-1301, USA.
 */
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#custom-handlers
+// https://html.spec.whatwg.org/C/#custom-handlers
 
 [
     ImplementedAs=NavigatorContentUtils

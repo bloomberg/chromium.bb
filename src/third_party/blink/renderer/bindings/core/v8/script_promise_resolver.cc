@@ -7,15 +7,17 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 #if DCHECK_IS_ON()
 #include "base/debug/alias.h"
+#include "components/crash/core/common/crash_key.h"
 #endif
 
 namespace blink {
 
 ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
-    : PausableObject(ExecutionContext::From(script_state)),
+    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       state_(kPending),
       script_state_(script_state),
       resolver_(script_state) {
@@ -25,38 +27,35 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
   }
 }
 
-#if DCHECK_IS_ON()
 ScriptPromiseResolver::~ScriptPromiseResolver() {
-  // This is here temporarily to make it easier to track down which promise
-  // resolvers are being abandoned.
-  // TODO(crbug.com/873980): Remove this.
-  base::debug::StackTrace create_stack_trace(create_stack_trace_);
-  base::debug::Alias(&create_stack_trace);
-
+#if DCHECK_IS_ON()
   // This assertion fails if:
   //  - promise() is called at least once and
   //  - this resolver is destructed before it is resolved, rejected,
   //    detached, the V8 isolate is terminated or the associated
   //    ExecutionContext is stopped.
-  DCHECK(state_ == kDetached || !is_promise_called_ ||
-         !GetScriptState()->ContextIsValid() || !GetExecutionContext() ||
-         GetExecutionContext()->IsContextDestroyed());
-}
+  const bool is_properly_detached =
+      state_ == kDetached || !is_promise_called_ ||
+      !GetScriptState()->ContextIsValid() || !GetExecutionContext() ||
+      GetExecutionContext()->IsContextDestroyed();
+  if (!is_properly_detached) {
+    // This is here to make it easier to track down which promise resolvers are
+    // being abandoned. See https://crbug.com/873980.
+    static crash_reporter::CrashKeyString<1024> trace_key(
+        "scriptpromiseresolver-trace");
+    crash_reporter::SetCrashKeyStringToStackTrace(&trace_key,
+                                                  create_stack_trace_);
+    DCHECK(false)
+        << "ScriptPromiseResolver was not properly detached; created at\n"
+        << create_stack_trace_.ToString();
+  }
 #endif
+}
 
 void ScriptPromiseResolver::Reject(ExceptionState& exception_state) {
   DCHECK(exception_state.HadException());
   Reject(exception_state.GetException());
   exception_state.ClearException();
-}
-
-void ScriptPromiseResolver::Pause() {
-  deferred_resolve_task_.Cancel();
-}
-
-void ScriptPromiseResolver::Unpause() {
-  if (state_ == kResolving || state_ == kRejecting)
-    ScheduleResolveOrReject();
 }
 
 void ScriptPromiseResolver::Detach() {
@@ -115,7 +114,7 @@ void ScriptPromiseResolver::ResolveOrRejectDeferred() {
 
 void ScriptPromiseResolver::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
-  PausableObject::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

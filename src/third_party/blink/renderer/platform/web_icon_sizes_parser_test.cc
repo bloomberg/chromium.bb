@@ -21,6 +21,12 @@ TEST(WebIconSizesParserTest, parseSizes) {
   EXPECT_EQ(32, sizes[0].width);
   EXPECT_EQ(33, sizes[0].height);
 
+  sizes_attribute = " 10x11 ";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  ASSERT_EQ(1u, sizes.size());
+  EXPECT_EQ(10, sizes[0].width);
+  EXPECT_EQ(11, sizes[0].height);
+
   sizes_attribute = "0x33";
   sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
   ASSERT_EQ(0U, sizes.size());
@@ -60,9 +66,65 @@ TEST(WebIconSizesParserTest, parseSizes) {
   sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
   ASSERT_EQ(1U, sizes.size());
 
+  sizes_attribute = " any";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  ASSERT_EQ(1U, sizes.size());
+  EXPECT_EQ(0, sizes[0].width);
+  EXPECT_EQ(0, sizes[0].height);
+
+  sizes_attribute = " any ";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  ASSERT_EQ(1U, sizes.size());
+  EXPECT_EQ(0, sizes[0].width);
+  EXPECT_EQ(0, sizes[0].height);
+
+  sizes_attribute = "any 10x10";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  ASSERT_EQ(2u, sizes.size());
+  EXPECT_EQ(0, sizes[0].width);
+  EXPECT_EQ(0, sizes[0].height);
+  EXPECT_EQ(10, sizes[1].width);
+  EXPECT_EQ(10, sizes[1].height);
+
   sizes_attribute = "an";
   sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
   ASSERT_EQ(0U, sizes.size());
+
+  sizes_attribute = "10";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  ASSERT_EQ(0U, sizes.size());
+
+  sizes_attribute = "10";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  EXPECT_EQ(0u, sizes.size());
+
+  sizes_attribute = "10 10";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  EXPECT_EQ(0u, sizes.size());
+
+  sizes_attribute = "010";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  EXPECT_EQ(0u, sizes.size());
+
+  sizes_attribute = " 010 ";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  EXPECT_EQ(0u, sizes.size());
+
+  sizes_attribute = " 10x ";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  EXPECT_EQ(0u, sizes.size());
+
+  sizes_attribute = " x10 ";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  EXPECT_EQ(0u, sizes.size());
+
+  sizes_attribute = "";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  EXPECT_EQ(0u, sizes.size());
+
+  sizes_attribute = "10ax11";
+  sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);
+  EXPECT_EQ(0u, sizes.size());
 
   sizes_attribute = "32x33 32";
   sizes = WebIconSizesParser::ParseIconSizes(sizes_attribute);

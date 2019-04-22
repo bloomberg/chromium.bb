@@ -4,10 +4,11 @@
 
 #include "chromeos/services/secure_channel/authenticated_channel_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace chromeos {
 
@@ -36,7 +37,7 @@ std::unique_ptr<AuthenticatedChannel>
 AuthenticatedChannelImpl::Factory::BuildInstance(
     const std::vector<mojom::ConnectionCreationDetail>&
         connection_creation_details,
-    std::unique_ptr<cryptauth::SecureChannel> secure_channel) {
+    std::unique_ptr<SecureChannel> secure_channel) {
   return base::WrapUnique(new AuthenticatedChannelImpl(
       connection_creation_details, std::move(secure_channel)));
 }
@@ -44,14 +45,13 @@ AuthenticatedChannelImpl::Factory::BuildInstance(
 AuthenticatedChannelImpl::AuthenticatedChannelImpl(
     const std::vector<mojom::ConnectionCreationDetail>&
         connection_creation_details,
-    std::unique_ptr<cryptauth::SecureChannel> secure_channel)
+    std::unique_ptr<SecureChannel> secure_channel)
     : AuthenticatedChannel(),
       connection_creation_details_(connection_creation_details),
       secure_channel_(std::move(secure_channel)) {
   // |secure_channel_| should be a valid and already authenticated.
   DCHECK(secure_channel_);
-  DCHECK_EQ(secure_channel_->status(),
-            cryptauth::SecureChannel::Status::AUTHENTICATED);
+  DCHECK_EQ(secure_channel_->status(), SecureChannel::Status::AUTHENTICATED);
 
   secure_channel_->AddObserver(this);
 }
@@ -71,8 +71,7 @@ void AuthenticatedChannelImpl::PerformSendMessage(
     const std::string& feature,
     const std::string& payload,
     base::OnceClosure on_sent_callback) {
-  DCHECK_EQ(secure_channel_->status(),
-            cryptauth::SecureChannel::Status::AUTHENTICATED);
+  DCHECK_EQ(secure_channel_->status(), SecureChannel::Status::AUTHENTICATED);
 
   int sequence_number = secure_channel_->SendMessage(feature, payload);
 
@@ -92,36 +91,34 @@ void AuthenticatedChannelImpl::PerformDisconnection() {
 }
 
 void AuthenticatedChannelImpl::OnSecureChannelStatusChanged(
-    cryptauth::SecureChannel* secure_channel,
-    const cryptauth::SecureChannel::Status& old_status,
-    const cryptauth::SecureChannel::Status& new_status) {
+    SecureChannel* secure_channel,
+    const SecureChannel::Status& old_status,
+    const SecureChannel::Status& new_status) {
   DCHECK_EQ(secure_channel_.get(), secure_channel);
 
   // The only expected status changes are AUTHENTICATING => AUTHENTICATED,
   // AUTHENTICATED => DISCONNECTING, AUTHENTICATED => DISCONNECTED, and
   // DISCONNECTING => DISCONNECTED.
-  DCHECK(old_status == cryptauth::SecureChannel::Status::AUTHENTICATING ||
-         old_status == cryptauth::SecureChannel::Status::AUTHENTICATED ||
-         old_status == cryptauth::SecureChannel::Status::DISCONNECTING);
-  DCHECK(new_status == cryptauth::SecureChannel::Status::AUTHENTICATED ||
-         new_status == cryptauth::SecureChannel::Status::DISCONNECTING ||
-         new_status == cryptauth::SecureChannel::Status::DISCONNECTED);
+  DCHECK(old_status == SecureChannel::Status::AUTHENTICATING ||
+         old_status == SecureChannel::Status::AUTHENTICATED ||
+         old_status == SecureChannel::Status::DISCONNECTING);
+  DCHECK(new_status == SecureChannel::Status::AUTHENTICATED ||
+         new_status == SecureChannel::Status::DISCONNECTING ||
+         new_status == SecureChannel::Status::DISCONNECTED);
 
-  if (new_status == cryptauth::SecureChannel::Status::DISCONNECTED)
+  if (new_status == SecureChannel::Status::DISCONNECTED)
     NotifyDisconnected();
 }
 
-void AuthenticatedChannelImpl::OnMessageReceived(
-    cryptauth::SecureChannel* secure_channel,
-    const std::string& feature,
-    const std::string& payload) {
+void AuthenticatedChannelImpl::OnMessageReceived(SecureChannel* secure_channel,
+                                                 const std::string& feature,
+                                                 const std::string& payload) {
   DCHECK_EQ(secure_channel_.get(), secure_channel);
   NotifyMessageReceived(feature, payload);
 }
 
-void AuthenticatedChannelImpl::OnMessageSent(
-    cryptauth::SecureChannel* secure_channel,
-    int sequence_number) {
+void AuthenticatedChannelImpl::OnMessageSent(SecureChannel* secure_channel,
+                                             int sequence_number) {
   DCHECK_EQ(secure_channel_.get(), secure_channel);
 
   if (!base::ContainsKey(sequence_number_to_callback_map_, sequence_number)) {

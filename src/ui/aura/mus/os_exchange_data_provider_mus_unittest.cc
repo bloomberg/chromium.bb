@@ -14,12 +14,12 @@
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "url/gurl.h"
 
-using ui::Clipboard;
 using ui::OSExchangeData;
 
 namespace aura {
@@ -171,8 +171,8 @@ TEST_F(OSExchangeDataProviderMusTest, TestFileToURLConversion) {
 }
 
 TEST_F(OSExchangeDataProviderMusTest, TestPickledData) {
-  const Clipboard::FormatType kTestFormat =
-      Clipboard::GetFormatType("application/vnd.chromium.test");
+  const ui::ClipboardFormatType kTestFormat =
+      ui::ClipboardFormatType::GetType("application/vnd.chromium.test");
 
   base::Pickle saved_pickle;
   saved_pickle.WriteInt(1);

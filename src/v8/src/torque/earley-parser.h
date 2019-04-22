@@ -39,6 +39,53 @@ class ParseResultHolderBase {
   const TypeId type_id_;
 };
 
+enum class ParseResultHolderBase::TypeId {
+  kStdString,
+  kBool,
+  kStdVectorOfString,
+  kExpressionPtr,
+  kIdentifierPtr,
+  kOptionalIdentifierPtr,
+  kStatementPtr,
+  kDeclarationPtr,
+  kTypeExpressionPtr,
+  kOptionalTypeExpressionPtr,
+  kLabelBlockPtr,
+  kOptionalLabelBlockPtr,
+  kNameAndTypeExpression,
+  kNameAndExpression,
+  kClassFieldExpression,
+  kStructFieldExpression,
+  kStdVectorOfNameAndTypeExpression,
+  kStdVectorOfNameAndExpression,
+  kStdVectorOfClassFieldExpression,
+  kStdVectorOfStructFieldExpression,
+  kIncrementDecrementOperator,
+  kOptionalStdString,
+  kStdVectorOfStatementPtr,
+  kStdVectorOfDeclarationPtr,
+  kStdVectorOfExpressionPtr,
+  kExpressionWithSource,
+  kParameterList,
+  kRangeExpression,
+  kOptionalRangeExpression,
+  kTypeList,
+  kOptionalTypeList,
+  kLabelAndTypes,
+  kStdVectorOfLabelAndTypes,
+  kStdVectorOfLabelBlockPtr,
+  kOptionalStatementPtr,
+  kOptionalExpressionPtr,
+  kTypeswitchCase,
+  kStdVectorOfTypeswitchCase,
+  kStdVectorOfIdentifierPtr,
+
+  kJsonValue,
+  kJsonMember,
+  kStdVectorOfJsonValue,
+  kStdVectorOfJsonMember,
+};
+
 using ParseResultTypeId = ParseResultHolderBase::TypeId;
 
 template <class T>
@@ -71,12 +118,16 @@ class ParseResult {
   explicit ParseResult(T x) : value_(new ParseResultHolder<T>(std::move(x))) {}
 
   template <class T>
-  const T& Cast() const {
+  const T& Cast() const& {
     return value_->Cast<T>();
   }
   template <class T>
-  T& Cast() {
+  T& Cast() & {
     return value_->Cast<T>();
+  }
+  template <class T>
+  T&& Cast() && {
+    return std::move(value_->Cast<T>());
   }
 
  private:
@@ -121,7 +172,7 @@ class ParseResultIterator {
   size_t i_ = 0;
   MatchedInput matched_input_;
 
-  DISALLOW_COPY_AND_MOVE_AND_ASSIGN(ParseResultIterator);
+  DISALLOW_COPY_AND_ASSIGN(ParseResultIterator);
 };
 
 struct LexerResult {
@@ -196,7 +247,7 @@ class Symbol {
   std::vector<std::unique_ptr<Rule>> rules_;
 
   // Disallow copying and moving to ensure Symbol has a stable address.
-  DISALLOW_COPY_AND_MOVE_AND_ASSIGN(Symbol);
+  DISALLOW_COPY_AND_ASSIGN(Symbol);
 };
 
 // Items are the core datastructure of Earley's algorithm.

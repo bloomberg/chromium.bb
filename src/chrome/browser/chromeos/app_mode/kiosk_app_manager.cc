@@ -39,8 +39,8 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chromeos/chromeos_paths.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_paths.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
@@ -138,7 +138,7 @@ void PerformDelayedCryptohomeRemovals(bool service_is_available) {
     cryptohome::AccountIdentifier account_id_proto;
     account_id_proto.set_account_id(cryptohome_id.id());
 
-    DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+    CryptohomeClient::Get()->RemoveEx(
         account_id_proto,
         base::BindOnce(&OnRemoveAppCryptohomeComplete, cryptohome_id, app_id,
                        base::OnceClosure()));
@@ -244,8 +244,7 @@ void KioskAppManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
 // static
 void KioskAppManager::RemoveObsoleteCryptohomes() {
-  chromeos::CryptohomeClient* client =
-      chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
+  chromeos::CryptohomeClient* client = chromeos::CryptohomeClient::Get();
   client->WaitForServiceToBeAvailable(
       base::Bind(&PerformDelayedCryptohomeRemovals));
 }
@@ -923,7 +922,7 @@ void KioskAppManager::ClearRemovedApps(
     cryptohome::AccountIdentifier account_id_proto;
     account_id_proto.set_account_id(cryptohome_id.id());
 
-    DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+    CryptohomeClient::Get()->RemoveEx(
         account_id_proto,
         base::BindOnce(&OnRemoveAppCryptohomeComplete, cryptohome_id,
                        entry.first, cryptohomes_barrier_closure));

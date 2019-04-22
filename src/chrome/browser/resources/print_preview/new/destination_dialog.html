@@ -1,7 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 /* The imports below are needed as an action-link is added to the promo-text
@@ -15,14 +17,15 @@
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../metrics.html">
+<link rel="import" href="../native_layer.html">
 <link rel="import" href="../print_preview_utils.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
 <link rel="import" href="../data/invitation.html">
 <link rel="import" href="../data/invitation_store.html">
+<link rel="import" href="../data/user_info.html">
 <link rel="import" href="destination_list.html">
 <link rel="import" href="print_preview_search_box.html">
 <link rel="import" href="print_preview_shared_css.html">
@@ -41,7 +44,6 @@
         };
         --cr-dialog-wrapper: {
           height: calc(100vh - 2 * var(--print-preview-dialog-margin));
-          width: 100%;
         };
         --cr-dialog-body-container: {
           flex: 1;
@@ -69,33 +71,19 @@
       }
 
       cr-dialog [slot=body] {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-        min-height: 0;
+        height: 100%;
       }
 
-      /* Height = 3 * destination item + 10px padding + 1 line text */
-      #recentList,
-      #printList {
-        min-height:
-            calc(2 * var(--destination-item-height) + 10px + 20 / 13 * 1rem);
-      }
-
-      #recentList {
-        flex: 1;
-        max-height:
-            calc(3 * var(--destination-item-height) + 10px + 20 / 13 * 1rem);
-        padding-bottom: 18px;
-      }
-
-      #printList {
-        flex: 1;
-        padding-bottom: 0;
+      div[slot='button-container'] {
+        justify-content: space-between;
       }
 
       paper-button {
         font-size: calc(12 / 13 * 1em);
+      }
+
+      .cancel-button {
+        margin-inline-end: 0;
       }
 
       #dialog #promos {
@@ -103,9 +91,13 @@
         padding: 0;
       }
 
+      :host-context([dark]) #dialog #promos {
+        background: rgb(50, 54, 57);
+      }
+
       #dialog .promo {
         align-items: center;
-        color: var(--google-grey-900);
+        color: var(--cr-primary-text-color);
         display: flex;
         padding: 16px 20px;
       }
@@ -120,8 +112,8 @@
       }
 
       #cloudPrintClose {
-        --cr-icon-ripple-size: 20px;
-        --cr-icon-size: 16px;
+        --cr-icon-button-size: 20px;
+        --cr-icon-button-icon-size: 16px;
         margin-inline-start: 16px;
         min-height: 14px;
         min-width: 14px;
@@ -139,12 +131,15 @@
       }
 
       #invitationPromo paper-button {
-        background-color: white;
         margin: 0 4px;
       }
 
+      :host-context(html:not([dark])) #invitationPromo paper-button {
+        background-color: white;
+      }
+
       #invitationPromo invitation-details {
-        color: var(--google-grey-refresh-700);
+        color: var(--cr-secondary-text-color);
         font-size: calc(10 / 13 * 1em);
         font-weight: 500;
       }
@@ -152,14 +147,14 @@
     <cr-dialog id="dialog" on-close="onCloseOrCancel_">
       <div slot="title" id="header">
         <div>$i18n{destinationSearchTitle}</div>
-        <div class="user-info" hidden$="[[!userInfo.loggedIn]]">
+        <div class="user-info" hidden$="[[!activeUser]]" hidden>
           <label class="account-select-label" id="accountSelectLabel">
             $i18n{accountSelectTitle}
           </label>
           <select class="md-select account-select"
               aria-labelledby="accountSelectLabel" on-change="onUserChange_">
-            <template is="dom-repeat" items="[[userInfo.users]]">
-              <option selected="[[isSelected_(item, userInfo.activeUser)]]"
+            <template is="dom-repeat" items="[[users]]">
+              <option selected="[[isSelected_(item, activeUser)]]"
                   value="[[item]]">
                 [[item]]
               </option>
@@ -173,15 +168,9 @@
         </print-preview-search-box>
       </div>
       <div slot="body">
-        <print-preview-destination-list id="recentList"
-            destinations="[[recentDestinationList_]]"
-            search-query="[[searchQuery_]]"
-            list-name="$i18n{recentDestinationsTitle}"
-            on-destination-selected="onDestinationSelected_">
-        </print-preview-destination-list>
         <print-preview-destination-list id="printList"
             destinations="[[destinations_]]"
-            has-manage-link loading-destinations="[[loadingDestinations_]]"
+            loading-destinations="[[loadingDestinations_]]"
             search-query="[[searchQuery_]]"
             list-name="$i18n{printDestinationsTitle}"
             on-destination-selected="onDestinationSelected_">
@@ -191,18 +180,22 @@
         </print-preview-provisional-destination-resolver>
       </div>
       <div slot="button-container">
+        <paper-button on-click="onOpenSettingsPrintPage_">
+          $i18n{manage}
+        </paper-button>
         <paper-button class="cancel-button" on-click="onCancelButtonClick_">
           $i18n{cancel}
         </paper-button>
       </div>
-      <div id="promos" slot="footer">
+      <div id="promos" slot="footer" hidden="[[!shouldShowFooter_(
+          cloudPrintPromoDismissed_, cloudPrintState, invitation_)]]">
         <div class="promo" id="cloudprintPromo"
-            hidden$="[[!showCloudPrintPromo]]">
+            hidden$="[[!shouldShowCloudPrintPromo_(
+                cloudPrintPromoDismissed_, cloudPrintState)]]">
           <iron-icon icon="print-preview:cloud-queue" alt=""></iron-icon>
           <div class="promo-text"></div>
-          <paper-icon-button-light id="cloudPrintClose" class="icon-clear">
-            <button on-click="onCloudPrintPromoDismissed_"></button>
-          </paper-icon-button-light>
+          <cr-icon-button id="cloudPrintClose" class="icon-clear"
+              on-click="onCloudPrintPromoDismissed_"></cr-icon-button>
         </div>
         <div class="promo" id="invitationPromo" hidden="[[!invitation_]]">
           <div inner-h-t-m-l="[[getInvitationText_(invitation_)]]"></div>

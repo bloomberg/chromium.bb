@@ -13,4 +13,5 @@ void FloatToHalfFloat(const float* input, HalfFloat* output, size_t num) {
     output[i] = (tmp2 & 0x80000000UL) >> 16 | (tmp2 >> 13);
   }
 }
-};
+
+}  // namespace gfx

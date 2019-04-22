@@ -269,7 +269,10 @@ template("generated_types") {
   # Compute the contents of the library/source set.
   lib_sources = invoker.sources + get_target_outputs(":$schema_generator_name")
   lib_public_deps = [ ":$schema_generator_name" ]
-  lib_deps = [ "//tools/json_schema_compiler:generated_api_util" ]
+  lib_deps = [
+    "//base",
+    "//tools/json_schema_compiler:generated_api_util",
+  ]
   lib_extra_configs = [ "//build/config/compiler:no_size_t_to_int_warning" ]
   if (defined(invoker.configs)) {
     lib_extra_configs += invoker.configs

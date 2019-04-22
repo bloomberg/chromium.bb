@@ -16,7 +16,7 @@
 
 #include "api/array_view.h"
 #include "modules/audio_processing/test/test_utils.h"
-#include "rtc_base/criticalsection.h"
+#include "rtc_base/critical_section.h"
 #include "rtc_base/event.h"
 #include "rtc_base/platform_thread.h"
 #include "rtc_base/random.h"
@@ -527,21 +527,20 @@ bool AudioProcessingImplLockTest::MaybeEndTest() {
 void AudioProcessingImplLockTest::SetUp() {
   test_config_ = static_cast<TestConfig>(GetParam());
 
-  ASSERT_EQ(apm_->kNoError, apm_->level_estimator()->Enable(true));
   ASSERT_EQ(apm_->kNoError, apm_->gain_control()->Enable(true));
 
   ASSERT_EQ(apm_->kNoError,
             apm_->gain_control()->set_mode(GainControl::kAdaptiveDigital));
   ASSERT_EQ(apm_->kNoError, apm_->gain_control()->Enable(true));
 
-  ASSERT_EQ(apm_->kNoError, apm_->noise_suppression()->Enable(true));
-  ASSERT_EQ(apm_->kNoError, apm_->voice_detection()->Enable(true));
-
-  AudioProcessing::Config apm_config;
+  AudioProcessing::Config apm_config = apm_->GetConfig();
   apm_config.echo_canceller.enabled =
       (test_config_.aec_type != AecType::AecTurnedOff);
   apm_config.echo_canceller.mobile_mode =
       (test_config_.aec_type == AecType::BasicWebRtcAecSettingsWithAecMobile);
+  apm_config.noise_suppression.enabled = true;
+  apm_config.voice_detection.enabled = true;
+  apm_config.level_estimation.enabled = true;
   apm_->ApplyConfig(apm_config);
 
   Config config;
@@ -584,11 +583,13 @@ bool StatsProcessor::Process() {
     EXPECT_FALSE(apm_config.echo_canceller.enabled);
   }
   EXPECT_TRUE(apm_->gain_control()->is_enabled());
-  EXPECT_TRUE(apm_->noise_suppression()->is_enabled());
+  EXPECT_TRUE(apm_config.noise_suppression.enabled);
 
   // The below return values are not testable.
   apm_->noise_suppression()->speech_probability();
   apm_->voice_detection()->is_enabled();
+
+  apm_->GetStatistics(/*has_remote_tracks=*/true);
 
   return true;
 }
@@ -1108,12 +1109,12 @@ TEST_P(AudioProcessingImplLockTest, LockTest) {
 }
 
 // Instantiate tests from the extreme test configuration set.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DISABLED_AudioProcessingImplLockExtensive,
     AudioProcessingImplLockTest,
     ::testing::ValuesIn(TestConfig::GenerateExtensiveTestConfigs()));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AudioProcessingImplLockBrief,
     AudioProcessingImplLockTest,
     ::testing::ValuesIn(TestConfig::GenerateBriefTestConfigs()));

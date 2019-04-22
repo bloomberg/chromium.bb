@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
   <svg id="svg1">
     <title>svg1-title</title>
@@ -20,9 +14,4 @@ test(function(t) {
   assert_equals(axSvg1.name, "svg1-title");
   assert_equals(axSvg1.nameFrom, "relatedElement");
 }, "SVG element with title element");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

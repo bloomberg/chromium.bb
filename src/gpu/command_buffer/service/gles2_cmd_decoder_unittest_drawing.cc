@@ -72,9 +72,9 @@ class GLES2DecoderGeometryInstancingTest : public GLES2DecoderWithShaderTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderGeometryInstancingTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderGeometryInstancingTest,
+                         ::testing::Bool());
 
 void GLES2DecoderManualInitTest::DirtyStateMaskTest(GLuint color_bits,
                                                     bool depth_mask,

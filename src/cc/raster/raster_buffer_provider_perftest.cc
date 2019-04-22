@@ -5,11 +5,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "base/timer/lap_timer.h"
 #include "build/build_config.h"
-#include "cc/base/lap_timer.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
 #include "cc/raster/one_copy_raster_buffer_provider.h"
@@ -67,6 +66,8 @@ class PerfGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
     if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)
       *params = 1;
   }
+
+  // Overridden from gpu::InterfaceBase
   void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override {
     // Copy the data over after setting the data to ensure alignment.
     gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO,
@@ -86,7 +87,7 @@ class PerfContextProvider
     capabilities_.sync_query = true;
 
     raster_context_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
-        context_gl_.get(), capabilities_);
+        context_gl_.get());
   }
 
   // viz::ContextProvider implementation.
@@ -182,6 +183,9 @@ class PerfTileTask : public TileTask {
 class PerfImageDecodeTaskImpl : public PerfTileTask {
  public:
   PerfImageDecodeTaskImpl() = default;
+  PerfImageDecodeTaskImpl(const PerfImageDecodeTaskImpl&) = delete;
+
+  PerfImageDecodeTaskImpl& operator=(const PerfImageDecodeTaskImpl&) = delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
@@ -191,9 +195,6 @@ class PerfImageDecodeTaskImpl : public PerfTileTask {
 
  protected:
   ~PerfImageDecodeTaskImpl() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PerfImageDecodeTaskImpl);
 };
 
 class PerfRasterBufferProviderHelper {
@@ -214,6 +215,8 @@ class PerfRasterTaskImpl : public PerfTileTask {
         pool_(pool),
         resource_(std::move(in_use_resource)),
         raster_buffer_(std::move(raster_buffer)) {}
+  PerfRasterTaskImpl(const PerfRasterTaskImpl&) = delete;
+  PerfRasterTaskImpl& operator=(const PerfRasterTaskImpl&) = delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
@@ -236,8 +239,6 @@ class PerfRasterTaskImpl : public PerfTileTask {
   ResourcePool* const pool_;
   ResourcePool::InUsePoolResource resource_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(PerfRasterTaskImpl);
 };
 
 class RasterBufferProviderPerfTestBase {
@@ -340,7 +341,7 @@ class RasterBufferProviderPerfTestBase {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   std::unique_ptr<ResourcePool> resource_pool_;
   std::unique_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
-  LapTimer timer_;
+  base::LapTimer timer_;
 };
 
 class RasterBufferProviderPerfTest
@@ -561,12 +562,13 @@ TEST_P(RasterBufferProviderPerfTest, ScheduleAndExecuteTasks) {
   RunScheduleAndExecuteTasksTest("32_4", 32, 4);
 }
 
-INSTANTIATE_TEST_CASE_P(RasterBufferProviderPerfTests,
-                        RasterBufferProviderPerfTest,
-                        ::testing::Values(RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY,
-                                          RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY,
-                                          RASTER_BUFFER_PROVIDER_TYPE_GPU,
-                                          RASTER_BUFFER_PROVIDER_TYPE_BITMAP));
+INSTANTIATE_TEST_SUITE_P(
+    RasterBufferProviderPerfTests,
+    RasterBufferProviderPerfTest,
+    ::testing::Values(RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY,
+                      RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY,
+                      RASTER_BUFFER_PROVIDER_TYPE_GPU,
+                      RASTER_BUFFER_PROVIDER_TYPE_BITMAP));
 
 class RasterBufferProviderCommonPerfTest
     : public RasterBufferProviderPerfTestBase,

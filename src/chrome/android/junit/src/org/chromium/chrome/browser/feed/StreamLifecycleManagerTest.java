@@ -15,8 +15,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.tab.Tab.TabHidingType.CHANGED_TABS;
-import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_NEW;
-import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_USER;
+import static org.chromium.chrome.browser.tabmodel.TabSelectionType.FROM_NEW;
+import static org.chromium.chrome.browser.tabmodel.TabSelectionType.FROM_USER;
 
 import android.app.Activity;
 import android.support.test.filters.SmallTest;

@@ -4,14 +4,16 @@
 
 #include "components/arc/media_session/arc_media_session_bridge.h"
 
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "content/public/common/service_manager_connection.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -40,7 +42,8 @@ class ArcMediaSessionBridgeFactory
 };
 
 bool IsArcUnifiedAudioFocusEnabled() {
-  return media_session::IsAudioFocusEnabled() &&
+  return base::FeatureList::IsEnabled(
+             media_session::features::kMediaSessionService) &&
          base::FeatureList::IsEnabled(kEnableUnifiedAudioFocusFeature);
 }
 

@@ -28,7 +28,7 @@ namespace constants = tts_extension_api_constants;
 
 namespace events {
 const char kOnEvent[] = "tts.onEvent";
-};  // namespace events
+}  // namespace events
 
 const char* TtsEventTypeToString(TtsEventType event_type) {
   switch (event_type) {

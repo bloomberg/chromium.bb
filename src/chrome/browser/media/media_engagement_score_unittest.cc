@@ -159,6 +159,10 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
   void OverrideFieldTrial(int min_visits,
                           double lower_threshold,
                           double upper_threshold) {
+    field_trial_list_.reset();
+    field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
+    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+
     std::map<std::string, std::string> params;
     params[MediaEngagementScore::kScoreMinVisitsParamName] =
         std::to_string(min_visits);
@@ -167,23 +171,9 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
     params[MediaEngagementScore::kHighScoreUpperThresholdParamName] =
         std::to_string(upper_threshold);
 
-    field_trial_list_.reset();
-    field_trial_list_.reset(new base::FieldTrialList(nullptr));
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-
-    const std::string kTrialName = "TrialName";
-    const std::string kGroupName = "GroupName";
-
-    base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-    base::FieldTrial* field_trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->RegisterFieldTrialOverride(
-        media::kMediaEngagementBypassAutoplayPolicies.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
-    base::FeatureList::ClearInstanceForTesting();
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitAndEnableFeatureWithParameters(
+        media::kMediaEngagementBypassAutoplayPolicies, params);
 
     std::map<std::string, std::string> actual_params;
     EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
@@ -194,7 +184,7 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 

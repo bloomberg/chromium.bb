@@ -6,52 +6,72 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "ios/web/web_sub_thread.h"
 #include "ios/web/web_thread_impl.h"
 
 namespace web {
 
-class TestWebThreadImpl : public WebThreadImpl {
- public:
-  TestWebThreadImpl(WebThread::ID identifier) : WebThreadImpl(identifier) {}
-
-  TestWebThreadImpl(WebThread::ID identifier, base::MessageLoop* message_loop)
-      : WebThreadImpl(identifier, message_loop) {}
-
-  ~TestWebThreadImpl() override { Stop(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestWebThreadImpl);
-};
-
 TestWebThread::TestWebThread(WebThread::ID identifier)
-    : impl_(new TestWebThreadImpl(identifier)) {
+    : identifier_(identifier),
+      real_thread_(std::make_unique<WebSubThread>(identifier_)) {
+  real_thread_->AllowBlockingForTesting();
 }
+
+TestWebThread::TestWebThread(
+    WebThread::ID identifier,
+    scoped_refptr<base::SingleThreadTaskRunner> thread_runner)
+    : identifier_(identifier),
+      fake_thread_(new WebThreadImpl(identifier_, thread_runner)) {}
 
 TestWebThread::TestWebThread(WebThread::ID identifier,
                              base::MessageLoop* message_loop)
-    : impl_(new TestWebThreadImpl(identifier, message_loop)) {
-}
+    : TestWebThread(identifier, message_loop->task_runner()) {}
 
 TestWebThread::~TestWebThread() {
-  Stop();
+  // The upcoming WebThreadImpl::ResetGlobalsForTesting() call requires that
+  // |identifier_| completed its shutdown phase.
+  real_thread_.reset();
+  fake_thread_.reset();
+
+  // Resets WebThreadImpl's globals so that |identifier_| is no longer
+  // bound. This is fine since the underlying MessageLoop has already been
+  // flushed and deleted above. In the case of an externally provided
+  // MessageLoop however, this means that TaskRunners obtained through
+  // |WebThreadImpl::GetTaskRunnerForThread(identifier_)| will no longer
+  // recognize their WebThreadImpl for RunsTasksInCurrentSequence(). This
+  // happens most often when such verifications are made from
+  // MessageLoop::DestructionObservers. Callers that care to work around that
+  // should instead use this shutdown sequence:
+  //   1) TestWebThread::Stop()
+  //   2) ~MessageLoop()
+  //   3) ~TestWebThread()
+  // (~TestWebThreadBundle() does this).
+  WebThreadImpl::ResetGlobalsForTesting(identifier_);
 }
 
-bool TestWebThread::Start() {
-  return impl_->Start();
+void TestWebThread::Start() {
+  CHECK(real_thread_->Start());
+  RegisterAsWebThread();
 }
 
-bool TestWebThread::StartIOThread() {
+void TestWebThread::StartIOThread() {
+  StartIOThreadUnregistered();
+  RegisterAsWebThread();
+}
+
+void TestWebThread::StartIOThreadUnregistered() {
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
-  return impl_->StartWithOptions(options);
+  CHECK(real_thread_->StartWithOptions(options));
+}
+
+void TestWebThread::RegisterAsWebThread() {
+  real_thread_->RegisterAsWebThread();
 }
 
 void TestWebThread::Stop() {
-  impl_->Stop();
-}
-
-bool TestWebThread::IsRunning() {
-  return impl_->IsRunning();
+  if (real_thread_)
+    real_thread_->Stop();
 }
 
 }  // namespace web

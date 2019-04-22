@@ -50,10 +50,7 @@
 
     document.addEventListener('webkitfullscreenchange', e => {
       internals.setPersistent(video, true);
-
-      testRunner.layoutAndPaintAsyncThen(() => {
-        testRunner.notifyDone();
-      });
+      testRunner.notifyDone();
     });
   }
 </script>

@@ -10,6 +10,7 @@
 #include "src/message-template.h"
 #include "src/objects/api-callbacks.h"
 #include "src/objects/hash-table-inl.h"
+#include "src/objects/property-cell.h"
 #include "src/objects/templates.h"
 
 namespace v8 {
@@ -68,15 +69,19 @@ MaybeHandle<Object> DefineAccessorProperty(
          !FunctionTemplateInfo::cast(*getter)->do_not_cache());
   DCHECK(!setter->IsFunctionTemplateInfo() ||
          !FunctionTemplateInfo::cast(*setter)->do_not_cache());
-  if (force_instantiate) {
-    if (getter->IsFunctionTemplateInfo()) {
+  if (getter->IsFunctionTemplateInfo()) {
+    if (force_instantiate ||
+        FunctionTemplateInfo::cast(*getter)->BreakAtEntry()) {
       ASSIGN_RETURN_ON_EXCEPTION(
           isolate, getter,
           InstantiateFunction(isolate,
                               Handle<FunctionTemplateInfo>::cast(getter)),
           Object);
     }
-    if (setter->IsFunctionTemplateInfo()) {
+  }
+  if (setter->IsFunctionTemplateInfo()) {
+    if (force_instantiate ||
+        FunctionTemplateInfo::cast(*setter)->BreakAtEntry()) {
       ASSIGN_RETURN_ON_EXCEPTION(
           isolate, setter,
           InstantiateFunction(isolate,
@@ -84,9 +89,10 @@ MaybeHandle<Object> DefineAccessorProperty(
           Object);
     }
   }
-  RETURN_ON_EXCEPTION(isolate, JSObject::DefineAccessor(object, name, getter,
-                                                        setter, attributes),
-                      Object);
+  RETURN_ON_EXCEPTION(
+      isolate,
+      JSObject::DefineAccessor(object, name, getter, setter, attributes),
+      Object);
   return object;
 }
 
@@ -114,8 +120,9 @@ MaybeHandle<Object> DefineDataProperty(Isolate* isolate,
   }
 #endif
 
-  MAYBE_RETURN_NULL(Object::AddDataProperty(
-      &it, value, attributes, kThrowOnError, StoreOrigin::kNamed));
+  MAYBE_RETURN_NULL(Object::AddDataProperty(&it, value, attributes,
+                                            Just(ShouldThrow::kThrowOnError),
+                                            StoreOrigin::kNamed));
   return value;
 }
 
@@ -161,8 +168,7 @@ class AccessCheckDisableScope {
   Handle<JSObject> obj_;
 };
 
-
-Object* GetIntrinsic(Isolate* isolate, v8::Intrinsic intrinsic) {
+Object GetIntrinsic(Isolate* isolate, v8::Intrinsic intrinsic) {
   Handle<Context> native_context = isolate->native_context();
   DCHECK(!native_context.is_null());
   switch (intrinsic) {
@@ -172,9 +178,8 @@ Object* GetIntrinsic(Isolate* isolate, v8::Intrinsic intrinsic) {
     V8_INTRINSICS_LIST(GET_INTRINSIC_VALUE)
 #undef GET_INTRINSIC_VALUE
   }
-  return nullptr;
+  return Object();
 }
-
 
 template <typename TemplateInfoT>
 MaybeHandle<JSObject> ConfigureInstance(Isolate* isolate, Handle<JSObject> obj,
@@ -186,9 +191,9 @@ MaybeHandle<JSObject> ConfigureInstance(Isolate* isolate, Handle<JSObject> obj,
 
   // Walk the inheritance chain and copy all accessors to current object.
   int max_number_of_properties = 0;
-  TemplateInfoT* info = *data;
-  while (info != nullptr) {
-    Object* props = info->property_accessors();
+  TemplateInfoT info = *data;
+  while (!info.is_null()) {
+    Object props = info->property_accessors();
     if (!props->IsUndefined(isolate)) {
       max_number_of_properties += TemplateList::cast(props)->length();
     }
@@ -201,10 +206,10 @@ MaybeHandle<JSObject> ConfigureInstance(Isolate* isolate, Handle<JSObject> obj,
     Handle<FixedArray> array =
         isolate->factory()->NewFixedArray(max_number_of_properties);
 
-    for (Handle<TemplateInfoT> temp(*data, isolate); *temp != nullptr;
+    for (Handle<TemplateInfoT> temp(*data, isolate); !temp->is_null();
          temp = handle(temp->GetParent(isolate), isolate)) {
       // Accumulate accessors.
-      Object* maybe_properties = temp->property_accessors();
+      Object maybe_properties = temp->property_accessors();
       if (!maybe_properties->IsUndefined(isolate)) {
         valid_descriptors = AccessorInfo::AppendUnique(
             isolate, handle(maybe_properties, isolate), array,
@@ -222,7 +227,7 @@ MaybeHandle<JSObject> ConfigureInstance(Isolate* isolate, Handle<JSObject> obj,
     }
   }
 
-  Object* maybe_property_list = data->property_list();
+  Object maybe_property_list = data->property_list();
   if (maybe_property_list->IsUndefined(isolate)) return obj;
   Handle<TemplateList> properties(TemplateList::cast(maybe_property_list),
                                   isolate);
@@ -231,7 +236,7 @@ MaybeHandle<JSObject> ConfigureInstance(Isolate* isolate, Handle<JSObject> obj,
   int i = 0;
   for (int c = 0; c < data->number_of_properties(); c++) {
     auto name = handle(Name::cast(properties->get(i++)), isolate);
-    Object* bit = properties->get(i++);
+    Object bit = properties->get(i++);
     if (bit->IsSmi()) {
       PropertyDetails details(Smi::cast(bit));
       PropertyAttributes attributes = details.attributes();
@@ -347,12 +352,12 @@ void UncacheTemplateInstantiation(Isolate* isolate, int serial_number,
   }
 }
 
-bool IsSimpleInstantiation(Isolate* isolate, ObjectTemplateInfo* info,
-                           JSReceiver* new_target) {
+bool IsSimpleInstantiation(Isolate* isolate, ObjectTemplateInfo info,
+                           JSReceiver new_target) {
   DisallowHeapAllocation no_gc;
 
   if (!new_target->IsJSFunction()) return false;
-  JSFunction* fun = JSFunction::cast(new_target);
+  JSFunction fun = JSFunction::cast(new_target);
   if (fun->shared()->function_data() != info->constructor()) return false;
   if (info->immutable_proto()) return false;
   return fun->context()->native_context() == isolate->raw_native_context();
@@ -383,7 +388,7 @@ MaybeHandle<JSObject> InstantiateObject(Isolate* isolate,
   }
 
   if (constructor.is_null()) {
-    Object* maybe_constructor_info = info->constructor();
+    Object maybe_constructor_info = info->constructor();
     if (maybe_constructor_info->IsUndefined(isolate)) {
       constructor = isolate->object_function();
     } else {
@@ -432,7 +437,7 @@ MaybeHandle<JSObject> InstantiateObject(Isolate* isolate,
 
 namespace {
 MaybeHandle<Object> GetInstancePrototype(Isolate* isolate,
-                                         Object* function_template) {
+                                         Object function_template) {
   // Enter a new scope.  Recursion could otherwise create a lot of handles.
   HandleScope scope(isolate);
   Handle<JSFunction> parent_instance;
@@ -467,9 +472,9 @@ MaybeHandle<JSFunction> InstantiateFunction(Isolate* isolate,
   }
   Handle<Object> prototype;
   if (!data->remove_prototype()) {
-    Object* prototype_templ = data->GetPrototypeTemplate();
+    Object prototype_templ = data->GetPrototypeTemplate();
     if (prototype_templ->IsUndefined(isolate)) {
-      Object* protoype_provider_templ = data->GetPrototypeProviderTemplate();
+      Object protoype_provider_templ = data->GetPrototypeProviderTemplate();
       if (protoype_provider_templ->IsUndefined(isolate)) {
         prototype = isolate->factory()->NewJSObject(isolate->object_function());
       } else {
@@ -486,14 +491,15 @@ MaybeHandle<JSFunction> InstantiateFunction(Isolate* isolate,
               Handle<JSReceiver>(), data->hidden_prototype(), true),
           JSFunction);
     }
-    Object* parent = data->GetParentTemplate();
+    Object parent = data->GetParentTemplate();
     if (!parent->IsUndefined(isolate)) {
       Handle<Object> parent_prototype;
       ASSIGN_RETURN_ON_EXCEPTION(isolate, parent_prototype,
                                  GetInstancePrototype(isolate, parent),
                                  JSFunction);
+      CHECK(parent_prototype->IsHeapObject());
       JSObject::ForceSetPrototype(Handle<JSObject>::cast(prototype),
-                                  parent_prototype);
+                                  Handle<HeapObject>::cast(parent_prototype));
     }
   }
   InstanceType function_type =
@@ -526,7 +532,7 @@ MaybeHandle<JSFunction> InstantiateFunction(Isolate* isolate,
 
 void AddPropertyToPropertyList(Isolate* isolate, Handle<TemplateInfo> templ,
                                int length, Handle<Object>* data) {
-  Object* maybe_list = templ->property_list();
+  Object maybe_list = templ->property_list();
   Handle<TemplateList> list;
   if (maybe_list->IsUndefined(isolate)) {
     list = TemplateList::New(isolate, length);
@@ -621,7 +627,7 @@ void ApiNatives::AddAccessorProperty(Isolate* isolate,
 void ApiNatives::AddNativeDataProperty(Isolate* isolate,
                                        Handle<TemplateInfo> info,
                                        Handle<AccessorInfo> property) {
-  Object* maybe_list = info->property_accessors();
+  Object maybe_list = info->property_accessors();
   Handle<TemplateList> list;
   if (maybe_list->IsUndefined(isolate)) {
     list = TemplateList::New(isolate, 1);

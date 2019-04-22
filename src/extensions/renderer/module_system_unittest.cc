@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "extensions/renderer/module_system_test.h"
 
 namespace extensions {
@@ -20,10 +21,11 @@ class CounterNatives : public ObjectBackedNativeHandler {
 
   // ObjectBackedNativeHandler:
   void AddRoutes() override {
-    RouteHandlerFunction(
-        "Get", base::Bind(&CounterNatives::Get, base::Unretained(this)));
-    RouteHandlerFunction("Increment", base::Bind(&CounterNatives::Increment,
-                                                 base::Unretained(this)));
+    RouteHandlerFunction("Get", base::BindRepeating(&CounterNatives::Get,
+                                                    base::Unretained(this)));
+    RouteHandlerFunction("Increment",
+                         base::BindRepeating(&CounterNatives::Increment,
+                                             base::Unretained(this)));
   }
 
   void Get(const v8::FunctionCallbackInfo<v8::Value>& args) {

@@ -7,6 +7,12 @@
 #import <CoreWLAN/CoreWLAN.h>
 #import <Foundation/Foundation.h>
 
+// This file uses the deprecated CWInterface API, but CWWiFiClient appears to be
+// different in ways that are relevant to this code, so for now ignore the
+// deprecation. See <https://crbug.com/841631>.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
@@ -104,7 +110,7 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
   // one interface did not fail.
   return interface_error_count == 0 ||
          [supported_interfaces count] > interface_error_count;
-};
+}
 
 // The time periods, in milliseconds, between successive polls of the wifi data.
 const int kDefaultPollingInterval = 120000;                // 2 mins
@@ -135,3 +141,5 @@ std::unique_ptr<WifiPollingPolicy> WifiDataProviderMac::CreatePollingPolicy() {
 }
 
 }  // namespace device
+
+#pragma clang diagnostic pop

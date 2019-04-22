@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
 #include "fxjs/cjs_event_context.h"
 #include "fxjs/cjs_eventhandler.h"
@@ -24,7 +25,7 @@
 #include "fxjs/js_define.h"
 #include "fxjs/js_resources.h"
 
-#if _FX_OS_ == _FX_OS_ANDROID_
+#if defined(OS_ANDROID)
 #include <ctype.h>
 #endif
 
@@ -222,45 +223,45 @@ CJS_Result CJS_Util::printd(CJS_Runtime* pRuntime,
                       TbConvertTable[i].lpszCppMark);
       iStart = iEnd;
     }
-    }
+  }
 
-    if (year < 0)
-      return CJS_Result::Failure(JSMessage::kValueError);
+  if (year < 0)
+    return CJS_Result::Failure(JSMessage::kValueError);
 
-    const TbConvertAdditional cTableAd[] = {
-        {L"m", month}, {L"d", day},
-        {L"H", hour},  {L"h", hour > 12 ? hour - 12 : hour},
-        {L"M", min},   {L"s", sec},
-    };
+  const TbConvertAdditional cTableAd[] = {
+      {L"m", month}, {L"d", day},
+      {L"H", hour},  {L"h", hour > 12 ? hour - 12 : hour},
+      {L"M", min},   {L"s", sec},
+  };
 
-    for (size_t i = 0; i < FX_ArraySize(cTableAd); ++i) {
-      int iStart = 0;
-      int iEnd;
-      while ((iEnd = cFormat.find(cTableAd[i].lpszJSMark, iStart)) != -1) {
-        if (iEnd > 0) {
-          if (cFormat[iEnd - 1] == L'%') {
-            iStart = iEnd + 1;
-            continue;
-          }
+  for (size_t i = 0; i < FX_ArraySize(cTableAd); ++i) {
+    int iStart = 0;
+    int iEnd;
+    while ((iEnd = cFormat.find(cTableAd[i].lpszJSMark, iStart)) != -1) {
+      if (iEnd > 0) {
+        if (cFormat[iEnd - 1] == L'%') {
+          iStart = iEnd + 1;
+          continue;
         }
-        cFormat.replace(iEnd, wcslen(cTableAd[i].lpszJSMark),
-                        WideString::Format(L"%d", cTableAd[i].iValue).c_str());
-        iStart = iEnd;
       }
+      cFormat.replace(iEnd, wcslen(cTableAd[i].lpszJSMark),
+                      WideString::Format(L"%d", cTableAd[i].iValue).c_str());
+      iStart = iEnd;
     }
+  }
 
-    struct tm time = {};
-    time.tm_year = year - 1900;
-    time.tm_mon = month - 1;
-    time.tm_mday = day;
-    time.tm_hour = hour;
-    time.tm_min = min;
-    time.tm_sec = sec;
+  struct tm time = {};
+  time.tm_year = year - 1900;
+  time.tm_mon = month - 1;
+  time.tm_mday = day;
+  time.tm_hour = hour;
+  time.tm_min = min;
+  time.tm_sec = sec;
 
-    wchar_t buf[64] = {};
-    FXSYS_wcsftime(buf, 64, cFormat.c_str(), &time);
-    cFormat = buf;
-    return CJS_Result::Success(pRuntime->NewString(cFormat.c_str()));
+  wchar_t buf[64] = {};
+  FXSYS_wcsftime(buf, 64, cFormat.c_str(), &time);
+  cFormat = buf;
+  return CJS_Result::Success(pRuntime->NewString(cFormat.c_str()));
 }
 
 CJS_Result CJS_Util::printx(CJS_Runtime* pRuntime,
@@ -277,6 +278,7 @@ CJS_Result CJS_Util::printx(CJS_Runtime* pRuntime,
 WideString CJS_Util::StringPrintx(const WideString& wsFormat,
                                   const WideString& wsSource) {
   WideString wsResult;
+  wsResult.Reserve(wsFormat.GetLength());
   size_t iSourceIdx = 0;
   size_t iFormatIdx = 0;
   CaseMode eCaseMode = kPreserveCase;
@@ -336,7 +338,7 @@ WideString CJS_Util::StringPrintx(const WideString& wsFormat,
       } break;
       case '9': {
         if (iSourceIdx < wsSource.GetLength()) {
-          if (std::iswdigit(wsSource[iSourceIdx])) {
+          if (FXSYS_IsDecimalDigit(wsSource[iSourceIdx])) {
             wsResult += wsSource[iSourceIdx];
             ++iFormatIdx;
           }
@@ -421,7 +423,7 @@ int CJS_Util::ParseDataType(std::wstring* sFormat) {
       case WIDTH:
         if (c == L'*')
           return -1;
-        if (std::iswdigit(c)) {
+        if (FXSYS_IsDecimalDigit(c)) {
           // Stay in same state.
         } else if (c == L'.') {
           state = PRECISION;
@@ -433,7 +435,7 @@ int CJS_Util::ParseDataType(std::wstring* sFormat) {
       case PRECISION:
         if (c == L'*')
           return -1;
-        if (std::iswdigit(c)) {
+        if (FXSYS_IsDecimalDigit(c)) {
           // Stay in same state.
           ++precision_digits;
         } else {

@@ -66,11 +66,11 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
   binding_.Bind(mojo::MakeRequest(&proxy_lookup_client));
   binding_.set_connection_error_handler(
       base::BindOnce(&ResolveProxyMsgHelper::OnProxyLookupComplete,
-                     base::Unretained(this), base::nullopt));
+                     base::Unretained(this), net::ERR_ABORTED, base::nullopt));
   owned_self_ = this;
   if (!SendRequestToNetworkService(pending_requests_.front().url,
                                    std::move(proxy_lookup_client))) {
-    OnProxyLookupComplete(base::nullopt);
+    OnProxyLookupComplete(net::ERR_FAILED, base::nullopt);
   }
 }
 
@@ -91,6 +91,7 @@ bool ResolveProxyMsgHelper::SendRequestToNetworkService(
 }
 
 void ResolveProxyMsgHelper::OnProxyLookupComplete(
+    int32_t net_error,
     const base::Optional<net::ProxyInfo>& proxy_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!pending_requests_.empty());

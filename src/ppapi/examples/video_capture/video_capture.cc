@@ -401,7 +401,8 @@ void VCDemoInstance::CreateGLObjects() {
   gles2_if_->EnableVertexAttribArray(context, tc_location);
   gles2_if_->VertexAttribPointer(
       context, tc_location, 2, GL_FLOAT, GL_FALSE, 0,
-      static_cast<float*>(0) + 8);  // Skip position coordinates.
+      reinterpret_cast<void*>(8 *
+                              sizeof(GLfloat)));  // Skip position coordinates.
   AssertNoGLError();
 }
 

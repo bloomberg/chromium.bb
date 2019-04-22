@@ -71,7 +71,8 @@ void CheckPolicyForCookies(const GURL& url,
                            int render_process_id,
                            int render_frame_id,
                            MediaResourceGetterImpl::GetCookieCB callback,
-                           const net::CookieList& cookie_list) {
+                           const net::CookieList& cookie_list,
+                           const net::CookieStatusList& excluded_cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // AllowGetCookie has to be called on IO thread.
@@ -82,20 +83,13 @@ void CheckPolicyForCookies(const GURL& url,
       std::move(callback));
 }
 
-}  // namespace
-
-static void RequestPlaformPathFromFileSystemURL(
-    const GURL& url,
-    int render_process_id,
+void OnSyncGetPlatformPathDone(
     scoped_refptr<storage::FileSystemContext> file_system_context,
-    media::MediaResourceGetter::GetPlatformPathCB callback) {
+    media::MediaResourceGetter::GetPlatformPathCB callback,
+    const base::FilePath& platform_path) {
   DCHECK(file_system_context->default_file_task_runner()
              ->RunsTasksInCurrentSequence());
-  base::FilePath platform_path;
-  SyncGetPlatformPath(file_system_context.get(),
-                      render_process_id,
-                      url,
-                      &platform_path);
+
   base::FilePath data_storage_path;
   base::PathService::Get(base::DIR_ANDROID_APP_DATA, &data_storage_path);
   if (data_storage_path.IsParent(platform_path))
@@ -103,6 +97,20 @@ static void RequestPlaformPathFromFileSystemURL(
   else
     ReturnResultOnUIThread(std::move(callback), std::string());
 }
+
+void RequestPlatformPathFromFileSystemURL(
+    const GURL& url,
+    int render_process_id,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    media::MediaResourceGetter::GetPlatformPathCB callback) {
+  DCHECK(file_system_context->default_file_task_runner()
+             ->RunsTasksInCurrentSequence());
+  SyncGetPlatformPath(file_system_context.get(), render_process_id, url,
+                      base::BindOnce(&OnSyncGetPlatformPathDone,
+                                     file_system_context, std::move(callback)));
+}
+
+}  // namespace
 
 MediaResourceGetterImpl::MediaResourceGetterImpl(
     BrowserContext* browser_context,
@@ -153,8 +161,8 @@ void MediaResourceGetterImpl::GetCookies(const GURL& url,
 
   net::CookieOptions options;
   options.set_include_httponly();
-  options.set_same_site_cookie_mode(
-      net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   options.set_do_not_update_access_time();
   GetCookieServiceForContext(browser_context_)
       ->GetCookieList(
@@ -187,7 +195,7 @@ void MediaResourceGetterImpl::GetPlatformPathFromURL(
 
   scoped_refptr<storage::FileSystemContext> context(file_system_context_);
   context->default_file_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&RequestPlaformPathFromFileSystemURL, url,
+      FROM_HERE, base::BindOnce(&RequestPlatformPathFromFileSystemURL, url,
                                 render_process_id_, context, std::move(cb)));
 }
 

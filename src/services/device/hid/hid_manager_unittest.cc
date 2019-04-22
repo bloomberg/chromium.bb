@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -244,7 +245,7 @@ TEST_F(HidManagerTest, TestHidConnectionInterface) {
   {
     base::RunLoop run_loop;
     hid_manager_->Connect(
-        device0->device_guid(),
+        device0->device_guid(), /*connection_client=*/nullptr,
         base::BindOnce(&OnConnect, run_loop.QuitClosure(), client.get()));
     run_loop.Run();
   }

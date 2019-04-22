@@ -20,6 +20,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/web_test/web_test_content_renderer_client.h"
 #include "content/test/test_content_client.h"
+#include "ui/events/platform/platform_event_source.h"
 
 #if defined(OS_ANDROID)
 #include "content/shell/app/shell_main_delegate.h"
@@ -30,7 +31,11 @@
 #endif
 
 #if !defined(OS_CHROMEOS) && defined(OS_LINUX)
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "content/public/test/network_connection_change_simulator.h"
 #endif
 
 #if defined(USE_AURA) && defined(TOOLKIT_VIEWS)
@@ -99,6 +104,8 @@ void ContentBrowserTest::SetUp() {
   ui::InitializeInputMethodForTesting();
 #endif
 
+  ui::PlatformEventSource::SetIgnoreNativePlatformEvents(true);
+
   BrowserTestBase::SetUp();
 }
 
@@ -116,6 +123,11 @@ void ContentBrowserTest::TearDown() {
 }
 
 void ContentBrowserTest::PreRunTestOnMainThread() {
+#if defined(OS_CHROMEOS)
+  NetworkConnectionChangeSimulator network_change_simulator;
+  network_change_simulator.InitializeChromeosConnectionType();
+#endif
+
   if (!switches::IsRunWebTestsSwitchPresent()) {
     CHECK_EQ(Shell::windows().size(), 1u);
     shell_ = Shell::windows()[0];
@@ -140,9 +152,16 @@ void ContentBrowserTest::PreRunTestOnMainThread() {
 #if defined(OS_MACOSX)
   pool_->Recycle();
 #endif
+
+  pre_run_test_executed_ = true;
 }
 
 void ContentBrowserTest::PostRunTestOnMainThread() {
+  // This code is failing when the test is overriding PreRunTestOnMainThread()
+  // without the required call to ContentBrowserTest::PreRunTestOnMainThread().
+  // This is a common error causing a crash on MAC.
+  DCHECK(pre_run_test_executed_);
+
 #if defined(OS_MACOSX)
   pool_->Recycle();
 #endif

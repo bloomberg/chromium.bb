@@ -147,7 +147,7 @@ Polymer({
   },
 
   focus: function() {
-    this.$.pinKeyboard.focus();
+    this.$.pinKeyboard.focusInput();
   },
 
   /** @override */
@@ -283,10 +283,11 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Custom event containing the new pin.
-   * @private */
+   * @param {!CustomEvent<{pin: string}>} e Custom event containing the new pin.
+   * @private
+   */
   onPinChange_: function(e) {
-    const newPin = /** @type {{pin: string}} */ (e.detail).pin;
+    const newPin = e.detail.pin;
     if (!this.isConfirmStep) {
       if (newPin) {
         this.quickUnlockPrivate.checkCredential(
@@ -327,14 +328,15 @@ Polymer({
   /** This is called by container object when user initiated submit. */
   doSubmit: function() {
     if (!this.isConfirmStep) {
-      if (!this.enableSubmit)
+      if (!this.enableSubmit) {
         return;
+      }
       this.initialPin_ = this.pinKeyboardValue_;
       this.pinKeyboardValue_ = '';
       this.isConfirmStep = true;
       this.onPinChange_(new CustomEvent(
           'pin-change', {detail: {pin: this.pinKeyboardValue_}}));
-      this.$.pinKeyboard.focus();
+      this.$.pinKeyboard.focusInput();
       this.writeUma(LockScreenProgress.ENTER_PIN);
       return;
     }
@@ -344,7 +346,7 @@ Polymer({
       this.showProblem_(MessageType.MISMATCH, ProblemType.ERROR);
       this.enableSubmit = false;
       // Focus the PIN keyboard and highlight the entire PIN.
-      this.$.pinKeyboard.focus(0, this.pinKeyboardValue_.length + 1);
+      this.$.pinKeyboard.focusInput(0, this.pinKeyboardValue_.length + 1);
       return;
     }
 

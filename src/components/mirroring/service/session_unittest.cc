@@ -99,7 +99,7 @@ class SessionTest : public mojom::ResourceProvider,
     EXPECT_TRUE(message->message_namespace == mojom::kWebRtcNamespace ||
                 message->message_namespace == mojom::kRemotingNamespace);
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(message->json_format_data);
+        base::JSONReader::ReadDeprecated(message->json_format_data);
     ASSERT_TRUE(value);
     std::string message_type;
     EXPECT_TRUE(GetString(*value, "type", &message_type));

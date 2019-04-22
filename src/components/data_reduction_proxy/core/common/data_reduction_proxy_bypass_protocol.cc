@@ -27,6 +27,8 @@ namespace data_reduction_proxy {
 
 namespace {
 
+static const char kDataReductionCoreProxy[] = "proxy.googlezip.net";
+
 // Returns the Data Reduction Proxy servers in |proxy_type_info| that should be
 // marked bad according to |data_reduction_proxy_info|.
 std::vector<net::ProxyServer> GetProxiesToMarkBad(
@@ -60,10 +62,49 @@ void ReportResponseProxyServerStatusHistogram(
 
 }  // namespace
 
-DataReductionProxyBypassProtocol::DataReductionProxyBypassProtocol(Stats* stats)
-    : stats_(stats) {}
+void RecordDataReductionProxyBypassInfo(
+    bool is_primary,
+    bool bypass_all,
+    DataReductionProxyBypassType bypass_type) {
+  if (bypass_all) {
+    if (is_primary) {
+      UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BlockTypePrimary",
+                                bypass_type, BYPASS_EVENT_TYPE_MAX);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BlockTypeFallback",
+                                bypass_type, BYPASS_EVENT_TYPE_MAX);
+    }
+  } else {
+    if (is_primary) {
+      UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BypassTypePrimary",
+                                bypass_type, BYPASS_EVENT_TYPE_MAX);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BypassTypeFallback",
+                                bypass_type, BYPASS_EVENT_TYPE_MAX);
+    }
+  }
+}
 
-DataReductionProxyBypassProtocol::Stats::~Stats() = default;
+void DetectAndRecordMissingViaHeaderResponseCode(
+    bool is_primary,
+    const net::HttpResponseHeaders& headers) {
+  if (HasDataReductionProxyViaHeader(headers, nullptr)) {
+    // The data reduction proxy via header is present, so don't record anything.
+    return;
+  }
+
+  if (is_primary) {
+    base::UmaHistogramSparse(
+        "DataReductionProxy.MissingViaHeader.ResponseCode.Primary",
+        headers.response_code());
+  } else {
+    base::UmaHistogramSparse(
+        "DataReductionProxy.MissingViaHeader.ResponseCode.Fallback",
+        headers.response_code());
+  }
+}
+
+DataReductionProxyBypassProtocol::DataReductionProxyBypassProtocol() = default;
 
 bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
     const std::string& method,
@@ -120,7 +161,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
       // TODO(sclittle): Remove this workaround once http://crbug.com/876776 is
       // fixed.
       placeholder_proxy_servers.push_back(
-          DataReductionProxyServer(proxy_server, ProxyServer_ProxyType_CORE));
+          DataReductionProxyServer(proxy_server));
     } else {
       ReportResponseProxyServerStatusHistogram(
           RESPONSE_PROXY_SERVER_STATUS_DRP);
@@ -185,7 +226,6 @@ bool DataReductionProxyBypassProtocol::HandleInvalidResponseHeadersCase(
   data_reduction_proxy_info->bypass_all = false;
   data_reduction_proxy_info->mark_proxies_as_bad = true;
   data_reduction_proxy_info->bypass_duration = base::TimeDelta::FromMinutes(5);
-  data_reduction_proxy_info->bypass_action = BYPASS_ACTION_TYPE_BYPASS;
   *bypass_type = BYPASS_EVENT_TYPE_MEDIUM;
 
   return true;
@@ -207,10 +247,8 @@ bool DataReductionProxyBypassProtocol::HandleValidResponseHeadersCase(
 
   // At this point, the response is expected to have the data reduction proxy
   // via header, so detect and report cases where the via header is missing.
-  if (stats_) {
-    stats_->DetectAndRecordMissingViaHeaderResponseCode(
-        data_reduction_proxy_type_info.proxy_index == 0U, *response_headers);
-  }
+  DetectAndRecordMissingViaHeaderResponseCode(
+      data_reduction_proxy_type_info.proxy_index == 0U, *response_headers);
 
   // GetDataReductionProxyBypassType will only log a net_log event if a bypass
   // command was sent via the data reduction proxy headers.
@@ -231,11 +269,11 @@ bool DataReductionProxyBypassProtocol::HandleValidResponseHeadersCase(
           .proxy_server();
 
   // Only record UMA if the proxy isn't already on the retry list.
-  if (stats_ && !IsProxyBypassedAtTime(proxy_retry_info, proxy_server,
-                                       base::TimeTicks::Now(), nullptr)) {
-    stats_->RecordDataReductionProxyBypassInfo(
+  if (!IsProxyBypassedAtTime(proxy_retry_info, proxy_server,
+                             base::TimeTicks::Now(), nullptr)) {
+    RecordDataReductionProxyBypassInfo(
         data_reduction_proxy_type_info.proxy_index == 0U,
-        data_reduction_proxy_info->bypass_all, proxy_server, *bypass_type);
+        data_reduction_proxy_info->bypass_all, *bypass_type);
   }
   return true;
 }
@@ -254,6 +292,19 @@ bool IsProxyBypassedAtTime(const net::ProxyRetryInfoMap& retry_map,
     *retry_delay = found->second.current_delay;
 
   return true;
+}
+
+bool IsQuicProxy(const net::ProxyServer& proxy_server) {
+  // Enable QUIC for whitelisted proxies.
+  return params::IsQuicEnabledForNonCoreProxies() ||
+         proxy_server ==
+             net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
+                              net::HostPortPair(kDataReductionCoreProxy, 443));
+}
+
+void RecordQuicProxyStatus(QuicProxyStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.Quic.ProxyStatus", status,
+                            QUIC_PROXY_STATUS_BOUNDARY);
 }
 
 }  // namespace data_reduction_proxy

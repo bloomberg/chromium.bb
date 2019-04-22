@@ -88,6 +88,8 @@ void ConnectOnUIThread(
 
 }  // namespace
 
+void CastSocket::Observer::OnReadyStateChanged(const CastSocket& socket) {}
+
 CastSocketImpl::CastSocketImpl(NetworkContextGetter network_context_getter,
                                const CastSocketOpenParams& open_params,
                                const scoped_refptr<Logger>& logger)
@@ -597,11 +599,11 @@ void CastSocketImpl::DoConnectCallback() {
   connect_callbacks_.clear();
 }
 
-void CastSocketImpl::Close(const net::CompletionCallback& callback) {
+void CastSocketImpl::Close(net::CompletionOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   CloseInternal();
   // Run this callback last.  It may delete the socket.
-  callback.Run(net::OK);
+  std::move(callback).Run(net::OK);
 }
 
 void CastSocketImpl::CloseInternal() {
@@ -642,8 +644,11 @@ void CastSocketImpl::SetConnectState(ConnectionState connect_state) {
 }
 
 void CastSocketImpl::SetReadyState(ReadyState ready_state) {
-  if (ready_state_ != ready_state)
+  if (ready_state_ != ready_state) {
     ready_state_ = ready_state;
+    for (auto& observer : observers_)
+      observer.OnReadyStateChanged(*this);
+  }
 }
 
 void CastSocketImpl::SetErrorState(ChannelError error_state) {

@@ -8,8 +8,8 @@
 #include <drm_mode.h>
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 

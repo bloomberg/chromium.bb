@@ -20,8 +20,8 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
-using buzz::QName;
-using buzz::XmlElement;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlElement;
 
 using testing::NotNull;
 using testing::Return;
@@ -71,7 +71,7 @@ class HostChangeNotificationListenerTest : public testing::Test {
   std::unique_ptr<XmlElement> GetNotificationStanza(std::string operation,
                                                     std::string hostId,
                                                     std::string botJid) {
-    std::unique_ptr<XmlElement> stanza(new XmlElement(buzz::QN_IQ));
+    std::unique_ptr<XmlElement> stanza(new XmlElement(jingle_xmpp::QN_IQ));
     stanza->AddAttr(QName(std::string(), "type"), "set");
     XmlElement* host_changed =
         new XmlElement(QName(kChromotingXmlNamespace, "host-changed"));
@@ -79,8 +79,8 @@ class HostChangeNotificationListenerTest : public testing::Test {
                           operation);
     host_changed->AddAttr(QName(kChromotingXmlNamespace, "hostid"), hostId);
     stanza->AddElement(host_changed);
-    stanza->AddAttr(buzz::QN_FROM, botJid);
-    stanza->AddAttr(buzz::QN_TO, kTestJid);
+    stanza->AddAttr(jingle_xmpp::QN_FROM, botJid);
+    stanza->AddAttr(jingle_xmpp::QN_TO, kTestJid);
     return stanza;
   }
 

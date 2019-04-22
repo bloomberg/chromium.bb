@@ -15,13 +15,14 @@
 #include <iostream>
 #include <limits>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/containers/hash_tables.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/format_macros.h"
@@ -123,7 +124,7 @@ bool PageIsUnevictable(const PageInfo& page_info) {
 }
 
 // Number of times a physical page is mapped in a process.
-typedef base::hash_map<uint64_t, int> PFNMap;
+typedef std::unordered_map<uint64_t, int> PFNMap;
 
 // Parses lines from /proc/<PID>/maps, e.g.:
 // 401e7000-401f5000 r-xp 00000000 103:02 158       /system/bin/linker
@@ -291,7 +292,7 @@ void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
   FillPFNMaps(*processes_memory, &pfn_maps);
   // Hash set keeping track of the physical pages mapped in a single process so
   // that they can be counted only once.
-  base::hash_set<uint64_t> physical_pages_mapped_in_process;
+  std::unordered_set<uint64_t> physical_pages_mapped_in_process;
 
   for (std::vector<ProcessMemory>::iterator it = processes_memory->begin();
        it != processes_memory->end(); ++it) {
@@ -313,7 +314,7 @@ void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
           continue;
         }
         const uint64_t page_frame_number = page_info.page_frame_number;
-        const std::pair<base::hash_set<uint64_t>::iterator, bool> result =
+        const std::pair<std::unordered_set<uint64_t>::iterator, bool> result =
             physical_pages_mapped_in_process.insert(page_frame_number);
         const bool did_insert = result.second;
         if (!did_insert) {
@@ -363,9 +364,9 @@ void AppendAppSharedField(const std::vector<PageCount>& app_shared_pages,
   out->append("[");
   for (std::vector<PageCount>::const_iterator it = app_shared_pages.begin();
        it != app_shared_pages.end(); ++it) {
-    out->append(base::IntToString(it->total_count * kPageSize));
+    out->append(base::NumberToString(it->total_count * kPageSize));
     out->append(":");
-    out->append(base::IntToString(it->unevictable_count * kPageSize));
+    out->append(base::NumberToString(it->unevictable_count * kPageSize));
     if (it + 1 != app_shared_pages.end())
       out->append(",");
   }

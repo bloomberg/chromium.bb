@@ -108,15 +108,12 @@ class BASE_EXPORT StackTrace {
   void InitTrace(const _CONTEXT* context_record);
 #endif
 
-#if defined(OS_WIN) || defined(OS_ANDROID)
-  // From http://msdn.microsoft.com/en-us/library/bb204633.aspx,
-  // the sum of FramesToSkip and FramesToCapture must be less than 63,
-  // so set it to 62.
-  // Testing indicates that Android has issues with a larger value
-  // here, so leave Android at 62 also.
+#if defined(OS_ANDROID)
+  // TODO(https://crbug.com/925525): Testing indicates that Android has issues
+  // with a larger value here, so leave Android at 62.
   static constexpr int kMaxTraces = 62;
 #else
-  // For other architectures, use 250. This seems reasonable without
+  // For other platforms, use 250. This seems reasonable without
   // being huge.
   static constexpr int kMaxTraces = 250;
 #endif
@@ -126,6 +123,13 @@ class BASE_EXPORT StackTrace {
   // The number of valid frames in |trace_|.
   size_t count_;
 };
+
+// Forwards to StackTrace::OutputToStream().
+BASE_EXPORT std::ostream& operator<<(std::ostream& os, const StackTrace& s);
+
+// Record a stack trace with up to |count| frames into |trace|. Returns the
+// number of frames read.
+BASE_EXPORT size_t CollectStackTrace(void** trace, size_t count);
 
 #if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 // Traces the stack by using frame pointers. This function is faster but less

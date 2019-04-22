@@ -6,6 +6,7 @@
 
 #include "src/utils.h"
 #include "src/v8memory.h"
+#include "src/vector.h"
 
 namespace v8 {
 namespace internal {
@@ -36,15 +37,17 @@ void TraceMemoryOperation(ExecutionTier tier, const MemoryTracingInfo* info,
   }
   const char* eng = "?";
   switch (tier) {
-    case ExecutionTier::kOptimized:
+    case ExecutionTier::kTurbofan:
       eng = "turbofan";
       break;
-    case ExecutionTier::kBaseline:
+    case ExecutionTier::kLiftoff:
       eng = "liftoff";
       break;
     case ExecutionTier::kInterpreter:
       eng = "interpreter";
       break;
+    case ExecutionTier::kNone:
+      UNREACHABLE();
   }
   printf("%-11s func:%6d+0x%-6x%s %08x val: %s\n", eng, func_index, position,
          info->is_store ? " store to" : "load from", info->address,

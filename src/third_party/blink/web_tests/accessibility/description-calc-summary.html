@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
   <details id="details1">
     <p>details1-content</p>
@@ -58,9 +52,4 @@ test(function(t) {
     assert_equals(axSummary3.description, "summary3-contents");
     assert_equals(axSummary3.descriptionFrom, "contents");
 }, "Summary with aria-label and contents");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

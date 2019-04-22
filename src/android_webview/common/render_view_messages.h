@@ -85,7 +85,12 @@ IPC_MESSAGE_CONTROL1(AwViewMsg_SetJsOnlineProperty,
 IPC_MESSAGE_ROUTED3(AwViewMsg_SmoothScroll,
                     int /* target_x */,
                     int /* target_y */,
-                    int /* duration_ms */)
+                    uint64_t /* duration_ms */)
+
+// Sent to inform renderers whether the internal error page should be shown or
+// not.
+IPC_MESSAGE_ROUTED1(AwViewMsg_WillSuppressErrorPage,
+                    bool /* will_suppress_error_page */)
 
 //-----------------------------------------------------------------------------
 // RenderView messages

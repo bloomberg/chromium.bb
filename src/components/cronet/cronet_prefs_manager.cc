@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -13,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/cronet/host_cache_persistence_manager.h"
 #include "components/prefs/json_pref_store.h"
@@ -239,8 +241,7 @@ CronetPrefsManager::CronetPrefsManager(
   PrefServiceFactory factory;
   factory.set_user_prefs(json_pref_store_);
   scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
-  registry->RegisterDictionaryPref(kHttpServerPropertiesPref,
-                                   std::make_unique<base::DictionaryValue>());
+  registry->RegisterDictionaryPref(kHttpServerPropertiesPref);
 
   if (enable_network_quality_estimator) {
     // Use lossy prefs to limit the overhead of reading/writing the prefs.

@@ -5,12 +5,11 @@ responsiveness, smoothness, memory, power or other key performance metrics.
 We seek to integrate a world-class benchmarking framework and performance
 monitoring tools into Chrome's release process.
 
-TL: sullivan@chromium.org<br>
-TPM: benhenry@chromium.org
+TPM: benhenry@chromium.org, ushesh@chromium.org
  
 Speed Operations consists of 3 teams, working in tandem:
 
-## Benchmarks
+## Benchmarking and Telemetry
 The benchmarks team provides:
   * A set of [releasing-oriented benchmarks](https://docs.google.com/document/d/1BM_6lBrPzpMNMtcyi2NFKGIzmzIQ1oH3OlNG27kDGNU/edit)
     that measure key user-visible performance metrics in important scenarios.
@@ -23,11 +22,10 @@ The benchmarks team provides:
     real device types, on Windows, Mac, Linux, and Android, with hardware power
     monitoring.
 
-TL: nednguyen@chromium.org<br>
-Contact: benchmarking-dev@chromium.org
+TL: crouleau@chromium.org
 
-## Services
-The [services](chrome_speed_services.md) team provides:
+## Speed Tooling
+The [tooling](chrome_speed_services.md) team provides:
   * The [Chrome performance dashboard](https://chromeperf.appspot.com), which
     stores performance timeseries and related debugging data. The dashboard
     automatically detects regressions in these timeseries and has integration
@@ -39,9 +37,8 @@ The [services](chrome_speed_services.md) team provides:
     we use in the continuous build.
 
 TL: simonhatch@chromium.org<br>
-Contact: speed-services-dev@chromium.org
 
-## Releasing
+## Releasing and System Health
 The releasing team provides:
   * Tracking of all performance regressions seen in user-visible performance
     both in the wild and in the lab.
@@ -49,4 +46,4 @@ The releasing team provides:
   * Recommendations about lab hardware and new test scenarios.
   * Management of performance sheriff rotations.
 
-TPM: benhenry@chromium.org
+TPM: ushesh@chromium.org

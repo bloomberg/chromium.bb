@@ -2,18 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * The global object.
- * @type {!Object}
- * @const
- */
-var global = this;
-
 /** @typedef {{eventName: string, uid: number}} */
+// eslint-disable-next-line no-var
 var WebUIListener;
 
 /** Platform, package, object property, and Event support. **/
-var cr = cr || function() {
+// eslint-disable-next-line no-var
+var cr = cr || function(global) {
   'use strict';
 
   /**
@@ -30,10 +25,10 @@ var cr = cr || function() {
    * @private
    */
   function exportPath(name, opt_object, opt_objectToExportTo) {
-    var parts = name.split('.');
-    var cur = opt_objectToExportTo || global;
+    const parts = name.split('.');
+    let cur = opt_objectToExportTo || global;
 
-    for (var part; parts.length && (part = parts.shift());) {
+    for (let part; parts.length && (part = parts.shift());) {
       if (!parts.length && opt_object !== undefined) {
         // last part and we have an object; use it
         cur[part] = opt_object;
@@ -54,7 +49,7 @@ var cr = cr || function() {
    * @param {*} oldValue The old value for the property.
    */
   function dispatchPropertyChange(target, propertyName, newValue, oldValue) {
-    var e = new Event(propertyName + 'Change');
+    const e = new Event(propertyName + 'Change');
     e.propertyName = propertyName;
     e.newValue = newValue;
     e.oldValue = oldValue;
@@ -76,7 +71,7 @@ var cr = cr || function() {
    * @enum {string}
    * @const
    */
-  var PropertyKind = {
+  const PropertyKind = {
     /**
      * Plain old JS property where the backing data is stored as a "private"
      * field on the object.
@@ -106,19 +101,20 @@ var cr = cr || function() {
    * @return {function():*} The getter for the property.
    */
   function getGetter(name, kind) {
+    let attributeName;
     switch (kind) {
       case PropertyKind.JS:
-        var privateName = name + '_';
+        const privateName = name + '_';
         return function() {
           return this[privateName];
         };
       case PropertyKind.ATTR:
-        var attributeName = getAttributeName(name);
+        attributeName = getAttributeName(name);
         return function() {
           return this.getAttribute(attributeName);
         };
       case PropertyKind.BOOL_ATTR:
-        var attributeName = getAttributeName(name);
+        attributeName = getAttributeName(name);
         return function() {
           return this.hasAttribute(attributeName);
         };
@@ -141,45 +137,51 @@ var cr = cr || function() {
    * @return {function(*):void} The function to use as a setter.
    */
   function getSetter(name, kind, opt_setHook) {
+    let attributeName;
     switch (kind) {
       case PropertyKind.JS:
-        var privateName = name + '_';
+        const privateName = name + '_';
         return function(value) {
-          var oldValue = this[name];
+          const oldValue = this[name];
           if (value !== oldValue) {
             this[privateName] = value;
-            if (opt_setHook)
+            if (opt_setHook) {
               opt_setHook.call(this, value, oldValue);
+            }
             dispatchPropertyChange(this, name, value, oldValue);
           }
         };
 
       case PropertyKind.ATTR:
-        var attributeName = getAttributeName(name);
+        attributeName = getAttributeName(name);
         return function(value) {
-          var oldValue = this[name];
+          const oldValue = this[name];
           if (value !== oldValue) {
-            if (value == undefined)
+            if (value == undefined) {
               this.removeAttribute(attributeName);
-            else
+            } else {
               this.setAttribute(attributeName, value);
-            if (opt_setHook)
+            }
+            if (opt_setHook) {
               opt_setHook.call(this, value, oldValue);
+            }
             dispatchPropertyChange(this, name, value, oldValue);
           }
         };
 
       case PropertyKind.BOOL_ATTR:
-        var attributeName = getAttributeName(name);
+        attributeName = getAttributeName(name);
         return function(value) {
-          var oldValue = this[name];
+          const oldValue = this[name];
           if (value !== oldValue) {
-            if (value)
+            if (value) {
               this.setAttribute(attributeName, name);
-            else
+            } else {
               this.removeAttribute(attributeName);
-            if (opt_setHook)
+            }
+            if (opt_setHook) {
               opt_setHook.call(this, value, oldValue);
+            }
             dispatchPropertyChange(this, name, value, oldValue);
           }
         };
@@ -200,22 +202,25 @@ var cr = cr || function() {
    *     property is set, but before the propertyChange event is fired.
    */
   function defineProperty(obj, name, opt_kind, opt_setHook) {
-    if (typeof obj == 'function')
+    if (typeof obj == 'function') {
       obj = obj.prototype;
+    }
 
-    var kind = /** @type {PropertyKind} */ (opt_kind || PropertyKind.JS);
+    const kind = /** @type {PropertyKind} */ (opt_kind || PropertyKind.JS);
 
-    if (!obj.__lookupGetter__(name))
+    if (!obj.__lookupGetter__(name)) {
       obj.__defineGetter__(name, getGetter(name, kind));
+    }
 
-    if (!obj.__lookupSetter__(name))
+    if (!obj.__lookupSetter__(name)) {
       obj.__defineSetter__(name, getSetter(name, kind, opt_setHook));
+    }
   }
 
   /**
    * Counter for use with createUid
    */
-  var uidCounter = 1;
+  let uidCounter = 1;
 
   /**
    * @return {number} A new unique ID.
@@ -231,8 +236,9 @@ var cr = cr || function() {
    * @return {number} The unique ID for the item.
    */
   function getUid(item) {
-    if (item.hasOwnProperty('uid'))
+    if (item.hasOwnProperty('uid')) {
       return item.uid;
+    }
     return item.uid = createUid();
   }
 
@@ -247,7 +253,7 @@ var cr = cr || function() {
    *     during the dispatch this will return false.
    */
   function dispatchSimpleEvent(target, type, opt_bubbles, opt_cancelable) {
-    var e = new Event(type, {
+    const e = new Event(type, {
       bubbles: opt_bubbles,
       cancelable: opt_cancelable === undefined || opt_cancelable
     });
@@ -274,16 +280,17 @@ var cr = cr || function() {
    *     the names and values of the new fields.
    */
   function define(name, fun) {
-    var obj = exportPath(name);
-    var exports = fun();
-    for (var propertyName in exports) {
+    const obj = exportPath(name);
+    const exports = fun();
+    for (const propertyName in exports) {
       // Maybe we should check the prototype chain here? The current usage
       // pattern is always using an object literal so we only care about own
       // properties.
-      var propertyDescriptor =
+      const propertyDescriptor =
           Object.getOwnPropertyDescriptor(exports, propertyName);
-      if (propertyDescriptor)
+      if (propertyDescriptor) {
         Object.defineProperty(obj, propertyName, propertyDescriptor);
+      }
     }
   }
 
@@ -310,7 +317,7 @@ var cr = cr || function() {
   function makePublic(ctor, methods, opt_target) {
     methods.forEach(function(method) {
       ctor[method] = function() {
-        var target = opt_target ?
+        const target = opt_target ?
             // Disable document.getElementById restriction since cr.js should
             // not depend on util.js.
             // eslint-disable-next-line no-restricted-properties
@@ -328,7 +335,7 @@ var cr = cr || function() {
    * sendWithPromise and is unique across all invocations of said method.
    * @type {!Object<!PromiseResolver>}
    */
-  var chromeSendResolverMap = {};
+  const chromeSendResolverMap = {};
 
   /**
    * The named method the WebUI handler calls directly in response to a
@@ -344,13 +351,14 @@ var cr = cr || function() {
    * @param {*} response The response as sent from C++.
    */
   function webUIResponse(id, isSuccess, response) {
-    var resolver = chromeSendResolverMap[id];
+    const resolver = chromeSendResolverMap[id];
     delete chromeSendResolverMap[id];
 
-    if (isSuccess)
+    if (isSuccess) {
       resolver.resolve(response);
-    else
+    } else {
       resolver.reject(response);
+    }
   }
 
   /**
@@ -362,9 +370,9 @@ var cr = cr || function() {
    * @return {!Promise}
    */
   function sendWithPromise(methodName, var_args) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    var promiseResolver = new PromiseResolver();
-    var id = methodName + '_' + createUid();
+    const args = Array.prototype.slice.call(arguments, 1);
+    const promiseResolver = new PromiseResolver();
+    const id = methodName + '_' + createUid();
     chromeSendResolverMap[id] = promiseResolver;
     chrome.send(methodName, [id].concat(args));
     return promiseResolver.promise;
@@ -377,7 +385,7 @@ var cr = cr || function() {
    * the same event.
    * @type {!Object<!Object<!Function>>}
    */
-  var webUIListenerMap = {};
+  const webUIListenerMap = {};
 
   /**
    * The named method the WebUI handler calls directly when an event occurs.
@@ -388,15 +396,15 @@ var cr = cr || function() {
    * @param {...*} var_args Additional arguments passed from C++.
    */
   function webUIListenerCallback(event, var_args) {
-    var eventListenersMap = webUIListenerMap[event];
+    const eventListenersMap = webUIListenerMap[event];
     if (!eventListenersMap) {
       // C++ event sent for an event that has no listeners.
       // TODO(dpapad): Should a warning be displayed here?
       return;
     }
 
-    var args = Array.prototype.slice.call(arguments, 1);
-    for (var listenerId in eventListenersMap) {
+    const args = Array.prototype.slice.call(arguments, 1);
+    for (const listenerId in eventListenersMap) {
       eventListenersMap[listenerId].apply(null, args);
     }
   }
@@ -411,7 +419,7 @@ var cr = cr || function() {
    */
   function addWebUIListener(eventName, callback) {
     webUIListenerMap[eventName] = webUIListenerMap[eventName] || {};
-    var uid = createUid();
+    const uid = createUid();
     webUIListenerMap[eventName][uid] = callback;
     return {eventName: eventName, uid: uid};
   }
@@ -424,7 +432,7 @@ var cr = cr || function() {
    *     removed.
    */
   function removeWebUIListener(listener) {
-    var listenerExists = webUIListenerMap[listener.eventName] &&
+    const listenerExists = webUIListenerMap[listener.eventName] &&
         webUIListenerMap[listener.eventName][listener.uid];
     if (listenerExists) {
       delete webUIListenerMap[listener.eventName][listener.uid];
@@ -486,4 +494,4 @@ var cr = cr || function() {
       return /iPad|iPhone|iPod/.test(navigator.platform);
     }
   };
-}();
+}(this);

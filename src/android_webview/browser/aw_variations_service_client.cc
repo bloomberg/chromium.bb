@@ -4,10 +4,10 @@
 
 #include "android_webview/browser/aw_variations_service_client.h"
 
-#include "android_webview/common/aw_channel.h"
 #include "base/bind.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
+#include "components/version_info/android/channel_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using version_info::Channel;
@@ -18,7 +18,8 @@ namespace {
 // Gets the version number to use for variations seed simulation. Must be called
 // on a thread where IO is allowed.
 base::Version GetVersionForSimulation() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return version_info::GetVersion();
 }
 
@@ -44,14 +45,7 @@ AwVariationsServiceClient::GetNetworkTimeTracker() {
 }
 
 Channel AwVariationsServiceClient::GetChannel() {
-  // Pretend stand-alone WebView is always "stable" for the purpose of
-  // variations. This simplifies experiment design, since stand-alone WebView
-  // need not be considered separately when choosing channels.
-  return android_webview::GetChannelOrStable();
-}
-
-bool AwVariationsServiceClient::GetSupportsPermanentConsistency() {
-  return false;
+  return version_info::android::GetChannel();
 }
 
 bool AwVariationsServiceClient::OverridesRestrictParameter(

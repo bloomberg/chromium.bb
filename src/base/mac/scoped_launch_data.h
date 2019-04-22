@@ -9,6 +9,11 @@
 
 #include "base/scoped_generic.h"
 
+// This file uses launch_data_t and related APIs, which are deprecated with no
+// replacement.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 namespace base {
 namespace mac {
 
@@ -27,5 +32,7 @@ using ScopedLaunchData =
 
 }  // namespace mac
 }  // namespace base
+
+#pragma clang diagnostic pop  // -Wdeprecated-declarations
 
 #endif  // BASE_MAC_SCOPED_LAUNCH_DATA_H_

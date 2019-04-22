@@ -1226,7 +1226,7 @@ void writeValuesToMem (Context& context, const vk::Allocation& dst, const ValueB
 	copyToLayout(dst.getHostPtr(), layout, values, arrayNdx);
 
 	// \note Buffers are not allocated with coherency / uncached requirement so we need to manually flush CPU write caches
-	flushMappedMemoryRange(context.getDeviceInterface(), context.getDevice(), dst.getMemory(), dst.getOffset(), (vk::VkDeviceSize)layout.size);
+	flushAlloc(context.getDeviceInterface(), context.getDevice(), dst);
 }
 
 class ShaderCaseInstance : public TestInstance
@@ -1314,7 +1314,7 @@ ShaderCaseInstance::ShaderCaseInstance (Context& context, const ShaderCaseSpecif
 	, m_uniformMem			(m_uniformLayout.size > 0 ? allocateAndBindMemory(context, *m_uniformBuffer, vk::MemoryRequirement::HostVisible) : MovePtr<vk::Allocation>())
 
 	, m_rtFormat			(getRenderTargetFormat(spec.outputFormat))
-	, m_outputCount			((deUint32)m_spec.values.outputs.size() == 0 ? 1 : (deUint32)m_spec.values.outputs.size())
+	, m_outputCount			(((deUint32)m_spec.values.outputs.size() == 0 || m_spec.outputType == glu::sl::OUTPUT_RESULT) ? 1 : (deUint32)m_spec.values.outputs.size())
 	, m_rtImage				()
 	, m_rtMem				()
 	, m_rtView				()
@@ -1374,7 +1374,7 @@ ShaderCaseInstance::ShaderCaseInstance (Context& context, const ShaderCaseSpecif
 		deMemcpy((deUint8*)m_posNdxMem->getHostPtr() + POSITIONS_OFFSET,	&s_positions[0],	sizeof(s_positions));
 		deMemcpy((deUint8*)m_posNdxMem->getHostPtr() + INDICES_OFFSET,		&s_indices[0],		sizeof(s_indices));
 
-		flushMappedMemoryRange(m_context.getDeviceInterface(), context.getDevice(), m_posNdxMem->getMemory(), m_posNdxMem->getOffset(), sizeof(s_positions)+sizeof(s_indices));
+		flushAlloc(m_context.getDeviceInterface(), context.getDevice(), *m_posNdxMem);
 	}
 
 	if (!m_spec.values.uniforms.empty())

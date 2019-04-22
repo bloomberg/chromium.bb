@@ -36,19 +36,9 @@ bool NotificationItemStructTraits::Read(
 }
 
 // static
-gfx::ImageSkia ButtonInfoStructTraits::icon(
-    const message_center::ButtonInfo& b) {
-  return b.icon.AsImageSkia();
-}
-
-// static
 bool ButtonInfoStructTraits::Read(
     message_center::mojom::ButtonInfoDataView data,
     ButtonInfo* out) {
-  gfx::ImageSkia icon;
-  if (!data.ReadIcon(&icon))
-    return false;
-  out->icon = gfx::Image(icon);
   return data.ReadTitle(&out->title) && data.ReadPlaceholder(&out->placeholder);
 }
 

@@ -8,19 +8,20 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <cstdint>
 #include <vector>
 
 #include "common_video/h264/h264_common.h"
 #include "common_video/h264/sps_vui_rewriter.h"
-#include "rtc_base/bitbuffer.h"
+#include "rtc_base/bit_buffer.h"
 #include "rtc_base/buffer.h"
 #include "rtc_base/logging.h"
+#include "test/gmock.h"
 #include "test/gtest.h"
 
 namespace webrtc {
 
 enum SpsMode {
-  kNoRewriteRequired_PocCorrect,
   kNoRewriteRequired_VuiOptimal,
   kRewriteRequired_NoVui,
   kRewriteRequired_NoBitstreamRestriction,
@@ -30,6 +31,11 @@ enum SpsMode {
 static const size_t kSpsBufferMaxSize = 256;
 static const size_t kWidth = 640;
 static const size_t kHeight = 480;
+
+static const uint8_t kStartSequence[] = {0x00, 0x00, 0x00, 0x01};
+static const uint8_t kSpsNaluType[] = {H264::NaluType::kSps};
+static const uint8_t kIdr1[] = {H264::NaluType::kIdr, 0xFF, 0x00, 0x00, 0x04};
+static const uint8_t kIdr2[] = {H264::NaluType::kIdr, 0xFF, 0x00, 0x11};
 
 // Generates a fake SPS with basically everything empty and with characteristics
 // based off SpsMode.
@@ -54,14 +60,10 @@ void GenerateFakeSps(SpsMode mode, rtc::Buffer* out_buffer) {
   // log2_max_frame_num_minus4: ue(v). 0 is fine.
   writer.WriteExponentialGolomb(0);
   // pic_order_cnt_type: ue(v).
-  // POC type 2 is the one that doesn't need to be rewritten.
-  if (mode == kNoRewriteRequired_PocCorrect) {
-    writer.WriteExponentialGolomb(2);
-  } else {
-    writer.WriteExponentialGolomb(0);
-    // log2_max_pic_order_cnt_lsb_minus4: ue(v). 0 is fine.
-    writer.WriteExponentialGolomb(0);
-  }
+  writer.WriteExponentialGolomb(0);
+  // log2_max_pic_order_cnt_lsb_minus4: ue(v). 0 is fine.
+  writer.WriteExponentialGolomb(0);
+
   // max_num_ref_frames: ue(v). Use 1, to make optimal/suboptimal more obvious.
   writer.WriteExponentialGolomb(1);
   // gaps_in_frame_num_value_allowed_flag: u(1).
@@ -95,7 +97,7 @@ void GenerateFakeSps(SpsMode mode, rtc::Buffer* out_buffer) {
 
   // Finally! The VUI.
   // vui_parameters_present_flag: u(1)
-  if (mode == kNoRewriteRequired_PocCorrect || mode == kRewriteRequired_NoVui) {
+  if (mode == kRewriteRequired_NoVui) {
     writer.WriteBits(0, 1);
   } else {
     writer.WriteBits(1, 1);
@@ -123,7 +125,7 @@ void GenerateFakeSps(SpsMode mode, rtc::Buffer* out_buffer) {
       if (mode == kRewriteRequired_VuiSuboptimal) {
         writer.WriteExponentialGolomb(4);
         writer.WriteExponentialGolomb(4);
-      } else if (kNoRewriteRequired_VuiOptimal) {
+      } else {
         writer.WriteExponentialGolomb(0);
         writer.WriteExponentialGolomb(1);
       }
@@ -137,53 +139,158 @@ void GenerateFakeSps(SpsMode mode, rtc::Buffer* out_buffer) {
     byte_count++;
   }
 
-  // Write the NALU header and type; {0 0 0 1} and 7 for the SPS header type.
-  uint8_t header[] = {0, 0, 0, 1, 7};
-  out_buffer->AppendData(header, sizeof(header));
-
   H264::WriteRbsp(rbsp, byte_count, out_buffer);
 }
 
 void TestSps(SpsMode mode, SpsVuiRewriter::ParseResult expected_parse_result) {
   rtc::LogMessage::LogToDebug(rtc::LS_VERBOSE);
-  rtc::Buffer buffer;
-  GenerateFakeSps(mode, &buffer);
-  std::vector<H264::NaluIndex> start_offsets =
-      H264::FindNaluIndices(buffer.data(), buffer.size());
-  EXPECT_EQ(1u, start_offsets.size());
-  H264::NaluIndex index = start_offsets[0];
-
-  H264::NaluType nal_type =
-      H264::ParseNaluType(buffer[index.payload_start_offset]);
-  EXPECT_EQ(H264::kSps, nal_type);
-  index.payload_start_offset += H264::kNaluTypeSize;
-  index.payload_size -= H264::kNaluTypeSize;
+  rtc::Buffer original_sps;
+  GenerateFakeSps(mode, &original_sps);
 
   absl::optional<SpsParser::SpsState> sps;
-  rtc::Buffer out_buffer;
-  SpsVuiRewriter::ParseResult result =
-      SpsVuiRewriter::ParseAndRewriteSps(&buffer[index.payload_start_offset],
-                                         index.payload_size, &sps, &out_buffer);
+  rtc::Buffer rewritten_sps;
+  SpsVuiRewriter::ParseResult result = SpsVuiRewriter::ParseAndRewriteSps(
+      original_sps.data(), original_sps.size(), &sps, &rewritten_sps,
+      SpsVuiRewriter::Direction::kIncoming);
   EXPECT_EQ(expected_parse_result, result);
+  ASSERT_TRUE(sps);
+  EXPECT_EQ(sps->width, kWidth);
+  EXPECT_EQ(sps->height, kHeight);
+  if (mode != kRewriteRequired_NoVui) {
+    EXPECT_EQ(sps->vui_params_present, 1u);
+  }
+
+  if (result == SpsVuiRewriter::ParseResult::kVuiRewritten) {
+    // Ensure that added/rewritten SPS is parsable.
+    rtc::Buffer tmp;
+    result = SpsVuiRewriter::ParseAndRewriteSps(
+        rewritten_sps.data(), rewritten_sps.size(), &sps, &tmp,
+        SpsVuiRewriter::Direction::kIncoming);
+    EXPECT_EQ(SpsVuiRewriter::ParseResult::kVuiOk, result);
+    ASSERT_TRUE(sps);
+    EXPECT_EQ(sps->width, kWidth);
+    EXPECT_EQ(sps->height, kHeight);
+    EXPECT_EQ(sps->vui_params_present, 1u);
+  }
 }
 
 #define REWRITE_TEST(test_name, mode, expected_parse_result) \
   TEST(SpsVuiRewriterTest, test_name) { TestSps(mode, expected_parse_result); }
 
-REWRITE_TEST(PocCorrect,
-             kNoRewriteRequired_PocCorrect,
-             SpsVuiRewriter::ParseResult::kPocOk);
 REWRITE_TEST(VuiAlreadyOptimal,
              kNoRewriteRequired_VuiOptimal,
-             SpsVuiRewriter::ParseResult::kVuiOk);
+             SpsVuiRewriter::ParseResult::kVuiOk)
 REWRITE_TEST(RewriteFullVui,
              kRewriteRequired_NoVui,
-             SpsVuiRewriter::ParseResult::kVuiRewritten);
+             SpsVuiRewriter::ParseResult::kVuiRewritten)
 REWRITE_TEST(AddBitstreamRestriction,
              kRewriteRequired_NoBitstreamRestriction,
-             SpsVuiRewriter::ParseResult::kVuiRewritten);
+             SpsVuiRewriter::ParseResult::kVuiRewritten)
 REWRITE_TEST(RewriteSuboptimalVui,
              kRewriteRequired_VuiSuboptimal,
-             SpsVuiRewriter::ParseResult::kVuiRewritten);
+             SpsVuiRewriter::ParseResult::kVuiRewritten)
 
+TEST(SpsVuiRewriterTest, ParseOutgoingBitstreamOptimalVui) {
+  rtc::LogMessage::LogToDebug(rtc::LS_VERBOSE);
+
+  rtc::Buffer optimal_sps;
+  GenerateFakeSps(kNoRewriteRequired_VuiOptimal, &optimal_sps);
+
+  rtc::Buffer buffer;
+  const size_t kNumNalus = 2;
+  size_t nalu_offsets[kNumNalus];
+  size_t nalu_lengths[kNumNalus];
+  buffer.AppendData(kStartSequence);
+  nalu_offsets[0] = buffer.size();
+  nalu_lengths[0] = optimal_sps.size();
+  buffer.AppendData(optimal_sps);
+  buffer.AppendData(kStartSequence);
+  nalu_offsets[1] = buffer.size();
+  nalu_lengths[1] = sizeof(kIdr1);
+  buffer.AppendData(kIdr1);
+
+  rtc::Buffer modified_buffer;
+  size_t modified_nalu_offsets[kNumNalus];
+  size_t modified_nalu_lengths[kNumNalus];
+
+  SpsVuiRewriter::ParseOutgoingBitstreamAndRewriteSps(
+      buffer, kNumNalus, nalu_offsets, nalu_lengths, &modified_buffer,
+      modified_nalu_offsets, modified_nalu_lengths);
+
+  EXPECT_THAT(
+      std::vector<uint8_t>(modified_buffer.data(),
+                           modified_buffer.data() + modified_buffer.size()),
+      ::testing::ElementsAreArray(buffer.data(), buffer.size()));
+  EXPECT_THAT(std::vector<size_t>(modified_nalu_offsets,
+                                  modified_nalu_offsets + kNumNalus),
+              ::testing::ElementsAreArray(nalu_offsets, kNumNalus));
+  EXPECT_THAT(std::vector<size_t>(modified_nalu_lengths,
+                                  modified_nalu_lengths + kNumNalus),
+              ::testing::ElementsAreArray(nalu_lengths, kNumNalus));
+}
+
+TEST(SpsVuiRewriterTest, ParseOutgoingBitstreamNoVui) {
+  rtc::LogMessage::LogToDebug(rtc::LS_VERBOSE);
+
+  rtc::Buffer sps;
+  GenerateFakeSps(kRewriteRequired_NoVui, &sps);
+
+  rtc::Buffer buffer;
+  const size_t kNumNalus = 3;
+  size_t nalu_offsets[kNumNalus];
+  size_t nalu_lengths[kNumNalus];
+  buffer.AppendData(kStartSequence);
+  nalu_offsets[0] = buffer.size();
+  nalu_lengths[0] = sizeof(kIdr1);
+  buffer.AppendData(kIdr1);
+  buffer.AppendData(kStartSequence);
+  nalu_offsets[1] = buffer.size();
+  nalu_lengths[1] = sizeof(kSpsNaluType) + sps.size();
+  buffer.AppendData(kSpsNaluType);
+  buffer.AppendData(sps);
+  buffer.AppendData(kStartSequence);
+  nalu_offsets[2] = buffer.size();
+  nalu_lengths[2] = sizeof(kIdr2);
+  buffer.AppendData(kIdr2);
+
+  rtc::Buffer optimal_sps;
+  GenerateFakeSps(kNoRewriteRequired_VuiOptimal, &optimal_sps);
+
+  rtc::Buffer expected_buffer;
+  size_t expected_nalu_offsets[kNumNalus];
+  size_t expected_nalu_lengths[kNumNalus];
+  expected_buffer.AppendData(kStartSequence);
+  expected_nalu_offsets[0] = expected_buffer.size();
+  expected_nalu_lengths[0] = sizeof(kIdr1);
+  expected_buffer.AppendData(kIdr1);
+  expected_buffer.AppendData(kStartSequence);
+  expected_nalu_offsets[1] = expected_buffer.size();
+  expected_nalu_lengths[1] = sizeof(kSpsNaluType) + optimal_sps.size();
+  expected_buffer.AppendData(kSpsNaluType);
+  expected_buffer.AppendData(optimal_sps);
+  expected_buffer.AppendData(kStartSequence);
+  expected_nalu_offsets[2] = expected_buffer.size();
+  expected_nalu_lengths[2] = sizeof(kIdr2);
+  expected_buffer.AppendData(kIdr2);
+
+  rtc::Buffer modified_buffer;
+  size_t modified_nalu_offsets[kNumNalus];
+  size_t modified_nalu_lengths[kNumNalus];
+
+  SpsVuiRewriter::ParseOutgoingBitstreamAndRewriteSps(
+      buffer, kNumNalus, nalu_offsets, nalu_lengths, &modified_buffer,
+      modified_nalu_offsets, modified_nalu_lengths);
+
+  EXPECT_THAT(
+      std::vector<uint8_t>(modified_buffer.data(),
+                           modified_buffer.data() + modified_buffer.size()),
+      ::testing::ElementsAreArray(expected_buffer.data(),
+                                  expected_buffer.size()));
+  EXPECT_THAT(std::vector<size_t>(modified_nalu_offsets,
+                                  modified_nalu_offsets + kNumNalus),
+              ::testing::ElementsAreArray(expected_nalu_offsets, kNumNalus));
+  EXPECT_THAT(std::vector<size_t>(modified_nalu_lengths,
+                                  modified_nalu_lengths + kNumNalus),
+              ::testing::ElementsAreArray(expected_nalu_lengths, kNumNalus));
+}
 }  // namespace webrtc

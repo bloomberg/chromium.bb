@@ -16,7 +16,7 @@ namespace chromeos {
 
 // Lorgnette LorgnetteManagerClient implementation used on Linux desktop,
 // which does nothing.
-class CHROMEOS_EXPORT FakeLorgnetteManagerClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeLorgnetteManagerClient
     : public LorgnetteManagerClient {
  public:
   FakeLorgnetteManagerClient();

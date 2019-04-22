@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -26,7 +27,6 @@
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/limits.h"
-#include "media/base/media_log.h"
 #include "media/base/media_util.h"
 #include "media/base/video_decoder.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -406,6 +406,8 @@ void VideoDecoderShim::YUVConverter::Convert(
         case kRec601_SkYUVColorSpace:
           // Current default.
           break;
+        default:
+          NOTREACHED();
       }
     }
 
@@ -656,7 +658,7 @@ class VideoDecoderShim::DecoderImpl {
 
   // WeakPtr is bound to main_message_loop_. Use only in shim callbacks.
   base::WeakPtr<VideoDecoderShim> shim_;
-  media::MediaLog media_log_;
+  media::NullMediaLog media_log_;
   std::unique_ptr<media::VideoDecoder> decoder_;
   bool initialized_ = false;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -711,7 +713,7 @@ void VideoDecoderShim::DecoderImpl::Initialize(
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&VideoDecoderShim::DecoderImpl::OnOutputComplete,
                  weak_ptr_factory_.GetWeakPtr()),
-      media::VideoDecoder::WaitingForDecryptionKeyCB());
+      base::NullCallback());
 #else
   OnInitDone(false);
 #endif  // BUILDFLAG(ENABLE_LIBVPX) || BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)

@@ -4,6 +4,7 @@
 
 #include "components/policy/core/common/cloud/user_info_fetcher.h"
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -109,7 +110,7 @@ void UserInfoFetcher::OnFetchComplete(
   DCHECK(unparsed_data);
   DVLOG(1) << "Received UserInfo response: " << *unparsed_data;
   std::unique_ptr<base::Value> parsed_value =
-      base::JSONReader::Read(*unparsed_data);
+      base::JSONReader::ReadDeprecated(*unparsed_data);
   base::DictionaryValue* dict;
   if (parsed_value.get() && parsed_value->GetAsDictionary(&dict)) {
     delegate_->OnGetUserInfoSuccess(dict);
@@ -120,4 +121,4 @@ void UserInfoFetcher::OnFetchComplete(
   }
 }
 
-};  // namespace policy
+}  // namespace policy

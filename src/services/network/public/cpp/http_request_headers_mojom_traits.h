@@ -7,13 +7,14 @@
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/public/mojom/http_request_headers.mojom.h"
+#include "services/network/public/mojom/http_request_headers.mojom-shared.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<network::mojom::HttpRequestHeaderKeyValuePairDataView,
-                    net::HttpRequestHeaders::HeaderKeyValuePair> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::HttpRequestHeaderKeyValuePairDataView,
+                 net::HttpRequestHeaders::HeaderKeyValuePair> {
   static const std::string& key(
       const net::HttpRequestHeaders::HeaderKeyValuePair& item) {
     return item.key;
@@ -27,8 +28,9 @@ struct StructTraits<network::mojom::HttpRequestHeaderKeyValuePairDataView,
 };
 
 template <>
-struct StructTraits<network::mojom::HttpRequestHeadersDataView,
-                    net::HttpRequestHeaders> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::HttpRequestHeadersDataView,
+                 net::HttpRequestHeaders> {
   static net::HttpRequestHeaders::HeaderVector headers(
       const net::HttpRequestHeaders& data) {
     return data.GetHeaderVector();

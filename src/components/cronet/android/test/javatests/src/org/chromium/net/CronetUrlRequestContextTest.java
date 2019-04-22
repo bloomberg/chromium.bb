@@ -921,7 +921,7 @@ public class CronetUrlRequestContextTest {
     }
 
     private boolean hasBytesInNetLog(File logFile) throws Exception {
-        return containsStringInNetLog(logFile, "\"hex_encoded_bytes\"");
+        return containsStringInNetLog(logFile, "\"bytes\"");
     }
 
     private boolean containsStringInNetLog(File logFile, String content) throws Exception {

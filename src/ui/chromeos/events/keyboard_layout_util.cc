@@ -14,8 +14,23 @@ bool DeviceUsesKeyboardLayout2() {
        InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
     EventRewriterChromeOS::KeyboardTopRowLayout layout;
     if (EventRewriterChromeOS::GetKeyboardTopRowLayout(keyboard.sys_path,
-                                                       &layout)) {
-      return layout == EventRewriterChromeOS::kKbdTopRowLayout2;
+                                                       &layout) &&
+        layout == EventRewriterChromeOS::kKbdTopRowLayout2) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool DeviceKeyboardHasAssistantKey() {
+  for (const InputDevice& keyboard :
+       InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
+    bool has_assistant_key = false;
+    if (EventRewriterChromeOS::HasAssistantKeyOnKeyboard(keyboard.sys_path,
+                                                         &has_assistant_key) &&
+        has_assistant_key) {
+      return true;
     }
   }
 

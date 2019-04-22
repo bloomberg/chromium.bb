@@ -4,10 +4,11 @@
 
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 
 TabParentingGlobalObserver* TabParentingGlobalObserver::GetInstance() {
-  return base::Singleton<TabParentingGlobalObserver>::get();
+  static base::NoDestructor<TabParentingGlobalObserver> instance;
+  return instance.get();
 }
 
 std::unique_ptr<base::CallbackList<void(web::WebState*)>::Subscription>

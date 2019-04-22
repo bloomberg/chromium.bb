@@ -6,13 +6,10 @@
 #define IOS_WEB_VIEW_INTERNAL_TRANSLATE_WEB_VIEW_TRANSLATE_RANKER_FACTORY_H_
 
 #include <memory>
-#include "base/macros.h"
-#include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
+#include "base/macros.h"
+#include "base/no_destructor.h"
+#include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 namespace translate {
 class TranslateRanker;
@@ -31,7 +28,7 @@ class WebViewTranslateRankerFactory : public BrowserStateKeyedServiceFactory {
   static WebViewTranslateRankerFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<WebViewTranslateRankerFactory>;
+  friend class base::NoDestructor<WebViewTranslateRankerFactory>;
 
   WebViewTranslateRankerFactory();
   ~WebViewTranslateRankerFactory() override;

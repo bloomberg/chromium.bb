@@ -12,11 +12,11 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chromeos/chromeos_test_utils.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_test_utils.h"
-#include "chromeos/tools/variable_expander.h"
+#include "chromeos/network/onc/variable_expander.h"
+#include "chromeos/test/chromeos_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -169,7 +169,7 @@ TEST(ONCUtils, ProxySettingsToProxyConfig) {
 
   int index = 0;
   for (const base::Value& test_case : list_of_tests->GetList()) {
-    SCOPED_TRACE("Test case #" + base::IntToString(index++));
+    SCOPED_TRACE("Test case #" + base::NumberToString(index++));
 
     ASSERT_TRUE(test_case.is_dict());
 
@@ -193,7 +193,7 @@ TEST(ONCUtils, ProxyConfigToOncProxySettings) {
 
   int index = 0;
   for (const base::Value& test_case : list_of_tests->GetList()) {
-    SCOPED_TRACE("Test case #" + base::IntToString(index++));
+    SCOPED_TRACE("Test case #" + base::NumberToString(index++));
 
     const base::Value* shill_proxy_config = test_case.FindKey("ProxyConfig");
     ASSERT_TRUE(shill_proxy_config);

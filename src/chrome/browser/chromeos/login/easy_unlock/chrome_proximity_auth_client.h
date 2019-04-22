@@ -10,15 +10,7 @@
 
 class Profile;
 
-namespace cryptauth {
-class CryptAuthService;
-}  // namespace cryptauth
-
 namespace chromeos {
-
-namespace device_sync {
-class DeviceSyncClient;
-}  // namespace device_sync
 
 // A Chrome-specific implementation of the ProximityAuthClient interface.
 // There is one |ChromeProximityAuthClient| per |Profile|.
@@ -38,19 +30,8 @@ class ChromeProximityAuthClient : public proximity_auth::ProximityAuthClient {
       const std::string& nonce,
       base::Callback<void(const std::string& challenge)> callback) override;
   proximity_auth::ProximityAuthPrefManager* GetPrefManager() override;
-  std::unique_ptr<cryptauth::CryptAuthClientFactory>
-  CreateCryptAuthClientFactory() override;
-  cryptauth::DeviceClassifier GetDeviceClassifier() override;
-  std::string GetAccountId() override;
-  cryptauth::CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager()
-      override;
-  cryptauth::CryptAuthDeviceManager* GetCryptAuthDeviceManager() override;
-  std::string GetLocalDevicePublicKey() override;
 
  private:
-  cryptauth::CryptAuthService* GetCryptAuthService();
-  device_sync::DeviceSyncClient* GetDeviceSyncClient();
-
   Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeProximityAuthClient);

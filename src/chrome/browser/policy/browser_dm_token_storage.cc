@@ -112,17 +112,6 @@ bool BrowserDMTokenStorage::ShouldDisplayErrorMessageOnFailure() {
   return should_display_error_message_on_failure_;
 }
 
-void BrowserDMTokenStorage::ScheduleUnusedPolicyDirectoryDeletion() {
-  // TODO(crbug.com/883869): Add a UMA metrics to track the deletion progress.
-  content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE,
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
-      base::BindOnce(&BrowserDMTokenStorage::DeletePolicyDirectory,
-                     base::Unretained(this)));
-}
-
 void BrowserDMTokenStorage::InitIfNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -161,7 +150,5 @@ std::string BrowserDMTokenStorage::InitSerialNumber() {
 
   return serial_number;
 }
-
-void BrowserDMTokenStorage::DeletePolicyDirectory() {}
 
 }  // namespace policy

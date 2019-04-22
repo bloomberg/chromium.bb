@@ -1,20 +1,4 @@
-
 describe('PathKit\'s SVG Behavior', function() {
-    // Note, don't try to print the PathKit object - it can cause Karma/Jasmine to lock up.
-    var PathKit = null;
-    const LoadPathKit = new Promise(function(resolve, reject) {
-        if (PathKit) {
-            resolve();
-        } else {
-            PathKitInit({
-                locateFile: (file) => '/pathkit/'+file,
-            }).then((_PathKit) => {
-                PathKit = _PathKit;
-                resolve();
-            });
-        }
-    });
-
     it('can create a path from an SVG string', function(done) {
         LoadPathKit.then(catchException(done, () => {
             //.This is a parallelagram from

@@ -8,14 +8,13 @@
 #ifndef GrVkGpuCommandBuffer_DEFINED
 #define GrVkGpuCommandBuffer_DEFINED
 
-#include "GrVkVulkan.h"
-
 #include "GrGpuCommandBuffer.h"
 
 #include "GrColor.h"
 #include "GrMesh.h"
 #include "GrTypes.h"
 #include "GrVkPipelineState.h"
+#include "vk/GrVkTypes.h"
 
 class GrVkGpu;
 class GrVkImage;
@@ -45,12 +44,12 @@ private:
     struct CopyInfo {
         CopyInfo(GrSurface* src, GrSurfaceOrigin srcOrigin, const SkIRect& srcRect,
                  const SkIPoint& dstPoint)
-            : fSrc(src), fSrcOrigin(srcOrigin), fSrcRect(srcRect), fDstPoint(dstPoint) {}
-
-        GrSurface*      fSrc;
-        GrSurfaceOrigin fSrcOrigin;
-        SkIRect         fSrcRect;
-        SkIPoint        fDstPoint;
+                : fSrc(src), fSrcOrigin(srcOrigin), fSrcRect(srcRect), fDstPoint(dstPoint) {}
+        using Src = GrPendingIOResource<GrSurface, kRead_GrIOType>;
+        Src              fSrc;
+        GrSurfaceOrigin  fSrcOrigin;
+        SkIRect          fSrcRect;
+        SkIPoint         fDstPoint;
     };
 
     GrVkGpu*                    fGpu;
@@ -88,12 +87,18 @@ public:
 private:
     void init();
 
+    // Called instead of init when we are drawing to a render target that already wraps a secondary
+    // command buffer.
+    void initWrapped();
+
+    bool wrapsSecondaryCommandBuffer() const;
+
     GrGpu* gpu() override;
 
     // Bind vertex and index buffers
-    void bindGeometry(const GrBuffer* indexBuffer,
-                      const GrBuffer* vertexBuffer,
-                      const GrBuffer* instanceBuffer);
+    void bindGeometry(const GrGpuBuffer* indexBuffer,
+                      const GrGpuBuffer* vertexBuffer,
+                      const GrGpuBuffer* instanceBuffer);
 
     GrVkPipelineState* prepareDrawState(const GrPrimitiveProcessor&,
                                         const GrPipeline&,
@@ -154,17 +159,17 @@ private:
     struct CopyInfo {
         CopyInfo(GrSurface* src, GrSurfaceOrigin srcOrigin, const SkIRect& srcRect,
                  const SkIPoint& dstPoint, bool shouldDiscardDst)
-            : fSrc(src)
-            , fSrcOrigin(srcOrigin)
-            , fSrcRect(srcRect)
-            , fDstPoint(dstPoint)
-            , fShouldDiscardDst(shouldDiscardDst) {}
-
-        GrSurface*      fSrc;
-        GrSurfaceOrigin fSrcOrigin;
-        SkIRect         fSrcRect;
-        SkIPoint        fDstPoint;
-        bool            fShouldDiscardDst;
+                : fSrc(src)
+                , fSrcOrigin(srcOrigin)
+                , fSrcRect(srcRect)
+                , fDstPoint(dstPoint)
+                , fShouldDiscardDst(shouldDiscardDst) {}
+        using Src = GrPendingIOResource<GrSurface, kRead_GrIOType>;
+        Src              fSrc;
+        GrSurfaceOrigin  fSrcOrigin;
+        SkIRect          fSrcRect;
+        SkIPoint         fDstPoint;
+        bool             fShouldDiscardDst;
     };
 
     enum class LoadStoreState {
@@ -175,6 +180,7 @@ private:
     };
 
     struct CommandBufferInfo {
+        using SampledTexture = GrPendingIOResource<GrVkTexture, kRead_GrIOType>;
         const GrVkRenderPass*                  fRenderPass;
         SkTArray<GrVkSecondaryCommandBuffer*>  fCommandBuffers;
         VkClearValue                           fColorClearValue;
@@ -185,10 +191,10 @@ private:
         // command buffer.
         SkTArray<InlineUploadInfo>             fPreDrawUploads;
         SkTArray<CopyInfo>                     fPreCopies;
-        // Array of images that will be sampled and thus need to be transfered to sampled layout
+        // Array of images that will be sampled and thus need to be transferred to sampled layout
         // before submitting the secondary command buffers. This must happen after we do any predraw
         // uploads or copies.
-        SkTArray<GrVkImage*>                   fSampledImages;
+        SkTArray<SampledTexture>               fSampledTextures;
 
         GrVkSecondaryCommandBuffer* currentCmdBuf() {
             return fCommandBuffers.back();

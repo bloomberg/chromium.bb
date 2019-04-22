@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_CLIENT_SHARED_IMAGE_INTERFACE_H_
 
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -33,8 +34,8 @@ class SharedImageInterface {
   // API(s) the image will be used with.
   // Returns a mailbox that can be imported into said APIs using their
   // corresponding shared image functions (e.g.
-  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM) or (deprecated)
-  // mailbox functions (e.g.  RasterInterface::CreateAndConsumeTexture or
+  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM or
+  // RasterInterface::CopySubTexture) or (deprecated) mailbox functions (e.g.
   // GLES2Interface::CreateAndConsumeTextureCHROMIUM).
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
@@ -44,16 +45,29 @@ class SharedImageInterface {
                                     const gfx::ColorSpace& color_space,
                                     uint32_t usage) = 0;
 
+  // Same behavior as the above, except that this version takes |pixel_data|
+  // which is used to populate the SharedImage.  |pixel_data| should have the
+  // same format which would be passed to glTexImage2D to populate a similarly
+  // specified texture.
+  virtual Mailbox CreateSharedImage(viz::ResourceFormat format,
+                                    const gfx::Size& size,
+                                    const gfx::ColorSpace& color_space,
+                                    uint32_t usage,
+                                    base::span<const uint8_t> pixel_data) = 0;
+
   // Creates a shared image out of a GpuMemoryBuffer, using |color_space|.
   // |usage| is a combination of |SharedImageUsage| bits that describes which
   // API(s) the image will be used with. Format and size are derived from the
   // GpuMemoryBuffer. |gpu_memory_buffer_manager| is the manager that created
-  // |gpu_memory_buffer|. If valid, |color_space| will be applied to the shared
+  // |gpu_memory_buffer|. If the |gpu_memory_buffer| was created on the client
+  // side (for NATIVE_PIXMAP or ANDROID_HARDWARE_BUFFER types only), without a
+  // GpuMemoryBufferManager, |gpu_memory_buffer_manager| can be nullptr.
+  // If valid, |color_space| will be applied to the shared
   // image (possibly overwriting the one set on the GpuMemoryBuffer).
   // Returns a mailbox that can be imported into said APIs using their
   // corresponding shared image functions (e.g.
-  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM) or (deprecated)
-  // mailbox functions (e.g.  RasterInterface::CreateAndConsumeTexture or
+  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM or
+  // RasterInterface::CopySubTexture) or (deprecated) mailbox functions (e.g.
   // GLES2Interface::CreateAndConsumeTextureCHROMIUM).
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
@@ -79,6 +93,10 @@ class SharedImageInterface {
   // Generates an unverified SyncToken that is released after all previous
   // commands on this interface have executed on the service side.
   virtual SyncToken GenUnverifiedSyncToken() = 0;
+
+  // Generates a verified SyncToken that is released after all previous
+  // commands on this interface have executed on the service side.
+  virtual SyncToken GenVerifiedSyncToken() = 0;
 };
 
 }  // namespace gpu

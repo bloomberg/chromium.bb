@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/system/sys_info.h"

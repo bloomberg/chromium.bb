@@ -31,6 +31,9 @@ class ResourceRequestInfo;
 class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor,
                                       public DevToolsNetworkInterceptor {
  public:
+  static std::unique_ptr<DevToolsURLRequestInterceptor> MaybeCreate(
+      BrowserContext* browser_context);
+
   static bool IsNavigationRequest(ResourceType resource_type);
 
   explicit DevToolsURLRequestInterceptor(BrowserContext* browser_context);
@@ -79,7 +82,7 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor,
                                      InterceptionStage* stage);
 
   const DevToolsTargetRegistry::TargetInfo* TargetInfoForRequestInfo(
-      const ResourceRequestInfo* request_info) const;
+      ResourceRequestInfo* request_info) const;
 
   // Returns a WeakPtr to the DevToolsURLInterceptorRequestJob corresponding
   // to |interception_id|.

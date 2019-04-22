@@ -6,6 +6,7 @@
 #define BASE_THREADING_SCOPED_BLOCKING_CALL_H
 
 #include "base/base_export.h"
+#include "base/location.h"
 #include "base/logging.h"
 
 namespace base {
@@ -34,7 +35,7 @@ class BlockingObserver;
 // ScopedBlockingCallWithBaseSyncPrimitives without assertions.
 class BASE_EXPORT UncheckedScopedBlockingCall {
  public:
-  UncheckedScopedBlockingCall(BlockingType blocking_type);
+  explicit UncheckedScopedBlockingCall(BlockingType blocking_type);
   ~UncheckedScopedBlockingCall();
 
  private:
@@ -66,13 +67,15 @@ class BASE_EXPORT UncheckedScopedBlockingCall {
 // Good:
 //   Data data;
 //   {
-//     ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+//     ScopedBlockingCall scoped_blocking_call(
+//         FROM_HERE, BlockingType::WILL_BLOCK);
 //     data = GetDataFromNetwork();
 //   }
 //   CPUIntensiveProcessing(data);
 //
 // Bad:
-//   ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+//   ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+//       BlockingType::WILL_BLOCK);
 //   Data data = GetDataFromNetwork();
 //   CPUIntensiveProcessing(data);  // CPU usage within a ScopedBlockingCall.
 //
@@ -80,7 +83,8 @@ class BASE_EXPORT UncheckedScopedBlockingCall {
 //   Data a;
 //   Data b;
 //   {
-//     ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+//     ScopedBlockingCall scoped_blocking_call(
+//         FROM_HERE, BlockingType::MAY_BLOCK);
 //     a = GetDataFromMemoryCacheOrNetwork();
 //     b = GetDataFromMemoryCacheOrNetwork();
 //   }
@@ -88,7 +92,8 @@ class BASE_EXPORT UncheckedScopedBlockingCall {
 //   CPUIntensiveProcessing(b);
 //
 // Bad:
-//   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+//   ScopedBlockingCall scoped_blocking_call(
+//       FROM_HERE, BlockingType::MAY_BLOCK);
 //   Data a = GetDataFromMemoryCacheOrNetwork();
 //   Data b = GetDataFromMemoryCacheOrNetwork();
 //   CPUIntensiveProcessing(a);  // CPU usage within a ScopedBlockingCall.
@@ -100,16 +105,17 @@ class BASE_EXPORT UncheckedScopedBlockingCall {
 //
 // Bad:
 //  base::WaitableEvent waitable_event(...);
-//  ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+//  ScopedBlockingCall scoped_blocking_call(
+//      FROM_HERE, BlockingType::WILL_BLOCK);
 //  waitable_event.Wait();  // Wait() instantiates its own ScopedBlockingCall.
 //
-// When a ScopedBlockingCall is instantiated from a TaskScheduler parallel or
+// When a ScopedBlockingCall is instantiated from a ThreadPool parallel or
 // sequenced task, the thread pool size is incremented to compensate for the
 // blocked thread (more or less aggressively depending on BlockingType).
 class BASE_EXPORT ScopedBlockingCall
     : public internal::UncheckedScopedBlockingCall {
  public:
-  ScopedBlockingCall(BlockingType blocking_type);
+  ScopedBlockingCall(const Location& from_here, BlockingType blocking_type);
   ~ScopedBlockingCall();
 };
 
@@ -123,7 +129,9 @@ namespace internal {
 class BASE_EXPORT ScopedBlockingCallWithBaseSyncPrimitives
     : public UncheckedScopedBlockingCall {
  public:
-  ScopedBlockingCallWithBaseSyncPrimitives(BlockingType blocking_type);
+  explicit ScopedBlockingCallWithBaseSyncPrimitives(BlockingType blocking_type);
+  ScopedBlockingCallWithBaseSyncPrimitives(const Location& from_here,
+                                           BlockingType blocking_type);
   ~ScopedBlockingCallWithBaseSyncPrimitives();
 };
 
@@ -155,7 +163,7 @@ BASE_EXPORT void SetBlockingObserverForCurrentThread(
 BASE_EXPORT void ClearBlockingObserverForTesting();
 
 // Unregisters the |blocking_observer| on the current thread within its scope.
-// Used in TaskScheduler tests to prevent calls to //base sync primitives from
+// Used in ThreadPool tests to prevent calls to //base sync primitives from
 // affecting the thread pool capacity.
 class BASE_EXPORT ScopedClearBlockingObserverForTesting {
  public:

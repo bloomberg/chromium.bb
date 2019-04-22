@@ -40,7 +40,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -115,7 +115,8 @@ void DecodeFileAndCopyToClipboard(
 }
 
 void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   scoped_refptr<base::RefCountedString> png_data(new base::RefCountedString());
   if (!base::ReadFileToString(screenshot_path, &(png_data->data()))) {
     LOG(ERROR) << "Failed to read the screenshot file: "
@@ -517,7 +518,7 @@ void ChromeScreenshotGrabber::PrepareFileAndRunOnBlockingPool(
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::Bind(EnsureLocalDirectoryExists, path, callback));
+      base::BindOnce(EnsureLocalDirectoryExists, path, callback));
 }
 
 void ChromeScreenshotGrabber::OnScreenshotCompleted(
@@ -669,16 +670,11 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
     // ScreenshotGrabberNotificationDelegate::ButtonIndex.
     message_center::ButtonInfo copy_button(l10n_util::GetStringUTF16(
         IDS_SCREENSHOT_NOTIFICATION_BUTTON_COPY_TO_CLIPBOARD));
-    copy_button.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_NOTIFICATION_SCREENSHOT_COPY_TO_CLIPBOARD);
     optional_field.buttons.push_back(copy_button);
 
     if (chromeos::NoteTakingHelper::Get()->IsAppAvailable(GetProfile())) {
       message_center::ButtonInfo annotate_button(l10n_util::GetStringUTF16(
           IDS_SCREENSHOT_NOTIFICATION_BUTTON_ANNOTATE));
-      annotate_button.icon =
-          ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-              IDR_NOTIFICATION_SCREENSHOT_ANNOTATE);
       optional_field.buttons.push_back(annotate_button);
     }
 
@@ -705,7 +701,8 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
           message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayService::GetForProfile(GetProfile())
-      ->Display(NotificationHandler::Type::TRANSIENT, *notification);
+      ->Display(NotificationHandler::Type::TRANSIENT, *notification,
+                /*metadata=*/nullptr);
 }
 
 Profile* ChromeScreenshotGrabber::GetProfile() {

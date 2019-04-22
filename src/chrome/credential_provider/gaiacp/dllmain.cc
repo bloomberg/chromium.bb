@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "base/win/current_module.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_com_initializer.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
@@ -31,6 +32,8 @@
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_module.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
+#include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
@@ -65,7 +68,22 @@ STDAPI DllCanUnloadNow(void) {
 
 // Returns a class factory to create an object of the requested type.
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
-  return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
+  // Check to see if the credential provider has crashed too much recently.
+  // If it has then do not allow it to create any credential providers.
+  if (!credential_provider::VerifyStartupSentinel()) {
+    LOGFN(ERROR) << "Disabled due to previous unsuccessful starts";
+    return E_NOTIMPL;
+  }
+
+  HRESULT hr = _AtlModule.DllGetClassObject(rclsid, riid, ppv);
+
+  // Start refreshing token handle validity as soon as possible so that when
+  // their validity is requested later on by the credential providers they may
+  // already be available and no wait is needed.
+  if (SUCCEEDED(hr))
+    _AtlModule.RefreshTokenHandleValidity();
+
+  return hr;
 }
 
 // DllRegisterServer - Adds entries to the system registry.
@@ -94,7 +112,7 @@ STDAPI DllRegisterServer(void) {
     } else {
       sts = key.WriteValue(
           L"name",
-          credential_provider::GetStringResource(IDS_PROJNAME).c_str());
+          credential_provider::GetStringResource(IDS_PROJNAME_BASE).c_str());
       if (sts != ERROR_SUCCESS) {
         hr = HRESULT_FROM_WIN32(sts);
         LOGFN(ERROR) << "key.WriteValue(name) hr=" << putHR(hr);
@@ -131,7 +149,7 @@ STDAPI DllUnregisterServer(void) {
 }
 
 // This entry point is called via rundll32.  See
-// CGaiaCredential::WaitForLoginUI() for details.
+// CGaiaCredential::ForkSaveAccountInfoStub() for details.
 void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
                                HINSTANCE /*hinst*/,
                                wchar_t* /*pszCmdLine*/,
@@ -155,32 +173,38 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
   // Don't log |buffer| since it contains sensitive info like password.
 
   HRESULT hr = S_OK;
-  base::DictionaryValue* dict = nullptr;
-  std::unique_ptr<base::Value> properties =
+  base::Optional<base::Value> properties =
       base::JSONReader::Read(buffer, base::JSON_ALLOW_TRAILING_COMMAS);
-  if (!properties || !properties->GetAsDictionary(&dict)) {
+
+  ::RtlSecureZeroMemory(buffer, base::size(buffer));
+
+  if (!properties || !properties->is_dict()) {
     LOGFN(ERROR) << "base::JSONReader::Read failed length=" << buffer_len_bytes;
     hr = E_FAIL;
   }
 
-  hr = credential_provider::CGaiaCredentialBase::SaveAccountInfo(*dict);
+  hr = credential_provider::CGaiaCredentialBase::SaveAccountInfo(*properties);
   if (FAILED(hr))
     LOGFN(ERROR) << "SaveAccountInfoW hr=" << putHR(hr);
 
-  // If an MDM URL is configured in the registry, use it.
-
-  wchar_t mdm_url[256];
-  ULONG length = base::size(mdm_url);
-  hr = credential_provider::GetGlobalFlag(L"mdm", mdm_url, &length);
-  if (SUCCEEDED(hr)) {
-    dict->SetString(credential_provider::kKeyMdmUrl, mdm_url);
-
-    hr = credential_provider::EnrollToGoogleMdmIfNeeded(*dict);
-    if (FAILED(hr))
-      LOGFN(INFO) << "EnrollToGoogleMdmIfNeeded hr=" << putHR(hr);
+  // Make sure COM is initialized in this thread. This thread must be
+  // initialized as an MTA or the call to enroll with MDM causes a crash in COM.
+  base::win::ScopedCOMInitializer com_initializer(
+      base::win::ScopedCOMInitializer::kMTA);
+  if (!com_initializer.Succeeded()) {
+    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    LOGFN(ERROR) << "ScopedCOMInitializer failed hr=" << putHR(hr);
   } else {
-    LOGFN(INFO) << "Not enrolling to MDM";
+    // Try to enroll the machine to MDM here. MDM requires a user to be signed
+    // on to an interactive session to succeed and when we call this function
+    // the user should have been successfully signed on at that point and able
+    // to finish the enrollment.
+    HRESULT hr = credential_provider::EnrollToGoogleMdmIfNeeded(*properties);
+    if (FAILED(hr))
+      LOGFN(ERROR) << "EnrollToGoogleMdmIfNeeded hr=" << putHR(hr);
   }
+
+  credential_provider::SecurelyClearDictionaryValue(&properties);
 
   LOGFN(INFO) << "Done";
 }
@@ -226,7 +250,9 @@ SetFakesForTesting(const credential_provider::FakesForTesting* fakes) {
   credential_provider::ScopedLsaPolicy::SetCreatorForTesting(
       fakes->scoped_lsa_policy_creator);
   credential_provider::OSUserManager::SetInstanceForTesting(
-      fakes->os_manager_for_testing);
+      fakes->os_user_manager_for_testing);
+  credential_provider::OSProcessManager::SetInstanceForTesting(
+      fakes->os_process_manager_for_testing);
 
   _AtlModule.set_is_testing(true);
 }

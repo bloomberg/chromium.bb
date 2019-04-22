@@ -10,7 +10,7 @@
 
 #include "third_party/libjingle_xmpp/xmllite/xmlconstants.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 const char STR_EMPTY[] = "";
 const char NS_XML[] = "http://www.w3.org/XML/1998/namespace";
@@ -22,4 +22,4 @@ const char STR_ENCODING[] = "encoding";
 
 const StaticQName QN_XMLNS = { STR_EMPTY, STR_XMLNS };
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

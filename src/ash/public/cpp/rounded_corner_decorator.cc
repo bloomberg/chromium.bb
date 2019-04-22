@@ -4,6 +4,7 @@
 
 #include "ash/public/cpp/rounded_corner_decorator.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/paint_recorder.h"
@@ -19,7 +20,12 @@ RoundedCornerDecorator::RoundedCornerDecorator(aura::Window* shadow_window,
     : layer_window_(layer_window), layer_(layer), radius_(radius) {
   layer_window_->AddObserver(this);
   layer_->AddObserver(this);
-  Update(layer_->size());
+  if (ash::features::ShouldUseShaderRoundedCorner()) {
+    layer_->SetRoundedCornerRadius({radius_, radius_, radius_, radius_});
+    layer_->SetIsFastRoundedCorner(true);
+  } else {
+    Update(layer_->size());
+  }
 
   // Update the shadow if necessary.
   ui::Shadow* shadow = wm::ShadowController::GetShadowForWindow(shadow_window);
@@ -70,6 +76,9 @@ void RoundedCornerDecorator::OnWindowDestroying(aura::Window* window) {
 }
 
 void RoundedCornerDecorator::Update(const gfx::Size& size) {
+  if (ash::features::ShouldUseShaderRoundedCorner())
+    return;
+
   DCHECK(layer_window_);
   DCHECK(layer_);
   if (!mask_layer_) {
@@ -84,10 +93,14 @@ void RoundedCornerDecorator::Update(const gfx::Size& size) {
 void RoundedCornerDecorator::Shutdown() {
   if (!IsValid())
     return;
+  if (ash::features::ShouldUseShaderRoundedCorner()) {
+    layer_->SetRoundedCornerRadius({0, 0, 0, 0});
+  } else {
+    if (layer_->layer_mask_layer() == mask_layer_.get())
+      layer_->SetMaskLayer(nullptr);
+    mask_layer_.reset();
+  }
 
-  if (layer_->layer_mask_layer() == mask_layer_.get())
-    layer_->SetMaskLayer(nullptr);
-  mask_layer_.reset();
   layer_->RemoveObserver(this);
   layer_window_->RemoveObserver(this);
   layer_ = nullptr;

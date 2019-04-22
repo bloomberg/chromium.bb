@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "components/browser_watcher/watcher_client_win.h"
 
 namespace {
@@ -75,8 +75,8 @@ bool ChromeWatcherClient::EnsureInitialized() {
   DCHECK(on_initialized_event_.IsValid());
 
   HANDLE handles[] = {on_initialized_event_.Get(), process_.Handle()};
-  DWORD result = ::WaitForMultipleObjects(arraysize(handles), handles,
-                                          FALSE, INFINITE);
+  DWORD result =
+      ::WaitForMultipleObjects(base::size(handles), handles, FALSE, INFINITE);
 
   switch (result) {
     case WAIT_OBJECT_0:

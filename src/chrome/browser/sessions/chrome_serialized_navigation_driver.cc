@@ -77,9 +77,7 @@ void ChromeSerializedNavigationDriver::Sanitize(
   }
 
   if (navigation->virtual_url().SchemeIs(content::kChromeUIScheme) &&
-      (navigation->virtual_url().host_piece() == chrome::kChromeUIHistoryHost ||
-       navigation->virtual_url().host_piece() ==
-           chrome::kDeprecatedChromeUIHistoryFrameHost)) {
+      navigation->virtual_url().host_piece() == chrome::kChromeUIHistoryHost) {
     // Rewrite the old history Web UI to the new android native history.
     navigation->set_virtual_url(GURL(chrome::kChromeUINativeHistoryURL));
     navigation->set_original_request_url(navigation->virtual_url());

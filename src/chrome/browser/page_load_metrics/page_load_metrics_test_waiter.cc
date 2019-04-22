@@ -38,6 +38,19 @@ void PageLoadMetricsTestWaiter::AddSubFrameExpectation(TimingField field) {
     page_expected_fields_.Set(field);
 }
 
+void PageLoadMetricsTestWaiter::AddWebFeatureExpectation(
+    blink::mojom::WebFeature web_feature) {
+  size_t feature_idx = static_cast<size_t>(web_feature);
+  if (!expected_web_features_.test(feature_idx)) {
+    expected_web_features_.set(feature_idx);
+  }
+}
+
+void PageLoadMetricsTestWaiter::AddSubframeNavigationExpectation(
+    size_t expected_subframe_navigations) {
+  expected_subframe_navigations_ = expected_subframe_navigations;
+}
+
 void PageLoadMetricsTestWaiter::AddMinimumCompleteResourcesExpectation(
     int expected_minimum_complete_resources) {
   expected_minimum_complete_resources_ = expected_minimum_complete_resources;
@@ -50,6 +63,11 @@ void PageLoadMetricsTestWaiter::AddMinimumNetworkBytesExpectation(
 
 bool PageLoadMetricsTestWaiter::DidObserveInPage(TimingField field) const {
   return observed_page_fields_.IsSet(field);
+}
+
+bool PageLoadMetricsTestWaiter::DidObserveWebFeature(
+    blink::mojom::WebFeature feature) const {
+  return observed_web_features_.test(static_cast<size_t>(feature));
 }
 
 void PageLoadMetricsTestWaiter::Wait() {
@@ -106,17 +124,11 @@ void PageLoadMetricsTestWaiter::OnLoadedResource(
 }
 
 void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
+    content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources) {
-    auto it = page_resources_.find(resource->request_id);
-    if (it != page_resources_.end()) {
-      it->second = resource.Clone();
-    } else {
-      page_resources_.emplace(std::piecewise_construct,
-                              std::forward_as_tuple(resource->request_id),
-                              std::forward_as_tuple(resource->Clone()));
-    }
+    HandleResourceUpdate(resource);
     if (resource->is_complete) {
       current_complete_resources_++;
       if (!resource->was_fetched_via_cache)
@@ -124,6 +136,36 @@ void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
     }
     current_network_bytes_ += resource->delta_bytes;
   }
+  if (ExpectationsSatisfied() && run_loop_)
+    run_loop_->Quit();
+}
+
+void PageLoadMetricsTestWaiter::OnFeaturesUsageObserved(
+    content::RenderFrameHost* rfh,
+    const mojom::PageLoadFeatures& features,
+    const PageLoadExtraInfo& extra_info) {
+  if (WebFeaturesExpectationsSatisfied())
+    return;
+
+  for (blink::mojom::WebFeature feature : features.features) {
+    size_t feature_idx = static_cast<size_t>(feature);
+    if (observed_web_features_.test(feature_idx))
+      continue;
+    observed_web_features_.set(feature_idx);
+  }
+
+  if (ExpectationsSatisfied() && run_loop_)
+    run_loop_->Quit();
+}
+
+void PageLoadMetricsTestWaiter::OnDidFinishSubFrameNavigation(
+    content::NavigationHandle* navigation_handle,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (SubframeNavigationExpectationsSatisfied())
+    return;
+
+  ++observed_subframe_navigations_;
+
   if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
 }
@@ -193,9 +235,25 @@ bool PageLoadMetricsTestWaiter::ResourceUseExpectationsSatisfied() const {
           current_network_bytes_ >= expected_minimum_network_bytes_);
 }
 
+bool PageLoadMetricsTestWaiter::WebFeaturesExpectationsSatisfied() const {
+  // We are only interested to see if all features being set in
+  // |expected_web_features_| are observed, but don't care about whether extra
+  // features are observed.
+  return (expected_web_features_ & observed_web_features_ ^
+          expected_web_features_)
+      .none();
+}
+
+bool PageLoadMetricsTestWaiter::SubframeNavigationExpectationsSatisfied()
+    const {
+  return observed_subframe_navigations_ >= expected_subframe_navigations_;
+}
+
 bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
   return subframe_expected_fields_.Empty() && page_expected_fields_.Empty() &&
-         ResourceUseExpectationsSatisfied();
+         ResourceUseExpectationsSatisfied() &&
+         WebFeaturesExpectationsSatisfied() &&
+         SubframeNavigationExpectationsSatisfied();
 }
 
 PageLoadMetricsTestWaiter::WaiterMetricsObserver::~WaiterMetricsObserver() {}
@@ -221,10 +279,27 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnLoadedResource(
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
     OnResourceDataUseObserved(
+        content::RenderFrameHost* rfh,
         const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
             resources) {
   if (waiter_)
-    waiter_->OnResourceDataUseObserved(resources);
+    waiter_->OnResourceDataUseObserved(rfh, resources);
+}
+
+void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnFeaturesUsageObserved(
+    content::RenderFrameHost* rfh,
+    const mojom::PageLoadFeatures& features,
+    const PageLoadExtraInfo& extra_info) {
+  if (waiter_)
+    waiter_->OnFeaturesUsageObserved(nullptr, features, extra_info);
+}
+
+void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
+    OnDidFinishSubFrameNavigation(
+        content::NavigationHandle* navigation_handle,
+        const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (waiter_)
+    waiter_->OnDidFinishSubFrameNavigation(navigation_handle, extra_info);
 }
 
 }  // namespace page_load_metrics

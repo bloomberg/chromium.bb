@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -155,6 +155,8 @@ class GPU_GLES2_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   bool HasColorAttachment(int index) const;
   bool HasDepthAttachment() const;
   bool HasStencilAttachment() const;
+  bool HasActiveFloat32ColorAttachment() const;
+  GLsizei last_color_attachment_id() const { return last_color_attachment_id_; }
   GLenum GetDepthFormat() const;
   GLenum GetStencilFormat() const;
   GLenum GetDrawBufferInternalFormat() const;
@@ -240,6 +242,11 @@ class GPU_GLES2_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   ~Framebuffer();
 
+  // Helper function updating cached last color attachment id bound.
+  // Called when attachments_ changed
+  void OnInsertUpdateLastColorAttachmentId(GLenum attachment);
+  void OnEraseUpdateLastColorAttachmentId(GLenum attachment);
+
   void MarkAsDeleted();
 
   void MarkAttachmentsAsCleared(
@@ -279,7 +286,7 @@ class GPU_GLES2_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   unsigned framebuffer_complete_state_count_id_;
 
   // A map of attachments.
-  typedef base::hash_map<GLenum, scoped_refptr<Attachment> > AttachmentMap;
+  typedef std::unordered_map<GLenum, scoped_refptr<Attachment>> AttachmentMap;
   AttachmentMap attachments_;
 
   // User's draw buffers setting through DrawBuffers() call.
@@ -295,11 +302,16 @@ class GPU_GLES2_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   // We have up to 16 draw buffers, each is encoded into 2 bits, total 32 bits:
   // the lowest 2 bits for draw buffer 0, the highest 2 bits for draw buffer 15.
   uint32_t draw_buffer_type_mask_;
+  // Same layout as above, 0x03 if it's 32bit float color attachment, 0x00 if
+  // not
+  uint32_t draw_buffer_float32_mask_;
   // Same layout as above, 2 bits per draw buffer, 0x03 if a draw buffer has a
   // bound image, 0x00 if not.
   uint32_t draw_buffer_bound_mask_;
   // This is the mask for the actual draw buffers sent to driver.
   uint32_t adjusted_draw_buffer_bound_mask_;
+  // The largest i of all GL_COLOR_ATTACHMENTi
+  GLsizei last_color_attachment_id_;
 
   GLenum read_buffer_;
 
@@ -370,8 +382,7 @@ class GPU_GLES2_EXPORT FramebufferManager {
   }
 
   // Info for each framebuffer in the system.
-  typedef base::hash_map<GLuint, scoped_refptr<Framebuffer> >
-      FramebufferMap;
+  typedef std::unordered_map<GLuint, scoped_refptr<Framebuffer>> FramebufferMap;
   FramebufferMap framebuffers_;
 
   // Incremented anytime anything changes that might effect framebuffer

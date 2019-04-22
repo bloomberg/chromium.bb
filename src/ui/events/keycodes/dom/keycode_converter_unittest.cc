@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -23,13 +24,13 @@ namespace {
 // These are in the same order as the columns in keycode_converter_data.inc
 // as reflected in the USB_KEYMAP() macro below.
 const size_t expected_mapped_key_count[] = {
-  208, // evdev
-  208, // xkb
-  157, // windows
-  118, // mac
+  211,  // evdev
+  211,  // xkb
+  157,  // windows
+  118,  // mac
 };
 
-const size_t kNativeColumns = arraysize(expected_mapped_key_count);
+const size_t kNativeColumns = base::size(expected_mapped_key_count);
 
 struct KeycodeConverterData {
   uint32_t usb_keycode;

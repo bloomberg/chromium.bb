@@ -6,7 +6,6 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -30,7 +29,6 @@ AccountInvestigatorFactory::AccountInvestigatorFactory()
     : BrowserContextKeyedServiceFactory(
           "AccountInvestigator",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
 }
 
@@ -40,7 +38,6 @@ KeyedService* AccountInvestigatorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile(Profile::FromBrowserContext(context));
   AccountInvestigator* investigator = new AccountInvestigator(
-      GaiaCookieManagerServiceFactory::GetForProfile(profile),
       profile->GetPrefs(), IdentityManagerFactory::GetForProfile(profile));
   investigator->Initialize();
   return investigator;

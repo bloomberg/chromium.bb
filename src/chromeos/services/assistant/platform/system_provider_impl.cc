@@ -6,17 +6,21 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
 
 namespace chromeos {
 namespace assistant {
 
 SystemProviderImpl::SystemProviderImpl(
+    std::unique_ptr<PowerManagerProviderImpl> power_manager_provider,
     device::mojom::BatteryMonitorPtr battery_monitor)
-    : battery_monitor_(std::move(battery_monitor)) {
+    : power_manager_provider_(std::move(power_manager_provider)),
+      battery_monitor_(std::move(battery_monitor)) {
   battery_monitor_->QueryNextStatus(base::BindOnce(
       &SystemProviderImpl::OnBatteryStatus, base::Unretained(this)));
 }
@@ -35,8 +39,7 @@ void SystemProviderImpl::RegisterMicMuteChangeCallback(
 
 assistant_client::PowerManagerProvider*
 SystemProviderImpl::GetPowerManagerProvider() {
-  // TODO(xiaohuic): implement power manager provider
-  return nullptr;
+  return power_manager_provider_.get();
 }
 
 bool SystemProviderImpl::GetBatteryState(BatteryState* state) {

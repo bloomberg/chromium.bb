@@ -37,7 +37,7 @@ except ImportError:
 import types
 
 from chromite.cbuildbot import archive_lib
-from chromite.lib.const import waterfall
+from chromite.lib import buildstore
 from chromite.lib import constants
 from chromite.lib import metadata_lib
 from chromite.lib import cidb
@@ -585,7 +585,6 @@ class _BuilderRunBase(object):
       # Some pre-computed run configuration values.
       'buildnumber',     # The build number for this run.
       'buildroot',       # The build root path for this run.
-      'debug',           # Boolean, represents "dry run" concept, really.
       'manifest_branch', # The manifest branch to build and test for this run.
 
       # Some attributes are available as properties.  In particular, attributes
@@ -618,15 +617,6 @@ class _BuilderRunBase(object):
     self.buildroot = self.options.buildroot
     self.buildnumber = self.options.buildnumber
     self.manifest_branch = self.options.branch
-
-    # For remote_trybot runs, options.debug is implied, but we want true dryrun
-    # mode only if --debug was actually specified (i.e. options.debug_forced).
-    # TODO(mtennant): Get rid of confusing debug and debug_forced, if at all
-    # possible.  Also, eventually use "dry_run" and "verbose" options instead to
-    # represent two distinct concepts.
-    self.debug = self.options.debug
-    if self.options.remote_trybot:
-      self.debug = self.options.debug_forced
 
     # The __slots__ logic above confuses pylint.
     # https://bitbucket.org/logilab/pylint/issue/380/
@@ -668,26 +658,6 @@ class _BuilderRunBase(object):
     """Create a BoardRunAttributes object for this run and given |board|."""
     return BoardRunAttributes(self.attrs, board, self.config.name)
 
-  def GetWaterfall(self):
-    """Gets the waterfall of the current build."""
-    # Metadata dictionary may not have been written at this time (it
-    # should be written in the BuildStartStage), fall back to get the
-    # environment variable in that case. Assume we are on the trybot
-    # waterfall if no waterfall can be found.
-    return (self.attrs.metadata.GetDict().get('buildbot-master-name') or
-            os.environ.get('BUILDBOT_MASTERNAME') or
-            waterfall.WATERFALL_SWARMING)
-
-  def GetBuildbotUrl(self):
-    """Gets the URL of the waterfall hosting the current build."""
-    # Metadata dictionary may not have been written at this time (it
-    # should be written in the BuildStartStage), fall back to the
-    # environment variable in that case. Assume we are on the trybot
-    # waterfall if no waterfall can be found.
-    return (self.attrs.metadata.GetDict().get('buildbot-url') or
-            os.environ.get('BUILDBOT_BUILDBOTURL') or
-            constants.SWARMING_DASHBOARD)
-
   def GetBuilderName(self):
     """Get the name of this builder on the current waterfall."""
     return os.environ.get('BUILDBOT_BUILDERNAME', self.config.name)
@@ -695,7 +665,8 @@ class _BuilderRunBase(object):
   def ConstructDashboardURL(self, stage=None):
     """Return the dashboard URL
 
-    This is the direct link to buildbot logs as seen in build.chromium.org
+    This is the direct link to logdog logs if given a stage, or the link to the
+    legoland build page for the build.
 
     Args:
       stage: Link to a specific |stage|, otherwise the general buildbot log
@@ -703,25 +674,10 @@ class _BuilderRunBase(object):
     Returns:
       The fully formed URL
     """
-    # TODO: Stage links are only used in metadata_lib, and may not be
-    # necessary. The logs links are currently limited an uninteresting. We
-    # should remove or update to logdog.
     if stage:
-      return tree_status.ConstructBuildStageURL(
-          self.GetBuildbotUrl(),
-          self.GetBuilderName(),
-          self.options.buildnumber, stage=stage)
+      return tree_status.ConstructLogDogURL(self.options.buildnumber, stage)
     else:
-      # If we have a buildbucket_id, use it to construct URLs.
-      if self.options.buildbucket_id:
-        return tree_status.ConstructLegolandBuildURL(
-            self.options.buildbucket_id)
-
-      # If not, assume buildbot URLs are needed.
-      return tree_status.ConstructDashboardURL(
-          self.GetWaterfall(),
-          self.GetBuilderName(),
-          self.options.buildnumber)
+      return tree_status.ConstructLegolandBuildURL(self.options.buildbucket_id)
 
   def ShouldBuildAutotest(self):
     """Return True if this run should build autotest and artifacts."""
@@ -732,25 +688,31 @@ class _BuilderRunBase(object):
     return self.options.prebuilts and self.config.prebuilts
 
   def GetCIDBHandle(self):
-    """Get the build_id and cidb handle, if available.
+    """Get the build_identifier and cidb handle, if available.
 
     Returns:
-      A (build_id, CIDBConnection) tuple if cidb is set up and a build_id is
-      known in metadata. Otherwise, (None, None).
+      A (BuildIdentifier, CIDBConnection) tuple if cidb is set up and
+      a build_id is known in metadata. Otherwise,
+      (BuildIdentifier(None, None), None).
     """
     try:
       build_id = self.attrs.metadata.GetValue('build_id')
+      buildbucket_id = self.options.buildbucket_id
+      build_identifier = buildstore.BuildIdentifier(
+          cidb_id=build_id, buildbucket_id=buildbucket_id)
     except KeyError:
-      return (None, None)
+      return (buildstore.BuildIdentifier(None, None), None)
+    except AttributeError:
+      return (buildstore.BuildIdentifier(None, None), None)
 
     if not cidb.CIDBConnectionFactory.IsCIDBSetup():
-      return (None, None)
+      return (buildstore.BuildIdentifier(None, None), None)
 
     cidb_handle = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
     if cidb_handle:
-      return (build_id, cidb_handle)
+      return (build_identifier, cidb_handle)
     else:
-      return (None, None)
+      return (buildstore.BuildIdentifier(None, None), None)
 
   def ShouldReexecAfterSync(self):
     """Return True if this run should re-exec itself after sync stage."""
@@ -767,8 +729,7 @@ class _BuilderRunBase(object):
 
   def InEmailReportingEnvironment(self):
     """Return True if this run should send reporting emails.."""
-    in_email_waterfall = self.GetWaterfall() in waterfall.EMAIL_WATERFALLS
-    return self.InProduction() or in_email_waterfall
+    return self.InProduction()
 
   def GetVersionInfo(self):
     """Helper for picking apart various version bits.

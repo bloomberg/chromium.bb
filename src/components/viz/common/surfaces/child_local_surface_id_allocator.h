@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
@@ -34,6 +36,12 @@ class VIZ_COMMON_EXPORT ChildLocalSurfaceIdAllocator {
 
   ~ChildLocalSurfaceIdAllocator() = default;
 
+  // Creates a ChildLocalSurfaceIdAllocator seeded with a LocalSurfaceId
+  // whose child sequence number is |value|. UpdateFromParent() must still be
+  // called.
+  static std::unique_ptr<ChildLocalSurfaceIdAllocator>
+  CreateWithChildSequenceNumber(uint32_t value);
+
   // When a parent-allocated LocalSurfaceId arrives in the child, the child
   // needs to update its understanding of the last generated message so the
   // messages can continue to monotonically increase. Returns whether the
@@ -42,6 +50,10 @@ class VIZ_COMMON_EXPORT ChildLocalSurfaceIdAllocator {
       const LocalSurfaceIdAllocation& parent_local_surface_id_allocation);
 
   void GenerateId();
+
+  // If UpdateFromParent() has been called this calls GenerateId(), otherwise
+  // the child sequence number is advanced.
+  void GenerateIdOrIncrementChild();
 
   const LocalSurfaceIdAllocation& GetCurrentLocalSurfaceIdAllocation() const {
     return current_local_surface_id_allocation_;

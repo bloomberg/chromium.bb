@@ -8,6 +8,8 @@
 The real entry plumbing is in toolchain_main.py.
 """
 
+from __future__ import print_function
+
 import os
 import StringIO
 import subprocess
@@ -16,12 +18,12 @@ import tempfile
 
 class Process(object):
   def __init__(self, args, cwd=None, shell=False, env=None, pipe=True):
-    print 'IN CWD=%s' % str(cwd)
+    print('IN CWD=%s' % str(cwd))
     self.args = args
     self.cwd = cwd or os.getcwd()
     self.shell = shell
     self.env = env
-    print 'CWD=' + self.cwd
+    print('CWD=' + self.cwd)
     try:
       if not pipe:
         self.proc = subprocess.Popen(self.args,
@@ -36,7 +38,7 @@ class Process(object):
                                      cwd=self.cwd,
                                      env=self.env)
     except:
-      print 'Failed to run:\n\t%s> %s' % (self.cwd, ' '.join(self.args))
+      print('Failed to run:\n\t%s> %s' % (self.cwd, ' '.join(self.args)))
       raise
 
   def Run(self, outfile=None, verbose=True):
@@ -64,4 +66,3 @@ def Run(args, cwd=None, shell=False, env=None, outfile=None, verbose=True):
 def WaitForAll(procs, outfile=None):
   for proc in procs:
     proc.Run(outfile)
-

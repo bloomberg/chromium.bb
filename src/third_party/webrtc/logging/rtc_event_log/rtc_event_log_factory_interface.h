@@ -14,7 +14,6 @@
 #include <memory>
 
 #include "logging/rtc_event_log/rtc_event_log.h"
-#include "rtc_base/task_queue.h"
 
 namespace webrtc {
 
@@ -27,13 +26,7 @@ class RtcEventLogFactoryInterface {
 
   virtual std::unique_ptr<RtcEventLog> CreateRtcEventLog(
       RtcEventLog::EncodingType encoding_type) = 0;
-
-  virtual std::unique_ptr<RtcEventLog> CreateRtcEventLog(
-      RtcEventLog::EncodingType encoding_type,
-      std::unique_ptr<rtc::TaskQueue> task_queue) = 0;
 };
-
-std::unique_ptr<RtcEventLogFactoryInterface> CreateRtcEventLogFactory();
 
 }  // namespace webrtc
 

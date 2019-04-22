@@ -14,9 +14,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory.h"
@@ -24,6 +24,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_frame_layout.h"
@@ -117,6 +118,15 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
                                                const gfx::Rect& visible_rect,
                                                const gfx::Size& natural_size,
                                                base::TimeDelta timestamp);
+
+  // Used by Chromecast only.
+  // Create a new frame that doesn't contain any valid video content. This frame
+  // is meant to be sent to compositor to inform that the compositor should
+  // punch a transparent hole so the video underlay will be visible.
+  static scoped_refptr<VideoFrame> CreateVideoHoleFrame(
+      const base::UnguessableToken& overlay_plane_id,
+      const gfx::Size& natural_size,
+      base::TimeDelta timestamp);
 
   // Offers the same functionality as CreateFrame, and additionally zeroes out
   // the initial allocated buffers.
@@ -228,6 +238,17 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       uint8_t* v_data,
       base::TimeDelta timestamp);
 
+  // Wraps external YUV data with VideoFrameLayout. The returned VideoFrame does
+  // not own the data passed in.
+  static scoped_refptr<VideoFrame> WrapExternalYuvDataWithLayout(
+      const VideoFrameLayout& layout,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      uint8_t* y_data,
+      uint8_t* u_data,
+      uint8_t* v_data,
+      base::TimeDelta timestamp);
+
   // Wraps external YUVA data of the given parameters with a VideoFrame.
   // The returned VideoFrame does not own the data passed in.
   static scoped_refptr<VideoFrame> WrapExternalYuvaData(
@@ -331,6 +352,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns the number of bytes per element for given |plane| and |format|.
   static int BytesPerElement(VideoPixelFormat format, size_t plane);
 
+  // Calculates strides for each plane based on |format| and |coded_size|.
+  static std::vector<int32_t> ComputeStrides(VideoPixelFormat format,
+                                             const gfx::Size& coded_size);
+
   // Returns the number of rows for the given plane, format, and height.
   // The height may be aligned to format requirements.
   static size_t Rows(size_t plane, VideoPixelFormat format, int height);
@@ -342,7 +367,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Used to keep a running hash of seen frames.  Expects an initialized MD5
   // context.  Calls MD5Update with the context and the contents of the frame.
   static void HashFrameForTesting(base::MD5Context* context,
-                                  const scoped_refptr<VideoFrame>& frame);
+                                  const VideoFrame& frame);
+
+  // Returns true if |frame| is accesible mapped in the VideoFrame memory space.
+  // static
+  static bool IsStorageTypeMappable(VideoFrame::StorageType storage_type);
 
   // Returns true if |frame| is accessible and mapped in the VideoFrame memory
   // space. If false, clients should refrain from accessing data(),
@@ -367,8 +396,15 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   VideoPixelFormat format() const { return layout_.format(); }
   StorageType storage_type() const { return storage_type_; }
 
+  // The full dimensions of the video frame data.
   const gfx::Size& coded_size() const { return layout_.coded_size(); }
+  // A subsection of [0, 0, coded_size().width(), coded_size.height()]. This
+  // can be set to "soft-apply" a cropping. It determines the pointers into
+  // the data returned by visible_data().
   const gfx::Rect& visible_rect() const { return visible_rect_; }
+  // Specifies that the |visible_rect| section of the frame is supposed to be
+  // scaled to this size when being presented. This can be used to represent
+  // anamorphic frames, or to "soft-apply" any custom scaling.
   const gfx::Size& natural_size() const { return natural_size_; }
 
   int stride(size_t plane) const {
@@ -566,13 +602,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Return the alignment for the whole frame, calculated as the max of the
   // alignment for each individual plane.
   static gfx::Size CommonAlignment(VideoPixelFormat format);
-
-  // Calculates strides if unassigned.
-  // For the case that plane stride is not assigned, i.e. 0, in the layout_
-  // object, it calculates strides for each plane based on frame format and
-  // coded size then writes them back.
-  static std::vector<int32_t> ComputeStrides(VideoPixelFormat format,
-                                             const gfx::Size& coded_size);
 
   void AllocateMemory(bool zero_initialize_memory);
 

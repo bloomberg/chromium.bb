@@ -34,13 +34,9 @@ class HTMLSpanElement;
 
 class WrapContentsInDummySpanCommand final : public SimpleEditCommand {
  public:
-  static WrapContentsInDummySpanCommand* Create(Element* element) {
-    return MakeGarbageCollected<WrapContentsInDummySpanCommand>(element);
-  }
-
   explicit WrapContentsInDummySpanCommand(Element*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

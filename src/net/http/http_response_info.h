@@ -7,7 +7,10 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "base/time/time.h"
+#include "net/base/auth.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_vary_data.h"
@@ -19,7 +22,6 @@ class Pickle;
 
 namespace net {
 
-class AuthChallengeInfo;
 class HttpResponseHeaders;
 class IOBufferWithSize;
 class SSLCertRequestInfo;
@@ -59,6 +61,7 @@ class NET_EXPORT HttpResponseInfo {
     CONNECTION_INFO_QUIC_44 = 23,
     CONNECTION_INFO_QUIC_45 = 24,
     CONNECTION_INFO_QUIC_46 = 25,
+    CONNECTION_INFO_QUIC_47 = 26,
     NUM_OF_CONNECTION_INFOS,
   };
 
@@ -169,7 +172,7 @@ class NET_EXPORT HttpResponseInfo {
   // originally.  This is true even if the response was re-validated using a
   // different remote address, or if some of the content came from a byte-range
   // request to a different address.
-  HostPortPair socket_address;
+  IPEndPoint remote_endpoint;
 
   // Protocol negotiated with the server.
   std::string alpn_negotiated_protocol;
@@ -187,7 +190,7 @@ class NET_EXPORT HttpResponseInfo {
 
   // If the response headers indicate a 401 or 407 failure, then this structure
   // will contain additional information about the authentication challenge.
-  scoped_refptr<AuthChallengeInfo> auth_challenge;
+  base::Optional<AuthChallengeInfo> auth_challenge;
 
   // The SSL client certificate request info.
   // TODO(wtc): does this really belong in HttpResponseInfo?  I put it here

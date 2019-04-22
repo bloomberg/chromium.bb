@@ -14,13 +14,14 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #include "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #include "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/navigation_context.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -36,16 +37,12 @@ bool IsApplicationStateActive() {
 }
 }  // namespace
 
-SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
-                                 id<SadTabTabHelperDelegate> delegate)
-    : SadTabTabHelper(web_state, kDefaultRepeatFailureInterval, delegate) {}
+SadTabTabHelper::SadTabTabHelper(web::WebState* web_state)
+    : SadTabTabHelper(web_state, kDefaultRepeatFailureInterval) {}
 
 SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
-                                 double repeat_failure_interval,
-                                 id<SadTabTabHelperDelegate> delegate)
-    : web_state_(web_state),
-      repeat_failure_interval_(repeat_failure_interval),
-      delegate_(delegate) {
+                                 double repeat_failure_interval)
+    : web_state_(web_state), repeat_failure_interval_(repeat_failure_interval) {
   web_state_->AddObserver(this);
   AddApplicationDidBecomeActiveObserver();
 }
@@ -55,28 +52,31 @@ SadTabTabHelper::~SadTabTabHelper() {
   DCHECK(!web_state_);
 }
 
-void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
-                                        id<SadTabTabHelperDelegate> delegate) {
+void SadTabTabHelper::CreateForWebState(web::WebState* web_state) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(), base::WrapUnique(new SadTabTabHelper(
-                                              web_state, delegate)));
+    web_state->SetUserData(UserDataKey(),
+                           base::WrapUnique(new SadTabTabHelper(web_state)));
   }
 }
 
 void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
-                                        double repeat_failure_interval,
-                                        id<SadTabTabHelperDelegate> delegate) {
+                                        double repeat_failure_interval) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
     web_state->SetUserData(UserDataKey(),
                            base::WrapUnique(new SadTabTabHelper(
-                               web_state, repeat_failure_interval, delegate)));
+                               web_state, repeat_failure_interval)));
   }
 }
 
 void SadTabTabHelper::SetDelegate(id<SadTabTabHelperDelegate> delegate) {
   delegate_ = delegate;
+  if (delegate_ && showing_sad_tab_ && web_state_->IsVisible()) {
+    UpdateFullscreenDisabler();
+    [delegate_ sadTabTabHelper:this
+        didShowForRepeatedFailure:repeated_failure_];
+  }
 }
 
 void SadTabTabHelper::WasShown(web::WebState* web_state) {
@@ -87,6 +87,7 @@ void SadTabTabHelper::WasShown(web::WebState* web_state) {
   }
   UpdateFullscreenDisabler();
   if (showing_sad_tab_) {
+    DCHECK(delegate_);
     [delegate_ sadTabTabHelper:this
         didShowForRepeatedFailure:repeated_failure_];
   }
@@ -95,12 +96,20 @@ void SadTabTabHelper::WasShown(web::WebState* web_state) {
 void SadTabTabHelper::WasHidden(web::WebState* web_state) {
   UpdateFullscreenDisabler();
   if (showing_sad_tab_) {
+    DCHECK(delegate_);
     [delegate_ sadTabTabHelperDidHide:this];
   }
 }
 
 void SadTabTabHelper::RenderProcessGone(web::WebState* web_state) {
   DCHECK_EQ(web_state_, web_state);
+
+  // Don't present a sad tab on top of an NTP.
+  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(web_state);
+  if (NTPHelper && NTPHelper->IsActive()) {
+    return;
+  }
+
   if (!web_state->IsVisible()) {
     requires_reload_on_becoming_visible_ = true;
     return;
@@ -122,6 +131,8 @@ void SadTabTabHelper::DidStartNavigation(
     web::NavigationContext* navigation_context) {
   // The sad tab is removed when a new navigation begins.
   SetIsShowingSadTab(false);
+  // NO-OP is fine if |delegate_| is nil since the |delegate_| will be updated
+  // when it is set.
   [delegate_ sadTabTabHelperDismissSadTab:this];
 }
 
@@ -152,6 +163,8 @@ void SadTabTabHelper::PresentSadTab(const GURL& url_causing_failure) {
       (url_causing_failure.EqualsIgnoringRef(last_failed_url_) &&
        seconds_since_last_failure < repeat_failure_interval_);
 
+  // NO-OP is fine if |delegate_| is nil since the |delegate_| will be updated
+  // when it is set.
   [delegate_ sadTabTabHelper:this
       presentSadTabForWebState:web_state_
                repeatedFailure:repeated_failure_];
@@ -221,3 +234,5 @@ void SadTabTabHelper::UpdateFullscreenDisabler() {
     fullscreen_disabler_ = nullptr;
   }
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(SadTabTabHelper)

@@ -26,11 +26,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
-#include "components/arc/arc_bridge_service.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
@@ -80,9 +80,6 @@ arc::mojom::IntentInfoPtr CreateIntentInfo(const GURL& clip_data_uri) {
 // Whether the app's manifest indicates that the app supports note taking on the
 // lock screen.
 bool IsLockScreenEnabled(const extensions::Extension* app) {
-  if (!lock_screen_apps::StateController::IsEnabled())
-    return false;
-
   if (!app->permissions_data()->HasAPIPermission(
           extensions::APIPermission::kLockScreen)) {
     return false;
@@ -362,7 +359,7 @@ NoteTakingHelper::NoteTakingHelper()
   }
   whitelisted_chrome_app_ids_.insert(whitelisted_chrome_app_ids_.end(),
                                      kExtensionIds,
-                                     kExtensionIds + arraysize(kExtensionIds));
+                                     kExtensionIds + base::size(kExtensionIds));
 
   // Track profiles so we can observe their extension registries.
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,

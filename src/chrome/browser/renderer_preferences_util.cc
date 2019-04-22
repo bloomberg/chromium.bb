@@ -7,22 +7,19 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "media/media_buildflags.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-#include "ui/gfx/font_render_params.h"
-#endif
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/controls/textfield/textfield.h"
@@ -80,10 +77,11 @@ void ParsePortRange(const std::string& range,
 
 namespace renderer_preferences_util {
 
-void UpdateFromSystemSettings(content::RendererPreferences* prefs,
+void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
                               Profile* profile) {
   const PrefService* pref_service = profile->GetPrefs();
-  prefs->accept_languages = pref_service->GetString(prefs::kAcceptLanguages);
+  prefs->accept_languages =
+      pref_service->GetString(language::prefs::kAcceptLanguages);
   prefs->enable_referrers = pref_service->GetBoolean(prefs::kEnableReferrers);
   prefs->enable_do_not_track =
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);
@@ -151,14 +149,8 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN)
-  static const base::NoDestructor<gfx::FontRenderParams> params(
-      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr));
-  prefs->should_antialias_text = params->antialiasing;
-  prefs->use_subpixel_positioning = params->subpixel_positioning;
-  prefs->hinting = params->hinting;
-  prefs->use_autohinter = params->autohinter;
-  prefs->use_bitmaps = params->use_bitmaps;
-  prefs->subpixel_rendering = params->subpixel_rendering;
+  content::UpdateFontRendererPreferencesFromSystemSettings(prefs);
+  content::UpdateFocusRingPreferencesFromSystemSettings(prefs);
 #endif
 
 #if !defined(OS_MACOSX)

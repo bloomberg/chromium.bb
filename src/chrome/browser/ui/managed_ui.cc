@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_features.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
@@ -25,10 +26,15 @@ bool ShouldDisplayManagedUi(Profile* profile) {
   if (!base::FeatureList::IsEnabled(features::kShowManagedUi))
     return false;
 
-  // Most policies don't apply to incognito mode, and incognito already
-  // discloses that you may be tracked/MITM'd by your admin.
-  if (profile->IsOffTheRecord())
+#if defined(OS_CHROMEOS)
+  // Don't show the UI in demo mode.
+  if (chromeos::DemoSession::IsDeviceInDemoMode())
     return false;
+
+  // Don't show the UI for Unicorn accounts.
+  if (profile->IsSupervised())
+    return false;
+#endif
 
   // This profile may have policies configured.
   auto* profile_connector =

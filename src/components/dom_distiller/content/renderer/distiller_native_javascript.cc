@@ -34,7 +34,7 @@ void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
   v8::Context::Scope context_scope(context);
 
   v8::Local<v8::Object> distiller_obj =
-      GetOrCreateDistillerObject(isolate, context->Global());
+      GetOrCreateDistillerObject(isolate, context);
 
   EnsureServiceConnected();
 
@@ -56,27 +56,33 @@ void DistillerNativeJavaScript::BindFunctionToObject(
     const base::Callback<Sig> callback) {
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   // Get the isolate associated with this object.
-  javascript_object->Set(gin::StringToSymbol(isolate, name),
-                         gin::CreateFunctionTemplate(isolate, callback)
-                             ->GetFunction(context)
-                             .ToLocalChecked());
+  javascript_object
+      ->Set(context, gin::StringToSymbol(isolate, name),
+            gin::CreateFunctionTemplate(isolate, callback)
+                ->GetFunction(context)
+                .ToLocalChecked())
+      .Check();
 }
 
 void DistillerNativeJavaScript::EnsureServiceConnected() {
   if (!distiller_js_service_ || !distiller_js_service_.is_bound()) {
-    render_frame_->GetRemoteInterfaces()->GetInterface(
-        &distiller_js_service_);
+    render_frame_->GetRemoteInterfaces()->GetInterface(&distiller_js_service_);
   }
 }
 
-v8::Local<v8::Object> GetOrCreateDistillerObject(v8::Isolate* isolate,
-                                                 v8::Local<v8::Object> global) {
+v8::Local<v8::Object> GetOrCreateDistillerObject(
+    v8::Isolate* isolate,
+    v8::Local<v8::Context> context) {
+  v8::Local<v8::Object> global = context->Global();
   v8::Local<v8::Object> distiller_obj;
-  v8::Local<v8::Value> distiller_value =
-      global->Get(gin::StringToV8(isolate, "distiller"));
-  if (distiller_value.IsEmpty() || !distiller_value->IsObject()) {
+  v8::Local<v8::Value> distiller_value;
+  if (!global->Get(context, gin::StringToV8(isolate, "distiller"))
+           .ToLocal(&distiller_value) ||
+      !distiller_value->IsObject()) {
     distiller_obj = v8::Object::New(isolate);
-    global->Set(gin::StringToSymbol(isolate, "distiller"), distiller_obj);
+    global
+        ->Set(context, gin::StringToSymbol(isolate, "distiller"), distiller_obj)
+        .Check();
   } else {
     distiller_obj = v8::Local<v8::Object>::Cast(distiller_value);
   }

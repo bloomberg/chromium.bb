@@ -11,20 +11,24 @@
 #include "video/video_stream_decoder_impl.h"
 
 #include "absl/memory/memory.h"
+#include "api/task_queue/queued_task.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/mod_ops.h"
-#include "rtc_base/timeutils.h"
+#include "rtc_base/time_utils.h"
 
 namespace webrtc {
 
 VideoStreamDecoderImpl::VideoStreamDecoderImpl(
-    VideoStreamDecoder::Callbacks* callbacks,
+    VideoStreamDecoderInterface::Callbacks* callbacks,
     VideoDecoderFactory* decoder_factory,
+    TaskQueueFactory* task_queue_factory,
     std::map<int, std::pair<SdpVideoFormat, int>> decoder_settings)
     : callbacks_(callbacks),
       decoder_factory_(decoder_factory),
       decoder_settings_(std::move(decoder_settings)),
-      bookkeeping_queue_("video_stream_decoder_bookkeeping_queue"),
+      bookkeeping_queue_(task_queue_factory->CreateTaskQueue(
+          "video_stream_decoder_bookkeeping_queue",
+          TaskQueueFactory::Priority::NORMAL)),
       decode_thread_(&DecodeLoop,
                      this,
                      "video_stream_decoder_decode_thread",
@@ -48,7 +52,7 @@ VideoStreamDecoderImpl::~VideoStreamDecoderImpl() {
 void VideoStreamDecoderImpl::OnFrame(
     std::unique_ptr<video_coding::EncodedFrame> frame) {
   if (!bookkeeping_queue_.IsCurrent()) {
-    struct OnFrameTask : rtc::QueuedTask {
+    struct OnFrameTask : QueuedTask {
       OnFrameTask(std::unique_ptr<video_coding::EncodedFrame> frame,
                   VideoStreamDecoderImpl* video_stream_decoder)
           : frame_(std::move(frame)),
@@ -272,8 +276,13 @@ void VideoStreamDecoderImpl::Decoded(VideoFrame& decoded_image,
                             frame_timestamps->render_time_us / 1000);
 
     callbacks_->OnDecodedFrame(
-        VideoFrame(decoded_image.video_frame_buffer(), decoded_image.rotation(),
-                   frame_timestamps->render_time_us),
+        VideoFrame::Builder()
+            .set_video_frame_buffer(decoded_image.video_frame_buffer())
+            .set_rotation(decoded_image.rotation())
+            .set_timestamp_us(frame_timestamps->render_time_us)
+            .set_timestamp_rtp(decoded_image.timestamp())
+            .set_id(decoded_image.id())
+            .build(),
         casted_decode_time_ms, casted_qp);
   });
 }

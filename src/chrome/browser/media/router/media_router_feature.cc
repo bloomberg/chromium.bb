@@ -15,14 +15,13 @@
 #include "crypto/random.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
-#include "ui/base/ui_base_features.h"
 #endif  // defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_ANDROID)
@@ -128,8 +127,7 @@ bool CastMediaRouteProviderEnabled() {
 }
 
 bool ShouldUseViewsDialog() {
-  return base::FeatureList::IsEnabled(features::kViewsCastDialog) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+  return base::FeatureList::IsEnabled(features::kViewsCastDialog);
 }
 
 bool ShouldUseMirroringService() {

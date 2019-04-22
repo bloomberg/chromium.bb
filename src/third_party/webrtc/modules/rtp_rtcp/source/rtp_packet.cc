@@ -14,7 +14,6 @@
 #include <cstring>
 #include <utility>
 
-#include "api/rtpparameters.h"
 #include "modules/rtp_rtcp/source/byte_io.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
@@ -61,12 +60,10 @@ RtpPacket::RtpPacket(const ExtensionManager* extensions)
 RtpPacket::RtpPacket(const RtpPacket&) = default;
 
 RtpPacket::RtpPacket(const ExtensionManager* extensions, size_t capacity)
-    : buffer_(capacity) {
+    : extensions_(extensions ? *extensions : ExtensionManager()),
+      buffer_(capacity) {
   RTC_DCHECK_GE(capacity, kFixedHeaderSize);
   Clear();
-  if (extensions) {
-    extensions_ = *extensions;
-  }
 }
 
 RtpPacket::~RtpPacket() {}
@@ -567,6 +564,11 @@ rtc::ArrayView<uint8_t> RtpPacket::AllocateExtension(ExtensionType type,
     return nullptr;
   }
   return AllocateRawExtension(id, length);
+}
+
+bool RtpPacket::HasExtension(ExtensionType type) const {
+  // TODO(webrtc:7990): Add support for empty extensions (length==0).
+  return !FindExtension(type).empty();
 }
 
 }  // namespace webrtc

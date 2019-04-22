@@ -5,6 +5,8 @@
  *  Contents: model description and encoding/decoding routines              *
  ****************************************************************************/
 
+namespace third_party_unrar {
+
 static const int MAX_O=64; /* maximum allowed model order */
 const uint TOP=1 << 24, BOT=1 << 15;
 
@@ -184,9 +186,6 @@ void RARPPM_CONTEXT::rescale(ModelPPM *Model)
 
 inline RARPPM_CONTEXT* ModelPPM::CreateSuccessors(bool Skip,RARPPM_STATE* p1)
 {
-#ifdef __ICL
-  static
-#endif
   RARPPM_STATE UpState;
   RARPPM_CONTEXT* pc=MinContext, * UpBranch=FoundState->Successor;
   RARPPM_STATE * p, * ps[MAX_O], ** pps=ps;
@@ -220,7 +219,14 @@ LOOP_ENTRY:
     {
       pc=p->Successor;
       break;
+
     }
+    // We ensure that PPM order input parameter does not exceed MAX_O (64),
+    // so we do not really need this check and added it for extra safety.
+    // See CVE-2017-17969 for details.
+    if (pps>=ps+ASIZE(ps))
+      return NULL;
+
     *pps++ = p;
   } while ( pc->Suffix );
 NO_LOOP:
@@ -510,6 +516,12 @@ inline bool RARPPM_CONTEXT::decodeSymbol2(ModelPPM *Model)
       p++; 
     } while (Model->CharMask[p->Symbol] == Model->EscCount);
     HiCnt += p->Freq;
+
+    // We do not reuse PPMd coder in unstable state, so we do not really need
+    // this check and added it for extra safety. See CVE-2017-17969 for details.
+    if (pps>=ps+ASIZE(ps))
+      return false;
+
     *pps++ = p;
   } while ( --i );
   Model->Coder.SubRange.scale += HiCnt;
@@ -521,7 +533,12 @@ inline bool RARPPM_CONTEXT::decodeSymbol2(ModelPPM *Model)
   {
     HiCnt=0;
     while ((HiCnt += p->Freq) <= count) 
-      p=*++pps;
+    {
+      pps++;
+      if (pps>=ps+ASIZE(ps)) // Extra safety check.
+        return false;
+      p=*pps;
+    }
     Model->Coder.SubRange.LowCount = (Model->Coder.SubRange.HighCount=HiCnt)-p->Freq;
     psee2c->update();
     update2(Model,p);
@@ -534,12 +551,15 @@ inline bool RARPPM_CONTEXT::decodeSymbol2(ModelPPM *Model)
     pps--;
     do 
     { 
-      Model->CharMask[(*++pps)->Symbol]=Model->EscCount; 
+      pps++;
+      if (pps>=ps+ASIZE(ps)) // Extra safety check.
+        return false;
+      Model->CharMask[(*pps)->Symbol]=Model->EscCount; 
     } while ( --i );
     psee2c->Summ += Model->Coder.SubRange.scale;
     Model->NumMasked = NumStats;
   }
-  return(true);
+  return true;
 }
 
 
@@ -633,3 +653,5 @@ int ModelPPM::DecodeChar()
   ARI_DEC_NORMALIZE(Coder.code,Coder.low,Coder.range,Coder.UnpackRead);
   return(Symbol);
 }
+
+}  // namespace third_party_unrar

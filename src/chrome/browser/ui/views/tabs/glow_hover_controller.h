@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_GLOW_HOVER_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "chrome/browser/ui/tabs/tab_style.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 
@@ -27,8 +28,6 @@ class View;
 // invokes SchedulePaint() back on the View as necessary.
 class GlowHoverController : public gfx::AnimationDelegate {
  public:
-  enum Style { SUBTLE, PRONOUNCED };
-
   explicit GlowHoverController(views::View* view);
   ~GlowHoverController() override;
 
@@ -45,13 +44,10 @@ class GlowHoverController : public gfx::AnimationDelegate {
   const gfx::Point& location() const { return location_; }
 
   // Initiates showing the hover.
-  void Show(Style style);
+  void Show(TabStyle::ShowHoverStyle style);
 
   // Hides the hover.
-  void Hide();
-
-  // Hides the hover immediately.
-  void HideImmediately();
+  void Hide(TabStyle::HideHoverStyle style);
 
   // Returns the value of the animation.
   double GetAnimationValue() const;

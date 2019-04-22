@@ -11,12 +11,13 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_merger.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 
@@ -43,7 +44,7 @@ void RemapProxyPolicies(PolicyMap* policies) {
   PolicySource inherited_source = POLICY_SOURCE_ENTERPRISE_DEFAULT;
   std::unique_ptr<base::DictionaryValue> proxy_settings(
       new base::DictionaryValue);
-  for (size_t i = 0; i < arraysize(kProxyPolicies); ++i) {
+  for (size_t i = 0; i < base::size(kProxyPolicies); ++i) {
     const PolicyMap::Entry* entry = policies->Get(kProxyPolicies[i]);
     if (entry) {
       if (entry->has_higher_priority_than(current_priority)) {
@@ -193,6 +194,31 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
     RemapProxyPolicies(&provided_bundle.Get(chrome_namespace));
     bundle.MergeFrom(provided_bundle);
   }
+
+  // Merges all the mergeable policies
+  const auto& chrome_policies = bundle.Get(chrome_namespace);
+  auto* policy_lists_to_merge_ptr =
+      chrome_policies.GetValue(key::kPolicyListMultipleSourceMergeList);
+
+  std::set<std::string> policy_lists_to_merge;
+
+  if (policy_lists_to_merge_ptr) {
+    for (const auto& item : policy_lists_to_merge_ptr->GetList())
+      policy_lists_to_merge.emplace(item.GetString());
+  }
+
+  auto* value =
+      chrome_policies.GetValue(key::kExtensionInstallListsMergeEnabled);
+  if (value && value->GetBool()) {
+    policy_lists_to_merge.insert(key::kExtensionInstallForcelist);
+    policy_lists_to_merge.insert(key::kExtensionInstallBlacklist);
+    policy_lists_to_merge.insert(key::kExtensionInstallWhitelist);
+  }
+
+  PolicyListMerger policy_list_merger(std::move(policy_lists_to_merge));
+
+  for (auto it = bundle.begin(); it != bundle.end(); ++it)
+    it->second->MergeValues({&policy_list_merger});
 
   // Swap first, so that observers that call GetPolicies() see the current
   // values.

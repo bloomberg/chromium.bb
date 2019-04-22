@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_BROWSER_TAB_STRIP_CONTROLLER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -55,10 +56,11 @@ class BrowserTabStripController : public TabStripController,
   int GetActiveIndex() const override;
   bool IsTabSelected(int model_index) const override;
   bool IsTabPinned(int model_index) const override;
-  void SelectTab(int model_index) override;
+  void SelectTab(int model_index, const ui::Event& event) override;
   void ExtendSelectionTo(int model_index) override;
   void ToggleSelected(int model_index) override;
   void AddSelectionFromAnchorTo(int model_index) override;
+  bool BeforeCloseTab(int model_index, CloseTabSource source) override;
   void CloseTab(int model_index, CloseTabSource source) override;
   void ShowContextMenuForTab(Tab* tab,
                              const gfx::Point& p,
@@ -66,13 +68,12 @@ class BrowserTabStripController : public TabStripController,
   int HasAvailableDragActions() const override;
   void OnDropIndexUpdate(int index, bool drop_before) override;
   bool IsCompatibleWith(TabStrip* other) const override;
-  NewTabButtonPosition GetNewTabButtonPosition() const override;
   void CreateNewTab() override;
   void CreateNewTabWithLocation(const base::string16& loc) override;
   void StackedLayoutMaybeChanged() override;
-  bool IsSingleTabModeAvailable() override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
+  std::vector<int> ListTabsInGroup(const TabGroupData* group) const override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;
@@ -124,13 +125,6 @@ class BrowserTabStripController : public TabStripController,
 
   // Invokes tabstrip_->SetTabData.
   void SetTabDataAt(content::WebContents* web_contents, int model_index);
-
-  void StartHighlightTabsForCommand(
-      TabStripModel::ContextMenuCommand command_id,
-      Tab* tab);
-  void StopHighlightTabsForCommand(
-      TabStripModel::ContextMenuCommand command_id,
-      Tab* tab);
 
   // Adds a tab.
   void AddTab(content::WebContents* contents, int index, bool is_active);

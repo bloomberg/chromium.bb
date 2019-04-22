@@ -37,3 +37,5 @@ void ContentSettingImageModelStates::VerifyType(ImageType type) const {
   CHECK_GE(type, static_cast<ImageType>(0));
   CHECK_LT(type, ImageType::NUM_IMAGE_TYPES);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentSettingImageModelStates)

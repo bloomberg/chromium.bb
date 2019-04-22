@@ -69,16 +69,16 @@ class FlakyFFmpegRegressionTest
 };
 
 #define FFMPEG_TEST_CASE_SEEKING(name, fn, init_status, end_status, seek_time) \
-  INSTANTIATE_TEST_CASE_P(name, FFmpegRegressionTest,                          \
-                          testing::Values(RegressionTestData(                  \
-                              fn, init_status, end_status, seek_time)));
+  INSTANTIATE_TEST_SUITE_P(name, FFmpegRegressionTest,                         \
+                           testing::Values(RegressionTestData(                 \
+                               fn, init_status, end_status, seek_time)))
 
 #define FFMPEG_TEST_CASE(name, fn, init_status, end_status) \
   FFMPEG_TEST_CASE_SEEKING(name, fn, init_status, end_status, kNoTimestamp)
 
-#define FLAKY_FFMPEG_TEST_CASE(name, fn) \
-    INSTANTIATE_TEST_CASE_P(FLAKY_##name, FlakyFFmpegRegressionTest, \
-                            testing::Values(FlakyRegressionTestData(fn)));
+#define FLAKY_FFMPEG_TEST_CASE(name, fn)                            \
+  INSTANTIATE_TEST_SUITE_P(FLAKY_##name, FlakyFFmpegRegressionTest, \
+                           testing::Values(FlakyRegressionTestData(fn)))
 
 // Test cases from issues.
 FFMPEG_TEST_CASE(Cr47325, "security/47325.mp4", PIPELINE_OK, PIPELINE_OK);
@@ -171,8 +171,8 @@ FFMPEG_TEST_CASE(Cr444546,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
 FFMPEG_TEST_CASE(Cr447860,
                  "security/447860.webm",
-                 PIPELINE_OK,
-                 PIPELINE_OK);
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr449958,
                  "security/449958.webm",
                  PIPELINE_OK,
@@ -183,8 +183,8 @@ FFMPEG_TEST_CASE(Cr536601,
                  PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr532967,
                  "security/532967.webm",
-                 PIPELINE_OK,
-                 PIPELINE_OK);
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 // TODO(tguilbert): update PIPELINE_ERROR_DECODE to
 // AUDIO_RENDERER_ERROR_IMPLICIT_CONFIG_CHANGE once the status is created.
 FFMPEG_TEST_CASE(Cr599625,

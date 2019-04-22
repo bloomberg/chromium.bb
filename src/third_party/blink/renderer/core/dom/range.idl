@@ -19,9 +19,6 @@
  */
 
 // https://dom.spec.whatwg.org/#interface-range
-// The `HTMLString` reference below is from Trusted Types:
-// https://github.com/WICG/trusted-types/, which is still WIP.
-// https://crbug.com/739170.
 [
     Constructor,
     ConstructorCallWith=Document
@@ -75,5 +72,5 @@
     [NewObject, RaisesException, CEReactions, CustomElementCallbacks] DocumentFragment createContextualFragment(HTMLString fragment);
 
     // Non-standard API
-    [RaisesException, DeprecateAs=RangeExpand] void expand([Default=Undefined] optional DOMString unit);
+    [RaisesException, DeprecateAs=RangeExpand] void expand([DefaultValue=Undefined] optional DOMString unit);
 };

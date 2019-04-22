@@ -52,7 +52,8 @@ class CertificateManagerModel {
              bool untrusted,
              Source source,
              bool web_trust_anchor,
-             bool hardware_backed);
+             bool hardware_backed,
+             bool device_wide);
     ~CertInfo();
 
     CERTCertificate* cert() const { return cert_.get(); }
@@ -63,6 +64,7 @@ class CertificateManagerModel {
     Source source() const { return source_; }
     bool web_trust_anchor() const { return web_trust_anchor_; }
     bool hardware_backed() const { return hardware_backed_; }
+    bool device_wide() const { return device_wide_; }
 
     // Clones a CertInfo, duplicating the contained NSS certificate.
     static std::unique_ptr<CertInfo> Clone(const CertInfo* cert_info);
@@ -95,6 +97,10 @@ class CertificateManagerModel {
     // true if the certificate is hardware-backed. Note that extension-provided
     // certificates are not regarded as hardware-backed.
     bool hardware_backed_;
+
+    // true if the certificate is device-wide.
+    // Note: can be true only on Chrome OS.
+    bool device_wide_;
 
     DISALLOW_COPY_AND_ASSIGN(CertInfo);
   };

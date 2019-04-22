@@ -28,7 +28,7 @@ MemoryMappedFile::MemoryMappedFile() : data_(nullptr), length_(0) {}
 bool MemoryMappedFile::MapFileRegionToMemory(
     const MemoryMappedFile::Region& region,
     Access access) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
   off_t map_start = 0;
   size_t map_size = 0;
@@ -172,7 +172,7 @@ bool MemoryMappedFile::MapFileRegionToMemory(
 #endif
 
 void MemoryMappedFile::CloseHandles() {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
   if (data_ != nullptr)
     munmap(data_, length_);

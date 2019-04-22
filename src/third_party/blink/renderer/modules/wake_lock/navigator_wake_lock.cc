@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/wake_lock/navigator_wake_lock.h"
 
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -27,6 +28,17 @@ ScriptPromise NavigatorWakeLock::getWakeLock(ScriptState* script_state,
 
 ScriptPromise NavigatorWakeLock::getWakeLock(ScriptState* script_state,
                                              String lock_type) {
+  if (!ExecutionContext::From(script_state)
+           ->GetSecurityContext()
+           .IsFeatureEnabled(mojom::FeaturePolicyFeature::kWakeLock,
+                             ReportOptions::kReportOnFailure)) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            DOMExceptionCode::kSecurityError,
+            "Access to WakeLock features is disallowed by feature policy"));
+  }
+
   if (lock_type == "screen") {
     if (!wake_lock_screen_)
       wake_lock_screen_ = WakeLock::CreateScreenWakeLock(script_state);

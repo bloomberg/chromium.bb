@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -46,8 +47,8 @@ void SVGNumberOptionalNumber::Trace(blink::Visitor* visitor) {
 }
 
 SVGNumberOptionalNumber* SVGNumberOptionalNumber::Clone() const {
-  return SVGNumberOptionalNumber::Create(first_number_->Clone(),
-                                         second_number_->Clone());
+  return MakeGarbageCollected<SVGNumberOptionalNumber>(first_number_->Clone(),
+                                                       second_number_->Clone());
 }
 
 SVGPropertyBase* SVGNumberOptionalNumber::CloneForAnimation(
@@ -57,8 +58,8 @@ SVGPropertyBase* SVGNumberOptionalNumber::CloneForAnimation(
     x = y = 0;
   }
 
-  return SVGNumberOptionalNumber::Create(SVGNumber::Create(x),
-                                         SVGNumber::Create(y));
+  return MakeGarbageCollected<SVGNumberOptionalNumber>(
+      MakeGarbageCollected<SVGNumber>(x), MakeGarbageCollected<SVGNumber>(y));
 }
 
 String SVGNumberOptionalNumber::ValueAsString() const {

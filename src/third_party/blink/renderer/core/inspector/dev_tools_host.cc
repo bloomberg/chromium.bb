@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/inspector/inspector_frontend_client.h"
-#include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
@@ -63,12 +62,6 @@ namespace blink {
 
 class FrontendMenuProvider final : public ContextMenuProvider {
  public:
-  static FrontendMenuProvider* Create(DevToolsHost* devtools_host,
-                                      WebVector<WebMenuItemInfo> items) {
-    return MakeGarbageCollected<FrontendMenuProvider>(devtools_host,
-                                                      std::move(items));
-  }
-
   FrontendMenuProvider(DevToolsHost* devtools_host,
                        WebVector<WebMenuItemInfo> items)
       : devtools_host_(devtools_host), items_(std::move(items)) {}
@@ -166,6 +159,7 @@ float DevToolsHost::zoomFactor() {
 
 void DevToolsHost::copyText(const String& text) {
   SystemClipboard::GetInstance().WritePlainText(text);
+  SystemClipboard::GetInstance().CommitWrite();
 }
 
 static String EscapeUnicodeNonCharacters(const String& str) {
@@ -202,8 +196,8 @@ void DevToolsHost::ShowContextMenu(LocalFrame* target_frame,
                                    float y,
                                    WebVector<WebMenuItemInfo> items) {
   DCHECK(frontend_frame_);
-  FrontendMenuProvider* menu_provider =
-      FrontendMenuProvider::Create(this, std::move(items));
+  auto* menu_provider =
+      MakeGarbageCollected<FrontendMenuProvider>(this, std::move(items));
   menu_provider_ = menu_provider;
   float zoom = target_frame->PageZoomFactor();
   {
@@ -213,27 +207,6 @@ void DevToolsHost::ShowContextMenu(LocalFrame* target_frame,
         target_frame, x * zoom, y * zoom, menu_provider);
   }
 }
-
-String DevToolsHost::getSelectionBackgroundColor() {
-  return LayoutTheme::GetTheme().ActiveSelectionBackgroundColor().Serialized();
-}
-
-String DevToolsHost::getSelectionForegroundColor() {
-  return LayoutTheme::GetTheme().ActiveSelectionForegroundColor().Serialized();
-}
-
-String DevToolsHost::getInactiveSelectionBackgroundColor() {
-  return LayoutTheme::GetTheme()
-      .InactiveSelectionBackgroundColor()
-      .Serialized();
-}
-
-String DevToolsHost::getInactiveSelectionForegroundColor() {
-  return LayoutTheme::GetTheme()
-      .InactiveSelectionForegroundColor()
-      .Serialized();
-}
-
 
 bool DevToolsHost::isHostedMode() {
   return false;

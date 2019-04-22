@@ -6,6 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#import "content/browser/web_contents/web_contents_view_cocoa.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,28 +37,6 @@ TEST_F(WebContentsViewCocoaTest, NonWebDragSourceTest) {
       [view draggingSourceOperationMaskForLocal:YES]);
   EXPECT_EQ(NSDragOperationCopy,
       [view draggingSourceOperationMaskForLocal:NO]);
-}
-
-TEST_F(WebContentsViewCocoaTest, AccessibilityParentTest) {
-  // The designated initializer is private but init should be fine in this case.
-  base::scoped_nsobject<WebContentsViewCocoa> view(
-      [[WebContentsViewCocoa alloc] init]);
-
-  // NSBox so it participates in the a11y hierarchy.
-  base::scoped_nsobject<NSView> parent_view([[NSBox alloc] init]);
-  base::scoped_nsobject<NSView> accessibility_parent([[NSView alloc] init]);
-
-  [parent_view addSubview:view];
-  EXPECT_NSEQ([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
-              parent_view);
-
-  [view setAccessibilityParentElement:accessibility_parent];
-  EXPECT_NSEQ([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
-              accessibility_parent);
-
-  [view setAccessibilityParentElement:nil];
-  EXPECT_NSEQ([view accessibilityAttributeValue:NSAccessibilityParentAttribute],
-              parent_view);
 }
 
 namespace {

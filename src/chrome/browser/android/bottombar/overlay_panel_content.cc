@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -90,12 +91,10 @@ void OverlayPanelContent::RemoveLastHistoryEntry(
     std::set<GURL> restrict_set;
     restrict_set.insert(
         GURL(base::android::ConvertJavaStringToUTF8(env, search_url)));
-    service->ExpireHistoryBetween(
-        restrict_set,
-        begin_time,
-        end_time,
-        base::Bind(&OnHistoryDeletionDone),
-        &history_task_tracker_);
+    service->ExpireHistoryBetween(restrict_set, begin_time, end_time,
+                                  /*user_initiated*/ false,
+                                  base::BindOnce(&OnHistoryDeletionDone),
+                                  &history_task_tracker_);
   }
 }
 

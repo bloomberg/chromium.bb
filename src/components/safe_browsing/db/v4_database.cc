@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -296,7 +297,10 @@ void V4Database::OnChecksumVerified(
 
 bool V4Database::IsStoreAvailable(const ListIdentifier& identifier) const {
   const auto& store_pair = store_map_->find(identifier);
-  if (store_pair == store_map_->end()) {
+  bool store_found = store_pair != store_map_->end();
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.V4Store.IsStoreAvailable.ValidStore",
+                        store_found);
+  if (!store_found) {
     // Store not in our list
     return false;
   }

@@ -307,9 +307,5 @@ unpacker.Decompressor.prototype.readPassphrase_ = function(data, requestId) {
         this.naclModule_.postMessage(
             unpacker.request.createReadPassphraseErrorResponse(
                 this.fileSystemId_, requestId));
-        // TODO(mtomasz): Instead of unmounting just let the current operation
-        // fail and ask for password for another files. This is however
-        // impossible for now due to a bug in minizip.
-        unpacker.app.unmountVolume(this.fileSystemId_, true);
       }.bind(this));
 };

@@ -165,7 +165,7 @@ class Printer(object):
         if self._options.timing:
             parallel_time = sum(result.total_run_time for result in run_results.results_by_name.values())
 
-            # There is serial overhead in layout_test_runner.run() that we can't easily account for when
+            # There is serial overhead in web_test_runner.run() that we can't easily account for when
             # really running in parallel, but taking the min() ensures that in the worst case
             # (if parallel time is less than run_time) we do account for it.
             serial_time = total_time - min(run_results.run_time, parallel_time)

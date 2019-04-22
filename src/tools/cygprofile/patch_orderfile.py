@@ -28,6 +28,7 @@ The general pipeline is:
 import argparse
 import collections
 import logging
+import re
 import sys
 
 import cyglog_to_orderfile
@@ -39,6 +40,10 @@ import symbol_extractor
 # inter-procedural optimization.
 _SUFFIXES = ('.clone.', '.part.', '.isra.', '.constprop.')
 
+
+# The pattern and format for a linker-generated outlined function.
+_OUTLINED_FUNCTION_RE = re.compile(r'OUTLINED_FUNCTION_(?P<index>\d+)$')
+_OUTLINED_FUNCTION_FORMAT = 'OUTLINED_FUNCTION_{}'
 
 def RemoveSuffixes(name):
   """Strips method name suffixes from cloning and splitting.
@@ -98,9 +103,81 @@ def _GroupSymbolsByOffset(binary_filename):
   return sym_to_matching
 
 
+def _GetMaxOutlinedIndex(sym_dict):
+  """Find the largest index of an outlined functions.
+
+  See _OUTLINED_FUNCTION_RE for the definition of the index. In practice the
+  maximum index equals the total number of outlined functions. This function
+  asserts that the index is near the total number of outlined functions.
+
+  Args:
+    sym_dict: Dict with symbol names as keys.
+
+  Returns:
+    The largest index of an outlined function seen in the keys of |sym_dict|.
+  """
+  seen = set()
+  for sym in sym_dict:
+    m = _OUTLINED_FUNCTION_RE.match(sym)
+    if m:
+      seen.add(int(m.group('index')))
+  if not seen:
+    return None
+  max_index = max(seen)
+  # Assert that the number of outlined functions is reasonable compared to the
+  # indices we've seen. At the time of writing, outlined functions are indexed
+  # consecutively from 0. If this radically changes, then other outlining
+  # behavior may have changed to violate some assumptions.
+  assert max_index < 2 * len(seen)
+  return max_index
+
+
 def _StripSuffixes(section_list):
   """Remove all suffixes on items in a list of symbols."""
   return [RemoveSuffixes(section) for section in section_list]
+
+
+def _PatchedSymbols(symbol_to_matching, profiled_symbols, max_outlined_index):
+  """Internal computation of an orderfile.
+
+  Args:
+    symbol_to_matching: ({symbol name -> [symbols at same offset]}), as from
+      _GroupSymbolsByOffset.
+    profiled_symbols: ([symbol names]) as from the unpatched orderfile.
+    max_outlined_index: (int or None) if not None, add outlined function names
+      to the end of the patched orderfile.
+
+  Yields:
+    Patched symbols, in a consistent order to profiled_symbols.
+  """
+  missing_symbol_count = 0
+  seen_symbols = set()
+  for sym in profiled_symbols:
+    if _OUTLINED_FUNCTION_RE.match(sym):
+      continue
+    if sym in seen_symbols:
+      continue
+    if sym not in symbol_to_matching:
+      missing_symbol_count += 1
+      continue
+    for matching in symbol_to_matching[sym]:
+      if matching in seen_symbols:
+        continue
+      if _OUTLINED_FUNCTION_RE.match(matching):
+        continue
+      yield matching
+      seen_symbols.add(matching)
+    assert sym in seen_symbols
+  logging.warning('missing symbol count = %d', missing_symbol_count)
+
+  if max_outlined_index is not None:
+    # The number of outlined functions may change with each build, so only
+    # ordering the outlined functions currently in the binary will not
+    # guarantee ordering after code changes before the next orderfile is
+    # generated. So we double the number of outlined functions as a measure of
+    # security.
+    for idx in xrange(2 * max_outlined_index + 1):
+      yield _OUTLINED_FUNCTION_FORMAT.format(idx)
 
 
 @_UniqueGenerator
@@ -121,30 +198,27 @@ def ReadOrderfile(orderfile):
 
 
 def GeneratePatchedOrderfile(unpatched_orderfile, native_lib_filename,
-                             output_filename):
+                             output_filename, order_outlined=False):
   """Writes a patched orderfile.
 
   Args:
     unpatched_orderfile: (str) Path to the unpatched orderfile.
     native_lib_filename: (str) Path to the native library.
     output_filename: (str) Path to the patched orderfile.
+    order_outlined: (bool) If outlined function symbols are present in the
+      native library, then add ordering of them to the orderfile. If there
+      are no outlined function symbols present then this flag has no effect.
   """
   symbol_to_matching = _GroupSymbolsByOffset(native_lib_filename)
+  if order_outlined:
+    max_outlined_index = _GetMaxOutlinedIndex(symbol_to_matching)
+    if not max_outlined_index:
+      # Only generate ordered outlined functions if they already appeared in
+      # the library.
+      max_outlined_index = None
+  else:
+    max_outlined_index = None  # Ignore outlining.
   profiled_symbols = ReadOrderfile(unpatched_orderfile)
-  missing_symbol_count = 0
-  seen_symbols = set()
-  patched_symbols = []
-  for sym in profiled_symbols:
-    if sym not in symbol_to_matching:
-      missing_symbol_count += 1
-      continue
-    if sym in seen_symbols:
-      continue
-    for matching in symbol_to_matching[sym]:
-      patched_symbols.append(matching)
-      seen_symbols.add(matching)
-    assert sym in seen_symbols
-  logging.warning('missing symbol count = %d', missing_symbol_count)
 
   with open(output_filename, 'w') as f:
     # Make sure the anchor functions are located in the right place, here and
@@ -157,16 +231,17 @@ def GeneratePatchedOrderfile(unpatched_orderfile, native_lib_filename,
                           '__cxx_global_var_init'):
       f.write(first_section + '\n')
 
-    for sym in patched_symbols:
+    for sym in _PatchedSymbols(symbol_to_matching, profiled_symbols,
+                               max_outlined_index):
       f.write(sym + '\n')
 
-    f.write('dummy_function_end_of_ordered_text')
+    f.write('dummy_function_end_of_ordered_text\n')
 
 
 def _CreateArgumentParser():
   """Creates and returns the argument parser."""
   parser = argparse.ArgumentParser()
-  parser.add_argument('--target-arch', action='store',
+  parser.add_argument('--target-arch', action='store', default='arm',
                       choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
                       help='The target architecture for the library.')
   parser.add_argument('--unpatched-orderfile', required=True,
@@ -180,8 +255,6 @@ def _CreateArgumentParser():
 def main():
   parser = _CreateArgumentParser()
   options = parser.parse_args()
-  if not options.target_arch:
-    options.arch = cygprofile_utils.DetectArchitecture()
   symbol_extractor.SetArchitecture(options.target_arch)
   GeneratePatchedOrderfile(options.unpatched_orderfile, options.native_library,
                            options.output_file)

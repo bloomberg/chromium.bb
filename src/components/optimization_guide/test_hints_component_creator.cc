@@ -156,7 +156,7 @@ void TestHintsComponentCreator::WriteConfigToFile(
 optimization_guide::HintsComponentInfo
 TestHintsComponentCreator::WriteConfigToFileAndReturnHintsComponentInfo(
     const optimization_guide::proto::Configuration& config) {
-  std::string version_string = base::IntToString(next_component_version_++);
+  std::string version_string = base::NumberToString(next_component_version_++);
   base::FilePath file_path = GetFilePath(version_string);
   WriteConfigToFile(file_path, config);
   return optimization_guide::HintsComponentInfo(base::Version(version_string),

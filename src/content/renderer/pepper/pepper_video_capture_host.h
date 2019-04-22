@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/media/video_capture.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
@@ -21,6 +20,7 @@
 #include "ppapi/c/dev/ppp_video_capture_dev.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
+#include "third_party/blink/public/common/media/video_capture.h"
 
 namespace media {
 class VideoFrame;

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "content/public/common/console_message_level.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
 class NavigationHandle;
@@ -34,12 +34,13 @@ class NavigationConsoleLogger
   // navigation in |contents| commits its next navigation. If |handle| has
   // already committed, logs the message immediately.
   static void LogMessageOnCommit(content::NavigationHandle* handle,
-                                 content::ConsoleMessageLevel level,
+                                 blink::mojom::ConsoleMessageLevel level,
                                  const std::string& message);
 
   ~NavigationConsoleLogger() override;
 
  private:
+  friend class content::WebContentsUserData<NavigationConsoleLogger>;
   explicit NavigationConsoleLogger(content::NavigationHandle* handle);
 
   // Creates a new NavigationConsoleLogger scoped to |handle|'s WebContents if
@@ -53,12 +54,14 @@ class NavigationConsoleLogger
   // content::WebContentsObserver:
   void DidFinishNavigation(content::NavigationHandle* handle) override;
 
-  using Message = std::pair<content::ConsoleMessageLevel, std::string>;
+  using Message = std::pair<blink::mojom::ConsoleMessageLevel, std::string>;
   std::vector<Message> commit_messages_;
 
   // |handle_| must outlive this class. This is guaranteed because the object
   // tears itself down with |handle_|'s navigation finishes.
   const content::NavigationHandle* handle_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(NavigationConsoleLogger);
 };

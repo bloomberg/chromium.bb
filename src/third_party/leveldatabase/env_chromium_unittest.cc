@@ -18,6 +18,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -26,6 +27,10 @@
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 #define FPL FILE_PATH_LITERAL
+
+#if defined(OS_WIN) && defined(DeleteFile)
+#undef DeleteFile
+#endif
 
 using base::trace_event::MemoryDumpArgs;
 using base::trace_event::MemoryDumpLevelOfDetail;
@@ -83,8 +88,8 @@ class ChromiumEnvMultiPlatformTests : public ::testing::Test {
 };
 
 typedef ::testing::Types<ChromiumEnv> ChromiumEnvMultiPlatformTestsTypes;
-TYPED_TEST_CASE(ChromiumEnvMultiPlatformTests,
-                ChromiumEnvMultiPlatformTestsTypes);
+TYPED_TEST_SUITE(ChromiumEnvMultiPlatformTests,
+                 ChromiumEnvMultiPlatformTestsTypes);
 
 int CountFilesWithExtension(const base::FilePath& dir,
                             const base::FilePath::StringType& extension) {

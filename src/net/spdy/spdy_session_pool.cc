@@ -7,10 +7,12 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -19,18 +21,19 @@
 #include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/trace_constants.h"
+#include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_source.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_request.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
-#include "net/spdy/bidirectional_stream_spdy_impl.h"
-#include "net/spdy/spdy_http_stream.h"
+#include "net/socket/client_socket_handle.h"
 #include "net/spdy/spdy_session.h"
-#include "net/third_party/spdy/core/hpack/hpack_constants.h"
-#include "net/third_party/spdy/core/hpack/hpack_huffman_table.h"
-#include "net/third_party/spdy/core/hpack/hpack_static_table.h"
+#include "net/third_party/quiche/src/spdy/core/hpack/hpack_constants.h"
+#include "net/third_party/quiche/src/spdy/core/hpack/hpack_huffman_table.h"
+#include "net/third_party/quiche/src/spdy/core/hpack/hpack_static_table.h"
 
 namespace net {
 
@@ -45,6 +48,25 @@ enum SpdySessionGetTypes {
 };
 
 }  // namespace
+
+SpdySessionPool::SpdySessionRequest::Delegate::Delegate() = default;
+SpdySessionPool::SpdySessionRequest::Delegate::~Delegate() = default;
+
+SpdySessionPool::SpdySessionRequest::SpdySessionRequest(
+    const SpdySessionKey& key,
+    Delegate* delegate,
+    SpdySessionPool* spdy_session_pool)
+    : key_(key), delegate_(delegate), spdy_session_pool_(spdy_session_pool) {}
+
+SpdySessionPool::SpdySessionRequest::~SpdySessionRequest() {
+  if (spdy_session_pool_)
+    spdy_session_pool_->RemoveRequestForSpdySession(this);
+}
+
+void SpdySessionPool::SpdySessionRequest::OnRemovedFromPool() {
+  DCHECK(spdy_session_pool_);
+  spdy_session_pool_ = nullptr;
+}
 
 SpdySessionPool::SpdySessionPool(
     HostResolver* resolver,
@@ -73,7 +95,8 @@ SpdySessionPool::SpdySessionPool(
       greased_http2_frame_(greased_http2_frame),
       time_func_(time_func),
       push_delegate_(nullptr),
-      network_quality_estimator_(network_quality_estimator) {
+      network_quality_estimator_(network_quality_estimator),
+      weak_ptr_factory_(this) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
   if (ssl_config_service_)
     ssl_config_service_->AddObserver(this);
@@ -98,48 +121,38 @@ SpdySessionPool::~SpdySessionPool() {
   CertDatabase::GetInstance()->RemoveObserver(this);
 }
 
+base::WeakPtr<SpdySession>
+SpdySessionPool::CreateAvailableSessionFromSocketHandle(
+    const SpdySessionKey& key,
+    bool is_trusted_proxy,
+    std::unique_ptr<ClientSocketHandle> client_socket_handle,
+    const NetLogWithSource& net_log) {
+  TRACE_EVENT0(NetTracingCategory(),
+               "SpdySessionPool::CreateAvailableSessionFromSocketHandle");
+
+  std::unique_ptr<SpdySession> new_session =
+      CreateSession(key, is_trusted_proxy, net_log.net_log());
+  new_session->InitializeWithSocketHandle(std::move(client_socket_handle),
+                                          this);
+  return InsertSession(key, std::move(new_session), net_log);
+}
+
 base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
     const SpdySessionKey& key,
     bool is_trusted_proxy,
-    std::unique_ptr<ClientSocketHandle> connection,
+    std::unique_ptr<StreamSocket> socket_stream,
+    const LoadTimingInfo::ConnectTiming& connect_timing,
     const NetLogWithSource& net_log) {
   TRACE_EVENT0(NetTracingCategory(),
                "SpdySessionPool::CreateAvailableSessionFromSocket");
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "Net.SpdySessionGet", IMPORTED_FROM_SOCKET, SPDY_SESSION_GET_MAX);
+  std::unique_ptr<SpdySession> new_session =
+      CreateSession(key, is_trusted_proxy, net_log.net_log());
 
-  auto new_session = std::make_unique<SpdySession>(
-      key, http_server_properties_, transport_security_state_,
-      ssl_config_service_, quic_supported_versions_,
-      enable_sending_initial_data_, enable_ping_based_connection_checking_,
-      support_ietf_format_quic_altsvc_, is_trusted_proxy,
-      session_max_recv_window_size_, initial_settings_, greased_http2_frame_,
-      time_func_, push_delegate_, network_quality_estimator_,
-      net_log.net_log());
+  new_session->InitializeWithSocket(std::move(socket_stream), connect_timing,
+                                    this);
 
-  new_session->InitializeWithSocket(std::move(connection), this);
-
-  base::WeakPtr<SpdySession> available_session = new_session->GetWeakPtr();
-  sessions_.insert(new_session.release());
-  MapKeyToAvailableSession(key, available_session);
-
-  net_log.AddEvent(
-      NetLogEventType::HTTP2_SESSION_POOL_IMPORTED_SESSION_FROM_SOCKET,
-      available_session->net_log().source().ToEventParametersCallback());
-
-  // Look up the IP address for this session so that we can match
-  // future sessions (potentially to different domains) which can
-  // potentially be pooled with this one. Because GetPeerAddress()
-  // reports the proxy's address instead of the origin server, check
-  // to see if this is a direct connection.
-  if (key.proxy_server().is_direct()) {
-    IPEndPoint address;
-    if (available_session->GetPeerAddress(&address) == OK)
-      aliases_.insert(AliasMap::value_type(address, key));
-  }
-
-  return available_session;
+  return InsertSession(key, std::move(new_session), net_log);
 }
 
 base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
@@ -183,18 +196,19 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     return base::WeakPtr<SpdySession>();
 
   // Look up IP addresses from resolver cache.
-  HostResolver::RequestInfo resolve_info(key.host_port_pair());
-  AddressList addresses;
-  int rv = resolver_->ResolveFromCache(resolve_info, &addresses, net_log);
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::LOCAL_ONLY;
+  std::unique_ptr<HostResolver::ResolveHostRequest> request =
+      resolver_->CreateRequest(key.host_port_pair(), net_log, parameters);
+
+  int rv = request->Start(base::BindOnce([](int error) { NOTREACHED(); }));
   DCHECK_NE(rv, ERR_IO_PENDING);
   if (rv != OK)
     return base::WeakPtr<SpdySession>();
 
   // Check if we have a session through a domain alias.
-  for (AddressList::const_iterator address_it = addresses.begin();
-       address_it != addresses.end();
-       ++address_it) {
-    auto range = aliases_.equal_range(*address_it);
+  for (const auto& address : request->GetAddressResults().value().endpoints()) {
+    auto range = aliases_.equal_range(address);
     for (auto alias_it = range.first; alias_it != range.second; ++alias_it) {
       // We found an alias.
       const SpdySessionKey& alias_key = alias_it->second;
@@ -202,7 +216,8 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
       // We can reuse this session only if the proxy and privacy
       // settings match.
       if (!(alias_key.proxy_server() == key.proxy_server()) ||
-          !(alias_key.privacy_mode() == key.privacy_mode())) {
+          !(alias_key.privacy_mode() == key.privacy_mode()) ||
+          !(alias_key.is_proxy_session() == key.is_proxy_session())) {
         continue;
       }
 
@@ -261,9 +276,9 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
             continue;
           }
           UnmapKey(*it);
-          SpdySessionKey new_pool_alias_key =
-              SpdySessionKey(it->host_port_pair(), it->proxy_server(),
-                             it->privacy_mode(), key.socket_tag());
+          SpdySessionKey new_pool_alias_key = SpdySessionKey(
+              it->host_port_pair(), it->proxy_server(), it->privacy_mode(),
+              it->is_proxy_session(), key.socket_tag());
           MapKeyToAvailableSession(new_pool_alias_key, available_session);
           auto old_it = it;
           ++it;
@@ -290,6 +305,39 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
   }
 
   return base::WeakPtr<SpdySession>();
+}
+
+base::WeakPtr<SpdySession> SpdySessionPool::RequestSession(
+    const SpdySessionKey& key,
+    bool enable_ip_based_pooling,
+    bool is_websocket,
+    const NetLogWithSource& net_log,
+    base::RepeatingClosure on_request_destroyed_callback,
+    SpdySessionRequest::Delegate* delegate,
+    std::unique_ptr<SpdySessionRequest>* spdy_session_request,
+    bool* is_first_request_for_session) {
+  DCHECK(delegate);
+
+  base::WeakPtr<SpdySession> spdy_session =
+      FindAvailableSession(key, enable_ip_based_pooling, is_websocket, net_log);
+  if (spdy_session) {
+    // This value doesn't really matter, but best to always populate it, for
+    // consistency.
+    *is_first_request_for_session = true;
+    return spdy_session;
+  }
+
+  RequestSet* request_set = &spdy_session_request_map_[key];
+  *is_first_request_for_session = request_set->empty();
+  *spdy_session_request =
+      std::make_unique<SpdySessionRequest>(key, delegate, this);
+  request_set->insert(spdy_session_request->get());
+
+  if (on_request_destroyed_callback && !*is_first_request_for_session) {
+    spdy_session_pending_request_map_[key].push_back(
+        on_request_destroyed_callback);
+  }
+  return nullptr;
 }
 
 void SpdySessionPool::MakeSessionUnavailable(
@@ -389,95 +437,24 @@ void SpdySessionPool::OnCertDBChanged() {
   CloseCurrentSessions(ERR_CERT_DATABASE_CHANGED);
 }
 
-void SpdySessionPool::OnNewSpdySessionReady(
-    const base::WeakPtr<SpdySession>& spdy_session,
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info,
-    bool was_alpn_negotiated,
-    NextProto negotiated_protocol,
-    bool using_spdy,
-    NetLogSource source_dependency) {
-  while (spdy_session) {
-    const SpdySessionKey& spdy_session_key = spdy_session->spdy_session_key();
-    // Each iteration may empty out the RequestSet for |spdy_session_key| in
-    // |spdy_session_request_map_|. So each time, check for RequestSet and use
-    // the first one.
-    //
-    // TODO(willchan): If it's important, switch RequestSet out for a FIFO
-    // queue (Order by priority first, then FIFO within same priority). Unclear
-    // that it matters here.
-    auto iter = spdy_session_request_map_.find(spdy_session_key);
-    if (iter == spdy_session_request_map_.end())
-      return;
-    HttpStreamRequest* request = *iter->second.begin();
-    request->Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
-    RemoveRequestFromSpdySessionRequestMap(request);
-    if (request->stream_type() == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
-      request->OnBidirectionalStreamImplReadyOnPooledConnection(
-          used_ssl_config, used_proxy_info,
-          std::make_unique<BidirectionalStreamSpdyImpl>(spdy_session,
-                                                        source_dependency));
-    } else {
-      request->OnStreamReadyOnPooledConnection(
-          used_ssl_config, used_proxy_info,
-          std::make_unique<SpdyHttpStream>(spdy_session, kNoPushedStreamFound,
-                                           source_dependency));
-    }
-  }
-  // TODO(mbelshe): Alert other valid requests.
-}
+void SpdySessionPool::RemoveRequestForSpdySession(SpdySessionRequest* request) {
+  DCHECK_EQ(this, request->spdy_session_pool());
 
-bool SpdySessionPool::StartRequest(const SpdySessionKey& spdy_session_key,
-                                   const base::Closure& callback) {
-  auto iter = spdy_session_pending_request_map_.find(spdy_session_key);
-  if (iter == spdy_session_pending_request_map_.end()) {
-    spdy_session_pending_request_map_.emplace(spdy_session_key,
-                                              std::list<base::Closure>{});
-    return true;
-  }
-  iter->second.push_back(callback);
-  return false;
-}
-
-void SpdySessionPool::ResumePendingRequests(
-    const SpdySessionKey& spdy_session_key) {
-  auto iter = spdy_session_pending_request_map_.find(spdy_session_key);
-  if (iter != spdy_session_pending_request_map_.end()) {
-    for (auto callback : iter->second) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
-    }
-    spdy_session_pending_request_map_.erase(iter);
-  }
-}
-
-void SpdySessionPool::AddRequestToSpdySessionRequestMap(
-    const SpdySessionKey& spdy_session_key,
-    HttpStreamRequest* request) {
-  if (request->HasSpdySessionKey())
-    return;
-  RequestSet& request_set = spdy_session_request_map_[spdy_session_key];
-  DCHECK(!base::ContainsKey(request_set, request));
-  request_set.insert(request);
-  request->SetSpdySessionKey(spdy_session_key);
-}
-
-void SpdySessionPool::RemoveRequestFromSpdySessionRequestMap(
-    HttpStreamRequest* request) {
-  if (!request->HasSpdySessionKey())
-    return;
-  const SpdySessionKey& spdy_session_key = request->GetSpdySessionKey();
+  const SpdySessionKey& spdy_session_key = request->key();
   // Resume all pending requests now that |request| is done/canceled.
-  ResumePendingRequests(spdy_session_key);
+  if (spdy_session_pending_request_map_.find(spdy_session_key) !=
+      spdy_session_pending_request_map_.end()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SpdySessionPool::UpdatePendingRequests,
+                       weak_ptr_factory_.GetWeakPtr(), spdy_session_key));
+  }
 
   auto iter = spdy_session_request_map_.find(spdy_session_key);
   DCHECK(iter != spdy_session_request_map_.end());
   RequestSet& request_set = iter->second;
   DCHECK(base::ContainsKey(request_set, request));
-  request_set.erase(request);
-  if (request_set.empty())
-    spdy_session_request_map_.erase(spdy_session_key);
-  // Resets |request|'s SpdySessionKey. This will invalid |spdy_session_key|.
-  request->ResetSpdySessionKey();
+  RemoveRequestInternal(iter, request_set.find(request));
 }
 
 void SpdySessionPool::DumpMemoryStats(
@@ -599,6 +576,106 @@ void SpdySessionPool::CloseCurrentSessionsHelper(Error error,
     DCHECK(!IsSessionAvailable(session));
     DCHECK(!session || session->IsDraining());
   }
+}
+
+std::unique_ptr<SpdySession> SpdySessionPool::CreateSession(
+    const SpdySessionKey& key,
+    bool is_trusted_proxy,
+    NetLog* net_log) {
+  UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet", IMPORTED_FROM_SOCKET,
+                            SPDY_SESSION_GET_MAX);
+
+  return std::make_unique<SpdySession>(
+      key, http_server_properties_, transport_security_state_,
+      ssl_config_service_, quic_supported_versions_,
+      enable_sending_initial_data_, enable_ping_based_connection_checking_,
+      support_ietf_format_quic_altsvc_, is_trusted_proxy,
+      session_max_recv_window_size_, initial_settings_, greased_http2_frame_,
+      time_func_, push_delegate_, network_quality_estimator_, net_log);
+}
+
+base::WeakPtr<SpdySession> SpdySessionPool::InsertSession(
+    const SpdySessionKey& key,
+    std::unique_ptr<SpdySession> new_session,
+    const NetLogWithSource& source_net_log) {
+  base::WeakPtr<SpdySession> available_session = new_session->GetWeakPtr();
+  sessions_.insert(new_session.release());
+  MapKeyToAvailableSession(key, available_session);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&SpdySessionPool::UpdatePendingRequests,
+                                weak_ptr_factory_.GetWeakPtr(), key));
+
+  source_net_log.AddEvent(
+      NetLogEventType::HTTP2_SESSION_POOL_IMPORTED_SESSION_FROM_SOCKET,
+      available_session->net_log().source().ToEventParametersCallback());
+
+  // Look up the IP address for this session so that we can match
+  // future sessions (potentially to different domains) which can
+  // potentially be pooled with this one. Because GetPeerAddress()
+  // reports the proxy's address instead of the origin server, check
+  // to see if this is a direct connection.
+  if (key.proxy_server().is_direct()) {
+    IPEndPoint address;
+    if (available_session->GetPeerAddress(&address) == OK)
+      aliases_.insert(AliasMap::value_type(address, key));
+  }
+
+  return available_session;
+}
+
+void SpdySessionPool::UpdatePendingRequests(const SpdySessionKey& key) {
+  auto it = LookupAvailableSessionByKey(key);
+  if (it != available_sessions_.end()) {
+    base::WeakPtr<SpdySession> new_session = it->second->GetWeakPtr();
+    while (new_session && new_session->IsAvailable()) {
+      // Each iteration may empty out the RequestSet for |spdy_session_key| in
+      // |spdy_session_request_map_|. So each time, check for RequestSet and use
+      // the first one. Could just keep track if the last iteration removed the
+      // final request, but it's possible that responding to one request will
+      // result in cancelling another one.
+      //
+      // TODO(willchan): If it's important, switch RequestSet out for a FIFO
+      // queue (Order by priority first, then FIFO within same priority).
+      // Unclear that it matters here.
+      auto iter = spdy_session_request_map_.find(key);
+      if (iter == spdy_session_request_map_.end())
+        break;
+      RequestSet* request_set = &iter->second;
+      RequestSet::iterator request = request_set->begin();
+      SpdySessionRequest::Delegate* delegate = (*request)->delegate();
+
+      RemoveRequestInternal(iter, request);
+
+      delegate->OnSpdySessionAvailable(new_session);
+    }
+  }
+
+  auto iter = spdy_session_pending_request_map_.find(key);
+  if (iter == spdy_session_pending_request_map_.end())
+    return;
+  // Remove all pending requests, if there are any. As a result, if one of these
+  // callbacks triggers a new RequestSession() call,
+  // |is_first_request_for_session| will be true.
+  std::list<base::RepeatingClosure> pending_requests = std::move(iter->second);
+  spdy_session_pending_request_map_.erase(iter);
+
+  // Resume any pending requests. This needs to be after the
+  // OnSpdySessionAvailable() calls, to prevent requests from calling into the
+  // socket pools in cases where that's not necessary.
+  for (auto callback : pending_requests) {
+    callback.Run();
+  }
+}
+
+void SpdySessionPool::RemoveRequestInternal(
+    SpdySessionRequestMap::iterator request_map_iterator,
+    RequestSet::iterator request_set_iterator) {
+  SpdySessionRequest* request = *request_set_iterator;
+  request_map_iterator->second.erase(request_set_iterator);
+  if (request_map_iterator->second.empty())
+    spdy_session_request_map_.erase(request_map_iterator);
+  request->OnRemovedFromPool();
 }
 
 }  // namespace net

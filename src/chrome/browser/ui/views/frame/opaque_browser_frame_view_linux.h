@@ -17,12 +17,8 @@ class OpaqueBrowserFrameViewLinux
       public views::WindowButtonOrderObserver {
  public:
   OpaqueBrowserFrameViewLinux(OpaqueBrowserFrameView* view,
-                              OpaqueBrowserFrameViewLayout* layout,
-                              ThemeService* theme_service);
+                              OpaqueBrowserFrameViewLayout* layout);
   ~OpaqueBrowserFrameViewLinux() override;
-
-  // Overridden from OpaqueBrowserFrameViewPlatformSpecific:
-  bool IsUsingSystemTheme() override;
 
   // Overridden from views::WindowButtonOrderObserver:
   void OnWindowButtonOrderingChange(
@@ -32,7 +28,6 @@ class OpaqueBrowserFrameViewLinux
  private:
   OpaqueBrowserFrameView* view_;
   OpaqueBrowserFrameViewLayout* layout_;
-  ThemeService* theme_service_;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameViewLinux);
 };

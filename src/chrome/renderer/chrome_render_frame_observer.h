@@ -52,8 +52,8 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle) override;
   bool OnMessageReceived(const IPC::Message& message) override;
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               bool is_content_initiated) override;
+  void ReadyToCommitNavigation(
+      blink::WebDocumentLoader* document_loader) override;
   void DidFinishLoad() override;
   void DidCreateNewDocument() override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,

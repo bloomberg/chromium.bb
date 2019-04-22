@@ -38,10 +38,6 @@ DragCaret::DragCaret() : display_item_client_(new CaretDisplayItemClient()) {}
 
 DragCaret::~DragCaret() = default;
 
-DragCaret* DragCaret::Create() {
-  return MakeGarbageCollected<DragCaret>();
-}
-
 void DragCaret::ClearPreviousVisualRect(const LayoutBlock& block) {
   display_item_client_->ClearPreviousVisualRect(block);
 }
@@ -96,7 +92,7 @@ void DragCaret::NodeWillBeRemoved(Node& node) {
   Clear();
 }
 
-void DragCaret::Trace(blink::Visitor* visitor) {
+void DragCaret::Trace(Visitor* visitor) {
   visitor->Trace(position_);
   SynchronousMutationObserver::Trace(visitor);
 }

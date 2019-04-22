@@ -4,16 +4,14 @@
 
 // https://wicg.github.io/picture-in-picture/#htmlvideoelement-extensions
 [
-    ImplementedAs=HTMLVideoElementPictureInPicture,
-    RuntimeEnabled=PictureInPictureAPI
+    ImplementedAs=HTMLVideoElementPictureInPicture
 ]
 partial interface HTMLVideoElement {
-    [CallWith=ScriptState, Measure, NewObject] Promise<PictureInPictureWindow> requestPictureInPicture();
-    [RuntimeEnabled=PictureInPictureControl] void setPictureInPictureControls(sequence<PictureInPictureControl> pipControls);
+    [RuntimeEnabled=PictureInPictureAPI, CallWith=ScriptState, Measure, NewObject] Promise<PictureInPictureWindow> requestPictureInPicture();
 
-    attribute EventHandler onenterpictureinpicture;
-    attribute EventHandler onleavepictureinpicture;
-    [RuntimeEnabled=PictureInPictureControl] attribute EventHandler onpictureinpicturecontrolclick;
+    [RuntimeEnabled=PictureInPictureAPI] attribute EventHandler onenterpictureinpicture;
+    [RuntimeEnabled=PictureInPictureAPI] attribute EventHandler onleavepictureinpicture;
 
-    [CEReactions, Measure, Reflect] attribute boolean disablePictureInPicture;
+    [RuntimeEnabled=AutoPictureInPicture, CEReactions, Measure, Reflect] attribute boolean autoPictureInPicture;
+    [RuntimeEnabled=PictureInPictureAPI, CEReactions, Measure, Reflect] attribute boolean disablePictureInPicture;
 };

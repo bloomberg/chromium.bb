@@ -11,9 +11,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
@@ -270,21 +270,23 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, UnsupportedExtension) {
-  MoveTest("a.txt", std::string(kValidImage, arraysize(kValidImage)), false);
+  MoveTest("a.txt", std::string(kValidImage, base::size(kValidImage)), false);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, ValidImage) {
-  MoveTest("a.webp", std::string(kValidImage, arraysize(kValidImage)), true);
+  MoveTest("a.webp", std::string(kValidImage, base::size(kValidImage)), true);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, InvalidImage) {
-  MoveTest("a.webp", std::string(kInvalidMediaFile,
-           arraysize(kInvalidMediaFile)), false);
+  MoveTest("a.webp",
+           std::string(kInvalidMediaFile, base::size(kInvalidMediaFile)),
+           false);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, InvalidAudio) {
-  MoveTest("a.ogg", std::string(kInvalidMediaFile,
-           arraysize(kInvalidMediaFile)), false);
+  MoveTest("a.ogg",
+           std::string(kInvalidMediaFile, base::size(kInvalidMediaFile)),
+           false);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, ValidAudio) {

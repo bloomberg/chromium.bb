@@ -36,7 +36,7 @@ class CertificateProviderInternalReportCertificatesFunction
       chromeos::certificate_provider::CertificateInfo* out_info);
 
   DECLARE_EXTENSION_FUNCTION("certificateProviderInternal.reportCertificates",
-                             CERTIFICATEPROVIDERINTERNAL_REPORTCERTIFICATES);
+                             CERTIFICATEPROVIDERINTERNAL_REPORTCERTIFICATES)
 };
 
 class CertificateProviderInternalReportSignatureFunction
@@ -46,7 +46,7 @@ class CertificateProviderInternalReportSignatureFunction
   ResponseAction Run() override;
 
   DECLARE_EXTENSION_FUNCTION("certificateProviderInternal.reportSignature",
-                             CERTIFICATEPROVIDERINTERNAL_REPORTSIGNATURE);
+                             CERTIFICATEPROVIDERINTERNAL_REPORTSIGNATURE)
 };
 
 class CertificateProviderRequestPinFunction : public UIThreadExtensionFunction {
@@ -59,7 +59,7 @@ class CertificateProviderRequestPinFunction : public UIThreadExtensionFunction {
   void OnInputReceived(const base::string16& value);
 
   DECLARE_EXTENSION_FUNCTION("certificateProvider.requestPin",
-                             CERTIFICATEPROVIDER_REQUESTPIN);
+                             CERTIFICATEPROVIDER_REQUESTPIN)
 };
 
 class CertificateProviderStopPinRequestFunction
@@ -70,7 +70,7 @@ class CertificateProviderStopPinRequestFunction
   void DialogClosed(const base::string16& value);
 
   DECLARE_EXTENSION_FUNCTION("certificateProvider.stopPinRequest",
-                             CERTIFICATEPROVIDER_STOPPINREQUEST);
+                             CERTIFICATEPROVIDER_STOPPINREQUEST)
 };
 
 }  // namespace extensions

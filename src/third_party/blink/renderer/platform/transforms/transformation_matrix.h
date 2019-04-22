@@ -84,42 +84,6 @@ class PLATFORM_EXPORT TransformationMatrix {
     Column columns[4];
   };
 
-  static std::unique_ptr<TransformationMatrix> Create() {
-    return std::make_unique<TransformationMatrix>();
-  }
-  static std::unique_ptr<TransformationMatrix> Create(
-      const TransformationMatrix& t) {
-    return std::make_unique<TransformationMatrix>(t);
-  }
-  static std::unique_ptr<TransformationMatrix> Create(double a,
-                                                      double b,
-                                                      double c,
-                                                      double d,
-                                                      double e,
-                                                      double f) {
-    return std::make_unique<TransformationMatrix>(a, b, c, d, e, f);
-  }
-  static std::unique_ptr<TransformationMatrix> Create(double m11,
-                                                      double m12,
-                                                      double m13,
-                                                      double m14,
-                                                      double m21,
-                                                      double m22,
-                                                      double m23,
-                                                      double m24,
-                                                      double m31,
-                                                      double m32,
-                                                      double m33,
-                                                      double m34,
-                                                      double m41,
-                                                      double m42,
-                                                      double m43,
-                                                      double m44) {
-    return std::make_unique<TransformationMatrix>(m11, m12, m13, m14, m21, m22,
-                                                  m23, m24, m31, m32, m33, m34,
-                                                  m41, m42, m43, m44);
-  }
-
   TransformationMatrix() {
     CheckAlignment();
     MakeIdentity();
@@ -393,10 +357,20 @@ class PLATFORM_EXPORT TransformationMatrix {
     double perspective_x, perspective_y, perspective_z, perspective_w;
   } DecomposedType;
 
-  WARN_UNUSED_RESULT bool Decompose(DecomposedType&) const;
-  void Recompose(const DecomposedType&);
+  // Decompose 2-D transform matrix into its component parts.
+  typedef struct {
+    double scale_x, scale_y;
+    double skew_xy;
+    double translate_x, translate_y;
+    double angle;
+  } Decomposed2dType;
 
+  WARN_UNUSED_RESULT bool Decompose(DecomposedType&) const;
+  WARN_UNUSED_RESULT bool Decompose2D(Decomposed2dType&) const;
+  void Recompose(const DecomposedType&);
+  void Recompose2D(const Decomposed2dType&);
   void Blend(const TransformationMatrix& from, double progress);
+  void Blend2D(const TransformationMatrix& from, double progress);
 
   bool IsAffine() const {
     return M13() == 0 && M14() == 0 && M23() == 0 && M24() == 0 && M31() == 0 &&
@@ -475,6 +449,8 @@ class PLATFORM_EXPORT TransformationMatrix {
            matrix_[2][3] == 0 && matrix_[3][2] == 0 && matrix_[3][3] == 1;
   }
 
+  bool Is2dTransform() const;
+
   bool IsIntegerTranslation() const;
 
   // Returns true if axis-aligned 2d rects will remain axis-aligned after being
@@ -483,7 +459,10 @@ class PLATFORM_EXPORT TransformationMatrix {
 
   // If this transformation is identity or 2D translation, returns the
   // translation.
-  FloatSize To2DTranslation() const;
+  FloatSize To2DTranslation() const {
+    DCHECK(IsIdentityOr2DTranslation());
+    return FloatSize(matrix_[3][0], matrix_[3][1]);
+  }
 
   typedef float FloatMatrix4[16];
   void ToColumnMajorFloatArray(FloatMatrix4& result) const;

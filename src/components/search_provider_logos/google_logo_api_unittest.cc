@@ -181,6 +181,153 @@ TEST(GoogleNewLogoApiTest, ParsesStaticImage) {
   EXPECT_EQ(LogoType::SIMPLE, logo->metadata.type);
 }
 
+TEST(GoogleNewLogoApiTest, ParsesShareButtonForSimpleDoodle) {
+  const GURL base_url("https://base.doo/");
+  // Note: The base64 encoding of "abc" is "YWJj".
+  const std::string json = R"json()]}'
+{
+  "ddljson": {
+    "doodle_type": "SIMPLE",
+    "data_uri": "data:image/png;base64,YWJj",
+    "short_link": "//g.co",
+    "share_button": {
+      "background_color": "#fe8080",
+      "icon_image": "test_img",
+      "offset_x": 111,
+      "offset_y": 222,
+      "opacity": 0.5
+    }
+  }
+})json";
+
+  bool failed = false;
+  std::unique_ptr<EncodedLogo> logo = ParseDoodleLogoResponse(
+      base_url, std::make_unique<std::string>(json), base::Time(), &failed);
+
+  ASSERT_FALSE(failed);
+  ASSERT_TRUE(logo);
+  EXPECT_EQ("abc", logo->encoded_image->data());
+  EXPECT_EQ(LogoType::SIMPLE, logo->metadata.type);
+  EXPECT_EQ("https://g.co/", logo->metadata.short_link);
+
+  EXPECT_EQ("#fe8080", logo->metadata.share_button_bg);
+  EXPECT_EQ("test_img", logo->metadata.share_button_icon);
+  EXPECT_EQ(111, logo->metadata.share_button_x);
+  EXPECT_EQ(222, logo->metadata.share_button_y);
+  EXPECT_EQ(0.5, logo->metadata.share_button_opacity);
+}
+
+TEST(GoogleNewLogoApiTest, ParsesNoShareButtonIfWrongShortLinkFormat) {
+  const GURL base_url("https://base.doo/");
+  // Note: The base64 encoding of "abc" is "YWJj".
+  const std::string json = R"json()]}'
+{
+  "ddljson": {
+    "doodle_type": "SIMPLE",
+    "data_uri": "data:image/png;base64,YWJj",
+    "short_link": "www.//g.co",
+    "share_button": {
+      "background_color": "#fe8080",
+      "icon_image": "test_img",
+      "offset_x": 111,
+      "offset_y": 222,
+      "opacity": 0.5
+    }
+  }
+})json";
+
+  bool failed = false;
+  std::unique_ptr<EncodedLogo> logo = ParseDoodleLogoResponse(
+      base_url, std::make_unique<std::string>(json), base::Time(), &failed);
+
+  ASSERT_FALSE(failed);
+  ASSERT_TRUE(logo);
+  EXPECT_EQ("abc", logo->encoded_image->data());
+  EXPECT_EQ(LogoType::SIMPLE, logo->metadata.type);
+  ASSERT_TRUE(logo->metadata.short_link.is_empty());
+  ASSERT_TRUE(logo->metadata.share_button_icon.empty());
+  EXPECT_EQ(-1, logo->metadata.share_button_x);
+  EXPECT_EQ(-1, logo->metadata.share_button_y);
+  EXPECT_EQ(0, logo->metadata.share_button_opacity);
+}
+
+TEST(GoogleNewLogoApiTest, ParsesNoShareButtonIfShortLinkInvalid) {
+  const GURL base_url("https://base.doo/");
+  // Note: The base64 encoding of "abc" is "YWJj".
+  const std::string json = R"json()]}'
+{
+  "ddljson": {
+    "doodle_type": "SIMPLE",
+    "data_uri": "data:image/png;base64,YWJj",
+    "short_link": "//dsdjf2(*&^%&",
+    "share_button": {
+      "background_color": "#fe8080",
+      "icon_image": "test_img",
+      "offset_x": 111,
+      "offset_y": 222,
+      "opacity": 0.5
+    }
+  }
+})json";
+
+  bool failed = false;
+  std::unique_ptr<EncodedLogo> logo = ParseDoodleLogoResponse(
+      base_url, std::make_unique<std::string>(json), base::Time(), &failed);
+
+  ASSERT_FALSE(failed);
+  ASSERT_TRUE(logo);
+  EXPECT_EQ("abc", logo->encoded_image->data());
+  EXPECT_EQ(LogoType::SIMPLE, logo->metadata.type);
+  ASSERT_FALSE(logo->metadata.short_link.is_valid());
+  ASSERT_TRUE(logo->metadata.share_button_icon.empty());
+  EXPECT_EQ(-1, logo->metadata.share_button_x);
+  EXPECT_EQ(-1, logo->metadata.share_button_y);
+  EXPECT_EQ(0, logo->metadata.share_button_opacity);
+}
+
+TEST(GoogleNewLogoApiTest, ParsesShareButtonForAnimatedDoodle) {
+  const GURL base_url("https://base.doo/");
+  // Note: The base64 encoding of "abc" is "YWJj".
+  const std::string json = R"json()]}'
+{
+  "ddljson": {
+    "doodle_type": "ANIMATED",
+    "target_url": "/target",
+    "large_image": {
+      "is_animated_gif": true,
+      "url": "https://www.doodle.com/image.gif"
+    },
+    "short_link": "//g.co",
+    "cta_data_uri": "data:image/png;base64,YWJj",
+    "share_button": {
+      "background_color": "#fe8080",
+      "icon_image": "test_img",
+      "offset_x": 111,
+      "offset_y": 222,
+      "opacity": 0.5
+    }
+  }
+})json";
+
+  bool failed = false;
+  std::unique_ptr<EncodedLogo> logo = ParseDoodleLogoResponse(
+      base_url, std::make_unique<std::string>(json), base::Time(), &failed);
+
+  ASSERT_FALSE(failed);
+  ASSERT_TRUE(logo);
+  EXPECT_EQ(GURL("https://www.doodle.com/image.gif"),
+            logo->metadata.animated_url);
+  EXPECT_EQ("abc", logo->encoded_image->data());
+  EXPECT_EQ(LogoType::ANIMATED, logo->metadata.type);
+  EXPECT_EQ("https://g.co/", logo->metadata.short_link);
+
+  EXPECT_EQ("#fe8080", logo->metadata.share_button_bg);
+  EXPECT_EQ("test_img", logo->metadata.share_button_icon);
+  EXPECT_EQ(111, logo->metadata.share_button_x);
+  EXPECT_EQ(222, logo->metadata.share_button_y);
+  EXPECT_EQ(0.5, logo->metadata.share_button_opacity);
+}
+
 TEST(GoogleNewLogoApiTest, ParsesAnimatedImage) {
   const GURL base_url("https://base.doo/");
   // Note: The base64 encoding of "abc" is "YWJj".
@@ -258,6 +405,7 @@ TEST(GoogleNewLogoApiTest, ParsesInteractiveDoodle) {
   EXPECT_EQ(LogoType::INTERACTIVE, logo->metadata.type);
   EXPECT_EQ(500, logo->metadata.iframe_width_px);
   EXPECT_EQ(200, logo->metadata.iframe_height_px);
+  EXPECT_EQ(nullptr, logo->encoded_image);
 }
 
 TEST(GoogleNewLogoApiTest, ParsesInteractiveDoodleWithNewWindowAsSimple) {

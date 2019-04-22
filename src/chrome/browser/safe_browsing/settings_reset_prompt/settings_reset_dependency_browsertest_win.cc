@@ -69,9 +69,9 @@ IN_PROC_BROWSER_TEST_P(SettingsResetDependencyTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(Default,
-                        SettingsResetDependencyTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Default,
+                         SettingsResetDependencyTest,
+                         ::testing::Bool());
 
 }  // namespace
 }  // namespace safe_browsing

@@ -29,7 +29,7 @@ class OutputProtectionControllerAsh
       const OutputProtectionDelegate::SetProtectionCallback& callback) override;
 
  private:
-  const uint64_t client_id_;
+  const display::DisplayConfigurator::ContentProtectionClientId client_id_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputProtectionControllerAsh);

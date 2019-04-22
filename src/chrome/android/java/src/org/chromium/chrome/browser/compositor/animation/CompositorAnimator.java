@@ -9,10 +9,12 @@ import android.animation.TimeInterpolator;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -89,6 +91,13 @@ public class CompositorAnimator extends Animator {
      */
     private boolean mDidUpdateToCompletion;
 
+    /** Reference to one of each standard interpolator to avoid allocations. */
+    public static final AccelerateInterpolator ACCELERATE_INTERPOLATOR =
+            new AccelerateInterpolator();
+    public static final DecelerateInterpolator DECELERATE_INTERPOLATOR =
+            new DecelerateInterpolator();
+    public static final LinearInterpolator LINEAR_INTERPOLATOR = new LinearInterpolator();
+
     /**
      * A utility for creating a basic animator.
      * @param handler The {@link CompositorAnimationHandler} responsible for running the animation.
@@ -144,7 +153,7 @@ public class CompositorAnimator extends Animator {
             final T target, final FloatProperty<T> property, float startValue, float endValue,
             long durationMs) {
         return ofFloatProperty(handler, target, property, startValue, endValue, durationMs,
-                ChromeAnimation.getDecelerateInterpolator());
+                DECELERATE_INTERPOLATOR);
     }
 
     /** An interface for listening for frames of an animation. */
@@ -165,7 +174,7 @@ public class CompositorAnimator extends Animator {
 
         // The default interpolator is decelerate; this mimics the existing ChromeAnimation
         // behavior.
-        mTimeInterpolator = ChromeAnimation.getDecelerateInterpolator();
+        mTimeInterpolator = DECELERATE_INTERPOLATOR;
 
         // By default, animate for 0 to 1.
         mStartValue = 0;

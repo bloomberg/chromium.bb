@@ -128,12 +128,6 @@ void JNI_ContentChildProcessServiceDelegate_InitChildProcess(
       env, obj, cpu_count, cpu_features);
 }
 
-void JNI_ContentChildProcessServiceDelegate_ShutdownMainThread(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  ChildThreadImpl::ShutdownThread();
-}
-
 void JNI_ContentChildProcessServiceDelegate_RetrieveFileDescriptorsIdsToKeys(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

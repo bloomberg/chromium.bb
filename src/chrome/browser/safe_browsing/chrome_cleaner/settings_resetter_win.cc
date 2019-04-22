@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
@@ -61,7 +62,7 @@ bool CopyProfilesToReset(const std::vector<Profile*>& profiles,
   std::copy_if(profiles.begin(), profiles.end(),
                std::back_inserter(*profiles_to_reset),
                [](Profile* profile) -> bool { return ResetPending(profile); });
-  return profiles_to_reset->size() > 0;
+  return !profiles_to_reset->empty();
 }
 
 // Manages post-cleanup settings reset for a list of profiles.

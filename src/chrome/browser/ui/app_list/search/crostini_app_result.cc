@@ -57,6 +57,10 @@ void CrostiniAppResult::ExecuteLaunchCommand(int event_flags) {
   Open(event_flags);
 }
 
+SearchResultType CrostiniAppResult::GetSearchResultType() const {
+  return CROSTINI_APP;
+}
+
 void CrostiniAppResult::OnAppImageUpdated(const std::string& app_id,
                                           const gfx::ImageSkia& image) {
   const gfx::Size icon_size(

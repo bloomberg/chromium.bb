@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_IN_PROGRESS_DOWNLOAD_MANAGER_H_
 #define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_IN_PROGRESS_DOWNLOAD_MANAGER_H_
 
+#include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
@@ -16,6 +18,7 @@
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
 #include "components/download/public/common/download_utils.h"
+#include "components/download/public/common/simple_download_manager.h"
 #include "components/download/public/common/url_download_handler.h"
 #include "url/gurl.h"
 
@@ -38,12 +41,15 @@ struct DownloadDBEntry;
 // Manager for handling all active downloads.
 class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     : public UrlDownloadHandler::Delegate,
-      public DownloadItemImplDelegate {
+      public DownloadItemImplDelegate,
+      public SimpleDownloadManager {
  public:
   using StartDownloadItemCallback =
       base::OnceCallback<void(std::unique_ptr<DownloadCreateInfo> info,
                               DownloadItemImpl*,
                               bool /* should_persist_new_download */)>;
+  using DisplayNames = std::unique_ptr<
+      std::map<std::string /*content URI*/, base::FilePath /* display name*/>>;
 
   // Class to be notified when download starts/stops.
   class COMPONENTS_DOWNLOAD_EXPORT Delegate {
@@ -76,6 +82,13 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
                             const IsOriginSecureCallback& is_origin_secure_cb,
                             const URLSecurityPolicy& url_security_policy);
   ~InProgressDownloadManager() override;
+
+  // SimpleDownloadManager implementation.
+  bool DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override;
+  void GetAllDownloads(
+      SimpleDownloadManager::DownloadVector* downloads) override;
+  DownloadItem* GetDownloadByGuid(const std::string& guid) override;
+
   // Called to start a download.
   void BeginDownload(
       std::unique_ptr<DownloadUrlParameters> params,
@@ -122,12 +135,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Called to remove an in-progress download.
   void RemoveInProgressDownload(const std::string& guid);
 
-  // Called to retrieve an in-progress download.
-  DownloadItemImpl* GetInProgressDownload(const std::string& guid);
-
-  // Run |on_initialized_cb| once this object is initialized.
-  void NotifyWhenInitialized(base::OnceClosure on_initialized_cb);
-
   void set_download_start_observer(DownloadStartObserver* observer) {
     download_start_observer_ = observer;
   }
@@ -142,6 +149,10 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // TODO(qinmin): remove this once features::kDownloadDBForNewDownloads is
   // enabled by default.
   void OnAllInprogressDownloadsLoaded();
+
+  // Gets the display name for a download. For non-android platforms, this
+  // always returns an empty path.
+  base::FilePath GetDownloadDisplayName(const base::FilePath& path);
 
   void set_file_factory(std::unique_ptr<DownloadFileFactory> file_factory) {
     file_factory_ = std::move(file_factory);
@@ -160,6 +171,10 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     is_origin_secure_cb_ = is_origin_secure_cb;
   }
 
+  // Called to insert an in-progress download for testing purpose.
+  void AddInProgressDownloadForTest(
+      std::unique_ptr<download::DownloadItemImpl> download);
+
  private:
   void Initialize(const base::FilePath& in_progress_db_dir);
 
@@ -173,9 +188,14 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void OnUrlDownloadHandlerCreated(
       UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) override;
 
-  // Called when the object is initialized.
-  void OnInitialized(bool success,
-                     std::unique_ptr<std::vector<DownloadDBEntry>> entries);
+  // Called when the in-progress DB is initialized.
+  void OnDBInitialized(bool success,
+                       std::unique_ptr<std::vector<DownloadDBEntry>> entries);
+
+  // Called when download display names are retrieved,
+  void OnDownloadNamesRetrieved(
+      std::unique_ptr<std::vector<DownloadDBEntry>> entries,
+      DisplayNames display_names);
 
   // Start a DownloadItemImpl.
   void StartDownloadWithItem(
@@ -184,9 +204,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       std::unique_ptr<DownloadCreateInfo> info,
       DownloadItemImpl* download,
       bool should_persist_new_download);
-
-  // Whether |download_db_cache_| is initialized.
-  bool is_initialized_;
 
   // Active download handlers.
   std::vector<UrlDownloadHandler::UniqueUrlDownloadHandlerPtr>
@@ -214,9 +231,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Observer to notify when a download starts.
   DownloadStartObserver* download_start_observer_;
 
-  // Callbacks to call once this object is initialized.
-  std::vector<std::unique_ptr<base::OnceClosure>> on_initialized_callbacks_;
-
   // callback to check if an origin is secure.
   IsOriginSecureCallback is_origin_secure_cb_;
 
@@ -231,8 +245,15 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // is not available.
   scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter_;
 
+  // Mapping between download URIs and display names.
+  // TODO(qinmin): move display name to history and in-progress DB.
+  DisplayNames display_names_;
+
   // Used to check if the URL is safe.
   URLSecurityPolicy url_security_policy_;
+
+  // Whether this object uses an empty database and no history will be saved.
+  bool use_empty_db_;
 
   base::WeakPtrFactory<InProgressDownloadManager> weak_factory_;
 

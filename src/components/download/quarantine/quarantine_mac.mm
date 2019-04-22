@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/mac/availability.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
@@ -23,34 +22,6 @@
 
 namespace {
 
-// Once Chrome no longer supports macOS 10.9, this code will no longer be
-// necessary. Note that LSCopyItemAttribute was deprecated in macOS 10.8, but
-// the replacement to kLSItemQuarantineProperties did not exist until macOS
-// 10.10.
-#if !defined(MAC_OS_X_VERSION_10_10) || \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_10
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-bool SetQuarantinePropertiesDeprecated(const base::FilePath& file,
-                                       NSDictionary* properties) {
-  const UInt8* path = reinterpret_cast<const UInt8*>(file.value().c_str());
-  FSRef file_ref;
-  if (FSPathMakeRef(path, &file_ref, nullptr) != noErr)
-    return false;
-
-  OSStatus os_error = LSSetItemAttribute(
-      &file_ref, kLSRolesAll, kLSItemQuarantineProperties, properties);
-  if (os_error != noErr) {
-    OSSTATUS_LOG(WARNING, os_error)
-        << "Unable to set quarantine attributes on file " << file.value();
-    return false;
-  }
-  return true;
-}
-#pragma clang diagnostic pop
-#endif
-
-API_AVAILABLE(macos(10.10))
 bool SetQuarantineProperties(const base::FilePath& file,
                              NSDictionary* properties) {
   base::scoped_nsobject<NSURL> file_url([[NSURL alloc]
@@ -96,10 +67,17 @@ namespace {
 // There is no documented API to set metadata on a file directly as of the
 // 10.5 SDK.  The MDSetItemAttribute function does exist to perform this task,
 // but it's undocumented.
+//
+// Note that the Metadata.framework in CoreServices has been superseded by the
+// NSMetadata API (e.g. kMDItemWhereFroms -> NSMetadataItemWhereFromsKey, etc).
+// The NSMetadata API still is a query-only interface, with no way to set
+// attributes, so we continue to use the original API.
 bool AddOriginMetadataToFile(const base::FilePath& file,
                              const GURL& source,
                              const GURL& referrer) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
   // There's no declaration for MDItemSetAttribute in any known public SDK.
   // It exists in the 10.4 and 10.5 runtimes.  To play it safe, do the lookup
   // at runtime instead of declaring it ourselves and linking against what's
@@ -109,22 +87,19 @@ bool AddOriginMetadataToFile(const base::FilePath& file,
   //  - If Apple removes or renames the function in a future runtime, the
   //    loader won't refuse to let the application launch.  Instead, we'll
   //    silently fail to set any metadata.
-  typedef OSStatus (*MDItemSetAttribute_type)(MDItemRef, CFStringRef,
-                                              CFTypeRef);
-  static MDItemSetAttribute_type md_item_set_attribute_func = NULL;
-
-  static bool did_symbol_lookup = false;
-  if (!did_symbol_lookup) {
-    did_symbol_lookup = true;
+  using MDItemSetAttribute_type =
+      OSStatus (*)(MDItemRef, CFStringRef, CFTypeRef);
+  static MDItemSetAttribute_type md_item_set_attribute_func =
+      []() -> MDItemSetAttribute_type {
     CFBundleRef metadata_bundle =
         CFBundleGetBundleWithIdentifier(CFSTR("com.apple.Metadata"));
     if (!metadata_bundle)
-      return false;
+      return nullptr;
 
-    md_item_set_attribute_func =
-        (MDItemSetAttribute_type)CFBundleGetFunctionPointerForName(
-            metadata_bundle, CFSTR("MDItemSetAttribute"));
-  }
+    return reinterpret_cast<MDItemSetAttribute_type>(
+        CFBundleGetFunctionPointerForName(metadata_bundle,
+                                          CFSTR("MDItemSetAttribute")));
+  }();
   if (!md_item_set_attribute_func)
     return false;
 
@@ -133,7 +108,7 @@ bool AddOriginMetadataToFile(const base::FilePath& file,
     return false;
 
   base::ScopedCFTypeRef<MDItemRef> md_item(
-      MDItemCreate(NULL, base::mac::NSToCFCast(file_path)));
+      MDItemCreate(kCFAllocatorDefault, base::mac::NSToCFCast(file_path)));
   if (!md_item) {
     LOG(WARNING) << "MDItemCreate failed for path " << file.value();
     return false;
@@ -142,17 +117,21 @@ bool AddOriginMetadataToFile(const base::FilePath& file,
   // We won't put any more than 2 items into the attribute.
   NSMutableArray* list = [NSMutableArray arrayWithCapacity:2];
 
-  // Follow Safari's lead: the first item in the list is the source URL of
-  // the downloaded file. If the referrer is known, store that, too.
+  // Follow Safari's lead: the first item in the list is the source URL of the
+  // downloaded file. If the referrer is known, store that, too. The URLs may be
+  // empty (e.g. files downloaded in Incognito mode); don't add empty URLs.
   NSString* origin_url = base::SysUTF8ToNSString(source.spec());
-  if (origin_url)
+  if (origin_url && [origin_url length])
     [list addObject:origin_url];
   NSString* referrer_url = base::SysUTF8ToNSString(referrer.spec());
-  if (referrer_url)
+  if (referrer_url && [referrer_url length])
     [list addObject:referrer_url];
 
-  md_item_set_attribute_func(md_item, kMDItemWhereFroms,
-                             base::mac::NSToCFCast(list));
+  if ([list count]) {
+    md_item_set_attribute_func(md_item, kMDItemWhereFroms,
+                               base::mac::NSToCFCast(list));
+  }
+
   return true;
 }
 
@@ -168,14 +147,10 @@ bool AddOriginMetadataToFile(const base::FilePath& file,
 bool AddQuarantineMetadataToFile(const base::FilePath& file,
                                  const GURL& source,
                                  const GURL& referrer) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   base::scoped_nsobject<NSMutableDictionary> properties;
-  bool success = false;
-  if (@available(macos 10.10, *)) {
-    success = GetQuarantineProperties(file, &properties);
-  } else {
-    success = GetQuarantinePropertiesDeprecated(file, &properties);
-  }
+  bool success = GetQuarantineProperties(file, &properties);
 
   if (!success)
     return false;
@@ -213,11 +188,7 @@ bool AddQuarantineMetadataToFile(const base::FilePath& file,
     [properties setValue:origin_url forKey:(NSString*)kLSQuarantineDataURLKey];
   }
 
-  if (@available(macos 10.10, *)) {
-    return SetQuarantineProperties(file, properties);
-  } else {
-    return SetQuarantinePropertiesDeprecated(file, properties);
-  }
+  return SetQuarantineProperties(file, properties);
 }
 
 }  // namespace

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tab;
 
 import android.view.ViewGroup;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.base.ViewAndroidDelegate;
 
 /**
@@ -16,6 +17,10 @@ class TabViewAndroidDelegate extends ViewAndroidDelegate {
     private static final String TAG = "TabVAD";
 
     private final Tab mTab;
+
+    private int mPreviousTopControlsOffset;
+    private int mPreviousBottomControlsOffset;
+    private int mPreviousTopContentOffset;
 
     TabViewAndroidDelegate(Tab tab, ViewGroup containerView) {
         super(containerView);
@@ -28,19 +33,26 @@ class TabViewAndroidDelegate extends ViewAndroidDelegate {
     }
 
     @Override
-    public void onTopControlsChanged(float topControlsOffsetY, float topContentOffsetY) {
+    public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY) {
+        mPreviousTopControlsOffset = topControlsOffsetY;
+        mPreviousTopContentOffset = topContentOffsetY;
         TabBrowserControlsOffsetHelper.from(mTab).onOffsetsChanged(
-                topControlsOffsetY, Float.NaN, topContentOffsetY);
+                topControlsOffsetY, mPreviousBottomControlsOffset, topContentOffsetY);
     }
 
     @Override
-    public void onBottomControlsChanged(float bottomControlsOffsetY, float bottomContentOffsetY) {
+    public void onBottomControlsChanged(int bottomControlsOffsetY, int bottomContentOffsetY) {
+        mPreviousBottomControlsOffset = bottomControlsOffsetY;
         TabBrowserControlsOffsetHelper.from(mTab).onOffsetsChanged(
-                Float.NaN, bottomControlsOffsetY, Float.NaN);
+                mPreviousTopControlsOffset, bottomControlsOffsetY, mPreviousTopContentOffset);
     }
 
     @Override
     public int getSystemWindowInsetBottom() {
-        return mTab.getSystemWindowInsetBottom();
+        ChromeActivity activity = mTab.getActivity();
+        if (activity != null && activity.getInsetObserverView() != null) {
+            return activity.getInsetObserverView().getSystemWindowInsetsBottom();
+        }
+        return 0;
     }
 }

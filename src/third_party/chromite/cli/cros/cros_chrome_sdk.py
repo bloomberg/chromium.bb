@@ -87,6 +87,8 @@ class SDKFetcher(object):
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
   QEMU_BIN_PATH = 'app-emulation/qemu'
   SEABIOS_BIN_PATH = 'sys-firmware/seabios'
+  TAST_CMD_PATH = 'chromeos-base/tast-cmd'
+  TAST_REMOTE_TESTS_PATH = 'chromeos-base/tast-remote-tests-cros'
 
   CANARIES_PER_DAY = 3
   DAYS_TO_CONSIDER = 14
@@ -94,7 +96,7 @@ class SDKFetcher(object):
 
   def __init__(self, cache_dir, board, clear_cache=False, chrome_src=None,
                sdk_path=None, toolchain_path=None, silent=False,
-               use_external_config=None):
+               use_external_config=None, require_exact_version=False):
     """Initialize the class.
 
     Args:
@@ -111,6 +113,7 @@ class SDKFetcher(object):
       use_external_config: When identifying the configuration for a board,
         force usage of the external configuration if both external and internal
         are available.
+      require_exact_version: Use exact SDK version only.
     """
     site_config = config_lib.GetConfig()
 
@@ -131,6 +134,7 @@ class SDKFetcher(object):
     self.chrome_src = chrome_src
     self.sdk_path = sdk_path
     self.toolchain_path = toolchain_path
+    self.require_exact_version = require_exact_version
     self.silent = silent
 
     # For external configs, there is no need to run 'gsutil config', because
@@ -203,6 +207,48 @@ class SDKFetcher(object):
     logging.debug('Read LKGM version from %s: %s', lkgm_file, version)
     return version
 
+  @classmethod
+  def GetCachePath(cls, key, cache_dir, board):
+    """Gets the path to an item in the cache.
+
+    This should be used when inspecting an SDK that's already been initialized
+    elsewhere.
+
+    Args:
+      key: Key of item in the cache.
+      cache_dir: The toplevel cache dir to search in.
+      board: The board to search for.
+
+    Returns:
+      Path to the item, or None if the item is missing.
+    """
+    # The board is always known in the simple chrome SDK shell.
+    if board is None:
+      return None
+
+    # Get the version by looking at the env var if we're in the SDK shell, and
+    # failing that, look at the misc cache.
+    sdk_version = os.environ.get(cls.SDK_VERSION_ENV)
+    if not sdk_version:
+      misc_cache_path = os.path.join(
+          cache_dir, COMMAND_NAME, cls.MISC_CACHE)
+      misc_cache = cache.DiskCache(misc_cache_path)
+      with misc_cache.Lookup((board, 'latest')) as ref:
+        if ref.Exists(lock=True):
+          sdk_version = osutils.ReadFile(ref.path).strip()
+      if not sdk_version:
+        return None
+
+    # Look up the cache entry in the tarball cache.
+    tarball_cache_path = os.path.join(
+        cache_dir, COMMAND_NAME, cls.TARBALL_CACHE)
+    tarball_cache = cache.TarballCache(tarball_cache_path)
+    cache_key = (board, sdk_version, key)
+    with tarball_cache.Lookup(cache_key) as ref:
+      if ref.Exists():
+        return ref.path
+    return None
+
   @memoize.Memoize
   def _GetSDKVersion(self, version):
     """Get SDK version from metadata.
@@ -248,6 +294,9 @@ class SDKFetcher(object):
       GS path, for e.g. gs://chromeos-prebuilt/board/amd64-host/
       chroot-2018.10.23.171742/packages/app-emulation/qemu-3.0.0.tbz2
     """
+    if not version or not key:
+      # A version and key is needed to locate the package in Google Storage.
+      return None
     package_version = self._GetManifest(version)['packages'][key][0][0]
     return gs.GetGsURL(
         bucket='chromeos-prebuilt',
@@ -372,7 +421,7 @@ class SDKFetcher(object):
     """
     version_file = '%s/LATEST-%s' % (self.gs_base, version)
     full_version = self._GetFullVersionFromStorage(version_file)
-    if full_version is None:
+    if full_version is None and not self.require_exact_version:
       logging.warning('No LATEST file matching SDK version %s', version)
       return self._GetFullVersionFromRecentLatest(version)
     return full_version
@@ -521,6 +570,16 @@ class SDKFetcher(object):
           self.toolchain_path, toolchain_url % {'target': target_tc})
       components.remove(self.TARGET_TOOLCHAIN_KEY)
 
+    # Fetch the Tast binary.
+    tast_cmd_path = self._GetBinPackageGSPath(version, self.TAST_CMD_PATH)
+    tast_remote_tests_path = self._GetBinPackageGSPath(
+        version, self.TAST_REMOTE_TESTS_PATH)
+    if tast_cmd_path and tast_remote_tests_path:
+      fetch_urls[self.TAST_CMD_PATH] = tast_cmd_path
+      fetch_urls[self.TAST_REMOTE_TESTS_PATH] = tast_remote_tests_path
+    else:
+      logging.warning('Failed to find Tast binaries to download.')
+
     # Also fetch QEMU binary if VM_IMAGE_TAR is specified.
     if constants.VM_IMAGE_TAR in components:
       qemu_bin_path = self._GetBinPackageGSPath(version, self.QEMU_BIN_PATH)
@@ -599,6 +658,7 @@ class ChromeSDKCommand(command.CliCommand):
       'LD',
       'NM',
       'RANLIB',
+      'READELF',
 
       # Compiler flags.
       'CFLAGS',
@@ -700,14 +760,18 @@ class ChromeSDKCommand(command.CliCommand):
         help='Use the goma installation at the specified PATH.')
     parser.add_argument(
         '--version', default=None, type=cls.ValidateVersion,
-        help="Specify the SDK version to use. This can be a platform version "
-             "ending in .0.0, e.g. 1234.0.0, in which case the full version "
-             "will be extracted from the corresponding LATEST file for the "
-             "specified board. If no LATEST file exists, an older version "
-             "will be used if available. Alternatively, a full version may be "
-             "specified, e.g. R56-1234.0.0, in which case that exact version "
-             "will be used. Defaults to using the version specified in the "
-             "CHROMEOS_LKGM file in the chromium checkout.")
+        help='Specify the SDK version to use. This can be a platform version '
+             'ending in .0.0, e.g. 1234.0.0, in which case the full version '
+             'will be extracted from the corresponding LATEST file for the '
+             'specified board. If no LATEST file exists, an older version '
+             'will be used if available. Alternatively, a full version may be '
+             'specified, e.g. R56-1234.0.0, in which case that exact version '
+             'will be used. Defaults to using the version specified in the '
+             'CHROMEOS_LKGM file in the chromium checkout.')
+    parser.add_argument(
+        '--require-exact-version', default=False, action='store_true',
+        help='Use the exact SDK version; do not attempt to use previous '
+             'versions.')
     parser.add_argument(
         'cmd', nargs='*', default=None,
         help='The command to execute in the SDK environment.  Defaults to '
@@ -799,27 +863,6 @@ class ChromeSDKCommand(command.CliCommand):
     gold_path = os.path.join(toolchain_path, gold_path.lstrip('/'))
     return '%s -B%s' % (cmd, gold_path)
 
-  def _StripGnArgs(self, gn_args_dict):
-    """Strip GN args set by developers and not by the chrome ebuild.
-
-    Accepts a dictionary of GN args and strips out args that should be ignored
-    when comparing two sets of GN args for the purpose of identifying GN args
-    that are generated by the chromeos-chrome ebuild and may have changed.
-
-    Returns a new dictionary including only the GN args to compare.
-    """
-    args_to_ignore = (
-        'dcheck_always_on',
-        'ffmpeg_branding',
-        'is_component_build',
-        'is_debug',
-        'optimize_webui',
-        'proprietary_codecs',
-        'symbol_level',
-    )
-    return dict((k, v) for k, v in gn_args_dict.items()
-                if k not in args_to_ignore)
-
   def _UpdateGnArgsIfStale(self, out_dir, build_label, gn_args, board):
     """Runs 'gn gen' if gn args are stale or logs a warning."""
     gn_args_file_path = os.path.join(
@@ -840,15 +883,13 @@ class ChromeSDKCommand(command.CliCommand):
         print_cmd=logging.getLogger().isEnabledFor(logging.DEBUG),
         cwd=self.options.chrome_src)
 
-  def _StaleGnArgs(self, gn_args, gn_args_file_path):
+  def _StaleGnArgs(self, new_gn_args, gn_args_file_path):
     """Returns True if args.gn needs to be updated."""
     if not os.path.exists(gn_args_file_path):
       logging.warning('No args.gn file: %s', gn_args_file_path)
       return True
 
-    new_gn_args = self._StripGnArgs(gn_args)
-    old_gn_args = self._StripGnArgs(
-        gn_helpers.FromGNArgs(osutils.ReadFile(gn_args_file_path)))
+    old_gn_args = gn_helpers.FromGNArgs(osutils.ReadFile(gn_args_file_path))
     if new_gn_args == old_gn_args:
       return False
 
@@ -899,10 +940,10 @@ class ChromeSDKCommand(command.CliCommand):
       env['CXXFLAGS'] = ' '.join(env['CXXFLAGS'].split() + clang_append_flags)
       env['LD'] = env['CXX']
 
-    # Use cros nm for the target builds. TODO: Delete it after Sept 2018 since
-    # NM env variable should already be set, https://crbug.com/862831.
-    if 'NM' not in env:
-      env['NM'] = sdk_ctx.target_tc + '-nm'
+    # Use cros readelf for the target builds. TODO: Delete it after Jan 2019
+    # since READELF env variable should already be set,
+    # https://crbug.com/917193.
+    env.setdefault('READELF', sdk_ctx.target_tc + '-readelf')
 
     # For host compiler, we use the compiler that comes with Chrome
     # instead of the target compiler.
@@ -913,6 +954,7 @@ class ChromeSDKCommand(command.CliCommand):
     binutils_path = os.path.join(options.chrome_src, self._HOST_BINUTILS_DIR)
     env['AR_host'] = os.path.join(binutils_path, 'ar')
     env['NM_host'] = os.path.join(binutils_path, 'nm')
+    env['READELF_host'] = os.path.join(binutils_path, 'readelf')
 
   def _ModifyPathForGomaBuild(self, compiler, tc_path=None):
     """Modify toolchain path for goma build.
@@ -1012,10 +1054,25 @@ class ChromeSDKCommand(command.CliCommand):
     if options.internal:
       gn_args['is_chrome_branded'] = True
       gn_args['is_official_build'] = True
+
+      # TODO(https://crbug.com/917504): We'd like to use lld for all
+      # configurations. However, it appears that there's a bug in how it emits
+      # unwinding info on ARM, and we emit unwind info on builds that aren't
+      # both official and branded. Until that bug is fixed, our use of lld has
+      # to be restricted to builds where we don't emit unwinding info.
+      gn_args['use_lld'] = True
     else:
       gn_args.pop('is_chrome_branded', None)
       gn_args.pop('is_official_build', None)
       gn_args.pop('internal_gles2_conform_tests', None)
+      gn_args.pop('use_lld', None)
+      # TODO(https://crbug.com/924155): Hack to keep Chromite rolling. Remove
+      # it when either we're back on lld (see the TODO above), or when we get a
+      # new-enough `environment` file.
+      ld_flags = gn_args.get('cros_target_extra_ldflags')
+      if ld_flags:
+        ld_flags = ld_flags.replace('-Wl,-z,keep-text-section-prefix', '')
+        gn_args['cros_target_extra_ldflags'] = ld_flags
 
     # For SimpleChrome, we use the binutils that comes bundled within Chrome.
     # We should not use the binutils from the host system.
@@ -1035,6 +1092,7 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['cros_target_cxx'] = modified_env_cxx.split()[0]
     gn_args['cros_target_ld'] = env['LD']
     gn_args['cros_target_nm'] = env['NM']
+    gn_args['cros_target_readelf'] = env['READELF']
     gn_args['cros_target_extra_cflags'] = ' '.join(
         [env.get('CFLAGS', '')] + modified_env_cc.split()[1:])
     gn_args['cros_target_extra_cxxflags'] = ' '.join(
@@ -1044,6 +1102,7 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['cros_host_ld'] = env['LD_host']
     gn_args['cros_host_nm'] = env['NM_host']
     gn_args['cros_host_ar'] = env['AR_host']
+    gn_args['cros_host_readelf'] = env['READELF_host']
     gn_args['cros_v8_snapshot_cc'] = self._ModifyPathForGomaBuild(
         env['CC_host'])
     gn_args['cros_v8_snapshot_cxx'] = self._ModifyPathForGomaBuild(
@@ -1051,6 +1110,7 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['cros_v8_snapshot_ld'] = env['LD_host']
     gn_args['cros_v8_snapshot_nm'] = env['NM_host']
     gn_args['cros_v8_snapshot_ar'] = env['AR_host']
+    gn_args['cros_v8_snapshot_readelf'] = env['READELF_host']
     # No need to adjust CFLAGS and CXXFLAGS for GN since the only
     # adjustment made in _SetupTCEnvironment is for split debug which
     # is done with 'use_debug_fission'.
@@ -1100,6 +1160,15 @@ class ChromeSDKCommand(command.CliCommand):
     # change the ebuild file.
     gn_args['remove_webcore_debug_symbols'] = False
     gn_args['blink_symbol_level'] = -1
+
+    # Remove symbol_level specified in the ebuild to use the default.
+    # Currently that is 1 when is_debug=false, instead of 2 specified by the
+    # ebuild. This results in faster builds in Simple Chrome.
+    if 'symbol_level' in gn_args:
+      symbol_level = gn_args.pop('symbol_level')
+      logging.info('Removing symbol_level = %d from gn args, use '
+                   '--gn-extra-args to specify a non default value.',
+                   symbol_level)
 
     if options.gn_extra_args:
       gn_args.update(gn_helpers.FromGNArgs(options.gn_extra_args))
@@ -1290,13 +1359,16 @@ class ChromeSDKCommand(command.CliCommand):
     self.silent = bool(self.options.cmd)
     # Lazy initialize because SDKFetcher creates a GSContext() object in its
     # constructor, which may block on user input.
-    self.sdk = SDKFetcher(self.options.cache_dir, self.options.board,
-                          clear_cache=self.options.clear_sdk_cache,
-                          chrome_src=self.options.chrome_src,
-                          sdk_path=self.options.sdk_path,
-                          toolchain_path=self.options.toolchain_path,
-                          silent=self.silent,
-                          use_external_config=self.options.use_external_config)
+    self.sdk = SDKFetcher(
+        self.options.cache_dir, self.options.board,
+        clear_cache=self.options.clear_sdk_cache,
+        chrome_src=self.options.chrome_src,
+        sdk_path=self.options.sdk_path,
+        toolchain_path=self.options.toolchain_path,
+        silent=self.silent,
+        use_external_config=self.options.use_external_config,
+        require_exact_version=self.options.require_exact_version
+    )
 
     prepare_version = self.options.version
     if not prepare_version and not self.options.sdk_path:

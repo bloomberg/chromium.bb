@@ -96,7 +96,7 @@ source_set("ipc_common_sources") {
       "gpu_memory_buffer_impl_dxgi.h",
     ]
   }
-  if (is_linux) {
+  if (is_linux || use_ozone) {
     sources += [
       "gpu_memory_buffer_impl_native_pixmap.cc",
       "gpu_memory_buffer_impl_native_pixmap.h",
@@ -139,8 +139,6 @@ source_set("ipc_common_sources") {
 
   if (is_android) {
     sources += [
-      "android/android_image_reader_utils.cc",
-      "android/android_image_reader_utils.h",
       "android/scoped_surface_request_conduit.cc",
       "android/scoped_surface_request_conduit.h",
       "android/surface_owner_android.cc",
@@ -151,10 +149,29 @@ source_set("ipc_common_sources") {
       "gpu_surface_tracker.h",
     ]
     libs = [ "android" ]
+    deps += [ ":android_image_reader_utils" ]
   }
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
+  }
+}
+
+if (is_android) {
+  source_set("android_image_reader_utils") {
+    sources = [
+      "android/android_image_reader_utils.cc",
+      "android/android_image_reader_utils.h",
+    ]
+    configs += [ "//gpu:gpu_implementation" ]
+    deps = [
+      "//base",
+      "//ui/gl",
+    ]
+    visibility = [
+      "//gpu/*",
+      "//media/gpu:gpu",
+    ]
   }
 }
 

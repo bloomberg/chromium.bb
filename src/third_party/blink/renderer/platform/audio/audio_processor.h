@@ -68,7 +68,7 @@ class PLATFORM_EXPORT AudioProcessor {
   // Forces all AudioParams in the processor to run the timeline,
   // bypassing any other processing the processor would do in
   // process().
-  virtual void ProcessOnlyAudioParams(uint32_t frames_to_process){};
+  virtual void ProcessOnlyAudioParams(uint32_t frames_to_process) {}
 
   // Resets filter state
   virtual void Reset() = 0;

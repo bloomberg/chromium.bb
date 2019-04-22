@@ -9,7 +9,6 @@
 #ifndef LIBANGLE_RENDERER_D3D9_STATEMANAGER9_H_
 #define LIBANGLE_RENDERER_D3D9_STATEMANAGER9_H_
 
-#include "libANGLE/ContextState.h"
 #include "libANGLE/State.h"
 #include "libANGLE/angletypes.h"
 #include "libANGLE/renderer/d3d/RendererD3D.h"
@@ -69,6 +68,7 @@ class StateManager9 final : angle::NonCopyable
     int getRenderTargetWidth() const { return mRenderTargetBounds.width; }
     int getRenderTargetHeight() const { return mRenderTargetBounds.height; }
 
+    void setAllDirtyBits() { mDirtyBits.set(); }
     void resetDirtyBits() { mDirtyBits.reset(); }
 
   private:

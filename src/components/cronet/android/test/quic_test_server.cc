@@ -17,7 +17,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/quic/crypto/proof_source_chromium.h"
 #include "net/test/test_data_directory.h"
-#include "net/third_party/quic/tools/quic_memory_cache_backend.h"
+#include "net/third_party/quiche/src/quic/tools/quic_memory_cache_backend.h"
 #include "net/tools/quic/quic_simple_server.h"
 
 using base::android::JavaParamRef;
@@ -79,7 +79,6 @@ void ShutdownOnServerThread() {
 // the device.
 void JNI_QuicTestServer_StartQuicTestServer(
     JNIEnv* env,
-    const JavaParamRef<jclass>& /*jcaller*/,
     const JavaParamRef<jstring>& jtest_files_root,
     const JavaParamRef<jstring>& jtest_data_dir) {
   DCHECK(!g_quic_server_thread);
@@ -96,20 +95,17 @@ void JNI_QuicTestServer_StartQuicTestServer(
       base::android::ConvertJavaStringToUTF8(env, jtest_files_root));
   g_quic_server_thread->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&StartOnServerThread, test_files_root, test_data_dir));
+      base::BindOnce(&StartOnServerThread, test_files_root, test_data_dir));
 }
 
-void JNI_QuicTestServer_ShutdownQuicTestServer(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& /*jcaller*/) {
+void JNI_QuicTestServer_ShutdownQuicTestServer(JNIEnv* env) {
   DCHECK(!g_quic_server_thread->task_runner()->BelongsToCurrentThread());
   g_quic_server_thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ShutdownOnServerThread));
+      FROM_HERE, base::BindOnce(&ShutdownOnServerThread));
   delete g_quic_server_thread;
 }
 
-int JNI_QuicTestServer_GetServerPort(JNIEnv* env,
-                                     const JavaParamRef<jclass>& /*jcaller*/) {
+int JNI_QuicTestServer_GetServerPort(JNIEnv* env) {
   return kServerPort;
 }
 

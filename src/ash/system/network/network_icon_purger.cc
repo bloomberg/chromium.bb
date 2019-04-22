@@ -9,26 +9,41 @@
 #include "chromeos/network/network_state_handler.h"
 
 using chromeos::NetworkHandler;
-
-namespace {
-const int kPurgeDelayMs = 300;
-}  // namespace
+using chromeos::NetworkStateHandler;
 
 namespace ash {
+
+namespace {
+
+const int kPurgeDelayMs = 300;
+
+void PurgeNetworkIconCache() {
+  NetworkStateHandler::NetworkStateList networks;
+  NetworkHandler::Get()->network_state_handler()->GetVisibleNetworkList(
+      &networks);
+  std::set<std::string> network_guids;
+  for (NetworkStateHandler::NetworkStateList::iterator iter = networks.begin();
+       iter != networks.end(); ++iter) {
+    network_guids.insert((*iter)->guid());
+  }
+  network_icon::PurgeNetworkIconCache(network_guids);
+}
+
+}  // namespace
 
 NetworkIconPurger::NetworkIconPurger() {
   // NetworkHandler may not be initialized in tests.
   if (NetworkHandler::IsInitialized()) {
-    auto* network_handler = NetworkHandler::Get();
-    network_handler->network_state_handler()->AddObserver(this, FROM_HERE);
+    NetworkHandler::Get()->network_state_handler()->AddObserver(this,
+                                                                FROM_HERE);
   }
 }
 
 NetworkIconPurger::~NetworkIconPurger() {
   // NetworkHandler may not be initialized in tests.
   if (NetworkHandler::IsInitialized()) {
-    auto* network_handler = NetworkHandler::Get();
-    network_handler->network_state_handler()->RemoveObserver(this, FROM_HERE);
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                   FROM_HERE);
   }
 }
 
@@ -36,7 +51,7 @@ void NetworkIconPurger::NetworkListChanged() {
   if (timer_.IsRunning())
     return;
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kPurgeDelayMs),
-               base::BindOnce(&network_icon::PurgeNetworkIconCache));
+               base::BindOnce(&PurgeNetworkIconCache));
 }
 
 }  // namespace ash

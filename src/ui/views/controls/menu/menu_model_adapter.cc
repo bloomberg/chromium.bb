@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/menu/menu_model_adapter.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/image/image.h"
@@ -13,29 +15,32 @@
 namespace views {
 
 MenuModelAdapter::MenuModelAdapter(ui::MenuModel* menu_model)
-    : MenuModelAdapter(menu_model, base::Closure() /*null callback*/) {}
+    : MenuModelAdapter(menu_model, base::RepeatingClosure() /*null callback*/) {
+}
 
-MenuModelAdapter::MenuModelAdapter(ui::MenuModel* menu_model,
-                                   const base::Closure& on_menu_closed_callback)
+MenuModelAdapter::MenuModelAdapter(
+    ui::MenuModel* menu_model,
+    base::RepeatingClosure on_menu_closed_callback)
     : menu_model_(menu_model),
       triggerable_event_flags_(ui::EF_LEFT_MOUSE_BUTTON |
                                ui::EF_RIGHT_MOUSE_BUTTON),
-      on_menu_closed_callback_(on_menu_closed_callback) {
+      on_menu_closed_callback_(std::move(on_menu_closed_callback)) {
   DCHECK(menu_model);
+  menu_model_->SetMenuModelDelegate(nullptr);
+  menu_model_->SetMenuModelDelegate(this);
 }
 
 MenuModelAdapter::~MenuModelAdapter() {
+  if (menu_model_)
+    menu_model_->SetMenuModelDelegate(nullptr);
 }
 
 void MenuModelAdapter::BuildMenu(MenuItemView* menu) {
   DCHECK(menu);
 
   // Clear the menu.
-  if (menu->HasSubmenu()) {
-    const int subitem_count = menu->GetSubmenu()->child_count();
-    for (int i = 0; i < subitem_count; ++i)
-      menu->RemoveMenuItemAt(0);
-  }
+  if (menu->HasSubmenu())
+    menu->RemoveAllMenuItems();
 
   // Leave entries in the map if the menu is being shown.  This
   // allows the map to find the menu model of submenus being closed
@@ -50,9 +55,9 @@ void MenuModelAdapter::BuildMenu(MenuItemView* menu) {
 }
 
 MenuItemView* MenuModelAdapter::CreateMenu() {
-  MenuItemView* item = new MenuItemView(this);
-  BuildMenu(item);
-  return item;
+  menu_ = new MenuItemView(this);
+  BuildMenu(menu_);
+  return menu_;
 }
 
 // Static.
@@ -110,8 +115,8 @@ MenuItemView* MenuModelAdapter::AppendMenuItemFromModel(ui::MenuModel* model,
                                                         int model_index,
                                                         MenuItemView* menu,
                                                         int item_id) {
-  const int menu_index = menu->HasSubmenu() ?
-      menu->GetSubmenu()->child_count() : 0;
+  const int menu_index =
+      menu->HasSubmenu() ? int{menu->GetSubmenu()->children().size()} : 0;
   return AddMenuItemFromModelAt(model, model_index, menu, menu_index, item_id);
 }
 
@@ -220,22 +225,6 @@ bool MenuModelAdapter::IsItemChecked(int id) const {
   return false;
 }
 
-void MenuModelAdapter::SelectionChanged(MenuItemView* menu) {
-  // Ignore selection of the root menu.
-  if (menu == menu->GetRootMenuItem())
-    return;
-
-  const int id = menu->GetCommand();
-  ui::MenuModel* model = menu_model_;
-  int index = 0;
-  if (ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index)) {
-    model->HighlightChangedTo(index);
-    return;
-  }
-
-  NOTREACHED();
-}
-
 void MenuModelAdapter::WillShowMenu(MenuItemView* menu) {
   // Look up the menu model for this menu.
   const std::map<MenuItemView*, ui::MenuModel*>::const_iterator map_iterator =
@@ -263,6 +252,16 @@ void MenuModelAdapter::WillHideMenu(MenuItemView* menu) {
 void MenuModelAdapter::OnMenuClosed(MenuItemView* menu) {
   if (!on_menu_closed_callback_.is_null())
     on_menu_closed_callback_.Run();
+}
+
+// MenuModelDelegate overrides:
+void MenuModelAdapter::OnMenuStructureChanged() {
+  if (menu_)
+    BuildMenu(menu_);
+}
+
+void MenuModelAdapter::OnMenuClearingDelegate() {
+  menu_model_ = nullptr;
 }
 
 // MenuModelAdapter, private:

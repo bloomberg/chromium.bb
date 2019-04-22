@@ -5,6 +5,7 @@
 #include "ui/views/window/dialog_client_view.h"
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -32,7 +33,7 @@ namespace views {
 class DialogClientViewTest : public test::WidgetTest,
                              public DialogDelegateView {
  public:
-  DialogClientViewTest() {}
+  DialogClientViewTest() = default;
 
   // testing::Test:
   void SetUp() override {
@@ -123,7 +124,7 @@ class DialogClientViewTest : public test::WidgetTest,
   // Sets the extra view padding.
   void SetExtraViewPadding(int padding) {
     DCHECK(!extra_view_padding_);
-    extra_view_padding_.reset(new int(padding));
+    extra_view_padding_ = std::make_unique<int>(padding);
     DialogModelChanged();
   }
 
@@ -183,8 +184,8 @@ class DialogClientViewTest : public test::WidgetTest,
 TEST_F(DialogClientViewTest, UpdateButtons) {
   // This dialog should start with no buttons.
   EXPECT_EQ(GetDialogButtons(), ui::DIALOG_BUTTON_NONE);
-  EXPECT_EQ(NULL, client_view()->ok_button());
-  EXPECT_EQ(NULL, client_view()->cancel_button());
+  EXPECT_EQ(nullptr, client_view()->ok_button());
+  EXPECT_EQ(nullptr, client_view()->cancel_button());
   const int height_without_buttons = GetUpdatedClientBounds().height();
 
   // Update to use both buttons.
@@ -196,19 +197,19 @@ TEST_F(DialogClientViewTest, UpdateButtons) {
 
   // Remove the dialog buttons.
   SetDialogButtons(ui::DIALOG_BUTTON_NONE);
-  EXPECT_EQ(NULL, client_view()->ok_button());
-  EXPECT_EQ(NULL, client_view()->cancel_button());
+  EXPECT_EQ(nullptr, client_view()->ok_button());
+  EXPECT_EQ(nullptr, client_view()->cancel_button());
   EXPECT_EQ(GetUpdatedClientBounds().height(), height_without_buttons);
 
   // Reset with just an ok button.
   SetDialogButtons(ui::DIALOG_BUTTON_OK);
   EXPECT_TRUE(client_view()->ok_button()->is_default());
-  EXPECT_EQ(NULL, client_view()->cancel_button());
+  EXPECT_EQ(nullptr, client_view()->cancel_button());
   EXPECT_EQ(GetUpdatedClientBounds().height(), height_with_buttons);
 
   // Reset with just a cancel button.
   SetDialogButtons(ui::DIALOG_BUTTON_CANCEL);
-  EXPECT_EQ(NULL, client_view()->ok_button());
+  EXPECT_EQ(nullptr, client_view()->ok_button());
   EXPECT_EQ(client_view()->cancel_button()->is_default(),
             PlatformStyle::kDialogDefaultButtonCanBeCancel);
   EXPECT_EQ(GetUpdatedClientBounds().height(), height_with_buttons);
@@ -218,9 +219,9 @@ TEST_F(DialogClientViewTest, RemoveAndUpdateButtons) {
   // Removing buttons from another context should clear the local pointer.
   SetDialogButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
   delete client_view()->ok_button();
-  EXPECT_EQ(NULL, client_view()->ok_button());
+  EXPECT_EQ(nullptr, client_view()->ok_button());
   delete client_view()->cancel_button();
-  EXPECT_EQ(NULL, client_view()->cancel_button());
+  EXPECT_EQ(nullptr, client_view()->cancel_button());
 
   // Updating should restore the requested buttons properly.
   SetDialogButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);

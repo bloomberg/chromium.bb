@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -27,15 +26,17 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
-import org.chromium.components.download.internal.NetworkStatusListenerAndroid;
+import org.chromium.components.download.NetworkStatusListenerAndroid;
 import org.chromium.components.gcm_driver.instance_id.FakeInstanceIDWithSubtype;
 import org.chromium.components.offline_pages.core.prefetch.proto.StatusOuterClass;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
 import org.chromium.net.test.util.WebServer;
@@ -49,13 +50,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Instrumentation tests for Prefetch.
+ * Instrumentation tests for Prefetch, using the Zine as the suggestion provider.
+ * Note: this test will eventually be removed along with Zine, and is replaced by
+ * PrefetchFeedFlowTest.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PrefetchFlowTest implements WebServer.RequestHandler {
     private static final String TAG = "PrefetchFlowTest";
+    private static final String GCM_TOKEN = "dummy_gcm_token";
     private TestOfflinePageService mOPS = new TestOfflinePageService();
     private TestSuggestionsService mSuggestionsService = new TestSuggestionsService();
     private WebServer mServer;
@@ -117,7 +121,7 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
         mActivityTestRule.startMainActivityOnBlankPage();
 
         // Register Offline Page observer and enable limitless prefetching.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mProfile = mActivityTestRule.getActivity().getActivityTab().getProfile();
             OfflinePageBridge.getForProfile(mProfile).addObserver(
                     new OfflinePageBridge.OfflinePageModelObserver() {
@@ -130,6 +134,7 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
             PrefetchTestBridge.enableLimitlessPrefetching(true);
             PrefetchTestBridge.skipNTPSuggestionsAPIKeyCheck();
         });
+        OfflineTestUtil.setPrefetchingEnabledByServer(true);
     }
 
     @After
@@ -158,9 +163,11 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
     private void runAndWaitForBackgroundTask() throws Throwable {
         CallbackHelper finished = new CallbackHelper();
         PrefetchBackgroundTask task = new PrefetchBackgroundTask();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             TaskParameters.Builder builder =
-                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
+                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
+                            .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(
+                                    GCM_TOKEN));
             PrefetchBackgroundTask.skipConditionCheckingForTesting();
             task.onStartTask(ContextUtils.getApplicationContext(), builder.build(),
                     (boolean needsReschedule) -> { finished.notifyCalled(); });
@@ -197,7 +204,7 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
     /** Trigger conditions required to load NTP snippets. */
     private void forceLoadSnippets() throws Throwable {
         // NTP suggestions require a connection and an accepted EULA.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             NetworkChangeNotifier.forceConnectivityState(true);
             PrefServiceBridge.getInstance().setEulaAccepted();
         });

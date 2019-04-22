@@ -51,7 +51,7 @@ WideString MakeLetters(int num) {
 
 WideString GetLabelNumPortion(int num, const ByteString& bsStyle) {
   if (bsStyle.IsEmpty())
-    return L"";
+    return WideString();
   if (bsStyle == "D")
     return WideString::Format(L"%d", num);
   if (bsStyle == "R") {
@@ -68,7 +68,7 @@ WideString GetLabelNumPortion(int num, const ByteString& bsStyle) {
   }
   if (bsStyle == "a")
     return MakeLetters(num);
-  return L"";
+  return WideString();
 }
 
 }  // namespace
@@ -110,7 +110,7 @@ Optional<WideString> CPDF_PageLabel::GetLabel(int nPage) const {
       if (pLabel->KeyExist("P"))
         label += pLabel->GetUnicodeTextFor("P");
 
-      ByteString bsNumberingStyle = pLabel->GetStringFor("S", "");
+      ByteString bsNumberingStyle = pLabel->GetStringFor("S", ByteString());
       int nLabelNum = nPage - n + pLabel->GetIntegerFor("St", 1);
       WideString wsNumPortion = GetLabelNumPortion(nLabelNum, bsNumberingStyle);
       label += wsNumPortion;

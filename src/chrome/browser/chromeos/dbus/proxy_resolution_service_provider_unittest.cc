@@ -6,133 +6,71 @@
 
 #include <memory>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/logging.h"
-#include "base/macros.h"
-#include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/test/thread_test_helper.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
 #include "chromeos/dbus/services/service_provider_test_helper.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "net/base/net_errors.h"
-#include "net/proxy_resolution/mock_proxy_resolver.h"
-#include "net/proxy_resolution/proxy_config_service_fixed.h"
 #include "net/proxy_resolution/proxy_info.h"
-#include "net/proxy_resolution/proxy_resolver.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/test/test_network_context.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
 namespace {
 
-// Runs pending, non-delayed tasks on |task_runner|. Note that delayed tasks or
-// additional tasks posted by pending tests will not be run.
-void RunPendingTasks(scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  scoped_refptr<base::ThreadTestHelper> helper =
-      new base::ThreadTestHelper(task_runner);
-  ASSERT_TRUE(helper->Run());
-}
-
-// Trivial net::ProxyResolver implementation that returns canned data either
-// synchronously or asynchronously.
-class TestProxyResolver : public net::ProxyResolver {
- public:
-  explicit TestProxyResolver(
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
-      : network_task_runner_(network_task_runner) {
-    proxy_info_.UseDirect();
-  }
-  ~TestProxyResolver() override = default;
-
-  const net::ProxyInfo& proxy_info() const { return proxy_info_; }
-  net::ProxyInfo* mutable_proxy_info() { return &proxy_info_; }
-
-  void set_async(bool async) { async_ = async; }
-  void set_result(net::Error result) { result_ = result; }
-
-  // net::ProxyResolver:
-  int GetProxyForURL(const GURL& url,
-                     net::ProxyInfo* results,
-                     net::CompletionOnceCallback callback,
-                     std::unique_ptr<Request>* request,
-                     const net::NetLogWithSource& net_log) override {
-    CHECK(network_task_runner_->BelongsToCurrentThread());
-    results->Use(proxy_info_);
-    if (!async_)
-      return result_;
-
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), result_));
-    return net::ERR_IO_PENDING;
-  }
-
- private:
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-
-  // Proxy info for GetProxyForURL() to return.
-  net::ProxyInfo proxy_info_;
-
-  // If true, GetProxyForURL() replies asynchronously rather than synchronously.
-  bool async_ = false;
-
-  // Final result for GetProxyForURL() to return.
-  net::Error result_ = net::OK;
-
-  DISALLOW_COPY_AND_ASSIGN(TestProxyResolver);
+// The parsed result from ProxyResolutionServiceProvider's D-Bus result (error
+// is a string).
+struct ResolveProxyResult {
+  std::string error;
+  std::string proxy_info;
 };
 
-// Trivial net::ProxyResolverFactory implementation that synchronously creates
-// net::ForwardingProxyResolvers that forward to a single passed-in resolver.
-class TestProxyResolverFactory : public net::ProxyResolverFactory {
- public:
-  // Ownership of |resolver| remains with the caller. |resolver| must outlive
-  // the forwarding resolvers returned by CreateProxyResolver().
-  explicit TestProxyResolverFactory(net::ProxyResolver* resolver)
-      : net::ProxyResolverFactory(false /* expects_pac_bytes */),
-        resolver_(resolver) {}
-  ~TestProxyResolverFactory() override = default;
+// A mock result to configure what the NetworkContext should return (error is an
+// integer).
+struct LookupProxyForURLMockResult {
+  net::Error error = net::ERR_UNEXPECTED;
+  std::string proxy_info_pac_string;
+};
 
-  // net::ProxyResolverFactory:
-  int CreateProxyResolver(const scoped_refptr<net::PacFileData>& pac_script,
-                          std::unique_ptr<net::ProxyResolver>* resolver,
-                          net::CompletionOnceCallback callback,
-                          std::unique_ptr<Request>* request) override {
-    *resolver = std::make_unique<net::ForwardingProxyResolver>(resolver_);
-    return net::OK;
+// Mock NetworkContext that allows controlling the result of
+// LookUpProxyForURL().
+class MockNetworkContext : public network::TestNetworkContext {
+ public:
+  MockNetworkContext() {}
+  ~MockNetworkContext() override {}
+
+  // network::mojom::NetworkContext implementation:
+  void LookUpProxyForURL(
+      const GURL& url,
+      ::network::mojom::ProxyLookupClientPtr proxy_lookup_client) override {
+    if (lookup_proxy_result_.error == net::OK) {
+      net::ProxyInfo proxy_info;
+      proxy_info.UsePacString(lookup_proxy_result_.proxy_info_pac_string);
+      proxy_lookup_client->OnProxyLookupComplete(net::OK, proxy_info);
+    } else {
+      proxy_lookup_client->OnProxyLookupComplete(lookup_proxy_result_.error,
+                                                 base::nullopt);
+    }
+  }
+
+  void SetNextProxyResult(LookupProxyForURLMockResult mock_result) {
+    lookup_proxy_result_ = mock_result;
   }
 
  private:
-  net::ProxyResolver* resolver_;  // Not owned.
+  LookupProxyForURLMockResult lookup_proxy_result_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestProxyResolverFactory);
+  DISALLOW_COPY_AND_ASSIGN(MockNetworkContext);
 };
 
 }  // namespace
 
 class ProxyResolutionServiceProviderTest : public testing::Test {
  public:
-  ProxyResolutionServiceProviderTest() : network_thread_("NetworkThread") {
-    CHECK(network_thread_.Start());
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        network_thread_.task_runner();
-
-    task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ProxyResolutionServiceProviderTest ::
-                           CreateProxyResolutionServiceOnNetworkThread,
-                       base::Unretained(this)));
-    RunPendingTasks(task_runner);
-
+  ProxyResolutionServiceProviderTest() {
     service_provider_ = std::make_unique<ProxyResolutionServiceProvider>();
-    service_provider_->set_request_context_getter_for_test(context_getter_);
+    service_provider_->set_network_context_for_test(&mock_network_context_);
 
     test_helper_.SetUp(
         kNetworkProxyServiceName, dbus::ObjectPath(kNetworkProxyServicePath),
@@ -142,125 +80,87 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
 
   ~ProxyResolutionServiceProviderTest() override {
     test_helper_.TearDown();
-
-    // URLRequestContextGetter posts a task to delete itself to its task runner,
-    // so give it a chance to do that.
-    service_provider_.reset();
-    network_thread_.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&ProxyResolutionServiceProviderTest::
-                                      DeleteProxyServiceOnNetworkThread,
-                                  base::Unretained(this)));
-    RunPendingTasks(network_thread_.task_runner());
-
-    network_thread_.Stop();
   }
 
  protected:
-  // Helper method for the constructor that initializes
-  // |proxy_resolution_service_| and injects it into |context_getter_|'s
-  // context. Also initializes |context_getter_| and |proxy_resolver_|.
-  void CreateProxyResolutionServiceOnNetworkThread() {
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        network_thread_.task_runner();
-    CHECK(task_runner->BelongsToCurrentThread());
-
-    context_getter_ = new net::TestURLRequestContextGetter(task_runner);
-    proxy_resolver_ = std::make_unique<TestProxyResolver>(task_runner);
-
-    // Setting a mandatory PAC URL makes |proxy_resolution_service_| query
-    // |proxy_resolver_| and also lets us generate
-    // net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED errors.
-    net::ProxyConfig config;
-    config.set_pac_url(GURL("http://www.example.com"));
-    config.set_pac_mandatory(true);
-    proxy_resolution_service_ = std::make_unique<net::ProxyResolutionService>(
-        std::make_unique<net::ProxyConfigServiceFixed>(
-            net::ProxyConfigWithAnnotation(config,
-                                           TRAFFIC_ANNOTATION_FOR_TESTS)),
-        std::make_unique<TestProxyResolverFactory>(proxy_resolver_.get()),
-        nullptr /* net_log */);
-    context_getter_->GetURLRequestContext()->set_proxy_resolution_service(
-        proxy_resolution_service_.get());
-  }
-
-  // Helper method for the destructor that resets |proxy_resolution_service_|.
-  void DeleteProxyServiceOnNetworkThread() {
-    CHECK(network_thread_.task_runner()->BelongsToCurrentThread());
-    proxy_resolution_service_.reset();
-    context_getter_ = nullptr;
-  }
-
-  // Makes a D-Bus call to |service_provider_|'s ResolveProxy method and returns
-  // the response.
-  std::unique_ptr<dbus::Response> CallMethod(const std::string& source_url) {
+  // Makes a D-Bus call to |service_provider_|'s ResolveProxy method and sets
+  // the parsed response in |result|.
+  void CallMethod(const std::string& source_url, ResolveProxyResult* result) {
     dbus::MethodCall method_call(kNetworkProxyServiceInterface,
                                  kNetworkProxyServiceResolveProxyMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(source_url);
-    return test_helper_.CallMethod(&method_call);
+
+    std::unique_ptr<dbus::Response> response =
+        test_helper_.CallMethod(&method_call);
+
+    // Parse the |dbus::Response|.
+    ASSERT_TRUE(response);
+    dbus::MessageReader reader(response.get());
+    std::string proxy_info, error;
+    EXPECT_TRUE(reader.PopString(&result->proxy_info));
+    EXPECT_TRUE(reader.PopString(&result->error));
   }
 
-  // Thread used to perform network operations.
-  base::Thread network_thread_;
+  MockNetworkContext mock_network_context_;
 
-  std::unique_ptr<TestProxyResolver> proxy_resolver_;
-
-  // Created, used, and destroyed on the network thread (since
-  // net::ProxyResolutionService is thread-affine (uses ThreadChecker)).
-  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
-
-  scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
   std::unique_ptr<ProxyResolutionServiceProvider> service_provider_;
   ServiceProviderTestHelper test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolutionServiceProviderTest);
 };
 
-TEST_F(ProxyResolutionServiceProviderTest, Sync) {
-  const char kSourceURL[] = "http://www.gmail.com/";
-  std::unique_ptr<dbus::Response> response = CallMethod(kSourceURL);
+// Tests the normal success case. The proxy resolver returns a single proxy.
+TEST_F(ProxyResolutionServiceProviderTest, Success) {
+  mock_network_context_.SetNextProxyResult({net::OK, "PROXY localhost:8080"});
+
+  ResolveProxyResult result;
+  CallMethod("http://www.gmail.com/", &result);
 
   // The response should contain the proxy info and an empty error.
-  ASSERT_TRUE(response);
-  dbus::MessageReader reader(response.get());
-  std::string proxy_info, error;
-  EXPECT_TRUE(reader.PopString(&proxy_info));
-  EXPECT_TRUE(reader.PopString(&error));
-  EXPECT_EQ(proxy_resolver_->proxy_info().ToPacString(), proxy_info);
-  EXPECT_EQ("", error);
+  EXPECT_EQ("PROXY localhost:8080", result.proxy_info);
+  EXPECT_EQ("", result.error);
 }
 
-TEST_F(ProxyResolutionServiceProviderTest, Async) {
-  const char kSourceURL[] = "http://www.gmail.com/";
-  proxy_resolver_->set_async(true);
-  proxy_resolver_->mutable_proxy_info()->UseNamedProxy("http://localhost:8080");
-  std::unique_ptr<dbus::Response> response = CallMethod(kSourceURL);
+// Tests the case where the proxy resolver fails with
+// ERR_MANDATORY_PROXY_CONFIGURATION_FAILED.
+TEST_F(ProxyResolutionServiceProviderTest, ResolverFailed) {
+  mock_network_context_.SetNextProxyResult(
+      {net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED, "PROXY localhost:8080"});
 
-  // The response should contain the proxy info and an empty error.
-  ASSERT_TRUE(response);
-  dbus::MessageReader reader(response.get());
-  std::string proxy_info, error;
-  EXPECT_TRUE(reader.PopString(&proxy_info));
-  EXPECT_TRUE(reader.PopString(&error));
-  EXPECT_EQ(proxy_resolver_->proxy_info().ToPacString(), proxy_info);
-  EXPECT_EQ("", error);
-}
-
-TEST_F(ProxyResolutionServiceProviderTest, Error) {
-  const char kSourceURL[] = "http://www.gmail.com/";
-  proxy_resolver_->set_result(net::ERR_FAILED);
-  std::unique_ptr<dbus::Response> response = CallMethod(kSourceURL);
+  ResolveProxyResult result;
+  CallMethod("http://www.gmail.com/", &result);
 
   // The response should contain empty proxy info and a "mandatory proxy config
   // failed" error (which the error from the resolver will be mapped to).
-  ASSERT_TRUE(response);
-  dbus::MessageReader reader(response.get());
-  std::string proxy_info, error;
-  EXPECT_TRUE(reader.PopString(&proxy_info));
-  EXPECT_TRUE(reader.PopString(&error));
-  EXPECT_EQ("DIRECT", proxy_info);
+  EXPECT_EQ("DIRECT", result.proxy_info);
   EXPECT_EQ(net::ErrorToString(net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED),
-            error);
+            result.error);
+}
+
+// Tests calling the proxy resolution provider with an invalid URL.
+TEST_F(ProxyResolutionServiceProviderTest, BadURL) {
+  ResolveProxyResult result;
+  CallMethod(":bad-url", &result);
+
+  // The response should contain empty proxy info and a "mandatory proxy config
+  // failed" error (which the error from the resolver will be mapped to).
+  EXPECT_EQ("DIRECT", result.proxy_info);
+  EXPECT_EQ("Invalid URL", result.error);
+}
+
+// Tests the failure case where a NetworkContext cannot be retrieved. This could
+// happen at certain points during startup/shutdown while the primary profile is
+// null.
+TEST_F(ProxyResolutionServiceProviderTest, NullNetworkContext) {
+  service_provider_->set_network_context_for_test(nullptr);
+
+  ResolveProxyResult result;
+  CallMethod("http://www.gmail.com/", &result);
+
+  // The response should contain a failure.
+  EXPECT_EQ("DIRECT", result.proxy_info);
+  EXPECT_EQ("No NetworkContext", result.error);
 }
 
 }  // namespace chromeos

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 566 tests; 400 PASS, 166 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 560 tests; 396 PASS, 164 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
@@ -307,12 +307,6 @@ PASS grid-row-start: "1" onto "5"
 PASS grid-template-areas (type: discrete) has testAccumulation function
 PASS grid-template-areas: "none" onto "". . a b" ". .a b""
 FAIL grid-template-areas: "". . a b" ". .a b"" onto "none" assert_equals: The value should be ". . a b" ". .a b" at 0ms expected "\". . a b\" \". .a b\"" but got "\". . a b\" \". . a b\""
-PASS grid-template-columns (type: discrete) has testAccumulation function
-PASS grid-template-columns: "5px" onto "1px"
-PASS grid-template-columns: "1px" onto "5px"
-PASS grid-template-rows (type: discrete) has testAccumulation function
-PASS grid-template-rows: "5px" onto "1px"
-PASS grid-template-rows: "1px" onto "5px"
 PASS hyphens (type: discrete) has testAccumulation function
 PASS hyphens: "none" onto "manual"
 PASS hyphens: "manual" onto "none"
@@ -449,10 +443,10 @@ PASS stop-opacity (type: opacity) has testAccumulation function
 FAIL stop-opacity: [0, 1] number assert_equals: The value should be 0.6 at 0ms expected "0.6" but got "0.3"
 FAIL stop-opacity: [0, 1] number (clamped) assert_equals: The value should be 1 at 0ms expected "1" but got "0.3"
 PASS stroke-dasharray (type: dasharray) has testAccumulation function
-FAIL stroke-dasharray: dasharray assert_equals: The value should be 1, 2, 3, 4, 5 at 0ms expected "1, 2, 3, 4, 5" but got "1px, 2px, 3px, 4px, 5px"
+PASS stroke-dasharray: dasharray
 PASS stroke-dasharray (type: discrete) has testAccumulation function
-FAIL stroke-dasharray: "10, 20" onto "none" assert_equals: The value should be 10, 20 at 0ms expected "10, 20" but got "10px, 20px"
-PASS stroke-dasharray: "none" onto "10, 20"
+PASS stroke-dasharray: "10px, 20px" onto "none"
+PASS stroke-dasharray: "none" onto "10px, 20px"
 PASS stroke-linecap (type: discrete) has testAccumulation function
 PASS stroke-linecap: "square" onto "round"
 PASS stroke-linecap: "round" onto "square"
@@ -507,18 +501,18 @@ PASS touch-action (type: discrete) has testAccumulation function
 PASS touch-action: "none" onto "auto"
 PASS touch-action: "auto" onto "none"
 PASS transform (type: transformList) has testAccumulation function
-FAIL transform: translate assert_approx_equals: expected matrix(1,0,0,1,-100,0) but got matrix(1, 0, 0, 1, -200, 0): The value should be matrix(1,0,0,1,-100,0) at 0ms but got matrix(1, 0, 0, 1, -200, 0) expected -100 +/- 0.0001 but got -200
-FAIL transform: rotate assert_approx_equals: expected matrix(0.7071067811865476,-0.7071067811865475,0.7071067811865475,0.7071067811865476,0,0) but got matrix(6.12323e-17, -1, 1, 6.12323e-17, 0, 0): The value should be matrix(0.7071067811865476,-0.7071067811865475,0.7071067811865475,0.7071067811865476,0,0) at 0ms but got matrix(6.12323e-17, -1, 1, 6.12323e-17, 0, 0) expected 0.7071067811865476 +/- 0.0001 but got 6.12323e-17
-FAIL transform: scale assert_approx_equals: expected matrix(-2,0,0,-2,0,0) but got matrix(-3, 0, 0, -3, 0, 0): The value should be matrix(-2,0,0,-2,0,0) at 0ms but got matrix(-3, 0, 0, -3, 0, 0) expected -2 +/- 0.0001 but got -3
-FAIL transform: skew assert_approx_equals: expected matrix(1,0.5773502691896257,-0.36397023426620234,1,0,0) but got matrix(1, 0.36397, -0.57735, 1, 0, 0): The value should be matrix(1,0.5773502691896257,-0.36397023426620234,1,0,0) at 0ms but got matrix(1, 0.36397, -0.57735, 1, 0, 0) expected 0.5773502691896257 +/- 0.0001 but got 0.36397
-FAIL transform: rotate on translate assert_approx_equals: expected matrix(0,1,-1,0,100,0) but got matrix(6.12323e-17, 1, -1, 6.12323e-17, 0, 0): The value should be matrix(0,1,-1,0,100,0) at 0ms but got matrix(6.12323e-17, 1, -1, 6.12323e-17, 0, 0) expected 100 +/- 0.0001 but got 0
-FAIL transform: translate on rotate assert_approx_equals: expected matrix(0,1,-1,0,100,0) but got matrix(1, 0, 0, 1, 100, 0): The value should be matrix(0,1,-1,0,100,0) at 0ms but got matrix(1, 0, 0, 1, 100, 0) expected 0 +/- 0.0001 but got 1
-FAIL transform: rotate and translate on rotate assert_approx_equals: expected matrix(6.123233995736766e-17,1,-1,6.123233995736766e-17,0,0) but got matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, 0): The value should be matrix(6.123233995736766e-17,1,-1,6.123233995736766e-17,0,0) at 0ms but got matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, 0) expected 6.123233995736766e-17 +/- 0.0001 but got 0.707107
-FAIL transform: rotate on rotate and translate assert_approx_equals: expected matrix(6.123233995736766e-17,1,-1,6.123233995736766e-17,6.123233995736766e-15,100) but got matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, 0): The value should be matrix(6.123233995736766e-17,1,-1,6.123233995736766e-17,6.123233995736766e-15,100) at 0ms but got matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, 0) expected 6.123233995736766e-17 +/- 0.0001 but got 0.707107
-FAIL transform: matrix assert_approx_equals: expected matrix(0,1,-1,0,100,0) but got matrix(1, 0, 0, 1, 100, 0): The value should be matrix(0,1,-1,0,100,0) at 0ms but got matrix(1, 0, 0, 1, 100, 0) expected 0 +/- 0.0001 but got 1
-FAIL transform: rotate3d assert_approx_equals: expected matrix3d(0.8535533905932737,0.1464466094067262,0.5,0,0.1464466094067262,0.8535533905932737,-0.5,0,-0.5,0.5,0.7071067811865476,0,0,0,0,1) but got matrix3d(0.5, 0.5, 0.707107, 0, 0.5, 0.5, -0.707107, 0, -0.707107, 0.707107, 6.12323e-17, 0, 0, 0, 0, 1): The value should be matrix3d(0.8535533905932737,0.1464466094067262,0.5,0,0.1464466094067262,0.8535533905932737,-0.5,0,-0.5,0.5,0.7071067811865476,0,0,0,0,1) at 0ms but got matrix3d(0.5, 0.5, 0.707107, 0, 0.5, 0.5, -0.707107, 0, -0.707107, 0.707107, 6.12323e-17, 0, 0, 0, 0, 1) expected 0.8535533905932737 +/- 0.0001 but got 0.5
-FAIL transform: matrix3d assert_approx_equals: expected matrix3d(0.8535533905932737,0.1464466094067262,0.5,0,0.1464466094067262,0.8535533905932737,-0.5,0,-0.5,0.5,0.7071067811865476,0,0,0,0,1) but got matrix3d(0.5, 0.5, 0.707107, 0, 0.5, 0.5, -0.707107, 0, -0.707107, 0.707107, 4.44089e-16, 0, 0, 0, 0, 1): The value should be matrix3d(0.8535533905932737,0.1464466094067262,0.5,0,0.1464466094067262,0.8535533905932737,-0.5,0,-0.5,0.5,0.7071067811865476,0,0,0,0,1) at 0ms but got matrix3d(0.5, 0.5, 0.707107, 0, 0.5, 0.5, -0.707107, 0, -0.707107, 0.707107, 4.44089e-16, 0, 0, 0, 0, 1) expected 0.8535533905932737 +/- 0.0001 but got 0.5
-FAIL transform: none assert_equals: dimension of the matrix: The value should be matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,1,1) at 0ms but got matrix(1, 0, 0, 1, 0, 0) expected 16 but got 6
+FAIL transform: translate assert_approx_equals: expected matrix(1, 0, 0, 1, -100, 0) but got matrix(1, 0, 0, 1, -200, 0): The value should be matrix(1, 0, 0, 1, -100, 0) at 0ms but got matrix(1, 0, 0, 1, -200, 0) expected -100 +/- 0.0001 but got -200
+FAIL transform: rotate assert_approx_equals: expected matrix(0.707107, -0.707107, 0.707107, 0.707107, 0, 0) but got matrix(0, -1, 1, 0, 0, 0): The value should be matrix(0.707107, -0.707107, 0.707107, 0.707107, 0, 0) at 0ms but got matrix(0, -1, 1, 0, 0, 0) expected 0.707107 +/- 0.0001 but got 0
+FAIL transform: scale assert_approx_equals: expected matrix(-2, 0, 0, -2, 0, 0) but got matrix(-3, 0, 0, -3, 0, 0): The value should be matrix(-2, 0, 0, -2, 0, 0) at 0ms but got matrix(-3, 0, 0, -3, 0, 0) expected -2 +/- 0.0001 but got -3
+FAIL transform: skew assert_approx_equals: expected matrix(1, 0.57735, -0.36397, 1, 0, 0) but got matrix(1, 0.36397, -0.57735, 1, 0, 0): The value should be matrix(1, 0.57735, -0.36397, 1, 0, 0) at 0ms but got matrix(1, 0.36397, -0.57735, 1, 0, 0) expected 0.57735 +/- 0.0001 but got 0.36397
+FAIL transform: rotate on translate assert_approx_equals: expected matrix(0, 1, -1, 0, 100, 0) but got matrix(0, 1, -1, 0, 0, 0): The value should be matrix(0, 1, -1, 0, 100, 0) at 0ms but got matrix(0, 1, -1, 0, 0, 0) expected 100 +/- 0.0001 but got 0
+FAIL transform: translate on rotate assert_approx_equals: expected matrix(0, 1, -1, 0, 100, 0) but got matrix(1, 0, 0, 1, 100, 0): The value should be matrix(0, 1, -1, 0, 100, 0) at 0ms but got matrix(1, 0, 0, 1, 100, 0) expected 0 +/- 0.0001 but got 1
+FAIL transform: rotate and translate on rotate assert_approx_equals: expected matrix(0, 1, -1, 0, 0, 0) but got matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, 0): The value should be matrix(0, 1, -1, 0, 0, 0) at 0ms but got matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, 0) expected 0 +/- 0.0001 but got 0.707107
+FAIL transform: rotate on rotate and translate assert_approx_equals: expected matrix(0, 1, -1, 0, 0, 100) but got matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, 0): The value should be matrix(0, 1, -1, 0, 0, 100) at 0ms but got matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, 0) expected 0 +/- 0.0001 but got 0.707107
+FAIL transform: matrix assert_approx_equals: expected matrix(0, 1, -1, 0, 100, 0) but got matrix(1, 0, 0, 1, 100, 0): The value should be matrix(0, 1, -1, 0, 100, 0) at 0ms but got matrix(1, 0, 0, 1, 100, 0) expected 0 +/- 0.0001 but got 1
+FAIL transform: rotate3d assert_approx_equals: expected matrix3d(0.853553, 0.146447, 0.5, 0, 0.146447, 0.853553, -0.5, 0, -0.5, 0.5, 0.707107, 0, 0, 0, 0, 1) but got matrix3d(0.5, 0.5, 0.707107, 0, 0.5, 0.5, -0.707107, 0, -0.707107, 0.707107, 0, 0, 0, 0, 0, 1): The value should be matrix3d(0.853553, 0.146447, 0.5, 0, 0.146447, 0.853553, -0.5, 0, -0.5, 0.5, 0.707107, 0, 0, 0, 0, 1) at 0ms but got matrix3d(0.5, 0.5, 0.707107, 0, 0.5, 0.5, -0.707107, 0, -0.707107, 0.707107, 0, 0, 0, 0, 0, 1) expected 0.853553 +/- 0.0001 but got 0.5
+FAIL transform: matrix3d assert_approx_equals: expected matrix3d(0.853553, 0.146447, 0.5, 0, 0.146447, 0.853553, -0.5, 0, -0.5, 0.5, 0.707107, 0, 0, 0, 0, 1) but got matrix3d(0.5, 0.5, 0.707107, 0, 0.5, 0.5, -0.707107, 0, -0.707107, 0.707107, 0, 0, 0, 0, 0, 1): The value should be matrix3d(0.853553, 0.146447, 0.5, 0, 0.146447, 0.853553, -0.5, 0, -0.5, 0.5, 0.707107, 0, 0, 0, 0, 1) at 0ms but got matrix3d(0.5, 0.5, 0.707107, 0, 0.5, 0.5, -0.707107, 0, -0.707107, 0.707107, 0, 0, 0, 0, 0, 1) expected 0.853553 +/- 0.0001 but got 0.5
+FAIL transform: none assert_equals: dimension of the matrix: The value should be matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1) at 0ms but got matrix(1, 0, 0, 1, 0, 0) expected 16 but got 6
 PASS transform: non-invertible matrices (non-invertible onto invertible)
 PASS transform: non-invertible matrices (invertible onto non-invertible)
 PASS transform: non-invertible matrices in matched transform lists (non-invertible onto invertible)

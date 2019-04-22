@@ -7,19 +7,31 @@
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/mirroring/mojom/cast_message_channel.mojom.h"
+#include "components/mirroring/mojom/session_observer.mojom.h"
+#include "components/mirroring/mojom/session_parameters.mojom.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "media/capture/mojom/video_capture.mojom.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
+#include "media/capture/video_capture_types.h"
+#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
+#include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/ui_base_features.h"
 
 using testing::_;
 using testing::InvokeWithoutArgs;
+using testing::Return;
 
 namespace mirroring {
 
@@ -170,7 +182,8 @@ class CastMirroringServiceHostBrowserTest
   void RequestRefreshFrame() {
     base::RunLoop run_loop;
     EXPECT_CALL(*video_frame_receiver_, OnBufferReadyCall(_))
-        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+        .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit))
+        .WillRepeatedly(Return());
     video_frame_receiver_->RequestRefreshFrame();
     run_loop.Run();
   }
@@ -246,6 +259,69 @@ IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, CaptureTabVideo) {
 IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, CaptureTabAudio) {
   StartTabMirroring();
   CreateAudioLoopbackStream();
+  StopMirroring();
+}
+
+IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, TabIndicator) {
+  ASSERT_EQ(TabAlertState::NONE,
+            chrome::GetTabAlertStateForContents(
+                browser()->tab_strip_model()->GetActiveWebContents()));
+
+  // A TabStripModelObserver that quits the MessageLoop whenever the UI's model
+  // is sent an event that changes the indicator status.
+  class IndicatorChangeObserver : public TabStripModelObserver {
+   public:
+    explicit IndicatorChangeObserver(Browser* browser)
+        : browser_(browser),
+          last_alert_state_(chrome::GetTabAlertStateForContents(
+              browser->tab_strip_model()->GetActiveWebContents())) {
+      browser_->tab_strip_model()->AddObserver(this);
+    }
+
+    ~IndicatorChangeObserver() override {
+      browser_->tab_strip_model()->RemoveObserver(this);
+    }
+
+    TabAlertState last_alert_state() const { return last_alert_state_; }
+
+    void TabChangedAt(content::WebContents* contents,
+                      int index,
+                      TabChangeType change_type) override {
+      const TabAlertState alert_state =
+          chrome::GetTabAlertStateForContents(contents);
+      if (alert_state != last_alert_state_) {
+        last_alert_state_ = alert_state;
+        if (on_tab_changed_)
+          std::move(on_tab_changed_).Run();
+      }
+    }
+
+    void WaitForTabChange() {
+      base::RunLoop run_loop;
+      on_tab_changed_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+
+   private:
+    Browser* const browser_;
+    TabAlertState last_alert_state_;
+    base::OnceClosure on_tab_changed_;
+  };
+
+  IndicatorChangeObserver observer(browser());
+  ASSERT_EQ(TabAlertState::NONE, observer.last_alert_state());
+  StartTabMirroring();
+
+  // Run the browser until the indicator turns on.
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  while (observer.last_alert_state() != TabAlertState::TAB_CAPTURING) {
+    if (base::TimeTicks::Now() - start_time >
+        TestTimeouts::action_max_timeout()) {
+      EXPECT_EQ(TabAlertState::TAB_CAPTURING, observer.last_alert_state());
+      return;
+    }
+    observer.WaitForTabChange();
+  }
   StopMirroring();
 }
 

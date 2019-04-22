@@ -2,7 +2,6 @@ Test touch adjustment for context-menu gestures with automatic select behaviour.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS adjusted node was null.
 PASS adjusted node was 'Text text text.'.
 PASS successfullyParsed is true

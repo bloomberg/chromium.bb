@@ -39,45 +39,7 @@ bool ValidateData(const std::vector<char>& data) {
 
 namespace mojo {
 
-using blink::mojom::NotificationDirection;
 using blink::mojom::NotificationActionType;
-
-// static
-NotificationDirection
-EnumTraits<NotificationDirection, blink::PlatformNotificationData::Direction>::
-    ToMojom(blink::PlatformNotificationData::Direction input) {
-  switch (input) {
-    case blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT:
-      return NotificationDirection::LEFT_TO_RIGHT;
-    case blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT:
-      return NotificationDirection::RIGHT_TO_LEFT;
-    case blink::PlatformNotificationData::DIRECTION_AUTO:
-      return NotificationDirection::AUTO;
-  }
-
-  NOTREACHED();
-  return NotificationDirection::AUTO;
-}
-
-// static
-bool EnumTraits<NotificationDirection,
-                blink::PlatformNotificationData::Direction>::
-    FromMojom(NotificationDirection input,
-              blink::PlatformNotificationData::Direction* out) {
-  switch (input) {
-    case NotificationDirection::LEFT_TO_RIGHT:
-      *out = blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
-      return true;
-    case NotificationDirection::RIGHT_TO_LEFT:
-      *out = blink::PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
-      return true;
-    case NotificationDirection::AUTO:
-      *out = blink::PlatformNotificationData::DIRECTION_AUTO;
-      return true;
-  }
-
-  return false;
-}
 
 // static
 NotificationActionType
@@ -148,7 +110,9 @@ bool StructTraits<blink::mojom::NotificationDataDataView,
       !notification_data.ReadVibrationPattern(
           &platform_notification_data->vibration_pattern) ||
       !notification_data.ReadActions(&platform_notification_data->actions) ||
-      !notification_data.ReadData(&data)) {
+      !notification_data.ReadData(&data) ||
+      !notification_data.ReadShowTriggerTimestamp(
+          &platform_notification_data->show_trigger_timestamp)) {
     return false;
   }
 

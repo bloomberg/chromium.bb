@@ -25,9 +25,9 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/modules/plugins/dom_mime_type_array.h"
 #include "third_party/blink/renderer/modules/plugins/navigator_plugins.h"
-#include "third_party/blink/renderer/platform/plugins/plugin_data.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -105,17 +105,16 @@ void DOMPluginArray::refresh(bool reload) {
 
   for (Frame* frame = GetFrame()->GetPage()->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
-    Navigator& navigator = *ToLocalFrame(frame)->DomWindow()->navigator();
+    Navigator& navigator = *local_frame->DomWindow()->navigator();
     NavigatorPlugins::plugins(navigator)->UpdatePluginData();
     NavigatorPlugins::mimeTypes(navigator)->UpdatePluginData();
   }
 
-  if (reload) {
-    GetFrame()->Reload(WebFrameLoadType::kReload,
-                       ClientRedirectPolicy::kClientRedirect);
-  }
+  if (reload)
+    GetFrame()->Reload(WebFrameLoadType::kReload);
 }
 
 PluginData* DOMPluginArray::GetPluginData() const {

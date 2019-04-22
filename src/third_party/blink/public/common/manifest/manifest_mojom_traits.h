@@ -7,6 +7,8 @@
 
 #include "third_party/blink/public/common/manifest/manifest.h"
 
+#include <vector>
+
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
@@ -104,6 +106,11 @@ struct BLINK_COMMON_EXPORT
     return manifest.share_target;
   }
 
+  static const base::Optional<::blink::Manifest::FileHandler>& file_handler(
+      const ::blink::Manifest& manifest) {
+    return manifest.file_handler;
+  }
+
   static const std::vector<::blink::Manifest::RelatedApplication>&
   related_applications(const ::blink::Manifest& manifest) {
     return manifest.related_applications;
@@ -167,15 +174,15 @@ struct BLINK_COMMON_EXPORT
 
 template <>
 struct BLINK_COMMON_EXPORT
-    StructTraits<blink::mojom::ManifestShareTargetFileDataView,
-                 ::blink::Manifest::ShareTargetFile> {
+    StructTraits<blink::mojom::ManifestFileFilterDataView,
+                 ::blink::Manifest::FileFilter> {
   static base::StringPiece16 name(
-      const ::blink::Manifest::ShareTargetFile& share_target_file) {
+      const ::blink::Manifest::FileFilter& share_target_file) {
     return internal::TruncateString16(share_target_file.name);
   }
 
   static const std::vector<base::StringPiece16> accept(
-      const ::blink::Manifest::ShareTargetFile& share_target_file) {
+      const ::blink::Manifest::FileFilter& share_target_file) {
     std::vector<base::StringPiece16> accept_types;
 
     for (const base::string16& accept_type : share_target_file.accept)
@@ -184,8 +191,8 @@ struct BLINK_COMMON_EXPORT
     return accept_types;
   }
 
-  static bool Read(blink::mojom::ManifestShareTargetFileDataView data,
-                   ::blink::Manifest::ShareTargetFile* out);
+  static bool Read(blink::mojom::ManifestFileFilterDataView data,
+                   ::blink::Manifest::FileFilter* out);
 };
 
 template <>
@@ -204,7 +211,7 @@ struct BLINK_COMMON_EXPORT
       const ::blink::Manifest::ShareTargetParams& share_target_params) {
     return internal::TruncateNullableString16(share_target_params.url);
   }
-  static const std::vector<blink::Manifest::ShareTargetFile>& files(
+  static const std::vector<blink::Manifest::FileFilter>& files(
       const ::blink::Manifest::ShareTargetParams& share_target_params) {
     return share_target_params.files;
   }

@@ -40,7 +40,7 @@
 #include "third_party/base/ptr_util.h"
 
 #ifdef PDF_ENABLE_XFA
-#include "fxjs/cfxjse_value.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #endif  // PDF_ENABLE_XFA
 
 CJS_Runtime::CJS_Runtime(CPDFSDK_FormFillEnvironment* pFormFillEnv)
@@ -187,7 +187,7 @@ CJS_Runtime* CJS_Runtime::AsCJSRuntime() {
   return this;
 }
 
-bool CJS_Runtime::GetValueByNameFromGlobalObject(const ByteStringView& utf8Name,
+bool CJS_Runtime::GetValueByNameFromGlobalObject(ByteStringView utf8Name,
                                                  CFXJSE_Value* pValue) {
   v8::Isolate::Scope isolate_scope(GetIsolate());
   v8::HandleScope handle_scope(GetIsolate());
@@ -212,7 +212,7 @@ bool CJS_Runtime::GetValueByNameFromGlobalObject(const ByteStringView& utf8Name,
   return true;
 }
 
-bool CJS_Runtime::SetValueByNameInGlobalObject(const ByteStringView& utf8Name,
+bool CJS_Runtime::SetValueByNameInGlobalObject(ByteStringView utf8Name,
                                                CFXJSE_Value* pValue) {
   if (utf8Name.IsEmpty() || !pValue)
     return false;
@@ -228,9 +228,10 @@ bool CJS_Runtime::SetValueByNameInGlobalObject(const ByteStringView& utf8Name,
       v8::String::NewFromUtf8(pIsolate, utf8Name.unterminated_c_str(),
                               v8::NewStringType::kNormal, utf8Name.GetLength())
           .ToLocalChecked();
-  return context->Global()->Set(context, str, propvalue).FromJust();
+  v8::Maybe<bool> result = context->Global()->Set(context, str, propvalue);
+  return result.IsJust() && result.FromJust();
 }
-#endif
+#endif  // PDF_ENABLE_XFA
 
 v8::Local<v8::Value> CJS_Runtime::MaybeCoerceToNumber(
     v8::Local<v8::Value> value) {

@@ -43,7 +43,6 @@ class CompositorTest : public testing::Test {
     compositor_.reset(new ui::Compositor(
         context_factory_private->AllocateFrameSinkId(), context_factory,
         context_factory_private, CreateTaskRunner(),
-        false /* enable_surface_synchronization */,
         false /* enable_pixel_canvas */));
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
   }
@@ -105,10 +104,12 @@ class CompositorTestWithMessageLoop : public CompositorTest {
 
 TEST_F(CompositorTestWithMessageLoop, OutputColorMatrix) {
   auto root_layer = std::make_unique<Layer>(ui::LAYER_SOLID_COLOR);
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
   root_layer->SetBounds(gfx::Rect(10, 10));
   compositor()->SetRootLayer(root_layer.get());
   compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10),
-                                viz::LocalSurfaceIdAllocation());
+                                allocator.GetCurrentLocalSurfaceIdAllocation());
   DCHECK(compositor()->IsVisible());
 
   // Set a non-identity color matrix on the compistor display, and expect it to
@@ -159,10 +160,12 @@ TEST_F(CompositorTestWithMockedTime,
 #endif
 TEST_F(CompositorTestWithMessageLoop, MAYBE_CreateAndReleaseOutputSurface) {
   std::unique_ptr<Layer> root_layer(new Layer(ui::LAYER_SOLID_COLOR));
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  allocator.GenerateId();
   root_layer->SetBounds(gfx::Rect(10, 10));
   compositor()->SetRootLayer(root_layer.get());
   compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10),
-                                viz::LocalSurfaceIdAllocation());
+                                allocator.GetCurrentLocalSurfaceIdAllocation());
   DCHECK(compositor()->IsVisible());
   compositor()->ScheduleDraw();
   DrawWaiterForTest::WaitForCompositingEnded(compositor());

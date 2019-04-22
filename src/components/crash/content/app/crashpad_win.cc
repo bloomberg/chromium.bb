@@ -10,6 +10,7 @@
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -30,7 +31,7 @@ void GetPlatformCrashpadAnnotations(
     std::map<std::string, std::string>* annotations) {
   CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
   wchar_t exe_file[MAX_PATH] = {};
-  CHECK(::GetModuleFileName(nullptr, exe_file, arraysize(exe_file)));
+  CHECK(::GetModuleFileName(nullptr, exe_file, base::size(exe_file)));
   base::string16 product_name, version, special_build, channel_name;
   crash_reporter_client->GetProductNameAndVersion(
       exe_file, &product_name, &version, &special_build, &channel_name);
@@ -96,7 +97,7 @@ base::FilePath PlatformCrashpadInitialization(
     if (exe_file.empty()) {
       wchar_t exe_file_path[MAX_PATH] = {};
       CHECK(::GetModuleFileName(nullptr, exe_file_path,
-                                arraysize(exe_file_path)));
+                                base::size(exe_file_path)));
 
       exe_file = base::FilePath(exe_file_path);
     }
@@ -170,86 +171,6 @@ NOINLINE DWORD WINAPI DumpProcessForHungInputThread(void* param) {
   DumpWithoutCrashing();
   return 0;
 }
-
-#if defined(ARCH_CPU_X86_64)
-
-static int CrashForExceptionInNonABICompliantCodeRange(
-    PEXCEPTION_RECORD ExceptionRecord,
-    ULONG64 EstablisherFrame,
-    PCONTEXT ContextRecord,
-    PDISPATCHER_CONTEXT DispatcherContext) {
-  EXCEPTION_POINTERS info = { ExceptionRecord, ContextRecord };
-  return CrashForException_ExportThunk(&info);
-}
-
-// See https://msdn.microsoft.com/en-us/library/ddssxxy8.aspx
-typedef struct _UNWIND_INFO {
-  unsigned char Version : 3;
-  unsigned char Flags : 5;
-  unsigned char SizeOfProlog;
-  unsigned char CountOfCodes;
-  unsigned char FrameRegister : 4;
-  unsigned char FrameOffset : 4;
-  ULONG ExceptionHandler;
-} UNWIND_INFO, *PUNWIND_INFO;
-
-struct ExceptionHandlerRecord {
-  RUNTIME_FUNCTION runtime_function;
-  UNWIND_INFO unwind_info;
-  unsigned char thunk[12];
-};
-
-void RegisterNonABICompliantCodeRangeImpl(void* start, size_t size_in_bytes) {
-  ExceptionHandlerRecord* record =
-      reinterpret_cast<ExceptionHandlerRecord*>(start);
-
-  // We assume that the first page of the code range is executable and
-  // committed and reserved for breakpad. What could possibly go wrong?
-
-  // All addresses are 32bit relative offsets to start.
-  record->runtime_function.BeginAddress = 0;
-  record->runtime_function.EndAddress =
-      base::checked_cast<DWORD>(size_in_bytes);
-  record->runtime_function.UnwindData =
-      offsetof(ExceptionHandlerRecord, unwind_info);
-
-  // Create unwind info that only specifies an exception handler.
-  record->unwind_info.Version = 1;
-  record->unwind_info.Flags = UNW_FLAG_EHANDLER;
-  record->unwind_info.SizeOfProlog = 0;
-  record->unwind_info.CountOfCodes = 0;
-  record->unwind_info.FrameRegister = 0;
-  record->unwind_info.FrameOffset = 0;
-  record->unwind_info.ExceptionHandler =
-      offsetof(ExceptionHandlerRecord, thunk);
-
-  // Hardcoded thunk.
-  // mov imm64, rax
-  record->thunk[0] = 0x48;
-  record->thunk[1] = 0xb8;
-  void* handler =
-      reinterpret_cast<void*>(&CrashForExceptionInNonABICompliantCodeRange);
-  memcpy(&record->thunk[2], &handler, 8);
-
-  // jmp rax
-  record->thunk[10] = 0xff;
-  record->thunk[11] = 0xe0;
-
-  // Protect reserved page against modifications.
-  DWORD old_protect;
-  CHECK(VirtualProtect(
-      start, sizeof(ExceptionHandlerRecord), PAGE_EXECUTE_READ, &old_protect));
-  CHECK(RtlAddFunctionTable(
-      &record->runtime_function, 1, reinterpret_cast<DWORD64>(start)));
-}
-
-void UnregisterNonABICompliantCodeRangeImpl(void* start) {
-  ExceptionHandlerRecord* record =
-      reinterpret_cast<ExceptionHandlerRecord*>(start);
-
-  CHECK(RtlDeleteFunctionTable(&record->runtime_function));
-}
-#endif  // ARCH_CPU_X86_64
 
 }  // namespace internal
 }  // namespace crash_reporter

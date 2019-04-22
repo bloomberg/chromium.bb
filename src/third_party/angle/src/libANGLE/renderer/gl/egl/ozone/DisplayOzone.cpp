@@ -524,7 +524,8 @@ egl::Error DisplayOzone::initialize(egl::Display *display)
     }
 
     EGLContext context = EGL_NO_CONTEXT;
-    ANGLE_TRY(initializeContext(EGL_NO_CONTEXT, display->getAttributeMap(), &context));
+    native_egl::AttributeVector attribs;
+    ANGLE_TRY(initializeContext(EGL_NO_CONTEXT, display->getAttributeMap(), &context, &attribs));
 
     if (!mEGL->makeCurrent(EGL_NO_SURFACE, context))
     {
@@ -534,8 +535,8 @@ egl::Error DisplayOzone::initialize(egl::Display *display)
     std::unique_ptr<FunctionsGL> functionsGL(mEGL->makeFunctionsGL());
     functionsGL->initialize(display->getAttributeMap());
 
-    mRenderer.reset(
-        new RendererEGL(std::move(functionsGL), display->getAttributeMap(), this, context));
+    mRenderer.reset(new RendererEGL(std::move(functionsGL), display->getAttributeMap(), this,
+                                    context, attribs));
     const gl::Version &maxVersion = mRenderer->getMaxSupportedESVersion();
     if (maxVersion < gl::Version(2, 0))
     {
@@ -927,13 +928,14 @@ SurfaceImpl *DisplayOzone::createPixmapSurface(const egl::SurfaceState &state,
     return nullptr;
 }
 
-ContextImpl *DisplayOzone::createContext(const gl::ContextState &state,
+ContextImpl *DisplayOzone::createContext(const gl::State &state,
+                                         gl::ErrorSet *errorSet,
                                          const egl::Config *configuration,
                                          const gl::Context *shareContext,
                                          const egl::AttributeMap &attribs)
 {
     // All contexts on Ozone are virtualized and share the same renderer.
-    return new ContextEGL(state, mRenderer);
+    return new ContextEGL(state, errorSet, mRenderer);
 }
 
 DeviceImpl *DisplayOzone::createDevice()
@@ -1018,6 +1020,57 @@ egl::Error DisplayOzone::makeCurrentSurfaceless(gl::Context *context)
 {
     // Nothing to do, handled in the GL layers
     return egl::NoError();
+}
+
+class WorkerContextOzone final : public WorkerContext
+{
+  public:
+    WorkerContextOzone(EGLContext context, FunctionsEGL *functions);
+    ~WorkerContextOzone() override;
+
+    bool makeCurrent() override;
+    void unmakeCurrent() override;
+
+  private:
+    EGLContext mContext;
+    FunctionsEGL *mFunctions;
+};
+
+WorkerContextOzone::WorkerContextOzone(EGLContext context, FunctionsEGL *functions)
+    : mContext(context), mFunctions(functions)
+{}
+
+WorkerContextOzone::~WorkerContextOzone()
+{
+    mFunctions->destroyContext(mContext);
+}
+
+bool WorkerContextOzone::makeCurrent()
+{
+    if (mFunctions->makeCurrent(EGL_NO_SURFACE, mContext) == EGL_FALSE)
+    {
+        ERR() << "Unable to make the EGL context current.";
+        return false;
+    }
+    return true;
+}
+
+void WorkerContextOzone::unmakeCurrent()
+{
+    mFunctions->makeCurrent(EGL_NO_SURFACE, EGL_NO_CONTEXT);
+}
+
+WorkerContext *DisplayOzone::createWorkerContext(std::string *infoLog,
+                                                 EGLContext sharedContext,
+                                                 const native_egl::AttributeVector workerAttribs)
+{
+    EGLContext context = mEGL->createContext(mConfig, sharedContext, workerAttribs.data());
+    if (context == EGL_NO_CONTEXT)
+    {
+        *infoLog += "Unable to create the EGL context.";
+        return nullptr;
+    }
+    return new WorkerContextOzone(context, mEGL);
 }
 
 }  // namespace rx

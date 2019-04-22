@@ -31,9 +31,12 @@
 #include "third_party/blink/renderer/platform/text/bidi_resolver.h"
 
 #include <fstream>
+
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/text/bidi_test_harness.h"
 #include "third_party/blink/renderer/platform/text/text_run_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -106,11 +109,13 @@ TEST(BidiResolver, ParagraphDirectionSurrogates) {
       // Test broken surrogate: trail appearing before
       // lead. (U+10858 units reversed)
       {{0xDC58, 0xD802}, 2, TextDirection::kLtr, false}};
-  for (size_t i = 0; i < arraysize(kTestData); ++i)
+  for (size_t i = 0; i < base::size(kTestData); ++i)
     TestDirectionality(kTestData[i]);
 }
 
 class BidiTestRunner {
+  STACK_ALLOCATED();
+
  public:
   BidiTestRunner()
       : tests_run_(0),

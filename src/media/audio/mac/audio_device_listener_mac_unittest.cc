@@ -37,8 +37,8 @@ class AudioDeviceListenerMacTest : public testing::Test {
     // order to ensure we don't end up with unbalanced TaskObserver calls.
     message_loop_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&AudioDeviceListenerMacTest::DestroyDeviceListener,
-                   base::Unretained(this)));
+        base::BindOnce(&AudioDeviceListenerMacTest::DestroyDeviceListener,
+                       base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 

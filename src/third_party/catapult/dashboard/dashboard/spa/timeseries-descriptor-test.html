@@ -9,6 +9,7 @@ found in the LICENSE file.
 <script src="/bower_components/web-component-tester/browser.js"></script>
 <link rel="import" href="/bower_components/polymer/polymer.html">
 <link rel="import" href="/dashboard/spa/timeseries-descriptor.html">
+<script src="/dashboard/spa/import-module.js">
 
 <test-fixture id="test">
   <template>
@@ -25,10 +26,10 @@ suite('timeseries-descriptor', function() {
     window.fetch = async(url, options) => {
       return {
         async json() {
-          if (url === '/api/test_suites') {
+          if (url === cp.TestSuitesRequest.URL) {
             return ['suite_a', 'suite_b', 'suite_c'];
           }
-          if (url === '/api/describe') {
+          if (url === cp.DescribeRequest.URL) {
             return {
               measurements: [
                 'measurement_a', 'measurement_b', 'measurement_c',
@@ -53,6 +54,7 @@ suite('timeseries-descriptor', function() {
   });
 
   test('suite select describe', async function() {
+    await importModule('./cp-checkbox.js');
     const td = fixture('test');
     td.dispatch(Redux.UPDATE('test', cp.TimeseriesDescriptor.buildState({
     })));
@@ -70,6 +72,7 @@ suite('timeseries-descriptor', function() {
   });
 
   test('option-select matrix-change', async function() {
+    await importModule('./cp-checkbox.js');
     const td = fixture('test');
     td.dispatch(Redux.UPDATE('test', cp.TimeseriesDescriptor.buildState({
     })));

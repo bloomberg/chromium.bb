@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -30,14 +31,14 @@ namespace {
 class NotReached : public ScriptFunction {
  public:
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
-    NotReached* self = new NotReached(script_state);
+    NotReached* self = MakeGarbageCollected<NotReached>(script_state);
     return self->BindToV8Function();
   }
 
- private:
   explicit NotReached(ScriptState* script_state)
       : ScriptFunction(script_state) {}
 
+ private:
   ScriptValue Call(ScriptValue) override;
 };
 
@@ -51,16 +52,17 @@ class StubFunction : public ScriptFunction {
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 ScriptValue& value,
                                                 size_t& call_count) {
-    StubFunction* self = new StubFunction(script_state, value, call_count);
+    StubFunction* self =
+        MakeGarbageCollected<StubFunction>(script_state, value, call_count);
     return self->BindToV8Function();
   }
 
- private:
   StubFunction(ScriptState* script_state,
                ScriptValue& value,
                size_t& call_count)
       : ScriptFunction(script_state), value_(value), call_count_(call_count) {}
 
+ private:
   ScriptValue Call(ScriptValue arg) override {
     value_ = arg;
     call_count_++;
@@ -79,9 +81,10 @@ class GarbageCollectedHolder final : public GarbageCollectedScriptWrappable {
       Property;
   GarbageCollectedHolder(ExecutionContext* execution_context)
       : GarbageCollectedScriptWrappable("holder"),
-        property_(new Property(execution_context,
-                               ToGarbageCollectedScriptWrappable(),
-                               Property::kReady)) {}
+        property_(
+            MakeGarbageCollected<Property>(execution_context,
+                                           ToGarbageCollectedScriptWrappable(),
+                                           Property::kReady)) {}
 
   Property* GetProperty() { return property_; }
   GarbageCollectedScriptWrappable* ToGarbageCollectedScriptWrappable() {
@@ -100,9 +103,9 @@ class GarbageCollectedHolder final : public GarbageCollectedScriptWrappable {
 class ScriptPromisePropertyTestBase {
  public:
   ScriptPromisePropertyTestBase()
-      : page_(DummyPageHolder::Create(IntSize(1, 1))) {
+      : page_(std::make_unique<DummyPageHolder>(IntSize(1, 1))) {
     v8::HandleScope handle_scope(GetIsolate());
-    other_script_state_ = ScriptState::Create(
+    other_script_state_ = MakeGarbageCollected<ScriptState>(
         v8::Context::New(GetIsolate()),
         DOMWrapperWorld::EnsureIsolatedWorld(GetIsolate(), 1));
   }
@@ -110,7 +113,7 @@ class ScriptPromisePropertyTestBase {
   virtual ~ScriptPromisePropertyTestBase() { DestroyContext(); }
 
   Document& GetDocument() { return page_->GetDocument(); }
-  v8::Isolate* GetIsolate() { return ToIsolate(&GetDocument()); }
+  v8::Isolate* GetIsolate() { return GetDocument().GetIsolate(); }
   ScriptState* MainScriptState() {
     return ToScriptStateForMainWorld(GetDocument().GetFrame());
   }
@@ -194,7 +197,7 @@ class ScriptPromisePropertyNonScriptWrappableResolutionTargetTest
     typedef ScriptPromiseProperty<Member<GarbageCollectedScriptWrappable>, T,
                                   ToV8UndefinedGenerator>
         Property;
-    Property* property = new Property(
+    Property* property = MakeGarbageCollected<Property>(
         &GetDocument(),
         MakeGarbageCollected<GarbageCollectedScriptWrappable>("holder"),
         Property::kReady);
@@ -286,8 +289,8 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest,
   Persistent<GCObservation> observation;
   {
     ScriptState::Scope scope(MainScriptState());
-    observation =
-        GCObservation::Create(Promise(DOMWrapperWorld::MainWorld()).V8Value());
+    observation = MakeGarbageCollected<GCObservation>(
+        Promise(DOMWrapperWorld::MainWorld()).V8Value());
   }
 
   Gc();

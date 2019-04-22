@@ -39,24 +39,24 @@
       </div>
 
       <cr-action-menu>
-        <button slot="item" class="dropdown-item" id="allow"
+        <button class="dropdown-item" id="allow"
             on-click="onAllowTap_" hidden$="[[!showAllowAction_]]">
           $i18n{siteSettingsActionAllow}
         </button>
-        <button slot="item" class="dropdown-item" id="block"
+        <button class="dropdown-item" id="block"
             on-click="onBlockTap_" hidden$="[[!showBlockAction_]]">
           $i18n{siteSettingsActionBlock}
         </button>
-        <button slot="item" class="dropdown-item" id="sessionOnly"
+        <button class="dropdown-item" id="sessionOnly"
             on-click="onSessionOnlyTap_"
             hidden$="[[!showSessionOnlyActionForSite_(actionMenuSite_)]]">
           $i18n{siteSettingsActionSessionOnly}
         </button>
-        <button slot="item" class="dropdown-item" id="edit"
+        <button class="dropdown-item" id="edit"
             on-click="onEditTap_">
           $i18n{edit}
         </button>
-        <button slot="item" class="dropdown-item" id="reset"
+        <button class="dropdown-item" id="reset"
             on-click="onResetTap_">
           $i18n{siteSettingsActionReset}
         </button>
@@ -65,8 +65,13 @@
       <div class="list-frame" hidden$="[[hasSites_(sites.*)]]">
         <div class="list-item secondary">$i18n{noSitesAdded}</div>
       </div>
+      <div class="list-frame"
+          hidden$="[[!showNoSearchResults_(searchFilter, sites.*)]]">
+        <div class="list-item secondary">$i18n{searchNoResults}</div>
+      </div>
       <div class="list-frame menu-content vertical-list" id="listContainer">
-        <iron-list items="[[sites]]" preserve-focus risk-selection>
+        <iron-list items="[[getFilteredSites_(searchFilter, sites.*)]]"
+            preserve-focus risk-selection>
           <template>
             <site-list-entry model="[[item]]" read-only-list="[[readOnlyList]]"
                 on-show-action-menu="onShowActionMenu_" tabindex$="[[tabIndex]]"

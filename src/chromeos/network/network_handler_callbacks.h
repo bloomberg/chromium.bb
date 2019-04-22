@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace base {
@@ -19,12 +19,12 @@ class DictionaryValue;
 namespace chromeos {
 namespace network_handler {
 
-CHROMEOS_EXPORT extern const char kDBusFailedError[];
-CHROMEOS_EXPORT extern const char kDBusFailedErrorMessage[];
-CHROMEOS_EXPORT extern const char kErrorName[];
-CHROMEOS_EXPORT extern const char kErrorDetail[];
-CHROMEOS_EXPORT extern const char kDbusErrorName[];
-CHROMEOS_EXPORT extern const char kDbusErrorMessage[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kDBusFailedError[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kDBusFailedErrorMessage[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kErrorName[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kErrorDetail[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kDbusErrorName[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kDbusErrorMessage[];
 
 // An error callback used by both the configuration handler and the state
 // handler to receive error results from the API.
@@ -44,19 +44,21 @@ typedef base::Callback<void(const std::string& service_path,
     ServiceResultCallback;
 
 // Create a DictionaryValue for passing to ErrorCallback.
-CHROMEOS_EXPORT base::DictionaryValue* CreateErrorData(
-    const std::string& path,
-    const std::string& error_name,
-    const std::string& error_detail);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+base::DictionaryValue* CreateErrorData(const std::string& path,
+                                       const std::string& error_name,
+                                       const std::string& error_detail);
 
 // If not NULL, runs |error_callback| with an ErrorData dictionary created from
 // the other arguments.
-CHROMEOS_EXPORT void RunErrorCallback(const ErrorCallback& error_callback,
-                                      const std::string& path,
-                                      const std::string& error_name,
-                                      const std::string& error_detail);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+void RunErrorCallback(const ErrorCallback& error_callback,
+                      const std::string& path,
+                      const std::string& error_name,
+                      const std::string& error_detail);
 
-CHROMEOS_EXPORT base::DictionaryValue* CreateDBusErrorData(
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+base::DictionaryValue* CreateDBusErrorData(
     const std::string& path,
     const std::string& error_name,
     const std::string& error_detail,
@@ -68,23 +70,23 @@ CHROMEOS_EXPORT base::DictionaryValue* CreateDBusErrorData(
 // |path| is the associated object path or blank if not relevant.
 // |dbus_error_name| and |dbus_error_message| are provided by the DBus handler.
 // Logs an error and calls |error_callback| if not null.
-CHROMEOS_EXPORT void ShillErrorCallbackFunction(
-    const std::string& error_name,
-    const std::string& path,
-    const ErrorCallback& error_callback,
-    const std::string& dbus_error_name,
-    const std::string& dbus_error_message);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+void ShillErrorCallbackFunction(const std::string& error_name,
+                                const std::string& path,
+                                const ErrorCallback& error_callback,
+                                const std::string& dbus_error_name,
+                                const std::string& dbus_error_message);
 
 // Callback for property getters used by NetworkConfigurationHandler
 // (for Network Services) and by NetworkDeviceHandler. Used to translate
 // the DBus Dictionary callback into one that calls the error callback
 // if |call_status| != DBUS_METHOD_CALL_SUCCESS.
-CHROMEOS_EXPORT void GetPropertiesCallback(
-    const DictionaryResultCallback& callback,
-    const ErrorCallback& error_callback,
-    const std::string& path,
-    DBusMethodCallStatus call_status,
-    const base::DictionaryValue& value);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+void GetPropertiesCallback(const DictionaryResultCallback& callback,
+                           const ErrorCallback& error_callback,
+                           const std::string& path,
+                           DBusMethodCallStatus call_status,
+                           const base::DictionaryValue& value);
 
 }  // namespace network_handler
 }  // namespace chromeos

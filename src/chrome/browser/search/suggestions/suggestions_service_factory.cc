@@ -7,24 +7,16 @@
 #include <memory>
 #include <utility>
 
-#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/profile_sync_service.h"
-#include "components/image_fetcher/core/image_fetcher.h"
-#include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/leveldb_proto/proto_database.h"
-#include "components/leveldb_proto/proto_database_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/suggestions/blacklist_store.h"
-#include "components/suggestions/image_manager.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service_impl.h"
 #include "components/suggestions/suggestions_store.h"
@@ -34,7 +26,6 @@
 #include "services/identity/public/cpp/identity_manager.h"
 
 using content::BrowserThread;
-using image_fetcher::ImageFetcherImpl;
 
 namespace suggestions {
 
@@ -61,15 +52,11 @@ SuggestionsServiceFactory::~SuggestionsServiceFactory() {}
 
 KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
-
   Profile* profile = static_cast<Profile*>(context);
 
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   std::unique_ptr<SuggestionsStore> suggestions_store(
@@ -77,24 +64,12 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<BlacklistStore> blacklist_store(
       new BlacklistStore(profile->GetPrefs()));
 
-  std::unique_ptr<leveldb_proto::ProtoDatabaseImpl<ImageData>> db(
-      new leveldb_proto::ProtoDatabaseImpl<ImageData>(background_task_runner));
-
-  base::FilePath database_dir(
-      profile->GetPath().Append(FILE_PATH_LITERAL("Thumbnails")));
-
-  std::unique_ptr<ImageFetcherImpl> image_fetcher(new ImageFetcherImpl(
-      std::make_unique<suggestions::ImageDecoderImpl>(),
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess()));
-  std::unique_ptr<ImageManager> thumbnail_manager(
-      new ImageManager(std::move(image_fetcher), std::move(db), database_dir));
   return new SuggestionsServiceImpl(
       identity_manager, sync_service,
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
-      std::move(suggestions_store), std::move(thumbnail_manager),
-      std::move(blacklist_store), base::DefaultTickClock::GetInstance());
+      std::move(suggestions_store), std::move(blacklist_store),
+      base::DefaultTickClock::GetInstance());
 }
 
 void SuggestionsServiceFactory::RegisterProfilePrefs(

@@ -17,6 +17,9 @@ import("../../../gn/proto_library.gni")
 import("../../../gn/protozero_library.gni")
 
 proto_library("lite") {
+  # Chromium shouldn't ignore the "android/" folder.
+  set_sources_assignment_filter([])
+
   generate_python = false
   proto_in_dir = "$perfetto_root_path/protos"
   proto_out_dir = "$perfetto_root_path/protos"
@@ -28,11 +31,13 @@ proto_library("lite") {
     "../common:lite",
   ]
   sources = [
+    "android/android_log_config.proto",
     "chrome/chrome_config.proto",
     "data_source_config.proto",
     "data_source_descriptor.proto",
     "ftrace/ftrace_config.proto",
     "inode_file/inode_file_config.proto",
+    "power/android_power_config.proto",
     "process_stats/process_stats_config.proto",
     "profiling/heapprofd_config.proto",
     "sys_stats/sys_stats_config.proto",
@@ -42,17 +47,22 @@ proto_library("lite") {
 }
 
 protozero_library("zero") {
+  # Chromium shouldn't ignore the "android/" folder.
+  set_sources_assignment_filter([])
+
   proto_in_dir = "$perfetto_root_path/protos"
   proto_out_dir = "$perfetto_root_path/protos"
   deps = [
     "../common:zero",
   ]
   sources = [
+    "android/android_log_config.proto",
     "chrome/chrome_config.proto",
     "data_source_config.proto",
     "data_source_descriptor.proto",
     "ftrace/ftrace_config.proto",
     "inode_file/inode_file_config.proto",
+    "power/android_power_config.proto",
     "process_stats/process_stats_config.proto",
     "profiling/heapprofd_config.proto",
     "sys_stats/sys_stats_config.proto",

@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
@@ -18,13 +20,12 @@
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
-
 namespace background_fetch {
 
 namespace {
@@ -130,14 +131,14 @@ CreateMetadataTask::CreateMetadataTask(
     DatabaseTaskHost* host,
     const BackgroundFetchRegistrationId& registration_id,
     std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-    const BackgroundFetchOptions& options,
+    blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     bool start_paused,
     CreateMetadataCallback callback)
     : DatabaseTask(host),
       registration_id_(registration_id),
       requests_(std::move(requests)),
-      options_(options),
+      options_(std::move(options)),
       icon_(icon),
       start_paused_(start_paused),
       callback_(std::move(callback)),
@@ -170,8 +171,8 @@ void CreateMetadataTask::DidGetCanCreateRegistration(
   }
 
   // Check if there is enough quota to download the data first.
-  if (options_.download_total > 0) {
-    IsQuotaAvailable(registration_id_.origin(), options_.download_total,
+  if (options_->download_total > 0) {
+    IsQuotaAvailable(registration_id_.origin(), options_->download_total,
                      base::BindOnce(&CreateMetadataTask::DidGetIsQuotaAvailable,
                                     weak_factory_.GetWeakPtr()));
   } else {
@@ -232,7 +233,7 @@ void CreateMetadataTask::InitializeMetadataProto() {
   auto* registration_proto = metadata_proto_->mutable_registration();
   registration_proto->set_unique_id(registration_id_.unique_id());
   registration_proto->set_developer_id(registration_id_.developer_id());
-  registration_proto->set_download_total(options_.download_total);
+  registration_proto->set_download_total(options_->download_total);
   registration_proto->set_result(
       proto::BackgroundFetchRegistration_BackgroundFetchResult_UNSET);
   registration_proto->set_failure_reason(
@@ -245,9 +246,9 @@ void CreateMetadataTask::InitializeMetadataProto() {
 
   // Set Options fields.
   auto* options_proto = metadata_proto_->mutable_options();
-  options_proto->set_title(options_.title);
-  options_proto->set_download_total(options_.download_total);
-  for (const auto& icon : options_.icons) {
+  options_proto->set_title(options_->title);
+  options_proto->set_download_total(options_->download_total);
+  for (const auto& icon : options_->icons) {
     auto* image_resource_proto = options_proto->add_icons();
 
     image_resource_proto->set_src(icon.src.spec());
@@ -297,7 +298,8 @@ void CreateMetadataTask::StoreMetadata() {
   // - DeveloperId -> UniqueID
   // - BackgroundFetchMetadata
   // - BackgroundFetchUIOptions
-  entries.reserve(requests_.size() + 3);
+  // - BackgroundFetchStorageVersion
+  entries.reserve(requests_.size() + 4u);
 
   std::string serialized_metadata_proto;
 
@@ -309,7 +311,7 @@ void CreateMetadataTask::StoreMetadata() {
 
   std::string serialized_ui_options_proto;
   proto::BackgroundFetchUIOptions ui_options;
-  ui_options.set_title(options_.title);
+  ui_options.set_title(options_->title);
   if (!serialized_icon_.empty())
     ui_options.set_icon(std::move(serialized_icon_));
 
@@ -326,6 +328,9 @@ void CreateMetadataTask::StoreMetadata() {
                        std::move(serialized_metadata_proto));
   entries.emplace_back(UIOptionsKey(registration_id_.unique_id()),
                        serialized_ui_options_proto);
+  entries.emplace_back(
+      StorageVersionKey(registration_id_.unique_id()),
+      base::NumberToString(proto::BackgroundFetchStorageVersion::SV_CURRENT));
 
   // Signed integers are used for request indexes to avoid unsigned gotchas.
   for (int i = 0; i < base::checked_cast<int>(requests_.size()); i++) {
@@ -334,6 +339,8 @@ void CreateMetadataTask::StoreMetadata() {
     pending_request_proto.set_request_index(i);
     pending_request_proto.set_serialized_request(
         ServiceWorkerUtils::SerializeFetchRequestToString(*requests_[i]));
+    if (requests_[i]->blob)
+      pending_request_proto.set_request_body_size(requests_[i]->blob->size);
     entries.emplace_back(PendingRequestKey(registration_id_.unique_id(), i),
                          pending_request_proto.SerializeAsString());
   }
@@ -347,6 +354,11 @@ void CreateMetadataTask::StoreMetadata() {
 
 void CreateMetadataTask::DidStoreMetadata(
     blink::ServiceWorkerStatusCode status) {
+  int64_t trace_id = blink::cache_storage::CreateTraceId();
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageMigrationTask::DidStoreMetadata",
+                         TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT);
+
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
       break;
@@ -358,15 +370,21 @@ void CreateMetadataTask::DidStoreMetadata(
   }
 
   // Create cache entries.
-  cache_manager()->OpenCache(registration_id_.origin(),
-                             CacheStorageOwner::kBackgroundFetch,
-                             registration_id_.unique_id() /* cache_name */,
-                             base::BindOnce(&CreateMetadataTask::DidOpenCache,
-                                            weak_factory_.GetWeakPtr()));
+  CacheStorageHandle cache_storage = GetOrOpenCacheStorage(registration_id_);
+  cache_storage.value()->OpenCache(
+      /* cache_name= */ registration_id_.unique_id(), trace_id,
+      base::BindOnce(&CreateMetadataTask::DidOpenCache,
+                     weak_factory_.GetWeakPtr(), trace_id));
 }
 
-void CreateMetadataTask::DidOpenCache(CacheStorageCacheHandle handle,
+void CreateMetadataTask::DidOpenCache(int64_t trace_id,
+                                      CacheStorageCacheHandle handle,
                                       blink::mojom::CacheStorageError error) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageMigrationTask::DidReopenCache",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   if (error != blink::mojom::CacheStorageError::kSuccess) {
     SetStorageErrorAndFinish(BackgroundFetchStorageError::kCacheStorageError);
     return;
@@ -377,17 +395,19 @@ void CreateMetadataTask::DidOpenCache(CacheStorageCacheHandle handle,
   // Create batch PUT operations instead of putting them one-by-one.
   std::vector<blink::mojom::BatchOperationPtr> operations;
   operations.reserve(requests_.size());
-  for (auto& request : requests_) {
+  for (size_t i = 0; i < requests_.size(); i++) {
     auto operation = blink::mojom::BatchOperation::New();
     operation->operation_type = blink::mojom::OperationType::kPut;
-    operation->request = std::move(request);
+    requests_[i]->url =
+        MakeCacheUrlUnique(requests_[i]->url, registration_id_.unique_id(), i);
+    operation->request = std::move(requests_[i]);
     // Empty response.
     operation->response = blink::mojom::FetchAPIResponse::New();
     operations.push_back(std::move(operation));
   }
 
   handle.value()->BatchOperation(
-      std::move(operations), /* fail_on_duplicates= */ false,
+      std::move(operations), trace_id,
       base::BindOnce(&CreateMetadataTask::DidStoreRequests,
                      weak_factory_.GetWeakPtr(), handle.Clone()),
       base::DoNothing());
@@ -410,13 +430,13 @@ void CreateMetadataTask::DidStoreRequests(
 
 void CreateMetadataTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
-  BackgroundFetchRegistration registration;
+  auto registration_data = blink::mojom::BackgroundFetchRegistrationData::New();
 
   if (error == blink::mojom::BackgroundFetchError::NONE) {
     DCHECK(metadata_proto_);
 
-    bool converted =
-        ToBackgroundFetchRegistration(*metadata_proto_, &registration);
+    bool converted = ToBackgroundFetchRegistration(*metadata_proto_,
+                                                   registration_data.get());
     if (!converted) {
       // Database corrupted.
       SetStorageErrorAndFinish(
@@ -425,14 +445,15 @@ void CreateMetadataTask::FinishWithError(
     }
 
     for (auto& observer : data_manager()->observers()) {
-      observer.OnRegistrationCreated(registration_id_, registration, options_,
-                                     icon_, requests_.size(), start_paused_);
+      observer.OnRegistrationCreated(registration_id_, *registration_data,
+                                     options_.Clone(), icon_, requests_.size(),
+                                     start_paused_);
     }
   }
 
   ReportStorageError();
 
-  std::move(callback_).Run(error, registration);
+  std::move(callback_).Run(error, std::move(registration_data));
   Finished();  // Destroys |this|.
 }
 
@@ -441,5 +462,4 @@ std::string CreateMetadataTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

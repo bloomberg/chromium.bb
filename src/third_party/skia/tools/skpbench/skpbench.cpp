@@ -5,6 +5,9 @@
  * found in the LICENSE file.
  */
 
+#include "CommandLineFlags.h"
+#include "CommonFlags.h"
+#include "CommonFlagsConfig.h"
 #include "DDLPromiseImageHelper.h"
 #include "DDLTileHelper.h"
 #include "GpuTimer.h"
@@ -12,11 +15,9 @@
 #include "GrContextFactory.h"
 #include "GrContextPriv.h"
 #include "SkCanvas.h"
-#include "SkCommonFlags.h"
-#include "SkCommonFlagsGpu.h"
 #include "SkDeferredDisplayList.h"
-#include "SkGraphics.h"
 #include "SkGr.h"
+#include "SkGraphics.h"
 #include "SkOSFile.h"
 #include "SkOSPath.h"
 #include "SkPerlinNoiseShader.h"
@@ -26,9 +27,7 @@
 #include "SkSurface.h"
 #include "SkSurfaceProps.h"
 #include "SkTaskGroup.h"
-#include "flags/SkCommandLineFlags.h"
-#include "flags/SkCommonFlagsConfig.h"
-#include "sk_tool_utils.h"
+#include "ToolUtils.h"
 
 #ifdef SK_XML
 #include "SkDOM.h"
@@ -54,19 +53,21 @@
  * Currently, only GPU configs are supported.
  */
 
-DEFINE_bool(ddl, false, "record the skp into DDLs before rendering");
-DEFINE_int32(ddlNumAdditionalThreads, 0, "number of DDL recording threads in addition to main one");
-DEFINE_int32(ddlTilingWidthHeight, 0, "number of tiles along one edge when in DDL mode");
-DEFINE_bool(ddlRecordTime, false, "report just the cpu time spent recording DDLs");
+static DEFINE_bool(ddl, false, "record the skp into DDLs before rendering");
+static DEFINE_int(ddlNumAdditionalThreads, 0,
+                    "number of DDL recording threads in addition to main one");
+static DEFINE_int(ddlTilingWidthHeight, 0, "number of tiles along one edge when in DDL mode");
+static DEFINE_bool(ddlRecordTime, false, "report just the cpu time spent recording DDLs");
 
-DEFINE_int32(duration, 5000, "number of milliseconds to run the benchmark");
-DEFINE_int32(sampleMs, 50, "minimum duration of a sample");
-DEFINE_bool(gpuClock, false, "time on the gpu clock (gpu work only)");
-DEFINE_bool(fps, false, "use fps instead of ms");
-DEFINE_string(src, "", "path to a single .skp or .svg file, or 'warmup' for a builtin warmup run");
-DEFINE_string(png, "", "if set, save a .png proof to disk at this file location");
-DEFINE_int32(verbosity, 4, "level of verbosity (0=none to 5=debug)");
-DEFINE_bool(suppressHeader, false, "don't print a header row before the results");
+static DEFINE_int(duration, 5000, "number of milliseconds to run the benchmark");
+static DEFINE_int(sampleMs, 50, "minimum duration of a sample");
+static DEFINE_bool(gpuClock, false, "time on the gpu clock (gpu work only)");
+static DEFINE_bool(fps, false, "use fps instead of ms");
+static DEFINE_string(src, "",
+                     "path to a single .skp or .svg file, or 'warmup' for a builtin warmup run");
+static DEFINE_string(png, "", "if set, save a .png proof to disk at this file location");
+static DEFINE_int(verbosity, 4, "level of verbosity (0=none to 5=debug)");
+static DEFINE_bool(suppressHeader, false, "don't print a header row before the results");
 
 static const char* header =
 "   accum    median       max       min   stddev  samples  sample_ms  clock  metric  config    bench";
@@ -112,11 +113,11 @@ enum class ExitErr {
     kSoftware     = 70
 };
 
-static void draw_skp_and_flush(SkCanvas*, const SkPicture*);
+static void draw_skp_and_flush(SkSurface*, const SkPicture*);
 static sk_sp<SkPicture> create_warmup_skp();
 static sk_sp<SkPicture> create_skp_from_svg(SkStream*, const char* filename);
 static bool mkdir_p(const SkString& name);
-static SkString join(const SkCommandLineFlags::StringArray&);
+static SkString         join(const CommandLineFlags::StringArray&);
 static void exitf(ExitErr, const char* format, ...);
 
 static void ddl_sample(GrContext* context, DDLTileHelper* tiles, GpuSync* gpuSync, Sample* sample,
@@ -193,17 +194,17 @@ static void run_ddl_benchmark(const sk_gpu_test::FenceSync* fenceSync,
     }
 }
 
-static void run_benchmark(const sk_gpu_test::FenceSync* fenceSync, SkCanvas* canvas,
+static void run_benchmark(const sk_gpu_test::FenceSync* fenceSync, SkSurface* surface,
                           const SkPicture* skp, std::vector<Sample>* samples) {
     using clock = std::chrono::high_resolution_clock;
     const Sample::duration sampleDuration = std::chrono::milliseconds(FLAGS_sampleMs);
     const clock::duration benchDuration = std::chrono::milliseconds(FLAGS_duration);
 
-    draw_skp_and_flush(canvas, skp); // draw 1
+    draw_skp_and_flush(surface, skp); // draw 1
     GpuSync gpuSync(fenceSync);
 
     for (int i = 1; i < kNumFlushesToPrimeCache; ++i) {
-        draw_skp_and_flush(canvas, skp); // draw N
+        draw_skp_and_flush(surface, skp); // draw N
         // Waits for draw N-1 to finish (after draw N's cpu work is done).
         gpuSync.syncToPreviousFrame();
     }
@@ -217,7 +218,7 @@ static void run_benchmark(const sk_gpu_test::FenceSync* fenceSync, SkCanvas* can
         Sample& sample = samples->back();
 
         do {
-            draw_skp_and_flush(canvas, skp);
+            draw_skp_and_flush(surface, skp);
             gpuSync.syncToPreviousFrame();
 
             now = clock::now();
@@ -228,7 +229,7 @@ static void run_benchmark(const sk_gpu_test::FenceSync* fenceSync, SkCanvas* can
 }
 
 static void run_gpu_time_benchmark(sk_gpu_test::GpuTimer* gpuTimer,
-                                   const sk_gpu_test::FenceSync* fenceSync, SkCanvas* canvas,
+                                   const sk_gpu_test::FenceSync* fenceSync, SkSurface* surface,
                                    const SkPicture* skp, std::vector<Sample>* samples) {
     using sk_gpu_test::PlatformTimerQuery;
     using clock = std::chrono::steady_clock;
@@ -240,13 +241,13 @@ static void run_gpu_time_benchmark(sk_gpu_test::GpuTimer* gpuTimer,
                         "results may be unreliable\n");
     }
 
-    draw_skp_and_flush(canvas, skp);
+    draw_skp_and_flush(surface, skp);
     GpuSync gpuSync(fenceSync);
 
     PlatformTimerQuery previousTime = 0;
     for (int i = 1; i < kNumFlushesToPrimeCache; ++i) {
         gpuTimer->queueStart();
-        draw_skp_and_flush(canvas, skp);
+        draw_skp_and_flush(surface, skp);
         previousTime = gpuTimer->queueStop();
         gpuSync.syncToPreviousFrame();
     }
@@ -261,7 +262,7 @@ static void run_gpu_time_benchmark(sk_gpu_test::GpuTimer* gpuTimer,
 
         do {
             gpuTimer->queueStart();
-            draw_skp_and_flush(canvas, skp);
+            draw_skp_and_flush(surface, skp);
             PlatformTimerQuery time = gpuTimer->queueStop();
             gpuSync.syncToPreviousFrame();
 
@@ -323,9 +324,10 @@ void print_result(const std::vector<Sample>& samples, const char* config, const 
 }
 
 int main(int argc, char** argv) {
-    SkCommandLineFlags::SetUsage("Use skpbench.py instead. "
-                                 "You usually don't want to use this program directly.");
-    SkCommandLineFlags::Parse(argc, argv);
+    CommandLineFlags::SetUsage(
+            "Use skpbench.py instead. "
+            "You usually don't want to use this program directly.");
+    CommandLineFlags::Parse(argc, argv);
 
     if (!FLAGS_suppressHeader) {
         printf("%s\n", header);
@@ -407,7 +409,7 @@ int main(int argc, char** argv) {
         exitf(ExitErr::kUnavailable, "failed to get GrPixelConfig from SkColorType: %d",
                                      config->getColorType());
     }
-    int supportedSampleCount = ctx->contextPriv().caps()->getRenderTargetSampleCount(
+    int supportedSampleCount = ctx->priv().caps()->getRenderTargetSampleCount(
             config->getSamples(), grPixConfig);
     if (supportedSampleCount != config->getSamples()) {
         exitf(ExitErr::kUnavailable, "sample count %i not supported by platform",
@@ -448,7 +450,7 @@ int main(int argc, char** argv) {
         if (FLAGS_ddl) {
             run_ddl_benchmark(testCtx->fenceSync(), ctx, canvas, skp.get(), &samples);
         } else {
-            run_benchmark(testCtx->fenceSync(), canvas, skp.get(), &samples);
+            run_benchmark(testCtx->fenceSync(), surface.get(), skp.get(), &samples);
         }
     } else {
         if (FLAGS_ddl) {
@@ -457,7 +459,7 @@ int main(int argc, char** argv) {
         if (!testCtx->gpuTimingSupport()) {
             exitf(ExitErr::kUnavailable, "GPU does not support timing");
         }
-        run_gpu_time_benchmark(testCtx->gpuTimer(), testCtx->fenceSync(), canvas, skp.get(),
+        run_gpu_time_benchmark(testCtx->gpuTimer(), testCtx->fenceSync(), surface.get(), skp.get(),
                                &samples);
     }
     print_result(samples, config->getTag().c_str(), srcname.c_str());
@@ -472,7 +474,7 @@ int main(int argc, char** argv) {
         if (!mkdir_p(SkOSPath::Dirname(FLAGS_png[0]))) {
             exitf(ExitErr::kIO, "failed to create directory for png \"%s\"", FLAGS_png[0]);
         }
-        if (!sk_tool_utils::EncodeImageToFile(FLAGS_png[0], bmp, SkEncodedImageFormat::kPNG, 100)) {
+        if (!ToolUtils::EncodeImageToFile(FLAGS_png[0], bmp, SkEncodedImageFormat::kPNG, 100)) {
             exitf(ExitErr::kIO, "failed to save png to \"%s\"", FLAGS_png[0]);
         }
     }
@@ -480,9 +482,10 @@ int main(int argc, char** argv) {
     exit(0);
 }
 
-static void draw_skp_and_flush(SkCanvas* canvas, const SkPicture* skp) {
+static void draw_skp_and_flush(SkSurface* surface, const SkPicture* skp) {
+    auto canvas = surface->getCanvas();
     canvas->drawPicture(skp);
-    canvas->flush();
+    surface->flush();
 }
 
 static sk_sp<SkPicture> create_warmup_skp() {
@@ -498,7 +501,7 @@ static sk_sp<SkPicture> create_warmup_skp() {
 
     // Use a big path to (theoretically) warmup the CPU.
     SkPath bigPath;
-    sk_tool_utils::make_big_path(bigPath);
+    ToolUtils::make_big_path(bigPath);
     recording->drawPath(bigPath, stroke);
 
     // Use a perlin shader to warmup the GPU.
@@ -534,13 +537,13 @@ static sk_sp<SkPicture> create_skp_from_svg(SkStream* stream, const char* filena
 }
 
 bool mkdir_p(const SkString& dirname) {
-    if (dirname.isEmpty()) {
+    if (dirname.isEmpty() || dirname == SkString("/")) {
         return true;
     }
     return mkdir_p(SkOSPath::Dirname(dirname.c_str())) && sk_mkdir(dirname.c_str());
 }
 
-static SkString join(const SkCommandLineFlags::StringArray& stringArray) {
+static SkString join(const CommandLineFlags::StringArray& stringArray) {
     SkString joined;
     for (int i = 0; i < stringArray.count(); ++i) {
         joined.appendf(i ? " %s" : "%s", stringArray[i]);

@@ -79,18 +79,10 @@ class UsbService {
   void GetTestDevices(std::vector<scoped_refptr<UsbDevice>>* devices);
 
  protected:
-  UsbService(scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+  UsbService();
 
   void NotifyDeviceAdded(scoped_refptr<UsbDevice> device);
   void NotifyDeviceRemoved(scoped_refptr<UsbDevice> device);
-
-  const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() const {
-    return task_runner_;
-  }
-
-  const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner() const {
-    return blocking_task_runner_;
-  }
 
   std::unordered_map<std::string, scoped_refptr<UsbDevice>>& devices() {
     return devices_;
@@ -99,8 +91,6 @@ class UsbService {
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unordered_map<std::string, scoped_refptr<UsbDevice>> devices_;
   std::unordered_set<std::string> testing_devices_;
   base::ObserverList<Observer, true>::Unchecked observer_list_;

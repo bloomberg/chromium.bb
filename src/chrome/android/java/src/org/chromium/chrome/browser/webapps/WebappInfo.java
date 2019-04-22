@@ -379,8 +379,12 @@ public class WebappInfo {
         return mIsIconGenerated;
     }
 
-    /** Returns whether the WebappActivity should be transparent while the page is loading. */
-    public boolean useTransparentSplash() {
+    /**
+     * Returns whether the WebappInfo is for a WebAPK and the WebAPK provides a splash screen
+     * activity that should be launched on top of the web contents in order to hide the web
+     * contents while the page is loading.
+     */
+    public boolean isSplashProvidedByWebApk() {
         return false;
     }
 

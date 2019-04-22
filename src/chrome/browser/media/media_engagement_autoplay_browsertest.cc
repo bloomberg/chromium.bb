@@ -93,7 +93,7 @@ class MediaEngagementAutoplayBrowserTest
 
     // Clear any preloaded MEI data.
     ApplyEmptyPreloadedList();
-  };
+  }
 
   void LoadTestPage(const std::string& page) {
     NavigateParams params(browser()->profile(), http_server_.GetURL("/" + page),
@@ -363,6 +363,6 @@ IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest, TopFrameNavigation) {
   ExpectAutoplayAllowedIfEnabled();
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        MediaEngagementAutoplayBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         MediaEngagementAutoplayBrowserTest,
+                         testing::Bool());

@@ -23,7 +23,7 @@ class CullRectTest : public testing::Test {
 
   CullRect::ApplyTransformResult ApplyTransform(
       CullRect& cull_rect,
-      const TransformPaintPropertyNode* t) {
+      const TransformPaintPropertyNode& t) {
     return cull_rect.ApplyTransformInternal(t);
   }
 
@@ -99,7 +99,7 @@ TEST_F(CullRectTest, ApplyTransform) {
   CullRect cull_rect(IntRect(1, 1, 50, 50));
   auto transform =
       CreateTransform(t0(), TransformationMatrix().Translate(1, 1));
-  EXPECT_EQ(kNotExpanded, ApplyTransform(cull_rect, transform.get()));
+  EXPECT_EQ(kNotExpanded, ApplyTransform(cull_rect, *transform));
 
   EXPECT_EQ(IntRect(0, 0, 50, 50), cull_rect.Rect());
 }
@@ -108,13 +108,13 @@ TEST_F(CullRectTest, ApplyTransformInfinite) {
   CullRect cull_rect = CullRect::Infinite();
   auto transform =
       CreateTransform(t0(), TransformationMatrix().Translate(1, 1));
-  EXPECT_EQ(kNotExpanded, ApplyTransform(cull_rect, transform.get()));
+  EXPECT_EQ(kNotExpanded, ApplyTransform(cull_rect, *transform));
 
   EXPECT_TRUE(cull_rect.IsInfinite());
 }
 
 TEST_F(CullRectTest, ApplyScrollTranslationPartialScrollingContents) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
 
   ScrollPaintPropertyNode::State scroll_state;
   scroll_state.container_rect = IntRect(20, 10, 40, 50);
@@ -126,7 +126,7 @@ TEST_F(CullRectTest, ApplyScrollTranslationPartialScrollingContents) {
 
   CullRect cull_rect(IntRect(0, 0, 50, 100));
   EXPECT_EQ(kExpandedForPartialScrollingContents,
-            ApplyTransform(cull_rect, scroll_translation.get()));
+            ApplyTransform(cull_rect, *scroll_translation));
 
   // Clipped: (20, 10, 30, 50)
   // Inverse transformed: (3020, 5010, 30, 50)
@@ -135,14 +135,14 @@ TEST_F(CullRectTest, ApplyScrollTranslationPartialScrollingContents) {
 
   cull_rect = CullRect::Infinite();
   EXPECT_EQ(kExpandedForPartialScrollingContents,
-            ApplyTransform(cull_rect, scroll_translation.get()));
+            ApplyTransform(cull_rect, *scroll_translation));
   // This result differs from the above result in height (8040 vs 8030)
   // because it's not clipped by the infinite input cull rect.
   EXPECT_EQ(IntRect(-980, 1010, 8040, 8050), cull_rect.Rect());
 }
 
 TEST_F(CullRectTest, ApplyScrollTranslationNoIntersectionWithContainerRect) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
 
   ScrollPaintPropertyNode::State scroll_state;
   scroll_state.container_rect = IntRect(200, 100, 40, 50);
@@ -152,12 +152,12 @@ TEST_F(CullRectTest, ApplyScrollTranslationNoIntersectionWithContainerRect) {
   auto scroll_translation = CreateScrollTranslation(t0(), -10, -15, *scroll);
 
   CullRect cull_rect(IntRect(0, 0, 50, 100));
-  EXPECT_EQ(kNotExpanded, ApplyTransform(cull_rect, scroll_translation.get()));
+  EXPECT_EQ(kNotExpanded, ApplyTransform(cull_rect, *scroll_translation));
   EXPECT_TRUE(cull_rect.Rect().IsEmpty());
 }
 
 TEST_F(CullRectTest, ApplyScrollTranslationWholeScrollingContents) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
 
   ScrollPaintPropertyNode::State scroll_state;
   scroll_state.container_rect = IntRect(20, 10, 40, 50);
@@ -168,7 +168,7 @@ TEST_F(CullRectTest, ApplyScrollTranslationWholeScrollingContents) {
 
   CullRect cull_rect(IntRect(0, 0, 50, 100));
   EXPECT_EQ(kExpandedForWholeScrollingContents,
-            ApplyTransform(cull_rect, scroll_translation.get()));
+            ApplyTransform(cull_rect, *scroll_translation));
 
   // Clipped: (20, 10, 30, 50)
   // Inverse transformed: (30, 25, 30, 50)
@@ -177,14 +177,14 @@ TEST_F(CullRectTest, ApplyScrollTranslationWholeScrollingContents) {
 
   cull_rect = CullRect::Infinite();
   EXPECT_EQ(kExpandedForWholeScrollingContents,
-            ApplyTransform(cull_rect, scroll_translation.get()));
+            ApplyTransform(cull_rect, *scroll_translation));
   // This result differs from the above result in height (8040 vs 8030)
   // because it's not clipped by the infinite input cull rect.
   EXPECT_EQ(IntRect(-3970, -3975, 8040, 8050), cull_rect.Rect());
 }
 
 TEST_F(CullRectTest, ChangedEnoughEmpty) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   EXPECT_FALSE(ChangedEnough(IntRect(), IntRect()));
   EXPECT_FALSE(ChangedEnough(IntRect(1, 1, 0, 0), IntRect(2, 2, 0, 0)));
   EXPECT_TRUE(ChangedEnough(IntRect(), IntRect(0, 0, 1, 1)));
@@ -192,7 +192,7 @@ TEST_F(CullRectTest, ChangedEnoughEmpty) {
 }
 
 TEST_F(CullRectTest, ChangedNotEnough) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   IntRect old_rect(100, 100, 100, 100);
   EXPECT_FALSE(ChangedEnough(old_rect, old_rect));
   EXPECT_FALSE(ChangedEnough(old_rect, IntRect(100, 100, 90, 90)));
@@ -201,7 +201,7 @@ TEST_F(CullRectTest, ChangedNotEnough) {
 }
 
 TEST_F(CullRectTest, ChangedEnoughScrollScenarios) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   IntRect old_rect(100, 100, 100, 100);
   IntRect new_rect(old_rect);
   new_rect.Move(500, 0);
@@ -215,52 +215,52 @@ TEST_F(CullRectTest, ChangedEnoughScrollScenarios) {
 }
 
 TEST_F(CullRectTest, ApplyTransformsSameTransform) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto transform =
       CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
   CullRect cull_rect1(IntRect(1, 1, 50, 50));
-  cull_rect1.ApplyTransforms(transform.get(), transform.get(), base::nullopt);
+  cull_rect1.ApplyTransforms(*transform, *transform, base::nullopt);
   EXPECT_EQ(IntRect(1, 1, 50, 50), cull_rect1.Rect());
 
   CullRect old_cull_rect = cull_rect1;
   old_cull_rect.Move(IntSize(1, 1));
   CullRect cull_rect2(IntRect(1, 1, 50, 50));
   // Should ignore old_cull_rect.
-  cull_rect2.ApplyTransforms(transform.get(), transform.get(), old_cull_rect);
+  cull_rect2.ApplyTransforms(*transform, *transform, old_cull_rect);
   EXPECT_EQ(cull_rect1, cull_rect2);
 
   CullRect infinite = CullRect::Infinite();
-  infinite.ApplyTransforms(transform.get(), transform.get(), base::nullopt);
+  infinite.ApplyTransforms(*transform, *transform, base::nullopt);
   EXPECT_TRUE(infinite.IsInfinite());
 }
 
 TEST_F(CullRectTest, ApplyTransformsWithoutScroll) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
   auto t2 = CreateTransform(*t1, TransformationMatrix().Translate(10, 20));
 
   CullRect cull_rect1(IntRect(1, 1, 50, 50));
-  cull_rect1.ApplyTransforms(t1.get(), t2.get(), base::nullopt);
+  cull_rect1.ApplyTransforms(*t1, *t2, base::nullopt);
   EXPECT_EQ(IntRect(-9, -19, 50, 50), cull_rect1.Rect());
 
   CullRect cull_rect2(IntRect(1, 1, 50, 50));
-  cull_rect2.ApplyTransforms(&t0(), t2.get(), base::nullopt);
+  cull_rect2.ApplyTransforms(t0(), *t2, base::nullopt);
   EXPECT_EQ(IntRect(-10, -21, 50, 50), cull_rect2.Rect());
 
   CullRect old_cull_rect = cull_rect2;
   old_cull_rect.Move(IntSize(1, 1));
   CullRect cull_rect3(IntRect(1, 1, 50, 50));
   // Should ignore old_cull_rect.
-  cull_rect3.ApplyTransforms(&t0(), t2.get(), old_cull_rect);
+  cull_rect3.ApplyTransforms(t0(), *t2, old_cull_rect);
   EXPECT_EQ(cull_rect2, cull_rect3);
 
   CullRect infinite = CullRect::Infinite();
-  infinite.ApplyTransforms(&t0(), t2.get(), base::nullopt);
+  infinite.ApplyTransforms(t0(), *t2, base::nullopt);
   EXPECT_TRUE(infinite.IsInfinite());
 }
 
 TEST_F(CullRectTest, ApplyTransformsSingleScrollWholeScrollingContents) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
 
   ScrollPaintPropertyNode::State scroll_state;
@@ -272,25 +272,25 @@ TEST_F(CullRectTest, ApplyTransformsSingleScrollWholeScrollingContents) {
 
   // Same as ApplyScrollTranslationWholeScrollingContents.
   CullRect cull_rect1(IntRect(0, 0, 50, 100));
-  cull_rect1.ApplyTransforms(t1.get(), scroll_translation.get(), base::nullopt);
+  cull_rect1.ApplyTransforms(*t1, *scroll_translation, base::nullopt);
   EXPECT_EQ(IntRect(-3970, -3975, 8030, 8050), cull_rect1.Rect());
 
   CullRect old_cull_rect = cull_rect1;
   old_cull_rect.Move(IntSize(1, 1));
   CullRect cull_rect2(IntRect(0, 0, 50, 100));
   // Should ignore old_cull_rect.
-  cull_rect2.ApplyTransforms(t1.get(), scroll_translation.get(), old_cull_rect);
+  cull_rect2.ApplyTransforms(*t1, *scroll_translation, old_cull_rect);
   EXPECT_EQ(cull_rect1, cull_rect2);
 
   CullRect cull_rect3 = CullRect::Infinite();
-  cull_rect3.ApplyTransforms(t1.get(), scroll_translation.get(), base::nullopt);
+  cull_rect3.ApplyTransforms(*t1, *scroll_translation, base::nullopt);
   // This result differs from the first result in height (8040 vs 8030)
   // because it's not clipped by the infinite input cull rect.
   EXPECT_EQ(IntRect(-3970, -3975, 8040, 8050), cull_rect3.Rect());
 }
 
 TEST_F(CullRectTest, ApplyTransformsSingleScrollPartialScrollingContents) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
 
   ScrollPaintPropertyNode::State scroll_state;
@@ -302,31 +302,31 @@ TEST_F(CullRectTest, ApplyTransformsSingleScrollPartialScrollingContents) {
 
   // Same as ApplyScrollTranslationPartialScrollingContents.
   CullRect cull_rect1(IntRect(0, 0, 50, 100));
-  cull_rect1.ApplyTransforms(t1.get(), scroll_translation.get(), base::nullopt);
+  cull_rect1.ApplyTransforms(*t1, *scroll_translation, base::nullopt);
   EXPECT_EQ(IntRect(-980, 1010, 8030, 8050), cull_rect1.Rect());
 
   CullRect old_cull_rect = cull_rect1;
   old_cull_rect.Move(IntSize(1, 1));
   CullRect cull_rect2(IntRect(0, 0, 50, 100));
   // Use old_cull_rect if the new cull rect didn't change enough.
-  cull_rect2.ApplyTransforms(t1.get(), scroll_translation.get(), old_cull_rect);
+  cull_rect2.ApplyTransforms(*t1, *scroll_translation, old_cull_rect);
   EXPECT_EQ(old_cull_rect, cull_rect2);
 
   old_cull_rect.Move(IntSize(1000, 1000));
   CullRect cull_rect3(IntRect(0, 0, 50, 100));
   // Use the new cull rect if it changed enough.
-  cull_rect3.ApplyTransforms(t1.get(), scroll_translation.get(), old_cull_rect);
+  cull_rect3.ApplyTransforms(*t1, *scroll_translation, old_cull_rect);
   EXPECT_EQ(cull_rect1, cull_rect3);
 
   CullRect cull_rect4 = CullRect::Infinite();
-  cull_rect4.ApplyTransforms(t1.get(), scroll_translation.get(), base::nullopt);
+  cull_rect4.ApplyTransforms(*t1, *scroll_translation, base::nullopt);
   // This result differs from the first result in height (8040 vs 8030)
   // because it's not clipped by the infinite input cull rect.
   EXPECT_EQ(IntRect(-980, 1010, 8040, 8050), cull_rect4.Rect());
 }
 
 TEST_F(CullRectTest, ApplyTransformsEscapingScroll) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
 
   ScrollPaintPropertyNode::State scroll_state;
@@ -340,19 +340,19 @@ TEST_F(CullRectTest, ApplyTransformsEscapingScroll) {
 
   CullRect cull_rect1(IntRect(0, 0, 50, 100));
   // Just apply tranforms without clipping and expansion for scroll translation.
-  cull_rect1.ApplyTransforms(t2.get(), t1.get(), base::nullopt);
+  cull_rect1.ApplyTransforms(*t2, *t1, base::nullopt);
   EXPECT_EQ(IntRect(-2900, -4800, 50, 100), cull_rect1.Rect());
 
   CullRect old_cull_rect = cull_rect1;
   old_cull_rect.Move(IntSize(1, 1));
   CullRect cull_rect2(IntRect(0, 0, 50, 100));
   // Should ignore old_cull_rect.
-  cull_rect2.ApplyTransforms(t2.get(), t1.get(), old_cull_rect);
+  cull_rect2.ApplyTransforms(*t2, *t1, old_cull_rect);
   EXPECT_EQ(cull_rect1, cull_rect2);
 }
 
 TEST_F(CullRectTest, ApplyTransformsSmallScrollContentsAfterBigScrollContents) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
 
   ScrollPaintPropertyNode::State scroll_state1;
@@ -373,21 +373,19 @@ TEST_F(CullRectTest, ApplyTransformsSmallScrollContentsAfterBigScrollContents) {
   auto scroll_translation2 = CreateScrollTranslation(*t2, -10, -15, *scroll2);
 
   CullRect cull_rect1(IntRect(0, 0, 50, 100));
-  cull_rect1.ApplyTransforms(t1.get(), scroll_translation2.get(),
-                             base::nullopt);
+  cull_rect1.ApplyTransforms(*t1, *scroll_translation2, base::nullopt);
   EXPECT_EQ(IntRect(-3960, -3965, 8100, 8200), cull_rect1.Rect());
 
   CullRect old_cull_rect = cull_rect1;
   old_cull_rect.Move(IntSize(1, 1));
   CullRect cull_rect2(IntRect(0, 0, 50, 100));
   // Should ignore old_cull_rect.
-  cull_rect2.ApplyTransforms(t1.get(), scroll_translation2.get(),
-                             old_cull_rect);
+  cull_rect2.ApplyTransforms(*t1, *scroll_translation2, old_cull_rect);
   EXPECT_EQ(cull_rect1, cull_rect2);
 }
 
 TEST_F(CullRectTest, ApplyTransformsBigScrollContentsAfterSmallScrollContents) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+  ScopedCompositeAfterPaintForTest cap(true);
   auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
 
   ScrollPaintPropertyNode::State scroll_state1;
@@ -409,8 +407,7 @@ TEST_F(CullRectTest, ApplyTransformsBigScrollContentsAfterSmallScrollContents) {
       CreateScrollTranslation(*t2, -3000, -5000, *scroll2);
 
   CullRect cull_rect1(IntRect(0, 0, 100, 200));
-  cull_rect1.ApplyTransforms(t1.get(), scroll_translation2.get(),
-                             base::nullopt);
+  cull_rect1.ApplyTransforms(*t1, *scroll_translation2, base::nullopt);
   // After the first scroll: (-3960, -3965, 8070, 8180)
   // After t2: (-3980, -3975, 8070, 8180)
   // Clipped by the container rect of the second scroll: (20, 10, 50, 100)
@@ -422,15 +419,13 @@ TEST_F(CullRectTest, ApplyTransformsBigScrollContentsAfterSmallScrollContents) {
   old_cull_rect.Move(IntSize(1, 1));
   CullRect cull_rect2(IntRect(0, 0, 100, 200));
   // Use old_cull_rect if the new cull rect didn't change enough.
-  cull_rect2.ApplyTransforms(t1.get(), scroll_translation2.get(),
-                             old_cull_rect);
+  cull_rect2.ApplyTransforms(*t1, *scroll_translation2, old_cull_rect);
   EXPECT_EQ(old_cull_rect, cull_rect2);
 
   old_cull_rect.Move(IntSize(1000, 1000));
   CullRect cull_rect3(IntRect(0, 0, 100, 200));
   // Use the new cull rect if it changed enough.
-  cull_rect3.ApplyTransforms(t1.get(), scroll_translation2.get(),
-                             old_cull_rect);
+  cull_rect3.ApplyTransforms(*t1, *scroll_translation2, old_cull_rect);
   EXPECT_EQ(cull_rect1, cull_rect3);
 }
 

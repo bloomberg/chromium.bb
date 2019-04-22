@@ -9,6 +9,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -18,6 +19,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/devtools/device/usb/usb_device_manager_helper.h"
+#include "chrome/browser/devtools/device/usb/usb_device_provider.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
@@ -336,16 +340,15 @@ class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {
       const DeviceProviders& providers,
       const DescriptorsCallback& callback) {
     // Don't keep counted reference on calling thread;
-    DevicesRequest* request = new DevicesRequest(callback);
-    // Avoid destruction while sending requests
-    request->AddRef();
+    scoped_refptr<DevicesRequest> request =
+        base::WrapRefCounted(new DevicesRequest(callback));
     for (auto it = providers.begin(); it != providers.end(); ++it) {
       device_task_runner->PostTask(
           FROM_HERE, base::BindOnce(&DeviceProvider::QueryDevices, *it,
                                     base::Bind(&DevicesRequest::ProcessSerials,
                                                request, *it)));
     }
-    device_task_runner->ReleaseSoon(FROM_HERE, request);
+    device_task_runner->ReleaseSoon(FROM_HERE, std::move(request));
   }
 
  private:
@@ -376,7 +379,13 @@ class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {
   std::unique_ptr<DeviceDescriptors> descriptors_;
 };
 
-} // namespace
+void OnCountDevices(const base::Callback<void(int)>& callback,
+                    int device_count) {
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback, device_count));
+}
+
+}  // namespace
 
 AndroidDeviceManager::BrowserInfo::BrowserInfo()
     : type(kTypeOther) {
@@ -532,9 +541,10 @@ AndroidDeviceManager::HandlerThread::~HandlerThread() {
   if (!thread_)
     return;
   // Shut down thread on a thread other than UI so it can join a thread.
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-                           base::BindOnce(&HandlerThread::StopThread, thread_));
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&HandlerThread::StopThread, thread_));
 }
 
 // static
@@ -545,10 +555,7 @@ std::unique_ptr<AndroidDeviceManager> AndroidDeviceManager::Create() {
 void AndroidDeviceManager::SetDeviceProviders(
     const DeviceProviders& providers) {
   for (auto it = providers_.begin(); it != providers_.end(); ++it) {
-    (*it)->AddRef();
-    DeviceProvider* raw_ptr = it->get();
-    *it = nullptr;
-    handler_thread_->message_loop()->ReleaseSoon(FROM_HERE, raw_ptr);
+    handler_thread_->message_loop()->ReleaseSoon(FROM_HERE, std::move(*it));
   }
   providers_ = providers;
 }
@@ -559,10 +566,25 @@ void AndroidDeviceManager::QueryDevices(const DevicesCallback& callback) {
                                    weak_factory_.GetWeakPtr(), callback));
 }
 
-AndroidDeviceManager::AndroidDeviceManager()
-    : handler_thread_(HandlerThread::GetInstance()),
-      weak_factory_(this) {
+void AndroidDeviceManager::CountDevices(
+    const base::Callback<void(int)>& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  handler_thread_->message_loop()->PostTask(
+      FROM_HERE, base::BindOnce(&UsbDeviceManagerHelper::CountDevices,
+                                base::BindOnce(&OnCountDevices, callback)));
 }
+
+void AndroidDeviceManager::set_usb_device_manager_for_test(
+    device::mojom::UsbDeviceManagerPtrInfo fake_usb_manager) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  handler_thread_->message_loop()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UsbDeviceManagerHelper::SetUsbManagerForTesting,
+                     std::move(fake_usb_manager)));
+}
+
+AndroidDeviceManager::AndroidDeviceManager()
+    : handler_thread_(HandlerThread::GetInstance()), weak_factory_(this) {}
 
 AndroidDeviceManager::~AndroidDeviceManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

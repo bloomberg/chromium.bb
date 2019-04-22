@@ -5,7 +5,10 @@
 #include "content/browser/renderer_host/pepper/pepper_network_monitor_host.h"
 
 #include <stddef.h>
+#include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
@@ -16,6 +19,7 @@
 #include "content/public/common/socket_permission_request.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace content {
 
@@ -35,11 +39,23 @@ bool CanUseNetworkMonitor(bool external_plugin,
                                                render_frame_id);
 }
 
-std::unique_ptr<net::NetworkInterfaceList> GetNetworkList() {
-  std::unique_ptr<net::NetworkInterfaceList> list(
-      new net::NetworkInterfaceList());
-  net::GetNetworkList(list.get(), net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
-  return list;
+void OnGetNetworkList(
+    base::OnceCallback<void(const net::NetworkInterfaceList&)> callback,
+    const base::Optional<net::NetworkInterfaceList>& networks) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(std::move(callback), networks.has_value()
+                                              ? *networks
+                                              : net::NetworkInterfaceList()));
+}
+
+void GetNetworkList(
+    base::OnceCallback<void(const net::NetworkInterfaceList&)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::GetNetworkService()->GetNetworkList(
+      net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+      base::BindOnce(&OnGetNetworkList, std::move(callback)));
 }
 
 }  // namespace
@@ -102,23 +118,21 @@ void PepperNetworkMonitorHost::SetNetworkConnectionTracker(
 
 void PepperNetworkMonitorHost::GetAndSendNetworkList() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // Call GetNetworkList() on a thread that allows blocking IO.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&GetNetworkList),
-      base::Bind(&PepperNetworkMonitorHost::SendNetworkList,
-                 weak_factory_.GetWeakPtr()));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&GetNetworkList,
+                     base::BindOnce(&PepperNetworkMonitorHost::SendNetworkList,
+                                    weak_factory_.GetWeakPtr())));
 }
 
 void PepperNetworkMonitorHost::SendNetworkList(
-    std::unique_ptr<net::NetworkInterfaceList> list) {
+    const net::NetworkInterfaceList& list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::unique_ptr<ppapi::proxy::SerializedNetworkList> list_copy(
-      new ppapi::proxy::SerializedNetworkList(list->size()));
-  for (size_t i = 0; i < list->size(); ++i) {
-    const net::NetworkInterface& network = list->at(i);
+      new ppapi::proxy::SerializedNetworkList(list.size()));
+  for (size_t i = 0; i < list.size(); ++i) {
+    const net::NetworkInterface& network = list.at(i);
     ppapi::proxy::SerializedNetworkInfo& network_copy = list_copy->at(i);
     network_copy.name = network.name;
 

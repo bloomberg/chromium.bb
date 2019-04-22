@@ -7,12 +7,13 @@ module ws.mojom;
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
-import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
+import "services/viz/public/interfaces/compositing/local_surface_id_allocation.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
-import "services/ws/public/mojom/cursor/cursor.mojom";
 import "services/ws/public/mojom/window_manager.mojom";
 import "services/ws/public/mojom/screen_provider_observer.mojom";
 import "services/ws/public/mojom/window_tree_constants.mojom";
+import "ui/base/ime/mojo/ime.mojom";
+import "ui/base/mojo/cursor.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/events/mojo/event_constants.mojom";
@@ -66,7 +67,6 @@ interface WindowTree {
   // Requests the WindowManager to create a new top level window. On success
   // OnTopLevelCreated() is called with the WindowData for the new window. On
   // failure OnChangeCompleted() is called.
-  // TODO(sky): this likely needs context, maybe in |properties|.
   NewTopLevelWindow(uint32 change_id,
                     uint64 window_id,
                     map<string, array<uint8>> properties);
@@ -105,10 +105,32 @@ interface WindowTree {
 
   // Sets the specified bounds of the specified window. The window will paint
   // the frame in the provided |local_frame_id|, if any.
-  SetWindowBounds(uint32 change_id,
-                  uint64 window_id,
-                  gfx.mojom.Rect bounds,
-                  viz.mojom.LocalSurfaceId? local_surface_id);
+  // |local_surface_id_allocation| need only be supplied for roots.
+  // For top-levels, clients may supply a null LocalSurfaceIdAllocation, before
+  // OnTopLevelCreated() is called (clients receive the initial
+  // LocalSurfaceIdAllocation in OnTopLevelCreated()). While clients may supply
+  // a LocalSurfaceIdAllocation for top-levels, they are only allowed to
+  // change the child-sequence number portion of the id. Supplying a different
+  // embed token results in failure, and changes to the parent sequence number
+  // are ignored.
+  // |bounds| are in DIPs.
+  SetWindowBounds(
+      uint32 change_id,
+      uint64 window_id,
+      gfx.mojom.Rect bounds,
+      viz.mojom.LocalSurfaceIdAllocation? local_surface_id_allocation);
+
+  // Updates the LocalSurfaceIdAllocation for a window from the child. Does
+  // nothing if |window_id| does not identify a top-level. See comment in
+  // SetWindowBounds() for allowable values of |local_surface_id_allocation|.
+  UpdateLocalSurfaceIdFromChild(
+      uint64 window_id,
+      viz.mojom.LocalSurfaceIdAllocation local_surface_id_allocation);
+
+  // Asks the server to generate a new LocalSurfaceId for a window. The server
+  // responds with the new LocalSurfaceId by way of OnWindowBoundsChanged().
+  // This is only useful for top-levels.
+  AllocateLocalSurfaceId(uint64 window_id);
 
   SetWindowTransform(uint32 change_id,
                      uint64 window_id,
@@ -129,6 +151,13 @@ interface WindowTree {
                    gfx.mojom.Insets mouse,
                    gfx.mojom.Insets touch);
 
+  // Specifies the shape of the window. The region outside of the shape becomes
+  // transparent and should be considered to be outside of the widget, so
+  // underlying window will be targeted. Each element of |shape| is relative to
+  // the window's coordinate. Empty means to reset the settings, so the normal
+  // rectangular region will be used.
+  SetShape(uint64 window_id, array<gfx.mojom.Rect> shape);
+
   // Called by clients that want to accept drag and drops. Windows default to
   // this being disabled; a window must actively opt-in to receiving OnDrag*()
   // calls.
@@ -148,6 +177,9 @@ interface WindowTree {
 
   // Sets the opacity of the specified window to |opacity|.
   SetWindowOpacity(uint32 change_id, uint64 window_id, float opacity);
+
+  // Sets the transparent status of the specified window to |transparent|.
+  SetWindowTransparent(uint32 change_id, uint64 window_id, bool transparent);
 
   // Attaches a CompositorFrameSink to a particular window.
   AttachCompositorFrameSink(
@@ -294,7 +326,7 @@ interface WindowTree {
   SetCanFocus(uint64 window_id, bool can_focus);
 
   // Sets the cursor when the pointer is inside |window_id|.
-  SetCursor(uint32 change_id, uint64 window_id, CursorData cursor);
+  SetCursor(uint32 change_id, uint64 window_id, ui.mojom.Cursor cursor);
 
   // Set text input state for the given window.
   SetWindowTextInputState(uint64 window_id, ui.mojom.TextInputState state);
@@ -339,12 +371,14 @@ interface WindowTree {
   // where the location is (x << 16) | y.
   GetCursorLocationMemory() => (handle<shared_buffer> cursor_buffer);
 
-  // Tells the window manager to start moving the window. OnChangeCompleted is
-  // called on whether the move was canceled. Because there's a delay between
-  // when a client sends this message and when the window manager starts acting
-  // on it, pass the cursor location at the start of the move.
+  // Tells the window manager to start moving or resizing the window.
+  // OnChangeCompleted is called on whether the move was canceled. Because
+  // there's a delay between when a client sends this message and when the
+  // window manager starts acting on it, pass the cursor location at the start
+  // of the move. |hit_test| specifies the type of the session; kCaption for
+  // moving.
   PerformWindowMove(uint32 change_id, uint64 window_id, MoveLoopSource source,
-                    gfx.mojom.Point cursor);
+                    gfx.mojom.Point cursor, ui.mojom.HitTest hit_test);
 
   // Tells the window manager to cancel any in progress window move started with
   // StartWindowMove() and to revert the window bounds to how they were.
@@ -381,6 +415,10 @@ interface WindowTree {
   // the topmost window under the cursor.
   StopObservingTopmostWindow();
 
+  // Sets the resize shadow for |hit_test| to the specified window. It hides
+  // the shadow when kNowhere is set.
+  SetWindowResizeShadow(uint64 window_id, ui.mojom.HitTest hit_test);
+
   // Called by the client to cancel active touch events. not_cancelled_window_id
   // is a window ID, and that window is excluded from cancelling. When
   // not_cancelled_window_id is invalid, active touch events should be cancelled
@@ -411,6 +449,12 @@ interface WindowTree {
   // all outstanding pause requests are cleared, server will re-compute
   // occlusion states for the tracked windows and send back updates.
   UnpauseWindowOcclusionTracking();
+
+  // Called by the client every time the focus changes, to build the connection
+  // between the client and the IME. And Window Service makes sure that only
+  // focused client can have the connection.
+  ConnectToImeEngine(ime.mojom.ImeEngine& engine_request,
+                     ime.mojom.ImeEngineClient client);
 };
 
 // Changes to windows are not sent to the connection that originated the
@@ -435,14 +479,15 @@ interface WindowTreeClient {
           int64 display_id,
           uint64 focused_window,
           bool parent_drawn,
-          viz.mojom.LocalSurfaceId? local_surface_id);
+          viz.mojom.LocalSurfaceIdAllocation? local_surface_id_allocation);
 
   // See description in ScheduleEmbedForExistingClient() for details on this.
   // Supplied arguments match that of OnEmbed().
-  OnEmbedFromToken(mojo_base.mojom.UnguessableToken token,
-                   WindowData root,
-                   int64 display_id,
-                   viz.mojom.LocalSurfaceId? local_surface_id);
+  OnEmbedFromToken(
+      mojo_base.mojom.UnguessableToken token,
+      WindowData root,
+      int64 display_id,
+      viz.mojom.LocalSurfaceIdAllocation? local_surface_id_allocation);
 
   // Invoked when the application embedded at |window| is disconnected. In other
   // words the embedded app closes the connection to the server. This is called
@@ -466,23 +511,25 @@ interface WindowTreeClient {
   // Called in response to NewTopLevelWindow() successfully completing.
   // |parent_drawn| is true if the parent of the window is drawn, see
   // OnDrawnStateChanged() for details. |display_id| identifies the display this
-  // window is on. If the top level window has a size, |local_surface_id|
-  // identifies the ID to use to submit CompositorFrames.
-  OnTopLevelCreated(uint32 change_id,
-                    WindowData data,
-                    int64 display_id,
-                    bool parent_drawn,
-                    viz.mojom.LocalSurfaceId? local_surface_id);
+  // window is on.
+  OnTopLevelCreated(
+      uint32 change_id,
+      WindowData data,
+      int64 display_id,
+      bool parent_drawn,
+      viz.mojom.LocalSurfaceIdAllocation local_surface_id_allocation);
 
-  // Invoked when a window's bounds have changed. Only the client embedded in
-  // |window| gets a non_empty |local_surface_id|.
-  OnWindowBoundsChanged(uint64 window,
-                        gfx.mojom.Rect old_bounds,
-                        gfx.mojom.Rect new_bounds,
-                        viz.mojom.LocalSurfaceId? local_surface_id);
+  // Invoked when a window's bounds have changed. |state| is supplied for roots,
+  // and SHOW_STATE_DEFAULT for non-roots. It allows the client to
+  // simultaneously update both bounds and show state, e.g. after a maximize
+  // operation. |local_surface_id_allocation| is only supplied for roots.
+  OnWindowBoundsChanged(
+      uint64 window,
+      gfx.mojom.Rect new_bounds,
+      ui.mojom.WindowShowState state,
+      viz.mojom.LocalSurfaceIdAllocation? local_surface_id_allocation);
 
   OnWindowTransformChanged(uint64 window,
-                           gfx.mojom.Transform old_transform,
                            gfx.mojom.Transform new_transform);
 
   OnTransientWindowAdded(uint64 window_id,
@@ -516,9 +563,6 @@ interface WindowTreeClient {
 
   // Invoked when the visibility of the specified window changes.
   OnWindowVisibilityChanged(uint64 window, bool visible);
-
-  // Invoked when the opacity of the specified window has changed.
-  OnWindowOpacityChanged(uint64 window, float old_opacity, float new_opacity);
 
   // Invoked when the window moves to a new display. This is only called on
   // a top-level window or an embedded root.
@@ -567,7 +611,7 @@ interface WindowTreeClient {
   // initiate the change.
   OnWindowFocused(uint64 focused_window_id);
 
-  OnWindowCursorChanged(uint64 window_id, CursorData cursor);
+  OnWindowCursorChanged(uint64 window_id, ui.mojom.Cursor cursor);
 
   // Called when the mouse cursor enters a window on this connection for the
   // first time, providing a list of available mime types. We want to send this
@@ -577,29 +621,34 @@ interface WindowTreeClient {
 
   // Called when the mouse cursor enters a window that has opted into accepting
   // drags through SetAcceptsDrags(), providing a list of available mime types.
-  // Returns a bitmask of the supported operations.
-  // |screen_position| is in screen coordinates.
+  // |location_in_root| is the location relative to the embed root of |window|.
+  // |location| is the location relative to |window|.
+  // If |window| is a top-level or embed root, then |location_in_root| is the
+  // same as |location|. Callback is supplied the supported operations.
   OnDragEnter(uint64 window,
               uint32 key_state,
-              gfx.mojom.Point screen_position,
+              gfx.mojom.PointF location_in_root,
+              gfx.mojom.PointF location,
               uint32 effect_bitmask) => (uint32 supported_op_bitmask);
 
   // Called when the pointer moves over the window after the initial DragEnter.
-  // Returns a bitmask of the supported operations at this location.
-  // |screen_position| is in screen coordinates.
+  // Returns a bitmask of the supported operations at this location. See
+  // OnDragEnter() for details on coordinates.
   OnDragOver(uint64 window,
              uint32 key_state,
-             gfx.mojom.Point screen_position,
+             gfx.mojom.PointF location_in_root,
+             gfx.mojom.PointF location,
              uint32 effect_bitmask) => (uint32 supported_op_bitmask);
 
   // Called when the pointer leaves a window or if the drop is canceled.
   OnDragLeave(uint64 window);
 
-  // Called when the drop occurs on a window. Returns the action taken.
-  // |screen_position| is in screen coordinates.
+  // Called when the drop occurs on a window. Returns the action taken. See
+  // OnDragEnter() for details on coordinates.
   OnCompleteDrop(uint64 window,
                  uint32 key_state,
-                 gfx.mojom.Point screen_position,
+                 gfx.mojom.PointF location_in_root,
+                 gfx.mojom.PointF location,
                  uint32 effect_bitmask) => (uint32 action_taken);
 
   // Called on the client that requested PerformDragDrop() to return which drag
@@ -633,9 +682,23 @@ interface WindowTreeClient {
   // ScreenProviderObserver for details.
   GetScreenProviderObserver(associated ScreenProviderObserver& observer);
 
-  // Called when the occlusion state changes for a window. See also
-  // TrackOcclusionState on WindowTree.
-  OnOcclusionStateChanged(uint64 window_id, OcclusionState occlusion_state);
+  // Called to send occlusion changes to client. |occlusion_changes| contains
+  // the changed info, with window id as its key and new occlusion state as its
+  // data. See also TrackOcclusionState on WindowTree.
+  OnOcclusionStatesChanged(map<uint64, OcclusionState> occlusion_changes);
+
+  // Cancels the ongoing touch gesture recognitions and clears related gesture
+  // recognition state of the window of |window_id| in the client.
+  CleanupGestureState(uint64 window_id);
+
+  // Called when the window manager may start resizing a window by a user
+  // gesture. For example, if the user clicks on a window-resize handle this may
+  // be called. This is followed by OnWindowResizeLoopEnded() when the loop is
+  // done. This function is only called for top-levels.
+  // OnWindowResizeLoopEnded() may not be called if the window is destroyed
+  // during the loop.
+  OnWindowResizeLoopStarted(uint64 window_id);
+  OnWindowResizeLoopEnded(uint64 window_id);
 };
 
 // Mus provides this interface as a way for clients to connect and obtain a

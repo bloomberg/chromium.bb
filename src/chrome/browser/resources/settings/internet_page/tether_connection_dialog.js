@@ -35,16 +35,18 @@ Polymer({
 
   open: function() {
     const dialog = this.getDialog_();
-    if (!dialog.open)
+    if (!dialog.open) {
       this.getDialog_().showModal();
+    }
 
     this.$.connectButton.focus();
   },
 
   close: function() {
     const dialog = this.getDialog_();
-    if (dialog.open)
+    if (dialog.open) {
       dialog.close();
+    }
   },
 
   /**
@@ -89,8 +91,9 @@ Polymer({
    */
   getBatteryPercentageAsString_: function(networkProperties) {
     const percentage = this.get('Tether.BatteryPercentage', networkProperties);
-    if (percentage === undefined)
+    if (percentage === undefined) {
       return '';
+    }
     return percentage.toString();
   },
 
@@ -105,8 +108,9 @@ Polymer({
    */
   getSignalStrengthIconName_: function(networkProperties) {
     let signalStrength = this.get('Tether.SignalStrength', networkProperties);
-    if (signalStrength === undefined)
+    if (signalStrength === undefined) {
       signalStrength = 4;
+    }
     return 'settings:signal-cellular-' +
         Math.min(4, Math.max(signalStrength, 0)) + '-bar';
   },

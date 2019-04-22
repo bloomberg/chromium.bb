@@ -7,7 +7,6 @@
 
 #include <array>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -51,7 +50,7 @@ class GPU_GLES2_EXPORT SRGBConverter {
       bool encode,
       bool enable_scissor_test);
 
-  void GenerateMipmap(const gles2::GLES2Decoder* decoder,
+  void GenerateMipmap(gles2::GLES2Decoder* decoder,
                       Texture* tex,
                       GLenum target);
 

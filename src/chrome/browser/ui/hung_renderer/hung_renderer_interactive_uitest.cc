@@ -15,7 +15,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 
 class HungRendererNavigationTest : public InProcessBrowserTest {
  public:

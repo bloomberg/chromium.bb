@@ -4,6 +4,7 @@
 
 #include "services/device/generic_sensor/platform_sensor_win.h"
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 
 namespace device {
@@ -50,8 +51,8 @@ void PlatformSensorWin::OnReadingUpdated(const SensorReading& reading) {
 
 void PlatformSensorWin::OnSensorError() {
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&PlatformSensorWin::NotifySensorError,
-                                    weak_factory_.GetWeakPtr()));
+                         base::BindOnce(&PlatformSensorWin::NotifySensorError,
+                                        weak_factory_.GetWeakPtr()));
 }
 
 bool PlatformSensorWin::StartSensor(

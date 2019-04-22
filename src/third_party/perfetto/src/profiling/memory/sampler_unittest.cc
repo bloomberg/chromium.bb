@@ -20,36 +20,25 @@
 
 #include <thread>
 
-#include "src/profiling/memory/client.h"  // For PThreadKey.
-
 namespace perfetto {
 namespace profiling {
 namespace {
 
 TEST(SamplerTest, TestLarge) {
-  PThreadKey key(ThreadLocalSamplingData::KeyDestructor);
-  ASSERT_TRUE(key.valid());
-  EXPECT_EQ(SampleSize(key.get(), 1024, 512, malloc, free), 1024);
+  Sampler sampler(512);
+  EXPECT_EQ(sampler.SampleSize(1024), 1024);
 }
 
 TEST(SamplerTest, TestSmall) {
-  PThreadKey key(ThreadLocalSamplingData::KeyDestructor);
-  ASSERT_TRUE(key.valid());
-  EXPECT_EQ(SampleSize(key.get(), 511, 512, malloc, free), 512);
+  Sampler sampler(512);
+  EXPECT_EQ(sampler.SampleSize(511), 512);
 }
 
-TEST(SamplerTest, TestSmallFromThread) {
-  PThreadKey key(ThreadLocalSamplingData::KeyDestructor);
-  ASSERT_TRUE(key.valid());
-  std::thread th([&key] {
-    EXPECT_EQ(SampleSize(key.get(), 511, 512, malloc, free), 512);
-  });
-  std::thread th2([&key] {
-    // The threads should have separate state.
-    EXPECT_EQ(SampleSize(key.get(), 511, 512, malloc, free), 512);
-  });
-  th.join();
-  th2.join();
+TEST(SamplerTest, TestSequence) {
+  Sampler sampler(1);
+  EXPECT_EQ(sampler.SampleSize(3), 3);
+  EXPECT_EQ(sampler.SampleSize(7), 7);
+  EXPECT_EQ(sampler.SampleSize(5), 5);
 }
 
 }  // namespace

@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float_vector.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -28,7 +27,6 @@ class NGInlineLayoutStateStack;
 class NGLineInfo;
 struct NGInlineBoxState;
 struct NGInlineItemResult;
-struct NGPositionedFloat;
 
 // A class for laying out an inline formatting context, i.e. a block with inline
 // children.
@@ -47,14 +45,17 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                           NGInlineChildLayoutContext* context);
   ~NGInlineLayoutAlgorithm() override;
 
-  void CreateLine(NGLineInfo*, NGExclusionSpace*);
+  void CreateLine(const NGLineLayoutOpportunity&,
+                  NGLineInfo*,
+                  NGExclusionSpace*);
 
-  scoped_refptr<NGLayoutResult> Layout() override;
+  scoped_refptr<const NGLayoutResult> Layout() override;
 
  private:
-  unsigned PositionLeadingFloats(NGExclusionSpace*);
-
-  void PositionPendingFloats(LayoutUnit content_size, NGExclusionSpace*);
+  unsigned PositionLeadingFloats(NGExclusionSpace*, NGPositionedFloatVector*);
+  NGPositionedFloat PositionFloat(LayoutUnit origin_block_bfc_offset,
+                                  LayoutObject* floating_object,
+                                  NGExclusionSpace*) const;
 
   bool IsHorizontalWritingMode() const { return is_horizontal_writing_mode_; }
 
@@ -88,15 +89,17 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   void PlaceLayoutResult(NGInlineItemResult*,
                          NGInlineBoxState*,
                          LayoutUnit inline_offset = LayoutUnit());
-  void PlaceOutOfFlowObjects(const NGLineInfo&,
-                             const NGLineHeightMetrics&,
-                             LayoutUnit inline_size);
+  void PlaceOutOfFlowObjects(const NGLineInfo&, const NGLineHeightMetrics&);
+  void PlaceFloatingObjects(const NGLineInfo&,
+                            const NGLineHeightMetrics&,
+                            const NGLineLayoutOpportunity&,
+                            NGExclusionSpace*);
   void PlaceListMarker(const NGInlineItem&,
                        NGInlineItemResult*,
                        const NGLineInfo&);
 
-  LayoutUnit OffsetForTextAlign(const NGLineInfo&, ETextAlign) const;
-  bool ApplyJustify(NGLineInfo*);
+  LayoutUnit ApplyTextAlign(NGLineInfo*);
+  bool ApplyJustify(LayoutUnit space, NGLineInfo*);
 
   LayoutUnit ComputeContentSize(const NGLineInfo&,
                                 const NGExclusionSpace&,
@@ -110,9 +113,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   unsigned is_horizontal_writing_mode_ : 1;
   unsigned quirks_mode_ : 1;
-
-  Vector<NGPositionedFloat> positioned_floats_;
-  NGUnpositionedFloatVector unpositioned_floats_;
 
 #if DCHECK_IS_ON()
   // True if |box_states_| is taken from |context_|, to check the |box_states_|

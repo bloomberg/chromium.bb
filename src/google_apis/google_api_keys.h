@@ -73,11 +73,18 @@ std::string GetAPIKey();
 // Non-stable channels may have a different Google API key.
 std::string GetNonStableAPIKey();
 
+// Retrieves the Chrome Remote Desktop FTL API key to be used during the
+// signaling process.
+std::string GetRemotingFtlAPIKey();
+
 #if defined(OS_IOS)
 // Sets the API key. This should be called as early as possible before this
 // API key is even accessed.
 void SetAPIKey(const std::string& api_key);
 #endif
+
+// Retrieves the key used to sign metrics (UMA/UKM) uploads.
+std::string GetMetricsKey();
 
 // Represents the different sets of client IDs and secrets in use.
 enum OAuth2Client {

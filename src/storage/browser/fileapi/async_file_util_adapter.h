@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "storage/browser/fileapi/async_file_util.h"
@@ -27,7 +28,8 @@ class FileSystemFileUtil;
 //
 // This instance (as thus this->sync_file_util_) is guaranteed to be alive
 // as far as FileSystemOperationContext given to each operation is kept alive.
-class STORAGE_EXPORT AsyncFileUtilAdapter : public AsyncFileUtil {
+class COMPONENT_EXPORT(STORAGE_BROWSER) AsyncFileUtilAdapter
+    : public AsyncFileUtil {
  public:
   // Creates a new AsyncFileUtil for |sync_file_util|. This takes the
   // ownership of |sync_file_util|. (This doesn't take std::unique_ptr<> just
@@ -56,7 +58,7 @@ class STORAGE_EXPORT AsyncFileUtilAdapter : public AsyncFileUtil {
                        StatusCallback callback) override;
   void GetFileInfo(std::unique_ptr<FileSystemOperationContext> context,
                    const FileSystemURL& url,
-                   int /* fields */,
+                   int fields,
                    GetFileInfoCallback callback) override;
   void ReadDirectory(std::unique_ptr<FileSystemOperationContext> context,
                      const FileSystemURL& url,

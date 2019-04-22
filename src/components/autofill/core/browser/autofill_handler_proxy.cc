@@ -18,9 +18,8 @@ AutofillHandlerProxy::~AutofillHandlerProxy() {}
 
 void AutofillHandlerProxy::OnFormSubmittedImpl(const FormData& form,
                                                bool known_success,
-                                               SubmissionSource source,
-                                               base::TimeTicks timestamp) {
-  provider_->OnFormSubmitted(this, form, known_success, source, timestamp);
+                                               SubmissionSource source) {
+  provider_->OnFormSubmitted(this, form, known_success, source);
 }
 
 void AutofillHandlerProxy::OnTextFieldDidChangeImpl(

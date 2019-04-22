@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "storage/browser/fileapi/file_system_operation.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class Time;
@@ -82,8 +82,8 @@ class AsyncFileUtil {
   // Creates an AsyncFileUtil instance which performs file operations on
   // local native file system. The created instance assumes
   // FileSystemURL::path() has the target platform path.
-  STORAGE_EXPORT static AsyncFileUtil*
-      CreateForLocalFileSystem();
+  COMPONENT_EXPORT(STORAGE_BROWSER)
+  static AsyncFileUtil* CreateForLocalFileSystem();
 
   AsyncFileUtil() {}
   virtual ~AsyncFileUtil() {}

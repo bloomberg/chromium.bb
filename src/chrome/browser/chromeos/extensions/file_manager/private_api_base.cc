@@ -4,43 +4,71 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 
+#include <inttypes.h>
 #include <stdint.h>
 
-#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "components/drive/event_logger.h"
 
 namespace extensions {
 namespace {
 
-const int kSlowOperationThresholdMs = 500;  // In ms.
+constexpr base::TimeDelta kDefaultSlowOperationThreshold =
+    base::TimeDelta::FromMilliseconds(500);
+constexpr base::TimeDelta kDefaultVerySlowOperationThreshold =
+    base::TimeDelta::FromSeconds(5);
 
 }  // namespace
 
-LoggedAsyncExtensionFunction::LoggedAsyncExtensionFunction()
-    : log_on_completion_(false) {
-  start_time_  = base::Time::Now();
+LoggedUIThreadExtensionFunction::LoggedUIThreadExtensionFunction()
+    : log_on_completion_(false),
+      slow_threshold_(kDefaultSlowOperationThreshold),
+      very_slow_threshold_(kDefaultVerySlowOperationThreshold) {
+  start_time_ = base::TimeTicks::Now();
 }
 
-LoggedAsyncExtensionFunction::~LoggedAsyncExtensionFunction() = default;
+LoggedUIThreadExtensionFunction::~LoggedUIThreadExtensionFunction() = default;
 
-void LoggedAsyncExtensionFunction::OnResponded() {
-  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
-  if (logger) {
-    int64_t elapsed = (base::Time::Now() - start_time_).InMilliseconds();
+void LoggedUIThreadExtensionFunction::OnResponded() {
+  base::TimeDelta elapsed = base::TimeTicks::Now() - start_time_;
+
+  const ChromeExtensionFunctionDetails chrome_details(this);
+  drive::EventLogger* logger =
+      file_manager::util::GetLogger(chrome_details.GetProfile());
+  if (logger && log_on_completion_) {
     DCHECK(response_type());
     bool success = *response_type() == SUCCEEDED;
-    if (log_on_completion_) {
-      logger->Log(logging::LOG_INFO, "%s[%d] %s. (elapsed time: %sms)", name(),
-                  request_id(), success ? "succeeded" : "failed",
-                  base::Int64ToString(elapsed).c_str());
-    } else if (elapsed >= kSlowOperationThresholdMs) {
-      logger->Log(logging::LOG_WARNING,
-                  "PEFORMANCE WARNING: %s[%d] was slow. (elapsed time: %sms)",
-                  name(), request_id(), base::Int64ToString(elapsed).c_str());
-    }
+    logger->Log(logging::LOG_INFO, "%s[%d] %s. (elapsed time: %" PRId64 "ms)",
+                name(), request_id(), success ? "succeeded" : "failed",
+                elapsed.InMilliseconds());
   }
-  ChromeAsyncExtensionFunction::OnResponded();
+
+  // Log performance issues separately from completion.
+  if (elapsed >= very_slow_threshold_) {
+    auto log_message = base::StringPrintf(
+        "%s[%d] was VERY slow. (elapsed time: %" PRId64 "ms)", name(),
+        request_id(), elapsed.InMilliseconds());
+    LOG(WARNING) << log_message;
+    if (logger) {
+      logger->LogRawString(logging::LOG_ERROR,
+                           "PERFORMANCE WARNING: " + log_message);
+    }
+  } else if (logger && elapsed >= slow_threshold_) {
+    logger->Log(logging::LOG_WARNING,
+                "PERFORMANCE WARNING: %s[%d] was slow. (elapsed time: %" PRId64
+                "ms)",
+                name(), request_id(), elapsed.InMilliseconds());
+  }
+  UIThreadExtensionFunction::OnResponded();
+}
+
+void LoggedUIThreadExtensionFunction::SetWarningThresholds(
+    base::TimeDelta slow_threshold,
+    base::TimeDelta very_slow_threshold) {
+  slow_threshold_ = slow_threshold;
+  very_slow_threshold_ = very_slow_threshold;
 }
 
 }  // namespace extensions

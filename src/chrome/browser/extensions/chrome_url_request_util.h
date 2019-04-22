@@ -24,6 +24,7 @@ class URLRequestJob;
 }
 
 namespace extensions {
+struct ComponentExtensionResourceInfo;
 class Extension;
 class ExtensionSet;
 class ProcessMap;
@@ -61,7 +62,7 @@ net::URLRequestJob* MaybeCreateURLRequestResourceBundleJob(
 base::FilePath GetBundleResourcePath(
     const network::ResourceRequest& request,
     const base::FilePath& extension_resources_path,
-    int* resource_id);
+    ComponentExtensionResourceInfo* resource_info);
 
 // Creates and starts a URLLoader for loading component extension resources out
 // of a Chrome resource bundle. This should only be called if
@@ -70,7 +71,7 @@ void LoadResourceFromResourceBundle(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderRequest loader,
     const base::FilePath& resource_relative_path,
-    int resource_id,
+    const ComponentExtensionResourceInfo& resource_info,
     const std::string& content_security_policy,
     network::mojom::URLLoaderClientPtr client,
     bool send_cors_header);

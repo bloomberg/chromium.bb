@@ -7,14 +7,14 @@
 
 namespace blink {
 
-// https://html.spec.whatwg.org/multipage/tables.html#dom-colgroup-span
-// https://html.spec.whatwg.org/multipage/tables.html#dom-col-span
-// https://html.spec.whatwg.org/multipage/tables.html#dom-tdth-colspan
+// https://html.spec.whatwg.org/C/#dom-colgroup-span
+// https://html.spec.whatwg.org/C/#dom-col-span
+// https://html.spec.whatwg.org/C/#dom-tdth-colspan
 constexpr unsigned kDefaultColSpan = 1u;
 constexpr unsigned kMinColSpan = 1u;
 constexpr unsigned kMaxColSpan = 1000u;
 
-// https://html.spec.whatwg.org/multipage/tables.html#dom-tdth-rowspan
+// https://html.spec.whatwg.org/C/#dom-tdth-rowspan
 constexpr unsigned kDefaultRowSpan = 1u;
 constexpr unsigned kMaxRowSpan = 65534u;
 constexpr unsigned kMinRowSpan = 0;

@@ -38,6 +38,9 @@ config("default") {
   libs = []
 
   if (is_win) {
+    if (is_clang && target_cpu == "arm64") {
+      cflags += [ "--target=arm64-windows" ]
+    }
     cflags += [
       "/bigobj",  # Some of our files are bigger than the regular limits.
       "/WX",  # Treat warnings as errors.
@@ -221,7 +224,7 @@ config("default") {
     ldflags += [ "-Wl,-w" ]
   }
 
-  if (sanitize != "") {
+  if (sanitize != "" && sanitize != "MSVC") {
     # You can either pass the sanitizers directly, e.g. "address,undefined",
     # or pass one of the couple common aliases used by the bots.
     sanitizers = sanitize
@@ -296,6 +299,10 @@ config("warnings") {
       # Probably only triggers when /EHsc is enabled.
       "/wd4291",  # no matching operator delete found;
                   # memory will not be freed if initialization throws an exception
+
+      # These only show up in shared builds:
+      "/wd4251",  # class 'type' needs to have dll-interface to be used by clients of class 'type2'
+      "/wd4275",  # non dll-interface class 'base' used as base for dll-interface class 'derived'
     ]
   } else {
     cflags += [
@@ -318,6 +325,7 @@ config("warnings") {
 
   if (is_clang) {
     cflags += [
+      "-fcolor-diagnostics",
       "-Weverything",
       "-Wno-unknown-warning-option",  # Let older Clangs ignore newer Clangs' warnings.
     ]
@@ -427,10 +435,11 @@ config("debug_symbols") {
     ]
   } else if (is_win) {
     cflags = [ "/Z7" ]
-    ldflags = [ "/DEBUG:FASTLINK" ]
     if (is_clang) {
-      # /DEBUG:FASTLINK requires every object file to have standalone debug information.
-      cflags += [ "-fstandalone-debug" ]
+      cflags += [ "-gcodeview-ghash" ]
+      ldflags = [ "/DEBUG:GHASH" ]
+    } else {
+      ldflags = [ "/DEBUG:FASTLINK" ]
     }
   } else {
     cflags = [ "-g" ]
@@ -480,6 +489,15 @@ config("optimize") {
 
 config("NDEBUG") {
   defines = [ "NDEBUG" ]
+}
+
+config("msvc_rtc") {
+  defines = [ "_ALLOW_RTCc_IN_STL" ]
+  cflags = [
+    "/RTCcsu",
+    "/guard:cf",
+  ]
+  ldflags = [ "/guard:cf" ]
 }
 
 config("executable") {

@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "base/unguessable_token.h"
 #include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_id.h"
@@ -27,12 +28,14 @@
 
 namespace gfx {
 class Rect;
+class RRectF;
 class Transform;
 }  // namespace gfx
 
 namespace viz {
 class ClientResourceProvider;
 class ContextProvider;
+class RasterContextProvider;
 class RenderPass;
 class SharedBitmapReporter;
 }  // namespace viz
@@ -50,6 +53,10 @@ enum class VideoFrameResourceType {
   RGBA_PREMULTIPLIED,
   RGBA,
   STREAM_TEXTURE,
+  // The VideoFrame is merely a hint to compositor that a hole must be made
+  // transparent so the video underlay will be visible.
+  // Used by Chromecast only.
+  VIDEO_HOLE,
 };
 
 class MEDIA_EXPORT VideoFrameExternalResources {
@@ -79,6 +86,7 @@ class MEDIA_EXPORT VideoResourceUpdater
   // compositing |shared_bitmap_reporter| should be provided. If there is a
   // non-null |context_provider| we assume GPU compositing.
   VideoResourceUpdater(viz::ContextProvider* context_provider,
+                       viz::RasterContextProvider* raster_context_provider,
                        viz::SharedBitmapReporter* shared_bitmap_reporter,
                        viz::ClientResourceProvider* resource_provider,
                        bool use_stream_video_draw_quad,
@@ -107,6 +115,7 @@ class MEDIA_EXPORT VideoResourceUpdater
                    gfx::Transform transform,
                    gfx::Rect quad_rect,
                    gfx::Rect visible_quad_rect,
+                   const gfx::RRectF& rounded_corner_bounds,
                    gfx::Rect clip_rect,
                    bool is_clipped,
                    bool context_opaque,
@@ -131,7 +140,9 @@ class MEDIA_EXPORT VideoResourceUpdater
     gfx::Size size_in_pixels;
   };
 
-  bool software_compositor() const { return context_provider_ == nullptr; }
+  bool software_compositor() const {
+    return context_provider_ == nullptr && raster_context_provider_ == nullptr;
+  }
 
   // Obtain a resource of the right format by either recycling an
   // unreferenced but appropriately formatted resource, or by
@@ -183,6 +194,7 @@ class MEDIA_EXPORT VideoResourceUpdater
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
   viz::ContextProvider* const context_provider_;
+  viz::RasterContextProvider* const raster_context_provider_;
   viz::SharedBitmapReporter* const shared_bitmap_reporter_;
   viz::ClientResourceProvider* const resource_provider_;
   const bool use_stream_video_draw_quad_;
@@ -207,6 +219,10 @@ class MEDIA_EXPORT VideoResourceUpdater
   // Resources that will be placed into quads by the next call to
   // AppendDrawQuads().
   std::vector<FrameResource> frame_resources_;
+  // If the video resource is a hole punching VideoFrame sent by Chromecast,
+  // the VideoFrame carries an |overlay_plane_id_| to activate the video
+  // overlay, but there is no video content to display within VideoFrame.
+  base::UnguessableToken overlay_plane_id_;
 
   // Resources allocated by VideoResourceUpdater. Used to recycle resources so
   // we can reduce the number of allocations and data transfers.

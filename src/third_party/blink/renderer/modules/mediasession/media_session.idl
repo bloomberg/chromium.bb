@@ -18,7 +18,8 @@ enum MediaSessionAction {
   "previoustrack",
   "nexttrack",
   "seekbackward",
-  "seekforward"
+  "seekforward",
+  "skipad",
 };
 
 callback MediaSessionActionHandler = void ();
@@ -29,6 +30,6 @@ callback MediaSessionActionHandler = void ();
     [Measure] attribute MediaMetadata? metadata;
     [Measure] attribute MediaSessionPlaybackState playbackState;
 
-    [Measure] void setActionHandler(MediaSessionAction action,
+    [Measure, RaisesException] void setActionHandler(MediaSessionAction action,
                                     MediaSessionActionHandler? handler);
 };

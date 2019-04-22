@@ -32,7 +32,7 @@
         android:lineSpacingMultiplier="1.64"
         android:paddingEnd="24dp"
         android:paddingStart="24dp"
-        android:textAppearance="@style/BlackBodyDefault" />
+        android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
 
     <org.chromium.chrome.browser.widget.DualControlLayout
         android:id="@+id/lightweight_fre_buttons"

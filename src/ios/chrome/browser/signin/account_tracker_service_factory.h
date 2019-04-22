@@ -8,14 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 class AccountTrackerService;
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace ios {
 
@@ -36,7 +32,7 @@ class AccountTrackerServiceFactory : public BrowserStateKeyedServiceFactory {
   static AccountTrackerServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<AccountTrackerServiceFactory>;
+  friend class base::NoDestructor<AccountTrackerServiceFactory>;
 
   AccountTrackerServiceFactory();
   ~AccountTrackerServiceFactory() override;

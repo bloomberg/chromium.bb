@@ -58,12 +58,6 @@ interface PageHandler {
   // Fetch suggestions in background after the given delay.
   FetchSuggestionsInBackground(int64 delaySeconds) => ();
 
-  // Returns if it's possible to push a dummy suggestion.
-  IsPushingDummySuggestionPossible() => (bool result);
-
-  // Push dummy suggestion in background after the given delay.
-  PushDummySuggestionInBackground(int64 delaySeconds) => ();
-
   // Download the last suggestions in json form.
   GetLastJson() => (string json);
 

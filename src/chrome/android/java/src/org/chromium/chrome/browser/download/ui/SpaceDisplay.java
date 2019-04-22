@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.content.Context;
-import android.os.Environment;
 import android.os.StatFs;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,7 +14,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
@@ -64,19 +62,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
 
         @Override
         protected Long doInBackground() {
-            File downloadDirectory = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS);
-
-            // Create the downloads directory, if necessary.
-            if (!downloadDirectory.exists()) {
-                try {
-                    // mkdirs() can fail, so we still need to check if the directory exists
-                    // later.
-                    downloadDirectory.mkdirs();
-                } catch (SecurityException e) {
-                    Log.e(TAG, "SecurityException when creating download directory.", e);
-                }
-            }
+            File downloadDirectory = DownloadUtils.getPrimaryDownloadDirectory();
 
             // Determine how much space is available on the storage device where downloads
             // reside.  If the downloads directory doesn't exist, it is likely that the user
@@ -115,10 +101,10 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
     private long mFreeBytes;
     private long mFileSystemBytes;
 
-    SpaceDisplay(final ViewGroup parent, DownloadHistoryAdapter historyAdapter) {
+    SpaceDisplay(Context context, final ViewGroup parent, DownloadHistoryAdapter historyAdapter) {
         mHistoryAdapter = historyAdapter;
-        mViewContainer = LayoutInflater.from(ContextUtils.getApplicationContext())
-                                 .inflate(R.layout.download_manager_ui_space_widget, parent, false);
+        mViewContainer = LayoutInflater.from(context).inflate(
+                R.layout.download_manager_ui_space_widget, parent, false);
         mView = mViewContainer.findViewById(R.id.space_widget_content);
         mSpaceUsedByDownloadsTextView = (TextView) mView.findViewById(R.id.size_downloaded);
         mSpaceFreeAndOtherAppsTextView =

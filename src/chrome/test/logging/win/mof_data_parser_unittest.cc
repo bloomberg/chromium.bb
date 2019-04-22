@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/test/logging/win/mof_data_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,7 +90,7 @@ TEST_F(MofDataParserTest, ReadPrimitive) {
 // writing a DWORD item count followed by the items.
 TEST_F(MofDataParserTest, ReadPointerArray) {
   const void* const pointers[] = { this, &buffer_ };
-  const DWORD array_size = arraysize(pointers);
+  const DWORD array_size = base::size(pointers);
 
   // Read a valid array of two pointers.
   EVENT_TRACE* event = MakeEventWithPointerArray(&pointers[0], array_size);
@@ -160,30 +160,30 @@ TEST_F(MofDataParserTest, ReadString) {
 
   // Read a string with a trailing newline.
   EVENT_TRACE* event =
-      MakeEventWithString(a_string_nl, arraysize(a_string_nl));
+      MakeEventWithString(a_string_nl, base::size(a_string_nl));
   {
     base::StringPiece value;
     logging_win::MofDataParser parser(event);
     EXPECT_FALSE(parser.empty());
     EXPECT_TRUE(parser.ReadString(&value));
-    EXPECT_EQ(base::StringPiece(&a_string_nl[0], arraysize(a_string_nl) - 2),
+    EXPECT_EQ(base::StringPiece(&a_string_nl[0], base::size(a_string_nl) - 2),
               value);
     EXPECT_TRUE(parser.empty());
   }
 
   // Read a string without a trailing newline.
-  event = MakeEventWithString(a_string, arraysize(a_string));
+  event = MakeEventWithString(a_string, base::size(a_string));
   {
     base::StringPiece value;
     logging_win::MofDataParser parser(event);
     EXPECT_FALSE(parser.empty());
     EXPECT_TRUE(parser.ReadString(&value));
-    EXPECT_EQ(base::StringPiece(&a_string[0], arraysize(a_string) - 1), value);
+    EXPECT_EQ(base::StringPiece(&a_string[0], base::size(a_string) - 1), value);
     EXPECT_TRUE(parser.empty());
   }
 
   // Try a string that isn't terminated.
-  event = MakeEventWithString(a_string, arraysize(a_string) - 1);
+  event = MakeEventWithString(a_string, base::size(a_string) - 1);
   {
     base::StringPiece value;
     logging_win::MofDataParser parser(event);

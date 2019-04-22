@@ -27,6 +27,42 @@ namespace chromeos {
 
 class PpdCache;
 
+// Everything we might know about a printer when looking for a
+// driver for it.  All of the default values for fields in this struct
+// mean we *don't* have that piece of information.
+//
+// Fields are listed in search order preference -- we use earlier
+// fields first to attempt to find a match.
+struct CHROMEOS_EXPORT PrinterSearchData {
+  PrinterSearchData();
+  PrinterSearchData(const PrinterSearchData& other);
+  ~PrinterSearchData();
+
+  // Make-and-model string guesses.
+  std::vector<std::string> make_and_model;
+
+  // 16-bit usb identifiers.
+  int usb_vendor_id = 0;
+  int usb_product_id = 0;
+
+  // Method of printer discovery.
+  enum PrinterDiscoveryType {
+    kUnknown = 0,
+    kManual = 1,
+    kUsb = 2,
+    kZeroconf = 3,
+    kDiscoveryTypeMax
+  };
+  PrinterDiscoveryType discovery_type;
+
+  // Set of MIME types supported by this printer.
+  std::vector<std::string> supported_document_formats;
+
+  // Stripped from IEEE1284 signaling method(from the device ID key 'CMD').
+  // Details a set of languages this printer understands.
+  std::vector<std::string> usb_command_set;
+};
+
 // PpdProvider is responsible for mapping printer descriptions to
 // CUPS-PostScript Printer Description (PPD) files.  It provides PPDs that a
 // user previously identified for use, and falls back to querying quirksserver
@@ -66,25 +102,6 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
 
     // Root of the ppd serving hierarchy.
     std::string ppd_server_root = "https://www.gstatic.com/chromeos_printing";
-  };
-
-  // Everything we might know about a printer when looking for a
-  // driver for it.  All of the default values for fields in this struct
-  // mean we *don't* have that piece of information.
-  //
-  // Fields are listed in search order preference -- we use earlier
-  // fields first to attempt to find a match.
-  struct PrinterSearchData {
-    PrinterSearchData();
-    PrinterSearchData(const PrinterSearchData& other);
-    ~PrinterSearchData();
-
-    // Make-and-model string guesses.
-    std::vector<std::string> make_and_model;
-
-    // 16-bit usb identifiers.
-    int usb_vendor_id = 0;
-    int usb_product_id = 0;
   };
 
   // Defines the limitations on when we show a particular PPD

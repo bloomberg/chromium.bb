@@ -8,6 +8,8 @@ Contains all conditions we iterate over (OS, CPU), as well as helper
 convertion functions.
 """
 
+from __future__ import print_function
+
 FULLARCH = {
   'arm' : 'arm',
   'x86' : 'x86-32',
@@ -70,7 +72,7 @@ class Conditions(object):
     if name == 'target_x86_64':
       return arch == 'x64'
 
-    print 'Unknown bit: ' + name
+    print('Unknown bit: ' + name)
     return False
 
   def SetA(self):

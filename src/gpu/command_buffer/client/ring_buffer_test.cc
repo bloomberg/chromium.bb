@@ -17,7 +17,6 @@
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/command_buffer_direct.h"
 #include "gpu/command_buffer/service/mocks.h"
-#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -59,9 +58,7 @@ class BaseRingBufferTest : public testing::Test {
 
   void SetUp() override {
     delay_set_token_ = false;
-    transfer_buffer_manager_ = std::make_unique<TransferBufferManager>(nullptr);
-    command_buffer_.reset(
-        new CommandBufferDirect(transfer_buffer_manager_.get()));
+    command_buffer_.reset(new CommandBufferDirect());
     api_mock_.reset(new AsyncAPIMock(true, command_buffer_->service()));
     command_buffer_->set_handler(api_mock_.get());
 
@@ -80,7 +77,6 @@ class BaseRingBufferTest : public testing::Test {
 
   int32_t GetToken() { return command_buffer_->GetLastState().token; }
 
-  std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<CommandBufferDirect> command_buffer_;
   std::unique_ptr<AsyncAPIMock> api_mock_;
   std::unique_ptr<CommandBufferHelper> helper_;

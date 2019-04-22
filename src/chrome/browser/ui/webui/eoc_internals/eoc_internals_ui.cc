@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/eoc_internals/eoc_internals_ui.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,7 +26,8 @@ EocInternalsUI::EocInternalsUI(content::WebUI* web_ui)
 
   source->AddResourcePath("eoc_internals.css", IDR_EOC_INTERNALS_CSS);
   source->AddResourcePath("eoc_internals.js", IDR_EOC_INTERNALS_JS);
-  source->AddResourcePath("eoc_internals.mojom.js", IDR_EOC_INTERNALS_MOJO_JS);
+  source->AddResourcePath("eoc_internals.mojom-lite.js",
+                          IDR_EOC_INTERNALS_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_EOC_INTERNALS_HTML);
   source->UseGzip();
 

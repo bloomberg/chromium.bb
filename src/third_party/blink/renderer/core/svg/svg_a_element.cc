@@ -43,16 +43,19 @@
 #include "third_party/blink/renderer/core/svg/animation/svg_smil_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 
 namespace blink {
 
 using namespace html_names;
 
-inline SVGAElement::SVGAElement(Document& document)
+SVGAElement::SVGAElement(Document& document)
     : SVGGraphicsElement(svg_names::kATag, document),
       SVGURIReference(this),
-      svg_target_(SVGAnimatedString::Create(this, svg_names::kTargetAttr)) {
+      svg_target_(
+          MakeGarbageCollected<SVGAnimatedString>(this,
+                                                  svg_names::kTargetAttr)) {
   AddToPropertyMap(svg_target_);
 }
 
@@ -96,7 +99,8 @@ void SVGAElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   SVGGraphicsElement::SvgAttributeChanged(attr_name);
 }
 
-LayoutObject* SVGAElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGAElement::CreateLayoutObject(const ComputedStyle&,
+                                              LegacyLayout) {
   if (parentNode() && parentNode()->IsSVGElement() &&
       ToSVGElement(parentNode())->IsTextContent())
     return new LayoutSVGInline(this);
@@ -136,12 +140,12 @@ void SVGAElement::DefaultEventHandler(Event& event) {
       FrameLoadRequest frame_request(
           &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)),
           target);
+      frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
       frame_request.SetTriggeringEventInfo(
           event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
                             : WebTriggeringEventInfo::kFromUntrustedEvent);
       frame->Loader().StartNavigation(frame_request,
-                                      WebFrameLoadType::kStandard,
-                                      NavigationPolicyFromEvent(&event));
+                                      WebFrameLoadType::kStandard);
       return;
     }
   }

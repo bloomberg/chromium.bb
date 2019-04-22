@@ -10,7 +10,6 @@
 #include <D3D11.h>
 #include <DXGI.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"

@@ -18,15 +18,20 @@
 namespace v8 {
 namespace internal {
 
+OBJECT_CONSTRUCTORS_IMPL(JSSegmentIterator, JSObject)
+
 // Base segment iterator accessors.
 ACCESSORS(JSSegmentIterator, icu_break_iterator, Managed<icu::BreakIterator>,
           kICUBreakIteratorOffset)
 ACCESSORS(JSSegmentIterator, unicode_string, Managed<icu::UnicodeString>,
           kUnicodeStringOffset)
 
+BIT_FIELD_ACCESSORS(JSSegmentIterator, flags, is_break_type_set,
+                    JSSegmentIterator::BreakTypeSetBits)
+
 SMI_ACCESSORS(JSSegmentIterator, flags, kFlagsOffset)
 
-CAST_ACCESSOR(JSSegmentIterator);
+CAST_ACCESSOR(JSSegmentIterator)
 
 inline void JSSegmentIterator::set_granularity(
     JSSegmenter::Granularity granularity) {

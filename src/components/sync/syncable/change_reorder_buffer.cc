@@ -137,8 +137,8 @@ void ChangeReorderBuffer::PushUpdatedItem(int64_t id) {
 
 void ChangeReorderBuffer::SetExtraDataForId(
     int64_t id,
-    ExtraPasswordChangeRecordData* extra) {
-  extra_data_[id] = make_linked_ptr<ExtraPasswordChangeRecordData>(extra);
+    std::unique_ptr<ExtraPasswordChangeRecordData> extra) {
+  extra_data_[id] = std::move(extra);
 }
 
 void ChangeReorderBuffer::SetSpecificsForId(
@@ -157,7 +157,7 @@ bool ChangeReorderBuffer::IsEmpty() const {
 
 bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
     const BaseTransaction* sync_trans,
-    ImmutableChangeRecordList* changes) {
+    ImmutableChangeRecordList* changes) const {
   syncable::BaseTransaction* trans = sync_trans->GetWrappedTrans();
 
   // Step 1: Iterate through the operations, doing three things:
@@ -174,11 +174,13 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
       ChangeRecord record;
       record.id = i->first;
       record.action = i->second;
-      if (specifics_.find(record.id) != specifics_.end())
-        record.specifics = specifics_[record.id];
-      if (extra_data_.find(record.id) != extra_data_.end())
-        record.extra = extra_data_[record.id];
-      changelist.push_back(record);
+      auto specifics_it = specifics_.find(record.id);
+      if (specifics_it != specifics_.end())
+        record.specifics = specifics_it->second;
+      auto extra_data_it = extra_data_.find(record.id);
+      if (extra_data_it != extra_data_.end())
+        record.extra = *extra_data_it->second;
+      changelist.push_back(std::move(record));
     } else {
       traversal.ExpandToInclude(trans, i->first);
     }
@@ -197,11 +199,13 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
       ChangeRecord record;
       record.id = next;
       record.action = i->second;
-      if (specifics_.find(record.id) != specifics_.end())
-        record.specifics = specifics_[record.id];
-      if (extra_data_.find(record.id) != extra_data_.end())
-        record.extra = extra_data_[record.id];
-      changelist.push_back(record);
+      auto specifics_it = specifics_.find(record.id);
+      if (specifics_it != specifics_.end())
+        record.specifics = specifics_it->second;
+      auto extra_data_it = extra_data_.find(record.id);
+      if (extra_data_it != extra_data_.end())
+        record.extra = *extra_data_it->second;
+      changelist.push_back(std::move(record));
     }
 
     // Now add the children of |next| to |to_visit|.

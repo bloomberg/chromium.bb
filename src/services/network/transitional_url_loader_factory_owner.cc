@@ -4,6 +4,7 @@
 
 #include "services/network/transitional_url_loader_factory_owner.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
@@ -59,7 +60,8 @@ class TransitionalURLLoaderFactoryOwner::Core {
       mojom::NetworkContextRequest request) {
     network_context_ = std::make_unique<network::NetworkContext>(
         nullptr /* network_service */, std::move(request),
-        url_request_context_getter_->GetURLRequestContext());
+        url_request_context_getter_->GetURLRequestContext(),
+        /*cors_exempt_header_list=*/std::vector<std::string>());
   }
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

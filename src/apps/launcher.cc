@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -34,7 +35,8 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/granted_file_entry.h"
-#include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/lazy_context_id.h"
+#include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
@@ -158,8 +160,8 @@ class PlatformAppPathLauncher
         FROM_HERE,
         {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::Bind(&PlatformAppPathLauncher::MakePathAbsolute, this,
-                   current_directory));
+        base::BindOnce(&PlatformAppPathLauncher::MakePathAbsolute, this,
+                       current_directory));
   }
 
  private:
@@ -182,7 +184,7 @@ class PlatformAppPathLauncher
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&PlatformAppPathLauncher::Launch, this));
+        base::BindOnce(&PlatformAppPathLauncher::Launch, this));
   }
 
   void OnFilesValid(std::unique_ptr<std::set<base::FilePath>> directory_paths) {
@@ -266,11 +268,11 @@ class PlatformAppPathLauncher
         }
       }
     } else {
-      const std::vector<const extensions::FileHandlerInfo*>& handlers =
-          extensions::app_file_handler_util::FindFileHandlersForEntries(
+      const std::vector<extensions::FileHandlerMatch> handlers =
+          extensions::app_file_handler_util::FindFileHandlerMatchesForEntries(
               *app, entries_);
       if (!handlers.empty())
-        handler = handlers[0];
+        handler = handlers[0].handler;
     }
 
     // If this app doesn't have a file handler that supports the file, launch
@@ -289,11 +291,11 @@ class PlatformAppPathLauncher
     // available, or it might be in the process of being unloaded, in which case
     // the lazy background task queue is used to load the extension and then
     // call back to us.
-    extensions::LazyBackgroundTaskQueue* const queue =
-        extensions::LazyBackgroundTaskQueue::Get(context_);
+    const extensions::LazyContextId context_id(context_, extension_id);
+    extensions::LazyContextTaskQueue* const queue = context_id.GetTaskQueue();
     if (queue->ShouldEnqueueTask(context_, app)) {
       queue->AddPendingTask(
-          context_, extension_id,
+          context_id,
           base::Bind(&PlatformAppPathLauncher::GrantAccessToFilesAndLaunch,
                      this));
       return;
@@ -304,25 +306,28 @@ class PlatformAppPathLauncher
     ExtensionHost* const host =
         process_manager->GetBackgroundHostForExtension(extension_id);
     DCHECK(host);
-    GrantAccessToFilesAndLaunch(host);
+    GrantAccessToFilesAndLaunch(
+        std::make_unique<extensions::LazyContextTaskQueue::ContextInfo>(host));
   }
 
-  void GrantAccessToFilesAndLaunch(ExtensionHost* host) {
+  void GrantAccessToFilesAndLaunch(
+      std::unique_ptr<extensions::LazyContextTaskQueue::ContextInfo>
+          context_info) {
     const Extension* app = GetExtension();
     if (!app)
       return;
 
-    // If there was an error loading the app page, |host| will be NULL.
-    if (!host) {
+    // If there was an error loading the app page, |context_info| will be NULL.
+    if (!context_info) {
       LOG(ERROR) << "Could not load app page for " << extension_id;
       return;
     }
 
     std::vector<GrantedFileEntry> granted_entries;
     for (size_t i = 0; i < entry_paths_.size(); ++i) {
-      granted_entries.push_back(
-          CreateFileEntry(context_, app, host->render_process_host()->GetID(),
-                          entries_[i].path, entries_[i].is_directory));
+      granted_entries.push_back(CreateFileEntry(
+          context_, app, context_info->render_process_host->GetID(),
+          entries_[i].path, entries_[i].is_directory));
     }
 
     AppRuntimeEventRouter::DispatchOnLaunchedEventWithFileEntries(

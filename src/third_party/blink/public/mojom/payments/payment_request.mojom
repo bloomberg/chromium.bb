@@ -44,12 +44,26 @@ enum CanMakePaymentQueryResult {
   QUERY_QUOTA_EXCEEDED,
 
   // Used only on localhost and file:// schemes to warn web developer that the
-  // query quota has exceeded, but Chrome is returning an answer anyway.
+  // query quota has been exceeded, but Chrome is returning an answer anyway.
   WARNING_CAN_MAKE_PAYMENT,
   WARNING_CANNOT_MAKE_PAYMENT,
 };
 
+enum HasEnrolledInstrumentQueryResult {
+  HAS_ENROLLED_INSTRUMENT,
+  HAS_NO_ENROLLED_INSTRUMENT,
+  QUERY_QUOTA_EXCEEDED,
+
+  // Used only on localhost and file:// schemes to warn web developer that the
+  // query quota has been exceeded, but Chrome is returning an answer anyway.
+  WARNING_HAS_ENROLLED_INSTRUMENT,
+  WARNING_HAS_NO_ENROLLED_INSTRUMENT,
+};
+
+// Implemented in the renderer process. Sandboxed. Deals with untrusted data.
+//   components/payments/content/payment_request.h
 interface PaymentRequestClient {
+  OnPaymentMethodChange(string method_name, string stringified_details);
   OnShippingAddressChange(PaymentAddress address);
   OnShippingOptionChange(string shipping_option_id);
   OnPayerDetailChange(PayerDetail detail);
@@ -58,6 +72,7 @@ interface PaymentRequestClient {
   OnComplete();
   OnAbort(bool aborted_successfully);
   OnCanMakePayment(CanMakePaymentQueryResult result);
+  OnHasEnrolledInstrument(HasEnrolledInstrumentQueryResult result);
   WarnNoFavicon();
 };
 
@@ -154,9 +169,14 @@ struct PaymentDetailsModifier {
 
 struct PaymentDetails {
   PaymentItem? total;
-  array<PaymentItem> display_items;
-  array<PaymentShippingOption> shipping_options;
-  array<PaymentDetailsModifier> modifiers;
+
+  // If any of these lists is null, then PaymentRequest.UpdateWith() ignores
+  // them. If any of these lists are empty, then PaymentRequest.UpdateWith()
+  // clears the corresponding lists in the browser.
+  array<PaymentItem>? display_items;
+  array<PaymentShippingOption>? shipping_options;
+  array<PaymentDetailsModifier>? modifiers;
+
   string error = "";
   AddressErrors? shipping_address_errors;
   // Identifier identifying the payment request, to be exposed
@@ -186,6 +206,12 @@ enum PaymentComplete {
   UNKNOWN
 };
 
+
+// Implemented in the browser process. Not sandboxed. Deals with trusted data.
+// Android implementation:
+//   chrome/android/java/src/org/chromium/chrome/browser/payments/PaymentRequestImpl.java
+// Desktop (Windows, ChromeOS, Linux, MacOS) implementation:
+//   components/payments/content/payment_request.h
 interface PaymentRequest {
   // Instantiates the renderer-browser connection with the information from the
   // JavaScript constructor of PaymentRequest.
@@ -195,7 +221,7 @@ interface PaymentRequest {
        PaymentOptions options);
 
   // Shows the user interface with the payment details.
-  Show(bool is_user_gesture);
+  Show(bool is_user_gesture, bool wait_for_updated_details);
 
   // Updates the payment details in response to new shipping address or shipping
   // option.
@@ -218,6 +244,15 @@ interface PaymentRequest {
   // the payment response.
   Retry(PaymentValidationErrors errors);
 
-  // Queries whether the user has a form of payment on file.
-  CanMakePayment();
+  // Queries whether support for the merchant-specified payment method is
+  // available, either because the user has a registered payment handler for
+  // that method, or because the browser can do just-in-time registration for a
+  // suitable payment handler. If |legacy_mode| is true, provide the legacy
+  // behavior, which also checks that the user has an enrolled instrument.
+  CanMakePayment(bool legacy_mode);
+
+  // Queries whether support for the merchant-specified payment method is
+  // available and the user has an enrolled instrument for that payment method
+  // that is ready to pay.
+  HasEnrolledInstrument(bool per_method_quota);
 };

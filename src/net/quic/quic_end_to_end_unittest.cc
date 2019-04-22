@@ -30,16 +30,15 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_scoped_task_environment.h"
-#include "net/third_party/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quic/tools/quic_memory_cache_backend.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/quic/tools/quic_memory_cache_backend.h"
 #include "net/tools/quic/quic_simple_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -75,7 +74,7 @@ class TestTransactionFactory : public HttpTransactionFactory {
 
   HttpCache* GetCache() override { return nullptr; }
 
-  HttpNetworkSession* GetSession() override { return session_.get(); };
+  HttpNetworkSession* GetSession() override { return session_.get(); }
 
  private:
   std::unique_ptr<HttpNetworkSession> session_;
@@ -107,8 +106,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
         cert_transparency_verifier_(new MultiLogCTVerifier()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
-        auth_handler_factory_(
-            HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
+        auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
         strike_register_no_startup_period_(false) {
     request_.method = "GET";
     request_.url = GURL("https://test.example.com/");
@@ -132,9 +130,6 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
     session_context_.ssl_config_service = ssl_config_service_.get();
     session_context_.http_auth_handler_factory = auth_handler_factory_.get();
     session_context_.http_server_properties = &http_server_properties_;
-    channel_id_service_.reset(
-        new ChannelIDService(new DefaultChannelIDStore(nullptr)));
-    session_context_.channel_id_service = channel_id_service_.get();
 
     CertVerifyResult verify_result;
     verify_result.verified_cert =
@@ -157,8 +152,9 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
 
     // Use a mapped host resolver so that request for test.example.com (port 80)
     // reach the server running on localhost.
-    std::string map_rule = "MAP test.example.com test.example.com:" +
-                           base::IntToString(server_->server_address().port());
+    std::string map_rule =
+        "MAP test.example.com test.example.com:" +
+        base::NumberToString(server_->server_address().port());
     EXPECT_TRUE(host_resolver_.AddRuleFromString(map_rule));
 
     // To simplify the test, and avoid the race with the HTTP request, we force
@@ -237,7 +233,6 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
   std::unique_ptr<MockHostResolver> host_resolver_impl_;
   MappedHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
-  std::unique_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
@@ -261,9 +256,9 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
   bool strike_register_no_startup_period_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicEndToEndTest,
-                        ::testing::ValuesIn(GetTestParams()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicEndToEndTest,
+                         ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
   std::string response(10 * 1024, 'x');

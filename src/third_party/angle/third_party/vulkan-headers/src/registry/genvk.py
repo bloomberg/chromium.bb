@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# Copyright (c) 2013-2018 The Khronos Group Inc.
+# Copyright (c) 2013-2019 The Khronos Group Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,12 +30,13 @@ startTime = None
 
 def startTimer(timeit):
     global startTime
-    startTime = time.clock()
+    if timeit:
+        startTime = time.process_time()
 
 def endTimer(timeit, msg):
     global startTime
-    endTime = time.clock()
-    if (timeit):
+    if timeit:
+        endTime = time.process_time()
         write(msg, endTime - startTime, file=sys.stderr)
         startTime = None
 
@@ -90,7 +91,7 @@ def makeGenOpts(args):
     # Copyright text prefixing all headers (list of strings).
     prefixStrings = [
         '/*',
-        '** Copyright (c) 2015-2018 The Khronos Group Inc.',
+        '** Copyright (c) 2015-2019 The Khronos Group Inc.',
         '**',
         '** Licensed under the Apache License, Version 2.0 (the "License");',
         '** you may not use this file except in compliance with the License.',
@@ -254,15 +255,16 @@ def makeGenOpts(args):
         [ 'vulkan_android.h',     [ 'VK_KHR_android_surface',
                                     'VK_ANDROID_external_memory_android_hardware_buffer'
                                                                   ], commonSuppressExtensions ],
+        [ 'vulkan_fuchsia.h',     [ 'VK_FUCHSIA_imagepipe_surface'], commonSuppressExtensions ],
         [ 'vulkan_ios.h',         [ 'VK_MVK_ios_surface'          ], commonSuppressExtensions ],
         [ 'vulkan_macos.h',       [ 'VK_MVK_macos_surface'        ], commonSuppressExtensions ],
-        [ 'vulkan_mir.h',         [ 'VK_KHR_mir_surface'          ], commonSuppressExtensions ],
         [ 'vulkan_vi.h',          [ 'VK_NN_vi_surface'            ], commonSuppressExtensions ],
         [ 'vulkan_wayland.h',     [ 'VK_KHR_wayland_surface'      ], commonSuppressExtensions ],
         [ 'vulkan_win32.h',       [ 'VK_.*_win32(|_.*)'           ], commonSuppressExtensions + [ 'VK_KHR_external_semaphore', 'VK_KHR_external_memory_capabilities', 'VK_KHR_external_fence', 'VK_KHR_external_fence_capabilities', 'VK_NV_external_memory_capabilities' ] ],
         [ 'vulkan_xcb.h',         [ 'VK_KHR_xcb_surface'          ], commonSuppressExtensions ],
         [ 'vulkan_xlib.h',        [ 'VK_KHR_xlib_surface'         ], commonSuppressExtensions ],
         [ 'vulkan_xlib_xrandr.h', [ 'VK_EXT_acquire_xlib_display' ], commonSuppressExtensions ],
+        [ 'vulkan_metal.h',       [ 'VK_EXT_metal_surface'        ], commonSuppressExtensions ],
     ]
 
     for platform in platforms:

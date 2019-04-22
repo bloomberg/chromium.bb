@@ -167,7 +167,7 @@ struct Attrib
 template <class T>
 void Store(double value, void *dest)
 {
-    T v = value;
+    T v = static_cast<T>(value);
     memcpy(dest, &v, sizeof(v));
 }
 
@@ -251,7 +251,7 @@ class AttributeLayoutTest : public ANGLETest
 
         glDisable(GL_DEPTH_TEST);
 
-        const std::string vertexSource =
+        constexpr char kVS[] =
             "attribute mediump vec2 coord;\n"
             "attribute mediump vec3 color;\n"
             "varying mediump vec3 vcolor;\n"
@@ -261,14 +261,14 @@ class AttributeLayoutTest : public ANGLETest
             "    vcolor = color;\n"
             "}\n";
 
-        const std::string fragmentSource =
+        constexpr char kFS[] =
             "varying mediump vec3 vcolor;\n"
             "void main(void)\n"
             "{\n"
             "    gl_FragColor = vec4(vcolor, 0);\n"
             "}\n";
 
-        mProgram = CompileProgram(vertexSource, fragmentSource);
+        mProgram = CompileProgram(kVS, kFS);
         ASSERT_NE(0u, mProgram);
         glUseProgram(mProgram);
 
@@ -409,9 +409,9 @@ void AttributeLayoutTest::GetTestCases(void)
     if (es3)
     {
         mTestCases.push_back({SInt(M0, 0, 40, mCoord), UInt(M0, 16, 40, mColor)});
-        if (!IsAndroid())
-            mTestCases.push_back(
-                {NormSInt(M0, 0, 40, mCoord), NormUInt(M0, 16, 40, mColor)});  // anglebug.com/2641
+        // Fails on Nexus devices (anglebug.com/2641)
+        if (!IsNexus5X() && !IsNexus6P())
+            mTestCases.push_back({NormSInt(M0, 0, 40, mCoord), NormUInt(M0, 16, 40, mColor)});
     }
 }
 

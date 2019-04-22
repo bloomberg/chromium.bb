@@ -6,12 +6,15 @@
 #include "base/run_loop.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/feedback/feedback_dialog_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -54,10 +57,11 @@ class FeedbackTest : public ExtensionBrowserTest {
   }
 
   void StartFeedbackUI(FeedbackFlow flow,
-                       const std::string& extra_diagnostics) {
+                       const std::string& extra_diagnostics,
+                       bool from_assistant = false) {
     base::Closure callback = base::Bind(&StopMessageLoopCallback);
     extensions::FeedbackPrivateGetStringsFunction::set_test_callback(&callback);
-    InvokeFeedbackUI(flow, extra_diagnostics);
+    InvokeFeedbackUI(flow, extra_diagnostics, from_assistant);
     content::RunMessageLoop();
     extensions::FeedbackPrivateGetStringsFunction::set_test_callback(NULL);
   }
@@ -74,13 +78,14 @@ class FeedbackTest : public ExtensionBrowserTest {
 
  private:
   void InvokeFeedbackUI(FeedbackFlow flow,
-                        const std::string& extra_diagnostics) {
+                        const std::string& extra_diagnostics,
+                        bool from_assistant) {
     extensions::FeedbackPrivateAPI* api =
         extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(
             browser()->profile());
-    api->RequestFeedbackForFlow("Test description", "Test placeholder",
-                                "Test tag", extra_diagnostics,
-                                GURL("http://www.test.com"), flow);
+    api->RequestFeedbackForFlow(
+        "Test description", "Test placeholder", "Test tag", extra_diagnostics,
+        GURL("http://www.test.com"), flow, from_assistant);
   }
 };
 
@@ -206,4 +211,77 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ExtraDiagnostics) {
   EXPECT_TRUE(bool_result);
 }
 
+// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
+// See crbug.com/757243.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ShowFeedbackFromAssistant DISABLED_ShowFeedbackFromAssistant
+#else
+#define MAYBE_ShowFeedbackFromAssistant ShowFeedbackFromAssistant
+#endif
+// Ensures that when triggered from Assistant with Google account, Assistant
+// checkbox are not hidden.
+IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedbackFromAssistant) {
+  WaitForExtensionViewsToLoad();
+
+  ASSERT_TRUE(IsFeedbackAppAvailable());
+  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL, std::string(),
+                  /*from_assistant*/ true);
+  VerifyFeedbackAppLaunch();
+
+  AppWindow* const window =
+      PlatformAppBrowserTest::GetFirstAppWindowForBrowser(browser());
+  ASSERT_TRUE(window);
+  content::WebContents* const content = window->web_contents();
+
+  bool bool_result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      content,
+      "domAutomationController.send("
+      "  ((function() {"
+      "      if ($('assistant-checkbox-container') != null &&"
+      "          $('assistant-checkbox-container').hidden == true) {"
+      "        return false;"
+      "      }"
+      "      return true;"
+      "    })()));",
+      &bool_result));
+  EXPECT_TRUE(bool_result);
+}
+
+IN_PROC_BROWSER_TEST_F(FeedbackTest, GetTargetTabUrl) {
+  const std::pair<std::string, std::string> test_cases[] = {
+      {"https://www.google.com/", "https://www.google.com/"},
+      {"about://version/", "chrome://version/"},
+      {"chrome://bookmarks/", "chrome://bookmarks/"},
+  };
+
+  for (const auto& test_case : test_cases) {
+    GURL expected_url = GURL(test_case.second);
+
+    ui_test_utils::NavigateToURL(browser(), GURL(test_case.first));
+
+    // Sanity check that we always have one tab in the browser.
+    ASSERT_EQ(browser()->tab_strip_model()->count(), 1);
+
+    ASSERT_EQ(expected_url,
+              browser()->tab_strip_model()->GetWebContentsAt(0)->GetURL());
+
+    ASSERT_EQ(expected_url,
+              chrome::GetTargetTabUrl(browser()->session_id(), 0));
+
+    // Open a DevTools window.
+    DevToolsWindow* devtools_window =
+        DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
+
+    // Verify the expected url returned from GetTargetTabUrl against a
+    // DevTools window.
+    ASSERT_EQ(expected_url, chrome::GetTargetTabUrl(
+                                DevToolsWindowTesting::Get(devtools_window)
+                                    ->browser()
+                                    ->session_id(),
+                                0));
+
+    DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
+  }
+}
 }  // namespace extensions

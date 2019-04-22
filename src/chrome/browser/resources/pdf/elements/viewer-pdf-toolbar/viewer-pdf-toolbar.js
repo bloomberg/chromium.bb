@@ -9,7 +9,7 @@ Polymer({
     /**
      * The current loading progress of the PDF document (0 - 100).
      */
-    loadProgress: {type: Number, observer: 'loadProgressChanged'},
+    loadProgress: {type: Number, observer: 'loadProgressChanged_'},
 
     /**
      * The title of the PDF document.
@@ -37,24 +37,72 @@ Polymer({
     opened: {type: Boolean, value: true},
 
     /**
+     * Whether the viewer is currently in annotation mode.
+     */
+    annotationMode: {
+      type: Boolean,
+      notify: true,
+      value: false,
+      reflectToAttribute: true,
+    },
+
+    annotationTool: {
+      type: Object,
+      value: null,
+      notify: true,
+    },
+
+    /**
+     * Whether annotation mode can be entered. This would be false if for
+     * example the PDF is encrypted or password protected. Note, this is
+     * true regardless of whether the feature flag is enabled.
+     */
+    annotationAvailable: {
+      type: Boolean,
+      value: true,
+    },
+
+    canUndoAnnotation: {
+      type: Boolean,
+      value: false,
+    },
+
+    canRedoAnnotation: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether the PDF Annotations feature is enabled.
      */
-    pdfAnnotationsEnabled: Boolean,
+    pdfAnnotationsEnabled: {
+      type: Boolean,
+      value: false,
+    },
 
     strings: Object,
   },
 
-  loadProgressChanged: function() {
-    if (this.loadProgress >= 100) {
-      this.$.pageselector.classList.toggle('invisible', false);
-      this.$.buttons.classList.toggle('invisible', false);
-      this.$.progress.style.opacity = 0;
+  /**
+   * @param {number} newProgress
+   * @param {number} oldProgress
+   * @private
+   */
+  loadProgressChanged_: function(newProgress, oldProgress) {
+    const loaded = newProgress >= 100;
+    const progressReset = newProgress < oldProgress;
+    if (progressReset || loaded) {
+      this.$.pageselector.classList.toggle('invisible', !loaded);
+      this.$.buttons.classList.toggle('invisible', !loaded);
+      this.$.progress.style.opacity = loaded ? 0 : 1;
+      this.$['annotations-bar'].hidden = !loaded || !this.annotationMode;
     }
   },
 
   hide: function() {
-    if (this.opened)
+    if (this.opened && !this.shouldKeepOpen()) {
       this.toggleVisibility();
+    }
   },
 
   show: function() {
@@ -101,15 +149,24 @@ Polymer({
 
   shouldKeepOpen: function() {
     return this.$.bookmarks.dropdownOpen || this.loadProgress < 100 ||
-        this.$.pageselector.isActive();
+        this.$.pageselector.isActive() || this.annotationMode;
   },
 
   hideDropdowns: function() {
+    let result = false;
     if (this.$.bookmarks.dropdownOpen) {
       this.$.bookmarks.toggleDropdown();
-      return true;
+      result = true;
     }
-    return false;
+    if (this.$.pen.dropdownOpen) {
+      this.$.pen.toggleDropdown();
+      result = true;
+    }
+    if (this.$.highlighter.dropdownOpen) {
+      this.$.highlighter.toggleDropdown();
+      result = true;
+    }
+    return result;
   },
 
   setDropdownLowerBound: function(lowerBound) {
@@ -126,6 +183,71 @@ Polymer({
 
   print: function() {
     this.fire('print');
-  }
+  },
+
+  undo: function() {
+    this.fire('undo');
+  },
+
+  redo: function() {
+    this.fire('redo');
+  },
+
+  toggleAnnotation: function() {
+    this.annotationMode = !this.annotationMode;
+    if (this.annotationMode) {
+      // Select pen tool when entering annotation mode.
+      this.updateAnnotationTool_(this.$.pen);
+    }
+    this.dispatchEvent(new CustomEvent('annotation-mode-toggled', {
+      detail: {
+        value: this.annotationMode,
+      },
+    }));
+  },
+
+  /** @param {Event} e */
+  annotationToolClicked_: function(e) {
+    this.updateAnnotationTool_(e.currentTarget);
+  },
+
+  /** @param {Event} e */
+  annotationToolOptionChanged_: function(e) {
+    const element = e.currentTarget.parentElement;
+    if (!this.annotationTool || element.id != this.annotationTool.tool) {
+      return;
+    }
+    this.updateAnnotationTool_(e.currentTarget.parentElement);
+  },
+
+  /** @param {Element} element */
+  updateAnnotationTool_: function(element) {
+    const tool = element.id;
+    const options = element.querySelector('viewer-pen-options') || {
+      selectedSize: 1,
+      selectedColor: null,
+    };
+    element.attributeStyleMap.set('--pen-tip-fill', options.selectedColor);
+    element.attributeStyleMap.set(
+        '--pen-tip-border',
+        options.selectedColor == '#000000' ? 'currentcolor' :
+                                             options.selectedColor);
+    this.annotationTool = {
+      tool: tool,
+      size: options.selectedSize,
+      color: options.selectedColor,
+    };
+  },
+
+  /**
+   * Used to determine equality in computed bindings.
+   *
+   * @param {*} a
+   * @param {*} b
+   */
+  equal_: function(a, b) {
+    return a == b;
+  },
+
 });
 })();

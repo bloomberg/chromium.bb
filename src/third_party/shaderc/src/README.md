@@ -1,9 +1,5 @@
 # Shaderc
 
-<img alt="Linux" src="kokoro/img/linux.png" width="20px" height="20px" hspace="2px"/>![Linux Build Status](https://storage.googleapis.com/shaderc/badges/build_status_linux_release.svg)
-<img alt="MacOS" src="kokoro/img/macos.png" width="20px" height="20px" hspace="2px"/>![MacOS Build Status](https://storage.googleapis.com/shaderc/badges/build_status_macos_release.svg)
-<img alt="Windows" src="kokoro/img/windows.png" width="20px" height="20px" hspace="2px"/>![Windows Build Status](https://storage.googleapis.com/shaderc/badges/build_status_windows_release.svg)
-
 A collection of tools, libraries and tests for shader compilation.
 At the moment it includes:
 
@@ -20,6 +16,14 @@ to provide:
   operating systems
 * increased functionality such as file `#include` support
 
+## Downloads
+
+<img alt="Linux" src="kokoro/img/linux.png" width="20px" height="20px" hspace="2px"/>[![Linux Build Status](https://storage.googleapis.com/shaderc/badges/build_status_linux_clang_release.svg)](https://storage.googleapis.com/shaderc/badges/build_link_linux_clang_release.html)
+<img alt="MacOS" src="kokoro/img/macos.png" width="20px" height="20px" hspace="2px"/>[![MacOS Build Status](https://storage.googleapis.com/shaderc/badges/build_status_macos_clang_release.svg)](https://storage.googleapis.com/shaderc/badges/build_link_macos_clang_release.html)
+<img alt="Windows" src="kokoro/img/windows.png" width="20px" height="20px" hspace="2px"/>[![Windows Build Status](https://storage.googleapis.com/shaderc/badges/build_status_windows_vs2017_release.svg)](https://storage.googleapis.com/shaderc/badges/build_link_windows_vs2017_release.html)
+
+[More downloads](downloads.md)
+
 ## Status
 
 Shaderc has maintained backward compatibility for quite some time, and we
@@ -30,6 +34,7 @@ Shaderc has been shipping in the
 [Android NDK](https://developer.android.com/ndk/index.html) since version r12b.
 (The NDK build uses sources from https://android.googlesource.com/platform/external/shaderc/.
 Those repos are downstream from GitHub.)
+We currently require r18b.
 
 For licensing terms, please see the [`LICENSE`](LICENSE) file.  If interested in
 contributing to this project, please see [`CONTRIBUTING.md`](CONTRIBUTING.md).
@@ -52,13 +57,6 @@ for more information. See also the [`AUTHORS`](AUTHORS) and
 - `utils/`: utility scripts for Shaderc
 
 Shaderc depends on glslang, the Khronos reference compiler for GLSL.
-Sometimes a change updates both Shaderc and glslang.  In that case the
-glslang change will appear in [google/glslang][google-glslang]
-before it appears upstream in [KhronosGroup/glslang][khr-glslang]
-We intend to upstream all changes to glslang. We maintain the separate
-copy only to stage those changes for review, and to provide something for
-Shaderc to build against in the meantime.  Please see
-[DEVELOPMENT.howto.md](DEVELOPMENT.howto.md) for more details.
 
 Shaderc depends on [SPIRV-Tools][spirv-tools] for assembling, disassembling,
 and transforming SPIR-V binaries.
@@ -79,11 +77,8 @@ branch under the "Artifacts" tab of a certain job.
 
 ```sh
 git clone https://github.com/google/shaderc $SOURCE_DIR
-cd $SOURCE_DIR/third_party
-git clone https://github.com/google/googletest.git
-git clone https://github.com/google/glslang.git
-git clone https://github.com/KhronosGroup/SPIRV-Tools.git spirv-tools
-git clone https://github.com/KhronosGroup/SPIRV-Headers.git spirv-headers
+cd $SOURCE_DIR
+./utils/git-sync-deps
 cd $SOURCE_DIR/
 ```
 
@@ -152,7 +147,7 @@ For building, testing, and profiling Shaderc, the following tools should be
 installed regardless of your OS:
 
 - [CMake](http://www.cmake.org/): for generating compilation targets.
-- [Python](http://www.python.org/): for utility scripts and running the test suite.
+- [Python 3](http://www.python.org/): for utility scripts and running the test suite.
 
 On Linux, the following tools should be installed:
 
@@ -238,7 +233,6 @@ older versions of Shaderc and its dependencies.
 * **Rust:** [shaderc-rs][shaderc-rs]
 
 [khr-glslang]: https://github.com/KhronosGroup/glslang
-[google-glslang]: https://github.com/google/glslang
 [spirv-tools]: https://github.com/KhronosGroup/SPIRV-Tools
 [pyshaderc]: https://github.com/realitix/pyshaderc
 [shaderc-rs]: https://github.com/google/shaderc-rs

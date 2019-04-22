@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -88,14 +89,14 @@ void RulesCacheDelegate::Init(RulesRegistry* registry) {
       store->RegisterKey(storage_key_);
 
     system.ready().Post(
-        FROM_HERE, base::BindRepeating(
-                       &RulesCacheDelegate::ReadRulesForInstalledExtensions,
+        FROM_HERE,
+        base::BindOnce(&RulesCacheDelegate::ReadRulesForInstalledExtensions,
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
   system.ready().Post(FROM_HERE,
-                      base::BindRepeating(&RulesCacheDelegate::CheckIfReady,
-                                          weak_ptr_factory_.GetWeakPtr()));
+                      base::BindOnce(&RulesCacheDelegate::CheckIfReady,
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RulesCacheDelegate::UpdateRules(const std::string& extension_id,
@@ -145,7 +146,7 @@ void RulesCacheDelegate::CheckIfReady() {
 
   base::PostTaskWithTraits(
       FROM_HERE, {rules_registry_thread_},
-      base::Bind(&RulesRegistry::MarkReady, registry_, storage_init_time_));
+      base::BindOnce(&RulesRegistry::MarkReady, registry_, storage_init_time_));
   notified_registry_ = true;
 }
 
@@ -187,9 +188,10 @@ void RulesCacheDelegate::ReadFromStorage(const std::string& extension_id) {
     storage_init_time_ = base::Time::Now();
 
   if (!GetDeclarativeRulesStored(extension_id)) {
-    ExtensionSystem::Get(browser_context_)->ready().Post(
-        FROM_HERE, base::Bind(&RulesCacheDelegate::CheckIfReady,
-                              weak_ptr_factory_.GetWeakPtr()));
+    ExtensionSystem::Get(browser_context_)
+        ->ready()
+        .Post(FROM_HERE, base::BindOnce(&RulesCacheDelegate::CheckIfReady,
+                                        weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -212,15 +214,16 @@ void RulesCacheDelegate::ReadFromStorageCallback(
   DCHECK_EQ(Type::kPersistent, type_);
   base::PostTaskWithTraits(
       FROM_HERE, {rules_registry_thread_},
-      base::Bind(&RulesRegistry::DeserializeAndAddRules, registry_,
-                 extension_id, base::Passed(&value)));
+      base::BindOnce(&RulesRegistry::DeserializeAndAddRules, registry_,
+                     extension_id, std::move(value)));
 
   waiting_for_extensions_.erase(extension_id);
 
   if (waiting_for_extensions_.empty())
-    ExtensionSystem::Get(browser_context_)->ready().Post(
-        FROM_HERE, base::Bind(&RulesCacheDelegate::CheckIfReady,
-                              weak_ptr_factory_.GetWeakPtr()));
+    ExtensionSystem::Get(browser_context_)
+        ->ready()
+        .Post(FROM_HERE, base::BindOnce(&RulesCacheDelegate::CheckIfReady,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool RulesCacheDelegate::GetDeclarativeRulesStored(

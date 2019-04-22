@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -27,6 +28,8 @@ namespace blink {
 // changed.
 
 class FindPropertiesNeedingUpdateScope {
+  STACK_ALLOCATED();
+
  public:
   FindPropertiesNeedingUpdateScope(const LayoutObject& object,
                                    const FragmentData& fragment_data,
@@ -71,14 +74,14 @@ class FindPropertiesNeedingUpdateScope {
     if (original_local_border_box_properties_ &&
         fragment_data_.HasLocalBorderBoxProperties()) {
       const auto object_border_box = fragment_data_.LocalBorderBoxProperties();
-      DCHECK_EQ(original_local_border_box_properties_->Transform(),
-                object_border_box.Transform())
+      DCHECK_EQ(&original_local_border_box_properties_->Transform(),
+                &object_border_box.Transform())
           << object_.DebugName();
-      DCHECK_EQ(original_local_border_box_properties_->Clip(),
-                object_border_box.Clip())
+      DCHECK_EQ(&original_local_border_box_properties_->Clip(),
+                &object_border_box.Clip())
           << object_.DebugName();
-      DCHECK_EQ(original_local_border_box_properties_->Effect(),
-                object_border_box.Effect())
+      DCHECK_EQ(&original_local_border_box_properties_->Effect(),
+                &object_border_box.Effect())
           << object_.DebugName();
     } else {
       DCHECK_EQ(!!original_local_border_box_properties_,

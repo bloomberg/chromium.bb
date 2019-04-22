@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -42,6 +43,7 @@ class Extension;
 class ExtensionService;
 
 // A helper class for creating bookmark apps from a WebContents.
+// DEPRECATED. Use web_app::InstallManager instead. crbug.com/915043.
 class BookmarkAppHelper : public content::NotificationObserver {
  public:
   typedef base::Callback<void(const Extension*, const WebApplicationInfo&)>
@@ -93,10 +95,29 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   bool is_system_app() { return is_system_app_; }
 
-  // If called, desktop shortcuts will not be created.
-  void set_skip_shortcut_creation() { create_shortcuts_ = false; }
+  void set_is_no_network_install() { is_no_network_install_ = true; }
 
-  bool create_shortcuts() const { return create_shortcuts_; }
+  bool is_no_network_install() { return is_no_network_install_; }
+
+  void set_skip_adding_to_applications_menu() {
+    add_to_applications_menu_ = false;
+  }
+
+  bool add_to_applications_menu() { return add_to_applications_menu_; }
+
+  // If called, desktop shortcuts will not be created. Has no effect on
+  // platforms other than Linux and Windows.
+  void set_skip_adding_to_desktop() { add_to_desktop_ = false; }
+
+  bool add_to_desktop() const { return add_to_desktop_; }
+
+  // If called, the app will not be pinned to the shelf. Has no effect on
+  // platforms other than Chrome OS.
+  void set_skip_adding_to_quick_launch_bar() {
+    add_to_quick_launch_bar_ = false;
+  }
+
+  bool add_to_quick_launch_bar() { return add_to_quick_launch_bar_; }
 
   // If called, the installability check won't test for a service worker.
   void set_bypass_service_worker_check() {
@@ -149,6 +170,10 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // installation steps.
   void FinishInstallation(const Extension* extension);
 
+  // Called when shortcut creation is complete.
+  void OnShortcutCreationCompleted(const std::string& extension_id,
+                                   bool shortcut_created);
+
   // Overridden from content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
@@ -185,7 +210,15 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   bool is_system_app_ = false;
 
-  bool create_shortcuts_ = true;
+  // If true, means that |web_app_info_| holds all the data needed for
+  // installation and we should not try to fetch a manifest.
+  bool is_no_network_install_ = false;
+
+  bool add_to_applications_menu_ = true;
+
+  bool add_to_desktop_ = true;
+
+  bool add_to_quick_launch_bar_ = true;
 
   bool bypass_service_worker_check_ = false;
 
@@ -202,12 +235,10 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
 // Creates or updates a bookmark app from the given |web_app_info|. Icons will
 // be downloaded from the icon URLs provided in |web_app_info|.
+// DEPRECATED. Use web_app::InstallManager instead. crbug.com/915043.
 void CreateOrUpdateBookmarkApp(ExtensionService* service,
                                WebApplicationInfo* web_app_info,
                                bool is_locally_installed);
-
-// Returns whether the given |url| is a valid user bookmark app url.
-bool IsValidBookmarkAppUrl(const GURL& url);
 
 }  // namespace extensions
 

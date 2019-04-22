@@ -47,7 +47,12 @@ NET_EXPORT std::string EscapeNSURLPrecursor(base::StringPiece precursor);
 NET_EXPORT std::string EscapeUrlEncodedData(base::StringPiece path,
                                             bool use_plus);
 
-// Escapes all non-ASCII input.
+// Escapes all non-ASCII input, as well as escaping % to %25.
+NET_EXPORT std::string EscapeNonASCIIAndPercent(base::StringPiece input);
+
+// Escapes all non-ASCII input. Note this function leaves % unescaped, which
+// means the unescaping the resulting string will not give back the original
+// input.
 NET_EXPORT std::string EscapeNonASCII(base::StringPiece input);
 
 // Escapes characters in text suitable for use as an external protocol handler

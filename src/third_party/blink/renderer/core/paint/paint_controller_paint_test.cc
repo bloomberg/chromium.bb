@@ -20,10 +20,10 @@ using testing::ElementsAre;
 
 namespace blink {
 
-INSTANTIATE_PAINT_TEST_CASE_P(PaintControllerPaintTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PaintControllerPaintTest);
 
-using PaintControllerPaintTestForSPv2 = PaintControllerPaintTest;
-INSTANTIATE_SPV2_TEST_CASE_P(PaintControllerPaintTestForSPv2);
+using PaintControllerPaintTestForCAP = PaintControllerPaintTest;
+INSTANTIATE_CAP_TEST_SUITE_P(PaintControllerPaintTestForCAP);
 
 TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
   SetBodyInnerHTML(
@@ -55,8 +55,8 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
       "<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA "
       "BBBBBBBBBB</div>");
   Element& div = *ToElement(GetDocument().body()->firstChild());
-  LayoutBlock& div_block =
-      *ToLayoutBlock(GetDocument().body()->firstChild()->GetLayoutObject());
+  auto& div_block =
+      *To<LayoutBlock>(GetDocument().body()->firstChild()->GetLayoutObject());
   LayoutText& text = *ToLayoutText(div_block.FirstChild());
   DisplayItemClient& first_text_box =
       text.FirstInlineFragment()
@@ -100,7 +100,7 @@ TEST_P(PaintControllerPaintTest, ChunkIdClientCacheFlag) {
     blue'></div>
     </div>
   )HTML");
-  LayoutBlock& div = *ToLayoutBlock(GetLayoutObjectByElementId("div"));
+  auto& div = *To<LayoutBlock>(GetLayoutObjectByElementId("div"));
   LayoutObject& sub_div = *div.FirstChild();
   LayoutObject& sub_div2 = *sub_div.NextSibling();
 
@@ -125,7 +125,7 @@ TEST_P(PaintControllerPaintTest, CompositingNoFold) {
     blue'></div>
     </div>
   )HTML");
-  LayoutBlock& div = *ToLayoutBlock(GetLayoutObjectByElementId("div"));
+  auto& div = *To<LayoutBlock>(GetLayoutObjectByElementId("div"));
   LayoutObject& sub_div = *div.FirstChild();
 
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
@@ -134,7 +134,7 @@ TEST_P(PaintControllerPaintTest, CompositingNoFold) {
                           IsSameId(&sub_div, kBackgroundType)));
 }
 
-TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
+TEST_P(PaintControllerPaintTestForCAP, FrameScrollingContents) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -173,7 +173,7 @@ TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
           IsSameId(&div4, kBackgroundType)));
 }
 
-TEST_P(PaintControllerPaintTestForSPv2, BlockScrollingNonLayeredContents) {
+TEST_P(PaintControllerPaintTestForCAP, BlockScrollingNonLayeredContents) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -190,7 +190,7 @@ TEST_P(PaintControllerPaintTestForSPv2, BlockScrollingNonLayeredContents) {
     </container>
   )HTML");
 
-  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& container = *To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto& div1 = *GetLayoutObjectByElementId("div1");
   auto& div2 = *GetLayoutObjectByElementId("div2");
   auto& div3 = *GetLayoutObjectByElementId("div3");
@@ -218,7 +218,7 @@ TEST_P(PaintControllerPaintTestForSPv2, BlockScrollingNonLayeredContents) {
           IsSameId(&div4, kBackgroundType)));
 }
 
-TEST_P(PaintControllerPaintTestForSPv2, ScrollHitTestOrder) {
+TEST_P(PaintControllerPaintTestForCAP, ScrollHitTestOrder) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -234,7 +234,7 @@ TEST_P(PaintControllerPaintTestForSPv2, ScrollHitTestOrder) {
     <div id='forceDocumentScroll'/>
   )HTML");
 
-  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& container = *To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
 
   // The container's items should all be after the document's scroll hit test
@@ -253,7 +253,7 @@ TEST_P(PaintControllerPaintTestForSPv2, ScrollHitTestOrder) {
           IsSameId(&child, kBackgroundType)));
 }
 
-TEST_P(PaintControllerPaintTestForSPv2, NonStackingScrollHitTestOrder) {
+TEST_P(PaintControllerPaintTestForCAP, NonStackingScrollHitTestOrder) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -274,7 +274,7 @@ TEST_P(PaintControllerPaintTestForSPv2, NonStackingScrollHitTestOrder) {
     </div>
   )HTML");
 
-  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& container = *To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
   auto& neg_z_child = *GetLayoutObjectByElementId("negZChild");
   auto& pos_z_child = *GetLayoutObjectByElementId("posZChild");
@@ -299,7 +299,7 @@ TEST_P(PaintControllerPaintTestForSPv2, NonStackingScrollHitTestOrder) {
           IsSameId(&pos_z_child, kBackgroundType)));
 }
 
-TEST_P(PaintControllerPaintTestForSPv2, StackingScrollHitTestOrder) {
+TEST_P(PaintControllerPaintTestForCAP, StackingScrollHitTestOrder) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none }
@@ -320,7 +320,7 @@ TEST_P(PaintControllerPaintTestForSPv2, StackingScrollHitTestOrder) {
     </div>
   )HTML");
 
-  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& container = *To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
   auto& neg_z_child = *GetLayoutObjectByElementId("negZChild");
   auto& pos_z_child = *GetLayoutObjectByElementId("posZChild");
@@ -343,7 +343,7 @@ TEST_P(PaintControllerPaintTestForSPv2, StackingScrollHitTestOrder) {
           IsSameId(&pos_z_child, kBackgroundType)));
 }
 
-TEST_P(PaintControllerPaintTestForSPv2,
+TEST_P(PaintControllerPaintTestForCAP,
        NonStackingScrollHitTestOrderWithoutBackground) {
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -365,7 +365,7 @@ TEST_P(PaintControllerPaintTestForSPv2,
     </div>
   )HTML");
 
-  auto& container = *ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto& container = *To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
   auto& neg_z_child = *GetLayoutObjectByElementId("negZChild");
   auto& pos_z_child = *GetLayoutObjectByElementId("posZChild");

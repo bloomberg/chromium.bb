@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
@@ -41,11 +42,10 @@ namespace viz {
 class VIZ_SERVICE_EXPORT BufferQueue {
  public:
   BufferQueue(gpu::gles2::GLES2Interface* gl,
-              uint32_t texture_target,
-              uint32_t internal_format,
               gfx::BufferFormat format,
               gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-              gpu::SurfaceHandle surface_handle);
+              gpu::SurfaceHandle surface_handle,
+              const gpu::Capabilities& capabilities);
   virtual ~BufferQueue();
 
   void Initialize();
@@ -59,10 +59,12 @@ class VIZ_SERVICE_EXPORT BufferQueue {
                bool use_stencil);
   void RecreateBuffers();
   uint32_t GetCurrentTextureId() const;
+  void CopyDamageForCurrentSurface(const gfx::Rect& damage);
 
   uint32_t fbo() const { return fbo_; }
   uint32_t internal_format() const { return internal_format_; }
   gfx::BufferFormat buffer_format() const { return format_; }
+  uint32_t texture_target() const { return texture_target_; }
 
  private:
   friend class BufferQueueTest;

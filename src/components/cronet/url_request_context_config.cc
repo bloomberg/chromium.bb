@@ -24,6 +24,7 @@
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
+#include "net/dns/context_host_resolver.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_network_session.h"
@@ -33,7 +34,7 @@
 #include "net/reporting/reporting_policy.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_key_logger_impl.h"
-#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/url_request/url_request_context_builder.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -66,6 +67,11 @@ const char kQuicGoAwaySessionsOnIpChange[] = "goaway_sessions_on_ip_change";
 const char kQuicAllowServerMigration[] = "allow_server_migration";
 const char kQuicMigrateSessionsOnNetworkChangeV2[] =
     "migrate_sessions_on_network_change_v2";
+const char kQuicMigrateIdleSessions[] = "migrate_idle_sessions";
+const char kQuicRetransmittableOnWireTimeoutMilliseconds[] =
+    "retransmittable_on_wire_timeout_milliseconds";
+const char kQuicIdleSessionMigrationPeriodSeconds[] =
+    "idle_session_migration_period_seconds";
 const char kQuicMaxTimeOnNonDefaultNetworkSeconds[] =
     "max_time_on_non_default_network_seconds";
 const char kQuicMaxMigrationsToNonDefaultNetworkOnWriteError[] =
@@ -291,7 +297,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
 
   DVLOG(1) << "Experimental Options:" << experimental_options;
   std::unique_ptr<base::Value> options =
-      base::JSONReader::Read(experimental_options);
+      base::JSONReader::ReadDeprecated(experimental_options);
 
   if (!options) {
     DCHECK(false) << "Parsing experimental options failed: "
@@ -461,12 +467,33 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
               quic_max_migrations_to_non_default_network_on_path_degrading;
         }
       }
+      bool quic_migrate_idle_sessions = false;
+      int quic_idle_session_migration_period_seconds = 0;
+      if (quic_args->GetBoolean(kQuicMigrateIdleSessions,
+                                &quic_migrate_idle_sessions)) {
+        session_params->quic_migrate_idle_sessions = quic_migrate_idle_sessions;
+        if (quic_args->GetInteger(
+                kQuicIdleSessionMigrationPeriodSeconds,
+                &quic_idle_session_migration_period_seconds)) {
+          session_params->quic_idle_session_migration_period =
+              base::TimeDelta::FromSeconds(
+                  quic_idle_session_migration_period_seconds);
+        }
+      }
 
       bool quic_migrate_sessions_early_v2 = false;
       if (quic_args->GetBoolean(kQuicMigrateSessionsEarlyV2,
                                 &quic_migrate_sessions_early_v2)) {
         session_params->quic_migrate_sessions_early_v2 =
             quic_migrate_sessions_early_v2;
+      }
+
+      int quic_retransmittable_on_wire_timeout_milliseconds = 0;
+      if (quic_args->GetInteger(
+              kQuicRetransmittableOnWireTimeoutMilliseconds,
+              &quic_retransmittable_on_wire_timeout_milliseconds)) {
+        session_params->quic_retransmittable_on_wire_timeout_milliseconds =
+            quic_retransmittable_on_wire_timeout_milliseconds;
       }
 
       bool quic_retry_on_alternate_network_before_handshake = false;
@@ -645,13 +672,15 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       disable_ipv6_on_wifi) {
     CHECK(net_log) << "All DNS-related experiments require NetLog.";
     std::unique_ptr<net::HostResolver> host_resolver;
+    // TODO(crbug.com/934402): Consider using a shared HostResolverManager for
+    // Cronet HostResolvers.
     if (stale_dns_enable) {
       DCHECK(!disable_ipv6_on_wifi);
       host_resolver.reset(new StaleHostResolver(
-          net::HostResolver::CreateDefaultResolverImpl(net_log),
+          net::HostResolver::CreateStandaloneContextResolver(net_log),
           stale_dns_options));
     } else {
-      host_resolver = net::HostResolver::CreateDefaultResolver(net_log);
+      host_resolver = net::HostResolver::CreateStandaloneResolver(net_log);
     }
     if (disable_ipv6_on_wifi)
       host_resolver->SetNoIPv6OnWifi(true);

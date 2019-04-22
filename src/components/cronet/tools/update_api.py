@@ -47,7 +47,7 @@ def generate_api(api_jar, output_filename):
     print 'ERROR: jar failed on ' + api_jar
     return False
   os.chdir(old_cwd)
-  shutil.rmtree(os.path.join(temp_dir, 'META-INF'))
+  shutil.rmtree(os.path.join(temp_dir, 'META-INF'), ignore_errors=True)
 
   # Collect names of all API class files
   api_class_files = []

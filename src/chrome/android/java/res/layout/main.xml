@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<merge 
+<merge
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -13,10 +13,7 @@
         android:layout_height="match_parent"
         android:layout_weight="1" >
 
-        <org.chromium.chrome.browser.compositor.CompositorViewHolder
-            android:id="@+id/compositor_view_holder"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+       <include layout="@layout/compositor_view_holder"/>
 
        <FrameLayout
             android:id="@+id/overview_list_layout_holder"
@@ -84,12 +81,12 @@
             android:visibility="gone" />
 
         <ViewStub
-            android:id="@+id/bottom_toolbar_stub"
+            android:id="@+id/bottom_controls_stub"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="start|bottom"
-            android:inflatedId="@+id/bottom_toolbar"
-            android:layout="@layout/bottom_toolbar" />
+            android:inflatedId="@+id/bottom_controls"
+            android:layout="@layout/bottom_control_container" />
 
         <ViewStub
             android:id="@+id/control_container_stub"

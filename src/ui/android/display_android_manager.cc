@@ -21,18 +21,20 @@ using base::android::AttachCurrentThread;
 using display::Display;
 using display::DisplayList;
 
-void SetScreenAndroid() {
+void SetScreenAndroid(bool use_display_wide_color_gamut) {
   // Do not override existing Screen.
   DCHECK_EQ(display::Screen::GetScreen(), nullptr);
 
-  DisplayAndroidManager* manager = new DisplayAndroidManager();
+  DisplayAndroidManager* manager =
+      new DisplayAndroidManager(use_display_wide_color_gamut);
   display::Screen::SetScreenInstance(manager);
 
   JNIEnv* env = AttachCurrentThread();
   Java_DisplayAndroidManager_onNativeSideCreated(env, (jlong)manager);
 }
 
-DisplayAndroidManager::DisplayAndroidManager() {}
+DisplayAndroidManager::DisplayAndroidManager(bool use_display_wide_color_gamut)
+    : use_display_wide_color_gamut_(use_display_wide_color_gamut) {}
 
 DisplayAndroidManager::~DisplayAndroidManager() {}
 
@@ -69,6 +71,30 @@ Display DisplayAndroidManager::GetDisplayMatching(
   return GetPrimaryDisplay();
 }
 
+void DisplayAndroidManager::DoUpdateDisplay(display::Display* display,
+                                            gfx::Size size_in_pixels,
+                                            float dipScale,
+                                            int rotationDegrees,
+                                            int bitsPerPixel,
+                                            int bitsPerComponent,
+                                            bool isWideColorGamut) {
+  if (!Display::HasForceDeviceScaleFactor())
+    display->set_device_scale_factor(dipScale);
+  if (!Display::HasForceDisplayColorProfile()) {
+    if (isWideColorGamut) {
+      display->set_color_space(gfx::ColorSpace::CreateDisplayP3D65());
+    } else {
+      display->set_color_space(gfx::ColorSpace::CreateSRGB());
+    }
+  }
+
+  display->set_size_in_pixels(size_in_pixels);
+  display->SetRotationAsDegree(rotationDegrees);
+  display->set_color_depth(bitsPerPixel);
+  display->set_depth_per_component(bitsPerComponent);
+  display->set_is_monochrome(bitsPerComponent == 0);
+}
+
 // Methods called from Java
 
 void DisplayAndroidManager::UpdateDisplay(
@@ -87,20 +113,9 @@ void DisplayAndroidManager::UpdateDisplay(
       gfx::ScaleToCeiledSize(bounds_in_pixels.size(), 1.0f / dipScale));
 
   display::Display display(sdkDisplayId, bounds_in_dip);
-  if (!Display::HasForceDeviceScaleFactor())
-    display.set_device_scale_factor(dipScale);
-  if (!Display::HasForceDisplayColorProfile()) {
-    // TODO(ccameron): Use CreateDisplayP3D65 if isWideColorGamut is true, once
-    // the feature is ready to use.
-    display.set_color_space(gfx::ColorSpace::CreateSRGB());
-  }
-
-  display.set_size_in_pixels(bounds_in_pixels.size());
-  display.SetRotationAsDegree(rotationDegrees);
-  display.set_color_depth(bitsPerPixel);
-  display.set_depth_per_component(bitsPerComponent);
-  display.set_is_monochrome(bitsPerComponent == 0);
-
+  DoUpdateDisplay(&display, bounds_in_pixels.size(), dipScale, rotationDegrees,
+                  bitsPerPixel, bitsPerComponent,
+                  isWideColorGamut && use_display_wide_color_gamut_);
   ProcessDisplayChanged(display, sdkDisplayId == primary_display_id_);
 }
 

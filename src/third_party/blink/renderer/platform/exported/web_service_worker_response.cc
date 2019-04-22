@@ -7,6 +7,7 @@
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -15,15 +16,19 @@ namespace blink {
 
 class WebServiceWorkerResponsePrivate
     : public RefCounted<WebServiceWorkerResponsePrivate> {
+  USING_FAST_MALLOC(WebServiceWorkerResponsePrivate);
+
  public:
   WebServiceWorkerResponsePrivate()
       : status(0),
         response_type(network::mojom::FetchResponseType::kDefault),
+        response_source(network::mojom::FetchResponseSource::kUnspecified),
         error(mojom::ServiceWorkerResponseError::kUnknown) {}
   WebVector<WebURL> url_list;
-  unsigned short status;
+  uint16_t status;
   WebString status_text;
   network::mojom::FetchResponseType response_type;
+  network::mojom::FetchResponseSource response_source;
   HTTPHeaderMap headers;
   scoped_refptr<BlobDataHandle> blob_data_handle;
   mojom::ServiceWorkerResponseError error;
@@ -52,11 +57,11 @@ const WebVector<WebURL>& WebServiceWorkerResponse::UrlList() const {
   return private_->url_list;
 }
 
-void WebServiceWorkerResponse::SetStatus(unsigned short status) {
+void WebServiceWorkerResponse::SetStatus(uint16_t status) {
   private_->status = status;
 }
 
-unsigned short WebServiceWorkerResponse::Status() const {
+uint16_t WebServiceWorkerResponse::Status() const {
   return private_->status;
 }
 
@@ -76,6 +81,16 @@ void WebServiceWorkerResponse::SetResponseType(
 network::mojom::FetchResponseType WebServiceWorkerResponse::ResponseType()
     const {
   return private_->response_type;
+}
+
+void WebServiceWorkerResponse::SetResponseSource(
+    network::mojom::FetchResponseSource response_source) {
+  private_->response_source = response_source;
+}
+
+network::mojom::FetchResponseSource WebServiceWorkerResponse::ResponseSource()
+    const {
+  return private_->response_source;
 }
 
 void WebServiceWorkerResponse::SetHeader(const WebString& key,
@@ -105,7 +120,7 @@ WebString WebServiceWorkerResponse::GetHeader(const WebString& key) const {
   return private_->headers.Get(key);
 }
 
-void WebServiceWorkerResponse::VisitHTTPHeaderFields(
+void WebServiceWorkerResponse::VisitHttpHeaderFields(
     WebHTTPHeaderVisitor* header_visitor) const {
   for (HTTPHeaderMap::const_iterator i = private_->headers.begin(),
                                      end = private_->headers.end();

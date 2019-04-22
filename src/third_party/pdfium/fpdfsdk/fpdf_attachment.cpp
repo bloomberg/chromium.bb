@@ -15,6 +15,7 @@
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
+#include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fpdfdoc/cpdf_filespec.h"
@@ -59,13 +60,15 @@ FPDFDoc_GetAttachmentCount(FPDF_DOCUMENT document) {
 FPDF_EXPORT FPDF_ATTACHMENT FPDF_CALLCONV
 FPDFDoc_AddAttachment(FPDF_DOCUMENT document, FPDF_WIDESTRING name) {
   CPDF_Document* pDoc = CPDFDocumentFromFPDFDocument(document);
-  WideString wsName =
-      WideString::FromUTF16LE(name, WideString::WStringLength(name));
-  if (!pDoc || wsName.IsEmpty())
+  if (!pDoc)
     return nullptr;
 
   CPDF_Dictionary* pRoot = pDoc->GetRoot();
   if (!pRoot)
+    return nullptr;
+
+  WideString wsName = WideStringFromFPDFWideString(name);
+  if (wsName.IsEmpty())
     return nullptr;
 
   // Retrieve the document's Names dictionary; create it if missing.
@@ -170,7 +173,7 @@ FPDFAttachment_SetStringValue(FPDF_ATTACHMENT attachment,
     return false;
 
   ByteString bsKey = key;
-  ByteString bsValue = CFXByteStringFromFPDFWideString(value);
+  ByteString bsValue = ByteStringFromFPDFWideString(value);
   bool bEncodedAsHex = bsKey == kChecksumKey;
   if (bEncodedAsHex)
     bsValue = CFXByteStringHexDecode(bsValue);

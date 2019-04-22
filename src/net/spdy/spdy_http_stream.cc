@@ -17,7 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
@@ -27,8 +27,8 @@
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_log_util.h"
 #include "net/spdy/spdy_session.h"
-#include "net/third_party/spdy/core/spdy_header_block.h"
-#include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
 namespace net {
 
@@ -111,8 +111,8 @@ SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
       closed_stream_id_(0),
       closed_stream_received_bytes_(0),
       closed_stream_sent_bytes_(0),
-      request_info_(NULL),
-      response_info_(NULL),
+      request_info_(nullptr),
+      response_info_(nullptr),
       response_headers_complete_(false),
       upload_stream_in_progress_(false),
       user_buffer_len_(0),
@@ -156,8 +156,8 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   }
 
   int rv = stream_request_.StartRequest(
-      SPDY_REQUEST_RESPONSE_STREAM, spdy_session_, request_info_->url, priority,
-      request_info_->socket_tag, stream_net_log,
+      SPDY_REQUEST_RESPONSE_STREAM, spdy_session_, request_info_->url,
+      can_send_early, priority, request_info_->socket_tag, stream_net_log,
       base::BindOnce(&SpdyHttpStream::OnStreamCreated,
                      weak_factory_.GetWeakPtr(), std::move(callback)),
       NetworkTrafficAnnotationTag(request_info->traffic_annotation));
@@ -312,7 +312,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     *response = *(push_response_info_.get());
     push_response_info_.reset();
   } else {
-    DCHECK_EQ(static_cast<HttpResponseInfo*>(NULL), response_info_);
+    DCHECK_EQ(static_cast<HttpResponseInfo*>(nullptr), response_info_);
   }
 
   response_info_ = response;
@@ -322,7 +322,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   int result = stream_->GetPeerAddress(&address);
   if (result != OK)
     return result;
-  response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
+  response_info_->remote_endpoint = address;
 
   if (stream_->type() == SPDY_PUSH_STREAM) {
     // Pushed streams do not send any data, and should always be

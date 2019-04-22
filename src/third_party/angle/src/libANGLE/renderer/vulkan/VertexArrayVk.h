@@ -18,27 +18,20 @@ namespace rx
 {
 class BufferVk;
 
-namespace vk
-{
-class RecordableGraphResource;
-}  // namespace vk
-
 class VertexArrayVk : public VertexArrayImpl
 {
   public:
-    VertexArrayVk(const gl::VertexArrayState &state, RendererVk *renderer);
+    VertexArrayVk(ContextVk *contextVk, const gl::VertexArrayState &state);
     ~VertexArrayVk() override;
 
     void destroy(const gl::Context *context) override;
 
     angle::Result syncState(const gl::Context *context,
                             const gl::VertexArray::DirtyBits &dirtyBits,
-                            const gl::VertexArray::DirtyAttribBitsArray &attribBits,
-                            const gl::VertexArray::DirtyBindingBitsArray &bindingBits) override;
+                            gl::VertexArray::DirtyAttribBitsArray *attribBits,
+                            gl::VertexArray::DirtyBindingBitsArray *bindingBits) override;
 
-    void getPackedInputDescriptions(vk::GraphicsPipelineDesc *pipelineDesc);
-
-    void updateDefaultAttrib(RendererVk *renderer,
+    void updateDefaultAttrib(ContextVk *contextVk,
                              size_t attribIndex,
                              VkBuffer bufferHandle,
                              uint32_t offset);
@@ -46,13 +39,14 @@ class VertexArrayVk : public VertexArrayImpl
     angle::Result updateClientAttribs(const gl::Context *context,
                                       GLint firstVertex,
                                       GLsizei vertexOrIndexCount,
-                                      GLenum indexTypeOrNone,
+                                      GLsizei instanceCount,
+                                      gl::DrawElementsType indexTypeOrInvalid,
                                       const void *indices);
 
     angle::Result handleLineLoop(ContextVk *contextVk,
                                  GLint firstVertex,
                                  GLsizei vertexOrIndexCount,
-                                 GLenum indexTypeOrNone,
+                                 gl::DrawElementsType indexTypeOrInvalid,
                                  const void *indices);
 
     const gl::AttribArray<VkBuffer> &getCurrentArrayBufferHandles() const
@@ -70,8 +64,6 @@ class VertexArrayVk : public VertexArrayImpl
         return mCurrentArrayBuffers;
     }
 
-    VkBuffer getCurrentElementArrayBufferHandle() const { return mCurrentElementArrayBufferHandle; }
-
     VkDeviceSize getCurrentElementArrayBufferOffset() const
     {
         return mCurrentElementArrayBufferOffset;
@@ -86,29 +78,27 @@ class VertexArrayVk : public VertexArrayImpl
 
     angle::Result updateIndexTranslation(ContextVk *contextVk,
                                          GLsizei indexCount,
-                                         GLenum type,
+                                         gl::DrawElementsType type,
                                          const void *indices);
 
   private:
-    // This will update any dirty packed input descriptions, regardless if they're used by the
-    // active program. This could lead to slight inefficiencies when the app would repeatedly
-    // update vertex info for attributes the program doesn't use, (very silly edge case). The
-    // advantage is the cached state then doesn't depend on the Program, so doesn't have to be
-    // updated when the active Program changes.
-    void updatePackedInputDescriptions();
-    void updatePackedInputInfo(uint32_t attribIndex,
-                               const gl::VertexBinding &binding,
-                               const gl::VertexAttribute &attrib);
+    void setDefaultPackedInput(ContextVk *contextVk, size_t attribIndex);
 
     angle::Result streamIndexData(ContextVk *contextVk,
-                                  GLenum indexType,
+                                  gl::DrawElementsType indexType,
                                   size_t indexCount,
                                   const void *sourcePointer,
                                   vk::DynamicBuffer *dynamicBuffer);
-    angle::Result convertVertexBuffer(ContextVk *contextVk,
-                                      BufferVk *srcBuffer,
-                                      const gl::VertexBinding &binding,
-                                      size_t attribIndex);
+    angle::Result convertVertexBufferGpu(ContextVk *contextVk,
+                                         BufferVk *srcBuffer,
+                                         const gl::VertexBinding &binding,
+                                         size_t attribIndex,
+                                         const vk::Format &vertexFormat);
+    angle::Result convertVertexBufferCpu(ContextVk *contextVk,
+                                         BufferVk *srcBuffer,
+                                         const gl::VertexBinding &binding,
+                                         size_t attribIndex,
+                                         const vk::Format &vertexFormat);
     void ensureConversionReleased(RendererVk *renderer, size_t attribIndex);
 
     angle::Result syncDirtyAttrib(ContextVk *contextVk,
@@ -119,19 +109,10 @@ class VertexArrayVk : public VertexArrayImpl
     gl::AttribArray<VkBuffer> mCurrentArrayBufferHandles;
     gl::AttribArray<VkDeviceSize> mCurrentArrayBufferOffsets;
     gl::AttribArray<vk::BufferHelper *> mCurrentArrayBuffers;
-    gl::AttribArray<const vk::Format *> mCurrentArrayBufferFormats;
-    gl::AttribArray<GLuint> mCurrentArrayBufferStrides;
     gl::AttribArray<vk::DynamicBuffer> mCurrentArrayBufferConversion;
     gl::AttribArray<bool> mCurrentArrayBufferConversionCanRelease;
-    VkBuffer mCurrentElementArrayBufferHandle;
     VkDeviceSize mCurrentElementArrayBufferOffset;
     vk::BufferHelper *mCurrentElementArrayBuffer;
-
-    // Keep a cache of binding and attribute descriptions for easy pipeline updates.
-    // This is copied out of here into the pipeline description on a Context state change.
-    gl::AttributesMask mDirtyPackedInputs;
-    vk::VertexInputBindings mPackedInputBindings;
-    vk::VertexInputAttributes mPackedInputAttributes;
 
     vk::DynamicBuffer mDynamicVertexData;
     vk::DynamicBuffer mDynamicIndexData;
@@ -141,6 +122,9 @@ class VertexArrayVk : public VertexArrayImpl
     Optional<GLint> mLineLoopBufferFirstIndex;
     Optional<size_t> mLineLoopBufferLastIndex;
     bool mDirtyLineLoopTranslation;
+
+    // Vulkan does not allow binding a null vertex buffer. We use a dummy as a placeholder.
+    vk::BufferHelper mTheNullBuffer;
 };
 }  // namespace rx
 

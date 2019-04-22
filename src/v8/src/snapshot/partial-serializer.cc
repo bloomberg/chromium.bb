@@ -32,7 +32,8 @@ PartialSerializer::~PartialSerializer() {
 void PartialSerializer::Serialize(Context* o, bool include_global_proxy) {
   context_ = *o;
   DCHECK(context_->IsNativeContext());
-  reference_map()->AddAttachedReference(context_->global_proxy());
+  reference_map()->AddAttachedReference(
+      reinterpret_cast<void*>(context_->global_proxy()->ptr()));
   // The bootstrap snapshot has a code-stub context. When serializing the
   // partial snapshot, it is chained into the weak context list on the isolate
   // and it's next context pointer may point to the code-stub context.  Clear
@@ -44,10 +45,17 @@ void PartialSerializer::Serialize(Context* o, bool include_global_proxy) {
   // Reset math random cache to get fresh random numbers.
   MathRandom::ResetContext(context_);
 
-  DCHECK_EQ(0, context_->native_context()->microtask_queue()->size());
+#ifdef DEBUG
+  MicrotaskQueue* microtask_queue =
+      context_->native_context()->microtask_queue();
+  DCHECK_EQ(0, microtask_queue->size());
+  DCHECK(!microtask_queue->HasMicrotasksSuppressions());
+  DCHECK_EQ(0, microtask_queue->GetMicrotasksScopeDepth());
+  DCHECK(microtask_queue->DebugMicrotasksScopeDepthIsZero());
+#endif
   context_->native_context()->set_microtask_queue(nullptr);
 
-  VisitRootPointer(Root::kPartialSnapshotCache, nullptr, ObjectSlot(o));
+  VisitRootPointer(Root::kPartialSnapshotCache, nullptr, FullObjectSlot(o));
   SerializeDeferredObjects();
 
   // Add section for embedder-serialized embedder fields.
@@ -60,24 +68,21 @@ void PartialSerializer::Serialize(Context* o, bool include_global_proxy) {
   Pad();
 }
 
-void PartialSerializer::SerializeObject(HeapObject* obj, HowToCode how_to_code,
-                                        WhereToPoint where_to_point, int skip) {
+void PartialSerializer::SerializeObject(HeapObject obj) {
   DCHECK(!ObjectIsBytecodeHandler(obj));  // Only referenced in dispatch table.
 
-  if (SerializeHotObject(obj, how_to_code, where_to_point, skip)) return;
+  if (SerializeHotObject(obj)) return;
 
-  if (SerializeRoot(obj, how_to_code, where_to_point, skip)) return;
+  if (SerializeRoot(obj)) return;
 
-  if (SerializeBackReference(obj, how_to_code, where_to_point, skip)) return;
+  if (SerializeBackReference(obj)) return;
 
-  if (startup_serializer_->SerializeUsingReadOnlyObjectCache(
-          &sink_, obj, how_to_code, where_to_point, skip)) {
+  if (startup_serializer_->SerializeUsingReadOnlyObjectCache(&sink_, obj)) {
     return;
   }
 
   if (ShouldBeInThePartialSnapshotCache(obj)) {
-    startup_serializer_->SerializeUsingPartialSnapshotCache(
-        &sink_, obj, how_to_code, where_to_point, skip);
+    startup_serializer_->SerializeUsingPartialSnapshotCache(&sink_, obj);
     return;
   }
 
@@ -93,30 +98,35 @@ void PartialSerializer::SerializeObject(HeapObject* obj, HowToCode how_to_code,
   // We should not end up at another native context.
   DCHECK_IMPLIES(obj != context_, !obj->IsNativeContext());
 
-  FlushSkip(skip);
-
   // Clear literal boilerplates and feedback.
   if (obj->IsFeedbackVector()) FeedbackVector::cast(obj)->ClearSlots(isolate());
 
-  if (SerializeJSObjectWithEmbedderFields(obj, how_to_code, where_to_point)) {
+  // Clear InterruptBudget when serializing FeedbackCell.
+  if (obj->IsFeedbackCell()) {
+    FeedbackCell::cast(obj)->set_interrupt_budget(
+        FeedbackCell::GetInitialInterruptBudget());
+  }
+
+  if (SerializeJSObjectWithEmbedderFields(obj)) {
     return;
   }
 
   if (obj->IsJSFunction()) {
     // Unconditionally reset the JSFunction to its SFI's code, since we can't
     // serialize optimized code anyway.
-    JSFunction* closure = JSFunction::cast(obj);
+    JSFunction closure = JSFunction::cast(obj);
+    closure->ResetIfBytecodeFlushed();
     if (closure->is_compiled()) closure->set_code(closure->shared()->GetCode());
   }
 
   CheckRehashability(obj);
 
   // Object has not yet been serialized.  Serialize it here.
-  ObjectSerializer serializer(this, obj, &sink_, how_to_code, where_to_point);
+  ObjectSerializer serializer(this, obj, &sink_);
   serializer.Serialize();
 }
 
-bool PartialSerializer::ShouldBeInThePartialSnapshotCache(HeapObject* o) {
+bool PartialSerializer::ShouldBeInThePartialSnapshotCache(HeapObject o) {
   // Scripts should be referred only through shared function infos.  We can't
   // allow them to be part of the partial snapshot because they contain a
   // unique ID, and deserializing several partial snapshots containing script
@@ -124,7 +134,7 @@ bool PartialSerializer::ShouldBeInThePartialSnapshotCache(HeapObject* o) {
   DCHECK(!o->IsScript());
   return o->IsName() || o->IsSharedFunctionInfo() || o->IsHeapNumber() ||
          o->IsCode() || o->IsScopeInfo() || o->IsAccessorInfo() ||
-         o->IsTemplateInfo() ||
+         o->IsTemplateInfo() || o->IsClassPositions() ||
          o->map() == ReadOnlyRoots(startup_serializer_->isolate())
                          .fixed_cow_array_map();
 }
@@ -133,14 +143,12 @@ namespace {
 bool DataIsEmpty(const StartupData& data) { return data.raw_size == 0; }
 }  // anonymous namespace
 
-bool PartialSerializer::SerializeJSObjectWithEmbedderFields(
-    Object* obj, HowToCode how_to_code, WhereToPoint where_to_point) {
+bool PartialSerializer::SerializeJSObjectWithEmbedderFields(Object obj) {
   if (!obj->IsJSObject()) return false;
-  JSObject* js_obj = JSObject::cast(obj);
+  JSObject js_obj = JSObject::cast(obj);
   int embedder_fields_count = js_obj->GetEmbedderFieldCount();
   if (embedder_fields_count == 0) return false;
   CHECK_GT(embedder_fields_count, 0);
-  DCHECK_NOT_NULL(serialize_embedder_fields_.callback);
   DCHECK(!js_obj->NeedsRehashing());
 
   DisallowHeapAllocation no_gc;
@@ -161,14 +169,22 @@ bool PartialSerializer::SerializeJSObjectWithEmbedderFields(
   for (int i = 0; i < embedder_fields_count; i++) {
     EmbedderDataSlot embedder_data_slot(js_obj, i);
     original_embedder_values.emplace_back(embedder_data_slot.load_raw(no_gc));
-    Object* object = embedder_data_slot.load_tagged();
+    Object object = embedder_data_slot.load_tagged();
     if (object->IsHeapObject()) {
       DCHECK(isolate()->heap()->Contains(HeapObject::cast(object)));
       serialized_data.push_back({nullptr, 0});
     } else {
-      StartupData data = serialize_embedder_fields_.callback(
-          api_obj, i, serialize_embedder_fields_.data);
-      serialized_data.push_back(data);
+      // If no serializer is provided and the field was empty, we serialize it
+      // by default to nullptr.
+      if (serialize_embedder_fields_.callback == nullptr &&
+          object->ptr() == 0) {
+        serialized_data.push_back({nullptr, 0});
+      } else {
+        DCHECK_NOT_NULL(serialize_embedder_fields_.callback);
+        StartupData data = serialize_embedder_fields_.callback(
+            api_obj, i, serialize_embedder_fields_.data);
+        serialized_data.push_back(data);
+      }
     }
   }
 
@@ -179,17 +195,17 @@ bool PartialSerializer::SerializeJSObjectWithEmbedderFields(
   //    with embedder callbacks.
   for (int i = 0; i < embedder_fields_count; i++) {
     if (!DataIsEmpty(serialized_data[i])) {
-      EmbedderDataSlot(js_obj, i).store_raw({kNullAddress}, no_gc);
+      EmbedderDataSlot(js_obj, i).store_raw(kNullAddress, no_gc);
     }
   }
 
   // 3) Serialize the object. References from embedder fields to heap objects or
   //    smis are serialized regularly.
-  ObjectSerializer(this, js_obj, &sink_, how_to_code, where_to_point)
-      .Serialize();
+  ObjectSerializer(this, js_obj, &sink_).Serialize();
 
   // 4) Obtain back reference for the serialized object.
-  SerializerReference reference = reference_map()->LookupReference(js_obj);
+  SerializerReference reference =
+      reference_map()->LookupReference(reinterpret_cast<void*>(js_obj->ptr()));
   DCHECK(reference.is_back_reference());
 
   // 5) Write data returned by the embedder callbacks into a separate sink,
@@ -218,7 +234,7 @@ bool PartialSerializer::SerializeJSObjectWithEmbedderFields(
   return true;
 }
 
-void PartialSerializer::CheckRehashability(HeapObject* obj) {
+void PartialSerializer::CheckRehashability(HeapObject obj) {
   if (!can_be_rehashed_) return;
   if (!obj->NeedsRehashing()) return;
   if (obj->CanBeRehashed()) return;

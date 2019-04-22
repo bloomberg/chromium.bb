@@ -17,7 +17,7 @@ void StringBuilderConcatHelper(String special, sinkchar* sink,
   DisallowHeapAllocation no_gc;
   int position = 0;
   for (int i = 0; i < array_length; i++) {
-    Object* element = fixed_array->get(i);
+    Object element = fixed_array->get(i);
     if (element->IsSmi()) {
       // Smi encoding of position and length.
       int encoded_slice = Smi::ToInt(element);
@@ -29,7 +29,7 @@ void StringBuilderConcatHelper(String special, sinkchar* sink,
         len = StringBuilderSubstringLength::decode(encoded_slice);
       } else {
         // Position and length encoded in two smis.
-        Object* obj = fixed_array->get(++i);
+        Object obj = fixed_array->get(++i);
         DCHECK(obj->IsSmi());
         pos = Smi::ToInt(obj);
         len = -encoded_slice;
@@ -59,7 +59,7 @@ int StringBuilderConcatLength(int special_length, FixedArray fixed_array,
   int position = 0;
   for (int i = 0; i < array_length; i++) {
     int increment = 0;
-    Object* elt = fixed_array->get(i);
+    Object elt = fixed_array->get(i);
     if (elt->IsSmi()) {
       // Smi encoding of position and length.
       int smi_value = Smi::ToInt(elt);
@@ -75,7 +75,7 @@ int StringBuilderConcatLength(int special_length, FixedArray fixed_array,
         // Get the position and check that it is a positive smi.
         i++;
         if (i >= array_length) return -1;
-        Object* next_smi = fixed_array->get(i);
+        Object next_smi = fixed_array->get(i);
         if (!next_smi->IsSmi()) return -1;
         pos = Smi::ToInt(next_smi);
         if (pos < 0) return -1;
@@ -88,7 +88,7 @@ int StringBuilderConcatLength(int special_length, FixedArray fixed_array,
       String element = String::cast(elt);
       int element_length = element->length();
       increment = element_length;
-      if (*one_byte && !element->HasOnlyOneByteChars()) {
+      if (*one_byte && !element->IsOneByteRepresentation()) {
         *one_byte = false;
       }
     } else {
@@ -139,9 +139,8 @@ void FixedArrayBuilder::EnsureCapacity(Isolate* isolate, int elements) {
   }
 }
 
-void FixedArrayBuilder::Add(Object* value) {
+void FixedArrayBuilder::Add(Object value) {
   DCHECK(!value->IsSmi());
-  DCHECK(length_ < capacity());
   array_->set(length_, value);
   length_++;
   has_non_smi_elements_ = true;
@@ -149,7 +148,6 @@ void FixedArrayBuilder::Add(Object* value) {
 
 void FixedArrayBuilder::Add(Smi value) {
   DCHECK(value->IsSmi());
-  DCHECK(length_ < capacity());
   array_->set(length_, value);
   length_++;
 }
@@ -166,7 +164,7 @@ ReplacementStringBuilder::ReplacementStringBuilder(Heap* heap,
                                                    Handle<String> subject,
                                                    int estimated_part_count)
     : heap_(heap),
-      array_builder_(heap->isolate(), estimated_part_count),
+      array_builder_(Isolate::FromHeap(heap), estimated_part_count),
       subject_(subject),
       character_count_(0),
       is_one_byte_(subject->IsOneByteRepresentation()) {
@@ -176,13 +174,13 @@ ReplacementStringBuilder::ReplacementStringBuilder(Heap* heap,
 }
 
 void ReplacementStringBuilder::EnsureCapacity(int elements) {
-  array_builder_.EnsureCapacity(heap_->isolate(), elements);
+  array_builder_.EnsureCapacity(Isolate::FromHeap(heap_), elements);
 }
 
 void ReplacementStringBuilder::AddString(Handle<String> string) {
   int length = string->length();
   DCHECK_GT(length, 0);
-  AddElement(*string);
+  AddElement(string);
   if (!string->IsOneByteRepresentation()) {
     is_one_byte_ = false;
   }
@@ -190,7 +188,7 @@ void ReplacementStringBuilder::AddString(Handle<String> string) {
 }
 
 MaybeHandle<String> ReplacementStringBuilder::ToString() {
-  Isolate* isolate = heap_->isolate();
+  Isolate* isolate = Isolate::FromHeap(heap_);
   if (array_builder_.length() == 0) {
     return isolate->factory()->empty_string();
   }
@@ -203,7 +201,7 @@ MaybeHandle<String> ReplacementStringBuilder::ToString() {
         String);
 
     DisallowHeapAllocation no_gc;
-    uint8_t* char_buffer = seq->GetChars();
+    uint8_t* char_buffer = seq->GetChars(no_gc);
     StringBuilderConcatHelper(*subject_, char_buffer, *array_builder_.array(),
                               array_builder_.length());
     joined_string = Handle<String>::cast(seq);
@@ -215,7 +213,7 @@ MaybeHandle<String> ReplacementStringBuilder::ToString() {
         String);
 
     DisallowHeapAllocation no_gc;
-    uc16* char_buffer = seq->GetChars();
+    uc16* char_buffer = seq->GetChars(no_gc);
     StringBuilderConcatHelper(*subject_, char_buffer, *array_builder_.array(),
                               array_builder_.length());
     joined_string = Handle<String>::cast(seq);
@@ -223,10 +221,11 @@ MaybeHandle<String> ReplacementStringBuilder::ToString() {
   return joined_string;
 }
 
-void ReplacementStringBuilder::AddElement(Object* element) {
+void ReplacementStringBuilder::AddElement(Handle<Object> element) {
   DCHECK(element->IsSmi() || element->IsString());
-  DCHECK(array_builder_.capacity() > array_builder_.length());
-  array_builder_.Add(element);
+  EnsureCapacity(1);
+  DisallowHeapAllocation no_gc;
+  array_builder_.Add(*element);
 }
 
 IncrementalStringBuilder::IncrementalStringBuilder(Isolate* isolate)

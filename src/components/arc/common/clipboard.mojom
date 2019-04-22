@@ -43,10 +43,6 @@ interface ClipboardHost {
   // initiates a 'copy' action.
   [MinVersion=1] SetClipContent@2(ClipData data);
 
-  // DEPRECATED: Please use GetClipContent@4 instead. Clean up after Aug 1 2018.
-  // This version of ClipboardInstance can't handle a ClipData larger than 800K.
-  [MinVersion=1] GetClipContentDeprecated@3() => (ClipData data);
-
   // Tells the host to return its clipboard content, usually when the user
   // initiates a 'paste' action or when the instance needs to re-sync its
   // clipboard content with the host.

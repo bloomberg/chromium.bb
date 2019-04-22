@@ -11,10 +11,10 @@ android_library("java") {
     "//services/device:*",
   ]
   java_files = [
-    "java/src/org/chromium/device/nfc/InvalidNfcMessageException.java",
+    "java/src/org/chromium/device/nfc/InvalidNdefMessageException.java",
     "java/src/org/chromium/device/nfc/NfcProviderImpl.java",
     "java/src/org/chromium/device/nfc/NfcImpl.java",
-    "java/src/org/chromium/device/nfc/NfcMessageValidator.java",
+    "java/src/org/chromium/device/nfc/NdefMessageValidator.java",
     "java/src/org/chromium/device/nfc/NfcTagHandler.java",
     "java/src/org/chromium/device/nfc/NfcTypeConverter.java",
   ]

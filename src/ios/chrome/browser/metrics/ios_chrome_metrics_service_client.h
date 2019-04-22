@@ -56,9 +56,6 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Checks if the user has forced metrics collection on via the override flag.
-  static bool IsMetricsReportingForceEnabled();
-
   // metrics::MetricsServiceClient:
   metrics::MetricsService* GetMetricsService() override;
   ukm::UkmService* GetUkmService() override;
@@ -70,8 +67,8 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   std::string GetVersionString() override;
   void CollectFinalMetricsForLog(const base::Closure& done_callback) override;
   std::unique_ptr<metrics::MetricsLogUploader> CreateUploader(
-      base::StringPiece server_url,
-      base::StringPiece insecure_server_url,
+      const GURL& server_url,
+      const GURL& insecure_server_url,
       base::StringPiece mime_type,
       metrics::MetricsLogUploader::MetricServiceType service_type,
       const metrics::MetricsLogUploader::UploadCallback& on_upload_complete)
@@ -80,6 +77,7 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   void OnRendererProcessCrash() override;
   bool SyncStateAllowsUkm() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
+  std::string GetUploadSigningKey() override;
 
   // ukm::HistoryDeleteObserver:
   void OnHistoryDeleted() override;

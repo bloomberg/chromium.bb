@@ -4,6 +4,7 @@
 
 #include "net/base/upload_data_stream.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "net/base/io_buffer.h"
@@ -142,7 +143,7 @@ bool UploadDataStream::IsInMemory() const {
 
 const std::vector<std::unique_ptr<UploadElementReader>>*
 UploadDataStream::GetElementReaders() const {
-  return NULL;
+  return nullptr;
 }
 
 void UploadDataStream::OnInitCompleted(int result) {

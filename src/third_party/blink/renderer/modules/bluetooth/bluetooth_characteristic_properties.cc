@@ -6,11 +6,6 @@
 
 namespace blink {
 
-BluetoothCharacteristicProperties* BluetoothCharacteristicProperties::Create(
-    uint32_t properties) {
-  return new BluetoothCharacteristicProperties(properties);
-}
-
 bool BluetoothCharacteristicProperties::broadcast() const {
   return properties & Property::kBroadcast;
 }

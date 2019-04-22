@@ -30,14 +30,17 @@ class TestSyncUserSettings : public SyncUserSettings {
   void SetFirstSetupComplete() override;
 
   bool IsSyncEverythingEnabled() const override;
-  ModelTypeSet GetChosenDataTypes() const override;
-  void SetChosenDataTypes(bool sync_everything, ModelTypeSet types) override;
+  UserSelectableTypeSet GetSelectedTypes() const override;
+  void SetSelectedTypes(bool sync_everything,
+                        UserSelectableTypeSet types) override;
+  UserSelectableTypeSet GetRegisteredSelectableTypes() const override;
+  UserSelectableTypeSet GetForcedTypes() const override;
 
   bool IsEncryptEverythingAllowed() const override;
-  void SetEncryptEverythingAllowed(bool allowed) override;
   bool IsEncryptEverythingEnabled() const override;
   void EnableEncryptEverything() override;
 
+  syncer::ModelTypeSet GetEncryptedDataTypes() const override;
   bool IsPassphraseRequired() const override;
   bool IsPassphraseRequiredForDecryption() const override;
   bool IsUsingSecondaryPassphrase() const override;
@@ -48,12 +51,20 @@ class TestSyncUserSettings : public SyncUserSettings {
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
 
   void SetFirstSetupComplete(bool first_setup_complete);
+  void SetEncryptEverythingAllowed(bool allowed);
+  void SetPassphraseRequired(bool required);
+  void SetPassphraseRequiredForDecryption(bool required);
+  void SetIsUsingSecondaryPassphrase(bool enabled);
 
  private:
   TestSyncService* service_;
 
   bool first_setup_complete_ = true;
   bool sync_everything_enabled_ = true;
+
+  bool passphrase_required_ = false;
+  bool passphrase_required_for_decryption_ = false;
+  bool using_secondary_passphrase_ = false;
 };
 
 }  // namespace syncer

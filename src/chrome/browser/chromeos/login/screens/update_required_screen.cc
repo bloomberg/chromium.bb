@@ -7,15 +7,12 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/update_required_view.h"
 
 namespace chromeos {
 
-UpdateRequiredScreen::UpdateRequiredScreen(
-    BaseScreenDelegate* base_screen_delegate,
-    UpdateRequiredView* view)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_UPDATE_REQUIRED),
+UpdateRequiredScreen::UpdateRequiredScreen(UpdateRequiredView* view)
+    : BaseScreen(OobeScreen::SCREEN_UPDATE_REQUIRED),
       view_(view),
       weak_factory_(this) {
   if (view_)

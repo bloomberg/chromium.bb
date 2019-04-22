@@ -45,8 +45,7 @@ void OverlayJsRenderFrameObserver::EnableJsApi(bool should_enable) {
 }
 
 bool OverlayJsRenderFrameObserver::EnsureServiceConnected() {
-  if (render_frame() && (!contextual_search_js_api_service_ ||
-                         !contextual_search_js_api_service_.is_bound())) {
+  if (render_frame() && !contextual_search_js_api_service_) {
     render_frame()->GetRemoteInterfaces()->GetInterface(
         &contextual_search_js_api_service_);
     return true;

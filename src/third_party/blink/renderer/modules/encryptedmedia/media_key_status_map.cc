@@ -20,10 +20,6 @@ namespace blink {
 class MediaKeyStatusMap::MapEntry final
     : public GarbageCollectedFinalized<MediaKeyStatusMap::MapEntry> {
  public:
-  static MapEntry* Create(WebData key_id, const String& status) {
-    return MakeGarbageCollected<MapEntry>(key_id, status);
-  }
-
   MapEntry(WebData key_id, const String& status)
       : key_id_(DOMArrayBuffer::Create(scoped_refptr<SharedBuffer>(key_id))),
         status_(status) {}
@@ -108,7 +104,7 @@ void MediaKeyStatusMap::Clear() {
 
 void MediaKeyStatusMap::AddEntry(WebData key_id, const String& status) {
   // Insert new entry into sorted list.
-  MapEntry* entry = MapEntry::Create(key_id, status);
+  auto* entry = MakeGarbageCollected<MapEntry>(key_id, status);
   uint32_t index = 0;
   while (index < entries_.size() &&
          MapEntry::CompareLessThan(entries_[index], entry))

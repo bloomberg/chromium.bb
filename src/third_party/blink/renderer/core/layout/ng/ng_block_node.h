@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -33,9 +34,21 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   NGBlockNode(std::nullptr_t) : NGLayoutInputNode(nullptr) {}
 
-  scoped_refptr<NGLayoutResult> Layout(
+  scoped_refptr<const NGLayoutResult> Layout(
       const NGConstraintSpace& constraint_space,
       const NGBreakToken* break_token = nullptr);
+
+  // This method is just for use within the |NGOutOfFlowLayoutPart|.
+  //
+  // As OOF-positioned objects have their position, and size computed
+  // pre-layout, we need a way to quickly determine if we need to perform this
+  // work. This method compares the containing-block size to determine this.
+  //
+  // If the containing-block size hasn't changed, and we are layout-clean we
+  // can reuse the previous layout result.
+  scoped_refptr<const NGLayoutResult> CachedLayoutResultForOutOfFlowPositioned(
+      NGLogicalSize container_content_size) const;
+
   NGLayoutInputNode NextSibling() const;
 
   // Computes the value of min-content and max-content for this node's border
@@ -60,7 +73,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
                                const MinMaxSizeInput&,
                                const NGConstraintSpace* = nullptr);
 
-  MinMaxSize ComputeMinMaxSizeFromLegacy(NGMinMaxSizeType) const;
+  MinMaxSize ComputeMinMaxSizeFromLegacy(const MinMaxSizeInput&) const;
 
   NGBoxStrut GetScrollbarSizes() const;
 
@@ -69,6 +82,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   NGBlockNode GetRenderedLegend() const;
   NGBlockNode GetFieldsetContent() const;
 
+  bool ChildrenInline() const;
   bool IsInlineLevel() const;
   bool IsAtomicInlineLevel() const;
 
@@ -77,7 +91,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   bool UseLogicalBottomMarginEdgeForInlineBlockBaseline() const;
 
   // Layout an atomic inline; e.g., inline block.
-  scoped_refptr<NGLayoutResult> LayoutAtomicInline(
+  scoped_refptr<const NGLayoutResult> LayoutAtomicInline(
       const NGConstraintSpace& parent_constraint_space,
       const ComputedStyle& parent_style,
       FontBaseline,
@@ -85,7 +99,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // Runs layout on the underlying LayoutObject and creates a fragment for the
   // resulting geometry.
-  scoped_refptr<NGLayoutResult> RunOldLayout(const NGConstraintSpace&);
+  scoped_refptr<const NGLayoutResult> RunOldLayout(const NGConstraintSpace&);
 
   // Called if this is an out-of-flow block which needs to be
   // positioned with legacy layout.
@@ -111,7 +125,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void FinishLayout(LayoutBlockFlow*,
                     const NGConstraintSpace&,
                     const NGBreakToken*,
-                    scoped_refptr<NGLayoutResult>);
+                    scoped_refptr<const NGLayoutResult>);
 
   // After we run the layout algorithm, this function copies back the geometry
   // data to the layout box.
@@ -142,11 +156,12 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
       LayoutUnit percentage_resolution_inline_size);
 };
 
-DEFINE_TYPE_CASTS(NGBlockNode,
-                  NGLayoutInputNode,
-                  node,
-                  node->IsBlock(),
-                  node.IsBlock());
+template <>
+struct DowncastTraits<NGBlockNode> {
+  static bool AllowFrom(const NGLayoutInputNode& node) {
+    return node.IsBlock();
+  }
+};
 
 }  // namespace blink
 

@@ -29,7 +29,6 @@ namespace sync_file_system {
 
 namespace {
 
-const char kGaiaId[] = "gaia_id";
 const char kEmail[] = "email@example.com";
 
 class FakeDriveServiceFactory
@@ -137,6 +136,10 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
     run_loop.Run();
   }
 
+  identity::IdentityManager* identity_manager() const {
+    return identity_test_env_->identity_manager();
+  }
+
  private:
   base::ScopedTempDir base_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
@@ -175,10 +178,8 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, AuthorizationTest) {
   // service.  Wait for the completion and resume the app.
   WaitUntilIdle();
 
-  AccountInfo info;
-  info.account_id = kGaiaId;
-  info.account_id = kEmail;
-  sync_engine()->OnPrimaryAccountCleared(info);
+  sync_engine()->OnPrimaryAccountCleared(
+      identity_manager()->GetPrimaryAccountInfo());
   foo_created.Reply("resume");
 
   ASSERT_TRUE(bar_created.WaitUntilSatisfied());
@@ -191,7 +192,8 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, AuthorizationTest) {
   EXPECT_EQ(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
             sync_engine()->GetCurrentState());
 
-  sync_engine()->OnPrimaryAccountSet(info);
+  sync_engine()->OnPrimaryAccountSet(
+      identity_manager()->GetPrimaryAccountInfo());
   WaitUntilIdle();
 
   bar_created.Reply("resume");

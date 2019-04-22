@@ -32,7 +32,6 @@ class TestLayerImpl : public LayerImpl {
   explicit TestLayerImpl(LayerTreeImpl* tree, int id)
       : LayerImpl(tree, id), count_(-1) {
     SetBounds(gfx::Size(100, 100));
-    SetPosition(gfx::PointF());
     SetDrawsContent(true);
   }
 };

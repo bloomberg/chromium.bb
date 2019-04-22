@@ -13,26 +13,26 @@
 #include "jingle/notifier/listener/notification_defines.h"
 #include "third_party/libjingle_xmpp/xmpp/xmpptask.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class Jid;
 class XmlElement;
 }  // namespace
 
 namespace notifier {
 
-class PushNotificationsSendUpdateTask : public buzz::XmppTask {
+class PushNotificationsSendUpdateTask : public jingle_xmpp::XmppTask {
  public:
   PushNotificationsSendUpdateTask(
-      buzz::XmppTaskParentInterface* parent, const Notification& notification);
+      jingle_xmpp::XmppTaskParentInterface* parent, const Notification& notification);
   ~PushNotificationsSendUpdateTask() override;
 
-  // Overridden from buzz::XmppTask.
+  // Overridden from jingle_xmpp::XmppTask.
   int ProcessStart() override;
 
  private:
-  // Allocates and constructs an buzz::XmlElement containing the update stanza.
-  static buzz::XmlElement* MakeUpdateMessage(
-      const Notification& notification, const buzz::Jid& to_jid_bare);
+  // Allocates and constructs an jingle_xmpp::XmlElement containing the update stanza.
+  static jingle_xmpp::XmlElement* MakeUpdateMessage(
+      const Notification& notification, const jingle_xmpp::Jid& to_jid_bare);
 
   const Notification notification_;
 

@@ -7,29 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
+#include "base/optional.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "net/base/address_list.h"
-#include "net/base/ip_endpoint.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_change_notifier.h"
-#include "net/dns/dns_client.h"
-#include "net/dns/dns_response.h"
-#include "net/dns/dns_transaction.h"
-#include "net/dns/public/dns_protocol.h"
-#include "net/log/net_log_with_source.h"
-
-using base::TimeDelta;
-using content::BrowserThread;
-using net::AddressList;
-using net::DnsClient;
-using net::DnsResponse;
-using net::DnsTransaction;
-using net::DnsTransactionFactory;
-using net::IPEndPoint;
-using net::NetLogWithSource;
-using net::NetworkChangeNotifier;
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace chrome_browser_net {
 
@@ -39,10 +22,13 @@ namespace {
 
 DnsProbeRunner::Result EvaluateResponse(
     int net_error,
-    const DnsResponse* response) {
+    const base::Optional<net::AddressList>& resolved_addresses) {
   switch (net_error) {
     case net::OK:
       break;
+
+    case net::ERR_FAILED:
+      return DnsProbeRunner::UNKNOWN;
 
     // ERR_NAME_NOT_RESOLVED maps to NXDOMAIN, which means the server is working
     // but returned a wrong answer.
@@ -65,81 +51,88 @@ DnsProbeRunner::Result EvaluateResponse(
       return DnsProbeRunner::UNREACHABLE;
   }
 
-  AddressList addr_list;
-  TimeDelta ttl;
-  DnsResponse::Result result = response->ParseToAddressList(&addr_list, &ttl);
-
-  if (result != DnsResponse::DNS_PARSE_OK)
-    return DnsProbeRunner::FAILING;
-  else if (addr_list.empty())
+  if (!resolved_addresses) {
+    // If net_error is OK, resolved_addresses should be set. The binding is not
+    // closed here since it will be closed by the caller anyway.
+    mojo::ReportBadMessage("resolved_addresses not set when net_error=OK");
+    return DnsProbeRunner::UNKNOWN;
+  } else if (resolved_addresses.value().empty()) {
     return DnsProbeRunner::INCORRECT;
-  else
+  } else {
     return DnsProbeRunner::CORRECT;
+  }
 }
 
 }  // namespace
 
-DnsProbeRunner::DnsProbeRunner() : result_(UNKNOWN), weak_factory_(this) {}
-
-DnsProbeRunner::~DnsProbeRunner() {}
-
-void DnsProbeRunner::SetClient(std::unique_ptr<net::DnsClient> client) {
-  client_ = std::move(client);
+DnsProbeRunner::DnsProbeRunner(
+    net::DnsConfigOverrides dns_config_overrides,
+    const NetworkContextGetter& network_context_getter)
+    : binding_(this),
+      dns_config_overrides_(dns_config_overrides),
+      network_context_getter_(network_context_getter),
+      result_(UNKNOWN) {
+  CreateHostResolver();
 }
 
-void DnsProbeRunner::RunProbe(const base::Closure& callback) {
+DnsProbeRunner::~DnsProbeRunner() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void DnsProbeRunner::RunProbe(base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
-  DCHECK(client_.get());
+  DCHECK(host_resolver_);
   DCHECK(callback_.is_null());
-  DCHECK(!transaction_.get());
+  DCHECK(!binding_);
 
-  callback_ = callback;
-  DnsTransactionFactory* factory = client_->GetTransactionFactory();
-  if (!factory) {
-    // If the DnsTransactionFactory is NULL, then the DnsConfig is invalid, so
-    // the runner can't run a transaction.  Return UNKNOWN asynchronously.
-    result_ = UNKNOWN;
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(&DnsProbeRunner::CallCallback,
-                                            weak_factory_.GetWeakPtr()));
-    return;
-  }
+  network::mojom::ResolveHostClientPtr client_ptr;
+  binding_.Bind(mojo::MakeRequest(&client_ptr));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &DnsProbeRunner::OnMojoConnectionError, base::Unretained(this)));
 
-  transaction_ = factory->CreateTransaction(
-      kKnownGoodHostname, net::dns_protocol::kTypeA,
-      base::Bind(&DnsProbeRunner::OnTransactionComplete,
-                 weak_factory_.GetWeakPtr()),
-      NetLogWithSource());
+  network::mojom::ResolveHostParametersPtr parameters =
+      network::mojom::ResolveHostParameters::New();
+  parameters->dns_query_type = net::DnsQueryType::A;
+  parameters->source = net::HostResolverSource::DNS;
+  parameters->allow_cached_response = false;
 
-  transaction_->Start();
+  host_resolver_->ResolveHost(net::HostPortPair(kKnownGoodHostname, 80),
+                              std::move(parameters), std::move(client_ptr));
+
+  callback_ = std::move(callback);
 }
 
 bool DnsProbeRunner::IsRunning() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !callback_.is_null();
 }
 
-void DnsProbeRunner::OnTransactionComplete(
-    DnsTransaction* transaction,
-    int net_error,
-    const DnsResponse* response) {
+void DnsProbeRunner::OnComplete(
+    int32_t result,
+    const base::Optional<net::AddressList>& resolved_addresses) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback_.is_null());
-  DCHECK(transaction_.get());
-  DCHECK_EQ(transaction_.get(), transaction);
 
-  result_ = EvaluateResponse(net_error, response);
-  transaction_.reset();
+  result_ = EvaluateResponse(result, resolved_addresses);
+  binding_.Close();
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(&DnsProbeRunner::CallCallback,
-                                          weak_factory_.GetWeakPtr()));
+  // ResolveHost will call OnComplete asynchronously, so callback_ can be
+  // invoked directly here.  Clear callback in case it starts a new probe
+  // immediately.
+  std::move(callback_).Run();
 }
 
-void DnsProbeRunner::CallCallback() {
-  DCHECK(!callback_.is_null());
-  DCHECK(!transaction_.get());
+void DnsProbeRunner::CreateHostResolver() {
+  host_resolver_.reset();
+  network_context_getter_.Run()->CreateHostResolver(
+      dns_config_overrides_, mojo::MakeRequest(&host_resolver_));
+}
 
-  // Clear callback in case it starts a new probe immediately.
-  std::move(callback_).Run();
+void DnsProbeRunner::OnMojoConnectionError() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CreateHostResolver();
+  OnComplete(net::ERR_FAILED, base::nullopt);
 }
 
 }  // namespace chrome_browser_net

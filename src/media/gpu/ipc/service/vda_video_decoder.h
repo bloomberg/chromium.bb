@@ -47,7 +47,7 @@ class VdaVideoDecoder : public VideoDecoder,
   using CreateCommandBufferHelperCB =
       base::OnceCallback<scoped_refptr<CommandBufferHelper>()>;
   using CreateAndInitializeVdaCB =
-      base::OnceCallback<std::unique_ptr<VideoDecodeAccelerator>(
+      base::RepeatingCallback<std::unique_ptr<VideoDecodeAccelerator>(
           scoped_refptr<CommandBufferHelper>,
           VideoDecodeAccelerator::Client*,
           MediaLog*,
@@ -98,13 +98,12 @@ class VdaVideoDecoder : public VideoDecoder,
 
   // media::VideoDecoder implementation.
   std::string GetDisplayName() const override;
-  void Initialize(
-      const VideoDecoderConfig& config,
-      bool low_delay,
-      CdmContext* cdm_context,
-      const InitCB& init_cb,
-      const OutputCB& output_cb,
-      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) override;
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
+                  CdmContext* cdm_context,
+                  const InitCB& init_cb,
+                  const OutputCB& output_cb,
+                  const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
   void Reset(const base::RepeatingClosure& reset_cb) override;
@@ -139,6 +138,7 @@ class VdaVideoDecoder : public VideoDecoder,
   // Tasks and thread hopping.
   void DestroyOnGpuThread();
   void InitializeOnGpuThread();
+  void ReinitializeOnGpuThread();
   void InitializeDone(bool status);
   void DecodeOnGpuThread(scoped_refptr<DecoderBuffer> buffer,
                          int32_t bitstream_id);
@@ -154,7 +154,6 @@ class VdaVideoDecoder : public VideoDecoder,
                                   gfx::Size texture_size,
                                   GLenum texture_target);
   void ReusePictureBuffer(int32_t picture_buffer_id);
-  void AddEventOnParentThread(std::unique_ptr<MediaLogEvent> event);
 
   // Error handling.
   void EnterErrorState();
@@ -191,14 +190,18 @@ class VdaVideoDecoder : public VideoDecoder,
   //
   // Shared state.
   //
+
   // Only read on GPU thread during initialization, which is mutually exclusive
   // with writes on the parent thread.
   VideoDecoderConfig config_;
+
   // Only written on the GPU thread during initialization, which is mutually
   // exclusive with reads on the parent thread.
   std::unique_ptr<VideoDecodeAccelerator> vda_;
+  scoped_refptr<CommandBufferHelper> command_buffer_helper_;
   bool vda_initialized_ = false;
   bool decode_on_parent_thread_ = false;
+  bool reinitializing_ = false;
 
   //
   // Weak pointers, prefixed by bound thread.

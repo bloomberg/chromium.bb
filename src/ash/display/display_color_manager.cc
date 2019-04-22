@@ -36,7 +36,8 @@ std::unique_ptr<DisplayColorManager::ColorCalibrationData> ParseDisplayProfile(
   VLOG(1) << "Trying ICC file " << path.value()
           << " has_color_correction_matrix: "
           << (has_color_correction_matrix ? "true" : "false");
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   // Reads from a file.
   qcms_profile* display_profile = qcms_profile_from_path(path.value().c_str());
   if (!display_profile) {
@@ -420,7 +421,7 @@ void DisplayColorManager::ResetDisplayColorCalibration(int64_t display_id) {
 }
 
 DisplayColorManager::ColorCalibrationData::ColorCalibrationData()
-    : correction_matrix{1, 0, 0, 0, 1, 0, 0, 0, 1} {};
+    : correction_matrix{1, 0, 0, 0, 1, 0, 0, 0, 1} {}
 
 DisplayColorManager::ColorCalibrationData::~ColorCalibrationData() = default;
 

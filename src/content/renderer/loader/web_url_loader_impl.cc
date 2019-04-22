@@ -11,12 +11,16 @@
 #include <string>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -24,22 +28,22 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
-#include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
-#include "content/renderer/loader/ftp_directory_listing_response_delegate.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
-#include "content/renderer/loader/shared_memory_data_consumer_handle.h"
 #include "content/renderer/loader/sync_load_response.h"
 #include "content/renderer/loader/web_url_request_util.h"
-#include "content/renderer/loader/weburlresponse_extradata_impl.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
+#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
@@ -47,7 +51,6 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/http_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
@@ -56,6 +59,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -141,6 +145,7 @@ void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
   url_timing->SetSSLEnd(load_timing.connect_timing.ssl_end);
   url_timing->SetSendStart(load_timing.send_start);
   url_timing->SetSendEnd(load_timing.send_end);
+  url_timing->SetReceiveHeadersStart(load_timing.receive_headers_start);
   url_timing->SetReceiveHeadersEnd(load_timing.receive_headers_end);
   url_timing->SetPushStart(load_timing.push_start);
   url_timing->SetPushEnd(load_timing.push_end);
@@ -171,37 +176,6 @@ net::RequestPriority ConvertWebKitPriorityToNetPriority(
       NOTREACHED();
       return net::LOW;
   }
-}
-
-// Extracts info from a data scheme URL |url| into |info| and |data|. Returns
-// net::OK if successful. Returns a net error code otherwise.
-int GetInfoFromDataURL(const GURL& url,
-                       network::ResourceResponseInfo* info,
-                       std::string* data) {
-  // Assure same time for all time fields of data: URLs.
-  Time now = Time::Now();
-  info->load_timing.request_start = TimeTicks::Now();
-  info->load_timing.request_start_time = now;
-  info->request_time = now;
-  info->response_time = now;
-
-  std::string mime_type;
-  std::string charset;
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  int result = net::URLRequestDataJob::BuildResponse(
-      url, &mime_type, &charset, data, headers.get());
-  if (result != net::OK)
-    return result;
-
-  info->headers = headers;
-  info->mime_type.swap(mime_type);
-  info->charset.swap(charset);
-  info->content_length = data->length();
-  info->encoded_data_length = 0;
-  info->encoded_body_length = 0;
-
-  return net::OK;
 }
 
 // Convert a net::SignedCertificateTimestampAndStatus object to a
@@ -240,7 +214,12 @@ void SetSecurityStyleAndDetails(const GURL& url,
     return;
   }
   if (!url.SchemeIsCryptographic()) {
-    response->SetSecurityStyle(blink::kWebSecurityStyleNeutral);
+    // Some origins are considered secure even though they're not cryptographic,
+    // so treat them as secure in the UI.
+    if (IsOriginSecure(url))
+      response->SetSecurityStyle(blink::kWebSecurityStyleSecure);
+    else
+      response->SetSecurityStyle(blink::kWebSecurityStyleInsecure);
     return;
   }
 
@@ -384,8 +363,6 @@ std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
 // deleted if it may have work to do after calling into the client.
 class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
  public:
-  using ReceivedData = RequestPeer::ReceivedData;
-
   Context(
       WebURLLoaderImpl* loader,
       ResourceDispatcher* resource_dispatcher,
@@ -413,20 +390,26 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
                           const network::ResourceResponseInfo& info);
   void OnReceivedResponse(const network::ResourceResponseInfo& info);
   void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body);
-  void OnReceivedData(std::unique_ptr<ReceivedData> data);
   void OnTransferSizeUpdated(int transfer_size_diff);
   void OnReceivedCachedMetadata(const char* data, int len);
   void OnCompletedRequest(const network::URLLoaderCompletionStatus& status);
 
  private:
   friend class base::RefCounted<Context>;
+  // The maximal number of bytes consumed in a task. When there are more bytes
+  // in the data pipe, they will be consumed in following tasks. Setting a too
+  // small number will generate ton of tasks but setting a too large number will
+  // lead to thread janks. Also, some clients cannot handle too large chunks
+  // (512k for example).
+  static constexpr uint32_t kMaxNumConsumedBytesInTask = 64 * 1024;
+
   ~Context();
 
   // Called when the body data stream is detached from the reader side.
   void CancelBodyStreaming();
-  // We can optimize the handling of data URLs in most cases.
-  bool CanHandleDataURLRequestLocally(const WebURLRequest& request) const;
-  void HandleDataURL();
+
+  void OnBodyAvailable(MojoResult, const mojo::HandleSignalsState&);
+  void OnBodyHasBeenRead(uint32_t read_bytes);
 
   static net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag(
       const blink::WebURLRequest& request);
@@ -434,7 +417,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   WebURLLoaderImpl* loader_;
 
   WebURL url_;
-  bool use_stream_on_response_;
   // Controls SetSecurityStyleAndDetails() in PopulateURLResponse(). Initially
   // set to WebURLRequest::ReportRawHeaders() in Start() and gets updated in
   // WillFollowRedirect() (by the InspectorNetworkAgent) while the new
@@ -443,16 +425,22 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   // TODO(tyoshino): Investigate whether it's worth propagating the new value.
   bool report_raw_headers_;
 
+  // ResponseLoadViaDataPipe: Consume the data in Context when it's set to
+  // false.
+  bool pass_response_pipe_to_client_ = false;
+
   WebURLLoaderClient* client_;
   ResourceDispatcher* resource_dispatcher_;
   std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::unique_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
-  std::unique_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
   mojom::KeepAliveHandlePtr keep_alive_handle_;
-  enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
+  enum DeferState { NOT_DEFERRING, SHOULD_DEFER };
   DeferState defers_loading_;
   int request_id_;
+  bool in_two_phase_read_ = false;
+  bool is_in_on_body_available_ = false;
+
+  base::Optional<network::URLLoaderCompletionStatus> completion_status_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 };
@@ -473,12 +461,11 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnReceivedCachedMetadata(const char* data, int len) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
-  scoped_refptr<base::TaskRunner> GetTaskRunner() const override {
+  scoped_refptr<base::TaskRunner> GetTaskRunner() override {
     return context_->task_runner();
   }
 
@@ -491,7 +478,11 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
 // A sink peer that doesn't forward the data.
 class WebURLLoaderImpl::SinkPeer : public RequestPeer {
  public:
-  explicit SinkPeer(Context* context) : context_(context) {}
+  explicit SinkPeer(Context* context)
+      : context_(context),
+        body_watcher_(FROM_HERE,
+                      mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                      context->task_runner()) {}
 
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override {}
@@ -501,25 +492,60 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
   }
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override {}
   void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override {}
-  void OnReceivedData(std::unique_ptr<ReceivedData> data) override {}
+      mojo::ScopedDataPipeConsumerHandle body) override {
+    body_handle_ = std::move(body);
+    body_watcher_.Watch(
+        body_handle_.get(),
+        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+        base::BindRepeating(&SinkPeer::OnBodyAvailable,
+                            base::Unretained(this)));
+  }
   void OnTransferSizeUpdated(int transfer_size_diff) override {}
   void OnReceivedCachedMetadata(const char* data, int len) override {}
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override {
+    body_handle_.reset();
+    body_watcher_.Cancel();
     context_->resource_dispatcher()->Cancel(context_->request_id(),
                                             context_->task_runner());
   }
-  scoped_refptr<base::TaskRunner> GetTaskRunner() const override {
+  scoped_refptr<base::TaskRunner> GetTaskRunner() override {
     return context_->task_runner();
   }
 
  private:
+  void OnBodyAvailable(MojoResult, const mojo::HandleSignalsState&) {
+    while (true) {
+      const void* buffer = nullptr;
+      uint32_t available = 0;
+      MojoResult rv = body_handle_->BeginReadData(&buffer, &available,
+                                                  MOJO_READ_DATA_FLAG_NONE);
+      if (rv == MOJO_RESULT_SHOULD_WAIT) {
+        return;
+      }
+      if (rv != MOJO_RESULT_OK) {
+        break;
+      }
+      rv = body_handle_->EndReadData(available);
+      if (rv != MOJO_RESULT_OK) {
+        break;
+      }
+    }
+    body_handle_.reset();
+    body_watcher_.Cancel();
+  }
+
   scoped_refptr<Context> context_;
+  mojo::ScopedDataPipeConsumerHandle body_handle_;
+  mojo::SimpleWatcher body_watcher_;
   DISALLOW_COPY_AND_ASSIGN(SinkPeer);
 };
 
 // WebURLLoaderImpl::Context --------------------------------------------------
+
+// static
+constexpr uint32_t WebURLLoaderImpl::Context::kMaxNumConsumedBytesInTask;
 
 WebURLLoaderImpl::Context::Context(
     WebURLLoaderImpl* loader,
@@ -528,7 +554,6 @@ WebURLLoaderImpl::Context::Context(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     mojom::KeepAliveHandlePtr keep_alive_handle_ptr)
     : loader_(loader),
-      use_stream_on_response_(false),
       report_raw_headers_(false),
       client_(nullptr),
       resource_dispatcher_(resource_dispatcher),
@@ -550,14 +575,6 @@ void WebURLLoaderImpl::Context::Cancel() {
     request_id_ = -1;
   }
 
-  if (body_stream_writer_)
-    body_stream_writer_->Fail();
-
-  // Ensure that we do not notify the delegate anymore as it has
-  // its own pointer to the client.
-  if (ftp_listing_delegate_)
-    ftp_listing_delegate_->Cancel();
-
   // Do not make any further calls to the client.
   client_ = nullptr;
   loader_ = nullptr;
@@ -569,10 +586,6 @@ void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
   if (value && defers_loading_ == NOT_DEFERRING) {
     defers_loading_ = SHOULD_DEFER;
   } else if (!value && defers_loading_ != NOT_DEFERRING) {
-    if (defers_loading_ == DEFERRED_DATA) {
-      task_runner_->PostTask(FROM_HERE,
-                             base::BindOnce(&Context::HandleDataURL, this));
-    }
     defers_loading_ = NOT_DEFERRING;
   }
 }
@@ -597,22 +610,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       ConvertWebKitPriorityToNetPriority(request.GetPriority()));
 
   url_ = request.Url();
-  use_stream_on_response_ = request.UseStreamOnResponse();
   report_raw_headers_ = request.ReportRawHeaders();
-
-  if (CanHandleDataURLRequestLocally(request)) {
-    if (sync_load_response) {
-      // This is a sync load. Do the work now.
-      sync_load_response->url = url_;
-      sync_load_response->error_code =
-          GetInfoFromDataURL(sync_load_response->url, &sync_load_response->info,
-                             &sync_load_response->data);
-    } else {
-      task_runner_->PostTask(FROM_HERE,
-                             base::BindOnce(&Context::HandleDataURL, this));
-    }
-    return;
-  }
+  pass_response_pipe_to_client_ = request.PassResponsePipeToClient();
 
   std::unique_ptr<NavigationResponseOverrideParameters> response_override;
   if (request.GetExtraData()) {
@@ -620,15 +619,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
         static_cast<RequestExtraData*>(request.GetExtraData());
     response_override = extra_data->TakeNavigationResponseOverrideOwnership();
   }
-
-
-  // PlzNavigate: outside of tests, the only navigation requests going through
-  // the WebURLLoader are the ones created by CommitNavigation. Several browser
-  // tests load HTML directly through a data url which will be handled by the
-  // block above.
-  DCHECK(response_override ||
-         request.GetFrameType() ==
-             network::mojom::RequestContextFrameType::kNone);
 
   // TODO(domfarolino): Retrieve the referrer in the form of a referrer member
   // instead of the header field. See https://crbug.com/850813.
@@ -648,6 +638,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->method = method;
   resource_request->url = url_;
   resource_request->site_for_cookies = request.SiteForCookies();
+  resource_request->top_frame_origin = request.TopFrameOrigin();
   resource_request->upgrade_if_insecure = request.UpgradeIfInsecure();
   resource_request->is_revalidating = request.IsRevalidating();
   if (!request.RequestorOrigin().IsNull()) {
@@ -681,17 +672,27 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_request->headers.SetHeaderIfMissing(network::kAcceptHeader,
                                                  network::kDefaultAcceptHeader);
   }
-  resource_request->requested_with_header =
-      WebString(request.GetRequestedWithHeader()).Utf8();
-  resource_request->client_data_header =
-      WebString(request.GetClientDataHeader()).Utf8();
+  // Set X-Requested-With header to cors_exempt_headers rather than headers to
+  // be exempted from CORS checks.
+  if (!request.GetRequestedWithHeader().IsEmpty()) {
+    resource_request->cors_exempt_headers.SetHeader(
+        kCorsExemptRequestedWithHeaderName,
+        WebString(request.GetRequestedWithHeader()).Utf8());
+  }
+  // Set Purpose header to cors_exempt_headers rather than headers to be
+  // exempted from CORS checks.
+  if (!request.GetPurposeHeader().IsEmpty()) {
+    resource_request->cors_exempt_headers.SetHeader(
+        kCorsExemptPurposeHeaderName,
+        WebString(request.GetPurposeHeader()).Utf8());
+  }
 
   if (resource_request->resource_type == RESOURCE_TYPE_PREFETCH ||
       resource_request->resource_type == RESOURCE_TYPE_FAVICON) {
     resource_request->do_not_prompt_for_login = true;
   }
 
-  resource_request->load_flags = GetLoadFlagsForWebURLRequest(request);
+  resource_request->load_flags = request.GetLoadFlagsForWebUrlRequest();
 
   // |plugin_child_id| only needs to be non-zero if the request originates
   // outside the render process, so we can use requestorProcessID even
@@ -712,7 +713,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->fetch_request_context_type =
       static_cast<int>(GetRequestContextTypeForWebURLRequest(request));
 
-  resource_request->fetch_frame_type = request.GetFrameType();
+  resource_request->fetch_frame_type =
+      network::mojom::RequestContextFrameType::kNone;
   resource_request->request_body =
       GetRequestBodyForWebURLRequest(request).get();
   resource_request->keepalive = request.GetKeepalive();
@@ -734,6 +736,11 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   if (base::UnguessableToken window_id = request.GetFetchWindowId())
     resource_request->fetch_window_id = base::make_optional(window_id);
+
+  if (request.GetDevToolsId().has_value()) {
+    resource_request->devtools_request_id =
+        request.GetDevToolsId().value().Ascii();
+  }
 
   // The network request has already been made by the browser. The renderer
   // should bind the URLLoaderClientEndpoints stored in |response_override| to
@@ -779,25 +786,25 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       blink::Platform::Current()->GetInterfaceProvider()->GetInterface(
           MakeRequest(&download_to_blob_registry));
     }
+    TimeTicks start_time = TimeTicks::Now();
     resource_dispatcher_->StartSync(
         std::move(resource_request), request.RequestorID(),
         GetTrafficAnnotationTag(request), sync_load_response,
         url_loader_factory_, std::move(throttles), request.TimeoutInterval(),
         std::move(download_to_blob_registry), std::move(peer));
+    base::TimeDelta delta = TimeTicks::Now() - start_time;
+    UMA_HISTOGRAM_MEDIUM_TIMES("WebURLLoader.SyncResourceRequestDuration",
+                               delta);
     return;
   }
 
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Start", this,
                          TRACE_EVENT_FLAG_FLOW_OUT);
-  base::OnceClosure continue_navigation_function;
   request_id_ = resource_dispatcher_->StartAsync(
       std::move(resource_request), request.RequestorID(), task_runner_,
       GetTrafficAnnotationTag(request), false /* is_sync */,
       request.PassResponsePipeToClient(), std::move(peer), url_loader_factory_,
-      std::move(throttles), std::move(response_override),
-      &continue_navigation_function);
-  extra_data->set_continue_navigation_function(
-      std::move(continue_navigation_function));
+      std::move(throttles), std::move(response_override));
 
   if (defers_loading_ != NOT_DEFERRING)
     resource_dispatcher_->SetDefersLoading(request_id_, true);
@@ -825,6 +832,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   url_ = WebURL(redirect_info.new_url);
   return client_->WillFollowRedirect(
       url_, redirect_info.new_site_for_cookies,
+      redirect_info.new_top_frame_origin,
       WebString::FromUTF8(redirect_info.new_referrer),
       Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
           redirect_info.new_referrer_policy),
@@ -844,101 +852,18 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   WebURLResponse response;
   PopulateURLResponse(url_, info, &response, report_raw_headers_, request_id_);
 
-  bool show_raw_listing = false;
-  if (info.mime_type == "text/vnd.chromium.ftp-dir") {
-    if (GURL(url_).query_piece() == "raw") {
-      // Set the MIME type to plain text to prevent any active content.
-      response.SetMIMEType("text/plain");
-      show_raw_listing = true;
-    } else {
-      // We're going to produce a parsed listing in HTML.
-      response.SetMIMEType("text/html");
-    }
-  }
-  if (info.headers.get() && info.mime_type == "multipart/x-mixed-replace") {
-    std::string content_type;
-    info.headers->EnumerateHeader(nullptr, "content-type", &content_type);
-
-    std::string mime_type;
-    std::string charset;
-    bool had_charset = false;
-    std::string boundary;
-    net::HttpUtil::ParseContentType(content_type, &mime_type, &charset,
-                                    &had_charset, &boundary);
-    base::TrimString(boundary, " \"", &boundary);
-    response.SetMultipartBoundary(boundary.data(), boundary.size());
-  }
-
-  if (use_stream_on_response_) {
-    SharedMemoryDataConsumerHandle::BackpressureMode mode =
-        SharedMemoryDataConsumerHandle::kDoNotApplyBackpressure;
-    if (info.headers &&
-        info.headers->HasHeaderValue("Cache-Control", "no-store")) {
-      mode = SharedMemoryDataConsumerHandle::kApplyBackpressure;
-    }
-
-    auto read_handle = std::make_unique<SharedMemoryDataConsumerHandle>(
-        mode, base::Bind(&Context::CancelBodyStreaming, this),
-        &body_stream_writer_);
-
-    // Here |body_stream_writer_| has an indirect reference to |this| and that
-    // creates a reference cycle, but it is not a problem because the cycle
-    // will break if one of the following happens:
-    //  1) The body data transfer is done (with or without an error).
-    //  2) |read_handle| (and its reader) is detached.
-    client_->DidReceiveResponse(response, std::move(read_handle));
-    // TODO(yhirano): Support ftp listening and multipart
-    return;
-  }
-
   client_->DidReceiveResponse(response);
 
   // DidReceiveResponse() may have triggered a cancel, causing the |client_| to
   // go away.
   if (!client_)
     return;
-
-  DCHECK(!ftp_listing_delegate_);
-  if (info.mime_type == "text/vnd.chromium.ftp-dir" && !show_raw_listing) {
-    ftp_listing_delegate_ =
-        std::make_unique<FtpDirectoryListingResponseDelegate>(client_, loader_,
-                                                              response);
-  }
 }
 
 void WebURLLoaderImpl::Context::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   if (client_)
     client_->DidStartLoadingResponseBody(std::move(body));
-}
-
-void WebURLLoaderImpl::Context::OnReceivedData(
-    std::unique_ptr<ReceivedData> data) {
-  const char* payload = data->payload();
-  int data_length = data->length();
-  if (!client_)
-    return;
-
-  TRACE_EVENT_WITH_FLOW0(
-      "loading", "WebURLLoaderImpl::Context::OnReceivedData",
-      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-
-  if (ftp_listing_delegate_) {
-    // The FTP listing delegate will make the appropriate calls to
-    // client_->didReceiveData and client_->didReceiveResponse.
-    ftp_listing_delegate_->OnReceivedData(payload, data_length);
-    return;
-  }
-
-  // We dispatch the data even when |useStreamOnResponse()| is set, in order
-  // to make Devtools work.
-  client_->DidReceiveData(payload, data_length);
-
-  if (use_stream_on_response_) {
-    // We don't support |ftp_listing_delegate_| for now.
-    // TODO(yhirano): Support ftp listening.
-    body_stream_writer_->AddData(std::move(data));
-  }
 }
 
 void WebURLLoaderImpl::Context::OnTransferSizeUpdated(int transfer_size_diff) {
@@ -960,31 +885,14 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
   int64_t total_transfer_size = status.encoded_data_length;
   int64_t encoded_body_size = status.encoded_body_length;
 
-  if (ftp_listing_delegate_) {
-    ftp_listing_delegate_->OnCompletedRequest();
-    ftp_listing_delegate_.reset(nullptr);
-  }
-
-  if (body_stream_writer_ && status.error_code != net::OK)
-    body_stream_writer_->Fail();
-  body_stream_writer_.reset();
-
   if (client_) {
-    TRACE_EVENT_WITH_FLOW0(
-        "loading", "WebURLLoaderImpl::Context::OnCompletedRequest",
-        this, TRACE_EVENT_FLAG_FLOW_IN);
+    TRACE_EVENT_WITH_FLOW0("loading",
+                           "WebURLLoaderImpl::Context::OnCompletedRequest",
+                           this, TRACE_EVENT_FLAG_FLOW_IN);
 
     if (status.error_code != net::OK) {
-      const WebURLError::HasCopyInCache has_copy_in_cache =
-          status.exists_in_cache ? WebURLError::HasCopyInCache::kTrue
-                                 : WebURLError::HasCopyInCache::kFalse;
-      client_->DidFail(
-          status.cors_error_status
-              ? WebURLError(*status.cors_error_status, has_copy_in_cache, url_)
-              : WebURLError(status.error_code, status.extended_error_code,
-                            has_copy_in_cache,
-                            WebURLError::IsWebSecurityViolation::kFalse, url_),
-          total_transfer_size, encoded_body_size, status.decoded_body_length);
+      client_->DidFail(PopulateURLError(status, url_), total_transfer_size,
+                       encoded_body_size, status.decoded_body_length);
     } else {
       client_->DidFinishLoading(status.completion_time, total_transfer_size,
                                 encoded_body_size, status.decoded_body_length,
@@ -1002,16 +910,6 @@ WebURLLoaderImpl::Context::~Context() {
 void WebURLLoaderImpl::Context::CancelBodyStreaming() {
   scoped_refptr<Context> protect(this);
 
-  // Notify renderer clients that the request is canceled.
-  if (ftp_listing_delegate_) {
-    ftp_listing_delegate_->OnCompletedRequest();
-    ftp_listing_delegate_.reset(nullptr);
-  }
-
-  if (body_stream_writer_) {
-    body_stream_writer_->Fail();
-    body_stream_writer_.reset();
-  }
   if (client_) {
     // TODO(yhirano): Set |stale_copy_in_cache| appropriately if possible.
     client_->DidFail(WebURLError(net::ERR_ABORTED, url_),
@@ -1020,81 +918,6 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
 
   // Notify the browser process that the request is canceled.
   Cancel();
-}
-
-bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
-    const WebURLRequest& request) const {
-  if (!request.Url().ProtocolIs(url::kDataScheme))
-    return false;
-
-  // The fast paths for data URL, Start() and HandleDataURL(), don't support
-  // the PassResponsePipeToClient option.
-  if (request.PassResponsePipeToClient())
-    return false;
-
-  // Data url requests from object tags may need to be intercepted as streams
-  // and so need to be sent to the browser.
-  if (request.GetRequestContext() == blink::mojom::RequestContextType::OBJECT)
-    return false;
-
-  // Optimize for the case where we can handle a data URL locally.  We must
-  // skip this for data URLs targetted at frames since those could trigger a
-  // download.
-  //
-  // NOTE: We special case MIME types we can render both for performance
-  // reasons as well as to support unit tests.
-
-#if defined(OS_ANDROID)
-  // For compatibility reasons on Android we need to expose top-level data://
-  // to the browser. In tests resource_dispatcher_ can be null, and test pages
-  // need to be loaded locally.
-  // For PlzNavigate, navigation requests were already checked in the browser.
-  if (resource_dispatcher_ &&
-      request.GetFrameType() ==
-          network::mojom::RequestContextFrameType::kTopLevel) {
-    if (!IsBrowserSideNavigationEnabled())
-      return false;
-  }
-#endif
-
-  if (request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kTopLevel &&
-      request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kNested)
-    return true;
-
-  std::string mime_type, unused_charset;
-  if (net::DataURL::Parse(request.Url(), &mime_type, &unused_charset,
-                          nullptr) &&
-      blink::IsSupportedMimeType(mime_type))
-    return true;
-
-  return false;
-}
-
-void WebURLLoaderImpl::Context::HandleDataURL() {
-  DCHECK_NE(defers_loading_, DEFERRED_DATA);
-  if (defers_loading_ == SHOULD_DEFER) {
-      defers_loading_ = DEFERRED_DATA;
-      return;
-  }
-
-  network::ResourceResponseInfo info;
-  std::string data;
-
-  int error_code = GetInfoFromDataURL(url_, &info, &data);
-
-  if (error_code == net::OK) {
-    OnReceivedResponse(info);
-    auto size = data.size();
-    if (size != 0)
-      OnReceivedData(std::make_unique<FixedReceivedData>(data.data(), size));
-  }
-
-  network::URLLoaderCompletionStatus status(error_code);
-  status.encoded_body_length = data.size();
-  status.decoded_body_length = data.size();
-  OnCompletedRequest(status);
 }
 
 // WebURLLoaderImpl::RequestPeerImpl ------------------------------------------
@@ -1122,13 +945,6 @@ void WebURLLoaderImpl::RequestPeerImpl::OnReceivedResponse(
 void WebURLLoaderImpl::RequestPeerImpl::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   context_->OnStartLoadingResponseBody(std::move(body));
-}
-
-void WebURLLoaderImpl::RequestPeerImpl::OnReceivedData(
-    std::unique_ptr<ReceivedData> data) {
-  if (discard_body_)
-    return;
-  context_->OnReceivedData(std::move(data));
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnTransferSizeUpdated(
@@ -1181,25 +997,24 @@ void WebURLLoaderImpl::PopulateURLResponse(
     WebURLResponse* response,
     bool report_security_info,
     int request_id) {
-  response->SetURL(url);
+  response->SetCurrentRequestUrl(url);
   response->SetResponseTime(info.response_time);
-  response->SetMIMEType(WebString::FromUTF8(info.mime_type));
+  response->SetMimeType(WebString::FromUTF8(info.mime_type));
   response->SetTextEncodingName(WebString::FromUTF8(info.charset));
   response->SetExpectedContentLength(info.content_length);
   response->SetHasMajorCertificateErrors(
       net::IsCertStatusError(info.cert_status) &&
       !net::IsCertStatusMinorError(info.cert_status));
   response->SetCTPolicyCompliance(info.ct_policy_compliance);
-  response->SetIsLegacySymantecCert(info.is_legacy_symantec_cert);
   response->SetIsLegacyTLSVersion(info.is_legacy_tls_version);
   response->SetAppCacheID(info.appcache_id);
   response->SetAppCacheManifestURL(info.appcache_manifest_url);
   response->SetWasCached(!info.load_timing.request_start_time.is_null() &&
                          info.response_time <
                              info.load_timing.request_start_time);
-  response->SetRemoteIPAddress(
-      WebString::FromUTF8(info.socket_address.HostForURL()));
-  response->SetRemotePort(info.socket_address.port());
+  response->SetRemoteIPAddress(WebString::FromUTF8(
+      net::HostPortPair::FromIPEndPoint(info.remote_endpoint).HostForURL()));
+  response->SetRemotePort(info.remote_endpoint.port());
   response->SetConnectionID(info.load_timing.socket_log_id);
   response->SetConnectionReused(info.load_timing.socket_reused);
   response->SetWasFetchedViaSPDY(info.was_fetched_via_spdy);
@@ -1207,7 +1022,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetWasFallbackRequiredByServiceWorker(
       info.was_fallback_required_by_service_worker);
   response->SetType(info.response_type);
-  response->SetURLListViaServiceWorker(info.url_list_via_service_worker);
+  response->SetUrlListViaServiceWorker(info.url_list_via_service_worker);
   response->SetCacheStorageCacheName(
       info.is_in_cache_storage
           ? blink::WebString::FromUTF8(info.cache_storage_cache_name)
@@ -1232,14 +1047,6 @@ void WebURLLoaderImpl::PopulateURLResponse(
       info.is_signed_exchange_inner_response);
 
   SetSecurityStyleAndDetails(url, info, response, report_security_info);
-
-  WebURLResponseExtraDataImpl* extra_data = new WebURLResponseExtraDataImpl();
-  response->SetExtraData(extra_data);
-  extra_data->set_was_fetched_via_spdy(info.was_fetched_via_spdy);
-  extra_data->set_was_alpn_negotiated(info.was_alpn_negotiated);
-  extra_data->set_was_alternate_protocol_available(
-      info.was_alternate_protocol_available);
-  extra_data->set_effective_connection_type(info.effective_connection_type);
 
   // If there's no received headers end time, don't set load timing.  This is
   // the case for non-HTTP requests, requests that don't go over the wire, and
@@ -1293,18 +1100,33 @@ void WebURLLoaderImpl::PopulateURLResponse(
     version = WebURLResponse::kHTTPVersion_1_1;
   else if (headers->GetHttpVersion() == net::HttpVersion(2, 0))
     version = WebURLResponse::kHTTPVersion_2_0;
-  response->SetHTTPVersion(version);
-  response->SetHTTPStatusCode(headers->response_code());
-  response->SetHTTPStatusText(WebString::FromLatin1(headers->GetStatusText()));
+  response->SetHttpVersion(version);
+  response->SetHttpStatusCode(headers->response_code());
+  response->SetHttpStatusText(WebString::FromLatin1(headers->GetStatusText()));
 
   // Build up the header map.
   size_t iter = 0;
   std::string name;
   std::string value;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    response->AddHTTPHeaderField(WebString::FromLatin1(name),
+    response->AddHttpHeaderField(WebString::FromLatin1(name),
                                  WebString::FromLatin1(value));
   }
+}
+
+// static
+WebURLError WebURLLoaderImpl::PopulateURLError(
+    const network::URLLoaderCompletionStatus& status,
+    const GURL& url) {
+  DCHECK_NE(net::OK, status.error_code);
+  const WebURLError::HasCopyInCache has_copy_in_cache =
+      status.exists_in_cache ? WebURLError::HasCopyInCache::kTrue
+                             : WebURLError::HasCopyInCache::kFalse;
+  if (status.cors_error_status)
+    return WebURLError(*status.cors_error_status, has_copy_in_cache, url);
+  return WebURLError(status.error_code, status.extended_error_code,
+                     has_copy_in_cache,
+                     WebURLError::IsWebSecurityViolation::kFalse, url);
 }
 
 void WebURLLoaderImpl::LoadSynchronously(
@@ -1382,6 +1204,10 @@ void WebURLLoaderImpl::SetDefersLoading(bool value) {
 void WebURLLoaderImpl::DidChangePriority(WebURLRequest::Priority new_priority,
                                          int intra_priority_value) {
   context_->DidChangePriority(new_priority, intra_priority_value);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> WebURLLoaderImpl::GetTaskRunner() {
+  return context_->task_runner();
 }
 
 // static

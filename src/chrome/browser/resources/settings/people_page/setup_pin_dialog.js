@@ -70,8 +70,9 @@ Polymer({
   },
 
   close: function() {
-    if (this.$.dialog.open)
+    if (this.$.dialog.open) {
       this.$.dialog.close();
+    }
 
     this.$.pinKeyboard.resetState();
   },
@@ -91,8 +92,9 @@ Polymer({
 
   /** @private */
   onSetPinDone_: function() {
-    if (this.$.dialog.open)
+    if (this.$.dialog.open) {
       this.$.dialog.close();
+    }
   },
 
   /**

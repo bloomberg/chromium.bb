@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "media/base/media_export.h"
 
@@ -36,7 +36,7 @@ using UUID = std::vector<uint8_t>;
 // provide customized additions to Android's media handling.
 class MEDIA_EXPORT MediaDrmBridgeClient {
  public:
-  typedef base::hash_map<std::string, UUID> KeySystemUuidMap;
+  typedef std::unordered_map<std::string, UUID> KeySystemUuidMap;
 
   MediaDrmBridgeClient();
   virtual ~MediaDrmBridgeClient();

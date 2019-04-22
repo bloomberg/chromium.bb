@@ -65,7 +65,7 @@ enum CorsHandlingByResourceFetcher {
 };
 
 // Was the request generated from a "parser-inserted" element?
-// https://html.spec.whatwg.org/multipage/scripting.html#parser-inserted
+// https://html.spec.whatwg.org/C/#parser-inserted
 enum ParserDisposition : uint8_t { kParserInserted, kNotParserInserted };
 
 enum CacheAwareLoadingEnabled : uint8_t {

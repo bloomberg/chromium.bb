@@ -12,9 +12,9 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/file_system.mojom.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -105,7 +105,17 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
               ++*counter;
             },
             counter));
+    runner_->GetRoots(base::BindOnce(
+        [](int* counter, base::Optional<std::vector<mojom::RootPtr>> roots) {
+          ++*counter;
+        },
+        counter));
     runner_->OpenFileToRead(
+        GURL(kUrl),
+        base::BindOnce(
+            [](int* counter, mojo::ScopedHandle handle) { ++*counter; },
+            counter));
+    runner_->OpenFileToWrite(
         GURL(kUrl),
         base::BindOnce(
             [](int* counter, mojo::ScopedHandle handle) { ++*counter; },
@@ -135,7 +145,7 @@ TEST_F(ArcFileSystemOperationRunnerTest, RunImmediately) {
   CallSetShouldDefer(false);
   CallAllFunctions(&counter);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(8, counter);
+  EXPECT_EQ(10, counter);
 }
 
 TEST_F(ArcFileSystemOperationRunnerTest, DeferAndRun) {
@@ -147,7 +157,7 @@ TEST_F(ArcFileSystemOperationRunnerTest, DeferAndRun) {
 
   CallSetShouldDefer(false);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(8, counter);
+  EXPECT_EQ(10, counter);
 }
 
 // TODO(nya,hidehiko): Check if we should keep this test.
@@ -172,7 +182,7 @@ TEST_F(ArcFileSystemOperationRunnerTest, FileInstanceUnavailable) {
   CallSetShouldDefer(false);
   CallAllFunctions(&counter);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(8, counter);
+  EXPECT_EQ(10, counter);
 }
 
 }  // namespace arc

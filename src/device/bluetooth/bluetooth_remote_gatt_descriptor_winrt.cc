@@ -6,10 +6,12 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/post_async_results.h"
 #include "base/win/winrt_storage_util.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_winrt.h"
 #include "device/bluetooth/event_utils_winrt.h"
@@ -18,6 +20,7 @@ namespace device {
 
 namespace {
 
+using ABI::Windows::Devices::Bluetooth::BluetoothCacheMode_Uncached;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCommunicationStatus;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
@@ -26,13 +29,13 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattReadResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattWriteResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-    IGattDescriptor2;
-using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattDescriptor;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-    IGattReadResult2;
+    IGattDescriptor2;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattReadResult;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    IGattReadResult2;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattWriteResult;
 using ABI::Windows::Foundation::IAsyncOperation;
@@ -106,9 +109,10 @@ void BluetoothRemoteGattDescriptorWinrt::ReadRemoteDescriptor(
   }
 
   ComPtr<IAsyncOperation<GattReadResult*>> read_value_op;
-  HRESULT hr = descriptor_->ReadValueAsync(&read_value_op);
+  HRESULT hr = descriptor_->ReadValueWithCacheModeAsync(
+      BluetoothCacheMode_Uncached, &read_value_op);
   if (FAILED(hr)) {
-    VLOG(2) << "GattDescriptor::ReadValueAsync failed: "
+    VLOG(2) << "GattDescriptor::ReadValueWithCacheModeAsync failed: "
             << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -117,7 +121,7 @@ void BluetoothRemoteGattDescriptorWinrt::ReadRemoteDescriptor(
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(read_value_op),
       base::BindOnce(&BluetoothRemoteGattDescriptorWinrt::OnReadValue,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -184,7 +188,7 @@ void BluetoothRemoteGattDescriptorWinrt::WriteRemoteDescriptor(
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(write_value_op),
       base::BindOnce(
           &BluetoothRemoteGattDescriptorWinrt::OnWriteValueWithResult,

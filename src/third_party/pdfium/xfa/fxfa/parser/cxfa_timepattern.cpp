@@ -6,14 +6,15 @@
 
 #include "xfa/fxfa/parser/cxfa_timepattern.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kTimePatternAttributeData[] = {
     {XFA_Attribute::Name, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Med},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kTimePatternName[] = L"timePattern";
+     (void*)XFA_AttributeValue::Med},
+};
 
 }  // namespace
 
@@ -23,8 +24,8 @@ CXFA_TimePattern::CXFA_TimePattern(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_LocaleSet,
                 XFA_ObjectType::ContentNode,
                 XFA_Element::TimePattern,
-                nullptr,
+                {},
                 kTimePatternAttributeData,
-                kTimePatternName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_TimePattern::~CXFA_TimePattern() {}
+CXFA_TimePattern::~CXFA_TimePattern() = default;

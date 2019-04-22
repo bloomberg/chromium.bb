@@ -33,7 +33,7 @@ bool IsKnownAdExecutionContext(ExecutionContext* execution_context) {
 }  // namespace
 
 AdTracker::AdTracker(LocalFrame* local_root) : local_root_(local_root) {
-  local_root_->GetProbeSink()->addAdTracker(this);
+  local_root_->GetProbeSink()->AddAdTracker(this);
 }
 
 AdTracker::~AdTracker() {
@@ -43,7 +43,7 @@ AdTracker::~AdTracker() {
 void AdTracker::Shutdown() {
   if (!local_root_)
     return;
-  local_root_->GetProbeSink()->removeAdTracker(this);
+  local_root_->GetProbeSink()->RemoveAdTracker(this);
   local_root_ = nullptr;
 }
 
@@ -96,8 +96,11 @@ void AdTracker::Will(const probe::CallFunction& probe) {
   v8::Local<v8::Value> resource_name =
       probe.function->GetScriptOrigin().ResourceName();
   String script_url;
-  if (!resource_name.IsEmpty())
-    script_url = ToCoreString(resource_name->ToString(ToIsolate(local_root_)));
+  if (!resource_name.IsEmpty()) {
+    script_url = ToCoreString(
+        resource_name->ToString(ToIsolate(local_root_)->GetCurrentContext())
+            .ToLocalChecked());
+  }
   WillExecuteScript(probe.context, script_url);
 }
 
@@ -108,28 +111,25 @@ void AdTracker::Did(const probe::CallFunction& probe) {
   DidExecuteScript();
 }
 
-void AdTracker::WillSendRequest(ExecutionContext* execution_context,
-                                unsigned long identifier,
-                                DocumentLoader* loader,
-                                ResourceRequest& request,
-                                const ResourceResponse& redirect_response,
-                                const FetchInitiatorInfo& initiator_info,
-                                ResourceType resource_type) {
-  // If the resource is not already marked as an ad, check if the document
-  // loading the resource is an ad or if any executing script is an ad.
-  if (!request.IsAdResource() &&
-      (IsKnownAdExecutionContext(execution_context) || IsAdScriptInStack())) {
-    request.SetIsAdResource();
-  }
+bool AdTracker::CalculateIfAdSubresource(ExecutionContext* execution_context,
+                                         const ResourceRequest& request,
+                                         ResourceType resource_type,
+                                         bool known_ad) {
+  // Check if the document loading the resource is an ad or if any executing
+  // script is an ad.
+  known_ad = known_ad || IsKnownAdExecutionContext(execution_context) ||
+             IsAdScriptInStack();
 
   // If it is a script marked as an ad and it's not in an ad context, append it
   // to the known ad script set. We don't need to keep track of ad scripts in ad
   // contexts, because any script executed inside an ad context is considered an
   // ad script by IsKnownAdScript.
-  if (resource_type == ResourceType::kScript && request.IsAdResource() &&
+  if (resource_type == ResourceType::kScript && known_ad &&
       !IsKnownAdExecutionContext(execution_context)) {
     AppendToKnownAdScripts(*execution_context, request.Url().GetString());
   }
+
+  return known_ad;
 }
 
 bool AdTracker::IsAdScriptInStack() {
@@ -167,7 +167,7 @@ bool AdTracker::IsKnownAdScript(ExecutionContext* execution_context,
   auto it = known_ad_scripts_.find(execution_context);
   if (it == known_ad_scripts_.end())
     return false;
-  return it->value.find(url) != it->value.end();
+  return it->value.Contains(url);
 }
 
 // This is a separate function for testing purposes.

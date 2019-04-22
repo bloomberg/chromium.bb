@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -22,6 +23,8 @@ namespace {
 // a mojo data pipe. Instances will delete themselves when all data has been
 // written, or when the data pipe is disconnected.
 class BlobBytesStreamer {
+  USING_FAST_MALLOC(BlobBytesStreamer);
+
  public:
   BlobBytesStreamer(Vector<scoped_refptr<RawData>> data,
                     mojo::ScopedDataPipeProducerHandle pipe,

@@ -6,6 +6,7 @@
 #define V8_OBJECTS_STRING_TABLE_H_
 
 #include "src/objects/hash-table.h"
+#include "src/roots.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -32,13 +33,13 @@ class StringTableKey : public HashTableKey {
 
 class StringTableShape : public BaseShape<StringTableKey*> {
  public:
-  static inline bool IsMatch(Key key, Object* value) {
+  static inline bool IsMatch(Key key, Object value) {
     return key->IsMatch(value);
   }
 
   static inline uint32_t Hash(Isolate* isolate, Key key) { return key->Hash(); }
 
-  static inline uint32_t HashForObject(Isolate* isolate, Object* object);
+  static inline uint32_t HashForObject(ReadOnlyRoots roots, Object object);
 
   static inline Handle<Object> AsHandle(Isolate* isolate, Key key);
 
@@ -77,12 +78,12 @@ class StringTable : public HashTable<StringTable, StringTableShape> {
   // {raw_string} must be a tagged String pointer.
   // Returns a tagged pointer: either an internalized string, or a Smi
   // sentinel.
-  static Address LookupStringIfExists_NoAllocate(Isolate* isolate,
-                                                 Address raw_string);
+  V8_EXPORT_PRIVATE static Address LookupStringIfExists_NoAllocate(
+      Isolate* isolate, Address raw_string);
 
   static void EnsureCapacityForDeserialization(Isolate* isolate, int expected);
 
-  DECL_CAST2(StringTable)
+  DECL_CAST(StringTable)
 
   static const int kMaxEmptyFactor = 4;
   static const int kMinCapacity = 2048;
@@ -92,14 +93,14 @@ class StringTable : public HashTable<StringTable, StringTableShape> {
   template <bool seq_one_byte>
   friend class JsonParser;
 
-  OBJECT_CONSTRUCTORS(StringTable, HashTable<StringTable, StringTableShape>)
+  OBJECT_CONSTRUCTORS(StringTable, HashTable<StringTable, StringTableShape>);
 };
 
 class StringSetShape : public BaseShape<String> {
  public:
-  static inline bool IsMatch(String key, Object* value);
+  static inline bool IsMatch(String key, Object value);
   static inline uint32_t Hash(Isolate* isolate, String key);
-  static inline uint32_t HashForObject(Isolate* isolate, Object* object);
+  static inline uint32_t HashForObject(ReadOnlyRoots roots, Object object);
 
   static const int kPrefixSize = 0;
   static const int kEntrySize = 1;
@@ -112,8 +113,8 @@ class StringSet : public HashTable<StringSet, StringSetShape> {
                                Handle<String> name);
   bool Has(Isolate* isolate, Handle<String> name);
 
-  DECL_CAST2(StringSet)
-  OBJECT_CONSTRUCTORS(StringSet, HashTable<StringSet, StringSetShape>)
+  DECL_CAST(StringSet)
+  OBJECT_CONSTRUCTORS(StringSet, HashTable<StringSet, StringSetShape>);
 };
 
 }  // namespace internal

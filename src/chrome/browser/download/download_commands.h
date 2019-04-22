@@ -37,8 +37,6 @@ class DownloadCommands {
   explicit DownloadCommands(DownloadUIModel* model);
   virtual ~DownloadCommands();
 
-  gfx::Image GetCommandIcon(Command command);
-
   bool IsCommandEnabled(Command command) const;
   bool IsCommandChecked(Command command) const;
   bool IsCommandVisible(Command command) const;
@@ -58,8 +56,6 @@ class DownloadCommands {
   FRIEND_TEST_ALL_PREFIXES(
       DownloadCommandsTest,
       GetLearnMoreURLForInterruptedDownload_ContainsContext);
-
-  int GetCommandIconId(Command command) const;
 
   DownloadUIModel* model_;
 

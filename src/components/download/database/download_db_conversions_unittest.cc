@@ -40,6 +40,7 @@ InProgressInfo CreateInProgressInfo() {
   info.received_slices.emplace_back(0, 500, false);
   info.received_slices.emplace_back(5000, 500, false);
   info.bytes_wasted = 1234;
+  info.auto_resume_count = 3;
   info.fetch_error_body = true;
   info.request_headers.emplace_back(
       std::make_pair<std::string, std::string>("123", "456"));

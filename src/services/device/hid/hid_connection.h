@@ -13,7 +13,7 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "services/device/hid/hid_device_info.h"
 
 namespace base {
@@ -36,9 +36,20 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
 
   using WriteCallback = base::OnceCallback<void(bool success)>;
 
+  class Client {
+   public:
+    // Notify the client when an input report is received from the connected
+    // device. |buffer| contains the report data, and |size| is the size of the
+    // received report. The buffer is sized to fit the largest input report
+    // supported by the device, which may be larger than |size|.
+    virtual void OnInputReport(scoped_refptr<base::RefCountedBytes> buffer,
+                               size_t size) = 0;
+  };
+
+  void SetClient(Client* client);
+
   scoped_refptr<HidDeviceInfo> device_info() const { return device_info_; }
   bool has_protected_collection() const { return has_protected_collection_; }
-  const base::ThreadChecker& thread_checker() const { return thread_checker_; }
   bool closed() const { return closed_; }
 
   // Closes the connection. This must be called before the object is freed.
@@ -85,13 +96,15 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
 
  private:
   scoped_refptr<HidDeviceInfo> device_info_;
+  Client* client_ = nullptr;
   bool has_protected_collection_;
-  base::ThreadChecker thread_checker_;
   bool closed_;
 
   base::queue<std::tuple<scoped_refptr<base::RefCountedBytes>, size_t>>
       pending_reports_;
   base::queue<ReadCallback> pending_reads_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(HidConnection);
 };

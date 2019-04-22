@@ -41,42 +41,15 @@ enum class WritingDirection;
 
 class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
  public:
-  enum EPropertyLevel { kPropertyDefault, kForceBlockProperties };
+  enum PropertyLevel { kPropertyDefault, kForceBlockProperties };
   enum InlineStyleRemovalMode { kRemoveIfNeeded, kRemoveAlways, kRemoveNone };
-  enum EAddStyledElement { kAddStyledElement, kDoNotAddStyledElement };
+  enum AddStyledElement { kAddStyledElement, kDoNotAddStyledElement };
   typedef bool (*IsInlineElementToRemoveFunction)(const Element*);
 
-  static ApplyStyleCommand* Create(Document& document,
-                                   const EditingStyle* style,
-                                   InputEvent::InputType input_type,
-                                   EPropertyLevel level = kPropertyDefault) {
-    return new ApplyStyleCommand(document, style, input_type, level);
-  }
-  static ApplyStyleCommand* Create(Document& document,
-                                   const EditingStyle* style,
-                                   const Position& start,
-                                   const Position& end) {
-    return new ApplyStyleCommand(document, style, start, end);
-  }
-  static ApplyStyleCommand* Create(Element* element, bool remove_only) {
-    return new ApplyStyleCommand(element, remove_only);
-  }
-  static ApplyStyleCommand* Create(
-      Document& document,
-      const EditingStyle* style,
-      IsInlineElementToRemoveFunction is_inline_element_to_remove_function,
-      InputEvent::InputType input_type) {
-    return new ApplyStyleCommand(
-        document, style, is_inline_element_to_remove_function, input_type);
-  }
-
-  void Trace(blink::Visitor*) override;
-
- private:
   ApplyStyleCommand(Document&,
                     const EditingStyle*,
                     InputEvent::InputType,
-                    EPropertyLevel);
+                    PropertyLevel = kPropertyDefault);
   ApplyStyleCommand(Document&,
                     const EditingStyle*,
                     const Position& start,
@@ -87,6 +60,9 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
                     bool (*is_inline_element_to_remove)(const Element*),
                     InputEvent::InputType);
 
+  void Trace(Visitor*) override;
+
+ private:
   void DoApply(EditingState*) override;
   InputEvent::InputType GetInputType() const override;
 
@@ -155,7 +131,7 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
   void ApplyInlineStyleChange(Node* start_node,
                               Node* end_node,
                               StyleChange&,
-                              EAddStyledElement,
+                              AddStyledElement,
                               EditingState*);
   void SplitTextAtStart(const Position& start, const Position& end);
   void SplitTextAtEnd(const Position& start, const Position& end);
@@ -195,7 +171,7 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
 
   const Member<EditingStyle> style_;
   const InputEvent::InputType input_type_;
-  const EPropertyLevel property_level_;
+  const PropertyLevel property_level_;
   Position start_;
   Position end_;
   bool use_ending_selection_;

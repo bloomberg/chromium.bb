@@ -47,6 +47,13 @@ GFX_EXPORT void GetVisibleMargins(const ImageSkia& image,
                                   int* left,
                                   int* right);
 
+// Downsizes the image if its area exceeds kSearchByImageMaxImageArea AND
+// (either its width exceeds kSearchByImageMaxImageWidth OR its height exceeds
+// kSearchByImageMaxImageHeight) in preparation for searching.
+GFX_EXPORT Image ResizedImageForSearchByImage(const Image& image);
+
+Image ResizedImageForSearchByImageSkiaRepresentation(const Image& image);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_IMAGE_IMAGE_UTIL_H_

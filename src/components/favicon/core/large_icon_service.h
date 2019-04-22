@@ -40,21 +40,32 @@ class LargeIconService : public KeyedService {
   // - Returns the default fallback icon style.
   // For cases 4 and 5, this function returns the style of the fallback icon
   // instead of rendering an icon so clients can render the icon themselves.
-  // TODO(crbug.com/903617): Rename to GetLargeIconRawBitmapOrFallbackStyle.
-  virtual base::CancelableTaskTracker::TaskId GetLargeIconOrFallbackStyle(
+  virtual base::CancelableTaskTracker::TaskId
+  GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       const GURL& page_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
       const favicon_base::LargeIconCallback& callback,
       base::CancelableTaskTracker* tracker) = 0;
 
-  // Behaves the same as GetLargeIconOrFallbackStyle(), only returns the large
-  // icon (if available) decoded.
-  virtual base::CancelableTaskTracker::TaskId GetLargeIconImageOrFallbackStyle(
+  // Behaves the same as GetLargeIconRawBitmapOrFallbackStyleForPageUrl(), only
+  // returns the large icon (if available) decoded.
+  virtual base::CancelableTaskTracker::TaskId
+  GetLargeIconImageOrFallbackStyleForPageUrl(
       const GURL& page_url,
       int min_source_size_in_pixel,
       int desired_size_in_pixel,
       const favicon_base::LargeIconImageCallback& callback,
+      base::CancelableTaskTracker* tracker) = 0;
+
+  // Behaves the same as GetLargeIconRawBitmapOrFallbackStyleForPageUrl, except
+  // uses icon URL instead of page URL.
+  virtual base::CancelableTaskTracker::TaskId
+  GetLargeIconRawBitmapOrFallbackStyleForIconUrl(
+      const GURL& icon_url,
+      int min_source_size_in_pixel,
+      int desired_size_in_pixel,
+      const favicon_base::LargeIconCallback& callback,
       base::CancelableTaskTracker* tracker) = 0;
 
   // Fetches the best large icon for the page at |page_url| from a Google
@@ -97,7 +108,7 @@ class LargeIconService : public KeyedService {
   virtual void TouchIconFromGoogleServer(const GURL& icon_url) = 0;
 
  protected:
-  LargeIconService(){};
+  LargeIconService() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LargeIconService);

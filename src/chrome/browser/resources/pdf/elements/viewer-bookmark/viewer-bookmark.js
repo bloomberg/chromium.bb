@@ -21,11 +21,11 @@
  *   children: !Array<!Bookmark>
  * }}
  */
-var Bookmark;
+let Bookmark;
 
 (function() {
 /** Amount that each level of bookmarks is indented by (px). */
-var BOOKMARK_INDENT = 20;
+const BOOKMARK_INDENT = 20;
 
 Polymer({
   is: 'viewer-bookmark',
@@ -85,12 +85,13 @@ Polymer({
   onEnter_: function(e) {
     // Don't allow events which have propagated up from the expand button to
     // trigger a click.
-    if (e.detail.keyboardEvent.target != this.$.expand)
+    if (e.detail.keyboardEvent.target != this.$.expand) {
       this.onClick();
+    }
   },
 
   onSpace_: function(e) {
-    // paper-icon-button stops propagation of space events, so there's no need
+    // cr-icon-button stops propagation of space events, so there's no need
     // to check the event source here.
     this.onClick();
     // Prevent default space scroll behavior.

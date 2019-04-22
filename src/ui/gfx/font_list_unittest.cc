@@ -22,7 +22,7 @@ namespace {
 std::string FontToString(const Font& font) {
   std::string font_string = font.GetFontName();
   font_string += "|";
-  font_string += base::IntToString(font.GetFontSize());
+  font_string += base::NumberToString(font.GetFontSize());
   int style = font.GetStyle();
   if (style & Font::ITALIC)
     font_string += "|italic";

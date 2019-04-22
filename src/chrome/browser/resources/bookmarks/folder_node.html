@@ -1,0 +1,117 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="actions.html">
+<link rel="import" href="command_manager.html">
+<link rel="import" href="shared_style.html">
+<link rel="import" href="store_client.html">
+<link rel="import" href="strings.html">
+
+<dom-module id="bookmarks-folder-node">
+  <template>
+    <style include="shared-style">
+      :host {
+        --padding-start-per-depth: 36px;
+        display: block;
+      }
+
+      .v-centered {
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+      }
+
+      .menu-label {
+        color: var(--folder-inactive-color);
+        font-weight: 500;
+        margin-inline-start: 16px;
+      }
+
+      #container {
+        cursor: pointer;
+        height: 40px;
+        padding-inline-start:
+            calc(var(--node-depth, 0) * var(--padding-start-per-depth));
+        position: relative;
+      }
+
+      #folder-label {
+        flex-grow: 1;
+        padding-inline-end: 8px;
+      }
+
+      :host([is-selected-folder_]) .menu-label,
+      :host([is-selected-folder_]) .folder-icon {
+        color: var(--interactive-color);
+      }
+
+      :host-context([dark]) .drag-on .menu-label,
+      :host-context([dark]) .drag-on .folder-icon,
+      :host-context([dark]) .drag-on #arrow {
+        color: var(--google-grey-refresh-700);
+      }
+
+      #arrow {
+        margin: 0 8px;
+      }
+
+      #arrow:not([is-open]) {
+        transform: rotate(-90deg);
+        transition: transform 150ms;
+      }
+
+      :host-context([dir='rtl']) #arrow:not([is-open]) {
+        transform: rotate(90deg);
+      }
+
+      #arrow[is-open] {
+        transform: initial;
+      }
+
+      [no-children] {
+        margin-inline-start: 52px; /* The width of the arrow and its margin */
+      }
+    </style>
+
+    <div id="container"
+        class="v-centered"
+        on-click="selectFolder_"
+        on-dblclick="toggleFolder_"
+        on-contextmenu="onContextMenu_"
+        tabindex$="[[getTabIndex_(selectedFolder_, itemId)]]"
+        hidden="[[isRootFolder_(depth)]]"
+        role="treeitem"
+        aria-owns="descendants">
+      <template is="dom-if" if="[[hasChildFolder_]]">
+        <cr-icon-button id="arrow" iron-icon="cr:arrow-drop-down"
+            on-click="toggleFolder_" on-mousedown="preventDefault_"
+            tabindex="-1" is-open$="[[isOpen]]" noink aria-hidden="true">
+        </cr-icon-button>
+      </template>
+      <div id="folder-label" class="v-centered">
+        <div class="folder-icon"
+            open$="[[isSelectedFolder_]]"
+            no-children$="[[!hasChildFolder_]]">
+        </div>
+        <div class="menu-label elided-text" title="[[item_.title]]">
+          [[item_.title]]
+        </div>
+      </div>
+    </div>
+    <div id="descendants" role="group">
+      <template is="dom-if" if="[[isOpen]]">
+        <template is="dom-repeat"
+            items="[[item_.children]]"
+            as="child"
+            filter="isFolder_">
+          <bookmarks-folder-node item-id="[[child]]"
+              draggable="true"
+              depth="[[getChildDepth_(depth)]]">
+          </bookmarks-folder-node>
+        </template>
+      </template>
+    </div>
+  </template>
+  <script src="folder_node.js"></script>
+</dom-module>

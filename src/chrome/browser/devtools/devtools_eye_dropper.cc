@@ -20,6 +20,7 @@
 #include "content/public/common/screen_info.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -131,19 +132,10 @@ bool DevToolsEyeDropper::HandleMouseEvent(const blink::WebMouseEvent& event) {
 
     // The picked colors are expected to be sRGB. Convert from |frame_|'s color
     // space to sRGB.
-    // TODO(ccameron): We don't actually know |frame_|'s color space, so just
-    // use |host_|'s current display's color space. This will almost always be
-    // the right color space, but is sloppy.
-    // http://crbug.com/758057
-    content::ScreenInfo screen_info;
-    host_->GetScreenInfo(&screen_info);
-    gfx::ColorSpace frame_color_space = screen_info.color_space;
-
     SkPixmap pm(
         SkImageInfo::Make(1, 1, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType,
-                          frame_color_space.ToSkColorSpace()),
+                          frame_.refColorSpace()),
         &sk_color, sizeof(sk_color));
-
     uint8_t rgba_color[4];
     bool ok = pm.readPixels(
         SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kUnpremul_SkAlphaType,
@@ -274,7 +266,6 @@ void DevToolsEyeDropper::UpdateCursor() {
 void DevToolsEyeDropper::OnFrameCaptured(
     base::ReadOnlySharedMemoryRegion data,
     ::media::mojom::VideoFrameInfoPtr info,
-    const gfx::Rect& update_rect,
     const gfx::Rect& content_rect,
     viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {
   gfx::Size view_size = host_->GetView()->GetViewBounds().size();
@@ -298,6 +289,10 @@ void DevToolsEyeDropper::OnFrameCaptured(
     DLOG(ERROR) << "Shared memory size was less than expected.";
     return;
   }
+  if (!info->color_space) {
+    DLOG(ERROR) << "Missing mandatory color space info.";
+    return;
+  }
 
   // The SkBitmap's pixels will be marked as immutable, but the installPixels()
   // API requires a non-const pointer. So, cast away the const.
@@ -315,7 +310,8 @@ void DevToolsEyeDropper::OnFrameCaptured(
   };
   frame_.installPixels(
       SkImageInfo::MakeN32(content_rect.width(), content_rect.height(),
-                           kPremul_SkAlphaType),
+                           kPremul_SkAlphaType,
+                           info->color_space->ToSkColorSpace()),
       pixels,
       media::VideoFrame::RowBytes(media::VideoFrame::kARGBPlane,
                                   info->pixel_format, info->coded_size.width()),

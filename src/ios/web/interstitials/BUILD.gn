@@ -7,6 +7,7 @@ import("//ios/build/config.gni")
 source_set("interstitials") {
   deps = [
     "//base",
+    "//ios/web/common",
     "//ios/web/navigation:core",
     "//ios/web/public",
     "//ios/web/web_state:web_state_impl_header",

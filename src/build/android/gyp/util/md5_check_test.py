@@ -4,11 +4,15 @@
 # found in the LICENSE file.
 
 import fnmatch
+import os
+import sys
 import tempfile
 import unittest
 import zipfile
 
-import md5_check # pylint: disable=W0403
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+from util import md5_check
 
 
 def _WriteZipFile(path, entries):
@@ -26,7 +30,7 @@ class TestMd5Check(unittest.TestCase):
     input_strings = ['string1', 'string2']
     input_file1 = tempfile.NamedTemporaryFile(suffix='.txt')
     input_file2 = tempfile.NamedTemporaryFile(suffix='.zip')
-    file1_contents = 'input file 1'
+    file1_contents = b'input file 1'
     input_file1.write(file1_contents)
     input_file1.flush()
     # Test out empty zip file to start.
@@ -119,7 +123,10 @@ class TestMd5Check(unittest.TestCase):
     CheckCallAndRecord(True, 'removing a string should trigger call')
 
     input_strings.append('a brand new string')
-    CheckCallAndRecord(True, 'added input string should trigger call')
+    CheckCallAndRecord(
+        True,
+        'added input string should trigger call',
+        added_or_modified_only=False)
 
     _WriteZipFile(input_file2.name, [('path/1.txt', '1')])
     CheckCallAndRecord(True, 'added subpath should trigger call',

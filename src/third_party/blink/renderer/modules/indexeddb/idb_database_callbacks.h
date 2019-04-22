@@ -26,8 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_DATABASE_CALLBACKS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_DATABASE_CALLBACKS_H_
 
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
-#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -37,13 +36,11 @@ namespace blink {
 
 class DOMException;
 class IDBDatabase;
-struct WebIDBObservation;
+class IDBObservation;
 
 class MODULES_EXPORT IDBDatabaseCallbacks
     : public GarbageCollectedFinalized<IDBDatabaseCallbacks> {
  public:
-  static IDBDatabaseCallbacks* Create();
-
   IDBDatabaseCallbacks();
   virtual ~IDBDatabaseCallbacks();
   void Trace(blink::Visitor*);
@@ -56,7 +53,7 @@ class MODULES_EXPORT IDBDatabaseCallbacks
   virtual void OnComplete(int64_t transaction_id);
   virtual void OnChanges(
       const WebIDBDatabaseCallbacks::ObservationIndexMap&,
-      WebVector<WebIDBObservation> observations,
+      Vector<Persistent<IDBObservation>> observations,
       const WebIDBDatabaseCallbacks::TransactionMap& transactions);
 
   void Connect(IDBDatabase*);

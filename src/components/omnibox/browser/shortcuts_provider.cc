@@ -33,6 +33,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -233,13 +234,11 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   // Create and initialize autocomplete matches from shortcut matches.
   // Also guarantee that all relevance scores are decreasing (but do not assign
   // any scores below 1).
-  WordMap terms_map(CreateWordMapForString(term_string));
   matches_.reserve(shortcut_matches.size());
   for (ShortcutMatch& match : shortcut_matches) {
     max_relevance = std::min(max_relevance, match.relevance);
     matches_.push_back(ShortcutToACMatch(*match.shortcut, max_relevance, input,
-                                         fixed_up_input, term_string,
-                                         terms_map));
+                                         fixed_up_input, term_string));
     if (max_relevance > 1)
       --max_relevance;
   }
@@ -250,8 +249,7 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     int relevance,
     const AutocompleteInput& input,
     const base::string16& fixed_up_input_text,
-    const base::string16 term_string,
-    const WordMap& terms_map) {
+    const base::string16 term_string) {
   DCHECK(!input.text().empty());
   AutocompleteMatch match;
   match.provider = this;
@@ -290,16 +288,26 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
 
   DCHECK(is_search_type != match.keyword.empty());
 
+  const bool keyword_matches =
+      base::StartsWith(base::UTF16ToUTF8(input.text()),
+                       base::StrCat({base::UTF16ToUTF8(match.keyword), " "}),
+                       base::CompareCase::INSENSITIVE_ASCII);
+  if (is_search_type) {
+    match.from_keyword =
+        // Either the match is not from the default search provider:
+        match.keyword != client_->GetTemplateURLService()
+                             ->GetDefaultSearchProvider()
+                             ->keyword() ||
+        // Or it is, but keyword mode was invoked explicitly and the keyword
+        // in the input is also of the default search provider.
+        (input.prefer_keyword() && keyword_matches);
+  }
   // True if input is in keyword mode and the match is a URL suggestion or the
   // match has a different keyword.
-  bool would_cause_leaving_keyboard_mode =
-      input.prefer_keyword() &&
-      (!is_search_type ||
-       !base::StartsWith(base::UTF16ToUTF8(input.text()),
-                         base::StrCat({base::UTF16ToUTF8(match.keyword), " "}),
-                         base::CompareCase::INSENSITIVE_ASCII));
+  bool would_cause_leaving_keyword_mode =
+      input.prefer_keyword() && !(is_search_type && keyword_matches);
 
-  if (!would_cause_leaving_keyboard_mode) {
+  if (!would_cause_leaving_keyword_mode) {
     if (is_search_type) {
       if (match.fill_into_edit.size() >= input.text().size() &&
           std::equal(match.fill_into_edit.begin(),
@@ -328,12 +336,11 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
 
   // Try to mark pieces of the contents and description as matches if they
   // appear in |input.text()|.
-  if (!terms_map.empty()) {
-    match.contents_class =
-        ClassifyAllMatchesInString(term_string, terms_map, match.contents,
-                                   is_search_type, match.contents_class);
+  if (!term_string.empty()) {
+    match.contents_class = ClassifyAllMatchesInString(
+        term_string, match.contents, is_search_type, match.contents_class);
     match.description_class = ClassifyAllMatchesInString(
-        term_string, terms_map, match.description,
+        term_string, match.description,
         /*text_is_search_query=*/false, match.description_class);
   }
   return match;

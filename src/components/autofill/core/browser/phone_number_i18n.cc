@@ -108,7 +108,7 @@ bool IsPrintable(base::StringPiece str) {
 
 namespace i18n {
 
-const size_t kMaxPhoneNumberSize = 1000u;
+const size_t kMaxPhoneNumberSize = 40u;
 
 // Returns true if |phone_number| is a possible number.
 bool IsPossiblePhoneNumber(
@@ -214,7 +214,7 @@ bool ParsePhoneNumber(const base::string16& value,
       i18n_number->country_code_source() !=
           ::i18n::phonenumbers::PhoneNumber::FROM_DEFAULT_COUNTRY) {
     *country_code =
-        base::UTF8ToUTF16(base::IntToString(i18n_number->country_code()));
+        base::UTF8ToUTF16(base::NumberToString(i18n_number->country_code()));
   }
 
   // The region might be different from what we started with.
@@ -265,6 +265,8 @@ bool PhoneNumbersMatch(const base::string16& number_a,
                        const base::string16& number_b,
                        const std::string& raw_region,
                        const std::string& app_locale) {
+  // TODO(crbug.com/953678): Maybe return true if two empty strings are given.
+
   // Sanitize the provided |raw_region| before trying to use it for parsing.
   const std::string region = SanitizeRegion(raw_region, app_locale);
 
@@ -327,6 +329,15 @@ base::string16 GetFormattedPhoneNumberForDisplay(const AutofillProfile& profile,
   }
 
   return base::UTF8ToUTF16(phone);
+}
+
+std::string FormatPhoneNationallyForDisplay(const std::string& phone_number,
+                                            const std::string& country_code) {
+  if (IsValidPhoneNumber(phone_number, country_code)) {
+    return FormatPhoneNumber(phone_number, country_code,
+                             PhoneNumberUtil::PhoneNumberFormat::NATIONAL);
+  }
+  return phone_number;
 }
 
 std::string FormatPhoneForDisplay(const std::string& phone_number,

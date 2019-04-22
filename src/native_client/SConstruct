@@ -2445,6 +2445,9 @@ def which(cmd, paths=os.environ.get('PATH', '').split(os.pathsep)):
 
 
 def SetUpLinuxEnvArm(env):
+  if env.Bit('clang'):
+    raise UserError('Clang build not supported with ARM '
+                    '(use --no-clang to disable)')
   jail = env.GetToolchainDir(toolchain_name='arm_trusted')
   if not platform.machine().startswith('arm'):
     # Allow emulation on non-ARM hosts.
@@ -2483,7 +2486,7 @@ def SetUpAndroidEnv(env):
                                                'third_party', 'android_tools',
                                                'ndk_experimental')
   android_sdk_root = os.path.join('${SOURCE_ROOT}', 'third_party',
-                                  'android_tools', 'sdk')
+                                  'android_sdk', 'public')
   android_sdk_version = 21
   android_stlport_root = os.path.join(android_ndk_root, 'sources', 'cxx-stl',
                                       'stlport')

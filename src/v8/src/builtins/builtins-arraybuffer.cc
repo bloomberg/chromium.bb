@@ -6,6 +6,7 @@
 #include "src/builtins/builtins.h"
 #include "src/conversions.h"
 #include "src/counters.h"
+#include "src/heap/heap-inl.h"  // For ToBoolean. TODO(jkummerow): Drop.
 #include "src/maybe-handles-inl.h"
 #include "src/objects-inl.h"
 #include "src/objects/js-array-buffer-inl.h"
@@ -27,9 +28,9 @@ namespace internal {
 
 namespace {
 
-Object* ConstructBuffer(Isolate* isolate, Handle<JSFunction> target,
-                        Handle<JSReceiver> new_target, Handle<Object> length,
-                        bool initialize) {
+Object ConstructBuffer(Isolate* isolate, Handle<JSFunction> target,
+                       Handle<JSReceiver> new_target, Handle<Object> length,
+                       bool initialize) {
   Handle<JSObject> result;
   ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
       isolate, result,
@@ -118,12 +119,12 @@ BUILTIN(SharedArrayBufferPrototypeGetByteLength) {
 BUILTIN(ArrayBufferIsView) {
   SealHandleScope shs(isolate);
   DCHECK_EQ(2, args.length());
-  ObjectPtr arg = args[1];
+  Object arg = args[1];
   return isolate->heap()->ToBoolean(arg->IsJSArrayBufferView());
 }
 
-static Object* SliceHelper(BuiltinArguments args, Isolate* isolate,
-                           const char* kMethodName, bool is_shared) {
+static Object SliceHelper(BuiltinArguments args, Isolate* isolate,
+                          const char* kMethodName, bool is_shared) {
   HandleScope scope(isolate);
   Handle<Object> start = args.at(1);
   Handle<Object> end = args.atOrUndefined(isolate, 2);
@@ -137,7 +138,7 @@ static Object* SliceHelper(BuiltinArguments args, Isolate* isolate,
   CHECK_SHARED(is_shared, array_buffer, kMethodName);
 
   // * [AB] If IsDetachedBuffer(buffer) is true, throw a TypeError exception.
-  if (!is_shared && array_buffer->was_neutered()) {
+  if (!is_shared && array_buffer->was_detached()) {
     THROW_NEW_ERROR_RETURN_FAILURE(
         isolate, NewTypeError(MessageTemplate::kDetachedOperation,
                               isolate->factory()->NewStringFromAsciiChecked(
@@ -223,7 +224,7 @@ static Object* SliceHelper(BuiltinArguments args, Isolate* isolate,
   CHECK_SHARED(is_shared, new_array_buffer, kMethodName);
 
   // * [AB] If IsDetachedBuffer(new) is true, throw a TypeError exception.
-  if (!is_shared && new_array_buffer->was_neutered()) {
+  if (!is_shared && new_array_buffer->was_detached()) {
     THROW_NEW_ERROR_RETURN_FAILURE(
         isolate, NewTypeError(MessageTemplate::kDetachedOperation,
                               isolate->factory()->NewStringFromAsciiChecked(
@@ -254,7 +255,7 @@ static Object* SliceHelper(BuiltinArguments args, Isolate* isolate,
 
   // * [AB] NOTE: Side-effects of the above steps may have detached O.
   // * [AB] If IsDetachedBuffer(O) is true, throw a TypeError exception.
-  if (!is_shared && array_buffer->was_neutered()) {
+  if (!is_shared && array_buffer->was_detached()) {
     THROW_NEW_ERROR_RETURN_FAILURE(
         isolate, NewTypeError(MessageTemplate::kDetachedOperation,
                               isolate->factory()->NewStringFromAsciiChecked(

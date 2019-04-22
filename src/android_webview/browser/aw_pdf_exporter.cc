@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_print_manager.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/AwPdfExporter_jni.h"
 #include "printing/print_settings.h"
@@ -64,7 +65,7 @@ void AwPdfExporter::ExportToPdf(JNIEnv* env,
   JNI_AwPdfExporter_GetPageRanges(env, pages, &page_ranges);
   InitPdfSettings(env, obj, page_ranges, print_settings);
   AwPrintManager* print_manager = AwPrintManager::CreateForWebContents(
-      web_contents_, print_settings, base::FileDescriptor(fd, false),
+      web_contents_, print_settings, fd,
       base::Bind(&AwPdfExporter::DidExportPdf, base::Unretained(this)));
 
   if (!print_manager->PrintNow())

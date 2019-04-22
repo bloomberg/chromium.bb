@@ -15,7 +15,11 @@
 #include "ui/gfx/image/image.h"
 
 namespace ntp_snippets {
+
 namespace {
+
+constexpr char kImageFetcherUmaClientName[] = "NtpSnippets";
+
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("remote_suggestions_provider", R"(
         semantics {
@@ -50,11 +54,6 @@ CachedImageFetcher::CachedImageFetcher(
       thumbnail_requests_throttler_(
           pref_service,
           RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL) {
-  // |image_fetcher_| can be null in tests.
-  if (image_fetcher_) {
-    image_fetcher_->SetDataUseServiceName(
-        data_use_measurement::DataUseUserData::NTP_SNIPPETS_THUMBNAILS);
-  }
 }
 
 CachedImageFetcher::~CachedImageFetcher() {}
@@ -74,6 +73,13 @@ void CachedImageFetcher::FetchSuggestionImage(
 void CachedImageFetcher::OnImageDecodingDone(
     ImageFetchedCallback callback,
     const std::string& id_within_category,
+    const gfx::Image& image,
+    const image_fetcher::RequestMetadata& metadata) {
+  std::move(callback).Run(image);
+}
+
+void CachedImageFetcher::OnImageFetchingDone(
+    ImageFetchedCallback callback,
     const gfx::Image& image,
     const image_fetcher::RequestMetadata& metadata) {
   std::move(callback).Run(image);
@@ -145,16 +151,18 @@ void CachedImageFetcher::FetchImageFromNetwork(
   image_fetcher::ImageFetcherCallback decode_callback;
   if (image_callback) {
     decode_callback =
-        base::BindOnce(&CachedImageFetcher::OnImageDecodingDone,
+        base::BindOnce(&CachedImageFetcher::OnImageFetchingDone,
                        base::Unretained(this), std::move(image_callback));
   }
 
+  image_fetcher::ImageFetcherParams params(kTrafficAnnotation,
+                                           kImageFetcherUmaClientName);
   image_fetcher_->FetchImageAndData(
-      suggestion_id.id_within_category(), url,
+      url,
       base::BindOnce(&CachedImageFetcher::SaveImageAndInvokeDataCallback,
                      base::Unretained(this), suggestion_id.id_within_category(),
                      std::move(image_data_callback)),
-      std::move(decode_callback), kTrafficAnnotation);
+      std::move(decode_callback), std::move(params));
 }
 
 void CachedImageFetcher::SaveImageAndInvokeDataCallback(

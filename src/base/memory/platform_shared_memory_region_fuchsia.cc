@@ -112,9 +112,9 @@ bool PlatformSharedMemoryRegion::MapAtInternal(off_t offset,
                                                void** memory,
                                                size_t* mapped_size) const {
   uintptr_t addr;
-  zx_vm_option_t options = ZX_VM_REQUIRE_NON_RESIZABLE | ZX_VM_FLAG_PERM_READ;
+  zx_vm_option_t options = ZX_VM_REQUIRE_NON_RESIZABLE | ZX_VM_PERM_READ;
   if (mode_ != Mode::kReadOnly)
-    options |= ZX_VM_FLAG_PERM_WRITE;
+    options |= ZX_VM_PERM_WRITE;
   zx_status_t status = zx::vmar::root_self()->map(
       /*vmar_offset=*/0, handle_, offset, size, options, &addr);
   if (status != ZX_OK) {
@@ -168,7 +168,8 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
   zx_status_t status = handle->get_info(ZX_INFO_HANDLE_BASIC, &basic,
                                         sizeof(basic), nullptr, nullptr);
   if (status != ZX_OK) {
-    ZX_DLOG(ERROR, status) << "zx_object_get_info";
+    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
+    ZX_LOG(ERROR, status) << "zx_object_get_info";
     return false;
   }
 
@@ -176,9 +177,10 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
   bool expected_read_only = mode == Mode::kReadOnly;
 
   if (is_read_only != expected_read_only) {
-    DLOG(ERROR) << "VMO object has wrong access rights: it is"
-                << (is_read_only ? " " : " not ") << "read-only but it should"
-                << (expected_read_only ? " " : " not ") << "be";
+    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
+    LOG(ERROR) << "VMO object has wrong access rights: it is"
+               << (is_read_only ? " " : " not ") << "read-only but it should"
+               << (expected_read_only ? " " : " not ") << "be";
     return false;
   }
 

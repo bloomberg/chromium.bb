@@ -63,6 +63,7 @@ void CredentialProviderSigninInfoFetcher::OnGetUserInfoResponse(
   DCHECK(full_name_.empty());
   bool has_error =
       !user_info->GetString("name", &full_name_) || full_name_.empty();
+  user_info->GetString("picture", &picture_url_);
   WriteResultsIfFinished(has_error);
 }
 
@@ -117,6 +118,10 @@ void CredentialProviderSigninInfoFetcher::WriteResultsIfFinished(
                         base::Value(mdm_id_token_));
     fetch_result.SetKey(credential_provider::kKeyFullname,
                         base::Value(full_name_));
+    if (!picture_url_.empty()) {
+      fetch_result.SetKey(credential_provider::kKeyPicture,
+                          base::Value(picture_url_));
+    }
     fetch_result.SetKey(credential_provider::kKeyTokenHandle,
                         base::Value(token_handle_));
   }

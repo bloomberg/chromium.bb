@@ -104,3 +104,20 @@ function MockDocumentDimensions(width, height) {
     this.pageDimensions = [];
   };
 }
+
+function animationFrame() {
+  return new Promise(resolve => requestAnimationFrame(resolve));
+}
+
+function contentElement() {
+  return document.elementFromPoint(innerWidth / 2, innerHeight / 2);
+}
+
+async function testAsync(f) {
+  try {
+    await f();
+    chrome.test.succeed();
+  } catch (e) {
+    chrome.test.fail(e);
+  }
+}

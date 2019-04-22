@@ -30,6 +30,7 @@
 <translation id="1929939181775079593">Chromium ಸ್ಪಂದಿಸುತ್ತಿಲ್ಲ. ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸುವುದೇ?</translation>
 <translation id="1966382378801805537">ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅನ್ನು ನಿರ್ಧರಿಸಲು ಅಥವಾ ಹೊಂದಿಸಲು Chromium ಗೆ ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ</translation>
 <translation id="2008474315282236005">ಈ ಸಾಧನದಿಂದ 1 ಐಟಂ ಅನ್ನು ಇದು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಮರುಪಡೆಯಲು, <ph name="USER_EMAIL" /> ನಂತೆ Chromium ಗೆ ಸೈನ್‌ಇನ್ ಮಾಡಿ.</translation>
+<translation id="2037988709973327241"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹೀಗಾಗಿ Chromium ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ. ಸುಧಾರಿತ ಸಂರಕ್ಷಣೆಯ ಮೂಲಕ ನಿಮ್ಮನ್ನು ರಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="2117378023188580026">ಈ ಅಪ್‌ಡೇಟ್‌ ಅನ್ವಯಿಸಲು ನೀವು Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕೆಂದು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಕೋರುತ್ತಿದ್ದಾರೆ</translation>
 <translation id="2119636228670142020">&amp;Chromium OS ಕುರಿತು</translation>
 <translation id="2178765360243863853">ಇದೀಗ ನೀವು Chromium ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕು</translation>
@@ -50,7 +51,6 @@
 <translation id="2718390899429598676">ಹೆಚ್ಚುವರಿ ಭದ್ರತೆಗಾಗಿ, Chromium ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡುತ್ತದೆ.</translation>
 <translation id="2770231113462710648">ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅನ್ನು ಇದ್ಕಕೆ ಬದಲಿಸಿ:</translation>
 <translation id="2799223571221894425">ಮರುಪ್ರಾರಂಭಿಸು</translation>
-<translation id="2818397554133737874">ಈ ವ್ಯಕ್ತಿಯ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಈ ಸಾಧನದಿಂದ ಅಳಿಸಲಾಗುತ್ತದೆ. ಡೇಟಾವನ್ನು ಪುನಃ ಪಡೆದುಕೊಳ್ಳಲು, Chromium ಗೆ $2 ಎಂಬುದಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2847479871509788944">Chromium ನಿಂದ ತೆಗೆದುಹಾಕಿ...</translation>
 <translation id="2886012850691518054">ಐಚ್ಚಿಕ: Google ಗೆ ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳು ಮತ್ತು ಕ್ರ್ಯಾಷ್ ವರದಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುವುದರಿಂದ Chromium ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ.</translation>
 <translation id="2898082584336937987">ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ Chromium ಅನ್ನು ಸ್ಥಾಪಿಸಿ. ನಿಮ್ಮ ಫೋನ್‌‌ಗೆ ನಾವು ಎಸ್ಎಂಎಸ್ ಕಳುಹಿಸುತ್ತೇವೆ: <ph name="PHONE_NUMBER" /></translation>
@@ -62,6 +62,7 @@
 <translation id="3068515742935458733">Google ಗೆ ಕ್ರ್ಯಾಶ್ ವರದಿಗಳನ್ನು ಮತ್ತು <ph name="UMA_LINK" /> ಕಳುಹಿಸುವುದರಿಂದ Chromium ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="3103660991484857065">ಆರ್ಕೈವ್ ಅನ್ನು ಸಂಕ್ಷೇಪ ಮಾಡದಿರಲು ಸ್ಥಾಪಕ ವಿಫಲಗೊಂಡಿದೆ. ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಪುನಃ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="3130323860337406239">Chromium ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್ ಬಳಸುತ್ತಿದೆ.</translation>
+<translation id="3154325651427862069"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು, ಹೀಗಾಗಿ Chromium ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ. ಸುಧಾರಿತ ಸಂರಕ್ಷಣೆಯ ಮೂಲಕ ನಿಮ್ಮನ್ನು ರಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="3155163173539279776">Chromium ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="3179665906251668410">Chromium ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="3190315855212034486">ಓಹ್! Chromium ಕ್ರ್ಯಾಶ್ ಆಗಿದೆ. ಮತ್ತೊಮ್ಮೆ ಪ್ರಾರಂಭಿಸುವುದೇ?</translation>
@@ -75,25 +76,28 @@
 <translation id="3479552764303398839">ಈಗ ಬೇಡ</translation>
 <translation id="3509308970982693815">ದಯವಿಟ್ಟು ಎಲ್ಲಾ Chromium ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿರಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="352783484088404971">Chromium ನಿಂದ ತೆಗೆದುಹಾಕಿ...</translation>
+<translation id="3575459661164320785">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಹಾನಿಕಾರಕ ಸಾಫ್ಟ್‌ವೇರ್ ಕಂಡುಬಂದಿದೆ. Chromium ಅದನ್ನು ತೆಗೆದುಹಾಕಬಹುದು, ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಸ್ಥಾಪಿಸಬಹುದು ಮತ್ತು ನಿಮ್ಮ ಬ್ರೌಸರ್ ಅನ್ನು ಪುನಃ ಸಾಮಾನ್ಯವಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸುವಂತೆ ಮಾಡಲು ವಿಸ್ತರಣೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಬಹುದು.</translation>
 <translation id="3582788516608077514">Chromium ಅನ್ನು ನವೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="358997566136285270">Chromium ಲೋಗೋ</translation>
+<translation id="3639635944603682591">ಈ ವ್ಯಕ್ತಿಯ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಈ ಸಾಧನದಿಂದ ಅಳಿಸಲಾಗುತ್ತದೆ. ಡೇಟಾವನ್ನು ಪುನಃ ಪಡೆದುಕೊಳ್ಳಲು, Chromium ನಲ್ಲಿ <ph name="USER_EMAIL" /> ಎಂದು ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="3713809861844741608">ಹೊಸ Chromium &amp;ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="3728336900324680424">ವಿಳಾಸಪಟ್ಟಿಯಲ್ಲಿ ಸಲಹೆ ನೀಡಲು, Chromium ನಿಮ್ಮ ಡ್ರೈವ್‌ಗೆ ಪ್ರವೇಶಿಸುತ್ತದೆ</translation>
-<translation id="3762167353400286894">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium OS ಪ್ರದರ್ಶನಗೊಂಡಿದೆ</translation>
 <translation id="378917192836375108">Chromium ನೀವು ವೆಬ್‌ನಲ್ಲಿ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಕ್ಲಿಕ್ ಮಾಡಲು ಅವಕಾಶ ಮಾಡುತ್ತದೆ ಮತ್ತು Skype ನೊಂದಿಗೆ ಕರೆ ಮಾಡುತ್ತದೆ!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">ನಿಮ್ಮ ಕಾರ್ಯಪಟ್ಟಿಗೆ Chromium ಅನ್ನು ಪಿನ್ ಮಾಡಿ</translation>
+<translation id="388648406173476553">Chromium ಕಸ್ಟಮೈಸ್ ಮಾಡಿ ಮತ್ತು ನಿಯಂತ್ರಿಸಿ. ನೀವು ಕೆಲವು ಸಂಗತಿಗಳ ಕುರಿತು ಗಮನಹರಿಸಬೇಕಿದೆ - ವಿವರಗಳಿಗಾಗಿ ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="3889543394854987837">Chromium ತೆರೆಯಲು ಮತ್ತು ಬ್ರೌಸ್ ಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಲು ನಿಮ್ಮ ಹೆಸರನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="3898493977366060150">Google ಸ್ಮಾರ್ಟ್‌ಗಳ ಮೂಲಕ ವೆಬ್‌ ಬ್ರೌಸ್‌ ಮಾಡುವಿಕೆ</translation>
+<translation id="3931244652999881512">ಈ ಫೈಲ್ ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹೀಗಾಗಿ Chromium ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ. ಸುಧಾರಿತ ಸಂರಕ್ಷಣೆಯ ಮೂಲಕ ನಿಮ್ಮನ್ನು ರಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="3965668104013180445">{0,plural, =1{ಒಂದು ಗಂಟೆಯಲ್ಲಿ Chromium OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ಗಂಟೆಗಳಲ್ಲಿ Chromium OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ಗಂಟೆಗಳಲ್ಲಿ Chromium OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />ಪ್ರಸ್ತುತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="END_LINK" /> ವರದಿ ಮಾಡುವ ಮೂಲಕ Chromium ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="4050175100176540509">ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯಲ್ಲಿ ಪ್ರಮುಖವಾದ ಭದ್ರತಾ ಸುಧಾರಣೆಗಳು ಮತ್ತು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿದೆ.</translation>
 <translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="421369550622382712">Chromium ಗಾಗಿ ಅದ್ಭುತ ಅಪ್ಲಿಕೇಶನ್‌‌ಗಳು, ಗೇಮ್‌ಗಳು, ವಿಸ್ತರಣೆಗಳು ಹಾಗೂ ಥೀಮ್‌ಗಳನ್ನು ಅನ್ವೇಷಿಸಿ.</translation>
+<translation id="4216212958613226427">Chromium UI ತೋರಿಸಲು ಈ ಭಾಷೆಯನ್ನು ಬಳಸಲಾಗುತ್ತದೆ</translation>
 <translation id="4222580632002216401">ಇದೀಗ ನೀವು Chromium ಗೆ ಸೈನ್ ಇನ್ ಆಗಿರುವಿರಿ! ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ಸಿಂಕ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="4224199872375172890">Chromium ಅನ್ನು ನವೀಕರಿಸಿದೆ.</translation>
 <translation id="4230135487732243613">ಈ ಖಾತೆಗೆ ನಿಮ್ಮ Chromium ಡೇಟಾವನ್ನು ಲಿಂಕ್ ಮಾಡುವುದೇ?</translation>
-<translation id="4260985389288095068">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಹಾನಿಕಾರಕ ಸಾಫ್ಟ್‌ವೇರ್‌ ಇದೆ. ನಿಮ್ಮ ಬ್ರೌಸರ್ ಪುನಃ ಸಾಮಾನ್ಯವಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸಲು, Chromium ಅದನ್ನು ತೆಗೆದುಹಾಕಬಹುದು ಮತ್ತು ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಸ್ಥಾಪಿಸಬಹುದು.</translation>
 <translation id="4271805377592243930">Chromium ಜೊತೆಗೆ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="4285930937574705105">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆಯು ವಿಫಲಗೊಂಡಿದೆ. Chromium ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿದ್ದರೆ, ದಯವಿಟ್ಟು ಅದನ್ನು ಮುಚ್ಚಿರಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4407044323746248786">ಹೇಗಿದ್ದರೂ Chromium ನಿಂದ ನಿರ್ಗಮಿಸುವುದೇ?</translation>
@@ -135,7 +139,8 @@
 <translation id="5680901439334282664">Chromium ಗೆ ಸೈನ್ ಇನ್ ಆಗಿ</translation>
 <translation id="5698481217667032250">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium ಪ್ರದರ್ಶಿಸು</translation>
 <translation id="5712253116097046984">ಈ ಅಪ್‌ಡೇಟ್‌ ಅನ್ನು ಅನ್ವಯಿಸಲು, ನೀವು Chromium OS ಮರುಪ್ರಾರಂಭಿಸಿ ಎಂದು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಕೇಳಿಕೊಳ್ಳುತ್ತಾರೆ</translation>
-<translation id="5726838626470692954">ನಿಮ್ಮ ಮ್ಯಾನೇಜರ್ ನಿಮ್ಮನ್ನು ತೆಗೆದುಹಾಕಿ ಮತ್ತು ಮರಳಿ Chromium ಗೆ ಸೇರಿಸಬೇಕು.</translation>
+<translation id="5726979195371243087">ಈ ಫೈಲ್ ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು, ಹೀಗಾಗಿ Chromium ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ. ಸುಧಾರಿತ ಸಂರಕ್ಷಣೆಯ ಮೂಲಕ ನಿಮ್ಮನ್ನು ರಕ್ಷಿಸಲಾಗಿದೆ.</translation>
+<translation id="5756484659843248772">Chromium OS UI ತೋರಿಸಲು ಈ ಭಾಷೆಯನ್ನು ಬಳಸಲಾಗುತ್ತದೆ</translation>
 <translation id="5768914737813585044">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium OS ಪ್ರದರ್ಶಿಸು</translation>
 <translation id="5796460469508169315">Chromium ಬಹುತೇಕ ಸಿದ್ಧಗೊಂಡಿದೆ.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -164,6 +169,7 @@
 <translation id="6373523479360886564">Chromium ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ನೀವು ಖಚಿತವಾಗಿ ಬಯಸುವಿರಾ?</translation>
 <translation id="6400072781405947421">Mac OS X 10.9 ನಲ್ಲಿ Chromium ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸದೇ ಇರುವುದರಿಂದ ಅದು ಸರಿಯಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸದೇ ಇರಬಹುದು.</translation>
 <translation id="6403826409255603130">Chromium ಒಂದು ವೆಬ್ ಬ್ರೌಸರ್ ಆಗಿದ್ದು ವೆಬ್‌ಪುಟಗಳನ್ನು ಮತ್ತು ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ವೇಗದೊಂದಿಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ. ಇದು ವೇಗವಾದ, ಸ್ಥಿರವಾದ, ಮತ್ತು ಬಳಸಲು ಸುಲಭವಾಗಿದೆ. ಮಾಲ್‌ವೇರ್‌ನೊಂದಿಗೆ ಹೆಚ್ಚು ಸುರಕ್ಷಿತವಾಗಿ ಹಾಗೂ Chromium ನಲ್ಲಿ ವಿನ್ಯಾಸಗೊಳಿಸಲಾದ ಫಿಶಿಂಗ್ ಸುರಕ್ಷೆಯೊಂದಿಗೆ ವೆಬ್ ಅನ್ನು ಬ್ರೌಸ್ ಮಾಡಿ.</translation>
+<translation id="6434250628340475518">Chromium OS ಸಿಸ್ಟಂ</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium 1 ಸೆಕೆಂಡ್‌ನಲ್ಲಿ ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ}one{Chromium # ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ}other{Chromium # ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ}}</translation>
 <translation id="6475912303565314141">ನೀವು Chromium ಪ್ರಾರಂಭಿಸಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
 <translation id="6485906693002546646">ನಿಮ್ಮ Chromium ವಿಷಯವನ್ನು ಸಿಂಕ್ ಮಾಡಲು ನೀವು <ph name="PROFILE_EMAIL" /> ಅನ್ನು ಬಳಸುತ್ತಿರುವಿರಿ. Google ಖಾತೆ ಇಲ್ಲದೆ ನಿಮ್ಮ ಸಿಂಕ್ ಪ್ರಾಶಸ್ತ್ಯಗಳನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು ಅಥವಾ Chromium ಬಳಸಲು, <ph name="SETTINGS_LINK" /> ಭೇಟಿ ನೀಡಿ.</translation>
@@ -183,7 +189,7 @@
 <translation id="6990124437352146030">ಈ ಸೈಟ್‌ಗಾಗಿ ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್‌ಗೆ ಪ್ರವೇಶಿಸಲು Chromium ಗೆ ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="705851970750939768">Chromium ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
 <translation id="7066436765290594559">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chromium OS ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ.</translation>
-<translation id="7162152143154757523">Google ಹುಡುಕಾಟ ಬಳಸುವ ಪದ ಪರೀಕ್ಷಕ ತಂತ್ರಜ್ಞಾನವನ್ನು ಬಳಸಲು ನಿಮಗೆ ಅನುಮತಿ ನೀಡಲು, ಬ್ರೌಸರ್‌ನಲ್ಲಿ ನೀವು ಟೈಪ್ ಮಾಡುವುದನ್ನು Google ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸುವ ಮೂಲಕ Chromium ಒಳ್ಳೆಯ ಪದ ಪರೀಕ್ಷವನ್ನು ಒದಗಿಸಬಹುದಾಗಿದೆ.</translation>
+<translation id="7067091210845072982">ಚಿತ್ರದಲ್ಲಿ ಉಪಯುಕ್ತ ವಿವರಣೆಯು ಇಲ್ಲದಿದ್ದರೆ, Chromium ನಿಮಗಾಗಿ ಒಂದು ವಿವರಣೆಯನ್ನು ಒದಗಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತದೆ. ವಿವರಣೆಗಳನ್ನು ರಚಿಸಲು, ಚಿತ್ರಗಳನ್ನು Google ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="7196312274710523067">Chromium ಅನ್ನು ಪ್ರಾರಂಭಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="7205698830395646142">Chromium ಮೆನುವಿನಲ್ಲಿ ಮರೆಮಾಡು</translation>
 <translation id="7223968959479464213">ಕಾರ್ಯನಿರ್ವಾಹಕ - Chromium</translation>
@@ -200,12 +206,14 @@
 <ph name="BEGIN_LINK_2" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK_2" />
 
 ಹೆಚ್ಚಿನ ಸೂಚನೆಗಳಿಗಾಗಿ ದಯವಿಟ್ಟು <ph name="ACCOUNT_EMAIL" /> ಗೆ ಬಂದಿರುವ ಇಮೇಲ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ.</translation>
+<translation id="7349591376906416160"><ph name="TARGET_URL_HOSTNAME" /> ಗೆ ಪ್ರವೇಶ ಪಡೆಯುವುದಕ್ಕಾಗಿ <ph name="ALTERNATIVE_BROWSER_NAME" /> ಅನ್ನು ತೆರೆಯಲು, ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರು Chromium ಅನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಿದ್ದಾರೆ.</translation>
 <translation id="7448255348454382571">Chromium OS ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">ಈ ಸೈಟ್‌ಗಾಗಿ ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಪ್ರವೇಶಿಸಲು Chromium ಗೆ ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="7471302858145901434">{0,plural, =1{ಒಂದು ದಿನದೊಳಗೆ Chromium OS ಮರುಪ್ರಾರಂಭಿಸಿ}one{# ದಿನಗಳ ಒಳಗೆ Chromium OS ಮರುಪ್ರಾರಂಭಿಸಿ}other{# ದಿನಗಳ ಒಳಗೆ Chromium OS ಮರುಪ್ರಾರಂಭಿಸಿ}}</translation>
 <translation id="7483335560992089831">ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿರುವ Chromium ನ ಅದೇ ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು Chromium ಅನ್ನು ಮುಚ್ಚಿರಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="7549178288319965365">Chromium OS ಕುರಿತು</translation>
+<translation id="7561906087460245826">Chromium ನಿಂದಲೂ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ (<ph name="URL" />)</translation>
 <translation id="761356813943268536">Chromium ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಬಳಸುತ್ತಿದೆ.</translation>
 <translation id="7617377681829253106">Chromium ಇದೀಗ ಉತ್ತಮಗೊಂಡಿದೆ</translation>
 <translation id="7686590090926151193">Chromium ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅಲ್ಲ</translation>
@@ -223,9 +231,9 @@
 <translation id="7979877361127045932">Chromium ಮೆನುವಿನಲ್ಲಿ ಮರೆಮಾಡು</translation>
 <translation id="8013436988911883588">Chromium ಒಮ್ಮೆ ಪ್ರವೇಶವನ್ನು ಪಡೆದ ಬಳಿಕ, ಪ್ರವೇಶಕ್ಕಾಗಿ ನಿಮ್ಮನ್ನು ಕೇಳಲು ವೆಬ್‍ಸೈಟ್‍ಗಳಿಗೆ ಸಾಧ್ಯವಾಗುತ್ತದೆ.</translation>
 <translation id="8030318113982266900">ನಿಮ್ಮ ಸಾಧನವನ್ನು <ph name="CHANNEL_NAME" /> ಚಾನಲ್‌ಗೆ ನವೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>
-<translation id="8157153840442649507">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium ಪ್ರದರ್ಶನಗೊಂಡಿದೆ</translation>
 <translation id="81770708095080097">ಈ ಫೈಲ್ ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹೀಗಾಗಿ Chromium ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="8222496066431494154">ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ Chromium ಅನ್ನು ಸ್ಥಾಪಿಸಿ. ನಿಮ್ಮ ಖಾತೆ ಮರುಪ್ರಾಪ್ತಿ ಫೋನ್ ಸಂಖ್ಯೆ‌ಗೆ ನಾವು ಎಸ್ಎಂಎಸ್ ಕಳುಹಿಸುತ್ತೇವೆ: <ph name="PHONE_NUMBER" /></translation>
+<translation id="8248265253516264921">ಚಿತ್ರದಲ್ಲಿ ಉಪಯುಕ್ತ ವಿವರಣೆಯು ಇಲ್ಲದಿದ್ದರೆ, Chromium ನಿಮಗಾಗಿ ಒಂದು ವಿವರಣೆಯನ್ನು ಒದಗಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತದೆ. ವಿವರಣೆಗಳನ್ನು ರಚಿಸಲು, ಚಿತ್ರಗಳನ್ನು Google ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ. ಇದನ್ನು ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಯಾವಾಗ ಬೇಕಾದರೂ ಆಫ್ ಮಾಡಬಹುದು.</translation>
 <translation id="8269379391216269538">Chromium ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="8290862415967981663">ಈ ಫೈಲ್ ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು, ಹೀಗಾಗಿ Chromium ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="8330519371938183845">ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ Chromium ಅನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಮತ್ತು ವೈಯಕ್ತೀಕರಿಸಲು ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
@@ -242,6 +250,7 @@
 <translation id="8667808506758191620">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ನವೀಕೃತವಾಗಿದೆ.</translation>
 <translation id="8697124171261953979">ನೀವು Chromium ಪ್ರಾರಂಭಿಸಿದಾಗ ಅಥವಾ ಓಮ್ನಿಬಾಕ್ಸ್‌ನಿಂದ ಹುಡುಕಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
 <translation id="8704119203788522458">ಇದು ನಿಮ್ಮ Chromium</translation>
+<translation id="8704255848199359374">ಇದು Google ಹುಡುಕಾಟದಲ್ಲಿ ಬಳಸಲಾದ ಅದೇ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆಯನ್ನು ಬಳಸುತ್ತದೆ. ನೀವು ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಟೈಪ್ ಮಾಡುವ ಪಠ್ಯವನ್ನು Google ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನೀವು ಈ ವರ್ತನೆಯನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಬದಲಾಯಿಸಬಹುದು.</translation>
 <translation id="8796602469536043152">ಈ ಸೈಟ್‌ಗಾಗಿ ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೊಫೋನ್‌ಗೆ ಪ್ರವೇಶಿಸಲು Chromium ಗೆ ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="8803635938069941624">Chromium OS ನಿಯಮಗಳು</translation>
 <translation id="8821041990367117597">ನಿಮ್ಮ ಖಾತೆಯ ಸೈನ್ ಇನ್ ವಿವರಗಳ ಅವಧಿ ಮುಗಿದಿರುವ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chromium ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
@@ -260,6 +269,7 @@
 <translation id="9089354809943900324">Chromium ನ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
 <translation id="91086099826398415">ಹೊಸ Chromium &amp;ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="911206726377975832">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಸಹ ಅಳಿಸುವುದೇ?</translation>
+<translation id="9158494823179993217"><ph name="TARGET_URL_HOSTNAME" /> ಗೆ ಪ್ರವೇಶಿಸಲು ಒಂದು ಪರ್ಯಾಯ ಬ್ರೌಸರ್ ತೆರೆಯುವಂತೆ ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರು Chromium ಅನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಿದ್ದಾರೆ.</translation>
 <translation id="918373042641772655"><ph name="USERNAME" /> ಅವರ ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸುವುದರಿಂದ ನಿಮ್ಮ ಇತಿಹಾಸ, ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ಈ ಸಾಧನದಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿರುವ ಇತರ Chromium ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ. ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿರುವ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ ಮತ್ತು <ph name="GOOGLE_DASHBOARD_LINK" />Google ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ನಲ್ಲಿ<ph name="END_GOOGLE_DASHBOARD_LINK" /> ನಿರ್ವಹಿಸಬಹುದಾಗಿದೆ.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">ಇದೀಗ ನೀವು Chromium ಗೆ ಸೈನ್‌ ಇನ್‌ ಆಗಿರುವಿರಿ</translation>

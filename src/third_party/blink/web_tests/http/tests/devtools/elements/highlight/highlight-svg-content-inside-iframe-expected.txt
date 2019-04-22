@@ -29,7 +29,6 @@ svg-rect{
     "idValue": "svg-rect",
     "nodeWidth": "60",
     "nodeHeight": "80"
-  },
-  "displayAsMaterial": false
+  }
 }
 

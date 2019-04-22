@@ -11,6 +11,7 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/containers/stack.h"
 #include "base/containers/stack_container.h"
 #include "base/i18n/string_compare.h"
@@ -458,7 +459,11 @@ jint BookmarkBridge::GetTotalBookmarkCount(
     nodes.pop();
 
     for (int i = 0; i < node->child_count(); ++i) {
+      // Empty title means deleted partner bookmarks or folders. See
+      // PartnerBookmarksShim::RemoveBookmark().
       const BookmarkNode* child = node->GetChild(i);
+      if (GetTitle(child).empty())
+        continue;
       if (child->is_folder()) {
         nodes.push(child);
       } else {

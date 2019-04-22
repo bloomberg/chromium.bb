@@ -44,17 +44,7 @@ WebGLExtensionName KHRParallelShaderCompile::GetName() const {
 
 KHRParallelShaderCompile* KHRParallelShaderCompile::Create(
     WebGLRenderingContextBase* context) {
-  return new KHRParallelShaderCompile(context);
-}
-
-void KHRParallelShaderCompile::maxShaderCompilerThreadsKHR(GLuint count) {
-  WebGLExtensionScopedContext scoped(this);
-  if (scoped.IsLost())
-    return;
-  // For WebGL contexts, we don't want applications to be able to spin up huge
-  // numbers of shader compliation threads. Enforce a maximum of 2 here.
-  scoped.Context()->ContextGL()->MaxShaderCompilerThreadsKHR(
-      std::min(2u, count));
+  return MakeGarbageCollected<KHRParallelShaderCompile>(context);
 }
 
 bool KHRParallelShaderCompile::Supported(WebGLRenderingContextBase* context) {

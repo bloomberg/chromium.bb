@@ -114,7 +114,7 @@ class HarfBuzzShaperTest : public testing::Test {
 class ScopedSubpixelOverride {
  public:
   ScopedSubpixelOverride(bool b) {
-    prev_layout_test_ = WebTestSupport::IsRunningWebTest();
+    prev_web_test_ = WebTestSupport::IsRunningWebTest();
     prev_subpixel_allowed_ =
         WebTestSupport::IsTextSubpixelPositioningAllowedForTest();
     prev_antialias_ = WebTestSupport::IsFontAntialiasingEnabledForTest();
@@ -147,7 +147,7 @@ class ScopedSubpixelOverride {
     WebTestSupport::SetFontAntialiasingEnabledForTest(prev_antialias_);
     WebTestSupport::SetTextSubpixelPositioningAllowedForTest(
         prev_subpixel_allowed_);
-    WebTestSupport::SetIsRunningWebTest(prev_layout_test_);
+    WebTestSupport::SetIsRunningWebTest(prev_web_test_);
 
     // Fonts cached with a different subpixel positioning state are not
     // automatically invalidated and need to be cleared between test
@@ -156,7 +156,7 @@ class ScopedSubpixelOverride {
   }
 
  private:
-  bool prev_layout_test_;
+  bool prev_web_test_;
   bool prev_subpixel_allowed_;
   bool prev_antialias_;
   bool prev_fd_subpixel_;
@@ -171,10 +171,10 @@ class ShapeParameterTest : public HarfBuzzShaperTest,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
-                        ShapeParameterTest,
-                        testing::Values(TextDirection::kLtr,
-                                        TextDirection::kRtl));
+INSTANTIATE_TEST_SUITE_P(HarfBuzzShaperTest,
+                         ShapeParameterTest,
+                         testing::Values(TextDirection::kLtr,
+                                         TextDirection::kRtl));
 
 TEST_F(HarfBuzzShaperTest, MutableUnique) {
   scoped_refptr<ShapeResult> result =
@@ -436,6 +436,15 @@ TEST_F(HarfBuzzShaperTest, MAYBE_ShapeArabicWithContext) {
   ASSERT_NEAR(combined->Width(), first->Width() + second->Width(), 0.1);
 }
 
+TEST_F(HarfBuzzShaperTest, ShapeTabulationCharacters) {
+  const unsigned length = HarfBuzzRunGlyphData::kMaxGlyphs * 2 + 1;
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::CreateForTabulationCharacters(&font, TextDirection::kLtr,
+                                                 TabSize(8), 0.f, 0, length);
+  EXPECT_EQ(result->NumCharacters(), length);
+  EXPECT_EQ(result->NumGlyphs(), length);
+}
+
 TEST_F(HarfBuzzShaperTest, ShapeVerticalUpright) {
   font_description.SetOrientation(FontOrientation::kVerticalUpright);
   font = Font(font_description);
@@ -460,7 +469,51 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalUpright) {
   result1->CopyRange(0, 3, composite_result.get());
   result2->CopyRange(3, string.length(), composite_result.get());
 
-  EXPECT_EQ(result->Bounds(), composite_result->Bounds());
+  EXPECT_EQ(result->Bounds().X(), composite_result->Bounds().X());
+  EXPECT_EQ(result->Bounds().Width(), composite_result->Bounds().Width());
+
+  // We don't get the y-axis quite correct for vertical runs.
+  float tolerance = result->Bounds().Height() * 0.2;
+  EXPECT_NEAR(result->Bounds().Y(), composite_result->Bounds().Y(), tolerance);
+  EXPECT_NEAR(result->Bounds().Height(), composite_result->Bounds().Height(),
+              tolerance);
+}
+
+TEST_F(HarfBuzzShaperTest, ShapeVerticalUprightIdeograph) {
+  font_description.SetOrientation(FontOrientation::kVerticalUpright);
+  font = Font(font_description);
+  font.Update(nullptr);
+
+  // This string should create one ideograph run.
+  String string(u"\u65E5\u65E6\u65E0\u65D3\u65D0");
+  TextDirection direction = TextDirection::kLtr;
+  HarfBuzzShaper shaper(string);
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  // Check width and bounds are not too much different. ".1" is heuristic.
+  EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .1);
+
+  // Shape each run and merge them using CopyRange. Bounds() should match.
+  scoped_refptr<ShapeResult> result1 = shaper.Shape(&font, direction, 0, 3);
+  scoped_refptr<ShapeResult> result2 =
+      shaper.Shape(&font, direction, 3, string.length());
+
+  scoped_refptr<ShapeResult> composite_result =
+      ShapeResult::Create(&font, 0, direction);
+  result1->CopyRange(0, 3, composite_result.get());
+  result2->CopyRange(3, string.length(), composite_result.get());
+
+  // Rounding of x and width may be off by ~0.1 on Mac.
+  float tolerance = 0.1f;
+  EXPECT_NEAR(result->Bounds().X(), composite_result->Bounds().X(), tolerance);
+  EXPECT_NEAR(result->Bounds().Width(), composite_result->Bounds().Width(),
+              tolerance);
+
+  // We don't get the y-axis quite correct for vertical runs.
+  tolerance = result->Bounds().Height() * 0.2;
+  EXPECT_NEAR(result->Bounds().Y(), composite_result->Bounds().Y(), tolerance);
+  EXPECT_NEAR(result->Bounds().Height(), composite_result->Bounds().Height(),
+              tolerance);
 }
 
 TEST_F(HarfBuzzShaperTest, RangeShapeSmallCaps) {
@@ -526,20 +579,27 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
   result1->CopyRange(0, 3, composite_result.get());
   result2->CopyRange(3, string.length(), composite_result.get());
 
-  EXPECT_EQ(result->Bounds(), composite_result->Bounds());
+  EXPECT_EQ(result->Bounds().X(), composite_result->Bounds().X());
+  EXPECT_EQ(result->Bounds().Width(), composite_result->Bounds().Width());
+
+  // We don't get the y-axis quite correct for vertical runs.
+  float tolerance = result->Bounds().Height() * 0.2;
+  EXPECT_NEAR(result->Bounds().Y(), composite_result->Bounds().Y(), tolerance);
+  EXPECT_NEAR(result->Bounds().Height(), composite_result->Bounds().Height(),
+              tolerance);
 }
 
 class ShapeStringTest : public HarfBuzzShaperTest,
                         public testing::WithParamInterface<const char16_t*> {};
 
-INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
-                        ShapeStringTest,
-                        testing::Values(
-                            // U+FFF0 is not assigned as of Unicode 10.0.
-                            u"\uFFF0",
-                            u"\uFFF0Hello",
-                            // U+00AD SOFT HYPHEN often does not have glyphs.
-                            u"\u00AD"));
+INSTANTIATE_TEST_SUITE_P(HarfBuzzShaperTest,
+                         ShapeStringTest,
+                         testing::Values(
+                             // U+FFF0 is not assigned as of Unicode 10.0.
+                             u"\uFFF0",
+                             u"\uFFF0Hello",
+                             // U+00AD SOFT HYPHEN often does not have glyphs.
+                             u"\u00AD"));
 
 TEST_P(ShapeStringTest, MissingGlyph) {
   String string(GetParam());
@@ -617,8 +677,11 @@ TEST_P(ShapeParameterTest, MaxGlyphsClusterDevanagari) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
   EXPECT_EQ(length, result->NumCharacters());
-#if defined(OS_LINUX)
-  // Linux doesn't have glyphs. We can't test RunInfo without all glyphs.
+#if defined(OS_LINUX) || defined(OS_FUCHSIA)
+  // Linux and Fuchsia use Lohit Devanagari. When using that font the shaper
+  // returns 32767 glyphs instead of 32769.
+  // TODO(crbug.com/933551): Add Noto Sans Devanagari to
+  // //third_party/test_fonts and use it here.
   if (result->NumGlyphs() != length)
     return;
 #endif
@@ -741,9 +804,9 @@ class GlyphDataRangeTest
     : public HarfBuzzShaperTest,
       public testing::WithParamInterface<GlyphDataRangeTestData> {};
 
-INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
-                        GlyphDataRangeTest,
-                        testing::ValuesIn(glyph_data_range_test_data));
+INSTANTIATE_TEST_SUITE_P(HarfBuzzShaperTest,
+                         GlyphDataRangeTest,
+                         testing::ValuesIn(glyph_data_range_test_data));
 
 TEST_P(GlyphDataRangeTest, Data) {
   auto data = GetParam();
@@ -751,7 +814,7 @@ TEST_P(GlyphDataRangeTest, Data) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, data.direction);
 
-  auto& run = TestInfo(result)->RunInfoForTesting(data.run_index);
+  const auto& run = TestInfo(result)->RunInfoForTesting(data.run_index);
   auto glyphs = run.FindGlyphDataRange(data.start_offset, data.end_offset);
   unsigned start_glyph = std::distance(run.glyph_data_.begin(), glyphs.begin);
   EXPECT_EQ(data.start_glyph, start_glyph);
@@ -803,7 +866,7 @@ class OffsetForPositionTest
     : public HarfBuzzShaperTest,
       public testing::WithParamInterface<OffsetForPositionTestData> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     HarfBuzzShaperTest,
     OffsetForPositionTest,
     testing::ValuesIn(offset_for_position_fixed_pitch_test_data));
@@ -880,7 +943,7 @@ class IncludePartialGlyphsTest
     : public HarfBuzzShaperTest,
       public ::testing::WithParamInterface<IncludePartialGlyphsOption> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     HarfBuzzShaperTest,
     IncludePartialGlyphsTest,
     ::testing::Values(IncludePartialGlyphsOption::OnlyFullGlyphs,
@@ -1091,9 +1154,9 @@ class ShapeResultCopyRangeTest
     : public HarfBuzzShaperTest,
       public testing::WithParamInterface<ShapeResultCopyRangeTestData> {};
 
-INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
-                        ShapeResultCopyRangeTest,
-                        testing::ValuesIn(shape_result_copy_range_test_data));
+INSTANTIATE_TEST_SUITE_P(HarfBuzzShaperTest,
+                         ShapeResultCopyRangeTest,
+                         testing::ValuesIn(shape_result_copy_range_test_data));
 
 // Split a ShapeResult and combine them should match to the original result.
 TEST_P(ShapeResultCopyRangeTest, Split) {
@@ -1181,7 +1244,15 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoLatin) {
 
   EXPECT_EQ(result->NumCharacters(), composite_result->NumCharacters());
   EXPECT_EQ(result->SnappedWidth(), composite_result->SnappedWidth());
-  EXPECT_EQ(result->Bounds(), composite_result->Bounds());
+
+  // Rounding of x and width may be off by ~0.1 on Mac.
+  float tolerance = 0.1f;
+  EXPECT_NEAR(result->Bounds().X(), composite_result->Bounds().X(), tolerance);
+  EXPECT_NEAR(result->Bounds().Width(), composite_result->Bounds().Width(),
+              tolerance);
+  EXPECT_EQ(result->Bounds().Y(), composite_result->Bounds().Y());
+  EXPECT_EQ(result->Bounds().Height(), composite_result->Bounds().Height());
+
   EXPECT_EQ(result->SnappedStartPositionForOffset(0),
             composite_result->SnappedStartPositionForOffset(0));
   EXPECT_EQ(result->SnappedStartPositionForOffset(15),
@@ -1232,13 +1303,13 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoArabicThaiHanLatin) {
             composite_result->SnappedStartPositionForOffset(8));
 }
 
-TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeAcrossRuns) {
+TEST_P(ShapeParameterTest, ShapeResultCopyRangeAcrossRuns) {
   // Create 3 runs:
   // [0]: 1 character.
   // [1]: 5 characters.
   // [2]: 2 character.
   String mixed_string(u"\u65E5Hello\u65E5\u65E5");
-  TextDirection direction = TextDirection::kLtr;
+  TextDirection direction = GetParam();
   HarfBuzzShaper shaper(mixed_string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
@@ -1249,6 +1320,21 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeAcrossRuns) {
   scoped_refptr<ShapeResult> target = ShapeResult::Create(&font, 0, direction);
   result->CopyRange(5, 7, target.get());
   EXPECT_EQ(2u, target->NumCharacters());
+}
+
+TEST_P(ShapeParameterTest, ShapeResultCopyRangeContextMultiRuns) {
+  // Create 2 runs:
+  // [0]: 5 characters.
+  // [1]: 4 character.
+  String mixed_string(u"Hello\u65E5\u65E5\u65E5\u65E5");
+  TextDirection direction = GetParam();
+  HarfBuzzShaper shaper(mixed_string);
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  scoped_refptr<ShapeResult> sub2to4 = result->SubRange(2, 4);
+  EXPECT_EQ(2u, sub2to4->NumCharacters());
+  scoped_refptr<ShapeResult> sub5to9 = result->SubRange(5, 9);
+  EXPECT_EQ(4u, sub5to9->NumCharacters());
 }
 
 TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeSegmentGlyphBoundingBox) {
@@ -1281,7 +1367,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeBoundsLtr) {
   // Because a space character does not have ink, the bounds of "." should be
   // the same as the bounds of ". ".
   scoped_refptr<ShapeResult> sub_range = result->SubRange(0, 1);
-  EXPECT_EQ(sub_range->Bounds().Width(), result->Bounds().Width());
+  EXPECT_NEAR(sub_range->Bounds().Width(), result->Bounds().Width(), 0.1);
 }
 
 TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeBoundsRtl) {
@@ -1293,7 +1379,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeBoundsRtl) {
   // Because a space character does not have ink, the bounds of "." should be
   // the same as the bounds of ". ".
   scoped_refptr<ShapeResult> sub_range = result->SubRange(0, 1);
-  EXPECT_EQ(sub_range->Bounds().Width(), result->Bounds().Width());
+  EXPECT_NEAR(sub_range->Bounds().Width(), result->Bounds().Width(), 0.1f);
 }
 
 TEST_F(HarfBuzzShaperTest, SubRange) {
@@ -1421,13 +1507,7 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
   }
 
   // Add zero-width spaces at some of the safe to break offsets.
-  String inserted_zero_width_spaces = test_word;
-  inserted_zero_width_spaces.Ensure16Bit();
-  unsigned enlarged_by = 0;
-  for (unsigned safe_to_break_position : safe_to_break_positions) {
-    inserted_zero_width_spaces.insert(u"\u200B",
-                                      safe_to_break_position + enlarged_by++);
-  }
+  String inserted_zero_width_spaces(u"RA\u200BD\u200BDAYoVa\u200BD\u200BD");
   HarfBuzzShaper refShaper(inserted_zero_width_spaces);
   scoped_refptr<ShapeResult> referenceResult =
       refShaper.Shape(&testFont, TextDirection::kLtr);
@@ -1452,8 +1532,8 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
 }
 
 // TODO(crbug.com/870712): This test fails due to font fallback differences on
-// Android.
-#if defined(OS_ANDROID)
+// Android and Fuchsia.
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
 #define MAYBE_SafeToBreakArabicCommonLigatures \
   DISABLED_SafeToBreakArabicCommonLigatures
 #else

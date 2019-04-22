@@ -34,38 +34,8 @@ CrSettingsInteractiveUITest.prototype = {
     PolymerTest.prototype.setUp.call(this);
     // We aren't loading the main document.
     this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
-
-    // TODO(michaelpg): Re-enable after bringing in fix for
-    // https://github.com/PolymerElements/paper-slider/issues/131.
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'badAriaAttributeValue', 'paper-slider');
   },
 };
-
-/**
- * Test fixture for FocusRowBehavior.
- * @constructor
- * @extends {CrSettingsInteractiveUITest}
- */
-function CrSettingsFocusRowBehavior() {}
-
-CrSettingsFocusRowBehavior.prototype = {
-  __proto__: CrSettingsInteractiveUITest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://settings/focus_row_behavior.html',
-
-  /** @override */
-  extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/util.js',
-    'focus_row_behavior_test.js',
-    'test_util.js',
-  ]),
-};
-
-TEST_F('CrSettingsFocusRowBehavior', 'FocusTest', function() {
-  mocha.run();
-});
 
 
 /**
@@ -87,7 +57,13 @@ CrSettingsSyncPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSyncPageTest', 'All', function() {
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+TEST_F('CrSettingsSyncPageTest', 'MAYBE_All', function() {
   mocha.run();
 });
 
@@ -109,6 +85,12 @@ CrSettingsAnimatedPagesTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsAnimatedPagesTest', 'All', function() {
+// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+TEST_F('CrSettingsAnimatedPagesTest', 'MAYBE_All', function() {
   mocha.run();
 });

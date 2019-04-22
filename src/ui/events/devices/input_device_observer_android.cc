@@ -10,13 +10,6 @@
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 
-// This macro provides the implementation for the observer notification methods.
-#define NOTIFY_ANDROID_OBSERVERS(method_decl, observer_call)   \
-  void InputDeviceObserverAndroid::method_decl {               \
-    for (ui::InputDeviceEventObserver & observer : observers_) \
-      observer.observer_call;                                  \
-  }
-
 namespace ui {
 
 InputDeviceObserverAndroid::InputDeviceObserverAndroid() {}
@@ -47,18 +40,14 @@ static void JNI_InputDeviceObserver_InputConfigurationChanged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   InputDeviceObserverAndroid::GetInstance()
-      ->NotifyObserversTouchpadDeviceConfigurationChanged();
-  InputDeviceObserverAndroid::GetInstance()
-      ->NotifyObserversKeyboardDeviceConfigurationChanged();
-  InputDeviceObserverAndroid::GetInstance()
-      ->NotifyObserversMouseDeviceConfigurationChanged();
+      ->NotifyObserversDeviceConfigurationChanged();
 }
 
-NOTIFY_ANDROID_OBSERVERS(NotifyObserversMouseDeviceConfigurationChanged(),
-                         OnMouseDeviceConfigurationChanged());
-NOTIFY_ANDROID_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged(),
-                         OnTouchpadDeviceConfigurationChanged());
-NOTIFY_ANDROID_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged(),
-                         OnKeyboardDeviceConfigurationChanged());
+void InputDeviceObserverAndroid::NotifyObserversDeviceConfigurationChanged() {
+  for (ui::InputDeviceEventObserver& observer : observers_)
+    observer.OnInputDeviceConfigurationChanged(
+        InputDeviceEventObserver::kMouse | InputDeviceEventObserver::kKeyboard |
+        InputDeviceEventObserver::kTouchpad);
+}
 
 }  // namespace ui

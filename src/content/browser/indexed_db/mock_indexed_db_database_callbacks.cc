@@ -11,7 +11,8 @@ namespace content {
 
 MockIndexedDBDatabaseCallbacks::MockIndexedDBDatabaseCallbacks()
     : IndexedDBDatabaseCallbacks(scoped_refptr<IndexedDBContextImpl>(nullptr),
-                                 nullptr),
+                                 nullptr,
+                                 base::SequencedTaskRunnerHandle::Get().get()),
       abort_called_(false),
       forced_close_called_(false) {}
 

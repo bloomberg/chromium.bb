@@ -9,6 +9,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
@@ -74,7 +76,7 @@ class ShutdownDetector : public base::PlatformThread::Delegate {
  public:
   ShutdownDetector(
       int shutdown_fd,
-      const base::Closure& shutdown_callback,
+      base::OnceCallback<void(int)> shutdown_callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~ShutdownDetector() override;
 
@@ -83,7 +85,7 @@ class ShutdownDetector : public base::PlatformThread::Delegate {
 
  private:
   const int shutdown_fd_;
-  const base::Closure shutdown_callback_;
+  base::OnceCallback<void(int)> shutdown_callback_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownDetector);
@@ -91,13 +93,13 @@ class ShutdownDetector : public base::PlatformThread::Delegate {
 
 ShutdownDetector::ShutdownDetector(
     int shutdown_fd,
-    const base::Closure& shutdown_callback,
+    base::OnceCallback<void(int)> shutdown_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : shutdown_fd_(shutdown_fd),
-      shutdown_callback_(shutdown_callback),
+      shutdown_callback_(std::move(shutdown_callback)),
       task_runner_(task_runner) {
   CHECK_NE(shutdown_fd_, -1);
-  CHECK(!shutdown_callback.is_null());
+  CHECK(!shutdown_callback_.is_null());
   CHECK(task_runner_);
 }
 
@@ -146,7 +148,8 @@ void ShutdownDetector::ThreadMain() {
   } while (bytes_read < sizeof(signal));
   VLOG(1) << "Handling shutdown for signal " << signal << ".";
 
-  if (!task_runner_->PostTask(FROM_HERE, shutdown_callback_)) {
+  if (!task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(std::move(shutdown_callback_), signal))) {
     // Without a valid task runner to post the exit task to, there aren't many
     // options. Raise the signal again. The default handler will pick it up
     // and cause an ungraceful exit.
@@ -172,7 +175,7 @@ void ShutdownDetector::ThreadMain() {
 }  // namespace
 
 void InstallShutdownSignalHandlers(
-    const base::Closure& shutdown_callback,
+    base::OnceCallback<void(int)> shutdown_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   int pipefd[2];
   int ret = pipe(pipefd);
@@ -191,7 +194,7 @@ void InstallShutdownSignalHandlers(
   const size_t kShutdownDetectorThreadStackSize = PTHREAD_STACK_MIN * 4;
 #endif
   ShutdownDetector* detector = new ShutdownDetector(
-      g_shutdown_pipe_read_fd, shutdown_callback, task_runner);
+      g_shutdown_pipe_read_fd, std::move(shutdown_callback), task_runner);
   // PlatformThread does not delete its delegate.
   ANNOTATE_LEAKING_OBJECT_PTR(detector);
   if (!base::PlatformThread::CreateNonJoinable(kShutdownDetectorThreadStackSize,
@@ -211,15 +214,15 @@ void InstallShutdownSignalHandlers(
   struct sigaction action;
   memset(&action, 0, sizeof(action));
   action.sa_handler = SIGTERMHandler;
-  CHECK(sigaction(SIGTERM, &action, nullptr) == 0);
+  CHECK_EQ(0, sigaction(SIGTERM, &action, nullptr));
 
   // Also handle SIGINT - when the user terminates the browser via Ctrl+C. If
   // the browser process is being debugged, GDB will catch the SIGINT first.
   action.sa_handler = SIGINTHandler;
-  CHECK(sigaction(SIGINT, &action, nullptr) == 0);
+  CHECK_EQ(0, sigaction(SIGINT, &action, nullptr));
 
   // And SIGHUP, for when the terminal disappears. On shutdown, many Linux
   // distros send SIGHUP, SIGTERM, and then SIGKILL.
   action.sa_handler = SIGHUPHandler;
-  CHECK(sigaction(SIGHUP, &action, nullptr) == 0);
+  CHECK_EQ(0, sigaction(SIGHUP, &action, nullptr));
 }

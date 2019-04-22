@@ -9,7 +9,7 @@
 #include "build/buildflag.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 #include "ui/views/focus/focus_manager.h"
 
 namespace ui_test_utils {
@@ -31,10 +31,11 @@ void ClickOnView(const Browser* browser, ViewID vid) {
   views::View* view =
       BrowserView::GetBrowserViewForBrowser(browser)->GetViewByID(vid);
   DCHECK(view);
-  MoveMouseToCenterAndPress(
-      view, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
-      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
-  content::RunMessageLoop();
+  base::RunLoop loop;
+  MoveMouseToCenterAndPress(view, ui_controls::LEFT,
+                            ui_controls::DOWN | ui_controls::UP,
+                            loop.QuitClosure());
+  loop.Run();
 }
 
 void FocusView(const Browser* browser, ViewID vid) {
@@ -42,12 +43,6 @@ void FocusView(const Browser* browser, ViewID vid) {
       BrowserView::GetBrowserViewForBrowser(browser)->GetViewByID(vid);
   DCHECK(view);
   view->RequestFocus();
-}
-
-gfx::Point GetCenterInScreenCoordinates(const views::View* view) {
-  gfx::Point center(view->width() / 2, view->height() / 2);
-  views::View::ConvertPointToScreen(view, &center);
-  return center;
 }
 
 }  // namespace ui_test_utils

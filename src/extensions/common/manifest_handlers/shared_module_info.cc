@@ -134,7 +134,7 @@ bool SharedModuleInfo::Parse(const Extension* extension,
   }
 
   if (has_export) {
-    const base::DictionaryValue* export_value = NULL;
+    const base::Value* export_value = nullptr;
     if (!extension->manifest()->GetDictionary(keys::kExport, &export_value)) {
       *error = base::ASCIIToUTF16(errors::kInvalidExport);
       return false;
@@ -143,60 +143,66 @@ bool SharedModuleInfo::Parse(const Extension* extension,
     // TODO(https://crbug.com/842354): Remove support for the legacy allowlist
     // key.
     const char* allowlist_key = nullptr;
-    if (export_value->HasKey(keys::kSharedModuleAllowlist))
+    if (export_value->FindKey(keys::kSharedModuleAllowlist) != nullptr) {
       allowlist_key = keys::kSharedModuleAllowlist;
-    else if (export_value->HasKey(keys::kSharedModuleLegacyAllowlist))
+    } else if (export_value->FindKey(keys::kSharedModuleLegacyAllowlist) !=
+               nullptr) {
       allowlist_key = keys::kSharedModuleLegacyAllowlist;
+    }
 
     if (allowlist_key) {
-      const base::ListValue* allowlist_value = NULL;
-      if (!export_value->GetList(allowlist_key, &allowlist_value)) {
+      const base::Value* allowlist_value =
+          export_value->FindKeyOfType(allowlist_key, base::Value::Type::LIST);
+      if (allowlist_value == nullptr) {
         *error = base::ASCIIToUTF16(errors::kInvalidExportAllowlist);
         return false;
       }
-      for (size_t i = 0; i < allowlist_value->GetSize(); ++i) {
-        std::string extension_id;
-        if (!allowlist_value->GetString(i, &extension_id) ||
-            !crx_file::id_util::IdIsValid(extension_id)) {
+      const base::Value::ListStorage& list_storage = allowlist_value->GetList();
+      for (size_t i = 0; i < list_storage.size(); ++i) {
+        if (!list_storage[i].is_string() ||
+            !crx_file::id_util::IdIsValid(list_storage[i].GetString())) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
               errors::kInvalidExportAllowlistString, base::NumberToString(i));
           return false;
         }
-        export_allowlist_.insert(extension_id);
+        export_allowlist_.insert(list_storage[i].GetString());
       }
     }
   }
 
   if (has_import) {
-    const base::ListValue* import_list = NULL;
+    const base::Value* import_list = nullptr;
     if (!extension->manifest()->GetList(keys::kImport, &import_list)) {
       *error = base::ASCIIToUTF16(errors::kInvalidImport);
       return false;
     }
-    for (size_t i = 0; i < import_list->GetSize(); ++i) {
-      const base::DictionaryValue* import_entry = NULL;
-      if (!import_list->GetDictionary(i, &import_entry)) {
+    const base::Value::ListStorage& list_storage = import_list->GetList();
+    for (size_t i = 0; i < list_storage.size(); ++i) {
+      const base::Value& import_entry = list_storage[i];
+      if (!import_entry.is_dict()) {
         *error = base::ASCIIToUTF16(errors::kInvalidImport);
         return false;
       }
-      std::string extension_id;
       imports_.push_back(ImportInfo());
-      if (!import_entry->GetString(keys::kId, &extension_id) ||
-          !crx_file::id_util::IdIsValid(extension_id)) {
+      const base::Value* extension_id =
+          import_entry.FindKeyOfType(keys::kId, base::Value::Type::STRING);
+      if (extension_id == nullptr ||
+          !crx_file::id_util::IdIsValid(extension_id->GetString())) {
         *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidImportId,
                                                      base::NumberToString(i));
         return false;
       }
-      imports_.back().extension_id = extension_id;
-      if (import_entry->HasKey(keys::kMinimumVersion)) {
-        std::string min_version;
-        if (!import_entry->GetString(keys::kMinimumVersion, &min_version)) {
+      imports_.back().extension_id = extension_id->GetString();
+      const base::Value* min_version =
+          import_entry.FindKey(keys::kMinimumVersion);
+      if (min_version != nullptr) {
+        if (!min_version->is_string()) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
               errors::kInvalidImportVersion, base::NumberToString(i));
           return false;
         }
-        imports_.back().minimum_version = min_version;
-        base::Version v(min_version);
+        imports_.back().minimum_version = min_version->GetString();
+        base::Version v(min_version->GetString());
         if (!v.IsValid()) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
               errors::kInvalidImportVersion, base::NumberToString(i));

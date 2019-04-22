@@ -18,22 +18,26 @@
 #include "components/viz/service/display_embedder/gl_output_surface_offscreen.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
+#include "components/viz/service/display_embedder/skia_output_surface_impl_non_ddl.h"
 #include "components/viz/service/display_embedder/software_output_surface.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
+#include "gpu/command_buffer/service/mailbox_manager_factory.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
+#include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
 #include "components/viz/service/display_embedder/gl_output_surface_win.h"
 #include "components/viz/service/display_embedder/software_output_device_win.h"
-#include "ui/gfx/win/rendering_window_manager.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -54,8 +58,8 @@
 #if defined(USE_OZONE)
 #include "components/viz/service/display_embedder/gl_output_surface_ozone.h"
 #include "components/viz/service/display_embedder/software_output_device_ozone.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #endif
@@ -65,7 +69,7 @@ namespace viz {
 GpuDisplayProvider::GpuDisplayProvider(
     uint32_t restart_id,
     GpuServiceImpl* gpu_service_impl,
-    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+    gpu::CommandBufferTaskExecutor* task_executor,
     gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
     std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
@@ -74,7 +78,7 @@ GpuDisplayProvider::GpuDisplayProvider(
     bool wait_for_all_pipeline_stages_before_draw)
     : restart_id_(restart_id),
       gpu_service_impl_(gpu_service_impl),
-      task_executor_(std::move(task_executor)),
+      task_executor_(task_executor),
       gpu_channel_manager_delegate_(gpu_channel_manager_delegate),
       gpu_memory_buffer_manager_(std::move(gpu_memory_buffer_manager)),
       image_factory_(image_factory),
@@ -106,15 +110,10 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     gpu::SurfaceHandle surface_handle,
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
-    ExternalBeginFrameSource* external_begin_frame_source,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source,
+    BeginFrameSource* begin_frame_source,
+    UpdateVSyncParametersCallback update_vsync_callback,
     const RendererSettings& renderer_settings,
     bool send_swap_size_notifications) {
-  BeginFrameSource* begin_frame_source =
-      synthetic_begin_frame_source
-          ? static_cast<BeginFrameSource*>(synthetic_begin_frame_source)
-          : static_cast<BeginFrameSource*>(external_begin_frame_source);
-
   // TODO(penghuang): Merge two output surfaces into one when GLRenderer and
   // software compositor is removed.
   std::unique_ptr<OutputSurface> output_surface;
@@ -122,16 +121,46 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
-        CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client));
-  } else if (renderer_settings.use_skia_deferred_display_list) {
+        CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client),
+        std::move(update_vsync_callback));
+  } else if (renderer_settings.use_skia_renderer ||
+             renderer_settings.use_skia_renderer_non_ddl) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
-    // TODO(penghuang): Support DDL for all platforms.
+    // TODO(penghuang): Support SkiaRenderer for all platforms.
     NOTIMPLEMENTED();
     return nullptr;
 #else
-    output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-        gpu_service_impl_, surface_handle, synthetic_begin_frame_source,
-        renderer_settings.show_overdraw_feedback);
+    if (renderer_settings.use_skia_renderer_non_ddl) {
+      DCHECK_EQ(gl::GetGLImplementation(), gl::kGLImplementationEGLGLES2)
+          << "SkiaRendererNonDDL is only supported with GLES2.";
+      auto gl_surface = gpu::ImageTransportSurface::CreateNativeSurface(
+          nullptr, surface_handle, gl::GLSurfaceFormat());
+      if (!shared_context_state_) {
+        auto gl_share_group = base::MakeRefCounted<gl::GLShareGroup>();
+        auto gl_context = gl::init::CreateGLContext(
+            gl_share_group.get(), gl_surface.get(), gl::GLContextAttribs());
+        gl_context->MakeCurrent(gl_surface.get());
+        shared_context_state_ = base::MakeRefCounted<gpu::SharedContextState>(
+            std::move(gl_share_group), gl_surface, std::move(gl_context),
+            false /* use_virtualized_gl_contexts */, base::DoNothing::Once(),
+            nullptr /* vulkan_context_provider */);
+        shared_context_state_->InitializeGrContext(
+            gpu::GpuDriverBugWorkarounds(), nullptr /* gr_shader_cache */);
+        mailbox_manager_ = gpu::gles2::CreateMailboxManager(
+            gpu_service_impl_->gpu_preferences());
+        DCHECK(mailbox_manager_->UsesSync());
+      }
+      output_surface = std::make_unique<SkiaOutputSurfaceImplNonDDL>(
+          std::move(gl_surface), shared_context_state_, mailbox_manager_.get(),
+          gpu_service_impl_->shared_image_manager(),
+          gpu_service_impl_->sync_point_manager(),
+          true /* need_swapbuffers_ack */);
+
+    } else {
+      output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
+          gpu_service_impl_, surface_handle, std::move(update_vsync_callback),
+          renderer_settings);
+    }
     skia_output_surface = static_cast<SkiaOutputSurface*>(output_surface.get());
 #endif
   } else {
@@ -142,49 +171,56 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     // Retry creating and binding |context_provider| on transient failures.
     gpu::ContextResult context_result = gpu::ContextResult::kTransientFailure;
     while (context_result != gpu::ContextResult::kSuccess) {
-#if defined(OS_ANDROID)
-      gpu::SharedMemoryLimits memory_limits =
-          gpu::SharedMemoryLimits::ForDisplayCompositor(
-              renderer_settings.initial_screen_size);
-#else
-      gpu::SharedMemoryLimits memory_limits =
-          gpu::SharedMemoryLimits::ForDisplayCompositor();
-#endif
+      // We are about to exit the GPU process so don't try to create a context.
+      // It will be recreated after the GPU process restarts. The same check
+      // also happens on the GPU thread before the context gets initialized
+      // there. If GPU process starts to exit after this check but before
+      // context initialization we'll encounter a transient error, loop and hit
+      // this check again.
+      if (gpu_channel_manager_delegate_->IsExiting())
+        return nullptr;
+
       context_provider = base::MakeRefCounted<VizProcessContextProvider>(
           task_executor_, surface_handle, gpu_memory_buffer_manager_.get(),
-          image_factory_, gpu_channel_manager_delegate_, memory_limits,
-          renderer_settings.requires_alpha_channel);
+          image_factory_, gpu_channel_manager_delegate_, renderer_settings);
       context_result = context_provider->BindToCurrentThread();
 
       if (IsFatalOrSurfaceFailure(context_result)) {
 #if defined(OS_ANDROID)
         display_client->OnFatalOrSurfaceContextCreationFailure(context_result);
-#endif
+#elif defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
+        // TODO(kylechar): Chrome OS can't disable GPU compositing. This needs
+        // to be handled similar to Android.
+        CHECK(false);
+#else
         gpu_service_impl_->DisableGpuCompositing();
+#endif
+
         return nullptr;
       }
     }
 
     if (surface_handle == gpu::kNullSurfaceHandle) {
       output_surface = std::make_unique<GLOutputSurfaceOffscreen>(
-          std::move(context_provider), synthetic_begin_frame_source);
+          std::move(context_provider), std::move(update_vsync_callback));
     } else if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
       output_surface = std::make_unique<GLOutputSurfaceOzone>(
           std::move(context_provider), surface_handle,
-          synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
-          GL_TEXTURE_2D, GL_BGRA_EXT);
+          std::move(update_vsync_callback), gpu_memory_buffer_manager_.get(),
+          renderer_settings.overlay_strategies);
 #elif defined(OS_MACOSX)
       output_surface = std::make_unique<GLOutputSurfaceMac>(
           std::move(context_provider), surface_handle,
-          synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
+          std::move(update_vsync_callback), gpu_memory_buffer_manager_.get(),
           renderer_settings.allow_overlays);
 #elif defined(OS_ANDROID)
-      // TODO(khushalsagar): Use RGB_565 if specified by context provider.
-      auto buffer_format = gfx::BufferFormat::RGBA_8888;
+      auto buffer_format = context_provider->UseRGB565PixelFormat()
+                               ? gfx::BufferFormat::BGR_565
+                               : gfx::BufferFormat::RGBA_8888;
       output_surface = std::make_unique<GLOutputSurfaceBufferQueueAndroid>(
           std::move(context_provider), surface_handle,
-          synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
+          std::move(update_vsync_callback), gpu_memory_buffer_manager_.get(),
           buffer_format);
 #else
       NOTREACHED();
@@ -199,14 +235,14 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
           capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
                                      use_overlays_for_sw_protected_video);
       output_surface = std::make_unique<GLOutputSurfaceWin>(
-          std::move(context_provider), synthetic_begin_frame_source,
+          std::move(context_provider), std::move(update_vsync_callback),
           use_overlays);
 #elif defined(OS_ANDROID)
       output_surface = std::make_unique<GLOutputSurfaceAndroid>(
-          std::move(context_provider), synthetic_begin_frame_source);
+          std::move(context_provider), std::move(update_vsync_callback));
 #else
       output_surface = std::make_unique<GLOutputSurface>(
-          std::move(context_provider), synthetic_begin_frame_source);
+          std::move(context_provider), std::move(update_vsync_callback));
 #endif
     }
   }
@@ -239,25 +275,8 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
     return std::make_unique<SoftwareOutputDevice>();
 
 #if defined(OS_WIN)
-  HWND child_hwnd;
-  auto device = CreateSoftwareOutputDeviceWinGpu(
-      surface_handle, &output_device_backing_, display_client, &child_hwnd);
-
-  // If |child_hwnd| isn't null then a new child HWND was created.
-  if (child_hwnd) {
-    if (gpu_channel_manager_delegate_) {
-      // Send an IPC to browser process for SetParent().
-      gpu_channel_manager_delegate_->SendCreatedChildWindow(surface_handle,
-                                                            child_hwnd);
-    } else {
-      // We are already in the browser process.
-      gfx::RenderingWindowManager::GetInstance()->RegisterChild(
-          surface_handle, child_hwnd,
-          /*expected_child_process_id=*/::GetCurrentProcessId());
-    }
-  }
-
-  return device;
+  return CreateSoftwareOutputDeviceWinGpu(
+      surface_handle, &output_device_backing_, display_client);
 #elif defined(OS_MACOSX)
   return std::make_unique<SoftwareOutputDeviceMac>(task_runner_);
 #elif defined(OS_ANDROID)
@@ -267,10 +286,13 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
 #elif defined(USE_OZONE)
   ui::SurfaceFactoryOzone* factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+  std::unique_ptr<ui::PlatformWindowSurface> platform_window_surface =
+      factory->CreatePlatformWindowSurface(surface_handle);
   std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
       factory->CreateCanvasForWidget(surface_handle);
   CHECK(surface_ozone);
-  return std::make_unique<SoftwareOutputDeviceOzone>(std::move(surface_ozone));
+  return std::make_unique<SoftwareOutputDeviceOzone>(
+      std::move(platform_window_surface), std::move(surface_ozone));
 #elif defined(USE_X11)
   return std::make_unique<SoftwareOutputDeviceX11>(surface_handle);
 #endif

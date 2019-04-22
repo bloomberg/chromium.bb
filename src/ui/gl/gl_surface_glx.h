@@ -78,7 +78,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
               ColorSpace color_space,
               bool has_alpha) override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
   bool SupportsPresentationCallback() override;
@@ -90,12 +90,10 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
                                 int y,
                                 int width,
                                 int height,
-                                const PresentationCallback& callback) override;
+                                PresentationCallback callback) override;
   bool OnMakeCurrent(GLContext* context) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   void SetVSyncEnabled(bool enabled) override;
-
-  VisualID GetVisualID() const { return visual_id_; }
 
  protected:
   ~NativeViewGLSurfaceGLX() override;
@@ -127,7 +125,6 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
 
   GLXFBConfig config_;
   gfx::Size size_;
-  VisualID visual_id_;
 
   bool has_swapped_buffers_;
 
@@ -147,7 +144,7 @@ class GL_EXPORT UnmappedNativeViewGLSurfaceGLX : public GLSurfaceGLX {
   bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
   void* GetConfig() override;

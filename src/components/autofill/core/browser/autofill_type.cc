@@ -116,6 +116,7 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
     case USERNAME:
       return USERNAME_FIELD;
 
+    case PRICE:
     case SEARCH_TERM:
       return UNFILLABLE;
 
@@ -774,10 +775,12 @@ std::string AutofillType::ServerFieldTypeToString(ServerFieldType type) {
       return "CONFIRMATION_PASSWORD";
     case SEARCH_TERM:
       return "SEARCH_TERM";
-
+    case PRICE:
+      return "PRICE";
+    case NOT_PASSWORD:
+      return "NOT_PASSWORD";
     case AMBIGUOUS_TYPE:
       return "AMBIGUOUS_TYPE";
-
     case MAX_VALID_FIELD_TYPE:
       return std::string();
   }

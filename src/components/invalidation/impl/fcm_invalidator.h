@@ -23,7 +23,7 @@ namespace syncer {
 
 class FCMSyncNetworkChannel;
 
-// This class inplements the Invalidator interface and serves as a
+// This class implements the Invalidator interface and serves as a
 // bridge betwen invalidation Listener and invalidationr Service.
 class FCMInvalidator : public Invalidator,
                        public FCMInvalidationListener::Delegate {
@@ -32,7 +32,8 @@ class FCMInvalidator : public Invalidator,
                  invalidation::IdentityProvider* identity_provider,
                  PrefService* pref_service,
                  network::mojom::URLLoaderFactory* loader_factory,
-                 const ParseJSONCallback& parse_json);
+                 const ParseJSONCallback& parse_json,
+                 const std::string& project_id);
 
   ~FCMInvalidator() override;
 

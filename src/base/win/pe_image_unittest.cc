@@ -156,7 +156,7 @@ TEST(PEImageTest, EnumeratesPE) {
 
 // Tests that we can locate an specific exported symbol, by name and by ordinal.
 TEST(PEImageTest, RetrievesExports) {
-  ScopedNativeLibrary module(FilePath(L"advapi32.dll"));
+  ScopedNativeLibrary module(FilePath(FILE_PATH_LITERAL("advapi32.dll")));
   ASSERT_TRUE(module.is_valid());
 
   PEImage pe(module.get());
@@ -204,7 +204,7 @@ TEST(PEImageTest, ForwardedExport) {
 // Test that we can get debug id out of a module.
 TEST(PEImageTest, GetDebugId) {
   static constexpr char kPdbFileName[] = "advapi32.pdb";
-  ScopedNativeLibrary module(FilePath(L"advapi32.dll"));
+  ScopedNativeLibrary module(FilePath(FILE_PATH_LITERAL("advapi32.dll")));
   ASSERT_TRUE(module.is_valid());
 
   PEImage pe(module.get());

@@ -67,7 +67,7 @@ void UIBaseTestSuite::Initialize() {
   // resources built in. On Android, ui_base_unittests_apk provides the
   // necessary framework.
   ui::ResourceBundle::InitSharedInstanceWithLocale(
-      "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+      "en-US", NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
 #else
   // On other platforms, the (hardcoded) paths for chrome_100_percent.pak and
@@ -82,6 +82,23 @@ void UIBaseTestSuite::Initialize() {
   // later, so use the path created by ui_test_pak.
   base::PathService::Override(ui::DIR_LOCALES, assets_path.AppendASCII("ui"));
 #endif
+
+  base::FilePath dir_resources;
+  bool result;
+#if defined(OS_ANDROID)
+  result =
+      base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &dir_resources);
+#elif defined(OS_MACOSX) || defined(OS_IOS)
+  result = base::PathService::Get(base::DIR_MODULE, &dir_resources);
+#else
+  dir_resources = assets_path;
+  result = true;
+#endif
+  DCHECK(result);
+  base::FilePath ui_base_test_resources_pak =
+      dir_resources.Append(FILE_PATH_LITERAL("ui_base_test_resources.pak"));
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      ui_base_test_resources_pak, ui::SCALE_FACTOR_NONE);
 }
 
 void UIBaseTestSuite::Shutdown() {

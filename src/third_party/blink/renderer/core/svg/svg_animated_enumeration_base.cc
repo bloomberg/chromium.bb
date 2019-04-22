@@ -36,7 +36,7 @@ namespace blink {
 
 SVGAnimatedEnumerationBase::~SVGAnimatedEnumerationBase() = default;
 
-void SVGAnimatedEnumerationBase::setBaseVal(unsigned short value,
+void SVGAnimatedEnumerationBase::setBaseVal(uint16_t value,
                                             ExceptionState& exception_state) {
   if (!value) {
     exception_state.ThrowTypeError(

@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/image-decoders/jpeg/jpeg_image_decoder.h"
 
 #include <memory>
+
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -337,7 +338,6 @@ static void ProgressMonitor(j_common_ptr info) {
 
 class JPEGImageReader final {
   USING_FAST_MALLOC(JPEGImageReader);
-  WTF_MAKE_NONCOPYABLE(JPEGImageReader);
 
  public:
   JPEGImageReader(JPEGImageDecoder* decoder)
@@ -807,6 +807,8 @@ class JPEGImageReader final {
 
   JSAMPARRAY samples_;
   IntSize uv_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(JPEGImageReader);
 };
 
 void error_exit(
@@ -920,21 +922,31 @@ bool JPEGImageDecoder::ShouldGenerateAllSizes() const {
 }
 
 bool JPEGImageDecoder::CanDecodeToYUV() {
+  // TODO(crbug.com/919627): Right now |decode_to_yuv_for_testing_| is false by
+  // default and is only set true for unit tests. Remove it once
+  // JPEG YUV decoding is finished and YUV decoding doesn't need to be disabled
+  // outside of tests.
+  //
+  // Returning false here is a bit deceptive because the JPEG decoder does
+  // support YUV. But the rest of the infrastructure at levels above the decoder
+  // is not quite there yet to handle the resulting JPEG YUV data,
+  // so for now we disable that path.
+  //
   // Calling IsSizeAvailable() ensures the reader is created and the output
   // color space is set.
-  return IsSizeAvailable() && reader_->Info()->out_color_space == JCS_YCbCr;
+  return decode_to_yuv_for_testing_ && IsSizeAvailable() &&
+         reader_->Info()->out_color_space == JCS_YCbCr;
 }
 
-bool JPEGImageDecoder::DecodeToYUV() {
-  if (!HasImagePlanes())
-    return false;
+void JPEGImageDecoder::DecodeToYUV() {
+  DCHECK(HasImagePlanes());
+  DCHECK(CanDecodeToYUV());
 
   {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Decode Image",
                  "imageType", "JPEG");
     Decode(false);
   }
-  return !Failed();
 }
 
 void JPEGImageDecoder::SetImagePlanes(

@@ -41,6 +41,46 @@
    "dns_api_endpoint": "argon2021.ct.googleapis.com"
   },
   {
+   "description": "Google 'Xenon2019' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/XyDwqzXL9i2GTjMYkqaEyiRL0Dy9sHq/BTebFdshbvCaXXEh6mjUK0Yy+AsDcI4MpzF1l7Kded2MD5zi420gA==",
+   "url": "ct.googleapis.com/logs/xenon2019/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    0
+   ],
+   "dns_api_endpoint": "xenon2019.ct.googleapis.com"
+  },
+  {
+   "description": "Google 'Xenon2020' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZU75VqjyzSTgFZKAnWg1QeYfFFIRZTMK7q3kWWZsmHhQdrBYnHRZ3OA4kUeUx0JN+xX+dSgt1ruqUhhl7jOvmw==",
+   "url": "ct.googleapis.com/logs/xenon2020/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    0
+   ],
+   "dns_api_endpoint": "xenon2020.ct.googleapis.com"
+  },
+  {
+   "description": "Google 'Xenon2021' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAER+1MInu8Q39BwDZ5Rp9TwXhwm3ktvgJzpk/r7dDgGk7ZacMm3ljfcoIvP1E72T8jvyLT1bvdapylajZcTH6W5g==",
+   "url": "ct.googleapis.com/logs/xenon2021/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    0
+   ],
+   "dns_api_endpoint": "xenon2021.ct.googleapis.com"
+  },
+  {
+   "description": "Google 'Xenon2022' log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+WS9FSxAYlCVEzg8xyGwOrmPonoV14nWjjETAIdZvLvukPzIWBMKv6tDNlQjpIHNrUcUt1igRPpqoKDXw2MeKw==",
+   "url": "ct.googleapis.com/logs/xenon2022/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    0
+   ],
+   "dns_api_endpoint": "xenon2022.ct.googleapis.com"
+  },
+  {
    "description": "Google 'Aviator' log",
    "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE1/TMabLkDpCjiupacAlP7xNi0I1JYP8bQFAHDG1xhtolSY1l4QgNRzRrvSe8liE+NPWHdjGxfx3JhTsN9x8/6Q==",
    "url": "ct.googleapis.com/aviator/",
@@ -264,6 +304,7 @@
    "operated_by": [
     2
    ],
+   "disqualified_at": 1550275200,
    "dns_api_endpoint": "symantec.ct.googleapis.com"
   },
   {
@@ -274,6 +315,7 @@
    "operated_by": [
     2
    ],
+   "disqualified_at": 1550275200,
    "dns_api_endpoint": "symantec-vega.ct.googleapis.com"
   },
   {
@@ -284,6 +326,7 @@
    "operated_by": [
     2
    ],
+   "disqualified_at": 1550275200,
    "dns_api_endpoint": "symantec-sirius.ct.googleapis.com"
   },
   {
@@ -363,7 +406,7 @@
    "dns_api_endpoint": "startcom1.ct.googleapis.com"
   },
   {
-   "description": "Comodo 'Sabre' CT log",
+   "description": "Sectigo 'Sabre' CT log",
    "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8m/SiQ8/xfiHHqtls9m7FyOMBg4JVZY9CgiixXGz0akvKD6DEL8S0ERmFe9U4ZiA0M4kbT5nmuk3I85Sk4bagA==",
    "url": "sabre.ct.comodo.com/",
    "maximum_merge_delay": 86400,
@@ -373,7 +416,7 @@
    "dns_api_endpoint": "comodo-sabre.ct.googleapis.com"
   },
   {
-   "description": "Comodo 'Mammoth' CT log",
+   "description": "Sectigo 'Mammoth' CT log",
    "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7+R9dC4VFbbpuyOL+yy14ceAmEf7QGlo/EmtYU6DRzwat43f/3swtLr/L8ugFOOt1YU/RFmMjGCL17ixv66MZw==",
    "url": "mammoth.ct.comodo.com/",
    "maximum_merge_delay": 86400,
@@ -421,7 +464,7 @@
    "id": 8
   },
   {
-   "name": "Comodo CA Limited",
+   "name": "Sectigo",
    "id": 9
   }
  ]

@@ -8,18 +8,18 @@
 
 #include <map>
 #include <set>
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/containers/hash_tables.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
@@ -100,7 +100,7 @@ bool IsChildEntryKey(const leveldb::Slice& key) {
 bool IsCacheEntryKey(const leveldb::Slice& key) {
   // A cache entry key should end with |kDBKeyDelimeter + kCacheEntryKeySuffix|.
   const leveldb::Slice expected_suffix(kCacheEntryKeySuffix,
-                                       arraysize(kCacheEntryKeySuffix) - 1);
+                                       base::size(kCacheEntryKeySuffix) - 1);
   if (key.size() < 1 + expected_suffix.size() ||
       key[key.size() - expected_suffix.size() - 1] != kDBKeyDelimeter)
     return false;
@@ -114,7 +114,7 @@ bool IsCacheEntryKey(const leveldb::Slice& key) {
 std::string GetIdFromCacheEntryKey(const leveldb::Slice& key) {
   DCHECK(IsCacheEntryKey(key));
   // Drop the suffix |kDBKeyDelimeter + kCacheEntryKeySuffix| from the key.
-  const size_t kSuffixLength = arraysize(kCacheEntryKeySuffix) - 1;
+  const size_t kSuffixLength = base::size(kCacheEntryKeySuffix) - 1;
   const int id_length = key.size() - 1 - kSuffixLength;
   return std::string(key.data(), id_length);
 }
@@ -134,7 +134,7 @@ bool IsIdEntryKey(const leveldb::Slice& key) {
   // A resource-ID-to-local-ID entry key should start with
   // |kDBKeyDelimeter + kIdEntryKeyPrefix + kDBKeyDelimeter|.
   const leveldb::Slice expected_prefix(kIdEntryKeyPrefix,
-                                       arraysize(kIdEntryKeyPrefix) - 1);
+                                       base::size(kIdEntryKeyPrefix) - 1);
   if (key.size() < 2 + expected_prefix.size())
     return false;
   const leveldb::Slice key_substring(key.data() + 1, expected_prefix.size());
@@ -148,7 +148,7 @@ std::string GetResourceIdFromIdEntryKey(const leveldb::Slice& key) {
   DCHECK(IsIdEntryKey(key));
   // Drop the prefix |kDBKeyDelimeter + kIdEntryKeyPrefix + kDBKeyDelimeter|
   // from the key.
-  const size_t kPrefixLength = arraysize(kIdEntryKeyPrefix) - 1;
+  const size_t kPrefixLength = base::size(kIdEntryKeyPrefix) - 1;
   const int offset = kPrefixLength + 2;
   return std::string(key.data() + offset, key.size() - offset);
 }
@@ -514,7 +514,8 @@ bool UpgradeOldDBVersions16To18(leveldb::DB* resource_map) {
 ResourceMetadataStorage::Iterator::Iterator(
     std::unique_ptr<leveldb::Iterator> it)
     : it_(std::move(it)) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(it_);
 
   // Skip the header entry.
@@ -526,11 +527,13 @@ ResourceMetadataStorage::Iterator::Iterator(
 }
 
 ResourceMetadataStorage::Iterator::~Iterator() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 }
 
 bool ResourceMetadataStorage::Iterator::IsAtEnd() const {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return !it_->Valid();
 }
 
@@ -539,13 +542,15 @@ std::string ResourceMetadataStorage::Iterator::GetID() const {
 }
 
 const ResourceEntry& ResourceMetadataStorage::Iterator::GetValue() const {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(!IsAtEnd());
   return entry_;
 }
 
 void ResourceMetadataStorage::Iterator::Advance() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(!IsAtEnd());
 
   for (it_->Next() ; it_->Valid(); it_->Next()) {
@@ -558,14 +563,16 @@ void ResourceMetadataStorage::Iterator::Advance() {
 }
 
 bool ResourceMetadataStorage::Iterator::HasError() const {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return !it_->status().ok();
 }
 
 // static
 bool ResourceMetadataStorage::UpgradeOldDB(
     const base::FilePath& directory_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   const base::FilePath resource_map_path =
       directory_path.Append(kResourceMapDBName);
@@ -658,7 +665,8 @@ ResourceMetadataStorage::ResourceMetadataStorage(
 }
 
 bool ResourceMetadataStorage::Initialize() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   resource_map_.reset();
 
@@ -826,7 +834,8 @@ void ResourceMetadataStorage::RecoverCacheInfoFromTrashedResourceMap(
 
 FileError ResourceMetadataStorage::SetLargestChangestamp(
     int64_t largest_changestamp) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   ResourceMetadataHeader header;
   FileError error = GetHeader(&header);
@@ -840,7 +849,8 @@ FileError ResourceMetadataStorage::SetLargestChangestamp(
 
 FileError ResourceMetadataStorage::GetLargestChangestamp(
     int64_t* largest_changestamp) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   ResourceMetadataHeader header;
   FileError error = GetHeader(&header);
   if (error != FILE_ERROR_OK) {
@@ -853,7 +863,8 @@ FileError ResourceMetadataStorage::GetLargestChangestamp(
 
 FileError ResourceMetadataStorage::GetStartPageToken(
     std::string* start_page_token) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   ResourceMetadataHeader header;
   FileError error = GetHeader(&header);
   if (error != FILE_ERROR_OK) {
@@ -866,7 +877,8 @@ FileError ResourceMetadataStorage::GetStartPageToken(
 
 FileError ResourceMetadataStorage::SetStartPageToken(
     const std::string& start_page_token) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   ResourceMetadataHeader header;
   FileError error = GetHeader(&header);
@@ -879,7 +891,8 @@ FileError ResourceMetadataStorage::SetStartPageToken(
 }
 
 FileError ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   const std::string& id = entry.local_id();
   DCHECK(!id.empty());
@@ -932,7 +945,8 @@ FileError ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
 
 FileError ResourceMetadataStorage::GetEntry(const std::string& id,
                                             ResourceEntry* out_entry) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(!id.empty());
 
   std::string serialized_entry;
@@ -947,7 +961,8 @@ FileError ResourceMetadataStorage::GetEntry(const std::string& id,
 }
 
 FileError ResourceMetadataStorage::RemoveEntry(const std::string& id) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(!id.empty());
 
   ResourceEntry entry;
@@ -975,7 +990,8 @@ FileError ResourceMetadataStorage::RemoveEntry(const std::string& id) {
 
 std::unique_ptr<ResourceMetadataStorage::Iterator>
 ResourceMetadataStorage::GetIterator() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::unique_ptr<leveldb::Iterator> it(
       resource_map_->NewIterator(leveldb::ReadOptions()));
@@ -985,7 +1001,8 @@ ResourceMetadataStorage::GetIterator() {
 FileError ResourceMetadataStorage::GetChild(const std::string& parent_id,
                                             const std::string& child_name,
                                             std::string* child_id) const {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(!parent_id.empty());
   DCHECK(!child_name.empty());
 
@@ -1000,7 +1017,8 @@ FileError ResourceMetadataStorage::GetChild(const std::string& parent_id,
 FileError ResourceMetadataStorage::GetChildren(
     const std::string& parent_id,
     std::vector<std::string>* children) const {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(!parent_id.empty());
 
   // Iterate over all entries with keys starting with |parent_id|.
@@ -1018,7 +1036,8 @@ FileError ResourceMetadataStorage::GetChildren(
 FileError ResourceMetadataStorage::GetIdByResourceId(
     const std::string& resource_id,
     std::string* out_id) const {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(!resource_id.empty());
 
   const leveldb::Status status = resource_map_->Get(
@@ -1034,7 +1053,8 @@ ResourceMetadataStorage::RecoveredCacheInfo::RecoveredCacheInfo()
 ResourceMetadataStorage::RecoveredCacheInfo::~RecoveredCacheInfo() = default;
 
 ResourceMetadataStorage::~ResourceMetadataStorage() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 }
 
 void ResourceMetadataStorage::DestroyOnBlockingPool() {
@@ -1057,7 +1077,8 @@ std::string ResourceMetadataStorage::GetChildEntryKey(
 
 FileError ResourceMetadataStorage::PutHeader(
     const ResourceMetadataHeader& header) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::string serialized_header;
   if (!header.SerializeToString(&serialized_header)) {
@@ -1074,7 +1095,8 @@ FileError ResourceMetadataStorage::PutHeader(
 
 FileError ResourceMetadataStorage::GetHeader(
     ResourceMetadataHeader* header) const {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::string serialized_header;
   const leveldb::Status status = resource_map_->Get(
@@ -1088,7 +1110,8 @@ FileError ResourceMetadataStorage::GetHeader(
 }
 
 bool ResourceMetadataStorage::CheckValidity() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Perform read with checksums verification enabled.
   leveldb::ReadOptions options;
@@ -1124,7 +1147,7 @@ bool ResourceMetadataStorage::CheckValidity() {
   }
 
   // First scan. Remember relationships between IDs.
-  typedef base::hash_map<std::string, std::string> KeyToIdMapping;
+  typedef std::unordered_map<std::string, std::string> KeyToIdMapping;
   KeyToIdMapping local_id_to_resource_id_map;
   KeyToIdMapping child_key_to_local_id_map;
   std::set<std::string> resource_entries;

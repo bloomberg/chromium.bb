@@ -7,6 +7,8 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -316,7 +318,7 @@ TEST_P(EmbeddedTestServerTest, ConnectionListenerAccept) {
 
   std::unique_ptr<StreamSocket> socket =
       ClientSocketFactory::GetDefaultFactory()->CreateTransportClientSocket(
-          address_list, NULL, &net_log, NetLogSource());
+          address_list, nullptr, &net_log, NetLogSource());
   TestCompletionCallback callback;
   ASSERT_THAT(callback.GetResult(socket->Connect(callback.callback())), IsOk());
 
@@ -423,9 +425,9 @@ class InfiniteResponse : public BasicHttpResponse {
   void SendInfinite(const SendBytesCallback& send) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(send, "echo",
-                   base::Bind(&InfiniteResponse::SendInfinite,
-                              weak_ptr_factory_.GetWeakPtr(), send)));
+        base::BindOnce(send, "echo",
+                       base::Bind(&InfiniteResponse::SendInfinite,
+                                  weak_ptr_factory_.GetWeakPtr(), send)));
   }
 
   base::WeakPtrFactory<InfiniteResponse> weak_ptr_factory_;
@@ -460,41 +462,43 @@ TEST_P(EmbeddedTestServerTest, CloseDuringWrite) {
   cancel_delegate.WaitUntilDone();
 }
 
-struct CertificateValuesEntry {
+const struct CertificateValuesEntry {
   const EmbeddedTestServer::ServerCertificate server_cert;
   const bool is_expired;
   const char* common_name;
-  const char* root;
-};
-
-const CertificateValuesEntry kCertificateValuesEntry[] = {
-    {EmbeddedTestServer::CERT_OK, false, "127.0.0.1", "Test Root CA"},
+  const char* issuer_common_name;
+  size_t certs_count;
+} kCertificateValuesEntry[] = {
+    {EmbeddedTestServer::CERT_OK, false, "127.0.0.1", "Test Root CA", 1},
+    {EmbeddedTestServer::CERT_OK_BY_INTERMEDIATE, false, "127.0.0.1",
+     "Test Intermediate CA", 2},
     {EmbeddedTestServer::CERT_MISMATCHED_NAME, false, "127.0.0.1",
-     "Test Root CA"},
+     "Test Root CA", 1},
     {EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN, false, "localhost",
-     "Test Root CA"},
-    {EmbeddedTestServer::CERT_EXPIRED, true, "127.0.0.1", "Test Root CA"},
+     "Test Root CA", 1},
+    {EmbeddedTestServer::CERT_EXPIRED, true, "127.0.0.1", "Test Root CA", 1},
 };
 
 TEST_P(EmbeddedTestServerTest, GetCertificate) {
   if (GetParam() != EmbeddedTestServer::TYPE_HTTPS)
     return;
 
-  for (const auto& certEntry : kCertificateValuesEntry) {
-    SCOPED_TRACE(certEntry.server_cert);
-    server_->SetSSLConfig(certEntry.server_cert);
+  for (const auto& cert_entry : kCertificateValuesEntry) {
+    SCOPED_TRACE(cert_entry.server_cert);
+    server_->SetSSLConfig(cert_entry.server_cert);
     scoped_refptr<X509Certificate> cert = server_->GetCertificate();
     ASSERT_TRUE(cert);
-    EXPECT_EQ(cert->HasExpired(), certEntry.is_expired);
-    EXPECT_EQ(cert->subject().common_name, certEntry.common_name);
-    EXPECT_EQ(cert->issuer().common_name, certEntry.root);
+    EXPECT_EQ(cert->HasExpired(), cert_entry.is_expired);
+    EXPECT_EQ(cert->subject().common_name, cert_entry.common_name);
+    EXPECT_EQ(cert->issuer().common_name, cert_entry.issuer_common_name);
+    EXPECT_EQ(cert->intermediate_buffers().size(), cert_entry.certs_count - 1);
   }
 }
 
-INSTANTIATE_TEST_CASE_P(EmbeddedTestServerTestInstantiation,
-                        EmbeddedTestServerTest,
-                        testing::Values(EmbeddedTestServer::TYPE_HTTP,
-                                        EmbeddedTestServer::TYPE_HTTPS));
+INSTANTIATE_TEST_SUITE_P(EmbeddedTestServerTestInstantiation,
+                         EmbeddedTestServerTest,
+                         testing::Values(EmbeddedTestServer::TYPE_HTTP,
+                                         EmbeddedTestServer::TYPE_HTTPS));
 
 // Below test exercises EmbeddedTestServer's ability to cope with the situation
 // where there is no MessageLoop available on the thread at EmbeddedTestServer
@@ -586,7 +590,7 @@ TEST_P(EmbeddedTestServerThreadingTest, RunTest) {
   base::PlatformThread::Join(thread_handle);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     EmbeddedTestServerThreadingTestInstantiation,
     EmbeddedTestServerThreadingTest,
     testing::Combine(testing::Bool(),

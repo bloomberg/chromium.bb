@@ -97,7 +97,6 @@ void AndroidContentSuggestionsNotifier::UnregisterChannel() {
 
 static void JNI_ContentSuggestionsNotifier_RecordNotificationOptOut(
     JNIEnv* env,
-    const JavaParamRef<jclass>& class_object,
     jint reason) {
   RecordContentSuggestionsNotificationOptOut(
       static_cast<ContentSuggestionsNotificationOptOut>(reason));
@@ -105,7 +104,6 @@ static void JNI_ContentSuggestionsNotifier_RecordNotificationOptOut(
 
 static void JNI_ContentSuggestionsNotifier_RecordNotificationAction(
     JNIEnv* env,
-    const JavaParamRef<jclass>& class_object,
     jint action) {
   RecordContentSuggestionsNotificationAction(
       static_cast<ContentSuggestionsNotificationAction>(action));
@@ -113,7 +111,6 @@ static void JNI_ContentSuggestionsNotifier_RecordNotificationAction(
 
 static void JNI_ContentSuggestionsNotifier_ReceiveFlushedMetrics(
     JNIEnv* env,
-    const JavaParamRef<jclass>& class_object,
     jint tap_count,
     jint dismissal_count,
     jint hide_deadline_count,

@@ -16,7 +16,6 @@
 
 // independent from idl_parser, since this code is not needed for most clients
 #include <cassert>
-#include <unordered_map>
 
 #include "flatbuffers/code_generators.h"
 #include "flatbuffers/flatbuffers.h"
@@ -52,11 +51,11 @@ static const char *keywords[] = {
 // and tables) and output them to a single file.
 class DartGenerator : public BaseGenerator {
  public:
-  typedef std::unordered_map<std::string, std::string> namespace_code_map;
+  typedef std::map<std::string, std::string> namespace_code_map;
 
   DartGenerator(const Parser &parser, const std::string &path,
                 const std::string &file_name)
-      : BaseGenerator(parser, path, file_name, "", "."){};
+      : BaseGenerator(parser, path, file_name, "", ".") {}
   // Iterate through all definitions we haven't generate code for (enums,
   // structs, and tables) and output them to a single file.
   bool generate() {

@@ -26,13 +26,14 @@ protected:
         return SkISize::Make(2*kSize, 2*kSize);
     }
 
-    void onDraw(SkCanvas* canvas) override {
+    DrawResult onDraw(SkCanvas* canvas, SkString* errorMsg) override {
         // Create image.
         const char* path = "images/mandrill_512_q075.jpg";
         sk_sp<SkImage> image = GetResourceAsImage(path);
         if (!image) {
-            SkDebugf("Failure: Is the resource path set properly?");
-            return;
+            *errorMsg = "Couldn't load images/mandrill_512_q075.jpg. "
+                        "Did you forget to set the resource path?";
+            return DrawResult::kFail;
         }
 
         // Create matching bitmap.
@@ -62,6 +63,7 @@ protected:
         srgbCanvas.translate(SkScalar(kSize), 0.0f);
         srgbCanvas.drawBitmap(bitmap, 0.0f, 0.0f, nullptr);
         canvas->drawBitmap(srgbBMCanvas, 0.0f, 0.0f, nullptr);
+        return DrawResult::kOk;
     }
 
 private:
@@ -72,7 +74,6 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new BitmapImageGM; }
-static GMRegistry reg(MyFactory);
+DEF_GM( return new BitmapImageGM; )
 
 }

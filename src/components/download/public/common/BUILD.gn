@@ -15,6 +15,9 @@ config("components_download_implementation") {
 
 component("public") {
   sources = [
+    "all_download_event_notifier.h",
+    "auto_resumption_handler.cc",
+    "auto_resumption_handler.h",
     "base_file.h",
     "download_content.h",
     "download_create_info.h",
@@ -36,6 +39,7 @@ component("public") {
     "download_item_impl_delegate.h",
     "download_job.h",
     "download_job_factory.h",
+    "download_path_reservation_tracker.h",
     "download_request_handle_interface.h",
     "download_response_handler.h",
     "download_save_info.cc",
@@ -56,6 +60,8 @@ component("public") {
     "parallel_download_configs.h",
     "rate_estimator.h",
     "resume_mode.h",
+    "simple_download_manager.h",
+    "simple_download_manager_coordinator.h",
     "stream_handle_input_stream.h",
     "url_download_handler_factory.h",
     "url_download_request_handle.h",
@@ -65,6 +71,9 @@ component("public") {
 
   public_deps = [
     ":interfaces",
+    "//components/download/network",
+    "//components/download/public/background_service:public",
+    "//services/network/public/cpp",
   ]
 
   deps = [
@@ -91,7 +100,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
-      "//third_party/android_deps:android_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
   }
 
@@ -133,5 +142,29 @@ source_set("test_support") {
     "//net",
     "//testing/gmock",
     "//url",
+  ]
+
+  if (is_android) {
+    deps = [
+      "//components/download/internal/common:internal_java",
+    ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "auto_resumption_handler_unittest.cc",
+  ]
+
+  deps = [
+    ":public",
+    ":test_support",
+    "//base/test:test_support",
+    "//components/download/public/task:test_support",
+    "//services/network:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

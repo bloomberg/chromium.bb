@@ -6,7 +6,6 @@ Test EventSource with non-HTTP protocol schemes in the URL.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS es.readyState is EventSource.CLOSED
 PASS es.readyState is EventSource.CLOSED
 PASS es.readyState is EventSource.CLOSED

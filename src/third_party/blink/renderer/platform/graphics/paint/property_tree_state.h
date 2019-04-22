@@ -17,31 +17,61 @@ class PLATFORM_EXPORT PropertyTreeState {
   USING_FAST_MALLOC(PropertyTreeState);
 
  public:
-  PropertyTreeState(const TransformPaintPropertyNode* transform,
-                    const ClipPaintPropertyNode* clip,
-                    const EffectPaintPropertyNode* effect)
-      : transform_(transform), clip_(clip), effect_(effect) {}
+  PropertyTreeState(const TransformPaintPropertyNode& transform,
+                    const ClipPaintPropertyNode& clip,
+                    const EffectPaintPropertyNode& effect)
+      : transform_(&transform), clip_(&clip), effect_(&effect) {
+    DCHECK(transform_);
+    DCHECK(clip_);
+    DCHECK(effect_);
+  }
+
+  static const PropertyTreeState& Root();
+
+  // This is used as the initial value of uninitialized PropertyTreeState.
+  // Access to the nodes are not allowed.
+  static const PropertyTreeState& Uninitialized();
+
+  // Returns true if all fields are initialized.
+  bool IsInitialized() const {
+    return transform_ != Uninitialized().transform_ &&
+           clip_ != Uninitialized().clip_ && effect_ != Uninitialized().effect_;
+  }
 
   // Returns an unaliased property tree state.
   PropertyTreeState Unalias() const;
 
-  const TransformPaintPropertyNode* Transform() const { return transform_; }
-  void SetTransform(const TransformPaintPropertyNode* node) {
-    transform_ = node;
+  const TransformPaintPropertyNode& Transform() const {
+    DCHECK_NE(transform_, Uninitialized().transform_);
+    return *transform_;
+  }
+  void SetTransform(const TransformPaintPropertyNode& node) {
+    transform_ = &node;
+    DCHECK(transform_);
   }
 
-  const ClipPaintPropertyNode* Clip() const { return clip_; }
-  void SetClip(const ClipPaintPropertyNode* node) { clip_ = node; }
+  const ClipPaintPropertyNode& Clip() const {
+    DCHECK_NE(clip_, Uninitialized().clip_);
+    return *clip_;
+  }
+  void SetClip(const ClipPaintPropertyNode& node) {
+    clip_ = &node;
+    DCHECK(clip_);
+  }
 
-  const EffectPaintPropertyNode* Effect() const { return effect_; }
-  void SetEffect(const EffectPaintPropertyNode* node) { effect_ = node; }
-
-  static const PropertyTreeState& Root();
+  const EffectPaintPropertyNode& Effect() const {
+    DCHECK_NE(effect_, Uninitialized().effect_);
+    return *effect_;
+  }
+  void SetEffect(const EffectPaintPropertyNode& node) {
+    effect_ = &node;
+    DCHECK(effect_);
+  }
 
   void ClearChangedToRoot() const {
-    Transform()->ClearChangedToRoot();
-    Clip()->ClearChangedToRoot();
-    Effect()->ClearChangedToRoot();
+    Transform().ClearChangedToRoot();
+    Clip().ClearChangedToRoot();
+    Effect().ClearChangedToRoot();
   }
 
   String ToString() const;
@@ -54,20 +84,22 @@ class PLATFORM_EXPORT PropertyTreeState {
   // ancestors.
   size_t CacheMemoryUsageInBytes() const;
 
+  bool operator==(const PropertyTreeState& other) const {
+    return transform_ == other.transform_ && clip_ == other.clip_ &&
+           effect_ == other.effect_;
+  }
+  bool operator!=(const PropertyTreeState& other) const {
+    return !(*this == other);
+  }
+
  private:
+  // For Uninitialized().
+  PropertyTreeState();
+
   const TransformPaintPropertyNode* transform_;
   const ClipPaintPropertyNode* clip_;
   const EffectPaintPropertyNode* effect_;
 };
-
-inline bool operator==(const PropertyTreeState& a, const PropertyTreeState& b) {
-  return a.Transform() == b.Transform() && a.Clip() == b.Clip() &&
-         a.Effect() == b.Effect();
-}
-
-inline bool operator!=(const PropertyTreeState& a, const PropertyTreeState& b) {
-  return !(a == b);
-}
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
                                          const PropertyTreeState&);

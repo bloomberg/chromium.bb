@@ -181,11 +181,12 @@ void MultiBufferReader::NotifyAvailableRange(
   if (!progress_callback_.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(progress_callback_, static_cast<int64_t>(range.begin)
-                                           << multibuffer_->block_size_shift(),
-                   (static_cast<int64_t>(range.end)
-                    << multibuffer_->block_size_shift()) +
-                       multibuffer_->UncommittedBytesAt(range.end)));
+        base::BindOnce(progress_callback_,
+                       static_cast<int64_t>(range.begin)
+                           << multibuffer_->block_size_shift(),
+                       (static_cast<int64_t>(range.end)
+                        << multibuffer_->block_size_shift()) +
+                           multibuffer_->UncommittedBytesAt(range.end)));
   }
 }
 

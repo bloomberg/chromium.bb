@@ -12,9 +12,7 @@ using base::android::JavaParamRef;
 
 namespace content {
 
-jboolean JNI_UseZoomForDSFPolicy_IsUseZoomForDSFEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+jboolean JNI_UseZoomForDSFPolicy_IsUseZoomForDSFEnabled(JNIEnv* env) {
   return IsUseZoomForDSFEnabled();
 }
 

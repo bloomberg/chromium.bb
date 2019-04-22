@@ -24,7 +24,7 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
-  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
   content::QuotaPermissionContext* CreateQuotaPermissionContext() override;
@@ -65,6 +65,9 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
+
+  std::string GetProduct() const override;
+  std::string GetUserAgent() const override;
 
  private:
   std::unique_ptr<base::Value> GetBrowserServiceManifestOverlay();

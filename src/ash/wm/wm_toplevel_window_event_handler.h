@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/window_move_client.h"
 
@@ -38,7 +39,8 @@ namespace wm {
 // EventHandler.
 class ASH_EXPORT WmToplevelWindowEventHandler
     : public WindowTreeHostManager::Observer,
-      public aura::WindowObserver {
+      public aura::WindowObserver,
+      public display::DisplayObserver {
  public:
   // Describes what triggered ending the drag.
   enum class DragResult {
@@ -55,18 +57,25 @@ class ASH_EXPORT WmToplevelWindowEventHandler
   WmToplevelWindowEventHandler();
   ~WmToplevelWindowEventHandler() override;
 
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t metrics) override;
+
   void OnKeyEvent(ui::KeyEvent* event);
   void OnMouseEvent(ui::MouseEvent* event, aura::Window* target);
   void OnGestureEvent(ui::GestureEvent* event, aura::Window* target);
 
   // Attempts to start a drag if one is not already in progress. Returns true if
   // successful. |end_closure| is run when the drag completes, including if the
-  // drag is not started.
+  // drag is not started. If |update_gesture_target| is true, the gesture
+  // target is forcefully updated and gesture events are transferred to
+  // new target if any.
   bool AttemptToStartDrag(aura::Window* window,
                           const gfx::Point& point_in_parent,
                           int window_component,
                           ::wm::WindowMoveSource source,
-                          EndClosure end_closure);
+                          EndClosure end_closure,
+                          bool update_gesture_target);
 
   // If there is a drag in progress it is reverted, otherwise does nothing.
   void RevertDrag();

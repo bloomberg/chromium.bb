@@ -30,9 +30,9 @@ class GL_EXPORT GLVisualPickerGLX {
 
   ~GLVisualPickerGLX();
 
-  const XVisualInfo& system_visual() { return system_visual_; };
+  const XVisualInfo& system_visual() { return system_visual_; }
 
-  const XVisualInfo& rgba_visual() { return rgba_visual_; };
+  const XVisualInfo& rgba_visual() { return rgba_visual_; }
 
  private:
   friend struct base::DefaultSingletonTraits<GLVisualPickerGLX>;

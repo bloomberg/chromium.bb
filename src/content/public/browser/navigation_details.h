@@ -68,7 +68,7 @@ struct CONTENT_EXPORT LoadCommittedDetails {
 // Provides the details for a NOTIFICATION_NAV_ENTRY_CHANGED notification.
 struct EntryChangedDetails {
   // The changed navigation entry after it has been updated.
-  const NavigationEntry* changed_entry;
+  NavigationEntry* changed_entry;
 
   // Indicates the current index in the back/forward list of the entry.
   int index;
@@ -76,9 +76,8 @@ struct EntryChangedDetails {
 
 // Details sent for NOTIFY_NAV_LIST_PRUNED.
 struct PrunedDetails {
-  // If true, count items were removed from the front of the list, otherwise
-  // count items were removed from the back of the list.
-  bool from_front;
+  // Index starting which |count| entries were removed.
+  int index;
 
   // Number of items removed.
   int count;

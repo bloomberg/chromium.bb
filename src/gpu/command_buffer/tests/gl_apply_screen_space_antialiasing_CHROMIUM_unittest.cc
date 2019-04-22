@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,6 +46,15 @@ class GLApplyScreenSpaceAntialiasingCHROMIUMTest : public testing::Test {
         GLTestHelper::HasExtension("GL_CHROMIUM_screen_space_antialiasing");
     if (!available_) {
       LOG(INFO) << "GL_CHROMIUM_screen_space_antialiasing not supported. "
+                   "Skipping test...";
+      return;
+    }
+
+    // Antialiasing will be enabled if framebuffer CMAA is enabled via GPU
+    // driver workarounds 'use_framebuffer_cmaa'.
+    available_ = gl_.workarounds().use_framebuffer_cmaa;
+    if (!available_) {
+      LOG(INFO) << "'use_framebuffer_cmaa' workaround not applied. "
                    "Skipping test...";
       return;
     }
@@ -160,7 +170,7 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, InternalFormat) {
 
   GLint formats[] = {GL_RGB, GL_RGBA, GL_ALPHA, GL_LUMINANCE,
                      GL_LUMINANCE_ALPHA};
-  for (size_t index = 0; index < arraysize(formats); index++) {
+  for (size_t index = 0; index < base::size(formats); index++) {
     glTexImage2D(GL_TEXTURE_2D, 0, formats[index], 1, 1, 0, formats[index],
                  GL_UNSIGNED_BYTE, nullptr);
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
@@ -380,7 +390,7 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, BasicStatePreservation) {
   }
 
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-};
+}
 
 // Verify that invocation of the extension does not modify the bound
 // texture state.

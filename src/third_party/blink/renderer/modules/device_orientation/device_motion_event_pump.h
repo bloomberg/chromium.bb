@@ -13,11 +13,14 @@
 namespace blink {
 
 class DeviceMotionData;
+class DeviceSensorEntry;
 class PlatformEventController;
 
 class MODULES_EXPORT DeviceMotionEventPump
     : public GarbageCollectedFinalized<DeviceMotionEventPump>,
       public DeviceSensorEventPump {
+  USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionEventPump);
+
  public:
   explicit DeviceMotionEventPump(scoped_refptr<base::SingleThreadTaskRunner>);
   ~DeviceMotionEventPump() override;
@@ -28,7 +31,7 @@ class MODULES_EXPORT DeviceMotionEventPump
   // Note that the returned object is owned by this class.
   DeviceMotionData* LatestDeviceMotionData();
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // DeviceSensorEventPump:
   void SendStartMessage(LocalFrame* frame) override;
@@ -38,9 +41,9 @@ class MODULES_EXPORT DeviceMotionEventPump
   // DeviceSensorEventPump:
   void FireEvent(TimerBase*) override;
 
-  SensorEntry accelerometer_;
-  SensorEntry linear_acceleration_sensor_;
-  SensorEntry gyroscope_;
+  Member<DeviceSensorEntry> accelerometer_;
+  Member<DeviceSensorEntry> linear_acceleration_sensor_;
+  Member<DeviceSensorEntry> gyroscope_;
 
  private:
   friend class DeviceMotionEventPumpTest;

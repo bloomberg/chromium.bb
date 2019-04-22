@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/raster/tile_task.h"
@@ -87,16 +87,16 @@ class GpuImageDecodeCachePerfTest
     }
   }
 
-  LapTimer timer_;
+  base::LapTimer timer_;
   scoped_refptr<TestInProcessContextProvider> context_provider_;
   std::unique_ptr<GpuImageDecodeCache> cache_;
 };
 
-INSTANTIATE_TEST_CASE_P(P,
-                        GpuImageDecodeCachePerfTest,
-                        testing::Values(TestMode::kGpu,
-                                        TestMode::kTransferCache,
-                                        TestMode::kSw));
+INSTANTIATE_TEST_SUITE_P(P,
+                         GpuImageDecodeCachePerfTest,
+                         testing::Values(TestMode::kGpu,
+                                         TestMode::kTransferCache,
+                                         TestMode::kSw));
 
 TEST_P(GpuImageDecodeCachePerfTest, DecodeWithColorConversion) {
   CreateCache(gfx::ColorSpace::CreateXYZD50().ToSkColorSpace());
@@ -121,10 +121,10 @@ TEST_P(GpuImageDecodeCachePerfTest, DecodeWithColorConversion) {
 }
 
 using GpuImageDecodeCachePerfTestNoSw = GpuImageDecodeCachePerfTest;
-INSTANTIATE_TEST_CASE_P(P,
-                        GpuImageDecodeCachePerfTestNoSw,
-                        testing::Values(TestMode::kGpu,
-                                        TestMode::kTransferCache));
+INSTANTIATE_TEST_SUITE_P(P,
+                         GpuImageDecodeCachePerfTestNoSw,
+                         testing::Values(TestMode::kGpu,
+                                         TestMode::kTransferCache));
 
 TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
   // Surface to render into.
@@ -151,7 +151,7 @@ TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
       surface->getCanvas()->drawImageRect(decoded_image.image().get(),
                                           SkRect::MakeWH(1024, 2048),
                                           SkRect::MakeWH(614, 1229), &paint);
-      surface->prepareForExternalIO();
+      surface->flush();
     }
 
     cache_->DrawWithImageFinished(image, decoded_image);

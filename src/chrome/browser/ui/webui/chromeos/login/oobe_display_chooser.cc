@@ -7,6 +7,8 @@
 #include <stdint.h>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -30,7 +32,7 @@ bool TouchSupportAvailable(const display::Display& display) {
 }
 
 // TODO(felixe): More context at crbug.com/738885
-const uint16_t kDeviceIds[] = {0x0457, 0x266e};
+const uint16_t kDeviceIds[] = {0x0457, 0x266e, 0x222a};
 
 // Returns true if |vendor_id| is a valid vendor id that may be made the primary
 // display.
@@ -96,8 +98,9 @@ void OobeDisplayChooser::MoveToTouchDisplay() {
       auto config_properties = ash::mojom::DisplayConfigProperties::New();
       config_properties->set_primary = true;
       cros_display_config_ptr_->SetDisplayProperties(
-          base::Int64ToString(device.target_display_id),
-          std::move(config_properties), base::DoNothing());
+          base::NumberToString(device.target_display_id),
+          std::move(config_properties), ash::mojom::DisplayConfigSource::kUser,
+          base::DoNothing());
       break;
     }
   }
@@ -107,8 +110,11 @@ void OobeDisplayChooser::OnTouchDeviceAssociationChanged() {
   MaybeMoveToTouchDisplay();
 }
 
-void OobeDisplayChooser::OnTouchscreenDeviceConfigurationChanged() {
-  MaybeMoveToTouchDisplay();
+void OobeDisplayChooser::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & ui::InputDeviceEventObserver::kTouchscreen) {
+    MaybeMoveToTouchDisplay();
+  }
 }
 
 void OobeDisplayChooser::OnDeviceListsComplete() {

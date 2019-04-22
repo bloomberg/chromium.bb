@@ -128,6 +128,7 @@ public:
 
         void init(const Attribute* attrs, int count) {
             fAttributes = attrs;
+            fRawCount = count;
             fCount = 0;
             fStride = 0;
             for (int i = 0; i < count; ++i) {
@@ -139,6 +140,7 @@ public:
         }
 
         const Attribute* fAttributes = nullptr;
+        int              fRawCount = 0;
         int              fCount = 0;
         size_t           fStride = 0;
     };
@@ -185,19 +187,28 @@ public:
     virtual void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const = 0;
 
 
+    void getAttributeKey(GrProcessorKeyBuilder* b) const {
+        // Ensure that our CPU and GPU type fields fit together in a 32-bit value, and we never
+        // collide with the "uninitialized" value.
+        static_assert(kGrVertexAttribTypeCount < (1 << 8), "");
+        static_assert(kGrSLTypeCount           < (1 << 8), "");
+
+        auto add_attributes = [=](const Attribute* attrs, int attrCount) {
+            for (int i = 0; i < attrCount; ++i) {
+                b->add32(attrs[i].isInitialized() ? (attrs[i].cpuType() << 16) | attrs[i].gpuType()
+                                                  : ~0);
+            }
+        };
+        add_attributes(fVertexAttributes.fAttributes, fVertexAttributes.fRawCount);
+        add_attributes(fInstanceAttributes.fAttributes, fInstanceAttributes.fRawCount);
+    }
+
     /** Returns a new instance of the appropriate *GL* implementation class
         for the given GrProcessor; caller is responsible for deleting
         the object. */
     virtual GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const = 0;
 
     virtual bool isPathRendering() const { return false; }
-
-    /**
-     * If non-null, overrides the dest color returned by GrGLSLFragmentShaderBuilder::dstColor().
-     */
-    virtual const char* getDestColorOverride() const { return nullptr; }
-
-    virtual float getSampleShading() const { return 0.0; }
 
 protected:
     void setVertexAttributes(const Attribute* attrs, int attrCount) {
@@ -244,7 +255,7 @@ class GrPrimitiveProcessor::TextureSampler {
 public:
     TextureSampler() = default;
 
-    TextureSampler(GrTextureType, GrPixelConfig, const GrSamplerState&);
+    TextureSampler(GrTextureType, GrPixelConfig, const GrSamplerState&, uint32_t extraSamplerKey);
 
     explicit TextureSampler(GrTextureType, GrPixelConfig,
                             GrSamplerState::Filter = GrSamplerState::Filter::kNearest,
@@ -253,15 +264,17 @@ public:
     TextureSampler(const TextureSampler&) = delete;
     TextureSampler& operator=(const TextureSampler&) = delete;
 
-    void reset(GrTextureType, GrPixelConfig, const GrSamplerState&);
+    void reset(GrTextureType, GrPixelConfig, const GrSamplerState&, uint32_t extraSamplerKey = 0);
     void reset(GrTextureType, GrPixelConfig,
-               GrSamplerState::Filter = GrSamplerState::Filter::kNearest,
-               GrSamplerState::WrapMode wrapXAndY = GrSamplerState::WrapMode::kClamp);
+               GrSamplerState::Filter,
+               GrSamplerState::WrapMode wrapXAndY);
 
     GrTextureType textureType() const { return fTextureType; }
     GrPixelConfig config() const { return fConfig; }
 
     const GrSamplerState& samplerState() const { return fSamplerState; }
+
+    uint32_t extraSamplerKey() const { return fExtraSamplerKey; }
 
     bool isInitialized() const { return fConfig != kUnknown_GrPixelConfig; }
 
@@ -269,6 +282,7 @@ private:
     GrSamplerState fSamplerState;
     GrTextureType fTextureType = GrTextureType::k2D;
     GrPixelConfig fConfig = kUnknown_GrPixelConfig;
+    uint32_t fExtraSamplerKey = 0;
 };
 
 const GrPrimitiveProcessor::TextureSampler& GrPrimitiveProcessor::IthTextureSampler(int i) {

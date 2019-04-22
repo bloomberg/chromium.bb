@@ -15,6 +15,7 @@
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
+#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "content/public/browser/restore_type.h"
@@ -58,7 +59,6 @@ class TabRestorePageLoadMetricsObserverTest
     timing_.paint_timing->first_contentful_paint =
         base::TimeDelta::FromSeconds(4);
     timing_.paint_timing->first_image_paint = base::TimeDelta::FromSeconds(5);
-    timing_.paint_timing->first_text_paint = base::TimeDelta::FromSeconds(6);
     timing_.document_timing->load_event_start = base::TimeDelta::FromSeconds(7);
     PopulateRequiredTimingFields(&timing_);
 
@@ -71,44 +71,14 @@ class TabRestorePageLoadMetricsObserverTest
     NavigateAndCommit(GURL(kDefaultTestUrl));
     SimulateTimingUpdate(timing_);
 
-    // Prepare 4 resources of varying size and configurations.
-    page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-        // Cached request.
-        {GURL(kResourceUrl), net::HostPortPair(), -1 /* frame_tree_node_id */,
-         true /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-         0 /* original_network_content_length */,
-         nullptr /* data_reduction_proxy_data */,
-         content::ResourceType::RESOURCE_TYPE_SCRIPT, 0,
-         nullptr /* load_timing_info */},
-        // Uncached non-proxied request.
-        {GURL(kResourceUrl), net::HostPortPair(), -1 /* frame_tree_node_id */,
-         false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-         1024 * 40 /* original_network_content_length */,
-         nullptr /* data_reduction_proxy_data */,
-         content::ResourceType::RESOURCE_TYPE_SCRIPT, 0,
-         nullptr /* load_timing_info */},
-        // Uncached proxied request with .1 compression ratio.
-        {GURL(kResourceUrl), net::HostPortPair(), -1 /* frame_tree_node_id */,
-         false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-         1024 * 40 /* original_network_content_length */,
-         nullptr /* data_reduction_proxy_data */,
-         content::ResourceType::RESOURCE_TYPE_SCRIPT, 0,
-         nullptr /* load_timing_info */},
-        // Uncached proxied request with .5 compression ratio.
-        {GURL(kResourceUrl), net::HostPortPair(), -1 /* frame_tree_node_id */,
-         false /*was_cached*/, 1024 * 40 /* raw_body_bytes */,
-         1024 * 40 /* original_network_content_length */,
-         nullptr /* data_reduction_proxy_data */,
-         content::ResourceType::RESOURCE_TYPE_SCRIPT, 0,
-         nullptr /* load_timing_info */},
-    };
-
-    for (const auto& request : resources) {
-      SimulateLoadedResource(request);
-      if (!request.was_cached) {
-        network_bytes_ += request.raw_body_bytes;
-      } else {
-        cache_bytes_ += request.raw_body_bytes;
+    auto resources = GetSampleResourceDataUpdateForTesting(10 * 1024);
+    SimulateResourceDataUseUpdate(resources);
+    for (const auto& resource : resources) {
+      if (resource->is_complete) {
+        if (!resource->was_fetched_via_cache)
+          network_bytes_ += resource->encoded_body_length;
+        else
+          cache_bytes_ += resource->encoded_body_length;
       }
     }
 

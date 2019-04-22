@@ -37,8 +37,6 @@ component("printing") {
     "metafile.h",
     "metafile_skia.cc",
     "metafile_skia.h",
-    "metafile_skia_wrapper.cc",
-    "metafile_skia_wrapper.h",
     "native_drawing_context.h",
     "nup_parameters.cc",
     "nup_parameters.h",
@@ -136,6 +134,10 @@ component("printing") {
     ]
   }
 
+  if (is_android) {
+    deps += [ "//ui/android" ]
+  }
+
   if (use_cups) {
     configs += [ ":cups" ]
 
@@ -206,6 +208,14 @@ component("printing") {
         "backend/print_backend_cups.cc",
         "backend/print_backend_cups.h",
       ]
+
+      # We still build the utils for fuzzing.
+      if (use_fuzzing_engine) {
+        sources += [
+          "backend/cups_ipp_util.cc",
+          "backend/cups_ipp_util.h",
+        ]
+      }
     }
   }
 
@@ -222,6 +232,7 @@ component("printing") {
     ]
   } else if (is_android) {
     sources += [
+      "printed_document_android.cc",
       "printing_context_android.cc",
       "printing_context_android.h",
     ]
@@ -272,6 +283,7 @@ test("printing_unittests") {
     "page_range_unittest.cc",
     "page_setup_unittest.cc",
     "pdf_metafile_cg_mac_unittest.cc",
+    "print_settings_conversion_unittest.cc",
     "printing_context_win_unittest.cc",
     "printing_test.h",
     "printing_utils_unittest.cc",
@@ -345,6 +357,7 @@ if (is_android) {
   android_library("printing_java") {
     deps = [
       "//base:base_java",
+      "//ui/android:ui_java",
     ]
     java_files = [
       "android/java/src/org/chromium/printing/PrintDocumentAdapterWrapper.java",

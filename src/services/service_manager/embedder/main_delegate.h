@@ -6,20 +6,22 @@
 #define SERVICES_SERVICE_MANAGER_EMBEDDER_MAIN_DELEGATE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/core/embedder/configuration.h"
-#include "services/service_manager/background/background_service_manager.h"
+#include "services/service_manager/background_service_manager.h"
 #include "services/service_manager/embedder/process_type.h"
-#include "services/service_manager/embedder/service_manager_embedder_export.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
 class CommandLine;
-class Value;
 namespace mac {
 class ScopedNSAutoreleasePool;
 }
@@ -30,7 +32,7 @@ namespace service_manager {
 // An interface which must be implemented by Service Manager embedders to
 // control basic process initialization and shutdown, as well as early branching
 // to run specific types of subprocesses.
-class SERVICE_MANAGER_EMBEDDER_EXPORT MainDelegate {
+class COMPONENT_EXPORT(SERVICE_MANAGER_EMBEDDER) MainDelegate {
  public:
   // Extra parameters passed to MainDelegate::Initialize.
   struct InitializeParams {
@@ -72,9 +74,10 @@ class SERVICE_MANAGER_EMBEDDER_EXPORT MainDelegate {
   // Allows the embedder to override the process-wide Mojop configuration.
   virtual void OverrideMojoConfiguration(mojo::core::Configuration* config);
 
-  // Create the service catalog to be used by the Service Manager. May return
-  // null to use the default (empty) catalog, if you're into that.
-  virtual std::unique_ptr<base::Value> CreateServiceCatalog();
+  // Gets the list of service manifests with which to initialize the Service
+  // Manager. This list must describe the complete set of usable services in
+  // the system and remains fixed for the lifetime of the Service Manager.
+  virtual std::vector<Manifest> GetServiceManifests();
 
   // Indicates whether a process started by the service manager for a given
   // target service identity should be run as a real service process (|true|)

@@ -7,7 +7,7 @@
 module chromeos.media_perception.mojom;
 
 import "chromeos/services/media_perception/public/mojom/media_perception.mojom";
-import "services/video_capture/public/mojom/device_factory.mojom";
+import "services/video_capture/public/mojom/video_source_provider.mojom";
 
 // Used to establish two-way communication between a client and the media
 // perception service.
@@ -24,6 +24,7 @@ interface MediaPerceptionController {
 interface MediaPerceptionControllerClient {
   // Interface for the service to connect to the Video Capture Service
   // directly via a Mojo pipe set up through a DeviceFactory request.
-  ConnectToVideoCaptureService@0(video_capture.mojom.DeviceFactory& request);
+  ConnectToVideoCaptureService@0(
+      video_capture.mojom.VideoSourceProvider& request);
 };
 

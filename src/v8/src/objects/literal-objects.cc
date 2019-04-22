@@ -12,23 +12,24 @@
 #include "src/objects/hash-table-inl.h"
 #include "src/objects/literal-objects-inl.h"
 #include "src/objects/smi.h"
+#include "src/objects/struct-inl.h"
 
 namespace v8 {
 namespace internal {
 
-Object* ObjectBoilerplateDescription::name(int index) const {
+Object ObjectBoilerplateDescription::name(int index) const {
   // get() already checks for out of bounds access, but we do not want to allow
   // access to the last element, if it is the number of properties.
   DCHECK_NE(size(), index);
   return get(2 * index + kDescriptionStartIndex);
 }
 
-Object* ObjectBoilerplateDescription::value(int index) const {
+Object ObjectBoilerplateDescription::value(int index) const {
   return get(2 * index + 1 + kDescriptionStartIndex);
 }
 
-void ObjectBoilerplateDescription::set_key_value(int index, Object* key,
-                                                 Object* value) {
+void ObjectBoilerplateDescription::set_key_value(int index, Object key,
+                                                 Object value) {
   DCHECK_LT(index, size());
   DCHECK_GE(index, 0);
   set(2 * index + kDescriptionStartIndex, key);
@@ -70,7 +71,7 @@ namespace {
 
 inline int EncodeComputedEntry(ClassBoilerplate::ValueKind value_kind,
                                unsigned key_index) {
-  typedef ClassBoilerplate::ComputedEntryFlags Flags;
+  using Flags = ClassBoilerplate::ComputedEntryFlags;
   int flags = Flags::ValueKindBits::encode(value_kind) |
               Flags::KeyIndexBits::encode(key_index);
   return flags;
@@ -110,8 +111,8 @@ void AddToDescriptorArrayTemplate(
     } else {
       DCHECK(value_kind == ClassBoilerplate::kGetter ||
              value_kind == ClassBoilerplate::kSetter);
-      Object* raw_accessor = descriptor_array_template->GetStrongValue(entry);
-      AccessorPair* pair;
+      Object raw_accessor = descriptor_array_template->GetStrongValue(entry);
+      AccessorPair pair;
       if (raw_accessor->IsAccessorPair()) {
         pair = AccessorPair::cast(raw_accessor);
       } else {
@@ -163,7 +164,7 @@ constexpr int ComputeEnumerationIndex(int value_index) {
                            ClassBoilerplate::kMinimumPrototypePropertiesCount);
 }
 
-inline int GetExistingValueIndex(Object* value) {
+inline int GetExistingValueIndex(Object value) {
   return value->IsSmi() ? Smi::ToInt(value) : -1;
 }
 
@@ -171,7 +172,7 @@ template <typename Dictionary, typename Key>
 void AddToDictionaryTemplate(Isolate* isolate, Handle<Dictionary> dictionary,
                              Key key, int key_index,
                              ClassBoilerplate::ValueKind value_kind,
-                             Object* value) {
+                             Object value) {
   int entry = dictionary->FindEntry(isolate, key);
 
   if (entry == kNotFound) {
@@ -211,11 +212,11 @@ void AddToDictionaryTemplate(Isolate* isolate, Handle<Dictionary> dictionary,
   } else {
     // Entry found, update it.
     int enum_order = dictionary->DetailsAt(entry).dictionary_index();
-    Object* existing_value = dictionary->ValueAt(entry);
+    Object existing_value = dictionary->ValueAt(entry);
     if (value_kind == ClassBoilerplate::kData) {
       // Computed value is a normal method.
       if (existing_value->IsAccessorPair()) {
-        AccessorPair* current_pair = AccessorPair::cast(existing_value);
+        AccessorPair current_pair = AccessorPair::cast(existing_value);
 
         int existing_getter_index =
             GetExistingValueIndex(current_pair->getter());
@@ -254,9 +255,15 @@ void AddToDictionaryTemplate(Isolate* isolate, Handle<Dictionary> dictionary,
           }
         }
       } else {
-        // Overwrite existing value if it was defined before the computed one.
-        int existing_value_index = Smi::ToInt(existing_value);
-        if (existing_value_index < key_index) {
+        // Overwrite existing value if it was defined before the computed one
+        // (AccessorInfo "length" property is always defined before).
+        DCHECK_IMPLIES(!existing_value->IsSmi(),
+                       existing_value->IsAccessorInfo());
+        DCHECK_IMPLIES(!existing_value->IsSmi(),
+                       AccessorInfo::cast(existing_value)->name() ==
+                           *isolate->factory()->length_string());
+        if (!existing_value->IsSmi() ||
+            Smi::ToInt(existing_value) < key_index) {
           PropertyDetails details(kData, DONT_ENUM, PropertyCellType::kNoCell,
                                   enum_order);
           dictionary->DetailsAtPut(isolate, entry, details);
@@ -268,7 +275,8 @@ void AddToDictionaryTemplate(Isolate* isolate, Handle<Dictionary> dictionary,
                                         ? ACCESSOR_GETTER
                                         : ACCESSOR_SETTER;
       if (existing_value->IsAccessorPair()) {
-        AccessorPair* current_pair = AccessorPair::cast(existing_value);
+        // Update respective component of existing AccessorPair.
+        AccessorPair current_pair = AccessorPair::cast(existing_value);
 
         int existing_component_index =
             GetExistingValueIndex(current_pair->get(component));
@@ -277,6 +285,7 @@ void AddToDictionaryTemplate(Isolate* isolate, Handle<Dictionary> dictionary,
         }
 
       } else {
+        // Overwrite existing value with new AccessorPair.
         Handle<AccessorPair> pair(isolate->factory()->NewAccessorPair());
         pair->set(component, value);
         PropertyDetails details(kAccessor, DONT_ENUM, PropertyCellType::kNoCell,
@@ -427,14 +436,14 @@ class ObjectDescriptor {
 
 void ClassBoilerplate::AddToPropertiesTemplate(
     Isolate* isolate, Handle<NameDictionary> dictionary, Handle<Name> name,
-    int key_index, ClassBoilerplate::ValueKind value_kind, Object* value) {
+    int key_index, ClassBoilerplate::ValueKind value_kind, Object value) {
   AddToDictionaryTemplate(isolate, dictionary, name, key_index, value_kind,
                           value);
 }
 
 void ClassBoilerplate::AddToElementsTemplate(
     Isolate* isolate, Handle<NumberDictionary> dictionary, uint32_t key,
-    int key_index, ClassBoilerplate::ValueKind value_kind, Object* value) {
+    int key_index, ClassBoilerplate::ValueKind value_kind, Object value) {
   AddToDictionaryTemplate(isolate, dictionary, key, key_index, value_kind,
                           value);
 }
@@ -492,10 +501,8 @@ Handle<ClassBoilerplate> ClassBoilerplate::BuildClassBoilerplate(
                             attribs);
   }
   {
-    Handle<Smi> start_position(Smi::FromInt(expr->start_position()), isolate);
-    Handle<Smi> end_position(Smi::FromInt(expr->end_position()), isolate);
-    Handle<Tuple2> class_positions =
-        factory->NewTuple2(start_position, end_position, NOT_TENURED);
+    Handle<ClassPositions> class_positions = factory->NewClassPositions(
+        expr->start_position(), expr->end_position());
     static_desc.AddConstant(isolate, factory->class_positions_symbol(),
                             class_positions, DONT_ENUM);
   }

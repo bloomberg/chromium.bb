@@ -29,6 +29,11 @@ struct UpdateManifestResult {
   std::string version;
   std::string browser_min_version;
 
+  // Attribute for no update: server may provide additional info about why there
+  // is no updates, eg. “bandwidth limit” if client is downloading extensions
+  // too aggressive.
+  base::Optional<std::string> info;
+
   // Attributes for the full update.
   GURL crx_url;
   std::string package_hash;

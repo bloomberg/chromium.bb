@@ -7,8 +7,8 @@
 #ifndef FXJS_XFA_CJX_HOSTPSEUDOMODEL_H_
 #define FXJS_XFA_CJX_HOSTPSEUDOMODEL_H_
 
-#include "fxjs/jse_define.h"
 #include "fxjs/xfa/cjx_object.h"
+#include "fxjs/xfa/jse_define.h"
 #include "xfa/fxfa/fxfa_basic.h"
 
 class CFXJSE_Value;
@@ -19,21 +19,24 @@ class CJX_HostPseudoModel final : public CJX_Object {
   explicit CJX_HostPseudoModel(CScript_HostPseudoModel* model);
   ~CJX_HostPseudoModel() override;
 
-  JSE_METHOD(beep, CJX_HostPseudoModel);
-  JSE_METHOD(documentCountInBatch, CJX_HostPseudoModel);
-  JSE_METHOD(documentInBatch, CJX_HostPseudoModel);
-  JSE_METHOD(exportData, CJX_HostPseudoModel);
-  JSE_METHOD(getFocus, CJX_HostPseudoModel);
-  JSE_METHOD(gotoURL, CJX_HostPseudoModel);
-  JSE_METHOD(importData, CJX_HostPseudoModel);
-  JSE_METHOD(messageBox, CJX_HostPseudoModel);
-  JSE_METHOD(openList, CJX_HostPseudoModel);
-  JSE_METHOD(pageDown, CJX_HostPseudoModel);
-  JSE_METHOD(pageUp, CJX_HostPseudoModel);
-  JSE_METHOD(print, CJX_HostPseudoModel);
-  JSE_METHOD(resetData, CJX_HostPseudoModel);
-  JSE_METHOD(response, CJX_HostPseudoModel);
-  JSE_METHOD(setFocus, CJX_HostPseudoModel);
+  // CJX_Object:
+  bool DynamicTypeIs(TypeTag eType) const override;
+
+  JSE_METHOD(beep);
+  JSE_METHOD(documentCountInBatch);
+  JSE_METHOD(documentInBatch);
+  JSE_METHOD(exportData);
+  JSE_METHOD(getFocus);
+  JSE_METHOD(gotoURL);
+  JSE_METHOD(importData);
+  JSE_METHOD(messageBox);
+  JSE_METHOD(openList);
+  JSE_METHOD(pageDown);
+  JSE_METHOD(pageUp);
+  JSE_METHOD(print);
+  JSE_METHOD(resetData);
+  JSE_METHOD(response);
+  JSE_METHOD(setFocus);
 
   JSE_PROP(appType);
   JSE_PROP(calculationsEnabled);
@@ -51,6 +54,10 @@ class CJX_HostPseudoModel final : public CJX_Object {
   JSE_PROP(name);
 
  private:
+  using Type__ = CJX_HostPseudoModel;
+  using ParentType__ = CJX_Object;
+
+  static const TypeTag static_type__ = TypeTag::HostPseudoModel;
   static const CJX_MethodSpec MethodSpecs[];
 };
 

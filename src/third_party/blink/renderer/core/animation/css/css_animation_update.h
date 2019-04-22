@@ -90,8 +90,8 @@ class UpdatedCSSAnimation {
 
 }  // namespace blink
 
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::NewCSSAnimation);
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::UpdatedCSSAnimation);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::NewCSSAnimation)
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::UpdatedCSSAnimation)
 
 namespace blink {
 

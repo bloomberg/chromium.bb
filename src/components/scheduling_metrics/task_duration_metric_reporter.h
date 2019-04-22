@@ -35,7 +35,7 @@ class TaskDurationMetricReporter {
             static_cast<int>(TaskClass::kCount),
             static_cast<int>(TaskClass::kCount) + 1,
             1000 * 1000,
-            base::HistogramBase::kUmaTargetedHistogramFlag)){};
+            base::HistogramBase::kUmaTargetedHistogramFlag)) {}
 
   void RecordTask(TaskClass task_class, base::TimeDelta duration) {
     DCHECK_LT(static_cast<int>(task_class),

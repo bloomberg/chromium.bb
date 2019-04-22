@@ -32,6 +32,11 @@ bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
   if (!vkGetInstanceProcAddrFn)
     return false;
 
+  vkEnumerateInstanceVersionFn =
+      reinterpret_cast<PFN_vkEnumerateInstanceVersion>(
+          vkGetInstanceProcAddrFn(nullptr, "vkEnumerateInstanceVersion"));
+  // vkEnumerateInstanceVersion didn't exist in Vulkan 1.0, so we should
+  // proceed even if we fail to get vkEnumerateInstanceVersion pointer.
   vkCreateInstanceFn = reinterpret_cast<PFN_vkCreateInstance>(
       vkGetInstanceProcAddrFn(nullptr, "vkCreateInstance"));
   if (!vkCreateInstanceFn)
@@ -111,6 +116,16 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkAllocateDescriptorSetsFn)
     return false;
 
+  vkAllocateMemoryFn = reinterpret_cast<PFN_vkAllocateMemory>(
+      vkGetDeviceProcAddrFn(vk_device, "vkAllocateMemory"));
+  if (!vkAllocateMemoryFn)
+    return false;
+
+  vkBindImageMemoryFn = reinterpret_cast<PFN_vkBindImageMemory>(
+      vkGetDeviceProcAddrFn(vk_device, "vkBindImageMemory"));
+  if (!vkBindImageMemoryFn)
+    return false;
+
   vkCreateCommandPoolFn = reinterpret_cast<PFN_vkCreateCommandPool>(
       vkGetDeviceProcAddrFn(vk_device, "vkCreateCommandPool"));
   if (!vkCreateCommandPoolFn)
@@ -135,6 +150,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkCreateFramebufferFn = reinterpret_cast<PFN_vkCreateFramebuffer>(
       vkGetDeviceProcAddrFn(vk_device, "vkCreateFramebuffer"));
   if (!vkCreateFramebufferFn)
+    return false;
+
+  vkCreateImageFn = reinterpret_cast<PFN_vkCreateImage>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateImage"));
+  if (!vkCreateImageFn)
     return false;
 
   vkCreateImageViewFn = reinterpret_cast<PFN_vkCreateImageView>(
@@ -253,6 +273,12 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkGetFenceStatusFn)
     return false;
 
+  vkGetImageMemoryRequirementsFn =
+      reinterpret_cast<PFN_vkGetImageMemoryRequirements>(
+          vkGetDeviceProcAddrFn(vk_device, "vkGetImageMemoryRequirements"));
+  if (!vkGetImageMemoryRequirementsFn)
+    return false;
+
   vkResetFencesFn = reinterpret_cast<PFN_vkResetFences>(
       vkGetDeviceProcAddrFn(vk_device, "vkResetFences"));
   if (!vkResetFencesFn)
@@ -270,14 +296,78 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
 
 #if defined(OS_ANDROID)
 
+  vkGetAndroidHardwareBufferPropertiesANDROIDFn =
+      reinterpret_cast<PFN_vkGetAndroidHardwareBufferPropertiesANDROID>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkGetAndroidHardwareBufferPropertiesANDROID"));
+  if (!vkGetAndroidHardwareBufferPropertiesANDROIDFn)
+    return false;
+
+#endif
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+
+  vkGetSemaphoreFdKHRFn = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkGetSemaphoreFdKHR"));
+  if (!vkGetSemaphoreFdKHRFn)
+    return false;
+
   vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
       vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
   if (!vkImportSemaphoreFdKHRFn)
     return false;
 
-  vkGetSemaphoreFdKHRFn = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(
-      vkGetDeviceProcAddrFn(vk_device, "vkGetSemaphoreFdKHR"));
-  if (!vkGetSemaphoreFdKHRFn)
+#endif
+
+#if defined(OS_LINUX)
+
+  vkGetMemoryFdKHRFn = reinterpret_cast<PFN_vkGetMemoryFdKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkGetMemoryFdKHR"));
+  if (!vkGetMemoryFdKHRFn)
+    return false;
+
+#endif
+
+#if defined(OS_FUCHSIA)
+
+  vkImportSemaphoreZirconHandleFUCHSIAFn =
+      reinterpret_cast<PFN_vkImportSemaphoreZirconHandleFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkImportSemaphoreZirconHandleFUCHSIA"));
+  if (!vkImportSemaphoreZirconHandleFUCHSIAFn)
+    return false;
+
+  vkGetSemaphoreZirconHandleFUCHSIAFn =
+      reinterpret_cast<PFN_vkGetSemaphoreZirconHandleFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkGetSemaphoreZirconHandleFUCHSIA"));
+  if (!vkGetSemaphoreZirconHandleFUCHSIAFn)
+    return false;
+
+  vkCreateBufferCollectionFUCHSIAFn =
+      reinterpret_cast<PFN_vkCreateBufferCollectionFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device, "vkCreateBufferCollectionFUCHSIA"));
+  if (!vkCreateBufferCollectionFUCHSIAFn)
+    return false;
+
+  vkSetBufferCollectionConstraintsFUCHSIAFn =
+      reinterpret_cast<PFN_vkSetBufferCollectionConstraintsFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkSetBufferCollectionConstraintsFUCHSIA"));
+  if (!vkSetBufferCollectionConstraintsFUCHSIAFn)
+    return false;
+
+  vkGetBufferCollectionPropertiesFUCHSIAFn =
+      reinterpret_cast<PFN_vkGetBufferCollectionPropertiesFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkGetBufferCollectionPropertiesFUCHSIA"));
+  if (!vkGetBufferCollectionPropertiesFUCHSIAFn)
+    return false;
+
+  vkDestroyBufferCollectionFUCHSIAFn =
+      reinterpret_cast<PFN_vkDestroyBufferCollectionFUCHSIA>(
+          vkGetDeviceProcAddrFn(vk_device, "vkDestroyBufferCollectionFUCHSIA"));
+  if (!vkDestroyBufferCollectionFUCHSIAFn)
     return false;
 
 #endif

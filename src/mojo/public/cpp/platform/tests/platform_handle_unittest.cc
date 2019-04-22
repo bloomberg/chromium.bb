@@ -244,20 +244,20 @@ TEST_P(PlatformHandleTest, CStructConversion) {
   EXPECT_EQ(kTestData, GetObjectContents(handle));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        PlatformHandleTest,
+INSTANTIATE_TEST_SUITE_P(,
+                         PlatformHandleTest,
 #if defined(OS_WIN)
-                        testing::Values(HandleType::kHandle)
+                         testing::Values(HandleType::kHandle)
 #elif defined(OS_FUCHSIA)
-                        testing::Values(HandleType::kHandle,
-                                        HandleType::kFileDescriptor)
+                         testing::Values(HandleType::kHandle,
+                                         HandleType::kFileDescriptor)
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-                        testing::Values(HandleType::kFileDescriptor,
-                                        HandleType::kMachPort)
+                         testing::Values(HandleType::kFileDescriptor,
+                                         HandleType::kMachPort)
 #elif defined(OS_POSIX)
-                        testing::Values(HandleType::kFileDescriptor)
+                         testing::Values(HandleType::kFileDescriptor)
 #endif
-                            );
+);
 
 }  // namespace
 }  // namespace mojo

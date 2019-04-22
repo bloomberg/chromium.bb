@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
@@ -37,7 +37,8 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
-#include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/lazy_context_id.h"
+#include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/url_pattern.h"
@@ -136,20 +137,6 @@ FileBrowserHandlerList FindFileBrowserHandlersForURL(
       if (!handler->MatchesURL(lowercase_url))
         continue;
 
-      // Filter out Files app from handling ZIP files via a handler, as it's
-      // now handled by:
-      // - Zip Archiver native extension component
-      // TODO(amistry): This can be removed once the AVFS-based zip mounting is
-      // removed and zip handling is removed from the file manager's
-      // manifest.json.
-      const URLPattern zip_pattern(URLPattern::SCHEME_EXTENSION,
-                                   "chrome-extension://*/*.zip");
-      if (handler->extension_id() == kFileManagerAppId &&
-          zip_pattern.MatchesURL(selected_file_url) &&
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              chromeos::switches::kDisableNewZIPUnpacker)) {
-        continue;
-      }
       results.push_back(handler);
     }
   }
@@ -199,7 +186,8 @@ class FileBrowserHandlerExecutor {
       std::unique_ptr<FileDefinitionList> file_definition_list,
       std::unique_ptr<EntryDefinitionList> entry_definition_list,
       int handler_pid_in,
-      extensions::ExtensionHost* host);
+      std::unique_ptr<extensions::LazyContextTaskQueue::ContextInfo>
+          context_info);
 
   // Registers file permissions from |handler_host_permissions_| with
   // ChildProcessSecurityPolicy for process with id |handler_pid|.
@@ -348,14 +336,14 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
                                      handler_pid, nullptr);
   } else {
     // We have to wake the handler background page before we proceed.
-    extensions::LazyBackgroundTaskQueue* queue =
-        extensions::LazyBackgroundTaskQueue::Get(profile_);
+    const extensions::LazyContextId context_id(profile_, extension_->id());
+    extensions::LazyContextTaskQueue* queue = context_id.GetTaskQueue();
     if (!queue->ShouldEnqueueTask(profile_, extension_.get())) {
       ExecuteDoneOnUIThread(false);
       return;
     }
     queue->AddPendingTask(
-        profile_, extension_->id(),
+        context_id,
         base::BindOnce(
             &FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent,
             weak_ptr_factory_.GetWeakPtr(),
@@ -368,9 +356,11 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
     std::unique_ptr<FileDefinitionList> file_definition_list,
     std::unique_ptr<EntryDefinitionList> entry_definition_list,
     int handler_pid_in,
-    extensions::ExtensionHost* host) {
-  int handler_pid = host ? host->render_process_host()->GetID() :
-      handler_pid_in;
+    std::unique_ptr<extensions::LazyContextTaskQueue::ContextInfo>
+        context_info) {
+  int handler_pid = context_info != nullptr
+                        ? context_info->render_process_host->GetID()
+                        : handler_pid_in;
 
   if (handler_pid <= 0) {
     ExecuteDoneOnUIThread(false);
@@ -426,35 +416,6 @@ void FileBrowserHandlerExecutor::SetupHandlerHostFileAccessPermissions(
   }
 }
 
-// Returns true if |extension_id| and |action_id| indicate that the file
-// currently being handled should be opened with the browser. This function
-// is used to handle certain action IDs of the file manager.
-bool ShouldBeOpenedWithBrowser(const std::string& extension_id,
-                               const std::string& action_id) {
-  return (extension_id == kFileManagerAppId &&
-          (action_id == "view-pdf" ||
-           action_id == "view-swf" ||
-           action_id == "view-in-browser" ||
-           action_id == "open-hosted-generic" ||
-           action_id == "open-hosted-gdoc" ||
-           action_id == "open-hosted-gsheet" ||
-           action_id == "open-hosted-gslides"));
-}
-
-// Opens the files specified by |file_urls| with the browser for |profile|.
-// Returns true on success. It's a failure if no files are opened.
-bool OpenFilesWithBrowser(Profile* profile,
-                          const std::vector<FileSystemURL>& file_urls) {
-  int num_opened = 0;
-  for (size_t i = 0; i < file_urls.size(); ++i) {
-    const FileSystemURL& file_url = file_urls[i];
-    if (chromeos::FileSystemBackend::CanHandleURL(file_url)) {
-      num_opened += util::OpenFileWithBrowser(profile, file_url) ? 1 : 0;
-    }
-  }
-  return num_opened > 0;
-}
-
 }  // namespace
 
 bool ExecuteFileBrowserHandler(Profile* profile,
@@ -465,16 +426,6 @@ bool ExecuteFileBrowserHandler(Profile* profile,
   // Forbid calling undeclared handlers.
   if (!FindFileBrowserHandlerForActionId(extension, action_id))
     return false;
-
-  // Some action IDs of the file manager's file browser handlers require the
-  // files to be directly opened with the browser.
-  if (ShouldBeOpenedWithBrowser(extension->id(), action_id)) {
-    const bool result = OpenFilesWithBrowser(profile, file_urls);
-    if (result && !done.is_null())
-      std::move(done).Run(
-          extensions::api::file_manager_private::TASK_RESULT_OPENED);
-    return result;
-  }
 
   // The executor object will be self deleted on completion.
   (new FileBrowserHandlerExecutor(profile, extension, action_id))

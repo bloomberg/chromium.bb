@@ -55,8 +55,6 @@
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
-using blink::WebIDBCursor;
-
 namespace blink {
 
 IDBRequest::AsyncTraceState::AsyncTraceState(const char* trace_event_name)
@@ -122,7 +120,6 @@ IDBRequest* IDBRequest::Create(ScriptState* script_state,
                                IDBRequest::AsyncTraceState metrics) {
   IDBRequest* request = MakeGarbageCollected<IDBRequest>(
       script_state, source, transaction, std::move(metrics));
-  request->PauseIfNeeded();
   // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames)
   // do not have an associated transaction.
   if (transaction)
@@ -134,13 +131,14 @@ IDBRequest::IDBRequest(ScriptState* script_state,
                        const Source& source,
                        IDBTransaction* transaction,
                        AsyncTraceState metrics)
-    : PausableObject(ExecutionContext::From(script_state)),
+    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       transaction_(transaction),
       isolate_(script_state->GetIsolate()),
       metrics_(std::move(metrics)),
       source_(source),
-      event_queue_(EventQueue::Create(ExecutionContext::From(script_state),
-                                      TaskType::kInternalIndexedDB)) {}
+      event_queue_(
+          MakeGarbageCollected<EventQueue>(ExecutionContext::From(script_state),
+                                           TaskType::kDatabaseAccess)) {}
 
 IDBRequest::~IDBRequest() {
   DCHECK((ready_state_ == DONE && metrics_.IsEmpty()) ||
@@ -155,7 +153,7 @@ void IDBRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_queue_);
   visitor->Trace(pending_cursor_);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 ScriptValue IDBRequest::result(ScriptState* script_state,
@@ -207,8 +205,7 @@ const String& IDBRequest::readyState() const {
 
 std::unique_ptr<WebIDBCallbacks> IDBRequest::CreateWebCallbacks() {
   DCHECK(!web_callbacks_);
-  std::unique_ptr<WebIDBCallbacks> callbacks =
-      WebIDBCallbacksImpl::Create(this);
+  auto callbacks = std::make_unique<WebIDBCallbacksImpl>(this);
   web_callbacks_ = callbacks.get();
   return callbacks;
 }
@@ -429,7 +426,7 @@ void IDBRequest::EnqueueResponse(const Vector<String>& string_list) {
     return;
   }
 
-  DOMStringList* dom_string_list = DOMStringList::Create();
+  auto* dom_string_list = MakeGarbageCollected<DOMStringList>();
   for (const auto& item : string_list)
     dom_string_list->Append(item);
   EnqueueResultInternal(IDBAny::Create(dom_string_list));
@@ -461,12 +458,14 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
 
   switch (cursor_type_) {
     case indexed_db::kCursorKeyOnly:
-      cursor = IDBCursor::Create(std::move(backend), cursor_direction_, this,
-                                 source, transaction_.Get());
+      cursor =
+          MakeGarbageCollected<IDBCursor>(std::move(backend), cursor_direction_,
+                                          this, source, transaction_.Get());
       break;
     case indexed_db::kCursorKeyAndValue:
-      cursor = IDBCursorWithValue::Create(std::move(backend), cursor_direction_,
-                                          this, source, transaction_.Get());
+      cursor = MakeGarbageCollected<IDBCursorWithValue>(
+          std::move(backend), cursor_direction_, this, source,
+          transaction_.Get());
       break;
     default:
       NOTREACHED();
@@ -619,7 +618,7 @@ void IDBRequest::ContextDestroyed(ExecutionContext*) {
   if (pending_cursor_)
     pending_cursor_->ContextWillBeDestroyed();
   if (web_callbacks_) {
-    web_callbacks_->Detach();
+    web_callbacks_->DetachRequestFromCallback();
     web_callbacks_ = nullptr;
   }
 }
@@ -629,7 +628,7 @@ const AtomicString& IDBRequest::InterfaceName() const {
 }
 
 ExecutionContext* IDBRequest::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
+  return ContextLifecycleObserver::GetExecutionContext();
 }
 
 DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
@@ -693,6 +692,9 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {
   // describes the consequences of getting this wrong.
   if (transaction_ && ready_state_ == DONE)
     transaction_->UnregisterRequest(this);
+
+  if (event.type() == event_type_names::kError && transaction_)
+    transaction_->IncrementNumErrorsHandled();
 
   event.SetTarget(this);
   DispatchEventResult dispatch_result =

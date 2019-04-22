@@ -33,7 +33,7 @@ public:
     const char* name() const override { return "Dummy Op"; }
 
     static std::unique_ptr<GrDrawOp> Make(GrContext* context, int numAttribs) {
-        GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
+        GrOpMemoryPool* pool = context->priv().opMemoryPool();
 
         return pool->allocate<Op>(numAttribs);
     }
@@ -42,8 +42,9 @@ public:
         return FixedFunctionFlags::kNone;
     }
 
-    RequiresDstTexture finalize(const GrCaps&, const GrAppliedClip*) override {
-        return RequiresDstTexture::kNo;
+    GrProcessorSet::Analysis finalize(
+            const GrCaps&, const GrAppliedClip*, GrFSAAType, GrClampType) override {
+        return GrProcessorSet::EmptySetAnalysis();
     }
 
 private:
@@ -62,8 +63,15 @@ private:
                 fAttributes.reset(new Attribute[numAttribs]);
                 for (auto i = 0; i < numAttribs; ++i) {
                     fAttribNames[i].printf("attr%d", i);
-                    fAttributes[i] = {fAttribNames[i].c_str(), kFloat2_GrVertexAttribType,
-                                                               kFloat2_GrSLType};
+                    // This gives us more of a mix of attribute types, and allows the
+                    // component count to fit within the limits for iOS Metal.
+                    if (i & 0x1) {
+                        fAttributes[i] = {fAttribNames[i].c_str(), kFloat_GrVertexAttribType,
+                                                                   kFloat_GrSLType};
+                    } else {
+                        fAttributes[i] = {fAttribNames[i].c_str(), kFloat2_GrVertexAttribType,
+                                                                   kFloat2_GrSLType};
+                    }
                 }
                 this->setVertexAttributes(fAttributes.get(), numAttribs);
             }
@@ -104,9 +112,12 @@ private:
         QuadHelper helper(target, vertexStride, 1);
         SkPoint* vertices = reinterpret_cast<SkPoint*>(helper.vertices());
         SkPointPriv::SetRectTriStrip(vertices, 0.f, 0.f, 1.f, 1.f, vertexStride);
-        auto pipe = target->makePipeline(0, GrProcessorSet::MakeEmptySet(),
-                                         target->detachAppliedClip());
-        helper.recordDraw(target, std::move(gp), pipe.fPipeline, pipe.fFixedDynamicState);
+        helper.recordDraw(target, std::move(gp));
+    }
+
+    void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
+        flushState->executeDrawsAndUploadsForMeshDrawOp(
+                this, chainBounds, GrProcessorSet::MakeEmptySet());
     }
 
     int fNumAttribs;
@@ -118,27 +129,27 @@ private:
 DEF_GPUTEST_FOR_ALL_CONTEXTS(VertexAttributeCount, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
 #if GR_GPU_STATS
-    GrGpu* gpu = context->contextPriv().getGpu();
+    GrGpu* gpu = context->priv().getGpu();
 #endif
 
     const GrBackendFormat format =
-            context->contextPriv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
 
     sk_sp<GrRenderTargetContext> renderTargetContext(
-            context->contextPriv().makeDeferredRenderTargetContext(format, SkBackingFit::kApprox,
-                                                                   1, 1, kRGBA_8888_GrPixelConfig,
-                                                                   nullptr));
+            context->priv().makeDeferredRenderTargetContext(format, SkBackingFit::kApprox,
+                                                            1, 1, kRGBA_8888_GrPixelConfig,
+                                                            nullptr));
     if (!renderTargetContext) {
         ERRORF(reporter, "Could not create render target context.");
         return;
     }
-    int attribCnt = context->contextPriv().caps()->maxVertexAttributes();
+    int attribCnt = context->priv().caps()->maxVertexAttributes();
     if (!attribCnt) {
         ERRORF(reporter, "No attributes allowed?!");
         return;
     }
     context->flush();
-    context->contextPriv().resetGpuStats();
+    context->priv().resetGpuStats();
 #if GR_GPU_STATS
     REPORTER_ASSERT(reporter, gpu->stats()->numDraws() == 0);
     REPORTER_ASSERT(reporter, gpu->stats()->numFailedDraws() == 0);
@@ -154,7 +165,7 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(VertexAttributeCount, reporter, ctxInfo) {
     REPORTER_ASSERT(reporter, gpu->stats()->numDraws() == 1);
     REPORTER_ASSERT(reporter, gpu->stats()->numFailedDraws() == 0);
 #endif
-    context->contextPriv().resetGpuStats();
+    context->priv().resetGpuStats();
     renderTargetContext->priv().testingOnly_addDrawOp(Op::Make(context, attribCnt + 1));
     context->flush();
 #if GR_GPU_STATS

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/atomic_sequence_num.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
@@ -14,6 +15,12 @@
 #include "base/strings/stringprintf.h"
 
 namespace gpu {
+namespace {
+
+// Global atomic to generate unique buffer IDs.
+base::AtomicSequenceNumber g_next_buffer_id;
+
+}  // namespace
 
 const base::UnsafeSharedMemoryRegion& BufferBacking::shared_memory_region()
     const {
@@ -26,7 +33,7 @@ base::UnguessableToken BufferBacking::GetGUID() const {
   return base::UnguessableToken();
 }
 
-MemoryBufferBacking::MemoryBufferBacking(size_t size)
+MemoryBufferBacking::MemoryBufferBacking(uint32_t size)
     : memory_(new char[size]), size_(size) {}
 
 MemoryBufferBacking::~MemoryBufferBacking() = default;
@@ -35,7 +42,7 @@ void* MemoryBufferBacking::GetMemory() const {
   return memory_.get();
 }
 
-size_t MemoryBufferBacking::GetSize() const {
+uint32_t MemoryBufferBacking::GetSize() const {
   return size_;
 }
 
@@ -45,6 +52,7 @@ SharedMemoryBufferBacking::SharedMemoryBufferBacking(
     : shared_memory_region_(std::move(shared_memory_region)),
       shared_memory_mapping_(std::move(shared_memory_mapping)) {
   DCHECK_EQ(shared_memory_region_.GetGUID(), shared_memory_mapping_.guid());
+  DCHECK_LE(shared_memory_mapping_.size(), static_cast<size_t>(UINT32_MAX));
 }
 
 SharedMemoryBufferBacking::~SharedMemoryBufferBacking() = default;
@@ -62,8 +70,8 @@ void* SharedMemoryBufferBacking::GetMemory() const {
   return shared_memory_mapping_.memory();
 }
 
-size_t SharedMemoryBufferBacking::GetSize() const {
-  return shared_memory_mapping_.size();
+uint32_t SharedMemoryBufferBacking::GetSize() const {
+  return static_cast<uint32_t>(shared_memory_mapping_.size());
 }
 
 Buffer::Buffer(std::unique_ptr<BufferBacking> backing)
@@ -95,6 +103,11 @@ uint32_t Buffer::GetRemainingSize(uint32_t data_offset) const {
   if (data_offset > static_cast<uint32_t>(size_))
     return 0;
   return static_cast<uint32_t>(size_) - data_offset;
+}
+
+int32_t GetNextBufferId() {
+  // 0 is a reserved value.
+  return g_next_buffer_id.GetNext() + 1;
 }
 
 base::trace_event::MemoryAllocatorDumpGuid GetBufferGUIDForTracing(

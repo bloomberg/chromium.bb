@@ -18,6 +18,7 @@
 #include "device/gamepad/abstract_haptic_gamepad.h"
 #include "device/gamepad/dualshock4_controller_win.h"
 #include "device/gamepad/hid_dll_functions_win.h"
+#include "device/gamepad/hid_haptic_gamepad_win.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 
 namespace device {
@@ -136,6 +137,9 @@ class RawInputGamepadDeviceWin : public AbstractHapticGamepad {
 
   // Dualshock4-specific functionality (e.g., haptics), if available.
   std::unique_ptr<Dualshock4ControllerWin> dualshock4_;
+
+  // A controller that uses a HID output report for vibration effects.
+  std::unique_ptr<HidHapticGamepadWin> hid_haptics_;
 };
 
 }  // namespace device

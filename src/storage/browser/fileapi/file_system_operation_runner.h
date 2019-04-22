@@ -12,6 +12,7 @@
 #include <set>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -19,7 +20,6 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 
@@ -33,7 +33,7 @@ class FileSystemContext;
 // operation fails, in addition to dispatching the callback with an error
 // code (therefore in most cases the caller does not need to check the
 // returned operation ID).
-class STORAGE_EXPORT FileSystemOperationRunner {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
  public:
   using GetMetadataCallback = FileSystemOperation::GetMetadataCallback;
   using ReadDirectoryCallback = FileSystemOperation::ReadDirectoryCallback;
@@ -48,7 +48,7 @@ class STORAGE_EXPORT FileSystemOperationRunner {
   using CopyOrMoveOption = FileSystemOperation::CopyOrMoveOption;
   using GetMetadataField = FileSystemOperation::GetMetadataField;
 
-  using OperationID = int;
+  using OperationID = uint64_t;
 
   virtual ~FileSystemOperationRunner();
 

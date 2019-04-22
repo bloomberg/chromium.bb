@@ -21,7 +21,6 @@ import("//third_party/fuchsia-sdk/fuchsia_sdk_pkg.gni")
 
 """
 
-
 def SerializeListOfStrings(strings):
   """Outputs a list of strings in GN-friendly, double-quoted format."""
 
@@ -31,11 +30,13 @@ def ReformatTargetName(dep_name):
   """Removes the namespace from |target| and substitutes invalid target
   characters with valid ones (e.g. hyphens become underscores)."""
 
-  return dep_name.split('.')[-1].replace('-','_')
+  assert not '.' in dep_name, "Invalid target name: %s" % dep_name
+  reformatted_name = dep_name.replace('-','_')
+  return reformatted_name
 
 def ConvertCommonFields(json):
   """Extracts fields from JSON manifest data which are used across all
-  target types."""
+  target types. Note that FIDL packages do their own processing."""
 
   return {
     'target_name': ReformatTargetName(json['name']),
@@ -72,6 +73,19 @@ def FormatGNTarget(fields):
 
   return output
 
+def ReformatFidlTargetName(dep_name):
+  """Converts a FIDL |dep_name| consisting of dot-delimited namespaces, and
+  package name, to a single underscore delimited name."""
+
+  assert not '-' in dep_name, "Invalid FIDL target name: %s" % dep_name
+
+  # For convenience, treat "fuchsia.*" namespace as top-level.
+  if dep_name[:8] == 'fuchsia.':
+    dep_name = dep_name[8:]
+
+  reformatted_name = dep_name.replace('.','_')
+  return reformatted_name
+
 def ConvertFidlLibrary(json):
   """Converts a fidl_library manifest entry to a GN target.
 
@@ -80,14 +94,18 @@ def ConvertFidlLibrary(json):
   Returns:
     The GN target definition, represented as a string."""
 
-  converted = ConvertCommonFields(json)
-  converted['type'] = 'fuchsia_sdk_fidl_pkg'
-  converted['sources'] = json['sources']
+  converted = {
+      'public_deps': [
+          ':' + ReformatFidlTargetName(dep) for dep in json['deps']],
+      'sources': json['sources'],
+      'target_name': ReformatFidlTargetName(json['name']),
+      'type': 'fuchsia_sdk_fidl_pkg'
+  }
 
-  # FIDL names require special handling, because the namespace needs to be
-  # extracted and used elsewhere.
+  # Override the package name & namespace, otherwise the rule will generate
+  # a top-level package with |target_name| as its directory name.
   name_parts = json['name'].split('.')
-  converted['target_name'] = name_parts[-1]
+  converted['package_name'] = name_parts[-1]
   converted['namespace'] = '.'.join(name_parts[:-1])
 
   return converted
@@ -103,8 +121,12 @@ def ConvertCcPrebuiltLibrary(json):
   converted = ConvertCommonFields(json)
   converted['type'] = 'fuchsia_sdk_pkg'
   converted['sources'] = json['headers']
-  converted['libs'] = [json['name']]
   converted['include_dirs'] = [json['root'] + '/include']
+
+  if json['format'] == 'shared':
+    converted['shared_libs'] = [json['name']]
+  else:
+    converted['static_libs'] = [json['name']]
 
   return converted
 
@@ -130,7 +152,7 @@ def ConvertCcSourceLibrary(json):
 
   converted['include_dirs'] = [json['root'] + '/include']
   converted['public_deps'] += \
-      [':' + ReformatTargetName(dep) for dep in json['fidl_deps']]
+      [':' + ReformatFidlTargetName(dep) for dep in json['fidl_deps']]
 
   return converted
 
@@ -147,6 +169,7 @@ _CONVERSION_FUNCTION_MAP = {
   'cc_prebuilt_library': ConvertCcPrebuiltLibrary,
 
   # No need to build targets for these types yet.
+  'dart_library': ConvertNoOp,
   'host_tool': ConvertNoOp,
   'image': ConvertNoOp,
   'loadable_module': ConvertNoOp,
@@ -164,12 +187,10 @@ def ConvertSdkManifests():
   with open(build_output_path, 'w') as buildfile:
     buildfile.write(_GENERATED_PREAMBLE)
 
-    for next_part in toplevel_meta['parts']:
-      parsed = json.load(open(os.path.join(sdk_base_dir, next_part)))
-      if 'type' not in parsed:
-        raise Exception("Couldn't find 'type' node in %s." % next_part)
+    for part in toplevel_meta['parts']:
+      parsed = json.load(open(os.path.join(sdk_base_dir, part['meta'])))
 
-      convert_function = _CONVERSION_FUNCTION_MAP.get(parsed['type'])
+      convert_function = _CONVERSION_FUNCTION_MAP.get(part['type'])
       if convert_function is None:
         raise Exception('Unexpected SDK artifact type %s in %s.' %
                         (parsed['type'], next_part))

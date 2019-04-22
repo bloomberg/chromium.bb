@@ -6,8 +6,8 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -17,26 +17,18 @@ class TypedNavigationTimingThrottleTest
 // Tests that the throttle is created for navigations to HTTP URLs.
 TEST_F(TypedNavigationTimingThrottleTest, IsCreatedForHTTP) {
   GURL http_url("http://example.test");
-  std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(http_url,
-                                                                  main_rfh());
+  content::MockNavigationHandle handle(http_url, main_rfh());
   std::unique_ptr<content::NavigationThrottle> throttle =
-      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(handle.get());
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(&handle);
   EXPECT_TRUE(throttle);
 }
 
 // Tests that the throttle is not created if the URL is HTTPS.
 TEST_F(TypedNavigationTimingThrottleTest, NotCreatedForHTTPS) {
   GURL https_url("https://example.test");
-  std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          https_url, main_rfh(), false, /* committed */
-          net::OK,                      /* error */
-          false,                        /* is_same_document */
-          false,                        /* is_post */
-          ui::PAGE_TRANSITION_TYPED);
+  content::MockNavigationHandle handle(https_url, main_rfh());
   std::unique_ptr<content::NavigationThrottle> throttle =
-      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(handle.get());
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(&handle);
   EXPECT_FALSE(throttle);
 }
 
@@ -45,25 +37,19 @@ TEST_F(TypedNavigationTimingThrottleTest, URLUpgraded) {
   base::HistogramTester test;
 
   GURL http_url("http://example.test");
-  std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          http_url, main_rfh(), false, /* committed */
-          net::OK,                     /* error */
-          false,                       /* is_same_document */
-          false,                       /* is_post */
-          ui::PAGE_TRANSITION_TYPED);
+  content::MockNavigationHandle handle(http_url, main_rfh());
+  handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+  std::unique_ptr<content::NavigationThrottle> throttle =
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(&handle);
+  ASSERT_TRUE(throttle);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle->CallWillStartRequestForTesting().action());
+            throttle->WillStartRequest().action());
 
   GURL https_url("https://example.test");
+  handle.set_url(https_url);
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillRedirectRequestForTesting(
-                    https_url, false, /* new_method_is_post */
-                    http_url,         /* new_referrer_url */
-                    false /* new_is_external_protocol */)
-                .action());
+            throttle->WillRedirectRequest().action());
 
   test.ExpectTotalCount("Omnibox.URLNavigationTimeToRedirectToHTTPS", 1);
 }
@@ -73,16 +59,14 @@ TEST_F(TypedNavigationTimingThrottleTest, URLNotUpgraded) {
   base::HistogramTester test;
 
   GURL http_url("http://example.test");
-  std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          http_url, main_rfh(), false, /* committed */
-          net::OK,                     /* error */
-          false,                       /* is_same_document */
-          false,                       /* is_post */
-          ui::PAGE_TRANSITION_TYPED);
+  content::MockNavigationHandle handle(http_url, main_rfh());
+  handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+  std::unique_ptr<content::NavigationThrottle> throttle =
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(&handle);
+  ASSERT_TRUE(throttle);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle->CallWillStartRequestForTesting().action());
+            throttle->WillStartRequest().action());
 
   test.ExpectTotalCount("Omnibox.URLNavigationTimeToRedirectToHTTPS", 0);
 }
@@ -93,25 +77,20 @@ TEST_F(TypedNavigationTimingThrottleTest, NonHTTPSRedirect) {
   base::HistogramTester test;
 
   GURL http_url("http://example.test");
-  std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          http_url, main_rfh(), false, /* committed */
-          net::OK,                     /* error */
-          false,                       /* is_same_document */
-          false,                       /* is_post */
-          ui::PAGE_TRANSITION_TYPED);
+  content::MockNavigationHandle handle(http_url, main_rfh());
+  handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+  std::unique_ptr<content::NavigationThrottle> throttle =
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(&handle);
+  ASSERT_TRUE(throttle);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle->CallWillStartRequestForTesting().action());
+            throttle->WillStartRequest().action());
 
   GURL other_url("http://nonexample.test");
+  handle.set_url(other_url);
+
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillRedirectRequestForTesting(
-                    other_url, false, /* new_method_is_post */
-                    http_url,         /* new_referrer_url */
-                    false /* new_is_external_protocol */)
-                .action());
+            throttle->WillStartRequest().action());
 
   test.ExpectTotalCount("Omnibox.URLNavigationTimeToRedirectToHTTPS", 0);
 }
@@ -122,25 +101,20 @@ TEST_F(TypedNavigationTimingThrottleTest, CrossSiteHTTPSRedirect) {
   base::HistogramTester test;
 
   GURL http_url("http://example.test");
-  std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          http_url, main_rfh(), false, /* committed */
-          net::OK,                     /* error */
-          false,                       /* is_same_document */
-          false,                       /* is_post */
-          ui::PAGE_TRANSITION_TYPED);
+  content::MockNavigationHandle handle(http_url, main_rfh());
+  handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+  std::unique_ptr<content::NavigationThrottle> throttle =
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(&handle);
+  ASSERT_TRUE(throttle);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle->CallWillStartRequestForTesting().action());
+            throttle->WillStartRequest().action());
 
   GURL other_url("https://nonexample.test");
+  handle.set_url(other_url);
+
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillRedirectRequestForTesting(
-                    other_url, false, /* new_method_is_post */
-                    http_url,         /* new_referrer_url */
-                    false /* new_is_external_protocol */)
-                .action());
+            throttle->WillStartRequest().action());
 
   test.ExpectTotalCount("Omnibox.URLNavigationTimeToRedirectToHTTPS", 0);
 }
@@ -151,21 +125,18 @@ TEST_F(TypedNavigationTimingThrottleTest, NonTypedNavigation) {
   base::HistogramTester test;
 
   GURL http_url("http://example.test");
-  std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(http_url,
-                                                                  main_rfh());
+  content::MockNavigationHandle handle(http_url, main_rfh());
+  std::unique_ptr<content::NavigationThrottle> throttle =
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(&handle);
+  ASSERT_TRUE(throttle);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle->CallWillStartRequestForTesting().action());
+            throttle->WillStartRequest().action());
 
   GURL https_url("https://example.test");
+  handle.set_url(https_url);
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillRedirectRequestForTesting(
-                    https_url, false, /* new_method_is_post */
-                    http_url,         /* new_referrer_url */
-                    false /* new_is_external_protocol */)
-                .action());
+            throttle->WillRedirectRequest().action());
 
   test.ExpectTotalCount("Omnibox.URLNavigationTimeToRedirectToHTTPS", 0);
 }
@@ -176,53 +147,34 @@ TEST_F(TypedNavigationTimingThrottleTest, ManyRedirects) {
   base::HistogramTester test;
 
   GURL http_url("http://example.test");
-  std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          http_url, main_rfh(), false, /* committed */
-          net::OK,                     /* error */
-          false,                       /* is_same_document */
-          false,                       /* is_post */
-          ui::PAGE_TRANSITION_TYPED);
+  content::MockNavigationHandle handle(http_url, main_rfh());
+  handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+  std::unique_ptr<content::NavigationThrottle> throttle =
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(&handle);
+  ASSERT_TRUE(throttle);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle->CallWillStartRequestForTesting().action());
+            throttle->WillStartRequest().action());
 
   // Redirecting to the "upgraded" URL twice in a row should result in only one
   // activation of the histogram trigger.
   GURL https_url("https://example.test");
+  handle.set_url(https_url);
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillRedirectRequestForTesting(
-                    https_url, false, /* new_method_is_post */
-                    http_url,         /* new_referrer_url */
-                    false /* new_is_external_protocol */)
-                .action());
+            throttle->WillRedirectRequest().action());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillRedirectRequestForTesting(
-                    https_url, false, /* new_method_is_post */
-                    http_url,         /* new_referrer_url */
-                    false /* new_is_external_protocol */)
-                .action());
+            throttle->WillRedirectRequest().action());
 
   // Other redirects should also not affect the histogram.
   GURL other_http_url("http://nonexample.test");
+  handle.set_url(other_http_url);
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillRedirectRequestForTesting(
-                    other_http_url, false, /* new_method_is_post */
-                    https_url,             /* new_referrer_url */
-                    false /* new_is_external_protocol */)
-                .action());
+            throttle->WillRedirectRequest().action());
 
   GURL other_https_url("https://nonexample.test");
+  handle.set_url(other_https_url);
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillRedirectRequestForTesting(
-                    other_https_url, false, /* new_method_is_post */
-                    other_http_url,         /* new_referrer_url */
-                    false /* new_is_external_protocol */)
-                .action());
+            throttle->WillRedirectRequest().action());
 
   test.ExpectTotalCount("Omnibox.URLNavigationTimeToRedirectToHTTPS", 1);
 }
@@ -232,25 +184,19 @@ TEST_F(TypedNavigationTimingThrottleTest, AddWWW) {
   base::HistogramTester test;
 
   GURL http_url("http://example.test");
-  std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          http_url, main_rfh(), false, /* committed */
-          net::OK,                     /* error */
-          false,                       /* is_same_document */
-          false,                       /* is_post */
-          ui::PAGE_TRANSITION_TYPED);
+  content::MockNavigationHandle handle(http_url, main_rfh());
+  handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+  std::unique_ptr<content::NavigationThrottle> throttle =
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(&handle);
+  ASSERT_TRUE(throttle);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle->CallWillStartRequestForTesting().action());
+            throttle->WillStartRequest().action());
 
   GURL https_url("https://www.example.test");
+  handle.set_url(https_url);
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillRedirectRequestForTesting(
-                    https_url, false, /* new_method_is_post */
-                    http_url,         /* new_referrer_url */
-                    false /* new_is_external_protocol */)
-                .action());
+            throttle->WillRedirectRequest().action());
 
   test.ExpectTotalCount("Omnibox.URLNavigationTimeToRedirectToHTTPS", 1);
 }
@@ -260,25 +206,19 @@ TEST_F(TypedNavigationTimingThrottleTest, RemoveWWW) {
   base::HistogramTester test;
 
   GURL http_url("http://www.example.test");
-  std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          http_url, main_rfh(), false, /* committed */
-          net::OK,                     /* error */
-          false,                       /* is_same_document */
-          false,                       /* is_post */
-          ui::PAGE_TRANSITION_TYPED);
+  content::MockNavigationHandle handle(http_url, main_rfh());
+  handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+  std::unique_ptr<content::NavigationThrottle> throttle =
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(&handle);
+  ASSERT_TRUE(throttle);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle->CallWillStartRequestForTesting().action());
+            throttle->WillStartRequest().action());
 
   GURL https_url("https://example.test");
+  handle.set_url(https_url);
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillRedirectRequestForTesting(
-                    https_url, false, /* new_method_is_post */
-                    http_url,         /* new_referrer_url */
-                    false /* new_is_external_protocol */)
-                .action());
+            throttle->WillRedirectRequest().action());
 
   test.ExpectTotalCount("Omnibox.URLNavigationTimeToRedirectToHTTPS", 1);
 }
@@ -288,25 +228,19 @@ TEST_F(TypedNavigationTimingThrottleTest, NonstandardPorts) {
   base::HistogramTester test;
 
   GURL http_url("http://example.test:8080");
-  std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          http_url, main_rfh(), false, /* committed */
-          net::OK,                     /* error */
-          false,                       /* is_same_document */
-          false,                       /* is_post */
-          ui::PAGE_TRANSITION_TYPED);
+  content::MockNavigationHandle handle(http_url, main_rfh());
+  handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+  std::unique_ptr<content::NavigationThrottle> throttle =
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(&handle);
+  ASSERT_TRUE(throttle);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle->CallWillStartRequestForTesting().action());
+            throttle->WillStartRequest().action());
 
   GURL https_url("https://example.test:4443");
+  handle.set_url(https_url);
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillRedirectRequestForTesting(
-                    https_url, false, /* new_method_is_post */
-                    http_url,         /* new_referrer_url */
-                    false /* new_is_external_protocol */)
-                .action());
+            throttle->WillRedirectRequest().action());
 
   test.ExpectTotalCount("Omnibox.URLNavigationTimeToRedirectToHTTPS", 1);
 }

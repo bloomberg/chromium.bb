@@ -14,6 +14,7 @@
 #include <vulkan/vulkan.h>
 
 #include "libANGLE/renderer/vulkan/RendererVk.h"
+#include "libANGLE/renderer/vulkan/android/HardwareBufferImageSiblingVkAndroid.h"
 #include "libANGLE/renderer/vulkan/android/WindowSurfaceVkAndroid.h"
 #include "libANGLE/renderer/vulkan/vk_caps_utils.h"
 
@@ -45,7 +46,7 @@ SurfaceImpl *DisplayVkAndroid::createWindowSurfaceVk(const egl::SurfaceState &st
 
 egl::ConfigSet DisplayVkAndroid::generateConfigs()
 {
-    constexpr GLenum kColorFormats[] = {GL_RGBA8, GL_RGB8, GL_RGB565};
+    constexpr GLenum kColorFormats[] = {GL_RGBA8, GL_RGB8, GL_RGB565, GL_RGB10_A2, GL_RGBA16F};
     constexpr EGLint kSampleCounts[] = {0};
     return egl_vk::GenerateConfigs(kColorFormats, egl_vk::kConfigDepthStencilFormats, kSampleCounts,
                                    this);
@@ -58,7 +59,39 @@ bool DisplayVkAndroid::checkConfigSupport(egl::Config *config)
     return true;
 }
 
-const char *DisplayVkAndroid::getWSIName() const
+egl::Error DisplayVkAndroid::validateImageClientBuffer(const gl::Context *context,
+                                                       EGLenum target,
+                                                       EGLClientBuffer clientBuffer,
+                                                       const egl::AttributeMap &attribs) const
+{
+    switch (target)
+    {
+        case EGL_NATIVE_BUFFER_ANDROID:
+            return HardwareBufferImageSiblingVkAndroid::ValidateHardwareBuffer(mRenderer,
+                                                                               clientBuffer);
+
+        default:
+            return DisplayVk::validateImageClientBuffer(context, target, clientBuffer, attribs);
+    }
+}
+
+ExternalImageSiblingImpl *DisplayVkAndroid::createExternalImageSibling(
+    const gl::Context *context,
+    EGLenum target,
+    EGLClientBuffer buffer,
+    const egl::AttributeMap &attribs)
+{
+    switch (target)
+    {
+        case EGL_NATIVE_BUFFER_ANDROID:
+            return new HardwareBufferImageSiblingVkAndroid(buffer);
+
+        default:
+            return DisplayVk::createExternalImageSibling(context, target, buffer, attribs);
+    }
+}
+
+const char *DisplayVkAndroid::getWSIExtension() const
 {
     return VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;
 }

@@ -24,7 +24,7 @@ class ClipboardAura : public Clipboard {
   // Clipboard overrides:
   void OnPreShutdown() override;
   uint64_t GetSequenceNumber(ClipboardType type) const override;
-  bool IsFormatAvailable(const FormatType& format,
+  bool IsFormatAvailable(const ClipboardFormatType& format,
                          ClipboardType type) const override;
   void Clear(ClipboardType type) override;
   void ReadAvailableTypes(ClipboardType type,
@@ -43,7 +43,8 @@ class ClipboardAura : public Clipboard {
                       const base::string16& type,
                       base::string16* result) const override;
   void ReadBookmark(base::string16* title, std::string* url) const override;
-  void ReadData(const FormatType& format, std::string* result) const override;
+  void ReadData(const ClipboardFormatType& format,
+                std::string* result) const override;
   void WriteObjects(ClipboardType type, const ObjectMap& objects) override;
   void WriteText(const char* text_data, size_t text_len) override;
   void WriteHTML(const char* markup_data,
@@ -57,7 +58,7 @@ class ClipboardAura : public Clipboard {
                      size_t url_len) override;
   void WriteWebSmartPaste() override;
   void WriteBitmap(const SkBitmap& bitmap) override;
-  void WriteData(const FormatType& format,
+  void WriteData(const ClipboardFormatType& format,
                  const char* data_data,
                  size_t data_len) override;
 

@@ -16,12 +16,14 @@ V8ContextNativeHandler::V8ContextNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context), context_(context) {}
 
 void V8ContextNativeHandler::AddRoutes() {
-  RouteHandlerFunction("GetAvailability",
-                       base::Bind(&V8ContextNativeHandler::GetAvailability,
-                                  base::Unretained(this)));
-  RouteHandlerFunction("GetModuleSystem",
-                       base::Bind(&V8ContextNativeHandler::GetModuleSystem,
-                                  base::Unretained(this)));
+  RouteHandlerFunction(
+      "GetAvailability",
+      base::BindRepeating(&V8ContextNativeHandler::GetAvailability,
+                          base::Unretained(this)));
+  RouteHandlerFunction(
+      "GetModuleSystem",
+      base::BindRepeating(&V8ContextNativeHandler::GetModuleSystem,
+                          base::Unretained(this)));
 }
 
 void V8ContextNativeHandler::GetAvailability(
@@ -31,24 +33,30 @@ void V8ContextNativeHandler::GetAvailability(
   std::string api_name = *v8::String::Utf8Value(isolate, args[0]);
   Feature::Availability availability = context_->GetAvailability(api_name);
 
+  v8::Local<v8::Context> context = context_->v8_context();
   v8::Local<v8::Object> ret = v8::Object::New(isolate);
-  v8::Maybe<bool> maybe =
-      ret->SetPrototype(context_->v8_context(), v8::Null(isolate));
+  v8::Maybe<bool> maybe = ret->SetPrototype(context, v8::Null(isolate));
   CHECK(maybe.IsJust() && maybe.FromJust());
-  ret->Set(v8::String::NewFromUtf8(isolate, "is_available",
+  ret->Set(context,
+           v8::String::NewFromUtf8(isolate, "is_available",
                                    v8::NewStringType::kInternalized)
                .ToLocalChecked(),
-           v8::Boolean::New(isolate, availability.is_available()));
-  ret->Set(v8::String::NewFromUtf8(isolate, "message",
+           v8::Boolean::New(isolate, availability.is_available()))
+      .ToChecked();
+  ret->Set(context,
+           v8::String::NewFromUtf8(isolate, "message",
                                    v8::NewStringType::kInternalized)
                .ToLocalChecked(),
            v8::String::NewFromUtf8(isolate, availability.message().c_str(),
                                    v8::NewStringType::kNormal)
-               .ToLocalChecked());
-  ret->Set(v8::String::NewFromUtf8(isolate, "result",
+               .ToLocalChecked())
+      .ToChecked();
+  ret->Set(context,
+           v8::String::NewFromUtf8(isolate, "result",
                                    v8::NewStringType::kInternalized)
                .ToLocalChecked(),
-           v8::Integer::New(isolate, availability.result()));
+           v8::Integer::New(isolate, availability.result()))
+      .ToChecked();
   args.GetReturnValue().Set(ret);
 }
 

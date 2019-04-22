@@ -18,9 +18,11 @@ project(LibProtobufMutator CXX)
 enable_language(C)
 enable_language(CXX)
 
+option(LIB_PROTO_MUTATOR_TESTING "Enable test building" ON)
 option(LIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF
        "Automatically download working protobuf" OFF)
 option(LIB_PROTO_MUTATOR_WITH_ASAN "Enable address sanitizer" OFF)
+option(PKG_CONFIG_PATH "Directory to install pkgconfig file" "share/pkgconfig")
 set(LIB_PROTO_MUTATOR_FUZZER_LIBRARIES "" CACHE STRING "Fuzzing engine libs")
 
 # External dependencies
@@ -110,17 +112,19 @@ else()
   include_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
-enable_testing()
-
 set(LIB_DIR "lib${LIB_SUFFIX}")
 
-include(googletest)
+if (LIB_PROTO_MUTATOR_TESTING)
+  enable_testing()
 
-if (NOT LIB_PROTO_MUTATOR_CTEST_JOBS)
-  ProcessorCount(LIB_PROTO_MUTATOR_CTEST_JOBS)
+  include(googletest)
+
+  if (NOT LIB_PROTO_MUTATOR_CTEST_JOBS)
+    ProcessorCount(LIB_PROTO_MUTATOR_CTEST_JOBS)
+  endif()
+  add_custom_target(check
+                    COMMAND ${CMAKE_CTEST_COMMAND} -j${LIB_PROTO_MUTATOR_CTEST_JOBS} --output-on-failure)
 endif()
-add_custom_target(check
-                  COMMAND ${CMAKE_CTEST_COMMAND} -j${LIB_PROTO_MUTATOR_CTEST_JOBS} --output-on-failure)
 
 add_subdirectory(src)
 
@@ -131,6 +135,6 @@ endif()
 
 configure_file("libprotobuf-mutator.pc.in" "libprotobuf-mutator.pc" @ONLY)
 install(FILES "${CMAKE_BINARY_DIR}/libprotobuf-mutator.pc"
-  DESTINATION share/pkgconfg)
+  DESTINATION ${PKG_CONFIG_PATH})
 install(DIRECTORY ./port ./src DESTINATION include/libprotobuf-mutator
   FILES_MATCHING PATTERN "*.h")

@@ -161,7 +161,7 @@ void CreatePassport(const std::string& domain,
   blob = domain + kItemSeparator;
   std::string tmp;
   ConvertVarValueMapToBlob(map, &tmp);
-  blob += tmp + kItemSeparator + base::Int64ToString(tick);
+  blob += tmp + kItemSeparator + base::NumberToString(tick);
 
   std::string hmac;
   unsigned char* hmac_data = reinterpret_cast<unsigned char*>(
@@ -179,7 +179,7 @@ void CreatePassport(const std::string& domain,
   DCHECK(hmac_base64.size() < result.size());
   std::copy(hmac_base64.begin(), hmac_base64.end(), result.begin());
 
-  std::string tick_decimal = base::Int64ToString(tick);
+  std::string tick_decimal = base::NumberToString(tick);
   DCHECK(tick_decimal.size() <= kTickStringLength);
   std::copy(
       tick_decimal.begin(),

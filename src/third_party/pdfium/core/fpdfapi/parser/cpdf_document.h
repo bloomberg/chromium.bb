@@ -30,6 +30,7 @@ class CPDF_Font;
 class CPDF_FontEncoding;
 class CPDF_IccProfile;
 class CPDF_LinearizedHeader;
+class CPDF_Object;
 class CPDF_Pattern;
 class CPDF_ReadValidator;
 class CPDF_StreamAcc;
@@ -109,6 +110,9 @@ class CPDF_Document : public Observable<CPDF_Document>,
   CPDF_Parser::Error LoadLinearizedDoc(
       const RetainPtr<CPDF_ReadValidator>& validator,
       const char* password);
+  bool has_valid_cross_reference_table() const {
+    return m_bHasValidCrossReferenceTable;
+  }
 
   void LoadPages();
   void CreateNewDoc();
@@ -117,7 +121,8 @@ class CPDF_Document : public Observable<CPDF_Document>,
   void IncrementParsedPageCount() { ++m_ParsedPageCount; }
   uint32_t GetParsedPageCountForTesting() { return m_ParsedPageCount; }
 
-  CPDF_Font* AddStandardFont(const char* font, CPDF_FontEncoding* pEncoding);
+  CPDF_Font* AddStandardFont(const char* font,
+                             const CPDF_FontEncoding* pEncoding);
   CPDF_Font* AddFont(CFX_Font* pFont, int charset);
 
 #if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
@@ -160,6 +165,7 @@ class CPDF_Document : public Observable<CPDF_Document>,
   bool InsertNewPage(int iPage, CPDF_Dictionary* pPageDict);
   void ResetTraversal();
   void SetParser(std::unique_ptr<CPDF_Parser> pParser);
+  CPDF_Parser::Error HandleLoadResult(CPDF_Parser::Error error);
 
   std::unique_ptr<CPDF_Parser> m_pParser;
   UnownedPtr<CPDF_Dictionary> m_pRootDict;
@@ -171,12 +177,19 @@ class CPDF_Document : public Observable<CPDF_Document>,
   // of the child being processed within the dictionary's /Kids array.
   std::vector<std::pair<CPDF_Dictionary*, size_t>> m_pTreeTraversal;
 
+  // True if the CPDF_Parser succeeded without having to rebuild the cross
+  // reference table.
+  bool m_bHasValidCrossReferenceTable = false;
+
   // Index of the next page that will be traversed from the page tree.
-  int m_iNextPageToTraverse = 0;
   bool m_bReachedMaxPageLevel = false;
+  int m_iNextPageToTraverse = 0;
   uint32_t m_ParsedPageCount = 0;
-  std::unique_ptr<CPDF_DocPageData> m_pDocPage;
+
   std::unique_ptr<CPDF_DocRenderData> m_pDocRender;
+  // Must be after |m_pDocRender|.
+  std::unique_ptr<CPDF_DocPageData> m_pDocPage;
+
   std::unique_ptr<JBig2_DocumentContext> m_pCodecContext;
   std::unique_ptr<CPDF_LinkList> m_pLinksContext;
   std::vector<uint32_t> m_PageList;  // Page number to page's dict objnum.

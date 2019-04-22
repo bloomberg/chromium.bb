@@ -5,9 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_PROXY_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_PIPE_CONTROL_MESSAGE_PROXY_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/disconnect_reason.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
@@ -20,7 +20,7 @@ class MessageReceiver;
 // Proxy for request messages defined in pipe_control_messages.mojom.
 //
 // NOTE: This object may be used from multiple sequences.
-class MOJO_CPP_BINDINGS_EXPORT PipeControlMessageProxy {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) PipeControlMessageProxy {
  public:
   // Doesn't take ownership of |receiver|. If This PipeControlMessageProxy will
   // be used from multiple sequences, |receiver| must be thread-safe.

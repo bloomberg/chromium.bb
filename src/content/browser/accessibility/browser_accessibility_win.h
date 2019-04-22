@@ -25,7 +25,6 @@ class CONTENT_EXPORT BrowserAccessibilityWin : public BrowserAccessibility {
   //
   // BrowserAccessibility methods.
   //
-  void OnSubtreeWillBeDeleted() override;
   bool IsNative() const override;
   void OnLocationChanged() override;
   base::string16 GetText() const override;
@@ -42,11 +41,11 @@ class CONTENT_EXPORT BrowserAccessibilityWin : public BrowserAccessibility {
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityWin);
 };
 
-CONTENT_EXPORT BrowserAccessibilityWin*
-ToBrowserAccessibilityWin(BrowserAccessibility* obj);
+CONTENT_EXPORT BrowserAccessibilityWin* ToBrowserAccessibilityWin(
+    BrowserAccessibility* obj);
 
-CONTENT_EXPORT const BrowserAccessibilityWin*
-ToBrowserAccessibilityWin(const BrowserAccessibility* obj);
+CONTENT_EXPORT const BrowserAccessibilityWin* ToBrowserAccessibilityWin(
+    const BrowserAccessibility* obj);
 
 }  // namespace content
 

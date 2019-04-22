@@ -76,11 +76,12 @@ base::WeakPtr<BackgroundHTMLParser> BackgroundHTMLParser::Create(
 void BackgroundHTMLParser::Init(
     const KURL& document_url,
     std::unique_ptr<CachedDocumentParameters> cached_document_parameters,
-    const MediaValuesCached::MediaValuesCachedData& media_values_cached_data) {
+    const MediaValuesCached::MediaValuesCachedData& media_values_cached_data,
+    bool priority_hints_origin_trial_enabled) {
   preload_scanner_.reset(new TokenPreloadScanner(
       document_url, std::move(cached_document_parameters),
-      media_values_cached_data,
-      TokenPreloadScanner::ScannerType::kMainDocument));
+      media_values_cached_data, TokenPreloadScanner::ScannerType::kMainDocument,
+      priority_hints_origin_trial_enabled));
 }
 
 BackgroundHTMLParser::Configuration::Configuration() {}
@@ -89,7 +90,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(
     std::unique_ptr<Configuration> config,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
     : token_(std::make_unique<HTMLToken>()),
-      tokenizer_(HTMLTokenizer::Create(config->options)),
+      tokenizer_(std::make_unique<HTMLTokenizer>(config->options)),
       tree_builder_simulator_(config->options),
       options_(config->options),
       parser_(config->parser),
@@ -99,8 +100,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(
       pending_csp_meta_token_index_(
           HTMLDocumentParser::TokenizedChunk::kNoPendingToken),
       starting_script_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 BackgroundHTMLParser::~BackgroundHTMLParser() = default;
 

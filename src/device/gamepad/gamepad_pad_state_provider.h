@@ -18,6 +18,9 @@ namespace device {
 
 class GamepadDataFetcher;
 
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "GamepadSource" in src/tools/metrics/histograms/enums.xml.
 enum GamepadSource {
   GAMEPAD_SOURCE_NONE = 0,
   GAMEPAD_SOURCE_ANDROID,
@@ -27,11 +30,14 @@ enum GamepadSource {
   GAMEPAD_SOURCE_MAC_GC,
   GAMEPAD_SOURCE_MAC_HID,
   GAMEPAD_SOURCE_MAC_XBOX,
+  GAMEPAD_SOURCE_NINTENDO,
   GAMEPAD_SOURCE_OCULUS,
   GAMEPAD_SOURCE_OPENVR,
   GAMEPAD_SOURCE_TEST,
   GAMEPAD_SOURCE_WIN_XINPUT,
   GAMEPAD_SOURCE_WIN_RAW,
+  GAMEPAD_SOURCE_WIN_MR,
+  kMaxValue = GAMEPAD_SOURCE_WIN_MR,
 };
 
 struct PadState {

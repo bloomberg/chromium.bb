@@ -7,12 +7,11 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_CONSTANTS_H_
 #define COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_CONSTANTS_H_
 
-#include <stddef.h>         // For size_t
+#include <stddef.h>  // For size_t
+
+#include "base/time/time.h"
 
 namespace autofill {
-
-// Help URL for the Autofill dialog.
-extern const char kHelpURL[];
 
 // The origin of an AutofillDataModel created or modified in the settings page.
 extern const char kSettingsOrigin[];
@@ -44,6 +43,20 @@ enum ShowPasswordSuggestionsOptions {
 // TODO(crbug.com/884817): Remove once StrikeDatabase v2 moves this constant to
 // its own credit card save policy.
 const int kMaxStrikesToPreventPoppingUpOfferToSavePrompt = 3;
+
+// Constants for the soft/hard deletion of Autofill data.
+constexpr base::TimeDelta kDisusedDataModelTimeDelta =
+    base::TimeDelta::FromDays(180);
+constexpr base::TimeDelta kDisusedDataModelDeletionTimeDelta =
+    base::TimeDelta::FromDays(395);
+
+// Returns if the entry with the given |use_date| is deletable? (i.e. has not
+// been used for a long time).
+bool IsAutofillEntryWithUseDateDeletable(const base::Time& use_date);
+
+// The period after which autocomplete entries should be cleaned-up in days.
+// Equivalent to roughly 14 months.
+const int64_t kAutocompleteRetentionPolicyPeriodInDays = 14 * 31;
 
 }  // namespace autofill
 

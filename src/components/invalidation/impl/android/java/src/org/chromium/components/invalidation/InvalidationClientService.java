@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import com.google.ipc.invalidation.external.client.InvalidationListener.RegistrationState;
 import com.google.ipc.invalidation.external.client.contrib.AndroidListener;
@@ -28,8 +29,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelTypeHelper;
 import org.chromium.components.sync.SyncConstants;
@@ -43,8 +44,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.annotation.Nullable;
 
 /**
  * Service that controls notifications for sync.
@@ -258,16 +257,17 @@ public class InvalidationClientService extends AndroidListener {
         ThreadUtils.runOnUiThread(() -> {
             // Attempt to retrieve a token for the user. This method will also invalidate
             // invalidAuthToken if it is non-null.
-            AccountManagerFacade.get().getNewAuthToken(account, invalidAuthToken,
-                    getOAuth2ScopeWithType(), new AccountManagerFacade.GetAuthTokenCallback() {
+            OAuth2TokenService.getNewAccessToken(account, invalidAuthToken,
+                    SyncConstants.CHROME_SYNC_OAUTH2_SCOPE,
+                    new OAuth2TokenService.GetAccessTokenCallback() {
                         @Override
-                        public void tokenAvailable(String token) {
+                        public void onGetTokenSuccess(String token) {
                             setAuthToken(InvalidationClientService.this.getApplicationContext(),
-                                    pendingIntent, token, getOAuth2ScopeWithType());
+                                    pendingIntent, token, SyncConstants.CHROME_SYNC_OAUTH2_SCOPE);
                         }
 
                         @Override
-                        public void tokenUnavailable(boolean isTransientError) {}
+                        public void onGetTokenFailure(boolean isTransientError) {}
                     });
         });
     }
@@ -535,10 +535,6 @@ public class InvalidationClientService extends AndroidListener {
     @VisibleForTesting
     @Nullable static byte[] getClientIdForTest() {
         return sClientId;
-    }
-
-    private static String getOAuth2ScopeWithType() {
-        return "oauth2:" + SyncConstants.CHROME_SYNC_OAUTH2_SCOPE;
     }
 
     private static void setClientId(byte[] clientId) {

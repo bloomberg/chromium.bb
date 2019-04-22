@@ -7,6 +7,7 @@
 
 #include "ash/public/interfaces/assistant_setup.mojom.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -24,7 +25,12 @@ class AssistantSetup : public ash::mojom::AssistantSetup,
 
   // ash::mojom::AssistantSetup:
   void StartAssistantOptInFlow(
+      ash::mojom::FlowType type,
       StartAssistantOptInFlowCallback callback) override;
+
+  // If prefs::kVoiceInteractionConsentStatus is nullptr, means the
+  // pref is not set by user. Therefore we need to start OOBE.
+  void MaybeStartAssistantOptInFlow();
 
  private:
   // arc::VoiceInteractionControllerClient::Observer overrides
@@ -36,6 +42,8 @@ class AssistantSetup : public ash::mojom::AssistantSetup,
   service_manager::Connector* connector_;
   chromeos::assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
   mojo::Binding<ash::mojom::AssistantSetup> binding_;
+
+  base::WeakPtrFactory<AssistantSetup> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantSetup);
 };

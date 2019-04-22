@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 432 tests; 417 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 441 tests; 426 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["createlink","http://www.google.com/"]] "foo[]bar": execCommand("createlink", false, "http://www.google.com/") return value
 PASS [["createlink","http://www.google.com/"]] "foo[]bar" checks for modifications to non-editable content
 FAIL [["createlink","http://www.google.com/"]] "foo[]bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobar" but got "foo<a href=\"http://www.google.com/\">http://www.google.com/</a>bar"
@@ -432,5 +432,14 @@ PASS [["createlink",""]] "foo[bar]baz" queryCommandValue("createlink") before
 PASS [["createlink",""]] "foo[bar]baz" queryCommandIndeterm("createlink") after
 PASS [["createlink",""]] "foo[bar]baz" queryCommandState("createlink") after
 PASS [["createlink",""]] "foo[bar]baz" queryCommandValue("createlink") after
+PASS [["createlink","http://www.google.com/日本語パス"]] "foo[bar]baz": execCommand("createlink", false, "http://www.google.com/日本語パス") return value
+PASS [["createlink","http://www.google.com/日本語パス"]] "foo[bar]baz" checks for modifications to non-editable content
+PASS [["createlink","http://www.google.com/日本語パス"]] "foo[bar]baz" compare innerHTML
+PASS [["createlink","http://www.google.com/日本語パス"]] "foo[bar]baz" queryCommandIndeterm("createlink") before
+PASS [["createlink","http://www.google.com/日本語パス"]] "foo[bar]baz" queryCommandState("createlink") before
+PASS [["createlink","http://www.google.com/日本語パス"]] "foo[bar]baz" queryCommandValue("createlink") before
+PASS [["createlink","http://www.google.com/日本語パス"]] "foo[bar]baz" queryCommandIndeterm("createlink") after
+PASS [["createlink","http://www.google.com/日本語パス"]] "foo[bar]baz" queryCommandState("createlink") after
+PASS [["createlink","http://www.google.com/日本語パス"]] "foo[bar]baz" queryCommandValue("createlink") after
 Harness: the test ran to completion.
 

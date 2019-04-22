@@ -65,10 +65,11 @@ function log(div, message) {
     div.innerHTML = message;
 }
 
-runTest(document.getElementById('rtl-in-ltr-first'), 'first', 0);
-runTest(document.getElementById('rtl-in-ltr-last'), 'last', 7);
-runTest(document.getElementById('ltr-in-rtl-first'), 'first', 7);
-runTest(document.getElementById('ltr-in-rtl-last'), 'last', 0);
+const usesBidiAffinity = window.internals && internals.runtimeFlags.bidiCaretAffinityEnabled;
+runTest(document.getElementById('rtl-in-ltr-first'), 'first', usesBidiAffinity ? 7 : 0);
+runTest(document.getElementById('rtl-in-ltr-last'), 'last', usesBidiAffinity ? 0 : 7);
+runTest(document.getElementById('ltr-in-rtl-first'), 'first', usesBidiAffinity ? 0 : 7);
+runTest(document.getElementById('ltr-in-rtl-last'), 'last', usesBidiAffinity ? 7 : 0);
 
 </script>
 </body>

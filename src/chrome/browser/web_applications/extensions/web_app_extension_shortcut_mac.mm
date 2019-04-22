@@ -4,6 +4,8 @@
 
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut_mac.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -88,9 +90,13 @@ void RebuildAppAndLaunch(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
       shortcut_info->extension_id, extensions::ExtensionRegistry::ENABLED);
   if (!extension || !extension->is_platform_app())
     return;
-
-  web_app::GetShortcutInfoForApp(extension, profile,
-                                 base::BindOnce(&UpdateAndLaunchShim));
+  base::OnceCallback<void(base::Process)> launched_callback = base::DoNothing();
+  base::OnceClosure terminated_callback = base::DoNothing();
+  web_app::GetShortcutInfoForApp(
+      extension, profile,
+      base::BindOnce(
+          &LaunchShim, LaunchShimUpdateBehavior::RECREATE_IF_INSTALLED,
+          std::move(launched_callback), std::move(terminated_callback)));
 }
 
 bool MaybeRebuildShortcut(const base::CommandLine& command_line) {
@@ -152,7 +158,8 @@ void ShowCreateChromeAppShortcutsDialog(
   // On Mac, the Applications folder is the only option, so don't bother asking
   // the user anything. Just create shortcuts.
   CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
-                  web_app::ShortcutLocations(), profile, app);
+                  web_app::ShortcutLocations(), profile, app,
+                  base::DoNothing());
   if (!close_callback.is_null())
     close_callback.Run(true);
 }

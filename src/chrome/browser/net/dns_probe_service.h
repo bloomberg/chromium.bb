@@ -8,16 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/macros.h"
-#include "base/time/time.h"
-#include "chrome/browser/net/dns_probe_runner.h"
+#include "base/callback.h"
 #include "components/error_page/common/net_error_info.h"
-#include "net/base/network_change_notifier.h"
-
-namespace net {
-class DnsClient;
-}
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace chrome_browser_net {
 
@@ -26,54 +19,17 @@ namespace chrome_browser_net {
 // (perhaps from multiple tabs) and caches the results.
 //
 // Uses a single DNS attempt per config, and doesn't randomize source ports.
-class DnsProbeService : public net::NetworkChangeNotifier::DNSObserver {
+//
+// Use DnsProbeServiceFactory to get a service handle.
+class DnsProbeService : public KeyedService {
  public:
-  typedef base::Callback<void(error_page::DnsProbeStatus result)>
-      ProbeCallback;
+  using ProbeCallback =
+      base::OnceCallback<void(error_page::DnsProbeStatus result)>;
 
-  DnsProbeService();
-  ~DnsProbeService() override;
-
-  virtual void ProbeDns(const ProbeCallback& callback);
-
-  // NetworkChangeNotifier::DNSObserver implementation:
-  void OnDNSChanged() override;
-  void OnInitialDNSConfigRead() override;
-
-  void SetSystemClientForTesting(std::unique_ptr<net::DnsClient> system_client);
-  void SetPublicClientForTesting(std::unique_ptr<net::DnsClient> public_client);
-  void ClearCachedResultForTesting();
-
- private:
-  enum State {
-    STATE_NO_RESULT,
-    STATE_PROBE_RUNNING,
-    STATE_RESULT_CACHED,
-  };
-
-  void SetSystemClientToCurrentConfig();
-  void SetPublicClientToGooglePublicDns();
-
-  // Starts a probe (runs system and public probes).
-  void StartProbes();
-  void OnProbeComplete();
-  // Calls all |pending_callbacks_| with the |cached_result_|.
-  void CallCallbacks();
-  // Clears a cached probe result.
-  void ClearCachedResult();
-
-  bool CachedResultIsExpired() const;
-
-  State state_;
-  std::vector<ProbeCallback> pending_callbacks_;
-  base::Time probe_start_time_;
-  error_page::DnsProbeStatus cached_result_;
-
-  // DnsProbeRunners for the system DNS configuration and a public DNS server.
-  DnsProbeRunner system_runner_;
-  DnsProbeRunner public_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DnsProbeService);
+  // Starts a DNS probe, or uses an existing probe result if a probe is already
+  // in progress or recently completed. |callback| will be called
+  // asynchronously with the probe result.
+  virtual void ProbeDns(ProbeCallback callback) = 0;
 };
 
 }  // namespace chrome_browser_net

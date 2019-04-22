@@ -6,6 +6,7 @@ package org.chromium.components.variations.firstrun;
 
 import android.content.SharedPreferences;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -17,6 +18,8 @@ import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -27,7 +30,6 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Fetches the variations seed before the actual first run of Chrome.
@@ -35,7 +37,12 @@ import java.util.concurrent.TimeUnit;
 public class VariationsSeedFetcher {
     private static final String TAG = "VariationsSeedFetch";
 
-    public enum VariationsPlatform { ANDROID, ANDROID_WEBVIEW }
+    @IntDef({VariationsPlatform.ANDROID, VariationsPlatform.ANDROID_WEBVIEW})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface VariationsPlatform {
+        int ANDROID = 0;
+        int ANDROID_WEBVIEW = 1;
+    }
 
     private static final String VARIATIONS_SERVER_URL =
             "https://clientservices.googleapis.com/chrome-variations/seed?osname=";
@@ -85,7 +92,7 @@ public class VariationsSeedFetcher {
 
     @VisibleForTesting
     protected HttpURLConnection getServerConnection(
-            VariationsPlatform platform, String restrictMode, String milestone, String channel)
+            @VariationsPlatform int platform, String restrictMode, String milestone, String channel)
             throws MalformedURLException, IOException {
         String urlString = getConnectionString(platform, restrictMode, milestone, channel);
         URL url = new URL(urlString);
@@ -93,14 +100,14 @@ public class VariationsSeedFetcher {
     }
 
     @VisibleForTesting
-    protected String getConnectionString(
-            VariationsPlatform platform, String restrictMode, String milestone, String channel) {
+    protected String getConnectionString(@VariationsPlatform int platform, String restrictMode,
+            String milestone, String channel) {
         String urlString = VARIATIONS_SERVER_URL;
         switch (platform) {
-            case ANDROID:
+            case VariationsPlatform.ANDROID:
                 urlString += "android";
                 break;
-            case ANDROID_WEBVIEW:
+            case VariationsPlatform.ANDROID_WEBVIEW:
                 urlString += "android_webview";
                 break;
             default:
@@ -192,14 +199,14 @@ public class VariationsSeedFetcher {
 
     private void recordSeedFetchTime(long timeDeltaMillis) {
         Log.i(TAG, "Fetched first run seed in " + timeDeltaMillis + " ms");
-        TimesHistogramSample histogram = new TimesHistogramSample(
-                "Variations.FirstRun.SeedFetchTime", TimeUnit.MILLISECONDS);
+        TimesHistogramSample histogram =
+                new TimesHistogramSample("Variations.FirstRun.SeedFetchTime");
         histogram.record(timeDeltaMillis);
     }
 
     private void recordSeedConnectTime(long timeDeltaMillis) {
-        TimesHistogramSample histogram = new TimesHistogramSample(
-                "Variations.FirstRun.SeedConnectTime", TimeUnit.MILLISECONDS);
+        TimesHistogramSample histogram =
+                new TimesHistogramSample("Variations.FirstRun.SeedConnectTime");
         histogram.record(timeDeltaMillis);
     }
 
@@ -217,7 +224,7 @@ public class VariationsSeedFetcher {
      * connection.
      */
     public SeedInfo downloadContent(
-            VariationsPlatform platform, String restrictMode, String milestone, String channel)
+            @VariationsPlatform int platform, String restrictMode, String milestone, String channel)
             throws SocketTimeoutException, UnknownHostException, IOException {
         HttpURLConnection connection = null;
         try {

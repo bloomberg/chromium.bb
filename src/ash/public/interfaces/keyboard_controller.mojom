@@ -7,6 +7,7 @@ module ash.mojom;
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/keyboard/public/keyboard_config.mojom";
 import "ui/keyboard/public/keyboard_controller_types.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 enum HideReason {
   // Hide requested by an explicit user action.
@@ -41,9 +42,24 @@ interface KeyboardControllerObserver {
   // Called when the keyboard occluded bounds change. |screen_bounds| is in
   // screen coordinates.
   OnKeyboardOccludedBoundsChanged(gfx.mojom.Rect screen_bounds);
+
+  // Signals a request to load the keyboard contents. If the contents are
+  // already loaded, requests a reload. Once the contents have loaded,
+  // KeyboardController.KeyboardContentsLoaded is expected to be called by the
+  // client implementation.
+  OnLoadKeyboardContentsRequested();
+
+  // Called when the UI has been destroyed so that the client can reset the
+  // embedded contents and handle.
+  OnKeyboardUIDestroyed();
 };
 
 interface KeyboardController {
+  // Informs the controller that the keyboard contents have loaded. Provides a
+  // token for embedding the client window and the size of the contents.
+  KeyboardContentsLoaded(mojo_base.mojom.UnguessableToken token,
+                         gfx.mojom.Size size);
+
   // Retrieves the current keyboard configuration.
   GetKeyboardConfig() => (keyboard.mojom.KeyboardConfig config);
 
@@ -57,7 +73,7 @@ interface KeyboardController {
   // changes, enables or disables the keyboard to match the new state.
   SetEnableFlag(keyboard.mojom.KeyboardEnableFlag flag);
 
-  // Clears the privided keyboard enable flag. If the computed enabled state
+  // Clears the provided keyboard enable flag. If the computed enabled state
   // changes, enables or disables the keyboard to match the new state.
   ClearEnableFlag(keyboard.mojom.KeyboardEnableFlag flag);
 

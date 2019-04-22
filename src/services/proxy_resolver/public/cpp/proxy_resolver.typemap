@@ -5,8 +5,8 @@
 mojom = "//services/proxy_resolver/public/mojom/proxy_resolver.mojom"
 public_headers = [
   "//net/base/proxy_server.h",
-  "//net/dns/host_resolver.h",
   "//net/proxy_resolution/proxy_info.h",
+  "//net/proxy_resolution/proxy_resolve_dns_operation.h",
 ]
 traits_headers = [
   "//services/proxy_resolver/public/cpp/mojo_host_struct_traits.h",
@@ -17,7 +17,7 @@ sources = [
   "//services/proxy_resolver/public/cpp/proxy_resolver_mojom_traits.cc",
 ]
 type_mappings = [
-  "proxy_resolver.mojom.HostResolverRequestInfo=std::unique_ptr<net::HostResolver::RequestInfo>[move_only]",
+  "proxy_resolver.mojom.HostResolveOperation=net::ProxyResolveDnsOperation",
   "proxy_resolver.mojom.ProxyInfo=net::ProxyInfo",
   "proxy_resolver.mojom.ProxyServer=net::ProxyServer",
   "proxy_resolver.mojom.ProxyServer::Scheme=net::ProxyScheme",

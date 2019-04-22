@@ -72,8 +72,9 @@ cr.define('settings', function() {
         this.lockScreenEnabled = enabled;
         clearError_();
       }
-      if (onComplete)
+      if (onComplete) {
         onComplete();
+      }
     },
 
     /**
@@ -137,8 +138,9 @@ cr.define('settings', function() {
         errors.push(chrome.quickUnlockPrivate.CredentialProblem.TOO_LONG);
       }
 
-      if (!!credential && TEST_WEAK_PINS.includes(credential))
+      if (!!credential && TEST_WEAK_PINS.includes(credential)) {
         warnings.push(chrome.quickUnlockPrivate.CredentialProblem.TOO_WEAK);
+      }
 
       message.errors = errors;
       message.warnings = warnings;

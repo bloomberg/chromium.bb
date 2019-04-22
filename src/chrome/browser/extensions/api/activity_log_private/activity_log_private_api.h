@@ -50,6 +50,8 @@ class ActivityLogAPI : public BrowserContextKeyedAPI,
   void OnListenerAdded(const EventListenerInfo& details) override;
   void OnListenerRemoved(const EventListenerInfo& details) override;
 
+  void StartOrStopListeningForExtensionActivities();
+
   content::BrowserContext* browser_context_;
   ActivityLog* activity_log_;
   bool initialized_;
@@ -88,6 +90,20 @@ class ActivityLogPrivateDeleteActivitiesFunction
 
  protected:
   ~ActivityLogPrivateDeleteActivitiesFunction() override {}
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
+// The implementation of activityLogPrivate.deleteActivitiesByExtension
+class ActivityLogPrivateDeleteActivitiesByExtensionFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("activityLogPrivate.deleteActivitiesByExtension",
+                             ACTIVITYLOGPRIVATE_DELETEACTIVITIESBYEXTENSION)
+
+ protected:
+  ~ActivityLogPrivateDeleteActivitiesByExtensionFunction() override {}
 
   // ExtensionFunction:
   ResponseAction Run() override;

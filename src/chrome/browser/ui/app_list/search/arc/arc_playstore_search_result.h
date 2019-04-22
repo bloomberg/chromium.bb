@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
@@ -36,6 +37,7 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
   // ChromeSearchResult overrides:
   void GetContextMenuModel(GetMenuModelCallback callback) override;
   void Open(int event_flags) override;
+  SearchResultType GetSearchResultType() const override;
 
   // app_list::AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;

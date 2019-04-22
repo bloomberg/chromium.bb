@@ -203,7 +203,7 @@ StyleRuleKeyframe* CSSParser::ParseKeyframeRule(const CSSParserContext* context,
                                                 const String& rule) {
   StyleRuleBase* keyframe = CSSParserImpl::ParseRule(
       rule, context, nullptr, CSSParserImpl::kKeyframeRules);
-  return ToStyleRuleKeyframe(keyframe);
+  return To<StyleRuleKeyframe>(keyframe);
 }
 
 bool CSSParser::ParseSupportsCondition(const String& condition,
@@ -236,13 +236,15 @@ bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {
     // context mode. If a function/unit/etc will require a secure context check
     // in the future, plumbing will need to be added.
     value = ParseSingleValue(
-        CSSPropertyColor, string,
+        CSSPropertyID::kColor, string,
         StrictCSSParserContext(SecureContextMode::kInsecureContext));
   }
 
-  if (!value || !value->IsColorValue())
+  auto* color_value = DynamicTo<CSSColorValue>(value);
+  if (!color_value)
     return false;
-  color = ToCSSColorValue(*value).Value();
+
+  color = color_value->Value();
   return true;
 }
 

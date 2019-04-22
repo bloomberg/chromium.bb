@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -63,6 +63,10 @@ const float kWindowAnimation_ShowBrightnessGrayscale = 0.f;
 
 const float kWindowAnimation_HideOpacity = 0.f;
 const float kWindowAnimation_ShowOpacity = 1.f;
+
+// Duration for gfx::Tween::ZERO animation of showing window.
+constexpr base::TimeDelta kZeroAnimationMs =
+    base::TimeDelta::FromMilliseconds(300);
 
 int64_t Round64(float f) {
   return static_cast<int64_t>(f + 0.5f);
@@ -246,17 +250,17 @@ void AnimateHideWindow_BrightnessGrayscale(aura::Window* window) {
 }
 
 bool AnimateShowWindow_SlideDown(aura::Window* window) {
-  AppListControllerImpl* app_list_controller =
-      Shell::Get()->app_list_controller();
+  HomeScreenController* home_screen_controller =
+      Shell::Get()->home_screen_controller();
   const TabletModeController* tablet_mode_controller =
       Shell::Get()->tablet_mode_controller();
 
-  if (app_list_controller && tablet_mode_controller &&
+  if (home_screen_controller && tablet_mode_controller &&
       tablet_mode_controller->IsTabletModeWindowManagerEnabled()) {
     // Slide down the window from above screen to show and, meanwhile, slide
     // down the home launcher off screen.
     HomeLauncherGestureHandler* handler =
-        app_list_controller->home_launcher_gesture_handler();
+        home_screen_controller->home_launcher_gesture_handler();
     if (handler &&
         handler->HideHomeLauncherForWindow(
             display::Screen::GetScreen()->GetDisplayNearestView(window),
@@ -296,6 +300,21 @@ void AnimateHideWindow_SlideOut(aura::Window* window) {
   window->layer()->SetBounds(dismissed_bounds);
 }
 
+void AnimateShowWindow_StepEnd(aura::Window* window) {
+  window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
+  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  settings.SetTransitionDuration(kZeroAnimationMs);
+  settings.SetTweenType(gfx::Tween::ZERO);
+  window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
+}
+
+void AnimateHideWindow_StepEnd(aura::Window* window) {
+  ::wm::ScopedHidingAnimationSettings settings(window);
+  settings.layer_animation_settings()->SetTransitionDuration(kZeroAnimationMs);
+  settings.layer_animation_settings()->SetTweenType(gfx::Tween::ZERO);
+  window->layer()->SetVisible(false);
+}
+
 bool AnimateShowWindow(aura::Window* window) {
   if (!::wm::HasWindowVisibilityAnimationTransition(window,
                                                     ::wm::ANIMATE_SHOW)) {
@@ -314,6 +333,9 @@ bool AnimateShowWindow(aura::Window* window) {
       return true;
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
       AnimateShowWindow_FadeIn(window);
+      return true;
+    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
+      AnimateShowWindow_StepEnd(window);
       return true;
     default:
       NOTREACHED();
@@ -338,6 +360,9 @@ bool AnimateHideWindow(aura::Window* window) {
       return AnimateHideWindow_SlideDown(window);
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
       AnimateHideWindow_SlideOut(window);
+      return true;
+    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
+      AnimateHideWindow_StepEnd(window);
       return true;
     default:
       NOTREACHED();

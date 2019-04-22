@@ -12,16 +12,10 @@
 #include "components/drive/chromeos/file_cache.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
-#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
-#include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
 
 class PrefRegistrySimple;
-
-namespace net {
-class IOBuffer;
-}  // namespace net
 
 namespace drive {
 
@@ -66,20 +60,6 @@ int ReadAllData(Reader* reader, std::string* content) {
 // preferences should be registered as TestingPrefServiceSimple will crash if
 // unregistered preference is referenced.
 void RegisterDrivePrefs(PrefRegistrySimple* pref_registry);
-
-// Fake NetworkChangeNotifier implementation.
-class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
- public:
-  FakeNetworkChangeNotifier();
-
-  void SetConnectionType(ConnectionType type);
-
-  // NetworkChangeNotifier override.
-  ConnectionType GetCurrentConnectionType() const override;
-
- private:
-  net::NetworkChangeNotifier::ConnectionType type_;
-};
 
 }  // namespace test_util
 }  // namespace drive

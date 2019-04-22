@@ -11,23 +11,32 @@
 
 #include <utility>
 
-#include "logging/rtc_event_log/output/rtc_event_log_output_file.h"
+#include "absl/memory/memory.h"
 #include "modules/audio_mixer/audio_mixer_impl.h"
-#include "modules/congestion_controller/bbr/test/bbr_printer.h"
 #include "modules/congestion_controller/goog_cc/test/goog_cc_printer.h"
-#include "test/call_test.h"
 
 namespace webrtc {
 namespace test {
 namespace {
+static constexpr size_t kNumSsrcs = 6;
+const uint32_t kSendRtxSsrcs[kNumSsrcs] = {0xBADCAFD, 0xBADCAFE, 0xBADCAFF,
+                                           0xBADCB00, 0xBADCB01, 0xBADCB02};
+const uint32_t kVideoSendSsrcs[kNumSsrcs] = {0xC0FFED, 0xC0FFEE, 0xC0FFEF,
+                                             0xC0FFF0, 0xC0FFF1, 0xC0FFF2};
+const uint32_t kVideoRecvLocalSsrcs[kNumSsrcs] = {0xDAB001, 0xDAB002, 0xDAB003,
+                                                  0xDAB004, 0xDAB005, 0xDAB006};
+const uint32_t kAudioSendSsrc = 0xDEADBEEF;
+const uint32_t kReceiverLocalAudioSsrc = 0x1234567;
+
 const char* kPriorityStreamId = "priority-track";
 
-CallClientFakeAudio InitAudio() {
+CallClientFakeAudio InitAudio(TimeController* time_controller) {
   CallClientFakeAudio setup;
   auto capturer = TestAudioDeviceModule::CreatePulsedNoiseCapturer(256, 48000);
   auto renderer = TestAudioDeviceModule::CreateDiscardRenderer(48000);
-  setup.fake_audio_device = TestAudioDeviceModule::CreateTestAudioDeviceModule(
-      std::move(capturer), std::move(renderer), 1.f);
+  setup.fake_audio_device = TestAudioDeviceModule::Create(
+      time_controller->GetTaskQueueFactory(), std::move(capturer),
+      std::move(renderer), 1.f);
   setup.apm = AudioProcessingBuilder().Create();
   setup.fake_audio_device->Init();
   AudioState::Config audio_state_config;
@@ -40,81 +49,84 @@ CallClientFakeAudio InitAudio() {
   return setup;
 }
 
-Call* CreateCall(CallClientConfig config,
-                 LoggingNetworkControllerFactory* network_controller_factory_,
+Call* CreateCall(TimeController* time_controller,
+                 CallClientConfig config,
+                 LoggingNetworkControllerFactory* network_controller_factory,
                  rtc::scoped_refptr<AudioState> audio_state) {
-  CallConfig call_config(network_controller_factory_->GetEventLog());
+  CallConfig call_config(network_controller_factory->GetEventLog());
   call_config.bitrate_config.max_bitrate_bps =
       config.transport.rates.max_rate.bps_or(-1);
   call_config.bitrate_config.min_bitrate_bps =
       config.transport.rates.min_rate.bps();
   call_config.bitrate_config.start_bitrate_bps =
       config.transport.rates.start_rate.bps();
-  call_config.network_controller_factory = network_controller_factory_;
+  call_config.task_queue_factory = time_controller->GetTaskQueueFactory();
+  call_config.network_controller_factory = network_controller_factory;
   call_config.audio_state = audio_state;
-  return Call::Create(call_config);
+  return Call::Create(call_config, time_controller->GetClock(),
+                      time_controller->CreateProcessThread("CallModules"),
+                      time_controller->CreateProcessThread("Pacer"));
 }
 }
 
 LoggingNetworkControllerFactory::LoggingNetworkControllerFactory(
-    std::string filename,
-    TransportControllerConfig config) {
-  if (filename.empty()) {
+    TimeController* time_controller,
+    LogWriterFactoryInterface* log_writer_factory,
+    TransportControllerConfig config)
+    : time_controller_(time_controller) {
+  std::unique_ptr<RtcEventLogOutput> cc_out;
+  if (!log_writer_factory) {
     event_log_ = RtcEventLog::CreateNull();
   } else {
-    event_log_ = RtcEventLog::Create(RtcEventLog::EncodingType::Legacy);
+    event_log_ = RtcEventLog::Create(RtcEventLog::EncodingType::Legacy,
+                                     time_controller->GetTaskQueueFactory());
     bool success = event_log_->StartLogging(
-        absl::make_unique<RtcEventLogOutputFile>(filename + ".rtc.dat",
-                                                 RtcEventLog::kUnlimitedOutput),
-        RtcEventLog::kImmediateOutput);
+        log_writer_factory->Create(".rtc.dat"), RtcEventLog::kImmediateOutput);
     RTC_CHECK(success);
-    cc_out_ = fopen((filename + ".cc_state.txt").c_str(), "w");
-    switch (config.cc) {
-      case TransportControllerConfig::CongestionController::kBbr: {
-        auto bbr_printer = absl::make_unique<BbrStatePrinter>();
-        cc_factory_.reset(new BbrDebugFactory(bbr_printer.get()));
-        cc_printer_.reset(
-            new ControlStatePrinter(cc_out_, std::move(bbr_printer)));
-        break;
-      }
-      case TransportControllerConfig::CongestionController::kGoogCc: {
-        auto goog_printer = absl::make_unique<GoogCcStatePrinter>();
-        cc_factory_.reset(
-            new GoogCcDebugFactory(event_log_.get(), goog_printer.get()));
-        cc_printer_.reset(
-            new ControlStatePrinter(cc_out_, std::move(goog_printer)));
-        break;
-      }
-      case TransportControllerConfig::CongestionController::kGoogCcFeedback: {
-        auto goog_printer = absl::make_unique<GoogCcStatePrinter>();
-        cc_factory_.reset(new GoogCcFeedbackDebugFactory(event_log_.get(),
-                                                         goog_printer.get()));
-        cc_printer_.reset(
-            new ControlStatePrinter(cc_out_, std::move(goog_printer)));
-        break;
-      }
-    }
-    cc_printer_->PrintHeaders();
+    cc_out = log_writer_factory->Create(".cc_state.txt");
   }
-  if (!cc_factory_) {
-    switch (config.cc) {
-      case TransportControllerConfig::CongestionController::kBbr:
-        cc_factory_.reset(new BbrNetworkControllerFactory());
-        break;
-      case TransportControllerConfig::CongestionController::kGoogCcFeedback:
-        cc_factory_.reset(
+  switch (config.cc) {
+    case TransportControllerConfig::CongestionController::kGoogCc:
+      if (cc_out) {
+        auto goog_printer = absl::make_unique<GoogCcStatePrinter>();
+        owned_cc_factory_.reset(
+            new GoogCcDebugFactory(event_log_.get(), goog_printer.get()));
+        cc_printer_.reset(new ControlStatePrinter(std::move(cc_out),
+                                                  std::move(goog_printer)));
+      } else {
+        owned_cc_factory_.reset(
+            new GoogCcNetworkControllerFactory(event_log_.get()));
+      }
+      break;
+    case TransportControllerConfig::CongestionController::kGoogCcFeedback:
+      if (cc_out) {
+        auto goog_printer = absl::make_unique<GoogCcStatePrinter>();
+        owned_cc_factory_.reset(new GoogCcFeedbackDebugFactory(
+            event_log_.get(), goog_printer.get()));
+        cc_printer_.reset(new ControlStatePrinter(std::move(cc_out),
+                                                  std::move(goog_printer)));
+      } else {
+        owned_cc_factory_.reset(
             new GoogCcFeedbackNetworkControllerFactory(event_log_.get()));
-        break;
-      case TransportControllerConfig::CongestionController::kGoogCc:
-        cc_factory_.reset(new GoogCcNetworkControllerFactory(event_log_.get()));
-        break;
-    }
+      }
+      break;
+    case TransportControllerConfig::CongestionController::kInjected:
+      cc_factory_ = config.cc_factory;
+      if (cc_out)
+        RTC_LOG(LS_WARNING)
+            << "Can't log controller state for injected network controllers";
+      break;
+  }
+  if (cc_printer_)
+    cc_printer_->PrintHeaders();
+  if (owned_cc_factory_) {
+    RTC_DCHECK(!cc_factory_);
+    cc_factory_ = owned_cc_factory_.get();
   }
 }
 
 LoggingNetworkControllerFactory::~LoggingNetworkControllerFactory() {
-  if (cc_out_)
-    fclose(cc_out_);
+  time_controller_->InvokeWithControlledYield([this]() { event_log_.reset(); });
 }
 
 void LoggingNetworkControllerFactory::LogCongestionControllerStats(
@@ -136,21 +148,34 @@ TimeDelta LoggingNetworkControllerFactory::GetProcessInterval() const {
   return cc_factory_->GetProcessInterval();
 }
 
-CallClient::CallClient(Clock* clock,
-                       std::string log_filename,
-                       CallClientConfig config)
-    : clock_(clock),
-      network_controller_factory_(log_filename, config.transport),
-      fake_audio_setup_(InitAudio()),
-      call_(CreateCall(config,
-                       &network_controller_factory_,
-                       fake_audio_setup_.audio_state)),
-      transport_(clock_, call_.get()),
-      header_parser_(RtpHeaderParser::Create()) {
-}  // namespace test
+CallClient::CallClient(
+    TimeController* time_controller,
+    std::unique_ptr<LogWriterFactoryInterface> log_writer_factory,
+    CallClientConfig config)
+    : time_controller_(time_controller),
+      clock_(time_controller->GetClock()),
+      log_writer_factory_(std::move(log_writer_factory)),
+      network_controller_factory_(time_controller,
+                                  log_writer_factory_.get(),
+                                  config.transport),
+      header_parser_(RtpHeaderParser::Create()),
+      task_queue_(time_controller->GetTaskQueueFactory()->CreateTaskQueue(
+          "CallClient",
+          TaskQueueFactory::Priority::NORMAL)) {
+  SendTask([this, config] {
+    fake_audio_setup_ = InitAudio(time_controller_);
+    call_.reset(CreateCall(time_controller_, config,
+                           &network_controller_factory_,
+                           fake_audio_setup_.audio_state));
+    transport_ = absl::make_unique<NetworkNodeTransport>(clock_, call_.get());
+  });
+}
 
 CallClient::~CallClient() {
-  delete header_parser_;
+  SendTask([&] {
+    call_.reset();
+    fake_audio_setup_ = {};
+  });
 }
 
 ColumnPrinter CallClient::StatsPrinter() {
@@ -168,40 +193,62 @@ Call::Stats CallClient::GetStats() {
   return call_->GetStats();
 }
 
-bool CallClient::TryDeliverPacket(rtc::CopyOnWriteBuffer packet,
-                                  uint64_t receiver,
-                                  Timestamp at_time) {
+void CallClient::OnPacketReceived(EmulatedIpPacket packet) {
   // Removes added overhead before delivering packet to sender.
-  RTC_DCHECK_GE(packet.size(), route_overhead_.at(receiver).bytes());
-  packet.SetSize(packet.size() - route_overhead_.at(receiver).bytes());
+  size_t size =
+      packet.data.size() - route_overhead_.at(packet.to.ipaddr()).bytes();
+  RTC_DCHECK_GE(size, 0);
+  packet.data.SetSize(size);
 
   MediaType media_type = MediaType::ANY;
-  if (!RtpHeaderParser::IsRtcp(packet.cdata(), packet.size())) {
-    RTPHeader header;
-    bool success =
-        header_parser_->Parse(packet.cdata(), packet.size(), &header);
-    if (!success)
-      return false;
-    media_type = ssrc_media_types_[header.ssrc];
+  if (!RtpHeaderParser::IsRtcp(packet.cdata(), packet.data.size())) {
+    auto ssrc = RtpHeaderParser::GetSsrc(packet.cdata(), packet.data.size());
+    RTC_CHECK(ssrc.has_value());
+    media_type = ssrc_media_types_[*ssrc];
   }
-  call_->Receiver()->DeliverPacket(media_type, packet, at_time.us());
-  return true;
+  struct Closure {
+    void operator()() {
+      call->Receiver()->DeliverPacket(media_type, packet.data,
+                                      packet.arrival_time.us());
+    }
+    Call* call;
+    MediaType media_type;
+    EmulatedIpPacket packet;
+  };
+  task_queue_.PostTask(Closure{call_.get(), media_type, std::move(packet)});
+}
+
+std::unique_ptr<RtcEventLogOutput> CallClient::GetLogWriter(std::string name) {
+  if (!log_writer_factory_ || name.empty())
+    return nullptr;
+  return log_writer_factory_->Create(name);
 }
 
 uint32_t CallClient::GetNextVideoSsrc() {
-  RTC_CHECK_LT(next_video_ssrc_index_, CallTest::kNumSsrcs);
-  return CallTest::kVideoSendSsrcs[next_video_ssrc_index_++];
+  RTC_CHECK_LT(next_video_ssrc_index_, kNumSsrcs);
+  return kVideoSendSsrcs[next_video_ssrc_index_++];
+}
+
+uint32_t CallClient::GetNextVideoLocalSsrc() {
+  RTC_CHECK_LT(next_video_local_ssrc_index_, kNumSsrcs);
+  return kVideoRecvLocalSsrcs[next_video_local_ssrc_index_++];
 }
 
 uint32_t CallClient::GetNextAudioSsrc() {
   RTC_CHECK_LT(next_audio_ssrc_index_, 1);
   next_audio_ssrc_index_++;
-  return CallTest::kAudioSendSsrc;
+  return kAudioSendSsrc;
+}
+
+uint32_t CallClient::GetNextAudioLocalSsrc() {
+  RTC_CHECK_LT(next_audio_local_ssrc_index_, 1);
+  next_audio_local_ssrc_index_++;
+  return kReceiverLocalAudioSsrc;
 }
 
 uint32_t CallClient::GetNextRtxSsrc() {
-  RTC_CHECK_LT(next_rtx_ssrc_index_, CallTest::kNumSsrcs);
-  return CallTest::kSendRtxSsrcs[next_rtx_ssrc_index_++];
+  RTC_CHECK_LT(next_rtx_ssrc_index_, kNumSsrcs);
+  return kSendRtxSsrcs[next_rtx_ssrc_index_++];
 }
 
 std::string CallClient::GetNextPriorityId() {
@@ -212,6 +259,11 @@ std::string CallClient::GetNextPriorityId() {
 void CallClient::AddExtensions(std::vector<RtpExtension> extensions) {
   for (const auto& extension : extensions)
     header_parser_->RegisterRtpHeaderExtension(extension);
+}
+
+void CallClient::SendTask(std::function<void()> task) {
+  time_controller_->InvokeWithControlledYield(
+      [&] { task_queue_.SendTask(std::move(task)); });
 }
 
 CallClientPair::~CallClientPair() = default;

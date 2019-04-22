@@ -92,7 +92,6 @@ start,?deleteCount,...items
 URL.createObjectURL(
 blob
 source
-stream
 
 (() => window)().URL["revokeObjectURL"](
 url
@@ -102,5 +101,14 @@ null
 
 some gibberish $@#)(*^@#
 null
+
+Date.parse(
+s
+
+JSON.parse(
+text,?reviver
+
+CSSNumericValue.parse(
+cssText
 
 

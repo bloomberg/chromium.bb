@@ -47,7 +47,9 @@ struct ExploreSitesCategory {
   ExploreSitesCategory(int category_id,
                        std::string version_token,
                        int category_type,
-                       std::string label);
+                       std::string label,
+                       int ntp_shown_count,
+                       int interaction_count);
   ExploreSitesCategory(ExploreSitesCategory&& other);
   virtual ~ExploreSitesCategory();
 
@@ -55,6 +57,9 @@ struct ExploreSitesCategory {
   std::string version_token;
   int category_type;
   std::string label;
+  int ntp_shown_count;  // Number of times this category was shown on NTP.
+  // Number of times sites within this category was interacted with.
+  int interaction_count;
 
   std::vector<ExploreSitesSite> sites;
 
@@ -89,6 +94,19 @@ enum class ExploreSitesRequestStatus {
   kShouldSuspendBlockedByAdministrator = 3,
   // kMaxValue should always be the last type.
   kMaxValue = kShouldSuspendBlockedByAdministrator
+};
+
+// This enum should be kept in sync with ExploreSitesCatalogUpdateRequestResult
+// in enums.xml.
+enum class ExploreSitesCatalogUpdateRequestResult {
+  // A new catalog was returned by the fetcher.
+  kNewCatalog = 0,
+  // The fetcher verified that the existing catalog is still current.
+  kExistingCatalogIsCurrent = 1,
+  // The fetcher failed.
+  kFailure = 2,
+  // kMaxValue should always be the last type.
+  kMaxValue = kFailure
 };
 
 // Must be kept in sync with ExploreSitesCatalogError enum in enums.xml.

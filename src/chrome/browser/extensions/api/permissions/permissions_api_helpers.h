@@ -52,20 +52,40 @@ struct UnpackPermissionSetResult {
   APIPermissionSet unlisted_apis;
   // Host permissions that were not listed in the extension's permissions.
   URLPatternSet unlisted_hosts;
+
+  // Special case: restricted file:-scheme patterns. These are populated with
+  // the patterns that are explicitly related to file:-schemes if the extension
+  // does *not* have file access.
+  // Consider unpacking ["<all_urls>", "file:///*"]:
+  // - If the extension does *not* have file access:
+  //   * <all_urls> will be unpacked normally, but will not include
+  //     URLPattern::SCHEME_FILE as a valid scheme.
+  //   * file:///* will be included in restricted_file_scheme_patterns, because
+  //     it is restricted and cannot be granted without explicit access from the
+  //     chrome://extensions page.
+  // - If the extension *has* file access:
+  //   * <all_urls> will be unpacked normally, and will include
+  //     URLPattern::SCHEME_FILE as a valid scheme.
+  //   * file:///* will be unpacked normally (|restricted_file_scheme_patterns|
+  //     will be empty).
+  URLPatternSet restricted_file_scheme_patterns;
 };
 
 // Parses the |permissions_input| object, and partitions permissions into the
 // result. |required_permissions| and |optional_permissions| are the required
 // and optional permissions specified in the extension's manifest, used for
-// separating permissions. |allow_file_access| is used to determine whether the
-// file:-scheme is valid for host permissions. If an error is detected (e.g.,
-// an unknown API permission, invalid URL pattern, or API that doesn't support
-// being optional), |error| is populated and null is returned.
+// separating permissions. |has_file_access| is used to determine whether the
+// file:-scheme is valid for host permissions. If file access is allowed,
+// <all_urls> will match the file:-scheme (otherwise, it will not). Patterns
+// that specifically specify "file:" will be parsed regardless (and placed into
+// restricted_file_scheme_patterns if file access is disallowed). If an error is
+// detected (e.g., an unknown API permission, invalid URL pattern, or API that
+// doesn't support being optional), |error| is populated and null is returned.
 std::unique_ptr<UnpackPermissionSetResult> UnpackPermissionSet(
     const api::permissions::Permissions& permissions_input,
     const PermissionSet& required_permissions,
     const PermissionSet& optional_permissions,
-    bool allow_file_access,
+    bool has_file_access,
     std::string* error);
 
 }  // namespace permissions_api_helpers

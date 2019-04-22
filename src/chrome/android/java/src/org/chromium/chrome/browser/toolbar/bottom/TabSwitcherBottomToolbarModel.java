@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * All of the state for the tab switcher bottom toolbar, updated by the
@@ -17,8 +17,11 @@ public class TabSwitcherBottomToolbarModel extends PropertyModel {
     /** Whether the tab switcher bottom toolbar is visible */
     public static final WritableBooleanPropertyKey IS_VISIBLE = new WritableBooleanPropertyKey();
 
+    /** Whether the tab switcher bottom toolbar shows on top of the screen. */
+    public static final WritableBooleanPropertyKey SHOW_ON_TOP = new WritableBooleanPropertyKey();
+
     /** Default constructor. */
     public TabSwitcherBottomToolbarModel() {
-        super(PRIMARY_COLOR, IS_VISIBLE);
+        super(PRIMARY_COLOR, IS_VISIBLE, SHOW_ON_TOP);
     }
 }

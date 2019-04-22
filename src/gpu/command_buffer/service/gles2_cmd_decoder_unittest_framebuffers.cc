@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -18,7 +19,6 @@
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gl_surface_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest.h"
-
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -1146,7 +1146,7 @@ TEST_P(GLES2DecoderTest, ReadPixelsOutOfRange) {
       },  // completely off right
   };
 
-  for (size_t tt = 0; tt < arraysize(tests); ++tt) {
+  for (size_t tt = 0; tt < base::size(tests); ++tt) {
     CheckReadPixelsOutOfRange(
         tests[tt][0], tests[tt][1], tests[tt][2], tests[tt][3], tt == 0);
   }
@@ -1468,7 +1468,7 @@ TEST_P(GLES2ReadPixelsAsyncTest, ReadPixelsAsyncChangePackAlignment) {
   FinishReadPixelsAndCheckResult(kWidth, kHeight, pixels);
 }
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2ReadPixelsAsyncTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES2ReadPixelsAsyncTest, ::testing::Bool());
 
 // Check that if a renderbuffer is attached and GL returns
 // GL_FRAMEBUFFER_COMPLETE that the buffer is cleared and state is restored.
@@ -2389,9 +2389,9 @@ class GLES2DecoderMultisampledRenderToTextureTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderMultisampledRenderToTextureTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderMultisampledRenderToTextureTest,
+                         ::testing::Bool());
 
 TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
        NotCompatibleWithRenderbufferStorageMultisampleCHROMIUM_EXT) {
@@ -3263,7 +3263,7 @@ TEST_P(GLES2DecoderTest, DrawBuffersEXTMainFramebuffer) {
   DrawBuffersEXTImmediate& cmd = *GetImmediateAs<DrawBuffersEXTImmediate>();
   {
     const GLenum bufs[] = {GL_BACK};
-    const GLsizei count = arraysize(bufs);
+    const GLsizei count = base::size(bufs);
     cmd.Init(count, bufs);
 
     EXPECT_CALL(*gl_, DrawBuffersARB(count, Pointee(GL_BACK)))
@@ -3284,7 +3284,7 @@ TEST_P(GLES2DecoderTest, DrawBuffersEXTMainFramebuffer) {
   }
   {
     const GLenum bufs[] = {GL_BACK, GL_NONE};
-    const GLsizei count = arraysize(bufs);
+    const GLsizei count = base::size(bufs);
     cmd.Init(count, bufs);
 
     EXPECT_CALL(*gl_, DrawBuffersARB(_, _)).Times(0).RetiresOnSaturation();
@@ -4034,9 +4034,9 @@ TEST_P(GLES2DecoderTestWithDrawRectangle, FramebufferDrawRectangleClear) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderTestWithDrawRectangle,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderTestWithDrawRectangle,
+                         ::testing::Bool());
 
 TEST_P(GLES2DecoderManualInitTest, MESAFramebufferFlipYExtensionEnabled) {
   InitState init;

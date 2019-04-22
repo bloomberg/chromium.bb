@@ -4,10 +4,15 @@
 
 package org.chromium.base.task;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * The default {@link TaskExecutor} which maps directly to base::TaskScheduler.
+ * The default {@link TaskExecutor} which maps directly to base::ThreadPool.
  */
 class DefaultTaskExecutor implements TaskExecutor {
+    Map<TaskTraits, TaskRunner> mTraitsToRunnerMap = new HashMap<>();
+
     @Override
     public TaskRunner createTaskRunner(TaskTraits taskTraits) {
         return new TaskRunnerImpl(taskTraits);
@@ -29,7 +34,27 @@ class DefaultTaskExecutor implements TaskExecutor {
     }
 
     @Override
-    public void postTask(TaskTraits taskTraits, Runnable task) {
-        createTaskRunner(taskTraits).postTask(task);
+    public void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay) {
+        if (taskTraits.hasExtension()) {
+            TaskRunner runner = createTaskRunner(taskTraits);
+            runner.postDelayedTask(task, delay);
+            runner.destroy();
+        } else {
+            // Caching TaskRunners only for common TaskTraits.
+            TaskRunner runner = mTraitsToRunnerMap.get(taskTraits);
+            if (runner == null) {
+                TaskRunnerImpl runnerImpl = new TaskRunnerImpl(taskTraits);
+                // Disable destroy() check since object will live forever.
+                runnerImpl.disableLifetimeCheck();
+                mTraitsToRunnerMap.put(taskTraits, runnerImpl);
+                runner = runnerImpl;
+            }
+            runner.postDelayedTask(task, delay);
+        }
+    }
+
+    @Override
+    public boolean canRunTaskImmediately(TaskTraits traits) {
+        return false;
     }
 }

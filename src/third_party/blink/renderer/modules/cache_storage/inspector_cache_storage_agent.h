@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/CacheStorage.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -23,10 +23,6 @@ class MODULES_EXPORT InspectorCacheStorageAgent final
  public:
   using CachesMap = HashMap<String, mojom::blink::CacheStoragePtr>;
 
-  static InspectorCacheStorageAgent* Create(InspectedFrames* frames) {
-    return MakeGarbageCollected<InspectorCacheStorageAgent>(frames);
-  }
-
   explicit InspectorCacheStorageAgent(InspectedFrames*);
   ~InspectorCacheStorageAgent() override;
   void Trace(blink::Visitor*) override;
@@ -36,6 +32,7 @@ class MODULES_EXPORT InspectorCacheStorageAgent final
   void requestEntries(const String& cache_id,
                       int skip_count,
                       int page_size,
+                      protocol::Maybe<String> path_filter,
                       std::unique_ptr<RequestEntriesCallback>) override;
   void deleteCache(const String& cache_id,
                    std::unique_ptr<DeleteCacheCallback>) override;
@@ -45,6 +42,8 @@ class MODULES_EXPORT InspectorCacheStorageAgent final
   void requestCachedResponse(
       const String& cache_id,
       const String& request_url,
+      const std::unique_ptr<protocol::Array<protocol::CacheStorage::Header>>
+          request_headers,
       std::unique_ptr<RequestCachedResponseCallback>) override;
 
  private:

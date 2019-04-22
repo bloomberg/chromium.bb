@@ -10,8 +10,17 @@
 // The minimum height for a TableViewHeaderFooterView.
 extern const CGFloat kTableViewHeaderFooterViewHeight;
 
+// The minimum height for a TableViewCell.
+extern const CGFloat kChromeTableViewCellHeight;
+
 // The horizontal spacing between views and the container view of a cell.
 extern const CGFloat kTableViewHorizontalSpacing;
+
+// The vertical spacing for a cell containing only one label.
+extern const CGFloat kTableViewOneLabelCellVerticalSpacing;
+
+// The vertical spacing for a cell containing one label and one sub label.
+extern const CGFloat kTableViewTwoLabelsCellVerticalSpacing;
 
 // The vertical spacing between views and the container view of a cell.
 extern const CGFloat kTableViewVerticalSpacing;
@@ -32,14 +41,14 @@ extern const CGFloat kUseDefaultFontSize;
 // Spacing between text label and cell contentView.
 extern const CGFloat kTableViewLabelVerticalTopSpacing;
 
+// The width taken by the accessory view when it is displayed.
+extern const CGFloat kTableViewAccessoryWidth;
+
 // Hex Value for blue label text color.
 extern const int kTableViewTextLabelColorBlue;
 
 // Hex Value for light gray label text color.
 extern const int kTableViewTextLabelColorLightGrey;
-
-// Hex Value for blue label text color.
-extern const int kTableViewTextLabelColorBlue;
 
 // Hex Value for the text color of the secondary labels (e.g. details, URL,
 // metadata...).

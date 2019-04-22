@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -100,6 +101,9 @@ GcpUsingChromeTest::GcpUsingChromeTest()
     : proxy_server_(net::SpawnedTestServer::TYPE_PROXY, base::FilePath()) {}
 
 void GcpUsingChromeTest::SetUp() {
+  if (!ShouldRunTestOnThisOS())
+    return;
+
   // Redirect connections to signin related pages to a handler that will
   // generate the needed headers and content to move the signin flow
   // forward automatically.
@@ -119,6 +123,9 @@ void GcpUsingChromeTest::SetUp() {
 }
 
 void GcpUsingChromeTest::TearDown() {
+  if (!ShouldRunTestOnThisOS())
+    return;
+
   EXPECT_TRUE(gaia_server_.ShutdownAndWaitUntilComplete());
   EXPECT_TRUE(google_apis_server_.ShutdownAndWaitUntilComplete());
   EXPECT_TRUE(proxy_server_.Stop());

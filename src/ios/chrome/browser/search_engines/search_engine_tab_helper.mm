@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_fetcher.h"
@@ -283,3 +284,5 @@ void SearchEngineTabHelper::AddTemplateURLBySearchableURL(
   data.safe_for_autoreplace = true;
   url_service->Add(std::make_unique<TemplateURL>(data));
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(SearchEngineTabHelper)

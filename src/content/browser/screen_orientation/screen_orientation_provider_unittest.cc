@@ -4,6 +4,7 @@
 
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "content/common/frame_messages.h"

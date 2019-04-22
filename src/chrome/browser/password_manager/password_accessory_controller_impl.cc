@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/password_manager/password_accessory_metrics_util.h"
-#include "chrome/browser/password_manager/password_generation_dialog_view_interface.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
@@ -28,20 +28,12 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 
 using autofill::AccessorySheetData;
 using autofill::FooterCommand;
 using autofill::PasswordForm;
 using autofill::UserInfo;
-
-namespace {
-
-void RecordGenerationDialogDismissal(bool accepted) {
-  UMA_HISTOGRAM_BOOLEAN("KeyboardAccessory.GeneratedPasswordDialog", accepted);
-}
-
-}  // namespace
+using FillingSource = ManualFillingController::FillingSource;
 
 PasswordAccessoryControllerImpl::~PasswordAccessoryControllerImpl() = default;
 
@@ -52,10 +44,8 @@ bool PasswordAccessoryController::AllowedForWebContents(
   if (vr::VrTabHelper::IsInVr(web_contents)) {
     return false;  // TODO(crbug.com/865749): Reenable if works for VR keyboard.
   }
-  // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
   return base::FeatureList::IsEnabled(
-             password_manager::features::kPasswordsKeyboardAccessory) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+      password_manager::features::kPasswordsKeyboardAccessory);
 }
 
 // static
@@ -72,29 +62,6 @@ PasswordAccessoryController* PasswordAccessoryController::GetIfExisting(
     content::WebContents* web_contents) {
   return PasswordAccessoryControllerImpl::FromWebContents(web_contents);
 }
-
-struct PasswordAccessoryControllerImpl::GenerationElementData {
-  GenerationElementData(autofill::PasswordForm form,
-                        autofill::FormSignature form_signature,
-                        autofill::FieldSignature field_signature,
-                        uint32_t max_password_length)
-      : form(std::move(form)),
-        form_signature(form_signature),
-        field_signature(field_signature),
-        max_password_length(max_password_length) {}
-
-  // Form for which password generation is triggered.
-  autofill::PasswordForm form;
-
-  // Signature of the form for which password generation is triggered.
-  autofill::FormSignature form_signature;
-
-  // Signature of the field for which password generation is triggered.
-  autofill::FieldSignature field_signature;
-
-  // Maximum length of the generated password.
-  uint32_t max_password_length;
-};
 
 struct PasswordAccessoryControllerImpl::SuggestionElementData {
   SuggestionElementData(base::string16 password,
@@ -126,16 +93,15 @@ struct PasswordAccessoryControllerImpl::FaviconRequestData {
 void PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
     base::WeakPtr<ManualFillingController> mf_controller,
-    CreateDialogFactory create_dialog_factory,
     favicon::FaviconService* favicon_service) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
   DCHECK(mf_controller);
 
   web_contents->SetUserData(
-      UserDataKey(), base::WrapUnique(new PasswordAccessoryControllerImpl(
-                         web_contents, std::move(mf_controller),
-                         create_dialog_factory, favicon_service)));
+      UserDataKey(),
+      base::WrapUnique(new PasswordAccessoryControllerImpl(
+          web_contents, std::move(mf_controller), favicon_service)));
 }
 
 void PasswordAccessoryControllerImpl::SavePasswordsForOrigin(
@@ -147,30 +113,8 @@ void PasswordAccessoryControllerImpl::SavePasswordsForOrigin(
   for (const auto& pair : best_matches) {
     const PasswordForm* form = pair.second;
     suggestions->emplace_back(form->password_value, GetDisplayUsername(*form),
-                              /*username_selectable*/ false);
+                              /*selectable=*/!form->username_value.empty());
   }
-}
-
-void PasswordAccessoryControllerImpl::OnAutomaticGenerationStatusChanged(
-    bool available,
-    const base::Optional<
-        autofill::password_generation::PasswordGenerationUIData>& ui_data,
-    const base::WeakPtr<password_manager::PasswordManagerDriver>& driver) {
-  target_frame_driver_ = driver;
-  if (available) {
-    DCHECK(ui_data.has_value());
-    generation_element_data_ = std::make_unique<GenerationElementData>(
-        ui_data.value().password_form,
-        autofill::CalculateFormSignature(
-            ui_data.value().password_form.form_data),
-        autofill::CalculateFieldSignatureByNameAndType(
-            ui_data.value().generation_element, "password"),
-        ui_data.value().max_length);
-  } else {
-    generation_element_data_.reset();
-  }
-
-  GetManualFillingController()->OnAutomaticGenerationStatusChanged(available);
 }
 
 void PasswordAccessoryControllerImpl::OnFilledIntoFocusedField(
@@ -205,6 +149,12 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
                        is_fillable ? origin_suggestions_[origin]
                                    : std::vector<SuggestionElementData>(),
                        is_password_field));
+  if (is_password_field) {
+    GetManualFillingController()->ShowWhenKeyboardIsVisible(
+        FillingSource::PASSWORD_FALLBACKS);
+  } else {
+    GetManualFillingController()->Hide(FillingSource::PASSWORD_FALLBACKS);
+  }
 }
 
 void PasswordAccessoryControllerImpl::DidNavigateMainFrame() {
@@ -212,14 +162,6 @@ void PasswordAccessoryControllerImpl::DidNavigateMainFrame() {
   current_origin_ = url::Origin();
   icons_request_data_.clear();
   origin_suggestions_.clear();
-}
-
-void PasswordAccessoryControllerImpl::ShowWhenKeyboardIsVisible() {
-  GetManualFillingController()->ShowWhenKeyboardIsVisible();
-}
-
-void PasswordAccessoryControllerImpl::Hide() {
-  GetManualFillingController()->Hide();
 }
 
 void PasswordAccessoryControllerImpl::GetFavicon(
@@ -259,13 +201,20 @@ void PasswordAccessoryControllerImpl::GetFavicon(
 void PasswordAccessoryControllerImpl::OnFillingTriggered(
     bool is_password,
     const base::string16& text_to_fill) {
+  content::RenderFrameHost* target = web_contents_->GetFocusedFrame();
+
+  const url::Origin& origin = target->GetLastCommittedOrigin();
+  if (!AppearsInSuggestions(text_to_fill, is_password, origin)) {
+    NOTREACHED() << "Tried to fill '" << text_to_fill << "' into " << origin;
+    return;  // Never fill across different origins!
+  }
+
   password_manager::ContentPasswordManagerDriverFactory* factory =
       password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
           web_contents_);
   DCHECK(factory);
-  // TODO(fhorschig): Consider allowing filling on non-main frames.
   password_manager::ContentPasswordManagerDriver* driver =
-      factory->GetDriverForFrame(web_contents_->GetMainFrame());
+      factory->GetDriverForFrame(target);
   if (!driver) {
     return;
   }  // |driver| can be NULL if the tab is being closed.
@@ -275,50 +224,9 @@ void PasswordAccessoryControllerImpl::OnFillingTriggered(
                      base::AsWeakPtr<PasswordAccessoryControllerImpl>(this)));
 }
 
-void PasswordAccessoryControllerImpl::OnGenerationRequested() {
-  if (!target_frame_driver_)
-    return;
-  // TODO(crbug.com/835234): Take the modal dialog logic out of the accessory
-  // controller.
-  dialog_view_ = create_dialog_factory_.Run(this);
-  uint32_t spec_priority = 0;
-  base::string16 password =
-      target_frame_driver_->GetPasswordGenerationManager()->GeneratePassword(
-          web_contents_->GetLastCommittedURL().GetOrigin(),
-          generation_element_data_->form_signature,
-          generation_element_data_->field_signature,
-          generation_element_data_->max_password_length, &spec_priority);
-  if (target_frame_driver_ && target_frame_driver_->GetPasswordManager()) {
-    target_frame_driver_->GetPasswordManager()
-        ->ReportSpecPriorityForGeneratedPassword(generation_element_data_->form,
-                                                 spec_priority);
-  }
-  dialog_view_->Show(password);
-}
-
-void PasswordAccessoryControllerImpl::GeneratedPasswordAccepted(
-    const base::string16& password) {
-  if (!target_frame_driver_)
-    return;
-  RecordGenerationDialogDismissal(true);
-  target_frame_driver_->GeneratedPasswordAccepted(password);
-  dialog_view_.reset();
-}
-
-void PasswordAccessoryControllerImpl::GeneratedPasswordRejected() {
-  RecordGenerationDialogDismissal(false);
-  dialog_view_.reset();
-}
-
-gfx::NativeWindow PasswordAccessoryControllerImpl::native_window() const {
-  return web_contents_->GetTopLevelNativeWindow();
-}
-
 PasswordAccessoryControllerImpl::PasswordAccessoryControllerImpl(
     content::WebContents* web_contents)
     : web_contents_(web_contents),
-      create_dialog_factory_(
-          base::BindRepeating(&PasswordGenerationDialogViewInterface::Create)),
       favicon_service_(FaviconServiceFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()),
           ServiceAccessType::EXPLICIT_ACCESS)) {
@@ -328,11 +236,9 @@ PasswordAccessoryControllerImpl::PasswordAccessoryControllerImpl(
 PasswordAccessoryControllerImpl::PasswordAccessoryControllerImpl(
     content::WebContents* web_contents,
     base::WeakPtr<ManualFillingController> mf_controller,
-    CreateDialogFactory create_dialog_factory,
     favicon::FaviconService* favicon_service)
     : web_contents_(web_contents),
       mf_controller_(std::move(mf_controller)),
-      create_dialog_factory_(create_dialog_factory),
       favicon_service_(favicon_service) {}
 
 // static
@@ -346,7 +252,8 @@ AccessorySheetData PasswordAccessoryControllerImpl::CreateAccessorySheetData(
           ? IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_EMPTY_MESSAGE
           : IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_TITLE,
       base::ASCIIToUTF16(origin.host()));
-  AccessorySheetData data(passwords_title_str);
+  AccessorySheetData data(autofill::FallbackSheetType::PASSWORD,
+                          passwords_title_str);
 
   // Create a username and a password element for every suggestion.
   for (const SuggestionElementData& suggestion : suggestions) {
@@ -354,7 +261,7 @@ AccessorySheetData PasswordAccessoryControllerImpl::CreateAccessorySheetData(
 
     user_info.add_field(UserInfo::Field(
         suggestion.username, suggestion.username, /*is_password=*/false,
-        /*selectable=*/suggestion.username_selectable));
+        /*selectable=*/suggestion.username_selectable && !is_password_field));
 
     user_info.add_field(UserInfo::Field(
         suggestion.password,
@@ -394,6 +301,19 @@ void PasswordAccessoryControllerImpl::OnImageFetched(
   icon_request->pending_requests.clear();
 }
 
+bool PasswordAccessoryControllerImpl::AppearsInSuggestions(
+    const base::string16& suggestion,
+    bool is_password,
+    const url::Origin& origin) const {
+  for (const SuggestionElementData& element : origin_suggestions_.at(origin)) {
+    const base::string16& candidate =
+        is_password ? element.password : element.username;
+    if (candidate == suggestion)
+      return true;
+  }
+  return false;
+}
+
 base::WeakPtr<ManualFillingController>
 PasswordAccessoryControllerImpl::GetManualFillingController() {
   if (!mf_controller_)
@@ -401,3 +321,5 @@ PasswordAccessoryControllerImpl::GetManualFillingController() {
   DCHECK(mf_controller_);
   return mf_controller_;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PasswordAccessoryControllerImpl)

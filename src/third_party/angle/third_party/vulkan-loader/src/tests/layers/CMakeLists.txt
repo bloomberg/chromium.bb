@@ -25,25 +25,28 @@ if(WIN32)
                           VERBATIM)
         set_target_properties(copy-${target}-def-file PROPERTIES FOLDER ${LOADER_HELPER_FOLDER})
         add_library(VkLayer_${target} SHARED ${ARGN} VkLayer_${target}.def)
+        target_compile_options(VkLayer_${target} PUBLIC ${MSVC_LOADER_COMPILE_OPTIONS})
         add_dependencies(VkLayer_${target} generate_helper_files)
+        target_link_libraries(VkLayer_${target} Vulkan::Headers)
     endmacro()
 elseif(APPLE)
     macro(AddVkLayer target)
         add_library(VkLayer_${target} SHARED ${ARGN})
         add_dependencies(VkLayer_${target} generate_helper_files)
         set_target_properties(VkLayer_${target} PROPERTIES LINK_FLAGS "-Wl")
+        target_link_libraries(VkLayer_${target} Vulkan::Headers)
     endmacro()
 else(UNIX AND NOT APPLE) # i.e.: Linux
     macro(AddVkLayer target)
         add_library(VkLayer_${target} SHARED ${ARGN})
         add_dependencies(VkLayer_${target} generate_helper_files)
         set_target_properties(VkLayer_${target} PROPERTIES LINK_FLAGS "-Wl,-Bsymbolic")
+        target_link_libraries(VkLayer_${target} Vulkan::Headers)
     endmacro()
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${CMAKE_CURRENT_SOURCE_DIR}/../../loader
-                    ${PROJECT_SOURCE_DIR}/Vulkan-Headers/include
                     ${CMAKE_CURRENT_BINARY_DIR}
                     ${PROJECT_BINARY_DIR}
                     ${CMAKE_BINARY_DIR})
@@ -77,7 +80,7 @@ string(REPLACE "\\"
 # TARGET_FILE_DIR, specifically)
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generator.cmake" "configure_file(\"\${INPUT_FILE}\" \"\${OUTPUT_FILE}\")")
 
-foreach(TARGET_NAME VkLayer_wrap_objects VkLayer_test VkLayer_meta)
+foreach(TARGET_NAME VkLayer_wrap_objects VkLayer_test VkLayer_meta VkLayer_meta_rev)
     set(CONFIG_DEFINES -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in"
         -DVK_VERSION="${VulkanHeaders_VERSION_MAJOR}.${VulkanHeaders_VERSION_MINOR}.${VulkanHeaders_VERSION_PATCH}")
 

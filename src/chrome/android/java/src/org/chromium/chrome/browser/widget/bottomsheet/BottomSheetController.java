@@ -7,14 +7,14 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 import android.app.Activity;
 import android.view.View;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.OverlayPanelManagerObserver;
+import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetCon
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Set;
 
@@ -37,7 +38,7 @@ import java.util.Set;
  * and call {@link #requestShowContent(BottomSheetContent, boolean)} which will return true if the
  * content was actually shown (see full doc on method).
  */
-public class BottomSheetController implements ApplicationStatus.ActivityStateListener {
+public class BottomSheetController implements Destroyable {
     /** The initial capacity for the priority queue handling pending content show requests. */
     private static final int INITIAL_QUEUE_CAPACITY = 1;
 
@@ -49,6 +50,9 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
 
     /** A handle to the {@link SnackbarManager} that manages snackbars inside the bottom sheet. */
     private final SnackbarManager mSnackbarManager;
+
+    /** A {@link VrModeObserver} that observers events of entering and exiting VR mode. */
+    private final VrModeObserver mVrModeObserver;
 
     /** A queue for content that is waiting to be shown in the {@link BottomSheet}. */
     private PriorityQueue<BottomSheetContent> mContentQueue;
@@ -80,6 +84,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
     /**
      * Build a new controller of the bottom sheet.
      * @param activity An activity for context.
+     * @param lifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the {@code activity}.
      * @param activityTabProvider The provider of the activity's current tab.
      * @param scrim The scrim that shows when the bottom sheet is opened.
      * @param bottomSheet The bottom sheet that this class will be controlling.
@@ -88,6 +93,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      *                                         Contextual Search is showing.
      */
     public BottomSheetController(final Activity activity,
+            final ActivityLifecycleDispatcher lifecycleDispatcher,
             final ActivityTabProvider activityTabProvider, final ScrimView scrim,
             BottomSheet bottomSheet, OverlayPanelManager overlayManager,
             boolean suppressSheetForContextualSearch) {
@@ -97,13 +103,13 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         mSuppressSheetForContextualSearch = suppressSheetForContextualSearch;
         mSnackbarManager = new SnackbarManager(
                 activity, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
-        mSnackbarManager.onStart();
-        ApplicationStatus.registerStateListenerForActivity(this, activity);
         mFullShowRequestedSet = new HashSet<>();
 
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,
                 (content1, content2) -> content2.getPriority() - content1.getPriority());
+
+        lifecycleDispatcher.register(this);
 
         final TabObserver tabObserver = new EmptyTabObserver() {
             @Override
@@ -122,7 +128,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             }
         };
 
-        VrModuleProvider.registerVrModeObserver(new VrModeObserver() {
+        mVrModeObserver = new VrModeObserver() {
             @Override
             public void onEnterVr() {
                 suppressSheet(StateChangeReason.VR);
@@ -132,7 +138,8 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             public void onExitVr() {
                 unsuppressSheet();
             }
-        });
+        };
+        VrModuleProvider.registerVrModeObserver(mVrModeObserver);
 
         mTabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
             @Override
@@ -144,7 +151,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
                     return;
                 }
 
-                // If refocusing the same tab, simply unsupress the sheet.
+                // If refocusing the same tab, simply unsuppress the sheet.
                 if (mLastActivityTab == tab) {
                     unsuppressSheet();
                     return;
@@ -177,17 +184,32 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetOpened(@StateChangeReason int reason) {
+                if (mBottomSheet.getCurrentSheetContent() != null
+                        && mBottomSheet.getCurrentSheetContent().hasCustomScrimLifecycle()) {
+                    return;
+                }
+
                 scrim.showScrim(mScrimParams);
                 scrim.setViewAlpha(0);
             }
 
             @Override
             public void onSheetClosed(@StateChangeReason int reason) {
+                if (mBottomSheet.getCurrentSheetContent() != null
+                        && mBottomSheet.getCurrentSheetContent().hasCustomScrimLifecycle()) {
+                    return;
+                }
+
                 scrim.hideScrim(false);
             }
 
             @Override
             public void onTransitionPeekToHalf(float transitionFraction) {
+                if (mBottomSheet.getCurrentSheetContent() != null
+                        && mBottomSheet.getCurrentSheetContent().hasCustomScrimLifecycle()) {
+                    return;
+                }
+
                 // TODO(mdjones): This event should not occur after the bottom sheet is closed.
                 if (scrim.getVisibility() == View.VISIBLE) {
                     scrim.setViewAlpha(transitionFraction);
@@ -215,6 +237,12 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         }
     }
 
+    // Destroyable implementation.
+    @Override
+    public void destroy() {
+        VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
+    }
+
     /**
      * Temporarily suppress the bottom sheet while other UI is showing. This will not itself change
      * the content displayed by the sheet.
@@ -230,7 +258,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      * the browser (i.e. the tab switcher may be showing).
      */
     private void unsuppressSheet() {
-        if (!mIsSuppressed || mTabProvider.getActivityTab() == null || !mWasShownForCurrentTab
+        if (!mIsSuppressed || mTabProvider.get() == null || !mWasShownForCurrentTab
                 || isOtherUIObscuring() || VrModuleProvider.getDelegate().isInVr()) {
             return;
         }
@@ -284,7 +312,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      */
     private boolean loadInternal(BottomSheetContent content) {
         if (content == mBottomSheet.getCurrentSheetContent()) return true;
-        if (mTabProvider.getActivityTab() == null) return false;
+        if (mTabProvider.get() == null) return false;
 
         BottomSheetContent shownContent = mBottomSheet.getCurrentSheetContent();
         boolean shouldSuppressExistingContent = shownContent != null
@@ -361,17 +389,6 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         }
     }
 
-    @Override
-    public void onActivityStateChange(Activity activity, int newState) {
-        if (newState == ActivityState.STARTED) {
-            mSnackbarManager.onStart();
-        } else if (newState == ActivityState.STOPPED) {
-            mSnackbarManager.onStop();
-        } else if (newState == ActivityState.DESTROYED) {
-            ApplicationStatus.unregisterActivityStateListener(this);
-        }
-    }
-
     /**
      * Show the next {@link BottomSheetContent} if it is available and peek the sheet. If no content
      * is available the sheet's content is set to null.
@@ -390,17 +407,34 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
     }
 
     /**
-     * Clear all the content show requests and hide the current content.
+     * For all contents that don't have a custom lifecycle, we remove them from show requests or
+     * hide it if it is currently shown.
      */
     private void clearRequestsAndHide() {
-        mContentQueue.clear();
-        mFullShowRequestedSet.clear();
-        // TODO(mdjones): Replace usages of bottom sheet with a model in line with MVC.
-        // TODO(mdjones): It would probably be useful to expose an observer method that notifies
-        //                objects when all content requests are cleared.
-        hideContent(mBottomSheet.getCurrentSheetContent(), true);
-        mWasShownForCurrentTab = false;
-        mIsSuppressed = false;
+        clearRequests(mContentQueue.iterator());
+        clearRequests(mFullShowRequestedSet.iterator());
+
+        BottomSheetContent currentContent = mBottomSheet.getCurrentSheetContent();
+        if (currentContent != null && !currentContent.hasCustomLifecycle()) {
+            if (mContentQueue.isEmpty() && mFullShowRequestedSet.isEmpty()) {
+                mWasShownForCurrentTab = false;
+                mIsSuppressed = false;
+            }
+
+            hideContent(currentContent, /* animate= */ true);
+        }
+    }
+
+    /**
+     * Remove all contents from {@code iterator} that don't have a custom lifecycle.
+     * @param iterator The iterator whose items must be removed.
+     */
+    private void clearRequests(Iterator<BottomSheetContent> iterator) {
+        while (iterator.hasNext()) {
+            if (!iterator.next().hasCustomLifecycle()) {
+                iterator.remove();
+            }
+        }
     }
 
     /**

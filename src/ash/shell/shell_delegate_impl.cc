@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/accessibility/default_accessibility_delegate.h"
-#include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/test_screenshot_delegate.h"
 
 namespace ash {
@@ -17,12 +16,8 @@ ShellDelegateImpl::ShellDelegateImpl() = default;
 
 ShellDelegateImpl::~ShellDelegateImpl() = default;
 
-bool ShellDelegateImpl::CanShowWindowForUser(aura::Window* window) const {
+bool ShellDelegateImpl::CanShowWindowForUser(const aura::Window* window) const {
   return true;
-}
-
-std::unique_ptr<keyboard::KeyboardUI> ShellDelegateImpl::CreateKeyboardUI() {
-  return std::make_unique<TestKeyboardUI>();
 }
 
 std::unique_ptr<ash::ScreenshotDelegate>

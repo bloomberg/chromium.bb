@@ -26,7 +26,6 @@ class ChromeBrowserState;
 @protocol FakeboxFocuser;
 @protocol SnackbarCommands;
 @class TabModel;
-@protocol UrlLoader;
 
 // A controller for the New Tab Page user interface. Supports content
 // suggestions and incognito, each with its own controller.
@@ -50,7 +49,6 @@ class ChromeBrowserState;
 // Init with the given url (presumably "chrome://newtab") and loader object.
 // |loader| may be nil, but isn't retained so it must outlive this controller.
 - (id)initWithUrl:(const GURL&)url
-                  loader:(id<UrlLoader>)loader
                  focuser:(id<OmniboxFocuser>)focuser
             browserState:(ios::ChromeBrowserState*)browserState
          toolbarDelegate:(id<NewTabPageControllerDelegate>)toolbarDelegate
@@ -60,8 +58,7 @@ class ChromeBrowserState;
                              BrowserCommands,
                              OmniboxFocuser,
                              FakeboxFocuser,
-                             SnackbarCommands,
-                             UrlLoader>)dispatcher
+                             SnackbarCommands>)dispatcher
            safeAreaInset:(UIEdgeInsets)safeAreaInset;
 
 // Animates the NTP fakebox to the focused position and focuses the real

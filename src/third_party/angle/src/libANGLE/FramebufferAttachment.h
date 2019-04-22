@@ -14,6 +14,7 @@
 #include "common/angleutils.h"
 #include "libANGLE/Error.h"
 #include "libANGLE/ImageIndex.h"
+#include "libANGLE/Observer.h"
 #include "libANGLE/formatutils.h"
 #include "libANGLE/renderer/FramebufferAttachmentObjectImpl.h"
 
@@ -35,11 +36,6 @@ class FramebufferAttachmentRenderTarget : angle::NonCopyable
 
 class FramebufferAttachmentObjectImpl;
 }  // namespace rx
-
-namespace angle
-{
-class Subject;
-}  // namespace angle
 
 namespace gl
 {
@@ -83,8 +79,7 @@ class FramebufferAttachment final
                 FramebufferAttachmentObject *resource,
                 GLsizei numViews,
                 GLuint baseViewIndex,
-                GLenum multiviewLayout,
-                const GLint *viewportOffsets);
+                bool isMultiview);
 
     // Helper methods
     GLuint getRedSize() const;
@@ -117,9 +112,8 @@ class FramebufferAttachment final
 
     GLsizei getNumViews() const { return mNumViews; }
 
-    GLenum getMultiviewLayout() const;
+    bool isMultiview() const;
     GLint getBaseViewIndex() const;
-    const std::vector<Offset> &getMultiviewViewportOffsets() const;
 
     // The size of the underlying resource the attachment points to. The 'depth' value will
     // correspond to a 3D texture depth or the layer count of a 2D array texture. For Surfaces and
@@ -152,11 +146,8 @@ class FramebufferAttachment final
     bool operator==(const FramebufferAttachment &other) const;
     bool operator!=(const FramebufferAttachment &other) const;
 
-    static std::vector<Offset> GetDefaultViewportOffsetVector();
     static const GLsizei kDefaultNumViews;
-    static const GLenum kDefaultMultiviewLayout;
     static const GLint kDefaultBaseViewIndex;
-    static const GLint kDefaultViewportOffsets[2];
 
   private:
     angle::Result getRenderTargetImpl(const Context *context,
@@ -188,17 +179,16 @@ class FramebufferAttachment final
     Target mTarget;
     FramebufferAttachmentObject *mResource;
     GLsizei mNumViews;
-    GLenum mMultiviewLayout;
+    bool mIsMultiview;
     GLint mBaseViewIndex;
-    std::vector<Offset> mViewportOffsets;
 };
 
 // A base class for objects that FBO Attachments may point to.
-class FramebufferAttachmentObject
+class FramebufferAttachmentObject : public angle::Subject
 {
   public:
     FramebufferAttachmentObject();
-    virtual ~FramebufferAttachmentObject();
+    ~FramebufferAttachmentObject() override;
 
     virtual Extents getAttachmentSize(const ImageIndex &imageIndex) const                  = 0;
     virtual Format getAttachmentFormat(GLenum binding, const ImageIndex &imageIndex) const = 0;
@@ -221,9 +211,6 @@ class FramebufferAttachmentObject
                                             rx::FramebufferAttachmentRenderTarget **rtOut) const;
 
     angle::Result initializeContents(const Context *context, const ImageIndex &imageIndex);
-
-    void onStorageChange(const gl::Context *context) const;
-    angle::Subject *getSubject() const { return getAttachmentImpl(); }
 
   protected:
     virtual rx::FramebufferAttachmentObjectImpl *getAttachmentImpl() const = 0;

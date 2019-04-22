@@ -24,65 +24,83 @@ class UnsupportedFeature(Error):
 
 class Manifest(object):
   """Manifest represents the contents of a repo manifest XML file."""
+
   # https://chromium.googlesource.com/external/repo/+/master/docs/manifest-format.txt
 
-  def __init__(self, etree):
+  def __init__(self, etree, allow_unsupported_features=False):
     """Initialize Manifest.
 
     Args:
       etree: An ElementTree object representing a manifest XML file.
+      allow_unsupported_features: If true, will not explode if manifest
+          contains unsupported features such as includes.
     """
     self._etree = etree
+    self._allow_unsupported_features = allow_unsupported_features
     self._ValidateTree()
 
   # These __*state__ pickle protocol methods are intended for multiprocessing.
 
   def __getstate__(self):
     """Return picklable state for this Manifest."""
-    return ElementTree.tostring(self._etree.getroot())
+    return (ElementTree.tostring(self._etree.getroot()),
+            self._allow_unsupported_features)
 
   def __setstate__(self, state):
     """Set the state from pickle for this Manifest."""
-    root = ElementTree.fromstring(state)
+    tree_string, allow_unsupported_features = state
+    root = ElementTree.fromstring(tree_string)
     self._etree = ElementTree.ElementTree(root)
+    self._allow_unsupported_features = allow_unsupported_features
 
   def _ValidateTree(self):
-    """Raise Error if self._etree is not a valid manifest tree."""
+    """Raise Error if self._etree is not a valid manifest tree.
+
+    Args:
+      allow_unsupported_features: If true, ignore unsupported features.
+    """
     root = self._etree.getroot()
     if root is None:
       raise InvalidManifest('no data')
     if root.tag != 'manifest':
       raise InvalidManifest('expected root <manifest>, got <%s>' % root.tag)
-    if self._etree.find('./project/project') is not None:
-      raise UnsupportedFeature('nested <project>')
-    for unsupported_tag in ('extend-project', 'remove-project', 'include'):
-      if self._etree.find(unsupported_tag) is not None:
-        raise UnsupportedFeature('<%s>' % unsupported_tag)
+    if not self._allow_unsupported_features:
+      if self._etree.find('./project/project') is not None:
+        raise UnsupportedFeature('nested <project>')
+      for unsupported_tag in ('extend-project', 'remove-project', 'include'):
+        if self._etree.find(unsupported_tag) is not None:
+          raise UnsupportedFeature('<%s>' % unsupported_tag)
 
   @classmethod
-  def FromFile(cls, source):
+  def FromFile(cls, source, allow_unsupported_features=False):
     """Parse XML into a Manifest.
 
     Args:
       source: A string path or file object containing XML data.
+      allow_unsupported_features: If true, will not explode if manifest
+          contains unsupported features such as includes.
 
     Raises:
       Error: If source couldn't be parsed into a Manifest.
     """
-    return cls(ElementTree.parse(source))
+    return cls(ElementTree.parse(source),
+               allow_unsupported_features=allow_unsupported_features)
 
   @classmethod
-  def FromString(cls, data):
+  def FromString(cls, data, allow_unsupported_features=False):
     """Parse XML into a Manifest.
 
     Args:
       data: A string containing XML data.
+      allow_unsupported_features: If true, will not explode if manifest
+          contains unsupported features such as includes.
 
     Raises:
       Error: If data couldn't be parsed into a Manifest.
     """
     root = ElementTree.fromstring(data)
-    return cls(ElementTree.ElementTree(root))
+    return cls(ElementTree.ElementTree(root),
+               allow_unsupported_features=allow_unsupported_features)
 
   def Write(self, dest):
     """Write the Manifest as XML.
@@ -102,6 +120,17 @@ class Manifest(object):
     if default_element is None:
       default_element = ElementTree.fromstring('<default/>')
     return Default(self, default_element)
+
+  def Includes(self):
+    """Yield an Include for each <include> element in the manifest.
+
+    This class does NOT process includes, so they are considered an unsupported
+    feature. You must set allow_unsupported_features to use this function.
+    """
+    if not self._allow_unsupported_features:
+      raise UnsupportedFeature('allow unsupported features to use Includes()')
+    for include_element in self._etree.iterfind('include'):
+      yield Include(self, include_element)
 
   def Remotes(self):
     """Yield a Remote for each <remote> element in the manifest."""
@@ -124,15 +153,27 @@ class Manifest(object):
     for project_element in self._etree.iterfind('project'):
       yield Project(self, project_element)
 
-  def GetUniqueProject(self, name):
-    """Return the unique Project with the given name.
+  def GetUniqueProject(self, name, branch=None):
+    """Return the unique Project with the given name and optional branch.
+
+    Args:
+      name: The name of the project to search for.
+      branch: The optional branch to search (without the 'refs/heads/').
 
     Raises:
-      ValueError: If there is not exactly one Project with the given name.
+      ValueError: If there is not exactly one Project with the given name/branch
     """
-    projects = [x for x in self.Projects() if x.name == name]
+    projects = []
+    for project in self.Projects():
+      # Strip the 'refs/heads/' from the branch name
+      stripped_branch = project.Revision() or 'master'
+      if stripped_branch.startswith('refs/heads/'):
+        stripped_branch = stripped_branch[len('refs/heads/'):]
+      if (branch is None or stripped_branch == branch) and project.name == name:
+        projects.append(project)
     if len(projects) != 1:
-      raise ValueError('%s projects named %s' % (len(projects), name))
+      raise ValueError(
+          '%s projects named %s on branch %s' % (len(projects), name, branch))
     return projects[0]
 
 
@@ -163,8 +204,8 @@ class _ManifestElement(object):
   def _XMLAttrName(self, name):
     """Return the XML attr name for the given Python attr name."""
     if name not in self.ATTRS:
-      raise AttributeError('%r has no attribute %r' %
-                           (self.__class__.__name__, name))
+      raise AttributeError(
+          '%r has no attribute %r' % (self.__class__.__name__, name))
     return name.replace('_', '-')
 
   def __getattr__(self, name):
@@ -175,6 +216,12 @@ class _ManifestElement(object):
       super(_ManifestElement, self).__setattr__(name, value)
     else:
       self._el.set(self._XMLAttrName(name), value)
+
+  def __delattr__(self, name):
+    if name.startswith('_'):
+      super(_ManifestElement, self).__delattr__(name)
+    else:
+      self._el.attrib.pop(self._XMLAttrName(name))
 
   def __str__(self):
     s = self.__class__.__name__
@@ -198,6 +245,12 @@ class Remote(_ManifestElement):
   def PushURL(self):
     """Return the effective push URL of this Remote."""
     return self.pushurl or self.fetch
+
+
+class Include(_ManifestElement):
+  """Include represents an <include> element of the manifest."""
+
+  ATTRS = ('name',)
 
 
 class Default(_ManifestElement):
@@ -226,6 +279,13 @@ class Project(_ManifestElement):
 
   def Revision(self):
     """Return the effective revision of this Project."""
-    return (self.revision or
-            self.Remote().revision or
+    return (self.revision or self.Remote().revision or
             self._manifest.Default().revision)
+
+  def Annotations(self):
+    """Return a dictionary from annotation key to annotation value."""
+    return {
+        child.get('name'): child.get('value')
+        for child in self._el
+        if child.tag == 'annotation'
+    }

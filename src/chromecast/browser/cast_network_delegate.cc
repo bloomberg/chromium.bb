@@ -69,7 +69,7 @@ int CastNetworkDelegate::OnBeforeURLRequest(
 
   // Get session id
   std::string session_id;
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
   CastNavigationUIData* nav_data =
       request_info ? static_cast<CastNavigationUIData*>(

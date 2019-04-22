@@ -23,7 +23,7 @@ class BuiltinArguments : public Arguments {
     DCHECK_LE(1, this->length());
   }
 
-  ObjectPtr operator[](int index) {
+  Object operator[](int index) {
     DCHECK_LT(index, length());
     return Arguments::operator[](index);
   }
@@ -67,30 +67,30 @@ class BuiltinArguments : public Arguments {
 // TODO(cbruni): add global flag to check whether any tracing events have been
 // enabled.
 #define BUILTIN(name)                                                        \
-  V8_WARN_UNUSED_RESULT static Object* Builtin_Impl_##name(                  \
+  V8_WARN_UNUSED_RESULT static Object Builtin_Impl_##name(                   \
       BuiltinArguments args, Isolate* isolate);                              \
                                                                              \
-  V8_NOINLINE static Object* Builtin_Impl_Stats_##name(                      \
+  V8_NOINLINE static Address Builtin_Impl_Stats_##name(                      \
       int args_length, Address* args_object, Isolate* isolate) {             \
     BuiltinArguments args(args_length, args_object);                         \
     RuntimeCallTimerScope timer(isolate,                                     \
                                 RuntimeCallCounterId::kBuiltin_##name);      \
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("v8.runtime"),                    \
                  "V8.Builtin_" #name);                                       \
-    return Builtin_Impl_##name(args, isolate);                               \
+    return Builtin_Impl_##name(args, isolate)->ptr();                        \
   }                                                                          \
                                                                              \
-  V8_WARN_UNUSED_RESULT Object* Builtin_##name(                              \
+  V8_WARN_UNUSED_RESULT Address Builtin_##name(                              \
       int args_length, Address* args_object, Isolate* isolate) {             \
     DCHECK(isolate->context().is_null() || isolate->context()->IsContext()); \
-    if (V8_UNLIKELY(FLAG_runtime_stats)) {                                   \
+    if (V8_UNLIKELY(TracingFlags::is_runtime_stats_enabled())) {             \
       return Builtin_Impl_Stats_##name(args_length, args_object, isolate);   \
     }                                                                        \
     BuiltinArguments args(args_length, args_object);                         \
-    return Builtin_Impl_##name(args, isolate);                               \
+    return Builtin_Impl_##name(args, isolate)->ptr();                        \
   }                                                                          \
                                                                              \
-  V8_WARN_UNUSED_RESULT static Object* Builtin_Impl_##name(                  \
+  V8_WARN_UNUSED_RESULT static Object Builtin_Impl_##name(                   \
       BuiltinArguments args, Isolate* isolate)
 
 // ----------------------------------------------------------------------------

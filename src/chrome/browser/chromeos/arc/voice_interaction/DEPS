@@ -1,6 +1,0 @@
-specific_include_rules = {
-  "arc_voice_interaction_framework_service\.cc": [
-    # TODO(mash): Fix. https://crbug.com/557397.
-    "+ash/shell.h",
-  ],
-}

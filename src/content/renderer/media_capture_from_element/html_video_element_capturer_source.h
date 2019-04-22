@@ -57,6 +57,8 @@ class CONTENT_EXPORT HtmlVideoElementCapturerSource final
   void StopCapture() override;
 
  private:
+  friend class HTMLVideoElementCapturerSourceTest;
+
   // This method includes collecting data from the WebMediaPlayer and converting
   // it into a format suitable for MediaStreams.
   void sendNewFrame();
@@ -68,6 +70,8 @@ class CONTENT_EXPORT HtmlVideoElementCapturerSource final
   const base::WeakPtr<blink::WebMediaPlayer> web_media_player_;
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  bool is_opaque_;
 
   // These three configuration items are passed on StartCapture();
   RunningCallback running_callback_;

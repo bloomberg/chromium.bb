@@ -8,6 +8,9 @@
 #include <stddef.h>
 
 #include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -20,6 +23,7 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/views/controls/resize_area_delegate.h"
 #include "ui/views/drag_controller.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -160,6 +164,9 @@ class BrowserActionsContainer : public views::View,
     return resize_animation_ && resize_animation_->is_animating();
   }
 
+  // Is the view being resized?
+  bool resizing() const { return resize_starting_width_.has_value(); }
+
   // Returns the ID of the action represented by the view at |index|.
   std::string GetIdAt(size_t index) const;
 
@@ -179,11 +186,6 @@ class BrowserActionsContainer : public views::View,
   // animating to a new size, or (if not animating) the currently visible icons.
   size_t VisibleBrowserActionsAfterAnimation() const;
 
-  // Returns the preferred width given the limit of |max_width|. (Unlike most
-  // views, since we don't want to show part of an icon or a large space after
-  // the omnibox, this is probably *not* |max_width|).
-  int GetWidthForMaxWidth(int max_width) const;
-
   // Sets the color for the separator if present, called after construction and
   // on theme changes.
   void SetSeparatorColor(SkColor color);
@@ -193,9 +195,8 @@ class BrowserActionsContainer : public views::View,
   int GetHeightForWidth(int width) const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
-  bool GetDropFormats(
-      int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) override;
+  bool GetDropFormats(int* formats,
+                      std::set<ui::ClipboardFormatType>* format_types) override;
   bool AreDropTypesRequired() override;
   bool CanDrop(const ui::OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
@@ -214,6 +215,7 @@ class BrowserActionsContainer : public views::View,
 
   // Overridden from views::ResizeAreaDelegate:
   void OnResize(int resize_amount, bool done_resizing) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // Overridden from gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -248,13 +250,17 @@ class BrowserActionsContainer : public views::View,
 
   views::BubbleDialogDelegateView* active_bubble() { return active_bubble_; }
 
+  static views::FlexRule GetFlexRule();
+
  protected:
   // Overridden from views::View:
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
+  friend class BrowserActionsContainerBrowserTest;
+
   // A struct representing the position at which an action will be dropped.
   struct DropPosition;
 
@@ -266,6 +272,14 @@ class BrowserActionsContainer : public views::View,
   int GetWidthForIconCount(size_t num_icons) const;
   int GetWidthWithAllActionsVisible() const;
 
+  // Get index of the drag-drop position.
+  size_t GetDropPositionIndex() const;
+
+  // Returns the preferred width given the limit of |max_width|. (Unlike most
+  // views, since we don't want to show part of an icon or a large space after
+  // the omnibox, this is probably *not* |max_width|).
+  int GetWidthForMaxWidth(int max_width) const;
+
   // Width allocated for the resize handle, |resize_area_|. 0 when it should not
   // be shown.
   int GetResizeAreaWidth() const;
@@ -273,6 +287,10 @@ class BrowserActionsContainer : public views::View,
   // Width of the separator and surrounding padding. 0 when the separator should
   // not be shown.
   int GetSeparatorAreaWidth() const;
+
+  // Updates the enabled state of the resize area based on whether a resize can
+  // happen with the current browser size and actions bar state.
+  void UpdateResizeArea();
 
   const ToolbarActionsBar::PlatformSettings& platform_settings() const {
     return toolbar_actions_bar_->platform_settings();

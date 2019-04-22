@@ -7,10 +7,12 @@
 #include <memory>
 #include <string>
 
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_request_info.h"
 #include "net/log/net_log_with_source.h"
@@ -39,13 +41,14 @@ TEST(HttpAuthHandlerBasicTest, GenerateAuthToken) {
   };
   GURL origin("http://www.example.com");
   HttpAuthHandlerBasic::Factory factory;
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string challenge = "Basic realm=\"Atlantis\"";
     SSLInfo null_ssl_info;
+    auto host_resolver = std::make_unique<MockHostResolver>();
     std::unique_ptr<HttpAuthHandler> basic;
     EXPECT_EQ(OK, factory.CreateAuthHandlerFromString(
                       challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
-                      NetLogWithSource(), &basic));
+                      NetLogWithSource(), host_resolver.get(), &basic));
     AuthCredentials credentials(base::ASCIIToUTF16(tests[i].username),
                                 base::ASCIIToUTF16(tests[i].password));
     HttpRequestInfo request_info;
@@ -96,12 +99,13 @@ TEST(HttpAuthHandlerBasicTest, HandleAnotherChallenge) {
   GURL origin("http://www.example.com");
   HttpAuthHandlerBasic::Factory factory;
   SSLInfo null_ssl_info;
+  auto host_resolver = std::make_unique<MockHostResolver>();
   std::unique_ptr<HttpAuthHandler> basic;
   EXPECT_EQ(OK, factory.CreateAuthHandlerFromString(
                     tests[0].challenge, HttpAuth::AUTH_SERVER, null_ssl_info,
-                    origin, NetLogWithSource(), &basic));
+                    origin, NetLogWithSource(), host_resolver.get(), &basic));
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string challenge(tests[i].challenge);
     HttpAuthChallengeTokenizer tok(challenge.begin(),
                                    challenge.end());
@@ -194,13 +198,14 @@ TEST(HttpAuthHandlerBasicTest, InitFromChallenge) {
   };
   HttpAuthHandlerBasic::Factory factory;
   GURL origin("http://www.example.com");
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string challenge = tests[i].challenge;
     SSLInfo null_ssl_info;
+    auto host_resolver = std::make_unique<MockHostResolver>();
     std::unique_ptr<HttpAuthHandler> basic;
     int rv = factory.CreateAuthHandlerFromString(
         challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
-        NetLogWithSource(), &basic);
+        NetLogWithSource(), host_resolver.get(), &basic);
     EXPECT_EQ(tests[i].expected_rv, rv);
     if (rv == OK)
       EXPECT_EQ(tests[i].expected_realm, basic->realm());

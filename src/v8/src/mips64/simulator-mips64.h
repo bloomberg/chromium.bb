@@ -12,14 +12,16 @@
 #ifndef V8_MIPS64_SIMULATOR_MIPS64_H_
 #define V8_MIPS64_SIMULATOR_MIPS64_H_
 
-#include "src/allocation.h"
-#include "src/mips64/constants-mips64.h"
+// globals.h defines USE_SIMULATOR.
+#include "src/globals.h"
 
 #if defined(USE_SIMULATOR)
 // Running with a simulator.
 
+#include "src/allocation.h"
 #include "src/assembler.h"
 #include "src/base/hashmap.h"
+#include "src/mips64/constants-mips64.h"
 #include "src/simulator-base.h"
 
 namespace v8 {
@@ -619,8 +621,6 @@ class Simulator : public SimulatorBase {
 
   class GlobalMonitor {
    public:
-    GlobalMonitor();
-
     class LinkedAddress {
      public:
       LinkedAddress();
@@ -658,16 +658,21 @@ class Simulator : public SimulatorBase {
     // Called when the simulator is destroyed.
     void RemoveLinkedAddress(LinkedAddress* linked_address);
 
+    static GlobalMonitor* Get();
+
    private:
+    // Private constructor. Call {GlobalMonitor::Get()} to get the singleton.
+    GlobalMonitor() = default;
+    friend class base::LeakyObject<GlobalMonitor>;
+
     bool IsProcessorInLinkedList_Locked(LinkedAddress* linked_address) const;
     void PrependProcessor_Locked(LinkedAddress* linked_address);
 
-    LinkedAddress* head_;
+    LinkedAddress* head_ = nullptr;
   };
 
   LocalMonitor local_monitor_;
   GlobalMonitor::LinkedAddress global_monitor_thread_;
-  static base::LazyInstance<GlobalMonitor>::type global_monitor_;
 };
 
 }  // namespace internal

@@ -9,14 +9,16 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "url/url_util.h"
@@ -33,6 +35,10 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
+#endif
+
+#if BUILDFLAG(ENABLE_MUS)
+#include "ui/aura/test/aura_test_suite_setup.h"  // nogncheck
 #endif
 
 namespace {
@@ -91,7 +97,7 @@ class ComponentsTestSuite : public base::TestSuite {
 
     ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
         kNonWildcardDomainNonPortSchemes,
-        arraysize(kNonWildcardDomainNonPortSchemes));
+        base::size(kNonWildcardDomainNonPortSchemes));
   }
 
   void Shutdown() override {
@@ -152,6 +158,10 @@ base::RunTestSuiteCallback GetLaunchCallback(int argc, char** argv) {
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new ComponentsUnitTestEventListener());
+#if BUILDFLAG(ENABLE_MUS)
+  // Components unit tests do not use mus window service client code.
+  aura::AuraTestSuiteSetup::DisableMusFeatures();
+#endif
 
 #if !defined(OS_IOS)
   return base::BindOnce(&content::UnitTestTestSuite::Run,

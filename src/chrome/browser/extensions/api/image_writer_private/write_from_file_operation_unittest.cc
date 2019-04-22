@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/image_writer_private/write_from_file_operation.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"

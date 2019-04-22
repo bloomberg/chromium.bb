@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 
 namespace blink {
@@ -69,7 +70,6 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
 
   bool IsLayoutFlowThread() const final { return true; }
   virtual bool IsLayoutMultiColumnFlowThread() const { return false; }
-  virtual bool IsLayoutPagedFlowThread() const { return false; }
 
   bool CreatesNewFormattingContext() const final {
     // The spec requires multicol containers to establish new formatting
@@ -206,6 +206,8 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
       MultiColumnSetIntervalTree;
 
   class MultiColumnSetSearchAdapter {
+    STACK_ALLOCATED();
+
    public:
     MultiColumnSetSearchAdapter(LayoutUnit offset)
         : offset_(offset), result_(nullptr) {}

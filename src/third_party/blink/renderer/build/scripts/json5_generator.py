@@ -21,14 +21,17 @@ an optional parameters validation map, and an optional metdata map. Examples:
   parameters: {
     param1: {default: 1, valid_values:[1,2,3]},
     param2: {valid_type: "str"},
+    param3: {valid_keys:["a", "b"], valid_values:["x", "y"]}
   },
   data: {
     "simple_item": {},
-    "item": {param1:1, param2: "Hello World"},
+    "item": {param1:1, param2: "Hello World", param3:{"a":"x", "b":"y"}},
+    "also_valid_item": {param2: "valid", param3: "x"}
     "bad_item_fails_validation": {
       name: "bad_item_fails_validation",
       param1: "bad_value_fails_valid_values_check",
       param2: 1.9,
+      param3: {"bad": "value"}
       unknown_param_fails_validation: true,
     },
   },
@@ -92,10 +95,15 @@ def _merge_doc(doc, doc2):
         _merge_dict("data")
 
 
-def _is_valid(valid_values, value):
+def _is_valid(valid_values, value, valid_keys=None):
     if type(value) == str and all([type(i) == str for i in valid_values]):
         return any([(value == valid) or (re.match("^" + valid + "$", value) is not None)
                     for valid in valid_values])
+    elif isinstance(value, dict):
+        assert valid_keys, "'valid_keys' must be declared when using a dict value"
+        return all([(key in valid_keys or key == "default")
+                    and (val in valid_values or val == "")
+                    for key, val in value.iteritems()])
     else:
         return value in valid_values
 
@@ -188,6 +196,7 @@ class Json5File(object):
         valid_values = parameter.get("valid_values")
         if not valid_values:
             return
+        valid_keys = parameter.get("valid_keys")
         # If valid_values is a list of simple items and not list of list, then
         # validate each item in the value list against valid_values.
         if valid_type == "list" and type(valid_values[0]) is not list:
@@ -195,9 +204,13 @@ class Json5File(object):
                 if not _is_valid(valid_values, item):
                     raise Exception("Unknown value: '%s'\nValid values: %s, \
                         Please change your value to a valid value" % (item, valid_values))
-        elif not _is_valid(valid_values, value):
-            raise Exception("Unknown value: '%s'\nValid values: %s, \
-                Please change your value to a valid value" % (value, valid_values))
+        elif not _is_valid(valid_values, value, valid_keys):
+            message = "Unknown value: '%s'\nValid values: %s, \
+                Please change your value to a valid value" % (value, valid_values)
+            if isinstance(value, dict):
+                message = "Unknown key or value in: %s\nPlease choose your keys and values from the list below:\n \
+                Valid keys: %s\nValid values: %s" % (value, valid_keys, valid_values)
+            raise Exception(message)
 
     def merge_from(self, doc):
         self._process(doc)
@@ -213,6 +226,10 @@ class Writer(object):
     def __init__(self, json5_files, output_dir):
         self._input_files = copy.copy(json5_files)
         self._outputs = {}  # file_name -> generator
+        # A set of filenames that were formerly generated, but aren't anymore.
+        # Files present in this set will be deleted to prevent erroneous
+        # inclusion of stale generated headers for incremental builds.
+        self._cleanup = set()
         self.gperf_path = None
         if json5_files:
             self.json5_file = Json5File.load_from_files(json5_files,
@@ -245,6 +262,12 @@ class Writer(object):
         for file_name, generator in self._outputs.items():
             self._write_file_if_changed(output_dir, generator(), file_name)
 
+    def cleanup_files(self, output_dir):
+        for file_name in self._cleanup:
+            path = os.path.join(output_dir, file_name)
+            if os.path.exists(path):
+                os.remove(path)
+
     def set_gperf_path(self, gperf_path):
         self.gperf_path = gperf_path
 
@@ -275,3 +298,4 @@ class Maker(object):
         writer = self._writer_class(args.files, args.output_dir)
         writer.set_gperf_path(args.gperf)
         writer.write_files(args.output_dir)
+        writer.cleanup_files(args.output_dir)

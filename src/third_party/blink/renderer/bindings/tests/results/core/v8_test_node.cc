@@ -10,6 +10,8 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/core/v8_test_node.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
@@ -20,6 +22,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -30,12 +33,12 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestNode::wrapper_type_info = {
+const WrapperTypeInfo v8_test_node_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestNode::DomTemplate,
     nullptr,
     "TestNode",
-    &V8Node::wrapper_type_info,
+    V8Node::GetWrapperTypeInfo(),
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::kNodeClassId,
     WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
@@ -47,7 +50,7 @@ const WrapperTypeInfo V8TestNode::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestNode.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestNode::wrapper_type_info_ = V8TestNode::wrapper_type_info;
+const WrapperTypeInfo& TestNode::wrapper_type_info_ = v8_test_node_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -143,7 +146,9 @@ static void HrefCallWithAttributeSetter(
 
   ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
 
-  impl->setHrefCallWith(execution_context, CurrentDOMWindow(info.GetIsolate()), EnteredDOMWindow(info.GetIsolate()), cpp_value);
+  ScriptState* script_state = ScriptState::ForRelevantRealm(info);
+
+  impl->setHrefCallWith(script_state, execution_context, cpp_value);
 }
 
 static void HrefByteStringAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -179,7 +184,7 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestNode* impl = TestNode::Create();
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestNode::wrapper_type_info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestNode::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
 }
 
@@ -275,7 +280,7 @@ static void InstallV8TestNodeTemplate(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestNode::wrapper_type_info.interface_name, V8Node::DomTemplate(isolate, world), V8TestNode::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestNode::GetWrapperTypeInfo()->interface_name, V8Node::DomTemplate(isolate, world), V8TestNode::kInternalFieldCount);
   interface_template->SetCallHandler(test_node_v8_internal::ConstructorCallback);
   interface_template->SetLength(0);
 
@@ -316,18 +321,18 @@ void V8TestNode::InstallRuntimeEnabledFeaturesOnTemplate(
 v8::Local<v8::FunctionTemplate> V8TestNode::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestNode::GetWrapperTypeInfo()),
       InstallV8TestNodeTemplate);
 }
 
 bool V8TestNode::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestNode::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestNode::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestNode::GetWrapperTypeInfo(), v8_value);
 }
 
 TestNode* V8TestNode::ToImplWithTypeCheck(

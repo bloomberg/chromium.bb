@@ -5,7 +5,8 @@
 #include "chromecast/tracing/system_tracing_common.h"
 
 #include <string.h>
-#include "base/macros.h"
+
+#include "base/stl_util.h"
 #include "base/trace_event/common/trace_event_common.h"
 
 namespace chromecast {
@@ -20,7 +21,7 @@ const char* const kCategories[] = {
     "gfx",   "input", TRACE_DISABLED_BY_DEFAULT("irq"),
     "power", "sched", "workq"};
 
-const size_t kCategoryCount = arraysize(kCategories);
+const size_t kCategoryCount = base::size(kCategories);
 
 sockaddr_un GetSystemTracingSocketAddress() {
   struct sockaddr_un addr;

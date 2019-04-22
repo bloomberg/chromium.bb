@@ -710,14 +710,14 @@ std::string SpeechRecognitionEngineTest::ConsumeChunkedUploadData() {
       EXPECT_TRUE(upstream_request->request.request_body);
       EXPECT_EQ(1u, upstream_request->request.request_body->elements()->size());
       EXPECT_EQ(
-          network::DataElement::TYPE_CHUNKED_DATA_PIPE,
+          network::mojom::DataElementType::kChunkedDataPipe,
           (*upstream_request->request.request_body->elements())[0].type());
       network::TestURLLoaderFactory::PendingRequest* mutable_upstream_request =
           const_cast<network::TestURLLoaderFactory::PendingRequest*>(
               upstream_request);
-      chunked_data_pipe_getter_ = (*mutable_upstream_request->request
-                                        .request_body->elements_mutable())[0]
-                                      .ReleaseChunkedDataPipeGetter();
+      chunked_data_pipe_getter_.Bind((*mutable_upstream_request->request
+                                           .request_body->elements_mutable())[0]
+                                         .ReleaseChunkedDataPipeGetter());
     }
     mojo::DataPipe data_pipe;
     chunked_data_pipe_getter_->StartReading(

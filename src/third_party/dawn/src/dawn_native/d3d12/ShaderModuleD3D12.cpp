@@ -15,6 +15,7 @@
 #include "dawn_native/d3d12/ShaderModuleD3D12.h"
 
 #include "common/Assert.h"
+#include "common/BitSetIterator.h"
 #include "dawn_native/d3d12/BindGroupLayoutD3D12.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
 #include "dawn_native/d3d12/PipelineLayoutD3D12.h"
@@ -36,7 +37,6 @@ namespace dawn_native { namespace d3d12 {
         // If these options are changed, the values in DawnSPIRVCrossHLSLFastFuzzer.cpp need to be
         // updated.
         spirv_cross::CompilerGLSL::Options options_glsl;
-        options_glsl.vertex.fixup_clipspace = true;
         options_glsl.vertex.flip_vert_y = true;
         compiler.set_common_options(options_glsl);
 
@@ -45,17 +45,15 @@ namespace dawn_native { namespace d3d12 {
         compiler.set_hlsl_options(options_hlsl);
 
         const ModuleBindingInfo& moduleBindingInfo = GetBindingInfo();
-        for (uint32_t group = 0; group < moduleBindingInfo.size(); ++group) {
+        for (uint32_t group : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
             const auto& bindingOffsets =
                 ToBackend(layout->GetBindGroupLayout(group))->GetBindingOffsets();
             const auto& groupBindingInfo = moduleBindingInfo[group];
             for (uint32_t binding = 0; binding < groupBindingInfo.size(); ++binding) {
                 const BindingInfo& bindingInfo = groupBindingInfo[binding];
                 if (bindingInfo.used) {
-                    uint32_t bindGroupOffset = group * kMaxBindingsPerGroup;
                     uint32_t bindingOffset = bindingOffsets[binding];
-                    compiler.set_decoration(bindingInfo.id, spv::DecorationBinding,
-                                            bindGroupOffset + bindingOffset);
+                    compiler.set_decoration(bindingInfo.id, spv::DecorationBinding, bindingOffset);
                 }
             }
         }

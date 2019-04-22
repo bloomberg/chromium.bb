@@ -31,11 +31,13 @@
 #include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
 
 #include <stddef.h>
+
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
@@ -91,11 +93,9 @@ void QuotedPrintableDecode(const char* data,
 // files.
 class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
  public:
-  static MIMEHeader* Create() { return MakeGarbageCollected<MIMEHeader>(); }
-
   MIMEHeader();
 
-  enum Encoding {
+  enum class Encoding {
     kQuotedPrintable,
     kBase64,
     kEightBit,
@@ -179,7 +179,7 @@ static KeyValueMap RetrieveKeyValuePairs(SharedBufferChunkReader* buffer) {
 }
 
 MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
-  MIMEHeader* mime_header = MIMEHeader::Create();
+  auto* mime_header = MakeGarbageCollected<MIMEHeader>();
   KeyValueMap key_value_pairs = RetrieveKeyValuePairs(buffer);
   KeyValueMap::iterator mime_parameters_iterator =
       key_value_pairs.find("content-type");
@@ -192,16 +192,16 @@ MIMEHeader* MIMEHeader::ParseHeader(SharedBufferChunkReader* buffer) {
     } else {
       mime_header->multipart_type_ =
           parsed_content_type.ParameterValueForName("type");
-      mime_header->end_of_part_boundary_ =
-          parsed_content_type.ParameterValueForName("boundary");
-      if (mime_header->end_of_part_boundary_.IsNull()) {
+      String boundary = parsed_content_type.ParameterValueForName("boundary");
+      if (boundary.IsNull()) {
         DVLOG(1) << "No boundary found in multipart MIME header.";
         return nullptr;
       }
-      mime_header->end_of_part_boundary_.insert("--", 0);
+      mime_header->end_of_part_boundary_ = "--" + boundary;
       mime_header->end_of_document_boundary_ =
           mime_header->end_of_part_boundary_;
-      mime_header->end_of_document_boundary_.append("--");
+      mime_header->end_of_document_boundary_ =
+          mime_header->end_of_document_boundary_ + "--";
     }
   }
 
@@ -236,20 +236,20 @@ MIMEHeader::Encoding MIMEHeader::ParseContentTransferEncoding(
     const String& text) {
   String encoding = text.StripWhiteSpace().DeprecatedLower();
   if (encoding == "base64")
-    return kBase64;
+    return Encoding::kBase64;
   if (encoding == "quoted-printable")
-    return kQuotedPrintable;
+    return Encoding::kQuotedPrintable;
   if (encoding == "8bit")
-    return kEightBit;
+    return Encoding::kEightBit;
   if (encoding == "7bit")
-    return kSevenBit;
+    return Encoding::kSevenBit;
   if (encoding == "binary")
-    return kBinary;
+    return Encoding::kBinary;
   DVLOG(1) << "Unknown encoding '" << text << "' found in MIME header.";
-  return kUnknown;
+  return Encoding::kUnknown;
 }
 
-MIMEHeader::MIMEHeader() : content_transfer_encoding_(kUnknown) {}
+MIMEHeader::MIMEHeader() : content_transfer_encoding_(Encoding::kUnknown) {}
 
 static bool SkipLinesUntilBoundaryFound(SharedBufferChunkReader& line_reader,
                                         const String& boundary) {
@@ -346,13 +346,13 @@ ArchiveResource* MHTMLParser::ParseNextPart(
   // If no content transfer encoding is specified, default to binary encoding.
   MIMEHeader::Encoding content_transfer_encoding =
       mime_header.ContentTransferEncoding();
-  if (content_transfer_encoding == MIMEHeader::kUnknown)
-    content_transfer_encoding = MIMEHeader::kBinary;
+  if (content_transfer_encoding == MIMEHeader::Encoding::kUnknown)
+    content_transfer_encoding = MIMEHeader::Encoding::kBinary;
 
   Vector<char> content;
   const bool check_boundary = !end_of_part_boundary.IsEmpty();
   bool end_of_part_reached = false;
-  if (content_transfer_encoding == MIMEHeader::kBinary) {
+  if (content_transfer_encoding == MIMEHeader::Encoding::kBinary) {
     if (!check_boundary) {
       DVLOG(1) << "Binary contents requires end of part";
       return nullptr;
@@ -413,7 +413,7 @@ ArchiveResource* MHTMLParser::ParseNextPart(
       // Note that we use line.utf8() and not line.ascii() as ascii turns
       // special characters (such as tab, line-feed...) into '?'.
       content.Append(line.Utf8().data(), line.length());
-      if (content_transfer_encoding == MIMEHeader::kQuotedPrintable) {
+      if (content_transfer_encoding == MIMEHeader::Encoding::kQuotedPrintable) {
         // The line reader removes the \r\n, but we need them for the content in
         // this case as the QuotedPrintable decoder expects CR-LF terminated
         // lines.
@@ -428,18 +428,18 @@ ArchiveResource* MHTMLParser::ParseNextPart(
 
   Vector<char> data;
   switch (content_transfer_encoding) {
-    case MIMEHeader::kBase64:
+    case MIMEHeader::Encoding::kBase64:
       if (!Base64Decode(content.data(), content.size(), data)) {
         DVLOG(1) << "Invalid base64 content for MHTML part.";
         return nullptr;
       }
       break;
-    case MIMEHeader::kQuotedPrintable:
+    case MIMEHeader::Encoding::kQuotedPrintable:
       QuotedPrintableDecode(content.data(), content.size(), data);
       break;
-    case MIMEHeader::kEightBit:
-    case MIMEHeader::kSevenBit:
-    case MIMEHeader::kBinary:
+    case MIMEHeader::Encoding::kEightBit:
+    case MIMEHeader::Encoding::kSevenBit:
+    case MIMEHeader::Encoding::kBinary:
       data.Append(content.data(), content.size());
       break;
     default:
@@ -452,10 +452,10 @@ ArchiveResource* MHTMLParser::ParseNextPart(
   // http://tools.ietf.org/html/rfc2557#section-5
   // IE and Firefox (UNMht) seem to generate only absolute URLs.
   KURL location = KURL(NullURL(), mime_header.ContentLocation());
-  return ArchiveResource::Create(content_buffer, location,
-                                 mime_header.ContentID(),
-                                 AtomicString(mime_header.ContentType()),
-                                 AtomicString(mime_header.Charset()));
+  return MakeGarbageCollected<ArchiveResource>(
+      content_buffer, location, mime_header.ContentID(),
+      AtomicString(mime_header.ContentType()),
+      AtomicString(mime_header.Charset()));
 }
 
 // static

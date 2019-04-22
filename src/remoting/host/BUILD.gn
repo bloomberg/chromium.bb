@@ -45,6 +45,15 @@ process_version("remoting_version") {
   output = "$target_gen_dir/version.h"
 }
 
+source_set("host") {
+  public_deps = [
+    ":common",
+  ]
+  deps = [
+    "//remoting/host/file_transfer",
+  ]
+}
+
 # This must be a static library instead of a source set because
 # remoting_unittests requires that remoting_me2me_host.cc not be pulled in,
 # which in turn depends on remoting_me2me_host_static which isn't part of that
@@ -52,7 +61,7 @@ process_version("remoting_version") {
 #
 # TODO fix this, successful builds should not depend on static libraries
 # stripping code.
-static_library("host") {
+static_library("common") {
   sources = [
     "action_executor.cc",
     "action_executor.h",
@@ -84,6 +93,7 @@ static_library("host") {
     "chromoting_messages.h",
     "chromoting_param_traits.cc",
     "chromoting_param_traits.h",
+    "chromoting_param_traits_impl.h",
     "client_session.cc",
     "client_session.h",
     "client_session_control.h",
@@ -114,6 +124,7 @@ static_library("host") {
     "desktop_capturer_proxy.h",
     "desktop_display_info.cc",
     "desktop_display_info.h",
+    "desktop_display_info_mac.mm",
     "desktop_environment.h",
     "desktop_environment_options.cc",
     "desktop_environment_options.h",
@@ -142,15 +153,10 @@ static_library("host") {
     "dns_blackhole_checker.h",
     "evaluate_capability.cc",
     "evaluate_capability.h",
-    "file_proxy_wrapper.cc",
-    "file_proxy_wrapper.h",
-    "file_proxy_wrapper_linux.cc",
-    "file_proxy_wrapper_mac.cc",
-    "file_proxy_wrapper_win.cc",
-    "file_transfer_message_handler.cc",
-    "file_transfer_message_handler.h",
     "forward_process_stats_agent.cc",
     "forward_process_stats_agent.h",
+    "ftl_signaling_connector.cc",
+    "ftl_signaling_connector.h",
     "gcd_rest_client.cc",
     "gcd_rest_client.h",
     "gcd_state_updater.cc",
@@ -304,6 +310,7 @@ static_library("host") {
     "//media",
     "//remoting/base",
     "//remoting/base:authorization",
+    "//remoting/host/file_transfer:common",
     "//remoting/host/input_monitor",
     "//remoting/host/security_key",
     "//remoting/protocol",
@@ -320,6 +327,7 @@ static_library("host") {
 
   public_deps = [
     "//ipc",
+    "//remoting/proto",
   ]
 
   if (is_posix) {
@@ -375,6 +383,7 @@ static_library("host") {
     deps += [
       "//ash",
       "//remoting/host/chromeos",
+      "//ui/base/ime/chromeos",
     ]
 
     if (use_ozone) {
@@ -438,8 +447,9 @@ static_library("test_support") {
     "//testing/gtest",
   ]
   public_deps = [
-    ":host",
+    ":common",
     "//remoting/base:test_support",
+    "//remoting/host/file_transfer:test_support",
     "//third_party/libjingle_xmpp",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/webrtc/modules/desktop_capture",
@@ -460,10 +470,9 @@ source_set("unit_tests") {
     "client_session_unittest.cc",
     "config_file_watcher_unittest.cc",
     "daemon_process_unittest.cc",
+    "desktop_display_info_unittest.cc",
     "desktop_process_unittest.cc",
     "desktop_session_agent_unittest.cc",
-    "file_proxy_wrapper_linux_unittest.cc",
-    "file_transfer_message_handler_unittest.cc",
     "gcd_rest_client_unittest.cc",
     "gcd_state_updater_unittest.cc",
     "heartbeat_sender_unittest.cc",
@@ -509,13 +518,13 @@ source_set("unit_tests") {
   configs += [ "//remoting/build/config:version" ]
 
   deps = [
-    ":host",
+    ":common",
     ":test_support",
     "//remoting/host/file_transfer:unit_tests",
     "//remoting/host/it2me:common",
     "//remoting/host/native_messaging",
     "//remoting/host/security_key:unit_tests",
-    "//remoting/host/setup",
+    "//remoting/host/setup:common",
     "//remoting/proto",
     "//remoting/resources",
     "//skia",
@@ -712,6 +721,7 @@ if (enable_me2me_host) {
       "//remoting/host",
       "//remoting/proto",
       "//third_party/libjingle_xmpp",
+      "//third_party/webrtc/api:scoped_refptr",
       "//third_party/webrtc/modules/desktop_capture",
       "//third_party/webrtc_overrides:init_webrtc",
     ]

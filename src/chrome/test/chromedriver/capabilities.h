@@ -125,6 +125,8 @@ struct Capabilities {
   base::TimeDelta page_load_timeout = Session::kDefaultPageLoadTimeout;
   base::TimeDelta implicit_wait_timeout = Session::kDefaultImplicitWaitTimeout;
 
+  bool strict_file_interactability;
+
   std::string unhandled_prompt_behavior;
 
   //

@@ -319,6 +319,34 @@ void VideoCaptureHost::GetDeviceFormatsInUse(
   std::move(callback).Run(formats_in_use);
 }
 
+void VideoCaptureHost::OnFrameDropped(
+    int32_t device_id,
+    media::VideoCaptureFrameDropReason reason) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  VideoCaptureControllerID controller_id(device_id);
+  auto it = controllers_.find(controller_id);
+  if (it == controllers_.end())
+    return;
+
+  const base::WeakPtr<VideoCaptureController>& controller = it->second;
+  if (controller)
+    controller->OnFrameDropped(reason);
+}
+
+void VideoCaptureHost::OnLog(int32_t device_id, const std::string& message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  VideoCaptureControllerID controller_id(device_id);
+  auto it = controllers_.find(controller_id);
+  if (it == controllers_.end())
+    return;
+
+  const base::WeakPtr<VideoCaptureController>& controller = it->second;
+  if (controller)
+    controller->OnLog(message);
+}
+
 void VideoCaptureHost::DoError(VideoCaptureControllerID controller_id,
                                media::VideoCaptureError error) {
   DVLOG(1) << __func__;

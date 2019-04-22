@@ -108,6 +108,7 @@ class PageHandler : public DevToolsDomainHandler,
       int* current_index,
       std::unique_ptr<NavigationEntries>* entries) override;
   Response NavigateToHistoryEntry(int entry_id) override;
+  Response ResetNavigationHistory() override;
 
   void CaptureScreenshot(
       Maybe<std::string> format,
@@ -145,8 +146,6 @@ class PageHandler : public DevToolsDomainHandler,
   Response HandleJavaScriptDialog(bool accept,
                                   Maybe<std::string> prompt_text) override;
 
-  Response RequestAppBanner() override;
-
   Response BringToFront() override;
 
   Response SetDownloadBehavior(const std::string& behavior,
@@ -156,6 +155,8 @@ class PageHandler : public DevToolsDomainHandler,
       std::unique_ptr<GetAppManifestCallback> callback) override;
 
   Response SetWebLifecycleState(const std::string& state) override;
+  void GetInstallabilityErrors(
+      std::unique_ptr<GetInstallabilityErrorsCallback> callback) override;
 
  private:
   enum EncodingFormat { PNG, JPEG };

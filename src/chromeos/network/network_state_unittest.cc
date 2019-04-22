@@ -246,43 +246,82 @@ TEST_F(NetworkStateTest, Visible) {
 TEST_F(NetworkStateTest, ConnectionState) {
   network_state_.set_visible(true);
 
-  network_state_.set_connection_state(shill::kStateConfiguration);
+  network_state_.SetConnectionState(shill::kStateConfiguration);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateConfiguration);
   EXPECT_TRUE(network_state_.IsConnectingState());
-  EXPECT_FALSE(network_state_.IsReconnecting());
+  EXPECT_TRUE(network_state_.IsConnectingOrConnected());
+  EXPECT_TRUE(network_state_.IsActive());
+  // State change to configuration from idle should not set connect_requested
+  // unless explicitly set by the UI.
+  EXPECT_FALSE(network_state_.connect_requested());
 
-  network_state_.set_connection_state(shill::kStateOnline);
+  network_state_.SetConnectionState(shill::kStateOnline);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateOnline);
   EXPECT_TRUE(network_state_.IsConnectedState());
-  EXPECT_FALSE(network_state_.IsReconnecting());
+  EXPECT_TRUE(network_state_.IsConnectingOrConnected());
+  EXPECT_TRUE(network_state_.IsActive());
 
-  network_state_.set_connection_state(shill::kStateConfiguration);
+  network_state_.SetConnectionState(shill::kStateConfiguration);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateConfiguration);
   EXPECT_TRUE(network_state_.IsConnectingState());
-  EXPECT_TRUE(network_state_.IsReconnecting());
+  // State change to configuration from a connected state should set
+  // connect_requested.
+  EXPECT_TRUE(network_state_.connect_requested());
+
+  network_state_.SetConnectionState(shill::kStateOnline);
+  EXPECT_TRUE(network_state_.IsConnectedState());
+  // State change to connected should clear connect_requested.
+  EXPECT_FALSE(network_state_.connect_requested());
+
+  network_state_.SetConnectionState(shill::kStateIdle);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateIdle);
+  EXPECT_FALSE(network_state_.IsConnectedState());
+  EXPECT_FALSE(network_state_.IsConnectingState());
+  EXPECT_FALSE(network_state_.IsConnectingOrConnected());
+  EXPECT_FALSE(network_state_.IsActive());
+
+  EXPECT_TRUE(SetStringProperty(shill::kActivationStateProperty,
+                                shill::kActivationStateActivating));
+  EXPECT_FALSE(network_state_.IsConnectedState());
+  EXPECT_FALSE(network_state_.IsConnectingState());
+  EXPECT_FALSE(network_state_.IsConnectingOrConnected());
+  EXPECT_TRUE(network_state_.IsActive());
+}
+
+TEST_F(NetworkStateTest, ConnectRequested) {
+  network_state_.set_visible(true);
+
+  network_state_.SetConnectionState(shill::kStateIdle);
+
+  network_state_.set_connect_requested_for_testing(true);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateIdle);
+  EXPECT_FALSE(network_state_.IsConnectedState());
+  EXPECT_TRUE(network_state_.IsConnectingState());
+  EXPECT_TRUE(network_state_.IsConnectingOrConnected());
+
+  network_state_.SetConnectionState(shill::kStateOnline);
+  EXPECT_TRUE(network_state_.IsConnectedState());
+  EXPECT_FALSE(network_state_.IsConnectingState());
 }
 
 TEST_F(NetworkStateTest, ConnectionStateNotVisible) {
   network_state_.set_visible(false);
 
-  network_state_.set_connection_state(shill::kStateConfiguration);
+  network_state_.SetConnectionState(shill::kStateConfiguration);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
   EXPECT_FALSE(network_state_.IsConnectingState());
-  EXPECT_FALSE(network_state_.IsReconnecting());
 
-  network_state_.set_connection_state(shill::kStateOnline);
+  network_state_.SetConnectionState(shill::kStateOnline);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
   EXPECT_FALSE(network_state_.IsConnectedState());
-  EXPECT_FALSE(network_state_.IsReconnecting());
 
-  network_state_.set_connection_state(shill::kStateConfiguration);
+  network_state_.SetConnectionState(shill::kStateConfiguration);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
   EXPECT_FALSE(network_state_.IsConnectingState());
-  EXPECT_FALSE(network_state_.IsReconnecting());
 }
 
 TEST_F(NetworkStateTest, TetherProperties) {
-  network_state_.set_type(kTypeTether);
+  network_state_.set_type_for_testing(kTypeTether);
   network_state_.set_carrier("Project Fi");
   network_state_.set_battery_percentage(85);
   network_state_.set_tether_has_connected_to_host(true);
@@ -310,6 +349,70 @@ TEST_F(NetworkStateTest, TetherProperties) {
   EXPECT_TRUE(
       dictionary.GetStringWithoutPathExpansion(kTetherCarrier, &carrier));
   EXPECT_EQ("Project Fi", carrier);
+}
+
+TEST_F(NetworkStateTest, CelularPaymentPortalPost) {
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeCellular));
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, "Test Cellular"));
+  EXPECT_TRUE(SetStringProperty(shill::kNetworkTechnologyProperty,
+                                shill::kNetworkTechnologyLteAdvanced));
+  EXPECT_TRUE(SetStringProperty(shill::kActivationTypeProperty,
+                                shill::kActivationTypeOTA));
+  EXPECT_TRUE(SetStringProperty(shill::kActivationStateProperty,
+                                shill::kActivationStateActivated));
+
+  base::Value payment_portal(base::Value::Type::DICTIONARY);
+  payment_portal.SetKey(shill::kPaymentPortalURL,
+                        base::Value("http://test-portal.com"));
+  payment_portal.SetKey(shill::kPaymentPortalMethod, base::Value("POST"));
+  payment_portal.SetKey(shill::kPaymentPortalPostData,
+                        base::Value("fake_data"));
+
+  EXPECT_TRUE(
+      SetProperty(shill::kPaymentPortalProperty,
+                  base::Value::ToUniquePtrValue(std::move(payment_portal))));
+
+  SignalInitialPropertiesReceived();
+  EXPECT_EQ("Test Cellular", network_state_.name());
+  EXPECT_EQ(shill::kNetworkTechnologyLteAdvanced,
+            network_state_.network_technology());
+  EXPECT_EQ(shill::kActivationTypeOTA, network_state_.activation_type());
+  EXPECT_EQ(shill::kActivationStateActivated,
+            network_state_.activation_state());
+  EXPECT_EQ("http://test-portal.com", network_state_.payment_url());
+  EXPECT_EQ("fake_data", network_state_.payment_post_data());
+}
+
+TEST_F(NetworkStateTest, CelularPaymentPortalGet) {
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeCellular));
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, "Test Cellular"));
+  EXPECT_TRUE(SetStringProperty(shill::kNetworkTechnologyProperty,
+                                shill::kNetworkTechnologyLteAdvanced));
+  EXPECT_TRUE(SetStringProperty(shill::kActivationTypeProperty,
+                                shill::kActivationTypeOTA));
+  EXPECT_TRUE(SetStringProperty(shill::kActivationStateProperty,
+                                shill::kActivationStateActivated));
+
+  base::Value payment_portal(base::Value::Type::DICTIONARY);
+  payment_portal.SetKey(shill::kPaymentPortalURL,
+                        base::Value("http://test-portal.com"));
+  payment_portal.SetKey(shill::kPaymentPortalMethod, base::Value("GET"));
+  payment_portal.SetKey(shill::kPaymentPortalPostData, base::Value("ignored"));
+
+  EXPECT_TRUE(
+      SetProperty(shill::kPaymentPortalProperty,
+                  base::Value::ToUniquePtrValue(std::move(payment_portal))));
+
+  SignalInitialPropertiesReceived();
+
+  EXPECT_EQ("Test Cellular", network_state_.name());
+  EXPECT_EQ(shill::kNetworkTechnologyLteAdvanced,
+            network_state_.network_technology());
+  EXPECT_EQ(shill::kActivationTypeOTA, network_state_.activation_type());
+  EXPECT_EQ(shill::kActivationStateActivated,
+            network_state_.activation_state());
+  EXPECT_EQ("http://test-portal.com", network_state_.payment_url());
+  EXPECT_EQ("", network_state_.payment_post_data());
 }
 
 }  // namespace chromeos

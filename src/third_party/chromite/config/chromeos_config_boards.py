@@ -34,14 +34,17 @@ arm_internal_release_boards = frozenset([
     'daisy_skate',
     'daisy_spring',
     'elm',
+    'flapjack',
     'gale',
     'gonzo',
-    'gru',
     'hana',
     'kevin',
     'kevin-arcnext',
+    'kevin64',
     'kukui',
     'lasilla-ground',
+    'littlejoe',
+    'mistral',
     'nyan_big',
     'nyan_blaze',
     'nyan_kitty',
@@ -60,6 +63,7 @@ arm_internal_release_boards = frozenset([
     'veyron_rialto',
     'veyron_speedy',
     'veyron_tiger',
+    'viking',
     'whirlwind',
     'wooten',
 ])
@@ -92,7 +96,6 @@ x86_internal_release_boards = frozenset([
     'clapper',
     'coral',
     'cyan',
-    'dragonegg',
     'edgar',
     'enguarde',
     'eve',
@@ -105,6 +108,7 @@ x86_internal_release_boards = frozenset([
     'fizz',
     'fizz-accelerator',
     'fizz-moblab',
+    'fizz-labstation',
     'gandof',
     'glados',
     'glimmer',
@@ -127,7 +131,6 @@ x86_internal_release_boards = frozenset([
     'lakitu_next',
     'lars',
     'leon',
-    'link',
     'lulu',
     'mccloud',
     'monroe',
@@ -151,10 +154,12 @@ x86_internal_release_boards = frozenset([
     'relm',
     'rikku',
     'samus',
+    'samus-kernelnext',
     'sand',
+    'sarien',
     'sentry',
     'setzer',
-    'slippy',
+    'sludge',
     'snappy',
     'soraka',
     'squawks',
@@ -167,6 +172,7 @@ x86_internal_release_boards = frozenset([
     'ultima',
     'winky',
     'wizpig',
+    'wristpin',
     'wolf',
     'zako',
 ])
@@ -182,6 +188,7 @@ x86_external_boards = frozenset([
 brillo_boards = frozenset([
     'arkham',
     'gale',
+    'mistral',
     'whirlwind',
 ])
 
@@ -193,6 +200,10 @@ accelerator_boards = frozenset([
 beaglebone_boards = frozenset([
     'beaglebone',
     'beaglebone_servo',
+])
+
+dustbuster_boards = frozenset([
+    'wristpin',
 ])
 
 lakitu_boards = frozenset([
@@ -218,6 +229,11 @@ loonix_boards = frozenset([
     'wooten',
 ])
 
+wshwos_boards = frozenset([
+    'littlejoe',
+    'viking',
+])
+
 moblab_boards = frozenset([
     'fizz-moblab',
     'guado_moblab',
@@ -229,6 +245,7 @@ scribe_boards = frozenset([
 ])
 
 termina_boards = frozenset([
+    'sludge',
     'tatl',
     'tael',
 ])
@@ -244,12 +261,17 @@ toolchains_from_source = frozenset([
 ])
 
 noimagetest_boards = (lakitu_boards | loonix_boards | termina_boards
-                      | scribe_boards)
+                      | scribe_boards | wshwos_boards | dustbuster_boards)
 
 nohwqual_boards = (lakitu_boards | lassen_boards | loonix_boards
-                   | termina_boards | beaglebone_boards)
+                   | termina_boards | beaglebone_boards | wshwos_boards
+                   | dustbuster_boards)
 
 norootfs_verification_boards = frozenset([
 ])
 
 base_layout_boards = lakitu_boards | termina_boards
+
+builder_incompatible_binaries_boards = frozenset([
+    'grunt',
+])

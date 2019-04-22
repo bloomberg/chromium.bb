@@ -23,21 +23,9 @@ using base::UTF16ToUTF8;
 namespace views {
 namespace examples {
 
-TextfieldExample::TextfieldExample()
-    : ExampleBase("Textfield"),
-      name_(nullptr),
-      password_(nullptr),
-      disabled_(nullptr),
-      read_only_(nullptr),
-      invalid_(nullptr),
-      rtl_(nullptr),
-      show_password_(nullptr),
-      clear_all_(nullptr),
-      append_(nullptr),
-      set_(nullptr),
-      set_style_(nullptr) {}
+TextfieldExample::TextfieldExample() : ExampleBase("Textfield") {}
 
-TextfieldExample::~TextfieldExample() {}
+TextfieldExample::~TextfieldExample() = default;
 
 void TextfieldExample::CreateExampleView(View* container) {
   name_ = new Textfield();
@@ -150,12 +138,12 @@ void TextfieldExample::ButtonPressed(Button* sender, const ui::Event& event) {
       if (name_->text().length() >= 5) {
         size_t fifth = name_->text().length() / 5;
         const gfx::Range big_range(1 * fifth, 4 * fifth);
-        name_->ApplyStyle(gfx::UNDERLINE, true, big_range);
+        name_->ApplyStyle(gfx::TEXT_STYLE_UNDERLINE, true, big_range);
         name_->ApplyColor(SK_ColorBLUE, big_range);
 
         const gfx::Range small_range(2 * fifth, 3 * fifth);
-        name_->ApplyStyle(gfx::ITALIC, true, small_range);
-        name_->ApplyStyle(gfx::UNDERLINE, false, small_range);
+        name_->ApplyStyle(gfx::TEXT_STYLE_ITALIC, true, small_range);
+        name_->ApplyStyle(gfx::TEXT_STYLE_UNDERLINE, false, small_range);
         name_->ApplyColor(SK_ColorRED, small_range);
       }
     }

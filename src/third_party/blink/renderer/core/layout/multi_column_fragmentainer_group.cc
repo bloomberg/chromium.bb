@@ -10,6 +10,15 @@
 
 namespace blink {
 
+// Limit the maximum column count, to prevent potential performance problems.
+static const unsigned kColumnCountClampMax = 10000;
+
+// Clamp "infinite" clips to a number of pixels that can be losslessly
+// converted to and from floating point, to avoid loss of precision.
+// Note that tables have something similar, see
+// TableLayoutAlgorithm::kTableMaxWidth.
+static const int kMulticolMaxClipPixels = 1000000;
+
 MultiColumnFragmentainerGroup::MultiColumnFragmentainerGroup(
     const LayoutMultiColumnSet& column_set)
     : column_set_(column_set) {}
@@ -62,7 +71,6 @@ LayoutUnit MultiColumnFragmentainerGroup::LogicalHeightInFlowThreadAt(
 }
 
 void MultiColumnFragmentainerGroup::ResetColumnHeight() {
-  actual_column_count_allowance_ = 0;
   max_logical_height_ = CalculateMaxColumnHeight();
 
   LayoutMultiColumnFlowThread* flow_thread =
@@ -137,24 +145,6 @@ bool MultiColumnFragmentainerGroup::RecalculateColumnHeight(
   // We may not have found our final height yet, but at least we've found a
   // height.
   is_logical_height_known_ = true;
-
-  unsigned column_count = UnclampedActualColumnCount();
-  if (column_count > LayoutMultiColumnFlowThread::ColumnCountClampMax() ||
-      (column_count > LayoutMultiColumnFlowThread::ColumnCountClampMin() &&
-       column_count > column_set_.UsedColumnCount())) {
-    // That's a lot of columns! We have either exceeded the maximum value, or we
-    // have overflowing columns, and the proposed count is within clamping
-    // range. Calculate allowance to make sure we have a legitimate reason for
-    // it, or else clamp it. We have quadratic performance complexity for
-    // painting columns.
-    if (!actual_column_count_allowance_) {
-      const auto* flow_thread = column_set_.MultiColumnFlowThread();
-      unsigned allowance = flow_thread->CalculateActualColumnCountAllowance();
-      DCHECK_GE(allowance, LayoutMultiColumnFlowThread::ColumnCountClampMin());
-      DCHECK_LE(allowance, LayoutMultiColumnFlowThread::ColumnCountClampMax());
-      actual_column_count_allowance_ = allowance;
-    }
-  }
 
   if (logical_height_ == old_column_height)
     return false;  // No change. We're done.
@@ -329,8 +319,7 @@ LayoutRect MultiColumnFragmentainerGroup::CalculateOverflow() const {
 
 unsigned MultiColumnFragmentainerGroup::ActualColumnCount() const {
   unsigned count = UnclampedActualColumnCount();
-  if (actual_column_count_allowance_)
-    count = std::min(count, actual_column_count_allowance_);
+  count = std::min(count, kColumnCountClampMax);
   DCHECK_GE(count, 1u);
   return count;
 }
@@ -424,15 +413,12 @@ LayoutRect MultiColumnFragmentainerGroup::ColumnRectAt(
   LayoutUnit column_logical_left;
   LayoutUnit column_gap = column_set_.ColumnGap();
 
-  if (column_set_.MultiColumnFlowThread()->ProgressionIsInline()) {
-    if (column_set_.StyleRef().IsLeftToRightDirection())
-      column_logical_left += column_index * (column_logical_width + column_gap);
-    else
-      column_logical_left += column_set_.ContentLogicalWidth() -
-                             column_logical_width -
-                             column_index * (column_logical_width + column_gap);
+  if (column_set_.StyleRef().IsLeftToRightDirection()) {
+    column_logical_left += column_index * (column_logical_width + column_gap);
   } else {
-    column_logical_top += column_index * (ColumnLogicalHeight() + column_gap);
+    column_logical_left += column_set_.ContentLogicalWidth() -
+                           column_logical_width -
+                           column_index * (column_logical_width + column_gap);
   }
 
   LayoutRect column_rect(column_logical_left, column_logical_top,
@@ -452,12 +438,6 @@ LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionRectAt(
   return LayoutRect(logical_top, LayoutUnit(), portion_logical_height,
                     column_set_.PageLogicalWidth());
 }
-
-// Clamp "infinite" clips to a number of pixels that can be losslessly
-// converted to and from floating point, to avoid loss of precision.
-// Note that tables have something similar, see
-// TableLayoutAlgorithm::kTableMaxWidth.
-static const int kMulticolMaxClipPixels = 1000000;
 
 LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionOverflowRectAt(
     unsigned column_index) const {
@@ -537,26 +517,20 @@ unsigned MultiColumnFragmentainerGroup::ConstrainedColumnIndexAtOffset(
 
 unsigned MultiColumnFragmentainerGroup::ColumnIndexAtVisualPoint(
     const LayoutPoint& visual_point) const {
-  bool is_column_progression_inline =
-      column_set_.MultiColumnFlowThread()->ProgressionIsInline();
-  bool is_horizontal_writing_mode = column_set_.IsHorizontalWritingMode();
-  LayoutUnit column_length_in_column_progression_direction =
-      is_column_progression_inline ? column_set_.PageLogicalWidth()
-                                   : ColumnLogicalHeight();
+  LayoutUnit column_length = column_set_.PageLogicalWidth();
   LayoutUnit offset_in_column_progression_direction =
-      is_horizontal_writing_mode == is_column_progression_inline
-          ? visual_point.X()
-          : visual_point.Y();
-  if (!column_set_.StyleRef().IsLeftToRightDirection() &&
-      is_column_progression_inline)
+      column_set_.IsHorizontalWritingMode() ? visual_point.X()
+                                            : visual_point.Y();
+  if (!column_set_.StyleRef().IsLeftToRightDirection()) {
     offset_in_column_progression_direction =
         column_set_.LogicalWidth() - offset_in_column_progression_direction;
+  }
   LayoutUnit column_gap = column_set_.ColumnGap();
-  if (column_length_in_column_progression_direction + column_gap <= 0)
+  if (column_length + column_gap <= 0)
     return 0;
   // Column boundaries are in the middle of the column gap.
   int index = ((offset_in_column_progression_direction + column_gap / 2) /
-               (column_length_in_column_progression_direction + column_gap))
+               (column_length + column_gap))
                   .ToInt();
   if (index < 0)
     return 0;
@@ -590,26 +564,22 @@ void MultiColumnFragmentainerGroup::ColumnIntervalForVisualRect(
     const LayoutRect& rect,
     unsigned& first_column,
     unsigned& last_column) const {
-  bool is_column_progression_inline =
-      column_set_.MultiColumnFlowThread()->ProgressionIsInline();
-  bool is_flipped_column_progression =
-      !column_set_.StyleRef().IsLeftToRightDirection() &&
-      is_column_progression_inline;
-  if (column_set_.IsHorizontalWritingMode() == is_column_progression_inline) {
-    if (is_flipped_column_progression) {
-      first_column = ColumnIndexAtVisualPoint(rect.MaxXMinYCorner());
-      last_column = ColumnIndexAtVisualPoint(rect.MinXMinYCorner());
-    } else {
+  bool is_column_ltr = column_set_.StyleRef().IsLeftToRightDirection();
+  if (column_set_.IsHorizontalWritingMode()) {
+    if (is_column_ltr) {
       first_column = ColumnIndexAtVisualPoint(rect.MinXMinYCorner());
       last_column = ColumnIndexAtVisualPoint(rect.MaxXMinYCorner());
+    } else {
+      first_column = ColumnIndexAtVisualPoint(rect.MaxXMinYCorner());
+      last_column = ColumnIndexAtVisualPoint(rect.MinXMinYCorner());
     }
   } else {
-    if (is_flipped_column_progression) {
-      first_column = ColumnIndexAtVisualPoint(rect.MinXMaxYCorner());
-      last_column = ColumnIndexAtVisualPoint(rect.MinXMinYCorner());
-    } else {
+    if (is_column_ltr) {
       first_column = ColumnIndexAtVisualPoint(rect.MinXMinYCorner());
       last_column = ColumnIndexAtVisualPoint(rect.MinXMaxYCorner());
+    } else {
+      first_column = ColumnIndexAtVisualPoint(rect.MinXMaxYCorner());
+      last_column = ColumnIndexAtVisualPoint(rect.MinXMinYCorner());
     }
   }
   DCHECK_LE(first_column, last_column);

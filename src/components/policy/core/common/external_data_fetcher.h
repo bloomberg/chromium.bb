@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/policy_export.h"
 
@@ -20,7 +21,9 @@ class ExternalDataManager;
 // data for a policy.
 class POLICY_EXPORT ExternalDataFetcher {
  public:
-  typedef base::Callback<void(std::unique_ptr<std::string>)> FetchCallback;
+  typedef base::OnceCallback<void(std::unique_ptr<std::string>,
+                                  const base::FilePath&)>
+      FetchCallback;
 
   // This instance's Fetch() method will instruct the |manager| to retrieve the
   // external data referenced by the given |policy|.
@@ -41,7 +44,7 @@ class POLICY_EXPORT ExternalDataFetcher {
   // |callback| will be invoked when the temporary hindrance is resolved. If
   // retrieval is permanently impossible (e.g. |policy_| references data that
   // does not exist on the server), the |callback| will never be invoked.
-  void Fetch(const FetchCallback& callback) const;
+  void Fetch(FetchCallback callback) const;
 
  private:
   base::WeakPtr<ExternalDataManager> manager_;

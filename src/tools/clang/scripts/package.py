@@ -19,13 +19,15 @@ import tarfile
 THIS_DIR = os.path.dirname(__file__)
 CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..', '..'))
 THIRD_PARTY_DIR = os.path.join(THIS_DIR, '..', '..', '..', 'third_party')
+BUILDTOOLS_DIR = os.path.join(THIS_DIR, '..', '..', '..', 'buildtools')
 LLVM_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm')
 LLVM_BOOTSTRAP_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-bootstrap')
 LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
                                           'llvm-bootstrap-install')
 LLVM_BUILD_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-build')
 LLVM_RELEASE_DIR = os.path.join(LLVM_BUILD_DIR, 'Release+Asserts')
-EU_STRIP = os.path.join(THIRD_PARTY_DIR, 'eu-strip', 'bin', 'eu-strip')
+EU_STRIP = os.path.join(BUILDTOOLS_DIR, 'third_party', 'eu-strip', 'bin',
+                        'eu-strip')
 STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
 
 
@@ -215,7 +217,7 @@ def main():
     if sys.platform.startswith('linux'):
       opt_flags += ['--lto-lld']
     build_cmd = [sys.executable, os.path.join(THIS_DIR, 'update.py'),
-                 '--bootstrap', '--force-local-build',
+                 '--bootstrap', '--disable-asserts', '--force-local-build',
                  '--run-tests'] + opt_flags
     TeeCmd(build_cmd, log)
 
@@ -232,7 +234,6 @@ def main():
   want = ['bin/llvm-pdbutil' + exe_ext,
           'bin/llvm-symbolizer' + exe_ext,
           'bin/llvm-undname' + exe_ext,
-          'bin/sancov' + exe_ext,
           # Copy built-in headers (lib/clang/3.x.y/include).
           'lib/clang/*/include/*',
           'lib/clang/*/share/asan_blacklist.txt',
@@ -242,11 +243,7 @@ def main():
     want.append('bin/clang-cl.exe')
     want.append('bin/lld-link.exe')
   else:
-    so_ext = 'dylib' if sys.platform == 'darwin' else 'so'
-    want.extend(['bin/clang',
-                 'lib/libFindBadConstructs.' + so_ext,
-                 'lib/libBlinkGCPlugin.' + so_ext,
-                 ])
+    want.append('bin/clang')
   if sys.platform == 'darwin':
     want.extend([
         # AddressSanitizer runtime.
@@ -287,6 +284,9 @@ def main():
 
         # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
         'lib/clang/*/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a',
+
+        # HWASAN Android runtime.
+        'lib/clang/*/lib/linux/libclang_rt.hwasan-aarch64-android.so',
 
         # MemorySanitizer C runtime (pure C won't link with *_cxx).
         'lib/clang/*/lib/linux/libclang_rt.msan-x86_64.a',
@@ -397,16 +397,12 @@ def main():
                        'llvm-pdbutil',
                        'llvm-symbolizer',
                        'llvm-undname',
-                       'sancov',
                        ]
   if sys.platform.startswith('linux'):
     stripped_binaries.append('lld')
     stripped_binaries.append('llvm-ar')
   for f in stripped_binaries:
-    if sys.platform == 'darwin':
-      # See http://crbug.com/256342
-      subprocess.call(['strip', '-x', os.path.join(pdir, 'bin', f)])
-    elif sys.platform.startswith('linux'):
+    if sys.platform != 'win32':
       subprocess.call(['strip', os.path.join(pdir, 'bin', f)])
 
   # Set up symlinks.
@@ -470,18 +466,6 @@ def main():
             filter=PrintTarProgress)
   MaybeUpload(args, objdumpdir, platform)
 
-  # Zip up llvm-cfi-verify for CFI coverage.
-  cfiverifydir = 'llvmcfiverify-' + stamp
-  shutil.rmtree(cfiverifydir, ignore_errors=True)
-  os.makedirs(os.path.join(cfiverifydir, 'bin'))
-  shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'llvm-cfi-verify' +
-                           exe_ext),
-              os.path.join(cfiverifydir, 'bin'))
-  with tarfile.open(cfiverifydir + '.tgz', 'w:gz') as tar:
-    tar.add(os.path.join(cfiverifydir, 'bin'), arcname='bin',
-            filter=PrintTarProgress)
-  MaybeUpload(args, cfiverifydir, platform)
-
   # On Mac, lld isn't part of the main zip.  Upload it in a separate zip.
   if sys.platform == 'darwin':
     llddir = 'lld-' + stamp
@@ -498,25 +482,18 @@ def main():
               filter=PrintTarProgress)
     MaybeUpload(args, llddir, platform)
 
-  # On Linux and Mac, package and upload llvm-strip in a separate zip.
-  # This is used for the Fuchsia build.
-  if sys.platform == 'darwin' or sys.platform.startswith('linux'):
-    stripdir = 'llvmstrip-' + stamp
-    shutil.rmtree(stripdir, ignore_errors=True)
-    os.makedirs(os.path.join(stripdir, 'bin'))
-    shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'llvm-strip'),
-                os.path.join(stripdir, 'bin'))
-    llvmstrip_stamp_file_base = 'llvmstrip_build_revision'
-    llvmstrip_stamp_file = os.path.join(stripdir, llvmstrip_stamp_file_base)
-    with open(llvmstrip_stamp_file, 'w') as f:
-      f.write(expected_stamp)
-      f.write('\n')
-    with tarfile.open(stripdir + '.tgz', 'w:gz') as tar:
-      tar.add(os.path.join(stripdir, 'bin'), arcname='bin',
+    # dsymutil isn't part of the main zip either, and it gets periodically
+    # deployed to CIPD (manually, not as part of clang rolls) for use in the
+    # Mac build toolchain.
+    dsymdir = 'dsymutil-' + stamp
+    shutil.rmtree(dsymdir, ignore_errors=True)
+    os.makedirs(os.path.join(dsymdir, 'bin'))
+    shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'dsymutil'),
+                os.path.join(dsymdir, 'bin'))
+    with tarfile.open(dsymdir + '.tgz', 'w:gz') as tar:
+      tar.add(os.path.join(dsymdir, 'bin'), arcname='bin',
               filter=PrintTarProgress)
-      tar.add(llvmstrip_stamp_file, arcname=llvmstrip_stamp_file_base,
-              filter=PrintTarProgress)
-    MaybeUpload(args, stripdir, platform)
+    MaybeUpload(args, dsymdir, platform)
 
   # Zip up the translation_unit tool.
   translation_unit_dir = 'translation_unit-' + stamp

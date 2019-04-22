@@ -5,37 +5,33 @@
 #include "chrome/services/util_win/util_win_service.h"
 
 #include <memory>
+#include <utility>
 
+#include "base/bind.h"
 #include "build/build_config.h"
-#include "chrome/services/util_win/public/mojom/shell_util_win.mojom.h"
-#include "chrome/services/util_win/shell_util_win_impl.h"
+#include "chrome/services/util_win/public/mojom/util_win.mojom.h"
+#include "chrome/services/util_win/util_win_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace {
 
-void OnShellUtilWinRequest(
-    service_manager::ServiceContextRefFactory* ref_factory,
-    chrome::mojom::ShellUtilWinRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<ShellUtilWinImpl>(ref_factory->CreateRef()),
-      std::move(request));
+void OnUtilWinRequest(service_manager::ServiceKeepalive* keepalive,
+                      chrome::mojom::UtilWinRequest request) {
+  mojo::MakeStrongBinding(std::make_unique<UtilWinImpl>(keepalive->CreateRef()),
+                          std::move(request));
 }
 
 }  // namespace
 
-UtilWinService::UtilWinService() = default;
+UtilWinService::UtilWinService(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)),
+      service_keepalive_(&service_binding_, base::TimeDelta()) {}
 
 UtilWinService::~UtilWinService() = default;
 
-std::unique_ptr<service_manager::Service> UtilWinService::CreateService() {
-  return std::unique_ptr<service_manager::Service>(new UtilWinService());
-}
-
 void UtilWinService::OnStart() {
-  ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
-      context()->CreateQuitClosure());
   registry_.AddInterface(
-      base::Bind(&OnShellUtilWinRequest, ref_factory_.get()));
+      base::BindRepeating(&OnUtilWinRequest, &service_keepalive_));
 }
 
 void UtilWinService::OnBindInterface(

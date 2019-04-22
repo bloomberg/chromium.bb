@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -31,17 +32,14 @@ class AgentRegistryTest : public testing::Test {
 
   void RegisterAgent(mojom::AgentPtr agent,
                      const std::string& label,
-                     mojom::TraceDataType type,
-                     bool supports_explicit_clock_sync) {
+                     mojom::TraceDataType type) {
     registry_->RegisterAgent(std::move(agent), label, type,
-                             supports_explicit_clock_sync,
                              base::kNullProcessId);
   }
 
   void RegisterAgent(mojom::AgentPtr agent) {
     registry_->RegisterAgent(std::move(agent), "label",
-                             mojom::TraceDataType::ARRAY, false,
-                             base::kNullProcessId);
+                             mojom::TraceDataType::ARRAY, base::kNullProcessId);
   }
 
   std::unique_ptr<AgentRegistry> registry_;
@@ -53,19 +51,17 @@ class AgentRegistryTest : public testing::Test {
 TEST_F(AgentRegistryTest, RegisterAgent) {
   MockAgent agent1;
   RegisterAgent(agent1.CreateAgentPtr(), "TraceEvent",
-                mojom::TraceDataType::ARRAY, false);
+                mojom::TraceDataType::ARRAY);
   size_t num_agents = 0;
   registry_->ForAllAgents([&num_agents](AgentRegistry::AgentEntry* entry) {
     num_agents++;
     EXPECT_EQ("TraceEvent", entry->label());
     EXPECT_EQ(mojom::TraceDataType::ARRAY, entry->type());
-    EXPECT_FALSE(entry->supports_explicit_clock_sync());
   });
   EXPECT_EQ(1u, num_agents);
 
   MockAgent agent2;
-  RegisterAgent(agent2.CreateAgentPtr(), "Power", mojom::TraceDataType::STRING,
-                true);
+  RegisterAgent(agent2.CreateAgentPtr(), "Power", mojom::TraceDataType::STRING);
   num_agents = 0;
   registry_->ForAllAgents([&num_agents](AgentRegistry::AgentEntry* entry) {
     num_agents++;
@@ -74,7 +70,6 @@ TEST_F(AgentRegistryTest, RegisterAgent) {
       return;
     EXPECT_EQ("Power", entry->label());
     EXPECT_EQ(mojom::TraceDataType::STRING, entry->type());
-    EXPECT_TRUE(entry->supports_explicit_clock_sync());
   });
   EXPECT_EQ(2u, num_agents);
 }
@@ -104,23 +99,20 @@ TEST_F(AgentRegistryTest, AgentInitialization) {
   size_t num_calls = 0;
   MockAgent agent1;
   RegisterAgent(agent1.CreateAgentPtr());
-  registry_->SetAgentInitializationCallback(base::BindRepeating(
-      [](size_t* num_calls, tracing::AgentRegistry::AgentEntry* entry) {
-        (*num_calls)++;
-      },
-      base::Unretained(&num_calls)));
+  size_t num_initialized_agents = registry_->SetAgentInitializationCallback(
+      base::BindRepeating(
+          [](size_t* num_calls, tracing::AgentRegistry::AgentEntry* entry) {
+            (*num_calls)++;
+          },
+          base::Unretained(&num_calls)),
+      false);
   // Since an agent was already registered, the callback should be run once.
+  EXPECT_EQ(1u, num_initialized_agents);
   EXPECT_EQ(1u, num_calls);
 
   // The callback should be run on future agents, too.
   MockAgent agent2;
   RegisterAgent(agent2.CreateAgentPtr());
-  EXPECT_EQ(2u, num_calls);
-
-  // The callback should not be run on future agents if it is removed.
-  registry_->RemoveAgentInitializationCallback();
-  MockAgent agent3;
-  RegisterAgent(agent3.CreateAgentPtr());
   EXPECT_EQ(2u, num_calls);
 }
 

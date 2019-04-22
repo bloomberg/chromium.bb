@@ -12,7 +12,7 @@
 #include "modules/audio_coding/neteq/tools/neteq_quality_test.h"
 #include "rtc_base/flags.h"
 
-using testing::InitGoogleTest;
+using ::testing::InitGoogleTest;
 
 namespace webrtc {
 namespace test {
@@ -44,7 +44,7 @@ NetEqIsacQualityTest::NetEqIsacQualityTest()
     : NetEqQualityTest(kIsacBlockDurationMs,
                        kIsacInputSamplingKhz,
                        kIsacOutputSamplingKhz,
-                       NetEqDecoder::kDecoderISAC),
+                       SdpAudioFormat("isac", 16000, 1)),
       isac_encoder_(NULL),
       bit_rate_kbps_(FLAG_bit_rate_kbps) {
   // Flag validation

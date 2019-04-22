@@ -76,7 +76,8 @@ class CopyOrMoveFileValidatorTestHelper {
     storage::FileSystemBackend* src_file_system_backend =
         file_system_context_->GetFileSystemBackend(src_type_);
     src_file_system_backend->ResolveURL(
-        FileSystemURL::CreateForTest(origin_, src_type_, base::FilePath()),
+        FileSystemURL::CreateForTest(url::Origin::Create(origin_), src_type_,
+                                     base::FilePath()),
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce(&ExpectOk));
     base::RunLoop().RunUntilIdle();
@@ -120,7 +121,7 @@ class CopyOrMoveFileValidatorTestHelper {
       EXPECT_TRUE(FileExists(copy_dest_, 10));
     else
       EXPECT_FALSE(FileExists(copy_dest_, 10));
-  };
+  }
 
   void MoveTest(base::File::Error expected) {
     ASSERT_TRUE(FileExists(move_src_, 10));
@@ -137,7 +138,7 @@ class CopyOrMoveFileValidatorTestHelper {
       EXPECT_TRUE(FileExists(move_src_, 10));
       EXPECT_FALSE(FileExists(move_dest_, 10));
     }
-  };
+  }
 
  private:
   FileSystemURL SourceURL(const std::string& path) {

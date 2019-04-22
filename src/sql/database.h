@@ -15,15 +15,15 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/time/tick_clock.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "sql/internal_api_token.h"
-#include "sql/sql_export.h"
 #include "sql/statement_id.h"
 
 struct sqlite3;
@@ -42,28 +42,15 @@ namespace sql {
 class DatabaseMemoryDumpProvider;
 class Statement;
 
-// To allow some test classes to be friended.
 namespace test {
-class ScopedCommitHook;
 class ScopedErrorExpecter;
-class ScopedScalarFunction;
-class ScopedMockTimeSource;
 }  // namespace test
-
-// Exposes private Database functionality to unit tests.
-//
-// This class is only defined in test targets.
-class DatabaseTestPeer;
 
 // Handle to an open SQLite database.
 //
 // Instances of this class are thread-unsafe and DCHECK that they are accessed
 // on the same sequence.
-//
-// TODO(pwnall): This should be renamed to Database. Class instances are
-// typically named "db_" / "db", and the class' equivalents in other systems
-// used by Chrome are named LevelDB::DB and blink::IDBDatabase.
-class SQL_EXPORT Database {
+class COMPONENT_EXPORT(SQL) Database {
  private:
   class StatementRef;  // Forward declaration, see real one below.
 
@@ -147,48 +134,48 @@ class SQL_EXPORT Database {
   // before EVENT_MAX_VALUE.
   enum Events {
     // Number of statements run, either with sql::Statement or Execute*().
-    EVENT_STATEMENT_RUN = 0,
+    EVENT_STATEMENT_RUN_DEPRECATED = 0,
 
     // Number of rows returned by statements run.
-    EVENT_STATEMENT_ROWS,
+    EVENT_STATEMENT_ROWS_DEPRECATED,
 
     // Number of statements successfully run (all steps returned SQLITE_DONE or
     // SQLITE_ROW).
-    EVENT_STATEMENT_SUCCESS,
+    EVENT_STATEMENT_SUCCESS_DEPRECATED,
 
     // Number of statements run by Execute() or ExecuteAndReturnErrorCode().
-    EVENT_EXECUTE,
+    EVENT_EXECUTE_DEPRECATED,
 
     // Number of rows changed by autocommit statements.
-    EVENT_CHANGES_AUTOCOMMIT,
+    EVENT_CHANGES_AUTOCOMMIT_DEPRECATED,
 
     // Number of rows changed by statements in transactions.
-    EVENT_CHANGES,
+    EVENT_CHANGES_DEPRECATED,
 
     // Count actual SQLite transaction statements (not including nesting).
-    EVENT_BEGIN,
-    EVENT_COMMIT,
-    EVENT_ROLLBACK,
+    EVENT_BEGIN_DEPRECATED,
+    EVENT_COMMIT_DEPRECATED,
+    EVENT_ROLLBACK_DEPRECATED,
 
     // Track success and failure in GetAppropriateMmapSize().
     // GetAppropriateMmapSize() should record at most one of these per run.  The
     // case of mapping everything is not recorded.
-    EVENT_MMAP_META_MISSING,         // No meta table present.
-    EVENT_MMAP_META_FAILURE_READ,    // Failed reading meta table.
-    EVENT_MMAP_META_FAILURE_UPDATE,  // Failed updating meta table.
-    EVENT_MMAP_VFS_FAILURE,          // Failed to access VFS.
-    EVENT_MMAP_FAILED,               // Failure from past run.
-    EVENT_MMAP_FAILED_NEW,           // Read error in this run.
-    EVENT_MMAP_SUCCESS_NEW,          // Read to EOF in this run.
-    EVENT_MMAP_SUCCESS_PARTIAL,      // Read but did not reach EOF.
-    EVENT_MMAP_SUCCESS_NO_PROGRESS,  // Read quota exhausted.
+    EVENT_MMAP_META_MISSING,                    // No meta table present.
+    EVENT_MMAP_META_FAILURE_READ,               // Failed reading meta table.
+    EVENT_MMAP_META_FAILURE_UPDATE,             // Failed updating meta table.
+    EVENT_MMAP_VFS_FAILURE,                     // Failed to access VFS.
+    EVENT_MMAP_FAILED,                          // Failure from past run.
+    EVENT_MMAP_FAILED_NEW,                      // Read error in this run.
+    EVENT_MMAP_SUCCESS_NEW_DEPRECATED,          // Read to EOF in this run.
+    EVENT_MMAP_SUCCESS_PARTIAL_DEPRECATED,      // Read but did not reach EOF.
+    EVENT_MMAP_SUCCESS_NO_PROGRESS_DEPRECATED,  // Read quota exhausted.
 
     EVENT_MMAP_STATUS_FAILURE_READ,    // Failure reading MmapStatus view.
     EVENT_MMAP_STATUS_FAILURE_UPDATE,  // Failure updating MmapStatus view.
 
     // Leave this at the end.
     // TODO(shess): |EVENT_MAX| causes compile fail on Windows.
-    EVENT_MAX_VALUE
+    EVENT_MAX_VALUE,
   };
   void RecordEvent(Events event, size_t count);
   void RecordOneEvent(Events event) { RecordEvent(event, 1); }
@@ -251,11 +238,8 @@ class SQL_EXPORT Database {
   // everything else.
   void Preload();
 
-  // Try to trim the cache memory used by the database.  If |aggressively| is
-  // true, this function will try to free all of the cache memory it can. If
-  // |aggressively| is false, this function will try to cut cache memory
-  // usage by half.
-  void TrimMemory(bool aggressively);
+  // Release all non-essential memory associated with this database connection.
+  void TrimMemory();
 
   // Raze the database to the ground.  This approximates creating a
   // fresh database from scratch, within the constraints of SQLite's
@@ -422,6 +406,12 @@ class SQL_EXPORT Database {
   bool DoesViewExist(const char* table_name) const;
 
   // Returns true if a column with the given name exists in the given table.
+  //
+  // Calling this method on a VIEW returns an unspecified result.
+  //
+  // This should only be used by migration code for legacy features that do not
+  // use MetaTable, and need an alternative way of figuring out the database's
+  // current version.
   bool DoesColumnExist(const char* table_name, const char* column_name) const;
 
   // Returns sqlite's internal ID for the last inserted row. Valid only
@@ -457,21 +447,6 @@ class SQL_EXPORT Database {
   // errors; if one is detected, DLOG(DCHECK) is generally appropriate (see
   // OnSqliteError implementation).
   static bool IsExpectedSqliteError(int error);
-
-  // Collect various diagnostic information and post a crash dump to aid
-  // debugging.  Dump rate per database is limited to prevent overwhelming the
-  // crash server.
-  void ReportDiagnosticInfo(int extended_error, Statement* stmt);
-
-  // Helper to return the current time from the time source.
-  base::TimeTicks NowTicks() const { return clock_->NowTicks(); }
-
-  // Intended for tests to inject a mock time source.
-  //
-  // Inlined to avoid generating code in the production binary.
-  inline void set_clock_for_testing(std::unique_ptr<base::TickClock> clock) {
-    clock_ = std::move(clock);
-  }
 
   // Computes the path of a database's rollback journal.
   //
@@ -523,12 +498,6 @@ class SQL_EXPORT Database {
   // (they should go through Statement).
   friend class Statement;
 
-  friend class DatabaseTestPeer;
-
-  friend class test::ScopedCommitHook;
-  friend class test::ScopedScalarFunction;
-  friend class test::ScopedMockTimeSource;
-
   FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, CachedStatement);
   FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, CollectDiagnosticInfo);
   FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, GetAppropriateMmapSize);
@@ -550,12 +519,12 @@ class SQL_EXPORT Database {
   // |forced| indicates that orderly-shutdown checks should not apply.
   void CloseInternal(bool forced);
 
-  // Check whether the current thread is allowed to make IO calls, but only
-  // if database wasn't open in memory. Function is inlined to be a no-op in
-  // official build.
-  void AssertIOAllowed() const {
+  // Construct a ScopedBlockingCall to annotate IO calls, but only if
+  // database wasn't open in memory.
+  void InitScopedBlockingCall(
+      base::Optional<base::ScopedBlockingCall>* scoped_blocking_call) const {
     if (!in_memory_)
-      base::AssertBlockingAllowedDeprecated();
+      scoped_blocking_call->emplace(FROM_HERE, base::BlockingType::MAY_BLOCK);
   }
 
   // Internal helper for Does*Exist() functions.
@@ -579,7 +548,8 @@ class SQL_EXPORT Database {
   //
   // The Database may revoke a StatementRef in some error cases, so callers
   // should always check validity before using.
-  class SQL_EXPORT StatementRef : public base::RefCounted<StatementRef> {
+  class COMPONENT_EXPORT(SQL) StatementRef
+      : public base::RefCounted<StatementRef> {
    public:
     REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
@@ -588,7 +558,7 @@ class SQL_EXPORT Database {
     // and for error handling.  Set to nullptr for invalid or untracked
     // refs.  |stmt| is the actual statement, and should only be null
     // to create an invalid ref.  |was_valid| indicates whether the
-    // statement should be considered valid for diagnistic purposes.
+    // statement should be considered valid for diagnostic purposes.
     // |was_valid| can be true for a null |stmt| if the Database has
     // been forcibly closed by an error handler.
     StatementRef(Database* database, sqlite3_stmt* stmt, bool was_valid);
@@ -617,11 +587,12 @@ class SQL_EXPORT Database {
     // orderly-shutdown checks should apply (see Database::RazeAndClose()).
     void Close(bool forced);
 
-    // Check whether the current thread is allowed to make IO calls, but only
-    // if database wasn't open in memory.
-    void AssertIOAllowed() const {
+    // Construct a ScopedBlockingCall to annotate IO calls, but only if
+    // database wasn't open in memory.
+    void InitScopedBlockingCall(
+        base::Optional<base::ScopedBlockingCall>* scoped_blocking_call) const {
       if (database_)
-        database_->AssertIOAllowed();
+        database_->InitScopedBlockingCall(scoped_blocking_call);
     }
 
    private:
@@ -680,30 +651,6 @@ class SQL_EXPORT Database {
                             std::vector<std::string>* messages)
       WARN_UNUSED_RESULT;
 
-  // Record time spent executing explicit COMMIT statements.
-  void RecordCommitTime(const base::TimeDelta& delta);
-
-  // Record time in DML (Data Manipulation Language) statements such as INSERT
-  // or UPDATE outside of an explicit transaction.  Due to implementation
-  // limitations time spent on DDL (Data Definition Language) statements such as
-  // ALTER and CREATE is not included.
-  void RecordAutoCommitTime(const base::TimeDelta& delta);
-
-  // Record all time spent on updating the database.  This includes CommitTime()
-  // and AutoCommitTime(), plus any time spent spilling to the journal if
-  // transactions do not fit in cache.
-  void RecordUpdateTime(const base::TimeDelta& delta);
-
-  // Record all time spent running statements, including time spent doing
-  // updates and time spent on read-only queries.
-  void RecordQueryTime(const base::TimeDelta& delta);
-
-  // Record |delta| as query time if |read_only| (from sqlite3_stmt_readonly) is
-  // true, autocommit time if the database is not in a transaction, or update
-  // time if the database is in a transaction.  Also records change count to
-  // EVENT_CHANGES_AUTOCOMMIT or EVENT_CHANGES_COMMIT.
-  void RecordTimeAndChanges(const base::TimeDelta& delta, bool read_only);
-
   // Release page-cache memory if memory-mapped I/O is enabled and the database
   // was changed.  Passing true for |implicit_change_performed| allows
   // overriding the change detection for cases like DDL (CREATE, DROP, etc),
@@ -713,23 +660,6 @@ class SQL_EXPORT Database {
   // Returns the results of sqlite3_db_filename(), which should match the path
   // passed to Open().
   base::FilePath DbPath() const;
-
-  // Helper to prevent uploading too many diagnostic dumps for a given database,
-  // since every dump will likely show the same problem.  Returns |true| if this
-  // function was not previously called for this database, and the persistent
-  // storage which tracks state was updated.
-  //
-  // |false| is returned if the function was previously called for this
-  // database, even across restarts.  |false| is also returned if the persistent
-  // storage cannot be updated, possibly indicating problems requiring user or
-  // admin intervention, such as filesystem corruption or disk full.  |false| is
-  // also returned if the persistent storage contains invalid data or is not
-  // readable.
-  //
-  // TODO(shess): It would make sense to reset the persistent state if the
-  // database is razed or recovered, or if the diagnostic code adds new
-  // capabilities.
-  bool RegisterIntentToUpload() const;
 
   // Helper to collect diagnostic info for a corrupt database.
   std::string CollectCorruptionInfo();
@@ -812,23 +742,6 @@ class SQL_EXPORT Database {
 
   // Linear histogram for RecordEvent().
   base::HistogramBase* stats_histogram_;
-
-  // Histogram for tracking time taken in commit.
-  base::HistogramBase* commit_time_histogram_;
-
-  // Histogram for tracking time taken in autocommit updates.
-  base::HistogramBase* autocommit_time_histogram_;
-
-  // Histogram for tracking time taken in updates (including commit and
-  // autocommit).
-  base::HistogramBase* update_time_histogram_;
-
-  // Histogram for tracking time taken in all queries.
-  base::HistogramBase* query_time_histogram_;
-
-  // Source for timing information, provided to allow tests to inject time
-  // changes.
-  std::unique_ptr<base::TickClock> clock_;
 
   // Stores the dump provider object when db is open.
   std::unique_ptr<DatabaseMemoryDumpProvider> memory_dump_provider_;

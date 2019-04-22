@@ -114,7 +114,7 @@ std::unique_ptr<TemplateURLData> TemplateURLDataFromDictionary(
 std::unique_ptr<base::DictionaryValue> TemplateURLDataToDictionary(
     const TemplateURLData& data) {
   auto url_dict = std::make_unique<base::DictionaryValue>();
-  url_dict->SetString(DefaultSearchManager::kID, base::Int64ToString(data.id));
+  url_dict->SetString(DefaultSearchManager::kID, base::NumberToString(data.id));
   url_dict->SetString(DefaultSearchManager::kShortName, data.short_name());
   url_dict->SetString(DefaultSearchManager::kKeyword, data.keyword());
   url_dict->SetInteger(DefaultSearchManager::kPrepopulateID,
@@ -145,14 +145,15 @@ std::unique_ptr<base::DictionaryValue> TemplateURLDataToDictionary(
   url_dict->SetBoolean(DefaultSearchManager::kSafeForAutoReplace,
                        data.safe_for_autoreplace);
 
-  url_dict->SetString(DefaultSearchManager::kDateCreated,
-                      base::Int64ToString(data.date_created.ToInternalValue()));
+  url_dict->SetString(
+      DefaultSearchManager::kDateCreated,
+      base::NumberToString(data.date_created.ToInternalValue()));
   url_dict->SetString(
       DefaultSearchManager::kLastModified,
-      base::Int64ToString(data.last_modified.ToInternalValue()));
+      base::NumberToString(data.last_modified.ToInternalValue()));
   url_dict->SetString(
       DefaultSearchManager::kLastVisited,
-      base::Int64ToString(data.last_visited.ToInternalValue()));
+      base::NumberToString(data.last_visited.ToInternalValue()));
   url_dict->SetInteger(DefaultSearchManager::kUsageCount, data.usage_count);
 
   auto alternate_urls = std::make_unique<base::ListValue>();

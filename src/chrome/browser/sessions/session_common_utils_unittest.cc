@@ -17,8 +17,8 @@ namespace {
 void AppendNavigations(sessions::SessionTab* tab,
                        content::NavigationEntry* entry) {
   tab->navigations.push_back(
-      sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-          0, *entry));
+      sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(0,
+                                                                        entry));
 }
 
 }  // namespace

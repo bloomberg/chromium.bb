@@ -117,7 +117,7 @@ class ProtectedMemoryLocker {
     // Then unlock the mutex
     __attribute__((unused)) int rv = pthread_mutex_unlock(mutex_);
     assert(rv == 0);
-  };
+  }
 
  private:
   ProtectedMemoryLocker();

@@ -56,6 +56,8 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode {
   // Missing from ui::ManagedDisplayMode
   float device_scale_factor() const { return device_scale_factor_; }
 
+  std::string ToString() const;
+
  private:
   gfx::Size size_;              // Physical pixel size of the display.
   float refresh_rate_ = 0.0f;   // Refresh rate of the display, in Hz.
@@ -63,6 +65,20 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode {
   bool native_ = false;         // True if mode is native mode of the display.
   float device_scale_factor_ = 1.0f;  // The device scale factor of the mode.
 };
+
+inline bool operator==(const ManagedDisplayMode& lhs,
+                       const ManagedDisplayMode& rhs) {
+  return lhs.size() == rhs.size() &&
+         lhs.is_interlaced() == rhs.is_interlaced() &&
+         lhs.refresh_rate() == rhs.refresh_rate() &&
+         lhs.native() == rhs.native() &&
+         lhs.device_scale_factor() == rhs.device_scale_factor();
+}
+
+inline bool operator!=(const ManagedDisplayMode& lhs,
+                       const ManagedDisplayMode& rhs) {
+  return !(lhs == rhs);
+}
 
 // ManagedDisplayInfo contains metadata for each display. This is used to create
 // |Display| as well as to maintain extra infomation to manage displays in ash
@@ -148,6 +164,11 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   bool is_zoom_factor_from_ui_scale() const {
     return is_zoom_factor_from_ui_scale_;
   }
+
+  float refresh_rate() const { return refresh_rate_; }
+  void set_refresh_rate(float refresh_rate) { refresh_rate_ = refresh_rate; }
+  bool is_interlaced() const { return is_interlaced_; }
+  void set_is_interlaced(bool is_interlaced) { is_interlaced_ = is_interlaced; }
 
   // Gets/Sets the device DPI of the display.
   float device_dpi() const { return device_dpi_; }
@@ -292,6 +313,13 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // multiplicatively to the device scale factor to get the effecting scaling
   // for a display.
   float zoom_factor_;
+
+  // The value of the current display mode refresh rate.
+  float refresh_rate_;
+
+  // True if the current display mode is interlaced (i.e. the display's odd
+  // and even lines are scanned alternately in two interwoven rasterized lines).
+  bool is_interlaced_;
 
   // True if the |zoom_factor_| currently set is a port of the ui-scale. This is
   // needed to correctly compute zoom values and effective device scale factor

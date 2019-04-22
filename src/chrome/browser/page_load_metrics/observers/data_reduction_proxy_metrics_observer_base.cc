@@ -6,20 +6,21 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "components/data_reduction_proxy/content/browser/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
 #include "components/previews/content/previews_user_data.h"
@@ -112,7 +113,6 @@ DataReductionProxyMetricsObserverBase::OnCommit(
                                 ->GetMainFrame()
                                 ->GetProcess()
                                 ->GetID();
-  navigation_start_ = navigation_handle->NavigationStart();
 
   return OnCommitCalled(navigation_handle, source_id);
 }
@@ -264,9 +264,9 @@ void DataReductionProxyMetricsObserverBase::SendPingback(
           timing.parse_timing->parse_stop, info)) {
     parse_stop = timing.parse_timing->parse_stop;
   }
-  if (navigation_start_ && main_frame_fetch_start_) {
+  if (GetDelegate()->DidCommit() && main_frame_fetch_start_) {
     main_frame_fetch_start =
-        main_frame_fetch_start_.value() - navigation_start_.value();
+        main_frame_fetch_start_.value() - GetDelegate()->GetNavigationStart();
   }
   if (info.started_in_foreground && info.page_end_time.has_value()) {
     // This should be reported even when the app goes into the background which
@@ -354,6 +354,7 @@ void DataReductionProxyMetricsObserverBase::OnLoadedResource(
 }
 
 void DataReductionProxyMetricsObserverBase::OnResourceDataUseObserved(
+    content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -408,7 +409,9 @@ void DataReductionProxyMetricsObserverBase::OnEventOccurred(
 }
 
 void DataReductionProxyMetricsObserverBase::OnUserInput(
-    const blink::WebInputEvent& event) {
+    const blink::WebInputEvent& event,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (event.GetType() == blink::WebInputEvent::kMouseDown ||
       event.GetType() == blink::WebInputEvent::kGestureTap) {
     touch_count_++;

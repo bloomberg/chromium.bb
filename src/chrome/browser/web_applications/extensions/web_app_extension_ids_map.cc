@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/values.h"
@@ -22,26 +23,14 @@ namespace web_app {
 
 namespace {
 
-// The stored preferences have evolved over time:
-//
-// For M70 (branched August 2018):
-//
-// "web_apps": {
-//   "extension_ids": {
-//     "https://events.google.com/io2016/?utm_source=web_app_manifest":
-//         "mjgafbdfajpigcjmkgmeokfbodbcfijl",
-//     "https://www.chromestatus.com/features":
-//         "fedbieoalmbobgfjapopkghdmhgncnaa"
-//   }
-// }
-//
-// For M71 and above:
+// The stored preferences look like:
 //
 // "web_apps": {
 //   "extension_ids": {
 //     "https://events.google.com/io2016/?utm_source=web_app_manifest": {
 //       "extension_id": "mjgafbdfajpigcjmkgmeokfbodbcfijl",
-//       "install_source": 1
+//       "install_source": 1,
+//       "is_placeholder": true,
 //     },
 //     "https://www.chromestatus.com/features": {
 //       "extension_id": "fedbieoalmbobgfjapopkghdmhgncnaa",
@@ -52,14 +41,39 @@ namespace {
 //
 // From the top, prefs::kWebAppsExtensionIDs is "web_apps.extension_ids".
 //
-// Two levels in is a dictionary (key/value pairs) whose keys are URLs:
-//  - For M70, the values are strings.
-//  - For M71+, values are leaf dictionaries. Those leaf dictionaries have keys
-//    such as kExtensionId and kInstallSource.
+// Two levels in is a dictionary (key/value pairs) whose keys are URLs and
+// values are leaf dictionaries. Those leaf dictionaries have keys such as
+// kExtensionId and kInstallSource.
 constexpr char kExtensionId[] = "extension_id";
 constexpr char kInstallSource[] = "install_source";
+constexpr char kIsPlaceholder[] = "is_placeholder";
 
-constexpr InstallSource m70_implicit_install_source = InstallSource::kInternal;
+// Returns the base::Value in |pref_service| corresponding to our stored dict
+// for |extension_id|, or nullptr if it doesn't exist.
+const base::Value* GetPreferenceValue(const PrefService* pref_service,
+                                      const std::string& extension_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const base::DictionaryValue* urls_to_dicts =
+      pref_service->GetDictionary(prefs::kWebAppsExtensionIDs);
+  if (!urls_to_dicts) {
+    return nullptr;
+  }
+  // Do a simple O(N) scan for extension_id being a value in each dictionary's
+  // key/value pairs. We expect both N and the number of times
+  // GetPreferenceValue is called to be relatively small in practice. If they
+  // turn out to be large, we can write a more sophisticated implementation.
+  for (const auto& it : urls_to_dicts->DictItems()) {
+    const base::Value* root = &it.second;
+    const base::Value* v = root;
+    if (v->is_dict()) {
+      v = v->FindKey(kExtensionId);
+      if (v && v->is_string() && (v->GetString() == extension_id)) {
+        return root;
+      }
+    }
+  }
+  return nullptr;
+}
 
 }  // namespace
 
@@ -70,62 +84,23 @@ void ExtensionIdsMap::RegisterProfilePrefs(
 }
 
 // static
-void ExtensionIdsMap::UpgradeFromM70Format(PrefService* pref_service) {
-  const base::DictionaryValue* urls_to_dicts =
-      pref_service->GetDictionary(prefs::kWebAppsExtensionIDs);
-  if (!urls_to_dicts) {
-    return;
-  }
-
-  // The std::pair is [url, extension_id].
-  std::vector<std::pair<std::string, std::string>> upgrades;
-  for (const auto& it : urls_to_dicts->DictItems()) {
-    if (it.second.is_string()) {
-      upgrades.emplace_back(it.first, it.second.GetString());
-    }
-  }
-  if (upgrades.empty()) {
-    return;
-  }
-
-  DictionaryPrefUpdate update(pref_service, prefs::kWebAppsExtensionIDs);
-  for (const auto& it : upgrades) {
-    // Write the M71+ format.
-    base::Value dict(base::Value::Type::DICTIONARY);
-    dict.SetKey(kExtensionId, base::Value(it.second));
-    dict.SetKey(kInstallSource,
-                base::Value(static_cast<int>(m70_implicit_install_source)));
-
-    update->SetKey(it.first, std::move(dict));
-  }
+bool ExtensionIdsMap::HasExtensionId(const PrefService* pref_service,
+                                     const std::string& extension_id) {
+  return GetPreferenceValue(pref_service, extension_id) != nullptr;
 }
 
 // static
-bool ExtensionIdsMap::HasExtensionId(const PrefService* pref_service,
-                                     const std::string& extension_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const base::DictionaryValue* urls_to_dicts =
-      pref_service->GetDictionary(prefs::kWebAppsExtensionIDs);
-  if (!urls_to_dicts) {
-    return false;
-  }
-  // Do a simple O(N) scan for extension_id being a value in each dictionary's
-  // key/value pairs. We expect both N and the number of times HasExtensionId
-  // is called to be relatively small in practice. If they turn out to be
-  // large, we can write a more sophisticated implementation.
-  for (const auto& it : urls_to_dicts->DictItems()) {
-    // On M70, v should be a string. On M71+, v should be a dict.
-    const base::Value* v = &it.second;
-    if (v->is_dict()) {
-      v = v->FindKey(kExtensionId);
-    }
 
-    // On both M70 and M71+, v should now be the extension_id.
-    if (v && v->is_string() && (v->GetString() == extension_id)) {
-      return true;
-    }
-  }
-  return false;
+bool ExtensionIdsMap::HasExtensionIdWithInstallSource(
+    const PrefService* pref_service,
+    const std::string& extension_id,
+    InstallSource install_source) {
+  const base::Value* v = GetPreferenceValue(pref_service, extension_id);
+  if (v == nullptr || !v->is_dict())
+    return false;
+
+  v = v->FindKeyOfType(kInstallSource, base::Value::Type::INTEGER);
+  return (v && v->GetInt() == static_cast<int>(install_source));
 }
 
 // static
@@ -142,25 +117,20 @@ std::vector<GURL> ExtensionIdsMap::GetInstalledAppUrls(
   }
 
   for (const auto& it : urls_to_dicts->DictItems()) {
-    // On M70, v should be a string. On M71+, v should be a dict.
-    //
-    // For M70, the implicit install_source is kInternal.
     const base::Value* v = &it.second;
-    auto actual_install_source = m70_implicit_install_source;
-    if (v->is_dict()) {
-      const base::Value* install_source_value =
-          v->FindKeyOfType(kInstallSource, base::Value::Type::INTEGER);
-      if (!install_source_value) {
-        continue;
-      }
-      actual_install_source =
-          static_cast<InstallSource>(install_source_value->GetInt());
-
-      v = v->FindKey(kExtensionId);
+    if (!v->is_dict()) {
+      continue;
     }
 
-    // On both M70 and M71+, v should now be the extension_id.
-    if (!v || !v->is_string() || (actual_install_source != install_source)) {
+    const base::Value* install_source_value =
+        v->FindKeyOfType(kInstallSource, base::Value::Type::INTEGER);
+    if (!install_source_value ||
+        (install_source_value->GetInt() != static_cast<int>(install_source))) {
+      continue;
+    }
+
+    v = v->FindKey(kExtensionId);
+    if (!v || !v->is_string()) {
       continue;
     }
     auto* extension =
@@ -177,16 +147,13 @@ std::vector<GURL> ExtensionIdsMap::GetInstalledAppUrls(
 }
 
 ExtensionIdsMap::ExtensionIdsMap(PrefService* pref_service)
-    : pref_service_(pref_service) {
-  UpgradeFromM70Format(pref_service);
-}
+    : pref_service_(pref_service) {}
 
 void ExtensionIdsMap::Insert(const GURL& url,
                              const std::string& extension_id,
                              InstallSource install_source) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Write the M71+ format.
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetKey(kExtensionId, base::Value(extension_id));
   dict.SetKey(kInstallSource, base::Value(static_cast<int>(install_source)));
@@ -196,22 +163,50 @@ void ExtensionIdsMap::Insert(const GURL& url,
 }
 
 base::Optional<std::string> ExtensionIdsMap::LookupExtensionId(
-    const GURL& url) {
+    const GURL& url) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // On M70, v should be a string. On M71+, v should be a dict.
   const base::Value* v =
       pref_service_->GetDictionary(prefs::kWebAppsExtensionIDs)
           ->FindKey(url.spec());
   if (v && v->is_dict()) {
     v = v->FindKey(kExtensionId);
-  }
-
-  // On both M70 and M71+, v should now be the extension_id.
-  if (v && v->is_string()) {
-    return base::make_optional(v->GetString());
+    if (v && v->is_string()) {
+      return base::make_optional(v->GetString());
+    }
   }
   return base::nullopt;
+}
+
+base::Optional<std::string> ExtensionIdsMap::LookupPlaceholderAppId(
+    const GURL& url) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  const base::Value* entry =
+      pref_service_->GetDictionary(prefs::kWebAppsExtensionIDs)
+          ->FindKey(url.spec());
+  if (!entry)
+    return base::nullopt;
+
+  base::Optional<bool> is_placeholder = entry->FindBoolKey(kIsPlaceholder);
+  if (!is_placeholder.has_value() || !is_placeholder.value())
+    return base::nullopt;
+
+  return *entry->FindStringKey(kExtensionId);
+}
+
+void ExtensionIdsMap::SetIsPlaceholder(const GURL& url, bool is_placeholder) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  DCHECK(pref_service_->GetDictionary(prefs::kWebAppsExtensionIDs)
+             ->HasKey(url.spec()));
+  DictionaryPrefUpdate update(pref_service_, prefs::kWebAppsExtensionIDs);
+  base::Value* map = update.Get();
+
+  auto* app_entry = map->FindKey(url.spec());
+  DCHECK(app_entry);
+
+  app_entry->SetBoolKey(kIsPlaceholder, is_placeholder);
 }
 
 }  // namespace web_app

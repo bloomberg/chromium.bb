@@ -5,12 +5,12 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableBooleanPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.components.offline_items_collection.VisualsCallback;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 import java.util.List;
 
@@ -69,6 +69,10 @@ public interface ListProperties {
     WritableObjectPropertyKey < Callback < List<OfflineItem>>> CALLBACK_REMOVE_ALL =
             new WritableObjectPropertyKey<>();
 
+    /** The callback for when a UI action should rename a {@link OfflineItem}. */
+    WritableObjectPropertyKey<Callback<OfflineItem>> CALLBACK_RENAME =
+            new WritableObjectPropertyKey<>();
+
     /** The provider to retrieve expensive assets for a {@link OfflineItem}. */
     WritableObjectPropertyKey<VisualsProvider> PROVIDER_VISUALS = new WritableObjectPropertyKey<>();
 
@@ -89,6 +93,6 @@ public interface ListProperties {
 
     PropertyKey[] ALL_KEYS = new PropertyKey[] {ENABLE_ITEM_ANIMATIONS, CALLBACK_OPEN,
             CALLBACK_PAUSE, CALLBACK_RESUME, CALLBACK_CANCEL, CALLBACK_SHARE, CALLBACK_SHARE_ALL,
-            CALLBACK_REMOVE, CALLBACK_REMOVE_ALL, PROVIDER_VISUALS, CALLBACK_SELECTION,
-            SELECTION_MODE_ACTIVE, CALLBACK_START_SELECTION};
+            CALLBACK_REMOVE, CALLBACK_REMOVE_ALL, CALLBACK_RENAME, PROVIDER_VISUALS,
+            CALLBACK_SELECTION, SELECTION_MODE_ACTIVE, CALLBACK_START_SELECTION};
 }

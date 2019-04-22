@@ -6,11 +6,46 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
-#include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
+#include "chrome/browser/ui/app_list/extension_app_context_menu.h"
+#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 
 // static
 const char AppServiceAppItem::kItemType[] = "AppServiceAppItem";
+
+// static
+std::unique_ptr<app_list::AppContextMenu> AppServiceAppItem::MakeAppContextMenu(
+    apps::mojom::AppType app_type,
+    AppContextMenuDelegate* delegate,
+    Profile* profile,
+    const std::string& app_id,
+    AppListControllerDelegate* controller,
+    bool is_platform_app) {
+  switch (app_type) {
+    case apps::mojom::AppType::kUnknown:
+    case apps::mojom::AppType::kBuiltIn:
+      return std::make_unique<app_list::AppContextMenu>(delegate, profile,
+                                                        app_id, controller);
+
+    case apps::mojom::AppType::kArc:
+      return std::make_unique<ArcAppContextMenu>(delegate, profile, app_id,
+                                                 controller);
+
+    case apps::mojom::AppType::kCrostini:
+      return std::make_unique<CrostiniAppContextMenu>(profile, app_id,
+                                                      controller);
+
+    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kWeb:
+      return std::make_unique<app_list::ExtensionAppContextMenu>(
+          delegate, profile, app_id, controller, is_platform_app);
+  }
+
+  return nullptr;
+}
 
 AppServiceAppItem::AppServiceAppItem(
     Profile* profile,
@@ -18,21 +53,9 @@ AppServiceAppItem::AppServiceAppItem(
     const app_list::AppListSyncableService::SyncItem* sync_item,
     const apps::AppUpdate& app_update)
     : ChromeAppListItem(profile, app_update.AppId()),
-      app_type_(app_update.AppType()) {
-  SetName(app_update.Name());
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
-  if (proxy) {
-    // TODO(crbug.com/826982): if another AppUpdate is observed, we should call
-    // LoadIcon again. The question (see the TODO in
-    // AppServiceAppModelBuilder::OnAppUpdate) is who should be the observer:
-    // the AppModelBuilder or the AppItem?
-    proxy->LoadIcon(app_update.AppId(),
-                    apps::mojom::IconCompression::kUncompressed,
-                    app_list::AppListConfig::instance().grid_icon_dimension(),
-                    base::BindOnce(&AppServiceAppItem::OnLoadIcon,
-                                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
+      app_type_(app_update.AppType()),
+      is_platform_app_(false) {
+  OnAppUpdate(app_update, true);
   if (sync_item && sync_item->item_ordinal.IsValid()) {
     UpdateFromSync(sync_item);
   } else {
@@ -45,32 +68,76 @@ AppServiceAppItem::AppServiceAppItem(
 
 AppServiceAppItem::~AppServiceAppItem() = default;
 
-void AppServiceAppItem::Activate(int event_flags) {
-  // This code snippet makes us update the same UMA histogram both before and
-  // after --enable-features=AppService. Before, it was updated in
-  // internal_app_item.h, which meant that there were histogram entries:
-  //   - only for internal apps, not for other app types.
-  //   - only when launched from the app list, and not from e.g. the shelf.
-  //     Keeping this behavior means that, even after the App Service is
-  //     enabled, the histogram is updated in this UI code rather than by the
-  //     App Service's app publisher, since the publisher can also be invoked
-  //     from other UIs like the shelf.
-  //
-  // TODO(crbug.com/826982): be more structured about UMA histograms, after we
-  // migrate more of the ui/app_list code over to use the App Service. Should
-  // they apply to all app types? Should they apply to all the different ways
-  // we can launch apps? Should we just delete the
-  // UMA_HISTOGRAM_ENUMERATION("Apps.AppListInternalApp.Activate", etc) code?
-  if (app_type_ == apps::mojom::AppType::kBuiltIn)
-    InternalAppItem::RecordActiveHistogram(id());
+void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update) {
+  OnAppUpdate(app_update, false);
+}
 
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
-  if (proxy)
-    proxy->Launch(id(), event_flags);
+void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update,
+                                    bool in_constructor) {
+  if (in_constructor || app_update.NameChanged()) {
+    SetName(app_update.Name());
+  }
+
+  if (in_constructor || app_update.IconKeyChanged()) {
+    constexpr bool allow_placeholder_icon = true;
+    CallLoadIcon(allow_placeholder_icon);
+  }
+
+  if (in_constructor || app_update.IsPlatformAppChanged()) {
+    is_platform_app_ =
+        app_update.IsPlatformApp() == apps::mojom::OptionalBool::kTrue;
+  }
+}
+
+void AppServiceAppItem::Activate(int event_flags) {
+  Launch(event_flags, apps::mojom::LaunchSource::kFromAppListGrid);
 }
 
 const char* AppServiceAppItem::GetItemType() const {
   return AppServiceAppItem::kItemType;
+}
+
+void AppServiceAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
+  context_menu_ = MakeAppContextMenu(app_type_, this, profile(), id(),
+                                     GetController(), is_platform_app_);
+  context_menu_->GetMenuModel(std::move(callback));
+}
+
+app_list::AppContextMenu* AppServiceAppItem::GetAppContextMenu() {
+  return context_menu_.get();
+}
+
+void AppServiceAppItem::ExecuteLaunchCommand(int event_flags) {
+  Launch(event_flags, apps::mojom::LaunchSource::kFromAppListGridContextMenu);
+
+  // TODO(crbug.com/826982): drop the if, and call MaybeDismissAppList
+  // unconditionally?
+  if (app_type_ == apps::mojom::AppType::kArc) {
+    MaybeDismissAppList();
+  }
+}
+
+void AppServiceAppItem::Launch(int event_flags,
+                               apps::mojom::LaunchSource launch_source) {
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile());
+  if (proxy) {
+    proxy->Launch(id(), event_flags, launch_source,
+                  GetController()->GetAppListDisplayId());
+  }
+}
+
+void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile());
+  if (proxy) {
+    proxy->LoadIcon(app_type_, id(),
+                    apps::mojom::IconCompression::kUncompressed,
+                    app_list::AppListConfig::instance().grid_icon_dimension(),
+                    allow_placeholder_icon,
+                    base::BindOnce(&AppServiceAppItem::OnLoadIcon,
+                                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void AppServiceAppItem::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
@@ -79,4 +146,9 @@ void AppServiceAppItem::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
     return;
   }
   SetIcon(icon_value->uncompressed);
+
+  if (icon_value->is_placeholder_icon) {
+    constexpr bool allow_placeholder_icon = false;
+    CallLoadIcon(allow_placeholder_icon);
+  }
 }

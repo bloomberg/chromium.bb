@@ -3,6 +3,15 @@
 # found in the LICENSE file.
 
 source_set("setup") {
+  public_deps = [
+    ":common",
+  ]
+  deps = [
+    "//remoting/host",
+  ]
+}
+
+source_set("common") {
   sources = [
     "daemon_controller.cc",
     "daemon_controller.h",
@@ -20,8 +29,6 @@ source_set("setup") {
     "service_client.h",
     "test_util.cc",
     "test_util.h",
-    "win/auth_code_getter.cc",
-    "win/auth_code_getter.h",
   ]
 
   configs += [
@@ -36,7 +43,7 @@ source_set("setup") {
     "//google_apis",
     "//mojo/core/embedder",
     "//remoting/base:authorization",
-    "//remoting/host",
+    "//remoting/host:common",
     "//remoting/host/native_messaging",
     "//services/network/public/cpp",
     "//services/network/public/mojom",

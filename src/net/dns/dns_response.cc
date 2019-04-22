@@ -4,13 +4,14 @@
 
 #include "net/dns/dns_response.h"
 
+#include <algorithm>
 #include <limits>
 #include <numeric>
 #include <utility>
-#include <vector>
 
 #include "base/big_endian.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
@@ -112,7 +113,8 @@ size_t DnsResourceRecord::CalculateRecordSize() const {
          (owned_rdata.empty() ? rdata.size() : owned_rdata.size());
 }
 
-DnsRecordParser::DnsRecordParser() : packet_(nullptr), length_(0), cur_(0) {}
+DnsRecordParser::DnsRecordParser()
+    : packet_(nullptr), length_(0), cur_(nullptr) {}
 
 DnsRecordParser::DnsRecordParser(const void* packet,
                                  size_t length,
@@ -125,6 +127,8 @@ DnsRecordParser::DnsRecordParser(const void* packet,
 
 unsigned DnsRecordParser::ReadName(const void* const vpos,
                                    std::string* out) const {
+  static const char kAbortMsg[] = "Abort parsing of noncompliant DNS record.";
+
   const char* const pos = reinterpret_cast<const char*>(vpos);
   DCHECK(packet_);
   DCHECK_LE(packet_, pos);
@@ -136,6 +140,12 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
   unsigned seen = 0;
   // Remember how many bytes were consumed before first jump.
   unsigned consumed = 0;
+  // The length of the encoded name (sum of label octets and label lengths).
+  // For context, RFC 1034 states that the total number of octets representing a
+  // domain name (the sum of all label octets and label lengths) is limited to
+  // 255. RFC 1035 introduces message compression as a way to reduce packet size
+  // on the wire, not to increase the maximum domain name length.
+  unsigned encoded_name_len = 0;
 
   if (pos >= end)
     return 0;
@@ -150,8 +160,10 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
     // either a direct length or a pointer to the remainder of the name.
     switch (*p & dns_protocol::kLabelMask) {
       case dns_protocol::kLabelPointer: {
-        if (p + sizeof(uint16_t) > end)
+        if (p + sizeof(uint16_t) > end) {
+          VLOG(1) << kAbortMsg << " Truncated or missing label pointer.";
           return 0;
+        }
         if (consumed == 0) {
           consumed = p - pos + sizeof(uint16_t);
           if (!out)
@@ -159,19 +171,30 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
         }
         seen += sizeof(uint16_t);
         // If seen the whole packet, then we must be in a loop.
-        if (seen > length_)
+        if (seen > length_) {
+          VLOG(1) << kAbortMsg << " Detected loop in label pointers.";
           return 0;
+        }
         uint16_t offset;
         base::ReadBigEndian<uint16_t>(p, &offset);
         offset &= dns_protocol::kOffsetMask;
         p = packet_ + offset;
-        if (p >= end)
+        if (p >= end) {
+          VLOG(1) << kAbortMsg << " Label pointer points outside packet.";
           return 0;
+        }
         break;
       }
       case dns_protocol::kLabelDirect: {
         uint8_t label_len = *p;
         ++p;
+        // Add one octet for the length and |label_len| for the number of
+        // following octets.
+        encoded_name_len += 1 + label_len;
+        if (encoded_name_len > dns_protocol::kMaxNameLength) {
+          VLOG(1) << kAbortMsg << " Name is too long.";
+          return 0;
+        }
         // Note: root domain (".") is NOT included.
         if (label_len == 0) {
           if (consumed == 0) {
@@ -179,8 +202,10 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
           }  // else we set |consumed| before first jump
           return consumed;
         }
-        if (p + label_len >= end)
+        if (p + label_len >= end) {
+          VLOG(1) << kAbortMsg << " Truncated or missing label.";
           return 0;  // Truncated or missing label.
+        }
         if (out) {
           if (!out->empty())
             out->append(".");
@@ -192,6 +217,7 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
       }
       default:
         // unhandled label type
+        VLOG(1) << kAbortMsg << " Unhandled label type.";
         return 0;
     }
   }
@@ -211,6 +237,8 @@ bool DnsRecordParser::ReadRecord(DnsResourceRecord* out) {
       reader.ReadU16(&rdlen) &&
       reader.ReadPiece(&out->rdata, rdlen)) {
     cur_ = reader.ptr();
+    UMA_HISTOGRAM_COUNTS_10000("Net.DNS.RecordParser.DomainNameLength",
+                               out->name.length());
     return true;
   }
   return false;
@@ -234,8 +262,10 @@ DnsResponse::DnsResponse(
     uint16_t id,
     bool is_authoritative,
     const std::vector<DnsResourceRecord>& answers,
+    const std::vector<DnsResourceRecord>& authority_records,
     const std::vector<DnsResourceRecord>& additional_records,
-    const base::Optional<DnsQuery>& query) {
+    const base::Optional<DnsQuery>& query,
+    uint8_t rcode) {
   bool has_query = query.has_value();
   dns_protocol::Header header;
   header.id = id;
@@ -249,8 +279,11 @@ DnsResponse::DnsResponse(
   header.flags |= dns_protocol::kFlagResponse;
   if (is_authoritative)
     header.flags |= dns_protocol::kFlagAA;
+  DCHECK_EQ(0, rcode & ~kRcodeMask);
+  header.flags |= rcode;
 
   header.ancount = answers.size();
+  header.nscount = authority_records.size();
   header.arcount = additional_records.size();
 
   // Response starts with the header and the question section (if any).
@@ -263,6 +296,9 @@ DnsResponse::DnsResponse(
   };
   response_size = std::accumulate(answers.begin(), answers.end(), response_size,
                                   do_accumulation);
+  response_size =
+      std::accumulate(authority_records.begin(), authority_records.end(),
+                      response_size, do_accumulation);
   response_size =
       std::accumulate(additional_records.begin(), additional_records.end(),
                       response_size, do_accumulation);
@@ -279,6 +315,11 @@ DnsResponse::DnsResponse(
   // Start the Answer section.
   for (const auto& answer : answers) {
     success &= WriteAnswer(&writer, answer, query);
+    DCHECK(success);
+  }
+  // Start the Authority section.
+  for (const auto& record : authority_records) {
+    success &= WriteRecord(&writer, record);
     DCHECK(success);
   }
   // Start the Additional section.
@@ -550,7 +591,10 @@ bool DnsResponse::WriteRecord(base::BigEndianWriter* writer,
 bool DnsResponse::WriteAnswer(base::BigEndianWriter* writer,
                               const DnsResourceRecord& answer,
                               const base::Optional<DnsQuery>& query) {
-  if (query.has_value() && answer.type != query.value().qtype()) {
+  // Generally assumed to be a mistake if we write answers that don't match the
+  // query type, except CNAME answers which can always be added.
+  if (query.has_value() && answer.type != query.value().qtype() &&
+      answer.type != dns_protocol::kTypeCNAME) {
     VLOG(1) << "Mismatched answer resource record type and qtype.";
     return false;
   }

@@ -5,9 +5,12 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 
 #include <algorithm>
+#include <map>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -21,6 +24,7 @@
 #include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
+#include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -169,6 +173,12 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         profile(), base::BindRepeating(&BuildTestHistoryService));
     SiteEngagementScore::SetParamValuesForTesting();
+
+    // Ensure that we have just one SiteEngagementService: no service created
+    // with TestingProfile.
+    // (See KeyedServiceBaseFactory::ServiceIsCreatedWithContext).
+    DCHECK(!SiteEngagementServiceFactory::GetForProfileIfExists(profile()));
+
     service_ = base::WrapUnique(new SiteEngagementService(profile(), &clock_));
   }
 
@@ -256,7 +266,7 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
  protected:
   void CheckScoreFromSettings(HostContentSettingsMap* settings_map,
                               const GURL& url,
-                              double *score) {
+                              double* score) {
     *score = SiteEngagementService::GetScoreFromSettings(settings_map, url);
   }
 
@@ -1073,10 +1083,10 @@ TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
                                              ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   NavigateWithTransitionAndExpectHigherScore(
       service, url, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  NavigateWithTransitionAndExpectHigherScore(service, url,
+                                             ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
 
   // Other transition types should not accumulate engagement.
-  NavigateWithTransitionAndExpectEqualScore(service, url,
-                                            ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   NavigateWithTransitionAndExpectEqualScore(service, url,
                                             ui::PAGE_TRANSITION_LINK);
   NavigateWithTransitionAndExpectEqualScore(service, url,
@@ -1157,7 +1167,8 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     base::CancelableTaskTracker task_tracker;
     // Expire origin1, origin2, origin2a, and origin4's most recent visit.
     history->ExpireHistoryBetween(std::set<GURL>(), yesterday, today,
-                                  base::DoNothing(), &task_tracker);
+                                  /*user_initiated*/ true, base::DoNothing(),
+                                  &task_tracker);
     waiter.Wait();
 
     // origin2 is cleaned up because all its urls are deleted. origin1a and

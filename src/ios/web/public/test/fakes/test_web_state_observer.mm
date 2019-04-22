@@ -6,8 +6,11 @@
 
 #include <memory>
 
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/ssl_status.h"
 #import "ios/web/public/web_state/navigation_context.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ios/web/web_state/navigation_context_impl.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,15 +45,6 @@ void TestWebStateObserver::WasHidden(WebState* web_state) {
   was_hidden_info_->web_state = web_state;
 }
 
-void TestWebStateObserver::NavigationItemCommitted(
-    WebState* web_state,
-    const LoadCommittedDetails& load_details) {
-  ASSERT_EQ(web_state_, web_state);
-  commit_navigation_info_ = std::make_unique<web::TestCommitNavigationInfo>();
-  commit_navigation_info_->web_state = web_state;
-  commit_navigation_info_->load_details = load_details;
-}
-
 void TestWebStateObserver::PageLoaded(
     WebState* web_state,
     PageLoadCompletionStatus load_completion_status) {
@@ -77,13 +71,6 @@ void TestWebStateObserver::NavigationItemsPruned(WebState* web_state,
       std::make_unique<web::TestNavigationItemsPrunedInfo>();
   navigation_items_pruned_info_->web_state = web_state;
   navigation_items_pruned_info_->count = pruned_item_count;
-}
-
-void TestWebStateObserver::NavigationItemChanged(WebState* web_state) {
-  ASSERT_EQ(web_state_, web_state);
-  navigation_item_changed_info_ =
-      std::make_unique<web::TestNavigationItemChangedInfo>();
-  navigation_item_changed_info_->web_state = web_state;
 }
 
 void TestWebStateObserver::DidStartNavigation(WebState* web_state,
@@ -131,6 +118,15 @@ void TestWebStateObserver::DidChangeVisibleSecurityState(WebState* web_state) {
   did_change_visible_security_state_info_ =
       std::make_unique<web::TestDidChangeVisibleSecurityStateInfo>();
   did_change_visible_security_state_info_->web_state = web_state;
+
+  NavigationItem* visible_item =
+      web_state->GetNavigationManager()->GetVisibleItem();
+  if (!visible_item) {
+    did_change_visible_security_state_info_->visible_ssl_status.reset();
+  } else {
+    did_change_visible_security_state_info_->visible_ssl_status =
+        std::make_unique<SSLStatus>(visible_item->GetSSL());
+  }
 }
 
 void TestWebStateObserver::FaviconUrlUpdated(

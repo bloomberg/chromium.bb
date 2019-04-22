@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
@@ -150,8 +151,6 @@ class StorageMonitorCrosTest : public testing::Test {
   StorageMonitor::EjectStatus status_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-
   content::TestBrowserThreadBundle thread_bundle_;
 
   // Temporary directory for created test data.
@@ -166,9 +165,7 @@ class StorageMonitorCrosTest : public testing::Test {
 StorageMonitorCrosTest::StorageMonitorCrosTest()
     : monitor_(NULL),
       disk_mount_manager_mock_(NULL),
-      status_(StorageMonitor::EJECT_FAILURE),
-      scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      status_(StorageMonitor::EJECT_FAILURE) {}
 
 StorageMonitorCrosTest::~StorageMonitorCrosTest() {
 }
@@ -197,7 +194,7 @@ void StorageMonitorCrosTest::TearDown() {
 
   disk_mount_manager_mock_ = NULL;
   DiskMountManager::Shutdown();
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 void StorageMonitorCrosTest::MountDevice(
@@ -217,7 +214,7 @@ void StorageMonitorCrosTest::MountDevice(
         true /* on_removable_device */, kFileSystemType);
   }
   monitor_->OnMountEvent(DiskMountManager::MOUNTING, error_code, mount_info);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 void StorageMonitorCrosTest::UnmountDevice(
@@ -226,7 +223,7 @@ void StorageMonitorCrosTest::UnmountDevice(
   monitor_->OnMountEvent(DiskMountManager::UNMOUNTING, error_code, mount_info);
   if (error_code == chromeos::MOUNT_ERROR_NONE)
     disk_mount_manager_mock_->RemoveDiskEntryForMountDevice(mount_info);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 uint64_t StorageMonitorCrosTest::GetDeviceStorageSize(

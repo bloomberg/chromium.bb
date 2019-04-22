@@ -15,7 +15,8 @@ namespace gpu {
 
 class GpuChannelManagerTest : public GpuChannelTestCommon {
  public:
-  GpuChannelManagerTest() : GpuChannelTestCommon() {}
+  GpuChannelManagerTest()
+      : GpuChannelTestCommon(true /* use_stub_bindings */) {}
   ~GpuChannelManagerTest() override = default;
 
 #if defined(OS_ANDROID)
@@ -47,7 +48,7 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
     EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 
     auto raster_decoder_state =
-        channel_manager()->GetRasterDecoderContextState(&result);
+        channel_manager()->GetSharedContextState(&result);
     EXPECT_EQ(result, ContextResult::kSuccess);
     ASSERT_TRUE(raster_decoder_state);
 
@@ -64,7 +65,7 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
     }
 
     // We should always clear the shared raster state on background cleanup.
-    ASSERT_NE(channel_manager()->GetRasterDecoderContextState(&result).get(),
+    ASSERT_NE(channel_manager()->GetSharedContextState(&result).get(),
               raster_decoder_state.get());
   }
 #endif

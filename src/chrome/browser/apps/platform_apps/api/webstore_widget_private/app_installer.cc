@@ -36,10 +36,11 @@ AppInstaller::AppInstaller(content::WebContents* web_contents,
                            const std::string& item_id,
                            Profile* profile,
                            bool silent_installation,
-                           const Callback& callback)
-    : extensions::WebstoreStandaloneInstaller(item_id, profile, callback),
+                           Callback callback)
+    : extensions::WebstoreStandaloneInstaller(item_id,
+                                              profile,
+                                              std::move(callback)),
       silent_installation_(silent_installation),
-      callback_(callback),
       web_contents_(web_contents),
       web_contents_observer_(new WebContentsObserver(web_contents, this)) {
   DCHECK(web_contents_);
@@ -79,8 +80,8 @@ content::WebContents* AppInstaller::GetWebContents() const {
 }
 
 void AppInstaller::OnWebContentsDestroyed(content::WebContents* web_contents) {
-  callback_.Run(false, kWebContentsDestroyedError,
-                extensions::webstore_install::OTHER_ERROR);
+  RunCallback(false, kWebContentsDestroyedError,
+              extensions::webstore_install::OTHER_ERROR);
   AbortInstall();
 }
 

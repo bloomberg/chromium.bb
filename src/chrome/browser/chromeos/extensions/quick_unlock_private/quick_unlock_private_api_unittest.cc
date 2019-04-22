@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
@@ -18,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
+#include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
@@ -29,8 +31,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/login/auth/fake_extended_authenticator.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
@@ -134,21 +135,22 @@ class QuickUnlockPrivateUnitTest
     : public ExtensionApiUnittest,
       public ::testing::WithParamInterface<TestType> {
  public:
-  QuickUnlockPrivateUnitTest()
-      : fake_user_manager_(new FakeChromeUserManager()),
-        scoped_user_manager_(base::WrapUnique(fake_user_manager_)) {}
+  QuickUnlockPrivateUnitTest() = default;
+  ~QuickUnlockPrivateUnitTest() override = default;
 
  protected:
   void SetUp() override {
-    // Setup DBusThreadManager before calling ExtensionApiUnittest::SetUp()
-    // since that will set dbus up with the default fake configuration.
-    auto cryptohome_client = std::make_unique<chromeos::FakeCryptohomeClient>();
+    CryptohomeClient::InitializeFake();
     if (GetParam() == TestType::kCryptohome) {
+      auto* cryptohome_client = FakeCryptohomeClient::Get();
       cryptohome_client->set_supports_low_entropy_credentials(true);
       cryptohome_client->set_enable_auth_check(true);
     }
-    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::move(cryptohome_client));
+    SystemSaltGetter::Initialize();
+
+    fake_user_manager_ = new FakeChromeUserManager();
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(fake_user_manager_));
 
     ExtensionApiUnittest::SetUp();
 
@@ -157,7 +159,7 @@ class QuickUnlockPrivateUnitTest
     fake_user_manager_->CreateLocalState();
 
     // Rebuild quick unlock state.
-    quick_unlock::EnableForTesting();
+    quick_unlock::EnabledForTesting(true);
     quick_unlock::PinBackend::ResetForTesting();
 
     base::RunLoop().RunUntilIdle();
@@ -184,13 +186,18 @@ class QuickUnlockPrivateUnitTest
   }
 
   void TearDown() override {
+    quick_unlock::EnabledForTesting(false);
     quick_unlock::DisablePinByPolicyForTesting(false);
 
     base::RunLoop().RunUntilIdle();
 
-    fake_user_manager_ = nullptr;
-
     ExtensionApiUnittest::TearDown();
+
+    fake_user_manager_ = nullptr;
+    scoped_user_manager_.reset();
+
+    SystemSaltGetter::Shutdown();
+    CryptohomeClient::Shutdown();
     cryptohome::HomedirMethods::Shutdown();
   }
 
@@ -498,8 +505,8 @@ class QuickUnlockPrivateUnitTest
     expect_modes_changed_ = false;
   }
 
-  FakeChromeUserManager* fake_user_manager_;
-  user_manager::ScopedUserManager scoped_user_manager_;
+  FakeChromeUserManager* fake_user_manager_ = nullptr;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   QuickUnlockPrivateSetModesFunction::ModesChangedEventHandler
       modes_changed_handler_;
   bool expect_modes_changed_ = false;
@@ -516,7 +523,8 @@ TEST_P(QuickUnlockPrivateUnitTest, GetAuthTokenValid) {
 
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForProfile(profile());
-  EXPECT_EQ(token_info->token, quick_unlock_storage->GetAuthToken());
+  EXPECT_EQ(token_info->token,
+            quick_unlock_storage->GetAuthToken()->Identifier());
   EXPECT_EQ(token_info->lifetime_seconds,
             quick_unlock::AuthToken::kTokenExpirationSeconds);
 }
@@ -751,8 +759,8 @@ TEST_P(QuickUnlockPrivateUnitTest, GetCredentialRequirements) {
   CheckGetCredentialRequirements(1, 0);
 }
 
-INSTANTIATE_TEST_CASE_P(StorageProviders,
-                        QuickUnlockPrivateUnitTest,
-                        ::testing::Values(TestType::kPrefs,
-                                          TestType::kCryptohome));
+INSTANTIATE_TEST_SUITE_P(StorageProviders,
+                         QuickUnlockPrivateUnitTest,
+                         ::testing::Values(TestType::kPrefs,
+                                           TestType::kCryptohome));
 }  // namespace chromeos

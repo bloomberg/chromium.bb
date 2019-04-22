@@ -21,13 +21,14 @@
 
 #include "third_party/blink/renderer/core/layout/layout_quote.h"
 
+#include <algorithm>
+
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
-
-#include <algorithm>
 
 namespace blink {
 
@@ -233,7 +234,7 @@ const QuotesData* QuotesDataForLanguage(const AtomicString& lang) {
     return nullptr;
 
   // This could be just a hash table, but doing that adds 200k to LayoutQuote.o
-  Language* languages_end = g_languages + arraysize(g_languages);
+  Language* languages_end = g_languages + base::size(g_languages);
   CString lowercase_lang = lang.DeprecatedLower().Utf8();
   Language key = {lowercase_lang.data(), 0, 0, 0, 0, nullptr};
   Language* match = std::lower_bound(g_languages, languages_end, key);
@@ -269,8 +270,10 @@ void LayoutQuote::UpdateText() {
     fragment->SetStyle(MutableStyle());
     fragment->SetContentString(text_.Impl());
   } else {
-    fragment = LayoutTextFragment::CreateAnonymous(*Style(), *owning_pseudo_,
-                                                   text_.Impl());
+    LegacyLayout legacy =
+        ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
+    fragment = LayoutTextFragment::CreateAnonymous(*owning_pseudo_,
+                                                   text_.Impl(), legacy);
     fragment->SetStyle(MutableStyle());
     AddChild(fragment);
   }

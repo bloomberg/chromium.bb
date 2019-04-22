@@ -25,10 +25,11 @@
 
 #include "third_party/blink/renderer/core/script/pending_script.h"
 
-#include "third_party/blink/public/platform/web_feature.mojom-shared.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_parser_timing.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/script/ignore_destructive_write_count_incrementer.h"
@@ -124,8 +125,9 @@ void PendingScript::MarkParserBlockingLoadStartTime() {
   parser_blocking_load_start_time_ = CurrentTimeTicks();
 }
 
-// <specdef href="https://html.spec.whatwg.org/#execute-the-script-block">
+// <specdef href="https://html.spec.whatwg.org/C/#execute-the-script-block">
 void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
+  TRACE_EVENT0("blink", "PendingScript::ExecuteScriptBlock");
   Document* context_document = element_->GetDocument().ContextDocument();
   if (!context_document) {
     Dispose();
@@ -147,7 +149,8 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
 
     // TODO(hiroshige): Also do not execute classic scripts.
     // https://crbug.com/721914
-    UseCounter::Count(frame, WebFeature::kEvaluateScriptMovedBetweenDocuments);
+    UseCounter::Count(context_document,
+                      WebFeature::kEvaluateScriptMovedBetweenDocuments);
   }
 
   Script* script = GetSource(document_url);
@@ -158,9 +161,8 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
 
     AtomicString nonce = element_->GetNonceForElement();
     if (!should_bypass_main_world_csp &&
-        !element_->AllowInlineScriptForCSP(
-            nonce, StartingPosition().line_, script->InlineSourceTextForCSP(),
-            ContentSecurityPolicy::InlineType::kBlock)) {
+        !element_->AllowInlineScriptForCSP(nonce, StartingPosition().line_,
+                                           script->InlineSourceTextForCSP())) {
       // Consider as if:
       //
       // <spec step="2">If the script's script is null, ...</spec>
@@ -187,7 +189,7 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
       parser_blocking_load_start_time, is_controlled_by_script_runner);
 }
 
-// <specdef href="https://html.spec.whatwg.org/#execute-the-script-block">
+// <specdef href="https://html.spec.whatwg.org/C/#execute-the-script-block">
 void PendingScript::ExecuteScriptBlockInternal(
     Script* script,
     ScriptElementBase* element,

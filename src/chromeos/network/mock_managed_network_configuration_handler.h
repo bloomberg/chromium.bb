@@ -7,15 +7,15 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT MockManagedNetworkConfigurationHandler
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockManagedNetworkConfigurationHandler
     : public ManagedNetworkConfigurationHandler {
  public:
   MockManagedNetworkConfigurationHandler();

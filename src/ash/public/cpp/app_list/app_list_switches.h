@@ -17,7 +17,6 @@ ASH_PUBLIC_EXPORT extern const char kDisableAppListDismissOnBlur[];
 ASH_PUBLIC_EXPORT extern const char kEnableAppList[];
 ASH_PUBLIC_EXPORT extern const char kEnableDriveSearchInChromeLauncher[];
 ASH_PUBLIC_EXPORT extern const char kDisableDriveSearchInChromeLauncher[];
-ASH_PUBLIC_EXPORT extern const char kResetAppListInstallState[];
 
 bool ASH_PUBLIC_EXPORT IsAppListSyncEnabled();
 
@@ -25,8 +24,6 @@ bool ASH_PUBLIC_EXPORT IsFolderUIEnabled();
 
 // Determines whether the app list should not be dismissed on focus loss.
 bool ASH_PUBLIC_EXPORT ShouldNotDismissOnBlur();
-
-bool ASH_PUBLIC_EXPORT IsDriveSearchInChromeLauncherEnabled();
 
 }  // namespace switches
 }  // namespace app_list

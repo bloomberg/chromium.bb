@@ -174,7 +174,7 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
      */
     @CallSuper
     protected List<TestRule> getDefaultTestRules() {
-        return Collections.emptyList();
+        return Arrays.asList(new DestroyActivitiesRule(), new LifetimeAssertRule());
     }
 
     /**
@@ -204,8 +204,11 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
      */
     @Override
     public void run(RunNotifier notifier) {
-        ContextUtils.initApplicationContext(
-                InstrumentationRegistry.getTargetContext().getApplicationContext());
+        // Most tests have an Application subclass that already call this.
+        if (ContextUtils.getApplicationContext() == null) {
+            ContextUtils.initApplicationContext(
+                    InstrumentationRegistry.getTargetContext().getApplicationContext());
+        }
         if (shouldListTests(InstrumentationRegistry.getArguments())) {
             for (Description child : getDescription().getChildren()) {
                 notifier.fireTestStarted(child);
@@ -273,5 +276,14 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
     @Override
     protected Statement withAfters(FrameworkMethod method, Object test, Statement base) {
         return super.withAfters(method, test, new ScreenshotOnFailureStatement(base));
+    }
+
+    @Override
+    protected List<TestRule> classRules() {
+        List<TestRule> result = super.classRules();
+        // Class rules are the outermost TestRules, so CommitSharedPreferencesTestRule will commit
+        // SharedPreferences after all other rules have finished writing them.
+        result.add(new CommitSharedPreferencesTestRule());
+        return result;
     }
 }

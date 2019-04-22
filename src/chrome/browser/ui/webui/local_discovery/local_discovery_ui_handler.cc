@@ -152,10 +152,12 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
       "openCloudPrintURL",
       base::BindRepeating(&LocalDiscoveryUIHandler::HandleOpenCloudPrintURL,
                           base::Unretained(this)));
+#if !defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "showSyncUI",
       base::BindRepeating(&LocalDiscoveryUIHandler::HandleShowSyncUI,
                           base::Unretained(this)));
+#endif
 
   // Cloud print connector related messages
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
@@ -266,6 +268,7 @@ void LocalDiscoveryUIHandler::HandleOpenCloudPrintURL(
                                 ui::PAGE_TRANSITION_FROM_API);
 }
 
+#if !defined(OS_CHROMEOS)
 void LocalDiscoveryUIHandler::HandleShowSyncUI(
     const base::ListValue* args) {
   Browser* browser = chrome::FindBrowserWithWebContents(
@@ -274,6 +277,7 @@ void LocalDiscoveryUIHandler::HandleShowSyncUI(
   chrome::ShowBrowserSignin(
       browser, signin_metrics::AccessPoint::ACCESS_POINT_DEVICES_PAGE);
 }
+#endif
 
 void LocalDiscoveryUIHandler::StartRegisterHTTP(
     std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
@@ -412,12 +416,12 @@ void LocalDiscoveryUIHandler::OnDeviceListUnavailable() {
 }
 
 void LocalDiscoveryUIHandler::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   CheckUserLoggedIn();
 }
 
 void LocalDiscoveryUIHandler::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   CheckUserLoggedIn();
 }
 

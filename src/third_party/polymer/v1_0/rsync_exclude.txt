@@ -28,6 +28,10 @@ package-lock.json
 */site/
 */templates/
 
+# html-imports-v0
+html-imports-v0/src/*
+html-imports-v0/gulpfile.js
+
 # iron-autogrow-textarea
 iron-autogrow-textarea/*
 
@@ -44,11 +48,6 @@ paper-input/paper-input-char-counter.html
 paper-input/paper-input.html
 paper-input/paper-textarea.html
 
-# paper-item
-paper-item/all-imports.html
-paper-item/paper-item-body.html
-paper-item/paper-item.html
-
 # paper-spinner
 paper-spinner/paper-spinner.html
 
@@ -57,3 +56,23 @@ paper-styles/classes/global.html
 paper-styles/element-styles/paper-item-styles.html
 paper-styles/paper-styles-classes.html
 paper-styles/paper-styles.html
+
+# neon-animations
+neon-animation/animations/cascaded-animation.html
+neon-animation/animations/hero-animation.html
+neon-animation/animations/opaque-animation.html
+neon-animation/animations/reverse-ripple-animation.html
+neon-animation/animations/ripple-animation.html
+neon-animation/animations/scale-down-animation.html
+neon-animation/animations/scale-up-animation.html
+neon-animation/animations/slide-down-animation.html
+neon-animation/animations/slide-from-bottom-animation.html
+neon-animation/animations/slide-from-left-animation.html
+neon-animation/animations/slide-from-right-animation.html
+neon-animation/animations/slide-from-top-animation.html
+neon-animation/animations/slide-left-animation.html
+neon-animation/animations/slide-right-animation.html
+neon-animation/animations/slide-up-animation.html
+neon-animation/animations/transform-animation.html
+neon-animation/neon-animation.html
+neon-animation/neon-animations.html

@@ -33,47 +33,111 @@ void U2fRegisterOperation::Start() {
   DCHECK(IsConvertibleToU2fRegisterCommand(request()));
 
   const auto& exclude_list = request().exclude_list();
-  if (!exclude_list || exclude_list->empty()) {
-    TryRegistration(false /* is_duplicate_registration */);
+  if (exclude_list && !exclude_list->empty()) {
+    // First try signing with the excluded credentials to see whether this
+    // device should be excluded.
+    TrySign();
   } else {
-    auto it = request().exclude_list()->cbegin();
-    DispatchDeviceRequest(
-        ConvertToU2fCheckOnlySignCommand(request(), *it),
-        base::BindOnce(&U2fRegisterOperation::OnCheckForExcludedKeyHandle,
-                       weak_factory_.GetWeakPtr(), it));
+    TryRegistration();
   }
 }
 
-void U2fRegisterOperation::TryRegistration(bool is_duplicate_registration) {
-  auto command = is_duplicate_registration
-                     ? ConstructBogusU2fRegistrationCommand()
-                     : ConvertToU2fRegisterCommand(request());
+void U2fRegisterOperation::Cancel() {
+  canceled_ = true;
+}
 
+void U2fRegisterOperation::TrySign() {
   DispatchDeviceRequest(
-      std::move(command),
+      ConvertToU2fSignCommand(request(), excluded_key_handle()),
+      base::BindOnce(&U2fRegisterOperation::OnCheckForExcludedKeyHandle,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
+    base::Optional<std::vector<uint8_t>> device_response) {
+  if (canceled_) {
+    return;
+  }
+
+  auto result = apdu::ApduResponse::Status::SW_WRONG_DATA;
+  if (device_response) {
+    const auto apdu_response =
+        apdu::ApduResponse::CreateFromMessage(std::move(*device_response));
+    if (apdu_response) {
+      result = apdu_response->status();
+    }
+  }
+
+  // Older U2F devices may respond with the length of the input as an error
+  // response if the length is unexpected.
+  if (result ==
+      static_cast<apdu::ApduResponse::Status>(excluded_key_handle().size())) {
+    result = apdu::ApduResponse::Status::SW_WRONG_LENGTH;
+  }
+
+  switch (result) {
+    case apdu::ApduResponse::Status::SW_NO_ERROR:
+      // Duplicate registration found. The device has already collected
+      // user-presence.
+      std::move(callback())
+          .Run(CtapDeviceResponseCode::kCtap2ErrCredentialExcluded,
+               base::nullopt);
+      break;
+
+    case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
+      // Duplicate registration found. Waiting for user touch.
+      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&U2fRegisterOperation::TrySign,
+                         weak_factory_.GetWeakPtr()),
+          kU2fRetryDelay);
+      break;
+
+    case apdu::ApduResponse::Status::SW_WRONG_DATA:
+    case apdu::ApduResponse::Status::SW_WRONG_LENGTH:
+      // Continue to iterate through the provided key handles in the exclude
+      // list to check for already registered keys.
+      if (++current_key_handle_index_ < request().exclude_list()->size()) {
+        TrySign();
+      } else {
+        // Reached the end of exclude list with no duplicate credential.
+        // Proceed with registration.
+        TryRegistration();
+      }
+      break;
+
+    default:
+      // Some sort of failure occurred. Silently drop device request.
+      std::move(callback())
+          .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
+      break;
+  }
+}
+
+void U2fRegisterOperation::TryRegistration() {
+  DispatchDeviceRequest(
+      ConvertToU2fRegisterCommand(request()),
       base::BindOnce(&U2fRegisterOperation::OnRegisterResponseReceived,
-                     weak_factory_.GetWeakPtr(), is_duplicate_registration));
+                     weak_factory_.GetWeakPtr()));
 }
 
 void U2fRegisterOperation::OnRegisterResponseReceived(
-    bool is_duplicate_registration,
     base::Optional<std::vector<uint8_t>> device_response) {
-  const auto& apdu_response =
+  if (canceled_) {
+    return;
+  }
+
+  auto result = apdu::ApduResponse::Status::SW_WRONG_DATA;
+  const auto apdu_response =
       device_response
           ? apdu::ApduResponse::CreateFromMessage(std::move(*device_response))
           : base::nullopt;
-  auto return_code = apdu_response ? apdu_response->status()
-                                   : apdu::ApduResponse::Status::SW_WRONG_DATA;
+  if (apdu_response) {
+    result = apdu_response->status();
+  }
 
-  switch (return_code) {
+  switch (result) {
     case apdu::ApduResponse::Status::SW_NO_ERROR: {
-      if (is_duplicate_registration) {
-        std::move(callback())
-            .Run(CtapDeviceResponseCode::kCtap2ErrCredentialExcluded,
-                 base::nullopt);
-        break;
-      }
-
       auto response =
           AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
               device()->DeviceTransport(),
@@ -83,15 +147,16 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
           .Run(CtapDeviceResponseCode::kSuccess, std::move(response));
       break;
     }
+
     case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
       // Waiting for user touch, retry after delay.
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&U2fRegisterOperation::TryRegistration,
-                         weak_factory_.GetWeakPtr(), is_duplicate_registration),
+                         weak_factory_.GetWeakPtr()),
           kU2fRetryDelay);
-
       break;
+
     default:
       // An error has occurred, quit trying this device.
       std::move(callback())
@@ -100,52 +165,9 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
   }
 }
 
-void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
-    ExcludeListIterator it,
-    base::Optional<std::vector<uint8_t>> device_response) {
-  const auto& apdu_response =
-      device_response
-          ? apdu::ApduResponse::CreateFromMessage(std::move(*device_response))
-          : base::nullopt;
-  auto return_code = apdu_response ? apdu_response->status()
-                                   : apdu::ApduResponse::Status::SW_WRONG_DATA;
-  switch (return_code) {
-    case apdu::ApduResponse::Status::SW_NO_ERROR:
-    case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED: {
-      // Duplicate registration found. Call bogus registration to check for
-      // user presence (touch) and terminate the registration process.
-      DispatchDeviceRequest(
-          ConstructBogusU2fRegistrationCommand(),
-          base::BindOnce(&U2fRegisterOperation::OnRegisterResponseReceived,
-                         weak_factory_.GetWeakPtr(),
-                         true /* is_duplicate_registration */));
-      break;
-    }
-
-    case apdu::ApduResponse::Status::SW_WRONG_DATA:
-      // Continue to iterate through the provided key handles in the exclude
-      // list and check for already registered keys.
-      if (++it != request().exclude_list()->cend()) {
-        DispatchDeviceRequest(
-            ConvertToU2fCheckOnlySignCommand(request(), *it),
-            base::BindOnce(&U2fRegisterOperation::OnCheckForExcludedKeyHandle,
-                           weak_factory_.GetWeakPtr(), it));
-      } else {
-        // Reached the end of exclude list with no duplicate credential.
-        // Proceed with registration.
-        DispatchDeviceRequest(
-            ConvertToU2fRegisterCommand(request()),
-            base::BindOnce(&U2fRegisterOperation::OnRegisterResponseReceived,
-                           weak_factory_.GetWeakPtr(),
-                           false /* is_duplicate_registration */));
-      }
-      break;
-    default:
-      // Some sort of failure occurred. Silently drop device request.
-      std::move(callback())
-          .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
-      break;
-  }
+const std::vector<uint8_t>& U2fRegisterOperation::excluded_key_handle() const {
+  DCHECK_LT(current_key_handle_index_, request().exclude_list()->size());
+  return request().exclude_list().value()[current_key_handle_index_].id();
 }
 
 }  // namespace device

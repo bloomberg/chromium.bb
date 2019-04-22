@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -94,6 +95,8 @@ enum class CallSetupState {
 };
 
 class MODULES_EXPORT CallSetupStateTracker {
+  DISALLOW_NEW();
+
  public:
   CallSetupStateTracker();
 

@@ -13,6 +13,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -20,10 +21,11 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/webrtc/api/video/video_frame.h"
+#include "third_party/webrtc/media/base/vp9_profile.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/rtc_base/bind.h"
-#include "third_party/webrtc/rtc_base/refcount.h"
-#include "third_party/webrtc/rtc_base/refcountedobject.h"
+#include "third_party/webrtc/rtc_base/ref_count.h"
+#include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
@@ -91,8 +93,10 @@ RTCVideoDecoder::~RTCVideoDecoder() {
 
 // static
 std::unique_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
-    webrtc::VideoCodecType type,
+    const webrtc::SdpVideoFormat& format,
     media::GpuVideoAcceleratorFactories* factories) {
+  const webrtc::VideoCodecType type =
+      webrtc::PayloadStringToCodecType(format.name);
   std::unique_ptr<RTCVideoDecoder> decoder;
 // See https://bugs.chromium.org/p/webrtc/issues/detail?id=5717.
 #if defined(OS_WIN)
@@ -110,9 +114,21 @@ std::unique_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
     case webrtc::kVideoCodecVP8:
       profile = media::VP8PROFILE_ANY;
       break;
-    case webrtc::kVideoCodecVP9:
-      profile = media::VP9PROFILE_MIN;
+    case webrtc::kVideoCodecVP9: {
+      const webrtc::VP9Profile vp9_profile =
+          webrtc::ParseSdpForVP9Profile(format.parameters)
+              .value_or(webrtc::VP9Profile::kProfile0);
+      switch (vp9_profile) {
+        case webrtc::VP9Profile::kProfile2:
+          profile = media::VP9PROFILE_PROFILE2;
+          break;
+        case webrtc::VP9Profile::kProfile0:
+        default:
+          profile = media::VP9PROFILE_PROFILE0;
+          break;
+      }
       break;
+    }
     case webrtc::kVideoCodecH264:
       profile = media::H264PROFILE_MAIN;
       break;
@@ -121,6 +137,9 @@ std::unique_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
       return decoder;
   }
 
+  // This wait is necessary because this task is completed in GPU process
+  // asynchronously but WebRTC API is synchronous.
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
   decoder.reset(new RTCVideoDecoder(type, factories));
@@ -135,12 +154,6 @@ std::unique_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
   else
     factories->GetTaskRunner()->DeleteSoon(FROM_HERE, decoder.release());
   return decoder;
-}
-
-// static
-void RTCVideoDecoder::Destroy(webrtc::VideoDecoder* decoder,
-                              media::GpuVideoAcceleratorFactories* factories) {
-  factories->GetTaskRunner()->DeleteSoon(FROM_HERE, decoder);
 }
 
 int32_t RTCVideoDecoder::InitDecode(const webrtc::VideoCodec* codecSettings,
@@ -160,18 +173,14 @@ int32_t RTCVideoDecoder::InitDecode(const webrtc::VideoCodec* codecSettings,
 int32_t RTCVideoDecoder::Decode(
     const webrtc::EncodedImage& input_image,
     bool missing_frames,
-    const webrtc::CodecSpecificInfo* codec_specific_info,
     int64_t render_time_ms) {
   DVLOG(3) << "Decode";
-  DCHECK(!codec_specific_info ||
-         video_codec_type_ == codec_specific_info->codecType);
 
   // Hardware VP9 decoders don't handle more than one spatial layer. Fall back
   // to software decoding. See https://crbug.com/webrtc/9304,
   // https://crbug.com/webrtc/9518.
-  if (video_codec_type_ == webrtc::kVideoCodecVP9 && codec_specific_info &&
-      codec_specific_info->codecSpecific.VP9.ss_data_available &&
-      codec_specific_info->codecSpecific.VP9.num_spatial_layers > 1) {
+  if (video_codec_type_ == webrtc::kVideoCodecVP9 &&
+      input_image.SpatialIndex().value_or(0) > 0) {
     return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
   }
 
@@ -234,12 +243,11 @@ int32_t RTCVideoDecoder::Decode(
     // http://crosbug.com/p/21913 is fixed.
 
     DCHECK(new_frame_size.IsEmpty());
-    // Increase the error counter, if we are already in an error state. Also,
-    // increase the counter if we keep receiving keyframes without size set.
-    vda_error_counter_ +=
-        vda_error_counter_ || input_image._frameType == webrtc::kVideoFrameKey
-            ? 1
-            : 0;
+    if (vda_error_counter_ ||
+        input_image._frameType == webrtc::VideoFrameType::kVideoFrameKey) {
+      ++vda_error_counter_;
+    }
+
     if (ShouldFallbackToSoftwareDecode())
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
     DVLOG(1) << "The first frame should have resolution. Drop this.";
@@ -248,7 +256,7 @@ int32_t RTCVideoDecoder::Decode(
 
   // Create buffer metadata.
   BufferData buffer_data(next_bitstream_buffer_id_, input_image.Timestamp(),
-                         input_image._length, gfx::Rect(frame_size_));
+                         input_image.size(), gfx::Rect(frame_size_));
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & ID_LAST;
 
@@ -257,7 +265,7 @@ int32_t RTCVideoDecoder::Decode(
   // immediately. Otherwise, save the buffer in the queue for later decode.
   std::unique_ptr<base::SharedMemory> shm_buffer;
   if (!need_to_reset_for_midstream_resize && pending_buffers_.empty())
-    shm_buffer = GetSHM_Locked(input_image._length);
+    shm_buffer = GetSHM_Locked(input_image.size());
   if (!shm_buffer) {
     if (!SaveToPendingBuffers_Locked(input_image, buffer_data)) {
       // We have exceeded the pending buffers count, we are severely behind.
@@ -622,7 +630,7 @@ void RTCVideoDecoder::SaveToDecodeBuffers_Locked(
     const webrtc::EncodedImage& input_image,
     std::unique_ptr<base::SharedMemory> shm_buffer,
     const BufferData& buffer_data) {
-  memcpy(shm_buffer->memory(), input_image._buffer, input_image._length);
+  memcpy(shm_buffer->memory(), input_image.data(), input_image.size());
 
   // Store the buffer and the metadata to the queue.
   decode_buffers_.emplace_back(std::move(shm_buffer), buffer_data);
@@ -642,13 +650,13 @@ bool RTCVideoDecoder::SaveToPendingBuffers_Locked(
   }
 
   // Clone the input image and save it to the queue.
-  uint8_t* buffer = new uint8_t[input_image._length];
+  uint8_t* buffer = new uint8_t[input_image.size()];
   // TODO(wuchengli): avoid memcpy. Extend webrtc::VideoDecoder::Decode()
   // interface to take a non-const ptr to the frame and add a method to the
   // frame that will swap buffers with another.
-  memcpy(buffer, input_image._buffer, input_image._length);
-  webrtc::EncodedImage encoded_image(
-      buffer, input_image._length, input_image._length);
+  memcpy(buffer, input_image.data(), input_image.size());
+  webrtc::EncodedImage encoded_image(buffer, input_image.size(),
+                                     input_image.size());
   std::pair<webrtc::EncodedImage, BufferData> buffer_pair =
       std::make_pair(encoded_image, buffer_data);
 
@@ -666,17 +674,17 @@ void RTCVideoDecoder::MovePendingBuffersToDecodeBuffers() {
     // Drop the frame if it comes before Release.
     if (!IsBufferAfterReset(buffer_data.bitstream_buffer_id,
                             reset_bitstream_buffer_id_)) {
-      delete[] input_image._buffer;
+      delete[] input_image.data();
       pending_buffers_.pop_front();
       continue;
     }
     // Get shared memory and save it to decode buffers.
     std::unique_ptr<base::SharedMemory> shm_buffer =
-        GetSHM_Locked(input_image._length);
+        GetSHM_Locked(input_image.size());
     if (!shm_buffer)
       return;
     SaveToDecodeBuffers_Locked(input_image, std::move(shm_buffer), buffer_data);
-    delete[] input_image._buffer;
+    delete[] input_image.data();
     pending_buffers_.pop_front();
   }
 }
@@ -916,7 +924,7 @@ void RTCVideoDecoder::DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent()
 void RTCVideoDecoder::ClearPendingBuffers() {
   // Delete WebRTC input buffers.
   for (const auto& pending_buffer : pending_buffers_)
-    delete[] pending_buffer.first._buffer;
+    delete[] pending_buffer.first.data();
   pending_buffers_.clear();
 }
 

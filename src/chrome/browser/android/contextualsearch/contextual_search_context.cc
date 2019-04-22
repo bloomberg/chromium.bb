@@ -56,10 +56,14 @@ void ContextualSearchContext::SetResolveProperties(
     JNIEnv* env,
     jobject obj,
     const base::android::JavaParamRef<jstring>& j_home_country,
-    jboolean j_may_send_base_page_url) {
+    jboolean j_may_send_base_page_url,
+    jlong j_previous_event_id,
+    jint j_previous_event_results) {
   can_resolve = true;
   home_country = base::android::ConvertJavaStringToUTF8(env, j_home_country);
   can_send_base_page_url = j_may_send_base_page_url;
+  previous_event_id = j_previous_event_id;
+  previous_event_results = j_previous_event_results;
 }
 
 void ContextualSearchContext::AdjustSelection(JNIEnv* env,
@@ -103,6 +107,14 @@ void ContextualSearchContext::SetBasePageEncoding(
 
 const std::string ContextualSearchContext::GetHomeCountry() const {
   return home_country;
+}
+
+int64_t ContextualSearchContext::GetPreviousEventId() const {
+  return previous_event_id;
+}
+
+int ContextualSearchContext::GetPreviousEventResults() const {
+  return previous_event_results;
 }
 
 void ContextualSearchContext::SetSelectionSurroundings(

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_observer_changes.h"
 
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_observation.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
@@ -29,39 +28,22 @@ ScriptValue IDBObserverChanges::records(ScriptState* script_state) {
   return ScriptValue::From(script_state, map);
 }
 
-IDBObserverChanges* IDBObserverChanges::Create(
-    IDBDatabase* database,
-    IDBTransaction* transaction,
-    const WebVector<WebIDBObservation>& web_observations,
-    const HeapVector<Member<IDBObservation>>& observations,
-    const WebVector<int32_t>& observation_indices) {
-  DCHECK_EQ(web_observations.size(), observations.size());
-  return MakeGarbageCollected<IDBObserverChanges>(
-      database, transaction, web_observations, observations,
-      observation_indices);
-}
-
 IDBObserverChanges::IDBObserverChanges(
     IDBDatabase* database,
     IDBTransaction* transaction,
-    const WebVector<WebIDBObservation>& web_observations,
-    const HeapVector<Member<IDBObservation>>& observations,
-    const WebVector<int32_t>& observation_indices)
+    const Vector<Persistent<IDBObservation>>& observations,
+    const Vector<int32_t>& observation_indices)
     : database_(database), transaction_(transaction) {
-  DCHECK_EQ(web_observations.size(), observations.size());
-  ExtractChanges(web_observations, observations, observation_indices);
+  ExtractChanges(observations, observation_indices);
 }
 
 void IDBObserverChanges::ExtractChanges(
-    const WebVector<WebIDBObservation>& web_observations,
-    const HeapVector<Member<IDBObservation>>& observations,
-    const WebVector<int32_t>& observation_indices) {
-  DCHECK_EQ(web_observations.size(), observations.size());
-
+    const Vector<Persistent<IDBObservation>>& observations,
+    const Vector<int32_t>& observation_indices) {
   // TODO(dmurph): Avoid getting and setting repeated times.
   for (const auto& idx : observation_indices) {
     records_
-        .insert(web_observations[idx].object_store_id,
+        .insert(observations[idx]->object_store_id(),
                 HeapVector<Member<IDBObservation>>())
         .stored_value->value.emplace_back(observations[idx]);
   }

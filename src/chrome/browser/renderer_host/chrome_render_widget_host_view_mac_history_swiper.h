@@ -166,9 +166,9 @@ enum RecognitionState {
   // This variables defaults to NO for new gestures.
   BOOL firstScrollUnconsumed_;
 
-  // Whether the renderer disables the overscroll effect, e.g. by
-  // CSSOverscrollBehavior.
-  BOOL rendererDisabledOverscroll_;
+  // Whether the overscroll has been triggered by renderer and is not disabled
+  // by CSSOverscrollBehavior.
+  BOOL overscrollTriggeredByRenderer_;
 
   // Whether we have received a gesture scroll begin and are awiting on the
   // first gesture scroll update to deteremine of the event was consumed by

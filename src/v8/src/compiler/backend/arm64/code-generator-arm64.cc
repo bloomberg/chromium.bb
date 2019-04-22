@@ -294,7 +294,9 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
       __ Push(lr, padreg);
       unwinding_info_writer_->MarkLinkRegisterOnTopOfStack(__ pc_offset(), sp);
     }
-    if (stub_mode_ == StubCallMode::kCallWasmRuntimeStub) {
+    if (mode_ == RecordWriteMode::kValueIsEphemeronKey) {
+      __ CallEphemeronKeyBarrier(object_, scratch1_, save_fp_mode);
+    } else if (stub_mode_ == StubCallMode::kCallWasmRuntimeStub) {
       // A direct call to a wasm runtime stub defined in this module.
       // Just encode the stub index. This will be patched when the code
       // is added to the native module and copied into wasm code space.
@@ -541,7 +543,7 @@ void CodeGenerator::AssembleTailCallAfterGap(Instruction* instr,
   InstructionOperandConverter g(this, instr);
   int optional_padding_slot = g.InputInt32(instr->InputCount() - 2);
   if (optional_padding_slot % 2) {
-    __ Poke(padreg, optional_padding_slot * kPointerSize);
+    __ Poke(padreg, optional_padding_slot * kSystemPointerSize);
   }
 }
 
@@ -565,17 +567,14 @@ void CodeGenerator::BailoutIfDeoptimized() {
   UseScratchRegisterScope temps(tasm());
   Register scratch = temps.AcquireX();
   int offset = Code::kCodeDataContainerOffset - Code::kHeaderSize;
-  __ Ldr(scratch, MemOperand(kJavaScriptCallCodeStartRegister, offset));
-  __ Ldr(scratch,
+  __ LoadTaggedPointerField(
+      scratch, MemOperand(kJavaScriptCallCodeStartRegister, offset));
+  __ Ldr(scratch.W(),
          FieldMemOperand(scratch, CodeDataContainer::kKindSpecificFlagsOffset));
   Label not_deoptimized;
-  __ Tbz(scratch, Code::kMarkedForDeoptimizationBit, &not_deoptimized);
-  // Ensure we're not serializing (otherwise we'd need to use an indirection to
-  // access the builtin below).
-  DCHECK(!isolate()->ShouldLoadConstantsFromRootList());
-  Handle<Code> code = isolate()->builtins()->builtin_handle(
-      Builtins::kCompileLazyDeoptimizedCode);
-  __ Jump(code, RelocInfo::CODE_TARGET);
+  __ Tbz(scratch.W(), Code::kMarkedForDeoptimizationBit, &not_deoptimized);
+  __ Jump(BUILTIN_CODE(isolate(), CompileLazyDeoptimizedCode),
+          RelocInfo::CODE_TARGET);
   __ Bind(&not_deoptimized);
 }
 
@@ -617,9 +616,16 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
         DCHECK_IMPLIES(
             HasCallDescriptorFlag(instr, CallDescriptor::kFixedTargetRegister),
             reg == kJavaScriptCallCodeStartRegister);
-        __ Add(reg, reg, Code::kHeaderSize - kHeapObjectTag);
-        __ Call(reg);
+        __ CallCodeObject(reg);
       }
+      RecordCallPosition(instr);
+      frame_access_state()->ClearSPDelta();
+      break;
+    }
+    case kArchCallBuiltinPointer: {
+      DCHECK(!instr->InputAt(0)->IsImmediate());
+      Register builtin_pointer = i.InputRegister(0);
+      __ CallBuiltinPointer(builtin_pointer);
       RecordCallPosition(instr);
       frame_access_state()->ClearSPDelta();
       break;
@@ -651,8 +657,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
         DCHECK_IMPLIES(
             HasCallDescriptorFlag(instr, CallDescriptor::kFixedTargetRegister),
             reg == kJavaScriptCallCodeStartRegister);
-        __ Add(reg, reg, Code::kHeaderSize - kHeapObjectTag);
-        __ Jump(reg);
+        __ JumpCodeObject(reg);
       }
       unwinding_info_writer_.MarkBlockWillExit();
       frame_access_state()->ClearSPDelta();
@@ -691,14 +696,15 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
         // Check the function's context matches the context argument.
         UseScratchRegisterScope scope(tasm());
         Register temp = scope.AcquireX();
-        __ Ldr(temp, FieldMemOperand(func, JSFunction::kContextOffset));
+        __ LoadTaggedPointerField(
+            temp, FieldMemOperand(func, JSFunction::kContextOffset));
         __ cmp(cp, temp);
         __ Assert(eq, AbortReason::kWrongFunctionContext);
       }
       static_assert(kJavaScriptCallCodeStartRegister == x2, "ABI mismatch");
-      __ Ldr(x2, FieldMemOperand(func, JSFunction::kCodeOffset));
-      __ Add(x2, x2, Operand(Code::kHeaderSize - kHeapObjectTag));
-      __ Call(x2);
+      __ LoadTaggedPointerField(x2,
+                                FieldMemOperand(func, JSFunction::kCodeOffset));
+      __ CallCodeObject(x2);
       RecordCallPosition(instr);
       frame_access_state()->ClearSPDelta();
       break;
@@ -718,9 +724,9 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       DCHECK(fp_mode_ == kDontSaveFPRegs || fp_mode_ == kSaveFPRegs);
       // kReturnRegister0 should have been saved before entering the stub.
       int bytes = __ PushCallerSaved(fp_mode_, kReturnRegister0);
-      DCHECK_EQ(0, bytes % kPointerSize);
+      DCHECK(IsAligned(bytes, kSystemPointerSize));
       DCHECK_EQ(0, frame_access_state()->sp_delta());
-      frame_access_state()->IncreaseSPDelta(bytes / kPointerSize);
+      frame_access_state()->IncreaseSPDelta(bytes / kSystemPointerSize);
       DCHECK(!caller_registers_saved_);
       caller_registers_saved_ = true;
       break;
@@ -731,7 +737,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       DCHECK(fp_mode_ == kDontSaveFPRegs || fp_mode_ == kSaveFPRegs);
       // Don't overwrite the returned value.
       int bytes = __ PopCallerSaved(fp_mode_, kReturnRegister0);
-      frame_access_state()->IncreaseSPDelta(-(bytes / kPointerSize));
+      frame_access_state()->IncreaseSPDelta(-(bytes / kSystemPointerSize));
       DCHECK_EQ(0, frame_access_state()->sp_delta());
       DCHECK(caller_registers_saved_);
       caller_registers_saved_ = false;
@@ -764,7 +770,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
         //   kArchRestoreCallerRegisters;
         int bytes =
             __ RequiredStackSizeForCallerSaved(fp_mode_, kReturnRegister0);
-        frame_access_state()->IncreaseSPDelta(bytes / kPointerSize);
+        frame_access_state()->IncreaseSPDelta(bytes / kSystemPointerSize);
       }
       break;
     }
@@ -855,7 +861,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       auto ool = new (zone()) OutOfLineRecordWrite(
           this, object, index, value, scratch0, scratch1, mode,
           DetermineStubCallMode(), &unwinding_info_writer_);
-      __ Str(value, MemOperand(object, index));
+      __ StoreTaggedField(value, MemOperand(object, index));
       __ CheckPageFlagSet(object, scratch0,
                           MemoryChunk::kPointersFromHereAreInterestingMask,
                           ool->entry());
@@ -917,10 +923,9 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     case kIeee754Float64Log10:
       ASSEMBLE_IEEE754_UNOP(log10);
       break;
-    case kIeee754Float64Pow: {
-      __ Call(BUILTIN_CODE(isolate(), MathPowInternal), RelocInfo::CODE_TARGET);
+    case kIeee754Float64Pow:
+      ASSEMBLE_IEEE754_BINOP(pow);
       break;
-    }
     case kIeee754Float64Sin:
       ASSEMBLE_IEEE754_UNOP(sin);
       break;
@@ -1229,7 +1234,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       break;
     }
     case kArm64Poke: {
-      Operand operand(i.InputInt32(1) * kPointerSize);
+      Operand operand(i.InputInt32(1) * kSystemPointerSize);
       if (instr->InputAt(0)->IsSimd128Register()) {
         __ Poke(i.InputSimd128Register(0), operand);
       } else if (instr->InputAt(0)->IsFPRegister()) {
@@ -1243,10 +1248,10 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       int slot = i.InputInt32(2) - 1;
       if (instr->InputAt(0)->IsFPRegister()) {
         __ PokePair(i.InputFloat64Register(1), i.InputFloat64Register(0),
-                    slot * kPointerSize);
+                    slot * kSystemPointerSize);
       } else {
         __ PokePair(i.InputRegister(1), i.InputRegister(0),
-                    slot * kPointerSize);
+                    slot * kSystemPointerSize);
       }
       break;
     }
@@ -1554,9 +1559,60 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       __ Ldr(i.OutputRegister(), i.MemoryOperand());
       EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
+    case kArm64LdrDecompressTaggedSigned:
+      __ DecompressTaggedSigned(i.OutputRegister(), i.MemoryOperand());
+      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
+      break;
+    case kArm64LdrDecompressTaggedPointer:
+      __ DecompressTaggedPointer(i.OutputRegister(), i.MemoryOperand());
+      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
+      break;
+    case kArm64LdrDecompressAnyTagged:
+      __ DecompressAnyTagged(i.OutputRegister(), i.MemoryOperand());
+      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
+      break;
     case kArm64Str:
       __ Str(i.InputOrZeroRegister64(0), i.MemoryOperand(1));
       break;
+    case kArm64DecompressSigned: {
+      __ Sxtw(i.OutputRegister(), i.InputRegister(0));
+      break;
+    }
+    case kArm64DecompressPointer: {
+      __ Add(i.OutputRegister(), kRootRegister,
+             Operand(i.InputRegister(0), SXTW));
+      break;
+    }
+    case kArm64DecompressAny: {
+      // TODO(solanes): Do branchful compute?
+      // Branchlessly compute |masked_root|:
+      STATIC_ASSERT((kSmiTagSize == 1) && (kSmiTag == 0));
+      UseScratchRegisterScope temps(tasm());
+      Register masked_root = temps.AcquireX();
+      // Sign extend tag bit to entire register.
+      __ Sbfx(masked_root, i.InputRegister(0), 0, kSmiTagSize);
+      __ And(masked_root, masked_root, kRootRegister);
+      // Now this add operation will either leave the value unchanged if it is a
+      // smi or add the isolate root if it is a heap object.
+      __ Add(i.OutputRegister(), masked_root,
+             Operand(i.InputRegister(0), SXTW));
+      break;
+    }
+    // TODO(solanes): Combine into one Compress? They seem to be identical.
+    // TODO(solanes): We might get away with doing a no-op in these three cases.
+    // The Uxtw instruction is the conservative way for the moment.
+    case kArm64CompressSigned: {
+      __ Uxtw(i.OutputRegister(), i.InputRegister(0));
+      break;
+    }
+    case kArm64CompressPointer: {
+      __ Uxtw(i.OutputRegister(), i.InputRegister(0));
+      break;
+    }
+    case kArm64CompressAny: {
+      __ Uxtw(i.OutputRegister(), i.InputRegister(0));
+      break;
+    }
     case kArm64LdrS:
       __ Ldr(i.OutputDoubleRegister().S(), i.MemoryOperand());
       break;
@@ -1574,6 +1630,9 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       break;
     case kArm64StrQ:
       __ Str(i.InputSimd128Register(0), i.MemoryOperand(1));
+      break;
+    case kArm64StrCompressTagged:
+      __ StoreTaggedField(i.InputOrZeroRegister64(0), i.MemoryOperand(1));
       break;
     case kArm64DsbIsb:
       __ Dsb(FullSystem, BarrierAll);
@@ -2283,7 +2342,7 @@ void CodeGenerator::AssembleArchTrap(Instruction* instr,
         __ Call(static_cast<Address>(trap_id), RelocInfo::WASM_STUB_CALL);
         ReferenceMap* reference_map =
             new (gen_->zone()) ReferenceMap(gen_->zone());
-        gen_->RecordSafepoint(reference_map, Safepoint::kSimple, 0,
+        gen_->RecordSafepoint(reference_map, Safepoint::kSimple,
                               Safepoint::kNoLazyDeopt);
         if (FLAG_debug_code) {
           // The trap code should never return.
@@ -2366,7 +2425,7 @@ void CodeGenerator::FinishFrame(Frame* frame) {
     DCHECK(saves_fp.list() == CPURegList::GetCalleeSavedV().list());
     DCHECK_EQ(saved_count % 2, 0);
     frame->AllocateSavedCalleeRegisterSlots(saved_count *
-                                            (kDoubleSize / kPointerSize));
+                                            (kDoubleSize / kSystemPointerSize));
   }
 
   CPURegList saves = CPURegList(CPURegister::kRegister, kXRegSizeInBits,
@@ -2384,8 +2443,8 @@ void CodeGenerator::AssembleConstructFrame() {
 
   // The frame has been previously padded in CodeGenerator::FinishFrame().
   DCHECK_EQ(frame()->GetTotalFrameSlotCount() % 2, 0);
-  int shrink_slots = frame()->GetTotalFrameSlotCount() -
-                     call_descriptor->CalculateFixedFrameSize();
+  int required_slots = frame()->GetTotalFrameSlotCount() -
+                       call_descriptor->CalculateFixedFrameSize();
 
   CPURegList saves = CPURegList(CPURegister::kRegister, kXRegSizeInBits,
                                 call_descriptor->CalleeSavedRegisters());
@@ -2416,11 +2475,11 @@ void CodeGenerator::AssembleConstructFrame() {
       // to allocate the remaining stack slots.
       if (FLAG_code_comments) __ RecordComment("-- OSR entrypoint --");
       osr_pc_offset_ = __ pc_offset();
-      shrink_slots -= osr_helper()->UnoptimizedFrameSlots();
+      required_slots -= osr_helper()->UnoptimizedFrameSlots();
       ResetSpeculationPoison();
     }
 
-    if (info()->IsWasm() && shrink_slots > 128) {
+    if (info()->IsWasm() && required_slots > 128) {
       // For WebAssembly functions with big frames we have to do the stack
       // overflow check before we construct the frame. Otherwise we may not
       // have enough space on the stack to call the runtime for the stack
@@ -2429,14 +2488,14 @@ void CodeGenerator::AssembleConstructFrame() {
       // If the frame is bigger than the stack, we throw the stack overflow
       // exception unconditionally. Thereby we can avoid the integer overflow
       // check in the condition code.
-      if (shrink_slots * kPointerSize < FLAG_stack_size * 1024) {
+      if (required_slots * kSystemPointerSize < FLAG_stack_size * 1024) {
         UseScratchRegisterScope scope(tasm());
         Register scratch = scope.AcquireX();
         __ Ldr(scratch, FieldMemOperand(
                             kWasmInstanceRegister,
                             WasmInstanceObject::kRealStackLimitAddressOffset));
         __ Ldr(scratch, MemOperand(scratch));
-        __ Add(scratch, scratch, shrink_slots * kPointerSize);
+        __ Add(scratch, scratch, required_slots * kSystemPointerSize);
         __ Cmp(sp, scratch);
         __ B(hs, &done);
       }
@@ -2452,13 +2511,11 @@ void CodeGenerator::AssembleConstructFrame() {
         __ Str(kWasmInstanceRegister,
                MemOperand(fp, WasmCompiledFrameConstants::kWasmInstanceOffset));
       }
-      __ Ldr(x2, FieldMemOperand(kWasmInstanceRegister,
-                                 WasmInstanceObject::kCEntryStubOffset));
-      __ Mov(cp, Smi::zero());
-      __ CallRuntimeWithCEntry(Runtime::kThrowWasmStackOverflow, x2);
+
+      __ Call(wasm::WasmCode::kWasmStackOverflow, RelocInfo::WASM_STUB_CALL);
       // We come from WebAssembly, there are no references for the GC.
       ReferenceMap* reference_map = new (zone()) ReferenceMap(zone());
-      RecordSafepoint(reference_map, Safepoint::kSimple, 0,
+      RecordSafepoint(reference_map, Safepoint::kSimple,
                       Safepoint::kNoLazyDeopt);
       if (FLAG_debug_code) {
         __ Brk(0);
@@ -2467,9 +2524,9 @@ void CodeGenerator::AssembleConstructFrame() {
     }
 
     // Skip callee-saved slots, which are pushed below.
-    shrink_slots -= saves.Count();
-    shrink_slots -= saves_fp.Count();
-    shrink_slots -= returns;
+    required_slots -= saves.Count();
+    required_slots -= saves_fp.Count();
+    required_slots -= returns;
 
     // Build remainder of frame, including accounting for and filling-in
     // frame-specific header information, i.e. claiming the extra slot that
@@ -2478,16 +2535,17 @@ void CodeGenerator::AssembleConstructFrame() {
     switch (call_descriptor->kind()) {
       case CallDescriptor::kCallJSFunction:
         if (call_descriptor->PushArgumentCount()) {
-          __ Claim(shrink_slots + 1);  // Claim extra slot for argc.
+          __ Claim(required_slots + 1);  // Claim extra slot for argc.
           __ Str(kJavaScriptCallArgCountRegister,
                  MemOperand(fp, OptimizedBuiltinFrameConstants::kArgCOffset));
         } else {
-          __ Claim(shrink_slots);
+          __ Claim(required_slots);
         }
         break;
       case CallDescriptor::kCallCodeObject: {
         UseScratchRegisterScope temps(tasm());
-        __ Claim(shrink_slots + 1);  // Claim extra slot for frame type marker.
+        __ Claim(required_slots +
+                 1);  // Claim extra slot for frame type marker.
         Register scratch = temps.AcquireX();
         __ Mov(scratch,
                StackFrame::TypeToMarker(info()->GetOutputStackFrameType()));
@@ -2495,7 +2553,8 @@ void CodeGenerator::AssembleConstructFrame() {
       } break;
       case CallDescriptor::kCallWasmFunction: {
         UseScratchRegisterScope temps(tasm());
-        __ Claim(shrink_slots + 2);  // Claim extra slots for marker + instance.
+        __ Claim(required_slots +
+                 2);  // Claim extra slots for marker + instance.
         Register scratch = temps.AcquireX();
         __ Mov(scratch,
                StackFrame::TypeToMarker(info()->GetOutputStackFrameType()));
@@ -2505,11 +2564,14 @@ void CodeGenerator::AssembleConstructFrame() {
       } break;
       case CallDescriptor::kCallWasmImportWrapper: {
         UseScratchRegisterScope temps(tasm());
-        __ ldr(kJSFunctionRegister,
-               FieldMemOperand(kWasmInstanceRegister, Tuple2::kValue2Offset));
-        __ ldr(kWasmInstanceRegister,
-               FieldMemOperand(kWasmInstanceRegister, Tuple2::kValue1Offset));
-        __ Claim(shrink_slots + 2);  // Claim extra slots for marker + instance.
+        __ LoadTaggedPointerField(
+            kJSFunctionRegister,
+            FieldMemOperand(kWasmInstanceRegister, Tuple2::kValue2Offset));
+        __ LoadTaggedPointerField(
+            kWasmInstanceRegister,
+            FieldMemOperand(kWasmInstanceRegister, Tuple2::kValue1Offset));
+        __ Claim(required_slots +
+                 2);  // Claim extra slots for marker + instance.
         Register scratch = temps.AcquireX();
         __ Mov(scratch,
                StackFrame::TypeToMarker(info()->GetOutputStackFrameType()));
@@ -2518,7 +2580,7 @@ void CodeGenerator::AssembleConstructFrame() {
                MemOperand(fp, WasmCompiledFrameConstants::kWasmInstanceOffset));
       } break;
       case CallDescriptor::kCallAddress:
-        __ Claim(shrink_slots);
+        __ Claim(required_slots);
         break;
       default:
         UNREACHABLE();

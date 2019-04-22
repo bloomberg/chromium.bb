@@ -31,12 +31,6 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "base/file_descriptor_posix.h"
-#include "base/strings/string_number_conversions.h"
-#include "chrome/browser/printing/print_view_manager_basic.h"
-#endif
-
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/conflicts/module_database_win.h"
 #endif
@@ -46,6 +40,8 @@ using content::BrowserThread;
 namespace printing {
 
 namespace {
+
+PrintingMessageFilter::TestDelegate* g_test_delegate = nullptr;
 
 class PrintingMessageFilterShutdownNotifierFactory
     : public BrowserContextKeyedServiceShutdownNotifierFactory {
@@ -67,7 +63,7 @@ class PrintingMessageFilterShutdownNotifierFactory
   DISALLOW_COPY_AND_ASSIGN(PrintingMessageFilterShutdownNotifierFactory);
 };
 
-#if defined(OS_ANDROID) || (defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW))
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 content::WebContents* GetWebContentsForRenderFrame(int render_process_id,
                                                    int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -76,16 +72,6 @@ content::WebContents* GetWebContentsForRenderFrame(int render_process_id,
   return frame ? content::WebContents::FromRenderFrameHost(frame) : nullptr;
 }
 
-#if defined(OS_ANDROID)
-PrintViewManagerBasic* GetPrintManager(int render_process_id,
-                                       int render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::WebContents* web_contents =
-      GetWebContentsForRenderFrame(render_process_id, render_frame_id);
-  return web_contents ? PrintViewManagerBasic::FromWebContents(web_contents)
-                      : nullptr;
-}
-#else  // defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 PrintViewManager* GetPrintViewManager(int render_process_id,
                                       int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -94,11 +80,14 @@ PrintViewManager* GetPrintViewManager(int render_process_id,
   return web_contents ? PrintViewManager::FromWebContents(web_contents)
                       : nullptr;
 }
-#endif
-#endif  // defined(OS_ANDROID) || (defined(OS_WIN) &&
-        // BUILDFLAG(ENABLE_PRINT_PREVIEW))
+#endif  // defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 }  // namespace
+
+// static
+void PrintingMessageFilter::SetDelegateForTesting(TestDelegate* delegate) {
+  g_test_delegate = delegate;
+}
 
 PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
                                              Profile* profile)
@@ -126,16 +115,6 @@ void PrintingMessageFilter::ShutdownOnUIThread() {
   printing_shutdown_notifier_.reset();
 }
 
-void PrintingMessageFilter::OverrideThreadForMessage(
-    const IPC::Message& message, BrowserThread::ID* thread) {
-#if defined(OS_ANDROID)
-  if (message.type() == PrintHostMsg_AllocateTempFileForPrinting::ID ||
-      message.type() == PrintHostMsg_TempFileForPrintingWritten::ID) {
-    *thread = BrowserThread::UI;
-  }
-#endif
-}
-
 void PrintingMessageFilter::OnDestruct() const {
   BrowserThread::DeleteOnUIThread::Destruct(this);
 }
@@ -143,12 +122,6 @@ void PrintingMessageFilter::OnDestruct() const {
 bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintingMessageFilter, message)
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_AllocateTempFileForPrinting,
-                        OnAllocateTempFileForPrinting)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_TempFileForPrintingWritten,
-                        OnTempFileForPrintingWritten)
-#endif
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_GetDefaultPrintSettings,
                                     OnGetDefaultPrintSettings)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_ScriptedPrint, OnScriptedPrint)
@@ -161,35 +134,6 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
   return handled;
 }
-
-#if defined(OS_ANDROID)
-void PrintingMessageFilter::OnAllocateTempFileForPrinting(
-    int render_frame_id,
-    base::FileDescriptor* temp_file_fd,
-    int* sequence_number) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PrintViewManagerBasic* print_view_manager =
-      GetPrintManager(render_process_id_, render_frame_id);
-  if (!print_view_manager)
-    return;
-
-  // The file descriptor is originally created in & passed from the Android
-  // side, and it will handle the closing.
-  temp_file_fd->fd = print_view_manager->file_descriptor().fd;
-  temp_file_fd->auto_close = false;
-}
-
-void PrintingMessageFilter::OnTempFileForPrintingWritten(int render_frame_id,
-                                                         int sequence_number,
-                                                         int page_count) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_GT(page_count, 0);
-  PrintViewManagerBasic* print_view_manager =
-      GetPrintManager(render_process_id_, render_frame_id);
-  if (print_view_manager)
-    print_view_manager->PdfWritingDone(page_count);
-}
-#endif  // defined(OS_ANDROID)
 
 void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -263,11 +207,6 @@ void PrintingMessageFilter::OnScriptedPrintReply(
     scoped_refptr<PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
   PrintMsg_PrintPages_Params params;
-#if defined(OS_ANDROID)
-  // We need to save the routing ID here because Send method below deletes the
-  // |reply_msg| before we can get the routing ID for the Android code.
-  int routing_id = reply_msg->routing_id();
-#endif
   if (printer_query->last_status() != PrintingContext::OK ||
       !printer_query->settings().dpi()) {
     params.Reset();
@@ -279,37 +218,15 @@ void PrintingMessageFilter::OnScriptedPrintReply(
   PrintHostMsg_ScriptedPrint::WriteReplyParams(reply_msg, params);
   Send(reply_msg);
   if (!params.params.dpi.IsEmpty() && params.params.document_cookie) {
-#if defined(OS_ANDROID)
-    int file_descriptor;
-    const base::string16& device_name = printer_query->settings().device_name();
-    if (base::StringToInt(device_name, &file_descriptor)) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::Bind(&PrintingMessageFilter::UpdateFileDescriptor, this,
-                     routing_id, file_descriptor));
-    }
-#endif
     queue_->QueuePrinterQuery(printer_query.get());
   } else {
     printer_query->StopWorker();
   }
 }
 
-#if defined(OS_ANDROID)
-void PrintingMessageFilter::UpdateFileDescriptor(int render_frame_id, int fd) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PrintViewManagerBasic* print_view_manager =
-      GetPrintManager(render_process_id_, render_frame_id);
-  if (print_view_manager)
-    print_view_manager->set_file_descriptor(base::FileDescriptor(fd, false));
-}
-#endif
-
-void PrintingMessageFilter::OnUpdatePrintSettings(
-    int document_cookie, const base::DictionaryValue& job_settings,
-    IPC::Message* reply_msg) {
-  std::unique_ptr<base::DictionaryValue> new_settings(job_settings.DeepCopy());
-
+void PrintingMessageFilter::OnUpdatePrintSettings(int document_cookie,
+                                                  base::Value job_settings,
+                                                  IPC::Message* reply_msg) {
   scoped_refptr<PrinterQuery> printer_query;
   if (!is_printing_enabled_.GetValue()) {
     // Reply with NULL query.
@@ -322,7 +239,7 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
         content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE);
   }
   printer_query->SetSettings(
-      std::move(new_settings),
+      std::move(job_settings),
       base::Bind(&PrintingMessageFilter::OnUpdatePrintSettingsReply, this,
                  printer_query, reply_msg));
 }
@@ -354,10 +271,14 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
     int routing_id = reply_msg->routing_id();
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&PrintingMessageFilter::NotifySystemDialogCancelled, this,
-                   routing_id));
+        base::BindOnce(&PrintingMessageFilter::NotifySystemDialogCancelled,
+                       this, routing_id));
   }
 #endif
+
+  if (g_test_delegate)
+    params.params = g_test_delegate->GetPrintParams();
+
   PrintHostMsg_UpdatePrintSettings::WriteReplyParams(reply_msg, params,
                                                      canceled);
   Send(reply_msg);

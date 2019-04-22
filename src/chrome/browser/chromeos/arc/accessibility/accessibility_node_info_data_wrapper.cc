@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_node_info_data_wrapper.h"
 
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "components/exo/wm_helper.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
@@ -324,7 +325,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     if (GetProperty(AXStringProperty::PACKAGE_NAME, &package_name)) {
       const std::string& url =
           base::StringPrintf("%s/%s", package_name.c_str(),
-                             tree_source_->tree_id().ToString().c_str());
+                             tree_source_->ax_tree_id().ToString().c_str());
       out_data->AddStringAttribute(ax::mojom::StringAttribute::kUrl, url);
     }
   }
@@ -382,7 +383,8 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   // - Root node must exist.
   // - Window where this tree is attached to need to be focused.
   if (tree_source_->GetRoot()->GetId() != -1 && wm_helper) {
-    aura::Window* active_window = tree_source_->is_notification()
+    aura::Window* active_window = (tree_source_->is_notification() ||
+                                   tree_source_->is_input_method_window())
                                       ? nullptr
                                       : wm_helper->GetActiveWindow();
     const gfx::Rect& local_bounds = tree_source_->GetBounds(

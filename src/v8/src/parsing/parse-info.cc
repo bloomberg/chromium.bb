@@ -10,7 +10,9 @@
 #include "src/base/template-utils.h"
 #include "src/compiler-dispatcher/compiler-dispatcher.h"
 #include "src/counters.h"
+#include "src/hash-seed-inl.h"
 #include "src/heap/heap-inl.h"
+#include "src/log.h"
 #include "src/objects-inl.h"
 #include "src/objects/scope-info.h"
 #include "src/zone/zone.h"
@@ -30,8 +32,8 @@ ParseInfo::ParseInfo(AccountingAllocator* zone_allocator)
       start_position_(0),
       end_position_(0),
       parameters_end_pos_(kNoSourcePosition),
-      function_literal_id_(FunctionLiteral::kIdTypeInvalid),
-      max_function_literal_id_(FunctionLiteral::kIdTypeInvalid),
+      function_literal_id_(kFunctionLiteralIdInvalid),
+      max_function_literal_id_(kFunctionLiteralIdInvalid),
       character_stream_(nullptr),
       ast_value_factory_(nullptr),
       ast_string_constants_(nullptr),
@@ -42,16 +44,29 @@ ParseInfo::ParseInfo(AccountingAllocator* zone_allocator)
 
 ParseInfo::ParseInfo(Isolate* isolate, AccountingAllocator* zone_allocator)
     : ParseInfo(zone_allocator) {
-  set_hash_seed(isolate->heap()->HashSeed());
+  set_hash_seed(HashSeed(isolate));
   set_stack_limit(isolate->stack_guard()->real_climit());
   set_runtime_call_stats(isolate->counters()->runtime_call_stats());
   set_logger(isolate->logger());
   set_ast_string_constants(isolate->ast_string_constants());
+  set_collect_source_positions(!FLAG_enable_lazy_source_positions ||
+                               isolate->NeedsDetailedOptimizedCodeLineInfo());
+  if (!isolate->is_best_effort_code_coverage()) set_coverage_enabled();
   if (isolate->is_block_code_coverage()) set_block_coverage_enabled();
   if (isolate->is_collecting_type_profile()) set_collect_type_profile();
   if (isolate->compiler_dispatcher()->IsEnabled()) {
     parallel_tasks_.reset(new ParallelTasks(isolate->compiler_dispatcher()));
   }
+  set_might_always_opt(FLAG_always_opt || FLAG_prepare_always_opt);
+  set_allow_lazy_compile(FLAG_lazy);
+  set_allow_natives_syntax(FLAG_allow_natives_syntax);
+  set_allow_harmony_public_fields(FLAG_harmony_public_fields);
+  set_allow_harmony_static_fields(FLAG_harmony_static_fields);
+  set_allow_harmony_dynamic_import(FLAG_harmony_dynamic_import);
+  set_allow_harmony_import_meta(FLAG_harmony_import_meta);
+  set_allow_harmony_numeric_separator(FLAG_harmony_numeric_separator);
+  set_allow_harmony_private_fields(FLAG_harmony_private_fields);
+  set_allow_harmony_private_methods(FLAG_harmony_private_methods);
 }
 
 ParseInfo::ParseInfo(Isolate* isolate)
@@ -69,6 +84,7 @@ void ParseInfo::SetFunctionInfo(T function) {
   set_requires_instance_members_initializer(
       function->requires_instance_members_initializer());
   set_toplevel(function->is_toplevel());
+  set_is_oneshot_iife(function->is_oneshot_iife());
   set_wrapped_as_function(function->is_wrapped());
 }
 
@@ -164,9 +180,6 @@ Handle<Script> ParseInfo::CreateScript(Isolate* isolate, Handle<String> source,
     Script::InitLineEnds(script);
   }
   switch (natives) {
-    case NATIVES_CODE:
-      script->set_type(Script::TYPE_NATIVE);
-      break;
     case EXTENSION_CODE:
       script->set_type(Script::TYPE_EXTENSION);
       break;
@@ -218,7 +231,6 @@ void ParseInfo::set_script(Handle<Script> script) {
   DCHECK(script_id_ == -1 || script_id_ == script->id());
   script_id_ = script->id();
 
-  set_native(script->type() == Script::TYPE_NATIVE);
   set_eval(script->compilation_type() == Script::COMPILATION_TYPE_EVAL);
   set_module(script->origin_options().IsModule());
   DCHECK(!(is_eval() && is_module()));

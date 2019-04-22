@@ -33,13 +33,16 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/template_content_document_fragment.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
 
 using namespace html_names;
 
 inline HTMLTemplateElement::HTMLTemplateElement(Document& document)
-    : HTMLElement(kTemplateTag, document) {}
+    : HTMLElement(kTemplateTag, document) {
+  UseCounter::Count(document, WebFeature::kHTMLTemplateElement);
+}
 
 DEFINE_NODE_FACTORY(HTMLTemplateElement)
 
@@ -47,14 +50,14 @@ HTMLTemplateElement::~HTMLTemplateElement() = default;
 
 DocumentFragment* HTMLTemplateElement::content() const {
   if (!content_)
-    content_ = TemplateContentDocumentFragment::Create(
+    content_ = MakeGarbageCollected<TemplateContentDocumentFragment>(
         GetDocument().EnsureTemplateDocument(),
         const_cast<HTMLTemplateElement*>(this));
 
   return content_.Get();
 }
 
-// https://html.spec.whatwg.org/multipage/scripting.html#the-template-element:concept-node-clone-ext
+// https://html.spec.whatwg.org/C/#the-template-element:concept-node-clone-ext
 void HTMLTemplateElement::CloneNonAttributePropertiesFrom(
     const Element& source,
     CloneChildrenFlag flag) {
@@ -71,7 +74,7 @@ void HTMLTemplateElement::DidMoveToNewDocument(Document& old_document) {
   GetDocument().EnsureTemplateDocument().AdoptIfNeeded(*content_);
 }
 
-void HTMLTemplateElement::Trace(blink::Visitor* visitor) {
+void HTMLTemplateElement::Trace(Visitor* visitor) {
   visitor->Trace(content_);
   HTMLElement::Trace(visitor);
 }

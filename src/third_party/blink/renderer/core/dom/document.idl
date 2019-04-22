@@ -18,9 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[Custom] callback CustomElementConstructor = Element ();
-
-// https://html.spec.whatwg.org/#the-document-object
+// https://html.spec.whatwg.org/C/#the-document-object
 enum DocumentReadyState { "loading", "interactive", "complete" };
 
 
@@ -33,7 +31,7 @@ enum AddressSpace { "local", "private", "public" };
 typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
 // https://dom.spec.whatwg.org/#interface-document
-// https://html.spec.whatwg.org/multipage/dom.html#documents
+// https://html.spec.whatwg.org/C/#documents
 
 [
     Constructor(),
@@ -74,11 +72,6 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
     [NewObject] Range createRange();
 
-    [CallWith=ScriptState, NewObject, RaisesException, RuntimeEnabled=ConstructableStylesheets] Promise<CSSStyleSheet> createCSSStyleSheet(DOMString text, optional CSSStyleSheetInit options);
-    [CallWith=ScriptState, NewObject, RaisesException, RuntimeEnabled=ConstructableStylesheets] CSSStyleSheet createCSSStyleSheetSync(DOMString text, optional CSSStyleSheetInit options);
-    [CallWith=ScriptState, NewObject, RaisesException, RuntimeEnabled=ConstructableStylesheets] CSSStyleSheet createEmptyCSSStyleSheet(optional CSSStyleSheetInit options);
-
-
     // NodeFilter.SHOW_ALL = 0xFFFFFFFF
     [NewObject] NodeIterator createNodeIterator(Node root, optional unsigned long whatToShow = 0xFFFFFFFF, optional NodeFilter? filter = null);
     [NewObject] TreeWalker createTreeWalker(Node root, optional unsigned long whatToShow = 0xFFFFFFFF, optional NodeFilter? filter = null);
@@ -92,7 +85,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [RaisesException=Setter, MeasureAs=DocumentXMLStandalone] attribute boolean xmlStandalone;
 
     // HTML
-    // https://html.spec.whatwg.org/#the-document-object
+    // https://html.spec.whatwg.org/C/#the-document-object
 
     // resource metadata management
 
@@ -121,16 +114,18 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [ImplementedAs=currentScriptForBinding] readonly attribute HTMLOrSVGScriptElement? currentScript;
 
     // dynamic markup insertion
-    [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException, MeasureAs=DocumentOpenTwoArgs] Document open(optional DOMString type = "text/html", optional DOMString replace = "");
-    [CallWith=(CurrentWindow,EnteredWindow), RaisesException, MeasureAs=DocumentOpenThreeArgs] Window open(URLString url, DOMString name, DOMString features);
+    [CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException, MeasureAs=DocumentOpenTwoArgs] Document open(optional DOMString type = "text/html", optional DOMString replace = "");
+    [CallWith=Isolate, RaisesException, MeasureAs=DocumentOpenThreeArgs] Window open(URLString url, DOMString name, DOMString features);
     [CEReactions, RaisesException] void close();
-    [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void write(DOMString... text);
-    [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
+    [CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException] void write(DOMString... text);
+    [CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
 
     // TrustedTypes variants of the above.
-    // TODO(mkwst): Write a spec for this.
-    [RuntimeEnabled=TrustedDOMTypes, CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void write(TrustedHTML text);
-    [RuntimeEnabled=TrustedDOMTypes, CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void writeln(TrustedHTML text);
+    // Note: This should be gated on [RuntimeEnabled=TrustedDOMTypes], but
+    // since RuntimeEnabled isn't compatible with overloaded methods, we're
+    // handling these unconditionally.
+    [CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException] void write(TrustedHTML text);
+    [CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException] void writeln(TrustedHTML text);
 
     // user interaction
     [Affects=Nothing] readonly attribute Window? defaultView;
@@ -146,7 +141,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [LenientThis] attribute EventHandler onreadystatechange;
 
     // HTML obsolete features
-    // https://html.spec.whatwg.org/#Document-partial
+    // https://html.spec.whatwg.org/C/#Document-partial
 
     [Measure] readonly attribute HTMLCollection anchors;
     [Measure] readonly attribute HTMLCollection applets;
@@ -190,14 +185,11 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [RuntimeEnabled=CorsRFC1918, ImplementedAs=addressSpaceForBindings] readonly attribute AddressSpace addressSpace;
 
     // Non-standard APIs
-    [MeasureAs=DocumentCaretRangeFromPoint] Range caretRangeFromPoint([Default=Undefined] optional long x, [Default=Undefined] optional long y);
+    [MeasureAs=DocumentCaretRangeFromPoint] Range caretRangeFromPoint([DefaultValue=Undefined] optional long x, [DefaultValue=Undefined] optional long y);
 
 
-    // https://wicg.github.io/feature-policy
-    // TODO(iclelland): add spec for JS exposure in the spec for Feature Policy.
-    // Please refer to this doc for more details for now:
-    // https://docs.google.com/a/chromium.org/document/d/1wvk3cXkblNnbkMcsKayseK-k0SMGiP9b9fQFgfpqQpc/edit?usp=sharing
-    [OriginTrialEnabled=FeaturePolicyJavaScriptInterface] readonly attribute Policy policy;
+    // https://w3c.github.io/webappsec-feature-policy/#the-policy-object
+    [RuntimeEnabled=FeaturePolicyJavaScriptInterface] readonly attribute FeaturePolicy featurePolicy;
 
     // Deprecated prefixed page visibility API.
     // TODO(davidben): This is a property so attaching a deprecation warning results in false positives when outputting
@@ -216,9 +208,9 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     attribute EventHandler onvisibilitychange;
 };
 
-Document implements GlobalEventHandlers;
-Document implements DocumentAndElementEventHandlers;
-Document implements ParentNode;
-Document implements NonElementParentNode;
-Document implements DocumentOrShadowRoot;
-Document implements FontFaceSource;
+Document includes GlobalEventHandlers;
+Document includes DocumentAndElementEventHandlers;
+Document includes ParentNode;
+Document includes NonElementParentNode;
+Document includes DocumentOrShadowRoot;
+Document includes FontFaceSource;

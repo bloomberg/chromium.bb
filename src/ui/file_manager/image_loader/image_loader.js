@@ -80,10 +80,12 @@ ImageLoader.ALLOWED_CLIENTS = [
  */
 ImageLoader.prototype.onIncomingRequest_ = function(
     request_data, sender, sendResponse) {
-  if (!sender.id || !request_data)
+  if (!sender.id || !request_data) {
     return;
-  if (ImageLoader.ALLOWED_CLIENTS.indexOf(sender.id) === -1)
+  }
+  if (ImageLoader.ALLOWED_CLIENTS.indexOf(sender.id) === -1) {
     return;
+  }
 
   var request = /** @type {!LoadImageRequest} */ (request_data);
 
@@ -141,7 +143,8 @@ ImageLoader.prototype.onMessage_ = function(senderId, request, callback) {
  * @return {ImageLoader} ImageLoader object.
  */
 ImageLoader.getInstance = function() {
-  if (!ImageLoader.instance_)
+  if (!ImageLoader.instance_) {
     ImageLoader.instance_ = new ImageLoader();
+  }
   return ImageLoader.instance_;
 };

@@ -112,15 +112,11 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
   Iterator begin() const { return Iterator(this); }
   Iterator end() const { return Iterator::CreateEnd(this); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   class NamedItemCache final : public GarbageCollected<NamedItemCache> {
    public:
-    static NamedItemCache* Create() {
-      return MakeGarbageCollected<NamedItemCache>();
-    }
-
     NamedItemCache();
 
     const HeapVector<Member<Element>>* GetElementsById(
@@ -144,7 +140,7 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
       AddElementToMap(name_cache_, name, element);
     }
 
-    void Trace(blink::Visitor* visitor) {
+    void Trace(Visitor* visitor) {
       visitor->Trace(id_cache_);
       visitor->Trace(name_cache_);
     }

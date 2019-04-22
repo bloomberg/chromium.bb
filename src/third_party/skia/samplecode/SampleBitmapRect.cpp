@@ -5,20 +5,21 @@
  * found in the LICENSE file.
  */
 
+#include "AnimTimer.h"
 #include "Sample.h"
-#include "SkAnimTimer.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
+#include "SkColorFilter.h"
+#include "SkColorPriv.h"
+#include "SkFont.h"
 #include "SkGradientShader.h"
 #include "SkGraphics.h"
 #include "SkPath.h"
 #include "SkRegion.h"
 #include "SkShader.h"
-#include "SkUTF.h"
-#include "SkColorPriv.h"
-#include "SkColorFilter.h"
 #include "SkTime.h"
 #include "SkTypeface.h"
+#include "SkUTF.h"
 
 #include "SkOSFile.h"
 #include "SkStream.h"
@@ -35,16 +36,13 @@ static void make_bitmap(SkBitmap* bitmap) {
     paint.setAntiAlias(true);
     const SkPoint pts[] = { { 0, 0 }, { SCALAR_SIZE, SCALAR_SIZE } };
     const SkColor colors[] = { SK_ColorWHITE, SK_ColorBLUE };
-    paint.setShader(SkGradientShader::MakeLinear(pts, colors, nullptr, 2,
-                                                   SkShader::kClamp_TileMode));
+    paint.setShader(SkGradientShader::MakeLinear(pts, colors, nullptr, 2, SkTileMode::kClamp));
     canvas.drawCircle(SCALAR_SIZE/2, SCALAR_SIZE/2, SCALAR_SIZE/2, paint);
 }
 
 static SkPoint unit_vec(int degrees) {
     SkScalar rad = SkDegreesToRadians(SkIntToScalar(degrees));
-    SkScalar s, c;
-    s = SkScalarSinCos(rad, &c);
-    return SkPoint::Make(c, s);
+    return SkPoint::Make(SkScalarCos(rad), SkScalarSin(rad));
 }
 
 static void bounce(SkScalar* value, SkScalar* delta, SkScalar min, SkScalar max) {
@@ -135,7 +133,7 @@ protected:
         }
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         if (timer.isStopped()) {
             this->resetBounce();
         } else if (timer.isRunning()) {
@@ -160,18 +158,17 @@ static void make_big_bitmap(SkBitmap* bm) {
 
     const int BIG_H = 120;
 
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    paint.setTextSize(SkIntToScalar(BIG_H));
+    SkFont font;
+    font.setSize(SkIntToScalar(BIG_H));
 
-    const int BIG_W = SkScalarRoundToInt(paint.measureText(gText, strlen(gText)));
+    const int BIG_W = SkScalarRoundToInt(font.measureText(gText, strlen(gText), kUTF8_SkTextEncoding));
 
     bm->allocN32Pixels(BIG_W, BIG_H);
     bm->eraseColor(SK_ColorWHITE);
 
     SkCanvas canvas(*bm);
 
-    canvas.drawString(gText, 0, paint.getTextSize()*4/5, paint);
+    canvas.drawSimpleText(gText, strlen(gText), kUTF8_SkTextEncoding, 0, font.getSize()*4/5, font, SkPaint());
 }
 
 class BitmapRectView2 : public Sample {
@@ -232,7 +229,7 @@ protected:
         }
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         if (timer.isStopped()) {
             this->resetBounce();
         } else if (timer.isRunning()) {

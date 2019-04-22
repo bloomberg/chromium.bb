@@ -15,17 +15,23 @@
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/webrtc/api/rtptransceiverinterface.h"
+#include "third_party/webrtc/api/rtp_transceiver_interface.h"
 
 namespace blink {
 
 class MediaStreamTrack;
+class RTCDtlsTransport;
 class RTCDTMFSender;
 class RTCPeerConnection;
 class RTCRtpCapabilities;
+class RTCRtpTransceiver;
 
 webrtc::RtpEncodingParameters ToRtpEncodingParameters(
     const RTCRtpEncodingParameters*);
+RTCRtpHeaderExtensionParameters* ToRtpHeaderExtensionParameters(
+    const webrtc::RtpHeaderExtensionParameters& headers);
+RTCRtpCodecParameters* ToRtpCodecParameters(
+    const webrtc::RtpCodecParameters& codecs);
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpsender-interface
 class RTCRtpSender final : public ScriptWrappable {
@@ -41,6 +47,8 @@ class RTCRtpSender final : public ScriptWrappable {
                MediaStreamVector streams);
 
   MediaStreamTrack* track();
+  RTCDtlsTransport* transport();
+  RTCDtlsTransport* rtcpTransport();
   ScriptPromise replaceTrack(ScriptState*, MediaStreamTrack*);
   RTCDTMFSender* dtmf();
   static RTCRtpCapabilities* getCapabilities(const String& kind);
@@ -55,6 +63,8 @@ class RTCRtpSender final : public ScriptWrappable {
   void ClearLastReturnedParameters();
   MediaStreamVector streams() const;
   void set_streams(MediaStreamVector streams);
+  void set_transceiver(RTCRtpTransceiver*);
+  void set_transport(RTCDtlsTransport*);
 
   void Trace(blink::Visitor*) override;
 
@@ -65,9 +75,11 @@ class RTCRtpSender final : public ScriptWrappable {
   // a copy here as long as we support Plan B.
   String kind_;
   Member<MediaStreamTrack> track_;
+  Member<RTCDtlsTransport> transport_;
   Member<RTCDTMFSender> dtmf_;
   MediaStreamVector streams_;
   Member<RTCRtpSendParameters> last_returned_parameters_;
+  Member<RTCRtpTransceiver> transceiver_;
 };
 
 }  // namespace blink

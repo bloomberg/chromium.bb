@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_block_child_iterator.h"
 
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
@@ -27,19 +28,19 @@ NGBlockChildIterator::NGBlockChildIterator(NGLayoutInputNode first_child,
     }
     return;
   }
-  auto first_node_child = ToNGBlockNode(break_token->InputNode()).FirstChild();
+  auto first_node_child =
+      To<NGBlockNode>(break_token->InputNode()).FirstChild();
   resuming_at_inline_formatting_context_ =
       first_node_child && first_node_child.IsInline();
   child_ = child_break_tokens[0]->InputNode();
 }
 
 NGBlockChildIterator::Entry NGBlockChildIterator::NextChild(
-    const NGBreakToken* previous_inline_break_token) {
+    const NGInlineBreakToken* previous_inline_break_token) {
   const NGBreakToken* child_break_token = nullptr;
 
   if (previous_inline_break_token &&
       !previous_inline_break_token->IsFinished()) {
-    DCHECK(previous_inline_break_token->IsInlineType());
     return Entry(previous_inline_break_token->InputNode(),
                  previous_inline_break_token);
   }

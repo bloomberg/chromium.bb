@@ -52,7 +52,7 @@ class KeyboardHandler
   void OnJavascriptDisallowed() override;
 
   // ui::InputDeviceEventObserver implementation.
-  void OnKeyboardDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
 
  private:
   // Initializes the page with the current keyboard information.

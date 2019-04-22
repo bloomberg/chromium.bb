@@ -13,6 +13,7 @@
 #include "components/scheduling_metrics/total_duration_metric_reporter.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace base {
 namespace sequence_manager {
@@ -35,6 +36,8 @@ constexpr int kUkmMetricVersion = 2;
 // Note that this is code reuse, not data reuse -- each thread should have its
 // own instantiation of this class.
 class PLATFORM_EXPORT MetricsHelper {
+  DISALLOW_NEW();
+
  public:
   MetricsHelper(WebThreadType thread_type, bool has_cpu_timing_for_each_task);
   ~MetricsHelper();

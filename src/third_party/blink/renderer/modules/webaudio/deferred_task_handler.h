@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFERRED_TASK_HANDLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFERRED_TASK_HANDLER_H_
 
+#include <atomic>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -134,15 +135,12 @@ class MODULES_EXPORT DeferredTaskHandler final
   // Thread Safety and Graph Locking:
   //
   void SetAudioThreadToCurrentThread();
-  ThreadIdentifier AudioThread() const { return AcquireLoad(&audio_thread_); }
 
-  // TODO(hongchan): Use no-barrier load here. (crbug.com/247328)
-  //
   // It is okay to use a relaxed (no-barrier) load here. Because the data
   // referenced by m_audioThread is not actually being used, thus we do not
   // need a barrier between the load of m_audioThread and of that data.
   bool IsAudioThread() const {
-    return CurrentThread() == AcquireLoad(&audio_thread_);
+    return CurrentThread() == audio_thread_.load(std::memory_order_relaxed);
   }
 
   void lock();
@@ -186,6 +184,14 @@ class MODULES_EXPORT DeferredTaskHandler final
    private:
     DeferredTaskHandler& handler_;
   };
+
+  HashSet<scoped_refptr<AudioHandler>>* GetActiveSourceHandlers() {
+    return &active_source_handlers_;
+  }
+
+  Vector<AudioHandler*>* GetFinishedSourceHandlers() {
+    return &finished_source_handlers_;
+  }
 
  private:
   explicit DeferredTaskHandler(scoped_refptr<base::SingleThreadTaskRunner>);
@@ -241,11 +247,27 @@ class MODULES_EXPORT DeferredTaskHandler final
   // accepted.
   bool accepts_tail_processing_ = true;
 
+  // When source nodes are started, we place the handlers here to keep track of
+  // these active sources.  We must call AudioHandler::makeConnection() when we
+  // add an AudioNode to this, and must call AudioHandler::breakConnection()
+  // when we remove an AudioNode from this.
+  //
+  // This can be accessed from either the main thread or the audio thread, so it
+  // must be protected by the graph lock.
+  HashSet<scoped_refptr<AudioHandler>> active_source_handlers_;
+
+  // When source nodes are finished, the handler is placed here to make a note
+  // of it.  At a render quantum boundary, these are used to break the
+  // connection and elements here are removed from |active_source_handlers_|.
+  //
+  // This must be accessed only from the audio thread.
+  Vector<AudioHandler*> finished_source_handlers_;
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Graph locking.
   RecursiveMutex context_graph_mutex_;
-  volatile ThreadIdentifier audio_thread_;
+  std::atomic<base::PlatformThreadId> audio_thread_;
 };
 
 }  // namespace blink

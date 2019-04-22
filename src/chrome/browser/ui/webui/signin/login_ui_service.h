@@ -7,6 +7,7 @@
 
 #include <list>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -75,10 +76,10 @@ class LoginUIService : public KeyedService {
   // option chosen by the user in the confirmation UI.
   void SyncConfirmationUIClosed(SyncConfirmationUIClosedResult result);
 
-  // Delegate to an existing login dialog if one exists.
-  // If not, we make a new popup dialog window, and set it to
-  // chrome://signin to ask the user to sign in to chrome.
-  void ShowLoginPopup();
+  // Delegate to an existing login tab if one exists. If not, a new sigin tab is
+  // created.
+  void ShowExtensionLoginPrompt(bool enable_sync,
+                                const std::string& email_hint);
 
   // Displays login results. This is either the Modal Signin Error dialog if
   // |error_message| is a non-empty string, or the User Menu with a blue header

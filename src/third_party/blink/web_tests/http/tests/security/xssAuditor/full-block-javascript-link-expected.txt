@@ -2,8 +2,6 @@ CONSOLE ERROR: line 14: The XSS Auditor blocked access to 'http://127.0.0.1:8000
 CONSOLE MESSAGE: line 31: PASS: "frame" is cross-origin.
 The loading of iframe below should be blocked:
 
-
-
 --------
 Frame: 'frame'
 --------

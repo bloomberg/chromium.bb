@@ -156,8 +156,9 @@ ImageRequest.prototype.loadFromCacheAndProcess = function(
  * @param {function()} callback Completion callback.
  */
 ImageRequest.prototype.downloadAndProcess = function(callback) {
-  if (this.downloadCallback_)
+  if (this.downloadCallback_) {
     throw new Error('Downloading already started.');
+  }
 
   this.downloadCallback_ = callback;
   this.downloadOriginal_(this.onImageLoad_.bind(this),
@@ -302,8 +303,9 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
 
   // Fetch the image via authorized XHR and parse it.
   var parseImage = function(contentType, blob) {
-    if (contentType)
+    if (contentType) {
       this.contentType_ = contentType;
+    }
     this.image_.src = URL.createObjectURL(blob);
   }.bind(this);
 
@@ -381,8 +383,9 @@ AuthorizedXHR.ExtensionContentTypeMap = {
  */
 AuthorizedXHR.prototype.abort = function() {
   this.aborted_ = true;
-  if (this.xhr_)
+  if (this.xhr_) {
     this.xhr_.abort();
+  }
 };
 
 /**
@@ -406,22 +409,24 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
               this.extractExtension_(url)];
         }
 
-        if (!this.aborted_)
+        if (!this.aborted_) {
           onSuccess(contentType, response);
+        }
       }.bind(this));
 
-  var onMaybeFailure = /** @type {function(number=)} */ (
-      function(opt_code) {
-        if (!this.aborted_)
-          onFailure();
-      }.bind(this));
+  var onMaybeFailure = /** @type {function(number=)} */ (function(opt_code) {
+    if (!this.aborted_) {
+      onFailure();
+    }
+  }.bind(this));
 
   // Fetches the access token and makes an authorized call. If refresh is true,
   // then forces refreshing the access token.
   var requestTokenAndCall = function(refresh, onInnerSuccess, onInnerFailure) {
     chrome.fileManagerPrivate.requestAccessToken(refresh, function(token) {
-      if (this.aborted_)
+      if (this.aborted_) {
         return;
+      }
       if (!token) {
         onInnerFailure();
         return;
@@ -433,8 +438,9 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
 
   // Refreshes the access token and retries the request.
   var maybeRetryCall = function(code) {
-    if (this.aborted_)
+    if (this.aborted_) {
       return;
+    }
     requestTokenAndCall(true, onMaybeSuccess, onMaybeFailure);
   }.bind(this);
 
@@ -484,8 +490,9 @@ AuthorizedXHR.load_ = function(token, url, onSuccess, onFailure) {
   xhr.responseType = 'blob';
 
   xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4)
+    if (xhr.readyState != 4) {
       return;
+    }
     if (xhr.status != 200) {
       onFailure(xhr.status);
       return;
@@ -498,8 +505,9 @@ AuthorizedXHR.load_ = function(token, url, onSuccess, onFailure) {
   // Perform a xhr request.
   try {
     xhr.open('GET', url, true);
-    if (token)
+    if (token) {
       xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    }
     xhr.send();
   } catch (e) {
     onFailure();
@@ -604,8 +612,9 @@ ImageRequest.prototype.cancel = function() {
   this.cleanup_();
 
   // If downloading has started, then call the callback.
-  if (this.downloadCallback_)
+  if (this.downloadCallback_) {
     this.downloadCallback_();
+  }
 };
 
 /**

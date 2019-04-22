@@ -28,7 +28,7 @@
 
 #include <memory>
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/mojom/color_chooser/color_chooser.mojom-blink.h"
+#include "third_party/blink/public/mojom/choosers/color_chooser.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -47,13 +47,9 @@ class CORE_EXPORT ColorChooserUIController
   USING_PRE_FINALIZER(ColorChooserUIController, Dispose);
 
  public:
-  static ColorChooserUIController* Create(LocalFrame* frame,
-                                          blink::ColorChooserClient* client) {
-    return new ColorChooserUIController(frame, client);
-  }
-
+  ColorChooserUIController(LocalFrame*, blink::ColorChooserClient*);
   ~ColorChooserUIController() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Dispose();
 
@@ -68,8 +64,6 @@ class CORE_EXPORT ColorChooserUIController
   void DidChooseColor(uint32_t color) final;
 
  protected:
-  ColorChooserUIController(LocalFrame*, blink::ColorChooserClient*);
-
   void OpenColorChooser();
   mojom::blink::ColorChooserPtr chooser_;
   Member<blink::ColorChooserClient> client_;

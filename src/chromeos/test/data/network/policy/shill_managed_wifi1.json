@@ -5,6 +5,7 @@
   "GUID": "policy2_wifi1",
   "Mode": "managed",
   "Passphrase": "user's passphrase",
+  "PassphraseRequired": false,
   "Profile": "/profile/user1/shill",
   "Security": "802_1x",
   "Type": "wifi",

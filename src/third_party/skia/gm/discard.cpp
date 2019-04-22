@@ -5,12 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
 #include "SkCanvas.h"
 #include "SkPaint.h"
 #include "SkRandom.h"
 #include "SkSurface.h"
+#include "ToolUtils.h"
+#include "gm.h"
 
 namespace skiagm {
 
@@ -18,7 +18,7 @@ namespace skiagm {
  * This GM exercises SkCanvas::discard() by creating an offscreen SkSurface and repeatedly
  * discarding it, drawing to it, and then drawing it to the main canvas.
  */
-class DiscardGM : public GM {
+class DiscardGM : public GpuGM {
 
 public:
     DiscardGM() {
@@ -33,19 +33,16 @@ protected:
         return SkISize::Make(100, 100);
     }
 
-    void onDraw(SkCanvas* canvas) override {
-        GrContext* context = canvas->getGrContext();
-        if (nullptr == context) {
-            return;
-        }
-
+    DrawResult onDraw(GrContext* context, GrRenderTargetContext*, SkCanvas* canvas,
+                      SkString* errorMsg) override {
         SkISize size = this->getISize();
         size.fWidth /= 10;
         size.fHeight /= 10;
         SkImageInfo info = SkImageInfo::MakeN32Premul(size);
         auto surface = SkSurface::MakeRenderTarget(context, SkBudgeted::kNo, info);
         if (nullptr == surface) {
-            return;
+            *errorMsg = "Could not create render target.";
+            return DrawResult::kFail;
         }
 
         canvas->clear(SK_ColorBLACK);
@@ -55,7 +52,7 @@ protected:
             for (int y = 0; y < 10; ++y) {
               surface->getCanvas()->discard();
               // Make something that isn't too close to the background color, black.
-              SkColor color = sk_tool_utils::color_to_565(rand.nextU() | 0xFF404040);
+              SkColor color = ToolUtils::color_to_565(rand.nextU() | 0xFF404040);
               switch (rand.nextULessThan(3)) {
                   case 0:
                       surface->getCanvas()->drawColor(color);
@@ -65,7 +62,7 @@ protected:
                       break;
                   case 2:
                       SkPaint paint;
-                      paint.setShader(SkShader::MakeColorShader(color));
+                      paint.setShader(SkShaders::Color(color));
                       surface->getCanvas()->drawPaint(paint);
                       break;
               }
@@ -74,6 +71,7 @@ protected:
         }
 
         surface->getCanvas()->discard();
+        return DrawResult::kOk;
     }
 
 private:

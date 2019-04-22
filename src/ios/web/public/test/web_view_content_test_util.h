@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_TEST_WEB_VIEW_CONTENT_TEST_UTIL_H_
 #define IOS_WEB_PUBLIC_TEST_WEB_VIEW_CONTENT_TEST_UTIL_H_
 
+#import "base/test/ios/wait_util.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -24,9 +25,20 @@ enum ImageStateElement {
 bool IsWebViewContainingText(web::WebState* web_state, const std::string& text);
 
 // Waits for the given web state to contain |text|. If the condition is not met
-// within a timeout false is returned.
-bool WaitForWebViewContainingText(web::WebState* web_state,
-                                  std::string text) WARN_UNUSED_RESULT;
+// within |timeout| false is returned.
+bool WaitForWebViewContainingText(
+    web::WebState* web_state,
+    std::string text,
+    NSTimeInterval timeout = base::test::ios::kWaitForPageLoadTimeout)
+    WARN_UNUSED_RESULT;
+
+// Waits for the given web state to not contain |text|. If the condition is not
+// met within |timeout| false is returned.
+bool WaitForWebViewNotContainingText(
+    web::WebState* web_state,
+    std::string text,
+    NSTimeInterval timeout = base::test::ios::kWaitForPageLoadTimeout)
+    WARN_UNUSED_RESULT;
 
 // Waits for a web view with the corresponding |image_id| and |image_state|, in
 // the given |web_state|.
@@ -37,7 +49,17 @@ bool WaitForWebViewContainingImage(std::string image_id,
 // Returns true if there is a web view for |web_state| that contains an
 // element for the |selector|.
 bool IsWebViewContainingElement(web::WebState* web_state,
-                                const web::test::ElementSelector& selector);
+                                ElementSelector* selector);
+
+// Waits for |web_state| to contain an element for |selector|.
+bool WaitForWebViewContainingElement(web::WebState* web_state,
+                                     ElementSelector* selector)
+    WARN_UNUSED_RESULT;
+
+// Waits for |web_state| to not contain an element for |selector|.
+bool WaitForWebViewNotContainingElement(web::WebState* web_state,
+                                        ElementSelector* selector)
+    WARN_UNUSED_RESULT;
 
 }  // namespace test
 }  // namespace web

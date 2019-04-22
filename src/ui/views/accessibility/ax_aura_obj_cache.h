@@ -18,8 +18,9 @@
 #include "ui/views/views_export.h"
 
 namespace base {
-template <typename T> struct DefaultSingletonTraits;
-}
+template <typename T>
+class NoDestructor;
+}  // namespace base
 
 namespace aura {
 class Window;
@@ -33,12 +34,12 @@ class Widget;
 // A cache responsible for assigning id's to a set of interesting Aura views.
 class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
  public:
-  // Get the single instance of this class.
-  static AXAuraObjCache* GetInstance();
+  AXAuraObjCache();
+  ~AXAuraObjCache() override;
 
   class Delegate {
    public:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
 
     virtual void OnChildWindowRemoved(AXAuraObjWrapper* parent) = 0;
     virtual void OnEvent(AXAuraObjWrapper* aura_obj,
@@ -72,7 +73,8 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   // Lookup a cached entry based on an id.
   AXAuraObjWrapper* Get(int32_t id);
 
-  // Get all top level windows this cache knows about.
+  // Get all top level windows this cache knows about. Under classic ash and
+  // SingleProcessMash this is a list of per-display root windows.
   void GetTopLevelWindows(std::vector<AXAuraObjWrapper*>* children);
 
   // Get the object that has focus.
@@ -83,9 +85,6 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
 
   // Tell our delegate to fire an event on a given object.
   void FireEvent(AXAuraObjWrapper* aura_obj, ax::mojom::Event event_type);
-
-  // Indicates if this object's currently being destroyed.
-  bool is_destroying() { return is_destroying_; }
 
   // Notifies this cache of a change in root window.
   void OnRootWindowObjCreated(aura::Window* window);
@@ -103,10 +102,7 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   }
 
  private:
-  friend struct base::DefaultSingletonTraits<AXAuraObjCache>;
-
-  AXAuraObjCache();
-  ~AXAuraObjCache() override;
+  friend class base::NoDestructor<AXAuraObjCache>;
 
   View* GetFocusedView();
 
@@ -133,9 +129,6 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   std::map<aura::Window*, int32_t> window_to_id_map_;
 
   std::map<int32_t, std::unique_ptr<AXAuraObjWrapper>> cache_;
-
-  // True immediately when entering this object's destructor.
-  bool is_destroying_ = false;
 
   Delegate* delegate_ = nullptr;
 

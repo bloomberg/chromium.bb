@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "net/base/ip_address.h"
+
 namespace net {
 
 TestNetworkErrorLoggingService::TestNetworkErrorLoggingService() = default;
@@ -29,6 +31,9 @@ void TestNetworkErrorLoggingService::OnRequest(RequestDetails details) {
           << details.uri;
   errors_.push_back(std::move(details));
 }
+
+void TestNetworkErrorLoggingService::QueueSignedExchangeReport(
+    const SignedExchangeReportDetails& details) {}
 
 void TestNetworkErrorLoggingService::RemoveBrowsingData(
     const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {}

@@ -7,6 +7,10 @@
 #include <utility>
 
 #include "base/stl_util.h"
+#include "base/time/time.h"
+#include "chrome/browser/banners/app_banner_manager.h"
+#include "chrome/browser/banners/app_banner_manager_desktop.h"
+#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/web_application_info.h"
@@ -49,15 +53,8 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   if (manifest.start_url.is_valid())
     web_app_info->app_url = manifest.start_url;
 
-  if (for_installable_site == ForInstallableSite::kYes) {
-    // If there is no scope present, use 'start_url' without the filename as the
-    // scope. This does not match the spec but it matches what we do on Android.
-    // See: https://github.com/w3c/manifest/issues/550
-    if (!manifest.scope.is_empty())
-      web_app_info->scope = manifest.scope;
-    else if (manifest.start_url.is_valid())
-      web_app_info->scope = manifest.start_url.Resolve(".");
-  }
+  if (for_installable_site == ForInstallableSite::kYes)
+    web_app_info->scope = manifest.scope;
 
   if (manifest.theme_color)
     web_app_info->theme_color = *manifest.theme_color;
@@ -86,6 +83,9 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   // we picked up from the web_app stuff.
   if (!web_app_icons.empty())
     web_app_info->icons = std::move(web_app_icons);
+
+  // Copy across the file handler info.
+  web_app_info->file_handler = manifest.file_handler;
 }
 
 std::set<int> SizesToGenerate() {
@@ -161,6 +161,13 @@ void ResizeDownloadedIconsGenerateMissing(
       &web_app_info->generated_icon_color);
 
   ReplaceWebAppIcons(size_to_icons, web_app_info);
+}
+
+void RecordAppBanner(content::WebContents* contents, const GURL& app_url) {
+  AppBannerSettingsHelper::RecordBannerEvent(
+      contents, app_url, app_url.spec(),
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
+      base::Time::Now());
 }
 
 }  // namespace web_app

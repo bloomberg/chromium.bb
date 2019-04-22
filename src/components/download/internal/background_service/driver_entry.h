@@ -82,6 +82,10 @@ struct DriverEntry {
   // The url chain of the download. Download may encounter redirects, and
   // fetches the content from the last url in the chain.
   std::vector<GURL> url_chain;
+
+  // An optional base::HexEncoded SHA-256 hash (if available) of the file
+  // contents.  If empty there is no available hash value.
+  std::string hash256;
 };
 
 }  // namespace download

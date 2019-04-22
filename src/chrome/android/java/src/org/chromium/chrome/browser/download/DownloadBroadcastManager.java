@@ -21,7 +21,6 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -40,15 +39,11 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotifi
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
-import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.content_public.browser.BrowserStartupController;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Class that spins up native when an interaction with a notification happens and passes the
@@ -179,26 +174,30 @@ public class DownloadBroadcastManager extends Service {
         final boolean browserStarted =
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .isStartupSuccessfullyCompleted();
+        final ContentId id = getContentIdFromIntent(intent);
         final BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public void finishNativeInitialization() {
                 // Delay the stop of the service by WAIT_TIME_MS after native library is loaded.
                 mHandler.postDelayed(mStopSelfRunnable, WAIT_TIME_MS);
 
-                if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
+                if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())
+                        && LegacyHelpers.isLegacyDownload(id)) {
                     DownloadNotificationUmaHelper.recordDownloadResumptionHistogram(browserStarted
                                     ? UmaDownloadResumption.BROWSER_RUNNING
                                     : UmaDownloadResumption.BROWSER_NOT_RUNNING);
+                    if (!browserStarted) {
+                        DownloadManagerService.getDownloadManagerService()
+                                .onBackgroundDownloadStarted(id.id);
+                    }
                 }
                 propagateInteraction(intent);
             }
 
             @Override
             public boolean startServiceManagerOnly() {
-                Set<String> features = new HashSet<String>();
-                features.add(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD);
-                features.add(ChromeFeatureList.NETWORK_SERVICE);
-                return ServiceManagerStartupUtils.canStartServiceManager(features)
+                if (!LegacyHelpers.isLegacyDownload(id)) return false;
+                return DownloadUtils.shouldStartServiceManagerOnly()
                         && !ACTION_DOWNLOAD_OPEN.equals(intent.getAction());
             }
         };
@@ -314,7 +313,9 @@ public class DownloadBroadcastManager extends Service {
      * @return delegate for interactions with the entry
      */
     static DownloadServiceDelegate getServiceDelegate(ContentId id) {
-        if (LegacyHelpers.isLegacyDownload(id)) {
+        if (LegacyHelpers.isLegacyDownload(id)
+                && !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
             return DownloadManagerService.getDownloadManagerService();
         }
         return OfflineContentAggregatorNotificationBridgeUiFactory.instance();
@@ -334,23 +335,25 @@ public class DownloadBroadcastManager extends Service {
         }
 
         long id = ids[0];
-        Uri uri = DownloadManagerDelegate.getContentUriFromDownloadManager(context, id);
-        if (uri == null) {
-            DownloadManagerService.openDownloadsPage(context);
-            return;
-        }
+        DownloadManagerBridge.queryDownloadResult(id, result -> {
+            if (result.contentUri == null) {
+                DownloadManagerService.openDownloadsPage(context);
+                return;
+            }
 
-        String downloadFilename = IntentUtils.safeGetStringExtra(
-                intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_PATH);
-        boolean isSupportedMimeType = IntentUtils.safeGetBooleanExtra(
-                intent, DownloadNotificationService.EXTRA_IS_SUPPORTED_MIME_TYPE, false);
-        boolean isOffTheRecord = IntentUtils.safeGetBooleanExtra(
-                intent, DownloadNotificationService.EXTRA_IS_OFF_THE_RECORD, false);
-        String originalUrl = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_ORIGINATING_URI);
-        String referrer = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_REFERRER);
-        DownloadManagerService.openDownloadedContent(context, downloadFilename, isSupportedMimeType,
-                isOffTheRecord, contentId.id, id, originalUrl, referrer,
-                DownloadMetrics.DownloadOpenSource.NOTIFICATION);
+            String downloadFilename = IntentUtils.safeGetStringExtra(
+                    intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_PATH);
+            boolean isSupportedMimeType = IntentUtils.safeGetBooleanExtra(
+                    intent, DownloadNotificationService.EXTRA_IS_SUPPORTED_MIME_TYPE, false);
+            boolean isOffTheRecord = IntentUtils.safeGetBooleanExtra(
+                    intent, DownloadNotificationService.EXTRA_IS_OFF_THE_RECORD, false);
+            String originalUrl =
+                    IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_ORIGINATING_URI);
+            String referrer = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_REFERRER);
+            DownloadManagerService.openDownloadedContent(context, downloadFilename,
+                    isSupportedMimeType, isOffTheRecord, contentId.id, id, originalUrl, referrer,
+                    DownloadMetrics.DownloadOpenSource.NOTIFICATION);
+        });
     }
 
     @Nullable

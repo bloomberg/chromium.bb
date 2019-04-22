@@ -22,9 +22,12 @@
 #include "common/debug.h"
 #include "common/mathutil.h"
 #include "common/platform.h"
+#include "common/string_utils.h"
+#include "common/system_utils.h"
 #include "common/utilities.h"
 #include "libANGLE/Context.h"
 #include "libANGLE/Device.h"
+#include "libANGLE/EGLSync.h"
 #include "libANGLE/Image.h"
 #include "libANGLE/ResourceManager.h"
 #include "libANGLE/Stream.h"
@@ -67,6 +70,8 @@
 #        include "libANGLE/renderer/vulkan/xcb/DisplayVkXcb.h"
 #    elif defined(ANGLE_PLATFORM_ANDROID)
 #        include "libANGLE/renderer/vulkan/android/DisplayVkAndroid.h"
+#    elif defined(ANGLE_PLATFORM_FUCHSIA)
+#        include "libANGLE/renderer/vulkan/fuchsia/DisplayVkFuchsia.h"
 #    else
 #        error Unsupported Vulkan platform.
 #    endif
@@ -132,11 +137,50 @@ rx::DisplayImpl *CreateDisplayFromDevice(Device *eglDevice, const DisplayState &
     return impl;
 }
 
+// On platforms with support for multiple back-ends, allow an environment variable to control
+// the default.  This is useful to run angle with benchmarks without having to modify the
+// benchmark source.  Possible values for this environment variable (ANGLE_DEFAULT_PLATFORM)
+// are: vulkan, gl, d3d11.
+EGLAttrib GetDisplayTypeFromEnvironment()
+{
+    std::string angleDefaultEnv = angle::GetEnvironmentVar("ANGLE_DEFAULT_PLATFORM");
+    angle::ToLower(&angleDefaultEnv);
+
+#if defined(ANGLE_ENABLE_VULKAN)
+    if (angleDefaultEnv == "vulkan")
+    {
+        return EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE;
+    }
+#endif
+
+#if defined(ANGLE_ENABLE_OPENGL)
+    if (angleDefaultEnv == "gl")
+    {
+        return EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE;
+    }
+#endif
+
+#if defined(ANGLE_ENABLE_D3D11)
+    if (angleDefaultEnv == "d3d11")
+    {
+        return EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE;
+    }
+#endif
+
+    return EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE;
+}
+
 rx::DisplayImpl *CreateDisplayFromAttribs(const AttributeMap &attribMap, const DisplayState &state)
 {
     rx::DisplayImpl *impl = nullptr;
     EGLAttrib displayType =
         attribMap.get(EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE);
+
+    if (displayType == EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE)
+    {
+        displayType = GetDisplayTypeFromEnvironment();
+    }
+
     switch (displayType)
     {
         case EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE:
@@ -147,6 +191,8 @@ rx::DisplayImpl *CreateDisplayFromAttribs(const AttributeMap &attribMap, const D
             impl = new rx::DisplayGLX(state);
 #elif defined(ANGLE_PLATFORM_APPLE)
             impl = new rx::DisplayCGL(state);
+#elif defined(ANGLE_PLATFORM_FUCHSIA)
+            impl = new rx::DisplayVkFuchsia(state);
 #elif defined(ANGLE_USE_OZONE)
             impl = new rx::DisplayOzone(state);
 #elif defined(ANGLE_PLATFORM_ANDROID)
@@ -219,6 +265,8 @@ rx::DisplayImpl *CreateDisplayFromAttribs(const AttributeMap &attribMap, const D
             impl = new rx::DisplayVkXcb(state);
 #    elif defined(ANGLE_PLATFORM_ANDROID)
             impl = new rx::DisplayVkAndroid(state);
+#    elif defined(ANGLE_PLATFORM_FUCHSIA)
+            impl = new rx::DisplayVkFuchsia(state);
 #    else
 #        error Unsupported Vulkan platform.
 #    endif
@@ -446,6 +494,7 @@ void Display::setAttributes(rx::DisplayImpl *impl, const AttributeMap &attribMap
 
 Error Display::initialize()
 {
+    ASSERT(mImplementation != nullptr);
     mImplementation->setBlobCache(&mBlobCache);
 
     // TODO(jmadill): Store Platform in Display and init here.
@@ -463,10 +512,10 @@ Error Display::initialize()
 
     gl::InitializeDebugAnnotations(&mAnnotator);
 
+    gl::InitializeDebugMutexIfNeeded();
+
     SCOPED_ANGLE_HISTOGRAM_TIMER("GPU.ANGLE.DisplayInitializeMS");
     TRACE_EVENT0("gpu.angle", "egl::Display::initialize");
-
-    ASSERT(mImplementation != nullptr);
 
     if (isInitialized())
     {
@@ -566,6 +615,11 @@ Error Display::terminate(const Thread *thread)
         destroyStream(*mStreamSet.begin());
     }
 
+    while (!mSyncSet.empty())
+    {
+        destroySync(*mSyncSet.begin());
+    }
+
     while (!mState.surfaceSet.empty())
     {
         ANGLE_TRY(destroySurface(*mState.surfaceSet.begin()));
@@ -597,6 +651,33 @@ Error Display::terminate(const Thread *thread)
 std::vector<const Config *> Display::getConfigs(const egl::AttributeMap &attribs) const
 {
     return mConfigSet.filter(attribs);
+}
+
+std::vector<const Config *> Display::chooseConfig(const egl::AttributeMap &attribs) const
+{
+    egl::AttributeMap attribsWithDefaults = AttributeMap();
+
+    // Insert default values for attributes that have either an Exact or Mask selection criteria,
+    // and a default value that matters (e.g. isn't EGL_DONT_CARE):
+    attribsWithDefaults.insert(EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER);
+    attribsWithDefaults.insert(EGL_LEVEL, 0);
+    attribsWithDefaults.insert(EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT);
+    attribsWithDefaults.insert(EGL_SURFACE_TYPE, EGL_WINDOW_BIT);
+    attribsWithDefaults.insert(EGL_TRANSPARENT_TYPE, EGL_NONE);
+    if (getExtensions().pixelFormatFloat)
+    {
+        attribsWithDefaults.insert(EGL_COLOR_COMPONENT_TYPE_EXT,
+                                   EGL_COLOR_COMPONENT_TYPE_FIXED_EXT);
+    }
+
+    // Add the caller-specified values (Note: the poorly-named insert() method will replace any
+    // of the default values from above):
+    for (auto attribIter = attribs.begin(); attribIter != attribs.end(); attribIter++)
+    {
+        attribsWithDefaults.insert(attribIter->first, attribIter->second);
+    }
+
+    return mConfigSet.filter(attribsWithDefaults);
 }
 
 Error Display::createWindowSurface(const Config *configuration,
@@ -814,6 +895,32 @@ Error Display::createContext(const Config *configuration,
     return NoError();
 }
 
+Error Display::createSync(const gl::Context *currentContext,
+                          EGLenum type,
+                          const AttributeMap &attribs,
+                          Sync **outSync)
+{
+    ASSERT(isInitialized());
+
+    if (mImplementation->testDeviceLost())
+    {
+        ANGLE_TRY(restoreLostDevice());
+    }
+
+    angle::UniqueObjectPointer<egl::Sync, Display> syncPtr(new Sync(mImplementation, type, attribs),
+                                                           this);
+
+    ANGLE_TRY(syncPtr->initialize(this, currentContext));
+
+    Sync *sync = syncPtr.release();
+
+    sync->addRef();
+    mSyncSet.insert(sync);
+
+    *outSync = sync;
+    return NoError();
+}
+
 Error Display::makeCurrent(egl::Surface *drawSurface,
                            egl::Surface *readSurface,
                            gl::Context *context)
@@ -924,6 +1031,14 @@ Error Display::destroyContext(const Thread *thread, gl::Context *context)
     return NoError();
 }
 
+void Display::destroySync(egl::Sync *sync)
+{
+    auto iter = mSyncSet.find(sync);
+    ASSERT(iter != mSyncSet.end());
+    (*iter)->release(this);
+    mSyncSet.erase(iter);
+}
+
 bool Display::isDeviceLost() const
 {
     ASSERT(isInitialized());
@@ -952,7 +1067,7 @@ void Display::notifyDeviceLost()
     for (ContextSet::iterator context = mContextSet.begin(); context != mContextSet.end();
          context++)
     {
-        (*context)->markContextLost();
+        (*context)->markContextLost(gl::GraphicsResetStatus::UnknownContextReset);
     }
 
     mDeviceLost = true;
@@ -1009,6 +1124,11 @@ bool Display::isValidStream(const Stream *stream) const
     return mStreamSet.find(const_cast<Stream *>(stream)) != mStreamSet.end();
 }
 
+bool Display::isValidSync(const Sync *sync) const
+{
+    return mSyncSet.find(const_cast<Sync *>(sync)) != mSyncSet.end();
+}
+
 bool Display::hasExistingWindowSurface(EGLNativeWindowType window)
 {
     WindowSurfaceMap *windowSurfaces = GetWindowSurfaces();
@@ -1056,8 +1176,8 @@ static ClientExtensions GenerateClientExtensions()
 #endif
 
     extensions.clientGetAllProcAddresses = true;
-    extensions.explicitContext           = true;
     extensions.debug                     = true;
+    extensions.explicitContext           = true;
 
     return extensions;
 }
@@ -1111,6 +1231,10 @@ void Display::initDisplayExtensions()
 
     // Blob cache extension is provided by the ANGLE frontend
     mDisplayExtensions.blobCache = true;
+
+    // The EGL_ANDROID_recordable extension is provided by the ANGLE frontend, and will always say
+    // that ANativeWindow is not recordable.
+    mDisplayExtensions.recordable = true;
 
     mDisplayExtensionString = GenerateExtensionsString(mDisplayExtensions);
 }

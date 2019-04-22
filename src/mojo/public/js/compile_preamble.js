@@ -12,7 +12,6 @@
 /** @const */
 var goog = {};
 
-
 /** @const */
 goog.global = this;
 
@@ -24,7 +23,7 @@ goog.global = this;
  */
 goog.exportSymbol = function(name, object, opt_objectToExportTo) {
   let parts = name.split('.');
-  let cur = opt_objectToExportTo || goog.global;
+  let cur = opt_objectToExportTo || mojo.internal.globalScope;
   for (let part; parts.length && (part = parts.shift());) {
     if (!parts.length && object !== undefined)
       cur[part] = object;

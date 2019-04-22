@@ -175,11 +175,6 @@ void PrefServiceSyncable::RemoveSyncedPrefObserver(
   priority_pref_sync_associator_.RemoveSyncedPrefObserver(name, observer);
 }
 
-void PrefServiceSyncable::RegisterMergeDataFinishedCallback(
-    const base::Closure& callback) {
-  pref_sync_associator_.RegisterMergeDataFinishedCallback(callback);
-}
-
 void PrefServiceSyncable::AddRegisteredSyncablePreference(
     const std::string& path,
     uint32_t flags) {

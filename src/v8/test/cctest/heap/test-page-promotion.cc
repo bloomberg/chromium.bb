@@ -45,7 +45,8 @@ v8::Isolate* NewIsolateForPagePromotion(int min_semi_space_size = 8,
 
 Page* FindLastPageInNewSpace(std::vector<Handle<FixedArray>>& handles) {
   for (auto rit = handles.rbegin(); rit != handles.rend(); ++rit) {
-    Page* candidate = Page::FromAddress((*rit)->address());
+    // One deref gets the Handle, the second deref gets the FixedArray.
+    Page* candidate = Page::FromHeapObject(**rit);
     if (candidate->InNewSpace()) return candidate;
   }
   return nullptr;
@@ -65,6 +66,11 @@ UNINITIALIZED_TEST(PagePromotion_NewToOld) {
     v8::HandleScope handle_scope(isolate);
     v8::Context::New(isolate)->Enter();
     Heap* heap = i_isolate->heap();
+
+    // Ensure that the new space is empty so that the page to be promoted
+    // does not contain the age mark.
+    heap->CollectGarbage(NEW_SPACE, i::GarbageCollectionReason::kTesting);
+    heap->CollectGarbage(NEW_SPACE, i::GarbageCollectionReason::kTesting);
 
     std::vector<Handle<FixedArray>> handles;
     heap::SimulateFullSpace(heap->new_space(), &handles);
@@ -111,7 +117,7 @@ UNINITIALIZED_TEST(PagePromotion_NewToNew) {
     // Last object in handles should definitely be on a page that does not
     // contain the age mark, thus qualifying for moving.
     Handle<FixedArray> last_object = handles.back();
-    Page* to_be_promoted_page = Page::FromAddress(last_object->address());
+    Page* to_be_promoted_page = Page::FromHeapObject(*last_object);
     CHECK(!to_be_promoted_page->Contains(heap->new_space()->age_mark()));
     CHECK(to_be_promoted_page->Contains(last_object->address()));
     CHECK(heap->new_space()->ToSpaceContainsSlow(last_object->address()));
@@ -148,7 +154,7 @@ UNINITIALIZED_TEST(PagePromotion_NewToNewJSArrayBuffer) {
     // First object in handles should be on the same page as the allocated
     // JSArrayBuffer.
     Handle<FixedArray> first_object = handles.front();
-    Page* to_be_promoted_page = Page::FromAddress(first_object->address());
+    Page* to_be_promoted_page = Page::FromHeapObject(*first_object);
     CHECK(!to_be_promoted_page->Contains(heap->new_space()->age_mark()));
     CHECK(to_be_promoted_page->Contains(first_object->address()));
     CHECK(to_be_promoted_page->Contains(buffer->address()));
@@ -190,7 +196,7 @@ UNINITIALIZED_TEST(PagePromotion_NewToOldJSArrayBuffer) {
     // First object in handles should be on the same page as the allocated
     // JSArrayBuffer.
     Handle<FixedArray> first_object = handles.front();
-    Page* to_be_promoted_page = Page::FromAddress(first_object->address());
+    Page* to_be_promoted_page = Page::FromHeapObject(*first_object);
     CHECK(!to_be_promoted_page->Contains(heap->new_space()->age_mark()));
     CHECK(to_be_promoted_page->Contains(first_object->address()));
     CHECK(to_be_promoted_page->Contains(buffer->address()));
@@ -227,7 +233,7 @@ UNINITIALIZED_HEAP_TEST(Regress658718) {
       // Last object in handles should definitely be on a page that does not
       // contain the age mark, thus qualifying for moving.
       Handle<FixedArray> last_object = handles.back();
-      Page* to_be_promoted_page = Page::FromAddress(last_object->address());
+      Page* to_be_promoted_page = Page::FromHeapObject(*last_object);
       CHECK(!to_be_promoted_page->Contains(heap->new_space()->age_mark()));
       CHECK(to_be_promoted_page->Contains(last_object->address()));
       CHECK(heap->new_space()->ToSpaceContainsSlow(last_object->address()));

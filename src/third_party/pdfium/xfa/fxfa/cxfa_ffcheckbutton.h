@@ -22,7 +22,7 @@ class CXFA_FFCheckButton final : public CXFA_FFField {
   // CXFA_FFField
   void RenderWidget(CXFA_Graphics* pGS,
                     const CFX_Matrix& matrix,
-                    uint32_t dwStatus) override;
+                    HighlightOption highlight) override;
 
   bool LoadWidget() override;
   bool PerformLayout() override;
@@ -41,7 +41,7 @@ class CXFA_FFCheckButton final : public CXFA_FFField {
   bool CommitData() override;
   bool IsDataChanged() override;
   void CapLeftRightPlacement(const CXFA_Margin* captionMargin);
-  void AddUIMargin(XFA_AttributeEnum iCapPlacement);
+  void AddUIMargin(XFA_AttributeValue iCapPlacement);
   XFA_CHECKSTATE FWLState2XFAState();
 
   UnownedPtr<IFWL_WidgetDelegate> m_pOldDelegate;

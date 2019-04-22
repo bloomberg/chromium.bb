@@ -73,15 +73,58 @@ std::string StringLiteralQuote(const std::string& s) {
   return result.str();
 }
 
+static const char kFileUriPrefix[] = "file://";
+static const int kFileUriPrefixLength = sizeof(kFileUriPrefix) - 1;
+
+static int HexCharToInt(unsigned char c) {
+  if (isdigit(c)) return c - '0';
+  if (isupper(c)) return c - 'A' + 10;
+  DCHECK(islower(c));
+  return c - 'a' + 10;
+}
+
+base::Optional<std::string> FileUriDecode(const std::string& uri) {
+  // Abort decoding of URIs that don't start with "file://".
+  if (uri.rfind(kFileUriPrefix) != 0) return base::nullopt;
+
+  const std::string path = uri.substr(kFileUriPrefixLength);
+  std::ostringstream decoded;
+
+  for (auto iter = path.begin(), end = path.end(); iter != end; ++iter) {
+    std::string::value_type c = (*iter);
+
+    // Normal characters are appended.
+    if (c != '%') {
+      decoded << c;
+      continue;
+    }
+
+    // If '%' is not followed by at least two hex digits, we abort.
+    if (std::distance(iter, end) <= 2) return base::nullopt;
+
+    unsigned char first = (*++iter);
+    unsigned char second = (*++iter);
+    if (!isxdigit(first) || !isxdigit(second)) return base::nullopt;
+
+    // An escaped hex value needs converting.
+    unsigned char value = HexCharToInt(first) * 16 + HexCharToInt(second);
+    decoded << value;
+  }
+
+  return decoded.str();
+}
+
 std::string CurrentPositionAsString() {
   return PositionAsString(CurrentSourcePosition::Get());
 }
 
 DEFINE_CONTEXTUAL_VARIABLE(LintErrorStatus)
 
-[[noreturn]] void ReportErrorString(const std::string& error) {
-  std::cerr << CurrentPositionAsString() << ": Torque error: " << error << "\n";
-  v8::base::OS::Abort();
+[[noreturn]] void ThrowTorqueError(const std::string& message,
+                                   bool include_position) {
+  TorqueError error(message);
+  if (include_position) error.position = CurrentSourcePosition::Get();
+  throw error;
 }
 
 void LintError(const std::string& error) {
@@ -125,8 +168,9 @@ bool IsKeywordLikeName(const std::string& s) {
 // naming convention and are those exempt from the normal type convention.
 bool IsMachineType(const std::string& s) {
   static const char* const machine_types[]{
-      "void",    "never",   "int32",   "uint32", "int64",  "intptr",
-      "uintptr", "float32", "float64", "bool",   "string", "int31"};
+      "void",    "never",   "int8",    "uint8",  "int16",  "uint16",
+      "int31",   "uint31",  "int32",   "uint32", "int64",  "intptr",
+      "uintptr", "float32", "float64", "bool",   "string", "bint"};
 
   return std::find(std::begin(machine_types), std::end(machine_types), s) !=
          std::end(machine_types);
@@ -161,6 +205,19 @@ bool IsValidTypeName(const std::string& s) {
   if (IsMachineType(s)) return true;
 
   return IsUpperCamelCase(s);
+}
+
+std::string CapifyStringWithUnderscores(const std::string& camellified_string) {
+  std::string result;
+  bool previousWasLower = false;
+  for (auto current : camellified_string) {
+    if (previousWasLower && isupper(current)) {
+      result += "_";
+    }
+    result += toupper(current);
+    previousWasLower = (islower(current));
+  }
+  return result;
 }
 
 std::string CamelifyString(const std::string& underscore_string) {

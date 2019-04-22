@@ -7,8 +7,8 @@
 #ifndef FXJS_XFA_CJX_EXTRAS_H_
 #define FXJS_XFA_CJX_EXTRAS_H_
 
-#include "fxjs/jse_define.h"
 #include "fxjs/xfa/cjx_node.h"
+#include "fxjs/xfa/jse_define.h"
 
 class CXFA_Extras;
 
@@ -17,9 +17,16 @@ class CJX_Extras final : public CJX_Node {
   explicit CJX_Extras(CXFA_Extras* node);
   ~CJX_Extras() override;
 
+  // CJX_Object:
+  bool DynamicTypeIs(TypeTag eType) const override;
+
   JSE_PROP(type);
-  JSE_PROP(use);
-  JSE_PROP(usehref);
+
+ private:
+  using Type__ = CJX_Extras;
+  using ParentType__ = CJX_Node;
+
+  static const TypeTag static_type__ = TypeTag::Extras;
 };
 
 #endif  // FXJS_XFA_CJX_EXTRAS_H_

@@ -8,6 +8,8 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/win/wrapped_window_proc.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 
 namespace base {
 
@@ -17,7 +19,7 @@ void ProcessPowerEventHelper(PowerMonitorSource::PowerEvent event) {
 
 namespace {
 
-const wchar_t kWindowClassName[] = L"Base_PowerMessageWindow";
+const char16 kWindowClassName[] = STRING16_LITERAL("Base_PowerMessageWindow");
 
 void ProcessWmPowerBroadcastMessage(WPARAM event_id) {
   PowerMonitorSource::PowerEvent power_event;
@@ -83,14 +85,15 @@ PowerMonitorDeviceSource::PowerMessageWindow::PowerMessageWindow()
   ATOM clazz = RegisterClassEx(&window_class);
   DCHECK(clazz);
 
-  message_hwnd_ = CreateWindowEx(WS_EX_NOACTIVATE, kWindowClassName,
-      NULL, WS_POPUP, 0, 0, 0, 0, NULL, NULL, instance_, NULL);
+  message_hwnd_ =
+      CreateWindowEx(WS_EX_NOACTIVATE, as_wcstr(kWindowClassName), NULL,
+                     WS_POPUP, 0, 0, 0, 0, NULL, NULL, instance_, NULL);
 }
 
 PowerMonitorDeviceSource::PowerMessageWindow::~PowerMessageWindow() {
   if (message_hwnd_) {
     DestroyWindow(message_hwnd_);
-    UnregisterClass(kWindowClassName, instance_);
+    UnregisterClass(as_wcstr(kWindowClassName), instance_);
   }
 }
 

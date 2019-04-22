@@ -15,7 +15,6 @@
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/simple_test_tick_clock.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "sql/database.h"
@@ -23,6 +22,7 @@
 #include "sql/meta_table.h"
 #include "sql/sql_features.h"
 #include "sql/statement.h"
+#include "sql/test/database_test_peer.h"
 #include "sql/test/error_callback_support.h"
 #include "sql/test/scoped_error_expecter.h"
 #include "sql/test/sql_test_base.h"
@@ -31,75 +31,6 @@
 #include "third_party/sqlite/sqlite3.h"
 
 namespace sql {
-
-class DatabaseTestPeer {
- public:
-  static bool AttachDatabase(Database* db,
-                             const base::FilePath& other_db_path,
-                             const char* attachment_point) {
-    return db->AttachDatabase(other_db_path, attachment_point,
-                              InternalApiToken());
-  }
-  static bool DetachDatabase(Database* db, const char* attachment_point) {
-    return db->DetachDatabase(attachment_point, InternalApiToken());
-  }
-};
-
-namespace test {
-
-// Allow a test to add a SQLite function in a scoped context.
-class ScopedScalarFunction {
- public:
-  ScopedScalarFunction(
-      sql::Database& db,
-      const char* function_name,
-      int args,
-      base::RepeatingCallback<void(sqlite3_context*, int, sqlite3_value**)> cb)
-      : db_(db.db_), function_name_(function_name), cb_(std::move(cb)) {
-    sqlite3_create_function_v2(db_, function_name, args, SQLITE_UTF8, this,
-                               &Run, nullptr, nullptr, nullptr);
-  }
-  ~ScopedScalarFunction() {
-    sqlite3_create_function_v2(db_, function_name_, 0, SQLITE_UTF8, nullptr,
-                               nullptr, nullptr, nullptr, nullptr);
-  }
-
- private:
-  static void Run(sqlite3_context* context, int argc, sqlite3_value** argv) {
-    ScopedScalarFunction* t =
-        static_cast<ScopedScalarFunction*>(sqlite3_user_data(context));
-    t->cb_.Run(context, argc, argv);
-  }
-
-  sqlite3* db_;
-  const char* function_name_;
-  base::RepeatingCallback<void(sqlite3_context*, int, sqlite3_value**)> cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedScalarFunction);
-};
-
-// Allow a test to add a SQLite commit hook in a scoped context.
-class ScopedCommitHook {
- public:
-  ScopedCommitHook(sql::Database& db, base::RepeatingCallback<int()> cb)
-      : db_(db.db_), cb_(std::move(cb)) {
-    sqlite3_commit_hook(db_, &Run, this);
-  }
-  ~ScopedCommitHook() { sqlite3_commit_hook(db_, nullptr, nullptr); }
-
- private:
-  static int Run(void* p) {
-    ScopedCommitHook* t = static_cast<ScopedCommitHook*>(p);
-    return t->cb_.Run();
-  }
-
-  sqlite3* db_;
-  base::RepeatingCallback<int(void)> cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedCommitHook);
-};
-
-}  // namespace test
 
 namespace {
 
@@ -181,29 +112,6 @@ class ScopedUmaskSetter {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedUmaskSetter);
 };
 #endif  // defined(OS_POSIX)
-
-// SQLite function to adjust mock time by |argv[0]| milliseconds.
-void sqlite_adjust_millis(base::SimpleTestTickClock* mock_clock,
-                          sqlite3_context* context,
-                          int argc,
-                          sqlite3_value** argv) {
-  CHECK_EQ(argc, 1);
-  int64_t milliseconds = sqlite3_value_int64(argv[0]);
-  mock_clock->Advance(base::TimeDelta::FromMilliseconds(milliseconds));
-  sqlite3_result_int64(context, milliseconds);
-}
-
-// Adjust mock time by |milliseconds| on commit.
-int adjust_commit_hook(base::SimpleTestTickClock* mock_clock,
-                       int64_t milliseconds) {
-  mock_clock->Advance(base::TimeDelta::FromMilliseconds(milliseconds));
-  return SQLITE_OK;
-}
-
-const char kCommitTime[] = "Sqlite.CommitTime.Test";
-const char kAutoCommitTime[] = "Sqlite.AutoCommitTime.Test";
-const char kUpdateTime[] = "Sqlite.UpdateTime.Test";
-const char kQueryTime[] = "Sqlite.QueryTime.Test";
 
 }  // namespace
 
@@ -302,6 +210,10 @@ TEST_F(SQLDatabaseTest, DoesTableExist) {
   ASSERT_TRUE(db().Execute("CREATE INDEX foo_index ON foo (a)"));
   EXPECT_TRUE(db().DoesTableExist("foo"));
   EXPECT_FALSE(db().DoesTableExist("foo_index"));
+
+  // DoesTableExist() is case-sensitive.
+  EXPECT_FALSE(db().DoesTableExist("Foo"));
+  EXPECT_FALSE(db().DoesTableExist("FOO"));
 }
 
 TEST_F(SQLDatabaseTest, DoesIndexExist) {
@@ -312,6 +224,11 @@ TEST_F(SQLDatabaseTest, DoesIndexExist) {
   ASSERT_TRUE(db().Execute("CREATE INDEX foo_index ON foo (a)"));
   EXPECT_TRUE(db().DoesIndexExist("foo_index"));
   EXPECT_FALSE(db().DoesIndexExist("foo"));
+
+  // DoesIndexExist() is case-sensitive.
+  EXPECT_FALSE(db().DoesIndexExist("Foo_index"));
+  EXPECT_FALSE(db().DoesIndexExist("Foo_Index"));
+  EXPECT_FALSE(db().DoesIndexExist("FOO_INDEX"));
 }
 
 TEST_F(SQLDatabaseTest, DoesViewExist) {
@@ -320,6 +237,10 @@ TEST_F(SQLDatabaseTest, DoesViewExist) {
   EXPECT_FALSE(db().DoesIndexExist("voo"));
   EXPECT_FALSE(db().DoesTableExist("voo"));
   EXPECT_TRUE(db().DoesViewExist("voo"));
+
+  // DoesTableExist() is case-sensitive.
+  EXPECT_FALSE(db().DoesViewExist("Voo"));
+  EXPECT_FALSE(db().DoesViewExist("VOO"));
 }
 
 TEST_F(SQLDatabaseTest, DoesColumnExist) {
@@ -331,9 +252,10 @@ TEST_F(SQLDatabaseTest, DoesColumnExist) {
   ASSERT_FALSE(db().DoesTableExist("bar"));
   EXPECT_FALSE(db().DoesColumnExist("bar", "b"));
 
-  // Names are not case sensitive.
-  EXPECT_TRUE(db().DoesTableExist("FOO"));
+  // SQLite resolves table/column names without case sensitivity.
   EXPECT_TRUE(db().DoesColumnExist("FOO", "A"));
+  EXPECT_TRUE(db().DoesColumnExist("FOO", "a"));
+  EXPECT_TRUE(db().DoesColumnExist("foo", "A"));
 }
 
 TEST_F(SQLDatabaseTest, GetLastInsertRowId) {
@@ -522,7 +444,7 @@ void TestPageSize(const base::FilePath& db_prefix,
   static const char kInsertSql2[] = "INSERT INTO x VALUES ('That was a test')";
 
   const base::FilePath db_path = db_prefix.InsertBeforeExtensionASCII(
-      base::IntToString(initial_page_size));
+      base::NumberToString(initial_page_size));
   sql::Database::Delete(db_path);
   sql::Database db;
   db.set_page_size(initial_page_size);
@@ -1117,284 +1039,6 @@ TEST_F(SQLDatabaseTest, Basic_FullIntegrityCheck) {
   // file that would pass the quick check and fail the full check.
 }
 
-// Test Sqlite.Stats histogram for execute-oriented calls.
-TEST_F(SQLDatabaseTest, EventsExecute) {
-  // Re-open with histogram tag.
-  db().Close();
-  db().set_histogram_tag("Test");
-  ASSERT_TRUE(db().Open(db_path()));
-
-  // Open() uses Execute() extensively, don't track those calls.
-  base::HistogramTester tester;
-
-  static const char kHistogramName[] = "Sqlite.Stats.Test";
-  static const char kGlobalHistogramName[] = "Sqlite.Stats";
-
-  ASSERT_TRUE(db().BeginTransaction());
-  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
-  EXPECT_TRUE(db().Execute(kCreateSql));
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (10, 'text')"));
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (11, 'text')"));
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (12, 'text')"));
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (13, 'text')"));
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (14, 'text')"));
-  EXPECT_TRUE(
-      db().Execute("INSERT INTO foo VALUES (15, 'text');"
-                   "INSERT INTO foo VALUES (16, 'text');"
-                   "INSERT INTO foo VALUES (17, 'text');"
-                   "INSERT INTO foo VALUES (18, 'text');"
-                   "INSERT INTO foo VALUES (19, 'text')"));
-  ASSERT_TRUE(db().CommitTransaction());
-  ASSERT_TRUE(db().BeginTransaction());
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (20, 'text')"));
-  db().RollbackTransaction();
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (20, 'text')"));
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (21, 'text')"));
-
-  // The create, 5 inserts, multi-statement insert, rolled-back insert, 2
-  // inserts outside transaction.
-  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_EXECUTE, 10);
-  tester.ExpectBucketCount(kGlobalHistogramName, sql::Database::EVENT_EXECUTE,
-                           10);
-
-  // All of the executes, with the multi-statement inserts broken out, plus one
-  // for each begin, commit, and rollback.
-  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_STATEMENT_RUN,
-                           18);
-  tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Database::EVENT_STATEMENT_RUN, 18);
-
-  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_STATEMENT_ROWS,
-                           0);
-  tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Database::EVENT_STATEMENT_ROWS, 0);
-  tester.ExpectBucketCount(kHistogramName,
-                           sql::Database::EVENT_STATEMENT_SUCCESS, 18);
-  tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Database::EVENT_STATEMENT_SUCCESS, 18);
-
-  // The 2 inserts outside the transaction.
-  tester.ExpectBucketCount(kHistogramName,
-                           sql::Database::EVENT_CHANGES_AUTOCOMMIT, 2);
-  tester.ExpectBucketCount(kGlobalHistogramName,
-                           sql::Database::EVENT_CHANGES_AUTOCOMMIT, 2);
-
-  // 11 inserts inside transactions.
-  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_CHANGES, 11);
-  tester.ExpectBucketCount(kGlobalHistogramName, sql::Database::EVENT_CHANGES,
-                           11);
-
-  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_BEGIN, 2);
-  tester.ExpectBucketCount(kGlobalHistogramName, sql::Database::EVENT_BEGIN, 2);
-  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_COMMIT, 1);
-  tester.ExpectBucketCount(kGlobalHistogramName, sql::Database::EVENT_COMMIT,
-                           1);
-  tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_ROLLBACK, 1);
-  tester.ExpectBucketCount(kGlobalHistogramName, sql::Database::EVENT_ROLLBACK,
-                           1);
-}
-
-// Test Sqlite.Stats histogram for prepared statements.
-TEST_F(SQLDatabaseTest, EventsStatement) {
-  // Re-open with histogram tag.
-  db().Close();
-  db().set_histogram_tag("Test");
-  ASSERT_TRUE(db().Open(db_path()));
-
-  static const char kHistogramName[] = "Sqlite.Stats.Test";
-  static const char kGlobalHistogramName[] = "Sqlite.Stats";
-
-  static const char kCreateSql[] =
-      "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
-  EXPECT_TRUE(db().Execute(kCreateSql));
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (10, 'text')"));
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (11, 'text')"));
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (12, 'text')"));
-
-  {
-    base::HistogramTester tester;
-
-    {
-      sql::Statement s(db().GetUniqueStatement("SELECT value FROM foo"));
-      while (s.Step()) {
-      }
-    }
-
-    tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_STATEMENT_RUN,
-                             1);
-    tester.ExpectBucketCount(kGlobalHistogramName,
-                             sql::Database::EVENT_STATEMENT_RUN, 1);
-    tester.ExpectBucketCount(kHistogramName,
-                             sql::Database::EVENT_STATEMENT_ROWS, 3);
-    tester.ExpectBucketCount(kGlobalHistogramName,
-                             sql::Database::EVENT_STATEMENT_ROWS, 3);
-    tester.ExpectBucketCount(kHistogramName,
-                             sql::Database::EVENT_STATEMENT_SUCCESS, 1);
-    tester.ExpectBucketCount(kGlobalHistogramName,
-                             sql::Database::EVENT_STATEMENT_SUCCESS, 1);
-  }
-
-  {
-    base::HistogramTester tester;
-
-    {
-      sql::Statement s(
-          db().GetUniqueStatement("SELECT value FROM foo WHERE id > 10"));
-      while (s.Step()) {
-      }
-    }
-
-    tester.ExpectBucketCount(kHistogramName, sql::Database::EVENT_STATEMENT_RUN,
-                             1);
-    tester.ExpectBucketCount(kGlobalHistogramName,
-                             sql::Database::EVENT_STATEMENT_RUN, 1);
-    tester.ExpectBucketCount(kHistogramName,
-                             sql::Database::EVENT_STATEMENT_ROWS, 2);
-    tester.ExpectBucketCount(kGlobalHistogramName,
-                             sql::Database::EVENT_STATEMENT_ROWS, 2);
-    tester.ExpectBucketCount(kHistogramName,
-                             sql::Database::EVENT_STATEMENT_SUCCESS, 1);
-    tester.ExpectBucketCount(kGlobalHistogramName,
-                             sql::Database::EVENT_STATEMENT_SUCCESS, 1);
-  }
-}
-
-// Read-only query allocates time to QueryTime, but not others.
-TEST_F(SQLDatabaseTest, TimeQuery) {
-  // Re-open with histogram tag.  Use an in-memory database to minimize variance
-  // due to filesystem.
-  db().Close();
-  db().set_histogram_tag("Test");
-  ASSERT_TRUE(db().OpenInMemory());
-
-  auto mock_clock = std::make_unique<base::SimpleTestTickClock>();
-  // Retaining the pointer is safe because the connection keeps it alive.
-  base::SimpleTestTickClock* mock_clock_ptr = mock_clock.get();
-  db().set_clock_for_testing(std::move(mock_clock));
-
-  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
-  EXPECT_TRUE(db().Execute(kCreateSql));
-
-  // Function to inject pauses into statements.
-  sql::test::ScopedScalarFunction scoper(
-      db(), "milliadjust", 1,
-      base::BindRepeating(&sqlite_adjust_millis, mock_clock_ptr));
-
-  base::HistogramTester tester;
-
-  EXPECT_TRUE(db().Execute("SELECT milliadjust(10)"));
-
-  std::unique_ptr<base::HistogramSamples> samples(
-      tester.GetHistogramSamplesSinceCreation(kQueryTime));
-  ASSERT_TRUE(samples);
-  EXPECT_EQ(10, samples->sum());
-
-  samples = tester.GetHistogramSamplesSinceCreation(kUpdateTime);
-  EXPECT_EQ(0, samples->sum());
-
-  samples = tester.GetHistogramSamplesSinceCreation(kCommitTime);
-  EXPECT_EQ(0, samples->sum());
-
-  samples = tester.GetHistogramSamplesSinceCreation(kAutoCommitTime);
-  EXPECT_EQ(0, samples->sum());
-}
-
-// Autocommit update allocates time to QueryTime, UpdateTime, and
-// AutoCommitTime.
-TEST_F(SQLDatabaseTest, TimeUpdateAutocommit) {
-  // Re-open with histogram tag.  Use an in-memory database to minimize variance
-  // due to filesystem.
-  db().Close();
-  db().set_histogram_tag("Test");
-  ASSERT_TRUE(db().OpenInMemory());
-
-  auto mock_clock = std::make_unique<base::SimpleTestTickClock>();
-  // Retaining the pointer is safe because the connection keeps it alive.
-  base::SimpleTestTickClock* mock_clock_ptr = mock_clock.get();
-  db().set_clock_for_testing(std::move(mock_clock));
-
-  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
-  EXPECT_TRUE(db().Execute(kCreateSql));
-
-  // Function to inject pauses into statements.
-  sql::test::ScopedScalarFunction scoper(
-      db(), "milliadjust", 1,
-      base::BindRepeating(&sqlite_adjust_millis, mock_clock_ptr));
-
-  base::HistogramTester tester;
-
-  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (10, milliadjust(10))"));
-
-  std::unique_ptr<base::HistogramSamples> samples(
-      tester.GetHistogramSamplesSinceCreation(kQueryTime));
-  ASSERT_TRUE(samples);
-  EXPECT_EQ(10, samples->sum());
-
-  samples = tester.GetHistogramSamplesSinceCreation(kUpdateTime);
-  ASSERT_TRUE(samples);
-  EXPECT_EQ(10, samples->sum());
-
-  samples = tester.GetHistogramSamplesSinceCreation(kCommitTime);
-  EXPECT_EQ(0, samples->sum());
-
-  samples = tester.GetHistogramSamplesSinceCreation(kAutoCommitTime);
-  ASSERT_TRUE(samples);
-  EXPECT_EQ(10, samples->sum());
-}
-
-// Update with explicit transaction allocates time to QueryTime, UpdateTime, and
-// CommitTime.
-TEST_F(SQLDatabaseTest, TimeUpdateTransaction) {
-  // Re-open with histogram tag.  Use an in-memory database to minimize variance
-  // due to filesystem.
-  db().Close();
-  db().set_histogram_tag("Test");
-  ASSERT_TRUE(db().OpenInMemory());
-
-  auto mock_clock = std::make_unique<base::SimpleTestTickClock>();
-  // Retaining the pointer is safe because the connection keeps it alive.
-  base::SimpleTestTickClock* mock_clock_ptr = mock_clock.get();
-  db().set_clock_for_testing(std::move(mock_clock));
-
-  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
-  EXPECT_TRUE(db().Execute(kCreateSql));
-
-  // Function to inject pauses into statements.
-  sql::test::ScopedScalarFunction scoper(
-      db(), "milliadjust", 1,
-      base::BindRepeating(&sqlite_adjust_millis, mock_clock_ptr));
-
-  base::HistogramTester tester;
-
-  {
-    // Make the commit slow.
-    sql::test::ScopedCommitHook scoped_hook(
-        db(), base::BindRepeating(adjust_commit_hook, mock_clock_ptr, 1000));
-    ASSERT_TRUE(db().BeginTransaction());
-    EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (11, milliadjust(10))"));
-    EXPECT_TRUE(
-        db().Execute("UPDATE foo SET value = milliadjust(100) WHERE id = 11"));
-    EXPECT_TRUE(db().CommitTransaction());
-  }
-
-  std::unique_ptr<base::HistogramSamples> samples(
-      tester.GetHistogramSamplesSinceCreation(kQueryTime));
-  ASSERT_TRUE(samples);
-  // 10 for insert, 100 for update, 1000 for commit
-  EXPECT_EQ(1110, samples->sum());
-
-  samples = tester.GetHistogramSamplesSinceCreation(kUpdateTime);
-  ASSERT_TRUE(samples);
-  EXPECT_EQ(1110, samples->sum());
-
-  samples = tester.GetHistogramSamplesSinceCreation(kCommitTime);
-  ASSERT_TRUE(samples);
-  EXPECT_EQ(1000, samples->sum());
-
-  samples = tester.GetHistogramSamplesSinceCreation(kAutoCommitTime);
-  EXPECT_EQ(0, samples->sum());
-}
-
 TEST_F(SQLDatabaseTest, OnMemoryDump) {
   base::trace_event::MemoryDumpArgs args = {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
@@ -1434,40 +1078,6 @@ TEST_F(SQLDatabaseTest, CollectDiagnosticInfo) {
   EXPECT_NE(std::string::npos, error_info.find(kSimpleSql));
   EXPECT_NE(std::string::npos, error_info.find("volcano"));
   EXPECT_NE(std::string::npos, error_info.find("version: 4"));
-}
-
-TEST_F(SQLDatabaseTest, RegisterIntentToUpload) {
-  base::FilePath breadcrumb_path =
-      db_path().DirName().AppendASCII("sqlite-diag");
-
-  // No stale diagnostic store.
-  ASSERT_TRUE(!base::PathExists(breadcrumb_path));
-
-  // The histogram tag is required to enable diagnostic features.
-  EXPECT_FALSE(db().RegisterIntentToUpload());
-  EXPECT_TRUE(!base::PathExists(breadcrumb_path));
-
-  db().Close();
-  db().set_histogram_tag("Test");
-  ASSERT_TRUE(db().Open(db_path()));
-
-  // Should signal upload only once.
-  EXPECT_TRUE(db().RegisterIntentToUpload());
-  EXPECT_TRUE(base::PathExists(breadcrumb_path));
-  EXPECT_FALSE(db().RegisterIntentToUpload());
-
-  // Changing the histogram tag should allow new upload to succeed.
-  db().Close();
-  db().set_histogram_tag("NewTest");
-  ASSERT_TRUE(db().Open(db_path()));
-  EXPECT_TRUE(db().RegisterIntentToUpload());
-  EXPECT_FALSE(db().RegisterIntentToUpload());
-
-  // Old tag is still prevented.
-  db().Close();
-  db().set_histogram_tag("Test");
-  ASSERT_TRUE(db().Open(db_path()));
-  EXPECT_FALSE(db().RegisterIntentToUpload());
 }
 
 // Test that a fresh database has mmap enabled by default, if mmap'ed I/O is
@@ -1590,7 +1200,7 @@ TEST_F(SQLDatabaseTest, GetAppropriateMmapSizeAltStatus) {
   ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
   ASSERT_FALSE(db().DoesTableExist("meta"));
   ASSERT_TRUE(db().DoesViewExist("MmapStatus"));
-  EXPECT_EQ(base::IntToString(MetaTable::kMmapSuccess),
+  EXPECT_EQ(base::NumberToString(MetaTable::kMmapSuccess),
             ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
 
   // Also maps everything when kMmapSuccess is already in the view.
@@ -1600,14 +1210,14 @@ TEST_F(SQLDatabaseTest, GetAppropriateMmapSizeAltStatus) {
   ASSERT_TRUE(db().Execute("DROP VIEW MmapStatus"));
   ASSERT_TRUE(db().Execute("CREATE VIEW MmapStatus (value) AS SELECT 1"));
   ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
-  EXPECT_EQ(base::IntToString(MetaTable::kMmapSuccess),
+  EXPECT_EQ(base::NumberToString(MetaTable::kMmapSuccess),
             ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
 
   // Failure status leads to nothing being mapped.
   ASSERT_TRUE(db().Execute("DROP VIEW MmapStatus"));
   ASSERT_TRUE(db().Execute("CREATE VIEW MmapStatus (value) AS SELECT -2"));
   ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
-  EXPECT_EQ(base::IntToString(MetaTable::kMmapFailure),
+  EXPECT_EQ(base::NumberToString(MetaTable::kMmapFailure),
             ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
 }
 

@@ -6,9 +6,17 @@
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_DELEGATE_H_
 
 #include <set>
+#include <utility>
+#include <vector>
 
+#include "ui/accessibility/ax_clipping_behavior.h"
+#include "ui/accessibility/ax_coordinate_system.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_node_position.h"
+#include "ui/accessibility/ax_offscreen_result.h"
+#include "ui/accessibility/ax_position.h"
+#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
@@ -50,6 +58,12 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the accessibility tree data for this node.
   virtual const AXTreeData& GetTreeData() const = 0;
 
+  // Creates a text position rooted at this object.
+  virtual AXNodePosition::AXPositionInstance CreateTextPositionAt(
+      int offset,
+      ax::mojom::TextAffinity affinity =
+          ax::mojom::TextAffinity::kDownstream) const = 0;
+
   // Get the accessibility node for the NSWindow the node is contained in. This
   // method is only meaningful on macOS.
   virtual gfx::NativeViewAccessible GetNSWindow() = 0;
@@ -67,13 +81,28 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   virtual gfx::NativeViewAccessible ChildAtIndex(int index) = 0;
 
-  // Get the bounds of this node in screen coordinates, applying clipping
-  // to all bounding boxes so that the resulting rect is within the window.
-  virtual gfx::Rect GetClippedScreenBoundsRect() const = 0;
+  // Return the bounds of this node in the coordinate system indicated. If the
+  // clipping behavior is set to clipped, clipping is applied. If an offscreen
+  // result address is provided, it will be populated depending on whether the
+  // returned bounding box is onscreen or offscreen.
+  virtual gfx::Rect GetBoundsRect(
+      const AXCoordinateSystem coordinate_system,
+      const AXClippingBehavior clipping_behavior,
+      AXOffscreenResult* offscreen_result = nullptr) const = 0;
 
-  // Get the bounds of this node in screen coordinates without applying
-  // any clipping; it may be outside of the window or offscreen.
-  virtual gfx::Rect GetUnclippedScreenBoundsRect() const = 0;
+  // Return the bounds of the text range given by text offsets in the coordinate
+  // system indicated. When determining the text offset of a node, the text of
+  // this node is included while descendant text may be accounted for with a
+  // single special character. If the clipping behavior is set to clipped,
+  // clipping is applied. If an offscreen result address is provided, it will be
+  // populated depending on whether the returned bounding box is onscreen or
+  // offscreen.
+  virtual gfx::Rect GetRangeBoundsRect(
+      const int start_offset,
+      const int end_offset,
+      const AXCoordinateSystem coordinate_system,
+      const AXClippingBehavior clipping_behavior,
+      AXOffscreenResult* offscreen_result = nullptr) const = 0;
 
   // Do a *synchronous* hit test of the given location in global screen
   // coordinates, and the node within this node's subtree (inclusive) that's
@@ -95,40 +124,96 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get whether this node is offscreen.
   virtual bool IsOffscreen() const = 0;
 
+  // Get whether this node is in web content.
+  virtual bool IsWebContent() const = 0;
+
   virtual AXPlatformNode* GetFromNodeID(int32_t id) = 0;
 
-  // Given a node ID attribute (one where IsNodeIdIntAttribute is true),
-  // and a destination node ID, return a set of all source node IDs that
-  // have that relationship attribute between them and the destination.
-  virtual std::set<int32_t> GetReverseRelations(ax::mojom::IntAttribute attr,
-                                                int32_t dst_id) = 0;
+  // Given a node ID attribute (one where IsNodeIdIntAttribute is true), return
+  // a target nodes for which this delegate's node has that relationship
+  // attribute or NULL if there is no such relationship.
+  virtual AXPlatformNode* GetTargetNodeForRelation(
+      ax::mojom::IntAttribute attr) = 0;
 
-  // Given a node ID list attribute (one where
-  // IsNodeIdIntListAttribute is true), and a destination node ID,
-  // return a set of all source node IDs that have that relationship
-  // attribute between them and the destination.
-  virtual std::set<int32_t> GetReverseRelations(
-      ax::mojom::IntListAttribute attr,
-      int32_t dst_id) = 0;
+  // Given a node ID attribute (one where IsNodeIdIntListAttribute is true),
+  // return a set of all target nodes for which this delegate's node has that
+  // relationship attribute.
+  virtual std::set<AXPlatformNode*> GetTargetNodesForRelation(
+      ax::mojom::IntListAttribute attr) = 0;
+
+  // Given a node ID attribute (one where IsNodeIdIntAttribute is true), return
+  // a set of all source nodes that have that relationship attribute between
+  // them and this delegate's node.
+  virtual std::set<AXPlatformNode*> GetReverseRelations(
+      ax::mojom::IntAttribute attr) = 0;
+
+  // Given a node ID list attribute (one where IsNodeIdIntListAttribute is
+  // true), return a set of all source nodes that have that relationship
+  // attribute between them and this delegate's node.
+  virtual std::set<AXPlatformNode*> GetReverseRelations(
+      ax::mojom::IntListAttribute attr) = 0;
 
   virtual const AXUniqueId& GetUniqueId() const = 0;
+
+  // This method finds text boundaries in the text used for platform text APIs.
+  // Implementations may use side-channel data such as line or word indices to
+  // produce appropriate results. It may optionally return no value, indicating
+  // that the delegate does not have all the information required to calculate
+  // this value and it is the responsibility of the AXPlatformNode itself to
+  // to calculate it.
+  virtual base::Optional<int> FindTextBoundary(
+      TextBoundaryType boundary_type,
+      int offset,
+      TextBoundaryDirection direction,
+      ax::mojom::TextAffinity affinity) const = 0;
+
+  // Return a vector of all the descendants of this delegate's node.
+  virtual const std::vector<gfx::NativeViewAccessible> GetDescendants()
+      const = 0;
 
   //
   // Tables. All of these should be called on a node that's a table-like
   // role.
   //
-
-  virtual int GetTableRowCount() const = 0;
-  virtual int GetTableColCount() const = 0;
+  virtual bool IsTable() const = 0;
+  virtual int32_t GetTableColCount() const = 0;
+  virtual int32_t GetTableRowCount() const = 0;
+  virtual base::Optional<int32_t> GetTableAriaColCount() const = 0;
+  virtual base::Optional<int32_t> GetTableAriaRowCount() const = 0;
+  virtual int32_t GetTableCellCount() const = 0;
   virtual const std::vector<int32_t> GetColHeaderNodeIds() const = 0;
   virtual const std::vector<int32_t> GetColHeaderNodeIds(
       int32_t col_index) const = 0;
   virtual const std::vector<int32_t> GetRowHeaderNodeIds() const = 0;
   virtual const std::vector<int32_t> GetRowHeaderNodeIds(
       int32_t row_index) const = 0;
-  virtual int32_t GetCellId(int32_t row_index, int32_t col_index) const = 0;
+  virtual AXPlatformNode* GetTableCaption() = 0;
+
+  // Table row-like nodes.
+  virtual bool IsTableRow() const = 0;
+  virtual int32_t GetTableRowRowIndex() const = 0;
+
+  // Table cell-like nodes.
+  virtual bool IsTableCellOrHeader() const = 0;
   virtual int32_t GetTableCellIndex() const = 0;
+  virtual int32_t GetTableCellColIndex() const = 0;
+  virtual int32_t GetTableCellRowIndex() const = 0;
+  virtual int32_t GetTableCellColSpan() const = 0;
+  virtual int32_t GetTableCellRowSpan() const = 0;
+  virtual int32_t GetTableCellAriaColIndex() const = 0;
+  virtual int32_t GetTableCellAriaRowIndex() const = 0;
+  virtual int32_t GetCellId(int32_t row_index, int32_t col_index) const = 0;
   virtual int32_t CellIndexToId(int32_t cell_index) const = 0;
+
+  // Helper methods to check if a cell is an ARIA-1.1+ 'cell' or 'gridcell'
+  virtual bool IsCellOrHeaderOfARIATable() const = 0;
+  virtual bool IsCellOrHeaderOfARIAGrid() const = 0;
+
+  // Ordered-set-like and item-like nodes.
+  virtual bool IsOrderedSetItem() const = 0;
+  virtual bool IsOrderedSet() const = 0;
+  virtual int32_t GetPosInSet() const = 0;
+  virtual int32_t GetSetSize() const = 0;
 
   //
   // Events.
@@ -145,6 +230,17 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Perform an accessibility action, switching on the ax::mojom::Action
   // provided in |data|.
   virtual bool AccessibilityPerformAction(const AXActionData& data) = 0;
+
+  //
+  // Localized strings.
+  //
+
+  virtual base::string16 GetLocalizedRoleDescriptionForUnlabeledImage()
+      const = 0;
+  virtual base::string16 GetLocalizedStringForImageAnnotationStatus(
+      ax::mojom::ImageAnnotationStatus status) const = 0;
+  virtual base::string16 GetLocalizedStringForLandmarkType() const = 0;
+  virtual base::string16 GetStyleNameAttributeAsLocalizedString() const = 0;
 
   //
   // Testing.

@@ -8,14 +8,14 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_UTIL_UNITTEST_H_
-#define WEBRTC_LIBJINGLE_XMPP_UTIL_UNITTEST_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_UTIL_UNITTEST_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_UTIL_UNITTEST_H_
 
 #include <sstream>
 #include <string>
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 // This class captures callbacks from engine.
 class XmppTestHandler : public XmppOutputHandler,  public XmppSessionHandler,
@@ -48,11 +48,11 @@ class XmppTestHandler : public XmppOutputHandler,  public XmppSessionHandler,
   std::stringstream stanza_;
 };
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
-inline std::ostream& operator<<(std::ostream& os, const buzz::Jid& jid) {
+inline std::ostream& operator<<(std::ostream& os, const jingle_xmpp::Jid& jid) {
   os << jid.Str();
   return os;
 }
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_UTIL_UNITTEST_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_UTIL_UNITTEST_H_

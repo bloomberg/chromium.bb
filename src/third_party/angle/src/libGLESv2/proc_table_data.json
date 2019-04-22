@@ -343,6 +343,45 @@
         "glGetTranslatedShaderSourceANGLE"
     ],
 
+    "GL_CHROMIUM_framebuffer_mixed_samples": [
+         "glMatrixLoadfCHROMIUM",
+         "glMatrixLoadIdentityCHROMIUM",
+         "glCoverageModulationCHROMIUM"
+    ],
+
+    "GL_CHROMIUM_path_rendering": [
+         "glGenPathsCHROMIUM",
+         "glDeletePathsCHROMIUM",
+         "glIsPathCHROMIUM",
+         "glPathCommandsCHROMIUM",
+         "glPathParameterfCHROMIUM",
+         "glPathParameteriCHROMIUM",
+         "glGetPathParameterfvCHROMIUM",
+         "glGetPathParameterivCHROMIUM",
+         "glPathStencilFuncCHROMIUM",
+         "glStencilFillPathCHROMIUM",
+         "glStencilStrokePathCHROMIUM",
+         "glCoverFillPathCHROMIUM",
+         "glCoverStrokePathCHROMIUM",
+         "glStencilThenCoverFillPathCHROMIUM",
+         "glStencilThenCoverStrokePathCHROMIUM",
+         "glCoverFillPathInstancedCHROMIUM",
+         "glCoverStrokePathInstancedCHROMIUM",
+         "glStencilFillPathInstancedCHROMIUM",
+         "glStencilStrokePathInstancedCHROMIUM",
+         "glStencilThenCoverFillPathInstancedCHROMIUM",
+         "glStencilThenCoverStrokePathInstancedCHROMIUM",
+         "glBindFragmentInputLocationCHROMIUM",
+         "glProgramPathFragmentInputGenCHROMIUM"
+    ],
+
+    "GL_EXT_blend_func_extended": [
+        "glBindFragDataLocationIndexedEXT",
+        "glBindFragDataLocationEXT",
+        "glGetProgramResourceLocationIndexEXT",
+        "glGetFragDataIndexEXT"
+    ],
+
     "GL_EXT_texture_storage": [
         "glTexStorage2DEXT",
         "glTexStorage3DEXT"
@@ -387,6 +426,12 @@
         "glDrawArraysInstancedANGLE",
         "glDrawElementsInstancedANGLE",
         "glVertexAttribDivisorANGLE"
+    ],
+
+    "GL_EXT_instanced_arrays": [
+        "glDrawArraysInstancedEXT",
+        "glDrawElementsInstancedEXT",
+        "glVertexAttribDivisorEXT"
     ],
 
     "GL_OES_get_program_binary": [
@@ -526,9 +571,15 @@
         "glGetQueryObjectui64vRobustANGLE"
     ],
 
-    "GL_ANGLE_multiview": [
-        "glFramebufferTextureMultiviewLayeredANGLE",
-        "glFramebufferTextureMultiviewSideBySideANGLE"
+    "GL_ANGLE_multi_draw": [
+      "glMultiDrawArraysANGLE",
+      "glMultiDrawArraysInstancedANGLE",
+      "glMultiDrawElementsANGLE",
+      "glMultiDrawElementsInstancedANGLE"
+    ],
+
+    "GL_OVR_multiview2": [
+        "glFramebufferTextureMultiviewOVR"
     ],
 
     "GL_KHR_parallel_shader_compile": [
@@ -740,6 +791,10 @@
       "glSampleMaskiANGLE"
     ],
 
+    "GL_ANGLE_provoking_vertex": [
+      "glProvokingVertexANGLE"
+    ],
+
     "EGL 1.0": [
         "eglChooseConfig",
         "eglCopyBuffers",
@@ -852,6 +907,15 @@
         "eglStreamPostD3DTextureANGLE"
     ],
 
+    "EGL_KHR_fence_sync": [
+        "eglCreateSyncKHR",
+        "eglDestroySyncKHR",
+        "eglClientWaitSyncKHR",
+        "eglGetSyncAttribKHR"
+    ],
+    "EGL_KHR_wait_sync": [
+        "eglWaitSyncKHR"
+    ],
     "EGL_CHROMIUM_get_sync_values": [
         "eglGetSyncValuesCHROMIUM"
     ],
@@ -892,5 +956,45 @@
     "angle::Platform related entry points": [
         "ANGLEGetDisplayPlatform",
         "ANGLEResetDisplayPlatform"
+    ],
+
+    "GL_EXT_memory_object/GL_EXT_semaphore": [
+        "glGetUnsignedBytevEXT",
+        "glGetUnsignedBytei_vEXT"
+    ],
+
+    "GL_EXT_memory_object": [
+        "glDeleteMemoryObjectsEXT",
+        "glIsMemoryObjectEXT",
+        "glCreateMemoryObjectsEXT",
+        "glMemoryObjectParameterivEXT",
+        "glGetMemoryObjectParameterivEXT",
+        "glTexStorageMem2DEXT",
+        "glTexStorageMem2DMultisampleEXT",
+        "glTexStorageMem3DEXT",
+        "glTexStorageMem3DMultisampleEXT",
+        "glBufferStorageMemEXT"
+    ],
+
+    "GL_EXT_memory_object_fd": [
+        "glImportMemoryFdEXT"
+    ],
+
+    "GL_EXT_semaphore": [
+        "glGenSemaphoresEXT",
+        "glDeleteSemaphoresEXT",
+        "glIsSemaphoreEXT",
+        "glSemaphoreParameterui64vEXT",
+        "glGetSemaphoreParameterui64vEXT",
+        "glWaitSemaphoreEXT",
+        "glSignalSemaphoreEXT"
+    ],
+
+    "GL_EXT_semaphore_fd": [
+        "glImportSemaphoreFdEXT"
+    ],
+
+    "GL_CHROMIUM_lose_context": [
+        "glLoseContextCHROMIUM"
     ]
 }

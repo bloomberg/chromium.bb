@@ -35,58 +35,58 @@ String MediaControlsResourceLoader::GetMediaControlsCSS() const {
       RuntimeEnabledFeatures::ModernMediaControlsEnabled()
           ? IDR_UASTYLE_MODERN_MEDIA_CONTROLS_CSS
           : IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_CSS);
-};
+}
 
 String MediaControlsResourceLoader::GetMediaControlsAndroidCSS() const {
   if (RuntimeEnabledFeatures::ModernMediaControlsEnabled())
     return String();
   return UncompressResourceAsString(
       IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_ANDROID_CSS);
-};
+}
 
 // static
 String MediaControlsResourceLoader::GetShadowTimelineStyleSheet() {
   return UncompressResourceAsString(
       IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_TIMELINE_CSS);
-};
+}
 
 // static
 String MediaControlsResourceLoader::GetShadowLoadingStyleSheet() {
   return UncompressResourceAsString(
       IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_LOADING_CSS);
-};
+}
 
 // static
 String MediaControlsResourceLoader::GetJumpSVGImage() {
   return UncompressResourceAsString(IDR_MODERN_MEDIA_CONTROLS_JUMP_SVG);
-};
+}
 
 // static
 String MediaControlsResourceLoader::GetArrowRightSVGImage() {
   return UncompressResourceAsString(IDR_MODERN_MEDIA_CONTROLS_ARROW_RIGHT_SVG);
-};
+}
 
 // static
 String MediaControlsResourceLoader::GetArrowLeftSVGImage() {
   return UncompressResourceAsString(IDR_MODERN_MEDIA_CONTROLS_ARROW_LEFT_SVG);
-};
+}
 
 // static
 String MediaControlsResourceLoader::GetScrubbingMessageStyleSheet() {
   return UncompressResourceAsString(
       IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_SCRUBBING_MESSAGE_CSS);
-};
+}
 
 // static
 String MediaControlsResourceLoader::GetAnimatedArrowStyleSheet() {
   return UncompressResourceAsString(
       IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_ANIMATED_ARROW_CSS);
-};
+}
 
 // static
 String MediaControlsResourceLoader::GetMediaInterstitialsStyleSheet() {
   return UncompressResourceAsString(IDR_UASTYLE_MEDIA_INTERSTITIALS_CSS);
-};
+}
 
 String MediaControlsResourceLoader::GetUAStyleSheet() {
   if (ShouldLoadAndroidCSS()) {

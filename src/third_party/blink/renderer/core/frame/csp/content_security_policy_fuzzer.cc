@@ -21,7 +21,7 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
   // Scope cannot be created before BlinkFuzzerTestSupport because it requires
   // that Oilpan be initialized to access blink::ThreadState::Current.
   LEAK_SANITIZER_DISABLED_SCOPE;
-  g_page_holder = DummyPageHolder::Create().release();
+  g_page_holder = std::make_unique<DummyPageHolder>().release();
   return 0;
 }
 
@@ -45,16 +45,15 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
 
   // Construct and initialize a policy from the string.
-  ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+  auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
   csp->DidReceiveHeader(header, header_type, header_source);
   g_page_holder->GetDocument().InitContentSecurityPolicy(csp);
 
   // Force a garbage collection.
   // Specify namespace explicitly. Otherwise it conflicts on Mac OS X with:
   // CoreServices.framework/Frameworks/CarbonCore.framework/Headers/Threads.h.
-  blink::ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
 
   return 0;
 }

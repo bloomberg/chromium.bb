@@ -133,7 +133,6 @@ class ResourceCreationAPI {
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) = 0;
   virtual PP_Resource CreateCameraDevicePrivate(PP_Instance instance) = 0;
-  virtual PP_Resource CreateCompositor(PP_Instance instance) = 0;
   virtual PP_Resource CreateFileChooser(PP_Instance instance,
                                         PP_FileChooserMode_Dev mode,
                                         const PP_Var& accept_types) = 0;

@@ -9,7 +9,9 @@
 #include "src/constants-arch.h"
 #include "src/external-reference-table.h"
 #include "src/roots.h"
+#include "src/thread-local-top.h"
 #include "src/utils.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace v8 {
 namespace internal {
@@ -49,6 +51,11 @@ class IsolateData final {
     return kExternalReferenceTableOffset - kIsolateRootBias;
   }
 
+  // Root-register-relative offset of the builtin entry table.
+  static constexpr int builtin_entry_table_offset() {
+    return kBuiltinEntryTableOffset - kIsolateRootBias;
+  }
+
   // Root-register-relative offset of the builtins table.
   static constexpr int builtins_table_offset() {
     return kBuiltinsTableOffset - kIsolateRootBias;
@@ -58,18 +65,24 @@ class IsolateData final {
   // TODO(ishell): remove in favour of typified id version.
   static int builtin_slot_offset(int builtin_index) {
     DCHECK(Builtins::IsBuiltinId(builtin_index));
-    return builtins_table_offset() + builtin_index * kPointerSize;
+    return builtins_table_offset() + builtin_index * kSystemPointerSize;
   }
 
   // Root-register-relative offset of the builtin table entry.
   static int builtin_slot_offset(Builtins::Name id) {
-    return builtins_table_offset() + id * kPointerSize;
+    return builtins_table_offset() + id * kSystemPointerSize;
   }
 
   // Root-register-relative offset of the virtual call target register value.
   static constexpr int virtual_call_target_register_offset() {
     return kVirtualCallTargetRegisterOffset - kIsolateRootBias;
   }
+
+  // The FP and PC that are saved right before TurboAssembler::CallCFunction.
+  Address* fast_c_call_caller_fp_address() { return &fast_c_call_caller_fp_; }
+  Address* fast_c_call_caller_pc_address() { return &fast_c_call_caller_pc_; }
+  Address fast_c_call_caller_fp() { return fast_c_call_caller_fp_; }
+  Address fast_c_call_caller_pc() { return fast_c_call_caller_pc_; }
 
   // Returns true if this address points to data stored in this instance.
   // If it's the case then the value can be accessed indirectly through the
@@ -80,6 +93,9 @@ class IsolateData final {
     return (address - start) < sizeof(*this);
   }
 
+  ThreadLocalTop& thread_local_top() { return thread_local_top_; }
+  ThreadLocalTop const& thread_local_top() const { return thread_local_top_; }
+
   RootsTable& roots() { return roots_; }
   const RootsTable& roots() const { return roots_; }
 
@@ -87,23 +103,28 @@ class IsolateData final {
     return &external_reference_table_;
   }
 
+  Address* builtin_entry_table() { return builtin_entry_table_; }
   Address* builtins() { return builtins_; }
 
  private:
 // Static layout definition.
-#define FIELDS(V)                                                         \
-  V(kEmbedderDataOffset, Internals::kNumIsolateDataSlots* kPointerSize)   \
-  V(kExternalMemoryOffset, kInt64Size)                                    \
-  V(kExternalMemoryLlimitOffset, kInt64Size)                              \
-  V(kExternalMemoryAtLastMarkCompactOffset, kInt64Size)                   \
-  V(kRootsTableOffset, RootsTable::kEntriesCount* kPointerSize)           \
-  V(kExternalReferenceTableOffset, ExternalReferenceTable::SizeInBytes()) \
-  V(kBuiltinsTableOffset, Builtins::builtin_count* kPointerSize)          \
-  V(kVirtualCallTargetRegisterOffset, kPointerSize)                       \
-  /* This padding aligns IsolateData size by 8 bytes. */                  \
-  V(kPaddingOffset,                                                       \
-    8 + RoundUp<8>(static_cast<int>(kPaddingOffset)) - kPaddingOffset)    \
-  /* Total size. */                                                       \
+#define FIELDS(V)                                                             \
+  V(kEmbedderDataOffset, Internals::kNumIsolateDataSlots* kSystemPointerSize) \
+  V(kExternalMemoryOffset, kInt64Size)                                        \
+  V(kExternalMemoryLlimitOffset, kInt64Size)                                  \
+  V(kExternalMemoryAtLastMarkCompactOffset, kInt64Size)                       \
+  V(kRootsTableOffset, RootsTable::kEntriesCount* kSystemPointerSize)         \
+  V(kExternalReferenceTableOffset, ExternalReferenceTable::kSizeInBytes)      \
+  V(kThreadLocalTopOffset, ThreadLocalTop::kSizeInBytes)                      \
+  V(kBuiltinEntryTableOffset, Builtins::builtin_count* kSystemPointerSize)    \
+  V(kBuiltinsTableOffset, Builtins::builtin_count* kSystemPointerSize)        \
+  V(kVirtualCallTargetRegisterOffset, kSystemPointerSize)                     \
+  V(kFastCCallCallerFPOffset, kSystemPointerSize)                             \
+  V(kFastCCallCallerPCOffset, kSystemPointerSize)                             \
+  /* This padding aligns IsolateData size by 8 bytes. */                      \
+  V(kPaddingOffset,                                                           \
+    8 + RoundUp<8>(static_cast<int>(kPaddingOffset)) - kPaddingOffset)        \
+  /* Total size. */                                                           \
   V(kSize, 0)
 
   DEFINE_FIELD_OFFSET_CONSTANTS(0, FIELDS)
@@ -130,6 +151,13 @@ class IsolateData final {
 
   ExternalReferenceTable external_reference_table_;
 
+  ThreadLocalTop thread_local_top_;
+
+  // The entry points for all builtins. This corresponds to
+  // Code::InstructionStart() for each Code object in the builtins table below.
+  // The entry table is in IsolateData for easy access through kRootRegister.
+  Address builtin_entry_table_[Builtins::builtin_count] = {};
+
   // The entries in this array are tagged pointers to Code objects.
   Address builtins_[Builtins::builtin_count] = {};
 
@@ -137,6 +165,13 @@ class IsolateData final {
   // TODO(v8:6666): Remove once wasm supports pc-relative jumps to builtins on
   // ia32 (otherwise the arguments adaptor call runs out of registers).
   void* virtual_call_target_register_ = nullptr;
+
+  // Stores the state of the caller for TurboAssembler::CallCFunction so that
+  // the sampling CPU profiler can iterate the stack during such calls. These
+  // are stored on IsolateData so that they can be stored to with only one move
+  // instruction in compiled code.
+  Address fast_c_call_caller_fp_ = kNullAddress;
+  Address fast_c_call_caller_pc_ = kNullAddress;
 
   // Ensure the size is 8-byte aligned in order to make alignment of the field
   // following the IsolateData field predictable. This solves the issue with
@@ -163,11 +198,14 @@ class IsolateData final {
 // actual V8 code.
 void IsolateData::AssertPredictableLayout() {
   STATIC_ASSERT(std::is_standard_layout<RootsTable>::value);
+  STATIC_ASSERT(std::is_standard_layout<ThreadLocalTop>::value);
   STATIC_ASSERT(std::is_standard_layout<ExternalReferenceTable>::value);
   STATIC_ASSERT(std::is_standard_layout<IsolateData>::value);
   STATIC_ASSERT(offsetof(IsolateData, roots_) == kRootsTableOffset);
   STATIC_ASSERT(offsetof(IsolateData, external_reference_table_) ==
                 kExternalReferenceTableOffset);
+  STATIC_ASSERT(offsetof(IsolateData, thread_local_top_) ==
+                kThreadLocalTopOffset);
   STATIC_ASSERT(offsetof(IsolateData, builtins_) == kBuiltinsTableOffset);
   STATIC_ASSERT(offsetof(IsolateData, virtual_call_target_register_) ==
                 kVirtualCallTargetRegisterOffset);
@@ -177,6 +215,10 @@ void IsolateData::AssertPredictableLayout() {
                 kExternalMemoryLlimitOffset);
   STATIC_ASSERT(offsetof(IsolateData, external_memory_at_last_mark_compact_) ==
                 kExternalMemoryAtLastMarkCompactOffset);
+  STATIC_ASSERT(offsetof(IsolateData, fast_c_call_caller_fp_) ==
+                kFastCCallCallerFPOffset);
+  STATIC_ASSERT(offsetof(IsolateData, fast_c_call_caller_pc_) ==
+                kFastCCallCallerPCOffset);
   STATIC_ASSERT(sizeof(IsolateData) == IsolateData::kSize);
 }
 

@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -23,7 +23,7 @@ bool EndsWithSpace(const std::string& string) {
 }
 }
 
-sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
+std::unique_ptr<sync_pb::PasswordSpecificsData> DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics,
     Cryptographer* crypto) {
   if (!specifics.has_password())
@@ -32,13 +32,13 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
   if (!password_specifics.has_encrypted())
     return nullptr;
   const sync_pb::EncryptedData& encrypted = password_specifics.encrypted();
-  std::unique_ptr<sync_pb::PasswordSpecificsData> data(
-      new sync_pb::PasswordSpecificsData);
+  std::unique_ptr<sync_pb::PasswordSpecificsData> data =
+      std::make_unique<sync_pb::PasswordSpecificsData>();
   if (!crypto->CanDecrypt(encrypted))
     return nullptr;
   if (!crypto->Decrypt(encrypted, data.get()))
     return nullptr;
-  return data.release();
+  return data;
 }
 
 // The list of names which are reserved for use by the server.
@@ -71,7 +71,7 @@ void ServerNameToSyncAPIName(const std::string& server_name, std::string* out) {
 // also illegal, but are not considered here.
 bool IsNameServerIllegalAfterTrimming(const std::string& name) {
   size_t untrimmed_count = name.find_last_not_of(' ') + 1;
-  for (size_t i = 0; i < arraysize(kForbiddenServerNames); ++i) {
+  for (size_t i = 0; i < base::size(kForbiddenServerNames); ++i) {
     if (name.compare(0, untrimmed_count, kForbiddenServerNames[i]) == 0)
       return true;
   }

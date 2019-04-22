@@ -188,19 +188,6 @@ class PlatformBackend(object):
   def InstallApplication(self, application):
     raise NotImplementedError()
 
-  def CanCaptureVideo(self):
-    return False
-
-  def StartVideoCapture(self, min_bitrate_mbps):
-    raise NotImplementedError()
-
-  @property
-  def is_video_capture_running(self):
-    return False
-
-  def StopVideoCapture(self):
-    raise NotImplementedError()
-
   def CanMonitorPower(self):
     return False
 
@@ -211,12 +198,6 @@ class PlatformBackend(object):
     raise NotImplementedError()
 
   def StopMonitoringPower(self):
-    raise NotImplementedError()
-
-  def CanMonitorNetworkData(self):
-    return False
-
-  def GetNetworkData(self, browser):
     raise NotImplementedError()
 
   def CanTakeScreenshot(self):

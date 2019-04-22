@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,8 +42,7 @@ TestUkmRecorder::TestUkmRecorder() {
   DisableSamplingForTesting();
 }
 
-TestUkmRecorder::~TestUkmRecorder() {
-};
+TestUkmRecorder::~TestUkmRecorder() {}
 
 bool TestUkmRecorder::ShouldRestrictToWhitelistedSourceIds() const {
   // In tests, we want to record all source ids (not just those that are
@@ -74,6 +74,16 @@ const UkmSource* TestUkmRecorder::GetSourceForSourceId(
     }
   }
   return source;
+}
+
+const ukm::mojom::UkmEntry* TestUkmRecorder::GetDocumentCreatedEntryForSourceId(
+    ukm::SourceId source_id) const {
+  auto entries = GetEntriesByName(ukm::builders::DocumentCreated::kEntryName);
+  for (auto* entry : entries) {
+    if (entry->source_id == source_id)
+      return entry;
+  }
+  return nullptr;
 }
 
 void TestUkmRecorder::SetOnAddEntryCallback(base::StringPiece entry_name,
@@ -152,6 +162,6 @@ TestAutoSetUkmRecorder::TestAutoSetUkmRecorder() : self_ptr_factory_(this) {
 
 TestAutoSetUkmRecorder::~TestAutoSetUkmRecorder() {
   DelegatingUkmRecorder::Get()->RemoveDelegate(this);
-};
+}
 
 }  // namespace ukm

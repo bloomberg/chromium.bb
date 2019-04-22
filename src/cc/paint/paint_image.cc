@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/atomic_sequence_num.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_image_generator.h"
 #include "cc/paint/paint_record.h"
@@ -152,12 +152,19 @@ void PaintImage::CreateSkImage() {
   }
 }
 
+bool PaintImage::IsEligibleForAcceleratedDecoding() const {
+  if (!CanDecodeFromGenerator())
+    return false;
+  DCHECK(paint_image_generator_);
+  return paint_image_generator_->IsEligibleForAcceleratedDecoding();
+}
+
 SkISize PaintImage::GetSupportedDecodeSize(
     const SkISize& requested_size) const {
-  // TODO(vmpstr): If this image is using subset_rect, then we don't support
-  // decoding to any scale other than the original. See the comment in Decode()
-  // explaining this in more detail.
-  if (paint_image_generator_ && subset_rect_.IsEmpty())
+  // TODO(vmpstr): In some cases we do not support decoding to any other
+  // size than the original. See the comment in CanDecodeFromGenerator()
+  // for more detail.
+  if (CanDecodeFromGenerator())
     return paint_image_generator_->GetSupportedDecodeSize(requested_size);
   return SkISize::Make(width(), height());
 }
@@ -167,24 +174,37 @@ bool PaintImage::Decode(void* memory,
                         sk_sp<SkColorSpace> color_space,
                         size_t frame_index,
                         GeneratorClientId client_id) const {
-  // We only support decode to supported decode size.
-  DCHECK(info->dimensions() == GetSupportedDecodeSize(info->dimensions()));
-
   // We don't support SkImageInfo's with color spaces on them. Color spaces
   // should always be passed via the |color_space| arg.
   DCHECK(!info->colorSpace());
 
-  // TODO(vmpstr): If we're using a subset_rect_ then the info specifies the
-  // requested size relative to the subset. However, the generator isn't aware
-  // of this subsetting and would need a size that is relative to the original
-  // image size. We could still implement this case, but we need to convert the
-  // requested size into the space of the original image. For now, fallback to
-  // DecodeFromSkImage().
-  if (paint_image_generator_ && subset_rect_.IsEmpty())
+  // We only support decode to supported decode size.
+  DCHECK(info->dimensions() == GetSupportedDecodeSize(info->dimensions()));
+
+  // TODO(vmpstr): In some cases we do not support decoding to any other
+  // size than the original. See the comment in CanDecodeFromGenerator()
+  // for more detail. For now, fallback to DecodeFromSkImage().
+  if (CanDecodeFromGenerator()) {
     return DecodeFromGenerator(memory, info, std::move(color_space),
                                frame_index, client_id);
+  }
   return DecodeFromSkImage(memory, info, std::move(color_space), frame_index,
                            client_id);
+}
+
+bool PaintImage::DecodeYuv(void* planes[SkYUVASizeInfo::kMaxCount],
+                           size_t frame_index,
+                           GeneratorClientId client_id,
+                           const SkYUVASizeInfo& yuva_size_info) const {
+  SkYUVAIndex indices[SkYUVAIndex::kIndexCount];
+  // Passing nullptr for the SkYUVASizeInfo forces IsYuv to create and fill out
+  // a temporary object instead because |yuva_size_info| is const.
+  bool is_yuv = IsYuv(nullptr, indices);
+  DCHECK(is_yuv);
+  DCHECK(CanDecodeFromGenerator());
+  const uint32_t lazy_pixel_ref = unique_id();
+  return paint_image_generator_->GetYUVA8Planes(yuva_size_info, indices, planes,
+                                                frame_index, lazy_pixel_ref);
 }
 
 bool PaintImage::DecodeFromGenerator(void* memory,
@@ -192,13 +212,23 @@ bool PaintImage::DecodeFromGenerator(void* memory,
                                      sk_sp<SkColorSpace> color_space,
                                      size_t frame_index,
                                      GeneratorClientId client_id) const {
-  DCHECK(subset_rect_.IsEmpty());
-
+  DCHECK(CanDecodeFromGenerator());
   // First convert the info to have the requested color space, since the decoder
   // will convert this for us.
   *info = info->makeColorSpace(std::move(color_space));
+  const uint32_t lazy_pixel_ref = unique_id();
   return paint_image_generator_->GetPixels(*info, memory, info->minRowBytes(),
-                                           frame_index, client_id, unique_id());
+                                           frame_index, client_id,
+                                           lazy_pixel_ref);
+}
+
+// TODO(vmpstr): If we're using a subset_rect_ then the info specifies the
+// requested size relative to the subset. However, the generator isn't aware
+// of this subsetting and would need a size that is relative to the original
+// image size. We could still implement this case, but we need to convert the
+// requested size into the space of the original image.
+bool PaintImage::CanDecodeFromGenerator() const {
+  return paint_image_generator_ && subset_rect_.IsEmpty();
 }
 
 bool PaintImage::DecodeFromSkImage(void* memory,
@@ -247,6 +277,23 @@ SkColorType PaintImage::GetColorType() const {
   if (GetSkImage())
     return GetSkImage()->colorType();
   return kUnknown_SkColorType;
+}
+
+bool PaintImage::IsYuv(SkYUVASizeInfo* yuva_size_info,
+                       SkYUVAIndex* plane_indices) const {
+  SkYUVASizeInfo temp_yuva_size_info;
+  SkYUVAIndex temp_plane_indices[SkYUVAIndex::kIndexCount];
+  if (!yuva_size_info) {
+    yuva_size_info = &temp_yuva_size_info;
+  }
+  if (!plane_indices) {
+    plane_indices = temp_plane_indices;
+  }
+  // We pass nullptr for color_space because QueryYUVA8 hardcodes it to
+  // kJPEG_SkYUVColorSpace when it should be kRec601_SkYUVColorSpace for WebP.
+  return CanDecodeFromGenerator() &&
+         paint_image_generator_->QueryYUVA8(yuva_size_info, plane_indices,
+                                            nullptr /* color_space */);
 }
 
 const std::vector<FrameMetadata>& PaintImage::GetFrameMetadata() const {
@@ -298,7 +345,7 @@ std::string PaintImage::ToString() const {
       << " animation_type_: " << static_cast<int>(animation_type_)
       << " completion_state_: " << static_cast<int>(completion_state_)
       << " subset_rect_: " << subset_rect_.ToString()
-      << " is_multipart_: " << is_multipart_;
+      << " is_multipart_: " << is_multipart_ << " is YUV: " << IsYuv();
   return str.str();
 }
 

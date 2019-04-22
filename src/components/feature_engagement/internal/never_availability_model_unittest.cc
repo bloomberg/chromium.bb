@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement {
@@ -31,7 +31,7 @@ class NeverAvailabilityModelTest : public ::testing::Test {
   base::Optional<bool> success_;
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(NeverAvailabilityModelTest);
 };

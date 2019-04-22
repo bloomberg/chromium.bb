@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_CHILD_HISTOGRAM_IMPL_H
-#define CONTENT_CHILD_CHILD_HISTOGRAM_IMPL_H
+#ifndef CONTENT_CHILD_CHILD_HISTOGRAM_FETCHER_IMPL_H
+#define CONTENT_CHILD_CHILD_HISTOGRAM_FETCHER_IMPL_H
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "content/common/histogram_fetcher.mojom.h"
 #include "ipc/message_filter.h"
 
@@ -29,7 +29,7 @@ class ChildHistogramFetcherFactoryImpl
   static void Create(content::mojom::ChildHistogramFetcherFactoryRequest);
 
  private:
-  void CreateFetcher(mojo::ScopedSharedBufferHandle,
+  void CreateFetcher(base::WritableSharedMemoryRegion,
                      content::mojom::ChildHistogramFetcherRequest) override;
 };
 
@@ -61,4 +61,4 @@ class ChildHistogramFetcherImpl : public content::mojom::ChildHistogramFetcher {
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_CHILD_HISTOGRAM_IMPL_H
+#endif  // CONTENT_CHILD_CHILD_HISTOGRAM_FETCHER_IMPL_H

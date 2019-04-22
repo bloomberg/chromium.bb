@@ -30,6 +30,8 @@ jumbo_source_set("fxbarcode") {
     "cbc_ean13.h",
     "cbc_ean8.cpp",
     "cbc_ean8.h",
+    "cbc_eancode.cpp",
+    "cbc_eancode.h",
     "cbc_onecode.cpp",
     "cbc_onecode.h",
     "cbc_pdf417i.cpp",
@@ -90,6 +92,8 @@ jumbo_source_set("fxbarcode") {
     "oned/BC_OnedEAN8Writer.h",
     "oned/BC_OnedEANChecksum.cpp",
     "oned/BC_OnedEANChecksum.h",
+    "oned/BC_OnedEANWriter.cpp",
+    "oned/BC_OnedEANWriter.h",
     "oned/BC_OnedUPCAWriter.cpp",
     "oned/BC_OnedUPCAWriter.h",
     "pdf417/BC_PDF417.cpp",
@@ -139,6 +143,7 @@ jumbo_source_set("fxbarcode") {
 
 pdfium_unittest_source_set("unittests") {
   sources = [
+    "datamatrix/BC_DataMatrixWriter_unittest.cpp",
     "oned/BC_OnedCodaBarWriter_unittest.cpp",
     "oned/BC_OnedCode128Writer_unittest.cpp",
     "oned/BC_OnedCode39Writer_unittest.cpp",
@@ -146,6 +151,8 @@ pdfium_unittest_source_set("unittests") {
     "oned/BC_OnedEAN8Writer_unittest.cpp",
     "oned/BC_OnedUPCAWriter_unittest.cpp",
     "pdf417/BC_PDF417HighLevelEncoder_unittest.cpp",
+    "pdf417/BC_PDF417Writer_unittest.cpp",
+    "qrcode/BC_QRCodeWriter_unittest.cpp",
   ]
   deps = [
     ":fxbarcode",

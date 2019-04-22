@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_BOOKMARKS_HOME_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_BOOKMARKS_HOME_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_HOME_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_HOME_VIEW_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
@@ -13,18 +13,15 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @protocol ApplicationCommands;
-@protocol UrlLoader;
-class GURL;
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
-
+@class BookmarkHomeViewController;
 namespace bookmarks {
 class BookmarkNode;
 }  // namespace bookmarks
-
-@class BookmarkHomeViewController;
+class GURL;
+namespace ios {
+class ChromeBrowserState;
+}  // namespace ios
+class WebStateList;
 
 @protocol BookmarkHomeViewControllerDelegate
 // The view controller wants to be dismissed. If |urls| is not empty, then
@@ -52,9 +49,9 @@ class BookmarkNode;
 @property(nonatomic, weak) id<BookmarkHomeViewControllerDelegate> homeDelegate;
 
 // Initializers.
-- (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(ios::ChromeBrowserState*)browserState
-                    dispatcher:(id<ApplicationCommands>)dispatcher
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                          dispatcher:(id<ApplicationCommands>)dispatcher
+                        webStateList:(WebStateList*)webStateList
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithTableViewStyle:(UITableViewStyle)tableViewStyle
                            appBarStyle:
@@ -73,4 +70,4 @@ class BookmarkNode;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_HOME_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_HOME_VIEW_CONTROLLER_H_

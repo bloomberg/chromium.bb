@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/signed_exchange_cert_fetcher.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
@@ -81,8 +82,8 @@ class MockURLLoader final : public network::mojom::URLLoader {
   ~MockURLLoader() override = default;
 
   MOCK_METHOD3(FollowRedirect,
-               void(const base::Optional<std::vector<std::string>>&,
-                    const base::Optional<net::HttpRequestHeaders>&,
+               void(const std::vector<std::string>&,
+                    const net::HttpRequestHeaders&,
                     const base::Optional<GURL>&));
   MOCK_METHOD0(ProceedWithResponse, void());
   MOCK_METHOD2(SetPriority,
@@ -151,8 +152,6 @@ class SignedExchangeCertFetcherTest : public testing::Test {
  public:
   SignedExchangeCertFetcherTest()
       : url_(GURL("https://www.example.com/cert")),
-        request_initiator_(
-            url::Origin::Create(GURL("https://sxg.example.com/test.sxg"))),
         resource_dispatcher_host_(CreateDownloadHandlerIntercept(),
                                   base::ThreadTaskRunnerHandle::Get(),
                                   true /* enable_resource_scheduler */) {}
@@ -215,9 +214,8 @@ class SignedExchangeCertFetcherTest : public testing::Test {
     return SignedExchangeCertFetcher::CreateAndStart(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &mock_loader_factory_),
-        std::move(throttles_), url, request_initiator_, force_fetch,
-        SignedExchangeVersion::kB2, std::move(callback),
-        nullptr /* devtools_proxy */,
+        std::move(throttles_), url, force_fetch, std::move(callback),
+        nullptr /* devtools_proxy */, nullptr /* reporter */,
         base::nullopt /* throttling_profile_id */);
   }
 
@@ -242,7 +240,6 @@ class SignedExchangeCertFetcherTest : public testing::Test {
   void CloseClientPipe() { mock_loader_factory_.CloseClientPipe(); }
 
   const GURL url_;
-  const url::Origin request_initiator_;
   bool callback_called_ = false;
   SignedExchangeLoadResult result_;
   std::unique_ptr<SignedExchangeCertificateChain> cert_result_;
@@ -270,8 +267,11 @@ TEST_F(SignedExchangeCertFetcherTest, Simple) {
   EXPECT_EQ(net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_DO_NOT_SAVE_COOKIES |
                 net::LOAD_DO_NOT_SEND_COOKIES,
             mock_loader_factory_.url_request()->load_flags);
-  EXPECT_EQ(request_initiator_,
-            mock_loader_factory_.url_request()->request_initiator);
+  EXPECT_TRUE(mock_loader_factory_.url_request()->request_initiator->opaque());
+  std::string accept;
+  EXPECT_TRUE(
+      mock_loader_factory_.url_request()->headers.GetHeader("Accept", &accept));
+  EXPECT_EQ("application/cert-chain+cbor", accept);
 
   CallOnReceiveResponse();
   mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(

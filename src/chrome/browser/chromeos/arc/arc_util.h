@@ -7,10 +7,9 @@
 
 #include <stdint.h>
 
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
-#include "components/arc/arc_supervision_transition.h"
+#include "components/arc/session/arc_supervision_transition.h"
 
 // Most utility should be put in components/arc/arc_util.{h,cc}, rather than
 // here. However, some utility implementation requires other modules defined in
@@ -49,6 +48,11 @@ enum FileSystemCompatibilityState : int32_t {
   // "compatible" state. Be careful in the case adding a new enum value.
 };
 
+// Returns false if |profile| is not a real user profile but some internal
+// profile for service purposes, which should be ignored for ARC and metrics
+// recording. Also returns false if |profile| is null.
+bool IsRealUserProfile(const Profile* profile);
+
 // Returns true if ARC is allowed to run for the given profile.
 // Otherwise, returns false, e.g. if the Profile is not for the primary user,
 // ARC is not available on the device, it is in the flow to set up managed
@@ -62,8 +66,6 @@ bool IsArcProvisioned(const Profile* profile);
 
 // Returns true if the profile is unmanaged or if the policy
 // EcryptfsMigrationStrategy for the user doesn't disable the migration.
-// Specifically if the policy states to ask the user, it is also considered that
-// migration is allowed, so return true.
 bool IsArcMigrationAllowedByPolicyForProfile(const Profile* profile);
 
 // Returns true if the profile is temporarily blocked to run ARC in the current
@@ -138,10 +140,6 @@ bool IsArcOobeOptInActive();
 // Returns true if opt-in during ChromeOS OOBE is triggered by configuration.
 bool IsArcOobeOptInConfigurationBased();
 
-// Returns true if OPA opt-in window is currently showing and active screen is
-// ARC ToS.
-bool IsArcOptInWizardForAssistantActive();
-
 // Returns true if Terms of Service negotiation is needed. Otherwise false.
 bool IsArcTermsOfServiceNegotiationNeeded(const Profile* profile);
 
@@ -163,10 +161,6 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
     const AccountId& account_id,
     const base::FilePath& profile_path,
     base::OnceClosure callback);
-
-// Returns whether Google Assistant feature is allowed for given |profile|.
-ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
-    const Profile* profile);
 
 // Returns the supervision transition status as stored in profile prefs.
 ArcSupervisionTransition GetSupervisionTransition(const Profile* profile);

@@ -19,8 +19,8 @@ CursorShapeStubProxy::~CursorShapeStubProxy() = default;
 void CursorShapeStubProxy::SetCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&protocol::CursorShapeStub::SetCursorShape, stub_,
-                            cursor_shape));
+      FROM_HERE, base::BindOnce(&protocol::CursorShapeStub::SetCursorShape,
+                                stub_, cursor_shape));
 }
 
 }  // namespace remoting

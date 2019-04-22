@@ -34,6 +34,10 @@ const char kCrashDumpsDir[] = "crash-dumps-dir";
 // (experimental).
 const char kDeterministicMode[] = "deterministic-mode";
 
+// Use a specific disk cache location, rather than one derived from the
+// UserDatadir.
+const char kDiskCacheDir[] = "disk-cache-dir";
+
 // Instructs headless_shell to print document.body.innerHTML to stdout.
 const char kDumpDom[] = "dump-dom";
 

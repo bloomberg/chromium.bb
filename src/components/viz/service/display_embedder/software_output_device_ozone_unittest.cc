@@ -19,6 +19,7 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #include "ui/platform_window/platform_window.h"
@@ -89,20 +90,21 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
   compositor_ = std::make_unique<ui::Compositor>(
       FrameSinkId(1, 1), context_factory, nullptr,
       base::ThreadTaskRunnerHandle::Get(),
-      false /* enable_surface_synchronization */,
       false /* enable_pixel_canvas */);
   compositor_->SetAcceleratedWidget(window_delegate_.GetAcceleratedWidget());
   compositor_->SetScaleAndSize(1.0f, size, LocalSurfaceIdAllocation());
 
   ui::SurfaceFactoryOzone* factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+  std::unique_ptr<ui::PlatformWindowSurface> platform_window_surface =
+      factory->CreatePlatformWindowSurface(compositor_->widget());
   std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
       factory->CreateCanvasForWidget(compositor_->widget());
   if (!surface_ozone) {
     LOG(ERROR) << "SurfaceOzoneCanvas not constructible on this platform";
   } else {
-    output_device_ =
-        std::make_unique<SoftwareOutputDeviceOzone>(std::move(surface_ozone));
+    output_device_ = std::make_unique<SoftwareOutputDeviceOzone>(
+        std::move(platform_window_surface), std::move(surface_ozone));
   }
   if (output_device_)
     output_device_->Resize(size, 1.f);

@@ -249,7 +249,6 @@ bool GetDeletionPreferenceFromDataType(
       case BrowsingDataType::BOOKMARKS:
       case BrowsingDataType::SITE_SETTINGS:
       case BrowsingDataType::DOWNLOADS:
-      case BrowsingDataType::MEDIA_LICENSES:
       case BrowsingDataType::HOSTED_APPS_DATA:
         return false;  // No corresponding preference on basic tab.
       case BrowsingDataType::NUM_TYPES:
@@ -284,9 +283,6 @@ bool GetDeletionPreferenceFromDataType(
     case BrowsingDataType::DOWNLOADS:
       *out_pref = prefs::kDeleteDownloadHistory;
       return true;
-    case BrowsingDataType::MEDIA_LICENSES:
-      *out_pref = prefs::kDeleteMediaLicenses;
-      return true;
     case BrowsingDataType::HOSTED_APPS_DATA:
       *out_pref = prefs::kDeleteHostedAppsData;
       return true;
@@ -313,7 +309,6 @@ BrowsingDataType GetDataTypeFromDeletionPreference(
           {prefs::kDeleteFormData, BrowsingDataType::FORM_DATA},
           {prefs::kDeleteSiteSettings, BrowsingDataType::SITE_SETTINGS},
           {prefs::kDeleteDownloadHistory, BrowsingDataType::DOWNLOADS},
-          {prefs::kDeleteMediaLicenses, BrowsingDataType::MEDIA_LICENSES},
           {prefs::kDeleteHostedAppsData, BrowsingDataType::HOSTED_APPS_DATA},
       },
       base::KEEP_FIRST_OF_DUPES);

@@ -10,6 +10,11 @@
 
 namespace media {
 
+MemoryDataSource::MemoryDataSource(std::string data)
+    : data_string_(std::move(data)),
+      data_(reinterpret_cast<const uint8_t*>(data_string_.data())),
+      size_(data_string_.size()) {}
+
 MemoryDataSource::MemoryDataSource(const uint8_t* data, size_t size)
     : data_(data), size_(size) {}
 

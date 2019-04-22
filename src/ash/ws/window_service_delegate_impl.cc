@@ -6,11 +6,13 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/host/ash_window_tree_host.h"
+#include "ash/ime/ime_engine_factory_registry.h"
 #include "ash/public/interfaces/ash_window_manager.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/non_client_frame_controller.h"
+#include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_finder.h"
@@ -81,6 +83,7 @@ WindowServiceDelegateImpl::WindowServiceDelegateImpl() = default;
 WindowServiceDelegateImpl::~WindowServiceDelegateImpl() = default;
 
 std::unique_ptr<aura::Window> WindowServiceDelegateImpl::NewTopLevel(
+    ws::TopLevelProxyWindow* top_level_proxy_window,
     aura::PropertyConverter* property_converter,
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   std::map<std::string, std::vector<uint8_t>> property_map =
@@ -88,8 +91,8 @@ std::unique_ptr<aura::Window> WindowServiceDelegateImpl::NewTopLevel(
   ws::mojom::WindowType window_type =
       aura::GetWindowTypeFromProperties(property_map);
 
-  auto* window = CreateAndParentTopLevelWindow(window_type, property_converter,
-                                               &property_map);
+  auto* window = CreateAndParentTopLevelWindow(
+      top_level_proxy_window, window_type, property_converter, &property_map);
   return base::WrapUnique<aura::Window>(window);
 }
 
@@ -113,6 +116,7 @@ void WindowServiceDelegateImpl::RunWindowMoveLoop(
     aura::Window* window,
     ws::mojom::MoveLoopSource source,
     const gfx::Point& cursor,
+    int window_component,
     DoneCallback callback) {
   if (!ShouldStartMoveLoop(window)) {
     std::move(callback).Run(false);
@@ -134,8 +138,9 @@ void WindowServiceDelegateImpl::RunWindowMoveLoop(
       ->toplevel_window_event_handler()
       ->wm_toplevel_window_event_handler()
       ->AttemptToStartDrag(
-          window, location_in_parent, HTCAPTION, aura_source,
-          base::BindOnce(&OnMoveLoopCompleted, std::move(callback)));
+          window, location_in_parent, window_component, aura_source,
+          base::BindOnce(&OnMoveLoopCompleted, std::move(callback)),
+          /*update_gesture_target=*/false);
 }
 
 void WindowServiceDelegateImpl::CancelWindowMoveLoop() {
@@ -171,6 +176,15 @@ void WindowServiceDelegateImpl::CancelDragLoop(aura::Window* window) {
     return;
 
   aura::client::GetDragDropClient(window->GetRootWindow())->DragCancel();
+}
+
+void WindowServiceDelegateImpl::SetWindowResizeShadow(aura::Window* window,
+                                                      int hit_test) {
+  ResizeShadowController* controller = Shell::Get()->resize_shadow_controller();
+  if (hit_test == HTNOWHERE)
+    controller->HideShadow(window);
+  else
+    controller->ShowShadow(window, hit_test);
 }
 
 void WindowServiceDelegateImpl::UpdateTextInputState(
@@ -219,6 +233,15 @@ ui::SystemInputInjector* WindowServiceDelegateImpl::GetSystemInputInjector() {
   return system_input_injector_.get();
 }
 
+ui::EventTarget* WindowServiceDelegateImpl::GetGlobalEventTarget() {
+  return Shell::Get();
+}
+
+aura::Window* WindowServiceDelegateImpl::GetRootWindowForDisplayId(
+    int64_t display_id) {
+  return Shell::Get()->GetRootWindowForDisplayId(display_id);
+}
+
 aura::Window* WindowServiceDelegateImpl::GetTopmostWindowAtPoint(
     const gfx::Point& location_in_screen,
     const std::set<aura::Window*>& ignore,
@@ -239,6 +262,13 @@ WindowServiceDelegateImpl::CreateWindowManagerInterface(
                                                           std::move(handle));
   }
   return nullptr;
+}
+
+void WindowServiceDelegateImpl::ConnectToImeEngine(
+    ime::mojom::ImeEngineRequest engine_request,
+    ime::mojom::ImeEngineClientPtr client) {
+  Shell::Get()->ime_engine_factory_registry()->ConnectToImeEngine(
+      std::move(engine_request), std::move(client));
 }
 
 }  // namespace ash

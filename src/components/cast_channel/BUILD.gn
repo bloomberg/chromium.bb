@@ -22,6 +22,8 @@ static_library("cast_channel") {
     "cast_socket_service.h",
     "cast_transport.cc",
     "cast_transport.h",
+    "enum_table.cc",
+    "enum_table.h",
     "keep_alive_delegate.cc",
     "keep_alive_delegate.h",
     "logger.cc",
@@ -76,6 +78,7 @@ source_set("unit_tests") {
     "cast_socket_service_unittest.cc",
     "cast_socket_unittest.cc",
     "cast_transport_unittest.cc",
+    "enum_table_unittest.cc",
     "keep_alive_delegate_unittest.cc",
     "logger_unittest.cc",
   ]

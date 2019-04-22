@@ -5,7 +5,7 @@
 /**
  * Namespace for async utility functions.
  */
-var AsyncUtil = {};
+const AsyncUtil = {};
 
 /**
  * Asynchronous version of Array.forEach.
@@ -23,18 +23,18 @@ var AsyncUtil = {};
  * @param {Object=} opt_thisObject Bound to callback if given.
  * @template T
  */
-AsyncUtil.forEach = function(
-    array, callback, completionCallback, opt_thisObject) {
-  if (opt_thisObject)
+AsyncUtil.forEach = (array, callback, completionCallback, opt_thisObject) => {
+  if (opt_thisObject) {
     callback = callback.bind(opt_thisObject);
-
-  var queue = new AsyncUtil.Queue();
-  for (var i = 0; i < array.length; i++) {
-    queue.run(function(element, index, iterationCompletionCallback) {
-      callback(iterationCompletionCallback, element, index, array);
-    }.bind(null, array[i], i));
   }
-  queue.run(function(iterationCompletionCallback) {
+
+  const queue = new AsyncUtil.Queue();
+  for (let i = 0; i < array.length; i++) {
+    queue.run(((element, index, iterationCompletionCallback) => {
+                callback(iterationCompletionCallback, element, index, array);
+              }).bind(null, array[i], i));
+  }
+  queue.run(iterationCompletionCallback => {
     completionCallback();  // Don't pass iteration completion callback.
   });
 };
@@ -115,18 +115,20 @@ AsyncUtil.ConcurrentQueue.prototype.isCancelled = function() {
  * @private
  */
 AsyncUtil.ConcurrentQueue.prototype.continue_ = function() {
-  if (this.addedTasks_.length === 0)
+  if (this.addedTasks_.length === 0) {
     return;
+  }
 
   console.assert(
       this.pendingTasks_.length <= this.limit_,
       'Too many jobs are running (' + this.pendingTasks_.length + ')');
 
-  if (this.pendingTasks_.length >= this.limit_)
+  if (this.pendingTasks_.length >= this.limit_) {
     return;
+  }
 
   // Run the next closure.
-  var closure = this.addedTasks_.shift();
+  const closure = this.addedTasks_.shift();
   this.pendingTasks_.push(closure);
   closure(this.onTaskFinished_.bind(this, closure));
 
@@ -140,7 +142,7 @@ AsyncUtil.ConcurrentQueue.prototype.continue_ = function() {
  * @private
  */
 AsyncUtil.ConcurrentQueue.prototype.onTaskFinished_ = function(closure) {
-  var index = this.pendingTasks_.indexOf(closure);
+  const index = this.pendingTasks_.indexOf(closure);
   console.assert(index >= 0, 'Invalid task is finished');
   this.pendingTasks_.splice(index, 1);
 
@@ -231,10 +233,10 @@ AsyncUtil.Group.prototype = {
  * @param {string=} opt_name Task identifier. Specify to use in dependencies.
  */
 AsyncUtil.Group.prototype.add = function(closure, opt_dependencies, opt_name) {
-  var length = Object.keys(this.addedTasks_).length;
-  var name = opt_name || ('(unnamed#' + (length + 1) + ')');
+  const length = Object.keys(this.addedTasks_).length;
+  const name = opt_name || ('(unnamed#' + (length + 1) + ')');
 
-  var task = new AsyncUtil.GroupTask(closure, opt_dependencies || [], name);
+  const task = new AsyncUtil.GroupTask(closure, opt_dependencies || [], name);
 
   this.addedTasks_[name] = task;
   this.pendingTasks_[name] = task;
@@ -246,8 +248,9 @@ AsyncUtil.Group.prototype.add = function(closure, opt_dependencies, opt_name) {
  * @param {function()=} opt_onCompletion Completion callback.
  */
 AsyncUtil.Group.prototype.run = function(opt_onCompletion) {
-  if (opt_onCompletion)
+  if (opt_onCompletion) {
     this.completionCallbacks_.push(opt_onCompletion);
+  }
   this.continue_();
 };
 
@@ -259,22 +262,23 @@ AsyncUtil.Group.prototype.continue_ = function() {
   // If all of the added tasks have finished, then call completion callbacks.
   if (Object.keys(this.addedTasks_).length ==
       Object.keys(this.finishedTasks_).length) {
-    for (var index = 0; index < this.completionCallbacks_.length; index++) {
-      var callback = this.completionCallbacks_[index];
+    for (let index = 0; index < this.completionCallbacks_.length; index++) {
+      const callback = this.completionCallbacks_[index];
       callback();
     }
     this.completionCallbacks_ = [];
     return;
   }
 
-  for (var name in this.pendingTasks_) {
-    var task = this.pendingTasks_[name];
-    var dependencyMissing = false;
-    for (var index = 0; index < task.dependencies.length; index++) {
-      var dependency = task.dependencies[index];
+  for (const name in this.pendingTasks_) {
+    const task = this.pendingTasks_[name];
+    let dependencyMissing = false;
+    for (let index = 0; index < task.dependencies.length; index++) {
+      const dependency = task.dependencies[index];
       // Check if the dependency has finished.
-      if (!this.finishedTasks_[dependency])
+      if (!this.finishedTasks_[dependency]) {
         dependencyMissing = true;
+      }
     }
     // All dependences finished, therefore start the task.
     if (!dependencyMissing) {
@@ -340,8 +344,8 @@ AsyncUtil.Aggregator.prototype.run = function() {
   // If recently called, then schedule the consecutive call with a delay.
   if (Date.now() - this.lastRunTime_ < this.delay_) {
     this.cancelScheduledRuns_();
-    this.scheduledRunsTimer_ = setTimeout(this.runImmediately_.bind(this),
-                                          this.delay_ + 1);
+    this.scheduledRunsTimer_ =
+        setTimeout(this.runImmediately_.bind(this), this.delay_ + 1);
     this.lastRunTime_ = Date.now();
     return;
   }
@@ -415,7 +419,7 @@ AsyncUtil.RateLimiter = function(closure, opt_minInterval) {
  * |minInteval_| milliseconds.
  */
 AsyncUtil.RateLimiter.prototype.run = function() {
-  var now = Date.now();
+  const now = Date.now();
   // If |minInterval| has not passed since the closure is run, skips or delays
   // this run.
   if (now - this.lastRunTime_ < this.minInterval_) {
@@ -510,8 +514,9 @@ PromiseSlot.prototype.invokeCallback_ = function(promise, callback, value) {
  * @param {Promise} promise May be null to detach previous promise.
  */
 PromiseSlot.prototype.setPromise = function(promise) {
-  if (this.promise_ && this.promise_.cancel)
+  if (this.promise_ && this.promise_.cancel) {
     this.promise_.cancel();
+  }
 
   this.promise_ = promise;
   if (this.promise_) {

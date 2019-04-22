@@ -86,6 +86,13 @@ class ChromePromptIPC {
       const std::vector<base::string16>& extension_ids,
       mojom::ChromePrompt::DisableExtensionsCallback callback);
 
+  // Queries Chrome for its version of the ChromePrompt interface. If version
+  // >= 3 calls |delete_allowed_callback|. Calls |delete_not_allowed_callback|
+  // otherwise.
+  virtual void TryDeleteExtensions(
+      base::OnceClosure delete_allowed_callback,
+      base::OnceClosure delete_not_allowed_callback);
+
  protected:
   // The destructor is only called by tests for doubles of this class. In the
   // cleaner, this object leaks, so we don't bother closing the connection

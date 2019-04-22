@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/test/gtest_util.h"
@@ -216,7 +217,7 @@ class SecureChannelActiveConnectionManagerImplTest : public testing::Test {
   }
 
  private:
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<FakeMultiplexedChannelFactory>
       fake_multiplexed_channel_factory_;

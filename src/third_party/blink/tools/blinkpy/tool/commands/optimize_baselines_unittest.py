@@ -12,7 +12,7 @@ class TestOptimizeBaselines(BaseTestCase):
     command_constructor = OptimizeBaselines
 
     def _write_test_file(self, port, path, contents):
-        abs_path = self.tool.filesystem.join(port.layout_tests_dir(), path)
+        abs_path = self.tool.filesystem.join(port.web_tests_dir(), path)
         self.tool.filesystem.write_text_file(abs_path, contents)
 
     def setUp(self):
@@ -33,13 +33,13 @@ class TestOptimizeBaselines(BaseTestCase):
 
         self.assertFalse(
             self.tool.filesystem.exists(self.tool.filesystem.join(
-                test_port.layout_tests_dir(), 'platform/mac/another/test-expected.txt')))
+                test_port.web_tests_dir(), 'platform/mac/another/test-expected.txt')))
         self.assertFalse(
             self.tool.filesystem.exists(self.tool.filesystem.join(
-                test_port.layout_tests_dir(), 'platform/mac/another/test-expected.png')))
+                test_port.web_tests_dir(), 'platform/mac/another/test-expected.png')))
         self.assertTrue(
             self.tool.filesystem.exists(self.tool.filesystem.join(
-                test_port.layout_tests_dir(), 'another/test-expected.txt')))
+                test_port.web_tests_dir(), 'another/test-expected.txt')))
         self.assertTrue(
             self.tool.filesystem.exists(self.tool.filesystem.join(
-                test_port.layout_tests_dir(), 'another/test-expected.png')))
+                test_port.web_tests_dir(), 'another/test-expected.png')))

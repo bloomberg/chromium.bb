@@ -13,6 +13,8 @@
 #include "ash/system/message_center/arc/mock_arc_notification_item.h"
 #include "ash/system/message_center/arc/mock_arc_notification_surface.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desks_util.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
@@ -89,7 +91,7 @@ class ArcNotificationViewTest : public AshTestBase {
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     init_params.context = CurrentContext();
     init_params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
-        kShellWindowId_DefaultContainer);
+        desks_util::GetActiveDeskContainerId());
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     views::Widget* widget = new views::Widget();
@@ -271,9 +273,6 @@ TEST_F(ArcNotificationViewTest, SlideOutNested) {
   EXPECT_TRUE(IsRemovedAfterIdle(notification_id));
 }
 
-// Pinning notification is ChromeOS only feature.
-#if defined(OS_CHROMEOS)
-
 TEST_F(ArcNotificationViewTest, SlideOutPinned) {
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
@@ -315,8 +314,6 @@ TEST_F(ArcNotificationViewTest, SnoozeButton) {
   EXPECT_NE(nullptr,
             notification_view()->GetControlButtonsView()->snooze_button());
 }
-
-#endif  // defined(OS_CHROMEOS)
 
 TEST_F(ArcNotificationViewTest, PressBackspaceKey) {
   std::string notification_id(kDefaultNotificationId);

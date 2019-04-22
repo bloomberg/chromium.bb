@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_COMMON_API_DECLARATIVE_NET_REQUEST_DNR_MANIFEST_DATA_H_
 #define EXTENSIONS_COMMON_API_DECLARATIVE_NET_REQUEST_DNR_MANIFEST_DATA_H_
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_resource.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -15,17 +15,18 @@ namespace declarative_net_request {
 // Manifest data required for the kDeclarativeNetRequestKey manifest
 // key.
 struct DNRManifestData : Extension::ManifestData {
-  explicit DNRManifestData(const ExtensionResource& resource);
+  explicit DNRManifestData(base::FilePath ruleset_relative_path);
   ~DNRManifestData() override;
 
-  // Returns ExtensionResource corresponding to the kDeclarativeNetRequestKey
-  // manifest key for the |extension|. Returns null if the extension didn't
-  // specify the manifest key.
-  // TODO(karandeepb): Change this so that it accepts a const reference.
-  static const ExtensionResource* GetRulesetResource(
-      const Extension* extension);
+  // Returns true if the extension specified the kDeclarativeNetRequestKey
+  // manifest key.
+  static bool HasRuleset(const Extension& extension);
 
-  ExtensionResource resource;
+  // Returns the path to the JSON ruleset for the |extension|. This must be
+  // called only if HasRuleset returns true for the |extension|.
+  static base::FilePath GetRulesetPath(const Extension& extension);
+
+  base::FilePath ruleset_relative_path;
 
   DISALLOW_COPY_AND_ASSIGN(DNRManifestData);
 };

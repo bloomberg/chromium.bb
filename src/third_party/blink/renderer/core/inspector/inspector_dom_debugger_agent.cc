@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/inspector/resolve_node.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace {
 
@@ -110,7 +111,7 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
     for (wtf_size_t k = 0; k < listeners->size(); ++k) {
       EventListener* event_listener = listeners->at(k).Callback();
       JSBasedEventListener* v8_event_listener =
-          JSBasedEventListener::Cast(event_listener);
+          DynamicTo<JSBasedEventListener>(event_listener);
       if (!v8_event_listener)
         continue;
       v8::Local<v8::Context> context = ToV8Context(
@@ -224,7 +225,7 @@ Response InspectorDOMDebuggerAgent::disable() {
 
 void InspectorDOMDebuggerAgent::Restore() {
   if (enabled_.Get())
-    instrumenting_agents_->addInspectorDOMDebuggerAgent(this);
+    instrumenting_agents_->AddInspectorDOMDebuggerAgent(this);
 }
 
 Response InspectorDOMDebuggerAgent::setEventListenerBreakpoint(
@@ -539,7 +540,7 @@ void InspectorDOMDebuggerAgent::BreakProgramOnDOMEvent(Node* target,
   DCHECK(breakpoint_owner_node_id);
   description->setInteger("nodeId", breakpoint_owner_node_id);
   description->setString("type", DomTypeName(breakpoint_type));
-  String json = description->serialize();
+  String json = description->toJSONString();
   v8_session_->breakProgram(
       ToV8InspectorStringView(
           v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::DOM),
@@ -579,7 +580,7 @@ void InspectorDOMDebuggerAgent::PauseOnNativeEventIfNeeded(
     bool synchronous) {
   if (!event_data)
     return;
-  String json = event_data->serialize();
+  String json = event_data->toJSONString();
   if (synchronous)
     v8_session_->breakProgram(
         ToV8InspectorStringView(v8_inspector::protocol::Debugger::API::Paused::
@@ -664,11 +665,11 @@ void InspectorDOMDebuggerAgent::Did(const probe::ExecuteScript& probe) {
 }
 
 void InspectorDOMDebuggerAgent::Will(const probe::UserCallback& probe) {
-  String name = probe.name ? String(probe.name) : probe.atomicName;
-  if (probe.eventTarget) {
-    Node* node = probe.eventTarget->ToNode();
+  String name = probe.name ? String(probe.name) : probe.atomic_name;
+  if (probe.event_target) {
+    Node* node = probe.event_target->ToNode();
     String target_name =
-        node ? node->nodeName() : probe.eventTarget->InterfaceName();
+        node ? node->nodeName() : probe.event_target->InterfaceName();
     AllowNativeBreakpoint(name, &target_name, false);
     return;
   }
@@ -722,7 +723,7 @@ void InspectorDOMDebuggerAgent::WillSendXMLHttpOrFetchNetworkRequest(
       protocol::DictionaryValue::create();
   event_data->setString("breakpointURL", breakpoint_url);
   event_data->setString("url", url);
-  String json = event_data->serialize();
+  String json = event_data->toJSONString();
   v8_session_->breakProgram(
       ToV8InspectorStringView(
           v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::XHR),
@@ -756,9 +757,9 @@ void InspectorDOMDebuggerAgent::DidRemoveBreakpoint() {
 void InspectorDOMDebuggerAgent::SetEnabled(bool enabled) {
   enabled_.Set(enabled);
   if (enabled)
-    instrumenting_agents_->addInspectorDOMDebuggerAgent(this);
+    instrumenting_agents_->AddInspectorDOMDebuggerAgent(this);
   else
-    instrumenting_agents_->removeInspectorDOMDebuggerAgent(this);
+    instrumenting_agents_->RemoveInspectorDOMDebuggerAgent(this);
 }
 
 void InspectorDOMDebuggerAgent::DidCommitLoadForLocalFrame(LocalFrame*) {

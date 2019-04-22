@@ -83,8 +83,8 @@ const uint32_t kMaxBackgroundFetchIntervalSeconds = 6 * 60 * 60;  // 6 hours.
 // Reduction Proxy configuration service.
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
     0,                // num_errors_to_ignore
-    30 * 1000,        // initial_delay_ms
-    4,                // multiply_factor
+    10 * 1000,        // initial_delay_ms
+    3,                // multiply_factor
     0.25,             // jitter_factor,
     128 * 60 * 1000,  // maximum_backoff_ms
     -1,               // entry_lifetime_ms
@@ -97,13 +97,11 @@ std::vector<DataReductionProxyServer> GetProxiesForHTTP(
   std::vector<DataReductionProxyServer> proxies;
   for (const auto& server : proxy_config.http_proxy_servers()) {
     if (server.scheme() != ProxyServer_ProxyScheme_UNSPECIFIED) {
-      proxies.push_back(DataReductionProxyServer(
-          net::ProxyServer(
-              protobuf_parser::SchemeFromProxyScheme(server.scheme()),
-              net::HostPortPair(server.host(), server.port()),
-              /* HTTPS proxies are marked as trusted. */
-              server.scheme() == ProxyServer_ProxyScheme_HTTPS),
-          server.type()));
+      proxies.push_back(DataReductionProxyServer(net::ProxyServer(
+          protobuf_parser::SchemeFromProxyScheme(server.scheme()),
+          net::HostPortPair(server.host(), server.port()),
+          /* HTTPS proxies are marked as trusted. */
+          server.scheme() == ProxyServer_ProxyScheme_HTTPS)));
     }
   }
 
@@ -468,7 +466,7 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
                                  net::LOAD_DO_NOT_SEND_COOKIES |
                                  net::LOAD_DO_NOT_SAVE_COOKIES;
   // Attach variations headers.
-  url_loader_ = variations::CreateSimpleURLLoaderWithVariationsHeaders(
+  url_loader_ = variations::CreateSimpleURLLoaderWithVariationsHeader(
       std::move(resource_request), variations::InIncognito::kNo,
       variations::SignedIn::kNo, traffic_annotation);
 
@@ -534,6 +532,23 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
     std::string encoded_config;
     base::Base64Encode(config_data, &encoded_config);
     config_storer_.Run(encoded_config);
+
+    // Record timing metrics on successful requests only.
+    const network::ResourceResponseHead* info = url_loader_->ResponseInfo();
+    base::TimeDelta http_request_rtt =
+        info->response_start - info->request_start;
+    UMA_HISTOGRAM_TIMES("DataReductionProxy.ConfigService.HttpRequestRTT",
+                        http_request_rtt);
+
+    if (info->load_timing.connect_timing.connect_end > base::TimeTicks() &&
+        info->load_timing.connect_timing.connect_start > base::TimeTicks()) {
+      base::TimeDelta connection_setup =
+          info->load_timing.connect_timing.connect_end -
+          info->load_timing.connect_timing.connect_start;
+      UMA_HISTOGRAM_TIMES(
+          "DataReductionProxy.ConfigService.ConnectionSetupTime",
+          connection_setup);
+    }
   } else {
     ++failed_attempts_before_success_;
   }

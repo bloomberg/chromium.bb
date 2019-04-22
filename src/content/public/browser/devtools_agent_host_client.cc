@@ -16,8 +16,16 @@ bool DevToolsAgentHostClient::MayAttachToBrowser() {
   return true;
 }
 
-bool DevToolsAgentHostClient::MayAffectLocalFiles() {
+bool DevToolsAgentHostClient::MayReadLocalFiles() {
   return true;
+}
+
+bool DevToolsAgentHostClient::MayWriteLocalFiles() {
+  return true;
+}
+
+bool DevToolsAgentHostClient::UsesBinaryProtocol() {
+  return false;
 }
 
 }  // namespace content

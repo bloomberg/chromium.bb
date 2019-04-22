@@ -6,8 +6,12 @@
 #define BASE_TEST_BIND_TEST_UTIL_H_
 
 #include "base/bind.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
+
+class Location;
+
 namespace internal {
 
 template <typename F, typename Signature>
@@ -30,6 +34,17 @@ decltype(auto) BindLambdaForTesting(F&& f) {
   return BindRepeating(&internal::BindLambdaHelper<F, Signature>::Run,
                        std::forward<F>(f));
 }
+
+// Returns a closure that fails on destruction if it hasn't been run.
+OnceClosure MakeExpectedRunClosure(const Location& location,
+                                   StringPiece message = StringPiece());
+RepeatingClosure MakeExpectedRunAtLeastOnceClosure(
+    const Location& location,
+    StringPiece message = StringPiece());
+
+// Returns a closure that fails the test if run.
+RepeatingClosure MakeExpectedNotRunClosure(const Location& location,
+                                           StringPiece message = StringPiece());
 
 }  // namespace base
 

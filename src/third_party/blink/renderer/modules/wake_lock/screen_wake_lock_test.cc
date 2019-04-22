@@ -8,7 +8,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
@@ -112,16 +111,16 @@ class ScreenWakeLockTest : public testing::Test {
 
   void Show() {
     DCHECK(web_view_helper_.GetWebView());
-    web_view_helper_.GetWebView()->SetVisibilityState(
-        mojom::blink::PageVisibilityState::kVisible, false);
+    web_view_helper_.GetWebView()->SetIsHidden(
+        /*is_hidden=*/false, /*initial_state=*/false);
     // Let the notification sink through the mojo pipes.
     test::RunPendingTasks();
   }
 
   void Hide() {
     DCHECK(web_view_helper_.GetWebView());
-    web_view_helper_.GetWebView()->SetVisibilityState(
-        mojom::blink::PageVisibilityState::kHidden, false);
+    web_view_helper_.GetWebView()->SetIsHidden(
+        /*is_hidden=*/true, /*initial_state=*/false);
     // Let the notification sink through the mojo pipes.
     test::RunPendingTasks();
   }

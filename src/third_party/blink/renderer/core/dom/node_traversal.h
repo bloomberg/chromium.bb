@@ -179,12 +179,12 @@ NodeTraversal::InclusiveDescendantsOf(const Node& root) {
 inline TraversalNextRange<NodeTraversal> NodeTraversal::StartsAt(
     const Node& start) {
   return TraversalNextRange<NodeTraversal>(&start);
-};
+}
 
 inline TraversalNextRange<NodeTraversal> NodeTraversal::StartsAfter(
     const Node& start) {
   return TraversalNextRange<NodeTraversal>(NodeTraversal::Next(start));
-};
+}
 
 template <class NodeType>
 inline Node* NodeTraversal::TraverseNextTemplate(NodeType& current) {

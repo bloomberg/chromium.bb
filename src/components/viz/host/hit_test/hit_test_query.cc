@@ -7,6 +7,7 @@
 #include "base/containers/stack.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -93,19 +94,21 @@ Target HitTestQuery::FindTargetForLocation(
     const gfx::PointF& location_in_root) const {
   if (hit_test_data_.empty())
     return Target();
+  return FindTargetForLocationStartingFromImpl(
+      event_source, location_in_root, hit_test_data_[0].frame_sink_id,
+      /* is_location_relative_to_parent */ true);
+}
 
-  base::ElapsedTimer target_timer;
-  Target target;
-  FindTargetInRegionForLocation(event_source, location_in_root, 0, &target);
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("Event.VizHitTest.TargetTimeUs",
-                                          target_timer.Elapsed(),
-                                          base::TimeDelta::FromMicroseconds(1),
-                                          base::TimeDelta::FromSeconds(10), 50);
-  return target;
+Target HitTestQuery::FindTargetForLocationStartingFrom(
+    EventSource event_source,
+    const gfx::PointF& location,
+    const FrameSinkId& frame_sink_id) const {
+  return FindTargetForLocationStartingFromImpl(
+      event_source, location, frame_sink_id,
+      /* is_location_relative_to_parent */ false);
 }
 
 bool HitTestQuery::TransformLocationForTarget(
-    EventSource event_source,
     const std::vector<FrameSinkId>& target_ancestors,
     const gfx::PointF& location_in_root,
     gfx::PointF* transformed_location) const {
@@ -138,9 +141,8 @@ bool HitTestQuery::TransformLocationForTarget(
                                           transform_timer.Elapsed(),
                                           base::TimeDelta::FromMicroseconds(1),
                                           base::TimeDelta::FromSeconds(10), 50);
-  return TransformLocationForTargetRecursively(event_source, target_ancestors,
-                                               target_ancestors.size() - 1, 0,
-                                               transformed_location);
+  return TransformLocationForTargetRecursively(
+      target_ancestors, target_ancestors.size() - 1, 0, transformed_location);
 }
 
 bool HitTestQuery::GetTransformToTarget(const FrameSinkId& target,
@@ -162,31 +164,57 @@ bool HitTestQuery::ContainsActiveFrameSinkId(
   return false;
 }
 
+Target HitTestQuery::FindTargetForLocationStartingFromImpl(
+    EventSource event_source,
+    const gfx::PointF& location,
+    const FrameSinkId& frame_sink_id,
+    bool is_location_relative_to_parent) const {
+  if (hit_test_data_.empty())
+    return Target();
+
+  base::ElapsedTimer target_timer;
+  Target target;
+  size_t start_index = 0;
+  if (!FindIndexOfFrameSink(frame_sink_id, &start_index))
+    return Target();
+
+  FindTargetInRegionForLocation(event_source, location, start_index,
+                                is_location_relative_to_parent, &target);
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("Event.VizHitTest.TargetTimeUs",
+                                          target_timer.Elapsed(),
+                                          base::TimeDelta::FromMicroseconds(1),
+                                          base::TimeDelta::FromSeconds(10), 50);
+  return target;
+}
+
 bool HitTestQuery::FindTargetInRegionForLocation(
     EventSource event_source,
-    const gfx::PointF& location_in_parent,
+    const gfx::PointF& location,
     size_t region_index,
+    bool is_location_relative_to_parent,
     Target* target) const {
-  gfx::PointF location_transformed(location_in_parent);
+  gfx::PointF location_transformed(location);
 
-  // HasPerspective() is checked for the transform because the point will not
-  // be transformed correctly for a plane with a different normal.
-  // See https://crbug.com/854247.
-  if (hit_test_data_[region_index].transform().HasPerspective()) {
-    target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
-    target->location_in_target = gfx::PointF();
-    target->flags = HitTestRegionFlags::kHitTestAsk;
-    RecordSlowPathHitTestReasons(
-        AsyncHitTestReasons::kPerspectiveTransform |
-        hit_test_data_[region_index].async_hit_test_reasons);
-    return true;
-  }
+  if (is_location_relative_to_parent) {
+    // HasPerspective() is checked for the transform because the point will not
+    // be transformed correctly for a plane with a different normal.
+    // See https://crbug.com/854247.
+    if (hit_test_data_[region_index].transform().HasPerspective()) {
+      target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
+      target->location_in_target = gfx::PointF();
+      target->flags = HitTestRegionFlags::kHitTestAsk;
+      RecordSlowPathHitTestReasons(
+          AsyncHitTestReasons::kPerspectiveTransform |
+          hit_test_data_[region_index].async_hit_test_reasons);
+      return true;
+    }
 
-  hit_test_data_[region_index].transform().TransformPoint(
-      &location_transformed);
-  if (!gfx::RectF(hit_test_data_[region_index].rect)
-           .Contains(location_transformed)) {
-    return false;
+    hit_test_data_[region_index].transform().TransformPoint(
+        &location_transformed);
+    if (!gfx::RectF(hit_test_data_[region_index].rect)
+             .Contains(location_transformed)) {
+      return false;
+    }
   }
 
   const int32_t region_child_count = hit_test_data_[region_index].child_count;
@@ -196,9 +224,7 @@ bool HitTestQuery::FindTargetInRegionForLocation(
 
   size_t child_region = region_index + 1;
   size_t child_region_end = child_region + region_child_count;
-  gfx::PointF location_in_target =
-      location_transformed -
-      hit_test_data_[region_index].rect.OffsetFromOrigin();
+  gfx::PointF location_in_target = location_transformed;
 
   const uint32_t flags = hit_test_data_[region_index].flags;
 
@@ -207,7 +233,11 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   DCHECK_EQ(!!(flags & HitTestRegionFlags::kHitTestAsk),
             !!hit_test_data_[region_index].async_hit_test_reasons);
 
-  if (flags & HitTestRegionFlags::kHitTestAsk) {
+  // TODO(sunxd): v2 doesn't work with drag-n-drop when it still relies on
+  // synchronous targeting result for nested OOPIF cases. crbug.com/896786
+  if (features::IsVizHitTestingSurfaceLayerEnabled() &&
+      ((flags & HitTestRegionFlags::kHitTestAsk) &&
+       !(flags & HitTestRegionFlags::kHitTestIgnore))) {
     target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
     target->location_in_target = location_in_target;
     target->flags = flags;
@@ -217,8 +247,9 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   }
 
   while (child_region < child_region_end) {
-    if (FindTargetInRegionForLocation(event_source, location_in_target,
-                                      child_region, target)) {
+    if (FindTargetInRegionForLocation(
+            event_source, location_in_target, child_region,
+            /*is_location_relative_to_parent=*/true, target)) {
       return true;
     }
 
@@ -233,7 +264,9 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   if (!RegionMatchEventSource(event_source, flags))
     return false;
 
-  if (flags & HitTestRegionFlags::kHitTestMine) {
+  if ((flags &
+       (HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestAsk)) &&
+      !(flags & HitTestRegionFlags::kHitTestIgnore)) {
     target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
     target->location_in_target = location_in_target;
     target->flags = flags;
@@ -246,20 +279,11 @@ bool HitTestQuery::FindTargetInRegionForLocation(
 }
 
 bool HitTestQuery::TransformLocationForTargetRecursively(
-    EventSource event_source,
     const std::vector<FrameSinkId>& target_ancestors,
     size_t target_ancestor,
     size_t region_index,
     gfx::PointF* location_in_target) const {
-  const uint32_t flags = hit_test_data_[region_index].flags;
-  if ((flags & HitTestRegionFlags::kHitTestChildSurface) == 0u &&
-      !RegionMatchEventSource(event_source, flags)) {
-    return false;
-  }
-
   hit_test_data_[region_index].transform().TransformPoint(location_in_target);
-  location_in_target->Offset(-hit_test_data_[region_index].rect.x(),
-                             -hit_test_data_[region_index].rect.y());
   if (!target_ancestor)
     return true;
 
@@ -275,7 +299,7 @@ bool HitTestQuery::TransformLocationForTargetRecursively(
     if (hit_test_data_[child_region].frame_sink_id ==
         target_ancestors[target_ancestor - 1]) {
       return TransformLocationForTargetRecursively(
-          event_source, target_ancestors, target_ancestor - 1, child_region,
+          target_ancestors, target_ancestor - 1, child_region,
           location_in_target);
     }
 
@@ -298,8 +322,6 @@ bool HitTestQuery::GetTransformToTargetRecursively(
   // found immediately.
   if (hit_test_data_[region_index].frame_sink_id == target) {
     *transform = hit_test_data_[region_index].transform();
-    transform->Translate(-hit_test_data_[region_index].rect.x(),
-                         -hit_test_data_[region_index].rect.y());
     return true;
   }
 
@@ -316,8 +338,6 @@ bool HitTestQuery::GetTransformToTargetRecursively(
     if (GetTransformToTargetRecursively(target, child_region,
                                         &transform_to_child)) {
       gfx::Transform region_transform(hit_test_data_[region_index].transform());
-      region_transform.Translate(-hit_test_data_[region_index].rect.x(),
-                                 -hit_test_data_[region_index].rect.y());
       *transform = transform_to_child * region_transform;
       return true;
     }
@@ -400,6 +420,17 @@ std::string HitTestQuery::PrintHitTestData() const {
   }
 
   return oss.str();
+}
+
+bool HitTestQuery::FindIndexOfFrameSink(const FrameSinkId& id,
+                                        size_t* index) const {
+  for (uint32_t i = 0; i < hit_test_data_.size(); ++i) {
+    if (hit_test_data_[i].frame_sink_id == id) {
+      *index = i;
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace viz

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
@@ -26,8 +26,8 @@
 #include "services/network/p2p/socket.h"
 #include "services/network/proxy_resolving_client_socket_factory.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
-#include "third_party/webrtc/media/base/rtputils.h"
-#include "third_party/webrtc/media/base/turnutils.h"
+#include "third_party/webrtc/media/base/rtp_utils.h"
+#include "third_party/webrtc/media/base/turn_utils.h"
 
 namespace network {
 
@@ -308,10 +308,10 @@ void P2PSocketManager::CreateSocket(P2PSocketType type,
     LOG(ERROR) << "Too many sockets created";
     return;
   }
-  std::unique_ptr<P2PSocket> socket(
+  std::unique_ptr<P2PSocket> socket =
       P2PSocket::Create(this, std::move(client), std::move(request), type,
                         url_request_context_->net_log(),
-                        proxy_resolving_socket_factory_.get(), &throttler_));
+                        proxy_resolving_socket_factory_.get(), &throttler_);
 
   if (!socket)
     return;
@@ -373,11 +373,7 @@ void P2PSocketManager::OnAddressResolved(
     const net::IPAddressList& addresses) {
   std::move(callback).Run(addresses);
 
-  dns_requests_.erase(
-      std::find_if(dns_requests_.begin(), dns_requests_.end(),
-                   [request](const std::unique_ptr<DnsRequest>& ptr) {
-                     return ptr.get() == request;
-                   }));
+  dns_requests_.erase(dns_requests_.find(request));
 }
 
 void P2PSocketManager::OnConnectionError() {

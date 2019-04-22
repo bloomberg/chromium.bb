@@ -23,15 +23,16 @@ class NGPhysicalTextFragmentTest : public NGLayoutTest {
     const LayoutObject* layout_object = container->GetLayoutObject();
     DCHECK(layout_object) << container;
     DCHECK(layout_object->IsLayoutBlockFlow()) << container;
-    const NGPhysicalBoxFragment* root_fragment =
-        ToLayoutBlockFlow(layout_object)->CurrentFragment();
+    const auto* root_fragment =
+        To<LayoutBlockFlow>(layout_object)->CurrentFragment();
     DCHECK(root_fragment) << container;
 
     Vector<scoped_refptr<const NGPhysicalTextFragment>> result;
     for (const auto& child :
          NGInlineFragmentTraversal::DescendantsOf(*root_fragment)) {
-      if (child.fragment->IsText())
-        result.push_back(ToNGPhysicalTextFragment(child.fragment.get()));
+      if (auto* text_child_fragment =
+              DynamicTo<NGPhysicalTextFragment>(child.fragment.get()))
+        result.push_back(text_child_fragment);
     }
     return result;
   }
@@ -180,9 +181,11 @@ TEST_F(NGPhysicalTextFragmentTest, Ellipsis) {
   const NGPhysicalTextFragment& ellipsis = *text_fragments[1];
   EXPECT_EQ(NGPhysicalTextFragment::kNormalText, abcdef.TextType());
   EXPECT_FALSE(abcdef.IsGeneratedText());
+  EXPECT_FALSE(abcdef.IsAnonymousText());
   EXPECT_EQ(u8"abc", GetText(abcdef));
   EXPECT_EQ(NGPhysicalTextFragment::kGeneratedText, ellipsis.TextType());
   EXPECT_TRUE(ellipsis.IsGeneratedText());
+  EXPECT_TRUE(ellipsis.IsAnonymousText());
   EXPECT_EQ(u8"\u2026", GetText(ellipsis));
 }
 

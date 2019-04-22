@@ -59,7 +59,7 @@ void ExtensionTestMessageListener::Reply(const std::string& message) {
 }
 
 void ExtensionTestMessageListener::Reply(int message) {
-  Reply(base::IntToString(message));
+  Reply(base::NumberToString(message));
 }
 
 void ExtensionTestMessageListener::ReplyWithError(const std::string& error) {

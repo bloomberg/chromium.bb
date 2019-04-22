@@ -151,7 +151,7 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
   void OnWindowDestroyed(aura::Window* window) override {}
   void OnWindowTargetVisibilityChanged(bool visible) override {}
   bool HasHitTestMask() const override { return false; }
-  void GetHitTestMask(gfx::Path* mask) const override {}
+  void GetHitTestMask(SkPath* mask) const override {}
   void OnWindowDestroying(aura::Window* window) override {
     DCHECK_EQ(drag_window_, window);
     drag_window_ = nullptr;

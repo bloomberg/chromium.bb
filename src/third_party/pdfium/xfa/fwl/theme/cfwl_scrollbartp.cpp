@@ -25,45 +25,44 @@ CFWL_ScrollBarTP::CFWL_ScrollBarTP() : m_pThemeData(new SBThemeData) {
 
 CFWL_ScrollBarTP::~CFWL_ScrollBarTP() {}
 
-void CFWL_ScrollBarTP::DrawBackground(CFWL_ThemeBackground* pParams) {
-  if (!pParams)
-    return;
-
-  CFWL_Widget* pWidget = pParams->m_pWidget;
+void CFWL_ScrollBarTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
+  CFWL_Widget* pWidget = pParams.m_pWidget;
   FWLTHEME_STATE eState = FWLTHEME_STATE_Normal;
-  if (pParams->m_dwStates & CFWL_PartState_Hovered)
+  if (pParams.m_dwStates & CFWL_PartState_Hovered)
     eState = FWLTHEME_STATE_Hover;
-  else if (pParams->m_dwStates & CFWL_PartState_Pressed)
+  else if (pParams.m_dwStates & CFWL_PartState_Pressed)
     eState = FWLTHEME_STATE_Pressed;
-  else if (pParams->m_dwStates & CFWL_PartState_Disabled)
+  else if (pParams.m_dwStates & CFWL_PartState_Disabled)
     eState = FWLTHEME_STATE_Disable;
 
-  CXFA_Graphics* pGraphics = pParams->m_pGraphics.Get();
-  CFX_RectF* pRect = &pParams->m_rtPart;
+  CXFA_Graphics* pGraphics = pParams.m_pGraphics.Get();
   bool bVert = !!pWidget->GetStylesEx();
-  switch (pParams->m_iPart) {
+  switch (pParams.m_iPart) {
     case CFWL_Part::ForeArrow: {
-      DrawMaxMinBtn(pGraphics, pRect,
+      DrawMaxMinBtn(pGraphics, pParams.m_rtPart,
                     bVert ? FWLTHEME_DIRECTION_Up : FWLTHEME_DIRECTION_Left,
-                    eState, &pParams->m_matrix);
+                    eState, pParams.m_matrix);
       break;
     }
     case CFWL_Part::BackArrow: {
-      DrawMaxMinBtn(pGraphics, pRect,
+      DrawMaxMinBtn(pGraphics, pParams.m_rtPart,
                     bVert ? FWLTHEME_DIRECTION_Down : FWLTHEME_DIRECTION_Right,
-                    eState, &pParams->m_matrix);
+                    eState, pParams.m_matrix);
       break;
     }
     case CFWL_Part::Thumb: {
-      DrawThumbBtn(pGraphics, pRect, bVert, eState, true, &pParams->m_matrix);
+      DrawThumbBtn(pGraphics, pParams.m_rtPart, bVert, eState, true,
+                   pParams.m_matrix);
       break;
     }
     case CFWL_Part::LowerTrack: {
-      DrawTrack(pGraphics, pRect, bVert, eState, true, &pParams->m_matrix);
+      DrawTrack(pGraphics, pParams.m_rtPart, bVert, eState, true,
+                pParams.m_matrix);
       break;
     }
     case CFWL_Part::UpperTrack: {
-      DrawTrack(pGraphics, pRect, bVert, eState, false, &pParams->m_matrix);
+      DrawTrack(pGraphics, pParams.m_rtPart, bVert, eState, false,
+                pParams.m_matrix);
       break;
     }
     default:
@@ -72,15 +71,15 @@ void CFWL_ScrollBarTP::DrawBackground(CFWL_ThemeBackground* pParams) {
 }
 
 void CFWL_ScrollBarTP::DrawThumbBtn(CXFA_Graphics* pGraphics,
-                                    const CFX_RectF* pRect,
+                                    const CFX_RectF& input_rect,
                                     bool bVert,
                                     FWLTHEME_STATE eState,
                                     bool bPawButton,
-                                    CFX_Matrix* pMatrix) {
+                                    const CFX_Matrix& matrix) {
   if (eState < FWLTHEME_STATE_Normal || eState > FWLTHEME_STATE_Disable)
     return;
 
-  CFX_RectF rect(*pRect);
+  CFX_RectF rect = input_rect;
   if (bVert)
     rect.Deflate(1, 0);
   else
@@ -89,8 +88,7 @@ void CFWL_ScrollBarTP::DrawThumbBtn(CXFA_Graphics* pGraphics,
   if (rect.IsEmpty(0.1f))
     return;
 
-  FillSolidRect(pGraphics, m_pThemeData->clrBtnBK[eState - 1][1], &rect,
-                pMatrix);
+  FillSolidRect(pGraphics, m_pThemeData->clrBtnBK[eState - 1][1], rect, matrix);
 
   pGraphics->SaveGraphState();
 
@@ -98,24 +96,24 @@ void CFWL_ScrollBarTP::DrawThumbBtn(CXFA_Graphics* pGraphics,
   path.AddRectangle(rect.left, rect.top, rect.width, rect.height);
   pGraphics->SetStrokeColor(
       CXFA_GEColor(m_pThemeData->clrBtnBorder[eState - 1]));
-  pGraphics->StrokePath(&path, pMatrix);
+  pGraphics->StrokePath(&path, &matrix);
   pGraphics->RestoreGraphState();
 }
 
 void CFWL_ScrollBarTP::DrawPaw(CXFA_Graphics* pGraphics,
-                               const CFX_RectF* pRect,
+                               const CFX_RectF& rect,
                                bool bVert,
                                FWLTHEME_STATE eState,
-                               CFX_Matrix* pMatrix) {
+                               const CFX_Matrix& matrix) {
   CXFA_GEPath path;
   if (bVert) {
     float fPawLen = kPawLength;
-    if (pRect->width / 2 <= fPawLen) {
-      fPawLen = (pRect->width - 6) / 2;
+    if (rect.width / 2 <= fPawLen) {
+      fPawLen = (rect.width - 6) / 2;
     }
 
-    float fX = pRect->left + pRect->width / 4;
-    float fY = pRect->top + pRect->height / 2;
+    float fX = rect.left + rect.width / 4;
+    float fY = rect.top + rect.height / 2;
     path.MoveTo(CFX_PointF(fX, fY - 4));
     path.LineTo(CFX_PointF(fX + fPawLen, fY - 4));
     path.MoveTo(CFX_PointF(fX, fY - 2));
@@ -144,15 +142,15 @@ void CFWL_ScrollBarTP::DrawPaw(CXFA_Graphics* pGraphics,
     pGraphics->SetLineWidth(1);
     pGraphics->SetStrokeColor(
         CXFA_GEColor(m_pThemeData->clrPawColorDark[eState - 1]));
-    pGraphics->StrokePath(&path, pMatrix);
+    pGraphics->StrokePath(&path, &matrix);
   } else {
     float fPawLen = kPawLength;
-    if (pRect->height / 2 <= fPawLen) {
-      fPawLen = (pRect->height - 6) / 2;
+    if (rect.height / 2 <= fPawLen) {
+      fPawLen = (rect.height - 6) / 2;
     }
 
-    float fX = pRect->left + pRect->width / 2;
-    float fY = pRect->top + pRect->height / 4;
+    float fX = rect.left + rect.width / 2;
+    float fY = rect.top + rect.height / 4;
     path.MoveTo(CFX_PointF(fX - 4, fY));
     path.LineTo(CFX_PointF(fX - 4, fY + fPawLen));
     path.MoveTo(CFX_PointF(fX - 2, fY));
@@ -165,7 +163,7 @@ void CFWL_ScrollBarTP::DrawPaw(CXFA_Graphics* pGraphics,
     pGraphics->SetLineWidth(1);
     pGraphics->SetStrokeColor(
         CXFA_GEColor(m_pThemeData->clrPawColorLight[eState - 1]));
-    pGraphics->StrokePath(&path, pMatrix);
+    pGraphics->StrokePath(&path, &matrix);
     fY++;
 
     path.Clear();
@@ -181,50 +179,49 @@ void CFWL_ScrollBarTP::DrawPaw(CXFA_Graphics* pGraphics,
     pGraphics->SetLineWidth(1);
     pGraphics->SetStrokeColor(
         CXFA_GEColor(m_pThemeData->clrPawColorDark[eState - 1]));
-    pGraphics->StrokePath(&path, pMatrix);
+    pGraphics->StrokePath(&path, &matrix);
   }
 }
 
 void CFWL_ScrollBarTP::DrawTrack(CXFA_Graphics* pGraphics,
-                                 const CFX_RectF* pRect,
+                                 const CFX_RectF& rect,
                                  bool bVert,
                                  FWLTHEME_STATE eState,
                                  bool bLowerTrack,
-                                 CFX_Matrix* pMatrix) {
+                                 const CFX_Matrix& matrix) {
   if (eState < FWLTHEME_STATE_Normal || eState > FWLTHEME_STATE_Disable)
     return;
 
   pGraphics->SaveGraphState();
   CXFA_GEPath path;
-  float fRight = pRect->right();
-  float fBottom = pRect->bottom();
+  float fRight = rect.right();
+  float fBottom = rect.bottom();
   if (bVert) {
-    path.AddRectangle(pRect->left, pRect->top, 1, pRect->height);
-    path.AddRectangle(fRight - 1, pRect->top, 1, pRect->height);
+    path.AddRectangle(rect.left, rect.top, 1, rect.height);
+    path.AddRectangle(fRight - 1, rect.top, 1, rect.height);
   } else {
-    path.AddRectangle(pRect->left, pRect->top, pRect->width, 1);
-    path.AddRectangle(pRect->left, fBottom - 1, pRect->width, 1);
+    path.AddRectangle(rect.left, rect.top, rect.width, 1);
+    path.AddRectangle(rect.left, fBottom - 1, rect.width, 1);
   }
   pGraphics->SetFillColor(CXFA_GEColor(ArgbEncode(255, 238, 237, 229)));
-  pGraphics->FillPath(&path, FXFILL_WINDING, pMatrix);
+  pGraphics->FillPath(&path, FXFILL_WINDING, &matrix);
   path.Clear();
-  path.AddRectangle(pRect->left + 1, pRect->top, pRect->width - 2,
-                    pRect->height);
+  path.AddRectangle(rect.left + 1, rect.top, rect.width - 2, rect.height);
   pGraphics->RestoreGraphState();
-  FillSolidRect(pGraphics, m_pThemeData->clrTrackBKEnd, pRect, pMatrix);
+  FillSolidRect(pGraphics, m_pThemeData->clrTrackBKEnd, rect, matrix);
 }
 
 void CFWL_ScrollBarTP::DrawMaxMinBtn(CXFA_Graphics* pGraphics,
-                                     const CFX_RectF* pRect,
+                                     const CFX_RectF& rect,
                                      FWLTHEME_DIRECTION eDict,
                                      FWLTHEME_STATE eState,
-                                     CFX_Matrix* pMatrix) {
-  DrawTrack(pGraphics, pRect,
+                                     const CFX_Matrix& matrix) {
+  DrawTrack(pGraphics, rect,
             eDict == FWLTHEME_DIRECTION_Up || eDict == FWLTHEME_DIRECTION_Down,
-            eState, true, pMatrix);
-  CFX_RectF rtArrowBtn(*pRect);
+            eState, true, matrix);
+  CFX_RectF rtArrowBtn = rect;
   rtArrowBtn.Deflate(1, 1, 1, 1);
-  DrawArrowBtn(pGraphics, &rtArrowBtn, eDict, eState, pMatrix);
+  DrawArrowBtn(pGraphics, rtArrowBtn, eDict, eState, matrix);
 }
 
 void CFWL_ScrollBarTP::SetThemeData() {

@@ -16,6 +16,7 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -46,6 +47,8 @@ enum class WebMemoryDumpLevelOfDetail { kBackground, kLight, kDetailed };
 // process. Embedders of WebMemoryDumpProvider are expected to populate a
 // WebProcessMemoryDump instance with the stats of their allocators.
 class PLATFORM_EXPORT WebProcessMemoryDump final {
+  USING_FAST_MALLOC(WebProcessMemoryDump);
+
  public:
   // Creates a standalone WebProcessMemoryDump, which owns the underlying
   // ProcessMemoryDump.

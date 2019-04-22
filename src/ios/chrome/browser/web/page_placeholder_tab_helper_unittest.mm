@@ -53,6 +53,36 @@ class PagePlaceholderTabHelperTest : public PlatformTest {
   UIView* web_state_view_ = nil;
 };
 
+// Tests that placeholder is not shown after WasShown() if it was not requested.
+TEST_F(PagePlaceholderTabHelperTest, TabShownAndPlaceholderNotShown) {
+  ASSERT_FALSE(tab_helper()->displaying_placeholder());
+  ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
+  web_state_->WasShown();
+  EXPECT_FALSE(tab_helper()->displaying_placeholder());
+  EXPECT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
+}
+
+// Tests that placeholder is shown after WasShown() if it was requested.
+TEST_F(PagePlaceholderTabHelperTest, TabShownAndPlaceholderShown) {
+  ASSERT_FALSE(tab_helper()->displaying_placeholder());
+  ASSERT_FALSE(tab_helper()->will_add_placeholder_for_next_navigation());
+  tab_helper()->AddPlaceholderForNextNavigation();
+  ASSERT_FALSE(tab_helper()->displaying_placeholder());
+  EXPECT_TRUE(tab_helper()->will_add_placeholder_for_next_navigation());
+  web_state_->WasShown();
+  EXPECT_TRUE(tab_helper()->displaying_placeholder());
+  EXPECT_TRUE(tab_helper()->will_add_placeholder_for_next_navigation());
+}
+
+// Tests that placeholder is removed after WasHidden().
+TEST_F(PagePlaceholderTabHelperTest, TabHiddenAndPlaceholderRemoved) {
+  tab_helper()->AddPlaceholderForNextNavigation();
+  web_state_->WasShown();
+  ASSERT_TRUE(tab_helper()->displaying_placeholder());
+  web_state_->WasHidden();
+  EXPECT_FALSE(tab_helper()->displaying_placeholder());
+}
+
 // Tests that placeholder is not shown after DidStartNavigation if it was not
 // requested.
 TEST_F(PagePlaceholderTabHelperTest, NotShown) {

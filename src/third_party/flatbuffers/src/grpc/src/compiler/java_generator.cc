@@ -37,9 +37,6 @@
 #define XSTR(s) STR(s)
 #endif
 
-#ifndef FALLTHROUGH_INTENDED
-#define FALLTHROUGH_INTENDED
-#endif
 
 typedef grpc_generator::Printer Printer;
 typedef std::map<grpc::string, grpc::string> VARS;
@@ -72,13 +69,14 @@ void GenerateImports(grpc_generator::File* file,
 //   - remove embedded underscores & capitalize the following letter
 static string MixedLower(const string& word) {
   string w;
-  w += (string::value_type)tolower(word[0]);
+  w += static_cast<string::value_type>(tolower(word[0]));
   bool after_underscore = false;
   for (size_t i = 1; i < word.length(); ++i) {
     if (word[i] == '_') {
       after_underscore = true;
     } else {
-      w += after_underscore ? (string::value_type)toupper(word[i]) : word[i];
+      w += after_underscore ? static_cast<string::value_type>(toupper(word[i]))
+                            : word[i];
       after_underscore = false;
     }
   }
@@ -92,7 +90,7 @@ static string MixedLower(const string& word) {
 static string ToAllUpperCase(const string& word) {
   string w;
   for (size_t i = 0; i < word.length(); ++i) {
-    w += (string::value_type)toupper(word[i]);
+    w += static_cast<string::value_type>(toupper(word[i]));
     if ((i < word.length() - 1) && islower(word[i]) && isupper(word[i + 1])) {
       w += '_';
     }
@@ -345,8 +343,8 @@ static void PrintMethodFields(Printer* p, VARS& vars,
 
   for (int i = 0; i < service->method_count(); ++i) {
     auto method = service->method(i);
-    vars["arg_in_id"] = to_string((long)2 * i); //trying to make msvc 10 happy
-    vars["arg_out_id"] = to_string((long)2 * i + 1);
+    vars["arg_in_id"] = to_string(2L * i); //trying to make msvc 10 happy
+    vars["arg_out_id"] = to_string(2L * i + 1);
     vars["method_name"] = method->name();
     vars["input_type_name"] = method->get_input_type_name();
     vars["output_type_name"] = method->get_output_type_name();
@@ -355,8 +353,8 @@ static void PrintMethodFields(Printer* p, VARS& vars,
     vars["method_field_name"] = MethodPropertiesFieldName(method.get());
     vars["method_new_field_name"] = MethodPropertiesGetterName(method.get());
     vars["method_method_name"] = MethodPropertiesGetterName(method.get());
-    bool client_streaming = method->ClientStreaming();
-    bool server_streaming = method->ServerStreaming();
+    bool client_streaming = method->ClientStreaming() || method->BidiStreaming();
+    bool server_streaming = method->ServerStreaming() || method->BidiStreaming();
     if (client_streaming) {
       if (server_streaming) {
         vars["method_type"] = "BIDI_STREAMING";
@@ -478,7 +476,7 @@ static void PrintStub(Printer* p, VARS& vars, const ServiceDescriptor* service,
       break;
     case BLOCKING_CLIENT_INTERFACE:
       interface = true;
-      FALLTHROUGH_INTENDED;  // fallthrough
+      FLATBUFFERS_FALLTHROUGH(); // fall thru
     case BLOCKING_CLIENT_IMPL:
       call_type = BLOCKING_CALL;
       stub_name += "BlockingStub";
@@ -486,7 +484,7 @@ static void PrintStub(Printer* p, VARS& vars, const ServiceDescriptor* service,
       break;
     case FUTURE_CLIENT_INTERFACE:
       interface = true;
-      FALLTHROUGH_INTENDED;  // fallthrough
+      FLATBUFFERS_FALLTHROUGH(); // fall thru
     case FUTURE_CLIENT_IMPL:
       call_type = FUTURE_CALL;
       stub_name += "FutureStub";
@@ -548,8 +546,8 @@ static void PrintStub(Printer* p, VARS& vars, const ServiceDescriptor* service,
     vars["output_type"] = JavaClassName(vars, method->get_output_type_name());
     vars["lower_method_name"] = LowerMethodName(&*method);
     vars["method_method_name"] = MethodPropertiesGetterName(&*method);
-    bool client_streaming = method->ClientStreaming();
-    bool server_streaming = method->ServerStreaming();
+    bool client_streaming = method->ClientStreaming() || method->BidiStreaming();
+    bool server_streaming = method->ServerStreaming() || method->BidiStreaming();
 
     if (call_type == BLOCKING_CALL && client_streaming) {
       // Blocking client interface with client streaming is not available
@@ -759,7 +757,7 @@ static void PrintMethodHandlerClass(Printer* p, VARS& vars,
 
   for (int i = 0; i < service->method_count(); ++i) {
     auto method = service->method(i);
-    if (method->ClientStreaming()) {
+    if (method->ClientStreaming() || method->BidiStreaming()) {
       continue;
     }
     vars["method_id_name"] = MethodIdFieldName(&*method);
@@ -793,7 +791,7 @@ static void PrintMethodHandlerClass(Printer* p, VARS& vars,
 
   for (int i = 0; i < service->method_count(); ++i) {
     auto method = service->method(i);
-    if (!method->ClientStreaming()) {
+    if (!(method->ClientStreaming() || method->BidiStreaming())) {
       continue;
     }
     vars["method_id_name"] = MethodIdFieldName(&*method);
@@ -929,8 +927,8 @@ static void PrintBindServiceMethodBody(Printer* p, VARS& vars,
     vars["input_type"] = JavaClassName(vars, method->get_input_type_name());
     vars["output_type"] = JavaClassName(vars, method->get_output_type_name());
     vars["method_id_name"] = MethodIdFieldName(&*method);
-    bool client_streaming = method->ClientStreaming();
-    bool server_streaming = method->ServerStreaming();
+    bool client_streaming = method->ClientStreaming() || method->BidiStreaming();
+    bool server_streaming = method->ServerStreaming() || method->BidiStreaming();
     if (client_streaming) {
       if (server_streaming) {
         vars["calls_method"] = "asyncBidiStreamingCall";

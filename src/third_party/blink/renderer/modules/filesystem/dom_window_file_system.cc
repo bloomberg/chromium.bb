@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/filesystem/async_callback_helper.h"
 #include "third_party/blink/renderer/modules/filesystem/choose_file_system_entries_options.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
@@ -48,7 +49,7 @@ namespace blink {
 void DOMWindowFileSystem::webkitRequestFileSystem(
     LocalDOMWindow& window,
     int type,
-    long long size,
+    int64_t size,
     V8FileSystemCallback* success_callback,
     V8ErrorCallback* error_callback) {
   if (!window.IsCurrentlyDisplayedInFrame())
@@ -58,13 +59,15 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
   if (!document)
     return;
 
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
   if (SchemeRegistry::SchemeShouldBypassContentSecurityPolicy(
           document->GetSecurityOrigin()->Protocol()))
     UseCounter::Count(document, WebFeature::kRequestFileSystemNonWebbyOrigin);
 
   if (!document->GetSecurityOrigin()->CanAccessFileSystem()) {
-    DOMFileSystem::ReportError(document,
-                               ScriptErrorCallback::Wrap(error_callback),
+    DOMFileSystem::ReportError(document, std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_SECURITY);
     return;
   } else if (document->GetSecurityOrigin()->IsLocal()) {
@@ -74,19 +77,19 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
   mojom::blink::FileSystemType file_system_type =
       static_cast<mojom::blink::FileSystemType>(type);
   if (!DOMFileSystemBase::IsValidType(file_system_type)) {
-    DOMFileSystem::ReportError(document,
-                               ScriptErrorCallback::Wrap(error_callback),
+    DOMFileSystem::ReportError(document, std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessCallback<DOMFileSystem>(success_callback);
+
   LocalFileSystem::From(*document)->RequestFileSystem(
       document, file_system_type, size,
-      FileSystemCallbacks::Create(
-          FileSystemCallbacks::OnDidOpenFileSystemV8Impl::Create(
-              success_callback),
-          ScriptErrorCallback::Wrap(error_callback), document,
-          file_system_type),
+      std::make_unique<FileSystemCallbacks>(std::move(success_callback_wrapper),
+                                            std::move(error_callback_wrapper),
+                                            document, file_system_type),
       LocalFileSystem::kAsynchronous);
 }
 
@@ -102,12 +105,14 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
   if (!document)
     return;
 
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
   const SecurityOrigin* security_origin = document->GetSecurityOrigin();
   KURL completed_url = document->CompleteURL(url);
   if (!security_origin->CanAccessFileSystem() ||
       !security_origin->CanRequest(completed_url)) {
-    DOMFileSystem::ReportError(document,
-                               ScriptErrorCallback::Wrap(error_callback),
+    DOMFileSystem::ReportError(document, std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_SECURITY);
     return;
   } else if (document->GetSecurityOrigin()->IsLocal()) {
@@ -115,17 +120,19 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
   }
 
   if (!completed_url.IsValid()) {
-    DOMFileSystem::ReportError(document,
-                               ScriptErrorCallback::Wrap(error_callback),
+    DOMFileSystem::ReportError(document, std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_INVALID_URL);
     return;
   }
 
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessCallback<Entry>(success_callback);
+
   LocalFileSystem::From(*document)->ResolveURL(
       document, completed_url,
-      ResolveURICallbacks::Create(
-          ResolveURICallbacks::OnDidGetEntryV8Impl::Create(success_callback),
-          ScriptErrorCallback::Wrap(error_callback), document),
+      std::make_unique<ResolveURICallbacks>(std::move(success_callback_wrapper),
+                                            std::move(error_callback_wrapper),
+                                            document),
       LocalFileSystem::kAsynchronous);
 }
 
@@ -172,23 +179,26 @@ Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> ConvertAccepts(
 ScriptPromise CreateFileHandle(ScriptState* script_state,
                                const mojom::blink::FileSystemEntryPtr& entry,
                                bool is_directory) {
-  auto* new_resolver = ScriptPromiseResolver::Create(script_state);
+  auto* new_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = new_resolver->Promise();
   auto* fs = DOMFileSystem::CreateIsolatedFileSystem(
       ExecutionContext::From(script_state), entry->file_system_id);
+
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessPromise<Entry>(new_resolver);
+  auto error_callback_wrapper = AsyncCallbackHelper::ErrorPromise(new_resolver);
+
   // TODO(mek): Try to create handle directly rather than having to do more
   // IPCs to get the actual entries.
   if (is_directory) {
-    fs->GetDirectory(
-        fs->root(), entry->base_name, FileSystemFlags::Create(),
-        MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(
-            new_resolver),
-        MakeGarbageCollected<PromiseErrorCallback>(new_resolver));
+    fs->GetDirectory(fs->root(), entry->base_name, FileSystemFlags::Create(),
+                     std::move(success_callback_wrapper),
+                     std::move(error_callback_wrapper));
   } else {
     fs->GetFile(fs->root(), entry->base_name, FileSystemFlags::Create(),
-                MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(
-                    new_resolver),
-                MakeGarbageCollected<PromiseErrorCallback>(new_resolver));
+                std::move(success_callback_wrapper),
+                std::move(error_callback_wrapper));
   }
   return result;
 }
@@ -199,7 +209,7 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
     ScriptState* script_state,
     LocalDOMWindow& window,
     const ChooseFileSystemEntriesOptions* options) {
-  if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kNativeFilesystemAPI)) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kAbortError));
   }
@@ -227,32 +237,33 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
   if (options->hasAccepts())
     accepts = ConvertAccepts(options->accepts());
 
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise result = resolver->Promise();
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise resolver_result = resolver->Promise();
   FileSystemDispatcher::From(document).GetFileSystemManager().ChooseEntry(
       ConvertChooserType(options->type(), options->multiple()),
       std::move(accepts), !options->excludeAcceptAllOption(),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
              const ChooseFileSystemEntriesOptions* options,
-             base::File::Error result,
+             base::File::Error file_operation_result,
              Vector<mojom::blink::FileSystemEntryPtr> entries) {
-            if (result != base::File::FILE_OK) {
-              resolver->Reject(file_error::CreateDOMException(result));
+            if (file_operation_result != base::File::FILE_OK) {
+              resolver->Reject(
+                  file_error::CreateDOMException(file_operation_result));
               return;
             }
             bool is_directory = options->type() == "openDirectory";
             ScriptState* script_state = resolver->GetScriptState();
             ScriptState::Scope scope(script_state);
             if (options->multiple()) {
-              Vector<ScriptPromise> result;
-              result.ReserveInitialCapacity(entries.size());
+              Vector<ScriptPromise> results;
+              results.ReserveInitialCapacity(entries.size());
               for (const auto& entry : entries) {
-                result.emplace_back(
+                results.emplace_back(
                     CreateFileHandle(script_state, entry, is_directory));
               }
               resolver->Resolve(
-                  ScriptPromise::All(script_state, result).GetScriptValue());
+                  ScriptPromise::All(script_state, results).GetScriptValue());
             } else {
               DCHECK_EQ(1u, entries.size());
               resolver->Resolve(
@@ -261,7 +272,7 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
             }
           },
           WrapPersistent(resolver), WrapPersistent(options)));
-  return result;
+  return resolver_result;
 }
 
 }  // namespace blink

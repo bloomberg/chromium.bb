@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#shared-workers-and-the-sharedworkerglobalscope-interface
+// https://html.spec.whatwg.org/C/#shared-workers-and-the-sharedworkerglobalscope-interface
 
 [
     Global=(Worker,SharedWorker),

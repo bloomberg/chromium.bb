@@ -66,7 +66,7 @@ class FastInkView : public views::View {
   };
 
   // Update content and damage rectangles for surface. |auto_refresh| should
-  // be set to true if continous updates are expected within content rectangle.
+  // be set to true if continuous updates are expected within content rectangle.
   void UpdateSurface(const gfx::Rect& content_rect,
                      const gfx::Rect& damage_rect,
                      bool auto_refresh);
@@ -94,7 +94,7 @@ class FastInkView : public views::View {
   bool pending_compositor_frame_ = false;
   bool pending_compositor_frame_ack_ = false;
   int next_resource_id_ = 1;
-  uint32_t presentation_token_ = 0;
+  viz::FrameTokenGenerator next_frame_token_;
   std::vector<std::unique_ptr<Resource>> returned_resources_;
   std::unique_ptr<LayerTreeFrameSinkHolder> frame_sink_holder_;
   base::WeakPtrFactory<FastInkView> weak_ptr_factory_;

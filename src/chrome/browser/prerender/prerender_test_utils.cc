@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -184,8 +185,7 @@ class NeverRunsExternalProtocolHandlerDelegate
   void BlockRequest() override {}
 
   void RunExternalProtocolDialog(const GURL& url,
-                                 int render_process_host_id,
-                                 int routing_id,
+                                 content::WebContents* web_contents,
                                  ui::PageTransition page_transition,
                                  bool has_user_gesture) override {
     NOTREACHED();
@@ -363,7 +363,7 @@ DestructionWaiter::DestructionWaiter(TestPrerenderContents* prerender_contents,
     saw_correct_status_ = true;
     return;
   }
-  if (prerender_contents->final_status() != FINAL_STATUS_MAX) {
+  if (prerender_contents->final_status() != FINAL_STATUS_UNKNOWN) {
     // The contents was already destroyed by the time this was called.
     MarkDestruction(prerender_contents->final_status());
   } else {
@@ -399,7 +399,7 @@ void DestructionWaiter::DestructionMarker::OnPrerenderStop(
 
 TestPrerender::TestPrerender()
     : contents_(nullptr),
-      final_status_(FINAL_STATUS_MAX),
+      final_status_(FINAL_STATUS_UNKNOWN),
       number_of_loads_(0),
       expected_number_of_loads_(0),
       started_(false),
@@ -710,10 +710,9 @@ GURL PrerenderInProcessBrowserTest::GetURLWithReplacement(
     const std::string& replacement_text) {
   base::StringPairs replacement_pair;
   replacement_pair.push_back(make_pair(replacement_variable, replacement_text));
-  std::string replacement_path;
-  net::test_server::GetFilePathWithReplacements(url_file, replacement_pair,
-                                                &replacement_path);
-  return src_server()->GetURL(MakeAbsolute(replacement_path));
+  return src_server()->GetURL(
+      MakeAbsolute(net::test_server::GetFilePathWithReplacements(
+          url_file, replacement_pair)));
 }
 
 std::vector<std::unique_ptr<TestPrerender>>
@@ -743,9 +742,8 @@ GURL PrerenderInProcessBrowserTest::ServeLoaderURL(
   base::StringPairs replacement_text;
   replacement_text.push_back(
       make_pair(replacement_variable, url_to_prerender.spec()));
-  std::string replacement_path;
-  net::test_server::GetFilePathWithReplacements(loader_path, replacement_text,
-                                                &replacement_path);
+  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
+      loader_path, replacement_text);
   return src_server()->GetURL(replacement_path + loader_query);
 }
 

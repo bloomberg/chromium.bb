@@ -282,6 +282,7 @@ bool CommonUniformElimPass::UniformAccessChainConvert(Function* func) {
       uint32_t replId;
       GenACLoadRepl(ptrInst, &newInsts, &replId);
       inst = ReplaceAndDeleteLoad(inst, replId, ptrInst);
+      assert(inst->opcode() != SpvOpPhi);
       inst = inst->InsertBefore(std::move(newInsts));
       modified = true;
     }
@@ -355,6 +356,10 @@ bool CommonUniformElimPass::CommonUniformLoadElimination(Function* func) {
     if (mergeBlockId == bp->id()) {
       mergeBlockId = 0;
       insertItr = bp->begin();
+      while (insertItr->opcode() == SpvOpPhi) {
+        ++insertItr;
+      }
+
       // Update insertItr until it will not be removed. Without this code,
       // ReplaceAndDeleteLoad() can set |insertItr| as a dangling pointer.
       while (IsUniformLoadToBeRemoved(&*insertItr)) ++insertItr;
@@ -509,6 +514,9 @@ Pass::Status CommonUniformElimPass::ProcessImpl() {
   // TODO(greg-lunarg): Add support for physical addressing
   if (context()->get_feature_mgr()->HasCapability(SpvCapabilityAddresses))
     return Status::SuccessWithoutChange;
+  if (context()->get_feature_mgr()->HasCapability(
+          SpvCapabilityVariablePointersStorageBuffer))
+    return Status::SuccessWithoutChange;
   // Do not process if any disallowed extensions are enabled
   if (!AllExtensionsSupported()) return Status::SuccessWithoutChange;
   // Do not process if module contains OpGroupDecorate. Additional
@@ -526,7 +534,7 @@ Pass::Status CommonUniformElimPass::ProcessImpl() {
   ProcessFunction pfn = [this](Function* fp) {
     return EliminateCommonUniform(fp);
   };
-  bool modified = ProcessEntryPointCallTree(pfn, get_module());
+  bool modified = context()->ProcessEntryPointCallTree(pfn);
   return modified ? Status::SuccessWithChange : Status::SuccessWithoutChange;
 }
 

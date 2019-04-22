@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -338,9 +339,10 @@ void AddPermissionsInfo(content::BrowserContext* browser_context,
   // from host permissions.
   const PermissionSet& active_permissions =
       extension.permissions_data()->active_permissions();
-  PermissionSet non_host_permissions(active_permissions.apis(),
-                                     active_permissions.manifest_permissions(),
-                                     URLPatternSet(), URLPatternSet());
+  PermissionSet non_host_permissions(
+      active_permissions.apis().Clone(),
+      active_permissions.manifest_permissions().Clone(), URLPatternSet(),
+      URLPatternSet());
   const PermissionMessageProvider* message_provider =
       PermissionMessageProvider::Get();
   // Generate the messages for just the API (and manifest) permissions.

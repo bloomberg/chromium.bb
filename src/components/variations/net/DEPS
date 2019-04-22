@@ -3,4 +3,5 @@ include_rules = [
   "+components/metrics",
   "+net",
   "+services/network/public/cpp",
+  "+services/network/public/mojom",
 ]

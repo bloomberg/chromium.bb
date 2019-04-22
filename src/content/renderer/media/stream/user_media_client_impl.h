@@ -14,10 +14,10 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_devices.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/stream/user_media_processor.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/common/mediastream/media_devices.h"
+#include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/web/web_apply_constraints_request.h"
 #include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
@@ -36,7 +36,7 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
  public:
   // TODO(guidou): Make all constructors private and replace with Create methods
   // that return a std::unique_ptr. This class is intended for instantiation on
-  // the free store. http://crbug.com/764293
+  // the free store. https://crbug.com/764293
   // |render_frame| and |dependency_factory| must outlive this instance.
   UserMediaClientImpl(
       RenderFrameImpl* render_frame,
@@ -62,7 +62,8 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   bool IsCapturing() override;
 
   // RenderFrameObserver override
-  void WillCommitProvisionalLoad() override;
+  void ReadyToCommitNavigation(
+      blink::WebDocumentLoader* document_loader) override;
 
   void SetMediaDevicesDispatcherForTesting(
       blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher);

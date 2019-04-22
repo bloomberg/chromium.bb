@@ -3,12 +3,13 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="smb_browser_proxy.html">
 
@@ -16,7 +17,7 @@
   <template>
     <style include="md-select paper-button-style">
       #dialog [slot=body] {
-        height: 350px;
+        height: 400px;
       }
 
       .md-select {
@@ -25,10 +26,6 @@
 
       .label {
         @apply --cr-form-field-label;
-      }
-
-      cr-input {
-        --cr-input-error-display: none;
       }
 
       cr-searchable-drop-down {
@@ -42,40 +39,47 @@
         margin-bottom: var(--cr-form-field-bottom-spacing);
       }
 
-      cr-toast {
-        left: 0;
-        max-height: 78px;
-        max-width: 300px;
-        position: absolute;
-        right: 0;
-      }
-
       paper-button {
         position: relative;
-        top: 38px;
-      }
-
-      .error-message {
-        color: white;
-        font: 13px;
-        padding-bottom: 15px;
-        padding-top: 15px;
-        text-align: center;
-        white-space: normal;
       }
 
       [slot='button-container'] {
-        height: 78px;
         justify-content: space-between;
+      }
+
+      #name,
+      #username {
+        --cr-input-error-display: none;
+      }
+
+      #general-error-container {
+        height: 32px;
+      }
+
+      #general-error-icon {
+       --iron-icon-fill-color: var(--google-red-600);
+      }
+
+      #general-error-message {
+        color: var(--google-red-600);
+        display: inline-block;
+        font-size: 10px;
       }
     </style>
 
     <cr-dialog id="dialog">
       <div slot="title">[[i18n('addSmbShare')]]</div>
       <div slot="body" spellcheck="false">
+        <div id="general-error-container">
+          <div hidden="[[!shouldShowGeneralError_(currentMountError_)]]">
+            <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
+            <div id="general-error-message">[[generalErrorText_]]</div>
+          </div>
+        </div>
         <cr-searchable-drop-down id="address" label="[[i18n('smbShareUrl')]]"
             value="{{mountUrl_}}" items="[[discoveredShares_]]"
             placeholder="\\server\share" on-change="onURLChanged_"
+            error-message-allowed
             update-value-on-input autofocus>
         </cr-searchable-drop-down>
         <cr-input id="name" label="[[i18n('smbShareName')]]"
@@ -98,32 +102,23 @@
         <div id="credentials"
             hidden="[[!shouldShowCredentialUI_(authenticationMethod_)]]">
           <cr-input id="username" label="[[i18n('smbShareUsername')]]"
-              value="{{username_}}">
+              value="{{username_}}"
+              invalid="[[shouldShowCredentialError_(currentMountError_)]]">
           </cr-input>
           <cr-input id="password" type="password"
-              label="[[i18n('smbSharePassword')]]" value="{{password_}}">
+              label="[[i18n('smbSharePassword')]]" value="{{password_}}"
+              invalid="[[shouldShowCredentialError_(currentMountError_)]]">
           </cr-input>
         </div>
       </div>
       <div slot="button-container">
-        <!-- Error toast -->
-        <div>
-          <cr-toast id="errorToast" duration="3000">
-            <div class="error-message">
-              [[addShareResultText_]]
-            </div>
-          </cr-toast>
-        </div>
-        <!-- Buttons -->
-        <div>
-          <paper-button class="cancel-button" on-click="cancel_" id="cancel">
-            [[i18n('cancel')]]
-          </paper-button>
-          <paper-button class="action-button" on-click="onAddButtonTap_"
-              disabled="[[!canAddShare_(mountUrl_, inProgress_)]]">
-            [[i18n('add')]]
-          </paper-button>
-        </div>
+        <paper-button class="cancel-button" on-click="cancel_" id="cancel">
+          [[i18n('cancel')]]
+        </paper-button>
+        <paper-button class="action-button" on-click="onAddButtonTap_"
+            disabled="[[!canAddShare_(mountUrl_, inProgress_)]]">
+          [[i18n('add')]]
+        </paper-button>
       </div>
     </cr-dialog>
   </template>

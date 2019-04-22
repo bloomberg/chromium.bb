@@ -4,6 +4,7 @@
 
 #include "services/network/conditional_cache_deletion_helper.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"

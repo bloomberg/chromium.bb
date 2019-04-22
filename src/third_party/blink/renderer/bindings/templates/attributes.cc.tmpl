@@ -11,9 +11,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %}) {
   {% filter format_remove_duplicates(['ExceptionState exception_state']) %}
   {% set define_exception_state -%}
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "{{interface_name}}", "{{attribute.name}}");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kGetterContext, "{{interface_name}}", "{{attribute.name}}");
   {%- endset %}
 
   {% if attribute.is_lenient_this %}
@@ -68,7 +66,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   // Same-origin attribute getters are never exposed via the cross-origin
   // interceptors. Since same-origin access requires a LocalDOMWindow, it is
   // safe to downcast here.
-  LocalDOMWindow* impl = ToLocalDOMWindow({{v8_class}}::ToImpl(holder));
+  LocalDOMWindow* impl = To<LocalDOMWindow>({{v8_class}}::ToImpl(holder));
   {% endif %}{# attribute.is_check_security_for_receiver #}
   {% else %}
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(holder);
@@ -101,7 +99,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     return;
   }
   {% if local_dom_window_only %}
-  LocalDOMWindow* impl = ToLocalDOMWindow(unchecked_impl);
+  LocalDOMWindow* impl = To<LocalDOMWindow>(unchecked_impl);
   {% endif %}{# local_dom_window_only #}
   {% endif %}
 
@@ -252,7 +250,11 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   {% if attribute.measure_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.measure_as('AttributeGetter')}});
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::k{{attribute.measure_as('AttributeGetter')}});
+  {% if attribute.high_entropy %}
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::k{{attribute.measure_as('AttributeGetter')}});
+  {% endif %}
   {% endif %}
 
   {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
@@ -290,13 +292,17 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}ConstructorGetterCall
   {% endif %}
 
   {% if attribute.measure_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.measure_as('ConstructorGetter')}});
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::k{{attribute.measure_as('ConstructorGetter')}});
+  {% if attribute.high_entropy %}
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::k{{attribute.measure_as('ConstructorGetter')}});
+  {% endif %}
   {% endif %}
 
   {% if attribute.is_named_constructor %}
   V8{{attribute.constructor_type}}::NamedConstructorAttributeGetter(property, info);
   {% else %}
-  V8ConstructorAttributeGetter(property, info, &V8{{attribute.constructor_type}}::wrapper_type_info);
+  V8ConstructorAttributeGetter(property, info, V8{{attribute.constructor_type}}::GetWrapperTypeInfo());
   {% endif %}
 }
 {% endmacro %}
@@ -339,7 +345,7 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
   // Same-origin attributes setters are never exposed via the cross-origin
   // interceptors. Since same-origin access requires a LocalDOMWindow, it is
   // safe to downcast here.
-  LocalDOMWindow* impl = ToLocalDOMWindow({{v8_class}}::ToImpl(holder));
+  LocalDOMWindow* impl = To<LocalDOMWindow>({{v8_class}}::ToImpl(holder));
   {% endif %}{# attribute.is_check_security_for_receiver #}
   {% else %}
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(holder);
@@ -358,7 +364,7 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
     return;
   }
   {% if local_dom_window_only %}
-  LocalDOMWindow* impl = ToLocalDOMWindow(unchecked_impl);
+  LocalDOMWindow* impl = To<LocalDOMWindow>(unchecked_impl);
   {% endif %}{# local_dom_window_only #}
   {% endif %}
 
@@ -421,7 +427,8 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
     if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues),
                      "{{attribute.enum_type}}", dummy_exception_state)) {
       ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
-          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+          ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                                 mojom::ConsoleMessageLevel::kWarning,
                                  dummy_exception_state.Message()));
       return;
     }

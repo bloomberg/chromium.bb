@@ -68,7 +68,7 @@ class AlsReaderImplTest : public testing::Test {
 
  protected:
   void WriteLux(int lux) {
-    const std::string lux_string = base::IntToString(lux);
+    const std::string lux_string = base::NumberToString(lux);
     const int bytes_written = base::WriteFile(
         ambient_light_path_, lux_string.data(), lux_string.size());
     ASSERT_EQ(bytes_written, static_cast<int>(lux_string.size()))
@@ -109,12 +109,9 @@ TEST_F(AlsReaderImplTest, ErrorMetrics) {
   histogram_tester_.ExpectBucketCount(
       histogram, static_cast<int>(AlsReader::AlsInitStatus::kDisabled), 1);
   histogram_tester_.ExpectBucketCount(
-      histogram, static_cast<int>(AlsReader::AlsInitStatus::kIncorrectConfig),
-      1);
-  histogram_tester_.ExpectBucketCount(
       histogram, static_cast<int>(AlsReader::AlsInitStatus::kMissingPath), 1);
-  // Expect 3 errors from above + 1 success from before |FailForTesting|.
-  histogram_tester_.ExpectTotalCount(histogram, 4);
+  // Expect 2 errors from above + 1 success from before |FailForTesting|.
+  histogram_tester_.ExpectTotalCount(histogram, 3);
 }
 
 TEST_F(AlsReaderImplTest, OneAlsValue) {

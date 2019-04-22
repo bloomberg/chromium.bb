@@ -112,7 +112,8 @@ void ExtensionSyncEventObserver::OnFileSynced(
   params->AppendString(sync_file_system::ToString(direction_enum));
 
   BroadcastOrDispatchEvent(
-      url.origin(), extensions::events::SYNC_FILE_SYSTEM_ON_FILE_STATUS_CHANGED,
+      url.origin().GetURL(),
+      extensions::events::SYNC_FILE_SYSTEM_ON_FILE_STATUS_CHANGED,
       sync_file_system::OnFileStatusChanged::kEventName, std::move(params));
 }
 

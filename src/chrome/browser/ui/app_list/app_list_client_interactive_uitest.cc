@@ -22,5 +22,5 @@ IN_PROC_BROWSER_TEST_F(AppListClientInteractiveTest, ShowAndDismiss) {
   ASSERT_TRUE(client->app_list_visible());
   client->DismissView();
   client->FlushMojoForTesting();
-  ASSERT_FALSE(client->app_list_visible());
+  ASSERT_FALSE(client->app_list_target_visibility());
 }

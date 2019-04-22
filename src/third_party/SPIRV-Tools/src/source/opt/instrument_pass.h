@@ -65,17 +65,16 @@ class InstrumentPass : public Pass {
   using cbb_ptr = const BasicBlock*;
 
  public:
-  using InstProcessFunction = std::function<void(
-      BasicBlock::iterator, UptrVectorIterator<BasicBlock>, uint32_t, uint32_t,
-      std::vector<std::unique_ptr<BasicBlock>>*)>;
+  using InstProcessFunction =
+      std::function<void(BasicBlock::iterator, UptrVectorIterator<BasicBlock>,
+                         uint32_t, std::vector<std::unique_ptr<BasicBlock>>*)>;
 
   ~InstrumentPass() override = default;
 
   IRContext::Analysis GetPreservedAnalyses() override {
-    return IRContext::kAnalysisDefUse |
-           IRContext::kAnalysisInstrToBlockMapping |
-           IRContext::kAnalysisDecorations | IRContext::kAnalysisCombinators |
-           IRContext::kAnalysisNameMap | IRContext::kAnalysisBuiltinVarId;
+    return IRContext::kAnalysisDefUse | IRContext::kAnalysisDecorations |
+           IRContext::kAnalysisCombinators | IRContext::kAnalysisNameMap |
+           IRContext::kAnalysisBuiltinVarId | IRContext::kAnalysisConstants;
   }
 
  protected:
@@ -106,7 +105,7 @@ class InstrumentPass : public Pass {
   // Move all code in |ref_block_itr| succeeding the instruction |ref_inst_itr|
   // to be instrumented into block |new_blk_ptr|.
   void MovePostludeCode(UptrVectorIterator<BasicBlock> ref_block_itr,
-                        std::unique_ptr<BasicBlock>* new_blk_ptr);
+                        BasicBlock* new_blk_ptr);
 
   // Generate instructions in |builder| which will atomically fetch and
   // increment the size of the debug output buffer stream of the current
@@ -194,6 +193,17 @@ class InstrumentPass : public Pass {
                            const std::vector<uint32_t>& validation_ids,
                            InstructionBuilder* builder);
 
+  // Generate in |builder| instructions to read the unsigned integer from the
+  // input buffer specified by the offsets in |offset_ids|. Given offsets
+  // o0, o1, ... oN, and input buffer ibuf, return the id for the value:
+  //
+  // ibuf[...ibuf[ibuf[o0]+o1]...+oN]
+  //
+  // The binding and the format of the input buffer is determined by each
+  // specific validation, which is specified at the creation of the pass.
+  uint32_t GenDebugDirectRead(const std::vector<uint32_t>& offset_ids,
+                              InstructionBuilder* builder);
+
   // Generate code to cast |value_id| to unsigned, if needed. Return
   // an id to the unsigned equivalent.
   uint32_t GenUintCastCode(uint32_t value_id, InstructionBuilder* builder);
@@ -210,14 +220,27 @@ class InstrumentPass : public Pass {
   // Return id for void type
   uint32_t GetVoidId();
 
-  // Return id for output buffer uint type
-  uint32_t GetOutputBufferUintPtrId();
+  // Return pointer to type for runtime array of uint
+  analysis::Type* GetUintRuntimeArrayType(analysis::DecorationManager* deco_mgr,
+                                          analysis::TypeManager* type_mgr);
+
+  // Return id for buffer uint type
+  uint32_t GetBufferUintPtrId();
 
   // Return binding for output buffer for current validation.
   uint32_t GetOutputBufferBinding();
 
+  // Return binding for input buffer for current validation.
+  uint32_t GetInputBufferBinding();
+
+  // Add storage buffer extension if needed
+  void AddStorageBufferExt();
+
   // Return id for debug output buffer
   uint32_t GetOutputBufferId();
+
+  // Return id for debug input buffer
+  uint32_t GetInputBufferId();
 
   // Return id for v4float type
   uint32_t GetVec4FloatId();
@@ -226,9 +249,13 @@ class InstrumentPass : public Pass {
   uint32_t GetVec4UintId();
 
   // Return id for output function. Define if it doesn't exist with
-  // |val_spec_arg_cnt| validation-specific uint32 arguments.
+  // |val_spec_param_cnt| validation-specific uint32 parameters.
   uint32_t GetStreamWriteFunctionId(uint32_t stage_idx,
                                     uint32_t val_spec_param_cnt);
+
+  // Return id for input function taking |param_cnt| uint32 parameters. Define
+  // if it doesn't exist.
+  uint32_t GetDirectReadFunctionId(uint32_t param_cnt);
 
   // Apply instrumentation function |pfn| to every instruction in |func|.
   // If code is generated for an instruction, replace the instruction's
@@ -291,7 +318,7 @@ class InstrumentPass : public Pass {
       std::unique_ptr<Instruction>* inst,
       std::unordered_map<uint32_t, uint32_t>* same_blk_post,
       std::unordered_map<uint32_t, Instruction*>* same_blk_pre,
-      std::unique_ptr<BasicBlock>* block_ptr);
+      BasicBlock* block_ptr);
 
   // Update phis in succeeding blocks to point to new last block
   void UpdateSucceedingPhis(
@@ -310,8 +337,8 @@ class InstrumentPass : public Pass {
   // CFG. It has functionality not present in CFG. Consolidate.
   std::unordered_map<uint32_t, BasicBlock*> id2block_;
 
-  // Map from function's position index to the offset of its first instruction
-  std::unordered_map<uint32_t, uint32_t> funcIdx2offset_;
+  // Map from instruction's unique id to offset in original file.
+  std::unordered_map<uint32_t, uint32_t> uid2offset_;
 
   // result id for OpConstantFalse
   uint32_t validation_id_;
@@ -320,13 +347,19 @@ class InstrumentPass : public Pass {
   uint32_t output_buffer_id_;
 
   // type id for output buffer element
-  uint32_t output_buffer_uint_ptr_id_;
+  uint32_t buffer_uint_ptr_id_;
 
   // id for debug output function
   uint32_t output_func_id_;
 
+  // ids for debug input functions
+  std::unordered_map<uint32_t, uint32_t> param2input_func_id_;
+
   // param count for output function
   uint32_t output_func_param_cnt_;
+
+  // id for input buffer variable
+  uint32_t input_buffer_id_;
 
   // id for v4float type
   uint32_t v4float_id_;
@@ -342,6 +375,12 @@ class InstrumentPass : public Pass {
 
   // id for void type
   uint32_t void_id_;
+
+  // boolean to remember storage buffer extension
+  bool storage_buffer_ext_defined_;
+
+  // runtime array of uint type
+  analysis::Type* uint_rarr_ty_;
 
   // Pre-instrumentation same-block insts
   std::unordered_map<uint32_t, Instruction*> same_block_pre_;

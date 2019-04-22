@@ -209,6 +209,15 @@ function updateServiceLog(log) {
 }
 
 /**
+ * Updates the service log section.
+ * @param {Array} log Log lines.
+ */
+function updateOtherServiceLogsUrl(url) {
+  var link = $('other-logs');
+  link.setAttribute('href', url);
+}
+
+/**
  * Creates an element named |elementName| containing the content |text|.
  * @param {string} elementName Name of the new element to be created.
  * @param {string} text Text to be contained in the new element.

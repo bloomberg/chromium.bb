@@ -17,11 +17,11 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/net.mojom.h"
-#include "components/arc/connection_holder.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/connection_holder.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -145,8 +145,9 @@ void InternetHandler::AddThirdPartyVpn(const base::ListValue* args) {
     NET_LOG(ERROR) << "Empty app id for " << kAddThirdPartyVpnMessage;
     return;
   }
-  if (profile_ != GetProfileForPrimaryUser()) {
-    NET_LOG(ERROR) << "Only the primary user can add VPNs";
+  if (profile_ != GetProfileForPrimaryUser() || profile_->IsChild()) {
+    NET_LOG(ERROR)
+        << "Only the primary user and non-child accounts can add VPNs";
     return;
   }
 

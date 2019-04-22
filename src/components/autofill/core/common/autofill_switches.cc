@@ -19,8 +19,13 @@ const char kAutofillServerURL[] = "autofill-server-url";
 // The randomized encoding type to use when sending metadata uploads. The
 // value of the parameter must be one of the valid integer values of the
 // AutofillRandomizedValue_EncodingType enum.
-extern const char kAutofillMetadataUploadEncoding[] =
+const char kAutofillMetadataUploadEncoding[] =
     "autofill-metadata-upload-encoding";
+
+// The number of days after which to reset the registry of autofill events for
+// which an upload has been sent.
+const char kAutofillUploadThrottlingPeriodInDays[] =
+    "autofill-upload-throttling-period-in-days";
 
 // Force hiding the local save checkbox in the autofill dialog box for getting
 // the full credit card number for a wallet card. The card will never be stored
@@ -33,10 +38,6 @@ const char kDisableOfferStoreUnmaskedWalletCards[] =
 const char kEnableOfferStoreUnmaskedWalletCards[] =
     "enable-offer-store-unmasked-wallet-cards";
 
-// Enables suggestions with substring matching instead of prefix matching.
-const char kEnableSuggestionsWithSubstringMatch[] =
-    "enable-suggestions-with-substring-match";
-
 // Ignores autocomplete="off" for Autofill data (profiles + credit cards).
 const char kIgnoreAutocompleteOffForAutofill[] =
     "ignore-autocomplete-off-autofill";
@@ -48,7 +49,7 @@ const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";
 const char kShowAutofillSignatures[] = "show-autofill-signatures";
 
 // Use the sandbox Online Wallet service URL (for developer testing).
-const char kWalletServiceUseSandbox[]       = "wallet-service-use-sandbox";
+const char kWalletServiceUseSandbox[] = "wallet-service-use-sandbox";
 
 }  // namespace switches
 }  // namespace autofill

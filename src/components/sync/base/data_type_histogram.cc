@@ -26,3 +26,7 @@ void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
       kModelTypeCountHistogramPrefix + type_string;
   base::UmaHistogramCounts1M(full_histogram_name, count);
 }
+
+void SyncWalletDataRecordClearedEntitiesCount(size_t count) {
+  UMA_HISTOGRAM_COUNTS_100("Sync.Wallet.EntitiesClearedWhenDisabled", count);
+}

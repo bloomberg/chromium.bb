@@ -22,10 +22,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace ui {
-class SimpleMenuModel;
-}
-
 namespace arc {
 
 // An observer class which populates the "Open with <app>" menu items either

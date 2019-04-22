@@ -5,6 +5,7 @@
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "base/test/gtest_util.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/content_browser_test.h"
@@ -14,7 +15,7 @@ namespace content {
 class BrowserThreadPostTaskBeforeInitBrowserTest : public ContentBrowserTest {
  protected:
   void SetUp() override {
-    // This should fail because the TaskScheduler + TaskExecutor weren't created
+    // This should fail because the ThreadPool + TaskExecutor weren't created
     // yet.
     EXPECT_DCHECK_DEATH(base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
                                                  base::DoNothing()));
@@ -45,7 +46,14 @@ class BrowserThreadPostTaskBeforeThreadCreationBrowserTest
   }
 };
 
+// Flaky on Chrome OS and Linux. https://crbug.com/910834
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_ExpectFailures DISABLED_ExpectFailures
+#else
+#define MAYBE_ExpectFailures ExpectFailures
+#endif
+
 IN_PROC_BROWSER_TEST_F(BrowserThreadPostTaskBeforeThreadCreationBrowserTest,
-                       ExpectFailures) {}
+                       MAYBE_ExpectFailures) {}
 
 }  // namespace content

@@ -74,8 +74,8 @@ void CFWL_PushButton::DrawBkground(CXFA_Graphics* pGraphics,
     param.m_matrix.Concat(*pMatrix);
   param.m_rtPart = m_rtClient;
   if (m_pProperties->m_dwStates & FWL_WGTSTATE_Focused)
-    param.m_pData = &m_rtCaption;
-  pTheme->DrawBackground(&param);
+    param.m_pRtData = &m_rtCaption;
+  pTheme->DrawBackground(param);
 }
 
 uint32_t CFWL_PushButton::GetPartStates() {

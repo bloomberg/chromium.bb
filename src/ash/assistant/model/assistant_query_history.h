@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/ash_export.h"
+#include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -16,7 +16,7 @@
 namespace ash {
 
 // Caches user query history.
-class ASH_EXPORT AssistantQueryHistory {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantQueryHistory {
  public:
   class Iterator {
    public:

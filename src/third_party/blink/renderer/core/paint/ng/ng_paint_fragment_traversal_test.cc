@@ -23,7 +23,7 @@ class NGPaintFragmentTraversalTest : public RenderingTest,
   void SetUpHtml(const char* container_id, const char* html) {
     SetBodyInnerHTML(html);
     layout_block_flow_ =
-        ToLayoutBlockFlow(GetLayoutObjectByElementId(container_id));
+        To<LayoutBlockFlow>(GetLayoutObjectByElementId(container_id));
     root_fragment_ = layout_block_flow_->PaintFragment();
   }
 
@@ -210,17 +210,19 @@ TEST_F(NGPaintFragmentTraversalTest, InlineDescendantsOf) {
 
   // Tests that floats, out-of-flow positioned and descendants of atomic inlines
   // are excluded.
-  auto descendants =
-      NGPaintFragmentTraversal::InlineDescendantsOf(*root_fragment_);
+  Vector<const NGPaintFragment*> descendants;
+  for (const NGPaintFragment* fragment :
+       NGPaintFragmentTraversal::InlineDescendantsOf(*root_fragment_))
+    descendants.push_back(fragment);
   ASSERT_EQ(6u, descendants.size());
   // TODO(layout-dev): This list marker is not in any line box. Should it be
   // treated as inline?
-  EXPECT_TRUE(descendants[0].fragment->PhysicalFragment().IsListMarker());
-  EXPECT_TRUE(descendants[1].fragment->PhysicalFragment().IsLineBox());
-  EXPECT_TRUE(descendants[2].fragment->PhysicalFragment().IsText());  // "text"
-  EXPECT_TRUE(descendants[3].fragment->PhysicalFragment().IsText());  // "br"
-  EXPECT_TRUE(descendants[4].fragment->PhysicalFragment().IsLineBox());
-  EXPECT_TRUE(descendants[5].fragment->PhysicalFragment().IsAtomicInline());
+  EXPECT_TRUE(descendants[0]->PhysicalFragment().IsListMarker());
+  EXPECT_TRUE(descendants[1]->PhysicalFragment().IsLineBox());
+  EXPECT_TRUE(descendants[2]->PhysicalFragment().IsText());  // "text"
+  EXPECT_TRUE(descendants[3]->PhysicalFragment().IsText());  // "br"
+  EXPECT_TRUE(descendants[4]->PhysicalFragment().IsLineBox());
+  EXPECT_TRUE(descendants[5]->PhysicalFragment().IsAtomicInline());
 }
 
 }  // namespace blink

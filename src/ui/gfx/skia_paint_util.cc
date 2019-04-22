@@ -15,8 +15,8 @@
 namespace gfx {
 
 sk_sp<cc::PaintShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
-                                            SkShader::TileMode tile_mode_x,
-                                            SkShader::TileMode tile_mode_y,
+                                            SkTileMode tile_mode_x,
+                                            SkTileMode tile_mode_y,
                                             const SkMatrix& local_matrix) {
   return CreateImageRepShaderForScale(image_rep, tile_mode_x, tile_mode_y,
                                       local_matrix, image_rep.scale());
@@ -24,8 +24,8 @@ sk_sp<cc::PaintShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
 
 sk_sp<cc::PaintShader> CreateImageRepShaderForScale(
     const gfx::ImageSkiaRep& image_rep,
-    SkShader::TileMode tile_mode_x,
-    SkShader::TileMode tile_mode_y,
+    SkTileMode tile_mode_x,
+    SkTileMode tile_mode_y,
     const SkMatrix& local_matrix,
     SkScalar scale) {
   // Unscale matrix by |scale| such that the bitmap is drawn at the
@@ -68,7 +68,7 @@ sk_sp<cc::PaintShader> CreateGradientShader(int start_point,
   grad_points[1].iset(0, end_point);
 
   return cc::PaintShader::MakeLinearGradient(grad_points, grad_colors, nullptr,
-                                             2, SkShader::kClamp_TileMode);
+                                             2, SkTileMode::kClamp);
 }
 
 // This is copied from
@@ -103,7 +103,7 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooper(
     paint->setMaskFilter(SkMaskFilter::MakeBlur(
         kNormal_SkBlurStyle, RadiusToSigma(shadow.blur() / 2)));
     paint->setColorFilter(
-        SkColorFilter::MakeModeFilter(shadow.color(), SkBlendMode::kSrcIn));
+        SkColorFilters::Blend(shadow.color(), SkBlendMode::kSrcIn));
   }
 
   return looper_builder.detach();

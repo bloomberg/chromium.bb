@@ -18,7 +18,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/public/browser/dom_storage_context.h"
-#include "url/gurl.h"
+#include "content/public/browser/storage_usage_info.h"
+#include "url/origin.h"
 
 class Profile;
 
@@ -27,31 +28,20 @@ class Profile;
 class BrowsingDataLocalStorageHelper
     : public base::RefCounted<BrowsingDataLocalStorageHelper> {
  public:
-  // Contains detailed information about local storage.
-  struct LocalStorageInfo {
-    LocalStorageInfo(const GURL& origin_url,
-                     int64_t size,
-                     base::Time last_modified);
-    ~LocalStorageInfo();
-
-    GURL origin_url;
-    int64_t size;
-    base::Time last_modified;
-  };
-
   using FetchCallback =
-      base::Callback<void(const std::list<LocalStorageInfo>&)>;
+      base::OnceCallback<void(const std::list<content::StorageUsageInfo>&)>;
 
   explicit BrowsingDataLocalStorageHelper(Profile* profile);
 
   // Starts the fetching process, which will notify its completion via
   // callback. This must be called only in the UI thread.
-  virtual void StartFetching(const FetchCallback& callback);
+  virtual void StartFetching(FetchCallback callback);
 
-  // Deletes the local storage for the |origin_url|. |callback| is called when
+  // Deletes the local storage for the |origin|. |callback| is called when
   // the deletion is sent to the database and |StartFetching()| doesn't return
   // entries for |origin_url| anymore.
-  virtual void DeleteOrigin(const GURL& origin_url, base::OnceClosure callback);
+  virtual void DeleteOrigin(const url::Origin& origin,
+                            base::OnceClosure callback);
 
  protected:
   friend class base::RefCounted<BrowsingDataLocalStorageHelper>;
@@ -64,8 +54,8 @@ class BrowsingDataLocalStorageHelper
 };
 
 // This class is a thin wrapper around BrowsingDataLocalStorageHelper that does
-// not fetch its information from the local storage tracker, but gets them
-// passed as a parameter during construction.
+// not fetch its information from the local storage context, but gets them
+// passed by a call when accessed.
 class CannedBrowsingDataLocalStorageHelper
     : public BrowsingDataLocalStorageHelper {
  public:
@@ -73,7 +63,7 @@ class CannedBrowsingDataLocalStorageHelper
 
   // Add a local storage to the set of canned local storages that is returned
   // by this helper.
-  void AddLocalStorage(const GURL& origin_url);
+  void Add(const url::Origin& origin_url);
 
   // Clear the list of canned local storages.
   void Reset();
@@ -82,20 +72,20 @@ class CannedBrowsingDataLocalStorageHelper
   bool empty() const;
 
   // Returns the number of local storages currently stored.
-  size_t GetLocalStorageCount() const;
+  size_t GetCount() const;
 
   // Returns the set of origins that use local storage.
-  const std::set<GURL>& GetLocalStorageInfo() const;
+  const std::set<url::Origin>& GetOrigins() const;
 
   // BrowsingDataLocalStorageHelper implementation.
-  void StartFetching(const FetchCallback& callback) override;
-  void DeleteOrigin(const GURL& origin_url,
+  void StartFetching(FetchCallback callback) override;
+  void DeleteOrigin(const url::Origin& origin,
                     base::OnceClosure callback) override;
 
  private:
   ~CannedBrowsingDataLocalStorageHelper() override;
 
-  std::set<GURL> pending_local_storage_info_;
+  std::set<url::Origin> pending_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataLocalStorageHelper);
 };

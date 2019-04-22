@@ -17,6 +17,19 @@
     #include <arm_neon.h>
 #elif defined(__SSE__)
     #include <immintrin.h>
+
+    #if defined(__clang__)
+        // That #include <immintrin.h> is usually enough, but Clang's headers
+        // "helpfully" skip including the whole kitchen sink when _MSC_VER is
+        // defined, because lots of programs on Windows would include that and
+        // it'd be a lot slower.  But we want all those headers included so we
+        // can use their features after runtime checks later.
+        #include <smmintrin.h>
+        #include <avxintrin.h>
+        #include <avx2intrin.h>
+        #include <avx512fintrin.h>
+        #include <avx512dqintrin.h>
+    #endif
 #endif
 
 // sizeof(x) will return size_t, which is 32-bit on some machines and 64-bit on others.
@@ -1105,7 +1118,7 @@ const skcms_TransferFunction* skcms_sRGB_TransferFunction() {
 
 const skcms_TransferFunction* skcms_sRGB_Inverse_TransferFunction() {
     static const skcms_TransferFunction sRGB_inv =
-        { (float)(1/2.4), 1.137119f, 0, 12.92f, 0.0031308f, -0.055f, 0 };
+        {0.416666657f, 1.137283325f, -0.0f, 12.920000076f, 0.003130805f, -0.054969788f, -0.0f};
     return &sRGB_inv;
 }
 
@@ -1403,80 +1416,67 @@ float skcms_TransferFunction_eval(const skcms_TransferFunction* tf, float x) {
                              : powf_(tf->a * x + tf->b, tf->g) + tf->e);
 }
 
-// TODO: Adjust logic here? This still assumes that purely linear inputs will have D > 1, which
-// we never generate. It also emits inverted linear using the same formulation. Standardize on
-// G == 1 here, too?
+#if defined(__clang__)
+    [[clang::no_sanitize("float-divide-by-zero")]]  // Checked for by tf_is_valid() on the way out.
+#endif
 bool skcms_TransferFunction_invert(const skcms_TransferFunction* src, skcms_TransferFunction* dst) {
-    // Original equation is:       y = (ax + b)^g + e   for x >= d
-    //                             y = cx + f           otherwise
-    //
-    // so 1st inverse is:          (y - e)^(1/g) = ax + b
-    //                             x = ((y - e)^(1/g) - b) / a
-    //
-    // which can be re-written as: x = (1/a)(y - e)^(1/g) - b/a
-    //                             x = ((1/a)^g)^(1/g) * (y - e)^(1/g) - b/a
-    //                             x = ([(1/a)^g]y + [-((1/a)^g)e]) ^ [1/g] + [-b/a]
-    //
-    // and 2nd inverse is:         x = (y - f) / c
-    // which can be re-written as: x = [1/c]y + [-f/c]
-    //
-    // and now both can be expressed in terms of the same parametric form as the
-    // original - parameters are enclosed in square brackets.
-    skcms_TransferFunction tf_inv = { 0, 0, 0, 0, 0, 0, 0 };
-
-    // This rejects obviously malformed inputs, as well as decreasing functions
     if (!tf_is_valid(src)) {
         return false;
     }
 
-    // There are additional constraints to be invertible
-    bool has_nonlinear = (src->d <= 1);
-    bool has_linear = (src->d > 0);
+    // We're inverting this function, solving for x in terms of y.
+    //   y = (cx + f)         x < d
+    //       (ax + b)^g + e   x ≥ d
+    // The inverse of this function can be expressed in the same piecewise form.
+    skcms_TransferFunction inv = {0,0,0,0,0,0,0};
 
-    // Is the linear section not invertible?
-    if (has_linear && src->c == 0) {
+    // We'll start by finding the new threshold inv.d.
+    // In principle we should be able to find that by solving for y at x=d from either side.
+    // (If those two d values aren't the same, it's a discontinuous transfer function.)
+    float d_l =       src->c * src->d + src->f,
+          d_r = powf_(src->a * src->d + src->b, src->g) + src->e;
+    if (fabsf_(d_l - d_r) > 1/512.0f) {
         return false;
     }
+    inv.d = d_l;  // TODO(mtklein): better in practice to choose d_r?
 
-    // Is the nonlinear section not invertible?
-    if (has_nonlinear && (src->a == 0 || src->g == 0)) {
-        return false;
+    // When d=0, the linear section collapses to a point.  We leave c,d,f all zero in that case.
+    if (inv.d > 0) {
+        // Inverting the linear section is pretty straightfoward:
+        //        y       = cx + f
+        //        y - f   = cx
+        //   (1/c)y - f/c = x
+        inv.c =    1.0f/src->c;
+        inv.f = -src->f/src->c;
     }
 
-    // If both segments are present, they need to line up
-    if (has_linear && has_nonlinear) {
-        float l_at_d = src->c * src->d + src->f;
-        float n_at_d = powf_(src->a * src->d + src->b, src->g) + src->e;
-        if (fabsf_(l_at_d - n_at_d) > (1 / 512.0f)) {
-            return false;
-        }
-    }
+    // The interesting part is inverting the nonlinear section:
+    //         y                = (ax + b)^g + e.
+    //         y - e            = (ax + b)^g
+    //        (y - e)^1/g       =  ax + b
+    //        (y - e)^1/g - b   =  ax
+    //   (1/a)(y - e)^1/g - b/a =   x
+    //
+    // To make that fit our form, we need to move the (1/a) term inside the exponentiation:
+    //   let k = (1/a)^g
+    //   (1/a)( y -  e)^1/g - b/a = x
+    //        (ky - ke)^1/g - b/a = x
 
-    // Invert linear segment
-    if (has_linear) {
-        tf_inv.c = 1.0f / src->c;
-        tf_inv.f = -src->f / src->c;
-    }
+    float k = powf_(src->a, -src->g);  // (1/a)^g == a^-g
+    inv.g = 1.0f / src->g;
+    inv.a = k;
+    inv.b = -k * src->e;
+    inv.e = -src->b / src->a;
 
-    // Invert nonlinear segment
-    if (has_nonlinear) {
-        tf_inv.g = 1.0f / src->g;
-        tf_inv.a = powf_(1.0f / src->a, src->g);
-        tf_inv.b = -tf_inv.a * src->e;
-        tf_inv.e = -src->b / src->a;
-    }
+    // Now in principle we're done.
+    // But to preserve the valuable invariant inv(src(1.0f)) == 1.0f,
+    // we'll tweak e.  These two values should be close to each other,
+    // just down to numerical precision issues, especially from powf_.
+    float s = powf_(src->a + src->b, src->g) + src->e;
+    inv.e = 1.0f - powf_(inv.a * s + inv.b, inv.g);
 
-    if (!has_linear) {
-        tf_inv.d = 0;
-    } else if (!has_nonlinear) {
-        // Any value larger than 1 works
-        tf_inv.d = 2.0f;
-    } else {
-        tf_inv.d = src->c * src->d + src->f;
-    }
-
-    *dst = tf_inv;
-    return true;
+    *dst = inv;
+    return tf_is_valid(dst);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -1722,7 +1722,7 @@ bool skcms_ApproximateCurve(const skcms_Curve* curve,
             int mid = (L + N) / 2;
             float mid_x = mid / (N - 1.0f);
             float mid_y = eval_curve(curve, mid_x);
-            tf.g = log2f_(mid_y) / log2f_(mid_x);;
+            tf.g = log2f_(mid_y) / log2f_(mid_x);
             tf.a = 1;
             tf.b = 0;
             tf.e =    tf.c*tf.d + tf.f
@@ -1819,15 +1819,6 @@ typedef enum {
     Op_store_ffff,
 } Op;
 
-// Without this wasm would try to use the N=4 128-bit vector code path,
-// which while ideal, causes tons of compiler problems.  This would be
-// a good thing to revisit as emcc matures (currently 1.38.5).
-#if 1 && defined(__EMSCRIPTEN_major__)
-    #if !defined(SKCMS_PORTABLE)
-        #define  SKCMS_PORTABLE
-    #endif
-#endif
-
 #if defined(__clang__)
     template <int N, typename T> using Vec = T __attribute__((ext_vector_type(N)));
 #elif defined(__GNUC__)
@@ -1842,7 +1833,8 @@ typedef enum {
 // First, instantiate our default exec_ops() implementation using the default compiliation target.
 
 namespace baseline {
-#if defined(SKCMS_PORTABLE) || !(defined(__clang__) || defined(__GNUC__))
+#if defined(SKCMS_PORTABLE) || !(defined(__clang__) || defined(__GNUC__)) \
+                            || (defined(__EMSCRIPTEN_major__) && !defined(__wasm_simd128__))
     #define N 1
     using F   = float;
     using U64 = uint64_t;
@@ -1885,80 +1877,127 @@ namespace baseline {
 #if !defined(SKCMS_PORTABLE) &&                           \
         (( defined(__clang__) && __clang_major__ >= 5) || \
          (!defined(__clang__) && defined(__GNUC__)))      \
-     && defined(__x86_64__) && !defined(__AVX2__)
+     && defined(__x86_64__)
 
-    #if defined(__clang__)
-        #pragma clang attribute push(__attribute__((target("avx2,f16c"))), apply_to=function)
-    #elif defined(__GNUC__)
-        #pragma GCC push_options
-        #pragma GCC target("avx2,f16c")
+    #if !defined(__AVX2__)
+        #if defined(__clang__)
+            #pragma clang attribute push(__attribute__((target("avx2,f16c"))), apply_to=function)
+        #elif defined(__GNUC__)
+            #pragma GCC push_options
+            #pragma GCC target("avx2,f16c")
+        #endif
+
+        namespace hsw {
+            #define USING_AVX
+            #define USING_AVX_F16C
+            #define USING_AVX2
+            #define N 8
+            using   F = Vec<N,float>;
+            using I32 = Vec<N,int32_t>;
+            using U64 = Vec<N,uint64_t>;
+            using U32 = Vec<N,uint32_t>;
+            using U16 = Vec<N,uint16_t>;
+            using  U8 = Vec<N,uint8_t>;
+
+            #include "src/Transform_inl.h"
+
+            // src/Transform_inl.h will undefine USING_* for us.
+            #undef N
+        }
+
+        #if defined(__clang__)
+            #pragma clang attribute pop
+        #elif defined(__GNUC__)
+            #pragma GCC pop_options
+        #endif
+
+        #define TEST_FOR_HSW
     #endif
 
-    namespace hsw {
-        #define USING_AVX
-        #define USING_AVX_F16C
-        #define USING_AVX2
-        #define N 8
-        using   F = Vec<N,float>;
-        using I32 = Vec<N,int32_t>;
-        using U64 = Vec<N,uint64_t>;
-        using U32 = Vec<N,uint32_t>;
-        using U16 = Vec<N,uint16_t>;
-        using  U8 = Vec<N,uint8_t>;
+    #if !defined(__AVX512F__)
+        #if defined(__clang__)
+            #pragma clang attribute push(__attribute__((target("avx512f,avx512dq,avx512cd,avx512bw,avx512vl"))), apply_to=function)
+        #elif defined(__GNUC__)
+            #pragma GCC push_options
+            #pragma GCC target("avx512f,avx512dq,avx512cd,avx512bw,avx512vl")
+        #endif
 
-        #include "src/Transform_inl.h"
+        namespace skx {
+            #define USING_AVX512F
+            #define N 16
+            using   F = Vec<N,float>;
+            using I32 = Vec<N,int32_t>;
+            using U64 = Vec<N,uint64_t>;
+            using U32 = Vec<N,uint32_t>;
+            using U16 = Vec<N,uint16_t>;
+            using  U8 = Vec<N,uint8_t>;
 
-        // src/Transform_inl.h will undefine USING_* for us.
-        #undef N
-    }
+            #include "src/Transform_inl.h"
 
-    #if defined(__clang__)
-        #pragma clang attribute pop
-    #elif defined(__GNUC__)
-        #pragma GCC pop_options
+            // src/Transform_inl.h will undefine USING_* for us.
+            #undef N
+        }
+
+        #if defined(__clang__)
+            #pragma clang attribute pop
+        #elif defined(__GNUC__)
+            #pragma GCC pop_options
+        #endif
+
+        #define TEST_FOR_SKX
     #endif
 
-    #define TEST_FOR_HSW
+    #if defined(TEST_FOR_HSW) || defined(TEST_FOR_SKX)
+        enum class CpuType { None, HSW, SKX };
+        static CpuType cpu_type() {
+            static const CpuType type = []{
+                // See http://www.sandpile.org/x86/cpuid.htm
 
-    static bool hsw_ok() {
-        static const bool ok = []{
-            // See http://www.sandpile.org/x86/cpuid.htm
+                // First, a basic cpuid(1) lets us check prerequisites for HSW, SKX.
+                uint32_t eax, ebx, ecx, edx;
+                __asm__ __volatile__("cpuid" : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
+                                             : "0"(1), "2"(0));
+                if ((edx & (1u<<25)) &&  // SSE
+                    (edx & (1u<<26)) &&  // SSE2
+                    (ecx & (1u<< 0)) &&  // SSE3
+                    (ecx & (1u<< 9)) &&  // SSSE3
+                    (ecx & (1u<<12)) &&  // FMA (N.B. not used, avoided even)
+                    (ecx & (1u<<19)) &&  // SSE4.1
+                    (ecx & (1u<<20)) &&  // SSE4.2
+                    (ecx & (1u<<26)) &&  // XSAVE
+                    (ecx & (1u<<27)) &&  // OSXSAVE
+                    (ecx & (1u<<28)) &&  // AVX
+                    (ecx & (1u<<29))) {  // F16C
 
-            // First, a basic cpuid(1).
-            uint32_t eax, ebx, ecx, edx;
-            __asm__ __volatile__("cpuid" : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
-                                         : "0"(1), "2"(0));
+                    // Call cpuid(7) to check for AVX2 and AVX-512 bits.
+                    __asm__ __volatile__("cpuid" : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
+                                                 : "0"(7), "2"(0));
+                    // eax from xgetbv(0) will tell us whether XMM, YMM, and ZMM state is saved.
+                    uint32_t xcr0, dont_need_edx;
+                    __asm__ __volatile__("xgetbv" : "=a"(xcr0), "=d"(dont_need_edx) : "c"(0));
 
-            // Sanity check for prerequisites.
-            if ((edx & (1<<25)) != (1<<25)) { return false; }   // SSE
-            if ((edx & (1<<26)) != (1<<26)) { return false; }   // SSE2
-            if ((ecx & (1<< 0)) != (1<< 0)) { return false; }   // SSE3
-            if ((ecx & (1<< 9)) != (1<< 9)) { return false; }   // SSSE3
-            if ((ecx & (1<<19)) != (1<<19)) { return false; }   // SSE4.1
-            if ((ecx & (1<<20)) != (1<<20)) { return false; }   // SSE4.2
-
-            if ((ecx & (3<<26)) != (3<<26)) { return false; }   // XSAVE + OSXSAVE
-
-            {
-                uint32_t eax_xgetbv, edx_xgetbv;
-                __asm__ __volatile__("xgetbv" : "=a"(eax_xgetbv), "=d"(edx_xgetbv) : "c"(0));
-                if ((eax_xgetbv & (3<<1)) != (3<<1)) { return false; }  // XMM+YMM state saved?
-            }
-
-            if ((ecx & (1<<28)) != (1<<28)) { return false; }   // AVX
-            if ((ecx & (1<<29)) != (1<<29)) { return false; }   // F16C
-            if ((ecx & (1<<12)) != (1<<12)) { return false; }   // FMA  (TODO: not currently used)
-
-            // Call cpuid(7) to check for our final AVX2 feature bit!
-            __asm__ __volatile__("cpuid" : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
-                                         : "0"(7), "2"(0));
-            if ((ebx & (1<< 5)) != (1<< 5)) { return false; }   // AVX2
-
-            return true;
-        }();
-
-        return ok;
-    }
+                    if ((xcr0 & (1u<<1)) &&  // XMM register state saved?
+                        (xcr0 & (1u<<2)) &&  // YMM register state saved?
+                        (ebx  & (1u<<5))) {  // AVX2
+                        // At this point we're at least HSW.  Continue checking for SKX.
+                        if ((xcr0 & (1u<< 5)) && // Opmasks state saved?
+                            (xcr0 & (1u<< 6)) && // First 16 ZMM registers saved?
+                            (xcr0 & (1u<< 7)) && // High 16 ZMM registers saved?
+                            (ebx  & (1u<<16)) && // AVX512F
+                            (ebx  & (1u<<17)) && // AVX512DQ
+                            (ebx  & (1u<<28)) && // AVX512CD
+                            (ebx  & (1u<<30)) && // AVX512BW
+                            (ebx  & (1u<<31))) { // AVX512VL
+                            return CpuType::SKX;
+                        }
+                        return CpuType::HSW;
+                    }
+                }
+                return CpuType::None;
+            }();
+            return type;
+        }
+    #endif
 
 #endif
 
@@ -2005,6 +2044,8 @@ static size_t bytes_per_pixel(skcms_PixelFormat fmt) {
         case skcms_PixelFormat_RGBA_16161616LE    >> 1: return  8;
         case skcms_PixelFormat_RGB_161616BE       >> 1: return  6;
         case skcms_PixelFormat_RGBA_16161616BE    >> 1: return  8;
+        case skcms_PixelFormat_RGB_hhh_Norm       >> 1: return  6;
+        case skcms_PixelFormat_RGBA_hhhh_Norm     >> 1: return  8;
         case skcms_PixelFormat_RGB_hhh            >> 1: return  6;
         case skcms_PixelFormat_RGBA_hhhh          >> 1: return  8;
         case skcms_PixelFormat_RGB_fff            >> 1: return 12;
@@ -2104,6 +2145,8 @@ bool skcms_TransformWithPalette(const void*             src,
         case skcms_PixelFormat_RGBA_16161616LE >> 1: *ops++ = Op_load_16161616LE; break;
         case skcms_PixelFormat_RGB_161616BE    >> 1: *ops++ = Op_load_161616BE;   break;
         case skcms_PixelFormat_RGBA_16161616BE >> 1: *ops++ = Op_load_16161616BE; break;
+        case skcms_PixelFormat_RGB_hhh_Norm    >> 1: *ops++ = Op_load_hhh;        break;
+        case skcms_PixelFormat_RGBA_hhhh_Norm  >> 1: *ops++ = Op_load_hhhh;       break;
         case skcms_PixelFormat_RGB_hhh         >> 1: *ops++ = Op_load_hhh;        break;
         case skcms_PixelFormat_RGBA_hhhh       >> 1: *ops++ = Op_load_hhhh;       break;
         case skcms_PixelFormat_RGB_fff         >> 1: *ops++ = Op_load_fff;        break;
@@ -2112,6 +2155,10 @@ bool skcms_TransformWithPalette(const void*             src,
         case skcms_PixelFormat_RGBA_8888_Palette8 >> 1: *ops++  = Op_load_8888_palette8;
                                                         *args++ = palette;
                                                         break;
+    }
+    if (srcFmt == skcms_PixelFormat_RGB_hhh_Norm ||
+        srcFmt == skcms_PixelFormat_RGBA_hhhh_Norm) {
+        *ops++ = Op_clamp;
     }
     if (srcFmt & 1) {
         *ops++ = Op_swap_rb;
@@ -2234,8 +2281,8 @@ bool skcms_TransformWithPalette(const void*             src,
         if (!is_identity_tf(&inv_dst_tf_b)) { *ops++ = Op_tf_b; *args++ = &inv_dst_tf_b; }
     }
 
-    // Clamp here before premul to make sure we're clamping to fixed-point values _and_ gamut,
-    // not just to values that fit in the fixed point representation.
+    // Clamp here before premul to make sure we're clamping to normalized values _and_ gamut,
+    // not just to values that fit in [0,1].
     //
     // E.g. r = 1.1, a = 0.5 would fit fine in fixed point after premul (ra=0.55,a=0.5),
     // but would be carrying r > 1, which is really unexpected for downstream consumers.
@@ -2263,6 +2310,8 @@ bool skcms_TransformWithPalette(const void*             src,
         case skcms_PixelFormat_RGBA_16161616LE >> 1: *ops++ = Op_store_16161616LE; break;
         case skcms_PixelFormat_RGB_161616BE    >> 1: *ops++ = Op_store_161616BE;   break;
         case skcms_PixelFormat_RGBA_16161616BE >> 1: *ops++ = Op_store_16161616BE; break;
+        case skcms_PixelFormat_RGB_hhh_Norm    >> 1: *ops++ = Op_store_hhh;        break;
+        case skcms_PixelFormat_RGBA_hhhh_Norm  >> 1: *ops++ = Op_store_hhhh;       break;
         case skcms_PixelFormat_RGB_hhh         >> 1: *ops++ = Op_store_hhh;        break;
         case skcms_PixelFormat_RGBA_hhhh       >> 1: *ops++ = Op_store_hhhh;       break;
         case skcms_PixelFormat_RGB_fff         >> 1: *ops++ = Op_store_fff;        break;
@@ -2271,7 +2320,18 @@ bool skcms_TransformWithPalette(const void*             src,
 
     auto run = baseline::run_program;
 #if defined(TEST_FOR_HSW)
-    if (hsw_ok()) { run = hsw::run_program; }
+    switch (cpu_type()) {
+        case CpuType::None:                        break;
+        case CpuType::HSW: run = hsw::run_program; break;
+        case CpuType::SKX: run = hsw::run_program; break;
+    }
+#endif
+#if defined(TEST_FOR_SKX)
+    switch (cpu_type()) {
+        case CpuType::None:                        break;
+        case CpuType::HSW:                         break;
+        case CpuType::SKX: run = skx::run_program; break;
+    }
 #endif
     run(program, arguments, (const char*)src, (char*)dst, n, src_bpp,dst_bpp);
     return true;

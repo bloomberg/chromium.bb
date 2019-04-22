@@ -13,6 +13,10 @@ namespace aura {
 class Window;
 }
 
+namespace ui {
+class LocatedEvent;
+}
+
 namespace exo {
 
 class Surface;
@@ -35,6 +39,12 @@ void SetShellMainSurface(aura::Window* window, Surface* surface);
 // Returns the main Surface instance or nullptr if it is not set.
 // |window| must not be nullptr.
 Surface* GetShellMainSurface(const aura::Window* window);
+
+// Returns the target surface for the located event |event|.  If an
+// event handling is grabbed by an window, it'll first examine that
+// window, then traverse to its transient parent if the parent also
+// requested grab.
+Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event);
 
 }  // namespace exo
 

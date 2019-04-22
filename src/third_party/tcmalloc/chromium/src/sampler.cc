@@ -35,30 +35,32 @@
 
 #include "sampler.h"
 
-#include <algorithm>  // For min()
 #include <math.h>
-#include "base/commandlineflags.h"
+#include <algorithm>  // For min()
 
 using std::min;
+
+namespace tcmalloc {
 
 // The approximate gap in bytes between sampling actions.
 // I.e., we take one sample approximately once every
 // tcmalloc_sample_parameter bytes of allocation
 // i.e. about once every 512KB if value is 1<<19.
 #ifdef NO_TCMALLOC_SAMPLES
-DEFINE_int64(tcmalloc_sample_parameter, 0,
-             "Unused: code is compiled with NO_TCMALLOC_SAMPLES");
+std::atomic<size_t> Sampler::tcmalloc_sample_parameter_(0);
 #else
-DEFINE_int64(tcmalloc_sample_parameter,
-             EnvToInt64("TCMALLOC_SAMPLE_PARAMETER", 0),
-             "The approximate gap in bytes between sampling actions. "
-             "This must be between 1 and 2^58.");
+std::atomic<size_t> Sampler::tcmalloc_sample_parameter_(
+    EnvToInt64("TCMALLOC_SAMPLE_PARAMETER", 0));
 #endif
 
-namespace tcmalloc {
+// Static
+size_t Sampler::GetSamplePeriod() {
+  return tcmalloc_sample_parameter_.load();
+}
 
-int Sampler::GetSamplePeriod() {
-  return FLAGS_tcmalloc_sample_parameter;
+// Static
+void Sampler::SetSamplePeriod(size_t period) {
+  tcmalloc_sample_parameter_.store(period);
 }
 
 // Run this before using your sampler
@@ -89,7 +91,8 @@ void Sampler::Init(uint64_t seed) {
 // log_2(q) * (-log_e(2) * 1/m) = x
 // In the code, q is actually in the range 1 to 2**26, hence the -26 below
 ssize_t Sampler::PickNextSamplingPoint() {
-  if (FLAGS_tcmalloc_sample_parameter <= 0) {
+  size_t sampling_period = GetSamplePeriod();
+  if (sampling_period == 0) {
     // In this case, we don't want to sample ever, and the larger a
     // value we put here, the longer until we hit the slow path
     // again. However, we have to support the flag changing at
@@ -108,8 +111,7 @@ ssize_t Sampler::PickNextSamplingPoint() {
   // under piii debug for some binaries.
   double q = static_cast<uint32_t>(rnd_ >> (prng_mod_power - 26)) + 1.0;
   // Put the computed p-value through the CDF of a geometric.
-  double interval =
-      (log2(q) - 26) * (-log(2.0) * FLAGS_tcmalloc_sample_parameter);
+  double interval = (log2(q) - 26) * (-log(2.0) * sampling_period);
 
   // Very large values of interval overflow ssize_t. If we happen to
   // hit such improbable condition, we simply cheat and clamp interval
@@ -127,7 +129,7 @@ bool Sampler::RecordAllocationSlow(size_t k) {
     }
   }
   bytes_until_sample_ = PickNextSamplingPoint();
-  return FLAGS_tcmalloc_sample_parameter <= 0;
+  return GetSamplePeriod() == 0;
 }
 
 }  // namespace tcmalloc

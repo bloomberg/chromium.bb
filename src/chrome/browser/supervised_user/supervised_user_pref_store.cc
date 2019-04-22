@@ -147,7 +147,7 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     for (const auto& entry : kSupervisedUserSettingsPrefMapping) {
       const base::Value* value = NULL;
       if (settings->GetWithoutPathExpansion(entry.settings_name, &value))
-        prefs_->SetValue(entry.pref_name, value->CreateDeepCopy());
+        prefs_->SetValue(entry.pref_name, value->Clone());
     }
 
     // Manually set preferences that aren't direct copies of the settings value.

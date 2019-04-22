@@ -4,10 +4,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "gm.h"
-#include "sk_tool_utils.h"
 #include "SkCanvas.h"
 #include "SkPath.h"
+#include "ToolUtils.h"
+#include "gm.h"
 
 #include <utility>
 
@@ -52,8 +52,8 @@ protected:
 
         SkPaint paint;
         paint.setAntiAlias(true);
-        sk_tool_utils::set_portable_typeface(&paint);
-        paint.setTextSize(SkIntToScalar(20));
+
+        SkFont font(ToolUtils::create_portable_typeface(), 20);
 
         constexpr struct {
             SkClipOp    fOp;
@@ -106,7 +106,7 @@ protected:
                                                    doAAB ? "A" : "B",
                                                    doInvB ? "I" : "N");
 
-                        canvas->drawString(str.c_str(), txtX, SkIntToScalar(130), paint);
+                        canvas->drawString(str.c_str(), txtX, SkIntToScalar(130), font, paint);
                         if (doInvB) {
                             canvas->translate(SkIntToScalar(150),0);
                         } else {

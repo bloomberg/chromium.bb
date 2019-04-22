@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace autofill {
 class LegacyStrikeDatabase;
@@ -32,8 +28,7 @@ class WebViewLegacyStrikeDatabaseFactory
   static WebViewLegacyStrikeDatabaseFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<
-      WebViewLegacyStrikeDatabaseFactory>;
+  friend class base::NoDestructor<WebViewLegacyStrikeDatabaseFactory>;
 
   WebViewLegacyStrikeDatabaseFactory();
   ~WebViewLegacyStrikeDatabaseFactory() override;

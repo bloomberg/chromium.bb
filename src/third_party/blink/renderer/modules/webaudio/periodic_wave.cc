@@ -58,11 +58,6 @@ PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
   if (real.size() != imag.size()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kIndexSizeError,
@@ -220,7 +215,7 @@ unsigned PeriodicWave::NumberOfPartialsForRange(unsigned range_index) const {
 
 // Tell V8 about the memory we're using so it can properly schedule garbage
 // collects.
-void PeriodicWave::AdjustV8ExternalMemory(int delta) {
+void PeriodicWave::AdjustV8ExternalMemory(int64_t delta) {
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(delta);
   v8_external_memory_ += delta;
 }

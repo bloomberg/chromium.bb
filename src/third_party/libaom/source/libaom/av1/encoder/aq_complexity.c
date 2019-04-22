@@ -93,7 +93,7 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
       if (segment == DEFAULT_AQ2_SEG) continue;
 
       qindex_delta = av1_compute_qdelta_by_rate(
-          &cpi->rc, cm->frame_type, cm->base_qindex,
+          &cpi->rc, cm->current_frame.frame_type, cm->base_qindex,
           aq_c_q_adj_factor[aq_strength][segment], cm->seq_params.bit_depth);
 
       // For AQ complexity mode, we dont allow Q0 in a segment if the base

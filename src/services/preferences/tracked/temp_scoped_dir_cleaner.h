@@ -12,7 +12,7 @@ class TempScopedDirCleaner
     : public base::RefCountedThreadSafe<TempScopedDirCleaner> {
  protected:
   friend class base::RefCountedThreadSafe<TempScopedDirCleaner>;
-  virtual ~TempScopedDirCleaner(){};
+  virtual ~TempScopedDirCleaner() {}
 };
 
 #endif  // SERVICES_PREFERENCES_TRACKED_TEMP_SCOPED_DIR_CLEANER_H_

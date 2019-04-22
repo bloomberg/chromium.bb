@@ -13,10 +13,6 @@ class ToolbarActionsBarObserver {
   // Called when a toolbar action drag-and-drop sequence has completed.
   virtual void OnToolbarActionDragDone() {}
 
-  // Called when the toolbar actions bar started to resize (since resizes are
-  // often animated, chances are the bar did not finish resizing).
-  virtual void OnToolbarActionsBarDidStartResize() {}
-
   // Called when the delegate of the toolbar actions bar finishes animating.
   virtual void OnToolbarActionsBarAnimationEnded() {}
 

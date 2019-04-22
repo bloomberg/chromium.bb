@@ -148,48 +148,53 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
       this.isLongTap_ = false;
       this.isTwoFingerTap_ = false;
       this.hasLongPressProcessed_ = false;
-      this.longTapDetectorTimerId_ = setTimeout(function() {
+      this.longTapDetectorTimerId_ = setTimeout(() => {
         this.longTapDetectorTimerId_ = -1;
-        if (!this.tapStarted_)
+        if (!this.tapStarted_) {
           return;
+        }
         this.isLongTap_ = true;
         if (callback(event, index, FileTapHandler.TapEvent.LONG_PRESS)) {
           this.hasLongPressProcessed_ = true;
         }
-      }.bind(this), FileTapHandler.LONG_PRESS_THRESHOLD_MILLISECONDS);
+      }, FileTapHandler.LONG_PRESS_THRESHOLD_MILLISECONDS);
       break;
 
     case 'touchmove':
-      if (this.activeTouchId_ === undefined)
+      if (this.activeTouchId_ === undefined) {
         break;
+      }
       var touch = this.findActiveTouch_(event.changedTouches);
-      if (!touch)
+      if (!touch) {
         break;
+      }
 
-      var clientX = touch.clientX;
-      var clientY = touch.clientY;
+      const clientX = touch.clientX;
+      const clientY = touch.clientY;
 
-      var moveX = this.lastTouchX_ - clientX;
-      var moveY = this.lastTouchY_ - clientY;
+      const moveX = this.lastTouchX_ - clientX;
+      const moveY = this.lastTouchY_ - clientY;
       this.totalMoveX_ += Math.abs(moveX);
       this.totalMoveY_ += Math.abs(moveY);
       this.lastTouchX_ = clientX;
       this.lastTouchY_ = clientY;
 
-      var couldBeTap =
+      const couldBeTap =
           this.totalMoveY_ <= FileTapHandler.MAX_TRACKING_FOR_TAP_ ||
           this.totalMoveX_ <= FileTapHandler.MAX_TRACKING_FOR_TAP_;
 
-      if (!couldBeTap)
+      if (!couldBeTap) {
         // If the pointer is slided, it is a drag. It is no longer a tap.
         this.tapStarted_ = false;
+      }
       this.lastMoveX_ = moveX;
       this.lastMoveY_ = moveY;
       break;
 
     case 'touchend':
-      if (!this.tapStarted_)
+      if (!this.tapStarted_) {
         break;
+      }
       // Mark as no longer being touched.
       // Two-finger tap event is issued when either of the 2 touch points is
       // released. Stop tracking the tap to avoid issuing duplicate events.
@@ -239,9 +244,10 @@ FileTapHandler.prototype.findActiveTouch_ = function(touches) {
   assert(this.activeTouchId_ !== undefined, 'Expecting an active touch');
   // A TouchList isn't actually an array, so we shouldn't use
   // Array.prototype.filter/some, etc.
-  for (var i = 0; i < touches.length; i++) {
-    if (touches[i].identifier == this.activeTouchId_)
+  for (let i = 0; i < touches.length; i++) {
+    if (touches[i].identifier == this.activeTouchId_) {
       return touches[i];
+    }
   }
   return undefined;
 };

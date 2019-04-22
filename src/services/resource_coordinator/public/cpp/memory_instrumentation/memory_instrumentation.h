@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_local_storage.h"
+#include "base/threading/thread_local.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
@@ -104,7 +104,7 @@ class COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MEMORY_INSTRUMENTATION)
 
   service_manager::Connector* const connector_;
   scoped_refptr<base::SingleThreadTaskRunner> connector_task_runner_;
-  base::ThreadLocalStorage::Slot tls_coordinator_;
+  base::ThreadLocalOwnedPointer<mojom::CoordinatorPtr> tls_coordinator_;
   const std::string service_name_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryInstrumentation);

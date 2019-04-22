@@ -20,7 +20,6 @@ class ScopedServiceBinding {
   ScopedServiceBinding(ServiceDirectory* service_directory, Interface* impl)
       : directory_(service_directory), impl_(impl) {
     directory_->AddService(
-        Interface::Name_,
         BindRepeating(&ScopedServiceBinding::BindClient, Unretained(this)));
   }
 
@@ -32,10 +31,11 @@ class ScopedServiceBinding {
         fit::bind_member(this, &ScopedServiceBinding::OnBindingSetEmpty));
   }
 
+  bool has_clients() const { return bindings_.size() != 0; }
+
  private:
-  void BindClient(zx::channel channel) {
-    bindings_.AddBinding(impl_,
-                         fidl::InterfaceRequest<Interface>(std::move(channel)));
+  void BindClient(fidl::InterfaceRequest<Interface> request) {
+    bindings_.AddBinding(impl_, std::move(request));
   }
 
   void OnBindingSetEmpty() {

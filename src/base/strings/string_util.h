@@ -17,7 +17,9 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/bit_cast.h"
 #include "base/compiler_specific.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"  // For implicit conversions.
 #include "build/build_config.h"
@@ -39,14 +41,9 @@ int vsnprintf(char* buffer, size_t size, const char* format, va_list arguments)
 
 // We separate the declaration from the implementation of this inline
 // function just so the PRINTF_FORMAT works.
-inline int snprintf(char* buffer,
-                    size_t size,
-                    _Printf_format_string_ const char* format,
-                    ...) PRINTF_FORMAT(3, 4);
-inline int snprintf(char* buffer,
-                    size_t size,
-                    _Printf_format_string_ const char* format,
-                    ...) {
+inline int snprintf(char* buffer, size_t size, const char* format, ...)
+    PRINTF_FORMAT(3, 4);
+inline int snprintf(char* buffer, size_t size, const char* format, ...) {
   va_list arguments;
   va_start(arguments, format);
   int result = vsnprintf(buffer, size, format, arguments);
@@ -229,6 +226,43 @@ BASE_EXPORT void TruncateUTF8ToByteSize(const std::string& input,
                                         const size_t byte_size,
                                         std::string* output);
 
+#if defined(WCHAR_T_IS_UTF16)
+// Utility functions to access the underlying string buffer as a wide char
+// pointer.
+inline wchar_t* as_writable_wcstr(char16* str) {
+  return bit_cast<wchar_t*>(str);
+}
+
+inline wchar_t* as_writable_wcstr(string16& str) {
+  return bit_cast<wchar_t*>(data(str));
+}
+
+inline const wchar_t* as_wcstr(const char16* str) {
+  return bit_cast<const wchar_t*>(str);
+}
+
+inline const wchar_t* as_wcstr(StringPiece16 str) {
+  return bit_cast<const wchar_t*>(str.data());
+}
+
+// Utility functions to access the underlying string buffer as a char16 pointer.
+inline char16* as_writable_u16cstr(wchar_t* str) {
+  return bit_cast<char16*>(str);
+}
+
+inline char16* as_writable_u16cstr(std::wstring& str) {
+  return bit_cast<char16*>(data(str));
+}
+
+inline const char16* as_u16cstr(const wchar_t* str) {
+  return bit_cast<const char16*>(str);
+}
+
+inline const char16* as_u16cstr(WStringPiece str) {
+  return bit_cast<const char16*>(str.data());
+}
+#endif  // defined(WCHAR_T_IS_UTF16)
+
 // Trims any whitespace from either end of the input string.
 //
 // The StringPiece versions return a substring referencing the input buffer.
@@ -331,7 +365,7 @@ BASE_EXPORT bool EndsWith(StringPiece16 str,
 // library versions will change based on locale).
 template <typename Char>
 inline bool IsAsciiWhitespace(Char c) {
-  return c == ' ' || c == '\r' || c == '\n' || c == '\t';
+  return c == ' ' || c == '\r' || c == '\n' || c == '\t' || c == '\f';
 }
 template <typename Char>
 inline bool IsAsciiAlpha(Char c) {

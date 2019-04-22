@@ -24,8 +24,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
 #include "net/base/net_errors.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 using content::InterstitialPageDelegate;
 using content::NavigationController;
@@ -142,7 +142,7 @@ void MITMSoftwareBlockingPage::CommandReceived(const std::string& command) {
 }
 
 void MITMSoftwareBlockingPage::OverrideRendererPrefs(
-    content::RendererPreferences* prefs) {
+    blink::mojom::RendererPreferences* prefs) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);

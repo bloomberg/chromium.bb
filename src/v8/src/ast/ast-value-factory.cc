@@ -59,7 +59,7 @@ class AstRawStringInternalizationKey : public StringTableKey {
   explicit AstRawStringInternalizationKey(const AstRawString* string)
       : StringTableKey(string->hash_field()), string_(string) {}
 
-  bool IsMatch(Object* other) override {
+  bool IsMatch(Object other) override {
     if (string_->is_one_byte())
       return String::cast(other)->IsOneByteEqualTo(string_->literal_bytes_);
     return String::cast(other)->IsTwoByteEqualTo(
@@ -124,6 +124,7 @@ bool AstRawString::Compare(void* a, void* b) {
   DCHECK_EQ(lhs->Hash(), rhs->Hash());
 
   if (lhs->length() != rhs->length()) return false;
+  if (lhs->length() == 0) return true;
   const unsigned char* l = lhs->raw_data();
   const unsigned char* r = rhs->raw_data();
   size_t length = rhs->length();
@@ -185,7 +186,7 @@ AstStringConstants::AstStringConstants(Isolate* isolate, uint64_t hash_seed)
     : zone_(isolate->allocator(), ZONE_NAME),
       string_table_(AstRawString::Compare),
       hash_seed_(hash_seed) {
-  DCHECK(ThreadId::Current().Equals(isolate->thread_id()));
+  DCHECK_EQ(ThreadId::Current(), isolate->thread_id());
 #define F(name, str)                                                       \
   {                                                                        \
     const char* data = str;                                                \
@@ -232,7 +233,7 @@ AstRawString* AstValueFactory::GetTwoByteStringInternal(
 const AstRawString* AstValueFactory::GetString(Handle<String> literal) {
   AstRawString* result = nullptr;
   DisallowHeapAllocation no_gc;
-  String::FlatContent content = literal->GetFlatContent();
+  String::FlatContent content = literal->GetFlatContent(no_gc);
   if (content.IsOneByte()) {
     result = GetOneByteStringInternal(content.ToOneByteVector());
   } else {

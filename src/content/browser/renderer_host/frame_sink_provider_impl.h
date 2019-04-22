@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDER_WIDGET_COMPOSITOR_FRAME_SINK_PROVIDER_H_
-#define CONTENT_BROWSER_RENDER_WIDGET_COMPOSITOR_FRAME_SINK_PROVIDER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_FRAME_SINK_PROVIDER_IMPL_H_
+#define CONTENT_BROWSER_RENDERER_HOST_FRAME_SINK_PROVIDER_IMPL_H_
 
 #include "content/common/frame_sink_provider.mojom.h"
 #include "content/common/render_frame_metadata.mojom.h"
@@ -42,4 +42,4 @@ class FrameSinkProviderImpl : public mojom::FrameSinkProvider {
 
 }  // namespace content
 
-#endif  //  CONTENT_BROWSER_RENDER_WIDGET_COMPOSITOR_FRAME_SINK_PROVIDER_H_
+#endif  //  CONTENT_BROWSER_RENDERER_HOST_FRAME_SINK_PROVIDER_IMPL_H_

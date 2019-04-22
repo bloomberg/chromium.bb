@@ -32,6 +32,11 @@
           "object": "LayoutTextControl INPUT id='root'",
           "rect": [0, 0, 61, 22],
           "reason": "full layer"
+        },
+        {
+          "object": "Caret",
+          "rect": [58, 4, 1, 16],
+          "reason": "caret"
         }
       ]
     }

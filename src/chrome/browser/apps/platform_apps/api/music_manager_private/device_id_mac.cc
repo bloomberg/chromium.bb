@@ -40,7 +40,8 @@ typedef base::Callback<bool(const void* bytes, size_t size)>
 // through the mounted volumes .
 // Return "" if an error occured.
 std::string FindBSDNameOfSystemDisk() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   struct statfs* mounted_volumes;
   int num_volumes = getmntinfo(&mounted_volumes, 0);
@@ -63,7 +64,8 @@ std::string FindBSDNameOfSystemDisk() {
 // Return the Volume UUID property of a BSD disk name (e.g. '/dev/disk1').
 // Return "" if an error occured.
 std::string GetVolumeUUIDFromBSDName(const std::string& bsd_name) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   const CFAllocatorRef allocator = NULL;
 
@@ -165,7 +167,8 @@ class MacAddressProcessor {
 
 std::string GetMacAddress(
     const IsValidMacAddressCallback& is_valid_mac_address) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   mach_port_t master_port;
   kern_return_t kr = IOMasterPort(MACH_PORT_NULL, &master_port);
@@ -222,7 +225,7 @@ void GetRawDeviceIdImpl(const IsValidMacAddressCallback& is_valid_mac_address,
     raw_device_id = mac_address + disk_id;
   }
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::Bind(callback, raw_device_id));
+                           base::BindOnce(callback, raw_device_id));
 }
 
 }  // namespace

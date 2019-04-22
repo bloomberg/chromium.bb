@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/site_instance_impl.h"
@@ -33,7 +34,7 @@
 
 namespace content {
 struct CommonNavigationParams;
-struct RequestNavigationParams;
+struct CommitNavigationParams;
 
 class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
  public:
@@ -96,64 +97,58 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   ~NavigationEntryImpl() override;
 
   // NavigationEntry implementation:
-  int GetUniqueID() const override;
-  PageType GetPageType() const override;
+  int GetUniqueID() override;
+  PageType GetPageType() override;
   void SetURL(const GURL& url) override;
-  const GURL& GetURL() const override;
+  const GURL& GetURL() override;
   void SetBaseURLForDataURL(const GURL& url) override;
-  const GURL& GetBaseURLForDataURL() const override;
+  const GURL& GetBaseURLForDataURL() override;
 #if defined(OS_ANDROID)
   void SetDataURLAsString(
       scoped_refptr<base::RefCountedString> data_url) override;
   const scoped_refptr<const base::RefCountedString>& GetDataURLAsString()
-      const override;
+      override;
 #endif
   void SetReferrer(const Referrer& referrer) override;
-  const Referrer& GetReferrer() const override;
+  const Referrer& GetReferrer() override;
   void SetVirtualURL(const GURL& url) override;
-  const GURL& GetVirtualURL() const override;
+  const GURL& GetVirtualURL() override;
   void SetTitle(const base::string16& title) override;
-  const base::string16& GetTitle() const override;
+  const base::string16& GetTitle() override;
   void SetPageState(const PageState& state) override;
-  PageState GetPageState() const override;
-  const base::string16& GetTitleForDisplay() const override;
-  bool IsViewSourceMode() const override;
+  PageState GetPageState() override;
+  const base::string16& GetTitleForDisplay() override;
+  bool IsViewSourceMode() override;
   void SetTransitionType(ui::PageTransition transition_type) override;
-  ui::PageTransition GetTransitionType() const override;
-  const GURL& GetUserTypedURL() const override;
+  ui::PageTransition GetTransitionType() override;
+  const GURL& GetUserTypedURL() override;
   void SetHasPostData(bool has_post_data) override;
-  bool GetHasPostData() const override;
+  bool GetHasPostData() override;
   void SetPostID(int64_t post_id) override;
-  int64_t GetPostID() const override;
+  int64_t GetPostID() override;
   void SetPostData(
       const scoped_refptr<network::ResourceRequestBody>& data) override;
-  scoped_refptr<network::ResourceRequestBody> GetPostData() const override;
-  const FaviconStatus& GetFavicon() const override;
+  scoped_refptr<network::ResourceRequestBody> GetPostData() override;
   FaviconStatus& GetFavicon() override;
-  const SSLStatus& GetSSL() const override;
   SSLStatus& GetSSL() override;
   void SetOriginalRequestURL(const GURL& original_url) override;
-  const GURL& GetOriginalRequestURL() const override;
+  const GURL& GetOriginalRequestURL() override;
   void SetIsOverridingUserAgent(bool override) override;
-  bool GetIsOverridingUserAgent() const override;
+  bool GetIsOverridingUserAgent() override;
   void SetTimestamp(base::Time timestamp) override;
-  base::Time GetTimestamp() const override;
+  base::Time GetTimestamp() override;
   void SetCanLoadLocalResources(bool allow) override;
-  bool GetCanLoadLocalResources() const override;
-  void SetExtraData(const std::string& key,
-                    const base::string16& data) override;
-  bool GetExtraData(const std::string& key,
-                    base::string16* data) const override;
-  void ClearExtraData(const std::string& key) override;
+  bool GetCanLoadLocalResources() override;
   void SetHttpStatusCode(int http_status_code) override;
-  int GetHttpStatusCode() const override;
+  int GetHttpStatusCode() override;
   void SetRedirectChain(const std::vector<GURL>& redirects) override;
-  const std::vector<GURL>& GetRedirectChain() const override;
+  const std::vector<GURL>& GetRedirectChain() override;
   const base::Optional<ReplacedNavigationEntryData>& GetReplacedEntryData()
-      const override;
-  bool IsRestored() const override;
-  std::string GetExtraHeaders() const override;
+      override;
+  bool IsRestored() override;
+  std::string GetExtraHeaders() override;
   void AddExtraHeaders(const std::string& extra_headers) override;
+  int64_t GetMainFrameDocumentSequenceNumber() override;
 
   // Creates a copy of this NavigationEntryImpl that can be modified
   // independently from the original.  Does not copy any value that would be
@@ -188,17 +183,18 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       FrameMsg_Navigate_Type::Value navigation_type,
       PreviewsState previews_state,
       base::TimeTicks navigation_start,
-      base::TimeTicks input_start) const;
-  RequestNavigationParams ConstructRequestNavigationParams(
+      base::TimeTicks input_start);
+  CommitNavigationParams ConstructCommitNavigationParams(
       const FrameNavigationEntry& frame_entry,
       const GURL& original_url,
+      const base::Optional<url::Origin>& origin_to_commit,
       const std::string& original_method,
       bool is_history_navigation_in_new_child,
       const std::map<std::string, bool>& subframe_unique_names,
       bool intended_as_new_entry,
       int pending_offset_to_send,
       int current_offset_to_send,
-      int current_length_to_send) const;
+      int current_length_to_send);
 
   // Once a navigation entry is committed, we should no longer track several
   // pieces of non-persisted state, as documented on the members below.
@@ -232,6 +228,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       SiteInstanceImpl* site_instance,
       scoped_refptr<SiteInstanceImpl> source_site_instance,
       const GURL& url,
+      const base::Optional<url::Origin>& origin,
       const Referrer& referrer,
       const std::vector<GURL>& redirect_chain,
       const PageState& page_state,
@@ -369,11 +366,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     should_replace_entry_ = should_replace_entry;
   }
 
-  void SetScreenshotPNGData(scoped_refptr<base::RefCountedBytes> png_data);
-  const scoped_refptr<base::RefCountedBytes> screenshot() const {
-    return screenshot_;
-  }
-
   // Whether this (pending) navigation should clear the session history. Resets
   // to false after commit.
   bool should_clear_history_list() const {
@@ -393,7 +385,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   }
 
   // Returns the history URL for a data URL to use in Blink.
-  GURL GetHistoryURLForDataURL() const;
+  GURL GetHistoryURLForDataURL();
 
   // These flags are set when the navigation controller gets notified of an SSL
   // error while a navigation is pending.
@@ -410,8 +402,28 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
 
   // Stores a record of the what was committed in this NavigationEntry's main
   // frame before it was replaced (e.g. by history.replaceState()).
-  void SetReplacedEntryData(const ReplacedNavigationEntryData& data) {
+  void set_replaced_entry_data(const ReplacedNavigationEntryData& data) {
     replaced_entry_data_ = data;
+  }
+
+  // See comment for should_skip_on_back_forward_ui_.
+  bool should_skip_on_back_forward_ui() const {
+    return should_skip_on_back_forward_ui_;
+  }
+
+  void set_should_skip_on_back_forward_ui(bool should_skip) {
+    should_skip_on_back_forward_ui_ = should_skip;
+  }
+
+  BackForwardCacheMetrics* back_forward_cache_metrics() {
+    return back_forward_cache_metrics_.get();
+  }
+
+  void set_back_forward_cache_metrics(
+      scoped_refptr<BackForwardCacheMetrics> metrics) {
+    DCHECK(metrics);
+    DCHECK(!back_forward_cache_metrics_);
+    back_forward_cache_metrics_ = metrics;
   }
 
  private:
@@ -452,15 +464,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // information is stored in PageState. It is also only shallow copied with
   // compiler provided copy constructor.  Cleared in |ResetForCommit|.
   scoped_refptr<network::ResourceRequestBody> post_data_;
-
-  // This is also a transient member (i.e. is not persisted with session
-  // restore). The screenshot of a page is taken when navigating away from the
-  // page. This screenshot is displayed during an overscroll-navigation
-  // gesture. |screenshot_| will be NULL when the screenshot is not available
-  // (e.g. after a session restore, or if taking the screenshot of a page
-  // failed). The UI is responsible for dealing with missing screenshots
-  // appropriately (e.g. display a placeholder image instead).
-  scoped_refptr<base::RefCountedBytes> screenshot_;
 
   // This member is not persisted with session restore.
   std::string extra_headers_;
@@ -525,11 +528,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // Determine if the navigation was started within a context menu.
   bool started_from_context_menu_;
 
-  // Used to store extra data to support browser features. This member is not
-  // persisted, unless specific data is taken out/put back in at save/restore
-  // time (see TabNavigation for an example of this).
-  std::map<std::string, base::string16> extra_data_;
-
   // Set to true if the navigation controller gets notified about a SSL error
   // for a pending navigation. Defaults to false.
   bool ssl_error_;
@@ -540,6 +538,23 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // subframe navigations but we only need to track it for main frames, that's
   // why the field is listed here.
   base::Optional<ReplacedNavigationEntryData> replaced_entry_data_;
+
+  // Set to true if this page does a navigation without ever receiving a user
+  // gesture. If true, it will be skipped on subsequent back/forward button
+  // clicks. This is to intervene against pages that manipulate the history such
+  // that the user is not able to go back to the last site they interacted with.
+  // Navigation here implies both client side redirects and history.pushState
+  // calls.
+  // It is always false the first time an entry's navigation is committed and
+  // is also reset to false if an entry is reused for any subsequent
+  // navigations.
+  // TODO(shivanisha): Persist this field once the intervention is stable.
+  bool should_skip_on_back_forward_ui_;
+
+  // TODO(altimin, crbug.com/933147): Remove this logic after we are done
+  // with implement back-forward cache.
+  // It is preserved at commit but not persisted.
+  scoped_refptr<BackForwardCacheMetrics> back_forward_cache_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationEntryImpl);
 };

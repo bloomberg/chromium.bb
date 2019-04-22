@@ -9,7 +9,7 @@
  *
  *   Auto-fitter hinting routines for latin writing system (body).
  *
- * Copyright 2003-2018 by
+ * Copyright (C) 2003-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -265,7 +265,7 @@
             /* Avoid single-point contours since they are never rasterized. */
             /* In some fonts, they correspond to mark attachment points     */
             /* which are way outside of the glyph's real outline.           */
-            if ( last == first )
+            if ( last <= first )
                 continue;
 
             if ( AF_LATIN_IS_TOP_BLUE( bb ) )
@@ -299,6 +299,7 @@
         /* now check whether the point belongs to a straight or round   */
         /* segment; we first need to find in which contour the extremum */
         /* lies, then inspect its previous and next points              */
+        if ( best_point >= 0 )
         {
           FT_Pos  best_x = points[best_point].x;
           FT_Int  start, end, prev, next;

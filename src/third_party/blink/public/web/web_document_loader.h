@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_archive_info.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_source_location.h"
@@ -45,10 +46,13 @@ namespace blink {
 class WebDocumentSubresourceFilter;
 class WebServiceWorkerNetworkProvider;
 class WebURL;
-class WebURLRequest;
 class WebURLResponse;
 template <typename T>
 class WebVector;
+
+namespace mojom {
+enum class FetchCacheMode : int32_t;
+}  // namespace mojom
 
 // An interface to expose the blink::DocumentLoader to the content layer,
 // including SetExtraData() and GetExtraData() to allow the content layer to
@@ -60,14 +64,26 @@ class BLINK_EXPORT WebDocumentLoader {
     virtual ~ExtraData() = default;
   };
 
-  // Returns the original request that resulted in this datasource.
-  virtual const WebURLRequest& OriginalRequest() const = 0;
+  static bool WillLoadUrlAsEmpty(const WebURL&);
 
-  // Returns the request corresponding to this datasource.  It may
-  // include additional request headers added by WebKit that were not
-  // present in the original request.  This request may also correspond
-  // to a location specified by a redirect that was followed.
-  virtual const WebURLRequest& GetRequest() const = 0;
+  // Returns the url of original request which initited this load.
+  virtual WebURL OriginalUrl() const = 0;
+
+  // Returns the http referrer of original request which initited this load.
+  virtual WebString OriginalReferrer() const = 0;
+
+  // Returns the url corresponding to this load. It may also be a url
+  // specified by a redirect that was followed.
+  virtual WebURL GetUrl() const = 0;
+
+  // Returns the http method of the request corresponding to this load.
+  virtual WebString HttpMethod() const = 0;
+
+  // Returns the http referrer of the request corresponding to this load.
+  virtual WebString Referrer() const = 0;
+
+  // Returns the referrer policy of the request corresponding to this load.
+  virtual network::mojom::ReferrerPolicy GetReferrerPolicy() const = 0;
 
   // Returns the response associated with this datasource.
   virtual const WebURLResponse& GetResponse() const = 0;
@@ -77,9 +93,8 @@ class BLINK_EXPORT WebDocumentLoader {
   virtual bool HasUnreachableURL() const = 0;
   virtual WebURL UnreachableURL() const = 0;
 
-  // Allows the embedder to append redirects to the chain as a navigation
-  // is starting, in case it is being transferred from another process.
-  virtual void AppendRedirect(const WebURL&) = 0;
+  // The error code for loading an error page.
+  virtual int ErrorCode() const = 0;
 
   // Returns all redirects that occurred (both client and server) before
   // at last committing the current page.  This will contain one entry
@@ -119,22 +134,26 @@ class BLINK_EXPORT WebDocumentLoader {
   virtual WebServiceWorkerNetworkProvider*
   GetServiceWorkerNetworkProvider() = 0;
 
-  virtual void ResetSourceLocation() = 0;
-
   // Can be used to temporarily suspend feeding the parser with new data. The
   // parser will be allowed to read new data when ResumeParser() is called the
   // same number of time than BlockParser().
   virtual void BlockParser() = 0;
   virtual void ResumeParser() = 0;
 
-  // Returns info about whether the document is an MHTML archive.
-  virtual bool IsArchive() const = 0;
-  // Returns archive info for the archive.  Should never be called if
-  // IsArchive returns false.
+  // Returns true if the document is an MHTML archive. When true,
+  // GetArchiveInfo() may be called to find the result of loading and, if
+  // loading was successful, more information about the archive. Note that this
+  // can return true even if archive loading ended up failing.
+  virtual bool HasBeenLoadedAsWebArchive() const = 0;
+
+  // Returns archive info for the archive.
   virtual WebArchiveInfo GetArchiveInfo() const = 0;
 
   // Whether this load was started with a user gesture.
   virtual bool HadUserGesture() const = 0;
+
+  // Returns true when the document is a FTP directory.
+  virtual bool IsListingFtpDirectory() const = 0;
 
  protected:
   ~WebDocumentLoader() = default;

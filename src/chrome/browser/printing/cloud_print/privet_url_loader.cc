@@ -251,7 +251,7 @@ void PrivetURLLoader::OnDownloadedToString(
   }
 
   base::JSONReader json_reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  std::unique_ptr<base::Value> value = json_reader.ReadToValue(*response_body);
+  base::Optional<base::Value> value = json_reader.ReadToValue(*response_body);
   if (!value || !value->is_dict()) {
     delegate_->OnError(0, JSON_PARSE_ERROR);
     return;
@@ -277,9 +277,10 @@ void PrivetURLLoader::OnDownloadedToString(
     is_error_response = true;
   }
 
-  delegate_->OnParsedJson(
-      response_code, *static_cast<const base::DictionaryValue*>(value.get()),
-      is_error_response);
+  std::unique_ptr<base::DictionaryValue> dict_value =
+      base::DictionaryValue::From(
+          base::Value::ToUniquePtrValue(std::move(*value)));
+  delegate_->OnParsedJson(response_code, *dict_value, is_error_response);
 }
 
 void PrivetURLLoader::OnDownloadedToFile(base::FilePath path) {

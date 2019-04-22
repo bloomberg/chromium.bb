@@ -19,6 +19,7 @@
 #include "content/browser/background_fetch/storage/get_developer_ids_task.h"
 #include "content/browser/background_fetch/storage/get_metadata_task.h"
 #include "content/browser/background_fetch/storage/get_registration_task.h"
+#include "content/browser/background_fetch/storage/get_request_blob_task.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/background_fetch/storage/mark_request_complete_task.h"
 #include "content/browser/background_fetch/storage/match_requests_task.h"
@@ -80,6 +81,37 @@ void BackgroundFetchDataManager::Cleanup() {
   AddDatabaseTask(std::make_unique<background_fetch::CleanupTask>(this));
 }
 
+CacheStorageHandle BackgroundFetchDataManager::GetOrOpenCacheStorage(
+    const url::Origin& origin,
+    const std::string& unique_id) {
+  auto it = cache_storage_handle_map_.find(unique_id);
+  if (it != cache_storage_handle_map_.end()) {
+    if (it->second.value()) {
+      DCHECK_EQ(origin, it->second.value()->Origin());
+    } else {
+      // The backing CacheStorage has been forcibly closed due to an external
+      // event. Re-open the CacheStorage and update the handle.
+      it->second = cache_manager()->OpenCacheStorage(
+          origin, CacheStorageOwner::kBackgroundFetch);
+    }
+    return it->second.Clone();
+  }
+
+  // This origin and unique_id has never been opened before. Open
+  // the CacheStorage, remember the association in the map, and return the
+  // handle.
+  CacheStorageHandle handle = cache_manager()->OpenCacheStorage(
+      origin, CacheStorageOwner::kBackgroundFetch);
+  cache_storage_handle_map_.emplace(unique_id, handle.Clone());
+  return handle;
+}
+
+void BackgroundFetchDataManager::ReleaseCacheStorage(
+    const std::string& unique_id) {
+  bool erased = cache_storage_handle_map_.erase(unique_id);
+  DCHECK(erased);
+}
+
 BackgroundFetchDataManager::~BackgroundFetchDataManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
@@ -95,15 +127,15 @@ void BackgroundFetchDataManager::GetInitializationData(
 void BackgroundFetchDataManager::CreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-    const BackgroundFetchOptions& options,
+    blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     bool start_paused,
-    GetRegistrationCallback callback) {
+    CreateRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AddDatabaseTask(std::make_unique<background_fetch::CreateMetadataTask>(
-      this, registration_id, std::move(requests), options, icon, start_paused,
-      std::move(callback)));
+      this, registration_id, std::move(requests), std::move(options), icon,
+      start_paused, std::move(callback)));
 }
 
 void BackgroundFetchDataManager::GetRegistration(
@@ -126,6 +158,16 @@ void BackgroundFetchDataManager::PopNextRequest(
   AddDatabaseTask(
       std::make_unique<background_fetch::StartNextPendingRequestTask>(
           this, registration_id, std::move(callback)));
+}
+
+void BackgroundFetchDataManager::GetRequestBlob(
+    const BackgroundFetchRegistrationId& registration_id,
+    const scoped_refptr<BackgroundFetchRequestInfo>& request_info,
+    GetRequestBlobCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  AddDatabaseTask(std::make_unique<background_fetch::GetRequestBlobTask>(
+      this, registration_id, request_info, std::move(callback)));
 }
 
 void BackgroundFetchDataManager::MarkRequestAsComplete(
@@ -215,6 +257,11 @@ void BackgroundFetchDataManager::OnTaskFinished(
 
 BackgroundFetchDataManager* BackgroundFetchDataManager::data_manager() {
   return this;
+}
+
+base::WeakPtr<background_fetch::DatabaseTaskHost>
+BackgroundFetchDataManager::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace content

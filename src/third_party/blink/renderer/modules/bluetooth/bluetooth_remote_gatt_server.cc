@@ -24,12 +24,6 @@ BluetoothRemoteGATTServer::BluetoothRemoteGATTServer(ExecutionContext* context,
                                                      BluetoothDevice* device)
     : ContextLifecycleObserver(context), device_(device), connected_(false) {}
 
-BluetoothRemoteGATTServer* BluetoothRemoteGATTServer::Create(
-    ExecutionContext* context,
-    BluetoothDevice* device) {
-  return new BluetoothRemoteGATTServer(context, device);
-}
-
 void BluetoothRemoteGATTServer::ContextDestroyed(ExecutionContext*) {
   Dispose();
 }
@@ -107,14 +101,17 @@ void BluetoothRemoteGATTServer::ConnectCallback(
 }
 
 ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   mojom::blink::WebBluetoothService* service =
       device_->GetBluetooth()->Service();
   mojom::blink::WebBluetoothServerClientAssociatedPtrInfo ptr_info;
+  // See https://bit.ly/2S0zRAS for task types.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   auto request = mojo::MakeRequest(&ptr_info);
-  client_bindings_.AddBinding(this, std::move(request));
+  client_bindings_.AddBinding(this, std::move(request), std::move(task_runner));
 
   service->RemoteServerConnect(
       device_->id(), std::move(ptr_info),
@@ -227,7 +224,7 @@ ScriptPromise BluetoothRemoteGATTServer::GetPrimaryServicesImpl(
                           BluetoothOperation::kServicesRetrieval));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   AddToActiveAlgorithms(resolver);
 

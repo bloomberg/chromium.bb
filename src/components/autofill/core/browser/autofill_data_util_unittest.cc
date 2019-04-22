@@ -25,7 +25,7 @@ TEST_P(IsCJKNameTest, IsCJKName) {
       << "Failed for: " << test_case.full_name;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillDataUtilTest,
     IsCJKNameTest,
     testing::Values(
@@ -73,7 +73,7 @@ TEST_P(SplitNameTest, SplitName) {
   EXPECT_EQ(base::UTF8ToUTF16(test_case.family_name), name_parts.family);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillDataUtil,
     SplitNameTest,
     testing::Values(
@@ -150,7 +150,7 @@ TEST_P(JoinNamePartsTest, JoinNameParts) {
   EXPECT_EQ(base::UTF8ToUTF16(test_case.full_name), joined);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillDataUtil,
     JoinNamePartsTest,
     testing::Values(
@@ -213,7 +213,7 @@ TEST_P(ValidCountryCodeTest, ValidCountryCode) {
             IsValidCountryCode(test_case.country_code));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillDataUtil,
     ValidCountryCodeTest,
     testing::Values(

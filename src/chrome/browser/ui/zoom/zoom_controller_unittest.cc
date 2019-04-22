@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/zoom/zoom_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/zoom/test/zoom_test_utils.h"
-#include "components/zoom/zoom_controller.h"
 #include "components/zoom/zoom_observer.h"
 #include "content/public/browser/host_zoom_map.h"
-#include "content/public/browser/navigation_handle.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "ipc/ipc_message.h"
@@ -52,10 +52,9 @@ TEST_F(ZoomControllerTest, DidNavigateMainFrame) {
       false);
   ZoomChangedWatcher zoom_change_watcher(zoom_controller_.get(),
                                          zoom_change_data);
-  std::unique_ptr<content::NavigationHandle> navigation_handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          GURL(), rvh()->GetMainFrame(), true);
-  zoom_controller_->DidFinishNavigation(navigation_handle.get());
+  content::MockNavigationHandle handle;
+  handle.set_has_committed(true);
+  zoom_controller_->DidFinishNavigation(&handle);
   zoom_change_watcher.Wait();
 }
 

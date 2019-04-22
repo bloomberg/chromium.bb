@@ -52,7 +52,8 @@ TextControlInnerContainer* TextControlInnerContainer::Create(
 }
 
 LayoutObject* TextControlInnerContainer::CreateLayoutObject(
-    const ComputedStyle&) {
+    const ComputedStyle&,
+    LegacyLayout) {
   return new LayoutTextControlInnerContainer(this);
 }
 
@@ -78,7 +79,7 @@ EditingViewPortElement::CustomStyleForLayoutObject() {
   style->InheritFrom(OwnerShadowHost()->ComputedStyleRef());
 
   style->SetFlexGrow(1);
-  style->SetMinWidth(Length(0, kFixed));
+  style->SetMinWidth(Length::Fixed(0));
   style->SetDisplay(EDisplay::kBlock);
   style->SetDirection(TextDirection::kLtr);
 
@@ -91,8 +92,7 @@ EditingViewPortElement::CustomStyleForLayoutObject() {
 
 // ---------------------------
 
-inline TextControlInnerEditorElement::TextControlInnerEditorElement(
-    Document& document)
+TextControlInnerEditorElement::TextControlInnerEditorElement(Document& document)
     : HTMLDivElement(document) {
   SetHasCustomStyleCallbacks();
 }
@@ -132,7 +132,8 @@ void TextControlInnerEditorElement::SetVisibility(bool is_visible) {
 }
 
 LayoutObject* TextControlInnerEditorElement::CreateLayoutObject(
-    const ComputedStyle&) {
+    const ComputedStyle&,
+    LegacyLayout) {
   return new LayoutTextControlInnerEditor(this);
 }
 
@@ -180,7 +181,7 @@ TextControlInnerEditorElement::CreateInnerEditorStyle() const {
 
     // We'd like to remove line-height if it's unnecessary because
     // overflow:scroll clips editing text by line-height.
-    Length logical_height = start_style.LogicalHeight();
+    const Length& logical_height = start_style.LogicalHeight();
     // Here, we remove line-height if the INPUT fixed height is taller than the
     // line-height.  It's not the precise condition because logicalHeight
     // includes border and padding if box-sizing:border-box, and there are cases
@@ -236,7 +237,7 @@ void SearchFieldCancelButtonElement::DefaultEventHandler(Event& event) {
 
   if (event.type() == event_type_names::kClick && event.IsMouseEvent() &&
       ToMouseEvent(event).button() ==
-          static_cast<short>(WebPointerProperties::Button::kLeft)) {
+          static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     input->SetValueForUser("");
     input->SetAutofillState(WebAutofillState::kNotFilled);
     input->OnSearch();

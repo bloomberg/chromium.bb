@@ -10,6 +10,8 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/core/v8_test_interface_constructor_4.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
@@ -20,6 +22,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -30,7 +33,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceConstructor4::wrapper_type_info = {
+const WrapperTypeInfo v8_test_interface_constructor_4_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInterfaceConstructor4::DomTemplate,
     nullptr,
@@ -47,7 +50,7 @@ const WrapperTypeInfo V8TestInterfaceConstructor4::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceConstructor4.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceConstructor4::wrapper_type_info_ = V8TestInterfaceConstructor4::wrapper_type_info;
+const WrapperTypeInfo& TestInterfaceConstructor4::wrapper_type_info_ = v8_test_interface_constructor_4_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -76,7 +79,7 @@ static void Constructor1(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestInterfaceConstructor4* impl = TestInterfaceConstructor4::Create(test_interface_4_arg);
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor4::wrapper_type_info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterfaceConstructor4::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
 }
 
@@ -92,7 +95,7 @@ static void Constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestInterfaceConstructor4* impl = TestInterfaceConstructor4::Create(usv_string_arg);
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor4::wrapper_type_info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterfaceConstructor4::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
 }
 
@@ -141,7 +144,7 @@ static void InstallV8TestInterfaceConstructor4Template(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceConstructor4::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceConstructor4::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceConstructor4::GetWrapperTypeInfo()->interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceConstructor4::kInternalFieldCount);
   interface_template->SetCallHandler(test_interface_constructor_4_v8_internal::ConstructorCallback);
   interface_template->SetLength(1);
 
@@ -179,18 +182,18 @@ void V8TestInterfaceConstructor4::InstallRuntimeEnabledFeaturesOnTemplate(
 v8::Local<v8::FunctionTemplate> V8TestInterfaceConstructor4::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestInterfaceConstructor4::GetWrapperTypeInfo()),
       InstallV8TestInterfaceConstructor4Template);
 }
 
 bool V8TestInterfaceConstructor4::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestInterfaceConstructor4::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestInterfaceConstructor4::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestInterfaceConstructor4::GetWrapperTypeInfo(), v8_value);
 }
 
 TestInterfaceConstructor4* V8TestInterfaceConstructor4::ToImplWithTypeCheck(

@@ -85,15 +85,23 @@ void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
           const int kCCellMaxWidth = 32760;
           Length cell_logical_width = cell->StyleOrColLogicalWidth();
           // FIXME: calc() on tables should be handled consistently with other
-          // lengths. See bug: https://crbug.com/382725
-          if (cell_logical_width.IsCalculated())
-            cell_logical_width = Length();  // Make it Auto
+          // lengths.
+          // Currently, only calc(% + 0px) case is handled as calc(%).
+          // See bug: https://crbug.com/382725
+          if (cell_logical_width.IsCalculated()) {
+            if (!cell_logical_width.GetPixelsAndPercent().pixels) {
+              cell_logical_width = Length::Percent(
+                  cell_logical_width.GetPixelsAndPercent().percent);
+            } else {
+              cell_logical_width = Length();  // Make it Auto
+            }
+          }
           if (cell_logical_width.Value() > kCCellMaxWidth)
-            cell_logical_width.SetValue(kCCellMaxWidth);
+            cell_logical_width = Length::Fixed(kCCellMaxWidth);
           if (cell_logical_width.IsNegative())
-            cell_logical_width.SetValue(0);
+            cell_logical_width = Length::Fixed(0);
           switch (cell_logical_width.GetType()) {
-            case kFixed:
+            case Length::kFixed:
               // ignore width=0
               if (cell_logical_width.IsPositive() &&
                   !column_layout.logical_width.IsPercentOrCalc()) {
@@ -106,16 +114,16 @@ void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
                   if ((logical_width > column_layout.logical_width.Value()) ||
                       ((column_layout.logical_width.Value() == logical_width) &&
                        (max_contributor == cell))) {
-                    column_layout.logical_width.SetValue(kFixed, logical_width);
+                    column_layout.logical_width = Length::Fixed(logical_width);
                     fixed_contributor = cell;
                   }
                 } else {
-                  column_layout.logical_width.SetValue(kFixed, logical_width);
+                  column_layout.logical_width = Length::Fixed(logical_width);
                   fixed_contributor = cell;
                 }
               }
               break;
-            case kPercent:
+            case Length::kPercent:
               has_percent_ = true;
               // TODO(alancutter): Make this work correctly for calc lengths.
               if (cell_logical_width.IsPositive() &&
@@ -225,7 +233,7 @@ static bool ShouldScaleColumnsForParent(LayoutTable* table) {
     // use ~infinity to make sure we use all available size in the containing
     // block. However, this just doesn't work if this is a flex or grid item, so
     // disallow scaling in that case.
-    if (cb->IsFlexibleBox() || cb->IsLayoutGrid())
+    if (cb->IsFlexibleBoxIncludingNG() || cb->IsLayoutGrid())
       return false;
     cb = cb->ContainingBlock();
   }
@@ -242,7 +250,7 @@ static bool ShouldScaleColumnsForSelf(LayoutTable* table) {
   // A special case.  If this table is not fixed width and contained inside
   // a cell, then don't bloat the maxwidth by examining percentage growth.
   while (true) {
-    Length tw = table->StyleRef().Width();
+    const Length& tw = table->StyleRef().Width();
     if ((!tw.IsAuto() && !tw.IsPercentOrCalc()) ||
         table->IsOutOfFlowPositioned())
       return true;
@@ -328,7 +336,7 @@ void TableLayoutAlgorithmAuto::ComputeIntrinsicLogicalWidths(
 void TableLayoutAlgorithmAuto::ApplyPreferredLogicalWidthQuirks(
     LayoutUnit& min_width,
     LayoutUnit& max_width) const {
-  Length table_logical_width = table_->StyleRef().LogicalWidth();
+  const Length& table_logical_width = table_->StyleRef().LogicalWidth();
   if (table_logical_width.IsFixed() && table_logical_width.IsPositive()) {
     // |minWidth| is the result of measuring the intrinsic content's size. Keep
     // it to make sure we are *never* smaller than the actual content.
@@ -360,7 +368,7 @@ int TableLayoutAlgorithmAuto::CalcEffectiveLogicalWidth() {
   int max_logical_width = 0;
 
   wtf_size_t n_eff_cols = layout_struct_.size();
-  int spacing_in_row_direction = table_->HBorderSpacing();
+  int16_t spacing_in_row_direction = table_->HBorderSpacing();
 
   for (wtf_size_t i = 0; i < n_eff_cols; ++i) {
     layout_struct_[i].effective_logical_width = layout_struct_[i].logical_width;
@@ -401,11 +409,11 @@ int TableLayoutAlgorithmAuto::CalcEffectiveLogicalWidth() {
     while (last_col < n_eff_cols && span > 0) {
       Layout& column_layout = layout_struct_[last_col];
       switch (column_layout.logical_width.GetType()) {
-        case kPercent:
+        case Length::kPercent:
           total_percent += column_layout.logical_width.Percent();
           all_cols_are_fixed = false;
           break;
-        case kFixed:
+        case Length::kFixed:
           if (column_layout.logical_width.Value() > 0) {
             fixed_width += column_layout.logical_width.Value();
             all_cols_are_percent = false;
@@ -415,7 +423,7 @@ int TableLayoutAlgorithmAuto::CalcEffectiveLogicalWidth() {
             break;
           }
           FALLTHROUGH;
-        case kAuto:
+        case Length::kAuto:
           have_auto = true;
           FALLTHROUGH;
         default:
@@ -478,11 +486,8 @@ int TableLayoutAlgorithmAuto::CalcEffectiveLogicalWidth() {
             total_width -=
                 layout_struct_[pos].ClampedEffectiveMaxLogicalWidth();
             percent_missing -= percent;
-            if (percent > 0)
-              layout_struct_[pos].effective_logical_width.SetValue(kPercent,
-                                                                   percent);
-            else
-              layout_struct_[pos].effective_logical_width = Length();
+            layout_struct_[pos].effective_logical_width =
+                percent > 0 ? Length::Percent(percent) : Length();
           }
         }
       }
@@ -689,16 +694,16 @@ void TableLayoutAlgorithmAuto::UpdateLayout() {
     available -= cell_logical_width;
     Length& logical_width = layout_struct_[i].effective_logical_width;
     switch (logical_width.GetType()) {
-      case kPercent:
+      case Length::kPercent:
         have_percent = true;
         total_percent += logical_width.Percent();
         break;
-      case kFixed:
+      case Length::kFixed:
         num_fixed++;
         total_fixed += layout_struct_[i].ClampedEffectiveMaxLogicalWidth();
         // fall through
         break;
-      case kAuto:
+      case Length::kAuto:
         if (layout_struct_[i].empty_cells_only) {
           num_auto_empty_cells_only++;
         } else {
@@ -766,31 +771,36 @@ void TableLayoutAlgorithmAuto::UpdateLayout() {
   // columns then empty columns.
   if (available > 0 && (num_auto || num_auto_empty_cells_only)) {
     available += alloc_auto;
-    if (num_auto)
-      DistributeWidthToColumns<float, kAuto, kNonEmptyCells, kInitialWidth,
-                               kStartToEnd>(available, total_auto);
-    if (num_auto_empty_cells_only)
-      DistributeWidthToColumns<unsigned, kAuto, kEmptyCells, kInitialWidth,
-                               kStartToEnd>(available,
-                                            num_auto_empty_cells_only);
+    if (num_auto) {
+      DistributeWidthToColumns<float, Length::kAuto, kNonEmptyCells,
+                               kInitialWidth, kStartToEnd>(available,
+                                                           total_auto);
+    }
+    if (num_auto_empty_cells_only) {
+      DistributeWidthToColumns<unsigned, Length::kAuto, kEmptyCells,
+                               kInitialWidth, kStartToEnd>(
+          available, num_auto_empty_cells_only);
+    }
   }
 
   // Any remaining available width expands fixed width, percent width, and
   // non-empty auto width columns, in that order.
-  if (available > 0 && num_fixed)
-    DistributeWidthToColumns<float, kFixed, kAllCells, kExtraWidth,
+  if (available > 0 && num_fixed) {
+    DistributeWidthToColumns<float, Length::kFixed, kAllCells, kExtraWidth,
                              kStartToEnd>(available, total_fixed);
+  }
 
-  if (available > 0 && has_percent_ && total_percent < 100)
-    DistributeWidthToColumns<float, kPercent, kAllCells, kExtraWidth,
+  if (available > 0 && has_percent_ && total_percent < 100) {
+    DistributeWidthToColumns<float, Length::kPercent, kAllCells, kExtraWidth,
                              kStartToEnd>(available, total_percent);
+  }
 
   if (available > 0 && n_eff_cols > num_auto_empty_cells_only) {
     unsigned total = n_eff_cols - num_auto_empty_cells_only;
     // Starting from the last cell is for compatibility with FF/IE - it isn't
     // specified anywhere.
-    DistributeWidthToColumns<unsigned, kAuto, kNonEmptyCells, kLeftoverWidth,
-                             kEndToStart>(available, total);
+    DistributeWidthToColumns<unsigned, Length::kAuto, kNonEmptyCells,
+                             kLeftoverWidth, kEndToStart>(available, total);
   }
 
   // If we have overallocated, reduce every cell according to the difference
@@ -798,11 +808,11 @@ void TableLayoutAlgorithmAuto::UpdateLayout() {
   // exact results with IE. Wonder is some of this also holds for width
   // distributing. This is basically the reverse of how we grew the cells.
   if (available < 0)
-    ShrinkColumnWidth(kAuto, available);
+    ShrinkColumnWidth(Length::kAuto, available);
   if (available < 0)
-    ShrinkColumnWidth(kFixed, available);
+    ShrinkColumnWidth(Length::kFixed, available);
   if (available < 0)
-    ShrinkColumnWidth(kPercent, available);
+    ShrinkColumnWidth(Length::kPercent, available);
 
   DCHECK_EQ(table_->EffectiveColumnPositions().size(), n_eff_cols + 1);
   int pos = 0;
@@ -815,7 +825,7 @@ void TableLayoutAlgorithmAuto::UpdateLayout() {
 }
 
 template <typename Total,
-          LengthType lengthType,
+          Length::Type lengthType,
           CellsToProcess cellsToProcess,
           DistributionMode distributionMode,
           DistributionDirection distributionDirection>
@@ -842,9 +852,9 @@ void TableLayoutAlgorithmAuto::DistributeWidthToColumns(int& available,
 
     float factor = 1;
     if (distributionMode != kLeftoverWidth) {
-      if (lengthType == kPercent)
+      if (lengthType == Length::kPercent)
         factor = logical_width.Percent();
-      else if (lengthType == kAuto || lengthType == kFixed)
+      else if (lengthType == Length::kAuto || lengthType == Length::kFixed)
         factor = layout_struct_[i].ClampedEffectiveMaxLogicalWidth();
     }
 
@@ -862,15 +872,16 @@ void TableLayoutAlgorithmAuto::DistributeWidthToColumns(int& available,
 
     // If we have run out of width to allocate we're done.
     // TODO(rhogan): Extend this to Fixed as well.
-    if (lengthType == kPercent && (!available || !total))
+    if (lengthType == Length::kPercent && (!available || !total))
       return;
-    if (lengthType == kAuto && !total)
+    if (lengthType == Length::kAuto && !total)
       return;
   }
 }
 
-void TableLayoutAlgorithmAuto::ShrinkColumnWidth(const LengthType& length_type,
-                                                 int& available) {
+void TableLayoutAlgorithmAuto::ShrinkColumnWidth(
+    const Length::Type& length_type,
+    int& available) {
   unsigned n_eff_cols = table_->NumEffectiveColumns();
   int logical_width_beyond_min = 0;
   for (unsigned i = n_eff_cols; i;) {

@@ -27,7 +27,7 @@ constexpr char kNotificationImageLoaderBaseDir[] = "notifications/";
 constexpr char kNotificationImageLoaderIcon500x500[] = "500x500.png";
 
 // This mirrors the definition in NotificationImageLoader.cpp.
-constexpr unsigned long kImageFetchTimeoutInMs = 90000;
+constexpr uint32_t kImageFetchTimeoutInMs = 90000;
 
 static_assert(kImageFetchTimeoutInMs > 1000.0,
               "kImageFetchTimeoutInMs must be greater than 1000ms.");

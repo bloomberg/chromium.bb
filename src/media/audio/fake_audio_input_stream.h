@@ -65,7 +65,7 @@ class MEDIA_EXPORT FakeAudioInputStream
   ~FakeAudioInputStream() override;
 
   std::unique_ptr<AudioOutputStream::AudioSourceCallback> ChooseSource();
-  void ReadAudioFromSource();
+  void ReadAudioFromSource(base::TimeTicks ideal_time, base::TimeTicks now);
 
   AudioManagerBase* audio_manager_;
   AudioInputCallback* callback_;

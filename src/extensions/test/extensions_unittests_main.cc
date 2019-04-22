@@ -10,15 +10,21 @@
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_io_thread.h"
+#include "build/buildflag.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/content_test_suite_base.h"
 #include "content/public/test/unittest_test_suite.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/test/test_extensions_client.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 #include "url/url_util.h"
+
+#if BUILDFLAG(ENABLE_MUS)
+#include "ui/aura/test/aura_test_suite_setup.h"  // nogncheck
+#endif
 
 namespace {
 
@@ -99,6 +105,12 @@ void ExtensionsTestSuite::Shutdown() {
 
 int main(int argc, char** argv) {
   content::UnitTestTestSuite test_suite(new ExtensionsTestSuite(argc, argv));
+
+#if BUILDFLAG(ENABLE_MUS)
+  // Extensions unit tests do not use mus window service client code.
+  aura::AuraTestSuiteSetup::DisableMusFeatures();
+#endif
+
   return base::LaunchUnitTests(argc,
                                argv,
                                base::Bind(&content::UnitTestTestSuite::Run,

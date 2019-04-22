@@ -14,10 +14,13 @@
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/graphics_context_3d_utils.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT WebGraphicsContext3DProviderWrapper {
+  USING_FAST_MALLOC(WebGraphicsContext3DProviderWrapper);
+
  public:
   class DestructionObserver {
    public:

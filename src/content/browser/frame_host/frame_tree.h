@@ -10,6 +10,7 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
@@ -148,20 +149,24 @@ class CONTENT_EXPORT FrameTree {
   // interface through which the child RenderFrame can access Mojo services
   // exposed by the corresponding RenderFrameHost. The caller takes care of
   // sending the client end of the interface down to the RenderFrame.
-  bool AddFrame(FrameTreeNode* parent,
-                int process_id,
-                int new_routing_id,
-                service_manager::mojom::InterfaceProviderRequest
-                    interface_provider_request,
-                blink::WebTreeScopeType scope,
-                const std::string& frame_name,
-                const std::string& frame_unique_name,
-                bool is_created_by_script,
-                const base::UnguessableToken& devtools_frame_token,
-                const blink::FramePolicy& frame_policy,
-                const FrameOwnerProperties& frame_owner_properties,
-                bool was_discarded,
-                blink::FrameOwnerElementType owner_type);
+  FrameTreeNode* AddFrame(FrameTreeNode* parent,
+                          int process_id,
+                          int new_routing_id,
+                          service_manager::mojom::InterfaceProviderRequest
+                              interface_provider_request,
+                          blink::mojom::DocumentInterfaceBrokerRequest
+                              document_interface_broker_content_request,
+                          blink::mojom::DocumentInterfaceBrokerRequest
+                              document_interface_broker_blink_request,
+                          blink::WebTreeScopeType scope,
+                          const std::string& frame_name,
+                          const std::string& frame_unique_name,
+                          bool is_created_by_script,
+                          const base::UnguessableToken& devtools_frame_token,
+                          const blink::FramePolicy& frame_policy,
+                          const FrameOwnerProperties& frame_owner_properties,
+                          bool was_discarded,
+                          blink::FrameOwnerElementType owner_type);
 
   // Removes a frame from the frame tree. |child|, its children, and objects
   // owned by their RenderFrameHostManagers are immediately deleted. The root
@@ -247,7 +252,9 @@ class CONTENT_EXPORT FrameTree {
  private:
   friend class FrameTreeTest;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
-  typedef base::hash_map<int, RenderViewHostImpl*> RenderViewHostMap;
+  using RenderViewHostMap =
+      std::unordered_map<int /* SiteInstance ID */,
+                         std::unique_ptr<RenderViewHostImpl>>;
 
   // Returns a range to iterate over all FrameTreeNodes in the frame tree in
   // breadth-first traversal order, skipping the subtree rooted at
@@ -261,13 +268,12 @@ class CONTENT_EXPORT FrameTree {
   RenderWidgetHostDelegate* render_widget_delegate_;
   RenderFrameHostManager::Delegate* manager_delegate_;
 
-  // Map of SiteInstance ID to a RenderViewHost.  This allows us to look up the
+  // Map of SiteInstance ID to RenderViewHost. This allows us to look up the
   // RenderViewHost for a given SiteInstance when creating RenderFrameHosts.
-  // Combined with the refcount on RenderViewHost, this allows us to call
-  // Shutdown on the RenderViewHost and remove it from the map when no more
-  // RenderFrameHosts are using it.
+  // Each RenderViewHost maintains a refcount and is deleted when there are no
+  // more RenderFrameHosts using it.
   //
-  // Must be declared before |root_| so that it is deleted afterward.  Otherwise
+  // Must be declared before |root_| so that it is deleted afterward. Otherwise
   // the map will be cleared before we delete the RenderFrameHosts in the tree.
   RenderViewHostMap render_view_host_map_;
 

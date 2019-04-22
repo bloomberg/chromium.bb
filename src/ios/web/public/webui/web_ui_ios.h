@@ -62,22 +62,7 @@ class WebUIIOS {
   // Call a Javascript function.  This is asynchronous; there's no way to get
   // the result of the call, and should be thought of more like sending a
   // message to the page.  All function names in WebUI must consist of only
-  // ASCII characters.  There are variants for calls with more arguments.
-  virtual void CallJavascriptFunction(const std::string& function_name) = 0;
-  virtual void CallJavascriptFunction(const std::string& function_name,
-                                      const base::Value& arg) = 0;
-  virtual void CallJavascriptFunction(const std::string& function_name,
-                                      const base::Value& arg1,
-                                      const base::Value& arg2) = 0;
-  virtual void CallJavascriptFunction(const std::string& function_name,
-                                      const base::Value& arg1,
-                                      const base::Value& arg2,
-                                      const base::Value& arg3) = 0;
-  virtual void CallJavascriptFunction(const std::string& function_name,
-                                      const base::Value& arg1,
-                                      const base::Value& arg2,
-                                      const base::Value& arg3,
-                                      const base::Value& arg4) = 0;
+  // ASCII characters.
   virtual void CallJavascriptFunction(
       const std::string& function_name,
       const std::vector<const base::Value*>& args) = 0;

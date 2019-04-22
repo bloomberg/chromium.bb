@@ -10,11 +10,8 @@
 
 namespace offline_pages {
 
-extern const base::Feature kOfflineBookmarksFeature;
 extern const base::Feature kOffliningRecentPagesFeature;
-extern const base::Feature kOfflinePagesSvelteConcurrentLoadingFeature;
 extern const base::Feature kOfflinePagesCTFeature;
-extern const base::Feature kOfflinePagesSharingFeature;
 extern const base::Feature kOfflinePagesLivePageSharingFeature;
 extern const base::Feature kBackgroundLoaderForDownloadsFeature;
 extern const base::Feature kPrefetchingOfflinePagesFeature;
@@ -22,7 +19,6 @@ extern const base::Feature kOfflinePagesLoadSignalCollectingFeature;
 extern const base::Feature kOfflinePagesCTV2Feature;
 extern const base::Feature kOfflinePagesRenovationsFeature;
 extern const base::Feature kOfflinePagesResourceBasedSnapshotFeature;
-extern const base::Feature kOfflinePagesLimitlessPrefetchingFeature;
 extern const base::Feature kOfflinePagesDescriptivePendingStatusFeature;
 extern const base::Feature kOfflinePagesInDownloadHomeOpenInCctFeature;
 extern const base::Feature kOfflinePagesDescriptiveFailStatusFeature;
@@ -30,13 +26,11 @@ extern const base::Feature kOfflinePagesCTSuppressNotificationsFeature;
 extern const base::Feature kOfflinePagesShowAlternateDinoPageFeature;
 extern const base::Feature kOfflineIndicatorFeature;
 extern const base::Feature kOfflineIndicatorAlwaysHttpProbeFeature;
+extern const base::Feature kOnTheFlyMhtmlHashComputationFeature;
 
 // The parameter name used to find the experiment tag for prefetching offline
 // pages.
 extern const char kPrefetchingOfflinePagesExperimentsOption[];
-
-// Returns true if saving bookmarked pages for offline viewing is enabled.
-bool IsOfflineBookmarksEnabled();
 
 // Returns true if offlining of recent pages (aka 'Last N pages') is enabled.
 bool IsOffliningRecentPagesEnabled();
@@ -44,28 +38,11 @@ bool IsOffliningRecentPagesEnabled();
 // Returns true if offline CT features are enabled.  See crbug.com/620421.
 bool IsOfflinePagesCTEnabled();
 
-// Returns true if offline page sharing is enabled.
-bool IsOfflinePagesSharingEnabled();
-
 // Returns true if live page sharing of offline page is enabled.
 bool IsOfflinePagesLivePageSharingEnabled();
 
-// Returns true if saving a foreground tab that is taking too long using the
-// background scheduler is enabled.
-bool IsBackgroundLoaderForDownloadsEnabled();
-
-// Returns true if concurrent background loading is enabled for svelte.
-bool IsOfflinePagesSvelteConcurrentLoadingEnabled();
-
 // Returns true if prefetching offline pages is enabled.
 bool IsPrefetchingOfflinePagesEnabled();
-
-// Returns true if prefetching offline pages should ignore its normal resource
-// usage limits.
-bool IsLimitlessPrefetchingEnabled();
-
-// Enables or disabled limitless prefetching. Provided for testing only.
-void SetLimitlessPrefetchingEnabledForTesting(bool enabled);
 
 // Returns true if we enable load timing signals to be collected.
 bool IsOfflinePagesLoadSignalCollectingEnabled();
@@ -119,6 +96,10 @@ bool IsOfflineIndicatorFeatureEnabled();
 // to test our http probe detection on Android devices with Marshmallow and
 // above.
 bool IsOfflineIndicatorAlwaysHttpProbeEnabled();
+
+// Returns true if we are saving MHTML files to the target location and
+// calculating their content digests in one step.
+bool IsOnTheFlyMhtmlHashComputationEnabled();
 
 }  // namespace offline_pages
 

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_FLAGS_UI_FEATURE_ENTRY_MACROS_H_
 #define COMPONENTS_FLAGS_UI_FEATURE_ENTRY_MACROS_H_
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 // Macros to simplify specifying the type of FeatureEntry. Please refer to
 // the comments on FeatureEntry::Type in feature_entry.h, which explain the
@@ -31,14 +31,14 @@
   ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(enable_switch, "", disable_switch, "")
 #define MULTI_VALUE_TYPE(choices)                                          \
   flags_ui::FeatureEntry::MULTI_VALUE, nullptr, nullptr, nullptr, nullptr, \
-      nullptr, arraysize(choices), choices, nullptr, nullptr
+      nullptr, base::size(choices), choices, nullptr, nullptr
 #define FEATURE_VALUE_TYPE(feature)                                          \
   flags_ui::FeatureEntry::FEATURE_VALUE, nullptr, nullptr, nullptr, nullptr, \
       &feature, 3, nullptr, nullptr, nullptr
-#define FEATURE_WITH_PARAMS_VALUE_TYPE(feature, feature_variations,           \
-                                       feature_trial)                         \
-  flags_ui::FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr,        \
-      nullptr, nullptr, &feature, 3 + arraysize(feature_variations), nullptr, \
+#define FEATURE_WITH_PARAMS_VALUE_TYPE(feature, feature_variations,            \
+                                       feature_trial)                          \
+  flags_ui::FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr,         \
+      nullptr, nullptr, &feature, 3 + base::size(feature_variations), nullptr, \
       feature_variations, feature_trial
 
 #endif  // COMPONENTS_FLAGS_UI_FEATURE_ENTRY_MACROS_H_

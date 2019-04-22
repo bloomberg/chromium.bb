@@ -28,12 +28,13 @@
 
 #include <atomic>
 #include <memory>
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/string_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_codec_icu.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_codec_latin1.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_codec_replacement.h"
@@ -134,7 +135,7 @@ static void CheckExistingName(const char* alias, const char* atomic_name) {
   // Keep the warning silent about one case where we know this will happen.
   if (strcmp(alias, "ISO-8859-8-I") == 0 &&
       strcmp(old_atomic_name, "ISO-8859-8-I") == 0 &&
-      strcasecmp(atomic_name, "iso-8859-8") == 0)
+      EqualIgnoringASCIICase(atomic_name, "iso-8859-8"))
     return;
   LOG(ERROR) << "alias " << alias << " maps to " << old_atomic_name
              << " already, but someone is trying to make it map to "

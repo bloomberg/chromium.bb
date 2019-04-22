@@ -130,7 +130,7 @@ class BLINK_EXPORT WebNode {
   template <>                             \
   BLINK_EXPORT type WebNode::To<type>();  \
   template <>                             \
-  BLINK_EXPORT const type WebNode::ToConst<type>() const;
+  BLINK_EXPORT const type WebNode::ToConst<type>() const
 
 #if INSIDE_BLINK
 #define DEFINE_WEB_NODE_TYPE_CASTS(type, predicate)        \

@@ -4,14 +4,16 @@
 
 #include "content/browser/background_fetch/background_fetch_request_match_params.h"
 
+#include <utility>
+
 namespace content {
 
 BackgroundFetchRequestMatchParams::BackgroundFetchRequestMatchParams(
     blink::mojom::FetchAPIRequestPtr request_to_match,
-    blink::mojom::QueryParamsPtr cache_query_params,
+    blink::mojom::CacheQueryOptionsPtr cache_query_options,
     bool match_all)
     : request_to_match_(std::move(request_to_match)),
-      cache_query_params_(std::move(cache_query_params)),
+      cache_query_options_(std::move(cache_query_options)),
       match_all_(match_all) {}
 
 BackgroundFetchRequestMatchParams::BackgroundFetchRequestMatchParams() =

@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -29,7 +31,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_session.h"
+#include "components/arc/session/arc_session.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -154,7 +156,7 @@ class LockScreenAppManagerImplTest
     // Initialize arc session manager - NoteTakingHelper expects it to be set.
     arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
         std::make_unique<arc::ArcSessionRunner>(
-            base::Bind(&ArcSessionFactory)));
+            base::BindRepeating(&ArcSessionFactory)));
 
     chromeos::NoteTakingHelper::Initialize();
     chromeos::NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(
@@ -461,12 +463,12 @@ class LockScreenAppManagerImplTest
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(Unpacked,
-                        LockScreenAppManagerImplTest,
-                        ::testing::Values(TestAppLocation::kUnpacked));
-INSTANTIATE_TEST_CASE_P(Internal,
-                        LockScreenAppManagerImplTest,
-                        ::testing::Values(TestAppLocation::kInternal));
+INSTANTIATE_TEST_SUITE_P(Unpacked,
+                         LockScreenAppManagerImplTest,
+                         ::testing::Values(TestAppLocation::kUnpacked));
+INSTANTIATE_TEST_SUITE_P(Internal,
+                         LockScreenAppManagerImplTest,
+                         ::testing::Values(TestAppLocation::kInternal));
 
 TEST_P(LockScreenAppManagerImplTest, StartAddsAppToTarget) {
   scoped_refptr<const extensions::Extension> note_taking_app =

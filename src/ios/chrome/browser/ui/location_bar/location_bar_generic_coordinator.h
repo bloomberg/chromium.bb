@@ -20,9 +20,8 @@ class WebStateList;
 @protocol BrowserCommands;
 @protocol EditViewAnimatee;
 @protocol LocationBarAnimatee;
-@protocol OmniboxPopupPositioner;
+@protocol OmniboxPopupPresenterDelegate;
 @protocol ToolbarCoordinatorDelegate;
-@protocol UrlLoader;
 
 @protocol LocationBarGenericCoordinator<NSObject,
                                         LocationBarURLLoader,
@@ -36,15 +35,14 @@ class WebStateList;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher for this view controller.
 @property(nonatomic, weak) CommandDispatcher* dispatcher;
-// URL loader for the location bar.
-@property(nonatomic, weak) id<UrlLoader> URLLoader;
 // Delegate for this coordinator.
 // TODO(crbug.com/799446): Change this.
 @property(nonatomic, weak) id<ToolbarCoordinatorDelegate> delegate;
 // The web state list this ToolbarCoordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;
 
-@property(nonatomic, weak) id<OmniboxPopupPositioner> popupPositioner;
+@property(nonatomic, weak) id<OmniboxPopupPresenterDelegate>
+    popupPresenterDelegate;
 
 // Start this coordinator.
 - (void)start;
@@ -59,10 +57,6 @@ class WebStateList;
 
 // Indicates when the omnibox is the first responder.
 - (BOOL)isOmniboxFirstResponder;
-
-// TODO(crbug.com/831506): Once legacy location bar is deleted, remove the
-// @optional label and matching respondsToSelector: calls.
-@optional
 
 // Returns the location bar animatee.
 - (id<LocationBarAnimatee>)locationBarAnimatee;

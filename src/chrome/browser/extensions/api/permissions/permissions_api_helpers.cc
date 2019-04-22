@@ -44,7 +44,7 @@ std::unique_ptr<APIPermission> UnpackPermissionWithArguments(
     const std::string& permission_str,
     std::string* error) {
   std::unique_ptr<base::Value> permission_json =
-      base::JSONReader::Read(permission_arg);
+      base::JSONReader::ReadDeprecated(permission_arg);
   if (!permission_json.get()) {
     *error = ErrorUtils::FormatErrorMessage(kInvalidParameter, permission_str);
     return nullptr;
@@ -145,12 +145,14 @@ bool UnpackOriginPermissions(const std::vector<std::string>& origins_input,
                              std::string* error) {
   int user_script_schemes = UserScript::ValidUserScriptSchemes();
   int explicit_schemes = Extension::kValidHostPermissionSchemes;
-  if (!allow_file_access) {
-    user_script_schemes &= ~URLPattern::SCHEME_FILE;
-    explicit_schemes &= ~URLPattern::SCHEME_FILE;
-  }
 
-  auto filter_chrome_scheme = [](URLPattern* pattern) {
+  auto filter_schemes = [allow_file_access](URLPattern* pattern) {
+    // NOTE: We use pattern->valid_schemes() here (instead of
+    // |user_script_schemes| or |explicit_schemes|) because
+    // URLPattern::Parse() can mutate the valid schemes for a pattern, and we
+    // don't want to override those changes.
+    int valid_schemes = pattern->valid_schemes();
+
     // We disallow the chrome:-scheme unless the pattern is explicitly
     // "chrome://..." - that is, <all_urls> should not match the chrome:-scheme.
     // Patterns which explicitly specify the chrome:-scheme are safe, since
@@ -159,14 +161,16 @@ bool UnpackOriginPermissions(const std::vector<std::string>& origins_input,
     // Note that we don't check PermissionsData::AllUrlsIncludesChromeUrls()
     // here, since that's only needed for Chromevox (which doesn't use optional
     // permissions).
-    if (pattern->scheme() != content::kChromeUIScheme) {
-      // NOTE: We use pattern->valid_schemes() here (instead of
-      // |user_script_schemes| or |explicit_schemes|) because
-      // URLPattern::Parse() can mutate the valid schemes for a pattern, and we
-      // don't want to override those changes.
-      pattern->SetValidSchemes(pattern->valid_schemes() &
-                               ~URLPattern::SCHEME_CHROMEUI);
-    }
+    if (pattern->scheme() != content::kChromeUIScheme)
+      valid_schemes &= ~URLPattern::SCHEME_CHROMEUI;
+
+    // Similarly, <all_urls> should only match file:-scheme URLs if file access
+    // is granted.
+    if (!allow_file_access && pattern->scheme() != url::kFileScheme)
+      valid_schemes &= ~URLPattern::SCHEME_FILE;
+
+    if (valid_schemes != pattern->valid_schemes())
+      pattern->SetValidSchemes(valid_schemes);
   };
 
   for (const auto& origin_str : origins_input) {
@@ -179,7 +183,18 @@ bool UnpackOriginPermissions(const std::vector<std::string>& origins_input,
       return false;
     }
 
-    filter_chrome_scheme(&explicit_origin);
+    filter_schemes(&explicit_origin);
+
+    if ((explicit_origin.valid_schemes() & URLPattern::SCHEME_FILE) &&
+        !allow_file_access) {
+      // This should only happen with patterns that specify file schemes;
+      // otherwise they should have been filtered out in filter_schemes().
+      DCHECK_EQ(url::kFileScheme, explicit_origin.scheme());
+      result->restricted_file_scheme_patterns.AddPattern(explicit_origin);
+      // Don't add the pattern to any other set to indicate that it can't be
+      // requested/granted/contained.
+      continue;
+    }
 
     bool used_origin = false;
     if (required_permissions.explicit_hosts().ContainsPattern(
@@ -195,7 +210,7 @@ bool UnpackOriginPermissions(const std::vector<std::string>& origins_input,
     URLPattern scriptable_origin(user_script_schemes);
     if (scriptable_origin.Parse(origin_str) ==
         URLPattern::ParseResult::kSuccess) {
-      filter_chrome_scheme(&scriptable_origin);
+      filter_schemes(&scriptable_origin);
       if (required_permissions.scriptable_hosts().ContainsPattern(
               scriptable_origin)) {
         used_origin = true;

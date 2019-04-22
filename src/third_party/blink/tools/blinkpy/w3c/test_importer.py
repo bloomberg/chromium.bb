@@ -21,6 +21,7 @@ from blinkpy.common.net.buildbot import current_build_link
 from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.net.network_transaction import NetworkTimeout
 from blinkpy.common.path_finder import PathFinder
+from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
 from blinkpy.w3c.common import read_credentials, is_testharness_baseline, is_file_exportable, WPT_GH_URL
@@ -39,7 +40,7 @@ POLL_DELAY_SECONDS = 2 * 60
 TIMEOUT_SECONDS = 210 * 60
 
 # Sheriff calendar URL, used for getting the ecosystem infra sheriff to TBR.
-ROTATIONS_URL = 'https://build.chromium.org/deprecated/chromium/all_rotations.js'
+ROTATIONS_URL = 'https://rota-ng.appspot.com/legacy/all_rotations.js'
 TBR_FALLBACK = 'robertma'
 
 _log = logging.getLogger(__file__)
@@ -55,7 +56,7 @@ class TestImporter(object):
         self.fs = host.filesystem
         self.finder = PathFinder(self.fs)
         self.chromium_git = self.host.git(self.finder.chromium_base())
-        self.dest_path = self.finder.path_from_layout_tests('external', 'wpt')
+        self.dest_path = self.finder.path_from_web_tests('external', 'wpt')
 
         # A common.net.git_cl.GitCL instance.
         self.git_cl = None
@@ -262,7 +263,14 @@ class TestImporter(object):
             return True
 
         _log.error('Cannot submit CL; aborting.')
-        self.git_cl.run(['set-close'])
+        try:
+            self.git_cl.run(['set-close'])
+        except ScriptError as e:
+            if e.output and 'Conflict: change is merged' in e.output:
+                _log.error('CL is already merged; treating as success.')
+                return True
+            else:
+                raise e
         return False
 
     def blink_try_bots(self):
@@ -385,11 +393,19 @@ class TestImporter(object):
         first ensures if upstream deletes some files, we also delete them.
         """
         _log.info('Cleaning out tests from %s.', self.dest_path)
+
+        # TODO(crbug.com/927187): Temporarily prevent the external/wpt/webdriver folder from deletion.
+        # Will delete once starting the two-way sync phase on webdriver/tests.
+        webdriver_dir_path = self.fs.join(self.dest_path, 'webdriver')
+
         should_remove = lambda fs, dirname, basename: (
             is_file_exportable(fs.relpath(fs.join(dirname, basename), self.finder.chromium_base())))
         files_to_delete = self.fs.files_under(self.dest_path, file_filter=should_remove)
         for subpath in files_to_delete:
-            self.remove(self.finder.path_from_layout_tests('external', subpath))
+            remove_path = self.finder.path_from_web_tests('external', subpath)
+            if remove_path.startswith(webdriver_dir_path):
+                continue
+            self.remove(remove_path)
 
     def _commit_changes(self, commit_message):
         _log.info('Committing changes.')
@@ -423,7 +439,7 @@ class TestImporter(object):
         #  - the manifest path could be factored out to a common location, and
         #  - the logic for reading the manifest could be factored out from here
         # and the Port class.
-        manifest_path = self.finder.path_from_layout_tests('external', 'wpt', 'MANIFEST.json')
+        manifest_path = self.finder.path_from_web_tests('external', 'wpt', 'MANIFEST.json')
         manifest = WPTManifest(self.fs.read_text_file(manifest_path))
         wpt_urls = manifest.all_urls()
 
@@ -433,7 +449,7 @@ class TestImporter(object):
         # TODO(qyearsley): Remove this when this behavior is fixed.
         wpt_urls = [url.split('?')[0] for url in wpt_urls]
 
-        wpt_dir = self.finder.path_from_layout_tests('external', 'wpt')
+        wpt_dir = self.finder.path_from_web_tests('external', 'wpt')
         for full_path in baselines:
             rel_path = self.fs.relpath(full_path, wpt_dir)
             if not self._has_corresponding_test(rel_path, wpt_urls):
@@ -608,12 +624,12 @@ class TestImporter(object):
         self.host.filesystem.write_text_file(path, new_file_contents)
 
     def _list_deleted_tests(self):
-        """List of layout tests that have been deleted."""
+        """List of web tests that have been deleted."""
         # TODO(robertma): Improve Git.changed_files so that we can use it here.
         out = self.chromium_git.run(['diff', 'origin/master', '-M100%', '--diff-filter=D', '--name-only'])
         deleted_tests = []
         for path in out.splitlines():
-            test = self._relative_to_layout_test_dir(path)
+            test = self._relative_to_web_test_dir(path)
             if test:
                 deleted_tests.append(test)
         return deleted_tests
@@ -627,18 +643,18 @@ class TestImporter(object):
         renamed_tests = {}
         for line in out.splitlines():
             _, source_path, dest_path = line.split()
-            source_test = self._relative_to_layout_test_dir(source_path)
-            dest_test = self._relative_to_layout_test_dir(dest_path)
+            source_test = self._relative_to_web_test_dir(source_path)
+            dest_test = self._relative_to_web_test_dir(dest_path)
             if source_test and dest_test:
                 renamed_tests[source_test] = dest_test
         return renamed_tests
 
-    def _relative_to_layout_test_dir(self, path_relative_to_repo_root):
-        """Returns a path that's relative to the layout tests directory."""
+    def _relative_to_web_test_dir(self, path_relative_to_repo_root):
+        """Returns a path that's relative to the web tests directory."""
         abs_path = self.finder.path_from_chromium_base(path_relative_to_repo_root)
-        if not abs_path.startswith(self.finder.layout_tests_dir()):
+        if not abs_path.startswith(self.finder.web_tests_dir()):
             return None
-        return self.fs.relpath(abs_path, self.finder.layout_tests_dir())
+        return self.fs.relpath(abs_path, self.finder.web_tests_dir())
 
     def _get_last_imported_wpt_revision(self):
         """Finds the last imported WPT revision."""

@@ -44,9 +44,8 @@ const char kDisableTouchDragDrop[] = "disable-touch-drag-drop";
 // Enables touch event based drag and drop.
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 
-// Enables touchable app context menus.
-const char kEnableTouchableAppContextMenu[] =
-    "enable-touchable-app-context-menus";
+// Forces the caption style for WebVTT captions.
+const char kForceCaptionStyle[] = "force-caption-style";
 
 // Forces dark mode in UI for platforms that support it.
 const char kForceDarkMode[] = "force-dark-mode";
@@ -59,16 +58,6 @@ const char kForceHighContrast[] = "force-high-contrast";
 // The language file that we want to try to open. Of the form
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[] = "lang";
-
-// Defines the speed of Material Design visual feedback animations.
-const char kMaterialDesignInkDropAnimationSpeed[] =
-    "material-design-ink-drop-animation-speed";
-
-// Defines that Material Design visual feedback animations should be fast.
-const char kMaterialDesignInkDropAnimationSpeedFast[] = "fast";
-
-// Defines that Material Design visual feedback animations should be slow.
-const char kMaterialDesignInkDropAnimationSpeedSlow[] = "slow";
 
 // Controls touch-optimized UI layout for top chrome.
 const char kTopChromeTouchUi[] = "top-chrome-touch-ui";

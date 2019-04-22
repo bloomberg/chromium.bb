@@ -30,6 +30,7 @@ class GL_EXPORT GLImageMemory : public GLImage {
   // Overridden from GLImage:
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
+  BindOrCopy ShouldBindOrCopy() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override {}
   bool CopyTexImage(unsigned target) override;
@@ -43,7 +44,6 @@ class GL_EXPORT GLImageMemory : public GLImage {
                             const gfx::RectF& crop_rect,
                             bool enable_blend,
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
-  void SetColorSpace(const gfx::ColorSpace& color_space) override {}
   void Flush() override {}
   Type GetType() const override;
 

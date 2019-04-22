@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_TEST_APP_PASSWORD_TEST_UTIL_H_
 #define IOS_CHROME_TEST_APP_PASSWORD_TEST_UTIL_H_
 
-#import "ios/chrome/browser/ui/settings/reauthentication_module.h"
+#import "ios/chrome/browser/ui/settings/password/reauthentication_module.h"
 
 @interface MockReauthenticationModule : NSObject<ReauthenticationProtocol>
 

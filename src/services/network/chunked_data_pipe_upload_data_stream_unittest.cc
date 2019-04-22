@@ -691,13 +691,14 @@ TEST_F(ChunkedDataPipeUploadDataStreamTest, ExtraBytes2) {
   EXPECT_FALSE(chunked_upload_stream_->IsEOF());
 
   // Start another read.
+  net::TestCompletionCallback callback2;
   ASSERT_EQ(net::ERR_IO_PENDING, chunked_upload_stream_->Read(
-                                     io_buffer.get(), 1, callback.callback()));
+                                     io_buffer.get(), 1, callback2.callback()));
 
   // Learn the size was only one byte. Read should complete, indicating the end
   // of the stream was reached.
   std::move(get_size_callback_).Run(net::OK, 1);
-  EXPECT_EQ(net::OK, callback.WaitForResult());
+  EXPECT_EQ(net::OK, callback2.WaitForResult());
   EXPECT_TRUE(chunked_upload_stream_->IsEOF());
 
   // More data is copied to the stream unexpectedly.  It should be ignored.
@@ -772,13 +773,18 @@ TEST_F(ChunkedDataPipeUploadDataStreamTest,
   // upload body should succeed once.
   EXPECT_EQ(kDataLen, callback.GetResult(result));
   EXPECT_TRUE(chunked_upload_stream_->IsEOF());
+
+  net::TestCompletionCallback callback2;
   EXPECT_EQ(0, chunked_upload_stream_->Read(io_buffer.get(), kDataLen,
-                                            callback.callback()));
+                                            callback2.callback()));
 
   // But trying again will result in failure.
   chunked_upload_stream_->Reset();
-  EXPECT_EQ(net::ERR_FAILED, chunked_upload_stream_->Init(
-                                 callback.callback(), net::NetLogWithSource()));
+
+  net::TestCompletionCallback callback3;
+  EXPECT_EQ(net::ERR_FAILED,
+            chunked_upload_stream_->Init(callback3.callback(),
+                                         net::NetLogWithSource()));
 }
 
 }  // namespace

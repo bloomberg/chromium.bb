@@ -21,15 +21,16 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/common/subresource_filter_utils.h"
+#include "components/subresource_filter/content/mojom/subresource_filter_agent.mojom.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/console_message_level.h"
 #include "net/base/net_errors.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace subresource_filter {
 
@@ -123,10 +124,17 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
       transferred_ad_frame || base::ContainsKey(ad_frames_, frame_host);
   DCHECK(!is_ad_subframe || !navigation_handle->IsInMainFrame());
 
+  bool parent_is_ad = base::ContainsKey(ad_frames_, frame_host->GetParent());
+
+  blink::mojom::AdFrameType ad_frame_type = blink::mojom::AdFrameType::kNonAd;
+  if (is_ad_subframe)
+    ad_frame_type = parent_is_ad ? blink::mojom::AdFrameType::kChildAd
+                                 : blink::mojom::AdFrameType::kRootAd;
+
   mojom::SubresourceFilterAgentAssociatedPtr agent;
   frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&agent);
   agent->ActivateForNextCommittedLoad(filter->activation_state().Clone(),
-                                      is_ad_subframe);
+                                      ad_frame_type);
 }
 
 void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
@@ -160,7 +168,7 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
         DCHECK(filter->activation_state().activation_level !=
                mojom::ActivationLevel::kDisabled);
         NavigationConsoleLogger::LogMessageOnCommit(
-            navigation_handle, content::CONSOLE_MESSAGE_LEVEL_WARNING,
+            navigation_handle, blink::mojom::ConsoleMessageLevel::kWarning,
             kActivationConsoleMessage);
       }
     }

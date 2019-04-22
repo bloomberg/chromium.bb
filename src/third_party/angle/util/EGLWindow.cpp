@@ -4,15 +4,17 @@
 // found in the LICENSE file.
 //
 
-#include <string.h>
+#include "util/EGLWindow.h"
+
 #include <cassert>
 #include <iostream>
 #include <vector>
 
-#include "EGLWindow.h"
-#include "OSWindow.h"
-#include "common/debug.h"
+#include <string.h>
+
 #include "platform/Platform.h"
+#include "util/OSWindow.h"
+#include "util/system_utils.h"
 
 EGLPlatformParameters::EGLPlatformParameters()
     : renderer(EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE),
@@ -20,8 +22,7 @@ EGLPlatformParameters::EGLPlatformParameters()
       minorVersion(EGL_DONT_CARE),
       deviceType(EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE),
       presentPath(EGL_DONT_CARE)
-{
-}
+{}
 
 EGLPlatformParameters::EGLPlatformParameters(EGLint renderer)
     : renderer(renderer),
@@ -29,8 +30,7 @@ EGLPlatformParameters::EGLPlatformParameters(EGLint renderer)
       minorVersion(EGL_DONT_CARE),
       deviceType(EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE),
       presentPath(EGL_DONT_CARE)
-{
-}
+{}
 
 EGLPlatformParameters::EGLPlatformParameters(EGLint renderer,
                                              EGLint majorVersion,
@@ -41,8 +41,7 @@ EGLPlatformParameters::EGLPlatformParameters(EGLint renderer,
       minorVersion(minorVersion),
       deviceType(deviceType),
       presentPath(EGL_DONT_CARE)
-{
-}
+{}
 
 EGLPlatformParameters::EGLPlatformParameters(EGLint renderer,
                                              EGLint majorVersion,
@@ -54,8 +53,7 @@ EGLPlatformParameters::EGLPlatformParameters(EGLint renderer,
       minorVersion(minorVersion),
       deviceType(deviceType),
       presentPath(presentPath)
-{
-}
+{}
 
 bool operator<(const EGLPlatformParameters &a, const EGLPlatformParameters &b)
 {
@@ -89,41 +87,62 @@ bool operator==(const EGLPlatformParameters &a, const EGLPlatformParameters &b)
            (a.presentPath == b.presentPath);
 }
 
+// ConfigParameters implementation.
+ConfigParameters::ConfigParameters()
+    : platformMethods(nullptr),
+      redBits(-1),
+      greenBits(-1),
+      blueBits(-1),
+      alphaBits(-1),
+      depthBits(-1),
+      stencilBits(-1),
+      swapInterval(-1),
+      componentType(EGL_COLOR_COMPONENT_TYPE_FIXED_EXT),
+      multisample(false),
+      debug(false),
+      noError(false),
+      bindGeneratesResource(true),
+      clientArraysEnabled(true),
+      robustAccess(false),
+      samples(-1),
+      resetStrategy(EGL_NO_RESET_NOTIFICATION_EXT)
+{}
+
+ConfigParameters::~ConfigParameters() = default;
+
+void ConfigParameters::reset()
+{
+    *this = ConfigParameters();
+}
+
+// static
+bool ConfigParameters::CanShareDisplay(const ConfigParameters &a, const ConfigParameters &b)
+{
+    return a.debugLayersEnabled == b.debugLayersEnabled &&
+           a.contextVirtualization == b.contextVirtualization &&
+           a.platformMethods == b.platformMethods;
+}
+
+// GLWindowBase implementation.
+GLWindowBase::GLWindowBase(EGLint glesMajorVersion, EGLint glesMinorVersion)
+    : mClientMajorVersion(glesMajorVersion), mClientMinorVersion(glesMinorVersion)
+{}
+
+GLWindowBase::~GLWindowBase() = default;
+
+// EGLWindow implementation.
 EGLWindow::EGLWindow(EGLint glesMajorVersion,
                      EGLint glesMinorVersion,
                      const EGLPlatformParameters &platform)
-    : mDisplay(EGL_NO_DISPLAY),
+    : GLWindowBase(glesMajorVersion, glesMinorVersion),
+      mConfig(0),
+      mDisplay(EGL_NO_DISPLAY),
       mSurface(EGL_NO_SURFACE),
       mContext(EGL_NO_CONTEXT),
-      mClientMajorVersion(glesMajorVersion),
-      mClientMinorVersion(glesMinorVersion),
       mEGLMajorVersion(0),
       mEGLMinorVersion(0),
-      mPlatform(platform),
-      mRedBits(-1),
-      mGreenBits(-1),
-      mBlueBits(-1),
-      mAlphaBits(-1),
-      mDepthBits(-1),
-      mStencilBits(-1),
-      mComponentType(EGL_COLOR_COMPONENT_TYPE_FIXED_EXT),
-      mMultisample(false),
-      mDebug(false),
-      mNoError(false),
-      mWebGLCompatibility(false),
-      mExtensionsEnabled(),
-      mBindGeneratesResource(true),
-      mClientArraysEnabled(true),
-      mRobustAccess(false),
-      mRobustResourceInit(),
-      mSwapInterval(-1),
-      mSamples(-1),
-      mDebugLayersEnabled(),
-      mContextProgramCacheEnabled(),
-      mContextVirtualization(),
-      mPlatformMethods(nullptr)
-{
-}
+      mPlatform(platform)
+{}
 
 EGLWindow::~EGLWindow()
 {
@@ -155,15 +174,35 @@ EGLContext EGLWindow::getContext() const
     return mContext;
 }
 
-bool EGLWindow::initializeGL(OSWindow *osWindow)
+bool EGLWindow::initializeGL(OSWindow *osWindow,
+                             angle::Library *glWindowingLibrary,
+                             const ConfigParameters &params)
 {
-    if (!initializeDisplayAndSurface(osWindow))
+    if (!initializeDisplay(osWindow, glWindowingLibrary, params))
+        return false;
+    if (!initializeSurface(osWindow, glWindowingLibrary, params))
         return false;
     return initializeContext();
 }
 
-bool EGLWindow::initializeDisplayAndSurface(OSWindow *osWindow)
+bool EGLWindow::initializeDisplay(OSWindow *osWindow,
+                                  angle::Library *glWindowingLibrary,
+                                  const ConfigParameters &params)
 {
+    mConfigParams = params;
+
+#if defined(ANGLE_USE_UTIL_LOADER)
+    PFNEGLGETPROCADDRESSPROC getProcAddress;
+    glWindowingLibrary->getAs("eglGetProcAddress", &getProcAddress);
+    if (!getProcAddress)
+    {
+        return false;
+    }
+
+    // Likely we will need to use a fallback to Library::getAs on non-ANGLE platforms.
+    angle::LoadEGL(getProcAddress);
+#endif  // defined(ANGLE_USE_UTIL_LOADER)
+
     std::vector<EGLAttrib> displayAttributes;
     displayAttributes.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
     displayAttributes.push_back(mPlatform.renderer);
@@ -193,23 +232,26 @@ bool EGLWindow::initializeDisplayAndSurface(OSWindow *osWindow)
     }
 
     // Set debug layer settings if requested.
-    if (mDebugLayersEnabled.valid())
+    if (mConfigParams.debugLayersEnabled.valid())
     {
         displayAttributes.push_back(EGL_PLATFORM_ANGLE_DEBUG_LAYERS_ENABLED_ANGLE);
-        displayAttributes.push_back(mDebugLayersEnabled.value() ? EGL_TRUE : EGL_FALSE);
+        displayAttributes.push_back(mConfigParams.debugLayersEnabled.value() ? EGL_TRUE
+                                                                             : EGL_FALSE);
     }
 
-    if (mContextVirtualization.valid())
+    if (mConfigParams.contextVirtualization.valid())
     {
         displayAttributes.push_back(EGL_PLATFORM_ANGLE_CONTEXT_VIRTUALIZATION_ANGLE);
-        displayAttributes.push_back(mContextVirtualization.value() ? EGL_TRUE : EGL_FALSE);
+        displayAttributes.push_back(mConfigParams.contextVirtualization.value() ? EGL_TRUE
+                                                                                : EGL_FALSE);
     }
 
-    if (mPlatformMethods)
+    if (mConfigParams.platformMethods)
     {
-        static_assert(sizeof(EGLAttrib) == sizeof(mPlatformMethods), "Unexpected pointer size");
+        static_assert(sizeof(EGLAttrib) == sizeof(mConfigParams.platformMethods),
+                      "Unexpected pointer size");
         displayAttributes.push_back(EGL_PLATFORM_ANGLE_PLATFORM_METHODS_ANGLEX);
-        displayAttributes.push_back(reinterpret_cast<EGLAttrib>(mPlatformMethods));
+        displayAttributes.push_back(reinterpret_cast<EGLAttrib>(mConfigParams.platformMethods));
     }
 
     displayAttributes.push_back(EGL_NONE);
@@ -229,22 +271,38 @@ bool EGLWindow::initializeDisplayAndSurface(OSWindow *osWindow)
         return false;
     }
 
+    return true;
+}
+
+bool EGLWindow::initializeSurface(OSWindow *osWindow,
+                                  angle::Library *glWindowingLibrary,
+                                  const ConfigParameters &params)
+{
+    mConfigParams                 = params;
     const char *displayExtensions = eglQueryString(mDisplay, EGL_EXTENSIONS);
 
     std::vector<EGLint> configAttributes = {
-        EGL_RED_SIZE,       (mRedBits >= 0) ? mRedBits : EGL_DONT_CARE,
-        EGL_GREEN_SIZE,     (mGreenBits >= 0) ? mGreenBits : EGL_DONT_CARE,
-        EGL_BLUE_SIZE,      (mBlueBits >= 0) ? mBlueBits : EGL_DONT_CARE,
-        EGL_ALPHA_SIZE,     (mAlphaBits >= 0) ? mAlphaBits : EGL_DONT_CARE,
-        EGL_DEPTH_SIZE,     (mDepthBits >= 0) ? mDepthBits : EGL_DONT_CARE,
-        EGL_STENCIL_SIZE,   (mStencilBits >= 0) ? mStencilBits : EGL_DONT_CARE,
-        EGL_SAMPLE_BUFFERS, mMultisample ? 1 : 0,
-        EGL_SAMPLES,        (mSamples >= 0) ? mSamples : EGL_DONT_CARE,
+        EGL_RED_SIZE,
+        (mConfigParams.redBits >= 0) ? mConfigParams.redBits : EGL_DONT_CARE,
+        EGL_GREEN_SIZE,
+        (mConfigParams.greenBits >= 0) ? mConfigParams.greenBits : EGL_DONT_CARE,
+        EGL_BLUE_SIZE,
+        (mConfigParams.blueBits >= 0) ? mConfigParams.blueBits : EGL_DONT_CARE,
+        EGL_ALPHA_SIZE,
+        (mConfigParams.alphaBits >= 0) ? mConfigParams.alphaBits : EGL_DONT_CARE,
+        EGL_DEPTH_SIZE,
+        (mConfigParams.depthBits >= 0) ? mConfigParams.depthBits : EGL_DONT_CARE,
+        EGL_STENCIL_SIZE,
+        (mConfigParams.stencilBits >= 0) ? mConfigParams.stencilBits : EGL_DONT_CARE,
+        EGL_SAMPLE_BUFFERS,
+        mConfigParams.multisample ? 1 : 0,
+        EGL_SAMPLES,
+        (mConfigParams.samples >= 0) ? mConfigParams.samples : EGL_DONT_CARE,
     };
 
     // Add dynamic attributes
     bool hasPixelFormatFloat = strstr(displayExtensions, "EGL_EXT_pixel_format_float") != nullptr;
-    if (!hasPixelFormatFloat && mComponentType != EGL_COLOR_COMPONENT_TYPE_FIXED_EXT)
+    if (!hasPixelFormatFloat && mConfigParams.componentType != EGL_COLOR_COMPONENT_TYPE_FIXED_EXT)
     {
         destroyGL();
         return false;
@@ -252,7 +310,7 @@ bool EGLWindow::initializeDisplayAndSurface(OSWindow *osWindow)
     if (hasPixelFormatFloat)
     {
         configAttributes.push_back(EGL_COLOR_COMPONENT_TYPE_EXT);
-        configAttributes.push_back(mComponentType);
+        configAttributes.push_back(mConfigParams.componentType);
     }
 
     // Finish the attribute list
@@ -265,13 +323,13 @@ bool EGLWindow::initializeDisplayAndSurface(OSWindow *osWindow)
         return false;
     }
 
-    eglGetConfigAttrib(mDisplay, mConfig, EGL_RED_SIZE, &mRedBits);
-    eglGetConfigAttrib(mDisplay, mConfig, EGL_GREEN_SIZE, &mGreenBits);
-    eglGetConfigAttrib(mDisplay, mConfig, EGL_BLUE_SIZE, &mBlueBits);
-    eglGetConfigAttrib(mDisplay, mConfig, EGL_ALPHA_SIZE, &mAlphaBits);
-    eglGetConfigAttrib(mDisplay, mConfig, EGL_DEPTH_SIZE, &mDepthBits);
-    eglGetConfigAttrib(mDisplay, mConfig, EGL_STENCIL_SIZE, &mStencilBits);
-    eglGetConfigAttrib(mDisplay, mConfig, EGL_SAMPLES, &mSamples);
+    eglGetConfigAttrib(mDisplay, mConfig, EGL_RED_SIZE, &mConfigParams.redBits);
+    eglGetConfigAttrib(mDisplay, mConfig, EGL_GREEN_SIZE, &mConfigParams.greenBits);
+    eglGetConfigAttrib(mDisplay, mConfig, EGL_BLUE_SIZE, &mConfigParams.blueBits);
+    eglGetConfigAttrib(mDisplay, mConfig, EGL_ALPHA_SIZE, &mConfigParams.alphaBits);
+    eglGetConfigAttrib(mDisplay, mConfig, EGL_DEPTH_SIZE, &mConfigParams.depthBits);
+    eglGetConfigAttrib(mDisplay, mConfig, EGL_STENCIL_SIZE, &mConfigParams.stencilBits);
+    eglGetConfigAttrib(mDisplay, mConfig, EGL_SAMPLES, &mConfigParams.samples);
 
     std::vector<EGLint> surfaceAttributes;
     if (strstr(displayExtensions, "EGL_NV_post_sub_buffer") != nullptr)
@@ -282,21 +340,29 @@ bool EGLWindow::initializeDisplayAndSurface(OSWindow *osWindow)
 
     bool hasRobustResourceInit =
         strstr(displayExtensions, "EGL_ANGLE_robust_resource_initialization") != nullptr;
-    if (hasRobustResourceInit && mRobustResourceInit.valid())
+    if (hasRobustResourceInit && mConfigParams.robustResourceInit.valid())
     {
         surfaceAttributes.push_back(EGL_ROBUST_RESOURCE_INITIALIZATION_ANGLE);
-        surfaceAttributes.push_back(mRobustResourceInit.value() ? EGL_TRUE : EGL_FALSE);
+        surfaceAttributes.push_back(mConfigParams.robustResourceInit.value() ? EGL_TRUE
+                                                                             : EGL_FALSE);
     }
 
     surfaceAttributes.push_back(EGL_NONE);
 
-    mSurface = eglCreateWindowSurface(mDisplay, mConfig, osWindow->getNativeWindow(), &surfaceAttributes[0]);
-    if (eglGetError() != EGL_SUCCESS)
+    osWindow->resetNativeWindow();
+
+    mSurface = eglCreateWindowSurface(mDisplay, mConfig, osWindow->getNativeWindow(),
+                                      &surfaceAttributes[0]);
+    if (eglGetError() != EGL_SUCCESS || (mSurface == EGL_NO_SURFACE))
     {
         destroyGL();
         return false;
     }
-    ASSERT(mSurface != EGL_NO_SURFACE);
+
+#if defined(ANGLE_USE_UTIL_LOADER)
+    angle::LoadGLES(eglGetProcAddress);
+#endif  // defined(ANGLE_USE_UTIL_LOADER)
+
     return true;
 }
 
@@ -309,54 +375,64 @@ EGLContext EGLWindow::createContext(EGLContext share) const
     if (mClientMajorVersion > 2 && !(mEGLMajorVersion > 1 || mEGLMinorVersion >= 5) &&
         !hasKHRCreateContext)
     {
+        std::cerr << "EGL_KHR_create_context incompatibility.\n";
         return EGL_NO_CONTEXT;
     }
 
     bool hasWebGLCompatibility =
         strstr(displayExtensions, "EGL_ANGLE_create_context_webgl_compatibility") != nullptr;
-    if (mWebGLCompatibility && !hasWebGLCompatibility)
+    if (mConfigParams.webGLCompatibility.valid() && !hasWebGLCompatibility)
     {
+        std::cerr << "EGL_ANGLE_create_context_webgl_compatibility missing.\n";
         return EGL_NO_CONTEXT;
     }
 
     bool hasCreateContextExtensionsEnabled =
         strstr(displayExtensions, "EGL_ANGLE_create_context_extensions_enabled") != nullptr;
-    if (mExtensionsEnabled.valid() && !hasCreateContextExtensionsEnabled)
+    if (mConfigParams.extensionsEnabled.valid() && !hasCreateContextExtensionsEnabled)
     {
+        std::cerr << "EGL_ANGLE_create_context_extensions_enabled missing.\n";
         return EGL_NO_CONTEXT;
     }
 
     bool hasRobustness = strstr(displayExtensions, "EGL_EXT_create_context_robustness") != nullptr;
-    if (mRobustAccess && !hasRobustness)
+    if ((mConfigParams.robustAccess ||
+         mConfigParams.resetStrategy != EGL_NO_RESET_NOTIFICATION_EXT) &&
+        !hasRobustness)
     {
+        std::cerr << "EGL_EXT_create_context_robustness missing.\n";
         return EGL_NO_CONTEXT;
     }
 
     bool hasBindGeneratesResource =
         strstr(displayExtensions, "EGL_CHROMIUM_create_context_bind_generates_resource") != nullptr;
-    if (!mBindGeneratesResource && !hasBindGeneratesResource)
+    if (!mConfigParams.bindGeneratesResource && !hasBindGeneratesResource)
     {
+        std::cerr << "EGL_CHROMIUM_create_context_bind_generates_resource missing.\n";
         return EGL_NO_CONTEXT;
     }
 
     bool hasClientArraysExtension =
         strstr(displayExtensions, "EGL_ANGLE_create_context_client_arrays") != nullptr;
-    if (!mClientArraysEnabled && !hasClientArraysExtension)
+    if (!mConfigParams.clientArraysEnabled && !hasClientArraysExtension)
     {
         // Non-default state requested without the extension present
+        std::cerr << "EGL_ANGLE_create_context_client_arrays missing.\n";
         return EGL_NO_CONTEXT;
     }
 
     bool hasProgramCacheControlExtension =
         strstr(displayExtensions, "EGL_ANGLE_program_cache_control ") != nullptr;
-    if (mContextProgramCacheEnabled.valid() && !hasProgramCacheControlExtension)
+    if (mConfigParams.contextProgramCacheEnabled.valid() && !hasProgramCacheControlExtension)
     {
+        std::cerr << "EGL_ANGLE_program_cache_control missing.\n";
         return EGL_NO_CONTEXT;
     }
 
     eglBindAPI(EGL_OPENGL_ES_API);
     if (eglGetError() != EGL_SUCCESS)
     {
+        std::cerr << "Error on eglBindAPI.\n";
         return EGL_NO_CONTEXT;
     }
 
@@ -370,57 +446,64 @@ EGLContext EGLWindow::createContext(EGLContext share) const
         contextAttributes.push_back(mClientMinorVersion);
 
         contextAttributes.push_back(EGL_CONTEXT_OPENGL_DEBUG);
-        contextAttributes.push_back(mDebug ? EGL_TRUE : EGL_FALSE);
+        contextAttributes.push_back(mConfigParams.debug ? EGL_TRUE : EGL_FALSE);
 
         // TODO(jmadill): Check for the extension string.
         // bool hasKHRCreateContextNoError = strstr(displayExtensions,
         // "EGL_KHR_create_context_no_error") != nullptr;
 
         contextAttributes.push_back(EGL_CONTEXT_OPENGL_NO_ERROR_KHR);
-        contextAttributes.push_back(mNoError ? EGL_TRUE : EGL_FALSE);
+        contextAttributes.push_back(mConfigParams.noError ? EGL_TRUE : EGL_FALSE);
 
-        if (hasWebGLCompatibility)
+        if (mConfigParams.webGLCompatibility.valid())
         {
             contextAttributes.push_back(EGL_CONTEXT_WEBGL_COMPATIBILITY_ANGLE);
-            contextAttributes.push_back(mWebGLCompatibility ? EGL_TRUE : EGL_FALSE);
+            contextAttributes.push_back(mConfigParams.webGLCompatibility.value() ? EGL_TRUE
+                                                                                 : EGL_FALSE);
         }
 
-        if (mExtensionsEnabled.valid())
+        if (mConfigParams.extensionsEnabled.valid())
         {
             contextAttributes.push_back(EGL_EXTENSIONS_ENABLED_ANGLE);
-            contextAttributes.push_back(mExtensionsEnabled.value() ? EGL_TRUE : EGL_FALSE);
+            contextAttributes.push_back(mConfigParams.extensionsEnabled.value() ? EGL_TRUE
+                                                                                : EGL_FALSE);
         }
 
         if (hasRobustness)
         {
             contextAttributes.push_back(EGL_CONTEXT_OPENGL_ROBUST_ACCESS_EXT);
-            contextAttributes.push_back(mRobustAccess ? EGL_TRUE : EGL_FALSE);
+            contextAttributes.push_back(mConfigParams.robustAccess ? EGL_TRUE : EGL_FALSE);
+
+            contextAttributes.push_back(EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT);
+            contextAttributes.push_back(mConfigParams.resetStrategy);
         }
 
         if (hasBindGeneratesResource)
         {
             contextAttributes.push_back(EGL_CONTEXT_BIND_GENERATES_RESOURCE_CHROMIUM);
-            contextAttributes.push_back(mBindGeneratesResource ? EGL_TRUE : EGL_FALSE);
+            contextAttributes.push_back(mConfigParams.bindGeneratesResource ? EGL_TRUE : EGL_FALSE);
         }
 
         if (hasClientArraysExtension)
         {
             contextAttributes.push_back(EGL_CONTEXT_CLIENT_ARRAYS_ENABLED_ANGLE);
-            contextAttributes.push_back(mClientArraysEnabled ? EGL_TRUE : EGL_FALSE);
+            contextAttributes.push_back(mConfigParams.clientArraysEnabled ? EGL_TRUE : EGL_FALSE);
         }
 
-        if (mContextProgramCacheEnabled.valid())
+        if (mConfigParams.contextProgramCacheEnabled.valid())
         {
             contextAttributes.push_back(EGL_CONTEXT_PROGRAM_BINARY_CACHE_ENABLED_ANGLE);
-            contextAttributes.push_back(mContextProgramCacheEnabled.value() ? EGL_TRUE : EGL_FALSE);
+            contextAttributes.push_back(
+                mConfigParams.contextProgramCacheEnabled.value() ? EGL_TRUE : EGL_FALSE);
         }
 
         bool hasRobustResourceInit =
             strstr(displayExtensions, "EGL_ANGLE_robust_resource_initialization") != nullptr;
-        if (hasRobustResourceInit && mRobustResourceInit.valid())
+        if (hasRobustResourceInit && mConfigParams.robustResourceInit.valid())
         {
             contextAttributes.push_back(EGL_ROBUST_RESOURCE_INITIALIZATION_ANGLE);
-            contextAttributes.push_back(mRobustResourceInit.value() ? EGL_TRUE : EGL_FALSE);
+            contextAttributes.push_back(mConfigParams.robustResourceInit.value() ? EGL_TRUE
+                                                                                 : EGL_FALSE);
         }
     }
     contextAttributes.push_back(EGL_NONE);
@@ -428,6 +511,7 @@ EGLContext EGLWindow::createContext(EGLContext share) const
     EGLContext context = eglCreateContext(mDisplay, mConfig, nullptr, &contextAttributes[0]);
     if (eglGetError() != EGL_SUCCESS)
     {
+        std::cerr << "Error on eglCreateContext.\n";
         return EGL_NO_CONTEXT;
     }
 
@@ -446,13 +530,14 @@ bool EGLWindow::initializeContext()
     eglMakeCurrent(mDisplay, mSurface, mSurface, mContext);
     if (eglGetError() != EGL_SUCCESS)
     {
+        std::cerr << "Error during eglMakeCurrent.\n";
         destroyGL();
         return false;
     }
 
-    if (mSwapInterval != -1)
+    if (mConfigParams.swapInterval != -1)
     {
-        eglSwapInterval(mDisplay, mSwapInterval);
+        eglSwapInterval(mDisplay, mConfigParams.swapInterval);
     }
 
     return true;
@@ -460,19 +545,8 @@ bool EGLWindow::initializeContext()
 
 void EGLWindow::destroyGL()
 {
-    if (mSurface != EGL_NO_SURFACE)
-    {
-        assert(mDisplay != EGL_NO_DISPLAY);
-        eglDestroySurface(mDisplay, mSurface);
-        mSurface = EGL_NO_SURFACE;
-    }
-
-    if (mContext != EGL_NO_CONTEXT)
-    {
-        assert(mDisplay != EGL_NO_DISPLAY);
-        eglDestroyContext(mDisplay, mContext);
-        mContext = EGL_NO_CONTEXT;
-    }
+    destroyContext();
+    destroySurface();
 
     if (mDisplay != EGL_NO_DISPLAY)
     {
@@ -482,11 +556,31 @@ void EGLWindow::destroyGL()
     }
 }
 
+void EGLWindow::destroySurface()
+{
+    if (mSurface != EGL_NO_SURFACE)
+    {
+        eglMakeCurrent(mDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        assert(mDisplay != EGL_NO_DISPLAY);
+        eglDestroySurface(mDisplay, mSurface);
+        mSurface = EGL_NO_SURFACE;
+    }
+}
+
+void EGLWindow::destroyContext()
+{
+    if (mContext != EGL_NO_CONTEXT)
+    {
+        eglMakeCurrent(mDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        assert(mDisplay != EGL_NO_DISPLAY);
+        eglDestroyContext(mDisplay, mContext);
+        mContext = EGL_NO_CONTEXT;
+    }
+}
+
 bool EGLWindow::isGLInitialized() const
 {
-    return mSurface != EGL_NO_SURFACE &&
-           mContext != EGL_NO_CONTEXT &&
-           mDisplay != EGL_NO_DISPLAY;
+    return mSurface != EGL_NO_SURFACE && mContext != EGL_NO_CONTEXT && mDisplay != EGL_NO_DISPLAY;
 }
 
 // Find an EGLConfig that is an exact match for the specified attributes. EGL_FALSE is returned if
@@ -532,6 +626,11 @@ void EGLWindow::makeCurrent()
     eglMakeCurrent(mDisplay, mSurface, mSurface, mContext);
 }
 
+bool EGLWindow::hasError() const
+{
+    return eglGetError() != EGL_SUCCESS;
+}
+
 // static
 bool EGLWindow::ClientExtensionEnabled(const std::string &extName)
 {
@@ -543,4 +642,26 @@ bool CheckExtensionExists(const char *allExtensions, const std::string &extName)
     const std::string paddedExtensions = std::string(" ") + allExtensions + std::string(" ");
     return paddedExtensions.find(std::string(" ") + extName + std::string(" ")) !=
            std::string::npos;
+}
+
+// static
+void GLWindowBase::Delete(GLWindowBase **window)
+{
+    delete *window;
+    *window = nullptr;
+}
+
+// static
+EGLWindow *EGLWindow::New(EGLint glesMajorVersion,
+                          EGLint glesMinorVersion,
+                          const EGLPlatformParameters &platform)
+{
+    return new EGLWindow(glesMajorVersion, glesMinorVersion, platform);
+}
+
+// static
+void EGLWindow::Delete(EGLWindow **window)
+{
+    delete *window;
+    *window = nullptr;
 }

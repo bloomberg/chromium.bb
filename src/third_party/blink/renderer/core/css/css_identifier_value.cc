@@ -27,37 +27,37 @@ String CSSIdentifierValue::CustomCSSText() const {
 
 CSSIdentifierValue::CSSIdentifierValue(CSSValueID value_id)
     : CSSValue(kIdentifierClass), value_id_(value_id) {
-  // TODO(sashab): Add a DCHECK_NE(valueID, CSSValueInvalid) once no code paths
-  // cause this to happen.
+  // TODO(sashab): Add a DCHECK_NE(valueID, CSSValueID::kInvalid) once no code
+  // paths cause this to happen.
 }
 
 CSSIdentifierValue::CSSIdentifierValue(const Length& length)
     : CSSValue(kIdentifierClass) {
   switch (length.GetType()) {
-    case kAuto:
-      value_id_ = CSSValueAuto;
+    case Length::kAuto:
+      value_id_ = CSSValueID::kAuto;
       break;
-    case kMinContent:
-      value_id_ = CSSValueMinContent;
+    case Length::kMinContent:
+      value_id_ = CSSValueID::kMinContent;
       break;
-    case kMaxContent:
-      value_id_ = CSSValueMaxContent;
+    case Length::kMaxContent:
+      value_id_ = CSSValueID::kMaxContent;
       break;
-    case kFillAvailable:
-      value_id_ = CSSValueWebkitFillAvailable;
+    case Length::kFillAvailable:
+      value_id_ = CSSValueID::kWebkitFillAvailable;
       break;
-    case kFitContent:
-      value_id_ = CSSValueFitContent;
+    case Length::kFitContent:
+      value_id_ = CSSValueID::kFitContent;
       break;
-    case kExtendToZoom:
-      value_id_ = CSSValueInternalExtendToZoom;
+    case Length::kExtendToZoom:
+      value_id_ = CSSValueID::kInternalExtendToZoom;
       break;
-    case kPercent:
-    case kFixed:
-    case kCalculated:
-    case kDeviceWidth:
-    case kDeviceHeight:
-    case kMaxSizeNone:
+    case Length::kPercent:
+    case Length::kFixed:
+    case Length::kCalculated:
+    case Length::kDeviceWidth:
+    case Length::kDeviceHeight:
+    case Length::kMaxSizeNone:
       NOTREACHED();
       break;
   }

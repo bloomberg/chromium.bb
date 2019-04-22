@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "net/base/completion_once_callback.h"
@@ -33,9 +32,6 @@ class WebSocketStreamRequestAPI;
 class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream final
     : public WebSocketHandshakeStreamBase {
  public:
-  // Feature to enable connection reuse.
-  static const base::Feature kWebSocketHandshakeReuseConnection;
-
   // |connect_delegate| and |failure_message| must out-live this object.
   WebSocketBasicHandshakeStream(
       std::unique_ptr<ClientSocketHandle> connection,
@@ -85,6 +81,8 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream final
   // depending on what extensions were negotiated. This object is unusable after
   // Upgrade() has been called and should be disposed of as soon as possible.
   std::unique_ptr<WebSocketStream> Upgrade() override;
+
+  base::WeakPtr<WebSocketHandshakeStreamBase> GetWeakPtr() override;
 
   // Set the value used for the next Sec-WebSocket-Key header
   // deterministically. The key is only used once, and then discarded.
@@ -150,6 +148,8 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream final
   WebSocketStreamRequestAPI* const stream_request_;
 
   WebSocketEndpointLockManager* const websocket_endpoint_lock_manager_;
+
+  base::WeakPtrFactory<WebSocketBasicHandshakeStream> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketBasicHandshakeStream);
 };

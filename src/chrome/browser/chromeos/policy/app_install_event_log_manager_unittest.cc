@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
@@ -63,21 +64,21 @@ using Events = std::map<std::string, std::vector<em::AppInstallReportLogEvent>>;
 
 bool ContainsSameEvents(const Events& expected,
                         const em::AppInstallReportRequest& actual) {
-  if (actual.app_install_report_size() != static_cast<int>(expected.size())) {
+  if (actual.app_install_reports_size() != static_cast<int>(expected.size())) {
     return false;
   }
   for (const auto& expected_app_log : expected) {
     bool app_found = false;
-    for (int i = 0; i < actual.app_install_report_size(); ++i) {
-      const auto& actual_app_log = actual.app_install_report(i);
+    for (int i = 0; i < actual.app_install_reports_size(); ++i) {
+      const auto& actual_app_log = actual.app_install_reports(i);
       if (actual_app_log.package() == expected_app_log.first) {
-        if (actual_app_log.log_size() !=
+        if (actual_app_log.logs_size() !=
             static_cast<int>(expected_app_log.second.size())) {
           return false;
         }
         for (int j = 0; j < static_cast<int>(expected_app_log.second.size());
              ++j) {
-          if (actual_app_log.log(j).SerializePartialAsString() !=
+          if (actual_app_log.logs(j).SerializePartialAsString() !=
               expected_app_log.second[j].SerializePartialAsString()) {
             return false;
           }
@@ -160,7 +161,7 @@ class AppInstallEventLogManagerTest : public testing::Test {
 
   void AddLogEntry(int app_index) {
     ASSERT_GE(app_index, 0);
-    ASSERT_LT(app_index, static_cast<int>(arraysize(kPackageNames)));
+    ASSERT_LT(app_index, static_cast<int>(base::size(kPackageNames)));
     const std::string package_name = kPackageNames[app_index];
     events_[package_name].push_back(event_);
     manager_->Add({kPackageNames[app_index]}, event_);
@@ -469,7 +470,7 @@ TEST_F(AppInstallEventLogManagerTest, AddToTriggerTotalSizeExpedited) {
   FastForwardTo(offset);
   int i = 0;
   while (i <= kTotalSizeExpeditedUploadThreshold) {
-    for (int j = 0; j < static_cast<int>(arraysize(kPackageNames)); ++i, ++j) {
+    for (int j = 0; j < static_cast<int>(base::size(kPackageNames)); ++i, ++j) {
       AddLogEntry(j /* app_index */);
     }
   }
@@ -507,7 +508,7 @@ TEST_F(AppInstallEventLogManagerTest,
   const base::TimeDelta offset = base::TimeDelta::FromMinutes(20);
   FastForwardTo(offset);
   for (int i = 0; i <= kTotalSizeExpeditedUploadThreshold;
-       i += arraysize(kPackageNames)) {
+       i += base::size(kPackageNames)) {
     AddLogEntryForAllApps();
   }
 

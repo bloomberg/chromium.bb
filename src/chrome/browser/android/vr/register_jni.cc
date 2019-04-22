@@ -6,6 +6,7 @@
 
 #include "base/android/jni_utils.h"
 #include "chrome/browser/android/vr/jni_registration.h"
+#include "chrome/browser/android/vr/register_gvr_jni.h"
 
 namespace vr {
 
@@ -15,6 +16,9 @@ bool RegisterJni(JNIEnv* env) {
     return false;
   }
   if (!vr::RegisterMainDexNatives(env)) {
+    return false;
+  }
+  if (!vr::RegisterGvrJni(env)) {
     return false;
   }
   return true;

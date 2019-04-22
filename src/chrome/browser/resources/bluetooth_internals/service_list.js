@@ -32,6 +32,7 @@ cr.define('service_list', function() {
    * expanded for the first time.
    * @param {!bluetooth.mojom.ServiceInfo} serviceInfo
    * @param {string} deviceAddress
+   * @extends {expandable_list.ExpandableListItem}
    * @constructor
    */
   function ServiceListItem(serviceInfo, deviceAddress) {
@@ -59,7 +60,7 @@ cr.define('service_list', function() {
       this.classList.add('service-list-item');
 
       /** @private {!object_fieldset.ObjectFieldSet} */
-      this.serviceFieldSet_ = object_fieldset.ObjectFieldSet();
+      this.serviceFieldSet_ = new object_fieldset.ObjectFieldSet();
       this.serviceFieldSet_.setPropertyDisplayNames(PROPERTY_NAMES);
       this.serviceFieldSet_.setObject({
         id: this.info.id,
@@ -110,6 +111,7 @@ cr.define('service_list', function() {
   /**
    * A list that displays ServiceListItems.
    * @constructor
+   * @extends {expandable_list.ExpandableList}
    */
   var ServiceList = cr.ui.define('list');
 
@@ -120,7 +122,7 @@ cr.define('service_list', function() {
     decorate: function() {
       ExpandableList.prototype.decorate.call(this);
 
-      /** @private {string} */
+      /** @private {?string} */
       this.deviceAddress_ = null;
       /** @private {boolean} */
       this.servicesRequested_ = false;
@@ -131,7 +133,7 @@ cr.define('service_list', function() {
 
     /** @override */
     createItem: function(data) {
-      return new ServiceListItem(data, this.deviceAddress_);
+      return new ServiceListItem(data, assert(this.deviceAddress_));
     },
 
     /**
@@ -141,8 +143,9 @@ cr.define('service_list', function() {
      * @param {string} deviceAddress
      */
     load: function(deviceAddress) {
-      if (this.servicesRequested_ || !this.isSpinnerShowing())
+      if (this.servicesRequested_ || !this.isSpinnerShowing()) {
         return;
+      }
 
       this.deviceAddress_ = deviceAddress;
       this.servicesRequested_ = true;

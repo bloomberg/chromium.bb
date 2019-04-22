@@ -8,13 +8,14 @@
 #import <UIKit/UIKit.h>
 
 #include "base/memory/ref_counted.h"
+#import "ios/chrome/browser/web/web_state_printer.h"
 
 namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
 // Interface for printing.
-@interface PrintController : NSObject
+@interface PrintController : NSObject <WebStatePrinter>
 
 - (instancetype)initWithContextGetter:
     (scoped_refptr<net::URLRequestContextGetter>)getter
@@ -22,10 +23,8 @@ class URLRequestContextGetter;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Shows print UI for |view| with |title| on |viewController|.
-- (void)printView:(UIView*)view
-         withTitle:(NSString*)title
-    viewController:(UIViewController*)viewController;
+// Shows print UI for |view| with |title|.
+- (void)printView:(UIView*)view withTitle:(NSString*)title;
 
 // Dismisses the print dialog with animation if |animated|.
 - (void)dismissAnimated:(BOOL)animated;

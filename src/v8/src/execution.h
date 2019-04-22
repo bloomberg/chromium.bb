@@ -11,6 +11,8 @@
 namespace v8 {
 namespace internal {
 
+class MicrotaskQueue;
+
 template <typename T>
 class Handle;
 
@@ -46,16 +48,14 @@ class Execution final : public AllStatic {
   // If message_handling is MessageHandling::kReport, exceptions (except for
   // termination exceptions) will be stored in exception_out (if not a
   // nullptr).
-  static MaybeHandle<Object> TryCall(Isolate* isolate, Handle<Object> callable,
-                                     Handle<Object> receiver, int argc,
-                                     Handle<Object> argv[],
-                                     MessageHandling message_handling,
-                                     MaybeHandle<Object>* exception_out,
-                                     Target target = Target::kCallable);
+  V8_EXPORT_PRIVATE static MaybeHandle<Object> TryCall(
+      Isolate* isolate, Handle<Object> callable, Handle<Object> receiver,
+      int argc, Handle<Object> argv[], MessageHandling message_handling,
+      MaybeHandle<Object>* exception_out);
   // Convenience method for performing RunMicrotasks
-  static MaybeHandle<Object> RunMicrotasks(Isolate* isolate,
-                                           MessageHandling message_handling,
-                                           MaybeHandle<Object>* exception_out);
+  static MaybeHandle<Object> TryRunMicrotasks(
+      Isolate* isolate, MicrotaskQueue* microtask_queue,
+      MaybeHandle<Object>* exception_out);
 };
 
 
@@ -67,7 +67,7 @@ class InterruptsScope;
 // invocation.
 class V8_EXPORT_PRIVATE StackGuard final {
  public:
-  StackGuard(Isolate* isolate) : isolate_(isolate) {}
+  explicit StackGuard(Isolate* isolate) : isolate_(isolate) {}
 
   // Pass the address beyond which the stack should not grow.  The stack
   // is assumed to grow downwards.
@@ -90,12 +90,14 @@ class V8_EXPORT_PRIVATE StackGuard final {
   // it has been set up.
   void ClearThread(const ExecutionAccess& lock);
 
-#define INTERRUPT_LIST(V)                       \
-  V(TERMINATE_EXECUTION, TerminateExecution, 0) \
-  V(GC_REQUEST, GC, 1)                          \
-  V(INSTALL_CODE, InstallCode, 2)               \
-  V(API_INTERRUPT, ApiInterrupt, 3)             \
-  V(DEOPT_MARKED_ALLOCATION_SITES, DeoptMarkedAllocationSites, 4)
+#define INTERRUPT_LIST(V)                                         \
+  V(TERMINATE_EXECUTION, TerminateExecution, 0)                   \
+  V(GC_REQUEST, GC, 1)                                            \
+  V(INSTALL_CODE, InstallCode, 2)                                 \
+  V(API_INTERRUPT, ApiInterrupt, 3)                               \
+  V(DEOPT_MARKED_ALLOCATION_SITES, DeoptMarkedAllocationSites, 4) \
+  V(GROW_SHARED_MEMORY, GrowSharedMemory, 5)                      \
+  V(LOG_WASM_CODE, LogWasmCode, 6)
 
 #define V(NAME, Name, id)                                                    \
   inline bool Check##Name() { return CheckInterrupt(NAME); }                 \
@@ -135,7 +137,7 @@ class V8_EXPORT_PRIVATE StackGuard final {
 
   // If the stack guard is triggered, but it is not an actual
   // stack overflow, then handle the interruption accordingly.
-  Object* HandleInterrupts();
+  Object HandleInterrupts();
 
  private:
   bool CheckInterrupt(InterruptFlag flag);

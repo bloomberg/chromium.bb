@@ -56,9 +56,9 @@ class FakeInvalidatorTestDelegate {
   std::unique_ptr<FakeInvalidator> invalidator_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(
-    FakeInvalidatorTest, InvalidatorTest,
-    FakeInvalidatorTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(FakeInvalidatorTest,
+                               InvalidatorTest,
+                               FakeInvalidatorTestDelegate);
 
 }  // namespace
 

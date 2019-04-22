@@ -54,8 +54,9 @@ void InitImplicitWeakMessageDefaultInstance() {
 }
 
 const ImplicitWeakMessage* ImplicitWeakMessage::default_instance() {
-  ::google::protobuf::GoogleOnceInit(&implicit_weak_message_once_init_,
-                 &InitImplicitWeakMessageDefaultInstance);
+  ::google::protobuf::GoogleOnceInit(
+      &GOOGLE_PROTOBUF_GET_ONCE(implicit_weak_message_once_init_),
+      &InitImplicitWeakMessageDefaultInstance);
   return &implicit_weak_message_default_instance.get();
 }
 

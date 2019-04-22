@@ -16,9 +16,9 @@ class FilePath;
 
 namespace sync_start_util {
 
-// Creates a StartSyncFlare that a SyncableService can use to tell
-// ProfileSyncService it needs sync to start ASAP.  Typically this would be
-// given to the SyncableService on construction.
+// Creates a StartSyncFlare that a SyncableService can use to tell SyncService
+// it needs sync to start ASAP. Typically this would be given to the
+// SyncableService on construction.
 //
 // The flare built by this function is designed to be Run()able from any thread
 // so that non-UI types don't have to deal with posting tasks.

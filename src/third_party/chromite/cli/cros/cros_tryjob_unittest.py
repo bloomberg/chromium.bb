@@ -638,9 +638,9 @@ class TryjobTestCbuildbotArgs(TryjobTest):
 
     # Default buildroot changes.
     self.assertEqual(args_out, [
-        '--no-buildbot-tags', '--debug',
         '--buildroot', mock.ANY,
         '--git-cache-dir', mock.ANY,
+        '--no-buildbot-tags', '--debug',
         '-b', 'master',
         '-g', '123',
     ])
@@ -656,8 +656,6 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--committer-email', 'foo@bar',
         '--branch', 'source_branch',
         '--version', '1.2.3', '--channel', 'chan',
-        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
-        '--delete-branch', '--force-create', '--skip-remote-push',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
         'eve-pre-cq', 'eve-release',
     ]
@@ -672,8 +670,6 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--timeout', '5', '--sanity-check-build',
         '--chrome_version', 'chrome_git_hash',
         '--version', '1.2.3', '--channel', 'chan',
-        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
-        '--delete-branch', '--force-create', '--skip-remote-push',
         '--cbuild-arg', 'bar'
     ])
 
@@ -689,8 +685,6 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--committer-email', 'foo@bar',
         '--branch', 'source_branch',
         '--version', '1.2.3', '--channel', 'chan',
-        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
-        '--delete-branch', '--force-create', '--skip-remote-push',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
         'eve-pre-cq', 'eve-release',
     ]
@@ -698,9 +692,9 @@ class TryjobTestCbuildbotArgs(TryjobTest):
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
 
     self.assertEqual(args_out, [
-        '--no-buildbot-tags', '--debug',
         '--buildroot', '/buildroot',
         '--git-cache-dir', '/buildroot/.git_cache',
+        '--no-buildbot-tags', '--debug',
         '-b', 'source_branch',
         '-g', '123', '-g', '*123', '-g', '123..456',
         '--latest-toolchain', '--nochromesdk',
@@ -708,8 +702,6 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--timeout', '5', '--sanity-check-build',
         '--chrome_version', 'chrome_git_hash',
         '--version', '1.2.3', '--channel', 'chan',
-        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
-        '--delete-branch', '--force-create', '--skip-remote-push',
         '--cbuild-arg', 'bar'
     ])
 
@@ -724,8 +716,6 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--committer-email', 'foo@bar',
         '--branch', 'source_branch',
         '--version', '1.2.3', '--channel', 'chan',
-        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
-        '--delete-branch', '--force-create', '--skip-remote-push',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
         'eve-paladin', 'eve-release',
     ]
@@ -733,18 +723,17 @@ class TryjobTestCbuildbotArgs(TryjobTest):
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
 
     self.assertEqual(args_out, [
+        '--buildroot', '/buildroot/repository',
+        '--workspace', '/buildroot/workspace',
+        '--git-cache-dir', '/buildroot/.git_cache',
         '--debug', '--nobootstrap', '--noreexec',
         '--no-buildbot-tags',
-        '--buildroot', '/buildroot',
-        '--git-cache-dir', '/buildroot/.git_cache',
         '-b', 'source_branch',
         '-g', '123', '-g', '*123', '-g', '123..456',
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
         '--timeout', '5', '--sanity-check-build',
         '--version', '1.2.3', '--channel', 'chan',
-        '--branch-name', 'test_branch', '--rename-to', 'new_branch',
-        '--delete-branch', '--force-create', '--skip-remote-push',
         '--cbuild-arg', 'bar'
     ])
 
@@ -768,9 +757,9 @@ class TryjobTestCbuildbotArgs(TryjobTest):
 
     # Default buildroot changes.
     self.assertEqual(args_out, [
-        '--no-buildbot-tags', '--buildbot',
         '--buildroot', mock.ANY,
         '--git-cache-dir', mock.ANY,
+        '--no-buildbot-tags', '--buildbot',
         '-b', 'master',
     ])
 

@@ -17,6 +17,7 @@
 namespace blink {
 
 class ExceptionState;
+class V8AnimatorConstructor;
 class WorkletAnimationOptions;
 
 // Represents the animation worklet global scope and implements all methods that
@@ -32,42 +33,51 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnimationWorkletGlobalScope* Create(
-      std::unique_ptr<GlobalScopeCreationParams>,
-      WorkerThread*);
+  AnimationWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+                              WorkerThread*);
   ~AnimationWorkletGlobalScope() override;
+
   void Trace(blink::Visitor*) override;
   void Dispose() override;
   bool IsAnimationWorkletGlobalScope() const final { return true; }
 
-  // Invokes the |animate| function of all of its active animators.
-  std::unique_ptr<AnimationWorkletOutput> Mutate(const AnimationWorkletInput&);
+  void UpdateAnimatorsList(const AnimationWorkletInput&);
+
+  // Invokes the |animate| function of selected animators.
+  void UpdateAnimators(const AnimationWorkletInput&,
+                       AnimationWorkletOutput*,
+                       bool (*predicate)(Animator*));
 
   // Registers a animator definition with the given name and constructor.
   void registerAnimator(const String& name,
-                        const ScriptValue& constructor_value,
+                        V8AnimatorConstructor* animator_ctor,
                         ExceptionState&);
 
   AnimatorDefinition* FindDefinitionForTest(const String& name);
+  bool IsAnimatorStateful(int animation_id);
+  void MigrateAnimatorsTo(AnimationWorkletGlobalScope*);
+  Animator* GetAnimator(int animation_id) {
+    return animators_.at(animation_id);
+  }
   unsigned GetAnimatorsSizeForTest() { return animators_.size(); }
 
  private:
-  AnimationWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
-                              WorkerThread*);
-
   void RegisterWithProxyClientIfNeeded();
-  Animator* CreateInstance(const String& name,
-                           WorkletAnimationOptions* options,
-                           int num_effects);
-  Animator* CreateAnimatorFor(int animation_id,
-                              const String& name,
-                              WorkletAnimationOptions* options,
-                              int num_effects);
-  typedef HeapHashMap<String, TraceWrapperMember<AnimatorDefinition>>
-      DefinitionMap;
+  Animator* CreateInstance(
+      const String& name,
+      WorkletAnimationOptions options,
+      scoped_refptr<SerializedScriptValue> serialized_state,
+      const std::vector<base::Optional<TimeDelta>>& local_times);
+  Animator* CreateAnimatorFor(
+      int animation_id,
+      const String& name,
+      WorkletAnimationOptions options,
+      scoped_refptr<SerializedScriptValue> serialized_state,
+      const std::vector<base::Optional<TimeDelta>>& local_times);
+  typedef HeapHashMap<String, Member<AnimatorDefinition>> DefinitionMap;
   DefinitionMap animator_definitions_;
 
-  typedef HeapHashMap<int, TraceWrapperMember<Animator>> AnimatorMap;
+  typedef HeapHashMap<int, Member<Animator>> AnimatorMap;
   AnimatorMap animators_;
 
   bool registered_ = false;

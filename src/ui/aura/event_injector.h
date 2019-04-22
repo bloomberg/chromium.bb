@@ -5,6 +5,7 @@
 #ifndef UI_AURA_EVENT_INJECTOR_H_
 #define UI_AURA_EVENT_INJECTOR_H_
 
+#include "base/callback.h"
 #include "services/ws/public/mojom/event_injector.mojom.h"
 #include "ui/aura/aura_export.h"
 
@@ -19,16 +20,25 @@ class WindowTreeHost;
 
 // Used to inject events into the system. In LOCAL mode, it directly injects
 // events into the WindowTreeHost, but in MUS mode, it injects events into the
-// window-server (over the mojom API).
+// window-service (over the mojom API).
 class AURA_EXPORT EventInjector {
  public:
   EventInjector();
   ~EventInjector();
 
-  ui::EventDispatchDetails Inject(WindowTreeHost* host, ui::Event* event);
+  // Inject |event| to |host|. |callback| is optional that gets invoked after
+  // the event is processed by |host|. In LOCAL mode,  |callback| is invoked
+  // synchronously. In MUS mode, it is invoked after a response is received
+  // from the window service (via mojo). If |event| is a LocatedEvent, then
+  // coordinates are relative to host and in DIPs.
+  ui::EventDispatchDetails Inject(
+      WindowTreeHost* host,
+      ui::Event* event,
+      base::OnceClosure callback = base::OnceClosure());
 
  private:
   ws::mojom::EventInjectorPtr event_injector_;
+  bool has_pending_callback_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(EventInjector);
 };

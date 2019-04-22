@@ -18,6 +18,7 @@ static_library("renderer") {
   deps = [
     "//base",
     "//components/subresource_filter/content/common",
+    "//components/subresource_filter/content/mojom",
     "//components/subresource_filter/core/common",
     "//content/public/common",
     "//content/public/renderer",
@@ -39,6 +40,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/subresource_filter/content/common",
+    "//components/subresource_filter/content/mojom",
     "//components/subresource_filter/core/common",
     "//components/subresource_filter/core/common:test_support",
     "//testing/gmock",

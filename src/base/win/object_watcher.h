@@ -107,7 +107,7 @@ class BASE_EXPORT ObjectWatcher {
 
   // A callback pre-bound to Signal() that is posted to the caller's task runner
   // when the wait completes.
-  Closure callback_;
+  RepeatingClosure callback_;
 
   // The object being watched.
   HANDLE object_ = nullptr;

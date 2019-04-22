@@ -1,33 +1,8 @@
+<!DOCTYPE HTML>
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
-<script>
-    function runTest() {
-        window.jsTestIsAsync = true;
-
-        description("This tests that checking of an aria checkbox sends a notification.");
-
-        var accessibleCheckbox = accessibilityController.accessibleElementById("checkbox1");
-        var notificationCount = 0;
-
-        function listener(notification) {
-            if (notification == "CheckedStateChanged")
-                notificationCount++;
-
-            debug("Got notification: " + notification);
-
-            if (notificationCount == 2) {
-                accessibleCheckbox.removeNotificationListener(listener);
-                finishJSTest();
-            }
-        }
-        accessibleCheckbox.addNotificationListener(listener);
-
-        // Check the checkbox.
-        document.getElementById('checkbox1').setAttribute('aria-checked', 'true');
-        document.getElementById('checkbox1').setAttribute('aria-checked', 'false');
-    };
-</script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 </head>
 <body>
 
@@ -36,7 +11,30 @@
 <p id="description"></p>
 <div id="console"></div>
 <script>
-    runTest();
+async_test(function(t) {
+    console.log('t ' + t);
+    var accessibleCheckbox = accessibilityController.accessibleElementById("checkbox1");
+    var notificationCount = 0;
+
+    function listener(notification) {
+        if (notification == "CheckedStateChanged")
+            notificationCount++;
+        console.log("notification " + notificationCount);
+
+        if (notificationCount == 2) {
+            accessibleCheckbox.removeNotificationListener(listener);
+            t.done();
+        }
+    }
+    accessibleCheckbox.addNotificationListener(listener);
+
+    // Check the checkbox.
+    document.getElementById('checkbox1').setAttribute('aria-checked', 'true');
+    document.getElementById('checkbox1').setAttribute('aria-checked', 'false');
+}, "This tests that checking of an aria checkbox sends a notification.");
+
+</script>
+</head>
 </script>
 </body>
 </html>

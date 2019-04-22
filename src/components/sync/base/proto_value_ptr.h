@@ -11,7 +11,7 @@
 
 namespace syncer {
 
-class ProcessorEntityTracker;
+class ProcessorEntity;
 struct EntityData;
 
 namespace syncable {
@@ -91,7 +91,7 @@ class ProtoValuePtr {
  private:
   friend struct syncable::EntryKernel;
   friend struct EntityData;
-  friend class ProcessorEntityTracker;
+  friend class ProcessorEntity;
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ValueAssignment);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ValueSwap);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, SharingTest);

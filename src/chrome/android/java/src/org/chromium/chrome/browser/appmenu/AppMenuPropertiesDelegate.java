@@ -41,8 +41,6 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * App Menu helper that handles hiding and showing menu items based on activity state.
  */
@@ -122,9 +120,9 @@ public class AppMenuPropertiesDelegate {
                             < DeviceFormFactor.getMinimumTabletWidthPx(
                                       mActivity.getWindowAndroid().getDisplay());
 
-            boolean bottomToolbarEnabled = mActivity.getToolbarManager() != null
-                    && mActivity.getToolbarManager().getBottomToolbarCoordinator() != null;
-            shouldShowIconRow &= !bottomToolbarEnabled;
+            final boolean bottomToolbarVisible = mActivity.getToolbarManager() != null
+                    && mActivity.getToolbarManager().isBottomToolbarVisible();
+            shouldShowIconRow &= !bottomToolbarVisible;
 
             // Update the icon row items (shown in narrow form factors).
             menu.findItem(R.id.icon_row_menu_id).setVisible(shouldShowIconRow);
@@ -137,7 +135,8 @@ public class AppMenuPropertiesDelegate {
                 Drawable icon =
                         AppCompatResources.getDrawable(mActivity, R.drawable.btn_reload_stop);
                 DrawableCompat.setTintList(icon,
-                        AppCompatResources.getColorStateList(mActivity, R.color.dark_mode_tint));
+                        AppCompatResources.getColorStateList(
+                                mActivity, R.color.standard_mode_tint));
                 mReloadMenuItem.setIcon(icon);
                 loadingStateChanged(currentTab.isLoading());
 
@@ -151,8 +150,8 @@ public class AppMenuPropertiesDelegate {
                 }
             }
 
-            menu.findItem(R.id.update_menu_id).setVisible(
-                    UpdateMenuItemHelper.getInstance().shouldShowMenuItem(mActivity));
+            menu.findItem(R.id.update_menu_id)
+                    .setVisible(UpdateMenuItemHelper.getInstance().getUiState().itemState != null);
 
             boolean hasMoreThanOneTab = mActivity.getTabModelSelector().getTotalTabCount() > 1;
             menu.findItem(R.id.move_to_other_window_menu_id).setVisible(
@@ -255,7 +254,7 @@ public class AppMenuPropertiesDelegate {
         // Record whether or not we have finished installability checks for this page when we're
         // preparing the menu to be displayed. This will let us determine if it is feasible to
         // change the add to homescreen menu item based on whether a site is a PWA.
-        currentTab.getAppBannerManager().recordMenuOpen();
+        AppBannerManager.forTab(currentTab).recordMenuOpen();
 
         MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
         MenuItem openWebApkItem = menu.findItem(R.id.open_webapk_id);
@@ -263,9 +262,9 @@ public class AppMenuPropertiesDelegate {
             Context context = ContextUtils.getApplicationContext();
             long addToHomeScreenStart = SystemClock.elapsedRealtime();
             ResolveInfo resolveInfo =
-                    WebApkValidator.queryWebApkResolveInfo(context, currentTab.getUrl());
+                    WebApkValidator.queryFirstWebApkResolveInfo(context, currentTab.getUrl());
             RecordHistogram.recordTimesHistogram("Android.PrepareMenu.OpenWebApkVisibilityCheck",
-                    SystemClock.elapsedRealtime() - addToHomeScreenStart, TimeUnit.MILLISECONDS);
+                    SystemClock.elapsedRealtime() - addToHomeScreenStart);
 
             boolean openWebApkItemVisible =
                     resolveInfo != null && resolveInfo.activityInfo.packageName != null;
@@ -438,7 +437,8 @@ public class AppMenuPropertiesDelegate {
         requestMenuRow.setVisible(itemVisible);
         if (!itemVisible) return;
 
-        boolean isRds = currentTab.getUseDesktopUserAgent();
+        boolean isRds =
+                currentTab.getWebContents().getNavigationController().getUseDesktopUserAgent();
         // Mark the checkbox if RDS is activated on this page.
         requestMenuCheck.setChecked(isRds);
 

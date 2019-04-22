@@ -188,7 +188,8 @@ void InitLogSilencerCount() {
   OnShutdown(&DeleteLogSilencerCount);
 }
 void InitLogSilencerCountOnce() {
-  GoogleOnceInit(&log_silencer_count_init_, &InitLogSilencerCount);
+  GoogleOnceInit(&GOOGLE_PROTOBUF_GET_ONCE(log_silencer_count_init_),
+                 &InitLogSilencerCount);
 }
 
 LogMessage& LogMessage::operator<<(const string& value) {
@@ -364,7 +365,8 @@ void InitShutdownFunctions() {
 }
 
 inline void InitShutdownFunctionsOnce() {
-  GoogleOnceInit(&shutdown_functions_init, &InitShutdownFunctions);
+  GoogleOnceInit(&GOOGLE_PROTOBUF_GET_ONCE(shutdown_functions_init),
+                 &InitShutdownFunctions);
 }
 
 void OnShutdown(void (*func)()) {

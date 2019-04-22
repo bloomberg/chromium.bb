@@ -19,10 +19,8 @@ class NamedTestView : public views::View {
   const char* GetClassName() const override { return kViewClassName; }
 
   // For custom properties test.
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override {
-    *tooltip = base::ASCIIToUTF16("This is the tooltip");
-    return true;
+  base::string16 GetTooltipText(const gfx::Point& p) const override {
+    return base::ASCIIToUTF16("This is the tooltip");
   }
 };
 const char NamedTestView::kViewClassName[] = "NamedTestView";
@@ -128,7 +126,7 @@ TEST_F(ViewElementTest, GetCustomProperties) {
   EXPECT_EQ(props[0].second, "This is the tooltip");
 }
 
-TEST_F(ViewElementTest, GetNodeWindowAndBounds) {
+TEST_F(ViewElementTest, GetNodeWindowAndScreenBounds) {
   // For this to be meaningful, the view must be in
   // a widget.
   auto widget = std::make_unique<views::Widget>();
@@ -143,7 +141,7 @@ TEST_F(ViewElementTest, GetNodeWindowAndBounds) {
   view()->SetBoundsRect(bounds);
 
   std::pair<gfx::NativeWindow, gfx::Rect> window_and_bounds =
-      element()->GetNodeWindowAndBounds();
+      element()->GetNodeWindowAndScreenBounds();
   EXPECT_EQ(window_and_bounds.first, widget->GetNativeWindow());
   EXPECT_EQ(window_and_bounds.second, view()->GetBoundsInScreen());
 

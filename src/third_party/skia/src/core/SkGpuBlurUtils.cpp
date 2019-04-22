@@ -11,8 +11,9 @@
 
 #if SK_SUPPORT_GPU
 #include "GrCaps.h"
-#include "GrContext.h"
 #include "GrFixedClip.h"
+#include "GrRecordingContext.h"
+#include "GrRecordingContextPriv.h"
 #include "GrRenderTargetContext.h"
 #include "GrRenderTargetContextPriv.h"
 #include "effects/GrGaussianConvolutionFragmentProcessor.h"
@@ -98,12 +99,13 @@ static GrPixelConfig get_blur_config(GrTextureProxy* proxy) {
              kRGB_888_GrPixelConfig == config || kRGBA_4444_GrPixelConfig == config ||
              kRGB_565_GrPixelConfig == config || kSRGBA_8888_GrPixelConfig == config ||
              kSBGRA_8888_GrPixelConfig == config || kRGBA_half_GrPixelConfig == config ||
-             kAlpha_8_GrPixelConfig == config || kRGBA_1010102_GrPixelConfig == config);
+             kAlpha_8_GrPixelConfig == config || kRGBA_1010102_GrPixelConfig == config ||
+             kRGBA_half_Clamped_GrPixelConfig == config);
 
     return config;
 }
 
-static sk_sp<GrRenderTargetContext> convolve_gaussian_2d(GrContext* context,
+static sk_sp<GrRenderTargetContext> convolve_gaussian_2d(GrRecordingContext* context,
                                                          sk_sp<GrTextureProxy> proxy,
                                                          const SkIRect& srcBounds,
                                                          const SkIPoint& srcOffset,
@@ -123,7 +125,7 @@ static sk_sp<GrRenderTargetContext> convolve_gaussian_2d(GrContext* context,
     }
 
     sk_sp<GrRenderTargetContext> renderTargetContext;
-    renderTargetContext = context->contextPriv().makeDeferredRenderTargetContext(
+    renderTargetContext = context->priv().makeDeferredRenderTargetContext(
                                                          format,
                                                          dstFit, dstII.width(), dstII.height(),
                                                          config, dstII.refColorSpace(),
@@ -150,7 +152,7 @@ static sk_sp<GrRenderTargetContext> convolve_gaussian_2d(GrContext* context,
     return renderTargetContext;
 }
 
-static sk_sp<GrRenderTargetContext> convolve_gaussian(GrContext* context,
+static sk_sp<GrRenderTargetContext> convolve_gaussian(GrRecordingContext* context,
                                                       sk_sp<GrTextureProxy> proxy,
                                                       const SkIRect& srcRect,
                                                       const SkIPoint& srcOffset,
@@ -171,7 +173,7 @@ static sk_sp<GrRenderTargetContext> convolve_gaussian(GrContext* context,
     }
 
     sk_sp<GrRenderTargetContext> dstRenderTargetContext;
-    dstRenderTargetContext = context->contextPriv().makeDeferredRenderTargetContext(
+    dstRenderTargetContext = context->priv().makeDeferredRenderTargetContext(
                                                                 format,
                                                                 fit, srcRect.width(),
                                                                 srcRect.height(),
@@ -259,7 +261,7 @@ static sk_sp<GrRenderTargetContext> convolve_gaussian(GrContext* context,
     return dstRenderTargetContext;
 }
 
-static sk_sp<GrTextureProxy> decimate(GrContext* context,
+static sk_sp<GrTextureProxy> decimate(GrRecordingContext* context,
                                       sk_sp<GrTextureProxy> src,
                                       SkIPoint* srcOffset,
                                       SkIRect* contentRect,
@@ -297,7 +299,7 @@ static sk_sp<GrTextureProxy> decimate(GrContext* context,
         shrink_irect_by_2(&dstRect, i < scaleFactorX, i < scaleFactorY);
 
         // We know this will not be the final draw so we are free to make it an approx match.
-        dstRenderTargetContext = context->contextPriv().makeDeferredRenderTargetContext(
+        dstRenderTargetContext = context->priv().makeDeferredRenderTargetContext(
                                                     format,
                                                     SkBackingFit::kApprox,
                                                     dstRect.fRight,
@@ -317,8 +319,15 @@ static sk_sp<GrTextureProxy> decimate(GrContext* context,
                                                                 : mode;
 
             SkRect domain = SkRect::Make(*contentRect);
-            domain.inset((i < scaleFactorX) ? SK_ScalarHalf : 0.0f,
-                         (i < scaleFactorY) ? SK_ScalarHalf : 0.0f);
+            domain.inset((i < scaleFactorX) ? SK_ScalarHalf + SK_ScalarNearlyZero : 0.0f,
+                         (i < scaleFactorY) ? SK_ScalarHalf + SK_ScalarNearlyZero : 0.0f);
+            // Ensure that the insetting doesn't invert the domain rectangle.
+            if (domain.fRight < domain.fLeft) {
+                domain.fLeft = domain.fRight = SkScalarAve(domain.fLeft, domain.fRight);
+            }
+            if (domain.fBottom < domain.fTop) {
+                domain.fTop = domain.fBottom = SkScalarAve(domain.fTop, domain.fBottom);
+            }
             auto fp = GrTextureDomainEffect::Make(std::move(src),
                                                   SkMatrix::I(),
                                                   domain,
@@ -373,7 +382,7 @@ static sk_sp<GrTextureProxy> decimate(GrContext* context,
 }
 
 // Expand the contents of 'srcRenderTargetContext' to fit in 'dstII'.
-static sk_sp<GrRenderTargetContext> reexpand(GrContext* context,
+static sk_sp<GrRenderTargetContext> reexpand(GrRecordingContext* context,
                                              sk_sp<GrRenderTargetContext> srcRenderTargetContext,
                                              const SkIRect& localSrcBounds,
                                              int scaleFactorX, int scaleFactorY,
@@ -406,7 +415,7 @@ static sk_sp<GrRenderTargetContext> reexpand(GrContext* context,
     }
 
     sk_sp<GrRenderTargetContext> dstRenderTargetContext =
-        context->contextPriv().makeDeferredRenderTargetContext(format,
+        context->priv().makeDeferredRenderTargetContext(format,
                                                                fit, dstII.width(), dstII.height(),
                                                                config, dstII.refColorSpace(),
                                                                1, GrMipMapped::kNo,
@@ -449,7 +458,7 @@ static sk_sp<GrRenderTargetContext> reexpand(GrContext* context,
 
 namespace SkGpuBlurUtils {
 
-sk_sp<GrRenderTargetContext> GaussianBlur(GrContext* context,
+sk_sp<GrRenderTargetContext> GaussianBlur(GrRecordingContext* context,
                                           sk_sp<GrTextureProxy> srcProxy,
                                           sk_sp<SkColorSpace> colorSpace,
                                           const SkIRect& dstBounds,
@@ -472,7 +481,7 @@ sk_sp<GrRenderTargetContext> GaussianBlur(GrContext* context,
 
     int scaleFactorX, radiusX;
     int scaleFactorY, radiusY;
-    int maxTextureSize = context->contextPriv().caps()->maxTextureSize();
+    int maxTextureSize = context->priv().caps()->maxTextureSize();
     sigmaX = adjust_sigma(sigmaX, maxTextureSize, &scaleFactorX, &radiusX);
     sigmaY = adjust_sigma(sigmaY, maxTextureSize, &scaleFactorY, &radiusY);
     SkASSERT(sigmaX || sigmaY);

@@ -103,7 +103,7 @@ void MojoRenderer::InitializeRendererFromStreams(
   // |remote_renderer_| is destroyed.
   remote_renderer_->Initialize(
       std::move(client_ptr_info), std::move(stream_proxies), base::nullopt,
-      base::nullopt,
+      base::nullopt, /* allow_credentials */ false,
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
 
@@ -124,7 +124,7 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
   std::vector<mojom::DemuxerStreamPtrInfo> streams;
   remote_renderer_->Initialize(
       std::move(client_ptr_info), std::move(streams), url_params.media_url,
-      url_params.site_for_cookies,
+      url_params.site_for_cookies, url_params.allow_credentials,
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
 
@@ -242,13 +242,6 @@ void MojoRenderer::OnEnded() {
   client_->OnEnded();
 }
 
-void MojoRenderer::InitiateScopedSurfaceRequest(
-    const ReceiveSurfaceRequestTokenCB& receive_request_token_cb) {
-  DVLOG(1) << __func__;
-
-  remote_renderer_->InitiateScopedSurfaceRequest(receive_request_token_cb);
-}
-
 void MojoRenderer::OnError() {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -272,9 +265,9 @@ void MojoRenderer::OnVideoNaturalSizeChange(const gfx::Size& size) {
   client_->OnVideoNaturalSizeChange(size);
 }
 
-void MojoRenderer::OnDurationChange(base::TimeDelta duration) {
-  DVLOG(2) << __func__ << ": duration" << duration;
-  client_->OnDurationChange(duration);
+void MojoRenderer::OnRemotePlayStateChange(media::MediaStatus::State state) {
+  DVLOG(2) << __func__ << ": state [" << static_cast<int>(state) << "]";
+  client_->OnRemotePlayStateChange(state);
 }
 
 void MojoRenderer::OnVideoOpacityChange(bool opaque) {
@@ -305,10 +298,10 @@ void MojoRenderer::OnStatisticsUpdate(const PipelineStatistics& stats) {
   client_->OnStatisticsUpdate(stats);
 }
 
-void MojoRenderer::OnWaitingForDecryptionKey() {
+void MojoRenderer::OnWaiting(WaitingReason reason) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnWaitingForDecryptionKey();
+  client_->OnWaiting(reason);
 }
 
 void MojoRenderer::OnConnectionError() {

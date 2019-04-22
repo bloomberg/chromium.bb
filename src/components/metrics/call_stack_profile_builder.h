@@ -5,26 +5,47 @@
 #ifndef COMPONENTS_METRICS_CALL_STACK_PROFILE_BUILDER_H_
 #define COMPONENTS_METRICS_CALL_STACK_PROFILE_BUILDER_H_
 
+#include <limits>
 #include <map>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/profiler/stack_sampling_profiler.h"
+#include "base/macros.h"
+#include "base/profiler/profile_builder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/time/time.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
+#include "components/metrics/metadata_recorder.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
+
+// Interface that allows the CallStackProfileBuilder to provide ids for distinct
+// work items. Samples with the same id are tagged as coming from the same work
+// item in the recorded samples.
+class WorkIdRecorder {
+ public:
+  WorkIdRecorder() = default;
+  virtual ~WorkIdRecorder() = default;
+
+  // This function is invoked on the profiler thread while the target thread is
+  // suspended so must not take any locks, including indirectly through use of
+  // heap allocation, LOG, CHECK, or DCHECK.
+  virtual unsigned int RecordWorkId() const = 0;
+
+  WorkIdRecorder(const WorkIdRecorder&) = delete;
+  WorkIdRecorder& operator=(const WorkIdRecorder&) = delete;
+};
 
 // An instance of the class is meant to be passed to base::StackSamplingProfiler
 // to collect profiles. The profiles collected are uploaded via the metrics log.
 //
 // This uses the new StackSample encoding rather than the legacy Sample
 // encoding.
-class CallStackProfileBuilder
-    : public base::StackSamplingProfiler::ProfileBuilder {
+class CallStackProfileBuilder : public base::ProfileBuilder {
  public:
   // |completed_callback| is made when sampling a profile completes. Other
   // threads, including the UI thread, may block on callback completion so this
@@ -35,13 +56,16 @@ class CallStackProfileBuilder
   // thus the callback must be callable on any thread.
   explicit CallStackProfileBuilder(
       const CallStackProfileParams& profile_params,
+      const WorkIdRecorder* work_id_recorder = nullptr,
+      const MetadataRecorder* metadata_recorder = nullptr,
       base::OnceClosure completed_callback = base::OnceClosure());
 
   ~CallStackProfileBuilder() override;
 
-  // base::StackSamplingProfiler::ProfileBuilder:
-  void OnSampleCompleted(
-      std::vector<base::StackSamplingProfiler::Frame> frames) override;
+  // base::ProfileBuilder:
+  base::ModuleCache* GetModuleCache() override;
+  void RecordMetadata() override;
+  void OnSampleCompleted(std::vector<base::Frame> frames) override;
   void OnProfileCompleted(base::TimeDelta profile_duration,
                           base::TimeDelta sampling_period) override;
 
@@ -68,6 +92,15 @@ class CallStackProfileBuilder
                     const CallStackProfile::Stack* stack2) const;
   };
 
+  // The module cache to use for the duration the sampling associated with this
+  // ProfileBuilder.
+  base::ModuleCache module_cache_;
+
+  unsigned int last_work_id_ = std::numeric_limits<unsigned int>::max();
+  bool is_continued_work_ = false;
+  const WorkIdRecorder* const work_id_recorder_;
+  const MetadataRecorder* const metadata_recorder_;
+
   // The SampledProfile protobuf message which contains the collected stack
   // samples.
   SampledProfile sampled_profile_;
@@ -75,17 +108,24 @@ class CallStackProfileBuilder
   // The indexes of stacks, indexed by stack's address.
   std::map<const CallStackProfile::Stack*, int, StackComparer> stack_index_;
 
-  // The indexes of modules, indexed by module's base_address.
-  std::map<uintptr_t, size_t> module_index_;
+  // The indexes of modules in the modules_ vector below..
+  std::unordered_map<const base::ModuleCache::Module*, size_t> module_index_;
 
   // The distinct modules in the current profile.
-  std::vector<base::ModuleCache::Module> modules_;
+  std::vector<const base::ModuleCache::Module*> modules_;
 
   // Callback made when sampling a profile completes.
   base::OnceClosure completed_callback_;
 
   // The start time of a profile collection.
   const base::TimeTicks profile_start_time_;
+
+  // The data fetched from the MetadataRecorder for each sample.
+  MetadataRecorder::ItemArray metadata_items_;
+  size_t metadata_item_count_ = 0;
+
+  // Maps metadata hash to index in |metadata_name_hash| array.
+  std::unordered_map<uint64_t, int> metadata_hashes_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(CallStackProfileBuilder);
 };

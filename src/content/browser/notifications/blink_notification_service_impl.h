@@ -12,8 +12,8 @@
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "url/origin.h"
 
 namespace blink {
@@ -28,7 +28,7 @@ class PlatformNotificationContextImpl;
 // Implementation of the NotificationService used for Web Notifications. Is
 // responsible for displaying, updating and reading of both non-persistent
 // and persistent notifications. Primarily lives on the UI thread, but jumps to
-// the IO thread when needing to interact with the PlatformNotificationContext.
+// the IO thread when needing to interact with the ServiceWorkerContextWrapper.
 class CONTENT_EXPORT BlinkNotificationServiceImpl
     : public blink::mojom::NotificationService {
  public:
@@ -56,6 +56,7 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   void ClosePersistentNotification(const std::string& notification_id) override;
   void GetNotifications(int64_t service_worker_registration_id,
                         const std::string& filter_tag,
+                        bool include_triggered,
                         GetNotificationsCallback callback) override;
 
  private:
@@ -72,31 +73,20 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   bool ValidateNotificationResources(
       const blink::NotificationResources& notification_resources);
 
-  void DisplayPersistentNotificationOnIOThread(
-      int64_t service_worker_registration_id,
-      int64_t persistent_notification_id,
-      const blink::PlatformNotificationData& platform_notification_data,
-      const blink::NotificationResources& notification_resources,
-      DisplayPersistentNotificationCallback callback);
+  // Validate |notification_data| received in a Mojo IPC message.
+  // If the validation failed, we'd close the Mojo connection |binding_| and
+  // destroy |this| by calling OnConnectionError() directly, then return false.
+  // So, please do not touch |this| again after you got a false return value.
+  bool ValidateNotificationData(
+      const blink::PlatformNotificationData& notification_data);
 
-  void DisplayPersistentNotificationWithIdOnIOThread(
-      int64_t service_worker_registration_id,
-      const blink::PlatformNotificationData& platform_notification_data,
-      const blink::NotificationResources& notification_resources,
-      DisplayPersistentNotificationCallback callback,
-      bool success,
-      const std::string& notification_id);
+  void DidWriteNotificationData(DisplayPersistentNotificationCallback callback,
+                                bool success,
+                                const std::string& notification_id);
 
-  void DisplayPersistentNotificationWithServiceWorkerOnIOThread(
-      const std::string& notification_id,
-      const blink::PlatformNotificationData& platform_notification_data,
-      const blink::NotificationResources& notification_resources,
-      DisplayPersistentNotificationCallback callback,
-      blink::ServiceWorkerStatusCode service_worker_status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
-
-  void DidGetNotificationsOnIOThread(
+  void DidGetNotifications(
       const std::string& filter_tag,
+      bool include_triggered,
       GetNotificationsCallback callback,
       bool success,
       const std::vector<NotificationDatabaseData>& notifications);

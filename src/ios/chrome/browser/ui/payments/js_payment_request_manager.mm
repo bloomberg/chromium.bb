@@ -69,10 +69,10 @@ NSString* JSONEscape(NSString* JSON) {
             (const payments::PaymentResponse&)paymentResponse
                                completionHandler:
                                    (ProceduralBlockWithBool)completionHandler {
-  std::unique_ptr<base::DictionaryValue> paymentResponseData =
-      payment_request_util::PaymentResponseToDictionaryValue(paymentResponse);
+  base::Value paymentResponseData =
+      payment_request_util::PaymentResponseToValue(paymentResponse);
   std::string paymentResponseDataJSON;
-  base::JSONWriter::Write(*paymentResponseData, &paymentResponseDataJSON);
+  base::JSONWriter::Write(paymentResponseData, &paymentResponseDataJSON);
   NSString* script = [NSString
       stringWithFormat:
           @"__gCrWeb['paymentRequestManager'].resolveRequestPromise(%@)",

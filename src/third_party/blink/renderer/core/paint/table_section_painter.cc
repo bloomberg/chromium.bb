@@ -202,15 +202,16 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
       dirtied_columns.Start() >= dirtied_columns.End())
     return;
 
-  const auto& overflowing_cells = layout_table_section_.OverflowingCells();
-  if (overflowing_cells.IsEmpty()) {
+  const auto& visually_overflowing_cells =
+      layout_table_section_.VisuallyOverflowingCells();
+  if (visually_overflowing_cells.IsEmpty()) {
     // This path is for 2 cases:
     // 1. Normal partial paint, without overflowing cells;
     // 2. Full paint, for small sections or big sections with many overflowing
     //    cells.
     // The difference between the normal partial paint and full paint is that
     // whether dirtied_rows and dirtied_columns cover the whole section.
-    DCHECK(!layout_table_section_.HasOverflowingCell() ||
+    DCHECK(!layout_table_section_.HasVisuallyOverflowingCell() ||
            (dirtied_rows == layout_table_section_.FullSectionRowSpan() &&
             dirtied_columns ==
                 layout_table_section_.FullTableEffectiveColumnSpan()));
@@ -235,7 +236,7 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
     // This is the "partial paint path" for overflowing cells referred in
     // LayoutTableSection::ComputeOverflowFromDescendants().
     Vector<const LayoutTableCell*> cells;
-    CopyToVector(overflowing_cells, cells);
+    CopyToVector(visually_overflowing_cells, cells);
 
     HashSet<const LayoutTableCell*> spanning_cells;
     for (unsigned r = dirtied_rows.Start(); r < dirtied_rows.End(); r++) {
@@ -250,7 +251,7 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
       for (unsigned c = dirtied_columns.Start();
            c < n_cols && c < dirtied_columns.End(); c++) {
         if (const auto* cell = layout_table_section_.OriginatingCellAt(r, c)) {
-          if (!overflowing_cells.Contains(cell))
+          if (!visually_overflowing_cells.Contains(cell))
             cells.push_back(cell);
         }
       }

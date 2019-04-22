@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_pairing_state_tracker.h"
@@ -44,15 +44,13 @@ MultiDeviceSetupInitializer::Factory::BuildInstance(
     device_sync::DeviceSyncClient* device_sync_client,
     AuthTokenValidator* auth_token_validator,
     OobeCompletionTracker* oobe_completion_tracker,
-    std::unique_ptr<AndroidSmsAppHelperDelegate>
-        android_sms_app_helper_delegate,
-    std::unique_ptr<AndroidSmsPairingStateTracker>
-        android_sms_pairing_state_tracker,
-    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider) {
+    AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+    AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
+    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider) {
   return base::WrapUnique(new MultiDeviceSetupInitializer(
       pref_service, device_sync_client, auth_token_validator,
-      oobe_completion_tracker, std::move(android_sms_app_helper_delegate),
-      std::move(android_sms_pairing_state_tracker), gcm_device_info_provider));
+      oobe_completion_tracker, android_sms_app_helper_delegate,
+      android_sms_pairing_state_tracker, gcm_device_info_provider));
 }
 
 MultiDeviceSetupInitializer::SetHostDeviceArgs::SetHostDeviceArgs(
@@ -75,19 +73,15 @@ MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
     device_sync::DeviceSyncClient* device_sync_client,
     AuthTokenValidator* auth_token_validator,
     OobeCompletionTracker* oobe_completion_tracker,
-    std::unique_ptr<AndroidSmsAppHelperDelegate>
-        android_sms_app_helper_delegate,
-    std::unique_ptr<AndroidSmsPairingStateTracker>
-        android_sms_pairing_state_tracker,
-    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
+    AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+    AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
+    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider)
     : pref_service_(pref_service),
       device_sync_client_(device_sync_client),
       auth_token_validator_(auth_token_validator),
       oobe_completion_tracker_(oobe_completion_tracker),
-      android_sms_app_helper_delegate_(
-          std::move(android_sms_app_helper_delegate)),
-      android_sms_pairing_state_tracker_(
-          std::move(android_sms_pairing_state_tracker)),
+      android_sms_app_helper_delegate_(android_sms_app_helper_delegate),
+      android_sms_pairing_state_tracker_(android_sms_pairing_state_tracker),
       gcm_device_info_provider_(gcm_device_info_provider) {
   // If |device_sync_client_| is null, this interface cannot perform its tasks.
   if (!device_sync_client_)
@@ -272,8 +266,8 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
 
   multidevice_setup_impl_ = MultiDeviceSetupImpl::Factory::Get()->BuildInstance(
       pref_service_, device_sync_client_, auth_token_validator_,
-      oobe_completion_tracker_, std::move(android_sms_app_helper_delegate_),
-      std::move(android_sms_pairing_state_tracker_), gcm_device_info_provider_);
+      oobe_completion_tracker_, android_sms_app_helper_delegate_,
+      android_sms_pairing_state_tracker_, gcm_device_info_provider_);
 
   if (pending_delegate_) {
     multidevice_setup_impl_->SetAccountStatusChangeDelegate(

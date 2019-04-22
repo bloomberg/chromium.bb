@@ -34,6 +34,10 @@ class AppWindowWaiter : public extensions::AppWindowRegistry::Observer {
   // Waits for an AppWindow of the app to be shown.
   extensions::AppWindow* WaitForShown();
 
+  // Waits for an AppWindow of the app to be shown or returns nullptr if the
+  // given timeout expires.
+  extensions::AppWindow* WaitForShownWithTimeout(base::TimeDelta timeout);
+
   // Waits for an AppWindow of the app to be activated.
   extensions::AppWindow* WaitForActivated();
 

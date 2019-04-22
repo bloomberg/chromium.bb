@@ -12,7 +12,6 @@ namespace base {
 namespace android {
 
 void JNI_PathService_Override(JNIEnv* env,
-                              const JavaParamRef<jclass>& clazz,
                               jint what,
                               const JavaParamRef<jstring>& path) {
   FilePath file_path(ConvertJavaStringToUTF8(env, path));

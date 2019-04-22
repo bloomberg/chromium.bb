@@ -6,6 +6,7 @@
     <script>
         if (window.testRunner) {
             testRunner.dumpAsText();
+            testRunner.waitUntilDone();
             testRunner.dumpChildFrames();
         }
 
@@ -27,6 +28,9 @@
 
         var iframe = document.getElementById("aFrame");
         iframe.src = url;
+        iframe.addEventListener('load', () => {
+          testRunner.notifyDone();
+        });
     </script>
 </body>
 </html>

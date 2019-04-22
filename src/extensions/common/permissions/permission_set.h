@@ -35,10 +35,10 @@ class PermissionSet {
   // permissions, manifest key permissions, host permissions, and scriptable
   // hosts. The effective hosts of the newly created permission set will be
   // inferred from the given host permissions.
-  PermissionSet(const APIPermissionSet& apis,
-                const ManifestPermissionSet& manifest_permissions,
-                const URLPatternSet& explicit_hosts,
-                const URLPatternSet& scriptable_hosts);
+  PermissionSet(APIPermissionSet apis,
+                ManifestPermissionSet manifest_permissions,
+                URLPatternSet explicit_hosts,
+                URLPatternSet scriptable_hosts);
   ~PermissionSet();
 
   // Creates a new permission set equal to |set1| - |set2|.

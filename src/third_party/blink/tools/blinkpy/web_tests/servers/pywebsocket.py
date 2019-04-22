@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""A class to help start/stop the PyWebSocket server as used by the layout tests."""
+"""A class to help start/stop the PyWebSocket server as used by the web tests."""
 
 import os
 import sys
@@ -47,12 +47,12 @@ class PyWebSocket(server_base.ServerBase):
         super(PyWebSocket, self).__init__(port_obj, output_dir)
         self._name = 'pywebsocket'
         self._log_prefixes = (_WS_LOG_PREFIX,)
-        self._mappings = [{'port': _DEFAULT_WS_PORT}]
+        self._mappings = [{'port': _DEFAULT_WS_PORT, 'scheme': 'ws'}]
         self._pid_file = self._filesystem.join(self._runtime_path, '%s.pid' % self._name)
 
         self._port = _DEFAULT_WS_PORT
-        self._layout_tests = self._port_obj.layout_tests_dir()
-        self._web_socket_tests = self._filesystem.join(self._layout_tests, 'http', 'tests', 'websocket')
+        self._web_tests = self._port_obj.web_tests_dir()
+        self._web_socket_tests = self._filesystem.join(self._web_tests, 'http', 'tests', 'websocket')
         time_str = time.strftime('%d%b%Y-%H%M%S')
         log_file_name = _WS_LOG_PREFIX + time_str
         self._error_log = self._filesystem.join(self._output_dir, log_file_name + '-err.txt')

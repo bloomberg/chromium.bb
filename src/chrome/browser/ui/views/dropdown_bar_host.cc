@@ -50,6 +50,7 @@ void DropdownBarHost::Init(views::View* host_view,
   // Initialize the host.
   host_.reset(new ThemeCopyingWidget(browser_view_->GetWidget()));
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+  params.delegate = this;
   params.name = "DropdownBarHost";
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = browser_view_->GetWidget()->GetNativeView();
@@ -71,6 +72,9 @@ void DropdownBarHost::Init(views::View* host_view,
   }
 
   animation_.reset(new gfx::SlideAnimation(this));
+  if (!gfx::Animation::ShouldRenderRichAnimation())
+    animation_->SetSlideDuration(0);
+
   // Update the widget and |view_| bounds to the hidden state.
   AnimationProgressed(animation_.get());
 }
@@ -111,7 +115,7 @@ void DropdownBarHost::Show(bool animate) {
 }
 
 void DropdownBarHost::SetFocusAndSelection() {
-  delegate_->SetFocusAndSelection(true);
+  delegate_->FocusAndSelectAll();
 }
 
 bool DropdownBarHost::IsAnimating() const {
@@ -225,6 +229,14 @@ void DropdownBarHost::OnVisibilityChanged() {
 void DropdownBarHost::GetWidgetBounds(gfx::Rect* bounds) {
   DCHECK(bounds);
   *bounds = browser_view_->bounds();
+}
+
+views::Widget* DropdownBarHost::GetWidget() {
+  return host_.get();
+}
+
+const views::Widget* DropdownBarHost::GetWidget() const {
+  return host_.get();
 }
 
 void DropdownBarHost::RegisterAccelerators() {

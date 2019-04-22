@@ -8,13 +8,18 @@
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 
-#include "ash/public/cpp/caption_buttons/caption_button_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/work_area_insets.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,6 +36,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/caption_button_types.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -48,7 +54,13 @@ constexpr char kForceRemoteShellScale[] = "force-remote-shell-scale";
 
 // We don't send configure immediately after tablet mode switch
 // because layout can change due to orientation lock state or accelerometer.
-const int kConfigureDelayAfterLayoutSwitchMs = 300;
+constexpr int kConfigureDelayAfterLayoutSwitchMs = 300;
+
+// Convert to 8.24 fixed format.
+int32_t To8_24Fixed(double value) {
+  constexpr int kDecimalBits = 24;
+  return static_cast<int32_t>(value * (1 << kDecimalBits));
+}
 
 uint32_t ResizeDirection(int component) {
   switch (component) {
@@ -92,6 +104,18 @@ double GetDefaultDeviceScaleFactor() {
   return WMHelper::GetInstance()->GetDefaultDeviceScaleFactor();
 }
 
+ash::ShelfLayoutManager* GetShelfLayoutManagerForDisplay(
+    const display::Display& display) {
+  auto* root = ash::Shell::GetRootWindowForDisplayId(display.id());
+  return ash::Shelf::ForWindow(root)->shelf_layout_manager();
+}
+
+ash::WorkAreaInsets* GetWorkAreaInsetsForDisplay(
+    const display::Display& display) {
+  auto* root = ash::Shell::GetRootWindowForDisplayId(display.id());
+  return ash::WorkAreaInsets::ForWindow(root);
+}
+
 int Component(uint32_t direction) {
   switch (direction) {
     case ZCR_REMOTE_SURFACE_V1_RESIZE_DIRECTION_NONE:
@@ -122,17 +146,18 @@ int Component(uint32_t direction) {
 uint32_t CaptionButtonMask(uint32_t mask) {
   uint32_t caption_button_icon_mask = 0;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_BACK)
-    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_BACK;
+    caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_BACK;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_MENU)
-    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_MENU;
+    caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_MENU;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_MINIMIZE)
-    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_MINIMIZE;
+    caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_MINIMIZE;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_MAXIMIZE_RESTORE)
-    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE;
+    caption_button_icon_mask |= 1
+                                << views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_CLOSE)
-    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_CLOSE;
+    caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_CLOSE;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_ZOOM)
-    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_ZOOM;
+    caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_ZOOM;
   return caption_button_icon_mask;
 }
 
@@ -367,6 +392,14 @@ void remote_surface_set_max_size(wl_client* client,
       gfx::Size(width, height));
 }
 
+void remote_surface_set_aspect_ratio(wl_client* client,
+                                     wl_resource* resource,
+                                     int32_t aspect_ratio_width,
+                                     int32_t aspect_ratio_height) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetAspectRatio(
+      gfx::SizeF(aspect_ratio_width, aspect_ratio_height));
+}
+
 void remote_surface_set_snapped_to_left(wl_client* client,
                                         wl_resource* resource) {
   GetUserDataAs<ClientControlledShellSurface>(resource)->SetSnappedToLeft();
@@ -499,7 +532,8 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_extra_title,
     remote_surface_set_orientation_lock,
     remote_surface_pip,
-    remote_surface_set_bounds};
+    remote_surface_set_bounds,
+    remote_surface_set_aspect_ratio};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -525,8 +559,22 @@ void input_method_surface_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
 
+void input_method_surface_set_bounds(wl_client* client,
+                                     wl_resource* resource,
+                                     uint32_t display_id_hi,
+                                     uint32_t display_id_lo,
+                                     int32_t x,
+                                     int32_t y,
+                                     int32_t width,
+                                     int32_t height) {
+  GetUserDataAs<InputMethodSurface>(resource)->SetBounds(
+      static_cast<int64_t>(display_id_hi) << 32 | display_id_lo,
+      gfx::Rect(x, y, width, height));
+}
+
 const struct zcr_input_method_surface_v1_interface
-    input_method_surface_implementation = {input_method_surface_destroy};
+    input_method_surface_implementation = {input_method_surface_destroy,
+                                           input_method_surface_set_bounds};
 
 ////////////////////////////////////////////////////////////////////////////////
 // remote_shell_interface:
@@ -552,10 +600,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
 
     if (wl_resource_get_version(remote_shell_resource_) >= 8) {
       double scale_factor = GetDefaultDeviceScaleFactor();
-      // Send using 16.16 fixed point.
-      const int kDecimalBits = 24;
-      int32_t fixed_scale =
-          static_cast<int32_t>(scale_factor * (1 << kDecimalBits));
+      int32_t fixed_scale = To8_24Fixed(scale_factor);
       zcr_remote_shell_v1_send_default_device_scale_factor(
           remote_shell_resource_, fixed_scale);
     }
@@ -662,44 +707,85 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     needs_send_display_metrics_ = false;
 
     const display::Screen* screen = display::Screen::GetScreen();
+    double default_dsf = GetDefaultDeviceScaleFactor();
 
     for (const auto& display : screen->GetAllDisplays()) {
       const gfx::Rect& bounds = display.bounds();
-      const gfx::Insets& insets = GetAdjustedInsets(display);
 
       double device_scale_factor = display.device_scale_factor();
 
       uint32_t display_id_hi = static_cast<uint32_t>(display.id() >> 32);
       uint32_t display_id_lo = static_cast<uint32_t>(display.id());
+      gfx::Size size_in_pixel = display.GetSizeInPixel();
 
-      zcr_remote_shell_v1_send_workspace(
-          remote_shell_resource_, display_id_hi, display_id_lo, bounds.x(),
-          bounds.y(), bounds.width(), bounds.height(), insets.left(),
-          insets.top(), insets.right(), insets.bottom(),
-          DisplayTransform(display.rotation()),
-          wl_fixed_from_double(device_scale_factor), display.IsInternal());
+      wl_array data;
+      wl_array_init(&data);
 
-      if (wl_resource_get_version(remote_shell_resource_) >= 19) {
-        gfx::Size size_in_pixel = display.GetSizeInPixel();
-
-        wl_array data;
-        wl_array_init(&data);
-
-        const auto& bytes =
-            WMHelper::GetInstance()->GetDisplayIdentificationData(display.id());
-        for (uint8_t byte : bytes) {
-          uint8_t* ptr =
-              static_cast<uint8_t*>(wl_array_add(&data, sizeof(uint8_t)));
-          DCHECK(ptr);
-          *ptr = byte;
-        }
-
-        zcr_remote_shell_v1_send_display_info(
-            remote_shell_resource_, display_id_hi, display_id_lo,
-            size_in_pixel.width(), size_in_pixel.height(), &data);
-
-        wl_array_release(&data);
+      const auto& bytes =
+          WMHelper::GetInstance()->GetDisplayIdentificationData(display.id());
+      for (uint8_t byte : bytes) {
+        uint8_t* ptr =
+            static_cast<uint8_t*>(wl_array_add(&data, sizeof(uint8_t)));
+        DCHECK(ptr);
+        *ptr = byte;
       }
+
+      if (wl_resource_get_version(remote_shell_resource_) >= 20) {
+        auto* shelf_layout_manager = GetShelfLayoutManagerForDisplay(display);
+
+        // Apply the scale factor used on the remote shell client (ARC).
+        const gfx::Rect& bounds = display.bounds();
+
+        // Note: The origin is used just to identify the workspace on the client
+        // side, and does not account the actual pixel size of other workspace
+        // on the client side.
+        int x_px = gfx::ToRoundedInt(bounds.x() * default_dsf);
+        int y_px = gfx::ToRoundedInt(bounds.y() * default_dsf);
+
+        float server_to_client_pixel_scale = default_dsf / device_scale_factor;
+
+        gfx::Size size_in_client_pixel = gfx::ScaleToRoundedSize(
+            size_in_pixel, server_to_client_pixel_scale);
+
+        gfx::Insets insets_in_client_pixel = GetWorkAreaInsetsInClientPixel(
+            display, default_dsf, size_in_client_pixel, display.work_area());
+
+        gfx::Insets stable_insets_in_client_pixel =
+            GetWorkAreaInsetsInClientPixel(
+                display, default_dsf, size_in_client_pixel,
+                GetWorkAreaInsetsForDisplay(display)->ComputeStableWorkArea());
+        int systemui_visibility =
+            shelf_layout_manager->visibility_state() == ash::SHELF_AUTO_HIDE
+                ? ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_AUTOHIDE_NON_STICKY
+                : ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_VISIBLE;
+
+        zcr_remote_shell_v1_send_workspace_info(
+            remote_shell_resource_, display_id_hi, display_id_lo, x_px, y_px,
+            size_in_client_pixel.width(), size_in_client_pixel.height(),
+            insets_in_client_pixel.left(), insets_in_client_pixel.top(),
+            insets_in_client_pixel.right(), insets_in_client_pixel.bottom(),
+            stable_insets_in_client_pixel.left(),
+            stable_insets_in_client_pixel.top(),
+            stable_insets_in_client_pixel.right(),
+            stable_insets_in_client_pixel.bottom(), systemui_visibility,
+            DisplayTransform(display.rotation()), display.IsInternal(), &data);
+      } else {
+        const gfx::Insets& insets = GetAdjustedInsets(display);
+        zcr_remote_shell_v1_send_workspace(
+            remote_shell_resource_, display_id_hi, display_id_lo, bounds.x(),
+            bounds.y(), bounds.width(), bounds.height(), insets.left(),
+            insets.top(), insets.right(), insets.bottom(),
+            DisplayTransform(display.rotation()),
+            wl_fixed_from_double(device_scale_factor), display.IsInternal());
+
+        if (wl_resource_get_version(remote_shell_resource_) == 19) {
+          zcr_remote_shell_v1_send_display_info(
+              remote_shell_resource_, display_id_hi, display_id_lo,
+              size_in_pixel.width(), size_in_pixel.height(), &data);
+        }
+      }
+
+      wl_array_release(&data);
     }
 
     zcr_remote_shell_v1_send_configure(remote_shell_resource_, layout_mode_);
@@ -761,12 +847,12 @@ void remote_shell_destroy(wl_client* client, wl_resource* resource) {
 int RemoteSurfaceContainer(uint32_t container) {
   switch (container) {
     case ZCR_REMOTE_SHELL_V1_CONTAINER_DEFAULT:
-      return ash::kShellWindowId_DefaultContainer;
+      return ash::desks_util::GetActiveDeskContainerId();
     case ZCR_REMOTE_SHELL_V1_CONTAINER_OVERLAY:
       return ash::kShellWindowId_SystemModalContainer;
     default:
       DLOG(WARNING) << "Unsupported container: " << container;
-      return ash::kShellWindowId_DefaultContainer;
+      return ash::desks_util::GetActiveDeskContainerId();
   }
 }
 

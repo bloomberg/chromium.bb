@@ -18,7 +18,7 @@ std::string GetUploadData(const network::ResourceRequest& request) {
 
   CHECK_EQ(1u, body->elements()->size());
   const auto& element = body->elements()->at(0);
-  CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
+  CHECK_EQ(mojom::DataElementType::kBytes, element.type());
   return std::string(element.bytes(), element.length());
 }
 

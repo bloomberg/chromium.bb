@@ -45,6 +45,15 @@ const base::TickClock* GetDefaultTickClock() {
   return default_tick_clock.get();
 }
 
+// An implementation of operator< for scored tabs.
+struct ScoredTabComparator {
+  bool operator()(const std::pair<float, content::WebContents*> tab0,
+                  const std::pair<float, content::WebContents*> tab1) {
+    // Greater scores sort first.
+    return tab0.first > tab1.first;
+  }
+};
+
 // Testing seams.
 size_t g_max_loaded_tab_count_for_testing = 0;
 base::RepeatingCallback<void(TabLoader*)>* g_construction_callback = nullptr;
@@ -121,7 +130,7 @@ void TabLoader::SetConstructionCallbackForTesting(
 
 void TabLoader::SetMaxSimultaneousLoadsForTesting(size_t loading_slots) {
   DCHECK_EQ(0u, reentry_depth_);  // Should never be called reentrantly.
-  max_simultaneous_loads_ = loading_slots;
+  max_simultaneous_loads_for_testing_ = loading_slots;
 }
 
 void TabLoader::SetTickClockForTesting(base::TickClock* tick_clock) {
@@ -131,6 +140,62 @@ void TabLoader::SetTickClockForTesting(base::TickClock* tick_clock) {
 void TabLoader::MaybeLoadSomeTabsForTesting() {
   ReentrancyHelper lifetime_helper(this);
   MaybeLoadSomeTabs();
+}
+
+void TabLoader::SetTabLoadingEnabledCallbackForTesting(
+    base::RepeatingCallback<void(bool)>* callback) {
+  tab_loading_enabled_callback_ = callback;
+}
+
+bool TabLoader::IsLoadingEnabled() const {
+  return loading_enabled_ && all_tabs_scored_;
+}
+
+void TabLoader::OnIsLoadingEnabledChanged() {
+  ReentrancyHelper lifetime_helper(this);
+
+  // TODO(chrisha): Make the SessionRestoreStatsCollector aware that tab loading
+  // was explicitly stopped or restarted. This can be used to invalidate various
+  // metrics.
+
+  if (IsLoadingEnabled()) {
+    // Extend the timeouts of all loading tabs by the duration that tab loading
+    // was disabled. This is to ensure that there's not a flurry of tab load
+    // timeouts that all occur at once when loading is re-enabled.
+    base::TimeDelta delta = clock_->NowTicks() - tab_loading_disabled_time_;
+    for (auto const_tab : tabs_loading_) {
+      // Directly modify the underlying data. This will temporarily invalidate
+      // the ordering condition of the set, but by incrementing all elements
+      // equally the ordering condition will hold again when finished.
+      LoadingTab* tab = const_cast<LoadingTab*>(&const_tab);
+      tab->loading_start_time += delta;
+    }
+
+    StartTimerIfNeeded();
+    MaybeLoadSomeTabs();
+  } else {
+    StartTimerIfNeeded();
+    tab_loading_disabled_time_ = clock_->NowTicks();
+  }
+
+  if (tab_loading_enabled_callback_)
+    tab_loading_enabled_callback_->Run(IsLoadingEnabled());
+}
+
+void TabLoader::SetAllTabsScored(bool all_tabs_scored) {
+  DCHECK(reentry_depth_ > 0);  // This can only be called internally.
+  if (all_tabs_scored == all_tabs_scored_)
+    return;
+
+  if (all_tabs_scored) {
+    DCHECK(std::is_sorted(tabs_to_load_.begin(), tabs_to_load_.end(),
+                          ScoredTabComparator()));
+  }
+
+  bool was_loading_enabled = IsLoadingEnabled();
+  all_tabs_scored_ = all_tabs_scored;
+  if (was_loading_enabled != IsLoadingEnabled())
+    OnIsLoadingEnabledChanged();
 }
 
 TabLoader::TabLoader(base::TimeTicks restore_started)
@@ -166,24 +231,41 @@ TabLoader::~TabLoader() {
 
 void TabLoader::SetTabLoadingEnabled(bool loading_enabled) {
   ReentrancyHelper lifetime_helper(this);
-
-  // TODO(chrisha): Make the SessionRestoreStatsCollector aware that tab loading
-  // was explicitly stopped or restarted. This can be used to invalidate various
-  // metrics.
-  if (loading_enabled == is_loading_enabled_)
+  if (loading_enabled == loading_enabled_)
     return;
-  is_loading_enabled_ = loading_enabled;
-  if (is_loading_enabled_) {
-    StartTimerIfNeeded();
-    MaybeLoadSomeTabs();
-  } else {
-    // When active tab loading is reenabled all loads that were initiated before
-    // or during the period when it was disabled can be ignored for timeout
-    // purposes. Otherwise a bunch of tabs may simultaneously timeout and cause
-    // a lot of simultaneous loads.
-    tabs_loading_.clear();
-    StartTimerIfNeeded();
+  bool was_loading_enabled = IsLoadingEnabled();
+  loading_enabled_ = loading_enabled;
+  if (was_loading_enabled != IsLoadingEnabled())
+    OnIsLoadingEnabledChanged();
+}
+
+void TabLoader::NotifyTabScoreChanged(content::WebContents* contents,
+                                      float score) {
+  ReentrancyHelper lifetime_helper(this);
+
+  // If |contents| is specified this is an update of the score for a tab.
+  if (contents) {
+    auto it = FindTabToLoad(contents);
+    it->first = score;
+
+    // If all tabs are already scored (indicating they are sorted) then keep the
+    // tab order sorted.
+    if (all_tabs_scored_)
+      MoveToSortedPosition(it);
+
+    return;
   }
+
+  // Otherwise, this is the policy engine telling us all tabs now have initial
+  // scores. This should only happen after a call to StartLoading, which
+  // implicitly disables tab loading initially. Sort all tabs and start
+  // loading again.
+  DCHECK(!contents);
+  DCHECK(!all_tabs_scored_);
+  DCHECK(!IsLoadingEnabled());
+  std::stable_sort(tabs_to_load_.begin(), tabs_to_load_.end(),
+                   ScoredTabComparator());
+  SetAllTabsScored(true);
 }
 
 void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
@@ -197,8 +279,6 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
   bool delegate_existed = true;
   if (!delegate_) {
     delegate_ = TabLoaderDelegate::Create(this);
-    if (max_simultaneous_loads_ == 0)
-      max_simultaneous_loads_ = delegate_->GetMaxSimultaneousTabLoads();
     delegate_existed = false;
   }
 
@@ -224,15 +304,10 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
     AddTab(restored_tab.contents());
   }
 
-  StartTimerIfNeeded();
-
-  // When multiple profiles are using the same TabLoader, another profile might
-  // already have started loading. In that case a delegate was already created
-  // and tab loading had already started. Only the initial call to StartLoading
-  // needs to kick off tab loads, as otherwise the state machine is already in
-  // operation.
-  if (!delegate_existed)
-    MaybeLoadSomeTabs();
+  // Disable loading for now, and wait for the policy engine to come back with
+  // a full sort order for the tabs to be loaded. This happens via
+  // NotifyTabScoreChanged.
+  SetAllTabsScored(false);
 }
 
 void TabLoader::OnLoadingStateChange(WebContents* contents,
@@ -242,7 +317,7 @@ void TabLoader::OnLoadingStateChange(WebContents* contents,
   TRACE_EVENT0("browser", "TabLoader::OnLoadingStateChange");
 
   // Calls into this can come from observers that are still running even if
-  // |is_loading_enabled_| is false.
+  // IsLoadingEnabled() is false.
   switch (new_loading_state) {
     // It could be that a tab starts loading from outside of our control. In
     // this case we can consider it as having started to load, and the load
@@ -327,8 +402,8 @@ size_t TabLoader::GetMaxNewTabLoads() const {
 
   // Determine the number of free loading slots available.
   size_t tabs_to_load = 0;
-  if (loading_tab_count < max_simultaneous_loads_)
-    tabs_to_load = max_simultaneous_loads_ - loading_tab_count;
+  if (loading_tab_count < MaxSimultaneousLoads())
+    tabs_to_load = MaxSimultaneousLoads() - loading_tab_count;
 
   // Cap the number of loads by the actual number of tabs remaining.
   tabs_to_load = std::min(tabs_to_load, tabs_to_load_.size());
@@ -356,7 +431,13 @@ void TabLoader::AddTab(WebContents* contents) {
     return;
   }
 
-  tabs_to_load_.push_back(contents);
+  // Higher scores are more important tabs. Store the score as a negative number
+  // so the more important tabs sort first.
+  float score = delegate_->AddTabForScoring(contents);
+  tabs_to_load_.push_back(std::make_pair(score, contents));
+
+  // Sorting doesn't need to be done here, as it is done en masse once all tab
+  // scores are finalized.
 }
 
 void TabLoader::RemoveTab(WebContents* contents) {
@@ -375,9 +456,11 @@ void TabLoader::RemoveTab(WebContents* contents) {
   tabs_load_initiated_.erase(contents);
 
   {
-    auto it = std::find(tabs_to_load_.begin(), tabs_to_load_.end(), contents);
-    if (it != tabs_to_load_.end())
+    auto it = FindTabToLoad(contents);
+    if (it != tabs_to_load_.end()) {
       tabs_to_load_.erase(it);
+      delegate_->RemoveTabForScoring(contents);
+    }
   }
 }
 
@@ -387,9 +470,10 @@ void TabLoader::MarkTabAsLoadInitiated(WebContents* contents) {
 
   // This can only be called for a tab that is waiting to be loaded so this
   // should never fail.
-  auto it = std::find(tabs_to_load_.begin(), tabs_to_load_.end(), contents);
+  auto it = FindTabToLoad(contents);
   DCHECK(it != tabs_to_load_.end());
   tabs_to_load_.erase(it);
+  delegate_->RemoveTabForScoring(contents);
 
   // Tabs are considered as starting to load the moment we schedule the load.
   // The actual load notification from TabLoadTracker comes some point after
@@ -404,7 +488,7 @@ void TabLoader::MarkTabAsLoading(WebContents* contents) {
   TRACE_EVENT0("browser", "TabLoader::MarkTabAsLoading");
 
   // Calls into this can come from observers that are still running even if
-  // |is_loading_enabled_| is false.
+  // IsLoadingEnabled is true.
 
   // We get notifications for tabs that we're not explicitly tracking, so
   // gracefully handle this.
@@ -423,11 +507,12 @@ void TabLoader::MarkTabAsLoading(WebContents* contents) {
   // Second check to see if its a tab load that we did not initiate, but which
   // is being tracked by us.
   {
-    auto it = std::find(tabs_to_load_.begin(), tabs_to_load_.end(), contents);
+    auto it = FindTabToLoad(contents);
     if (it != tabs_to_load_.end()) {
       tabs_to_load_.erase(it);
       tabs_loading_.insert(LoadingTab{clock_->NowTicks(), contents});
       delegate_->NotifyTabLoadStarted();
+      delegate_->RemoveTabForScoring(contents);
       ++scheduled_to_load_count_;
       return;
     }
@@ -440,9 +525,10 @@ void TabLoader::MarkTabAsDeferred(content::WebContents* contents) {
 
   // This can only be called for a tab that is waiting to be loaded so this
   // should never fail.
-  auto it = std::find(tabs_to_load_.begin(), tabs_to_load_.end(), contents);
+  auto it = FindTabToLoad(contents);
   DCHECK(it != tabs_to_load_.end());
   tabs_to_load_.erase(it);
+  delegate_->RemoveTabForScoring(contents);
   stats_collector_->DeferTab(&contents->GetController());
 }
 
@@ -450,7 +536,7 @@ void TabLoader::MaybeLoadSomeTabs() {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
   TRACE_EVENT0("browser", "TabLoader::MaybeLoadSomeTabs");
 
-  if (!is_loading_enabled_ || tabs_to_load_.empty())
+  if (!IsLoadingEnabled() || tabs_to_load_.empty())
     return;
 
   // Continue to load tabs while possible. This is in a loop with a
@@ -467,7 +553,7 @@ void TabLoader::ForceLoadTimerFired() {
   // CheckInvariants can't be called directly as the timer is no longer
   // running at this point. However, the conditions under which the timer
   // should be running can be checked.
-  DCHECK(is_loading_enabled_);
+  DCHECK(IsLoadingEnabled());
   DCHECK(!tabs_to_load_.empty());
   DCHECK(!tabs_loading_.empty());
   DCHECK(!force_load_time_.is_null());
@@ -497,14 +583,17 @@ void TabLoader::StopLoadingTabs() {
   TRACE_EVENT0("browser", "TabLoader::StopLoadingTabs");
 
   // Calls into this can come from observers that are still running even if
-  // |is_loading_enabled_| is false.
+  // IsLoadingEnabled() is already false.
 
   // Stop the timer and suppress any tab loads while we clean the list.
   SetTabLoadingEnabled(false);
 
   // Notify the stats collector of deferred tabs.
-  for (auto* contents : tabs_to_load_)
+  for (auto score_content_pair : tabs_to_load_) {
+    auto* contents = score_content_pair.second;
+    delegate_->RemoveTabForScoring(contents);
     stats_collector_->DeferTab(&contents->GetController());
+  }
 
   // Clear out the remaining tabs to load and clean ourselves up.
   tabs_to_load_.clear();
@@ -520,7 +609,7 @@ content::WebContents* TabLoader::GetNextTabToLoad() {
   // Find the next tab to load. This skips tabs that the delegate decides
   // shouldn't be loaded at this moment.
   while (!tabs_to_load_.empty()) {
-    WebContents* contents = tabs_to_load_.front();
+    WebContents* contents = tabs_to_load_.front().second;
     if (delegate_->ShouldLoad(contents))
       return contents;
     MarkTabAsDeferred(contents);
@@ -528,7 +617,9 @@ content::WebContents* TabLoader::GetNextTabToLoad() {
 
   // It's possible the delegate decided none of the remaining tabs should be
   // loaded, in which case the TabLoader is done and will clean itself up as
-  // the stack unwinds to the outermost frame.
+  // the stack unwinds to the outermost frame. Call "StartTimerIfNeeded" to make
+  // sure that the timer invariant is enforced.
+  StartTimerIfNeeded();
   return nullptr;
 }
 
@@ -582,7 +673,7 @@ base::TimeDelta TabLoader::GetLoadTimeoutPeriod() const {
 void TabLoader::StartTimerIfNeeded() {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
 
-  if (!is_loading_enabled_ || tabs_to_load_.empty() || tabs_loading_.empty()) {
+  if (!IsLoadingEnabled() || tabs_to_load_.empty() || tabs_loading_.empty()) {
     if (force_load_timer_.IsRunning()) {
       force_load_time_ = base::TimeTicks();
       force_load_timer_.Stop();
@@ -616,4 +707,60 @@ void TabLoader::StartTimerIfNeeded() {
     force_load_timer_.Start(FROM_HERE, expiry_delta, this,
                             &TabLoader::ForceLoadTimerFired);
   }
+}
+
+TabLoader::TabVector::iterator TabLoader::FindTabToLoad(
+    content::WebContents* contents) {
+  auto it = tabs_to_load_.begin();
+  while (it != tabs_to_load_.end()) {
+    if (it->second == contents)
+      break;
+    ++it;
+  }
+  return it;
+}
+
+TabLoader::TabVector::const_iterator TabLoader::FindTabToLoad(
+    content::WebContents* contents) const {
+  auto it = tabs_to_load_.begin();
+  while (it != tabs_to_load_.end()) {
+    if (it->second == contents)
+      break;
+    ++it;
+  }
+  return it;
+}
+
+void TabLoader::MoveToSortedPosition(TabVector::iterator it) {
+  ScoredTabComparator cmp;
+
+  // Bubble left as needed.
+  while (true) {
+    if (it == tabs_to_load_.begin())
+      break;
+    auto it_left = it;
+    --it_left;
+    if (cmp(*it, *it_left)) {
+      std::iter_swap(it, it_left);
+      it = it_left;
+    }
+  }
+
+  // Bubble right as needed.
+  while (true) {
+    auto it_right = it;
+    ++it_right;
+    if (it_right == tabs_to_load_.end())
+      break;
+    if (cmp(*it_right, *it)) {
+      std::iter_swap(it, it_right);
+      it = it_right;
+    }
+  }
+}
+
+size_t TabLoader::MaxSimultaneousLoads() const {
+  if (max_simultaneous_loads_for_testing_ != 0)
+    return max_simultaneous_loads_for_testing_;
+  return delegate_->GetMaxSimultaneousTabLoads();
 }

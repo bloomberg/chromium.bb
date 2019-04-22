@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -11,6 +12,8 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
+
+using ::testing::UnorderedElementsAre;
 
 class LayoutInlineTest : public RenderingTest {};
 
@@ -25,7 +28,7 @@ class ParameterizedLayoutInlineTest : public testing::WithParamInterface<bool>,
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All, ParameterizedLayoutInlineTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ParameterizedLayoutInlineTest, testing::Bool());
 
 TEST_P(ParameterizedLayoutInlineTest, LinesBoundingBox) {
   LoadAhem();
@@ -71,8 +74,7 @@ TEST_F(LayoutInlineTest, SimpleContinuation) {
             GetLayoutObjectByElementId("before"));
   EXPECT_FALSE(split_inline_part1->FirstChild()->NextSibling());
 
-  LayoutBlockFlow* block =
-      ToLayoutBlockFlow(split_inline_part1->Continuation());
+  auto* block = To<LayoutBlockFlow>(split_inline_part1->Continuation());
   ASSERT_TRUE(block);
   ASSERT_TRUE(block->FirstChild());
   EXPECT_EQ(block->FirstChild(), GetLayoutObjectByElementId("blockChild"));
@@ -113,11 +115,37 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
   HitTestResult hit_result(hit_request, location);
   LayoutPoint hit_offset;
 
-  bool hit_outcome =
-      lots_of_boxes->HitTestCulledInline(hit_result, location, hit_offset);
-  // Assert checks that we both hit something and that the area covered
-  // by "something" totally contains the hit region.
-  EXPECT_TRUE(hit_outcome);
+  // The return value of HitTestCulledInline() indicates whether the hit test
+  // rect is completely contained by the part of |lots_of_boxes| being hit-
+  // tested. Legacy hit tests the entire LayoutObject all at once while NG hit
+  // tests line by line. Therefore, legacy returns true while NG is false.
+  //
+  // Note: The legacy behavior seems wrong. In a full list-based hit testing,
+  // after testing the node in the last intersecting line, the |true| return
+  // value of HitTestCulledInline() terminates the hit test process, and nodes
+  // in the previous lines are not tested.
+  //
+  // TODO(xiaochengh): Expose this issue in a real Chrome use case.
+
+  if (!lots_of_boxes->IsInLayoutNGInlineFormattingContext()) {
+    bool hit_outcome =
+        lots_of_boxes->HitTestCulledInline(hit_result, location, hit_offset);
+    // Assert checks that we both hit something and that the area covered
+    // by "something" totally contains the hit region.
+    EXPECT_TRUE(hit_outcome);
+    return;
+  }
+
+  const auto* div = To<LayoutBlockFlow>(lots_of_boxes->Parent());
+  for (const NGPaintFragment* line : div->PaintFragment()->Children()) {
+    DCHECK(line->PhysicalFragment().IsLineBox());
+    bool hit_outcome = lots_of_boxes->HitTestCulledInline(hit_result, location,
+                                                          hit_offset, line);
+    EXPECT_FALSE(hit_outcome);
+  }
+  // Make sure that the inline is hit
+  const Node* span = lots_of_boxes->GetNode();
+  EXPECT_EQ(span, hit_result.InnerNode());
 }
 
 // crbug.com/844746
@@ -266,11 +294,84 @@ TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocument) {
   )HTML");
 
   LayoutInline* target = ToLayoutInline(GetLayoutObjectByElementId("target"));
-  LayoutRect visual_rect = target->VisualRectInDocument();
-  EXPECT_EQ(visual_rect.X(), LayoutUnit(0));
-  EXPECT_EQ(visual_rect.Y(), LayoutUnit(20));
-  EXPECT_EQ(visual_rect.Width(), LayoutUnit(111));
-  EXPECT_EQ(visual_rect.Height(), LayoutUnit(222 + 20 * 2));
+  EXPECT_EQ(LayoutRect(0, 20, 111, 222 + 20 * 2),
+            target->VisualRectInDocument());
+  EXPECT_EQ(LayoutRect(0, 20, 111, 222 + 20 * 2),
+            target->VisualRectInDocument(kUseGeometryMapper));
+}
+
+// When adding focus ring rects, we should avoid adding duplicated rect for
+// continuations.
+TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveContinuations) {
+  // TODO(crbug.com/835484): The test is broken for LayoutNG.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <span id="target">SPAN0
+      <div>DIV1
+        <span>SPAN1
+          <div>DIV2</div>
+        </span>
+      </div>
+    </span>
+  )HTML");
+
+  Vector<LayoutRect> rects;
+  GetLayoutObjectByElementId("target")->AddOutlineRects(
+      rects, LayoutPoint(), NGOutlineType::kIncludeBlockVisualOverflow);
+
+  EXPECT_THAT(rects,
+              UnorderedElementsAre(LayoutRect(0, 0, 100, 20),    // 'SPAN0'
+                                   LayoutRect(0, 20, 800, 40),   // div DIV1
+                                   LayoutRect(0, 20, 200, 20),   // 'DIV1 SPAN1'
+                                   LayoutRect(0, 40, 800, 20),   // div DIV2
+                                   LayoutRect(0, 40, 80, 20)));  // 'DIV2'
+}
+
+// When adding focus ring rects, we should avoid adding line box rects of
+// recursive inlines repeatedly.
+TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveInlines) {
+  // TODO(crbug.com/835484): The test is broken for LayoutNG.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <div style="width: 200px">
+      <span id="target">
+        <b><b><b><i><i><i>INLINE</i></i> <i><i>TEXT</i></i>
+        <div style="position: relative; top: -5px">
+          <b><b>BLOCK</b> <i>CONTENTS</i></b>
+        </div>
+        </i></b></b></b>
+      </span>
+    </div>
+  )HTML");
+
+  Vector<LayoutRect> rects;
+  GetLayoutObjectByElementId("target")->AddOutlineRects(
+      rects, LayoutPoint(), NGOutlineType::kIncludeBlockVisualOverflow);
+
+  EXPECT_THAT(rects,
+              UnorderedElementsAre(LayoutRect(0, 0, 120, 20),   // 'INLINE'
+                                   LayoutRect(0, 20, 80, 20),   // 'TEXT'
+                                   LayoutRect(0, 35, 200, 40),  // the inner div
+                                   LayoutRect(0, 35, 100, 20),  // 'BLOCK'
+                                   LayoutRect(0, 55, 160, 20)));  // 'CONTENTS'
 }
 
 }  // namespace blink

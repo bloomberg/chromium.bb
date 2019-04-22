@@ -9,12 +9,11 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/threading/thread_checker.h"
 #include "components/metrics_services_manager/metrics_services_manager_client.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #endif
 
 class PrefService;
@@ -65,6 +64,9 @@ class ChromeMetricsServicesManagerClient
   void OnCrosSettingsCreated();
 #endif
 
+  // Accessor for the EnabledStateProvider instance used by this object.
+  const metrics::EnabledStateProvider& GetEnabledStateProviderForTesting();
+
  private:
   // This is defined as a member class to get access to
   // ChromeMetricsServiceAccessor through ChromeMetricsServicesManagerClient's
@@ -77,24 +79,15 @@ class ChromeMetricsServicesManagerClient
       override;
   std::unique_ptr<metrics::MetricsServiceClient> CreateMetricsServiceClient()
       override;
-  std::unique_ptr<const base::FieldTrial::EntropyProvider>
-  CreateEntropyProvider() override;
+  metrics::MetricsStateManager* GetMetricsStateManager() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsMetricsReportingEnabled() override;
   bool IsMetricsConsentGiven() override;
-
+  bool IsIncognitoSessionActive() override;
 #if defined(OS_WIN)
   // On Windows, the client controls whether Crashpad can upload crash reports.
   void UpdateRunningServices(bool may_record, bool may_upload) override;
 #endif  // defined(OS_WIN)
-
-  bool IsMetricsReportingForceEnabled() override;
-
-  bool IsIncognitoSessionActive() override;
-
-  // Gets the MetricsStateManager, creating it if it has not already been
-  // created.
-  metrics::MetricsStateManager* GetMetricsStateManager();
 
   // MetricsStateManager which is passed as a parameter to service constructors.
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
@@ -104,14 +97,14 @@ class ChromeMetricsServicesManagerClient
   std::unique_ptr<metrics::EnabledStateProvider> enabled_state_provider_;
 
   // Ensures that all functions are called from the same thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Weak pointer to the local state prefs store.
   PrefService* const local_state_;
 
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      cros_settings_observer_;
+  std::unique_ptr<chromeos::StatsReportingController::ObserverSubscription>
+      reporting_setting_observer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetricsServicesManagerClient);

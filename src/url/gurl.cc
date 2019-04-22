@@ -372,6 +372,20 @@ bool GURL::SchemeIsWSOrWSS() const {
   return SchemeIs(url::kWsScheme) || SchemeIs(url::kWssScheme);
 }
 
+bool GURL::SchemeIsCryptographic() const {
+  if (parsed_.scheme.len <= 0)
+    return false;
+  return SchemeIsCryptographic(scheme_piece());
+}
+
+bool GURL::SchemeIsCryptographic(base::StringPiece lower_ascii_scheme) {
+  DCHECK(base::IsStringASCII(lower_ascii_scheme));
+  DCHECK(base::ToLowerASCII(lower_ascii_scheme) == lower_ascii_scheme);
+
+  return lower_ascii_scheme == url::kHttpsScheme ||
+         lower_ascii_scheme == url::kWssScheme;
+}
+
 int GURL::IntPort() const {
   if (parsed_.port.is_nonempty())
     return url::ParsePort(spec_.data(), parsed_.port);

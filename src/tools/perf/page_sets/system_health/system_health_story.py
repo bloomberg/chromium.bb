@@ -7,6 +7,7 @@ from page_sets.system_health import story_tags
 
 from telemetry.page import page
 from telemetry.page import shared_page_state
+from telemetry.util import wpr_modes
 
 
 # Extra wait time after the page has loaded required by the loading metric. We
@@ -54,8 +55,8 @@ class SystemHealthStory(page.Page):
   NAME = NotImplemented
   URL = NotImplemented
   ABSTRACT_STORY = True
-  # TODO(crbug.com/862077): SKIP_LOGIN is a temporary hack to skip the login
-  # flow during replay. Switch this to False when recording.
+  # Skip the login flow in replay mode
+  # If you want to replay the login flow in your story, set SKIP_LOGIN to False
   SKIP_LOGIN = True
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   TAGS = []
@@ -114,7 +115,7 @@ class SystemHealthStory(page.Page):
     pass
 
   def RunNavigateSteps(self, action_runner):
-    if not self.SKIP_LOGIN:
+    if not (self.SKIP_LOGIN and self.wpr_mode == wpr_modes.WPR_REPLAY):
       self._Login(action_runner)
     super(SystemHealthStory, self).RunNavigateSteps(action_runner)
 

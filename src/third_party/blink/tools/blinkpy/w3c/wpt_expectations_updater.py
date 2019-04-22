@@ -26,7 +26,7 @@ _log = logging.getLogger(__name__)
 MARKER_COMMENT = '# ====== New tests from wpt-importer added here ======'
 UMBRELLA_BUG = 'crbug.com/626703'
 
-# TODO(robertma): Investigate reusing layout_tests.models.test_expectations and
+# TODO(robertma): Investigate reusing web_tests.models.test_expectations and
 # alike in this module.
 
 SimpleTestResult = namedtuple('SimpleTestResult', ['expected', 'actual', 'bug'])
@@ -114,7 +114,7 @@ class WPTExpectationsUpdater(object):
     def get_failing_results_dict(self, build):
         """Returns a nested dict of failing test results.
 
-        Retrieves a full list of layout test results from a builder result URL.
+        Retrieves a full list of web test results from a builder result URL.
         Collects the builder name, platform and a list of tests that did not
         run as expected.
 
@@ -134,24 +134,24 @@ class WPTExpectationsUpdater(object):
         if port_name in self.ports_with_all_pass:
             # All tests passed, so there should be no failing results.
             return {}
-        layout_test_results = self.host.buildbot.fetch_results(build)
-        if layout_test_results is None:
+        web_test_results = self.host.buildbot.fetch_results(build)
+        if web_test_results is None:
             _log.warning('No results for build %s', build)
             self.ports_with_no_results.add(self.port_name(build))
             return {}
-        failing_test_results = [result for result in layout_test_results.didnt_run_as_expected_results() if not result.did_pass()]
+        failing_test_results = [result for result in web_test_results.didnt_run_as_expected_results() if not result.did_pass()]
         return self.generate_results_dict(self.port_name(build), failing_test_results)
 
     @memoized
     def port_name(self, build):
         return self.host.builders.port_name_for_builder_name(build.builder_name)
 
-    def generate_results_dict(self, full_port_name, layout_test_results):
+    def generate_results_dict(self, full_port_name, web_test_results):
         """Makes a dict with results for one platform.
 
         Args:
             full_port_name: The fully-qualified port name, e.g. "win-win10".
-            layout_test_results: A list of LayoutTestResult objects.
+            web_test_results: A list of WebTestResult objects.
 
         Returns:
             A dictionary with the structure: {
@@ -161,7 +161,7 @@ class WPTExpectationsUpdater(object):
             }
         """
         test_dict = {}
-        for result in layout_test_results:
+        for result in web_test_results:
             test_name = result.test_name()
 
             if not self.port.is_wpt_test(test_name):

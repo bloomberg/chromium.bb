@@ -24,6 +24,7 @@ set -x
 
 BUILD_ROOT=$PWD
 SRC=$PWD/github/shaderc
+INSTALL_DIR="$SRC/install"
 CONFIG=$1
 COMPILER=$2
 
@@ -33,8 +34,7 @@ BUILD_TYPE="Debug"
 CMAKE_C_CXX_COMPILER=""
 if [ $COMPILER = "clang" ]
 then
-  sudo ln -s /usr/bin/clang-3.8 /usr/bin/clang
-  sudo ln -s /usr/bin/clang++-3.8 /usr/bin/clang++
+  PATH=/usr/lib/llvm-3.8/bin:$PATH
   CMAKE_C_CXX_COMPILER="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
 fi
 
@@ -50,7 +50,7 @@ ADDITIONAL_CMAKE_FLAGS=""
 if [ $CONFIG = "ASAN" ]
 then
   ADDITIONAL_CMAKE_FLAGS="-DCMAKE_CXX_FLAGS=-fsanitize=address -DCMAKE_C_FLAGS=-fsanitize=address"
-  export ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-3.4
+  [ $COMPILER = "clang" ] || { echo "$CONFIG requires clang"; exit 1; }
 elif [ $CONFIG = "COVERAGE" ]
 then
   ADDITIONAL_CMAKE_FLAGS="-DENABLE_CODE_COVERAGE=ON"
@@ -69,22 +69,16 @@ wget -q https://github.com/ninja-build/ninja/releases/download/v1.7.2/ninja-linu
 unzip -q ninja-linux.zip
 export PATH="$PWD:$PATH"
 
-cd $SRC/third_party
-git clone https://github.com/google/googletest.git
-git clone https://github.com/google/glslang.git
-git clone https://github.com/KhronosGroup/SPIRV-Tools.git spirv-tools
-git clone https://github.com/KhronosGroup/SPIRV-Headers.git spirv-headers
-git clone https://github.com/google/re2 spirv-tools/external/re2
-git clone https://github.com/google/effcee spirv-tools/external/effcee
+cd $SRC
+./utils/git-sync-deps
 
-cd $SRC/
 mkdir build
 cd $SRC/build
 
 # Invoke the build.
 BUILD_SHA=${KOKORO_GITHUB_COMMIT:-$KOKORO_GITHUB_PULL_REQUEST_COMMIT}
 echo $(date): Starting build...
-cmake -GNinja -DRE2_BUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE $ADDITIONAL_CMAKE_FLAGS $CMAKE_C_CXX_COMPILER ..
+cmake -GNinja -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DSHADERC_ENABLE_SPVC=ON -DRE2_BUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE $ADDITIONAL_CMAKE_FLAGS $CMAKE_C_CXX_COMPILER ..
 
 echo $(date): Build glslang...
 ninja glslangValidator
@@ -110,3 +104,7 @@ then
 fi
 echo $(date): ctest completed.
 
+# Package the build.
+ninja install
+cd $(dirname $INSTALL_DIR)
+tar czf $KOKORO_ARTIFACTS_DIR/install.tgz $(basename $INSTALL_DIR)

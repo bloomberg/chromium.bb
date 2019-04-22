@@ -10,7 +10,7 @@ if (window.testRunner) {
   // Inject a subresource filter to disallow 'beta.js' (but not 'alpha.js').
   // Furthermore, try to block the imported document itself, which should have no effect
   // as subresource filtering should not apply directly to import document resources.
-  testRunner.setDisallowedSubresourcePathSuffixes(["beta.js", "include-scripts.html"]);
+  testRunner.setDisallowedSubresourcePathSuffixes(["beta.js", "include-scripts.html"], true /* block_subresources */);
 }
 
 document.scriptsLoaded = [];

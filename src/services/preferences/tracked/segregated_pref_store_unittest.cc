@@ -340,15 +340,15 @@ TEST_F(SegregatedPrefStoreTest, GetValues) {
   EXPECT_TRUE(base::Value(kValue1).Equals(value));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     WithoutCallback,
     SegregatedPrefStoreTest,
     ::testing::Values(CommitPendingWriteMode::WITHOUT_CALLBACK));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     WithCallback,
     SegregatedPrefStoreTest,
     ::testing::Values(CommitPendingWriteMode::WITH_CALLBACK));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     WithSynchronousCallback,
     SegregatedPrefStoreTest,
     ::testing::Values(CommitPendingWriteMode::WITH_SYNCHRONOUS_CALLBACK));

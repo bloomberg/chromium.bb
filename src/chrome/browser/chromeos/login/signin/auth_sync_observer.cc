@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/signin/auth_sync_observer.h"
 
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
@@ -13,7 +14,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -35,7 +36,7 @@ AuthSyncObserver::AuthSyncObserver(Profile* profile) : profile_(profile) {
 AuthSyncObserver::~AuthSyncObserver() {}
 
 void AuthSyncObserver::StartObserving() {
-  browser_sync::ProfileSyncService* const sync_service =
+  syncer::SyncService* const sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service)
     sync_service->AddObserver(this);
@@ -49,7 +50,7 @@ void AuthSyncObserver::StartObserving() {
 }
 
 void AuthSyncObserver::Shutdown() {
-  browser_sync::ProfileSyncService* const sync_service =
+  syncer::SyncService* const sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service)
     sync_service->RemoveObserver(this);

@@ -45,6 +45,11 @@ key: "bgfetch_completed_request_<unique_id>_<request_index>"
 value: "<serialized content::proto::BackgroundFetchCompletedRequest>"
 ```
 
+```
+key: "bgfetch_storage_version_<unique_id>"
+value: "<content::proto::BackgroundFetchStorageVersion>"
+```
+
 ## Cache Storage UserData schema
 
 The downloaded responses of every fetch will be stored in their own private cache.

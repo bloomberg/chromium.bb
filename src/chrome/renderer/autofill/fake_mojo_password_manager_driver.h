@@ -51,12 +51,12 @@ class FakeMojoPasswordManagerDriver
 
   bool called_password_form_submitted() const {
     return called_password_form_submitted_ && password_form_submitted_ &&
-           !password_form_submitted_->only_for_fallback_saving;
+           !password_form_submitted_->only_for_fallback;
   }
 
   bool called_password_form_submitted_only_for_fallback() const {
     return called_password_form_submitted_ && password_form_submitted_ &&
-           password_form_submitted_->only_for_fallback_saving;
+           password_form_submitted_->only_for_fallback;
   }
 
   const base::Optional<autofill::PasswordForm>& password_form_submitted()
@@ -166,6 +166,8 @@ class FakeMojoPasswordManagerDriver
       const autofill::PasswordForm& password_form) override;
   void HideManualFallbackForSaving() override;
   void FocusedInputChanged(bool is_fillable, bool is_password_field) override;
+  void LogFirstFillingResult(uint32_t form_renderer_id,
+                             int32_t result) override {}
 
   // Records whether ShowPasswordSuggestions() gets called.
   bool called_show_pw_suggestions_ = false;

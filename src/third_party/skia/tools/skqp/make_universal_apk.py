@@ -63,7 +63,7 @@ def check_ninja():
 def remove(p):
     if not os.path.islink(p) and os.path.isdir(p):
         shutil.rmtree(p)
-    elif os.path.exists(p):
+    elif os.path.lexists(p):
         os.remove(p)
     assert not os.path.exists(p)
 
@@ -84,6 +84,7 @@ def make_apk(architectures,
     assert os.path.exists(android_ndk)
     assert os.path.exists(android_home)
     assert os.path.exists(skia_dir)
+    assert os.path.exists(skia_dir + '/bin/gn')  # Did you `tools/git-syc-deps`?
     assert architectures
     assert all(arch in skia_to_android_arch_name_map
                for arch in architectures)
@@ -100,10 +101,8 @@ def make_apk(architectures,
     build_paths = [apps_dir + '/.gradle',
                    apps_dir + '/skqp/build',
                    apps_dir + '/skqp/src/main/libs',
-                   apps_dir + '/skqp/src/main/assets/resources',
                    apps_dir + '/skqp/src/main/assets/gmkb']
     remove(build_dir + '/libs')
-    remove(build_dir + '/resources')
     for path in build_paths:
         remove(path)
         newdir = os.path.join(build_dir, os.path.basename(path))
@@ -114,6 +113,11 @@ def make_apk(architectures,
         except OSError:
             pass
 
+    resources_path = apps_dir + '/skqp/src/main/assets/resources'
+    remove(resources_path)
+    os.symlink('../../../../../../../resources', resources_path)
+    build_paths.append(resources_path)
+
     app = 'skqp'
     lib = 'libskqp_app.so'
 
@@ -121,13 +125,9 @@ def make_apk(architectures,
 
     if os.path.exists(apps_dir + '/skqp/src/main/assets/files.checksum'):
         check_call([sys.executable, 'tools/skqp/download_model'])
-        if os.environ.get('SKQP_EXTRA_MODELS' ,''):
-            check_call([sys.executable, 'tools/skqp/remove_unneeded_assets'])
     else:
         sys.stderr.write(
                 '\n* * *\n\nNote: SkQP models are missing!!!!\n\n* * *\n\n')
-
-    check_call([sys.executable, 'tools/skqp/setup_resources'])
 
     for arch in architectures:
         build = os.path.join(build_dir, arch)
@@ -168,11 +168,11 @@ def make_apk(architectures,
     for path in build_paths:
         remove(path)
 
-    if len(architectures) == 1:
-        arch = architectures[0]
-        copy = os.path.join(final_output_dir, "%s-%s-debug.apk" % (app, arch))
-        shutil.copyfile(out, copy)
-        sys.stdout.write(copy + '\n')
+    arches = '_'.join(sorted(architectures))
+    copy = os.path.join(final_output_dir, "%s-%s-debug.apk" % (app, arches))
+    shutil.copyfile(out, copy)
+    sys.stdout.write(copy + '\n')
+
     sys.stdout.write('* * * COMPLETE * * *\n\n')
 
 def main():

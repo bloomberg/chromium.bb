@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_URL_LOADER_FACTORY_GETTER_H_
 #define CONTENT_BROWSER_URL_LOADER_FACTORY_GETTER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

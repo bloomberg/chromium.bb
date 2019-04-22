@@ -21,9 +21,11 @@
 
 namespace dawn_native { namespace metal {
 
+    class Device;
+
     class RenderPipeline : public RenderPipelineBase {
       public:
-        RenderPipeline(RenderPipelineBuilder* builder);
+        RenderPipeline(Device* device, const RenderPipelineDescriptor* descriptor);
         ~RenderPipeline();
 
         MTLIndexType GetMTLIndexType() const;
@@ -31,10 +33,15 @@ namespace dawn_native { namespace metal {
 
         void Encode(id<MTLRenderCommandEncoder> encoder);
 
+        id<MTLDepthStencilState> GetMTLDepthStencilState();
+
       private:
+        MTLVertexDescriptor* MakeVertexDesc();
+
         MTLIndexType mMtlIndexType;
         MTLPrimitiveType mMtlPrimitiveTopology;
         id<MTLRenderPipelineState> mMtlRenderPipelineState = nil;
+        id<MTLDepthStencilState> mMtlDepthStencilState = nil;
     };
 
 }}  // namespace dawn_native::metal

@@ -10,7 +10,8 @@ import android.graphics.Bitmap;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.signin.AccountTrackerService;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.components.signin.AccountTrackerService;
 
 import java.util.ArrayList;
 
@@ -76,7 +77,7 @@ public class ProfileDownloader {
             ThreadUtils.assertOnUiThread();
             if (sPendingProfileDownloads == null) {
                 sPendingProfileDownloads = new PendingProfileDownloads();
-                AccountTrackerService.get().addSystemAccountsSeededListener(
+                IdentityServicesProvider.getAccountTrackerService().addSystemAccountsSeededListener(
                         sPendingProfileDownloads);
             }
             return sPendingProfileDownloads;
@@ -121,7 +122,7 @@ public class ProfileDownloader {
             Context context, String accountId, int imageSidePixels, boolean isPreSignin) {
         ThreadUtils.assertOnUiThread();
         Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
-        if (!AccountTrackerService.get().checkAndSeedSystemAccounts()) {
+        if (!IdentityServicesProvider.getAccountTrackerService().checkAndSeedSystemAccounts()) {
             PendingProfileDownloads.get(context).pendProfileDownload(
                     profile, accountId, imageSidePixels);
             return;

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 10
+// Next MinVersion: 14
 
 module arc.mojom;
 
+import "components/arc/common/bitmap.mojom";
 import "components/arc/common/intent_common.mojom";
 import "url/mojom/url.mojom";
 
@@ -36,6 +37,57 @@ struct Document {
   // This value is available in limited DocumentsProviders only. If the
   // provider does not expose real VFS paths, this field is always set to null.
   [MinVersion=5] string? android_file_system_path;
+
+  // Flag indicating that a document is deletable.
+  [MinVersion=12] bool supports_delete;
+
+  // Flag indicating that a document can be renamed.
+  [MinVersion=12] bool supports_rename;
+
+  // Flag indicating that a document supports writing.
+  [MinVersion=12] bool supports_write;
+
+  // Flag indicating that a document is a directory that supports creation of
+  // new files within it.
+  [MinVersion=12] bool dir_supports_create;
+
+  // Flag indicating that a document can be copied to another location within
+  // the same document provider.
+  [MinVersion=12] bool supports_copy;
+
+  // Flag indicating that a document can be moved to another location within
+  // the same document provider.
+  [MinVersion=12] bool supports_move;
+};
+
+// Represents a root in Android DocumentsProvider.
+// See Android docs of DocumentsContract.Root for details.
+struct Root {
+  // Authority for the root.
+  string authority;
+
+  // Opaque ID of the root.
+  string root_id;
+
+  // Opaque ID of the document which is a directory that represents the top
+  // directory of the root.
+  string document_id;
+
+  // Title for the root, which will be shown to a user.
+  string title;
+
+  // Summary for the root, which may be shown to a user.
+  string? summary;
+
+  // Icon for the root, represented in a ARGB_8888 bitmap.
+  ArcBitmap? icon;
+
+  // Flag indicating that at least one directory under this root supports
+  // creating contents.
+  [MinVersion=12] bool supports_create;
+
+  // Mime types supported by this root.
+  [MinVersion=12] array<string>? mime_types;
 };
 
 // Describes the type of a change made to a document.
@@ -107,6 +159,21 @@ struct SelectFilesRequest {
   // Directory path to be initially opened when the file selector is launched.
   // Corresponds to DocumentsContract.EXTRA_INITIAL_URI.
   string initial_content_uri;
+
+  // DocumentPath representation for initial URI.
+  // Filled only when DocumentsContract.EXTRA_INITIAL_URI points to a document
+  // served by a DocumentsProvider.
+  DocumentPath? initial_document_path;
+};
+
+// Represents a path to a document served by a DocumentsProvider.
+struct DocumentPath {
+  // Authority of the document provider.
+  string authority;
+
+  // List of document ID from the root document to the child document.
+  // This should at least contain root document ID.
+  array<string> path;
 };
 
 // Result for SelectFilesRequest.
@@ -116,7 +183,40 @@ struct SelectFilesResult {
   array<url.mojom.Url> urls;
 };
 
-// Next method ID: 6
+// UI event to be dispatched to ChromeOS file selector.
+struct FileSelectorEvent {
+  // Type of the UI event.
+  FileSelectorEventType type;
+
+  // Specifies the target directory/file for CLICK_DIRECTORY/CLICK_FILE.
+  FileSelectorElement click_target;
+};
+
+// Types of UI events for FileSelectorEvent.
+[Extensible]
+enum FileSelectorEventType {
+  CLICK_OK,         // Clicks OK button.
+  CLICK_DIRECTORY,  // Clicks a directory in the left pane.
+  CLICK_FILE,       // Clicks a file in the right pane.
+};
+
+// Represents a clickable UI element shown on ChromeOS file selector.
+struct FileSelectorElement {
+  // User-visible label of the element (e.g. button text).
+  // This is usually equivalent to accessibility label of the element.
+  string name;
+};
+
+// A subset of clickable UI elements shown on ChromeOS file selector.
+struct FileSelectorElements {
+  // List of directories in the left pane.
+  array<FileSelectorElement> directory_elements;
+
+  // List of files in the right pane.
+  array<FileSelectorElement> file_elements;
+};
+
+// Next method ID: 9
 interface FileSystemHost {
   // Returns the name of the file specified by the URL.
   // When an error occurs, returns null value.
@@ -135,15 +235,29 @@ interface FileSystemHost {
   // |type| describes the type of change made to the document.
   [MinVersion=3] OnDocumentChanged@0(int64 watcher_id, ChangeType type);
 
+  // Called when the list of available roots or their metadata are changed.
+  [MinVersion=10] OnRootsChanged@6();
+
   // Returns an FD for reading the file specified by the URL.
   [MinVersion=6] OpenFileToRead@4(string url) => (handle? fd);
 
   // Asks the user to select files using ChromeOS file selector.
   [MinVersion=9] SelectFiles@5(SelectFilesRequest request) =>
       (SelectFilesResult result);
+
+  // Dispatches a UI event to the ChromeOS file selector previously opened by
+  // SelectFiles@5. This exists for running Android UI tests (CTS) on ChromeOS
+  // file selector, and thus it is only allowed under test conditions.
+  [MinVersion=11] OnFileSelectorEvent@7(FileSelectorEvent event) => ();
+
+  // Returns UI elements shown on the ChromeOS file selector previously opened
+  // by SelectFiles@5. This exists for running Android UI tests (CTS) on
+  // ChromeOS file selector, and thus it is only allowed under test conditions.
+  [MinVersion=11] GetFileSelectorElements@8() =>
+      (FileSelectorElements elements);
 };
 
-// Next method ID: 12
+// Next method ID: 19
 interface FileSystemInstance {
   // Notes about Android Documents Provider:
   //
@@ -210,6 +324,42 @@ interface FileSystemInstance {
   [MinVersion=5] GetRecentDocuments@9(string authority, string root_id) =>
       (array<Document>? documents);
 
+  // Queries available roots from all Documents Providers.
+  // If there is no root in ARC, an empty array is returned.
+  // If an error is found during GetRoots() methord processing in ARC, null
+  // value is returned.
+  [MinVersion=10] GetRoots@12() => (array<Root>? roots);
+
+  // Deletes the given document.
+  [MinVersion=12] DeleteDocument@13(string authority, string document_id) =>
+      (bool success);
+
+  // Changes the display name of an existing document.
+  [MinVersion=12] RenameDocument@14(string authority,
+                                    string document_id,
+                                    string display_name) =>
+                                        (Document? document);
+
+  // Creates a new document with given MIME type and display name.
+  [MinVersion=12] CreateDocument@15(string authority,
+                                    string parent_document_id,
+                                    string mime_type,
+                                    string display_name) =>
+                                        (Document? document);
+
+  // Copies the given document.
+  [MinVersion=12] CopyDocument@16(string authority,
+                                  string source_document_id,
+                                  string target_parent_document_id) =>
+                                      (Document? document);
+
+  // Moves the given document under a new parent.
+  [MinVersion=12] MoveDocument@17(string authority,
+                                  string source_document_id,
+                                  string source_parent_document_id,
+                                  string target_parent_document_id) =>
+                                      (Document? document);
+
   // DEPRECATED: Please use Init@10 instead.
   [MinVersion=3] InitDeprecated@5(FileSystemHost host_ptr);
 
@@ -219,6 +369,10 @@ interface FileSystemInstance {
   // Asks the ContentResolver to get a FD to read the file specified by the
   // URL.
   [MinVersion=1] OpenFileToRead@2(string url) => (handle? fd);
+
+  // Asks the ContentResolver to get a FD to write the file specified by the
+  // URL.
+  [MinVersion=13] OpenFileToWrite@18(string url) => (handle? fd);
 
   // Uninstalls a document watcher.
   //

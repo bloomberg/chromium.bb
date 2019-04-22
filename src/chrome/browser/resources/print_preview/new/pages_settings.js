@@ -13,10 +13,10 @@ const PagesInputErrorState = {
   EMPTY: 3,
 };
 
-/** @enum {string} */
+/** @enum {number} */
 const PagesValue = {
-  ALL: 'all',
-  CUSTOM: 'custom',
+  ALL: 0,
+  CUSTOM: 1,
 };
 
 /**
@@ -28,57 +28,42 @@ const PagesValue = {
  * @private
  */
 function parseIntStrict(value) {
-  if (/^\d+$/.test(value.trim()))
+  if (/^\d+$/.test(value.trim())) {
     return Number(value);
+  }
   return NaN;
 }
 
 Polymer({
   is: 'print-preview-pages-settings',
 
-  behaviors: [SettingsBehavior, print_preview_new.InputBehavior],
+  behaviors: [
+    SettingsBehavior, print_preview_new.InputBehavior,
+    print_preview_new.SelectBehavior
+  ],
 
   properties: {
-    /** @type {!print_preview.DocumentInfo} */
-    documentInfo: Object,
+    disabled: Boolean,
 
-    /** @private {string} */
-    inputString_: {
-      type: String,
-      value: '',
-    },
+    pageCount: Number,
 
     /** @private {!Array<number>} */
     allPagesArray_: {
       type: Array,
-      computed: 'computeAllPagesArray_(documentInfo.pageCount)',
+      computed: 'computeAllPagesArray_(pageCount)',
     },
 
-    /** @private {string} */
-    optionSelected_: {
-      type: Boolean,
-      value: PagesValue.ALL,
-      observer: 'onOptionSelectedChange_',
-    },
-
-    disabled: Boolean,
-
-    /** @private */
-    hasError_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
-     * Note: |disabled| specifies whether printing, and any settings section
-     * not in an error state, is disabled. |controlsDisabled_| specifies whether
-     * the pages section should be disabled, based on the value of |disabled|
-     * and the state of this section.
-     * @private {boolean} Whether this section is disabled.
-     */
+    /** @private {boolean} */
     controlsDisabled_: {
       type: Boolean,
       computed: 'computeControlsDisabled_(disabled, hasError_)',
+    },
+
+    /** @private {boolean} */
+    customSelected_: {
+      type: Boolean,
+      value: false,
+      observer: 'onCustomSelectedChange_',
     },
 
     /** @private {number} */
@@ -88,11 +73,18 @@ Polymer({
       value: PagesInputErrorState.NO_ERROR,
     },
 
+    /** @private {string} */
+    inputString_: {
+      type: String,
+      value: '',
+    },
+
     /** @private {!Array<number>} */
     pagesToPrint_: {
       type: Array,
-      computed: 'computePagesToPrint_(' +
-          'inputString_, optionSelected_, allPagesArray_)',
+      value: function() {
+        return [];
+      },
     },
 
     /** @private {!Array<{to: number, from: number}>} */
@@ -112,6 +104,7 @@ Polymer({
   },
 
   observers: [
+    'updatePagesToPrint_(inputString_, allPagesArray_)',
     'onRangeChange_(errorState_, rangesToPrint_, settings.pages, ' +
         'settings.pagesPerSheet.value)',
   ],
@@ -120,17 +113,49 @@ Polymer({
     'input-change': 'onInputChange_',
   },
 
+  /**
+   * True if the user's last valid input should be restored to the custom input
+   * field. Cleared when the input is set automatically, or the user manually
+   * clears the field.
+   * @private {boolean}
+   */
+  restoreLastInput_: true,
+
+  /**
+   * Initialize |selectedValue| in attached() since this doesn't observe
+   * settings.pages, because settings.pages is not sticky.
+   * @override
+   */
+  attached: function() {
+    this.selectedValue = PagesValue.ALL.toString();
+  },
+
   /** @return {!CrInputElement} The cr-input field element for InputBehavior. */
   getInput: function() {
     return this.$.pageSettingsCustomInput;
   },
 
   /**
-   * @param {!CustomEvent} e Contains the new input value.
+   * @param {!CustomEvent<string>} e Contains the new input value.
    * @private
    */
   onInputChange_: function(e) {
-    this.inputString_ = /** @type {string} */ (e.detail);
+    if (this.inputString_ !== e.detail) {
+      this.restoreLastInput_ = true;
+    }
+    this.inputString_ = e.detail;
+  },
+
+  onProcessSelectChange: function(value) {
+    this.customSelected_ = value === PagesValue.CUSTOM.toString();
+  },
+
+  /** @private */
+  onCollapseChanged_: function() {
+    if (this.customSelected_) {
+        /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
+            .inputElement.focus();
+    }
   },
 
   /**
@@ -147,66 +172,57 @@ Polymer({
    * @private
    */
   computeAllPagesArray_: function() {
-    // This computed function will unnecessarily get triggered if
-    // this.documentInfo is set to a new object, which happens whenever the
-    // preview refreshes, but the page count is the same as before. We do not
-    // want to trigger all observers unnecessarily.
-    if (!!this.allPagesArray_ &&
-        this.allPagesArray_.length == this.documentInfo.pageCount) {
-      return this.allPagesArray_;
-    }
-
-    const array = new Array(this.documentInfo.pageCount);
-    for (let i = 0; i < array.length; i++)
+    const array = new Array(this.pageCount);
+    for (let i = 0; i < array.length; i++) {
       array[i] = i + 1;
+    }
     return array;
   },
 
   /**
    * Updates pages to print and error state based on the validity and
    * current value of the input.
-   * @return {!Array<number>}
    * @private
    */
-  computePagesToPrint_: function() {
-    if (this.optionSelected_ === PagesValue.ALL) {
+  updatePagesToPrint_: function() {
+    if (!this.customSelected_) {
       this.errorState_ = PagesInputErrorState.NO_ERROR;
-      return this.allPagesArray_;
+      this.pagesToPrint_ = this.allPagesArray_ || [];
+      return;
     } else if (this.inputString_ === '') {
-      if (this.errorState_ !== PagesInputErrorState.NO_ERROR)
-        this.errorState_ = PagesInputErrorState.EMPTY;
-      return this.pagesToPrint_;
+      this.errorState_ = PagesInputErrorState.EMPTY;
+      return;
     }
 
     const pages = [];
     const added = {};
     const ranges = this.inputString_.split(/,|\u3001/);
     const maxPage = this.allPagesArray_.length;
-    for (let range of ranges) {
+    for (const range of ranges) {
       if (range == '') {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         this.onRangeChange_();
-        return this.pagesToPrint_;
+        return;
       }
 
       const limits = range.split('-');
       if (limits.length > 2) {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         this.onRangeChange_();
-        return this.pagesToPrint_;
+        return;
       }
 
       let min = parseIntStrict(limits[0]);
       if ((limits[0].length > 0 && Number.isNaN(min)) || min < 1) {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         this.onRangeChange_();
-        return this.pagesToPrint_;
+        return;
       }
       if (limits.length == 1) {
         if (min > maxPage) {
           this.errorState_ = PagesInputErrorState.OUT_OF_BOUNDS;
           this.onRangeChange_();
-          return this.pagesToPrint_;
+          return;
         }
         if (!added.hasOwnProperty(min)) {
           pages.push(min);
@@ -219,22 +235,24 @@ Polymer({
       if (Number.isNaN(max) && limits[1].length > 0) {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         this.onRangeChange_();
-        return this.pagesToPrint_;
+        return;
       }
 
-      if (Number.isNaN(min))
+      if (Number.isNaN(min)) {
         min = 1;
-      if (Number.isNaN(max))
+      }
+      if (Number.isNaN(max)) {
         max = maxPage;
+      }
       if (min > max) {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
         this.onRangeChange_();
-        return this.pagesToPrint_;
+        return;
       }
       if (max > maxPage) {
         this.errorState_ = PagesInputErrorState.OUT_OF_BOUNDS;
         this.onRangeChange_();
-        return this.pagesToPrint_;
+        return;
       }
       for (let i = min; i <= max; i++) {
         if (!added.hasOwnProperty(i)) {
@@ -244,7 +262,7 @@ Polymer({
       }
     }
     this.errorState_ = PagesInputErrorState.NO_ERROR;
-    return pages;
+    this.pagesToPrint_ = pages;
   },
 
   /**
@@ -253,16 +271,16 @@ Polymer({
    * @private
    */
   computeRangesToPrint_: function() {
-    let lastPage = 0;
-    if (this.pagesToPrint_.length == 0 || this.pagesToPrint_[0] == -1 ||
+    if (!this.pagesToPrint_ || this.pagesToPrint_.length == 0 ||
+        this.pagesToPrint_[0] == -1 ||
         this.pagesToPrint_ == this.allPagesArray_) {
       return [];
     }
 
     let from = this.pagesToPrint_[0];
     let to = this.pagesToPrint_[0];
-    let ranges = [];
-    for (let page of this.pagesToPrint_.slice(1)) {
+    const ranges = [];
+    for (const page of this.pagesToPrint_.slice(1)) {
       if (page == to + 1) {
         to = page;
         continue;
@@ -284,13 +302,15 @@ Polymer({
   getNupPages_: function() {
     const pagesPerSheet =
         /** @type {number} */ (this.getSettingValue('pagesPerSheet'));
-    if (pagesPerSheet <= 1 || this.pagesToPrint_.length == 0)
+    if (pagesPerSheet <= 1 || this.pagesToPrint_.length == 0) {
       return this.pagesToPrint_;
+    }
 
     const numPages = Math.ceil(this.pagesToPrint_.length / pagesPerSheet);
     const nupPages = new Array(numPages);
-    for (let i = 0; i < nupPages.length; i++)
+    for (let i = 0; i < nupPages.length; i++) {
       nupPages[i] = i + 1;
+    }
     return nupPages;
   },
 
@@ -300,8 +320,9 @@ Polymer({
    * @private
    */
   onRangeChange_: function() {
-    if (this.settings === undefined || this.pagesToPrint_ === undefined)
+    if (this.settings === undefined || this.pagesToPrint_ === undefined) {
       return;
+    }
 
     if (this.errorState_ === PagesInputErrorState.EMPTY) {
       this.setSettingValid('pages', true);
@@ -323,106 +344,33 @@ Polymer({
         nupPages.length != this.getSettingValue('pages').length) {
       this.setSetting('pages', nupPages);
     }
-    if (rangesChanged)
+    if (rangesChanged) {
       this.setSetting('ranges', this.rangesToPrint_);
+    }
     this.setSettingValid('pages', true);
     this.hasError_ = false;
   },
 
   /** @private */
-  onOptionSelectedChange_: function() {
-    if (this.optionSelected_ === PagesValue.CUSTOM) {
-      this.async(() => {
-        /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
-            .inputElement.focus();
-      });
+  onSelectBlur_: function(event) {
+    if (!this.customSelected_ ||
+        event.relatedTarget === this.$.pageSettingsCustomInput) {
+      return;
     }
+
+    this.onCustomInputBlur_();
   },
 
   /** @private */
-  resetIfEmpty_: function() {
-    if (this.inputString_ !== '')
-      return;
-
-    this.optionSelected_ = PagesValue.ALL;
-
-    // Manually set tab index to -1, so that this is not identified as the
-    // target for the radio group if the user navigates back.
-    this.$.customRadioButton.tabIndex = -1;
-  },
-
-  /**
-   * @param {!KeyboardEvent} e The keyboard event
-   */
-  onKeydown_: function(e) {
-    if (e.key === 'Escape')
-      return;
-
-    if (e.key === 'Enter') {
-      this.resetAndUpdate();
-      this.resetIfEmpty_();
-      return;
-    }
-
-    e.stopPropagation();
-    if (e.shiftKey && e.key === 'Tab') {
-      this.$.customRadioButton.focus();
-      e.preventDefault();
-    }
-  },
-
-  /**
-   * @param {Event} event Contains information about where focus is going.
-   * @private
-   */
-  onCustomRadioBlur_: function(event) {
-    if (event.relatedTarget != this.$.pageSettingsCustomInput &&
-        event.relatedTarget !=
-            /** @type {!CrInputElement} */
-            (this.$.pageSettingsCustomInput).inputElement) {
-      this.resetIfEmpty_();
-    }
-  },
-
-  /**
-   * @param {Event} event Contains information about where focus is going.
-   * @private
-   */
-  onCustomInputBlur_: function(event) {
+  onCustomInputBlur_: function() {
     this.resetAndUpdate();
-
-    if (event.relatedTarget != this.$.customRadioButton) {
-      this.resetIfEmpty_();
+    if (this.errorState_ === PagesInputErrorState.EMPTY) {
+      // Update with all pages.
+      this.$$('cr-input').value = this.getAllPagesString_();
+      this.inputString_ = this.getAllPagesString_();
+      this.resetString();
+      this.restoreLastInput_ = false;
     }
-  },
-
-  /** @private */
-  onCustomInputFocus_: function() {
-    if (this.optionSelected_ !== PagesValue.CUSTOM)
-      this.optionSelected_ = PagesValue.CUSTOM;
-  },
-
-  /**
-   * @param {!Event} e Click event
-   * @private
-   */
-  onCustomInputClick_: function(e) {
-    e.stopPropagation();
-  },
-
-  /** @private */
-  onCustomRadioClick_: function() {
-    /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
-        .inputElement.focus();
-  },
-
-  /**
-   * Gets a tab index for the custom input if it can be tabbed to.
-   * @return {number}
-   * @private
-   */
-  computeTabIndex_: function() {
-    return this.optionSelected_ === PagesValue.CUSTOM ? 0 : -1;
   },
 
   /**
@@ -441,11 +389,10 @@ Polymer({
           'pageRangeSyntaxInstruction',
           loadTimeData.getString('examplePageRangeText'));
     } else {
-      formattedMessage = (this.documentInfo === undefined) ?
+      formattedMessage = (this.pageCount === 0) ?
           '' :
           loadTimeData.getStringF(
-              'pageRangeLimitInstructionWithValue',
-              this.documentInfo.pageCount);
+              'pageRangeLimitInstructionWithValue', this.pageCount);
     }
     return formattedMessage.replace(/<\/b>|<b>/g, '');
   },
@@ -457,6 +404,34 @@ Polymer({
   hintHidden_: function() {
     return this.errorState_ == PagesInputErrorState.NO_ERROR ||
         this.errorState_ == PagesInputErrorState.EMPTY;
+  },
+
+  /**
+   * @return {boolean} Whether to disable the custom input.
+   * @private
+   */
+  inputDisabled_: function() {
+    return !this.customSelected_ || this.controlsDisabled_;
+  },
+
+  /**
+   * @return {string} A string representing the full page range.
+   * @private
+   */
+  getAllPagesString_: function() {
+    return this.pageCount === 1 ? '1' : `1-${this.pageCount}`;
+  },
+
+  /** @private */
+  onCustomSelectedChange_: function() {
+    if ((this.customSelected_ && !this.restoreLastInput_) ||
+        this.errorState_ !== PagesInputErrorState.NO_ERROR) {
+      this.restoreLastInput_ = true;
+      this.inputString_ = '';
+      this.$$('cr-input').value = '';
+      this.resetString();
+    }
+    this.updatePagesToPrint_();
   }
 });
 })();

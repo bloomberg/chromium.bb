@@ -6,24 +6,18 @@
 
 #include <gtest/gtest.h>
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
-#include "test_utils/angle_test_configs.h"
+#include "test_utils/ANGLETest.h"
 
 using namespace angle;
 
-class EGLQueryContextTest : public testing::TestWithParam<PlatformParameters>
+class EGLQueryContextTest : public EGLTest, public testing::WithParamInterface<PlatformParameters>
 {
   public:
     void SetUp() override
     {
-        int clientVersion = GetParam().majorVersion;
+        EGLTest::SetUp();
 
-        PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
-            reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(
-                eglGetProcAddress("eglGetPlatformDisplayEXT"));
-        EXPECT_TRUE(eglGetPlatformDisplayEXT != nullptr);
+        int clientVersion = GetParam().majorVersion;
 
         EGLint dispattrs[] = {EGL_PLATFORM_ANGLE_TYPE_ANGLE, GetParam().getRenderer(), EGL_NONE};
         mDisplay           = eglGetPlatformDisplayEXT(
@@ -57,10 +51,14 @@ class EGLQueryContextTest : public testing::TestWithParam<PlatformParameters>
 
     void TearDown() override
     {
-        eglMakeCurrent(mDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-        eglDestroyContext(mDisplay, mContext);
-        eglDestroySurface(mDisplay, mSurface);
-        eglTerminate(mDisplay);
+        if (mDisplay != EGL_NO_DISPLAY)
+        {
+            eglMakeCurrent(mDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+            eglDestroyContext(mDisplay, mContext);
+            eglDestroySurface(mDisplay, mSurface);
+            eglTerminate(mDisplay);
+        }
+        ASSERT_EGL_SUCCESS() << "Error during test TearDown";
     }
 
     EGLDisplay mDisplay;
@@ -108,6 +106,7 @@ TEST_P(EGLQueryContextTest, GetRenderBufferBoundSurface)
     EXPECT_TRUE(eglQueryContext(mDisplay, mContext, EGL_RENDER_BUFFER, &contextRenderBuffer) !=
                 EGL_FALSE);
     EXPECT_TRUE(renderBuffer == contextRenderBuffer);
+    ASSERT_EGL_SUCCESS();
 }
 
 TEST_P(EGLQueryContextTest, BadDisplay)

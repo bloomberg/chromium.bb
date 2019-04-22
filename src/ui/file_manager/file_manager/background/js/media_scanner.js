@@ -16,16 +16,15 @@
  *     !Promise<!importer.Disposition>} dispositionChecker
  * @param {!importer.DirectoryWatcherFactory} watcherFactory
  */
-importer.DefaultMediaScanner =
-    function(hashGenerator, dispositionChecker, watcherFactory) {
-
+importer.DefaultMediaScanner = function(
+    hashGenerator, dispositionChecker, watcherFactory) {
   /**
    * A little factory for DefaultScanResults which allows us to forgo
    * the saving it's dependencies in our fields.
    * @param {importer.ScanMode} mode Mode of the scan to find new files.
    * @return {!importer.DefaultScanResult}
    */
-  this.createScanResult_ = function(mode) {
+  this.createScanResult_ = mode => {
     return new importer.DefaultScanResult(mode, hashGenerator);
   };
 
@@ -54,7 +53,7 @@ importer.DefaultMediaScanner.prototype.addObserver = function(observer) {
 
 /** @override */
 importer.DefaultMediaScanner.prototype.removeObserver = function(observer) {
-  var index = this.observers_.indexOf(observer);
+  const index = this.observers_.indexOf(observer);
   if (index > -1) {
     this.observers_.splice(index, 1);
   } else {
@@ -63,32 +62,29 @@ importer.DefaultMediaScanner.prototype.removeObserver = function(observer) {
 };
 
 /** @override */
-importer.DefaultMediaScanner.prototype.scanDirectory = function(directory,
-                                                                mode) {
-  var scan = this.createScanResult_(mode);
+importer.DefaultMediaScanner.prototype.scanDirectory = function(
+    directory, mode) {
+  const scan = this.createScanResult_(mode);
   console.info(scan.name + ': Scanning directory ' + directory.fullPath);
 
-  var watcher = this.watcherFactory_(
-      (/** @this {importer.DefaultMediaScanner} */
-      function() {
+  const watcher = this.watcherFactory_(
+      /** @this {importer.DefaultMediaScanner} */
+      () => {
         scan.cancel();
         this.notify_(importer.ScanEvent.INVALIDATED, scan);
-      }).bind(this));
+      });
 
   this.crawlDirectory_(directory, watcher)
       .then(this.scanMediaFiles_.bind(this, scan))
       .then(scan.resolve)
       .catch(scan.reject);
 
-  scan.whenFinal()
-      .then(
-          (/** @this {importer.DefaultMediaScanner} */
-          function() {
-            console.info(
-                scan.name + ': Finished directory scan. Details: ' +
-                JSON.stringify(scan.getStatistics()));
-            this.notify_(importer.ScanEvent.FINALIZED, scan);
-          }).bind(this));
+  scan.whenFinal().then(() => {
+    console.info(
+        scan.name + ': Finished directory scan. Details: ' +
+        JSON.stringify(scan.getStatistics()));
+    this.notify_(importer.ScanEvent.FINALIZED, scan);
+  });
 
   return scan;
 };
@@ -98,34 +94,26 @@ importer.DefaultMediaScanner.prototype.scanFiles = function(entries, mode) {
   if (entries.length === 0) {
     throw new Error('Cannot scan empty list.');
   }
-  var scan = this.createScanResult_(mode);
+  const scan = this.createScanResult_(mode);
   console.info(
-      scan.name + ': Scanning fixed set of ' +
-      entries.length + ' entries.');
+      scan.name + ': Scanning fixed set of ' + entries.length + ' entries.');
 
-  var watcher = this.watcherFactory_(
-      /** @this {importer.DefaultMediaScanner} */
-      (function() {
-        scan.cancel();
-        this.notify_(importer.ScanEvent.INVALIDATED, scan);
-      }).bind(this));
+  const watcher = this.watcherFactory_(() => {
+    scan.cancel();
+    this.notify_(importer.ScanEvent.INVALIDATED, scan);
+  });
 
   scan.setCandidateCount(entries.length);
-  var scanPromises = entries.map(this.onFileEntryFound_.bind(this, scan));
+  const scanPromises = entries.map(this.onFileEntryFound_.bind(this, scan));
 
-  Promise.all(scanPromises)
-      .then(scan.resolve)
-      .catch(scan.reject);
+  Promise.all(scanPromises).then(scan.resolve).catch(scan.reject);
 
-  scan.whenFinal()
-      .then(
-          (/** @this {importer.DefaultMediaScanner} */
-          function() {
-            console.info(
-                scan.name + ': Finished file-selection scan. Details: ' +
-                JSON.stringify(scan.getStatistics()));
-            this.notify_(importer.ScanEvent.FINALIZED, scan);
-          }).bind(this));
+  scan.whenFinal().then(() => {
+    console.info(
+        scan.name + ': Finished file-selection scan. Details: ' +
+        JSON.stringify(scan.getStatistics()));
+    this.notify_(importer.ScanEvent.FINALIZED, scan);
+  });
 
   return scan;
 };
@@ -140,38 +128,34 @@ importer.DefaultMediaScanner.SCAN_BATCH_SIZE = 1;
  *     or canceled.
  * @private
  */
-importer.DefaultMediaScanner.prototype.scanMediaFiles_ =
-    function(scan, entries) {
+importer.DefaultMediaScanner.prototype.scanMediaFiles_ = function(
+    scan, entries) {
   scan.setCandidateCount(entries.length);
-  var handleFileEntry = this.onFileEntryFound_.bind(this, scan);
+  const handleFileEntry = this.onFileEntryFound_.bind(this, scan);
 
   /**
    * @param {number} begin The beginning offset in the list of entries
    *     to process.
    * @return {!Promise}
    */
-  var scanBatch = function(begin) {
+  const scanBatch = begin => {
     if (scan.canceled()) {
       console.debug(
-          scan.name + ': Skipping remaining ' +
-          (entries.length - begin) +
+          scan.name + ': Skipping remaining ' + (entries.length - begin) +
           ' entries. Scan was canceled.');
       return Promise.resolve();
     }
 
     // the second arg to slice is an exclusive end index, so we +1 batch size.
-    var end = begin + importer.DefaultMediaScanner.SCAN_BATCH_SIZE;
+    const end = begin + importer.DefaultMediaScanner.SCAN_BATCH_SIZE;
     console.log(scan.name + ': Processing batch ' + begin + '-' + (end - 1));
-    var batch = entries.slice(begin, end);
+    const batch = entries.slice(begin, end);
 
-    return Promise.all(
-        batch.map(handleFileEntry))
-        .then(
-            function() {
-              if (end < entries.length) {
-                return scanBatch(end);
-              }
-            });
+    return Promise.all(batch.map(handleFileEntry)).then(() => {
+      if (end < entries.length) {
+        return scanBatch(end);
+      }
+    });
   };
 
   return scanBatch(0);
@@ -187,7 +171,7 @@ importer.DefaultMediaScanner.prototype.scanMediaFiles_ =
 importer.DefaultMediaScanner.prototype.notify_ = function(event, result) {
   this.observers_.forEach(
       /** @param {!importer.ScanObserver} observer */
-      function(observer) {
+      observer => {
         observer(event, result);
       });
 };
@@ -202,31 +186,31 @@ importer.DefaultMediaScanner.prototype.notify_ = function(event, result) {
  * @private
  */
 importer.DefaultMediaScanner.prototype.crawlDirectory_ =
-    function(directory, watcher) {
-  var mediaFiles = [];
+    (directory, watcher) => {
+      const mediaFiles = [];
 
-  return fileOperationUtil.findEntriesRecursively(
-      directory,
-      /** @param  {!Entry} entry */
-      function(entry) {
-        if (watcher.triggered) {
-          return;
-        }
+      return fileOperationUtil
+          .findEntriesRecursively(
+              directory,
+              /** @param  {!Entry} entry */
+              entry => {
+                if (watcher.triggered) {
+                  return;
+                }
 
-        if (entry.isDirectory) {
-          // Note, there is no need for us to recurse, the utility
-          // function findEntriesRecursively does that. So we
-          // just watch the directory for modifications, and that's it.
-          watcher.addDirectory(/** @type {!DirectoryEntry} */(entry));
-        } else if (importer.isEligibleType(entry)) {
-          mediaFiles.push(/** @type {!FileEntry} */ (entry));
-        }
-      })
-      .then(
-          function() {
+                if (entry.isDirectory) {
+                  // Note, there is no need for us to recurse, the utility
+                  // function findEntriesRecursively does that. So we
+                  // just watch the directory for modifications, and that's it.
+                  watcher.addDirectory(/** @type {!DirectoryEntry} */ (entry));
+                } else if (importer.isEligibleType(entry)) {
+                  mediaFiles.push(/** @type {!FileEntry} */ (entry));
+                }
+              })
+          .then(() => {
             return mediaFiles;
           });
-};
+    };
 
 /**
  * Finds all files beneath directory.
@@ -236,23 +220,21 @@ importer.DefaultMediaScanner.prototype.crawlDirectory_ =
  * @return {!Promise}
  * @private
  */
-importer.DefaultMediaScanner.prototype.onFileEntryFound_ =
-    function(scan, entry) {
-
-  return this.getDisposition_(entry, importer.Destination.GOOGLE_DRIVE,
-                              scan.mode)
+importer.DefaultMediaScanner.prototype.onFileEntryFound_ = function(
+    scan, entry) {
+  return this
+      .getDisposition_(entry, importer.Destination.GOOGLE_DRIVE, scan.mode)
       .then(
-          (/**
+          /**
            * @param {!importer.Disposition} disposition The disposition
            *     of the entry. Either some sort of dupe, or an original.
            * @return {!Promise}
-           * @this {importer.DefaultMediaScanner}
            */
-          function(disposition) {
+          disposition => {
             return disposition === importer.Disposition.ORIGINAL ?
                 this.onUniqueFileFound_(scan, entry) :
                 this.onDuplicateFileFound_(scan, entry, disposition);
-          }).bind(this));
+          });
 };
 
 /**
@@ -263,26 +245,23 @@ importer.DefaultMediaScanner.prototype.onFileEntryFound_ =
  * @return {!Promise}
  * @private
  */
-importer.DefaultMediaScanner.prototype.onUniqueFileFound_ =
-    function(scan, entry) {
-
+importer.DefaultMediaScanner.prototype.onUniqueFileFound_ = function(
+    scan, entry) {
   scan.onCandidatesProcessed(1);
   if (!importer.isEligibleType(entry)) {
     this.notify_(importer.ScanEvent.UPDATED, scan);
     return Promise.resolve();
   }
 
-  return scan.addFileEntry(entry)
-      .then(
-          (/**
-           * @param {boolean} added
-           * @this {importer.DefaultMediaScanner}
-           */
-          function(added) {
-            if (added) {
-              this.notify_(importer.ScanEvent.UPDATED, scan);
-            }
-          }).bind(this));
+  return scan.addFileEntry(entry).then(
+      /**
+       * @param {boolean} added
+       */
+      added => {
+        if (added) {
+          this.notify_(importer.ScanEvent.UPDATED, scan);
+        }
+      });
 };
 
 /**
@@ -295,8 +274,8 @@ importer.DefaultMediaScanner.prototype.onUniqueFileFound_ =
  * @return {!Promise}
  * @private
  */
-importer.DefaultMediaScanner.prototype.onDuplicateFileFound_ =
-    function(scan, entry, disposition) {
+importer.DefaultMediaScanner.prototype.onDuplicateFileFound_ = function(
+    scan, entry, disposition) {
   scan.onCandidatesProcessed(1);
   scan.addDuplicateEntry(entry, disposition);
   this.notify_(importer.ScanEvent.UPDATED, scan);
@@ -432,8 +411,7 @@ importer.DefaultScanResult.prototype.getFileEntries = function() {
 };
 
 /** @override */
-importer.DefaultScanResult.prototype.getDuplicateFileEntries =
-    function() {
+importer.DefaultScanResult.prototype.getDuplicateFileEntries = function() {
   return this.duplicateFileEntries_;
 };
 
@@ -461,39 +439,33 @@ importer.DefaultScanResult.prototype.canceled = function() {
  */
 importer.DefaultScanResult.prototype.addFileEntry = function(entry) {
   return metadataProxy.getEntryMetadata(entry).then(
-      (/**
+      /**
        * @param {!Metadata} metadata
-       * @this {importer.DefaultScanResult}
        */
-      function(metadata) {
+      metadata => {
         console.assert(
-            'size' in metadata,
-            'size attribute missing from metadata.');
+            'size' in metadata, 'size attribute missing from metadata.');
 
-        return this.createHashcode_(entry)
-            .then(
-                (/**
-                 * @param {string} hashcode
-                 * @this {importer.DefaultScanResult}
-                 */
-                function(hashcode) {
-                  this.lastScanActivity_ = new Date();
+        return this.createHashcode_(entry).then(
+            /**
+             * @param {string} hashcode
+             */
+            hashcode => {
+              this.lastScanActivity_ = new Date();
 
-                  if (hashcode in this.fileHashcodes_) {
-                    this.addDuplicateEntry(
-                        entry,
-                        importer.Disposition.SCAN_DUPLICATE);
-                    return false;
-                  }
+              if (hashcode in this.fileHashcodes_) {
+                this.addDuplicateEntry(
+                    entry, importer.Disposition.SCAN_DUPLICATE);
+                return false;
+              }
 
-                  entry.size = metadata.size;
-                  this.totalBytes_ += metadata.size;
-                  this.fileHashcodes_[hashcode] = entry;
-                  this.fileEntries_.push(entry);
-                  return true;
-                }).bind(this));
-
-      }).bind(this));
+              entry.size = metadata.size;
+              this.totalBytes_ += metadata.size;
+              this.fileHashcodes_[hashcode] = entry;
+              this.fileEntries_.push(entry);
+              return true;
+            });
+      });
 };
 
 /**
@@ -501,9 +473,8 @@ importer.DefaultScanResult.prototype.addFileEntry = function(entry) {
  * @param {!FileEntry} entry
  * @param {!importer.Disposition} disposition
  */
-importer.DefaultScanResult.prototype.addDuplicateEntry =
-    function(entry, disposition) {
-
+importer.DefaultScanResult.prototype.addDuplicateEntry = function(
+    entry, disposition) {
   switch (disposition) {
     case importer.Disposition.SCAN_DUPLICATE:
     case importer.Disposition.CONTENT_DUPLICATE:
@@ -526,7 +497,7 @@ importer.DefaultScanResult.prototype.getStatistics = function() {
     sizeBytes: this.totalBytes_,
     candidates: {
       total: this.candidateCount_,
-      processed: this.candidatesProcessed_
+      processed: this.candidatesProcessed_,
     },
     progress: this.calculateProgress_()
   };
@@ -537,7 +508,7 @@ importer.DefaultScanResult.prototype.getStatistics = function() {
  * @private
  */
 importer.DefaultScanResult.prototype.calculateProgress_ = function() {
-  var progress = (this.candidateCount_ > 0) ?
+  let progress = (this.candidateCount_ > 0) ?
       Math.floor(this.candidatesProcessed_ / this.candidateCount_ * 100) :
       0;
 
@@ -561,7 +532,7 @@ importer.DirectoryWatcher = function() {};
  * Registers new directory to be watched.
  * @param {!DirectoryEntry} entry
  */
-importer.DirectoryWatcher.prototype.addDirectory = function(entry) {};
+importer.DirectoryWatcher.prototype.addDirectory = entry => {};
 
 /**
  * @typedef {function()}
@@ -594,7 +565,7 @@ importer.DefaultDirectoryWatcher = function(callback) {
  *     directories is changed.
  * @return {!importer.DirectoryWatcher}
  */
-importer.DefaultDirectoryWatcher.create = function(callback) {
+importer.DefaultDirectoryWatcher.create = callback => {
   return new importer.DefaultDirectoryWatcher(callback);
 };
 
@@ -609,7 +580,7 @@ importer.DefaultDirectoryWatcher.prototype.addDirectory = function(entry) {
         assert(this.listener_));
   }
   this.watchedDirectories_[entry.toURL()] = true;
-  chrome.fileManagerPrivate.addFileWatch(entry, function() {});
+  chrome.fileManagerPrivate.addFileWatch(entry, () => {});
 };
 
 /**
@@ -618,16 +589,17 @@ importer.DefaultDirectoryWatcher.prototype.addDirectory = function(entry) {
  */
 importer.DefaultDirectoryWatcher.prototype.onWatchedDirectoryModified_ =
     function(event) {
-  if (!this.watchedDirectories_[event.entry.toURL()])
+  if (!this.watchedDirectories_[event.entry.toURL()]) {
     return;
+  }
   this.triggered = true;
-  for (var url in this.watchedDirectories_) {
-    window.webkitResolveLocalFileSystemURL(url, function(entry) {
+  for (const url in this.watchedDirectories_) {
+    window.webkitResolveLocalFileSystemURL(url, entry => {
       if (chrome.runtime.lastError) {
         console.error(chrome.runtime.lastError.name);
         return;
       }
-      chrome.fileManagerPrivate.removeFileWatch(entry, function() {});
+      chrome.fileManagerPrivate.removeFileWatch(entry, () => {});
     });
   }
   chrome.fileManagerPrivate.onDirectoryChanged.removeListener(

@@ -7,6 +7,7 @@
 
 #include "extensions/browser/api/execute_code_function.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "extensions/browser/component_extension_resource_manager.h"
@@ -53,7 +54,8 @@ void ExecuteCodeFunction::GetFileURLAndMaybeLocalizeInBackground(
     bool might_require_localization,
     std::string* data) {
   // TODO(karandeepb): Limit scope of ScopedBlockingCall.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // TODO(devlin): FilePathToFileURL() doesn't need to be done on a blocking
   // task runner, so we could do that on the UI thread and then avoid the hop
@@ -228,18 +230,19 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file,
   // DCHECK.
   bool might_require_localization = ShouldInsertCSS() && !extension_id.empty();
 
-  int resource_id;
+  ComponentExtensionResourceInfo resource_info;
   const ComponentExtensionResourceManager*
       component_extension_resource_manager =
           ExtensionsBrowserClient::Get()
               ->GetComponentExtensionResourceManager();
   if (component_extension_resource_manager &&
       component_extension_resource_manager->IsComponentExtensionResource(
-          resource_.extension_root(),
-          resource_.relative_path(),
-          &resource_id)) {
+          resource_.extension_root(), resource_.relative_path(),
+          &resource_info)) {
+    DCHECK(!resource_info.gzipped);
     base::StringPiece resource =
-        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+            resource_info.resource_id);
     std::unique_ptr<std::string> data(
         new std::string(resource.data(), resource.size()));
 

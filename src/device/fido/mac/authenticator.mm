@@ -31,10 +31,8 @@ namespace mac {
 
 // static
 bool TouchIdAuthenticator::IsAvailable() {
-  if (base::FeatureList::IsEnabled(device::kWebAuthTouchId)) {
-    if (__builtin_available(macOS 10.12.2, *)) {
-      return TouchIdContext::TouchIdAvailable();
-    }
+  if (__builtin_available(macOS 10.12.2, *)) {
+    return TouchIdContext::TouchIdAvailable();
   }
   return false;
 }
@@ -145,12 +143,11 @@ namespace {
 
 AuthenticatorSupportedOptions TouchIdAuthenticatorOptions() {
   AuthenticatorSupportedOptions options;
-  options.SetIsPlatformDevice(true);
-  options.SetSupportsResidentKey(true);
-  options.SetUserVerificationAvailability(
-      AuthenticatorSupportedOptions::UserVerificationAvailability::
-          kSupportedAndConfigured);
-  options.SetUserPresenceRequired(true);
+  options.is_platform_device = true;
+  options.supports_resident_key = true;
+  options.user_verification_availability = AuthenticatorSupportedOptions::
+      UserVerificationAvailability::kSupportedAndConfigured;
+  options.supports_user_presence = true;
   return options;
 }
 

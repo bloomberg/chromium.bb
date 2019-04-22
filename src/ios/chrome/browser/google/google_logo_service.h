@@ -22,8 +22,9 @@
 //
 class GoogleLogoService : public search_provider_logos::LogoServiceImpl {
  public:
-  explicit GoogleLogoService(
+  GoogleLogoService(
       TemplateURLService* template_url_service,
+      identity::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~GoogleLogoService() override;
 

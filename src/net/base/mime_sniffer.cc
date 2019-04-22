@@ -101,11 +101,11 @@ namespace net {
 static const size_t kBytesRequiredForMagic = 42;
 
 struct MagicNumber {
-  const char* mime_type;
-  const char* magic;
+  const char* const mime_type;
+  const char* const magic;
   size_t magic_len;
   bool is_string;
-  const char* mask;  // if set, must have same length as |magic|
+  const char* const mask;  // if set, must have same length as |magic|
 };
 
 #define MAGIC_NUMBER(mime_type, magic) \
@@ -196,7 +196,7 @@ enum OfficeDocType {
 
 struct OfficeExtensionType {
   OfficeDocType doc_type;
-  const char* extension;
+  const char* const extension;
   size_t extension_len;
 };
 
@@ -215,7 +215,6 @@ static const OfficeExtensionType kOfficeExtensionTypes[] = {
 static const MagicNumber kExtraMagicNumbers[] = {
   MAGIC_NUMBER("image/x-xbitmap", "#define"),
   MAGIC_NUMBER("image/x-icon", "\x00\x00\x01\x00"),
-  MAGIC_NUMBER("image/svg+xml", "<?xml_version="),
   MAGIC_NUMBER("audio/wav", "RIFF....WAVEfmt "),
   MAGIC_NUMBER("video/avi", "RIFF....AVI LIST"),
   MAGIC_NUMBER("audio/ogg", "OggS\0"),
@@ -325,7 +324,7 @@ static bool MatchMagicNumber(const char* content,
   // pretend the length is content_size.
   const char* end = static_cast<const char*>(memchr(content, '\0', size));
   const size_t content_strlen =
-      (end != NULL) ? static_cast<size_t>(end - content) : size;
+      (end != nullptr) ? static_cast<size_t>(end - content) : size;
 
   bool match = false;
   if (magic_entry.is_string) {

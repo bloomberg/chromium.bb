@@ -9,11 +9,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -40,13 +42,12 @@ class MockAffiliationService : public testing::StrictMock<AffiliationService> {
   MOCK_METHOD2(CancelPrefetch, void(const FacetURI&, const base::Time&));
   MOCK_METHOD1(TrimCacheForFacetURI, void(const FacetURI&));
 
-  void GetAffiliationsAndBranding(
-      const FacetURI& facet_uri,
-      StrategyOnCacheMiss cache_miss_strategy,
-      const ResultCallback& result_callback) override {
+  void GetAffiliationsAndBranding(const FacetURI& facet_uri,
+                                  StrategyOnCacheMiss cache_miss_strategy,
+                                  ResultCallback result_callback) override {
     AffiliatedFacets affiliation =
         OnGetAffiliationsAndBrandingCalled(facet_uri, cache_miss_strategy);
-    result_callback.Run(affiliation, !affiliation.empty());
+    std::move(result_callback).Run(affiliation, !affiliation.empty());
   }
 
   void ExpectCallToGetAffiliationsAndBrandingAndSucceedWithResult(
@@ -347,7 +348,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
     RunUntilIdle();
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::ScopedMockTimeMessageLoopTaskRunner mock_time_task_runner_;
 
   std::vector<std::string> last_result_realms_;

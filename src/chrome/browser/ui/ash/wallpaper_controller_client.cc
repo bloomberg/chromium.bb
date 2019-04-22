@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind.h"
+#include "base/hash/sha1.h"
 #include "base/path_service.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -18,8 +20,10 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chromeos/chromeos_switches.h"
+#include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
@@ -131,7 +135,15 @@ user_manager::User* FindPublicSession(const user_manager::UserList& users) {
 }  // namespace
 
 WallpaperControllerClient::WallpaperControllerClient()
-    : policy_handler_(this), binding_(this), weak_factory_(this) {
+    : binding_(this), weak_factory_(this) {
+  local_state_ = g_browser_process->local_state();
+  show_user_names_on_signin_subscription_ =
+      chromeos::CrosSettings::Get()->AddSettingsObserver(
+          chromeos::kAccountsPrefShowUserNamesOnSignIn,
+          base::BindRepeating(
+              &WallpaperControllerClient::ShowWallpaperOnLoginScreen,
+              weak_factory_.GetWeakPtr()));
+
   DCHECK(!g_wallpaper_controller_client_instance);
   g_wallpaper_controller_client_instance = this;
 }
@@ -143,6 +155,12 @@ WallpaperControllerClient::~WallpaperControllerClient() {
 }
 
 void WallpaperControllerClient::Init() {
+  pref_registrar_.Init(local_state_);
+  pref_registrar_.Add(
+      prefs::kDeviceWallpaperImageFilePath,
+      base::BindRepeating(
+          &WallpaperControllerClient::DeviceWallpaperImageFilePathChanged,
+          weak_factory_.GetWeakPtr()));
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &wallpaper_controller_);
@@ -324,6 +342,15 @@ void WallpaperControllerClient::ShowSigninWallpaper() {
   wallpaper_controller_->ShowSigninWallpaper();
 }
 
+void WallpaperControllerClient::ShowAlwaysOnTopWallpaper(
+    const base::FilePath& image_path) {
+  wallpaper_controller_->ShowAlwaysOnTopWallpaper(image_path);
+}
+
+void WallpaperControllerClient::RemoveAlwaysOnTopWallpaper() {
+  wallpaper_controller_->RemoveAlwaysOnTopWallpaper();
+}
+
 void WallpaperControllerClient::RemoveUserWallpaper(
     const AccountId& account_id) {
   ash::mojom::WallpaperUserInfoPtr user_info =
@@ -431,16 +458,9 @@ void WallpaperControllerClient::ShouldShowWallpaperSetting(
   wallpaper_controller_->ShouldShowWallpaperSetting(std::move(callback));
 }
 
-void WallpaperControllerClient::OnDeviceWallpaperChanged() {
-  wallpaper_controller_->SetDeviceWallpaperPolicyEnforced(true /*enforced=*/);
-}
-
-void WallpaperControllerClient::OnDeviceWallpaperPolicyCleared() {
-  wallpaper_controller_->SetDeviceWallpaperPolicyEnforced(false /*enforced=*/);
-}
-
-void WallpaperControllerClient::OnShowUserNamesOnLoginPolicyChanged() {
-  ShowWallpaperOnLoginScreen();
+void WallpaperControllerClient::DeviceWallpaperImageFilePathChanged() {
+  wallpaper_controller_->SetDevicePolicyWallpaperPath(
+      GetDeviceWallpaperImageFilePath());
 }
 
 void WallpaperControllerClient::FlushForTesting() {
@@ -461,11 +481,12 @@ void WallpaperControllerClient::BindAndSetClient() {
   CHECK(base::PathService::Get(chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS,
                                &chromeos_custom_wallpapers_path));
 
+  base::FilePath device_policy_wallpaper_path =
+      GetDeviceWallpaperImageFilePath();
+
   wallpaper_controller_->Init(
       std::move(client), user_data_path, chromeos_wallpapers_path,
-      chromeos_custom_wallpapers_path,
-      policy_handler_.device_wallpaper_file_path(),
-      policy_handler_.IsDeviceWallpaperPolicyEnforced());
+      chromeos_custom_wallpapers_path, device_policy_wallpaper_path);
 }
 
 void WallpaperControllerClient::ShowWallpaperOnLoginScreen() {
@@ -477,7 +498,7 @@ void WallpaperControllerClient::ShowWallpaperOnLoginScreen() {
   user_manager::User* public_session = FindPublicSession(users);
 
   // Show the default signin wallpaper if there's no user to display.
-  if ((!policy_handler_.ShouldShowUserNamesOnLogin() && !public_session) ||
+  if ((!ShouldShowUserNamesOnLogin() && !public_session) ||
       !HasNonDeviceLocalAccounts(users)) {
     ShowSigninWallpaper();
     return;
@@ -556,4 +577,16 @@ void WallpaperControllerClient::OnFirstWallpaperAnimationFinished() {
       chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
+}
+
+bool WallpaperControllerClient::ShouldShowUserNamesOnLogin() const {
+  bool show_user_names = true;
+  chromeos::CrosSettings::Get()->GetBoolean(
+      chromeos::kAccountsPrefShowUserNamesOnSignIn, &show_user_names);
+  return show_user_names;
+}
+
+base::FilePath WallpaperControllerClient::GetDeviceWallpaperImageFilePath() {
+  return base::FilePath(
+      local_state_->GetString(prefs::kDeviceWallpaperImageFilePath));
 }

@@ -233,7 +233,7 @@ class VirtualAudioInputStreamTest : public testing::TestWithParam<bool> {
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     audio_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
+        base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();
   }
 
@@ -353,8 +353,8 @@ TEST_P(VirtualAudioInputStreamTest, ComprehensiveTest) {
   WaitUntilClosed();
 }
 
-INSTANTIATE_TEST_CASE_P(SingleVersusMultithreaded,
-                        VirtualAudioInputStreamTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(SingleVersusMultithreaded,
+                         VirtualAudioInputStreamTest,
+                         ::testing::Values(false, true));
 
 }  // namespace media

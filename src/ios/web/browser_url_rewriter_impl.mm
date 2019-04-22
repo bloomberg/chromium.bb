@@ -56,7 +56,8 @@ bool BrowserURLRewriter::RewriteURLWithWriters(
 
 // static
 BrowserURLRewriterImpl* BrowserURLRewriterImpl::GetInstance() {
-  return base::Singleton<BrowserURLRewriterImpl>::get();
+  static base::NoDestructor<BrowserURLRewriterImpl> instance;
+  return instance.get();
 }
 
 BrowserURLRewriterImpl::BrowserURLRewriterImpl() {

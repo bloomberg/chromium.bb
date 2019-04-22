@@ -30,7 +30,7 @@ static_library("common") {
 
   public_deps = [
     "//components/subresource_filter/core/common/flat:indexed_ruleset",
-    "//components/subresource_filter/mojom",
+    "//components/subresource_filter/core/mojom",
     "//components/url_pattern_index",
   ]
 

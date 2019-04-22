@@ -19,8 +19,7 @@ static jlong JNI_HeapProfilingTestShim_Init(JNIEnv* env,
 }
 
 HeapProfilingTestShim::HeapProfilingTestShim(JNIEnv* env, jobject obj) {}
-
-HeapProfilingTestShim::~HeapProfilingTestShim() {}
+HeapProfilingTestShim::~HeapProfilingTestShim() = default;
 
 void HeapProfilingTestShim::Destroy(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj) {

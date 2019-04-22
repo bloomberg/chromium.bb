@@ -4,23 +4,26 @@
 
 #include "media/formats/mp4/box_definitions.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_util.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "media/formats/common/opus_constants.h"
 #include "media/formats/mp4/es_descriptor.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/media_buildflags.h"
-#include "third_party/libaom/av1_buildflags.h"
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #include "media/formats/mp4/avc.h"
@@ -610,7 +613,7 @@ bool AVCDecoderConfigurationRecord::Parse(BoxReader* reader) {
 bool AVCDecoderConfigurationRecord::Parse(const uint8_t* data, int data_size) {
   BufferReader reader(data, data_size);
   // TODO(wolenetz): Questionable MediaLog usage, http://crbug.com/712310
-  MediaLog media_log;
+  NullMediaLog media_log;
   return ParseInternal(&reader, &media_log);
 }
 
@@ -1378,6 +1381,11 @@ bool Movie::Parse(BoxReader* reader) {
                       "require ISO BMFF moov to contain mvex to indicate that "
                       "Movie Fragments are to be expected.");
 
+  MetadataBox meta;
+  RCHECK(reader->MaybeReadChild(&meta));
+  base::UmaHistogramBoolean("Media.MSE.DetectedShakaPackagerInMp4",
+                            meta.used_shaka_packager);
+
   return reader->MaybeReadChildren(&pssh);
 }
 
@@ -1758,6 +1766,49 @@ SampleDependsOn IndependentAndDisposableSamples::sample_depends_on(
     return kSampleDependsOnUnknown;
 
   return sample_depends_on_[i];
+}
+
+ID3v2Box::ID3v2Box() = default;
+ID3v2Box::ID3v2Box(const ID3v2Box& other) = default;
+ID3v2Box::~ID3v2Box() = default;
+FourCC ID3v2Box::BoxType() const {
+  return FOURCC_ID32;
+}
+
+bool ID3v2Box::Parse(BoxReader* reader) {
+  // This is reading the ID32 box without regard for what's in it -- there will
+  // likely be binary data in this vector. We don't care though since we're just
+  // going to scan the memory without caring about sentinel values like \0.
+  RCHECK(reader->ReadVec(&id3v2_data,
+                         std::min(static_cast<size_t>(128),
+                                  reader->buffer_size() - reader->pos())));
+  return true;
+}
+
+MetadataBox::MetadataBox() : used_shaka_packager(false) {}
+MetadataBox::MetadataBox(const MetadataBox& other) = default;
+MetadataBox::~MetadataBox() = default;
+FourCC MetadataBox::BoxType() const {
+  return FOURCC_META;
+}
+
+bool MetadataBox::Parse(BoxReader* reader) {
+  RCHECK(reader->ReadFullBoxHeader());
+
+  // This is an optional box, so generate no errors.
+  if (!reader->ScanChildren())
+    return true;
+
+  ID3v2Box id3v2;
+  if (!reader->ReadChild(&id3v2))
+    return true;
+
+  constexpr char kShakaPackager[] = "shaka-packager";
+  used_shaka_packager =
+      base::StringPiece(reinterpret_cast<char*>(id3v2.id3v2_data.data()),
+                        id3v2.id3v2_data.size())
+          .find(kShakaPackager) != base::StringPiece::npos;
+  return true;
 }
 
 }  // namespace mp4

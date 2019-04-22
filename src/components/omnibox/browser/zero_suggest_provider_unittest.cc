@@ -20,6 +20,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/search_engines/template_url.h"
@@ -38,25 +39,7 @@ class FakeEmptyTopSites : public history::TopSites {
   }
 
   // history::TopSites:
-  bool SetPageThumbnail(const GURL& url,
-                        const gfx::Image& thumbnail,
-                        const history::ThumbnailScore& score) override {
-    return false;
-  }
-  void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback,
-                          bool include_forced_urls) override;
-  bool GetPageThumbnail(const GURL& url, bool prefix_match,
-                        scoped_refptr<base::RefCountedMemory>* bytes) override {
-    return false;
-  }
-  bool GetPageThumbnailScore(const GURL& url,
-                             history::ThumbnailScore* score) override {
-    return false;
-  }
-  bool GetTemporaryPageThumbnailScore(const GURL& url,
-                                      history::ThumbnailScore* score) override {
-    return false;
-  }
+  void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback) override;
   void SyncWithHistory() override {}
   bool HasBlacklistedItems() const override {
     return false;
@@ -70,20 +53,12 @@ class FakeEmptyTopSites : public history::TopSites {
   bool IsKnownURL(const GURL& url) override {
     return false;
   }
-  bool IsNonForcedFull() override {
-    return false;
-  }
-  bool IsForcedFull() override {
-    return false;
-  }
+  bool IsFull() override { return false; }
   bool loaded() const override {
     return false;
   }
   history::PrepopulatedPageList GetPrepopulatedPages() override {
     return history::PrepopulatedPageList();
-  }
-  bool AddForcedURL(const GURL& url, const base::Time& time) override {
-    return false;
   }
   void OnNavigationCommitted(const GURL& url) override {}
 
@@ -109,8 +84,7 @@ class FakeEmptyTopSites : public history::TopSites {
 };
 
 void FakeEmptyTopSites::GetMostVisitedURLs(
-    const GetMostVisitedURLsCallback& callback,
-    bool include_forced_urls)  {
+    const GetMostVisitedURLsCallback& callback) {
   callbacks.push_back(callback);
 }
 

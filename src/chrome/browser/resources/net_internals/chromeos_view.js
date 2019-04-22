@@ -5,11 +5,11 @@
 /**
  * This view displays information on ChromeOS specific features.
  */
-var CrosView = (function() {
+const CrosView = (function() {
   'use strict';
 
-  var fileContent;
-  var passcode = '';
+  let fileContent;
+  let passcode = '';
 
   /**
    *  Clear file input div
@@ -29,10 +29,11 @@ var CrosView = (function() {
    */
   function importONCFile_() {
     clearParseStatus_();
-    if (fileContent)
+    if (fileContent) {
       g_browser.importONCFile(fileContent, passcode);
-    else
+    } else {
       setParseStatus_('ONC file parse failed: cannot read file');
+    }
     clearFileInput_();
   }
 
@@ -44,8 +45,9 @@ var CrosView = (function() {
    */
   function setPasscode_(value) {
     passcode = value;
-    if (passcode)
+    if (passcode) {
       importONCFile_();
+    }
   }
 
   /**
@@ -69,7 +71,7 @@ var CrosView = (function() {
   function setFileContent_(result) {
     fileContent = result;
     // Parse the JSON to get at the top level "Type" property.
-    var jsonObject;
+    let jsonObject;
     // Ignore any parse errors: they'll get handled in the C++ import code.
     try {
       jsonObject = JSON.parse(fileContent);
@@ -90,7 +92,7 @@ var CrosView = (function() {
    *  @private
    */
   function clearParseStatus_(error) {
-    var parseStatus = $(CrosView.PARSE_STATUS_ID);
+    const parseStatus = $(CrosView.PARSE_STATUS_ID);
     parseStatus.hidden = true;
     parseStatus.textContent = '';
   }
@@ -101,7 +103,7 @@ var CrosView = (function() {
    *  @private
    */
   function setParseStatus_(error) {
-    var parseStatus = $(CrosView.PARSE_STATUS_ID);
+    const parseStatus = $(CrosView.PARSE_STATUS_ID);
     parseStatus.hidden = false;
     parseStatus.textContent = error ? 'ONC file parse failed: ' + error :
                                       'ONC file successfully parsed';
@@ -115,6 +117,16 @@ var CrosView = (function() {
    */
   function setStoreDebugLogsStatus_(status) {
     $(CrosView.STORE_DEBUG_LOGS_STATUS_ID).innerText = status;
+  }
+
+
+  /**
+   *  Set storing combined debug logs status.
+   *
+   *  @private
+   */
+  function setStoreCombinedDebugLogsStatus_(status) {
+    $(CrosView.STORE_COMBINED_DEBUG_LOGS_STATUS_ID).innerText = status;
   }
 
   /**
@@ -133,8 +145,8 @@ var CrosView = (function() {
    */
   function handleFileChangeEvent_(event) {
     clearParseStatus_();
-    var file = event.target.files[0];
-    var reader = new FileReader();
+    const file = event.target.files[0];
+    const reader = new FileReader();
     reader.onloadend = function(e) {
       setFileContent_(reader.result);
     };
@@ -160,6 +172,11 @@ var CrosView = (function() {
       $(CrosView.STORE_DEBUG_LOGS_STATUS_ID).innerText = '';
       g_browser.storeDebugLogs();
     }, false);
+    $(CrosView.STORE_COMBINED_DEBUG_LOGS_ID)
+        .addEventListener('click', function(event) {
+          $(CrosView.STORE_COMBINED_DEBUG_LOGS_STATUS_ID).innerText = '';
+          g_browser.storeCombinedDebugLogs();
+        }, false);
 
     $(CrosView.DEBUG_WIFI_ID).addEventListener('click', function(event) {
       setNetworkDebugMode_('wifi');
@@ -227,6 +244,10 @@ var CrosView = (function() {
   CrosView.PARSE_STATUS_ID = 'chromeos-view-parse-status';
   CrosView.STORE_DEBUG_LOGS_ID = 'chromeos-view-store-debug-logs';
   CrosView.STORE_DEBUG_LOGS_STATUS_ID = 'chromeos-view-store-debug-logs-status';
+  CrosView.STORE_COMBINED_DEBUG_LOGS_ID =
+      'chromeos-view-store-combined-debug-logs';
+  CrosView.STORE_COMBINED_DEBUG_LOGS_STATUS_ID =
+      'chromeos-view-store-combined-debug-logs-status';
   CrosView.DEBUG_WIFI_ID = 'chromeos-view-network-debugging-wifi';
   CrosView.DEBUG_ETHERNET_ID = 'chromeos-view-network-debugging-ethernet';
   CrosView.DEBUG_CELLULAR_ID = 'chromeos-view-network-debugging-cellular';
@@ -242,6 +263,7 @@ var CrosView = (function() {
 
     onONCFileParse: setParseStatus_,
     onStoreDebugLogs: setStoreDebugLogsStatus_,
+    onStoreCombinedDebugLogs: setStoreCombinedDebugLogsStatus_,
     onSetNetworkDebugMode: setNetworkDebugModeStatus_,
   };
 

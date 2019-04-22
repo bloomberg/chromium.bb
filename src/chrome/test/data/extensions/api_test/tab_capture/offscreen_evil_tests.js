@@ -78,17 +78,6 @@ chrome.test.runTests([
       waitForGreenOrRedTestResultAndEndTest);
   },
 
-  function cannotGetUserMedia() {
-    chrome.tabCapture.captureOffscreenTab(
-      makeDataUriFromDocument(makeOffscreenTabTestDocument(
-          'navigator.webkitGetUserMedia(\n' +
-          '  {video: true},\n' +
-          '  function onSuccess(stream) { setFillColor(redColor); },\n' +
-          '  function onFailure(error) { setFillColor(greenColor); });')),
-      getCaptureOptions(),
-      waitForGreenOrRedTestResultAndEndTest);
-  },
-
   function cannotNavigateWhenPresenting() {
     const captureOptions = getCaptureOptions();
     captureOptions.presentationId = 'presentation_id';

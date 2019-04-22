@@ -1,9 +1,8 @@
 //===----------------------------------------------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
@@ -64,7 +63,7 @@
 #error RAND_MAX not defined
 #endif
 
-int main()
+int main(int, char**)
 {
     size_t s = 0; ((void)s);
     div_t d; ((void)d);
@@ -87,10 +86,8 @@ int main()
     static_assert((std::is_same<decltype(srand(0)), void>::value), "");
 
 //  Microsoft does not implement aligned_alloc in their C library
-#ifndef TEST_COMPILER_C1XX
-#if TEST_STD_VER > 14 && defined(TEST_HAS_C11_FEATURES)
+#if TEST_STD_VER > 14 && defined(TEST_HAS_C11_FEATURES) && !defined(_WIN32)
     static_assert((std::is_same<decltype(aligned_alloc(0,0)), void*>::value), "");
-#endif
 #endif
 
     static_assert((std::is_same<decltype(calloc(0,0)), void*>::value), "");
@@ -119,4 +116,6 @@ int main()
     static_assert((std::is_same<decltype(wctomb(pc,L' ')), int>::value), "");
     static_assert((std::is_same<decltype(mbstowcs(pw,"",0)), size_t>::value), "");
     static_assert((std::is_same<decltype(wcstombs(pc,pwc,0)), size_t>::value), "");
+
+  return 0;
 }

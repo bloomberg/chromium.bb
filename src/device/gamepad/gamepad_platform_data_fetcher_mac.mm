@@ -10,6 +10,9 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
+#include "device/gamepad/gamepad_id_list.h"
+#include "device/gamepad/gamepad_uma.h"
+#include "device/gamepad/nintendo_controller.h"
 
 #import <Foundation/Foundation.h>
 #include <IOKit/hid/IOHIDKeys.h>
@@ -23,9 +26,6 @@ const uint16_t kGenericDesktopUsagePage = 0x01;
 const uint16_t kJoystickUsageNumber = 0x04;
 const uint16_t kGameUsageNumber = 0x05;
 const uint16_t kMultiAxisUsageNumber = 0x08;
-
-const uint16_t kVendorSteelSeries = 0x1038;
-const uint16_t kProductNimbus = 0x1420;
 
 void CopyNSStringAsUTF16LittleEndian(NSString* src,
                                      UChar* dest,
@@ -180,10 +180,6 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   // Find an index for this device.
   size_t slot = GetSlotForDevice(device);
 
-  // We can't handle this many connected devices.
-  if (slot == Gamepads::kItemsLengthCap)
-    return;
-
   NSNumber* vendor_id = CFToNSCast(CFCastStrict<CFNumberRef>(
       IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey))));
   NSNumber* product_id = CFToNSCast(CFCastStrict<CFNumberRef>(
@@ -196,11 +192,29 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   uint16_t product_int = [product_id intValue];
   uint16_t version_int = [version_number intValue];
 
+  // Nintendo devices are handled by the Nintendo data fetcher.
+  if (NintendoController::IsNintendoController(vendor_int, product_int))
+    return;
+
+  // Record the device before excluding Made for iOS gamepads. This allows us to
+  // recognize these devices even though the GameController API masks the vendor
+  // and product IDs. XInput devices are recorded elsewhere.
+  const auto& gamepad_id_list = GamepadIdList::Get();
+  DCHECK_EQ(kXInputTypeNone,
+            gamepad_id_list.GetXInputType(vendor_int, product_int));
+  RecordConnectedGamepad(vendor_int, product_int);
+
+  // We can't handle this many connected devices.
+  if (slot == Gamepads::kItemsLengthCap)
+    return;
+
   // The SteelSeries Nimbus and other Made for iOS gamepads should be handled
   // through the GameController interface. Blacklist it here so it doesn't
   // take up an additional gamepad slot.
-  if (vendor_int == kVendorSteelSeries && product_int == kProductNimbus)
+  if (gamepad_id_list.GetGamepadId(vendor_int, product_int) ==
+      GamepadId::kSteelSeriesProduct1420) {
     return;
+  }
 
   PadState* state = GetPadState(location_int);
   if (!state)
@@ -291,31 +305,37 @@ void GamepadPlatformDataFetcherMac::PlayEffect(
     int source_id,
     mojom::GamepadHapticEffectType type,
     mojom::GamepadEffectParametersPtr params,
-    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   size_t slot = GetSlotForLocation(source_id);
   if (slot == Gamepads::kItemsLengthCap) {
     // No connected gamepad with this location. Probably the effect was issued
     // while the gamepad was still connected, so handle this as if it were
     // preempted by a disconnect.
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
     return;
   }
-  devices_[slot]->PlayEffect(type, std::move(params), std::move(callback));
+  devices_[slot]->PlayEffect(type, std::move(params), std::move(callback),
+                             std::move(callback_runner));
 }
 
 void GamepadPlatformDataFetcherMac::ResetVibration(
     int source_id,
-    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   size_t slot = GetSlotForLocation(source_id);
   if (slot == Gamepads::kItemsLengthCap) {
     // No connected gamepad with this location. Since the gamepad is already
     // disconnected, allow the reset to report success.
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultComplete);
     return;
   }
-  devices_[slot]->ResetVibration(std::move(callback));
+  devices_[slot]->ResetVibration(std::move(callback),
+                                 std::move(callback_runner));
 }
 
 }  // namespace device

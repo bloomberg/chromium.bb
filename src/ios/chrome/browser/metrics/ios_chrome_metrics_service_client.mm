@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -19,7 +20,6 @@
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/threading/platform_thread.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -29,7 +29,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
-#include "components/metrics/metrics_switches.h"
 #include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
@@ -42,9 +41,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_status_metrics_provider.h"
 #include "components/sync/device_info/device_count_metrics_provider.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/ukm/ukm_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
+#include "google_apis/google_api_keys.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
@@ -52,12 +53,12 @@
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
+#include "ios/chrome/browser/metrics/ios_user_type_metrics_provider.h"
 #include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h"
-#include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
+#include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
-#import "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/translate/translate_ranker_metrics_provider.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
@@ -112,12 +113,6 @@ void IOSChromeMetricsServiceClient::RegisterPrefs(
   ukm::UkmService::RegisterPrefs(registry);
 }
 
-// static
-bool IOSChromeMetricsServiceClient::IsMetricsReportingForceEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      metrics::switches::kForceEnableMetricsReporting);
-}
-
 metrics::MetricsService* IOSChromeMetricsServiceClient::GetMetricsService() {
   return metrics_service_.get();
 }
@@ -162,8 +157,8 @@ void IOSChromeMetricsServiceClient::CollectFinalMetricsForLog(
 
 std::unique_ptr<metrics::MetricsLogUploader>
 IOSChromeMetricsServiceClient::CreateUploader(
-    base::StringPiece server_url,
-    base::StringPiece insecure_server_url,
+    const GURL& server_url,
+    const GURL& insecure_server_url,
     base::StringPiece mime_type,
     metrics::MetricsLogUploader::MetricServiceType service_type,
     const metrics::MetricsLogUploader::UploadCallback& on_upload_complete) {
@@ -209,12 +204,8 @@ void IOSChromeMetricsServiceClient::Initialize() {
       std::make_unique<metrics::NetworkMetricsProvider>(
           base::BindRepeating(&GetNetworkConnectionTrackerAsync)));
 
-  // Currently, we configure OmniboxMetricsProvider to not log events to UMA
-  // if there is a single incognito session visible. In the future, it may
-  // be worth revisiting this to still log events from non-incognito sessions.
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<OmniboxMetricsProvider>(
-          base::Bind(&TabModelList::IsOffTheRecordSessionActive)));
+      std::make_unique<OmniboxMetricsProvider>());
 
   {
     auto stability_metrics_provider =
@@ -243,11 +234,14 @@ void IOSChromeMetricsServiceClient::Initialize() {
           metrics_service_.get()));
 
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<syncer::DeviceCountMetricsProvider>(
-          base::Bind(&IOSChromeSyncClient::GetDeviceInfoTrackers)));
+      std::make_unique<syncer::DeviceCountMetricsProvider>(base::BindRepeating(
+          &DeviceInfoSyncServiceFactory::GetAllDeviceInfoTrackers)));
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<translate::TranslateRankerMetricsProvider>());
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<IOSUserTypeMetricsProvider>());
 }
 
 void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
@@ -300,11 +294,10 @@ bool IOSChromeMetricsServiceClient::RegisterForBrowserStateEvents(
       ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::IMPLICIT_ACCESS);
   ObserveServiceForDeletions(history_service);
-  browser_sync::ProfileSyncService* sync =
+  syncer::SyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetForBrowserState(
           browser_state);
-  ObserveServiceForSyncDisables(static_cast<syncer::SyncService*>(sync),
-                                browser_state->GetPrefs());
+  ObserveServiceForSyncDisables(sync, browser_state->GetPrefs());
   return (history_service != nullptr && sync != nullptr);
 }
 
@@ -355,4 +348,10 @@ bool IOSChromeMetricsServiceClient::SyncStateAllowsUkm() {
 bool IOSChromeMetricsServiceClient::
     AreNotificationListenersEnabledOnAllProfiles() {
   return notification_listeners_active_;
+}
+
+std::string IOSChromeMetricsServiceClient::GetUploadSigningKey() {
+  std::string decoded_key;
+  base::Base64Decode(google_apis::GetMetricsKey(), &decoded_key);
+  return decoded_key;
 }

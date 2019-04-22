@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest,
                        LaunchAppOffline_UpgradeNeeded) {
   base::HistogramTester histogram_tester;
-  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
+  SetConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   crostini::CrostiniManager::GetForProfile(browser()->profile())
       ->MaybeUpgradeCrostini();
 

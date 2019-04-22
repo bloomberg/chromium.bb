@@ -67,6 +67,8 @@ class OffscreenTabsOwner final
   content::WebContents* const extension_web_contents_;
   std::vector<std::unique_ptr<OffscreenTab>> tabs_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(OffscreenTabsOwner);
 };
 

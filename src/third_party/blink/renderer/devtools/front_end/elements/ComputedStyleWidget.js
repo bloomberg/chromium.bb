@@ -83,6 +83,14 @@ Elements.ComputedStyleWidget = class extends UI.ThrottledWidget {
     fontsWidget.show(this.contentElement);
   }
 
+  /**
+   * @override
+   */
+  onResize() {
+    const isNarrow = this.contentElement.offsetWidth < 260;
+    this._propertiesOutline.contentElement.classList.toggle('computed-narrow', isNarrow);
+  }
+
   _showInheritedComputedStyleChanged() {
     this.update();
   }
@@ -181,7 +189,7 @@ Elements.ComputedStyleWidget = class extends UI.ThrottledWidget {
       propertyElement.appendChild(propertyNameElement);
 
       const colon = createElementWithClass('span', 'delimeter');
-      colon.textContent = ':';
+      colon.textContent = ': ';
       propertyNameElement.appendChild(colon);
 
       const propertyValueElement = propertyElement.createChild('span', 'property-value');

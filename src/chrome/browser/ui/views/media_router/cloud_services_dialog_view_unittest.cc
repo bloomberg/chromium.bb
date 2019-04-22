@@ -10,7 +10,6 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/widget/widget.h"
 
@@ -24,8 +23,9 @@ class CloudServicesDialogViewTest : public ChromeViewsTestBase {
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
 
+    profile_ = std::make_unique<TestingProfile>();
     window_ = std::make_unique<TestBrowserWindow>();
-    Browser::CreateParams browser_params(&profile_, true);
+    Browser::CreateParams browser_params(profile_.get(), true);
     browser_params.window = window_.get();
     browser_ = std::make_unique<Browser>(browser_params);
 
@@ -42,6 +42,7 @@ class CloudServicesDialogViewTest : public ChromeViewsTestBase {
     anchor_widget_.reset();
     browser_.reset();
     window_.reset();
+    profile_.reset();
 
     ChromeViewsTestBase::TearDown();
   }
@@ -65,11 +66,10 @@ class CloudServicesDialogViewTest : public ChromeViewsTestBase {
                          prefs::kMediaRouterCloudServicesPrefSet));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<BrowserWindow> window_;
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<views::Widget> anchor_widget_;
-  TestingProfile profile_;
+  std::unique_ptr<TestingProfile> profile_;
 };
 
 TEST_F(CloudServicesDialogViewTest, Enable) {

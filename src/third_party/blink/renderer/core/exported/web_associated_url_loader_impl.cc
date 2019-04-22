@@ -45,8 +45,8 @@
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
@@ -107,15 +107,13 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
                 scoped_refptr<base::SingleThreadTaskRunner>);
 
   // ThreadableLoaderClient
-  void DidSendData(unsigned long long /*bytesSent*/,
-                   unsigned long long /*totalBytesToBeSent*/) override;
-  void DidReceiveResponse(unsigned long,
-                          const ResourceResponse&,
-                          std::unique_ptr<WebDataConsumerHandle>) override;
-  void DidDownloadData(int /*dataLength*/) override;
+  void DidSendData(uint64_t /*bytesSent*/,
+                   uint64_t /*totalBytesToBeSent*/) override;
+  void DidReceiveResponse(uint64_t, const ResourceResponse&) override;
+  void DidDownloadData(uint64_t /*dataLength*/) override;
   void DidReceiveData(const char*, unsigned /*dataLength*/) override;
   void DidReceiveCachedMetadata(const char*, int /*dataLength*/) override;
-  void DidFinishLoading(unsigned long /*identifier*/) override;
+  void DidFinishLoading(uint64_t /*identifier*/) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
@@ -190,8 +188,8 @@ bool WebAssociatedURLLoaderImpl::ClientAdapter::WillFollowRedirect(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidSendData(
-    unsigned long long bytes_sent,
-    unsigned long long total_bytes_to_be_sent) {
+    uint64_t bytes_sent,
+    uint64_t total_bytes_to_be_sent) {
   if (!client_)
     return;
 
@@ -199,11 +197,8 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidSendData(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
-    unsigned long,
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
-  ALLOW_UNUSED_LOCAL(handle);
-  DCHECK(!handle);
+    uint64_t,
+    const ResourceResponse& response) {
   if (!client_)
     return;
 
@@ -221,7 +216,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
   WebHTTPHeaderSet blocked_headers;
   for (const auto& header : response.HttpHeaderFields()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.key) ||
-        (!cors::IsOnAccessControlResponseHeaderWhitelist(header.key) &&
+        (!cors::IsCorsSafelistedResponseHeader(header.key) &&
          exposed_headers.find(header.key.Ascii().data()) ==
              exposed_headers.end()))
       blocked_headers.insert(header.key.Ascii().data());
@@ -236,12 +231,12 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
   // If there are blocked headers, copy the response so we can remove them.
   WebURLResponse validated_response = WrappedResourceResponse(response);
   for (const auto& header : blocked_headers)
-    validated_response.ClearHTTPHeaderField(WebString::FromASCII(header));
+    validated_response.ClearHttpHeaderField(WebString::FromASCII(header));
   client_->DidReceiveResponse(validated_response);
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidDownloadData(
-    int data_length) {
+    uint64_t data_length) {
   if (!client_)
     return;
 
@@ -269,7 +264,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveCachedMetadata(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidFinishLoading(
-    unsigned long identifier) {
+    uint64_t identifier) {
   if (!client_)
     return;
 
@@ -368,9 +363,9 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     allow_load = observer_ && IsValidHTTPToken(method) &&
                  !FetchUtils::IsForbiddenMethod(method);
     if (allow_load) {
-      new_request.SetHTTPMethod(FetchUtils::NormalizeMethod(method));
+      new_request.SetHttpMethod(FetchUtils::NormalizeMethod(method));
       HTTPRequestHeaderValidator validator;
-      new_request.VisitHTTPHeaderFields(&validator);
+      new_request.VisitHttpHeaderFields(&validator);
       allow_load = validator.IsSafe();
     }
   }
@@ -400,8 +395,10 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       const auto mode = new_request.GetFetchRequestMode();
       DCHECK(mode == network::mojom::FetchRequestMode::kNoCors ||
              mode == network::mojom::FetchRequestMode::kNavigate);
-      scoped_refptr<SecurityOrigin> origin =
-          SecurityOrigin::CreateUniqueOpaque();
+      // Some callers, notablly flash, with |grant_universal_access| want to
+      // have an origin matching with referrer.
+      KURL referrer(request.HttpHeaderField(http_names::kReferer));
+      scoped_refptr<SecurityOrigin> origin = SecurityOrigin::Create(referrer);
       origin->GrantUniversalAccess();
       new_request.ToMutableResourceRequest().SetRequestorOrigin(origin);
     }

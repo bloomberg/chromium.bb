@@ -9,8 +9,8 @@
 #include "components/signin/core/browser/account_info.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/objc/identity_manager_observer_bridge.h"
@@ -102,13 +102,14 @@
 #pragma mark - IdentityManagerObserverBridgeDelegate
 
 // Called when a user signs into Google services such as sync.
-- (void)onPrimaryAccountSet:(const AccountInfo&)primaryAccountInfo {
+- (void)onPrimaryAccountSet:(const CoreAccountInfo&)primaryAccountInfo {
   if (!self.signinPromoViewMediator.isSigninInProgress)
     self.shouldShowSigninPromo = NO;
 }
 
 // Called when the currently signed-in user for a user has been signed out.
-- (void)onPrimaryAccountCleared:(const AccountInfo&)previousPrimaryAccountInfo {
+- (void)onPrimaryAccountCleared:
+    (const CoreAccountInfo&)previousPrimaryAccountInfo {
   [self updateShouldShowSigninPromo];
 }
 

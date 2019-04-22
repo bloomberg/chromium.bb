@@ -43,7 +43,8 @@ void ManagedBookmarksPolicyHandler::ApplyPolicySettings(
   prefs->SetString(bookmarks::prefs::kManagedBookmarksFolderName,
                    GetFolderName(*list));
   FilterBookmarks(list);
-  prefs->SetValue(bookmarks::prefs::kManagedBookmarks, std::move(value));
+  prefs->SetValue(bookmarks::prefs::kManagedBookmarks,
+                  base::Value::FromUniquePtrValue(std::move(value)));
 }
 
 std::string

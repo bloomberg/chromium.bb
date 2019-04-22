@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -87,7 +88,7 @@ class ListAttributeTargetObserver : public IdTargetObserver {
 
   ListAttributeTargetObserver(const AtomicString& id, HTMLInputElement*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   void IdTargetChanged() override;
 
  private:
@@ -135,7 +136,7 @@ HTMLInputElement* HTMLInputElement::Create(Document& document,
   return input_element;
 }
 
-void HTMLInputElement::Trace(blink::Visitor* visitor) {
+void HTMLInputElement::Trace(Visitor* visitor) {
   visitor->Trace(input_type_);
   visitor->Trace(input_type_view_);
   visitor->Trace(list_attribute_target_observer_);
@@ -143,10 +144,12 @@ void HTMLInputElement::Trace(blink::Visitor* visitor) {
   TextControlElement::Trace(visitor);
 }
 
-const HashSet<AtomicString>& HTMLInputElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLInputElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"formaction", SpecificTrustedType::kTrustedURL},
+                        {"src", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 bool HTMLInputElement::HasPendingActivity() const {
@@ -155,7 +158,7 @@ bool HTMLInputElement::HasPendingActivity() const {
 
 HTMLImageLoader& HTMLInputElement::EnsureImageLoader() {
   if (!image_loader_)
-    image_loader_ = HTMLImageLoader::Create(this);
+    image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
   return *image_loader_;
 }
 
@@ -385,7 +388,7 @@ void HTMLInputElement::InitializeTypeInParsing() {
     CreateShadowSubtree();
   }
 
-  SetNeedsWillValidateCheck();
+  UpdateWillValidateCache();
 
   if (!default_value.IsNull())
     input_type_->WarnIfValueIsInvalid(default_value);
@@ -437,6 +440,10 @@ void HTMLInputElement::UpdateType() {
 
   has_been_password_field_ |= new_type_name == input_type_names::kPassword;
 
+  // 7. Let previouslySelectable be true if setRangeText() previously applied
+  // to the element, and false otherwise.
+  const bool previously_selectable = input_type_->SupportsSelectionAPI();
+
   input_type_ = new_type;
   input_type_view_ = input_type_->CreateView();
   if (input_type_view_->NeedsShadowSubtree()) {
@@ -444,7 +451,7 @@ void HTMLInputElement::UpdateType() {
     CreateShadowSubtree();
   }
 
-  SetNeedsWillValidateCheck();
+  UpdateWillValidateCache();
 
   if (placeholder_changed) {
     // We need to update the UA shadow and then the placeholder visibility flag
@@ -458,7 +465,7 @@ void HTMLInputElement::UpdateType() {
 
   ValueMode new_value_mode = input_type_->GetValueMode();
 
-  // https://html.spec.whatwg.org/multipage/forms.html#input-type-change
+  // https://html.spec.whatwg.org/C/#input-type-change
   //
   // 1. If the previous state of the element's type attribute put the value IDL
   // attribute in the value mode, and the element's value is not the empty
@@ -541,12 +548,24 @@ void HTMLInputElement::UpdateType() {
   // UA Shadow tree was recreated. We need to set selection again. We do it
   // later in order to avoid force layout.
   if (GetDocument().FocusedElement() == this)
-    GetDocument().UpdateFocusAppearanceLater();
+    GetDocument().UpdateFocusAppearanceAfterLayout();
 
   // TODO(tkent): Should we dispatch a change event?
   ClearValueBeforeFirstUserEdit();
 
+  // 5. Signal a type change for the element. (The Radio Button state uses
+  // this, in particular.)
   AddToRadioButtonGroup();
+
+  // 8. Let nowSelectable be true if setRangeText() now applies to the element,
+  // and false otherwise.
+  const bool now_selectable = input_type_->SupportsSelectionAPI();
+
+  // 9. If previouslySelectable is false and nowSelectable is true, set the
+  // element's text entry cursor position to the beginning of the text control,
+  // and set its selection direction to "none".
+  if (!previously_selectable && now_selectable)
+    SetSelectionRange(0, 0, kSelectionHasNoDirection);
 
   SetNeedsValidityCheck();
   if ((could_be_successful_submit_button || CanBeSuccessfulSubmitButton()) &&
@@ -704,20 +723,20 @@ void HTMLInputElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kVspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
-    AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginTop, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginBottom, value);
   } else if (name == kHspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
-    AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginLeft, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginRight, value);
   } else if (name == kAlignAttr) {
     if (input_type_->ShouldRespectAlignAttribute())
       ApplyAlignmentAttributeToStyle(value, style);
   } else if (name == kWidthAttr) {
     if (input_type_->ShouldRespectHeightAndWidthAttributes())
-      AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
+      AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
   } else if (name == kHeightAttr) {
     if (input_type_->ShouldRespectHeightAndWidthAttributes())
-      AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
+      AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
   } else if (name == kBorderAttr &&
              type() == input_type_names::kImage) {  // FIXME: Remove type check.
     ApplyBorderAttributeToStyle(value, style);
@@ -874,24 +893,19 @@ bool HTMLInputElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
          TextControlElement::LayoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style) {
-  return input_type_view_->CreateLayoutObject(style);
+LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style,
+                                                   LegacyLayout legacy) {
+  return input_type_view_->CreateLayoutObject(style, legacy);
 }
 
 void HTMLInputElement::AttachLayoutTree(AttachContext& context) {
   TextControlElement::AttachLayoutTree(context);
-  if (GetLayoutObject()) {
+  if (GetLayoutObject())
     input_type_->OnAttachWithLayoutObject();
-  }
-
-  input_type_view_->StartResourceLoading();
   input_type_->CountUsage();
 }
 
 void HTMLInputElement::DetachLayoutTree(const AttachContext& context) {
-  if (GetLayoutObject()) {
-    input_type_->OnDetachWithLayoutObject();
-  }
   TextControlElement::DetachLayoutTree(context);
   needs_to_update_view_value_ = true;
   input_type_view_->ClosePopupView();
@@ -1000,7 +1014,8 @@ void HTMLInputElement::setChecked(bool now_checked,
   // unchecked to match other browsers. DOM is not a useful standard for this
   // because it says only to fire change events at "lose focus" time, which is
   // definitely wrong in practice for these types of elements.
-  if (event_behavior == kDispatchInputAndChangeEvent && isConnected() &&
+  if (event_behavior == TextFieldEventBehavior::kDispatchInputAndChangeEvent &&
+      isConnected() &&
       input_type_->ShouldSendChangeEventAfterCheckedChanged()) {
     DispatchInputEvent();
   }
@@ -1072,7 +1087,7 @@ String HTMLInputElement::ValueOrDefaultLabel() const {
 
 void HTMLInputElement::SetValueForUser(const String& value) {
   // Call setValue and make it send a change event.
-  setValue(value, kDispatchChangeEvent);
+  setValue(value, TextFieldEventBehavior::kDispatchChangeEvent);
 }
 
 void HTMLInputElement::SetSuggestedValue(const String& value) {
@@ -1144,6 +1159,23 @@ void HTMLInputElement::setValue(const String& value,
 
   if (value_changed)
     NotifyFormStateChanged();
+
+  if (isConnected()) {
+    if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
+      auto* page = GetDocument().GetPage();
+      auto* view = GetDocument().View();
+      // Run the document lifecycle to ensure AX notifications fire,
+      // even if the value didn't change.
+      if (page && view) {
+        // TODO(aboxhall): add a lifecycle phase for accessibility updates.
+        if (!view->CanThrottleRendering())
+          page->Animator().ScheduleVisualUpdate(GetDocument().GetFrame());
+
+        GetDocument().Lifecycle().EnsureStateAtMost(
+            DocumentLifecycle::kVisualUpdatePending);
+      }
+    }
+  }
 }
 
 void HTMLInputElement::SetNonAttributeValue(const String& sanitized_value) {
@@ -1246,7 +1278,7 @@ EventDispatchHandlingState* HTMLInputElement::PreDispatchEventHandler(
     return nullptr;
   if (!event.IsMouseEvent() ||
       ToMouseEvent(event).button() !=
-          static_cast<short>(WebPointerProperties::Button::kLeft))
+          static_cast<int16_t>(WebPointerProperties::Button::kLeft))
     return nullptr;
   return input_type_view_->WillDispatchClick();
 }
@@ -1263,7 +1295,7 @@ void HTMLInputElement::PostDispatchEventHandler(
 void HTMLInputElement::DefaultEventHandler(Event& evt) {
   if (evt.IsMouseEvent() && evt.type() == event_type_names::kClick &&
       ToMouseEvent(evt).button() ==
-          static_cast<short>(WebPointerProperties::Button::kLeft)) {
+          static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     input_type_view_->HandleClickEvent(ToMouseEvent(evt));
     if (evt.DefaultHandled())
       return;
@@ -1701,7 +1733,7 @@ bool HTMLInputElement::IsEnumeratable() const {
   return input_type_->IsEnumeratable();
 }
 
-bool HTMLInputElement::SupportLabels() const {
+bool HTMLInputElement::IsLabelable() const {
   return input_type_->IsInteractiveContent();
 }
 
@@ -1810,7 +1842,7 @@ ListAttributeTargetObserver::ListAttributeTargetObserver(
                        id),
       element_(element) {}
 
-void ListAttributeTargetObserver::Trace(blink::Visitor* visitor) {
+void ListAttributeTargetObserver::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   IdTargetObserver::Trace(visitor);
 }
@@ -1925,12 +1957,9 @@ scoped_refptr<ComputedStyle> HTMLInputElement::CustomStyleForLayoutObject() {
       OriginalStyleForLayoutObject());
 }
 
-void HTMLInputElement::DidRecalcStyle(StyleRecalcChange change) {
+void HTMLInputElement::DidRecalcStyle(const StyleRecalcChange change) {
   TextControlElement::DidRecalcStyle(change);
-  if (change != kReattach)
-    return;
-  ComputedStyle* style = GetNonAttachedStyle();
-  if (style && style->Display() != EDisplay::kNone)
+  if (NeedsReattachLayoutTree() && GetComputedStyle())
     input_type_view_->StartResourceLoading();
 }
 

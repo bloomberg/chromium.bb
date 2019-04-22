@@ -17,6 +17,10 @@ namespace search_engines {
 void UpdateSearchEnginesIfNeeded(PrefService* preferences,
                                  TemplateURLService* service);
 
+// Checks whether the default url of the given template url supports searching
+// by image.
+bool SupportsSearchByImage(TemplateURLService* service);
+
 }  // namespace search_engines
 
 #endif  // IOS_CHROME_BROWSER_SEARCH_ENGINES_SEARCH_ENGINES_UTIL_H_

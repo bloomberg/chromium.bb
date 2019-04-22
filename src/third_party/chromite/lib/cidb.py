@@ -175,7 +175,7 @@ class SchemaVersionedMySQLConnection(object):
       if 'ssl' not in self._ssl_args:
         self._ssl_args['ssl'] = {}
       self._ssl_args['ssl'][key] = file_path
-      self._ssl_args['ssl']['check_hostname'] = False
+      self._ssl_args['ssl']['check_hostname'] = True
 
   def _UpdateConnectArgs(self, db_credentials_dir, for_service=False):
     """Update all connection args from |db_credentials_dir|."""
@@ -696,27 +696,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'buildbot_generation', 'master_build_id', 'bot_hostname', 'deadline',
       'build_type', 'metadata_url', 'toolchain_url', 'branch')
 
-  _SQL_FETCH_ANNOTATIONS = (
-      'SELECT aT.build_id, aT.last_updated, last_annotator, '
-      'failure_category, failure_message, blame_url, notes, deleted, '
-      'bT.last_updated, bT.id, buildbot_generation, builder_name, '
-      'waterfall, build_number, build_config, bot_hostname, status, '
-      'start_time, finish_time, status_pickle, build_type, final, '
-      'chrome_version, milestone_version, platform_version, summary, '
-      'full_version, sdk_version, toolchain_url, metadata_url, '
-      'deadline, important, buildbucket_id, unibuild, suite_scheduling'
-      ' FROM annotationsTable aT'
-      ' JOIN buildTable bT ON aT.build_id = bT.id')
-  BAD_CL_ANNOTATION_KEYS = (
-      'master_build_id', 'last_annotated', 'last_annotator',
-      'failure_category', 'failure_message', 'blame_url', 'notes', 'deleted',
-      'build_last_updated', 'id', 'buildbot_generation', 'builder_name',
-      'waterfall', 'build_number', 'build_config', 'bot_hostname', 'status',
-      'start_time', 'finish_time', 'status_pickle', 'build_type', 'final',
-      'chrome_version', 'milestone_version', 'platform_version', 'summary',
-      'full_version', 'sdk_version', 'toolchain_url', 'metadata_url',
-      'deadline', 'important', 'buildbucket_id', 'unibuild', 'suite_scheduling')
-
   def __init__(self, db_credentials_dir, for_service=False,
                query_retry_args=SqlConnectionRetryArgs(8, 4, 2)):
     super(CIDBConnection, self).__init__(
@@ -732,7 +711,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return self._Execute('SELECT NOW()').fetchall()[0][0]
 
   @minimum_schema(65)
-  def InsertBuild(self, builder_name, waterfall, build_number,
+  def InsertBuild(self, builder_name, build_number,
                   build_config, bot_hostname, master_build_id=None,
                   timeout_seconds=None, important=None, buildbucket_id=None,
                   branch=None):
@@ -740,7 +719,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     Args:
       builder_name: buildbot builder name.
-      waterfall: buildbot waterfall name.
       build_number: buildbot build number.
       build_config: cbuildbot config of build
       bot_hostname: hostname of bot running the build
@@ -756,7 +734,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     values = {
         'builder_name': builder_name,
         'buildbot_generation': constants.BUILDBOT_GENERATION,
-        'waterfall': waterfall,
+        # While waterfall is nullable all non waterfall entries show empty
+        # string, sticking to the convention.
+        'waterfall': '',
         'build_number': build_number,
         'build_config': build_config,
         'bot_hostname': bot_hostname,
@@ -991,22 +971,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'suite_scheduling': d.get('suite_scheduling', False),
                          'branch': d.get('branch')})
 
-  @minimum_schema(2)
-  def GetMetadata(self, build_id):
-    """Get the metadata for |build_id| in buildTable.
-
-    Args:
-      build_id: Id of the row to select.
-      fields: List of fields (column names) to select.
-
-    Returns:
-      The metadata object.
-    """
-    fields = ['chrome_version', 'milestone_version', 'platform_version',
-              'full_version', 'sdk_version', 'toolchain_url', 'build_type',
-              'important']
-    return self._Select('buildTable', build_id, fields)
-
   @minimum_schema(32)
   def ExtendDeadline(self, build_id, timeout_seconds):
     """Extend the deadline for this build.
@@ -1158,11 +1122,13 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         (status, build_id, child_config))
 
   @minimum_schema(65)
-  def GetBuildStatusWithBuildbucketId(self, buildbucket_id):
-    status = self._SelectWhere('buildTable',
-                               'buildbucket_id = "%s"' % buildbucket_id,
-                               self.BUILD_STATUS_KEYS)
-    return status[0] if status else None
+  def GetBuildStatusesWithBuildbucketIds(self, buildbucket_ids):
+    status = self._SelectWhere(
+        'buildTable',
+        'buildbucket_id IN (%s)' % ','.join([str(int(x))
+                                             for x in buildbucket_ids]),
+        self.BUILD_STATUS_KEYS)
+    return status if status else []
 
   @minimum_schema(65)
   def GetBuildStatus(self, build_id):
@@ -1216,20 +1182,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return stage[0] if stage else None
 
   @minimum_schema(30)
-  def GetBuildStages(self, build_id):
-    """Gets all the stages of a given build.
-
-    Args:
-      build_id: build id of the build to fetch the stages for.
-
-    Returns:
-      A list containing, for each stage of the build found, a dictionary with
-      keys (id, build_id, name, board, status, last_updated, start_time,
-      finish_time, final).
-    """
-    return self.GetBuildsStages([build_id])
-
-  @minimum_schema(30)
   def GetBuildsStages(self, build_ids):
     """Gets all the stages for all listed build_ids.
 
@@ -1243,11 +1195,62 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """
     if not build_ids:
       return []
-    return self._SelectWhere(
-        'buildStageTable',
-        'build_id IN (%s)' % ','.join(str(int(x)) for x in build_ids),
-        ['id', 'build_id', 'name', 'board', 'status',
-         'last_updated', 'start_time', 'finish_time', 'final'])
+    bs_table_columns = ['id', 'build_id', 'name', 'board', 'status',
+                        'last_updated', 'start_time', 'finish_time', 'final']
+    bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
+
+    b_table_columns = ['build_config', 'important']
+    b_prepended_columns = ['b.' + x for x in b_table_columns]
+
+    query = ('SELECT %s, %s FROM buildStageTable bs JOIN '
+             'buildTable b ON bs.build_id=b.id' %
+             (', '.join(bs_prepended_columns),
+              ', '.join(b_prepended_columns)))
+
+    query += (' WHERE b.id IN (%s)' %
+              (','.join('"%s"' % x for x in build_ids)))
+
+    results = self._Execute(query).fetchall()
+
+    columns = bs_table_columns + b_table_columns
+    return [dict(zip(columns, values)) for values in results]
+
+  @minimum_schema(30)
+  def GetBuildsStagesWithBuildbucketIds(self, buildbucket_ids):
+    """Gets all the stages for all listed buildbucket_ids.
+
+    This function is a modified copy of GetBuildsStages().
+
+    Args:
+      buildbucket_ids: list of buildbucket ids of the builds to fetch the
+        stages for.
+
+    Returns:
+      A list containing, for each stage of the builds found, a dictionary with
+      keys (id, build_id, name, board, status, last_updated, start_time,
+      finish_time, final).
+    """
+    if not buildbucket_ids:
+      return []
+    bs_table_columns = ['id', 'build_id', 'name', 'board', 'status',
+                        'last_updated', 'start_time', 'finish_time', 'final']
+    bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
+
+    b_table_columns = ['build_config', 'important']
+    b_prepended_columns = ['b.' + x for x in b_table_columns]
+
+    query = ('SELECT %s, %s FROM buildStageTable bs JOIN '
+             'buildTable b ON bs.build_id=b.id' %
+             (', '.join(bs_prepended_columns),
+              ', '.join(b_prepended_columns)))
+
+    query += (' WHERE b.buildbucket_id IN (%s)' %
+              (','.join('"%s"' % x for x in buildbucket_ids)))
+
+    results = self._Execute(query).fetchall()
+
+    columns = bs_table_columns + b_table_columns
+    return [dict(zip(columns, values)) for values in results]
 
   @minimum_schema(65)
   def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
@@ -1282,148 +1285,25 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       else:
         return []
 
-  @minimum_schema(30)
-  def _GetStages(self, master_build_id, is_master=False, buildbucket_ids=None):
-    """Gets stages of master/slave builds of a given master build.
-
-    Args:
-      master_build_id: build id of the master build to fetch the master/slave
-                       builds' stages for.
-      is_master: boolean, if the query is for a master build's stages. If true,
-                 return all the stages in the master build. Otherwise return
-                 stages in the slave builds.
-      buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
-        to given master_build_id. If buildbucket_ids is given, only fetch
-        the stages of builds with |buildbucket_id| in buildbucket_ids.
-        Default to None.
-
-    Returns:
-      A list containing, for each stage of master/slave builds found,
-      a dictionary with keys (id, build_id, name, board, status, last_updated,
-      start_time, finish_time, final, build_config).
-      If buildbucket_ids is None, the list contains all stages found; else, it
-      only contains the stages with |buildbucket_id| in buildbucket_ids.
-    """
-    bs_table_columns = ['id', 'build_id', 'name', 'board', 'status',
-                        'last_updated', 'start_time', 'finish_time', 'final']
-    bs_prepended_columns = ['bs.' + x for x in bs_table_columns]
-
-    b_table_columns = ['build_config', 'important']
-    b_prepended_columns = ['b.' + x for x in b_table_columns]
-
-    # define query for a master build
-    id_key = 'id' if is_master else 'master_build_id'
-
-    query = ('SELECT %s, %s FROM buildStageTable bs JOIN '
-             'buildTable b ON bs.build_id=b.id WHERE b.%s=%d' %
-             (', '.join(bs_prepended_columns),
-              ', '.join(b_prepended_columns),
-              id_key,
-              master_build_id))
-
-
-    if buildbucket_ids is not None:
-      if not buildbucket_ids:
-        return []
-
-      query += (' AND b.buildbucket_id IN (%s)' %
-                (','.join('"%s"' % x for x in buildbucket_ids)))
-
-    results = self._Execute(query).fetchall()
-
-    columns = bs_table_columns + b_table_columns
-    return [dict(zip(columns, values)) for values in results]
-
-  @minimum_schema(30)
-  def GetSlaveStages(self, master_build_id, buildbucket_ids=None):
-    """Gets the stages of all slave builds to given master_build_id.
-
-    Args:
-      master_build_id: build id of the master build to fetch the slave
-                       stages for.
-      buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
-        to given master_build_id. If buildbucket_ids is given, only fetch
-        the stages of builds with |buildbucket_id| in buildbucket_ids.
-        Default to None.
-
-    Returns:
-      A list containing, for each stage of slave builds found,
-      a dictionary with keys (id, build_id, name, board, status, last_updated,
-      start_time, finish_time, final, build_config).
-      If buildbucket_ids is None, the list contains all stages of all slaves;
-      else, it only contains the stages of the slaves with |buildbucket_id|
-      in buildbucket_ids.
-    """
-    return self._GetStages(master_build_id, buildbucket_ids=buildbucket_ids)
-
-  @minimum_schema(30)
-  def GetMasterStages(self, master_build_id):
-    """Gets the stages of a master build.
-
-    Args:
-      master_build_id: build id of the master build to fetch the slave
-                       stages for.
-
-    Returns:
-      A list containing, for each stage of master build found,
-      a dictionary with keys (id, build_id, name, board, status, last_updated,
-      start_time, finish_time, final, build_config).
-    """
-    return self._GetStages(master_build_id, is_master=True)
-
-
   @minimum_schema(44)
-  def GetBuildsFailures(self, build_ids):
-    """Gets the failure entries for all listed build_ids.
+  def GetBuildsFailures(self, buildbucket_ids):
+    """Gets the failure entries for all listed buildbucket_ids.
 
     Args:
-      build_ids: list of build ids of the builds to fetch failures for.
+      buildbucket_ids: list of build ids of the builds to fetch failures for.
 
     Returns:
       A list of failure_message_lib.StageFailure instances.
     """
-    if not build_ids:
+    if not buildbucket_ids:
       return []
 
     columns_string = ', '.join(failure_message_lib.FAILURE_KEYS)
 
-    query = ('SELECT %s FROM failureView WHERE build_id IN (%s)' %
-             (columns_string, ','.join(str(int(x)) for x in build_ids)))
+    query = ('SELECT %s FROM failureView WHERE buildbucket_id IN (%s)' %
+             (columns_string, ','.join(str(int(x)) for x in buildbucket_ids)))
 
     results = self._Execute(query).fetchall()
-    return [failure_message_lib.StageFailure(*values) for values in results]
-
-  @minimum_schema(44)
-  def GetSlaveFailures(self, master_build_id, buildbucket_ids=None):
-    """Gets the failure entries for slave builds to given build.
-
-    Args:
-      master_build_id: build id of the master build to fetch failures
-                       for.
-      buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
-        to given master_build_id. If buildbucket_ids is given, only fetch
-        the failures of builds with |buildbucket_id| in buildbucket_ids.
-        Default to None.
-
-    Returns:
-      A list of failure_message_lib.StageFailure instances.
-    """
-    columns_string = ', '.join(failure_message_lib.FAILURE_KEYS)
-
-    query = ('SELECT %s FROM failureView WHERE master_build_id = %s ' %
-             (columns_string, master_build_id))
-
-    results = []
-    if buildbucket_ids is None:
-      results = self._Execute(query).fetchall()
-    else:
-      if not buildbucket_ids:
-        return []
-
-      query += (' AND buildbucket_id IN (%s)' %
-                (','.join('"%s"' % x for x in buildbucket_ids)))
-      results = self._Execute(query).fetchall()
-
     return [failure_message_lib.StageFailure(*values) for values in results]
 
   @minimum_schema(32)
@@ -1462,10 +1342,10 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   @minimum_schema(65)
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
-                      milestone_version=None, platform_version=None,
-                      starting_build_id=None, ending_build_id=None,
-                      waterfall=None, buildbot_generation=None, final=False,
-                      reverse=False):
+                      branch=None, milestone_version=None,
+                      platform_version=None, starting_build_id=None,
+                      ending_build_id=None, waterfall=None,
+                      buildbot_generation=None, final=False, reverse=False):
     """Returns basic information about most recent builds for build config.
 
     By default this function returns the most recent builds. Some arguments can
@@ -1483,6 +1363,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
           after this date.
       end_date: (Optional, type:datetime.date) Get builds that occured on or
           before this date.
+      branch: (Optional) Return only results for this branch.
       milestone_version: (Optional) Return only results for this
           milestone_version.
       platform_version: (Optional) Return only results for this
@@ -1506,7 +1387,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return self.GetBuildsHistory(
         [build_config], num_results,
         ignore_build_id=ignore_build_id, start_date=start_date,
-        end_date=end_date,
+        end_date=end_date, branch=branch,
         milestone_version=milestone_version, platform_version=platform_version,
         starting_build_id=starting_build_id, ending_build_id=ending_build_id,
         waterfall=waterfall, buildbot_generation=buildbot_generation,
@@ -1515,10 +1396,10 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   @minimum_schema(65)
   def GetBuildsHistory(self, build_configs, num_results,
                        ignore_build_id=None, start_date=None, end_date=None,
-                       milestone_version=None, platform_version=None,
-                       starting_build_id=None, ending_build_id=None,
-                       waterfall=None, buildbot_generation=None, final=False,
-                       reverse=False):
+                       branch=None, milestone_version=None,
+                       platform_version=None, starting_build_id=None,
+                       ending_build_id=None, waterfall=None,
+                       buildbot_generation=None, final=False, reverse=False):
     """Returns basic information about most recent builds for build configs.
 
     By default this function returns the most recent builds. Some arguments can
@@ -1537,6 +1418,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
           after this date.
       end_date: (Optional, type:datetime.date) Get builds that occured on or
           before this date.
+      branch: (Optional) Return only results for this branch.
       milestone_version: (Optional) Return only results for this
           milestone_version.
       platform_version: (Optional) Return only results for this
@@ -1573,6 +1455,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       where_clauses.append('id <= %d' % ending_build_id)
     if ignore_build_id is not None:
       where_clauses.append('id != %d' % ignore_build_id)
+    if branch is not None:
+      where_clauses.append('branch = "%s"' % branch)
     if milestone_version is not None:
       where_clauses.append('milestone_version = "%s"' % milestone_version)
     if platform_version is not None:
@@ -1598,48 +1482,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     results = self._Execute(query).fetchall()
     return [dict(zip(CIDBConnection.BUILD_STATUS_KEYS, values))
-            for values in results]
-
-  @minimum_schema(47)
-  def GetAnnotatedBuilds(self, build_config, num_results, start_date=None,
-                         end_date=None):
-    """Returns most recent failed builds with additional failure information.
-
-    By default this function returns the all failed builds. Some arguments can
-    restrict the result to older builds.
-
-    Args:
-      build_config: config name of the build.
-      num_results: Number of builds to search back. Set this to
-          CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
-          of results.
-      start_date: (Optional, type: datetime.date) Get builds that occured on or
-          after this date.
-      end_date: (Optional, type:datetime.date) Get builds that occured on or
-          before this date.
-
-    Returns:
-      A sorted list of dicts containing up to |number| dictionaries for
-      build statuses in descending order. Valid keys in the dictionary are
-      described in BAD_CL_ANNOTATION_KEYS.
-    """
-    where_clauses = ['build_config = "%s"' % build_config]
-    if start_date is not None:
-      where_clauses.append('date(start_time) >= date("%s")' %
-                           start_date.strftime(self._DATE_FORMAT))
-    if end_date is not None:
-      where_clauses.append('date(start_time) <= date("%s")' %
-                           end_date.strftime(self._DATE_FORMAT))
-
-    query = ('%s AND %s' %
-             (self._SQL_FETCH_ANNOTATIONS, ' AND '.join(where_clauses)))
-
-    if num_results != self.NUM_RESULTS_NO_LIMIT:
-      query += ' LIMIT %d' % num_results
-
-    results = self._Execute(query).fetchall()
-
-    return [dict(zip(CIDBConnection.BAD_CL_ANNOTATION_KEYS, values))
             for values in results]
 
   @minimum_schema(26)
@@ -1727,37 +1569,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     results = self._Execute(
         '%s WHERE %s' % (self._SQL_FETCH_ACTIONS, clause)).fetchall()
     return [clactions.CLAction(*values) for values in results]
-
-  def GetFailuresForChange(self, change_number, change_source, master_build_id):
-    """Gets all the failures for a given change during a given master build.
-
-    Note that the failures are from the master build and all its slaves.
-
-    Args:
-      change_number: Gerrit number
-      change_source: string, source of change, 'external' or 'internal'
-      master_build_id: Master Build id in the annotation table
-
-    Returns:
-      A list of failure_message_lib.StageFailure instances.
-    """
-    # preprocess keys for query
-    keys = list(failure_message_lib.FAILURE_KEYS)
-    keys[keys.index('id')] = 'fV.id'
-    keys[keys.index('timestamp')] = 'fV.timestamp'
-    keys[keys.index('build_id')] = 'fV.build_id'
-    keys[keys.index('buildbucket_id')] = 'fV.buildbucket_id'
-    columns_string = ', '.join(keys)
-
-    query = ('SELECT %s FROM clActionTable clT JOIN failureView fV '
-             'ON clT.build_id = fV.build_id '
-             'WHERE clT.change_number = %s AND clT.change_source = "%s" '
-             'AND (fV.master_build_id = %s OR clT.build_id = %s) ' %
-             (columns_string, str(change_number), change_source,
-              str(master_build_id), str(master_build_id)))
-    results = self._Execute(query).fetchall()
-
-    return [failure_message_lib.StageFailure(*values) for values in results]
 
   @minimum_schema(11)
   def GetActionsForBuild(self, build_id):

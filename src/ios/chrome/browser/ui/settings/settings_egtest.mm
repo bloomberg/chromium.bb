@@ -17,12 +17,12 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/ukm/ios/features.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/pref_names.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -41,8 +41,6 @@
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -53,7 +51,8 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
-using chrome_test_util::ClearBrowsingDataCollectionView;
+using chrome_test_util::ClearBrowsingDataButton;
+using chrome_test_util::ClearBrowsingDataView;
 using chrome_test_util::ClearBrowsingHistoryButton;
 using chrome_test_util::ClearCacheButton;
 using chrome_test_util::ClearCookiesButton;
@@ -66,8 +65,6 @@ using chrome_test_util::SettingsMenuPrivacyButton;
 using chrome_test_util::VoiceSearchButton;
 
 namespace {
-
-const char kTestOrigin1[] = "http://host1:1/";
 
 const char kUrl[] = "http://foo/browsing";
 const char kUrlWithSetCookie[] = "http://foo/set_cookie";
@@ -82,10 +79,6 @@ enum MetricsServiceType {
   kBreakpadFirstLaunch,
 };
 
-// Matcher for the clear browsing data button on the clear browsing data panel.
-id<GREYMatcher> ClearBrowsingDataButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BUTTON);
-}
 // Matcher for the Send Usage Data cell on the Privacy screen.
 id<GREYMatcher> SendUsageDataButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_OPTIONS_SEND_USAGE_DATA);
@@ -131,79 +124,6 @@ id<GREYMatcher> TranslateSettingsButton() {
 // Matcher for the Bandwidth Settings button on the main Settings screen.
 id<GREYMatcher> BandwidthSettingsButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS);
-}
-
-// Run as a task to check if a certificate has been added to the ChannelIDStore.
-// Signals the given |semaphore| if the cert was added, or reposts itself
-// otherwise.
-void CheckCertificate(scoped_refptr<net::URLRequestContextGetter> getter,
-                      dispatch_semaphore_t semaphore) {
-  net::ChannelIDService* channel_id_service =
-      getter->GetURLRequestContext()->channel_id_service();
-  if (channel_id_service->channel_id_count() == 0) {
-    // If the channel_id_count is still 0, no certs have been added yet.
-    // Re-post this task and check again later.
-    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
-                             base::Bind(&CheckCertificate, getter, semaphore));
-  } else {
-    // If certs have been added, signal the calling thread.
-    dispatch_semaphore_signal(semaphore);
-  }
-}
-
-// Set certificate for host |kTestOrigin1| for testing.
-void SetCertificate() {
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-  scoped_refptr<net::URLRequestContextGetter> getter =
-      browserState->GetRequestContext();
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
-        net::ChannelIDService* channel_id_service =
-            getter->GetURLRequestContext()->channel_id_service();
-        net::ChannelIDStore* channel_id_store =
-            channel_id_service->GetChannelIDStore();
-        base::Time now = base::Time::Now();
-        channel_id_store->SetChannelID(
-            std::make_unique<net::ChannelIDStore::ChannelID>(
-                kTestOrigin1, now, crypto::ECPrivateKey::Create()));
-      }));
-
-  // The ChannelIDStore may not be loaded, so adding the new cert may not happen
-  // immediately.  This posted task signals the semaphore if the cert was added,
-  // or re-posts itself to check again later otherwise.
-  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
-                           base::Bind(&CheckCertificate, getter, semaphore));
-
-  dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-}
-
-// Fetching channel id is expected to complete immediately in this test, so a
-// dummy callback function is set for testing.
-void CertCallback(int err,
-                  const std::string& server_identifier,
-                  std::unique_ptr<crypto::ECPrivateKey> key) {}
-
-// Check if certificate is empty for host |kTestOrigin1|.
-bool IsCertificateCleared() {
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  __block int result;
-  dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-  scoped_refptr<net::URLRequestContextGetter> getter =
-      browserState->GetRequestContext();
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
-        net::ChannelIDService* channel_id_service =
-            getter->GetURLRequestContext()->channel_id_service();
-        std::unique_ptr<crypto::ECPrivateKey> dummy_key;
-        result = channel_id_service->GetChannelIDStore()->GetChannelID(
-            kTestOrigin1, &dummy_key, base::Bind(CertCallback));
-        dispatch_semaphore_signal(semaphore);
-      }));
-  dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-  return result == net::ERR_FILE_NOT_FOUND;
 }
 
 }  // namespace
@@ -260,7 +180,7 @@ bool IsCertificateCleared() {
 
   // Before returning, make sure that the top of the Clear Browsing Data
   // settings screen is visible to match the state at the start of the method.
-  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataCollectionView()]
+  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataView()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
 }
 
@@ -331,6 +251,15 @@ bool IsCertificateCleared() {
   preferences->SetBoolean(browsing_data::prefs::kDeleteFormData, false);
 }
 
+- (void)setMetricsReportingEnabled:(BOOL)reportingEnabled {
+  chrome_test_util::SetBooleanLocalStatePref(
+      metrics::prefs::kMetricsReportingEnabled, reportingEnabled);
+  // Breakpad uses dispatch_async to update its state. Wait to get to a
+  // consistent state.
+  chrome_test_util::WaitForBreakpadQueue();
+}
+
+// TODO(crbug.com/953862): Remove as part of feature flag cleanup.
 - (void)setMetricsReportingEnabled:(BOOL)reportingEnabled
                           wifiOnly:(BOOL)wifiOnly {
   chrome_test_util::SetBooleanLocalStatePref(
@@ -436,14 +365,24 @@ bool IsCertificateCleared() {
   // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF
   //  - Services record data and upload data.
 
-  // kMetricsReportingEnabled OFF and kMetricsReportingWifiOnly OFF
-  [self setMetricsReportingEnabled:NO wifiOnly:NO];
+  if (base::FeatureList::IsEnabled(kUmaCellular)) {
+    // kMetricsReportingEnabled OFF
+    [self setMetricsReportingEnabled:NO];
+  } else {
+    // kMetricsReportingEnabled OFF and kMetricsReportingWifiOnly OFF
+    [self setMetricsReportingEnabled:NO wifiOnly:NO];
+  }
   // Service should be completely disabled.
   // I.e. no recording of data, and no uploading of what's been recorded.
   [self assertMetricsServiceDisabled:serviceType];
 
-  // kMetricsReportingEnabled OFF and kMetricsReportingWifiOnly ON
-  [self setMetricsReportingEnabled:NO wifiOnly:YES];
+  if (base::FeatureList::IsEnabled(kUmaCellular)) {
+    // kMetricsReportingEnabled OFF
+    [self setMetricsReportingEnabled:NO];
+  } else {
+    // kMetricsReportingEnabled OFF and kMetricsReportingWifiOnly ON
+    [self setMetricsReportingEnabled:NO wifiOnly:YES];
+  }
   // If kMetricsReportingEnabled is OFF, any service should remain completely
   // disabled, i.e. no uploading even if kMetricsReportingWifiOnly is ON.
   [self assertMetricsServiceDisabled:serviceType];
@@ -456,25 +395,28 @@ bool IsCertificateCleared() {
   // The values of the prefs and the wwan vs wifi state should be honored by
   // the services, turning on and off according to the rules laid out above.
 
-  // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly ON.
-  [self setMetricsReportingEnabled:YES wifiOnly:YES];
-  // Service should be enabled.
-  [self assertMetricsServiceEnabled:serviceType];
+  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
+    // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly ON.
+    [self setMetricsReportingEnabled:YES wifiOnly:YES];
+    // Service should be enabled.
+    [self assertMetricsServiceEnabled:serviceType];
 
-  // Set the network to use a cellular network, which should disable uploading
-  // when the wifi-only flag is set.
-  chrome_test_util::SetWWANStateTo(YES);
-  chrome_test_util::WaitForBreakpadQueue();
-  [self assertMetricsServiceEnabledButNotUploading:serviceType];
+    // Set the network to use a cellular network, which should disable uploading
+    // when the wifi-only flag is set.
+    chrome_test_util::SetWWANStateTo(YES);
+    chrome_test_util::WaitForBreakpadQueue();
+    [self assertMetricsServiceEnabledButNotUploading:serviceType];
 
-  // Turn off cellular network usage, which should enable uploading.
-  chrome_test_util::SetWWANStateTo(NO);
-  chrome_test_util::WaitForBreakpadQueue();
-  [self assertMetricsServiceEnabled:serviceType];
+    // Turn off cellular network usage, which should enable uploading.
+    chrome_test_util::SetWWANStateTo(NO);
+    chrome_test_util::WaitForBreakpadQueue();
+    [self assertMetricsServiceEnabled:serviceType];
 
-  // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF
-  [self setMetricsReportingEnabled:YES wifiOnly:NO];
-  [self assertMetricsServiceEnabled:serviceType];
+    // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF
+    [self setMetricsReportingEnabled:YES wifiOnly:NO];
+    [self assertMetricsServiceEnabled:serviceType];
+  }
+
 #else
   // Development build.  Do not allow any recording or uploading of data.
   // Specifically, the kMetricsReportingEnabled preference is completely
@@ -483,15 +425,17 @@ bool IsCertificateCleared() {
   // This tests that no matter the state change, pref or network connection,
   // services remain disabled.
 
-  // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly ON
-  [self setMetricsReportingEnabled:YES wifiOnly:YES];
-  // Service should remain disabled.
-  [self assertMetricsServiceDisabled:serviceType];
+  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
+    // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly ON
+    [self setMetricsReportingEnabled:YES wifiOnly:YES];
+    // Service should remain disabled.
+    [self assertMetricsServiceDisabled:serviceType];
 
-  // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF
-  [self setMetricsReportingEnabled:YES wifiOnly:NO];
-  // Service should remain disabled.
-  [self assertMetricsServiceDisabled:serviceType];
+    // kMetricsReportingEnabled ON and kMetricsReportingWifiOnly OFF
+    [self setMetricsReportingEnabled:YES wifiOnly:NO];
+    // Service should remain disabled.
+    [self assertMetricsServiceDisabled:serviceType];
+  }
 #endif
 }
 
@@ -590,22 +534,6 @@ bool IsCertificateCleared() {
   [self assertsMetricsPrefsForService:kBreakpadFirstLaunch];
 }
 
-// Set a server bound certificate, clears the site data through the UI and
-// checks that the certificate is deleted.
-- (void)testClearCertificates {
-  SetCertificate();
-  // Restore the Clear Browsing Data checkmarks prefs to their default state in
-  // Teardown.
-  __weak SettingsTestCase* weakSelf = self;
-  [self setTearDownHandler:^{
-    [weakSelf restoreClearBrowsingDataCheckmarksToDefault];
-  }];
-  GREYAssertFalse(IsCertificateCleared(), @"Failed to set certificate.");
-  [self clearCookiesAndSiteData];
-  GREYAssertTrue(IsCertificateCleared(),
-                 @"Certificate is expected to be deleted.");
-}
-
 // Verifies that Settings opens when signed-out and in Incognito mode.
 // This tests that crbug.com/607335 has not regressed.
 - (void)testSettingsSignedOutIncognito {
@@ -681,7 +609,7 @@ bool IsCertificateCleared() {
 - (void)testAccessibilityOnPrivacyClearBrowsingHistoryPage {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
-  [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataButton()];
+  [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataCell()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [self closeSubSettingsMenu];
 }
@@ -755,10 +683,10 @@ bool IsCertificateCleared() {
       assertWithMatcher:grey_notNil()];
 
   // Verify that the Settings register keyboard commands.
-  MainController* mainController = chrome_test_util::GetMainController();
-  BrowserViewController* bvc =
-      [[mainController browserViewInformation] currentBVC];
-  UIViewController* settings = bvc.presentedViewController;
+  UIViewController* viewController =
+      chrome_test_util::GetMainController()
+          .interfaceProvider.mainInterface.viewController;
+  UIViewController* settings = viewController.presentedViewController;
   GREYAssertNotNil(settings.keyCommands,
                    @"Settings should register key commands when presented.");
 

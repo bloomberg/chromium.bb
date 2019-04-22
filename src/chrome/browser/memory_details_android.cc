@@ -115,7 +115,8 @@ ProcessData* MemoryDetails::ChromeBrowser() {
 
 void MemoryDetails::CollectProcessData(
     const std::vector<ProcessMemoryInformation>& chrome_processes) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
   std::vector<ProcessMemoryInformation> all_processes(chrome_processes);
   AddNonChildChromeProcesses(&all_processes);
@@ -146,5 +147,5 @@ void MemoryDetails::CollectProcessData(
   // Finally return to the browser thread.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&MemoryDetails::CollectChildInfoOnUIThread, this));
+      base::BindOnce(&MemoryDetails::CollectChildInfoOnUIThread, this));
 }

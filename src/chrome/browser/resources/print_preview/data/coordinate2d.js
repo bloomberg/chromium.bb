@@ -39,25 +39,6 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {number} x Amount to translate in the X dimension.
-     * @param {number} y Amount to translate in the Y dimension.
-     * @return {!print_preview.Coordinate2d} A new two-dimensional point
-     *     translated along the X and Y dimensions.
-     */
-    translate(x, y) {
-      return new Coordinate2d(this.x_ + x, this.y_ + y);
-    }
-
-    /**
-     * @param {number} factor Amount to scale the X and Y dimensions.
-     * @return {!print_preview.Coordinate2d} A new two-dimensional point scaled
-     *     by the given factor.
-     */
-    scale(factor) {
-      return new Coordinate2d(this.x_ * factor, this.y_ * factor);
-    }
-
-    /**
      * @param {print_preview.Coordinate2d} other The point to compare against.
      * @return {boolean} Whether another point is equal to this one.
      */

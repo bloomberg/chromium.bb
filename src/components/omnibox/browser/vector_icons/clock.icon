@@ -1,0 +1,25 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Source: time_16px.svg --> SVGOMG --> Skiafy
+
+CANVAS_DIMENSIONS, 16,
+MOVE_TO, 8, 0,
+ARC_TO, 7.99f, 7.99f, 0, 0, 0, 0, 8,
+R_CUBIC_TO, 0, 4.42f, 3.58f, 8, 8, 8,
+R_ARC_TO, 8, 8, 0, 1, 0, 0, -16,
+CLOSE,
+MOVE_TO, 8, 14,
+R_CUBIC_TO, -3.31f, 0, -6, -2.68f, -6, -6,
+R_CUBIC_TO, 0, -3.32f, 2.69f, -6, 6, -6,
+R_CUBIC_TO, 3.31f, 0, 6, 2.69f, 6, 6,
+R_CUBIC_TO, 0, 3.31f, -2.68f, 6, -6, 6,
+CLOSE,
+MOVE_TO, 8, 5,
+H_LINE_TO, 7,
+R_V_LINE_TO, 3.93f,
+LINE_TO, 10.5f, 11,
+R_LINE_TO, 0.5f, -0.81f,
+R_LINE_TO, -3, -1.75f,
+CLOSE

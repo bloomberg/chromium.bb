@@ -8,13 +8,16 @@
 #include <utility>
 
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
+
+#if defined(OS_ANDROID)
+#include "media/base/android/media_drm_bridge.h"
+#endif
 
 namespace content_settings {
 
@@ -33,14 +36,14 @@ std::vector<std::string> WhitelistedSchemes() {
 std::vector<std::string> WhitelistedSchemes(const char* scheme1,
                                             const char* scheme2) {
   const char* schemes[] = {scheme1, scheme2};
-  return std::vector<std::string>(schemes, schemes + arraysize(schemes));
+  return std::vector<std::string>(schemes, schemes + base::size(schemes));
 }
 
 std::vector<std::string> WhitelistedSchemes(const char* scheme1,
                                             const char* scheme2,
                                             const char* scheme3) {
   const char* schemes[] = {scheme1, scheme2, scheme3};
-  return std::vector<std::string>(schemes, schemes + arraysize(schemes));
+  return std::vector<std::string>(schemes, schemes + base::size(schemes));
 }
 
 std::set<ContentSetting> ValidSettings() {
@@ -50,14 +53,14 @@ std::set<ContentSetting> ValidSettings() {
 std::set<ContentSetting> ValidSettings(ContentSetting setting1,
                                        ContentSetting setting2) {
   ContentSetting settings[] = {setting1, setting2};
-  return std::set<ContentSetting>(settings, settings + arraysize(settings));
+  return std::set<ContentSetting>(settings, settings + base::size(settings));
 }
 
 std::set<ContentSetting> ValidSettings(ContentSetting setting1,
                                        ContentSetting setting2,
                                        ContentSetting setting3) {
   ContentSetting settings[] = {setting1, setting2, setting3};
-  return std::set<ContentSetting>(settings, settings + arraysize(settings));
+  return std::set<ContentSetting>(settings, settings + base::size(settings));
 }
 
 std::set<ContentSetting> ValidSettings(ContentSetting setting1,
@@ -65,7 +68,20 @@ std::set<ContentSetting> ValidSettings(ContentSetting setting1,
                                        ContentSetting setting3,
                                        ContentSetting setting4) {
   ContentSetting settings[] = {setting1, setting2, setting3, setting4};
-  return std::set<ContentSetting>(settings, settings + arraysize(settings));
+  return std::set<ContentSetting>(settings, settings + base::size(settings));
+}
+
+ContentSetting GetInitialDefaultContentSettingForProtectedMediaIdentifier() {
+// On Android, the default value is ALLOW or ASK depending on whether per-origin
+// provisioning is used (https://crbug.com/854737 and https://crbug.com/904883).
+// On ChromeOS the default value is always ASK.
+#if defined(OS_ANDROID)
+  return media::MediaDrmBridge::IsPerOriginProvisioningSupported()
+             ? CONTENT_SETTING_ALLOW
+             : CONTENT_SETTING_ASK;
+#else
+  return CONTENT_SETTING_ASK;
+#endif  // defined(OS_ANDROID)
 }
 
 }  // namespace
@@ -264,26 +280,19 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
 
+  const auto protected_media_identifier_setting =
+      GetInitialDefaultContentSettingForProtectedMediaIdentifier();
   Register(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-           "protected-media-identifier",
-// On Android, the default value is ALLOW. See https://crbug.com/854737 for
-// details. On ChromeOS the default value is still ASK.
-#if defined(OS_ANDROID)
-           CONTENT_SETTING_ALLOW,
-#else
-           CONTENT_SETTING_ASK,
-#endif  // defined(OS_ANDROID)
+           "protected-media-identifier", protected_media_identifier_setting,
            WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
            WebsiteSettingsRegistry::PLATFORM_ANDROID |
                WebsiteSettingsRegistry::PLATFORM_CHROMEOS,
-#if defined(OS_ANDROID)
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO,
-#else
-           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
-#endif  // defined(OS_ANDROID)
+           protected_media_identifier_setting == CONTENT_SETTING_ALLOW
+               ? ContentSettingsInfo::INHERIT_IN_INCOGNITO
+               : ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
 
@@ -428,6 +437,16 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsInfo::SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE,
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
+           ContentSettingsInfo::PERSISTENT,
+           ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
+
+  Register(CONTENT_SETTINGS_TYPE_SERIAL_GUARD, "serial-guard",
+           CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
+           WhitelistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ASK, CONTENT_SETTING_BLOCK),
+           WebsiteSettingsInfo::SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP,
            ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);

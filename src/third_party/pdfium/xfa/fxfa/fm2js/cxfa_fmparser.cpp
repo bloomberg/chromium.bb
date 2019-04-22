@@ -21,7 +21,7 @@ constexpr unsigned int kMaxExpressionListSize = 10000;
 
 }  // namespace
 
-CXFA_FMParser::CXFA_FMParser(const WideStringView& wsFormcalc)
+CXFA_FMParser::CXFA_FMParser(WideStringView wsFormcalc)
     : m_lexer(pdfium::MakeUnique<CXFA_FMLexer>(wsFormcalc)),
       m_error(false),
       m_parse_depth(0),
@@ -719,7 +719,7 @@ std::unique_ptr<CXFA_FMSimpleExpression> CXFA_FMParser::ParsePostExpression(
           return nullptr;
 
         expr = pdfium::MakeUnique<CXFA_FMDotAccessorExpression>(
-            std::move(expr), TOKcall, L"", std::move(s));
+            std::move(expr), TOKcall, WideStringView(), std::move(s));
         break;
       }
       case TOKdot: {
@@ -753,7 +753,7 @@ std::unique_ptr<CXFA_FMSimpleExpression> CXFA_FMParser::ParsePostExpression(
             return nullptr;
 
           expr = pdfium::MakeUnique<CXFA_FMDotAccessorExpression>(
-              std::move(expr), TOKcall, L"", std::move(s));
+              std::move(expr), TOKcall, WideStringView(), std::move(s));
         } else if (m_token.m_type == TOKlbracket) {
           std::unique_ptr<CXFA_FMSimpleExpression> s = ParseIndexExpression();
           if (!s)

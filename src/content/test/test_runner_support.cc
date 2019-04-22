@@ -10,7 +10,7 @@
 
 namespace content {
 
-std::string GetFrameNameForLayoutTests(blink::WebLocalFrame* frame) {
+std::string GetFrameNameForWebTests(blink::WebLocalFrame* frame) {
   std::string unique_name = RenderFrameImpl::FromWebFrame(frame)->unique_name();
   return UniqueNameHelper::ExtractStableNameForTesting(unique_name);
 }

@@ -48,3 +48,5 @@ void DOMAlteringLock::Release(id<DOMAltering> feature) {
   if (current_dom_altering_feature_ == feature)
     current_dom_altering_feature_ = nil;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(DOMAlteringLock)

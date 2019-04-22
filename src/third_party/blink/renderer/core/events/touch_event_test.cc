@@ -23,8 +23,8 @@ class ConsoleCapturingChromeClient : public EmptyChromeClient {
 
   // ChromeClient methods:
   void AddMessageToConsole(LocalFrame*,
-                           MessageSource message_source,
-                           MessageLevel,
+                           mojom::ConsoleMessageSource message_source,
+                           mojom::ConsoleMessageLevel,
                            const String& message,
                            unsigned line_number,
                            const String& source_id,
@@ -35,19 +35,19 @@ class ConsoleCapturingChromeClient : public EmptyChromeClient {
 
   // Expose console output.
   const std::vector<String>& Messages() { return messages_; }
-  const std::vector<MessageSource>& MessageSources() {
+  const std::vector<mojom::ConsoleMessageSource>& MessageSources() {
     return message_sources_;
   }
 
  private:
   std::vector<String> messages_;
-  std::vector<MessageSource> message_sources_;
+  std::vector<mojom::ConsoleMessageSource> message_sources_;
 };
 
 class TouchEventTest : public PageTestBase {
  public:
   void SetUp() override {
-    chrome_client_ = new ConsoleCapturingChromeClient();
+    chrome_client_ = MakeGarbageCollected<ConsoleCapturingChromeClient>();
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
@@ -56,7 +56,7 @@ class TouchEventTest : public PageTestBase {
   }
 
   const std::vector<String>& Messages() { return chrome_client_->Messages(); }
-  const std::vector<MessageSource>& MessageSources() {
+  const std::vector<mojom::ConsoleMessageSource>& MessageSources() {
     return chrome_client_->MessageSources();
   }
 
@@ -89,7 +89,8 @@ TEST_F(TouchEventTest,
       ElementsAre("Unable to preventDefault inside passive event listener due "
                   "to target being treated as passive. See "
                   "https://www.chromestatus.com/features/5093566007214080"));
-  EXPECT_THAT(MessageSources(), ElementsAre(kInterventionMessageSource));
+  EXPECT_THAT(MessageSources(),
+              ElementsAre(mojom::ConsoleMessageSource::kIntervention));
 }
 
 class TouchEventTestNoFrame : public testing::Test {};

@@ -162,7 +162,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
       weak_factory_(this) {
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
-  child_process_host_.reset(ChildProcessHost::Create(this));
+  child_process_host_ = ChildProcessHost::Create(this);
   AddFilter(new TraceMessageFilter(data_.id));
 
   g_child_process_list.Get().push_back(this);
@@ -266,7 +266,7 @@ const base::Process& BrowserChildProcessHostImpl::GetProcess() const {
   return child_process_->GetProcess();
 }
 
-std::unique_ptr<base::SharedPersistentMemoryAllocator>
+std::unique_ptr<base::PersistentMemoryAllocator>
 BrowserChildProcessHostImpl::TakeMetricsAllocator() {
   return std::move(metrics_allocator_);
 }
@@ -313,10 +313,12 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
       *base::CommandLine::ForCurrentProcess();
   static const char* const kForwardSwitches[] = {
       service_manager::switches::kDisableInProcessStackTraces,
-      switches::kDisableBackgroundTasks,
+      switches::kDisableBestEffortTasks,
       switches::kDisableLogging,
+      switches::kDisablePerfetto,
       switches::kEnableLogging,
       switches::kIPCConnectionTimeout,
+      switches::kLogFile,
       switches::kLoggingLevel,
       switches::kTraceToConsole,
       switches::kV,
@@ -360,6 +362,12 @@ void BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
   UMA_HISTOGRAM_ENUMERATION("ChildProcess.BadMessgeTerminated", process_type,
                             PROCESS_TYPE_MAX);
 }
+
+#if defined(OS_ANDROID)
+void BrowserChildProcessHostImpl::EnableWarmUpConnection() {
+  can_use_warm_up_connection_ = true;
+}
+#endif
 
 ChildProcessTerminationInfo BrowserChildProcessHostImpl::GetTerminationInfo(
     bool known_dead) {
@@ -566,25 +574,25 @@ void BrowserChildProcessHostImpl::CreateMetricsAllocator() {
   // Create the shared memory segment and attach an allocator to it.
   // Mapping the memory shouldn't fail but be safe if it does; everything
   // will continue to work but just as if persistence weren't available.
-  std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
-  if (!shm->CreateAndMapAnonymous(memory_size))
+  base::WritableSharedMemoryRegion shm_region =
+      base::WritableSharedMemoryRegion::Create(memory_size);
+  base::WritableSharedMemoryMapping shm_mapping = shm_region.Map();
+  if (!shm_region.IsValid() || !shm_mapping.IsValid())
     return;
-  metrics_allocator_.reset(new base::SharedPersistentMemoryAllocator(
-      std::move(shm), static_cast<uint64_t>(data_.id), metrics_name,
-      /*readonly=*/false));
+  metrics_allocator_ =
+      std::make_unique<base::WritableSharedPersistentMemoryAllocator>(
+          std::move(shm_mapping), static_cast<uint64_t>(data_.id),
+          metrics_name);
+  metrics_shared_region_ = std::move(shm_region);
 }
 
 void BrowserChildProcessHostImpl::ShareMetricsAllocatorToProcess() {
   if (metrics_allocator_) {
     HistogramController::GetInstance()->SetHistogramMemory<ChildProcessHost>(
-        GetHost(),
-        mojo::WrapSharedMemoryHandle(
-            metrics_allocator_->shared_memory()->handle().Duplicate(),
-            metrics_allocator_->shared_memory()->mapped_size(),
-            mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite));
+        GetHost(), std::move(metrics_shared_region_));
   } else {
     HistogramController::GetInstance()->SetHistogramMemory<ChildProcessHost>(
-        GetHost(), mojo::ScopedSharedBufferHandle());
+        GetHost(), base::WritableSharedMemoryRegion());
   }
 }
 
@@ -594,6 +602,12 @@ void BrowserChildProcessHostImpl::OnProcessLaunchFailed(int error_code) {
   delete delegate_;  // Will delete us
 }
 
+#if defined(OS_ANDROID)
+bool BrowserChildProcessHostImpl::CanUseWarmUpConnection() {
+  return can_use_warm_up_connection_;
+}
+#endif
+
 void BrowserChildProcessHostImpl::OnProcessLaunched() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -601,7 +615,7 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   DCHECK(process.IsValid());
 
   if (child_connection_)
-    child_connection_->SetProcessHandle(process.Handle());
+    child_connection_->SetProcess(process.Duplicate());
 
 #if defined(OS_WIN)
   // Start a WaitableEventWatcher that will invoke OnProcessExitedEarly if the

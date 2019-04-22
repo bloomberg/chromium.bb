@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/task_runner_util.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/file_change.h"

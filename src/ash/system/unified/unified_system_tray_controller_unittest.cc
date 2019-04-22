@@ -4,11 +4,16 @@
 
 #include "ash/system/unified/unified_system_tray_controller.h"
 
+#include "ash/public/cpp/ash_features.h"
+#include "ash/public/interfaces/session_controller.mojom.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
+#include "ash/system/unified/notification_hidden_view.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/test/ash_test_base.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/network_handler.h"
 #include "components/prefs/testing_pref_service.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -16,6 +21,17 @@
 #include "ui/views/view_observer.h"
 
 namespace ash {
+
+namespace {
+
+void SetSessionState(const session_manager::SessionState& state) {
+  mojom::SessionInfoPtr info_ptr = mojom::SessionInfo::New();
+  info_ptr->state = state;
+  SessionController* session_controller = Shell::Get()->session_controller();
+  session_controller->SetSessionInfo(std::move(info_ptr));
+}
+
+}  // anonymous namespace
 
 class UnifiedSystemTrayControllerTest : public AshTestBase,
                                         public views::ViewObserver {
@@ -25,7 +41,7 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
 
   // testing::Test:
   void SetUp() override {
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::shill_clients::InitializeFakes();
     // Initializing NetworkHandler before ash is more like production.
     chromeos::NetworkHandler::Initialize();
     AshTestBase::SetUp();
@@ -36,15 +52,11 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
 
     model_ = std::make_unique<UnifiedSystemTrayModel>();
     controller_ = std::make_unique<UnifiedSystemTrayController>(model());
-    view_.reset(controller_->CreateView());
-
-    view_->AddObserver(this);
-    OnViewPreferredSizeChanged(view());
-
-    preferred_size_changed_count_ = 0;
   }
 
   void TearDown() override {
+    DCHECK(view_) << "Must call InitializeView() during the tests";
+
     view_->RemoveObserver(this);
 
     view_.reset();
@@ -55,7 +67,7 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
     chromeos::NetworkHandler::Get()->ShutdownPrefServices();
     AshTestBase::TearDown();
     chromeos::NetworkHandler::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::shill_clients::Shutdown();
   }
 
   // views::ViewObserver:
@@ -73,6 +85,15 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
 
   int preferred_size_changed_count() const {
     return preferred_size_changed_count_;
+  }
+
+  void InitializeView() {
+    view_.reset(controller_->CreateView());
+
+    view_->AddObserver(this);
+    OnViewPreferredSizeChanged(view());
+
+    preferred_size_changed_count_ = 0;
   }
 
   UnifiedSystemTrayModel* model() { return model_.get(); }
@@ -93,6 +114,8 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
 };
 
 TEST_F(UnifiedSystemTrayControllerTest, ToggleExpanded) {
+  InitializeView();
+
   EXPECT_TRUE(model()->IsExpandedOnOpen());
   const int expanded_height = view()->GetPreferredSize().height();
 
@@ -105,6 +128,8 @@ TEST_F(UnifiedSystemTrayControllerTest, ToggleExpanded) {
 }
 
 TEST_F(UnifiedSystemTrayControllerTest, PreferredSizeChanged) {
+  InitializeView();
+
   // Checks PreferredSizeChanged is not called too frequently.
   EXPECT_EQ(0, preferred_size_changed_count());
   view()->SetExpandedAmount(0.0);
@@ -115,6 +140,57 @@ TEST_F(UnifiedSystemTrayControllerTest, PreferredSizeChanged) {
   EXPECT_EQ(3, preferred_size_changed_count());
   view()->SetExpandedAmount(1.0);
   EXPECT_EQ(4, preferred_size_changed_count());
+}
+
+TEST_F(UnifiedSystemTrayControllerTest, NotificationHiddenView_ModeShow) {
+  AshMessageCenterLockScreenController::OverrideModeForTest(
+      AshMessageCenterLockScreenController::Mode::SHOW);
+  SetSessionState(session_manager::SessionState::LOCKED);
+  InitializeView();
+
+  EXPECT_TRUE(AshMessageCenterLockScreenController::IsAllowed());
+  EXPECT_TRUE(AshMessageCenterLockScreenController::IsEnabled());
+  EXPECT_FALSE(view()->notification_hidden_view_for_testing()->visible());
+}
+
+TEST_F(UnifiedSystemTrayControllerTest, NotificationHiddenView_ModeHide) {
+  AshMessageCenterLockScreenController::OverrideModeForTest(
+      AshMessageCenterLockScreenController::Mode::HIDE);
+  SetSessionState(session_manager::SessionState::LOCKED);
+  InitializeView();
+
+  EXPECT_TRUE(AshMessageCenterLockScreenController::IsAllowed());
+  EXPECT_FALSE(AshMessageCenterLockScreenController::IsEnabled());
+  EXPECT_TRUE(view()->notification_hidden_view_for_testing()->visible());
+  EXPECT_NE(nullptr, view()
+                         ->notification_hidden_view_for_testing()
+                         ->change_button_for_testing());
+}
+
+TEST_F(UnifiedSystemTrayControllerTest,
+       NotificationHiddenView_ModeHideSensitive) {
+  AshMessageCenterLockScreenController::OverrideModeForTest(
+      AshMessageCenterLockScreenController::Mode::HIDE_SENSITIVE);
+  SetSessionState(session_manager::SessionState::LOCKED);
+  InitializeView();
+
+  EXPECT_TRUE(AshMessageCenterLockScreenController::IsAllowed());
+  EXPECT_TRUE(AshMessageCenterLockScreenController::IsEnabled());
+  EXPECT_FALSE(view()->notification_hidden_view_for_testing()->visible());
+}
+
+TEST_F(UnifiedSystemTrayControllerTest, NotificationHiddenView_ModeProhibited) {
+  AshMessageCenterLockScreenController::OverrideModeForTest(
+      AshMessageCenterLockScreenController::Mode::PROHIBITED);
+  SetSessionState(session_manager::SessionState::LOCKED);
+  InitializeView();
+
+  EXPECT_FALSE(AshMessageCenterLockScreenController::IsAllowed());
+  EXPECT_FALSE(AshMessageCenterLockScreenController::IsEnabled());
+  EXPECT_TRUE(view()->notification_hidden_view_for_testing()->visible());
+  EXPECT_EQ(nullptr, view()
+                         ->notification_hidden_view_for_testing()
+                         ->change_button_for_testing());
 }
 
 }  // namespace ash

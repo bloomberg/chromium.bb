@@ -16,9 +16,8 @@ class CORE_EXPORT FeaturePolicyViolationReportBody : public MessageReportBody {
  public:
   FeaturePolicyViolationReportBody(const String& feature_id,
                                    const String& message,
-                                   const String& disposition,
-                                   std::unique_ptr<SourceLocation> location)
-      : MessageReportBody(message, std::move(location)),
+                                   const String& disposition)
+      : MessageReportBody(message),
         feature_id_(feature_id),
         disposition_(disposition) {}
 

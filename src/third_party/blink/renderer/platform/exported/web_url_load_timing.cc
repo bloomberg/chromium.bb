@@ -135,6 +135,14 @@ void WebURLLoadTiming::SetSendEnd(base::TimeTicks end) {
   private_->SetSendEnd(end);
 }
 
+base::TimeTicks WebURLLoadTiming::ReceiveHeadersStart() const {
+  return private_->ReceiveHeadersStart();
+}
+
+void WebURLLoadTiming::SetReceiveHeadersStart(base::TimeTicks start) {
+  private_->SetReceiveHeadersStart(start);
+}
+
 base::TimeTicks WebURLLoadTiming::ReceiveHeadersEnd() const {
   return private_->ReceiveHeadersEnd();
 }
@@ -186,6 +194,19 @@ WebURLLoadTiming& WebURLLoadTiming::operator=(
 
 WebURLLoadTiming::operator scoped_refptr<ResourceLoadTiming>() const {
   return private_.Get();
+}
+
+WebURLLoadTiming WebURLLoadTiming::DeepCopy() const {
+  return private_->DeepCopy();
+}
+
+CrossThreadCopier<WebURLLoadTiming>::Type
+CrossThreadCopier<WebURLLoadTiming>::Copy(const WebURLLoadTiming& timing) {
+  return timing.DeepCopy();
+}
+
+bool WebURLLoadTiming::operator==(const WebURLLoadTiming& other) const {
+  return *private_ == *other.private_;
 }
 
 }  // namespace blink

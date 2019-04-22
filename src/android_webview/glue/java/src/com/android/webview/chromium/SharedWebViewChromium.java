@@ -25,6 +25,8 @@ public class SharedWebViewChromium {
     // The WebView wrapper for WebContents and required browser components.
     private AwContents mAwContents;
 
+    private SharedWebViewContentsClientAdapter mContentsClientAdapter;
+
     // Default WebViewClient used to avoid null checks.
     final static WebViewClient sNullWebViewClient = new WebViewClient();
     // The WebViewClient instance that was passed to WebView.setWebViewClient().
@@ -60,7 +62,11 @@ public class SharedWebViewChromium {
         return mAwContents.getRenderProcess();
     }
 
-    public void setAwContentsOnUiThread(AwContents awContents) {
+    public void init(SharedWebViewContentsClientAdapter contentsClientAdapter) {
+        mContentsClientAdapter = contentsClientAdapter;
+    }
+
+    public void initForReal(AwContents awContents) {
         assert ThreadUtils.runningOnUiThread();
 
         if (mAwContents != null) {
@@ -109,6 +115,34 @@ public class SharedWebViewChromium {
             return;
         }
         mAwContents.postMessageToFrame(null, message, targetOrigin, sentPorts);
+    }
+
+    public void setWebViewRendererClientAdapter(
+            SharedWebViewRendererClientAdapter webViewRendererClientAdapter) {
+        if (checkNeedsPost()) {
+            mRunQueue.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    setWebViewRendererClientAdapter(webViewRendererClientAdapter);
+                }
+            });
+            return;
+        }
+        mContentsClientAdapter.setWebViewRendererClientAdapter(webViewRendererClientAdapter);
+    }
+
+    public SharedWebViewRendererClientAdapter getWebViewRendererClientAdapter() {
+        mAwInit.startYourEngines(true);
+        if (checkNeedsPost()) {
+            return mRunQueue.runOnUiThreadBlocking(
+                    new Callable<SharedWebViewRendererClientAdapter>() {
+                        @Override
+                        public SharedWebViewRendererClientAdapter call() {
+                            return getWebViewRendererClientAdapter();
+                        }
+                    });
+        }
+        return mContentsClientAdapter.getWebViewRendererClientAdapter();
     }
 
     protected boolean checkNeedsPost() {

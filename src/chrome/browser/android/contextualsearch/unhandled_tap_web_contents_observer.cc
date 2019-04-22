@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/public_buildflags.h"
 

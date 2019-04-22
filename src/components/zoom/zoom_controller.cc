@@ -4,6 +4,7 @@
 
 #include "components/zoom/zoom_controller.h"
 
+#include "base/bind.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "components/zoom/zoom_observer.h"
 #include "content/public/browser/browser_thread.h"
@@ -396,5 +397,7 @@ bool ZoomController::PageScaleFactorIsOne() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return content::HostZoomMap::PageScaleFactorIsOne(web_contents());
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ZoomController)
 
 }  // namespace zoom

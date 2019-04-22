@@ -64,6 +64,8 @@ MidiManager::MidiManager(MidiService* service) : service_(service) {
 
 MidiManager::~MidiManager() {
   base::AutoLock auto_lock(lock_);
+  DCHECK(pending_clients_.empty() && clients_.empty());
+
   if (session_thread_runner_) {
     DCHECK(session_thread_runner_->BelongsToCurrentThread());
     session_thread_runner_ = nullptr;
@@ -79,12 +81,6 @@ MidiManager::~MidiManager() {
                  : (data_received_ ? SendReceiveUsage::RECEIVED
                                    : SendReceiveUsage::NO_USE),
       static_cast<Sample>(SendReceiveUsage::MAX) + 1);
-
-  // Detach all clients so that they do not call MidiManager methods any more.
-  for (auto* client : pending_clients_)
-    client->Detach();
-  for (auto* client : clients_)
-    client->Detach();
 }
 
 #if !defined(OS_MACOSX) && !defined(OS_WIN) && \
@@ -180,6 +176,16 @@ void MidiManager::DispatchSendMidiData(MidiManagerClient* client,
                                        const std::vector<uint8_t>& data,
                                        base::TimeTicks timestamp) {
   NOTREACHED();
+}
+
+void MidiManager::EndAllSessions() {
+  base::AutoLock lock(lock_);
+  for (auto* client : pending_clients_)
+    client->Detach();
+  for (auto* client : clients_)
+    client->Detach();
+  pending_clients_.clear();
+  clients_.clear();
 }
 
 void MidiManager::StartInitialization() {
@@ -286,6 +292,7 @@ size_t MidiManager::GetClientCountForTesting() {
 }
 
 size_t MidiManager::GetPendingClientCountForTesting() {
+  base::AutoLock auto_lock(lock_);
   return pending_clients_.size();
 }
 

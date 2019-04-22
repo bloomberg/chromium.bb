@@ -23,7 +23,7 @@
 #include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
 #include "modules/video_coding/codecs/h264/include/h264_globals.h"
 #include "rtc_base/buffer.h"
-#include "rtc_base/constructormagic.h"
+#include "rtc_base/constructor_magic.h"
 
 namespace webrtc {
 
@@ -54,7 +54,6 @@ class RtpPacketizerH264 : public RtpPacketizer {
     ~Fragment();
     const uint8_t* buffer = nullptr;
     size_t length = 0;
-    std::unique_ptr<rtc::Buffer> tmp_buffer;
   };
 
   // A packet unit (H264 packet), to be put into an RTP packet:
@@ -91,6 +90,7 @@ class RtpPacketizerH264 : public RtpPacketizer {
   void NextFragmentPacket(RtpPacketToSend* rtp_packet);
 
   const PayloadSizeLimits limits_;
+  std::unique_ptr<rtc::Buffer> modified_buffer_;
   size_t num_packets_left_;
   std::deque<Fragment> input_fragments_;
   std::queue<PacketUnit> packets_;

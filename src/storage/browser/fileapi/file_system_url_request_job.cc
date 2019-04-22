@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -42,7 +43,7 @@ namespace storage {
 static net::HttpResponseHeaders* CreateHttpResponseHeaders() {
   // HttpResponseHeaders expects its input string to be terminated by two NULs.
   static const char kStatus[] = "HTTP/1.1 200 OK\0";
-  static const size_t kStatusLen = arraysize(kStatus);
+  static const size_t kStatusLen = base::size(kStatus);
 
   net::HttpResponseHeaders* headers =
       new net::HttpResponseHeaders(std::string(kStatus, kStatusLen));

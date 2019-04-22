@@ -2,6 +2,7 @@ include_rules = [
   "+extensions/strings/grit/extensions_strings.h",
   "+services/network/public/mojom",
   "+services/network/session_cleanup_cookie_store.h",
+  "+third_party/ink/grit",
   "+ui/base",
 
   # For access to testing command line switches.
@@ -28,5 +29,10 @@ specific_include_rules = {
   ],
   "test_extension_system.cc": [
     "+services/data_decoder",
+  ],
+  "cross_origin_read_blocking_browsertest.cc": [
+    # Mostly for helping the test verify UMA values from
+    # network::CrossOriginReadBlocking::Action enum.
+    "+services/network/cross_origin_read_blocking.h"
   ],
 }

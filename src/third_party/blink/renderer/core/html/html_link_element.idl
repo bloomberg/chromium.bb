@@ -19,7 +19,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-link-element
+// https://html.spec.whatwg.org/C/#the-link-element
 [HTMLConstructor]
 interface HTMLLinkElement : HTMLElement {
     // FIXME: The disabled attribute has been removed from the spec:
@@ -32,20 +32,20 @@ interface HTMLLinkElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString media;
     [CEReactions, Reflect] attribute DOMString hreflang;
     [CEReactions, Reflect] attribute DOMString type;
-    [Reflect, ReflectOnly=("script","style","image","video", "audio", "track", "font", "fetch")] attribute DOMString as;
+    [Reflect, ReflectOnly=("script","style","image", "track", "font", "fetch")] attribute DOMString as;
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
     [PutForwards=value] readonly attribute DOMTokenList sizes;
-    [CEReactions, RuntimeEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString importance;
-    [RuntimeEnabled=PreloadImageSrcSet, CEReactions, Reflect] attribute DOMString imageSrcset;
-    [RuntimeEnabled=PreloadImageSrcSet, CEReactions, Reflect] attribute DOMString imageSizes;
+    [CEReactions, MeasureAs=PriorityHints, RuntimeEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString importance;
+    [CEReactions, Reflect] attribute DOMString imageSrcset;
+    [CEReactions, Reflect] attribute DOMString imageSizes;
 
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLLinkElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLLinkElement-partial
     [CEReactions, Reflect] attribute DOMString charset;
     [CEReactions, Reflect] attribute DOMString rev;
     [CEReactions, Reflect] attribute DOMString target;
 
-    // HTMLLinkElement implements LinkStyle
+    // HTMLLinkElement includes LinkStyle
     // https://drafts.csswg.org/cssom/#the-linkstyle-interface
     readonly attribute StyleSheet? sheet;
 

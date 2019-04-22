@@ -4,17 +4,19 @@
 
 #include "gpu/command_buffer/service/wrapped_sk_image.h"
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "gpu/command_buffer/service/raster_decoder_context_state.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -30,10 +32,10 @@ namespace {
 class WrappedSkImage : public SharedImageBacking {
  public:
   ~WrappedSkImage() override {
-    DCHECK(context_state_->context_lost ||
-           context_state_->context->IsCurrent(nullptr));
-    if (!context_state_->context_lost)
-      context_state_->need_context_state_reset = true;
+    DCHECK(context_state_->context_lost() ||
+           context_state_->IsCurrent(nullptr));
+    if (!context_state_->context_lost())
+      context_state_->set_need_context_state_reset(true);
   }
 
   // SharedImageBacking implementation.
@@ -69,28 +71,26 @@ class WrappedSkImage : public SharedImageBacking {
 
   sk_sp<SkSurface> GetSkSurface(int final_msaa_count,
                                 SkColorType color_type,
+                                sk_sp<SkColorSpace> color_space,
                                 const SkSurfaceProps& surface_props) {
-    if (context_state_->context_lost)
+    if (context_state_->context_lost())
       return nullptr;
-    DCHECK(context_state_->context->IsCurrent(nullptr));
+    DCHECK(context_state_->IsCurrent(nullptr));
     GrBackendTexture gr_texture =
         image_->getBackendTexture(/*flushPendingGrContextIO=*/true);
     DCHECK(gr_texture.isValid());
     return SkSurface::MakeFromBackendTextureAsRenderTarget(
-        context_state_->gr_context, gr_texture, kTopLeft_GrSurfaceOrigin,
-        final_msaa_count, color_type, /*colorSpace=*/nullptr, &surface_props);
+        context_state_->gr_context(), gr_texture, kTopLeft_GrSurfaceOrigin,
+        final_msaa_count, color_type, color_space, &surface_props);
   }
 
-  bool GetGrBackendTexture(GrBackendTexture* gr_texture) const {
-    context_state_->need_context_state_reset = true;
-    *gr_texture = image_->getBackendTexture(/*flushPendingGrContextIO=*/true);
-    return gr_texture->isValid();
-  }
+  sk_sp<SkPromiseImageTexture> promise_texture() { return promise_texture_; }
 
  protected:
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override;
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override;
 
  private:
   friend class gpu::raster::WrappedSkImageFactory;
@@ -101,30 +101,45 @@ class WrappedSkImage : public SharedImageBacking {
                  const gfx::ColorSpace& color_space,
                  uint32_t usage,
                  size_t estimated_size,
-                 raster::RasterDecoderContextState* context_state)
+                 SharedContextState* context_state)
       : SharedImageBacking(mailbox,
                            format,
                            size,
                            color_space,
                            usage,
-                           estimated_size),
+                           estimated_size,
+                           false /* is_thread_safe */),
         context_state_(context_state) {
     DCHECK(!!context_state_);
   }
 
-  bool Initialize(const SkImageInfo& info) {
-    if (context_state_->context_lost)
+  bool Initialize(const SkImageInfo& info, base::span<const uint8_t> data) {
+    if (context_state_->context_lost())
       return false;
-    DCHECK(context_state_->context->IsCurrent(nullptr));
+    DCHECK(context_state_->IsCurrent(nullptr));
 
-    context_state_->need_context_state_reset = true;
+    context_state_->set_need_context_state_reset(true);
 
-    auto surface = SkSurface::MakeRenderTarget(context_state_->gr_context,
-                                               SkBudgeted::kNo, info);
-    if (!surface)
-      return false;
+    if (data.empty()) {
+      auto surface = SkSurface::MakeRenderTarget(context_state_->gr_context(),
+                                                 SkBudgeted::kNo, info);
+      if (!surface)
+        return false;
 
-    image_ = surface->makeImageSnapshot();
+      image_ = surface->makeImageSnapshot();
+    } else {
+      SkBitmap bitmap;
+      if (!bitmap.installPixels(info, const_cast<uint8_t*>(data.data()),
+                                info.minRowBytes())) {
+        return false;
+      }
+      sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+      if (!image)
+        return false;
+      image_ = image->makeTextureImage(context_state_->gr_context(),
+                                       image->colorSpace());
+    }
+
     if (!image_ || !image_->isTextureBacked())
       return false;
 
@@ -132,6 +147,7 @@ class WrappedSkImage : public SharedImageBacking {
         image_->getBackendTexture(/*flushPendingGrContextIO=*/false);
     if (!gr_texture.isValid())
       return false;
+    promise_texture_ = SkPromiseImageTexture::Make(gr_texture);
 
     switch (gr_texture.backend()) {
       case GrBackendApi::kOpenGL: {
@@ -153,9 +169,11 @@ class WrappedSkImage : public SharedImageBacking {
     return true;
   }
 
-  RasterDecoderContextState* const context_state_;
+  SharedContextState* const context_state_;
 
   sk_sp<SkImage> image_;
+  sk_sp<SkPromiseImageTexture> promise_texture_;
+
   bool cleared_ = false;
 
   uint64_t tracing_id_ = 0;
@@ -173,12 +191,14 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
   ~WrappedSkImageRepresentation() override { DCHECK(!write_surface_); }
 
   sk_sp<SkSurface> BeginWriteAccess(
-      GrContext* gr_context,
       int final_msaa_count,
-      SkColorType color_type,
       const SkSurfaceProps& surface_props) override {
-    auto surface = wrapped_sk_image()->GetSkSurface(final_msaa_count,
-                                                    color_type, surface_props);
+    SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+        /*gpu_compositing=*/true, format());
+
+    auto surface = wrapped_sk_image()->GetSkSurface(
+        final_msaa_count, sk_color_type,
+        backing()->color_space().ToSkColorSpace(), surface_props);
     write_surface_ = surface.get();
     return surface;
   }
@@ -189,11 +209,8 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
     write_surface_ = nullptr;
   }
 
-  bool BeginReadAccess(SkColorType color_type,
-                       GrBackendTexture* backend_texture) override {
-    if (!wrapped_sk_image()->GetGrBackendTexture(backend_texture))
-      return false;
-    return true;
+  sk_sp<SkPromiseImageTexture> BeginReadAccess() override {
+    return wrapped_sk_image()->promise_texture();
   }
 
   void EndReadAccess() override {
@@ -210,8 +227,7 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
 
 }  // namespace
 
-WrappedSkImageFactory::WrappedSkImageFactory(
-    RasterDecoderContextState* context_state)
+WrappedSkImageFactory::WrappedSkImageFactory(SharedContextState* context_state)
     : context_state_(context_state) {}
 
 WrappedSkImageFactory::~WrappedSkImageFactory() = default;
@@ -221,7 +237,20 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
-    uint32_t usage) {
+    uint32_t usage,
+    bool is_thread_safe) {
+  DCHECK(!is_thread_safe);
+  return CreateSharedImage(mailbox, format, size, color_space, usage,
+                           base::span<uint8_t>());
+}
+
+std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
+    const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    base::span<const uint8_t> data) {
   auto info = SkImageInfo::Make(size.width(), size.height(),
                                 ResourceFormatToClosestSkColorType(
                                     /*gpu_compositing=*/true, format),
@@ -230,7 +259,7 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
   std::unique_ptr<WrappedSkImage> texture(
       new WrappedSkImage(mailbox, format, size, color_space, usage,
                          estimated_size, context_state_));
-  if (!texture->Initialize(info))
+  if (!texture->Initialize(info, data))
     return nullptr;
   return texture;
 }
@@ -250,7 +279,9 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
 
 std::unique_ptr<SharedImageRepresentationSkia> WrappedSkImage::ProduceSkia(
     SharedImageManager* manager,
-    MemoryTypeTracker* tracker) {
+    MemoryTypeTracker* tracker,
+    scoped_refptr<SharedContextState> context_state) {
+  DCHECK_EQ(context_state_, context_state.get());
   return std::make_unique<WrappedSkImageRepresentation>(manager, this, tracker);
 }
 

@@ -18,15 +18,18 @@ namespace blink {
 
 CanvasRenderingContextHost::CanvasRenderingContextHost() = default;
 
-void CanvasRenderingContextHost::RecordCanvasSizeToUMA(unsigned width,
-                                                       unsigned height,
+void CanvasRenderingContextHost::RecordCanvasSizeToUMA(const IntSize& size,
                                                        HostType hostType) {
+  if (did_record_canvas_size_to_uma_)
+    return;
+  did_record_canvas_size_to_uma_ = true;
+
   if (hostType == kCanvasHost) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.Canvas.SqrtNumberOfPixels",
-                                std::sqrt(width * height), 1, 5000, 100);
+                                std::sqrt(size.Area()), 1, 5000, 100);
   } else if (hostType == kOffscreenCanvasHost) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.OffscreenCanvas.SqrtNumberOfPixels",
-                                std::sqrt(width * height), 1, 5000, 100);
+                                std::sqrt(size.Area()), 1, 5000, 100);
   } else {
     NOTREACHED();
   }
@@ -93,7 +96,7 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
         CanvasResourceProvider::ResourceUsage usage;
         if (SharedGpuContext::IsGpuCompositingEnabled()) {
           if (LowLatencyEnabled())
-            usage = CanvasResourceProvider::kAcceleratedDirectResourceUsage;
+            usage = CanvasResourceProvider::kAcceleratedDirect3DResourceUsage;
           else
             usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
         } else {
@@ -120,7 +123,7 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
         CanvasResourceProvider::ResourceUsage usage;
         if (want_acceleration) {
           if (LowLatencyEnabled())
-            usage = CanvasResourceProvider::kAcceleratedDirectResourceUsage;
+            usage = CanvasResourceProvider::kAcceleratedDirect2DResourceUsage;
           else
             usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
         } else {
@@ -201,8 +204,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
   scoped_refptr<StaticBitmapImage> image_bitmap =
       RenderingContext()->GetImage(kPreferNoAcceleration);
   if (image_bitmap) {
-    ScriptPromiseResolver* resolver =
-        ScriptPromiseResolver::Create(script_state);
+    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     CanvasAsyncBlobCreator::ToBlobFunctionType function_type =
         CanvasAsyncBlobCreator::kHTMLCanvasConvertToBlobPromise;
     if (this->IsOffscreenCanvas()) {

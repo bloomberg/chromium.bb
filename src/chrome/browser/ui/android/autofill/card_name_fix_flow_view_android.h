@@ -19,7 +19,8 @@ class WebContents;
 namespace autofill {
 
 class CardNameFixFlowViewDelegateMobile;
-
+// This class is responsible for its destruction. Destruction is achieved by
+// calling delete when the prompt is dismissed.
 class CardNameFixFlowViewAndroid {
  public:
   CardNameFixFlowViewAndroid(

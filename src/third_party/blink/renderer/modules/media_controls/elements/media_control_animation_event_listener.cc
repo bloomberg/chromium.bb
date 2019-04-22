@@ -11,7 +11,7 @@ namespace blink {
 
 MediaControlAnimationEventListener::MediaControlAnimationEventListener(
     Observer* observer)
-    : EventListener(EventListener::kCPPEventListenerType), observer_(observer) {
+    : observer_(observer) {
   observer_->WatchedAnimationElement().addEventListener(
       event_type_names::kAnimationend, this, false);
   observer_->WatchedAnimationElement().addEventListener(
@@ -23,11 +23,6 @@ void MediaControlAnimationEventListener::Detach() {
       event_type_names::kAnimationend, this, false);
   observer_->WatchedAnimationElement().removeEventListener(
       event_type_names::kAnimationiteration, this, false);
-}
-
-bool MediaControlAnimationEventListener::operator==(
-    const EventListener& other) const {
-  return this == &other;
 }
 
 void MediaControlAnimationEventListener::Trace(Visitor* visitor) {

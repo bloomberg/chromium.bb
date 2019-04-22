@@ -26,7 +26,7 @@ public class TintedDrawable extends BitmapDrawable {
 
     public TintedDrawable(Context context, Bitmap bitmap) {
         super(context.getResources(), bitmap);
-        mTint = AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
+        mTint = AppCompatResources.getColorStateList(context, R.color.standard_mode_tint);
     }
 
     @Override

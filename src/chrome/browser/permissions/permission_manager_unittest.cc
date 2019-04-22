@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -30,6 +31,7 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/mock_location_settings.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
@@ -51,6 +53,23 @@ class PermissionManagerTestingProfile final : public TestingProfile {
 
   DISALLOW_COPY_AND_ASSIGN(PermissionManagerTestingProfile);
 };
+
+#if defined(OS_ANDROID)
+// See https://crbug.com/904883.
+auto GetDefaultProtectedMediaIdentifierPermissionStatus() {
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+                 base::android::SDK_VERSION_MARSHMALLOW
+             ? PermissionStatus::GRANTED
+             : PermissionStatus::ASK;
+}
+
+auto GetDefaultProtectedMediaIdentifierContentSetting() {
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+                 base::android::SDK_VERSION_MARSHMALLOW
+             ? CONTENT_SETTING_ALLOW
+             : CONTENT_SETTING_ASK;
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace
 
@@ -208,7 +227,7 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDefault) {
   CheckPermissionStatus(PermissionType::GEOLOCATION, PermissionStatus::ASK);
 #if defined(OS_ANDROID)
   CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
-                        PermissionStatus::GRANTED);
+                        GetDefaultProtectedMediaIdentifierPermissionStatus());
 #endif
 }
 
@@ -241,7 +260,7 @@ TEST_F(PermissionManagerTest, CheckPermissionResultDefault) {
                         PermissionStatusSource::UNSPECIFIED);
 #if defined(OS_ANDROID)
   CheckPermissionResult(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-                        CONTENT_SETTING_ALLOW,
+                        GetDefaultProtectedMediaIdentifierContentSetting(),
                         PermissionStatusSource::UNSPECIFIED);
 #endif
 }

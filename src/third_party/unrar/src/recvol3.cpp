@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 // Buffer size for all volumes involved.
 static const size_t TotalBufferSize=0x4000000;
 
@@ -545,3 +547,5 @@ void RecVolumes3::Test(RAROptions *Cmd,const wchar *Name)
     NextVolumeName(VolName,ASIZE(VolName),false);
   }
 }
+
+}  // namespace third_party_unrar

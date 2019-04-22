@@ -80,11 +80,6 @@ chrome/installer/util/browser_distribution.h
 chrome/installer/util/google_update_constants.h
 chrome/installer/util/google_update_settings.h
 chrome/installer/util/util_constants.h
-chromeos/chromeos_export.h
-chromeos/login/login_state.h
-chromeos/login/scoped_test_public_session_login_state.h
-chromeos/settings/cros_settings_names.h
-chromeos/settings/cros_settings_provider.h
 components/browser_watcher/features.h
 components/browser_watcher/stability_paths.h
 components/cast_certificate/cast_crl_root_ca_cert_der-inc.h
@@ -230,7 +225,6 @@ remoting/protocol/test_event_matchers.h
 remoting/protocol/video_feedback_stub.h
 remoting/protocol/video_stream.h
 sandbox/linux/system_headers/capability.h
-services/service_manager/public/c/main.h
 skia/ext/convolver_mips_dspr2.h
 skia/ext/skia_commit_hash.h
 testing/gmock_mutant.h

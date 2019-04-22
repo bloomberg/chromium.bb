@@ -5,9 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <functional>
 #include <memory>
 #include <set>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
@@ -18,6 +21,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -52,6 +56,7 @@
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -139,23 +144,36 @@ class RenderFrameHostDestructionObserver : public WebContentsObserver {
   RenderFrameHost* render_frame_host_;
 };
 
+// A NavigationThrottle implementation that blocks all outgoing navigation
+// requests for a specific WebContents. It is used to block navigations to
+// WebUI URLs in the following test.
+class RequestBlockingNavigationThrottle : public NavigationThrottle {
+ public:
+  explicit RequestBlockingNavigationThrottle(NavigationHandle* handle)
+      : NavigationThrottle(handle) {}
+
+  static std::unique_ptr<NavigationThrottle> Create(NavigationHandle* handle) {
+    return std::make_unique<RequestBlockingNavigationThrottle>(handle);
+  }
+
+ private:
+  ThrottleCheckResult WillStartRequest() override {
+    return NavigationThrottle::BLOCK_REQUEST;
+  }
+
+  const char* GetNameForLogging() override {
+    return "RequestBlockingNavigationThrottle";
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(RequestBlockingNavigationThrottle);
+};
+
 }  // anonymous namespace
 
 class RenderFrameHostManagerTest : public ContentBrowserTest {
  public:
   RenderFrameHostManagerTest() : foo_com_("foo.com") {
     replace_host_.SetHostStr(foo_com_);
-  }
-
-  static void GetFilePathWithHostAndPortReplacement(
-      const std::string& original_file_path,
-      const net::HostPortPair& host_port_pair,
-      std::string* replacement_path) {
-    base::StringPairs replacement_text;
-    replacement_text.push_back(
-        make_pair("REPLACE_WITH_HOST_AND_PORT", host_port_pair.ToString()));
-    net::test_server::GetFilePathWithReplacements(
-        original_file_path, replacement_text, replacement_path);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1329,7 +1347,7 @@ class RenderFrameHostManagerSpoofingTest : public RenderFrameHostManagerTest {
   // but the spoofing tests synchronize execution using window title changes.
   void ExecuteScript(const ToRenderFrameHost& adapter, const char* script) {
     adapter.render_frame_host()->ExecuteJavaScriptForTests(
-        base::UTF8ToUTF16(script));
+        base::UTF8ToUTF16(script), base::NullCallback());
   }
 };
 
@@ -1596,8 +1614,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // Ensures that a pending navigation's URL  is no longer visible after the
 // speculative RFH is discarded due to a concurrent renderer-initiated
 // navigation.  See https://crbug.com/760342.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       ResetVisibleURLOnCrossProcessNavigationInterrupted) {
+// TODO(https://crbug.com/945194): Disabled due to flaky timeouts.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostManagerTest,
+    DISABLED_ResetVisibleURLOnCrossProcessNavigationInterrupted) {
   const std::string kVictimPath = "/victim.html";
   const std::string kAttackPath = "/attack.html";
   net::test_server::ControllableHttpResponse victim_response(
@@ -4342,6 +4362,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
 
   scoped_refptr<SiteInstance> success_site_instance =
       shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+  url::Origin expected_origin =
+      shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin();
+
+  EXPECT_EQ(url::Origin::Create(error_url), expected_origin);
 
   // Install an interceptor which will cause network failure for |error_url|,
   // reload the existing entry and verify.
@@ -4403,6 +4427,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
       GURL(kUnreachableWebDataURL),
       policy->GetOriginLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
+  EXPECT_EQ(expected_origin,
+            shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
   // Test the same scenario as above, but this time initiated by the
   // renderer process.
@@ -4448,6 +4474,313 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
       GURL(kUnreachableWebDataURL),
       policy->GetOriginLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
+  EXPECT_EQ(expected_origin,
+            shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+}
+
+// Version of ErrorPageNavigationReload test that targets a subframe (because
+// subframes are currently [~2019Q1] not subject to error page isolation).
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ErrorPageNavigationReload_InSubframe_NetworkError) {
+  StartEmbeddedServer();
+
+  // Isolating a.com helps more robustly exercise platforms without strict site
+  // isolation - we want to ensure that enforcing |initiator_origin| in
+  // BeginNavigation is compatible with process locks, even when only one of the
+  // frames requires isolation.
+  IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                           {"b.com"});
+
+  // Start on a page with a main frame and a subframe.
+  GURL page_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL test_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+  NavigationControllerImpl& nav_controller =
+      static_cast<NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  // We start at 3, because IsolateOriginsForTesting is sneeking in extra two
+  // navigations.
+  EXPECT_EQ(3, nav_controller.GetEntryCount());
+
+  // Grab child's site URL.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameTreeNode* child = root->child_at(0);
+  GURL child_site_url =
+      child->current_frame_host()->GetSiteInstance()->GetSiteURL();
+
+  // Navigate the subframe to a URL that is cross-site from the main frame.
+  {
+    TestNavigationObserver nav_observer(shell()->web_contents());
+    ASSERT_TRUE(ExecJs(child, JsReplace("window.location = $1", test_url)));
+    nav_observer.Wait();
+
+    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(4, nav_controller.GetEntryCount());
+    EXPECT_EQ(test_url, child->current_frame_host()->GetLastCommittedURL());
+    EXPECT_EQ(url::Origin::Create(test_url),
+              child->current_frame_host()->GetLastCommittedOrigin());
+    EXPECT_EQ(child_site_url,
+              child->current_frame_host()->GetSiteInstance()->GetSiteURL());
+  }
+
+  // Reload the subframe while the network is down.
+  {
+    std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+        SetupRequestFailForURL(test_url);
+    TestNavigationObserver nav_observer(shell()->web_contents());
+    ASSERT_TRUE(ExecJs(child, "window.location.reload()"));
+    nav_observer.Wait();
+
+    EXPECT_FALSE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(4, nav_controller.GetEntryCount());
+    EXPECT_EQ(test_url, child->current_frame_host()->GetLastCommittedURL());
+
+    // Error pages should commit in an opaque origin.
+    url::Origin origin = child->current_frame_host()->GetLastCommittedOrigin();
+    EXPECT_TRUE(origin.opaque());
+    EXPECT_EQ(test_url.GetOrigin(),
+              origin.GetTupleOrPrecursorTupleIfOpaque().GetURL());
+
+    // Error page isolation should apply only to the main frame - subframes
+    // should commit in their usual process / SiteInstance.
+    EXPECT_EQ(child_site_url,
+              child->current_frame_host()->GetSiteInstance()->GetSiteURL());
+  }
+
+  // Reload the subframe after the network is restored.
+  {
+    TestNavigationObserver nav_observer(shell()->web_contents());
+    // Note that some error pages actually do embed a button that will do an
+    // equivalent of the renderer-initiated reload that is triggered below.
+    ASSERT_TRUE(ExecJs(child, "window.location.reload()"));
+    nav_observer.Wait();
+
+    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(4, nav_controller.GetEntryCount());
+    EXPECT_EQ(test_url, child->current_frame_host()->GetLastCommittedURL());
+    EXPECT_EQ(url::Origin::Create(test_url),
+              child->current_frame_host()->GetLastCommittedOrigin());
+    EXPECT_EQ(child_site_url,
+              child->current_frame_host()->GetSiteInstance()->GetSiteURL());
+  }
+}
+
+// Version of ErrorPageNavigationReload test that targets a subframe (because
+// subframes are currently [~2019Q1] not subject to error page isolation).
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ErrorPageNavigationReload_InSubframe_BlockedByClient) {
+  StartEmbeddedServer();
+
+  // Isolating a.com and b.com helps more robustly exercise platforms without
+  // strict site isolation - we want to ensure that enforcing |initiator_origin|
+  // in BeginNavigation is compatible with process locks, even when only some of
+  // the frames requires isolation.
+  IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                           {"a.com", "b.com"});
+
+  // Start on a page with a same-site main frame and a subframe.
+  GURL page_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
+  GURL test_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+  NavigationControllerImpl& nav_controller =
+      static_cast<NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  // We start at 3, because IsolateOriginsForTesting calls are sneeking in extra
+  // two navigations.
+  EXPECT_EQ(3, nav_controller.GetEntryCount());
+
+  // Grab child's site URL.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameTreeNode* child1 = root->child_at(0);
+  FrameTreeNode* child2 = root->child_at(1);
+  GURL a_site_url = root->current_frame_host()->GetSiteInstance()->GetSiteURL();
+  EXPECT_EQ("a.com", a_site_url.host());
+  GURL b_site_url =
+      child2->current_frame_host()->GetSiteInstance()->GetSiteURL();
+  EXPECT_EQ("b.com", b_site_url.host());
+
+  // Navigate the subframe to a cross-site URL, while blocking the request with
+  // ERR_BLOCKED_BY_CLIENT.
+  {
+    // Name the first child, so it can be found and navigated by the other child
+    // in the next test step below.
+    ASSERT_TRUE(ExecJs(child1, "window.name = 'child1';"));
+
+    // Have |child2| initiate navigation of |child1| - the navigation should
+    // result in ERR_BLOCKED_BY_CLIENT (because of the throttle created below).
+    content::TestNavigationThrottleInserter throttle_inserter(
+        shell()->web_contents(),
+        base::BindRepeating(&RequestBlockingNavigationThrottle::Create));
+    const char kScriptTemplate[] = R"(
+        var child1 = window.open('', 'child1');
+        child1.location = $1;
+    )";
+    TestNavigationObserver nav_observer(shell()->web_contents());
+    ASSERT_TRUE(ExecJs(child2, JsReplace(kScriptTemplate, test_url)));
+    nav_observer.Wait();
+    EXPECT_FALSE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(4, nav_controller.GetEntryCount());
+    EXPECT_EQ(test_url, child1->current_frame_host()->GetLastCommittedURL());
+
+    // Error pages should commit in an opaque origin.
+    url::Origin error_origin =
+        child1->current_frame_host()->GetLastCommittedOrigin();
+    url::Origin initiator_origin =
+        child2->current_frame_host()->GetLastCommittedOrigin();
+    EXPECT_TRUE(error_origin.opaque());
+    EXPECT_EQ(initiator_origin.GetURL(),
+              error_origin.GetTupleOrPrecursorTupleIfOpaque().GetURL());
+
+    // net::ERR_BLOCKED_BY_CLIENT errors in subframes should commit in their
+    // initiator's process (not in their parent's process).
+    EXPECT_EQ(b_site_url,
+              child1->current_frame_host()->GetSiteInstance()->GetSiteURL());
+  }
+
+  // Reload the subframe when no longer blocking the navigation.
+  {
+    TestNavigationObserver nav_observer(shell()->web_contents());
+    // Note that some error pages actually do embed a button that will do an
+    // equivalent of the renderer-initiated reload that is triggered below.
+    ASSERT_TRUE(ExecJs(child1, "window.location.reload()"));
+    nav_observer.Wait();
+
+    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(4, nav_controller.GetEntryCount());
+    EXPECT_EQ(test_url, child1->current_frame_host()->GetLastCommittedURL());
+    EXPECT_EQ(url::Origin::Create(test_url),
+              child1->current_frame_host()->GetLastCommittedOrigin());
+
+    SiteInstanceImpl* child1_site_instance =
+        child1->current_frame_host()->GetSiteInstance();
+
+    GURL c_site_url = child1_site_instance->GetSiteURL();
+    if (AreAllSitesIsolatedForTesting()) {
+      EXPECT_EQ("c.com", c_site_url.host());
+      EXPECT_EQ(test_url.host(), c_site_url.host());
+    } else {
+      EXPECT_TRUE(child1_site_instance->IsDefaultSiteInstance());
+    }
+    EXPECT_NE(a_site_url, c_site_url);
+    EXPECT_NE(b_site_url, c_site_url);
+  }
+}
+
+// Make sure that reload works properly if it redirects to a different site than
+// the initial navigation.  The initial purpose of this test was to make sure
+// the corresponding unit test matches the actual product code behavior
+// (e.g. see NavigationControllerTest.Reload_GeneratesNewPage).
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ReloadRedirectsToDifferentCrossSitePage) {
+  // Set-up http server handlers for |start_url|.
+  //
+  // |response1| is only required to make sure that |response2| doesn't kick-in
+  // and intercept the http request until step 4.  Note that step 3 won't hit
+  // the http server and therefore doesn't require handling here.
+  auto response1 = std::make_unique<net::test_server::ControllableHttpResponse>(
+      embedded_test_server(), "/title1.html");
+  auto response2 = std::make_unique<net::test_server::ControllableHttpResponse>(
+      embedded_test_server(), "/title1.html");
+
+  // Start the server after all the required handlers have been already
+  // registered.
+  StartEmbeddedServer();
+  NavigationControllerImpl& nav_controller =
+      static_cast<NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  // URLs used in the test:
+  // - Step1: Navigate to |start_url|
+  // - Step2: Navigate to |second_url|
+  // - Step3: Go back (to |start_url|)
+  // - Step4: Reload (redirects to a different destination - |redirect_url|).
+  GURL start_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  GURL second_url(embedded_test_server()->GetURL("foo.com", "/title3.html"));
+  GURL redirect_url(embedded_test_server()->GetURL("bar.com", "/title2.html"));
+
+  // Test Step 1: Simple navigation that won't redirect and will just
+  // successfully commit http://foo.com/title1.html.
+  {
+    // Navigate...
+    TestNavigationObserver nav_observer(shell()->web_contents());
+    shell()->LoadURL(start_url);
+    response1->WaitForRequest();
+    response1->Send(net::HTTP_OK, "text/html; charset=utf-8", "<p>Blah</p>");
+    response1->Done();
+    nav_observer.Wait();
+
+    // Verify...
+    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(1, nav_controller.GetEntryCount());
+    EXPECT_EQ(0, nav_controller.GetLastCommittedEntryIndex());
+    EXPECT_EQ(start_url, nav_controller.GetLastCommittedEntry()->GetURL());
+  }
+
+  // Test Step 2: Simple navigation that won't redirect and will just
+  // successfully commit http://foo.com/title3.html.
+  {
+    // Navigate...
+    EXPECT_TRUE(NavigateToURL(shell(), second_url));
+
+    // Verify...
+    EXPECT_EQ(2, nav_controller.GetEntryCount());
+    EXPECT_EQ(1, nav_controller.GetLastCommittedEntryIndex());
+    EXPECT_EQ(second_url, nav_controller.GetLastCommittedEntry()->GetURL());
+  }
+
+  // Test Step 3: Go back (to |start_url|).
+  {
+    // Navigate...
+    TestNavigationObserver nav_observer(shell()->web_contents());
+    nav_controller.GoBack();
+    nav_observer.Wait();
+
+    // Verify...
+    EXPECT_TRUE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(2, nav_controller.GetEntryCount());
+    EXPECT_EQ(0, nav_controller.GetLastCommittedEntryIndex());
+    EXPECT_EQ(start_url, nav_controller.GetLastCommittedEntry()->GetURL());
+  }
+
+  // Test Step 4: Reload that will redirect to http://bar.com/title2.html (which
+  // is a different, cross-site location compared to what the initial navigation
+  // committed).
+  {
+    // Navigate...
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
+    response2->WaitForRequest();
+    response2->Send("HTTP/1.1 302 Moved Temporarily\n");
+    response2->Send("Location: " + redirect_url.spec());
+    response2->Done();
+    reload_observer.Wait();
+
+    // Verify that reload 1) replaced the current entry (rather than creating a
+    // new entry) and 2) the tail of the history (e.g. the |second_url|
+    // navigation) was preserved rather than truncated.
+    EXPECT_TRUE(reload_observer.last_navigation_succeeded());
+    EXPECT_EQ(2, nav_controller.GetEntryCount());
+    EXPECT_EQ(0, nav_controller.GetLastCommittedEntryIndex());
+    EXPECT_EQ(redirect_url, nav_controller.GetLastCommittedEntry()->GetURL());
+    EXPECT_EQ(second_url, nav_controller.GetEntryAtIndex(1)->GetURL());
+    if (AreAllSitesIsolatedForTesting()) {
+      // The successful reload should be classified as a NEW_PAGE navigation
+      // with replacement, since it needs to stay at the same entry in session
+      // history, but needs a new entry because of the change in SiteInstance.
+      // (the same as expectations in the ErrorPageNavigationReload test above).
+      EXPECT_EQ(NavigationType::NAVIGATION_TYPE_NEW_PAGE,
+                reload_observer.last_navigation_type());
+    } else {
+      EXPECT_EQ(NavigationType::NAVIGATION_TYPE_EXISTING_PAGE,
+                reload_observer.last_navigation_type());
+    }
+  }
 }
 
 // Test to verify that navigating away from an error page results in correct
@@ -4674,30 +5007,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
             ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
                 web_contents->GetSiteInstance()->GetProcess()->GetID()));
 }
-
-// A NavigationThrottle implementation that blocks all outgoing navigation
-// requests for a specific WebContents. It is used to block navigations to
-// WebUI URLs in the following test.
-class RequestBlockingNavigationThrottle : public NavigationThrottle {
- public:
-  explicit RequestBlockingNavigationThrottle(NavigationHandle* handle)
-      : NavigationThrottle(handle) {}
-
-  static std::unique_ptr<NavigationThrottle> Create(NavigationHandle* handle) {
-    return std::make_unique<RequestBlockingNavigationThrottle>(handle);
-  }
-
- private:
-  ThrottleCheckResult WillStartRequest() override {
-    return NavigationThrottle::BLOCK_REQUEST;
-  }
-
-  const char* GetNameForLogging() override {
-    return "RequestBlockingNavigationThrottle";
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(RequestBlockingNavigationThrottle);
-};
 
 // Test to verify that navigations to WebUI URL which results in an error
 // commits properly in the error page process and does not give it WebUI
@@ -5170,7 +5479,7 @@ class AssertForegroundHelper {
         FROM_HERE,
         base::BindOnce(&AssertForegroundHelper::AssertForegroundAndRepost,
                        weak_ptr_factory_.GetWeakPtr(),
-                       base::ConstRef(renderer_process), port_provider),
+                       std::cref(renderer_process), port_provider),
         base::TimeDelta::FromMilliseconds(1));
   }
 #else   // defined(OS_MACOSX)
@@ -5181,7 +5490,7 @@ class AssertForegroundHelper {
         FROM_HERE,
         base::BindOnce(&AssertForegroundHelper::AssertForegroundAndRepost,
                        weak_ptr_factory_.GetWeakPtr(),
-                       base::ConstRef(renderer_process)),
+                       std::cref(renderer_process)),
         base::TimeDelta::FromMilliseconds(1));
   }
 #endif  // defined(OS_MACOSX)
@@ -5381,6 +5690,104 @@ IN_PROC_BROWSER_TEST_F(
   navigation_manager.WaitForNavigationFinished();
   EXPECT_NE(start_rph, web_contents->GetMainFrame()->GetProcess());
   EXPECT_EQ(speculative_rph, web_contents->GetMainFrame()->GetProcess());
+}
+
+// ContentBrowserClient that skips assigning a site URL for a given URL.
+class DontAssignSiteContentBrowserClient : public TestContentBrowserClient {
+ public:
+  // Any visit to |url_to_skip| will not cause the site to be assigned to the
+  // SiteInstance.
+  explicit DontAssignSiteContentBrowserClient(const GURL& url_to_skip)
+      : url_to_skip_(url_to_skip) {}
+
+  bool ShouldAssignSiteForURL(const GURL& url) override {
+    return url != url_to_skip_;
+  }
+
+ private:
+  GURL url_to_skip_;
+
+  DISALLOW_COPY_AND_ASSIGN(DontAssignSiteContentBrowserClient);
+};
+
+// Ensure that coming back to a NavigationEntry with a previously unassigned
+// SiteInstance (which is now used for another site) properly switches processes
+// and SiteInstances.  See https://crbug.com/945399.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       NavigateWithUnassignedSiteInstance) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Navigate to a URL that does not assign site URLs.
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  DontAssignSiteContentBrowserClient content_browser_client(url1);
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_EQ(url1, web_contents->GetLastCommittedURL());
+  scoped_refptr<SiteInstanceImpl> instance1(
+      web_contents->GetMainFrame()->GetSiteInstance());
+  RenderProcessHost* process1 = instance1->GetProcess();
+  EXPECT_EQ(GURL(), instance1->GetSiteURL());
+
+  // Navigate to foo.com, which uses the previous SiteInstance and sets its site
+  // URL.
+  GURL url2(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  EXPECT_EQ(instance1, web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_EQ(GURL("http://foo.com"), instance1->GetSiteURL());
+
+  // Navigate to bar.com, which destroys the previous RenderProcessHost.
+  GURL url3(embedded_test_server()->GetURL("bar.com", "/title1.html"));
+  RenderProcessHostWatcher exit_observer(
+      process1, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(NavigateToURL(shell(), url3));
+  exit_observer.Wait();
+  EXPECT_NE(instance1, web_contents->GetMainFrame()->GetSiteInstance());
+
+  // At this point, process1 is deleted, and the first entry is unfortunately
+  // pointing to instance1, which has been locked to url2 and has no process.
+  EXPECT_FALSE(instance1->HasProcess());
+  if (AreAllSitesIsolatedForTesting()) {
+    // In site-per-process, we cannot use foo.com's SiteInstance for a.com.
+    EXPECT_TRUE(instance1->HasWrongProcessForURL(url1));
+  } else {
+    // If neither foo.com nor a.com require dedicated processes, then we can use
+    // the same process.
+    EXPECT_FALSE(instance1->HasWrongProcessForURL(url1));
+  }
+
+  // TODO(creis): Enable the rest of the test when https://crbug.com/793127 is
+  // fixed, since this currently fails with a DCHECK in SiteProcessCountTracker.
+#if 0
+  // Go back to the chrome-native:// URL's entry, which should swap to a new
+  // SiteInstance with an unused site URL.
+  TestNavigationObserver observer(web_contents);
+  web_contents->GetController().GoToOffset(-2);
+  observer.Wait();
+  scoped_refptr<SiteInstanceImpl> new_instance =
+      web_contents->GetMainFrame()->GetSiteInstance();
+  EXPECT_EQ(url1, web_contents->GetLastCommittedURL());
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_NE(instance1, new_instance);
+    EXPECT_EQ(GURL(), new_instance->GetSiteURL());
+  } else {
+    EXPECT_EQ(instance1, new_instance);
+  }
+  EXPECT_TRUE(new_instance->HasProcess());
+
+  // Because url1 does not set a site URL, it should not lock the new process
+  // either, so that it can be used for subsequent navigations.
+  content::RenderProcessHost* new_process = new_instance->GetProcess();
+  auto* policy = ChildProcessSecurityPolicy::GetInstance();
+  EXPECT_TRUE(
+      policy->CanAccessDataForOrigin(new_process->GetID(), url1));
+  EXPECT_TRUE(
+      policy->CanAccessDataForOrigin(new_process->GetID(), url2));
+#endif
+
+  SetBrowserClientForTesting(old_client);
 }
 
 }  // namespace content

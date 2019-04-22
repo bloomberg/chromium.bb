@@ -62,26 +62,48 @@ class TestProxyConfigServiceObserver
   DISALLOW_COPY_AND_ASSIGN(TestProxyConfigServiceObserver);
 };
 
+// Test fixture for notifying ProxyConfigServiceMojo of changes through the
+// client interface, and watching the subsequent values it emits to registered
+// net::ProxyConfigService::Observers.
+class ProxyConfigServiceMojoTest : public testing::Test {
+ public:
+  ProxyConfigServiceMojoTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        proxy_config_service_(mojo::MakeRequest(&config_client_),
+                              base::Optional<net::ProxyConfigWithAnnotation>(),
+                              nullptr),
+        observer_(&proxy_config_service_) {
+    proxy_config_service_.AddObserver(&observer_);
+  }
+
+  ~ProxyConfigServiceMojoTest() override {
+    proxy_config_service_.RemoveObserver(&observer_);
+  }
+
+ protected:
+  // After notifying a new configuration through |config_client_|, waits for the
+  // observers to have been notified.
+  void WaitForConfig() { scoped_task_environment_.RunUntilIdle(); }
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  mojom::ProxyConfigClientPtr config_client_;
+  ProxyConfigServiceMojo proxy_config_service_;
+  TestProxyConfigServiceObserver observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceMojoTest);
+};
+
 // Most tests of this class are in network_context_unittests.
 
 // Makes sure that a ProxyConfigService::Observer is correctly notified of
 // changes when the ProxyConfig changes, and is not informed of them in the case
 // of "changes" that result in the same ProxyConfig as before.
-TEST(ProxyConfigServiceMojoTest, ObserveProxyChanges) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::IO);
-
-  mojom::ProxyConfigClientPtr config_client;
-  ProxyConfigServiceMojo proxy_config_service(
-      mojo::MakeRequest(&config_client),
-      base::Optional<net::ProxyConfigWithAnnotation>(), nullptr);
-  TestProxyConfigServiceObserver observer(&proxy_config_service);
-  proxy_config_service.AddObserver(&observer);
-
+TEST_F(ProxyConfigServiceMojoTest, ObserveProxyChanges) {
   net::ProxyConfigWithAnnotation proxy_config;
   // The service should start without a config.
   EXPECT_EQ(net::ProxyConfigService::CONFIG_PENDING,
-            proxy_config_service.GetLatestProxyConfig(&proxy_config));
+            proxy_config_service_.GetLatestProxyConfig(&proxy_config));
 
   net::ProxyConfig proxy_configs[3];
   proxy_configs[0].proxy_rules().ParseFromString("http=foopy:80");
@@ -90,29 +112,62 @@ TEST(ProxyConfigServiceMojoTest, ObserveProxyChanges) {
 
   for (const auto& proxy_config : proxy_configs) {
     // Set the proxy configuration to something that does not match the old one.
-    config_client->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation(
+    config_client_->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation(
         proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
-    scoped_task_environment.RunUntilIdle();
-    EXPECT_EQ(1, observer.GetAndResetConfigChanges());
-    EXPECT_TRUE(proxy_config.Equals(observer.observed_config().value()));
+    WaitForConfig();
+    EXPECT_EQ(1, observer_.GetAndResetConfigChanges());
+    EXPECT_TRUE(proxy_config.Equals(observer_.observed_config().value()));
     net::ProxyConfigWithAnnotation retrieved_config;
     EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
-              proxy_config_service.GetLatestProxyConfig(&retrieved_config));
+              proxy_config_service_.GetLatestProxyConfig(&retrieved_config));
     EXPECT_TRUE(proxy_config.Equals(retrieved_config.value()));
 
     // Set the proxy configuration to the same value again. There should be not
     // be another proxy config changed notification.
-    config_client->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation(
+    config_client_->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation(
         proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS));
-    scoped_task_environment.RunUntilIdle();
-    EXPECT_EQ(0, observer.GetAndResetConfigChanges());
-    EXPECT_TRUE(proxy_config.Equals(observer.observed_config().value()));
+    WaitForConfig();
+    EXPECT_EQ(0, observer_.GetAndResetConfigChanges());
+    EXPECT_TRUE(proxy_config.Equals(observer_.observed_config().value()));
     EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
-              proxy_config_service.GetLatestProxyConfig(&retrieved_config));
+              proxy_config_service_.GetLatestProxyConfig(&retrieved_config));
     EXPECT_TRUE(proxy_config.Equals(retrieved_config.value()));
   }
+}
 
-  proxy_config_service.RemoveObserver(&observer);
+// Creates a URL that has length |url::kMaxURLChars + 1|.
+GURL CreateLargeURL() {
+  std::string spec;
+  spec.reserve(url::kMaxURLChars + 1);
+  spec.assign("http://test.invalid/");
+  spec.append(url::kMaxURLChars + 1 - spec.size(), 'x');
+  return GURL(spec);
+}
+
+// Tests what happens when ProxyConfigServiceMojo is updated to using a
+// ProxyConfig with a large URL. GURL does not impose size limits, however some
+// internals like url.mojom.Url do.
+TEST_F(ProxyConfigServiceMojoTest, LargePacUrlNotTruncated) {
+  // Create a config using a large, valid, PAC URL.
+  net::ProxyConfig orig_config;
+  GURL large_url = CreateLargeURL();
+  EXPECT_TRUE(large_url.is_valid());
+  EXPECT_EQ(url::kMaxURLChars + 1, large_url.possibly_invalid_spec().size());
+  orig_config.set_pac_url(large_url);
+
+  // Notify the ProxyConfigServiceMojo of this URL through the client interface.
+  config_client_->OnProxyConfigUpdated(net::ProxyConfigWithAnnotation(
+      orig_config, TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  WaitForConfig();
+
+  // Read back the ProxyConfig that was observed (which has been serialized
+  // through a Mojo pipe).
+  const GURL& observed_url = observer_.observed_config().value().pac_url();
+
+  // The URL should be unchanged, and not changed by the Mojo serialization.
+  EXPECT_EQ(large_url, observed_url);
+  EXPECT_EQ(url::kMaxURLChars + 1, observed_url.possibly_invalid_spec().size());
 }
 
 }  // namespace

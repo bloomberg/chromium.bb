@@ -71,6 +71,10 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
                                   blink::WebURLResponse* response,
                                   bool report_security_info,
                                   int request_id);
+  static blink::WebURLError PopulateURLError(
+      const network::URLLoaderCompletionStatus& status,
+      const GURL& url);
+
   // WebURLLoader methods:
   void LoadSynchronously(const blink::WebURLRequest& request,
                          blink::WebURLLoaderClient* client,
@@ -86,6 +90,8 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
   void SetDefersLoading(bool value) override;
   void DidChangePriority(blink::WebURLRequest::Priority new_priority,
                          int intra_priority_value) override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
+
  private:
   class Context;
   class RequestPeerImpl;

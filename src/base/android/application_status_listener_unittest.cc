@@ -51,8 +51,8 @@ class MultiThreadedTest {
     // Start the thread and tell it to register for events.
     thread_.Start();
     thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&MultiThreadedTest::RegisterThreadForEvents,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&MultiThreadedTest::RegisterThreadForEvents,
+                                  base::Unretained(this)));
 
     // Wait for its completion.
     event_.Wait();

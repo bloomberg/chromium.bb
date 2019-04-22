@@ -6,6 +6,7 @@
 
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -70,7 +71,7 @@ class MockDatabaseTracker : public DatabaseTracker {
     return true;
   }
 
-  int DeleteDataForOrigin(const std::string& origin_identifier,
+  int DeleteDataForOrigin(const url::Origin& origin,
                           net::CompletionOnceCallback callback) override {
     ++delete_called_count_;
     if (async_delete()) {
@@ -109,7 +110,7 @@ class MockDatabaseTracker : public DatabaseTracker {
 
     void AddMockDatabase(const base::string16& name, int size) {
       EXPECT_TRUE(database_info_.find(name) == database_info_.end());
-      database_info_[name].first = size;
+      database_info_[name].size = size;
       total_size_ += size;
     }
   };

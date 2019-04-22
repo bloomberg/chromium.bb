@@ -46,7 +46,6 @@ class ChromeExtensionsClient : public ExtensionsClient {
   std::set<base::FilePath> GetBrowserImagePaths(
       const Extension* extension) override;
   bool ExtensionAPIEnabledInExtensionServiceWorkers() const override;
-  std::string GetUserAgent() const override;
   void AddOriginAccessPermissions(
       const Extension& extension,
       bool is_extension_active,

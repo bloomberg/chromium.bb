@@ -112,6 +112,8 @@ void WindowPortLocal::OnWillMoveChild(size_t current_index, size_t dest_index) {
 
 void WindowPortLocal::OnVisibilityChanged(bool visible) {}
 
+void WindowPortLocal::OnTransparentChanged(bool visible) {}
+
 void WindowPortLocal::OnDidChangeBounds(const gfx::Rect& old_bounds,
                                         const gfx::Rect& new_bounds) {
   if (!window_->IsRootWindow() && last_size_ != new_bounds.size() &&

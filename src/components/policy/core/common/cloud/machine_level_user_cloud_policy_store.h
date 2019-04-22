@@ -48,6 +48,10 @@ class POLICY_EXPORT MachineLevelUserCloudPolicyStore
   void SetupRegistration(const std::string& machine_dm_token,
                          const std::string& machine_client_id);
 
+  // No DM token can be fetched from server or read from disk. Finish
+  // initialization with empty policy data.
+  void InitWithoutToken();
+
  private:
   // override DesktopCloudPolicyStore
   void Validate(

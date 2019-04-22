@@ -9,12 +9,10 @@
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/geometry/rect.h"
 
+class SkPath;
+
 namespace cc {
 class DisplayItemList;
-}
-
-namespace gfx {
-class Path;
 }
 
 namespace ui {
@@ -30,8 +28,8 @@ class COMPOSITOR_EXPORT ClipRecorder {
   ~ClipRecorder();
 
   void ClipRect(const gfx::Rect& clip_rect);
-  void ClipPath(const gfx::Path& clip_path);
-  void ClipPathWithAntiAliasing(const gfx::Path& clip_path);
+  void ClipPath(const SkPath& clip_path);
+  void ClipPathWithAntiAliasing(const SkPath& clip_path);
 
  private:
   const PaintContext& context_;

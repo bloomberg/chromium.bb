@@ -7,6 +7,7 @@
 #include <ostream>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -159,14 +160,6 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
     LOG(ERROR) << "Invalid parse_start " << timing.parse_timing->parse_start
                << " for first_layout " << timing.document_timing->first_layout;
     return internal::INVALID_ORDER_PARSE_START_FIRST_LAYOUT;
-  }
-
-  if (!EventsInOrder(timing.paint_timing->first_paint,
-                     timing.paint_timing->first_text_paint)) {
-    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing->first_paint
-               << " for first_text_paint "
-               << timing.paint_timing->first_text_paint;
-    return internal::INVALID_ORDER_FIRST_PAINT_FIRST_TEXT_PAINT;
   }
 
   if (!EventsInOrder(timing.paint_timing->first_paint,
@@ -334,9 +327,6 @@ class PageLoadTimingMerger {
     mojom::PaintTiming* target_paint_timing = target_->paint_timing.get();
     MaybeUpdateTimeDelta(&target_paint_timing->first_paint,
                          navigation_start_offset, new_paint_timing.first_paint);
-    MaybeUpdateTimeDelta(&target_paint_timing->first_text_paint,
-                         navigation_start_offset,
-                         new_paint_timing.first_text_paint);
     MaybeUpdateTimeDelta(&target_paint_timing->first_image_paint,
                          navigation_start_offset,
                          new_paint_timing.first_image_paint);
@@ -344,9 +334,18 @@ class PageLoadTimingMerger {
                          navigation_start_offset,
                          new_paint_timing.first_contentful_paint);
     if (is_main_frame) {
-      // First meaningful paint is only tracked in the main frame.
+      // FMP and FCP++ are only tracked in the main frame.
       target_paint_timing->first_meaningful_paint =
           new_paint_timing.first_meaningful_paint;
+
+      target_paint_timing->largest_image_paint =
+          new_paint_timing.largest_image_paint;
+      target_paint_timing->largest_image_paint_size =
+          new_paint_timing.largest_image_paint_size;
+      target_paint_timing->largest_text_paint =
+          new_paint_timing.largest_text_paint;
+      target_paint_timing->largest_text_paint_size =
+          new_paint_timing.largest_text_paint_size;
     }
   }
 
@@ -412,8 +411,7 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
       current_merged_page_timing_(CreatePageLoadTiming()),
       pending_merged_page_timing_(CreatePageLoadTiming()),
       main_frame_metadata_(mojom::PageLoadMetadata::New()),
-      subframe_metadata_(mojom::PageLoadMetadata::New()),
-      main_frame_render_data_(mojom::PageRenderData::New()) {}
+      subframe_metadata_(mojom::PageLoadMetadata::New()) {}
 
 PageLoadMetricsUpdateDispatcher::~PageLoadMetricsUpdateDispatcher() {
   ShutDown();
@@ -427,36 +425,6 @@ void PageLoadMetricsUpdateDispatcher::ShutDown() {
   }
   timer_ = nullptr;
 
-  if (largest_image_paint_) {
-    pending_merged_page_timing_->paint_timing->largest_image_paint.swap(
-        largest_image_paint_);
-    // Reset it so multiple shutdowns will have only one dispatch.
-    largest_image_paint_.reset();
-    should_dispatch = true;
-  }
-  if (last_image_paint_) {
-    pending_merged_page_timing_->paint_timing->last_image_paint.swap(
-        last_image_paint_);
-    // Reset it so multiple shutdowns will have only one dispatch.
-    last_image_paint_.reset();
-    should_dispatch = true;
-  }
-
-  if (largest_text_paint_) {
-    pending_merged_page_timing_->paint_timing->largest_text_paint.swap(
-        largest_text_paint_);
-    // Reset it so multiple shutdowns will have only one dispatch.
-    largest_text_paint_.reset();
-    should_dispatch = true;
-  }
-  if (last_text_paint_) {
-    pending_merged_page_timing_->paint_timing->last_text_paint.swap(
-        last_text_paint_);
-    // Reset it so multiple shutdowns will have only one dispatch.
-    last_text_paint_.reset();
-    should_dispatch = true;
-  }
-
   if (should_dispatch) {
     DispatchTimingUpdates();
   }
@@ -468,7 +436,9 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     mojom::PageLoadMetadataPtr new_metadata,
     mojom::PageLoadFeaturesPtr new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-    mojom::PageRenderDataPtr render_data) {
+    mojom::FrameRenderDataUpdatePtr render_data,
+    mojom::CpuTimingPtr new_cpu_timing,
+    mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
   if (render_frame_host->GetLastCommittedURL().SchemeIs(
           extensions::kExtensionScheme)) {
     // Extensions can inject child frames into a page. We don't want to track
@@ -476,19 +446,32 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     return;
   }
 
+  // Report cpu usage.
+  UpdateFrameCpuTiming(render_frame_host, std::move(new_cpu_timing));
   // Report data usage before new timing and metadata for messages that have
   // both updates.
-  client_->UpdateResourceDataUse(resources);
-  if (render_frame_host->GetParent() == nullptr) {
+  client_->UpdateResourceDataUse(render_frame_host, resources);
+
+  // Report new deferral info.
+  client_->OnNewDeferredResourceCounts(*new_deferred_resource_data);
+
+  bool is_main_frame = render_frame_host->GetParent() == nullptr;
+  if (is_main_frame) {
     UpdateMainFrameMetadata(std::move(new_metadata));
     UpdateMainFrameTiming(std::move(new_timing));
-    UpdateMainFrameRenderData(std::move(render_data));
+    UpdateMainFrameRenderData(*render_data);
   } else {
-    UpdateSubFrameMetadata(std::move(new_metadata));
+    UpdateSubFrameMetadata(render_frame_host, std::move(new_metadata));
     UpdateSubFrameTiming(render_frame_host, std::move(new_timing));
-    // TODO: Handle subframe PageRenderData.
   }
-  client_->UpdateFeaturesUsage(*new_features);
+
+  UpdatePageRenderData(*render_data);
+  if (!is_main_frame) {
+    // This path is just for the AMP metrics.
+    OnSubFrameRenderDataChanged(render_frame_host, *render_data);
+  }
+
+  client_->UpdateFeaturesUsage(render_frame_host, *new_features);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateFeatures(
@@ -500,7 +483,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateFeatures(
     // these as they could skew metrics. See http://crbug.com/761037
     return;
   }
-  client_->UpdateFeaturesUsage(new_features);
+  client_->UpdateFeaturesUsage(render_frame_host, new_features);
 }
 
 void PageLoadMetricsUpdateDispatcher::DidFinishSubFrameNavigation(
@@ -542,18 +525,31 @@ void PageLoadMetricsUpdateDispatcher::UpdateSubFrameTiming(
   MaybeDispatchTimingUpdates(merger.should_buffer_timing_update_callback());
 }
 
+void PageLoadMetricsUpdateDispatcher::UpdateFrameCpuTiming(
+    content::RenderFrameHost* render_frame_host,
+    mojom::CpuTimingPtr new_timing) {
+  // If the task time is zero, then there's nothing to do.
+  if (new_timing->task_time.is_zero())
+    return;
+  // If this is not the main frame, make sure it's valid.
+  if (render_frame_host->GetParent() != nullptr) {
+    const auto it = subframe_navigation_start_offset_.find(
+        render_frame_host->GetFrameTreeNodeId());
+    if (it == subframe_navigation_start_offset_.end()) {
+      // We received timing information for an untracked load. Ignore it.
+      return;
+    }
+  }
+  client_->UpdateFrameCpuTiming(render_frame_host, *new_timing);
+}
+
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMetadata(
+    content::RenderFrameHost* render_frame_host,
     mojom::PageLoadMetadataPtr subframe_metadata) {
   // Merge the subframe loading behavior flags with any we've already observed,
   // possibly from other subframes.
-  const int last_subframe_loading_behavior_flags =
-      subframe_metadata_->behavior_flags;
   subframe_metadata_->behavior_flags |= subframe_metadata->behavior_flags;
-  if (last_subframe_loading_behavior_flags ==
-      subframe_metadata_->behavior_flags)
-    return;
-
-  client_->OnSubframeMetadataChanged();
+  client_->OnSubframeMetadataChanged(render_frame_host, *subframe_metadata);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
@@ -584,18 +580,6 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
 
   mojom::InteractiveTimingPtr last_interactive_timing =
       std::move(pending_merged_page_timing_->interactive_timing);
-
-  // Update the latest candidate to the corresponding buffers. We will dispatch
-  // the last candidate at the page load end. Because we don't want to dispatch
-  // the non-last candidate here, we clear it from |new_timing|.
-  largest_image_paint_.swap(new_timing->paint_timing->largest_image_paint);
-  new_timing->paint_timing->largest_image_paint.reset();
-  last_image_paint_.swap(new_timing->paint_timing->last_image_paint);
-  new_timing->paint_timing->last_image_paint.reset();
-  largest_text_paint_.swap(new_timing->paint_timing->largest_text_paint);
-  new_timing->paint_timing->largest_text_paint.reset();
-  last_text_paint_.swap(new_timing->paint_timing->last_text_paint);
-  new_timing->paint_timing->last_text_paint.reset();
 
   // Update the pending_merged_page_timing_, making sure to merge the previously
   // observed |paint_timing| and |interactive_timing|, which are tracked across
@@ -628,9 +612,20 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
   client_->OnMainFrameMetadataChanged();
 }
 
+void PageLoadMetricsUpdateDispatcher::UpdatePageRenderData(
+    const mojom::FrameRenderDataUpdate& render_data) {
+  page_render_data_.layout_jank_score += render_data.layout_jank_delta;
+}
+
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
-    mojom::PageRenderDataPtr render_data) {
-  main_frame_render_data_ = std::move(render_data);
+    const mojom::FrameRenderDataUpdate& render_data) {
+  main_frame_render_data_.layout_jank_score += render_data.layout_jank_delta;
+}
+
+void PageLoadMetricsUpdateDispatcher::OnSubFrameRenderDataChanged(
+    content::RenderFrameHost* render_frame_host,
+    const mojom::FrameRenderDataUpdate& render_data) {
+  client_->OnSubFrameRenderDataChanged(render_frame_host, render_data);
 }
 
 void PageLoadMetricsUpdateDispatcher::MaybeDispatchTimingUpdates(
@@ -671,9 +666,6 @@ void PageLoadMetricsUpdateDispatcher::DispatchTimingUpdates() {
 
   LogIfOutOfOrderTiming(current_merged_page_timing_->paint_timing->first_paint,
                         pending_merged_page_timing_->paint_timing->first_paint);
-  LogIfOutOfOrderTiming(
-      current_merged_page_timing_->paint_timing->first_text_paint,
-      pending_merged_page_timing_->paint_timing->first_text_paint);
   LogIfOutOfOrderTiming(
       current_merged_page_timing_->paint_timing->first_image_paint,
       pending_merged_page_timing_->paint_timing->first_image_paint);

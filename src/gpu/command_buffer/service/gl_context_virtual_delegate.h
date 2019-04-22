@@ -32,7 +32,6 @@ class GPU_GLES2_EXPORT GLContextVirtualDelegate {
   // Restore States.
   virtual void RestoreGlobalState() const = 0;
   virtual void ClearAllAttributes() const = 0;
-  virtual void RestoreAllAttributes() const = 0;
   virtual void RestoreActiveTexture() const = 0;
   virtual void RestoreAllTextureUnitAndSamplerBindings(
       const gles2::ContextState* prev_state) const = 0;
@@ -42,7 +41,6 @@ class GPU_GLES2_EXPORT GLContextVirtualDelegate {
   virtual void RestoreFramebufferBindings() const = 0;
   virtual void RestoreRenderbufferBindings() = 0;
   virtual void RestoreProgramBindings() const = 0;
-  virtual void RestoreTextureState(unsigned service_id) const = 0;
   virtual void RestoreTextureUnitBindings(unsigned unit) const = 0;
   virtual void RestoreVertexAttribArray(unsigned index) = 0;
   virtual void RestoreAllExternalTextureBindingsIfNeeded() = 0;

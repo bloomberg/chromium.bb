@@ -14,11 +14,13 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwDevToolsServer;
 import org.chromium.android_webview.AwSettings;
-import org.chromium.android_webview.command_line.CommandLineUtil;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.MemoryPressureLevel;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.memory.MemoryPressureMonitor;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
 
@@ -44,10 +46,9 @@ public class SharedStatics {
     }
 
     public void setWebContentsDebuggingEnabled(boolean enable) {
-        // Web Contents debugging is always enabled on debug builds.
-        if (!CommandLineUtil.isBuildDebuggable()) {
-            setWebContentsDebuggingEnabledUnconditionally(enable);
-        }
+        // On debug builds, Web Contents debugging is enabled elsewhere, and cannot be disabled.
+        if (BuildInfo.isDebugAndroid()) return;
+        setWebContentsDebuggingEnabledUnconditionally(enable);
     }
 
     public void setWebContentsDebuggingEnabledUnconditionally(boolean enable) {
@@ -64,14 +65,14 @@ public class SharedStatics {
 
     public void clearClientCertPreferences(Runnable onCleared) {
         // clang-format off
-        ThreadUtils.runOnUiThread(() ->
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () ->
                 AwContentsStatics.clearClientCertPreferences(onCleared));
         // clang-format on
     }
 
     public void freeMemoryForTests() {
         if (ActivityManager.isRunningInTestHarness()) {
-            ThreadUtils.postOnUiThread(() -> {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                 // This variable is needed to prevent weird formatting by "git cl format".
                 MemoryPressureMonitor pressureMonitor = MemoryPressureMonitor.INSTANCE;
                 pressureMonitor.notifyPressure(MemoryPressureLevel.CRITICAL);
@@ -95,15 +96,15 @@ public class SharedStatics {
      */
     public void initSafeBrowsing(Context context, Callback<Boolean> callback) {
         // clang-format off
-        ThreadUtils.runOnUiThread(() -> AwContentsStatics.initSafeBrowsing(context,
-                    callback));
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> AwContentsStatics.initSafeBrowsing(context, callback));
         // clang-format on
     }
 
     public void setSafeBrowsingWhitelist(List<String> urls, Callback<Boolean> callback) {
         // clang-format off
-        ThreadUtils.runOnUiThread(() -> AwContentsStatics.setSafeBrowsingWhitelist(
-                urls, callback));
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> AwContentsStatics.setSafeBrowsingWhitelist(urls, callback));
         // clang-format on
     }
 
@@ -114,26 +115,11 @@ public class SharedStatics {
      * to users.
      */
     public Uri getSafeBrowsingPrivacyPolicyUrl() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(
+        return PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT,
                 () -> AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl());
     }
 
-    public void setProxyOverride(String host, int port, String[] exclusionList, Runnable callback) {
-        if (host == null) {
-            throw new NullPointerException("Host string should not be null");
-        }
-        if (exclusionList != null) {
-            for (String url : exclusionList) {
-                if (url == null) {
-                    throw new NullPointerException("Excluded URL strings should not be null");
-                }
-            }
-        }
-        ThreadUtils.runOnUiThread(
-                () -> AwContentsStatics.setProxyOverride(host, port, exclusionList, callback));
-    }
-
-    public void clearProxyOverride(Runnable callback) {
-        ThreadUtils.runOnUiThread(() -> AwContentsStatics.clearProxyOverride(callback));
+    public boolean isMultiProcessEnabled() {
+        return AwContentsStatics.isMultiProcessEnabled();
     }
 }

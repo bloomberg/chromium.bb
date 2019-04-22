@@ -11,14 +11,14 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
@@ -30,7 +30,7 @@ class MessageReceiver;
 
 // Base class used to factor out code in AssociatedBinding<T> expansions, in
 // particular for Bind().
-class MOJO_CPP_BINDINGS_EXPORT AssociatedBindingBase {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) AssociatedBindingBase {
  public:
   AssociatedBindingBase();
   virtual ~AssociatedBindingBase();
@@ -73,7 +73,7 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedBindingBase {
                 MessageReceiverWithResponderStatus* receiver,
                 std::unique_ptr<MessageReceiver> payload_validator,
                 bool expect_sync_requests,
-                scoped_refptr<base::SingleThreadTaskRunner> runner,
+                scoped_refptr<base::SequencedTaskRunner> runner,
                 uint32_t interface_version);
 
   std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
@@ -83,8 +83,8 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedBindingBase {
 // to Binding, except that it doesn't own a message pipe handle.
 //
 // When you bind this class to a request, optionally you can specify a
-// base::SingleThreadTaskRunner. This task runner must belong to the same
-// thread. It will be used to dispatch incoming method calls and connection
+// base::SequencedTaskRunner. This task runner must belong to the same
+// sequence. It will be used to dispatch incoming method calls and connection
 // error notification. It is useful when you attach multiple task runners to a
 // single thread for the purposes of task scheduling. Please note that
 // incoming synchronous method calls may not be run from this task runner, when
@@ -104,10 +104,9 @@ class AssociatedBinding : public AssociatedBindingBase {
 
   // Constructs a completed associated binding of |impl|. |impl| must outlive
   // the binding.
-  AssociatedBinding(
-      ImplPointerType impl,
-      AssociatedInterfaceRequest<Interface> request,
-      scoped_refptr<base::SingleThreadTaskRunner> runner = nullptr)
+  AssociatedBinding(ImplPointerType impl,
+                    AssociatedInterfaceRequest<Interface> request,
+                    scoped_refptr<base::SequencedTaskRunner> runner = nullptr)
       : AssociatedBinding(std::move(impl)) {
     Bind(std::move(request), std::move(runner));
   }
@@ -116,7 +115,7 @@ class AssociatedBinding : public AssociatedBindingBase {
 
   // Sets up this object as the implementation side of an associated interface.
   void Bind(AssociatedInterfaceRequest<Interface> request,
-            scoped_refptr<base::SingleThreadTaskRunner> runner = nullptr) {
+            scoped_refptr<base::SequencedTaskRunner> runner = nullptr) {
     BindImpl(request.PassHandle(), &stub_,
              base::WrapUnique(new typename Interface::RequestValidator_()),
              Interface::HasSyncMethods_, std::move(runner),

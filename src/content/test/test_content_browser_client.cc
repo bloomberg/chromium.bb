@@ -45,6 +45,10 @@ void TestContentBrowserClient::GetQuotaSettings(
   std::move(callback).Run(storage::GetHardCodedSettings(100 * 1024 * 1024));
 }
 
+std::string TestContentBrowserClient::GetUserAgent() const {
+  return std::string("TestContentClient");
+}
+
 #if defined(OS_ANDROID)
 void TestContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,

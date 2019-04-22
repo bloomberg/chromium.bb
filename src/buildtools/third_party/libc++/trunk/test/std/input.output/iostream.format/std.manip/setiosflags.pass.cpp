@@ -1,9 +1,8 @@
 //===----------------------------------------------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
@@ -12,6 +11,8 @@
 // T2 setiosflags (ios_base::fmtflags mask);
 
 #include <iomanip>
+#include <istream>
+#include <ostream>
 #include <cassert>
 
 template <class CharT>
@@ -21,7 +22,7 @@ struct testbuf
     testbuf() {}
 };
 
-int main()
+int main(int, char**)
 {
     {
         testbuf<char> sb;
@@ -51,4 +52,6 @@ int main()
         os << std::setiosflags(std::ios_base::oct);
         assert(os.flags() & std::ios_base::oct);
     }
+
+  return 0;
 }

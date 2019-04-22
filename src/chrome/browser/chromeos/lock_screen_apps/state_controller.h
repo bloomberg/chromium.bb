@@ -16,7 +16,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/api/app_runtime.h"
@@ -75,13 +75,7 @@ class StateController : public ash::mojom::TrayActionClient,
                         public ui::InputDeviceEventObserver,
                         public chromeos::PowerManagerClient::Observer {
  public:
-  // Returns whether the StateController is enabled - it is currently guarded by
-  // a feature flag. If not enabled, |StateController| instance is not allowed
-  // to be created. |Get| will still work, but it will return nullptr.
-  static bool IsEnabled();
-
-  // Returns the global StateController instance. Note that this can return
-  // nullptr when lock screen apps are not enabled (see |IsEnabled|).
+  // Returns the global StateController instance.
   static StateController* Get();
 
   static void RegisterProfilePrefs(PrefRegistrySimple* pref_registry);
@@ -146,13 +140,14 @@ class StateController : public ash::mojom::TrayActionClient,
 
   // aura::WindowObserver:
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // extensions::AppWindowRegistry::Observer:
   void OnAppWindowAdded(extensions::AppWindow* app_window) override;
   void OnAppWindowRemoved(extensions::AppWindow* app_window) override;
 
   // ui::InputDeviceEventObserver:
-  void OnTouchscreenDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
 
   // chromeos::PowerManagerClient::Observer
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
@@ -175,11 +170,6 @@ class StateController : public ash::mojom::TrayActionClient,
   // Returns whether the focus has been taken from the app window.
   bool HandleTakeFocus(content::WebContents* web_contents, bool reverse);
 
-  // Called from the lock screen Web UI when the animation shown on a note
-  // action launch finishes (the animation is started when the lock screen
-  // note state changes to kLaunching).
-  void NewNoteLaunchAnimationDone();
-
   FirstAppRunToastManager* first_app_run_toast_manager() {
     return first_app_run_toast_manager_.get();
   }
@@ -200,11 +190,6 @@ class StateController : public ash::mojom::TrayActionClient,
   // Continues lock screen apps initialization. Should be called when stylus
   // input has been detected.
   void InitializeWithStylusInputPresent();
-
-  // Issues a lock screen note app launch request to |app_manager_|.
-  // Expected to be called only in kLaunching state. In the case the launch is
-  // not successful, the note taking action state will be changed accordingly.
-  void StartLaunchRequest();
 
   // Called when app manager reports that note taking availability has changed.
   void OnNoteTakingAvailabilityChanged();
@@ -239,13 +224,6 @@ class StateController : public ash::mojom::TrayActionClient,
   ash::mojom::TrayActionPtr tray_action_ptr_;
 
   std::unique_ptr<LockScreenProfileCreator> lock_screen_profile_creator_;
-
-  // Whether sending app launch request to the note taking app (using
-  // |app_manager_|) was delayed until the note action launch animation is
-  // completed by lock screen UI - this is only used with Web UI lock
-  // implementation, and for note action launch requests that don't come from
-  // the lock UI (i.e. stylus removal).
-  bool app_launch_delayed_for_animation_ = false;
 
   // Whether lock screen apps initialization was stopped due to stylus input
   // missing (or stylus not being otherwise enabled). If stylus availability

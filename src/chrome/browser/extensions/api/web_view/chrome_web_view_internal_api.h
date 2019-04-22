@@ -20,7 +20,7 @@ class ChromeWebViewInternalContextMenusCreateFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("chromeWebViewInternal.contextMenusCreate",
-                             WEBVIEWINTERNAL_CONTEXTMENUSCREATE);
+                             WEBVIEWINTERNAL_CONTEXTMENUSCREATE)
   ChromeWebViewInternalContextMenusCreateFunction() {}
 
  protected:
@@ -37,7 +37,7 @@ class ChromeWebViewInternalContextMenusUpdateFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("chromeWebViewInternal.contextMenusUpdate",
-                             WEBVIEWINTERNAL_CONTEXTMENUSUPDATE);
+                             WEBVIEWINTERNAL_CONTEXTMENUSUPDATE)
   ChromeWebViewInternalContextMenusUpdateFunction() {}
 
  protected:
@@ -54,7 +54,7 @@ class ChromeWebViewInternalContextMenusRemoveFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("chromeWebViewInternal.contextMenusRemove",
-                             WEBVIEWINTERNAL_CONTEXTMENUSREMOVE);
+                             WEBVIEWINTERNAL_CONTEXTMENUSREMOVE)
   ChromeWebViewInternalContextMenusRemoveFunction() {}
 
  protected:
@@ -71,7 +71,7 @@ class ChromeWebViewInternalContextMenusRemoveAllFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("chromeWebViewInternal.contextMenusRemoveAll",
-                             WEBVIEWINTERNAL_CONTEXTMENUSREMOVEALL);
+                             WEBVIEWINTERNAL_CONTEXTMENUSREMOVEALL)
   ChromeWebViewInternalContextMenusRemoveAllFunction() {}
 
  protected:
@@ -88,7 +88,7 @@ class ChromeWebViewInternalShowContextMenuFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("chromeWebViewInternal.showContextMenu",
-                             WEBVIEWINTERNAL_SHOWCONTEXTMENU);
+                             WEBVIEWINTERNAL_SHOWCONTEXTMENU)
 
   ChromeWebViewInternalShowContextMenuFunction();
 

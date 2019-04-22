@@ -232,7 +232,7 @@ TEST_F(FormatConvertTest, Enum) {
 template <typename T>
 class TypedFormatConvertTest : public FormatConvertTest { };
 
-TYPED_TEST_CASE_P(TypedFormatConvertTest);
+TYPED_TEST_SUITE_P(TypedFormatConvertTest);
 
 std::vector<std::string> AllFlagCombinations() {
   const char kFlags[] = {'-', '#', '0', '+', ' '};
@@ -363,6 +363,7 @@ typedef ::testing::Types<
     AllIntTypes;
 INSTANTIATE_TYPED_TEST_CASE_P(TypedFormatConvertTestWithAllIntTypes,
                               TypedFormatConvertTest, AllIntTypes);
+
 TEST_F(FormatConvertTest, Uint128) {
   absl::uint128 v = static_cast<absl::uint128>(0x1234567890abcdef) * 1979;
   absl::uint128 max = absl::Uint128Max();

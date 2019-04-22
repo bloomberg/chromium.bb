@@ -15,6 +15,7 @@
 #include "media/base/cdm_config.h"
 #include "media/base/key_system_names.h"
 #include "media/base/key_systems.h"
+#include "media/base/logging_override_if_enabled.h"
 #include "media/base/media_permission.h"
 #include "media/base/mime_util.h"
 #include "media/blink/webmediaplayer_util.h"
@@ -516,7 +517,7 @@ KeySystemConfigSelector::GetSupportedConfiguration(
 
   // 3. If the initDataTypes member of candidate configuration is non-empty,
   //    run the following steps:
-  if (!candidate.init_data_types.IsEmpty()) {
+  if (!candidate.init_data_types.empty()) {
     // 3.1. Let supported types be an empty sequence of DOMStrings.
     std::vector<blink::WebEncryptedMediaInitDataType> supported_types;
 
@@ -704,8 +705,8 @@ KeySystemConfigSelector::GetSupportedConfiguration(
 
   // 15. If the videoCapabilities and audioCapabilities members in candidate
   //     configuration are both empty, return NotSupported.
-  if (candidate.video_capabilities.IsEmpty() &&
-      candidate.audio_capabilities.IsEmpty()) {
+  if (candidate.video_capabilities.empty() &&
+      candidate.audio_capabilities.empty()) {
     DVLOG(2) << "Rejecting requested configuration because "
              << "neither audioCapabilities nor videoCapabilities is specified";
     return CONFIGURATION_NOT_SUPPORTED;
@@ -714,7 +715,7 @@ KeySystemConfigSelector::GetSupportedConfiguration(
   // 16. If the videoCapabilities member in candidate configuration is
   //     non-empty:
   std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities;
-  if (!candidate.video_capabilities.IsEmpty()) {
+  if (!candidate.video_capabilities.empty()) {
     // 16.1. Let video capabilities be the result of executing the Get
     //       Supported Capabilities for Audio/Video Type algorithm on Video,
     //       candidate configuration's videoCapabilities member, accumulated
@@ -740,7 +741,7 @@ KeySystemConfigSelector::GetSupportedConfiguration(
   // 17. If the audioCapabilities member in candidate configuration is
   //     non-empty:
   std::vector<blink::WebMediaKeySystemMediaCapability> audio_capabilities;
-  if (!candidate.audio_capabilities.IsEmpty()) {
+  if (!candidate.audio_capabilities.empty()) {
     // 17.1. Let audio capabilities be the result of executing the Get
     //       Supported Capabilities for Audio/Video Type algorithm on Audio,
     //       candidate configuration's audioCapabilities member, accumulated

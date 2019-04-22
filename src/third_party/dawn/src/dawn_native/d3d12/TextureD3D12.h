@@ -32,26 +32,35 @@ namespace dawn_native { namespace d3d12 {
         ~Texture();
 
         DXGI_FORMAT GetD3D12Format() const;
-        ID3D12Resource* GetD3D12Resource();
+        ID3D12Resource* GetD3D12Resource() const;
 
         void TransitionUsageNow(ComPtr<ID3D12GraphicsCommandList> commandList,
                                 dawn::TextureUsageBit usage);
+        void TransitionUsageNow(ComPtr<ID3D12GraphicsCommandList> commandList,
+                                D3D12_RESOURCE_STATES newState);
+
+        uint32_t GetSubresourceIndex(uint32_t mipmapLevel, uint32_t arraySlice) const;
 
       private:
+        // Dawn API
+        void DestroyImpl() override;
+
         UINT16 GetDepthOrArraySize();
 
         ComPtr<ID3D12Resource> mResource = {};
         ID3D12Resource* mResourcePtr = nullptr;
-        dawn::TextureUsageBit mLastUsage = dawn::TextureUsageBit::None;
+        D3D12_RESOURCE_STATES mLastState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
     };
 
     class TextureView : public TextureViewBase {
       public:
         TextureView(TextureBase* texture, const TextureViewDescriptor* descriptor);
 
+        DXGI_FORMAT GetD3D12Format() const;
+
         const D3D12_SHADER_RESOURCE_VIEW_DESC& GetSRVDescriptor() const;
-        D3D12_RENDER_TARGET_VIEW_DESC GetRTVDescriptor();
-        D3D12_DEPTH_STENCIL_VIEW_DESC GetDSVDescriptor();
+        D3D12_RENDER_TARGET_VIEW_DESC GetRTVDescriptor() const;
+        D3D12_DEPTH_STENCIL_VIEW_DESC GetDSVDescriptor() const;
 
       private:
         D3D12_SHADER_RESOURCE_VIEW_DESC mSrvDesc;

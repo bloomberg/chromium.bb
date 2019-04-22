@@ -14,10 +14,6 @@
 typedef void (^ShowSigninCommandCompletionCallback)(BOOL succeeded);
 
 enum AuthenticationOperation {
-  // Operation to cancel the current authentication operation and dismiss any
-  // UI presented by this operation.
-  AUTHENTICATION_OPERATION_DISMISS,
-
   // Operation to start a re-authenticate operation. The user is presented with
   // the SSOAuth re-authenticate web page.
   AUTHENTICATION_OPERATION_REAUTHENTICATE,

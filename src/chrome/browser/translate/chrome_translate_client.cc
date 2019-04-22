@@ -16,8 +16,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/language/language_model_manager_factory.h"
+#include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/translate/translate_ranker_factory.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -31,10 +31,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/language/core/browser/language_model_manager.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/protocol/user_event_specifics.pb.h"
-#include "components/sync/user_events/user_event_service.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
@@ -80,43 +78,14 @@ TranslateEventProto::EventType BubbleResultToTranslateEvent(
   }
 }
 
-// ========== LOG TRANSLATE EVENT ==============
-
-void LogTranslateEvent(content::WebContents* const web_contents,
-                       const metrics::TranslateEventProto& translate_event) {
-  if (!FeatureList::IsEnabled(switches::kSyncUserTranslationEvents))
-    return;
-  DCHECK(web_contents);
-  auto* const profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
-  syncer::UserEventService* const user_event_service =
-      browser_sync::UserEventServiceFactory::GetForProfile(profile);
-
-  const auto* const entry =
-      web_contents->GetController().GetLastCommittedEntry();
-
-  // If entry is null, we don't record the page.
-  // The navigation entry can be null in situations like download or initial
-  // blank page.
-  if (entry == nullptr)
-    return;
-
-  auto specifics = std::make_unique<sync_pb::UserEventSpecifics>();
-  // We only log the event we care about.
-  const bool needs_logging = translate::ConstructTranslateEvent(
-      entry->GetTimestamp().ToInternalValue(), translate_event,
-      specifics.get());
-  if (needs_logging) {
-    user_event_service->RecordUserEvent(std::move(specifics));
-  }
-}
-
 }  // namespace
 
 ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      translate_driver_(&web_contents->GetController()),
+      translate_driver_(
+          &web_contents->GetController(),
+          UrlLanguageHistogramFactory::GetForBrowserContext(
+              web_contents->GetBrowserContext())),
       translate_manager_(new translate::TranslateManager(
           this,
           translate::TranslateRankerFactory::GetForBrowserContext(
@@ -140,12 +109,12 @@ translate::LanguageState& ChromeTranslateClient::GetLanguageState() {
 std::unique_ptr<translate::TranslatePrefs>
 ChromeTranslateClient::CreateTranslatePrefs(PrefService* prefs) {
 #if defined(OS_CHROMEOS)
-  const char* preferred_languages_prefs = prefs::kLanguagePreferredLanguages;
+  const char* preferred_languages_prefs = language::prefs::kPreferredLanguages;
 #else
   const char* preferred_languages_prefs = NULL;
 #endif
   std::unique_ptr<translate::TranslatePrefs> translate_prefs(
-      new translate::TranslatePrefs(prefs, prefs::kAcceptLanguages,
+      new translate::TranslatePrefs(prefs, language::prefs::kAcceptLanguages,
                                     preferred_languages_prefs));
 
   // We need to obtain the country here, since it comes from VariationsService.
@@ -178,7 +147,6 @@ translate::TranslateManager* ChromeTranslateClient::GetManagerFromWebContents(
   return chrome_translate_client->GetTranslateManager();
 }
 
-// static
 void ChromeTranslateClient::GetTranslateLanguages(
     content::WebContents* web_contents,
     std::string* source,
@@ -186,19 +154,14 @@ void ChromeTranslateClient::GetTranslateLanguages(
   DCHECK(source != NULL);
   DCHECK(target != NULL);
 
-  ChromeTranslateClient* chrome_translate_client =
-      FromWebContents(web_contents);
-  if (!chrome_translate_client)
-    return;
-
   *source = translate::TranslateDownloadManager::GetLanguageCode(
-      chrome_translate_client->GetLanguageState().original_language());
+      GetLanguageState().original_language());
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   std::unique_ptr<translate::TranslatePrefs> translate_prefs =
       CreateTranslatePrefs(profile->GetPrefs());
-  if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
+  if (!profile->IsOffTheRecord()) {
     std::string auto_translate_language =
         translate::TranslateManager::GetAutoTargetLanguage(
             *source, translate_prefs.get());
@@ -212,11 +175,6 @@ void ChromeTranslateClient::GetTranslateLanguages(
       translate_prefs.get(), LanguageModelManagerFactory::GetInstance()
                                  ->GetForBrowserContext(profile)
                                  ->GetPrimaryModel());
-}
-
-void ChromeTranslateClient::RecordTranslateEvent(
-    const TranslateEventProto& translate_event) {
-  LogTranslateEvent(web_contents(), translate_event);
 }
 
 translate::TranslateManager* ChromeTranslateClient::GetTranslateManager() {
@@ -257,7 +215,8 @@ bool ChromeTranslateClient::ShowTranslateUI(
     return false;
   }
 
-  ShowTranslateBubbleResult result = ShowBubble(step, error_type);
+  ShowTranslateBubbleResult result =
+      ShowBubble(step, source_language, target_language, error_type);
   if (result != ShowTranslateBubbleResult::SUCCESS &&
       step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE) {
     translate_manager_->RecordTranslateEvent(
@@ -304,30 +263,10 @@ void ChromeTranslateClient::ManualTranslateWhenReady() {
 }
 #endif
 
-void ChromeTranslateClient::RecordLanguageDetectionEvent(
-    const translate::LanguageDetectionDetails& details) const {
-  if (!FeatureList::IsEnabled(switches::kSyncUserLanguageDetectionEvents))
-    return;
-
-  DCHECK(web_contents());
-  auto* const profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-
-  syncer::UserEventService* const user_event_service =
-      browser_sync::UserEventServiceFactory::GetForProfile(profile);
-
-  const auto* const entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-
-  // If entry is null, we don't record the page.
-  // The navigation entry can be null in situations like download or initial
-  // blank page.
-  if (entry != nullptr &&
-      TranslateService::IsTranslatableURL(entry->GetVirtualURL())) {
-    user_event_service->RecordUserEvent(
-        translate::ConstructLanguageDetectionEvent(
-            entry->GetTimestamp().ToInternalValue(), details));
-  }
+void ChromeTranslateClient::SetPredefinedTargetLanguage(
+    const std::string& translate_language_code) {
+  translate::TranslateManager* manager = GetTranslateManager();
+  manager->SetPredefinedTargetLanguage(translate_language_code);
 }
 
 bool ChromeTranslateClient::IsTranslatableURL(const GURL& url) {
@@ -370,8 +309,6 @@ void ChromeTranslateClient::OnLanguageDetermined(
       content::Source<content::WebContents>(web_contents()),
       content::Details<const translate::LanguageDetectionDetails>(&details));
 
-  RecordLanguageDetectionEvent(details);
-
 #if defined(OS_ANDROID)
   // See ChromeTranslateClient::ManualTranslateOnReady
   if (manual_translate_on_ready_) {
@@ -400,6 +337,8 @@ void ChromeTranslateClient::OnPageTranslated(
 
 ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
     translate::TranslateStep step,
+    const std::string& source_language,
+    const std::string& target_language,
     translate::TranslateErrors::Type error_type) {
   DCHECK(translate_manager_);
 // The bubble is implemented only on the desktop platforms.
@@ -409,7 +348,9 @@ ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
   // |browser| might be NULL when testing. In this case, Show(...) should be
   // called because the implementation for testing is used.
   if (!browser) {
-    return TranslateBubbleFactory::Show(NULL, web_contents(), step, error_type);
+    return TranslateBubbleFactory::Show(NULL, web_contents(), step,
+                                        source_language, target_language,
+                                        error_type);
   }
 
   if (web_contents() != browser->tab_strip_model()->GetActiveWebContents())
@@ -431,9 +372,12 @@ ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
   }
 
   return TranslateBubbleFactory::Show(browser->window(), web_contents(), step,
+                                      source_language, target_language,
                                       error_type);
 #else
   NOTREACHED();
   return ShowTranslateBubbleResult::SUCCESS;
 #endif
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeTranslateClient)

@@ -107,6 +107,8 @@ protected:
     };
 
     enum MetalIntrinsic {
+        kEqual_MetalIntrinsic,
+        kNotEqual_MetalIntrinsic,
         kLessThan_MetalIntrinsic,
         kLessThanEqual_MetalIntrinsic,
         kGreaterThan_MetalIntrinsic,
@@ -184,9 +186,15 @@ protected:
 
     void writeInverseHack(const Expression& mat);
 
+    String getMatrixConstructHelper(const Type& matrix, const Type& arg);
+
+    void writeMatrixTimesEqualHelper(const Type& left, const Type& right, const Type& result);
+
     void writeSpecialIntrinsic(const FunctionCall& c, SpecialIntrinsic kind);
 
-    void writeConstructor(const Constructor& c);
+    bool canCoerce(const Type& t1, const Type& t2);
+
+    void writeConstructor(const Constructor& c, Precedence parentPrecedence);
 
     void writeFieldAccess(const FieldAccess& f);
 
@@ -268,6 +276,7 @@ protected:
     std::unordered_map<const FunctionDeclaration*, Requirements> fRequirements;
     bool fSetupFragPositionGlobal = false;
     bool fSetupFragPositionLocal = false;
+    std::unordered_map<String, String> fHelpers;
     int fUniformBuffer = -1;
 
     typedef CodeGenerator INHERITED;

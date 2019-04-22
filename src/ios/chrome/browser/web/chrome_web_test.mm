@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/web/chrome_web_test.h"
 
+#include "base/bind.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"

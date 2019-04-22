@@ -25,7 +25,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
@@ -278,7 +278,6 @@ class AssistantIconBackground : public ui::Layer, public ui::LayerDelegate {
       AddPaintLayer(static_cast<PaintedShape>(i));
   }
   ~AssistantIconBackground() override = default;
-  ;
 
   void MoveLargeShadow(const gfx::PointF& new_center) {
     gfx::Transform transform;

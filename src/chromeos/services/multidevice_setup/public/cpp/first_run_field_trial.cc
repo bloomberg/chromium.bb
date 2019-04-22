@@ -8,7 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/variations/service/variations_field_trial_creator.h"
 
 namespace chromeos {

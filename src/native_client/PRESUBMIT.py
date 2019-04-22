@@ -5,6 +5,8 @@
 # Documentation on PRESUBMIT.py can be found at:
 # http://www.chromium.org/developers/how-tos/depottools/presubmit-scripts
 
+from __future__ import print_function
+
 import os
 import subprocess
 import sys
@@ -60,7 +62,7 @@ def CheckGitBranch():
       warning += 'git branch -u origin/master'
       return warning
     return None
-  print 'Warning: presubmit check could not determine local git branch'
+  print('Warning: presubmit check could not determine local git branch')
   return None
 
 
@@ -189,41 +191,3 @@ TOOLCHAIN_BUILD_TRYBOTS = [
     'nacl-toolchain-precise64-newlib-arm',
     'nacl-toolchain-mac-newlib-arm',
     ] + PNACL_TOOLCHAIN_TRYBOTS
-
-
-def GetPreferredTryMasters(_, change):
-
-  has_pnacl = False
-  has_toolchain_build = False
-  has_others = False
-
-  for file in change.AffectedFiles():
-    if IsFileInDirectories(file.AbsoluteLocalPath(),
-                           [os.path.join(NACL_TOP_DIR, 'build'),
-                            os.path.join(NACL_TOP_DIR, 'buildbot'),
-                            os.path.join(NACL_TOP_DIR, 'pynacl')]):
-      # Buildbot and infrastructure changes should trigger all the try bots.
-      has_pnacl = True
-      has_toolchain_build = True
-      has_others = True
-      break
-    elif IsFileInDirectories(file.AbsoluteLocalPath(),
-                           [os.path.join(NACL_TOP_DIR, 'pnacl')]):
-      has_pnacl = True
-    elif IsFileInDirectories(file.AbsoluteLocalPath(),
-                             [os.path.join(NACL_TOP_DIR, 'toolchain_build')]):
-      has_toolchain_build = True
-    else:
-      has_others = True
-
-  trybots = []
-  if has_pnacl:
-    trybots += PNACL_TOOLCHAIN_TRYBOTS
-  if has_toolchain_build:
-    trybots += TOOLCHAIN_BUILD_TRYBOTS
-  if has_others:
-    trybots += DEFAULT_TRYBOTS
-
-  return {
-    'tryserver.nacl': { t: set(['defaulttests']) for t in set(trybots) },
-  }

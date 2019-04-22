@@ -1,4 +1,4 @@
-// Copyright kTestRendererPid2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,10 +21,10 @@ using GlobalMemoryDumpPtr = memory_instrumentation::mojom::GlobalMemoryDumpPtr;
 using ProcessMemoryDumpPtr =
     memory_instrumentation::mojom::ProcessMemoryDumpPtr;
 using OSMemDumpPtr = memory_instrumentation::mojom::OSMemDumpPtr;
-using PageInfoPtr = resource_coordinator::mojom::PageInfoPtr;
+using PageInfo = ProcessMemoryMetricsEmitter::PageInfo;
 using ProcessType = memory_instrumentation::mojom::ProcessType;
-using ProcessInfoPtr = resource_coordinator::mojom::ProcessInfoPtr;
-using ProcessInfoVector = std::vector<ProcessInfoPtr>;
+using ProcessInfo = ProcessMemoryMetricsEmitter::ProcessInfo;
+using ProcessInfoVector = std::vector<ProcessInfo>;
 
 namespace {
 
@@ -308,6 +308,7 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
 
 constexpr int kTestRendererPrivateMemoryFootprint = 130;
 constexpr int kTestRendererSharedMemoryFootprint = 135;
+constexpr int kNativeLibraryResidentMemoryFootprint = 27560;
 
 #if !defined(OS_MACOSX)
 constexpr int kTestRendererResidentSet = 110;
@@ -500,60 +501,57 @@ ProcessInfoVector GetProcessInfo(ukm::TestUkmRecorder& ukm_recorder) {
 
   // Process 200 always has no URLs.
   {
-    ProcessInfoPtr process_info(
-        resource_coordinator::mojom::ProcessInfo::New());
-    process_info->pid = 200;
+    ProcessInfo process_info;
+    process_info.pid = 200;
     process_infos.push_back(std::move(process_info));
   }
 
   // Process kTestRendererPid201 always has 1 URL
   {
-    ProcessInfoPtr process_info(
-        resource_coordinator::mojom::ProcessInfo::New());
-    process_info->pid = kTestRendererPid201;
+    ProcessInfo process_info;
+    process_info.pid = kTestRendererPid201;
     ukm::SourceId first_source_id = ukm::UkmRecorder::GetNewSourceID();
     ukm_recorder.UpdateSourceURL(first_source_id,
                                  GURL("http://www.url201.com/"));
-    PageInfoPtr page_info(resource_coordinator::mojom::PageInfo::New());
+    PageInfo page_info;
 
-    page_info->ukm_source_id = first_source_id;
-    page_info->tab_id = 201;
-    page_info->hosts_main_frame = true;
-    page_info->is_visible = true;
-    page_info->time_since_last_visibility_change =
+    page_info.ukm_source_id = first_source_id;
+    page_info.tab_id = 201;
+    page_info.hosts_main_frame = true;
+    page_info.is_visible = true;
+    page_info.time_since_last_visibility_change =
         base::TimeDelta::FromSeconds(15);
-    page_info->time_since_last_navigation = base::TimeDelta::FromSeconds(20);
-    process_info->page_infos.push_back(std::move(page_info));
+    page_info.time_since_last_navigation = base::TimeDelta::FromSeconds(20);
+    process_info.page_infos.push_back(page_info);
     process_infos.push_back(std::move(process_info));
   }
 
   // Process kTestRendererPid202 always has 2 URL
   {
-    ProcessInfoPtr process_info(
-        resource_coordinator::mojom::ProcessInfo::New());
-    process_info->pid = kTestRendererPid202;
+    ProcessInfo process_info;
+    process_info.pid = kTestRendererPid202;
     ukm::SourceId first_source_id = ukm::UkmRecorder::GetNewSourceID();
     ukm::SourceId second_source_id = ukm::UkmRecorder::GetNewSourceID();
     ukm_recorder.UpdateSourceURL(first_source_id,
                                  GURL("http://www.url2021.com/"));
     ukm_recorder.UpdateSourceURL(second_source_id,
                                  GURL("http://www.url2022.com/"));
-    PageInfoPtr page_info1(resource_coordinator::mojom::PageInfo::New());
-    page_info1->ukm_source_id = first_source_id;
-    page_info1->tab_id = 2021;
-    page_info1->hosts_main_frame = true;
-    page_info1->time_since_last_visibility_change =
+    PageInfo page_info1;
+    page_info1.ukm_source_id = first_source_id;
+    page_info1.tab_id = 2021;
+    page_info1.hosts_main_frame = true;
+    page_info1.time_since_last_visibility_change =
         base::TimeDelta::FromSeconds(11);
-    page_info1->time_since_last_navigation = base::TimeDelta::FromSeconds(21);
-    PageInfoPtr page_info2(resource_coordinator::mojom::PageInfo::New());
-    page_info2->ukm_source_id = second_source_id;
-    page_info2->tab_id = 2022;
-    page_info2->hosts_main_frame = true;
-    page_info2->time_since_last_visibility_change =
+    page_info1.time_since_last_navigation = base::TimeDelta::FromSeconds(21);
+    PageInfo page_info2;
+    page_info2.ukm_source_id = second_source_id;
+    page_info2.tab_id = 2022;
+    page_info2.hosts_main_frame = true;
+    page_info2.time_since_last_visibility_change =
         base::TimeDelta::FromSeconds(12);
-    page_info2->time_since_last_navigation = base::TimeDelta::FromSeconds(22);
-    process_info->page_infos.push_back(std::move(page_info1));
-    process_info->page_infos.push_back(std::move(page_info2));
+    page_info2.time_since_last_navigation = base::TimeDelta::FromSeconds(22);
+    process_info.page_infos.push_back(std::move(page_info1));
+    process_info.page_infos.push_back(std::move(page_info2));
 
     process_infos.push_back(std::move(process_info));
   }
@@ -619,12 +617,12 @@ TEST_P(ProcessMemoryMetricsEmitterTest, CollectsSingleProcessUKMs) {
   CheckMemoryUkmEntryMetrics(expected_entries);
 }
 
-INSTANTIATE_TEST_CASE_P(SinglePtype,
-                        ProcessMemoryMetricsEmitterTest,
-                        testing::Values(ProcessType::BROWSER,
-                                        ProcessType::RENDERER,
-                                        ProcessType::GPU,
-                                        ProcessType::UTILITY));
+INSTANTIATE_TEST_SUITE_P(SinglePtype,
+                         ProcessMemoryMetricsEmitterTest,
+                         testing::Values(ProcessType::BROWSER,
+                                         ProcessType::RENDERER,
+                                         ProcessType::GPU,
+                                         ProcessType::UTILITY));
 
 TEST_F(ProcessMemoryMetricsEmitterTest, CollectsExtensionProcessUKMs) {
   MetricMap expected_metrics = GetExpectedRendererMetrics();
@@ -804,9 +802,13 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
 
   GlobalMemoryDumpPtr global_dump(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
+  global_dump->aggregated_metrics =
+      memory_instrumentation::mojom::AggregatedMetrics::New();
   MetricMap expected_metrics = GetExpectedRendererMetrics();
   PopulateRendererMetrics(global_dump, expected_metrics, kTestRendererPid201);
   PopulateRendererMetrics(global_dump, expected_metrics, kTestRendererPid202);
+  global_dump->aggregated_metrics->native_library_resident_kb =
+      kNativeLibraryResidentMemoryFootprint;
 
   // No histograms should have been recorded yet.
   histograms.ExpectTotalCount("Memory.Renderer.PrivateMemoryFootprint", 0);
@@ -817,6 +819,8 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   histograms.ExpectTotalCount("Memory.Total.RendererPrivateMemoryFootprint", 0);
   histograms.ExpectTotalCount("Memory.Total.SharedMemoryFootprint", 0);
   histograms.ExpectTotalCount("Memory.Total.ResidentSet", 0);
+  histograms.ExpectTotalCount(
+      "Memory.NativeLibrary.MappedAndResidentMemoryFootprint2", 0);
 
   // Simulate some metrics emission.
   scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter =
@@ -849,6 +853,9 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   histograms.ExpectUniqueSample("Memory.Total.ResidentSet",
                                 2 * kTestRendererResidentSet, 1);
 #endif
+  histograms.ExpectUniqueSample(
+      "Memory.NativeLibrary.MappedAndResidentMemoryFootprint2",
+      kNativeLibraryResidentMemoryFootprint, 1);
 }
 
 TEST_F(ProcessMemoryMetricsEmitterTest, MainFramePMFEmitted) {

@@ -2,12 +2,14 @@ This test documents all interface attributes and methods on the global window ob
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 [INTERFACES]
-interface Bluetooth
+interface Bluetooth : EventTarget
     attribute @@toStringTag
+    getter onadvertisementreceived
     method constructor
     method requestDevice
+    method requestLEScan
+    setter onadvertisementreceived
 interface BluetoothCharacteristicProperties
     attribute @@toStringTag
     getter authenticatedSignedWrites

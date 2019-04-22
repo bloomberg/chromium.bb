@@ -95,20 +95,26 @@ class BindingSetBase {
 
   // Adds a new binding to the set which binds |request| to |impl| with no
   // additional context.
-  BindingId AddBinding(ImplPointerType impl, RequestType request) {
+  BindingId AddBinding(
+      ImplPointerType impl,
+      RequestType request,
+      scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr) {
     static_assert(!ContextTraits::SupportsContext(),
                   "Context value required for non-void context type.");
-    return AddBindingImpl(std::move(impl), std::move(request), false);
+    return AddBindingImpl(std::move(impl), std::move(request), false,
+                          std::move(task_runner));
   }
 
   // Adds a new binding associated with |context|.
-  BindingId AddBinding(ImplPointerType impl,
-                       RequestType request,
-                       Context context) {
+  BindingId AddBinding(
+      ImplPointerType impl,
+      RequestType request,
+      Context context,
+      scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr) {
     static_assert(ContextTraits::SupportsContext(),
                   "Context value unsupported for void context type.");
     return AddBindingImpl(std::move(impl), std::move(request),
-                          std::move(context));
+                          std::move(context), std::move(task_runner));
   }
 
   // Removes a binding from the set. Note that this is safe to call even if the
@@ -216,8 +222,9 @@ class BindingSetBase {
           RequestType request,
           BindingSetBase* binding_set,
           BindingId binding_id,
-          Context context)
-        : binding_(std::move(impl), std::move(request)),
+          Context context,
+          scoped_refptr<base::SequencedTaskRunner> task_runner)
+        : binding_(std::move(impl), std::move(request), std::move(task_runner)),
           binding_set_(binding_set),
           binding_id_(binding_id),
           context_(std::move(context)) {
@@ -275,13 +282,16 @@ class BindingSetBase {
       pre_dispatch_handler_.Run(*context);
   }
 
-  BindingId AddBindingImpl(ImplPointerType impl,
-                           RequestType request,
-                           Context context) {
+  BindingId AddBindingImpl(
+      ImplPointerType impl,
+      RequestType request,
+      Context context,
+      scoped_refptr<base::SequencedTaskRunner> task_runner) {
     BindingId id = next_binding_id_++;
     DCHECK_GE(next_binding_id_, 0u);
-    auto entry = std::make_unique<Entry>(std::move(impl), std::move(request),
-                                         this, id, std::move(context));
+    auto entry =
+        std::make_unique<Entry>(std::move(impl), std::move(request), this, id,
+                                std::move(context), std::move(task_runner));
     bindings_.insert(std::make_pair(id, std::move(entry)));
     return id;
   }

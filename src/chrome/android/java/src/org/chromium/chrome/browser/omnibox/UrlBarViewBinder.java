@@ -13,10 +13,10 @@ import android.text.TextUtils;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.omnibox.UrlBarProperties.AutocompleteText;
 import org.chromium.chrome.browser.omnibox.UrlBarProperties.UrlBarTextState;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Handles translating the UrlBar model data to the view state.
@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.omnibox.UrlBarProperties.UrlBarTextState;
 class UrlBarViewBinder {
     /**
      * @see
-     * org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder#bind(Object,
+     * PropertyModelChangeProcessor.ViewBinder#bind(Object,
      * Object, Object)
      */
     public static void bind(PropertyModel model, UrlBar view, PropertyKey propertyKey) {
@@ -91,14 +91,12 @@ class UrlBarViewBinder {
         int hintColor;
         int highlightColor;
         if (useDarkTextColors) {
-            textColor =
-                    ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text);
+            textColor = ApiCompatibilityUtils.getColor(resources, R.color.default_text_color_dark);
             hintColor =
                     ApiCompatibilityUtils.getColor(resources, R.color.locationbar_dark_hint_text);
             highlightColor = originalHighlightColor;
         } else {
-            textColor = ApiCompatibilityUtils.getColor(
-                    resources, R.color.url_emphasis_light_default_text);
+            textColor = ApiCompatibilityUtils.getColor(resources, R.color.default_text_color_light);
             hintColor =
                     ApiCompatibilityUtils.getColor(resources, R.color.locationbar_light_hint_text);
             highlightColor = ApiCompatibilityUtils.getColor(

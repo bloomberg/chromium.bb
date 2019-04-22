@@ -7,8 +7,8 @@
 #ifndef FXJS_XFA_CJX_TREELIST_H_
 #define FXJS_XFA_CJX_TREELIST_H_
 
-#include "fxjs/jse_define.h"
 #include "fxjs/xfa/cjx_list.h"
+#include "fxjs/xfa/jse_define.h"
 
 class CXFA_TreeList;
 
@@ -17,12 +17,19 @@ class CJX_TreeList final : public CJX_List {
   explicit CJX_TreeList(CXFA_TreeList* list);
   ~CJX_TreeList() override;
 
-  JSE_METHOD(namedItem, CJX_TreeList);
+  // CJX_Object:
+  bool DynamicTypeIs(TypeTag eType) const override;
+
+  JSE_METHOD(namedItem);
 
  private:
-  CXFA_TreeList* GetXFATreeList();
+  using Type__ = CJX_TreeList;
+  using ParentType__ = CJX_List;
 
+  static const TypeTag static_type__ = TypeTag::TreeList;
   static const CJX_MethodSpec MethodSpecs[];
+
+  CXFA_TreeList* GetXFATreeList();
 };
 
 #endif  // FXJS_XFA_CJX_TREELIST_H_

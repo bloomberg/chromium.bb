@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "google_apis/gcm/engine/gcm_request_test_base.h"
@@ -338,7 +339,7 @@ TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataPassedToFetcher) {
   EXPECT_EQ(base::NumberToString(kSecurityToken), auth_tokenizer.token());
 
   std::map<std::string, std::string> expected_pairs;
-  expected_pairs["gmsv"] = base::IntToString(kGCMVersion);
+  expected_pairs["gmsv"] = base::NumberToString(kGCMVersion);
   expected_pairs["app"] = kAppId;
   expected_pairs["device"] = base::NumberToString(kAndroidId);
   expected_pairs["delete"] = "true";
@@ -357,7 +358,7 @@ TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataWithSubtype) {
 
   // Same as RequestDataPassedToFetcher except "app" and "X-subtype".
   std::map<std::string, std::string> expected_pairs;
-  expected_pairs["gmsv"] = base::IntToString(kGCMVersion);
+  expected_pairs["gmsv"] = base::NumberToString(kGCMVersion);
   expected_pairs["app"] = kProductCategoryForSubtypes;
   expected_pairs["X-subtype"] = kAppId;
   expected_pairs["device"] = base::NumberToString(kAndroidId);

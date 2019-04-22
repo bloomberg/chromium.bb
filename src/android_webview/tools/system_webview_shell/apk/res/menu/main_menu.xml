@@ -11,6 +11,10 @@
     <item android:id="@+id/menu_enable_tracing"
           android:checkable="true"
           android:title="@string/menu_enable_tracing"/>
+    <item android:id="@+id/menu_print"
+          android:title="@string/menu_print"/>
+    <item android:id="@+id/start_animation_activity"
+          android:title="@string/menu_start_animation_activity"/>
     <item android:id="@+id/menu_about"
           android:title="@string/menu_about"/>
 </menu>

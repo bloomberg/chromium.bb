@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function() {
-  var kSecondaryAppId = 'lfaidgolgikbpapkmdhoppddflhaocnf';
+  var kSecondaryAppId = 'kajpgkhinciaiihghpdamekpjpldgpfi';
   var kNotAllowedError = 'Not allowed in kiosk.';
 
   chrome.test.runTests([

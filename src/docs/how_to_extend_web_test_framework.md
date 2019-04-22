@@ -108,7 +108,7 @@ and MacPort (and maybe the android port class) should be extended as they
 provide platform specific overrides/extensions that implement most of the
 important functionality. While there are many functions in Port, overriding one
 function will affect most of the other ones to get the desired behavior. For
-example, if `layout_tests_dir()` is overridden, not only will the code look for
+example, if `web_tests_dir()` is overridden, not only will the code look for
 tests in that directory, but it will find the correct TestExpectations file, the
 platform specific expected files, etc.
 
@@ -125,7 +125,7 @@ Here are some of the functions that most likely need to be overridden.
     *   This should return the name of the program test p. By default it returns
         ‘content_shell’, but you want to have it return the program you want to
         run, such as `chrome` or `browser_tests`.
-*   `layout_tests_dir`
+*   `web_tests_dir`
     *   This tells the port where to look for all the and everything associated
         with them such as resources files.
     *   By default it returns the absolute path to the web tests directory.
@@ -172,7 +172,7 @@ and has stdout, stdin, stderr.
 #### Goals
 
 Your goal for this part of the project is to create a program (or extend a
-program) to interface with the web test framework. The layout test framework
+program) to interface with the web test framework. The web test framework
 will communicate with this program to tell it what to do and it will accept data
 from this program to perform the regression testing or create new base line
 files.

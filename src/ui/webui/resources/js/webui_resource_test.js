@@ -11,10 +11,11 @@
  */
 function assertEquals(expected, observed, opt_message) {
   if (observed !== expected) {
-    var message = 'Assertion Failed\n  Observed: ' + observed +
+    let message = 'Assertion Failed\n  Observed: ' + observed +
         '\n  Expected: ' + expected;
-    if (opt_message)
+    if (opt_message) {
       message = message + '\n  ' + opt_message;
+    }
     throw new Error(message);
   }
 }
@@ -48,10 +49,11 @@ function assertFalse(observed, opt_message) {
  */
 function assertNotEqual(reference, observed, opt_message) {
   if (observed === reference) {
-    var message = 'Assertion Failed\n  Observed: ' + observed +
+    let message = 'Assertion Failed\n  Observed: ' + observed +
         '\n  Reference: ' + reference;
-    if (opt_message)
+    if (opt_message) {
       message = message + '\n  ' + opt_message;
+    }
     throw new Error(message);
   }
 }
@@ -61,14 +63,15 @@ function assertNotEqual(reference, observed, opt_message) {
  * @param {!Function} f The test function.
  */
 function assertThrows(f) {
-  var triggeredError = false;
+  let triggeredError = false;
   try {
     f();
   } catch (err) {
     triggeredError = true;
   }
-  if (!triggeredError)
+  if (!triggeredError) {
     throw new Error('Assertion Failed: throw expected.');
+  }
 }
 
 /**
@@ -77,11 +80,11 @@ function assertThrows(f) {
  * @param {!Array} observed The actual result.
  */
 function assertArrayEquals(expected, observed) {
-  var v1 = Array.prototype.slice.call(expected);
-  var v2 = Array.prototype.slice.call(observed);
-  var equal = v1.length == v2.length;
+  const v1 = Array.prototype.slice.call(expected);
+  const v2 = Array.prototype.slice.call(observed);
+  let equal = v1.length == v2.length;
   if (equal) {
-    for (var i = 0; i < v1.length; i++) {
+    for (let i = 0; i < v1.length; i++) {
       if (v1[i] !== v2[i]) {
         equal = false;
         break;
@@ -89,7 +92,7 @@ function assertArrayEquals(expected, observed) {
     }
   }
   if (!equal) {
-    var message =
+    const message =
         ['Assertion Failed', 'Observed: ' + v2, 'Expected: ' + v1].join('\n  ');
     throw new Error(message);
   }
@@ -103,11 +106,11 @@ function assertArrayEquals(expected, observed) {
 function assertDeepEquals(expected, observed, opt_message) {
   if (typeof expected == 'object' && expected != null) {
     assertNotEqual(null, observed);
-    for (var key in expected) {
+    for (const key in expected) {
       assertTrue(key in observed, opt_message);
       assertDeepEquals(expected[key], observed[key], opt_message);
     }
-    for (var key in observed) {
+    for (const key in observed) {
       assertTrue(key in expected, opt_message);
     }
   } else {
@@ -136,55 +139,55 @@ function assertDeepEquals(expected, observed, opt_message) {
  *   tearDown: (function(): void|undefined),
  * }}
  */
-var WebUiTestHarness;
+let WebUiTestHarness;
 
 /**
  * Scope containing testXXX functions.
  * @type {!Object}
  */
-var testScope = {};
+let testScope = {};
 
 /**
  * Test harness entrypoints on |testScope|.
  * @type {!WebUiTestHarness}
  */
-var testHarness = {};
+let testHarness = {};
 
 /**
  * List of test cases.
  * @type {Array<string>} List of function names for tests to run.
  */
-var testCases = [];
+const testCases = [];
 
 /**
  * Indicates if all tests have run successfully.
  * @type {boolean}
  */
-var cleanTestRun = true;
+let cleanTestRun = true;
 
 /**
  * Armed during setup of a test to call the matching tear down code.
  * @type {Function}
  */
-var pendingTearDown = null;
+let pendingTearDown = null;
 
 /**
  * Name of current test.
  * @type {?string}
  */
-var testName = null;
+let testName = null;
 
 /**
  * Time current test started.
  * @type {number}
  */
-var testStartTime = 0;
+let testStartTime = 0;
 
 /**
  * Time first test started.
  * @type {number}
  */
-var runnerStartTime = 0;
+let runnerStartTime = 0;
 
 /**
  * Runs all functions starting with test and reports success or
@@ -196,18 +199,20 @@ function runTests(opt_testScope) {
   runnerStartTime = performance.now();
   testScope = opt_testScope || window;
   testHarness = /** @type{!WebUiTestHarness} */ (testScope);
-  for (var name in testScope) {
+  for (const name in testScope) {
     // To avoid unnecessary getting properties, test name first.
-    if (/^test/.test(name) && typeof testScope[name] == 'function')
+    if (/^test/.test(name) && typeof testScope[name] == 'function') {
       testCases.push(name);
+    }
   }
   if (!testCases.length) {
     console.error('Failed to find test cases.');
     cleanTestRun = false;
   }
   try {
-    if (testHarness.setUpPage)
+    if (testHarness.setUpPage) {
       testHarness.setUpPage();
+    }
   } catch (err) {
     cleanTestRun = false;
   }
@@ -232,16 +237,17 @@ function startTesting() {
  *     last asynchronous test failed.
  */
 function continueTesting(opt_asyncTestFailure) {
-  var now = performance.now();
+  const now = performance.now();
   if (testName) {
     console.log(
         'TEST ' + testName +
         ' complete, status=' + (opt_asyncTestFailure ? 'FAIL' : 'PASS') +
         ', duration=' + Math.round(now - testStartTime) + 'ms');
   }
-  if (opt_asyncTestFailure)
+  if (opt_asyncTestFailure) {
     cleanTestRun = false;
-  var done = false;
+  }
+  let done = false;
   if (pendingTearDown) {
     pendingTearDown();
     pendingTearDown = null;
@@ -250,11 +256,12 @@ function continueTesting(opt_asyncTestFailure) {
     testStartTime = now;
     testName = testCases.pop();
     console.log('TEST ' + testName + ' starting...');
-    var isAsyncTest = testScope[testName].length;
-    var testError = false;
+    const isAsyncTest = testScope[testName].length;
+    let testError = false;
     try {
-      if (testHarness.setUp)
+      if (testHarness.setUp) {
         testHarness.setUp();
+      }
       pendingTearDown = testHarness.tearDown || null;
       testScope[testName](continueTesting);
     } catch (err) {
@@ -265,8 +272,9 @@ function continueTesting(opt_asyncTestFailure) {
     }
     // Asynchronous tests must manually call continueTesting when complete
     // unless they throw an exception.
-    if (!isAsyncTest || testError)
+    if (!isAsyncTest || testError) {
       continueTesting();
+    }
   } else {
     done = true;
     endTests(cleanTestRun);
@@ -281,7 +289,8 @@ function continueTesting(opt_asyncTestFailure) {
  * @param {boolean} success Indicates if the test completed successfully.
  */
 function endTests(success) {
-  var duration = runnerStartTime == 0 ? 0 : performance.now() - runnerStartTime;
+  const duration =
+      runnerStartTime == 0 ? 0 : performance.now() - runnerStartTime;
   console.log(
       'TEST all complete, status=' + (success ? 'PASS' : 'FAIL') +
       ', duration=' + Math.round(duration) + 'ms');

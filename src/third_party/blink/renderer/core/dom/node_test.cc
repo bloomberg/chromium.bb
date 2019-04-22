@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/dom/comment.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
-#include "third_party/blink/renderer/core/dom/layout_tree_builder.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/shadow_root_init.h"
@@ -38,11 +37,9 @@ class NodeTest : public EditingTestBase {
   LayoutObject* ReattachLayoutTreeForNode(Node& node) {
     node.LazyReattachIfAttached();
     GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-    GetDocument().GetStyleEngine().RecalcStyle(kNoChange);
-    ReattachLegacyLayoutObjectList legacy_objects(GetDocument());
+    GetDocument().GetStyleEngine().RecalcStyle({});
     Node::AttachContext context;
     node.ReattachLayoutTree(context);
-    legacy_objects.ForceLegacyLayoutIfNeeded();
     return context.previous_in_flow;
   }
 
@@ -340,9 +337,13 @@ TEST_F(NodeTest, LazyReattachCommentAndPI) {
 
   comment->LazyReattachIfAttached();
   EXPECT_FALSE(body->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(comment->GetForceReattachLayoutTree());
+  EXPECT_FALSE(comment->NeedsStyleRecalc());
 
   pi->LazyReattachIfAttached();
   EXPECT_FALSE(body->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(pi->GetForceReattachLayoutTree());
+  EXPECT_FALSE(pi->NeedsStyleRecalc());
 }
 
 }  // namespace blink

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "components/drive/chromeos/about_resource_loader.h"
 #include "components/drive/chromeos/about_resource_root_folder_id_loader.h"
@@ -25,6 +26,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 
 namespace drive {
 namespace file_system {
@@ -56,12 +58,6 @@ bool OperationTestBase::LoggingDelegate::WaitForSyncComplete(
       false : wait_for_sync_complete_handler_.Run(local_id, callback);
 }
 
-OperationTestBase::OperationTestBase() = default;
-
-OperationTestBase::OperationTestBase(int test_thread_bundle_options)
-    : thread_bundle_(test_thread_bundle_options) {
-}
-
 OperationTestBase::~OperationTestBase() = default;
 
 void OperationTestBase::SetUp() {
@@ -78,8 +74,11 @@ void OperationTestBase::SetUp() {
   fake_drive_service_ = std::make_unique<FakeDriveService>();
   ASSERT_TRUE(test_util::SetUpTestEntries(fake_drive_service_.get()));
 
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   scheduler_ = std::make_unique<JobScheduler>(
       pref_service_.get(), logger_.get(), fake_drive_service_.get(),
+      network::TestNetworkConnectionTracker::GetInstance(),
       blocking_task_runner_.get(), nullptr);
 
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
@@ -187,6 +186,10 @@ FileError OperationTestBase::CheckForUpdates() {
   content::RunAllTasksUntilIdle();
   return error;
 }
+
+OperationTestBase::OperationTestBase(
+    std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle)
+    : thread_bundle_(std::move(thread_bundle)) {}
 
 }  // namespace file_system
 }  // namespace drive

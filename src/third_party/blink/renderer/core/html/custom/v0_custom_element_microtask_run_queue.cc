@@ -13,8 +13,9 @@
 namespace blink {
 
 V0CustomElementMicrotaskRunQueue::V0CustomElementMicrotaskRunQueue()
-    : sync_queue_(V0CustomElementSyncMicrotaskQueue::Create()),
-      async_queue_(V0CustomElementAsyncImportMicrotaskQueue::Create()),
+    : sync_queue_(MakeGarbageCollected<V0CustomElementSyncMicrotaskQueue>()),
+      async_queue_(
+          MakeGarbageCollected<V0CustomElementAsyncImportMicrotaskQueue>()),
       dispatch_is_pending_(false) {}
 
 void V0CustomElementMicrotaskRunQueue::Enqueue(
@@ -41,7 +42,7 @@ void V0CustomElementMicrotaskRunQueue::RequestDispatchIfNeeded() {
   dispatch_is_pending_ = true;
 }
 
-void V0CustomElementMicrotaskRunQueue::Trace(blink::Visitor* visitor) {
+void V0CustomElementMicrotaskRunQueue::Trace(Visitor* visitor) {
   visitor->Trace(sync_queue_);
   visitor->Trace(async_queue_);
 }

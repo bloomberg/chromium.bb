@@ -110,6 +110,7 @@ extern AVInputFormat  ff_daud_demuxer;
 extern AVOutputFormat ff_daud_muxer;
 extern AVInputFormat  ff_dcstr_demuxer;
 extern AVInputFormat  ff_dfa_demuxer;
+extern AVInputFormat  ff_dhav_demuxer;
 extern AVInputFormat  ff_dirac_demuxer;
 extern AVOutputFormat ff_dirac_muxer;
 extern AVInputFormat  ff_dnxhd_demuxer;
@@ -175,6 +176,7 @@ extern AVOutputFormat ff_h263_muxer;
 extern AVInputFormat  ff_h264_demuxer;
 extern AVOutputFormat ff_h264_muxer;
 extern AVOutputFormat ff_hash_muxer;
+extern AVInputFormat  ff_hcom_demuxer;
 extern AVOutputFormat ff_hds_muxer;
 extern AVInputFormat  ff_hevc_demuxer;
 extern AVOutputFormat ff_hevc_muxer;
@@ -289,6 +291,8 @@ extern AVInputFormat  ff_pcm_alaw_demuxer;
 extern AVOutputFormat ff_pcm_alaw_muxer;
 extern AVInputFormat  ff_pcm_mulaw_demuxer;
 extern AVOutputFormat ff_pcm_mulaw_muxer;
+extern AVInputFormat  ff_pcm_vidc_demuxer;
+extern AVOutputFormat ff_pcm_vidc_muxer;
 extern AVInputFormat  ff_pcm_f64be_demuxer;
 extern AVOutputFormat ff_pcm_f64be_muxer;
 extern AVInputFormat  ff_pcm_f64le_demuxer;
@@ -367,6 +371,7 @@ extern AVInputFormat  ff_segafilm_demuxer;
 extern AVOutputFormat ff_segafilm_muxer;
 extern AVOutputFormat ff_segment_muxer;
 extern AVOutputFormat ff_stream_segment_muxer;
+extern AVInputFormat  ff_ser_demuxer;
 extern AVInputFormat  ff_shorten_demuxer;
 extern AVInputFormat  ff_siff_demuxer;
 extern AVOutputFormat ff_singlejpeg_muxer;
@@ -418,6 +423,7 @@ extern AVInputFormat  ff_vc1_demuxer;
 extern AVOutputFormat ff_vc1_muxer;
 extern AVInputFormat  ff_vc1t_demuxer;
 extern AVOutputFormat ff_vc1t_muxer;
+extern AVInputFormat  ff_vividas_demuxer;
 extern AVInputFormat  ff_vivo_demuxer;
 extern AVInputFormat  ff_vmd_demuxer;
 extern AVInputFormat  ff_vobsub_demuxer;
@@ -459,6 +465,7 @@ extern AVInputFormat  ff_image_bmp_pipe_demuxer;
 extern AVInputFormat  ff_image_dds_pipe_demuxer;
 extern AVInputFormat  ff_image_dpx_pipe_demuxer;
 extern AVInputFormat  ff_image_exr_pipe_demuxer;
+extern AVInputFormat  ff_image_gif_pipe_demuxer;
 extern AVInputFormat  ff_image_j2k_pipe_demuxer;
 extern AVInputFormat  ff_image_jpeg_pipe_demuxer;
 extern AVInputFormat  ff_image_jpegls_pipe_demuxer;
@@ -576,7 +583,11 @@ AVInputFormat *av_iformat_next(const AVInputFormat *f)
     ff_thread_once(&av_format_next_init, av_format_init_next);
 
     if (f)
+#if FF_API_AVIOFORMAT
         return f->next;
+#else
+        return (AVInputFormat *) f->next;
+#endif
     else {
         void *opaque = NULL;
         return (AVInputFormat *)av_demuxer_iterate(&opaque);
@@ -588,7 +599,11 @@ AVOutputFormat *av_oformat_next(const AVOutputFormat *f)
     ff_thread_once(&av_format_next_init, av_format_init_next);
 
     if (f)
+#if FF_API_AVIOFORMAT
         return f->next;
+#else
+        return (AVOutputFormat *) f->next;
+#endif
     else {
         void *opaque = NULL;
         return (AVOutputFormat *)av_muxer_iterate(&opaque);

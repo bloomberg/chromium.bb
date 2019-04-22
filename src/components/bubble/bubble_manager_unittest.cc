@@ -79,6 +79,7 @@ class MockBubbleManagerObserver : public BubbleManager::BubbleManagerObserver {
 
   MOCK_METHOD1(OnBubbleNeverShown, void(BubbleReference));
   MOCK_METHOD2(OnBubbleClosed, void(BubbleReference, BubbleCloseReason));
+  MOCK_METHOD1(OnBubbleShown, void(BubbleReference));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBubbleManagerObserver);
@@ -366,6 +367,19 @@ TEST_F(BubbleManagerTest, BubbleCloseReasonIsCalled) {
   MockBubbleManagerObserver metrics;
   EXPECT_CALL(metrics, OnBubbleNeverShown(testing::_)).Times(0);
   EXPECT_CALL(metrics, OnBubbleClosed(testing::_, BUBBLE_CLOSE_ACCEPTED));
+  manager_->AddBubbleManagerObserver(&metrics);
+
+  BubbleReference ref = manager_->ShowBubble(MockBubbleDelegate::Default());
+  ref->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
+
+  // Destroy to verify no events are sent to |metrics| in destructor.
+  manager_.reset();
+}
+
+TEST_F(BubbleManagerTest, OnBubbleShownIsCalled) {
+  MockBubbleManagerObserver metrics;
+  EXPECT_CALL(metrics, OnBubbleNeverShown(testing::_)).Times(0);
+  EXPECT_CALL(metrics, OnBubbleShown(testing::_));
   manager_->AddBubbleManagerObserver(&metrics);
 
   BubbleReference ref = manager_->ShowBubble(MockBubbleDelegate::Default());

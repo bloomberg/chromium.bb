@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "content/public/renderer/v8_value_converter.h"
-#include "extensions/renderer/extension_bindings_system.h"
+#include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -27,7 +27,7 @@ const char kSessionNotFound[] = "Session not found";
 
 DisplaySourceCustomBindings::DisplaySourceCustomBindings(
     ScriptContext* context,
-    ExtensionBindingsSystem* bindings_system)
+    NativeExtensionBindingsSystem* bindings_system)
     : ObjectBackedNativeHandler(context),
       bindings_system_(bindings_system),
       weak_factory_(this) {}
@@ -35,13 +35,14 @@ DisplaySourceCustomBindings::DisplaySourceCustomBindings(
 DisplaySourceCustomBindings::~DisplaySourceCustomBindings() {}
 
 void DisplaySourceCustomBindings::AddRoutes() {
-  RouteHandlerFunction("StartSession", "displaySource",
-                       base::Bind(&DisplaySourceCustomBindings::StartSession,
-                                  weak_factory_.GetWeakPtr()));
+  RouteHandlerFunction(
+      "StartSession", "displaySource",
+      base::BindRepeating(&DisplaySourceCustomBindings::StartSession,
+                          weak_factory_.GetWeakPtr()));
   RouteHandlerFunction(
       "TerminateSession", "displaySource",
-      base::Bind(&DisplaySourceCustomBindings::TerminateSession,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&DisplaySourceCustomBindings::TerminateSession,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void DisplaySourceCustomBindings::Invalidate() {
@@ -54,20 +55,18 @@ namespace {
 
 v8::Local<v8::Value> GetChildValue(v8::Local<v8::Object> value,
                                    const std::string& key_name,
-                                   v8::Isolate* isolate) {
-  v8::Local<v8::Array> property_names(value->GetOwnPropertyNames());
-  for (uint32_t i = 0; i < property_names->Length(); ++i) {
-    v8::Local<v8::Value> key(property_names->Get(i));
-    if (key_name == *v8::String::Utf8Value(isolate, key)) {
-      v8::TryCatch try_catch(isolate);
-      v8::Local<v8::Value> child_v8 = value->Get(key);
-      if (try_catch.HasCaught()) {
-        return v8::Null(isolate);
-      }
-      return child_v8;
-    }
+                                   v8::Local<v8::Context> context) {
+  v8::Isolate* isolate = context->GetIsolate();
+  v8::TryCatch try_catch(isolate);
+  v8::Local<v8::String> key;
+  v8::Local<v8::Value> child_value;
+  if (v8::String::NewFromUtf8(isolate, key_name.c_str(),
+                              v8::NewStringType::kNormal)
+          .ToLocal(&key) &&
+      value->HasOwnProperty(context, key).FromMaybe(false) &&
+      value->Get(context, key).ToLocal(&child_value)) {
+    return child_value;
   }
-
   return v8::Null(isolate);
 }
 
@@ -84,12 +83,13 @@ void DisplaySourceCustomBindings::StartSession(
   CHECK(args[0]->IsObject());
 
   v8::Isolate* isolate = context()->isolate();
+  v8::Local<v8::Context> v8_context = context()->v8_context();
   v8::Local<v8::Object> start_info = args[0].As<v8::Object>();
 
   v8::Local<v8::Value> sink_id_val =
-      GetChildValue(start_info, "sinkId", isolate);
+      GetChildValue(start_info, "sinkId", v8_context);
   CHECK(sink_id_val->IsInt32());
-  const int sink_id = sink_id_val->ToInt32(isolate)->Value();
+  const int sink_id = sink_id_val.As<v8::Int32>()->Value();
   if (GetDisplaySession(sink_id)) {
     isolate->ThrowException(v8::Exception::Error(
         v8::String::NewFromUtf8(isolate, kSessionAlreadyStarted,
@@ -99,9 +99,9 @@ void DisplaySourceCustomBindings::StartSession(
   }
 
   v8::Local<v8::Value> video_stream_val =
-      GetChildValue(start_info, "videoTrack", isolate);
+      GetChildValue(start_info, "videoTrack", v8_context);
   v8::Local<v8::Value> audio_stream_val =
-      GetChildValue(start_info, "audioTrack", isolate);
+      GetChildValue(start_info, "audioTrack", v8_context);
 
   if ((video_stream_val->IsNull() || video_stream_val->IsUndefined()) &&
       (audio_stream_val->IsNull() || audio_stream_val->IsUndefined())) {
@@ -141,7 +141,7 @@ void DisplaySourceCustomBindings::StartSession(
 
   std::unique_ptr<DisplaySourceAuthInfo> auth_info;
   v8::Local<v8::Value> auth_info_v8_val =
-      GetChildValue(start_info, "authenticationInfo", isolate);
+      GetChildValue(start_info, "authenticationInfo", v8_context);
   if (!auth_info_v8_val->IsNull()) {
     CHECK(auth_info_v8_val->IsObject());
     std::unique_ptr<base::Value> auth_info_val =
@@ -194,7 +194,7 @@ void DisplaySourceCustomBindings::TerminateSession(
   CHECK(args[0]->IsInt32());
 
   v8::Isolate* isolate = context()->isolate();
-  int sink_id = args[0]->ToInt32(args.GetIsolate())->Value();
+  int sink_id = args[0].As<v8::Int32>()->Value();
   DisplaySourceSession* session = GetDisplaySession(sink_id);
   if (!session) {
     isolate->ThrowException(

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sha1.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
@@ -288,7 +288,7 @@ void DownloadProtectionService::ShowDetailsForDownload(
       learn_more_url, g_browser_process->GetApplicationLocale());
   learn_more_url = net::AppendQueryParameter(
       learn_more_url, "ctx",
-      base::IntToString(static_cast<int>(item.GetDangerType())));
+      base::NumberToString(static_cast<int>(item.GetDangerType())));
   navigator->OpenURL(
       content::OpenURLParams(learn_more_url, content::Referrer(),
                              WindowOpenDisposition::NEW_FOREGROUND_TAB,

@@ -442,16 +442,6 @@ class SupervisedUserServiceExtensionTest
  public:
   SupervisedUserServiceExtensionTest()
       : SupervisedUserServiceExtensionTestBase(true) {}
-
- protected:
-  void InitSupervisedUserInitiatedExtensionInstallFeature(bool enabled) {
-    if (enabled) {
-      scoped_feature_list_.InitAndEnableFeature(
-          supervised_users::kSupervisedUserInitiatedExtensionInstall);
-    }
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(SupervisedUserServiceExtensionTest,
@@ -459,9 +449,6 @@ TEST_F(SupervisedUserServiceExtensionTest,
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   ASSERT_TRUE(profile_->IsSupervised());
-
-  // Disable supervised user initiated installs.
-  InitSupervisedUserInitiatedExtensionInstallFeature(false);
 
   // Check that a supervised user can install and uninstall a theme even if
   // they are not allowed to install extensions.
@@ -510,14 +497,21 @@ TEST_F(SupervisedUserServiceExtensionTest,
 #endif
 }
 
+// TODO(crbug.com/910597): Flaky due to use of ScopedFeatureList.
 TEST_F(SupervisedUserServiceExtensionTest,
-       ExtensionManagementPolicyProviderWithSUInitiatedInstalls) {
+       DISABLED_ExtensionManagementPolicyProviderWithSUInitiatedInstalls) {
+  // Enable supervised user initiated installs.
+  // TODO(crbug.com/846380): ScopedFeatureList must be initialized before the
+  // TestBrowserThreadBundle in ExtensionServiceTestBase to avoid races between
+  // threads.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      supervised_users::kSupervisedUserInitiatedExtensionInstall);
+
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   ASSERT_TRUE(profile_->IsSupervised());
 
-  // Enable supervised user initiated installs.
-  InitSupervisedUserInitiatedExtensionInstallFeature(true);
   // The supervised user should be able to load and uninstall the extensions
   // they install.
   {

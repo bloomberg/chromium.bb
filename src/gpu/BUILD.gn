@@ -159,8 +159,6 @@ jumbo_static_library("test_support") {
     "command_buffer/service/error_state_mock.h",
     "command_buffer/service/gles2_cmd_decoder_mock.cc",
     "command_buffer/service/gles2_cmd_decoder_mock.h",
-    "command_buffer/service/raster_decoder_mock.cc",
-    "command_buffer/service/raster_decoder_mock.h",
     "ipc/raster_in_process_context.cc",
     "ipc/raster_in_process_context.h",
     "ipc/service/gpu_memory_buffer_factory_test_template.h",
@@ -216,7 +214,6 @@ test("gl_tests") {
     "command_buffer/tests/gl_ext_multisample_compatibility_unittest.cc",
     "command_buffer/tests/gl_ext_srgb_unittest.cc",
     "command_buffer/tests/gl_ext_window_rectangles_unittest.cc",
-    "command_buffer/tests/gl_fence_sync_unittest.cc",
     "command_buffer/tests/gl_gpu_memory_buffer_unittest.cc",
     "command_buffer/tests/gl_iosurface_readback_workaround_unittest.cc",
     "command_buffer/tests/gl_lose_context_chromium_unittest.cc",
@@ -245,15 +242,23 @@ test("gl_tests") {
     "command_buffer/tests/gl_unittests_android.cc",
     "command_buffer/tests/gl_virtual_contexts_ext_window_rectangles_unittest.cc",
     "command_buffer/tests/gl_virtual_contexts_unittest.cc",
+    "command_buffer/tests/gl_webgl_multi_draw_test.cc",
     "command_buffer/tests/occlusion_query_unittest.cc",
     "command_buffer/tests/texture_image_factory.cc",
     "command_buffer/tests/texture_image_factory.h",
     "ipc/client/gpu_context_tests.h",
     "ipc/client/gpu_in_process_context_tests.cc",
     "ipc/client/raster_in_process_context_tests.cc",
-    "ipc/client/webgpu_in_process_context_tests.cc",
     "ipc/service/direct_composition_surface_win_unittest.cc",
   ]
+
+  if (use_dawn) {
+    sources += [
+      "command_buffer/tests/webgpu_fence_unittest.cc",
+      "command_buffer/tests/webgpu_test.cc",
+      "command_buffer/tests/webgpu_test.h",
+    ]
+  }
 
   defines = [ "GL_GLEXT_PROTOTYPES" ]
 
@@ -286,6 +291,10 @@ test("gl_tests") {
     "//ui/gl/init",
   ]
 
+  if (use_dawn) {
+    deps += [ "//third_party/dawn/src/dawn:libdawn" ]
+  }
+
   libs = []
 
   if (is_android) {
@@ -294,10 +303,18 @@ test("gl_tests") {
     sources += [ "command_buffer/service/shared_image_backing_factory_ahardwarebuffer_unittest.cc" ]
   } else if (is_mac) {
     libs += [ "IOSurface.framework" ]
+    sources += [ "command_buffer/service/shared_image_backing_factory_iosurface_unittest.cc" ]
   } else if (is_win) {
     deps += [
       "//ui/platform_window",
       "//ui/platform_window:platform_impls",
+    ]
+  }
+
+  if (use_dawn) {
+    deps += [
+      "//third_party/dawn:libdawn_native",
+      "//third_party/dawn/src/dawn:libdawn",
     ]
   }
 }
@@ -321,6 +338,7 @@ test("gpu_unittests") {
     "command_buffer/client/raster_implementation_unittest.cc",
     "command_buffer/client/raster_implementation_unittest_autogen.h",
     "command_buffer/client/ring_buffer_test.cc",
+    "command_buffer/client/transfer_buffer_cmd_copy_helpers_unittest.cc",
     "command_buffer/client/transfer_buffer_unittest.cc",
     "command_buffer/client/vertex_array_object_manager_unittest.cc",
     "command_buffer/client/webgpu_implementation_unittest.cc",
@@ -389,6 +407,7 @@ test("gpu_unittests") {
     "command_buffer/service/memory_program_cache_unittest.cc",
     "command_buffer/service/mocks.cc",
     "command_buffer/service/mocks.h",
+    "command_buffer/service/multi_draw_manager_unittest.cc",
     "command_buffer/service/passthrough_program_cache_unittest.cc",
     "command_buffer/service/path_manager_unittest.cc",
     "command_buffer/service/program_cache_unittest.cc",
@@ -414,7 +433,6 @@ test("gpu_unittests") {
     "command_buffer/service/transform_feedback_manager_unittest.cc",
     "command_buffer/service/vertex_array_manager_unittest.cc",
     "command_buffer/service/vertex_attrib_manager_unittest.cc",
-    "command_buffer/service/webgpu_decoder_unittest.cc",
     "config/gpu_blacklist_unittest.cc",
     "config/gpu_control_list_entry_unittest.cc",
     "config/gpu_control_list_testing_arrays_and_structs_autogen.h",
@@ -440,7 +458,12 @@ test("gpu_unittests") {
     "ipc/service/gpu_channel_test_common.cc",
     "ipc/service/gpu_channel_test_common.h",
     "ipc/service/gpu_channel_unittest.cc",
+    "ipc/service/image_decode_accelerator_stub_unittest.cc",
   ]
+
+  if (use_dawn) {
+    sources += [ "command_buffer/service/webgpu_decoder_unittest.cc" ]
+  }
 
   if (is_mac) {
     sources += [
@@ -449,7 +472,7 @@ test("gpu_unittests") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || use_ozone) {
     sources += [
       "ipc/common/gpu_memory_buffer_impl_native_pixmap_unittest.cc",
       "ipc/service/gpu_memory_buffer_factory_native_pixmap_unittest.cc",
@@ -469,7 +492,7 @@ test("gpu_unittests") {
     ]
   }
 
-  if (is_fuchsia || (is_posix && !is_mac)) {
+  if (is_linux || is_android || is_chromeos) {
     sources += [ "command_buffer/service/gpu_fence_manager_unittest.cc" ]
   }
 
@@ -504,6 +527,7 @@ test("gpu_unittests") {
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/service",
+    "//gpu/config",
     "//gpu/ipc:gl_in_process_context",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
@@ -562,6 +586,10 @@ test("gpu_perftests") {
     "//ui/gl/init",
   ]
 
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
   data_deps = [
     # Needed for isolate script to execute.
     "//testing:run_perf_test",
@@ -592,6 +620,10 @@ test("command_buffer_perftests") {
     "//ui/gl/init",
   ]
 
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
   data_deps = [
     # Needed for isolate script to execute.
     "//testing:run_perf_test",
@@ -610,6 +642,7 @@ fuzzer_test("gpu_fuzzer") {
     ":gles2",
     ":gpu",
     "//base",
+    "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//ui/gfx/geometry",
     "//ui/gl",
@@ -689,6 +722,30 @@ if (is_linux) {
     ]
 
     defines = [ "GPU_FUZZER_USE_RASTER_DECODER" ]
+
+    deps = [
+      ":gles2",
+      ":gpu",
+      "//base",
+      "//base/third_party/dynamic_annotations",
+      "//ui/gfx/geometry",
+      "//ui/gl",
+      "//ui/gl:test_support",
+    ]
+
+    libfuzzer_options = [ "max_len=16384" ]
+  }
+
+  fuzzer_test("gpu_raster_passthrough_fuzzer") {
+    sources = [
+      "command_buffer/tests/fuzzer_main.cc",
+    ]
+
+    defines = [
+      "GPU_FUZZER_USE_ANGLE",
+      "GPU_FUZZER_USE_RASTER_DECODER",
+      "GPU_FUZZER_USE_PASSTHROUGH_CMD_DECODER",
+    ]
 
     deps = [
       ":gles2",

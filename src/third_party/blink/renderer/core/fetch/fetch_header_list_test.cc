@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
 
 #include <utility>
+
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -13,7 +15,7 @@ namespace blink {
 namespace {
 
 TEST(FetchHeaderListTest, Append) {
-  FetchHeaderList* headerList = FetchHeaderList::Create();
+  auto* headerList = MakeGarbageCollected<FetchHeaderList>();
   headerList->Append("ConTenT-TyPe", "text/plain");
   headerList->Append("content-type", "application/xml");
   headerList->Append("CONTENT-type", "foo");
@@ -23,7 +25,7 @@ TEST(FetchHeaderListTest, Append) {
       std::make_pair("ConTenT-TyPe", "application/xml"),
       std::make_pair("ConTenT-TyPe", "foo"), std::make_pair("X-Foo", "bar"),
   };
-  EXPECT_EQ(arraysize(expectedHeaders), headerList->size());
+  EXPECT_EQ(base::size(expectedHeaders), headerList->size());
   size_t i = 0;
   for (const auto& header : headerList->List()) {
     EXPECT_EQ(expectedHeaders[i].first, header.first);
@@ -33,7 +35,7 @@ TEST(FetchHeaderListTest, Append) {
 }
 
 TEST(FetchHeaderListTest, Set) {
-  FetchHeaderList* headerList = FetchHeaderList::Create();
+  auto* headerList = MakeGarbageCollected<FetchHeaderList>();
   headerList->Append("ConTenT-TyPe", "text/plain");
   headerList->Append("content-type", "application/xml");
   headerList->Append("CONTENT-type", "foo");
@@ -46,7 +48,7 @@ TEST(FetchHeaderListTest, Set) {
       std::make_pair("some-header", "some value"),
       std::make_pair("X-Foo", "bar"),
   };
-  EXPECT_EQ(arraysize(expectedHeaders), headerList->size());
+  EXPECT_EQ(base::size(expectedHeaders), headerList->size());
   size_t i = 0;
   for (const auto& header : headerList->List()) {
     EXPECT_EQ(expectedHeaders[i].first, header.first);
@@ -56,7 +58,7 @@ TEST(FetchHeaderListTest, Set) {
 }
 
 TEST(FetchHeaderListTest, Erase) {
-  FetchHeaderList* headerList = FetchHeaderList::Create();
+  auto* headerList = MakeGarbageCollected<FetchHeaderList>();
   headerList->Remove("foo");
   EXPECT_EQ(0U, headerList->size());
   headerList->Append("ConTenT-TyPe", "text/plain");
@@ -68,7 +70,7 @@ TEST(FetchHeaderListTest, Erase) {
   const std::pair<String, String> expectedHeaders[] = {
       std::make_pair("X-Foo", "bar"),
   };
-  EXPECT_EQ(arraysize(expectedHeaders), headerList->size());
+  EXPECT_EQ(base::size(expectedHeaders), headerList->size());
   size_t i = 0;
   for (const auto& header : headerList->List()) {
     EXPECT_EQ(expectedHeaders[i].first, header.first);
@@ -78,7 +80,7 @@ TEST(FetchHeaderListTest, Erase) {
 }
 
 TEST(FetchHeaderListTest, Combine) {
-  FetchHeaderList* headerList = FetchHeaderList::Create();
+  auto* headerList = MakeGarbageCollected<FetchHeaderList>();
   headerList->Append("ConTenT-TyPe", "text/plain");
   headerList->Append("content-type", "application/xml");
   headerList->Append("CONTENT-type", "foo");
@@ -91,7 +93,7 @@ TEST(FetchHeaderListTest, Combine) {
 }
 
 TEST(FetchHeaderListTest, Contains) {
-  FetchHeaderList* headerList = FetchHeaderList::Create();
+  auto* headerList = MakeGarbageCollected<FetchHeaderList>();
   headerList->Append("ConTenT-TyPe", "text/plain");
   headerList->Append("content-type", "application/xml");
   headerList->Append("X-Foo", "bar");
@@ -101,7 +103,7 @@ TEST(FetchHeaderListTest, Contains) {
 }
 
 TEST(FetchHeaderListTest, SortAndCombine) {
-  FetchHeaderList* headerList = FetchHeaderList::Create();
+  auto* headerList = MakeGarbageCollected<FetchHeaderList>();
   EXPECT_TRUE(headerList->SortAndCombine().IsEmpty());
   headerList->Append("content-type", "multipart/form-data");
   headerList->Append("ConTenT-TyPe", "application/xml");
@@ -113,7 +115,7 @@ TEST(FetchHeaderListTest, SortAndCombine) {
       std::make_pair("x-foo", "bar")};
   const Vector<FetchHeaderList::Header> sortedAndCombined =
       headerList->SortAndCombine();
-  EXPECT_EQ(arraysize(expectedHeaders), sortedAndCombined.size());
+  EXPECT_EQ(base::size(expectedHeaders), sortedAndCombined.size());
   size_t i = 0;
   for (const auto& headerPair : headerList->SortAndCombine()) {
     EXPECT_EQ(expectedHeaders[i].first, headerPair.first);

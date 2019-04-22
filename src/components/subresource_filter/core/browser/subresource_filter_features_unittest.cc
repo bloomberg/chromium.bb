@@ -74,7 +74,7 @@ void ExpectAndRetrieveExactlyOneExtraEnabledConfig(
     Configuration* actual_config) {
   DCHECK(actual_config);
   const auto config_list = GetEnabledConfigurations();
-  ASSERT_EQ(3u, config_list->configs_by_decreasing_priority().size());
+  ASSERT_EQ(4u, config_list->configs_by_decreasing_priority().size());
   *actual_config = config_list->configs_by_decreasing_priority().back();
 }
 
@@ -513,7 +513,9 @@ TEST_F(SubresourceFilterFeaturesTest,
       config_list->configs_by_decreasing_priority(),
       ::testing::ElementsAre(
           Configuration::MakePresetForLiveRunOnPhishingSites(),
-          Configuration::MakePresetForLiveRunForBetterAds(), Configuration()));
+          Configuration::MakePresetForLiveRunForBetterAds(),
+          Configuration::MakePresetForPerformanceTestingDryRunOnAllSites(),
+          Configuration()));
   EXPECT_EQ(std::string(),
             config_list->lexicographically_greatest_ruleset_flavor());
 }
@@ -528,7 +530,7 @@ TEST_F(SubresourceFilterFeaturesTest,
       {{kActivationLevelParameterName, kActivationLevelDryRun},
        {kActivationScopeParameterName, kActivationScopeAllSites},
        {kActivationPriorityParameterName, "500"},
-       {kPerformanceMeasurementRateParameterName, "1.0"}});
+       {kPerformanceMeasurementRateParameterName, "0.01"}});
 }
 
 TEST_F(SubresourceFilterFeaturesTest, PresetForLiveRunOnBetterAdsSites) {
@@ -571,10 +573,10 @@ TEST_F(SubresourceFilterFeaturesTest, EnableDisableMultiplePresets) {
 
   // The default config comes from the empty experimental configuration.
   const std::vector<Configuration> kEmptyConfig = {Configuration()};
-  const std::vector<Configuration> kDefaultConfig = {
+  const std::vector<Configuration> kSmallConfig = {
       Configuration::MakePresetForLiveRunOnPhishingSites(),
       Configuration::MakePresetForLiveRunForBetterAds(), Configuration()};
-  const std::vector<Configuration> kAllConfigs = {
+  const std::vector<Configuration> kDefaultConfig = {
       Configuration::MakePresetForLiveRunOnPhishingSites(),
       Configuration::MakePresetForLiveRunForBetterAds(),
       Configuration::MakePresetForPerformanceTestingDryRunOnAllSites(),
@@ -588,15 +590,15 @@ TEST_F(SubresourceFilterFeaturesTest, EnableDisableMultiplePresets) {
       {"", "", kDefaultConfig},
       {"garbage1", "garbage2", kDefaultConfig},
       {"", kPhishing + "," + kPerfTest + "," + kBAS, kEmptyConfig},
-      {kPhishing, kPerfTest, kDefaultConfig},
-      {kPerfTest, "garbage", kAllConfigs},
-      {kPerfTest, base::ToUpperASCII(kPerfTest), kDefaultConfig},
+      {kPhishing, kPerfTest, kSmallConfig},
+      {kPerfTest, "garbage", kDefaultConfig},
+      {kPerfTest, base::ToUpperASCII(kPerfTest), kSmallConfig},
       {kPerfTest + "," + kPhishing + "," + kBAS,
        ",,garbage, ," + kPerfTest + "," + kPhishing + "," + kBAS, kEmptyConfig},
       {base::ToUpperASCII(kPhishing) + "," + base::ToUpperASCII(kPerfTest), "",
-       kAllConfigs},
-      {",, ," + kPerfTest + ",," + kPhishing, "", kAllConfigs},
-      {"garbage,garbage2," + kPerfTest + "," + kPhishing, "", kAllConfigs}};
+       kDefaultConfig},
+      {",, ," + kPerfTest + ",," + kPhishing, "", kDefaultConfig},
+      {"garbage,garbage2," + kPerfTest + "," + kPhishing, "", kDefaultConfig}};
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(

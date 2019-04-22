@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "src/base/macros.h"
+#include "src/base/optional.h"
 #include "src/globals.h"
 #include "src/pointer-with-payload.h"
 
@@ -75,8 +76,8 @@ class PerThreadAssertScope {
 template <PerIsolateAssertType type, bool allow>
 class PerIsolateAssertScope {
  public:
-  explicit PerIsolateAssertScope(Isolate* isolate);
-  ~PerIsolateAssertScope();
+  V8_EXPORT_PRIVATE explicit PerIsolateAssertScope(Isolate* isolate);
+  V8_EXPORT_PRIVATE ~PerIsolateAssertScope();
 
   static bool IsAllowed(Isolate* isolate);
 
@@ -133,7 +134,7 @@ typedef PerThreadAssertScopeDebugOnly<HANDLE_ALLOCATION_ASSERT, true>
 typedef PerThreadAssertScopeDebugOnly<HEAP_ALLOCATION_ASSERT, false>
     DisallowHeapAllocation;
 #ifdef DEBUG
-#define DISALLOW_HEAP_ALLOCATION(name) DisallowHeapAllocation name
+#define DISALLOW_HEAP_ALLOCATION(name) DisallowHeapAllocation name;
 #else
 #define DISALLOW_HEAP_ALLOCATION(name)
 #endif
@@ -167,10 +168,20 @@ typedef PerThreadAssertScopeDebugOnly<CODE_DEPENDENCY_CHANGE_ASSERT, true>
     AllowCodeDependencyChange;
 
 class DisallowHeapAccess {
-  DisallowHeapAllocation no_heap_allocation_;
+  DisallowCodeDependencyChange no_dependency_change_;
   DisallowHandleAllocation no_handle_allocation_;
   DisallowHandleDereference no_handle_dereference_;
-  DisallowCodeDependencyChange no_dependency_change_;
+  DisallowHeapAllocation no_heap_allocation_;
+};
+
+class DisallowHeapAccessIf {
+ public:
+  explicit DisallowHeapAccessIf(bool condition) {
+    if (condition) maybe_disallow_.emplace();
+  }
+
+ private:
+  base::Optional<DisallowHeapAccess> maybe_disallow_;
 };
 
 // Per-isolate assert scopes.
@@ -230,6 +241,35 @@ typedef PerIsolateAssertScopeDebugOnly<NO_EXCEPTION_ASSERT, false>
 // Scope to introduce an exception to DisallowExceptions.
 typedef PerIsolateAssertScopeDebugOnly<NO_EXCEPTION_ASSERT, true>
     AllowExceptions;
+
+// Explicit instantiation declarations.
+extern template class PerThreadAssertScope<HEAP_ALLOCATION_ASSERT, false>;
+extern template class PerThreadAssertScope<HEAP_ALLOCATION_ASSERT, true>;
+extern template class PerThreadAssertScope<HANDLE_ALLOCATION_ASSERT, false>;
+extern template class PerThreadAssertScope<HANDLE_ALLOCATION_ASSERT, true>;
+extern template class PerThreadAssertScope<HANDLE_DEREFERENCE_ASSERT, false>;
+extern template class PerThreadAssertScope<HANDLE_DEREFERENCE_ASSERT, true>;
+extern template class PerThreadAssertScope<DEFERRED_HANDLE_DEREFERENCE_ASSERT,
+                                           false>;
+extern template class PerThreadAssertScope<DEFERRED_HANDLE_DEREFERENCE_ASSERT,
+                                           true>;
+extern template class PerThreadAssertScope<CODE_DEPENDENCY_CHANGE_ASSERT,
+                                           false>;
+extern template class PerThreadAssertScope<CODE_DEPENDENCY_CHANGE_ASSERT, true>;
+
+extern template class PerIsolateAssertScope<JAVASCRIPT_EXECUTION_ASSERT, false>;
+extern template class PerIsolateAssertScope<JAVASCRIPT_EXECUTION_ASSERT, true>;
+extern template class PerIsolateAssertScope<JAVASCRIPT_EXECUTION_THROWS, false>;
+extern template class PerIsolateAssertScope<JAVASCRIPT_EXECUTION_THROWS, true>;
+extern template class PerIsolateAssertScope<JAVASCRIPT_EXECUTION_DUMP, false>;
+extern template class PerIsolateAssertScope<JAVASCRIPT_EXECUTION_DUMP, true>;
+extern template class PerIsolateAssertScope<DEOPTIMIZATION_ASSERT, false>;
+extern template class PerIsolateAssertScope<DEOPTIMIZATION_ASSERT, true>;
+extern template class PerIsolateAssertScope<COMPILATION_ASSERT, false>;
+extern template class PerIsolateAssertScope<COMPILATION_ASSERT, true>;
+extern template class PerIsolateAssertScope<NO_EXCEPTION_ASSERT, false>;
+extern template class PerIsolateAssertScope<NO_EXCEPTION_ASSERT, true>;
+
 }  // namespace internal
 }  // namespace v8
 

@@ -6,7 +6,7 @@ import("//build/config/android/rules.gni")
 
 _jni_sources = [
   "java/src/org/chromium/components/crash/browser/ChildProcessCrashObserver.java",
-  "java/src/org/chromium/components/crash/browser/CrashDumpManager.java",
+  "java/src/org/chromium/components/crash/browser/PackagePaths.java",
   "java/src/org/chromium/components/crash/CrashKeys.java",
 ]
 
@@ -41,18 +41,6 @@ source_set("crash_android") {
   ]
 }
 
-android_library("javatests") {
-  testonly = true
-  deps = [
-    ":java",
-    "//base:base_java",
-    "//base:base_java_test_support",
-    "//third_party/android_support_test_runner:runner_java",
-    "//third_party/junit",
-  ]
-  java_files = [ "javatests/src/org/chromium/components/crash/browser/CrashDumpManagerTest.java" ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -62,5 +50,33 @@ source_set("unit_tests") {
     ":crash_android",
     "//components/crash/core/common:crash_key",
     "//testing/gtest",
+  ]
+}
+
+_java_handler_jni_sources =
+    [ "java/src/org/chromium/components/crash/browser/CrashpadMain.java" ]
+
+generate_jni("java_handler_jni_headers") {
+  sources = _java_handler_jni_sources
+  jni_package = "crashpad"
+}
+
+android_library("handler_java") {
+  deps = [
+    "//base:base_java",
+  ]
+  java_files = _java_handler_jni_sources
+}
+
+static_library("crashpad_main") {
+  sources = [
+    "crashpad_main.cc",
+  ]
+
+  deps = [
+    ":java_handler_jni_headers",
+    "//base",
+    "//third_party/crashpad/crashpad/client",
+    "//third_party/crashpad/crashpad/handler",
   ]
 }

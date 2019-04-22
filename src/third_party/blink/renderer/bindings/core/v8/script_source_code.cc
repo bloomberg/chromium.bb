@@ -83,7 +83,8 @@ ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
       cache_handler_(resource->CacheHandler()),
       streamer_(streamer),
       not_streaming_reason_(reason),
-      url_(StripFragmentIdentifier(resource->GetResponse().Url())),
+      url_(
+          StripFragmentIdentifier(resource->GetResponse().CurrentRequestUrl())),
       source_map_url_(SourceMapUrlFromResponse(resource->GetResponse())),
       start_position_(TextPosition::MinimumPosition()),
       source_location_type_(ScriptSourceLocationType::kExternalFile) {

@@ -58,12 +58,9 @@ Console.ConsoleViewport = class {
     this.element.addEventListener('scroll', this._onScroll.bind(this), false);
     this.element.addEventListener('copy', this._onCopy.bind(this), false);
     this.element.addEventListener('dragstart', this._onDragStart.bind(this), false);
-    this._keyboardNavigationEnabled = Runtime.experiments.isEnabled('consoleKeyboardNavigation');
-    if (this._keyboardNavigationEnabled) {
-      this._contentElement.addEventListener('focusin', this._onFocusIn.bind(this), false);
-      this._contentElement.addEventListener('focusout', this._onFocusOut.bind(this), false);
-      this._contentElement.addEventListener('keydown', this._onKeyDown.bind(this), false);
-    }
+    this._contentElement.addEventListener('focusin', this._onFocusIn.bind(this), false);
+    this._contentElement.addEventListener('focusout', this._onFocusOut.bind(this), false);
+    this._contentElement.addEventListener('keydown', this._onKeyDown.bind(this), false);
     this._virtualSelectedIndex = -1;
     this._contentElement.tabIndex = -1;
 
@@ -101,6 +98,13 @@ Console.ConsoleViewport = class {
       this._observer.disconnect();
   }
 
+  /**
+   * @return {boolean}
+   */
+  hasVirtualSelection() {
+    return this._virtualSelectedIndex !== -1;
+  }
+
   copyWithStyles() {
     this._muteCopyHandler = true;
     this.element.ownerDocument.execCommand('copy');
@@ -130,9 +134,13 @@ Console.ConsoleViewport = class {
     let focusLastChild = false;
     // Make default selection when moving from external (e.g. prompt) to the container.
     if (this._virtualSelectedIndex === -1 && this._isOutsideViewport(/** @type {?Element} */ (event.relatedTarget)) &&
-        event.target === this._contentElement) {
+        event.target === this._contentElement && this._itemCount) {
       focusLastChild = true;
       this._virtualSelectedIndex = this._itemCount - 1;
+
+      // Update stick to bottom before scrolling into view.
+      this.refresh();
+      this.scrollItemIntoView(this._virtualSelectedIndex);
     }
     this._updateFocusedItem(focusLastChild);
   }
@@ -213,14 +221,14 @@ Console.ConsoleViewport = class {
     const containerHasFocus = this._contentElement === this.element.ownerDocument.deepActiveElement();
     if (this._lastSelectedElement && changed)
       this._lastSelectedElement.classList.remove('console-selected');
-    if (selectedElement && (changed || containerHasFocus) && this.element.hasFocus()) {
+    if (selectedElement && (focusLastChild || changed || containerHasFocus) && this.element.hasFocus()) {
       selectedElement.classList.add('console-selected');
       // Do not focus the message if something within holds focus (e.g. object).
-      if (!selectedElement.hasFocus()) {
-        if (focusLastChild)
-          this._renderedItems[this._virtualSelectedIndex - this._firstActiveIndex].focusLastChildOrSelf();
-        else
-          focusWithoutScroll(selectedElement);
+      if (focusLastChild) {
+        this.setStickToBottom(false);
+        this._renderedItems[this._virtualSelectedIndex - this._firstActiveIndex].focusLastChildOrSelf();
+      } else if (!selectedElement.hasFocus()) {
+        focusWithoutScroll(selectedElement);
       }
     }
     if (this._itemCount && !this._contentElement.hasFocus())
@@ -459,8 +467,7 @@ Console.ConsoleViewport = class {
       this._bottomGapElement.style.height = '0px';
       this._firstActiveIndex = -1;
       this._lastActiveIndex = -1;
-      if (this._keyboardNavigationEnabled)
-        this._updateFocusedItem();
+      this._updateFocusedItem();
       return;
     }
 
@@ -524,8 +531,7 @@ Console.ConsoleViewport = class {
     prepare();
     let hadFocus = false;
     for (let i = 0; i < willBeHidden.length; ++i) {
-      if (this._keyboardNavigationEnabled)
-        hadFocus = hadFocus || willBeHidden[i].element().hasFocus();
+      hadFocus = hadFocus || willBeHidden[i].element().hasFocus();
       willBeHidden[i].element().remove();
     }
 
@@ -546,11 +552,9 @@ Console.ConsoleViewport = class {
       wasShown[i].wasShown();
     this._renderedItems = Array.from(itemsToRender);
 
-    if (this._keyboardNavigationEnabled) {
-      if (hadFocus)
-        this._contentElement.focus();
-      this._updateFocusedItem();
-    }
+    if (hadFocus)
+      this._contentElement.focus();
+    this._updateFocusedItem();
   }
 
   /**

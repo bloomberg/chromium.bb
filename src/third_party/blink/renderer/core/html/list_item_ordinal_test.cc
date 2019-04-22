@@ -16,7 +16,7 @@ class ListItemOrdinalTest : public EditingTestBase {};
 
 TEST_F(ListItemOrdinalTest, ItemInsertedOrRemoved_ListItemsInSlot) {
   // Note: We should have more than |kLCSTableSizeLimit|(16) child nodes in
-  // host to invoke |LazyReattachNodesNaive()|.
+  // host to invoke |NotifySlottedNodesOfFlatTreeChangeNaive()|.
   SetBodyContent(
       "<div id=host>"
       "<li id=item1>1</li>"

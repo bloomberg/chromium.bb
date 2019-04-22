@@ -6,8 +6,8 @@
 #include <tuple>
 
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/pickle.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "extensions/common/api/sockets/sockets_manifest_permission.h"
 #include "extensions/common/manifest_constants.h"
@@ -42,7 +42,7 @@ static void AssertEmptyPermission(const SocketsManifestPermission* permission) {
 
 static std::unique_ptr<base::Value> ParsePermissionJSON(
     const std::string& json) {
-  std::unique_ptr<base::Value> result(base::JSONReader::Read(json));
+  std::unique_ptr<base::Value> result(base::JSONReader::ReadDeprecated(json));
   EXPECT_TRUE(result) << "Invalid JSON string: " << json;
   return result;
 }
@@ -120,7 +120,7 @@ static testing::AssertionResult CheckFormat(const std::string& json,
                                             const CheckFormatEntry& op1) {
   CheckFormatEntry entries[] = {op1};
   return CheckFormat(
-      std::multiset<CheckFormatEntry>(entries, entries + arraysize(entries)),
+      std::multiset<CheckFormatEntry>(entries, entries + base::size(entries)),
       json);
 }
 
@@ -129,7 +129,7 @@ static testing::AssertionResult CheckFormat(const std::string& json,
                                             const CheckFormatEntry& op2) {
   CheckFormatEntry entries[] = {op1, op2};
   return CheckFormat(
-      std::multiset<CheckFormatEntry>(entries, entries + arraysize(entries)),
+      std::multiset<CheckFormatEntry>(entries, entries + base::size(entries)),
       json);
 }
 
@@ -145,7 +145,7 @@ static testing::AssertionResult CheckFormat(const std::string& json,
                                             const CheckFormatEntry& op9) {
   CheckFormatEntry entries[] = {op1, op2, op3, op4, op5, op6, op7, op8, op9};
   return CheckFormat(
-      std::multiset<CheckFormatEntry>(entries, entries + arraysize(entries)),
+      std::multiset<CheckFormatEntry>(entries, entries + base::size(entries)),
       json);
 }
 

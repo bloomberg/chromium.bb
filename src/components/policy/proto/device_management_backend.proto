@@ -8,6 +8,9 @@ option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
+// Everything below this comment will be synchronized between client and server
+// repos ( go/cros-proto-sync ).
+
 // This enum needs to be shared between DeviceRegisterRequest and
 // LicenseAvailability protos. With java_api_version 1, this means that enum
 // needs to be wrapped into a message.
@@ -54,7 +57,7 @@ message DeviceRegisterRequest {
   enum Type {
     reserved 5;
 
-    TT   = 0;             // Register for TT release.
+    TT = 0;               // Register for TT release.
     USER = 1;             // Register for Chrome OS user polices.
     DEVICE = 2;           // Register for Chrome OS device policies.
     BROWSER = 3;          // Register for desktop Chrome browser user policies.
@@ -133,7 +136,7 @@ message DeviceRegisterRequest {
     // is mandatory, but it failed and we are doing a fallback to manual
     // enrollment.
     FLAVOR_ENROLLMENT_ATTESTATION_INITIAL_MANUAL_FALLBACK = 15;
-  };
+  }
 
   // Indicates the registration flavor. This is passed to the server FYI when
   // registering for policy so the server can distinguish registration triggers.
@@ -160,6 +163,23 @@ message DeviceRegisterRequest {
 
   // Previous DMToken that should be reused for re-registration.
   optional string reregistration_dm_token = 13;
+
+  // MAC address for onboard network (ethernet) interface.
+  // The format is twelve (12) hexadecimal digits without any delimiter
+  // (uppercase letters).
+  // This field might be set only if register type == DEVICE.
+  optional string ethernet_mac_address = 14;
+
+  // Built-in MAC address for the docking station that the device can be
+  // connected to.
+  // The format is twelve (12) hexadecimal digits without any delimiter
+  // (uppercase letters).
+  // This field might be set only if register type == DEVICE.
+  optional string dock_mac_address = 15;
+
+  // The date the device was manufactured in yyyy-mm-dd format.
+  // This field might be set only if register type == DEVICE.
+  optional string manufacture_date = 16;
 }
 
 // Response from server to device register request.
@@ -208,12 +228,10 @@ message DeviceRegisterResponse {
 
 // Request from device to server to unregister device.
 // GoogleDMToken MUST be in HTTP Authorization header.
-message DeviceUnregisterRequest {
-}
+message DeviceUnregisterRequest {}
 
 // Response from server to device for unregister request.
-message DeviceUnregisterResponse {
-}
+message DeviceUnregisterResponse {}
 
 // Request from device to server to upload a device certificate or an enrollment
 // identifier.
@@ -237,13 +255,12 @@ message DeviceCertUploadRequest {
 }
 
 // Response from server to device for cert upload request.
-message DeviceCertUploadResponse {
-}
+message DeviceCertUploadResponse {}
 
 // Request to access a Google service with the given scope.
 message DeviceServiceApiAccessRequest {
   // The list of auth scopes the device requests from DMServer.
-  repeated string auth_scope = 1;
+  repeated string auth_scopes = 1;
 
   // OAuth2 client ID to which the returned authorization code is bound.
   optional string oauth2_client_id = 2;
@@ -260,7 +277,7 @@ message DeviceServiceApiAccessRequest {
     // to access Google Docs.
     // Please see go/cros-demo-mode and go/demo-mode-account-brainstorm.
     CHROME_OS_DEMO_MODE = 2;
-  };
+  }
 
   // Device type indicates the intended use of the auth code.
   optional DeviceType device_type = 3;
@@ -375,6 +392,12 @@ message DeviceState {
   // State that is relevant only when the |device_mode| is
   // |DEVICE_MODE_DISABLED|.
   optional DisabledState disabled_state = 2;
+}
+
+message CustomerLogo {
+  // The SCS url for the logo set by the admin for a particular OU.
+  // This is in the form https://admin.googleusercontent.com/<scs_url_key>.
+  optional string logo_url = 1;
 }
 
 // This message is included in serialized form in PolicyFetchResponse below. It
@@ -551,6 +574,18 @@ message PolicyData {
   // This field should only be set for Device Policy response.
   // See go/cros-rlz-segments
   optional MarketSegment market_segment = 30;
+
+  // This field is currently only set for Device Policy response.
+  // This represents the logo set by the admin for the OU that the device
+  // belongs to. This is domain metadata included in a device policy response,
+  // but it is not an explicit device policy.
+  optional CustomerLogo customer_logo = 31;
+
+  // b/129771193
+  // This setting is from SingleSignOnSettingsProto#change_password_uri
+  // http://google3/ccc/hosted/policies/services/common/sso_settings.proto?l=48&rcl=241246111
+  // This field is currently only set for User Policy response.
+  optional string change_password_uri = 32;
 }
 
 message PolicyFetchResponse {
@@ -651,16 +686,16 @@ message PublicKeyVerificationData {
 
 // Request from device to server for reading policies.
 message DevicePolicyRequest {
-  // The policy fetch request.  If this field exists, the request must
-  // comes from a non-TT client.  The repeated field allows client to
-  // request multiple policies for better performance.
-  repeated PolicyFetchRequest request = 3;
+  // The policy fetch requests.  If this field exists, the requests must come
+  // from a non-TT client.  The repeated field allows clients to request
+  // multiple policies for better performance.
+  repeated PolicyFetchRequest requests = 3;
 }
 
 // Response from server to device for reading policies.
 message DevicePolicyResponse {
-  // The policy fetch response.
-  repeated PolicyFetchResponse response = 3;
+  // The policy fetch responses.
+  repeated PolicyFetchResponse responses = 3;
 }
 
 message TimePeriod {
@@ -780,6 +815,8 @@ message CPUTempInfo {
   optional string cpu_label = 1;
   // CPU temperature in Celsius.
   optional int32 cpu_temp = 2;
+  // Unix timestamp.
+  optional int64 timestamp = 3;
 }
 
 // Chrome release channel, shared for different reports.
@@ -789,6 +826,86 @@ enum Channel {
   CHANNEL_DEV = 2;
   CHANNEL_BETA = 3;
   CHANNEL_STABLE = 4;
+}
+
+// Frequently changing data for battery.
+message BatterySample {
+  optional int64 timestamp = 1;
+  // Battery voltage
+  optional int64 voltage = 2;
+  // Battery remaining capacity (mA-hours)
+  optional int64 remaining_capacity = 3;
+  // Temperature in Celsius.
+  optional int32 temperature = 4;
+  // The battery discharge rate measured in mW. Positive if the battery is being
+  // discharged, negative if it's being charged.
+  optional int32 discharge_rate = 5;
+  // Battery charge percentage
+  optional int32 charge_rate = 6;
+}
+
+// Status of the single battery
+message BatteryInfo {
+  optional string serial = 1;
+  optional string manufacturer = 2;
+  optional string battery_health = 3;
+  // Design capacity (mA-hours)
+  optional int64 design_capacity = 4;
+  // Full charge capacity (mA-hours)
+  optional int64 full_charge_capacity = 5;
+  optional int32 cycle_count = 6;
+  // Last sampling data.
+  repeated BatterySample samples = 7;
+  // Designed minimum output voltage (mV)
+  optional int32 design_min_voltage = 9;
+}
+
+// Status of the power subsystem
+message PowerStatus {
+  enum PowerSource {
+    POWER_UNKNOWN = 0;
+    POWER_AC = 1;
+    POWER_BATTERY = 2;
+  }
+  optional PowerSource power_source = 1;
+  repeated BatteryInfo batteries = 2;
+}
+
+// Status of the single storage device
+message DiskInfo {
+  optional string serial = 1;
+  optional string manufacturer = 2;
+  optional string model = 3;
+  // Size in bytes
+  optional int64 size = 4;
+  // SSD / eMMC / HDD
+  optional string type = 5;
+  optional string health = 6;
+  // volume_id for volumes on this disk.
+  repeated string volumes = 7;
+}
+
+// Status of the storage subsystem.
+message StorageStatus {
+  repeated DiskInfo disks = 1;
+}
+
+// Sampling for single temperature measurements
+message ThermalSample {
+  optional int64 timestamp = 1;
+  optional int32 temperature = 2;
+}
+
+// Temperature measurement series for thermal point.
+message ThermalInfo {
+  reserved 2;
+  optional string label = 1;
+  repeated ThermalSample samples = 3;
+}
+
+// Status for various on-board components
+message BoardStatus {
+  repeated ThermalInfo thermal_infos = 1;
 }
 
 // Report device level status.
@@ -809,32 +926,32 @@ message DeviceStatusReportRequest {
   optional string browser_version = 5;
 
   // A list of periods when the device was active, aggregated by day by user.
-  repeated ActiveTimePeriod active_period = 6;
+  repeated ActiveTimePeriod active_periods = 6;
 
   // List of network interfaces.
-  repeated NetworkInterface network_interface = 8;
+  repeated NetworkInterface network_interfaces = 8;
 
   // List of recent device users, in descending order by last login time.
-  repeated DeviceUser user = 9;
+  repeated DeviceUser users = 9;
 
   // Disk space + other info about mounted/connected volumes.
-  repeated VolumeInfo volume_info = 10;
+  repeated VolumeInfo volume_infos = 10;
 
   // List of visible/configured networks
-  repeated NetworkState network_state = 11;
+  repeated NetworkState network_states = 11;
 
   // Samples of CPU utilization (0-100), sampled once every 120 seconds.
-  repeated int32 cpu_utilization_pct = 12;
+  repeated int32 cpu_utilization_pct_samples = 12;
 
   // Total RAM on the device.
   optional int64 system_ram_total = 14;
 
   // Samples of free RAM [in bytes] (unreliable due to GC).
-  repeated int64 system_ram_free = 15;
+  repeated int64 system_ram_free_samples = 15;
 
   // Samples of CPU temperatures in Celsius, plus associated labels
   // identifying which CPU produced the temperature measurement.
-  repeated CPUTempInfo cpu_temp_info = 16;
+  repeated CPUTempInfo cpu_temp_infos = 16;
 
   // This field is set only when an OS update is needed because of the required
   // platform version of an updated kiosk app is different from the current
@@ -859,6 +976,15 @@ message DeviceStatusReportRequest {
 
   // Whether hardware write protect switch is on.
   optional bool write_protect_switch = 24;
+
+  // Status of the power subsystem.
+  optional PowerStatus power_status = 25;
+
+  // Status of the storage subsystem.
+  optional StorageStatus storage_status = 26;
+
+  // Status of various main board components.
+  optional BoardStatus board_status = 27;
 }
 
 message OsUpdateStatus {
@@ -905,7 +1031,7 @@ message AppStatus {
 
 // Chrome user profile level status.
 message ChromeUserProfileReport {
-  // An string to uniquely identify this profile within the browser.
+  // A string to uniquely identify this profile within the browser.
   optional string id = 1;
   // A JSON encoded string containing both the “email” and “id” (obfuscated
   // GaiaID) of the user signed in to the Chrome browser, if any.
@@ -1190,7 +1316,7 @@ message DeviceAutoEnrollmentRequest {
     // Forced Enrollment check with SHA-256 hashes of (brand code + “_” + serial
     // number), truncated to first 8 bytes each.
     ENROLLMENT_CHECK_TYPE_FORCED_ENROLLMENT = 2;
-  };
+  }
 
   // Specifies the type of auto enrollment check that is being made.
   // This also defines the format of the device identifier hash used in this
@@ -1215,7 +1341,7 @@ message DeviceAutoEnrollmentResponse {
   // enrollment should be optional.
   // The format of each entry depends on the |enrollment_check_type| that was
   // set in the DeviceAutoEnrollmentRequest.
-  repeated bytes hash = 2;
+  repeated bytes hashes = 2;
 }
 
 // Sent by the client to the server. The device management server keeps a
@@ -1239,7 +1365,7 @@ message DeviceStateKeyUpdateRequest {
   // algorithm that takes stable device identifiers as an input and produces a
   // key as the output, possibly by running the identifiers through a
   // cryptographic hash function such as SHA-256.
-  repeated bytes server_backed_state_key = 1;
+  repeated bytes server_backed_state_keys = 1;
 }
 
 // Server to client message carrying the device state response. Because the
@@ -1262,7 +1388,7 @@ message DeviceStateRetrievalResponse {
     RESTORE_MODE_DISABLED = 3;
     // Enterprise enrollment is enforced using Zero-Touch and cannot be skipped.
     RESTORE_MODE_REENROLLMENT_ZERO_TOUCH = 4;
-  };
+  }
   // The server-indicated restore mode.
   optional RestoreMode restore_mode = 1 [default = RESTORE_MODE_NONE];
 
@@ -1298,7 +1424,7 @@ message DeviceInitialEnrollmentStateResponse {
     // Zero-Touch (attestation-based) enrollment is enforced and cannot be
     // skipped.
     INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED = 2;
-  };
+  }
   // The server-indicated initial enrollment mode.
   optional InitialEnrollmentMode initial_enrollment_mode = 1
       [default = INITIAL_ENROLLMENT_MODE_NONE];
@@ -1311,7 +1437,6 @@ message DeviceInitialEnrollmentStateResponse {
 // device. The HTTP request contains an end-user OAuth token and only succeeds
 // if both Host and Controller devices belong to the end-user domain.
 message DevicePairingRequest {
-
   // The device ID of the Host device.
   optional string host_device_id = 1;
 
@@ -1321,7 +1446,6 @@ message DevicePairingRequest {
 
 // Response from the server to the device pairing request.
 message DevicePairingResponse {
-
   // The client should check HTTP status code first. If HTTP status code is not
   // 200 (e.g. 500 internal error), then it means the pairing fails. If HTTP
   // status code is 200, then the client should check the status code within the
@@ -1336,7 +1460,7 @@ message DevicePairingResponse {
     HOST_DEVICE_NOT_FOUND = 2;
 
     // The Controller device cannot be found in the user's domain.
-    CONTROLLER_DEVICE_NOT_FOUND  = 3;
+    CONTROLLER_DEVICE_NOT_FOUND = 3;
 
     // The Host device is deprovisioned.
     HOST_DEVICE_DEPROVISIONED = 4;
@@ -1352,7 +1476,6 @@ message DevicePairingResponse {
 // request contains controller service account OAuth token as well as the
 // DMToken from the Host device.
 message CheckDevicePairingRequest {
-
   // The device ID of the Host device.
   optional string host_device_id = 1;
 
@@ -1362,7 +1485,6 @@ message CheckDevicePairingRequest {
 
 // Response from the server to the check device pairing request.
 message CheckDevicePairingResponse {
-
   // The client should check HTTP status code first. If HTTP status code is not
   // 200 (e.g. 500 internal error), then it means the pairing status is unknown.
   // If HTTP status code is 200, then the client should check the status code
@@ -1377,7 +1499,7 @@ message CheckDevicePairingResponse {
     HOST_DEVICE_NOT_FOUND = 2;
 
     // The Controller device cannot be found in the Host device domain.
-    CONTROLLER_DEVICE_NOT_FOUND  = 3;
+    CONTROLLER_DEVICE_NOT_FOUND = 3;
 
     // The Host device is deprovisioned.
     HOST_DEVICE_DEPROVISIONED = 4;
@@ -1423,6 +1545,9 @@ message RemoteCommand {
 
     // Wipe the device (perform a powerwash).
     DEVICE_REMOTE_POWERWASH = 7;
+
+    // Refresh the device machine certificate and re-upload it.
+    DEVICE_REFRESH_ENTERPRISE_MACHINE_CERTIFICATE = 8;
   }
 
   // The command type.
@@ -1490,8 +1615,7 @@ message DeviceRemoteCommandResponse {
 // Sent by the client to the server to check if the current user is allowed
 // to update attributes (asset id and location).  The HTTP request contains an
 // end-user OAuth token.
-message DeviceAttributeUpdatePermissionRequest {
-}
+message DeviceAttributeUpdatePermissionRequest {}
 
 // Response from the server specifying whether the current user is allowed to
 // update attributes (asset id and location).
@@ -1556,6 +1680,12 @@ message CertificateBasedDeviceRegisterRequest {
   optional SignedData signed_request = 1;
 }
 
+// Requested configuration to be passed along a registration request.
+message DeviceRegisterConfiguration {
+  // The device owner's email address.
+  optional string device_owner = 1;
+}
+
 message CertificateBasedDeviceRegistrationData {
   enum CertificateType {
     UNKNOWN = 0;
@@ -1573,6 +1703,8 @@ message CertificateBasedDeviceRegistrationData {
   optional bytes device_certificate = 2;
   // regular device registration request
   optional DeviceRegisterRequest device_register_request = 3;
+  // Additional configuration to register the device.
+  optional DeviceRegisterConfiguration device_register_configuration = 4;
 }
 
 // Request to enroll a Chrome browser. Fields match identically named fields
@@ -1671,7 +1803,7 @@ message CheckDeviceLicenseResponse {
   // contains more than one entry then device should display a screen asking
   // user to choose license type and send selected license type value in the
   // DeviceRegisterRequest.license_type field.
-  repeated LicenseAvailability license_availability = 2;
+  repeated LicenseAvailability license_availabilities = 2;
 }
 
 // Sign in an Active Directory user using SAML SSO. The device management server
@@ -1720,7 +1852,7 @@ message TpmStatusInfo {
 // System state included with some log events.
 message SystemState {
   // VolumeInfo is reused from existing Chrome reporting.
-  repeated VolumeInfo volume_info = 1;
+  repeated VolumeInfo volume_infos = 1;
 }
 
 // A single entry in the push-install log for an app.
@@ -1806,13 +1938,13 @@ message AppInstallReport {
   optional bool incomplete = 2;
 
   // Log events for the app.
-  repeated AppInstallReportLogEvent log = 3;
+  repeated AppInstallReportLogEvent logs = 3;
 }
 
 // Push-install logs for all apps.
 message AppInstallReportRequest {
   // Log buckets for each app.
-  repeated AppInstallReport app_install_report = 1;
+  repeated AppInstallReport app_install_reports = 1;
 }
 
 // Response from server after receiving a report on the status of app
@@ -1839,6 +1971,58 @@ message RefreshAccountRequest {
 // Response from server after receiving a request to refresh the service
 // account.
 message RefreshAccountResponse {}
+
+// Models a window for screen time.
+message ScreenTimeSpan {
+  optional TimePeriod time_period = 1;
+
+  // The actual activity duration during a particular time period window
+  // (in milliseconds).
+  optional int64 active_duration_ms = 2;
+}
+
+// Informs the server about the current state of a child user's session, to
+// allow parent supervision.
+message ChildStatusReportRequest {
+  // The user's DMToken.
+  optional string user_dm_token = 1;
+
+  // Timestamp of this status report in milliseconds since epoch.
+  optional int64 timestamp_ms = 2;
+
+  // Time zone id of the active user (e.g. America/Sao_Paulo).
+  // For more details check `third_party/icu/source/i18n/unicode/timezone.h`.
+  optional string time_zone = 3;
+
+  // A list of time spans when the screen was on during the user's session.
+  repeated ScreenTimeSpan screen_time_span = 4;
+
+  // Information about ARC status.
+  optional AndroidStatus android_status = 5;
+
+  // The OS version reported by the device is a platform version
+  // e.g. 1435.0.2011_12_16_1635.
+  optional string os_version = 6;
+
+  // "Verified", "Dev". Same as verified mode.
+  // If the mode is unknown, this field should not be set.
+  optional string boot_mode = 7;
+
+  // Next id: 8.
+}
+
+// Response from DMServer to update user devices' status.
+// It is possible that status report fails but policy request succeed.  In such
+// case, the ChildStatusReportResponse will contain an error code and the
+// device should re-send status report data in the next policy request.  The
+// device should re-send report data if policy request fails, even if
+// ChildStatusReportResponse contains no error code.
+message ChildStatusReportResponse {
+  optional int32 error_code = 1;
+
+  // Human readable error message for customer support purpose.
+  optional string error_message = 2;
+}
 
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
@@ -1912,7 +2096,8 @@ message RefreshAccountResponse {}
 //   ping: policy_request
 //   policy: policy_request
 //   register: register_request
-//   status: device_status_report_request or session_status_report_request
+//   status: device_status_report_request or session_status_report_request or
+//       child_status_report_request
 //   unregister: unregister_request
 //   remote_commands: remote_command_request
 //   attribute_update_permission: device_attribute_update_permission_request
@@ -1930,7 +2115,6 @@ message RefreshAccountResponse {}
 //   policy_validation_report: policy_validation_report_request
 //   device_initial_enrollment_state: device_initial_enrollment_state_request
 //   refresh_account: refresh_account_request
-//
 message DeviceManagementRequest {
   reserved 24;  // unused previous version of chrome_desktop_report_request.
 
@@ -1946,6 +2130,7 @@ message DeviceManagementRequest {
   // Update status.
   optional DeviceStatusReportRequest device_status_report_request = 4;
   optional SessionStatusReportRequest session_status_report_request = 5;
+  optional ChildStatusReportRequest child_status_report_request = 30;
 
   // Auto-enrollment detection.
   optional DeviceAutoEnrollmentRequest auto_enrollment_request = 6;
@@ -2022,6 +2207,8 @@ message DeviceManagementRequest {
 
   // Request from device to wipe an old account and get a new account.
   optional RefreshAccountRequest refresh_account_request = 29;
+
+  // Next id: 31.
 }
 
 // Response from server to device.
@@ -2065,11 +2252,10 @@ message DeviceManagementResponse {
   // Policy response.
   optional DevicePolicyResponse policy_response = 5;
 
-  // Device status report response.
+  // Update status report response.
   optional DeviceStatusReportResponse device_status_report_response = 6;
-
-  // Session status report response.
   optional SessionStatusReportResponse session_status_report_response = 7;
+  optional ChildStatusReportResponse child_status_report_response = 29;
 
   // Auto-enrollment detection response.
   optional DeviceAutoEnrollmentResponse auto_enrollment_response = 8;
@@ -2103,8 +2289,8 @@ message DeviceManagementResponse {
   optional GcmIdUpdateResponse gcm_id_update_response = 17;
 
   // Response to check Android management request.
-  optional CheckAndroidManagementResponse
-      check_android_management_response = 18;
+  optional CheckAndroidManagementResponse check_android_management_response =
+      18;
 
   // Response to an Active Directory Play user enrollment request.
   optional ActiveDirectoryEnrollPlayUserResponse
@@ -2137,4 +2323,6 @@ message DeviceManagementResponse {
 
   // Response to refresh account request.
   optional RefreshAccountResponse refresh_account_response = 28;
+
+  // Next id: 30.
 }

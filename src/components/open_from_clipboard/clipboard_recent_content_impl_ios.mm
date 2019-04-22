@@ -5,6 +5,7 @@
 #import "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
 
 #import <CommonCrypto/CommonDigest.h>
+#import <MobileCoreServices/MobileCoreServices.h>
 #import <UIKit/UIKit.h>
 
 #import "base/mac/foundation_util.h"
@@ -27,15 +28,38 @@ NSString* const kPasteboardChangeDateKey = @"PasteboardChangeDate";
 // hash changed, the pasteboard content is considered to have changed.
 NSString* const kPasteboardEntryMD5Key = @"PasteboardEntryMD5";
 
-// Compute a hash consisting of the first 4 bytes of the MD5 hash of |string|.
-// This value is used to detect pasteboard content change. Keeping only 4 bytes
-// is a privacy requirement to introduce collision and allow deniability of
-// having copied a given string.
-NSData* WeakMD5FromNSString(NSString* string) {
+// Compute a hash consisting of the first 4 bytes of the MD5 hash of |string|,
+// |image_data|, and |url|. This value is used to detect pasteboard content
+// change. Keeping only 4 bytes is a privacy requirement to introduce collision
+// and allow deniability of having copied a given string, image, or url.
+//
+// |image_data| is passed in as NSData instead of UIImage because converting
+// UIImage to NSData can be slow for large images and getting NSData directly
+// from the pasteboard is quicker.
+NSData* WeakMD5FromPasteboardData(NSString* string,
+                                  NSData* image_data,
+                                  NSURL* url) {
+  CC_MD5_CTX ctx;
+  CC_MD5_Init(&ctx);
+
+  const std::string clipboard_string = base::SysNSStringToUTF8(string);
+  const char* c_string = clipboard_string.c_str();
+  CC_MD5_Update(&ctx, c_string, strlen(c_string));
+
+  // This hash is used only to tell if the image has changed, so
+  // limit the number of bytes to hash to prevent slowdown.
+  NSUInteger bytes_to_hash = fmin([image_data length], 1000000);
+  if (bytes_to_hash > 0) {
+    CC_MD5_Update(&ctx, [image_data bytes], bytes_to_hash);
+  }
+
+  const std::string url_string = base::SysNSStringToUTF8([url absoluteString]);
+  const char* url_c_string = url_string.c_str();
+  CC_MD5_Update(&ctx, url_c_string, strlen(url_c_string));
+
   unsigned char hash[CC_MD5_DIGEST_LENGTH];
-  const std::string clipboard = base::SysNSStringToUTF8(string);
-  const char* c_string = clipboard.c_str();
-  CC_MD5(c_string, strlen(c_string), hash);
+  CC_MD5_Final(hash, &ctx);
+
   NSData* data = [NSData dataWithBytes:hash length:4];
   return data;
 }
@@ -124,7 +148,11 @@ NSData* WeakMD5FromNSString(NSString* string) {
 
 - (NSData*)getCurrentMD5 {
   NSString* pasteboardString = [UIPasteboard generalPasteboard].string;
-  NSData* md5 = WeakMD5FromNSString(pasteboardString);
+  NSData* pasteboardImageData = [[UIPasteboard generalPasteboard]
+      dataForPasteboardType:(NSString*)kUTTypeImage];
+  NSURL* pasteboardURL = [UIPasteboard generalPasteboard].URL;
+  NSData* md5 = WeakMD5FromPasteboardData(pasteboardString, pasteboardImageData,
+                                          pasteboardURL);
 
   return md5;
 }
@@ -158,6 +186,22 @@ NSData* WeakMD5FromNSString(NSString* string) {
   return [self URLFromPasteboard];
 }
 
+- (NSString*)recentTextFromClipboard {
+  [self updateIfNeeded];
+  if ([self clipboardContentAge] > self.maximumAgeOfClipboard) {
+    return nil;
+  }
+  return [UIPasteboard generalPasteboard].string;
+}
+
+- (UIImage*)recentImageFromClipboard {
+  [self updateIfNeeded];
+  if ([self clipboardContentAge] > self.maximumAgeOfClipboard) {
+    return nil;
+  }
+  return [UIPasteboard generalPasteboard].image;
+}
+
 - (NSTimeInterval)clipboardContentAge {
   return -[self.lastPasteboardChangeDate timeIntervalSinceNow];
 }
@@ -185,9 +229,7 @@ NSData* WeakMD5FromNSString(NSString* string) {
 }
 
 - (NSURL*)URLFromPasteboard {
-  NSString* clipboardString = [UIPasteboard generalPasteboard].string;
-
-  NSURL* url = [NSURL URLWithString:clipboardString];
+  NSURL* url = [UIPasteboard generalPasteboard].URL;
   if (![self.authorizedSchemes containsObject:url.scheme]) {
     return nil;
   }

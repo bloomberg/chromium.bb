@@ -15,9 +15,9 @@ test can query for whether each submitted frame used the correct pose.
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
-      var t = async_test("Pose data is correct");
       var frame_id = 0;
       var frame_data_array = {};
+      var pose_array = {};
       // We exit presentation before checking stuff that needs the frame of
       // reference, so we need to cache its value.
       var cached_frame_of_ref = null;
@@ -43,36 +43,33 @@ test can query for whether each submitted frame used the correct pose.
 
       function checkFrameView(frame_id, eye, expected) {
         let frame_data = frame_data_array[frame_id];
-        let pose = frame_data.getDevicePose(cached_frame_of_ref);
-        return MatrixCompare(pose.getViewMatrix(frame_data_array[frame_id].views[eye]), expected);
+        let pose = pose_array[frame_id];
+        return MatrixCompare(pose.views[eye].viewMatrix, expected);
       }
 
       function checkFramePose(frame_id, expected) {
-        let frame_data = frame_data_array[frame_id];
-        let pose = frame_data.getDevicePose(cached_frame_of_ref);
+        let pose = pose_array[frame_id];
         if (!pose) {
-          // We can intermittently get null poses.  For now treat them as passing,
-          // even though this should be fixed.
-          // TODO(https://crbug.com/859700): Make it so we don't get null poses unexpectedly.
-          console.log("null pose - unexpected, but pass");
-          return true;
+          console.log("unexpected - null pose");
+          return false;
         }
 
-        console.log("checkFramePose: " + pose.poseModelMatrix + "\n" + expected);
-        return MatrixCompare(pose.poseModelMatrix, expected);
+        console.log("checkFramePose: " + pose.transform.matrix + "\n" + expected);
+        return MatrixCompare(pose.transform.matrix, expected);
       }
 
       onImmersiveXRFrameCallback = function(session, frame, gl) {
         // Encode an index into the clear color.
         frame_id++;
         frame_data_array[frame_id] = frame;
-        cached_frame_of_ref = sessionInfos[sessionTypes.IMMERSIVE].currentFrameOfRef;
+        cached_frame_of_ref = sessionInfos[sessionTypes.IMMERSIVE].currentRefSpace;
+        pose_array[frame_id] = frame.getViewerPose(cached_frame_of_ref);
 
         var encoded_frame_id = {};
         encoded_frame_id.r = frame_id % 256;
         encoded_frame_id.g = ((frame_id - frame_id % 256) / 256) % 256;
         encoded_frame_id.b = ((frame_id - frame_id % (256 * 256)) / (256 * 256)) % 256;
-        // We divide by 255 rather than 256, because our range of values is [0, 255], 
+        // We divide by 255 rather than 256, because our range of values is [0, 255],
         // which should map to [0.0f, 1.0f].
         gl.clearColor(encoded_frame_id.r / 255, encoded_frame_id.g / 255, encoded_frame_id.b / 255, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
@@ -80,7 +77,7 @@ test can query for whether each submitted frame used the correct pose.
       }
 
       function finishTest() {
-        t.done();
+        done();
       }
     </script>
   </body>

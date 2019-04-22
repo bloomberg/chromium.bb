@@ -229,6 +229,64 @@ TEST_F(LoadingPredictorTest, TestMainFrameRequestDoesntCancelExternalHint) {
   EXPECT_EQ(start_time, it->second);
 }
 
+TEST_F(LoadingPredictorTest, TestDuplicateHintAfterPreconnectCompleteCalled) {
+  const GURL url = GURL(kUrl);
+  const auto& active_navigations = predictor_->active_navigations_;
+  auto& active_hints = predictor_->active_hints_;
+
+  predictor_->PrepareForPageLoad(url, HintOrigin::EXTERNAL);
+  auto it = active_hints.find(url);
+  EXPECT_NE(it, active_hints.end());
+  EXPECT_TRUE(active_navigations.empty());
+
+  // To check that the hint is replaced, set the start time in the past,
+  // and check later that it changed.
+  base::TimeTicks start_time = it->second - base::TimeDelta::FromSeconds(10);
+  it->second = start_time;
+
+  std::unique_ptr<PreconnectStats> preconnect_stats =
+      std::make_unique<PreconnectStats>(url);
+  predictor_->PreconnectFinished(std::move(preconnect_stats));
+
+  predictor_->PrepareForPageLoad(url, HintOrigin::NAVIGATION_PREDICTOR);
+  it = active_hints.find(url);
+  EXPECT_NE(it, active_hints.end());
+  EXPECT_TRUE(active_navigations.empty());
+
+  // Calling PreconnectFinished() must have cleared the hint, and duplicate
+  // PrepareForPageLoad() call should be honored.
+  EXPECT_LT(start_time, it->second);
+}
+
+TEST_F(LoadingPredictorTest,
+       TestDuplicateHintAfterPreconnectCompleteNotCalled) {
+  const GURL url = GURL(kUrl);
+  const auto& active_navigations = predictor_->active_navigations_;
+  auto& active_hints = predictor_->active_hints_;
+
+  predictor_->PrepareForPageLoad(url, HintOrigin::EXTERNAL);
+  auto it = active_hints.find(url);
+  EXPECT_NE(it, active_hints.end());
+  EXPECT_TRUE(active_navigations.empty());
+
+  content::RunAllTasksUntilIdle();
+  it = active_hints.find(url);
+  EXPECT_NE(it, active_hints.end());
+
+  // To check that the hint is not replaced, set the start time in the recent
+  // past, and check later that it didn't change.
+  base::TimeTicks start_time = it->second - base::TimeDelta::FromSeconds(10);
+  it->second = start_time;
+
+  predictor_->PrepareForPageLoad(url, HintOrigin::NAVIGATION_PREDICTOR);
+  it = active_hints.find(url);
+  EXPECT_NE(it, active_hints.end());
+  EXPECT_TRUE(active_navigations.empty());
+
+  // Duplicate PrepareForPageLoad() call should not be honored.
+  EXPECT_EQ(start_time, it->second);
+}
+
 TEST_F(LoadingPredictorTest, TestDontTrackNonPrefetchableUrls) {
   const GURL url3 = GURL(kUrl3);
   predictor_->PrepareForPageLoad(url3, HintOrigin::NAVIGATION);

@@ -8,9 +8,9 @@
 
 #include <vector>
 
-#include "fxjs/cfxjse_engine.h"
-#include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
+#include "fxjs/xfa/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/parser/cxfa_arraynodelist.h"
@@ -31,6 +31,10 @@ CJX_Form::CJX_Form(CXFA_Form* form) : CJX_Model(form) {
 
 CJX_Form::~CJX_Form() {}
 
+bool CJX_Form::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
+
 CJS_Result CJX_Form::formNodes(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
@@ -42,14 +46,11 @@ CJS_Result CJX_Form::formNodes(
   if (!pDataNode)
     return CJS_Result::Failure(JSMessage::kValueError);
 
-  std::vector<CXFA_Node*> formItems;
   CXFA_ArrayNodeList* pFormNodes = new CXFA_ArrayNodeList(GetDocument());
-  pFormNodes->SetArrayNodeList(formItems);
-
   CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetJSValueFromMap(pFormNodes);
-  if (!value)
-    return CJS_Result::Success(runtime->NewNull());
+      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
+          pFormNodes);
+
   return CJS_Result::Success(
       value->DirectGetValue().Get(runtime->GetIsolate()));
 }
@@ -81,8 +82,8 @@ CJS_Result CJX_Form::recalculate(
     const std::vector<v8::Local<v8::Value>>& params) {
   CXFA_EventParam* pEventParam =
       GetDocument()->GetScriptContext()->GetEventParam();
-  if (pEventParam->m_eType == XFA_EVENT_Calculate ||
-      pEventParam->m_eType == XFA_EVENT_InitCalculate) {
+  if (pEventParam && (pEventParam->m_eType == XFA_EVENT_Calculate ||
+                      pEventParam->m_eType == XFA_EVENT_InitCalculate)) {
     return CJS_Result::Success();
   }
   if (params.size() != 1)
@@ -124,4 +125,17 @@ CJS_Result CJX_Form::execValidate(
   int32_t iRet = pNotify->ExecEventByDeepFirst(GetXFANode(), XFA_EVENT_Validate,
                                                false, true);
   return CJS_Result::Success(runtime->NewBoolean(iRet != XFA_EVENTERROR_Error));
+}
+
+void CJX_Form::checksumS(CFXJSE_Value* pValue,
+                         bool bSetting,
+                         XFA_Attribute eAttribute) {
+  if (bSetting) {
+    SetAttribute(XFA_Attribute::Checksum, pValue->ToWideString().AsStringView(),
+                 false);
+    return;
+  }
+
+  Optional<WideString> checksum = TryAttribute(XFA_Attribute::Checksum, false);
+  pValue->SetString(checksum ? checksum->ToUTF8().AsStringView() : "");
 }

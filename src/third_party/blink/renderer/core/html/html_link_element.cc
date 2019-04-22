@@ -27,6 +27,7 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
+#include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
@@ -41,21 +42,23 @@
 #include "third_party/blink/renderer/core/html/link_manifest.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/core/loader/link_loader.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
 using namespace html_names;
 
-inline HTMLLinkElement::HTMLLinkElement(Document& document,
-                                        const CreateElementFlags flags)
+HTMLLinkElement::HTMLLinkElement(Document& document,
+                                 const CreateElementFlags flags)
     : HTMLElement(kLinkTag, document),
       link_loader_(LinkLoader::Create(this)),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
-      sizes_(DOMTokenList::Create(*this, html_names::kSizesAttr)),
-      rel_list_(RelList::Create(this)),
+      sizes_(MakeGarbageCollected<DOMTokenList>(*this, html_names::kSizesAttr)),
+      rel_list_(MakeGarbageCollected<RelList>(this)),
       created_by_parser_(flags.IsCreatedByParser()) {}
 
 HTMLLinkElement* HTMLLinkElement::Create(Document& document,
@@ -65,9 +68,10 @@ HTMLLinkElement* HTMLLinkElement::Create(Document& document,
 
 HTMLLinkElement::~HTMLLinkElement() = default;
 
-const HashSet<AtomicString>& HTMLLinkElement::GetCheckedAttributeNames() const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"href"}));
-  return attribute_set;
+const AttrNameToTrustedType& HTMLLinkElement::GetCheckedAttributeTypes() const {
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"href", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 void HTMLLinkElement::ParseAttribute(
@@ -77,7 +81,7 @@ void HTMLLinkElement::ParseAttribute(
   if (name == kRelAttr) {
     rel_attribute_ = LinkRelAttribute(value);
     if (rel_attribute_.IsImport()) {
-      Deprecation::CountDeprecation(GetDocument(), WebFeature::kHTMLImports);
+      Deprecation::CountDeprecation(&GetDocument(), WebFeature::kHTMLImports);
     }
     rel_list_->DidUpdateAttributeValue(params.old_value, value);
     Process();
@@ -115,7 +119,8 @@ void HTMLLinkElement::ParseAttribute(
   } else if (name == kIntegrityAttr) {
     integrity_ = value;
   } else if (name == kImportanceAttr &&
-             RuntimeEnabledFeatures::PriorityHintsEnabled()) {
+             RuntimeEnabledFeatures::PriorityHintsEnabled(&GetDocument())) {
+    UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
     importance_ = value;
   } else if (name == kDisabledAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);
@@ -134,10 +139,23 @@ void HTMLLinkElement::ParseAttribute(
 }
 
 bool HTMLLinkElement::ShouldLoadLink() {
+  // Common case: We should load <link> on document that will be rendered.
+  if (!InActiveDocument()) {
+    // Handle rare cases.
+
+    if (!isConnected())
+      return false;
+
+    // Load:
+    // - <link> tags for stylesheets regardless of its document state
+    //   (TODO: document why this is the case. kouhei@ doesn't know.)
+    // - <link> tags on html import documents.
+    if (!rel_attribute_.IsStyleSheet() && !GetDocument().IsHTMLImport())
+      return false;
+  }
+
   const KURL& href = GetNonEmptyURLAttribute(kHrefAttr);
-  return (IsInDocumentTree() ||
-          (isConnected() && rel_attribute_.IsStyleSheet())) &&
-         !href.PotentiallyDanglingMarkup();
+  return !href.PotentiallyDanglingMarkup();
 }
 
 bool HTMLLinkElement::IsLinkCreatedByParser() {
@@ -145,8 +163,7 @@ bool HTMLLinkElement::IsLinkCreatedByParser() {
 }
 
 bool HTMLLinkElement::LoadLink(const LinkLoadParameters& params) {
-  return link_loader_->LoadLink(params, GetDocument(),
-                                NetworkHintsInterfaceImpl());
+  return link_loader_->LoadLink(params, GetDocument());
 }
 
 void HTMLLinkElement::LoadStylesheet(const LinkLoadParameters& params,
@@ -170,13 +187,30 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
   }
 
   if (!link_) {
-    if (rel_attribute_.IsImport() &&
-        RuntimeEnabledFeatures::HTMLImportsEnabled()) {
-      link_ = LinkImport::Create(this);
+    if (rel_attribute_.IsImport()) {
+      // Only create an import link when HTML imports are enabled. Either:
+      // 1) For chrome internal resources only, if HTMLImportsOnlyChromeEnabled.
+      // 2) The WebComponentsV0 origin trial is enabled.
+      bool imports_enabled =
+          RuntimeEnabledFeatures::HTMLImportsOnlyChromeEnabled() &&
+          (Href().Protocol() == "chrome" ||
+           Href().Protocol() == "chrome-extension");
+      if (!imports_enabled) {
+        // Ensure the origin trial context is created, as the enabled check will
+        // return false if the context doesn't exist yet.
+        OriginTrialContext::FromOrCreate(&GetDocument());
+        imports_enabled =
+            RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument());
+      }
+      if (imports_enabled) {
+        link_ = MakeGarbageCollected<LinkImport>(this);
+      } else {
+        return nullptr;
+      }
     } else if (rel_attribute_.IsManifest()) {
       link_ = LinkManifest::Create(this);
     } else {
-      LinkStyle* link = LinkStyle::Create(this);
+      auto* link = MakeGarbageCollected<LinkStyle>(this);
       if (FastHasAttribute(kDisabledAttr)) {
         UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);
         link->SetDisabledState(true);
@@ -223,8 +257,9 @@ Node::InsertionNotificationRequest HTMLLinkElement::InsertedInto(
 
   if (!ShouldLoadLink() && IsInShadowTree()) {
     String message = "HTML element <link> is ignored in shadow tree.";
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel, message));
+    GetDocument().AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning, message));
     return kInsertionDone;
   }
 
@@ -327,11 +362,12 @@ void HTMLLinkElement::DispatchPendingEvent(
 void HTMLLinkElement::ScheduleEvent() {
   GetDocument()
       .GetTaskRunner(TaskType::kDOMManipulation)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&HTMLLinkElement::DispatchPendingEvent,
-                           WrapPersistent(this),
-                           WTF::Passed(IncrementLoadEventDelayCount::Create(
-                               GetDocument()))));
+      ->PostTask(
+          FROM_HERE,
+          WTF::Bind(&HTMLLinkElement::DispatchPendingEvent,
+                    WrapPersistent(this),
+                    WTF::Passed(std::make_unique<IncrementLoadEventDelayCount>(
+                        GetDocument()))));
 }
 
 void HTMLLinkElement::StartLoadingDynamicSheet() {
@@ -389,7 +425,7 @@ DOMTokenList* HTMLLinkElement::sizes() const {
   return sizes_.Get();
 }
 
-void HTMLLinkElement::Trace(blink::Visitor* visitor) {
+void HTMLLinkElement::Trace(Visitor* visitor) {
   visitor->Trace(link_);
   visitor->Trace(sizes_);
   visitor->Trace(link_loader_);

@@ -10,9 +10,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -81,7 +82,7 @@ const char kConversionErrorMessage[] =
     "properly.";
 
 const PrefMappingEntry kPrefMapping[] = {
-    {"spdy_proxy.enabled", prefs::kDataSaverEnabled,
+    {"spdy_proxy.enabled", data_reduction_proxy::prefs::kDataSaverEnabled,
      APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
     {"data_reduction.daily_original_length",
      data_reduction_proxy::prefs::kDailyHttpOriginalContentLength,
@@ -289,8 +290,8 @@ class PrefMapping {
       event_mapping_[pref.browser_pref] =
           PrefMapData(event_name, pref.read_permission, pref.write_permission);
     }
-    DCHECK_EQ(arraysize(kPrefMapping), mapping_.size());
-    DCHECK_EQ(arraysize(kPrefMapping), event_mapping_.size());
+    DCHECK_EQ(base::size(kPrefMapping), mapping_.size());
+    DCHECK_EQ(base::size(kPrefMapping), event_mapping_.size());
     RegisterPrefTransformer(proxy_config::prefs::kProxy,
                             std::make_unique<ProxyPrefTransformer>());
     RegisterPrefTransformer(prefs::kBlockThirdPartyCookies,
@@ -460,13 +461,13 @@ void PreferenceAPIBase::SetExtensionControlledPref(
     const std::string& extension_id,
     const std::string& pref_key,
     ExtensionPrefsScope scope,
-    base::Value* value) {
+    base::Value value) {
 #ifndef NDEBUG
   const PrefService::Preference* pref =
       extension_prefs()->pref_service()->FindPreference(pref_key);
   DCHECK(pref) << "Extension controlled preference key " << pref_key
                << " not registered.";
-  DCHECK_EQ(pref->GetType(), value->type())
+  DCHECK_EQ(pref->GetType(), value.type())
       << "Extension controlled preference " << pref_key << " has wrong type.";
 #endif
 
@@ -479,10 +480,10 @@ void PreferenceAPIBase::SetExtensionControlledPref(
                                                   extension_id,
                                                   scope_string);
     auto preference = update.Create();
-    preference->SetWithoutPathExpansion(pref_key, value->CreateDeepCopy());
+    preference->SetWithoutPathExpansion(pref_key, value.CreateDeepCopy());
   }
-  extension_pref_value_map()->SetExtensionPref(
-      extension_id, pref_key, scope, value);
+  extension_pref_value_map()->SetExtensionPref(extension_id, pref_key, scope,
+                                               std::move(value));
 }
 
 void PreferenceAPIBase::RemoveExtensionControlledPref(
@@ -795,14 +796,15 @@ ExtensionFunction::ResponseAction SetPreferenceFunction::Run() {
     // |SetExtensionControlledPref| takes ownership of the base::Value pointer.
     preference_api->SetExtensionControlledPref(
         extension_id(), autofill::prefs::kAutofillCreditCardEnabled, scope,
-        new base::Value(browser_pref_value->GetBool()));
+        base::Value(browser_pref_value->GetBool()));
     preference_api->SetExtensionControlledPref(
         extension_id(), autofill::prefs::kAutofillProfileEnabled, scope,
-        new base::Value(browser_pref_value->GetBool()));
+        base::Value(browser_pref_value->GetBool()));
   }
 
   preference_api->SetExtensionControlledPref(
-      extension_id(), browser_pref, scope, browser_pref_value.release());
+      extension_id(), browser_pref, scope,
+      base::Value::FromUniquePtrValue(std::move(browser_pref_value)));
 
   return RespondNow(NoArguments());
 }

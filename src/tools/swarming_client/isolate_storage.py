@@ -66,13 +66,13 @@ class ServerRef(object):
     self._namespace = namespace
     self._hash_algo = hashlib.sha1
     self._hash_algo_name = 'sha-1'
-    for name, algo in isolated_format.SUPPORTED_ALGOS.iteritems():
-      if self.namespace.startswith(name + '-'):
-        self._hash_algo_name = name
-        self._hash_algo = algo
-        break
-    self._is_with_compression = self.namespace.endswith(
-        ('-gzip', '-deflate', '-flate'))
+    if self.namespace.startswith('sha256-'):
+      self._hash_algo = hashlib.sha256
+      self._hash_algo_name = 'sha-256'
+    if self.namespace.startswith('sha512-'):
+      self._hash_algo = hashlib.sha512
+      self._hash_algo_name = 'sha-512'
+    self._is_with_compression = self.namespace.endswith(('-gzip', '-deflate'))
 
   @property
   def url(self):
@@ -113,33 +113,34 @@ class Item(object):
   the main thread. It is never used concurrently from multiple threads.
   """
 
-  def __init__(self, digest=None, size=None, high_priority=False):
-    self.digest = digest
-    self.size = size
-    self.high_priority = high_priority
-    self.compression_level = 6
+  def __init__(
+      self, digest=None, size=None, high_priority=False,
+      compression_level=6):
+    self._digest = digest
+    self._size = size
+    self._high_priority = high_priority
+    self._compression_level = compression_level
+
+  @property
+  def digest(self):
+    assert self._digest
+    return self._digest
+
+  @property
+  def size(self):
+    return self._size
+
+  @property
+  def high_priority(self):
+    return self._high_priority
+
+  @property
+  def compression_level(self):
+    return self._compression_level
 
   def content(self):
     """Iterable with content of this item as byte string (str) chunks."""
     raise NotImplementedError()
-
-  def prepare(self, hash_algo):
-    """Ensures self.digest and self.size are set.
-
-    Uses content() as a source of data to calculate them. Does nothing if digest
-    and size is already known.
-
-    Arguments:
-      hash_algo: hash algorithm to use to calculate digest.
-    """
-    if self.digest is None or self.size is None:
-      digest = hash_algo()
-      total = 0
-      for chunk in self.content():
-        digest.update(chunk)
-        total += len(chunk)
-      self.digest = digest.hexdigest()
-      self.size = total
 
 
 class StorageApi(object):

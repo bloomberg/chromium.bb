@@ -60,7 +60,7 @@ class CORE_EXPORT LinkResource
   virtual void OwnerInserted() {}
   virtual bool HasLoaded() const = 0;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
  protected:
   void Load();

@@ -11,7 +11,7 @@
  * @enum {string}
  * @const
  */
-var DialogType = {
+const DialogType = {
   SELECT_FOLDER: 'folder',
   SELECT_UPLOAD_FOLDER: 'upload-folder',
   SELECT_SAVEAS_FILE: 'saveas-file',
@@ -24,7 +24,7 @@ var DialogType = {
  * @param {DialogType} type Dialog type.
  * @return {boolean} Whether the type is modal.
  */
-DialogType.isModal = function(type) {
+DialogType.isModal = type => {
   return type == DialogType.SELECT_FOLDER ||
       type == DialogType.SELECT_UPLOAD_FOLDER ||
       type == DialogType.SELECT_SAVEAS_FILE ||
@@ -36,27 +36,27 @@ DialogType.isModal = function(type) {
  * @param {DialogType} type Dialog type.
  * @return {boolean} Whether the type is open dialog.
  */
-DialogType.isOpenDialog = function(type) {
+DialogType.isOpenDialog = type => {
   return type == DialogType.SELECT_OPEN_FILE ||
-         type == DialogType.SELECT_OPEN_MULTI_FILE ||
-         type == DialogType.SELECT_FOLDER ||
-         type == DialogType.SELECT_UPLOAD_FOLDER;
+      type == DialogType.SELECT_OPEN_MULTI_FILE ||
+      type == DialogType.SELECT_FOLDER ||
+      type == DialogType.SELECT_UPLOAD_FOLDER;
 };
 
 /**
  * @param {DialogType} type Dialog type.
  * @return {boolean} Whether the type is open dialog for file(s).
  */
-DialogType.isOpenFileDialog = function(type) {
+DialogType.isOpenFileDialog = type => {
   return type == DialogType.SELECT_OPEN_FILE ||
-         type == DialogType.SELECT_OPEN_MULTI_FILE;
+      type == DialogType.SELECT_OPEN_MULTI_FILE;
 };
 
 /**
  * @param {DialogType} type Dialog type.
  * @return {boolean} Whether the type is folder selection dialog.
  */
-DialogType.isFolderDialog = function(type) {
+DialogType.isFolderDialog = type => {
   return type == DialogType.SELECT_FOLDER ||
-         type == DialogType.SELECT_UPLOAD_FOLDER;
+      type == DialogType.SELECT_UPLOAD_FOLDER;
 };

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/append_quads_data.h"
@@ -42,7 +43,8 @@ void SurfaceLayerImpl::SetRange(const viz::SurfaceRange& surface_range,
     return;
   }
 
-  if (surface_range_.end() != surface_range.end()) {
+  if (surface_range_.end() != surface_range.end() &&
+      surface_range.end().local_surface_id().is_valid()) {
     TRACE_EVENT_WITH_FLOW2(
         TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
         "LocalSurfaceId.Embed.Flow",
@@ -50,18 +52,6 @@ void SurfaceLayerImpl::SetRange(const viz::SurfaceRange& surface_range,
             surface_range.end().local_surface_id().embed_trace_id()),
         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
         "ImplSetSurfaceId", "surface_id", surface_range.end().ToString());
-  }
-
-  if (surface_range.start() &&
-      surface_range_.start() != surface_range.start()) {
-    TRACE_EVENT_WITH_FLOW2(
-        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-        "LocalSurfaceId.Submission.Flow",
-        TRACE_ID_GLOBAL(
-            surface_range.start()->local_surface_id().submission_trace_id()),
-        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-        "ImplSetOldestAcceptableFallback", "surface_id",
-        surface_range.start()->ToString());
   }
 
   surface_range_ = surface_range;
@@ -128,7 +118,7 @@ void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     return;
 
   auto* primary = CreateSurfaceDrawQuad(render_pass, surface_range_);
-  if (primary && surface_range_.end() != surface_range_.start()) {
+  if (primary) {
     // Add the primary surface ID as a dependency.
     append_quads_data->activation_dependencies.push_back(surface_range_.end());
     if (deadline_in_frames_) {
@@ -147,6 +137,11 @@ void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
 bool SurfaceLayerImpl::is_surface_layer() const {
   return true;
+}
+
+gfx::Rect SurfaceLayerImpl::GetEnclosingRectInTargetSpace() const {
+  return GetScaledEnclosingRectInTargetSpace(
+      layer_tree_impl()->device_scale_factor());
 }
 
 viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
@@ -212,7 +207,7 @@ void SurfaceLayerImpl::AppendRainbowDebugBorder(viz::RenderPass* render_pass) {
       0x800000ff,  // Blue.
       0x80ee82ee,  // Violet.
   };
-  const int kNumColors = arraysize(colors);
+  const int kNumColors = base::size(colors);
 
   const int kStripeWidth = 300;
   const int kStripeHeight = 300;

@@ -8,6 +8,8 @@
 
 #include <commdlg.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
@@ -19,6 +21,8 @@
 #include "ui/shell_dialogs/select_file_policy.h"
 
 using content::WebContents;
+
+namespace printing {
 
 namespace {
 
@@ -39,7 +43,7 @@ class FakePdfPrinterHandler : public PdfPrinterHandler {
  public:
   FakePdfPrinterHandler(Profile* profile,
                         content::WebContents* contents,
-                        printing::StickySettings* sticky_settings)
+                        StickySettings* sticky_settings)
       : PdfPrinterHandler(profile, contents, sticky_settings),
         save_failed_(false) {}
 
@@ -57,7 +61,7 @@ class FakePdfPrinterHandler : public PdfPrinterHandler {
   }
 
   void StartPrintToPdf(const base::string16& job_title) {
-    StartPrint("", "", job_title, "", gfx::Size(), nullptr, base::DoNothing());
+    StartPrint(job_title, base::Value(), nullptr, base::DoNothing());
     run_loop_.Run();
   }
 
@@ -126,3 +130,5 @@ TEST_F(PdfPrinterHandlerWinTest, TestSaveAsPdfLongFileName) {
       L"1111111111111111111111111111111111111111111111111.html");
   EXPECT_TRUE(pdf_printer_->save_failed());
 }
+
+}  // namespace printing

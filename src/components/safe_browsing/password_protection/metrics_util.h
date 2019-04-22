@@ -28,7 +28,6 @@ extern const char kGSuiteSyncPasswordEntryVerdictHistogram[];
 extern const char kGSuiteSyncPasswordInterstitialHistogram[];
 extern const char kGSuiteSyncPasswordPageInfoHistogram[];
 extern const char kGSuiteSyncPasswordWarningDialogHistogram[];
-extern const char kInterstitialActionByUserNavigationHistogram[];
 extern const char kPasswordOnFocusRequestOutcomeHistogram[];
 extern const char kPasswordOnFocusVerdictHistogram[];
 extern const char kProtectedPasswordEntryRequestOutcomeHistogram[];

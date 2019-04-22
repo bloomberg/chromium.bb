@@ -152,8 +152,8 @@ bool LocaleAwareCompareFilenames(const FilePath& a, const FilePath& b) {
   collator->setStrength(icu::Collator::TERTIARY);
 
 #if defined(OS_WIN)
-  return CompareString16WithCollator(*collator, WideToUTF16(a.value()),
-                                     WideToUTF16(b.value())) == UCOL_LESS;
+  return CompareString16WithCollator(*collator, a.value(), b.value()) ==
+         UCOL_LESS;
 
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // On linux, the file system encoding is not defined. We assume

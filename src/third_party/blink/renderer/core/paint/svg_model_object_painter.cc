@@ -38,7 +38,7 @@ void SVGModelObjectPainter::RecordHitTestData(
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
     return;
 
-  auto touch_action = layout_svg_model_object.EffectiveWhitelistedTouchAction();
+  auto touch_action = layout_svg_model_object.EffectiveAllowedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 

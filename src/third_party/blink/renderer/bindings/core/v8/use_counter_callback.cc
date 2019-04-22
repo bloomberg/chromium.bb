@@ -162,6 +162,7 @@ void UseCounterCallback(v8::Isolate* isolate,
       break;
     case v8::Isolate::kAtomicsWake:
       blink_feature = WebFeature::kV8AtomicsWake;
+      deprecated = true;
       break;
     case v8::Isolate::kCollator:
       blink_feature = WebFeature::kCollator;
@@ -216,6 +217,15 @@ void UseCounterCallback(v8::Isolate* isolate,
       break;
     case v8::Isolate::kOptimizedFunctionWithOneShotBytecode:
       blink_feature = WebFeature::kV8OptimizedFunctionWithOneShotBytecode;
+      break;
+    case v8::Isolate::kRegExpMatchIsTrueishOnNonJSRegExp:
+      blink_feature = WebFeature::kV8RegExpMatchIsTrueishOnNonJSRegExp;
+      break;
+    case v8::Isolate::kRegExpMatchIsFalseishOnJSRegExp:
+      blink_feature = WebFeature::kV8RegExpMatchIsFalseishOnJSRegExp;
+      break;
+    case v8::Isolate::kStringNormalize:
+      blink_feature = WebFeature::kV8StringNormalize;
       break;
     default:
       // This can happen if V8 has added counters that this version of Blink

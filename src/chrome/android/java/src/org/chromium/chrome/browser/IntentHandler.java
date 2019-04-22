@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.speech.RecognizerResultsIntent;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -42,7 +43,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -60,6 +61,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Handles all browser-related Intents.
@@ -138,6 +140,13 @@ public class IntentHandler {
      */
     public static final String EXTRA_INVOKED_FROM_SHORTCUT =
             "com.android.chrome.invoked_from_shortcut";
+
+    /**
+     * An extra to indicate that the intent was triggered by the launch new incognito tab feature.
+     * See {@link org.chromium.chrome.browser.incognito.IncognitoTabLauncher}.
+     */
+    public static final String EXTRA_INVOKED_FROM_LAUNCH_NEW_INCOGNITO_TAB =
+            "org.chromium.chrome.browser.incognito.invoked_from_launch_new_incognito_tab";
 
     /**
      * Intent extra used to identify the sending application.
@@ -280,7 +289,8 @@ public class IntentHandler {
 
     @IntDef({TabOpenType.OPEN_NEW_TAB, TabOpenType.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB,
             TabOpenType.REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB, TabOpenType.CLOBBER_CURRENT_TAB,
-            TabOpenType.BRING_TAB_TO_FRONT, TabOpenType.OPEN_NEW_INCOGNITO_TAB})
+            TabOpenType.BRING_TAB_TO_FRONT, TabOpenType.OPEN_NEW_INCOGNITO_TAB,
+            TabOpenType.REUSE_TAB_MATCHING_ID_ELSE_NEW_TAB})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TabOpenType {
         int OPEN_NEW_TAB = 0;
@@ -292,8 +302,13 @@ public class IntentHandler {
         int BRING_TAB_TO_FRONT = 4;
         // Opens a new incognito tab.
         int OPEN_NEW_INCOGNITO_TAB = 5;
+        // Tab is reused only if the tab ID exists (tab ID is specified with the integer extra
+        // REUSE_TAB_MATCHING_ID_STRING), and if the tab matches the requested URL.
+        // Otherwise, the URL is opened in a new tab.
+        int REUSE_TAB_MATCHING_ID_ELSE_NEW_TAB = 6;
 
         String BRING_TAB_TO_FRONT_STRING = "BRING_TAB_TO_FRONT";
+        String REUSE_TAB_MATCHING_ID_STRING = "REUSE_TAB_MATCHING_ID";
     }
 
     /**
@@ -432,7 +447,7 @@ public class IntentHandler {
      * @param intent Target intent.
      * @return Whether the Intent was successfully handled.
      */
-    boolean onNewIntent(Intent intent) {
+    public boolean onNewIntent(Intent intent) {
         updateDeferredIntent(null);
 
         assert intentHasValidUrl(intent);
@@ -727,6 +742,26 @@ public class IntentHandler {
     }
 
     /**
+     * Sets the Extra field 'EXTRA_HEADERS' on intent. If |extraHeaders| is empty or null,
+     * removes 'EXTRA_HEADERS' from intent.
+     *
+     * @param extraHeaders   A map containing the set of headers. May be null.
+     * @param intent         The intent to modify.
+     */
+    public static void setIntentExtraHeaders(
+            @Nullable Map<String, String> extraHeaders, Intent intent) {
+        if (extraHeaders == null || extraHeaders.isEmpty()) {
+            intent.removeExtra(Browser.EXTRA_HEADERS);
+        } else {
+            Bundle bundle = new Bundle();
+            for (Map.Entry<String, String> header : extraHeaders.entrySet()) {
+                bundle.putString(header.getKey(), header.getValue());
+            }
+            intent.putExtra(Browser.EXTRA_HEADERS, bundle);
+        }
+    }
+
+    /**
      * Calls {@link #getExtraHeadersFromIntent(Intent, boolean)} with shouldLogHeaders as false.
      */
     public static String getExtraHeadersFromIntent(Intent intent) {
@@ -874,7 +909,8 @@ public class IntentHandler {
                     // applications.
                     String lowerCaseUrl = url.toLowerCase(Locale.US);
                     if (ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(lowerCaseUrl)
-                            || ContentUrlConstants.ABOUT_BLANK_URL.equals(lowerCaseUrl)) {
+                            || ContentUrlConstants.ABOUT_BLANK_URL.equals(lowerCaseUrl)
+                            || UrlConstants.CHROME_DINO_URL.equals(lowerCaseUrl)) {
                         return false;
                     }
 
@@ -972,8 +1008,7 @@ public class IntentHandler {
         if (isChromeToken(token)) {
             return true;
         }
-        if (ExternalAuthUtils.getInstance().isGoogleSigned(
-                    ApiCompatibilityUtils.getCreatorPackage(token))) {
+        if (ExternalAuthUtils.getInstance().isGoogleSigned(token.getCreatorPackage())) {
             return true;
         }
         return false;
@@ -985,9 +1020,16 @@ public class IntentHandler {
         // i.e. the user will see what is going on.
         Context appContext = ContextUtils.getApplicationContext();
         if (!ApiCompatibilityUtils.isInteractive(appContext)) return false;
-        if (!ApiCompatibilityUtils.isDeviceProvisioned(appContext)) return true;
+        if (!isDeviceProvisioned(appContext)) return true;
         return !((KeyguardManager) appContext.getSystemService(Context.KEYGUARD_SERVICE))
                 .inKeyguardRestrictedInputMode();
+    }
+
+    private static boolean isDeviceProvisioned(Context context) {
+        if (context == null || context.getContentResolver() == null) return true;
+        return Settings.Global.getInt(
+                       context.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 0)
+                != 0;
     }
 
     /*
@@ -1013,6 +1055,12 @@ public class IntentHandler {
         if (appId == null
                 || IntentUtils.safeGetBooleanExtra(intent, Browser.EXTRA_CREATE_NEW_TAB, false)) {
             return TabOpenType.OPEN_NEW_TAB;
+        }
+
+        int tabId = IntentUtils.safeGetIntExtra(
+                intent, TabOpenType.REUSE_TAB_MATCHING_ID_STRING, Tab.INVALID_TAB_ID);
+        if (tabId != Tab.INVALID_TAB_ID) {
+            return TabOpenType.REUSE_TAB_MATCHING_ID_ELSE_NEW_TAB;
         }
 
         // Intents from chrome open in the same tab by default, all others only clobber
@@ -1289,5 +1337,25 @@ public class IntentHandler {
      */
     public static @Nullable @TabLaunchType Integer getTabLaunchType(Intent intent) {
         return IntentUtils.safeGetSerializableExtra(intent, EXTRA_TAB_LAUNCH_TYPE);
+    }
+
+    /**
+     * Creates an Intent that will launch a ChromeTabbedActivity on the new tab page. The Intent
+     * will be trusted and therefore able to launch Incognito tabs.
+     * @param context A {@link Context} to access class and package information.
+     * @param incognito Whether the tab should be opened in Incognito.
+     * @return The {@link Intent} to launch.
+     */
+    public static Intent createTrustedOpenNewTabIntent(Context context, boolean incognito) {
+        Intent newIntent = new Intent();
+        newIntent.setAction(Intent.ACTION_VIEW);
+        newIntent.setData(Uri.parse(UrlConstants.NTP_URL));
+        newIntent.setClass(context, ChromeLauncherActivity.class);
+        newIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
+        newIntent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+        newIntent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, incognito);
+        IntentHandler.addTrustedIntentExtras(newIntent);
+
+        return newIntent;
     }
 }

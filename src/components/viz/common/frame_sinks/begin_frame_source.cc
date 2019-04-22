@@ -41,7 +41,28 @@ void FilterAndIssueBeginFrame(BeginFrameObserver* observer,
   observer->OnBeginFrame(args);
 }
 
+// Checks |args| for continuity with our last args.  It is possible that the
+// source in which |args| originate changes, or that our hookup to this source
+// changes, so we have to check for continuity.  See also
+// https://crbug.com/690127 for what may happen without this check.
+bool CheckBeginFrameContinuity(BeginFrameObserver* observer,
+                               const BeginFrameArgs& args) {
+  const BeginFrameArgs& last_args = observer->LastUsedBeginFrameArgs();
+  if (!last_args.IsValid() || (args.frame_time > last_args.frame_time)) {
+    DCHECK((args.source_id != last_args.source_id) ||
+           (args.sequence_number > last_args.sequence_number))
+        << "current " << args.AsValue()->ToString() << ", last "
+        << last_args.AsValue()->ToString();
+    return true;
+  }
+  return false;
+}
 }  // namespace
+
+// BeginFrameObserver -----------------------------------------------------
+bool BeginFrameObserver::IsRoot() const {
+  return false;
+}
 
 // BeginFrameObserverBase -------------------------------------------------
 BeginFrameObserverBase::BeginFrameObserverBase() = default;
@@ -385,18 +406,24 @@ void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
 
   last_begin_frame_args_ = args;
   base::flat_set<BeginFrameObserver*> observers(observers_);
+
+  // Process non-root observers.
+  // TODO(ericrk): Remove root/non-root handling once a better workaround
+  // exists. https://crbug.com/947717
   for (auto* obs : observers) {
-    // It is possible that the source in which |args| originate changes, or that
-    // our hookup to this source changes, so we have to check for continuity.
-    // See also https://crbug.com/690127 for what may happen without this check.
-    const BeginFrameArgs& last_args = obs->LastUsedBeginFrameArgs();
-    if (!last_args.IsValid() || (args.frame_time > last_args.frame_time)) {
-      DCHECK((args.source_id != last_args.source_id) ||
-             (args.sequence_number > last_args.sequence_number))
-          << "current " << args.AsValue()->ToString() << ", last "
-          << last_args.AsValue()->ToString();
-      FilterAndIssueBeginFrame(obs, args);
-    }
+    if (obs->IsRoot())
+      continue;
+    if (!CheckBeginFrameContinuity(obs, args))
+      continue;
+    FilterAndIssueBeginFrame(obs, args);
+  }
+  // Process root observers.
+  for (auto* obs : observers) {
+    if (!obs->IsRoot())
+      continue;
+    if (!CheckBeginFrameContinuity(obs, args))
+      continue;
+    FilterAndIssueBeginFrame(obs, args);
   }
 }
 
@@ -404,17 +431,9 @@ BeginFrameArgs ExternalBeginFrameSource::GetMissedBeginFrameArgs(
     BeginFrameObserver* obs) {
   if (!last_begin_frame_args_.IsValid())
     return BeginFrameArgs();
-
-  const BeginFrameArgs& last_args = obs->LastUsedBeginFrameArgs();
-  if (last_args.IsValid() &&
-      last_begin_frame_args_.frame_time <= last_args.frame_time) {
+  if (!CheckBeginFrameContinuity(obs, last_begin_frame_args_))
     return BeginFrameArgs();
-  }
 
-  DCHECK((last_begin_frame_args_.source_id != last_args.source_id) ||
-         (last_begin_frame_args_.sequence_number > last_args.sequence_number))
-      << "current " << last_begin_frame_args_.AsValue()->ToString() << ", last "
-      << last_args.AsValue()->ToString();
   BeginFrameArgs missed_args = last_begin_frame_args_;
   missed_args.type = BeginFrameArgs::MISSED;
   return missed_args;

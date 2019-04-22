@@ -9,11 +9,11 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -77,28 +77,14 @@ class TetherHostFetcherImpl
                             multidevice_setup_client_);
 
  private:
-  enum class TetherHostSource {
-    UNKNOWN,
-    MULTIDEVICE_SETUP_CLIENT,
-    DEVICE_SYNC_CLIENT,
-    REMOTE_DEVICE_PROVIDER
-  };
-
   void CacheCurrentTetherHosts();
-  cryptauth::RemoteDeviceRefList GenerateHostDeviceList();
-
-  // This returns true if there is no BETTER_TOGETHER_HOST supported or enabled,
-  // but there *are* MAGIC_TETHER_HOSTs supported or enabled. This can only
-  // happen if the user's phone has not yet fully updated to the new multidevice
-  // world.
-  // TODO(crbug.com/894585): Remove this legacy special case after M71.
-  bool IsInLegacyHostMode();
+  multidevice::RemoteDeviceRefList GenerateHostDeviceList();
 
   device_sync::DeviceSyncClient* device_sync_client_;
   chromeos::multidevice_setup::MultiDeviceSetupClient*
       multidevice_setup_client_;
 
-  cryptauth::RemoteDeviceRefList current_remote_device_list_;
+  multidevice::RemoteDeviceRefList current_remote_device_list_;
   base::WeakPtrFactory<TetherHostFetcherImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TetherHostFetcherImpl);

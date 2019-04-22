@@ -145,7 +145,7 @@ void TestRulesetCreator::CreateRulesetToDisallowURLsWithManySuffixes(
   std::vector<proto::UrlRule> rules;
   for (int i = 0; i < num_of_suffixes; ++i) {
     std::string current_suffix =
-        suffix.as_string() + '_' + base::IntToString(i);
+        suffix.as_string() + '_' + base::NumberToString(i);
     rules.push_back(CreateSuffixRule(current_suffix));
   }
   CreateRulesetWithRules(rules, test_ruleset_pair);
@@ -176,7 +176,7 @@ void TestRulesetCreator::GetUniqueTemporaryPath(base::FilePath* path) {
   ASSERT_TRUE(scoped_temp_dir_->IsValid() ||
               scoped_temp_dir_->CreateUniqueTempDir());
   *path = scoped_temp_dir_->GetPath().AppendASCII(
-      base::IntToString(next_unique_file_suffix++));
+      base::NumberToString(next_unique_file_suffix++));
 }
 
 void TestRulesetCreator::CreateTestRulesetFromContents(

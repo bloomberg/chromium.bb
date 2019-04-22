@@ -22,7 +22,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -91,6 +90,10 @@ using testing::Return;
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
+
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 using testing::_;
 using extensions::Extension;
@@ -375,12 +378,14 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppUrlShortcut) {
             web_contents->GetLastCommittedURL().ExtractFileName());
 }
 
-// App shortcuts are not implemented on mac os.
-#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
   // Load an app with launch.container = 'tab'.
   const Extension* extension_app = NULL;
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
+
+  // When we start, the browser should already have an open tab.
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  EXPECT_EQ(1, tab_strip->count());
 
   // Add --app-id=<extension->id()> to the command line.
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
@@ -391,16 +396,15 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
   StartupBrowserCreatorImpl launch(base::FilePath(), command_line, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
-  // No pref was set, so the app should have opened in a tab in a new window.
-  // The launch should have created a new browser.
-  Browser* new_browser = FindOneOtherBrowser(browser());
-  ASSERT_TRUE(new_browser);
+  // No pref was set, so the app should have opened in a tab in the existing
+  // window.
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+  EXPECT_EQ(2, tab_strip->count());
+  EXPECT_EQ(tab_strip->GetActiveWebContents(), tab_strip->GetWebContentsAt(1));
 
-  // If new bookmark apps are enabled, it should be a standard tabbed window,
-  // not an app window; otherwise the reverse should be true.
-  bool new_bookmark_apps_enabled = extensions::util::IsNewBookmarkAppsEnabled();
-  EXPECT_EQ(!new_bookmark_apps_enabled, new_browser->is_app());
-  EXPECT_EQ(new_bookmark_apps_enabled, new_browser->is_type_tabbed());
+  // It should be a standard tabbed window, not an app window.
+  EXPECT_FALSE(browser()->is_app());
+  EXPECT_TRUE(browser()->is_type_tabbed());
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
@@ -433,11 +437,15 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
+  // When we start, the browser should already have an open tab.
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  EXPECT_EQ(1, tab_strip->count());
+
   // Load an app with launch.container = 'tab'.
   const Extension* extension_app = NULL;
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
-  // Set a pref indicating that the user wants to open this app in a window.
+  // Set a pref indicating that the user wants to open this app in a tab.
   SetAppLaunchPref(extension_app->id(), extensions::LAUNCH_TYPE_REGULAR);
 
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
@@ -447,24 +455,17 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
   StartupBrowserCreatorImpl launch(base::FilePath(), command_line, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
-  // When an app shortcut is open and the pref indicates a tab should
-  // open, the tab is open in a new browser window.  Expect a new window.
-  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
+  // When an app shortcut is open and the pref indicates a tab should open, the
+  // tab is open in the existing browser window.
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+  EXPECT_EQ(2, tab_strip->count());
+  EXPECT_EQ(tab_strip->GetActiveWebContents(), tab_strip->GetWebContentsAt(1));
 
-  Browser* new_browser = FindOneOtherBrowser(browser());
-  ASSERT_TRUE(new_browser);
-
-  // The tab should be in a tabbed window.
-  EXPECT_TRUE(new_browser->is_type_tabbed());
-
-  // The browser's app_name should not include the app's ID: It is in a
-  // normal browser.
-  EXPECT_EQ(
-      new_browser->app_name_.find(extension_app->id()),
-      std::string::npos) << new_browser->app_name_;
+  // The browser's app_name should not include the app's ID: it is in a normal
+  // tabbed browser.
+  EXPECT_EQ(browser()->app_name_.find(extension_app->id()), std::string::npos)
+      << browser()->app_name_;
 }
-
-#endif  // !defined(OS_MACOSX)
 
 #endif  // !defined(OS_CHROMEOS)
 
@@ -1209,10 +1210,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
       embedded_test_server()->GetURL("/title1.html"));
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kRestoreOnStartup, 1);
-  // We switch off the sign-in promo too because it's behavior varies between
-  // platforms too much.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kSignInPromoUserSkipped, true);
 
   // Do a process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
@@ -1255,8 +1252,13 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   TabStripModel* tab_strip = browser->tab_strip_model();
 
   // Windows 10 has its own Welcome page; the standard Welcome page does not
-  // appear until second run.
-  if (IsWindows10OrNewer()) {
+  // appear until second run.  However, if NuxOnboarding is enabled, the
+  // standard welcome URL should still be used.
+  bool is_navi_enabled = false;
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  is_navi_enabled = nux::IsNuxOnboardingEnabled(profile1);
+#endif
+  if (IsWindows10OrNewer() && !is_navi_enabled) {
     ASSERT_EQ(1, tab_strip->count());
     EXPECT_EQ("chrome://welcome-win10/",
               tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());

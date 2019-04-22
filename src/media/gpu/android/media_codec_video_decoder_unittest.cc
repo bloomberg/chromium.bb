@@ -58,10 +58,7 @@ struct DestructionObservableMCVD : public DestructionObservable,
 
 class MockVideoFrameFactory : public VideoFrameFactory {
  public:
-  MOCK_METHOD3(Initialize,
-               void(bool wants_promotion_hint,
-                    bool use_texture_owner_as_overlay,
-                    InitCb init_cb));
+  MOCK_METHOD2(Initialize, void(OverlayMode overlay_mode, InitCb init_cb));
   MOCK_METHOD1(MockSetSurfaceBundle, void(scoped_refptr<AVDASurfaceBundle>));
   MOCK_METHOD5(
       MockCreateVideoFrame,
@@ -143,10 +140,8 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
         std::make_unique<NiceMock<MockVideoFrameFactory>>();
     video_frame_factory_ = video_frame_factory.get();
     // Set up VFF to pass |texture_owner_| via its InitCb.
-    const bool want_promotion_hint =
-        device_info_->IsSetOutputSurfaceSupported();
-    ON_CALL(*video_frame_factory_, Initialize(want_promotion_hint, _, _))
-        .WillByDefault(RunCallback<2>(texture_owner));
+    ON_CALL(*video_frame_factory_, Initialize(ExpectedOverlayMode(), _))
+        .WillByDefault(RunCallback<1>(texture_owner));
 
     auto* observable_mcvd = new DestructionObservableMCVD(
         gpu_preferences_, gpu_feature_info_, device_info_.get(),
@@ -160,6 +155,14 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
     destruction_observer_ = observable_mcvd->CreateDestructionObserver();
     // Ensure MCVD doesn't leak by default.
     destruction_observer_->ExpectDestruction();
+  }
+
+  VideoFrameFactory::OverlayMode ExpectedOverlayMode() const {
+    const bool want_promotion_hint =
+        device_info_->IsSetOutputSurfaceSupported();
+    return want_promotion_hint
+               ? VideoFrameFactory::OverlayMode::kRequestPromotionHints
+               : VideoFrameFactory::OverlayMode::kDontRequestPromotionHints;
   }
 
   void CreateCdm(bool has_media_crypto_context,
@@ -183,7 +186,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
     auto init_cb = [](bool* result_out, bool result) { *result_out = result; };
     mcvd_->Initialize(config, false, cdm_.get(), base::Bind(init_cb, &result),
                       base::BindRepeating(&OutputCb, &most_recent_frame_),
-                      base::NullCallback());
+                      base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
     // If there is a CDM available, then we expect that MCVD will be waiting
@@ -309,7 +312,8 @@ TEST_P(MediaCodecVideoDecoderVp8Test, SmallVp8IsRejected) {
 
 TEST_P(MediaCodecVideoDecoderTest, InitializeDoesntInitSurfaceOrCodec) {
   CreateMcvd();
-  EXPECT_CALL(*video_frame_factory_, Initialize(_, _, _)).Times(0);
+  EXPECT_CALL(*video_frame_factory_, Initialize(ExpectedOverlayMode(), _))
+      .Times(0);
   EXPECT_CALL(*surface_chooser_, MockUpdateState()).Times(0);
   EXPECT_CALL(*codec_allocator_, MockCreateMediaCodecAsync(_, _)).Times(0);
   Initialize(TestVideoConfig::Large(codec_));
@@ -317,7 +321,7 @@ TEST_P(MediaCodecVideoDecoderTest, InitializeDoesntInitSurfaceOrCodec) {
 
 TEST_P(MediaCodecVideoDecoderTest, FirstDecodeTriggersFrameFactoryInit) {
   Initialize(TestVideoConfig::Large(codec_));
-  EXPECT_CALL(*video_frame_factory_, Initialize(_, _, _));
+  EXPECT_CALL(*video_frame_factory_, Initialize(ExpectedOverlayMode(), _));
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
 }
 
@@ -371,8 +375,8 @@ TEST_P(MediaCodecVideoDecoderTest, CodecIsCreatedAfterSurfaceChosen) {
 
 TEST_P(MediaCodecVideoDecoderTest, FrameFactoryInitFailureIsAnError) {
   Initialize(TestVideoConfig::Large(codec_));
-  ON_CALL(*video_frame_factory_, Initialize(_, _, _))
-      .WillByDefault(RunCallback<2>(nullptr));
+  ON_CALL(*video_frame_factory_, Initialize(ExpectedOverlayMode(), _))
+      .WillByDefault(RunCallback<1>(nullptr));
   EXPECT_CALL(decode_cb_, Run(DecodeStatus::DECODE_ERROR)).Times(1);
   EXPECT_CALL(*surface_chooser_, MockUpdateState()).Times(0);
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
@@ -1027,18 +1031,18 @@ static std::vector<VideoCodec> GetVp8IfAvailable() {
              : std::vector<VideoCodec>();
 }
 
-INSTANTIATE_TEST_CASE_P(MediaCodecVideoDecoderTest,
-                        MediaCodecVideoDecoderTest,
-                        testing::ValuesIn(GetTestList()));
+INSTANTIATE_TEST_SUITE_P(MediaCodecVideoDecoderTest,
+                         MediaCodecVideoDecoderTest,
+                         testing::ValuesIn(GetTestList()));
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-INSTANTIATE_TEST_CASE_P(MediaCodecVideoDecoderH264Test,
-                        MediaCodecVideoDecoderH264Test,
-                        testing::ValuesIn(GetH264IfAvailable()));
+INSTANTIATE_TEST_SUITE_P(MediaCodecVideoDecoderH264Test,
+                         MediaCodecVideoDecoderH264Test,
+                         testing::ValuesIn(GetH264IfAvailable()));
 #endif
 
-INSTANTIATE_TEST_CASE_P(MediaCodecVideoDecoderVp8Test,
-                        MediaCodecVideoDecoderVp8Test,
-                        testing::ValuesIn(GetVp8IfAvailable()));
+INSTANTIATE_TEST_SUITE_P(MediaCodecVideoDecoderVp8Test,
+                         MediaCodecVideoDecoderVp8Test,
+                         testing::ValuesIn(GetVp8IfAvailable()));
 
 }  // namespace media

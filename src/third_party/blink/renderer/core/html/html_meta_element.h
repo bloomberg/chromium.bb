@@ -51,6 +51,8 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
       Document*,
       bool viewport_meta_zero_values_quirk);
 
+  explicit HTMLMetaElement(Document&);
+
   // Encoding computed from processing the http-equiv, charset and content
   // attributes.
   WTF::TextEncoding ComputeEncoding() const;
@@ -60,8 +62,6 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
   const AtomicString& GetName() const;
 
  private:
-  explicit HTMLMetaElement(Document&);
-
   static void ProcessViewportKeyValuePair(Document*,
                                           bool report_warnings,
                                           const String& key,
@@ -116,6 +116,7 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
   void Process();
   void ProcessViewportContentAttribute(const String& content,
                                        ViewportDescription::Type origin);
+  void ProcessSupportedColorSchemes(const AtomicString& content);
 };
 
 }  // namespace blink

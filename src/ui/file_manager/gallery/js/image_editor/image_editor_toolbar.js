@@ -130,8 +130,9 @@ ImageEditorToolbar.ButtonType = {
  */
 ImageEditorToolbar.createButton_ = function(title, type, handler, opt_class) {
   var button = /** @type {!HTMLElement} */ (document.createElement('button'));
-  if (opt_class)
+  if (opt_class) {
     button.classList.add(opt_class);
+  }
   button.classList.add('edit-toolbar');
 
   if (type === ImageEditorToolbar.ButtonType.ICON ||
@@ -179,8 +180,9 @@ ImageEditorToolbar.createButton_ = function(title, type, handler, opt_class) {
   button.addEventListener('keydown', function(event) {
     // Stop propagation of Enter key event to prevent it from being captured by
     // image editor.
-    if (event.key === 'Enter')
+    if (event.key === 'Enter') {
       event.stopPropagation();
+    }
   });
 
   return button;
@@ -278,26 +280,28 @@ ImageEditorToolbar.prototype.addRange = function(
   range.appendChild(label);
 
   var scale = opt_scale || 1;
-  var slider = document.createElement('paper-slider');
+  var slider = document.createElement('cr-slider');
   slider.min = Math.ceil(min * scale);
   slider.max = Math.floor(max * scale);
   slider.value = value * scale;
-  slider.addEventListener('change', function(event) {
-    if (this.updateCallback_)
+  const handler = () => {
+    if (this.updateCallback_) {
       this.updateCallback_(this.getOptions());
-  }.bind(this));
+    }
+  };
+  slider.addEventListener('cr-slider-value-changed', handler);
+  setTimeout(handler);
   range.appendChild(slider);
 
   range.name = name;
-  range.getValue = function(slider, scale) {
-    return slider.value / scale;
-  }.bind(this, slider, scale);
+  range.getValue = () => slider.value / scale;
 
   // Swallow the left and right keys, so they are not handled by other
   // listeners.
   range.addEventListener('keydown', function(e) {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight')
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.stopPropagation();
+    }
   });
 
   this.add(range);
@@ -313,8 +317,9 @@ ImageEditorToolbar.prototype.getOptions = function() {
 
   for (var child = this.container_.firstChild; child;
        child = child.nextSibling) {
-    if (child.name)
+    if (child.name) {
       values[child.name] = child.getValue();
+    }
   }
 
   return values;
@@ -325,8 +330,9 @@ ImageEditorToolbar.prototype.getOptions = function() {
  */
 ImageEditorToolbar.prototype.reset = function() {
   for (var child = this.wrapper_.firstChild; child; child = child.nextSibling) {
-    if (child.reset)
+    if (child.reset) {
       child.reset();
+    }
   }
 };
 
@@ -335,16 +341,26 @@ ImageEditorToolbar.prototype.reset = function() {
  * @param {boolean} on True if show.
  */
 ImageEditorToolbar.prototype.show = function(on) {
-  if (!this.wrapper_.firstChild)
+  if (!this.wrapper_.firstChild) {
     return;  // Do not show empty toolbar;
+  }
 
   this.wrapper_.hidden = !on;
 
   // Focus the first input on the toolbar.
   if (on) {
     var input = this.container_.querySelector(
-        'button, paper-button, input, paper-slider, cr-input');
-    if (input)
+        // Crop aspect ratio buttons should not be focused immediately
+        // crbug.com/655943
+        'button:not(.crop-aspect-ratio), paper-button, input, cr-slider, cr-input');
+    if (input) {
       input.focus();
+      // Fix for crbug/914741 set selection to the end (> 32-bit int)
+      // Note the input element lives in Shadow DOM.
+      if (input.select && input.tagName) {
+        assert(input.tagName === 'CR-INPUT');
+        input.select(12, 12);
+      }
+    }
   }
 };

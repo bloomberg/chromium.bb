@@ -76,7 +76,7 @@ Examples:
 
 * chrome-devtools:
 * chrome-extensions:
-* chrome: 
+* chrome:
 * file:
 * view-source:
 
@@ -238,9 +238,42 @@ $('bakeDonutsButton').onclick = function() {
 <a name="AllowJavascript"></a>
 ### WebUIMessageHandler::AllowJavascript()
 
-This method determines whether browser &rarr; renderer communication is allowed.
-It is called in response to a signal from JavaScript that the page is ready to
-communicate.
+A tab that has been used for settings UI may be reloaded, or may navigate to an
+external origin. In both cases, one does not want callbacks from C++ to
+Javascript to run. In the former case, the callbacks will occur when the
+Javascript doesn't expect them. In the latter case, sensitive information may be
+delivered to an untrusted origin.
+
+Therefore each message handler maintains
+[a boolean](https://cs.chromium.org/search/?q=WebUIMessageHandler::javascript_allowed_)
+that describes whether delivering callbacks to Javascript is currently
+appropriate. This boolean is set by calling `AllowJavascript`, which should be
+done when handling a call from Javascript, because that indicates that the page
+is ready for the subsequent callback. (See
+[design doc](https://drive.google.com/open?id=1z1diKvwgMmn4YFzlW1kss0yHmo8yy68TN_FUhUzRz7Q).)
+If the tab navigates or reloads,
+[`DisallowJavascript`](https://cs.chromium.org/search/?q=WebUIMessageHandler::DisallowJavascript)
+is called to clear the flag.
+
+Therefore, before each callback from C++ to Javascript, the flag must be tested
+by calling
+[`IsJavascriptAllowed`](https://cs.chromium.org/search/?q=WebUIMessageHandler::IsJavascriptAllowed).
+If false, then the callback must be dropped. (When the flag is false, calling
+[`ResolveJavascriptCallback`](https://cs.chromium.org/search/?q=WebUIMessageHandler::ResolveJavascriptCallback)
+will crash. See
+[design doc](https://docs.google.com/document/d/1udXoW3aJL0-l5wrbsOg5bpYWB0qOCW5K7yXpv4tFeA8).)
+
+Also beware of [ABA](https://en.wikipedia.org/wiki/ABA_problem) issues: Consider
+the case where an asynchronous operation is started, the settings page is
+reloaded, and the user triggers another operation using the original message
+handler. The `javascript_allowed_` boolean will be true, but the original
+callback should still be dropped because it relates to a operation that was
+discarded by the reload. (Reloading settings UI does _not_ cause message handler
+objects to be deleted.)
+
+Thus a message handler may override
+[`OnJavascriptDisallowed`](https://cs.chromium.org/search/?q=WebUIMessageHandler::OnJavascriptDisallowed)
+to learn when pending callbacks should be canceled.
 
 In the JS:
 
@@ -502,8 +535,7 @@ renderer:
 
 ```c++
 // WebUIExtension::Install():
-v8::Local<v8::Object> chrome =
-    GetOrCreateChromeObject(isolate, context->Global());
+v8::Local<v8::Object> chrome = GetOrCreateChromeObject(isolate, context);
 chrome->Set(gin::StringToSymbol(isolate, "send"),
             gin::CreateFunctionTemplate(
                 isolate, base::Bind(&WebUIExtension::Send))->GetFunction());

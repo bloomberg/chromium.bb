@@ -18,6 +18,8 @@ blink_modules_sources("payments") {
     "can_make_payment_respond_with_observer.h",
     "html_iframe_element_payments.cc",
     "html_iframe_element_payments.h",
+    "merchant_validation_event.cc",
+    "merchant_validation_event.h",
     "payment_address.cc",
     "payment_address.h",
     "payment_app_service_worker_global_scope.h",
@@ -35,6 +37,7 @@ blink_modules_sources("payments") {
     "payment_method_change_event.h",
     "payment_request.cc",
     "payment_request.h",
+    "payment_request_delegate.h",
     "payment_request_event.cc",
     "payment_request_event.h",
     "payment_request_respond_with_observer.cc",
@@ -44,9 +47,10 @@ blink_modules_sources("payments") {
     "payment_response.cc",
     "payment_response.h",
     "payment_state_resolver.h",
-    "payment_updater.h",
     "payments_validators.cc",
     "payments_validators.h",
+    "update_payment_details_function.cc",
+    "update_payment_details_function.h",
   ]
 
   deps = [

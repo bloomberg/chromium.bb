@@ -331,7 +331,7 @@ bool SkMaskFilterBase::canFilterMaskGPU(const GrShape& shape,
     return false;
 }
 
-bool SkMaskFilterBase::directFilterMaskGPU(GrContext*,
+bool SkMaskFilterBase::directFilterMaskGPU(GrRecordingContext*,
                                            GrRenderTargetContext*,
                                            GrPaint&&,
                                            const GrClip&,
@@ -340,7 +340,7 @@ bool SkMaskFilterBase::directFilterMaskGPU(GrContext*,
     return false;
 }
 
-sk_sp<GrTextureProxy> SkMaskFilterBase::filterMaskGPU(GrContext*,
+sk_sp<GrTextureProxy> SkMaskFilterBase::filterMaskGPU(GrRecordingContext*,
                                                       sk_sp<GrTextureProxy> srcProxy,
                                                       const SkMatrix& ctm,
                                                       const SkIRect& maskRect) const {
@@ -707,9 +707,9 @@ sk_sp<SkMaskFilter> SkMaskFilter::makeWithMatrix(const SkMatrix& lm) const {
 }
 
 void SkMaskFilter::RegisterFlattenables() {
-    SK_REGISTER_FLATTENABLE(SkMatrixMF)
-    SK_REGISTER_FLATTENABLE(SkComposeMF)
-    SK_REGISTER_FLATTENABLE(SkCombineMF)
+    SK_REGISTER_FLATTENABLE(SkMatrixMF);
+    SK_REGISTER_FLATTENABLE(SkComposeMF);
+    SK_REGISTER_FLATTENABLE(SkCombineMF);
     sk_register_blur_maskfilter_createproc();
 #if SK_SUPPORT_GPU
     gr_register_sdf_maskfilter_createproc();

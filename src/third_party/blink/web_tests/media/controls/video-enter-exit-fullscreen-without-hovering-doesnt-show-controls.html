@@ -29,6 +29,8 @@ async_test(function(t) {
     // Move mouse away so it no longer hovers over controls/video.
     eventSender.mouseMoveTo(0, 0);
 
+    video.blur();
+
     runAfterHideMediaControlsTimerFired(t.step_func(function() {
       assert_equals(getComputedStyle(panel).opacity, "0",
                     "Inline controls should be hidden by timer");

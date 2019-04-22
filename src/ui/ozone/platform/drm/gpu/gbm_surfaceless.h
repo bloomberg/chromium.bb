@@ -36,7 +36,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
 
   // gl::GLSurface:
   bool Initialize(gl::GLSurfaceFormat format) override;
-  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,
                             gl::GLImage* image,
@@ -53,17 +53,15 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
                                 int y,
                                 int width,
                                 int height,
-                                const PresentationCallback& callback) override;
-  void SwapBuffersAsync(
-      const SwapCompletionCallback& completion_callback,
-      const PresentationCallback& presentation_callback) override;
-  void PostSubBufferAsync(
-      int x,
-      int y,
-      int width,
-      int height,
-      const SwapCompletionCallback& completion_callback,
-      const PresentationCallback& presentation_callback) override;
+                                PresentationCallback callback) override;
+  void SwapBuffersAsync(SwapCompletionCallback completion_callback,
+                        PresentationCallback presentation_callback) override;
+  void PostSubBufferAsync(int x,
+                          int y,
+                          int width,
+                          int height,
+                          SwapCompletionCallback completion_callback,
+                          PresentationCallback presentation_callback) override;
   EGLConfig GetConfig() override;
   void SetRelyOnImplicitSync() override;
 

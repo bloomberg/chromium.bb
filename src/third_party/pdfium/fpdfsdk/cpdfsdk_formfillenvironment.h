@@ -15,11 +15,9 @@
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfdoc/cpdf_occontext.h"
 #include "core/fxcrt/observable.h"
-#include "fpdfsdk/cfx_systemhandler.h"
 #include "fpdfsdk/cpdfsdk_annot.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "public/fpdf_formfill.h"
-#include "public/fpdf_fwlevent.h"
 
 class CFFL_InteractiveFormFiller;
 class CFX_SystemHandler;
@@ -50,19 +48,15 @@ class CPDFSDK_FormFillEnvironment final
   CPDFSDK_FormFillEnvironment(CPDF_Document* pDoc, FPDF_FORMFILLINFO* pFFinfo);
   ~CPDFSDK_FormFillEnvironment();
 
-  static bool IsSHIFTKeyDown(uint32_t nFlag) {
-    return !!(nFlag & FWL_EVENTFLAG_ShiftKey);
-  }
-  static bool IsCTRLKeyDown(uint32_t nFlag) {
-    return !!(nFlag & FWL_EVENTFLAG_ControlKey);
-  }
-  static bool IsALTKeyDown(uint32_t nFlag) {
-    return !!(nFlag & FWL_EVENTFLAG_AltKey);
-  }
+  static bool IsSHIFTKeyDown(uint32_t nFlag);
+  static bool IsCTRLKeyDown(uint32_t nFlag);
+  static bool IsALTKeyDown(uint32_t nFlag);
 
   CPDFSDK_PageView* GetPageView(IPDF_Page* pPage, bool renew);
   CPDFSDK_PageView* GetPageView(int nIndex);
+#ifdef PDF_ENABLE_V8
   CPDFSDK_PageView* GetCurrentView();
+#endif
   void RemovePageView(IPDF_Page* pPage);
   void UpdateAllViews(CPDFSDK_PageView* pSender, CPDFSDK_Annot* pAnnot);
 
@@ -97,8 +91,9 @@ class CPDFSDK_FormFillEnvironment final
   int SetTimer(int uElapse, TimerCallback lpTimerFunc);
   void KillTimer(int nTimerID);
 
-  FX_SYSTEMTIME GetLocalTime() const;
+#ifdef PDF_ENABLE_V8
   FPDF_PAGE GetCurrentPage() const;
+#endif
 
   void OnChange();
   void ExecuteNamedAction(const char* namedAction);
@@ -132,7 +127,7 @@ class CPDFSDK_FormFillEnvironment final
 
   WideString GetPlatform();
   void GotoURL(const WideString& wsURL);
-  void GetPageViewRect(CPDFXFA_Page* page, FS_RECTF& dstRect);
+  FS_RECTF GetPageViewRect(CPDFXFA_Page* page);
   bool PopupMenu(CPDFXFA_Page* page,
                  FPDF_WIDGET hWidget,
                  int menuFlag,
@@ -202,7 +197,7 @@ class CPDFSDK_FormFillEnvironment final
   WideString JS_docGetFilePath();
   void JS_docSubmitForm(void* formData, int length, const WideString& URL);
 
-  ByteString GetAppName() const { return ""; }
+  ByteString GetAppName() const { return ByteString(); }
   CFX_SystemHandler* GetSysHandler() const { return m_pSysHandler.get(); }
   FPDF_FORMFILLINFO* GetFormFillInfo() const { return m_pInfo; }
 

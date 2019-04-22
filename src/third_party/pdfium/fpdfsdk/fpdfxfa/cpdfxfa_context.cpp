@@ -77,7 +77,6 @@ void CPDFXFA_Context::CloseXFADoc() {
     return;
 
   m_pXFADocView = nullptr;
-  m_pXFADoc->CloseDoc();
   m_pXFADoc.reset();
 }
 
@@ -103,13 +102,9 @@ void CPDFXFA_Context::SetFormFillEnv(
 bool CPDFXFA_Context::LoadXFADoc() {
   m_nLoadStatus = FXFA_LOADSTATUS_LOADING;
   m_XFAPageList.clear();
-
-  CXFA_FFApp* pApp = GetXFAApp();
-  if (!pApp)
-    return false;
-
-  m_pXFADoc = pdfium::MakeUnique<CXFA_FFDoc>(pApp, &m_DocEnv);
-  if (!m_pXFADoc->OpenDoc(m_pPDFDoc.Get())) {
+  m_pXFADoc =
+      CXFA_FFDoc::CreateAndOpen(m_pXFAApp.get(), &m_DocEnv, m_pPDFDoc.Get());
+  if (!m_pXFADoc) {
     SetLastError(FPDF_ERR_XFALOAD);
     return false;
   }
@@ -228,15 +223,15 @@ WideString CPDFXFA_Context::GetAppTitle() const {
 }
 
 WideString CPDFXFA_Context::GetAppName() {
-  return m_pFormFillEnv ? m_pFormFillEnv->FFI_GetAppName() : L"";
+  return m_pFormFillEnv ? m_pFormFillEnv->FFI_GetAppName() : WideString();
 }
 
 WideString CPDFXFA_Context::GetLanguage() {
-  return m_pFormFillEnv ? m_pFormFillEnv->GetLanguage() : L"";
+  return m_pFormFillEnv ? m_pFormFillEnv->GetLanguage() : WideString();
 }
 
 WideString CPDFXFA_Context::GetPlatform() {
-  return m_pFormFillEnv ? m_pFormFillEnv->GetPlatform() : L"";
+  return m_pFormFillEnv ? m_pFormFillEnv->GetPlatform() : WideString();
 }
 
 void CPDFXFA_Context::Beep(uint32_t dwType) {

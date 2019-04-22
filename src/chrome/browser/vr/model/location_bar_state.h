@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VR_MODEL_LOCATION_BAR_STATE_H_
 #define CHROME_BROWSER_VR_MODEL_LOCATION_BAR_STATE_H_
 
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 #include "components/security_state/core/security_state.h"
 #include "url/gurl.h"
 
@@ -16,7 +16,7 @@ struct VectorIcon;
 namespace vr {
 
 // Passes information obtained from LocationBarModel to the VR UI framework.
-struct VR_EXPORT LocationBarState {
+struct VR_BASE_EXPORT LocationBarState {
  public:
   LocationBarState();
   LocationBarState(const GURL& url,

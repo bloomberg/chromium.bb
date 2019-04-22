@@ -5,8 +5,8 @@
 #include <stddef.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
@@ -56,11 +56,11 @@ class SigninPrepareUserListTest : public testing::Test,
         this, TestingBrowserProcess::GetGlobal()->local_state()));
     fake_user_manager_->set_multi_profile_user_controller(controller_.get());
 
-    for (size_t i = 0; i < arraysize(kUsersPublic); ++i)
+    for (size_t i = 0; i < base::size(kUsersPublic); ++i)
       fake_user_manager_->AddPublicAccountUser(
           AccountId::FromUserEmail(kUsersPublic[i]));
 
-    for (size_t i = 0; i < arraysize(kUsers); ++i)
+    for (size_t i = 0; i < base::size(kUsers); ++i)
       fake_user_manager_->AddUser(AccountId::FromUserEmail(kUsers[i]));
 
     fake_user_manager_->set_owner_id(AccountId::FromUserEmail(kOwner));

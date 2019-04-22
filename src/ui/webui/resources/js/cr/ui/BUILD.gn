@@ -4,12 +4,18 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
-js_type_check("closure_compile") {
+group("closure_compile") {
+  deps = [
+    ":ui_resources",
+    "page_manager:closure_compile",
+  ]
+}
+
+js_type_check("ui_resources") {
   deps = [
     ":array_data_model",
     ":autocomplete_list",
     ":command",
-    ":context_menu_button",
     ":context_menu_handler",
     ":dialogs",
     ":drag_wrapper",
@@ -17,6 +23,7 @@ js_type_check("closure_compile") {
     ":focus_manager",
     ":focus_outline_manager",
     ":focus_row",
+    ":focus_row_behavior",
     ":focus_without_ink",
     ":grid",
     ":list",
@@ -31,7 +38,10 @@ js_type_check("closure_compile") {
     ":overlay",
     ":position_util",
     ":splitter",
+    ":store",
+    ":store_client",
     ":table",
+    ":tabs",
     ":tree",
   ]
 }
@@ -51,16 +61,18 @@ js_library("autocomplete_list") {
   ]
 }
 
+js_library("bubble") {
+  deps = [
+    "..:ui",
+    "../..:cr",
+    "../..:event_tracker",
+  ]
+}
+
 js_library("command") {
   deps = [
     "..:ui",
     "../..:cr",
-  ]
-}
-
-js_library("context_menu_button") {
-  deps = [
-    ":menu_button",
   ]
 }
 
@@ -106,6 +118,12 @@ js_library("focus_manager") {
 js_library("focus_outline_manager") {
   deps = [
     "../..:cr",
+  ]
+}
+
+js_library("focus_row_behavior") {
+  deps = [
+    ":focus_row",
   ]
 }
 
@@ -223,6 +241,19 @@ js_library("splitter") {
   ]
 }
 
+js_library("store") {
+  deps = [
+    "../..:cr",
+  ]
+}
+
+js_library("store_client") {
+  deps = [
+    ":store",
+    "../..:cr",
+  ]
+}
+
 js_library("table") {
   deps = [
     ":list",
@@ -230,6 +261,14 @@ js_library("table") {
     "table:table_column_model",
     "table:table_header",
     "table:table_list",
+  ]
+}
+
+js_library("tabs") {
+  deps = [
+    ":focus_outline_manager",
+    "..:ui",
+    "../..:cr",
   ]
 }
 

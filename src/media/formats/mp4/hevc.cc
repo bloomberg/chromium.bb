@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/media_util.h"
 #include "media/formats/mp4/avc.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/box_reader.h"
@@ -49,7 +50,7 @@ bool HEVCDecoderConfigurationRecord::Parse(BoxReader* reader) {
 bool HEVCDecoderConfigurationRecord::Parse(const uint8_t* data, int data_size) {
   BufferReader reader(data, data_size);
   // TODO(wolenetz): Questionable MediaLog usage, http://crbug.com/712310
-  MediaLog media_log;
+  NullMediaLog media_log;
   return ParseInternal(&reader, &media_log);
 }
 

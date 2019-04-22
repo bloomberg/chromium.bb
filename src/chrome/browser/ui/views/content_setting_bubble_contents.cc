@@ -67,19 +67,19 @@ struct LayoutRow {
 // in the content setting bubble.
 class MediaComboboxModel : public ui::ComboboxModel {
  public:
-  explicit MediaComboboxModel(content::MediaStreamType type);
+  explicit MediaComboboxModel(blink::MediaStreamType type);
   ~MediaComboboxModel() override;
 
-  content::MediaStreamType type() const { return type_; }
-  const content::MediaStreamDevices& GetDevices() const;
-  int GetDeviceIndex(const content::MediaStreamDevice& device) const;
+  blink::MediaStreamType type() const { return type_; }
+  const blink::MediaStreamDevices& GetDevices() const;
+  int GetDeviceIndex(const blink::MediaStreamDevice& device) const;
 
   // ui::ComboboxModel:
   int GetItemCount() const override;
   base::string16 GetItemAt(int index) override;
 
  private:
-  content::MediaStreamType type_;
+  blink::MediaStreamType type_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaComboboxModel);
 };
@@ -117,7 +117,7 @@ class MediaMenuBlock : public views::View {
       first_row = false;
 
       layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-      content::MediaStreamType stream_type = i->first;
+      blink::MediaStreamType stream_type = i->first;
       const ContentSettingBubbleModel::MediaMenu& menu = i->second;
 
       views::Label* label = new views::Label(menu.label);
@@ -151,24 +151,24 @@ class MediaMenuBlock : public views::View {
 
 // MediaComboboxModel ----------------------------------------------------------
 
-MediaComboboxModel::MediaComboboxModel(content::MediaStreamType type)
+MediaComboboxModel::MediaComboboxModel(blink::MediaStreamType type)
     : type_(type) {
-  DCHECK(type_ == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type_ == content::MEDIA_DEVICE_VIDEO_CAPTURE);
+  DCHECK(type_ == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type_ == blink::MEDIA_DEVICE_VIDEO_CAPTURE);
 }
 
 MediaComboboxModel::~MediaComboboxModel() {}
 
-const content::MediaStreamDevices& MediaComboboxModel::GetDevices() const {
+const blink::MediaStreamDevices& MediaComboboxModel::GetDevices() const {
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
-  return type_ == content::MEDIA_DEVICE_AUDIO_CAPTURE
+  return type_ == blink::MEDIA_DEVICE_AUDIO_CAPTURE
              ? dispatcher->GetAudioCaptureDevices()
              : dispatcher->GetVideoCaptureDevices();
 }
 
 int MediaComboboxModel::GetDeviceIndex(
-    const content::MediaStreamDevice& device) const {
+    const blink::MediaStreamDevice& device) const {
   const auto& devices = GetDevices();
   for (size_t i = 0; i < devices.size(); ++i) {
     if (device.id == devices[i].id)
@@ -455,11 +455,12 @@ void ContentSettingBubbleContents::Init() {
 
   // Layout for the item list (blocked plugins and popups).
   if (!bubble_content.list_items.empty()) {
-    list_item_container_ = new ListItemContainer(this);
-    list_item_container_->SetBorder(
+    auto list_item_container = std::make_unique<ListItemContainer>(this);
+    list_item_container->SetBorder(
         views::CreateEmptyBorder(0, margins().left(), 0, margins().right()));
     auto scroll_view = std::make_unique<views::ScrollView>();
-    scroll_view->SetContents(list_item_container_);
+    list_item_container_ =
+        scroll_view->SetContents(std::move(list_item_container));
     rows.push_back({std::move(scroll_view), LayoutRowType::FULL_WIDTH});
 
     for (const ContentSettingBubbleModel::ListItem& list_item :

@@ -20,9 +20,9 @@ namespace notifier {
 SendPingTask::Delegate::~Delegate() {
 }
 
-SendPingTask::SendPingTask(buzz::XmppTaskParentInterface* parent,
+SendPingTask::SendPingTask(jingle_xmpp::XmppTaskParentInterface* parent,
                            Delegate* delegate)
-    : XmppTask(parent, buzz::XmppEngine::HL_SINGLE), delegate_(delegate) {
+    : XmppTask(parent, jingle_xmpp::XmppEngine::HL_SINGLE), delegate_(delegate) {
 }
 
 SendPingTask::~SendPingTask() {
@@ -30,9 +30,9 @@ SendPingTask::~SendPingTask() {
 
 int SendPingTask::ProcessStart() {
   ping_task_id_ = task_id();
-  std::unique_ptr<buzz::XmlElement> stanza(MakePingStanza(ping_task_id_));
+  std::unique_ptr<jingle_xmpp::XmlElement> stanza(MakePingStanza(ping_task_id_));
   DVLOG(1) << "Sending ping stanza " << XmlElementToString(*stanza);
-  if (SendStanza(stanza.get()) != buzz::XMPP_RETURN_OK) {
+  if (SendStanza(stanza.get()) != jingle_xmpp::XMPP_RETURN_OK) {
     DLOG(WARNING) << "Could not send stanza " << XmlElementToString(*stanza);
     return STATE_ERROR;
   }
@@ -40,15 +40,15 @@ int SendPingTask::ProcessStart() {
 }
 
 int SendPingTask::ProcessResponse() {
-  const buzz::XmlElement* stanza = NextStanza();
+  const jingle_xmpp::XmlElement* stanza = NextStanza();
   if (stanza == NULL) {
     return STATE_BLOCKED;
   }
 
   DVLOG(1) << "Received stanza " << XmlElementToString(*stanza);
 
-  std::string type = stanza->Attr(buzz::QN_TYPE);
-  if (type != buzz::STR_RESULT) {
+  std::string type = stanza->Attr(jingle_xmpp::QN_TYPE);
+  if (type != jingle_xmpp::STR_RESULT) {
     DLOG(WARNING) << "No type=\"result\" attribute found in stanza "
                   << XmlElementToString(*stanza);
     return STATE_ERROR;
@@ -58,22 +58,22 @@ int SendPingTask::ProcessResponse() {
   return STATE_DONE;
 }
 
-bool SendPingTask::HandleStanza(const buzz::XmlElement* stanza) {
+bool SendPingTask::HandleStanza(const jingle_xmpp::XmlElement* stanza) {
   // MatchResponseIq() matches the given Jid with the "from" field of the given
   // stanza, which in this case should be the empty string
   // (signifying the server).
-  if (MatchResponseIq(stanza, buzz::Jid(buzz::STR_EMPTY), ping_task_id_)) {
+  if (MatchResponseIq(stanza, jingle_xmpp::Jid(jingle_xmpp::STR_EMPTY), ping_task_id_)) {
     QueueStanza(stanza);
     return true;
   }
   return false;
 }
 
-buzz::XmlElement* SendPingTask::MakePingStanza(const std::string& task_id) {
-  buzz::XmlElement* stanza = MakeIq(buzz::STR_GET,
-                                    buzz::Jid(buzz::STR_EMPTY),
+jingle_xmpp::XmlElement* SendPingTask::MakePingStanza(const std::string& task_id) {
+  jingle_xmpp::XmlElement* stanza = MakeIq(jingle_xmpp::STR_GET,
+                                    jingle_xmpp::Jid(jingle_xmpp::STR_EMPTY),
                                     task_id);
-  stanza->AddElement(new buzz::XmlElement(buzz::QN_PING));
+  stanza->AddElement(new jingle_xmpp::XmlElement(jingle_xmpp::QN_PING));
   return stanza;
 }
 

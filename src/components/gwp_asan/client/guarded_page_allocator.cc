@@ -4,7 +4,11 @@
 
 #include "components/gwp_asan/client/guarded_page_allocator.h"
 
+#include <algorithm>
+#include <memory>
+
 #include "base/bits.h"
+#include "base/debug/stack_trace.h"
 #include "base/no_destructor.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
@@ -14,46 +18,90 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/gwp_asan/common/allocator_state.h"
 #include "components/gwp_asan/common/crash_key_name.h"
+#include "components/gwp_asan/common/pack_stack_trace.h"
 
-using base::debug::StackTrace;
+#if defined(OS_MACOSX)
+#include <pthread.h>
+#endif
 
 namespace gwp_asan {
 namespace internal {
+
+namespace {
+
+// Report a tid that matches what crashpad collects which may differ from what
+// base::PlatformThread::CurrentId() returns.
+uint64_t ReportTid() {
+#if !defined(OS_MACOSX)
+  return base::PlatformThread::CurrentId();
+#else
+  uint64_t tid = base::kInvalidThreadId;
+  pthread_threadid_np(nullptr, &tid);
+  return tid;
+#endif
+}
+
+}  // namespace
 
 // TODO: Delete out-of-line constexpr defininitons once C++17 is in use.
 constexpr size_t GuardedPageAllocator::kGpaAllocAlignment;
 
 GuardedPageAllocator::GuardedPageAllocator() {}
 
-void GuardedPageAllocator::Init(size_t num_pages) {
-  CHECK_GT(num_pages, 0U);
-  CHECK_LE(num_pages, AllocatorState::kGpaMaxPages);
-  state_.num_pages = num_pages;
+void GuardedPageAllocator::Init(size_t max_alloced_pages,
+                                size_t num_metadata,
+                                size_t total_pages) {
+  CHECK_GT(max_alloced_pages, 0U);
+  CHECK_LE(max_alloced_pages, num_metadata);
+  CHECK_LE(num_metadata, AllocatorState::kMaxMetadata);
+  CHECK_LE(num_metadata, total_pages);
+  CHECK_LE(total_pages, AllocatorState::kMaxSlots);
+  max_alloced_pages_ = max_alloced_pages;
+  state_.num_metadata = num_metadata;
+  state_.total_pages = total_pages;
 
   state_.page_size = base::GetPageSize();
-  CHECK(MapPages());
+
+  void* region = MapRegion();
+  if (!region)
+    PLOG(FATAL) << "Failed to reserve allocator region";
+
+  state_.pages_base_addr = reinterpret_cast<uintptr_t>(region);
+  state_.first_page_addr = state_.pages_base_addr + state_.page_size;
+  state_.pages_end_addr = state_.pages_base_addr + RegionSize();
 
   {
     // Obtain this lock exclusively to satisfy the thread-safety annotations,
     // there should be no risk of a race here.
     base::AutoLock lock(lock_);
-    free_pages_ = (state_.num_pages == AllocatorState::kGpaMaxPages)
-                      ? ~0ULL
-                      : (1ULL << state_.num_pages) - 1;
+
+    free_metadata_.resize(state_.num_metadata);
+    for (size_t i = 0; i < num_metadata; i++)
+      free_metadata_[i] = i;
+
+    free_slots_.resize(total_pages);
+    for (size_t i = 0; i < total_pages; i++)
+      free_slots_[i] = i;
   }
 
-  AllocateStackTraces();
+  slot_to_metadata_idx_.resize(total_pages);
+  for (size_t i = 0; i < total_pages; i++)
+    slot_to_metadata_idx_[i] = AllocatorState::kInvalidMetadataIdx;
+  state_.slot_to_metadata_addr =
+      reinterpret_cast<uintptr_t>(&slot_to_metadata_idx_.front());
+
+  metadata_ =
+      std::make_unique<AllocatorState::SlotMetadata[]>(state_.num_metadata);
+  state_.metadata_addr = reinterpret_cast<uintptr_t>(metadata_.get());
 }
 
 GuardedPageAllocator::~GuardedPageAllocator() {
-  if (state_.num_pages) {
-    UnmapPages();
-    DeallocateStackTraces();
-  }
+  if (state_.total_pages)
+    UnmapRegion();
 }
 
 void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
-  if (!size || size > state_.page_size)
+  if (!size || size > state_.page_size || align > state_.page_size)
     return nullptr;
 
   // Default alignment is size's next smallest power-of-two, up to
@@ -62,18 +110,18 @@ void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
     align =
         std::min(size_t{1} << base::bits::Log2Floor(size), kGpaAllocAlignment);
   }
-  CHECK_LE(align, size);
   CHECK(base::bits::IsPowerOfTwo(align));
 
-  size_t free_slot = ReserveSlot();
-  if (free_slot == SIZE_MAX)
-    return nullptr;  // All slots are reserved.
+  AllocatorState::SlotIdx free_slot;
+  AllocatorState::MetadataIdx free_metadata;
+  if (!ReserveSlotAndMetadata(&free_slot, &free_metadata))
+    return nullptr;
 
   uintptr_t free_page = state_.SlotToAddr(free_slot);
   MarkPageReadWrite(reinterpret_cast<void*>(free_page));
 
   size_t offset;
-  if (base::RandInt(0, 1))
+  if (free_slot & 1)
     // Return right-aligned allocation to detect overflows.
     offset = state_.page_size - base::bits::Align(size, align);
   else
@@ -82,8 +130,15 @@ void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
 
   void* alloc = reinterpret_cast<void*>(free_page + offset);
 
-  // Initialize slot metadata.
-  RecordAllocationInSlot(free_slot, size, alloc);
+  // Initialize slot metadata and only then update slot_to_metadata_idx so that
+  // the mapping never points to an incorrect metadata mapping.
+  RecordAllocationMetadata(free_metadata, size, alloc);
+  {
+    // Lock to avoid race with the slot_to_metadata_idx_ check/write in
+    // ReserveSlotAndMetadata().
+    base::AutoLock lock(lock_);
+    slot_to_metadata_idx_[free_slot] = free_metadata;
+  }
 
   return alloc;
 }
@@ -92,122 +147,152 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
   CHECK(PointerIsMine(ptr));
 
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-  MarkPageInaccessible(reinterpret_cast<void*>(state_.GetPageAddr(addr)));
+  AllocatorState::SlotIdx slot = state_.AddrToSlot(state_.GetPageAddr(addr));
+  AllocatorState::MetadataIdx metadata_idx = slot_to_metadata_idx_[slot];
 
-  size_t slot = state_.AddrToSlot(state_.GetPageAddr(addr));
-  DCHECK_EQ(addr, state_.data[slot].alloc_ptr);
-  // Check for double free.
-  if (state_.data[slot].dealloc.trace_addr) {
-    state_.double_free_detected = true;
-    *reinterpret_cast<char*>(ptr) = 'X';  // Trigger exception.
+  // Check for a call to free() with an incorrect pointer, e.g. the pointer does
+  // not match the allocated pointer. This may occur with a bad free pointer or
+  // an outdated double free when the metadata has expired.
+  if (metadata_idx == AllocatorState::kInvalidMetadataIdx ||
+      addr != metadata_[metadata_idx].alloc_ptr) {
+    state_.free_invalid_address = addr;
     __builtin_trap();
   }
 
-  // Record deallocation stack trace/thread id.
-  RecordDeallocationInSlot(slot);
+  // Check for double free.
+  if (metadata_[metadata_idx].deallocation_occurred.exchange(true)) {
+    state_.double_free_address = addr;
+    // TODO(https://crbug.com/925447): The other thread may not be done writing
+    // a stack trace so we could spin here until it's read; however, it's also
+    // possible we are racing an allocation in the middle of
+    // RecordAllocationMetadata. For now it's possible a racy double free could
+    // lead to a bad stack trace, but no internal allocator corruption.
+    __builtin_trap();
+  }
 
-  FreeSlot(slot);
+  // Record deallocation stack trace/thread id before marking the page
+  // inaccessible in case a use-after-free occurs immediately.
+  RecordDeallocationMetadata(metadata_idx);
+  MarkPageInaccessible(reinterpret_cast<void*>(state_.GetPageAddr(addr)));
+
+  FreeSlotAndMetadata(slot, metadata_idx);
 }
 
 size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
-  DCHECK(PointerIsMine(ptr));
+  CHECK(PointerIsMine(ptr));
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-  size_t slot = state_.AddrToSlot(state_.GetPageAddr(addr));
-  DCHECK_EQ(addr, state_.data[slot].alloc_ptr);
-  return state_.data[slot].alloc_size;
+  AllocatorState::SlotIdx slot = state_.AddrToSlot(state_.GetPageAddr(addr));
+  AllocatorState::MetadataIdx metadata_idx = slot_to_metadata_idx_[slot];
+#if !defined(OS_MACOSX)
+  CHECK_LT(metadata_idx, state_.num_metadata);
+  CHECK_EQ(addr, metadata_[metadata_idx].alloc_ptr);
+#else
+  // macOS core libraries call malloc_size() inside an allocation. The macOS
+  // malloc_size() returns 0 when the pointer is not recognized.
+  // https://crbug.com/946736
+  if (metadata_idx == AllocatorState::kInvalidMetadataIdx ||
+      addr != metadata_[metadata_idx].alloc_ptr)
+    return 0;
+#endif
+  return metadata_[metadata_idx].alloc_size;
 }
 
-// Selects a random slot in O(1) time by rotating the free_pages bitmap by a
-// random amount, using an intrinsic to get the least-significant 1-bit after
-// the rotation, and then computing the position of the bit before the rotation.
-// Picking a random slot is useful for randomizing allocator behavior across
-// different runs, so certain bits being more heavily biased is not a concern.
-size_t GuardedPageAllocator::ReserveSlot() {
+size_t GuardedPageAllocator::RegionSize() const {
+  return (2 * state_.total_pages + 1) * state_.page_size;
+}
+
+bool GuardedPageAllocator::ReserveSlotAndMetadata(
+    AllocatorState::SlotIdx* slot,
+    AllocatorState::MetadataIdx* metadata_idx) {
   base::AutoLock lock(lock_);
-  if (!free_pages_)
-    return SIZE_MAX;
+  if (num_alloced_pages_ == max_alloced_pages_)
+    return false;
+  num_alloced_pages_++;
 
-  // Disable allocations after a double free is detected so that the double
-  // freed allocation is not reallocated while the crash handler could be
-  // concurrently inspecting the metadata.
-  if (state_.double_free_detected)
-    return SIZE_MAX;
+  DCHECK(!free_metadata_.empty());
+  DCHECK_LE(free_metadata_.size(), state_.num_metadata);
+  size_t rand = base::RandGenerator(free_metadata_.size());
+  *metadata_idx = free_metadata_[rand];
+  free_metadata_[rand] = free_metadata_.back();
+  free_metadata_.pop_back();
+  DCHECK_EQ(free_metadata_.size(), state_.num_metadata - num_alloced_pages_);
 
-  uint64_t rot = base::RandGenerator(AllocatorState::kGpaMaxPages);
-  BitMap rotated_bitmap = (free_pages_ << rot) |
-                          (free_pages_ >> (AllocatorState::kGpaMaxPages - rot));
-  int rotated_selection = CountTrailingZeroBits64(rotated_bitmap);
-  size_t selection = (rotated_selection - rot + AllocatorState::kGpaMaxPages) %
-                     AllocatorState::kGpaMaxPages;
-  DCHECK_LT(selection, AllocatorState::kGpaMaxPages);
-  DCHECK(free_pages_ & (1ULL << selection));
-  free_pages_ &= ~(1ULL << selection);
-  return selection;
+  // If this metadata has been previously used, overwrite the outdated
+  // slot_to_metadata_idx mapping from the previous use if it's still valid.
+  if (metadata_[*metadata_idx].alloc_ptr) {
+    DCHECK(state_.PointerIsMine(metadata_[*metadata_idx].alloc_ptr));
+    size_t old_slot = state_.GetNearestSlot(metadata_[*metadata_idx].alloc_ptr);
+    if (slot_to_metadata_idx_[old_slot] == *metadata_idx)
+      slot_to_metadata_idx_[old_slot] = AllocatorState::kInvalidMetadataIdx;
+  }
+
+  DCHECK(!free_slots_.empty());
+  DCHECK_LE(free_slots_.size(), state_.total_pages);
+  rand = base::RandGenerator(free_slots_.size());
+  *slot = free_slots_[rand];
+  free_slots_[rand] = free_slots_.back();
+  free_slots_.pop_back();
+  DCHECK_EQ(free_slots_.size(), state_.total_pages - num_alloced_pages_);
+
+  return true;
 }
 
-void GuardedPageAllocator::FreeSlot(size_t slot) {
-  DCHECK_LT(slot, AllocatorState::kGpaMaxPages);
+void GuardedPageAllocator::FreeSlotAndMetadata(
+    AllocatorState::SlotIdx slot,
+    AllocatorState::MetadataIdx metadata_idx) {
+  DCHECK_LT(slot, state_.total_pages);
+  DCHECK_LT(metadata_idx, state_.num_metadata);
 
-  BitMap bit = 1ULL << slot;
   base::AutoLock lock(lock_);
-  DCHECK_EQ((free_pages_ & bit), 0ULL);
-  free_pages_ |= bit;
+  DCHECK_LT(free_slots_.size(), state_.total_pages);
+  free_slots_.push_back(slot);
+
+  DCHECK_LT(free_metadata_.size(), state_.total_pages);
+  free_metadata_.push_back(metadata_idx);
+
+  DCHECK_GT(num_alloced_pages_, 0U);
+  num_alloced_pages_--;
+
+  DCHECK_EQ(free_metadata_.size(), state_.num_metadata - num_alloced_pages_);
+  DCHECK_EQ(free_slots_.size(), state_.total_pages - num_alloced_pages_);
 }
 
-void GuardedPageAllocator::AllocateStackTraces() {
-  // new is not used so that we can explicitly call the constructor when we
-  // want to collect a stack trace.
-  for (size_t i = 0; i < state_.num_pages; i++) {
-    alloc_traces[i] =
-        static_cast<StackTrace*>(malloc(sizeof(*alloc_traces[i])));
-    CHECK(alloc_traces[i]);
-    dealloc_traces[i] =
-        static_cast<StackTrace*>(malloc(sizeof(*dealloc_traces[i])));
-    CHECK(dealloc_traces[i]);
-  }
+void GuardedPageAllocator::RecordAllocationMetadata(
+    AllocatorState::MetadataIdx metadata_idx,
+    size_t size,
+    void* ptr) {
+  metadata_[metadata_idx].alloc_size = size;
+  metadata_[metadata_idx].alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
+
+  void* trace[AllocatorState::kMaxStackFrames];
+  size_t len =
+      base::debug::CollectStackTrace(trace, AllocatorState::kMaxStackFrames);
+  metadata_[metadata_idx].alloc.trace_len =
+      Pack(reinterpret_cast<uintptr_t*>(trace), len,
+           metadata_[metadata_idx].stack_trace_pool,
+           sizeof(metadata_[metadata_idx].stack_trace_pool) / 2);
+  metadata_[metadata_idx].alloc.tid = ReportTid();
+  metadata_[metadata_idx].alloc.trace_collected = true;
+
+  metadata_[metadata_idx].dealloc.tid = base::kInvalidThreadId;
+  metadata_[metadata_idx].dealloc.trace_len = 0;
+  metadata_[metadata_idx].dealloc.trace_collected = false;
+  metadata_[metadata_idx].deallocation_occurred = false;
 }
 
-void GuardedPageAllocator::DeallocateStackTraces() {
-  for (size_t i = 0; i < state_.num_pages; i++) {
-    DestructStackTrace(i);
-
-    free(alloc_traces[i]);
-    alloc_traces[i] = nullptr;
-    free(dealloc_traces[i]);
-    dealloc_traces[i] = nullptr;
-  }
-}
-
-void GuardedPageAllocator::DestructStackTrace(size_t slot) {
-  // Destruct previous allocation/deallocation traces. The constructor was only
-  // called if trace_addr is non-null.
-  if (state_.data[slot].alloc.trace_addr)
-    alloc_traces[slot]->~StackTrace();
-  if (state_.data[slot].dealloc.trace_addr)
-    dealloc_traces[slot]->~StackTrace();
-}
-
-void GuardedPageAllocator::RecordAllocationInSlot(size_t slot,
-                                                  size_t size,
-                                                  void* ptr) {
-  state_.data[slot].alloc_size = size;
-  state_.data[slot].alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
-
-  state_.data[slot].alloc.tid = base::PlatformThread::CurrentId();
-  new (alloc_traces[slot]) StackTrace();
-  state_.data[slot].alloc.trace_addr = reinterpret_cast<uintptr_t>(
-      alloc_traces[slot]->Addresses(&state_.data[slot].alloc.trace_len));
-
-  state_.data[slot].dealloc.tid = base::kInvalidThreadId;
-  state_.data[slot].dealloc.trace_addr = 0;
-  state_.data[slot].dealloc.trace_len = 0;
-}
-
-void GuardedPageAllocator::RecordDeallocationInSlot(size_t slot) {
-  state_.data[slot].dealloc.tid = base::PlatformThread::CurrentId();
-  new (dealloc_traces[slot]) StackTrace();
-  state_.data[slot].dealloc.trace_addr = reinterpret_cast<uintptr_t>(
-      dealloc_traces[slot]->Addresses(&state_.data[slot].dealloc.trace_len));
+void GuardedPageAllocator::RecordDeallocationMetadata(
+    AllocatorState::MetadataIdx metadata_idx) {
+  void* trace[AllocatorState::kMaxStackFrames];
+  size_t len =
+      base::debug::CollectStackTrace(trace, AllocatorState::kMaxStackFrames);
+  metadata_[metadata_idx].dealloc.trace_len =
+      Pack(reinterpret_cast<uintptr_t*>(trace), len,
+           metadata_[metadata_idx].stack_trace_pool +
+               metadata_[metadata_idx].alloc.trace_len,
+           sizeof(metadata_[metadata_idx].stack_trace_pool) -
+               metadata_[metadata_idx].alloc.trace_len);
+  metadata_[metadata_idx].dealloc.tid = ReportTid();
+  metadata_[metadata_idx].dealloc.trace_collected = true;
 }
 
 uintptr_t GuardedPageAllocator::GetCrashKeyAddress() const {

@@ -21,7 +21,7 @@
 
 namespace blink {
 
-// https://html.spec.whatwg.org/multipage/dom.html#html-element-constructors
+// https://html.spec.whatwg.org/C/#html-element-constructors
 void V8HTMLConstructor::HtmlConstructor(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     const WrapperTypeInfo& wrapper_type_info,
@@ -74,7 +74,7 @@ void V8HTMLConstructor::HtmlConstructor(
     // Autonomous custom element
     // 4.1. If the active function object is not HTMLElement, then throw a
     // TypeError
-    if (!V8HTMLElement::wrapper_type_info.Equals(&wrapper_type_info)) {
+    if (!V8HTMLElement::GetWrapperTypeInfo()->Equals(&wrapper_type_info)) {
       V8ThrowException::ThrowTypeError(isolate,
                                        "Illegal constructor: autonomous custom "
                                        "elements must extend HTMLElement");

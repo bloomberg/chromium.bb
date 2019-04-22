@@ -4,28 +4,16 @@
 
 #include "cc/layers/painted_scrollbar_layer.h"
 
-#include <algorithm>
-
 #include "base/auto_reset.h"
-#include "cc/base/math_util.h"
-#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
-#include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
-#include "cc/resources/ui_resource_bitmap.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/layer_tree_impl.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkSize.h"
-#include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/skia_util.h"
 
 namespace {
 static constexpr int kMaxScrollbarDimension = 8192;
-};
+}
 
 namespace cc {
 
@@ -54,10 +42,6 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(
       is_overlay_(scrollbar_->IsOverlay()),
       has_thumb_(scrollbar_->HasThumb()),
       thumb_opacity_(scrollbar_->ThumbOpacity()) {
-  if (!scrollbar_->IsOverlay()) {
-    AddMainThreadScrollingReasons(
-        MainThreadScrollingReason::kScrollbarScrolling);
-  }
   SetIsScrollbar(true);
 }
 
@@ -86,6 +70,8 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
       internal_contents_scale_, internal_content_bounds_);
 
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
+  scrollbar_layer->SetBackButtonRect(back_button_rect_);
+  scrollbar_layer->SetForwardButtonRect(forward_button_rect_);
   scrollbar_layer->SetThumbLength(thumb_length_);
   if (scrollbar_->Orientation() == HORIZONTAL) {
     scrollbar_layer->SetTrackStart(
@@ -149,6 +135,8 @@ gfx::Rect PaintedScrollbarLayer::OriginThumbRect() const {
 
 void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
   UpdateProperty(scrollbar_->TrackRect(), &track_rect_);
+  UpdateProperty(scrollbar_->BackButtonRect(), &back_button_rect_);
+  UpdateProperty(scrollbar_->ForwardButtonRect(), &forward_button_rect_);
   UpdateProperty(scrollbar_->Location(), &location_);
   UpdateProperty(scrollbar_->IsOverlay(), &is_overlay_);
   UpdateProperty(scrollbar_->HasThumb(), &has_thumb_);

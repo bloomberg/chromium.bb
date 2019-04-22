@@ -9,6 +9,29 @@
 
 namespace previews {
 
+// If you're adding values to this switch, also make sure to update
+// |Previews.ServerLitePage.Penalty.Types| in histograms.xml.
+std::string ServerLitePageStatusToString(ServerLitePageStatus status) {
+  switch (status) {
+    case ServerLitePageStatus::kUnknown:
+      // Unknown penalty metrics are not recorded.
+      NOTREACHED();
+      return "Unknown";
+    case ServerLitePageStatus::kSuccess:
+      return "Success";
+    case ServerLitePageStatus::kBypass:
+      return "Bypass";
+    case ServerLitePageStatus::kRedirect:
+      return "Redirect";
+    case ServerLitePageStatus::kFailure:
+      return "Failure";
+    case ServerLitePageStatus::kControl:
+      // Control group penalty metrics are not recorded.
+      NOTREACHED();
+      return "Control";
+  }
+}
+
 bool IsLitePageRedirectPreviewDomain(const GURL& url) {
   if (!url.is_valid())
     return false;
@@ -31,8 +54,11 @@ bool ExtractOriginalURLFromLitePageRedirectURL(const GURL& url,
   if (!net::GetValueForKeyInQuery(url, "u", &original_url_query_param))
     return false;
 
-  if (original_url)
+  if (original_url) {
+    if (url.has_ref())
+      original_url_query_param += "#" + url.ref();
     *original_url = original_url_query_param;
+  }
   return true;
 }
 

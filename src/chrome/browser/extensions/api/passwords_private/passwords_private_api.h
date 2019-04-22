@@ -8,8 +8,10 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
-#include "chrome/browser/ui/passwords/password_manager_presenter.h"
+#include "chrome/browser/ui/passwords/settings/password_manager_presenter.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -20,7 +22,7 @@ class PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction
   PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction() {}
   DECLARE_EXTENSION_FUNCTION(
       "passwordsPrivate.recordPasswordsPageAccessInSettings",
-      PASSWORDSPRIVATE_RECORDPASSWORDSPAGEACCESSINSETTINGS);
+      PASSWORDSPRIVATE_RECORDPASSWORDSPAGEACCESSINSETTINGS)
 
  protected:
   ~PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction() override;
@@ -33,12 +35,29 @@ class PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction
       PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction);
 };
 
+class PasswordsPrivateChangeSavedPasswordFunction
+    : public UIThreadExtensionFunction {
+ public:
+  PasswordsPrivateChangeSavedPasswordFunction() {}
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.changeSavedPassword",
+                             PASSWORDSPRIVATE_CHANGESAVEDPASSWORD)
+
+ protected:
+  ~PasswordsPrivateChangeSavedPasswordFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateChangeSavedPasswordFunction);
+};
+
 class PasswordsPrivateRemoveSavedPasswordFunction :
     public UIThreadExtensionFunction {
  public:
   PasswordsPrivateRemoveSavedPasswordFunction() {}
   DECLARE_EXTENSION_FUNCTION("passwordsPrivate.removeSavedPassword",
-                             PASSWORDSPRIVATE_REMOVESAVEDPASSWORD);
+                             PASSWORDSPRIVATE_REMOVESAVEDPASSWORD)
 
  protected:
   ~PasswordsPrivateRemoveSavedPasswordFunction() override;
@@ -55,7 +74,7 @@ class PasswordsPrivateRemovePasswordExceptionFunction :
  public:
   PasswordsPrivateRemovePasswordExceptionFunction() {}
   DECLARE_EXTENSION_FUNCTION("passwordsPrivate.removePasswordException",
-                             PASSWORDSPRIVATE_REMOVEPASSWORDEXCEPTION);
+                             PASSWORDSPRIVATE_REMOVEPASSWORDEXCEPTION)
 
  protected:
   ~PasswordsPrivateRemovePasswordExceptionFunction() override;
@@ -73,7 +92,7 @@ class PasswordsPrivateUndoRemoveSavedPasswordOrExceptionFunction
   PasswordsPrivateUndoRemoveSavedPasswordOrExceptionFunction() {}
   DECLARE_EXTENSION_FUNCTION(
       "passwordsPrivate.undoRemoveSavedPasswordOrException",
-      PASSWORDSPRIVATE_UNDOREMOVESAVEDPASSWORDOREXCEPTION);
+      PASSWORDSPRIVATE_UNDOREMOVESAVEDPASSWORDOREXCEPTION)
 
  protected:
   ~PasswordsPrivateUndoRemoveSavedPasswordOrExceptionFunction() override;
@@ -91,7 +110,7 @@ class PasswordsPrivateRequestPlaintextPasswordFunction :
  public:
   PasswordsPrivateRequestPlaintextPasswordFunction() {}
   DECLARE_EXTENSION_FUNCTION("passwordsPrivate.requestPlaintextPassword",
-                             PASSWORDSPRIVATE_REQUESTPLAINTEXTPASSWORD);
+                             PASSWORDSPRIVATE_REQUESTPLAINTEXTPASSWORD)
 
  protected:
   ~PasswordsPrivateRequestPlaintextPasswordFunction() override;
@@ -100,6 +119,8 @@ class PasswordsPrivateRequestPlaintextPasswordFunction :
   ResponseAction Run() override;
 
  private:
+  void GotPassword(base::Optional<base::string16> password);
+
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateRequestPlaintextPasswordFunction);
 };
 
@@ -108,7 +129,7 @@ class PasswordsPrivateGetSavedPasswordListFunction
  public:
   PasswordsPrivateGetSavedPasswordListFunction() {}
   DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getSavedPasswordList",
-                             PASSWORDSPRIVATE_GETSAVEDPASSWORDLIST);
+                             PASSWORDSPRIVATE_GETSAVEDPASSWORDLIST)
 
  protected:
   ~PasswordsPrivateGetSavedPasswordListFunction() override;
@@ -128,7 +149,7 @@ class PasswordsPrivateGetPasswordExceptionListFunction
  public:
   PasswordsPrivateGetPasswordExceptionListFunction() {}
   DECLARE_EXTENSION_FUNCTION("passwordsPrivate.getPasswordExceptionList",
-                             PASSWORDSPRIVATE_GETPASSWORDEXCEPTIONLIST);
+                             PASSWORDSPRIVATE_GETPASSWORDEXCEPTIONLIST)
 
  protected:
   ~PasswordsPrivateGetPasswordExceptionListFunction() override;
@@ -148,7 +169,7 @@ class PasswordsPrivateImportPasswordsFunction
  public:
   PasswordsPrivateImportPasswordsFunction() {}
   DECLARE_EXTENSION_FUNCTION("passwordsPrivate.importPasswords",
-                             PASSWORDSPRIVATE_IMPORTPASSWORDS);
+                             PASSWORDSPRIVATE_IMPORTPASSWORDS)
 
  protected:
   ~PasswordsPrivateImportPasswordsFunction() override;
@@ -165,7 +186,7 @@ class PasswordsPrivateExportPasswordsFunction
  public:
   PasswordsPrivateExportPasswordsFunction() {}
   DECLARE_EXTENSION_FUNCTION("passwordsPrivate.exportPasswords",
-                             PASSWORDSPRIVATE_EXPORTPASSWORDS);
+                             PASSWORDSPRIVATE_EXPORTPASSWORDS)
 
  protected:
   ~PasswordsPrivateExportPasswordsFunction() override;
@@ -184,7 +205,7 @@ class PasswordsPrivateCancelExportPasswordsFunction
  public:
   PasswordsPrivateCancelExportPasswordsFunction() {}
   DECLARE_EXTENSION_FUNCTION("passwordsPrivate.cancelExportPasswords",
-                             PASSWORDSPRIVATE_CANCELEXPORTPASSWORDS);
+                             PASSWORDSPRIVATE_CANCELEXPORTPASSWORDS)
 
  protected:
   ~PasswordsPrivateCancelExportPasswordsFunction() override;
@@ -201,7 +222,7 @@ class PasswordsPrivateRequestExportProgressStatusFunction
  public:
   PasswordsPrivateRequestExportProgressStatusFunction() {}
   DECLARE_EXTENSION_FUNCTION("passwordsPrivate.requestExportProgressStatus",
-                             PASSWORDSPRIVATE_REQUESTEXPORTPROGRESSSTATUS);
+                             PASSWORDSPRIVATE_REQUESTEXPORTPROGRESSSTATUS)
 
  protected:
   ~PasswordsPrivateRequestExportProgressStatusFunction() override;

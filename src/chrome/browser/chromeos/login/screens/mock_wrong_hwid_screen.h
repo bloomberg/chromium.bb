@@ -11,13 +11,14 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
-
 class MockWrongHWIDScreen : public WrongHWIDScreen {
  public:
-  MockWrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
-                      WrongHWIDScreenView* view);
+  MockWrongHWIDScreen(WrongHWIDScreenView* view,
+                      const base::RepeatingClosure& exit_callback);
   ~MockWrongHWIDScreen() override;
+
+  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(Hide, void());
 };
 
 class MockWrongHWIDScreenView : public WrongHWIDScreenView {
@@ -32,7 +33,7 @@ class MockWrongHWIDScreenView : public WrongHWIDScreenView {
   MOCK_METHOD1(MockSetDelegate, void(Delegate*));
 
  private:
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 };
 
 }  // namespace chromeos

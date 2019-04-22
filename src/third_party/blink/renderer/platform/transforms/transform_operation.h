@@ -25,10 +25,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORM_OPERATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORM_OPERATION_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
@@ -37,8 +37,6 @@ namespace blink {
 
 class PLATFORM_EXPORT TransformOperation
     : public RefCounted<TransformOperation> {
-  WTF_MAKE_NONCOPYABLE(TransformOperation);
-
  public:
   enum OperationType {
     kScaleX,
@@ -104,6 +102,9 @@ class PLATFORM_EXPORT TransformOperation
   virtual bool HasNonTrivial3DComponent() const { return Is3DOperation(); }
 
   virtual bool DependsOnBoxSize() const { return false; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TransformOperation);
 };
 
 #define DEFINE_TRANSFORM_TYPE_CASTS(thisType)                                \

@@ -89,11 +89,6 @@ DelayNode* DelayNode::Create(BaseAudioContext& context,
                              ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
   if (max_delay_time <= 0 || max_delay_time >= kMaximumAllowedDelayTime) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,

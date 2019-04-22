@@ -16,7 +16,7 @@ Important information to include:
 
 ### Example
 ```
-<event name="GoatTeleported">
+<event name="Goat.Teleported">
   <owner>teleporter@chromium.org</owner>
   <summary>
     Recorded when a page teleports a goat.
@@ -34,6 +34,90 @@ Important information to include:
 </event>
 ```
 
+### Controlling the Aggregation of Metrics
+
+Control of which metrics are included in the History table is done via the same
+[`tools/metrics/ukm/ukm.xml`](https://cs.chromium.org/chromium/src/tools/metrics/ukm/ukm.xml)
+file in the Chromium codebase. To have a metric aggregated, `<aggregation>` and
+`<history>` tags need to be added.
+
+```
+<event name="Goat.Teleported">
+  <metric name="Duration">
+    ...
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+    ...
+  </metric>
+</event>
+```
+
+Supported statistic types are:
+
+*   `<quantiles type="std-percentiles"/>`: Calculates the "standard percentiles"
+    for the values which are 1, 5, 10, 25, 50, 75, 90, 95, and 99%ile.
+*   `<enumeration/>`: Calculates the proportions of all values individually. The
+    proportions indicate the relative frequency of each bucket and are
+    calculated independently for each metric over each aggregation. (Details
+    below.)
+
+There can also be one or more `index` tags which define additional aggregation
+keys. These are a comma-separated list of keys that is appended to the standard
+set. These additional keys are optional but, if present, are always present
+together. In other words, "fields=profile.county,profile.form_factory" will
+cause all the standard aggregations plus each with *both* country *and*
+form_factor but **not** with all the standard aggregations (see above) plus only
+one of them. If individual and combined versions are desired, use multiple index
+tags.
+
+Currently supported additional index fields are:
+
+*   `profile.country`
+*   `profile.form_factor`
+*   `profile.system_ram`
+
+## Enumeration Proportions
+
+Porportions are calculated against the number of "page loads" (meaning per
+"source" which is usually but not always the same as a browser page load) that
+emitted one or more values for the enumeration.  The proportions will sum to 1.0
+for an enumeration that emits only one result per page-load if it emits anything
+at all. An enumeration emitted more than once per source will result in
+proportions that total greater than 1.0 but are still relative to the total
+number of loads.
+
+For example, `Security.SiteEngagement` emits one value (either 4 or 2) per source:
+
+*   https://www.google.com/ : 4
+*   https://www.facebook.com/ : 2
+*   https://www.wikipedia.com/ : 4
+
+A proportion calculated over all sources would sum to 1.0:
+
+*   2 (0.3333)
+*   4 (0.6667)
+
+In contrast, `Blink.UseCounter.Feature` emits multiple values per source:
+
+*   https://www.google.com/ : 1, 2, 4, 6
+*   https://www.facebook.com/ : 2, 4, 5
+*   https://www.wikipedia.com/ : 1, 2, 4
+
+A proportion calculated over all sources would be:
+
+*   1 (0.6667)
+*   2 (1.0000)
+*   3 (absent)
+*   4 (1.0000)
+*   5 (0.3333)
+*   6 (0.3333)
+
 ## Get UkmRecorder instance
 
 In order to record UKM events, your code needs a UkmRecorder object, defined by [//services/metrics/public/cpp/ukm_recorder.h](https://cs.chromium.org/chromium/src/services/metrics/public/cpp/ukm_recorder.h)
@@ -42,11 +126,11 @@ There are two main ways of getting a UkmRecorder instance.
 
 1) Use ukm::UkmRecorder::Get().  This currently only works from the Browser process.
 
-2) Use a service connector and get a MojoUkmRecorder.
+2) Use a service connector and get a UkmRecorder.
 
 ```
-std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder =
-    ukm::MojoUkmRecorder::Create(context()->connector());
+std::unique_ptr<ukm::UkmRecorder> ukm_recorder =
+    ukm::UkmRecorder::Create(context()->connector());
 ukm::builders::MyEvent(source_id)
     .SetMyMetric(metric_value)
     .Record(ukm_recorder.get());
@@ -54,7 +138,7 @@ ukm::builders::MyEvent(source_id)
 
 ## Get a ukm::SourceId
 
-UKM identifies navigations by thier source ID and you'll need to associate and ID with your event in order to tie it to a main frame URL.  Preferrably, get an existing ID for the navigation from another object.
+UKM identifies navigations by their source ID and you'll need to associate and ID with your event in order to tie it to a main frame URL.  Preferrably, get an existing ID for the navigation from another object.
 
 The main methods for doing this are using one of the following methods:
 
@@ -68,9 +152,11 @@ Currently, however, the code for passing these IDs around is incomplete so you m
 Example:
 
 ```
-ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceId();
-recorder->UpdateSourceUrl(source_id, main_frame_url);
+ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+ukm_recorder->UpdateSourceURL(source_id, main_frame_url);
 ```
+
+You will also need to add your class as a friend of UkmRecorder in order to use this private API.
 
 ## Create some events
 
@@ -81,12 +167,14 @@ Helper objects for recording your event are generated from the descriptions in u
 
 void OnGoatTeleported() {
   ...
-  ukm::builders::GoatTeleported(source_id)
+  ukm::builders::Goat_Teleported(source_id)
       .SetDuration(duration.InNanoseconds())
       .SetMass(RoundedToMultiple(mass_kg, 10))
       .Record(ukm_recorder);
 }
 ```
+
+If the event name in the XML contains a period (`.`), it is replaced with an underscore (`_`) in the method name.
 
 ## Check that it works
 

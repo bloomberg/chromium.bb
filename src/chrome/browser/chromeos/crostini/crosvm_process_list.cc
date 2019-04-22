@@ -31,7 +31,7 @@ void ProcessProcStatFile(pid_t pid,
                          pid_t* vm_concierge_pid_out,
                          const base::FilePath& slash_proc) {
   base::FilePath file_path =
-      slash_proc.Append(base::IntToString(pid)).Append("stat");
+      slash_proc.Append(base::NumberToString(pid)).Append("stat");
   base::Optional<chromeos::system::SingleProcStat> stat =
       chromeos::system::GetSingleProcStat(file_path);
   if (!stat.has_value())

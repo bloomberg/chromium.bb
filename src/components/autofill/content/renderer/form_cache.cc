@@ -164,7 +164,7 @@ void LogDeprecationMessages(const WebFormControlElement& element) {
     std::string msg = std::string("autocomplete='") + str +
         "' is deprecated and will soon be ignored. See http://goo.gl/YjeSsW";
     WebConsoleMessage console_message = WebConsoleMessage(
-        WebConsoleMessage::kLevelWarning, WebString::FromASCII(msg));
+        blink::mojom::ConsoleMessageLevel::kWarning, WebString::FromASCII(msg));
     element.GetDocument().GetFrame()->AddMessageToConsole(console_message);
   }
 }

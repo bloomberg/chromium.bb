@@ -10,6 +10,8 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -202,7 +204,7 @@ public class TemplateUrlService {
         // If the load has already been completed, post a load complete to the observer.  Done
         // as an asynchronous call to keep the client code predictable in the loaded/unloaded state.
         if (isLoaded()) {
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     if (!mLoadListeners.hasObserver(listener)) return;
@@ -328,6 +330,11 @@ public class TemplateUrlService {
     @VisibleForTesting
     public String updateLastVisitedForTesting(String keyword) {
         return nativeUpdateLastVisitedForTesting(mNativeTemplateUrlServiceAndroid, keyword);
+    }
+
+    @VisibleForTesting
+    static void setInstanceForTesting(TemplateUrlService service) {
+        sService = service;
     }
 
     private native long nativeInit();

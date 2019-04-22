@@ -110,26 +110,6 @@ InspectorFrontendHostAPI.prototype = {
   indexPath(requestId, fileSystemPath, excludedFolders) {},
 
   /**
-   * @return {string}
-   */
-  getSelectionBackgroundColor() {},
-
-  /**
-   * @return {string}
-   */
-  getSelectionForegroundColor() {},
-
-  /**
-   * @return {string}
-   */
-  getInactiveSelectionBackgroundColor() {},
-
-  /**
-   * @return {string}
-   */
-  getInactiveSelectionForegroundColor() {},
-
-  /**
    * Requests inspected page to be placed atop of the inspector frontend with specified bounds.
    * @param {{x: number, y: number, width: number, height: number}} bounds
    */
@@ -259,6 +239,12 @@ InspectorFrontendHostAPI.prototype = {
    * @param {number} bucketSize
    */
   recordEnumeratedHistogram(actionName, actionCode, bucketSize) {},
+
+  /**
+   * @param {string} histogramName
+   * @param {number} duration
+   */
+  recordPerformanceHistogram(histogramName, duration) {},
 
   /**
    * @param {string} message

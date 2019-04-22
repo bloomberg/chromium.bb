@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_data.h"
@@ -90,12 +90,11 @@ std::string AXTreeUpdateBase<AXNodeData, AXTreeData>::ToString() const {
 
   if (node_id_to_clear != 0) {
     result += "AXTreeUpdate: clear node " +
-        base::IntToString(node_id_to_clear) + "\n";
+              base::NumberToString(node_id_to_clear) + "\n";
   }
 
   if (root_id != 0) {
-    result += "AXTreeUpdate: root id " +
-        base::IntToString(root_id) + "\n";
+    result += "AXTreeUpdate: root id " + base::NumberToString(root_id) + "\n";
   }
 
   // The challenge here is that we want to indent the nodes being updated
@@ -103,7 +102,7 @@ std::string AXTreeUpdateBase<AXNodeData, AXTreeData>::ToString() const {
   // to the rest of the tree for context, so we have to try to show the
   // relative indentation of child nodes in this update relative to their
   // parents.
-  base::hash_map<int32_t, int> id_to_indentation;
+  std::unordered_map<int32_t, int> id_to_indentation;
   for (size_t i = 0; i < nodes.size(); ++i) {
     int indent = id_to_indentation[nodes[i].id];
     result += std::string(2 * indent, ' ');
@@ -113,6 +112,26 @@ std::string AXTreeUpdateBase<AXNodeData, AXTreeData>::ToString() const {
   }
 
   return result;
+}
+
+// Two tree updates can be merged into one if the second one
+// doesn't clear a subtree, doesn't have new tree data, and
+// doesn't have a new root id - in other words the second tree
+// update consists of only changes to nodes.
+template <typename AXNodeData, typename AXTreeData>
+bool TreeUpdatesCanBeMerged(
+    const AXTreeUpdateBase<AXNodeData, AXTreeData>& u1,
+    const AXTreeUpdateBase<AXNodeData, AXTreeData>& u2) {
+  if (u2.node_id_to_clear)
+    return false;
+
+  if (u2.has_tree_data && u2.tree_data != u1.tree_data)
+    return false;
+
+  if (u2.root_id != u1.root_id)
+    return false;
+
+  return true;
 }
 
 }  // namespace ui

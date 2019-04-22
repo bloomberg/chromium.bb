@@ -85,9 +85,8 @@ class OptionalGarbageCollectedMatcher : public MatchFinder::MatchCallback {
 
 class MissingMixinMarker : public MatchFinder::MatchCallback {
  public:
-  explicit MissingMixinMarker(clang::ASTContext& ast_context,
-                              DiagnosticsReporter& diagnostics)
-      : ast_context_(ast_context), diagnostics_(diagnostics) {}
+  explicit MissingMixinMarker(DiagnosticsReporter& diagnostics)
+      : diagnostics_(diagnostics) {}
 
   void Register(MatchFinder& match_finder) {
     auto class_missing_mixin_marker = cxxRecordDecl(
@@ -100,8 +99,10 @@ class MissingMixinMarker : public MatchFinder::MatchCallback {
         isDerivedFrom(cxxRecordDecl(decl().bind("mixin_base_class"),
                                     hasName("::blink::GarbageCollectedMixin"))),
         // ...and doesn't use USING_GARBAGE_COLLECTED_MIXIN
-        unless(isSameOrDerivedFrom(
-            has(fieldDecl(hasName("mixin_constructor_marker_"))))),
+        unless(anyOf(isSameOrDerivedFrom(has(typedefNameDecl(
+                         hasName("HasUsingGarbageCollectedMixinMacro")))),
+                     isSameOrDerivedFrom(has(
+                         fieldDecl(hasName("mixin_constructor_marker_")))))),
         // ...and might end up actually being constructed
         unless(hasMethod(isPure())), unless(matchesName("::SameSizeAs")));
     match_finder.addDynamicMatcher(class_missing_mixin_marker, this);
@@ -135,7 +136,6 @@ class MissingMixinMarker : public MatchFinder::MatchCallback {
   }
 
  private:
-  clang::ASTContext& ast_context_;
   DiagnosticsReporter& diagnostics_;
 };
 
@@ -151,7 +151,7 @@ void FindBadPatterns(clang::ASTContext& ast_context,
   OptionalGarbageCollectedMatcher optional_gc(diagnostics);
   optional_gc.Register(match_finder);
 
-  MissingMixinMarker missing_mixin_marker(ast_context, diagnostics);
+  MissingMixinMarker missing_mixin_marker(diagnostics);
   missing_mixin_marker.Register(match_finder);
 
   match_finder.matchAST(ast_context);

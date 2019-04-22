@@ -31,7 +31,8 @@ std::vector<GLImplementation> GetAllowedGLImplementations() {
   return impls;
 }
 
-bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
+bool GetGLWindowSystemBindingInfo(const GLVersionInfo& gl_info,
+                                  GLWindowSystemBindingInfo* info) {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
       return GetGLWindowSystemBindingInfoWGL(info);

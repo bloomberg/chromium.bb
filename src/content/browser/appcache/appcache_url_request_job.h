@@ -14,11 +14,12 @@
 #include "content/browser/appcache/appcache_job.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/content_export.h"
+#include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_job.h"
 
 namespace net {
 class GrowableIOBuffer;
-};
+}
 
 namespace content {
 class AppCacheHost;
@@ -100,7 +101,7 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public AppCacheJob,
   bool GetCharset(std::string* charset) override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
   int ReadRawData(net::IOBuffer* buf, int buf_size) override;
-  net::HostPortPair GetSocketAddress() const override;
+  net::IPEndPoint GetResponseRemoteEndpoint() const override;
 
   // Sets extra request headers for Job types that support request headers.
   // This is how we get informed of range-requests.

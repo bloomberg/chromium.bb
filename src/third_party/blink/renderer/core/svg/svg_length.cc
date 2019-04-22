@@ -26,16 +26,57 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+
+namespace {
+
+#define CAST_UNIT(unit) \
+  (static_cast<uint8_t>(CSSPrimitiveValue::UnitType::unit))
+
+// Table of initial values for SVGLength properties. Indexed by the
+// SVGLength::Initial enumeration, hence these two need to be kept
+// synchronized.
+const struct {
+  int8_t value;
+  uint8_t unit;
+} g_initial_lengths_table[] = {
+    {0, CAST_UNIT(kUserUnits)},    {-10, CAST_UNIT(kPercentage)},
+    {0, CAST_UNIT(kPercentage)},   {50, CAST_UNIT(kPercentage)},
+    {100, CAST_UNIT(kPercentage)}, {120, CAST_UNIT(kPercentage)},
+    {3, CAST_UNIT(kUserUnits)},
+};
+static_assert(static_cast<size_t>(SVGLength::Initial::kNumValues) ==
+                  base::size(g_initial_lengths_table),
+              "the enumeration is synchronized with the value table");
+static_assert(static_cast<size_t>(SVGLength::Initial::kNumValues) <=
+                  1u << SVGLength::kInitialValueBits,
+              "the enumeration is synchronized with the value table");
+
+#undef CAST_UNIT
+
+const CSSPrimitiveValue& CreateInitialCSSValue(
+    SVGLength::Initial initial_value) {
+  size_t initial_value_index = static_cast<size_t>(initial_value);
+  DCHECK_LT(initial_value_index, base::size(g_initial_lengths_table));
+  const auto& entry = g_initial_lengths_table[initial_value_index];
+  return *CSSPrimitiveValue::Create(
+      entry.value, static_cast<CSSPrimitiveValue::UnitType>(entry.unit));
+}
+
+}  // namespace
 
 SVGLength::SVGLength(SVGLengthMode mode)
     : SVGLength(
           *CSSPrimitiveValue::Create(0,
                                      CSSPrimitiveValue::UnitType::kUserUnits),
           mode) {}
+
+SVGLength::SVGLength(Initial initial, SVGLengthMode mode)
+    : SVGLength(CreateInitialCSSValue(initial), mode) {}
 
 SVGLength::SVGLength(const CSSPrimitiveValue& value, SVGLengthMode mode)
     : value_(value), unit_mode_(static_cast<unsigned>(mode)) {
@@ -55,7 +96,7 @@ SVGLength* SVGLength::Clone() const {
 }
 
 SVGPropertyBase* SVGLength::CloneForAnimation(const String& value) const {
-  SVGLength* length = Create();
+  auto* length = MakeGarbageCollected<SVGLength>();
   length->unit_mode_ = unit_mode_;
 
   if (length->SetValueAsString(value) != SVGParseStatus::kNoError)
@@ -153,12 +194,12 @@ SVGParsingError SVGLength::SetValueAsString(const String& string) {
   // in the future, plumbing will need to be added.
   CSSParserContext* svg_parser_context = CSSParserContext::Create(
       kSVGAttributeMode, SecureContextMode::kInsecureContext);
-  const CSSValue* parsed =
-      CSSParser::ParseSingleValue(CSSPropertyX, string, svg_parser_context);
-  if (!parsed || !parsed->IsPrimitiveValue())
+  const CSSValue* parsed = CSSParser::ParseSingleValue(
+      CSSPropertyID::kX, string, svg_parser_context);
+  const auto* new_value = DynamicTo<CSSPrimitiveValue>(parsed);
+  if (!new_value)
     return SVGParseStatus::kExpectedLength;
 
-  const CSSPrimitiveValue* new_value = ToCSSPrimitiveValue(parsed);
   if (!IsSupportedCSSUnitType(new_value->TypeWithCalcResolved()))
     return SVGParseStatus::kExpectedLength;
 
@@ -287,47 +328,6 @@ float SVGLength::CalculateDistance(SVGPropertyBase* to_value,
   SVGLength* to_length = ToSVGLength(to_value);
 
   return fabsf(to_length->Value(length_context) - Value(length_context));
-}
-
-namespace {
-
-#define CAST_UNIT(unit) \
-  (static_cast<uint8_t>(CSSPrimitiveValue::UnitType::unit))
-
-// Table of initial values for SVGLength properties. Indexed by the
-// SVGLength::Initial enumeration, hence these two need to be kept
-// synchronized.
-const struct {
-  int8_t value;
-  uint8_t unit;
-} g_initial_lengths_table[] = {
-    {0, CAST_UNIT(kUserUnits)},    {-10, CAST_UNIT(kPercentage)},
-    {0, CAST_UNIT(kPercentage)},   {50, CAST_UNIT(kPercentage)},
-    {100, CAST_UNIT(kPercentage)}, {120, CAST_UNIT(kPercentage)},
-    {3, CAST_UNIT(kUserUnits)},
-};
-static_assert(static_cast<size_t>(SVGLength::Initial::kNumValues) ==
-                  base::size(g_initial_lengths_table),
-              "the enumeration is synchronized with the value table");
-static_assert(static_cast<size_t>(SVGLength::Initial::kNumValues) <=
-                  1u << SVGLength::kInitialValueBits,
-              "the enumeration is synchronized with the value table");
-
-#undef CAST_UNIT
-
-const CSSPrimitiveValue& CreateInitialCSSValue(
-    SVGLength::Initial initial_value) {
-  size_t initial_value_index = static_cast<size_t>(initial_value);
-  DCHECK_LT(initial_value_index, base::size(g_initial_lengths_table));
-  const auto& entry = g_initial_lengths_table[initial_value_index];
-  return *CSSPrimitiveValue::Create(
-      entry.value, static_cast<CSSPrimitiveValue::UnitType>(entry.unit));
-}
-
-}  // namespace
-
-SVGLength* SVGLength::Create(Initial initial, SVGLengthMode mode) {
-  return MakeGarbageCollected<SVGLength>(CreateInitialCSSValue(initial), mode);
 }
 
 void SVGLength::SetInitial(unsigned initial_value) {

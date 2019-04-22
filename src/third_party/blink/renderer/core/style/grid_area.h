@@ -138,12 +138,13 @@ struct GridSpan {
  private:
   enum GridSpanType { kUntranslatedDefinite, kTranslatedDefinite, kIndefinite };
 
-  GridSpan(int start_line, int end_line, GridSpanType type) : type_(type) {
+  template <typename T>
+  GridSpan(T start_line, T end_line, GridSpanType type) : type_(type) {
 #if DCHECK_IS_ON()
     DCHECK_LT(start_line, end_line);
     if (type == kTranslatedDefinite) {
-      DCHECK_GE(start_line, 0);
-      DCHECK_GT(end_line, 0);
+      DCHECK_GE(start_line, static_cast<T>(0));
+      DCHECK_GT(end_line, static_cast<T>(0));
     }
 #endif
 

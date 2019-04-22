@@ -82,6 +82,34 @@ make_core_generated_deps = [
   "//third_party/blink/renderer/core:core_event_interfaces",
 ]
 
+# A wrapper for python scripts. This adds the following paths to PYTHONPATH,
+# then run invoker.script.
+#  - //third_party/blink/renderer/build/scripts
+#  - //third_party
+template("blink_python_runner") {
+  action(target_name) {
+    script = "$_scripts_dir/run_with_pythonpath.py"
+    inputs = [
+      invoker.script,
+    ]
+    if (defined(invoker.inputs)) {
+      inputs += invoker.inputs
+    }
+    outputs = invoker.outputs
+    args = [
+             "-I",
+             rebase_path(_scripts_dir, root_build_dir),
+             "-I",
+             rebase_path("//third_party", root_build_dir),
+             rebase_path(invoker.script, root_build_dir),
+           ] + invoker.args
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+    forward_variables_from(invoker, [ "visibility" ])
+  }
+}
+
 # TODO(crbug.com/732657): Remove this once everything that uses this switches over to
 # the 'code_generator' template instead.
 # Template to run most of scripts that process "*.json5" files.
@@ -97,7 +125,7 @@ make_core_generated_deps = [
 #   deps [optional]:
 #     Depenendencies. If unspecified defaults to make_core_generated_deps.
 template("process_json5_files") {
-  action(target_name) {
+  blink_python_runner(target_name) {
     script = invoker.script
 
     inputs = invoker.in_files
@@ -146,7 +174,7 @@ template("process_json5_files") {
 #   deps [optional]:
 #     Depenendencies. If unspecified defaults to make_core_generated_deps.
 template("code_generator") {
-  action(target_name) {
+  blink_python_runner(target_name) {
     script = invoker.script
     inputs = invoker.json_inputs + invoker.templates + scripts_for_json5_files
     if (defined(invoker.other_inputs)) {

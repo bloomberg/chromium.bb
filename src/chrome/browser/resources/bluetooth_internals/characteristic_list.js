@@ -47,6 +47,7 @@ cr.define('characteristic_list', function() {
    * @param {!bluetooth.mojom.CharacteristicInfo} characteristicInfo
    * @param {string} deviceAddress
    * @param {string} serviceId
+   * @extends {expandable_list.ExpandableListItem}
    */
   function CharacteristicListItem(
       characteristicInfo, deviceAddress, serviceId) {
@@ -76,7 +77,7 @@ cr.define('characteristic_list', function() {
       this.classList.add('characteristic-list-item');
 
       /** @private {!object_fieldset.ObjectFieldSet} */
-      this.characteristicFieldSet_ = object_fieldset.ObjectFieldSet();
+      this.characteristicFieldSet_ = new object_fieldset.ObjectFieldSet();
       this.characteristicFieldSet_.setPropertyDisplayNames(INFO_PROPERTY_NAMES);
       this.characteristicFieldSet_.setObject({
         id: this.info.id,
@@ -195,6 +196,7 @@ cr.define('characteristic_list', function() {
   /**
    * A list that displays CharacteristicListItems.
    * @constructor
+   * @extends {expandable_list.ExpandableList}
    */
   var CharacteristicList = cr.ui.define('list');
 
@@ -216,10 +218,9 @@ cr.define('characteristic_list', function() {
       this.setEmptyMessage('No Characteristics Found');
     },
 
-    /** @override */
     createItem: function(data) {
       return new CharacteristicListItem(
-          data, this.deviceAddress_, this.serviceId_);
+          data, assert(this.deviceAddress_), assert(this.serviceId_));
     },
 
     /**
@@ -230,8 +231,9 @@ cr.define('characteristic_list', function() {
      * @param {string} serviceId
      */
     load: function(deviceAddress, serviceId) {
-      if (this.characteristicsRequested_ || !this.isSpinnerShowing())
+      if (this.characteristicsRequested_ || !this.isSpinnerShowing()) {
         return;
+      }
 
       this.deviceAddress_ = deviceAddress;
       this.serviceId_ = serviceId;

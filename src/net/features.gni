@@ -39,4 +39,8 @@ declare_args() {
   # willing to take the responsibility to make sure that all important
   # connections use HTTPS.
   include_transport_security_state_preload_list = true
+
+  # Platforms where the cert verifier comparison trial is supported.
+  # See https://crbug.com/649026.
+  trial_comparison_cert_verifier_supported = is_desktop_linux || is_mac
 }

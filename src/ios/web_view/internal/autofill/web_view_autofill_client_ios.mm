@@ -27,21 +27,23 @@ namespace autofill {
 WebViewAutofillClientIOS::WebViewAutofillClientIOS(
     PrefService* pref_service,
     PersonalDataManager* personal_data_manager,
+    AutocompleteHistoryManager* autocomplete_history_manager,
     web::WebState* web_state,
     id<CWVAutofillClientIOSBridge> bridge,
     identity::IdentityManager* identity_manager,
-    LegacyStrikeDatabase* strike_database,
+    LegacyStrikeDatabase* legacy_strike_database,
+    StrikeDatabase* strike_database,
     scoped_refptr<AutofillWebDataService> autofill_web_data_service,
     syncer::SyncService* sync_service)
     : pref_service_(pref_service),
       personal_data_manager_(personal_data_manager),
+      autocomplete_history_manager_(autocomplete_history_manager),
       web_state_(web_state),
       bridge_(bridge),
       identity_manager_(identity_manager),
       payments_client_(std::make_unique<payments::PaymentsClient>(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               web_state_->GetBrowserState()->GetURLLoaderFactory()),
-          pref_service_,
           identity_manager_,
           personal_data_manager_,
           web_state_->GetBrowserState()->IsOffTheRecord())),
@@ -51,7 +53,8 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
           personal_data_manager_,
           ios_web_view::ApplicationContext::GetInstance()
               ->GetApplicationLocale())),
-      legacy_strike_database_(strike_database),
+      legacy_strike_database_(legacy_strike_database),
+      strike_database_(strike_database),
       autofill_web_data_service_(autofill_web_data_service),
       sync_service_(sync_service) {}
 
@@ -61,6 +64,11 @@ WebViewAutofillClientIOS::~WebViewAutofillClientIOS() {
 
 PersonalDataManager* WebViewAutofillClientIOS::GetPersonalDataManager() {
   return personal_data_manager_;
+}
+
+AutocompleteHistoryManager*
+WebViewAutofillClientIOS::GetAutocompleteHistoryManager() {
+  return autocomplete_history_manager_;
 }
 
 PrefService* WebViewAutofillClientIOS::GetPrefs() {
@@ -85,6 +93,10 @@ payments::PaymentsClient* WebViewAutofillClientIOS::GetPaymentsClient() {
 
 LegacyStrikeDatabase* WebViewAutofillClientIOS::GetLegacyStrikeDatabase() {
   return legacy_strike_database_;
+}
+
+StrikeDatabase* WebViewAutofillClientIOS::GetStrikeDatabase() {
+  return strike_database_;
 }
 
 ukm::UkmRecorder* WebViewAutofillClientIOS::GetUkmRecorder() {
@@ -132,6 +144,7 @@ void WebViewAutofillClientIOS::ShowLocalCardMigrationDialog(
 
 void WebViewAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
     std::unique_ptr<base::DictionaryValue> legal_message,
+    const std::string& user_email,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     LocalCardMigrationCallback start_migrating_cards_callback) {
   NOTIMPLEMENTED();
@@ -155,30 +168,23 @@ void WebViewAutofillClientIOS::ConfirmSaveAutofillProfile(
 
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
-    bool show_prompt,
-    base::OnceClosure callback) {
-  DCHECK(show_prompt);
+    SaveCreditCardOptions options,
+    LocalSaveCardPromptCallback callback) {
+  DCHECK(options.show_prompt);
   [bridge_ confirmSaveCreditCardLocally:card callback:std::move(callback)];
 }
 
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
-    bool should_request_name_from_user,
-    bool should_request_expiration_date_from_user,
-    bool show_prompt,
-    UserAcceptedUploadCallback callback) {
-  DCHECK(show_prompt);
+    SaveCreditCardOptions options,
+    UploadSaveCardPromptCallback callback) {
+  DCHECK(options.show_prompt);
 }
 
 void WebViewAutofillClientIOS::ConfirmCreditCardFillAssist(
     const CreditCard& card,
     base::OnceClosure callback) {}
-
-void WebViewAutofillClientIOS::LoadRiskData(
-    base::OnceCallback<void(const std::string&)> callback) {
-  [bridge_ loadRiskData:std::move(callback)];
-}
 
 bool WebViewAutofillClientIOS::HasCreditCardScanFeature() {
   return false;
@@ -198,18 +204,18 @@ void WebViewAutofillClientIOS::ShowAutofillPopup(
   [bridge_ showAutofillPopup:suggestions popupDelegate:delegate];
 }
 
+void WebViewAutofillClientIOS::UpdateAutofillPopupDataListValues(
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels) {
+  NOTREACHED();
+}
+
 void WebViewAutofillClientIOS::HideAutofillPopup() {
   [bridge_ hideAutofillPopup];
 }
 
 bool WebViewAutofillClientIOS::IsAutocompleteEnabled() {
   return prefs::IsAutocompleteEnabled(GetPrefs());
-}
-
-void WebViewAutofillClientIOS::UpdateAutofillPopupDataListValues(
-    const std::vector<base::string16>& values,
-    const std::vector<base::string16>& labels) {
-  NOTREACHED();
 }
 
 void WebViewAutofillClientIOS::PropagateAutofillPredictions(
@@ -222,12 +228,6 @@ void WebViewAutofillClientIOS::DidFillOrPreviewField(
     const base::string16& autofilled_value,
     const base::string16& profile_full_name) {}
 
-scoped_refptr<AutofillWebDataService> WebViewAutofillClientIOS::GetDatabase() {
-  return autofill_web_data_service_;
-}
-
-void WebViewAutofillClientIOS::DidInteractWithNonsecureCreditCardInput() {}
-
 bool WebViewAutofillClientIOS::IsContextSecure() {
   return IsContextSecureForWebState(web_state_);
 }
@@ -236,12 +236,17 @@ bool WebViewAutofillClientIOS::ShouldShowSigninPromo() {
   return false;
 }
 
+bool WebViewAutofillClientIOS::AreServerCardsSupported() {
+  return true;
+}
+
 void WebViewAutofillClientIOS::ExecuteCommand(int id) {
   NOTIMPLEMENTED();
 }
 
-bool WebViewAutofillClientIOS::AreServerCardsSupported() {
-  return true;
+void WebViewAutofillClientIOS::LoadRiskData(
+    base::OnceCallback<void(const std::string&)> callback) {
+  [bridge_ loadRiskData:std::move(callback)];
 }
 
 }  // namespace autofill

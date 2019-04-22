@@ -35,6 +35,7 @@ source_set("unit_tests") {
   deps = [
     ":managed",
     "//base",
+    "//base/test:test_support",
     "//components/bookmarks/browser",
     "//components/bookmarks/common",
     "//components/bookmarks/test",

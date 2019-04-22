@@ -7,8 +7,6 @@ component("mozilla") {
     "MozillaExport.h",
     "NSPasteboard+Utils.h",
     "NSPasteboard+Utils.mm",
-    "NSScreen+Utils.h",
-    "NSScreen+Utils.m",
     "NSString+Utils.h",
     "NSString+Utils.mm",
     "NSURL+Utils.h",

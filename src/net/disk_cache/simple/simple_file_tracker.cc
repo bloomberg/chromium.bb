@@ -17,8 +17,17 @@
 
 namespace disk_cache {
 
+namespace {
+
+void RecordFileDescripterLimiterOp(FileDescriptorLimiterOp op) {
+  UMA_HISTOGRAM_ENUMERATION("SimpleCache.FileDescriptorLimiterAction", op,
+                            FD_LIMIT_OP_MAX);
+}
+
+}  // namespace
+
 SimpleFileTracker::SimpleFileTracker(int file_limit)
-    : file_limit_(file_limit), open_files_(0) {}
+    : file_limit_(file_limit) {}
 
 SimpleFileTracker::~SimpleFileTracker() {
   DCHECK(lru_.empty());
@@ -252,8 +261,7 @@ void SimpleFileTracker::CloseFilesIfTooManyOpen(
           tracked_files->files[j] != nullptr) {
         files_to_close->push_back(std::move(tracked_files->files[j]));
         --open_files_;
-        UMA_HISTOGRAM_ENUMERATION("SimpleCache.FileDescriptorLimiterAction",
-                                  FD_LIMIT_CLOSE_FILE, FD_LIMIT_OP_MAX);
+        RecordFileDescripterLimiterOp(FD_LIMIT_CLOSE_FILE);
       }
     }
 
@@ -283,14 +291,12 @@ void SimpleFileTracker::ReopenFile(TrackedFiles* owners_files,
   owners_files->files[file_index] =
       std::make_unique<base::File>(file_path, flags);
   if (owners_files->files[file_index]->IsValid()) {
-    UMA_HISTOGRAM_ENUMERATION("SimpleCache.FileDescriptorLimiterAction",
-                              FD_LIMIT_REOPEN_FILE, FD_LIMIT_OP_MAX);
+    RecordFileDescripterLimiterOp(FD_LIMIT_REOPEN_FILE);
 
     ++open_files_;
   } else {
     owners_files->files[file_index] = nullptr;
-    UMA_HISTOGRAM_ENUMERATION("SimpleCache.FileDescriptorLimiterAction",
-                              FD_LIMIT_FAIL_REOPEN_FILE, FD_LIMIT_OP_MAX);
+    RecordFileDescripterLimiterOp(FD_LIMIT_FAIL_REOPEN_FILE);
   }
 }
 
@@ -305,8 +311,7 @@ void SimpleFileTracker::EnsureInFrontOfLRU(TrackedFiles* owners_files) {
   DCHECK_EQ(*owners_files->position_in_lru, owners_files);
 }
 
-SimpleFileTracker::FileHandle::FileHandle()
-    : file_tracker_(nullptr), entry_(nullptr), file_(nullptr) {}
+SimpleFileTracker::FileHandle::FileHandle() = default;
 
 SimpleFileTracker::FileHandle::FileHandle(SimpleFileTracker* file_tracker,
                                           const SimpleSynchronousEntry* entry,

@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/public/mojom/autoplay/autoplay.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
-#include "third_party/blink/public/platform/autoplay.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -14,12 +14,13 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_uma_helper.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -38,34 +39,12 @@ const char kErrorAutoplayFuncUnified[] =
 const char kErrorAutoplayFuncMobile[] =
     "play() can only be initiated by a user gesture.";
 
-bool IsDocumentCrossOrigin(const Document& document) {
-  const LocalFrame* frame = document.GetFrame();
-  return frame && frame->IsCrossOriginSubframe();
-}
-
-// Returns whether |document| is whitelisted for autoplay. If true, the user
-// gesture lock will be initilized as false, indicating that the element is
-// allowed to autoplay unmuted without user gesture.
-bool IsDocumentWhitelisted(const Document& document) {
-  DCHECK(document.GetSettings());
-
-  const String& whitelist_scope =
-      document.GetSettings()->GetMediaPlaybackGestureWhitelistScope();
-  if (whitelist_scope.IsNull() || whitelist_scope.IsEmpty())
-    return false;
-
-  DCHECK_EQ(KURL(whitelist_scope).GetString(), whitelist_scope);
-  return document.Url().GetString().StartsWith(whitelist_scope);
-}
-
 // Return true if and only if the document settings specifies media playback
 // requires user gesture on the element.
 bool ComputeLockPendingUserGestureRequired(const Document& document) {
   switch (AutoplayPolicy::GetAutoplayPolicyForDocument(document)) {
     case AutoplayPolicy::Type::kNoUserGestureRequired:
       return false;
-    case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
-      return IsDocumentCrossOrigin(document);
     case AutoplayPolicy::Type::kUserGestureRequired:
       return true;
     // kDocumentUserActivationRequired policy does not imply that a user gesture
@@ -87,7 +66,7 @@ AutoplayPolicy::Type AutoplayPolicy::GetAutoplayPolicyForDocument(
   if (!document.GetSettings())
     return Type::kNoUserGestureRequired;
 
-  if (IsDocumentWhitelisted(document))
+  if (document.IsInWebAppScope())
     return Type::kNoUserGestureRequired;
 
   if (DocumentHasUserExceptionFlag(document))
@@ -185,14 +164,10 @@ bool AutoplayPolicy::DocumentIsCapturingUserMedia(const Document& document) {
 
 AutoplayPolicy::AutoplayPolicy(HTMLMediaElement* element)
     : locked_pending_user_gesture_(false),
-      locked_pending_user_gesture_if_cross_origin_experiment_enabled_(true),
       element_(element),
-      autoplay_visibility_observer_(nullptr),
-      autoplay_uma_helper_(AutoplayUmaHelper::Create(element)) {
+      autoplay_uma_helper_(MakeGarbageCollected<AutoplayUmaHelper>(element)) {
   locked_pending_user_gesture_ =
       ComputeLockPendingUserGestureRequired(element->GetDocument());
-  locked_pending_user_gesture_if_cross_origin_experiment_enabled_ =
-      IsDocumentCrossOrigin(element->GetDocument());
 }
 
 void AutoplayPolicy::VideoWillBeDrawnToCanvas() const {
@@ -209,15 +184,19 @@ void AutoplayPolicy::DidMoveToNewDocument(Document& old_document) {
   if (new_document_requires_user_gesture && !old_document_requires_user_gesture)
     locked_pending_user_gesture_ = true;
 
-  if (IsDocumentCrossOrigin(element_->GetDocument()) &&
-      !IsDocumentCrossOrigin(old_document))
-    locked_pending_user_gesture_if_cross_origin_experiment_enabled_ = true;
-
   autoplay_uma_helper_->DidMoveToNewDocument(old_document);
 }
 
 bool AutoplayPolicy::IsEligibleForAutoplayMuted() const {
-  return element_->IsHTMLVideoElement() && element_->muted() &&
+  if (!element_->IsHTMLVideoElement())
+    return false;
+
+  if (RuntimeEnabledFeatures::VideoAutoFullscreenEnabled() &&
+      !element_->FastHasAttribute(html_names::kPlaysinlineAttr)) {
+    return false;
+  }
+
+  return element_->muted() &&
          DocumentShouldAutoplayMutedVideos(element_->GetDocument());
 }
 
@@ -225,23 +204,22 @@ void AutoplayPolicy::StartAutoplayMutedWhenVisible() {
   // We might end up in a situation where the previous
   // observer didn't had time to fire yet. We can avoid
   // creating a new one in this case.
-  if (autoplay_visibility_observer_)
+  if (autoplay_intersection_observer_)
     return;
 
-  autoplay_visibility_observer_ =
-      MakeGarbageCollected<ElementVisibilityObserver>(
-          element_,
-          WTF::BindRepeating(&AutoplayPolicy::OnVisibilityChangedForAutoplay,
-                             WrapWeakPersistent(this)));
-  autoplay_visibility_observer_->Start();
+  autoplay_intersection_observer_ = IntersectionObserver::Create(
+      {}, {IntersectionObserver::kMinimumThreshold}, &element_->GetDocument(),
+      WTF::BindRepeating(&AutoplayPolicy::OnIntersectionChangedForAutoplay,
+                         WrapWeakPersistent(this)));
+  autoplay_intersection_observer_->observe(element_);
 }
 
 void AutoplayPolicy::StopAutoplayMutedWhenVisible() {
-  if (!autoplay_visibility_observer_)
+  if (!autoplay_intersection_observer_)
     return;
 
-  autoplay_visibility_observer_->Stop();
-  autoplay_visibility_observer_ = nullptr;
+  autoplay_intersection_observer_->disconnect();
+  autoplay_intersection_observer_ = nullptr;
 }
 
 bool AutoplayPolicy::RequestAutoplayUnmute() {
@@ -254,7 +232,8 @@ bool AutoplayPolicy::RequestAutoplayUnmute() {
     if (IsGestureNeededForPlayback()) {
       if (IsUsingDocumentUserActivationRequiredPolicy()) {
         element_->GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-            kJSMessageSource, kWarningMessageLevel, kWarningUnmuteFailed));
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning, kWarningUnmuteFailed));
       }
 
       autoplay_uma_helper_->RecordAutoplayUnmuteStatus(
@@ -273,22 +252,11 @@ bool AutoplayPolicy::RequestAutoplayByAttribute() {
 
   autoplay_uma_helper_->OnAutoplayInitiated(AutoplaySource::kAttribute);
 
-  if (IsGestureNeededForPlayback()) {
-    autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-        CrossOriginAutoplayResult::kAutoplayBlocked);
+  if (IsGestureNeededForPlayback())
     return false;
-  }
 
   // If it's the first playback, track that it started because of autoplay.
   MaybeSetAutoplayInitiated();
-
-  if (IsGestureNeededForPlaybackIfCrossOriginExperimentEnabled()) {
-    autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-        CrossOriginAutoplayResult::kAutoplayBlocked);
-  } else {
-    autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-        CrossOriginAutoplayResult::kAutoplayAllowed);
-  }
 
   // At this point the gesture is not needed for playback per the if statement
   // above.
@@ -305,22 +273,9 @@ base::Optional<DOMExceptionCode> AutoplayPolicy::RequestPlay() {
   if (!LocalFrame::HasTransientUserActivation(
           element_->GetDocument().GetFrame())) {
     autoplay_uma_helper_->OnAutoplayInitiated(AutoplaySource::kMethod);
-    if (IsGestureNeededForPlayback()) {
-      autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-          CrossOriginAutoplayResult::kAutoplayBlocked);
+    if (IsGestureNeededForPlayback())
       return DOMExceptionCode::kNotAllowedError;
-    }
-
-    if (IsGestureNeededForPlaybackIfCrossOriginExperimentEnabled()) {
-      autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-          CrossOriginAutoplayResult::kAutoplayBlocked);
-    } else {
-      autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-          CrossOriginAutoplayResult::kAutoplayAllowed);
-    }
   } else {
-    autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
-        CrossOriginAutoplayResult::kPlayedWithGesture);
     TryUnlockingUserGesture();
   }
 
@@ -356,20 +311,18 @@ bool AutoplayPolicy::IsLockedPendingUserGesture() const {
 void AutoplayPolicy::TryUnlockingUserGesture() {
   if (IsLockedPendingUserGesture() && LocalFrame::HasTransientUserActivation(
                                           element_->GetDocument().GetFrame())) {
-    UnlockUserGesture();
+    locked_pending_user_gesture_ = false;
   }
-}
-
-void AutoplayPolicy::UnlockUserGesture() {
-  locked_pending_user_gesture_ = false;
-  locked_pending_user_gesture_if_cross_origin_experiment_enabled_ = false;
 }
 
 bool AutoplayPolicy::IsGestureNeededForPlayback() const {
   if (!IsLockedPendingUserGesture())
     return false;
 
-  return IsGestureNeededForPlaybackIfPendingUserGestureIsLocked();
+  // We want to allow muted video to autoplay if:
+  // - The element is allowed to autoplay muted;
+  // - Autoplay is enabled in settings.
+  return !(IsEligibleForAutoplayMuted() && IsAutoplayAllowedPerSettings());
 }
 
 String AutoplayPolicy::GetPlayErrorMessage() const {
@@ -389,32 +342,9 @@ void AutoplayPolicy::EnsureAutoplayInitiatedSet() {
   autoplay_initiated_ = false;
 }
 
-bool AutoplayPolicy::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
-    const {
-  // We want to allow muted video to autoplay if:
-  // - the flag is enabled;
-  // - Data Saver is not enabled;
-  // - Preload was not disabled (low end devices);
-  // - Autoplay is enabled in settings;
-  if (element_->IsHTMLVideoElement() && element_->muted() &&
-      DocumentShouldAutoplayMutedVideos(element_->GetDocument()) &&
-      !(element_->GetDocument().GetSettings() &&
-        GetNetworkStateNotifier().SaveDataEnabled() &&
-        !element_->GetDocument()
-             .GetSettings()
-             ->GetDataSaverHoldbackMediaApi()) &&
-      !(element_->GetDocument().GetSettings() &&
-        element_->GetDocument()
-            .GetSettings()
-            ->GetForcePreloadNoneForMediaElements()) &&
-      IsAutoplayAllowedPerSettings()) {
-    return false;
-  }
-
-  return true;
-}
-
-void AutoplayPolicy::OnVisibilityChangedForAutoplay(bool is_visible) {
+void AutoplayPolicy::OnIntersectionChangedForAutoplay(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  bool is_visible = (entries.back()->intersectionRatio() > 0);
   if (!is_visible) {
     if (element_->can_autoplay_ && element_->Autoplay()) {
       element_->PauseInternal();
@@ -459,14 +389,6 @@ void AutoplayPolicy::MaybeSetAutoplayInitiated() {
   }
 }
 
-bool AutoplayPolicy::IsGestureNeededForPlaybackIfCrossOriginExperimentEnabled()
-    const {
-  if (!locked_pending_user_gesture_if_cross_origin_experiment_enabled_)
-    return false;
-
-  return IsGestureNeededForPlaybackIfPendingUserGestureIsLocked();
-}
-
 bool AutoplayPolicy::IsAutoplayAllowedPerSettings() const {
   LocalFrame* frame = element_->GetDocument().GetFrame();
   if (!frame)
@@ -477,14 +399,14 @@ bool AutoplayPolicy::IsAutoplayAllowedPerSettings() const {
 }
 
 bool AutoplayPolicy::ShouldAutoplay() {
-  if (element_->GetDocument().IsSandboxed(kSandboxAutomaticFeatures))
+  if (element_->GetDocument().IsSandboxed(WebSandboxFlags::kAutomaticFeatures))
     return false;
   return element_->can_autoplay_ && element_->paused_ && element_->Autoplay();
 }
 
-void AutoplayPolicy::Trace(blink::Visitor* visitor) {
+void AutoplayPolicy::Trace(Visitor* visitor) {
   visitor->Trace(element_);
-  visitor->Trace(autoplay_visibility_observer_);
+  visitor->Trace(autoplay_intersection_observer_);
   visitor->Trace(autoplay_uma_helper_);
 }
 
@@ -492,9 +414,6 @@ STATIC_ASSERT_ENUM(WebSettings::AutoplayPolicy::kNoUserGestureRequired,
                    AutoplayPolicy::Type::kNoUserGestureRequired);
 STATIC_ASSERT_ENUM(WebSettings::AutoplayPolicy::kUserGestureRequired,
                    AutoplayPolicy::Type::kUserGestureRequired);
-STATIC_ASSERT_ENUM(
-    WebSettings::AutoplayPolicy::kUserGestureRequiredForCrossOrigin,
-    AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin);
 STATIC_ASSERT_ENUM(WebSettings::AutoplayPolicy::kDocumentUserActivationRequired,
                    AutoplayPolicy::Type::kDocumentUserActivationRequired);
 

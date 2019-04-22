@@ -45,13 +45,12 @@ class MojoVideoDecoder final : public VideoDecoder,
   // VideoDecoder implementation.
   std::string GetDisplayName() const final;
   bool IsPlatformDecoder() const final;
-  void Initialize(
-      const VideoDecoderConfig& config,
-      bool low_delay,
-      CdmContext* cdm_context,
-      const InitCB& init_cb,
-      const OutputCB& output_cb,
-      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) final;
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
+                  CdmContext* cdm_context,
+                  const InitCB& init_cb,
+                  const OutputCB& output_cb,
+                  const WaitingCB& waiting_cb) final;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) final;
   void Reset(const base::Closure& closure) final;
@@ -64,6 +63,7 @@ class MojoVideoDecoder final : public VideoDecoder,
       const scoped_refptr<VideoFrame>& frame,
       bool can_read_without_stalling,
       const base::Optional<base::UnguessableToken>& release_token) final;
+  void OnWaiting(WaitingReason reason) final;
   void RequestOverlayInfo(bool restart_for_transitions) final;
 
   void set_writer_capacity_for_testing(uint32_t capacity) {
@@ -99,6 +99,7 @@ class MojoVideoDecoder final : public VideoDecoder,
 
   InitCB init_cb_;
   OutputCB output_cb_;
+  WaitingCB waiting_cb_;
   uint64_t decode_counter_ = 0;
   std::map<uint64_t, DecodeCB> pending_decodes_;
   base::Closure reset_cb_;
@@ -121,6 +122,9 @@ class MojoVideoDecoder final : public VideoDecoder,
   bool needs_bitstream_conversion_ = false;
   bool can_read_without_stalling_ = true;
   int32_t max_decode_requests_ = 1;
+
+  mojom::VideoDecoderImplementation video_decoder_implementation_ =
+      mojom::VideoDecoderImplementation::Default;
 
   base::WeakPtr<MojoVideoDecoder> weak_this_;
   base::WeakPtrFactory<MojoVideoDecoder> weak_factory_;

@@ -11,7 +11,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
@@ -40,7 +40,6 @@ class FetchRequestData final
   static FetchRequestData* Create(ScriptState*, const WebServiceWorkerRequest&);
   static FetchRequestData* Create(ScriptState*,
                                   const mojom::blink::FetchAPIRequest&);
-  // Call Request::refreshBody() after calling clone() or pass().
   FetchRequestData* Clone(ScriptState*, ExceptionState&);
   FetchRequestData* Pass(ScriptState*, ExceptionState&);
 
@@ -96,10 +95,9 @@ class FetchRequestData final
     header_list_ = header_list;
   }
   BodyStreamBuffer* Buffer() const { return buffer_; }
-  // Call Request::refreshBody() after calling setBuffer().
   void SetBuffer(BodyStreamBuffer* buffer) { buffer_ = buffer; }
   String MimeType() const { return mime_type_; }
-  void SetMIMEType(const String& type) { mime_type_ = type; }
+  void SetMimeType(const String& type) { mime_type_ = type; }
   String Integrity() const { return integrity_; }
   void SetIntegrity(const String& integrity) { integrity_ = integrity; }
   ResourceLoadPriority Priority() const { return priority_; }
@@ -146,7 +144,7 @@ class FetchRequestData final
   // FIXME: Support m_useURLCredentialsFlag;
   // FIXME: Support m_redirectCount;
   Tainting response_tainting_;
-  TraceWrapperMember<BodyStreamBuffer> buffer_;
+  Member<BodyStreamBuffer> buffer_;
   String mime_type_;
   String integrity_;
   ResourceLoadPriority priority_;

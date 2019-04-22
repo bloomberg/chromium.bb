@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/password_manager/password_store_mac.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -47,11 +48,12 @@ bool PasswordStoreMac::InitOnBackgroundSequence(
                      initial_status_ == MigrationStatus::FAILED_TWICE)) {
     // Migration isn't possible due to Chrome changing the certificate. Just
     // drop the entries in the DB because they don't have passwords anyway.
-    login_db()->RemoveLoginsCreatedBetween(base::Time(), base::Time());
+    login_db()->RemoveLoginsCreatedBetween(base::Time(), base::Time(),
+                                           /*changes=*/nullptr);
     initial_status_ = MigrationStatus::MIGRATION_STOPPED;
     main_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&PasswordStoreMac::UpdateStatusPref, this, initial_status_));
+        FROM_HERE, base::BindOnce(&PasswordStoreMac::UpdateStatusPref, this,
+                                  initial_status_));
   }
 
   UMA_HISTOGRAM_ENUMERATION(

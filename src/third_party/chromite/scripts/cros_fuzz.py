@@ -784,7 +784,7 @@ class ToolManager(object):
   ASAN_SYMBOLIZE_PATH = os.path.join('/', 'usr', 'bin', 'asan_symbolize.py')
 
   # List of LLVM binaries we must install in sysroot.
-  LLVM_BINARY_NAMES = ['llvm-symbolizer', 'llvm-profdata']
+  LLVM_BINARY_NAMES = ['gdbserver', 'llvm-symbolizer', 'llvm-profdata']
 
   def __init__(self):
     self.asan_symbolize_sysroot_path = GetSysrootPath(self.ASAN_SYMBOLIZE_PATH)
@@ -844,6 +844,13 @@ class LlvmBinary(object):
     # the sysroot.
     binary_rel_path = ['usr', 'bin', self.binary]
     binary_chroot_path = os.path.join('/', *binary_rel_path)
+    if not os.path.exists(binary_chroot_path):
+      logging.warning('Cannot copy %s, file does not exist in chroot.',
+                      binary_chroot_path)
+      logging.warning('Functionality provided by %s will be missing.',
+                      binary_chroot_path)
+      return
+
     osutils.SafeMakedirsNonRoot(self.install_dir)
 
     # Copy the binary and everything needed to run it into the sysroot.

@@ -13,8 +13,9 @@
 #include <memory>
 #include <string>
 
+#include "api/task_queue/task_queue_factory.h"
 #include "api/video/video_frame.h"
-#include "rtc_base/criticalsection.h"
+#include "rtc_base/critical_section.h"
 #include "rtc_base/task_queue.h"
 #include "test/frame_generator.h"
 #include "test/test_video_capturer.h"
@@ -59,10 +60,16 @@ class FrameGeneratorCapturer : public TestVideoCapturer {
                                                       int frame_repeat_count,
                                                       int target_fps,
                                                       Clock* clock);
+
+  static FrameGeneratorCapturer* Create(
+      std::unique_ptr<FrameGenerator> frame_generator,
+      int target_fps,
+      Clock* clock);
+
   virtual ~FrameGeneratorCapturer();
 
-  void Start() override;
-  void Stop() override;
+  void Start();
+  void Stop();
   void ChangeResolution(size_t width, size_t height);
   void ChangeFramerate(int target_framerate);
 
@@ -74,24 +81,27 @@ class FrameGeneratorCapturer : public TestVideoCapturer {
 
   void ForceFrame();
   void SetFakeRotation(VideoRotation rotation);
+  void SetFakeColorSpace(absl::optional<ColorSpace> color_space);
 
   int64_t first_frame_capture_time() const { return first_frame_capture_time_; }
 
   FrameGeneratorCapturer(Clock* clock,
                          std::unique_ptr<FrameGenerator> frame_generator,
                          int target_fps);
+  FrameGeneratorCapturer(Clock* clock,
+                         std::unique_ptr<FrameGenerator> frame_generator,
+                         int target_fps,
+                         TaskQueueFactory& task_queue_factory);
   bool Init();
 
  private:
-  class InsertFrameTask;
-
   void InsertFrame();
   static bool Run(void* obj);
   int GetCurrentConfiguredFramerate();
+  void UpdateFps(int max_fps) RTC_EXCLUSIVE_LOCKS_REQUIRED(&lock_);
 
   Clock* const clock_;
   bool sending_;
-  rtc::VideoSinkInterface<VideoFrame>* sink_ RTC_GUARDED_BY(&lock_);
   SinkWantsObserver* sink_wants_observer_ RTC_GUARDED_BY(&lock_);
 
   rtc::CriticalSection lock_;
@@ -101,6 +111,7 @@ class FrameGeneratorCapturer : public TestVideoCapturer {
   int target_capture_fps_ RTC_GUARDED_BY(&lock_);
   absl::optional<int> wanted_fps_ RTC_GUARDED_BY(&lock_);
   VideoRotation fake_rotation_ = kVideoRotation_0;
+  absl::optional<ColorSpace> fake_color_space_ RTC_GUARDED_BY(&lock_);
 
   int64_t first_frame_capture_time_;
   // Must be the last field, so it will be deconstructed first as tasks

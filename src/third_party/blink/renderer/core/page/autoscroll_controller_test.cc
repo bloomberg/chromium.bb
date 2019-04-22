@@ -22,7 +22,7 @@ class AutoscrollControllerTest : public SimTest {
 // Ensure Autoscroll not crash by layout called in UpdateSelectionForMouseDrag.
 TEST_F(AutoscrollControllerTest,
        CrashWhenLayoutStopAnimationBeforeScheduleAnimation) {
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   WebView().SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -69,7 +69,8 @@ TEST_F(AutoscrollControllerTest,
   DCHECK(controller.IsAutoscrolling());
 
   // Hide scrollable here will cause UpdateSelectionForMouseDrag stop animation.
-  scrollable->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  scrollable->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                     CSSValueID::kNone);
 
   // BeginFrame will call AutoscrollController::Animate.
   Compositor().BeginFrame();

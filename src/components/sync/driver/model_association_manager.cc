@@ -12,8 +12,11 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_stop_metadata_fate.h"
@@ -24,30 +27,30 @@ namespace syncer {
 namespace {
 
 static const ModelType kStartOrder[] = {
-    NIGORI,       //  Listed for completeness.
-    DEVICE_INFO,  //  Listed for completeness.
-    EXPERIMENTS,  //  Listed for completeness.
-    PROXY_TABS,   //  Listed for completeness.
+    NIGORI,  //  Listed for completeness.
+    DEVICE_INFO,
+    DEPRECATED_EXPERIMENTS,  //  Listed for completeness.
+    PROXY_TABS,              //  Listed for completeness.
 
     // Kick off the association of the non-UI types first so they can associate
     // in parallel with the UI types.
     PASSWORDS, AUTOFILL, AUTOFILL_PROFILE, AUTOFILL_WALLET_DATA,
     AUTOFILL_WALLET_METADATA, EXTENSION_SETTINGS, APP_SETTINGS, TYPED_URLS,
-    HISTORY_DELETE_DIRECTIVES, SYNCED_NOTIFICATIONS,
-    SYNCED_NOTIFICATION_APP_INFO,
+    HISTORY_DELETE_DIRECTIVES, DEPRECATED_SYNCED_NOTIFICATIONS,
+    DEPRECATED_SYNCED_NOTIFICATION_APP_INFO,
 
     // UI thread data types.
     BOOKMARKS, PREFERENCES, PRIORITY_PREFERENCES, EXTENSIONS, APPS, APP_LIST,
     ARC_PACKAGE, READING_LIST, THEMES, SEARCH_ENGINES, SESSIONS,
-    APP_NOTIFICATIONS, DICTIONARY, FAVICON_IMAGES, FAVICON_TRACKING, PRINTERS,
-    USER_CONSENTS, USER_EVENTS, SUPERVISED_USER_SETTINGS,
+    DEPRECATED_APP_NOTIFICATIONS, DICTIONARY, FAVICON_IMAGES, FAVICON_TRACKING,
+    PRINTERS, USER_CONSENTS, USER_EVENTS, SUPERVISED_USER_SETTINGS,
     SUPERVISED_USER_WHITELISTS, DEPRECATED_WIFI_CREDENTIALS,
     DEPRECATED_SUPERVISED_USERS, MOUNTAIN_SHARES,
     DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, DEPRECATED_ARTICLES,
-    SEND_TAB_TO_SELF};
+    SEND_TAB_TO_SELF, SECURITY_EVENTS};
 
-static_assert(arraysize(kStartOrder) ==
-                  MODEL_TYPE_COUNT - FIRST_REAL_MODEL_TYPE,
+static_assert(base::size(kStartOrder) ==
+                  ModelType::NUM_ENTRIES - FIRST_REAL_MODEL_TYPE,
               "When adding a new type, update kStartOrder.");
 
 // The amount of time we wait for association to finish. If some types haven't
@@ -180,11 +183,16 @@ void ModelAssociationManager::StopDatatype(ModelType type,
                                            ShutdownReason shutdown_reason,
                                            SyncError error) {
   DCHECK(error.IsSet());
+  desired_types_.Remove(type);
+
   DataTypeController* dtc = controllers_->find(type)->second.get();
   if (dtc->state() != DataTypeController::NOT_RUNNING &&
       dtc->state() != DataTypeController::STOPPING) {
     StopDatatypeImpl(error, shutdown_reason, dtc, base::DoNothing());
   }
+
+  // Removing a desired type may mean all models are now loaded.
+  NotifyDelegateIfReadyForConfigure();
 }
 
 void ModelAssociationManager::StopDatatypeImpl(
@@ -218,7 +226,7 @@ void ModelAssociationManager::LoadEnabledTypes() {
     }
   }
   // Load in kStartOrder.
-  for (size_t i = 0; i < arraysize(kStartOrder); i++) {
+  for (size_t i = 0; i < base::size(kStartOrder); i++) {
     ModelType type = kStartOrder[i];
     if (!desired_types_.Has(type))
       continue;
@@ -268,7 +276,7 @@ void ModelAssociationManager::StartAssociationAsync(
                               weak_ptr_factory_.GetWeakPtr(), INITIALIZED));
 
   // Start association of types that are loaded in specified order.
-  for (size_t i = 0; i < arraysize(kStartOrder); i++) {
+  for (size_t i = 0; i < base::size(kStartOrder); i++) {
     ModelType type = kStartOrder[i];
     if (!associating_types_.Has(type) || !loaded_types_.Has(type))
       continue;
@@ -333,7 +341,8 @@ void ModelAssociationManager::ModelLoadCallback(ModelType type,
     return;
   }
 
-  // This happens when slow loading type is disabled by new configuration.
+  // This happens when slow loading type is disabled by new configuration or
+  // the model came unready during loading.
   if (!desired_types_.Has(type))
     return;
 
@@ -440,7 +449,7 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
       // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
                                 ModelTypeToHistogramInt(dtc->type()),
-                                static_cast<int>(MODEL_TYPE_COUNT));
+                                static_cast<int>(ModelType::NUM_ENTRIES));
       StopDatatypeImpl(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
                                  "Association timed out.", dtc->type()),
                        STOP_SYNC, dtc, base::DoNothing());

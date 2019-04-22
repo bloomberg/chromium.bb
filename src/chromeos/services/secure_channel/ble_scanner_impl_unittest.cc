@@ -12,12 +12,12 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
 #include "chromeos/services/secure_channel/connection_role.h"
 #include "chromeos/services/secure_channel/fake_ble_scanner.h"
 #include "chromeos/services/secure_channel/fake_ble_service_data_helper.h"
 #include "chromeos/services/secure_channel/fake_ble_synchronizer.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
@@ -61,7 +61,7 @@ class FakeBluetoothDevice : public device::MockBluetoothDevice {
 class FakeDiscoverySession
     : public testing::NiceMock<device::MockBluetoothDiscoverySession> {
  public:
-  FakeDiscoverySession(base::OnceClosure destructor_callback)
+  explicit FakeDiscoverySession(base::OnceClosure destructor_callback)
       : destructor_callback_(std::move(destructor_callback)) {
     ON_CALL(*this, IsActive())
         .WillByDefault(testing::Invoke(this, &FakeDiscoverySession::is_active));
@@ -101,7 +101,7 @@ class SecureChannelBleScannerImplTest : public testing::Test {
   };
 
   SecureChannelBleScannerImplTest()
-      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(3)) {}
+      : test_devices_(multidevice::CreateRemoteDeviceRefListForTest(3)) {}
   ~SecureChannelBleScannerImplTest() override = default;
 
   // testing::Test:
@@ -152,8 +152,7 @@ class SecureChannelBleScannerImplTest : public testing::Test {
 
   void ProcessScanResultAndVerifyDevice(
       const std::string& service_data,
-      bool is_new_device,
-      cryptauth::RemoteDeviceRef expected_remote_device,
+      multidevice::RemoteDeviceRef expected_remote_device,
       bool is_background_advertisement) {
     const FakeBleScannerDelegate::ScannedResultList& results =
         fake_delegate_->handled_scan_results();
@@ -210,7 +209,9 @@ class SecureChannelBleScannerImplTest : public testing::Test {
     return fake_ble_service_data_helper_.get();
   }
 
-  const cryptauth::RemoteDeviceRefList& test_devices() { return test_devices_; }
+  const multidevice::RemoteDeviceRefList& test_devices() {
+    return test_devices_;
+  }
 
  private:
   FakeBluetoothDevice* SimulateScanResult(const std::string& service_data) {
@@ -237,7 +238,7 @@ class SecureChannelBleScannerImplTest : public testing::Test {
 
   void OnDiscoverySessionDeleted() { fake_discovery_session_ = nullptr; }
 
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  const multidevice::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<FakeBleScannerDelegate> fake_delegate_;
   std::unique_ptr<FakeBleServiceDataHelper> fake_ble_service_data_helper_;

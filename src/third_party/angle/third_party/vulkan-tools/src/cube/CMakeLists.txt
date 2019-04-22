@@ -46,8 +46,7 @@ if(UNIX AND NOT APPLE) # i.e. Linux
     option(BUILD_WSI_XCB_SUPPORT "Build XCB WSI support" ON)
     option(BUILD_WSI_XLIB_SUPPORT "Build Xlib WSI support" ON)
     option(BUILD_WSI_WAYLAND_SUPPORT "Build Wayland WSI support" ON)
-    option(BUILD_WSI_MIR_SUPPORT "Build Mir WSI support" OFF)
-    set(CUBE_WSI_SELECTION "XCB" CACHE STRING "Select WSI target for cube (XCB, XLIB, WAYLAND, MIR, DISPLAY)")
+    set(CUBE_WSI_SELECTION "XCB" CACHE STRING "Select WSI target for vkcube (XCB, XLIB, WAYLAND, DISPLAY)")
 
     if(BUILD_WSI_XCB_SUPPORT)
         find_package(XCB REQUIRED)
@@ -61,18 +60,13 @@ if(UNIX AND NOT APPLE) # i.e. Linux
         find_package(Wayland REQUIRED)
         include_directories(${WAYLAND_CLIENT_INCLUDE_DIR})
     endif()
-
-    if(BUILD_WSI_MIR_SUPPORT)
-        find_package(Mir REQUIRED)
-    endif()
-
 endif()
 
 if(WIN32)
     add_definitions(-DVK_USE_PLATFORM_WIN32_KHR -DWIN32_LEAN_AND_MEAN)
     if(NOT MSVC_VERSION LESS 1900)
         # Enable control flow guard
-        message(STATUS "Building cube with control flow guard")
+        message(STATUS "Building vkcube with control flow guard")
         add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/guard:cf>")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /guard:cf")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /guard:cf")
@@ -88,31 +82,25 @@ elseif(UNIX AND NOT APPLE) # i.e. Linux
 
     if(CUBE_WSI_SELECTION STREQUAL "XCB")
         if(NOT BUILD_WSI_XCB_SUPPORT)
-            message(FATAL_ERROR "Selected XCB for cube build but not building Xcb support")
+            message(FATAL_ERROR "Selected XCB for vkcube build but not building Xcb support")
         endif()
         set(CUBE_INCLUDE_DIRS ${XCB_INCLUDE_DIRS} ${CUBE_INCLUDE_DIRS})
         link_libraries(${XCB_LIBRARIES})
         add_definitions(-DVK_USE_PLATFORM_XCB_KHR)
     elseif(CUBE_WSI_SELECTION STREQUAL "XLIB")
         if(NOT BUILD_WSI_XLIB_SUPPORT)
-            message(FATAL_ERROR "Selected XLIB for cube build but not building Xlib support")
+            message(FATAL_ERROR "Selected XLIB for vkcube build but not building Xlib support")
         endif()
         set(CUBE_INCLUDE_DIRS ${X11_INCLUDE_DIR} ${CUBE_INCLUDE_DIRS})
         link_libraries(${X11_LIBRARIES})
         add_definitions(-DVK_USE_PLATFORM_XLIB_KHR)
     elseif(CUBE_WSI_SELECTION STREQUAL "WAYLAND")
         if(NOT BUILD_WSI_WAYLAND_SUPPORT)
-            message(FATAL_ERROR "Selected Wayland for cube build but not building Wayland support")
+            message(FATAL_ERROR "Selected Wayland for vkcube build but not building Wayland support")
         endif()
         set(CUBE_INCLUDE_DIRS ${WAYLAND_CLIENT_INCLUDE_DIR} ${CUBE_INCLUDE_DIRS})
         link_libraries(${WAYLAND_CLIENT_LIBRARIES})
         add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
-    elseif(CUBE_WSI_SELECTION STREQUAL "MIR")
-        if(NOT BUILD_WSI_MIR_SUPPORT)
-            message(FATAL_ERROR "Selected MIR for cube build but not building Mir support")
-        endif()
-        add_definitions(-DVK_USE_PLATFORM_MIR_KHR)
-        set(CUBE_INCLUDE_DIRS ${MIR_INCLUDE_DIR} ${CUBE_INCLUDE_DIRS})
     elseif(CUBE_WSI_SELECTION STREQUAL "DISPLAY")
         add_definitions(-DVK_USE_PLATFORM_DISPLAY_KHR)
     else()
@@ -173,19 +161,23 @@ endif()
 include_directories(${CUBE_INCLUDE_DIRS})
 
 # ----------------------------------------------------------------------------
-# cube
+# vkcube
 
 if(APPLE)
     include(macOS/cube/cube.cmake)
 elseif(NOT WIN32)
     if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL ${CMAKE_HOST_SYSTEM_PROCESSOR})
-        add_executable(cube
+        add_executable(vkcube
                        cube.c
                        ${PROJECT_SOURCE_DIR}/cube/cube.vert
                        ${PROJECT_SOURCE_DIR}/cube/cube.frag
                        cube.vert.inc
                        cube.frag.inc)
-        target_link_libraries(cube Vulkan::Vulkan)
+        target_link_libraries(vkcube Vulkan::Vulkan)
+        CHECK_LIBRARY_EXISTS("rt" clock_gettime "" NEED_RT)
+        if (NEED_RT)
+            target_link_libraries(vkcube rt)
+        endif()
     endif()
 else()
     if(CMAKE_CL_64)
@@ -194,43 +186,43 @@ else()
         set(LIB_DIR "Win32")
     endif()
 
-    add_executable(cube
+    add_executable(vkcube
                    WIN32
                    cube.c
                    ${PROJECT_SOURCE_DIR}/cube/cube.vert
                    ${PROJECT_SOURCE_DIR}/cube/cube.frag
                    cube.vert.inc
                    cube.frag.inc)
-    target_link_libraries(cube Vulkan::Vulkan)
+    target_link_libraries(vkcube Vulkan::Vulkan)
 endif()
 
 if(APPLE)
     # Keep RPATH so fixup_bundle can use it to find libraries
-    set_target_properties(cube PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
-    install(TARGETS cube BUNDLE DESTINATION "cube")
+    set_target_properties(vkcube PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+    install(TARGETS vkcube BUNDLE DESTINATION "cube")
     # Fix up the library references to be self-contained within the bundle.
     install(CODE "
         include(BundleUtilities)
-        fixup_bundle(\${CMAKE_INSTALL_PREFIX}/cube/cube.app \"\" \"\")
+        fixup_bundle(\${CMAKE_INSTALL_PREFIX}/cube/vkcube.app \"\" \"${Vulkan_LIBRARY_DIR}\")
         ")
 else()
-    install(TARGETS cube RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(TARGETS vkcube RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
 # ----------------------------------------------------------------------------
-# cubepp
+# vkcubepp
 
 if(APPLE)
     include(macOS/cubepp/cubepp.cmake)
 elseif(NOT WIN32)
     if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL ${CMAKE_HOST_SYSTEM_PROCESSOR})
-        add_executable(cubepp
+        add_executable(vkcubepp
                        cube.cpp
                        ${PROJECT_SOURCE_DIR}/cube/cube.vert
                        ${PROJECT_SOURCE_DIR}/cube/cube.frag
                        cube.vert.inc
                        cube.frag.inc)
-        target_link_libraries(cubepp Vulkan::Vulkan)
+        target_link_libraries(vkcubepp Vulkan::Vulkan)
     endif()
 else()
     if(CMAKE_CL_64)
@@ -239,25 +231,25 @@ else()
         set(LIB_DIR "Win32")
     endif()
 
-    add_executable(cubepp
+    add_executable(vkcubepp
                    WIN32
                    cube.cpp
                    ${PROJECT_SOURCE_DIR}/cube/cube.vert
                    ${PROJECT_SOURCE_DIR}/cube/cube.frag
                    cube.vert.inc
                    cube.frag.inc)
-    target_link_libraries(cubepp Vulkan::Vulkan)
+    target_link_libraries(vkcubepp Vulkan::Vulkan)
 endif()
 
 if(APPLE)
     # Keep RPATH so fixup_bundle can use it to find libraries
-    set_target_properties(cubepp PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
-    install(TARGETS cubepp BUNDLE DESTINATION "cube")
+    set_target_properties(vkcubepp PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+    install(TARGETS vkcubepp BUNDLE DESTINATION "cube")
     # Fix up the library references to be self-contained within the bundle.
     install(CODE "
         include(BundleUtilities)
-        fixup_bundle(\${CMAKE_INSTALL_PREFIX}/cube/cubepp.app \"\" \"\")
+        fixup_bundle(\${CMAKE_INSTALL_PREFIX}/cube/vkcubepp.app \"\" \"${Vulkan_LIBRARY_DIR}\")
         ")
 else()
-    install(TARGETS cubepp RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(TARGETS vkcubepp RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

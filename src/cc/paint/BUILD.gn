@@ -8,8 +8,6 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 cc_component("paint") {
   output_name = "cc_paint"
   sources = [
-    "color_space_transfer_cache_entry.cc",
-    "color_space_transfer_cache_entry.h",
     "decode_stashing_image_provider.cc",
     "decode_stashing_image_provider.h",
     "decoded_draw_image.cc",
@@ -31,6 +29,8 @@ cc_component("paint") {
     "image_provider.h",
     "image_transfer_cache_entry.cc",
     "image_transfer_cache_entry.h",
+    "node_holder.cc",
+    "node_holder.h",
     "paint_cache.cc",
     "paint_cache.h",
     "paint_canvas.h",
@@ -59,6 +59,8 @@ cc_component("paint") {
     "paint_recorder.h",
     "paint_shader.cc",
     "paint_shader.h",
+    "paint_worklet_input.h",
+    "paint_worklet_layer_painter.h",
     "raw_memory_transfer_cache_entry.cc",
     "raw_memory_transfer_cache_entry.h",
     "record_paint_canvas.cc",
@@ -77,6 +79,7 @@ cc_component("paint") {
     "skottie_wrapper.h",
     "solid_color_analyzer.cc",
     "solid_color_analyzer.h",
+    "text_holder.h",
     "transfer_cache_deserialize_helper.h",
     "transfer_cache_entry.cc",
     "transfer_cache_entry.h",

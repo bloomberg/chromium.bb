@@ -30,7 +30,6 @@ void APIBindingTest::SetUp() {
 #endif
 
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
-                                 gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
 
   isolate_holder_ = std::make_unique<gin::IsolateHolder>(

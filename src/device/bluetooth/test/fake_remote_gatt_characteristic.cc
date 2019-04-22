@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_uuid.h"

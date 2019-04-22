@@ -46,7 +46,7 @@ class WidgetElementTest : public views::ViewsTestBase {
   }
 
  protected:
-  views::Widget* widget() { return widget_; };
+  views::Widget* widget() { return widget_; }
   WidgetElement* element() { return element_.get(); }
   MockUIElementDelegate* delegate() { return delegate_.get(); }
 
@@ -130,9 +130,9 @@ TEST_F(WidgetElementTest, GetAttributes) {
   EXPECT_EQ(attrs->get(3), "true");
 }
 
-TEST_F(WidgetElementTest, GetNodeWindowAndBounds) {
+TEST_F(WidgetElementTest, GetNodeWindowAndScreenBounds) {
   std::pair<gfx::NativeWindow, gfx::Rect> window_and_bounds =
-      element()->GetNodeWindowAndBounds();
+      element()->GetNodeWindowAndScreenBounds();
   EXPECT_EQ(widget()->GetNativeWindow(), window_and_bounds.first);
   EXPECT_EQ(widget()->GetWindowBoundsInScreen(), window_and_bounds.second);
 }

@@ -31,10 +31,10 @@ Note that `ComputedStyle::locale()` is an `AtomicString`
 for the style system to work without special casing,
 while `FontDescription::locale()` is a pointer to `LayoutLocale`.
 
-[lang attribute]: https://html.spec.whatwg.org/multipage/dom.html#the-lang-and-xml:lang-attributes
+[lang attribute]: https://html.spec.whatwg.org/C/#the-lang-and-xml:lang-attributes
 [BCP 47]: https://tools.ietf.org/html/bcp47
-[language of a node]: https://html.spec.whatwg.org/multipage/dom.html#language
-[content-language]: https://html.spec.whatwg.org/multipage/semantics.html#pragma-set-default-language
+[language of a node]: https://html.spec.whatwg.org/C/#language
+[content-language]: https://html.spec.whatwg.org/C/#pragma-set-default-language
 
 ## Generic Family
 

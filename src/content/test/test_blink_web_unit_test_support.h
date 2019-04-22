@@ -30,7 +30,21 @@ class MockClipboardHost;
 // An implementation of BlinkPlatformImpl for tests.
 class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
  public:
-  TestBlinkWebUnitTestSupport();
+  enum class SchedulerType {
+    // Create a mock version of scheduling infrastructure, which just forwards
+    // all calls to the default task runner.
+    // All non-blink users (content_unittests etc) should call this method.
+    // Each test has to create base::test::ScopedTaskEnvironment manually.
+    kMockScheduler,
+    // Initialize blink platform with the real scheduler.
+    // Should be used only by webkit_unit_tests.
+    // Tests don't have to create base::test::ScopedTaskEnvironment, but should
+    // be careful not to leak any tasks to the other tests.
+    kRealScheduler,
+  };
+
+  explicit TestBlinkWebUnitTestSupport(
+      SchedulerType scheduler_type = SchedulerType::kMockScheduler);
   ~TestBlinkWebUnitTestSupport() override;
 
   blink::WebBlobRegistry* GetBlobRegistry() override;
@@ -49,6 +63,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
       const blink::WebString& value1,
       const blink::WebString& value2) override;
   blink::WebString DefaultLocale() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;
 
   blink::WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
 

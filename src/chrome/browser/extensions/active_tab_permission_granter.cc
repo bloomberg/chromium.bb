@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -23,6 +25,7 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -92,6 +95,21 @@ bool ShouldGrantActiveTabOrPrompt(const Extension* extension,
              extension, web_contents);
 }
 
+void UpdateTabSpecificCorsOriginAccessLists(const ExtensionId& extension_id,
+                                            ProcessManager* process_manager) {
+  // TODO(crbug.com/736308): In OOR-CORS mode, activeTab permissions are
+  // supported only when NetworkService is enabled. Revisit here if the legacy
+  // path needs to support it. Even so, probably we won't have per-factory
+  // lists, but share the per-profile lists in the legacy path.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  const std::set<content::RenderFrameHost*>& extension_hosts =
+      process_manager->GetRenderFrameHostsForExtension(extension_id);
+  for (auto* host : extension_hosts)
+    host->UpdateSubresourceLoaderFactories();
+}
+
 }  // namespace
 
 ActiveTabPermissionGranter::ActiveTabPermissionGranter(
@@ -152,23 +170,23 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
 
   if (!new_apis.empty() || !new_hosts.is_empty()) {
     granted_extensions_.Insert(extension);
-    PermissionSet new_permissions(new_apis, ManifestPermissionSet(), new_hosts,
-                                  new_hosts);
+    PermissionSet new_permissions(std::move(new_apis), ManifestPermissionSet(),
+                                  new_hosts.Clone(), new_hosts.Clone());
     permissions_data->UpdateTabSpecificPermissions(tab_id_, new_permissions);
-    const content::NavigationEntry* navigation_entry =
+    ProcessManager* process_manager =
+        ProcessManager::Get(web_contents()->GetBrowserContext());
+    UpdateTabSpecificCorsOriginAccessLists(extension->id(), process_manager);
+
+    content::NavigationEntry* navigation_entry =
         web_contents()->GetController().GetVisibleEntry();
     if (navigation_entry) {
       // We update all extension render views with the new tab permissions, and
       // also the tab itself.
       CreateMessageFunction update_message =
-          base::Bind(&CreateUpdateMessage,
-                     navigation_entry->GetURL(),
-                     extension->id(),
-                     new_hosts,
-                     tab_id_);
+          base::Bind(&CreateUpdateMessage, navigation_entry->GetURL(),
+                     extension->id(), new_hosts.Clone(), tab_id_);
       SendMessageToProcesses(
-          ProcessManager::Get(web_contents()->GetBrowserContext())
-              ->GetRenderFrameHostsForExtension(extension->id()),
+          process_manager->GetRenderFrameHostsForExtension(extension->id()),
           web_contents()->GetMainFrame()->GetProcess(), update_message);
 
       // If more things ever need to know about this, we should consider making
@@ -198,7 +216,7 @@ void ActiveTabPermissionGranter::DidFinishNavigation(
   // Only clear the granted permissions for cross-origin navigations.
   // TODO(devlin): We likely shouldn't be using the visible entry. Instead,
   // we should use WebContents::GetLastCommittedURL().
-  const content::NavigationEntry* navigation_entry =
+  content::NavigationEntry* navigation_entry =
       web_contents()->GetController().GetVisibleEntry();
   if (navigation_entry && navigation_entry->GetURL().GetOrigin() ==
                               navigation_handle->GetPreviousURL().GetOrigin()) {
@@ -231,6 +249,8 @@ void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
       ProcessManager::Get(web_contents()->GetBrowserContext());
   for (const scoped_refptr<const Extension>& extension : granted_extensions_) {
     extension->permissions_data()->ClearTabSpecificPermissions(tab_id_);
+    UpdateTabSpecificCorsOriginAccessLists(extension->id(), process_manager);
+
     extension_ids.push_back(extension->id());
     std::set<content::RenderFrameHost*> extension_frame_hosts =
         process_manager->GetRenderFrameHostsForExtension(extension->id());

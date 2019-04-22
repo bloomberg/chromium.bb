@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -36,7 +35,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
@@ -152,8 +150,6 @@ class ContentScriptApiTest : public ExtensionApiTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(ContentScriptApiTest);
 };
 
@@ -620,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
 
   ExtensionTestMessageListener listener("done", false);
   AddTabAtIndex(0, GURL("chrome://newtab"), ui::PAGE_TRANSITION_LINK);
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
   content::WebContents* tab_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -929,6 +925,18 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, InifiniteLoopInGetEffectiveURL) {
   // Verify that the renderer is still responsive / that the renderer didn't
   // enter an infinite loop.
   EXPECT_EQ(123, content::EvalJs(web_contents, "123"));
+}
+
+// Verifies how the messaging API works with content scripts.
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, Test) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "content_scripts/other_extensions/message_echoer_allows_by_default")));
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "content_scripts/other_extensions/message_echoer_allows")));
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "content_scripts/other_extensions/message_echoer_denies")));
+  ASSERT_TRUE(RunExtensionTest("content_scripts/messaging")) << message_;
 }
 
 // Test fixture which sets a custom NTP Page.

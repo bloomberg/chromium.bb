@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/arc/arc_util.h"
-#include "components/arc/connection_holder.h"
+#include "components/arc/session/connection_holder.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
@@ -118,6 +118,19 @@ bool ArcPackageSyncableService::IsPackageSyncing(
     const std::string& package_name) const {
   return pending_install_items_.find(package_name) !=
       pending_install_items_.end();
+}
+
+void ArcPackageSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
+  DCHECK(!wait_until_ready_to_sync_cb_);
+
+  if (prefs_->package_list_initial_refreshed()) {
+    std::move(done).Run();
+    return;
+  }
+
+  // Wait until the initial list is loaded, handled in
+  // OnPackageListInitialRefreshed().
+  wait_until_ready_to_sync_cb_ = std::move(done);
 }
 
 syncer::SyncMergeResult ArcPackageSyncableService::MergeDataAndStartSyncing(
@@ -320,6 +333,11 @@ void ArcPackageSyncableService::OnPackageModified(
   }
 
   SendSyncChange(package_info, SyncChange::ACTION_UPDATE);
+}
+
+void ArcPackageSyncableService::OnPackageListInitialRefreshed() {
+  if (wait_until_ready_to_sync_cb_)
+    std::move(wait_until_ready_to_sync_cb_).Run();
 }
 
 void ArcPackageSyncableService::SendSyncChange(

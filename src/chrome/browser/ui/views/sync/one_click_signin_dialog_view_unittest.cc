@@ -51,7 +51,7 @@ class OneClickSigninDialogViewTest : public ChromeViewsTestBase,
         base::string16(),
         std::make_unique<TestOneClickSigninLinksDelegate>(this),
         anchor_widget_->GetNativeWindow(),
-        base::Bind(&OneClickSigninDialogViewTest::OnStartSync,
+        base::Bind(&OneClickSigninDialogViewTest::ConfirmedCallback,
                    base::Unretained(this)));
 
     OneClickSigninDialogView* view =
@@ -60,9 +60,9 @@ class OneClickSigninDialogViewTest : public ChromeViewsTestBase,
     return view;
   }
 
-  void OnStartSync(OneClickSigninSyncStarter::StartSyncMode mode) {
-    on_start_sync_called_ = true;
-    mode_ = mode;
+  void ConfirmedCallback(bool confirmed) {
+    on_confirmed_callback_called_ = true;
+    confirmed_ = confirmed;
   }
 
   // Waits for the OneClickSigninDialogView to close, by observing its Widget,
@@ -85,11 +85,9 @@ class OneClickSigninDialogViewTest : public ChromeViewsTestBase,
   // views::WidgetObserver method:
   void OnWidgetDestroyed(views::Widget* widget) override { run_loop_->Quit(); }
 
-  bool on_start_sync_called_ = false;
-  OneClickSigninSyncStarter::StartSyncMode mode_ =
-      OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST;
+  bool on_confirmed_callback_called_ = false;
+  bool confirmed_ = false;
   int learn_more_click_count_ = 0;
-  int advanced_click_count_ = 0;
 
  private:
   friend class TestOneClickSigninLinksDelegate;
@@ -104,7 +102,6 @@ class OneClickSigninDialogViewTest : public ChromeViewsTestBase,
     void OnLearnMoreLinkClicked(bool is_dialog) override {
       ++test_->learn_more_click_count_;
     }
-    void OnAdvancedLinkClicked() override { ++test_->advanced_click_count_; }
 
    private:
     OneClickSigninDialogViewTest* test_;
@@ -131,8 +128,8 @@ TEST_F(OneClickSigninDialogViewTest, HideDialog) {
   OneClickSigninDialogView::Hide();
   WaitForClose();
   EXPECT_FALSE(OneClickSigninDialogView::IsShowing());
-  EXPECT_TRUE(on_start_sync_called_);
-  EXPECT_EQ(OneClickSigninSyncStarter::UNDO_SYNC, mode_);
+  EXPECT_TRUE(on_confirmed_callback_called_);
+  EXPECT_EQ(false, confirmed_);
 }
 
 TEST_F(OneClickSigninDialogViewTest, OkButton) {
@@ -148,8 +145,8 @@ TEST_F(OneClickSigninDialogViewTest, OkButton) {
 
   WaitForClose();
   EXPECT_FALSE(OneClickSigninDialogView::IsShowing());
-  EXPECT_TRUE(on_start_sync_called_);
-  EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
+  EXPECT_TRUE(on_confirmed_callback_called_);
+  EXPECT_EQ(true, confirmed_);
 }
 
 TEST_F(OneClickSigninDialogViewTest, UndoButton) {
@@ -165,8 +162,8 @@ TEST_F(OneClickSigninDialogViewTest, UndoButton) {
 
   WaitForClose();
   EXPECT_FALSE(OneClickSigninDialogView::IsShowing());
-  EXPECT_TRUE(on_start_sync_called_);
-  EXPECT_EQ(OneClickSigninSyncStarter::UNDO_SYNC, mode_);
+  EXPECT_TRUE(on_confirmed_callback_called_);
+  EXPECT_EQ(false, confirmed_);
 }
 
 TEST_F(OneClickSigninDialogViewTest, AdvancedLink) {
@@ -177,10 +174,9 @@ TEST_F(OneClickSigninDialogViewTest, AdvancedLink) {
   listener->LinkClicked(view->advanced_link_, 0);
 
   WaitForClose();
-  EXPECT_TRUE(on_start_sync_called_);
-  EXPECT_EQ(OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST, mode_);
+  EXPECT_TRUE(on_confirmed_callback_called_);
+  EXPECT_EQ(true, confirmed_);
   EXPECT_FALSE(OneClickSigninDialogView::IsShowing());
-  EXPECT_EQ(0, advanced_click_count_);
 }
 
 TEST_F(OneClickSigninDialogViewTest, LearnMoreLink) {
@@ -203,8 +199,8 @@ TEST_F(OneClickSigninDialogViewTest, PressEnterKey) {
 
   WaitForClose();
   EXPECT_FALSE(OneClickSigninDialogView::IsShowing());
-  EXPECT_TRUE(on_start_sync_called_);
-  EXPECT_EQ(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, mode_);
+  EXPECT_TRUE(on_confirmed_callback_called_);
+  EXPECT_EQ(true, confirmed_);
 }
 
 TEST_F(OneClickSigninDialogViewTest, PressEscapeKey) {
@@ -214,6 +210,6 @@ TEST_F(OneClickSigninDialogViewTest, PressEscapeKey) {
 
   WaitForClose();
   EXPECT_FALSE(OneClickSigninDialogView::IsShowing());
-  EXPECT_TRUE(on_start_sync_called_);
-  EXPECT_EQ(OneClickSigninSyncStarter::UNDO_SYNC, mode_);
+  EXPECT_TRUE(on_confirmed_callback_called_);
+  EXPECT_EQ(false, confirmed_);
 }

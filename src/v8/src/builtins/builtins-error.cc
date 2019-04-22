@@ -6,6 +6,7 @@
 #include "src/builtins/builtins-utils-inl.h"
 #include "src/builtins/builtins.h"
 #include "src/counters.h"
+#include "src/isolate-inl.h"
 #include "src/messages.h"
 #include "src/objects-inl.h"
 #include "src/objects/api-callbacks.h"
@@ -85,8 +86,8 @@ BUILTIN(ErrorPrototypeToString) {
 
 namespace {
 
-Object* MakeGenericError(Isolate* isolate, BuiltinArguments args,
-                         Handle<JSFunction> constructor) {
+Object MakeGenericError(Isolate* isolate, BuiltinArguments args,
+                        Handle<JSFunction> constructor) {
   Handle<Object> template_index = args.atOrUndefined(isolate, 1);
   Handle<Object> arg0 = args.atOrUndefined(isolate, 2);
   Handle<Object> arg1 = args.atOrUndefined(isolate, 3);

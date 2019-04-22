@@ -165,7 +165,8 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
 
     if (!instance_) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, kInfoMessageLevel,
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kInfo,
           "Unable to create an instance of layout class '" + name +
               "', falling back to block layout."));
       return false;
@@ -195,7 +196,8 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
 
       if (index >= child_fragments.size()) {
         GetDocument().AddConsoleMessage(
-            ConsoleMessage::Create(kJSMessageSource, kInfoMessageLevel,
+            ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                                   mojom::ConsoleMessageLevel::kInfo,
                                    "Chrome currently requires exactly one "
                                    "LayoutFragment per LayoutChild, "
                                    "falling back to block layout."));
@@ -205,7 +207,8 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
       CustomLayoutFragment* fragment = child_fragments[index++];
       if (!fragment->IsValid()) {
         GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-            kJSMessageSource, kInfoMessageLevel,
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kInfo,
             "An invalid LayoutFragment was returned from the "
             "layout, falling back to block layout."));
         return false;
@@ -245,7 +248,8 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
     // Currently we only support exactly one LayoutFragment per LayoutChild.
     if (index != child_fragments.size()) {
       GetDocument().AddConsoleMessage(
-          ConsoleMessage::Create(kJSMessageSource, kInfoMessageLevel,
+          ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                                 mojom::ConsoleMessageLevel::kInfo,
                                  "Chrome currently requires exactly one "
                                  "LayoutFragment per LayoutChild, "
                                  "falling back to block layout."));
@@ -266,7 +270,7 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
       relayout_children = true;
 
     LayoutPositionedObjects(relayout_children || IsDocumentElement());
-    ComputeOverflow(old_client_after_edge);
+    ComputeLayoutOverflow(old_client_after_edge);
   }
 
   UpdateAfterLayout();

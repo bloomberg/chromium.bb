@@ -13,14 +13,12 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/bind.h"
 #include "base/time/time.h"
 #include "chromeos/system/devicemode.h"
-#include "ui/base/class_property.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
-
-DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ScreenRotationAnimator*);
 
 namespace ash {
 
@@ -35,12 +33,6 @@ namespace {
 const int64_t kAfterDisplayChangeThrottleTimeoutMs = 500;
 const int64_t kCycleDisplayThrottleTimeoutMs = 4000;
 const int64_t kSetPrimaryDisplayThrottleTimeoutMs = 500;
-
-// A property key to store the ScreenRotationAnimator of the window; Used for
-// screen rotation.
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ash::ScreenRotationAnimator,
-                                   kScreenRotationAnimatorKey,
-                                   nullptr);
 
 bool g_disable_animator_for_test = false;
 
@@ -129,13 +121,6 @@ void DisplayConfigurationController::SetUnifiedDesktopLayoutMatrix(
 }
 
 void DisplayConfigurationController::SetMirrorMode(bool mirror, bool throttle) {
-  if (!display_manager_->is_multi_mirroring_enabled() &&
-      display_manager_->num_connected_displays() > 2) {
-    ShowDisplayErrorNotification(
-        l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED),
-        false);
-    return;
-  }
   if (display_manager_->num_connected_displays() <= 1 ||
       display_manager_->IsInMirrorMode() == mirror ||
       (throttle && IsLimited())) {
@@ -222,13 +207,6 @@ void DisplayConfigurationController::SetAnimatorForTest(bool enable) {
     display_animator_.reset(new DisplayAnimator());
 }
 
-void DisplayConfigurationController::SetScreenRotationAnimatorForTest(
-    int64_t display_id,
-    std::unique_ptr<ScreenRotationAnimator> animator) {
-  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
-  root_window->SetProperty(kScreenRotationAnimatorKey, animator.release());
-}
-
 // Private
 
 void DisplayConfigurationController::SetThrottleTimeout(int64_t throttle_ms) {
@@ -273,13 +251,7 @@ ScreenRotationAnimator*
 DisplayConfigurationController::GetScreenRotationAnimatorForDisplay(
     int64_t display_id) {
   aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
-  ScreenRotationAnimator* animator =
-      root_window->GetProperty(kScreenRotationAnimatorKey);
-  if (!animator) {
-    animator = new ScreenRotationAnimator(root_window);
-    root_window->SetProperty(kScreenRotationAnimatorKey, animator);
-  }
-  return animator;
+  return ScreenRotationAnimator::GetForRootWindow(root_window);
 }
 
 }  // namespace ash

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_DATA_UNITTEST_UTILS_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_DATA_UNITTEST_UTILS_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
@@ -13,13 +15,20 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 class WebContents;
 }
 
+namespace performance_manager {
+class PerformanceManager;
+}  // namespace performance_manager
+
 namespace resource_coordinator {
+
+
 namespace testing {
 
 // Return the LocalSiteCharacteristicsDataImpl instance backing a WebContents,
@@ -93,6 +102,7 @@ class ChromeTestHarnessWithLocalDB : public ChromeRenderViewHostTestHarness {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   service_manager::mojom::ServicePtr service_;
+  std::unique_ptr<performance_manager::PerformanceManager> performance_manager_;
 };
 
 }  // namespace testing

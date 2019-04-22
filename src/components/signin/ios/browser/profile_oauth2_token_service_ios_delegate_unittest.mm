@@ -11,7 +11,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
@@ -30,29 +29,21 @@ typedef ProfileOAuth2TokenServiceIOSProvider::AccountInfo ProviderAccount;
 class ProfileOAuth2TokenServiceIOSDelegateTest
     : public testing::Test,
       public OAuth2AccessTokenConsumer,
-      public OAuth2TokenService::Observer,
-      public SigninErrorController::Observer {
+      public OAuth2TokenService::Observer {
  public:
   ProfileOAuth2TokenServiceIOSDelegateTest()
       : factory_(NULL),
         client_(&prefs_),
-        signin_error_controller_(
-            SigninErrorController::AccountMode::ANY_ACCOUNT),
         token_available_count_(0),
         token_revoked_count_(0),
         tokens_loaded_count_(0),
         access_token_success_(0),
         access_token_failure_(0),
-        error_changed_count_(0),
         auth_error_changed_count_(0),
         last_access_token_error_(GoogleServiceAuthError::NONE) {}
 
   void SetUp() override {
-    prefs_.registry()->RegisterListPref(
-        AccountTrackerService::kAccountInfoPref);
-    prefs_.registry()->RegisterIntegerPref(
-        prefs::kAccountIdMigrationState,
-        AccountTrackerService::MIGRATION_NOT_STARTED);
+    AccountTrackerService::RegisterPrefs(prefs_.registry());
     account_tracker_.Initialize(&prefs_, base::FilePath());
 
     prefs_.registry()->RegisterBooleanPref(
@@ -64,14 +55,11 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
     factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(), "",
                              net::HTTP_OK, net::URLRequestStatus::SUCCESS);
     oauth2_delegate_.reset(new ProfileOAuth2TokenServiceIOSDelegate(
-        &client_, base::WrapUnique(fake_provider_), &account_tracker_,
-        &signin_error_controller_));
+        &client_, base::WrapUnique(fake_provider_), &account_tracker_));
     oauth2_delegate_->AddObserver(this);
-    signin_error_controller_.AddObserver(this);
   }
 
   void TearDown() override {
-    signin_error_controller_.RemoveObserver(this);
     oauth2_delegate_->RemoveObserver(this);
     oauth2_delegate_->Shutdown();
   }
@@ -85,7 +73,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   void OnGetTokenFailure(const GoogleServiceAuthError& error) override {
     ++access_token_failure_;
     last_access_token_error_ = error;
-  };
+  }
 
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override {
@@ -100,16 +88,12 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
     ++auth_error_changed_count_;
   }
 
-  // SigninErrorController::Observer implementation.
-  void OnErrorChanged() override { ++error_changed_count_; }
-
   void ResetObserverCounts() {
     token_available_count_ = 0;
     token_revoked_count_ = 0;
     tokens_loaded_count_ = 0;
     token_available_count_ = 0;
     access_token_failure_ = 0;
-    error_changed_count_ = 0;
     auth_error_changed_count_ = 0;
   }
 
@@ -124,7 +108,6 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   TestingPrefServiceSimple prefs_;
   TestSigninClient client_;
   AccountTrackerService account_tracker_;
-  SigninErrorController signin_error_controller_;
   FakeProfileOAuth2TokenServiceIOSProvider* fake_provider_;
   std::unique_ptr<ProfileOAuth2TokenServiceIOSDelegate> oauth2_delegate_;
   TestingOAuth2TokenServiceConsumer consumer_;
@@ -133,7 +116,6 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   int tokens_loaded_count_;
   int access_token_success_;
   int access_token_failure_;
-  int error_changed_count_;
   int auth_error_changed_count_;
   GoogleServiceAuthError last_access_token_error_;
 };
@@ -311,13 +293,11 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
   oauth2_delegate_->UpdateAuthError(GetAccountId(account1), error);
   EXPECT_EQ(error, oauth2_delegate_->GetAuthError("gaia_1"));
   EXPECT_EQ(1, auth_error_changed_count_);
-  EXPECT_EQ(1, error_changed_count_);
 
   oauth2_delegate_->RevokeAllCredentials();
   ResetObserverCounts();
   oauth2_delegate_->UpdateAuthError(GetAccountId(account1), error);
   EXPECT_EQ(0, auth_error_changed_count_);
-  EXPECT_EQ(0, error_changed_count_);
 }
 
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, GetAuthError) {

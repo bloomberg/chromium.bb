@@ -17,9 +17,9 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "net/reporting/reporting_cache.h"
+#include "net/reporting/reporting_cache_observer.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_endpoint_manager.h"
-#include "net/reporting/reporting_observer.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_uploader.h"
 #include "url/gurl.h"
@@ -52,26 +52,28 @@ void SerializeReports(const std::vector<const ReportingReport*>& reports,
 }
 
 class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
-                                   public ReportingObserver {
+                                   public ReportingCacheObserver {
  public:
   ReportingDeliveryAgentImpl(ReportingContext* context)
       : context_(context),
         timer_(std::make_unique<base::OneShotTimer>()),
         weak_factory_(this) {
-    context_->AddObserver(this);
+    context_->AddCacheObserver(this);
   }
 
   // ReportingDeliveryAgent implementation:
 
-  ~ReportingDeliveryAgentImpl() override { context_->RemoveObserver(this); }
+  ~ReportingDeliveryAgentImpl() override {
+    context_->RemoveCacheObserver(this);
+  }
 
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) override {
     DCHECK(!timer_->IsRunning());
     timer_ = std::move(timer);
   }
 
-  // ReportingObserver implementation:
-  void OnCacheUpdated() override {
+  // ReportingCacheObserver implementation:
+  void OnReportsUpdated() override {
     if (CacheHasReports() && !timer_->IsRunning()) {
       SendReports();
       StartTimer();

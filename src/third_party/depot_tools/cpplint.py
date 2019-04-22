@@ -2530,7 +2530,7 @@ class NestingState(object):
     #   };
     class_decl_match = Match(
         r'^(\s*(?:template\s*<[\w\s<>,:]*>\s*)?'
-        r'(class|struct)\s+(?:[A-Z_]+\s+)*(\w+(?:::\w+)*))'
+        r'(class|struct)\s+(?:[A-Z0-9_]+\s+)*(\w+(?:::\w+)*))'
         r'(.*)$', line)
     if (class_decl_match and
         (not self.stack or self.stack[-1].open_parentheses == 0)):
@@ -2955,7 +2955,7 @@ def CheckForFunctionLengths(filename, clean_lines, linenum,
     # ignore it, unless it's TEST or TEST_F.
     function_name = match_result.group(1).split()[-1]
     if function_name == 'TEST' or function_name == 'TEST_F' or (
-        not Match(r'[A-Z_]+$', function_name)):
+        not Match(r'[A-Z_0-9]+$', function_name)):
       starting_func = True
 
   if starting_func:
@@ -4665,6 +4665,9 @@ def CheckLanguage(filename, clean_lines, linenum, file_extension,
 
       if Search(r'sizeof\(.+\)', tok): continue
       if Search(r'arraysize\(\w+\)', tok): continue
+      if Search(r'base::size\(.+\)', tok): continue
+      if Search(r'std::size\(.+\)', tok): continue
+      if Search(r'std::extent<.+>', tok): continue
 
       tok = tok.lstrip('(')
       tok = tok.rstrip(')')
@@ -6001,14 +6004,16 @@ def ParseArguments(args):
   """
   try:
     (opts, filenames) = getopt.getopt(args, '', ['help', 'output=', 'verbose=',
+                                                 'headers=', # We understand but ignore headers.
                                                  'counting=',
                                                  'filter=',
                                                  'root=',
                                                  'linelength=',
                                                  'extensions=',
-                                                 'project_root='])
-  except getopt.GetoptError:
-    PrintUsage('Invalid arguments.')
+                                                 'project_root=',
+                                                 'repository='])
+  except getopt.GetoptError as e:
+    PrintUsage('Invalid arguments: {}'.format(e))
 
   verbosity = _VerboseLevel()
   output_format = _OutputFormat()
@@ -6035,7 +6040,7 @@ def ParseArguments(args):
     elif opt == '--root':
       global _root
       _root = val
-    elif opt == '--project_root':
+    elif opt == '--project_root' or opt == "--repository":
       global _project_root
       _project_root = val
       if not os.path.isabs(_project_root):

@@ -9,7 +9,7 @@
  *  rotate90: number
  * }}
  */
-var ImageTransformation;
+let ImageTransformation;
 
 /**
  * Metadata of a file. Doesn't have @struct to allow for '[]' computed property
@@ -29,6 +29,11 @@ function MetadataItem() {
   this.modificationTime;
 
   /**
+   * @public {Error|undefined}
+   */
+  this.modificationTimeError;
+
+  /**
    * @public {!Date|undefined}
    */
   this.modificationByMeTime;
@@ -44,6 +49,11 @@ function MetadataItem() {
    * @public {string|undefined}
    */
   this.croppedThumbnailUrl;
+
+  /**
+   * @public {Error|undefined}
+   */
+  this.croppedThumbnailUrlError;
 
   /**
    * @public {Error|undefined}

@@ -5,9 +5,9 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_IMPL_H_
 #define STORAGE_BROWSER_BLOB_BLOB_IMPL_H_
 
+#include "base/component_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 namespace storage {
@@ -15,8 +15,9 @@ namespace storage {
 class BlobDataHandle;
 
 // Self destroys when no more bindings exist.
-class STORAGE_EXPORT BlobImpl : public blink::mojom::Blob,
-                                public network::mojom::DataPipeGetter {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobImpl
+    : public blink::mojom::Blob,
+      public network::mojom::DataPipeGetter {
  public:
   static base::WeakPtr<BlobImpl> Create(std::unique_ptr<BlobDataHandle> handle,
                                         blink::mojom::BlobRequest request);

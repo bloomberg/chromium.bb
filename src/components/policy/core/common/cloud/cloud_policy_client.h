@@ -133,7 +133,7 @@ class POLICY_EXPORT CloudPolicyClient {
       enterprise_management::DeviceRegisterRequest::Flavor flavor,
       enterprise_management::DeviceRegisterRequest::Lifetime lifetime,
       enterprise_management::LicenseType::LicenseTypeEnum license_type,
-      std::unique_ptr<DMAuth> auth,
+      const std::string& oauth_token,
       const std::string& client_id,
       const std::string& requisition,
       const std::string& current_state_key);
@@ -150,7 +150,8 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& pem_certificate_chain,
       const std::string& client_id,
       const std::string& requisition,
-      const std::string& current_state_key);
+      const std::string& current_state_key,
+      const std::string& sub_organization);
 
   // Attempts to enroll with the device management service using an enrollment
   // token. Results in a registration change or error notification.
@@ -161,6 +162,15 @@ class POLICY_EXPORT CloudPolicyClient {
   // will use the given info, and callers can use fetched_invalidation_version
   // to determine which version of policy was fetched.
   void SetInvalidationInfo(int64_t version, const std::string& payload);
+
+  // Sets OAuth token to be used as an additional authentication in requests to
+  // DMServer. It is used for child user. This class does not track validity of
+  // the |oauth_token|. It should be provided with a fresh token when the
+  // previous token expires. If OAuth token is set for the client, it will be
+  // automatically included in the folllowing requests:
+  //  * policy fetch
+  //  * status report upload
+  virtual void SetOAuthTokenAsAdditionalAuth(const std::string& oauth_token);
 
   // Requests a policy fetch. The client being registered is a prerequisite to
   // this operation and this call will CHECK if the client is not in registered
@@ -214,13 +224,13 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void UploadEnterpriseEnrollmentId(const std::string& enrollment_id,
                                             const StatusCallback& callback);
 
-  // Uploads device/session status to the server. As above, the client must be
-  // in a registered state. If non-null, |device_status| and |session_status|
-  // will be included in the upload status request. The |callback| will be
-  // called when the operation completes.
+  // Uploads status to the server. The client must be in a registered state.
+  // Only non-null statuses will be included in the upload status request. The
+  // |callback| will be called when the operation completes.
   virtual void UploadDeviceStatus(
       const enterprise_management::DeviceStatusReportRequest* device_status,
       const enterprise_management::SessionStatusReportRequest* session_status,
+      const enterprise_management::ChildStatusReportRequest* child_status,
       const StatusCallback& callback);
 
   // Uploads Chrome Desktop report to the server. As above, the client must be
@@ -269,10 +279,10 @@ class POLICY_EXPORT CloudPolicyClient {
                               const std::string& location,
                               const StatusCallback& callback);
 
-  // Requests a list of licenses available for enrollment. Uses |auth| to
+  // Requests a list of licenses available for enrollment. Uses |oauth_token| to
   // identify user who issues the request, the |callback| will
   // be called when the operation completes.
-  void RequestAvailableLicenses(std::unique_ptr<DMAuth> auth,
+  void RequestAvailableLicenses(const std::string& oauth_token,
                                 const LicenseRequestCallback& callback);
 
   // Sends a GCM id update request to the DM server. The server will
@@ -335,7 +345,7 @@ class POLICY_EXPORT CloudPolicyClient {
   const std::string& client_id() const { return client_id_; }
   const base::DictionaryValue* configuration_seed() const {
     return configuration_seed_.get();
-  };
+  }
 
   // The device mode as received in the registration request.
   DeviceMode device_mode() const { return device_mode_; }
@@ -491,6 +501,10 @@ class POLICY_EXPORT CloudPolicyClient {
   const std::string brand_code_;
   PolicyTypeSet types_to_fetch_;
   std::vector<std::string> state_keys_to_upload_;
+
+  // OAuth token that if set is used as an additional form of authentication
+  // (next to |dm_token_|) in policy fetch requests.
+  std::string oauth_token_;
 
   std::string dm_token_;
   std::unique_ptr<base::DictionaryValue> configuration_seed_;

@@ -10,6 +10,8 @@ import shutil
 import subprocess
 import sys
 
+DSYMUTIL_INVOKE = ['xcrun', 'dsymutil']
+
 # The linker_driver.py is responsible for forwarding a linker invocation to
 # the compiler driver, while processing special arguments itself.
 #
@@ -30,6 +32,10 @@ import sys
 #       example, if the linker driver were invoked with:
 #         "... -o out/gn/obj/foo/libbar.dylib ... -Wcrl,dsym,out/gn ..."
 #       The resulting dSYM would be out/gn/libbar.dylib.dSYM/.
+#
+#   -Wcrl,dsymutilpath,<dsymutil_path>
+#       Sets the path to the dsymutil to run with -Wcrl,dsym, in which case
+#       `xcrun` is not used to invoke it.
 #
 #   -Wcrl,unstripped,<unstripped_path_prefix>
 #       After invoking the linker, and before strip, this will save a copy of
@@ -142,8 +148,27 @@ def RunDsymUtil(dsym_path_prefix, full_args):
 
   # Remove old dSYMs before invoking dsymutil.
   _RemovePath(dsym_out)
-  subprocess.check_call(['xcrun', 'dsymutil', '-o', dsym_out, linker_out])
+  subprocess.check_call(DSYMUTIL_INVOKE + ['-o', dsym_out, linker_out])
   return [dsym_out]
+
+
+def SetDsymutilPath(dsymutil_path, full_args):
+  """Linker driver action for -Wcrl,dsymutilpath,<dsymutil_path>.
+
+  Sets the invocation command for dsymutil, which allows the caller to specify
+  an alternate dsymutil. This action is always processed before the RunDsymUtil
+  action.
+
+  Args:
+    dsymutil_path: string, The path to the dsymutil binary to run
+    full_args: list of string, Full argument list for the linker driver.
+
+  Returns:
+    No output - this step is run purely for its side-effect.
+  """
+  global DSYMUTIL_INVOKE
+  DSYMUTIL_INVOKE = [dsymutil_path]
+  return []
 
 
 def RunSaveUnstripped(unstripped_path_prefix, full_args):
@@ -219,6 +244,7 @@ order in which the actions are invoked. The first item in the tuple is the
 argument's -Wcrl,<sub_argument> and the second is the function to invoke.
 """
 _LINKER_DRIVER_ACTIONS = [
+    ('dsymutilpath,', SetDsymutilPath),
     ('dsym,', RunDsymUtil),
     ('unstripped,', RunSaveUnstripped),
     ('strip,', RunStrip),

@@ -11,6 +11,7 @@
 
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -30,7 +31,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -52,11 +53,6 @@ namespace chromeos {
 namespace {
 
 const char kNotifierNetworkPortalDetector[] = "ash.network.portal-detector";
-
-bool IsPortalNotificationEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableNetworkPortalNotification);
-}
 
 Profile* GetProfileForPrimaryUser() {
   const user_manager::User* primary_user =
@@ -175,14 +171,9 @@ void NetworkPortalNotificationControllerDelegate::Click(
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
-  const bool disable_bypass_proxy_switch_present =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableCaptivePortalBypassProxy);
   const bool use_incognito_profile =
-      disable_bypass_proxy_switch_present
-          ? false
-          : (profile && profile->GetPrefs()->GetBoolean(
-                            prefs::kCaptivePortalAuthenticationIgnoresProxy));
+      profile && profile->GetPrefs()->GetBoolean(
+                     prefs::kCaptivePortalAuthenticationIgnoresProxy);
 
   if (use_incognito_profile) {
     if (controller_)
@@ -258,9 +249,6 @@ void NetworkPortalNotificationController::DefaultNetworkChanged(
 void NetworkPortalNotificationController::OnPortalDetectionCompleted(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
-  if (!IsPortalNotificationEnabled())
-    return;
-
   if (!network ||
       state.status != NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL) {
     last_network_guid_.clear();

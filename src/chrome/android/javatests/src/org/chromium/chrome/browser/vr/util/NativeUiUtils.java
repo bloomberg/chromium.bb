@@ -8,13 +8,14 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.support.annotation.IntDef;
 import android.view.Choreographer;
 import android.view.View;
 import android.view.ViewGroup;
 
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.vr.KeyboardTestAction;
@@ -27,10 +28,14 @@ import org.chromium.chrome.browser.vr.VrControllerTestAction;
 import org.chromium.chrome.browser.vr.VrDialog;
 import org.chromium.chrome.browser.vr.VrShell;
 import org.chromium.chrome.browser.vr.VrViewContainer;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
 
@@ -39,15 +44,37 @@ import java.util.concurrent.TimeoutException;
  * omnibox or back button.
  */
 public class NativeUiUtils {
+    @IntDef({ScrollDirection.UP, ScrollDirection.DOWN, ScrollDirection.LEFT, ScrollDirection.RIGHT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ScrollDirection {
+        int UP = 0;
+        int DOWN = 1;
+        int LEFT = 2;
+        int RIGHT = 3;
+    }
+
     // How many frames to wait after entering text in the omnibox before we can assume that
     // suggestions are updated. This should only be used if the workaround of inputting text and
     // waiting for the suggestion box to appear doesn't work, e.g. if you need to input text, wait
     // for autocomplete, then input more text before committing. 20 is arbitrary, but stable.
     public static final int NUM_FRAMES_FOR_SUGGESTION_UPDATE = 20;
+    // Arbitrary number of interpolated steps to perform within a scroll to consistently trigger
+    // either fling or non-fling scrolling.
+    public static final int NUM_STEPS_NON_FLING_SCROLL = 60;
+    public static final int NUM_STEPS_FLING_SCROLL = 6;
+    // Number of frames to wait after queueing a non-fling scroll before we can be sure that all the
+    // scroll actions have been processed. The +2 comes from scrolls always having a touch down and
+    // up action with NUM_STEPS_*_SCROLL additional actions in between.
+    public static final int NUM_FRAMES_NON_FLING_SCROLL = NUM_STEPS_NON_FLING_SCROLL + 2;
+    // Arbitrary number of frames to wait before sending a touch up event in order to ensure that a
+    // fast scroll does not become a fling scroll.
+    public static final int NUM_FRAMES_DELAY_TO_PREVENT_FLING = 30;
     public static final String FRAME_BUFFER_SUFFIX_WEB_XR_OVERLAY = "_WebXrOverlay";
     public static final String FRAME_BUFFER_SUFFIX_WEB_XR_CONTENT = "_WebXrContent";
     public static final String FRAME_BUFFER_SUFFIX_BROWSER_UI = "_BrowserUi";
     public static final String FRAME_BUFFER_SUFFIX_BROWSER_CONTENT = "_BrowserContent";
+    // Valid position to click on the content quad in order to select the reposition bar.
+    public static final PointF REPOSITION_BAR_COORDINATES = new PointF(0.0f, 0.55f);
 
     // Arbitrary but reasonable amount of time to expect the UI to stop updating after interacting
     // with an element.
@@ -81,10 +108,44 @@ public class NativeUiUtils {
      *        unit square centered at (0, 0).
      */
     public static void clickElement(int elementName, PointF position) {
+        clickDown(elementName, position);
+        clickUp(elementName, position);
+    }
+
+    /**
+     * Moves to the given position in the given element and presses the touchpad down.
+     *
+     * @param elementName The UserFriendlyElementName that will be clicked on.
+     * @param position A PointF specifying where on the element to send the click relative to a
+     *        unit square centered at (0, 0).
+     */
+    public static void clickDown(int elementName, PointF position) {
         TestVrShellDelegate.getInstance().performControllerActionForTesting(
                 elementName, VrControllerTestAction.CLICK_DOWN, position);
+    }
+
+    /**
+     * Moves to the given position in the given element and unpresses the touchpad.
+     *
+     * @param elementName The UserFriendlyElementName that will be unclicked on.
+     * @param position A PointF specifying where on the element to send the click relative to a
+     *        unit square centered at (0, 0).
+     */
+    public static void clickUp(int elementName, PointF position) {
         TestVrShellDelegate.getInstance().performControllerActionForTesting(
                 elementName, VrControllerTestAction.CLICK_UP, position);
+    }
+
+    /**
+     * Hovers over a UI element with the controller.
+     *
+     * @param elementName The UserFriendlyElementName that will be hovered over.
+     * @param position A PointF specifying where on the element to hover relative to a unit square
+     *        centered at (0, 0).
+     */
+    public static void hoverElement(int elementName, PointF position) {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.HOVER, position);
     }
 
     /**
@@ -133,7 +194,7 @@ public class NativeUiUtils {
      */
     public static void clickContentNode(String nodeId, PointF position, final int numClicks,
             VrBrowserTestFramework testFramework) throws InterruptedException, TimeoutException {
-        Rect nodeBounds = DOMUtils.getNodeBounds(testFramework.getFirstTabWebContents(), nodeId);
+        Rect nodeBounds = DOMUtils.getNodeBounds(testFramework.getCurrentWebContents(), nodeId);
         int contentWidth = Integer.valueOf(
                 testFramework.runJavaScriptOrFail("window.innerWidth", POLL_TIMEOUT_SHORT_MS));
         int contentHeight = Integer.valueOf(
@@ -159,6 +220,96 @@ public class NativeUiUtils {
                 clickElement(UserFriendlyElementName.CONTENT_QUAD, clickCoordinates);
             }
         });
+    }
+
+    /**
+     * Helper function to click the reposition bar to select it.
+     */
+    public static void selectRepositionBar() {
+        // We need to ensure that the reposition bar is at least partially visible before trying
+        // to click it, so hover it for a frame.
+        hoverElement(UserFriendlyElementName.CONTENT_QUAD, REPOSITION_BAR_COORDINATES);
+        clickElement(UserFriendlyElementName.CONTENT_QUAD, REPOSITION_BAR_COORDINATES);
+    }
+
+    /**
+     * An alias to click in place in order to deslect the reposition bar.
+     */
+    public static void deselectRepositionBar() {
+        clickElement(UserFriendlyElementName.CURRENT_POSITION, new PointF());
+    }
+
+    /**
+     * Touches the touchpad at the given coordinates, keeping whatever button states and direction
+     * are already present.
+     *
+     * @param position A PointF specifying where on the touchpad to touch, each axis in the range
+     *        [-1, 1].
+     */
+    public static void touchDown(PointF position) {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                UserFriendlyElementName.NONE /* unused */, VrControllerTestAction.TOUCH_DOWN,
+                position);
+    }
+
+    /**
+     * Helper function for performing a non-fling scroll.
+     *
+     * @param direction the ScrollDirection to scroll in.
+     */
+    public static void scrollNonFling(@ScrollDirection int direction) throws InterruptedException {
+        scroll(directionToStartPoint(direction), directionToEndPoint(direction),
+                NUM_STEPS_NON_FLING_SCROLL, false /* delayTouchUp */);
+    }
+
+    /**
+     * Helper function for performing a fling scroll.
+     *
+     * @param direction the ScrollDirection to scroll in.
+     */
+    public static void scrollFling(@ScrollDirection int direction) throws InterruptedException {
+        scroll(directionToStartPoint(direction), directionToEndPoint(direction),
+                NUM_STEPS_FLING_SCROLL, false /* delayTouchUp */);
+    }
+
+    /**
+     * Helper function to perform the same action as a fling scroll, but delay the touch up event.
+     * This results in a fast, non-fling scroll that's useful for ensuring that an actual fling
+     * scroll works by asserting the actual fling scroll goes further.
+     *
+     * @param direction the ScrollDirection to scroll in.
+     */
+    public static void scrollNonFlingFast(@ScrollDirection int direction)
+            throws InterruptedException {
+        scroll(directionToStartPoint(direction), directionToEndPoint(direction),
+                NUM_STEPS_FLING_SCROLL, true /* delayTouchUp */);
+    }
+
+    /**
+     * Perform a touchpad drag to scroll.
+     *
+     * @param start the position on the touchpad to start the drag.
+     * @param end the position on the touchpad to end the drag.
+     * @param numSteps the number of steps to interpolate between the two points, one step per
+     *        frame.
+     * @param delayTouchUp whether to significantly delay the final touch up event, which should
+     *        prevent fling scrolls regardless of scroll speed.
+     */
+    public static void scroll(PointF start, PointF end, int numSteps, boolean delayTouchUp)
+            throws InterruptedException {
+        PointF stepIncrement =
+                new PointF((end.x - start.x) / numSteps, (end.y - start.y) / numSteps);
+        PointF currentPosition = new PointF(start.x, start.y);
+        touchDown(currentPosition);
+        for (int i = 0; i < numSteps; ++i) {
+            currentPosition.offset(stepIncrement.x, stepIncrement.y);
+            touchDown(currentPosition);
+        }
+        if (delayTouchUp) {
+            waitNumFrames(NUM_FRAMES_DELAY_TO_PREVENT_FLING);
+        }
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                UserFriendlyElementName.NONE /* unused */, VrControllerTestAction.TOUCH_UP, end);
     }
 
     /**
@@ -274,7 +425,7 @@ public class NativeUiUtils {
         operationData.timeoutMs = DEFAULT_UI_QUIESCENCE_TIMEOUT_MS;
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         action.run();
 
@@ -307,7 +458,7 @@ public class NativeUiUtils {
             resultLatch.countDown();
         };
         operationData.timeoutMs = DEFAULT_UI_QUIESCENCE_TIMEOUT_MS;
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         // Catch the interrupted exception so we don't have to try/catch anytime we chain multiple
         // actions.
@@ -347,7 +498,7 @@ public class NativeUiUtils {
         operationData.visibility = visible;
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         action.run();
 
@@ -371,9 +522,9 @@ public class NativeUiUtils {
      *
      * @param numFrames The number of frames to wait for.
      */
-    public static void waitNumFrames(int numFrames) throws InterruptedException {
+    public static void waitNumFrames(int numFrames) {
         final CountDownLatch frameLatch = new CountDownLatch(numFrames);
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             final Choreographer.FrameCallback callback = new Choreographer.FrameCallback() {
                 @Override
                 public void doFrame(long frameTimeNanos) {
@@ -384,7 +535,11 @@ public class NativeUiUtils {
             };
             Choreographer.getInstance().postFrameCallback(callback);
         });
-        frameLatch.await();
+        try {
+            frameLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail("Interrupted while waiting for frames: " + e.toString());
+        }
     }
 
     /**
@@ -414,7 +569,7 @@ public class NativeUiUtils {
 
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         instance.saveNextFrameBufferToDiskForTesting(filepathBase);
         resultLatch.await();
@@ -477,6 +632,32 @@ public class NativeUiUtils {
                 return "Timeout (Element visibility did not match)";
             default:
                 return "Unknown result";
+        }
+    }
+
+    private static PointF directionToStartPoint(@ScrollDirection int direction) {
+        switch (direction) {
+            case ScrollDirection.UP:
+                return new PointF(0.5f, 0.05f);
+            case ScrollDirection.DOWN:
+                return new PointF(0.5f, 0.95f);
+            case ScrollDirection.LEFT:
+                return new PointF(0.05f, 0.5f);
+            default:
+                return new PointF(0.95f, 0.5f);
+        }
+    }
+
+    private static PointF directionToEndPoint(@ScrollDirection int direction) {
+        switch (direction) {
+            case ScrollDirection.UP:
+                return new PointF(0.5f, 0.95f);
+            case ScrollDirection.DOWN:
+                return new PointF(0.5f, 0.05f);
+            case ScrollDirection.LEFT:
+                return new PointF(0.95f, 0.5f);
+            default:
+                return new PointF(0.05f, 0.5f);
         }
     }
 }

@@ -25,7 +25,7 @@ add_executable(vulkaninfo-bundle
                vulkaninfo.c
                ${CMAKE_BINARY_DIR}/staging-json/MoltenVK_icd.json
                ${CMAKE_CURRENT_SOURCE_DIR}/macOS/vulkaninfo.sh
-               ${CMAKE_CURRENT_SOURCE_DIR}/macOS/Resources/LunarGIcon.icns
+               ${CMAKE_CURRENT_SOURCE_DIR}/macOS/Resources/VulkanIcon.icns
                ${CMAKE_CURRENT_SOURCE_DIR}/macOS/vulkaninfo/metal_view.m
                ${CMAKE_CURRENT_SOURCE_DIR}/macOS/vulkaninfo/metal_view.h)
 set_target_properties(vulkaninfo-bundle
@@ -38,7 +38,7 @@ target_link_libraries(vulkaninfo-bundle ${Vulkan_LIBRARY} "-framework AppKit -fr
 target_include_directories(vulkaninfo-bundle PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/macOS/vulkaninfo ${VulkanHeaders_INCLUDE_DIR})
 add_dependencies(vulkaninfo-bundle MoltenVK_icd-staging-json)
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/macOS/vulkaninfo.sh PROPERTIES MACOSX_PACKAGE_LOCATION "MacOS")
-set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/macOS/Resources/LunarGIcon.icns
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/macOS/Resources/VulkanIcon.icns
                             PROPERTIES
                             MACOSX_PACKAGE_LOCATION
                             "Resources")
@@ -50,12 +50,12 @@ set_source_files_properties(${CMAKE_BINARY_DIR}/staging-json/MoltenVK_icd.json
 # Xcode projects need some extra help with what would be install steps.
 if(${CMAKE_GENERATOR} MATCHES "^Xcode.*")
     add_custom_command(TARGET vulkaninfo-bundle POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy "${MOLTENVK_DIR}/MoltenVK/macOS/libMoltenVK.dylib"
+                       COMMAND ${CMAKE_COMMAND} -E copy "${MOLTENVK_DIR}/MoltenVK/macOS/dynamic/libMoltenVK.dylib"
                                ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/vulkaninfo.app/Contents/Frameworks/libMoltenVK.dylib
                        DEPENDS vulkan)
 else()
     add_custom_command(TARGET vulkaninfo-bundle POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy "${MOLTENVK_DIR}/MoltenVK/macOS/libMoltenVK.dylib"
+                       COMMAND ${CMAKE_COMMAND} -E copy "${MOLTENVK_DIR}/MoltenVK/macOS/dynamic/libMoltenVK.dylib"
                                ${CMAKE_CURRENT_BINARY_DIR}/vulkaninfo.app/Contents/Frameworks/libMoltenVK.dylib
                        DEPENDS vulkan)
 endif()
@@ -68,5 +68,5 @@ install(TARGETS vulkaninfo-bundle BUNDLE DESTINATION "vulkaninfo")
 # script, which can't be fixed up. Instead pass it the explicit name of the executable.
 install(CODE "
     include(BundleUtilities)
-    fixup_bundle(\${CMAKE_INSTALL_PREFIX}/vulkaninfo/vulkaninfo.app/Contents/MacOS/vulkaninfo \"\" \"\")
+    fixup_bundle(\${CMAKE_INSTALL_PREFIX}/vulkaninfo/vulkaninfo.app/Contents/MacOS/vulkaninfo \"\" \"${Vulkan_LIBRARY_DIR}\")
     ")

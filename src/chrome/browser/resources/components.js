@@ -9,7 +9,7 @@
  * version. This is populated in returnComponentsData() for the convenience of
  * tests.
  */
-var currentComponentsData = null;
+let currentComponentsData = null;
 
 /**
  * Takes the |componentsData| input argument which represents data about the
@@ -20,8 +20,8 @@ var currentComponentsData = null;
  */
 function renderTemplate(componentsData) {
   // This is the javascript code that processes the template:
-  var input = new JsEvalContext(componentsData);
-  var output = $('component-template').cloneNode(true);
+  const input = new JsEvalContext(componentsData);
+  const output = $('component-template').cloneNode(true);
   $('component-placeholder').innerHTML = '';
   $('component-placeholder').appendChild(output);
   jstProcess(input, output);
@@ -58,8 +58,8 @@ function requestComponentsData() {
  *   }
  */
 function returnComponentsData(componentsData) {
-  var bodyContainer = $('body-container');
-  var body = document.body;
+  const bodyContainer = $('body-container');
+  const body = document.body;
 
   bodyContainer.style.visibility = 'hidden';
   body.className = '';
@@ -71,8 +71,8 @@ function returnComponentsData(componentsData) {
   renderTemplate(componentsData);
 
   // Add handlers to dynamically created HTML elements.
-  var links = document.getElementsByClassName('button-check-update');
-  for (var i = 0; i < links.length; i++) {
+  const links = document.getElementsByClassName('button-check-update');
+  for (let i = 0; i < links.length; i++) {
     links[i].onclick = function(e) {
       handleCheckUpdate(this);
       e.preventDefault();
@@ -97,22 +97,23 @@ function returnComponentsData(componentsData) {
  * optional.
  */
 function onComponentEvent(eventArgs) {
-  if (!eventArgs['id'])
+  if (!eventArgs['id']) {
     return;
+  }
 
-  var id = eventArgs['id'];
+  const id = eventArgs['id'];
 
-  var filteredComponents = currentComponentsData.filter(function(entry) {
+  const filteredComponents = currentComponentsData.filter(function(entry) {
     return entry.id === id;
   });
-  var component = filteredComponents[0];
+  const component = filteredComponents[0];
 
-  var status = eventArgs['event'];
+  const status = eventArgs['event'];
   $('status-' + id).textContent = status;
   component['status'] = status;
 
   if (eventArgs['version']) {
-    var version = eventArgs['version'];
+    const version = eventArgs['version'];
     $('version-' + id).textContent = version;
     component['version'] = version;
   }

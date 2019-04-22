@@ -4,10 +4,13 @@
 
 #include "components/cast_channel/cast_message_util.h"
 
-#include "base/json/json_reader.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::test::IsJson;
+using base::test::ParseJsonDeprecated;
 
 namespace cast_channel {
 
@@ -22,7 +25,7 @@ TEST(CastMessageUtilTest, IsCastInternalNamespace) {
 TEST(CastMessageUtilTest, CastMessageType) {
   for (int i = 0; i < static_cast<int>(CastMessageType::kOther); ++i) {
     CastMessageType type = static_cast<CastMessageType>(i);
-    EXPECT_EQ(type, CastMessageTypeFromString(CastMessageTypeToString(type)));
+    EXPECT_EQ(type, CastMessageTypeFromString(ToString(type)));
   }
 }
 
@@ -35,10 +38,8 @@ TEST(CastMessageUtilTest, GetLaunchSessionResponseOk) {
     }
   )";
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(payload);
-  ASSERT_TRUE(value);
-
-  LaunchSessionResponse response = GetLaunchSessionResponse(*value);
+  LaunchSessionResponse response =
+      GetLaunchSessionResponse(*ParseJsonDeprecated(payload));
   EXPECT_EQ(LaunchSessionResponse::Result::kOk, response.result);
   EXPECT_TRUE(response.receiver_status);
 }
@@ -51,10 +52,8 @@ TEST(CastMessageUtilTest, GetLaunchSessionResponseError) {
     }
   )";
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(payload);
-  ASSERT_TRUE(value);
-
-  LaunchSessionResponse response = GetLaunchSessionResponse(*value);
+  LaunchSessionResponse response =
+      GetLaunchSessionResponse(*ParseJsonDeprecated(payload));
   EXPECT_EQ(LaunchSessionResponse::Result::kError, response.result);
   EXPECT_FALSE(response.receiver_status);
 }
@@ -69,10 +68,8 @@ TEST(CastMessageUtilTest, GetLaunchSessionResponseUnknown) {
     }
   )";
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(payload);
-  ASSERT_TRUE(value);
-
-  LaunchSessionResponse response = GetLaunchSessionResponse(*value);
+  LaunchSessionResponse response =
+      GetLaunchSessionResponse(*ParseJsonDeprecated(payload));
   EXPECT_EQ(LaunchSessionResponse::Result::kUnknown, response.result);
   EXPECT_FALSE(response.receiver_status);
 }
@@ -86,17 +83,59 @@ TEST(CastMessageUtilTest, CreateStopRequest) {
     }
   )";
 
-  std::unique_ptr<base::Value> expected_value =
-      base::JSONReader::Read(expected_message);
-  ASSERT_TRUE(expected_value);
-
   CastMessage message = CreateStopRequest("sourceId", 123, "sessionId");
   ASSERT_TRUE(IsCastMessageValid(message));
+  EXPECT_THAT(message.payload_utf8(), IsJson(expected_message));
+}
 
-  std::unique_ptr<base::Value> actual_value =
-      base::JSONReader::Read(message.payload_utf8());
-  ASSERT_TRUE(actual_value);
-  EXPECT_EQ(*expected_value, *actual_value);
+TEST(CastMessageUtilTest, CreateReceiverStatusRequest) {
+  std::string expected_message = R"(
+    {
+       "type": "GET_STATUS",
+       "requestId": 123
+    }
+  )";
+
+  CastMessage message = CreateReceiverStatusRequest("sourceId", 123);
+  ASSERT_TRUE(IsCastMessageValid(message));
+  EXPECT_THAT(message.payload_utf8(), IsJson(expected_message));
+}
+
+TEST(CastMessageUtilTest, CreateMediaRequest) {
+  std::string body = R"({
+       "type": "STOP_MEDIA",
+    })";
+  std::string expected_message = R"({
+       "type": "STOP",
+       "requestId": 123,
+    })";
+
+  CastMessage message = CreateMediaRequest(*ParseJsonDeprecated(body), 123,
+                                           "theSourceId", "theDestinationId");
+  ASSERT_TRUE(IsCastMessageValid(message));
+  EXPECT_EQ(kMediaNamespace, message.namespace_());
+  EXPECT_EQ("theSourceId", message.source_id());
+  EXPECT_EQ("theDestinationId", message.destination_id());
+  EXPECT_THAT(message.payload_utf8(), IsJson(expected_message));
+}
+
+TEST(CastMessageUtilTest, CreateVolumeRequest) {
+  std::string body = R"({
+       "type": "SET_VOLUME",
+       "sessionId": "theSessionId",
+    })";
+  std::string expected_message = R"({
+       "type": "SET_VOLUME",
+       "requestId": 123,
+    })";
+
+  CastMessage message =
+      CreateSetVolumeRequest(*ParseJsonDeprecated(body), 123, "theSourceId");
+  ASSERT_TRUE(IsCastMessageValid(message));
+  EXPECT_EQ(kReceiverNamespace, message.namespace_());
+  EXPECT_EQ("theSourceId", message.source_id());
+  EXPECT_EQ(kPlatformReceiverId, message.destination_id());
+  EXPECT_THAT(message.payload_utf8(), IsJson(expected_message));
 }
 
 }  // namespace cast_channel

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -26,31 +27,40 @@ namespace content {
 // * All lock range requests at a level must be disjoint - they cannot overlap.
 // * Lock ranges are remembered for future performance - remove them using
 //   RemoveLockRange.
+// * Lock ranges are compared using bytewise comparison.
+//
+// Additional invariants for this implementation:
 // * All calls must happen from the same sequenced task runner.
+// * Locks are granted in the order in which they are requested.
+// * Locks held by an entity must be acquired all at once. If more locks are
+//   needed (where old locks will continue to be held), then all locks must be
+//   released first, and then all necessary locks acquired in one acquisition
+//   call.
 class CONTENT_EXPORT DisjointRangeLockManager : public ScopesLockManager {
  public:
   // Creates a lock manager with the given number of levels, the comparator for
   // leveldb keys, and the current task runner that we are running on. The task
   // runner will be used for the lock acquisition callbacks.
-  DisjointRangeLockManager(
-      int level_count,
-      const leveldb::Comparator* comparator,
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+  DisjointRangeLockManager(int level_count);
   ~DisjointRangeLockManager() override;
 
   int64_t LocksHeldForTesting() const override;
   int64_t RequestsWaitingForTesting() const override;
 
-  void AcquireLock(int level,
-                   const LockRange& range,
-                   LockType type,
-                   LockAquiredCallback callback) override;
+  // Returns if the request was valid. To be valid, all requests must have:
+  // * lock level < |level_count| populated above,
+  // * |range.begin| < |range.end| using the |comparator| above,
+  // * range disjoint from other lock ranges (which is an implementation
+  //   invariant).
+  bool AcquireLocks(base::flat_set<ScopeLockRequest> lock_requests,
+                    LocksAquiredCallback callback) override;
 
   // Remove the given lock range at the given level. The lock range must not be
   // in use. Use this if the lock will never be used again.
-  void RemoveLockRange(int level, const LockRange& range);
+  void RemoveLockRange(int level, const ScopeLockRange& range);
 
  private:
+  using LockAquiredCallback = base::OnceCallback<void(ScopeLock)>;
   struct LockRequest {
    public:
     LockRequest();
@@ -86,33 +96,15 @@ class CONTENT_EXPORT DisjointRangeLockManager : public ScopesLockManager {
     DISALLOW_COPY_AND_ASSIGN(Lock);
   };
 
-  // This is a proxy between a LevelDB Comparator and the interface expected by
-  // std::map. It sorts using the |begin| entry of the ranges.
-  class RangeLessThan {
-   public:
-    explicit RangeLessThan(const leveldb::Comparator* comparator)
-        : comparator_(comparator) {}
-    bool operator()(const LockRange& a, const LockRange& b) const {
-      return comparator_->Compare(leveldb::Slice(a.begin),
-                                  leveldb::Slice(b.begin)) < 0;
-    }
+  using LockLevelMap = base::flat_map<ScopeLockRange, Lock>;
 
-   private:
-    const leveldb::Comparator* const comparator_;
-  };
+  bool AcquireLock(ScopeLockRequest request, LockAquiredCallback callback);
 
-  using LockLevelMap = base::flat_map<LockRange, Lock, RangeLessThan>;
+  void LockReleased(int level, ScopeLockRange range);
 
-  void LockReleased(int level, LockRange range);
+  static bool IsRangeDisjointFromNeighbors(const LockLevelMap& map,
+                                           const ScopeLockRange& range);
 
-#if DCHECK_IS_ON()
-  static bool IsRangeDisjointFromNeighbors(
-      const LockLevelMap& map,
-      const LockRange& range,
-      const leveldb::Comparator* const comparator_);
-#endif
-
-  const leveldb::Comparator* const comparator_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   // This vector should never be modified after construction.
   std::vector<LockLevelMap> locks_;

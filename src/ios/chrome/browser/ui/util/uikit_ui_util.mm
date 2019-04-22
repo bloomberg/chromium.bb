@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/numerics/math_constants.h"
-#include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -614,8 +614,6 @@ bool IsSplitToolbarMode(id<UITraitEnvironment> environment) {
   return IsCompactWidth(environment) && !IsCompactHeight(environment);
 }
 
-// Returns the first responder in the subviews of |view|, or nil if no view in
-// the subtree is the first responder.
 UIView* GetFirstResponderSubview(UIView* view) {
   if ([view isFirstResponder])
     return view;
@@ -689,21 +687,4 @@ NSString* TextForTabCount(long count) {
   if (count > 99)
     return @":)";
   return [NSString stringWithFormat:@"%ld", count];
-}
-
-UIFont* PreferredFontForTextStyleWithMaxCategory(
-    UIFontTextStyle style,
-    UIContentSizeCategory currentCategory,
-    UIContentSizeCategory maxCategory) {
-  CGFloat maxMultiplier = SystemSuggestedFontSizeMultiplier(maxCategory);
-  CGFloat currentMultiplier =
-      SystemSuggestedFontSizeMultiplier(currentCategory);
-  if (currentMultiplier > maxMultiplier) {
-    return [UIFont
-            preferredFontForTextStyle:style
-        compatibleWithTraitCollection:
-            [UITraitCollection
-                traitCollectionWithPreferredContentSizeCategory:maxCategory]];
-  }
-  return [UIFont preferredFontForTextStyle:style];
 }

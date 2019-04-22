@@ -7,6 +7,7 @@
 // The following line silences a presubmit warning that would otherwise be
 // triggered by this:
 // no-include-guard-because-multiply-included
+// NOLINT(build/header_guard)
 
 // In the event of a failure, a many end events will have a |net_error|
 // parameter with the integer error code associated with the failure.  Most
@@ -525,7 +526,7 @@ EVENT_TYPE(SSL_VERIFICATION_MERGED)
 // An SSL connection sent or received an alert.
 // The following parameters are attached:
 //   {
-//     "hex_encoded_bytes": <The exact bytes sent, as a hexadecimal string>
+//     "bytes": <The exact bytes sent, Base64 encoded>
 //   }
 EVENT_TYPE(SSL_ALERT_RECEIVED)
 EVENT_TYPE(SSL_ALERT_SENT)
@@ -537,8 +538,8 @@ EVENT_TYPE(SSL_CONFIRM_HANDSHAKE)
 // The following parameters are attached:
 //   {
 //     "type": <The type of the handshake message, as an integer>
-//     "hex_encoded_bytes": <The exact bytes sent, as a hexadecimal string. May
-//                           be elided in some cases>
+//     "bytes": <The exact bytes sent, Base64 encoded.
+//               May be elided in some cases>
 //   }
 EVENT_TYPE(SSL_HANDSHAKE_MESSAGE_RECEIVED)
 EVENT_TYPE(SSL_HANDSHAKE_MESSAGE_SENT)
@@ -549,8 +550,8 @@ EVENT_TYPE(SSL_HANDSHAKE_MESSAGE_SENT)
 // The following parameters are attached:
 //   {
 //     "byte_count": <Number of bytes that were just sent>,
-//     "hex_encoded_bytes": <The exact bytes sent, as a hexadecimal string.
-//                           Only present when byte logging is enabled>,
+//     "bytes": <The exact bytes sent, Base64 encoded.
+//               Only present when byte logging is enabled>,
 //   }
 EVENT_TYPE(SOCKET_BYTES_SENT)
 EVENT_TYPE(SSL_SOCKET_BYTES_SENT)
@@ -559,8 +560,8 @@ EVENT_TYPE(SSL_SOCKET_BYTES_SENT)
 // The following parameters are attached:
 //   {
 //     "byte_count": <Number of bytes that were just received>,
-//     "hex_encoded_bytes": <The exact bytes received, as a hexadecimal string.
-//                           Only present when byte logging is enabled>,
+//     "bytes": <The exact bytes received, Base64 encoded.
+//               Only present when byte logging is enabled>,
 //   }
 EVENT_TYPE(SOCKET_BYTES_RECEIVED)
 EVENT_TYPE(SSL_SOCKET_BYTES_RECEIVED)
@@ -694,8 +695,8 @@ EVENT_TYPE(UDP_LOCAL_ADDRESS)
 //     "address": <Remote address of data transfer.  Not present when not
 //                 specified for UDP_BYTES_SENT events>,
 //     "byte_count": <Number of bytes that were just received>,
-//     "hex_encoded_bytes": <The exact bytes received, as a hexadecimal string.
-//                           Only present when byte logging is enabled>,
+//     "bytes": <The exact bytes received, Base64 encoded.
+//               Only present when byte logging is enabled>,
 //   }
 EVENT_TYPE(UDP_BYTES_RECEIVED)
 EVENT_TYPE(UDP_BYTES_SENT)
@@ -709,20 +710,11 @@ EVENT_TYPE(UDP_RECEIVE_ERROR)
 EVENT_TYPE(UDP_SEND_ERROR)
 
 // ------------------------------------------------------------------------
-// ClientSocketPoolBase::ConnectJob
+// ConnectJob
 // ------------------------------------------------------------------------
 
 // The start/end of a ConnectJob.
-//
-// The BEGIN phase has these parameters:
-//
-//   {
-//     "group_name": <The group name for the socket request.>,
-//   }
-EVENT_TYPE(SOCKET_POOL_CONNECT_JOB)
-
-// The start/end of the ConnectJob::Connect().
-EVENT_TYPE(SOCKET_POOL_CONNECT_JOB_CONNECT)
+EVENT_TYPE(CONNECT_JOB)
 
 // This event is logged whenever the ConnectJob gets a new socket
 // association. The event parameters point to that socket:
@@ -733,7 +725,26 @@ EVENT_TYPE(SOCKET_POOL_CONNECT_JOB_CONNECT)
 EVENT_TYPE(CONNECT_JOB_SET_SOCKET)
 
 // Whether the connect job timed out.
-EVENT_TYPE(SOCKET_POOL_CONNECT_JOB_TIMED_OUT)
+EVENT_TYPE(CONNECT_JOB_TIMED_OUT)
+
+// ------------------------------------------------------------------------
+// ConnectJob subclasses
+// ------------------------------------------------------------------------
+
+// The start/end of the TransportConnectJob::Connect().
+EVENT_TYPE(TRANSPORT_CONNECT_JOB_CONNECT)
+
+// The start/end of the SSLConnectJob::Connect().
+EVENT_TYPE(SSL_CONNECT_JOB_CONNECT)
+
+// The start/end of the SOCKSConnectJob::Connect().
+EVENT_TYPE(SOCKS_CONNECT_JOB_CONNECT)
+
+// The start/end of the HttpProxyConnectJob::Connect().
+EVENT_TYPE(HTTP_PROXY_CONNECT_JOB_CONNECT)
+
+// The start/end of the WebSocketConnectJob::Connect().
+EVENT_TYPE(WEB_SOCKET_TRANSPORT_CONNECT_JOB_CONNECT)
 
 // ------------------------------------------------------------------------
 // ClientSocketPoolBaseHelper
@@ -758,19 +769,24 @@ EVENT_TYPE(SOCKET_POOL_REUSED_AN_EXISTING_SOCKET)
 // This event simply describes the host:port that were requested from the
 // socket pool. Its parameters are:
 //   {
-//     "host_and_port": <String encoding the host and port>,
+//     "group_id": <The group id for the socket request>,
 //   }
 EVENT_TYPE(TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET)
 
 // This event simply describes the host:port that were requested from the
 // socket pool. Its parameters are:
 //   {
-//     "host_and_port": <String encoding the host and port>,
+//     "group_id": <The group id for the socket request>,
 //   }
 EVENT_TYPE(TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS)
 
-// A backup connect job is created due to slow connect.
-EVENT_TYPE(BACKUP_CONNECT_JOB_CREATED)
+// A connect job is created by a socket pool. Its parameters are:
+//   {
+//     "backup_job": <Whether this is a backup job created because the other
+//                    ConnectJob was taking too long>,
+//     "group_id": <The group id for the socket request>,
+//   }
+EVENT_TYPE(SOCKET_POOL_CONNECT_JOB_CREATED)
 
 // This event is sent when a connect job is eventually bound to a request
 // (because of late binding and socket backup jobs, we don't assign the job to
@@ -855,7 +871,7 @@ EVENT_TYPE(DELEGATE_INFO)
 // The following parameters are attached:
 //   {
 //     "byte_count": <Number of bytes that were just sent>,
-//     "hex_encoded_bytes": <The exact bytes sent, as a hexadecimal string>,
+//     "bytes": <The exact bytes sent, Base64 encoded>,
 //   }
 EVENT_TYPE(URL_REQUEST_JOB_BYTES_READ)
 EVENT_TYPE(URL_REQUEST_JOB_FILTERED_BYTES_READ)
@@ -896,6 +912,9 @@ EVENT_TYPE(URL_REQUEST_FILTERS_SET)
 
 // Measures the time while getting a reference to the back end.
 EVENT_TYPE(HTTP_CACHE_GET_BACKEND)
+
+// Measures the time while getting a disk cache entry with OpenOrCreateEntry().
+EVENT_TYPE(HTTP_CACHE_OPEN_OR_CREATE_ENTRY)
 
 // Measures the time while opening a disk cache entry.
 EVENT_TYPE(HTTP_CACHE_OPEN_ENTRY)
@@ -1133,6 +1152,14 @@ EVENT_TYPE(HTTP_STREAM_JOB_CONTROLLER_BOUND)
 //   }
 EVENT_TYPE(HTTP_STREAM_JOB_CONTROLLER_PROXY_SERVER_RESOLVED)
 
+// Logs an alternative service found by the controller. The event parameters
+// are:
+//   {
+//      "alt_svc": The alternative service.
+//      "broken": <boolean>
+//   }
+EVENT_TYPE(HTTP_STREAM_JOB_CONTROLLER_ALT_SVC_FOUND)
+
 // ------------------------------------------------------------------------
 // HttpNetworkTransaction
 // ------------------------------------------------------------------------
@@ -1266,8 +1293,8 @@ EVENT_TYPE(BIDIRECTIONAL_STREAM_BYTES_SENT_COALESCED)
 // The following parameters are attached:
 //   {
 //     "byte_count": <Number of bytes that were just sent>,
-//     "hex_encoded_bytes": <The exact bytes sent, as a hexadecimal string.
-//                           Only present when byte logging is enabled>,
+//     "bytes": <The exact bytes sent, Base64 encoded.
+//               Only present when byte logging is enabled>,
 //   }
 EVENT_TYPE(BIDIRECTIONAL_STREAM_BYTES_SENT)
 
@@ -1275,8 +1302,8 @@ EVENT_TYPE(BIDIRECTIONAL_STREAM_BYTES_SENT)
 // The following parameters are attached:
 //   {
 //     "byte_count": <Number of bytes that were just received>,
-//     "hex_encoded_bytes": <The exact bytes received, as a hexadecimal string.
-//                           Only present when byte logging is enabled>,
+//     "bytes": <The exact bytes received, Base64 encoded.
+//               Only present when byte logging is enabled>,
 //   }
 EVENT_TYPE(BIDIRECTIONAL_STREAM_BYTES_RECEIVED)
 
@@ -1656,11 +1683,17 @@ EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_CONNECT)
 // will be attempted soon.
 EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_RETRY_ON_ALTERNATE_NETWORK)
 
-// This event indicates that the stale host resolution has failed.
-EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_FAILED)
+// This event indicates that the stale host result is used to try connecting.
+EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_STALE_HOST_TRIED_ON_CONNECTION)
+
+// This event indicates that stale host was not used to try connecting.
+EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_STALE_HOST_NOT_USED_ON_CONNECTION)
 
 // This event indicates that the stale host doesn't match with fresh host.
 EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_NO_MATCH)
+
+// This event indicates that stale host matches with fresh resolution.
+EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_MATCHED)
 
 // ------------------------------------------------------------------------
 // quic::QuicSession
@@ -1959,9 +1992,19 @@ EVENT_TYPE(QUIC_SESSION_PUSH_PROMISE_RECEIVED)
 // Session was closed, either remotely or by the peer.
 //   {
 //     "quic_error": <quic::QuicErrorCode which caused the connection to be
-//     closed>, "from_peer":  <True if the peer closed the connection>
+//                    closed>,
+//     "details": <The error details string in the connection close.>,
+//     "from_peer":  <True if the peer closed the connection>
 //   }
 EVENT_TYPE(QUIC_SESSION_CLOSED)
+
+// Records that QUIC connectivity probe finished on the following path:
+//  {
+//     "network": <ID of the network probed>
+//     "peer address:" <Peer address probed>
+//     "is_success:" <Whether the connectivity probe succeeded>
+//  }
+EVENT_TYPE(QUIC_SESSION_CONNECTIVITY_PROBING_FINISHED)
 
 // ------------------------------------------------------------------------
 // QuicHttpStream
@@ -2042,47 +2085,6 @@ EVENT_TYPE(QUIC_CONNECTION_MIGRATION_FAILURE)
 //  }
 EVENT_TYPE(QUIC_CONNECTION_MIGRATION_SUCCESS)
 
-// Records that QUIC connectivity probing is triggered.
-// Identified by network id.
-//  {
-//     "network": <ID of the network being probed>
-//     "initial_timeout_ms": <Initial timeout in milliseconds>
-//  }
-EVENT_TYPE(QUIC_CONNECTION_CONNECTIVITY_PROBING_TRIGGERED)
-
-// Records that QUIC connectivity probing succeeds.
-//  {
-//     "network": <ID of the network being probed>
-//  }
-EVENT_TYPE(QUIC_CONNECTION_CONNECTIVITY_PROBING_SUCCEEDED)
-
-// Records that QUIC connectivity probing fails.
-//  {
-//     "network": <ID of the network being probed>
-//  }
-EVENT_TYPE(QUIC_CONNECTION_CONNECTIVITY_PROBING_FAILED)
-
-// Records that QUIC connectivity probing fails.
-//  {
-//     "network": <ID of the network being probed>
-//  }
-EVENT_TYPE(QUIC_CONNECTION_CONNECTIVITY_PROBING_CANCELLED)
-
-// Records that a QUIC connectivity probing packet has been sent.
-//  {
-//     "network": <ID of the network being probed>
-//     "retry_count": <Number of trials>
-//  }
-EVENT_TYPE(QUIC_CONNECTION_CONNECTIVITY_PROBING_PACKET_SENT)
-
-// Records that a QUIC connectivity probing packet has been received.
-//  {
-//     "network": <ID of the network being probed>
-//     "self_address": <Self address on the probed path>
-//     "peer_address": <Peer address on the probed path>
-//  }
-EVENT_TYPE(QUIC_CONNECTION_CONNECTIVITY_PROBING_PACKET_RECEIVED)
-
 // Records that a QUIC connection migration attempt due to new network
 // being connected.
 EVENT_TYPE(QUIC_CONNECTION_MIGRATION_ON_NETWORK_CONNECTED)
@@ -2112,6 +2114,43 @@ EVENT_TYPE(QUIC_CONNECTION_MIGRATION_FAILURE_AFTER_PROBING)
 
 // Records a QUIC connection migration success after probing.
 EVENT_TYPE(QUIC_CONNECTION_MIGRATION_SUCCESS_AFTER_PROBING)
+
+// ------------------------------------------------------------------------
+// QuicConnectivityProbingManager
+// ------------------------------------------------------------------------
+
+// Records that QUIC connectivity probing manager starts probing for the
+// following path:
+//  {
+//     "network": <ID of the network being probed>
+//     "peer_address": <Peer address being probed>
+//     "initial_timeout_ms": <Initial timeout in milliseconds>
+//  }
+EVENT_TYPE(QUIC_CONNECTIVITY_PROBING_MANAGER_START_PROBING)
+
+// Records that QUIC connectivity probing manager cancels probing for the
+// following path:
+//  {
+//     "network": <ID of the network being probed>
+//     "peer_address": <Peer address being probed>
+//  }
+EVENT_TYPE(QUIC_CONNECTIVITY_PROBING_MANAGER_CANCEL_PROBING)
+
+// Records that QUIC connectivity probing manager sends a probe.
+//  {
+//     "retry_count": <Number of the trial to send probe>
+//  }
+EVENT_TYPE(QUIC_CONNECTIVITY_PROBING_MANAGER_PROBE_SENT)
+
+// Records that QUIC connectivity probing manager receives a probe on the
+// following path:
+//  {
+//     "network": <ID of the network being probed>
+//     "self_address": <Self address on the probed path>
+//     "peer_address": <Peer address on the probed path>
+//  }
+EVENT_TYPE(QUIC_CONNECTIVITY_PROBING_MANAGER_PROBE_RECEIVED)
+
 // ------------------------------------------------------------------------
 // HttpStreamParser
 // ------------------------------------------------------------------------
@@ -2682,6 +2721,21 @@ EVENT_TYPE(SIMPLE_CACHE_ENTRY_CREATE_BEGIN)
 //   "net_error": <net error code returned from the call>
 // }
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_CREATE_END)
+
+// This event is created when OpenOrCreateEntry is called.  It has no
+// parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_CALL)
+
+// This event is created when the Simple Cache actually begins open/create of
+// the cache entry.  It has no parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_BEGIN)
+
+// This event is created when the Simple Cache finishes the OpenOrCreateEntry
+// call. It contains the following parameter:
+// {
+//   "net_error": <net error code returned from the call>
+// }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_END)
 
 // This event is created when ReadData is called.
 // It contains the following parameters:

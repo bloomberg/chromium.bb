@@ -9,23 +9,46 @@
 namespace blink {
 
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
-    std::unique_ptr<CrossThreadFetchClientSettingsObjectData> data)
-    : FetchClientSettingsObjectSnapshot(data->base_url,
-                                        data->security_origin,
-                                        data->referrer_policy,
-                                        data->outgoing_referrer,
-                                        data->https_state) {}
+    const FetchClientSettingsObject& fetch_client_setting_object)
+    : FetchClientSettingsObjectSnapshot(
+          fetch_client_setting_object.GlobalObjectUrl(),
+          fetch_client_setting_object.BaseUrl(),
+          fetch_client_setting_object.GetSecurityOrigin(),
+          fetch_client_setting_object.GetReferrerPolicy(),
+          fetch_client_setting_object.GetOutgoingReferrer(),
+          fetch_client_setting_object.GetHttpsState(),
+          fetch_client_setting_object.MimeTypeCheckForClassicWorkerScript(),
+          fetch_client_setting_object.GetAddressSpace()) {}
 
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
+    std::unique_ptr<CrossThreadFetchClientSettingsObjectData> data)
+    : FetchClientSettingsObjectSnapshot(
+          data->global_object_url,
+          data->base_url,
+          data->security_origin,
+          data->referrer_policy,
+          data->outgoing_referrer,
+          data->https_state,
+          data->mime_type_check_for_classic_worker_script,
+          data->address_space) {}
+
+FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
+    const KURL& global_object_url,
     const KURL& base_url,
     const scoped_refptr<const SecurityOrigin> security_origin,
     network::mojom::ReferrerPolicy referrer_policy,
     const String& outgoing_referrer,
-    HttpsState https_state)
-    : base_url_(base_url),
+    HttpsState https_state,
+    AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script,
+    mojom::IPAddressSpace address_space)
+    : global_object_url_(global_object_url),
+      base_url_(base_url),
       security_origin_(std::move(security_origin)),
       referrer_policy_(referrer_policy),
       outgoing_referrer_(outgoing_referrer),
-      https_state_(https_state) {}
+      https_state_(https_state),
+      mime_type_check_for_classic_worker_script_(
+          mime_type_check_for_classic_worker_script),
+      address_space_(address_space) {}
 
 }  // namespace blink

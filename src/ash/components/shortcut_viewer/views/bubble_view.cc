@@ -84,19 +84,21 @@ void BubbleView::SetText(const base::string16& text) {
 gfx::Size BubbleView::CalculatePreferredSize() const {
   int width = 0;
   int height = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    const auto child_size = child_at(i)->GetPreferredSize();
-    height = std::max(height, child_size.height());
-    width += child_size.width();
+  if (!children().empty()) {
+    for (const auto* child : children()) {
+      const auto child_size = child->GetPreferredSize();
+      height = std::max(height, child_size.height());
+      width += child_size.width();
+    }
+    width += kIconTextSpacing * (children().size() - 1);
   }
-  gfx::Size preferred_size(width + (kIconTextSpacing * (child_count() - 1)),
-                           height);
-  preferred_size.Enlarge(GetInsets().width(), GetInsets().height());
+  gfx::Size preferred_size(width + GetInsets().width(),
+                           height + GetInsets().height());
 
   // To avoid text and icon bubbles have different heights in a row.
   constexpr int kMinimumHeight = 32;
   preferred_size.SetToMax(gfx::Size(kMinimumHeight, kMinimumHeight));
-  // Make the width to be at lease as large as the height.
+  // Make the width to be at least as large as the height.
   preferred_size.set_width(
       std::max(preferred_size.width(), preferred_size.height()));
   return preferred_size;
@@ -105,7 +107,7 @@ gfx::Size BubbleView::CalculatePreferredSize() const {
 void BubbleView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
-  constexpr SkColor kBackgroundColor = SkColorSetARGB(0xFF, 0xF1, 0xF3, 0xF4);
+  constexpr SkColor kBackgroundColor = gfx::kGoogleGrey100;
   constexpr int kCornerRadius = 22;
   // Draw a round rect with background color and shadow.
   cc::PaintFlags flags;

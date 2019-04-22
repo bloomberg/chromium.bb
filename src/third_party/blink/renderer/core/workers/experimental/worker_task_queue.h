@@ -19,6 +19,7 @@ class ExecutionContext;
 class ScriptState;
 class ScriptValue;
 class Task;
+class V8Function;
 
 class CORE_EXPORT WorkerTaskQueue : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -27,22 +28,24 @@ class CORE_EXPORT WorkerTaskQueue : public ScriptWrappable {
   static WorkerTaskQueue* Create(ExecutionContext*,
                                  const String&,
                                  ExceptionState&);
+
+  WorkerTaskQueue(Document*, TaskType);
   ~WorkerTaskQueue() override = default;
 
   ScriptPromise postFunction(ScriptState*,
-                             const ScriptValue& function,
+                             V8Function* function,
                              AbortSignal*,
-                             const Vector<ScriptValue>& arguments);
+                             const Vector<ScriptValue>& arguments,
+                             ExceptionState&);
 
   Task* postTask(ScriptState*,
-                 const ScriptValue& function,
-                 const Vector<ScriptValue>& arguments);
+                 V8Function* function,
+                 const Vector<ScriptValue>& arguments,
+                 ExceptionState&);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  WorkerTaskQueue(Document*, TaskType);
-
   Member<Document> document_;
   const TaskType task_type_;
 };

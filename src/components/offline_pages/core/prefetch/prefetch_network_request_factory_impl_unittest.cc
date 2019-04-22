@@ -10,7 +10,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/prefetch/generate_page_bundle_request.h"
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_request_test_base.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/version_info/channel.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -32,14 +34,18 @@ class PrefetchNetworkRequestFactoryTest : public PrefetchRequestTestBase {
     return request_factory_.get();
   }
 
+  TestingPrefServiceSimple* pref_service() { return &pref_service_; }
+
  private:
   std::unique_ptr<PrefetchNetworkRequestFactoryImpl> request_factory_;
+  TestingPrefServiceSimple pref_service_;
 };
 
 PrefetchNetworkRequestFactoryTest::PrefetchNetworkRequestFactoryTest() {
+  prefetch_prefs::RegisterPrefs(pref_service()->registry());
   request_factory_ = std::make_unique<PrefetchNetworkRequestFactoryImpl>(
       shared_url_loader_factory(), version_info::Channel::UNKNOWN,
-      "a user agent");
+      "a user agent", pref_service());
 }
 
 TEST_F(PrefetchNetworkRequestFactoryTest, TestMakeGetOperationRequest) {

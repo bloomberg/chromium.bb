@@ -14,6 +14,7 @@
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/math_util.h"
@@ -587,7 +588,7 @@ void PictureLayerTiling::ComputeTilePriorityRects(
       &visible_rect_in_layer_space, &skewport_in_layer_space,
       &soon_border_rect_in_layer_space, &eventually_rect_in_layer_space};
   gfx::Rect output_rects[4];
-  for (size_t i = 0; i < arraysize(input_rects); ++i)
+  for (size_t i = 0; i < base::size(input_rects); ++i)
     output_rects[i] = EnclosingContentsRectFromLayerRect(*input_rects[i]);
   // Make sure the eventually rect is aligned to tile bounds.
   output_rects[3] =

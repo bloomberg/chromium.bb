@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -23,11 +24,11 @@ content::WebUIDataSource* CreateHTMLSource(Profile* profile,
 
   base::string16 page_title;
   if (host_name == chrome::kChromeUIBookmarksHost)
-    page_title = l10n_util::GetStringUTF16(IDS_MD_BOOKMARK_MANAGER_TITLE);
+    page_title = l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_TITLE);
   else if (host_name == chrome::kChromeUIHistoryHost)
     page_title = l10n_util::GetStringUTF16(IDS_HISTORY_TITLE);
   else if (host_name == chrome::kChromeUIExtensionsHost)
-    page_title = l10n_util::GetStringUTF16(IDS_MD_EXTENSIONS_TOOLBAR_TITLE);
+    page_title = l10n_util::GetStringUTF16(IDS_EXTENSIONS_TOOLBAR_TITLE);
   else
     page_title = base::UTF8ToUTF16(host_name);
 
@@ -48,5 +49,7 @@ PageNotAvailableForGuestUI::PageNotAvailableForGuestUI(
     const std::string& host_name)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateHTMLSource(profile, host_name));
+  auto* source = CreateHTMLSource(profile, host_name);
+  DarkModeHandler::Initialize(web_ui, source);
+  content::WebUIDataSource::Add(profile, source);
 }

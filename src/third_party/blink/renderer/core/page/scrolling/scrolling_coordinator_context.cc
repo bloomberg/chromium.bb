@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
-
 namespace blink {
 
 void ScrollingCoordinatorContext::SetAnimationTimeline(
@@ -13,9 +11,8 @@ void ScrollingCoordinatorContext::SetAnimationTimeline(
   animation_timeline_ = std::move(timeline);
 }
 
-void ScrollingCoordinatorContext::SetAnimationHost(
-    std::unique_ptr<CompositorAnimationHost> host) {
-  animation_host_ = std::move(host);
+void ScrollingCoordinatorContext::SetAnimationHost(cc::AnimationHost* host) {
+  animation_host_ = host;
 }
 
 CompositorAnimationTimeline*
@@ -23,14 +20,8 @@ ScrollingCoordinatorContext::GetCompositorAnimationTimeline() {
   return animation_timeline_.get();
 }
 
-CompositorAnimationHost*
-ScrollingCoordinatorContext::GetCompositorAnimationHost() {
-  return animation_host_.get();
-}
-
-HashSet<const PaintLayer*>*
-ScrollingCoordinatorContext::GetLayersWithTouchRects() {
-  return &layers_with_touch_rects_;
+cc::AnimationHost* ScrollingCoordinatorContext::GetCompositorAnimationHost() {
+  return animation_host_;
 }
 
 bool ScrollingCoordinatorContext::ScrollGestureRegionIsDirty() const {

@@ -69,7 +69,6 @@ public class DisplayStyleObserverAdapter
         mCurrentDisplayStyle = newDisplayStyle;
 
         if (!mIsViewAttached) return;
-        if (mCurrentDisplayStyle.equals(mNotifiedDisplayStyle)) return;
 
         mNotifiedDisplayStyle = mCurrentDisplayStyle;
 

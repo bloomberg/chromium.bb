@@ -64,7 +64,8 @@ void ViewsContentClientMainPartsChromeOS::PreMainMessageLoopRun() {
 
   // Ensure Aura knows where to open new windows.
   aura::Window* root_window = wm_test_helper_->host()->window();
-  views_content_client()->task().Run(browser_context(), root_window);
+  views_content_client()->OnPreMainMessageLoopRun(browser_context(),
+                                                  root_window);
 }
 
 void ViewsContentClientMainPartsChromeOS::PostMainMessageLoopRun() {

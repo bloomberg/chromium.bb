@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "apps/saved_files_service.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -84,7 +85,7 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
   void TearDown() override {
     FileSystemChooseEntryFunction::StopSkippingPickerForTest();
     PlatformAppBrowserTest::TearDown();
-  };
+  }
 
  protected:
   base::FilePath TempFilePath(const std::string& destination_name,

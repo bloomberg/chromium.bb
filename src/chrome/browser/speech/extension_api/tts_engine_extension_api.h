@@ -11,8 +11,6 @@
 #include "content/public/browser/tts_controller.h"
 #include "extensions/browser/extension_function.h"
 
-class Utterance;
-
 namespace content {
 class BrowserContext;
 }
@@ -32,13 +30,12 @@ class TtsExtensionEngine : public content::TtsEngineDelegate {
   // Overridden from TtsEngineDelegate:
   void GetVoices(content::BrowserContext* browser_context,
                  std::vector<content::VoiceData>* out_voices) override;
-  void Speak(content::Utterance* utterance,
+  void Speak(content::TtsUtterance* utterance,
              const content::VoiceData& voice) override;
-  void Stop(content::Utterance* utterance) override;
-  void Pause(content::Utterance* utterance) override;
-  void Resume(content::Utterance* utterance) override;
-  bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) override;
+  void Stop(content::TtsUtterance* utterance) override;
+  void Pause(content::TtsUtterance* utterance) override;
+  void Resume(content::TtsUtterance* utterance) override;
+  bool LoadBuiltInTtsEngine(content::BrowserContext* browser_context) override;
 };
 
 // Function that allows tts engines to update its list of supported voices at

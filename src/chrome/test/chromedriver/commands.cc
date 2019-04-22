@@ -14,7 +14,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
@@ -31,24 +30,32 @@
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_thread_map.h"
 #include "chrome/test/chromedriver/util.h"
+#include "chrome/test/chromedriver/version.h"
 
 void ExecuteGetStatus(
     const base::DictionaryValue& params,
     const std::string& session_id,
     const CommandCallback& callback) {
+  // W3C defined data:
+  // ChromeDriver doesn't have a preset limit on number of active sessions,
+  // so we are always ready.
+  base::DictionaryValue info;
+  info.SetBoolean("ready", true);
+  info.SetString("message", "ChromeDriver ready for new sessions.");
+
+  // ChromeDriver specific data:
   base::DictionaryValue build;
-  build.SetString("version", "alpha");
+  build.SetString("version", kChromeDriverVersion);
+  info.SetKey("build", std::move(build));
 
   base::DictionaryValue os;
   os.SetString("name", base::SysInfo::OperatingSystemName());
   os.SetString("version", base::SysInfo::OperatingSystemVersion());
   os.SetString("arch", base::SysInfo::OperatingSystemArchitecture());
-
-  base::DictionaryValue info;
-  info.SetKey("build", std::move(build));
   info.SetKey("os", std::move(os));
+
   callback.Run(Status(kOk), base::Value::ToUniquePtrValue(std::move(info)),
-               std::string(), false);
+               std::string(), kW3CDefault);
 }
 
 void ExecuteCreateSession(
@@ -60,8 +67,8 @@ void ExecuteCreateSession(
   std::string new_id = session_id;
   if (new_id.empty())
     new_id = GenerateId();
-  std::unique_ptr<Session> session(new Session(new_id));
-  std::unique_ptr<base::Thread> thread(new base::Thread(new_id));
+  std::unique_ptr<Session> session = std::make_unique<Session>(new_id);
+  std::unique_ptr<base::Thread> thread = std::make_unique<base::Thread>(new_id);
   if (!thread->Start()) {
     callback.Run(
         Status(kUnknownError, "failed to start a thread for the new session"),
@@ -72,8 +79,7 @@ void ExecuteCreateSession(
 
   thread->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&SetThreadLocalSession, std::move(session)));
-  session_thread_map
-      ->insert(std::make_pair(new_id, make_linked_ptr(thread.release())));
+  session_thread_map->insert(std::make_pair(new_id, std::move(thread)));
   init_session_cmd.Run(params, new_id, callback);
 }
 
@@ -120,9 +126,8 @@ void ExecuteGetSessions(const Command& session_capabilities_command,
 
   base::RunLoop run_loop;
 
-  for (SessionThreadMap::const_iterator iter = session_thread_map->begin();
-       iter != session_thread_map->end();
-       ++iter) {
+  for (auto iter = session_thread_map->begin();
+       iter != session_thread_map->end(); ++iter) {
     session_capabilities_command.Run(params,
                                      iter->first,
                                      base::Bind(
@@ -172,9 +177,8 @@ void ExecuteQuitAll(
     return;
   }
   base::RunLoop run_loop;
-  for (SessionThreadMap::const_iterator iter = session_thread_map->begin();
-       iter != session_thread_map->end();
-       ++iter) {
+  for (auto iter = session_thread_map->begin();
+       iter != session_thread_map->end(); ++iter) {
     quit_command.Run(params,
                      iter->first,
                      base::Bind(&OnSessionQuit,
@@ -201,6 +205,7 @@ void TerminateSessionThreadOnCommandThread(SessionThreadMap* session_thread_map,
 void ExecuteSessionCommandOnSessionThread(
     const char* command_name,
     const SessionCommand& command,
+    bool w3c_standard_command,
     bool return_ok_without_session,
     std::unique_ptr<base::DictionaryValue> params,
     scoped_refptr<base::SingleThreadTaskRunner> cmd_task_runner,
@@ -233,65 +238,73 @@ void ExecuteSessionCommandOnSessionThread(
   // Will mark |session| for deletion if an error is encountered.
   Status status = NotifyCommandListenersBeforeCommand(session, command_name);
 
-  // Only run the command if we were able to notify all listeners successfully.
-  // Otherwise, pass error to callback, delete |session|, and do not continue.
   std::unique_ptr<base::Value> value;
-  if (status.IsError()) {
-    LOG(ERROR) << status.message();
+  if (session->w3c_compliant && !w3c_standard_command) {
+    status = Status(kUnknownCommand,
+                    "Cannot call non W3C standard command while in W3C mode");
   } else {
-    status = command.Run(session, *params, &value);
+    // Only run the command if we were able to notify all listeners
+    // successfully.
+    // Otherwise, pass error to callback, delete |session|, and do not continue.
+    if (status.IsError()) {
+      LOG(ERROR) << status.message();
+    } else {
+      status = command.Run(session, *params, &value);
 
-    if (status.IsError() && session->chrome) {
-      if (!session->quit && session->chrome->HasCrashedWebView()) {
-        session->quit = true;
-        std::string message("session deleted because of page crash");
-        if (!session->detach) {
-          Status quit_status = session->chrome->Quit();
-          if (quit_status.IsError())
-            message += ", but failed to kill browser:" + quit_status.message();
+      if (status.IsError() && session->chrome) {
+        if (!session->quit && session->chrome->HasCrashedWebView()) {
+          session->quit = true;
+          std::string message("session deleted because of page crash");
+          if (!session->detach) {
+            Status quit_status = session->chrome->Quit();
+            if (quit_status.IsError())
+              message +=
+                  ", but failed to kill browser:" + quit_status.message();
+          }
+          status = Status(kUnknownError, message, status);
+        } else if (status.code() == kDisconnected) {
+          // Some commands, like clicking a button or link which closes the
+          // window, may result in a kDisconnected error code.
+          std::list<std::string> web_view_ids;
+          Status status_tmp = session->chrome->GetWebViewIds(
+              &web_view_ids, session->w3c_compliant);
+          if (status_tmp.IsError() &&
+              status_tmp.code() != kChromeNotReachable) {
+            status.AddDetails("failed to check if window was closed: " +
+                              status_tmp.message());
+          } else if (!base::ContainsValue(web_view_ids, session->window)) {
+            status = Status(kOk);
+          }
         }
-        status = Status(kUnknownError, message, status);
-      } else if (status.code() == kDisconnected) {
-        // Some commands, like clicking a button or link which closes the
-        // window, may result in a kDisconnected error code.
-        std::list<std::string> web_view_ids;
-        Status status_tmp = session->chrome->GetWebViewIds(
-          &web_view_ids, session->w3c_compliant);
-        if (status_tmp.IsError() && status_tmp.code() != kChromeNotReachable) {
-          status.AddDetails(
-              "failed to check if window was closed: " + status_tmp.message());
-        } else if (!base::ContainsValue(web_view_ids, session->window)) {
-          status = Status(kOk);
+        if (status.IsError()) {
+          const BrowserInfo* browser_info = session->chrome->GetBrowserInfo();
+          status.AddDetails("Session info: " + browser_info->browser_name +
+                            "=" + browser_info->browser_version);
         }
       }
-      if (status.IsError()) {
-        const BrowserInfo* browser_info = session->chrome->GetBrowserInfo();
-        status.AddDetails("Session info: " + browser_info->browser_name + "=" +
-                          browser_info->browser_version);
-      }
-    }
 
-    if (IsVLogOn(0)) {
-      std::string result;
-      if (status.IsError()) {
-        result = "ERROR " + status.message();
-      } else if (value) {
-        result = FormatValueForDisplay(*value);
+      if (IsVLogOn(0)) {
+        std::string result;
+        if (status.IsError()) {
+          result = "ERROR " + status.message();
+        } else if (value) {
+          result = FormatValueForDisplay(*value);
+        }
+        if (!session->driver_log ||
+            session->driver_log->min_level() != Log::Level::kOff) {
+          // Note: ChromeDriver log-replay depends on the format of this
+          // logging. see chromedriver/log_replay/client_replay.py
+          VLOG(0) << "[" << session->id << "] "
+                  << "RESPONSE " << command_name
+                  << (result.length() ? " " + result : "");
+        }
       }
-      if (!session->driver_log ||
-          session->driver_log->min_level() != Log::Level::kOff) {
-        // Note: ChromeDriver log-replay depends on the format of this logging.
-        // see chromedriver/log_replay/client_replay.py
-        VLOG(0) << "[" << session->id << "] "
-                << "RESPONSE " << command_name
-                << (result.length() ? " " + result : "");
-      }
-    }
 
-    if (status.IsOk() && session->auto_reporting_enabled) {
-      std::string message = session->GetFirstBrowserError();
-      if (!message.empty())
-        status = Status(kUnknownError, message);
+      if (status.IsOk() && session->auto_reporting_enabled) {
+        std::string message = session->GetFirstBrowserError();
+        if (!message.empty())
+          status = Status(kUnknownError, message);
+      }
     }
   }
 
@@ -308,14 +321,14 @@ void ExecuteSessionCommandOnSessionThread(
 
 }  // namespace
 
-void ExecuteSessionCommand(
-    SessionThreadMap* session_thread_map,
-    const char* command_name,
-    const SessionCommand& command,
-    bool return_ok_without_session,
-    const base::DictionaryValue& params,
-    const std::string& session_id,
-    const CommandCallback& callback) {
+void ExecuteSessionCommand(SessionThreadMap* session_thread_map,
+                           const char* command_name,
+                           const SessionCommand& command,
+                           bool w3c_standard_command,
+                           bool return_ok_without_session,
+                           const base::DictionaryValue& params,
+                           const std::string& session_id,
+                           const CommandCallback& callback) {
   auto iter = session_thread_map->find(session_id);
   if (iter == session_thread_map->end()) {
     Status status(return_ok_without_session ? kOk : kInvalidSessionId);
@@ -325,7 +338,7 @@ void ExecuteSessionCommand(
     iter->second->task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&ExecuteSessionCommandOnSessionThread, command_name,
-                       command, return_ok_without_session,
+                       command, w3c_standard_command, return_ok_without_session,
                        base::WrapUnique(params.DeepCopy()),
                        base::ThreadTaskRunnerHandle::Get(), callback,
                        base::Bind(&TerminateSessionThreadOnCommandThread,

@@ -173,16 +173,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
     data_.scale = scale;
   }
 
-  void mark_previous_scroll_update_in_sequence_prevented() {
-    DCHECK_EQ(ET_GESTURE_SCROLL_UPDATE, type_);
-    data_.scroll_update.previous_update_in_sequence_prevented = true;
-  }
-
-  bool previous_scroll_update_in_sequence_prevented() const {
-    DCHECK_EQ(ET_GESTURE_SCROLL_UPDATE, type_);
-    return data_.scroll_update.previous_update_in_sequence_prevented;
-  }
-
   // Supports comparison over internal structures for testing.
   bool operator==(const GestureEventDetails& other) const {
     return type_ == other.type_ &&
@@ -210,7 +200,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
       ScrollUnits delta_units;
       // Whether any previous scroll update in the current scroll sequence was
       // suppressed because the underlying touch was consumed.
-      bool previous_update_in_sequence_prevented;
     } scroll_update;
 
     float scale;  // PINCH scale.

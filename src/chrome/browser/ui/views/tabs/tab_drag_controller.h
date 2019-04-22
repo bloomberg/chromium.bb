@@ -52,8 +52,7 @@ class WindowFinder;
 // that the tabs should be moved out of the tab strip a new Browser is created
 // and RunMoveLoop() is invoked on the Widget to drag the browser around. This
 // is the default on aura.
-class TabDragController : public views::WidgetObserver,
-                          public TabStripModelObserver {
+class TabDragController : public views::WidgetObserver {
  public:
   // What should happen as the mouse is dragged within the tabstrip.
   enum MoveBehavior {
@@ -140,6 +139,14 @@ class TabDragController : public views::WidgetObserver,
 
  private:
   friend class TabDragControllerTest;
+
+#if defined(OS_CHROMEOS)
+  class DeferredTargetTabstripObserver;
+#endif
+
+  class SourceTabStripEmptinessTracker;
+
+  class DraggedTabsClosedTracker;
 
   // Used to indicate the direction the mouse has moved when attached.
   static const int kMovedMouseLeft  = 1 << 0;
@@ -241,10 +248,6 @@ class TabDragController : public views::WidgetObserver,
 
   typedef std::vector<TabDragData> DragData;
 
-#if defined(OS_CHROMEOS)
-  class DeferredTargetTabstripObserver;
-#endif
-
   // Sets |drag_data| from |tab|. This also registers for necessary
   // notifications and resets the delegate of the WebContents.
   void InitTabDragData(Tab* tab, TabDragData* drag_data);
@@ -253,8 +256,12 @@ class TabDragController : public views::WidgetObserver,
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
 
-  // Overriden from TabStripModelObserver:
-  void TabStripEmpty() override;
+  // Forget the source tabstrip. It doesn't exist any more, so it doesn't
+  // make sense to insert dragged tabs back into it if the drag is reverted.
+  void OnSourceTabStripEmpty();
+
+  // A tab was closed in the active tabstrip. Clean up if we were dragging it.
+  void OnActiveStripWebContentsRemoved(content::WebContents* contents);
 
   // Initialize the offset used to calculate the position to create windows
   // in |GetWindowCreatePoint|. This should only be invoked from |Init|.
@@ -436,8 +443,12 @@ class TabDragController : public views::WidgetObserver,
   // When |last_tabstrip_width| is larger than the new tabstrip width the tabs
   // in the attached tabstrip are scaled and the attached browser is positioned
   // such that the tab that was dragged remains under the |point_in_screen|.
+  // |drag_offset| is the offset of |point_in_screen| from the origin of the
+  // dragging browser window, and will be updated when this method ends up with
+  // changing the origin of the attached browser window.
   void AdjustBrowserAndTabBoundsForDrag(int last_tabstrip_width,
                                         const gfx::Point& point_in_screen,
+                                        gfx::Vector2d* drag_offset,
                                         std::vector<gfx::Rect>* drag_bounds);
 
   // Creates and returns a new Browser to handle the drag.
@@ -481,7 +492,8 @@ class TabDragController : public views::WidgetObserver,
   void ClearTabDraggingInfo();
 
   // Sets |deferred_target_tabstrip_| and updates its corresponding window
-  // property.
+  // property. |location| is the location of the pointer when the deferred
+  // target is set.
   void SetDeferredTargetTabstrip(TabStrip* deferred_target_tabstrip);
 
   DragState current_state_;
@@ -631,6 +643,12 @@ class TabDragController : public views::WidgetObserver,
   int attach_index_;
 
   std::unique_ptr<EscapeTracker> escape_tracker_;
+
+  std::unique_ptr<SourceTabStripEmptinessTracker>
+      source_tab_strip_emptiness_tracker_;
+
+  std::unique_ptr<DraggedTabsClosedTracker>
+      attached_tabstrip_tabs_closed_tracker_;
 
   std::unique_ptr<WindowFinder> window_finder_;
 

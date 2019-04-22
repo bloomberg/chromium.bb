@@ -94,5 +94,18 @@ class IncludeNodeUnittest(unittest.TestCase):
     self.assertFalse(inc[1].IsResourceMapSource())
     self.assertTrue(inc[2].IsResourceMapSource())
 
+  def testAcceptsPreprocess(self):
+    root = util.ParseGrdForUnittest('''
+        <includes>
+          <include name="PREPROCESS_TEST" file="preprocess_test.html"
+                   preprocess="true" type="chrome_html"/>
+        </includes>''', base_dir = util.PathFromRoot('grit/testdata'))
+    inc, = root.GetChildrenOfType(include.IncludeNode)
+    result = inc.GetDataPackValue(lang='en', encoding=1)
+    self.failUnless(result.find('should be kept') != -1)
+    self.failUnless(result.find('in the middle...') != -1)
+    self.failUnless(result.find('should be removed') == -1)
+
+
 if __name__ == '__main__':
   unittest.main()

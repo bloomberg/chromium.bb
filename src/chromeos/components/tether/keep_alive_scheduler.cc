@@ -74,10 +74,10 @@ void KeepAliveScheduler::OnActiveHostChanged(
 }
 
 void KeepAliveScheduler::OnOperationFinished(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     std::unique_ptr<DeviceStatus> device_status) {
   // Make a copy before destroying the operation below.
-  const cryptauth::RemoteDeviceRef device_copy = remote_device;
+  const multidevice::RemoteDeviceRef device_copy = remote_device;
 
   keep_alive_operation_->RemoveObserver(this);
   keep_alive_operation_.reset();

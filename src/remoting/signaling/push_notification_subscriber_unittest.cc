@@ -30,7 +30,7 @@ TEST(PushNotificationSubscriberTest, Subscribe) {
   EXPECT_CALL(signal_strategy, GetNextId()).WillOnce(Return("next_id"));
   EXPECT_CALL(signal_strategy, AddListener(_)).Times(AtLeast(1));
   EXPECT_CALL(signal_strategy, RemoveListener(_)).Times(AtLeast(1));
-  buzz::XmlElement* sent_stanza;
+  jingle_xmpp::XmlElement* sent_stanza;
   EXPECT_CALL(signal_strategy, SendStanzaPtr(_))
       .WillOnce(DoAll(SaveArg<0>(&sent_stanza), Return(true)));
 

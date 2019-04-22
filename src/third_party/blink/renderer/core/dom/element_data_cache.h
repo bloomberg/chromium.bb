@@ -39,16 +39,12 @@ class ShareableElementData;
 
 class ElementDataCache final : public GarbageCollected<ElementDataCache> {
  public:
-  static ElementDataCache* Create() {
-    return MakeGarbageCollected<ElementDataCache>();
-  }
-
   ElementDataCache();
 
   ShareableElementData* CachedShareableElementDataWithAttributes(
       const Vector<Attribute>&);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   typedef HeapHashMap<unsigned, Member<ShareableElementData>, AlreadyHashed>

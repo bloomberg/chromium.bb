@@ -15,37 +15,35 @@
 namespace {
 
 // Field trial strings.
-const char kSRTPromptOffGroup[] = "Off";
-const char kSRTPromptSeedParam[] = "Seed";
+constexpr char kSRTPromptOffGroup[] = "Off";
+constexpr char kSRTPromptSeedParam[] = "Seed";
 
-const char kSRTElevationTrial[] = "SRTElevation";
-const char kSRTElevationAsNeededGroup[] = "AsNeeded";
+constexpr char kSRTElevationTrial[] = "SRTElevation";
+constexpr char kSRTElevationAsNeededGroup[] = "AsNeeded";
 
 // The download links of the Software Removal Tool.
-const char kDownloadRootPath[] =
+constexpr char kDownloadRootPath[] =
     "https://dl.google.com/dl/softwareremovaltool/win/";
 
-const char kLegacySRTDownloadURL[] =
+constexpr char kSRTX86StableDownloadURL[] =
     "https://dl.google.com/dl"
-    "/softwareremovaltool/win/chrome_cleanup_tool.exe";
+    "/softwareremovaltool/win/x86/stable/chrome_cleanup_tool.exe";
+
+constexpr char kSRTX64StableDownloadURL[] =
+    "https://dl.google.com/dl"
+    "/softwareremovaltool/win/x64/stable/chrome_cleanup_tool.exe";
 
 }  // namespace
 
 namespace safe_browsing {
 
-const char kSRTPromptTrial[] = "SRTPromptFieldTrial";
+constexpr char kSRTPromptTrial[] = "SRTPromptFieldTrial";
 
 const base::Feature kRebootPromptDialogFeature{
-    "RebootPromptDialog", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kUserInitiatedChromeCleanupsFeature{
-    "UserInitiatedChromeCleanups", base::FEATURE_ENABLED_BY_DEFAULT};
+    "RebootPromptDialog", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeCleanupDistributionFeature{
     "ChromeCleanupDistribution", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeCleanupQuarantineFeature{
-    "ChromeCleanupQuarantine", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeCleanupExtensionsFeature{
     "ChromeCleanupExtensions", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -61,12 +59,12 @@ bool SRTPromptNeedsElevationIcon() {
       kSRTElevationAsNeededGroup, base::CompareCase::SENSITIVE);
 }
 
-bool UserInitiatedCleanupsEnabled() {
-  return base::FeatureList::IsEnabled(kUserInitiatedChromeCleanupsFeature);
-}
-
-GURL GetLegacyDownloadURL() {
-  return GURL(kLegacySRTDownloadURL);
+GURL GetStableDownloadURL() {
+  const std::string url = base::win::OSInfo::GetArchitecture() ==
+                                  base::win::OSInfo::X86_ARCHITECTURE
+                              ? kSRTX86StableDownloadURL
+                              : kSRTX64StableDownloadURL;
+  return GURL(url);
 }
 
 GURL GetSRTDownloadURL() {
@@ -74,9 +72,9 @@ GURL GetSRTDownloadURL() {
   const std::string download_group = base::GetFieldTrialParamValueByFeature(
       kChromeCleanupDistributionFeature, kCleanerDownloadGroupParam);
   if (download_group.empty())
-    return GetLegacyDownloadURL();
+    return GetStableDownloadURL();
 
-  std::string architecture = base::win::OSInfo::GetInstance()->architecture() ==
+  std::string architecture = base::win::OSInfo::GetArchitecture() ==
                                      base::win::OSInfo::X86_ARCHITECTURE
                                  ? "x86"
                                  : "x64";
@@ -93,7 +91,7 @@ GURL GetSRTDownloadURL() {
   const url::Origin known_good_origin = url::Origin::Create(download_root);
   url::Origin current_origin = url::Origin::Create(download_url);
   if (!current_origin.IsSameOriginWith(known_good_origin))
-    return GetLegacyDownloadURL();
+    return GetStableDownloadURL();
 
   return download_url;
 }
@@ -113,7 +111,7 @@ RebootPromptType GetRebootPromptType() {
     return REBOOT_PROMPT_TYPE_OPEN_SETTINGS_PAGE;
   if (base::GetFieldTrialParamByFeatureAsBool(kRebootPromptDialogFeature,
                                               kIsModalParam,
-                                              /*default_value=*/false)) {
+                                              /*default_value=*/true)) {
     return REBOOT_PROMPT_TYPE_SHOW_MODAL_DIALOG;
   } else {
     return REBOOT_PROMPT_TYPE_SHOW_NON_MODAL_DIALOG;

@@ -7,6 +7,7 @@
 
 #include "src/globals.h"
 #include "src/heap/heap.h"
+#include "src/objects/heap-object.h"
 #include "src/snapshot/serializer-common.h"
 
 namespace v8 {
@@ -17,7 +18,9 @@ class StartupDeserializer;
 
 class DeserializerAllocator final {
  public:
-  explicit DeserializerAllocator(Deserializer* deserializer);
+  DeserializerAllocator() = default;
+
+  void Initialize(Heap* heap) { heap_ = heap; }
 
   // ------- Allocation Methods -------
   // Methods related to memory allocation during deserialization.
@@ -46,15 +49,16 @@ class DeserializerAllocator final {
   bool next_reference_is_weak() const { return next_reference_is_weak_; }
 #endif
 
-  HeapObject* GetMap(uint32_t index);
-  HeapObject* GetLargeObject(uint32_t index);
-  HeapObject* GetObject(AllocationSpace space, uint32_t chunk_index,
-                        uint32_t chunk_offset);
+  HeapObject GetMap(uint32_t index);
+  HeapObject GetLargeObject(uint32_t index);
+  HeapObject GetObject(AllocationSpace space, uint32_t chunk_index,
+                       uint32_t chunk_offset);
 
   // ------- Reservation Methods -------
   // Methods related to memory reservations (prior to deserialization).
 
-  void DecodeReservation(const std::vector<SerializedData::Reservation>& res);
+  V8_EXPORT_PRIVATE void DecodeReservation(
+      const std::vector<SerializedData::Reservation>& res);
   bool ReserveSpace();
 
   bool ReservationsAreFullyUsed() const;
@@ -64,8 +68,6 @@ class DeserializerAllocator final {
   void RegisterDeserializedObjectsForBlackAllocation();
 
  private:
-  Isolate* isolate() const;
-
   // Raw allocation without considering alignment.
   Address AllocateRaw(AllocationSpace space, int size);
 
@@ -94,12 +96,11 @@ class DeserializerAllocator final {
 
   // Allocated large objects are kept in this map and may be fetched later as
   // back-references.
-  std::vector<HeapObject*> deserialized_large_objects_;
+  std::vector<HeapObject> deserialized_large_objects_;
 
-  // The current deserializer.
-  Deserializer* const deserializer_;
+  Heap* heap_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeserializerAllocator)
+  DISALLOW_COPY_AND_ASSIGN(DeserializerAllocator);
 };
 
 }  // namespace internal

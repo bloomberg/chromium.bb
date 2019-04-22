@@ -8,7 +8,9 @@
 #include <rpc.h>
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/stl_util.h"
 #include "base/test/test_reg_util_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -623,7 +625,7 @@ TEST_F(NtRegistryTest, ApiEnumeration) {
     ASSERT_TRUE(nt::QueryRegSubkey(key_handle, i, &subkey_name));
 
     bool found = false;
-    for (size_t index = 0; index < arraysize(check_names); index++) {
+    for (size_t index = 0; index < base::size(check_names); index++) {
       if (0 == subkey_name.compare(check_names[index])) {
         found = true;
         break;

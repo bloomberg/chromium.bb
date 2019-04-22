@@ -5,6 +5,7 @@
 import common
 from common import TestDriver
 from common import IntegrationTest
+from decorators import ChromeVersionBeforeM
 
 class Fallback(IntegrationTest):
 
@@ -13,6 +14,9 @@ class Fallback(IntegrationTest):
   def testSecureProxyProbeFallback(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg(
+        '--enable-features=NetworkService,'
+        'DataReductionProxyEnabledWithNetworkService')
 
       # Set the secure proxy check URL to the google.com favicon, which will be
       # interpreted as a secure proxy check failure since the response body is
@@ -33,12 +37,13 @@ class Fallback(IntegrationTest):
       responses = test_driver.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
       for response in responses:
-          self.assertHasChromeProxyViaHeader(response)
-          self.assertEqual(u'http/1.1', response.protocol)
+          self.assertHasProxyHeaders(response)
+          self.assertEqual(u'http/2+quic/43', response.protocol)
 
   # Verify that when Chrome receives a non-4xx response through a Data Reduction
   # Proxy that doesn't set a proper via header, Chrome falls back to the next
   # available proxy.
+  @ChromeVersionBeforeM(67)
   def testMissingViaHeaderNon4xxFallback(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
@@ -56,7 +61,7 @@ class Fallback(IntegrationTest):
       responses = test_driver.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         self.assertEqual(u'http/1.1', response.protocol)
 
       # Check that the BypassTypePrimary histogram has a single entry in the
@@ -68,23 +73,19 @@ class Fallback(IntegrationTest):
       self.assertEqual(1, histogram['count'])
       self.assertIn({'count': 1, 'high': 6, 'low': 5}, histogram['buckets'])
 
-  # DataSaver uses a https proxy by default, if that fails it will fall back to 
+  # DataSaver uses a https proxy by default, if that fails it will fall back to
   # a http proxy; and if that fails, it will fall back to a direct connection
   def testHTTPToDirectFallback(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      # set the primary (https) proxy to a bad one.  
-      # That will force DataSaver to the http proxy for normal page requests.
-      test_driver.AddChromeArg('--spdy-proxy-auth-origin='
-                               'https://nonexistent.googlezip.net')
       test_driver.AddChromeArg('--data-reduction-proxy-http-proxies='
                                'http://nonexistent.googlezip.net;'
-                               'http://compress.googlezip.net')  
-          
+                               'http://compress.googlezip.net')
+
       test_driver.LoadURL('http://check.googlezip.net/fallback/')
-      responses = test_driver.GetHTTPResponses()      
+      responses = test_driver.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
-      for response in responses:        
+      for response in responses:
         self.assertEqual(80, response.port)
 
       test_driver.LoadURL('http://check.googlezip.net/block/')
@@ -92,6 +93,6 @@ class Fallback(IntegrationTest):
       self.assertNotEqual(0, len(responses))
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)
-        
+
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

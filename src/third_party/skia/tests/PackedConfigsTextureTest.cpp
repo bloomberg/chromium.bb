@@ -117,7 +117,7 @@ static void run_test(skiatest::Reporter* reporter, GrContext* context, int array
                                                            origin, controlPixelData.begin(), 0);
         SkASSERT(proxy);
 
-        sk_sp<GrSurfaceContext> sContext = context->contextPriv().makeWrappedSurfaceContext(
+        sk_sp<GrSurfaceContext> sContext = context->priv().makeWrappedSurfaceContext(
                                                                         std::move(proxy));
 
         if (!sContext->readPixels(dstInfo, readBuffer.begin(), 0, 0, 0)) {
@@ -138,9 +138,13 @@ static void run_test(skiatest::Reporter* reporter, GrContext* context, int array
 static const int CONTROL_ARRAY_SIZE = DEV_W * DEV_H;
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(RGBA4444TextureTest, reporter, ctxInfo) {
-    run_test(reporter, ctxInfo.grContext(), CONTROL_ARRAY_SIZE, kARGB_4444_SkColorType);
+    if (ctxInfo.grContext()->colorTypeSupportedAsImage(kARGB_4444_SkColorType)) {
+        run_test(reporter, ctxInfo.grContext(), CONTROL_ARRAY_SIZE, kARGB_4444_SkColorType);
+    }
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(RGB565TextureTest, reporter, ctxInfo) {
-    run_test(reporter, ctxInfo.grContext(), CONTROL_ARRAY_SIZE, kRGB_565_SkColorType);
+    if (ctxInfo.grContext()->colorTypeSupportedAsImage(kRGB_565_SkColorType)) {
+        run_test(reporter, ctxInfo.grContext(), CONTROL_ARRAY_SIZE, kRGB_565_SkColorType);
+    }
 }

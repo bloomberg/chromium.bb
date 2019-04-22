@@ -5,6 +5,7 @@
 #include "device/bluetooth/bluetooth_adapter_android.h"
 
 #include <memory>
+#include <string>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -167,6 +168,7 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     const JavaParamRef<jstring>& address,
     const JavaParamRef<jobject>&
         bluetooth_device_wrapper,  // Java Type: bluetoothDeviceWrapper
+    const JavaParamRef<jstring>& local_name,
     int32_t rssi,
     const JavaParamRef<jobjectArray>& advertised_uuids,  // Java Type: String[]
     int32_t tx_power,
@@ -175,7 +177,7 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     const JavaParamRef<jintArray>& manufacturer_data_keys,  // Java Type: int[]
     const JavaParamRef<jobjectArray>&
         manufacturer_data_values  // Java Type: byte[]
-    ) {
+) {
   std::string device_address = ConvertJavaStringToUTF8(env, address);
   auto iter = devices_.find(device_address);
 
@@ -235,12 +237,29 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
 
   device_android->UpdateAdvertisementData(
       BluetoothDevice::ClampPower(rssi), base::nullopt /* flags */,
-      std::move(advertised_bluetooth_uuids),
+      advertised_bluetooth_uuids,
       // Android uses INT32_MIN to indicate no Advertised Tx Power.
       // https://developer.android.com/reference/android/bluetooth/le/ScanRecord.html#getTxPowerLevel()
       tx_power == INT32_MIN ? base::nullopt
                             : base::make_optional(clamped_tx_power),
       service_data_map, manufacturer_data_map);
+
+  for (auto& observer : observers_) {
+    base::Optional<std::string> device_name_opt = device_android->GetName();
+    base::Optional<std::string> advertisement_name_opt;
+    if (local_name)
+      advertisement_name_opt = ConvertJavaStringToUTF8(env, local_name);
+
+    observer.DeviceAdvertisementReceived(
+        device_android->GetAddress(), device_name_opt, advertisement_name_opt,
+        BluetoothDevice::ClampPower(rssi),
+        // Android uses INT32_MIN to indicate no Advertised Tx Power.
+        // https://developer.android.com/reference/android/bluetooth/le/ScanRecord.html#getTxPowerLevel()
+        tx_power == INT32_MIN ? base::nullopt
+                              : base::make_optional(clamped_tx_power),
+        base::nullopt, /* TODO(crbug.com/588083) Implement appearance */
+        advertised_bluetooth_uuids, service_data_map, manufacturer_data_map);
+  }
 
   if (is_new_device) {
     devices_[device_address] = std::move(device_android_owner);
@@ -264,13 +283,15 @@ void BluetoothAdapterAndroid::PurgeTimedOutDevices() {
   RemoveTimedOutDevices();
   if (IsDiscovering()) {
     ui_task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&BluetoothAdapterAndroid::PurgeTimedOutDevices,
-                              weak_ptr_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&BluetoothAdapterAndroid::PurgeTimedOutDevices,
+                       weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kActivePollInterval));
   } else {
     ui_task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&BluetoothAdapterAndroid::RemoveTimedOutDevices,
-                              weak_ptr_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&BluetoothAdapterAndroid::RemoveTimedOutDevices,
+                       weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kPassivePollInterval));
   }
 }
@@ -296,8 +317,9 @@ void BluetoothAdapterAndroid::AddDiscoverySession(
       // Using a delayed task in order to give the adapter some time
       // to settle before purging devices.
       ui_task_runner_->PostDelayedTask(
-          FROM_HERE, base::Bind(&BluetoothAdapterAndroid::PurgeTimedOutDevices,
-                                weak_ptr_factory_.GetWeakPtr()),
+          FROM_HERE,
+          base::BindOnce(&BluetoothAdapterAndroid::PurgeTimedOutDevices,
+                         weak_ptr_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kPurgeDelay));
     }
   } else {

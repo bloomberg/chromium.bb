@@ -9,6 +9,7 @@
  */
 
 #include <string.h>
+#include <tuple>
 
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
@@ -77,7 +78,7 @@ struct ConvolveFunctions {
   int use_highbd_;  // 0 if high bitdepth not used, else the actual bit depth.
 };
 
-typedef ::testing::tuple<int, int, const ConvolveFunctions *> ConvolveParam;
+typedef std::tuple<int, int, const ConvolveFunctions *> ConvolveParam;
 
 #define ALL_SIZES(convolve_fn)                                            \
   make_tuple(4, 4, &convolve_fn), make_tuple(8, 4, &convolve_fn),         \
@@ -415,8 +416,14 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
     for (int i = 0; i < kOutputBufferSize; ++i) {
       if (IsIndexInBorder(i)) {
         output_[i] = 255;
+#if CONFIG_VP9_HIGHBITDEPTH
+        output16_[i] = mask_;
+#endif
       } else {
         output_[i] = 0;
+#if CONFIG_VP9_HIGHBITDEPTH
+        output16_[i] = 0;
+#endif
       }
     }
 
@@ -1113,7 +1120,7 @@ TEST_P(ConvolveTest, CheckScalingFiltering) {
 }
 #endif
 
-using ::testing::make_tuple;
+using std::make_tuple;
 
 #if CONFIG_VP9_HIGHBITDEPTH
 #define WRAP(func, bd)                                                       \
@@ -1256,9 +1263,9 @@ const ConvolveFunctions convolve12_c(
     wrap_convolve8_horiz_c_12, wrap_convolve8_avg_horiz_c_12,
     wrap_convolve8_vert_c_12, wrap_convolve8_avg_vert_c_12, wrap_convolve8_c_12,
     wrap_convolve8_avg_c_12, 12);
-const ConvolveParam kArrayConvolve_c[] = {
-  ALL_SIZES(convolve8_c), ALL_SIZES(convolve10_c), ALL_SIZES(convolve12_c)
-};
+const ConvolveParam kArrayConvolve_c[] = { ALL_SIZES(convolve8_c),
+                                           ALL_SIZES(convolve10_c),
+                                           ALL_SIZES(convolve12_c) };
 
 #else
 const ConvolveFunctions convolve8_c(

@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/console_message.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -146,7 +147,7 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
   }
 
   info->SetString("script_url", version.script_url.spec());
-  info->SetString("version_id", base::Int64ToString(version.version_id));
+  info->SetString("version_id", base::NumberToString(version.version_id));
   info->SetInteger("process_id",
                    static_cast<int>(GetRealProcessId(version.process_id)));
   info->SetInteger("process_host_id", version.process_id);
@@ -162,7 +163,7 @@ std::unique_ptr<ListValue> GetRegistrationListValue(
     auto registration_info = std::make_unique<DictionaryValue>();
     registration_info->SetString("scope", registration.scope.spec());
     registration_info->SetString(
-        "registration_id", base::Int64ToString(registration.registration_id));
+        "registration_id", base::NumberToString(registration.registration_id));
     registration_info->SetBoolean("navigation_preload_enabled",
                                   registration.navigation_preload_enabled);
     registration_info->SetInteger(
@@ -254,7 +255,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(
         "serviceworker.onRunningStateChanged", Value(partition_id_),
-        Value(base::Int64ToString(version_id)));
+        Value(base::NumberToString(version_id)));
   }
   void OnVersionStateChanged(int64_t version_id,
                              const GURL& scope,
@@ -262,14 +263,14 @@ class ServiceWorkerInternalsUI::PartitionObserver
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(
         "serviceworker.onVersionStateChanged", Value(partition_id_),
-        Value(base::Int64ToString(version_id)));
+        Value(base::NumberToString(version_id)));
   }
   void OnErrorReported(int64_t version_id,
                        const ErrorInfo& info) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::vector<std::unique_ptr<const Value>> args;
     args.push_back(std::make_unique<Value>(partition_id_));
-    args.push_back(std::make_unique<Value>(base::Int64ToString(version_id)));
+    args.push_back(std::make_unique<Value>(base::NumberToString(version_id)));
     auto value = std::make_unique<DictionaryValue>();
     value->SetString("message", info.error_message);
     value->SetInteger("lineNumber", info.line_number);
@@ -284,10 +285,10 @@ class ServiceWorkerInternalsUI::PartitionObserver
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::vector<std::unique_ptr<const Value>> args;
     args.push_back(std::make_unique<Value>(partition_id_));
-    args.push_back(std::make_unique<Value>(base::Int64ToString(version_id)));
+    args.push_back(std::make_unique<Value>(base::NumberToString(version_id)));
     auto value = std::make_unique<DictionaryValue>();
-    value->SetInteger("sourceIdentifier", message.source_identifier);
-    value->SetInteger("message_level", message.message_level);
+    value->SetInteger("sourceIdentifier", static_cast<int>(message.source));
+    value->SetInteger("message_level", static_cast<int>(message.message_level));
     value->SetString("message", message.message);
     value->SetInteger("lineNumber", message.line_number);
     value->SetString("sourceURL", message.source_url.spec());

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/elements/text.h"
 
-#include "base/i18n/char_iterator.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/elements/render_text_wrapper.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
@@ -79,42 +78,11 @@ void UpdateRenderText(gfx::RenderText* render_text,
   }
 
   const int font_style = font_list.GetFontStyle();
-  render_text->SetStyle(gfx::ITALIC, (font_style & gfx::Font::ITALIC) != 0);
-  render_text->SetStyle(gfx::UNDERLINE,
+  render_text->SetStyle(gfx::TEXT_STYLE_ITALIC,
+                        (font_style & gfx::Font::ITALIC) != 0);
+  render_text->SetStyle(gfx::TEXT_STYLE_UNDERLINE,
                         (font_style & gfx::Font::UNDERLINE) != 0);
   render_text->SetWeight(font_list.GetFontWeight());
-}
-
-std::set<UChar32> CollectDifferentChars(base::string16 text) {
-  std::set<UChar32> characters;
-  for (base::i18n::UTF16CharIterator it(&text); !it.end(); it.Advance()) {
-    characters.insert(it.get());
-  }
-  return characters;
-}
-
-bool GetFontList(const std::string& preferred_font_name,
-                 int font_size,
-                 base::string16 text,
-                 gfx::FontList* font_list) {
-  gfx::Font preferred_font(preferred_font_name, font_size);
-  std::vector<gfx::Font> fonts{preferred_font};
-
-  std::set<std::string> names;
-  for (UChar32 c : CollectDifferentChars(text)) {
-    std::string name;
-    bool found_name = GetFallbackFontNameForChar(preferred_font, c, "", &name);
-    if (!found_name)
-      return false;
-    if (!name.empty())
-      names.insert(name);
-  }
-  for (const auto& name : names) {
-    DCHECK(!name.empty());
-    fonts.push_back(gfx::Font(name, font_size));
-  }
-  *font_list = gfx::FontList(fonts);
-  return true;
 }
 
 }  // namespace
@@ -434,7 +402,9 @@ gfx::Size TextTexture::LayOutText() {
   }
 
   gfx::FontList fonts;
-  if (!GetFontList(kDefaultFontFamily, pixel_font_height, text_, &fonts) ||
+  bool check_all_characters = !!unhandled_codepoint_callback_;
+  if (!GetFontList(kDefaultFontFamily, pixel_font_height, text_, &fonts,
+                   check_all_characters) ||
       unsupported_code_point_for_test_) {
     if (unhandled_codepoint_callback_)
       unhandled_codepoint_callback_.Run();

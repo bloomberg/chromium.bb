@@ -36,8 +36,6 @@ namespace blink {
 DocumentResource* DocumentResource::FetchSVGDocument(FetchParameters& params,
                                                      ResourceFetcher* fetcher,
                                                      ResourceClient* client) {
-  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
-            network::mojom::RequestContextFrameType::kNone);
   DCHECK_EQ(params.GetResourceRequest().GetFetchRequestMode(),
             network::mojom::FetchRequestMode::kSameOrigin);
   params.SetRequestContext(mojom::RequestContextType::IMAGE);
@@ -66,7 +64,7 @@ void DocumentResource::NotifyFinished() {
   if (Data() && MimeTypeAllowed()) {
     // We don't need to create a new frame because the new document belongs to
     // the parent UseElement.
-    document_ = CreateDocument(GetResponse().Url());
+    document_ = CreateDocument(GetResponse().CurrentRequestUrl());
     document_->SetContent(DecodedText());
   }
   Resource::NotifyFinished();

@@ -1093,7 +1093,7 @@ void TargetX86Base<TraitsType>::addProlog(CfgNode *Node) {
     assert(RegNum == Traits::getBaseReg(RegNum));
     ++NumCallee;
     PreservedRegsSizeBytes += typeWidthInBytes(Traits::WordType);
-    _push_reg(getPhysicalRegister(RegNum, Traits::WordType));
+    _push_reg(RegNum);
   }
   Ctx->statsUpdateRegistersSaved(NumCallee);
 
@@ -1359,7 +1359,7 @@ void TargetX86Base<TraitsType>::addEpilog(CfgNode *Node) {
       continue;
     const auto RegNum = RegNumT::fromInt(i);
     assert(RegNum == Traits::getBaseReg(RegNum));
-    _pop(getPhysicalRegister(RegNum, Traits::WordType));
+    _pop_reg(RegNum);
   }
 
   if (!NeedSandboxing) {
@@ -5300,7 +5300,7 @@ void TargetX86Base<TraitsType>::lowerMemset(Operand *Dest, Operand *Val,
     // reverse order. Then handle any remainder with overlapping copies. Since
     // the remainder will be at the end, there will be reduces pressure on the
     // memory unit as the access to the same memory are far apart.
-    Type Ty;
+    Type Ty = IceType_void;
     if (ValValue == 0 && CountValue >= BytesPerStoreq &&
         CountValue <= BytesPerStorep * Traits::MEMSET_UNROLL_LIMIT) {
       // When the value is zero it can be loaded into a vector register cheaply

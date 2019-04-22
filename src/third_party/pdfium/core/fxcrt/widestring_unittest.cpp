@@ -402,6 +402,24 @@ TEST(WideString, OperatorPlus) {
   EXPECT_EQ(L"Dogs like me", WideString(L"Dogs") + L" like me");
   EXPECT_EQ(L"Oh no, error number 42",
             L"Oh no, error number " + WideString::Format(L"%d", 42));
+
+  {
+    // Make sure operator+= and Concat() increases string memory allocation
+    // geometrically.
+    int allocations = 0;
+    WideString str(L"ABCDEFGHIJKLMN");
+    const wchar_t* buffer = str.c_str();
+    for (size_t i = 0; i < 10000; ++i) {
+      str += L"!";
+      const wchar_t* new_buffer = str.c_str();
+      if (new_buffer != buffer) {
+        buffer = new_buffer;
+        ++allocations;
+      }
+    }
+    EXPECT_LT(allocations, 25);
+    EXPECT_GT(allocations, 10);
+  }
 }
 
 TEST(WideString, ConcatInPlace) {
@@ -1007,6 +1025,26 @@ TEST(WideString, IsASCII) {
   EXPECT_FALSE(WideString(L"xy\u2041z").IsASCII());
 }
 
+TEST(WideString, EqualsASCII) {
+  EXPECT_TRUE(WideString(L"").EqualsASCII(""));
+  EXPECT_FALSE(WideString(L"A").EqualsASCII(""));
+  EXPECT_FALSE(WideString(L"").EqualsASCII("A"));
+  EXPECT_FALSE(WideString(L"A").EqualsASCII("B"));
+  EXPECT_TRUE(WideString(L"ABC").EqualsASCII("ABC"));
+  EXPECT_FALSE(WideString(L"ABC").EqualsASCII("AEC"));
+  EXPECT_FALSE(WideString(L"\u00c1").EqualsASCII("\x41"));
+  EXPECT_FALSE(WideString(L"\u0141").EqualsASCII("\x41"));
+}
+
+TEST(WideString, EqualsASCIINoCase) {
+  EXPECT_TRUE(WideString(L"").EqualsASCIINoCase(""));
+  EXPECT_FALSE(WideString(L"A").EqualsASCIINoCase("b"));
+  EXPECT_TRUE(WideString(L"AbC").EqualsASCIINoCase("aBc"));
+  EXPECT_FALSE(WideString(L"ABc").EqualsASCIINoCase("AeC"));
+  EXPECT_FALSE(WideString(L"\u00c1").EqualsASCIINoCase("\x41"));
+  EXPECT_FALSE(WideString(L"\u0141").EqualsASCIINoCase("\x41"));
+}
+
 TEST(WideString, ToASCII) {
   const char* kResult =
       "x"
@@ -1022,6 +1060,23 @@ TEST(WideString, ToASCII) {
                                 L"\u208c"
                                 L"y")
                          .ToASCII());
+}
+
+TEST(WideString, ToLatin1) {
+  const char* kResult =
+      "x"
+      "\x82"
+      "\xff"
+      "\x22"
+      "\x8c"
+      "y";
+  EXPECT_EQ(kResult, WideString(L"x"
+                                L"\u0082"
+                                L"\u00ff"
+                                L"\u0122"
+                                L"\u208c"
+                                L"y")
+                         .ToLatin1());
 }
 
 TEST(WideString, ToDefANSI) {
@@ -1051,7 +1106,7 @@ TEST(WideString, ToDefANSI) {
 }
 
 TEST(WideString, FromASCII) {
-  EXPECT_EQ(L"", WideString::FromDefANSI(ByteStringView()));
+  EXPECT_EQ(L"", WideString::FromASCII(ByteStringView()));
   const wchar_t* kResult =
       L"x"
       L"\u0002"
@@ -1061,6 +1116,19 @@ TEST(WideString, FromASCII) {
                                            "\x82"
                                            "\xff"
                                            "y"));
+}
+
+TEST(WideString, FromLatin1) {
+  EXPECT_EQ(L"", WideString::FromLatin1(ByteStringView()));
+  const wchar_t* kResult =
+      L"x"
+      L"\u0082"
+      L"\u00ff"
+      L"y";
+  EXPECT_EQ(kResult, WideString::FromLatin1("x"
+                                            "\x82"
+                                            "\xff"
+                                            "y"));
 }
 
 TEST(WideString, FromDefANSI) {
@@ -1845,6 +1913,17 @@ TEST(WideStringView, WideOStreamOverload) {
     stream << str1 << str2;
     EXPECT_EQ(L"abcdef", stream.str());
   }
+}
+
+TEST(WideString, FX_HashCode_Wide) {
+  EXPECT_EQ(0u, FX_HashCode_GetW(L"", false));
+  EXPECT_EQ(65u, FX_HashCode_GetW(L"A", false));
+  EXPECT_EQ(97u, FX_HashCode_GetW(L"A", true));
+  EXPECT_EQ(1313 * 65u + 66u, FX_HashCode_GetW(L"AB", false));
+  EXPECT_EQ(FX_HashCode_GetAsIfW("AB\xff", false),
+            FX_HashCode_GetW(L"AB\xff", false));
+  EXPECT_EQ(FX_HashCode_GetAsIfW("AB\xff", true),
+            FX_HashCode_GetW(L"AB\xff", true));
 }
 
 }  // namespace fxcrt

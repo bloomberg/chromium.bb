@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "src/arm64/simulator-arm64.h"
+
+#if defined(USE_SIMULATOR)
+
 #include <stdlib.h>
 #include <cmath>
 #include <cstdarg>
 #include <type_traits>
 
-#if V8_TARGET_ARCH_ARM64
-
 #include "src/arm64/decoder-arm64-inl.h"
-#include "src/arm64/simulator-arm64.h"
 #include "src/assembler-inl.h"
-#include "src/codegen.h"
+#include "src/base/lazy-instance.h"
 #include "src/disasm.h"
 #include "src/macro-assembler.h"
 #include "src/objects-inl.h"
@@ -21,8 +22,6 @@
 
 namespace v8 {
 namespace internal {
-
-#if defined(USE_SIMULATOR)
 
 
 // This macro provides a platform independent use of sscanf. The reason for
@@ -58,9 +57,8 @@ TEXT_COLOUR clr_debug_number   = FLAG_log_colour ? COLOUR_BOLD(YELLOW)  : "";
 TEXT_COLOUR clr_debug_message  = FLAG_log_colour ? COLOUR(YELLOW)       : "";
 TEXT_COLOUR clr_printf         = FLAG_log_colour ? COLOUR(GREEN)        : "";
 
-// static
-base::LazyInstance<Simulator::GlobalMonitor>::type Simulator::global_monitor_ =
-    LAZY_INSTANCE_INITIALIZER;
+DEFINE_LAZY_LEAKY_OBJECT_GETTER(Simulator::GlobalMonitor,
+                                Simulator::GlobalMonitor::Get)
 
 // This is basically the same as PrintF, with a guard for FLAG_trace_sim.
 void Simulator::TraceSim(const char* format, ...) {
@@ -254,9 +252,9 @@ uintptr_t Simulator::PushAddress(uintptr_t address) {
   intptr_t new_sp = sp() - 2 * kXRegSize;
   uintptr_t* alignment_slot =
     reinterpret_cast<uintptr_t*>(new_sp + kXRegSize);
-  memcpy(alignment_slot, &kSlotsZapValue, kPointerSize);
+  memcpy(alignment_slot, &kSlotsZapValue, kSystemPointerSize);
   uintptr_t* stack_slot = reinterpret_cast<uintptr_t*>(new_sp);
-  memcpy(stack_slot, &address, kPointerSize);
+  memcpy(stack_slot, &address, kSystemPointerSize);
   set_sp(new_sp);
   return new_sp;
 }
@@ -368,7 +366,7 @@ void Simulator::ResetState() {
 
 
 Simulator::~Simulator() {
-  global_monitor_.Pointer()->RemoveProcessor(&global_monitor_processor_);
+  GlobalMonitor::Get()->RemoveProcessor(&global_monitor_processor_);
   delete[] reinterpret_cast<byte*>(stack_);
   if (FLAG_log_instruction_stats) {
     delete instrument_;
@@ -474,7 +472,7 @@ void Simulator::DoRuntimeCall(Instruction* instr) {
     case ExternalReference::BUILTIN_CALL:
 #if defined(V8_OS_WIN)
     {
-      // Object* f(v8::internal::Arguments).
+      // Object f(v8::internal::Arguments).
       TraceSim("Type: BUILTIN_CALL\n");
 
       // When this simulator runs on Windows x64 host, function with ObjectPair
@@ -514,7 +512,7 @@ void Simulator::DoRuntimeCall(Instruction* instr) {
     }
 #endif
     case ExternalReference::BUILTIN_CALL_PAIR: {
-      // Object* f(v8::internal::Arguments) or
+      // Object f(v8::internal::Arguments) or
       // ObjectPair f(v8::internal::Arguments).
       TraceSim("Type: BUILTIN_CALL\n");
 
@@ -537,13 +535,13 @@ void Simulator::DoRuntimeCall(Instruction* instr) {
           reinterpret_cast<SimulatorRuntimeCall>(external);
       ObjectPair result =
           target(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
-      TraceSim("Returned: {%p, %p}\n", static_cast<void*>(result.x),
-               static_cast<void*>(result.y));
+      TraceSim("Returned: {%p, %p}\n", reinterpret_cast<void*>(result.x),
+               reinterpret_cast<void*>(result.y));
 #ifdef DEBUG
       CorruptAllCallerSavedCPURegisters();
 #endif
-      set_xreg(0, reinterpret_cast<int64_t>(result.x));
-      set_xreg(1, reinterpret_cast<int64_t>(result.y));
+      set_xreg(0, static_cast<int64_t>(result.x));
+      set_xreg(1, static_cast<int64_t>(result.y));
       break;
     }
 
@@ -1780,12 +1778,12 @@ void Simulator::LoadStoreHelper(Instruction* instr,
   uintptr_t stack = 0;
 
   {
-    base::MutexGuard lock_guard(&global_monitor_.Pointer()->mutex);
+    base::MutexGuard lock_guard(&GlobalMonitor::Get()->mutex);
     if (instr->IsLoad()) {
       local_monitor_.NotifyLoad();
     } else {
       local_monitor_.NotifyStore();
-      global_monitor_.Pointer()->NotifyStore_Locked(&global_monitor_processor_);
+      GlobalMonitor::Get()->NotifyStore_Locked(&global_monitor_processor_);
     }
   }
 
@@ -1914,12 +1912,12 @@ void Simulator::LoadStorePairHelper(Instruction* instr,
   uintptr_t stack = 0;
 
   {
-    base::MutexGuard lock_guard(&global_monitor_.Pointer()->mutex);
+    base::MutexGuard lock_guard(&GlobalMonitor::Get()->mutex);
     if (instr->IsLoad()) {
       local_monitor_.NotifyLoad();
     } else {
       local_monitor_.NotifyStore();
-      global_monitor_.Pointer()->NotifyStore_Locked(&global_monitor_processor_);
+      GlobalMonitor::Get()->NotifyStore_Locked(&global_monitor_processor_);
     }
   }
 
@@ -2065,7 +2063,7 @@ void Simulator::VisitLoadLiteral(Instruction* instr) {
   unsigned rt = instr->Rt();
 
   {
-    base::MutexGuard lock_guard(&global_monitor_.Pointer()->mutex);
+    base::MutexGuard lock_guard(&GlobalMonitor::Get()->mutex);
     local_monitor_.NotifyLoad();
   }
 
@@ -2156,12 +2154,12 @@ void Simulator::VisitLoadStoreAcquireRelease(Instruction* instr) {
   unsigned access_size = 1 << instr->LoadStoreXSizeLog2();
   uintptr_t address = LoadStoreAddress(rn, 0, AddrMode::Offset);
   DCHECK_EQ(address % access_size, 0);
-  base::MutexGuard lock_guard(&global_monitor_.Pointer()->mutex);
+  base::MutexGuard lock_guard(&GlobalMonitor::Get()->mutex);
   if (is_load != 0) {
     if (is_exclusive) {
       local_monitor_.NotifyLoadExcl(address, get_transaction_size(access_size));
-      global_monitor_.Pointer()->NotifyLoadExcl_Locked(
-          address, &global_monitor_processor_);
+      GlobalMonitor::Get()->NotifyLoadExcl_Locked(address,
+                                                  &global_monitor_processor_);
     } else {
       local_monitor_.NotifyLoad();
     }
@@ -2193,7 +2191,7 @@ void Simulator::VisitLoadStoreAcquireRelease(Instruction* instr) {
       DCHECK_NE(rs, rn);
       if (local_monitor_.NotifyStoreExcl(address,
                                          get_transaction_size(access_size)) &&
-          global_monitor_.Pointer()->NotifyStoreExcl_Locked(
+          GlobalMonitor::Get()->NotifyStoreExcl_Locked(
               address, &global_monitor_processor_)) {
         switch (op) {
           case STLXR_b:
@@ -2218,7 +2216,7 @@ void Simulator::VisitLoadStoreAcquireRelease(Instruction* instr) {
       }
     } else {
       local_monitor_.NotifyStore();
-      global_monitor_.Pointer()->NotifyStore_Locked(&global_monitor_processor_);
+      GlobalMonitor::Get()->NotifyStore_Locked(&global_monitor_processor_);
       switch (op) {
         case STLR_b:
           MemoryWrite<uint8_t>(address, wreg(rt));
@@ -2280,7 +2278,8 @@ void Simulator::VisitMoveWideImmediate(Instruction* instr) {
         unsigned reg_code = instr->Rd();
         int64_t prev_xn_val = is_64_bits ? xreg(reg_code)
                                          : wreg(reg_code);
-        new_xn_val = (prev_xn_val & ~(0xFFFFL << shift)) | shifted_imm16;
+        new_xn_val =
+            (prev_xn_val & ~(INT64_C(0xFFFF) << shift)) | shifted_imm16;
         break;
     }
     case MOVZ_w:
@@ -3239,7 +3238,7 @@ void Simulator::Debug() {
           int64_t value;
           StdoutStream os;
           if (GetValue(arg1, &value)) {
-            Object* obj = reinterpret_cast<Object*>(value);
+            Object obj(value);
             os << arg1 << ": \n";
 #ifdef DEBUG
             obj->Print(os);
@@ -3292,15 +3291,12 @@ void Simulator::Debug() {
         while (cur < end) {
           PrintF("  0x%016" PRIx64 ":  0x%016" PRIx64 " %10" PRId64,
                  reinterpret_cast<uint64_t>(cur), *cur, *cur);
-          HeapObject* obj = reinterpret_cast<HeapObject*>(*cur);
-          int64_t value = *cur;
+          Object obj(*cur);
           Heap* current_heap = isolate_->heap();
-          if (((value & 1) == 0) || current_heap->Contains(obj)) {
+          if (obj.IsSmi() || current_heap->Contains(HeapObject::cast(obj))) {
             PrintF(" (");
-            if ((value & kSmiTagMask) == 0) {
-              DCHECK(SmiValuesAre32Bits() || SmiValuesAre31Bits());
-              int32_t untagged = (value >> kSmiShift) & 0xFFFFFFFF;
-              PrintF("smi %" PRId32, untagged);
+            if (obj.IsSmi()) {
+              PrintF("smi %" PRId32, Smi::ToInt(obj));
             } else {
               obj->ShortPrint();
             }
@@ -4535,12 +4531,12 @@ void Simulator::NEONLoadStoreMultiStructHelper(const Instruction* instr,
   }
 
   {
-    base::MutexGuard lock_guard(&global_monitor_.Pointer()->mutex);
+    base::MutexGuard lock_guard(&GlobalMonitor::Get()->mutex);
     if (log_read) {
       local_monitor_.NotifyLoad();
     } else {
       local_monitor_.NotifyStore();
-      global_monitor_.Pointer()->NotifyStore_Locked(&global_monitor_processor_);
+      GlobalMonitor::Get()->NotifyStore_Locked(&global_monitor_processor_);
     }
   }
 
@@ -4781,12 +4777,12 @@ void Simulator::NEONLoadStoreSingleStructHelper(const Instruction* instr,
   }
 
   {
-    base::MutexGuard lock_guard(&global_monitor_.Pointer()->mutex);
+    base::MutexGuard lock_guard(&GlobalMonitor::Get()->mutex);
     if (do_load) {
       local_monitor_.NotifyLoad();
     } else {
       local_monitor_.NotifyStore();
-      global_monitor_.Pointer()->NotifyStore_Locked(&global_monitor_processor_);
+      GlobalMonitor::Get()->NotifyStore_Locked(&global_monitor_processor_);
     }
   }
 
@@ -5864,8 +5860,6 @@ bool Simulator::GlobalMonitor::Processor::NotifyStoreExcl_Locked(
   return false;
 }
 
-Simulator::GlobalMonitor::GlobalMonitor() : head_(nullptr) {}
-
 void Simulator::GlobalMonitor::NotifyLoadExcl_Locked(uintptr_t addr,
                                                      Processor* processor) {
   processor->NotifyLoadExcl_Locked(addr);
@@ -5932,9 +5926,7 @@ void Simulator::GlobalMonitor::RemoveProcessor(Processor* processor) {
   processor->next_ = nullptr;
 }
 
-#endif  // USE_SIMULATOR
-
 }  // namespace internal
 }  // namespace v8
 
-#endif  // V8_TARGET_ARCH_ARM64
+#endif  // USE_SIMULATOR

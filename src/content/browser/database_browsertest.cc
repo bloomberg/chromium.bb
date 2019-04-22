@@ -45,13 +45,13 @@ class DatabaseTest : public ContentBrowserTest {
   void UpdateRecord(Shell* shell, int index, const std::string& data) {
     RunScriptAndCheckResult(
         shell,
-        "updateRecord(" + base::IntToString(index) + ", '" + data + "')",
+        "updateRecord(" + base::NumberToString(index) + ", '" + data + "')",
         "done");
   }
 
   void DeleteRecord(Shell* shell, int index) {
     RunScriptAndCheckResult(
-        shell, "deleteRecord(" + base::IntToString(index) + ")", "done");
+        shell, "deleteRecord(" + base::NumberToString(index) + ")", "done");
   }
 
   void CompareRecords(Shell* shell, const std::string& expected) {
@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(DatabaseTest, DatabaseOperations) {
 
   std::string expected;
   for (int i = 0; i < 10; ++i) {
-    std::string item = base::IntToString(i);
+    std::string item = base::NumberToString(i);
     InsertRecord(shell(), item);
     if (!expected.empty())
       expected += ", ";
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(DatabaseTest, DatabaseOperations) {
 
   expected.clear();
   for (int i = 0; i < 10; ++i) {
-    std::string item = base::IntToString(i * i);
+    std::string item = base::NumberToString(i * i);
     UpdateRecord(shell(), i, item);
     if (!expected.empty())
       expected += ", ";

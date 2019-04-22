@@ -38,8 +38,10 @@ diff --git a/tools/wpt/paths b/tools/wpt/paths
 index 0ef13c96e3..93c97dc02b 100644
 --- a/tools/wpt/paths
 +++ b/tools/wpt/paths
-@@ -1,4 +1,3 @@
+@@ -1,6 +1,4 @@
 -tools/ci/
  tools/lint/
  tools/manifest/
  tools/serve/
+-tools/taskcluster/
+ tools/wpt/

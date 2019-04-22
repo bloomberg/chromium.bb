@@ -217,7 +217,8 @@ bool PluginDispatcher::InitPluginWithChannel(
     const IPC::ChannelHandle& channel_handle,
     bool is_client) {
   if (!Dispatcher::InitWithChannel(delegate, peer_pid, channel_handle,
-                                   is_client))
+                                   is_client,
+                                   base::ThreadTaskRunnerHandle::Get()))
     return false;
   plugin_delegate_ = delegate;
   plugin_dispatcher_id_ = plugin_delegate_->Register(this);

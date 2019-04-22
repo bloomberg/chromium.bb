@@ -46,7 +46,7 @@ ACTION_P2(ExpectGuidAndThen, expected_guid, callback) {
   EXPECT_EQ(expected_guid, arg0->guid);
   if (!callback.is_null())
     callback.Run();
-};
+}
 
 class WebUsbServiceImplTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -317,7 +317,7 @@ TEST_F(WebUsbServiceImplTest, RevokeDevicePermission) {
       base::BindLambdaForTesting([&]() { device_ptr.reset(); }));
 
   auto objects = context->GetGrantedObjects(origin, origin);
-  context->RevokeObjectPermission(origin, origin, *objects[0]);
+  context->RevokeObjectPermission(origin, origin, objects[0]->value);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(device_ptr);

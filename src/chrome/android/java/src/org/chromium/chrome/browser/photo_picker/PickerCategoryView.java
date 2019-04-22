@@ -9,9 +9,11 @@ import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.SystemClock;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +36,6 @@ import org.chromium.ui.UiUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A class for keeping track of common data associated with showing photos in
@@ -154,8 +155,8 @@ public class PickerCategoryView extends RelativeLayout
         int titleId = multiSelectionAllowed ? R.string.photo_picker_select_images
                                             : R.string.photo_picker_select_image;
         PhotoPickerToolbar toolbar = (PhotoPickerToolbar) mSelectableListLayout.initializeToolbar(
-                R.layout.photo_picker_toolbar, mSelectionDelegate, titleId, null, 0, 0,
-                R.color.default_primary_color, null, false, false);
+                R.layout.photo_picker_toolbar, mSelectionDelegate, titleId, 0, 0, null, false,
+                false);
         toolbar.setNavigationOnClickListener(this);
         Button doneButton = (Button) toolbar.findViewById(R.id.done);
         doneButton.setOnClickListener(this);
@@ -183,6 +184,12 @@ public class PickerCategoryView extends RelativeLayout
         mRecyclerView.removeItemDecoration(mSpacingDecoration);
         mSpacingDecoration = new GridSpacingItemDecoration(mColumns, mPadding);
         mRecyclerView.addItemDecoration(mSpacingDecoration);
+
+        // Configuration change can happen at any time, even before the photos have been
+        // enumerated (when mPickerBitmaps is null, causing: https://crbug.com/947657). There's no
+        // need to call notifyDataSetChanged in that case because it will be called once the photo
+        // list becomes ready.
+        if (mPickerBitmaps != null) mPickerAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -229,8 +236,7 @@ public class PickerCategoryView extends RelativeLayout
         // Calculate the rate of files enumerated per tenth of a second.
         long elapsedTimeMs = SystemClock.elapsedRealtime() - mEnumStartTime;
         int rate = (int) (100 * files.size() / elapsedTimeMs);
-        RecordHistogram.recordTimesHistogram(
-                "Android.PhotoPicker.EnumerationTime", elapsedTimeMs, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordTimesHistogram("Android.PhotoPicker.EnumerationTime", elapsedTimeMs);
         RecordHistogram.recordCustomCountHistogram(
                 "Android.PhotoPicker.EnumeratedFiles", files.size(), 1, 10000, 50);
         RecordHistogram.recordCount1000Histogram("Android.PhotoPicker.EnumeratedRate", rate);
@@ -335,10 +341,10 @@ public class PickerCategoryView extends RelativeLayout
      * Calculates image size and how many columns can fit on-screen.
      */
     private void calculateGridMetrics() {
-        Rect appRect = new Rect();
-        mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(appRect);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        mActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
-        int width = appRect.width();
+        int width = displayMetrics.widthPixels;
         int minSize =
                 mActivity.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_min_size);
         mPadding = mActivity.getResources().getDimensionPixelSize(R.dimen.photo_picker_tile_gap);
@@ -365,8 +371,8 @@ public class PickerCategoryView extends RelativeLayout
         }
 
         mEnumStartTime = SystemClock.elapsedRealtime();
-        mWorkerTask = new FileEnumWorkerTask(
-                mActivity.getWindowAndroid(), this, new MimeTypeFilter(mMimeTypes, true));
+        mWorkerTask = new FileEnumWorkerTask(mActivity.getWindowAndroid(), this,
+                new MimeTypeFilter(mMimeTypes, true), mActivity.getContentResolver());
         mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -376,10 +382,10 @@ public class PickerCategoryView extends RelativeLayout
     private void notifyPhotosSelected() {
         List<PickerBitmap> selectedFiles = mSelectionDelegate.getSelectedItemsAsList();
         Collections.sort(selectedFiles);
-        String[] photos = new String[selectedFiles.size()];
+        Uri[] photos = new Uri[selectedFiles.size()];
         int i = 0;
         for (PickerBitmap bitmap : selectedFiles) {
-            photos[i++] = bitmap.getFilePath();
+            photos[i++] = bitmap.getUri();
         }
 
         executeAction(
@@ -430,7 +436,7 @@ public class PickerCategoryView extends RelativeLayout
      * @param umaId The UMA value to record with the action.
      */
     private void executeAction(
-            @PhotoPickerListener.PhotoPickerAction int action, String[] photos, int umaId) {
+            @PhotoPickerListener.PhotoPickerAction int action, Uri[] photos, int umaId) {
         mListener.onPhotoPickerUserAction(action, photos);
         mDialog.dismiss();
         UiUtils.onPhotoPickerDismissed();

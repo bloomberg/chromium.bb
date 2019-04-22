@@ -12,16 +12,17 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
+#include "ui/base/cocoa/command_dispatcher.h"
 #include "ui/base/cocoa/ns_view_ids.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/display_observer.h"
-#include "ui/views/views_export.h"
 #import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
+#include "ui/views_bridge_mac/mojo/text_input_host.mojom.h"
+#include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
 @class BridgedContentView;
 @class ModalShowAnimationWithLayer;
@@ -32,6 +33,7 @@ namespace views_bridge_mac {
 
 namespace mojom {
 class BridgedNativeWidgetHost;
+class TextInputHost;
 }  // namespace mojom
 
 class BridgedNativeWidgetHostHelper;
@@ -55,7 +57,7 @@ using views_bridge_mac::CocoaMouseCaptureDelegate;
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
-class VIEWS_EXPORT BridgedNativeWidgetImpl
+class VIEWS_BRIDGE_MAC_EXPORT BridgedNativeWidgetImpl
     : public views_bridge_mac::mojom::BridgedNativeWidget,
       public display::DisplayObserver,
       public ui::CATransactionCoordinator::PreCommitObserver,
@@ -66,17 +68,20 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   static gfx::Size GetWindowSizeForClientSize(NSWindow* window,
                                               const gfx::Size& size);
 
-  // Retrieve a BridgedNativeWidgetImpl* from its id.
+  // Retrieve a BridgedNativeWidgetImpl* from its id or window.
   static BridgedNativeWidgetImpl* GetFromId(uint64_t bridged_native_widget_id);
+  static BridgedNativeWidgetImpl* GetFromNativeWindow(gfx::NativeWindow window);
 
   // Create an NSWindow for the specified parameters.
   static base::scoped_nsobject<NativeWidgetMacNSWindow> CreateNSWindow(
       const views_bridge_mac::mojom::CreateWindowParams* params);
 
   // Creates one side of the bridge. |host| and |parent| must not be NULL.
-  BridgedNativeWidgetImpl(uint64_t bridged_native_widget_id,
-                          BridgedNativeWidgetHost* host,
-                          BridgedNativeWidgetHostHelper* host_helper);
+  BridgedNativeWidgetImpl(
+      uint64_t bridged_native_widget_id,
+      BridgedNativeWidgetHost* host,
+      BridgedNativeWidgetHostHelper* host_helper,
+      views_bridge_mac::mojom::TextInputHost* text_input_host);
   ~BridgedNativeWidgetImpl() override;
 
   // Bind |bridge_mojo_binding_| to |request|, and set the connection error
@@ -91,6 +96,12 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // process boundary, it will not be possible to explicitly set an NSWindow in
   // this way.
   void SetWindow(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
+
+  // Set the command dispatcher delegate for the window. This will retain
+  // |delegate| for the lifetime of |this|.
+  void SetCommandDispatcher(
+      NSObject<CommandDispatcherDelegate>* delegate,
+      id<UserInterfaceItemCommandHandler> command_handler);
 
   // Start moving the window, pinned to the mouse cursor, and monitor events.
   // Return true on mouse up or false on premature termination via EndMoveLoop()
@@ -147,6 +158,9 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   BridgedContentView* ns_view() { return bridged_view_; }
   BridgedNativeWidgetHost* host() { return host_; }
   BridgedNativeWidgetHostHelper* host_helper() { return host_helper_; }
+  views_bridge_mac::mojom::TextInputHost* text_input_host() const {
+    return text_input_host_;
+  }
   NSWindow* ns_window();
 
   views_bridge_mac::DragDropClient* drag_drop_client();
@@ -172,6 +186,10 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // Redispatch a keyboard event using the widget's window's CommandDispatcher.
   // Return true if the event is handled.
   bool RedispatchKeyEvent(NSEvent* event);
+  // Save an NSEvent to be used at the mojo version of RedispatchKeyEvent,
+  // rather than (inaccurately) reconstructing the NSEvent.
+  // https://crbug.com/942690
+  void SaveKeyEventForRedispatch(NSEvent* event);
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -185,6 +203,9 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   void CreateWindow(
       views_bridge_mac::mojom::CreateWindowParamsPtr params) override;
   void SetParent(uint64_t parent_id) override;
+  void StackAbove(uint64_t sibling_id) override;
+  void StackAtTop() override;
+  void ShowEmojiPanel() override;
   void InitWindow(views_bridge_mac::mojom::BridgedNativeWidgetInitParamsPtr
                       params) override;
   void InitCompositorView() override;
@@ -205,6 +226,8 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
       views_bridge_mac::mojom::VisibilityTransition transitions) override;
   void SetVisibleOnAllSpaces(bool always_visible) override;
   void SetFullscreen(bool fullscreen) override;
+  void SetCanAppearInExistingFullscreenSpaces(
+      bool can_appear_in_existing_fullscreen_spaces) override;
   void SetMiniaturized(bool miniaturized) override;
   void SetSizeConstraints(const gfx::Size& min_size,
                           const gfx::Size& max_size,
@@ -226,9 +249,9 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
                           const base::string16& characters_ignoring_modifiers,
                           uint32_t key_code) override;
 
-  // TODO(ccameron): This method exists temporarily as we move all direct access
-  // of TextInputClient out of BridgedContentView.
-  void SetTextInputClient(ui::TextInputClient* text_input_client);
+  // Return true if [NSApp updateWindows] needs to be called after updating the
+  // TextInputClient.
+  bool NeedsUpdateWindows();
 
   // Compute the window and content size, and forward them to |host_|. This will
   // update widget and compositor size.
@@ -272,8 +295,15 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   const uint64_t id_;
   BridgedNativeWidgetHost* const host_;               // Weak. Owns this.
   BridgedNativeWidgetHostHelper* const host_helper_;  // Weak, owned by |host_|.
+  views_bridge_mac::mojom::TextInputHost* const
+      text_input_host_;  // Weak, owned by |host_|.
+
   base::scoped_nsobject<NativeWidgetMacNSWindow> window_;
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
+  base::scoped_nsobject<NSObject<CommandDispatcherDelegate>>
+      window_command_dispatcher_delegate_;
+  base::scoped_nsobject<NSEvent> saved_redispatch_event_;
+
   base::scoped_nsobject<BridgedContentView> bridged_view_;
   std::unique_ptr<ui::ScopedNSViewIdMapping> bridged_view_id_mapping_;
   base::scoped_nsobject<ModalShowAnimationWithLayer> show_animation_;
@@ -315,6 +345,13 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // Whether this window is in a fullscreen transition, and the fullscreen state
   // can not currently be changed.
   bool in_fullscreen_transition_ = false;
+
+  // Trying to close an NSWindow during a fullscreen transition will cause the
+  // window to lock up. Use this to track if CloseWindow was called during a
+  // fullscreen transition, to defer the -[NSWindow close] call until the
+  // transition is complete.
+  // https://crbug.com/945237
+  bool has_deferred_window_close_ = false;
 
   // Stores the value last read from -[NSWindow isVisible], to detect visibility
   // changes.

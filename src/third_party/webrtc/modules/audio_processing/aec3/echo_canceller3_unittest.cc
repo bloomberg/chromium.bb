@@ -28,8 +28,8 @@
 namespace webrtc {
 namespace {
 
-using testing::StrictMock;
-using testing::_;
+using ::testing::_;
+using ::testing::StrictMock;
 
 // Populates the frame with linearly increasing sample values for each band,
 // with a band-specific offset, in order to allow simple bitexactness
@@ -104,7 +104,7 @@ class CaptureTransportVerificationProcessor : public BlockProcessor {
 
   void GetMetrics(EchoControl::Metrics* metrics) const override {}
 
-  void SetAudioBufferDelay(size_t delay_ms) override{};
+  void SetAudioBufferDelay(size_t delay_ms) override {}
 
  private:
   RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(CaptureTransportVerificationProcessor);
@@ -134,7 +134,7 @@ class RenderTransportVerificationProcessor : public BlockProcessor {
 
   void GetMetrics(EchoControl::Metrics* metrics) const override {}
 
-  void SetAudioBufferDelay(size_t delay_ms) override{};
+  void SetAudioBufferDelay(size_t delay_ms) override {}
 
  private:
   std::deque<std::vector<std::vector<float>>> received_render_blocks_;
@@ -327,7 +327,7 @@ class EchoCanceller3Tester {
             .Times(1);
         break;
       case EchoLeakageTestVariant::kTrueNonSticky: {
-        testing::InSequence s;
+        ::testing::InSequence s;
         EXPECT_CALL(*block_processor_mock, UpdateEchoLeakageStatus(true))
             .Times(1);
         EXPECT_CALL(*block_processor_mock, UpdateEchoLeakageStatus(false))
@@ -409,14 +409,14 @@ class EchoCanceller3Tester {
             .Times(expected_num_block_to_process);
         break;
       case SaturationTestVariant::kOneNegative: {
-        testing::InSequence s;
+        ::testing::InSequence s;
         EXPECT_CALL(*block_processor_mock, ProcessCapture(_, true, _))
             .Times(num_full_blocks_per_frame);
         EXPECT_CALL(*block_processor_mock, ProcessCapture(_, false, _))
             .Times(expected_num_block_to_process - num_full_blocks_per_frame);
       } break;
       case SaturationTestVariant::kOnePositive: {
-        testing::InSequence s;
+        ::testing::InSequence s;
         EXPECT_CALL(*block_processor_mock, ProcessCapture(_, true, _))
             .Times(num_full_blocks_per_frame);
         EXPECT_CALL(*block_processor_mock, ProcessCapture(_, false, _))

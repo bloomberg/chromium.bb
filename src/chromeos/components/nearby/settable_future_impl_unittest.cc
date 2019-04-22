@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -79,7 +80,7 @@ class SettableFutureImplTest : public testing::Test {
     base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   void GetAsyncResult(const base::UnguessableToken& id) {

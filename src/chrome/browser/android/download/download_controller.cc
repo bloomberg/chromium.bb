@@ -20,7 +20,9 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/download/dangerous_download_infobar_delegate.h"
 #include "chrome/browser/android/download/download_manager_service.h"
+#include "chrome/browser/android/download/download_utils.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/download/download_offline_content_provider.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/offline_pages/android/offline_page_bridge.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/download/public/common/auto_resumption_handler.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -58,11 +61,6 @@ using content::WebContents;
 namespace {
 // Guards download_controller_
 base::LazyInstance<base::Lock>::DestructorAtExit g_download_controller_lock_;
-
-// If received bytes is more than the size limit and resumption will restart
-// from the beginning, throttle it.
-int kDefaultAutoResumptionSizeLimit = 10 * 1024 * 1024;  // 10 MB
-const char kAutoResumptionSizeLimitParamName[] = "AutoResumptionSizeLimit";
 
 void CreateContextMenuDownload(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
@@ -114,16 +112,6 @@ void CreateContextMenuDownload(
   RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
   dl_params->set_download_source(download::DownloadSource::CONTEXT_MENU);
   dlm->DownloadUrl(std::move(dl_params));
-}
-
-int GetAutoResumptionSizeLimit() {
-  std::string value = base::GetFieldTrialParamValueByFeature(
-      chrome::android::kDownloadAutoResumptionThrottling,
-      kAutoResumptionSizeLimitParamName);
-  int size_limit;
-  return base::StringToInt(value, &size_limit)
-             ? size_limit
-             : kDefaultAutoResumptionSizeLimit;
 }
 
 // Helper class for retrieving a DownloadManager.
@@ -203,7 +191,6 @@ void OnStoragePermissionDecided(
 
 static void JNI_DownloadController_OnAcquirePermissionResult(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jlong callback_id,
     jboolean granted,
     const JavaParamRef<jstring>& jpermission_to_update) {
@@ -296,12 +283,14 @@ void DownloadController::AcquireFileAccessPermission(
 void DownloadController::CreateAndroidDownload(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const DownloadInfo& info) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::Bind(&DownloadController::StartAndroidDownload,
-                                      base::Unretained(this), wc_getter, info));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&DownloadController::StartAndroidDownload,
+                     base::Unretained(this), wc_getter, info));
 }
 
 void DownloadController::AboutToResumeDownload(DownloadItem* download_item) {
+  download_item->RemoveObserver(this);
   download_item->AddObserver(this);
 
   // If a download is resumed from an interrupted state, record its strong
@@ -395,10 +384,20 @@ void DownloadController::OnDownloadStarted(
   download_item->RemoveObserver(this);
   download_item->AddObserver(this);
 
+  if (download::AutoResumptionHandler::Get())
+    download::AutoResumptionHandler::Get()->OnDownloadStarted(download_item);
+
+  DownloadUtils::GetDownloadOfflineContentProvider(
+      content::DownloadItemUtils::GetBrowserContext(download_item))
+      ->OnDownloadStarted(download_item);
+
   OnDownloadUpdated(download_item);
 }
 
 void DownloadController::OnDownloadUpdated(DownloadItem* item) {
+  if (item->IsTemporary() || item->IsTransient())
+    return;
+
   if (item->IsDangerous() && (item->GetState() != DownloadItem::CANCELLED)) {
     // Dont't show notification for a dangerous download, as user can resume
     // the download after browser crash through notification.
@@ -412,8 +411,6 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
   switch (item->GetState()) {
     case DownloadItem::IN_PROGRESS: {
       Java_DownloadController_onDownloadUpdated(env, j_item);
-      if (item->IsPaused())
-        item->RemoveObserver(this);
       break;
     }
     case DownloadItem::COMPLETE:
@@ -439,7 +436,6 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
       // resume in this case.
       Java_DownloadController_onDownloadInterrupted(env, j_item,
           IsInterruptedDownloadAutoResumable(item));
-      item->RemoveObserver(this);
       break;
     case DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
@@ -483,7 +479,7 @@ bool DownloadController::IsInterruptedDownloadAutoResumable(
   if (!download_item->GetURL().SchemeIsHTTPOrHTTPS())
     return false;
 
-  static int size_limit = GetAutoResumptionSizeLimit();
+  static int size_limit = DownloadUtils::GetAutoResumptionSizeLimit();
   bool exceeds_size_limit = download_item->GetReceivedBytes() > size_limit;
   std::string etag = download_item->GetETag();
   std::string last_modified = download_item->GetLastModifiedTime();

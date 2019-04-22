@@ -9,15 +9,12 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/common/search/instant_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace {
-
-const auto FAVICON = SearchBox::FAVICON;
-const auto THUMB = SearchBox::THUMB;
 
 const char* kUrlString1 = "http://www.google.com";
 const char* kUrlString2 = "http://www.chromium.org/path/q=3#r=4";
@@ -66,14 +63,12 @@ bool ParseViewIdAndRestrictedId(const std::string& id_part,
 
 // Defined in searchbox.cc
 bool ParseIconRestrictedUrl(const GURL& url,
-                            SearchBox::ImageSourceType type,
                             std::string* param_part,
                             int* view_id,
                             InstantRestrictedID* rid);
 
 // Defined in searchbox.cc
-bool TranslateIconRestrictedUrl(const GURL& transient_url,
-                                SearchBox::ImageSourceType type,
+void TranslateIconRestrictedUrl(const GURL& transient_url,
                                 const SearchBox::IconURLHelper& helper,
                                 GURL* url);
 
@@ -135,7 +130,7 @@ TEST(SearchBoxUtilTest, ParseViewIdAndRestrictedIdFailure) {
     "blahblah",
     "0xA/0x10",
   };
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     int view_id = -1;
     InstantRestrictedID rid = -1;
     EXPECT_FALSE(ParseViewIdAndRestrictedId(test_cases[i], &view_id, &rid))
@@ -147,24 +142,22 @@ TEST(SearchBoxUtilTest, ParseViewIdAndRestrictedIdFailure) {
 
 TEST(SearchBoxUtilTest, ParseIconRestrictedUrlFaviconSuccess) {
   struct {
-    SearchBox::ImageSourceType type;
     const char* transient_url_str;
     const char* expected_param_part;
     int expected_view_id;
     InstantRestrictedID expected_rid;
   } test_cases[] = {
-    {FAVICON, "chrome-search://favicon/1/2", "", 1, 2},
-    {FAVICON, "chrome-search://favicon/size/16@2x/3/4", "size/16@2x/", 3, 4},
-    {FAVICON, "chrome-search://favicon/iconurl/9/10", "iconurl/", 9, 10},
-    {THUMB, "chrome-search://thumb/1/2", "", 1, 2},
+      {"chrome-search://favicon/1/2", "", 1, 2},
+      {"chrome-search://favicon/size/16@2x/3/4", "size/16@2x/", 3, 4},
+      {"chrome-search://favicon/iconurl/9/10", "iconurl/", 9, 10},
   };
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     std::string param_part = "(unwritten)";
     int view_id = -1;
     InstantRestrictedID rid = -1;
     EXPECT_TRUE(ParseIconRestrictedUrl(GURL(test_cases[i].transient_url_str),
-        test_cases[i].type, &param_part, &view_id, &rid))
-            << " for test_cases[" << i << "]";
+                                       &param_part, &view_id, &rid))
+        << " for test_cases[" << i << "]";
     EXPECT_EQ(test_cases[i].expected_param_part, param_part)
         << " for test_cases[" << i << "]";
     EXPECT_EQ(test_cases[i].expected_view_id, view_id)
@@ -176,29 +169,21 @@ TEST(SearchBoxUtilTest, ParseIconRestrictedUrlFaviconSuccess) {
 
 TEST(SearchBoxUtilTest, ParseIconRestrictedUrlFailure) {
   struct {
-    SearchBox::ImageSourceType type;
     const char* transient_url_str;
   } test_cases[] = {
-    {FAVICON, "chrome-search://favicon/"},
-    {FAVICON, "chrome-search://favicon/3/"},
-    {FAVICON, "chrome-search://favicon/size/3/4"},
-    {FAVICON, "chrome-search://favicon/largest/http://www.google.com"},
-    {FAVICON, "chrome-search://favicon/size/16@2x/-1/10"},
-    {THUMB, "chrome-search://thumb"},
-    {THUMB, "chrome-search://thumb/"},
-    {THUMB, "chrome-search://thumb/123"},
-    {THUMB, "chrome-search://thumb/xyz"},
-    {THUMB, "chrome-search://thumb/123/"},
-    {THUMB, "chrome-search://thumb/123/xyz"},
-    {THUMB, "chrome-search://thumb/http://www.google.com"},
+      {"chrome-search://favicon/"},
+      {"chrome-search://favicon/3/"},
+      {"chrome-search://favicon/size/3/4"},
+      {"chrome-search://favicon/largest/http://www.google.com"},
+      {"chrome-search://favicon/size/16@2x/-1/10"},
   };
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     std::string param_part = "(unwritten)";
     int view_id = -1;
     InstantRestrictedID rid = -1;
     EXPECT_FALSE(ParseIconRestrictedUrl(GURL(test_cases[i].transient_url_str),
-        test_cases[i].type, &param_part, &view_id, &rid))
-            << " for test_cases[" << i << "]";
+                                        &param_part, &view_id, &rid))
+        << " for test_cases[" << i << "]";
     EXPECT_EQ("(unwritten)", param_part);
     EXPECT_EQ(-1, view_id);
     EXPECT_EQ(-1, rid);
@@ -207,63 +192,28 @@ TEST(SearchBoxUtilTest, ParseIconRestrictedUrlFailure) {
 
 TEST(SearchBoxUtilTest, TranslateIconRestrictedUrlSuccess) {
   struct {
-    SearchBox::ImageSourceType type;
     const char* transient_url_str;
     std::string expected_url_str;
   } test_cases[] = {
-    {FAVICON, "chrome-search://favicon/137/1",
-        std::string("chrome-search://favicon/") + kUrlString1},
-    // FAVICON is permission: invalid input just yields default endpoint.
-    {FAVICON, "chrome-search://favicon/", "chrome-search://favicon/"},
-    {FAVICON, "chrome-search://favicon/314", "chrome-search://favicon/"},
-    {FAVICON, "chrome-search://favicon/314/1", "chrome-search://favicon/"},
-    {FAVICON, "chrome-search://favicon/137/255", "chrome-search://favicon/"},
-    {FAVICON, "chrome-search://favicon/-3/-1", "chrome-search://favicon/"},
-    {FAVICON, "chrome-search://favicon/invalidstuff",
-        "chrome-search://favicon/"},
-    {FAVICON, "chrome-search://favicon/size/16@2x/http://www.google.com",
-        "chrome-search://favicon/"},
-    // Other types of icons.
-    {THUMB, "chrome-search://thumb/137/3",
-        std::string("chrome-search://thumb/") + kUrlString3},
+      {"chrome-search://favicon/137/1",
+       std::string("chrome-search://favicon/") + kUrlString1},
+      {"chrome-search://favicon/", "chrome-search://favicon/"},
+      {"chrome-search://favicon/314", "chrome-search://favicon/"},
+      {"chrome-search://favicon/314/1", "chrome-search://favicon/"},
+      {"chrome-search://favicon/137/255", "chrome-search://favicon/"},
+      {"chrome-search://favicon/-3/-1", "chrome-search://favicon/"},
+      {"chrome-search://favicon/invalidstuff", "chrome-search://favicon/"},
+      {"chrome-search://favicon/size/16@2x/http://www.google.com",
+       "chrome-search://favicon/"},
   };
 
   MockIconURLHelper helper;
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     GURL url;
     GURL transient_url(test_cases[i].transient_url_str);
-    EXPECT_TRUE(TranslateIconRestrictedUrl(transient_url, test_cases[i].type,
-                    helper, &url))
-        << " for test_cases[" << i << "]";
+    TranslateIconRestrictedUrl(transient_url, helper, &url);
     EXPECT_EQ(GURL(test_cases[i].expected_url_str), url)
         << " for test_cases[" << i << "]";
-  }
-}
-
-// For Non-FAVICON only.
-TEST(SearchBoxUtilTest, TranslateIconRestrictedUrlFailure) {
-  struct {
-    SearchBox::ImageSourceType type;
-    const char* transient_url_str;
-  } test_cases[] = {
-    // Empty.
-    {THUMB, "chrome-search://thumb/"},
-    // Bad view_id.
-    {THUMB, "chrome-search://thumb/314/1"},
-    // Missing rid.
-    {THUMB, "chrome-search://thumb/314/"},
-    // Use Page URL.
-    {THUMB, "chrome-search://thumb/http://www.google.com"},
-  };
-
-  MockIconURLHelper helper;
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    GURL url;
-    GURL transient_url(test_cases[i].transient_url_str);
-    EXPECT_FALSE(TranslateIconRestrictedUrl(transient_url, test_cases[i].type,
-                     helper, &url))
-        << " for test_cases[" << i << "]";
-    EXPECT_TRUE(url.is_empty()) << " for test_cases[" << i << "]";
   }
 }
 

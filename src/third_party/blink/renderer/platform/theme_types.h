@@ -44,7 +44,7 @@ enum ControlState {
 
 typedef unsigned ControlStates;
 
-// Must follow CSSValueKeywords.in order
+// Must follow css_value_keywords.json5 order
 enum ControlPart {
   kNoControlPart,
   kCheckboxPart,
@@ -52,51 +52,25 @@ enum ControlPart {
   kPushButtonPart,
   kSquareButtonPart,
   kButtonPart,
-  kButtonBevelPart,
   kInnerSpinButtonPart,
   kListboxPart,
-  kListItemPart,
-  kMediaEnterFullscreenButtonPart,
-  kMediaExitFullscreenButtonPart,
-  kMediaMuteButtonPart,
-  kMediaPlayButtonPart,
-  kMediaOverlayPlayButtonPart,
-  kMediaToggleClosedCaptionsButtonPart,
   kMediaSliderPart,
   kMediaSliderThumbPart,
-  kMediaVolumeSliderContainerPart,
   kMediaVolumeSliderPart,
   kMediaVolumeSliderThumbPart,
-  kMediaControlsBackgroundPart,
-  kMediaControlsFullscreenBackgroundPart,
-  kMediaCurrentTimePart,
-  kMediaTimeRemainingPart,
-  kMediaCastOffButtonPart,
-  kMediaOverlayCastOffButtonPart,
-  kMediaTrackSelectionCheckmarkPart,
-  kMediaClosedCaptionsIconPart,
-  kMediaSubtitlesIconPart,
-  kMediaOverflowMenuButtonPart,
-  kMediaDownloadIconPart,
-  kMediaRemotingCastIconPart,
   kMediaControlPart,
   kMenulistPart,
   kMenulistButtonPart,
-  kMenulistTextPart,
-  kMenulistTextFieldPart,
   kMeterPart,
   kProgressBarPart,
-  kProgressBarValuePart,
   kSliderHorizontalPart,
   kSliderVerticalPart,
   kSliderThumbHorizontalPart,
   kSliderThumbVerticalPart,
-  kCaretPart,
   kSearchFieldPart,
   kSearchFieldCancelButtonPart,
   kTextFieldPart,
   kTextAreaPart,
-  kCapsLockIndicatorPart
 };
 
 enum SelectionPart { kSelectionBackground, kSelectionForeground };

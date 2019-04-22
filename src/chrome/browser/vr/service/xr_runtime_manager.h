@@ -46,6 +46,8 @@ class VR_EXPORT XRRuntimeManager {
   static void AddObserver(XRRuntimeManagerObserver* observer);
   static void RemoveObserver(XRRuntimeManagerObserver* observer);
 
+  static void ExitImmersivePresentation();
+
   // Adds a listener for runtime manager events. XRRuntimeManager does not own
   // this object.
   void AddService(VRServiceImpl* service);

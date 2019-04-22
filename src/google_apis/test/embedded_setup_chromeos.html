@@ -29,8 +29,6 @@ gaia.chromeOSLogin.registerHtml5Listener = function() {
           gaia.chromeOSLogin.initialized_ = true;
           goFirstPage();
         }
-        // Repeat clearOldAttempts as soon as we got parent.
-        gaia.chromeOSLogin.clearOldAttempts();
     }
   };
   window.addEventListener('message', onMessage);
@@ -39,14 +37,6 @@ gaia.chromeOSLogin.registerHtml5Listener = function() {
       type: 'gaia_saml_api',
       call: {method: 'initialize', requestedVersion: 1}}, '/');
 }
-
-gaia.chromeOSLogin.clearOldAttempts = function() {
-  var msg = {
-    'method': 'clearOldAttempts'
-  };
-  gaia.chromeOSLogin.parent_webview_.postMessage(msg,
-      gaia.chromeOSLogin.parent_webview_url_);
-};
 
 gaia.chromeOSLogin.attemptLogin = function(email, password) {
   var msg = {

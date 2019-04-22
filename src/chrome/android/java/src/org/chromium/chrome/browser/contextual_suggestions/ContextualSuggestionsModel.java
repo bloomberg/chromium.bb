@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.contextual_suggestions;
 import android.view.View.OnClickListener;
 
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.modelutil.PropertyObservable;
 import org.chromium.chrome.browser.widget.ListMenuButton;
+import org.chromium.ui.modelutil.PropertyObservable;
 
 import java.util.Arrays;
 import java.util.Collection;

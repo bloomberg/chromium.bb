@@ -36,11 +36,10 @@ static const char kPlaintextPassword[] = "plaintext";
 
 api::passwords_private::PasswordUiEntry CreateEntry(int id) {
   api::passwords_private::PasswordUiEntry entry;
-  entry.login_pair.urls.shown = "test" + std::to_string(id) + ".com";
-  entry.login_pair.urls.origin =
-      "http://" + entry.login_pair.urls.shown + "/login";
-  entry.login_pair.urls.link = entry.login_pair.urls.origin;
-  entry.login_pair.username = "testName" + std::to_string(id);
+  entry.urls.shown = "test" + std::to_string(id) + ".com";
+  entry.urls.origin = "http://" + entry.urls.shown + "/login";
+  entry.urls.link = entry.urls.origin;
+  entry.username = "testName" + std::to_string(id);
   entry.num_characters_in_password = kNumCharactersInPassword;
   entry.id = id;
   return entry;
@@ -77,8 +76,8 @@ class TestDelegate : public PasswordsPrivateDelegate {
       router->OnSavedPasswordsListChanged(current_entries_);
   }
 
-  void GetSavedPasswordsList(const UiEntriesCallback& callback) override {
-    callback.Run(current_entries_);
+  void GetSavedPasswordsList(UiEntriesCallback callback) override {
+    std::move(callback).Run(current_entries_);
   }
 
   void SendPasswordExceptionsList() override {
@@ -91,6 +90,20 @@ class TestDelegate : public PasswordsPrivateDelegate {
   void GetPasswordExceptionsList(
       const ExceptionEntriesCallback& callback) override {
     callback.Run(current_exceptions_);
+  }
+
+  void ChangeSavedPassword(int id,
+                           base::string16 username,
+                           base::Optional<base::string16> password) override {
+    if (size_t{id} >= current_entries_.size())
+      return;
+
+    // PasswordUiEntry does not contain a password. Thus we are only updating
+    // the username and the length of the password.
+    current_entries_[id].username = base::UTF16ToUTF8(username);
+    if (password)
+      current_entries_[id].num_characters_in_password = password->size();
+    SendSavedPasswordsList();
   }
 
   void RemoveSavedPassword(int id) override {
@@ -128,14 +141,10 @@ class TestDelegate : public PasswordsPrivateDelegate {
   }
 
   void RequestShowPassword(int id,
+                           PlaintextPasswordCallback callback,
                            content::WebContents* web_contents) override {
     // Return a mocked password value.
-    std::string plaintext_password(kPlaintextPassword);
-    PasswordsPrivateEventRouter* router =
-        PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
-    if (router) {
-      router->OnPlaintextPasswordFetched(id, plaintext_password);
-    }
+    std::move(callback).Run(base::ASCIIToUTF16(kPlaintextPassword));
   }
 
   void SetProfile(Profile* profile) { profile_ = profile; }
@@ -246,6 +255,10 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
 TestDelegate* PasswordsPrivateApiTest::s_test_delegate_ = nullptr;
 
 }  // namespace
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ChangeSavedPassword) {
+  EXPECT_TRUE(RunPasswordsSubtest("changeSavedPassword")) << message_;
+}
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
                        RemoveAndUndoRemoveSavedPassword) {

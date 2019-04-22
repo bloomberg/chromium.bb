@@ -10,8 +10,9 @@
 
 #include "base/callback.h"
 #include "base/observer_list.h"
+#include "base/values.h"
+#include "components/invalidation/impl/channels_states.h"
 #include "components/invalidation/impl/network_channel.h"
-#include "components/invalidation/public/invalidator_state.h"
 
 namespace syncer {
 
@@ -23,12 +24,15 @@ class FCMSyncNetworkChannel : public NetworkChannel {
  public:
   class Observer {
    public:
-    virtual void OnFCMSyncNetworkChannelStateChanged(
-        InvalidatorState invalidator_state) = 0;
+    virtual void OnFCMChannelStateChanged(
+        FcmChannelState invalidator_state) = 0;
   };
 
   FCMSyncNetworkChannel();
   ~FCMSyncNetworkChannel() override;
+
+  virtual void StartListening() = 0;
+  virtual void StopListening() = 0;
 
   void SetMessageReceiver(MessageCallback incoming_receiver) override;
   void SetTokenReceiver(TokenCallback token_receiver) override;
@@ -50,7 +54,7 @@ class FCMSyncNetworkChannel : public NetworkChannel {
   // NotifyChannelStateChange. If communication doesn't work and it is possible
   // that invalidations from server will not reach this client then channel
   // should call this function with TRANSIENT_INVALIDATION_ERROR.
-  void NotifyChannelStateChange(InvalidatorState invalidator_state);
+  void NotifyChannelStateChange(FcmChannelState invalidator_state);
 
   // Subclass should call DeliverIncomingMessage for message to reach
   // invalidations library.
@@ -62,6 +66,11 @@ class FCMSyncNetworkChannel : public NetworkChannel {
   // Subclass should call DeliverToken for token to reach registration
   // manager.
   bool DeliverToken(const std::string& token);
+
+  // Subclass should implement RequestDetailedStatus to provide debugging
+  // information.
+  virtual void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> callback);
 
  private:
   // Callbacks into invalidation library

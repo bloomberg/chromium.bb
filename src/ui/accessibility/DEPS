@@ -1,7 +1,9 @@
 include_rules = [
   "+mojo/public",
+  "+third_party/cld_3",
   "+third_party/iaccessible2",
   "+third_party/skia",
+  "+services/service_manager/public/cpp",
   "+ui/aura",
   "+ui/base",
   "+ui/base/l10n",

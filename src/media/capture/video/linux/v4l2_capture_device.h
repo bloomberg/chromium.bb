@@ -17,7 +17,7 @@ namespace media {
 // Interface for abstracting out the V4L2 API. This allows using a mock or fake
 // implementation in testing.
 class CAPTURE_EXPORT V4L2CaptureDevice
-    : public base::RefCounted<V4L2CaptureDevice> {
+    : public base::RefCountedThreadSafe<V4L2CaptureDevice> {
  public:
   virtual int open(const char* device_name, int flags) = 0;
   virtual int close(int fd) = 0;
@@ -36,7 +36,7 @@ class CAPTURE_EXPORT V4L2CaptureDevice
   virtual ~V4L2CaptureDevice() {}
 
  private:
-  friend class base::RefCounted<V4L2CaptureDevice>;
+  friend class base::RefCountedThreadSafe<V4L2CaptureDevice>;
 };
 
 }  // namespace media

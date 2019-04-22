@@ -14,8 +14,10 @@ goog.require('LogStore');
 goog.require('Output');
 goog.require('TreeDumper');
 goog.require('cvox.ChromeVoxBackground');
-goog.require('cvox.ChromeVoxPrefs');
 goog.require('cvox.ChromeVoxKbHandler');
+goog.require('cvox.ChromeVoxPrefs');
+goog.require('cvox.CommandStore');
+goog.require('Color');
 
 goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
@@ -25,12 +27,20 @@ var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
 var StateType = chrome.automation.StateType;
 
+/** @private {boolean} */
+CommandHandler.incognito_ = !!chrome.runtime.getManifest()['incognito'];
+
 /**
  * Handles ChromeVox Next commands.
  * @param {string} command
  * @return {boolean} True if the command should propagate.
  */
 CommandHandler.onCommand = function(command) {
+  // Check for a command disallowed in OOBE/login.
+  if (CommandHandler.incognito_ && cvox.CommandStore.CMD_WHITELIST[command] &&
+      cvox.CommandStore.CMD_WHITELIST[command].disallowOOBE)
+    return true;
+
   // Check for loss of focus which results in us invalidating our current
   // range. Note this call is synchronis.
   chrome.automation.getFocus(function(focusedNode) {
@@ -109,47 +119,25 @@ CommandHandler.onCommand = function(command) {
       chrome.windows.create(explorerPage);
       break;
     case 'showLogPage':
-      chrome.commandLinePrivate.hasSwitch(
-          'enable-chromevox-developer-option', function(enable) {
-            if (enable) {
-              var logPage = {url: 'cvox2/background/log.html'};
-              chrome.tabs.create(logPage);
-            }
-          });
+      var logPage = {url: 'cvox2/background/log.html'};
+      chrome.tabs.create(logPage);
       break;
     case 'enableLogging':
-      chrome.commandLinePrivate.hasSwitch(
-          'enable-chromevox-developer-option', function(enable) {
-            if (enable) {
-              var prefs = new cvox.ChromeVoxPrefs();
-              for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
-                prefs.setLoggingPrefs(
-                    cvox.ChromeVoxPrefs.loggingPrefs[type], true);
-              }
-            }
-          });
+      var prefs = new cvox.ChromeVoxPrefs();
+      for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
+        prefs.setLoggingPrefs(cvox.ChromeVoxPrefs.loggingPrefs[type], true);
+      }
       break;
     case 'disableLogging':
-      chrome.commandLinePrivate.hasSwitch(
-          'enable-chromevox-developer-option', function(enable) {
-            if (enable) {
-              var prefs = new cvox.ChromeVoxPrefs();
-              for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
-                prefs.setLoggingPrefs(
-                    cvox.ChromeVoxPrefs.loggingPrefs[type], false);
-              }
-            }
-          });
+      var prefs = new cvox.ChromeVoxPrefs();
+      for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
+        prefs.setLoggingPrefs(cvox.ChromeVoxPrefs.loggingPrefs[type], false);
+      }
       break;
     case 'dumpTree':
-      chrome.commandLinePrivate.hasSwitch(
-          'enable-chromevox-developer-option', function(enable) {
-            if (enable) {
-              chrome.automation.getDesktop(function(root) {
-                LogStore.getInstance().writeTreeLog(new TreeDumper(root));
-              });
-            }
-          });
+      chrome.automation.getDesktop(function(root) {
+        LogStore.getInstance().writeTreeLog(new TreeDumper(root));
+      });
       break;
     case 'decreaseTtsRate':
       CommandHandler.increaseOrDecreaseSpeechProperty_(
@@ -309,6 +297,7 @@ CommandHandler.onCommand = function(command) {
   var skipSync = false;
   var didNavigate = false;
   var tryScrolling = true;
+  var skipSettingSelection = false;
   switch (command) {
     case 'nextCharacter':
       didNavigate = true;
@@ -391,10 +380,12 @@ CommandHandler.onCommand = function(command) {
       dir = Dir.BACKWARD;
       pred = AutomationPredicate.image;
       predErrorMsg = 'no_previous_graphic';
+      skipSettingSelection = true;
       break;
     case 'nextGraphic':
       pred = AutomationPredicate.image;
       predErrorMsg = 'no_next_graphic';
+      skipSettingSelection = true;
       break;
     case 'nextHeading':
       pred = AutomationPredicate.heading;
@@ -685,10 +676,12 @@ CommandHandler.onCommand = function(command) {
             true);
       } else {
         var root = ChromeVoxState.instance.currentRange.start.node.root;
-        if (root && root.anchorObject && root.focusObject) {
+        if (root && root.selectionStartObject && root.selectionEndObject) {
           var sel = new cursors.Range(
-              new cursors.Cursor(root.anchorObject, root.anchorOffset),
-              new cursors.Cursor(root.focusObject, root.focusOffset));
+              new cursors.Cursor(
+                  root.selectionStartObject, root.selectionStartOffset),
+              new cursors.Cursor(
+                  root.selectionEndObject, root.selectionEndOffset));
           var o = new Output()
                       .format('@end_selection')
                       .withSpeechAndBraille(sel, sel, Output.EventType.NAVIGATE)
@@ -872,6 +865,37 @@ CommandHandler.onCommand = function(command) {
       }
       cvox.ChromeVox.tts.speak(announce, cvox.QueueMode.FLUSH);
       return false;
+    case 'getBatteryDescription':
+      chrome.accessibilityPrivate.getBatteryDescription(function(
+          batteryDescription) {
+        new Output()
+            .withString(batteryDescription)
+            .withQueueMode(cvox.QueueMode.FLUSH)
+            .go();
+      });
+      break;
+    case 'getRichTextDescription':
+      var node = ChromeVoxState.instance.currentRange.start.node;
+      var optSubs = [];
+      node.fontSize ? optSubs.push('font size: ' + node.fontSize) :
+                      optSubs.push('');
+      node.color ? optSubs.push(Color.getColorDescription(node.color)) :
+                   optSubs.push('');
+      node.bold ? optSubs.push(Msgs.getMsg('bold')) : optSubs.push('');
+      node.italic ? optSubs.push(Msgs.getMsg('italic')) : optSubs.push('');
+      node.underline ? optSubs.push(Msgs.getMsg('underline')) :
+                       optSubs.push('');
+      node.lineThrough ? optSubs.push(Msgs.getMsg('linethrough')) :
+                         optSubs.push('');
+      node.fontFamily ? optSubs.push('font family: ' + node.fontFamily) :
+                        optSubs.push('');
+
+      var richTextDescription = Msgs.getMsg('rich_text_attributes', optSubs);
+      new Output()
+          .withString(richTextDescription)
+          .withQueueMode(cvox.QueueMode.CATEGORY_FLUSH)
+          .go();
+      return false;
     default:
       return true;
   }
@@ -1005,8 +1029,10 @@ CommandHandler.onCommand = function(command) {
     }
   }
 
-  if (current)
-    ChromeVoxState.instance.navigateToRange(current, undefined, speechProps);
+  if (current) {
+    ChromeVoxState.instance.navigateToRange(
+        current, undefined, speechProps, skipSettingSelection);
+  }
 
   return false;
 };

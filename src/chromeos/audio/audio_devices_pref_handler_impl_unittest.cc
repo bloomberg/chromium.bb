@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
-#include "chromeos/chromeos_pref_names.h"
-#include "chromeos/dbus/audio_node.h"
+#include "chromeos/constants/chromeos_pref_names.h"
+#include "chromeos/dbus/audio/audio_node.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -205,8 +205,8 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(AudioDevicesPrefHandlerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(Input, AudioDevicesPrefHandlerTest, Values(true));
-INSTANTIATE_TEST_CASE_P(Output, AudioDevicesPrefHandlerTest, Values(false));
+INSTANTIATE_TEST_SUITE_P(Input, AudioDevicesPrefHandlerTest, Values(true));
+INSTANTIATE_TEST_SUITE_P(Output, AudioDevicesPrefHandlerTest, Values(false));
 
 TEST_P(AudioDevicesPrefHandlerTest, TestDefaultValuesV1) {
   AudioDevice device = GetDeviceWithVersion(1);

@@ -92,8 +92,11 @@ class OperationTestBase : public testing::Test {
     WaitForSyncCompleteHandler wait_for_sync_complete_handler_;
   };
 
-  OperationTestBase();
-  explicit OperationTestBase(int test_thread_bundle_options);
+  template <typename... Args>
+  OperationTestBase(Args... args)
+      : OperationTestBase(
+            std::make_unique<content::TestBrowserThreadBundle>(args...)) {}
+
   ~OperationTestBase() override;
 
   // testing::Test overrides.
@@ -142,7 +145,12 @@ class OperationTestBase : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  // The template constructor has to be in the header but it delegates to this
+  // constructor to initialize all other members out-of-line.
+  explicit OperationTestBase(
+      std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle);
+
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   base::ScopedTempDir temp_dir_;

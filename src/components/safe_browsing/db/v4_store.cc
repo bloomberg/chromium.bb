@@ -103,6 +103,26 @@ void RecordEnumWithAndWithoutSuffix(const std::string& metric,
   }
 }
 
+void RecordBooleanWithAndWithoutSuffix(const std::string& metric,
+                                       bool value,
+                                       const base::FilePath& file_path) {
+  // The histograms below are an expansion of the UMA_HISTOGRAM_BOOLEAN
+  // macro adapted to allow for a dynamically suffixed histogram name.
+  // Note: The factory creates and owns the histogram.
+  base::HistogramBase* histogram = base::BooleanHistogram::FactoryGet(
+      metric, base::HistogramBase::kUmaTargetedHistogramFlag);
+  if (histogram) {
+    histogram->Add(value);
+  }
+
+  std::string suffix = GetUmaSuffixForStore(file_path);
+  base::HistogramBase* histogram_suffix = base::BooleanHistogram::FactoryGet(
+      metric + suffix, base::HistogramBase::kUmaTargetedHistogramFlag);
+  if (histogram_suffix) {
+    histogram_suffix->Add(value);
+  }
+}
+
 void RecordApplyUpdateResult(const std::string& base_metric,
                              ApplyUpdateResult result,
                              const base::FilePath& file_path) {
@@ -155,7 +175,7 @@ void RecordStoreWriteResult(StoreWriteResult result) {
 }
 
 // Returns the name of the temporary file used to buffer data for
-// |filename|.  Exported for unit tests.
+// |filename|.
 const base::FilePath TemporaryFileForFilename(const base::FilePath& filename) {
   return base::FilePath(filename.value() + FILE_PATH_LITERAL("_new"));
 }
@@ -189,6 +209,8 @@ void V4Store::Initialize() {
 }
 
 bool V4Store::HasValidData() const {
+  RecordBooleanWithAndWithoutSuffix("SafeBrowsing.V4Store.IsStoreValid",
+                                    has_valid_data_, store_path_);
   return has_valid_data_;
 }
 
@@ -329,8 +351,6 @@ ApplyUpdateResult V4Store::ProcessUpdate(
     // Calculate the checksum asynchronously later and if it doesn't match,
     // reset the store.
     expected_checksum_ = expected_checksum;
-
-    apply_update_result = APPLY_UPDATE_SUCCESS;
   } else {
     apply_update_result = MergeUpdate(hash_prefix_map_old, hash_prefix_map,
                                       raw_removals, expected_checksum);
@@ -646,7 +666,7 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
       if (checksum[i] != expected_checksum[i]) {
 #if DCHECK_IS_ON()
         std::string checksum_b64, expected_checksum_b64;
-        base::Base64Encode(base::StringPiece(checksum, arraysize(checksum)),
+        base::Base64Encode(base::StringPiece(checksum, base::size(checksum)),
                            &checksum_b64);
         base::Base64Encode(expected_checksum, &expected_checksum_b64);
         DVLOG(1) << "Failure: Checksum mismatch: calculated: " << checksum_b64
@@ -724,14 +744,14 @@ StoreWriteResult V4Store::WriteToDisk(const Checksum& checksum) {
   *(lur->mutable_checksum()) = checksum;
   lur->set_new_client_state(state_);
   lur->set_response_type(ListUpdateResponse::FULL_UPDATE);
-  for (auto map_iter : hash_prefix_map_) {
+  for (const auto& entry : hash_prefix_map_) {
     ThreatEntrySet* additions = lur->add_additions();
     // TODO(vakh): Write RICE encoded hash prefixes on disk. Not doing so
     // currently since it takes a long time to decode them on startup, which
     // blocks resource load. See: http://crbug.com/654819
     additions->set_compression_type(RAW);
-    additions->mutable_raw_hashes()->set_prefix_size(map_iter.first);
-    additions->mutable_raw_hashes()->set_raw_hashes(map_iter.second);
+    additions->mutable_raw_hashes()->set_prefix_size(entry.first);
+    additions->mutable_raw_hashes()->set_raw_hashes(entry.second);
   }
 
   // Attempt writing to a temporary file first and at the end, swap the files.
@@ -745,10 +765,12 @@ StoreWriteResult V4Store::WriteToDisk(const Checksum& checksum) {
                                    file_format_string.size());
 
   if (file_format_string.size() != written) {
+    base::DeleteFile(new_filename, /*recursive=*/false);
     return UNEXPECTED_BYTES_WRITTEN_FAILURE;
   }
 
   if (!base::Move(new_filename, store_path_)) {
+    base::DeleteFile(new_filename, /*recursive=*/false);
     return UNABLE_TO_RENAME_FAILURE;
   }
 
@@ -826,7 +848,7 @@ bool V4Store::VerifyChecksum() {
                               store_path_);
 #if DCHECK_IS_ON()
       std::string checksum_b64, expected_checksum_b64;
-      base::Base64Encode(base::StringPiece(checksum, arraysize(checksum)),
+      base::Base64Encode(base::StringPiece(checksum, base::size(checksum)),
                          &checksum_b64);
       base::Base64Encode(expected_checksum_, &expected_checksum_b64);
       DVLOG(1) << "Failure: Checksum mismatch: calculated: " << checksum_b64
@@ -855,7 +877,8 @@ int64_t V4Store::RecordAndReturnFileSize(const std::string& base_metric) {
 void V4Store::CollectStoreInfo(
     DatabaseManagerInfo::DatabaseInfo::StoreInfo* store_info,
     const std::string& base_metric) {
-  store_info->set_file_name(base_metric + GetUmaSuffixForStore(store_path_));
+  store_info->set_file_name(GetUmaSuffixForStore(store_path_)
+                                .substr(1));  // Strip the '.' off the front
   store_info->set_file_size_bytes(file_size_);
   store_info->set_update_status(static_cast<int>(last_apply_update_result_));
   store_info->set_checks_attempted(checks_attempted_);

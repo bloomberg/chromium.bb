@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "media/base/media_content_type.h"
 
@@ -23,7 +24,7 @@ class MediaWebContentsObserver;
 class CONTENT_EXPORT MediaSessionController
     : public MediaSessionPlayerObserver {
  public:
-  MediaSessionController(const WebContentsObserver::MediaPlayerId& id,
+  MediaSessionController(const MediaPlayerId& id,
                          MediaWebContentsObserver* media_web_contents_observer);
   ~MediaSessionController() override;
 
@@ -58,7 +59,7 @@ class CONTENT_EXPORT MediaSessionController
   void WebContentsMutedStateChanged(bool muted);
 
  private:
-  const WebContentsObserver::MediaPlayerId id_;
+  const MediaPlayerId id_;
 
   // Non-owned pointer; |media_web_contents_observer_| is the owner of |this|.
   MediaWebContentsObserver* const media_web_contents_observer_;

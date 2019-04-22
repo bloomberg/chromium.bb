@@ -27,10 +27,9 @@ ValueStore* Param(const base::FilePath& file_path) {
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(
-    LeveldbValueStore,
-    ValueStoreTest,
-    testing::Values(&Param));
+INSTANTIATE_TEST_SUITE_P(LeveldbValueStore,
+                         ValueStoreTest,
+                         testing::Values(&Param));
 
 class LeveldbValueStoreUnitTest : public testing::Test {
  public:

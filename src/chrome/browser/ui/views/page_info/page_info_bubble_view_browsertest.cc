@@ -368,10 +368,10 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
-            security_info.malicious_content_status);
+            visible_security_state->malicious_content_status);
 
   // Verify these two buttons are showing.
   EXPECT_TRUE(change_password_button->visible());
@@ -402,9 +402,9 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
                            safe_browsing::WarningAction::MARK_AS_LEGITIMATE),
                        1)));
   // Security state will change after whitelisting.
-  helper->GetSecurityInfo(&security_info);
+  visible_security_state = helper->GetVisibleSecurityState();
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
-            security_info.malicious_content_status);
+            visible_security_state->malicious_content_status);
 }
 
 // Test opening page info bubble that matches
@@ -435,10 +435,10 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE,
-            security_info.malicious_content_status);
+            visible_security_state->malicious_content_status);
 
   // Verify these two buttons are showing.
   EXPECT_TRUE(change_password_button->visible());
@@ -471,9 +471,9 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
                            safe_browsing::WarningAction::MARK_AS_LEGITIMATE),
                        1)));
   // Security state will change after whitelisting.
-  helper->GetSecurityInfo(&security_info);
+  visible_security_state = helper->GetVisibleSecurityState();
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
-            security_info.malicious_content_status);
+            visible_security_state->malicious_content_status);
 }
 
 // Shows the Page Info bubble for a HTTP page (specifically, about:blank).

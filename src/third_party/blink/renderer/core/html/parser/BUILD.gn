@@ -65,6 +65,8 @@ blink_core_sources("parser") {
     "parser_synchronization_policy.h",
     "preload_request.cc",
     "preload_request.h",
+    "pump_session.cc",
+    "pump_session.h",
     "resource_preloader.cc",
     "resource_preloader.h",
     "text_document_parser.cc",

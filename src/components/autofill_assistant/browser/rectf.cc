@@ -14,11 +14,4 @@ bool RectF::empty() const {
   return right <= left || bottom <= top;
 }
 
-bool RectF::Contains(float x, float y) const {
-  if (empty())
-    return false;
-
-  return x >= left && x <= right && y >= top && y <= bottom;
-}
-
 }  // namespace autofill_assistant

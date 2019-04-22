@@ -4,7 +4,30 @@
 */
 'use strict';
 tr.exportTo('cp', () => {
+  const DEFAULT_RECOMMENDATIONS = [
+    'Chromium Perf Sheriff',
+    'memory:chrome:all_processes:reported_by_chrome:effective_size',
+  ];
+
   class RecommendedOptions extends cp.ElementBase {
+    static get template() {
+      return Polymer.html`
+        <style>
+          option-group {
+            border-bottom: 1px solid var(--primary-color-dark, blue);
+          }
+        </style>
+
+        <template is="dom-if" if="[[!isEmpty_(recommended.options)]]">
+          <b style="margin: 4px;">Recommended</b>
+          <option-group
+              state-path="[[statePath]].recommended"
+              root-state-path="[[statePath]]">
+          </option-group>
+        </template>
+      `;
+    }
+
     ready() {
       super.ready();
       if (!this.optionRecommendations) this.dispatch('getRecommendations');
@@ -51,6 +74,7 @@ tr.exportTo('cp', () => {
     },
 
     recommendOptions: statePath => async(dispatch, getState) => {
+      if (!Polymer.Path.get(getState(), statePath)) return;
       dispatch({
         type: RecommendedOptions.reducers.recommendOptions.name,
         statePath,
@@ -76,7 +100,14 @@ tr.exportTo('cp', () => {
       const now = new Date().getTime();
       try {
         optionRecommendations = JSON.parse(localStorage.getItem(
-            RecommendedOptions.STORAGE_KEY));
+            RecommendedOptions.STORAGE_KEY)) || {};
+
+        for (const value of DEFAULT_RECOMMENDATIONS) {
+          if (!(value in optionRecommendations)) {
+            optionRecommendations[value] = [now];
+          }
+        }
+
         for (const [value, dates] of Object.entries(optionRecommendations)) {
           optionRecommendations[value] = dates.map(d => new Date(d)).filter(
               date => ((now - date) < RecommendedOptions.OLD_MS));
@@ -90,6 +121,7 @@ tr.exportTo('cp', () => {
     },
 
     recommendOptions: (state, action, rootState) => {
+      if (!state) return state;
       const optionValues = RecommendedOptions.recommendOptions(
           state.optionValues, rootState.optionRecommendations).slice(
           0, RecommendedOptions.OPTION_LIMIT);
@@ -125,7 +157,7 @@ tr.exportTo('cp', () => {
   }
 
   RecommendedOptions.recommendOptions = (values, recommendations) => {
-    if (!recommendations) return [];
+    if (!values || !recommendations) return [];
     const now = new Date();
     const recommended = [];
     for (const value of values) {

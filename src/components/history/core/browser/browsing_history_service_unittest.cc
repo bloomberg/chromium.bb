@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -134,11 +135,11 @@ class TestWebHistoryService : public FakeWebHistoryService {
     bool IsPending() override { return false; }
     int GetResponseCode() override { return net::HTTP_OK; }
     const std::string& GetResponseBody() override { return body_; }
-    void SetPostData(const std::string& post_data) override{};
+    void SetPostData(const std::string& post_data) override {}
     void SetPostDataAndType(const std::string& post_data,
-                            const std::string& mime_type) override{};
-    void SetUserAgent(const std::string& user_agent) override{};
-    void Start() override{};
+                            const std::string& mime_type) override {}
+    void SetUserAgent(const std::string& user_agent) override {}
+    void Start() override {}
 
     std::string body_ = "{}";
   };

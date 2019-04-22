@@ -10,13 +10,14 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
 class Document;
 class Element;
+class FileOrUSVStringOrFormData;
 class HTMLElement;
 class HTMLFormElement;
 class QualifiedName;
@@ -94,20 +95,26 @@ class CORE_EXPORT CustomElement {
       const AtomicString& is_value);
   static HTMLElement* CreateFailedElement(Document&, const QualifiedName&);
 
-  static void Enqueue(Element*, CustomElementReaction*);
-  static void EnqueueConnectedCallback(Element*);
-  static void EnqueueDisconnectedCallback(Element*);
-  static void EnqueueAdoptedCallback(Element*,
-                                     Document* old_owner,
-                                     Document* new_owner);
-  static void EnqueueAttributeChangedCallback(Element*,
+  static void Enqueue(Element&, CustomElementReaction&);
+  static void EnqueueConnectedCallback(Element&);
+  static void EnqueueDisconnectedCallback(Element&);
+  static void EnqueueAdoptedCallback(Element&,
+                                     Document& old_owner,
+                                     Document& new_owner);
+  static void EnqueueAttributeChangedCallback(Element&,
                                               const QualifiedName&,
                                               const AtomicString& old_value,
                                               const AtomicString& new_value);
   static void EnqueueFormAssociatedCallback(Element& element,
                                             HTMLFormElement* nullable_form);
+  static void EnqueueFormResetCallback(Element& element);
+  static void EnqueueFormDisabledCallback(Element& element, bool is_disabled);
+  static void EnqueueFormStateRestoreCallback(
+      Element& element,
+      const FileOrUSVStringOrFormData& value,
+      const String& mode);
 
-  static void TryToUpgrade(Element*, bool upgrade_invisible_elements = false);
+  static void TryToUpgrade(Element&, bool upgrade_invisible_elements = false);
 
   static void AddEmbedderCustomElementNameForTesting(const AtomicString& name,
                                                      ExceptionState&);
@@ -116,7 +123,7 @@ class CORE_EXPORT CustomElement {
   // Some existing specs have element names with hyphens in them,
   // like font-face in SVG. The custom elements spec explicitly
   // disallows these as custom element names.
-  // https://html.spec.whatwg.org/#valid-custom-element-name
+  // https://html.spec.whatwg.org/C/#valid-custom-element-name
   static bool IsHyphenatedSpecElementName(const AtomicString&);
 
   static Vector<AtomicString>& EmbedderCustomElementNames();

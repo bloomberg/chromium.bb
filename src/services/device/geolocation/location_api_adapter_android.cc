@@ -19,7 +19,6 @@ using device::LocationApiAdapterAndroid;
 
 static void JNI_LocationProviderAdapter_NewLocationAvailable(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     jdouble latitude,
     jdouble longitude,
     jdouble time_stamp,
@@ -38,7 +37,6 @@ static void JNI_LocationProviderAdapter_NewLocationAvailable(
 
 static void JNI_LocationProviderAdapter_NewErrorAvailable(
     JNIEnv* env,
-    const JavaParamRef<jclass>&,
     const JavaParamRef<jstring>& message) {
   LocationApiAdapterAndroid::OnNewErrorAvailable(env, message);
 }
@@ -108,8 +106,9 @@ void LocationApiAdapterAndroid::OnNewLocationAvailable(double latitude,
 
   LocationApiAdapterAndroid* self = GetInstance();
   self->task_runner_->PostTask(
-      FROM_HERE, base::Bind(&LocationApiAdapterAndroid::NotifyNewGeoposition,
-                            base::Unretained(self), position));
+      FROM_HERE,
+      base::BindOnce(&LocationApiAdapterAndroid::NotifyNewGeoposition,
+                     base::Unretained(self), position));
 }
 
 // static
@@ -123,8 +122,9 @@ void LocationApiAdapterAndroid::OnNewErrorAvailable(JNIEnv* env,
 
   LocationApiAdapterAndroid* self = GetInstance();
   self->task_runner_->PostTask(
-      FROM_HERE, base::Bind(&LocationApiAdapterAndroid::NotifyNewGeoposition,
-                            base::Unretained(self), position_error));
+      FROM_HERE,
+      base::BindOnce(&LocationApiAdapterAndroid::NotifyNewGeoposition,
+                     base::Unretained(self), position_error));
 }
 
 // static

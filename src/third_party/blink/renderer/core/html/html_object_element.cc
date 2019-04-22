@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -64,16 +65,17 @@ HTMLObjectElement* HTMLObjectElement::Create(Document& document,
   return element;
 }
 
-void HTMLObjectElement::Trace(blink::Visitor* visitor) {
+void HTMLObjectElement::Trace(Visitor* visitor) {
   ListedElement::Trace(visitor);
   HTMLPlugInElement::Trace(visitor);
 }
 
-const HashSet<AtomicString>& HTMLObjectElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLObjectElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set,
-                      ({"data", "codebase"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"data", SpecificTrustedType::kTrustedScriptURL},
+                        {"codebase", SpecificTrustedType::kTrustedScriptURL}}));
+  return attribute_map;
 }
 
 LayoutEmbeddedContent* HTMLObjectElement::ExistingLayoutEmbeddedContent()
@@ -118,7 +120,7 @@ void HTMLObjectElement::ParseAttribute(
     if (GetLayoutObject() && IsImageType()) {
       SetNeedsPluginUpdate(true);
       if (!image_loader_)
-        image_loader_ = HTMLImageLoader::Create(this);
+        image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
       image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
     } else {
       ReloadPluginOnAttributeChange(name);
@@ -336,8 +338,15 @@ const AtomicString HTMLObjectElement::ImageSourceURL() const {
 }
 
 void HTMLObjectElement::ReattachFallbackContent() {
-  if (!GetDocument().InStyleRecalc())
-    LazyReattachIfAttached();
+  if (!GetDocument().InStyleRecalc()) {
+    // TODO(futhark): Currently needs kSubtreeStyleChange because a style recalc
+    // for the object element does not detect the changed need for descendant
+    // style when we have a change in HTMLObjectElement::ChildrenCanHaveStyle().
+    SetNeedsStyleRecalc(
+        kSubtreeStyleChange,
+        StyleChangeReasonForTracing::Create(style_change_reason::kUseFallback));
+    SetForceReattachLayoutTree();
+  }
 }
 
 void HTMLObjectElement::RenderFallbackContent(Frame* frame) {
@@ -364,9 +373,6 @@ void HTMLObjectElement::RenderFallbackContent(Frame* frame) {
   }
 
   use_fallback_content_ = true;
-
-  // TODO(schenney): crbug.com/572908 Style gets recalculated which is
-  // suboptimal.
   ReattachFallbackContent();
 }
 

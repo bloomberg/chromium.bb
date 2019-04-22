@@ -52,7 +52,6 @@ void KillPluginOnIOThread(int child_id) {
 
 }  // namespace
 
-
 // HungPluginTabHelper::PluginState -------------------------------------------
 
 // Per-plugin state (since there could be more than one plugin hung).  The
@@ -96,17 +95,14 @@ HungPluginTabHelper::PluginState::PluginState(const base::FilePath& p,
       infobar(NULL),
       next_reshow_delay(base::TimeDelta::FromSeconds(kInitialReshowDelaySec)) {}
 
-HungPluginTabHelper::PluginState::~PluginState() {
-}
-
+HungPluginTabHelper::PluginState::~PluginState() {}
 
 // HungPluginTabHelper --------------------------------------------------------
 
 HungPluginTabHelper::HungPluginTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents), infobar_observer_(this) {}
 
-HungPluginTabHelper::~HungPluginTabHelper() {
-}
+HungPluginTabHelper::~HungPluginTabHelper() {}
 
 void HungPluginTabHelper::PluginCrashed(const base::FilePath& plugin_path,
                                         base::ProcessId plugin_pid) {
@@ -156,9 +152,9 @@ void HungPluginTabHelper::PluginHungStatusChanged(
       content::PluginService::GetInstance()->GetPluginDisplayNameByPath(
           plugin_path);
 
-  linked_ptr<PluginState> state(new PluginState(plugin_path, plugin_name));
-  hung_plugins_[plugin_child_id] = state;
-  ShowBar(plugin_child_id, state.get());
+  hung_plugins_[plugin_child_id] =
+      std::make_unique<PluginState>(plugin_path, plugin_name);
+  ShowBar(plugin_child_id, hung_plugins_[plugin_child_id].get());
 }
 
 void HungPluginTabHelper::OnInfoBarRemoved(infobars::InfoBar* infobar,
@@ -171,9 +167,8 @@ void HungPluginTabHelper::OnInfoBarRemoved(infobars::InfoBar* infobar,
       // Schedule the timer to re-show the infobar if the plugin continues to be
       // hung.
       state->timer.Start(FROM_HERE, state->next_reshow_delay,
-          base::Bind(&HungPluginTabHelper::OnReshowTimer,
-                     base::Unretained(this),
-                     i->first));
+                         base::BindOnce(&HungPluginTabHelper::OnReshowTimer,
+                                        base::Unretained(this), i->first));
 
       // Next time we do this, delay it twice as long to avoid being annoying.
       state->next_reshow_delay *= 2;
@@ -224,3 +219,5 @@ void HungPluginTabHelper::CloseBar(PluginState* state) {
     state->infobar = NULL;
   }
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(HungPluginTabHelper)

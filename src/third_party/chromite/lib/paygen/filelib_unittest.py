@@ -89,3 +89,12 @@ class TestFileLib(cros_test_lib.TempDirTestCase):
 
     filelib.Copy(path1, relative_path)
     self.assertExists(path2)
+
+  def testCopyFileSegment(self):
+    """Test copying on a simple file segment."""
+    a = os.path.join(self.tempdir, 'a.txt')
+    osutils.WriteFile(a, '789')
+    b = os.path.join(self.tempdir, 'b.txt')
+    osutils.WriteFile(b, '0123')
+    filelib.CopyFileSegment(a, 'r', 2, b, 'r+', in_seek=1)
+    self.assertEqual(osutils.ReadFile(b), '8923')

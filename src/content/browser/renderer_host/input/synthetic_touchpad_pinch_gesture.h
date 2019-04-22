@@ -25,6 +25,8 @@ class CONTENT_EXPORT SyntheticTouchpadPinchGesture : public SyntheticGesture {
   SyntheticGesture::Result ForwardInputEvents(
       const base::TimeTicks& timestamp,
       SyntheticGestureTarget* target) override;
+  void WaitForTargetAck(base::OnceClosure callback,
+                        SyntheticGestureTarget* target) const override;
 
  private:
   enum GestureState { SETUP, STARTED, IN_PROGRESS, DONE };

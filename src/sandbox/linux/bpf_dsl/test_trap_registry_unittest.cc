@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
@@ -37,7 +37,7 @@ TEST(TestTrapRegistry, TrapIDs) {
 
   // Add traps twice to test that IDs are reused correctly.
   for (int i = 0; i < 2; ++i) {
-    for (size_t j = 0; j < arraysize(funcs); ++j) {
+    for (size_t j = 0; j < base::size(funcs); ++j) {
       // Trap IDs start at 1.
       EXPECT_EQ(j + 1, traps.Add(funcs[j].fnc, funcs[j].aux, true));
     }

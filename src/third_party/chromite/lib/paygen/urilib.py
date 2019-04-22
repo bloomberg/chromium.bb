@@ -22,10 +22,12 @@ from chromite.lib.paygen import filelib
 PROTOCOL_GS = 'gs'
 PROTOCOL_HTTP = 'http'
 PROTOCOL_HTTPS = 'https'
+PROTOCOL_FILE = 'file'
 
 PROTOCOLS = (PROTOCOL_GS,
              PROTOCOL_HTTP,
-             PROTOCOL_HTTPS)
+             PROTOCOL_HTTPS,
+             PROTOCOL_FILE)
 
 PROTOCOL_SEP = '://'
 
@@ -34,7 +36,7 @@ EXTRACT_PROTOCOL_RE = re.compile(r'^(\w+)%s' % PROTOCOL_SEP)
 TYPE_GS = PROTOCOL_GS
 TYPE_HTTP = PROTOCOL_HTTP
 TYPE_HTTPS = PROTOCOL_HTTPS
-TYPE_LOCAL = 'file'
+TYPE_LOCAL = PROTOCOL_FILE
 
 
 class NotSupportedForTypes(RuntimeError):
@@ -177,3 +179,18 @@ def Copy(src_uri, dest_uri):
     return URLRetrieve(src_uri, dest_uri)
 
   raise NotSupportedBetweenTypes(uri_type1, uri_type2)
+
+def GetPathExcludingProtocol(uri):
+  """Returns the path of the given URI excluding the protocol and its separator.
+
+  Args:
+    uri: The uri to extract the base name, e.g.:
+         gs://foo/directory/file.bin -> /foo/directory/file.bin
+         file:///foo/directory/file.bin -> /foo/directory/file.bin
+         /foo/directory/file.bin -> /foo/directory/file.bin
+  """
+  protocol = ExtractProtocol(uri)
+  if protocol is None:
+    return uri
+  else:
+    return uri[len(protocol) + len(PROTOCOL_SEP):]

@@ -22,7 +22,7 @@ filter.create = function(name, options) {
     var dst = arguments[0];
     var mPixPerSec = dst.width * dst.height / 1000 / (Date.now() - time);
     ImageUtil.trace.report(name, Math.round(mPixPerSec * 10) / 10 + 'Mps');
-  }
+  };
 };
 
 /**
@@ -158,9 +158,10 @@ filter.mapPixels = function(rMap, gMap, bMap, dst, src, offsetX, offsetY) {
   var srcWidth = src.width;
   var srcHeight = src.height;
 
-  if (offsetX < 0 || offsetX + dstWidth > srcWidth ||
-      offsetY < 0 || offsetY + dstHeight > srcHeight)
+  if (offsetX < 0 || offsetX + dstWidth > srcWidth || offsetY < 0 ||
+      offsetY + dstHeight > srcHeight) {
     throw new Error('Invalid offset');
+  }
 
   var dstIndex = 0;
   for (var y = 0; y != dstHeight; y++) {
@@ -233,14 +234,16 @@ filter.convolve5x5 = function(weights, dst, src, offsetX, offsetY) {
   var srcStride = srcWidth * 4;
   var srcStride2 = srcStride * 2;
 
-  if (offsetX < 0 || offsetX + dstWidth > srcWidth ||
-      offsetY < 0 || offsetY + dstHeight > srcHeight)
+  if (offsetX < 0 || offsetX + dstWidth > srcWidth || offsetY < 0 ||
+      offsetY + dstHeight > srcHeight) {
     throw new Error('Invalid offset');
+  }
 
   // Javascript is not very good at inlining constants.
   // We inline manually and assert that the constant is equal to the variable.
-  if (filter.FIXED_POINT_SHIFT != 16)
+  if (filter.FIXED_POINT_SHIFT != 16) {
     throw new Error('Wrong fixed point shift');
+  }
 
   var margin = 2;
 
@@ -269,12 +272,13 @@ filter.convolve5x5 = function(weights, dst, src, offsetX, offsetY) {
                         srcData[srcIndex + 8] +
                         srcData[srcIndex - srcStride2] +
                         srcData[srcIndex + srcStride2]);
-        if (sum < 0)
+        if (sum < 0) {
           dstData[dstIndex++] = 0;
-        else if (sum > 0xFF0000)
+        } else if (sum > 0xFF0000) {
           dstData[dstIndex++] = 0xFF;
-        else
+        } else {
           dstData[dstIndex++] = sum >> 16;
+        }
         srcIndex++;
       }
       srcIndex++;
@@ -380,14 +384,16 @@ filter.colorMatrix3x3 = function(matrix, dst, src, offsetX, offsetY) {
   var srcWidth = src.width;
   var srcHeight = src.height;
 
-  if (offsetX < 0 || offsetX + dstWidth > srcWidth ||
-      offsetY < 0 || offsetY + dstHeight > srcHeight)
+  if (offsetX < 0 || offsetX + dstWidth > srcWidth || offsetY < 0 ||
+      offsetY + dstHeight > srcHeight) {
     throw new Error('Invalid offset');
+  }
 
   // Javascript is not very good at inlining constants.
   // We inline manually and assert that the constant is equal to the variable.
-  if (filter.FIXED_POINT_SHIFT != 16)
+  if (filter.FIXED_POINT_SHIFT != 16) {
     throw new Error('Wrong fixed point shift');
+  }
 
   var dstIndex = 0;
   for (var y = 0; y != dstHeight; y++) {
@@ -458,8 +464,9 @@ filter.createConvolutionFilter = function(weights) {
       Math.abs(normalized[1]) * 4 +
       Math.abs(normalized[2]) * 4 +
       Math.abs(normalized[3]) * 4;
-  if (maxWeightedSum > filter.MAX_FLOAT_VALUE)
+  if (maxWeightedSum > filter.MAX_FLOAT_VALUE) {
     throw new Error('convolve5x5 cannot convert the weights to fixed point');
+  }
 
   return filter.convolve5x5.bind(null, normalized);
 };
@@ -475,9 +482,10 @@ filter.createColorMatrixFilter = function(matrix) {
     for (var c = 0; c != 3; c++) {
       maxRowSum += 0xFF * Math.abs(matrix[r * 3 + c]);
     }
-    if (maxRowSum > filter.MAX_FLOAT_VALUE)
+    if (maxRowSum > filter.MAX_FLOAT_VALUE) {
       throw new Error(
           'colorMatrix3x3 cannot convert the matrix to fixed point');
+    }
   }
   return filter.colorMatrix3x3.bind(null, matrix);
 };
@@ -488,15 +496,15 @@ filter.createColorMatrixFilter = function(matrix) {
  * @return {function(!ImageData,!ImageData,number,number)} Blur filter.
  */
 filter.blur = function(options) {
-  if (options.radius == 1)
-    return filter.createConvolutionFilter(
-        [1, options.strength]);
-  else if (options.radius == 2)
+  if (options.radius == 1) {
+    return filter.createConvolutionFilter([1, options.strength]);
+  } else if (options.radius == 2) {
     return filter.createConvolutionFilter(
         [1, options.strength, options.strength]);
-  else
+  } else {
     return filter.createConvolutionFilter(
         [1, options.strength, options.strength, options.strength]);
+  }
 };
 
 /**
@@ -505,15 +513,15 @@ filter.blur = function(options) {
  * @return {function(!ImageData,!ImageData,number,number)} Sharpen filter.
  */
 filter.sharpen = function(options) {
-  if (options.radius == 1)
-    return filter.createConvolutionFilter(
-        [5, -options.strength]);
-  else if (options.radius == 2)
+  if (options.radius == 1) {
+    return filter.createConvolutionFilter([5, -options.strength]);
+  } else if (options.radius == 2) {
     return filter.createConvolutionFilter(
         [10, -options.strength, -options.strength]);
-  else
+  } else {
     return filter.createConvolutionFilter(
         [15, -options.strength, -options.strength, -options.strength]);
+  }
 };
 
 /**
@@ -574,17 +582,20 @@ filter.autofix.stretchColors = function(channelHistogram) {
  */
 filter.autofix.getRange = function(channelHistogram) {
   var first = 0;
-  while (first < channelHistogram.length && channelHistogram[first] == 0)
+  while (first < channelHistogram.length && channelHistogram[first] == 0) {
     first++;
+  }
 
   var last = channelHistogram.length - 1;
-  while (last >= 0 && channelHistogram[last] == 0)
+  while (last >= 0 && channelHistogram[last] == 0) {
     last--;
+  }
 
-  if (first >= last) // Stretching does not make sense
+  if (first >= last) {  // Stretching does not make sense
     return {first: 0, last: channelHistogram.length - 1};
-  else
+  } else {
     return {first: first, last: last};
+  }
 };
 
 /**

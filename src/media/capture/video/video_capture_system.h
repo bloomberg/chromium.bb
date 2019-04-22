@@ -8,6 +8,10 @@
 #include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video/video_capture_device_info.h"
 
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace media {
 
 // GetDeviceInfosAsync() should be called at least once before calling
@@ -29,6 +33,12 @@ class CAPTURE_EXPORT VideoCaptureSystem {
   // wrong.
   virtual std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const std::string& device_id) = 0;
+
+#if defined(OS_CHROMEOS)
+  // Pass the mojo request to bind with DeviceFactory for Chrome OS.
+  virtual void BindCrosImageCaptureRequest(
+      cros::mojom::CrosImageCaptureRequest request) = 0;
+#endif  // defined(OS_CHROMEOS)
 };
 
 }  // namespace media

@@ -11,9 +11,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -228,7 +228,7 @@ TEST_F(FileUtilTest, CheckIllegalFilenamesOnlyReserved) {
   static const base::FilePath::CharType* const folders[] = {
       kLocaleFolder, kPlatformSpecificFolder};
 
-  for (size_t i = 0; i < arraysize(folders); i++) {
+  for (size_t i = 0; i < base::size(folders); i++) {
     base::FilePath src_path = temp.GetPath().Append(folders[i]);
     ASSERT_TRUE(base::CreateDirectory(src_path));
   }
@@ -413,20 +413,20 @@ TEST_F(FileUtilTest, FindPrivateKeyFiles) {
   base::FilePath src_path = temp.GetPath().AppendASCII("some_dir");
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
-  ASSERT_EQ(static_cast<int>(arraysize(private_key)),
+  ASSERT_EQ(static_cast<int>(base::size(private_key)),
             base::WriteFile(src_path.AppendASCII("a_key.pem"), private_key,
-                            arraysize(private_key)));
-  ASSERT_EQ(static_cast<int>(arraysize(private_key)),
+                            base::size(private_key)));
+  ASSERT_EQ(static_cast<int>(base::size(private_key)),
             base::WriteFile(src_path.AppendASCII("second_key.pem"), private_key,
-                            arraysize(private_key)));
+                            base::size(private_key)));
   // Shouldn't find a key with a different extension.
-  ASSERT_EQ(static_cast<int>(arraysize(private_key)),
+  ASSERT_EQ(static_cast<int>(base::size(private_key)),
             base::WriteFile(src_path.AppendASCII("key.diff_ext"), private_key,
-                            arraysize(private_key)));
+                            base::size(private_key)));
   // Shouldn't find a key that isn't parsable.
-  ASSERT_EQ(static_cast<int>(arraysize(private_key)) - 30,
+  ASSERT_EQ(static_cast<int>(base::size(private_key)) - 30,
             base::WriteFile(src_path.AppendASCII("unparsable_key.pem"),
-                            private_key, arraysize(private_key) - 30));
+                            private_key, base::size(private_key) - 30));
   std::vector<base::FilePath> private_keys =
       file_util::FindPrivateKeyFiles(temp.GetPath());
   EXPECT_EQ(2U, private_keys.size());
@@ -575,7 +575,7 @@ TEST_F(FileUtilTest, ExtensionURLToRelativeFilePath) {
   };
 #undef URL_PREFIX
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     GURL url(test_cases[i].url);
     base::FilePath expected_path =
         base::FilePath::FromUTF8Unsafe(test_cases[i].expected_relative_path);

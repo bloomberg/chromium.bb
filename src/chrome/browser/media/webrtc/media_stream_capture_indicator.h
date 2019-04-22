@@ -12,7 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
-#include "content/public/common/media_stream_request.h"
+#include "content/public/browser/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -31,10 +32,14 @@ class MediaStreamUI {
   // Called when stream capture is stopped.
   virtual ~MediaStreamUI() = default;
 
-  // Called when stream capture starts. |stop_callback| is a callback to stop
-  // the stream. Returns the platform-dependent window ID for the UI, or 0 if
-  // not applicable.
-  virtual gfx::NativeViewId OnStarted(const base::Closure& stop) = 0;
+  // Called when stream capture starts.
+  // |stop_callback| is a callback to stop the stream.
+  // |source_callback| is a callback to change the desktop capture source.
+  // Returns the platform-dependent window ID for the UI, or 0 if not
+  // applicable.
+  virtual gfx::NativeViewId OnStarted(
+      base::OnceClosure stop_callback,
+      base::RepeatingClosure source_callback) = 0;
 };
 
 // Keeps track of which WebContents are capturing media streams. Used to display
@@ -53,7 +58,7 @@ class MediaStreamCaptureIndicator
   // |ui| is used to display custom UI while the stream is captured.
   std::unique_ptr<content::MediaStreamUI> RegisterMediaStream(
       content::WebContents* web_contents,
-      const content::MediaStreamDevices& devices,
+      const blink::MediaStreamDevices& devices,
       std::unique_ptr<MediaStreamUI> ui = nullptr);
 
   // Overrides from StatusIconMenuModel::Delegate implementation.

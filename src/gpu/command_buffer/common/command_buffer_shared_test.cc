@@ -66,7 +66,8 @@ TEST_F(CommandBufferSharedTest, TestConsistency) {
 
   consumer.Start();
   consumer.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&WriteToState, buffer.get(), shared_state_.get()));
+      FROM_HERE,
+      base::BindOnce(&WriteToState, buffer.get(), shared_state_.get()));
 
   CommandBuffer::State last_state;
   while (1) {

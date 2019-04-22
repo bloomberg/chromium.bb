@@ -38,7 +38,7 @@ std::unique_ptr<TemplateURL> CreatePrepopulateTemplateURL(
       *CreatePrepopulateTemplateURLData(prepopulate_id, keyword, id));
 }
 
-};  // namespace
+}  // namespace
 
 TEST(TemplateURLServiceUtilTest, RemoveDuplicatePrepopulateIDs) {
   std::vector<std::unique_ptr<TemplateURLData>> prepopulated_turls;

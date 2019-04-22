@@ -14,7 +14,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/switches.h"
@@ -46,32 +45,9 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/dbus/dbus_helper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #endif  // defined(OS_CHROMEOS)
-
-namespace {
-
-#if defined(OS_CHROMEOS)
-void RegisterStubPathOverridesIfNecessary() {
-  // These overrides need to occur before BrowserPolicyConnectorChromeOS
-  // (for one) is created. The DCHECK ensures that is the case.
-  DCHECK(!g_browser_process);
-
-  base::FilePath user_data_dir;
-  if (base::SysInfo::IsRunningOnChromeOS() ||
-      !base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    return;
-  }
-
-  // Override some paths with stub locations so that cloud policy and enterprise
-  // enrollment work on desktop builds, for ease of development.
-  chromeos::RegisterStubPathOverrides(user_data_dir);
-}
-#endif  // defined(OS_CHROMEOS)
-
-}  // namespace
 
 ChromeFeatureListCreator::ChromeFeatureListCreator() = default;
 
@@ -88,6 +64,10 @@ void ChromeFeatureListCreator::CreateFeatureList() {
 void ChromeFeatureListCreator::SetApplicationLocale(const std::string& locale) {
   actual_locale_ = locale;
   metrics_services_manager_->GetVariationsService()->EnsureLocaleEquals(locale);
+}
+
+void ChromeFeatureListCreator::OverrideCachedUIStrings() {
+  metrics_services_manager_->GetVariationsService()->OverrideCachedUIStrings();
 }
 
 metrics_services_manager::MetricsServicesManagerClient*
@@ -131,8 +111,8 @@ void ChromeFeatureListCreator::CreatePrefService() {
   RegisterLocalState(pref_registry.get());
 
 #if defined(OS_CHROMEOS)
-  RegisterStubPathOverridesIfNecessary();
-  chromeos::PreEarlyInitDBus();
+  // DBus must be initialized before constructing the policy connector.
+  CHECK(chromeos::DBusThreadManager::IsInitialized());
   browser_policy_connector_ =
       std::make_unique<policy::BrowserPolicyConnectorChromeOS>();
 #else
@@ -185,13 +165,14 @@ void ChromeFeatureListCreator::ConvertFlagsToSwitches() {
 }
 
 void ChromeFeatureListCreator::SetupFieldTrials() {
-  browser_field_trials_ = std::make_unique<ChromeBrowserFieldTrials>();
+  browser_field_trials_ =
+      std::make_unique<ChromeBrowserFieldTrials>(local_state_.get());
 
   // Initialize FieldTrialList to support FieldTrials. This is intentionally
   // leaked since it needs to live for the duration of the browser process and
   // there's no benefit in cleaning it up at exit.
   base::FieldTrialList* leaked_field_trial_list = new base::FieldTrialList(
-      metrics_services_manager_.get()->CreateEntropyProvider());
+      metrics_services_manager_->CreateEntropyProvider());
   ANNOTATE_LEAKING_OBJECT_PTR(leaked_field_trial_list);
   ignore_result(leaked_field_trial_list);
 
@@ -209,7 +190,7 @@ void ChromeFeatureListCreator::SetupFieldTrials() {
 #endif  // defined(OFFICIAL_BUILD)
 
   variations::VariationsService* variations_service =
-      metrics_services_manager_.get()->GetVariationsService();
+      metrics_services_manager_->GetVariationsService();
   variations_service->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
       switches::kDisableFeatures, unforceable_field_trials, variation_ids,

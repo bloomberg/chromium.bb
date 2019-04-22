@@ -23,6 +23,8 @@
 
 #include "glad/glad.h"
 
+#include <queue>
+
 // Remove windows.h macros after glad's include of windows.h
 #if defined(DAWN_PLATFORM_WINDOWS)
 #    include "common/windows_with_undefs.h"
@@ -32,23 +34,29 @@ namespace dawn_native { namespace opengl {
 
     class Device : public DeviceBase {
       public:
-        Device();
-        BindGroupBase* CreateBindGroup(BindGroupBuilder* builder) override;
-        BlendStateBase* CreateBlendState(BlendStateBuilder* builder) override;
-        BufferViewBase* CreateBufferView(BufferViewBuilder* builder) override;
-        CommandBufferBase* CreateCommandBuffer(CommandBufferBuilder* builder) override;
-        DepthStencilStateBase* CreateDepthStencilState(DepthStencilStateBuilder* builder) override;
-        InputStateBase* CreateInputState(InputStateBuilder* builder) override;
-        RenderPassDescriptorBase* CreateRenderPassDescriptor(
-            RenderPassDescriptorBuilder* builder) override;
-        RenderPipelineBase* CreateRenderPipeline(RenderPipelineBuilder* builder) override;
-        SwapChainBase* CreateSwapChain(SwapChainBuilder* builder) override;
+        Device(AdapterBase* adapter);
+        ~Device();
 
+        void SubmitFenceSync();
+
+        // Dawn API
+        CommandBufferBase* CreateCommandBuffer(CommandEncoderBase* encoder) override;
+
+        Serial GetCompletedCommandSerial() const final override;
+        Serial GetLastSubmittedCommandSerial() const final override;
+        Serial GetPendingCommandSerial() const override;
         void TickImpl() override;
 
-        const dawn_native::PCIInfo& GetPCIInfo() const override;
+        ResultOrError<std::unique_ptr<StagingBufferBase>> CreateStagingBuffer(size_t size) override;
+        MaybeError CopyFromStagingToBuffer(StagingBufferBase* source,
+                                           uint64_t sourceOffset,
+                                           BufferBase* destination,
+                                           uint64_t destinationOffset,
+                                           uint64_t size) override;
 
       private:
+        ResultOrError<BindGroupBase*> CreateBindGroupImpl(
+            const BindGroupDescriptor* descriptor) override;
         ResultOrError<BindGroupLayoutBase*> CreateBindGroupLayoutImpl(
             const BindGroupLayoutDescriptor* descriptor) override;
         ResultOrError<BufferBase*> CreateBufferImpl(const BufferDescriptor* descriptor) override;
@@ -57,16 +65,23 @@ namespace dawn_native { namespace opengl {
         ResultOrError<PipelineLayoutBase*> CreatePipelineLayoutImpl(
             const PipelineLayoutDescriptor* descriptor) override;
         ResultOrError<QueueBase*> CreateQueueImpl() override;
+        ResultOrError<RenderPipelineBase*> CreateRenderPipelineImpl(
+            const RenderPipelineDescriptor* descriptor) override;
         ResultOrError<SamplerBase*> CreateSamplerImpl(const SamplerDescriptor* descriptor) override;
         ResultOrError<ShaderModuleBase*> CreateShaderModuleImpl(
             const ShaderModuleDescriptor* descriptor) override;
+        ResultOrError<SwapChainBase*> CreateSwapChainImpl(
+            const SwapChainDescriptor* descriptor) override;
         ResultOrError<TextureBase*> CreateTextureImpl(const TextureDescriptor* descriptor) override;
         ResultOrError<TextureViewBase*> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
-        void CollectPCIInfo();
 
-        dawn_native::PCIInfo mPCIInfo;
+        void CheckPassedFences();
+
+        Serial mCompletedSerial = 0;
+        Serial mLastSubmittedSerial = 0;
+        std::queue<std::pair<GLsync, Serial>> mFencesInFlight;
     };
 
 }}  // namespace dawn_native::opengl

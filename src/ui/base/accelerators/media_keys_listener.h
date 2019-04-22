@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/observer_list_types.h"
 #include "ui/base/ui_base_export.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
 
@@ -22,22 +24,13 @@ class UI_BASE_EXPORT MediaKeysListener {
     kFocused,  // Listener only works whan application has focus.
   };
 
-  enum class MediaKeysHandleResult {
-    kIgnore,  // Ignore the key and continue propagation to other system apps.
-    kSuppressPropagation,  // Handled. Prevent propagation to other system
-                           // apps.
-  };
-
   // Media keys accelerators receiver.
-  class UI_BASE_EXPORT Delegate {
+  class UI_BASE_EXPORT Delegate : public base::CheckedObserver {
    public:
-    virtual ~Delegate();
+    ~Delegate() override;
 
     // Called on media key event.
-    // Return result - whether event is handled and propagation of event should
-    // be suppressed.
-    virtual MediaKeysHandleResult OnMediaKeysAccelerator(
-        const Accelerator& accelerator) = 0;
+    virtual void OnMediaKeysAccelerator(const Accelerator& accelerator) = 0;
   };
 
   // Can return nullptr if media keys listening is not implemented.
@@ -45,14 +38,17 @@ class UI_BASE_EXPORT MediaKeysListener {
   static std::unique_ptr<MediaKeysListener> Create(Delegate* delegate,
                                                    Scope scope);
 
+  static bool IsMediaKeycode(KeyboardCode key_code);
+
   virtual ~MediaKeysListener();
 
-  // Start receiving media keys events.
-  virtual void StartWatchingMediaKeys() = 0;
-  // Stop receiving media keys events.
-  virtual void StopWatchingMediaKeys() = 0;
-  // Whether listener started receiving media keys events.
-  virtual bool IsWatchingMediaKeys() const = 0;
+  // Start listening for a given media key. Returns true if the listener
+  // successfully started listening for the key. Some implementations may not be
+  // able to register if another application is already listening to the media
+  // key.
+  virtual bool StartWatchingMediaKey(KeyboardCode key_code) = 0;
+  // Stop listening for a given media key.
+  virtual void StopWatchingMediaKey(KeyboardCode key_code) = 0;
 };
 
 }  // namespace ui

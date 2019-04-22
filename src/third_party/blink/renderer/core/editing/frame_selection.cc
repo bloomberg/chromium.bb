@@ -96,8 +96,8 @@ static inline bool ShouldAlwaysUseDirectionalSelection(LocalFrame* frame) {
 
 FrameSelection::FrameSelection(LocalFrame& frame)
     : frame_(frame),
-      layout_selection_(LayoutSelection::Create(*this)),
-      selection_editor_(SelectionEditor::Create(frame)),
+      layout_selection_(MakeGarbageCollected<LayoutSelection>(*this)),
+      selection_editor_(MakeGarbageCollected<SelectionEditor>(frame)),
       granularity_(TextGranularity::kCharacter),
       x_pos_for_vertical_arrow_navigation_(NoXPosForVerticalArrowNavigation()),
       focused_(frame.GetPage() &&
@@ -148,9 +148,9 @@ size_t FrameSelection::CharacterIndexForPoint(const IntPoint& point) const {
 
 VisibleSelection FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated()
     const {
-  // TODO(editing-dev): Hoist updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Hoist UpdateStyleAndLayout
   // to caller. See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   return ComputeVisibleSelectionInDOMTree();
 }
 
@@ -422,9 +422,9 @@ void FrameSelection::Clear() {
 }
 
 bool FrameSelection::SelectionHasFocus() const {
-  // TODO(editing-dev): Hoist UpdateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Hoist UpdateStyleAndLayout
   // to caller. See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   if (ComputeVisibleSelectionInFlatTree().IsNone())
     return false;
   const Node* current =
@@ -536,9 +536,9 @@ bool FrameSelection::ComputeAbsoluteBounds(IntRect& anchor,
   if (!IsAvailable() || GetSelectionInDOMTree().IsNone())
     return false;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_->GetDocument()->UpdateStyleAndLayout();
   if (ComputeVisibleSelectionInDOMTree().IsNone()) {
     // plugins/mouse-capture-inside-shadow.html reaches here.
     return false;
@@ -633,9 +633,9 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
     return;
   }
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   if (!IsStartOfDocument(ComputeVisibleSelectionInDOMTree().VisibleStart()))
     return;
@@ -643,7 +643,8 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
     return;
 
   // FIXME: This is not yet implemented for cross-process frame relationships.
-  if (!parent->IsLocalFrame())
+  auto* parent_local_frame = DynamicTo<LocalFrame>(parent);
+  if (!parent_local_frame)
     return;
 
   // Get to the <iframe> or <frame> (or even <object>) element in the parent
@@ -656,10 +657,9 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
   if (!owner_element_parent)
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  owner_element_parent->GetDocument()
-      .UpdateStyleAndLayoutIgnorePendingStylesheets();
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // needs to be audited. See http://crbug.com/590369 for more details.
+  owner_element_parent->GetDocument().UpdateStyleAndLayout();
 
   // This method's purpose is it to make it easier to select iframes (in order
   // to delete them).  Don't do anything if the iframe isn't deletable.
@@ -672,9 +672,9 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
   // SetFocusedFrame can dispatch synchronous focus/blur events.  The document
   // tree might be modified.
   if (!owner_element->isConnected() ||
-      owner_element->GetDocument() != ToLocalFrame(parent)->GetDocument())
+      owner_element->GetDocument() != parent_local_frame->GetDocument())
     return;
-  ToLocalFrame(parent)->Selection().SetSelectionAndEndTyping(
+  parent_local_frame->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position::BeforeNode(*owner_element),
                             Position::AfterNode(*owner_element))
@@ -899,7 +899,7 @@ void FrameSelection::SetFocusedNodeIfNeeded() {
   if (Element* target =
           ComputeVisibleSelectionInDOMTreeDeprecated().RootEditableElement()) {
     // Walk up the DOM tree to search for a node to focus.
-    GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayoutTree();
     while (target) {
       // We don't want to set focus on a subframe when selecting in a parent
       // frame, so add the !isFrameElement check here. There's probably a better
@@ -987,10 +987,10 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
                                      RevealExtentOption reveal_extent_option) {
   DCHECK(IsAvailable());
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // Calculation of absolute caret bounds requires clean layout.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   const VisibleSelection& selection = ComputeVisibleSelectionInDOMTree();
   if (selection.IsNone())
@@ -1063,7 +1063,7 @@ void FrameSelection::ShowTreeForThis() const {
 
 #endif
 
-void FrameSelection::Trace(blink::Visitor* visitor) {
+void FrameSelection::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(layout_selection_);
   visitor->Trace(selection_editor_);
@@ -1088,9 +1088,9 @@ bool FrameSelection::SelectWordAroundCaret() {
   if (!selection.IsCaret())
     return false;
   const Position position = selection.Start();
-  static const EWordSide kWordSideList[2] = {kNextWordIfOnBoundary,
-                                             kPreviousWordIfOnBoundary};
-  for (EWordSide word_side : kWordSideList) {
+  static const WordSide kWordSideList[2] = {kNextWordIfOnBoundary,
+                                            kPreviousWordIfOnBoundary};
+  for (WordSide word_side : kWordSideList) {
     Position start = StartOfWordPosition(position, word_side);
     Position end = EndOfWordPosition(position, word_side);
 

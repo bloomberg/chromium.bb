@@ -47,7 +47,7 @@ SingleLoginAttempt::~SingleLoginAttempt() {}
 // TODO(akalin): Add unit tests to enforce the behavior above.
 
 void SingleLoginAttempt::OnConnect(
-    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
+    base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> base_task) {
   DVLOG(1) << "Connected to " << current_settings_->ToString();
   delegate_->OnConnect(base_task);
 }
@@ -84,14 +84,14 @@ net::HostPortPair ParseRedirectText(const std::string& redirect_text) {
 
 }  // namespace
 
-void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
-                                 const buzz::XmlElement* stream_error) {
+void SingleLoginAttempt::OnError(jingle_xmpp::XmppEngine::Error error, int subcode,
+                                 const jingle_xmpp::XmlElement* stream_error) {
   DVLOG(1) << "Error: " << error << ", subcode: " << subcode
            << (stream_error
                    ? (", stream error: " + XmlElementToString(*stream_error))
                    : std::string());
 
-  DCHECK_EQ(error == buzz::XmppEngine::ERROR_STREAM, stream_error != NULL);
+  DCHECK_EQ(error == jingle_xmpp::XmppEngine::ERROR_STREAM, stream_error != NULL);
 
   // Check for redirection.  We expect something like:
   //
@@ -111,11 +111,11 @@ void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
   // [1]: http://xmpp.org/internet-drafts/draft-saintandre-rfc3920bis-08.html#streams-error-conditions-see-other-host
   // [2]: http://forums.miranda-im.org/showthread.php?24376-GoogleTalk-drops
   if (stream_error) {
-    const buzz::XmlElement* other =
-        stream_error->FirstNamed(buzz::QN_XSTREAM_SEE_OTHER_HOST);
+    const jingle_xmpp::XmlElement* other =
+        stream_error->FirstNamed(jingle_xmpp::QN_XSTREAM_SEE_OTHER_HOST);
     if (other) {
-      const buzz::XmlElement* text =
-          stream_error->FirstNamed(buzz::QN_XSTREAM_TEXT);
+      const jingle_xmpp::XmlElement* text =
+          stream_error->FirstNamed(jingle_xmpp::QN_XSTREAM_TEXT);
       if (text) {
         // Yep, its a "stream:error" with "see-other-host" text,
         // let's parse out the server:port, and then reconnect
@@ -138,7 +138,7 @@ void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
     }
   }
 
-  if (error == buzz::XmppEngine::ERROR_UNAUTHORIZED) {
+  if (error == jingle_xmpp::XmppEngine::ERROR_UNAUTHORIZED) {
     DVLOG(1) << "Credentials rejected";
     delegate_->OnCredentialsRejected();
     return;
@@ -164,12 +164,12 @@ void SingleLoginAttempt::TryConnect(
   DVLOG(1) << "Trying to connect to " << connection_settings.ToString();
   // Copy the user settings and fill in the connection parameters from
   // |connection_settings|.
-  buzz::XmppClientSettings client_settings = login_settings_.user_settings();
+  jingle_xmpp::XmppClientSettings client_settings = login_settings_.user_settings();
   connection_settings.FillXmppClientSettings(&client_settings);
 
-  buzz::Jid jid(client_settings.user(), client_settings.host(),
-                buzz::STR_EMPTY);
-  buzz::PreXmppAuth* pre_xmpp_auth =
+  jingle_xmpp::Jid jid(client_settings.user(), client_settings.host(),
+                jingle_xmpp::STR_EMPTY);
+  jingle_xmpp::PreXmppAuth* pre_xmpp_auth =
       new GaiaTokenPreXmppAuth(
           jid.Str(), client_settings.auth_token(),
           client_settings.token_service(),

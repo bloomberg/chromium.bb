@@ -59,6 +59,10 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService : public mojom::AudioDecoder {
   // Called by |decoder_| for each decoded buffer.
   void OnAudioBufferReady(const scoped_refptr<AudioBuffer>& audio_buffer);
 
+  // Called by |decoder_| when it's waiting because of |reason|, e.g. waiting
+  // for decryption key.
+  void OnWaiting(WaitingReason reason);
+
   std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 
   // A helper object required to get CDM from CDM id.

@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @protocol LocationBarConsumer;
+class TemplateURLService;
 class WebStateList;
 class LocationBarModel;
 
@@ -25,6 +26,10 @@ class LocationBarModel;
 // The location bar model used by this mediator to extract the current URL and
 // the security state.
 @property(nonatomic, assign, readonly) LocationBarModel* locationBarModel;
+
+// The templateURLService used by this mediator to extract whether the default
+// search engine supports search-by-image.
+@property(nonatomic, assign) TemplateURLService* templateURLService;
 
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.

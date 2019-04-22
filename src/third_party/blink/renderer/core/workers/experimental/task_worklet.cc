@@ -38,7 +38,7 @@ TaskWorklet* TaskWorklet::From(LocalDOMWindow& window) {
   TaskWorklet* task_worklet =
       Supplement<LocalDOMWindow>::From<TaskWorklet>(window);
   if (!task_worklet) {
-    task_worklet = new TaskWorklet(window.document());
+    task_worklet = MakeGarbageCollected<TaskWorklet>(window.document());
     Supplement<LocalDOMWindow>::ProvideTo(window, task_worklet);
   }
   return task_worklet;
@@ -49,20 +49,30 @@ static const size_t kMaxTaskWorkletThreads = 4;
 TaskWorklet::TaskWorklet(Document* document) : Worklet(document) {}
 
 Task* TaskWorklet::postTask(ScriptState* script_state,
-                            const ScriptValue& function,
-                            const Vector<ScriptValue>& arguments) {
-  DCHECK(function.IsFunction());
+                            V8Function* function,
+                            const Vector<ScriptValue>& arguments,
+                            ExceptionState& exception_state) {
   // TODO(japhet): Here and below: it's unclear what task type should be used,
   // and whether the API should allow it to be configured. Using kIdleTask as a
   // placeholder for now.
-  return new Task(this, script_state, function, arguments, TaskType::kIdleTask);
+  Task* task =
+      MakeGarbageCollected<Task>(script_state, this, function, arguments,
+                                 TaskType::kIdleTask, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+  return task;
 }
 
 Task* TaskWorklet::postTask(ScriptState* script_state,
                             const String& function_name,
-                            const Vector<ScriptValue>& arguments) {
-  return new Task(this, script_state, function_name, arguments,
-                  TaskType::kIdleTask);
+                            const Vector<ScriptValue>& arguments,
+                            ExceptionState& exception_state) {
+  Task* task =
+      MakeGarbageCollected<Task>(script_state, this, function_name, arguments,
+                                 TaskType::kIdleTask, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+  return task;
 }
 
 ThreadPoolThread* TaskWorklet::GetLeastBusyThread() {
@@ -101,8 +111,8 @@ bool TaskWorklet::NeedsToCreateGlobalScope() {
 WorkletGlobalScopeProxy* TaskWorklet::CreateGlobalScope() {
   DCHECK_LT(GetNumberOfGlobalScopes(), kMaxTaskWorkletThreads);
   TaskWorkletMessagingProxy* proxy =
-      new TaskWorkletMessagingProxy(GetExecutionContext());
-  proxy->Initialize(WorkerClients::Create(), ModuleResponsesMap(),
+      MakeGarbageCollected<TaskWorkletMessagingProxy>(GetExecutionContext());
+  proxy->Initialize(MakeGarbageCollected<WorkerClients>(), ModuleResponsesMap(),
                     WorkerBackingThreadStartupData::CreateDefault());
   return proxy;
 }

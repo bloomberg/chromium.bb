@@ -32,7 +32,7 @@ namespace blink {
 
 class HTMLCanvasElement;
 
-class LayoutHTMLCanvas final : public LayoutReplaced {
+class CORE_EXPORT LayoutHTMLCanvas final : public LayoutReplaced {
  public:
   explicit LayoutHTMLCanvas(HTMLCanvasElement*);
 

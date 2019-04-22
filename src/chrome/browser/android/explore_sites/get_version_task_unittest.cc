@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
@@ -20,6 +21,7 @@
 using offline_pages::TaskTestBase;
 
 namespace explore_sites {
+using InitializationStatus = ExploreSitesStore::InitializationStatus;
 
 class ExploreSitesGetVersionTaskTest : public TaskTestBase {
  public:
@@ -68,7 +70,8 @@ class ExploreSitesGetVersionTaskTest : public TaskTestBase {
 };
 
 TEST_F(ExploreSitesGetVersionTaskTest, StoreFailure) {
-  store()->SetInitializationStatusForTest(InitializationStatus::FAILURE);
+  store()->SetInitializationStatusForTesting(InitializationStatus::kFailure,
+                                             false);
   GetVersionTask task(store(),
                       base::BindLambdaForTesting(
                           [&](std::string result) { EXPECT_EQ("", result); }));

@@ -4,6 +4,8 @@
 
 #include "chrome/chrome_cleaner/parsers/json_parser/sandboxed_json_parser.h"
 
+#include "base/bind.h"
+
 namespace chrome_cleaner {
 
 SandboxedJsonParser::SandboxedJsonParser(MojoTaskRunner* mojo_task_runner,

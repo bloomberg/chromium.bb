@@ -7,8 +7,8 @@
 #ifndef FXJS_XFA_CJX_NODE_H_
 #define FXJS_XFA_CJX_NODE_H_
 
-#include "fxjs/jse_define.h"
 #include "fxjs/xfa/cjx_tree.h"
+#include "fxjs/xfa/jse_define.h"
 #include "xfa/fxfa/fxfa_basic.h"
 
 class CXFA_Node;
@@ -18,19 +18,21 @@ class CJX_Node : public CJX_Tree {
   explicit CJX_Node(CXFA_Node* node);
   ~CJX_Node() override;
 
-  JSE_METHOD(applyXSL, CJX_Node);
-  JSE_METHOD(assignNode, CJX_Node);
-  JSE_METHOD(clone, CJX_Node);
-  JSE_METHOD(getAttribute, CJX_Node);
-  JSE_METHOD(getElement, CJX_Node);
-  JSE_METHOD(isPropertySpecified, CJX_Node);
-  JSE_METHOD(loadXML, CJX_Node);
-  JSE_METHOD(saveFilteredXML, CJX_Node);
-  JSE_METHOD(saveXML, CJX_Node);
-  JSE_METHOD(setAttribute, CJX_Node);
-  JSE_METHOD(setElement, CJX_Node);
+  // CJX_Object:
+  bool DynamicTypeIs(TypeTag eType) const override;
 
-  JSE_PROP(id);
+  JSE_METHOD(applyXSL);
+  JSE_METHOD(assignNode);
+  JSE_METHOD(clone);
+  JSE_METHOD(getAttribute);
+  JSE_METHOD(getElement);
+  JSE_METHOD(isPropertySpecified);
+  JSE_METHOD(loadXML);
+  JSE_METHOD(saveFilteredXML);
+  JSE_METHOD(saveXML);
+  JSE_METHOD(setAttribute);
+  JSE_METHOD(setElement);
+
   JSE_PROP(isContainer);
   JSE_PROP(isNull);
   JSE_PROP(model);
@@ -40,10 +42,13 @@ class CJX_Node : public CJX_Tree {
   CXFA_Node* GetXFANode() const;
 
  protected:
-  int32_t execSingleEventByName(const WideStringView& wsEventName,
-                                XFA_Element eType);
+  int32_t execSingleEventByName(WideStringView wsEventName, XFA_Element eType);
 
  private:
+  using Type__ = CJX_Node;
+  using ParentType__ = CJX_Tree;
+
+  static const TypeTag static_type__ = TypeTag::Node;
   static const CJX_MethodSpec MethodSpecs[];
 };
 

@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/waiting.h"
 #include "media/filters/decoder_stream_traits.h"
 
 namespace base {
@@ -67,7 +68,7 @@ class MEDIA_EXPORT DecoderSelector {
   void Initialize(StreamTraits* traits,
                   DemuxerStream* stream,
                   CdmContext* cdm_context,
-                  base::RepeatingClosure waiting_for_decryption_key_cb);
+                  WaitingCB waiting_cb);
 
   // Selects and initializes a decoder, which will be returned via
   // |select_decoder_cb| posted to |task_runner|. Subsequent calls to
@@ -105,7 +106,7 @@ class MEDIA_EXPORT DecoderSelector {
   StreamTraits* traits_ = nullptr;
   DemuxerStream* stream_ = nullptr;
   CdmContext* cdm_context_ = nullptr;
-  base::RepeatingClosure waiting_for_decryption_key_cb_;
+  WaitingCB waiting_cb_;
 
   // Overall decoder selection state.
   DecoderConfig config_;

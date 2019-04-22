@@ -19,6 +19,7 @@
 #endif
 #endif
 
+#include "build/build_config.h"
 #include "sandbox/linux/system_headers/linux_seccomp.h"  // For AUDIT_ARCH_*
 
 // Impose some reasonable maximum BPF program size. Realistically, the
@@ -190,7 +191,7 @@ typedef user_regs regs_struct;
 #define SECCOMP_PT_PARM5(_regs)   (_regs).REG_r4
 #define SECCOMP_PT_PARM6(_regs)   (_regs).REG_r5
 
-#elif defined(__mips32__)
+#elif defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS)
 #define SECCOMP_ARCH        AUDIT_ARCH_MIPSEL
 #define SYSCALL_EIGHT_ARGS
 // MIPS sigcontext_t is different from i386/x86_64 and ARM.
@@ -244,7 +245,7 @@ struct regs_struct {
 #define SECCOMP_PT_PARM3(_regs)   (_regs).REG_a2
 #define SECCOMP_PT_PARM4(_regs)   (_regs).REG_a3
 
-#elif defined(__mips64__)
+#elif defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS)
 #define SECCOMP_ARCH        AUDIT_ARCH_MIPSEL64
 #define SYSCALL_EIGHT_ARGS
 // MIPS sigcontext_t is different from i386/x86_64 and ARM.

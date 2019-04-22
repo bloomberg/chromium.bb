@@ -79,7 +79,7 @@ RangeInputType::RangeInputType(HTMLInputElement& element)
       InputTypeView(element),
       tick_mark_values_dirty_(true) {}
 
-void RangeInputType::Trace(blink::Visitor* visitor) {
+void RangeInputType::Trace(Visitor* visitor) {
   InputTypeView::Trace(visitor);
   InputType::Trace(visitor);
 }
@@ -144,7 +144,7 @@ StepRange RangeInputType::CreateStepRange(
                            GetElement().FastGetAttribute(kStepAttr));
   // Range type always has range limitations because it has default
   // minimum/maximum.
-  // https://html.spec.whatwg.org/multipage/forms.html#range-state-(type=range):concept-input-min-default
+  // https://html.spec.whatwg.org/C/#range-state-(type=range):concept-input-min-default
   const bool kHasRangeLimitations = true;
   return StepRange(step_base, minimum, maximum, kHasRangeLimitations, step,
                    step_description);
@@ -160,7 +160,7 @@ void RangeInputType::HandleMouseDownEvent(MouseEvent& event) {
 
   Node* target_node = event.target()->ToNode();
   if (event.button() !=
-          static_cast<short>(WebPointerProperties::Button::kLeft) ||
+          static_cast<int16_t>(WebPointerProperties::Button::kLeft) ||
       !target_node)
     return;
   DCHECK(IsShadowHost(GetElement()));
@@ -228,7 +228,8 @@ void RangeInputType::HandleKeydownEvent(KeyboardEvent& event) {
 
   if (new_value != current) {
     EventQueueScope scope;
-    TextFieldEventBehavior event_behavior = kDispatchInputAndChangeEvent;
+    TextFieldEventBehavior event_behavior =
+        TextFieldEventBehavior::kDispatchInputAndChangeEvent;
     SetValueAsDecimal(new_value, event_behavior, IGNORE_EXCEPTION_FOR_TESTING);
 
     if (AXObjectCache* cache =
@@ -252,7 +253,8 @@ void RangeInputType::CreateShadowSubtree() {
   GetElement().UserAgentShadowRoot()->AppendChild(container);
 }
 
-LayoutObject* RangeInputType::CreateLayoutObject(const ComputedStyle&) const {
+LayoutObject* RangeInputType::CreateLayoutObject(const ComputedStyle&,
+                                                 LegacyLayout) const {
   return new LayoutSlider(&GetElement());
 }
 

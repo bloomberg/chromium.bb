@@ -66,7 +66,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   // views::View:
   gfx::Size GetMinimumSize() const override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
 
  private:
   friend class CollectedCookiesViewsTest;
@@ -85,7 +85,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   std::unique_ptr<views::View> CreateButtonsPane();
 
   // Creates and returns a containing ScrollView around the given tree view.
-  views::View* CreateScrollView(views::TreeView* pane);
+  views::View* CreateScrollView(std::unique_ptr<views::TreeView> pane);
 
   void EnableControls();
 

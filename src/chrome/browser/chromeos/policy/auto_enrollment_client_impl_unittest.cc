@@ -126,15 +126,15 @@ class AutoEnrollmentClientImplTest
             GetParam() == AutoEnrollmentProtocol::kFRE
                 ? hash_full
                 : hash_full.substr(0, kInitialEnrollmentIdHashLength);
-        enrollment_response->mutable_hash()->Add()->assign(hash);
+        enrollment_response->mutable_hashes()->Add()->assign(hash);
       }
     }
     if (with_id_hash) {
       if (GetParam() == AutoEnrollmentProtocol::kFRE) {
-        enrollment_response->mutable_hash()->Add()->assign(
+        enrollment_response->mutable_hashes()->Add()->assign(
             kStateKeyHash, crypto::kSHA256Length);
       } else {
-        enrollment_response->mutable_hash()->Add()->assign(
+        enrollment_response->mutable_hashes()->Add()->assign(
             kInitialEnrollmentIdHash, kInitialEnrollmentIdHashLength);
       }
     }
@@ -815,10 +815,10 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkFailureThenRequireUpdatedModulus) {
   Mock::VerifyAndClearExpectations(service_.get());
 }
 
-INSTANTIATE_TEST_CASE_P(FRE,
-                        AutoEnrollmentClientImplTest,
-                        testing::Values(AutoEnrollmentProtocol::kFRE));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(FRE,
+                         AutoEnrollmentClientImplTest,
+                         testing::Values(AutoEnrollmentProtocol::kFRE));
+INSTANTIATE_TEST_SUITE_P(
     InitialEnrollment,
     AutoEnrollmentClientImplTest,
     testing::Values(AutoEnrollmentProtocol::kInitialEnrollment));

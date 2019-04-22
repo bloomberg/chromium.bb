@@ -7,11 +7,11 @@
  *
  *   - Has a button to clear the host cache.
  */
-var DnsView = (function() {
+const DnsView = (function() {
   'use strict';
 
   // We inherit from DivView.
-  var superClass = DivView;
+  const superClass = DivView;
 
   /**
    *  @constructor

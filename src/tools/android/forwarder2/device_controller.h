@@ -7,10 +7,9 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "tools/android/forwarder2/socket.h"
@@ -36,9 +35,6 @@ class DeviceController {
   void Start();
 
  private:
-  typedef base::hash_map<
-      int /* port */, linked_ptr<DeviceListener> > ListenersMap;
-
   DeviceController(std::unique_ptr<Socket> host_socket, int exit_notifier_fd);
 
   void AcceptHostCommandSoon();
@@ -56,7 +52,8 @@ class DeviceController {
   // Lets ensure DeviceListener instances are deleted on the thread they were
   // created on.
   const scoped_refptr<base::SingleThreadTaskRunner> construction_task_runner_;
-  ListenersMap listeners_;
+  std::unordered_map<int /* port */, std::unique_ptr<DeviceListener>>
+      listeners_;
 
   //WeakPtrFactory's documentation says:
   // Member variables should appear before the WeakPtrFactory, to ensure

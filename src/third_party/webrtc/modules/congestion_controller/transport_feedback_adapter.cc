@@ -10,13 +10,16 @@
 
 #include "modules/congestion_controller/transport_feedback_adapter.h"
 
+#include <stdlib.h>
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 
+#include "api/units/data_size.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/transport_feedback.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
-#include "rtc_base/numerics/mod_ops.h"
 
 namespace webrtc {
 
@@ -26,9 +29,8 @@ const int64_t kBaseTimestampScaleFactor =
     rtcp::TransportFeedback::kDeltaScaleFactor * (1 << 8);
 const int64_t kBaseTimestampRangeSizeUs = kBaseTimestampScaleFactor * (1 << 24);
 
-LegacyTransportFeedbackAdapter::LegacyTransportFeedbackAdapter(
-    const Clock* clock)
-    : send_time_history_(clock, kSendTimeHistoryWindowMs),
+LegacyTransportFeedbackAdapter::LegacyTransportFeedbackAdapter(Clock* clock)
+    : send_time_history_(kSendTimeHistoryWindowMs),
       clock_(clock),
       current_offset_ms_(kNoTimestamp),
       last_timestamp_us_(kNoTimestamp),
@@ -67,7 +69,8 @@ void LegacyTransportFeedbackAdapter::AddPacket(
     const int64_t creation_time_ms = clock_->TimeInMilliseconds();
     send_time_history_.AddAndRemoveOld(
         PacketFeedback(creation_time_ms, sequence_number, length, local_net_id_,
-                       remote_net_id_, pacing_info));
+                       remote_net_id_, pacing_info),
+        creation_time_ms);
   }
 
   {

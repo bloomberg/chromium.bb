@@ -15,36 +15,12 @@
 #include "components/exo/display.h"
 #include "components/exo/file_helper.h"
 #include "components/exo/wayland/server.h"
+#include "components/exo/wayland/wayland_watcher.h"
 #include "components/exo/wm_helper.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "ui/aura/env.h"
 
 namespace ash {
-
-class WaylandServerController::WaylandWatcher
-    : public base::MessagePumpLibevent::FdWatcher {
- public:
-  explicit WaylandWatcher(exo::wayland::Server* server)
-      : controller_(FROM_HERE), server_(server) {
-    base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
-        server_->GetFileDescriptor(),
-        true,  // persistent
-        base::MessagePumpLibevent::WATCH_READ, &controller_, this);
-  }
-
-  // base::MessagePumpLibevent::FdWatcher:
-  void OnFileCanReadWithoutBlocking(int fd) override {
-    server_->Dispatch(base::TimeDelta());
-    server_->Flush();
-  }
-  void OnFileCanWriteWithoutBlocking(int fd) override { NOTREACHED(); }
-
- private:
-  base::MessagePumpLibevent::FdWatchController controller_;
-  exo::wayland::Server* const server_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandWatcher);
-};
 
 // static
 std::unique_ptr<WaylandServerController>
@@ -83,7 +59,8 @@ WaylandServerController::WaylandServerController(
   wayland_server_ = exo::wayland::Server::Create(display_.get());
   // Wayland server creation can fail if XDG_RUNTIME_DIR is not set correctly.
   if (wayland_server_)
-    wayland_watcher_ = std::make_unique<WaylandWatcher>(wayland_server_.get());
+    wayland_watcher_ =
+        std::make_unique<exo::wayland::WaylandWatcher>(wayland_server_.get());
 }
 
 }  // namespace ash

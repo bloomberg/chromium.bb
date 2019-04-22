@@ -4,6 +4,9 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 
+#include <vector>
+
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
@@ -56,11 +59,13 @@ CastMediaRouteProvider::CastMediaRouteProvider(
       FROM_HERE,
       base::BindOnce(&CastMediaRouteProvider::Init, base::Unretained(this),
                      std::move(request), std::move(media_router),
+                     CastSessionTracker::GetInstance(),
                      std::make_unique<DataDecoder>(connector), hash_token));
 }
 
 void CastMediaRouteProvider::Init(mojom::MediaRouteProviderRequest request,
                                   mojom::MediaRouterPtrInfo media_router,
+                                  CastSessionTracker* session_tracker,
                                   std::unique_ptr<DataDecoder> data_decoder,
                                   const std::string& hash_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -69,8 +74,8 @@ void CastMediaRouteProvider::Init(mojom::MediaRouteProviderRequest request,
   media_router_.Bind(std::move(media_router));
 
   activity_manager_ = std::make_unique<CastActivityManager>(
-      media_sink_service_, message_handler_, media_router_.get(),
-      std::move(data_decoder), hash_token);
+      media_sink_service_, session_tracker, message_handler_,
+      media_router_.get(), std::move(data_decoder), hash_token);
 
   // TODO(crbug.com/816702): This needs to be set properly according to sinks
   // discovered.
@@ -104,7 +109,7 @@ void CastMediaRouteProvider::CreateRoute(const std::string& media_source,
   }
 
   std::unique_ptr<CastMediaSource> cast_source =
-      CastMediaSource::From(media_source);
+      CastMediaSource::FromMediaSourceId(media_source);
   if (!cast_source) {
     std::move(callback).Run(
         base::nullopt, nullptr, std::string("Invalid source"),
@@ -169,7 +174,7 @@ void CastMediaRouteProvider::StartObservingMediaSinks(
     return;
 
   std::unique_ptr<CastMediaSource> cast_source =
-      CastMediaSource::From(media_source);
+      CastMediaSource::FromMediaSourceId(media_source);
   if (!cast_source)
     return;
 
@@ -218,6 +223,8 @@ void CastMediaRouteProvider::StopListeningForRouteMessages(
 }
 
 void CastMediaRouteProvider::DetachRoute(const std::string& route_id) {
+  // DetachRoute() isn't implemented. Instead, a presentation connection
+  // associated with the route will call DidClose(). See CastSessionClient.
   NOTIMPLEMENTED();
 }
 

@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -33,6 +34,8 @@ namespace blink {
 // comments in the implementation.
 
 class CORE_EXPORT JankRegion {
+  DISALLOW_NEW();
+
  public:
   void AddRect(const IntRect& rect) {
     if (!rect.IsEmpty())

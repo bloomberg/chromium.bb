@@ -43,9 +43,10 @@ struct XRRuntimeSessionOptions {
   bool immersive;
   bool environment_integration;
 
-  // The following options are used for permission requests.
-  // TODO(crbug.com/854655): remove these fields, and do permission checks in
-  // the browser process before calling out to devices.
+  // The following options are used for permission requests and showing module
+  // install UI.
+  // TODO(crbug.com/854655): Remove these fields, and do permission checks, show
+  // module install UI in the browser process before calling out to devices.
   int32 render_process_id;
   int32 render_frame_id;
 
@@ -78,7 +79,11 @@ interface XRRuntime {
   // Ensure that the runtime has installed all prerequisites, and is ready to
   // start. May result in updated display info being sent to registered
   // listeners. RequestSession will fail if this hasn't been called.
-  EnsureInitialized() => ();
+  // |render_process_id| and |render_frame_id| are needed to reference the tab
+  // module install UI would be shown in if necessary.
+  // TODO(crbug.com/854655): Remove |render_process_id| and |render_frame_id|
+  // and show module install UI in the browser process.
+  EnsureInitialized(int32 render_process_id, int32 render_frame_id) => ();
 
   SetListeningForActivate(bool listen_for_activation);
 
@@ -163,6 +168,15 @@ interface ImmersiveOverlay {
 
   // Allows the browser to hide WebXR content or overlays temporarily.
   SetOverlayAndWebXRVisibility(bool overlay_visible, bool webxr_visible);
+
+  // The browser may request to be notified the browser that the current page
+  // has submitted a frame.  This call returns when the current page submits a
+  // frame.
+  // If the current page's WebXR session is not visible because the browser has
+  // made its own UI visible, the page may receive one frame's worth of pose
+  // data to unblock rendering.  This allows frame-timeout UI to show while
+  // still allowing a timed-out page to recover and start submitting frames.
+  RequestNotificationOnWebXrSubmitted() => ();
 };
 
 // XRCompositorHost lives in the XRRuntime process, and allows the browser to
@@ -181,7 +195,7 @@ interface IsolatedXRRuntimeProviderClient {
   OnDeviceAdded(XRRuntime runtime,
       IsolatedXRGamepadProviderFactory gamepad_factory,
       XRCompositorHost compositor_host,
-      device.mojom.VRDisplayInfo display_info);
+      device.mojom.XRDeviceId device_id);
 
   // Called when runtimes become unavailable - for example if the hardware is
   // disconnected or the APIs notify us that they are shutting down.

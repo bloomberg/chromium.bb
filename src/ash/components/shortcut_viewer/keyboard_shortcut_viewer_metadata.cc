@@ -548,7 +548,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
 
       {// |categories|
        {ShortcutCategory::kSystemAndDisplay, ShortcutCategory::kTextEditing},
-       IDS_KSV_DESCRIPTION_NEXT_IME,
+       IDS_KSV_DESCRIPTION_SWITCH_TO_NEXT_IME,
        IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
        // |accelerator_ids|
        {{ui::VKEY_SPACE, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN}}},
@@ -562,7 +562,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
 
       {// |categories|
        {ShortcutCategory::kSystemAndDisplay, ShortcutCategory::kTextEditing},
-       IDS_KSV_DESCRIPTION_PREVIOUS_IME,
+       IDS_KSV_DESCRIPTION_SWITCH_TO_LAST_USED_IME,
        IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
        // |accelerator_ids|
        {{ui::VKEY_SPACE, ui::EF_CONTROL_DOWN}}},
@@ -1181,6 +1181,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        IDS_KSV_SHORTCUT_ONE_KEY,
        // |accelerator_ids|
        {{ui::VKEY_LWIN}}},
+
+      {// |categories|
+       {ShortcutCategory::kSystemAndDisplay},
+       IDS_KSV_DESCRIPTION_TOGGLE_APP_LIST_FULLSCREEN,
+       IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+       // |accelerator_ids|
+       {{ui::VKEY_LWIN, ui::EF_SHIFT_DOWN}}},
 
       {// |categories|
        {ShortcutCategory::kTabAndWindow},

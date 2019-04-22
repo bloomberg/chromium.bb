@@ -20,6 +20,7 @@
 #include <string>
 #include <utility>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gtest/gtest.h"
 #include "minidump/minidump_stream_writer.h"
@@ -134,7 +135,7 @@ TEST(MinidumpFileWriter, AddUserExtensionStream) {
   minidump_file.SetTimestamp(kTimestamp);
 
   static constexpr uint8_t kStreamData[] = "Hello World!";
-  constexpr size_t kStreamSize = arraysize(kStreamData);
+  constexpr size_t kStreamSize = base::size(kStreamData);
   constexpr MinidumpStreamType kStreamType =
       static_cast<MinidumpStreamType>(0x4d);
 

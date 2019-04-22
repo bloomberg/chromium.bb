@@ -20,7 +20,7 @@
 #include "api/video_codecs/video_encoder_factory.h"
 #include "modules/video_coding/codecs/multiplex/multiplex_encoded_image_packer.h"
 #include "modules/video_coding/include/video_codec_interface.h"
-#include "rtc_base/criticalsection.h"
+#include "rtc_base/critical_section.h"
 
 namespace webrtc {
 
@@ -43,11 +43,9 @@ class MultiplexEncoderAdapter : public VideoEncoder {
                  int number_of_cores,
                  size_t max_payload_size) override;
   int Encode(const VideoFrame& input_image,
-             const CodecSpecificInfo* codec_specific_info,
-             const std::vector<FrameType>* frame_types) override;
+             const std::vector<VideoFrameType>* frame_types) override;
   int RegisterEncodeCompleteCallback(EncodedImageCallback* callback) override;
-  int SetRateAllocation(const VideoBitrateAllocation& bitrate,
-                        uint32_t new_framerate) override;
+  void SetRates(const RateControlParameters& parameters) override;
   int Release() override;
   EncoderInfo GetEncoderInfo() const override;
 

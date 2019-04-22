@@ -13,9 +13,9 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
@@ -296,7 +296,7 @@ const SyncStatusCode kStatus5 = static_cast<SyncStatusCode>(-5);
 }  // namespace
 
 TEST(SyncTaskManagerTest, ScheduleTask) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   TaskManagerClient client(0 /* maximum_background_task */);
   int callback_count = 0;
   SyncStatusCode callback_status = SYNC_STATUS_OK;
@@ -316,7 +316,7 @@ TEST(SyncTaskManagerTest, ScheduleTask) {
 }
 
 TEST(SyncTaskManagerTest, ScheduleTwoTasks) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   TaskManagerClient client(0 /* maximum_background_task */);
   int callback_count = 0;
   SyncStatusCode callback_status = SYNC_STATUS_OK;
@@ -339,7 +339,7 @@ TEST(SyncTaskManagerTest, ScheduleTwoTasks) {
 }
 
 TEST(SyncTaskManagerTest, ScheduleIdleTask) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   TaskManagerClient client(0 /* maximum_background_task */);
 
   client.ScheduleTaskIfIdle(kStatus1);
@@ -353,7 +353,7 @@ TEST(SyncTaskManagerTest, ScheduleIdleTask) {
 }
 
 TEST(SyncTaskManagerTest, ScheduleIdleTaskWhileNotIdle) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   TaskManagerClient client(0 /* maximum_background_task */);
   int callback_count = 0;
   SyncStatusCode callback_status = SYNC_STATUS_OK;
@@ -375,7 +375,7 @@ TEST(SyncTaskManagerTest, ScheduleIdleTaskWhileNotIdle) {
 }
 
 TEST(SyncTaskManagerTest, ScheduleAndCancelSyncTask) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
 
   int callback_count = 0;
   SyncStatusCode status = SYNC_STATUS_UNKNOWN;
@@ -404,7 +404,7 @@ TEST(SyncTaskManagerTest, ScheduleAndCancelSyncTask) {
 }
 
 TEST(SyncTaskManagerTest, ScheduleTaskAtPriority) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                0 /* maximum_background_task */,
                                base::ThreadTaskRunnerHandle::Get());
@@ -465,7 +465,7 @@ TEST(SyncTaskManagerTest, ScheduleTaskAtPriority) {
 }
 
 TEST(SyncTaskManagerTest, BackgroundTask_Sequential) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                10 /* maximum_background_task */,
                                base::ThreadTaskRunnerHandle::Get());
@@ -497,7 +497,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Sequential) {
 }
 
 TEST(SyncTaskManagerTest, BackgroundTask_Parallel) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                10 /* maximum_background_task */,
                                base::ThreadTaskRunnerHandle::Get());
@@ -529,7 +529,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Parallel) {
 }
 
 TEST(SyncTaskManagerTest, BackgroundTask_Throttled) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                2 /* maximum_background_task */,
                                base::ThreadTaskRunnerHandle::Get());
@@ -561,7 +561,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Throttled) {
 }
 
 TEST(SyncTaskManagerTest, UpdateTaskBlocker) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                10 /* maximum_background_task */,
                                base::ThreadTaskRunnerHandle::Get());

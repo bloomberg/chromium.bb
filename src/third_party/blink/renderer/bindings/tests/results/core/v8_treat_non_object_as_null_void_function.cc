@@ -26,8 +26,16 @@ const char* V8TreatNonObjectAsNullVoidFunction::NameInHeapSnapshot() const {
   return "V8TreatNonObjectAsNullVoidFunction";
 }
 
-v8::Maybe<void> V8TreatNonObjectAsNullVoidFunction::Invoke(ScriptWrappable* callback_this_value) {
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+v8::Maybe<void> V8TreatNonObjectAsNullVoidFunction::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) {
+  ScriptState* callback_relevant_script_state =
+      CallbackRelevantScriptStateOrThrowException(
+          "TreatNonObjectAsNullVoidFunction",
+          "invoke");
+  if (!callback_relevant_script_state) {
+    return v8::Nothing<void>();
+  }
+
+  if (!IsCallbackFunctionRunnable(callback_relevant_script_state,
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
@@ -47,7 +55,7 @@ v8::Maybe<void> V8TreatNonObjectAsNullVoidFunction::Invoke(ScriptWrappable* call
 
   // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
-      CallbackRelevantScriptState());
+      callback_relevant_script_state);
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
@@ -64,7 +72,12 @@ v8::Maybe<void> V8TreatNonObjectAsNullVoidFunction::Invoke(ScriptWrappable* call
   function = CallbackFunction();
 
   v8::Local<v8::Value> this_arg;
-  this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
+  if (callback_this_value.IsEmpty()) {
+    // step 2. If thisArg was not given, let thisArg be undefined.
+    this_arg = v8::Undefined(GetIsolate());
+  } else {
+    this_arg = callback_this_value.V8Value(callback_relevant_script_state);
+  }
 
   // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
@@ -77,7 +90,7 @@ v8::Maybe<void> V8TreatNonObjectAsNullVoidFunction::Invoke(ScriptWrappable* call
   // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
-          ExecutionContext::From(CallbackRelevantScriptState()),
+          ExecutionContext::From(callback_relevant_script_state),
           this_arg,
           argc,
           argv,
@@ -92,7 +105,7 @@ v8::Maybe<void> V8TreatNonObjectAsNullVoidFunction::Invoke(ScriptWrappable* call
   return v8::JustVoid();
 }
 
-void V8TreatNonObjectAsNullVoidFunction::InvokeAndReportException(ScriptWrappable* callback_this_value) {
+void V8TreatNonObjectAsNullVoidFunction::InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) {
   v8::TryCatch try_catch(GetIsolate());
   try_catch.SetVerbose(true);
 
@@ -102,12 +115,12 @@ void V8TreatNonObjectAsNullVoidFunction::InvokeAndReportException(ScriptWrappabl
   ALLOW_UNUSED_LOCAL(maybe_result);
 }
 
-v8::Maybe<void> V8PersistentCallbackFunction<V8TreatNonObjectAsNullVoidFunction>::Invoke(ScriptWrappable* callback_this_value) {
+v8::Maybe<void> V8PersistentCallbackFunction<V8TreatNonObjectAsNullVoidFunction>::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) {
   return Proxy()->Invoke(
       callback_this_value);
 }
 
-void V8PersistentCallbackFunction<V8TreatNonObjectAsNullVoidFunction>::InvokeAndReportException(ScriptWrappable* callback_this_value) {
+void V8PersistentCallbackFunction<V8TreatNonObjectAsNullVoidFunction>::InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) {
   Proxy()->InvokeAndReportException(
       callback_this_value);
 }

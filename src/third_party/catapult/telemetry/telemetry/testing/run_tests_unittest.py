@@ -2,11 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+import tempfile
 import unittest
+import json
 
+
+from telemetry import project_config
+from telemetry import decorators
 from telemetry.core import util
 from telemetry.testing import run_tests
-
+from telemetry.testing import unittest_runner
 
 class MockArgs(object):
   def __init__(self):
@@ -40,7 +46,258 @@ class MockPlatform(object):
     return ''
 
 
+def _MakeTestFilter(tests):
+  return '::'.join(tests)
+
+
 class RunTestsUnitTest(unittest.TestCase):
+  def setUp(self):
+    self._test_result = {}
+
+  def _ExtractTestResults(self, test_result):
+    delimiter = test_result['path_delimiter']
+    failures = []
+    successes = []
+    skips = []
+    def _IsLeafNode(node):
+      test_dict = node[1]
+      return ('expected' in test_dict and
+              isinstance(test_dict['expected'], basestring))
+    node_queues = []
+    for t in test_result['tests']:
+      node_queues.append((t, test_result['tests'][t]))
+    while node_queues:
+      node = node_queues.pop()
+      full_test_name, test_dict = node
+      if _IsLeafNode(node):
+        if all(res not in test_dict['expected'].split() for res in
+               test_dict['actual'].split()):
+          failures.append(full_test_name)
+        elif test_dict['actual'] == 'SKIP':
+          skips.append(full_test_name)
+        else:
+          successes.append(full_test_name)
+      else:
+        for k in test_dict:
+          node_queues.append(
+              ('%s%s%s' % (full_test_name, delimiter, k),
+               test_dict[k]))
+    return set(successes), set(failures), set(skips)
+
+  def _RunTest(
+      self, expected_failures, expected_successes, expected_skips,
+      expected_return_code=0, test_name='', extra_args=None, no_browser=True):
+    extra_args = extra_args or []
+    config = project_config.ProjectConfig(
+        top_level_dir=os.path.join(util.GetTelemetryDir(), 'examples'),
+        client_configs=[],
+        benchmark_dirs=[
+            os.path.join(util.GetTelemetryDir(), 'examples', 'browser_tests')]
+    )
+    temp_file = tempfile.NamedTemporaryFile(delete=False)
+    temp_file.close()
+    temp_file_name = temp_file.name
+    try:
+      passed_args = []
+      if test_name:
+        passed_args.append(test_name)
+      if no_browser:
+        passed_args.append('--no-browser')
+      passed_args.append('--write-full-results-to=%s' % temp_file_name)
+      ret = unittest_runner.Run(config, passed_args=passed_args + extra_args)
+      assert ret == expected_return_code, (
+          'actual return code %d, does not equal the expected return code %d' %
+          (ret, expected_return_code))
+      with open(temp_file_name) as f:
+        self._test_result = json.load(f)
+      (actual_successes,
+       actual_failures,
+       actual_skips) = self._ExtractTestResults(self._test_result)
+
+      # leave asserts below because we may miss tests
+      # that are running when they are not supposed to
+      self.assertEquals(set(actual_failures), set(expected_failures))
+      self.assertEquals(set(actual_successes), set(expected_successes))
+      self.assertEquals(set(actual_skips), set(expected_skips))
+    finally:
+      os.remove(temp_file_name)
+    return actual_failures, actual_successes, actual_skips
+
+  def _RunTestsWithExpectationsFile(
+      self, full_test_name, expectation, test_tags='foo', extra_args=None,
+      expected_exit_code=0):
+    extra_args = extra_args or []
+    expectations = ('# tags: [ foo bar mac ]\n'
+                    'crbug.com/123 [ %s ] %s [ %s ]')
+    expectations = expectations % (test_tags, full_test_name, expectation)
+    expectations_file = tempfile.NamedTemporaryFile(delete=False)
+    expectations_file.write(expectations)
+    results = tempfile.NamedTemporaryFile(delete=False)
+    results.close()
+    expectations_file.close()
+    config = project_config.ProjectConfig(
+        top_level_dir=os.path.join(util.GetTelemetryDir(), 'examples'),
+        client_configs=[],
+        expectations_files=[expectations_file.name],
+        benchmark_dirs=[
+            os.path.join(util.GetTelemetryDir(), 'examples', 'browser_tests')]
+    )
+    try:
+      passed_args = ([full_test_name, '--no-browser',
+                      ('--write-full-results-to=%s' % results.name)] +
+                     ['--tag=%s' % tag for tag in test_tags.split()])
+      ret = unittest_runner.Run(config, passed_args=passed_args + extra_args)
+      self.assertEqual(ret, expected_exit_code)
+      with open(results.name) as f:
+        self._test_result = json.load(f)
+    finally:
+      os.remove(expectations_file.name)
+      os.remove(results.name)
+    return self._test_result
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testIncludeGlobsInTestFilterListWithOutBrowser(self):
+    test_prefix = 'unit_tests_test.ExampleTests.%s'
+    expected_failure = test_prefix % 'test_fail'
+    expected_success = test_prefix % 'test_pass'
+    expected_skip = test_prefix % 'test_skip'
+    test_filter = _MakeTestFilter(
+        [expected_failure, test_prefix % 'test_sk*', expected_success])
+    self._RunTest(
+        [expected_failure], [expected_success], [expected_skip],
+        expected_return_code=1, extra_args=['--skip=*skip',
+                                            '--test-filter=%s' % test_filter])
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testIncludeGlobsInTestFilterListWithBrowser(self):
+    test_prefix = 'unit_tests_test.ExampleTests.%s'
+    expected_failure = test_prefix % 'test_fail'
+    expected_success = test_prefix % 'test_pass'
+    expected_skip = test_prefix % 'test_skip'
+    args = MockArgs()
+    args.test_filter = _MakeTestFilter(
+        [expected_failure, test_prefix % 'test_sk*', expected_success])
+    runner = run_tests.typ.Runner()
+    runner.top_level_dirs = [os.path.join(util.GetTelemetryDir(), 'examples')]
+    possible_browser = MockPossibleBrowser(
+        'system', 'mac', 'mavericks', True)
+    runner.classifier = run_tests.GetClassifier(args, possible_browser)
+    _, test_set = runner.find_tests(runner.args)
+    self.assertEqual(len(test_set.parallel_tests), 3)
+    test_names_found = [test.name for test in test_set.parallel_tests]
+    self.assertIn(expected_failure, test_names_found)
+    self.assertIn(expected_success, test_names_found)
+    self.assertIn(expected_skip, test_names_found)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testSkipOnlyWhenTestMatchesTestFilterWithBrowser(self):
+    test_name = 'unit_tests_test.ExampleTests.test_also_fail'
+    args = MockArgs()
+    args.skip.append('*fail')
+    args.test_filter = test_name
+    runner = run_tests.typ.Runner()
+    runner.top_level_dirs = [os.path.join(util.GetTelemetryDir(), 'examples')]
+    possible_browser = MockPossibleBrowser(
+        'system', 'mac', 'mavericks', True)
+    runner.classifier = run_tests.GetClassifier(args, possible_browser)
+    _, test_set = runner.find_tests(runner.args)
+    self.assertEqual(len(test_set.tests_to_skip), 1)
+    self.assertEqual(test_set.tests_to_skip[0].name, test_name)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testSkipOnlyWhenTestMatchesTestFilterWithoutBrowser(self):
+    test_name = 'unit_tests_test.ExampleTests.test_also_fail'
+    _, _, actual_skips = self._RunTest(
+        [], [], [test_name],
+        test_name=test_name,
+        extra_args=['--skip=*fail'])
+    self.assertEqual(actual_skips, set([test_name]))
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testTestFailsAllRetryOnFailureRetriesAndIsNotARegression(self):
+    self._RunTestsWithExpectationsFile(
+        'unit_tests_test.ExampleTests.test_fail', 'RetryOnFailure Failure',
+        extra_args=['--retry-limit=3', '--retry-only-retry-on-failure-tests'],
+        expected_exit_code=0)
+    results = (self._test_result['tests']['unit_tests_test']
+               ['ExampleTests']['test_fail'])
+    self.assertEqual(results['actual'], 'FAIL FAIL FAIL FAIL')
+    self.assertEqual(results['expected'], 'FAIL')
+    self.assertNotIn('is_unexpected', results)
+    self.assertNotIn('is_regression', results)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testDoNotRetryExpectedFailure(self):
+    self._RunTestsWithExpectationsFile(
+        'unit_tests_test.ExampleTests.test_fail', 'Failure',
+        extra_args=['--retry-limit=3'])
+    test_result = (self._test_result['tests']['unit_tests_test']['ExampleTests']
+                   ['test_fail'])
+    self.assertEqual(test_result['actual'], 'FAIL')
+    self.assertEqual(test_result['expected'], 'FAIL')
+    self.assertNotIn('is_unexpected', test_result)
+    self.assertNotIn('is_regression', test_result)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testRetryOnFailureExpectationWithPassingTest(self):
+    self._RunTestsWithExpectationsFile(
+        'unit_tests_test.ExampleTests.test_pass', 'RetryOnFailure')
+    test_result = (self._test_result['tests']['unit_tests_test']['ExampleTests']
+                   ['test_pass'])
+    self.assertEqual(test_result['actual'], 'PASS')
+    self.assertEqual(test_result['expected'], 'PASS')
+    self.assertNotIn('is_unexpected', test_result)
+    self.assertNotIn('is_regression', test_result)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testSkipTestCmdArgNoExpectationsFile(self):
+    test_name = 'unit_tests_test.ExampleTests.test_pass'
+    _, _, actual_skips = self._RunTest(
+        [], [], ['unit_tests_test.ExampleTests.test_pass'], test_name=test_name,
+        extra_args=['--skip=*test_pass'])
+    test_result = (self._test_result['tests']['unit_tests_test']
+                   ['ExampleTests']['test_pass'])
+    self.assertEqual(actual_skips, set([test_name]))
+    self.assertEqual(test_result['expected'], 'SKIP')
+    self.assertEqual(test_result['actual'], 'SKIP')
+    self.assertNotIn('is_unexpected', test_result)
+    self.assertNotIn('is_regression', test_result)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testSkipTestNoExpectationsFile(self):
+    test_name = 'unit_tests_test.ExampleTests.test_skip'
+    _, _, actual_skips = self._RunTest(
+        [], [], [test_name], test_name=test_name)
+    result = (self._test_result['tests']['unit_tests_test']
+              ['ExampleTests']['test_skip'])
+    self.assertEqual(actual_skips, set([test_name]))
+    self.assertEqual(result['actual'], 'SKIP')
+    self.assertEqual(result['expected'], 'SKIP')
+    self.assertNotIn('is_unexpected', result)
+    self.assertNotIn('is_regression', result)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testSkipTestWithExpectationsFileWithSkipExpectation(self):
+    self._RunTestsWithExpectationsFile(
+        'unit_tests_test.ExampleTests.test_pass', 'Skip Failure Crash')
+    test_result = (self._test_result['tests']['unit_tests_test']['ExampleTests']
+                   ['test_pass'])
+    self.assertEqual(test_result['actual'], 'SKIP')
+    self.assertEqual(test_result['expected'], 'CRASH FAIL SKIP')
+    self.assertNotIn('is_unexpected', test_result)
+    self.assertNotIn('is_regression', test_result)
+
+  @decorators.Disabled('chromeos')  # crbug.com/696553
+  def testSkipTestCmdArgsWithExpectationsFile(self):
+    self._RunTestsWithExpectationsFile(
+        'unit_tests_test.ExampleTests.test_pass', 'Crash Failure',
+        extra_args=['--skip=*test_pass'])
+    test_result = (self._test_result['tests']['unit_tests_test']['ExampleTests']
+                   ['test_pass'])
+    self.assertEqual(test_result['actual'], 'SKIP')
+    self.assertEqual(test_result['expected'], 'SKIP')
+    self.assertNotIn('is_unexpected', test_result)
+    self.assertNotIn('is_regression', test_result)
 
   def _GetEnabledTests(self, browser_type, os_name, os_version_name,
                        supports_tab_control, args=None):

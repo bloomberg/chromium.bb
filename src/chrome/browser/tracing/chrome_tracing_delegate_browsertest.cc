@@ -148,6 +148,12 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
       local_state->GetInt64(prefs::kBackgroundTracingLastUpload));
   EXPECT_FALSE(last_upload_time.is_null());
 
+  content::BackgroundTracingManager::GetInstance()->AbortScenario();
+  base::RunLoop wait_for_abort;
+  content::BackgroundTracingManager::GetInstance()->WhenIdle(
+      wait_for_abort.QuitClosure());
+  wait_for_abort.Run();
+
   // We should not be able to start a new reactive scenario immediately after
   // a previous one gets uploaded.
   EXPECT_FALSE(StartPreemptiveScenario(
@@ -181,6 +187,16 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
   const base::Time last_upload_time = base::Time::FromInternalValue(
       local_state->GetInt64(prefs::kBackgroundTracingLastUpload));
   EXPECT_FALSE(last_upload_time.is_null());
+
+  content::BackgroundTracingManager::GetInstance()->AbortScenario();
+  base::RunLoop wait_for_abort;
+  content::BackgroundTracingManager::GetInstance()->WhenIdle(
+      wait_for_abort.QuitClosure());
+  wait_for_abort.Run();
+
+  EXPECT_FALSE(StartPreemptiveScenario(
+      base::RepeatingClosure(),
+      content::BackgroundTracingManager::NO_DATA_FILTERING));
 
   // We move the last upload time to eight days in the past,
   // and at that point should be able to start a scenario again.

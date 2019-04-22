@@ -21,8 +21,9 @@
 #include "absl/types/optional.h"
 #include "api/video_codecs/sdp_video_format.h"
 #include "modules/video_coding/include/video_codec_interface.h"
-#include "rtc_base/atomicops.h"
-#include "rtc_base/sequenced_task_checker.h"
+#include "rtc_base/atomic_ops.h"
+#include "rtc_base/synchronization/sequence_checker.h"
+#include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
 
@@ -33,7 +34,7 @@ class VideoEncoderFactory;
 // webrtc::VideoEncoder instances with the given VideoEncoderFactory.
 // The object is created and destroyed on the worker thread, but all public
 // interfaces should be called from the encoder task queue.
-class SimulcastEncoderAdapter : public VideoEncoder {
+class RTC_EXPORT SimulcastEncoderAdapter : public VideoEncoder {
  public:
   explicit SimulcastEncoderAdapter(VideoEncoderFactory* factory,
                                    const SdpVideoFormat& format);
@@ -45,11 +46,9 @@ class SimulcastEncoderAdapter : public VideoEncoder {
                  int number_of_cores,
                  size_t max_payload_size) override;
   int Encode(const VideoFrame& input_image,
-             const CodecSpecificInfo* codec_specific_info,
-             const std::vector<FrameType>* frame_types) override;
+             const std::vector<VideoFrameType>* frame_types) override;
   int RegisterEncodeCompleteCallback(EncodedImageCallback* callback) override;
-  int SetRateAllocation(const VideoBitrateAllocation& bitrate,
-                        uint32_t new_framerate) override;
+  void SetRates(const RateControlParameters& parameters) override;
 
   // Eventual handler for the contained encoders' EncodedImageCallbacks, but
   // called from an internal helper that also knows the correct stream
@@ -83,11 +82,17 @@ class SimulcastEncoderAdapter : public VideoEncoder {
     bool send_stream;
   };
 
+  enum class StreamResolution {
+    OTHER,
+    HIGHEST,
+    LOWEST,
+  };
+
   // Populate the codec settings for each simulcast stream.
   void PopulateStreamCodec(const webrtc::VideoCodec& inst,
                            int stream_index,
                            uint32_t start_bitrate_kbps,
-                           bool highest_resolution_stream,
+                           StreamResolution stream_resolution,
                            webrtc::VideoCodec* stream_codec);
 
   bool Initialized() const;
@@ -103,13 +108,14 @@ class SimulcastEncoderAdapter : public VideoEncoder {
   EncoderInfo encoder_info_;
 
   // Used for checking the single-threaded access of the encoder interface.
-  rtc::SequencedTaskChecker encoder_queue_;
+  SequenceChecker encoder_queue_;
 
   // Store encoders in between calls to Release and InitEncode, so they don't
   // have to be recreated. Remaining encoders are destroyed by the destructor.
   std::stack<std::unique_ptr<VideoEncoder>> stored_encoders_;
 
   const absl::optional<unsigned int> experimental_boosted_screenshare_qp_;
+  const bool boost_base_layer_quality_;
 };
 
 }  // namespace webrtc

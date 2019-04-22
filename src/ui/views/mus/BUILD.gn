@@ -5,8 +5,6 @@
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -20,6 +18,8 @@ jumbo_component("mus") {
     "ax_remote_host.h",
     "ax_tree_source_mus.cc",
     "ax_tree_source_mus.h",
+    "cursor_manager_owner.cc",
+    "cursor_manager_owner.h",
     "desktop_window_tree_host_mus.cc",
     "desktop_window_tree_host_mus.h",
     "mus_client.cc",
@@ -32,6 +32,8 @@ jumbo_component("mus") {
     "screen_mus.cc",
     "screen_mus.h",
     "screen_mus_delegate.h",
+    "screen_position_client_mus.cc",
+    "screen_position_client_mus.h",
     "window_manager_constants_converters.cc",
     "window_manager_constants_converters.h",
     "window_manager_frame_values.cc",
@@ -52,8 +54,6 @@ jumbo_component("mus") {
     "//cc",
     "//mojo/public/cpp/bindings",
     "//net",
-    "//services/catalog/public/cpp",
-    "//services/catalog/public/mojom:constants",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/ws/public/cpp",
@@ -64,6 +64,7 @@ jumbo_component("mus") {
     "//ui/accessibility",
     "//ui/accessibility/mojom",
     "//ui/aura",
+    "//ui/base/ime/init",
     "//ui/base/mojo:lib",
     "//ui/compositor",
     "//ui/display",
@@ -102,218 +103,5 @@ repack("resources") {
 group("for_mojo_application") {
   public_deps = [
     ":mus",
-  ]
-}
-
-jumbo_static_library("test_support") {
-  testonly = true
-
-  sources = [
-    "../test/native_widget_factory_aura_mus.cc",
-    "mus_client_test_api.h",
-    "views_mus_test_suite.cc",
-    "views_mus_test_suite.h",
-  ]
-
-  deps = [
-    ":mus",
-    "//base",
-    "//base/test:test_support",
-    "//mojo/core/embedder",
-    "//services/catalog:lib",
-    "//services/service_manager/background:lib",
-    "//services/service_manager/public/cpp",
-    "//services/ws/common",
-    "//testing/gtest",
-    "//ui/aura",
-    "//ui/aura:test_support",
-    "//ui/compositor:test_support",
-    "//ui/gl:test_support",
-    "//ui/resources",
-    "//ui/resources:ui_test_pak",
-    "//ui/views",
-    "//ui/views:test_support_internal",
-  ]
-
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
-
-  data_deps = [
-    ":views_mus_tests_catalog",
-    "//services/ws/ime/test_ime_driver",
-    "//ui/resources:ui_test_pak_data",
-  ]
-}
-
-test("views_mus_unittests") {
-  testonly = true
-
-  sources = [
-    "ax_remote_host_unittest.cc",
-    "ax_tree_source_mus_unittest.cc",
-    "desktop_window_tree_host_mus_unittest.cc",
-    "run_all_unittests_mus.cc",
-    "screen_mus_unittest.cc",
-  ]
-
-  configs += [ "//build/config:precompiled_headers" ]
-
-  deps = [
-    ":mus",
-    ":test_support",
-    "//base",
-    "//base:i18n",
-    "//base/test:test_support",
-    "//cc",
-    "//net",
-    "//services/ws/public/mojom",
-    "//services/ws/test_ws:mojom",
-    "//skia",
-    "//testing/gtest",
-    "//third_party/icu",
-    "//ui/accessibility",
-    "//ui/accessibility/mojom",
-    "//ui/aura",
-    "//ui/aura:test_support",
-    "//ui/base",
-    "//ui/base:test_support",
-    "//ui/base/ime",
-    "//ui/compositor:test_support",
-    "//ui/events:dom_keycode_converter",
-    "//ui/events:events_base",
-    "//ui/events:test_support",
-    "//ui/events/platform",
-    "//ui/gfx:test_support",
-    "//ui/gfx/geometry",
-    "//ui/native_theme",
-    "//ui/strings",
-    "//ui/touch_selection",
-    "//ui/views",
-    "//ui/views:test_support_internal",
-    "//ui/views:views_unittests_sources",
-    "//ui/views/mus/remote_view:tests",
-    "//ui/wm",
-    "//url",
-  ]
-
-  data_deps = [
-    ":views_mus_tests_catalog_copy",
-    "//services/ws/ime/test_ime_driver",
-    "//services/ws/test_ws",
-  ]
-
-  if (is_win) {
-    deps += [
-      "//build/win:default_exe_manifest",
-      "//third_party/iaccessible2",
-      "//third_party/wtl",
-    ]
-    libs = [
-      "imm32.lib",
-      "oleacc.lib",
-      "comctl32.lib",
-    ]
-  }
-
-  if (use_x11) {
-    configs += [
-      "//build/config/linux:x11",
-      "//build/config/linux:xext",
-    ]
-    deps += [
-      "//ui/events/devices",
-      "//ui/events/platform/x11",
-      "//ui/gfx/x",
-    ]
-  }
-}
-
-# Tests that must run sequentially because they access system-wide features
-# like capture.
-test("views_mus_interactive_ui_tests") {
-  testonly = true
-
-  sources = [
-    "../widget/widget_interactive_uitest.cc",
-    "clipboard_unittest.cc",
-    "drag_interactive_uitest.cc",
-    "interactive_ui_tests_mus.cc",
-  ]
-
-  deps = [
-    ":mus",
-    ":test_support",
-    "//base",
-    "//mojo/core/embedder",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//ui/aura",
-    "//ui/aura:test_support",
-    "//ui/base",
-    "//ui/base:test_support",
-    "//ui/base/ime",
-    "//ui/base/mojo:lib",
-    "//ui/events:events_base",
-    "//ui/events:test_support",
-    "//ui/gl:test_support",
-    "//ui/touch_selection",
-    "//ui/views",
-    "//ui/views:test_support_internal",
-    "//ui/wm",
-    "//ui/wm/public",
-  ]
-
-  data_deps = [
-    ":views_mus_tests_catalog_copy",
-    "//services/ws/test_ws",
-  ]
-
-  if (is_win) {
-    deps += [
-      "//build/win:default_exe_manifest",
-      "//third_party/iaccessible2",
-      "//third_party/wtl",
-    ]
-    libs = [
-      "imm32.lib",
-      "oleacc.lib",
-      "comctl32.lib",
-    ]
-  }
-}
-
-service_manifest("unittests_manifest") {
-  name = "views_mus_unittests"
-  source = "unittests_manifest.json"
-}
-
-service_manifest("interactive_ui_tests_manifest") {
-  name = "views_mus_interactive_ui_tests"
-  source = "interactive_ui_tests_manifest.json"
-}
-
-catalog("views_mus_tests_catalog") {
-  testonly = true
-
-  embedded_services = [
-    ":unittests_manifest",
-    ":interactive_ui_tests_manifest",
-  ]
-
-  standalone_services = [
-    "//services/ws/test_ws:manifest",
-    "//services/ws/ime/test_ime_driver:manifest",
-  ]
-}
-
-copy("views_mus_tests_catalog_copy") {
-  testonly = true
-  sources = get_target_outputs(":views_mus_tests_catalog")
-  outputs = [
-    "${root_out_dir}/views_mus_tests_catalog.json",
-  ]
-  deps = [
-    ":views_mus_tests_catalog",
   ]
 }

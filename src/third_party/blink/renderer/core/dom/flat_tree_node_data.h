@@ -6,11 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_FLAT_TREE_NODE_DATA_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
-class Node;
 class HTMLSlotElement;
 
 class FlatTreeNodeData final : public GarbageCollected<FlatTreeNodeData> {
@@ -22,6 +22,13 @@ class FlatTreeNodeData final : public GarbageCollected<FlatTreeNodeData> {
     next_in_assigned_nodes_ = nullptr;
   }
   void Trace(Visitor*);
+
+#if DCHECK_IS_ON()
+  bool IsCleared() const {
+    return !assigned_slot_ && !previous_in_assigned_nodes_ &&
+           !next_in_assigned_nodes_;
+  }
+#endif
 
  private:
   void SetAssignedSlot(HTMLSlotElement* assigned_slot) {
@@ -39,6 +46,7 @@ class FlatTreeNodeData final : public GarbageCollected<FlatTreeNodeData> {
 
   friend class FlatTreeTraversal;
   friend class HTMLSlotElement;
+  friend HTMLSlotElement* Node::AssignedSlot() const;
 
   WeakMember<HTMLSlotElement> assigned_slot_;
   WeakMember<Node> previous_in_assigned_nodes_;

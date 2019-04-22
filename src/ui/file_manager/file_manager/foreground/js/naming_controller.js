@@ -31,7 +31,7 @@ function NamingController(
    */
   this.alertDialog_ = alertDialog;
 
- /**
+  /**
    * @type {!cr.ui.dialogs.ConfirmDialog}
    * @const
    * @private
@@ -78,13 +78,18 @@ function NamingController(
  */
 NamingController.prototype.validateFileName = function(
     parentEntry, name, onDone) {
-  var fileNameErrorPromise = util.validateFileName(
+  const fileNameErrorPromise = util.validateFileName(
       parentEntry, name, !this.fileFilter_.isHiddenFilesVisible());
-  fileNameErrorPromise.then(onDone.bind(null, true), function(message) {
-    this.alertDialog_.show(message, onDone.bind(null, false));
-  }.bind(this)).catch(function(error) {
-    console.error(error.stack || error);
-  });
+  fileNameErrorPromise
+      .then(
+          onDone.bind(null, true),
+          message => {
+            this.alertDialog_.show(
+                /** @type {string} */ (message), onDone.bind(null, false));
+          })
+      .catch(error => {
+        console.error(error.stack || error);
+      });
 };
 
 /**
@@ -92,15 +97,16 @@ NamingController.prototype.validateFileName = function(
  * @return {Promise<string>}
  */
 NamingController.prototype.validateFileNameForSaving = function(filename) {
-  var directory = /** @type {DirectoryEntry} */ (
-      this.directoryModel_.getCurrentDirEntry());
-  var currentDirUrl = directory.toURL().replace(/\/?$/, '/');
-  var fileUrl = currentDirUrl + encodeURIComponent(filename);
+  const directory =
+      /** @type {DirectoryEntry} */ (this.directoryModel_.getCurrentDirEntry());
+  const currentDirUrl = directory.toURL().replace(/\/?$/, '/');
+  const fileUrl = currentDirUrl + encodeURIComponent(filename);
 
-  return new Promise(this.validateFileName.bind(this, directory, filename)).
-      then(function(isValid) {
-        if (!isValid)
+  return new Promise(this.validateFileName.bind(this, directory, filename))
+      .then(isValid => {
+        if (!isValid) {
           return Promise.reject('Invalid filename.');
+        }
 
         if (directory && util.isFakeEntry(directory)) {
           // Can't save a file into a fake directory.
@@ -109,34 +115,37 @@ NamingController.prototype.validateFileNameForSaving = function(filename) {
 
         return new Promise(
             directory.getFile.bind(directory, filename, {create: false}));
-      }).then(function() {
-        // An existing file is found. Show confirmation dialog to
-        // overwrite it. If the user select "OK" on the dialog, save it.
-        return new Promise(function(fulfill, reject) {
-          this.confirmDialog_.show(
-              strf('CONFIRM_OVERWRITE_FILE', filename),
-              fulfill.bind(null, fileUrl),
-              reject.bind(null, 'Cancelled'),
-              function() {});
-        }.bind(this));
-      }.bind(this), function(error) {
-        if (error.name == util.FileError.NOT_FOUND_ERR) {
-          // The file does not exist, so it should be ok to create a
-          // new file.
-          return fileUrl;
-        }
+      })
+      .then(
+          () => {
+            // An existing file is found. Show confirmation dialog to
+            // overwrite it. If the user select "OK" on the dialog, save it.
+            return new Promise((fulfill, reject) => {
+              this.confirmDialog_.show(
+                  strf('CONFIRM_OVERWRITE_FILE', filename),
+                  fulfill.bind(null, fileUrl), reject.bind(null, 'Cancelled'),
+                  () => {});
+            });
+          },
+          error => {
+            if (error.name == util.FileError.NOT_FOUND_ERR) {
+              // The file does not exist, so it should be ok to create a
+              // new file.
+              return fileUrl;
+            }
 
-        if (error.name == util.FileError.TYPE_MISMATCH_ERR) {
-          // An directory is found.
-          // Do not allow to overwrite directory.
-          this.alertDialog_.show(strf('DIRECTORY_ALREADY_EXISTS', filename));
-          return Promise.reject(error);
-        }
+            if (error.name == util.FileError.TYPE_MISMATCH_ERR) {
+              // An directory is found.
+              // Do not allow to overwrite directory.
+              this.alertDialog_.show(
+                  strf('DIRECTORY_ALREADY_EXISTS', filename));
+              return Promise.reject(error);
+            }
 
-        // Unexpected error.
-        console.error('File save failed: ' + error.code);
-        return Promise.reject(error);
-      }.bind(this));
+            // Unexpected error.
+            console.error('File save failed: ' + error.code);
+            return Promise.reject(error);
+          });
 };
 
 /**
@@ -147,12 +156,13 @@ NamingController.prototype.isRenamingInProgress = function() {
 };
 
 NamingController.prototype.initiateRename = function() {
-  var item = this.listContainer_.currentList.ensureLeadItemExists();
-  if (!item)
+  const item = this.listContainer_.currentList.ensureLeadItemExists();
+  if (!item) {
     return;
-  var label = item.querySelector('.filename-label');
-  var input = this.listContainer_.renameInput;
-  var currentEntry =
+  }
+  const label = item.querySelector('.filename-label');
+  const input = this.listContainer_.renameInput;
+  const currentEntry =
       this.listContainer_.currentList.dataModel.item(item.listIndex);
 
   input.value = label.textContent;
@@ -160,7 +170,7 @@ NamingController.prototype.initiateRename = function() {
   label.parentNode.appendChild(input);
   input.focus();
 
-  var selectionEnd = input.value.lastIndexOf('.');
+  const selectionEnd = input.value.lastIndexOf('.');
   if (currentEntry.isFile && selectionEnd !== -1) {
     input.selectionStart = 0;
     input.selectionEnd = selectionEnd;
@@ -183,22 +193,24 @@ NamingController.prototype.initiateRename = function() {
  * Except for the item that the user is renaming.
  */
 NamingController.prototype.restoreItemBeingRenamed = function() {
-  if (!this.isRenamingInProgress())
+  if (!this.isRenamingInProgress()) {
     return;
+  }
 
-  var dm = this.directoryModel_;
-  var leadIndex = dm.getFileListSelection().leadIndex;
-  if (leadIndex < 0)
+  const dm = this.directoryModel_;
+  const leadIndex = dm.getFileListSelection().leadIndex;
+  if (leadIndex < 0) {
     return;
+  }
 
-  var leadEntry = /** @type {Entry} */ (dm.getFileList().item(leadIndex));
+  const leadEntry = /** @type {Entry} */ (dm.getFileList().item(leadIndex));
   if (!util.isSameEntry(
           this.listContainer_.renameInput.currentEntry, leadEntry)) {
     return;
   }
 
-  var leadListItem = this.listContainer_.findListItemForNode(
-      this.listContainer_.renameInput);
+  const leadListItem =
+      this.listContainer_.findListItemForNode(this.listContainer_.renameInput);
   if (this.listContainer_.currentListType == ListContainer.ListType.DETAIL) {
     this.listContainer_.table.updateFileMetadata(leadListItem, leadEntry);
   }
@@ -212,11 +224,13 @@ NamingController.prototype.restoreItemBeingRenamed = function() {
 NamingController.prototype.onRenameInputKeyDown_ = function(event) {
   // Ignore key events if event.keyCode is VK_PROCESSKEY(229).
   // TODO(fukino): Remove this workaround once crbug.com/644140 is fixed.
-  if (event.keyCode === 229)
+  if (event.keyCode === 229) {
     return;
+  }
 
-  if (!this.isRenamingInProgress())
+  if (!this.isRenamingInProgress()) {
     return;
+  }
 
   // Do not move selection or lead item in list during rename.
   if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
@@ -251,28 +265,29 @@ NamingController.prototype.onRenameInputBlur_ = function(event) {
  * @private
  */
 NamingController.prototype.commitRename_ = function() {
-  var input = this.listContainer_.renameInput;
-  var entry = input.currentEntry;
-  var newName = input.value;
+  const input = this.listContainer_.renameInput;
+  const entry = input.currentEntry;
+  const newName = input.value;
 
   if (!newName || newName == entry.name) {
     this.cancelRename_();
     return;
   }
 
-  var renamedItemElement = this.listContainer_.findListItemForNode(
-      this.listContainer_.renameInput);
-  var nameNode = renamedItemElement.querySelector('.filename-label');
+  const renamedItemElement =
+      this.listContainer_.findListItemForNode(this.listContainer_.renameInput);
+  const nameNode = renamedItemElement.querySelector('.filename-label');
 
   input.validation_ = true;
-  var validationDone = function(valid) {
+  const validationDone = valid => {
     input.validation_ = false;
 
     if (!valid) {
       // Cancel rename if it fails to restore focus from alert dialog.
       // Otherwise, just cancel the commitment and continue to rename.
-      if (document.activeElement != input)
+      if (document.activeElement != input) {
         this.cancelRename_();
+      }
       return;
     }
 
@@ -290,8 +305,8 @@ NamingController.prototype.commitRename_ = function() {
 
     util.rename(
         entry, newName,
-        function(newEntry) {
-          this.directoryModel_.onRenameEntry(entry, newEntry, function() {
+        newEntry => {
+          this.directoryModel_.onRenameEntry(entry, assert(newEntry), () => {
             // Select new entry.
             this.listContainer_.currentList.selectionModel.selectedIndex =
                 this.directoryModel_.getFileList().indexOf(newEntry);
@@ -303,27 +318,27 @@ NamingController.prototype.commitRename_ = function() {
 
             // Focus may go out of the list. Back it to the list.
             this.listContainer_.currentList.focus();
-          }.bind(this));
-        }.bind(this),
-        function(error) {
+          });
+        },
+        error => {
           // Write back to the old name.
           nameNode.textContent = entry.name;
           renamedItemElement.removeAttribute('renaming');
           this.listContainer_.endBatchUpdates();
 
           // Show error dialog.
-          var message = util.getRenameErrorMessage(error, entry, newName);
+          const message = util.getRenameErrorMessage(error, entry, newName);
           this.alertDialog_.show(message);
-        }.bind(this));
-  }.bind(this);
+        });
+  };
 
   // TODO(mtomasz): this.getCurrentDirectoryEntry() might not return the actual
   // parent if the directory content is a search result. Fix it to do proper
   // validation.
   this.validateFileName(
-      /** @type {!DirectoryEntry} */ (this.directoryModel_.getCurrentDirEntry()),
-      newName,
-      validationDone.bind(this));
+      /** @type {!DirectoryEntry} */ (
+          this.directoryModel_.getCurrentDirEntry()),
+      newName, validationDone.bind(this));
 };
 
 /**
@@ -332,14 +347,16 @@ NamingController.prototype.commitRename_ = function() {
 NamingController.prototype.cancelRename_ = function() {
   this.listContainer_.renameInput.currentEntry = null;
 
-  var item = this.listContainer_.findListItemForNode(
-      this.listContainer_.renameInput);
-  if (item)
+  const item =
+      this.listContainer_.findListItemForNode(this.listContainer_.renameInput);
+  if (item) {
     item.removeAttribute('renaming');
+  }
 
-  var parent = this.listContainer_.renameInput.parentNode;
-  if (parent)
+  const parent = this.listContainer_.renameInput.parentNode;
+  if (parent) {
     parent.removeChild(this.listContainer_.renameInput);
+  }
 
   this.listContainer_.endBatchUpdates();
 

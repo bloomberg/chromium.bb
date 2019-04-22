@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -47,9 +48,9 @@ class MainThreadTest : public testing::Test {
   void SetUp() override {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
     scheduler_.reset(new MainThreadSchedulerImpl(
-        base::sequence_manager::SequenceManagerForTest::Create(
-            message_loop_.GetMessageLoopBase(), message_loop_.task_runner(),
-            &clock_),
+        base::sequence_manager::SequenceManagerForTest::CreateOnCurrentThread(
+            base::sequence_manager::SequenceManager::Settings{.clock =
+                                                                  &clock_}),
         base::nullopt));
     scheduler_overrider_ =
         std::make_unique<ScopedSchedulerOverrider>(scheduler_.get());

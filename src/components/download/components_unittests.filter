@@ -16,3 +16,4 @@ NavigationMonitorImplTest.*
 NetworkListenerTest.*
 ProtoConversionsTest.*
 ServiceConfigImplTest.*
+TaskManagerImplTest.*

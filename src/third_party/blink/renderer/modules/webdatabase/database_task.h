@@ -31,13 +31,14 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/renderer/modules/webdatabase/database.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_basic_types.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_error.h"
 #include "third_party/blink/renderer/modules/webdatabase/sql_transaction_backend.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -45,7 +46,6 @@
 namespace blink {
 
 class DatabaseTask {
-  WTF_MAKE_NONCOPYABLE(DatabaseTask);
   USING_FAST_MALLOC(DatabaseTask);
 
  public:
@@ -56,43 +56,33 @@ class DatabaseTask {
   Database* GetDatabase() const { return database_.Get(); }
 
  protected:
-  DatabaseTask(Database*, WaitableEvent* complete_event);
+  DatabaseTask(Database*, base::WaitableEvent* complete_event);
 
  private:
   virtual void DoPerformTask() = 0;
   virtual void TaskCancelled() {}
 
   CrossThreadPersistent<Database> database_;
-  WaitableEvent* complete_event_;
+  base::WaitableEvent* complete_event_;
 
 #if DCHECK_IS_ON()
   virtual const char* DebugTaskName() const = 0;
   bool complete_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(DatabaseTask);
 };
 
 class Database::DatabaseOpenTask final : public DatabaseTask {
  public:
-  static std::unique_ptr<DatabaseOpenTask> Create(
-      Database* db,
-      bool set_version_in_new_database,
-      WaitableEvent* complete_event,
-      DatabaseError& error,
-      String& error_message,
-      bool& success) {
-    return base::WrapUnique(
-        new DatabaseOpenTask(db, set_version_in_new_database, complete_event,
-                             error, error_message, success));
-  }
-
- private:
   DatabaseOpenTask(Database*,
                    bool set_version_in_new_database,
-                   WaitableEvent*,
+                   base::WaitableEvent*,
                    DatabaseError&,
                    String& error_message,
                    bool& success);
 
+ private:
   void DoPerformTask() override;
 #if DCHECK_IS_ON()
   const char* DebugTaskName() const override;
@@ -106,15 +96,9 @@ class Database::DatabaseOpenTask final : public DatabaseTask {
 
 class Database::DatabaseCloseTask final : public DatabaseTask {
  public:
-  static std::unique_ptr<DatabaseCloseTask> Create(
-      Database* db,
-      WaitableEvent* synchronizer) {
-    return base::WrapUnique(new DatabaseCloseTask(db, synchronizer));
-  }
+  DatabaseCloseTask(Database*, base::WaitableEvent*);
 
  private:
-  DatabaseCloseTask(Database*, WaitableEvent*);
-
   void DoPerformTask() override;
 #if DCHECK_IS_ON()
   const char* DebugTaskName() const override;
@@ -123,19 +107,13 @@ class Database::DatabaseCloseTask final : public DatabaseTask {
 
 class Database::DatabaseTransactionTask final : public DatabaseTask {
  public:
-  ~DatabaseTransactionTask() override;
-
   // Transaction task is never synchronous, so no 'synchronizer' parameter.
-  static std::unique_ptr<DatabaseTransactionTask> Create(
-      SQLTransactionBackend* transaction) {
-    return base::WrapUnique(new DatabaseTransactionTask(transaction));
-  }
+  explicit DatabaseTransactionTask(SQLTransactionBackend*);
+  ~DatabaseTransactionTask() override;
 
   SQLTransactionBackend* Transaction() const { return transaction_.Get(); }
 
  private:
-  explicit DatabaseTransactionTask(SQLTransactionBackend*);
-
   void DoPerformTask() override;
   void TaskCancelled() override;
 #if DCHECK_IS_ON()
@@ -147,15 +125,11 @@ class Database::DatabaseTransactionTask final : public DatabaseTask {
 
 class Database::DatabaseTableNamesTask final : public DatabaseTask {
  public:
-  static std::unique_ptr<DatabaseTableNamesTask>
-  Create(Database* db, WaitableEvent* synchronizer, Vector<String>& names) {
-    return base::WrapUnique(
-        new DatabaseTableNamesTask(db, synchronizer, names));
-  }
+  DatabaseTableNamesTask(Database*,
+                         base::WaitableEvent*,
+                         Vector<String>& names);
 
  private:
-  DatabaseTableNamesTask(Database*, WaitableEvent*, Vector<String>& names);
-
   void DoPerformTask() override;
 #if DCHECK_IS_ON()
   const char* DebugTaskName() const override;

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -29,7 +29,7 @@ const ui::ScaleFactor FaviconScaleFactor1xAnd2x[] = {
 
 #define SCOPED_FAVICON_SCALE_FACTOR(list)          \
   ui::test::ScopedSetSupportedScaleFactors scoped( \
-      std::vector<ui::ScaleFactor>(list, list + arraysize(list)))
+      std::vector<ui::ScaleFactor>(list, list + base::size(list)))
 
 #define SCOPED_FAVICON_SCALE_FACTOR_1X \
   SCOPED_FAVICON_SCALE_FACTOR(FaviconScaleFactor1x)

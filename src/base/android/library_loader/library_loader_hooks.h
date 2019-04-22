@@ -9,9 +9,28 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 
 namespace base {
+
 namespace android {
+
+namespace internal {
+
+// Manages the selection of a trial that can be overridden by a flag.
+//
+// If the flag is present in the command line, this will return true or false
+// for flag values "on" or "off", respectively. If not present or misspelled,
+// true is returned and an error logged.
+//
+// If the flag is not present, the true is returned by a 50% random choice, and
+// the corresponding flag added to the command line.
+BASE_EXPORT bool GetRandomizedTrial(
+    const std::string& flag_name,
+    CommandLine* command_line = CommandLine::ForCurrentProcess());
+
+}  // namespace internal.
 
 // The process the shared library is loaded in.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.base.library_loader
@@ -27,6 +46,9 @@ enum LibraryProcessType {
   // Shared library is running in child process as part of webview.
   PROCESS_WEBVIEW_CHILD = 4,
 };
+
+// A randomized trial using switches::kOrderfileMemoryOptimization.
+BASE_EXPORT bool IsUsingOrderfileOptimization();
 
 typedef bool NativeInitializationHook(LibraryProcessType library_process_type);
 

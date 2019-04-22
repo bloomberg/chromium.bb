@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 
+#include "base/bind_helpers.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,7 +24,7 @@ TEST_F(CannedBrowsingDataLocalStorageTest, Empty) {
       new CannedBrowsingDataLocalStorageHelper(&profile));
 
   ASSERT_TRUE(helper->empty());
-  helper->AddLocalStorage(origin);
+  helper->Add(url::Origin::Create(origin));
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());
@@ -40,14 +41,14 @@ TEST_F(CannedBrowsingDataLocalStorageTest, Delete) {
       new CannedBrowsingDataLocalStorageHelper(&profile));
 
   EXPECT_TRUE(helper->empty());
-  helper->AddLocalStorage(origin1);
-  helper->AddLocalStorage(origin2);
-  helper->AddLocalStorage(origin3);
-  EXPECT_EQ(3u, helper->GetLocalStorageCount());
-  helper->DeleteOrigin(origin2, base::DoNothing());
-  EXPECT_EQ(2u, helper->GetLocalStorageCount());
-  helper->DeleteOrigin(origin1, base::DoNothing());
-  EXPECT_EQ(1u, helper->GetLocalStorageCount());
+  helper->Add(url::Origin::Create(origin1));
+  helper->Add(url::Origin::Create(origin2));
+  helper->Add(url::Origin::Create(origin3));
+  EXPECT_EQ(3u, helper->GetCount());
+  helper->DeleteOrigin(url::Origin::Create(origin2), base::DoNothing());
+  EXPECT_EQ(2u, helper->GetCount());
+  helper->DeleteOrigin(url::Origin::Create(origin1), base::DoNothing());
+  EXPECT_EQ(1u, helper->GetCount());
 }
 
 TEST_F(CannedBrowsingDataLocalStorageTest, IgnoreExtensionsAndDevTools) {
@@ -60,9 +61,9 @@ TEST_F(CannedBrowsingDataLocalStorageTest, IgnoreExtensionsAndDevTools) {
       new CannedBrowsingDataLocalStorageHelper(&profile));
 
   ASSERT_TRUE(helper->empty());
-  helper->AddLocalStorage(origin1);
+  helper->Add(url::Origin::Create(origin1));
   ASSERT_TRUE(helper->empty());
-  helper->AddLocalStorage(origin2);
+  helper->Add(url::Origin::Create(origin2));
   ASSERT_TRUE(helper->empty());
 }
 

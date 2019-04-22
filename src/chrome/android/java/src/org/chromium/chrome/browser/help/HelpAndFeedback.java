@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
@@ -22,7 +23,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlUtilities;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Launches an activity that displays a relevant support page and has an option to provide feedback.

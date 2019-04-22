@@ -36,14 +36,14 @@ class CrashReporterClient {
   CrashReporterClient();
   virtual ~CrashReporterClient();
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN)
+#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(OS_ANDROID)
   // Sets the crash reporting client ID, a unique identifier for the client
   // that is sending crash reports. After it is set, it should not be changed.
   // |client_guid| may either be a full GUID or a GUID that was already stripped
   // from its dashes.
   //
-  // On Mac OS X and Windows, this is the responsibility of Crashpad, and can
-  // not be set directly by the client.
+  // On macOS, Windows, and Android this is the responsibility of Crashpad, and
+  // can not be set directly by the client.
   virtual void SetCrashReporterClientIdFromGUID(const std::string& client_guid);
 #endif
 
@@ -153,6 +153,15 @@ class CrashReporterClient {
   virtual bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled);
 
 #if defined(OS_ANDROID)
+  // Used by WebView to sample crashes without generating the unwanted dumps. If
+  // the returned value is less than 100, crash dumping will be sampled to that
+  // percentage.
+  virtual unsigned int GetCrashDumpPercentage();
+
+  // Returns true if |ptype| was set to a value to override the default `ptype`
+  // annotation used for the browser process.
+  virtual bool GetBrowserProcessType(std::string* ptype);
+
   // Returns the descriptor key of the android minidump global descriptor.
   virtual int GetAndroidMinidumpDescriptor();
 

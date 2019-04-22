@@ -8,9 +8,10 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
@@ -35,7 +36,7 @@
 
 namespace {
 
-const char kExtensionId[] = "abc";
+const char kExtensionId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 const char* const kUrlApiCalls[] = {
     "HTMLButtonElement.formAction", "HTMLEmbedElement.src",
@@ -85,6 +86,11 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   static void RetrieveActions_LogAndFetchActions0(
       std::unique_ptr<std::vector<scoped_refptr<Action>>> i) {
     ASSERT_EQ(0, static_cast<int>(i->size()));
+  }
+
+  static void RetrieveActions_LogAndFetchActions1(
+      std::unique_ptr<std::vector<scoped_refptr<Action>>> i) {
+    ASSERT_EQ(1, static_cast<int>(i->size()));
   }
 
   static void RetrieveActions_LogAndFetchActions2(
@@ -168,7 +174,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 
   static void RetrieveActions_ArgUrlApiCalls(
       std::unique_ptr<std::vector<scoped_refptr<Action>>> actions) {
-    size_t api_calls_size = arraysize(kUrlApiCalls);
+    size_t api_calls_size = base::size(kUrlApiCalls);
     const base::DictionaryValue* other = NULL;
     int dom_verb = -1;
 
@@ -200,7 +206,6 @@ TEST_F(ActivityLogTest, Construct) {
 
 TEST_F(ActivityLogTest, LogAndFetchActions) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
   ASSERT_TRUE(GetDatabaseEnabled());
 
   // Write some API calls
@@ -238,7 +243,7 @@ TEST_F(ActivityLogTest, LogPrerender) {
 
   prerender::test_utils::RestorePrerenderMode restore_prerender_mode;
   prerender::PrerenderManager::SetMode(
-      prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
+      prerender::PrerenderManager::DEPRECATED_PRERENDER_MODE_ENABLED);
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(profile());
 
@@ -267,8 +272,6 @@ TEST_F(ActivityLogTest, LogPrerender) {
 
 TEST_F(ActivityLogTest, ArgUrlExtraction) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
-
   base::Time now = base::Time::Now();
 
   // Submit a DOM API call which should have its URL extracted into the arg_url
@@ -338,7 +341,6 @@ TEST_F(ActivityLogTest, UninstalledExtension) {
           .Build();
 
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
   ASSERT_TRUE(GetDatabaseEnabled());
 
   // Write some API calls
@@ -362,9 +364,8 @@ TEST_F(ActivityLogTest, UninstalledExtension) {
 
 TEST_F(ActivityLogTest, ArgUrlApiCalls) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
   base::Time now = base::Time::Now();
-  int api_calls_size = arraysize(kUrlApiCalls);
+  int api_calls_size = base::size(kUrlApiCalls);
   scoped_refptr<Action> action;
 
   for (int i = 0; i < api_calls_size; i++) {
@@ -381,6 +382,32 @@ TEST_F(ActivityLogTest, ArgUrlApiCalls) {
   activity_log->GetFilteredActions(
       kExtensionId, Action::ACTION_ANY, "", "", "", -1,
       base::BindOnce(ActivityLogTest::RetrieveActions_ArgUrlApiCalls));
+}
+
+TEST_F(ActivityLogTest, DeleteActivitiesByExtension) {
+  const std::string kOtherExtensionId = std::string(32, 'c');
+
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile());
+  ASSERT_TRUE(GetDatabaseEnabled());
+
+  scoped_refptr<Action> action =
+      base::MakeRefCounted<Action>(kExtensionId, base::Time::Now(),
+                                   Action::ACTION_API_CALL, "tabs.testMethod");
+  activity_log->LogAction(action);
+
+  action =
+      base::MakeRefCounted<Action>(kOtherExtensionId, base::Time::Now(),
+                                   Action::ACTION_DOM_ACCESS, "document.write");
+  action->set_page_url(GURL("http://www.google.com"));
+  activity_log->LogAction(action);
+
+  activity_log->RemoveExtensionData(kExtensionId);
+  activity_log->GetFilteredActions(
+      kExtensionId, Action::ACTION_ANY, "", "", "", 0,
+      base::BindOnce(ActivityLogTest::RetrieveActions_LogAndFetchActions0));
+  activity_log->GetFilteredActions(
+      kOtherExtensionId, Action::ACTION_ANY, "", "", "", 0,
+      base::BindOnce(ActivityLogTest::RetrieveActions_LogAndFetchActions1));
 }
 
 class ActivityLogTestWithoutSwitch : public ActivityLogTest {
@@ -407,8 +434,11 @@ TEST_F(ActivityLogTestWithoutSwitch, TestShouldLog) {
   // Loading a watchdog app means the activity log should log other extension
   // activities...
   EXPECT_TRUE(activity_log->ShouldLog(empty_extension->id()));
-  // ... but not those of the watchdog app.
+  // ... but not those of the watchdog app...
   EXPECT_FALSE(activity_log->ShouldLog(activity_log_extension->id()));
+  // ... or activities from the browser/extensions page, represented by an empty
+  // extension ID.
+  EXPECT_FALSE(activity_log->ShouldLog(std::string()));
   extension_service_->DisableExtension(activity_log_extension->id(),
                                        disable_reason::DISABLE_USER_ACTION);
   // Disabling the watchdog app means that we're back to never logging anything.

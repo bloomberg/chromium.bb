@@ -20,6 +20,7 @@ message Crash {
     BUFFER_OVERFLOW = 2;
     DOUBLE_FREE = 3;
     UNKNOWN = 4;
+    FREE_INVALID_ADDRESS = 5;
   }
 
   message AllocationInfo {
@@ -33,4 +34,18 @@ message Crash {
 
   optional AllocationInfo allocation = 4;
   optional AllocationInfo deallocation = 5;
+
+  // Records the bounds of the GWP-ASan allocator region.
+  optional uint64 region_start = 6;
+  optional uint64 region_size = 7;
+
+  // The invalid address that was free()d, if present.
+  optional uint64 free_invalid_address = 8;
+
+  // Set to true if metadata (allocation address and size, stack traces) was
+  // missing for the allocation involving this crash. This can occur when a
+  // use-after-free occurs after the metadata for the allocation has been
+  // deleted or a wild memory access occurs for a page that has no associated
+  // metadata.
+  optional bool missing_metadata = 9;
 }

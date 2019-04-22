@@ -23,17 +23,7 @@ class PolicyPathParserTests : public testing::Test {
   }
 };
 
-// TODO(pastarmovj): Modify test or change the logic after investigating why it
-// is flaky. Please only redisable after it has had a chance to run for a few
-// times. See bug http://crbug.com/327520 for context.
-// TODO(pastarmovj): Disabling on Mac OS X as the test is flaky. See
-// crbug.com/458590 for details.
-#if defined(OS_MACOSX)
-#define MAYBE_AllPlatformVariables DISABLED_AllPlatformVariables
-#else
-#define MAYBE_AllPlatformVariables AllPlatformVariables
-#endif
-TEST_F(PolicyPathParserTests, MAYBE_AllPlatformVariables) {
+TEST_F(PolicyPathParserTests, AllPlatformVariables) {
   // No vars whatsoever no substitution should occur.
   base::FilePath::StringType no_vars(FILE_PATH_LITERAL("//$C/shares"));
   base::FilePath::StringType no_vars_result =

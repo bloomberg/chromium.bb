@@ -11,8 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -27,7 +27,8 @@ class FakeHostBackendDelegate : public HostBackendDelegate {
   // Changes the backend host to |host_device_on_backend| and notifies
   // observers.
   void NotifyHostChangedOnBackend(
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device_on_backend);
+      const base::Optional<multidevice::RemoteDeviceRef>&
+          host_device_on_backend);
 
   void NotifyBackendRequestFailed();
 
@@ -35,18 +36,18 @@ class FakeHostBackendDelegate : public HostBackendDelegate {
 
   // HostBackendDelegate:
   void AttemptToSetMultiDeviceHostOnBackend(
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device) override;
+      const base::Optional<multidevice::RemoteDeviceRef>& host_device) override;
   bool HasPendingHostRequest() override;
-  base::Optional<cryptauth::RemoteDeviceRef> GetPendingHostRequest()
+  base::Optional<multidevice::RemoteDeviceRef> GetPendingHostRequest()
       const override;
-  base::Optional<cryptauth::RemoteDeviceRef> GetMultiDeviceHostFromBackend()
+  base::Optional<multidevice::RemoteDeviceRef> GetMultiDeviceHostFromBackend()
       const override;
 
  private:
   size_t num_attempt_to_set_calls_ = 0u;
-  base::Optional<base::Optional<cryptauth::RemoteDeviceRef>>
+  base::Optional<base::Optional<multidevice::RemoteDeviceRef>>
       pending_host_request_;
-  base::Optional<cryptauth::RemoteDeviceRef> host_device_on_backend_;
+  base::Optional<multidevice::RemoteDeviceRef> host_device_on_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeHostBackendDelegate);
 };

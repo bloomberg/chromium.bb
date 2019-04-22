@@ -9,6 +9,7 @@
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ui/aura/window.h"
@@ -35,14 +36,20 @@ void OverflowBubble::Show(OverflowButton* overflow_button,
 
   Hide();
 
-  bubble_ = new OverflowBubbleView(shelf_);
-  bubble_->InitOverflowBubble(overflow_button, shelf_view);
+  bubble_ = new OverflowBubbleView(
+      shelf_view, overflow_button,
+      shelf_view->shelf_widget()->GetShelfBackgroundColor());
   overflow_button_ = overflow_button;
 
-  TrayBackgroundView::InitializeBubbleAnimations(bubble_->GetWidget());
-  bubble_->GetWidget()->AddObserver(this);
-  bubble_->GetWidget()->Show();
-  Shell::Get()->focus_cycler()->AddWidget(bubble_->GetWidget());
+  views::Widget* widget = bubble_->GetWidget();
+  TrayBackgroundView::InitializeBubbleAnimations(widget);
+  widget->AddObserver(this);
+  // Show the bubble without activating it so that if the keyboard focus is on
+  // the overflow button, it remains there and allows toggling with the
+  // keyboard.
+  widget->ShowInactive();
+  widget->GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
+  Shell::Get()->focus_cycler()->AddWidget(widget);
 }
 
 void OverflowBubble::Hide() {

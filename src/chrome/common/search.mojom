@@ -104,6 +104,21 @@ interface EmbeddedSearch {
 
   // Let the user select a local file for the NTP background.
   SelectLocalBackgroundImage();
+
+  // Add a search suggestion task id to the blocklist.
+  BlocklistSearchSuggestion(int32 task_version, int64 task_id);
+
+  // Add a search suggestion task id and hash to the blocklist.
+  BlocklistSearchSuggestionWithHash(int32 task_version, int64 task_id,
+                                    array<uint8, 4> hash);
+
+  // A search suggestion was selected, issue a new request with the suggestion
+  // temporarily added to the blocklist.
+  SearchSuggestionSelected(int32 task_version, int64 task_id,
+                                    array<uint8, 4> hash);
+
+  // Opts the user out of receiving search suggestions.
+  OptOutOfSearchSuggestions();
 };
 
 [Native]

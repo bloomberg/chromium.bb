@@ -109,18 +109,14 @@ V8_INLINE Dest bit_cast(Source const& source) {
 }
 
 // Explicitly declare the assignment operator as deleted.
-#define DISALLOW_ASSIGN(TypeName) TypeName& operator=(const TypeName&) = delete;
+#define DISALLOW_ASSIGN(TypeName) TypeName& operator=(const TypeName&) = delete
 
 // Explicitly declare the copy constructor and assignment operator as deleted.
+// This also deletes the implicit move constructor and implicit move assignment
+// operator, but still allows to manually define them.
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&) = delete;      \
   DISALLOW_ASSIGN(TypeName)
-
-// Explicitly declare all copy/move constructors and assignments as deleted.
-#define DISALLOW_COPY_AND_MOVE_AND_ASSIGN(TypeName) \
-  TypeName(TypeName&&) = delete;                    \
-  TypeName& operator=(TypeName&&) = delete;         \
-  DISALLOW_COPY_AND_ASSIGN(TypeName)
 
 // Explicitly declare all implicit constructors as deleted, namely the
 // default constructor, copy constructor and operator= functions.
@@ -150,7 +146,7 @@ V8_INLINE Dest bit_cast(Source const& source) {
 //  odr-used by the definition of the destructor of that class, [...]
 #define DISALLOW_NEW_AND_DELETE()                            \
   void* operator new(size_t) { base::OS::Abort(); }          \
-  void* operator new[](size_t) { base::OS::Abort(); };       \
+  void* operator new[](size_t) { base::OS::Abort(); }        \
   void operator delete(void*, size_t) { base::OS::Abort(); } \
   void operator delete[](void*, size_t) { base::OS::Abort(); }
 
@@ -322,7 +318,7 @@ V8_INLINE A implicit_cast(A x) {
 #define V8PRIdPTR V8_PTR_PREFIX "d"
 #define V8PRIuPTR V8_PTR_PREFIX "u"
 
-#ifdef V8_TARGET_ARCH_64_BIT
+#if V8_TARGET_ARCH_64_BIT
 #define V8_PTR_HEX_DIGITS 12
 #define V8PRIxPTR_FMT "0x%012" V8PRIxPTR
 #else

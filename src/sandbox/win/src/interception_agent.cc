@@ -185,7 +185,8 @@ bool InterceptionAgent::PatchDll(const DllPatchInfo* dll_info,
       return false;
     }
 
-    DCHECK_NT(!g_originals[function->id]);
+    DCHECK_NT(!g_originals[function->id] ||
+              g_originals[function->id] == &thunks->thunks[i]);
     g_originals[function->id] = &thunks->thunks[i];
 
     thunks->num_thunks++;

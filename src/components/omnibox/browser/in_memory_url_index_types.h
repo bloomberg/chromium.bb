@@ -8,13 +8,23 @@
 #include <stddef.h>
 
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/containers/hash_tables.h"
 #include "base/strings/string16.h"
 #include "components/history/core/browser/history_types.h"
 #include "url/gurl.h"
+
+// Convenience Types -----------------------------------------------------------
+
+typedef std::vector<base::string16> String16Vector;
+typedef base::flat_set<base::string16> String16Set;
+typedef base::flat_set<base::char16> Char16Set;
+typedef std::vector<base::char16> Char16Vector;
+
+// A vector that contains the offsets at which each word starts within a string.
+typedef std::vector<size_t> WordStarts;
 
 // Matches within URL and Title Strings ----------------------------------------
 
@@ -33,6 +43,10 @@ struct TermMatch {
   size_t length;  // The length of the substring match.
 };
 typedef std::vector<TermMatch> TermMatches;
+
+// Returns the joined TermMatches of each term. See MatchTermInString.
+TermMatches MatchTermsInString(const String16Vector& terms,
+                               const base::string16& cleaned_string);
 
 // Returns a TermMatches which has an entry for each occurrence of the
 // string |term| found in the string |cleaned_string|. Use
@@ -65,16 +79,6 @@ std::vector<size_t> OffsetsFromTermMatches(const TermMatches& matches);
 // the updated list of matches.
 TermMatches ReplaceOffsetsInTermMatches(const TermMatches& matches,
                                         const std::vector<size_t>& offsets);
-
-// Convenience Types -----------------------------------------------------------
-
-typedef std::vector<base::string16> String16Vector;
-typedef base::flat_set<base::string16> String16Set;
-typedef base::flat_set<base::char16> Char16Set;
-typedef std::vector<base::char16> Char16Vector;
-
-// A vector that contains the offsets at which each word starts within a string.
-typedef std::vector<size_t> WordStarts;
 
 // Utility Functions -----------------------------------------------------------
 
@@ -167,7 +171,7 @@ struct HistoryInfoMapValue {
 };
 
 // A map from history_id to the history's URL and title.
-typedef base::hash_map<HistoryID, HistoryInfoMapValue> HistoryInfoMap;
+typedef std::unordered_map<HistoryID, HistoryInfoMapValue> HistoryInfoMap;
 
 // A map from history_id to URL and page title word start metrics.
 struct RowWordStarts {

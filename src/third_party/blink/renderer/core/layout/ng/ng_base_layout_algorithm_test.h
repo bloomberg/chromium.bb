@@ -68,7 +68,7 @@ NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
     NGLogicalSize size,
     bool shrink_to_fit = false,
     bool is_new_formatting_context = false,
-    LayoutUnit fragmentainer_space_available = LayoutUnit());
+    LayoutUnit fragmentainer_space_available = NGSizeIndefinite);
 
 }  // namespace blink
 

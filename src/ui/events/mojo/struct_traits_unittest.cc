@@ -15,6 +15,11 @@
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/latency/mojo/latency_info_struct_traits.h"
 
+#if defined(USE_OZONE)
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"  // nogncheck
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"  // nogncheck
+#endif
+
 namespace ui {
 
 namespace {
@@ -43,6 +48,17 @@ void ExpectMouseWheelEventsEqual(const MouseWheelEvent& expected,
   EXPECT_EQ(expected.offset(), actual.offset());
 }
 
+void ExpectKeyEventsEqual(const KeyEvent& expected, const KeyEvent& actual) {
+  EXPECT_EQ(expected.GetCharacter(), actual.GetCharacter());
+  EXPECT_EQ(expected.GetUnmodifiedText(), actual.GetUnmodifiedText());
+  EXPECT_EQ(expected.GetText(), actual.GetText());
+  EXPECT_EQ(expected.is_char(), actual.is_char());
+  EXPECT_EQ(expected.is_repeat(), actual.is_repeat());
+  EXPECT_EQ(expected.GetConflatedWindowsKeyCode(),
+            actual.GetConflatedWindowsKeyCode());
+  EXPECT_EQ(expected.code(), actual.code());
+}
+
 void ExpectEventsEqual(const Event& expected, const Event& actual) {
   EXPECT_EQ(expected.type(), actual.type());
   EXPECT_EQ(expected.time_stamp(), actual.time_stamp());
@@ -64,6 +80,10 @@ void ExpectEventsEqual(const Event& expected, const Event& actual) {
   if (expected.IsTouchEvent()) {
     ASSERT_TRUE(actual.IsTouchEvent());
     ExpectTouchEventsEqual(*expected.AsTouchEvent(), *actual.AsTouchEvent());
+  }
+  if (expected.IsKeyEvent()) {
+    ASSERT_TRUE(actual.IsKeyEvent());
+    ExpectKeyEventsEqual(*expected.AsKeyEvent(), *actual.AsKeyEvent());
   }
 }
 
@@ -95,15 +115,6 @@ TEST(StructTraitsTest, KeyEvent) {
 
     const KeyEvent* output_key_event = output->AsKeyEvent();
     ExpectEventsEqual(kTestData[i], *output_key_event);
-    EXPECT_EQ(kTestData[i].GetCharacter(), output_key_event->GetCharacter());
-    EXPECT_EQ(kTestData[i].GetUnmodifiedText(),
-              output_key_event->GetUnmodifiedText());
-    EXPECT_EQ(kTestData[i].GetText(), output_key_event->GetText());
-    EXPECT_EQ(kTestData[i].is_char(), output_key_event->is_char());
-    EXPECT_EQ(kTestData[i].is_repeat(), output_key_event->is_repeat());
-    EXPECT_EQ(kTestData[i].GetConflatedWindowsKeyCode(),
-              output_key_event->GetConflatedWindowsKeyCode());
-    EXPECT_EQ(kTestData[i].code(), output_key_event->code());
   }
 }
 
@@ -183,22 +194,30 @@ TEST(StructTraitsTest, MouseWheelEvent) {
 }
 
 TEST(StructTraitsTest, FloatingPointLocations) {
-  MouseEvent input_event(
-      ET_MOUSE_PRESSED, gfx::Point(10, 10), gfx::Point(20, 30),
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(201), EF_NONE, 0,
-      PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                     MouseEvent::kMousePointerId));
+  // Create some events with non-integer locations.
+  const gfx::PointF location(11.1, 22.2);
+  const gfx::PointF root_location(33.3, 44.4);
+  const base::TimeTicks time_stamp = base::TimeTicks::Now();
+  MouseEvent mouse_event(ET_MOUSE_PRESSED, location, root_location, time_stamp,
+                         EF_NONE, EF_NONE);
+  MouseWheelEvent wheel_event(gfx::Vector2d(1, 0), location, root_location,
+                              time_stamp, EF_NONE, EF_NONE);
+  ScrollEvent scroll_event(ET_SCROLL, location, root_location, time_stamp,
+                           EF_NONE, 1, 2, 3, 4, 5);
+  TouchEvent touch_event(ET_TOUCH_PRESSED, location, root_location, time_stamp,
+                         {}, EF_NONE);
+  Event* test_data[] = {&mouse_event, &wheel_event, &scroll_event,
+                        &touch_event};
 
-  input_event.set_location_f(gfx::PointF(10.1, 10.2));
-  input_event.set_root_location_f(gfx::PointF(20.2, 30.3));
-
-  std::unique_ptr<Event> expected_copy = Event::Clone(input_event);
-  std::unique_ptr<Event> output;
-  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Event>(&expected_copy,
-                                                                &output));
-  ASSERT_TRUE(output->IsMouseEvent());
-
-  ExpectEventsEqual(input_event, *output->AsMouseEvent());
+  // Serialize and deserialize does not round or truncate the locations.
+  for (Event* event : test_data) {
+    std::unique_ptr<Event> event_copy = Event::Clone(*event);
+    std::unique_ptr<Event> output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Event>(&event_copy,
+                                                                  &output));
+    EXPECT_EQ(location, output->AsLocatedEvent()->location_f());
+    EXPECT_EQ(root_location, output->AsLocatedEvent()->root_location_f());
+  }
 }
 
 TEST(StructTraitsTest, KeyEventPropertiesSerialized) {
@@ -219,6 +238,14 @@ TEST(StructTraitsTest, KeyEventPropertiesSerialized) {
 }
 
 TEST(StructTraitsTest, GestureEvent) {
+  GestureEventDetails pinch_begin_details(ET_GESTURE_PINCH_BEGIN);
+  pinch_begin_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  GestureEventDetails pinch_end_details(ET_GESTURE_PINCH_END);
+  pinch_end_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  GestureEventDetails pinch_update_details(ET_GESTURE_PINCH_UPDATE);
+  pinch_update_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  pinch_update_details.set_scale(1.23f);
+
   const GestureEvent kTestData[] = {
       {10, 20, EF_NONE,
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
@@ -226,6 +253,15 @@ TEST(StructTraitsTest, GestureEvent) {
       {10, 20, EF_NONE,
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
        GestureEventDetails(ET_GESTURE_TAP)},
+      {10, 20, EF_NONE,
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
+       pinch_begin_details},
+      {10, 20, EF_NONE,
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
+       pinch_end_details},
+      {10, 20, EF_NONE,
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
+       pinch_update_details},
   };
 
   for (size_t i = 0; i < base::size(kTestData); i++) {
@@ -370,5 +406,45 @@ TEST(StructTraitsTest, UnserializedTouchEventFields) {
   EXPECT_NE(expected->AsTouchEvent()->unique_event_id(),
             output->AsTouchEvent()->unique_event_id());
 }
+
+#if defined(USE_OZONE)
+
+// Test KeyboardLayoutEngine implementation that always returns 'x'.
+class FixedKeyboardLayoutEngine : public StubKeyboardLayoutEngine {
+ public:
+  FixedKeyboardLayoutEngine() = default;
+  ~FixedKeyboardLayoutEngine() override = default;
+
+  // StubKeyboardLayoutEngine:
+  bool Lookup(DomCode dom_code,
+              int flags,
+              DomKey* out_dom_key,
+              KeyboardCode* out_key_code) const override {
+    *out_dom_key = DomKey::FromCharacter('x');
+    *out_key_code = ui::VKEY_X;
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FixedKeyboardLayoutEngine);
+};
+
+TEST(StructTraitsTest, DifferentKeyboardLayout) {
+  // Verifies KeyEvent serialization is not impacted by a KeyboardLayoutEngine.
+  KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+      std::make_unique<FixedKeyboardLayoutEngine>());
+  std::unique_ptr<KeyEvent> key_event = std::make_unique<KeyEvent>(
+      ET_KEY_PRESSED, VKEY_S, DomCode::US_S, EF_NONE,
+      DomKey::FromCharacter('s'), base::TimeTicks::Now());
+  std::unique_ptr<Event> expected = std::move(key_event);
+  std::unique_ptr<Event> output;
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::Event>(&expected, &output));
+  ExpectEventsEqual(*expected, *output);
+  KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+      std::make_unique<StubKeyboardLayoutEngine>());
+}
+
+#endif
 
 }  // namespace ui

@@ -4,12 +4,12 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "gm.h"
-#include "sk_tool_utils.h"
+#include "SkCanvas.h"
 #include "SkColorPriv.h"
 #include "SkShader.h"
-#include "SkCanvas.h"
 #include "SkUTF.h"
+#include "ToolUtils.h"
+#include "gm.h"
 
 namespace skiagm {
 
@@ -36,9 +36,8 @@ protected:
     virtual void onDraw(SkCanvas* canvas) {
         SkBitmap bm = make_bitmap();
         SkPaint paint;
-        paint.setAlpha(0x80);
-        paint.setShader(SkShader::MakeBitmapShader(bm, SkShader::kRepeat_TileMode,
-                                                   SkShader::kMirror_TileMode));
+        paint.setAlphaf(0.5f);
+        paint.setShader(bm.makeShader(SkTileMode::kRepeat, SkTileMode::kMirror));
         canvas->drawPaint(paint);
     }
 
@@ -48,7 +47,6 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new TinyBitmapGM; }
-static GMRegistry reg(MyFactory);
+DEF_GM( return new TinyBitmapGM; )
 
 }

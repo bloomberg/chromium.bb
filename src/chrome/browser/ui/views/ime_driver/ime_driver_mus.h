@@ -9,19 +9,21 @@
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 
 // Creates an InputMethodBridge when an IME session is started via mojo.
-class IMEDriver : public ws::mojom::IMEDriver {
+class IMEDriverMus : public ws::mojom::IMEDriver {
  public:
-  IMEDriver();
-  ~IMEDriver() override;
+  IMEDriverMus();
+  ~IMEDriverMus() override;
 
   // Instantiate the IME driver and register it to the UI service.
   static void Register();
 
  private:
   // ws::mojom::IMEDriver:
-  void StartSession(ws::mojom::StartSessionDetailsPtr details) override;
+  void StartSession(ws::mojom::InputMethodRequest input_method_request,
+                    ws::mojom::TextInputClientPtr client,
+                    ws::mojom::SessionDetailsPtr details) override;
 
-  DISALLOW_COPY_AND_ASSIGN(IMEDriver);
+  DISALLOW_COPY_AND_ASSIGN(IMEDriverMus);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_IME_DRIVER_IME_DRIVER_MUS_H_

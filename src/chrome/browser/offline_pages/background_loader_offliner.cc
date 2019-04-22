@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -283,9 +284,9 @@ bool BackgroundLoaderOffliner::HandleTimeout(int64_t request_id) {
 }
 
 void BackgroundLoaderOffliner::CanDownload(
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   if (!pending_request_.get()) {
-    callback.Run(false);  // Shouldn't happen though...
+    std::move(callback).Run(false);  // Shouldn't happen though...
   }
 
   bool should_allow_downloads = false;
@@ -301,7 +302,7 @@ void BackgroundLoaderOffliner::CanDownload(
     final_status = Offliner::RequestStatus::DOWNLOAD_THROTTLED;
   }
 
-  callback.Run(should_allow_downloads);
+  std::move(callback).Run(should_allow_downloads);
   SavePageRequest request(*pending_request_.get());
   std::move(completion_callback_).Run(request, final_status);
   base::ThreadTaskRunnerHandle::Get()->PostTask(

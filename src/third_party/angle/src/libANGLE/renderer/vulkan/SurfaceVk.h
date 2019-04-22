@@ -60,6 +60,8 @@ class OffscreenSurfaceVk : public SurfaceImpl
     angle::Result initializeContents(const gl::Context *context,
                                      const gl::ImageIndex &imageIndex) override;
 
+    vk::ImageHelper *getColorAttachmentImage();
+
   private:
     struct AttachmentImage final : angle::NonCopyable
     {
@@ -134,6 +136,10 @@ class WindowSurfaceVk : public SurfaceImpl
                                         const vk::RenderPass &compatibleRenderPass,
                                         vk::Framebuffer **framebufferOut);
 
+    angle::Result generateSemaphoresForFlush(vk::Context *context,
+                                             const vk::Semaphore **outWaitSemaphore,
+                                             const vk::Semaphore **outSignalSempahore);
+
   protected:
     EGLNativeWindowType mNativeWindowType;
     VkSurfaceKHR mSurface;
@@ -141,12 +147,33 @@ class WindowSurfaceVk : public SurfaceImpl
 
   private:
     virtual angle::Result createSurfaceVk(vk::Context *context, gl::Extents *extentsOut) = 0;
+    virtual angle::Result getCurrentWindowSize(vk::Context *context, gl::Extents *extentsOut) = 0;
+
     angle::Result initializeImpl(DisplayVk *displayVk);
+    angle::Result recreateSwapchain(DisplayVk *displayVk,
+                                    const gl::Extents &extents,
+                                    uint32_t swapHistoryIndex);
+    angle::Result checkForOutOfDateSwapchain(DisplayVk *displayVk,
+                                             uint32_t swapHistoryIndex,
+                                             bool presentOutOfDate);
+    void releaseSwapchainImages(RendererVk *renderer);
     angle::Result nextSwapchainImage(DisplayVk *displayVk);
-    angle::Result swapImpl(DisplayVk *displayVk);
+    angle::Result present(DisplayVk *displayVk,
+                          EGLint *rects,
+                          EGLint n_rects,
+                          bool &swapchainOutOfDate);
+    angle::Result swapImpl(DisplayVk *displayVk, EGLint *rects, EGLint n_rects);
+
+    VkSurfaceCapabilitiesKHR mSurfaceCaps;
+    std::vector<VkPresentModeKHR> mPresentModes;
 
     VkSwapchainKHR mSwapchain;
-    VkPresentModeKHR mSwapchainPresentMode;
+    // Cached information used to recreate swapchains.
+    VkPresentModeKHR mSwapchainPresentMode;         // Current swapchain mode
+    VkPresentModeKHR mDesiredSwapchainPresentMode;  // Desired mode set through setSwapInterval()
+    uint32_t mMinImageCount;
+    VkSurfaceTransformFlagBitsKHR mPreTransform;
+    VkCompositeAlphaFlagBitsKHR mCompositeAlpha;
 
     RenderTargetVk mColorRenderTarget;
     RenderTargetVk mDepthStencilRenderTarget;
@@ -166,11 +193,43 @@ class WindowSurfaceVk : public SurfaceImpl
 
     std::vector<SwapchainImage> mSwapchainImages;
 
-    // A circular buffer, with the same size as mSwapchainImages (N), that stores the serial of the
-    // renderer on every swap.  In FIFO present modes, the CPU is throttled by waiting for the
-    // Nth previous serial to finish.
-    std::vector<Serial> mSwapSerials;
-    size_t mCurrentSwapSerialIndex;
+    // Each time vkPresent is called, a wait semaphore is needed to know when the work to render the
+    // frame is done. For ANGLE to know when that is, it needs to add a signal semaphore to each
+    // flush. Conversely, before being able to use a swap chain image, ANGLE needs to wait on the
+    // semaphore returned by vkAcquireNextImage.
+    //
+    // We build a chain of semaphores starting with the semaphore returned by vkAcquireNextImageKHR
+    // and ending with the semaphore provided to vkPresent. Each time generateSemaphoresForFlush is
+    // called, a new semaphore is created and appended to mFlushSemaphoreChain. The second last
+    // semaphore is used as a wait semaphore and the last one is used as a signal semaphore for the
+    // flush.
+    //
+    // The semaphore chain is cleared after every call to present and a new one is started once
+    // vkAquireImage is called.
+    //
+    // We don't need a semaphore chain for offscreen surfaces or surfaceless rendering because the
+    // results cannot affect the images in a swap chain.
+    std::vector<vk::Semaphore> mFlushSemaphoreChain;
+
+    // A circular buffer that stores the serial of the renderer on every swap.  The CPU is
+    // throttled by waiting for the 2nd previous serial to finish.  Old swapchains are scheduled to
+    // be destroyed at the same time.
+    struct SwapHistory : angle::NonCopyable
+    {
+        SwapHistory();
+        SwapHistory(SwapHistory &&other);
+        SwapHistory &operator=(SwapHistory &&other);
+        ~SwapHistory();
+
+        void destroy(VkDevice device);
+
+        Serial serial;
+        std::vector<vk::Semaphore> semaphores;
+        VkSwapchainKHR swapchain = VK_NULL_HANDLE;
+    };
+    static constexpr size_t kSwapHistorySize = 2;
+    std::array<SwapHistory, kSwapHistorySize> mSwapHistory;
+    size_t mCurrentSwapHistoryIndex;
 
     vk::ImageHelper mDepthStencilImage;
     vk::ImageView mDepthStencilImageView;

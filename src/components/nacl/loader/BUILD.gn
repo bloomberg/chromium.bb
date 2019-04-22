@@ -6,7 +6,6 @@ import("//build/config/c++/c++.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/nacl/config.gni")
 import("//components/nacl/features.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 assert(enable_nacl)
@@ -321,7 +320,15 @@ if (is_nacl_nonsfi) {
   }
 }
 
-service_manifest("nacl_loader_manifest") {
-  name = "nacl_loader"
-  source = "nacl_loader_manifest.json"
+source_set("nacl_loader_manifest") {
+  sources = [
+    "nacl_loader_manifest.cc",
+    "nacl_loader_manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/nacl/common",
+    "//services/service_manager/public/cpp",
+  ]
 }

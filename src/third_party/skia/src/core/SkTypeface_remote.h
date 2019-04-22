@@ -27,11 +27,10 @@ public:
                          const SkDescriptor* desc,
                          sk_sp<SkStrikeClient::DiscardableHandleManager> manager);
 
-    void initCache(SkGlyphCache*, SkStrikeCache*);
+    void initCache(SkStrike*, SkStrikeCache*);
 
 protected:
     unsigned generateGlyphCount() override;
-    uint16_t generateCharToGlyph(SkUnichar) override;
     bool generateAdvance(SkGlyph* glyph) override;
     void generateMetrics(SkGlyph* glyph) override;
     void generateImage(const SkGlyph& glyph) override;
@@ -41,7 +40,7 @@ protected:
 
 private:
     sk_sp<SkStrikeClient::DiscardableHandleManager> fDiscardableManager;
-    SkGlyphCache* fCache = nullptr;
+    SkStrike* fCache = nullptr;
     SkStrikeCache* fStrikeCache = nullptr;
     typedef SkScalerContext INHERITED;
 };
@@ -65,7 +64,7 @@ public:
 
 protected:
     int onGetUPEM() const override { SK_ABORT("Should never be called."); return 0; }
-    SkStreamAsset* onOpenStream(int* ttcIndex) const override {
+    std::unique_ptr<SkStreamAsset> onOpenStream(int* ttcIndex) const override {
         SK_ABORT("Should never be called.");
         return nullptr;
     }
@@ -123,10 +122,8 @@ protected:
         SK_ABORT("Should never be called.");
         return nullptr;
     }
-    int onCharsToGlyphs(const void* chars, Encoding,
-                        uint16_t glyphs[], int glyphCount) const override {
+    void onCharsToGlyphs(const SkUnichar* chars, int count, SkGlyphID glyphs[]) const override {
         SK_ABORT("Should never be called.");
-        return 0;
     }
     int onCountGlyphs() const override {
         return this->glyphCount();

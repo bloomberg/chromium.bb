@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
@@ -15,6 +16,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
+#include "services/network/cookie_settings.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,9 +84,10 @@ class RestrictedCookieManagerSync {
 class RestrictedCookieManagerTest : public testing::Test {
  public:
   RestrictedCookieManagerTest()
-      : cookie_monster_(nullptr, nullptr, nullptr /* netlog */),
+      : cookie_monster_(nullptr, nullptr /* netlog */),
         service_(std::make_unique<RestrictedCookieManager>(
             &cookie_monster_,
+            &cookie_settings_,
             url::Origin::Create(GURL("http://example.com")))),
         binding_(service_.get(), mojo::MakeRequest(&service_ptr_)) {
     sync_service_ =
@@ -104,16 +107,22 @@ class RestrictedCookieManagerTest : public testing::Test {
 
   // Set a canonical cookie directly into the store.
   bool SetCanonicalCookie(const net::CanonicalCookie& cookie,
-                          bool secure_source,
+                          std::string source_scheme,
                           bool can_modify_httponly) {
-    net::ResultSavingCookieCallback<bool> callback;
+    net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
+        callback;
+    net::CookieOptions options;
+    if (can_modify_httponly)
+      options.set_include_httponly();
     cookie_monster_.SetCanonicalCookieAsync(
-        std::make_unique<net::CanonicalCookie>(cookie), secure_source,
-        can_modify_httponly,
-        base::BindOnce(&net::ResultSavingCookieCallback<bool>::Run,
+        std::make_unique<net::CanonicalCookie>(cookie),
+        std::move(source_scheme), options,
+        base::BindOnce(&net::ResultSavingCookieCallback<
+                           net::CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&callback)));
     callback.WaitUntilDone();
-    return callback.result();
+    return callback.result() ==
+           net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
   }
 
   // Simplified helper for SetCanonicalCookie.
@@ -130,7 +139,7 @@ class RestrictedCookieManagerTest : public testing::Test {
                              /* httponly = */ false,
                              net::CookieSameSite::NO_RESTRICTION,
                              net::COOKIE_PRIORITY_DEFAULT),
-        /* secure_source = */ true, /* can_modify_httponly = */ true));
+        "https", /* can_modify_httponly = */ true));
   }
 
   void ExpectBadMessage() { expecting_bad_message_ = true; }
@@ -145,6 +154,7 @@ class RestrictedCookieManagerTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
   net::CookieMonster cookie_monster_;
+  CookieSettings cookie_settings_;
   std::unique_ptr<RestrictedCookieManager> service_;
   mojom::RestrictedCookieManagerPtr service_ptr_;
   mojo::Binding<mojom::RestrictedCookieManager> binding_;
@@ -256,6 +266,37 @@ TEST_F(RestrictedCookieManagerTest, GetAllForUrlFromWrongOrigin) {
   ASSERT_THAT(cookies, testing::SizeIs(0));
 }
 
+TEST_F(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
+  SetSessionCookie("cookie-name", "cookie-value", "example.com", "/");
+
+  // With default policy, should be able to get all cookies, even third-party.
+  {
+    auto options = mojom::CookieManagerGetOptions::New();
+    options->name = "cookie-name";
+    options->match_type = mojom::CookieMatchType::STARTS_WITH;
+
+    std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+        GURL("http://example.com/test/"), GURL("http://notexample.com"),
+        std::move(options));
+    ASSERT_THAT(cookies, testing::SizeIs(1));
+    EXPECT_EQ("cookie-name", cookies[0].Name());
+    EXPECT_EQ("cookie-value", cookies[0].Value());
+  }
+
+  // Disabing getting third-party cookies works correctly.
+  cookie_settings_.set_block_third_party_cookies(true);
+  {
+    auto options = mojom::CookieManagerGetOptions::New();
+    options->name = "cookie-name";
+    options->match_type = mojom::CookieMatchType::STARTS_WITH;
+
+    std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+        GURL("http://example.com/test/"), GURL("http://notexample.com"),
+        std::move(options));
+    ASSERT_THAT(cookies, testing::SizeIs(0));
+  }
+}
+
 TEST_F(RestrictedCookieManagerTest, SetCanonicalCookie) {
   EXPECT_TRUE(sync_service_->SetCanonicalCookie(
       net::CanonicalCookie(
@@ -288,6 +329,39 @@ TEST_F(RestrictedCookieManagerTest, SetCanonicalCookieFromWrongOrigin) {
           net::COOKIE_PRIORITY_DEFAULT),
       GURL("http://not-example.com/test/"), GURL("http://not-example.com")));
   ASSERT_TRUE(received_bad_message());
+}
+
+TEST_F(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
+  {
+    // With default settings object, setting a third-party cookie is OK.
+    auto cookie =
+        net::CanonicalCookie::Create(GURL("http://example.com"), "A=B",
+                                     base::Time::Now(), net::CookieOptions());
+    EXPECT_TRUE(sync_service_->SetCanonicalCookie(
+        *cookie, GURL("http://example.com"), GURL("http://notexample.com")));
+  }
+
+  {
+    // Not if third-party cookies are disabled, though.
+    cookie_settings_.set_block_third_party_cookies(true);
+    auto cookie =
+        net::CanonicalCookie::Create(GURL("http://example.com"), "A2=B2",
+                                     base::Time::Now(), net::CookieOptions());
+    EXPECT_FALSE(sync_service_->SetCanonicalCookie(
+        *cookie, GURL("http://example.com"), GURL("http://notexample.com")));
+  }
+
+  // Read back, in first-part context
+  auto options = mojom::CookieManagerGetOptions::New();
+  options->name = "A";
+  options->match_type = mojom::CookieMatchType::STARTS_WITH;
+
+  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+      GURL("http://example.com/test/"), GURL("http://example.com/"),
+      std::move(options));
+  ASSERT_THAT(cookies, testing::SizeIs(1));
+  EXPECT_EQ("A", cookies[0].Name());
+  EXPECT_EQ("B", cookies[0].Value());
 }
 
 namespace {

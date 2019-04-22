@@ -13,9 +13,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -34,7 +34,7 @@ class FakeMultiDeviceSetupClient : public MultiDeviceSetupClient {
                        mojom::FeatureState feature_state);
 
   void InvokePendingGetEligibleHostDevicesCallback(
-      const cryptauth::RemoteDeviceRefList& eligible_devices);
+      const multidevice::RemoteDeviceRefList& eligible_devices);
   void InvokePendingSetHostDeviceCallback(
       const std::string& expected_device_id,
       const std::string& expected_auth_token,

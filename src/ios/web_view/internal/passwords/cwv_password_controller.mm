@@ -160,7 +160,7 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
 
   // Notify the password manager that the page loaded so it can clear its own
   // per-page state.
-  _passwordManager->DidNavigateMainFrame(/*form_may_be_submitted=*/false);
+  _passwordManager->DidNavigateMainFrame(/*form_may_be_submitted=*/true);
 
   if (!webState->ContentIsHTML()) {
     // If the current page is not HTML, it does not contain any HTML forms.
@@ -240,12 +240,8 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
   // ios_chrome_update_password_infobar_delegate.mm
   __block std::unique_ptr<PasswordFormManagerForUI> formPtr(
       std::move(formToUpdate));
-  BOOL hasMultipleCredentials =
-      formPtr->GetBestMatches().size() > 1 && !formPtr->IsPasswordOverridden();
 
-  const autofill::PasswordForm& credentials =
-      hasMultipleCredentials ? *(formPtr->GetPreferredMatch())
-                             : formPtr->GetPendingCredentials();
+  const autofill::PasswordForm& credentials = formPtr->GetPendingCredentials();
   NSString* userName = base::SysUTF16ToNSString(credentials.username_value);
 
   [self.delegate passwordController:self

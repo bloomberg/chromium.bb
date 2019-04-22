@@ -34,7 +34,6 @@ namespace storage {
 QuotaTemporaryStorageEvictor::EvictionRoundStatistics::EvictionRoundStatistics()
     : in_round(false),
       is_initialized(false),
-      usage_overage_at_round(-1),
       diskspace_shortage_at_round(-1),
       usage_on_beginning_of_round(-1),
       usage_on_end_of_round(-1),
@@ -57,10 +56,9 @@ QuotaTemporaryStorageEvictor::~QuotaTemporaryStorageEvictor() {
 
 void QuotaTemporaryStorageEvictor::GetStatistics(
     std::map<std::string, int64_t>* statistics) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(statistics);
 
-  (*statistics)["errors-on-evicting-origin"] =
-      statistics_.num_errors_on_evicting_origin;
   (*statistics)["errors-on-getting-usage-and-quota"] =
       statistics_.num_errors_on_getting_usage_and_quota;
   (*statistics)["evicted-origins"] =
@@ -72,6 +70,7 @@ void QuotaTemporaryStorageEvictor::GetStatistics(
 }
 
 void QuotaTemporaryStorageEvictor::ReportPerRoundHistogram() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(round_statistics_.in_round);
   DCHECK(round_statistics_.is_initialized);
 
@@ -81,8 +80,6 @@ void QuotaTemporaryStorageEvictor::ReportPerRoundHistogram() {
   if (!time_of_end_of_last_round_.is_null())
     UMA_HISTOGRAM_MINUTES("Quota.TimeDeltaOfEvictionRounds",
                           now - time_of_end_of_last_round_);
-  UMA_HISTOGRAM_MBYTES("Quota.UsageOverageOfTemporaryGlobalStorage",
-                       round_statistics_.usage_overage_at_round);
   UMA_HISTOGRAM_MBYTES("Quota.DiskspaceShortage",
                        round_statistics_.diskspace_shortage_at_round);
   UMA_HISTOGRAM_MBYTES("Quota.EvictedBytesPerRound",
@@ -93,14 +90,11 @@ void QuotaTemporaryStorageEvictor::ReportPerRoundHistogram() {
 }
 
 void QuotaTemporaryStorageEvictor::ReportPerHourHistogram() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Statistics stats_in_hour(statistics_);
   stats_in_hour.subtract_assign(previous_statistics_);
   previous_statistics_ = statistics_;
 
-  UMA_HISTOGRAM_COUNTS_1M("Quota.ErrorsOnEvictingOriginPerHour",
-                          stats_in_hour.num_errors_on_evicting_origin);
-  UMA_HISTOGRAM_COUNTS_1M("Quota.ErrorsOnGettingUsageAndQuotaPerHour",
-                          stats_in_hour.num_errors_on_getting_usage_and_quota);
   UMA_HISTOGRAM_COUNTS_1M("Quota.EvictedOriginsPerHour",
                           stats_in_hour.num_evicted_origins);
   UMA_HISTOGRAM_COUNTS_1M("Quota.EvictionRoundsPerHour",
@@ -110,6 +104,7 @@ void QuotaTemporaryStorageEvictor::ReportPerHourHistogram() {
 }
 
 void QuotaTemporaryStorageEvictor::OnEvictionRoundStarted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (round_statistics_.in_round)
     return;
   round_statistics_.in_round = true;
@@ -118,6 +113,7 @@ void QuotaTemporaryStorageEvictor::OnEvictionRoundStarted() {
 }
 
 void QuotaTemporaryStorageEvictor::OnEvictionRoundFinished() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   in_progress_eviction_origins_.clear();
 
   // Check if skipped round
@@ -145,7 +141,9 @@ void QuotaTemporaryStorageEvictor::Start() {
       this, &QuotaTemporaryStorageEvictor::ReportPerHourHistogram);
 }
 
-void QuotaTemporaryStorageEvictor::StartEvictionTimerWithDelay(int delay_ms) {
+void QuotaTemporaryStorageEvictor::StartEvictionTimerWithDelay(
+    int64_t delay_ms) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (eviction_timer_.IsRunning() || timer_disabled_for_testing_)
     return;
   eviction_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
@@ -153,6 +151,7 @@ void QuotaTemporaryStorageEvictor::StartEvictionTimerWithDelay(int delay_ms) {
 }
 
 void QuotaTemporaryStorageEvictor::ConsiderEviction() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnEvictionRoundStarted();
   quota_eviction_handler_->GetEvictionRoundInfo(
       base::BindOnce(&QuotaTemporaryStorageEvictor::OnGotEvictionRoundInfo,
@@ -166,6 +165,7 @@ void QuotaTemporaryStorageEvictor::OnGotEvictionRoundInfo(
     int64_t total_space,
     int64_t current_usage,
     bool current_usage_is_complete) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(current_usage, 0);
 
   // Note: if there is no storage pressure, |current_usage|
@@ -191,7 +191,6 @@ void QuotaTemporaryStorageEvictor::OnGotEvictionRoundInfo(
   }
 
   if (!round_statistics_.is_initialized) {
-    round_statistics_.usage_overage_at_round = usage_overage;
     round_statistics_.diskspace_shortage_at_round = diskspace_shortage;
     round_statistics_.usage_on_beginning_of_round = current_usage;
     round_statistics_.is_initialized = true;
@@ -259,7 +258,6 @@ void QuotaTemporaryStorageEvictor::OnEvictionComplete(
     // We many need to get rid of more space so reconsider immediately.
     ConsiderEviction();
   } else {
-    ++statistics_.num_errors_on_evicting_origin;
     // Sleep for a while and retry again until we see too many errors.
     StartEvictionTimerWithDelay(interval_ms_);
     OnEvictionRoundFinished();

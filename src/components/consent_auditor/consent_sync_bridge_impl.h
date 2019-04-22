@@ -19,30 +19,31 @@
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
-namespace syncer {
+namespace consent_auditor {
 
 class ConsentSyncBridgeImpl : public ConsentSyncBridge,
-                              public ModelTypeSyncBridge {
+                              public syncer::ModelTypeSyncBridge {
  public:
   ConsentSyncBridgeImpl(
-      OnceModelTypeStoreFactory store_factory,
-      std::unique_ptr<ModelTypeChangeProcessor> change_processor);
+      syncer::OnceModelTypeStoreFactory store_factory,
+      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~ConsentSyncBridgeImpl() override;
 
   // ModelTypeSyncBridge implementation.
-  std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
-  base::Optional<ModelError> MergeSyncData(
-      std::unique_ptr<MetadataChangeList> metadata_change_list,
-      EntityChangeList entity_data) override;
-  base::Optional<ModelError> ApplySyncChanges(
-      std::unique_ptr<MetadataChangeList> metadata_change_list,
-      EntityChangeList entity_changes) override;
+  std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
+      override;
+  base::Optional<syncer::ModelError> MergeSyncData(
+      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+      syncer::EntityChangeList entity_data) override;
+  base::Optional<syncer::ModelError> ApplySyncChanges(
+      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+      syncer::EntityChangeList entity_changes) override;
   void GetData(StorageKeyList storage_keys, DataCallback callback) override;
   void GetAllDataForDebugging(DataCallback callback) override;
-  std::string GetClientTag(const EntityData& entity_data) override;
-  std::string GetStorageKey(const EntityData& entity_data) override;
-  StopSyncResponse ApplyStopSyncChanges(
-      std::unique_ptr<MetadataChangeList> delete_metadata_change_list) override;
+  std::string GetClientTag(const syncer::EntityData& entity_data) override;
+  std::string GetStorageKey(const syncer::EntityData& entity_data) override;
+  void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
+                                delete_metadata_change_list) override;
 
   // ConsentSyncBridge implementation.
   void RecordConsent(
@@ -52,7 +53,7 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge,
 
   static std::string GetStorageKeyFromSpecificsForTest(
       const sync_pb::UserConsentSpecifics& specifics);
-  std::unique_ptr<ModelTypeStore> StealStoreForTest();
+  std::unique_ptr<syncer::ModelTypeStore> StealStoreForTest();
 
  private:
   void RecordConsentImpl(
@@ -60,31 +61,33 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge,
   // Record events in the deferred queue and clear the queue.
   void ProcessQueuedEvents();
 
-  void OnStoreCreated(const base::Optional<ModelError>& error,
-                      std::unique_ptr<ModelTypeStore> store);
-  void OnReadAllMetadata(const base::Optional<ModelError>& error,
-                         std::unique_ptr<MetadataBatch> metadata_batch);
-  void OnCommit(const base::Optional<ModelError>& error);
-  void OnReadData(DataCallback callback,
-                  const base::Optional<ModelError>& error,
-                  std::unique_ptr<ModelTypeStore::RecordList> data_records,
-                  std::unique_ptr<ModelTypeStore::IdList> missing_id_list);
-  void OnReadAllData(DataCallback callback,
-                     const base::Optional<ModelError>& error,
-                     std::unique_ptr<ModelTypeStore::RecordList> data_records);
+  void OnStoreCreated(const base::Optional<syncer::ModelError>& error,
+                      std::unique_ptr<syncer::ModelTypeStore> store);
+  void OnReadAllMetadata(const base::Optional<syncer::ModelError>& error,
+                         std::unique_ptr<syncer::MetadataBatch> metadata_batch);
+  void OnCommit(const base::Optional<syncer::ModelError>& error);
+  void OnReadData(
+      DataCallback callback,
+      const base::Optional<syncer::ModelError>& error,
+      std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records,
+      std::unique_ptr<syncer::ModelTypeStore::IdList> missing_id_list);
+  void OnReadAllData(
+      DataCallback callback,
+      const base::Optional<syncer::ModelError>& error,
+      std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records);
 
   // Resubmit all the consents persisted in the store to sync consents, which
   // were preserved when sync was disabled. This may resubmit entities that the
   // processor already knows about (i.e. with metadata), but it is allowed.
   void ReadAllDataAndResubmit();
   void OnReadAllDataToResubmit(
-      const base::Optional<ModelError>& error,
-      std::unique_ptr<ModelTypeStore::RecordList> data_records);
+      const base::Optional<syncer::ModelError>& error,
+      std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records);
 
   // Persistent storage for in flight consents. Should remain quite small, as we
   // delete upon commit confirmation. May contain consents without metadata
   // (e.g. persisted when sync was disabled).
-  std::unique_ptr<ModelTypeStore> store_;
+  std::unique_ptr<syncer::ModelTypeStore> store_;
 
   // Used to store consents while the store or change processor are not
   // ready.
@@ -96,6 +99,6 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge,
   DISALLOW_COPY_AND_ASSIGN(ConsentSyncBridgeImpl);
 };
 
-}  // namespace syncer
+}  // namespace consent_auditor
 
 #endif  // COMPONENTS_CONSENT_AUDITOR_CONSENT_SYNC_BRIDGE_IMPL_H_

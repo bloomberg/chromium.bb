@@ -16,26 +16,44 @@ import android.webkit.WebViewClient;
  * This activity is designed for Telemetry testing of WebView.
  */
 public class TelemetryActivity extends Activity {
+    static final String START_UP_TRACE_TAG_NAME = "WebViewStartUpTraceTag";
     static final String DEFAULT_START_UP_TRACE_TAG = "WebViewStartupInterval";
+
+    static final String LOAD_URL_TRACE_TAG_NAME = "WebViewLoadUrlTraceTag";
     static final String DEFAULT_LOAD_URL_TRACE_TAG = "WebViewBlankUrlLoadInterval";
+
+    static final String START_UP_AND_LOAD_URL_TRACE_TAG_NAME = "WebViewStartUpAndLoadUrlTraceTag";
     static final String DEFAULT_START_UP_AND_LOAD_URL_TRACE_TAG =
             "WebViewStartupAndLoadBlankUrlInterval";
+
+    static final String DUMMY_TRACE_TAG_NAME = "WebViewDummyTraceTag";
+    static final String DEFAULT_DUMMY_TRACE_TAG = "WebViewDummyInterval";
+
+    private Intent mIntent;
+
+    private String getTraceTag(String tagName, String tagDefault) {
+        String tag = mIntent.getStringExtra(tagName);
+        return tag == null ? tagDefault : tag;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mIntent = getIntent();
+
         getWindow().setTitle(
                 getResources().getString(R.string.title_activity_telemetry));
 
-        Intent intent = getIntent();
-        final String startUpTraceTag = intent.getStringExtra("WebViewStartUpTraceTag");
-        final String loadUrlTraceTag = intent.getStringExtra("WebViewLoadUrlTraceTag");
-        final String startUpAndLoadUrlTraceTag =
-                intent.getStringExtra("WebViewStartUpAndLoadUrlTraceTag");
+        final String startUpTraceTag =
+                getTraceTag(START_UP_TRACE_TAG_NAME, DEFAULT_START_UP_TRACE_TAG);
+        final String loadUrlTraceTag =
+                getTraceTag(LOAD_URL_TRACE_TAG_NAME, DEFAULT_LOAD_URL_TRACE_TAG);
+        final String startUpAndLoadUrlTraceTag = getTraceTag(
+                START_UP_AND_LOAD_URL_TRACE_TAG_NAME, DEFAULT_START_UP_AND_LOAD_URL_TRACE_TAG);
+        final String dummyTraceTag = getTraceTag(DUMMY_TRACE_TAG_NAME, DEFAULT_DUMMY_TRACE_TAG);
 
-        Trace.beginSection(startUpTraceTag == null ? DEFAULT_START_UP_AND_LOAD_URL_TRACE_TAG
-                                                   : startUpAndLoadUrlTraceTag);
-        Trace.beginSection(startUpTraceTag == null ? DEFAULT_START_UP_TRACE_TAG : startUpTraceTag);
+        Trace.beginSection(startUpAndLoadUrlTraceTag);
+        Trace.beginSection(startUpTraceTag);
         WebView webView = new WebView(this);
         setContentView(webView);
         Trace.endSection();
@@ -47,7 +65,7 @@ public class TelemetryActivity extends Activity {
         settings.setLoadWithOverviewMode(true);
         settings.setDomStorageEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
-        String userAgentString = intent.getStringExtra("userAgent");
+        String userAgentString = mIntent.getStringExtra("userAgent");
         if (userAgentString != null) {
             settings.setUserAgentString(userAgentString);
         }
@@ -62,12 +80,31 @@ public class TelemetryActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+                // dummyTraceTag was ended by code in Android intended to end
+                // activityStart before onPageFinished was called, so the time
+                // reported as the activityStart will be longer than actual.
+                // The actual duration of activityStart will be from the
+                // beginning of the activityStart to the end of the dummyTraceTag
+
+                // Ends loadUrlTraceTag
                 Trace.endSection();
+
+                // Ends startUpAndLoadUrlTraceTag
+                Trace.endSection();
+
+                // Ends activityStart
                 Trace.endSection();
             }
         });
 
-        Trace.beginSection(loadUrlTraceTag == null ? DEFAULT_LOAD_URL_TRACE_TAG : loadUrlTraceTag);
+        Trace.beginSection(loadUrlTraceTag);
+
         webView.loadUrl("about:blank");
+
+        // TODO(aluo): Use async tracing to avoid having to do this
+        // dummyTraceTag is needed here to prevent code in Android intended to
+        // end activityStart from ending loadUrlTraceTag prematurely,
+        // see crbug/919221
+        Trace.beginSection(dummyTraceTag);
     }
 }

@@ -87,22 +87,6 @@ class ContentSuggestionsCollectionUtilsTest : public PlatformTest {
   std::unique_ptr<ScopedBlockSwizzler> orientation_swizzler_;
 };
 
-TEST_F(ContentSuggestionsCollectionUtilsTest, centeredTilesMarginIPhone6) {
-  // Setup.
-  SetAsIPhone();
-
-  CGFloat result = centeredTilesMarginForWidth(375);
-  EXPECT_EQ(28, result);
-}
-
-TEST_F(ContentSuggestionsCollectionUtilsTest, centeredTilesMarginIPad) {
-  // Setup.
-  SetAsIPad();
-
-  CGFloat result = centeredTilesMarginForWidth(767);
-  EXPECT_EQ(209, result);
-}
-
 TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPad) {
   // Setup.
   SetAsIPad();
@@ -215,36 +199,6 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPhone) {
   EXPECT_EQ(276, heightForLogoHeader(YES, NO, YES, 0));
   EXPECT_EQ(276, heightForLogoHeader(YES, YES, NO, 0));
   EXPECT_EQ(276, heightForLogoHeader(YES, NO, NO, 0));
-}
-
-TEST_F(ContentSuggestionsCollectionUtilsTest, SizeIPhone6) {
-  // Setup.
-  SetAsIPhone();
-
-  // Test.
-  EXPECT_EQ(4U, numberOfTilesForWidth(360));
-}
-
-TEST_F(ContentSuggestionsCollectionUtilsTest, SizeIPhone5) {
-  // Setup.
-  SetAsIPhone();
-
-  // Test.
-  EXPECT_EQ(4U, numberOfTilesForWidth(320));
-}
-
-// Test for iPad portrait and iPhone landscape.
-TEST_F(ContentSuggestionsCollectionUtilsTest, SizeLarge) {
-  // Test.
-  EXPECT_EQ(4U, numberOfTilesForWidth(720));
-}
-
-TEST_F(ContentSuggestionsCollectionUtilsTest, SizeIPadSplit) {
-  // Setup.
-  SetAsIPad();
-
-  // Test.
-  EXPECT_EQ(4U, numberOfTilesForWidth(360));
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, NearestAncestor) {

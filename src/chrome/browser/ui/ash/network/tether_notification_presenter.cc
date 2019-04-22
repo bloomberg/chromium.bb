@@ -13,10 +13,11 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/network/network_connect.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -39,8 +40,6 @@ const int kMediumSignalStrength = 50;
 
 // Dimensions of Tether notification icon in pixels.
 constexpr gfx::Size kTetherSignalIconSize(18, 18);
-
-const char kTetherSettingsSubpage[] = "networks?type=Tether";
 
 // Handles clicking and closing of a notification via callbacks.
 class TetherNotificationDelegate
@@ -72,7 +71,8 @@ class SettingsUiDelegateImpl
 
   void ShowSettingsSubPageForProfile(Profile* profile,
                                      const std::string& sub_page) override {
-    chrome::ShowSettingsSubPageForProfile(profile, sub_page);
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,
+                                                                 sub_page);
   }
 };
 
@@ -124,7 +124,7 @@ TetherNotificationPresenter::TetherNotificationPresenter(
 TetherNotificationPresenter::~TetherNotificationPresenter() = default;
 
 void TetherNotificationPresenter::NotifyPotentialHotspotNearby(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     int signal_strength) {
   PA_LOG(VERBOSE) << "Displaying \"potential hotspot nearby\" notification for "
                   << "device with name \"" << remote_device.name() << "\". "
@@ -252,7 +252,8 @@ void TetherNotificationPresenter::OnNotificationClicked(
       GetMetricValueForClickOnNotificationBody(notification_id),
       TetherNotificationPresenter::NOTIFICATION_INTERACTION_TYPE_MAX);
 
-  OpenSettingsAndRemoveNotification(kTetherSettingsSubpage, notification_id);
+  OpenSettingsAndRemoveNotification(chrome::kTetherSettingsSubPage,
+                                    notification_id);
 }
 
 TetherNotificationPresenter::NotificationInteractionType
@@ -319,7 +320,8 @@ void TetherNotificationPresenter::ShowNotification(
     std::unique_ptr<message_center::Notification> notification) {
   showing_notification_id_ = notification->id();
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 void TetherNotificationPresenter::OpenSettingsAndRemoveNotification(

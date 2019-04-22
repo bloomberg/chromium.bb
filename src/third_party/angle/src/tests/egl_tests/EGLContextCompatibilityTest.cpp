@@ -10,13 +10,12 @@
 //   rendering works, otherwise it checks an error is generated one MakeCurrent.
 #include <gtest/gtest.h>
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
 #include <vector>
 
-#include "OSWindow.h"
 #include "test_utils/ANGLETest.h"
 #include "test_utils/angle_test_configs.h"
+#include "test_utils/angle_test_instantiate.h"
+#include "util/OSWindow.h"
 
 using namespace angle;
 
@@ -26,16 +25,16 @@ namespace
 const EGLint contextAttribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
 }
 
-class EGLContextCompatibilityTest : public ANGLETest
+class EGLContextCompatibilityTest : public EGLTest,
+                                    public testing::WithParamInterface<PlatformParameters>
 {
   public:
     EGLContextCompatibilityTest() : mDisplay(0) {}
 
     void SetUp() override
     {
-        PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
-            reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(
-                eglGetProcAddress("eglGetPlatformDisplayEXT"));
+        EGLTest::SetUp();
+
         ASSERT_TRUE(eglGetPlatformDisplayEXT != nullptr);
 
         EGLint dispattrs[] = {EGL_PLATFORM_ANGLE_TYPE_ANGLE, GetParam().getRenderer(), EGL_NONE};
@@ -60,7 +59,7 @@ class EGLContextCompatibilityTest : public ANGLETest
     {
         eglMakeCurrent(mDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         eglTerminate(mDisplay);
-    };
+    }
 
   protected:
     // Queries EGL config to determine if multisampled or not
@@ -69,6 +68,27 @@ class EGLContextCompatibilityTest : public ANGLETest
         EGLint samples = 0;
         eglGetConfigAttrib(mDisplay, config, EGL_SAMPLES, &samples);
         return (samples > 1);
+    }
+
+    // The only configs with 16-bits for each of red, green, blue, and alpha is GL_RGBA16F
+    bool isRGBA16FConfig(EGLConfig config)
+    {
+        EGLint red, green, blue, alpha;
+        eglGetConfigAttrib(mDisplay, config, EGL_RED_SIZE, &red);
+        eglGetConfigAttrib(mDisplay, config, EGL_GREEN_SIZE, &green);
+        eglGetConfigAttrib(mDisplay, config, EGL_BLUE_SIZE, &blue);
+        eglGetConfigAttrib(mDisplay, config, EGL_ALPHA_SIZE, &alpha);
+        return ((red == 16) && (green == 16) && (blue == 16) && (alpha == 16));
+    }
+
+    bool isRGB10_A2Config(EGLConfig config)
+    {
+        EGLint red, green, blue, alpha;
+        eglGetConfigAttrib(mDisplay, config, EGL_RED_SIZE, &red);
+        eglGetConfigAttrib(mDisplay, config, EGL_GREEN_SIZE, &green);
+        eglGetConfigAttrib(mDisplay, config, EGL_BLUE_SIZE, &blue);
+        eglGetConfigAttrib(mDisplay, config, EGL_ALPHA_SIZE, &alpha);
+        return ((red == 10) && (green == 10) && (blue == 10) && (alpha == 2));
     }
 
     bool areConfigsCompatible(EGLConfig c1, EGLConfig c2, EGLint surfaceBit)
@@ -100,7 +120,7 @@ class EGLContextCompatibilityTest : public ANGLETest
 
         EGLint colorComponentType1 = EGL_COLOR_COMPONENT_TYPE_FIXED_EXT;
         EGLint colorComponentType2 = EGL_COLOR_COMPONENT_TYPE_FIXED_EXT;
-        if (eglDisplayExtensionEnabled(mDisplay, "EGL_EXT_pixel_format_float"))
+        if (IsDisplayExtensionEnabled(mDisplay, "EGL_EXT_pixel_format_float"))
         {
             eglGetConfigAttrib(mDisplay, c1, EGL_COLOR_COMPONENT_TYPE_EXT, &colorComponentType1);
             eglGetConfigAttrib(mDisplay, c2, EGL_COLOR_COMPONENT_TYPE_EXT, &colorComponentType2);
@@ -118,7 +138,7 @@ class EGLContextCompatibilityTest : public ANGLETest
                                  EGLConfig contextConfig,
                                  bool compatible) const
     {
-        OSWindow *osWindow = CreateOSWindow();
+        OSWindow *osWindow = OSWindow::New();
         ASSERT_TRUE(osWindow != nullptr);
         osWindow->initialize("EGLContextCompatibilityTest", 500, 500);
         osWindow->setVisible(true);
@@ -146,7 +166,7 @@ class EGLContextCompatibilityTest : public ANGLETest
         eglDestroyContext(mDisplay, context);
         ASSERT_EGL_SUCCESS();
 
-        SafeDelete(osWindow);
+        OSWindow::Delete(&osWindow);
     }
 
     void testPbufferCompatibility(EGLConfig pbufferConfig,
@@ -194,7 +214,7 @@ class EGLContextCompatibilityTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
 
         EGLint surfaceCompontentType = EGL_COLOR_COMPONENT_TYPE_FIXED_EXT;
-        if (eglDisplayExtensionEnabled(mDisplay, "EGL_EXT_pixel_format_float"))
+        if (IsDisplayExtensionEnabled(mDisplay, "EGL_EXT_pixel_format_float"))
         {
             eglGetConfigAttrib(mDisplay, surfaceConfig, EGL_COLOR_COMPONENT_TYPE_EXT,
                                &surfaceCompontentType);
@@ -239,8 +259,10 @@ TEST_P(EGLContextCompatibilityTest, WindowSameConfig)
         if ((surfaceType & EGL_WINDOW_BIT) != 0)
         {
             // Disabling multisampled configurations due to test instability with various graphics
-            // cards
-            if (isMultisampledConfig(config))
+            // cards, and RGBA16F/RGB10_A2 on Android due to OSWindow on Android not providing
+            // compatible windows (anglebug.com/3156)
+            if (isMultisampledConfig(config) ||
+                (IsAndroid() && (isRGB10_A2Config(config) || isRGBA16FConfig(config))))
             {
                 continue;
             }
@@ -264,8 +286,9 @@ TEST_P(EGLContextCompatibilityTest, PbufferSameConfig)
         if ((surfaceType & EGL_PBUFFER_BIT) != 0)
         {
             // Disabling multisampled configurations due to test instability with various graphics
-            // cards
-            if (isMultisampledConfig(config))
+            // cards, and RGB10_A2 on Android due to OSWindow on Android not providing compatible
+            // windows (anglebug.com/3156)
+            if (isMultisampledConfig(config) || (IsAndroid() && isRGB10_A2Config(config)))
             {
                 continue;
             }
@@ -286,8 +309,11 @@ TEST_P(EGLContextCompatibilityTest, WindowDifferentConfig)
     for (size_t i = 0; i < mConfigs.size(); i++)
     {
         EGLConfig config1 = mConfigs[i];
-        // Disabling multisampled configurations due to test instability with various graphics cards
-        if (isMultisampledConfig(config1))
+        // Disabling multisampled configurations due to test instability with various graphics
+        // cards, and RGBA16F/RGB10_A2 on Android due to OSWindow on Android not providing
+        // compatible windows (anglebug.com/3156)
+        if (isMultisampledConfig(config1) ||
+            (IsAndroid() && (isRGB10_A2Config(config1) || isRGBA16FConfig(config1))))
         {
             continue;
         }
@@ -305,8 +331,10 @@ TEST_P(EGLContextCompatibilityTest, WindowDifferentConfig)
         {
             EGLConfig config2 = mConfigs[j];
             // Disabling multisampled configurations due to test instability with various graphics
-            // cards
-            if (isMultisampledConfig(config2))
+            // cards, and RGBA16F/RGB10_A2 on Android due to OSWindow on Android not providing
+            // compatible windows (anglebug.com/3156)
+            if (isMultisampledConfig(config2) ||
+                (IsAndroid() && (isRGB10_A2Config(config2) || isRGBA16FConfig(config2))))
             {
                 continue;
             }
@@ -323,8 +351,10 @@ TEST_P(EGLContextCompatibilityTest, PbufferDifferentConfig)
     for (size_t i = 0; i < mConfigs.size(); i++)
     {
         EGLConfig config1 = mConfigs[i];
-        // Disabling multisampled configurations due to test instability with various graphics cards
-        if (isMultisampledConfig(config1))
+        // Disabling multisampled configurations due to test instability with various graphics
+        // cards, and RGB10_A2 on Android due to OSWindow on Android not providing compatible
+        // windows (anglebug.com/3156)
+        if (isMultisampledConfig(config1) || (IsAndroid() && isRGB10_A2Config(config1)))
         {
             continue;
         }
@@ -342,8 +372,9 @@ TEST_P(EGLContextCompatibilityTest, PbufferDifferentConfig)
         {
             EGLConfig config2 = mConfigs[j];
             // Disabling multisampled configurations due to test instability with various graphics
-            // cards
-            if (isMultisampledConfig(config2))
+            // cards, and RGB10_A2 on Android due to OSWindow on Android not providing compatible
+            // windows (anglebug.com/3156)
+            if (isMultisampledConfig(config2) || (IsAndroid() && isRGB10_A2Config(config2)))
             {
                 continue;
             }
@@ -363,4 +394,4 @@ ANGLE_INSTANTIATE_TEST(EGLContextCompatibilityTest,
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
-#endif
+#endif  // defined(NDEBUG)

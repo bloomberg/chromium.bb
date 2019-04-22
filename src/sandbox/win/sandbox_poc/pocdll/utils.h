@@ -16,7 +16,7 @@ class HandleToFile {
  public:
   HandleToFile() {
     file_ = NULL;
-  };
+  }
 
   // Note: c_file_handle_ does not need to be closed because fclose does it.
   ~HandleToFile() {
@@ -24,7 +24,7 @@ class HandleToFile {
       fflush(file_);
       fclose(file_);
     }
-  };
+  }
 
   // Translates a HANDLE (handle) to a FILE * opened with the mode "mode".
   // The return value is the FILE * or NULL if there is an error.
@@ -55,7 +55,7 @@ class HandleToFile {
 
     file_ = _fdopen(c_file_handle, mode);
     return file_;
-  };
+  }
  private:
   // the FILE* returned. We need to closed it at the end.
   FILE* file_;

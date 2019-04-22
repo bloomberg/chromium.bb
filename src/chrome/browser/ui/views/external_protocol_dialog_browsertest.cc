@@ -46,12 +46,11 @@ class TestExternalProtocolDialogDelegate
     : public ExternalProtocolDialogDelegate {
  public:
   TestExternalProtocolDialogDelegate(const GURL& url,
-                                     int render_process_host_id,
-                                     int routing_id,
+                                     content::WebContents* web_contents,
                                      bool* called,
                                      bool* accept,
                                      bool* remember)
-      : ExternalProtocolDialogDelegate(url, render_process_host_id, routing_id),
+      : ExternalProtocolDialogDelegate(url, web_contents),
         called_(called),
         accept_(accept),
         remember_(remember) {}
@@ -88,15 +87,11 @@ class ExternalProtocolDialogBrowserTest
   void ShowUi(const std::string& name) override {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    int render_view_process_id =
-        web_contents->GetRenderViewHost()->GetProcess()->GetID();
-    int render_view_routing_id =
-        web_contents->GetRenderViewHost()->GetRoutingID();
     dialog_ = new ExternalProtocolDialog(
         std::make_unique<TestExternalProtocolDialogDelegate>(
-            GURL("telnet://12345"), render_view_process_id,
-            render_view_routing_id, &called_, &accept_, &remember_),
-        render_view_process_id, render_view_routing_id);
+            GURL("telnet://12345"), web_contents, &called_, &accept_,
+            &remember_),
+        web_contents);
   }
 
   void SetChecked(bool checked) {
@@ -116,8 +111,7 @@ class ExternalProtocolDialogBrowserTest
   }
   void BlockRequest() override {}
   void RunExternalProtocolDialog(const GURL& url,
-                                 int render_process_host_id,
-                                 int routing_id,
+                                 content::WebContents* web_contents,
                                  ui::PageTransition page_transition,
                                  bool has_user_gesture) override {}
   void LaunchUrlWithoutSecurityCheck(

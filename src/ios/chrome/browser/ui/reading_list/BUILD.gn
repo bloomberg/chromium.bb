@@ -56,6 +56,7 @@ source_set("reading_list") {
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/browser/url_loading",
     "//ios/chrome/common/favicon",
     "//ios/web",
     "//ios/web/public",

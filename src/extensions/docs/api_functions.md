@@ -94,7 +94,7 @@ GizmoFrobulateFunction : public UIThreadExtensionFunction {
  public:
   // This declares the extension function and initiates the mapping between the
   // string name to the C++ class as well as the histogram value.
-  DECLARE_EXTENSION_FUNCTION("gizmo.frobulate", GIZMO_FROBULATE);
+  DECLARE_EXTENSION_FUNCTION("gizmo.frobulate", GIZMO_FROBULATE)
 
   GizmoFrobulateFunction();
 

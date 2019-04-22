@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_REPRESENTATION_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_REPRESENTATION_H_
 
+#include <dawn/dawn.h>
+
 #include "base/callback_helpers.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
@@ -14,8 +16,8 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
-class GrContext;
 typedef unsigned int GLenum;
+class SkPromiseImageTexture;
 
 namespace gpu {
 namespace gles2 {
@@ -42,15 +44,20 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
 
   // Indicates that the underlying graphics context has been lost, and the
   // backing should be treated as destroyed.
-  void OnContextLost() { backing_->OnContextLost(); }
+  void OnContextLost() {
+    has_context_ = false;
+    backing_->OnContextLost();
+  }
 
  protected:
   SharedImageBacking* backing() const { return backing_; }
+  bool has_context() const { return has_context_; }
 
  private:
-  SharedImageManager* manager_;
-  SharedImageBacking* backing_;
-  MemoryTypeTracker* tracker_;
+  SharedImageManager* const manager_;
+  SharedImageBacking* const backing_;
+  MemoryTypeTracker* const tracker_;
+  bool has_context_ = true;
 };
 
 class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
@@ -70,6 +77,24 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
 class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture
     : public SharedImageRepresentation {
  public:
+  class ScopedAccess {
+   public:
+    ScopedAccess(SharedImageRepresentationGLTexture* representation,
+                 GLenum mode)
+        : representation_(representation),
+          success_(representation_->BeginAccess(mode)) {}
+    ~ScopedAccess() {
+      if (success_)
+        representation_->EndAccess();
+    }
+
+    bool success() const { return success_; }
+
+   private:
+    SharedImageRepresentationGLTexture* representation_;
+    bool success_;
+  };
+
   SharedImageRepresentationGLTexture(SharedImageManager* manager,
                                      SharedImageBacking* backing,
                                      MemoryTypeTracker* tracker)
@@ -86,6 +111,24 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture
 class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
     : public SharedImageRepresentation {
  public:
+  class ScopedAccess {
+   public:
+    ScopedAccess(SharedImageRepresentationGLTexturePassthrough* representation,
+                 GLenum mode)
+        : representation_(representation),
+          success_(representation_->BeginAccess(mode)) {}
+    ~ScopedAccess() {
+      if (success_)
+        representation_->EndAccess();
+    }
+
+    bool success() const { return success_; }
+
+   private:
+    SharedImageRepresentationGLTexturePassthrough* representation_;
+    bool success_;
+  };
+
   SharedImageRepresentationGLTexturePassthrough(SharedImageManager* manager,
                                                 SharedImageBacking* backing,
                                                 MemoryTypeTracker* tracker)
@@ -108,14 +151,22 @@ class SharedImageRepresentationSkia : public SharedImageRepresentation {
       : SharedImageRepresentation(manager, backing, tracker) {}
 
   virtual sk_sp<SkSurface> BeginWriteAccess(
-      GrContext* gr_context,
       int final_msaa_count,
-      SkColorType color_type,
       const SkSurfaceProps& surface_props) = 0;
   virtual void EndWriteAccess(sk_sp<SkSurface> surface) = 0;
-  virtual bool BeginReadAccess(SkColorType color_type,
-                               GrBackendTexture* backend_texture_out) = 0;
+  virtual sk_sp<SkPromiseImageTexture> BeginReadAccess() = 0;
   virtual void EndReadAccess() = 0;
+};
+
+class SharedImageRepresentationDawn : public SharedImageRepresentation {
+ public:
+  SharedImageRepresentationDawn(SharedImageManager* manager,
+                                SharedImageBacking* backing,
+                                MemoryTypeTracker* tracker)
+      : SharedImageRepresentation(manager, backing, tracker) {}
+
+  virtual DawnTexture BeginAccess(DawnTextureUsageBit usage) = 0;
+  virtual void EndAccess() = 0;
 };
 
 }  // namespace gpu

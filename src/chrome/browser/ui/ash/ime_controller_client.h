@@ -38,10 +38,12 @@ class ImeControllerClient
 
   // ash::mojom::ImeControllerClient:
   void SwitchToNextIme() override;
-  void SwitchToPreviousIme() override;
+  void SwitchToLastUsedIme() override;
   void SwitchImeById(const std::string& id, bool show_message) override;
   void ActivateImeMenuItem(const std::string& key) override;
   void SetCapsLockEnabled(bool caps_enabled) override;
+  void UpdateMirroringState(bool mirroring_enabled) override;
+  void UpdateCastingState(bool casting_enabled) override;
   void OverrideKeyboardKeyset(chromeos::input_method::mojom::ImeKeyset keyset,
                               OverrideKeyboardKeysetCallback callback) override;
 

@@ -11,7 +11,6 @@
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event.h"
@@ -93,8 +92,6 @@ class OmniboxResultViewTest : public ChromeViewsTestBase {
   OmniboxResultView* result_view() { return result_view_; }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
-
   std::unique_ptr<OmniboxEditModel> edit_model_;
   std::unique_ptr<TestOmniboxPopupContentsView> popup_view_;
   OmniboxResultView* result_view_;

@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This has to be included first.
-// See http://code.google.com/p/googletest/issues/detail?id=371
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -30,10 +26,11 @@
 #include "media/base/test_data_util.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/buildflags.h"
-#include "media/gpu/gpu_jpeg_decode_accelerator_factory.h"
+#include "media/gpu/gpu_mjpeg_decode_accelerator_factory.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
-#include "media/video/jpeg_decode_accelerator.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 #include "mojo/core/embedder/embedder.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -161,20 +158,17 @@ class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
 
   void SetUp() override;
 
-  // Creates and returns a FilePath for the pathless |name|. The current folder
-  // is used if |name| exists in it. If not the file will be treated as relative
-  // to the test data path. This is either a custom test data path provided by
-  // --test_data_path, or the default test data path (//media/test/data).
-  base::FilePath GetOriginalOrTestDataFilePath(const std::string& name) {
-    LOG_ASSERT(std::find_if(name.begin(), name.end(),
-                            base::FilePath::IsSeparator) == name.end())
-        << name << " should be just a file name and not have a path";
-    const base::FilePath original_file_path = base::FilePath(name);
+  // Resolve the specified file path. The file path can be either an absolute
+  // path, relative to the current directory, or relative to the test data path.
+  // This is either a custom test data path provided by --test_data_path, or the
+  // default test data path (//media/test/data).
+  base::FilePath GetOriginalOrTestDataFilePath(const std::string& file_path) {
+    const base::FilePath original_file_path = base::FilePath(file_path);
     if (base::PathExists(original_file_path))
       return original_file_path;
     if (test_data_path_)
       return base::FilePath(test_data_path_).Append(original_file_path);
-    return GetTestDataFilePath(name);
+    return GetTestDataFilePath(file_path);
   }
 
   // Used for InputSizeChange test case. The image size should be smaller than
@@ -243,25 +237,28 @@ enum ClientState {
   CS_ERROR,
 };
 
-class JpegClient : public JpegDecodeAccelerator::Client {
+class JpegClient : public MjpegDecodeAccelerator::Client {
  public:
   // JpegClient takes ownership of |note|.
-  JpegClient(const std::vector<ParsedJpegImage*>& test_image_files,
-             std::unique_ptr<ClientStateNotification<ClientState>> note,
-             bool is_skip);
+  JpegClient(
+      const std::vector<ParsedJpegImage*>& test_image_files,
+      std::unique_ptr<media::test::ClientStateNotification<ClientState>> note,
+      bool is_skip);
   ~JpegClient() override;
   void CreateJpegDecoder();
   void StartDecode(int32_t bitstream_buffer_id, bool do_prepare_memory = true);
   void PrepareMemory(int32_t bitstream_buffer_id);
   bool GetSoftwareDecodeResult(int32_t bitstream_buffer_id);
 
-  // JpegDecodeAccelerator::Client implementation.
+  // MjpegDecodeAccelerator::Client implementation.
   void VideoFrameReady(int32_t bitstream_buffer_id) override;
   void NotifyError(int32_t bitstream_buffer_id,
-                   JpegDecodeAccelerator::Error error) override;
+                   MjpegDecodeAccelerator::Error error) override;
 
   // Accessors.
-  ClientStateNotification<ClientState>* note() const { return note_.get(); }
+  media::test::ClientStateNotification<ClientState>* note() const {
+    return note_.get();
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(JpegClientTest, GetMeanAbsoluteDifference);
@@ -284,7 +281,7 @@ class JpegClient : public JpegDecodeAccelerator::Client {
   ClientState state_;
 
   // Used to notify another thread about the state. JpegClient owns this.
-  std::unique_ptr<ClientStateNotification<ClientState>> note_;
+  std::unique_ptr<media::test::ClientStateNotification<ClientState>> note_;
 
   // Skip JDA decode result. Used for testing performance.
   bool is_skip_;
@@ -304,14 +301,14 @@ class JpegClient : public JpegDecodeAccelerator::Client {
   // potentially uses other members in the JpegClient instance. For example,
   // as decode tasks finish in a new thread spawned by |decoder_|, |hw_out_shm_|
   // can be accessed.
-  std::unique_ptr<JpegDecodeAccelerator> decoder_;
+  std::unique_ptr<MjpegDecodeAccelerator> decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(JpegClient);
 };
 
 JpegClient::JpegClient(
     const std::vector<ParsedJpegImage*>& test_image_files,
-    std::unique_ptr<ClientStateNotification<ClientState>> note,
+    std::unique_ptr<media::test::ClientStateNotification<ClientState>> note,
     bool is_skip)
     : test_image_files_(test_image_files),
       state_(CS_CREATED),
@@ -324,7 +321,7 @@ void JpegClient::CreateJpegDecoder() {
   decoder_ = nullptr;
 
   auto jda_factories =
-      GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories();
+      GpuMjpegDecodeAcceleratorFactory::GetAcceleratorFactories();
   if (jda_factories.empty()) {
     LOG(ERROR) << "JpegDecodeAccelerator not supported on this platform.";
     SetState(CS_ERROR);
@@ -376,7 +373,7 @@ void JpegClient::VideoFrameReady(int32_t bitstream_buffer_id) {
 }
 
 void JpegClient::NotifyError(int32_t bitstream_buffer_id,
-                             JpegDecodeAccelerator::Error error) {
+                             MjpegDecodeAccelerator::Error error) {
   LOG(ERROR) << "Notifying of error " << error << " for buffer id "
              << bitstream_buffer_id;
   SetState(CS_ERROR);
@@ -588,7 +585,8 @@ void JpegDecodeAcceleratorTest::TestDecode(
 
   for (size_t i = 0; i < num_concurrent_decoders; i++) {
     auto client = std::make_unique<JpegClient>(
-        images, std::make_unique<ClientStateNotification<ClientState>>(),
+        images,
+        std::make_unique<media::test::ClientStateNotification<ClientState>>(),
         false /* is_skip */);
     scoped_clients.emplace_back(
         new ScopedJpegClient(decoder_thread.task_runner(), std::move(client)));
@@ -624,7 +622,8 @@ void JpegDecodeAcceleratorTest::PerfDecodeByJDA(
   ASSERT_TRUE(decoder_thread.Start());
 
   auto client = std::make_unique<JpegClient>(
-      images, std::make_unique<ClientStateNotification<ClientState>>(),
+      images,
+      std::make_unique<media::test::ClientStateNotification<ClientState>>(),
       true /* is_skip */);
   auto scoped_client = std::make_unique<ScopedJpegClient>(
       decoder_thread.task_runner(), std::move(client));
@@ -658,7 +657,8 @@ void JpegDecodeAcceleratorTest::PerfDecodeBySW(
   LOG_ASSERT(images.size() == 1);
 
   std::unique_ptr<JpegClient> client = std::make_unique<JpegClient>(
-      images, std::make_unique<ClientStateNotification<ClientState>>(),
+      images,
+      std::make_unique<media::test::ClientStateNotification<ClientState>>(),
       true /* is_skip */);
 
   const int32_t bitstream_buffer_id = 0;

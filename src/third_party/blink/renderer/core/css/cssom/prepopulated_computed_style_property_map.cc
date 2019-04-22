@@ -29,7 +29,7 @@ PrepopulatedComputedStylePropertyMap::PrepopulatedComputedStylePropertyMap(
 
   for (const auto& property_id : native_properties) {
     // Silently drop shorthand properties.
-    DCHECK_NE(property_id, CSSPropertyInvalid);
+    DCHECK_NE(property_id, CSSPropertyID::kInvalid);
     if (CSSProperty::Get(property_id).IsShorthand())
       continue;
 
@@ -41,7 +41,7 @@ PrepopulatedComputedStylePropertyMap::PrepopulatedComputedStylePropertyMap(
   }
 }
 
-unsigned PrepopulatedComputedStylePropertyMap::size() {
+unsigned PrepopulatedComputedStylePropertyMap::size() const {
   return native_values_.size() + custom_values_.size();
 }
 
@@ -49,7 +49,7 @@ void PrepopulatedComputedStylePropertyMap::UpdateStyle(
     const Document& document,
     const ComputedStyle& style) {
   for (const auto& property_id : native_values_.Keys()) {
-    DCHECK_NE(property_id, CSSPropertyInvalid);
+    DCHECK_NE(property_id, CSSPropertyID::kInvalid);
     UpdateNativeProperty(style, property_id);
   }
 
@@ -83,12 +83,12 @@ void PrepopulatedComputedStylePropertyMap::UpdateCustomProperty(
 }
 
 const CSSValue* PrepopulatedComputedStylePropertyMap::GetProperty(
-    CSSPropertyID property_id) {
+    CSSPropertyID property_id) const {
   return native_values_.at(property_id);
 }
 
 const CSSValue* PrepopulatedComputedStylePropertyMap::GetCustomProperty(
-    AtomicString property_name) {
+    AtomicString property_name) const {
   return custom_values_.at(property_name);
 }
 
@@ -96,17 +96,16 @@ void PrepopulatedComputedStylePropertyMap::ForEachProperty(
     const IterationCallback& callback) {
   // Have to sort by all properties by code point, so we have to store
   // them in a buffer first.
-  HeapVector<std::pair<AtomicString, Member<const CSSValue>>> values;
+  HeapVector<std::pair<CSSPropertyName, Member<const CSSValue>>> values;
 
   for (const auto& entry : native_values_) {
     DCHECK(entry.value);
-    values.emplace_back(
-        CSSProperty::Get(entry.key).GetPropertyNameAtomicString(), entry.value);
+    values.emplace_back(CSSPropertyName(entry.key), entry.value);
   }
 
   for (const auto& entry : custom_values_) {
     DCHECK(entry.value);
-    values.emplace_back(entry.key, entry.value);
+    values.emplace_back(CSSPropertyName(entry.key), entry.value);
   }
 
   std::sort(values.begin(), values.end(), [](const auto& a, const auto& b) {
@@ -118,7 +117,7 @@ void PrepopulatedComputedStylePropertyMap::ForEachProperty(
 }
 
 String PrepopulatedComputedStylePropertyMap::SerializationForShorthand(
-    const CSSProperty&) {
+    const CSSProperty&) const {
   // TODO(816722): Shorthands not yet supported for this style map.
   NOTREACHED();
   return "";

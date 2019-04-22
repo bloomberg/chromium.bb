@@ -32,13 +32,13 @@
 
 #include "include/libplatform/libplatform.h"
 #include "include/v8-platform.h"
+#include "src/base/enum-set.h"
 #include "src/debug/debug-interface.h"
 #include "src/flags.h"
 #include "src/heap/factory.h"
 #include "src/isolate.h"
 #include "src/objects.h"
 #include "src/register-configuration.h"
-#include "src/utils.h"
 #include "src/v8.h"
 #include "src/zone/accounting-allocator.h"
 
@@ -55,6 +55,12 @@ const auto GetRegConfig = RegisterConfiguration::Default;
 
 class HandleScope;
 class Zone;
+
+namespace compiler {
+
+class JSHeapBroker;
+
+}  // namespace compiler
 
 }  // namespace internal
 
@@ -88,20 +94,15 @@ class Zone;
   V(TRACE_EXTENSION,    "v8/trace")
 
 #define DEFINE_EXTENSION_ID(Name, Ident) Name##_ID,
-enum CcTestExtensionIds {
-  EXTENSION_LIST(DEFINE_EXTENSION_ID)
-  kMaxExtensions
-};
+enum CcTestExtensionId { EXTENSION_LIST(DEFINE_EXTENSION_ID) kMaxExtensions };
 #undef DEFINE_EXTENSION_ID
 
-typedef v8::internal::EnumSet<CcTestExtensionIds> CcTestExtensionFlags;
-#define DEFINE_EXTENSION_FLAG(Name, Ident)                               \
-  static const CcTestExtensionFlags Name(1 << Name##_ID);
-  static const CcTestExtensionFlags NO_EXTENSIONS(0);
-  static const CcTestExtensionFlags ALL_EXTENSIONS((1 << kMaxExtensions) - 1);
-  EXTENSION_LIST(DEFINE_EXTENSION_FLAG)
-#undef DEFINE_EXTENSION_FLAG
+using CcTestExtensionFlags = v8::base::EnumSet<CcTestExtensionId>;
 
+#define DEFINE_EXTENSION_NAME(Name, Ident) Ident,
+static constexpr const char* kExtensionName[kMaxExtensions] = {
+    EXTENSION_LIST(DEFINE_EXTENSION_NAME)};
+#undef DEFINE_EXTENSION_NAME
 
 class CcTest {
  public:
@@ -161,7 +162,11 @@ class CcTest {
   // Helper function to configure a context.
   // Must be in a HandleScope.
   static v8::Local<v8::Context> NewContext(
-      CcTestExtensionFlags extensions,
+      v8::Isolate* isolate = CcTest::isolate()) {
+    return NewContext({}, isolate);
+  }
+  static v8::Local<v8::Context> NewContext(
+      CcTestExtensionFlags extension_flags,
       v8::Isolate* isolate = CcTest::isolate());
 
   static void TearDown();
@@ -334,6 +339,10 @@ static inline i::Handle<T> GetGlobal(const char* name) {
   return i::Handle<T>::cast(value);
 }
 
+static inline v8::Local<v8::Boolean> v8_bool(bool val) {
+  return v8::Boolean::New(v8::Isolate::GetCurrent(), val);
+}
+
 static inline v8::Local<v8::Value> v8_num(double x) {
   return v8::Number::New(v8::Isolate::GetCurrent(), x);
 }
@@ -381,28 +390,29 @@ static inline int32_t v8_run_int32value(v8::Local<v8::Script> script) {
   return script->Run(context).ToLocalChecked()->Int32Value(context).FromJust();
 }
 
-
 static inline v8::Local<v8::Script> CompileWithOrigin(
-    v8::Local<v8::String> source, v8::Local<v8::String> origin_url) {
-  v8::ScriptOrigin origin(origin_url);
+    v8::Local<v8::String> source, v8::Local<v8::String> origin_url,
+    v8::Local<v8::Boolean> is_shared_cross_origin) {
+  v8::ScriptOrigin origin(origin_url, v8::Local<v8::Integer>(),
+                          v8::Local<v8::Integer>(), is_shared_cross_origin);
   v8::ScriptCompiler::Source script_source(source, origin);
   return v8::ScriptCompiler::Compile(
              v8::Isolate::GetCurrent()->GetCurrentContext(), &script_source)
       .ToLocalChecked();
 }
 
+static inline v8::Local<v8::Script> CompileWithOrigin(
+    v8::Local<v8::String> source, const char* origin_url,
+    bool is_shared_cross_origin) {
+  return CompileWithOrigin(source, v8_str(origin_url),
+                           v8_bool(is_shared_cross_origin));
+}
 
 static inline v8::Local<v8::Script> CompileWithOrigin(
-    v8::Local<v8::String> source, const char* origin_url) {
-  return CompileWithOrigin(source, v8_str(origin_url));
+    const char* source, const char* origin_url, bool is_shared_cross_origin) {
+  return CompileWithOrigin(v8_str(source), v8_str(origin_url),
+                           v8_bool(is_shared_cross_origin));
 }
-
-
-static inline v8::Local<v8::Script> CompileWithOrigin(const char* source,
-                                                      const char* origin_url) {
-  return CompileWithOrigin(v8_str(source), v8_str(origin_url));
-}
-
 
 // Helper functions that compile and run the source.
 static inline v8::MaybeLocal<v8::Value> CompileRun(
@@ -488,7 +498,13 @@ static inline v8::Local<v8::Value> CompileRunWithOrigin(
   return CompileRunWithOrigin(v8_str(source), origin_url);
 }
 
-
+// Takes a JSFunction and runs it through the test version of the optimizing
+// pipeline, allocating the temporary compilation artifacts in a given Zone.
+// For possible {flags} values, look at OptimizedCompilationInfo::Flag.
+// If passed a non-null pointer for {broker}, outputs the JSHeapBroker to it.
+i::Handle<i::JSFunction> Optimize(
+    i::Handle<i::JSFunction> function, i::Zone* zone, i::Isolate* isolate,
+    uint32_t flags, i::compiler::JSHeapBroker** out_broker = nullptr);
 
 static inline void ExpectString(const char* code, const char* expected) {
   v8::Local<v8::Value> result = CompileRun(code);

@@ -7,14 +7,14 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // This structure represents Google Maps Geolocation response.
 // Based on device/geolocation/geoposition.h .
-struct CHROMEOS_EXPORT Geoposition {
+struct COMPONENT_EXPORT(CHROMEOS_GEOLOCATION) Geoposition {
   // Geolocation API client status.
   // (Server status is reported in "error_code" field.)
   enum Status {

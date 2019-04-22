@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -30,15 +31,15 @@ using display::Screen;
 
 namespace views {
 
-AXRemoteHost::AXRemoteHost() {
+AXRemoteHost::AXRemoteHost(AXAuraObjCache* cache) : cache_(cache) {
   AXEventManager::Get()->AddObserver(this);
-  AXAuraObjCache::GetInstance()->SetDelegate(this);
+  cache_->SetDelegate(this);
 }
 
 AXRemoteHost::~AXRemoteHost() {
   if (widget_)
     StopMonitoringWidget();
-  AXAuraObjCache::GetInstance()->SetDelegate(nullptr);
+  cache_->SetDelegate(nullptr);
   AXEventManager::Get()->RemoveObserver(this);
 }
 
@@ -69,15 +70,15 @@ void AXRemoteHost::StartMonitoringWidget(Widget* widget) {
                                           new std::string(tree_id_.ToString()));
 
   // The cache needs to track the root window to follow focus changes.
-  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
-  cache->OnRootWindowObjCreated(widget_->GetNativeWindow());
+  cache_->OnRootWindowObjCreated(widget_->GetNativeWindow());
 
   // Start the AX tree with the contents view because the window frame is
   // handled by the window manager in another process.
   View* contents_view = widget_->widget_delegate()->GetContentsView();
-  AXAuraObjWrapper* contents_wrapper = cache->GetOrCreate(contents_view);
+  AXAuraObjWrapper* contents_wrapper = cache_->GetOrCreate(contents_view);
 
-  tree_source_ = std::make_unique<AXTreeSourceMus>(contents_wrapper, tree_id_);
+  tree_source_ =
+      std::make_unique<AXTreeSourceMus>(contents_wrapper, tree_id_, cache_);
   tree_serializer_ = std::make_unique<AuraAXTreeSerializer>(tree_source_.get());
 
   // Inform the serializer of the display device scale factor.
@@ -92,9 +93,8 @@ void AXRemoteHost::StopMonitoringWidget() {
   DCHECK(widget_->HasObserver(this));
   Screen::GetScreen()->RemoveObserver(this);
   widget_->RemoveObserver(this);
-  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
-  cache->OnRootWindowObjDestroyed(widget_->GetNativeWindow());
-  cache->Remove(widget_->widget_delegate()->GetContentsView());
+  cache_->OnRootWindowObjDestroyed(widget_->GetNativeWindow());
+  cache_->Remove(widget_->widget_delegate()->GetContentsView());
   widget_ = nullptr;
   // Delete source and serializers to save memory.
   tree_serializer_.reset();
@@ -167,7 +167,7 @@ void AXRemoteHost::OnViewEvent(View* view, ax::mojom::Event event_type) {
     return;
 
   // Can return null for views without a widget.
-  AXAuraObjWrapper* aura_obj = AXAuraObjCache::GetInstance()->GetOrCreate(view);
+  AXAuraObjWrapper* aura_obj = cache_->GetOrCreate(view);
   if (!aura_obj)
     return;
   SendEvent(aura_obj, event_type);
@@ -242,7 +242,7 @@ void AXRemoteHost::SendEvent(AXAuraObjWrapper* aura_obj,
   updates.push_back(update);
 
   // Make sure the focused node is serialized.
-  AXAuraObjWrapper* focus = AXAuraObjCache::GetInstance()->GetFocus();
+  AXAuraObjWrapper* focus = cache_->GetFocus();
   if (focus) {
     ui::AXTreeUpdate focused_node_update;
     tree_serializer_->SerializeChanges(focus, &focused_node_update);

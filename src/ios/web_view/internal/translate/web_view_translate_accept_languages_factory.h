@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace translate {
 class TranslateAcceptLanguages;
@@ -33,8 +29,7 @@ class WebViewTranslateAcceptLanguagesFactory
   static WebViewTranslateAcceptLanguagesFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<
-      WebViewTranslateAcceptLanguagesFactory>;
+  friend class base::NoDestructor<WebViewTranslateAcceptLanguagesFactory>;
 
   WebViewTranslateAcceptLanguagesFactory();
   ~WebViewTranslateAcceptLanguagesFactory() override;

@@ -7,9 +7,8 @@
 #include <utility>
 
 #include "base/metrics/user_metrics.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace ash {
@@ -20,9 +19,7 @@ void BrightnessControllerChromeos::HandleBrightnessDown(
   if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_DOWN)
     base::RecordAction(base::UserMetricsAction("Accel_BrightnessDown_F6"));
 
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->DecreaseScreenBrightness(true);
+  chromeos::PowerManagerClient::Get()->DecreaseScreenBrightness(true);
 }
 
 void BrightnessControllerChromeos::HandleBrightnessUp(
@@ -30,9 +27,7 @@ void BrightnessControllerChromeos::HandleBrightnessUp(
   if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_UP)
     base::RecordAction(base::UserMetricsAction("Accel_BrightnessUp_F7"));
 
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->IncreaseScreenBrightness();
+  chromeos::PowerManagerClient::Get()->IncreaseScreenBrightness();
 }
 
 void BrightnessControllerChromeos::SetBrightnessPercent(double percent,
@@ -45,16 +40,13 @@ void BrightnessControllerChromeos::SetBrightnessPercent(double percent,
           : power_manager::SetBacklightBrightnessRequest_Transition_INSTANT);
   request.set_cause(
       power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST);
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->SetScreenBrightness(request);
+  chromeos::PowerManagerClient::Get()->SetScreenBrightness(request);
 }
 
 void BrightnessControllerChromeos::GetBrightnessPercent(
     base::OnceCallback<void(base::Optional<double>)> callback) {
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->GetScreenBrightnessPercent(std::move(callback));
+  chromeos::PowerManagerClient::Get()->GetScreenBrightnessPercent(
+      std::move(callback));
 }
 
 }  // namespace system

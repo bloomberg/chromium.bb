@@ -64,9 +64,10 @@ class LayoutGeometryMapTest : public testing::Test {
     WebFrame* iframe =
         static_cast<WebViewImpl*>(web_view)->MainFrameImpl()->FindFrameByName(
             WebString::FromUTF8(iframe_name));
-    if (!iframe || !iframe->IsWebLocalFrame())
+    auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(iframe);
+    if (!web_local_frame)
       return nullptr;
-    LocalFrame* frame = ToWebLocalFrameImpl(iframe)->GetFrame();
+    LocalFrame* frame = web_local_frame->GetFrame();
     Document* doc = frame->GetDocument();
     Element* element = doc->getElementById(element_id);
     if (!element)
@@ -151,7 +152,7 @@ class LayoutGeometryMapTest : public testing::Test {
         static_cast<WebViewImpl*>(web_view)->MainFrameImpl()->GetFrame();
     LayoutView* layout_view = frame->GetDocument()->GetLayoutView();
     if (layout_view->HasOverflowClip())
-      result.Move(layout_view->ScrolledContentOffset());
+      result.Move(FloatSize(layout_view->ScrolledContentOffset()));
     return result;
   }
 
@@ -520,9 +521,19 @@ TEST_F(LayoutGeometryMapTest, FloatUnderInlineLayer) {
   rgm.PushMappingsToAncestor(container->Layer(), nullptr);
   rgm.PushMappingsToAncestor(span->Layer(), container->Layer());
   rgm.PushMappingsToAncestor(layer_under_float->Layer(), span->Layer());
-  EXPECT_EQ(rect, RectFromQuad(rgm.MapToAncestor(rect, container)));
-  EXPECT_EQ(FloatRect(63.0f, 54.0f, 10.0f, 8.0f),
-            RectFromQuad(rgm.MapToAncestor(rect, nullptr)));
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // LayoutNG inline-level floats are children of their inline-level
+    // containers. As such they are positioned relative to their inline-level
+    // container, (and shifted by an additional 200,100 in this case).
+    EXPECT_EQ(FloatRect(203.0f, 104.0f, 10.0f, 8.0f),
+              RectFromQuad(rgm.MapToAncestor(rect, container)));
+    EXPECT_EQ(FloatRect(263.0f, 154.0f, 10.0f, 8.0f),
+              RectFromQuad(rgm.MapToAncestor(rect, nullptr)));
+  } else {
+    EXPECT_EQ(rect, RectFromQuad(rgm.MapToAncestor(rect, container)));
+    EXPECT_EQ(FloatRect(63.0f, 54.0f, 10.0f, 8.0f),
+              RectFromQuad(rgm.MapToAncestor(rect, nullptr)));
+  }
 
   rgm.PopMappingsToAncestor(span->Layer());
   EXPECT_EQ(FloatRect(203.0f, 104.0f, 10.0f, 8.0f),
@@ -531,9 +542,16 @@ TEST_F(LayoutGeometryMapTest, FloatUnderInlineLayer) {
             RectFromQuad(rgm.MapToAncestor(rect, nullptr)));
 
   rgm.PushMappingsToAncestor(floating, span);
-  EXPECT_EQ(rect, RectFromQuad(rgm.MapToAncestor(rect, container)));
-  EXPECT_EQ(FloatRect(63.0f, 54.0f, 10.0f, 8.0f),
-            RectFromQuad(rgm.MapToAncestor(rect, nullptr)));
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(FloatRect(203.0f, 104.0f, 10.0f, 8.0f),
+              RectFromQuad(rgm.MapToAncestor(rect, container)));
+    EXPECT_EQ(FloatRect(263.0f, 154.0f, 10.0f, 8.0f),
+              RectFromQuad(rgm.MapToAncestor(rect, nullptr)));
+  } else {
+    EXPECT_EQ(rect, RectFromQuad(rgm.MapToAncestor(rect, container)));
+    EXPECT_EQ(FloatRect(63.0f, 54.0f, 10.0f, 8.0f),
+              RectFromQuad(rgm.MapToAncestor(rect, nullptr)));
+  }
 }
 
 }  // namespace blink

@@ -10,9 +10,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/buildflags.h"
@@ -87,7 +85,7 @@ class TestSigninCreateProfileHandler : public SigninCreateProfileHandler {
 
   // Mock this method so that we don't actually open the signin dialog during
   // the test.
-  MOCK_METHOD1(OpenSigninDialogForProfile, void(Profile* profile));
+  MOCK_METHOD1(OpenForceSigninDialogForProfile, void(Profile* profile));
 
  private:
   TestingProfileManager* profile_manager_;
@@ -120,13 +118,8 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
     return handler_.get();
   }
 
-  FakeSigninManagerForTesting* signin_manager() {
-    return fake_signin_manager_;
-  }
-
  private:
   std::unique_ptr<content::TestWebUI> web_ui_;
-  FakeSigninManagerForTesting* fake_signin_manager_;
   std::unique_ptr<TestSigninCreateProfileHandler> handler_;
 };
 
@@ -171,7 +164,7 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfile) {
   EXPECT_CALL(*handler(), OpenNewWindowForProfile(_, _));
 
   // Expect no signin dialog opened for the new profile.
-  EXPECT_CALL(*handler(), OpenSigninDialogForProfile(_)).Times(0);
+  EXPECT_CALL(*handler(), OpenForceSigninDialogForProfile(_)).Times(0);
 
   // Create a profile.
   base::ListValue list_args;
@@ -203,7 +196,7 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfileWithForceSignin) {
   EXPECT_CALL(*handler(), OpenNewWindowForProfile(_, _)).Times(0);
 
   // Expect a signin dialog opened for the new profile.
-  EXPECT_CALL(*handler(), OpenSigninDialogForProfile(_)).Times(1);
+  EXPECT_CALL(*handler(), OpenForceSigninDialogForProfile(_)).Times(1);
 
   base::ListValue list_args;
   list_args.AppendString(kTestProfileName);

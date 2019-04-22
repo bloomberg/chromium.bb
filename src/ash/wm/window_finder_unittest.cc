@@ -7,6 +7,11 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_session.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/geometry/insets.h"
@@ -116,6 +121,41 @@ TEST_F(WindowFinderTest, WindowTargeterWithHitTestRects) {
   EXPECT_EQ(window2.get(),
             GetTopmostWindowAtPoint(gfx::Point(60, 10), ignore, &real_topmost));
   EXPECT_EQ(window2.get(), real_topmost);
+}
+
+// Tests that when overview is active, GetTopmostWindowAtPoint() will return
+// the window in overview that contains the specified screen point, even though
+// it might be a minimized window.
+TEST_F(WindowFinderTest, TopmostWindowWithOverviewActive) {
+  UpdateDisplay("400x400");
+  std::unique_ptr<aura::Window> window1 =
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100));
+  std::unique_ptr<aura::Window> window2 =
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100));
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->IsSelecting());
+
+  // Get |window1| and |window2|'s transformed bounds in overview.
+  OverviewGrid* grid =
+      overview_controller->overview_session()->GetGridWithRootWindow(
+          window1->GetRootWindow());
+  gfx::Rect bounds1 = gfx::ToEnclosedRect(
+      grid->GetOverviewItemContaining(window1.get())->target_bounds());
+  gfx::Rect bounds2 = gfx::ToEnclosedRect(
+      grid->GetOverviewItemContaining(window2.get())->target_bounds());
+
+  std::set<aura::Window*> ignore;
+  aura::Window* real_topmost = nullptr;
+  EXPECT_EQ(window1.get(), GetTopmostWindowAtPoint(bounds1.CenterPoint(),
+                                                   ignore, &real_topmost));
+  EXPECT_EQ(window2.get(), GetTopmostWindowAtPoint(bounds2.CenterPoint(),
+                                                   ignore, &real_topmost));
+
+  wm::GetWindowState(window1.get())->Minimize();
+  EXPECT_EQ(window1.get(), GetTopmostWindowAtPoint(bounds1.CenterPoint(),
+                                                   ignore, &real_topmost));
 }
 
 }  // namespace wm

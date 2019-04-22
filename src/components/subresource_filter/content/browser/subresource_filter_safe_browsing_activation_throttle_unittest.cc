@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -32,7 +34,7 @@
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
-#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
@@ -723,7 +725,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
     EXPECT_EQ(mojom::ActivationLevel::kDisabled,
               *observer()->GetPageActivationForLastCommittedLoad());
   }
-};
+}
 
 // Only main frames with http/https schemes should activate.
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
@@ -757,7 +759,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
     EXPECT_EQ(test_data.expected_activation_level,
               *observer()->GetPageActivationForLastCommittedLoad());
   }
-};
+}
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
        ListNotMatched_NoActivation) {
@@ -1034,7 +1036,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling,
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelay, 0);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CancelMethod,
     SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling,
     ::testing::Combine(
@@ -1045,12 +1047,12 @@ INSTANTIATE_TEST_CASE_P(
         ::testing::Values(content::TestNavigationThrottle::SYNCHRONOUS,
                           content::TestNavigationThrottle::ASYNCHRONOUS)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ActivationLevelTest,
     SubresourceFilterSafeBrowsingActivationThrottleParamTest,
     ::testing::ValuesIn(kActivationListTestData));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ActivationScopeTest,
     SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
     ::testing::ValuesIn(kActivationScopeTestData));

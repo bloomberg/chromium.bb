@@ -75,16 +75,6 @@ class PossibleBrowser(possible_app.PossibleApp):
       logging.warning(
           'Flush system cache is not supported. Did not flush OS page cache.')
 
-  def _ClearCachesOnStart(self):
-    """Clear DNS caches and OS page caches if the corresponding option is set.
-
-    TODO(crbug.com/811244): Cache clearing decisions should me moved to the
-    shared state and this method removed.
-    """
-    self.platform.FlushDnsCache()
-    if self._browser_options.clear_sytem_cache_for_browser_and_profile_on_start:
-      self.FlushOsPageCaches()
-
   @contextlib.contextmanager
   def BrowserSession(self, browser_options):
     try:
@@ -104,9 +94,8 @@ class PossibleBrowser(possible_app.PossibleApp):
     assert getattr(browser_options, 'IS_BROWSER_OPTIONS', False)
     self._browser_options = browser_options
 
-  def Create(self, clear_caches=True):
-    # TODO(crbug.com/811244): The clear_caches option should be removed then
-    # this is handled by the shared state.
+  def Create(self):
+    """Start the browser process."""
     raise NotImplementedError()
 
   def CleanUpEnvironment(self):
@@ -127,12 +116,6 @@ class PossibleBrowser(possible_app.PossibleApp):
   def SupportsOptions(self, browser_options):
     """Tests for extension support."""
     raise NotImplementedError()
-
-  def IsRemote(self):
-    return False
-
-  def RunRemote(self):
-    pass
 
   def UpdateExecutableIfNeeded(self):
     pass

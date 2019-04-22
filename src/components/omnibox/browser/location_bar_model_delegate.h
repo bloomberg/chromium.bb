@@ -5,13 +5,16 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_LOCATION_BAR_MODEL_DELEGATE_H_
 #define COMPONENTS_OMNIBOX_BROWSER_LOCATION_BAR_MODEL_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/security_state/core/security_state.h"
 
+class AutocompleteClassifier;
 class GURL;
+class TemplateURLService;
 
 namespace gfx {
 struct VectorIcon;
@@ -34,22 +37,25 @@ class LocationBarModelDelegate {
   // exists. Otherwise returns false and leaves |url| unmodified.
   virtual bool GetURL(GURL* url) const = 0;
 
+  // Returns whether we should prevent elision of the display URL and turn off
+  // query in omnibox. Based on whether user has a specified extension enabled.
+  virtual bool ShouldPreventElision() const;
+
   // Returns whether the URL for the current navigation entry should be
   // in the location bar.
   virtual bool ShouldDisplayURL() const;
 
-  // Returns the underlying security info of the page without regard to any
+  // Returns the underlying security level of the page without regard to any
   // user edits that may be in progress.
-  virtual void GetSecurityInfo(security_state::SecurityInfo* result) const;
+  virtual security_state::SecurityLevel GetSecurityLevel() const;
+
+  // Returns the underlying security state of the page without regard to any
+  // user edits that may be in progress. Should never return nullptr.
+  virtual std::unique_ptr<security_state::VisibleSecurityState>
+  GetVisibleSecurityState() const;
 
   // Returns the certificate for the current navigation entry.
   virtual scoped_refptr<net::X509Certificate> GetCertificate() const;
-
-  // Returns true if the current page fails the billing interstitial check.
-  virtual bool FailsBillingCheck() const;
-
-  // Returns true if the current page fails the malware check.
-  virtual bool FailsMalwareCheck() const;
 
   // Returns the id of the icon to show to the left of the address, or nullptr
   // if the icon should be selected by the caller. This is useful for
@@ -60,6 +66,12 @@ class LocationBarModelDelegate {
   // Returns whether the page is an offline page, sourced from a cache of
   // previously-downloaded content.
   virtual bool IsOfflinePage() const;
+
+  // Returns the AutocompleteClassifier instance for the current page.
+  virtual AutocompleteClassifier* GetAutocompleteClassifier();
+
+  // Returns the TemplateURLService instance for the current page.
+  virtual TemplateURLService* GetTemplateURLService();
 
  protected:
   virtual ~LocationBarModelDelegate() {}

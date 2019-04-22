@@ -49,8 +49,7 @@ class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
 
-    scoped_refptr<gl::GLImageNativePixmap> image(new gl::GLImageNativePixmap(
-        size, gl::GLImageNativePixmap::GetInternalFormatForTesting(format)));
+    auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
     EXPECT_TRUE(image->InitializeFromTexture(texture_id));
 
     glDeleteTextures(1, &texture_id);
@@ -70,7 +69,7 @@ template <typename GLImageTestDelegate>
 class GLImageNativePixmapToDmabufTest
     : public GLImageTest<GLImageTestDelegate> {};
 
-TYPED_TEST_CASE_P(GLImageNativePixmapToDmabufTest);
+TYPED_TEST_SUITE_P(GLImageNativePixmapToDmabufTest);
 
 TYPED_TEST_P(GLImageNativePixmapToDmabufTest, GLTexture2DToDmabuf) {
   if (this->delegate_.SkipTest())
@@ -89,37 +88,36 @@ TYPED_TEST_P(GLImageNativePixmapToDmabufTest, GLTexture2DToDmabuf) {
       gfx::NumberOfPlanesForBufferFormat(this->delegate_.GetBufferFormat());
   EXPECT_EQ(num_planes, native_pixmap_handle.planes.size());
 
-  std::vector<base::ScopedFD> scoped_fds;
-  for (auto& fd : native_pixmap_handle.fds) {
-    EXPECT_TRUE(fd.auto_close);
-    scoped_fds.emplace_back(fd.fd);
-    EXPECT_TRUE(scoped_fds.back().is_valid());
+  for (auto& plane : native_pixmap_handle.planes) {
+    EXPECT_TRUE(plane.fd.is_valid());
   }
 }
 
 // This test verifies that GLImageNativePixmap can be exported as dmabuf fds.
-REGISTER_TYPED_TEST_CASE_P(GLImageNativePixmapToDmabufTest,
-                           GLTexture2DToDmabuf);
+REGISTER_TYPED_TEST_SUITE_P(GLImageNativePixmapToDmabufTest,
+                            GLTexture2DToDmabuf);
 
 using GLImageTestTypes = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferFormat::RGBX_8888>,
     GLImageNativePixmapTestDelegate<gfx::BufferFormat::RGBA_8888>,
     GLImageNativePixmapTestDelegate<gfx::BufferFormat::BGRX_8888>,
-    GLImageNativePixmapTestDelegate<gfx::BufferFormat::BGRA_8888>>;
+    GLImageNativePixmapTestDelegate<gfx::BufferFormat::BGRA_8888>,
+    GLImageNativePixmapTestDelegate<gfx::BufferFormat::RGBX_1010102>,
+    GLImageNativePixmapTestDelegate<gfx::BufferFormat::BGRX_1010102>>;
 
 #if !defined(MEMORY_SANITIZER)
 // Fails under MSAN: crbug.com/886995
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageNativePixmap,
-                              GLImageTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageNativePixmap,
+                               GLImageTest,
+                               GLImageTestTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageNativePixmap,
-                              GLImageOddSizeTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageNativePixmap,
+                               GLImageOddSizeTest,
+                               GLImageTestTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageNativePixmap,
-                              GLImageNativePixmapToDmabufTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageNativePixmap,
+                               GLImageNativePixmapToDmabufTest,
+                               GLImageTestTypes);
 #endif
 
 }  // namespace

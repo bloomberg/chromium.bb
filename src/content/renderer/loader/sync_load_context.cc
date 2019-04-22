@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
@@ -107,8 +108,7 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
       traffic_annotation, true /* is_sync */,
       download_to_blob /* pass_response_pipe_to_peer */,
       base::WrapUnique(context), context->url_loader_factory_,
-      std::move(throttles), nullptr /* navigation_response_override_params */,
-      nullptr /* continue_for_navigation */);
+      std::move(throttles), nullptr /* navigation_response_override_params */);
 }
 
 SyncLoadContext::SyncLoadContext(
@@ -121,12 +121,16 @@ SyncLoadContext::SyncLoadContext(
     blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : response_(response),
+      body_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       download_to_blob_registry_(std::move(download_to_blob_registry)),
       task_runner_(std::move(task_runner)),
       signals_(std::make_unique<SignalHelper>(this,
                                               redirect_or_response_event,
                                               abort_event,
                                               timeout)) {
+  if (download_to_blob_registry_)
+    mode_ = Mode::kBlob;
+
   url_loader_factory_ =
       network::SharedURLLoaderFactory::Create(std::move(url_loader_factory));
 
@@ -171,7 +175,7 @@ void SyncLoadContext::CancelRedirect() {
   response_->redirect_info = net::RedirectInfo();
   response_->context_for_redirect = nullptr;
   response_->error_code = net::ERR_ABORTED;
-  CompleteRequest(true);
+  CompleteRequest();
 }
 
 void SyncLoadContext::OnReceivedResponse(
@@ -182,42 +186,57 @@ void SyncLoadContext::OnReceivedResponse(
 
 void SyncLoadContext::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
-  DCHECK(download_to_blob_registry_);
-  DCHECK(!blob_response_started_);
+  if (mode_ == Mode::kBlob) {
+    DCHECK(download_to_blob_registry_);
+    DCHECK(!blob_response_started_);
 
-  blob_response_started_ = true;
+    blob_response_started_ = true;
 
-  download_to_blob_registry_->RegisterFromStream(
-      response_->info.mime_type, "",
-      std::max<int64_t>(0, response_->info.content_length), std::move(body),
-      nullptr,
-      base::BindOnce(&SyncLoadContext::OnFinishCreatingBlob,
-                     base::Unretained(this)));
-}
-
-void SyncLoadContext::OnReceivedData(std::unique_ptr<ReceivedData> data) {
-  DCHECK(!Completed());
-  response_->data.append(data->payload(), data->length());
+    download_to_blob_registry_->RegisterFromStream(
+        response_->info.mime_type, "",
+        std::max<int64_t>(0, response_->info.content_length), std::move(body),
+        nullptr,
+        base::BindOnce(&SyncLoadContext::OnFinishCreatingBlob,
+                       base::Unretained(this)));
+    return;
+  }
+  DCHECK_EQ(Mode::kInitial, mode_);
+  mode_ = Mode::kDataPipe;
+  // setup datapipe to read.
+  body_handle_ = std::move(body);
+  body_watcher_.Watch(
+      body_handle_.get(),
+      MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+      MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+      base::BindRepeating(&SyncLoadContext::OnBodyReadable,
+                          base::Unretained(this)));
+  body_watcher_.ArmOrNotify();
 }
 
 void SyncLoadContext::OnTransferSizeUpdated(int transfer_size_diff) {}
 
 void SyncLoadContext::OnCompletedRequest(
     const network::URLLoaderCompletionStatus& status) {
-  DCHECK(!Completed());
+  if (Completed()) {
+    // It means the response has been aborted due to an error before finishing
+    // the response.
+    return;
+  }
+  request_completed_ = true;
   response_->error_code = status.error_code;
   response_->extended_error_code = status.extended_error_code;
   response_->cors_error = status.cors_error_status;
   response_->info.encoded_data_length = status.encoded_data_length;
   response_->info.encoded_body_length = status.encoded_body_length;
-  if (blob_response_started_ && !blob_finished_) {
-    request_completed_ = true;
+  if ((blob_response_started_ && !blob_finished_) || body_handle_.is_valid()) {
+    // The body is still begin downloaded as a Blob, or being read through the
+    // handle. Wait until it's completed.
     return;
   }
-  CompleteRequest(true /* remove_pending_request */);
+  CompleteRequest();
 }
 
-scoped_refptr<base::TaskRunner> SyncLoadContext::GetTaskRunner() const {
+scoped_refptr<base::TaskRunner> SyncLoadContext::GetTaskRunner() {
   return task_runner_;
 }
 
@@ -227,13 +246,47 @@ void SyncLoadContext::OnFinishCreatingBlob(
   blob_finished_ = true;
   response_->downloaded_blob = std::move(blob);
   if (request_completed_)
-    CompleteRequest(true /* remove_pending_request */);
+    CompleteRequest();
+}
+
+void SyncLoadContext::OnBodyReadable(MojoResult,
+                                     const mojo::HandleSignalsState&) {
+  DCHECK_EQ(Mode::kDataPipe, mode_);
+  DCHECK(body_handle_.is_valid());
+  const void* buffer = nullptr;
+  uint32_t read_bytes = 0;
+  MojoResult result = body_handle_->BeginReadData(&buffer, &read_bytes,
+                                                  MOJO_READ_DATA_FLAG_NONE);
+  if (result == MOJO_RESULT_SHOULD_WAIT) {
+    body_watcher_.ArmOrNotify();
+    return;
+  }
+  if (result == MOJO_RESULT_FAILED_PRECONDITION) {
+    // Whole body has been read.
+    body_handle_.reset();
+    body_watcher_.Cancel();
+    if (request_completed_)
+      CompleteRequest();
+    return;
+  }
+  if (result != MOJO_RESULT_OK) {
+    // Something went wrong.
+    body_handle_.reset();
+    body_watcher_.Cancel();
+    response_->error_code = net::ERR_FAILED;
+    CompleteRequest();
+    return;
+  }
+
+  response_->data.append(static_cast<const char*>(buffer), read_bytes);
+  body_handle_->EndReadData(read_bytes);
+  body_watcher_.ArmOrNotify();
 }
 
 void SyncLoadContext::OnAbort(base::WaitableEvent* event) {
   DCHECK(!Completed());
   response_->error_code = net::ERR_ABORTED;
-  CompleteRequest(true /* remove_pending_request */);
+  CompleteRequest();
 }
 
 void SyncLoadContext::OnTimeout() {
@@ -241,18 +294,19 @@ void SyncLoadContext::OnTimeout() {
   // the OneShotTimer must have been stopped.
   DCHECK(!Completed());
   response_->error_code = net::ERR_TIMED_OUT;
-  CompleteRequest(true /* remove_pending_request */);
+  CompleteRequest();
 }
 
-void SyncLoadContext::CompleteRequest(bool remove_pending_request) {
+void SyncLoadContext::CompleteRequest() {
+  DCHECK(blob_finished_ || (mode_ != Mode::kBlob));
+  DCHECK(!body_handle_.is_valid());
+  body_watcher_.Cancel();
   signals_->SignalRedirectOrResponseComplete();
   signals_ = nullptr;
   response_ = nullptr;
 
-  if (remove_pending_request) {
-    // This will indirectly cause this object to be deleted.
-    resource_dispatcher_->RemovePendingRequest(request_id_, task_runner_);
-  }
+  // This will indirectly cause this object to be deleted.
+  resource_dispatcher_->RemovePendingRequest(request_id_, task_runner_);
 }
 
 bool SyncLoadContext::Completed() const {

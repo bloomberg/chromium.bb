@@ -21,9 +21,9 @@
 #include "net/log/net_log_source.h"
 #include "net/socket/udp_server_socket.h"
 #include "remoting/protocol/socket_util.h"
-#include "third_party/webrtc/media/base/rtputils.h"
-#include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
-#include "third_party/webrtc/rtc_base/nethelpers.h"
+#include "third_party/webrtc/media/base/rtp_utils.h"
+#include "third_party/webrtc/rtc_base/async_packet_socket.h"
+#include "third_party/webrtc/rtc_base/net_helpers.h"
 #include "third_party/webrtc/rtc_base/socket.h"
 
 namespace remoting {
@@ -329,9 +329,7 @@ void UdpPacketSocket::OnSendCompleted(int result) {
   // socket.
   send_queue_size_ -= send_queue_.front().data->size();
   SignalSentPacket(this, rtc::SentPacket(send_queue_.front().options.packet_id,
-                                         (base::TimeTicks::Now() -
-                                          base::TimeTicks::UnixEpoch())
-                                             .InMilliseconds()));
+                                         rtc::TimeMillis()));
   send_queue_.pop_front();
   DoSend();
 }

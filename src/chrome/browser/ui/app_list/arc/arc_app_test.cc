@@ -4,9 +4,13 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -15,11 +19,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/arc_session_runner.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_arc_session.h"
@@ -96,7 +101,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
   arc_session_manager_ = std::make_unique<arc::ArcSessionManager>(
       std::make_unique<arc::ArcSessionRunner>(
-          base::Bind(arc::FakeArcSession::Create)));
+          base::BindRepeating(arc::FakeArcSession::Create)));
   DCHECK(arc::ArcSessionManager::Get());
   arc::ArcSessionManager::SetUiEnabledForTesting(false);
   arc_session_manager_->SetProfile(profile_);
@@ -112,10 +117,12 @@ void ArcAppTest::SetUp(Profile* profile) {
     WaitForDefaultApps();
 
   // Check initial conditions.
-  if (!arc::ShouldArcAlwaysStart())
-    arc::SetArcPlayStoreEnabledForProfile(profile_, true);
-  if (!arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_))
-    EXPECT_TRUE(arc_session_manager_->enable_requested());
+  if (activate_arc_on_start_) {
+    if (!arc::ShouldArcAlwaysStart())
+      arc::SetArcPlayStoreEnabledForProfile(profile_, true);
+    if (!arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_))
+      EXPECT_TRUE(arc_session_manager_->enable_requested());
+  }
 
   app_instance_ = std::make_unique<arc::FakeAppInstance>(arc_app_list_pref_);
   arc_service_manager_->arc_bridge_service()->app()->SetInstance(
@@ -124,12 +131,20 @@ void ArcAppTest::SetUp(Profile* profile) {
   // expect waiting in ArcAppTest setup.
   if (wait_default_apps_)
     WaitForInstanceReady(arc_service_manager_->arc_bridge_service()->app());
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceAsh)) {
+    // Ensure that the singleton apps::ArcApps is constructed, and let it
+    // complete its set-up (including integrating with the App Service, an
+    // async Mojo service).
+    apps::ArcAppsFactory::GetForProfile(profile_);
+    base::RunLoop().RunUntilIdle();
+  }
 }
 
 void ArcAppTest::WaitForDefaultApps() {
   DCHECK(arc_app_list_pref_);
   base::RunLoop run_loop;
-  arc_app_list_pref_->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
+  arc_app_list_pref_->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
   run_loop.Run();
 }
 
@@ -157,20 +172,27 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
   app.sticky = true;
   fake_default_apps_.push_back(app);
 
+  base::flat_map<arc::mojom::AppPermission, bool> permissions;
+  permissions.insert(std::make_pair(arc::mojom::AppPermission::CAMERA, 0));
   fake_packages_.emplace_back(arc::mojom::ArcPackageInfo::New(
       kPackageName1 /* package_name */, 1 /* package_version */,
       1 /* last_backup_android_id */, 1 /* last_backup_time */,
-      false /* sync */));
+      false /* sync */, false /* system */, false /* vpn_provider */,
+      nullptr /* web_app_info */, permissions));
 
+  permissions.insert(std::make_pair(arc::mojom::AppPermission::MICROPHONE, 0));
   fake_packages_.emplace_back(arc::mojom::ArcPackageInfo::New(
       kPackageName2 /* package_name */, 2 /* package_version */,
-      2 /* last_backup_android_id */, 2 /* last_backup_time */,
-      true /* sync */));
+      2 /* last_backup_android_id */, 2 /* last_backup_time */, true /* sync */,
+      false /* system */, false /* vpn_provider */, nullptr /* web_app_info */,
+      permissions));
 
+  permissions.insert(std::make_pair(arc::mojom::AppPermission::LOCATION, 1));
   fake_packages_.emplace_back(arc::mojom::ArcPackageInfo::New(
       kPackageName3 /* package_name */, 3 /* package_version */,
       3 /* last_backup_android_id */, 3 /* last_backup_time */,
-      false /* sync */));
+      false /* sync */, false /* system */, false /* vpn_provider */,
+      nullptr /* web_app_info */, permissions));
 
   for (int i = 0; i < 3; ++i) {
     arc::mojom::ShortcutInfo shortcut_info;
@@ -227,12 +249,9 @@ void ArcAppTest::AddPackage(arc::mojom::ArcPackageInfoPtr package) {
 }
 
 void ArcAppTest::RemovePackage(const std::string& package_name) {
-  fake_packages_.erase(
-      std::remove_if(fake_packages_.begin(), fake_packages_.end(),
-                     [package_name](const auto& package) {
-                       return package->package_name == package_name;
-                     }),
-      fake_packages_.end());
+  base::EraseIf(fake_packages_, [package_name](const auto& package) {
+    return package->package_name == package_name;
+  });
 }
 
 bool ArcAppTest::FindPackage(const std::string& package_name) {

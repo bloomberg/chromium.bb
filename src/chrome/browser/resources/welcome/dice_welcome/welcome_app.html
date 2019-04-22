@@ -102,6 +102,10 @@
         position: relative;
       }
 
+      :host-context([dark]) .heading-container {
+        color: var(--cr-primary-text-color);
+      }
+
       .heading {
         animation: fadeOutAndSlideUp 600ms 2.1s cubic-bezier(.4, .2, 0, 1) forwards;
         /* Makes sure fading-in/out doesn't impact the logo position. */

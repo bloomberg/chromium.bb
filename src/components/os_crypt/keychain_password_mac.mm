@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/mac/mac_logging.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/rand_util.h"
 #include "components/os_crypt/encryption_key_creation_util.h"
 #include "crypto/apple_keychain.h"
@@ -65,10 +66,10 @@ std::string KeychainPassword::GetPassword() const {
   DCHECK(key_creation_util_);
 
   UInt32 password_length = 0;
-  void* password_data = NULL;
+  void* password_data = nullptr;
   OSStatus error = keychain_.FindGenericPassword(
       strlen(service_name), service_name, strlen(account_name), account_name,
-      &password_length, &password_data, NULL);
+      &password_length, &password_data, nullptr);
 
   if (error == noErr) {
     std::string password =
@@ -79,13 +80,14 @@ std::string KeychainPassword::GetPassword() const {
   }
 
   if (error == errSecItemNotFound) {
+    key_creation_util_->OnKeyNotFound(keychain_);
     std::string password =
         AddRandomPasswordToKeychain(keychain_, service_name, account_name);
-    key_creation_util_->OnKeyNotFound(!password.empty());
+    key_creation_util_->OnKeyStored(!password.empty());
     return password;
   }
 
-  key_creation_util_->OnKeychainLookupFailed();
+  key_creation_util_->OnKeychainLookupFailed(error);
   OSSTATUS_DLOG(ERROR, error) << "Keychain lookup failed";
   return std::string();
 }

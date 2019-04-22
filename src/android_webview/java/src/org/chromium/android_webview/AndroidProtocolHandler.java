@@ -230,16 +230,11 @@ public class AndroidProtocolHandler {
      * @return a Uri instance, or null if the URL was invalid.
      */
     private static Uri verifyUrl(String url) {
-        if (url == null) {
-            return null;
-        }
-        Uri uri = Uri.parse(url);
-        if (uri == null) {
-            Log.e(TAG, "Malformed URL: " + url);
-            return null;
-        }
+        if (url == null) return null;
+        if (url.isEmpty()) return null;
+        Uri uri = Uri.parse(url); // Never null. parse() doesn't actually parse or verify anything.
         String path = uri.getPath();
-        if (path == null || path.length() == 0) {
+        if (path == null || path.isEmpty() || path.equals("/")) {
             Log.e(TAG, "URL does not have a path: " + url);
             return null;
         }

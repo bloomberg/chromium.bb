@@ -10,23 +10,21 @@ gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
   DCHECK(id.type == content::DesktopMediaID::TYPE_WINDOW);
 
   HWND hwnd = reinterpret_cast<HWND>(id.id);
+  HICON icon_handle = 0;
 
-  HICON icon_handle =
-      reinterpret_cast<HICON>(SendMessage(hwnd, WM_GETICON, ICON_BIG, 0));
-
+  SendMessageTimeout(hwnd, WM_GETICON, ICON_BIG, 0, SMTO_ABORTIFHUNG, 5,
+                     (PDWORD_PTR)&icon_handle);
   if (!icon_handle)
     icon_handle = reinterpret_cast<HICON>(GetClassLongPtr(hwnd, GCLP_HICON));
 
   if (!icon_handle) {
-    icon_handle =
-        reinterpret_cast<HICON>(SendMessage(hwnd, WM_GETICON, ICON_SMALL, 0));
+    SendMessageTimeout(hwnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 5,
+                       (PDWORD_PTR)&icon_handle);
   }
-
   if (!icon_handle) {
-    icon_handle =
-        reinterpret_cast<HICON>(SendMessage(hwnd, WM_GETICON, ICON_SMALL2, 0));
+    SendMessageTimeout(hwnd, WM_GETICON, ICON_SMALL2, 0, SMTO_ABORTIFHUNG, 5,
+                       (PDWORD_PTR)&icon_handle);
   }
-
   if (!icon_handle)
     icon_handle = reinterpret_cast<HICON>(GetClassLongPtr(hwnd, GCLP_HICONSM));
 

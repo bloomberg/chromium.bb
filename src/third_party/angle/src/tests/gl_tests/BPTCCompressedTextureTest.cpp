@@ -21,7 +21,7 @@ const unsigned int kPixelTolerance = 1u;
 const std::array<GLubyte, 16> kBC7Data4x4 = {0x50, 0x1f, 0xfc, 0xf, 0x0,  0xf0, 0xe3, 0xe1,
                                              0xe1, 0xe1, 0xc1, 0xf, 0xfc, 0xc0, 0xf,  0xfc};
 
-};  // anonymous namespace
+}  // anonymous namespace
 
 class BPTCCompressedTextureTest : public ANGLETest
 {
@@ -40,29 +40,27 @@ class BPTCCompressedTextureTest : public ANGLETest
     {
         ANGLETest::SetUp();
 
-        const std::string vsSource =
-            R"(precision highp float;
-            attribute vec4 position;
-            varying vec2 texcoord;
+        constexpr char kVS[] = R"(precision highp float;
+attribute vec4 position;
+varying vec2 texcoord;
 
-            void main()
-            {
-                gl_Position = position;
-                texcoord = (position.xy * 0.5) + 0.5;
-                texcoord.y = 1.0 - texcoord.y;
-            })";
+void main()
+{
+    gl_Position = position;
+    texcoord = (position.xy * 0.5) + 0.5;
+    texcoord.y = 1.0 - texcoord.y;
+})";
 
-        const std::string textureFSSource =
-            R"(precision highp float;
-            uniform sampler2D tex;
-            varying vec2 texcoord;
+        constexpr char kFS[] = R"(precision highp float;
+uniform sampler2D tex;
+varying vec2 texcoord;
 
-            void main()
-            {
-                gl_FragColor = texture2D(tex, texcoord);
-            })";
+void main()
+{
+    gl_FragColor = texture2D(tex, texcoord);
+})";
 
-        mTextureProgram = CompileProgram(vsSource, textureFSSource);
+        mTextureProgram = CompileProgram(kVS, kFS);
         if (mTextureProgram == 0)
         {
             FAIL() << "shader compilation failed.";

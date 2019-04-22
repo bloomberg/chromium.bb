@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -89,6 +90,10 @@ class NET_EXPORT MDnsTransaction {
 // A listener listens for updates regarding a specific record or set of records.
 // Created by the MDnsClient (see |MDnsClient::CreateListener|) and used to keep
 // track of listeners.
+//
+// TODO(ericorth@chromium.org): Consider moving this inside MDnsClient to better
+// organize the namespace and avoid confusion with
+// net::HostResolver::MdnsListener.
 class NET_EXPORT MDnsListener {
  public:
   // Used in the MDnsListener delegate to signify what type of change has been
@@ -166,7 +171,7 @@ class NET_EXPORT MDnsClient {
       int flags,
       const MDnsTransaction::ResultCallback& callback) = 0;
 
-  virtual bool StartListening(MDnsSocketFactory* factory) = 0;
+  virtual int StartListening(MDnsSocketFactory* factory) = 0;
 
   // Do not call this inside callbacks from related MDnsListener and
   // MDnsTransaction objects.

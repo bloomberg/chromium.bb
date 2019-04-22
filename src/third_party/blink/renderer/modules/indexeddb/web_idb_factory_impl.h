@@ -6,52 +6,47 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_IMPL_H_
 
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_database_callbacks_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
 
-namespace blink {
-class WebSecurityOrigin;
-class WebString;
+namespace WTF {
+class String;
+}
 
-class WebIDBFactoryImpl : public blink::WebIDBFactory {
+namespace blink {
+
+class WebIDBFactoryImpl : public WebIDBFactory {
  public:
-  explicit WebIDBFactoryImpl(mojom::blink::IDBFactoryPtrInfo factory_info);
+  explicit WebIDBFactoryImpl(
+      mojom::blink::IDBFactoryPtrInfo factory_info,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WebIDBFactoryImpl() override;
 
-  // See WebIDBFactory.h for documentation on these functions.
-  void GetDatabaseInfo(
-      blink::WebIDBCallbacks* callbacks,
-      const blink::WebSecurityOrigin& origin,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-  void GetDatabaseNames(
-      blink::WebIDBCallbacks* callbacks,
-      const blink::WebSecurityOrigin& origin,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-  void Open(const blink::WebString& name,
-            long long version,
-            long long transaction_id,
-            blink::WebIDBCallbacks* callbacks,
-            blink::WebIDBDatabaseCallbacks* databaseCallbacks,
-            const blink::WebSecurityOrigin& origin,
-            scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-  void DeleteDatabase(
-      const blink::WebString& name,
-      blink::WebIDBCallbacks* callbacks,
-      const blink::WebSecurityOrigin& origin,
-      bool force_close,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
+  // See web_idb_factory.h for documentation on these functions.
+  void GetDatabaseInfo(std::unique_ptr<WebIDBCallbacks> callbacks) override;
+  void GetDatabaseNames(std::unique_ptr<WebIDBCallbacks> callbacks) override;
+  void Open(
+      const WTF::String& name,
+      int64_t version,
+      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
+      int64_t transaction_id,
+      std::unique_ptr<WebIDBCallbacks> callbacks,
+      std::unique_ptr<WebIDBDatabaseCallbacks> database_callbacks) override;
+  void DeleteDatabase(const WTF::String& name,
+                      std::unique_ptr<WebIDBCallbacks> callbacks,
+                      bool force_close) override;
 
  private:
   mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
-      std::unique_ptr<blink::IndexedDBCallbacksImpl> callbacks);
+      std::unique_ptr<WebIDBCallbacks> callbacks);
   mojom::blink::IDBDatabaseCallbacksAssociatedPtrInfo GetDatabaseCallbacksProxy(
-      std::unique_ptr<blink::IndexedDBDatabaseCallbacksImpl> callbacks);
+      std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks);
 
   mojom::blink::IDBFactoryPtr factory_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink

@@ -7,6 +7,7 @@
 #include <Cocoa/Cocoa.h>
 #include <sys/stat.h>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -118,8 +119,8 @@ void FileSelectHelper::ProcessSelectedFilesMac(
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&FileSelectHelper::ProcessSelectedFilesMacOnUIThread,
-                 base::Unretained(this), files_out, temporary_files));
+      base::BindOnce(&FileSelectHelper::ProcessSelectedFilesMacOnUIThread,
+                     base::Unretained(this), files_out, temporary_files));
 }
 
 void FileSelectHelper::ProcessSelectedFilesMacOnUIThread(

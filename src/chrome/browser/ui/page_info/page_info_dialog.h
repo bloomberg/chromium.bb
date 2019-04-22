@@ -7,13 +7,10 @@
 
 #include "base/callback_forward.h"
 #include "chrome/browser/ui/bubble_anchor_util.h"
+#include "components/security_state/core/security_state.h"
 
 namespace content {
 class WebContents;
-}
-
-namespace security_state {
-struct SecurityInfo;
 }
 
 class GURL;
@@ -25,15 +22,17 @@ bool ShowPageInfoDialog(
     content::WebContents* web_contents,
     bubble_anchor_util::Anchor = bubble_anchor_util::kLocationBar);
 
-// Shows Page Info using the specified information. |virtual_url| is the
-// virtual url of the page/frame the info applies to, and |security_info|
-// contains the security state for that page/frame.
+// Shows Page Info using the specified information. |virtual_url| is the virtual
+// url of the page/frame the info applies to, and |security_level|,
+// |visible_security_state| contain the security state for that page/frame.
 // Implemented in platform-specific files.
-void ShowPageInfoDialogImpl(Browser* browser,
-                            content::WebContents* web_contents,
-                            const GURL& virtual_url,
-                            const security_state::SecurityInfo& security_info,
-                            bubble_anchor_util::Anchor);
+void ShowPageInfoDialogImpl(
+    Browser* browser,
+    content::WebContents* web_contents,
+    const GURL& virtual_url,
+    security_state::SecurityLevel security_level,
+    const security_state::VisibleSecurityState& visible_security_state,
+    bubble_anchor_util::Anchor);
 
 // Gets the callback to run after a dialog is created. Only used in tests.
 base::OnceClosure& GetPageInfoDialogCreatedCallbackForTesting();

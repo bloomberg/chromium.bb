@@ -67,11 +67,6 @@ class CookieStore;
 class HttpTransactionFactory;
 class URLRequestContextBuilder;
 class URLRequestJobFactoryImpl;
-
-#if BUILDFLAG(ENABLE_REPORTING)
-class NetworkErrorLoggingService;
-class ReportingService;
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 }  // namespace net
 
 namespace network {
@@ -132,7 +127,6 @@ class ProfileIOData {
   virtual net::CookieStore* GetExtensionsCookieStore() const = 0;
   net::URLRequestContext* GetIsolatedAppRequestContext(
       IOThread* io_thread,
-      net::URLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
       std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
@@ -157,7 +151,6 @@ class ProfileIOData {
 
   // Gets Sync state, for Dice account consistency.
   bool IsSyncEnabled() const;
-  bool SyncHasAuthError() const;
 
   BooleanPrefMember* safe_browsing_enabled() const {
     return &safe_browsing_enabled_;
@@ -169,6 +162,10 @@ class ProfileIOData {
 
   IntegerPrefMember* network_prediction_options() const {
     return &network_prediction_options_;
+  }
+
+  BooleanPrefMember* signed_exchange_enabled() const {
+    return &signed_exchange_enabled_;
   }
 
   signin::AccountConsistencyMethod account_consistency() const {
@@ -288,13 +285,6 @@ class ProfileIOData {
     void SetHttpTransactionFactory(
         std::unique_ptr<net::HttpTransactionFactory> http_factory);
     void SetJobFactory(std::unique_ptr<net::URLRequestJobFactory> job_factory);
-#if BUILDFLAG(ENABLE_REPORTING)
-    void SetReportingService(
-        std::unique_ptr<net::ReportingService> reporting_service);
-    void SetNetworkErrorLoggingService(
-        std::unique_ptr<net::NetworkErrorLoggingService>
-            network_error_logging_service);
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
    private:
     ~AppRequestContext() override;
@@ -304,11 +294,6 @@ class ProfileIOData {
     std::unique_ptr<net::HttpNetworkSession> http_network_session_;
     std::unique_ptr<net::HttpTransactionFactory> http_factory_;
     std::unique_ptr<net::URLRequestJobFactory> job_factory_;
-#if BUILDFLAG(ENABLE_REPORTING)
-    std::unique_ptr<net::ReportingService> reporting_service_;
-    std::unique_ptr<net::NetworkErrorLoggingService>
-        network_error_logging_service_;
-#endif  // BUILDFLAG(ENABLE_REPORTING)
   };
 
   // Created on the UI thread, read on the IO thread during ProfileIOData lazy
@@ -426,10 +411,6 @@ class ProfileIOData {
       net::HttpTransactionFactory* main_http_factory,
       std::unique_ptr<net::HttpCache::BackendFactory> backend) const;
 
-  // Deletes the media cache at the specified path if the media cache is
-  // disabled.
-  static void MaybeDeleteMediaCache(const base::FilePath& media_cache_path);
-
  private:
   class ResourceContext : public content::ResourceContext {
    public:
@@ -518,7 +499,6 @@ class ProfileIOData {
       client_cert_store_factory_;
 
   mutable StringPrefMember google_services_user_account_id_;
-  mutable BooleanPrefMember sync_has_auth_error_;
   mutable BooleanPrefMember sync_suppress_start_;
   mutable BooleanPrefMember sync_first_setup_complete_;
   mutable signin::AccountConsistencyMethod account_consistency_;
@@ -535,6 +515,7 @@ class ProfileIOData {
   mutable StringPrefMember allowed_domains_for_apps_;
   mutable IntegerPrefMember network_prediction_options_;
   mutable IntegerPrefMember incognito_availibility_pref_;
+  mutable BooleanPrefMember signed_exchange_enabled_;
 #if BUILDFLAG(ENABLE_PLUGINS)
   mutable BooleanPrefMember always_open_pdf_externally_;
 #endif

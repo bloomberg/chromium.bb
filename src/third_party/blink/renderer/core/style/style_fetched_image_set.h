@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -46,14 +47,6 @@ class StyleFetchedImageSet final : public StyleImage,
   USING_PRE_FINALIZER(StyleFetchedImageSet, Dispose);
 
  public:
-  static StyleFetchedImageSet* Create(ImageResourceContent* image,
-                                      float image_scale_factor,
-                                      CSSImageSetValue* value,
-                                      const KURL& url) {
-    return MakeGarbageCollected<StyleFetchedImageSet>(image, image_scale_factor,
-                                                      value, url);
-  }
-
   StyleFetchedImageSet(ImageResourceContent*,
                        float image_scale_factor,
                        CSSImageSetValue*,
@@ -74,8 +67,7 @@ class StyleFetchedImageSet final : public StyleImage,
   FloatSize ImageSize(const Document&,
                       float multiplier,
                       const LayoutSize& default_object_size) const override;
-  bool ImageHasRelativeSize() const override;
-  bool UsesImageContainerSize() const override;
+  bool HasIntrinsicSize() const override;
   void AddClient(ImageResourceObserver*) override;
   void RemoveClient(ImageResourceObserver*) override;
   scoped_refptr<Image> GetImage(const ImageResourceObserver&,
@@ -101,7 +93,12 @@ class StyleFetchedImageSet final : public StyleImage,
   const KURL url_;
 };
 
-DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImageSet, IsImageResourceSet());
+template <>
+struct DowncastTraits<StyleFetchedImageSet> {
+  static bool AllowFrom(const StyleImage& styleImage) {
+    return styleImage.IsImageResourceSet();
+  }
+};
 
 }  // namespace blink
 

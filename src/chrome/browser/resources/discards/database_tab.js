@@ -132,11 +132,13 @@ cr.define('database_tab', function() {
    *    time with units.
    */
   function microsecondsToString(time) {
-    if (time < 1000)
+    if (time < 1000) {
       return time.toString() + ' µs';
+    }
     time /= 1000;
-    if (time < 1000)
+    if (time < 1000) {
       return time.toFixed(2) + ' ms';
+    }
     time /= 1000;
     return time.toFixed(2) + ' s';
   }
@@ -147,11 +149,13 @@ cr.define('database_tab', function() {
    *    time with units.
    */
   function kilobytesToString(value) {
-    if (value < 1000)
+    if (value < 1000) {
       return value.toString() + ' KB';
+    }
     value /= 1000;
-    if (value < 1000)
+    if (value < 1000) {
       return value.toFixed(1) + ' MB';
+    }
     value /= 1000;
     return value.toFixed(1) + ' GB';
   }
@@ -162,8 +166,9 @@ cr.define('database_tab', function() {
    * @return {string} The requested load time estimate or 'N/A' if unavailable.
    */
   function formatLoadTimeEstimate(item, propertyName) {
-    if (!item.value || !item.value.loadTimeEstimates)
+    if (!item.value || !item.value.loadTimeEstimates) {
       return 'N/A';
+    }
 
     const value = item.value.loadTimeEstimates[propertyName];
     if (propertyName.endsWith('Us')) {
@@ -222,7 +227,7 @@ Polymer({
   /** @private {!Object} */
   requestedOrigins_: {},
 
-  /** @private {?mojom.DiscardsDetailsProviderPtr} */
+  /** @private {?mojom.DiscardsDetailsProviderProxy} */
   uiHandler_: null,
 
   /** @override */
@@ -266,14 +271,16 @@ Polymer({
         .getSiteCharacteristicsDatabase(Object.keys(this.requestedOrigins_))
         .then(response => {
           // Bail if the SiteCharacteristicsDatabase is turned off.
-          if (!response.result)
+          if (!response.result) {
             return;
+          }
 
           // Add any new origins to the (monotonically increasing)
           // set of requested origins.
           const dbRows = response.result.dbRows;
-          for (let dbRow of dbRows)
+          for (const dbRow of dbRows) {
             this.requestedOrigins_[dbRow.origin] = true;
+          }
           this.rows_ = dbRows;
         });
   },
@@ -317,8 +324,9 @@ Polymer({
   updateDbSizes_: function() {
     this.uiHandler_.getSiteCharacteristicsDatabaseSize().then(response => {
       // Bail if the SiteCharacteristicsDatabase is turned off.
-      if (!response.dbSize)
+      if (!response.dbSize) {
         return;
+      }
       this.size_ = response.dbSize;
     });
   },
@@ -337,8 +345,9 @@ Polymer({
   computeSortFunction_: function(sortKey, sortReverse) {
     // Polymer 2 may invoke multi-property observers before all properties
     // are defined.
-    if (!sortKey)
+    if (!sortKey) {
       return (a, b) => 0;
+    }
 
     const sortFunction = database_tab.getSortFunctionForKey(sortKey);
     return (a, b) => {
@@ -395,8 +404,9 @@ Polymer({
    * @private
    */
   featureToString_: function(feature) {
-    if (!feature)
+    if (!feature) {
       return 'N/A';
+    }
 
     if (feature.useTimestamp) {
       const nowSecondsFromEpoch = Math.round(Date.now() / 1000);

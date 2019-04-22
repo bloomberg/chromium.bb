@@ -28,6 +28,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -80,7 +81,8 @@ DOMTimer::DOMTimer(ExecutionContext* context,
                    TimeDelta interval,
                    bool single_shot,
                    int timeout_id)
-    : PausableTimer(context, TaskType::kJavascriptTimer),
+    : ContextLifecycleObserver(context),
+      TimerBase(context->GetTaskRunner(TaskType::kJavascriptTimer)),
       timeout_id_(timeout_id),
       nesting_level_(context->Timers()->TimerNestingLevel() + 1),
       action_(action) {
@@ -101,7 +103,6 @@ DOMTimer::DOMTimer(ExecutionContext* context,
   else
     StartRepeating(interval_milliseconds, FROM_HERE);
 
-  PauseIfNeeded();
   TRACE_EVENT_INSTANT1("devtools.timeline", "TimerInstall",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        inspector_timer_install_event::Data(
@@ -128,7 +129,7 @@ void DOMTimer::Stop() {
   if (action_)
     action_->Dispose();
   action_ = nullptr;
-  PausableTimer::Stop();
+  TimerBase::Stop();
 }
 
 void DOMTimer::ContextDestroyed(ExecutionContext*) {
@@ -174,6 +175,9 @@ void DOMTimer::Fired() {
 
   action->Execute(context);
 
+  // Eagerly clear out |action|'s resources.
+  action->Dispose();
+
   // ExecutionContext might be already gone when we executed action->execute().
   ExecutionContext* execution_context = GetExecutionContext();
   if (!execution_context)
@@ -182,8 +186,6 @@ void DOMTimer::Fired() {
   execution_context->Timers()->SetTimerNestingLevel(0);
   // Eagerly unregister as ExecutionContext observer.
   ClearContext();
-  // Eagerly clear out |action|'s resources.
-  action->Dispose();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> DOMTimer::TimerTaskRunner() const {
@@ -192,7 +194,7 @@ scoped_refptr<base::SingleThreadTaskRunner> DOMTimer::TimerTaskRunner() const {
 
 void DOMTimer::Trace(blink::Visitor* visitor) {
   visitor->Trace(action_);
-  PausableTimer::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

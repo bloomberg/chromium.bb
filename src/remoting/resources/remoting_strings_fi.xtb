@@ -24,6 +24,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="1520828917794284345">Sovita työpöydän koko</translation>
 <translation id="154040539590487450">Etäkäyttöpalvelun käynnistäminen epäonnistui.</translation>
 <translation id="1546934824884762070">Odottamaton virhe. Ilmoita tästä ongelmasta kehittäjille.</translation>
+<translation id="1624185583382384493">Chrome-etäkäyttö on nyt verkossa. Kokeile <ph name="LINK_BEGIN" />verkkosovellusta<ph name="LINK_END" />: se on nopea ja maksuton ja siinä on entistä enemmän ominaisuuksia, mukaan lukien parannettu useiden näyttöjen tuki.</translation>
 <translation id="1643640058022401035">Vaihtamalla sivua päätät Chromoting-käyttökerran.</translation>
 <translation id="1654128982815600832">Otetaan tietokoneen etäyhteyksiä käyttöön…</translation>
 <translation id="170207782578677537">Tietokoneen rekisteröinti epäonnistui.</translation>
@@ -138,6 +139,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="3989511127559254552">Jotta voit jatkaa, sinun on annettava laajennetut käyttöoikeudet tietokoneeseesi. Tämä täytyy tehdä vain kerran.</translation>
 <translation id="4006787130661126000">Etäyhteydet on otettava käyttöön, jotta tietokonetta voidaan käyttää Chrome-etäkäytön avulla.</translation>
 <translation id="405887016757208221">Etätietokone ei alustanut istuntoa oikein. Jos ongelma ei ratkea, yritä määrittää isäntäkoneen asetukset uudelleen.</translation>
+<translation id="4060747889721220580">Lataa tiedosto</translation>
 <translation id="4068946408131579958">Kaikki yhteydet</translation>
 <translation id="409800995205263688">HUOMAA: käytäntöasetusten vuoksi vain verkossasi olevien tietokoneiden väliset yhteydet sallitaan.</translation>
 <translation id="4126409073460786861">Päivitä tämä sivu määrityksen jälkeen, niin voit käyttää tietokonetta valitsemalla laitteesi ja syöttämällä PIN-koodin</translation>
@@ -242,6 +244,7 @@ Ota ominaisuus käyttöön valitsemalla ensin <ph name="BUTTON_NAME" />, jolloin
 <translation id="6198252989419008588">Vaihda PIN-koodi</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (vanhentunut)</translation>
 <translation id="6221358653751391898">Et ole kirjautunut Chromeen. Kirjaudu sisään ja yritä uudelleen.</translation>
+<translation id="6227369581881558336">Chrome-etäkäyttö on nyt verkossa uusine ominaisuuksineen, mukaan lukien tiedostonsiirto. Tutustu <ph name="LINK_BEGIN" />verkkosovellukseen<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Konsolin logiikkaruudussa käynnissä ollut isäntä sulkeutui tukeakseen verhotilaa. Vaihdetaan käyttäjäkohtaisessa istunnossa käynnissä olevaan isäntään.</translation>
 <translation id="629730747756840877">Tili</translation>
 <translation id="6304318647555713317">Asiakas</translation>
@@ -289,7 +292,6 @@ Ota ominaisuus käyttöön valitsemalla ensin <ph name="BUTTON_NAME" />, jolloin
 <translation id="7434397035092923453">Käyttöoikeus kiellettiin asiakkaalta <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Asiakas <ph name="CLIENT_USERNAME" /> yhdistettiin.</translation>
 <translation id="7526139040829362392">Vaihda tiliä</translation>
-<translation id="7589941250119944644">Chrome-etäkäyttö siirtyy uuteen sijaintiin verkossa. Kokeile <ph name="LINK_BEGIN" />verkkosovellusta<ph name="LINK_END" /> – se on nopea ja maksuton, ja siinä on samat ominaisuudet kuin ennenkin.</translation>
 <translation id="7606912958770842224">Ota etäyhteydet käyttöön</translation>
 <translation id="7628469622942688817">Muista PIN-koodini tällä laitteella.</translation>
 <translation id="7649070708921625228">Ohje</translation>

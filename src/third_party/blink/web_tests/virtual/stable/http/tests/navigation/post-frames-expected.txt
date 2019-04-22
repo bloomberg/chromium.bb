@@ -1,7 +1,5 @@
 Tests that a POST request in a frame is handled correctly. If this test passes, you will see a page indicating a form was POSTed.
 
-
-
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
@@ -11,6 +9,7 @@ Parameters:
 
 the-input = input value goes here
 submitwithpost = Submit with POST
+
 Http headers:
 
 HTTP_CACHE_CONTROL = max-age=0

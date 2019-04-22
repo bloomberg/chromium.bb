@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_CONSTANTS_H_
 
+#include <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
 
 // Accessibility identifier prefix of a grid cell. To reference a specific cell,
@@ -75,10 +76,12 @@ extern const int kGridDarkThemeCellSeparatorColor;
 extern const CGSize kGridCellSizeSmall;
 extern const CGSize kGridCellSizeMedium;
 extern const CGSize kGridCellSizeLarge;
+extern const CGSize kGridCellSizeAccessibility;
 extern const CGFloat kGridCellCornerRadius;
 extern const CGFloat kGridCellIconCornerRadius;
 // The cell header contains the icon, title, and close button.
 extern const CGFloat kGridCellHeaderHeight;
+extern const CGFloat kGridCellHeaderAccessibilityHeight;
 extern const CGFloat kGridCellHeaderLeadingInset;
 extern const CGFloat kGridCellCloseTapTargetWidthHeight;
 extern const CGFloat kGridCellCloseButtonContentInset;

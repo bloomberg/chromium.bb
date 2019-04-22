@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
@@ -156,7 +157,7 @@ class ParallelDownloadJobTest : public testing::Test {
     received_slices_ = slices;
   }
 
-  bool IsJobCanceled() const { return job_->is_canceled_; };
+  bool IsJobCanceled() const { return job_->is_canceled_; }
 
   void MakeWorkerReady(
       DownloadWorker* worker,

@@ -19,7 +19,7 @@ bool AllowFromSources(const GURL& url,
   return false;
 }
 
-};  // namespace
+}  // namespace
 
 CSPSourceList::CSPSourceList()
     : allow_self(false),

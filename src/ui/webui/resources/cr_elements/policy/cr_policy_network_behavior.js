@@ -16,12 +16,14 @@ const CrPolicyNetworkBehavior = {
   isNetworkPolicyControlled: function(property) {
     // If the property is not a dictionary, or does not have an Effective
     // sub-property set, then the property is not policy controlled.
-    if (typeof property != 'object' || !property.Effective)
+    if (typeof property != 'object' || !property.Effective) {
       return false;
+    }
     // Enforced
     const effective = property.Effective;
-    if (effective == 'UserPolicy' || effective == 'DevicePolicy')
+    if (effective == 'UserPolicy' || effective == 'DevicePolicy') {
       return true;
+    }
     // Recommended
     if (typeof property.UserPolicy != 'undefined' ||
         typeof property.DevicePolicy != 'undefined') {
@@ -57,17 +59,20 @@ const CrPolicyNetworkBehavior = {
    */
   isEditable: function(property) {
     // If the property is not a dictionary, then the property is not editable.
-    if (typeof property != 'object')
+    if (typeof property != 'object') {
       return false;
+    }
 
     // If the property has a UserEditable sub-property, that determines whether
     // or not it is editable.
-    if (typeof property.UserEditable != 'undefined')
+    if (typeof property.UserEditable != 'undefined') {
       return property.UserEditable;
+    }
 
     // Otherwise if the property has a DeviceEditable sub-property, check that.
-    if (typeof property.DeviceEditable != 'undefined')
+    if (typeof property.DeviceEditable != 'undefined') {
       return property.DeviceEditable;
+    }
 
     // If no 'Editable' sub-property exists, the policy value is not editable.
     return false;
@@ -108,10 +113,96 @@ const CrPolicyNetworkBehavior = {
    * @private
    */
   getIndicatorTypeForSource: function(source) {
-    if (source == CrOnc.Source.DEVICE_POLICY)
+    if (source == CrOnc.Source.DEVICE_POLICY) {
       return CrPolicyIndicatorType.DEVICE_POLICY;
-    if (source == CrOnc.Source.USER_POLICY)
+    }
+    if (source == CrOnc.Source.USER_POLICY) {
       return CrPolicyIndicatorType.USER_POLICY;
+    }
     return CrPolicyIndicatorType.NONE;
+  },
+
+  /**
+   * @param {Object} dict A managed ONC dictionary.
+   * @param {string} path A path to a setting inside |dict|.
+   * @return {!CrOnc.ManagedProperty|undefined} The value of the setting at
+   * |path|.
+   * @private
+   */
+  getSettingAtPath_: function(dict, path) {
+    const keys = path.split('.');
+    for (let i = 0; i < keys.length; ++i) {
+      const key = keys[i];
+      if (typeof dict !== 'object' || !(key in dict)) {
+        return undefined;
+      }
+      dict = dict[key];
+    }
+    return dict;
+  },
+
+  /**
+   * Get managed property at the given path. If the property is not policy
+   * managed, return 'undefined'. If the property's value is 'undefined' return
+   * a non-editable policy managed 'CrOnc.ManagedProperty' object.
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {string} path
+   * @return {!CrOnc.ManagedProperty|undefined}
+   * @private
+   */
+  getManagedSettingAtPath_: function(networkProperties, path) {
+    if (!this.isPolicySource(networkProperties.Source)) {
+      return undefined;
+    }
+    const setting = this.getSettingAtPath_(networkProperties, path);
+    if (setting) {
+      return setting;
+    }
+    // If setting is not defined, return a non-editable managed property with
+    // 'undefined' value enforced by 'networkProperties.Source'.
+    return {
+      'Effective': networkProperties.Source,
+      'DeviceEditable': false,
+      'UserEditable': false,
+      'UserPolicy': undefined,
+      'DevicePolicy': undefined
+    };
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {string} path A path to a setting inside |networkProperties|.
+   * @return {boolean} True if the setting at |path| is managed by policy (e.g.
+   * 'StaticIPConfig.NameServers').
+   */
+  isNetworkPolicyPathManaged: function(networkProperties, path) {
+    return this.isNetworkPolicyControlled(
+        this.getManagedSettingAtPath_(networkProperties, path));
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {string} path A path to a setting inside |networkProperties|.
+   * @return {boolean} True if the setting at |path| is enforced by policy (e.g.
+   * 'StaticIPConfig.NameServers').
+   */
+  isNetworkPolicyPathEnforced: function(networkProperties, path) {
+    return this.isNetworkPolicyEnforced(
+        this.getManagedSettingAtPath_(networkProperties, path));
+  },
+
+  /**
+   * Get policy indicator type for the setting at |path|.
+   * @param {CrOnc.NetworkProperties} networkProperties
+   * @param {string} path
+   * @return {CrPolicyIndicatorType}
+   */
+  getPolicyIndicatorType_: function(networkProperties, path) {
+    if (!this.isNetworkPolicyPathManaged(networkProperties, path)) {
+      return CrPolicyIndicatorType.NONE;
+    }
+    return networkProperties.Source == CrOnc.Source.DEVICE_POLICY ?
+        CrPolicyIndicatorType.DEVICE_POLICY :
+        CrPolicyIndicatorType.USER_POLICY;
   },
 };

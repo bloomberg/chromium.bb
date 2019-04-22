@@ -5,30 +5,9 @@
 module device.mojom;
 
 import "device/usb/public/mojom/device.mojom";
-import "mojo/public/mojom/base/string16.mojom";
-
-struct UsbDeviceFilter {
-  bool has_vendor_id;
-  uint16 vendor_id;
-
-  bool has_product_id;
-  uint16 product_id;
-
-  bool has_class_code;
-  uint8 class_code;
-
-  bool has_subclass_code;
-  uint8 subclass_code;
-
-  bool has_protocol_code;
-  uint8 protocol_code;
-
-  mojo_base.mojom.String16? serial_number;
-};
-
-struct UsbEnumerationOptions {
-  array<UsbDeviceFilter> filters;
-};
+import "device/usb/public/mojom/device_enumeration_options.mojom";
+import "device/usb/public/mojom/device_manager_client.mojom";
+import "mojo/public/mojom/base/file.mojom";
 
 interface UsbDeviceManager {
   // Retrieves information about all devices available to the DeviceManager
@@ -44,15 +23,17 @@ interface UsbDeviceManager {
   GetDevice(string guid, UsbDevice& device_request,
             UsbDeviceClient? device_client);
 
+  // Check whether permission_broker will allow a future Open call for
+  // a given USB device to succeed.
+  [EnableIf=is_chromeos]
+  CheckAccess(string guid) => (bool success);
+
+  // Attempt to open a USB device using permission_broker and return
+  // a file descriptor.
+  [EnableIf=is_chromeos]
+  OpenFileDescriptor(string guid) => (mojo_base.mojom.File? fd);
+
   // Sets the client for this DeviceManager service. The service will notify its
   // client of device events such as connection and disconnection.
   SetClient(associated UsbDeviceManagerClient client);
-};
-
-interface UsbDeviceManagerClient {
-  // Called when a device is connected to the host.
-  OnDeviceAdded(UsbDeviceInfo device_info);
-
-  // Called when a device is disconnected from the host.
-  OnDeviceRemoved(UsbDeviceInfo device_info);
 };

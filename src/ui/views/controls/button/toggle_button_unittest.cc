@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/button/toggle_button.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,15 +49,15 @@ class TestToggleButton : public ToggleButton {
 
 class ToggleButtonTest : public ViewsTestBase {
  public:
-  ToggleButtonTest() {}
-  ~ToggleButtonTest() override {}
+  ToggleButtonTest() = default;
+  ~ToggleButtonTest() override = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();
 
     // Create a widget so that the ToggleButton can query the hover state
     // correctly.
-    widget_.reset(new Widget);
+    widget_ = std::make_unique<Widget>();
     Widget::InitParams params =
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

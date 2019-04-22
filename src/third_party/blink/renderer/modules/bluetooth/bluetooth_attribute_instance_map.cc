@@ -25,9 +25,9 @@ BluetoothAttributeInstanceMap::GetOrCreateRemoteGATTService(
       service_id_to_object_.at(service_instance_id);
 
   if (!service) {
-    service =
-        new BluetoothRemoteGATTService(std::move(remote_gatt_service),
-                                       is_primary, device_instance_id, device_);
+    service = MakeGarbageCollected<BluetoothRemoteGATTService>(
+        std::move(remote_gatt_service), is_primary, device_instance_id,
+        device_);
     service_id_to_object_.insert(service_instance_id, service);
   }
 
@@ -50,7 +50,7 @@ BluetoothAttributeInstanceMap::GetOrCreateRemoteGATTCharacteristic(
       characteristic_id_to_object_.at(instance_id);
 
   if (!characteristic) {
-    characteristic = BluetoothRemoteGATTCharacteristic::Create(
+    characteristic = MakeGarbageCollected<BluetoothRemoteGATTCharacteristic>(
         context, std::move(remote_gatt_characteristic), service, device_);
     characteristic_id_to_object_.insert(instance_id, characteristic);
   }
@@ -74,8 +74,8 @@ BluetoothAttributeInstanceMap::GetOrCreateBluetoothRemoteGATTDescriptor(
   if (result)
     return result;
 
-  result =
-      new BluetoothRemoteGATTDescriptor(std::move(descriptor), characteristic);
+  result = MakeGarbageCollected<BluetoothRemoteGATTDescriptor>(
+      std::move(descriptor), characteristic);
   descriptor_id_to_object_.insert(instance_id, result);
   return result;
 }

@@ -4,6 +4,7 @@
 
 #include <tuple>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -60,8 +61,7 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
   void FormSubmitted(const FormData& form,
                      bool known_success,
-                     SubmissionSource source,
-                     base::TimeTicks timestamp) override {
+                     SubmissionSource source) override {
     form_submitted_.reset(new FormData(form));
     known_success_ = known_success;
     submission_source_ = source;
@@ -184,7 +184,7 @@ void SimulateOnFillForm(autofill::AutofillAgent* autofill_agent,
 
   FormData data;
   data.name = base::ASCIIToUTF16("name");
-  data.origin = GURL("http://example.com/");
+  data.url = GURL("http://example.com/");
   data.action = GURL("http://example.com/blade.php");
   data.is_form_tag = true;  // Default value.
 

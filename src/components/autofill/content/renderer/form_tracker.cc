@@ -4,11 +4,11 @@
 
 #include "components/autofill/content/renderer/form_tracker.h"
 
+#include "base/bind.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/web/modules/autofill/web_form_element_observer.h"
-#include "third_party/blink/public/web/modules/autofill/web_form_element_observer_callback.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
@@ -20,24 +20,6 @@ using blink::WebFormControlElement;
 using blink::WebFormElement;
 
 namespace autofill {
-
-class FormTracker::FormElementObserverCallback
-    : public blink::WebFormElementObserverCallback {
- public:
-  explicit FormElementObserverCallback(FormTracker* tracker)
-      : tracker_(tracker) {}
-  ~FormElementObserverCallback() override = default;
-
-  void ElementWasHiddenOrRemoved() override {
-    tracker_->FireInferredFormSubmission(
-        SubmissionSource::DOM_MUTATION_AFTER_XHR);
-  }
-
- private:
-  FormTracker* tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(FormElementObserverCallback);
-};
 
 FormTracker::FormTracker(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame), weak_ptr_factory_(this) {
@@ -155,8 +137,9 @@ void FormTracker::DidCommitProvisionalLoad(bool is_same_document_navigation,
   FireSubmissionIfFormDisappear(SubmissionSource::SAME_DOCUMENT_NAVIGATION);
 }
 
-void FormTracker::DidStartProvisionalLoad(WebDocumentLoader* document_loader,
-                                          bool is_content_initiated) {
+void FormTracker::DidStartNavigation(
+    const GURL& url,
+    base::Optional<blink::WebNavigationType> navigation_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
   blink::WebLocalFrame* navigated_frame = render_frame()->GetWebFrame();
   // Ony handle main frame.
@@ -167,15 +150,11 @@ void FormTracker::DidStartProvisionalLoad(WebDocumentLoader* document_loader,
   // the user is performing actions outside the page (e.g. typed url,
   // history navigation). We don't want to trigger saving in these cases.
 
-  // We are interested only in content initiated navigations.  Explicit browser
-  // initiated navigations (e.g. via omnibox) are discarded here.  Similarly
-  // PlzNavigate navigations originating from the browser are discarded because
-  // they were already processed as a content initiated one
-  // (i.e. DidStartProvisionalLoad is called twice in this case).  The check for
-  // kWebNavigationTypeLinkClicked is reliable only for content initiated
-  // navigations.
-  if (is_content_initiated && document_loader->GetNavigationType() !=
-                                  blink::kWebNavigationTypeLinkClicked) {
+  // We are interested only in content-initiated navigations. Explicit browser
+  // initiated navigations (e.g. via omnibox) don't have a navigation type
+  // and are discarded here.
+  if (navigation_type.has_value() &&
+      navigation_type.value() != blink::kWebNavigationTypeLinkClicked) {
     FireProbablyFormSubmitted();
   }
 }
@@ -249,8 +228,8 @@ void FormTracker::TrackElement() {
   // Already has observer for last interacted element.
   if (form_element_observer_)
     return;
-  std::unique_ptr<FormElementObserverCallback> callback =
-      std::make_unique<FormElementObserverCallback>(this);
+  auto callback = base::BindOnce(&FormTracker::ElementWasHiddenOrRemoved,
+                                 base::Unretained(this));
 
   if (!last_interacted_form_.IsNull()) {
     form_element_observer_ = blink::WebFormElementObserver::Create(
@@ -268,6 +247,10 @@ void FormTracker::ResetLastInteractedElements() {
     form_element_observer_->Disconnect();
     form_element_observer_ = nullptr;
   }
+}
+
+void FormTracker::ElementWasHiddenOrRemoved() {
+  FireInferredFormSubmission(SubmissionSource::DOM_MUTATION_AFTER_XHR);
 }
 
 }  // namespace autofill

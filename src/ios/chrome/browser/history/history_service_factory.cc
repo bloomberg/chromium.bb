@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/visit_delegate.h"
@@ -54,7 +54,8 @@ history::HistoryService* HistoryServiceFactory::GetForBrowserStateIfExists(
 
 // static
 HistoryServiceFactory* HistoryServiceFactory::GetInstance() {
-  return base::Singleton<HistoryServiceFactory>::get();
+  static base::NoDestructor<HistoryServiceFactory> instance;
+  return instance.get();
 }
 
 HistoryServiceFactory::HistoryServiceFactory()

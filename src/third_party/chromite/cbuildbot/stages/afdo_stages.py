@@ -72,10 +72,37 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
     # to find an older AFDO profile.
     try:
       if afdo.WaitForAFDOPerfData(cpv, arch, buildroot, gs_context):
-        afdo_file = afdo.GenerateAFDOData(cpv, arch, board,
-                                          buildroot, gs_context)
+        afdo_file, uploaded_afdo = afdo.GenerateAFDOData(cpv, arch, board,
+                                                         buildroot, gs_context)
         assert afdo_file
         logging.info('Generated %s AFDO profile %s', arch, afdo_file)
+
+        # If there's no new profile, merging would only be redoing the last
+        # merge and uploading nothing.
+        if not uploaded_afdo:
+          logging.info('AFDO profile already existed in GS. Quit')
+          return
+
+        merged_file, uploaded_merged = \
+            afdo.CreateAndUploadMergedAFDOProfile(gs_context, buildroot,
+                                                  afdo_file)
+
+        if merged_file is not None:
+          logging.info('Generated %s merged AFDO profile %s', arch,
+                       merged_file)
+
+        # TODO(gbiv): once there's clarity that merged profiles are working
+        # (e.g. a week goes by with Android/Linux mostly-happily using them),
+        # we may want to turn them on for CrOS. Until then, `latest` is always
+        # the raw AFDO file.
+        if uploaded_merged and False:
+          newest_afdo_file = merged_file
+        else:
+          newest_afdo_file = afdo_file
+
+        afdo.UpdateLatestAFDOProfileInGS(cpv, arch, buildroot,
+                                         newest_afdo_file, gs_context)
+        logging.info('Pointed newest profile at %s', newest_afdo_file)
       else:
         raise afdo.MissingAFDOData('Could not find current "perf" profile. '
                                    'Master PFQ builder will try to use stale '

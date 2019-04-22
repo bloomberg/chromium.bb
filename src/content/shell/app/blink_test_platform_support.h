@@ -8,7 +8,7 @@
 namespace content {
 
 bool CheckLayoutSystemDeps();
-bool BlinkTestPlatformInitialize();
+void BlinkTestPlatformInitialize();
 
 }  // namespace content
 

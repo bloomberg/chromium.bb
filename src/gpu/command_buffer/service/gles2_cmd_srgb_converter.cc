@@ -378,7 +378,7 @@ void SRGBConverter::Blit(
   decoder->RestoreGlobalState();
 }
 
-void SRGBConverter::GenerateMipmap(const gles2::GLES2Decoder* decoder,
+void SRGBConverter::GenerateMipmap(gles2::GLES2Decoder* decoder,
                                    Texture* tex,
                                    GLenum target) {
   // This function generateMipmap for srgb texture.

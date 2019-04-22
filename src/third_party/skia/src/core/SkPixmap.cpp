@@ -119,6 +119,7 @@ float SkPixmap::getAlphaf(int x, int y) const {
             uint32_t u32 = static_cast<const uint32_t*>(srcPtr)[0];
             value = (u32 >> 30) * (1.0f/3);
         } break;
+        case kRGBA_F16Norm_SkColorType:
         case kRGBA_F16_SkColorType: {
             uint64_t px;
             memcpy(&px, srcPtr, sizeof(px));
@@ -216,8 +217,8 @@ bool SkPixmap::scalePixels(const SkPixmap& actualDst, SkFilterQuality quality) c
 
     // We'll create a shader to do this draw so we have control over the bicubic clamp.
     sk_sp<SkShader> shader = SkImageShader::Make(SkImage::MakeFromBitmap(bitmap),
-                                                 SkShader::kClamp_TileMode,
-                                                 SkShader::kClamp_TileMode,
+                                                 SkTileMode::kClamp,
+                                                 SkTileMode::kClamp,
                                                  &scale,
                                                  clampAsIfUnpremul);
 
@@ -304,6 +305,7 @@ SkColor SkPixmap::getColor(int x, int y) const {
                  | (uint32_t)( b * 255.0f ) <<  0
                  | (uint32_t)( a * 255.0f ) << 24;
         }
+        case kRGBA_F16Norm_SkColorType:
         case kRGBA_F16_SkColorType: {
             const uint64_t* addr =
                 (const uint64_t*)fPixels + y * (fRowBytes >> 3) + x;
@@ -388,6 +390,7 @@ bool SkPixmap::computeIsOpaque() const {
             }
             return true;
         }
+        case kRGBA_F16Norm_SkColorType:
         case kRGBA_F16_SkColorType: {
             const SkHalf* row = (const SkHalf*)this->addr();
             for (int y = 0; y < height; ++y) {
@@ -434,7 +437,7 @@ bool SkPixmap::computeIsOpaque() const {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-static bool draw_orientation(const SkPixmap& dst, const SkPixmap& src, unsigned flags) {
+static bool draw_orientation(const SkPixmap& dst, const SkPixmap& src, SkEncodedOrigin origin) {
     auto surf = SkSurface::MakeRasterDirect(dst.info(), dst.writable_addr(), dst.rowBytes());
     if (!surf) {
         return false;
@@ -443,26 +446,8 @@ static bool draw_orientation(const SkPixmap& dst, const SkPixmap& src, unsigned 
     SkBitmap bm;
     bm.installPixels(src);
 
-    SkMatrix m;
-    m.setIdentity();
+    SkMatrix m = SkEncodedOriginToMatrix(origin, src.width(), src.height());
 
-    SkScalar W = SkIntToScalar(src.width());
-    SkScalar H = SkIntToScalar(src.height());
-    if (flags & SkPixmapPriv::kSwapXY) {
-        SkMatrix s;
-        s.setAll(0, 1, 0, 1, 0, 0, 0, 0, 1);
-        m.postConcat(s);
-        using std::swap;
-        swap(W, H);
-    }
-    if (flags & SkPixmapPriv::kMirrorX) {
-        m.postScale(-1, 1);
-        m.postTranslate(W, 0);
-    }
-    if (flags & SkPixmapPriv::kMirrorY) {
-        m.postScale(1, -1);
-        m.postTranslate(0, H);
-    }
     SkPaint p;
     p.setBlendMode(SkBlendMode::kSrc);
     surf->getCanvas()->concat(m);
@@ -470,8 +455,7 @@ static bool draw_orientation(const SkPixmap& dst, const SkPixmap& src, unsigned 
     return true;
 }
 
-bool SkPixmapPriv::Orient(const SkPixmap& dst, const SkPixmap& src, OrientFlags flags) {
-    SkASSERT((flags & ~(kMirrorX | kMirrorY | kSwapXY)) == 0);
+bool SkPixmapPriv::Orient(const SkPixmap& dst, const SkPixmap& src, SkEncodedOrigin origin) {
     if (src.colorType() != dst.colorType()) {
         return false;
     }
@@ -479,7 +463,7 @@ bool SkPixmapPriv::Orient(const SkPixmap& dst, const SkPixmap& src, OrientFlags 
 
     int w = src.width();
     int h = src.height();
-    if (flags & kSwapXY) {
+    if (ShouldSwapWidthHeight(origin)) {
         using std::swap;
         swap(w, h);
     }
@@ -492,34 +476,14 @@ bool SkPixmapPriv::Orient(const SkPixmap& dst, const SkPixmap& src, OrientFlags 
 
     // check for aliasing to self
     if (src.addr() == dst.addr()) {
-        return flags == 0;
+        return kTopLeft_SkEncodedOrigin == origin;
     }
-    return draw_orientation(dst, src, flags);
+    return draw_orientation(dst, src, origin);
 }
 
-#define kMirrorX    SkPixmapPriv::kMirrorX
-#define kMirrorY    SkPixmapPriv::kMirrorY
-#define kSwapXY     SkPixmapPriv::kSwapXY
-
-static constexpr uint8_t gOrientationFlags[] = {
-    0,                              // kTopLeft_SkEncodedOrigin
-    kMirrorX,                       // kTopRight_SkEncodedOrigin
-    kMirrorX | kMirrorY,            // kBottomRight_SkEncodedOrigin
-               kMirrorY,            // kBottomLeft_SkEncodedOrigin
-                          kSwapXY,  // kLeftTop_SkEncodedOrigin
-    kMirrorX            | kSwapXY,  // kRightTop_SkEncodedOrigin
-    kMirrorX | kMirrorY | kSwapXY,  // kRightBottom_SkEncodedOrigin
-               kMirrorY | kSwapXY,  // kLeftBottom_SkEncodedOrigin
-};
-
-SkPixmapPriv::OrientFlags SkPixmapPriv::OriginToOrient(SkEncodedOrigin o) {
-    unsigned io = static_cast<int>(o) - 1;
-    SkASSERT(io < SK_ARRAY_COUNT(gOrientationFlags));
-    return static_cast<SkPixmapPriv::OrientFlags>(gOrientationFlags[io]);
-}
-
-bool SkPixmapPriv::ShouldSwapWidthHeight(SkEncodedOrigin o) {
-    return SkToBool(OriginToOrient(o) & kSwapXY);
+bool SkPixmapPriv::ShouldSwapWidthHeight(SkEncodedOrigin origin) {
+    // The last four SkEncodedOrigin values involve 90 degree rotations
+    return origin >= kLeftTop_SkEncodedOrigin;
 }
 
 SkImageInfo SkPixmapPriv::SwapWidthHeight(const SkImageInfo& info) {

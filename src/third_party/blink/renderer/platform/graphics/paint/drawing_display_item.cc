@@ -13,28 +13,6 @@
 
 namespace blink {
 
-void DrawingDisplayItem::Replay(GraphicsContext& context) const {
-  if (record_)
-    context.DrawRecord(record_);
-}
-
-void DrawingDisplayItem::AppendToDisplayItemList(
-    const FloatSize& visual_rect_offset,
-    cc::DisplayItemList& list) const {
-  if (record_) {
-    list.StartPaint();
-    list.push<cc::DrawRecordOp>(record_);
-    // Convert visual rect into the GraphicsLayer's coordinate space.
-    auto visual_rect = VisualRect();
-    visual_rect.Move(-visual_rect_offset);
-    list.EndPaintOfUnpaired(EnclosingIntRect(visual_rect));
-  }
-}
-
-bool DrawingDisplayItem::DrawsContent() const {
-  return record_.get();
-}
-
 #if DCHECK_IS_ON()
 void DrawingDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
@@ -90,7 +68,7 @@ bool DrawingDisplayItem::Equals(const DisplayItem& other) const {
   if (!record || !other_record)
     return false;
 
-  const auto& bounds = this->VisualRect();
+  auto bounds = this->VisualRect();
   const auto& other_bounds = other.VisualRect();
   if (bounds != other_bounds)
     return false;
@@ -100,10 +78,9 @@ bool DrawingDisplayItem::Equals(const DisplayItem& other) const {
 
   // Sometimes the client may produce different records for the same visual
   // result, which should be treated as equal.
-  IntRect int_bounds = EnclosingIntRect(bounds);
   // Limit the bounds to prevent OOM.
-  int_bounds.Intersect(IntRect(int_bounds.X(), int_bounds.Y(), 6000, 6000));
-  return BitmapsEqual(std::move(record), std::move(other_record), int_bounds);
+  bounds.Intersect(IntRect(bounds.X(), bounds.Y(), 6000, 6000));
+  return BitmapsEqual(std::move(record), std::move(other_record), bounds);
 }
 
 }  // namespace blink

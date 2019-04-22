@@ -4,6 +4,7 @@
 
 #include "ui/ozone/public/ozone_platform.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -39,8 +40,6 @@ OzonePlatform::OzonePlatform() {
   GetOzoneInstanceLock().AssertAcquired();
   DCHECK(!g_instance) << "There should only be a single OzonePlatform.";
   g_instance = this;
-  g_platform_initialized_ui = false;
-  g_platform_initialized_gpu = false;
 }
 
 OzonePlatform::~OzonePlatform() = default;
@@ -50,11 +49,14 @@ void OzonePlatform::InitializeForUI(const InitParams& args) {
   EnsureInstance();
   if (g_platform_initialized_ui)
     return;
-  g_platform_initialized_ui = true;
   g_instance->InitializeUI(args);
   // This is deliberately created after initializing so that the platform can
   // create its own version of DDM.
   DeviceDataManager::CreateInstance();
+  {
+    base::AutoLock lock(GetOzoneInstanceLock());
+    g_platform_initialized_ui = true;
+  }
   auto& instance_callback = GetInstanceCallback();
   if (instance_callback)
     std::move(instance_callback).Run(g_instance);
@@ -104,7 +106,7 @@ void OzonePlatform::RegisterStartupCallback(StartupCallback callback) {
   OzonePlatform* inst = nullptr;
   {
     base::AutoLock lock(GetOzoneInstanceLock());
-    if (!g_instance || !g_platform_initialized_ui) {
+    if (!g_platform_initialized_ui) {
       auto& instance_callback = GetInstanceCallback();
       instance_callback = std::move(callback);
       return;
@@ -122,6 +124,11 @@ std::unique_ptr<PlatformScreen> OzonePlatform::CreateScreen() {
   return nullptr;
 }
 
+PlatformClipboard* OzonePlatform::GetPlatformClipboard() {
+  // Platforms that support system clipboard must override this method.
+  return nullptr;
+}
+
 bool OzonePlatform::IsNativePixmapConfigSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) const {
@@ -135,6 +142,14 @@ OzonePlatform::GetPlatformProperties() {
   return *properties;
 }
 
+const OzonePlatform::InitializedHostProperties&
+OzonePlatform::GetInitializedHostProperties() {
+  DCHECK(g_platform_initialized_ui);
+
+  static InitializedHostProperties host_properties;
+  return host_properties;
+}
+
 base::MessageLoop::Type OzonePlatform::GetMessageLoopTypeForGpu() {
   return base::MessageLoop::TYPE_DEFAULT;
 }
@@ -142,5 +157,10 @@ base::MessageLoop::Type OzonePlatform::GetMessageLoopTypeForGpu() {
 void OzonePlatform::AddInterfaces(service_manager::BinderRegistry* registry) {}
 
 void OzonePlatform::AfterSandboxEntry() {}
+
+// static
+bool OzonePlatform::has_initialized_ui() {
+  return g_platform_initialized_ui;
+}
 
 }  // namespace ui

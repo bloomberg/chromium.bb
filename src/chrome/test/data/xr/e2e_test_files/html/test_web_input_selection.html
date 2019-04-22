@@ -13,34 +13,27 @@
     <input id="textfield" type="text" style="width:100%" oninput="finishJavaScriptStep()">
   </body>
   <script>
-    var t = async_test("Web input text can be selected");
     var numExpectedClicks = 1;
 
     function stepVerifyInitialString(expectedString) {
-      t.step(() => {
-        let actualString = document.getElementById("textfield").value;
-        assert_equals(actualString, expectedString,
-            "Initial text input did not work");
-      });
+      let actualString = document.getElementById("textfield").value;
+      assert_equals(actualString, expectedString,
+          "Initial text input did not work");
       finishJavaScriptStep();
     }
 
     function stepVerifyDeletedString(expectedString) {
-      t.step(() => {
-        let actualString = document.getElementById("textfield").value;
-        assert_equals(actualString, expectedString,
-            "Text deletion at via text selection did not work");
-      });
+      let actualString = document.getElementById("textfield").value;
+      assert_equals(actualString, expectedString,
+          "Text deletion at via text selection did not work");
       finishJavaScriptStep();
     }
 
     function stepVerifyClearedString() {
-      t.step(() => {
-        let actualString = document.getElementById("textfield").value;
-        assert_equals(actualString.length, 0,
-            "Text field was not fully cleared by triple click + backspace");
-      });
-      t.done();
+      let actualString = document.getElementById("textfield").value;
+      assert_equals(actualString.length, 0,
+          "Text field was not fully cleared by triple click + backspace");
+      done();
     }
 
     function onClick(evt) {

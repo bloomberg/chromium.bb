@@ -9,6 +9,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.SystemClock;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
@@ -19,7 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -28,11 +29,13 @@ import org.chromium.content.browser.input.ChromiumBaseInputConnection;
 import org.chromium.content.browser.input.ImeTestUtils;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content_public.browser.SelectionClient;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.util.concurrent.Callable;
@@ -84,7 +87,8 @@ public class ContentTextSelectionTest {
                 result = new SelectionClient.Result();
             }
 
-            ThreadUtils.postOnUiThread(() -> mResultCallback.onClassified(result));
+            PostTask.postTask(
+                    UiThreadTaskTraits.DEFAULT, () -> mResultCallback.onClassified(result));
             return true;
         }
 
@@ -184,6 +188,33 @@ public class ContentTextSelectionTest {
         Assert.assertTrue(mSelectionPopupController.hasSelection());
 
         setAttachedOnUiThread(true);
+        waitForSelectActionBarVisible(true);
+        Assert.assertTrue(mSelectionPopupController.hasSelection());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"TextSelection"})
+    @DisableIf.
+    Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "Drag and drop not enabled pre-N")
+    public void testSelectionPreservedAfterDragAndDrop() throws Throwable {
+        DOMUtils.longPressNode(mWebContents, "plain_text_1");
+        waitForSelectActionBarVisible(true);
+        Assert.assertTrue(mSelectionPopupController.hasSelection());
+
+        // Long press the selected text without release for the following drag.
+        long downTime = SystemClock.uptimeMillis();
+        DOMUtils.longPressNodeWithoutUp(mWebContents, "plain_text_1", downTime);
+        waitForSelectActionBarVisible(true);
+        Assert.assertTrue(mSelectionPopupController.hasSelection());
+
+        // Drag to the specified position by a DOM node id.
+        int stepCount = 10;
+        DOMUtils.dragNodeTo(mWebContents, "plain_text_1", "plain_text_2", stepCount, downTime);
+        waitForSelectActionBarVisible(false);
+        Assert.assertTrue(mSelectionPopupController.hasSelection());
+
+        DOMUtils.dragNodeEnd(mWebContents, "plain_text_2", downTime);
         waitForSelectActionBarVisible(true);
         Assert.assertTrue(mSelectionPopupController.hasSelection());
     }
@@ -397,12 +428,7 @@ public class ContentTextSelectionTest {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(mWebContents, "empty_input_text");
         waitForPastePopupStatus(true);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mWebContents.destroy();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mWebContents.destroy(); });
         waitForPastePopupStatus(false);
     }
 
@@ -539,7 +565,7 @@ public class ContentTextSelectionTest {
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
         selectActionBarCut();
         waitForSelectActionBarVisible(false);
-        Assert.assertFalse(mSelectionPopupController.hasSelection());
+        Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
         waitForClipboardContents("SampleInputText");
         Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
     }
@@ -572,7 +598,7 @@ public class ContentTextSelectionTest {
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
         selectActionBarCut();
         waitForSelectActionBarVisible(false);
-        Assert.assertFalse(mSelectionPopupController.hasSelection());
+        Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
         waitForClipboardContents("SampleTextArea");
         Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
     }
@@ -580,6 +606,7 @@ public class ContentTextSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextSelection"})
+    @DisabledTest(message = "https://crbug.com/946157")
     public void testSelectActionBarPlainTextSelectAll() throws Exception {
         DOMUtils.longPressNode(mWebContents, "plain_text_1");
         waitForSelectActionBarVisible(true);
@@ -697,7 +724,7 @@ public class ContentTextSelectionTest {
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
         selectActionBarPaste();
         waitForSelectActionBarVisible(false);
-        Assert.assertFalse(mSelectionPopupController.hasSelection());
+        Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
 
         // Ensure the new text matches the pasted text.
         DOMUtils.longPressNode(mWebContents, "input_text");
@@ -724,7 +751,7 @@ public class ContentTextSelectionTest {
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
         selectActionBarPaste();
         waitForSelectActionBarVisible(false);
-        Assert.assertFalse(mSelectionPopupController.hasSelection());
+        Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
 
         // Ensure the new text matches the pasted text. Note that we can't
         // actually compare strings as password field selections only provide
@@ -773,66 +800,32 @@ public class ContentTextSelectionTest {
     }
 
     private void selectActionBarPaste() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.paste();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSelectionPopupController.paste(); });
     }
 
     private void selectActionBarSelectAll() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.selectAll();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSelectionPopupController.selectAll(); });
     }
 
     private void selectActionBarCut() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.cut();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSelectionPopupController.cut(); });
     }
 
     private void selectActionBarCopy() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.copy();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSelectionPopupController.copy(); });
     }
 
     private void selectActionBarSearch() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.search();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSelectionPopupController.search(); });
     }
 
     private void selectActionBarShare() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.share();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mSelectionPopupController.share(); });
     }
 
     private void hideSelectActionMode() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSelectionPopupController.destroySelectActionMode();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mSelectionPopupController.destroySelectActionMode(); });
     }
 
     private void waitForClipboardContents(final String expectedContents) {
@@ -860,41 +853,32 @@ public class ContentTextSelectionTest {
 
     private void setVisibileOnUiThread(final boolean show) {
         final WebContents webContents = mActivityTestRule.getWebContents();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                if (show) {
-                    webContents.onShow();
-                } else {
-                    webContents.onHide();
-                }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            if (show) {
+                webContents.onShow();
+            } else {
+                webContents.onHide();
             }
         });
     }
 
     private void setAttachedOnUiThread(final boolean attached) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ViewEventSinkImpl viewEventSink =
-                        ViewEventSinkImpl.from(mActivityTestRule.getWebContents());
-                if (attached) {
-                    viewEventSink.onAttachedToWindow();
-                } else {
-                    viewEventSink.onDetachedFromWindow();
-                }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ViewEventSinkImpl viewEventSink =
+                    ViewEventSinkImpl.from(mActivityTestRule.getWebContents());
+            if (attached) {
+                viewEventSink.onAttachedToWindow();
+            } else {
+                viewEventSink.onDetachedFromWindow();
             }
         });
     }
 
     private void requestFocusOnUiThread(final boolean gainFocus) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ViewEventSinkImpl viewEventSink =
-                        ViewEventSinkImpl.from(mActivityTestRule.getWebContents());
-                viewEventSink.onViewFocusChanged(gainFocus);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ViewEventSinkImpl viewEventSink =
+                    ViewEventSinkImpl.from(mActivityTestRule.getWebContents());
+            viewEventSink.onViewFocusChanged(gainFocus);
         });
     }
 

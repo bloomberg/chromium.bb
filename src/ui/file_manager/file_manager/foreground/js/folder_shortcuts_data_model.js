@@ -6,104 +6,100 @@
  * The drive mount path used in the storage. It must be '/drive'.
  * @type {string}
  */
-var STORED_DRIVE_MOUNT_PATH = '/drive';
+const STORED_DRIVE_MOUNT_PATH = '/drive';
 
 /**
  * Model for the folder shortcuts. This object is cr.ui.ArrayDataModel-like
  * object with additional methods for the folder shortcut feature.
  * This uses chrome.storage as backend. Items are always sorted by URL.
- *
- * @param {!FilteredVolumeManager} volumeManager Volume manager instance.
- * @constructor
- * @extends {cr.EventTarget}
  */
-function FolderShortcutsDataModel(volumeManager) {
-  this.volumeManager_ = volumeManager;
-  this.array_ = [];
-  this.pendingPaths_ = {};  // Hash map for easier deleting.
-  this.unresolvablePaths_ = {};
-  this.lastDriveRootURL_ = null;
+class FolderShortcutsDataModel extends cr.EventTarget {
+  /**
+   * @param {!FilteredVolumeManager} volumeManager Volume manager instance.
+   */
+  constructor(volumeManager) {
+    super();
 
-  // Queue to serialize resolving entries.
-  this.queue_ = new AsyncUtil.Queue();
-  this.queue_.run(
-      this.volumeManager_.ensureInitialized.bind(this.volumeManager_));
+    this.volumeManager_ = volumeManager;
+    this.array_ = [];
+    this.pendingPaths_ = {};  // Hash map for easier deleting.
+    this.unresolvablePaths_ = {};
+    this.lastDriveRootURL_ = null;
 
-  // Load the shortcuts. Runs within the queue.
-  this.load_();
+    // Queue to serialize resolving entries.
+    this.queue_ = new AsyncUtil.Queue();
+    this.queue_.run(
+        this.volumeManager_.ensureInitialized.bind(this.volumeManager_));
 
-  // Listening for changes in the storage.
-  chrome.storage.onChanged.addListener(function(changes, namespace) {
-    if (!(FolderShortcutsDataModel.NAME in changes) || namespace !== 'sync')
-      return;
-    this.reload_();  // Runs within the queue.
-  }.bind(this));
+    // Load the shortcuts. Runs within the queue.
+    this.load_();
 
-  // If the volume info list is changed, then shortcuts have to be reloaded.
-  this.volumeManager_.volumeInfoList.addEventListener(
-      'permuted', this.reload_.bind(this));
+    // Listening for changes in the storage.
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      if (!(FolderShortcutsDataModel.NAME in changes) || namespace !== 'sync') {
+        return;
+      }
+      this.reload_();  // Runs within the queue.
+    });
 
-  // If the drive status has changed, then shortcuts have to be re-resolved.
-  this.volumeManager_.addEventListener(
-      'drive-connection-changed', this.reload_.bind(this));
-}
+    // If the volume info list is changed, then shortcuts have to be reloaded.
+    this.volumeManager_.volumeInfoList.addEventListener(
+        'permuted', this.reload_.bind(this));
 
-/**
- * Key name in chrome.storage. The array are stored with this name.
- * @type {string}
- * @const
- */
-FolderShortcutsDataModel.NAME = 'folder-shortcuts-list';
-
-FolderShortcutsDataModel.prototype = {
-  __proto__: cr.EventTarget.prototype,
+    // If the drive status has changed, then shortcuts have to be re-resolved.
+    this.volumeManager_.addEventListener(
+        'drive-connection-changed', this.reload_.bind(this));
+  }
 
   /**
    * @return {number} Number of elements in the array.
    */
   get length() {
     return this.array_.length;
-  },
+  }
 
   /**
    * Remembers the Drive volume's root URL used for conversions between virtual
    * paths and URLs.
    * @private
    */
-  rememberLastDriveURL_: function() {
-    if (this.lastDriveRootURL_)
+  rememberLastDriveURL_() {
+    if (this.lastDriveRootURL_) {
       return;
-    var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
+    }
+    const volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
         VolumeManagerCommon.VolumeType.DRIVE);
-    if (volumeInfo)
+    if (volumeInfo) {
       this.lastDriveRootURL_ = volumeInfo.fileSystem.root.toURL();
-  },
+    }
+  }
 
   /**
    * Resolves Entries from a list of stored virtual paths. Runs within a queue.
    * @param {Array<string>} list List of virtual paths.
    * @private
    */
-  processEntries_: function(list) {
-    this.queue_.run(function(callback) {
+  processEntries_(list) {
+    this.queue_.run(callback => {
       this.pendingPaths_ = {};
       this.unresolvablePaths_ = {};
       list.forEach(function(path) {
         this.pendingPaths_[path] = true;
       }, this);
       callback();
-    }.bind(this));
+    });
 
-    this.queue_.run(function(queueCallback) {
-      var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
+    this.queue_.run(queueCallback => {
+      const volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
           VolumeManagerCommon.VolumeType.DRIVE);
-      var changed = false;
-      var resolvedURLs = {};
+      let changed = false;
+      const resolvedURLs = {};
       this.rememberLastDriveURL_();  // Required for conversions.
 
-      var onResolveSuccess = function(path, entry) {
-        if (path in this.pendingPaths_)
+      const onResolveSuccess = (path, entry) => {
+        if (path in this.pendingPaths_) {
           delete this.pendingPaths_[path];
+        }
         if (path in this.unresolvablePaths_) {
           changed = true;
           delete this.unresolvablePaths_[path];
@@ -113,12 +109,13 @@ FolderShortcutsDataModel.prototype = {
           this.addInternal_(entry);
         }
         resolvedURLs[entry.toURL()] = true;
-      }.bind(this);
+      };
 
-      var onResolveFailure = function(path, url) {
-        if (path in this.pendingPaths_)
+      const onResolveFailure = (path, url) => {
+        if (path in this.pendingPaths_) {
           delete this.pendingPaths_[path];
-        var existingIndex = this.getIndexByURL_(url);
+        }
+        const existingIndex = this.getIndexByURL_(url);
         if (existingIndex !== -1) {
           changed = true;
           this.removeInternal_(this.item(existingIndex));
@@ -137,38 +134,38 @@ FolderShortcutsDataModel.prototype = {
         // Not adding to the model nor to the |unresolvablePaths_| means
         // that it will be removed from the storage permanently after the
         // next call to save_().
-      }.bind(this);
+      };
 
       // Resolve the items all at once, in parallel.
-      var group = new AsyncUtil.Group();
+      const group = new AsyncUtil.Group();
       list.forEach(function(path) {
-        group.add(function(path, callback) {
-          var url =
-              this.lastDriveRootURL_ && this.convertStoredPathToUrl_(path);
-          if (url && volumeInfo) {
-            window.webkitResolveLocalFileSystemURL(
-                url,
-                function(entry) {
-                  onResolveSuccess(path, entry);
-                  callback();
-                },
-                function() {
-                  onResolveFailure(path, url);
-                  callback();
-                });
-          } else {
-            onResolveFailure(path, url);
-            callback();
-          }
-        }.bind(this, path));
+        group.add(((path, callback) => {
+                    const url = this.lastDriveRootURL_ &&
+                        this.convertStoredPathToUrl_(path);
+                    if (url && volumeInfo) {
+                      window.webkitResolveLocalFileSystemURL(
+                          url,
+                          entry => {
+                            onResolveSuccess(path, entry);
+                            callback();
+                          },
+                          () => {
+                            onResolveFailure(path, url);
+                            callback();
+                          });
+                    } else {
+                      onResolveFailure(path, url);
+                      callback();
+                    }
+                  }).bind(null, path));
       }, this);
 
       // Save the model after finishing.
-      group.run(function() {
+      group.run(() => {
         // Remove all of those old entries, which were resolved by this method.
-        var index = 0;
+        let index = 0;
         while (index < this.length) {
-          var entry = this.item(index);
+          const entry = this.item(index);
           if (!resolvedURLs[entry.toURL()]) {
             this.removeInternal_(entry);
             changed = true;
@@ -177,27 +174,29 @@ FolderShortcutsDataModel.prototype = {
           }
         }
         // If something changed, then save.
-        if (changed)
+        if (changed) {
           this.save_();
+        }
         queueCallback();
-      }.bind(this));
-    }.bind(this));
-  },
+      });
+    });
+  }
 
   /**
    * Initializes the model and loads the shortcuts.
    * @private
    */
-  load_: function() {
-    this.queue_.run(function(callback) {
-      chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
+  load_() {
+    this.queue_.run(callback => {
+      chrome.storage.sync.get(FolderShortcutsDataModel.NAME, value => {
         if (chrome.runtime.lastError) {
-          console.error('Failed to load shortcut paths from chrome.storage: ' +
+          console.error(
+              'Failed to load shortcut paths from chrome.storage: ' +
               chrome.runtime.lastError.message);
           callback();
           return;
         }
-        var shortcutPaths = value[FolderShortcutsDataModel.NAME] || [];
+        const shortcutPaths = value[FolderShortcutsDataModel.NAME] || [];
 
         // Record metrics.
         metrics.recordSmallCount('FolderShortcut.Count', shortcutPaths.length);
@@ -205,24 +204,24 @@ FolderShortcutsDataModel.prototype = {
         // Resolve and add the entries to the model.
         this.processEntries_(shortcutPaths);  // Runs within a queue.
         callback();
-      }.bind(this));
-    }.bind(this));
-  },
+      });
+    });
+  }
 
   /**
    * Reloads the model and loads the shortcuts.
    * @private
    */
-  reload_: function() {
-    var shortcutPaths;
-    this.queue_.run(function(callback) {
-      chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
-        var shortcutPaths = value[FolderShortcutsDataModel.NAME] || [];
+  reload_() {
+    let shortcutPaths;
+    this.queue_.run(callback => {
+      chrome.storage.sync.get(FolderShortcutsDataModel.NAME, value => {
+        const shortcutPaths = value[FolderShortcutsDataModel.NAME] || [];
         this.processEntries_(shortcutPaths);  // Runs within a queue.
         callback();
-      }.bind(this));
-    }.bind(this));
-  },
+      });
+    });
+  }
 
   /**
    * Returns the entries in the given range as a new array instance. The
@@ -232,44 +231,46 @@ FolderShortcutsDataModel.prototype = {
    * @param {number=} opt_end Where to end the selection.
    * @return {Array<Entry>} Entries in the selected range.
    */
-  slice: function(begin, opt_end) {
+  slice(begin, opt_end) {
     return this.array_.slice(begin, opt_end);
-  },
+  }
 
   /**
    * @param {number} index Index of the element to be retrieved.
    * @return {Entry} The value of the |index|-th element.
    */
-  item: function(index) {
+  item(index) {
     return this.array_[index];
-  },
+  }
 
   /**
    * @param {string} value URL of the entry to be found.
    * @return {number} Index of the element with the specified |value|.
    * @private
    */
-  getIndexByURL_: function(value) {
-    for (var i = 0; i < this.length; i++) {
+  getIndexByURL_(value) {
+    for (let i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
-      if (this.array_[i].toURL() === value)
+      if (this.array_[i].toURL() === value) {
         return i;
+      }
     }
     return -1;
-  },
+  }
 
   /**
    * @param {Entry} value Value of the element to be retrieved.
    * @return {number} Index of the element with the specified |value|.
    */
-  getIndex: function(value) {
-    for (var i = 0; i < this.length; i++) {
+  getIndex(value) {
+    for (let i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
-      if (util.isSameEntry(this.array_[i], value))
+      if (util.isSameEntry(this.array_[i], value)) {
         return i;
+      }
     }
     return -1;
-  },
+  }
 
   /**
    * Compares 2 entries and returns a number indicating one entry comes before
@@ -280,9 +281,9 @@ FolderShortcutsDataModel.prototype = {
    * @return {number} Returns -1, if |a| < |b|. Returns 0, if |a| === |b|.
    *     Otherwise, returns 1.
    */
-  compare: function(a, b) {
+  compare(a, b) {
     return util.comparePath(a, b);
-  },
+  }
 
   /**
    * Adds the given item to the array. If there were already same item in the
@@ -292,12 +293,12 @@ FolderShortcutsDataModel.prototype = {
    * @param {Entry} value Value to be added into the array.
    * @return {number} Index in the list which the element added to.
    */
-  add: function(value) {
-    var result = this.addInternal_(value);
+  add(value) {
+    const result = this.addInternal_(value);
     metrics.recordUserAction('FolderShortcut.Add');
     this.save_();
     return result;
-  },
+  }
 
   /**
    * Adds the given item to the array. If there were already same item in the
@@ -308,15 +309,16 @@ FolderShortcutsDataModel.prototype = {
    * @return {number} Index in the list which the element added to.
    * @private
    */
-  addInternal_: function(value) {
+  addInternal_(value) {
     this.rememberLastDriveURL_();  // Required for saving.
 
-    var oldArray = this.array_.slice(0);  // Shallow copy.
-    var addedIndex = -1;
-    for (var i = 0; i < this.length; i++) {
+    const oldArray = this.array_.slice(0);  // Shallow copy.
+    let addedIndex = -1;
+    for (let i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
-      if (util.isSameEntry(this.array_[i], value))
+      if (util.isSameEntry(this.array_[i], value)) {
         return i;
+      }
 
       // Since the array is sorted, new item will be added just before the first
       // larger item.
@@ -332,24 +334,23 @@ FolderShortcutsDataModel.prototype = {
       addedIndex = this.length;
     }
 
-    this.firePermutedEvent_(
-        this.calculatePermutation_(oldArray, this.array_));
+    this.firePermutedEvent_(this.calculatePermutation_(oldArray, this.array_));
     return addedIndex;
-  },
+  }
 
   /**
    * Removes the given item from the array.
    * @param {Entry} value Value to be removed from the array.
    * @return {number} Index in the list which the element removed from.
    */
-  remove: function(value) {
-    var result = this.removeInternal_(value);
+  remove(value) {
+    const result = this.removeInternal_(value);
     if (result !== -1) {
       this.save_();
       metrics.recordUserAction('FolderShortcut.Remove');
     }
     return result;
-  },
+  }
 
   /**
    * Removes the given item from the array.
@@ -358,10 +359,10 @@ FolderShortcutsDataModel.prototype = {
    * @return {number} Index in the list which the element removed from.
    * @private
    */
-  removeInternal_: function(value) {
-    var removedIndex = -1;
-    var oldArray = this.array_.slice(0);  // Shallow copy.
-    for (var i = 0; i < this.length; i++) {
+  removeInternal_(value) {
+    let removedIndex = -1;
+    const oldArray = this.array_.slice(0);  // Shallow copy.
+    for (let i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
       if (util.isSameEntry(this.array_[i], value)) {
         this.array_.splice(i, 1);
@@ -378,38 +379,41 @@ FolderShortcutsDataModel.prototype = {
 
     // No item is removed.
     return -1;
-  },
+  }
 
   /**
    * @param {Entry} entry Entry to be checked.
    * @return {boolean} True if the given |entry| exists in the array. False
    *     otherwise.
    */
-  exists: function(entry) {
-    var index = this.getIndex(entry);
+  exists(entry) {
+    const index = this.getIndex(entry);
     return (index >= 0);
-  },
+  }
 
   /**
    * Saves the current array to chrome.storage.
    * @private
    */
-  save_: function() {
+  save_() {
     this.rememberLastDriveURL_();
-    if (!this.lastDriveRootURL_)
+    if (!this.lastDriveRootURL_) {
       return;
+    }
 
     // TODO(mtomasz): Migrate to URL.
-    var paths = this.array_.
-                map(function(entry) { return entry.toURL(); }).
-                map(this.convertUrlToStoredPath_.bind(this)).
-                concat(Object.keys(this.pendingPaths_)).
-                concat(Object.keys(this.unresolvablePaths_));
+    const paths = this.array_
+                      .map(entry => {
+                        return entry.toURL();
+                      })
+                      .map(this.convertUrlToStoredPath_.bind(this))
+                      .concat(Object.keys(this.pendingPaths_))
+                      .concat(Object.keys(this.unresolvablePaths_));
 
-    var prefs = {};
+    const prefs = {};
     prefs[FolderShortcutsDataModel.NAME] = paths;
-    chrome.storage.sync.set(prefs, function() {});
-  },
+    chrome.storage.sync.set(prefs, () => {});
+  }
 
   /**
    * Creates a permutation array for 'permuted' event, which is compatible with
@@ -420,12 +424,12 @@ FolderShortcutsDataModel.prototype = {
    * @return {Array<number>} Created permutation array.
    * @private
    */
-  calculatePermutation_: function(oldArray, newArray) {
-    var oldIndex = 0;  // Index of oldArray.
-    var newIndex = 0;  // Index of newArray.
+  calculatePermutation_(oldArray, newArray) {
+    let oldIndex = 0;  // Index of oldArray.
+    let newIndex = 0;  // Index of newArray.
 
     // Note that both new and old arrays are sorted.
-    var permutation = [];
+    const permutation = [];
     for (; oldIndex < oldArray.length; oldIndex++) {
       if (newIndex >= newArray.length) {
         // oldArray[oldIndex] is deleted, which is not in the new array.
@@ -454,14 +458,14 @@ FolderShortcutsDataModel.prototype = {
       }
     }
     return permutation;
-  },
+  }
 
   /**
    * Fires a 'permuted' event, which is compatible with cr.ui.ArrayDataModel.
    * @param {Array<number>} permutation Permutation array.
    */
-  firePermutedEvent_: function(permutation) {
-    var permutedEvent = new Event('permuted');
+  firePermutedEvent_(permutation) {
+    const permutedEvent = new Event('permuted');
     permutedEvent.newLength = this.length;
     permutedEvent.permutation = permutation;
     this.dispatchEvent(permutedEvent);
@@ -472,24 +476,24 @@ FolderShortcutsDataModel.prototype = {
     // 2) 'splice' and 'sorted' events are not implemented. These events are
     //    not used in NavigationListModel. We have to implement them when
     //    necessary.
-  },
+  }
 
   /**
    * Called externally when one of the items is not found on the filesystem.
    * @param {Entry} entry The entry which is not found.
    */
-  onItemNotFoundError: function(entry) {
+  onItemNotFoundError(entry) {
     // If Drive is online, then delete the shortcut permanently. Otherwise,
     // delete from model and add to |unresolvablePaths_|.
     if (this.volumeManager_.getDriveConnectionState().type !==
         VolumeManagerCommon.DriveConnectionType.ONLINE) {
-      var path = this.convertUrlToStoredPath_(entry.toURL());
+      const path = this.convertUrlToStoredPath_(entry.toURL());
       // TODO(mtomasz): Add support for multi-profile.
       this.unresolvablePaths_[path] = true;
     }
     this.removeInternal_(entry);
     this.save_();
-  },
+  }
 
   /**
    * Converts the given "stored path" to the URL.
@@ -502,14 +506,14 @@ FolderShortcutsDataModel.prototype = {
    * @return {?string} URL of the given path.
    * @private
    */
-  convertStoredPathToUrl_: function(path) {
+  convertStoredPathToUrl_(path) {
     if (path.indexOf(STORED_DRIVE_MOUNT_PATH + '/') !== 0) {
       console.warn(path + ' is neither a drive mount path nor a stored path.');
       return null;
     }
-    return this.lastDriveRootURL_ + encodeURIComponent(
-        path.substr(STORED_DRIVE_MOUNT_PATH.length));
-  },
+    return this.lastDriveRootURL_ +
+        encodeURIComponent(path.substr(STORED_DRIVE_MOUNT_PATH.length));
+  }
 
   /**
    * Converts the URL to the stored-formatted path.
@@ -520,14 +524,21 @@ FolderShortcutsDataModel.prototype = {
    * @return {?string} Path with the stored drive mount path.
    * @private
    */
-  convertUrlToStoredPath_: function(url) {
+  convertUrlToStoredPath_(url) {
     // Root URLs contain a trailing slash.
     if (url.indexOf(this.lastDriveRootURL_) !== 0) {
       console.warn(url + ' is not a drive URL.');
       return null;
     }
 
-    return STORED_DRIVE_MOUNT_PATH + '/' + decodeURIComponent(
-        url.substr(this.lastDriveRootURL_.length));
-  },
-};
+    return STORED_DRIVE_MOUNT_PATH + '/' +
+        decodeURIComponent(url.substr(this.lastDriveRootURL_.length));
+  }
+}
+
+/**
+ * Key name in chrome.storage. The array are stored with this name.
+ * @type {string}
+ * @const
+ */
+FolderShortcutsDataModel.NAME = 'folder-shortcuts-list';

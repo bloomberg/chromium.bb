@@ -22,7 +22,7 @@ namespace {
 
 class TestButton : public Button {
  public:
-  TestButton() : Button(NULL) {}
+  TestButton() : Button(nullptr) {}
   ~TestButton() override = default;
 
  private:

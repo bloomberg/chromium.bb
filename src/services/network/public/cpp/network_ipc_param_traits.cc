@@ -9,6 +9,9 @@
 #include "ipc/ipc_platform_file.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom-shared.h"
 
 namespace IPC {
 
@@ -62,18 +65,18 @@ void ParamTraits<network::DataElement>::Write(base::Pickle* m,
                                               const param_type& p) {
   WriteParam(m, static_cast<int>(p.type()));
   switch (p.type()) {
-    case network::DataElement::TYPE_BYTES: {
+    case network::mojom::DataElementType::kBytes: {
       m->WriteData(p.bytes(), static_cast<int>(p.length()));
       break;
     }
-    case network::DataElement::TYPE_FILE: {
+    case network::mojom::DataElementType::kFile: {
       WriteParam(m, p.path());
       WriteParam(m, p.offset());
       WriteParam(m, p.length());
       WriteParam(m, p.expected_modification_time());
       break;
     }
-    case network::DataElement::TYPE_RAW_FILE: {
+    case network::mojom::DataElementType::kRawFile: {
       WriteParam(
           m, IPC::GetPlatformFileForTransit(p.file().GetPlatformFile(),
                                             false /* close_source_handle */));
@@ -83,26 +86,25 @@ void ParamTraits<network::DataElement>::Write(base::Pickle* m,
       WriteParam(m, p.expected_modification_time());
       break;
     }
-    case network::DataElement::TYPE_BLOB: {
+    case network::mojom::DataElementType::kBlob: {
       WriteParam(m, p.blob_uuid());
       WriteParam(m, p.offset());
       WriteParam(m, p.length());
       break;
     }
-    case network::DataElement::TYPE_DATA_PIPE: {
+    case network::mojom::DataElementType::kDataPipe: {
       WriteParam(
           m, p.CloneDataPipeGetter().PassInterface().PassHandle().release());
       break;
     }
-    case network::DataElement::TYPE_CHUNKED_DATA_PIPE: {
+    case network::mojom::DataElementType::kChunkedDataPipe: {
       WriteParam(m, const_cast<network::DataElement&>(p)
                         .ReleaseChunkedDataPipeGetter()
-                        .PassInterface()
                         .PassHandle()
                         .release());
       break;
     }
-    case network::DataElement::TYPE_UNKNOWN: {
+    case network::mojom::DataElementType::kUnknown: {
       NOTREACHED();
       break;
     }
@@ -115,8 +117,8 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
   int type;
   if (!ReadParam(m, iter, &type))
     return false;
-  switch (type) {
-    case network::DataElement::TYPE_BYTES: {
+  switch (static_cast<network::mojom::DataElementType>(type)) {
+    case network::mojom::DataElementType::kBytes: {
       const char* data;
       int len;
       if (!iter->ReadData(&data, &len))
@@ -124,7 +126,7 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
       r->SetToBytes(data, len);
       return true;
     }
-    case network::DataElement::TYPE_FILE: {
+    case network::mojom::DataElementType::kFile: {
       base::FilePath file_path;
       uint64_t offset, length;
       base::Time expected_modification_time;
@@ -140,7 +142,7 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
                             expected_modification_time);
       return true;
     }
-    case network::DataElement::TYPE_RAW_FILE: {
+    case network::mojom::DataElementType::kRawFile: {
       IPC::PlatformFileForTransit platform_file_for_transit;
       if (!ReadParam(m, iter, &platform_file_for_transit))
         return false;
@@ -161,7 +163,7 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
                         expected_modification_time);
       return true;
     }
-    case network::DataElement::TYPE_BLOB: {
+    case network::mojom::DataElementType::kBlob: {
       std::string blob_uuid;
       uint64_t offset, length;
       if (!ReadParam(m, iter, &blob_uuid))
@@ -173,7 +175,7 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
       r->SetToBlobRange(blob_uuid, offset, length);
       return true;
     }
-    case network::DataElement::TYPE_DATA_PIPE: {
+    case network::mojom::DataElementType::kDataPipe: {
       network::mojom::DataPipeGetterPtr data_pipe_getter;
       mojo::MessagePipeHandle message_pipe;
       if (!ReadParam(m, iter, &message_pipe))
@@ -183,7 +185,7 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
       r->SetToDataPipe(std::move(data_pipe_getter));
       return true;
     }
-    case network::DataElement::TYPE_CHUNKED_DATA_PIPE: {
+    case network::mojom::DataElementType::kChunkedDataPipe: {
       network::mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter;
       mojo::MessagePipeHandle message_pipe;
       if (!ReadParam(m, iter, &message_pipe))
@@ -194,7 +196,7 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
       r->SetToChunkedDataPipe(std::move(chunked_data_pipe_getter));
       return true;
     }
-    case network::DataElement::TYPE_UNKNOWN: {
+    case network::mojom::DataElementType::kUnknown: {
       NOTREACHED();
       return false;
     }
@@ -233,7 +235,7 @@ bool ParamTraits<scoped_refptr<network::ResourceRequestBody>>::Read(
   // A chunked element is only allowed if it's the only one element.
   if (elements.size() > 1) {
     for (const auto& element : elements) {
-      if (element.type() == network::DataElement::TYPE_CHUNKED_DATA_PIPE)
+      if (element.type() == network::mojom::DataElementType::kChunkedDataPipe)
         return false;
     }
   }

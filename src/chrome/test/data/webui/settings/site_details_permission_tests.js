@@ -38,7 +38,7 @@ suite('SiteDetailsPermission', function() {
     // Set the camera icon on <site-details-permission> manually to avoid
     // failures on undefined icons during teardown in PolymerTest.testIronIcons.
     // In practice, this is done from the parent.
-    testElement.icon = 'settings:videocam';
+    testElement.icon = 'cr:videocam';
     document.body.appendChild(testElement);
   });
 
@@ -403,5 +403,23 @@ suite('SiteDetailsPermission', function() {
               'Mute', testElement.$.permission.options[2].text,
               'Block setting string should match prefs');
         });
+  });
+
+  test('ASK can be chosen as a preference by users', function() {
+    const origin = 'https://www.example.com';
+    testElement.category = settings.ContentSettingsTypes.USB_DEVICES;
+    testElement.label = 'USB';
+    testElement.site = {
+      origin: origin,
+      embeddingOrigin: origin,
+      setting: settings.ContentSetting.ASK,
+      source: settings.SiteSettingSource.PREFERENCE,
+    };
+
+    // In addition to the assertions below, the main goal of this test is to
+    // ensure we do not hit any assertions when choosing ASK as a setting.
+    assertEquals(testElement.$.permission.value, settings.ContentSetting.ASK);
+    assertFalse(testElement.$.permission.disabled);
+    assertFalse(testElement.$.permission.options.ask.hidden);
   });
 });

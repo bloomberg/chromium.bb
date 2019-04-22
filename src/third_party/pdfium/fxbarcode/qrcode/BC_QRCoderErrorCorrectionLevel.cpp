@@ -29,41 +29,25 @@ CBC_QRCoderErrorCorrectionLevel* CBC_QRCoderErrorCorrectionLevel::H = nullptr;
 
 CBC_QRCoderErrorCorrectionLevel::CBC_QRCoderErrorCorrectionLevel(
     int32_t ordinal,
-    int32_t bits,
-    const char* name)
-    : m_ordinal(ordinal), m_bits(bits), m_name(name) {}
+    int32_t bits)
+    : m_ordinal(ordinal), m_bits(bits) {}
 
-CBC_QRCoderErrorCorrectionLevel::~CBC_QRCoderErrorCorrectionLevel() {}
+CBC_QRCoderErrorCorrectionLevel::~CBC_QRCoderErrorCorrectionLevel() = default;
 
 void CBC_QRCoderErrorCorrectionLevel::Initialize() {
-  L = new CBC_QRCoderErrorCorrectionLevel(0, 0x01, "L");
-  M = new CBC_QRCoderErrorCorrectionLevel(1, 0x00, "M");
-  Q = new CBC_QRCoderErrorCorrectionLevel(2, 0x03, "Q");
-  H = new CBC_QRCoderErrorCorrectionLevel(3, 0x02, "H");
+  L = new CBC_QRCoderErrorCorrectionLevel(0, 0x01);
+  M = new CBC_QRCoderErrorCorrectionLevel(1, 0x00);
+  Q = new CBC_QRCoderErrorCorrectionLevel(2, 0x03);
+  H = new CBC_QRCoderErrorCorrectionLevel(3, 0x02);
 }
 
 void CBC_QRCoderErrorCorrectionLevel::Finalize() {
   delete L;
+  L = nullptr;
   delete M;
+  M = nullptr;
   delete Q;
+  Q = nullptr;
   delete H;
-}
-
-void CBC_QRCoderErrorCorrectionLevel::Destroy() {
-  if (L) {
-    delete CBC_QRCoderErrorCorrectionLevel::L;
-    L = nullptr;
-  }
-  if (M) {
-    delete CBC_QRCoderErrorCorrectionLevel::M;
-    M = nullptr;
-  }
-  if (H) {
-    delete CBC_QRCoderErrorCorrectionLevel::H;
-    H = nullptr;
-  }
-  if (Q) {
-    delete CBC_QRCoderErrorCorrectionLevel::Q;
-    Q = nullptr;
-  }
+  H = nullptr;
 }

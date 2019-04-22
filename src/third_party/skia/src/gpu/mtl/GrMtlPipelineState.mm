@@ -37,8 +37,8 @@ GrMtlPipelineState::GrMtlPipelineState(
         MTLPixelFormat pixelFormat,
         const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
         const UniformInfoArray& uniforms,
-        GrMtlBuffer* geometryUniformBuffer,
-        GrMtlBuffer* fragmentUniformBuffer,
+        sk_sp<GrMtlBuffer> geometryUniformBuffer,
+        sk_sp<GrMtlBuffer> fragmentUniformBuffer,
         uint32_t numSamplers,
         std::unique_ptr<GrGLSLPrimitiveProcessor> geometryProcessor,
         std::unique_ptr<GrGLSLXferProcessor> xferProcessor,
@@ -48,24 +48,26 @@ GrMtlPipelineState::GrMtlPipelineState(
         , fPipelineState(pipelineState)
         , fPixelFormat(pixelFormat)
         , fBuiltinUniformHandles(builtinUniformHandles)
-        , fGeometryUniformBuffer(geometryUniformBuffer)
-        , fFragmentUniformBuffer(fragmentUniformBuffer)
+        , fGeometryUniformBuffer(std::move(geometryUniformBuffer))
+        , fFragmentUniformBuffer(std::move(fragmentUniformBuffer))
         , fNumSamplers(numSamplers)
         , fGeometryProcessor(std::move(geometryProcessor))
         , fXferProcessor(std::move(xferProcessor))
         , fFragmentProcessors(std::move(fragmentProcessors))
         , fFragmentProcessorCnt(fragmentProcessorCnt)
-        , fDataManager(uniforms, geometryUniformBuffer->sizeInBytes(),
-                       fragmentUniformBuffer->sizeInBytes()) {
+        , fDataManager(uniforms, fGeometryUniformBuffer->size(),
+                       fFragmentUniformBuffer->size()) {
     (void) fPixelFormat; // Suppress unused-var warning.
 }
 
-void GrMtlPipelineState::setData(const GrPrimitiveProcessor& primProc,
+void GrMtlPipelineState::setData(const GrRenderTarget* renderTarget,
+                                 GrSurfaceOrigin origin,
+                                 const GrPrimitiveProcessor& primProc,
                                  const GrPipeline& pipeline,
                                  const GrTextureProxy* const primProcTextures[]) {
     SkASSERT(primProcTextures || !primProc.numTextureSamplers());
 
-    this->setRenderTargetState(pipeline.proxy());
+    this->setRenderTargetState(renderTarget, origin);
     fGeometryProcessor->setData(fDataManager, primProc,
                                 GrFragmentProcessor::CoordTransformIter(pipeline));
     fSamplerBindings.reset();
@@ -110,11 +112,17 @@ void GrMtlPipelineState::setData(const GrPrimitiveProcessor& primProc,
     }
 
     if (pipeline.isStencilEnabled()) {
-        GrRenderTarget* rt = pipeline.renderTarget();
-        SkASSERT(rt->renderTargetPriv().getStencilAttachment());
+        SkASSERT(renderTarget->renderTargetPriv().getStencilAttachment());
         fStencil.reset(*pipeline.getUserStencil(), pipeline.hasStencilClip(),
-                       rt->renderTargetPriv().numStencilBits());
+                       renderTarget->renderTargetPriv().numStencilBits());
     }
+}
+
+void GrMtlPipelineState::setDrawState(id<MTLRenderCommandEncoder> renderCmdEncoder,
+                                      GrPixelConfig config, const GrXferProcessor& xferProcessor) {
+    this->bind(renderCmdEncoder);
+    this->setBlendConstants(renderCmdEncoder, config, xferProcessor);
+    this->setDepthStencilState(renderCmdEncoder);
 }
 
 void GrMtlPipelineState::bind(id<MTLRenderCommandEncoder> renderCmdEncoder) {
@@ -137,9 +145,7 @@ void GrMtlPipelineState::bind(id<MTLRenderCommandEncoder> renderCmdEncoder) {
     }
 }
 
-void GrMtlPipelineState::setRenderTargetState(const GrRenderTargetProxy* proxy) {
-    GrRenderTarget* rt = proxy->peekRenderTarget();
-
+void GrMtlPipelineState::setRenderTargetState(const GrRenderTarget* rt, GrSurfaceOrigin origin) {
     // Load the RT height uniform if it is needed to y-flip gl_FragCoord.
     if (fBuiltinUniformHandles.fRTHeightUni.isValid() &&
         fRenderTargetState.fRenderTargetSize.fHeight != rt->height()) {
@@ -150,10 +156,10 @@ void GrMtlPipelineState::setRenderTargetState(const GrRenderTargetProxy* proxy) 
     SkISize size;
     size.set(rt->width(), rt->height());
     SkASSERT(fBuiltinUniformHandles.fRTAdjustmentUni.isValid());
-    if (fRenderTargetState.fRenderTargetOrigin != proxy->origin() ||
+    if (fRenderTargetState.fRenderTargetOrigin != origin ||
         fRenderTargetState.fRenderTargetSize != size) {
         fRenderTargetState.fRenderTargetSize = size;
-        fRenderTargetState.fRenderTargetOrigin = proxy->origin();
+        fRenderTargetState.fRenderTargetOrigin = origin;
 
         float rtAdjustmentVec[4];
         fRenderTargetState.getRTAdjustmentVec(rtAdjustmentVec);
@@ -273,4 +279,29 @@ void GrMtlPipelineState::setDepthStencilState(id<MTLRenderCommandEncoder> render
         id<MTLDepthStencilState> state = [fGpu->device() newDepthStencilStateWithDescriptor:desc];
         [renderCmdEncoder setDepthStencilState:state];
     }
+}
+
+void GrMtlPipelineState::SetDynamicScissorRectState(id<MTLRenderCommandEncoder> renderCmdEncoder,
+                                                    const GrRenderTarget* renderTarget,
+                                                    GrSurfaceOrigin rtOrigin,
+                                                    SkIRect scissorRect) {
+    if (!scissorRect.intersect(SkIRect::MakeWH(renderTarget->width(), renderTarget->height()))) {
+        scissorRect.setEmpty();
+    }
+
+    MTLScissorRect scissor;
+    scissor.x = scissorRect.fLeft;
+    scissor.width = scissorRect.width();
+    if (kTopLeft_GrSurfaceOrigin == rtOrigin) {
+        scissor.y = scissorRect.fTop;
+    } else {
+        SkASSERT(kBottomLeft_GrSurfaceOrigin == rtOrigin);
+        scissor.y = renderTarget->height() - scissorRect.fBottom;
+    }
+    scissor.height = scissorRect.height();
+
+    SkASSERT(scissor.x >= 0);
+    SkASSERT(scissor.y >= 0);
+
+    [renderCmdEncoder setScissorRect: scissor];
 }

@@ -71,15 +71,13 @@ class ContentAutofillDriver : public AutofillDriver,
   void PopupHidden() override;
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;
-  void DidInteractWithCreditCardForm() override;
 
   // mojom::AutofillDriver:
   void FormsSeen(const std::vector<FormData>& forms,
                  base::TimeTicks timestamp) override;
   void FormSubmitted(const FormData& form,
                      bool known_success,
-                     SubmissionSource source,
-                     base::TimeTicks timestamp) override;
+                     SubmissionSource source) override;
   void TextFieldDidChange(const FormData& form,
                           const FormFieldData& field,
                           const gfx::RectF& bounding_box,
@@ -117,6 +115,7 @@ class ContentAutofillDriver : public AutofillDriver,
   }
 
   AutofillManager* autofill_manager() { return autofill_manager_; }
+  AutofillHandler* autofill_handler() { return autofill_handler_.get(); }
   content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
 
   const mojom::AutofillAgentAssociatedPtr& GetAutofillAgent();

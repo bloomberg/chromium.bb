@@ -36,6 +36,8 @@ class ContentSettingImageModelStates
   // This bit is reset to false when the image is hidden.
   bool animations_[static_cast<int>(ImageType::NUM_IMAGE_TYPES)] = {};
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModelStates);
 };
 

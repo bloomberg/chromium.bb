@@ -74,9 +74,13 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   // focus, but the FocusRing sits on the parent instead of the inner view.
   void SetHasFocusPredicate(const ViewPredicate& predicate);
 
+  void SetColor(base::Optional<SkColor> color);
+
   // View:
   const char* GetClassName() const override;
   void Layout() override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
   void OnPaint(gfx::Canvas* canvas) override;
 
   // ViewObserver:
@@ -84,7 +88,7 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   void OnViewBlurred(View* view) override;
 
  private:
-  explicit FocusRing(View* parent);
+  FocusRing();
 
   // Translates the provided SkRect or SkRRect, which is in the parent's
   // coordinate system, into this view's coordinate system, then insets it
@@ -94,9 +98,6 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   SkRRect RingRectFromPathRect(const SkRect& rect) const;
   SkRRect RingRectFromPathRect(const SkRRect& rect) const;
 
-  // The View this focus ring is installed on.
-  View* view_ = nullptr;
-
   // The path to draw this focus ring around. IsPathUseable(path_) is always
   // true.
   SkPath path_;
@@ -105,12 +106,17 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   // the focus ring shows an invalid appearance (usually a different color).
   bool invalid_ = false;
 
+  // Overriding color for the focus ring.
+  base::Optional<SkColor> color_;
+
   // The predicate used to determine whether the parent has focus.
   ViewPredicate has_focus_predicate_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusRing);
 };
 
-}  // views
+VIEWS_EXPORT SkPath GetHighlightPath(const View* view);
+
+}  // namespace views
 
 #endif  // UI_VIEWS_CONTROLS_FOCUS_RING_H_

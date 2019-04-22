@@ -4,7 +4,7 @@
  *
  *   Generic list support for FreeType (specification).
  *
- * Copyright 1996-2018 by
+ * Copyright (C) 1996-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -90,7 +90,7 @@ FT_BEGIN_HEADER
    *     The address of the listed object.
    *
    * @return:
-   *   List node.  NULL if it wasn't found.
+   *   List node.  `NULL` if it wasn't found.
    */
   FT_EXPORT( FT_ListNode )
   FT_List_Find( FT_List  list,
@@ -267,7 +267,7 @@ FT_BEGIN_HEADER
    *
    *   destroy ::
    *     A list destructor that will be applied to each element of the list.
-   *     Set this to NULL if not needed.
+   *     Set this to `NULL` if not needed.
    *
    *   memory ::
    *     The current memory object that handles deallocation.

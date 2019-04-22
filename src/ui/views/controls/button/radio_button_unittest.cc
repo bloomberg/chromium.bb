@@ -18,14 +18,15 @@ namespace views {
 
 class RadioButtonTest : public ViewsTestBase {
  public:
-  RadioButtonTest() : button_container_(nullptr) {}
+  RadioButtonTest() = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();
 
     // Create a Widget so the radio buttons can find their group siblings.
     widget_ = std::make_unique<Widget>();
-    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+    Widget::InitParams params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget_->Init(params);
     widget_->Show();
@@ -44,7 +45,7 @@ class RadioButtonTest : public ViewsTestBase {
   View& button_container() { return *button_container_; }
 
  private:
-  View* button_container_;
+  View* button_container_ = nullptr;
   std::unique_ptr<Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(RadioButtonTest);

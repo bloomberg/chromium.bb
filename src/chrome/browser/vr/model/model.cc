@@ -95,7 +95,12 @@ bool Model::default_browsing_enabled() const {
   return get_last_opaque_mode() == kModeBrowsing;
 }
 
-bool Model::voice_search_enabled() const {
+bool Model::voice_search_available() const {
+  return speech.has_or_can_request_record_audio_permission && !incognito &&
+         !active_capturing.audio_capture_enabled;
+}
+
+bool Model::voice_search_active() const {
   return get_last_opaque_mode() == kModeVoiceSearch;
 }
 
@@ -123,6 +128,14 @@ bool Model::reposition_window_permitted() const {
   return !editing_input && !editing_web_input &&
          active_modal_prompt_type == kModalPromptTypeNone &&
          !hosted_platform_ui.hosted_ui_enabled;
+}
+
+const ControllerModel& Model::primary_controller() const {
+  return controllers[0];
+}
+
+ControllerModel& Model::mutable_primary_controller() {
+  return controllers[0];
 }
 
 }  // namespace vr

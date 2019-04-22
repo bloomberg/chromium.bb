@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -208,5 +209,7 @@ void AdSamplerTrigger::SetTaskRunnerForTest(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   task_runner_ = task_runner;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AdSamplerTrigger)
 
 }  // namespace safe_browsing

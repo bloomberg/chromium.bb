@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
@@ -216,8 +217,8 @@ class NaivePlayer : public InProcessReceiver,
   void Start() final {
     AudioManager::Get()->GetTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&NaivePlayer::StartAudioOutputOnAudioManagerThread,
-                   base::Unretained(this)));
+        base::BindOnce(&NaivePlayer::StartAudioOutputOnAudioManagerThread,
+                       base::Unretained(this)));
     // Note: No need to wait for audio polling to start since the push-and-pull
     // mechanism is synchronized via the |audio_playout_queue_|.
     InProcessReceiver::Start();
@@ -230,9 +231,8 @@ class NaivePlayer : public InProcessReceiver,
     DCHECK(!AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
     AudioManager::Get()->GetTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&NaivePlayer::StopAudioOutputOnAudioManagerThread,
-                   base::Unretained(this),
-                   &done));
+        base::BindOnce(&NaivePlayer::StopAudioOutputOnAudioManagerThread,
+                       base::Unretained(this), &done));
     done.Wait();
 
     // Now, stop receiving new frames.

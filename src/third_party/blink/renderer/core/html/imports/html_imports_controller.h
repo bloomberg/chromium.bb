@@ -70,7 +70,7 @@ class HTMLImportsController final
   HTMLImportLoader* LoaderAt(wtf_size_t i) const { return loaders_[i]; }
   HTMLImportLoader* LoaderFor(const Document&) const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void Dispose();
 
@@ -84,7 +84,7 @@ class HTMLImportsController final
                                HTMLImport* parent,
                                HTMLImportChildClient*);
 
-  TraceWrapperMember<HTMLImportTreeRoot> root_;
+  Member<HTMLImportTreeRoot> root_;
   using LoaderList = HeapVector<Member<HTMLImportLoader>>;
   LoaderList loaders_;
 };

@@ -30,10 +30,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_PANNER_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -43,7 +44,6 @@ class HRTFDatabaseLoader;
 
 class PLATFORM_EXPORT Panner {
   USING_FAST_MALLOC(Panner);
-  WTF_MAKE_NONCOPYABLE(Panner);
 
  public:
   // This values are used in histograms and should not be renumbered or deleted.
@@ -56,7 +56,6 @@ class PLATFORM_EXPORT Panner {
                                         HRTFDatabaseLoader*);
 
   virtual ~Panner() = default;
-  ;
 
   virtual void Pan(double azimuth,
                    double elevation,
@@ -81,6 +80,9 @@ class PLATFORM_EXPORT Panner {
   Panner(PanningModel model) : panning_model_(model) {}
 
   PanningModel panning_model_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Panner);
 };
 
 }  // namespace blink

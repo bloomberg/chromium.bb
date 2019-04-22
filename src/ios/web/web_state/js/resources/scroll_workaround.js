@@ -27,11 +27,13 @@ var originalWindowScrollTo_ = window.scrollTo;
 
 /**
  * Wraps the original window.scrollTo() to suppress it as long as
- * webViewScrollViewIsDragging is true.
+ * webViewScrollViewIsDragging is true. Use apply() with called
+ * arguments since there are two variants of window.scrollTo:
+ * scrollTo(x, y) and scrollTo(options).
  */
-window.scrollTo = function(x, y) {
+window.scrollTo = function() {
   if (webViewScrollViewIsDragging_) return;
-  originalWindowScrollTo_(x, y);
+  originalWindowScrollTo_.apply(null, arguments);
 };
 
 }());  // End of anonymous object

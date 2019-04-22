@@ -4,6 +4,7 @@
 
 #include "components/update_client/update_engine.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -13,6 +14,7 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/component.h"
@@ -42,10 +44,11 @@ UpdateContext::UpdateContext(
       notify_observers_callback(notify_observers_callback),
       callback(std::move(callback)),
       crx_downloader_factory(crx_downloader_factory),
-      session_id(base::GenerateGUID()) {
-  for (const auto& id : ids)
+      session_id(base::StrCat({"{", base::GenerateGUID(), "}"})) {
+  for (const auto& id : ids) {
     components.insert(
         std::make_pair(id, std::make_unique<Component>(*this, id)));
+  }
 }
 
 UpdateContext::~UpdateContext() {}
@@ -197,12 +200,12 @@ void UpdateEngine::UpdateCheckResultsAvailable(
 
   update_context->retry_after_sec = retry_after_sec;
 
-  const int throttle_sec(update_context->retry_after_sec);
-  DCHECK_LE(throttle_sec, 24 * 60 * 60);
-
   // Only positive values for throttle_sec are effective. 0 means that no
-  // throttling occurs and has the effect of resetting the member.
+  // throttling occurs and it resets |throttle_updates_until_|.
   // Negative values are not trusted and are ignored.
+  constexpr int kMaxRetryAfterSec = 24 * 60 * 60;  // 24 hours.
+  const int throttle_sec =
+      std::min(update_context->retry_after_sec, kMaxRetryAfterSec);
   if (throttle_sec >= 0) {
     throttle_updates_until_ =
         throttle_sec ? base::TimeTicks::Now() +

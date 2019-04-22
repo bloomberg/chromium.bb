@@ -10,9 +10,6 @@ namespace dom_distiller {
 // Returns true when flag enable-dom-distiller is set or enabled from Finch.
 bool IsEnableDomDistillerSet();
 
-// Returns true when flag enable-sync-articles is set or enabled from Finch.
-bool IsEnableSyncArticlesSet();
-
 }  // namespace dom_distiller
 
 #endif  // COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_FEATURES_H_

@@ -37,6 +37,8 @@ JSON Files:
     [Default file: toolchain_revisions/$PACKAGE.json]
 """
 
+from __future__ import print_function
+
 import argparse
 import collections
 import logging
@@ -151,8 +153,8 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
 
     old_hash = archive_info.GetArchiveHash(local_archive_file)
     if archive_desc.hash == old_hash:
-        logging.debug('Skipping matching archive: %s', archive_desc.name)
-        continue
+      logging.debug('Skipping matching archive: %s', archive_desc.name)
+      continue
 
     archive_tuple = (local_archive_file, archive_obj.GetArchiveData())
     update_archives.append(archive_tuple)
@@ -377,7 +379,7 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
     url = archive_desc.url
     if archive_desc.hash and url is None:
       if annotate:
-        print '@@@BUILD_STEP Archive:%s (upload)@@@' % archive_desc.name
+        print('@@@BUILD_STEP Archive:%s (upload)@@@' % archive_desc.name)
 
       archive_file = package_locations.GetLocalPackageArchiveFile(
           tar_dir,
@@ -399,7 +401,7 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
           archive_desc.hash)
       url = storage.PutFile(archive_file, remote_archive_key, clobber=True)
       if annotate:
-        print '@@@STEP_LINK@download@%s@@@' % url
+        print('@@@STEP_LINK@download@%s@@@' % url)
 
     updated_archive_obj = archive_obj.Copy(url=url)
     upload_package_desc.AppendArchive(updated_archive_obj)
@@ -655,24 +657,24 @@ def _DoListCmd(arguments):
 
   modes_dict = arguments.packages_desc.GetPackageModes()
   if not modes_dict:
-    print 'No Package Modes Found.'
+    print('No Package Modes Found.')
   else:
-    print 'Listing Modes:'
+    print('Listing Modes:')
     for mode, package_list in modes_dict.iteritems():
-      print ' [%s]' % mode
+      print(' [%s]' % mode)
       for package in package_list:
-        print '  ', package
+        print('  ', package)
 
   if arguments.mode:
-    print
-    print 'Current Mode Selected:', arguments.mode
+    print()
+    print('Current Mode Selected:', arguments.mode)
 
-  print
-  print 'Listing Package Targets and Packages:'
+  print()
+  print('Listing Package Targets and Packages:')
   for package_target, packages in package_targets.iteritems():
-    print ' [%s]:' % package_target
+    print(' [%s]:' % package_target)
     for package in sorted(packages):
-      print '  ', package
+      print('  ', package)
 
 
 def _ArchiveCmdArgParser(subparser):
@@ -984,7 +986,7 @@ def _DoGetRevisionCmd(arguments):
         logging.error('  %s', package)
       raise error.Error('Package revisions are not set to the same revision.')
 
-  print revision_number
+  print(revision_number)
 
 
 def _RevPackagesCmdArgParser(subparser):
@@ -1005,7 +1007,7 @@ def _DoRevPackagesCmd(arguments):
     packages_list = revision_set
 
   for package_name in packages_list:
-    print package_name
+    print(package_name)
 
 
 def _FillEmptyTarsParser(subparser):
@@ -1187,7 +1189,7 @@ def ParseArgs(args):
   # Add subparsers for all commands. These are flags for specific commands,
   # IE. [options] command [command-options]
   command_parser = parser.add_subparsers(title='command', dest='command')
-  for command, cmd_funcs in COMMANDS.iteritems():
+  for command, cmd_funcs in COMMANDS.items():
     sub_parser = command_parser.add_parser(command)
     cmd_funcs.parse_func(sub_parser)
 

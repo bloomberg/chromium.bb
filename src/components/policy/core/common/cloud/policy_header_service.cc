@@ -4,13 +4,15 @@
 
 #include "components/policy/core/common/cloud/policy_header_service.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/json/json_writer.h"
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
-#include "net/http/http_request_headers.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace {
 const char kUserDMTokenKey[] = "user_dmtoken";
@@ -35,16 +37,15 @@ PolicyHeaderService::~PolicyHeaderService() {
   user_policy_store_->RemoveObserver(this);
 }
 
-void PolicyHeaderService::AddPolicyHeaders(
-    const GURL& url,
-    std::unique_ptr<net::HttpRequestHeaders>* extra_headers) const {
-  DCHECK(extra_headers);
-  if (!policy_header_.empty() &&
-      url.spec().compare(0, server_url_.size(), server_url_) == 0) {
-    if (!extra_headers->get())
-      (*extra_headers) = std::make_unique<net::HttpRequestHeaders>();
-    (*extra_headers)->SetHeader(kChromePolicyHeader, policy_header_);
-  }
+void PolicyHeaderService::AddPolicyHeaders(const GURL& url,
+                                           AddHeaderFunction add_header) const {
+  if (policy_header_.empty())
+    return;
+
+  if (url.spec().compare(0, server_url_.size(), server_url_) != 0)
+    return;
+
+  std::move(add_header).Run(kChromePolicyHeader, policy_header_);
 }
 
 std::string PolicyHeaderService::CreateHeaderValue() {

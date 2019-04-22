@@ -113,9 +113,8 @@ class SelfDeleterHelper {
   void MaybeSelfDeleteSoon() {
     DCHECK(!construction_runner_->RunsTasksInCurrentSequence());
     construction_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&SelfDeleterHelper::SelfDelete,
-                   weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SelfDeleterHelper::SelfDelete,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:

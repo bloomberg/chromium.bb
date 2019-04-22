@@ -5,10 +5,10 @@
 /**
  * Handles DumpDatabase tab for syncfs-internals.
  */
-var DumpDatabase = (function() {
+const DumpDatabase = (function() {
   'use strict';
 
-  var DumpDatabase = {};
+  const DumpDatabase = {};
 
   /**
    * Get the database dump.
@@ -24,7 +24,7 @@ var DumpDatabase = (function() {
    * @return {HTMLElement} The newly created HTML element.
    */
   function createElementFromText(elementName, text) {
-    var element = document.createElement(elementName);
+    const element = document.createElement(elementName);
     element.appendChild(document.createTextNode(text));
     return element;
   }
@@ -43,19 +43,21 @@ var DumpDatabase = (function() {
    *     element.
    */
   function createDatabaseDumpTable(div, header, body, databaseDump) {
-    var metadata = databaseDump.shift();
+    const metadata = databaseDump.shift();
     div.appendChild(createElementFromText('h3', metadata['title']));
 
-    var tr = document.createElement('tr');
-    for (var i = 0; i < metadata.keys.length; ++i)
+    let tr = document.createElement('tr');
+    for (let i = 0; i < metadata.keys.length; ++i) {
       tr.appendChild(createElementFromText('td', metadata.keys[i]));
+    }
     header.appendChild(tr);
 
-    for (var i = 0; i < databaseDump.length; i++) {
-      var entry = databaseDump[i];
-      var tr = document.createElement('tr');
-      for (var k = 0; k < metadata.keys.length; ++k)
+    for (let i = 0; i < databaseDump.length; i++) {
+      const entry = databaseDump[i];
+      tr = document.createElement('tr');
+      for (let k = 0; k < metadata.keys.length; ++k) {
         tr.appendChild(createElementFromText('td', entry[metadata.keys[k]]));
+      }
       body.appendChild(tr);
     }
   }
@@ -65,13 +67,13 @@ var DumpDatabase = (function() {
    * @param {Array} databaseDump List of lists for the database dump.
    */
   DumpDatabase.onGetDatabaseDump = function(databaseDump) {
-    var placeholder = $('dump-database-placeholder');
+    const placeholder = $('dump-database-placeholder');
     placeholder.innerHTML = '';
-    for (var i = 0; i < databaseDump.length; ++i) {
-      var div = document.createElement('div');
-      var table = document.createElement('table');
-      var header = document.createElement('thead');
-      var body = document.createElement('tbody');
+    for (let i = 0; i < databaseDump.length; ++i) {
+      const div = document.createElement('div');
+      const table = document.createElement('table');
+      const header = document.createElement('thead');
+      const body = document.createElement('tbody');
       createDatabaseDumpTable(div, header, body, databaseDump[i]);
       table.appendChild(header);
       table.appendChild(body);

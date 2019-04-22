@@ -7,10 +7,12 @@
 #include <algorithm>
 
 #include "ash/app_list/pagination_model_observer.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ui/gfx/animation/slide_animation.h"
 
 namespace app_list {
+
+// Dampening value for PaginationModel's SlideAnimation.
+constexpr int kPageTransitionDurationDampening = 3;
 
 PaginationModel::PaginationModel()
     : total_pages_(-1),
@@ -116,6 +118,8 @@ void PaginationModel::SetTransitionDurations(int duration_ms,
 }
 
 void PaginationModel::StartScroll() {
+  NotifyScrollStarted();
+
   // Cancels current transition animation (if any).
   transition_animation_.reset();
 }
@@ -151,6 +155,8 @@ void PaginationModel::UpdateScroll(double delta) {
 }
 
 void PaginationModel::EndScroll(bool cancel) {
+  NotifyScrollEnded();
+
   if (!has_transition())
     return;
 
@@ -206,6 +212,16 @@ void PaginationModel::NotifyTransitionChanged() {
 void PaginationModel::NotifyTransitionEnded() {
   for (auto& observer : observers_)
     observer.TransitionEnded();
+}
+
+void PaginationModel::NotifyScrollStarted() {
+  for (auto& observer : observers_)
+    observer.ScrollStarted();
+}
+
+void PaginationModel::NotifyScrollEnded() {
+  for (auto& observer : observers_)
+    observer.ScrollEnded();
 }
 
 int PaginationModel::CalculateTargetPage(int delta) const {

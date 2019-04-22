@@ -1084,21 +1084,19 @@ TEST_P(CloudPolicyInvalidatorUserTypedTest, ExpiredInvalidations) {
 }
 
 #if defined(OS_CHROMEOS)
-INSTANTIATE_TEST_CASE_P(
-    CloudPolicyInvalidatorUserTypedTestInstance,
-    CloudPolicyInvalidatorUserTypedTest,
-    testing::Values(em::DeviceRegisterRequest::USER,
-                    em::DeviceRegisterRequest::DEVICE));
+INSTANTIATE_TEST_SUITE_P(CloudPolicyInvalidatorUserTypedTestInstance,
+                         CloudPolicyInvalidatorUserTypedTest,
+                         testing::Values(em::DeviceRegisterRequest::USER,
+                                         em::DeviceRegisterRequest::DEVICE));
 #elif defined(OS_ANDROID)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CloudPolicyInvalidatorUserTypedTestInstance,
     CloudPolicyInvalidatorUserTypedTest,
     testing::Values(em::DeviceRegisterRequest::ANDROID_BROWSER));
 #else
-INSTANTIATE_TEST_CASE_P(
-    CloudPolicyInvalidatorUserTypedTestInstance,
-    CloudPolicyInvalidatorUserTypedTest,
-    testing::Values(em::DeviceRegisterRequest::BROWSER));
+INSTANTIATE_TEST_SUITE_P(CloudPolicyInvalidatorUserTypedTestInstance,
+                         CloudPolicyInvalidatorUserTypedTest,
+                         testing::Values(em::DeviceRegisterRequest::BROWSER));
 #endif
 
 }  // namespace policy

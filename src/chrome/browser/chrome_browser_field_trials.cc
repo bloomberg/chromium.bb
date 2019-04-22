@@ -13,9 +13,11 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/persistent_histograms.h"
+#include "chrome/browser/search/local_ntp_first_run_field_trial_handler.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -23,6 +25,8 @@
 #include "components/version_info/version_info.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/library_loader/library_loader_hooks.h"
+#include "base/android/reached_code_profiler.h"
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
 #else
 #include "chrome/browser/chrome_browser_field_trials_desktop.h"
@@ -52,7 +56,10 @@ void CreateFallbackUkmSamplingTrialIfNeeded(base::FeatureList* feature_list) {
 
 }  // namespace
 
-ChromeBrowserFieldTrials::ChromeBrowserFieldTrials() {}
+ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(PrefService* local_state)
+    : local_state_(local_state) {
+  DCHECK(local_state_);
+}
 
 ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 }
@@ -83,6 +90,38 @@ void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
     chromeos::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
 #endif
   }
+#if !defined(OS_ANDROID)
+  // TODO(crbug.com/944624) Remove hide shortcuts field trial
+  ntp_first_run::ActivateHideShortcutsOnNtpFieldTrial(feature_list,
+                                                      local_state_);
+#endif  // !defined(OS_ANDROID)
+}
+
+void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
+#if defined(OS_ANDROID)
+  static constexpr char kEnabledGroup[] = "Enabled";
+  static constexpr char kDisabledGroup[] = "Disabled";
+
+  static constexpr char kOrderfileOptimizationTrial[] =
+      "AndroidOrderfileOptimization";
+  if (base::android::IsUsingOrderfileOptimization()) {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        kOrderfileOptimizationTrial, kEnabledGroup);
+  } else {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        kOrderfileOptimizationTrial, kDisabledGroup);
+  }
+
+  static constexpr char kReachedCodeProfilerTrial[] =
+      "ReachedCodeProfilerSynthetic";
+  if (base::android::IsReachedCodeProfilerEnabled()) {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        kReachedCodeProfilerTrial, kEnabledGroup);
+  } else {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        kReachedCodeProfilerTrial, kDisabledGroup);
+  }
+#endif  // defined(OS_ANDROID)
 }
 
 void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {

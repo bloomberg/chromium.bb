@@ -67,6 +67,12 @@ class VIZ_COMMON_EXPORT ContextCacheController {
   virtual void ClientBecameNotVisible(
       std::unique_ptr<ScopedVisibility> scoped_visibility);
 
+  // When a client becomes not visible because it is being deleted, hold on to
+  // the visibility token so that we don't aggressively free resources that are
+  // still going to be used. Instead, release the token when this is deleted.
+  virtual void ClientBecameNotVisibleDuringShutdown(
+      std::unique_ptr<ScopedVisibility> scoped_visibility);
+
   // Clients of the owning ContextProvider may call this function when they
   // become busy. The returned ScopedBusy pointer must be passed back
   // to ClientBecameNotBusy or it will DCHECK in its destructor.
@@ -84,6 +90,8 @@ class VIZ_COMMON_EXPORT ContextCacheController {
   gpu::ContextSupport* context_support_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   GrContext* gr_context_ = nullptr;
+
+  std::unique_ptr<ScopedVisibility> held_visibility_;
 
   // If set, |context_lock_| must be held before accessing any member within
   // the idle callback. Exceptions to this are |current_idle_generation_|,

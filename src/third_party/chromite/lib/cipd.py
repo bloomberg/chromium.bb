@@ -122,6 +122,30 @@ def GetCIPDFromCache(instance_id=CIPD_INSTANCE_ID):
   return ref.path
 
 
+def GetInstanceID(cipd_path, package, version, service_account_json=None):
+  """Get the latest instance ID for ref latest.
+
+  Args:
+    cipd_path: The path to a cipd executable. GetCIPDFromCache can give this.
+    package: A string package name.
+    version: A string version of package.
+    service_account_json: The path of the service account credentials.
+
+  Returns:
+    A string instance ID.
+  """
+  service_account_flag = []
+  if service_account_json:
+    service_account_flag = ['-service-account-json', service_account_json]
+
+  result = cros_build_lib.RunCommand(
+      [cipd_path, 'resolve', package, '-version', version] +
+      service_account_flag, capture_output=True)
+  # An example output of resolve is like:
+  #   Packages:\n package:instance_id
+  return result.output.splitlines()[-1].split(':')[-1]
+
+
 @memoize.Memoize
 def InstallPackage(cipd_path, package, instance_id, destination,
                    service_account_json=None):

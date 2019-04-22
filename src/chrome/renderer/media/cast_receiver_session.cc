@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -98,7 +99,7 @@ void CastReceiverSession::StartAudio(
 }
 
 void CastReceiverSession::StartVideo(
-    content::VideoCaptureDeliverFrameCB frame_callback) {
+    blink::VideoCaptureDeliverFrameCB frame_callback) {
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&CastReceiverSessionDelegate::StartVideo,

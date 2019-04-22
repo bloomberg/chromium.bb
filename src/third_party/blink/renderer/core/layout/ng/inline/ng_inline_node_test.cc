@@ -4,9 +4,12 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_items.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
@@ -21,6 +24,13 @@
 
 namespace blink {
 
+// The spec turned into a discussion that may change. Put this logic on hold
+// until CSSWG resolves the issue.
+// https://github.com/w3c/csswg-drafts/issues/337
+#define SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH 0
+
+using ::testing::ElementsAre;
+
 class NGInlineNodeForTest : public NGInlineNode {
  public:
   using NGInlineNode::NGInlineNode;
@@ -31,21 +41,18 @@ class NGInlineNodeForTest : public NGInlineNode {
     return data.items;
   }
 
-  void Append(const String& text,
-              const ComputedStyle* style = nullptr,
-              LayoutObject* layout_object = nullptr) {
+  void Append(const String& text, LayoutObject* layout_object) {
     NGInlineNodeData* data = MutableData();
     unsigned start = data->text_content.length();
-    data->text_content.append(text);
+    data->text_content = data->text_content + text;
     data->items.push_back(NGInlineItem(NGInlineItem::kText, start,
-                                       start + text.length(), style,
-                                       layout_object));
+                                       start + text.length(), layout_object));
     data->is_empty_inline_ = false;
   }
 
   void Append(UChar character) {
     NGInlineNodeData* data = MutableData();
-    data->text_content.append(character);
+    data->text_content = data->text_content + character;
     unsigned end = data->text_content.length();
     data->items.push_back(
         NGInlineItem(NGInlineItem::kBidiControl, end - 1, end, nullptr));
@@ -104,6 +111,12 @@ class NGInlineNodeTest : public NGLayoutTest {
     return node;
   }
 
+  MinMaxSize ComputeMinMaxSize(NGInlineNode node) {
+    return node.ComputeMinMaxSize(
+        node.Style().GetWritingMode(),
+        MinMaxSizeInput(/* percentage_resolution_block_size */ LayoutUnit()));
+  }
+
   void CreateLine(
       NGInlineNode node,
       Vector<scoped_refptr<const NGPhysicalTextFragment>>* fragments_out) {
@@ -114,15 +127,15 @@ class NGInlineNodeTest : public NGLayoutTest {
             .SetAvailableSize({LayoutUnit::Max(), LayoutUnit(-1)})
             .ToConstraintSpace();
     NGInlineChildLayoutContext context;
-    scoped_refptr<NGLayoutResult> result =
+    scoped_refptr<const NGLayoutResult> result =
         NGInlineLayoutAlgorithm(node, constraint_space,
                                 nullptr /* break_token */, &context)
             .Layout();
 
-    const NGPhysicalLineBoxFragment* line =
-        ToNGPhysicalLineBoxFragment(result->PhysicalFragment());
+    const auto* line =
+        To<NGPhysicalLineBoxFragment>(result->PhysicalFragment());
     for (const auto& child : line->Children()) {
-      fragments_out->push_back(ToNGPhysicalTextFragment(child.get()));
+      fragments_out->push_back(To<NGPhysicalTextFragment>(child.get()));
     }
   }
 
@@ -158,11 +171,33 @@ class NGInlineNodeTest : public NGLayoutTest {
 
   void ForceLayout() { GetDocument().body()->OffsetTop(); }
 
+  Vector<unsigned> ToEndOffsetList(
+      NGInlineItemSegments::const_iterator segments) {
+    Vector<unsigned> end_offsets;
+    for (const NGInlineItemSegment& segment : segments)
+      end_offsets.push_back(segment.EndOffset());
+    return end_offsets;
+  }
+
   scoped_refptr<const ComputedStyle> style_;
   LayoutNGBlockFlow* layout_block_flow_ = nullptr;
   LayoutObject* layout_object_ = nullptr;
   FontCachePurgePreventer purge_preventer_;
 };
+
+class NodeParameterTest : public NGInlineNodeTest,
+                          public testing::WithParamInterface<const char*> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    NGInlineNodeTest,
+    NodeParameterTest,
+    testing::Values("text",
+                    "<span>span</span>",
+                    "<span>1234 12345678</span>",
+                    "<span style='display: inline-block'>box</span>",
+                    "<img>",
+                    "<div style='float: left'>float</div>",
+                    "<div style='position: absolute'>abs</div>"));
 
 #define TEST_ITEM_TYPE_OFFSET(item, type, start, end) \
   EXPECT_EQ(NGInlineItem::type, item.Type());         \
@@ -317,7 +352,7 @@ TEST_F(NGInlineNodeTest, CollectInlinesMixedTextEndWithON) {
 
 TEST_F(NGInlineNodeTest, SegmentASCII) {
   NGInlineNodeForTest node = CreateInlineNode();
-  node.Append("Hello");
+  node.Append("Hello", layout_object_);
   node.SegmentText();
   Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(1u, items.size());
@@ -326,7 +361,7 @@ TEST_F(NGInlineNodeTest, SegmentASCII) {
 
 TEST_F(NGInlineNodeTest, SegmentHebrew) {
   NGInlineNodeForTest node = CreateInlineNode();
-  node.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA");
+  node.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", layout_object_);
   node.SegmentText();
   ASSERT_EQ(1u, node.Items().size());
   Vector<NGInlineItem>& items = node.Items();
@@ -336,7 +371,7 @@ TEST_F(NGInlineNodeTest, SegmentHebrew) {
 
 TEST_F(NGInlineNodeTest, SegmentSplit1To2) {
   NGInlineNodeForTest node = CreateInlineNode();
-  node.Append(u"Hello \u05E2\u05D1\u05E8\u05D9\u05EA");
+  node.Append(u"Hello \u05E2\u05D1\u05E8\u05D9\u05EA", layout_object_);
   node.SegmentText();
   Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(2u, items.size());
@@ -346,9 +381,9 @@ TEST_F(NGInlineNodeTest, SegmentSplit1To2) {
 
 TEST_F(NGInlineNodeTest, SegmentSplit3To4) {
   NGInlineNodeForTest node = CreateInlineNode();
-  node.Append("Hel");
-  node.Append(u"lo \u05E2");
-  node.Append(u"\u05D1\u05E8\u05D9\u05EA");
+  node.Append("Hel", layout_object_);
+  node.Append(u"lo \u05E2", layout_object_);
+  node.Append(u"\u05D1\u05E8\u05D9\u05EA", layout_object_);
   node.SegmentText();
   Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(4u, items.size());
@@ -360,9 +395,9 @@ TEST_F(NGInlineNodeTest, SegmentSplit3To4) {
 
 TEST_F(NGInlineNodeTest, SegmentBidiOverride) {
   NGInlineNodeForTest node = CreateInlineNode();
-  node.Append("Hello ");
+  node.Append("Hello ", layout_object_);
   node.Append(kRightToLeftOverrideCharacter);
-  node.Append("ABC");
+  node.Append("ABC", layout_object_);
   node.Append(kPopDirectionalFormattingCharacter);
   node.SegmentText();
   Vector<NGInlineItem>& items = node.Items();
@@ -374,26 +409,25 @@ TEST_F(NGInlineNodeTest, SegmentBidiOverride) {
 }
 
 static NGInlineNodeForTest CreateBidiIsolateNode(NGInlineNodeForTest node,
-                                                 const ComputedStyle* style,
                                                  LayoutObject* layout_object) {
-  node.Append("Hello ", style, layout_object);
+  node.Append("Hello ", layout_object);
   node.Append(kRightToLeftIsolateCharacter);
-  node.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA ", style, layout_object);
+  node.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA ", layout_object);
   node.Append(kLeftToRightIsolateCharacter);
-  node.Append("A", style, layout_object);
+  node.Append("A", layout_object);
   node.Append(kPopDirectionalIsolateCharacter);
-  node.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style, layout_object);
+  node.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", layout_object);
   node.Append(kPopDirectionalIsolateCharacter);
-  node.Append(" World", style, layout_object);
+  node.Append(" World", layout_object);
   node.SegmentText();
   return node;
 }
 
 TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   NGInlineNodeForTest node = CreateInlineNode();
-  node = CreateBidiIsolateNode(node, style_.get(), layout_object_);
+  node = CreateBidiIsolateNode(node, layout_object_);
   Vector<NGInlineItem>& items = node.Items();
-  ASSERT_EQ(10u, items.size());
+  EXPECT_EQ(9u, items.size());
   TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::kLtr);
   TEST_ITEM_OFFSET_DIR(items[1], 6u, 7u, TextDirection::kLtr);
   TEST_ITEM_OFFSET_DIR(items[2], 7u, 13u, TextDirection::kRtl);
@@ -402,8 +436,7 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   TEST_ITEM_OFFSET_DIR(items[5], 15u, 16u, TextDirection::kRtl);
   TEST_ITEM_OFFSET_DIR(items[6], 16u, 21u, TextDirection::kRtl);
   TEST_ITEM_OFFSET_DIR(items[7], 21u, 22u, TextDirection::kLtr);
-  TEST_ITEM_OFFSET_DIR(items[8], 22u, 23u, TextDirection::kLtr);
-  TEST_ITEM_OFFSET_DIR(items[9], 23u, 28u, TextDirection::kLtr);
+  TEST_ITEM_OFFSET_DIR(items[8], 22u, 28u, TextDirection::kLtr);
 }
 
 #define TEST_TEXT_FRAGMENT(fragment, start_offset, end_offset) \
@@ -413,28 +446,26 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
 TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   UseLayoutObjectAndAhem();
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetLineHeight(Length(1, kFixed));
+  style->SetLineHeight(Length::Fixed(1));
   style->GetFont().Update(nullptr);
   NGInlineNodeForTest node = CreateInlineNode();
-  node = CreateBidiIsolateNode(node, style.get(), layout_object_);
+  node = CreateBidiIsolateNode(node, layout_object_);
   node.ShapeText();
   Vector<scoped_refptr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);
-  ASSERT_EQ(6u, fragments.size());
+  EXPECT_EQ(5u, fragments.size());
   TEST_TEXT_FRAGMENT(fragments[0], 0u, 6u);
   TEST_TEXT_FRAGMENT(fragments[1], 16u, 21u);
   TEST_TEXT_FRAGMENT(fragments[2], 14u, 15u);
   TEST_TEXT_FRAGMENT(fragments[3], 7u, 13u);
-  TEST_TEXT_FRAGMENT(fragments[4], 22u, 23u);
-  TEST_TEXT_FRAGMENT(fragments[5], 23u, 28u);
+  TEST_TEXT_FRAGMENT(fragments[4], 22u, 28u);
 }
 
 TEST_F(NGInlineNodeTest, MinMaxSize) {
   LoadAhem();
   SetupHtml("t", "<div id=t style='font:10px Ahem'>AB CDEF</div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes =
-      node.ComputeMinMaxSize(WritingMode::kHorizontalTb, MinMaxSizeInput());
+  MinMaxSize sizes = ComputeMinMaxSize(node);
   EXPECT_EQ(40, sizes.min_size);
   EXPECT_EQ(70, sizes.max_size);
 }
@@ -443,8 +474,7 @@ TEST_F(NGInlineNodeTest, MinMaxSizeElementBoundary) {
   LoadAhem();
   SetupHtml("t", "<div id=t style='font:10px Ahem'>A B<span>C D</span></div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes =
-      node.ComputeMinMaxSize(WritingMode::kHorizontalTb, MinMaxSizeInput());
+  MinMaxSize sizes = ComputeMinMaxSize(node);
   // |min_content| should be the width of "BC" because there is an element
   // boundary between "B" and "C" but no break opportunities.
   EXPECT_EQ(20, sizes.min_size);
@@ -463,8 +493,7 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloats) {
   )HTML");
 
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes =
-      node.ComputeMinMaxSize(WritingMode::kHorizontalTb, MinMaxSizeInput());
+  MinMaxSize sizes = ComputeMinMaxSize(node);
 
   EXPECT_EQ(50, sizes.min_size);
   EXPECT_EQ(130, sizes.max_size);
@@ -483,8 +512,7 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloatsClearance) {
   )HTML");
 
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes =
-      node.ComputeMinMaxSize(WritingMode::kHorizontalTb, MinMaxSizeInput());
+  MinMaxSize sizes = ComputeMinMaxSize(node);
 
   EXPECT_EQ(50, sizes.min_size);
   EXPECT_EQ(160, sizes.max_size);
@@ -496,11 +524,249 @@ TEST_F(NGInlineNodeTest, AssociatedItemsWithControlItem) {
   LayoutText* const layout_text = ToLayoutText(
       GetDocument().getElementById("t")->firstChild()->GetLayoutObject());
   ASSERT_TRUE(layout_text->HasValidInlineItems());
-  const Vector<NGInlineItem*>& items = layout_text->InlineItems();
-  ASSERT_EQ(3u, items.size());
+  Vector<const NGInlineItem*> items;
+  for (const NGInlineItem& item : layout_text->InlineItems())
+    items.push_back(&item);
+  ASSERT_EQ(5u, items.size());
   TEST_ITEM_TYPE_OFFSET((*items[0]), kText, 1u, 3u);
-  TEST_ITEM_TYPE_OFFSET((*items[1]), kControl, 4u, 5u);
-  TEST_ITEM_TYPE_OFFSET((*items[2]), kText, 6u, 8u);
+  TEST_ITEM_TYPE_OFFSET((*items[1]), kBidiControl, 3u, 4u);
+  TEST_ITEM_TYPE_OFFSET((*items[2]), kControl, 4u, 5u);
+  TEST_ITEM_TYPE_OFFSET((*items[3]), kBidiControl, 5u, 6u);
+  TEST_ITEM_TYPE_OFFSET((*items[4]), kText, 6u, 8u);
+}
+
+TEST_F(NGInlineNodeTest, NeedsCollectInlinesOnSetText) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="container">
+      <span id="previous"></span>
+      <span id="parent">old</span>
+      <span id="next"></span>
+    </div>
+  )HTML");
+
+  Element* container = GetElementById("container");
+  Element* parent = GetElementById("parent");
+  Text* text = ToText(parent->firstChild());
+  EXPECT_FALSE(text->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_FALSE(parent->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_FALSE(container->GetLayoutObject()->NeedsCollectInlines());
+
+  text->setData("new");
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  // The text and ancestors up to the container should be marked.
+  EXPECT_TRUE(text->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_TRUE(parent->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_TRUE(container->GetLayoutObject()->NeedsCollectInlines());
+
+  // Siblings of |parent| should stay clean.
+  Element* previous = GetElementById("previous");
+  Element* next = GetElementById("next");
+  EXPECT_FALSE(previous->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_FALSE(next->GetLayoutObject()->NeedsCollectInlines());
+}
+
+struct StyleChangeData {
+  const char* css;
+  enum ChangedElements {
+    kText = 1,
+    kParent = 2,
+    kContainer = 4,
+
+    kNone = 0,
+    kParentAndAbove = kParent | kContainer,
+    kAll = kText | kParentAndAbove,
+  };
+  unsigned needs_collect_inlines;
+} style_change_data[] = {
+    {"#parent.after { color: red; }", StyleChangeData::kNone},
+    {"#parent.after { text-decoration-line: underline; }",
+     StyleChangeData::kNone},
+    {"#parent.after { font-size: 200%; }", StyleChangeData::kAll},
+    {"#parent.after { unicode-bidi: bidi-override; }",
+     StyleChangeData::kParentAndAbove},
+    {"#container.after { unicode-bidi: bidi-override; }",
+     StyleChangeData::kContainer},
+};
+
+std::ostream& operator<<(std::ostream& os, const StyleChangeData& data) {
+  return os << data.css;
+}
+
+class StyleChangeTest : public NGInlineNodeTest,
+                        public testing::WithParamInterface<StyleChangeData> {};
+
+INSTANTIATE_TEST_SUITE_P(NGInlineNodeTest,
+                         StyleChangeTest,
+                         testing::ValuesIn(style_change_data));
+
+TEST_P(StyleChangeTest, NeedsCollectInlinesOnStyle) {
+  auto data = GetParam();
+  SetBodyInnerHTML(String(R"HTML(
+    <style>
+    )HTML") + data.css +
+                   R"HTML(
+    </style>
+    <div id="container">
+      <span id="previous"></span>
+      <span id="parent">text</span>
+      <span id="next"></span>
+    </div>
+  )HTML");
+
+  Element* container = GetElementById("container");
+  Element* parent = GetElementById("parent");
+  Text* text = ToText(parent->firstChild());
+  EXPECT_FALSE(text->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_FALSE(parent->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_FALSE(container->GetLayoutObject()->NeedsCollectInlines());
+
+  container->classList().Add("after");
+  parent->classList().Add("after");
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  // The text and ancestors up to the container should be marked.
+  EXPECT_EQ(text->GetLayoutObject()->NeedsCollectInlines(),
+            !!(data.needs_collect_inlines & StyleChangeData::kText));
+  EXPECT_EQ(parent->GetLayoutObject()->NeedsCollectInlines(),
+            !!(data.needs_collect_inlines & StyleChangeData::kParent));
+  EXPECT_EQ(container->GetLayoutObject()->NeedsCollectInlines(),
+            !!(data.needs_collect_inlines & StyleChangeData::kContainer));
+
+  // Siblings of |parent| should stay clean.
+  Element* previous = GetElementById("previous");
+  Element* next = GetElementById("next");
+  EXPECT_FALSE(previous->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_FALSE(next->GetLayoutObject()->NeedsCollectInlines());
+}
+
+using CreateNode = Node* (*)(Document&);
+static CreateNode node_creators[] = {
+    [](Document& document) -> Node* { return document.createTextNode("new"); },
+    [](Document& document) -> Node* {
+      return document.CreateRawElement(html_names::kSpanTag);
+    },
+    [](Document& document) -> Node* {
+      Element* element = document.CreateRawElement(html_names::kSpanTag);
+      element->classList().Add("abspos");
+      return element;
+    },
+    [](Document& document) -> Node* {
+      Element* element = document.CreateRawElement(html_names::kSpanTag);
+      element->classList().Add("float");
+      return element;
+    }};
+
+class NodeInsertTest : public NGInlineNodeTest,
+                       public testing::WithParamInterface<CreateNode> {};
+
+INSTANTIATE_TEST_SUITE_P(NGInlineNodeTest,
+                         NodeInsertTest,
+                         testing::ValuesIn(node_creators));
+
+TEST_P(NodeInsertTest, NeedsCollectInlinesOnInsert) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    .abspos { position: absolute; }
+    .float { float: left; }
+    </style>
+    <div id="container">
+      <span id="previous"></span>
+      <span id="parent"></span>
+      <span id="next"></span>
+    </div>
+  )HTML");
+
+  Element* container = GetElementById("container");
+  Element* parent = GetElementById("parent");
+  EXPECT_FALSE(parent->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_FALSE(container->GetLayoutObject()->NeedsCollectInlines());
+
+  Node* insert = (*GetParam())(GetDocument());
+  parent->appendChild(insert);
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  // Ancestors up to the container should be marked.
+  EXPECT_TRUE(parent->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_TRUE(container->GetLayoutObject()->NeedsCollectInlines());
+
+  // Siblings of |parent| should stay clean.
+  Element* previous = GetElementById("previous");
+  Element* next = GetElementById("next");
+  EXPECT_FALSE(previous->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_FALSE(next->GetLayoutObject()->NeedsCollectInlines());
+}
+
+class NodeRemoveTest : public NGInlineNodeTest,
+                       public testing::WithParamInterface<const char*> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    NGInlineNodeTest,
+    NodeRemoveTest,
+    testing::Values(nullptr, "span", "abspos", "float", "inline-block", "img"));
+
+TEST_P(NodeRemoveTest, NeedsCollectInlinesOnRemove) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    .abspos { position: absolute; }
+    .float { float: left; }
+    .inline-block { display: inline-block; }
+    </style>
+    <div id="container">
+      <span id="previous"></span>
+      <span id="parent">
+        text
+        <span id="span">span</span>
+        <span id="abspos">abspos</span>
+        <span id="float">float</span>
+        <span id="inline-block">inline-block</span>
+        <img id="img">
+      </span>
+      <span id="next"></span>
+    </div>
+  )HTML");
+
+  Element* container = GetElementById("container");
+  Element* parent = GetElementById("parent");
+  EXPECT_FALSE(parent->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_FALSE(container->GetLayoutObject()->NeedsCollectInlines());
+
+  const char* id = GetParam();
+  if (id) {
+    Element* target = GetElementById(GetParam());
+    target->remove();
+  } else {
+    Node* target = parent->firstChild();
+    target->remove();
+  }
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  // Ancestors up to the container should be marked.
+  EXPECT_TRUE(parent->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_TRUE(container->GetLayoutObject()->NeedsCollectInlines());
+
+  // Siblings of |parent| should stay clean.
+  Element* previous = GetElementById("previous");
+  Element* next = GetElementById("next");
+  EXPECT_FALSE(previous->GetLayoutObject()->NeedsCollectInlines());
+  EXPECT_FALSE(next->GetLayoutObject()->NeedsCollectInlines());
+}
+
+TEST_F(NGInlineNodeTest, NeedsCollectInlinesOnForceLayout) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="container">
+      <span id="target">
+        <span id="child" style="position: absolute">X</span>
+      </span>
+    </div>
+  )HTML");
+
+  LayoutObject* container = GetLayoutObjectByElementId("container");
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  LayoutObject* child = GetLayoutObjectByElementId("child");
+  child->ForceLayout();
+  EXPECT_FALSE(container->NeedsCollectInlines());
+  EXPECT_FALSE(target->NeedsCollectInlines());
 }
 
 TEST_F(NGInlineNodeTest, InvalidateAddSpan) {
@@ -745,15 +1011,17 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnRemove) {
 }
 
 // Test marking line boxes when removing a span.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnRemoveFirst) {
-  SetupHtml("container", R"HTML(
-    <div id=container style="font-size: 10px; width: 10ch">
-      <span id=t>1234</span>5678
+TEST_P(NodeParameterTest, MarkLineBoxesDirtyOnRemoveFirst) {
+  SetupHtml("container", String(R"HTML(
+    <div id=container style="font-size: 10px; width: 10ch">)HTML") +
+                             GetParam() + R"HTML(<span>after</span>
     </div>
   )HTML");
 
-  Element* span = GetElementById("t");
-  span->remove();
+  Element* container = GetElementById("container");
+  Node* node = container->firstChild();
+  ASSERT_TRUE(node);
+  node->remove();
 
   auto lines = MarkLineBoxesDirty();
   EXPECT_TRUE(lines[0]->IsDirty());
@@ -774,6 +1042,27 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnRemove2) {
   auto lines = MarkLineBoxesDirty();
   EXPECT_FALSE(lines[0]->IsDirty());
   EXPECT_TRUE(lines[1]->IsDirty());
+}
+
+// Test marking line boxes when removing a text node on 2nd line.
+TEST_P(NodeParameterTest, MarkLineBoxesDirtyOnRemoveAfterBR) {
+  SetupHtml("container", String(R"HTML(
+    <div id=container style="font-size: 10px; width: 10ch">
+      line 1
+      <br>)HTML") + GetParam() +
+                             "</div>");
+
+  Element* container = GetElementById("container");
+  Node* node = container->lastChild();
+  ASSERT_TRUE(node);
+  node->remove();
+
+  auto lines = MarkLineBoxesDirty();
+  EXPECT_TRUE(lines[0]->IsDirty());
+  // Currently, only the first dirty line is marked.
+  EXPECT_FALSE(lines[1]->IsDirty());
+
+  ForceLayout();  // Ensure running layout does not crash.
 }
 
 // Test marking line boxes when the first span has NeedsLayout. The span is
@@ -862,6 +1151,157 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnChildOfWrappedBox) {
 
   auto lines = MarkLineBoxesDirty();
   EXPECT_TRUE(lines[0]->IsDirty());
+}
+
+// Test marking line boxes when a span has NeedsLayout. The span has a box
+// fragment.
+TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyInInlineBlock) {
+  SetupHtml("container", R"HTML(
+    <div id=container style="display: inline-block; font-size: 10px">
+      12345678<br>
+      12345678<br>
+    </div>
+  )HTML");
+
+  Element* container = GetElementById("container");
+  container->appendChild(GetDocument().createTextNode("append"));
+
+  // Inline block with auto-size calls |ComputeMinMaxSize|, which may call
+  // |CollectInlines|. Emulate it to ensure it does not let tests to fail.
+  GetDocument().UpdateStyleAndLayoutTree();
+  ComputeMinMaxSize(NGInlineNode(layout_block_flow_));
+
+  auto lines = MarkLineBoxesDirty();
+  EXPECT_FALSE(lines[0]->IsDirty());
+  EXPECT_TRUE(lines[1]->IsDirty());
+}
+
+TEST_F(NGInlineNodeTest, RemoveInlineNodeDataIfBlockBecomesEmpty1) {
+  SetupHtml("container", "<div id=container><b id=remove><i>foo</i></b></div>");
+  ASSERT_TRUE(layout_block_flow_->HasNGInlineNodeData());
+
+  Element* to_remove = GetElementById("remove");
+  to_remove->remove();
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(layout_block_flow_->HasNGInlineNodeData());
+}
+
+TEST_F(NGInlineNodeTest, RemoveInlineNodeDataIfBlockBecomesEmpty2) {
+  SetupHtml("container", "<div id=container><b><i>foo</i></b></div>");
+  ASSERT_TRUE(layout_block_flow_->HasNGInlineNodeData());
+
+  GetElementById("container")->SetInnerHTMLFromString("");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(layout_block_flow_->HasNGInlineNodeData());
+}
+
+TEST_F(NGInlineNodeTest, RemoveInlineNodeDataIfBlockObtainsBlockChild) {
+  SetupHtml("container",
+            "<div id=container><b id=blockify><i>foo</i></b></div>");
+  ASSERT_TRUE(layout_block_flow_->HasNGInlineNodeData());
+
+  GetElementById("blockify")
+      ->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kBlock);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(layout_block_flow_->HasNGInlineNodeData());
+}
+
+// https://crbug.com/911220
+TEST_F(NGInlineNodeTest, PreservedNewlineWithBidiAndRelayout) {
+  SetupHtml("container",
+            "<style>span{unicode-bidi:isolate}</style>"
+            "<pre id=container>foo<span>\n</span>bar<br></pre>");
+  EXPECT_EQ(String(u"foo\u2066\u2069\n\u2066\u2069bar\n"), GetText());
+
+  Node* new_text = Text::Create(GetDocument(), "baz");
+  GetElementById("container")->appendChild(new_text);
+  UpdateAllLifecyclePhasesForTest();
+
+  // The bidi context popping and re-entering should be preserved around '\n'.
+  EXPECT_EQ(String(u"foo\u2066\u2069\n\u2066\u2069bar\nbaz"), GetText());
+}
+
+#if SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH
+// https://crbug.com/879088
+TEST_F(NGInlineNodeTest, RemoveSegmentBreakFromJapaneseInRelayout) {
+  SetupHtml("container",
+            u"<div id=container>"
+            u"<span>\u30ED\u30B0\u30A4\u30F3</span>"
+            u"\n"
+            u"<span>\u767B\u9332</span>"
+            u"<br></div>");
+  EXPECT_EQ(String(u"\u30ED\u30B0\u30A4\u30F3\u767B\u9332\n"), GetText());
+
+  Node* new_text = Text::Create(GetDocument(), "foo");
+  GetElementById("container")->appendChild(new_text);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(String(u"\u30ED\u30B0\u30A4\u30F3\u767B\u9332\nfoo"), GetText());
+}
+
+// https://crbug.com/879088
+TEST_F(NGInlineNodeTest, RemoveSegmentBreakFromJapaneseInRelayout2) {
+  SetupHtml("container",
+            u"<div id=container>"
+            u"<span>\u30ED\u30B0\u30A4\u30F3</span>"
+            u"\n"
+            u"<span> \u767B\u9332</span>"
+            u"<br></div>");
+  EXPECT_EQ(String(u"\u30ED\u30B0\u30A4\u30F3\u767B\u9332\n"), GetText());
+
+  Node* new_text = Text::Create(GetDocument(), "foo");
+  GetElementById("container")->appendChild(new_text);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(String(u"\u30ED\u30B0\u30A4\u30F3\u767B\u9332\nfoo"), GetText());
+}
+#endif
+
+TEST_F(NGInlineNodeTest, SegmentRanges) {
+  SetupHtml("container",
+            "<div id=container>"
+            u"\u306Forange\u304C"
+            "<span>text</span>"
+            "</div>");
+
+  NGInlineItemsData* items_data = layout_block_flow_->GetNGInlineNodeData();
+  ASSERT_TRUE(items_data);
+  NGInlineItemSegments* segments = items_data->segments.get();
+  ASSERT_TRUE(segments);
+
+  // Test EndOffset for the full text. All segment boundaries including the end
+  // of the text content should be returned.
+  Vector<unsigned> expect_0_12 = {1u, 7u, 8u, 12u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(0, 12, 0)), expect_0_12);
+
+  // Test ranges for each segment that start with 1st item.
+  Vector<unsigned> expect_0_1 = {1u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(0, 1, 0)), expect_0_1);
+  Vector<unsigned> expect_2_3 = {3u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(2, 3, 0)), expect_2_3);
+  Vector<unsigned> expect_7_8 = {8u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(7, 8, 0)), expect_7_8);
+
+  // Test ranges that acrosses multiple segments.
+  Vector<unsigned> expect_0_8 = {1u, 7u, 8u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(0, 8, 0)), expect_0_8);
+  Vector<unsigned> expect_2_8 = {7u, 8u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(2, 8, 0)), expect_2_8);
+  Vector<unsigned> expect_2_10 = {7u, 8u, 10u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(2, 10, 0)), expect_2_10);
+  Vector<unsigned> expect_7_10 = {8u, 10u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(7, 10, 0)), expect_7_10);
+
+  // Test ranges that starts with 2nd item.
+  Vector<unsigned> expect_8_9 = {9u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(8, 9, 1)), expect_8_9);
+  Vector<unsigned> expect_8_10 = {10u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(8, 10, 1)), expect_8_10);
+  Vector<unsigned> expect_9_12 = {12u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(9, 12, 1)), expect_9_12);
 }
 
 }  // namespace blink

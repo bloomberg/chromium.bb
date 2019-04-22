@@ -129,6 +129,10 @@ class NET_EXPORT CertPathBuilder {
     // better than invalid, but otherwise nothing is guaranteed.
     size_t best_result_index = 0;
 
+    // True if the search stopped because it exceeded the iteration limit
+    // configured with |SetIterationLimit|.
+    bool exceeded_iteration_limit = false;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Result);
   };
@@ -169,6 +173,10 @@ class NET_EXPORT CertPathBuilder {
   // it is a trust anchor or is directly signed by a trust anchor.)
   void AddCertIssuerSource(CertIssuerSource* cert_issuer_source);
 
+  // Sets a limit to the number of times to repeat the process of considering a
+  // new intermediate over all potential paths.
+  void SetIterationLimit(uint32_t limit);
+
   // Executes verification of the target certificate.
   //
   // Upon return results are written to the |result| object passed into the
@@ -187,6 +195,7 @@ class NET_EXPORT CertPathBuilder {
   const std::set<der::Input> user_initial_policy_set_;
   const InitialPolicyMappingInhibit initial_policy_mapping_inhibit_;
   const InitialAnyPolicyInhibit initial_any_policy_inhibit_;
+  uint32_t max_iteration_count_ = 0;
 
   Result* out_result_;
 

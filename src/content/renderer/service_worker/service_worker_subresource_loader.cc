@@ -5,11 +5,15 @@
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
 
 #include "base/atomic_sequence_num.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
+#include "content/common/fetch/fetch_request_type_converters.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -175,6 +179,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       resource_request_(resource_request),
       fallback_factory_(std::move(fallback_factory)),
       task_runner_(std::move(task_runner)),
+      response_source_(network::mojom::FetchResponseSource::kUnspecified),
       weak_factory_(this) {
   DCHECK(controller_connector_);
   response_head_.request_start = base::TimeTicks::Now();
@@ -224,9 +229,9 @@ void ServiceWorkerSubresourceLoader::StartRequest(
 void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
   response_callback_binding_.Bind(mojo::MakeRequest(&response_callback_ptr));
-  mojom::ControllerServiceWorker* controller =
+  blink::mojom::ControllerServiceWorker* controller =
       controller_connector_->GetControllerServiceWorker(
-          mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
+          blink::mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
 
   response_head_.load_timing.send_start = base::TimeTicks::Now();
   response_head_.load_timing.send_end = base::TimeTicks::Now();
@@ -258,25 +263,11 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   }
 
   auto params = blink::mojom::DispatchFetchEventParams::New();
-  params->request = resource_request_;
+  params->request = blink::mojom::FetchAPIRequest::From(resource_request_);
   params->client_id = controller_connector_->client_id();
-
-  // S13nServiceWorker without NetworkService:
-  // BlobPtr for each blob data element in the request body needs to be created
-  // before dispatching the fetch event for keeping the blob alive.
-  if (resource_request_.request_body &&
-      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // We need this as GetBlobFromUUID is a sync IPC.
-    // TODO(kinuko): Remove the friend for ScopedAllowBaseSyncPrimitives
-    // in //base as well when we remove this code.
-    base::ScopedAllowBaseSyncPrimitives allow_sync_primitives;
-    params->request_body_blob_ptrs =
-        GetBlobPtrsForRequestBody(*resource_request_.request_body);
-  }
 
   // TODO(falken): Grant the controller service worker's process access to files
   // in the body, like ServiceWorkerFetchDispatcher::DispatchFetchEvent() does.
-
   controller->DispatchFetchEvent(
       std::move(params), std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
@@ -308,6 +299,7 @@ void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
       // promise, and handle this request.
       break;
     case blink::mojom::ServiceWorkerEventStatus::ABORTED:
+    case blink::mojom::ServiceWorkerEventStatus::TIMEOUT:
       // Fetch event dispatch did not complete, possibly due to timeout of
       // respondWith() or waitUntil(). Return network error.
 
@@ -431,15 +423,13 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   fallback_factory_->CreateLoaderAndStart(
       url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
       resource_request_, std::move(client), traffic_annotation_);
+
   // Per spec, redirects after this point are not intercepted by the service
   // worker again (https://crbug.com/517364). So this loader is done.
   //
-  // Assume ServiceWorkerSubresourceLoaderFactory is still alive and also
-  // has a ref to fallback_factory_, so it's OK to destruct here. If that
-  // factory dies, the web context that made the request is dead so the request
-  // is moot.
-  DCHECK(!fallback_factory_->HasOneRef());
-
+  // It's OK to destruct this loader here. This loader may be the only one who
+  // has a ref to fallback_factory_ but in that case the web context that made
+  // the request is dead so the request is moot.
   RecordTimingMetrics(false /* handled */);
   delete this;
 }
@@ -468,7 +458,10 @@ void ServiceWorkerSubresourceLoader::StartResponse(
       response->status_code, response->status_text, response->headers,
       &response_head_);
   response_head_.response_start = base::TimeTicks::Now();
-  response_head_.load_timing.receive_headers_end = base::TimeTicks::Now();
+  response_head_.load_timing.receive_headers_start = base::TimeTicks::Now();
+  response_head_.load_timing.receive_headers_end =
+      response_head_.load_timing.receive_headers_start;
+  response_source_ = response->response_source;
 
   // Handle a redirect response. ComputeRedirectInfo returns non-null redirect
   // info if the given response is a redirect.
@@ -562,8 +555,10 @@ void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
                           TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_IN, "error_code", net::ErrorToString(error_code));
 
-  if (error_code == net::OK)
-    RecordTimingMetrics(true /* handled */);
+  if (error_code == net::OK) {
+    bool handled = !response_head_.was_fallback_required_by_service_worker;
+    RecordTimingMetrics(handled);
+  }
 
   TransitionToStatus(Status::kCompleted);
   DCHECK(url_loader_client_.is_bound());
@@ -627,6 +622,13 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
         "ServiceWorker.LoadTiming.Subresource."
         "ResponseReceivedToCompleted2",
         completion_time - response_head_.load_timing.receive_headers_end);
+    // Same as above, breakdown by response source.
+    base::UmaHistogramMediumTimes(
+        base::StrCat({"ServiceWorker.LoadTiming.Subresource."
+                      "ResponseReceivedToCompleted2",
+                      ServiceWorkerUtils::FetchResponseSourceToSuffix(
+                          response_source_)}),
+        completion_time - response_head_.load_timing.receive_headers_end);
   } else {
     // Mojo message delay (network fallback case). See above for the detail.
     UMA_HISTOGRAM_TIMES(
@@ -639,9 +641,8 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
 // ServiceWorkerSubresourceLoader: URLLoader implementation -----------------
 
 void ServiceWorkerSubresourceLoader::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::FollowRedirect",
@@ -649,17 +650,20 @@ void ServiceWorkerSubresourceLoader::FollowRedirect(
                           TRACE_ID_LOCAL(request_id_)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "new_url",
       redirect_info_->new_url.spec());
-  DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
-                                                   "headers was not supported "
-                                                   "yet. crbug.com/845683";
-  DCHECK(!new_url.has_value()) << "Redirect with modified URL was not "
+  // TODO(arthursonzogni, juncai): This seems to be correctly implemented, but
+  // not used so far. Add tests and remove this DCHECK to support this feature
+  // if needed. See https://crbug.com/845683.
+  DCHECK(removed_headers.empty() && modified_headers.IsEmpty())
+      << "Redirect with removed or modified headers is not supported yet. See "
+         "https://crbug.com/845683";
+  DCHECK(!new_url.has_value()) << "Redirect with modified url was not "
                                   "supported yet. crbug.com/845683";
   DCHECK(redirect_info_);
 
   bool should_clear_upload = false;
   net::RedirectUtil::UpdateHttpRequest(
       resource_request_.url, resource_request_.method, *redirect_info_,
-      modified_request_headers, &resource_request_.headers,
+      removed_headers, modified_headers, &resource_request_.headers,
       &should_clear_upload);
   if (should_clear_upload)
     resource_request_.request_body = nullptr;

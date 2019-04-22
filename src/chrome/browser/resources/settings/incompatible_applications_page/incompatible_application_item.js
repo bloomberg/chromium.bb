@@ -92,12 +92,15 @@ Polymer({
    * @private
    */
   getActionName_: function(actionType) {
-    if (actionType === settings.ActionTypes.UNINSTALL)
+    if (actionType === settings.ActionTypes.UNINSTALL) {
       return this.i18n('incompatibleApplicationsRemoveButton');
-    if (actionType === settings.ActionTypes.MORE_INFO)
+    }
+    if (actionType === settings.ActionTypes.MORE_INFO) {
       return this.i18n('learnMore');
-    if (actionType === settings.ActionTypes.UPGRADE)
+    }
+    if (actionType === settings.ActionTypes.UPGRADE) {
       return this.i18n('incompatibleApplicationsUpdateButton');
+    }
     assertNotReached();
   },
 });

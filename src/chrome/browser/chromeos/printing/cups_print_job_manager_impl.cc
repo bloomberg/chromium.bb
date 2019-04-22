@@ -138,6 +138,8 @@ chromeos::CupsPrintJob::ErrorCode ErrorCodeFromReasons(
       case PrinterReason::TONER_EMPTY:
       case PrinterReason::TONER_LOW:
         return chromeos::CupsPrintJob::ErrorCode::OUT_OF_INK;
+      case PrinterReason::TIMED_OUT:
+        return chromeos::CupsPrintJob::ErrorCode::PRINTER_UNREACHABLE;
       default:
         break;
     }
@@ -221,7 +223,7 @@ class CupsWrapper {
                  QueryResult* result) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     result->success = cups_connection_.GetJobs(printer_ids, &result->queues);
   }
@@ -230,7 +232,7 @@ class CupsWrapper {
   void CancelJobImpl(const std::string& printer_id, const int job_id) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     std::unique_ptr<::printing::CupsPrinter> printer =
         cups_connection_.GetPrinter(printer_id);
@@ -350,8 +352,9 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
 
     // Run a query now.
     base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
-        ->PostTask(FROM_HERE, base::Bind(&CupsPrintJobManagerImpl::PostQuery,
-                                         weak_ptr_factory_.GetWeakPtr()));
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(&CupsPrintJobManagerImpl::PostQuery,
+                                  weak_ptr_factory_.GetWeakPtr()));
     // Start the timer for ongoing queries.
     ScheduleQuery();
 
@@ -445,7 +448,13 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
           NotifyJobStateUpdate(print_job->GetWeakPtr());
         }
 
-        if (print_job->PipelineDead()) {
+        if (print_job->IsExpired()) {
+          // Job needs to be forcibly cancelled.
+          RecordJobResult(TIMEOUT_CANCEL);
+          FinishPrintJob(print_job);
+          // Beware, print_job was removed from jobs_ and
+          // deleted.
+        } else if (print_job->PipelineDead()) {
           RecordJobResult(FILTER_FAILED);
           FinishPrintJob(print_job);
         } else if (print_job->IsJobFinished()) {
@@ -486,7 +495,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     jobs_.clear();
   }
 
-  // Notify observers that a state update has occured for |job|.
+  // Notify observers that a state update has occurred for |job|.
   void NotifyJobStateUpdate(base::WeakPtr<CupsPrintJob> job) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

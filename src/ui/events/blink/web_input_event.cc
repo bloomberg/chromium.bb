@@ -11,7 +11,6 @@
 #include "ui/events/event_target.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/events/keycodes/keyboard_code_conversion.h"
 
 #if defined(OS_WIN)
 #include "ui/events/blink/web_input_event_builders_win.h"
@@ -105,12 +104,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromUiEvent(const KeyEvent& event) {
 
   if (webkit_event.GetModifiers() & blink::WebInputEvent::kAltKey)
     webkit_event.is_system_key = true;
-
-  // TODO(dtapuska): crbug.com/570388. Ozone appears to deliver
-  // key_code events that aren't "located" for the keypad like
-  // Windows and X11 do and blink expects.
-  webkit_event.windows_key_code =
-      NonLocatedToLocatedKeypadKeyboardCode(event.key_code(), event.code());
+  webkit_event.windows_key_code = event.key_code();
   webkit_event.native_key_code =
       KeycodeConverter::DomCodeToNativeKeycode(event.code());
   webkit_event.dom_code = static_cast<int>(event.code());
@@ -206,7 +200,7 @@ blink::WebGestureEvent MakeWebGestureEventFromUiEvent(
 
   blink::WebGestureEvent webkit_event(
       type, EventFlagsToWebEventModifiers(event.flags()), event.time_stamp(),
-      blink::kWebGestureDeviceTouchpad);
+      blink::WebGestureDevice::kTouchpad);
   if (event.type() == ET_SCROLL_FLING_START) {
     webkit_event.data.fling_start.velocity_x = event.x_offset();
     webkit_event.data.fling_start.velocity_y = event.y_offset();
@@ -262,7 +256,7 @@ blink::WebMouseEvent MakeWebMouseEvent(const MouseEvent& event) {
   webkit_event.SetPositionInWidget(event.x(), event.y());
 
 #if defined(OS_WIN)
-  if (event.native_event().message)
+  if (event.native_event().message && event.type() != ET_MOUSE_EXITED)
     return webkit_event;
 #endif
 
@@ -373,7 +367,7 @@ blink::WebGestureEvent MakeWebGestureEventFlingCancel(
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::kGestureFlingCancel,
       blink::WebInputEvent::kNoModifiers, wheel_event.TimeStamp(),
-      blink::kWebGestureDeviceTouchpad);
+      blink::WebGestureDevice::kTouchpad);
   // Coordinates need to be transferred to the fling cancel gesture only
   // for Surface-targeting to ensure that it is targeted to the correct
   // RenderWidgetHost.

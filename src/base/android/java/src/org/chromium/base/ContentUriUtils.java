@@ -56,6 +56,13 @@ public abstract class ContentUriUtils {
         }
     }
 
+    /**
+     * Get a URI for |file| which has the image capture. This function assumes that path of |file|
+     * is based on the result of UiUtils.getDirectoryForImageCapture().
+     *
+     * @param file image capture file.
+     * @return URI for |file|.
+     */
     public static Uri getContentUriFromFile(File file) {
         synchronized (sLock) {
             if (sFileProviderUtil != null) {
@@ -276,5 +283,25 @@ public abstract class ContentUriUtils {
         int index = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_FLAGS);
         return index > -1
                 && (cursor.getLong(index) & DocumentsContract.Document.FLAG_VIRTUAL_DOCUMENT) != 0;
+    }
+
+    /**
+     * @return whether a Uri has content scheme.
+     */
+    public static boolean isContentUri(String uri) {
+        if (uri == null) return false;
+        Uri parsedUri = Uri.parse(uri);
+        return parsedUri != null && ContentResolver.SCHEME_CONTENT.equals(parsedUri.getScheme());
+    }
+
+    /**
+     * Deletes a content uri from the system.
+     */
+    @CalledByNative
+    public static void delete(String uriString) {
+        assert isContentUri(uriString);
+        Uri parsedUri = Uri.parse(uriString);
+        ContentResolver resolver = ContextUtils.getApplicationContext().getContentResolver();
+        resolver.delete(parsedUri, null, null);
     }
 }

@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chromeos/chromeos_export.h"
 
 namespace base {
 class Value;
@@ -24,7 +24,7 @@ namespace chromeos {
 namespace onc {
 
 // Represents certificates parsed from the ONC Certificates section.
-class CHROMEOS_EXPORT OncParsedCertificates {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) OncParsedCertificates {
  public:
   // A Server or Authority certificate parsed from ONC. The payload is
   // represented as a net::X509Certificate.

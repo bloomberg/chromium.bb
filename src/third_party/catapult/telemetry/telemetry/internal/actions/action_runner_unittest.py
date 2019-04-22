@@ -12,54 +12,10 @@ from telemetry.internal.actions import action_runner as action_runner_module
 from telemetry.internal.actions import page_action
 from telemetry.testing import tab_test_case
 from telemetry.timeline import chrome_trace_category_filter
-from telemetry.timeline import model
 from telemetry.timeline import tracing_config
-from telemetry.web_perf import timeline_interaction_record as tir_module
+from telemetry.util import trace_processor
 
 import py_utils
-
-
-class ActionRunnerInteractionTest(tab_test_case.TabTestCase):
-
-  def GetInteractionRecords(self, trace_data):
-    timeline_model = model.TimelineModel(trace_data)
-    renderer_thread = timeline_model.GetFirstRendererThread(self._tab.id)
-    return [
-        tir_module.TimelineInteractionRecord.FromAsyncEvent(e)
-        for e in renderer_thread.async_slices
-        if tir_module.IsTimelineInteractionRecord(e.name)
-    ]
-
-  def VerifyIssuingInteractionRecords(self, **interaction_kwargs):
-    action_runner = action_runner_module.ActionRunner(
-        self._tab, skip_waits=True)
-    self.Navigate('interaction_enabled_page.html')
-    action_runner.Wait(1)
-    config = tracing_config.TracingConfig()
-    config.chrome_trace_config.SetLowOverheadFilter()
-    config.enable_chrome_trace = True
-    self._browser.platform.tracing_controller.StartTracing(config)
-    with action_runner.CreateInteraction('InteractionName',
-                                         **interaction_kwargs):
-      pass
-    trace_data, errors = self._browser.platform.tracing_controller.StopTracing()
-    self.assertEqual(errors, [])
-
-    records = self.GetInteractionRecords(trace_data)
-    self.assertEqual(
-        1,
-        len(records),
-        'Failed to issue the interaction record on the tracing timeline.'
-        ' Trace data:\n%s' % repr(trace_data._raw_data))
-    self.assertEqual('InteractionName', records[0].label)
-    for attribute_name in interaction_kwargs:
-      self.assertTrue(getattr(records[0], attribute_name))
-
-  # Test disabled for android: crbug.com/437057
-  # Test disabled for linux: crbug.com/513874
-  @decorators.Disabled('android', 'chromeos', 'linux')
-  def testIssuingMultipleMeasurementInteractionRecords(self):
-    self.VerifyIssuingInteractionRecords(repeatable=True)
 
 
 class ActionRunnerMeasureMemoryTest(tab_test_case.TabTestCase):
@@ -69,6 +25,7 @@ class ActionRunnerMeasureMemoryTest(tab_test_case.TabTestCase):
     self.action_runner = action_runner_module.ActionRunner(
         self._tab, skip_waits=True)
     self.Navigate('blank.html')
+    self._REQUESTED_DUMP_COUNT = 3
 
   def testWithoutTracing(self):
     with mock.patch.object(self._tab.browser, 'DumpMemory') as mock_method:
@@ -82,19 +39,21 @@ class ActionRunnerMeasureMemoryTest(tab_test_case.TabTestCase):
     config.enable_chrome_trace = True
     config.chrome_trace_config.SetCategoryFilter(trace_memory)
     self._browser.platform.tracing_controller.StartTracing(config)
-    try:
-      dump_id = self.action_runner.MeasureMemory(deterministic_mode)
-    finally:
-      trace_data, errors = (
-          self._browser.platform.tracing_controller.StopTracing())
-      self.assertEqual(errors, [])
 
-    # If successful, i.e. we haven't balied out due to an exception, check
-    # that we can find our dump in the trace.
-    self.assertIsNotNone(dump_id)
-    timeline_model = model.TimelineModel(trace_data)
-    dump_ids = (d.dump_id for d in timeline_model.IterGlobalMemoryDumps())
-    self.assertIn(dump_id, dump_ids)
+    expected_dump_ids = []
+    try:
+      for _ in xrange(self._REQUESTED_DUMP_COUNT):
+        dump_id = self.action_runner.MeasureMemory(deterministic_mode)
+        expected_dump_ids.append(dump_id)
+    finally:
+      trace_data = self._browser.platform.tracing_controller.StopTracing()
+
+    # Check that all dump ids are correct and different from each other.
+    self.assertNotIn(None, expected_dump_ids)
+    self.assertEqual(len(set(expected_dump_ids)), len(expected_dump_ids))
+
+    actual_dump_ids = trace_processor.ExtractMemoryDumpIds(trace_data)
+    self.assertEqual(actual_dump_ids, expected_dump_ids)
 
   # TODO(perezju): Enable when reference browser is >= M53
   # https://github.com/catapult-project/catapult/issues/2610
@@ -324,8 +283,7 @@ class ActionRunnerTest(tab_test_case.TabTestCase):
 
     self.assertRaises(exceptions.EvaluateException, WillFail)
 
-  # https://github.com/catapult-project/catapult/issues/3099
-  @decorators.Disabled('android')
+  @decorators.Disabled('android', 'mac')  # crbug.com/934649
   def testScrollToElement(self):
     self.Navigate('page_with_swipeables.html')
     action_runner = action_runner_module.ActionRunner(
@@ -482,6 +440,20 @@ class ActionRunnerTest(tab_test_case.TabTestCase):
 
     action_runner.EnterOverviewMode()
     action_runner.ExitOverviewMode()
+
+  def testCreateInteraction(self):
+    action_runner = action_runner_module.ActionRunner(self._tab)
+    self.Navigate('interaction_enabled_page.html')
+    action_runner.Wait(1)
+    config = tracing_config.TracingConfig()
+    config.chrome_trace_config.SetLowOverheadFilter()
+    config.enable_chrome_trace = True
+    self._browser.platform.tracing_controller.StartTracing(config)
+    with action_runner.CreateInteraction('InteractionName', repeatable=True):
+      pass
+    trace_data = self._browser.platform.tracing_controller.StopTracing()
+    markers = trace_processor.ExtractTimelineMarkers(trace_data)
+    self.assertIn('Interaction.InteractionName/repeatable', markers)
 
 
 class InteractionTest(unittest.TestCase):

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -30,7 +31,7 @@
 #include "third_party/sqlite/sqlite3.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_constants.h"
+#include "chromeos/constants/chromeos_constants.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace diagnostics {
@@ -136,7 +137,7 @@ class SqliteIntegrityTest : public DiagnosticsTest {
                         "Database locked by another process");
         } else {
           std::string str("Pragma failed. Error: ");
-          str += base::IntToString(error);
+          str += base::NumberToString(error);
           RecordFailure(DIAG_SQLITE_PRAGMA_FAILED, str);
         }
         return false;
@@ -157,7 +158,7 @@ class SqliteIntegrityTest : public DiagnosticsTest {
     // All done. Report to the user.
     if (errors != 0) {
       std::string str("Database corruption detected: ");
-      str += base::IntToString(errors) + " errors";
+      str += base::NumberToString(errors) + " errors";
       RecordFailure(DIAG_SQLITE_DB_CORRUPTED, str);
       return true;
     }

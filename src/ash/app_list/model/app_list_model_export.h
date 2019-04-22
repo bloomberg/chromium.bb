@@ -9,20 +9,11 @@
 // app_list_model module can be exported to consumers.
 
 #if defined(COMPONENT_BUILD)
-#if defined(WIN32)
 
-#if defined(APP_LIST_MODEL_IMPLEMENTATION)
-#define APP_LIST_MODEL_EXPORT __declspec(dllexport)
-#else
-#define APP_LIST_MODEL_EXPORT __declspec(dllimport)
-#endif  // defined(APP_LIST_MODEL_IMPLEMENTATION)
-
-#else  // defined(WIN32)
 #if defined(APP_LIST_MODEL_IMPLEMENTATION)
 #define APP_LIST_MODEL_EXPORT __attribute__((visibility("default")))
 #else
 #define APP_LIST_MODEL_EXPORT
-#endif
 #endif
 
 #else  // defined(COMPONENT_BUILD)

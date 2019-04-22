@@ -12,30 +12,14 @@ import mock
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import scheduler_stages
-from chromite.lib.const import waterfall
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import build_requests
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
-
-
-class HelperMethodTests(cros_test_lib.MockTestCase):
-  """Test cases for helper methods in scheduler_stages."""
-
-  def testBuilderName(self):
-    """Test BuilderName."""
-    builder_name = scheduler_stages.BuilderName(
-        'parrot-release', waterfall.WATERFALL_INTERNAL, 'master-release')
-    self.assertEqual(builder_name, 'parrot-release')
-
-    builder_name = scheduler_stages.BuilderName(
-        'parrot-release', waterfall.WATERFALL_RELEASE,
-        'master-release release-R62-9901.B')
-    self.assertEqual(builder_name, 'parrot-release release-R62-9901.B')
+from chromite.lib.buildstore import FakeBuildStore
 
 
 class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
@@ -62,7 +46,45 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     self._Prepare()
 
   def ConstructStage(self):
-    return scheduler_stages.ScheduleSlavesStage(self._run, self.sync_stage)
+    bs = FakeBuildStore()
+    return scheduler_stages.ScheduleSlavesStage(self._run, bs, self.sync_stage)
+
+  def testRequestBuild(self):
+    config = config_lib.BuildConfig(
+        name='child',
+        build_affinity=True,
+        important=True,
+        display_label='cq',
+        boards=['board_A'], build_type='paladin')
+
+    stage = self.ConstructStage()
+    # pylint: disable=protected-access
+    request = stage._CreateRequestBuild('child', config, 0, 'master_bb_0', None)
+    self.assertEqual(request.build_config, 'child')
+    self.assertEqual(request.master_buildbucket_id, 'master_bb_0')
+    self.assertEqual(request.extra_args, ['--buildbot',
+                                          '--master-buildbucket-id',
+                                          'master_bb_0'])
+
+  def testRequestBuildWithSnapshotRev(self):
+    config = config_lib.BuildConfig(
+        name='child',
+        build_affinity=True,
+        important=True,
+        display_label='cq',
+        boards=['board_A'], build_type='paladin')
+
+    stage = self.ConstructStage()
+    # Set the annealing snapshot revision to pass to the child builders.
+    # pylint: disable=protected-access
+    stage._run.options.cbb_snapshot_revision = 'hash1234'
+    request = stage._CreateRequestBuild('child', config, 0, 'master_bb_1', None)
+    self.assertEqual(request.build_config, 'child')
+    self.assertEqual(request.master_buildbucket_id, 'master_bb_1')
+    expected_extra_args = ['--buildbot',
+                           '--master-buildbucket-id', 'master_bb_1',
+                           '--cbb_snapshot_revision', 'hash1234']
+    self.assertEqual(request.extra_args, expected_extra_args)
 
   def testPerformStage(self):
     """Test PerformStage."""
@@ -81,20 +103,9 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
                      side_effect=buildbucket_lib.BuildbucketResponseException)
 
     slave_config_map_1 = {
-        'slave_external': config_lib.BuildConfig(
-            important=True, active_waterfall=waterfall.WATERFALL_SWARMING)}
+        'slave_external': config_lib.BuildConfig(important=True)}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map_1)
-    self.assertRaises(
-        buildbucket_lib.BuildbucketResponseException,
-        stage.ScheduleSlaveBuildsViaBuildbucket,
-        important_only=False, dryrun=True)
-
-    slave_config_map_2 = {
-        'slave_internal': config_lib.BuildConfig(
-            important=True, active_waterfall=waterfall.WATERFALL_INTERNAL)}
-    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
-                     return_value=slave_config_map_2)
     self.assertRaises(
         buildbucket_lib.BuildbucketResponseException,
         stage.ScheduleSlaveBuildsViaBuildbucket,
@@ -108,10 +119,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
                      side_effect=buildbucket_lib.BuildbucketResponseException)
 
     slave_config_map = {
-        'slave_external': config_lib.BuildConfig(
-            important=False, active_waterfall=waterfall.WATERFALL_SWARMING),
-        'slave_internal': config_lib.BuildConfig(
-            important=False, active_waterfall=waterfall.WATERFALL_INTERNAL),}
+        'slave_external': config_lib.BuildConfig(important=False),}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map)
     stage.ScheduleSlaveBuildsViaBuildbucket(important_only=False, dryrun=True)
@@ -121,7 +129,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.assertEqual(len(scheduled_slaves), 0)
     unscheduled_slaves = self._run.attrs.metadata.GetValue(
         constants.METADATA_UNSCHEDULED_SLAVES)
-    self.assertEqual(len(unscheduled_slaves), 2)
+    self.assertEqual(len(unscheduled_slaves), 1)
 
   def testScheduleSlaveBuildsFailure(self):
     """Test ScheduleSlaveBuilds with mixed slave failures."""
@@ -131,10 +139,8 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
                      side_effect=buildbucket_lib.BuildbucketResponseException)
 
     slave_config_map = {
-        'slave_external': config_lib.BuildConfig(
-            important=False, active_waterfall=waterfall.WATERFALL_SWARMING),
-        'slave_internal': config_lib.BuildConfig(
-            important=True, active_waterfall=waterfall.WATERFALL_INTERNAL)}
+        'slave_1': config_lib.BuildConfig(important=False),
+        'slave_2': config_lib.BuildConfig(important=True),}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map)
     self.assertRaises(
@@ -151,10 +157,8 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
                      return_value=('buildbucket_id', None))
 
     slave_config_map = {
-        'slave_external': config_lib.BuildConfig(
-            important=False, active_waterfall=waterfall.WATERFALL_SWARMING),
-        'slave_internal': config_lib.BuildConfig(
-            important=True, active_waterfall=waterfall.WATERFALL_INTERNAL)}
+        'slave_1': config_lib.BuildConfig(important=False),
+        'slave_2': config_lib.BuildConfig(important=True)}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map)
 
@@ -163,6 +167,9 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     scheduled_slaves = self._run.attrs.metadata.GetValue(
         constants.METADATA_SCHEDULED_IMPORTANT_SLAVES)
     self.assertEqual(len(scheduled_slaves), 1)
+    experimental_slaves = self._run.attrs.metadata.GetValue(
+        constants.METADATA_SCHEDULED_EXPERIMENTAL_SLAVES)
+    self.assertEqual(len(experimental_slaves), 1)
     unscheduled_slaves = self._run.attrs.metadata.GetValue(
         constants.METADATA_UNSCHEDULED_SLAVES)
     self.assertEqual(len(unscheduled_slaves), 0)
@@ -196,7 +203,8 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
                      return_value=content)
     slave_config = config_lib.BuildConfig(
         name='slave',
-        important=True, active_waterfall=waterfall.WATERFALL_INTERNAL,
+        build_affinity=True,
+        important=True,
         display_label='cq',
         boards=['board_A'], build_type='paladin')
 
@@ -214,10 +222,8 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
                      'PostSlaveBuildToBuildbucket',
                      side_effect=(('bb_id_1', None), ('bb_id_2', None)))
     slave_config_map = {
-        'important_external': config_lib.BuildConfig(
-            important=True, active_waterfall=waterfall.WATERFALL_SWARMING),
-        'experimental_external': config_lib.BuildConfig(
-            important=False, active_waterfall=waterfall.WATERFALL_SWARMING)}
+        'important_external': config_lib.BuildConfig(important=True),
+        'experimental_external': config_lib.BuildConfig(important=False),}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map)
 

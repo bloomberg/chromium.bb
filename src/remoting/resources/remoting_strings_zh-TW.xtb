@@ -24,6 +24,7 @@
 <translation id="1520828917794284345">將桌面調整為合適大小</translation>
 <translation id="154040539590487450">無法啟動遠端存取服務。</translation>
 <translation id="1546934824884762070">發生未預期的錯誤，請向開發人員回報這個問題。</translation>
+<translation id="1624185583382384493">Chrome 遠端桌面現已推出網路版。歡迎試試我們的<ph name="LINK_BEGIN" />網路應用程式<ph name="LINK_END" />！不僅快速、免費，還提供更多功能，包括更完善的多螢幕支援。</translation>
 <translation id="1643640058022401035">如果離開這個頁面，你的 Chromoting 工作階段也會結束。</translation>
 <translation id="1654128982815600832">正在啟用這台電腦的遠端連線...</translation>
 <translation id="170207782578677537">無法註冊這台電腦。</translation>
@@ -138,6 +139,7 @@
 <translation id="3989511127559254552">您必須先授予電腦的延伸存取權限，才能繼續操作 (只需執行一次)。</translation>
 <translation id="4006787130661126000">你必須啟用遠端連線，才能透過 Chrome 遠端桌面存取這台電腦。</translation>
 <translation id="405887016757208221">遠端電腦無法初始化工作階段。如果問題持續發生，請嘗試重新設定主機。</translation>
+<translation id="4060747889721220580">下載檔案</translation>
 <translation id="4068946408131579958">所有連線</translation>
 <translation id="409800995205263688">注意：政策設定僅允許你網路中的電腦相互連線。</translation>
 <translation id="4126409073460786861">設定完成後請重新整理本頁面。之後你只要選擇自己的裝置並輸入 PIN 碼，就可以存取這部電腦</translation>
@@ -242,6 +244,7 @@ PC</translation>
 <translation id="6198252989419008588">變更 PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (版本過舊)</translation>
 <translation id="6221358653751391898">您尚未登入 Chrome，請登入並再試一次。</translation>
+<translation id="6227369581881558336">Chrome 遠端桌面現已推出網路版，並增加了檔案傳輸等新功能！歡迎試試我們的<ph name="LINK_BEGIN" />網路應用程式<ph name="LINK_END" />。</translation>
 <translation id="6284412385303060032">在控制台登入畫面執行的主機已關閉。這樣才能切換成在個別使用者工作階段中執行的主機，以支援帷幕模式。</translation>
 <translation id="629730747756840877">帳戶</translation>
 <translation id="6304318647555713317">用戶端</translation>
@@ -289,7 +292,6 @@ PC</translation>
 <translation id="7434397035092923453">用戶端遭拒絕存取：<ph name="CLIENT_USERNAME" />。</translation>
 <translation id="7444276978508498879">已連線至用戶端：<ph name="CLIENT_USERNAME" />。</translation>
 <translation id="7526139040829362392">變更帳戶</translation>
-<translation id="7589941250119944644">Chrome 遠端桌面現已推出全新的線上版本。歡迎試試我們的<ph name="LINK_BEGIN" />網路應用程式<ph name="LINK_END" />！不僅快速、免費，更完整保留過去的所有功能。</translation>
 <translation id="7606912958770842224">啟用遠端連線</translation>
 <translation id="7628469622942688817">在這個裝置上儲存我的 PIN 碼。</translation>
 <translation id="7649070708921625228">說明</translation>

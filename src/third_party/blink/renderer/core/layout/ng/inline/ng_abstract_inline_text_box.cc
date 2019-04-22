@@ -19,7 +19,6 @@ NGAbstractInlineTextBox::FragmentToNGAbstractInlineTextBoxHashMap*
     NGAbstractInlineTextBox::g_abstract_inline_text_box_map_ = nullptr;
 
 scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::GetOrCreate(
-    LineLayoutText line_layout_item,
     const NGPaintFragment& fragment) {
   DCHECK(fragment.GetLayoutObject()->IsText()) << fragment.GetLayoutObject();
   if (!g_abstract_inline_text_box_map_) {
@@ -30,7 +29,8 @@ scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::GetOrCreate(
   if (it != g_abstract_inline_text_box_map_->end())
     return it->value;
   scoped_refptr<AbstractInlineTextBox> obj =
-      base::AdoptRef(new NGAbstractInlineTextBox(line_layout_item, fragment));
+      base::AdoptRef(new NGAbstractInlineTextBox(
+          LineLayoutText(ToLayoutText(fragment.GetLayoutObject())), fragment));
   g_abstract_inline_text_box_map_->Set(&fragment, obj);
   return obj;
 }
@@ -66,14 +66,14 @@ void NGAbstractInlineTextBox::Detach() {
 }
 
 bool NGAbstractInlineTextBox::HasSoftWrapToNextLine() const {
-  return ToNGPhysicalLineBoxFragment(
+  return To<NGPhysicalLineBoxFragment>(
              fragment_->ContainerLineBox()->PhysicalFragment())
       .HasSoftWrapToNextLine();
 }
 
 const NGPhysicalTextFragment& NGAbstractInlineTextBox::PhysicalTextFragment()
     const {
-  return ToNGPhysicalTextFragment(fragment_->PhysicalFragment());
+  return To<NGPhysicalTextFragment>(fragment_->PhysicalFragment());
 }
 
 bool NGAbstractInlineTextBox::NeedsLayout() const {
@@ -86,7 +86,7 @@ bool NGAbstractInlineTextBox::NeedsTrailingSpace() const {
   const NGPaintFragment* next_fragment = NextTextFragmentForSameLayoutObject();
   if (!next_fragment)
     return false;
-  return ToNGPhysicalTextFragment(next_fragment->PhysicalFragment())
+  return To<NGPhysicalTextFragment>(next_fragment->PhysicalFragment())
              .StartOffset() != PhysicalTextFragment().EndOffset();
 }
 
@@ -110,7 +110,7 @@ NGAbstractInlineTextBox::NextInlineTextBox() const {
   const NGPaintFragment* next_fragment = NextTextFragmentForSameLayoutObject();
   if (!next_fragment)
     return nullptr;
-  return GetOrCreate(GetLineLayoutItem(), *next_fragment);
+  return GetOrCreate(*next_fragment);
 }
 
 LayoutRect NGAbstractInlineTextBox::LocalBounds() const {
@@ -166,6 +166,9 @@ void NGAbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
 String NGAbstractInlineTextBox::GetText() const {
   if (!fragment_ || !GetLineLayoutItem())
     return String();
+
+  String result = PhysicalTextFragment().Text().ToString();
+
   // For compatibility with |InlineTextBox|, we should have a space character
   // for soft line break.
   // Following tests require this:
@@ -173,8 +176,15 @@ String NGAbstractInlineTextBox::GetText() const {
   //  - accessibility/inline-text-changes.html
   //  - accessibility/inline-text-word-boundaries.html
   if (NeedsTrailingSpace())
-    return PhysicalTextFragment().Text().ToString() + " ";
-  return PhysicalTextFragment().Text().ToString();
+    result = result + " ";
+
+  // When the CSS first-letter pseudoselector is used, the LayoutText for the
+  // first letter is excluded from the accessibility tree, so we need to prepend
+  // its text here.
+  if (LayoutText* first_letter = GetFirstLetterPseudoLayoutText())
+    result = first_letter->GetText().SimplifyWhiteSpace() + result;
+
+  return result;
 }
 
 bool NGAbstractInlineTextBox::IsFirst() const {
@@ -204,7 +214,7 @@ scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::NextOnLine()
   NGPaintFragmentTraversal cursor(*fragment_->ContainerLineBox(), *fragment_);
   for (cursor.MoveToNext(); !cursor.IsAtEnd(); cursor.MoveToNext()) {
     if (cursor->GetLayoutObject()->IsText())
-      return GetOrCreate(GetLineLayoutItem(), *cursor);
+      return GetOrCreate(*cursor);
   }
   return nullptr;
 }
@@ -218,7 +228,7 @@ scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::PreviousOnLine()
   NGPaintFragmentTraversal cursor(*fragment_->ContainerLineBox(), *fragment_);
   for (cursor.MoveToPrevious(); !cursor.IsAtEnd(); cursor.MoveToPrevious()) {
     if (cursor->GetLayoutObject()->IsText())
-      return GetOrCreate(GetLineLayoutItem(), *cursor);
+      return GetOrCreate(*cursor);
   }
   return nullptr;
 }

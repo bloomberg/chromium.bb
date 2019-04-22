@@ -4,6 +4,7 @@
 
 #include "components/drive/chromeos/file_system/remove_operation.h"
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system/operation_delegate.h"

@@ -13,7 +13,12 @@
 namespace gpu {
 
 class DecoderClient;
+struct GpuFeatureInfo;
+struct GpuPreferences;
+class MemoryTracker;
 class ServiceTransferCache;
+class SharedContextState;
+class SharedImageManager;
 
 namespace gles2 {
 class CopyTextureCHROMIUMResourceManager;
@@ -24,7 +29,6 @@ class Outputter;
 }  // namespace gles2
 
 namespace raster {
-struct RasterDecoderContextState;
 
 // This class implements the AsyncAPIInterface interface, decoding
 // RasterInterface commands and calling GL.
@@ -35,8 +39,11 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
       DecoderClient* client,
       CommandBufferServiceBase* command_buffer_service,
       gles2::Outputter* outputter,
-      gles2::ContextGroup* group,
-      scoped_refptr<RasterDecoderContextState> raster_decoder_context_state);
+      const GpuFeatureInfo& gpu_feature_info,
+      const GpuPreferences& gpu_preferences,
+      MemoryTracker* memory_tracker,
+      SharedImageManager* shared_image_manager,
+      scoped_refptr<SharedContextState> shared_context_state);
 
   ~RasterDecoder() override;
 
@@ -83,9 +90,11 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
 
   virtual void SetUpForRasterCHROMIUMForTest() = 0;
   virtual void SetOOMErrorForTest() = 0;
+  virtual void DisableFlushWorkaroundForTest() = 0;
 
  protected:
-  RasterDecoder(CommandBufferServiceBase* command_buffer_service,
+  RasterDecoder(DecoderClient* client,
+                CommandBufferServiceBase* command_buffer_service,
                 gles2::Outputter* outputter);
 
  private:

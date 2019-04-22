@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,7 @@
 #
 
 load(
-    "//absl:copts.bzl",
+    "//absl:copts/configure_copts.bzl",
     "ABSL_DEFAULT_COPTS",
     "ABSL_TEST_COPTS",
     "ABSL_EXCEPTIONS_FLAG",
@@ -168,6 +168,7 @@ cc_library(
     deps = [
         ":bad_optional_access",
         "//absl/base:config",
+        "//absl/base:core_headers",
         "//absl/memory",
         "//absl/meta:type_traits",
         "//absl/utility",
@@ -286,6 +287,7 @@ cc_test(
     linkopts = ABSL_EXCEPTIONS_FLAG_LINKOPTS,
     deps = [
         ":variant",
+        "//absl/base:config",
         "//absl/base:exception_safety_testing",
         "//absl/memory",
         "@com_google_googletest//:gtest_main",

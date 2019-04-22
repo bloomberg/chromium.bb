@@ -59,7 +59,7 @@ import "oleacc.idl";
  * 
  *  IAccessible2 IDL Specification 
  * 
- *  Copyright (c) 2007, 2013 Linux Foundation 
+ *  Copyright (c) 2007, 2010 Linux Foundation 
  *  Copyright (c) 2006 IBM Corporation 
  *  Copyright (c) 2000, 2006 Sun Microsystems, Inc. 
  *  All rights reserved. 
@@ -400,6 +400,24 @@ const WCHAR *const IA2_RELATION_PREVIOUS_TABBABLE = L"previousTabbable";
 /** This object is a sub window of a target object. */
 const WCHAR *const IA2_RELATION_SUBWINDOW_OF = L"subwindowOf";
 
+/** The target object provides the detailed, extended description for this
+ object. It provides more detailed information than would normally be provided
+ using the IA2_RELATION_DESCRIBED_BY relation. A common use for this relation is
+ in digital publishing where an extended description needs to be conveyed in
+ a book that requires structural markup or the embedding of other technology to
+ provide illustrative content. */
+const WCHAR *const IA2_RELATION_DETAILS = L"details";
+
+/** This object provides the detailed, extended description for the target
+ object. See IA2_RELATION_DETAILS. */
+const WCHAR *const IA2_RELATION_DETAILS_FOR = L"detailsFor";
+
+/** The target object is the error message for this object. */
+const WCHAR *const IA2_RELATION_ERROR = L"error";
+
+/** This object is the error message for the target object. */
+const WCHAR *const IA2_RELATION_ERROR_FOR = L"errorFor";
+
 ///@}
 
 /** This interface gives access to an object's set of relations.
@@ -694,55 +712,55 @@ interface IAccessibleAction : IUnknown
 /*************************************************************************
  *
  *  File Name (AccessibleRole.idl)
- * 
- *  IAccessible2 IDL Specification 
- * 
- *  Copyright (c) 2007, 2013 Linux Foundation 
- *  Copyright (c) 2006 IBM Corporation 
- *  Copyright (c) 2000, 2006 Sun Microsystems, Inc. 
- *  All rights reserved. 
- *   
- *   
- *  Redistribution and use in source and binary forms, with or without 
- *  modification, are permitted provided that the following conditions 
- *  are met: 
- *   
- *   1. Redistributions of source code must retain the above copyright 
- *      notice, this list of conditions and the following disclaimer. 
- *   
- *   2. Redistributions in binary form must reproduce the above 
- *      copyright notice, this list of conditions and the following 
- *      disclaimer in the documentation and/or other materials 
- *      provided with the distribution. 
  *
- *   3. Neither the name of the Linux Foundation nor the names of its 
- *      contributors may be used to endorse or promote products 
- *      derived from this software without specific prior written 
- *      permission. 
- *   
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND 
- *  CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
- *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
- *  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT 
- *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
- *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
- *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
- *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
- *   
- *  This BSD License conforms to the Open Source Initiative "Simplified 
- *  BSD License" as published at: 
- *  http://www.opensource.org/licenses/bsd-license.php 
- *   
- *  IAccessible2 is a trademark of the Linux Foundation. The IAccessible2 
- *  mark may be used in accordance with the Linux Foundation Trademark 
- *  Policy to indicate compliance with the IAccessible2 specification. 
- * 
- ************************************************************************/ 
+ *  IAccessible2 IDL Specification
+ *
+ *  Copyright (c) 2007-2018 Linux Foundation
+ *  Copyright (c) 2006 IBM Corporation
+ *  Copyright (c) 2000, 2006 Sun Microsystems, Inc.
+ *  All rights reserved.
+ *
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *
+ *   2. Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials
+ *      provided with the distribution.
+ *
+ *   3. Neither the name of the Linux Foundation nor the names of its
+ *      contributors may be used to endorse or promote products
+ *      derived from this software without specific prior written
+ *      permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ *  CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ *  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ *  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  This BSD License conforms to the Open Source Initiative "Simplified
+ *  BSD License" as published at:
+ *  http://www.opensource.org/licenses/bsd-license.php
+ *
+ *  IAccessible2 is a trademark of the Linux Foundation. The IAccessible2
+ *  mark may be used in accordance with the Linux Foundation Trademark
+ *  Policy to indicate compliance with the IAccessible2 specification.
+ *
+ ************************************************************************/
 
 
 
@@ -750,19 +768,19 @@ interface IAccessibleAction : IUnknown
 
   This enumerator defines an extended set of accessible roles of objects implementing
   the %IAccessible2 interface. These roles are in addition to the MSAA roles obtained
-  through the MSAA get_accRole method.  Examples are 'footnote', 'heading', and 
+  through the MSAA get_accRole method.  Examples are 'footnote', 'heading', and
   'label'. You obtain an object's %IAccessible2 roles by calling IAccessible2::role.
 */
 enum IA2Role {
 
-  /** Unknown role. The object contains some Accessible information, but its 
+  /** Unknown role. The object contains some Accessible information, but its
    role is not known.
   */
   IA2_ROLE_UNKNOWN = 0,
 
   /** An object that can be drawn into and to manage events from the objects
    drawn into it.  Also refer to ::IA2_ROLE_FRAME,
-   ::IA2_ROLE_GLASS_PANE, and ::IA2_ROLE_LAYERED_PANE. 
+   ::IA2_ROLE_GLASS_PANE, and ::IA2_ROLE_LAYERED_PANE.
   */
   IA2_ROLE_CANVAS = 0x401,
 
@@ -778,18 +796,18 @@ enum IA2Role {
   /// A date editor.
   IA2_ROLE_DATE_EDITOR,
 
-  /** An iconified internal frame in an ::IA2_ROLE_DESKTOP_PANE. 
+  /** An iconified internal frame in an ::IA2_ROLE_DESKTOP_PANE.
    Also refer to ::IA2_ROLE_INTERNAL_FRAME.
   */
   IA2_ROLE_DESKTOP_ICON,
 
-  /** A desktop pane. A pane that supports internal frames and iconified 
+  /** A desktop pane. A pane that supports internal frames and iconified
    versions of those internal frames.  Also refer to ::IA2_ROLE_INTERNAL_FRAME.
   */
   IA2_ROLE_DESKTOP_PANE,
 
-  /** A directory pane. A pane that allows the user to navigate through 
-   and select the contents of a directory. May be used by a file chooser.   
+  /** A directory pane. A pane that allows the user to navigate through
+   and select the contents of a directory. May be used by a file chooser.
    Also refer to ::IA2_ROLE_FILE_CHOOSER.
   */
   IA2_ROLE_DIRECTORY_PANE,
@@ -806,15 +824,15 @@ enum IA2Role {
   /// Text that is used as an endnote (footnote at the end of a chapter or section).
   IA2_ROLE_ENDNOTE,
 
-  /** A file chooser. A specialized dialog that displays the files in the 
-   directory and lets the user select a file, browse a different directory, 
-   or specify a filename. May use the directory pane to show the contents of 
-   a directory.  
+  /** A file chooser. A specialized dialog that displays the files in the
+   directory and lets the user select a file, browse a different directory,
+   or specify a filename. May use the directory pane to show the contents of
+   a directory.
    Also refer to ::IA2_ROLE_DIRECTORY_PANE.
   */
   IA2_ROLE_FILE_CHOOSER,
 
-  /** A font chooser. A font chooser is a component that lets the user pick 
+  /** A font chooser. A font chooser is a component that lets the user pick
    various attributes for fonts.
   */
   IA2_ROLE_FONT_CHOOSER,
@@ -832,7 +850,7 @@ enum IA2Role {
   */
   IA2_ROLE_FORM,
 
-  /** Frame role. A top level window with a title bar, border, menu bar, etc.  
+  /** Frame role. A top level window with a title bar, border, menu bar, etc.
    It is often used as the primary window for an application.  Also refer to
    ::IA2_ROLE_CANVAS and the MSAA roles of dialog and window.
   */
@@ -855,7 +873,7 @@ enum IA2Role {
   /// A small fixed size picture, typically used to decorate components.
   IA2_ROLE_ICON,
 
-  /** An image map object.  Usually a graphic with multiple hotspots, where 
+  /** An image map object.  Usually a graphic with multiple hotspots, where
    each hotspot can be activated resulting in the loading of another document
    or section of a document.
   */
@@ -866,8 +884,8 @@ enum IA2Role {
   */
   IA2_ROLE_INPUT_METHOD_WINDOW,
 
-  /** An internal frame. A frame-like object that is clipped by a desktop pane.  
-   The desktop pane, internal frame, and desktop icon objects are often used to 
+  /** An internal frame. A frame-like object that is clipped by a desktop pane.
+   The desktop pane, internal frame, and desktop icon objects are often used to
    create multiple document interfaces within an application.
    Also refer to ::IA2_ROLE_DESKTOP_ICON, ::IA2_ROLE_DESKTOP_PANE, and ::IA2_ROLE_FRAME.
   */
@@ -876,9 +894,9 @@ enum IA2Role {
   /// An object used to present an icon or short string in an interface.
   IA2_ROLE_LABEL,
 
-  /** A layered pane. A specialized pane that allows its children to be drawn 
-   in layers, providing a form of stacking order. This is usually the pane that 
-   holds the menu bar as  well as the pane that contains most of the visual 
+  /** A layered pane. A specialized pane that allows its children to be drawn
+   in layers, providing a form of stacking order. This is usually the pane that
+   holds the menu bar as  well as the pane that contains most of the visual
    components in a window.
    Also refer to ::IA2_ROLE_CANVAS, ::IA2_ROLE_GLASS_PANE, and ::IA2_ROLE_ROOT_PANE.
   */
@@ -912,7 +930,7 @@ enum IA2Role {
   */
   IA2_ROLE_REDUNDANT_OBJECT,
 
-  /** A root pane. A specialized pane that has a glass pane and a layered pane 
+  /** A root pane. A specialized pane that has a glass pane and a layered pane
    as its children.
    Also refer to ::IA2_ROLE_GLASS_PANE and ::IA2_ROLE_LAYERED_PANE
   */
@@ -922,19 +940,19 @@ enum IA2Role {
   */
   IA2_ROLE_RULER,
 
-  /** A scroll pane. An object that allows a user to incrementally view a large 
+  /** A scroll pane. An object that allows a user to incrementally view a large
    amount of information.  Its children can include scroll bars and a viewport.
    Also refer to ::IA2_ROLE_VIEW_PORT and MSAA's scroll bar role.
   */
   IA2_ROLE_SCROLL_PANE,
 
   /** A container of document content.  An example of the use of this role is to
-   represent an HTML DIV tag.  A section may be used as a region.  A region is a 
-   group of elements that together form a perceivable unit.  A region does not 
-   necessarily follow the logical structure of the content, but follows the 
-   perceivable structure of the page.  A region may have an attribute in the set 
-   of IAccessible2::attributes which indicates that it is "live".  A live region 
-   is content that is likely to change in response to a timed change, a user 
+   represent an HTML DIV tag.  A section may be used as a region.  A region is a
+   group of elements that together form a perceivable unit.  A region does not
+   necessarily follow the logical structure of the content, but follows the
+   perceivable structure of the page.  A region may have an attribute in the set
+   of IAccessible2::attributes which indicates that it is "live".  A live region
+   is content that is likely to change in response to a timed change, a user
    event, or some other programmed logic or event.
   */
   IA2_ROLE_SECTION,
@@ -942,13 +960,13 @@ enum IA2Role {
   /// Object with graphical representation used to represent content on draw pages.
   IA2_ROLE_SHAPE,
 
-  /** A split pane. A specialized panel that presents two other panels at the 
-   same time. Between the two panels is a divider the user can manipulate to make 
+  /** A split pane. A specialized panel that presents two other panels at the
+   same time. Between the two panels is a divider the user can manipulate to make
    one panel larger and the other panel smaller.
   */
   IA2_ROLE_SPLIT_PANE,
 
-  /** An object that forms part of a menu system but which can be "undocked" 
+  /** An object that forms part of a menu system but which can be "undocked"
    from or "torn off" the menu system to exist as a separate window.
   */
   IA2_ROLE_TEAR_OFF_MENU,
@@ -959,16 +977,16 @@ enum IA2Role {
   /// Collection of objects that constitute a logical text entity.
   IA2_ROLE_TEXT_FRAME,
 
-  /** A toggle button. A specialized push button that can be checked or unchecked, 
+  /** A toggle button. A specialized push button that can be checked or unchecked,
    but does not provide a separate indicator for the current state.
    Also refer to MSAA's roles of push button, check box, and radio button.
-   <BR><B>Note:</B> IA2_ROLE_TOGGLE_BUTTON should not be used.  Instead, use MSAA's 
+   <BR><B>Note:</B> IA2_ROLE_TOGGLE_BUTTON should not be used.  Instead, use MSAA's
    ROLE_SYSTEM_PUSHBUTTON and STATE_SYSTEM_PRESSED.
   */
   IA2_ROLE_TOGGLE_BUTTON,
 
-  /** A viewport. An object usually used in a scroll pane. It represents the 
-   portion of the entire data that the user can see. As the user manipulates 
+  /** A viewport. An object usually used in a scroll pane. It represents the
+   portion of the entire data that the user can see. As the user manipulates
    the scroll bars, the contents of the viewport can change.
    Also refer to ::IA2_ROLE_SCROLL_PANE.
   */
@@ -984,10 +1002,10 @@ enum IA2Role {
    content, it may be appropriate to use a more general role.
   */
   IA2_ROLE_COMPLEMENTARY_CONTENT,
-  
+
   /** An object representing a navigational landmark, a region on a page to
-   which the user may want quick access, such as navigating, searching,
-   perusing the primary content.
+   which the user may want quick access, such as a navigation area, a search
+   facility or the main content of a page.
   */
   IA2_ROLE_LANDMARK,
 
@@ -999,15 +1017,17 @@ enum IA2Role {
 
   /** Content previously deleted or proposed for deletion, e.g. in revision
    history or a content view providing suggestions from reviewers.
-   */
+  */
   IA2_ROLE_CONTENT_DELETION,
 
   /** Content previously inserted or proposed for insertion, e.g. in revision
    history or a content view providing suggestions from reviewers.
-   */
-  IA2_ROLE_CONTENT_INSERTION
-};
+  */
+  IA2_ROLE_CONTENT_INSERTION,
 
+  /// A section of content that is quoted from another source.
+  IA2_ROLE_BLOCK_QUOTE
+};
 /*************************************************************************
  *
  *  File Name (AccessibleStates.idl)
@@ -1275,6 +1295,8 @@ IA2_STATE_PINNED =					0x80000
  @section _interfaces Interfaces
   IAccessible2\n
   IAccessible2_2\n
+  IAccessible2_3\n
+  IAccessible2_4\n
   IAccessibleAction\n
   IAccessibleApplication\n
   IAccessibleComponent\n
@@ -1294,6 +1316,7 @@ IA2_STATE_PINNED =					0x80000
 
  @section _structs Structs
   IA2Locale\n
+  IA2Range\n
   IA2TableModelChange\n
   IA2TextSegment
 
@@ -1370,7 +1393,7 @@ IA2_STATE_PINNED =					0x80000
  @ref _memory\n
  &nbsp;&nbsp;@ref _arrayConsideration\n
  @ref _indexes\n
- @ref _enumBase\n
+ @ref _enums\n
  @ref _specialOffsets\n
  @ref _dicoveringInterfaces\n
  @ref _changingInterfaces\n
@@ -1446,7 +1469,7 @@ IA2_STATE_PINNED =					0x80000
  @section _indexes Zero and One Based Indexes
   Unless otherwise specified all offsets and indexes are 0 based. 
 
- @section _enumBase Enum Base
+ @section _enums Enums
   Note that enums start at 0.
 
  @section _specialOffsets Special Offsets for use in the IAccessibleText and IAccessibleEditableText Methods
@@ -2032,6 +2055,86 @@ interface IAccessible2_2 : IAccessible2
 
 }
 
+
+
+
+
+
+/**
+ * This structure represents a directional range of the content. It is defined
+ * by two points in the content, where each one is defined by an accessible
+ * object and an offset relative to it. A typical case of a range point is
+ * a text accessible and text offset within it.
+ *
+ * The "anchor" is one point of the range and typically remains constant.
+ * The other point is the "active" point, which typically corresponds to
+ * the user's focus or point of interest. The user moves the active point to
+ * expand or collapse the range. In most cases, anchor is the start of the range
+ * and active is the end. However, in case of selection, when selecting
+ * backwards (e.g. pressing shift+left arrow in a text field), the start of
+ * the range is the active point, as the user moves this to manipulate
+ * the selection.
+ */
+typedef struct IA2Range {
+  IUnknown* anchor;
+  long anchorOffset;
+  IUnknown* active;
+  long activeOffset;
+} IA2Range;
+
+/**
+ * @brief This interface is an extension of IAccessible2_2 and IAccessible2
+ * interfaces.
+ */
+[object, uuid(5BE18059-762E-4E73-9476-ABA294FED411)]
+interface IAccessible2_3 : IAccessible2_2
+{
+  /**
+   * @brief Returns an array of ranges for selections within the accessible.
+   * @param [out] ranges
+     The array of selection ranges, allocated by the server. The client must
+     free it with CoTaskMemFree.
+   * @param [out] nRanges
+     the array length
+   * @retval S_OK
+   * @retval S_FALSE returned if there is no selection within the accessible
+  */
+  [propget] HRESULT selectionRanges
+    (
+      [out, size_is(,*nRanges)] IA2Range **ranges,
+      [out, retval] long *nRanges
+    );
+}
+
+/**
+ * @brief This interface is an extension of IAccessible2_3 which exposes a
+ * single method for setting the current selection given a number of selection
+ * ranges.
+ *
+ * This interface is preliminary as it has not been adopted by any standard yet.
+ */
+[object, uuid(610a7bec-91bb-444d-a336-a0daf13c4c29)]
+interface IAccessible2_4 : IAccessible2_3
+{
+  /**
+   * @brief Sets the current selection to the provided ranges. The provided
+   * ranges don't need to be contained within this accessible.
+   * @param [in] nRanges
+   *     The length of the array containing the selection ranges.
+   * @param [in] ranges
+   *     The array of selection ranges, allocated by the client with
+   *     CoTaskMemAlloc and freed by the client with CoTaskMemFree.
+   * @retval S_OK Returned if the selection was made successfully.
+   * @retval S_FALSE Returned if the selection could not be made.
+   * @retval E_INVALIDARG Returned if any of the input arguments are invalid.
+   */
+  HRESULT setSelectionRanges
+  (
+      [in] long nRanges,
+      [in, size_is(nRanges)] IA2Range* ranges
+      );
+}
+
 /*************************************************************************
  *
  *  File Name (AccessibleComponent.idl)
@@ -2376,25 +2479,42 @@ typedef struct IA2TextSegment {
 */
 
 enum IA2TextBoundaryType {
-  IA2_TEXT_BOUNDARY_CHAR,       /**< Typically, a single character is returned.  In some cases more than
-                                 one character is returned, for example, when a document contains field
-                                 data such as a field containing a date, time, or footnote reference.
-                                 In this case the caret can move over several characters in one movement
-                                 of the caret.  Note that after the caret moves, the caret offset changes
-                                 by the number of characters in the field, e.g. by 8 characters in the 
-                                 following date: 03/26/07. */
-  IA2_TEXT_BOUNDARY_WORD,       /**< The range provided matches the range observed when the application
-                                 processes the Ctrl + left arrow and Ctrl + right arrow key sequences.
-                                 Typically this is from the start of one word to the start of the next, but
-                                 various applications are inconsistent in the handling of the end of a line. */
-  IA2_TEXT_BOUNDARY_SENTENCE,   ///< Range is from start of one sentence to the start of another sentence.
-  IA2_TEXT_BOUNDARY_PARAGRAPH,  ///< Range is from start of one paragraph to the start of another paragraph.
-  IA2_TEXT_BOUNDARY_LINE,       /**< Range is from start of one line to the start of another line. This
-                                 often means that an end-of-line character will appear at the end of the
-                                 range. However in the case of some applications an end-of-line character
-                                 indicates the end of a paragraph and the lines composing the paragraph,
-                                 other than the last line, do not contain an end of line character. */
-  IA2_TEXT_BOUNDARY_ALL         ///< Using this value will cause all text to be returned.
+  /** Typically, a single character is returned. In some cases more than one
+   character is returned, for example, when a document contains field data such
+   as a field containing a date, time, or footnote reference. In this case
+   the caret can move over several characters in one movement of the caret.
+   Note, that after the caret moves, the caret offset changes by the number of
+  characters in the field, e.g. by 8 characters in the following date: 03/26/07.
+  */
+  IA2_TEXT_BOUNDARY_CHAR,
+
+  /** The range provided matches the range observed when the application
+   processes the Ctrl + left arrow and Ctrl + right arrow key sequences.
+   Typically this is from the start of one word to the start of the next, but
+   various applications are inconsistent in the handling of the end of a line.
+  */
+  IA2_TEXT_BOUNDARY_WORD,
+
+  /** Range is from start of one sentence to the start of another sentence.
+  */
+  IA2_TEXT_BOUNDARY_SENTENCE,
+
+  /** Range is from start of one paragraph to the start of another paragraph.
+  */
+  IA2_TEXT_BOUNDARY_PARAGRAPH,
+
+  /** Range is from start of one line to the start of another line. This often
+   means that an end-of-line character will appear at the end of the range.
+   However in the case of some applications an end-of-line character indicates
+   the end of a paragraph and the lines composing the paragraph, other than
+   the last line, do not contain an end of line character.
+  */
+  IA2_TEXT_BOUNDARY_LINE,
+
+  /** <b>Deprecated.</b> Using this value will cause all text to be returned.
+   Note: IAccessibleText::text should be used instead.
+  */
+  IA2_TEXT_BOUNDARY_ALL
 };
 
 /** @brief This interface gives read-only access to text.
@@ -2405,7 +2525,7 @@ enum IA2TextBoundaryType {
   provides access to the text's content, attributes, and spatial location.  
   However, text can not be modified with this interface.  That is the task 
   of the IAccessibleEditableText interface.
-        
+
  The text length, i.e. the number of characters in the text, is
   returned by IAccessibleText::nCharacters. All methods that operate 
   on particular characters (e.g. IAccessibleText::textAtOffset) use character 
@@ -5383,7 +5503,7 @@ interface IAccessibleDocument : IUnknown
   
    A document's most recently targeted in-page anchor is returned.  A typical use
     of this method is to fetch the anchor target within an HTML document.  In this
-    case anchor targets are those which have been defined with the &lt;a&gt; tag.  
+    case anchor targets are those which has been defined with the <a> tag.  
 
    @param [out] accessible
    @retval S_OK
@@ -5468,6 +5588,7 @@ library IAccessible2Lib
     importlib ("oleacc.dll");
     interface IAccessible2;
     interface IAccessible2_2;
+    interface IAccessible2_3;
     interface IAccessibleAction;
     interface IAccessibleApplication;
     interface IAccessibleComponent;

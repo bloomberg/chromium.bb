@@ -15,17 +15,35 @@ import android.text.format.DateUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge.AboutVersionStrings;
+import org.chromium.chrome.browser.preferences.developer.DeveloperPreferences;
+import org.chromium.ui.widget.Toast;
 
 import java.util.Calendar;
 
 /**
  * Settings fragment that displays information about Chrome.
  */
-public class AboutChromePreferences extends PreferenceFragment {
+public class AboutChromePreferences
+        extends PreferenceFragment implements Preference.OnPreferenceClickListener {
+    private static final int TAPS_FOR_DEVELOPER_PREFERENCES = 7;
 
     private static final String PREF_APPLICATION_VERSION = "application_version";
     private static final String PREF_OS_VERSION = "os_version";
     private static final String PREF_LEGAL_INFORMATION = "legal_information";
+
+    // Non-translated strings:
+    private static final String MSG_DEVELOPER_ENABLE_COUNTDOWN =
+            "%s more taps to enable Developer options.";
+    private static final String MSG_DEVELOPER_ENABLE_COUNTDOWN_LAST_TAP =
+            "1 more tap to enable Developer options.";
+    private static final String MSG_DEVELOPER_ENABLED = "Developer options are now enabled.";
+    private static final String MSG_DEVELOPER_ALREADY_ENABLED =
+            "Developer options are already enabled.";
+
+    private int mDeveloperHitCountdown = DeveloperPreferences.shouldShowDeveloperPreferences()
+            ? -1
+            : TAPS_FOR_DEVELOPER_PREFERENCES;
+    private Toast mToast;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,6 +55,7 @@ public class AboutChromePreferences extends PreferenceFragment {
         AboutVersionStrings versionStrings = prefServiceBridge.getAboutVersionStrings();
         Preference p = findPreference(PREF_APPLICATION_VERSION);
         p.setSummary(getApplicationVersion(getActivity(), versionStrings.getApplicationVersion()));
+        p.setOnPreferenceClickListener(this);
         p = findPreference(PREF_OS_VERSION);
         p.setSummary(versionStrings.getOSVersion());
         p = findPreference(PREF_LEGAL_INFORMATION);
@@ -65,5 +84,46 @@ public class AboutChromePreferences extends PreferenceFragment {
                 info.lastUpdateTime, System.currentTimeMillis(), 0);
         return context.getString(R.string.version_with_update_time, version,
                 updateTimeString);
+    }
+
+    @Override
+    public boolean onPreferenceClick(Preference preference) {
+        if (mDeveloperHitCountdown > 0) {
+            mDeveloperHitCountdown--;
+
+            if (mDeveloperHitCountdown == 0) {
+                DeveloperPreferences.setDeveloperPreferencesEnabled();
+
+                // Show a toast that the developer preferences were enabled.
+                if (mToast != null) {
+                    mToast.cancel();
+                }
+                mToast = Toast.makeText(getActivity(), MSG_DEVELOPER_ENABLED, Toast.LENGTH_LONG);
+                mToast.show();
+            } else if (mDeveloperHitCountdown > 0
+                    && mDeveloperHitCountdown < (TAPS_FOR_DEVELOPER_PREFERENCES - 2)) {
+                // Show a countdown toast.
+                if (mToast != null) {
+                    mToast.cancel();
+                }
+                String title;
+                if (mDeveloperHitCountdown == 1) {
+                    title = MSG_DEVELOPER_ENABLE_COUNTDOWN_LAST_TAP;
+                } else {
+                    title = String.format(MSG_DEVELOPER_ENABLE_COUNTDOWN, mDeveloperHitCountdown);
+                }
+                mToast = Toast.makeText(getActivity(), title, Toast.LENGTH_SHORT);
+                mToast.show();
+            }
+        } else if (mDeveloperHitCountdown < 0) {
+            // Show a toast that the developer preferences are already enabled.
+            if (mToast != null) {
+                mToast.cancel();
+            }
+            mToast =
+                    Toast.makeText(getActivity(), MSG_DEVELOPER_ALREADY_ENABLED, Toast.LENGTH_LONG);
+            mToast.show();
+        }
+        return true;
     }
 }

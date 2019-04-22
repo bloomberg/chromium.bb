@@ -10,11 +10,13 @@
 #include <wrl/client.h>
 #include <wrl/implements.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_hstring.h"
@@ -119,11 +121,10 @@ class NotificationPlatformBridgeWinUITest : public InProcessBrowserTest {
     quit_task.Run();
   }
 
-  void DisplayedNotifications(
-      const base::RepeatingClosure& quit_task,
-      std::unique_ptr<std::set<std::string>> displayed_notifications,
-      bool supports_synchronization) {
-    displayed_notifications_ = *displayed_notifications;
+  void DisplayedNotifications(const base::RepeatingClosure& quit_task,
+                              std::set<std::string> displayed_notifications,
+                              bool supports_synchronization) {
+    displayed_notifications_ = std::move(displayed_notifications);
     quit_task.Run();
   }
 

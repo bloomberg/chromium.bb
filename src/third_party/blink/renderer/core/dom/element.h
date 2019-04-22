@@ -30,6 +30,8 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/css/style_recalc.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/element_data.h"
@@ -38,9 +40,9 @@
 #include "third_party/blink/renderer/core/html/focus_options.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -57,7 +59,6 @@ class DOMRectList;
 class DOMStringMap;
 class DOMTokenList;
 class Document;
-class DisplayLockContext;
 class ElementAnimations;
 class ElementInternals;
 class ElementIntersectionObserverData;
@@ -87,7 +88,6 @@ class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class USVStringOrTrustedURL;
 class V0CustomElementDefinition;
-class V8DisplayLockCallback;
 
 enum SpellcheckAttributeState {
   kSpellcheckAttributeTrue,
@@ -114,7 +114,7 @@ enum class SelectionBehaviorOnFocus {
   kNone,
 };
 
-// https://html.spec.whatwg.org/multipage/dom.html#dom-document-nameditem-filter
+// https://html.spec.whatwg.org/C/#dom-document-nameditem-filter
 enum class NamedItemType {
   kNone,
   kName,
@@ -149,7 +149,9 @@ struct FocusParams {
   Member<const FocusOptions> options;
 };
 
-typedef HeapVector<TraceWrapperMember<Attr>> AttrNodeList;
+typedef HeapVector<Member<Attr>> AttrNodeList;
+
+typedef HashMap<AtomicString, SpecificTrustedType> AttrNameToTrustedType;
 
 class CORE_EXPORT Element : public ContainerNode {
   DEFINE_WRAPPERTYPEINFO();
@@ -158,12 +160,11 @@ class CORE_EXPORT Element : public ContainerNode {
   static Element* Create(const QualifiedName&, Document*);
 
   Element(const QualifiedName& tag_name, Document*, ConstructionType);
-  ~Element() override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy, kBeforecopy);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut, kBeforecut);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste, kBeforepaste);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(search, kSearch);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy, kBeforecopy)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut, kBeforecut)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste, kBeforepaste)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(search, kSearch)
 
   bool hasAttribute(const QualifiedName&) const;
   const AtomicString& getAttribute(const QualifiedName&) const;
@@ -205,6 +206,9 @@ class CORE_EXPORT Element : public ContainerNode {
   bool hasAttributeNS(const AtomicString& namespace_uri,
                       const AtomicString& local_name) const;
 
+  // Ignores namespace.
+  bool HasAttributeIgnoringNamespace(const AtomicString& local_name) const;
+
   const AtomicString& getAttribute(const AtomicString& name) const;
   const AtomicString& getAttributeNS(const AtomicString& namespace_uri,
                                      const AtomicString& local_name) const;
@@ -221,7 +225,7 @@ class CORE_EXPORT Element : public ContainerNode {
       ExceptionState&);
 
   // Returns attributes that should be checked against Trusted Types
-  virtual const HashSet<AtomicString>& GetCheckedAttributeNames() const;
+  virtual const AttrNameToTrustedType& GetCheckedAttributeTypes() const;
 
   // Trusted Type HTML variant
   void setAttribute(const QualifiedName&,
@@ -327,8 +331,6 @@ class CORE_EXPORT Element : public ContainerNode {
   DOMRectList* getClientRects();
   DOMRect* getBoundingClientRect();
 
-  bool HasNonEmptyLayoutSize() const;
-
   const AtomicString& computedRole();
   String computedName();
 
@@ -336,8 +338,11 @@ class CORE_EXPORT Element : public ContainerNode {
   AccessibleNode* accessibleNode();
 
   InvisibleState Invisible() const;
+  bool HasInvisibleAttribute() const;
+
   void DispatchActivateInvisibleEventIfNeeded();
-  bool IsInsideInvisibleStaticSubtree();
+  bool IsInsideInvisibleSubtree() const;
+  bool IsInsideInvisibleStaticSubtree() const;
 
   void DefaultEventHandler(Event&) override;
 
@@ -397,8 +402,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   String nodeName() const override;
 
-  Element* CloneWithChildren(Document* = nullptr) const;
-  Element* CloneWithoutChildren(Document* = nullptr) const;
+  Element& CloneWithChildren(Document* = nullptr) const;
+  Element& CloneWithoutChildren(Document* = nullptr) const;
 
   void SetBooleanAttribute(const QualifiedName&, bool);
 
@@ -505,9 +510,9 @@ class CORE_EXPORT Element : public ContainerNode {
   void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
 
-  virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);
+  virtual LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout);
   virtual bool LayoutObjectIsNeeded(const ComputedStyle&) const;
-  void RecalcStyle(StyleRecalcChange);
+  void RecalcStyle(const StyleRecalcChange);
   void RecalcStyleForTraversalRootAncestor();
   void RebuildLayoutTreeForTraversalRootAncestor() {
     RebuildFirstLetterLayoutTree();
@@ -563,16 +568,9 @@ class CORE_EXPORT Element : public ContainerNode {
   // display none.
   const ComputedStyle* EnsureComputedStyle(PseudoId = kPseudoIdNone);
 
-  const ComputedStyle* NonLayoutObjectComputedStyle() const;
-
   bool HasDisplayContentsStyle() const;
 
-  ComputedStyle* MutableNonLayoutObjectComputedStyle() const {
-    return const_cast<ComputedStyle*>(NonLayoutObjectComputedStyle());
-  }
-
-  bool ShouldStoreNonLayoutObjectComputedStyle(const ComputedStyle&) const;
-  void StoreNonLayoutObjectComputedStyle(scoped_refptr<ComputedStyle>);
+  bool ShouldStoreComputedStyle(const ComputedStyle&) const;
 
   // Methods for indicating the style is affected by dynamic updates (e.g.,
   // children changing, our position changing in our sibling list, etc.)
@@ -700,21 +698,14 @@ class CORE_EXPORT Element : public ContainerNode {
                           const StringOrTrustedHTML&,
                           ExceptionState&);
 
-  void setPointerCapture(int pointer_id, ExceptionState&);
-  void releasePointerCapture(int pointer_id, ExceptionState&);
+  void setPointerCapture(PointerId poinetr_id, ExceptionState&);
+  void releasePointerCapture(PointerId pointer_id, ExceptionState&);
 
   // Returns true iff the element would capture the next pointer event. This
   // is true between a setPointerCapture call and a releasePointerCapture (or
   // implicit release) call:
   // https://w3c.github.io/pointerevents/#dom-element-haspointercapture
-  bool hasPointerCapture(int pointer_id) const;
-
-  // Returns true iff the element has received a gotpointercapture event for
-  // the |pointerId| but hasn't yet received a lostpointercapture event for
-  // the same id. The time window during which this is true is "delayed" from
-  // (but overlapping with) the time window for hasPointerCapture():
-  // https://w3c.github.io/pointerevents/#process-pending-pointer-capture
-  bool HasProcessedPointerCapture(int pointer_id) const;
+  bool hasPointerCapture(PointerId pointer_id) const;
 
   String TextFromChildren();
 
@@ -789,7 +780,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   // Elements that may have an insertion mode other than "in body" should
   // override this and return true.
-  // https://html.spec.whatwg.org/multipage/parsing.html#reset-the-insertion-mode-appropriately
+  // https://html.spec.whatwg.org/C/#reset-the-insertion-mode-appropriately
   virtual bool HasNonInBodyInsertionMode() const { return false; }
 
   bool CanContainRangeEndPoint() const override { return true; }
@@ -799,7 +790,18 @@ class CORE_EXPORT Element : public ContainerNode {
   // sent at all.
   virtual bool IsDisabledFormControl() const { return false; }
 
-  virtual bool ShouldForceLegacyLayout() const { return false; }
+  // Return true if we should force legacy layout on this element and all
+  // descendants. Note that even if this element returns true, it's not implied
+  // that all descendants will return the same. Once an element needs to force
+  // legacy layout, though, the layout engine knows that it will have to perform
+  // legacy layout on the entire subtree.
+  bool ShouldForceLegacyLayout() const {
+    if (TypeShouldForceLegacyLayout())
+      return true;
+    if (!HasRareData())
+      return false;
+    return StyleShouldForceLegacyLayout() || ShouldForceLegacyLayoutForChild();
+  }
 
   virtual void BuildPendingResource() {}
 
@@ -836,7 +838,8 @@ class CORE_EXPORT Element : public ContainerNode {
   bool IsSpellCheckingEnabled() const;
 
   // FIXME: public for LayoutTreeBuilder, we shouldn't expose this though.
-  scoped_refptr<ComputedStyle> StyleForLayoutObject();
+  scoped_refptr<ComputedStyle> StyleForLayoutObject(
+      bool calc_invisible = false);
 
   bool HasID() const;
   bool HasClass() const;
@@ -884,24 +887,30 @@ class CORE_EXPORT Element : public ContainerNode {
       const char element[],
       const AttributeModificationParams&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   SpellcheckAttributeState GetSpellcheckAttributeState() const;
 
   ElementIntersectionObserverData* IntersectionObserverData() const;
   ElementIntersectionObserverData& EnsureIntersectionObserverData();
-  void ComputeIntersectionObservations(unsigned flags);
+  bool ComputeIntersectionObservations(unsigned flags);
+  // Returns true if the Element is being observed by an IntersectionObserver
+  // for which trackVisibility() is true.
+  bool NeedsOcclusionTracking() const;
 
-  HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>*
+  HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>*
   ResizeObserverData() const;
-  HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>&
+  HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>&
   EnsureResizeObserverData();
   void SetNeedsResizeObserverUpdate();
 
-  ScriptPromise acquireDisplayLock(ScriptState*, V8DisplayLockCallback*);
+  DisplayLockContext* getDisplayLockForBindings();
   DisplayLockContext* GetDisplayLockContext() const;
 
-  bool StyleRecalcBlockedByDisplayLock() const;
+  bool StyleRecalcBlockedByDisplayLock(
+      DisplayLockContext::LifecycleTarget) const;
+
+  void ActivateDisplayLockIfNeeded();
 
  protected:
   const ElementData* GetElementData() const { return element_data_.Get(); }
@@ -925,8 +934,8 @@ class CORE_EXPORT Element : public ContainerNode {
   void RemovedFrom(ContainerNode&) override;
   void ChildrenChanged(const ChildrenChange&) override;
 
-  virtual void WillRecalcStyle(StyleRecalcChange);
-  virtual void DidRecalcStyle(StyleRecalcChange);
+  virtual void WillRecalcStyle(const StyleRecalcChange);
+  virtual void DidRecalcStyle(const StyleRecalcChange);
   virtual scoped_refptr<ComputedStyle> CustomStyleForLayoutObject();
 
   virtual NamedItemType GetNamedItemType() const {
@@ -945,12 +954,12 @@ class CORE_EXPORT Element : public ContainerNode {
   // don't have layoutObjects. e.g., HTMLOptionElement.
   virtual bool IsFocusableStyle() const;
 
-  virtual bool ChildrenCanHaveStyle() const { return true; }
-
   // classAttributeChanged() exists to share code between
   // parseAttribute (called via setAttribute()) and
   // svgAttributeChanged (called when element.className.baseValue is set)
   void ClassAttributeChanged(const AtomicString& new_class_string);
+
+  void PictureInPicturePseudoStateChanged();
 
   static bool AttributeValueIsJavaScriptURL(const Attribute&);
 
@@ -998,13 +1007,11 @@ class CORE_EXPORT Element : public ContainerNode {
   // these changes can be directly propagated to this element (the child).
   // If these conditions are met, propagates the changes to the current style
   // and returns the new style. Otherwise, returns null.
-  scoped_refptr<ComputedStyle> PropagateInheritedProperties(StyleRecalcChange);
+  scoped_refptr<ComputedStyle> PropagateInheritedProperties();
 
-  StyleRecalcChange RecalcOwnStyle(StyleRecalcChange);
-
-  // Returns true if we should traverse shadow including children and pseudo
-  // elements for RecalcStyle.
-  bool ShouldCallRecalcStyleForChildren(StyleRecalcChange);
+  // Recalculate the ComputedStyle for this element and return a
+  // StyleRecalcChange for propagation/traversal into child nodes.
+  StyleRecalcChange RecalcOwnStyle(const StyleRecalcChange);
 
   void RebuildPseudoElementLayoutTree(PseudoId, WhitespaceAttacher&);
   void RebuildFirstLetterLayoutTree();
@@ -1012,7 +1019,7 @@ class CORE_EXPORT Element : public ContainerNode {
   inline void CheckForEmptyStyleChange(const Node* node_before_change,
                                        const Node* node_after_change);
 
-  void UpdatePseudoElement(PseudoId, StyleRecalcChange);
+  void UpdatePseudoElement(PseudoId, const StyleRecalcChange);
 
   enum class StyleUpdatePhase {
     kRecalc,
@@ -1080,13 +1087,11 @@ class CORE_EXPORT Element : public ContainerNode {
 
   inline void UpdateCallbackSelectors(const ComputedStyle* old_style,
                                       const ComputedStyle* new_style);
-  inline void RemoveCallbackSelectors();
-  inline void AddCallbackSelectors();
 
   // Clone is private so that non-virtual CloneElementWithChildren and
   // CloneElementWithoutChildren are used instead.
   Node* Clone(Document&, CloneChildrenFlag) const override;
-  virtual Element* CloneWithoutAttributesAndChildren(Document& factory) const;
+  virtual Element& CloneWithoutAttributesAndChildren(Document& factory) const;
 
   QualifiedName tag_name_;
 
@@ -1111,7 +1116,54 @@ class CORE_EXPORT Element : public ContainerNode {
   void DetachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
   void DetachAttrNodeAtIndex(Attr*, wtf_size_t index);
 
-  void NotifyDisplayLockDidRecalcStyle();
+  bool DisplayLockPreventsActivation() const;
+  FRIEND_TEST_ALL_PREFIXES(DisplayLockContextTest,
+                           DisplayLockPreventsActivation);
+
+  // Return whether this element type requires legacy layout.
+  virtual bool TypeShouldForceLegacyLayout() const { return false; }
+
+  // Return whether the computed style of this element causes need for legacy
+  // layout.
+  bool StyleShouldForceLegacyLayout() const {
+    if (!HasRareData())
+      return false;
+    return StyleShouldForceLegacyLayoutInternal();
+  }
+  bool StyleShouldForceLegacyLayoutInternal() const;
+  void SetStyleShouldForceLegacyLayout(bool force) {
+    if (!force && !HasRareData())
+      return;
+    SetStyleShouldForceLegacyLayoutInternal(force);
+  }
+  void SetStyleShouldForceLegacyLayoutInternal(bool);
+
+  // Return whether this element needs legacy layout because of a child.
+  bool ShouldForceLegacyLayoutForChild() const {
+    if (!HasRareData())
+      return false;
+    return ShouldForceLegacyLayoutForChildInternal();
+  }
+  bool ShouldForceLegacyLayoutForChildInternal() const;
+  void SetShouldForceLegacyLayoutForChild(bool force) {
+    if (!force && !HasRareData())
+      return;
+    SetShouldForceLegacyLayoutForChildInternal(force);
+  }
+  void SetShouldForceLegacyLayoutForChildInternal(bool);
+
+  // Update ForceLegacyLayout flags for this element, and for ancestors, if
+  // necessary. We cannot establish a ForceLegacyLayout subtree at an arbitrary
+  // element; it needs to be a block formatting context root.
+  void UpdateForceLegacyLayout(const ComputedStyle& new_style,
+                               const ComputedStyle* old_style);
+
+  // If this element requires legacy layout, and we can't tell for sure that it
+  // is going to establish a new formatting context, we need to force legacy
+  // layout on ancestors until we reach one that we're sure that will establish
+  // a new formatting context. LayoutNG and legacy layout cannot cooperate
+  // within a formatting context.
+  void ForceLegacyLayoutInFormattingContext(const ComputedStyle& new_style);
 
   Member<ElementData> element_data_;
 };
@@ -1287,7 +1339,7 @@ inline bool Element::HasClass() const {
 inline UniqueElementData& Element::EnsureUniqueElementData() {
   if (!GetElementData() || !GetElementData()->IsUnique())
     CreateUniqueElementData();
-  return ToUniqueElementData(*element_data_);
+  return To<UniqueElementData>(*element_data_);
 }
 
 inline void Element::InvalidateStyleAttribute() {

@@ -67,12 +67,18 @@ group("gn_all") {
     "//base:base_perftests",
     "//base:base_unittests",
     "//chrome/installer",
+    "//chrome/updater",
     "//net:net_unittests",
+    "//services:services_unittests",
+    "//services/service_manager/public/cpp",
     "//skia:skia_unittests",
     "//sql:sql_unittests",
+    "//third_party/flatbuffers:flatbuffers_unittests",
     "//tools/binary_size:binary_size_trybot_py",
     "//tools/ipc_fuzzer:ipc_fuzzer_all",
+    "//tools/metrics:metrics_metadata",
     "//ui/base:ui_base_unittests",
+    "//ui/gfx:gfx_unittests",
     "//url:url_unittests",
   ]
 
@@ -84,13 +90,7 @@ group("gn_all") {
   }
 
   if (!is_fuchsia) {
-    deps += [
-      "//components:components_unittests",
-      "//services:services_unittests",
-      "//services/service_manager/public/cpp",
-      "//tools/metrics:metrics_metadata",
-      "//ui/gfx:gfx_unittests",
-    ]
+    deps += [ "//components:components_unittests" ]
   }
 
   if (closure_compile) {
@@ -115,7 +115,6 @@ group("gn_all") {
       "//ppapi/examples/2d",
       "//ppapi/examples/audio",
       "//ppapi/examples/audio_input",
-      "//ppapi/examples/compositor",
       "//ppapi/examples/crxfs",
       "//ppapi/examples/enumerate_devices",
       "//ppapi/examples/file_chooser",
@@ -143,8 +142,8 @@ group("gn_all") {
       "//third_party/SPIRV-Tools/src:SPIRV-Tools",
       "//third_party/SPIRV-Tools/src/test/fuzzers",
       "//third_party/cacheinvalidation:cacheinvalidation_unittests",
-      "//third_party/dawn:dawn_end2end_tests",
-      "//third_party/dawn:dawn_unittests",
+      "//third_party/dawn:dawn_end2end_tests_temp_group",
+      "//third_party/dawn:dawn_unittests_temp_group",
       "//third_party/pdfium/samples:pdfium_test",
       "//third_party/webrtc/rtc_tools:frame_analyzer",
       "//tools/perf/clear_system_cache",
@@ -169,7 +168,9 @@ group("gn_all") {
       "//mojo",
       "//mojo:mojo_unittests",
       "//net:net_perftests",
-      "//third_party/blink/renderer/controller:webkit_unit_tests",
+      "//third_party/angle/src/tests:angle_end2end_tests",
+      "//third_party/angle/src/tests:angle_unittests",
+      "//third_party/blink/renderer/controller:blink_unittests",
       "//third_party/blink/renderer/platform/wtf:wtf_unittests",
       "//ui/gl:gl_unittests",
       "//url/ipc:url_ipc_unittests",
@@ -180,6 +181,7 @@ group("gn_all") {
     deps += [
       "//components/cronet:cronet_tests",
       "//components/cronet:cronet_unittests",
+      "//components/viz/demo:viz_demo",
     ]
   }
 
@@ -188,7 +190,7 @@ group("gn_all") {
       "//chrome/test:telemetry_perf_unittests",
       "//chrome/test:unit_tests",
       "//components:components_browsertests",
-      "//components/ui_devtools/viz_views",
+      "//components/ui_devtools/viz",
       "//components/viz:viz_perftests",
       "//components/viz:viz_unittests",
       "//components/viz/common:viz_benchmark",
@@ -197,15 +199,13 @@ group("gn_all") {
       "//media/capture:capture_unittests",
       "//media/cast:cast_unittests",
       "//storage:storage_unittests",
-      "//third_party/angle/src/tests:angle_end2end_tests",
-      "//third_party/angle/src/tests:angle_unittests",
       "//third_party/angle/src/tests:angle_white_box_tests",
       "//third_party/blink/common:blink_common_unittests",
       "//third_party/blink/renderer/platform:blink_platform_unittests",
       "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
       "//third_party/catapult/telemetry:bitmaptools($host_toolchain)",
       "//third_party/smhasher:pmurhash",
-      "//tools/imagediff($host_toolchain)",
+      "//tools/imagediff",
       "//ui/display:display_unittests",
       "//ui/events:events_unittests",
       "//ui/latency:latency_unittests",
@@ -217,7 +217,9 @@ group("gn_all") {
   } else if (is_fuchsia) {
     deps += [
       ":d8_fuchsia",
-      "build/fuchsia/fidlgen_js:fidlgen_js_unittests",
+      "//build/fuchsia/fidlgen_js:fidlgen_js_unittests",
+      "//fuchsia:gn_all",
+      "//headless",
     ]
   }
 
@@ -334,7 +336,6 @@ group("gn_all") {
         "//components/cronet/android:cronet_perf_test_apk",
         "//components/cronet/android:cronet_sample_apk",
         "//components/cronet/android:cronet_sample_test_apk",
-        "//components/cronet/android:cronet_test_apk",
         "//components/cronet/android:cronet_test_instrumentation_apk",
         "//components/cronet/android:cronet_unittests_android",
       ]
@@ -350,6 +351,7 @@ group("gn_all") {
         "//chrome/android:chrome_junit_tests",
         "//chrome/android:chrome_public_apk",
         "//chrome/android:chrome_public_test_apk",
+        "//chrome/android/features/media_router:media_router_junit_tests",
         "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
         "//content/shell/android:content_shell_test_apk",
         "//third_party/custom_tabs_client:custom_tabs_client_example_apk",
@@ -395,15 +397,14 @@ group("gn_all") {
 
   if (is_chromeos) {
     deps += [
-      "//ash:ash_content_unittests",
       "//ash:ash_shell_with_content",
       "//ash:ash_unittests",
       "//ash/app_list:app_list_demo",
       "//ash/app_list:app_list_unittests",
+      "//chrome/test:usage_time_limit_unittests",
       "//chromeos:chromeos_unittests",
       "//chromeos/components:chromeos_components_unittests",
       "//chromeos/components/proximity_auth:proximity_auth_unittests",
-      "//chromeos/services:chromeos_services_unittests",
       "//components/session_manager/core",
       "//ui/chromeos:ui_chromeos_unittests",
       "//ui/keyboard:keyboard_unittests",
@@ -481,8 +482,6 @@ group("gn_all") {
         "//chrome/test:load_library_perf_tests",
         "//chrome/test:sync_performance_tests",
         "//chrome/test/chromedriver:chromedriver",
-        "//chrome/test/chromedriver:chromedriver_tests",
-        "//components/sync:run_sync_testserver",
         "//courgette:courgette",
         "//courgette:courgette_fuzz",
         "//courgette:courgette_minimal_tool",
@@ -585,6 +584,7 @@ group("gn_all") {
   if (is_win) {
     deps += [
       "//base:pe_image_test",
+      "//chrome/browser/browser_switcher/bho:browser_switcher_bho",
       "//chrome/chrome_cleaner:chrome_cleaner_unittests",
       "//chrome/elevation_service:elevation_service_unittests",
       "//chrome/install_static:install_static_unittests",
@@ -624,6 +624,9 @@ group("gn_all") {
 
   if (is_chromecast) {
     deps += [ "//chromecast:cast_shell" ]
+    if (enable_extensions && use_aura) {
+      deps += [ "//chrome/browser/resources/chromeos/chromevox" ]
+    }
   }
 
   if (is_mac || is_win || is_android || (is_linux && !is_chromeos)) {
@@ -652,11 +655,8 @@ group("gn_all") {
 
   if (is_win || is_linux) {
     deps += [
-      "//mash:all",
       "//media/mojo/services:media_service_unittests",
       "//mojo",
-      "//ui/views/mus:views_mus_interactive_ui_tests",
-      "//ui/views/mus:views_mus_unittests",
     ]
 
     # crbug.com/676055: media_service_unittests fails to link under Windows
@@ -666,11 +666,11 @@ group("gn_all") {
     }
   }
 
-  if (is_mac || is_linux || is_android) {
+  if (is_mac || is_linux || is_android || is_fuchsia) {
     deps += [ "//third_party/perfetto:all" ]
   }
 
-  if (is_mac || is_linux) {
+  if (is_win || is_mac || is_linux) {
     deps += [ "//third_party/sqlite:sqlite_shell" ]
   }
 
@@ -722,10 +722,12 @@ group("gn_all") {
     }
   }
 
-  if ((is_linux && !is_chromecast) ||
-      (is_win && (use_drfuzz || use_libfuzzer)) || (use_libfuzzer && is_mac)) {
+  if ((is_linux && !is_chromecast) || (is_win && use_libfuzzer) ||
+      (use_libfuzzer && is_mac)) {
     deps += [
+      "//chrome/services/cups_ipp_parser/public/cpp:fuzzers",
       "//testing/libfuzzer/fuzzers",
+      "//third_party/grpc:fuzzers",
       "//third_party/icu/fuzzers",
       "//third_party/qcms:fuzzers",
       "//third_party/zlib/contrib/tests/fuzzers",
@@ -755,29 +757,14 @@ group("gn_all") {
       "//chrome/browser/vr:vr_common_perftests",
       "//chrome/browser/vr:vr_common_unittests",
       "//chrome/browser/vr:vr_pixeltests",
+      "//tools/perf/contrib/vr_benchmarks:vr_perf_tests",
     ]
     if (is_desktop_linux && use_ozone) {
       deps += [ "//chrome/browser/vr/testapp:vr_testapp" ]
     }
     if (is_android) {
-      deps += [
-        "//chrome/browser/android/vr:vr_android_unittests",
-        "//tools/perf/contrib/vr_benchmarks:vr_perf_tests",
-      ]
+      deps += [ "//chrome/browser/android/vr:vr_android_unittests" ]
     }
-  }
-
-  if (is_fuchsia) {
-    deps += [
-      "//headless",
-      "//headless:headless_shell",
-      "//headless:headless_tests",
-      "//webrunner",
-      "//webrunner:archive_sources",
-      "//webrunner:webrunner_unittests",
-      "//webrunner/net_http:http_pkg",
-      "//webrunner/net_http:http_service_tests",
-    ]
   }
 
   if (enable_vulkan) {
@@ -790,6 +777,13 @@ group("gn_all") {
       "//tools/accessibility/inspect:ax_dump_tree",
     ]
   }
+
+  # PFFFT.
+  deps += [
+    "//third_party/pffft:fuzzers",
+    "//third_party/pffft:pffft_benchmark",
+    "//third_party/pffft:pffft_unittest",
+  ]
 }
 
 if ((is_linux || is_win) && enable_remoting && !use_ozone) {
@@ -891,6 +885,7 @@ if (is_chromeos) {
 
     if (use_v4l2_codec || use_vaapi) {
       deps += [
+        "//media/gpu:video_decode_accelerator_perf_tests",
         "//media/gpu:video_decode_accelerator_tests",
 
         # TODO(https://crbug.com/879065): remove once tests have been migrated
@@ -927,18 +922,42 @@ if (!is_ios) {
     testonly = true
 
     deps = [
-      ":webkit_layout_tests",
+      ":blink_web_tests",
       "//third_party/blink/public:all_blink",
     ]
   }
 
-  # Layout tests runner
+  # Web tests runner
   # third_party/blink/tools/run_web_tests.py
-  group("run_webkit_tests") {
+  group("run_web_tests") {
     testonly = true
     deps = [
-      ":webkit_layout_tests",
+      ":blink_web_tests",
     ]
+  }
+
+  if (!is_chromeos && !is_ios && !is_fuchsia && !is_android) {
+    # WPT Webdriver tests runner
+    # chrome/test/chromedriver/test/run_webdriver_tests.py
+    group("webdriver_wpt_tests") {
+      testonly = true
+      data = [
+        "//chrome/test/chromedriver/chrome_paths.py",
+        "//chrome/test/chromedriver/server/server.py",
+        "//chrome/test/chromedriver/test/run_webdriver_tests.py",
+        "//chrome/test/chromedriver/util.py",
+        "//testing/xvfb.py",
+        "//third_party/blink/tools/blinkpy/",
+        "//third_party/blink/web_tests/external/wpt/webdriver/",
+        "//third_party/blink/web_tests/VirtualTestSuites",
+        "//third_party/blink/web_tests/WebDriverExpectations",
+        "//third_party/pywebsocket/src/mod_pywebsocket/",
+      ]
+      data_deps = [
+        "//chrome:chrome",
+        "//chrome/test/chromedriver",
+      ]
+    }
   }
 
   # https://www.chromium.org/developers/testing/webkit-layout-tests
@@ -946,21 +965,21 @@ if (!is_ios) {
   # The _exparchive at the end of the name indicates to the isolate recipe
   # that the isolate should be archived separately using the `exparchive`
   # command, rather than as part of the normal `batcharchive` command.
-  group("webkit_layout_tests_exparchive") {
+  group("blink_web_tests_exparchive") {
     testonly = true
     deps = [
-      ":webkit_layout_tests",
+      ":blink_web_tests",
     ]
     data_deps = [
-      ":webkit_layout_tests",
+      ":blink_web_tests",
     ]
   }
 
-  # This target contains only a small subset of the layout tests,
+  # This target contains only a small subset of the web tests,
   # and is useful for testing with the regular isolate mechanism.
-  # To run the full layout test suite you need to use
-  # :webkit_layout_tests_exparchive, above, instead.
-  generated_script_test("webkit_layout_tests") {
+  # To run the full web test suite you need to use
+  # :blink_web_tests_exparchive, above, instead.
+  generated_script_test("blink_web_tests") {
     generator_script =
         "//testing/scripts/generators/gen_run_web_tests_script.py"
     extra_args = []
@@ -980,11 +999,12 @@ if (!is_ios) {
       ":layout_test_data_mojo_bindings",
       ":layout_test_data_mojo_bindings_lite",
       "//content/shell:content_shell",
-      "//content/test:mojo_layouttest_bindings_js_data_deps",
+      "//content/test:mojo_web_test_bindings_js_data_deps",
       "//device/bluetooth/public/mojom:fake_bluetooth_interfaces_js_data_deps",
       "//device/usb/public/mojom:mojom_js_data_deps",
       "//device/vr/public/mojom:mojom_js_data_deps",
       "//media/capture/mojom:image_capture_js_data_deps",
+      "//media/midi:mojo_js_data_deps",
       "//mojo/public/interfaces/bindings/tests:test_data_deps",
       "//mojo/public/mojom/base:base_js_data_deps",
       "//services/shape_detection/public/mojom:mojom_js_data_deps",
@@ -1030,7 +1050,6 @@ if (!is_ios) {
     }
 
     data = [
-      "$root_build_dir/resources/inspector/",
       "//testing/scripts/common.py",
       "//testing/scripts/run_isolated_script_test.py",
       "//testing/xvfb.py",
@@ -1045,6 +1064,10 @@ if (!is_ios) {
         "//third_party/apache-win32/",
         "//third_party/perl/perl/",
       ]
+    }
+
+    if (is_mac) {
+      data += [ "//third_party/apache-mac/" ]
     }
 
     if (is_android) {
@@ -1087,7 +1110,7 @@ if (!is_ios) {
     ]
   }
 
-  group("webkit_python_tests") {
+  group("blink_python_tests") {
     data = [
       "//build/android/",
       "//components/crash/content/tools/generate_breakpad_symbols.py",
@@ -1131,7 +1154,6 @@ group("chromium_builder_perf") {
       "//cc:cc_perftests",
       "//chrome/test:load_library_perf_tests",
       "//chrome/test:performance_test_suite",
-      "//chrome/test:telemetry_perf_tests_without_chrome",
       "//components/tracing:tracing_perftests",
       "//gpu:command_buffer_perftests",
       "//gpu:gpu_perftests",
@@ -1140,7 +1162,7 @@ group("chromium_builder_perf") {
     ]
 
     if (is_android) {
-      data += [ "//third_party/android_tools/sdk/platform-tools/adb" ]
+      data += [ "//third_party/android_sdk/public/platform-tools/adb" ]
     }
 
     if (!is_chromeos) {
@@ -1188,10 +1210,7 @@ if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
       ]
     }
     if (enable_ipc_fuzzer && !is_component_build) {
-      deps += [
-        "//chrome/app:service_manifests",
-        "//tools/ipc_fuzzer:ipc_fuzzer_all",
-      ]
+      deps += [ "//tools/ipc_fuzzer:ipc_fuzzer_all" ]
     }
     if (!is_chromeos) {
       deps += [
@@ -1247,9 +1266,10 @@ if (closure_compile) {
     testonly = true
     data_deps = [
       "chrome/browser/resources:closure_compile",
-      "content/browser/resources:closure_compile",
-      "ui/webui/resources:closure_compile",
       "components/ukm/debug:closure_compile",
+      "content/browser/resources:closure_compile",
+      "mojo/public/tools/bindings/generators/js_templates/lite/test:closure_compile",
+      "ui/webui/resources:closure_compile",
     ]
     if (is_chromeos) {
       data_deps += [ "ui/file_manager:closure_compile" ]

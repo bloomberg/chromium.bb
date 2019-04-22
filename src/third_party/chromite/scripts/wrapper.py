@@ -129,9 +129,10 @@ def FindTarget(target):
     parent = parent[len(CHROMITE_PATH):].split(os.sep)
     target = ['chromite'] + parent + [target]
 
-    if target[-2] == 'bin':
-      # Convert <path>/bin/foo -> <path>/scripts/foo.
-      target[-2] = 'scripts'
+    if target[1] == 'bin':
+      # Convert chromite/bin/foo -> chromite/scripts/foo.
+      # Since chromite/bin/ is in $PATH, we want to keep it clean.
+      target[1] = 'scripts'
     elif target[1] == 'bootstrap' and len(target) == 3:
       # Convert <git_repo>/bootstrap/foo -> <git_repo>/bootstrap/scripts/foo.
       target.insert(2, 'scripts')

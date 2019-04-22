@@ -34,8 +34,12 @@ Document* GetRootDocument(const HTMLAnchorElement& anchor) {
 int AccumulatedScrollOffset(const HTMLAnchorElement& anchor_element) {
   IntSize offset;
   Frame* frame = anchor_element.GetDocument().GetFrame();
-  while (frame && frame->View() && frame->IsLocalFrame()) {
-    offset += ToLocalFrame(frame)->View()->LayoutViewport()->ScrollOffsetInt();
+  while (frame && frame->View()) {
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
+      break;
+
+    offset += local_frame->View()->LayoutViewport()->ScrollOffsetInt();
     frame = frame->Tree().Parent();
   }
   return offset.Height();
@@ -44,9 +48,8 @@ int AccumulatedScrollOffset(const HTMLAnchorElement& anchor_element) {
 // Whether the element is inside an iframe.
 bool IsInIFrame(const HTMLAnchorElement& anchor_element) {
   Frame* frame = anchor_element.GetDocument().GetFrame();
-  while (frame && frame->IsLocalFrame()) {
-    HTMLFrameOwnerElement* owner =
-        ToLocalFrame(frame)->GetDocument()->LocalOwner();
+  while (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+    HTMLFrameOwnerElement* owner = local_frame->GetDocument()->LocalOwner();
     if (owner && IsHTMLIFrameElement(owner))
       return true;
     frame = frame->Tree().Parent();
@@ -126,8 +129,8 @@ bool IsUrlIncrementedByOne(const HTMLAnchorElement& anchor_element) {
 // overflows.
 IntRect AbsoluteElementBoundingBoxRect(const LayoutObject* layout_object) {
   Vector<LayoutRect> rects;
-  layout_object->AddElementVisualOverflowRects(rects, LayoutPoint());
-
+  layout_object->AddOutlineRects(rects, LayoutPoint(),
+                                 NGOutlineType::kIncludeBlockVisualOverflow);
   return layout_object
       ->LocalToAbsoluteQuad(FloatQuad(FloatRect(UnionRect(rects))))
       .EnclosingBoundingBox();
@@ -212,7 +215,7 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
 base::Optional<AnchorElementMetrics>
 AnchorElementMetrics::MaybeReportClickedMetricsOnClick(
     const HTMLAnchorElement* anchor_element) {
-  if (!base::FeatureList::IsEnabled(features::kRecordAnchorMetricsClicked) ||
+  if (!base::FeatureList::IsEnabled(features::kNavigationPredictor) ||
       !anchor_element->Href().ProtocolIsInHTTPFamily() ||
       !GetRootDocument(*anchor_element)->Url().ProtocolIsInHTTPFamily() ||
       !anchor_element->GetDocument().BaseURL().ProtocolIsInHTTPFamily()) {
@@ -236,7 +239,7 @@ AnchorElementMetrics::MaybeReportClickedMetricsOnClick(
 void AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(
     Document& document) {
   DCHECK(document.GetFrame());
-  if (!base::FeatureList::IsEnabled(features::kRecordAnchorMetricsVisible) ||
+  if (!base::FeatureList::IsEnabled(features::kNavigationPredictor) ||
       document.ParentDocument() || !document.View() ||
       !document.Url().ProtocolIsInHTTPFamily() ||
       !document.BaseURL().ProtocolIsInHTTPFamily()) {

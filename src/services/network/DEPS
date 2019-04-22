@@ -19,4 +19,5 @@ include_rules = [
   "+services/service_manager/public",
   "+services/service_manager/sandbox",
   "+third_party/boringssl/src/include",
+  "+url",
 ]

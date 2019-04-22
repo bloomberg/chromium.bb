@@ -4,6 +4,7 @@
 
 #include "ash/app_list/views/search_result_container_view.h"
 
+#include "ash/app_list/views/search_result_base_view.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -11,7 +12,11 @@
 
 namespace app_list {
 
-SearchResultContainerView::SearchResultContainerView() = default;
+SearchResultContainerView::SearchResultContainerView(
+    AppListViewDelegate* view_delegate)
+    : view_delegate_(view_delegate) {
+  DCHECK(view_delegate);
+}
 
 SearchResultContainerView::~SearchResultContainerView() {
   if (results_)
@@ -55,6 +60,23 @@ const char* SearchResultContainerView::GetClassName() const {
   return "SearchResultContainerView";
 }
 
+void SearchResultContainerView::OnViewFocused(View* observed_view) {
+  if (delegate_) {
+    delegate_->OnSearchResultContainerResultFocused(
+        static_cast<SearchResultBaseView*>(observed_view));
+  }
+}
+
+void SearchResultContainerView::AddObservedResultView(
+    SearchResultBaseView* result_view) {
+  result_view_observer_.Add(result_view);
+}
+
+void SearchResultContainerView::RemoveObservedResultView(
+    SearchResultBaseView* result_view) {
+  result_view_observer_.Remove(result_view);
+}
+
 void SearchResultContainerView::ListItemsAdded(size_t /*start*/,
                                                size_t /*count*/) {
   ScheduleUpdate();
@@ -78,6 +100,16 @@ void SearchResultContainerView::ListItemsChanged(size_t /*start*/,
 SearchResultBaseView* SearchResultContainerView::GetFirstResultView() {
   return nullptr;
 }
+
+void SearchResultContainerView::SetShown(bool shown) {
+  if (shown_ == shown) {
+    return;
+  }
+  shown_ = shown;
+  OnShownChanged();
+}
+
+void SearchResultContainerView::OnShownChanged() {}
 
 void SearchResultContainerView::ScheduleUpdate() {
   // When search results are added one by one, each addition generates an update

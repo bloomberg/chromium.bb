@@ -77,11 +77,11 @@ bool FlingController::ShouldForwardForTapSuppression(
   switch (gesture_event.event.GetType()) {
     case WebInputEvent::kGestureFlingCancel:
       if (gesture_event.event.SourceDevice() ==
-          blink::kWebGestureDeviceTouchscreen) {
+          blink::WebGestureDevice::kTouchscreen) {
         touchscreen_tap_suppression_controller_
             .GestureFlingCancelStoppedFling();
       } else if (gesture_event.event.SourceDevice() ==
-                 blink::kWebGestureDeviceTouchpad) {
+                 blink::WebGestureDevice::kTouchpad) {
         touchpad_tap_suppression_controller_.GestureFlingCancelStoppedFling();
       }
       return true;
@@ -95,7 +95,7 @@ bool FlingController::ShouldForwardForTapSuppression(
     case WebInputEvent::kGestureLongTap:
     case WebInputEvent::kGestureTwoFingerTap:
       if (gesture_event.event.SourceDevice() ==
-          blink::kWebGestureDeviceTouchscreen) {
+          blink::WebGestureDevice::kTouchscreen) {
         return !touchscreen_tap_suppression_controller_.FilterTapEvent(
             gesture_event);
       }
@@ -146,11 +146,42 @@ bool FlingController::FilterGestureEventForFlingBoosting(
   return should_filter_event;
 }
 
-bool FlingController::FilterGestureEvent(
+bool FlingController::ObserveAndMaybeConsumeGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
-  return !ShouldForwardForGFCFiltering(gesture_event) ||
-         !ShouldForwardForTapSuppression(gesture_event) ||
-         FilterGestureEventForFlingBoosting(gesture_event);
+  if (!ShouldForwardForGFCFiltering(gesture_event) ||
+      !ShouldForwardForTapSuppression(gesture_event) ||
+      FilterGestureEventForFlingBoosting(gesture_event))
+    return true;
+
+  if (gesture_event.event.GetType() == WebInputEvent::kGestureScrollUpdate) {
+    last_seen_scroll_update_ = gesture_event.event.TimeStamp();
+  } else if (gesture_event.event.GetType() ==
+                 WebInputEvent::kGestureScrollEnd ||
+             gesture_event.event.GetType() ==
+                 WebInputEvent::kGestureScrollBegin) {
+    // TODO(bokan): We reset this on Begin as well as End since there appear to
+    // be cases where we see an invalid event sequence:
+    // https://crbug.com/928569.
+    last_seen_scroll_update_ = base::TimeTicks();
+  }
+
+  // fling_controller_ is in charge of handling GFS events and the events are
+  // not sent to the renderer, the controller processes the fling and generates
+  // fling progress events (wheel events for touchpad and GSU events for
+  // touchscreen and autoscroll) which are handled normally.
+  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingStart) {
+    ProcessGestureFlingStart(gesture_event);
+    return true;
+  }
+
+  // If the GestureFlingStart event is processed by the fling_controller_, the
+  // GestureFlingCancel event should be the same.
+  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingCancel) {
+    ProcessGestureFlingCancel(gesture_event);
+    return true;
+  }
+
+  return false;
 }
 
 void FlingController::ProcessGestureFlingStart(
@@ -163,6 +194,7 @@ void FlingController::ProcessGestureFlingStart(
   TRACE_EVENT_ASYNC_BEGIN2("input", kFlingTraceName, this, "vx", vx, "vy", vy);
 
   has_fling_animation_started_ = false;
+  last_progress_time_ = base::TimeTicks();
   fling_in_progress_ = true;
   fling_booster_ = std::make_unique<ui::FlingBooster>(
       current_fling_parameters_.velocity,
@@ -215,7 +247,7 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
     // later than the fling start time, delay the fling start time to one frame
     // prior to the current time. This makes sure that at least one progress
     // event is sent while the fling is active even when the fling duration is
-    // short (samll velocity) and the time delta between its timestamp and its
+    // short (small velocity) and the time delta between its timestamp and its
     // processing time is big (e.g. When a GFS gets bubbled from an oopif).
     if (current_time >= current_fling_parameters_.start_time +
                             kMaxMicrosecondsFromFlingTimestampToFirstProgress) {
@@ -227,8 +259,9 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
   // the first OnAnimationStep call has the time of the last frame before
   // AddAnimationObserver call rather than time of the first frame after
   // AddAnimationObserver call. Do not advance the fling when current_time is
-  // less than the GFS event timestamp.
-  if (current_time <= current_fling_parameters_.start_time) {
+  // less than last fling progress time or less than the GFS event timestamp.
+  if (current_time < last_progress_time_ ||
+      current_time <= current_fling_parameters_.start_time) {
     ScheduleFlingProgress();
     return;
   }
@@ -242,6 +275,7 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
         std::abs(delta_to_scroll.y()) > kMinInertialScrollDelta) {
       GenerateAndSendFlingProgressEvents(delta_to_scroll);
       has_fling_animation_started_ = true;
+      last_progress_time_ = current_time;
     }
     // As long as the fling curve is active, the fling progress must get
     // scheduled even when the last delta to scroll was zero.
@@ -250,7 +284,7 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
   }
 
   if (current_fling_parameters_.source_device !=
-      blink::kWebGestureDeviceSyntheticAutoscroll) {
+      blink::WebGestureDevice::kSyntheticAutoscroll) {
     CancelCurrentFling();
   }
 }
@@ -304,6 +338,8 @@ void FlingController::GenerateAndSendGestureScrollEvents(
     DCHECK_EQ(WebInputEvent::kGestureScrollEnd, type);
     synthetic_gesture.event.data.scroll_end.inertial_phase =
         WebGestureEvent::kMomentumPhase;
+    synthetic_gesture.event.data.scroll_end.generated_by_fling_controller =
+        true;
   }
   event_sender_client_->SendGeneratedGestureScrollEvents(synthetic_gesture);
 }
@@ -311,7 +347,7 @@ void FlingController::GenerateAndSendGestureScrollEvents(
 void FlingController::GenerateAndSendFlingProgressEvents(
     const gfx::Vector2dF& delta) {
   switch (current_fling_parameters_.source_device) {
-    case blink::kWebGestureDeviceTouchpad: {
+    case blink::WebGestureDevice::kTouchpad: {
       blink::WebMouseWheelEvent::Phase phase =
           has_fling_animation_started_
               ? blink::WebMouseWheelEvent::kPhaseChanged
@@ -319,32 +355,34 @@ void FlingController::GenerateAndSendFlingProgressEvents(
       GenerateAndSendWheelEvents(delta, phase);
       break;
     }
-    case blink::kWebGestureDeviceTouchscreen:
-    case blink::kWebGestureDeviceSyntheticAutoscroll:
+    case blink::WebGestureDevice::kTouchscreen:
+    case blink::WebGestureDevice::kSyntheticAutoscroll:
       GenerateAndSendGestureScrollEvents(WebInputEvent::kGestureScrollUpdate,
                                          delta);
       break;
-    default:
+    case blink::WebGestureDevice::kUninitialized:
+    case blink::WebGestureDevice::kScrollbar:
       NOTREACHED()
           << "Fling controller doesn't handle flings with source device:"
-          << current_fling_parameters_.source_device;
+          << static_cast<int>(current_fling_parameters_.source_device);
   }
 }
 
 void FlingController::GenerateAndSendFlingEndEvents() {
   switch (current_fling_parameters_.source_device) {
-    case blink::kWebGestureDeviceTouchpad:
+    case blink::WebGestureDevice::kTouchpad:
       GenerateAndSendWheelEvents(gfx::Vector2d(),
                                  blink::WebMouseWheelEvent::kPhaseEnded);
       break;
-    case blink::kWebGestureDeviceTouchscreen:
-    case blink::kWebGestureDeviceSyntheticAutoscroll:
+    case blink::WebGestureDevice::kTouchscreen:
+    case blink::WebGestureDevice::kSyntheticAutoscroll:
       GenerateAndSendGestureScrollEvents(WebInputEvent::kGestureScrollEnd);
       break;
-    default:
+    case blink::WebGestureDevice::kUninitialized:
+    case blink::WebGestureDevice::kScrollbar:
       NOTREACHED()
           << "Fling controller doesn't handle flings with source device:"
-          << current_fling_parameters_.source_device;
+          << static_cast<int>(current_fling_parameters_.source_device);
   }
 }
 
@@ -352,6 +390,7 @@ void FlingController::CancelCurrentFling() {
   bool had_active_fling = !!fling_curve_;
   fling_curve_.reset();
   has_fling_animation_started_ = false;
+  last_progress_time_ = base::TimeTicks();
   fling_in_progress_ = false;
 
   // Extract the last event filtered by the fling booster if it exists.
@@ -374,7 +413,7 @@ void FlingController::CancelCurrentFling() {
   // the first wheel event after the cancelation will cause a GSB generation.
   if (fling_cancellation_is_deferred &&
       last_fling_boost_event.SourceDevice() ==
-          blink::kWebGestureDeviceTouchscreen &&
+          blink::WebGestureDevice::kTouchscreen &&
       (last_fling_boost_event.GetType() == WebInputEvent::kGestureScrollBegin ||
        last_fling_boost_event.GetType() ==
            WebInputEvent::kGestureScrollUpdate)) {
@@ -413,10 +452,19 @@ bool FlingController::UpdateCurrentFlingState(
   current_fling_parameters_.global_point = fling_start_event.PositionInScreen();
   current_fling_parameters_.modifiers = fling_start_event.GetModifiers();
   current_fling_parameters_.source_device = fling_start_event.SourceDevice();
-  current_fling_parameters_.start_time = fling_start_event.TimeStamp();
+
+  if (fling_start_event.SourceDevice() ==
+          blink::WebGestureDevice::kSyntheticAutoscroll ||
+      last_seen_scroll_update_.is_null()) {
+    current_fling_parameters_.start_time = fling_start_event.TimeStamp();
+  } else {
+    // To maintain a smooth, continuous transition from a drag scroll to a fling
+    // scroll, the animation should begin at the time of the last update.
+    current_fling_parameters_.start_time = last_seen_scroll_update_;
+  }
 
   if (velocity.IsZero() && fling_start_event.SourceDevice() !=
-                               blink::kWebGestureDeviceSyntheticAutoscroll) {
+                               blink::WebGestureDevice::kSyntheticAutoscroll) {
     CancelCurrentFling();
     return false;
   }

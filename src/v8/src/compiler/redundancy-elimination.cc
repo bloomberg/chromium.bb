@@ -26,6 +26,9 @@ Reduction RedundancyElimination::Reduce(Node* node) {
     case IrOpcode::kCheckHeapObject:
     case IrOpcode::kCheckIf:
     case IrOpcode::kCheckInternalizedString:
+    case IrOpcode::kCheckNonEmptyString:
+    case IrOpcode::kCheckNonEmptyOneByteString:
+    case IrOpcode::kCheckNonEmptyTwoByteString:
     case IrOpcode::kCheckNotTaggedHole:
     case IrOpcode::kCheckNumber:
     case IrOpcode::kCheckReceiver:
@@ -130,6 +133,21 @@ bool CheckSubsumes(Node const* a, Node const* b) {
     if (a->opcode() == IrOpcode::kCheckInternalizedString &&
         b->opcode() == IrOpcode::kCheckString) {
       // CheckInternalizedString(node) implies CheckString(node)
+    } else if (a->opcode() == IrOpcode::kCheckNonEmptyString &&
+               b->opcode() == IrOpcode::kCheckString) {
+      // CheckNonEmptyString(node) implies CheckString(node)
+    } else if (a->opcode() == IrOpcode::kCheckNonEmptyOneByteString &&
+               b->opcode() == IrOpcode::kCheckNonEmptyString) {
+      // CheckNonEmptyOneByteString(node) implies CheckNonEmptyString(node)
+    } else if (a->opcode() == IrOpcode::kCheckNonEmptyTwoByteString &&
+               b->opcode() == IrOpcode::kCheckNonEmptyString) {
+      // CheckNonEmptyTwoByteString(node) implies CheckNonEmptyString(node)
+    } else if (a->opcode() == IrOpcode::kCheckNonEmptyOneByteString &&
+               b->opcode() == IrOpcode::kCheckString) {
+      // CheckNonEmptyOneByteString(node) implies CheckString(node)
+    } else if (a->opcode() == IrOpcode::kCheckNonEmptyTwoByteString &&
+               b->opcode() == IrOpcode::kCheckString) {
+      // CheckNonEmptyTwoByteString(node) implies CheckString(node)
     } else if (a->opcode() == IrOpcode::kCheckSmi &&
                b->opcode() == IrOpcode::kCheckNumber) {
       // CheckSmi(node) implies CheckNumber(node)
@@ -154,6 +172,10 @@ bool CheckSubsumes(Node const* a, Node const* b) {
         case IrOpcode::kCheckedTaggedSignedToInt32:
         case IrOpcode::kCheckedTaggedToTaggedPointer:
         case IrOpcode::kCheckedTaggedToTaggedSigned:
+        case IrOpcode::kCheckedCompressedToTaggedPointer:
+        case IrOpcode::kCheckedCompressedToTaggedSigned:
+        case IrOpcode::kCheckedTaggedToCompressedPointer:
+        case IrOpcode::kCheckedTaggedToCompressedSigned:
         case IrOpcode::kCheckedUint32Bounds:
         case IrOpcode::kCheckedUint32ToInt32:
         case IrOpcode::kCheckedUint32ToTaggedSigned:
@@ -200,11 +222,22 @@ bool CheckSubsumes(Node const* a, Node const* b) {
   return true;
 }
 
+bool TypeSubsumes(Node* node, Node* replacement) {
+  if (!NodeProperties::IsTyped(node) || !NodeProperties::IsTyped(replacement)) {
+    // If either node is untyped, we are running during an untyped optimization
+    // phase, and replacement is OK.
+    return true;
+  }
+  Type node_type = NodeProperties::GetType(node);
+  Type replacement_type = NodeProperties::GetType(replacement);
+  return replacement_type.Is(node_type);
+}
+
 }  // namespace
 
 Node* RedundancyElimination::EffectPathChecks::LookupCheck(Node* node) const {
   for (Check const* check = head_; check != nullptr; check = check->next) {
-    if (CheckSubsumes(check->node, node)) {
+    if (CheckSubsumes(check->node, node) && TypeSubsumes(node, check->node)) {
       DCHECK(!check->node->IsDead());
       return check->node;
     }

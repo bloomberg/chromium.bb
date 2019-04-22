@@ -346,7 +346,7 @@ egl::Error SurfaceD3D::checkForOutOfDateSwapChain(DisplayD3D *displayD3D)
 
 egl::Error SurfaceD3D::swap(const gl::Context *context)
 {
-    DisplayD3D *displayD3D = GetImplAs<DisplayD3D>(context->getCurrentDisplay());
+    DisplayD3D *displayD3D = GetImplAs<DisplayD3D>(context->getDisplay());
     return swapRect(displayD3D, 0, 0, mWidth, mHeight);
 }
 
@@ -356,7 +356,7 @@ egl::Error SurfaceD3D::postSubBuffer(const gl::Context *context,
                                      EGLint width,
                                      EGLint height)
 {
-    DisplayD3D *displayD3D = GetImplAs<DisplayD3D>(context->getCurrentDisplay());
+    DisplayD3D *displayD3D = GetImplAs<DisplayD3D>(context->getDisplay());
     return swapRect(displayD3D, x, y, width, height);
 }
 
@@ -441,7 +441,7 @@ angle::Result SurfaceD3D::getAttachmentRenderTarget(const gl::Context *context,
     {
         *rtOut = mSwapChain->getDepthStencilRenderTarget();
     }
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result SurfaceD3D::initializeContents(const gl::Context *context,
@@ -455,7 +455,7 @@ angle::Result SurfaceD3D::initializeContents(const gl::Context *context,
     {
         ANGLE_TRY(mRenderer->initRenderTarget(context, mSwapChain->getDepthStencilRenderTarget()));
     }
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 WindowSurfaceD3D::WindowSurfaceD3D(const egl::SurfaceState &state,

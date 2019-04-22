@@ -86,7 +86,7 @@ class DateTimeEditElement final : public HTMLDivElement,
 
   DateTimeEditElement(Document&, EditControlOwner&);
   ~DateTimeEditElement() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void AddField(DateTimeFieldElement*);
   bool AnyEditableFieldsHaveValues() const;

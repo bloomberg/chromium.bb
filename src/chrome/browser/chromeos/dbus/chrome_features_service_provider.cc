@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 
+#include <algorithm>
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -18,6 +20,39 @@
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+namespace {
+
+void SendResponse(dbus::MethodCall* method_call,
+                  dbus::ExportedObject::ResponseSender response_sender,
+                  bool answer) {
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
+  dbus::MessageWriter writer(response.get());
+  writer.AppendBool(answer);
+  response_sender.Run(std::move(response));
+}
+
+Profile* GetSenderProfile(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader reader(method_call);
+  std::string user_id_hash;
+
+  if (!reader.PopString(&user_id_hash)) {
+    LOG(ERROR) << "Failed to pop user_id_hash from incoming message.";
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS, "No user_id_hash string arg"));
+    return nullptr;
+  }
+
+  if (user_id_hash.empty())
+    return ProfileManager::GetActiveUserProfile();
+
+  return g_browser_process->profile_manager()->GetProfileByPath(
+      chromeos::ProfileHelper::GetProfilePathByUserIdHash(user_id_hash));
+}
+}  // namespace
+
 namespace chromeos {
 
 ChromeFeaturesServiceProvider::ChromeFeaturesServiceProvider()
@@ -29,8 +64,22 @@ void ChromeFeaturesServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
   exported_object->ExportMethod(
       kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsFeatureEnabledMethod,
+      base::BindRepeating(&ChromeFeaturesServiceProvider::IsFeatureEnabled,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsCrostiniEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsCrostiniEnabled,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsPluginVmEnabledMethod,
+      base::BindRepeating(&ChromeFeaturesServiceProvider::IsPluginVmEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -39,14 +88,6 @@ void ChromeFeaturesServiceProvider::Start(
       kChromeFeaturesServiceIsUsbguardEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsUsbguardEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
-                          weak_ptr_factory_.GetWeakPtr()));
-  exported_object->ExportMethod(
-      kChromeFeaturesServiceInterface,
-      kChromeFeaturesServiceIsShillSandboxingEnabledMethod,
-      base::BindRepeating(
-          &ChromeFeaturesServiceProvider::IsShillSandboxingEnabled,
-          weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -60,51 +101,61 @@ void ChromeFeaturesServiceProvider::OnExported(
   }
 }
 
-void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
+void ChromeFeaturesServiceProvider::IsFeatureEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  dbus::MessageReader reader(method_call);
-  std::string user_id_hash;
+  static const base::Feature constexpr* kFeatureLookup[] = {
+      &features::kUsbbouncer, &features::kUsbguard};
 
-  if (!reader.PopString(&user_id_hash)) {
-    LOG(ERROR) << "Failed to pop user_id_hash from incoming message.";
+  dbus::MessageReader reader(method_call);
+  std::string feature_name;
+  if (!reader.PopString(&feature_name)) {
+    LOG(ERROR) << "Failed to pop feature_name from incoming message.";
     response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, "No user_id_hash string arg"));
+        method_call, DBUS_ERROR_INVALID_ARGS,
+        "Missing or invalid feature_name string arg."));
     return;
   }
 
-  Profile* profile =
-      user_id_hash.empty()
-          ? ProfileManager::GetActiveUserProfile()
-          : g_browser_process->profile_manager()->GetProfileByPath(
-                ProfileHelper::GetProfilePathByUserIdHash(user_id_hash));
+  auto* const* it =
+      std::find_if(std::begin(kFeatureLookup), std::end(kFeatureLookup),
+                   [&feature_name](const base::Feature* feature) -> bool {
+                     return feature_name == feature->name;
+                   });
+  if (it == std::end(kFeatureLookup)) {
+    LOG(ERROR) << "Unexpected feature name.";
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS, "Unexpected feature name."));
+    return;
+  }
 
-  std::unique_ptr<dbus::Response> response =
-      dbus::Response::FromMethodCall(method_call);
-  dbus::MessageWriter writer(response.get());
-  writer.AppendBool(crostini::IsCrostiniAllowedForProfile(profile));
-  response_sender.Run(std::move(response));
+  SendResponse(method_call, response_sender,
+               base::FeatureList::IsEnabled(**it));
 }
 
-// TODO(mortonm): Combine these functions below when adding any more flags.
+void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  Profile* profile = GetSenderProfile(method_call, response_sender);
+  SendResponse(
+      method_call, response_sender,
+      profile ? crostini::IsCrostiniAllowedForProfile(profile) : false);
+}
+
+void ChromeFeaturesServiceProvider::IsPluginVmEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  // TODO(dtor): extend the check to include device capabilities
+  // and device/user policies.
+  SendResponse(method_call, response_sender,
+               base::FeatureList::IsEnabled(features::kPluginVm));
+}
+
 void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  std::unique_ptr<dbus::Response> response =
-      dbus::Response::FromMethodCall(method_call);
-  dbus::MessageWriter writer(response.get());
-  writer.AppendBool(base::FeatureList::IsEnabled(features::kUsbguard));
-  response_sender.Run(std::move(response));
-}
-
-void ChromeFeaturesServiceProvider::IsShillSandboxingEnabled(
-    dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
-  std::unique_ptr<dbus::Response> response =
-      dbus::Response::FromMethodCall(method_call);
-  dbus::MessageWriter writer(response.get());
-  writer.AppendBool(base::FeatureList::IsEnabled(features::kShillSandboxing));
-  response_sender.Run(std::move(response));
+  SendResponse(method_call, response_sender,
+               base::FeatureList::IsEnabled(features::kUsbguard));
 }
 
 }  // namespace chromeos

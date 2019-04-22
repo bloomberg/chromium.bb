@@ -20,9 +20,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/bookmark_app_extension_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -159,14 +159,8 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetBoolean("mayChangeLaunchType",
                     !extension->is_platform_app() && is_locally_installed);
 
-#if defined(OS_MACOSX)
-  // On Mac, only packaged apps can have shortcuts created.
-  value->SetBoolean("mayCreateShortcuts", extension->is_platform_app());
-#else
-  // On other platforms, any locally installed app can have shortcuts created.
+  // Any locally installed app can have shortcuts created.
   value->SetBoolean("mayCreateShortcuts", is_locally_installed);
-#endif
-
   value->SetBoolean("isLocallyInstalled", is_locally_installed);
 
   auto icon_size = extension_misc::EXTENSION_ICON_LARGE;
@@ -259,6 +253,10 @@ void AppLauncherHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "createAppShortcut",
       base::BindRepeating(&AppLauncherHandler::HandleCreateAppShortcut,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "installAppLocally",
+      base::BindRepeating(&AppLauncherHandler::HandleInstallAppLocally,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "showAppInfo", base::BindRepeating(&AppLauncherHandler::HandleShowAppInfo,
@@ -625,6 +623,29 @@ void AppLauncherHandler::HandleCreateAppShortcut(const base::ListValue* args) {
       base::Callback<void(bool)>());
 }
 
+void AppLauncherHandler::HandleInstallAppLocally(const base::ListValue* args) {
+  std::string extension_id;
+  CHECK(args->GetString(0, &extension_id));
+
+  const Extension* extension =
+      extension_service_->GetExtensionById(extension_id, true);
+  if (!extension)
+    return;
+
+  auto* profile = Profile::FromBrowserContext(
+      web_ui()->GetWebContents()->GetBrowserContext());
+  SetBookmarkAppIsLocallyInstalled(profile, extension, true);
+  if (extensions::CanBookmarkAppCreateOsShortcuts()) {
+    extensions::BookmarkAppCreateOsShortcuts(
+        profile, extension, true /* add_to_desktop */, base::DoNothing());
+  }
+
+  // Use the appAdded to update the app icon's color to no longer be greyscale.
+  std::unique_ptr<base::DictionaryValue> app_info(GetAppInfo(extension));
+  if (app_info)
+    web_ui()->CallJavascriptFunctionUnsafe("ntp.appAdded", *app_info);
+}
+
 void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
@@ -852,10 +873,9 @@ extensions::ExtensionUninstallDialog*
 AppLauncherHandler::CreateExtensionUninstallDialog() {
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  extension_uninstall_dialog_.reset(
-      extensions::ExtensionUninstallDialog::Create(
-          extension_service_->profile(), browser->window()->GetNativeWindow(),
-          this));
+  extension_uninstall_dialog_ = extensions::ExtensionUninstallDialog::Create(
+      extension_service_->profile(), browser->window()->GetNativeWindow(),
+      this);
   return extension_uninstall_dialog_.get();
 }
 

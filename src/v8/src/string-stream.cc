@@ -11,6 +11,7 @@
 #include "src/objects-inl.h"
 #include "src/objects/js-array-inl.h"
 #include "src/prototype.h"
+#include "src/vector.h"
 
 namespace v8 {
 namespace internal {
@@ -121,7 +122,7 @@ void StringStream::Add(Vector<const char> format, Vector<FmtElm> elms) {
     }
     case 'o': {
       DCHECK_EQ(FmtElm::OBJ, current.type_);
-      Object* obj = current.data_.u_obj_;
+      Object obj(current.data_.u_obj_);
       PrintObject(obj);
       break;
     }
@@ -177,8 +178,7 @@ void StringStream::Add(Vector<const char> format, Vector<FmtElm> elms) {
   DCHECK_EQ(buffer_[length_], '\0');
 }
 
-
-void StringStream::PrintObject(Object* o) {
+void StringStream::PrintObject(Object o) {
   o->ShortPrint(this);
   if (o->IsString()) {
     if (String::cast(o)->length() <= String::kMaxShortPrintLength) {
@@ -190,23 +190,23 @@ void StringStream::PrintObject(Object* o) {
   if (o->IsHeapObject() && object_print_mode_ == kPrintObjectVerbose) {
     // TODO(delphick): Consider whether we can get the isolate without using
     // TLS.
+    Isolate* isolate = Isolate::Current();
     DebugObjectCache* debug_object_cache =
-        Isolate::Current()->string_stream_debug_object_cache();
+        isolate->string_stream_debug_object_cache();
     for (size_t i = 0; i < debug_object_cache->size(); i++) {
-      if ((*debug_object_cache)[i] == o) {
+      if (*(*debug_object_cache)[i] == o) {
         Add("#%d#", static_cast<int>(i));
         return;
       }
     }
     if (debug_object_cache->size() < kMentionedObjectCacheMaxSize) {
       Add("#%d#", static_cast<int>(debug_object_cache->size()));
-      debug_object_cache->push_back(HeapObject::cast(o));
+      debug_object_cache->push_back(handle(HeapObject::cast(o), isolate));
     } else {
       Add("@%p", o);
     }
   }
 }
-
 
 std::unique_ptr<char[]> StringStream::ToCString() const {
   char* str = NewArray<char>(length_ + 1);
@@ -244,7 +244,7 @@ Handle<String> StringStream::ToString(Isolate* isolate) {
 
 
 void StringStream::ClearMentionedObjectCache(Isolate* isolate) {
-  isolate->set_string_stream_current_security_token(nullptr);
+  isolate->set_string_stream_current_security_token(Object());
   if (isolate->string_stream_debug_object_cache() == nullptr) {
     isolate->set_string_stream_debug_object_cache(new DebugObjectCache());
   }
@@ -275,7 +275,7 @@ bool StringStream::Put(String str, int start, int end) {
   return true;
 }
 
-void StringStream::PrintName(Object* name) {
+void StringStream::PrintName(Object name) {
   if (name->IsString()) {
     String str = String::cast(name);
     if (str->length() > 0) {
@@ -288,16 +288,15 @@ void StringStream::PrintName(Object* name) {
   }
 }
 
-
-void StringStream::PrintUsingMap(JSObject* js_object) {
+void StringStream::PrintUsingMap(JSObject js_object) {
   Map map = js_object->map();
   int real_size = map->NumberOfOwnDescriptors();
-  DescriptorArray* descs = map->instance_descriptors();
+  DescriptorArray descs = map->instance_descriptors();
   for (int i = 0; i < real_size; i++) {
     PropertyDetails details = descs->GetDetails(i);
     if (details.location() == kField) {
       DCHECK_EQ(kData, details.kind());
-      Object* key = descs->GetKey(i);
+      Object key = descs->GetKey(i);
       if (key->IsString() || key->IsNumber()) {
         int len = 3;
         if (key->IsString()) {
@@ -316,7 +315,7 @@ void StringStream::PrintUsingMap(JSObject* js_object) {
           double value = js_object->RawFastDoublePropertyAt(index);
           Add("<unboxed double> %.16g\n", FmtElm(value));
         } else {
-          Object* value = js_object->RawFastPropertyAt(index);
+          Object value = js_object->RawFastPropertyAt(index);
           Add("%o\n", value);
         }
       }
@@ -327,7 +326,7 @@ void StringStream::PrintUsingMap(JSObject* js_object) {
 void StringStream::PrintFixedArray(FixedArray array, unsigned int limit) {
   ReadOnlyRoots roots = array->GetReadOnlyRoots();
   for (unsigned int i = 0; i < 10 && i < limit; i++) {
-    Object* element = array->get(i);
+    Object element = array->get(i);
     if (element->IsTheHole(roots)) continue;
     for (int len = 1; len < 18; len++) {
       Put(' ');
@@ -366,8 +365,9 @@ void StringStream::PrintMentionedObjectCache(Isolate* isolate) {
       isolate->string_stream_debug_object_cache();
   Add("==== Key         ============================================\n\n");
   for (size_t i = 0; i < debug_object_cache->size(); i++) {
-    HeapObject* printee = (*debug_object_cache)[i];
-    Add(" #%d# %p: ", static_cast<int>(i), printee);
+    HeapObject printee = *(*debug_object_cache)[i];
+    Add(" #%d# %p: ", static_cast<int>(i),
+        reinterpret_cast<void*>(printee->ptr()));
     printee->ShortPrint(this);
     Add("\n");
     if (printee->IsJSObject()) {
@@ -376,7 +376,7 @@ void StringStream::PrintMentionedObjectCache(Isolate* isolate) {
       }
       PrintUsingMap(JSObject::cast(printee));
       if (printee->IsJSArray()) {
-        JSArray* array = JSArray::cast(printee);
+        JSArray array = JSArray::cast(printee);
         if (array->HasObjectElements()) {
           unsigned int limit = FixedArray::cast(array->elements())->length();
           unsigned int length =
@@ -394,8 +394,8 @@ void StringStream::PrintMentionedObjectCache(Isolate* isolate) {
   }
 }
 
-void StringStream::PrintSecurityTokenIfChanged(JSFunction* fun) {
-  Object* token = fun->native_context()->security_token();
+void StringStream::PrintSecurityTokenIfChanged(JSFunction fun) {
+  Object token = fun->native_context()->security_token();
   Isolate* isolate = fun->GetIsolate();
   if (token != isolate->string_stream_current_security_token()) {
     Add("Security context: %o\n", token);
@@ -403,15 +403,13 @@ void StringStream::PrintSecurityTokenIfChanged(JSFunction* fun) {
   }
 }
 
-void StringStream::PrintFunction(JSFunction* fun, Object* receiver,
-                                 Code* code) {
+void StringStream::PrintFunction(JSFunction fun, Object receiver, Code* code) {
   PrintPrototype(fun, receiver);
   *code = fun->code();
 }
 
-
-void StringStream::PrintPrototype(JSFunction* fun, Object* receiver) {
-  Object* name = fun->shared()->Name();
+void StringStream::PrintPrototype(JSFunction fun, Object receiver) {
+  Object name = fun->shared()->Name();
   bool print_name = false;
   Isolate* isolate = fun->GetIsolate();
   if (receiver->IsNullOrUndefined(isolate) || receiver->IsTheHole(isolate) ||
@@ -426,7 +424,7 @@ void StringStream::PrintPrototype(JSFunction* fun, Object* receiver) {
                                 kStartAtReceiver);
          !iter.IsAtEnd(); iter.Advance()) {
       if (iter.GetCurrent()->IsJSProxy()) break;
-      Object* key = iter.GetCurrent<JSObject>()->SlowReverseLookup(fun);
+      Object key = iter.GetCurrent<JSObject>()->SlowReverseLookup(fun);
       if (!key->IsUndefined(isolate)) {
         if (!name->IsString() ||
             !key->IsString() ||
@@ -450,7 +448,6 @@ void StringStream::PrintPrototype(JSFunction* fun, Object* receiver) {
     Put(')');
   }
 }
-
 
 char* HeapStringAllocator::grow(unsigned* bytes) {
   unsigned new_bytes = *bytes * 2;

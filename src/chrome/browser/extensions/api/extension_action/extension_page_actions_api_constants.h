@@ -16,6 +16,6 @@ extern const char kUrlKey[];
 extern const char kTitleKey[];
 extern const char kButtonKey[];
 
-};  // namespace extension_page_actions_api_constants
+}  // namespace extension_page_actions_api_constants
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_PAGE_ACTIONS_API_CONSTANTS_H_

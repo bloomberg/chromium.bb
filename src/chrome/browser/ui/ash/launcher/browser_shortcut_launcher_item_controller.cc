@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -48,11 +49,22 @@ constexpr uint16_t kMaxItems = std::numeric_limits<uint16_t>::max();
 // The tab-index flag for browser window menu items that do not specify a tab.
 constexpr uint16_t kNoTab = std::numeric_limits<uint16_t>::max();
 
-bool IsSettingsBrowser(Browser* browser) {
+bool IsManagedBrowser(Browser* browser) {
+  // System Web Apps use the chrome://scheme and rely on the Bookmark App path
+  // to associate WebContents with ShelfIDs.
+  if (web_app::SystemWebAppManager::IsEnabled())
+    return false;
+
   // Normally this test is sufficient. TODO(stevenjb): Replace this with a
   // better mechanism (Settings WebUI or Browser type).
   if (chrome::IsTrustedPopupWindowWithScheme(browser, content::kChromeUIScheme))
     return true;
+
+  if (chromeos::DiscoverWindowManager::GetInstance()->IsDiscoverBrowser(
+          browser)) {
+    return true;
+  }
+
   // If a settings window navigates away from a kChromeUIScheme (e.g. after a
   // crash), the above may not be true, so also test against the known list
   // of settings browsers (which will not be valid during chrome::Navigate
@@ -122,9 +134,7 @@ bool IsBrowserRepresentedInBrowserList(Browser* browser) {
 
   // Settings and Discover browsers have their own item; all others should be
   // represented.
-  return !IsSettingsBrowser(browser) &&
-         !chromeos::DiscoverWindowManager::GetInstance()->IsDiscoverBrowser(
-             browser);
+  return !IsManagedBrowser(browser);
 }
 
 // Gets a list of active browsers.
@@ -202,7 +212,7 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
   // The browser window may not exist in unit tests.
   if (!browser || !browser->window() || !browser->window()->GetNativeWindow() ||
       !multi_user_util::IsProfileFromActiveUser(browser->profile()) ||
-      IsSettingsBrowser(browser)) {
+      IsManagedBrowser(browser)) {
     return;
   }
 
@@ -245,9 +255,16 @@ void BrowserShortcutLauncherItemController::ItemSelected(
     return;
   }
 
-  ash::ShelfAction action =
-      ChromeLauncherController::instance()->ActivateWindowOrMinimizeIfActive(
-          last_browser->window(), items.size() == 1);
+  ash::ShelfAction action;
+  if (items.size() == 1) {
+    action =
+        ChromeLauncherController::instance()->ActivateWindowOrMinimizeIfActive(
+            last_browser->window(), true);
+  } else {
+    // Multiple targets, a menu will be shown. No need to activate or minimize
+    // the recently active browser.
+    action = ash::SHELF_ACTION_NONE;
+  }
   std::move(callback).Run(action, std::move(items));
 }
 
@@ -314,8 +331,10 @@ void BrowserShortcutLauncherItemController::ExecuteCommand(
 
   const uint16_t browser_index = GetBrowserIndex(command_id);
   // Check that the index is valid and the browser has not been closed.
+  // It's unclear why, but the browser's window may be null: crbug.com/937088
   if (browser_index < browser_menu_items_.size() &&
-      browser_menu_items_[browser_index]) {
+      browser_menu_items_[browser_index] &&
+      browser_menu_items_[browser_index]->window()) {
     Browser* browser = browser_menu_items_[browser_index];
     TabStripModel* tab_strip = browser->tab_strip_model();
     const uint16_t tab_index = GetWebContentsIndex(command_id);
@@ -330,7 +349,7 @@ void BrowserShortcutLauncherItemController::ExecuteCommand(
       multi_user_util::MoveWindowToCurrentDesktop(
           browser->window()->GetNativeWindow());
       if (tab_index != kNoTab && tab_strip->ContainsIndex(tab_index))
-        tab_strip->ActivateTabAt(tab_index, false);
+        tab_strip->ActivateTabAt(tab_index);
       browser->window()->Show();
       browser->window()->Activate();
     }

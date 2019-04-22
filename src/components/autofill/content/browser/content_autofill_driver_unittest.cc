@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,12 +22,11 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "net/base/net_errors.h"
@@ -208,7 +208,7 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   void SetFocusRequiresScroll(bool require) override {}
 
-  void SetQueryPasswordSuggestion(bool query) override{};
+  void SetQueryPasswordSuggestion(bool query) override {}
 
   void GetElementFormAndFieldData(
       const std::vector<std::string>& selectors,
@@ -252,7 +252,6 @@ class MockAutofillManager : public AutofillManager {
 class MockAutofillClient : public TestAutofillClient {
  public:
   MOCK_METHOD0(OnFirstUserGestureObserved, void());
-  MOCK_METHOD0(DidInteractWithNonsecureCreditCardInput, void());
 };
 
 class TestContentAutofillDriver : public ContentAutofillDriver {
@@ -305,10 +304,10 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
   }
 
   void Navigate(bool same_document) {
-    std::unique_ptr<content::NavigationHandle> navigation_handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(), main_rfh(), /*committed=*/true, net::OK, same_document);
-    driver_->DidNavigateMainFrame(navigation_handle.get());
+    content::MockNavigationHandle navigation_handle(GURL(), main_rfh());
+    navigation_handle.set_has_committed(true);
+    navigation_handle.set_is_same_document(same_document);
+    driver_->DidNavigateMainFrame(&navigation_handle);
   }
 
  protected:
@@ -456,38 +455,6 @@ TEST_F(ContentAutofillDriverTest, PreviewFieldWithValue) {
 
   EXPECT_TRUE(fake_agent_.GetString16PreviewFieldWithValue(&output_value));
   EXPECT_EQ(input_value, output_value);
-}
-
-// Tests that credit card form interactions trigger a call to the client's
-// |DidInteractWithNonsecureCreditCardInput| function if the page is HTTP.
-TEST_F(ContentAutofillDriverTest, CreditCardFormInteraction) {
-  GURL url("http://example.test");
-  NavigateAndCommit(url);
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetVisibleEntry();
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(url, entry->GetURL());
-
-  EXPECT_CALL(*test_autofill_client_,
-              DidInteractWithNonsecureCreditCardInput());
-  driver_->DidInteractWithCreditCardForm();
-}
-
-// Tests that credit card form interactions do NOT trigger a call to the
-// client's |DidInteractWithNonsecureCreditCardInput| function if the page
-// is HTTPS.
-TEST_F(ContentAutofillDriverTest, CreditCardFormInteractionOnHTTPS) {
-  EXPECT_CALL(*test_autofill_client_, DidInteractWithNonsecureCreditCardInput())
-      .Times(0);
-
-  GURL url("https://example.test");
-  NavigateAndCommit(url);
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetVisibleEntry();
-  ASSERT_TRUE(entry);
-  EXPECT_EQ(url, entry->GetURL());
-
-  driver_->DidInteractWithCreditCardForm();
 }
 
 }  // namespace autofill

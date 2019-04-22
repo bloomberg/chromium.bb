@@ -5,11 +5,13 @@
 #ifndef CONTENT_BROWSER_CODE_CACHE_GENERATED_CODE_CACHE_H_
 #define CONTENT_BROWSER_CODE_CACHE_GENERATED_CODE_CACHE_H_
 
+#include <queue>
+
+#include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
 #include "url/origin.h"
@@ -42,6 +44,7 @@ class CONTENT_EXPORT GeneratedCodeCache {
   using ReadDataCallback =
       base::RepeatingCallback<void(const base::Time&,
                                    const std::vector<uint8_t>&)>;
+  using GetBackendCallback = base::OnceCallback<void(disk_cache::Backend*)>;
   static const int kResponseTimeSizeInBytes = sizeof(int64_t);
 
   // Cache type. Used for collecting statistics for JS and Wasm in separate
@@ -57,8 +60,14 @@ class CONTENT_EXPORT GeneratedCodeCache {
     kCreate,
     kError,
     kIncompleteEntry,
-    kMaxValue = kIncompleteEntry
+    kWriteFailed,
+    kMaxValue = kWriteFailed
   };
+
+  // Returns the resource URL from the key. The key has the format prefix +
+  // resource URL + separator + requesting origin. This function extracts and
+  // returns resource URL from the key.
+  static std::string GetResourceURLFromKey(const std::string& key);
 
   // Creates a GeneratedCodeCache with the specified path and the maximum size.
   // If |max_size_bytes| is 0, then disk_cache picks a default size based on
@@ -68,6 +77,12 @@ class CONTENT_EXPORT GeneratedCodeCache {
                      CodeCacheType cache_type);
 
   ~GeneratedCodeCache();
+
+  // Runs the callback with a raw pointer to the backend. If we could not create
+  // the backend then it will return a null. This runs the callback
+  // synchronously if the backend is already open or asynchronously on the
+  // completion of a pending backend creation.
+  void GetBackend(GetBackendCallback callback);
 
   // Writes data to the cache. If there is an entry corresponding to
   // <|resource_url|, |origin_lock|> this overwrites the existing data. If
@@ -86,12 +101,12 @@ class CONTENT_EXPORT GeneratedCodeCache {
   // Delete the entry corresponding to <resource_url, origin_lock>
   void DeleteEntry(const GURL& resource_url, const GURL& origin_lock);
 
-  // Clear code cache.
-  // TODO(mythria): Add support to conditional clearing based on URL
-  // and time range.
-  // TODO(mythria): Also check if we can avoid retruning an error code and
-  // always call the callback to be consistent with other methods.
-  int ClearCache(net::CompletionCallback callback);
+  // Should be only used for tests. Sets the last accessed timestamp of an
+  // entry.
+  void SetLastUsedTimeForTest(const GURL& resource_url,
+                              const GURL& origin_lock,
+                              base::Time time,
+                              base::RepeatingCallback<void(void)> callback);
 
   const base::FilePath& path() const { return path_; }
 
@@ -100,10 +115,10 @@ class CONTENT_EXPORT GeneratedCodeCache {
   using ScopedBackendPtr = std::unique_ptr<disk_cache::Backend>;
 
   // State of the backend.
-  enum BackendState { kUnInitialized, kInitializing, kInitialized, kFailed };
+  enum BackendState { kInitializing, kInitialized, kFailed };
 
   // The operation requested.
-  enum Operation { kFetch, kWrite, kDelete, kClearCache };
+  enum Operation { kFetch, kWrite, kDelete, kGetBackend };
 
   // Data streams corresponding to each entry.
   enum { kDataIndex = 1 };
@@ -122,31 +137,44 @@ class CONTENT_EXPORT GeneratedCodeCache {
   // Write entry to cache
   void WriteDataImpl(const std::string& key,
                      scoped_refptr<net::IOBufferWithSize> buffer);
-  void OpenCompleteForWriteData(
+  void CompleteForWriteData(
       scoped_refptr<net::IOBufferWithSize> buffer,
       const std::string& key,
-      scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
+      scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>>
+          entry_struct,
       int rv);
-  void CreateCompleteForWriteData(
-      scoped_refptr<net::IOBufferWithSize> buffer,
-      scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
-      int rv);
+  void WriteDataCompleted(const std::string& key, int rv);
 
   // Fetch entry from cache
   void FetchEntryImpl(const std::string& key, ReadDataCallback);
   void OpenCompleteForReadData(
       ReadDataCallback callback,
+      const std::string& key,
       scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
       int rv);
-  void ReadDataComplete(ReadDataCallback callback,
+  void ReadDataComplete(const std::string& key,
+                        ReadDataCallback callback,
                         scoped_refptr<net::IOBufferWithSize> buffer,
                         int rv);
 
   // Delete entry from cache
   void DeleteEntryImpl(const std::string& key);
 
-  void DoPendingClearCache(net::CompletionCallback callback);
-  void PendingClearComplete(net::CompletionCallback callback, int rv);
+  // Issues the queued operation at the front of the queue for the given |key|.
+  void IssueQueuedOperationForEntry(const std::string& key);
+  // Enqueues into the list if there is an in-progress operation. Otherwise
+  // creates an entry to indicate there is an active operation.
+  bool EnqueueAsPendingOperation(const std::string& key,
+                                 std::unique_ptr<PendingOperation> op);
+  void IssueOperation(PendingOperation* op);
+
+  void DoPendingGetBackend(GetBackendCallback callback);
+
+  void OpenCompleteForSetLastUsedForTest(
+      scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
+      base::Time time,
+      base::RepeatingCallback<void(void)> callback,
+      int rv);
 
   void CollectStatistics(GeneratedCodeCache::CacheEntryStatus status);
 
@@ -154,6 +182,10 @@ class CONTENT_EXPORT GeneratedCodeCache {
   BackendState backend_state_;
 
   std::vector<std::unique_ptr<PendingOperation>> pending_ops_;
+
+  // Map from key to queue ops.
+  std::map<std::string, base::queue<std::unique_ptr<PendingOperation>>>
+      active_entries_map_;
 
   base::FilePath path_;
   int max_size_bytes_;

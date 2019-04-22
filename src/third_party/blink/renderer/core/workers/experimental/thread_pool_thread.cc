@@ -36,9 +36,15 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
   }
 
   // WorkerGlobalScope
-  void ImportModuleScript(
+  void FetchAndRunClassicScript(
+      const KURL& script_url,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      const v8_inspector::V8StackTraceId& stack_id) override {
+    NOTREACHED();
+  }
+  void FetchAndRunModuleScript(
       const KURL& module_url_record,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) override {
     // TODO(japhet): Consider whether modules should be supported.
     NOTREACHED();
@@ -54,16 +60,19 @@ ThreadPoolThread::ThreadPoolThread(ExecutionContext* parent_execution_context,
                                    ThreadBackingPolicy backing_policy)
     : WorkerThread(object_proxy), backing_policy_(backing_policy) {
   DCHECK(parent_execution_context);
-  worker_backing_thread_ = WorkerBackingThread::Create(
+  worker_backing_thread_ = std::make_unique<WorkerBackingThread>(
       ThreadCreationParams(GetThreadType())
           .SetFrameOrWorkerScheduler(parent_execution_context->GetScheduler()));
 }
 
 WorkerOrWorkletGlobalScope* ThreadPoolThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
-  if (backing_policy_ == kWorker)
-    return new ThreadPoolWorkerGlobalScope(std::move(creation_params), this);
-  return new TaskWorkletGlobalScope(std::move(creation_params), this);
+  if (backing_policy_ == kWorker) {
+    return MakeGarbageCollected<ThreadPoolWorkerGlobalScope>(
+        std::move(creation_params), this);
+  }
+  return MakeGarbageCollected<TaskWorkletGlobalScope>(
+      std::move(creation_params), this);
 }
 
 }  // namespace blink

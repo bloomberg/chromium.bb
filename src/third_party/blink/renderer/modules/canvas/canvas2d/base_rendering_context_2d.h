@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_BASE_RENDERING_CONTEXT_2D_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_BASE_RENDERING_CONTEXT_2D_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/modules/v8/canvas_image_source.h"
 #include "third_party/blink/renderer/bindings/modules/v8/string_or_canvas_gradient_or_canvas_pattern.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
@@ -26,8 +27,6 @@ typedef CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTML
 
 class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                                               public CanvasPath {
-  WTF_MAKE_NONCOPYABLE(BaseRenderingContext2D);
-
  public:
   ~BaseRenderingContext2D() override;
 
@@ -212,7 +211,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   virtual bool OriginClean() const = 0;
   virtual void SetOriginTainted() = 0;
-  virtual bool WouldTaintOrigin(CanvasImageSource*, ExecutionContext*) = 0;
+  virtual bool WouldTaintOrigin(CanvasImageSource*) = 0;
 
   virtual int Width() const = 0;
   virtual int Height() const = 0;
@@ -334,7 +333,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   void UnwindStateStack();
 
-  virtual CanvasColorParams ColorParams() const { return CanvasColorParams(); };
+  virtual CanvasColorParams ColorParams() const { return CanvasColorParams(); }
   virtual bool WritePixels(const SkImageInfo& orig_info,
                            const void* pixels,
                            size_t row_bytes,
@@ -433,6 +432,8 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                            base::TimeTicks start_time);
 
   bool origin_tainted_by_content_;
+
+  DISALLOW_COPY_AND_ASSIGN(BaseRenderingContext2D);
 };
 
 template <typename DrawFunc, typename ContainsFunc>

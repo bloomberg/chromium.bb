@@ -34,16 +34,16 @@ void ForceSafeSearchPolicyHandler::ApplyPolicySettings(
   }
   const base::Value* value = policies.GetValue(policy_name());
   if (value) {
-    prefs->SetValue(prefs::kForceGoogleSafeSearch, value->CreateDeepCopy());
+    prefs->SetValue(prefs::kForceGoogleSafeSearch, value->Clone());
 
     // Note that ForceYouTubeRestrict is an int policy, we cannot simply deep
     // copy value, which is a boolean.
     bool enabled = false;
     if (value->GetAsBoolean(&enabled)) {
-      prefs->SetValue(prefs::kForceYouTubeRestrict,
-                      std::make_unique<base::Value>(
-                          enabled ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
-                                  : safe_search_util::YOUTUBE_RESTRICT_OFF));
+      prefs->SetValue(
+          prefs::kForceYouTubeRestrict,
+          base::Value(enabled ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
+                              : safe_search_util::YOUTUBE_RESTRICT_OFF));
     }
   }
 }

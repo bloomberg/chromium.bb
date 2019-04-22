@@ -17,7 +17,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_empty_background.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
@@ -44,10 +44,12 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -138,9 +140,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 // bookmarks.
 @property(nonatomic, strong) BookmarkFolderViewController* folderSelector;
 
-// Object to load URLs.
-@property(nonatomic, weak) id<UrlLoader> loader;
-
 // FaviconLoader is a keyed service that uses LargeIconService to retrieve
 // favicon images.
 @property(nonatomic, assign) FaviconLoader* faviconLoader;
@@ -190,30 +189,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @property(nonatomic, strong)
     BookmarkInteractionController* bookmarkInteractionController;
 
+@property(nonatomic, assign) WebStateList* webStateList;
+
 @end
 
 @implementation BookmarkHomeViewController
-
-@synthesize bookmarks = _bookmarks;
-@synthesize browserState = _browserState;
-@synthesize folderSelector = _folderSelector;
-@synthesize loader = _loader;
-@synthesize homeDelegate = _homeDelegate;
-@synthesize contextBarState = _contextBarState;
-@synthesize dispatcher = _dispatcher;
-@synthesize cachedIndexPathRow = _cachedIndexPathRow;
-@synthesize isReconstructingFromCache = _isReconstructingFromCache;
-@synthesize sharedState = _sharedState;
-@synthesize mediator = _mediator;
-@synthesize searchController = _searchController;
-@synthesize searchTerm = _searchTerm;
-@synthesize deleteButton = _deleteButton;
-@synthesize moreButton = _moreButton;
-@synthesize scrimView = _scrimView;
-@synthesize spinnerView = _spinnerView;
-@synthesize emptyTableBackgroundView = _emptyTableBackgroundView;
-@synthesize actionSheetCoordinator = _actionSheetCoordinator;
-@synthesize bookmarkInteractionController = _bookmarkInteractionController;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -221,16 +201,16 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 #pragma mark - Initializer
 
-- (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(ios::ChromeBrowserState*)browserState
-                    dispatcher:(id<ApplicationCommands>)dispatcher {
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                          dispatcher:(id<ApplicationCommands>)dispatcher
+                        webStateList:(WebStateList*)webStateList {
   DCHECK(browserState);
   self = [super initWithTableViewStyle:UITableViewStylePlain
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _browserState = browserState->GetOriginalChromeBrowserState();
-    _loader = loader;
     _dispatcher = dispatcher;
+    _webStateList = webStateList;
 
     _faviconLoader =
         IOSChromeFaviconLoaderFactory::GetForBrowserState(_browserState);
@@ -354,7 +334,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.scrimView.accessibilityIdentifier = kBookmarkHomeSearchScrimIdentifier;
   [self.scrimView addTarget:self
                      action:@selector(dismissSearchController:)
-           forControlEvents:UIControlEventAllTouchEvents];
+           forControlEvents:UIControlEventTouchUpInside];
 
   // Place the search bar in the navigation bar.
   self.navigationItem.searchController = self.searchController;
@@ -556,12 +536,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return;
   }
 
-  CGFloat scale = [UIScreen mainScreen].scale;
-  CGFloat desiredFaviconSizeInPixel =
-      scale * [BookmarkHomeSharedState desiredFaviconSizePt];
-  CGFloat minFaviconSizeInPixel =
-      scale * [BookmarkHomeSharedState minFaviconSizePt];
-
   // Start loading a favicon.
   __weak BookmarkHomeViewController* weakSelf = self;
   GURL blockURL(node->url());
@@ -581,8 +555,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     [URLCell.faviconView configureWithAttributes:attributes];
   };
 
-  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForUrl(
-      blockURL, minFaviconSizeInPixel, desiredFaviconSizeInPixel,
+  CGFloat desiredFaviconSizeInPoints =
+      [BookmarkHomeSharedState desiredFaviconSizePt];
+  CGFloat minFaviconSizeInPoints = [BookmarkHomeSharedState minFaviconSizePt];
+
+  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForPageUrl(
+      blockURL, desiredFaviconSizeInPoints, minFaviconSizeInPoints,
       /*fallback_to_google_server=*/fallbackToGoogleServer, faviconLoadedBlock);
   DCHECK(cachedAttributes);
   faviconLoadedBlock(cachedAttributes);
@@ -661,9 +639,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if (!self.bookmarkInteractionController) {
     self.bookmarkInteractionController = [[BookmarkInteractionController alloc]
         initWithBrowserState:self.browserState
-                      loader:self.loader
             parentController:self
-                  dispatcher:self.dispatcher];
+                  dispatcher:self.dispatcher
+                webStateList:self.webStateList];
     self.bookmarkInteractionController.delegate = self;
   }
 
@@ -1049,7 +1027,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 // Saves the current position and asks the delegate to open the url, if delegate
-// is set, otherwise opens the URL using loader.
+// is set, otherwise opens the URL using URL loading service.
 - (void)dismissWithURL:(const GURL&)url {
   [self cacheIndexPathRow];
   if (self.homeDelegate) {
@@ -1076,10 +1054,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                                  new_tab_page_uma::ACTION_OPENED_BOOKMARK);
   base::RecordAction(
       base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
-  web::NavigationManager::WebLoadParams params(url);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  ChromeLoadParams chromeParams(params);
-  [self.loader loadURLWithParams:chromeParams];
+  UrlLoadParams params = UrlLoadParams::InCurrentTab(url);
+  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
 }
 
 - (void)addNewFolder {
@@ -1123,10 +1100,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (BookmarkHomeViewController*)createControllerWithRootFolder:
     (const bookmarks::BookmarkNode*)folder {
-  BookmarkHomeViewController* controller =
-      [[BookmarkHomeViewController alloc] initWithLoader:_loader
-                                            browserState:self.browserState
-                                              dispatcher:self.dispatcher];
+  BookmarkHomeViewController* controller = [[BookmarkHomeViewController alloc]
+      initWithBrowserState:self.browserState
+                dispatcher:self.dispatcher
+              webStateList:self.webStateList];
   [controller setRootNode:folder];
   controller.homeDelegate = self.homeDelegate;
   return controller;
@@ -1200,6 +1177,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // If the first row is still visible, return 0.
   NSIndexPath* topMostIndexPath = [visibleIndexPaths objectAtIndex:0];
   if (topMostIndexPath.row == 0)
+    return 0;
+
+  // To avoid an index out of bounds, check if there are less or equal
+  // kRowsHiddenByNavigationBar than number of visibleIndexPaths.
+  if ([visibleIndexPaths count] <= kRowsHiddenByNavigationBar)
     return 0;
 
   // Return the first visible row not covered by the NavigationBar.
@@ -1314,6 +1296,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
         self.tableView.scrollEnabled = YES;
       }];
   [self setupContextBar];
+}
+
+- (BOOL)scrimIsVisible {
+  return self.scrimView.superview ? YES : NO;
 }
 
 #pragma mark - Loading and Empty States
@@ -1707,8 +1693,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
        shouldReceiveTouch:(UITouch*)touch {
-  // Ignore long press in edit mode.
-  if (self.sharedState.currentlyInEditMode) {
+  // Ignore long press in edit mode or search mode.
+  if (self.sharedState.currentlyInEditMode || [self scrimIsVisible]) {
     return NO;
   }
   return YES;

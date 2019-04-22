@@ -4,17 +4,44 @@
 
 #include "chrome/browser/chromeos/cryptauth/gcm_device_info_provider_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string>
+
+#include "base/hash/md5.h"
 #include "base/linux_util.h"
 #include "base/no_destructor.h"
 #include "base/system/sys_info.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
-#include "chromeos/chromeos_features.h"
-#include "components/cryptauth/cryptauth_enrollment_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/version_info/version_info.h"
 
 namespace chromeos {
+
+namespace {
+
+int64_t HashStringToInt64(const std::string& string) {
+  base::MD5Context context;
+  base::MD5Init(&context);
+  base::MD5Update(&context, string);
+
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &context);
+
+  // Fold the digest into an int64_t value. |digest.a| is a 16-byte array, so we
+  // sum the two 8-byte halves of the digest to create the hash.
+  int64_t hash = 0;
+  for (size_t i = 0; i < sizeof(digest.a); ++i) {
+    uint8_t byte = digest.a[i];
+    hash += static_cast<int64_t>(byte) << (i % sizeof(int64_t));
+  }
+
+  return hash;
+}
+
+}  // namespace
 
 // static
 const GcmDeviceInfoProviderImpl* GcmDeviceInfoProviderImpl::GetInstance() {
@@ -26,7 +53,7 @@ const cryptauth::GcmDeviceInfo& GcmDeviceInfoProviderImpl::GetGcmDeviceInfo()
     const {
   static const base::NoDestructor<cryptauth::GcmDeviceInfo> gcm_device_info([] {
     static const google::protobuf::int64 kSoftwareVersionCode =
-        cryptauth::HashStringToInt64(version_info::GetLastChange());
+        HashStringToInt64(version_info::GetLastChange());
 
     cryptauth::GcmDeviceInfo gcm_device_info;
 
@@ -47,25 +74,19 @@ const cryptauth::GcmDeviceInfo& GcmDeviceInfoProviderImpl::GetGcmDeviceInfo()
     // phones/tablets, but it must be set due to server API verification.
     gcm_device_info.set_device_display_diagonal_mils(0);
 
-    // EasyUnlock is supported on all Chromebooks.
+    // Smart Lock, MultiDevice Setup and Messages are supported on all
+    // Chromebooks.
     gcm_device_info.add_supported_software_features(
         cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT);
+    gcm_device_info.add_supported_software_features(
+        cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT);
+    gcm_device_info.add_supported_software_features(
+        cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT);
 
-    // Unified Setup, Instant Tethering, and Android Messages integration is
-    // only supported if the flag is enabled.
-    if (base::FeatureList::IsEnabled(
-            chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-      gcm_device_info.add_supported_software_features(
-          cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT);
-    }
+    // Instant Tethering is only supported if the associated flag is enabled.
     if (base::FeatureList::IsEnabled(features::kInstantTethering)) {
       gcm_device_info.add_supported_software_features(
           cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT);
-    }
-    if (base::FeatureList::IsEnabled(
-            chromeos::features::kAndroidMessagesIntegration)) {
-      gcm_device_info.add_supported_software_features(
-          cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT);
     }
 
     return gcm_device_info;

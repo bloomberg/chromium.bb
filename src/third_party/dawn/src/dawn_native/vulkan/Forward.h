@@ -17,49 +17,39 @@
 
 #include "dawn_native/ToBackend.h"
 
-namespace dawn_native {
-    class BufferViewBase;
-}
-
 namespace dawn_native { namespace vulkan {
 
+    class Adapter;
     class BindGroup;
     class BindGroupLayout;
-    class BlendState;
     class Buffer;
-    using BufferView = BufferViewBase;
     class CommandBuffer;
     class ComputePipeline;
-    class DepthStencilState;
     class Device;
-    class InputState;
     class PipelineLayout;
     class Queue;
-    class RenderPassDescriptor;
     class RenderPipeline;
     class Sampler;
     class ShaderModule;
+    class StagingBuffer;
     class SwapChain;
     class Texture;
     class TextureView;
 
     struct VulkanBackendTraits {
+        using AdapterType = Adapter;
         using BindGroupType = BindGroup;
         using BindGroupLayoutType = BindGroupLayout;
-        using BlendStateType = BlendState;
         using BufferType = Buffer;
-        using BufferViewType = BufferView;
         using CommandBufferType = CommandBuffer;
         using ComputePipelineType = ComputePipeline;
-        using DepthStencilStateType = DepthStencilState;
         using DeviceType = Device;
-        using InputStateType = InputState;
         using PipelineLayoutType = PipelineLayout;
         using QueueType = Queue;
-        using RenderPassDescriptorType = RenderPassDescriptor;
         using RenderPipelineType = RenderPipeline;
         using SamplerType = Sampler;
         using ShaderModuleType = ShaderModule;
+        using StagingBufferType = StagingBuffer;
         using SwapChainType = SwapChain;
         using TextureType = Texture;
         using TextureViewType = TextureView;

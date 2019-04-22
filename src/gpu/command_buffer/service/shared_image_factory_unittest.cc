@@ -40,7 +40,8 @@ class SharedImageFactoryTest : public testing::Test {
     workarounds.max_texture_size = INT_MAX - 1;
     factory_ = std::make_unique<SharedImageFactory>(
         preferences, workarounds, GpuFeatureInfo(), nullptr, &mailbox_manager_,
-        &shared_image_manager_, &image_factory_, nullptr);
+        &shared_image_manager_, &image_factory_, nullptr,
+        /*is_using_skia_renderer=*/false);
   }
 
   void TearDown() override {
@@ -58,7 +59,7 @@ class SharedImageFactoryTest : public testing::Test {
 };
 
 TEST_F(SharedImageFactoryTest, Basic) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -74,7 +75,7 @@ TEST_F(SharedImageFactoryTest, Basic) {
 }
 
 TEST_F(SharedImageFactoryTest, DuplicateMailbox) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
@@ -89,13 +90,14 @@ TEST_F(SharedImageFactoryTest, DuplicateMailbox) {
   workarounds.max_texture_size = INT_MAX - 1;
   auto other_factory = std::make_unique<SharedImageFactory>(
       preferences, workarounds, GpuFeatureInfo(), nullptr, &mailbox_manager_,
-      &shared_image_manager_, &image_factory_, nullptr);
+      &shared_image_manager_, &image_factory_, nullptr,
+      /*is_using_skia_renderer=*/false);
   EXPECT_FALSE(other_factory->CreateSharedImage(mailbox, format, size,
                                                 color_space, usage));
 }
 
 TEST_F(SharedImageFactoryTest, DestroyInexistentMailbox) {
-  auto mailbox = Mailbox::Generate();
+  auto mailbox = Mailbox::GenerateForSharedImage();
   EXPECT_FALSE(factory_->DestroySharedImage(mailbox));
 }
 

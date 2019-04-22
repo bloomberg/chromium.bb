@@ -159,7 +159,7 @@ void V8DevToolsHost::ShowContextMenuAtPointMethodCustom(
     if (window_wrapper.IsEmpty())
       return;
     DOMWindow* window = V8Window::ToImpl(window_wrapper);
-    document = window ? ToLocalDOMWindow(window)->document() : nullptr;
+    document = window ? To<LocalDOMWindow>(window)->document() : nullptr;
   }
   if (!document || !document->GetFrame())
     return;

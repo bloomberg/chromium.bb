@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -28,6 +29,7 @@
 #include "media/gpu/android/android_video_surface_chooser.h"
 #include "media/gpu/android/codec_allocator.h"
 #include "media/media_buildflags.h"
+#include "media/video/supported_video_decoder_config.h"
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #include "media/base/android/extract_sps_and_pps.h"
@@ -120,6 +122,69 @@ PendingDecode::PendingDecode(scoped_refptr<DecoderBuffer> buffer,
 PendingDecode::PendingDecode(PendingDecode&& other) = default;
 PendingDecode::~PendingDecode() = default;
 
+// static
+std::vector<SupportedVideoDecoderConfig>
+MediaCodecVideoDecoder::GetSupportedConfigs() {
+  std::vector<SupportedVideoDecoderConfig> supported_configs;
+
+  if (MediaCodecUtil::IsVp8DecoderAvailable()) {
+    // For unencrypted content, require that the size is at least 360p and that
+    // the MediaCodec implementation is hardware; otherwise fall back to libvpx.
+    if (!MediaCodecUtil::IsKnownUnaccelerated(kCodecVP8,
+                                              MediaCodecDirection::DECODER)) {
+      supported_configs.emplace_back(VP8PROFILE_ANY, VP8PROFILE_ANY,
+                                     gfx::Size(480, 360), gfx::Size(3840, 2160),
+                                     false,   // allow_encrypted
+                                     false);  // require_encrypted
+    }
+
+    // Encrypted content must be decoded by MediaCodec.
+    supported_configs.emplace_back(VP8PROFILE_ANY, VP8PROFILE_ANY,
+                                   gfx::Size(0, 0), gfx::Size(3840, 2160),
+                                   true,   // allow_encrypted
+                                   true);  // require_encrypted
+  }
+
+  if (MediaCodecUtil::IsVp9DecoderAvailable()) {
+    // For unencrypted content, require that the size is at least 360p and that
+    // the MediaCodec implementation is hardware; otherwise fall back to libvpx.
+    if (!MediaCodecUtil::IsKnownUnaccelerated(kCodecVP9,
+                                              MediaCodecDirection::DECODER)) {
+      supported_configs.emplace_back(VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE3,
+                                     gfx::Size(480, 360), gfx::Size(3840, 2160),
+                                     false,   // allow_encrypted
+                                     false);  // require_encrypted
+    }
+
+    // Encrypted content must be decoded by MediaCodec.
+    supported_configs.emplace_back(VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE3,
+                                   gfx::Size(0, 0), gfx::Size(3840, 2160),
+                                   true,   // allow_encrypted
+                                   true);  // require_encrypted
+  }
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  // MediaCodec is only guaranteed to support baseline, but some devices may
+  // support others. Advertise support for all H.264 profiles and let the
+  // MediaCodec fail when decoding if it's not actually supported. It's assumed
+  // that there is not software fallback for H.264 on Android.
+  supported_configs.emplace_back(H264PROFILE_BASELINE,
+                                 H264PROFILE_MULTIVIEWHIGH, gfx::Size(0, 0),
+                                 gfx::Size(3840, 2160),
+                                 true,    // allow_encrypted
+                                 false);  // require_encrypted
+
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  supported_configs.emplace_back(HEVCPROFILE_MAIN, HEVCPROFILE_MAIN10,
+                                 gfx::Size(0, 0), gfx::Size(3840, 2160),
+                                 true,    // allow_encrypted
+                                 false);  // require_encrypted
+#endif
+#endif
+
+  return supported_configs;
+}
+
 MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuFeatureInfo& gpu_feature_info,
@@ -186,13 +251,15 @@ void MediaCodecVideoDecoder::Destroy() {
   StartDrainingCodec(DrainType::kForDestroy);
 }
 
-void MediaCodecVideoDecoder::Initialize(
-    const VideoDecoderConfig& config,
-    bool low_delay,
-    CdmContext* cdm_context,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                        bool low_delay,
+                                        CdmContext* cdm_context,
+                                        const InitCB& init_cb,
+                                        const OutputCB& output_cb,
+                                        const WaitingCB& waiting_cb) {
+  DCHECK(output_cb);
+  DCHECK(waiting_cb);
+
   const bool first_init = !decoder_config_.IsValidConfig();
   DVLOG(1) << (first_init ? "Initializing" : "Reinitializing")
            << " MCVD with config: " << config.AsHumanReadableString()
@@ -215,6 +282,7 @@ void MediaCodecVideoDecoder::Initialize(
   surface_chooser_helper_.SetVideoRotation(decoder_config_.video_rotation());
 
   output_cb_ = output_cb;
+  waiting_cb_ = waiting_cb;
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (config.codec() == kCodecH264)
@@ -320,19 +388,26 @@ void MediaCodecVideoDecoder::StartLazyInit() {
   lazy_init_pending_ = false;
   codec_allocator_->StartThread(this);
 
-  // SurfaceControl allows TextureOwner to be promoted to an overlay in the
-  // compositing pipeline itself.
-  const bool use_texture_owner_as_overlays = is_surface_control_enabled_;
-
   // Only ask for promotion hints if we can actually switch surfaces, since we
   // wouldn't be able to do anything with them. Also, if threaded texture
-  // mailboxes are enabled, then we turn off overlays anyway. And if texture
-  // owner can be used as an overlay, no promotion hints are necessary.
+  // mailboxes are enabled, then we turn off overlays anyway.
   const bool want_promotion_hints =
       device_info_->IsSetOutputSurfaceSupported() &&
-      !enable_threaded_texture_mailboxes_ && !use_texture_owner_as_overlays;
+      !enable_threaded_texture_mailboxes_;
+
+  VideoFrameFactory::OverlayMode overlay_mode =
+      VideoFrameFactory::OverlayMode::kDontRequestPromotionHints;
+  if (is_surface_control_enabled_) {
+    overlay_mode =
+        requires_secure_codec_
+            ? VideoFrameFactory::OverlayMode::kSurfaceControlSecure
+            : VideoFrameFactory::OverlayMode::kSurfaceControlInsecure;
+  } else if (want_promotion_hints) {
+    overlay_mode = VideoFrameFactory::OverlayMode::kRequestPromotionHints;
+  }
+
   video_frame_factory_->Initialize(
-      want_promotion_hints, use_texture_owner_as_overlays,
+      overlay_mode,
       base::Bind(&MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized,
                  weak_factory_.GetWeakPtr()));
 }
@@ -375,6 +450,8 @@ void MediaCodecVideoDecoder::OnOverlayInfoChanged(
   bool overlay_changed = !overlay_info_.RefersToSameOverlayAs(overlay_info);
   overlay_info_ = overlay_info;
   surface_chooser_helper_.SetIsFullscreen(overlay_info_.is_fullscreen);
+  surface_chooser_helper_.SetIsPersistentVideo(
+      overlay_info_.is_persistent_video);
   surface_chooser_helper_.UpdateChooserState(
       overlay_changed ? base::make_optional(CreateOverlayFactoryCb())
                       : base::nullopt);
@@ -661,6 +738,7 @@ bool MediaCodecVideoDecoder::QueueInput() {
     case CodecWrapper::QueueStatus::kNoKey:
       // Retry when a key is added.
       waiting_for_key_ = true;
+      waiting_cb_.Run(WaitingReason::kNoDecryptionKey);
       return false;
     case CodecWrapper::QueueStatus::kError:
       EnterTerminalState(State::kError);

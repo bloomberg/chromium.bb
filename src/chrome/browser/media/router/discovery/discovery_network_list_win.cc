@@ -20,6 +20,7 @@
 
 #include "base/containers/small_map.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace media_router {
@@ -68,7 +69,7 @@ class WlanApi {
   static std::unique_ptr<WlanApi> Create() {
     static const wchar_t* kWlanDllPath = L"%WINDIR%\\system32\\wlanapi.dll";
     wchar_t path[MAX_PATH] = {0};
-    ExpandEnvironmentStrings(kWlanDllPath, path, arraysize(path));
+    ExpandEnvironmentStrings(kWlanDllPath, path, base::size(path));
     HINSTANCE library =
         LoadLibraryEx(path, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
     if (!library) {

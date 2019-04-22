@@ -63,8 +63,8 @@ base::LazyInstance<URLRequestSlowDownloadJob::SlowJobsSet>::Leaky
 
 void URLRequestSlowDownloadJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&URLRequestSlowDownloadJob::StartAsync,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&URLRequestSlowDownloadJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 int64_t URLRequestSlowDownloadJob::GetTotalReceivedBytes() const {
@@ -203,8 +203,9 @@ int URLRequestSlowDownloadJob::ReadRawData(IOBuffer* buf, int buf_size) {
       buffer_ = buf;
       buffer_size_ = buf_size;
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&URLRequestSlowDownloadJob::CheckDoneStatus,
-                                weak_factory_.GetWeakPtr()),
+          FROM_HERE,
+          base::BindOnce(&URLRequestSlowDownloadJob::CheckDoneStatus,
+                         weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(100));
       return ERR_IO_PENDING;
   }
@@ -215,20 +216,21 @@ int URLRequestSlowDownloadJob::ReadRawData(IOBuffer* buf, int buf_size) {
 void URLRequestSlowDownloadJob::CheckDoneStatus() {
   if (should_finish_download_) {
     VLOG(10) << __FUNCTION__ << " called w/ should_finish_download_ set.";
-    DCHECK(NULL != buffer_.get());
+    DCHECK(nullptr != buffer_.get());
     int bytes_written = 0;
     ReadStatus status =
         FillBufferHelper(buffer_.get(), buffer_size_, &bytes_written);
     DCHECK_EQ(BUFFER_FILLED, status);
-    buffer_ = NULL;  // Release the reference.
+    buffer_ = nullptr;  // Release the reference.
     ReadRawDataComplete(bytes_written);
   } else if (should_error_download_) {
     VLOG(10) << __FUNCTION__ << " called w/ should_finish_ownload_ set.";
     ReadRawDataComplete(ERR_CONNECTION_RESET);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&URLRequestSlowDownloadJob::CheckDoneStatus,
-                              weak_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&URLRequestSlowDownloadJob::CheckDoneStatus,
+                       weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(100));
   }
 }

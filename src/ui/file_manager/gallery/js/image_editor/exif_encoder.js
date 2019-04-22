@@ -67,8 +67,9 @@ ExifEncoder.prototype.setImageData = function(canvas) {
   ImageEncoder.MetadataEncoder.prototype.setImageData.call(this, canvas);
 
   var image = this.ifd_.image;
-  if (!image)
+  if (!image) {
     image = this.ifd_.image = {};
+  }
 
   // Only update width/height in this directory if they are present.
   if (image[Exif.Tag.IMAGE_WIDTH] && image[Exif.Tag.IMAGE_HEIGHT]) {
@@ -77,8 +78,9 @@ ExifEncoder.prototype.setImageData = function(canvas) {
   }
 
   var exif = this.ifd_.exif;
-  if (!exif)
+  if (!exif) {
     exif = this.ifd_.exif = {};
+  }
   ExifEncoder.findOrCreateTag(image, Exif.Tag.EXIFDATA);
   ExifEncoder.findOrCreateTag(exif, Exif.Tag.X_DIMENSION).value = canvas.width;
   ExifEncoder.findOrCreateTag(exif, Exif.Tag.Y_DIMENSION).value = canvas.height;
@@ -138,8 +140,9 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
   }
   if (this.thumbnailDataUrl) {
     var thumbnail = this.ifd_.thumbnail;
-    if (!thumbnail)
+    if (!thumbnail) {
       thumbnail = this.ifd_.thumbnail = {};
+    }
 
     ExifEncoder.findOrCreateTag(thumbnail, Exif.Tag.IMAGE_WIDTH).value =
         canvas.width;
@@ -158,8 +161,9 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
     ExifEncoder.findOrCreateTag(this.ifd_.image, Exif.Tag.COMPRESSION).value =
         6;
   } else {
-    if (this.ifd_.thumbnail)
+    if (this.ifd_.thumbnail) {
       delete this.ifd_.thumbnail;
+    }
   }
 };
 
@@ -168,13 +172,15 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
  */
 ExifEncoder.prototype.findInsertionRange = function(encodedImage) {
   function getWord(pos) {
-    if (pos + 2 > encodedImage.length)
+    if (pos + 2 > encodedImage.length) {
       throw 'Reading past the buffer end @' + pos;
+    }
     return encodedImage.charCodeAt(pos) << 8 | encodedImage.charCodeAt(pos + 1);
   }
 
-  if (getWord(0) != Exif.Mark.SOI)
+  if (getWord(0) != Exif.Mark.SOI) {
     throw new Error('Jpeg data starts from 0x' + getWord(0).toString(16));
+  }
 
   var sectionStart = 2;
 
@@ -185,18 +191,21 @@ ExifEncoder.prototype.findInsertionRange = function(encodedImage) {
   for (;;) {
     var tag = getWord(sectionStart);
 
-    if (tag == Exif.Mark.SOS)
+    if (tag == Exif.Mark.SOS) {
       break;
+    }
 
     var nextSectionStart = sectionStart + 2 + getWord(sectionStart + 2);
     if (nextSectionStart <= sectionStart ||
-        nextSectionStart > encodedImage.length)
+        nextSectionStart > encodedImage.length) {
       throw new Error('Invalid section size in jpeg data');
+    }
 
     if (tag == Exif.Mark.APP0) {
       // Assert that we have not seen the Exif section yet.
-      if (range.from != range.to)
+      if (range.from != range.to) {
         throw new Error('APP0 section found after EXIF section');
+      }
       // An empty range right after the APP0 segment.
       range.from = range.to = nextSectionStart;
     } else if (tag == Exif.Mark.EXIF) {
@@ -250,16 +259,18 @@ ExifEncoder.prototype.encode = function() {
     bw.resolveOffset(Exif.Tag.EXIFDATA);
     ExifEncoder.encodeDirectory(bw, this.ifd_.exif);
   } else {
-    if (Exif.Tag.EXIFDATA in this.ifd_.image)
+    if (Exif.Tag.EXIFDATA in this.ifd_.image) {
       throw new Error('Corrupt exif dictionary reference');
+    }
   }
 
   if (this.ifd_.gps) {
     bw.resolveOffset(Exif.Tag.GPSDATA);
     ExifEncoder.encodeDirectory(bw, this.ifd_.gps);
   } else {
-    if (Exif.Tag.GPSDATA in this.ifd_.image)
+    if (Exif.Tag.GPSDATA in this.ifd_.image) {
       throw new Error('Missing gps dictionary reference');
+    }
   }
 
   // Since thumbnail data can be large, check enough space has left for
@@ -327,8 +338,9 @@ ExifEncoder.encodeDirectory = function(
 
     if (opt_resolveLater && (opt_resolveLater.indexOf(tag.id) >= 0)) {
       // The actual value depends on further computations.
-      if (tag.componentCount != 1 || width > 4)
+      if (tag.componentCount != 1 || width > 4) {
         throw new Error('Cannot forward the pointer for ' + tag.id);
+      }
       bw.forward(tag.id, width);
     } else if (width <= 4) {
       // The value fits into 4 bytes, write it immediately.
@@ -401,8 +413,9 @@ ExifEncoder.writeValue = function(bw, tag) {
           'String size mismatch for 0x' + Number(tag.id).toString(16));
     }
 
-    if (tag.value.charAt(tag.value.length - 1) !== '\0')
+    if (tag.value.charAt(tag.value.length - 1) !== '\0') {
       throw new Error('String must end with null character.');
+    }
 
     bw.writeString(/** @type {string} */ (tag.value));
   } else {  // Scalar or rational
@@ -491,7 +504,9 @@ ByteWriter.prototype.setByteOrder = function(order) {
 /**
  * @return {number} the current write position.
  */
-ByteWriter.prototype.tell = function() { return this.pos_ };
+ByteWriter.prototype.tell = function() {
+  return this.pos_;
+};
 
 /**
  * Skips desired amount of bytes in output stream.
@@ -508,8 +523,9 @@ ByteWriter.prototype.skip = function(count) {
  * @param {number} width Amount of bytes to check.
  */
 ByteWriter.prototype.validateWrite = function(width) {
-  if (this.pos_ + width > this.view_.byteLength)
+  if (this.pos_ + width > this.view_.byteLength) {
     throw new Error('Writing past the end of the buffer');
+  }
 };
 
 /**
@@ -568,8 +584,9 @@ ByteWriter.prototype.writeString = function(str) {
  * @param {number} width Width of the value in bytes.
  */
 ByteWriter.prototype.forward = function(key, width) {
-  if (key in this.forwards_)
+  if (key in this.forwards_) {
     throw new Error('Duplicate forward key ' + key);
+  }
   this.validateWrite(width);
   this.forwards_[key] = {
     pos: this.pos_,
@@ -584,8 +601,9 @@ ByteWriter.prototype.forward = function(key, width) {
  * @param {number} value value to write in pre-allocated space.
  */
 ByteWriter.prototype.resolve = function(key, value) {
-  if (!(key in this.forwards_))
+  if (!(key in this.forwards_)) {
     throw new Error('Undeclared forward key ' + key.toString(16));
+  }
   var forward = this.forwards_[key];
   var curPos = this.pos_;
   this.pos_ = forward.pos;

@@ -5,15 +5,16 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_PAYMENTS_CLIENT_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_PAYMENTS_CLIENT_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/prefs/pref_service.h"
+#include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/identity/public/cpp/access_token_info.h"
@@ -111,25 +112,32 @@ class PaymentsClient {
   };
 
   // An enum set in the GetUploadDetailsRequest indicating the source of the
-  // request. It should stay consistent with the same enum in Google Payments
-  // server code.
-  enum MigrationSource {
-    // Source unknown or unnecessary (such as during single credit card upload).
-    UNKNOWN_MIGRATION_SOURCE,
-    // Migration request comes from the checkout flow.
-    CHECKOUT_FLOW,
-    // Migration request comes from settings page.
-    SETTINGS_PAGE,
+  // request when uploading a card to Google Payments. It should stay consistent
+  // with the same enum in Google Payments server code.
+  enum UploadCardSource {
+    // Source unknown.
+    UNKNOWN_UPLOAD_CARD_SOURCE,
+    // Single card is being uploaded from the normal credit card offer-to-save
+    // prompt during a checkout flow.
+    UPSTREAM_CHECKOUT_FLOW,
+    // Single card is being uploaded from chrome://settings/payments.
+    UPSTREAM_SETTINGS_PAGE,
+    // Single card is being uploaded after being scanned by OCR.
+    UPSTREAM_CARD_OCR,
+    // 1+ cards are being uploaded from a migration request that started during
+    // a checkout flow.
+    LOCAL_CARD_MIGRATION_CHECKOUT_FLOW,
+    // 1+ cards are being uploaded from a migration request that was initiated
+    // from chrome://settings/payments.
+    LOCAL_CARD_MIGRATION_SETTINGS_PAGE,
   };
 
   // |url_loader_factory| is reference counted so it has no lifetime or
-  // ownership requirements. |pref_service| is used to get the registered
-  // preference value, |identity_manager| and |account_info_getter|
-  // must all outlive |this|. Either delegate might be nullptr.
-  // |is_off_the_record| denotes incognito mode.
+  // ownership requirements. |identity_manager| and |account_info_getter| must
+  // all outlive |this|. Either delegate might be nullptr. |is_off_the_record|
+  // denotes incognito mode.
   PaymentsClient(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      PrefService* const pref_service,
       identity::IdentityManager* const identity_manager,
       AccountInfoGetter* const account_info_getter,
       bool is_off_the_record = false);
@@ -142,8 +150,6 @@ class PaymentsClient {
   // identifying information should not be sent until the user has explicitly
   // accepted an upload prompt.
   void Prepare();
-
-  PrefService* GetPrefService() const;
 
   // The user has attempted to unmask a card with the given cvc.
   void UnmaskCard(const UnmaskRequestDetails& request_details,
@@ -160,7 +166,7 @@ class PaymentsClient {
   // billable service number in the GetUploadDetails request. If the conditions
   // are met, the legal message will be returned via |callback|.
   // |active_experiments| is used by Payments server to track requests that were
-  // triggered by enabled features. |migration_source| is used by Payments
+  // triggered by enabled features. |upload_card_source| is used by Payments
   // server metrics to track the source of the request.
   virtual void GetUploadDetails(
       const std::vector<AutofillProfile>& addresses,
@@ -169,10 +175,11 @@ class PaymentsClient {
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const base::string16&,
-                              std::unique_ptr<base::DictionaryValue>)> callback,
+                              std::unique_ptr<base::Value>,
+                              std::vector<std::pair<int, int>>)> callback,
       const int billable_service_number,
-      MigrationSource migration_source =
-          MigrationSource::UNKNOWN_MIGRATION_SOURCE);
+      UploadCardSource upload_card_source =
+          UploadCardSource::UNKNOWN_UPLOAD_CARD_SOURCE);
 
   // The user has indicated that they would like to upload a card with the given
   // cvc. This request will fail server-side if a successful call to
@@ -196,6 +203,8 @@ class PaymentsClient {
   // Exposed for testing.
   void set_url_loader_factory_for_testing(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
+  bool is_off_the_record() { return is_off_the_record_; }
 
  private:
   friend class PaymentsClientTest;
@@ -232,9 +241,6 @@ class PaymentsClient {
 
   // The URL loader factory for the request.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-
-  // The pref service for this client.
-  PrefService* const pref_service_;
 
   // Provided in constructor; not owned by PaymentsClient.
   identity::IdentityManager* const identity_manager_;

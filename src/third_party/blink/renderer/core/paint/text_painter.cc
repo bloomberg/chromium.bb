@@ -29,34 +29,38 @@ namespace blink {
 void TextPainter::Paint(unsigned start_offset,
                         unsigned end_offset,
                         unsigned length,
-                        const TextPaintStyle& text_style) {
+                        const TextPaintStyle& text_style,
+                        const NodeHolder& node_holder) {
   GraphicsContextStateSaver state_saver(graphics_context_, false);
   UpdateGraphicsContext(text_style, state_saver);
   if (combined_text_) {
     graphics_context_.Save();
     combined_text_->TransformToInlineCoordinates(graphics_context_,
                                                  text_bounds_);
-    PaintInternal<kPaintText>(start_offset, end_offset, length);
+    PaintInternal<kPaintText>(start_offset, end_offset, length, node_holder);
     graphics_context_.Restore();
   } else {
-    PaintInternal<kPaintText>(start_offset, end_offset, length);
+    PaintInternal<kPaintText>(start_offset, end_offset, length, node_holder);
   }
 
   if (!emphasis_mark_.IsEmpty()) {
     if (text_style.emphasis_mark_color != text_style.fill_color)
       graphics_context_.SetFillColor(text_style.emphasis_mark_color);
 
-    if (combined_text_)
+    if (combined_text_) {
       PaintEmphasisMarkForCombinedText();
-    else
-      PaintInternal<kPaintEmphasisMark>(start_offset, end_offset, length);
+    } else {
+      PaintInternal<kPaintEmphasisMark>(start_offset, end_offset, length,
+                                        node_holder);
+    }
   }
 }
 
 template <TextPainter::PaintInternalStep step>
 void TextPainter::PaintInternalRun(TextRunPaintInfo& text_run_paint_info,
                                    unsigned from,
-                                   unsigned to) {
+                                   unsigned to,
+                                   const NodeHolder& node_holder) {
   DCHECK(from <= text_run_paint_info.run.length());
   DCHECK(to <= text_run_paint_info.run.length());
 
@@ -70,24 +74,28 @@ void TextPainter::PaintInternalRun(TextRunPaintInfo& text_run_paint_info,
   } else {
     DCHECK(step == kPaintText);
     graphics_context_.DrawText(font_, text_run_paint_info,
-                               FloatPoint(text_origin_));
+                               FloatPoint(text_origin_), node_holder);
   }
 }
 
 template <TextPainter::PaintInternalStep Step>
 void TextPainter::PaintInternal(unsigned start_offset,
                                 unsigned end_offset,
-                                unsigned truncation_point) {
+                                unsigned truncation_point,
+                                const NodeHolder& node_holder) {
   TextRunPaintInfo text_run_paint_info(run_);
-  text_run_paint_info.bounds = FloatRect(text_bounds_);
   if (start_offset <= end_offset) {
-    PaintInternalRun<Step>(text_run_paint_info, start_offset, end_offset);
+    PaintInternalRun<Step>(text_run_paint_info, start_offset, end_offset,
+                           node_holder);
   } else {
-    if (end_offset > 0)
-      PaintInternalRun<Step>(text_run_paint_info, ellipsis_offset_, end_offset);
-    if (start_offset < truncation_point)
+    if (end_offset > 0) {
+      PaintInternalRun<Step>(text_run_paint_info, ellipsis_offset_, end_offset,
+                             node_holder);
+    }
+    if (start_offset < truncation_point) {
       PaintInternalRun<Step>(text_run_paint_info, start_offset,
-                             truncation_point);
+                             truncation_point, node_holder);
+    }
   }
 }
 
@@ -120,7 +128,6 @@ void TextPainter::PaintEmphasisMarkForCombinedText() {
                                       font_data->GetFontMetrics().Ascent() +
                                       emphasis_mark_offset_);
   TextRunPaintInfo text_run_paint_info(placeholder_text_run);
-  text_run_paint_info.bounds = FloatRect(text_bounds_);
   graphics_context_.ConcatCTM(Rotation(text_bounds_, kClockwise));
   graphics_context_.DrawEmphasisMarks(combined_text_->OriginalFont(),
                                       text_run_paint_info, emphasis_mark_,

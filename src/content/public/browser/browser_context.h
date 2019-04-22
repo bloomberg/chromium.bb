@@ -11,19 +11,18 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/hash_tables.h"
 #include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
-#include "services/network/public/mojom/cors_origin_pattern.mojom.h"
-#include "services/service_manager/public/cpp/embedded_service_info.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
-#include "third_party/blink/public/mojom/blob/blob.mojom.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom-forward.h"
+#include "services/service_manager/public/mojom/service.mojom-forward.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-forward.h"
 
 #if !defined(OS_ANDROID)
 #include "content/public/browser/zoom_level_delegate.h"
@@ -79,6 +78,7 @@ class BrowserPluginGuestManager;
 class BrowsingDataRemover;
 class BrowsingDataRemoverDelegate;
 class DownloadManager;
+class ClientHintsControllerDelegate;
 class DownloadManagerDelegate;
 class PermissionController;
 class PermissionControllerDelegate;
@@ -143,7 +143,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // ownership of the pointer.
   static void GarbageCollectStoragePartitions(
       BrowserContext* browser_context,
-      std::unique_ptr<base::hash_set<base::FilePath>> active_paths,
+      std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
       const base::Closure& done);
 
   static StoragePartition* GetDefaultStoragePartition(
@@ -225,21 +225,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static ServiceManagerConnection* GetServiceManagerConnectionFor(
       BrowserContext* browser_context);
 
-  // Returns a SharedCorsOriginAccessList instance for the |browser_context|.
-  // TODO(toyoshim): Remove this interface once NetworkService is enabled.
-  static const SharedCorsOriginAccessList* GetSharedCorsOriginAccessList(
-      BrowserContext* browser_context);
-
-  // Sets CORS origin access lists. This obtains SharedCorsOriginAccessList
-  // that is bound to |browser_context|, and calls SetForOrigin(...) for legacy
-  // code path, but calls into NetworkService instead if it is enabled.
-  static void SetCorsOriginAccessListsForOrigin(
-      BrowserContext* browser_context,
-      const url::Origin& source_origin,
-      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-      base::OnceClosure closure);
-
   BrowserContext();
 
   ~BrowserContext() override;
@@ -261,7 +246,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns the path of the directory where this context's data is stored.
   virtual base::FilePath GetPath() const = 0;
 
-  // Return whether this context is incognito. Default is false.
+  // Return whether this context is off the record. Default is false.
+  // Note that for Chrome this does not imply Incognito as Guest sessions are
+  // also off the record.
   virtual bool IsOffTheRecord() const = 0;
 
   // Returns the resource context.
@@ -296,6 +283,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Note: if you want to check a permission status, you probably need
   // BrowserContext::GetPermissionController() instead.
   virtual PermissionControllerDelegate* GetPermissionControllerDelegate() = 0;
+
+  // Returns the ClientHintsControllerDelegate associated with that context if
+  // any, nullptr otherwise.
+  virtual ClientHintsControllerDelegate* GetClientHintsControllerDelegate() = 0;
 
   // Returns the BackgroundFetchDelegate associated with that context if any,
   // nullptr otherwise.
@@ -333,12 +324,16 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
           const base::FilePath& partition_path,
           bool in_memory) = 0;
 
-  using StaticServiceMap =
-      std::map<std::string, service_manager::EmbeddedServiceInfo>;
+  // Sets CORS origin access lists.
+  virtual void SetCorsOriginAccessListForOrigin(
+      const url::Origin& source_origin,
+      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+      base::OnceClosure closure);
 
-  // Registers per-browser-context services to be loaded in the browser process
-  // by the Service Manager.
-  virtual void RegisterInProcessServices(StaticServiceMap* services) {}
+  // Returns a SharedCorsOriginAccessList instance.
+  virtual const SharedCorsOriginAccessList* GetSharedCorsOriginAccessList()
+      const;
 
   // Handles a service request for a service expected to run an instance per
   // BrowserContext.

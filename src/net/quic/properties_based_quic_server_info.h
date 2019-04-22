@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/quic/quic_server_info.h"
-#include "net/third_party/quic/platform/api/quic_export.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 
 namespace net {
 

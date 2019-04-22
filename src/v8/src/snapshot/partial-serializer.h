@@ -14,7 +14,7 @@ namespace internal {
 
 class StartupSerializer;
 
-class PartialSerializer : public Serializer {
+class V8_EXPORT_PRIVATE PartialSerializer : public Serializer {
  public:
   PartialSerializer(Isolate* isolate, StartupSerializer* startup_serializer,
                     v8::SerializeEmbedderFieldsCallback callback);
@@ -27,15 +27,13 @@ class PartialSerializer : public Serializer {
   bool can_be_rehashed() const { return can_be_rehashed_; }
 
  private:
-  void SerializeObject(HeapObject* o, HowToCode how_to_code,
-                       WhereToPoint where_to_point, int skip) override;
+  void SerializeObject(HeapObject o) override;
 
-  bool ShouldBeInThePartialSnapshotCache(HeapObject* o);
+  bool ShouldBeInThePartialSnapshotCache(HeapObject o);
 
-  bool SerializeJSObjectWithEmbedderFields(Object* obj, HowToCode how_to_code,
-                                           WhereToPoint where_to_point);
+  bool SerializeJSObjectWithEmbedderFields(Object obj);
 
-  void CheckRehashability(HeapObject* obj);
+  void CheckRehashability(HeapObject obj);
 
   StartupSerializer* startup_serializer_;
   v8::SerializeEmbedderFieldsCallback serialize_embedder_fields_;

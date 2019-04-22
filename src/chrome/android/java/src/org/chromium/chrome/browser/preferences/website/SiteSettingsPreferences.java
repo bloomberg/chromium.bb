@@ -13,7 +13,6 @@ import android.widget.ListView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
@@ -103,18 +102,12 @@ public class SiteSettingsPreferences extends PreferenceFragment
             if (!SiteSettingsCategory.adsCategoryEnabled()) {
                 getPreferenceScreen().removePreference(findPreference(Type.ADS));
             }
-            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SOUND_CONTENT_SETTING)) {
-                getPreferenceScreen().removePreference(findPreference(Type.SOUND));
-            }
-            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CLIPBOARD_CONTENT_SETTING)) {
-                getPreferenceScreen().removePreference(findPreference(Type.CLIPBOARD));
-            }
             // The new Languages Preference *feature* is an advanced version of this translate
             // preference. Once Languages Preference is enabled, remove this setting.
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.LANGUAGES_PREFERENCE)) {
                 getPreferenceScreen().removePreference(findPreference(TRANSLATE_KEY));
             }
-            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
+            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SENSOR_CONTENT_SETTING)) {
                 getPreferenceScreen().removePreference(findPreference(Type.SENSORS));
             }
         }
@@ -145,21 +138,17 @@ public class SiteSettingsPreferences extends PreferenceFragment
             }
             websitePrefs.add(Type.BACKGROUND_SYNC);
             websitePrefs.add(Type.CAMERA);
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CLIPBOARD_CONTENT_SETTING)) {
-                websitePrefs.add(Type.CLIPBOARD);
-            }
+            websitePrefs.add(Type.CLIPBOARD);
             websitePrefs.add(Type.COOKIES);
             websitePrefs.add(Type.JAVASCRIPT);
             websitePrefs.add(Type.DEVICE_LOCATION);
             websitePrefs.add(Type.MICROPHONE);
             websitePrefs.add(Type.NOTIFICATIONS);
             websitePrefs.add(Type.POPUPS);
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.SENSOR_CONTENT_SETTING)) {
                 websitePrefs.add(Type.SENSORS);
             }
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.SOUND_CONTENT_SETTING)) {
-                websitePrefs.add(Type.SOUND);
-            }
+            websitePrefs.add(Type.SOUND);
             websitePrefs.add(Type.USB);
         }
 
@@ -172,12 +161,13 @@ public class SiteSettingsPreferences extends PreferenceFragment
                     prefServiceBridge.requiresTriStateContentSetting(contentType);
 
             boolean checked = false;
-            ContentSetting setting = ContentSetting.DEFAULT;
+            @ContentSettingValues
+            int setting = ContentSettingValues.DEFAULT;
 
             if (prefCategory == Type.DEVICE_LOCATION) {
                 checked = LocationSettings.getInstance().areAllLocationSettingsEnabled();
             } else if (requiresTriStateSetting) {
-                setting = ContentSetting.fromInt(prefServiceBridge.getContentSetting(contentType));
+                setting = prefServiceBridge.getContentSetting(contentType);
             } else {
                 checked = prefServiceBridge.isCategoryEnabled(contentType);
             }
@@ -185,16 +175,12 @@ public class SiteSettingsPreferences extends PreferenceFragment
             p.setTitle(ContentSettingsResources.getTitle(contentType));
             p.setOnPreferenceClickListener(this);
 
-            if ((Type.CAMERA == prefCategory || Type.MICROPHONE == prefCategory)
+            if ((Type.CAMERA == prefCategory || Type.MICROPHONE == prefCategory
+                        || Type.NOTIFICATIONS == prefCategory)
                     && SiteSettingsCategory.createFromType(prefCategory)
                                .showPermissionBlockedMessage(getActivity())) {
                 // Show 'disabled' message when permission is not granted in Android.
                 p.setSummary(ContentSettingsResources.getCategorySummary(contentType, false));
-            } else if (Type.AUTOPLAY == prefCategory
-                    && DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
-                // Disable autoplay preference if Data Saver is ON.
-                p.setSummary(ContentSettingsResources.getAutoplayDisabledByDataSaverSummary());
-                p.setEnabled(false);
             } else if (Type.COOKIES == prefCategory && checked
                     && prefServiceBridge.isBlockThirdPartyCookiesEnabled()) {
                 p.setSummary(ContentSettingsResources.getCookieAllowedExceptThirdPartySummary());

@@ -4,6 +4,7 @@
 
 #include "services/device/generic_sensor/platform_sensor_provider_android.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -22,6 +22,7 @@
 #include "base/atomicops.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "test/errors.h"
@@ -612,7 +613,7 @@ void LockingTest(FileLocking main_lock, FileLocking other_locks) {
 
   LockingTestThread threads[20];
   int expected_iterations = 0;
-  for (size_t index = 0; index < arraysize(threads); ++index) {
+  for (size_t index = 0; index < base::size(threads); ++index) {
     int iterations_for_this_thread = static_cast<int>(index * 10);
     threads[index].Init(
         (other_locks == FileLocking::kShared)

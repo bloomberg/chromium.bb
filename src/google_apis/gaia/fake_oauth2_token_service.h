@@ -33,7 +33,7 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
       const GoogleServiceAuthError& auth_error);
 
   void InvalidateTokenForMultilogin(const std::string& account_id,
-                                    const std::string& token) override{};
+                                    const std::string& token) override {}
 
   FakeOAuth2TokenServiceDelegate* GetFakeOAuth2TokenServiceDelegate();
 

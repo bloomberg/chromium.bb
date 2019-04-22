@@ -243,8 +243,8 @@ bool AppLaunchInfo::LoadLaunchContainer(Extension* extension,
     return false;
   }
 
-  if (launch_container_string == values::kLaunchContainerPanel) {
-    launch_container_ = LAUNCH_CONTAINER_PANEL;
+  if (launch_container_string == values::kLaunchContainerPanelDeprecated) {
+    launch_container_ = LAUNCH_CONTAINER_PANEL_DEPRECATED;
   } else if (launch_container_string == values::kLaunchContainerTab) {
     launch_container_ = LAUNCH_CONTAINER_TAB;
   } else {
@@ -252,7 +252,10 @@ bool AppLaunchInfo::LoadLaunchContainer(Extension* extension,
     return false;
   }
 
-  bool can_specify_initial_size = launch_container_ == LAUNCH_CONTAINER_PANEL;
+  // TODO(manucornet): Remove this special behavior now that panels are
+  // deprecated.
+  bool can_specify_initial_size =
+      launch_container_ == LAUNCH_CONTAINER_PANEL_DEPRECATED;
 
   // Validate the container width if present.
   if (!ReadLaunchDimension(extension->manifest(),

@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -33,6 +32,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
     @Feature({"Downloads"})
     @Features.EnableFeatures(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)
     public void testDefaultDialogPositiveButtonClickThrough() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(DownloadPromptStatus.SHOW_INITIAL,
                     PrefServiceBridge.getInstance().getPromptForDownloadAndroid());
 
@@ -117,7 +117,7 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
     public void testNoDialogWithoutSDCard() throws Exception {
         int currentCallCount = mDownloadTestRule.getChromeDownloadCallCount();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(DownloadPromptStatus.SHOW_INITIAL,
                     PrefServiceBridge.getInstance().getPromptForDownloadAndroid());
 
@@ -162,7 +162,7 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
     }
 
     private void promptDownloadLocationDialog(@DownloadPromptStatus int promptStatus) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setPromptForDownloadAndroid(promptStatus);
         });
     }

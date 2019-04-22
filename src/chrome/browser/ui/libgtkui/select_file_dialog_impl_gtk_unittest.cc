@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl_gtk.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/libgtkui/gtk_ui.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -108,7 +108,7 @@ TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectExistingFolder) {
   EXPECT_FALSE(file_picker.canCreateFolder());
   EXPECT_STREQ("Select Folder", file_picker.getTitle());
 
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
   RunLoop().RunUntilIdle();
 }
 
@@ -123,7 +123,7 @@ TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectUploadFolder) {
   EXPECT_FALSE(file_picker.canCreateFolder());
   EXPECT_STREQ("Select Folder to Upload", file_picker.getTitle());
 
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
   RunLoop().RunUntilIdle();
 }
 
@@ -138,7 +138,7 @@ TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectFolder) {
   EXPECT_TRUE(file_picker.canCreateFolder());
   EXPECT_STREQ("Select Folder", file_picker.getTitle());
 
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
   RunLoop().RunUntilIdle();
 }
 

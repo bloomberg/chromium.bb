@@ -6,11 +6,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "device/base/features.h"
 #include "device/vr/orientation/orientation_device.h"
 #include "device/vr/orientation/orientation_device_provider.h"
 #include "device/vr/test/fake_orientation_provider.h"
@@ -89,12 +92,12 @@ class VROrientationDeviceProviderTest : public testing::Test {
     return base::BindRepeating([](device::mojom::XRDeviceId id,
                                   mojom::VRDisplayInfoPtr,
                                   mojom::XRRuntimePtr device) { FAIL(); });
-  };
+  }
 
   base::RepeatingCallback<void(device::mojom::XRDeviceId)>
   DeviceIdCallbackFailIfCalled() {
     return base::BindRepeating([](device::mojom::XRDeviceId id) { FAIL(); });
-  };
+  }
 
   base::RepeatingCallback<void(device::mojom::XRDeviceId,
                                mojom::VRDisplayInfoPtr,
@@ -108,7 +111,7 @@ class VROrientationDeviceProviderTest : public testing::Test {
           std::move(quit_closure).Run();
         },
         loop->QuitClosure());
-  };
+  }
 
   base::RepeatingCallback<void(device::mojom::XRDeviceId)>
   DeviceIdCallbackMustBeCalled(base::RunLoop* loop) {
@@ -117,17 +120,17 @@ class VROrientationDeviceProviderTest : public testing::Test {
           std::move(quit_closure).Run();
         },
         loop->QuitClosure());
-  };
+  }
 
   base::OnceClosure ClosureFailIfCalled() {
     return base::BindOnce([]() { FAIL(); });
-  };
+  }
 
   base::OnceClosure ClosureMustBeCalled(base::RunLoop* loop) {
     return base::BindOnce(
         [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
         loop->QuitClosure());
-  };
+  }
 
   // Needed for MakeRequest to work.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -154,6 +157,10 @@ TEST_F(VROrientationDeviceProviderTest, InitializationTest) {
 }
 
 TEST_F(VROrientationDeviceProviderTest, InitializationCallbackSuccessTest) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      device::kWebXrOrientationSensorDevice);
+
   base::RunLoop wait_for_device;
   base::RunLoop wait_for_init;
 
@@ -170,6 +177,10 @@ TEST_F(VROrientationDeviceProviderTest, InitializationCallbackSuccessTest) {
 }
 
 TEST_F(VROrientationDeviceProviderTest, InitializationCallbackFailureTest) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      device::kWebXrOrientationSensorDevice);
+
   base::RunLoop wait_for_init;
 
   provider_->Initialize(DeviceAndIdCallbackFailIfCalled(),
@@ -179,6 +190,24 @@ TEST_F(VROrientationDeviceProviderTest, InitializationCallbackFailureTest) {
   InitializeDevice(nullptr);
 
   // Wait for the initialization to finish.
+  wait_for_init.Run();
+  EXPECT_TRUE(provider_->Initialized());
+}
+
+TEST_F(VROrientationDeviceProviderTest, InitializationCallbackUnsupportedTest) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      device::kWebXrOrientationSensorDevice);
+
+  base::RunLoop wait_for_init;
+
+  provider_->Initialize(DeviceAndIdCallbackFailIfCalled(),
+                        DeviceIdCallbackFailIfCalled(),
+                        ClosureMustBeCalled(&wait_for_init));
+
+  // With the feature disabled, the device should still be initialized to match
+  // the failure case above, but we shouldn't need any callbacks triggered via
+  // InitializeDevice.
   wait_for_init.Run();
   EXPECT_TRUE(provider_->Initialized());
 }

@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_oid.h"
 
-#include "fxjs/xfa/cjx_oid.h"
+#include "fxjs/xfa/cjx_textnode.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -16,9 +16,7 @@ const CXFA_Node::AttributeData kOidAttributeData[] = {
     {XFA_Attribute::Name, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kOidName[] = L"oid";
+};
 
 }  // namespace
 
@@ -28,9 +26,8 @@ CXFA_Oid::CXFA_Oid(CXFA_Document* doc, XFA_PacketType packet)
                 (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
                 XFA_ObjectType::TextNode,
                 XFA_Element::Oid,
-                nullptr,
+                {},
                 kOidAttributeData,
-                kOidName,
-                pdfium::MakeUnique<CJX_Oid>(this)) {}
+                pdfium::MakeUnique<CJX_TextNode>(this)) {}
 
-CXFA_Oid::~CXFA_Oid() {}
+CXFA_Oid::~CXFA_Oid() = default;

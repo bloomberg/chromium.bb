@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chromeos/components/multidevice/remote_device_cache.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_base.h"
-#include "components/cryptauth/remote_device_cache.h"
 
 namespace chromeos {
 
@@ -36,14 +36,14 @@ class FakeSecureChannel : public SecureChannelBase {
  private:
   // mojom::SecureChannel:
   void ListenForConnectionFromDevice(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       mojom::ConnectionDelegatePtr delegate) override;
   void InitiateConnectionToDevice(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       mojom::ConnectionDelegatePtr delegate) override;

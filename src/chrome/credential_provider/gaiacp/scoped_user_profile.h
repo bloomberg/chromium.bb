@@ -22,19 +22,30 @@ class ScopedUserProfile {
  public:
   static std::unique_ptr<ScopedUserProfile> Create(
       const base::string16& sid,
+      const base::string16& domain,
       const base::string16& username,
       const base::string16& password);
 
   virtual ~ScopedUserProfile();
 
   // Saves Gaia information to the account's KHCU registry hive.
-  virtual HRESULT SaveAccountInfo(const base::DictionaryValue& properties);
+  virtual HRESULT SaveAccountInfo(const base::Value& properties);
 
  protected:
   // This constructor is used by the derived fake class to bypass the
   // initialization code in the public constructor that will fail because the
   // tests are not running elevated.
   ScopedUserProfile();
+
+  HRESULT ExtractAssociationInformation(const base::Value& properties,
+                                        base::string16* sid,
+                                        base::string16* id,
+                                        base::string16* email,
+                                        base::string16* token_handle);
+  HRESULT RegisterAssociation(const base::string16& sid,
+                              const base::string16& id,
+                              const base::string16& email,
+                              const base::string16& token_handle);
 
  private:
   friend class FakeScopedUserProfileFactory;
@@ -52,6 +63,7 @@ class ScopedUserProfile {
   // directory and registry hive to be loaded by the system itself.  This
   // code must be run after the credprov tells winlogon to log the user in.
   ScopedUserProfile(const base::string16& sid,
+                    const base::string16& domain,
                     const base::string16& username,
                     const base::string16& password);
 

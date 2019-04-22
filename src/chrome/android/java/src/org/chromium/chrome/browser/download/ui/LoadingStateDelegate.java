@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.download.ui;
 
+import org.chromium.chrome.browser.ChromeFeatureList;
+
 /**
  * Determines when the data from all of the backends has been loaded.
  * <p>
@@ -39,6 +41,9 @@ public class LoadingStateDelegate {
 
     /** @return Whether all backends are loaded. */
     public boolean isLoaded() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER))
+            return true;
+
         return mLoadingState == ALL_LOADED;
     }
 

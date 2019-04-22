@@ -12,7 +12,7 @@ namespace subresource_filter {
 // static
 void NavigationConsoleLogger::LogMessageOnCommit(
     content::NavigationHandle* handle,
-    content::ConsoleMessageLevel level,
+    blink::mojom::ConsoleMessageLevel level,
     const std::string& message) {
   DCHECK(handle->IsInMainFrame());
   if (handle->HasCommitted() && !handle->IsErrorPage()) {
@@ -58,5 +58,7 @@ void NavigationConsoleLogger::DidFinishNavigation(
   // Deletes |this|.
   web_contents()->RemoveUserData(UserDataKey());
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(NavigationConsoleLogger)
 
 }  // namespace subresource_filter

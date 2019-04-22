@@ -6,7 +6,6 @@
 #include "core/fxcrt/xml/cfx_xmlelement.h"
 #include "core/fxcrt/xml/cfx_xmlinstruction.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/test_support.h"
 
 TEST(CFX_XMLDocumentTest, Root) {
   CFX_XMLDocument doc;
@@ -17,6 +16,6 @@ TEST(CFX_XMLDocumentTest, CreateNode) {
   CFX_XMLDocument doc;
   auto* node = doc.CreateNode<CFX_XMLElement>(L"elem");
 
-  ASSERT_EQ(FX_XMLNODE_Element, node->GetType());
+  ASSERT_EQ(CFX_XMLNode::Type::kElement, node->GetType());
   EXPECT_EQ(L"elem", node->GetName());
 }

@@ -150,9 +150,7 @@ class CORE_EXPORT OffscreenCanvas final
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                                AccelerationHint,
                                                const FloatSize&) final;
-  bool WouldTaintOrigin(const SecurityOrigin*) const final {
-    return !origin_clean_;
-  }
+  bool WouldTaintOrigin() const final { return !origin_clean_; }
   FloatSize ElementSize(const FloatSize& default_object_size) const final {
     return FloatSize(width(), height());
   }

@@ -120,6 +120,9 @@
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
+      <!-- Files app strings. It's shared with ARC++ (//components/arc). -->
+      <part file="file_manager_strings.grdp" />
+
       <!-- Default user profile images. -->
       <!-- User Image default image accessible descriptions -->
       <message name="IDS_LOGIN_DEFAULT_USER_DESC_19" desc="Description of the default user icon with a picture of a bicycle">
@@ -1095,40 +1098,6 @@
       </message>
       <message name="IDS_IME_NAME_TRANSLITERATION_UR" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
         Transliteration (salam &#x2190; &#x0633;&#x0644;&#x0627;&#x0645;)
-      </message>
-
-      <message name="IDS_POWER_SOURCE_PORT_LEFT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the left side of this device.">
-        USB-C device (left port)
-      </message>
-      <message name="IDS_POWER_SOURCE_PORT_RIGHT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the right side of this device.">
-        USB-C device (right port)
-      </message>
-      <message name="IDS_POWER_SOURCE_PORT_BACK" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the back of this device.">
-        USB-C device (rear port)
-      </message>
-      <message name="IDS_POWER_SOURCE_PORT_FRONT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the front of this device.">
-        USB-C device (front port)
-      </message>
-      <message name="IDS_POWER_SOURCE_PORT_LEFT_FRONT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the left side of this device. In this case there are two ports on that side, so this text should refer to the front one on that side.">
-        USB-C device (left side front port)
-      </message>
-      <message name="IDS_POWER_SOURCE_PORT_LEFT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the left side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">
-        USB-C device (left side back port)
-      </message>
-      <message name="IDS_POWER_SOURCE_PORT_RIGHT_FRONT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the front one on that side.">
-        USB-C device (right side front port)
-      </message>
-      <message name="IDS_POWER_SOURCE_PORT_RIGHT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">
-        USB-C device (right side back port)
-      </message>
-      <message name="IDS_POWER_SOURCE_PORT_BACK_LEFT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the back of this device. In this case there are two ports on the back, so this text should refer to the one on the left.">
-        USB-C device (left port in the back)
-      </message>
-      <message name="IDS_POWER_SOURCE_PORT_BACK_RIGHT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the back of this device. In this case there are two ports on the back, so this text should refer to the one on the right.">
-        USB-C device (right port in the back)
-      </message>
-      <message name="IDS_POWER_SOURCE_PORT_UNKNOWN" desc="The text referring to the device to charge from, when its port location cannot be determined.">
-        USB-C device
       </message>
     </messages>
   </release>

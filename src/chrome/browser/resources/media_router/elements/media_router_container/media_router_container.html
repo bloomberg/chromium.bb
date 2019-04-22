@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
@@ -160,10 +161,10 @@
         <template is="dom-if" if="[[searchEnabled_]]">
           <div id="sink-search">
             <div class="sink-content">
-              <paper-icon-button id="sink-search-icon"
-                  icon="media-router:search" on-tap="searchButtonClick_"
+              <cr-icon-button id="sink-search-icon"
+                  iron-icon="media-router:search" on-tap="searchButtonClick_"
                   title="[[i18n('searchButtonTitle')]]">
-              </paper-icon-button>
+              </cr-icon-button>
               <cr-input id="sink-search-input" value="{{searchInputText_}}"
                   placeholder="[[i18n('searchInputLabel')]]">
               </cr-input>

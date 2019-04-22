@@ -35,7 +35,6 @@
 #include "src/globals.h"
 #include "src/heap/factory.h"
 #include "src/isolate.h"
-#include "src/utils.h"
 
 // Ast(Raw|Cons)String and AstValueFactory are for storing strings and
 // values independent of the V8 heap and internalizing them later. During
@@ -53,7 +52,7 @@ class AstRawString final : public ZoneObject {
                          : literal_bytes_.length() / 2;
   }
   bool AsArrayIndex(uint32_t* index) const;
-  bool IsOneByteEqualTo(const char* data) const;
+  V8_EXPORT_PRIVATE bool IsOneByteEqualTo(const char* data) const;
   uint16_t FirstCharacter() const;
 
   void Internalize(Isolate* isolate);
@@ -203,10 +202,12 @@ class AstBigInt {
   F(await, "await")                             \
   F(bigint, "bigint")                           \
   F(boolean, "boolean")                         \
+  F(computed, "<computed>")                     \
   F(constructor, "constructor")                 \
   F(default, "default")                         \
   F(done, "done")                               \
   F(dot, ".")                                   \
+  F(dot_default, ".default")                    \
   F(dot_for, ".for")                            \
   F(dot_generator_object, ".generator_object")  \
   F(dot_iterator, ".iterator")                  \
@@ -236,7 +237,6 @@ class AstBigInt {
   F(return, "return")                           \
   F(set, "set")                                 \
   F(set_space, "set ")                          \
-  F(star_default_star, "*default*")             \
   F(string, "string")                           \
   F(symbol, "symbol")                           \
   F(target, "target")                           \

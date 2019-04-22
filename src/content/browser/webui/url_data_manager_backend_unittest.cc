@@ -59,9 +59,8 @@ class UrlDataManagerBackendTest : public testing::Test {
       const char* origin) {
     std::unique_ptr<net::URLRequest> request =
         url_request_context_.CreateRequest(
-            GURL(
-                "chrome://resources/polymer/v1_0/polymer/polymer-extracted.js"),
-            net::HIGHEST, delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+            GURL("chrome://resources/css/text_defaults.css"), net::HIGHEST,
+            delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
     request->SetExtraRequestHeaderByName("Origin", origin, true);
     return request;
   }

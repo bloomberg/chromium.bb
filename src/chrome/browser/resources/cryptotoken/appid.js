@@ -136,8 +136,9 @@ XhrAppIdChecker.prototype.checkAppIds = function(
   this.allowHttp_ = allowHttp;
   /** @private {string|undefined} */
   this.logMsgUrl_ = opt_logMsgUrl;
-  if (!this.distinctAppIds_.length)
+  if (!this.distinctAppIds_.length) {
     return Promise.resolve(false);
+  }
 
   if (this.allAppIdsEqualOrigin_()) {
     // Trivially allowed.

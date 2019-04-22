@@ -5,49 +5,25 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//media/gpu/args.gni")
+import("//tools/generate_stubs/rules.gni")
 import("//ui/gl/features.gni")
 import("//ui/ozone/ozone.gni")
 
 assert(use_vaapi)
 
-action("libva_generate_stubs") {
+generate_stubs("libva_stubs") {
   extra_header = "va_stub_header.fragment"
-
-  script = "//tools/generate_stubs/generate_stubs.py"
-  sources = [
-    "va.sigs",
-  ]
-  inputs = [
-    extra_header,
-  ]
+  sigs = [ "va.sigs" ]
   if (use_x11) {
-    sources += [ "va_x11.sigs" ]
+    sigs += [ "va_x11.sigs" ]
   }
   if (is_linux) {
-    sources += [ "va_drm.sigs" ]
+    sigs += [ "va_drm.sigs" ]
   }
-  stubs_filename_root = "va_stubs"
-
-  outputs = [
-    "$target_gen_dir/$stubs_filename_root.cc",
-    "$target_gen_dir/$stubs_filename_root.h",
+  output_name = "va_stubs"
+  deps = [
+    "//base",
   ]
-  args = [
-    "-i",
-    rebase_path("$target_gen_dir", root_build_dir),
-    "-o",
-    rebase_path("$target_gen_dir", root_build_dir),
-    "-t",
-    "posix_stubs",
-    "-e",
-    rebase_path(extra_header, root_build_dir),
-    "-s",
-    stubs_filename_root,
-    "-p",
-    "media/gpu/vaapi",
-  ]
-
-  args += rebase_path(sources, root_build_dir)
 }
 
 source_set("vaapi") {
@@ -61,14 +37,18 @@ source_set("vaapi") {
     "va_surface.h",
     "vaapi_common.cc",
     "vaapi_common.h",
+    "vaapi_dmabuf_video_frame_mapper.cc",
+    "vaapi_dmabuf_video_frame_mapper.h",
     "vaapi_h264_accelerator.cc",
     "vaapi_h264_accelerator.h",
-    "vaapi_jpeg_decode_accelerator.cc",
-    "vaapi_jpeg_decode_accelerator.h",
+    "vaapi_jpeg_decoder.cc",
+    "vaapi_jpeg_decoder.h",
     "vaapi_jpeg_encode_accelerator.cc",
     "vaapi_jpeg_encode_accelerator.h",
     "vaapi_jpeg_encoder.cc",
     "vaapi_jpeg_encoder.h",
+    "vaapi_mjpeg_decode_accelerator.cc",
+    "vaapi_mjpeg_decode_accelerator.h",
     "vaapi_picture.cc",
     "vaapi_picture.h",
     "vaapi_picture_factory.cc",
@@ -87,18 +67,27 @@ source_set("vaapi") {
     "vaapi_wrapper.h",
     "vp8_encoder.cc",
     "vp8_encoder.h",
+    "vp9_encoder.cc",
+    "vp9_encoder.h",
   ]
-  sources += get_target_outputs(":libva_generate_stubs")
 
   configs += [ "//third_party/libyuv:libyuv_config" ]
 
   deps = [
-    ":libva_generate_stubs",
+    ":libva_stubs",
+    "//base",
     "//gpu/ipc/service",
     "//media",
     "//media/gpu:common",
+    "//media/gpu:video_frame_mapper_common",
     "//third_party/libyuv",
+    "//ui/gfx/geometry",
   ]
+
+  if (is_linux) {
+    configs += [ "//build/config/linux/libva" ]
+    deps += [ "//media/gpu/linux" ]
+  }
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
@@ -148,19 +137,20 @@ source_set("unit_test") {
   ]
 }
 
-source_set("jpeg_decode_accelerator_unit_test") {
+source_set("jpeg_decoder_unit_test") {
   testonly = true
   sources = [
-    "vaapi_jpeg_decode_accelerator_unittest.cc",
+    "vaapi_jpeg_decoder_unittest.cc",
   ]
   deps = [
     ":vaapi",
+    "//base",
     "//base/test:test_support",
-    "//gpu:test_support",
     "//media:test_support",
-    "//media/gpu:common",
-    "//testing/gmock",
+    "//skia",
     "//testing/gtest",
-    "//ui/gfx:test_support",
+    "//third_party/libyuv:libyuv",
+    "//ui/gfx/codec",
+    "//ui/gfx/geometry",
   ]
 }

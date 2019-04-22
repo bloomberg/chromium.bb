@@ -10,7 +10,7 @@
 
 #include <arm_neon.h>
 
-namespace {
+namespace {  // NOLINT(google-build-namespaces)
 
 // ARMv8 has vrndm(q)_f32 to floor floats.  Here we emulate it:
 //   - roundtrip through integers via truncation
@@ -496,6 +496,7 @@ public:
 
     AI SkNx operator + (const SkNx& o) const { return vaddq_u8(fVec, o.fVec); }
     AI SkNx operator - (const SkNx& o) const { return vsubq_u8(fVec, o.fVec); }
+    AI SkNx operator & (const SkNx& o) const { return vandq_u8(fVec, o.fVec); }
 
     AI static SkNx Min(const SkNx& a, const SkNx& b) { return vminq_u8(a.fVec, b.fVec); }
     AI SkNx operator < (const SkNx& o) const { return vcltq_u8(fVec, o.fVec); }

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -39,18 +40,18 @@ class POLICY_EXPORT ResourceCache {
                 const base::Optional<int64_t> max_cache_size);
   virtual ~ResourceCache();
 
-  // Stores |data| under (key, subkey). Returns true if the store suceeded, and
-  // false otherwise.
-  bool Store(const std::string& key,
-             const std::string& subkey,
-             const std::string& data);
+  // Stores |data| under (key, subkey). Returns file path if the store
+  // succeeded, and empty FilePath otherwise.
+  base::FilePath Store(const std::string& key,
+                       const std::string& subkey,
+                       const std::string& data);
 
   // Loads the contents of (key, subkey) into |data| and returns true. Returns
-  // false if (key, subkey) isn't found or if there is a problem reading the
-  // data.
-  bool Load(const std::string& key,
-            const std::string& subkey,
-            std::string* data);
+  // empty FilePath if (key, subkey) isn't found or if there is a problem
+  // reading the data, and file path otherwise.
+  base::FilePath Load(const std::string& key,
+                      const std::string& subkey,
+                      std::string* data);
 
   // Loads all the subkeys of |key| into |contents|.
   void LoadAllSubkeys(const std::string& key,

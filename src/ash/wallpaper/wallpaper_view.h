@@ -5,11 +5,6 @@
 #ifndef ASH_WALLPAPER_WALLPAPER_VIEW_H_
 #define ASH_WALLPAPER_WALLPAPER_VIEW_H_
 
-#include <memory>
-
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
-#include "base/scoped_observer.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/view.h"
 
@@ -21,41 +16,60 @@ namespace ash {
 
 class PreEventDispatchHandler;
 
-class WallpaperView : public views::View,
-                      public views::ContextMenuController,
-                      TabletModeObserver {
+class WallpaperView : public views::View, public views::ContextMenuController {
  public:
-  WallpaperView();
+  WallpaperView(int blur, float opacity);
   ~WallpaperView() override;
+
+  // Schedules a repaint of the wallpaper with blur and opacity changes.
+  void RepaintBlurAndOpacity(int repaint_blur, float repaint_opacity);
+
+  int repaint_blur() const { return repaint_blur_; }
+  float repaint_opacity() const { return repaint_opacity_; }
 
  private:
   friend class WallpaperControllerTest;
 
-  // Overridden from views::View:
+  // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
 
-  // Overridden from TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
-  void OnTabletControllerDestroyed() override;
+  // views::ContextMenuController:
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
-  // Overridden from views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  // Helper to draw the wallpaper.
+  void DrawWallpaper(const gfx::ImageSkia& wallpaper,
+                     const gfx::Rect& src,
+                     const gfx::Rect& dst,
+                     const cc::PaintFlags& flags,
+                     gfx::Canvas* canvas);
 
-  ScopedObserver<TabletModeController, TabletModeObserver>
-      tablet_mode_observer_{this};
-  bool is_tablet_mode_ = false;
+  // These are used by overview mode to animate the blur and opacity on the
+  // wallpaper. If |repaint_blur_| is not 0 and |repaint_opacity_| is not 1, the
+  // wallpaper will be downsampled and a blur and brightness filter will be
+  // applied. It is downsampled to increase performance.
+  int repaint_blur_;
+  float repaint_opacity_;
 
+  // A cached downsampled image of the wallpaper image. It will help wallpaper
+  // blur/brightness animations be more performant.
+  base::Optional<gfx::ImageSkia> small_image_;
+
+  // A event handler that handles taps and closes overview if we are in that
+  // mode.
+  // TODO(sammiequon): Move this logic into ash/wm/overview.
   std::unique_ptr<PreEventDispatchHandler> pre_dispatch_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperView);
 };
 
 views::Widget* CreateWallpaperWidget(aura::Window* root_window,
-                                     int container_id);
+                                     int container_id,
+                                     int blur,
+                                     float opacity,
+                                     WallpaperView** out_wallpaper_view);
 
 }  // namespace ash
 

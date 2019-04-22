@@ -28,7 +28,7 @@ class WM_PUBLIC_EXPORT ActivationDelegate {
 WM_PUBLIC_EXPORT void SetActivationDelegate(aura::Window* window,
                                             ActivationDelegate* delegate);
 WM_PUBLIC_EXPORT ActivationDelegate* GetActivationDelegate(
-    aura::Window* window);
+    const aura::Window* window);
 
 }  // namespace wm
 

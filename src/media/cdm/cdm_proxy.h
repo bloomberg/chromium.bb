@@ -34,8 +34,11 @@ class MEDIA_EXPORT CdmProxy {
    public:
     Client();
     virtual ~Client();
-    // Called when there is a hardware reset and all the hardware context is
-    // lost.
+
+    // Called when there is a hardware reset. When hardware reset happens, all
+    // the hardware context is lost and all crypto sessions are destroyed. The
+    // CdmProxy returns to an uninitialized state and the caller must call
+    // Initialize() on the CdmProxy again to be able to continue using it.
     virtual void NotifyHardwareReset() = 0;
   };
 
@@ -82,7 +85,10 @@ class MEDIA_EXPORT CdmProxy {
       void(Status status, Protocol protocol, uint32_t crypto_session_id)>;
 
   // Initializes the proxy. The status and the return values of the call is
-  // reported to |init_cb|.
+  // reported to |init_cb|. All other methods should only be called after the
+  // proxy is fully initialized. Otherwise they may fail.
+  // Note: The proxy also needs to be reinitialized after hardware reset. See
+  // Client::NotifyHardwareReset() for details.
   virtual void Initialize(Client* client, InitializeCB init_cb) = 0;
 
   // Callback for Process(). |output_data| is the output of processing.

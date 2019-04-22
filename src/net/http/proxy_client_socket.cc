@@ -24,7 +24,7 @@ void ProxyClientSocket::SetStreamPriority(RequestPriority priority) {}
 // static
 void ProxyClientSocket::BuildTunnelRequest(
     const HostPortPair& endpoint,
-    const HttpRequestHeaders& auth_headers,
+    const HttpRequestHeaders& extra_headers,
     const std::string& user_agent,
     std::string* request_line,
     HttpRequestHeaders* request_headers) {
@@ -41,7 +41,7 @@ void ProxyClientSocket::BuildTunnelRequest(
   if (!user_agent.empty())
     request_headers->SetHeader(HttpRequestHeaders::kUserAgent, user_agent);
 
-  request_headers->MergeFrom(auth_headers);
+  request_headers->MergeFrom(extra_headers);
 }
 
 // static
@@ -52,7 +52,7 @@ int ProxyClientSocket::HandleProxyAuthChallenge(
   DCHECK(response->headers.get());
   int rv = auth->HandleAuthChallenge(response->headers, response->ssl_info,
                                      false, true, net_log);
-  response->auth_challenge = auth->auth_info();
+  auth->TakeAuthInfo(&response->auth_challenge);
   if (rv == OK)
     return ERR_PROXY_AUTH_REQUESTED;
   return rv;

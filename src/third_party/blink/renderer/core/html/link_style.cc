@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/loader/importance_attribute.h"
+#include "third_party/blink/renderer/core/loader/link_load_parameters.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -35,18 +36,13 @@ static bool StyleSheetTypeIsSupported(const String& type) {
          MIMETypeRegistry::IsSupportedStyleSheetMIMEType(trimmed_type);
 }
 
-LinkStyle* LinkStyle::Create(HTMLLinkElement* owner) {
-  return MakeGarbageCollected<LinkStyle>(owner);
-}
-
 LinkStyle::LinkStyle(HTMLLinkElement* owner)
     : LinkResource(owner),
       disabled_state_(kUnset),
       pending_sheet_type_(kNone),
       loading_(false),
       fired_load_(false),
-      loaded_sheet_(false),
-      fetch_following_cors_(false) {}
+      loaded_sheet_(false) {}
 
 LinkStyle::~LinkStyle() = default;
 
@@ -91,8 +87,8 @@ void LinkStyle::NotifyFinished(Resource* resource) {
   }
 
   CSSParserContext* parser_context = CSSParserContext::Create(
-      GetDocument(), cached_style_sheet->GetResponse().Url(),
-      cached_style_sheet->GetResponse().IsOpaqueResponseFromServiceWorker(),
+      GetDocument(), cached_style_sheet->GetResponse().ResponseUrl(),
+      cached_style_sheet->GetResponse().IsCorsSameOrigin(),
       cached_style_sheet->GetReferrerPolicy(), cached_style_sheet->Encoding());
 
   if (StyleSheetContents* parsed_sheet =
@@ -103,7 +99,6 @@ void LinkStyle::NotifyFinished(Resource* resource) {
     sheet_->SetMediaQueries(MediaQuerySet::Create(owner_->Media()));
     if (owner_->IsInDocumentTree())
       SetSheetTitle(owner_->title());
-    SetCrossOriginStylesheetStatus(sheet_.Get());
 
     loading_ = false;
     parsed_sheet->CheckLoaded();
@@ -121,7 +116,6 @@ void LinkStyle::NotifyFinished(Resource* resource) {
   sheet_->SetMediaQueries(MediaQuerySet::Create(owner_->Media()));
   if (owner_->IsInDocumentTree())
     SetSheetTitle(owner_->title());
-  SetCrossOriginStylesheetStatus(sheet_.Get());
 
   style_sheet->ParseAuthorStyleSheet(cached_style_sheet,
                                      GetDocument().GetSecurityOrigin());
@@ -241,17 +235,6 @@ void LinkStyle::SetDisabledState(bool disabled) {
     Process();
 }
 
-void LinkStyle::SetCrossOriginStylesheetStatus(CSSStyleSheet* sheet) {
-  if (fetch_following_cors_ && GetResource() &&
-      !GetResource()->ErrorOccurred()) {
-    // Record the security origin the CORS access check succeeded at, if cross
-    // origin.  Only origins that are script accessible to it may access the
-    // stylesheet's rules.
-    sheet->SetAllowRuleAccessFromOrigin(GetDocument().GetSecurityOrigin());
-  }
-  fetch_following_cors_ = false;
-}
-
 LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
     const LinkLoadParameters& params,
     const WTF::TextEncoding& charset) {
@@ -263,7 +246,6 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   if (GetResource()) {
     RemovePendingSheet();
     ClearResource();
-    ClearFetchFollowingCors();
   }
 
   if (!owner_->ShouldLoadLink())
@@ -290,10 +272,6 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   bool blocking = media_query_matches && !owner_->IsAlternate() &&
                   owner_->IsCreatedByParser();
   AddPendingSheet(blocking ? kBlocking : kNonBlocking);
-
-  if (params.cross_origin != kCrossOriginAttributeNotSet) {
-    SetFetchFollowingCors();
-  }
 
   // Load stylesheets that are not needed for the layout immediately with low
   // priority.  When the link element is created by scripts, load the
@@ -381,7 +359,7 @@ void LinkStyle::OwnerRemoved() {
     ClearSheet();
 }
 
-void LinkStyle::Trace(blink::Visitor* visitor) {
+void LinkStyle::Trace(Visitor* visitor) {
   visitor->Trace(sheet_);
   LinkResource::Trace(visitor);
   ResourceClient::Trace(visitor);

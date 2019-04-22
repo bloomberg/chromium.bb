@@ -2,8 +2,7 @@ noparent = True
 
 include_rules = [
   "+base",
-  "+chromeos/chromeos_export.h",
-  "+chromeos/chromeos_features.h",
+  # Please do not add any chromeos/ dependencies here: https://crbug.com/863439
   "+components/account_id/account_id.h",
   "+components/device_event_log",
   "+components/policy/proto",
@@ -14,11 +13,3 @@ include_rules = [
   "+third_party/cros_system_api",
   "+url",
 ]
-
-specific_include_rules = {
-  "fake_.*": [
-    # TODO(stevenjb): Remove use of chromeos_paths in fake impls.
-    # https://crbug.com/863439.
-    "+chromeos/chromeos_paths.h",
-  ],
-}

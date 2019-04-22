@@ -50,6 +50,13 @@ void CollectProcessDataForChromeProcess(
   info.product_name = base::ASCIIToUTF16(version_info::GetProductName());
   info.version = base::ASCIIToUTF16(version_info::GetVersionNumber());
 
+  // A PortProvider is not necessary to acquire information about the number
+  // of open file descriptors.
+  std::unique_ptr<base::ProcessMetrics> metrics(
+      base::ProcessMetrics::CreateProcessMetrics(pid, nullptr));
+  info.num_open_fds = metrics->GetOpenFdCount();
+  info.open_fds_soft_limit = metrics->GetOpenFdSoftLimit();
+
   // Check if this is one of the child processes whose data was already
   // collected and exists in |child_data|.
   for (const ProcessMemoryInformation& child : child_info) {
@@ -82,7 +89,8 @@ ProcessData* MemoryDetails::ChromeBrowser() {
 
 void MemoryDetails::CollectProcessData(
     const std::vector<ProcessMemoryInformation>& child_info) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Clear old data.
   process_data_[0].processes.clear();
@@ -123,5 +131,5 @@ void MemoryDetails::CollectProcessData(
   // Finally return to the browser thread.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&MemoryDetails::CollectChildInfoOnUIThread, this));
+      base::BindOnce(&MemoryDetails::CollectChildInfoOnUIThread, this));
 }

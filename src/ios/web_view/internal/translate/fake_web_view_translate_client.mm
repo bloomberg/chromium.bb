@@ -14,9 +14,9 @@ FakeWebViewTranslateClient::FakeWebViewTranslateClient(web::WebState* web_state,
                                                        std::string page_lang)
     : WebViewTranslateClient(web_state),
       page_lang_(page_lang),
-      current_lang_(page_lang){};
+      current_lang_(page_lang) {}
 
-FakeWebViewTranslateClient::~FakeWebViewTranslateClient(){};
+FakeWebViewTranslateClient::~FakeWebViewTranslateClient() {}
 
 void FakeWebViewTranslateClient::TranslatePage(const std::string& source_lang,
                                                const std::string& target_lang,

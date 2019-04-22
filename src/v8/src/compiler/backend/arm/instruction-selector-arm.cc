@@ -4,6 +4,7 @@
 
 #include "src/base/adapters.h"
 #include "src/base/bits.h"
+#include "src/base/enum-set.h"
 #include "src/compiler/backend/instruction-selector-impl.h"
 #include "src/compiler/node-matchers.h"
 #include "src/compiler/node-properties.h"
@@ -475,7 +476,10 @@ void InstructionSelector::VisitLoad(Node* node) {
     case MachineRepresentation::kSimd128:
       opcode = kArmVld1S128;
       break;
-    case MachineRepresentation::kWord64:  // Fall through.
+    case MachineRepresentation::kCompressedSigned:   // Fall through.
+    case MachineRepresentation::kCompressedPointer:  // Fall through.
+    case MachineRepresentation::kCompressed:         // Fall through.
+    case MachineRepresentation::kWord64:             // Fall through.
     case MachineRepresentation::kNone:
       UNREACHABLE();
       return;
@@ -522,21 +526,8 @@ void InstructionSelector::VisitStore(Node* node) {
       addressing_mode = kMode_Offset_RR;
     }
     inputs[input_count++] = g.UseUniqueRegister(value);
-    RecordWriteMode record_write_mode = RecordWriteMode::kValueIsAny;
-    switch (write_barrier_kind) {
-      case kNoWriteBarrier:
-        UNREACHABLE();
-        break;
-      case kMapWriteBarrier:
-        record_write_mode = RecordWriteMode::kValueIsMap;
-        break;
-      case kPointerWriteBarrier:
-        record_write_mode = RecordWriteMode::kValueIsPointer;
-        break;
-      case kFullWriteBarrier:
-        record_write_mode = RecordWriteMode::kValueIsAny;
-        break;
-    }
+    RecordWriteMode record_write_mode =
+        WriteBarrierKindToRecordWriteMode(write_barrier_kind);
     InstructionOperand temps[] = {g.TempRegister(), g.TempRegister()};
     size_t const temp_count = arraysize(temps);
     InstructionCode code = kArchStoreWithWriteBarrier;
@@ -568,7 +559,10 @@ void InstructionSelector::VisitStore(Node* node) {
       case MachineRepresentation::kSimd128:
         opcode = kArmVst1S128;
         break;
-      case MachineRepresentation::kWord64:  // Fall through.
+      case MachineRepresentation::kCompressedSigned:   // Fall through.
+      case MachineRepresentation::kCompressedPointer:  // Fall through.
+      case MachineRepresentation::kCompressed:         // Fall through.
+      case MachineRepresentation::kWord64:             // Fall through.
       case MachineRepresentation::kNone:
         UNREACHABLE();
         return;
@@ -768,6 +762,7 @@ void EmitBic(InstructionSelector* selector, Node* node, Node* left,
 
 void EmitUbfx(InstructionSelector* selector, Node* node, Node* left,
               uint32_t lsb, uint32_t width) {
+  DCHECK_LE(lsb, 31u);
   DCHECK_LE(1u, width);
   DCHECK_LE(width, 32u - lsb);
   ArmOperandGenerator g(selector);
@@ -947,7 +942,7 @@ void InstructionSelector::VisitWord32Shr(Node* node) {
       uint32_t value = (mleft.right().Value() >> lsb) << lsb;
       uint32_t width = base::bits::CountPopulation(value);
       uint32_t msb = base::bits::CountLeadingZeros32(value);
-      if (msb + width + lsb == 32) {
+      if ((width != 0) && (msb + width + lsb == 32)) {
         DCHECK_EQ(lsb, base::bits::CountTrailingZeros32(value));
         return EmitUbfx(this, node, mleft.left().node(), lsb, width);
       }
@@ -1122,11 +1117,6 @@ void InstructionSelector::VisitWord32ReverseBytes(Node* node) {
 }
 
 void InstructionSelector::VisitWord32Popcnt(Node* node) { UNREACHABLE(); }
-
-void InstructionSelector::VisitSpeculationFence(Node* node) {
-  ArmOperandGenerator g(this);
-  Emit(kArmDsbIsb, g.NoOutput());
-}
 
 void InstructionSelector::VisitInt32Add(Node* node) {
   ArmOperandGenerator g(this);
@@ -2466,7 +2456,7 @@ void InstructionSelector::VisitWord32AtomicPairCompareExchange(Node* node) {
 
 void InstructionSelector::VisitS128Zero(Node* node) {
   ArmOperandGenerator g(this);
-  Emit(kArmS128Zero, g.DefineAsRegister(node), g.DefineAsRegister(node));
+  Emit(kArmS128Zero, g.DefineAsRegister(node));
 }
 
 #define SIMD_VISIT_SPLAT(Type)                               \
@@ -2692,8 +2682,7 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
 // static
 MachineOperatorBuilder::Flags
 InstructionSelector::SupportedMachineOperatorFlags() {
-  MachineOperatorBuilder::Flags flags =
-      MachineOperatorBuilder::kSpeculationFence;
+  MachineOperatorBuilder::Flags flags = MachineOperatorBuilder::kNoFlags;
   if (CpuFeatures::IsSupported(SUDIV)) {
     // The sdiv and udiv instructions correctly return 0 if the divisor is 0,
     // but the fall-back implementation does not.
@@ -2720,7 +2709,7 @@ InstructionSelector::SupportedMachineOperatorFlags() {
 // static
 MachineOperatorBuilder::AlignmentRequirements
 InstructionSelector::AlignmentRequirements() {
-  EnumSet<MachineRepresentation> req_aligned;
+  base::EnumSet<MachineRepresentation> req_aligned;
   req_aligned.Add(MachineRepresentation::kFloat32);
   req_aligned.Add(MachineRepresentation::kFloat64);
   return MachineOperatorBuilder::AlignmentRequirements::

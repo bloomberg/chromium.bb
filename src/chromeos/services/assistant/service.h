@@ -14,19 +14,20 @@
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "components/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/identity/public/mojom/identity_manager.mojom.h"
+#include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -36,27 +37,33 @@ class GoogleServiceAuthError;
 
 namespace base {
 class OneShotTimer;
-}
+}  // namespace base
 
 namespace network {
 class NetworkConnectionTracker;
+class SharedURLLoaderFactoryInfo;
 }  // namespace network
+
+namespace power_manager {
+class PowerSupplyProperties;
+}  // namespace power_manager
 
 namespace chromeos {
 namespace assistant {
 
 class AssistantManagerService;
-class AssistantSettingsManager;
 
-class Service : public service_manager::Service,
-                public chromeos::PowerManagerClient::Observer,
-                public ash::mojom::SessionActivationObserver,
-                public mojom::AssistantPlatform,
-                public ash::DefaultVoiceInteractionObserver {
+class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
+    : public service_manager::Service,
+      public chromeos::PowerManagerClient::Observer,
+      public ash::mojom::SessionActivationObserver,
+      public mojom::AssistantPlatform,
+      public ash::DefaultVoiceInteractionObserver {
  public:
   Service(service_manager::mojom::ServiceRequest request,
           network::NetworkConnectionTracker* network_connection_tracker,
-          scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+          std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+              url_loader_factory_info);
   ~Service() override;
 
   mojom::Client* client() { return client_.get(); }
@@ -67,20 +74,33 @@ class Service : public service_manager::Service,
     return assistant_controller_.get();
   }
 
+  ash::mojom::AssistantAlarmTimerController*
+  assistant_alarm_timer_controller() {
+    return assistant_alarm_timer_controller_.get();
+  }
+
+  ash::mojom::AssistantNotificationController*
+  assistant_notification_controller() {
+    return assistant_notification_controller_.get();
+  }
+
   ash::mojom::AssistantScreenContextController*
   assistant_screen_context_controller() {
     return assistant_screen_context_controller_.get();
   }
 
   ash::AssistantStateBase* assistant_state() { return &assistant_state_; }
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
-    return io_task_runner_;
+
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner() {
+    return main_task_runner_;
   }
+
+  bool is_signed_out_mode() const { return is_signed_out_mode_; }
 
   void RequestAccessToken();
 
-  void SetIdentityManagerForTesting(
-      identity::mojom::IdentityManagerPtr identity_manager);
+  void SetIdentityAccessorForTesting(
+      identity::mojom::IdentityAccessorPtr identity_accessor);
 
   void SetAssistantManagerForTesting(
       std::unique_ptr<AssistantManagerService> assistant_manager_service);
@@ -98,6 +118,7 @@ class Service : public service_manager::Service,
   void BindAssistantPlatformConnection(mojom::AssistantPlatformRequest request);
 
   // chromeos::PowerManagerClient::Observer overrides:
+  void PowerChanged(const power_manager::PowerSupplyProperties& prop) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // ash::mojom::SessionActivationObserver overrides:
@@ -107,9 +128,10 @@ class Service : public service_manager::Service,
   // ash::mojom::VoiceInteractionObserver:
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
+  void OnVoiceInteractionHotwordAlwaysOn(bool always_on) override;
   void OnLocaleChanged(const std::string& locale) override;
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
-  void MaybeRestartAssistantManager();
   void UpdateAssistantManagerState();
   void BindAssistantSettingsManager(
       mojom::AssistantSettingsManagerRequest request);
@@ -118,7 +140,7 @@ class Service : public service_manager::Service,
   void Init(mojom::ClientPtr client,
             mojom::DeviceActionsPtr device_actions) override;
 
-  identity::mojom::IdentityManager* GetIdentityManager();
+  identity::mojom::IdentityAccessor* GetIdentityAccessor();
 
   void GetPrimaryAccountInfoCallback(
       const base::Optional<AccountInfo>& account_info,
@@ -139,6 +161,8 @@ class Service : public service_manager::Service,
 
   void UpdateListeningState();
 
+  bool ShouldEnableHotword();
+
   service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
 
@@ -149,14 +173,13 @@ class Service : public service_manager::Service,
   mojom::ClientPtr client_;
   mojom::DeviceActionsPtr device_actions_;
 
-  identity::mojom::IdentityManagerPtr identity_manager_;
+  identity::mojom::IdentityAccessorPtr identity_accessor_;
 
   AccountId account_id_;
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
-  AssistantSettingsManager* assistant_settings_manager_;
   std::unique_ptr<base::OneShotTimer> token_refresh_timer_;
   int token_refresh_error_backoff_factor = 1;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>
       power_manager_observer_;
@@ -165,18 +188,26 @@ class Service : public service_manager::Service,
   bool session_active_ = false;
   // Whether the lock screen is on.
   bool locked_ = false;
-  // Whether there is a pending run for updating AssistantManagerService
-  bool pending_restart_assistant_manager_ = false;
+  // Whether the power source is connected.
+  bool power_source_connected_ = false;
+  // In the signed-out mode, we are going to run Assistant service without
+  // using user's signed in account information.
+  bool is_signed_out_mode_ = false;
 
   base::Optional<std::string> access_token_;
 
   ash::mojom::AssistantControllerPtr assistant_controller_;
+  ash::mojom::AssistantAlarmTimerControllerPtr
+      assistant_alarm_timer_controller_;
+  ash::mojom::AssistantNotificationControllerPtr
+      assistant_notification_controller_;
   ash::mojom::AssistantScreenContextControllerPtr
       assistant_screen_context_controller_;
   ash::AssistantStateProxy assistant_state_;
 
   network::NetworkConnectionTracker* network_connection_tracker_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // non-null until |assistant_manager_service_| is created.
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 

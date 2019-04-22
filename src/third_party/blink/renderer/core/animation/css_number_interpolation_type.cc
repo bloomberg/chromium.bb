@@ -17,17 +17,11 @@ namespace blink {
 class InheritedNumberChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedNumberChecker> Create(
-      const CSSProperty& property,
-      base::Optional<double> number) {
-    return base::WrapUnique(new InheritedNumberChecker(property, number));
-  }
-
- private:
   InheritedNumberChecker(const CSSProperty& property,
                          base::Optional<double> number)
       : property_(property), number_(number) {}
 
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     base::Optional<double> parent_number =
@@ -50,7 +44,7 @@ const CSSValue* CSSNumberInterpolationType::CreateCSSValue(
 
 InterpolationValue CSSNumberInterpolationType::CreateNumberValue(
     double number) const {
-  return InterpolationValue(InterpolableNumber::Create(number));
+  return InterpolationValue(std::make_unique<InterpolableNumber>(number));
 }
 
 InterpolationValue CSSNumberInterpolationType::MaybeConvertNeutral(
@@ -77,7 +71,7 @@ InterpolationValue CSSNumberInterpolationType::MaybeConvertInherit(
   base::Optional<double> inherited =
       NumberPropertyFunctions::GetNumber(CssProperty(), *state.ParentStyle());
   conversion_checkers.push_back(
-      InheritedNumberChecker::Create(CssProperty(), inherited));
+      std::make_unique<InheritedNumberChecker>(CssProperty(), inherited));
   if (!inherited)
     return nullptr;
   return CreateNumberValue(*inherited);
@@ -87,11 +81,11 @@ InterpolationValue CSSNumberInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.IsPrimitiveValue() ||
-      !(ToCSSPrimitiveValue(value).IsNumber() ||
-        ToCSSPrimitiveValue(value).IsPercentage()))
+  auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+  if (!primitive_value ||
+      !(primitive_value->IsNumber() || primitive_value->IsPercentage()))
     return nullptr;
-  return CreateNumberValue(ToCSSPrimitiveValue(value).GetDoubleValue());
+  return CreateNumberValue(primitive_value->GetDoubleValue());
 }
 
 InterpolationValue

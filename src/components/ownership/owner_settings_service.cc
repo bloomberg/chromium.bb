@@ -88,6 +88,11 @@ void OwnerSettingsService::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool OwnerSettingsService::IsReady() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return private_key_.get();
+}
+
 bool OwnerSettingsService::IsOwner() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return private_key_.get() && private_key_->key();

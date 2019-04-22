@@ -23,7 +23,6 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_service.h"
@@ -38,6 +37,7 @@
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/driver/sync_api_component_factory.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sequenced_model_worker.h"
@@ -46,12 +46,10 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/session_sync_service.h"
-#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_sync_service_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
@@ -61,16 +59,16 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
+#include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "ios/chrome/browser/sync/session_sync_service_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
-#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -111,25 +109,15 @@ IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
   password_store_ = IOSChromePasswordStoreFactory::GetForBrowserState(
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
-  // Component factory may already be set in tests.
-  if (!GetSyncApiComponentFactory()) {
-    component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
-        this, ::GetChannel(), ::GetVersionString(),
-        ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
-        prefs::kSavingBrowserHistoryDisabled,
-        base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
-        db_thread_, profile_web_data_service_, account_web_data_service_,
-        password_store_,
-        ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_)));
-  }
+  component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
+      this, ::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
+      db_thread_, profile_web_data_service_, account_web_data_service_,
+      password_store_,
+      ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_)));
 }
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}
-
-syncer::SyncService* IOSChromeSyncClient::GetSyncService() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
-}
 
 PrefService* IOSChromeSyncClient::GetPrefService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
@@ -143,6 +131,17 @@ base::FilePath IOSChromeSyncClient::GetLocalSyncBackendFolder() {
 syncer::ModelTypeStoreService* IOSChromeSyncClient::GetModelTypeStoreService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return ModelTypeStoreServiceFactory::GetForBrowserState(browser_state_);
+}
+
+syncer::DeviceInfoSyncService* IOSChromeSyncClient::GetDeviceInfoSyncService() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  return DeviceInfoSyncServiceFactory::GetForBrowserState(browser_state_);
+}
+
+send_tab_to_self::SendTabToSelfSyncService*
+IOSChromeSyncClient::GetSendTabToSelfSyncService() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  return SendTabToSelfSyncServiceFactory::GetForBrowserState(browser_state_);
 }
 
 bookmarks::BookmarkModel* IOSChromeSyncClient::GetBookmarkModel() {
@@ -168,11 +167,6 @@ IOSChromeSyncClient::GetSessionSyncService() {
   return SessionSyncServiceFactory::GetForBrowserState(browser_state_);
 }
 
-bool IOSChromeSyncClient::HasPasswordStore() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return password_store_ != nullptr;
-}
-
 autofill::PersonalDataManager* IOSChromeSyncClient::GetPersonalDataManager() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return autofill::PersonalDataManagerFactory::GetForBrowserState(
@@ -186,15 +180,15 @@ base::Closure IOSChromeSyncClient::GetPasswordStateChangedCallback() {
 }
 
 syncer::DataTypeController::TypeVector
-IOSChromeSyncClient::CreateDataTypeControllers() {
+IOSChromeSyncClient::CreateDataTypeControllers(
+    syncer::SyncService* sync_service) {
   // The iOS port does not have any platform-specific datatypes.
   return component_factory_->CreateCommonDataTypeControllers(
-      GetDisabledTypesFromCommandLine());
+      GetDisabledTypesFromCommandLine(), sync_service);
 }
 
-BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoServiceIfExists() {
-  return ios::BookmarkUndoServiceFactory::GetForBrowserStateIfExists(
-      browser_state_);
+BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoService() {
+  return ios::BookmarkUndoServiceFactory::GetForBrowserState(browser_state_);
 }
 
 invalidation::InvalidationService*
@@ -251,8 +245,8 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       history::HistoryService* history =
           ios::HistoryServiceFactory::GetForBrowserState(
               browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
-      return history ? history->AsWeakPtr()
-                     : base::WeakPtr<history::HistoryService>();
+      return history ? history->GetDeleteDirectivesSyncableService()
+                     : base::WeakPtr<syncer::SyncableService>();
     }
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {
@@ -354,28 +348,7 @@ IOSChromeSyncClient::GetSyncApiComponentFactory() {
   return component_factory_.get();
 }
 
-void IOSChromeSyncClient::SetSyncApiComponentFactoryForTesting(
-    std::unique_ptr<syncer::SyncApiComponentFactory> component_factory) {
-  component_factory_ = std::move(component_factory);
-}
-
-// static
-void IOSChromeSyncClient::GetDeviceInfoTrackers(
-    std::vector<const syncer::DeviceInfoTracker*>* trackers) {
-  DCHECK(trackers);
-  std::vector<ios::ChromeBrowserState*> browser_state_list =
-      GetApplicationContext()
-          ->GetChromeBrowserStateManager()
-          ->GetLoadedBrowserStates();
-  for (ios::ChromeBrowserState* browser_state : browser_state_list) {
-    browser_sync::ProfileSyncService* profile_sync_service =
-        ProfileSyncServiceFactory::GetForBrowserState(browser_state);
-    if (profile_sync_service != nullptr) {
-      const syncer::DeviceInfoTracker* tracker =
-          profile_sync_service->GetDeviceInfoTracker();
-      if (tracker != nullptr) {
-        trackers->push_back(tracker);
-      }
-    }
-  }
+syncer::SyncTypePreferenceProvider*
+IOSChromeSyncClient::GetPreferenceProvider() {
+  return nullptr;
 }

@@ -10,12 +10,13 @@
 #include "third_party/blink/renderer/core/html/media/html_media_source.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 
 MediaControlPlayButtonElement::MediaControlPlayButtonElement(
     MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls, kMediaPlayButton) {
+    : MediaControlInputElement(media_controls) {
   setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-play-button"));
 }
@@ -25,8 +26,11 @@ bool MediaControlPlayButtonElement::WillRespondToMouseClickEvents() {
 }
 
 void MediaControlPlayButtonElement::UpdateDisplayType() {
-  SetDisplayType(MediaElement().paused() ? kMediaPlayButton
-                                         : kMediaPauseButton);
+  WebLocalizedString::Name state =
+      MediaElement().paused() ? WebLocalizedString::kAXMediaPlayButton
+                              : WebLocalizedString::kAXMediaPauseButton;
+  setAttribute(html_names::kAriaLabelAttr,
+               WTF::AtomicString(GetLocale().QueryString(state)));
   SetClass("pause", MediaElement().paused());
   UpdateOverflowString();
 
@@ -44,12 +48,17 @@ bool MediaControlPlayButtonElement::HasOverflowButton() const {
   return true;
 }
 
+bool MediaControlPlayButtonElement::IsControlPanelButton() const {
+  return true;
+}
+
 const char* MediaControlPlayButtonElement::GetNameForHistograms() const {
   return IsOverflowElement() ? "PlayPauseOverflowButton" : "PlayPauseButton";
 }
 
 void MediaControlPlayButtonElement::DefaultEventHandler(Event& event) {
-  if (event.type() == event_type_names::kClick) {
+  if (!IsDisabled() && (event.type() == event_type_names::kClick ||
+                        event.type() == event_type_names::kGesturetap)) {
     if (MediaElement().paused()) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.Play"));

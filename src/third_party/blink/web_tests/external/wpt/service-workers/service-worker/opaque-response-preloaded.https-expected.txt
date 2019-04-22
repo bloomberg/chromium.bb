@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL Opaque responses should not be reused for XHRs, loading case assert_unreached: unregister and register should not fail: Failed to register a ServiceWorker: ServiceWorker script evaluation failed Reached unreachable code
+FAIL Opaque responses should not be reused for XHRs, done case assert_unreached: unregister and register should not fail: Failed to register a ServiceWorker: ServiceWorker script evaluation failed Reached unreachable code
+Harness: the test ran to completion.
+

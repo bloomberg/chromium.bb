@@ -28,6 +28,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -53,7 +54,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
-    std::string b = base::Int64ToString(base::Time::Now().ToInternalValue());
+    std::string b = base::NumberToString(base::Time::Now().ToInternalValue());
     TestingProfile* profile = profile_manager()->CreateTestingProfile(b);
     SessionService* session_service = new SessionService(profile);
     path_ = profile->GetPath();
@@ -157,6 +158,58 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
                                ui::SHOW_STATE_MAXIMIZED);
     helper_.PrepareTabInWindow(window2_id, tab2_id, 0, true);
     UpdateNavigation(window2_id, tab2_id, *nav2, true);
+  }
+
+  void TestAppRestore(const std::string& app_name,
+                      SessionService::AppType app_type) {
+    SessionID window2_id = SessionID::NewUnique();
+    SessionID tab_id = SessionID::NewUnique();
+    SessionID tab2_id = SessionID::NewUnique();
+    ASSERT_NE(window2_id, window_id);
+
+    service()->SetWindowType(window2_id, Browser::TYPE_POPUP, app_type);
+    service()->SetWindowBounds(window2_id, window_bounds,
+                               ui::SHOW_STATE_NORMAL);
+    service()->SetWindowAppName(window2_id, app_name);
+
+    SerializedNavigationEntry nav1 =
+        SerializedNavigationEntryTestHelper::CreateNavigation(
+            "http://google.com", "abc");
+    SerializedNavigationEntry nav2 =
+        SerializedNavigationEntryTestHelper::CreateNavigation(
+            "http://google2.com", "abcd");
+
+    helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+    UpdateNavigation(window_id, tab_id, nav1, true);
+
+    helper_.PrepareTabInWindow(window2_id, tab2_id, 0, false);
+    UpdateNavigation(window2_id, tab2_id, nav2, true);
+
+    std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
+    ReadWindows(&windows, NULL);
+
+    ASSERT_EQ(2U, windows.size());
+    int tabbed_index =
+        windows[0]->type == sessions::SessionWindow::TYPE_TABBED ? 0 : 1;
+    int app_index = tabbed_index == 0 ? 1 : 0;
+    ASSERT_EQ(0, windows[tabbed_index]->selected_tab_index);
+    ASSERT_EQ(window_id, windows[tabbed_index]->window_id);
+    ASSERT_EQ(1U, windows[tabbed_index]->tabs.size());
+
+    sessions::SessionTab* tab = windows[tabbed_index]->tabs[0].get();
+    helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
+    helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
+
+    ASSERT_EQ(0, windows[app_index]->selected_tab_index);
+    ASSERT_EQ(window2_id, windows[app_index]->window_id);
+    ASSERT_EQ(1U, windows[app_index]->tabs.size());
+    ASSERT_TRUE(windows[app_index]->type ==
+                sessions::SessionWindow::TYPE_POPUP);
+    ASSERT_EQ(app_name, windows[app_index]->app_name);
+
+    tab = windows[app_index]->tabs[0].get();
+    helper_.AssertTabEquals(window2_id, tab2_id, 0, 0, 1, *tab);
+    helper_.AssertNavigationEquals(nav2, tab->navigations[0]);
   }
 
   SessionService* service() { return helper_.service(); }
@@ -272,7 +325,17 @@ TEST_F(SessionServiceTest, Pruning) {
     nav->set_index(i);
     UpdateNavigation(window_id, tab_id, *nav, true);
   }
-  service()->TabNavigationPathPrunedFromBack(window_id, tab_id, 3);
+
+  // Set available range for testing.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(0, 5));
+
+  service()->TabNavigationPathPruned(window_id, tab_id, 3 /* index */,
+                                     3 /* count */);
+
+  std::pair<int, int> available_range;
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
+  EXPECT_EQ(0, available_range.first);
+  EXPECT_EQ(2, available_range.second);
 
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
   ReadWindows(&windows, NULL);
@@ -534,59 +597,19 @@ TEST_F(SessionServiceTest, RemoveUnusedRestoreWindowsTest) {
   EXPECT_EQ(sessions::SessionWindow::TYPE_TABBED, windows_list[0]->type);
 }
 
-#if defined (OS_CHROMEOS)
-// Makes sure we track apps. Only applicable on chromeos.
-TEST_F(SessionServiceTest, RestoreApp) {
-  SessionID window2_id = SessionID::NewUnique();
-  SessionID tab_id = SessionID::NewUnique();
-  SessionID tab2_id = SessionID::NewUnique();
-  ASSERT_NE(window2_id, window_id);
+// Makes sure we track Web Apps on all platforms. Don't test on OS X since web
+// apps on that platform require a shim on disk to open in windows.
+#if !defined(OS_MACOSX)
+TEST_F(SessionServiceTest, RestoreWebApps) {
+  TestAppRestore(web_app::GenerateApplicationNameFromAppId("TestAppId"),
+                 SessionService::TYPE_WEB_APP);
+}
+#endif  // defined(OS_MACOSX)
 
-  service()->SetWindowType(window2_id,
-                           Browser::TYPE_POPUP,
-                           SessionService::TYPE_APP);
-  service()->SetWindowBounds(window2_id,
-                             window_bounds,
-                             ui::SHOW_STATE_NORMAL);
-  service()->SetWindowAppName(window2_id, "TestApp");
-
-  SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
-  SerializedNavigationEntry nav2 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google2.com", "abcd");
-
-  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
-  UpdateNavigation(window_id, tab_id, nav1, true);
-
-  helper_.PrepareTabInWindow(window2_id, tab2_id, 0, false);
-  UpdateNavigation(window2_id, tab2_id, nav2, true);
-
-  std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
-  ReadWindows(&windows, NULL);
-
-  ASSERT_EQ(2U, windows.size());
-  int tabbed_index = windows[0]->type == sessions::SessionWindow::TYPE_TABBED ?
-      0 : 1;
-  int app_index = tabbed_index == 0 ? 1 : 0;
-  ASSERT_EQ(0, windows[tabbed_index]->selected_tab_index);
-  ASSERT_EQ(window_id, windows[tabbed_index]->window_id);
-  ASSERT_EQ(1U, windows[tabbed_index]->tabs.size());
-
-  sessions::SessionTab* tab = windows[tabbed_index]->tabs[0].get();
-  helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
-  helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
-
-  ASSERT_EQ(0, windows[app_index]->selected_tab_index);
-  ASSERT_EQ(window2_id, windows[app_index]->window_id);
-  ASSERT_EQ(1U, windows[app_index]->tabs.size());
-  ASSERT_TRUE(windows[app_index]->type == sessions::SessionWindow::TYPE_POPUP);
-  ASSERT_EQ("TestApp", windows[app_index]->app_name);
-
-  tab = windows[app_index]->tabs[0].get();
-  helper_.AssertTabEquals(window2_id, tab2_id, 0, 0, 1, *tab);
-  helper_.AssertNavigationEquals(nav2, tab->navigations[0]);
+#if defined(OS_CHROMEOS)
+// Makes sure we track Chrome Apps on Chrome OS.
+TEST_F(SessionServiceTest, RestoreChromeApps) {
+  TestAppRestore("TestAppName", SessionService::TYPE_CHROME_APP);
 }
 
 // Don't track Crostini apps. Only applicable on Chrome OS.
@@ -605,8 +628,7 @@ TEST_F(SessionServiceTest, IgnoreCrostiniApps) {
   for (auto& window : windows)
     ASSERT_NE(window2_id, window->window_id);
 }
-
-#endif  // defined (OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 
 // Tests pruning from the front.
 TEST_F(SessionServiceTest, PruneFromFront) {
@@ -619,13 +641,22 @@ TEST_F(SessionServiceTest, PruneFromFront) {
   for (int i = 0; i < 5; ++i) {
     SerializedNavigationEntry nav =
         SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::IntToString(i), "a");
+            base_url + base::NumberToString(i), "a");
     nav.set_index(i);
     UpdateNavigation(window_id, tab_id, nav, (i == 3));
   }
 
+  // Set available range for testing.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(0, 4));
+
   // Prune the first two navigations from the front.
-  helper_.service()->TabNavigationPathPrunedFromFront(window_id, tab_id, 2);
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 0 /* index */,
+                                             2 /* count */);
+
+  std::pair<int, int> available_range;
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
+  EXPECT_EQ(0, available_range.first);
+  EXPECT_EQ(2, available_range.second);
 
   // Read back in.
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
@@ -643,12 +674,134 @@ TEST_F(SessionServiceTest, PruneFromFront) {
   sessions::SessionTab* tab = windows[0]->tabs[0].get();
   ASSERT_EQ(1, tab->current_navigation_index);
   EXPECT_EQ(3U, tab->navigations.size());
-  EXPECT_TRUE(GURL(base_url + base::IntToString(2)) ==
+  EXPECT_TRUE(GURL(base_url + base::NumberToString(2)) ==
               tab->navigations[0].virtual_url());
-  EXPECT_TRUE(GURL(base_url + base::IntToString(3)) ==
+  EXPECT_TRUE(GURL(base_url + base::NumberToString(3)) ==
               tab->navigations[1].virtual_url());
-  EXPECT_TRUE(GURL(base_url + base::IntToString(4)) ==
+  EXPECT_TRUE(GURL(base_url + base::NumberToString(4)) ==
               tab->navigations[2].virtual_url());
+}
+
+// Tests pruning from the middle.
+TEST_F(SessionServiceTest, PruneFromMiddle) {
+  const std::string base_url("http://google.com/");
+  SessionID tab_id = SessionID::NewUnique();
+
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+
+  // Add 5 navigations, with the 4th selected.
+  for (int i = 0; i < 5; ++i) {
+    SerializedNavigationEntry nav =
+        SerializedNavigationEntryTestHelper::CreateNavigation(
+            base_url + base::NumberToString(i), "a");
+    nav.set_index(i);
+    UpdateNavigation(window_id, tab_id, nav, (i == 3));
+  }
+
+  // Set available range for testing.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(0, 4));
+
+  // Prune two navigations starting from second.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 1 /* index */,
+                                             2 /* count */);
+
+  std::pair<int, int> available_range;
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
+  EXPECT_EQ(0, available_range.first);
+  EXPECT_EQ(2, available_range.second);
+
+  // Read back in.
+  std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
+  ReadWindows(&windows, nullptr);
+
+  ASSERT_EQ(1U, windows.size());
+  ASSERT_EQ(0, windows[0]->selected_tab_index);
+  ASSERT_EQ(window_id, windows[0]->window_id);
+  ASSERT_EQ(1U, windows[0]->tabs.size());
+
+  // There shouldn't be an app id.
+  EXPECT_TRUE(windows[0]->tabs[0]->extension_app_id.empty());
+
+  // We should be left with three navigations, the 2nd selected.
+  sessions::SessionTab* tab = windows[0]->tabs[0].get();
+  ASSERT_EQ(1, tab->current_navigation_index);
+  EXPECT_EQ(3U, tab->navigations.size());
+  EXPECT_EQ(GURL(base_url + base::NumberToString(0)),
+            tab->navigations[0].virtual_url());
+  EXPECT_EQ(GURL(base_url + base::NumberToString(3)),
+            tab->navigations[1].virtual_url());
+  EXPECT_EQ(GURL(base_url + base::NumberToString(4)),
+            tab->navigations[2].virtual_url());
+}
+
+// Tests possible computations of available ranges.
+TEST_F(SessionServiceTest, AvailableRanges) {
+  const std::string base_url("http://google.com/");
+  SessionID tab_id = SessionID::NewUnique();
+
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+
+  // Set available range to a subset for testing.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(4, 7));
+
+  // 1. Test when range starts after the pruned entries.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 1 /* index */,
+                                             2 /* count */);
+
+  std::pair<int, int> available_range;
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
+  EXPECT_EQ(2, available_range.first);
+  EXPECT_EQ(5, available_range.second);
+
+  // Set back available range.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(4, 7));
+
+  // 2. Test when range is before the pruned entries.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 8 /* index */,
+                                             2 /* count */);
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
+  EXPECT_EQ(4, available_range.first);
+  EXPECT_EQ(7, available_range.second);
+
+  // Set back available range.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(4, 7));
+
+  // 3. Test when range is within the pruned entries.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 3 /* index */,
+                                             5 /* count */);
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
+  EXPECT_EQ(0, available_range.first);
+  EXPECT_EQ(0, available_range.second);
+
+  // Set back available range.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(4, 7));
+
+  // 4. Test when only range.first is within the pruned entries.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 3 /* index */,
+                                             3 /* count */);
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
+  EXPECT_EQ(3, available_range.first);
+  EXPECT_EQ(4, available_range.second);
+
+  // Set back available range.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(4, 7));
+
+  // 4. Test when only range.second is within the pruned entries.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 5 /* index */,
+                                             3 /* count */);
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
+  EXPECT_EQ(4, available_range.first);
+  EXPECT_EQ(4, available_range.second);
+
+  // Set back available range.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(4, 7));
+
+  // 4. Test when only range contains all the pruned entries.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 5 /* index */,
+                                             2 /* count */);
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
+  EXPECT_EQ(4, available_range.first);
+  EXPECT_EQ(5, available_range.second);
 }
 
 // Prunes from front so that we have no entries.
@@ -662,13 +815,22 @@ TEST_F(SessionServiceTest, PruneToEmpty) {
   for (int i = 0; i < 5; ++i) {
     SerializedNavigationEntry nav =
         SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::IntToString(i), "a");
+            base_url + base::NumberToString(i), "a");
     nav.set_index(i);
     UpdateNavigation(window_id, tab_id, nav, (i == 3));
   }
 
-  // Prune the first two navigations from the front.
-  helper_.service()->TabNavigationPathPrunedFromFront(window_id, tab_id, 5);
+  // Set available range for testing.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(0, 4));
+
+  // Prune all navigations from the front.
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 0 /* index */,
+                                             5 /* count */);
+
+  std::pair<int, int> available_range;
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
+  EXPECT_EQ(0, available_range.first);
+  EXPECT_EQ(0, available_range.second);
 
   // Read back in.
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
@@ -859,7 +1021,7 @@ TEST_F(SessionServiceTest, ReplacePendingNavigation) {
   for (int i = 0; i < 5; ++i) {
     SerializedNavigationEntry nav =
         SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::IntToString(i), "a");
+            base_url + base::NumberToString(i), "a");
     nav.set_index(i / 2);
     UpdateNavigation(window_id, tab_id, nav, true);
   }
@@ -872,11 +1034,11 @@ TEST_F(SessionServiceTest, ReplacePendingNavigation) {
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(1U, windows[0]->tabs.size());
   EXPECT_EQ(3U, windows[0]->tabs[0]->navigations.size());
-  EXPECT_EQ(GURL(base_url + base::IntToString(1)),
+  EXPECT_EQ(GURL(base_url + base::NumberToString(1)),
             windows[0]->tabs[0]->navigations[0].virtual_url());
-  EXPECT_EQ(GURL(base_url + base::IntToString(3)),
+  EXPECT_EQ(GURL(base_url + base::NumberToString(3)),
             windows[0]->tabs[0]->navigations[1].virtual_url());
-  EXPECT_EQ(GURL(base_url + base::IntToString(4)),
+  EXPECT_EQ(GURL(base_url + base::NumberToString(4)),
             windows[0]->tabs[0]->navigations[2].virtual_url());
 }
 
@@ -889,18 +1051,27 @@ TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
   for (int i = 0; i < 5; ++i) {
     SerializedNavigationEntry nav =
         SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::IntToString(i), "a");
+            base_url + base::NumberToString(i), "a");
     nav.set_index(i);
     UpdateNavigation(window_id, tab_id, nav, true);
   }
 
+  // Set available range for testing.
+  helper_.SetAvailableRange(tab_id, std::pair<int, int>(0, 4));
+
   // Prune all those navigations.
-  helper_.service()->TabNavigationPathPrunedFromFront(window_id, tab_id, 5);
+  helper_.service()->TabNavigationPathPruned(window_id, tab_id, 0 /* index */,
+                                             5 /* count */);
+
+  std::pair<int, int> available_range;
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
+  EXPECT_EQ(0, available_range.first);
+  EXPECT_EQ(0, available_range.second);
 
   // Add another navigation to replace the last one.
   SerializedNavigationEntry nav =
       SerializedNavigationEntryTestHelper::CreateNavigation(
-        base_url + base::IntToString(5), "a");
+          base_url + base::NumberToString(5), "a");
   nav.set_index(4);
   UpdateNavigation(window_id, tab_id, nav, true);
 
@@ -913,7 +1084,7 @@ TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(1U, windows[0]->tabs.size());
   ASSERT_EQ(1U, windows[0]->tabs[0]->navigations.size());
-  EXPECT_EQ(GURL(base_url + base::IntToString(5)),
+  EXPECT_EQ(GURL(base_url + base::NumberToString(5)),
             windows[0]->tabs[0]->navigations[0].virtual_url());
 }
 

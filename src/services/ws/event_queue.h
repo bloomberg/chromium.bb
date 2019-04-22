@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
@@ -26,53 +25,35 @@ class WindowTreeHost;
 
 namespace ui {
 class Event;
+struct EventDispatchDetails;
 }
 
 namespace ws {
 
-class HostEventDispatcher;
-class HostEventQueue;
 class WindowService;
 
-// EventQueue handles the actual queuing, waiting and dispatching of events.
-// HostEventQueues calls into this. EventQueue tracks the dispatch by way of
-// being a WindowServiceObserver. EventQueue also supports adding a callback
-// that is notified when the queue is empty.
+// EventQueue handles queueing, waiting, and delivering events to event sinks.
+// EventQueue tracks the dispatch by way of being a WindowServiceObserver.
+// EventQueue also supports queueing callbacks run in order with queued events.
 class COMPONENT_EXPORT(WINDOW_SERVICE) EventQueue
     : public WindowServiceObserver {
  public:
   explicit EventQueue(WindowService* service);
   ~EventQueue() override;
 
-  // Creates a new HostEventQueue.
-  std::unique_ptr<HostEventQueue> RegisterHostEventDispatcher(
-      aura::WindowTreeHost* window_tree_host,
-      HostEventDispatcher* dispatcher);
-
-  // Convenience to locate the HostEventDispatcher for |window_tree_host|
-  // and call DispatchOrQueueEvent() on it with |event|. If |honor_rewriters|
-  // is true, the event is passed through EventRewriters first. Events received
-  // from the platform go through EventRewriters, so generally
-  // |honor_rewriters| should be true, remote injection may need to circumvent
-  // that though.
-  static void DispatchOrQueueEvent(WindowService* service,
-                                   aura::WindowTreeHost* window_tree_host,
-                                   ui::Event* event,
-                                   bool honor_rewriters);
-
-  // Returns true if |event| should be queued at this time.
-  bool ShouldQueueEvent(HostEventQueue* host, const ui::Event& event);
+  // Queue the event if needed, or deliver it directly to the host's event sink.
+  // Call WindowTreeHost::SendEventToSink instead, if the event should be passed
+  // through the host's EventRewriters; that calls through here after rewriting.
+  base::Optional<ui::EventDispatchDetails> DeliverOrQueueEvent(
+      aura::WindowTreeHost* host,
+      ui::Event* event);
 
   // Notifies |closure| when this EventQueue is ready to dispatch an event,
   // which may be immediately.
   void NotifyWhenReadyToDispatch(base::OnceClosure closure);
 
-  // Returns the HostEventQueue associated with the specified display.
-  HostEventQueue* GetHostEventQueueForDisplay(int64_t display_id);
-
  private:
   friend class EventQueueTestHelper;
-  friend class HostEventQueue;
 
   struct QueuedEvent;
 
@@ -82,18 +63,15 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventQueue
     uint32_t event_id = 0u;
   };
 
+  // Returns true if |event| should be queued at this time for the given |host|.
+  bool ShouldQueueEvent(aura::WindowTreeHost* host, const ui::Event& event);
+
+  // Adds |event| to |queued_events_| for delivery to |host|.
+  void QueueEvent(aura::WindowTreeHost* host, const ui::Event& event);
+
   // Called by |ack_timer_| if the client does not respond to the event in a
   // timely manner.
   void OnClientTookTooLongToAckEvent();
-
-  // Called when a HostEventQueue is created/deleted.
-  void OnHostEventQueueCreated(HostEventQueue* host);
-  void OnHostEventQueueDestroyed(HostEventQueue* host);
-
-  // Adds |event| to |queued_events_|.
-  void QueueEvent(HostEventQueue* host,
-                  const ui::Event& event,
-                  bool honor_rewriters);
 
   // Processes QueuedEvents until |queued_events_| is empty, or there is an
   // event sent to a client.
@@ -113,9 +91,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventQueue
 
   // Set when an event has been sent to a client.
   base::Optional<InFlightEvent> in_flight_event_;
-
-  // Set of HostEventQueues.
-  std::set<HostEventQueue*> host_event_queues_;
 
   base::OneShotTimer ack_timer_;
 

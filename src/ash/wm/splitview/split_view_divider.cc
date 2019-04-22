@@ -9,9 +9,11 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -21,6 +23,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter_delegate.h"
@@ -48,11 +51,11 @@ constexpr int kWhiteBarCornerRadius = 1;
 constexpr SkColor kDividerBackgroundColor = SK_ColorBLACK;
 constexpr SkColor kWhiteBarBackgroundColor = SK_ColorWHITE;
 constexpr int kDividerBoundsChangeDurationMs = 250;
-constexpr int kWhiteBarBoundsChangeDurationMs = 150;
+constexpr int kWhiteBarBoundsChangeDurationMs = 250;
 
 // The distance to the divider edge in which a touch gesture will be considered
 // as a valid event on the divider.
-constexpr int kDividerEdgeInsetForTouch = 5;
+constexpr int kDividerEdgeInsetForTouch = 8;
 
 // The window targeter that is installed on the always on top container window
 // when the split view mode is active.
@@ -123,6 +126,7 @@ class DividerView : public views::View,
     SetEventTargeter(
         std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
     white_bar_animation_.SetSlideDuration(kWhiteBarBoundsChangeDurationMs);
+    white_bar_animation_.SetTweenType(gfx::Tween::EASE_IN);
   }
   ~DividerView() override { white_bar_animation_.Stop(); }
 
@@ -243,14 +247,12 @@ class DividerView : public views::View,
   void UpdateWhiteHandlerBounds() {
     // Calculate the width/height/radius for the rounded rectangle.
     int width, height, radius;
-    const int expected_width_unselected =
-        controller_->IsCurrentScreenOrientationLandscape()
-            ? kWhiteBarShortSideLength
-            : kWhiteBarLongSideLength;
-    const int expected_height_unselected =
-        controller_->IsCurrentScreenOrientationLandscape()
-            ? kWhiteBarLongSideLength
-            : kWhiteBarShortSideLength;
+    const int expected_width_unselected = IsCurrentScreenOrientationLandscape()
+                                              ? kWhiteBarShortSideLength
+                                              : kWhiteBarLongSideLength;
+    const int expected_height_unselected = IsCurrentScreenOrientationLandscape()
+                                               ? kWhiteBarLongSideLength
+                                               : kWhiteBarShortSideLength;
     if (white_bar_animation_.is_animating()) {
       width = white_bar_animation_.CurrentValueBetween(
           expected_width_unselected, kWhiteBarRadius * 2);
@@ -374,10 +376,10 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
   aura::Window* root_window =
       divider_widget_->GetNativeWindow()->GetRootWindow();
   const gfx::Rect work_area_bounds_in_screen =
-      controller_->GetDisplayWorkAreaBoundsInScreen(root_window);
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          root_window);
   const int divider_position = controller_->divider_position();
-  const OrientationLockType screen_orientation =
-      controller_->GetCurrentScreenOrientation();
+  const OrientationLockType screen_orientation = GetCurrentScreenOrientation();
   return GetDividerBoundsInScreen(work_area_bounds_in_screen,
                                   screen_orientation, divider_position,
                                   is_dragging);

@@ -21,7 +21,6 @@ gfx::Size OverflowBubbleViewTestAPI::GetContentsSize() {
 
 void OverflowBubbleViewTestAPI::ScrollByXOffset(int x_offset) {
   bubble_view_->ScrollByXOffset(x_offset);
-  bubble_view_->Layout();
 }
 
 views::BubbleFrameView* OverflowBubbleViewTestAPI::GetBubbleFrameView() {

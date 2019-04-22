@@ -39,10 +39,10 @@
 
 namespace blink {
 
-static long long GenerateSequenceNumber() {
+static int64_t GenerateSequenceNumber() {
   // Initialize to the current time to reduce the likelihood of generating
   // identifiers that overlap with those from past/future browser sessions.
-  static long long next = static_cast<long long>(CurrentTime() * 1000000.0);
+  static int64_t next = static_cast<int64_t>(CurrentTime() * 1000000.0);
   return ++next;
 }
 
@@ -82,26 +82,26 @@ void HistoryItem::SetReferrer(const Referrer& referrer) {
 
 void HistoryItem::SetVisualViewportScrollOffset(const ScrollOffset& offset) {
   if (!view_state_)
-    view_state_ = std::make_unique<ViewState>();
+    view_state_ = base::make_optional<ViewState>();
   view_state_->visual_viewport_scroll_offset_ = offset;
 }
 
 void HistoryItem::SetScrollOffset(const ScrollOffset& offset) {
   if (!view_state_)
-    view_state_ = std::make_unique<ViewState>();
+    view_state_ = base::make_optional<ViewState>();
   view_state_->scroll_offset_ = offset;
 }
 
 void HistoryItem::SetPageScaleFactor(float scale_factor) {
   if (!view_state_)
-    view_state_ = std::make_unique<ViewState>();
+    view_state_ = base::make_optional<ViewState>();
   view_state_->page_scale_factor_ = scale_factor;
 }
 
 void HistoryItem::SetScrollAnchorData(
     const ScrollAnchorData& scroll_anchor_data) {
   if (!view_state_)
-    view_state_ = std::make_unique<ViewState>();
+    view_state_ = base::make_optional<ViewState>();
   view_state_->scroll_anchor_data_ = scroll_anchor_data;
 }
 
@@ -137,19 +137,6 @@ const AtomicString& HistoryItem::FormContentType() const {
   return form_content_type_;
 }
 
-void HistoryItem::SetFormInfoFromRequest(const ResourceRequest& request) {
-  if (DeprecatedEqualIgnoringCase(request.HttpMethod(), "POST")) {
-    // FIXME: Eventually we have to make this smart enough to handle the case
-    // where we have a stream for the body to handle the "data interspersed with
-    // files" feature.
-    form_data_ = request.HttpBody();
-    form_content_type_ = request.HttpContentType();
-  } else {
-    form_data_ = nullptr;
-    form_content_type_ = g_null_atom;
-  }
-}
-
 void HistoryItem::SetFormData(scoped_refptr<EncodedFormData> form_data) {
   form_data_ = std::move(form_data);
 }
@@ -167,11 +154,11 @@ ResourceRequest HistoryItem::GenerateResourceRequest(
   ResourceRequest request(url_string_);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  request.SetHTTPReferrer(referrer_);
+  request.SetHttpReferrer(referrer_);
   request.SetCacheMode(cache_mode);
   if (form_data_) {
-    request.SetHTTPMethod(http_names::kPOST);
-    request.SetHTTPBody(form_data_);
+    request.SetHttpMethod(http_names::kPOST);
+    request.SetHttpBody(form_data_);
     request.SetHTTPContentType(form_content_type_);
     request.SetHTTPOriginToMatchReferrerIfNeeded();
   }

@@ -4,7 +4,7 @@
 
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
 
-#include "android_webview/browser/browser_view_renderer.h"
+#include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/common/aw_content_client.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"

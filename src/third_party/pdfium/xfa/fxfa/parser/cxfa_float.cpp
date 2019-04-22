@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_float.h"
 
-#include "fxjs/xfa/cjx_float.h"
+#include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -16,9 +16,7 @@ const CXFA_Node::AttributeData kFloatAttributeData[] = {
     {XFA_Attribute::Name, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kFloatName[] = L"float";
+};
 
 }  // namespace
 
@@ -28,9 +26,8 @@ CXFA_Float::CXFA_Float(CXFA_Document* doc, XFA_PacketType packet)
                 (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
                 XFA_ObjectType::ContentNode,
                 XFA_Element::Float,
-                nullptr,
+                {},
                 kFloatAttributeData,
-                kFloatName,
-                pdfium::MakeUnique<CJX_Float>(this)) {}
+                pdfium::MakeUnique<CJX_Object>(this)) {}
 
-CXFA_Float::~CXFA_Float() {}
+CXFA_Float::~CXFA_Float() = default;

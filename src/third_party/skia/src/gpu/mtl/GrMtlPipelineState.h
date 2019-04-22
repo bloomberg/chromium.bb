@@ -37,8 +37,8 @@ public:
             MTLPixelFormat pixelFormat,
             const GrGLSLBuiltinUniformHandles& builtinUniformHandles,
             const UniformInfoArray& uniforms,
-            GrMtlBuffer* geometryUniformBuffer,
-            GrMtlBuffer* fragmentUniformBuffer,
+            sk_sp<GrMtlBuffer> geometryUniformBuffer,
+            sk_sp<GrMtlBuffer> fragmentUniformBuffer,
             uint32_t numSamplers,
             std::unique_ptr<GrGLSLPrimitiveProcessor> geometryProcessor,
             std::unique_ptr<GrGLSLXferProcessor> xferPRocessor,
@@ -47,14 +47,16 @@ public:
 
     id<MTLRenderPipelineState> mtlPipelineState() { return fPipelineState; }
 
-    void setData(const GrPrimitiveProcessor& primPRoc, const GrPipeline& pipeline,
+    void setData(const GrRenderTarget*, GrSurfaceOrigin,
+                 const GrPrimitiveProcessor& primPRoc, const GrPipeline& pipeline,
                  const GrTextureProxy* const primProcTextures[]);
 
-    void bind(id<MTLRenderCommandEncoder>);
+    void setDrawState(id<MTLRenderCommandEncoder>, GrPixelConfig, const GrXferProcessor&);
 
-    void setBlendConstants(id<MTLRenderCommandEncoder>, GrPixelConfig, const GrXferProcessor&);
-
-    void setDepthStencilState(id<MTLRenderCommandEncoder> renderCmdEncoder);
+    static void SetDynamicScissorRectState(id<MTLRenderCommandEncoder> renderCmdEncoder,
+                                           const GrRenderTarget* renderTarget,
+                                           GrSurfaceOrigin rtOrigin,
+                                           SkIRect scissorRect);
 
 private:
     /**
@@ -93,7 +95,13 @@ private:
         }
     };
 
-    void setRenderTargetState(const GrRenderTargetProxy*);
+    void setRenderTargetState(const GrRenderTarget*, GrSurfaceOrigin);
+
+    void bind(id<MTLRenderCommandEncoder>);
+
+    void setBlendConstants(id<MTLRenderCommandEncoder>, GrPixelConfig, const GrXferProcessor&);
+
+    void setDepthStencilState(id<MTLRenderCommandEncoder> renderCmdEncoder);
 
     struct SamplerBindings {
         id<MTLSamplerState> fSampler;

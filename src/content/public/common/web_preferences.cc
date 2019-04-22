@@ -26,24 +26,16 @@ STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_UNIX, WebSettings::EditingBehavior::kUnix);
 STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_ANDROID,
                    WebSettings::EditingBehavior::kAndroid);
 
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_DEFAULT,
+STATIC_ASSERT_ENUM(blink::mojom::V8CacheOptions::kDefault,
                    WebSettings::V8CacheOptions::kDefault);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_NONE, WebSettings::V8CacheOptions::kNone);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE, WebSettings::V8CacheOptions::kCode);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE_WITHOUT_HEAT_CHECK,
+STATIC_ASSERT_ENUM(blink::mojom::V8CacheOptions::kNone,
+                   WebSettings::V8CacheOptions::kNone);
+STATIC_ASSERT_ENUM(blink::mojom::V8CacheOptions::kCode,
+                   WebSettings::V8CacheOptions::kCode);
+STATIC_ASSERT_ENUM(blink::mojom::V8CacheOptions::kCodeWithoutHeatCheck,
                    WebSettings::V8CacheOptions::kCodeWithoutHeatCheck);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_FULLCODE_WITHOUT_HEAT_CHECK,
+STATIC_ASSERT_ENUM(blink::mojom::V8CacheOptions::kFullCodeWithoutHeatCheck,
                    WebSettings::V8CacheOptions::kFullCodeWithoutHeatCheck);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_LAST,
-                   WebSettings::V8CacheOptions::kFullCodeWithoutHeatCheck);
-
-STATIC_ASSERT_ENUM(SavePreviousDocumentResources::NEVER,
-                   WebSettings::SavePreviousDocumentResources::kNever);
-STATIC_ASSERT_ENUM(
-    SavePreviousDocumentResources::UNTIL_ON_DOM_CONTENT_LOADED,
-    WebSettings::SavePreviousDocumentResources::kUntilOnDOMContentLoaded);
-STATIC_ASSERT_ENUM(SavePreviousDocumentResources::UNTIL_ON_LOAD,
-                   WebSettings::SavePreviousDocumentResources::kUntilOnLoad);
 
 STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_ALLOWED,
                    WebSettings::ImageAnimationPolicy::kAllowed);
@@ -91,7 +83,6 @@ WebPreferences::WebPreferences()
       dns_prefetching_enabled(true),
       data_saver_enabled(false),
       data_saver_holdback_web_api_enabled(false),
-      data_saver_holdback_media_api_enabled(false),
       local_storage_enabled(false),
       databases_enabled(false),
       application_cache_enabled(false),
@@ -130,6 +121,7 @@ WebPreferences::WebPreferences()
       should_print_backgrounds(false),
       should_clear_document_background(true),
       enable_scroll_animator(false),
+      prefers_reduced_motion(false),
       touch_event_feature_detection_enabled(false),
       touch_adjustment_enabled(true),
       pointer_events_max_touch_points(0),
@@ -137,6 +129,7 @@ WebPreferences::WebPreferences()
       primary_pointer_type(ui::POINTER_TYPE_NONE),
       available_hover_types(0),
       primary_hover_type(ui::HOVER_TYPE_NONE),
+      dont_send_key_events_to_javascript(false),
       sync_xhr_in_documents_enabled(true),
       should_respect_image_orientation(false),
       number_of_cpu_cores(1),
@@ -158,9 +151,7 @@ WebPreferences::WebPreferences()
       shrinks_viewport_contents_to_fit(true),
       viewport_style(ViewportStyle::MOBILE),
       always_show_context_menu_on_touch(false),
-      // TODO(sunyunjia): Re-enable smooth scroll for find on Android.
-      // https://crbug.com/845500
-      smooth_scroll_for_find_enabled(false),
+      smooth_scroll_for_find_enabled(true),
 #else
       viewport_meta_enabled(false),
       shrinks_viewport_contents_to_fit(false),
@@ -178,9 +169,8 @@ WebPreferences::WebPreferences()
       spatial_navigation_enabled(false),
       use_solid_color_scrollbars(false),
       navigate_on_drag_drop(true),
-      v8_cache_options(V8_CACHE_OPTIONS_DEFAULT),
+      v8_cache_options(blink::mojom::V8CacheOptions::kDefault),
       record_whole_document(false),
-      save_previous_document_resources(SavePreviousDocumentResources::NEVER),
       cookie_enabled(true),
       accelerated_video_decode_enabled(false),
       animation_policy(IMAGE_ANIMATION_POLICY_ALLOWED),
@@ -219,7 +209,6 @@ WebPreferences::WebPreferences()
       video_fullscreen_detection_enabled(false),
       embedded_media_experience_enabled(false),
       css_hex_alpha_color_enabled(true),
-      enable_media_download_in_product_help(false),
       scroll_top_left_interop_enabled(true),
 #endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
@@ -237,6 +226,7 @@ WebPreferences::WebPreferences()
       media_controls_enabled(true),
       do_not_update_selection_on_mutating_selection_range(false),
       autoplay_policy(AutoplayPolicy::kDocumentUserActivationRequired),
+      preferred_color_scheme(blink::PreferredColorScheme::kNoPreference),
       low_priority_iframes_threshold(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       picture_in_picture_enabled(true),
       translate_service_available(false),

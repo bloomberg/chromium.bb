@@ -5,6 +5,8 @@
 
 """Outputs host CPU architecture in format recognized by gyp."""
 
+from __future__ import print_function
+
 import platform
 import re
 import sys
@@ -13,6 +15,7 @@ import sys
 def HostArch():
   """Returns the host architecture with a predictable string."""
   host_arch = platform.machine().lower()
+  host_processor = platform.processor().lower()
 
   # Convert machine type to format recognized by gyp.
   if re.match(r'i.86', host_arch) or host_arch == 'i86pc':
@@ -27,7 +30,7 @@ def HostArch():
     host_arch = 'mips64'
   elif host_arch.startswith('mips'):
     host_arch = 'mips'
-  elif host_arch.startswith('ppc'):
+  elif host_arch.startswith('ppc') or host_processor == 'powerpc':
     host_arch = 'ppc'
   elif host_arch.startswith('s390'):
     host_arch = 's390'
@@ -50,4 +53,4 @@ def DoMain(_):
   return HostArch()
 
 if __name__ == '__main__':
-  print DoMain([])
+  print(DoMain([]))

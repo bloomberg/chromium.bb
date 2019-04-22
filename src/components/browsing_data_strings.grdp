@@ -125,34 +125,16 @@
      =1 {1 item}
      other {# items}}
   </message>
-  <message name="IDS_DEL_HOSTED_APPS_COUNTER" desc="A counter showing how many hosted apps the user has. We show the number of apps, and in the cases where there is one or two apps, we will also give two example app names, denoted as placeholders $1 and $2. If there are more than two apps, we will give two examples and say 'and X more'. The 'and X more' string, denoted by the placeholder $3, will be supplied from another message.">
+  <message name="IDS_DEL_HOSTED_APPS_COUNTER" desc="A counter showing how many hosted apps the user has. We show the number of apps, and in the cases where there is one or two apps, we will also give two example app names, denoted as placeholders EXAMPLE_APP_1 and EXAMPLE_APP_2. If there are more than two apps, we will give two examples and say 'and X more'. The 'and X more' string, denoted by the placeholder AND_MORE, will be supplied from another message.">
     {COUNT, plural,
      =0 {None}
-     =1 {1 app ($1)}
-     =2 {2 apps ($1, $2)}
-     other {# apps ($1, $2, $3)}}
+     =1 {1 app (<ph name="EXAMPLE_APP_1">$1<ex>Gmail</ex></ph>)}
+     =2 {2 apps (<ph name="EXAMPLE_APP_1">$1<ex>Gmail</ex></ph>, <ph name="EXAMPLE_APP_2">$2<ex>Youtube</ex></ph>)}
+     other {# apps (<ph name="EXAMPLE_APP_1">$1<ex>Gmail</ex></ph>, <ph name="EXAMPLE_APP_2">$2<ex>Youtube</ex></ph>, <ph name="AND_MORE">$3<ex>and 9 more</ex></ph>)}}
   </message>
   <message name="IDS_DEL_HOSTED_APPS_COUNTER_AND_X_MORE" desc="This message stands at the end of a sentence enumerating hosted apps the user has installed, e.g.: 'App1, App2, and 5 more'">
     {COUNT, plural,
      =1 {and 1 more}
      other {and # more}}
-  </message>
-  <message name="IDS_DEL_MEDIA_LICENSES_COUNTER_GENERAL_COMMENT" desc="A static message shown in the Clear Browsing Data dialog explaining to the user that clearing media licenses will result in the user being unable to play some protected content">
-    You may lose access to protected content from some sites.
-  </message>
-  <message name="IDS_DEL_MEDIA_LICENSES_COUNTER_SITE_COMMENT" desc="A message shown in the Clear Browsing Data dialog explaining to the user that clearing media licenses will result in the user being unable to play some protected content from at least one specific web site">
-     You may lose access to protected content from <ph name="SITE">$1<ex>youtube.com</ex></ph> and some other sites.
-  </message>
-  <message name="IDS_DEL_CLEAR_COOKIES_SUMMARY_BASIC" desc="A summary for the 'Cookies, media licenses and site data' option in the 'Clear Browsing Data' basic screen, explaining that deleting cookies and site data will sign the user out of most websites.">
-    Signs you out of most sites.
-  </message>
-  <message name="IDS_DEL_CLEAR_COOKIES_SUMMARY_BASIC_WITH_EXCEPTION" desc="A summary for the 'Cookies, media licenses and site data' option in the 'Clear Browsing Data' basic screen, explaining that deleting cookies and site data will sign the user out of most websites but your Google sign in will stay.">
-    Signs you out of most sites. You won't be signed out of your Google Account.
-  </message>
-  <message name="IDS_DEL_CLEAR_COOKIES_SUMMARY_BASIC_WITH_MEDIA_LICENSES" desc="A summary for the 'Cookies, media licenses and site data' option in the 'Clear Browsing Data' basic screen, explaining that deleting cookies and site data will sign the user out of most websites. Clearing media licenses will result in the user being unable to play some protected content from at least one specific web site.">
-    Signs you out of most sites. You may lose access to protected content from <ph name="SITE">$1<ex>youtube.com</ex></ph> and some other sites.
-  </message>
-  <message name="IDS_DEL_CLEAR_COOKIES_SUMMARY_BASIC_WITH_EXCEPTION_AND_MEDIA_LICENSES" desc="A summary for the 'Cookies, media licenses and site data' option in the 'Clear Browsing Data' basic screen, explaining that deleting cookies and site data will sign the user out of most websites but your Google sign in will stay. Clearing media licenses will result in the user being unable to play some protected content from at least one specific web site.">
-    Signs you out of most sites. You won't be signed out of your Google Account. You may lose access to protected content from <ph name="SITE">$1<ex>youtube.com</ex></ph> and some other sites.
   </message>
 </grit-part>

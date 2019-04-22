@@ -18,4 +18,3 @@ NSString* const kReadingListToolbarCancelButtonID =
     @"ReadingListToolbarCancelButton";
 NSString* const kReadingListToolbarMarkButtonID =
     @"ReadingListToolbarMarkButton";
-;

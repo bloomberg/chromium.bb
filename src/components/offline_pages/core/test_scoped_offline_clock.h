@@ -10,6 +10,17 @@
 
 namespace offline_pages {
 
+// Overrides |OfflineClock()| with |clock| upon construction. Returns
+// |OfflineClock()| to its original state upon destruction.
+class TestScopedOfflineClockOverride {
+ public:
+  explicit TestScopedOfflineClockOverride(base::Clock* clock);
+  ~TestScopedOfflineClockOverride();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestScopedOfflineClockOverride);
+};
+
 // Overrides |OfflineClock()| with |this| upon construction. Returns
 // |OfflineClock()| to its original state upon destruction.
 class TestScopedOfflineClock : public base::SimpleTestClock {
@@ -18,6 +29,8 @@ class TestScopedOfflineClock : public base::SimpleTestClock {
   ~TestScopedOfflineClock() override;
 
  private:
+  TestScopedOfflineClockOverride override_;
+
   DISALLOW_COPY_AND_ASSIGN(TestScopedOfflineClock);
 };
 

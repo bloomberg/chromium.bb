@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/extensions/browsertest_util.h"
@@ -852,8 +853,8 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_TRUE(HasValidVerifiedContents());
 }
 
-INSTANTIATE_TEST_CASE_P(FetchBehaviorTests,
-                        ContentVerifierHashTest,
-                        testing::Values(kEnforce, kEnforceStrict));
+INSTANTIATE_TEST_SUITE_P(FetchBehaviorTests,
+                         ContentVerifierHashTest,
+                         testing::Values(kEnforce, kEnforceStrict));
 
 }  // namespace extensions

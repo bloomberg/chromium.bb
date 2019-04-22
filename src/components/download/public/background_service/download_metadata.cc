@@ -42,7 +42,8 @@ bool CompletionInfo::operator==(const CompletionInfo& other) const {
   return path == other.path && bytes_downloaded == other.bytes_downloaded &&
          url_chain == other.url_chain &&
          AreResponseHeadersEqual(response_headers.get(),
-                                 other.response_headers.get());
+                                 other.response_headers.get()) &&
+         hash256 == other.hash256;
 }
 
 DownloadMetaData::DownloadMetaData() : current_size(0u), paused(false) {}

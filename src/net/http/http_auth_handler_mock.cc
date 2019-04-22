@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
+#include "net/dns/host_resolver.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_request_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,7 +46,7 @@ HttpAuthHandlerMock::HttpAuthHandlerMock()
     : state_(State::WAIT_FOR_INIT),
       generate_async_(false),
       generate_rv_(OK),
-      auth_token_(NULL),
+      auth_token_(nullptr),
       first_round_(true),
       connection_based_(false),
       allows_default_credentials_(false),
@@ -111,12 +112,12 @@ int HttpAuthHandlerMock::GenerateAuthTokenImpl(
   request_url_ = request->url;
   if (generate_async_) {
     EXPECT_TRUE(callback_.is_null());
-    EXPECT_TRUE(auth_token_ == NULL);
+    EXPECT_TRUE(auth_token_ == nullptr);
     callback_ = std::move(callback);
     auth_token_ = auth_token;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&HttpAuthHandlerMock::OnGenerateAuthToken,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&HttpAuthHandlerMock::OnGenerateAuthToken,
+                                  weak_factory_.GetWeakPtr()));
     state_ = State::TOKEN_PENDING;
     return ERR_IO_PENDING;
   } else {
@@ -142,7 +143,7 @@ void HttpAuthHandlerMock::OnGenerateAuthToken() {
   } else {
     state_ = State::DONE;
   }
-  auth_token_ = NULL;
+  auth_token_ = nullptr;
   base::ResetAndReturn(&callback_).Run(generate_rv_);
 }
 
@@ -166,6 +167,7 @@ int HttpAuthHandlerMock::Factory::CreateAuthHandler(
     CreateReason reason,
     int nonce_count,
     const NetLogWithSource& net_log,
+    HostResolver* host_resolver,
     std::unique_ptr<HttpAuthHandler>* handler) {
   if (handlers_[target].empty())
     return ERR_UNEXPECTED;

@@ -36,14 +36,14 @@
 
     [NewObject, CallWith=ScriptState, RaisesException] IDBRequest get(any key);
     [NewObject, CallWith=ScriptState, RaisesException] IDBRequest getKey(any key);
-    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest getAll([Default=Undefined] optional any query,
+    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest getAll([DefaultValue=Undefined] optional any query,
                                                                          optional [EnforceRange] unsigned long count);
-    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest getAllKeys([Default=Undefined] optional any query,
+    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest getAllKeys([DefaultValue=Undefined] optional any query,
                                                                              optional [EnforceRange] unsigned long count);
-    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest count([Default=Undefined] optional any key);
+    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest count([DefaultValue=Undefined] optional any key);
 
-    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest openCursor([Default=Undefined] optional any range,
+    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest openCursor([DefaultValue=Undefined] optional any range,
                                                                              optional IDBCursorDirection direction = "next");
-    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest openKeyCursor([Default=Undefined] optional any range,
+    [NewObject, CallWith=ScriptState, RaisesException] IDBRequest openKeyCursor([DefaultValue=Undefined] optional any range,
                                                                                 optional IDBCursorDirection direction = "next");
 };

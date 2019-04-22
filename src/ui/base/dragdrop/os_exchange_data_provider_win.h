@@ -154,7 +154,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
   void SetURL(const GURL& url, const base::string16& title) override;
   void SetFilename(const base::FilePath& path) override;
   void SetFilenames(const std::vector<FileInfo>& filenames) override;
-  void SetPickledData(const Clipboard::FormatType& format,
+  void SetPickledData(const ClipboardFormatType& format,
                       const base::Pickle& data) override;
   void SetFileContents(const base::FilePath& filename,
                        const std::string& file_contents) override;
@@ -166,7 +166,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
                       base::string16* title) const override;
   bool GetFilename(base::FilePath* path) const override;
   bool GetFilenames(std::vector<FileInfo>* filenames) const override;
-  bool GetPickledData(const Clipboard::FormatType& format,
+  bool GetPickledData(const ClipboardFormatType& format,
                       base::Pickle* data) const override;
   bool GetFileContents(base::FilePath* filename,
                        std::string* file_contents) const override;
@@ -176,7 +176,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
   bool HasFile() const override;
   bool HasFileContents() const override;
   bool HasHtml() const override;
-  bool HasCustomFormat(const Clipboard::FormatType& format) const override;
+  bool HasCustomFormat(const ClipboardFormatType& format) const override;
   void SetDownloadFileInfo(
       const OSExchangeData::DownloadFileInfo& download_info) override;
   void SetDragImage(const gfx::ImageSkia& image_skia,

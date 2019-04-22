@@ -142,21 +142,6 @@ ExtensionAction* ExtensionActionManager::GetBrowserAction(
                            profile_);
 }
 
-std::unique_ptr<ExtensionAction> ExtensionActionManager::GetBestFitAction(
-    const Extension& extension,
-    ActionInfo::Type type) const {
-  const ActionInfo* info = ActionInfo::GetBrowserActionInfo(&extension);
-  if (!info)
-    info = ActionInfo::GetPageActionInfo(&extension);
-
-  // Create a new ExtensionAction of |type| with |extension|'s ActionInfo.
-  // If no ActionInfo exists for |extension|, create and return a new action
-  // with a blank ActionInfo.
-  // Populate any missing values from |extension|'s manifest.
-  return std::make_unique<ExtensionAction>(extension, type,
-                                           info ? *info : ActionInfo());
-}
-
 ExtensionAction* ExtensionActionManager::GetSystemIndicator(
     const Extension& extension) const {
   // If it does not already exist, create the SystemIndicatorManager for the

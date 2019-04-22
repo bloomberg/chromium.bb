@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
@@ -30,7 +31,7 @@ namespace content {
 class RenderFrameHost;
 class WebContents;
 struct OpenURLParams;
-}
+}  // namespace content
 
 // Parameters that tell Navigate() what to do.
 //
@@ -79,6 +80,9 @@ struct NavigateParams {
   // The URL/referrer to be loaded. Ignored if |contents_to_insert| is non-NULL.
   GURL url;
   content::Referrer referrer;
+
+  // The origin of the initiator of the navigation.
+  base::Optional<url::Origin> initiator_origin;
 
   // The frame name to be used for the main frame.
   std::string frame_name;
@@ -166,6 +170,9 @@ struct NavigateParams {
   // TabStrip. The actual index will be determined by the TabHandler in
   // accordance with |add_types|. The default allows the TabHandler to decide.
   int tabstrip_index = -1;
+
+  // The group the caller would like the tab to be added to.
+  const TabGroupData* group = nullptr;
 
   // A bitmask of values defined in TabStripModel::AddTabTypes. Helps
   // determine where to insert a new tab and whether or not it should be
@@ -271,6 +278,9 @@ struct NavigateParams {
   // hrefTranslate attribute, this contains the attribute's value (a BCP47
   // language code). Empty otherwise.
   std::string href_translate;
+
+  // Indicates the reload type of this navigation.
+  content::ReloadType reload_type = content::ReloadType::NONE;
 
  private:
   NavigateParams();

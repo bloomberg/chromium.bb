@@ -63,7 +63,7 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
 
   // Updates the visibility of the items in this view according to
   // |app_list_state| and |is_in_drag|.
-  void UpdateControlVisibility(AppListViewState app_list_state,
+  void UpdateControlVisibility(ash::mojom::AppListViewState app_list_state,
                                bool is_in_drag);
 
   // Updates y position and opacity of the items in this view during dragging.
@@ -73,11 +73,11 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   void OnTabletModeChanged(bool started);
 
   // views::View overrides:
-  gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   const char* GetClassName() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  gfx::Size GetMinimumSize() const override;
 
   // HorizontalPage overrides:
   void OnWillBeHidden() override;
@@ -97,6 +97,9 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   }
   AppListFolderView* app_list_folder_view() { return app_list_folder_view_; }
 
+  // Updates suggestion chips from app list model.
+  void UpdateSuggestionChips();
+
  private:
   enum ShowState {
     SHOW_NONE,  // initial state
@@ -107,15 +110,6 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
 
   void SetShowState(ShowState show_state, bool show_apps_with_animation);
 
-  // Gets the final top padding of search box.
-  int GetSearchBoxFinalTopPadding() const;
-
-  // Returns the bounds of the page in the parent view during dragging.
-  gfx::Rect GetPageBoundsDuringDragging(ash::AppListState state) const;
-
-  // Updates suggestion chips from app list model.
-  void UpdateSuggestionChips();
-
   // Suggestion chips and apps grid view become unfocusable if |disabled| is
   // true. This is used to trap focus within the folder when it is opened.
   void DisableFocusForShowingActiveFolder(bool disabled);
@@ -124,10 +118,11 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // list transition progress.
   int GetExpectedSuggestionChipY(float progress);
 
-  ContentsView* contents_view_;  // Not owned.
+  // Returns true if columns and rows number of |apps_grid_view_| should be
+  // switched.
+  bool ShouldSwitchColsAndRows() const;
 
-  // True if new style launcher feature is enabled.
-  const bool is_new_style_launcher_enabled_;
+  ContentsView* contents_view_;  // Not owned.
 
   // The views below are owned by views hierarchy.
   SuggestionChipContainerView* suggestion_chip_container_view_ = nullptr;

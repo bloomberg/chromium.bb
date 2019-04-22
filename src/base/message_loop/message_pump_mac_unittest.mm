@@ -4,11 +4,14 @@
 
 #include "base/message_loop/message_pump_mac.h"
 
+#include "base/bind.h"
+#include "base/cancelable_callback.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -127,18 +130,15 @@ namespace {
 // PostedTasks are only executed while the message pump has a delegate. That is,
 // when a base::RunLoop is running, so in order to test whether posted tasks
 // are run by CFRunLoopRunInMode and *not* by the regular RunLoop, we need to
-// be inside a task that is also calling CFRunLoopRunInMode. This task runs the
-// given |mode| after posting a task to increment a counter, then checks whether
-// the counter incremented after emptying that run loop mode.
-void IncrementInModeAndExpect(CFRunLoopMode mode, int result) {
+// be inside a task that is also calling CFRunLoopRunInMode.
+// This function posts |task| and runs the given |mode|.
+void RunTaskInMode(CFRunLoopMode mode, OnceClosure task) {
   // Since this task is "ours" rather than a system task, allow nesting.
   MessageLoopCurrent::ScopedNestableTaskAllower allow;
-  int counter = 0;
-  auto increment = BindRepeating([](int* i) { ++*i; }, &counter);
-  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, increment);
+  CancelableOnceClosure cancelable(std::move(task));
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, cancelable.callback());
   while (CFRunLoopRunInMode(mode, 0, true) == kCFRunLoopRunHandledSource)
     ;
-  ASSERT_EQ(result, counter);
 }
 
 }  // namespace
@@ -152,35 +152,41 @@ TEST(MessagePumpMacTest, ScopedPumpMessagesInPrivateModes) {
 
   // Work is seen when running in the default mode.
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&IncrementInModeAndExpect, kRegular, 1));
+      FROM_HERE,
+      BindOnce(&RunTaskInMode, kRegular, MakeExpectedRunClosure(FROM_HERE)));
   EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
 
   // But not seen when running in a private mode.
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&IncrementInModeAndExpect, kPrivate, 0));
+      FROM_HERE,
+      BindOnce(&RunTaskInMode, kPrivate, MakeExpectedNotRunClosure(FROM_HERE)));
   EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
 
   {
     ScopedPumpMessagesInPrivateModes allow_private;
     // Now the work should be seen.
     ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, BindOnce(&IncrementInModeAndExpect, kPrivate, 1));
+        FROM_HERE,
+        BindOnce(&RunTaskInMode, kPrivate, MakeExpectedRunClosure(FROM_HERE)));
     EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
 
     // The regular mode should also work the same.
     ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, BindOnce(&IncrementInModeAndExpect, kRegular, 1));
+        FROM_HERE,
+        BindOnce(&RunTaskInMode, kRegular, MakeExpectedRunClosure(FROM_HERE)));
     EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
   }
 
   // And now the scoper is out of scope, private modes should no longer see it.
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&IncrementInModeAndExpect, kPrivate, 0));
+      FROM_HERE,
+      BindOnce(&RunTaskInMode, kPrivate, MakeExpectedNotRunClosure(FROM_HERE)));
   EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
 
   // Only regular modes see it.
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&IncrementInModeAndExpect, kRegular, 1));
+      FROM_HERE,
+      BindOnce(&RunTaskInMode, kRegular, MakeExpectedRunClosure(FROM_HERE)));
   EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
 }
 
@@ -205,6 +211,109 @@ TEST(MessagePumpMacTest, ScopedPumpMessagesAttemptWithModalDialog) {
                   inModes:@[ NSModalPanelRunLoopMode ]];
   NSInteger result = [alert runModal];
   EXPECT_EQ(NSAlertFirstButtonReturn, result);
+}
+
+// This is a regression test for a scenario where the invalidation of the
+// delayed work timer (using non-public APIs) causes a nested native run loop to
+// hang. The exact root cause of the hang is unknown since it involves the
+// closed-source Core Foundation runtime, but the steps needed to trigger it
+// are:
+//
+//   1. Post a delayed task that will run some time after step #4.
+//   2. Allow Chrome tasks to run in nested run loops (with
+//      ScopedNestableTaskAllower).
+//   3. Allow running Chrome tasks during private run loop modes (with
+//      ScopedPumpMessagesInPrivateModes).
+//   4. Open a pop-up menu via [NSMenu popupContextMenu]. This will start a
+//      private native run loop to process menu interaction.
+//   5. In a posted task, close the menu with [NSMenu cancelTracking].
+//
+// At this point the menu closes visually but the nested run loop (flakily)
+// hangs forever in a live-lock, i.e., Chrome tasks keep executing but the
+// NSMenu call in #4 never returns.
+//
+// The workaround is to avoid timer invalidation during nested native run loops.
+//
+// DANGER: As the pop-up menu captures keyboard input, the bug will make the
+// machine's keyboard inoperable during the live-lock. Use a TTY-based remote
+// terminal such as SSH (as opposed to Chromoting) to investigate the issue.
+//
+TEST(MessagePumpMacTest, DontInvalidateTimerInNativeRunLoop) {
+  MessageLoopForUI message_loop;
+  NSWindow* window =
+      [[[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100)
+                                   styleMask:NSBorderlessWindowMask
+                                     backing:NSBackingStoreBuffered
+                                       defer:NO] autorelease];
+  NSMenu* menu = [[NSMenu alloc] initWithTitle:@"Test menu"];
+  [menu insertItemWithTitle:@"Dummy item"
+                     action:@selector(dummy)
+              keyEquivalent:@"a"
+                    atIndex:0];
+  NSEvent* event = [NSEvent otherEventWithType:NSApplicationDefined
+                                      location:NSZeroPoint
+                                 modifierFlags:0
+                                     timestamp:0
+                                  windowNumber:0
+                                       context:nil
+                                       subtype:0
+                                         data1:0
+                                         data2:0];
+
+  // Post a task to open the menu. This needs to be a separate task so that
+  // nested task execution can be allowed.
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](NSWindow* window, NSMenu* menu, NSEvent* event) {
+                       MessageLoopCurrent::ScopedNestableTaskAllower allow;
+                       ScopedPumpMessagesInPrivateModes pump_private;
+                       // When the bug triggers, this call never returns.
+                       [NSMenu popUpContextMenu:menu
+                                      withEvent:event
+                                        forView:[window contentView]];
+                     },
+                     window, menu, event));
+
+  // Post another task to close the menu. The 100ms delay was determined
+  // experimentally on a 2013 Mac Pro.
+  RunLoop run_loop;
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](RunLoop* run_loop, NSMenu* menu) {
+            [menu cancelTracking];
+            run_loop->Quit();
+          },
+          &run_loop, menu),
+      base::TimeDelta::FromMilliseconds(100));
+
+  EXPECT_NO_FATAL_FAILURE(run_loop.Run());
+}
+
+TEST(MessagePumpMacTest, QuitWithModalWindow) {
+  MessageLoopForUI message_loop;
+  NSWindow* window =
+      [[[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100)
+                                   styleMask:NSBorderlessWindowMask
+                                     backing:NSBackingStoreBuffered
+                                       defer:NO] autorelease];
+
+  // Check that quitting the run loop while a modal window is shown applies to
+  // |run_loop| rather than the internal NSApplication modal run loop.
+  RunLoop run_loop;
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&] {
+        MessageLoopCurrent::ScopedNestableTaskAllower allow;
+        ScopedPumpMessagesInPrivateModes pump_private;
+        [NSApp runModalForWindow:window];
+      }));
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                          base::BindLambdaForTesting([&] {
+                                            [NSApp stopModal];
+                                            run_loop.Quit();
+                                          }));
+
+  EXPECT_NO_FATAL_FAILURE(run_loop.Run());
 }
 
 }  // namespace base

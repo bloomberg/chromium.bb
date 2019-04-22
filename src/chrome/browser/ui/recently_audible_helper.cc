@@ -4,13 +4,14 @@
 
 #include "chrome/browser/ui/recently_audible_helper.h"
 
+#include "base/no_destructor.h"
 #include "base/time/default_tick_clock.h"
 
 namespace {
 
 const base::TickClock* GetDefaultTickClock() {
-  static base::DefaultTickClock default_tick_clock;
-  return &default_tick_clock;
+  static base::NoDestructor<base::DefaultTickClock> default_tick_clock;
+  return default_tick_clock.get();
 }
 
 }  // namespace
@@ -107,3 +108,5 @@ void RecentlyAudibleHelper::SetNotRecentlyAudibleForTesting() {
   last_audible_time_ = tick_clock_->NowTicks() - kRecentlyAudibleTimeout;
   recently_audible_timer_.Stop();
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(RecentlyAudibleHelper)

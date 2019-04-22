@@ -15,19 +15,24 @@
 #include "SkOSFile.h"
 #include "SkOSPath.h"
 
+#include <cmath>
+
 namespace skottie_utils {
 
-sk_sp<MultiFrameImageAsset> MultiFrameImageAsset::Make(sk_sp<SkData> data) {
+sk_sp<MultiFrameImageAsset> MultiFrameImageAsset::Make(sk_sp<SkData> data, bool predecode) {
     if (auto codec = SkCodec::MakeFromData(std::move(data))) {
         return sk_sp<MultiFrameImageAsset>(
-              new MultiFrameImageAsset(skstd::make_unique<SkAnimCodecPlayer>(std::move(codec))));
+              new MultiFrameImageAsset(skstd::make_unique<SkAnimCodecPlayer>(std::move(codec)),
+                                                                             predecode));
     }
 
     return nullptr;
 }
 
-MultiFrameImageAsset::MultiFrameImageAsset(std::unique_ptr<SkAnimCodecPlayer> player)
-    : fPlayer(std::move(player)) {
+MultiFrameImageAsset::MultiFrameImageAsset(std::unique_ptr<SkAnimCodecPlayer> player,
+                                           bool predecode)
+    : fPlayer(std::move(player))
+    , fPreDecode(predecode) {
     SkASSERT(fPlayer);
 }
 
@@ -36,8 +41,40 @@ bool MultiFrameImageAsset::isMultiFrame() {
 }
 
 sk_sp<SkImage> MultiFrameImageAsset::getFrame(float t) {
+    auto decode = [](sk_sp<SkImage> image) {
+        SkASSERT(image->isLazyGenerated());
+
+        static constexpr size_t kMaxArea = 2048 * 2048;
+        const auto image_area = SkToSizeT(image->width() * image->height());
+
+        if (image_area > kMaxArea) {
+            // When the image is too large, decode and scale down to a reasonable size.
+            const auto scale = std::sqrt(static_cast<float>(kMaxArea) / image_area);
+            const auto info  = SkImageInfo::MakeN32Premul(scale * image->width(),
+                                                          scale * image->height());
+            SkBitmap bm;
+            if (bm.tryAllocPixels(info, info.minRowBytes()) &&
+                    image->scalePixels(bm.pixmap(),
+                                       SkFilterQuality::kMedium_SkFilterQuality,
+                                       SkImage::kDisallow_CachingHint)) {
+                image = SkImage::MakeFromBitmap(bm);
+            }
+        } else {
+            // When the image size is OK, just force-decode.
+            image = image->makeRasterImage();
+        }
+
+        return image;
+    };
+
     fPlayer->seek(static_cast<uint32_t>(t * 1000));
-    return fPlayer->getFrame();
+    auto frame = fPlayer->getFrame();
+
+    if (fPreDecode && frame && frame->isLazyGenerated()) {
+        frame = decode(std::move(frame));
+    }
+
+    return frame;
 }
 
 sk_sp<FileResourceProvider> FileResourceProvider::Make(SkString base_dir) {
@@ -60,51 +97,66 @@ sk_sp<skottie::ImageAsset> FileResourceProvider::loadImageAsset(const char resou
     return MultiFrameImageAsset::Make(this->load(resource_path, resource_name));
 }
 
-CustomPropertyManagerBuilder::CustomPropertyManagerBuilder() = default;
-CustomPropertyManagerBuilder::~CustomPropertyManagerBuilder() = default;
+class CustomPropertyManager::PropertyInterceptor final : public skottie::PropertyObserver {
+public:
+    explicit PropertyInterceptor(CustomPropertyManager* mgr) : fMgr(mgr) {}
 
-std::unique_ptr<CustomPropertyManager> CustomPropertyManagerBuilder::build() {
-    return std::unique_ptr<CustomPropertyManager>(
-                new CustomPropertyManager(std::move(fColorMap),
-                                          std::move(fOpacityMap),
-                                          std::move(fTransformMap)));
-}
-
-void CustomPropertyManagerBuilder::onColorProperty(
-        const char node_name[],
-        const LazyHandle<skottie::ColorPropertyHandle>& c) {
-    const auto key = this->acceptProperty(node_name);
-    if (!key.empty()) {
-        fColorMap[key].push_back(c());
+    void onColorProperty(const char node_name[],
+                         const LazyHandle<skottie::ColorPropertyHandle>& c) override {
+        const auto key = fMgr->acceptKey(node_name);
+        if (!key.empty()) {
+            fMgr->fColorMap[key].push_back(c());
+        }
     }
-}
 
-void CustomPropertyManagerBuilder::onOpacityProperty(
-        const char node_name[],
-        const LazyHandle<skottie::OpacityPropertyHandle>& o) {
-    const auto key = this->acceptProperty(node_name);
-    if (!key.empty()) {
-        fOpacityMap[key].push_back(o());
+    void onOpacityProperty(const char node_name[],
+                           const LazyHandle<skottie::OpacityPropertyHandle>& o) override {
+        const auto key = fMgr->acceptKey(node_name);
+        if (!key.empty()) {
+            fMgr->fOpacityMap[key].push_back(o());
+        }
     }
-}
 
-void CustomPropertyManagerBuilder::onTransformProperty(
-        const char node_name[],
-        const LazyHandle<skottie::TransformPropertyHandle>& t) {
-    const auto key = this->acceptProperty(node_name);
-    if (!key.empty()) {
-        fTransformMap[key].push_back(t());
+    void onTransformProperty(const char node_name[],
+                             const LazyHandle<skottie::TransformPropertyHandle>& t) override {
+        const auto key = fMgr->acceptKey(node_name);
+        if (!key.empty()) {
+            fMgr->fTransformMap[key].push_back(t());
+        }
     }
-}
 
-CustomPropertyManager::CustomPropertyManager(PropMap<skottie::ColorPropertyHandle> cmap,
-                                             PropMap<skottie::OpacityPropertyHandle> omap,
-                                             PropMap<skottie::TransformPropertyHandle> tmap)
-    : fColorMap(std::move(cmap))
-    , fOpacityMap(std::move(omap))
-    , fTransformMap(std::move(tmap)) {}
+private:
+    CustomPropertyManager* fMgr;
+};
+
+class CustomPropertyManager::MarkerInterceptor final : public skottie::MarkerObserver {
+public:
+    explicit MarkerInterceptor(CustomPropertyManager* mgr) : fMgr(mgr) {}
+
+    void onMarker(const char name[], float t0, float t1) override {
+        const auto key = fMgr->acceptKey(name);
+        if (!key.empty()) {
+            fMgr->fMarkers.push_back({ std::move(key), t0, t1 });
+        }
+    }
+
+private:
+    CustomPropertyManager* fMgr;
+};
+
+CustomPropertyManager::CustomPropertyManager()
+    : fPropertyInterceptor(sk_make_sp<PropertyInterceptor>(this))
+    , fMarkerInterceptor(sk_make_sp<MarkerInterceptor>(this)) {}
 
 CustomPropertyManager::~CustomPropertyManager() = default;
+
+sk_sp<skottie::PropertyObserver> CustomPropertyManager::getPropertyObserver() const {
+    return fPropertyInterceptor;
+}
+
+sk_sp<skottie::MarkerObserver> CustomPropertyManager::getMarkerObserver() const {
+    return fMarkerInterceptor;
+}
 
 template <typename T>
 std::vector<CustomPropertyManager::PropKey>

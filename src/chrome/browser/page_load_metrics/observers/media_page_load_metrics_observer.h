@@ -26,11 +26,13 @@ class MediaPageLoadMetricsObserver
   FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
-                            extra_request_complete_info) override;
+  void OnResourceDataUseObserved(
+      content::RenderFrameHost* rfh,
+      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+          resources) override;
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
-      bool is_in_main_frame) override;
+      content::RenderFrameHost* render_frame_host) override;
 
  private:
   // Records histograms for byte information.

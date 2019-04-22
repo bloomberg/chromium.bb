@@ -43,7 +43,7 @@ class TestCertVerifier : public net::MockCertVerifier {
     }
     return net::MockCertVerifier::Verify(params, verify_result,
                                          std::move(callback), out_req, net_log);
-  };
+  }
 };
 
 }  // namespace

@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -139,12 +139,12 @@ std::unique_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner) {
   // The form owns the following variables, so they should not be deleted.
   AutofillField* parsed_fields[FIELD_MAX];
 
-  for (size_t i = 0; i < arraysize(kPhoneFieldGrammars); ++i) {
+  for (size_t i = 0; i < base::size(kPhoneFieldGrammars); ++i) {
     memset(parsed_fields, 0, sizeof(parsed_fields));
     size_t saved_cursor = scanner->SaveCursor();
 
     // Attempt to parse according to the next grammar.
-    for (; i < arraysize(kPhoneFieldGrammars) &&
+    for (; i < base::size(kPhoneFieldGrammars) &&
            kPhoneFieldGrammars[i].regex != REGEX_SEPARATOR;
          ++i) {
       if (!ParsePhoneField(scanner, GetRegExp(kPhoneFieldGrammars[i].regex),
@@ -158,7 +158,7 @@ std::unique_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner) {
       }
     }
 
-    if (i >= arraysize(kPhoneFieldGrammars)) {
+    if (i >= base::size(kPhoneFieldGrammars)) {
       scanner->RewindTo(saved_cursor);
       return nullptr;  // Parsing failed.
     }
@@ -168,11 +168,11 @@ std::unique_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner) {
     // Proceed to the next grammar.
     do {
       ++i;
-    } while (i < arraysize(kPhoneFieldGrammars) &&
+    } while (i < base::size(kPhoneFieldGrammars) &&
              kPhoneFieldGrammars[i].regex != REGEX_SEPARATOR);
 
     scanner->RewindTo(saved_cursor);
-    if (i + 1 == arraysize(kPhoneFieldGrammars)) {
+    if (i + 1 == base::size(kPhoneFieldGrammars)) {
       return nullptr;  // Tried through all the possibilities - did not match.
     }
   }

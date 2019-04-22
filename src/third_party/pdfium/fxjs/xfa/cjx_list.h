@@ -7,8 +7,8 @@
 #ifndef FXJS_XFA_CJX_LIST_H_
 #define FXJS_XFA_CJX_LIST_H_
 
-#include "fxjs/jse_define.h"
 #include "fxjs/xfa/cjx_object.h"
+#include "fxjs/xfa/jse_define.h"
 
 class CXFA_List;
 
@@ -17,17 +17,24 @@ class CJX_List : public CJX_Object {
   explicit CJX_List(CXFA_List* list);
   ~CJX_List() override;
 
-  JSE_METHOD(append, CJX_List);
-  JSE_METHOD(insert, CJX_List);
-  JSE_METHOD(item, CJX_List);
-  JSE_METHOD(remove, CJX_List);
+  // CJX_Object:
+  bool DynamicTypeIs(TypeTag eType) const override;
+
+  JSE_METHOD(append);
+  JSE_METHOD(insert);
+  JSE_METHOD(item);
+  JSE_METHOD(remove);
 
   JSE_PROP(length);
 
  private:
-  CXFA_List* GetXFAList();
+  using Type__ = CJX_List;
+  using ParentType__ = CJX_Object;
 
+  static const TypeTag static_type__ = TypeTag::List;
   static const CJX_MethodSpec MethodSpecs[];
+
+  CXFA_List* GetXFAList();
 };
 
 #endif  // FXJS_XFA_CJX_LIST_H_

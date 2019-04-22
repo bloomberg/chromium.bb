@@ -10,11 +10,13 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/assistant/assistant_alarm_timer_controller.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/cast_config_controller.h"
-#include "ash/contained_shell/contained_shell_controller.h"
+#include "ash/custom_tab/arc_custom_tab_controller.h"
 #include "ash/display/ash_display_controller.h"
 #include "ash/display/cros_display_config.h"
 #include "ash/display/display_output_protection.h"
@@ -22,10 +24,12 @@
 #include "ash/first_run/first_run_helper.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/ime/ime_engine_factory_registry.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
-#include "ash/media_controller.h"
+#include "ash/media/media_controller.h"
 #include "ash/metrics/time_to_first_present_recorder.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
@@ -36,7 +40,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shutdown_controller.h"
-#include "ash/system/locale/locale_notification_controller.h"
+#include "ash/system/locale/locale_update_controller.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/vpn_list.h"
@@ -49,7 +53,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
@@ -77,7 +81,16 @@ void BindAccessibilityFocusRingControllerRequestOnMainThread(
 
 void BindAppListControllerRequestOnMainThread(
     mojom::AppListControllerRequest request) {
-  Shell::Get()->app_list_controller()->BindRequest(std::move(request));
+  // The AppListController is not available in KioskNext sessions.
+  // TODO(michaelpg): Also disable the Chrome AppList client in KioskNext
+  // sessions.
+  if (Shell::Get()->app_list_controller())
+    Shell::Get()->app_list_controller()->BindRequest(std::move(request));
+}
+
+void BindArcCustomTabControllerRequestOnMainThread(
+    mojom::ArcCustomTabControllerRequest request) {
+  Shell::Get()->arc_custom_tab_controller()->BindRequest(std::move(request));
 }
 
 void BindAshDisplayControllerRequestOnMainThread(
@@ -85,9 +98,21 @@ void BindAshDisplayControllerRequestOnMainThread(
   Shell::Get()->ash_display_controller()->BindRequest(std::move(request));
 }
 
+void BindAssistantAlarmTimerControllerRequestOnMainThread(
+    mojom::AssistantAlarmTimerControllerRequest request) {
+  Shell::Get()->assistant_controller()->alarm_timer_controller()->BindRequest(
+      std::move(request));
+}
+
 void BindAssistantControllerRequestOnMainThread(
     mojom::AssistantControllerRequest request) {
   Shell::Get()->assistant_controller()->BindRequest(std::move(request));
+}
+
+void BindAssistantNotificationControllerRequestOnMainThread(
+    mojom::AssistantNotificationControllerRequest request) {
+  Shell::Get()->assistant_controller()->notification_controller()->BindRequest(
+      std::move(request));
 }
 
 void BindAssistantScreenContextControllerRequestOnMainThread(
@@ -123,11 +148,6 @@ void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
   Shell::Get()->cast_config()->BindRequest(std::move(request));
 }
 
-void BindContainedShellControllerRequestOnMainThread(
-    mojom::ContainedShellControllerRequest request) {
-  Shell::Get()->contained_shell_controller()->BindRequest(std::move(request));
-}
-
 void BindDisplayOutputProtectionRequestOnMainThread(
     mojom::DisplayOutputProtectionRequest request) {
   Shell::Get()->display_output_protection()->BindRequest(std::move(request));
@@ -157,15 +177,24 @@ void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
   Shell::Get()->ime_controller()->BindRequest(std::move(request));
 }
 
+void BindImeEngineFactoryRegistryRequestOnMainThread(
+    ime::mojom::ImeEngineFactoryRegistryRequest request) {
+  Shell::Get()->ime_engine_factory_registry()->BindRequest(std::move(request));
+}
+
 void BindKeyboardControllerRequestOnMainThread(
     mojom::KeyboardControllerRequest request) {
   Shell::Get()->ash_keyboard_controller()->BindRequest(std::move(request));
 }
 
-void BindLocaleNotificationControllerOnMainThread(
-    mojom::LocaleNotificationControllerRequest request) {
-  Shell::Get()->locale_notification_controller()->BindRequest(
-      std::move(request));
+void BindKioskNextShellControllerRequestOnMainThread(
+    mojom::KioskNextShellControllerRequest request) {
+  Shell::Get()->kiosk_next_shell_controller()->BindRequest(std::move(request));
+}
+
+void BindLocaleUpdateControllerOnMainThread(
+    mojom::LocaleUpdateControllerRequest request) {
+  Shell::Get()->locale_update_controller()->BindRequest(std::move(request));
 }
 
 void BindLockScreenRequestOnMainThread(mojom::LoginScreenRequest request) {
@@ -261,9 +290,20 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::BindRepeating(&BindAppListControllerRequestOnMainThread),
       main_thread_task_runner);
+  registry->AddInterface(
+      base::BindRepeating(&BindArcCustomTabControllerRequestOnMainThread),
+      main_thread_task_runner);
   if (chromeos::switches::IsAssistantEnabled()) {
     registry->AddInterface(
+        base::BindRepeating(
+            &BindAssistantAlarmTimerControllerRequestOnMainThread),
+        main_thread_task_runner);
+    registry->AddInterface(
         base::BindRepeating(&BindAssistantControllerRequestOnMainThread),
+        main_thread_task_runner);
+    registry->AddInterface(
+        base::BindRepeating(
+            &BindAssistantNotificationControllerRequestOnMainThread),
         main_thread_task_runner);
     registry->AddInterface(
         base::BindRepeating(
@@ -287,19 +327,17 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(base::BindRepeating(&BindCastConfigOnMainThread),
                          main_thread_task_runner);
-  if (base::FeatureList::IsEnabled(features::kContainedShell)) {
+  if (base::FeatureList::IsEnabled(features::kKioskNextShell)) {
     registry->AddInterface(
-        base::BindRepeating(&BindContainedShellControllerRequestOnMainThread),
+        base::BindRepeating(&BindKioskNextShellControllerRequestOnMainThread),
         main_thread_task_runner);
   }
   registry->AddInterface(
       base::BindRepeating(&BindDisplayOutputProtectionRequestOnMainThread),
       main_thread_task_runner);
-  if (features::IsDockedMagnifierEnabled()) {
-    registry->AddInterface(
-        base::BindRepeating(&BindDockedMagnifierControllerRequestOnMainThread),
-        main_thread_task_runner);
-  }
+  registry->AddInterface(
+      base::BindRepeating(&BindDockedMagnifierControllerRequestOnMainThread),
+      main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindEventRewriterControllerRequestOnMainThread),
       main_thread_task_runner);
@@ -313,10 +351,13 @@ void RegisterInterfaces(
       base::BindRepeating(&BindImeControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
+      base::BindRepeating(&BindImeEngineFactoryRegistryRequestOnMainThread),
+      main_thread_task_runner);
+  registry->AddInterface(
       base::BindRepeating(&BindKeyboardControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
-      base::BindRepeating(&BindLocaleNotificationControllerOnMainThread),
+      base::BindRepeating(&BindLocaleUpdateControllerOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindLockScreenRequestOnMainThread),
@@ -327,11 +368,9 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::BindRepeating(&BindNewWindowControllerRequestOnMainThread),
       main_thread_task_runner);
-  if (features::IsNightLightEnabled()) {
     registry->AddInterface(
         base::BindRepeating(&BindNightLightControllerRequestOnMainThread),
         main_thread_task_runner);
-  }
   registry->AddInterface(
       base::BindRepeating(&BindNoteTakingControllerRequestOnMainThread),
       main_thread_task_runner);

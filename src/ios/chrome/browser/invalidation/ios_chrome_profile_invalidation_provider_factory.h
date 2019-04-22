@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace invalidation {
 class ProfileInvalidationProvider;
@@ -36,8 +32,7 @@ class IOSChromeProfileInvalidationProviderFactory
   static IOSChromeProfileInvalidationProviderFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<
-      IOSChromeProfileInvalidationProviderFactory>;
+  friend class base::NoDestructor<IOSChromeProfileInvalidationProviderFactory>;
 
   IOSChromeProfileInvalidationProviderFactory();
   ~IOSChromeProfileInvalidationProviderFactory() override;

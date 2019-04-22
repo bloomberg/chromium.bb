@@ -97,15 +97,8 @@ Audits2.AuditController = class extends Common.Object {
     const inspectedURL = mainTarget && mainTarget.inspectedURL();
     if (inspectedURL && !/^(http|chrome-extension)/.test(inspectedURL)) {
       return Common.UIString(
-          'Can only audit HTTP/HTTPS pages and Chrome extensions. ' +
-          'Navigate to a different page to start an audit.');
+          'Can only audit HTTP/HTTPS pages and Chrome extensions. Navigate to a different page to start an audit.');
     }
-
-    // Audits don't work on most undockable targets (extension popup pages, remote debugging, etc).
-    // However, the tests run in a content shell which is not dockable yet audits just fine,
-    // so disable this check when under test.
-    if (!Host.isUnderTest() && !Runtime.queryParam('can_dock'))
-      return Common.UIString('Can only audit tabs. Navigate to this page in a separate tab to start an audit.');
 
     return null;
   }
@@ -185,8 +178,7 @@ Audits2.AuditController = class extends Common.Object {
     let helpText = '';
     if (hasActiveServiceWorker) {
       helpText = Common.UIString(
-          'Multiple tabs are being controlled by the same service worker. ' +
-          'Close your other tabs on the same origin to audit this page.');
+          'Multiple tabs are being controlled by the same service worker. Close your other tabs on the same origin to audit this page.');
     } else if (!hasAtLeastOneCategory) {
       helpText = Common.UIString('At least one category must be selected.');
     } else if (unauditablePageMessage) {

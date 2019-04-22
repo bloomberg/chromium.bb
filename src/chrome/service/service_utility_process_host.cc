@@ -17,20 +17,21 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
-#include "chrome/service/service_process_catalog_source.h"
 #include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
+#include "content/public/app/content_browser_manifest.h"
+#include "content/public/app/content_utility_manifest.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/content_switches.h"
@@ -54,11 +55,11 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/runner/host/service_process_launcher.h"
-#include "services/service_manager/runner/host/service_process_launcher_factory.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "services/service_manager/service_manager.h"
+#include "services/service_manager/service_process_launcher.h"
+#include "services/service_manager/service_process_launcher_factory.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace {
@@ -276,7 +277,7 @@ ServiceUtilityProcessHost::ServiceUtilityProcessHost(
       client_task_runner_(client_task_runner),
       waiting_for_reply_(false),
       weak_ptr_factory_(this) {
-  child_process_host_.reset(ChildProcessHost::Create(this));
+  child_process_host_ = ChildProcessHost::Create(this);
 }
 
 ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {
@@ -359,9 +360,11 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
   // instances: this process, which masquerades as "content_browser"; and the
   // child process, which exists ostensibly as the only instance of
   // "content_utility". This is all set up here.
+  std::vector<service_manager::Manifest> manifests{
+      content::GetContentBrowserManifest(),
+      content::GetContentUtilityManifest()};
   service_manager_ = std::make_unique<service_manager::ServiceManager>(
-      std::make_unique<NullServiceProcessLauncherFactory>(),
-      CreateServiceProcessCatalog(), nullptr);
+      std::make_unique<NullServiceProcessLauncherFactory>(), manifests);
 
   service_manager::mojom::ServicePtr browser_proxy;
   service_manager_connection_ = content::ServiceManagerConnection::Create(
@@ -428,7 +431,7 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
       switches::kVModule,
   };
   cmd_line->CopySwitchesFrom(service_command_line, kForwardSwitches,
-                             arraysize(kForwardSwitches));
+                             base::size(kForwardSwitches));
 
   if (sandbox) {
     mojo::PlatformChannel channel;
@@ -477,7 +480,7 @@ void ServiceUtilityProcessHost::OnChildDisconnected() {
     // If we are yet to receive a reply then notify the client that the
     // child died.
     client_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Client::OnChildDied, client_.get()));
+        FROM_HERE, base::BindOnce(&Client::OnChildDied, client_.get()));
     ReportUmaEvent(SERVICE_UTILITY_DISCONNECTED);
   }
 
@@ -556,8 +559,8 @@ void ServiceUtilityProcessHost::OnPDFToEmfFinished(bool success) {
   ReportUmaEvent(success ? SERVICE_UTILITY_METAFILE_SUCCEEDED
                          : SERVICE_UTILITY_METAFILE_FAILED);
   client_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::OnRenderPDFPagesToMetafileDone,
-                            client_.get(), success));
+      FROM_HERE, base::BindOnce(&Client::OnRenderPDFPagesToMetafileDone,
+                                client_.get(), success));
   pdf_to_emf_state_.reset();
 
   // The child process has finished at this point. This host is done as well.
@@ -571,8 +574,9 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
   ReportUmaEvent(SERVICE_UTILITY_CAPS_SUCCEEDED);
   waiting_for_reply_ = false;
   client_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::OnGetPrinterCapsAndDefaults, client_.get(),
-                            true, printer_name, caps_and_defaults));
+      FROM_HERE,
+      base::BindOnce(&Client::OnGetPrinterCapsAndDefaults, client_.get(), true,
+                     printer_name, caps_and_defaults));
   // The child process disconnects itself and this host deletes itself via
   // OnChildDisconnected().
 }
@@ -585,8 +589,8 @@ void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsSucceeded(
   waiting_for_reply_ = false;
   client_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Client::OnGetPrinterSemanticCapsAndDefaults, client_.get(),
-                 true, printer_name, caps_and_defaults));
+      base::BindOnce(&Client::OnGetPrinterSemanticCapsAndDefaults,
+                     client_.get(), true, printer_name, caps_and_defaults));
   // The child process disconnects itself and this host deletes itself via
   // OnChildDisconnected().
 }
@@ -598,8 +602,8 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsFailed(
   waiting_for_reply_ = false;
   client_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Client::OnGetPrinterCapsAndDefaults, client_.get(), false,
-                 printer_name, printing::PrinterCapsAndDefaults()));
+      base::BindOnce(&Client::OnGetPrinterCapsAndDefaults, client_.get(), false,
+                     printer_name, printing::PrinterCapsAndDefaults()));
   // The child process disconnects itself and this host deletes itself via
   // OnChildDisconnected().
 }
@@ -610,9 +614,9 @@ void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsFailed(
   ReportUmaEvent(SERVICE_UTILITY_SEMANTIC_CAPS_FAILED);
   waiting_for_reply_ = false;
   client_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::OnGetPrinterSemanticCapsAndDefaults,
-                            client_.get(), false, printer_name,
-                            printing::PrinterSemanticCapsAndDefaults()));
+      FROM_HERE, base::BindOnce(&Client::OnGetPrinterSemanticCapsAndDefaults,
+                                client_.get(), false, printer_name,
+                                printing::PrinterSemanticCapsAndDefaults()));
   // The child process disconnects itself and this host deletes itself via
   // OnChildDisconnected().
 }

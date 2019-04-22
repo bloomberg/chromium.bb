@@ -22,6 +22,8 @@ class ThreadPool final : public GarbageCollectedFinalized<ThreadPool>,
  public:
   static const char kSupplementName[];
   static ThreadPool* From(Document&);
+
+  ThreadPool(Document&);
   ~ThreadPool();
 
   ThreadPoolThread* GetLeastBusyThread() override;
@@ -29,8 +31,6 @@ class ThreadPool final : public GarbageCollectedFinalized<ThreadPool>,
   void Trace(blink::Visitor*) final;
 
  private:
-  ThreadPool(Document&);
-
   ThreadPoolThread* CreateNewThread();
 
   HeapHashSet<Member<ThreadPoolMessagingProxy>> thread_proxies_;

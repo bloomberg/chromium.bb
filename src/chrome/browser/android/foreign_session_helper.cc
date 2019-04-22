@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -18,9 +19,9 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/notification_details.h"
@@ -139,7 +140,6 @@ void JNI_ForeignSessionHelper_CopySessionToJava(
 
 static jlong JNI_ForeignSessionHelper_Init(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& profile) {
   ForeignSessionHelper* foreign_session_helper = new ForeignSessionHelper(
       ProfileAndroid::FromProfileAndroid(profile));
@@ -181,13 +181,12 @@ jboolean ForeignSessionHelper::IsTabSyncEnabled(
 void ForeignSessionHelper::TriggerSessionSync(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  syncer::SyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (!service)
     return;
 
-  const syncer::ModelTypeSet types(syncer::SESSIONS);
-  service->TriggerRefresh(types);
+  service->TriggerRefresh({syncer::SESSIONS});
 }
 
 void ForeignSessionHelper::SetOnForeignSessionCallback(
@@ -309,8 +308,8 @@ void ForeignSessionHelper::SetInvalidationsForSessionsEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jboolean enabled) {
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  syncer::SyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (!service)
     return;
 

@@ -14,7 +14,7 @@ namespace media {
 // Interface for classes that allow reformating of FFmpeg bitstreams
 class MEDIA_EXPORT FFmpegBitstreamConverter {
  public:
-  virtual ~FFmpegBitstreamConverter() {};
+  virtual ~FFmpegBitstreamConverter() {}
 
   // Reads the data in packet, and then overwrites this data with the
   // converted version of packet

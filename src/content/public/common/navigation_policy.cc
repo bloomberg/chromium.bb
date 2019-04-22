@@ -11,12 +11,12 @@
 
 namespace content {
 
-bool IsBrowserSideNavigationEnabled() {
-  return true;
-}
-
 bool IsPerNavigationMojoInterfaceEnabled() {
   return base::FeatureList::IsEnabled(features::kPerNavigationMojoInterface);
+}
+
+bool IsBackForwardCacheEnabled() {
+  return base::FeatureList::IsEnabled(features::kBackForwardCache);
 }
 
 }  // namespace content

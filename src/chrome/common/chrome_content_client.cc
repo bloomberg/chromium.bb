@@ -11,6 +11,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
@@ -33,21 +34,18 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pepper_flash.h"
-#include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/common_resources.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/services/heap_profiling/public/cpp/client.h"
-#include "components/version_info/version_info.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "gpu/config/gpu_info.h"
@@ -127,11 +125,11 @@ const char kPDFPluginOutOfProcessMimeType[] =
     "application/x-google-chrome-pdf";
 const uint32_t kPDFPluginPermissions = ppapi::PERMISSION_PDF |
                                        ppapi::PERMISSION_DEV;
-#endif  // BUILDFLAG(ENABLE_PDF)
 
 content::PepperPluginInfo::GetInterfaceFunc g_pdf_get_interface;
 content::PepperPluginInfo::PPP_InitializeModuleFunc g_pdf_initialize_module;
 content::PepperPluginInfo::PPP_ShutdownModuleFunc g_pdf_shutdown_module;
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_NACL)
 content::PepperPluginInfo::GetInterfaceFunc g_nacl_get_interface;
@@ -265,8 +263,9 @@ bool TryCreatePepperFlashInfo(const base::FilePath& flash_filename,
   if (!base::ReadFileToString(manifest_path, &manifest_data))
     return false;
 
-  std::unique_ptr<base::DictionaryValue> manifest = base::DictionaryValue::From(
-      base::JSONReader::Read(manifest_data, base::JSON_ALLOW_TRAILING_COMMAS));
+  std::unique_ptr<base::DictionaryValue> manifest =
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
+          manifest_data, base::JSON_ALLOW_TRAILING_COMMAS));
   if (!manifest)
     return false;
 
@@ -394,28 +393,7 @@ bool IsWidevineAvailable(base::FilePath* cdm_path,
 }
 #endif  // defined(REGISTER_BUNDLED_WIDEVINE_CDM)
 
-std::string GetProduct() {
-  return version_info::GetProductNameAndVersionForUserAgent();
-}
-
 }  // namespace
-
-std::string GetUserAgent() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUserAgent)) {
-    std::string ua = command_line->GetSwitchValueASCII(switches::kUserAgent);
-    if (net::HttpUtil::IsValidHeaderValue(ua))
-      return ua;
-    LOG(WARNING) << "Ignored invalid value for flag --" << switches::kUserAgent;
-  }
-
-  std::string product = GetProduct();
-#if defined(OS_ANDROID)
-  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
-    product += " Mobile";
-#endif
-  return content::BuildUserAgentFromProduct(product);
-}
 
 ChromeContentClient::ChromeContentClient() {
 }
@@ -434,7 +412,7 @@ void ChromeContentClient::SetNaClEntryFunctions(
 }
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_PDF)
 void ChromeContentClient::SetPDFEntryFunctions(
     content::PepperPluginInfo::GetInterfaceFunc get_interface,
     content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
@@ -450,7 +428,8 @@ void ChromeContentClient::SetActiveURL(const GURL& url,
   static crash_reporter::CrashKeyString<1024> active_url("url-chunk");
   active_url.Set(url.possibly_invalid_spec());
 
-  static crash_reporter::CrashKeyString<64> top_origin_key("top-origin");
+  // Use a large enough size for Origin::GetDebugString.
+  static crash_reporter::CrashKeyString<128> top_origin_key("top-origin");
   top_origin_key.Set(top_origin);
 }
 
@@ -645,8 +624,6 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
   // with them by third parties.
   schemes->secure_schemes.push_back(extensions::kExtensionScheme);
 
-  schemes->secure_origins = secure_origin_whitelist::GetWhitelist();
-
   // chrome-native: is a scheme used for placeholder navigations that allow
   // UIs to be drawn with platform native widgets instead of HTML.  These pages
   // should be treated as empty documents that can commit synchronously.
@@ -676,16 +653,14 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
 #endif
 }
 
-std::string ChromeContentClient::GetProduct() const {
-  return ::GetProduct();
-}
-
-std::string ChromeContentClient::GetUserAgent() const {
-  return ::GetUserAgent();
-}
-
 base::string16 ChromeContentClient::GetLocalizedString(int message_id) const {
   return l10n_util::GetStringUTF16(message_id);
+}
+
+base::string16 ChromeContentClient::GetLocalizedString(
+    int message_id,
+    const base::string16& replacement) const {
+  return l10n_util::GetStringFUTF16(message_id, replacement);
 }
 
 base::StringPiece ChromeContentClient::GetDataResource(
@@ -731,9 +706,9 @@ std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
 }
 
 bool ChromeContentClient::AllowScriptExtensionForServiceWorker(
-    const GURL& script_url) {
+    const url::Origin& script_origin) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  return script_url.SchemeIs(extensions::kExtensionScheme);
+  return script_origin.scheme() == extensions::kExtensionScheme;
 #else
   return false;
 #endif

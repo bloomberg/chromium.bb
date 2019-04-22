@@ -10,7 +10,6 @@
 
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
-#include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
@@ -223,12 +222,9 @@ void Vec4::SetValues<GLuint>(const GLuint* values) {
 }
 
 ContextState::ContextState(FeatureInfo* feature_info,
-                           ErrorStateClient* error_state_client,
-                           Logger* logger,
                            bool track_texture_and_sampler_units)
     : track_texture_and_sampler_units(track_texture_and_sampler_units),
-      feature_info_(feature_info),
-      error_state_(ErrorState::Create(error_state_client, logger)) {
+      feature_info_(feature_info) {
   Initialize();
 }
 
@@ -627,10 +623,6 @@ void ContextState::RestoreState(const ContextState* prev_state) {
 
   // FRAMEBUFFER_SRGB will be restored lazily at render time.
   framebuffer_srgb_valid_ = false;
-}
-
-ErrorState* ContextState::GetErrorState() {
-  return error_state_.get();
 }
 
 void ContextState::EnableDisable(GLenum pname, bool enable) const {

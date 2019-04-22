@@ -10,6 +10,7 @@ from __future__ import print_function
 import operator
 
 from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -74,7 +75,7 @@ class GerritHelper(object):
   def FromGob(cls, gob, **kwargs):
     """Return a helper for a GoB instance."""
     site_params = config_lib.GetSiteParams()
-    host = site_params.GOB_HOST % ('%s-review' % gob)
+    host = constants.GOB_HOST % ('%s-review' % gob)
     # TODO(phobbs) this will be wrong when "gob" isn't in GOB_REMOTES.
     # We should get rid of remotes altogether and just use the host.
     return cls(host, site_params.GOB_REMOTES.get(gob, gob), **kwargs)
@@ -366,7 +367,8 @@ class GerritHelper(object):
 
     return change
 
-  def SetReview(self, change, msg=None, labels=None, dryrun=False):
+  def SetReview(self, change, msg=None, labels=None,
+                dryrun=False, notify='ALL'):
     """Update the review labels on a gerrit change.
 
     Args:
@@ -374,6 +376,7 @@ class GerritHelper(object):
       msg: A text comment to post to the review.
       labels: A dict of label/value to set on the review.
       dryrun: If True, don't actually update the review.
+      notify: A string, parameter controlling gerrit's email generation.
     """
     if not msg and not labels:
       return
@@ -387,7 +390,7 @@ class GerritHelper(object):
                        key, val, change)
       return
     gob_util.SetReview(self.host, self._to_changenum(change),
-                       msg=msg, labels=labels, notify='ALL')
+                       msg=msg, labels=labels, notify=notify)
 
   def SetTopic(self, change, topic, dryrun=False):
     """Update the topic on a gerrit change.
@@ -419,15 +422,12 @@ class GerritHelper(object):
                          add=add, remove=remove)
 
   def RemoveReady(self, change, dryrun=False):
-    """Set the 'Commit-Queue' and 'Trybot-Ready' labels on a |change| to '0'."""
+    """Set the 'Commit-Queue' label on a |change| to '0'."""
     if dryrun:
-      logging.info('Would have reset Commit-Queue and Trybot-Ready label for '
-                   '%s', change)
+      logging.info('Would have reset Commit-Queue label for %s', change)
       return
     gob_util.ResetReviewLabels(self.host, self._to_changenum(change),
                                label='Commit-Queue', notify='OWNER')
-    gob_util.ResetReviewLabels(self.host, self._to_changenum(change),
-                               label='Trybot-Ready', notify='OWNER')
 
   def SubmitChange(self, change, dryrun=False):
     """Land (merge) a gerrit change using the JSON API."""

@@ -134,8 +134,23 @@ fast/harness/results.html [ WontFix ]
  [ Win ] fast/text/aat-morx.html [ WontFix ]
  [ Android ] fast/text/aat-morx.html [ WontFix ]
 
+# AAT Small Caps test not supported on platforms other than Mac 10.13.
+ [ Linux ] fast/text/small-caps-aat.html [ WontFix ]
+ [ Win ] fast/text/small-caps-aat.html [ WontFix ]
+ [ Android ] fast/text/small-caps-aat.html [ WontFix ]
+ [ Mac10.10 ] fast/text/small-caps-aat.html [ WontFix ]
+ [ Mac10.11 ] fast/text/small-caps-aat.html [ WontFix ]
+ [ Mac10.12 ] fast/text/small-caps-aat.html [ WontFix ]
+
 # Linux layout tests do not have a Myanmar fallback font.
 [ Linux ] inspector-protocol/layout-fonts/fallback-myanmar.js [ WontFix ]
+[ Linux ] virtual/nobinary-for-inspector-protocol/inspector-protocol/layout-fonts/fallback-myanmar.js [ WontFix ]
+
+# Segoe UI matching is only relevant on Windows
+[ Mac ] inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ WontFix ]
+[ Mac ] virtual/nobinary-for-inspector-protocol/inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ WontFix ]
+[ Linux ] inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ WontFix ]
+[ Linux ] virtual/nobinary-for-inspector-protocol/inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ WontFix ]
 
 # Tests in media/stable are only supposed to be run as virtual test (see virtual/stable/media).
 media/stable [ WontFix ]
@@ -279,9 +294,6 @@ crbug.com/753080 external/wpt/css/css-transforms/transform3d-perspective-005.htm
 crbug.com/753080 external/wpt/css/css-transforms/transform3d-preserve3d-010.html [ WontFix ]
 crbug.com/753080 external/wpt/css/css-transforms/transform3d-preserve3d-013.html [ WontFix ]
 crbug.com/753080 external/wpt/css/css-transforms/transform3d-rotatex-perspective-003.html [ WontFix ]
-crbug.com/753080 external/wpt/css/css-transforms/transform3d-scale-005.html [ WontFix ]
-crbug.com/753080 external/wpt/css/css-transforms/transform3d-scale-006.html [ WontFix ]
-crbug.com/753080 external/wpt/css/css-transforms/transform3d-scale-007.html [ WontFix ]
 crbug.com/753080 external/wpt/css/css-transforms/transform3d-sorting-002.html [ WontFix ]
 crbug.com/753080 external/wpt/css/css-transforms/transform3d-sorting-004.html [ WontFix ]
 crbug.com/753080 external/wpt/css/css-transforms/transform3d-sorting-006.html [ WontFix ]
@@ -342,7 +354,9 @@ crbug.com/763610 external/wpt/css/CSS2/cascade [ WontFix ]
 external/wpt/css/css-cascade/revert-val-001.html [ WontFix ]
 
 # These tests require a DRM system that is not available with content_shell.
+external/wpt/encrypted-media/drm-check-encryption-scheme.https.html [ WontFix ]
 external/wpt/encrypted-media/drm-check-initdata-type.https.html [ WontFix ]
+external/wpt/encrypted-media/drm-check-status-for-hdcp.https.html [ WontFix ]
 external/wpt/encrypted-media/drm-events.https.html [ WontFix ]
 external/wpt/encrypted-media/drm-events-session-closed-event.https.html [ WontFix ]
 external/wpt/encrypted-media/drm-expiration.https.html [ WontFix ]
@@ -434,8 +448,17 @@ external/wpt/encrypted-media/clearkey-mp4-unique-origin.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-mp4-waiting-for-a-key.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-events-session-closed-event.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-update-non-ascii-input.https.html [ WontFix ]
+external/wpt/media-source/mediasource-invalid-codec.html [ WontFix ]
 
-external/wpt/clipboard-apis/async-navigator-clipboard-basics.https.html [ WontFix ]
+# CSS Text features that are not planned to implement.
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-001.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-002.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-003.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-004.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-005.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-006.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-007.html [ WontFix ]
+
 external/wpt/css/CSS2/linebox/inline-formatting-context-010b.xht [ WontFix ]
 external/wpt/css/CSS2/normal-flow/inline-block-replaced-height-008.xht [ WontFix ]
 external/wpt/css/CSS2/normal-flow/inline-replaced-height-008.xht [ WontFix ]
@@ -972,7 +995,6 @@ external/wpt/css/css-backgrounds/background-size/vector/wide--cover--omitted-wid
 external/wpt/css/css-backgrounds/background-size/vector/wide--cover--percent-width-nonpercent-height-viewbox.html [ WontFix ]
 external/wpt/css/css-backgrounds/background-size/vector/wide--cover--percent-width-omitted-height-viewbox.html [ WontFix ]
 external/wpt/css/css-backgrounds/background-size/vector/wide--cover--percent-width-percent-height-viewbox.html [ WontFix ]
-external/wpt/css/css-backgrounds/border-image-5.html [ WontFix ]
 external/wpt/css/css-backgrounds/border-image-6.html [ WontFix ]
 external/wpt/css/css-backgrounds/border-image-repeat-round.html [ WontFix ]
 external/wpt/css/css-backgrounds/border-image-round-and-stretch.html [ WontFix ]
@@ -1690,10 +1712,10 @@ crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitel
 crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ WontFix ]
 crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ WontFix ]
 crbug.com/870172 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-all.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ WontFix ]
-crbug.com/870172 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ WontFix ]
+
+# Tests that passes iff outofblink-cors feature is enabled.
+# TODO(toyoshim): Remove this if Out-Of-Blink CORS is enabled
+http/tests/security/img-redirect-to-crossorigin-credentials.html [ WontFix ]
 
 # Tests that only work when the mixed content autoupgrade experiment is enabled
 http/tests/mixed-autoupgrade [ WontFix ]
@@ -1712,13 +1734,16 @@ external/wpt/audio-output/setSinkId-manual.https.html [ WontFix ]
 external/wpt/battery-status/battery-charging-manual.https.html [ WontFix ]
 external/wpt/battery-status/battery-plugging-in-manual.https.html [ WontFix ]
 external/wpt/battery-status/battery-unplugging-manual.https.html [ WontFix ]
-external/wpt/clipboard-apis/async-write-dttext-read-dttext-manual.https.html [ WontFix ]
-external/wpt/clipboard-apis/async-write-dttext-read-text-manual.https.html [ WontFix ]
-external/wpt/clipboard-apis/async-write-text-read-dttext-manual.https.html [ WontFix ]
-external/wpt/clipboard-apis/async-write-text-read-text-manual.https.html [ WontFix ]
-external/wpt/clipboard-apis/copy-event-manual.html [ WontFix ]
-external/wpt/clipboard-apis/cut-event-manual.html [ WontFix ]
-external/wpt/clipboard-apis/paste-event-manual.html [ WontFix ]
+external/wpt/clipboard-apis/async-navigator-clipboard-basics.https.html [ WontFix ]
+external/wpt/clipboard-apis/async-write-blobs-read-blobs-manual.https.html [ WontFix ]
+external/wpt/clipboard-apis/async-write-image-read-image-manual.https.html [ WontFix ]
+external/wpt/clipboard-apis/events/copy-event-manual.html [ WontFix ]
+external/wpt/clipboard-apis/events/cut-event-manual.html [ WontFix ]
+external/wpt/clipboard-apis/events/paste-event-manual.html [ WontFix ]
+external/wpt/clipboard-apis/text-write-read/async-write-read-manual.https.html [ WontFix ]
+external/wpt/clipboard-apis/text-write-read/async-write-readText-manual.https.html [ WontFix ]
+external/wpt/clipboard-apis/text-write-read/async-writeText-read-manual.https.html [ WontFix ]
+external/wpt/clipboard-apis/text-write-read/async-writeText-readText-manual.https.html [ WontFix ]
 external/wpt/console/console-count-logging-manual.html [ WontFix ]
 external/wpt/console/console-countReset-logging-manual.html [ WontFix ]
 external/wpt/console/console-number-format-specifiers-symbol-manual.html [ WontFix ]
@@ -1790,6 +1815,72 @@ external/wpt/css/css-animations/animation-timing-function-010-manual.html [ Wont
 external/wpt/css/css-animations/animation-timing-function-011-manual.html [ WontFix ]
 external/wpt/css/css-animations/animation-timing-function-012-manual.html [ WontFix ]
 external/wpt/css/css-animations/animationstart-and-animationend-events-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-delay-001-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-delay-002-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-delay-003-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-delay-004-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-delay-005-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-delay-006-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-delay-007-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-direction-001-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-direction-002-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-direction-003-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-direction-004-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-direction-005-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-direction-006-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-display-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-duration-001-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-duration-002-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-duration-003-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-duration-004-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-duration-005-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-duration-006-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-duration-007-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-duration-008-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-fill-mode-001-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-fill-mode-002-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-fill-mode-003-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-fill-mode-004-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-fill-mode-005-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-fill-mode-006-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-001-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-002-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-003-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-004-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-005-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-006-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-007-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-iteration-count-008-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-iteration-event-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-keyframes-001-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-keyframes-002-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-keyframes-003-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-name-001-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-name-002-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-name-003-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-name-004-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-name-005-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-name-006-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-play-state-001-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-play-state-002-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-play-state-003-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-play-state-004-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-shorthand-001-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-shorthand-002-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-shorthand-003-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-timing-function-001-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-timing-function-002-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-timing-function-003-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-timing-function-004-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-timing-function-005-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-timing-function-006-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-timing-function-007-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-timing-function-008-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-timing-function-009-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-timing-function-010-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-timing-function-011-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animation-timing-function-012-manual.html [ WontFix ]
+virtual/threaded/external/wpt/css/css-animations/animationstart-and-animationend-events-manual.html [ WontFix ]
 external/wpt/css/css-ui/cursor-pointer-links-001-manual.html [ WontFix ]
 external/wpt/css/css-ui/cursor-pointer-links-002-manual.html [ WontFix ]
 external/wpt/css/css-ui/cursor-pointer-links-003-manual.html [ WontFix ]
@@ -1965,21 +2056,21 @@ external/wpt/offscreen-canvas/text/2d.text.draw.fill.maxWidth.large-manual.worke
 external/wpt/offscreen-canvas/text/2d.text.draw.fill.rtl-manual.worker.js [ WontFix ]
 external/wpt/offscreen-canvas/text/2d.text.draw.kern.consistent-manual.worker.js [ WontFix ]
 external/wpt/offscreen-canvas/text/2d.text.draw.stroke.basic-manual.worker.js [ WontFix ]
-external/wpt/orientation-event/free-fall-manual.html [ WontFix ]
-external/wpt/orientation-event/screen-upmost-manual.html [ WontFix ]
-external/wpt/orientation-event/screen-upright-manual.html [ WontFix ]
-external/wpt/orientation-event/t001-manual.html [ WontFix ]
-external/wpt/orientation-event/t002-manual.html [ WontFix ]
-external/wpt/orientation-event/t003-manual.html [ WontFix ]
-external/wpt/orientation-event/t006-manual.html [ WontFix ]
-external/wpt/orientation-event/t009-manual.html [ WontFix ]
-external/wpt/orientation-event/t010-manual.html [ WontFix ]
-external/wpt/orientation-event/t012-manual.html [ WontFix ]
-external/wpt/orientation-event/t021-manual.html [ WontFix ]
-external/wpt/orientation-event/t022-manual.html [ WontFix ]
-external/wpt/orientation-event/t023-manual.html [ WontFix ]
-external/wpt/orientation-event/t025-manual.html [ WontFix ]
-external/wpt/orientation-event/t028-manual.html [ WontFix ]
+external/wpt/orientation-event/free-fall-manual.https.html [ WontFix ]
+external/wpt/orientation-event/screen-upmost-manual.https.html [ WontFix ]
+external/wpt/orientation-event/screen-upright-manual.https.html [ WontFix ]
+external/wpt/orientation-event/t001-manual.https.html [ WontFix ]
+external/wpt/orientation-event/t002-manual.https.html [ WontFix ]
+external/wpt/orientation-event/t003-manual.https.html [ WontFix ]
+external/wpt/orientation-event/t006-manual.https.html [ WontFix ]
+external/wpt/orientation-event/t009-manual.https.html [ WontFix ]
+external/wpt/orientation-event/t010-manual.https.html [ WontFix ]
+external/wpt/orientation-event/t012-manual.https.html [ WontFix ]
+external/wpt/orientation-event/t021-manual.https.html [ WontFix ]
+external/wpt/orientation-event/t022-manual.https.html [ WontFix ]
+external/wpt/orientation-event/t023-manual.https.html [ WontFix ]
+external/wpt/orientation-event/t025-manual.https.html [ WontFix ]
+external/wpt/orientation-event/t028-manual.https.html [ WontFix ]
 external/wpt/orientation-sensor/OrientationSensor_onerror-manual.https.html [ WontFix ]
 external/wpt/page-visibility/test_minimize-manual.html [ WontFix ]
 external/wpt/page-visibility/test_tab_state_change-manual.html [ WontFix ]
@@ -1996,9 +2087,11 @@ external/wpt/payment-request/PaymentValidationErrors/retry-shows-shippingAddress
 external/wpt/payment-request/algorithms-manual.https.html [ WontFix ]
 external/wpt/payment-request/change-shipping-option-manual.https.html [ WontFix ]
 external/wpt/payment-request/change-shipping-option-select-last-manual.https.html [ WontFix ]
+external/wpt/payment-request/payment-request-hasenrolledinstrument-method-manual.tentative.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/complete-method-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/methodName-attribute-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/onpayerdetailchange-attribute-manual.https.html [ WontFix ]
+external/wpt/payment-request/payment-response/payerdetailschange-updateWith-immediate-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/payerEmail-attribute-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/payerName-attribute-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/payerPhone-attribute-manual.https.html [ WontFix ]
@@ -2007,6 +2100,7 @@ external/wpt/payment-request/payment-response/requestId-attribute-manual.https.h
 external/wpt/payment-request/payment-response/retry-method-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/shippingAddress-attribute-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/shippingOption-attribute-manual.https.html [ WontFix ]
+external/wpt/payment-request/rejects_if_not_active_manual.https.html [ WontFix ]
 external/wpt/payment-request/shipping-address-changed-manual.https.html [ WontFix ]
 external/wpt/payment-request/show-method-optional-promise-rejects-manual.https.html [ WontFix ]
 external/wpt/payment-request/show-method-optional-promise-resolves-manual.https.html [ WontFix ]
@@ -2014,7 +2108,6 @@ external/wpt/payment-request/show-method-postmessage-manual.https.html [ WontFix
 external/wpt/payment-request/updateWith-method-pmi-handling-manual.https.html [ WontFix ]
 external/wpt/payment-request/user-abort-algorithm-manual.https.html [ WontFix ]
 external/wpt/payment-request/user-accepts-payment-request-algo-manual.https.html [ WontFix ]
-external/wpt/pointerevents/pointerevent_click_during_capture-manual.html [ WontFix ]
 external/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html [ WontFix ]
 external/wpt/pointerevents/pointerevent_touch-action-svg-test_touch-manual.html [ WontFix ]
 external/wpt/pointerlock/movementX_Y_no-jumps-manual.html [ WontFix ]
@@ -2023,8 +2116,6 @@ external/wpt/pointerlock/pointerlock_fullscreen-manual.html [ WontFix ]
 external/wpt/pointerlock/pointerlock_indefinite-manual.html [ WontFix ]
 external/wpt/pointerlock/pointerlock_leave_Tab-manual.html [ WontFix ]
 external/wpt/pointerlock/pointerlock_leave_UA-manual.html [ WontFix ]
-external/wpt/pointerlock/pointerlock_remove_target-manual.html [ WontFix ]
-external/wpt/pointerlock/pointerlock_shadow-manual.html [ WontFix ]
 external/wpt/presentation-api/controlling-ua/PresentationAvailability_onchange-manual.https.html [ WontFix ]
 external/wpt/presentation-api/controlling-ua/PresentationConnection_onclose-manual.https.html [ WontFix ]
 external/wpt/presentation-api/controlling-ua/PresentationConnection_onconnect-manual.https.html [ WontFix ]
@@ -2103,43 +2194,57 @@ external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
 external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ WontFix ]
-virtual/mojo-blob-urls/external/wpt/FileAPI/url/url_createobjecturl_file_img-manual.html [ WontFix ]
-virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
-virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
-virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
-virtual/outofblink-cors-ns/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
-virtual/outofblink-cors-ns/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
 virtual/outofblink-cors/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
 virtual/outofblink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
-virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
-virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
-virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
+virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
+virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
+virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
+virtual/omt-worker-fetch/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
+virtual/omt-worker-fetch/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-abort-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onerror-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onresult-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-stop-manual.https.html [ WontFix ]
 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ WontFix ]
 
-# ====== Tests incompatible with the default Site Isolation from here ======
-# See also third_party/WebKit/LayoutTests/virtual/not-site-per-process/README.md
+# MathML is not implemented.
+crbug.com/6606 external/wpt/mathml [ WontFix ]
+
+# ==== Tests incompatible with the default WPT Origin Isolation start here ==VV
+# The section below lists web tests that are incompatible with the WPT Origin
+# Isolation mode of Site Isolation (see
+# WebTestContentBrowserClient::GetOriginsRequiringDedicatedProcess) which
+# isolates WPT origins on top of the default site-per-process mode (see
+# ContentBrowserClient::ShouldEnableStrictSiteIsolation).
+#
+# Note that test coverage offered by the tests WontFix-ed below is preserved by
+# the virtual/not-site-per-process test suite (see also
+# third_party/blink/web_tests/virtual/not-site-per-process/README.md).
 #
 # When modifying the list of files that behave differently with and without
 # OOPIFs, please consider modifying all the locations below:
 # - LayoutTests/NeverFixTests (the section here)
 # - LayoutTests/VirtualTestSuites (virtual/not-site-per-process suite)
 # - LayoutTests/virtual/not-site-per-process/README.md
-
-# Tests permanently disabled with Site Isolation (e.g. tests that use
-# document.domain are are therefore inherently incompatible with isolation of
-# WPT origins):
+#
+# --------------------------- document.domain -----------------------
+# To test OOPIF support in various web platform features, we isolate all WPT
+# *origins* (under assumptions that hopefully some WPT tests will exercise
+# cross-origin scenarios, but that cross-site test coverage is unlikely).
+# *Origin* isolation is incompatible with document.domain and this means that
+# tests exercising document.domain might fail - such tests are listed as
+# WontFix below.  Note that by default Site Isolation isolates *sites* rather
+# than *origin* and therefore avoids problems related to document.domain
+# compatibility.
 Bug(none) external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction [ WontFix ]
 Bug(none) external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ WontFix ]
-Bug(none) virtual/mojo-blob-urls/external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ WontFix ]
 Bug(none) external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ WontFix ]
 Bug(none) external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ WontFix ]
+Bug(none) http/tests/dom/EventListener-incumbent-global-1.html [ WontFix ]
+Bug(none) http/tests/dom/EventListener-incumbent-global-2.html [ WontFix ]
 Bug(none) external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ WontFix ]
 Bug(none) external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ WontFix ]
 Bug(none) external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ WontFix ]
@@ -2148,9 +2253,21 @@ Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/share
 Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ WontFix ]
 Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ WontFix ]
 Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ WontFix ]
-Bug(none) external/wpt/wasm/serialization/window-domain-success.sub.html [ WontFix ]
-Bug(none) external/wpt/wasm/serialization/window-similar-but-cross-origin-success.sub.html [ WontFix ]
-
+Bug(none) external/wpt/wasm/serialization/module/window-domain-success.sub.html [ WontFix ]
+Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ WontFix ]
+# -------------------- origin-vs-url in console messages -----------------
+# Process hosting https://foo.example.com should not get any data from
+# https://bar.other-site-example.com.  This includes things like cookies
+# and localStorage, but also full URLs (which may include some "secrets"
+# and [unlike origins] are not exposed to other origins through web APIs).
+# To properly enforce security boundary described above, console messages
+# cannot include full cross-origin URLs (i.e. the messages need to strip
+# cross-origin URLs down to just the origin - for example,
+# https://foo.example.com/path?token=secret needs to be replaced with just
+# https://foo.example.com).
+crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ WontFix ]
+crbug.com/669083 virtual/outofblink-cors/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ WontFix ]
+# --------------------------- code cache isolation -----------------------
 # Code cache isolation tests only make sense if either
 # 1) site isolation is disabled or
 #    (covered by virtual/not-site-per-process/.../isolated-code-cache)
@@ -2160,5 +2277,41 @@ Bug(none) external/wpt/wasm/serialization/window-similar-but-cross-origin-succes
 # 3) site isolation is enabled without also enabling
 #    IsolatedCodeCache (tests disabled by the test expectation below).
 Bug(none) http/tests/devtools/isolated-code-cache/cross-origin-test.js [ WontFix ]
+Bug(none) virtual/nobinary-for-devtools/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ WontFix ]
+# ==== Tests incompatible with the default WPT Origin Isolation end here ==^^
 
-# ====== Tests incompatible with the default Site Isolation until here ======
+# Tests using testRunner.useUnfortunateSynchronousResizeMode occasionally fail on Win7,
+crbug.com/946022 [ Win7 ] animations/responsive/viewport-unit-translate-responsive-expected.html [ WontFix ]
+crbug.com/946022 [ Win7 ] animations/responsive/viewport-unit-transform-responsive-expected.html [ WontFix ]
+crbug.com/946022 [ Win7 ] animations/responsive/viewport-unit-transform-responsive.html [ WontFix ]
+crbug.com/946022 [ Win7 ] animations/responsive/viewport-unit-translate-responsive.html [ WontFix ]
+crbug.com/946022 [ Win7 ] css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ WontFix ]
+crbug.com/946022 [ Win7 ] compositing/transitions/transform-on-large-layer.html [ WontFix ]
+crbug.com/946022 [ Win7 ] compositing/transitions/transform-on-large-layer-expected.html [ WontFix ]
+crbug.com/946022 [ Win7 ] fast/autoresize/turn-off-autoresize.html [ WontFix ]
+crbug.com/946022 [ Win7 ] fast/autoresize/basic.html [ WontFix ]
+crbug.com/946022 [ Win7 ] fast/dom/viewport/resize-event-fired-window-resized.html [ WontFix ]
+crbug.com/946022 [ Win7 ] fast/dom/Window/window-resize-contents.html [ WontFix ]
+crbug.com/946022 [ Win7 ] virtual/user-activation-v2/fast/dom/Window/window-resize-contents.html [ WontFix ]
+crbug.com/946022 [ Win7 ] fast/dom/rtl-scroll-to-leftmost-and-resize.html [ WontFix ]
+crbug.com/946022 [ Win7 ] fast/dynamic/window-resize-scrollbars-test.html [ WontFix ]
+crbug.com/946022 [ Win7 ] fast/events/resize-events-count.html [ WontFix ]
+crbug.com/946022 [ Win7 ] fast/css-grid-layout/flex-content-sized-columns-resize.html [ WontFix ]
+crbug.com/946022 [ Win7 ] fast/css-grid-layout/flex-content-sized-columns-resize-expected.html [ WontFix ]
+crbug.com/946022 [ Win7 ] fast/text/line-break-between-text-nodes-with-inline-blocks.html [ WontFix ]
+crbug.com/946022 [ Win7 ] images/image-click-scale-restore-zoomed-image.html [ WontFix ]
+crbug.com/946022 [ Win7 ] images/image-zoom-to-25.html [ WontFix ]
+crbug.com/946022 [ Win7 ] images/image-zoom-to-500.html [ WontFix ]
+crbug.com/946022 [ Win7 ] media/controls/overflow-menu-hide-on-resize.html [ WontFix ]
+crbug.com/946022 [ Win7 ] virtual/video-surface-layer/media/controls/overflow-menu-hide-on-resize.html [ WontFix ]
+crbug.com/946022 [ Win7 ] paint/invalidation/resize-iframe-text.html [ WontFix ]
+crbug.com/946022 [ Win7 ] paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ WontFix ]
+crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/ [ WontFix ]
+
+external/wpt/css/css-overscroll-behavior/overscrollBehavior-manual.html [ WontFix ]
+external/wpt/html/semantics/forms/the-input-element/event-select-manual.html [ WontFix ]
+external/wpt/html/editing/dnd/the-datatransferitem-interface/getAsString-manual.html [ WontFix ]
+external/wpt/payment-request/billing-address-changed-manual.https.html [ WontFix ]
+external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-event-manual.html [ WontFix ]
+external/wpt/payment-request/payment-response/retry-method-warnings-manual.https.html [ WontFix ]
+external/wpt/payment-request/payment-response/payerdetailschange-updateWith-manual.https.html [ WontFix ]

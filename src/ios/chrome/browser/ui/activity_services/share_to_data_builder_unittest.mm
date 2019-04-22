@@ -102,10 +102,6 @@ class ShareToDataBuilderTest : public PlatformTest {
 
     tab_ = [[ShareToDataBuilderTestTabMock alloc]
         initWithWebState:std::move(web_state)];
-    OCMockObject* tab_mock = static_cast<OCMockObject*>(tab_);
-
-    ios::ChromeBrowserState* ptr = chrome_browser_state_.get();
-    [[[tab_mock stub] andReturnValue:OCMOCK_VALUE(ptr)] browserState];
   }
 
   void TearDown() override {

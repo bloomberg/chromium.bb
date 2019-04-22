@@ -37,6 +37,9 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
                 AppListView* app_list_view = nullptr);
   ~SearchBoxView() override;
 
+  // Returns the total focus ring spacing for use in folders.
+  static int GetFocusRingSpacing();
+
   // Overridden from search_box::SearchBoxViewBase:
   void ClearSearch() override;
   views::View* GetSelectedViewInContentsView() override;
@@ -54,6 +57,8 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // Overridden from views::View:
   void OnKeyEvent(ui::KeyEvent* event) override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -86,6 +91,12 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
 
   // Sets the autocomplete text if autocomplete conditions are met.
   void ProcessAutocomplete();
+
+  // Updates the search box with |new_query| and starts a new search.
+  void UpdateQuery(const base::string16& new_query);
+
+  // Clears the search query and de-activate the search box.
+  void ClearSearchAndDeactivateSearchBox();
 
   void set_contents_view(ContentsView* contents_view) {
     contents_view_ = contents_view;
@@ -155,9 +166,6 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // Owned by views hierarchy.
   app_list::AppListView* app_list_view_;
   ContentsView* contents_view_ = nullptr;
-
-  // True if new style launcher feature is enabled.
-  const bool is_new_style_launcher_enabled_;
 
   // True if app list search autocomplete is enabled.
   const bool is_app_list_search_autocomplete_enabled_;

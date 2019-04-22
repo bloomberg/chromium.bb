@@ -60,7 +60,7 @@ void AsyncApiFunction::AsyncWorkCompleted() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     bool rv = base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&AsyncApiFunction::RespondOnUIThread, this));
+        base::BindOnce(&AsyncApiFunction::RespondOnUIThread, this));
     DCHECK(rv);
   } else {
     SendResponse(Respond());

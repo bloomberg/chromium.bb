@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
-#include "ui/gfx/path.h"
 
 #include <memory>
 #include <vector>
@@ -59,12 +58,7 @@ class AutofillPopupRowView : public views::View {
 };
 
 // Views implementation for the autofill and password suggestion.
-// TODO(https://crbug.com/768881): Once this implementation is complete, this
-// class should be renamed to AutofillPopupViewViews and old
-// AutofillPopupViewViews should be removed. The main difference of
-// AutofillPopupViewNativeViews from AutofillPopupViewViews is that child views
-// are drawn using toolkit-views framework, in contrast to
-// AutofillPopupViewViews, where individuals rows are drawn directly on canvas.
+// TODO(https://crbug.com/831603): Rename to AutofillPopupViewViews.
 class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
                                      public AutofillPopupView {
  public:
@@ -82,8 +76,7 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
 
   // AutofillPopupBaseView:
   // TODO(crbug.com/831603): Remove these overrides and the corresponding
-  // methods in AutofillPopupBaseView once deprecation of
-  // AutofillPopupViewViews is complete.
+  // methods in AutofillPopupBaseView.
   void OnMouseMoved(const ui::MouseEvent& event) override {}
 
   AutofillPopupController* controller() { return controller_; }

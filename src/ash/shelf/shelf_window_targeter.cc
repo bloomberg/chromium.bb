@@ -4,9 +4,14 @@
 
 #include "ash/shelf/shelf_window_targeter.h"
 
+#include "ash/public/cpp/session_types.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_widget.h"
+#include "ash/shell.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -39,6 +44,29 @@ ShelfWindowTargeter::~ShelfWindowTargeter() {
 bool ShelfWindowTargeter::ShouldUseExtendedBounds(
     const aura::Window* window) const {
   return true;
+}
+
+bool ShelfWindowTargeter::GetHitTestRects(
+    aura::Window* target,
+    gfx::Rect* hit_test_rect_mouse,
+    gfx::Rect* hit_test_rect_touch) const {
+  // We only want to special case a very specific situation where we are not
+  // currently in an active session (or unknown session state) and change only
+  // the behavior of the login shelf. On secondary displays, the login shelf
+  // will not be visible.
+  if (target->id() == kShellWindowId_ShelfContainer && shelf_->IsVisible() &&
+      Shell::Get()->session_controller()->GetSessionState() !=
+          session_manager::SessionState::ACTIVE &&
+      Shell::Get()->session_controller()->GetSessionState() !=
+          session_manager::SessionState::UNKNOWN) {
+    // When this is the case, let events pass through the "empty" part of
+    // the shelf.
+    return shelf_->shelf_widget()->GetHitTestRects(target, hit_test_rect_mouse,
+                                                   hit_test_rect_touch);
+  }
+  // Otherwise, fall back to what our superclass does.
+  return EasyResizeWindowTargeter::GetHitTestRects(target, hit_test_rect_mouse,
+                                                   hit_test_rect_touch);
 }
 
 void ShelfWindowTargeter::OnWindowDestroying(aura::Window* window) {

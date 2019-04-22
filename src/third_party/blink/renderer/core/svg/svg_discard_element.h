@@ -41,11 +41,11 @@ class SVGDiscardElement final : public SVGSMILElement {
  public:
   DECLARE_NODE_FACTORY(SVGDiscardElement);
 
+  explicit SVGDiscardElement(Document&);
+
   bool IsSVGDiscardElement() const override { return true; }
 
  private:
-  explicit SVGDiscardElement(Document&);
-
   void ResetAnimatedType() override {}
   void ClearAnimatedType() override {}
   void ApplyResultsToTarget() override {}

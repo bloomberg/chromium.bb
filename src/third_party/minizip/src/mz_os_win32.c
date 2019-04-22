@@ -1,5 +1,5 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.7.5, November 13, 2018
+   Version 2.8.1, December 1, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -9,19 +9,12 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <time.h>
-#include <direct.h>
-#include <errno.h>
-
-#include <windows.h>
 
 #include "mz.h"
-
 #include "mz_os.h"
 #include "mz_strm_os.h"
+
+#include <windows.h>
 
 /***************************************************************************/
 
@@ -51,8 +44,10 @@ wchar_t *mz_os_unicode_string_create(const char *string, int32_t encoding)
     if (string_wide_size == 0)
         return NULL;
     string_wide = (wchar_t *)MZ_ALLOC((string_wide_size + 1) * sizeof(wchar_t));
-    memset(string_wide, 0, sizeof(wchar_t) * (string_wide_size + 1));
+    if (string_wide == NULL)
+        return NULL;
 
+    memset(string_wide, 0, sizeof(wchar_t) * (string_wide_size + 1));
     MultiByteToWideChar(encoding, 0, string, -1, string_wide, string_wide_size);
 
     return string_wide;
@@ -352,7 +347,7 @@ int32_t mz_os_set_file_attribs(const char *path, uint32_t attributes)
 int32_t mz_os_make_dir(const char *path)
 {
     wchar_t *path_wide = NULL;
-    int32_t err = 0;
+    int32_t err = MZ_OK;
 
     if (path == NULL)
         return MZ_PARAM_ERROR;
@@ -360,13 +355,15 @@ int32_t mz_os_make_dir(const char *path)
     if (path_wide == NULL)
         return MZ_PARAM_ERROR;
 
-    err = _wmkdir(path_wide);
+    if (CreateDirectoryW(path_wide, NULL) == 0)
+    {
+        if (GetLastError() != ERROR_ALREADY_EXISTS)
+            err = MZ_INTERNAL_ERROR;
+    }
+
     mz_os_unicode_string_delete(&path_wide);
 
-    if (err != 0 && errno != EEXIST)
-        return MZ_INTERNAL_ERROR;
-
-    return MZ_OK;
+    return err;
 }
 
 DIR *mz_os_open_dir(const char *path)
@@ -396,6 +393,8 @@ DIR *mz_os_open_dir(const char *path)
         return NULL;
 
     dir_int = (DIR_int *)MZ_ALLOC(sizeof(DIR_int));
+    if (dir_int == NULL)
+        return NULL;
     dir_int->find_handle = handle;
     dir_int->end = 0;
 

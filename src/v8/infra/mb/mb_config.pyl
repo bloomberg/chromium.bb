@@ -62,6 +62,7 @@
       'V8 Linux64 - custom snapshot - debug builder': 'debug_x64_custom',
       'V8 Linux64 - internal snapshot': 'release_x64_internal',
       'V8 Linux64 - debug - header includes': 'debug_x64_header_includes',
+      'V8 Linux64 - shared': 'release_x64_shared_verify_heap',
       'V8 Linux64 - verify csa': 'release_x64_verify_csa',
       # Jumbo.
       'V8 Linux64 Jumbo': 'release_x64_jumbo',
@@ -88,22 +89,22 @@
       'V8 Linux64 TSAN - builder': 'release_x64_tsan',
       'V8 Linux - arm64 - sim - MSAN': 'release_simulate_arm64_msan',
       # Misc.
-      'V8 Linux gcc 4.8': 'release_x86_gcc',
-      'V8 Linux64 gcc 4.8 - debug': 'debug_x64_gcc',
+      'V8 Linux gcc': 'release_x86_gcc',
+      'V8 Linux64 gcc - debug': 'debug_x64_gcc',
       # FYI.
       'V8 Linux64 - pointer compression': 'release_x64_pointer_compression',
+      'V8 Linux64 - arm64 - sim - pointer compression - builder':
+          'release_simulate_arm64_pointer_compression',
       'V8 Linux - noembed': 'release_x86_noembed',
       'V8 Linux - noembed - debug': 'debug_x86_noembed',
       'V8 Fuchsia': 'release_x64_fuchsia',
       'V8 Fuchsia - debug': 'debug_x64_fuchsia',
       'V8 Linux64 - cfi': 'release_x64_cfi',
       'V8 Linux64 UBSan': 'release_x64_ubsan',
-      'V8 Linux64 UBSanVptr': 'release_x64_ubsan_vptr',
       'V8 Linux - vtunejit': 'debug_x86_vtunejit',
       'V8 Linux64 - gcov coverage': 'release_x64_gcc_coverage',
       'V8 Linux - predictable': 'release_x86_predictable',
       'V8 Linux - full debug': 'full_debug_x86',
-      'V8 Linux - interpreted regexp': 'release_x86_interpreted_regexp',
       'V8 Random Deopt Fuzzer - debug': 'debug_x64',
     },
     'client.v8.clusterfuzz': {
@@ -135,8 +136,8 @@
       'V8 Clusterfuzz Linux MSAN chained origins':
           'release_simulate_arm64_msan_edge',
       'V8 Clusterfuzz Linux64 TSAN - release builder': 'release_x64_tsan',
-      'V8 Clusterfuzz Linux64 UBSanVptr - release builder':
-          'release_x64_ubsan_vptr_recover_edge',
+      'V8 Clusterfuzz Linux64 UBSan - release builder':
+          'release_x64_ubsan_recover_edge',
     },
     'client.v8.ports': {
       # Arm.
@@ -203,13 +204,17 @@
       'v8_linux_gcc_compile_rel': 'release_x86_gcc_minimal_symbols',
       'v8_linux_gcc_rel': 'release_x86_gcc_minimal_symbols',
       'v8_linux_shared_compile_rel': 'release_x86_shared_verify_heap',
+      'v8_linux64_arm64_pointer_compression_rel_ng':
+          'release_simulate_arm64_pointer_compression',
       'v8_linux64_compile_rel_xg': 'release_x64_test_features_trybot',
       'v8_linux64_dbg_ng': 'debug_x64_trybot',
+      'v8_linux64_gc_stress_custom_snapshot_dbg_ng': 'debug_x64_trybot_custom',
       'v8_linux64_gcc_compile_dbg': 'debug_x64_gcc',
       'v8_linux64_header_includes_dbg': 'debug_x64_header_includes',
       'v8_linux64_fyi_rel_ng': 'release_x64_test_features_trybot',
       'v8_linux64_pointer_compression_rel_ng': 'release_x64_pointer_compression',
       'v8_linux64_rel_ng': 'release_x64_test_features_trybot',
+      'v8_linux64_shared_compile_rel': 'release_x64_shared_verify_heap',
       'v8_linux64_verify_csa_rel_ng': 'release_x64_verify_csa',
       'v8_linux64_asan_rel_ng': 'release_x64_asan_minimal_symbols',
       'v8_linux64_cfi_rel_ng': 'release_x64_cfi',
@@ -221,7 +226,7 @@
       'v8_linux64_tsan_rel': 'release_x64_tsan_minimal_symbols',
       'v8_linux64_tsan_isolates_rel_ng':
           'release_x64_tsan_minimal_symbols',
-      'v8_linux64_ubsan_rel_ng': 'release_x64_ubsan_vptr_minimal_symbols',
+      'v8_linux64_ubsan_rel_ng': 'release_x64_ubsan_minimal_symbols',
       'v8_odroid_arm_rel_ng': 'release_arm',
       # TODO(machenbach): Remove after switching to x64 on infra side.
       'v8_win_dbg': 'debug_x86_trybot',
@@ -354,6 +359,9 @@
       'release_trybot', 'simulate_arm', 'v8_enable_lite_mode'],
     'release_simulate_arm64': [
       'release_bot', 'simulate_arm64'],
+    'release_simulate_arm64_pointer_compression': [
+      'release_bot', 'simulate_arm64', 'dcheck_always_on',
+      'v8_enable_slow_dchecks', 'v8_enable_pointer_compression'],
     'release_simulate_arm64_msan': [
       'release_bot', 'simulate_arm64', 'msan'],
     'release_simulate_arm64_msan_minimal_symbols': [
@@ -423,7 +431,8 @@
     'release_x64_fuchsia_trybot': [
       'release_trybot', 'x64', 'fuchsia'],
     'release_x64_gcc_coverage': [
-      'release_bot', 'x64', 'coverage', 'gcc', 'no_custom_libcxx', 'no_sysroot'],
+      'release_bot', 'x64', 'coverage', 'gcc', 'no_custom_libcxx',
+      'no_sysroot'],
     'release_x64_internal': [
       'release_bot', 'x64', 'v8_snapshot_internal'],
     'release_x64_jumbo': [
@@ -449,12 +458,12 @@
       'release_bot', 'x64', 'tsan', 'minimal_symbols'],
     'release_x64_ubsan': [
       'release_bot', 'x64', 'ubsan'],
-    'release_x64_ubsan_vptr': [
-      'release_bot', 'x64', 'ubsan_vptr'],
-    'release_x64_ubsan_vptr_recover_edge': [
-      'release_bot', 'x64', 'edge', 'ubsan_vptr_recover'],
-    'release_x64_ubsan_vptr_minimal_symbols': [
-      'release_bot', 'x64', 'ubsan_vptr', 'minimal_symbols'],
+    'release_x64_ubsan_minimal_symbols': [
+      'release_bot', 'x64', 'ubsan', 'minimal_symbols'],
+    'release_x64_ubsan_recover_edge': [
+      'release_bot', 'x64', 'edge', 'ubsan_recover'],
+    'release_x64_shared_verify_heap': [
+      'release_bot', 'x64', 'shared', 'v8_verify_heap'],
     'release_x64_verify_csa': [
       'release_bot', 'x64', 'dcheck_always_on',
       'v8_enable_slow_dchecks', 'v8_verify_csa'],
@@ -483,6 +492,8 @@
       'debug_bot', 'x64', 'minimal_symbols'],
     'debug_x64_trybot': [
       'debug_trybot', 'x64'],
+    'debug_x64_trybot_custom': [
+      'debug_trybot', 'x64', 'v8_snapshot_custom'],
 
     # Debug configs for x86.
     'debug_x86': [
@@ -502,8 +513,7 @@
     'debug_x86_vtunejit': [
       'debug_bot', 'x86', 'v8_enable_vtunejit'],
     'full_debug_x86': [
-      'debug', 'x86', 'goma', 'static', 'v8_enable_slow_dchecks',
-      'v8_full_debug'],
+      'debug', 'x86', 'goma', 'v8_enable_slow_dchecks', 'v8_full_debug'],
 
     # Release configs for x86.
     'release_x86': [
@@ -520,8 +530,6 @@
       'release_bot', 'x86', 'gcmole'],
     'release_x86_gcmole_trybot': [
       'release_trybot', 'x86', 'gcmole'],
-    'release_x86_interpreted_regexp': [
-      'release_bot', 'x86', 'v8_interpreted_regexp'],
     'release_x86_minimal_symbols': [
       'release_bot', 'x86', 'minimal_symbols'],
     'release_x86_no_i18n_trybot': [
@@ -751,21 +759,13 @@
       # TODO(krasin): Remove is_ubsan_no_recover=true when
       # https://llvm.org/bugs/show_bug.cgi?id=25569 is fixed and just use
       # ubsan instead.
-      'gn_args': 'is_ubsan=true is_ubsan_no_recover=true',
+      'gn_args': 'is_ubsan=true is_ubsan_no_recover=true is_ubsan_vptr=true',
     },
 
-    'ubsan_vptr': {
+    'ubsan_recover': {
       'mixins': ['v8_enable_test_features'],
-      # TODO(krasin): Remove is_ubsan_no_recover=true when
-      # https://llvm.org/bugs/show_bug.cgi?id=25569 is fixed and just use
-      # ubsan_vptr instead.
-      'gn_args': 'is_ubsan_vptr=true is_ubsan_no_recover=true',
-    },
-
-    'ubsan_vptr_recover': {
-      'mixins': ['v8_enable_test_features'],
-      # Ubsan vptr with recovery.
-      'gn_args': 'is_ubsan_vptr=true is_ubsan_no_recover=false',
+      # Ubsan with recovery.
+      'gn_args': 'is_ubsan=true is_ubsan_no_recover=false is_ubsan_vptr=true',
     },
 
     'v8_check_header_includes': {
@@ -807,10 +807,6 @@
 
     'v8_full_debug': {
       'gn_args': 'v8_optimized_debug=false',
-    },
-
-    'v8_interpreted_regexp': {
-      'gn_args': 'v8_interpreted_regexp=true',
     },
 
     'v8_optimized_debug': {

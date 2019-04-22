@@ -4,7 +4,7 @@
 <translation id="1002108253973310084">S'ha detectat una versió del protocol incompatible. Assegureu-vos que tingueu instal·lada la versió més recent del programari als dos ordinadors i torneu-ho a provar.</translation>
 <translation id="1008557486741366299">Ara no</translation>
 <translation id="1050693411695664090">Deficient</translation>
-<translation id="1152528166145813711">Seleccioneu...</translation>
+<translation id="1152528166145813711">Seleccion...</translation>
 <translation id="1199593201721843963">Desactiva les connexions remotes</translation>
 <translation id="1291443878853470558">Heu d'activar les connexions remotes si voleu utilitzar Chromoting per accedir a aquest ordinador.</translation>
 <translation id="1297009705180977556">S'ha produït un error en connectar amb <ph name="HOSTNAME" /></translation>
@@ -24,6 +24,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="1520828917794284345">Ajusta la mida de l'escriptori</translation>
 <translation id="154040539590487450">No s'ha pogut iniciar el servei d'accés remot.</translation>
 <translation id="1546934824884762070">S'ha produït un error inesperat. Informeu d'aquest problema als desenvolupadors.</translation>
+<translation id="1624185583382384493">Ara Escriptori remot de Chrome és al web. Prova l'<ph name="LINK_BEGIN" />aplicació web<ph name="LINK_END" />: és ràpida, gratuïta i ofereix més funcions encara, com la compatibilitat amb diversos monitors.</translation>
 <translation id="1643640058022401035">Si sortiu d'aquesta pàgina, la sessió de Chromoting finalitzarà.</translation>
 <translation id="1654128982815600832">S'estan activant les connexions remotes en aquest ordinador...</translation>
 <translation id="170207782578677537">No s'ha pogut registrar aquest ordinador.</translation>
@@ -138,6 +139,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="3989511127559254552">Per continuar heu de concedir permisos d'accés ampliat a l'ordinador. Només ho heu de fer una vegada.</translation>
 <translation id="4006787130661126000">Heu d'activar les connexions remotes si voleu utilitzar l'escriptori remot de Chrome per accedir a aquest ordinador.</translation>
 <translation id="405887016757208221">L'ordinador remot no ha pogut inicialitzar la sessió. Si el problema continua, torneu a configurar l'amfitrió.</translation>
+<translation id="4060747889721220580">Baixa el fitxer</translation>
 <translation id="4068946408131579958">Totes les connexions</translation>
 <translation id="409800995205263688">NOTA: La configuració de la política només permet connexions entre ordinadors de la vostra xarxa.</translation>
 <translation id="4126409073460786861">Un cop finalitzada la configuració, actualitza aquesta pàgina i podràs accedir a l'ordinador triant el dispositiu i introduint-hi el PIN</translation>
@@ -242,6 +244,7 @@ Si vols activar aquesta funcionalitat, selecciona <ph name="BUTTON_NAME" /> per 
 <translation id="6198252989419008588">Canvia el PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (obsolet)</translation>
 <translation id="6221358653751391898">No heu iniciat la sessió a Chrome. Inicieu-hi la sessió i torneu-ho a provar.</translation>
+<translation id="6227369581881558336">Ara Escriptori remot de Chrome és al web, amb funcions noves com la transferència de fitxers. Dona un cop d'ull a l'<ph name="LINK_BEGIN" />aplicació web<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">L'amfitrió que s'executa a la pantalla d'inici de la consola s'ha aturat per admetre el mode Curtain, i fa servir un amfitrió que s'executa en una sessió específica de l'usuari.</translation>
 <translation id="629730747756840877">Compte</translation>
 <translation id="6304318647555713317">Client</translation>
@@ -289,7 +292,6 @@ Si vols activar aquesta funcionalitat, selecciona <ph name="BUTTON_NAME" /> per 
 <translation id="7434397035092923453">S'ha rebutjat l'accés del client: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Client connectat: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Canvia de compte</translation>
-<translation id="7589941250119944644">Escriptori remot de Chrome es trasllada al web. Prova la nostra <ph name="LINK_BEGIN" />aplicació web<ph name="LINK_END" />; és ràpida i gratuïta, i té totes les funcions que tenia abans.</translation>
 <translation id="7606912958770842224">Activa les connexions remotes</translation>
 <translation id="7628469622942688817">Recorda el meu PIN en aquest dispositiu.</translation>
 <translation id="7649070708921625228">Ajuda</translation>

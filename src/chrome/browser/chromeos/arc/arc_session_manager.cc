@@ -25,32 +25,31 @@
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_data_remover.h"
 #include "components/arc/arc_features.h"
-#include "components/arc/arc_instance_mode.h"
 #include "components/arc/arc_prefs.h"
-#include "components/arc/arc_session_runner.h"
-#include "components/arc/arc_supervision_transition.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/metrics/arc_metrics_service.h"
+#include "components/arc/metrics/stability_metrics_manager.h"
+#include "components/arc/session/arc_data_remover.h"
+#include "components/arc/session/arc_instance_mode.h"
+#include "components/arc/session/arc_session_runner.h"
+#include "components/arc/session/arc_supervision_transition.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,7 +59,7 @@ namespace arc {
 
 namespace {
 
-// Weak pointer.  This class is owned by ArcServiceManager.
+// Weak pointer.  This class is owned by ArcServiceLauncher.
 ArcSessionManager* g_arc_session_manager = nullptr;
 
 // Allows the session manager to skip creating UI in unit tests.
@@ -82,16 +81,6 @@ void MaybeUpdateOptInCancelUMA(const ArcSupportHost* support_host) {
   }
 
   UpdateOptInCancelUMA(OptInCancelReason::USER_CANCEL);
-}
-
-chromeos::SessionManagerClient* GetSessionManagerClient() {
-  // If the DBusThreadManager or the SessionManagerClient aren't available,
-  // there isn't much we can do. This should only happen when running tests.
-  if (!chromeos::DBusThreadManager::IsInitialized() ||
-      !chromeos::DBusThreadManager::Get() ||
-      !chromeos::DBusThreadManager::Get()->GetSessionManagerClient())
-    return nullptr;
-  return chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
 }
 
 // Returns true if launching the Play Store on OptIn succeeded is needed.
@@ -133,6 +122,24 @@ bool ShouldLaunchPlayStoreApp(Profile* profile,
   }
 
   return true;
+}
+
+void ResetStabilityMetrics() {
+  // TODO(shaochuan): Make this an event observable by StabilityMetricsManager
+  // and eliminate this null check.
+  auto* stability_metrics_manager = StabilityMetricsManager::Get();
+  if (!stability_metrics_manager)
+    return;
+  stability_metrics_manager->ResetMetrics();
+}
+
+void SetArcEnabledStateMetric(bool enabled) {
+  // TODO(shaochuan): Make this an event observable by StabilityMetricsManager
+  // and eliminate this null check.
+  auto* stability_metrics_manager = StabilityMetricsManager::Get();
+  if (!stability_metrics_manager)
+    return;
+  stability_metrics_manager->SetArcEnabledState(enabled);
 }
 
 }  // namespace
@@ -202,17 +209,16 @@ ArcSessionManager::ArcSessionManager(
   DCHECK(!g_arc_session_manager);
   g_arc_session_manager = this;
   arc_session_runner_->AddObserver(this);
-  chromeos::SessionManagerClient* client = GetSessionManagerClient();
-  if (client)
-    client->AddObserver(this);
+  if (chromeos::SessionManagerClient::Get())
+    chromeos::SessionManagerClient::Get()->AddObserver(this);
+  ResetStabilityMetrics();
 }
 
 ArcSessionManager::~ArcSessionManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  chromeos::SessionManagerClient* client = GetSessionManagerClient();
-  if (client)
-    client->RemoveObserver(this);
+  if (chromeos::SessionManagerClient::Get())
+    chromeos::SessionManagerClient::Get()->RemoveObserver(this);
 
   Shutdown();
   arc_session_runner_->RemoveObserver(this);
@@ -435,9 +441,12 @@ bool ArcSessionManager::IsAllowed() const {
 
 void ArcSessionManager::SetProfile(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!profile || !profile_);
-  DCHECK(!profile || IsArcAllowedForProfile(profile));
+  DCHECK(!profile_);
+  DCHECK(IsArcAllowedForProfile(profile));
   profile_ = profile;
+  // RequestEnable() requires |profile_| set, therefore shouldn't have been
+  // called at this point.
+  SetArcEnabledStateMetric(false);
 }
 
 void ArcSessionManager::Initialize() {
@@ -606,34 +615,6 @@ void ArcSessionManager::CancelAuthCode() {
   SetArcPlayStoreEnabledForProfile(profile_, false);
 }
 
-void ArcSessionManager::RecordArcState() {
-  // Only record legacy enabled state if ARC is allowed in the first place, so
-  // we do not split the ARC population by devices that cannot run ARC.
-  if (IsAllowed()) {
-    UpdateEnabledStateUMA(enable_requested_);
-    UpdateEnabledStateByUserTypeUMA(enable_requested_, profile_);
-    ArcMetricsService* service =
-        ArcMetricsService::GetForBrowserContext(profile_);
-    service->RecordNativeBridgeUMA();
-    return;
-  }
-
-  const Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  // Don't record UMA for the set of cases:
-  // * No primary profile is set at this moment.
-  // * Primary profile matches the built-in profile used for signing in or the
-  //   lock screen.
-  // * Primary profile matches guest session.
-  // * Primary profile is in incognito mode.
-  if (!profile || chromeos::ProfileHelper::IsSigninProfile(profile) ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(profile) ||
-      profile->IsOffTheRecord() || profile->IsGuestSession()) {
-    return;
-  }
-
-  UpdateEnabledStateByUserTypeUMA(enable_requested_, profile);
-}
-
 void ArcSessionManager::RequestEnable() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
@@ -643,6 +624,7 @@ void ArcSessionManager::RequestEnable() {
     return;
   }
   enable_requested_ = true;
+  SetArcEnabledStateMetric(true);
 
   VLOG(1) << "ARC opt-in. Starting ARC session.";
 
@@ -684,7 +666,7 @@ bool ArcSessionManager::RequestEnableImpl() {
   // the initial request.
   // |prefs::kArcProvisioningInitiatedFromOobe| is reset when provisioning is
   // done or ARC is opted out.
-  if (IsArcOobeOptInActive() || IsArcOptInWizardForAssistantActive())
+  if (IsArcOobeOptInActive())
     prefs->SetBoolean(prefs::kArcProvisioningInitiatedFromOobe, true);
 
   // If it is marked that sign in has been successfully done or if Play Store is
@@ -708,10 +690,8 @@ bool ArcSessionManager::RequestEnableImpl() {
     return false;
   }
 
-  if (!pai_starter_ && IsPlayStoreAvailable()) {
-    pai_starter_ =
-        ArcPaiStarter::CreateIfNeeded(profile_, profile_->GetPrefs());
-  }
+  if (!pai_starter_ && IsPlayStoreAvailable())
+    pai_starter_ = ArcPaiStarter::CreateIfNeeded(profile_);
 
   if (!fast_app_reinstall_starter_ && IsPlayStoreAvailable()) {
     fast_app_reinstall_starter_ = ArcFastAppReinstallStarter::CreateIfNeeded(
@@ -751,8 +731,11 @@ void ArcSessionManager::RequestDisable() {
     return;
   }
 
+  VLOG(1) << "Disabling ARC.";
+
   directly_started_ = false;
   enable_requested_ = false;
+  SetArcEnabledStateMetric(false);
   scoped_opt_in_tracker_.reset();
   pai_starter_.reset();
   fast_app_reinstall_starter_.reset();
@@ -760,14 +743,13 @@ void ArcSessionManager::RequestDisable() {
   // Reset any pending request to re-enable ARC.
   reenable_arc_ = false;
   StopArc();
-  VLOG(1) << "ARC opt-out. Removing user data.";
-  RequestArcDataRemoval();
 }
 
 void ArcSessionManager::RequestArcDataRemoval() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
   DCHECK(data_remover_);
+  VLOG(1) << "Removing user ARC data.";
 
   // TODO(hidehiko): DCHECK the previous state. This is called for four cases;
   // 1) Supporting managed user initial disabled case (Please see also
@@ -828,7 +810,7 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
     return;
   }
 
-  if (IsArcOobeOptInActive() || IsArcOptInWizardForAssistantActive()) {
+  if (IsArcOobeOptInActive()) {
     VLOG(1) << "Use OOBE negotiator.";
     terms_of_service_negotiator_ =
         std::make_unique<ArcTermsOfServiceOobeNegotiator>();
@@ -1005,7 +987,15 @@ void ArcSessionManager::StartArc() {
 
   std::string locale;
   std::string preferred_languages;
-  GetLocaleAndPreferredLanguages(profile_, &locale, &preferred_languages);
+  if (IsArcLocaleSyncDisabled()) {
+    // Use fixed locale and preferred languages for auto-tests.
+    locale = "en-US";
+    preferred_languages = "en-US,en";
+    VLOG(1) << "Locale and preferred languages are fixed to " << locale << ","
+            << preferred_languages << ".";
+  } else {
+    GetLocaleAndPreferredLanguages(profile_, &locale, &preferred_languages);
+  }
 
   ArcSession::UpgradeParams params;
 

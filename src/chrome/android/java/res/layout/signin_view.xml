@@ -28,29 +28,30 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
+                android:paddingTop="24dp"
+                android:paddingBottom="24dp"
                 android:background="@color/signin_header_animation_background"
-                tools:ignore="ContentDescription"
                 android:scaleType="center"
                 app:srcCompat="@drawable/signin_header_animation"
-                tools:src="@drawable/signin_header_animation"/>
+                tools:ignore="ContentDescription"/>
             <TextView
                 android:id="@+id/signin_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/signin_header_image"
-                android:layout_marginStart="@dimen/signin_margin_start"
-                android:layout_marginTop="15dp"
-                android:layout_marginEnd="@dimen/signin_margin_end"
-                android:textAppearance="@style/BlackHeadline"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:textAppearance="@style/TextAppearance.BlackHeadline"
                 tools:text="@string/signin_title"/>
             <LinearLayout
                 android:id="@+id/signin_account_picker"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/signin_title"
-                android:layout_marginStart="@dimen/signin_margin_start"
+                android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
-                android:layout_marginEnd="@dimen/signin_margin_end"
+                android:layout_marginEnd="16dp"
                 android:background="@drawable/account_picker_background"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
@@ -63,8 +64,8 @@
                     android:id="@+id/account_image"
                     android:layout_width="56dp"
                     android:layout_height="40dp"
-                    tools:ignore="ContentDescription"
                     android:scaleType="fitStart"
+                    tools:ignore="ContentDescription"
                     tools:src="@drawable/logo_avatar_anonymous"/>
                 <LinearLayout
                     android:layout_width="0dp"
@@ -77,7 +78,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:minHeight="20dp"
-                        android:textAppearance="@style/BlackBodyDefault"
+                        android:textAppearance="@style/TextAppearance.BlackTitle1"
                         tools:text="John Doe"/>
                     <TextView
                         android:id="@+id/account_text_secondary"
@@ -85,7 +86,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
                         android:minHeight="20dp"
-                        android:textAppearance="@style/BlackCaption"
+                        android:textAppearance="@style/TextAppearance.BlackBody"
                         tools:text="john.doe@example.com"/>
                 </LinearLayout>
                 <!-- For forced sign-in & consent bump this ImageView shows checkmark icon. -->
@@ -96,103 +97,43 @@
                     android:layout_marginStart="16dp"
                     tools:ignore="ContentDescription"
                     tools:src="@drawable/ic_expand_more_black_24dp"
-                    tools:tint="@color/dark_mode_tint"/>
+                    tools:tint="@color/standard_mode_tint"/>
             </LinearLayout>
-            <ImageView
-                android:id="@+id/signin_sync_icon"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_alignTop="@+id/signin_sync_description"
-                android:layout_alignBottom="@+id/signin_sync_description"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/signin_margin_start"
-                tools:ignore="ContentDescription"
-                app:srcCompat="@drawable/ic_sync_circle_green_16dp"/>
+            <TextView
+                android:id="@+id/signin_sync_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/signin_account_picker"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:textAppearance="@style/TextAppearance.BlackTitle1"
+                tools:text="@string/signin_sync_title"/>
             <TextView
                 android:id="@+id/signin_sync_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/signin_account_picker"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="@dimen/signin_drawable_padding"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="@dimen/signin_margin_end"
-                android:layout_toEndOf="@id/signin_sync_icon"
-                android:textAppearance="@style/BlackBody"
+                android:layout_below="@id/signin_sync_title"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:textAppearance="@style/TextAppearance.BlackBody"
                 tools:text="@string/signin_sync_description"/>
-            <ImageView
-                android:id="@+id/signin_personalization_icon"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_alignTop="@+id/signin_personalization_description"
-                android:layout_alignBottom="@+id/signin_personalization_description"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/signin_margin_start"
-                tools:ignore="ContentDescription"
-                app:srcCompat="@drawable/ic_assistant_16dp"/>
-            <TextView
-                android:id="@+id/signin_personalization_description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/signin_sync_description"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="@dimen/signin_drawable_padding"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="@dimen/signin_margin_end"
-                android:layout_toEndOf="@id/signin_sync_icon"
-                android:textAppearance="@style/BlackBody"
-                tools:text="@string/signin_personalization_description"/>
-            <ImageView
-                android:id="@+id/signin_google_services_icon"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_alignTop="@+id/signin_google_services_description"
-                android:layout_alignBottom="@+id/signin_google_services_description"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/signin_margin_start"
-                tools:ignore="ContentDescription"
-                app:srcCompat="@drawable/ic_logo_googleg_16dp"/>
-            <TextView
-                android:id="@+id/signin_google_services_description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/signin_personalization_description"
-                android:layout_marginStart="@dimen/signin_drawable_padding"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="@dimen/signin_margin_end"
-                android:layout_toEndOf="@id/signin_google_services_icon"
-                android:textAppearance="@style/BlackBody"
-                tools:text="@string/signin_google_services_description"/>
             <View
                 android:id="@+id/signin_divider"
                 style="@style/HorizontalDivider"
-                android:layout_below="@id/signin_google_services_description"
-                android:layout_marginStart="@dimen/signin_divider_margin_start"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="@dimen/signin_margin_end"/>
-            <ImageView
-                android:id="@+id/signin_details_icon"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_alignBaseline="@+id/signin_details_description"
-                android:layout_alignParentStart="true"
-                android:layout_marginStart="@dimen/signin_margin_start"
-                android:baseline="12dp"
-                tools:ignore="ContentDescription"
-                app:srcCompat="@drawable/ic_settings_grey_16dp"/>
-            <TextView
+                android:layout_below="@id/signin_sync_description"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"/>
+            <org.chromium.ui.widget.TextViewWithClickableSpans
                 android:id="@+id/signin_details_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/signin_divider"
-                android:layout_marginStart="@dimen/signin_drawable_padding"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="@dimen/signin_margin_end"
-                android:layout_toEndOf="@id/signin_details_icon"
-                android:textAppearance="@style/BlackBody"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:textAppearance="@style/TextAppearance.BlackBody"
                 tools:text="@string/signin_details_description"/>
         </RelativeLayout>
     </org.chromium.chrome.browser.signin.SigninScrollView>
@@ -204,12 +145,12 @@
         android:padding="16dp">
         <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/negative_button"
+            style="@style/TextButton"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:paddingStart="@dimen/fre_button_padding"
             android:paddingEnd="@dimen/fre_button_padding"
-            tools:text="@string/no_thanks"
-            style="@style/TextButton" />
+            tools:text="@string/no_thanks"/>
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -217,21 +158,21 @@
             android:visibility="invisible"/>
         <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/positive_button"
+            style="@style/FilledButton.Flat"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:paddingStart="@dimen/fre_button_padding"
             android:paddingEnd="@dimen/fre_button_padding"
-            tools:text="@string/signin_accept_button"
-            style="@style/FilledButton.Flat" />
+            tools:text="@string/signin_accept_button"/>
         <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/more_button"
+            style="@style/TextButton"
             android:layout_width="wrap_content"
-            android:layout_height="36dp"
+            android:layout_height="wrap_content"
             android:drawableEnd="@drawable/down_arrow"
             android:drawablePadding="8dp"
             android:visibility="gone"
-            tools:text="@string/more"
-            style="@style/TextButton" />
+            tools:text="@string/more"/>
         <View
             android:id="@+id/positive_button_end_padding"
             android:layout_width="0dp"

@@ -27,16 +27,24 @@ namespace skottie_utils {
 
 class MultiFrameImageAsset final : public skottie::ImageAsset {
 public:
-    static sk_sp<MultiFrameImageAsset> Make(sk_sp<SkData>);
+    /**
+    * By default, images are decoded on-the-fly, at rasterization time.
+    * Large images may cause jank as decoding is expensive (and can thrash internal caches).
+    *
+    * Pass |predecode| true to force-decode all images upfront, at the cost of potentially more RAM
+    * and slower animation build times.
+    */
+    static sk_sp<MultiFrameImageAsset> Make(sk_sp<SkData>, bool predecode = false);
 
     bool isMultiFrame() override;
 
     sk_sp<SkImage> getFrame(float t) override;
 
 private:
-    explicit MultiFrameImageAsset(std::unique_ptr<SkAnimCodecPlayer>);
+    explicit MultiFrameImageAsset(std::unique_ptr<SkAnimCodecPlayer>, bool predecode);
 
     std::unique_ptr<SkAnimCodecPlayer> fPlayer;
+    bool                               fPreDecode;
 
     using INHERITED = skottie::ImageAsset;
 };
@@ -66,11 +74,12 @@ private:
  *   - getters return all the managed property groups, and the first value within each of them
  *     (unchecked assumption: all properties within the same group have the same value)
  *
- * Use CustomPropertyManagerBuilder to filter nodes at animation build time, and instantiate a
- * CustomPropertyManager.
+ * Attach to an Animation::Builder using the utility methods below to intercept properties and
+ * markers at build time.
  */
 class CustomPropertyManager final {
 public:
+    CustomPropertyManager();
     ~CustomPropertyManager();
 
     using PropKey = std::string;
@@ -87,8 +96,32 @@ public:
     skottie::TransformPropertyValue getTransform(const PropKey&) const;
     bool setTransform(const PropKey&, const skottie::TransformPropertyValue&);
 
+    struct MarkerInfo {
+        std::string name;
+        float       t0, t1;
+    };
+    const std::vector<MarkerInfo>& markers() const { return fMarkers; }
+
+    // Returns a property observer to be attached to an animation builder.
+    sk_sp<skottie::PropertyObserver> getPropertyObserver() const;
+
+    // Returns a marker observer to be attached to an animation builder.
+    sk_sp<skottie::MarkerObserver> getMarkerObserver() const;
+
 private:
-    friend class CustomPropertyManagerBuilder;
+    class PropertyInterceptor;
+    class MarkerInterceptor;
+
+    static std::string acceptKey(const char* name) {
+        static constexpr char kPrefix = '$';
+
+        return (name[0] == kPrefix && name[1] != '\0')
+            ? std::string(name + 1)
+            : std::string();
+    }
+
+    sk_sp<PropertyInterceptor> fPropertyInterceptor;
+    sk_sp<MarkerInterceptor>   fMarkerInterceptor;
 
     template <typename T>
     using PropGroup = std::vector<std::unique_ptr<T>>;
@@ -105,46 +138,10 @@ private:
     template <typename V, typename T>
     bool set(const PropKey&, const V&, const PropMap<T>& container);
 
-    CustomPropertyManager(PropMap<skottie::ColorPropertyHandle>,
-                          PropMap<skottie::OpacityPropertyHandle>,
-                          PropMap<skottie::TransformPropertyHandle>);
-
     PropMap<skottie::ColorPropertyHandle>     fColorMap;
     PropMap<skottie::OpacityPropertyHandle>   fOpacityMap;
     PropMap<skottie::TransformPropertyHandle> fTransformMap;
-};
-
-/**
- * A builder for CustomPropertyManager.  Only accepts node names starting with '$'.
- */
-class CustomPropertyManagerBuilder final : public skottie::PropertyObserver {
-public:
-    CustomPropertyManagerBuilder();
-    ~CustomPropertyManagerBuilder() override;
-
-    std::unique_ptr<CustomPropertyManager> build();
-
-    void onColorProperty    (const char node_name[],
-                             const LazyHandle<skottie::ColorPropertyHandle>&) override;
-    void onOpacityProperty  (const char node_name[],
-                             const LazyHandle<skottie::OpacityPropertyHandle>&) override;
-    void onTransformProperty(const char node_name[],
-                             const LazyHandle<skottie::TransformPropertyHandle>&) override;
-
-private:
-    std::string acceptProperty(const char* name) const {
-        static constexpr char kPrefix = '$';
-
-        return (name[0] == kPrefix && name[1] != '\0')
-            ? std::string(name + 1)
-            : std::string();
-    }
-
-    CustomPropertyManager::PropMap<skottie::ColorPropertyHandle>     fColorMap;
-    CustomPropertyManager::PropMap<skottie::OpacityPropertyHandle>   fOpacityMap;
-    CustomPropertyManager::PropMap<skottie::TransformPropertyHandle> fTransformMap;
-
-    using INHERITED = skottie::PropertyObserver;
+    std::vector<MarkerInfo>                   fMarkers;
 };
 
 } // namespace skottie_utils

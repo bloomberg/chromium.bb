@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"
 #include "base/test/scoped_task_environment.h"
@@ -111,8 +112,8 @@ TEST_P(SyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
   reader.Read(output_bus.get());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SyncReaderBitstreamTest,
-                        ::testing::ValuesIn(overflow_test_case_values));
+INSTANTIATE_TEST_SUITE_P(,
+                         SyncReaderBitstreamTest,
+                         ::testing::ValuesIn(overflow_test_case_values));
 
 }  // namespace audio

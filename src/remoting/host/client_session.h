@@ -18,6 +18,7 @@
 #include "base/timer/timer.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/client_session_details.h"
+#include "remoting/host/desktop_display_info.h"
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/host_experiment_session_plugin.h"
 #include "remoting/host/host_extension_session_manager.h"
@@ -35,6 +36,7 @@
 #include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/video_stream.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
@@ -113,6 +115,8 @@ class ClientSession : public protocol::HostStub,
   void RequestPairing(
       const remoting::protocol::PairingRequest& pairing_request) override;
   void DeliverClientMessage(const protocol::ExtensionMessage& message) override;
+  void SelectDesktopDisplay(
+      const protocol::SelectDesktopDisplayRequest& select_display) override;
 
   // protocol::ConnectionToClient::EventHandler interface.
   void OnConnectionAuthenticating() override;
@@ -242,6 +246,13 @@ class ClientSession : public protocol::HostStub,
 
   // Used to apply client-requested changes in screen resolution.
   std::unique_ptr<ScreenControls> screen_controls_;
+
+  // Contains the most recently gathered info about the desktop displays;
+  DesktopDisplayInfo desktop_display_info_;
+
+  // The id of the desktop display to show to the user.
+  // Default is webrtc::kFullDesktopScreenId which shows all displays.
+  webrtc::ScreenId show_display_id_ = webrtc::kFullDesktopScreenId;
 
   // The pairing registry for PIN-less authentication.
   scoped_refptr<protocol::PairingRegistry> pairing_registry_;

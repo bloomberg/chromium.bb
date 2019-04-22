@@ -7,6 +7,7 @@
 #include <memory>
 #include <ostream>
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -23,9 +24,7 @@ static const char* const server_whitelist_array[] = {
   "gog"
 };
 
-enum {
-  ALL_SERVERS_MATCH = (1 << arraysize(server_whitelist_array)) - 1
-};
+enum { ALL_SERVERS_MATCH = (1 << base::size(server_whitelist_array)) - 1 };
 
 struct UrlData {
   GURL url;
@@ -73,7 +72,7 @@ static const UrlData urls[] = {
 TEST(HttpAuthFilterTest, EmptyFilter) {
   // Create an empty filter
   HttpAuthFilterWhitelist filter((std::string()));
-  for (size_t i = 0; i < arraysize(urls); i++) {
+  for (size_t i = 0; i < base::size(urls); i++) {
     EXPECT_EQ(urls[i].target == HttpAuth::AUTH_PROXY,
               filter.IsValid(urls[i].url, urls[i].target))
         << " " << i << ": " << urls[i].url;
@@ -83,14 +82,14 @@ TEST(HttpAuthFilterTest, EmptyFilter) {
 TEST(HttpAuthFilterTest, NonEmptyFilter) {
   // Create an non-empty filter
   std::string server_whitelist_filter_string;
-  for (size_t i = 0; i < arraysize(server_whitelist_array); ++i) {
+  for (size_t i = 0; i < base::size(server_whitelist_array); ++i) {
     if (!server_whitelist_filter_string.empty())
       server_whitelist_filter_string += ",";
     server_whitelist_filter_string += "*";
     server_whitelist_filter_string += server_whitelist_array[i];
   }
   HttpAuthFilterWhitelist filter(server_whitelist_filter_string);
-  for (size_t i = 0; i < arraysize(urls); i++) {
+  for (size_t i = 0; i < base::size(urls); i++) {
     EXPECT_EQ(urls[i].matches, filter.IsValid(urls[i].url, urls[i].target))
         << " " << i << ": " << urls[i].url;
   }

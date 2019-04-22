@@ -5,10 +5,16 @@
 module chromecast.shell.mojom;
 
 // Receives messages from browser process to control media playback options
-// (block loading, background suspend) for a specific RenderFrame.
+// (block loading, background playback) for a specific RenderFrame.
 // Implemented by a RenderFrameObserver.
 interface MediaPlaybackOptions {
   SetMediaLoadingBlocked(bool blocked);
 
-  SetBackgroundSuspendEnabled(bool enabled);
+  SetBackgroundVideoPlaybackEnabled(bool enabled);
+
+  // Enable CMA (MojoRenderer) for media playback.
+  // Otherwise, media playback uses RendererImpl, which is the same as other
+  // platforms. For video codec supported by v4l2 (e.g. h264), it's still
+  // accelerated by hardware. Video will be rendererd on graphics plane.
+  SetUseCmaRenderer(bool enabled);
 };

@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -32,12 +33,6 @@
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/shell_dialogs/select_file_policy.h"
-
-#if defined(OS_WIN)
-#define IntToStringType base::IntToString16
-#else
-#define IntToStringType base::IntToString
-#endif
 
 using base::ProcessId;
 using std::string;
@@ -287,6 +282,7 @@ void WebRTCInternals::OnGetUserMedia(int rid,
   dict->SetInteger("rid", rid);
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetString("origin", origin);
+  dict->SetDouble("timestamp", base::Time::Now().ToJsTime());
   if (audio)
     dict->SetString("audio", audio_constraints);
   if (video)

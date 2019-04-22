@@ -4,14 +4,27 @@
 
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
+namespace {
+
+using resource_coordinator::mojom::InterventionPolicy;
+using resource_coordinator::mojom::PolicyControlledIntervention;
+
+}  // namespace
+
 // static
-std::unique_ptr<FrameResourceCoordinator> FrameResourceCoordinator::Create(
+std::unique_ptr<FrameResourceCoordinator> FrameResourceCoordinator::MaybeCreate(
     service_manager::InterfaceProvider* interface_provider) {
+  if (!RuntimeEnabledFeatures::PerformanceManagerInstrumentationEnabled())
+    return nullptr;
+
   return base::WrapUnique(new FrameResourceCoordinator(interface_provider));
 }
 
@@ -35,6 +48,12 @@ void FrameResourceCoordinator::SetLifecycleState(
 void FrameResourceCoordinator::SetHasNonEmptyBeforeUnload(
     bool has_nonempty_beforeunload) {
   service_->SetHasNonEmptyBeforeUnload(has_nonempty_beforeunload);
+}
+
+void FrameResourceCoordinator::SetInterventionPolicy(
+    PolicyControlledIntervention intervention,
+    InterventionPolicy policy) {
+  service_->SetInterventionPolicy(intervention, policy);
 }
 
 void FrameResourceCoordinator::OnNonPersistentNotificationCreated() {

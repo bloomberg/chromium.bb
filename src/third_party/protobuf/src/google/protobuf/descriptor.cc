@@ -510,7 +510,9 @@ void InitAllowedProto3Extendee() {
 // instead of comparing the descriptor directly because the extensions may be
 // defined in a different pool.
 bool AllowedExtendeeInProto3(const string& name) {
-  ::google::protobuf::GoogleOnceInit(&allowed_proto3_extendees_init_, &InitAllowedProto3Extendee);
+  ::google::protobuf::GoogleOnceInit(
+      &GOOGLE_PROTOBUF_GET_ONCE(allowed_proto3_extendees_init_),
+      &InitAllowedProto3Extendee);
   return allowed_proto3_extendees_->find(name) !=
          allowed_proto3_extendees_->end();
 }
@@ -846,7 +848,8 @@ void InitFileDescriptorTables() {
 
 inline void InitFileDescriptorTablesOnce() {
   ::google::protobuf::GoogleOnceInit(
-      &file_descriptor_tables_once_init_, &InitFileDescriptorTables);
+      &GOOGLE_PROTOBUF_GET_ONCE(file_descriptor_tables_once_init_),
+      &InitFileDescriptorTables);
 }
 
 }  // anonymous namespace
@@ -1358,7 +1361,8 @@ static void InitGeneratedPool() {
 }
 
 inline void InitGeneratedPoolOnce() {
-  ::google::protobuf::GoogleOnceInit(&generated_pool_init_, &InitGeneratedPool);
+  ::google::protobuf::GoogleOnceInit(
+      &GOOGLE_PROTOBUF_GET_ONCE(generated_pool_init_), &InitGeneratedPool);
 }
 
 }  // anonymous namespace

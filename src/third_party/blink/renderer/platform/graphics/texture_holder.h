@@ -48,7 +48,6 @@ class PLATFORM_EXPORT TextureHolder {
     NOTREACHED();
     return nullptr;
   }
-  virtual void Abandon() { is_abandoned_ = true; }  // Overrides must call base.
 
   // Methods that have exactly the same impelmentation for all sub-classes
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
@@ -61,7 +60,6 @@ class PLATFORM_EXPORT TextureHolder {
                ? context_provider_wrapper_->ContextProvider()
                : nullptr;
   }
-  bool IsAbandoned() const { return is_abandoned_; }
 
  protected:
   TextureHolder(base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
@@ -75,7 +73,6 @@ class PLATFORM_EXPORT TextureHolder {
   // and that we need to clear the resouces associated with that
   // AcceleratedStaticBitmapImage on the original thread.
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
-  bool is_abandoned_ = false;
 };
 
 }  // namespace blink

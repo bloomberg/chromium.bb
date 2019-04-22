@@ -9,11 +9,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/path.h"
 
 namespace gfx {
 
@@ -117,7 +118,7 @@ TEST(CreateNSBezierPathFromSkPathTest, TwoRectanglesPath) {
   const NSPoint outside_points[] = {{-1, -1}, {-1, 51},  {51, 51},   {51, -1},
                                     {99, 99}, {99, 151}, {151, 151}, {151, 99},
                                     {75, 75}, {-5, -5}};
-  ASSERT_EQ(arraysize(inside_points), arraysize(outside_points));
+  ASSERT_EQ(base::size(inside_points), base::size(outside_points));
   const Rect expected_bounds(0, 0, 150, 150);
 
   SkPath path;
@@ -127,7 +128,7 @@ TEST(CreateNSBezierPathFromSkPathTest, TwoRectanglesPath) {
 
   // Check points near the boundary of the path and verify that they are
   // reported correctly as being inside/outside the path.
-  for (size_t i = 0; i < arraysize(inside_points); i++) {
+  for (size_t i = 0; i < base::size(inside_points); i++) {
     EXPECT_TRUE([result containsPoint:inside_points[i]]);
     EXPECT_FALSE([result containsPoint:outside_points[i]]);
   }
@@ -227,7 +228,7 @@ TEST(CreateNSBezierPathFromSkPathTest, RoundedRectanglePath) {
       {kRectangleWidth / 2.0, kRectangleHeight + kCushion},
       // Left middle.
       {-kCushion, kRectangleHeight / 2.0}};
-  ASSERT_EQ(arraysize(inside_points), arraysize(outside_points));
+  ASSERT_EQ(base::size(inside_points), base::size(outside_points));
 
   SkPath path;
   path.addRRect(rrect);
@@ -235,7 +236,7 @@ TEST(CreateNSBezierPathFromSkPathTest, RoundedRectanglePath) {
 
   // Check points near the boundary of the path and verify that they are
   // reported correctly as being inside/outside the path.
-  for (size_t i = 0; i < arraysize(inside_points); i++) {
+  for (size_t i = 0; i < base::size(inside_points); i++) {
     EXPECT_TRUE([result containsPoint:inside_points[i]]);
     EXPECT_FALSE([result containsPoint:outside_points[i]]);
   }

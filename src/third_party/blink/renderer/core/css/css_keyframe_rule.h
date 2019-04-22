@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/css/css_rule.h"
 #include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -63,7 +64,12 @@ class CSSKeyframeRule final : public CSSRule {
   friend class CSSKeyframesRule;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframeRule, kKeyframeRule);
+template <>
+struct DowncastTraits<CSSKeyframeRule> {
+  static bool AllowFrom(const CSSRule& rule) {
+    return rule.type() == CSSRule::kKeyframeRule;
+  }
+};
 
 }  // namespace blink
 

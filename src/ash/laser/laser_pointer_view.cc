@@ -5,6 +5,7 @@
 #include "ash/laser/laser_pointer_view.h"
 
 #include "ash/laser/laser_segment_utils.h"
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkTypes.h"
@@ -128,15 +129,15 @@ class LaserSegment {
     DCHECK_EQ(4u, ordered_points.size());
     path_.moveTo(ordered_points[0].x(), ordered_points[0].y());
     if (!is_first_segment) {
-      path_.arcTo(start_radius, start_radius, 180.0f, gfx::Path::kSmall_ArcSize,
-                  gfx::Path::kCW_Direction, ordered_points[1].x(),
+      path_.arcTo(start_radius, start_radius, 180.0f, SkPath::kSmall_ArcSize,
+                  SkPath::kCW_Direction, ordered_points[1].x(),
                   ordered_points[1].y());
     }
 
     path_.lineTo(ordered_points[2].x(), ordered_points[2].y());
     path_.arcTo(
-        end_radius, end_radius, 180.0f, gfx::Path::kSmall_ArcSize,
-        is_last_segment ? gfx::Path::kCW_Direction : gfx::Path::kCCW_Direction,
+        end_radius, end_radius, 180.0f, SkPath::kSmall_ArcSize,
+        is_last_segment ? SkPath::kCW_Direction : SkPath::kCCW_Direction,
         ordered_points[3].x(), ordered_points[3].y());
     path_.lineTo(ordered_points[0].x(), ordered_points[0].y());
 

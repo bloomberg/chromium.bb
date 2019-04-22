@@ -46,9 +46,6 @@ const char kEnableOverrideBookmarksUI[] = "enable-override-bookmarks-ui";
 const char kDisableExtensionsHttpThrottling[] =
     "disable-extensions-http-throttling";
 
-// Enables tab for desktop sharing.
-const char kDisableTabForDesktopShare[] = "disable-tab-for-desktop-share";
-
 // Allows the ErrorConsole to collect runtime and manifest errors, and display
 // them in the chrome:extensions page.
 const char kErrorConsole[] = "error-console";
@@ -63,6 +60,12 @@ const char kExtensionsOnChromeURLs[] = "extensions-on-chrome-urls";
 
 // Whether to force developer mode extensions highlighting.
 const char kForceDevModeHighlighting[] = "force-dev-mode-highlighting";
+
+// Whether |extensions_features::kBypassCorbAllowlistParamName| should always be
+// empty (i.e. ignoring hardcoded allowlist and the field trial param).  This
+// switch is useful for manually verifying if an extension would continue to
+// work fine after removing it from the allowlist.
+const char kForceEmptyCorbAllowlist[] = "force-empty-corb-allowlist";
 
 // Comma-separated list of paths to apps to load at startup. The first app in
 // the list will be launched.

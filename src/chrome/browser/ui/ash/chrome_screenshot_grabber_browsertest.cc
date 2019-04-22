@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -67,7 +68,8 @@ class ChromeScreenshotGrabberBrowserTest
 
   bool IsImageClipboardAvailable() {
     return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
-        ui::Clipboard::GetBitmapFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE);
+        ui::ClipboardFormatType::GetBitmapType(),
+        ui::CLIPBOARD_TYPE_COPY_PASTE);
   }
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;

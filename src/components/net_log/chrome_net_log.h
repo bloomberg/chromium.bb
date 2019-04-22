@@ -59,16 +59,16 @@ class ChromeNetLog : public net::NetLog {
 
   // Notify the ChromeNetLog that things are shutting-down.
   //
-  // If ChromeNetLog does not outlive the TaskScheduler, there is no need to
+  // If ChromeNetLog does not outlive the ThreadPool, there is no need to
   // call this.
   //
-  // However, if it can outlive the TaskScheduler, this should be called
-  // before the TaskScheduler is shutdown. This allows for any file writers
+  // However, if it can outlive the ThreadPool, this should be called
+  // before the ThreadPool is shutdown. This allows for any file writers
   // using BLOCK_SHUTDOWN to finish posting their writes.
   //
   // Not calling this is not a fatal error, however may result in an incomplete
   // NetLog file being written to disk.
-  void ShutDownBeforeTaskScheduler();
+  void ShutDownBeforeThreadPool();
 
  private:
   // Deletes file_net_log_observer_.

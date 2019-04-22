@@ -8,26 +8,31 @@
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 class SimNetwork;
+class StaticDataNavigationBodyLoader;
 class WebURLLoaderClient;
 
 // Simulates a single request for a resource from the server. Requires a
-// SimNetwork to have been created first. Use the start(), write() and finish()
-// methods to simulate the response from the server. Note that all started
-// requests must be finished.
-class SimRequest final {
+// SimNetwork to have been created first. Use the Write(), Finish() and
+// Complete() methods to simulate the response from the server.
+// Note that all requests must be finished.
+class SimRequestBase {
  public:
-  SimRequest(String url, String mime_type);
-  ~SimRequest();
+  // Additional params which can be passed to the SimRequest.
+  struct Params {
+    // Redirect the request to |redirect_url|. Don't call Start() or Complete()
+    // if |redirect_url| is non-empty.
+    String redirect_url;
 
-  // Starts the response from the server, this is as if the headers and 200 OK
-  // reply had been received but no response body yet.
-  void Start();
+    WTF::HashMap<String, String> response_http_headers;
+  };
 
   // Write a chunk of the response body.
   void Write(const String& data);
@@ -40,8 +45,15 @@ class SimRequest final {
   void Complete(const String& data = String());
   void Complete(const Vector<char>& data);
 
-  const String& Url() const { return url_; }
-  const WebURLResponse& GetResponse() const { return response_; }
+ protected:
+  SimRequestBase(String url,
+                 String mime_type,
+                 bool start_immediately,
+                 Params params = Params());
+  ~SimRequestBase();
+
+  void StartInternal();
+  void ServePending();
 
  private:
   friend class SimNetwork;
@@ -51,13 +63,42 @@ class SimRequest final {
   // Used by SimNetwork.
   void DidReceiveResponse(WebURLLoaderClient*, const WebURLResponse&);
   void DidFail(const WebURLError&);
+  void UsedForNavigation(StaticDataNavigationBodyLoader*);
 
-  String url_;
+  KURL url_;
+  String redirect_url_;
+  String mime_type_;
+  bool start_immediately_;
+  bool started_;
   WebURLResponse response_;
   base::Optional<WebURLError> error_;
   WebURLLoaderClient* client_;
   unsigned total_encoded_data_length_;
-  bool is_ready_;
+  WTF::HashMap<String, String> response_http_headers_;
+  StaticDataNavigationBodyLoader* navigation_body_loader_ = nullptr;
+};
+
+// This request can be used as a main resource request for navigation.
+// It does not allow starting asynchronously, because that's not how
+// navigations work in reality.
+// TODO(dgozman): rename this to SimNavigationRequest or something.
+class SimRequest final : public SimRequestBase {
+ public:
+  SimRequest(String url, String mime_type, Params params = Params());
+  ~SimRequest();
+};
+
+// This request can be started asynchronously, suited for simulating
+// delayed load of subresources.
+class SimSubresourceRequest final : public SimRequestBase {
+ public:
+  SimSubresourceRequest(String url, String mime_type, Params params = Params());
+
+  ~SimSubresourceRequest();
+
+  // Starts the response from the server, this is as if the headers and 200 OK
+  // reply had been received but no response body yet.
+  void Start();
 };
 
 }  // namespace blink

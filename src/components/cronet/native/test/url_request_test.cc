@@ -223,9 +223,9 @@ class UrlRequestTest : public ::testing::TestWithParam<bool> {
 };
 
 const bool kDirectExecutorEnabled[]{true, false};
-INSTANTIATE_TEST_CASE_P(,
-                        UrlRequestTest,
-                        testing::ValuesIn(kDirectExecutorEnabled));
+INSTANTIATE_TEST_SUITE_P(,
+                         UrlRequestTest,
+                         testing::ValuesIn(kDirectExecutorEnabled));
 
 TEST_P(UrlRequestTest, InitChecks) {
   Cronet_EngineParamsPtr engine_params = Cronet_EngineParams_Create();
@@ -292,6 +292,9 @@ TEST_P(UrlRequestTest, InitChecks) {
 
   request = Cronet_UrlRequest_Create();
   Cronet_UrlRequestParams_http_method_set(request_params, "HEAD");
+  Cronet_UrlRequestParams_priority_set(
+      request_params,
+      Cronet_UrlRequestParams_REQUEST_PRIORITY_REQUEST_PRIORITY_IDLE);
   // Check header validation
   Cronet_HttpHeaderPtr http_header = Cronet_HttpHeader_Create();
   Cronet_UrlRequestParams_request_headers_add(request_params, http_header);
@@ -303,6 +306,9 @@ TEST_P(UrlRequestTest, InitChecks) {
   Cronet_UrlRequest_Destroy(request);
 
   request = Cronet_UrlRequest_Create();
+  Cronet_UrlRequestParams_priority_set(
+      request_params,
+      Cronet_UrlRequestParams_REQUEST_PRIORITY_REQUEST_PRIORITY_LOWEST);
   Cronet_HttpHeader_name_set(http_header, "bad:name");
   Cronet_UrlRequestParams_request_headers_add(request_params, http_header);
   EXPECT_EQ(
@@ -313,6 +319,9 @@ TEST_P(UrlRequestTest, InitChecks) {
   Cronet_UrlRequest_Destroy(request);
 
   request = Cronet_UrlRequest_Create();
+  Cronet_UrlRequestParams_priority_set(
+      request_params,
+      Cronet_UrlRequestParams_REQUEST_PRIORITY_REQUEST_PRIORITY_LOW);
   Cronet_HttpHeader_value_set(http_header, "header value");
   Cronet_UrlRequestParams_request_headers_add(request_params, http_header);
   EXPECT_EQ(
@@ -323,6 +332,9 @@ TEST_P(UrlRequestTest, InitChecks) {
   Cronet_UrlRequest_Destroy(request);
 
   request = Cronet_UrlRequest_Create();
+  Cronet_UrlRequestParams_priority_set(
+      request_params,
+      Cronet_UrlRequestParams_REQUEST_PRIORITY_REQUEST_PRIORITY_HIGHEST);
   Cronet_HttpHeader_name_set(http_header, "header-name");
   Cronet_UrlRequestParams_request_headers_add(request_params, http_header);
   EXPECT_EQ(Cronet_RESULT_SUCCESS, Cronet_UrlRequest_InitWithParams(
@@ -471,6 +483,22 @@ TEST_P(UrlRequestTest, UploadWithSetMethod) {
   EXPECT_EQ(200, callback->response_info_->http_status_code);
   // Setting upload provider should change method to 'POST'.
   EXPECT_EQ("PUT", callback->response_as_string_);
+}
+
+TEST_P(UrlRequestTest, UploadWithBigRead) {
+  const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
+  TestUploadDataProvider upload_data_provider(TestUploadDataProvider::SYNC,
+                                              /* executor = */ nullptr);
+  // Use reads that match exact size of read buffer, which is 16384 bytes.
+  upload_data_provider.AddRead(std::string(16384, 'a'));
+  upload_data_provider.AddRead(std::string(32768 - 16384, 'a'));
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
+
+  callback = StartAndWaitForComplete(url, std::move(callback),
+                                     std::string("PUT"), &upload_data_provider);
+  EXPECT_EQ(200, callback->response_info_->http_status_code);
+  // Confirm that body is uploaded correctly.
+  EXPECT_EQ(std::string(32768, 'a'), callback->response_as_string_);
 }
 
 TEST_F(UrlRequestTest, UploadWithDirectExecutor) {
@@ -1028,7 +1056,7 @@ TEST_P(UrlRequestTest, GetStatus) {
     // final callbacks.
     GetRequestStatus(request, &test_callback);
     test_callback.WaitForNextStep();
-  } while (!test_callback.IsDone());
+  } while (!Cronet_UrlRequest_IsDone(request));
 
   EXPECT_EQ(Cronet_UrlRequestStatusListener_Status_INVALID,
             GetRequestStatus(request, &test_callback));

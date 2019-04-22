@@ -14,8 +14,8 @@
 #include <vector>
 
 #include "base/format_macros.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -490,7 +490,7 @@ TEST_F(HistoryQuickProviderTest, ContentsClass) {
   // increase that number in the future.  Regardless, we require the first
   // five offsets to be correct--in this example these cover at least one
   // occurrence of each term.
-  EXPECT_LE(contents_class.size(), arraysize(expected_offsets));
+  EXPECT_LE(contents_class.size(), base::size(expected_offsets));
   EXPECT_GE(contents_class.size(), 5u);
   for (size_t i = 0; i < contents_class.size(); ++i)
     EXPECT_EQ(expected_offsets[i], contents_class[i].offset);

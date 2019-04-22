@@ -47,7 +47,7 @@ void TreeOrderedList::Add(Node* node) {
   do {
     --it;
     Node* n = *it;
-    unsigned short position =
+    uint16_t position =
         n->compareDocumentPosition(node, Node::kTreatShadowTreesAsComposed);
     if (position & Node::kDocumentPositionFollowing) {
       nodes_.InsertBefore(following_node, node);
@@ -63,7 +63,7 @@ void TreeOrderedList::Remove(const Node* node) {
   nodes_.erase(const_cast<Node*>(node));
 }
 
-void TreeOrderedList::Trace(blink::Visitor* visitor) {
+void TreeOrderedList::Trace(Visitor* visitor) {
   visitor->Trace(nodes_);
 }
 

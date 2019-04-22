@@ -61,7 +61,7 @@ class LoadingPredictorPageLoadMetricsObserverTest
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
         std::make_unique<LoadingPredictorPageLoadMetricsObserver>(
-            predictor_.get(), collector_.get(), web_contents()));
+            predictor_.get(), collector_.get()));
   }
 
   void TestHistogramsRecorded(bool is_preconnectable) {

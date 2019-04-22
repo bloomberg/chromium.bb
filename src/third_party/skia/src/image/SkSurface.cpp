@@ -5,13 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "SkAtomics.h"
+#include "GrBackendSurface.h"
 #include "SkCanvas.h"
 #include "SkFontLCDConfig.h"
 #include "SkImagePriv.h"
 #include "SkSurface_Base.h"
-
-#include "GrBackendSurface.h"
+#include <atomic>
 
 static SkPixelGeometry compute_default_geometry() {
     SkFontLCDConfig::LCDOrder order = SkFontLCDConfig::GetSubpixelOrder();
@@ -122,8 +121,8 @@ void SkSurface_Base::aboutToDraw(ContentChangeMode mode) {
 
 uint32_t SkSurface_Base::newGenerationID() {
     SkASSERT(!fCachedCanvas || fCachedCanvas->getSurfaceBase() == this);
-    static int32_t gID;
-    return sk_atomic_inc(&gID) + 1;
+    static std::atomic<uint32_t> nextID{1};
+    return nextID++;
 }
 
 static SkSurface_Base* asSB(SkSurface* surface) {
@@ -240,17 +239,30 @@ GrBackendRenderTarget SkSurface::getBackendRenderTarget(BackendHandleAccess acce
     return asSB(this)->onGetBackendRenderTarget(access);
 }
 
-void SkSurface::prepareForExternalIO() {
-    this->flush();
+void SkSurface::flush() {
+    this->flush(BackendSurfaceAccess::kNoAccess, GrFlushInfo());
 }
 
-void SkSurface::flush() {
-    asSB(this)->onFlush(0, nullptr);
+GrSemaphoresSubmitted SkSurface::flush(BackendSurfaceAccess access, const GrFlushInfo& flushInfo) {
+    return asSB(this)->onFlush(access, flushInfo);
+}
+
+GrSemaphoresSubmitted SkSurface::flush(BackendSurfaceAccess access, FlushFlags flags,
+                                       int numSemaphores, GrBackendSemaphore signalSemaphores[]) {
+    GrFlushFlags grFlags = flags == kSyncCpu_FlushFlag ? kSyncCpu_GrFlushFlag : kNone_GrFlushFlags;
+    GrFlushInfo info;
+    info.fFlags = grFlags;
+    info.fNumSemaphores = numSemaphores;
+    info.fSignalSemaphores = signalSemaphores;
+    return this->flush(access, info);
 }
 
 GrSemaphoresSubmitted SkSurface::flushAndSignalSemaphores(int numSemaphores,
                                                           GrBackendSemaphore signalSemaphores[]) {
-    return asSB(this)->onFlush(numSemaphores, signalSemaphores);
+    GrFlushInfo info;
+    info.fNumSemaphores = numSemaphores;
+    info.fSignalSemaphores = signalSemaphores;
+    return this->flush(BackendSurfaceAccess::kNoAccess, info);
 }
 
 bool SkSurface::wait(int numSemaphores, const GrBackendSemaphore* waitSemaphores) {
@@ -301,7 +313,7 @@ sk_sp<SkSurface> SkSurface::MakeRenderTarget(GrContext*, SkBudgeted, const SkIma
     return nullptr;
 }
 
-sk_sp<SkSurface> SkSurface::MakeRenderTarget(GrContext*, const SkSurfaceCharacterization&,
+sk_sp<SkSurface> SkSurface::MakeRenderTarget(GrRecordingContext*, const SkSurfaceCharacterization&,
                                              SkBudgeted) {
     return nullptr;
 }
@@ -309,7 +321,8 @@ sk_sp<SkSurface> SkSurface::MakeRenderTarget(GrContext*, const SkSurfaceCharacte
 sk_sp<SkSurface> SkSurface::MakeFromBackendTexture(GrContext*, const GrBackendTexture&,
                                                    GrSurfaceOrigin origin, int sampleCnt,
                                                    SkColorType, sk_sp<SkColorSpace>,
-                                                   const SkSurfaceProps*) {
+                                                   const SkSurfaceProps*,
+                                                   TextureReleaseProc, ReleaseContext) {
     return nullptr;
 }
 
@@ -318,7 +331,8 @@ sk_sp<SkSurface> SkSurface::MakeFromBackendRenderTarget(GrContext*,
                                                         GrSurfaceOrigin origin,
                                                         SkColorType,
                                                         sk_sp<SkColorSpace>,
-                                                        const SkSurfaceProps*) {
+                                                        const SkSurfaceProps*,
+                                                        RenderTargetReleaseProc, ReleaseContext) {
     return nullptr;
 }
 

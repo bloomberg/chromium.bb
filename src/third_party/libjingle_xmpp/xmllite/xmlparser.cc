@@ -18,7 +18,7 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlnsstack.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlnsstack.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 
 static void
@@ -257,4 +257,4 @@ XmlParser::ParseContext::GetPosition(unsigned long * line,
 XmlParser::ParseContext::~ParseContext() {
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

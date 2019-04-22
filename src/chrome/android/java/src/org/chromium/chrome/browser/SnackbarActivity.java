@@ -34,18 +34,6 @@ public abstract class SnackbarActivity extends SynchronousInitializationActivity
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        mSnackbarManager.onStart();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mSnackbarManager.onStop();
-    }
-
-    @Override
     public SnackbarManager getSnackbarManager() {
         return mSnackbarManager;
     }

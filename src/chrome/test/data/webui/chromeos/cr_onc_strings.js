@@ -98,22 +98,25 @@ CrOncTest.overrideCrOncStrings = function() {
  */
 CrOncTest.convertToManagedProperties = function(properties) {
   'use strict';
-  if (!properties)
+  if (!properties) {
     return undefined;
+  }
   var result = {};
   var keys = Object.keys(properties);
-  if (typeof properties != 'object')
+  if (typeof properties != 'object') {
     return {Active: properties};
+  }
   for (var i = 0; i < keys.length; ++i) {
     var k = keys[i];
     const unmanagedProperties = [
       'ConnectionState', 'GUID',
       /* ManagedCellularProperties.SIMLockStatus */ 'LockType', 'Source', 'Type'
     ];
-    if (unmanagedProperties.includes(k))
+    if (unmanagedProperties.includes(k)) {
       result[k] = properties[k];
-    else
+    } else {
       result[k] = this.convertToManagedProperties(properties[k]);
+    }
   }
   return result;
 };

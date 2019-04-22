@@ -22,6 +22,7 @@
 
 #include "fxbarcode/datamatrix/BC_ErrorCorrection.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "fxbarcode/datamatrix/BC_Encoder.h"
@@ -99,103 +100,132 @@ const uint8_t* const FACTORS[16] = {
     FACTORS_6,  FACTORS_7,  FACTORS_8,  FACTORS_9, FACTORS_10, FACTORS_11,
     FACTORS_12, FACTORS_13, FACTORS_14, FACTORS_15};
 
-constexpr int32_t MODULO_VALUE = 0x12D;
+constexpr uint8_t LOG[256] = {
+    0,   0,   1,   240, 2,   225, 241, 53,  3,   38,  226, 133, 242, 43,  54,
+    210, 4,   195, 39,  114, 227, 106, 134, 28,  243, 140, 44,  23,  55,  118,
+    211, 234, 5,   219, 196, 96,  40,  222, 115, 103, 228, 78,  107, 125, 135,
+    8,   29,  162, 244, 186, 141, 180, 45,  99,  24,  49,  56,  13,  119, 153,
+    212, 199, 235, 91,  6,   76,  220, 217, 197, 11,  97,  184, 41,  36,  223,
+    253, 116, 138, 104, 193, 229, 86,  79,  171, 108, 165, 126, 145, 136, 34,
+    9,   74,  30,  32,  163, 84,  245, 173, 187, 204, 142, 81,  181, 190, 46,
+    88,  100, 159, 25,  231, 50,  207, 57,  147, 14,  67,  120, 128, 154, 248,
+    213, 167, 200, 63,  236, 110, 92,  176, 7,   161, 77,  124, 221, 102, 218,
+    95,  198, 90,  12,  152, 98,  48,  185, 179, 42,  209, 37,  132, 224, 52,
+    254, 239, 117, 233, 139, 22,  105, 27,  194, 113, 230, 206, 87,  158, 80,
+    189, 172, 203, 109, 175, 166, 62,  127, 247, 146, 66,  137, 192, 35,  252,
+    10,  183, 75,  216, 31,  83,  33,  73,  164, 144, 85,  170, 246, 65,  174,
+    61,  188, 202, 205, 157, 143, 169, 82,  72,  182, 215, 191, 251, 47,  178,
+    89,  151, 101, 94,  160, 123, 26,  112, 232, 21,  51,  238, 208, 131, 58,
+    69,  148, 18,  15,  16,  68,  17,  121, 149, 129, 19,  155, 59,  249, 70,
+    214, 250, 168, 71,  201, 156, 64,  60,  237, 130, 111, 20,  93,  122, 177,
+    150};
 
-int32_t LOG[256] = {0};
-int32_t ALOG[256] = {0};
+constexpr uint8_t ALOG[256] = {
+    1,   2,   4,   8,   16,  32,  64,  128, 45,  90,  180, 69,  138, 57,  114,
+    228, 229, 231, 227, 235, 251, 219, 155, 27,  54,  108, 216, 157, 23,  46,
+    92,  184, 93,  186, 89,  178, 73,  146, 9,   18,  36,  72,  144, 13,  26,
+    52,  104, 208, 141, 55,  110, 220, 149, 7,   14,  28,  56,  112, 224, 237,
+    247, 195, 171, 123, 246, 193, 175, 115, 230, 225, 239, 243, 203, 187, 91,
+    182, 65,  130, 41,  82,  164, 101, 202, 185, 95,  190, 81,  162, 105, 210,
+    137, 63,  126, 252, 213, 135, 35,  70,  140, 53,  106, 212, 133, 39,  78,
+    156, 21,  42,  84,  168, 125, 250, 217, 159, 19,  38,  76,  152, 29,  58,
+    116, 232, 253, 215, 131, 43,  86,  172, 117, 234, 249, 223, 147, 11,  22,
+    44,  88,  176, 77,  154, 25,  50,  100, 200, 189, 87,  174, 113, 226, 233,
+    255, 211, 139, 59,  118, 236, 245, 199, 163, 107, 214, 129, 47,  94,  188,
+    85,  170, 121, 242, 201, 191, 83,  166, 97,  194, 169, 127, 254, 209, 143,
+    51,  102, 204, 181, 71,  142, 49,  98,  196, 165, 103, 206, 177, 79,  158,
+    17,  34,  68,  136, 61,  122, 244, 197, 167, 99,  198, 161, 111, 222, 145,
+    15,  30,  60,  120, 240, 205, 183, 67,  134, 33,  66,  132, 37,  74,  148,
+    5,   10,  20,  40,  80,  160, 109, 218, 153, 31,  62,  124, 248, 221, 151,
+    3,   6,   12,  24,  48,  96,  192, 173, 119, 238, 241, 207, 179, 75,  150,
+    0};
 
-Optional<WideString> CreateECCBlock(const WideString& codewords,
-                                    int32_t numECWords) {
-  const int32_t len = codewords.GetLength();
-  static const size_t kFactorTableNum = sizeof(FACTOR_SETS) / sizeof(int32_t);
+WideString CreateECCBlock(const WideString& codewords, size_t numECWords) {
+  ASSERT(numECWords > 0);
+
+  const size_t len = codewords.GetLength();
+  static constexpr size_t kFactorTableNum = FX_ArraySize(FACTOR_SETS);
   size_t table = 0;
   while (table < kFactorTableNum && FACTOR_SETS[table] != numECWords)
-    table++;
+    ++table;
 
   if (table >= kFactorTableNum)
-    return {};
+    return WideString();
 
-  uint16_t* ecc = FX_Alloc(uint16_t, numECWords);
-  for (int32_t i = 0; i < 0 + len; i++) {
+  std::vector<uint16_t> ecc(numECWords);
+  for (size_t i = 0; i < len; ++i) {
     uint16_t m = ecc[numECWords - 1] ^ codewords[i];
-    for (int32_t k = numECWords - 1; k > 0; k--) {
-      if (m != 0 && FACTORS[table][k] != 0) {
-        ecc[k] = (uint16_t)(ecc[k - 1] ^
-                            ALOG[(LOG[m] + LOG[FACTORS[table][k]]) % 255]);
+    for (int32_t j = numECWords - 1; j > 0; --j) {
+      if (m != 0 && FACTORS[table][j] != 0) {
+        ecc[j] = static_cast<uint16_t>(
+            ecc[j - 1] ^ ALOG[(LOG[m] + LOG[FACTORS[table][j]]) % 255]);
       } else {
-        ecc[k] = ecc[k - 1];
+        ecc[j] = ecc[j - 1];
       }
     }
     if (m != 0 && FACTORS[table][0] != 0) {
-      ecc[0] = (uint16_t)ALOG[(LOG[m] + LOG[FACTORS[table][0]]) % 255];
+      ecc[0] =
+          static_cast<uint16_t>(ALOG[(LOG[m] + LOG[FACTORS[table][0]]) % 255]);
     } else {
       ecc[0] = 0;
     }
   }
   WideString strecc;
-  for (int32_t j = 0; j < numECWords; j++) {
-    strecc += (wchar_t)ecc[numECWords - j - 1];
-  }
-  FX_Free(ecc);
+  strecc.Reserve(numECWords);
+  for (size_t i = 0; i < numECWords; ++i)
+    strecc.InsertAtBack(static_cast<wchar_t>(ecc[numECWords - i - 1]));
+
+  ASSERT(!strecc.IsEmpty());
   return strecc;
 }
+
 }  // namespace
 
-void CBC_ErrorCorrection::Initialize() {
-  int32_t p = 1;
-  for (int32_t i = 0; i < 255; i++) {
-    ALOG[i] = p;
-    LOG[p] = i;
-    p <<= 1;
-    if (p >= 256) {
-      p ^= MODULO_VALUE;
-    }
-  }
-}
-void CBC_ErrorCorrection::Finalize() {}
+WideString CBC_ErrorCorrection::EncodeECC200(const WideString& codewords,
+                                             const CBC_SymbolInfo* symbolInfo) {
+  if (codewords.GetLength() != symbolInfo->dataCapacity())
+    return WideString();
 
-Optional<WideString> CBC_ErrorCorrection::EncodeECC200(
-    const WideString& codewords,
-    const CBC_SymbolInfo* symbolInfo) {
-  if (pdfium::base::checked_cast<int32_t>(codewords.GetLength()) !=
-      symbolInfo->dataCapacity()) {
-    return {};
-  }
-  WideString sb;
-  sb += codewords;
-  int32_t blockCount = symbolInfo->getInterleavedBlockCount();
+  WideString sb = codewords;
+  size_t blockCount = symbolInfo->getInterleavedBlockCount();
   if (blockCount == 1) {
-    Optional<WideString> ecc =
-        CreateECCBlock(codewords, symbolInfo->errorCodewords());
-    if (!ecc.has_value())
+    WideString ecc = CreateECCBlock(codewords, symbolInfo->errorCodewords());
+    if (ecc.IsEmpty())
       return WideString();
-    sb += ecc.value();
+    sb += ecc;
   } else {
-    std::vector<int32_t> dataSizes(blockCount);
-    std::vector<int32_t> errorSizes(blockCount);
-    std::vector<int32_t> startPos(blockCount);
-    for (int32_t i = 0; i < blockCount; i++) {
-      dataSizes[i] = symbolInfo->getDataLengthForInterleavedBlock(i + 1);
-      errorSizes[i] = symbolInfo->getErrorLengthForInterleavedBlock(i + 1);
-      startPos[i] = 0;
-      if (i > 0) {
-        startPos[i] = startPos[i - 1] + dataSizes[i];
-      }
+    std::vector<size_t> dataSizes(blockCount);
+    std::vector<size_t> errorSizes(blockCount);
+    std::vector<size_t> startPos(blockCount);
+    for (size_t i = 0; i < blockCount; ++i) {
+      dataSizes[i] = symbolInfo->getDataLengthForInterleavedBlock();
+      errorSizes[i] = symbolInfo->getErrorLengthForInterleavedBlock();
+      startPos[i] = i > 0 ? startPos[i - 1] + dataSizes[i] : 0;
     }
-    for (int32_t block = 0; block < blockCount; block++) {
+
+    size_t max_error_sizes =
+        *std::max_element(errorSizes.begin(), errorSizes.end()) * blockCount;
+    sb.Reserve(sb.GetLength() + max_error_sizes);
+    for (size_t i = 0; i < max_error_sizes; ++i)
+      sb.InsertAtBack(0);
+
+    for (size_t block = 0; block < blockCount; ++block) {
       WideString temp;
-      for (int32_t d = block; d < symbolInfo->dataCapacity(); d += blockCount) {
-        temp += (wchar_t)codewords[d];
-      }
-      Optional<WideString> ecc = CreateECCBlock(temp, errorSizes[block]);
-      if (!ecc.has_value())
+      if (symbolInfo->dataCapacity() > block)
+        temp.Reserve((symbolInfo->dataCapacity() - block / blockCount) + 1);
+      for (size_t d = block; d < symbolInfo->dataCapacity(); d += blockCount)
+        temp.InsertAtBack(static_cast<wchar_t>(codewords[d]));
+
+      WideString ecc = CreateECCBlock(temp, errorSizes[block]);
+      if (ecc.IsEmpty())
         return WideString();
-      int32_t pos = 0;
-      for (int32_t l = block; l < errorSizes[block] * blockCount;
-           l += blockCount) {
-        sb.SetAt(symbolInfo->dataCapacity() + l, ecc.value()[pos++]);
+
+      for (size_t pos = 0, i = block; i < errorSizes[block] * blockCount;
+           ++pos, i += blockCount) {
+        sb.SetAt(symbolInfo->dataCapacity() + i, ecc[pos]);
       }
     }
   }
+  ASSERT(!sb.IsEmpty());
   return sb;
 }

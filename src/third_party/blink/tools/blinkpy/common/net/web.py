@@ -33,11 +33,20 @@ from blinkpy.common.net.network_transaction import NetworkTransaction
 
 class Web(object):
 
-    def get_binary(self, url, return_none_on_404=False):
-        return NetworkTransaction(return_none_on_404=return_none_on_404).run(lambda: urllib2.urlopen(url).read())
+    class _HTTPRedirectHandler2(urllib2.HTTPRedirectHandler):   # pylint:disable=no-init
+        """A subclass of HTTPRedirectHandler to support 308 Permanent Redirect."""
 
-    def request(self, method, url, data, headers=None):
-        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        def http_error_308(self, req, fp, code, msg, headers):  # pylint:disable=unused-argument
+            # We have to override the code to 301 (Moved Permanently);
+            # otherwise, HTTPRedirectHandler will throw a HTTPError.
+            return self.http_error_301(req, fp, 301, msg, headers)
+
+    def get_binary(self, url, return_none_on_404=False):
+        return NetworkTransaction(return_none_on_404=return_none_on_404).run(
+            lambda: self.request('GET', url).read())
+
+    def request(self, method, url, data=None, headers=None):
+        opener = urllib2.build_opener(Web._HTTPRedirectHandler2)
         request = urllib2.Request(url=url, data=data)
 
         request.get_method = lambda: method

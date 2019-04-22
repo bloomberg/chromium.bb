@@ -11,6 +11,7 @@
 #include "base/test/simple_test_clock.h"
 #include "chrome/common/pref_names.h"
 #include "components/offline_pages/core/offline_store_utils.h"
+#include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +30,7 @@ class OfflineMetricsCollectorTest : public testing::Test {
   void SetUp() override {
     base::Time epoch;
     ASSERT_TRUE(base::Time::FromUTCString("1 Jan 1994 GMT", &epoch));
-    test_clock().SetNow(epoch.LocalMidnight());
+    test_clock()->SetNow(epoch.LocalMidnight());
     OfflineMetricsCollectorImpl::RegisterPrefs(pref_service_.registry());
     Reload();
   }
@@ -38,10 +39,9 @@ class OfflineMetricsCollectorTest : public testing::Test {
   void Reload() {
     collector_ =
         std::make_unique<OfflineMetricsCollectorImpl>(&prefs());
-    collector_->SetClockForTesting(&test_clock());
   }
 
-  base::SimpleTestClock& test_clock() { return test_clock_; }
+  TestScopedOfflineClock* test_clock() { return &test_clock_; }
   PrefService& prefs() { return pref_service_; }
   OfflineMetricsCollector* collector() const { return collector_.get(); }
   const base::HistogramTester& histograms() const { return histogram_tester_; }
@@ -71,11 +71,11 @@ class OfflineMetricsCollectorTest : public testing::Test {
         "OfflinePages.OfflineUsage.NotOfflineResilient", count);
   }
 
- protected:
-  base::SimpleTestClock test_clock_;
+ private:
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<OfflineMetricsCollectorImpl> collector_;
   base::HistogramTester histogram_tester_;
+  TestScopedOfflineClock test_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineMetricsCollectorTest);
 };
@@ -110,7 +110,7 @@ TEST_F(OfflineMetricsCollectorTest, FirstStart) {
   EXPECT_EQ(false, prefs().GetBoolean(prefs::kOfflineUsageStartObserved));
   EXPECT_EQ(false, prefs().GetBoolean(prefs::kOfflineUsageOfflineObserved));
   EXPECT_EQ(false, prefs().GetBoolean(prefs::kOfflineUsageOnlineObserved));
-  base::Time start = test_clock().Now();
+  base::Time start = test_clock()->Now();
 
   collector()->OnAppStartupOrResume();
 
@@ -187,7 +187,7 @@ TEST_F(OfflineMetricsCollectorTest, TrueIsFinalState) {
 
 // Restore from Prefs keeps accumulated state, counters and timestamp.
 TEST_F(OfflineMetricsCollectorTest, RestoreFromPrefs) {
-  base::Time start = test_clock().Now();
+  base::Time start = test_clock()->Now();
   collector()->OnSuccessfulNavigationOnline();
   EXPECT_EQ(false, prefs().GetBoolean(prefs::kOfflineUsageStartObserved));
   EXPECT_EQ(false, prefs().GetBoolean(prefs::kOfflineUsageOfflineObserved));
@@ -265,7 +265,7 @@ TEST_F(OfflineMetricsCollectorTest, RestoreFromPrefsPrefetch) {
 }
 
 TEST_F(OfflineMetricsCollectorTest, ChangesWithinDay) {
-  base::Time start = test_clock().Now();
+  base::Time start = test_clock()->Now();
   collector()->OnAppStartupOrResume();
   collector()->OnSuccessfulNavigationOnline();
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageStartObserved));
@@ -273,8 +273,7 @@ TEST_F(OfflineMetricsCollectorTest, ChangesWithinDay) {
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageOnlineObserved));
 
   // Move time ahead but still same day.
-  base::Time later1Hour = start + base::TimeDelta::FromHours(1);
-  test_clock().SetNow(later1Hour);
+  test_clock()->Advance(base::TimeDelta::FromHours(1));
   collector()->OnSuccessfulNavigationOffline();
   // Timestamp shouldn't change.
   EXPECT_EQ(GetTimestampFromPrefs(), start);
@@ -292,13 +291,13 @@ TEST_F(OfflineMetricsCollectorTest, ChangesWithinDay) {
 }
 
 TEST_F(OfflineMetricsCollectorTest, MultipleDays) {
-  base::Time start = test_clock().Now();
+  // Clock starts at epoch.LocalMidnight()
   collector()->OnAppStartupOrResume();
 
   ExpectNotResilientOfflineUsageTotalCount(0);
 
-  base::Time nextDay = start + base::TimeDelta::FromHours(25);
-  test_clock().SetNow(nextDay);
+  // Advance the clock to the next day
+  test_clock()->Advance(base::TimeDelta::FromHours(25));
 
   collector()->OnAppStartupOrResume();
   // 1 day 'started' counter, another is being tracked as current day...
@@ -312,8 +311,8 @@ TEST_F(OfflineMetricsCollectorTest, MultipleDays) {
   ExpectNotResilientOfflineUsageBucketCount(DailyUsageType::kStarted, 1);
   ExpectNotResilientOfflineUsageTotalCount(1);
 
-  base::Time skip4Days = nextDay + base::TimeDelta::FromHours(24 * 4);
-  test_clock().SetNow(skip4Days);
+  // Skip the next 4 days within the virtual clock
+  test_clock()->Advance(base::TimeDelta::FromDays(4));
   collector()->OnSuccessfulNavigationOnline();
   // 2 days started, 3 days skipped ('unused').
   EXPECT_EQ(2, prefs().GetInteger(prefs::kOfflineUsageStartedCount));
@@ -345,24 +344,24 @@ TEST_F(OfflineMetricsCollectorTest, MultipleDays) {
 }
 
 TEST_F(OfflineMetricsCollectorTest, OverDayBoundaryPrefetch) {
-  base::Time start = test_clock().Now();
+  // Clock starts at epoch.LocalMidnight()
   collector()->OnPrefetchEnabled();
 
-  test_clock().SetNow(start + base::TimeDelta::FromDays(1));
+  test_clock()->Advance(base::TimeDelta::FromDays(1));
   collector()->OnPrefetchEnabled();
 
-  test_clock().SetNow(start + base::TimeDelta::FromDays(2));
+  test_clock()->Advance(base::TimeDelta::FromDays(1));
   collector()->OnSuccessfulPagePrefetch();
 
-  test_clock().SetNow(start + base::TimeDelta::FromDays(3));
+  test_clock()->Advance(base::TimeDelta::FromDays(1));
   collector()->OnPrefetchedPageOpened();
 
-  test_clock().SetNow(start + base::TimeDelta::FromDays(4));
+  test_clock()->Advance(base::TimeDelta::FromDays(1));
   collector()->OnPrefetchEnabled();
   collector()->OnSuccessfulPagePrefetch();
   collector()->OnPrefetchedPageOpened();
 
-  test_clock().SetNow(start + base::TimeDelta::FromDays(6));
+  test_clock()->Advance(base::TimeDelta::FromDays(1));
   collector()->OnPrefetchEnabled();
 
   // Force collector to report stats and observe them reported correctly.

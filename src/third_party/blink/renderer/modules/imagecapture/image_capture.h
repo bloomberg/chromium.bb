@@ -9,15 +9,14 @@
 #include "media/capture/mojom/image_capture.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/imagecapture/photo_settings.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_capabilities.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_constraint_set.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_settings.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/async_method_runner.h"
 
 namespace blink {
 
@@ -27,7 +26,7 @@ class PhotoCapabilities;
 class ScriptPromiseResolver;
 class WebImageCaptureFrameGrabber;
 
-// TODO(mcasas): Consider adding a LayoutTest checking that this class is not
+// TODO(mcasas): Consider adding a web test checking that this class is not
 // garbage collected while it has event listeners.
 class MODULES_EXPORT ImageCapture final
     : public EventTargetWithInlineData,

@@ -1,3 +1,6 @@
 # Mac Sandbox profiles.
 per-file *.sb=set noparent
 per-file *.sb=rsesek@chromium.org
+
+# For service-related code
+per-file utility_service_factory.*=rockot@google.com

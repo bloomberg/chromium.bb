@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_GBM_BUFFER_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_GBM_BUFFER_H_
 
+#include <memory>
 #include <vector>
 
 #include "ui/gfx/native_pixmap.h"
@@ -25,7 +26,6 @@ class GbmPixmap : public gfx::NativePixmap {
 
   // NativePixmap:
   bool AreDmaBufFdsValid() const override;
-  size_t GetDmaBufFdCount() const override;
   int GetDmaBufFd(size_t plane) const override;
   int GetDmaBufPitch(size_t plane) const override;
   int GetDmaBufOffset(size_t plane) const override;

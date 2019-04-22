@@ -17,7 +17,7 @@ class CONTENT_EXPORT DelegateToBrowserGpuServiceAcceleratorFactory
     : public video_capture::mojom::AcceleratorFactory {
  public:
   void CreateJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
+      media::mojom::MjpegDecodeAcceleratorRequest jda_request) override;
 };
 
 }  // namespace content

@@ -75,6 +75,11 @@ void BindingStateBase::FlushForTesting() {
   endpoint_client_->FlushForTesting();
 }
 
+void BindingStateBase::EnableBatchDispatch() {
+  DCHECK(is_bound());
+  router_->EnableBatchDispatch();
+}
+
 void BindingStateBase::EnableTestingMode() {
   DCHECK(is_bound());
   router_->EnableTestingMode();
@@ -86,7 +91,7 @@ scoped_refptr<internal::MultiplexRouter> BindingStateBase::RouterForTesting() {
 
 void BindingStateBase::BindInternal(
     ScopedMessagePipeHandle handle,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    scoped_refptr<base::SequencedTaskRunner> runner,
     const char* interface_name,
     std::unique_ptr<MessageReceiver> request_validator,
     bool passes_associated_kinds,

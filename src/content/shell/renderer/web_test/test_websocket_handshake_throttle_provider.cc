@@ -6,11 +6,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "third_party/blink/public/platform/web_callbacks.h"
+#include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "url/gurl.h"
 
@@ -18,7 +19,7 @@ namespace content {
 
 namespace {
 
-using Callbacks = blink::WebCallbacks<void, const blink::WebString&>;
+using CompletionCallback = blink::WebSocketHandshakeThrottle::OnCompletion;
 
 // Checks for a valid "content-shell-websocket-delay-ms" parameter and returns
 // it as a TimeDelta if it exists. Otherwise returns a zero TimeDelta.
@@ -53,18 +54,24 @@ base::TimeDelta ExtractDelayFromUrl(const GURL& url) {
 class TestWebSocketHandshakeThrottle
     : public blink::WebSocketHandshakeThrottle {
  public:
+  explicit TestWebSocketHandshakeThrottle(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    timer_.SetTaskRunner(std::move(task_runner));
+  }
+
   ~TestWebSocketHandshakeThrottle() override = default;
 
   void ThrottleHandshake(const blink::WebURL& url,
-                         Callbacks* callbacks) override {
-    DCHECK(callbacks);
+                         CompletionCallback completion_callback) override {
+    DCHECK(completion_callback);
 
-    // This use of Unretained is safe because this object is destroyed before
-    // |callbacks| is freed. Destroying this object prevents the timer from
-    // firing.
-    timer_.Start(FROM_HERE, ExtractDelayFromUrl(url),
-                 base::BindRepeating(&Callbacks::OnSuccess,
-                                     base::Unretained(callbacks)));
+    auto wrapper = base::BindOnce(
+        [](CompletionCallback callback) {
+          std::move(callback).Run(base::nullopt);
+        },
+        std::move(completion_callback));
+
+    timer_.Start(FROM_HERE, ExtractDelayFromUrl(url), std::move(wrapper));
   }
 
  private:
@@ -74,13 +81,17 @@ class TestWebSocketHandshakeThrottle
 }  // namespace
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
-TestWebSocketHandshakeThrottleProvider::Clone() {
+TestWebSocketHandshakeThrottleProvider::Clone(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return std::make_unique<TestWebSocketHandshakeThrottleProvider>();
 }
 
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
-TestWebSocketHandshakeThrottleProvider::CreateThrottle(int render_frame_id) {
-  return std::make_unique<TestWebSocketHandshakeThrottle>();
+TestWebSocketHandshakeThrottleProvider::CreateThrottle(
+    int render_frame_id,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return std::make_unique<TestWebSocketHandshakeThrottle>(
+      std::move(task_runner));
 }
 
 }  // namespace content

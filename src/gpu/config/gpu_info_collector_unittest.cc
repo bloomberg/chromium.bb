@@ -196,9 +196,9 @@ class GPUInfoCollectorTest
   std::vector<std::string> split_extensions_;
 };
 
-INSTANTIATE_TEST_CASE_P(GPUConfig,
-                        GPUInfoCollectorTest,
-                        ::testing::ValuesIn(kMockedOperatingSystemKinds));
+INSTANTIATE_TEST_SUITE_P(GPUConfig,
+                         GPUInfoCollectorTest,
+                         ::testing::ValuesIn(kMockedOperatingSystemKinds));
 
 // TODO(rlp): Test the vendor and device id collection if deemed necessary as
 //            it involves several complicated mocks for each platform.

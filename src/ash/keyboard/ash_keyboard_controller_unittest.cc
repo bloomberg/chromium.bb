@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -139,6 +140,8 @@ class TestClient {
     keyboard_controller_ptr_.FlushForTesting();
   }
 
+  void FlushMojoForTesting() { keyboard_controller_ptr_.FlushForTesting(); }
+
   int got_keyboard_config_count() const { return got_keyboard_config_count_; }
   const KeyboardConfig& keyboard_config() const { return keyboard_config_; }
 
@@ -160,7 +163,7 @@ class TestClient {
 
 class TestContainerBehavior : public keyboard::ContainerBehavior {
  public:
-  TestContainerBehavior() : keyboard::ContainerBehavior(nullptr){};
+  TestContainerBehavior() : keyboard::ContainerBehavior(nullptr) {}
   ~TestContainerBehavior() override = default;
 
   // keyboard::ContainerBehavior
@@ -184,11 +187,6 @@ class TestContainerBehavior : public keyboard::ContainerBehavior {
                           const gfx::Rect& display_bounds) override {}
 
   bool IsOverscrollAllowed() const override { return true; }
-
-  bool IsDragHandle(const gfx::Vector2d& offset,
-                    const gfx::Size& keyboard_size) const override {
-    return false;
-  }
 
   void SavePosition(const gfx::Rect& keyboard_bounds_in_screen,
                     const gfx::Size& screen_size) override {}
@@ -455,6 +453,24 @@ TEST_F(AshKeyboardControllerTest, SetDraggableArea) {
   gfx::Rect bounds(10, 20, 30, 40);
   test_client()->SetDraggableArea(bounds);
   EXPECT_EQ(bounds, behavior->draggable_area());
+}
+
+TEST_F(AshKeyboardControllerTest, ChangingSessionRebuildsKeyboard) {
+  // Enable the keyboard.
+  test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // LOGGED_IN_NOT_ACTIVE session state needs to rebuild keyboard for supervised
+  // user profile.
+  Shell::Get()->ash_keyboard_controller()->OnSessionStateChanged(
+      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
+  test_client()->FlushMojoForTesting();
+  EXPECT_EQ(1, test_observer()->destroyed_count());
+
+  // ACTIVE session state also needs to rebuild keyboard for guest user profile.
+  Shell::Get()->ash_keyboard_controller()->OnSessionStateChanged(
+      session_manager::SessionState::ACTIVE);
+  test_client()->FlushMojoForTesting();
+  EXPECT_EQ(2, test_observer()->destroyed_count());
 }
 
 }  // namespace ash

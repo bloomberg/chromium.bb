@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -97,17 +96,19 @@ void AppLauncherLoginHandler::RegisterMessages() {
       "initializeSyncLogin",
       base::BindRepeating(&AppLauncherLoginHandler::HandleInitializeSyncLogin,
                           base::Unretained(this)));
+#if !defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "showSyncLoginUI",
       base::BindRepeating(&AppLauncherLoginHandler::HandleShowSyncLoginUI,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "loginMessageSeen",
-      base::BindRepeating(&AppLauncherLoginHandler::HandleLoginMessageSeen,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "showAdvancedLoginUI",
       base::BindRepeating(&AppLauncherLoginHandler::HandleShowAdvancedLoginUI,
+                          base::Unretained(this)));
+#endif
+  web_ui()->RegisterMessageCallback(
+      "loginMessageSeen",
+      base::BindRepeating(&AppLauncherLoginHandler::HandleLoginMessageSeen,
                           base::Unretained(this)));
 }
 
@@ -116,6 +117,7 @@ void AppLauncherLoginHandler::HandleInitializeSyncLogin(
   UpdateLogin();
 }
 
+#if !defined(OS_CHROMEOS)
 void AppLauncherLoginHandler::HandleShowSyncLoginUI(
     const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -141,6 +143,7 @@ void AppLauncherLoginHandler::HandleShowSyncLoginUI(
   chrome::ShowBrowserSignin(browser, access_point);
   RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
 }
+#endif
 
 void AppLauncherLoginHandler::RecordInHistogram(NTPSignInPromoBuckets type) {
   DCHECK(type >= NTP_SIGN_IN_PROMO_VIEWED &&
@@ -155,6 +158,7 @@ void AppLauncherLoginHandler::HandleLoginMessageSeen(
       prefs::kSignInPromoShowNTPBubble, false);
 }
 
+#if !defined(OS_CHROMEOS)
 void AppLauncherLoginHandler::HandleShowAdvancedLoginUI(
     const base::ListValue* args) {
   content::WebContents* web_contents = web_ui()->GetWebContents();
@@ -167,6 +171,7 @@ void AppLauncherLoginHandler::HandleShowAdvancedLoginUI(
           : signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK;
   chrome::ShowBrowserSignin(browser, access_point);
 }
+#endif
 
 void AppLauncherLoginHandler::UpdateLogin() {
   std::string username = profile_info_watcher_->GetAuthenticatedUsername();

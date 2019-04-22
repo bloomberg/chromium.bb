@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
@@ -161,9 +160,6 @@ TEST_F(EnumerateShellExtensionsTest, EnumerateApprovedShellExtensions) {
 }
 
 TEST_F(EnumerateShellExtensionsTest, EnumerateShellExtensionPaths) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kExtendedShellExtensionsEnumeration);
-
   struct {
     const wchar_t* guid;
     const wchar_t* path;

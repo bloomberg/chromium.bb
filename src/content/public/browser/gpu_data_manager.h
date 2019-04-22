@@ -12,6 +12,10 @@
 #include "base/process/process.h"
 #include "content/common/content_export.h"
 
+namespace base {
+class CommandLine;
+}
+
 namespace gpu {
 struct GPUInfo;
 struct VideoMemoryUsageStats;
@@ -24,6 +28,9 @@ class GpuDataManagerObserver;
 // This class is fully thread-safe.
 class GpuDataManager {
  public:
+  using VideoMemoryUsageStatsCallback =
+      base::OnceCallback<void(const gpu::VideoMemoryUsageStats&)>;
+
   // Getter for the singleton.
   CONTENT_EXPORT static GpuDataManager* GetInstance();
 
@@ -49,8 +56,7 @@ class GpuDataManager {
 
   // Requests that the GPU process report its current video memory usage stats.
   virtual void RequestVideoMemoryUsageStatsUpdate(
-      const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
-          callback) const = 0;
+      VideoMemoryUsageStatsCallback callback) const = 0;
 
   // Registers/unregister |observer|.
   virtual void AddObserver(GpuDataManagerObserver* observer) = 0;
@@ -61,10 +67,13 @@ class GpuDataManager {
   // Whether a GPU is in use (as opposed to a software renderer).
   virtual bool HardwareAccelerationEnabled() const = 0;
 
+  // Insert switches into gpu process command line: kUseGL, etc.
+  virtual void AppendGpuCommandLine(base::CommandLine* command_line) const = 0;
+
  protected:
   virtual ~GpuDataManager() {}
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_GPU_DATA_MANAGER_H_

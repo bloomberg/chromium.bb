@@ -72,7 +72,8 @@ class CorsURLLoaderFactoryTest : public testing::Test {
     cors_url_loader_factory_ = std::make_unique<CorsURLLoaderFactory>(
         network_context_.get(), std::move(factory_params),
         resource_scheduler_client,
-        mojo::MakeRequest(&cors_url_loader_factory_ptr_), &origin_access_list_);
+        mojo::MakeRequest(&cors_url_loader_factory_ptr_), &origin_access_list_,
+        nullptr);
   }
 
   void CreateLoaderAndStart(const ResourceRequest& request) {

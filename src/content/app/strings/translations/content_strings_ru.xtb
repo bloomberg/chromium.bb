@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">В этом месяце</translation>
 <translation id="1637811476055996098">Выбрать файлы</translation>
 <translation id="1650423536718072820">цитата в виде врезки</translation>
+<translation id="1727886345390570319">скрыть меню субтитров</translation>
 <translation id="1729654308190250600">Введите адрес электронной почты.</translation>
 <translation id="1758486001363313524">Другое…</translation>
 <translation id="1806710327868736751">диалоговое окно оповещения</translation>
@@ -41,6 +42,7 @@
 <translation id="2291999235780842123">флажок</translation>
 <translation id="2311842470354187719">разрыв страницы</translation>
 <translation id="2335594187091864976">окно выбора даты и времени</translation>
+<translation id="245932805758469625">оставшееся время до конца видео в секундах</translation>
 <translation id="248395913932153421">День</translation>
 <translation id="2507943997699731163">Заполните это поле.</translation>
 <translation id="2508569020611168319">список вкладок</translation>
@@ -50,7 +52,6 @@
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2657045182931379222">графический объект</translation>
 <translation id="2674318244760992338">нижний колонтитул</translation>
-<translation id="2706474812903655270">Видео воспроизводится в режиме "Картинка в картинке".</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="2723001399770238859">аудио</translation>
 <translation id="2746543609216772311">Минимальное значение должно быть <ph name="MINIMUM_DATE_OR_TIME" />.</translation>
@@ -71,11 +72,10 @@
 <translation id="3450233048674729344">Значение должно быть меньше или равно <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">описание</translation>
 <translation id="3557673793733683882">заголовок <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">оставшееся время до конца фильма в секундах</translation>
+<translation id="3685101356851116974">Изображение без описания</translation>
 <translation id="3706100364254443312">переключить</translation>
 <translation id="3732799496749320381">мм</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
-<translation id="3785482301506746191">полоса прокрутки</translation>
 <translation id="3808586225841795776">запрос</translation>
 <translation id="3822383571486410024">Минимально допустимое количество символов: <ph name="MIN_CHARACTERS" />. Длина текста сейчас: <ph name="CURRENT_LENGTH" />.</translation>
 <translation id="383465348367842624">Часть адреса до символа "<ph name="ATSIGN" />" не должна содержать символ "<ph name="INVALIDCHARACTER" />".</translation>
@@ -94,8 +94,10 @@
 <translation id="4360991593054037559">Введите допустимое значение. Ближайшие допустимые значения: <ph name="VALID_VALUE_LOW" /> и <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Вопросы и ответы</translation>
 <translation id="4413860115965805769">кнопка меню</translation>
+<translation id="4444765639179266822">Похоже, тут написано "<ph name="OCR_TEXT" />"</translation>
 <translation id="4446524499724042288">ссылка на словарную статью</translation>
 <translation id="4522570452068850558">Подробнее</translation>
+<translation id="4542388879936266156">осталось времени: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">форма</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Часть адреса после символа "<ph name="ATSIGN" />" не должна содержать символ "<ph name="INVALIDCHARACTER" />".</translation>
@@ -111,6 +113,7 @@
 <translation id="4992066212339426712">Включить звук</translation>
 <translation id="49969490063480558">Введите часть адреса после символа "<ph name="ATSIGN" />". Адрес "<ph name="INVALIDADDRESS" />" неполный.</translation>
 <translation id="5034860022980953847">индикатор хода выполнения</translation>
+<translation id="5090250355906949916">полоса воспроизведения видео</translation>
 <translation id="5093189678851173835">эпиграф</translation>
 <translation id="5117590920725113268">Показать следующий месяц</translation>
 <translation id="512758898067543763">заголовок строки</translation>
@@ -118,6 +121,7 @@
 <translation id="5164977714490026579">Значение должно быть больше или равно <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5307600278924710095">Введите часть адреса до символа "<ph name="ATSIGN" />". Адрес "<ph name="INVALIDADDRESS" />" неполный.</translation>
+<translation id="5334352251556557839">Не удалось воспроизвести медиафайл.</translation>
 <translation id="5406322316791861025">фигура</translation>
 <translation id="5453733299334684579">элемент дерева</translation>
 <translation id="5466621249238537318">Выберите один или несколько файлов.</translation>
@@ -132,7 +136,7 @@
 <translation id="5677946354068040947">дополнительные параметры</translation>
 <translation id="576709008726043716">введение</translation>
 <translation id="57838592816432529">Отключить звук</translation>
-<translation id="5860033963881614850">Выкл.</translation>
+<translation id="5860033963881614850">ВЫКЛ</translation>
 <translation id="588258955323874662">Полноэкранный режим</translation>
 <translation id="5888666972993069672">Транслируется на устройство "<ph name="DEVICE_FRIENDLY_NAME" />"</translation>
 <translation id="5939518447894949180">Сбросить</translation>
@@ -144,16 +148,20 @@
 <translation id="6150588977291308318">библиография</translation>
 <translation id="6164829606128959761">счетчик</translation>
 <translation id="6166809985690652833">послесловие</translation>
+<translation id="6209276755895393898">Кажется, это "<ph name="DESCRIPTION" />"</translation>
 <translation id="6213469881011901533">словарь</translation>
+<translation id="628938136236500310">Воспроизведение в режиме "Картинка в картинке"</translation>
 <translation id="6398862346408813489">Показать панель выбора месяца</translation>
 <translation id="6404546809543547843">полоса воспроизведения</translation>
+<translation id="6443871981718447451">показать меню субтитров</translation>
 <translation id="6453774872122745852">благодарности</translation>
 <translation id="648732519525291180">окно выбора даты</translation>
 <translation id="6550675742724504774">Параметры</translation>
+<translation id="6572309429103589720">Грамматическая ошибка</translation>
 <translation id="658823671542763450">полноэкранный режим</translation>
 <translation id="663493177488814956">лента</translation>
 <translation id="6637586476836377253">log</translation>
-<translation id="6643016212128521049">Очистить</translation>
+<translation id="6643016212128521049">Удалить</translation>
 <translation id="668171684555832681">Другой...</translation>
 <translation id="6692633176391053278">счетчик</translation>
 <translation id="6709570249143506788">Плохое качество воспроизведения</translation>
@@ -162,7 +170,6 @@
 <translation id="6820355525329141109">Не удалось загрузить плагин</translation>
 <translation id="6820615603175220800">ссылка на библиографию</translation>
 <translation id="6843725295806269523">отключить звук</translation>
-<translation id="6853785296079745596">скрыть субтитры</translation>
 <translation id="6885760532393684712">каталог</translation>
 <translation id="689129560213475294">выпускные данные</translation>
 <translation id="6934078000481955284">цитата</translation>
@@ -170,25 +177,29 @@
 <translation id="6981594929165378967">вставка</translation>
 <translation id="6989848892321993519">Текст должен быть не короче <ph name="MIN_CHARACTERS" /> симв. Длина текста сейчас: 1 символ.</translation>
 <translation id="709897737746224366">Введите данные в указанном формате.</translation>
+<translation id="7118469954320184356">Нет описания.</translation>
 <translation id="7139483182332611405">вступление</translation>
-<translation id="7223624360433298498">прошедшее время</translation>
 <translation id="7263440858009898357">Выберите один из пунктов списка.</translation>
 <translation id="727747134524199931">заголовок столбца</translation>
+<translation id="7320576522385648310">Буферизация…</translation>
 <translation id="7353453495576941748">упоминание</translation>
 <translation id="7364796246159120393">Выберите файл</translation>
 <translation id="739024184232394898">Другое…</translation>
 <translation id="7405738980073107433">концевые сноски</translation>
+<translation id="7410239719251593705">Похоже, это контент для взрослых. Описания нет.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">Скачать</translation>
 <translation id="7529102961911894712">обратная ссылка</translation>
+<translation id="7533959249147584474">Графическое изображение без описания</translation>
 <translation id="7647456547678091388">совет</translation>
 <translation id="7661956066982048809">графический документ</translation>
 <translation id="7673697353781729403">Часы</translation>
 <translation id="7681220483256441252">указатель</translation>
-<translation id="7720026100085573005">оставшееся время</translation>
 <translation id="7740050170769002709">HTML-содержание</translation>
+<translation id="7745230546936012372">Чтобы получить недостающие описания изображений, откройте контекстное меню.</translation>
 <translation id="7750228210027921155">Картинка в картинке</translation>
+<translation id="775297008183122718">Неверная запись</translation>
 <translation id="7789962463072032349">Пауза</translation>
 <translation id="7802800022689234070">треугольник развертывания</translation>
 <translation id="7888071071722539607">Адрес электронной почты должен содержать символ "<ph name="ATSIGN" />". В адресе "<ph name="INVALIDADDRESS" />" отсутствует символ "<ph name="ATSIGN" />".</translation>
@@ -197,10 +208,13 @@
 <translation id="8053789581856978548">поле поиска</translation>
 <translation id="8057695513531652401">примечание</translation>
 <translation id="8105797009065549151">ссылка на примечание</translation>
+<translation id="811583516810654505">Загружается описание...</translation>
 <translation id="8117451130807776954">На этой неделе</translation>
 <translation id="8199524924445686405">гггг</translation>
+<translation id="8261464734335370856">Орфографическая ошибка</translation>
 <translation id="8284326494547611709">Титры</translation>
 <translation id="835897206747267392">Недопустимые данные.</translation>
+<translation id="8403857369060869934">прошло времени: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">часть</translation>
 <translation id="8433900881053900389">панель инструментов</translation>
 <translation id="8444882422881193423">Число файлов: <ph name="NUMBER_OF_FILES" /></translation>
@@ -225,7 +239,6 @@
 <translation id="8987927404178983737">Месяц</translation>
 <translation id="901493112792887934">текущее время в секундах</translation>
 <translation id="9048119486235211610">навигация</translation>
-<translation id="9050748414552849310">показать субтитры</translation>
 <translation id="9062295712474918030">документ</translation>
 <translation id="9093215626363556771">выйти из режима "Картинка в картинке"</translation>
 <translation id="9108370397979208512">math</translation>

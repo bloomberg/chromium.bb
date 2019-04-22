@@ -37,7 +37,9 @@ interface CompositorFrameSink {
   // |local_surface_id|. The local_id component of |local_surface_id| must be
   // monontonically increasing for each change to LocalSurfaceId. Submit time is
   // set to when this function is called to used for tracing how much time is
-  // spend between a CompositorFrame is sent and received.
+  // spend between a CompositorFrame is sent and received. Once a
+  // |hit_test_region_list| is received, it will be reused until a new one is
+  // submitted.
   // TODO(weiliangc): Submit time is recorded in microseconds right now and
   // should be changed to use TimeTicks when Blink can send base types directly.
   // For successful swaps, the implementation must call

@@ -16,9 +16,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/case_conversion.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -278,7 +278,7 @@ void InMemoryURLIndexTest::SetUp() {
 
   // Set up a simple template URL service with a default search engine.
   template_url_service_ = std::make_unique<TemplateURLService>(
-      kTemplateURLData, arraysize(kTemplateURLData));
+      kTemplateURLData, base::size(kTemplateURLData));
   TemplateURL* template_url = template_url_service_->GetTemplateURLForKeyword(
       base::ASCIIToUTF16(kDefaultTemplateURLKeyword));
   template_url_service_->SetUserSelectedDefaultSearchProvider(template_url);
@@ -1094,7 +1094,7 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
   };
 
   const SchemeSet& whitelist(scheme_whitelist());
-  for (size_t i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < base::size(data); ++i) {
     GURL url(data[i].url_spec);
     EXPECT_EQ(data[i].expected_is_whitelisted,
               URLIndexPrivateData::URLSchemeIsWhitelisted(url, whitelist));
@@ -1342,7 +1342,7 @@ TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsets) {
                     {"abcd :", 5, 2, {0, 1, kInvalid}},
                     {"abcd :", 2, 3, {0, 0, 1}}};
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     SCOPED_TRACE(testing::Message()
                  << "search_string = " << test_cases[i].search_string
                  << ", cursor_position = " << test_cases[i].cursor_position);
@@ -1382,7 +1382,7 @@ TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsetsUnderscore) {
                     {"abcd_", 4, 2, {0, 1, kInvalid}},
                     {"ab_cd", 5, 1, {0, kInvalid, kInvalid}}};
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     SCOPED_TRACE(testing::Message()
                  << "search_string = " << test_cases[i].search_string
                  << ", cursor_position = " << test_cases[i].cursor_position);

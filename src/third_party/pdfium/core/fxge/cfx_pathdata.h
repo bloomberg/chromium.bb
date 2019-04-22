@@ -29,11 +29,12 @@ class FX_PATHPOINT {
   bool m_CloseFigure;
 };
 
-class CFX_PathData final : public Retainable {
+class CFX_PathData {
  public:
   CFX_PathData();
   CFX_PathData(const CFX_PathData& src);
-  ~CFX_PathData() override;
+  CFX_PathData(CFX_PathData&& src);
+  ~CFX_PathData();
 
   void Clear();
 
@@ -49,7 +50,7 @@ class CFX_PathData final : public Retainable {
   CFX_FloatRect GetBoundingBox() const;
   CFX_FloatRect GetBoundingBox(float line_width, float miter_limit) const;
 
-  void Transform(const CFX_Matrix* pMatrix);
+  void Transform(const CFX_Matrix& matrix);
   bool IsRect() const;
   bool GetZeroAreaPath(const CFX_Matrix* pMatrix,
                        bool bAdjust,
@@ -67,6 +68,17 @@ class CFX_PathData final : public Retainable {
 
  private:
   std::vector<FX_PATHPOINT> m_Points;
+};
+
+class CFX_RetainablePathData final : public Retainable, public CFX_PathData {
+ public:
+  template <typename T, typename... Args>
+  friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
+
+ private:
+  CFX_RetainablePathData();
+  CFX_RetainablePathData(const CFX_RetainablePathData& src);
+  ~CFX_RetainablePathData() override;
 };
 
 #endif  // CORE_FXGE_CFX_PATHDATA_H_

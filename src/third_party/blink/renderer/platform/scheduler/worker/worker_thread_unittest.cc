@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
@@ -116,23 +117,6 @@ TEST_F(WorkerThreadTest, TestDefaultTask) {
       *thread_->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
   completion.Wait();
-}
-
-TEST_F(WorkerThreadTest, TestTaskExecutedBeforeThreadDeletion) {
-  MockTask task;
-  base::WaitableEvent completion(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-
-  EXPECT_CALL(task, Run());
-  ON_CALL(task, Run()).WillByDefault(Invoke([&completion]() {
-    completion.Signal();
-  }));
-
-  PostCrossThreadTask(
-      *thread_->GetTaskRunner(), FROM_HERE,
-      CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
-  thread_.reset();
 }
 
 TEST_F(WorkerThreadTest, TestTaskObserver) {

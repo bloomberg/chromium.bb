@@ -103,9 +103,63 @@
         "type": "string",
         "description": "The state of the Select-to-Speak extension",
         "enum": ["selecting", "speaking", "inactive"]
+      },
+      {
+        "id": "FocusType",
+        "type": "string",
+        "description": "The type of visual appearance for the focus ring.",
+        "enum": ["glow", "solid", "dashed"]
+      },
+      {
+        "id": "FocusRingInfo",
+        "type": "object",
+        "properties": {
+          "rects": {
+            "type": "array",
+            "items": { "$ref": "ScreenRect" },
+            "description": "Array of rectangles to draw the accessibility focus ring around."
+          },
+          "type": {
+            "$ref": "FocusType",
+            "description": "The FocusType for the ring."
+          },
+          "color": {
+            "type": "string",
+            "description": "A CSS-style color string (e.g. #3F8213) that describes the primary color of the focus ring."
+          },
+          "secondaryColor": {
+            "type": "string",
+            "description": "A CSS-style color string (e.g. #3F82E4) that describes the secondary color of the focus ring, if there is one.",
+            "optional": true
+          },
+          "id": {
+            "type": "string",
+            "description": "An identifier for this focus ring, unique within the extension.",
+            "optional": true
+          }
+        }
       }
     ],
     "functions": [
+      {
+        "name": "getBatteryDescription",
+        "type": "function",
+        "description": "Called to request battery status from Chrome OS system.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Returns battery description as a string.",
+            "parameters": [
+              {
+                "name": "batteryDescription",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
       {
         "name": "setNativeAccessibilityEnabled",
         "type": "function",
@@ -119,21 +173,15 @@
         ]
       },
       {
-        "name": "setFocusRing",
+        "name": "setFocusRings",
         "type": "function",
-        "description": "Sets the bounds of the accessibility focus ring.",
+        "description": "Sets the given accessibility focus rings for this extension.",
         "parameters": [
           {
-            "name": "rects",
+            "name": "focusRings",
             "type": "array",
-            "items": { "$ref": "ScreenRect" },
-            "description": "Array of rectangles to draw the accessibility focus ring around."
-          },
-          {
-            "name": "color",
-            "type": "string",
-            "description": "CSS-style hex color string beginning with # like #FF9982 or #EEE.",
-            "optional": true
+            "items": { "$ref": "FocusRingInfo" },
+            "description": "Array of focus rings to draw."
           }
         ]
       },
@@ -199,6 +247,41 @@
               "maximum": 90  // 'z' key
             },
             "description": "The key codes for the keys that will be captured."
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
+            "name": "setSwitchAccessMenuState",
+            "type": "function",
+            "description": "Shows or hides the Switch Access menu. If shown, it is at the indicated location.",
+            "parameters": [
+              {
+                "name": "show",
+                "type": "boolean",
+                "description": "If true, show the menu. If false, hide the menu."
+              },
+              {
+                "name": "element_bounds",
+                "$ref": "ScreenRect",
+                "description": "Position of an element, in global screen coordinates, to place the menu next to."
+              },
+              {
+                "name": "item_count",
+                "type": "integer",
+                "description": "The number of items that need to be shown in the menu."
+              }
+            ],
+            "platforms": ["chromeos"]
+      },
+      {
+        "name": "forwardKeyEventsToSwitchAccess",
+        "type": "function",
+        "description": "When enabled, forwards key events to the Switch Access extension",
+        "parameters": [
+          {
+            "name": "shouldForward",
+            "type": "boolean"
           }
         ],
         "platforms": ["chromeos"]
@@ -273,6 +356,18 @@
         "description": "Toggles dictation between active and inactive states.",
         "parameters": [],
         "platforms": ["chromeos"]
+      },
+      {
+        "name": "setVirtualKeyboardVisible",
+        "type": "function",
+        "description": "Shows or hides the virtual keyboard.",
+        "parameters": [
+          {
+            "name": "isVisible",
+            "type": "boolean"
+          }
+        ],
+        "platforms": ["chromeos"]
       }
     ],
     "events": [
@@ -309,6 +404,20 @@
         "type": "function",
         "description": "Called when Chrome OS wants to change the Select-to-Speak state, between selecting with the mouse, speaking, and inactive.",
         "parameters": [],
+        "platforms": ["chromeos"]
+      },
+      {
+        "name": "onAnnounceForAccessibility",
+        "type": "function",
+        "description": "Called when an internal component within accessibility wants to force speech output for an accessibility extension. Do not use without approval from accessibility owners.",
+        "parameters": [
+          {
+            "name": "announceText",
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Text to be announced."
+          }
+        ],
         "platforms": ["chromeos"]
       }
     ]

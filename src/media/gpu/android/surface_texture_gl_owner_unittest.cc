@@ -50,7 +50,8 @@ class SurfaceTextureGLOwnerTest : public testing::Test {
     std::unique_ptr<MockAbstractTexture> texture =
         std::make_unique<MockAbstractTexture>(texture_id_);
     abstract_texture_ = texture->AsWeakPtr();
-    surface_texture_ = SurfaceTextureGLOwner::Create(std::move(texture));
+    surface_texture_ = SurfaceTextureGLOwner::Create(
+        std::move(texture), TextureOwner::Mode::kSurfaceTextureInsecure);
     texture_id_ = surface_texture_->GetTextureId();
     EXPECT_TRUE(abstract_texture_);
   }

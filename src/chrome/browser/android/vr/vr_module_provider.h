@@ -9,6 +9,7 @@
 #include <queue>
 
 #include "base/android/jni_android.h"
+#include "chrome/browser/android/tab_android.h"
 #include "device/vr/android/gvr/vr_module_delegate.h"
 
 namespace vr {
@@ -16,7 +17,7 @@ namespace vr {
 // Installs the VR module.
 class VrModuleProvider : public device::VrModuleDelegate {
  public:
-  VrModuleProvider();
+  explicit VrModuleProvider(TabAndroid* tab);
   ~VrModuleProvider() override;
   bool ModuleInstalled() override;
   void InstallModule(base::OnceCallback<void(bool)> on_finished) override;
@@ -29,7 +30,16 @@ class VrModuleProvider : public device::VrModuleDelegate {
  private:
   std::queue<base::OnceCallback<void(bool)>> on_finished_callbacks_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_module_provider_;
+  TabAndroid* tab_;
   SEQUENCE_CHECKER(sequence_checker_);
+};
+
+// Creates a VR module provider.
+class VrModuleProviderFactory : public device::VrModuleDelegateFactory {
+ public:
+  std::unique_ptr<device::VrModuleDelegate> CreateDelegate(
+      int render_process_id,
+      int render_frame_id) override;
 };
 
 }  // namespace vr

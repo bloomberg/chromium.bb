@@ -111,6 +111,7 @@ class NetErrorTabHelper
   // chrome::mojom::NetworkEasterEgg:
   void GetHighScore(GetHighScoreCallback callback) override;
   void UpdateHighScore(uint32_t high_score) override;
+  void ResetHighScore() override;
 
   // Shows the diagnostics dialog after its been sanitized, virtual for
   // testing.
@@ -158,6 +159,8 @@ class NetErrorTabHelper
   IntegerPrefMember easter_egg_high_score_;
 
   base::WeakPtrFactory<NetErrorTabHelper> weak_factory_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorTabHelper);
 };

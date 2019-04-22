@@ -19,15 +19,30 @@ namespace net {
 class AddressList;
 
 // DNSDomainFromDot - convert a domain string to DNS format. From DJB's
-// public domain DNS library.
+// public domain DNS library. |dotted| may include only characters a-z, A-Z,
+// 0-9, -, and _.
 //
 //   dotted: a string in dotted form: "www.google.com"
 //   out: a result in DNS form: "\x03www\x06google\x03com\x00"
 NET_EXPORT bool DNSDomainFromDot(const base::StringPiece& dotted,
                                  std::string* out);
 
+// DNSDomainFromUnrestrictedDot - convert a domain string to DNS format. Adapted
+// from DJB's public domain DNS library. No validation of the characters in
+// |dotted| is performed.
+//
+//   dotted: a string in dotted form: "Foo Printer._tcp.local"
+//   out: a result in DNS form: "\x0bFoo Printer\x04_tcp\x05local\x00"
+NET_EXPORT bool DNSDomainFromUnrestrictedDot(const base::StringPiece& dotted,
+                                             std::string* out);
+
 // Checks that a hostname is valid. Simple wrapper around DNSDomainFromDot.
 NET_EXPORT_PRIVATE bool IsValidDNSDomain(const base::StringPiece& dotted);
+
+// Checks that a hostname is valid. Simple wrapper around
+// DNSDomainFromUnrestrictedDot.
+NET_EXPORT_PRIVATE bool IsValidUnrestrictedDNSDomain(
+    const base::StringPiece& dotted);
 
 // Returns true if the character is valid in a DNS hostname label, whether in
 // the first position or later in the label.
@@ -92,6 +107,18 @@ uint16_t DnsQueryTypeToQtype(DnsQueryType dns_query_type);
 
 NET_EXPORT DnsQueryType
 AddressFamilyToDnsQueryType(AddressFamily address_family);
+
+// The SecureDnsMode specifies what types of lookups (secure/insecure) should
+// be performed and in what order when resolving a specific query.
+enum SecureDnsMode : int {
+  // In OFF mode, no DoH lookups should be performed.
+  OFF,
+  // In AUTOMATIC mode, DoH lookups should be performed first if DoH is
+  // available, and insecure DNS lookups should be performed as a fallback.
+  AUTOMATIC,
+  // In SECURE mode, only DoH lookups should be performed.
+  SECURE,
+};
 
 }  // namespace net
 

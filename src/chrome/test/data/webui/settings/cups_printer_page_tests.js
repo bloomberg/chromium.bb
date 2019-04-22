@@ -6,20 +6,30 @@
 class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
+      'addCupsPrinter',
       'addDiscoveredPrinter',
       'getCupsPrintersList',
       'getCupsPrinterManufacturersList',
       'getCupsPrinterModelsList',
       'getPrinterInfo',
+      'getPrinterPpdManufacturerAndModel',
       'startDiscoveringPrinters',
       'stopDiscoveringPrinters',
       'cancelPrinterSetUp',
+      'updateCupsPrinter',
+      'reconfigureCupsPrinter',
     ]);
 
     this.printerList = [];
     this.manufacturers = [];
     this.models = [];
     this.printerInfo = {};
+    this.printerPpdMakeModel = {};
+  }
+
+  /** @override */
+  addCupsPrinter(newPrinter) {
+    this.methodCalled('addCupsPrinter', newPrinter);
   }
 
   /** @override */
@@ -65,6 +75,22 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
   cancelPrinterSetUp(newPrinter) {
     this.methodCalled('cancelPrinterSetUp', newPrinter);
   }
+
+  /** @override */
+  updateCupsPrinter(printerId, printerName) {
+    this.methodCalled('updateCupsPrinter', printerId, printerName);
+  }
+
+  /** @override */
+  getPrinterPpdManufacturerAndModel(printerId) {
+    this.methodCalled('getPrinterPpdManufacturerAndModel', printerId);
+    return Promise.resolve(this.printerPpdMakeModel);
+  }
+
+  /** @override */
+  reconfigureCupsPrinter(printer) {
+    this.methodCalled('reconfigureCupsPrinter', printer);
+  }
 }
 
 suite('CupsAddPrinterDialogTests', function() {
@@ -95,6 +121,12 @@ suite('CupsAddPrinterDialogTests', function() {
     const cancelButton = dialog.$$('.cancel-button');
     assertTrue(!!cancelButton, 'Button is null');
     cancelButton.click();
+  }
+
+  function canAddPrinter(dialog, name, address) {
+    dialog.newPrinter.printerName = name;
+    dialog.newPrinter.printerAddress = address;
+    return dialog.canAddPrinter_();
   }
 
   let page = null;
@@ -147,58 +179,59 @@ suite('CupsAddPrinterDialogTests', function() {
 
   test('ValidIPV4', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
-    expectTrue(dialog.canAddPrinter_('Test printer', '127.0.0.1'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '127.0.0.1'));
   });
 
   test('ValidIPV4WithPort', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
-    expectTrue(dialog.canAddPrinter_('Test printer', '127.0.1.183:1234'));
+
+    expectTrue(canAddPrinter(dialog, 'Test printer', '127.0.0.1:1234'));
   });
 
   test('ValidIPV6', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
 
     // Test the full ipv6 address scheme.
-    expectTrue(dialog.canAddPrinter_('Test printer', '1:2:a3:ff4:5:6:7:8'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '1:2:a3:ff4:5:6:7:8'));
 
     // Test the shorthand prefix scheme.
-    expectTrue(dialog.canAddPrinter_('Test printer', '::255'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '::255'));
 
     // Test the shorthand suffix scheme.
-    expectTrue(dialog.canAddPrinter_('Test printer', '1::'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '1::'));
   });
 
   test('ValidIPV6WithPort', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
 
-    expectTrue(dialog.canAddPrinter_('Test printer', '[1:2:aa2:4]:12'));
-    expectTrue(dialog.canAddPrinter_('Test printer', '[::255]:54'));
-    expectTrue(dialog.canAddPrinter_('Test printer', '[1::]:7899'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '[1:2:aa2:4]:12'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '[::255]:54'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '[1::]:7899'));
   });
 
   test('InvalidIPV6', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
 
-    expectFalse(dialog.canAddPrinter_('Test printer', '1:2:3:4:5:6:7:8:9'));
-    expectFalse(dialog.canAddPrinter_('Test printer', '1:2:3:aa:a1245:2'));
-    expectFalse(dialog.canAddPrinter_('Test printer', '1:2:3:za:2'));
-    expectFalse(dialog.canAddPrinter_('Test printer', '1:::22'));
-    expectFalse(dialog.canAddPrinter_('Test printer', '1::2::3'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', '1:2:3:4:5:6:7:8:9'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', '1:2:3:aa:a1245:2'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', '1:2:3:za:2'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', '1:::22'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', '1::2::3'));
   });
 
   test('ValidHostname', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
 
-    expectTrue(dialog.canAddPrinter_('Test printer', 'hello-world.com'));
-    expectTrue(dialog.canAddPrinter_('Test printer', 'hello.world.com:12345'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', 'hello-world.com'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', 'hello.world.com:12345'));
   });
 
   test('InvalidHostname', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
 
-    expectFalse(dialog.canAddPrinter_('Test printer', 'helloworld!123.com'));
-    expectFalse(dialog.canAddPrinter_('Test printer', 'helloworld123-.com'));
-    expectFalse(dialog.canAddPrinter_('Test printer', '-helloworld123.com'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', 'helloworld!123.com'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', 'helloworld123-.com'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', '-helloworld123.com'));
   });
 
   /**
@@ -297,6 +330,11 @@ suite('CupsAddPrinterDialogTests', function() {
       printerMakeAndModel: '',
       printerName: 'Test Printer',
       printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
       printerProtocol: 'ipps',
       printerQueue: 'moreinfohere',
       printerStatus: '',
@@ -363,6 +401,11 @@ suite('CupsAddPrinterDialogTests', function() {
       printerMakeAndModel: '',
       printerName: 'printer',
       printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
       printerProtocol: 'usb',
       printerQueue: 'moreinfohere',
       printerStatus: '',
@@ -399,5 +442,543 @@ suite('CupsAddPrinterDialogTests', function() {
           assertEquals(expectedPrinter, printer.printerId);
           assertDeepEquals(usbInfo, printer.printerUsbInfo);
         });
+  });
+
+  /**
+   * Test that the close button exists on the configure dialog.
+   */
+  test('ConfigureDialogCancelDisabled', function() {
+    // Starts in discovery dialog, select add manually button.
+    const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
+    assertTrue(!!discoveryDialog);
+    discoveryDialog.$$('.secondary-button').click();
+    Polymer.dom.flush();
+
+    // Now we should be in the manually add dialog.
+    const addDialog = dialog.$$('add-printer-manually-dialog');
+    assertTrue(!!addDialog);
+    fillAddManuallyDialog(addDialog);
+
+    // Advance to the configure dialog.
+    addDialog.$$('.action-button').click();
+    Polymer.dom.flush();
+
+    // Configure is shown.
+    const configureDialog = dialog.$$('add-printer-configuring-dialog');
+    assertTrue(!!configureDialog);
+
+    const closeButton = configureDialog.$$('.cancel-button');
+    assertTrue(!!closeButton);
+    assertFalse(closeButton.disabled);
+
+    const waitForClose = test_util.eventToPromise('close', configureDialog);
+
+    closeButton.click();
+    Polymer.dom.flush();
+
+    return waitForClose.then(() => {
+      dialog = page.$$('settings-cups-add-printer-dialog');
+      assertFalse(dialog.showConfiguringDialog_);
+    });
+  });
+});
+
+suite('EditPrinterDialog', function() {
+  // Sets ppdManufacturer and ppdModel since ppdManufacturer has an observer
+  // that erases ppdModel when ppdManufacturer changes.
+  function setPpdManufacturerAndPpdModel(manufacturer, model) {
+    dialog.pendingPrinter_.ppdManufacturer = manufacturer;
+    dialog.pendingPrinter_.ppdModel = model;
+  }
+
+  function clickSaveButton(dialog) {
+    assertTrue(!!dialog, 'Dialog is null for save');
+    const saveButton = dialog.$$('.action-button');
+    assertTrue(!!saveButton, 'Button is null');
+    saveButton.click();
+  }
+
+  function clickCancelButton(dialog) {
+    assertTrue(!!dialog, 'Dialog is null for cancel');
+    const cancelButton = dialog.$$('.cancel-button');
+    assertTrue(!!cancelButton, 'Button is null');
+    cancelButton.click();
+  }
+
+  /** @type {?settings.TestCupsPrintersBrowserProxy} */
+  let cupsPrintersBrowserProxy = null;
+
+  let dialog = null;
+
+  setup(function() {
+    cupsPrintersBrowserProxy = new TestCupsPrintersBrowserProxy();
+    settings.CupsPrintersBrowserProxyImpl.instance_ = cupsPrintersBrowserProxy;
+    PolymerTest.clearBody();
+
+    dialog = document.createElement('settings-cups-edit-printer-dialog');
+
+    dialog.pendingPrinter_ = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: '',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: '',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: '',
+      printerQueue: '',
+      printerStatus: '',
+    };
+
+    document.body.appendChild(dialog);
+  });
+
+  teardown(function() {
+    dialog.remove();
+    dialog = null;
+  });
+
+  /**
+   * Test that USB printers can be editted.
+   */
+  test('USBPrinterCanBeEdited', function() {
+    dialog.pendingPrinter_ = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '03f0/e414?serial=CD4234',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: '',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: 'http://myfakeppddownload.com',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'usb',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+
+    // Set pendingPrinter_.ppdManufactuer and pendingPrinter_.ppdModel to
+    // simulate a printer for which we have a PPD.
+    setPpdManufacturerAndPpdModel('manufacturer', 'model');
+
+    // Edit the printer name.
+    const nameField = dialog.$$('.printer-name-input');
+    assertTrue(!!nameField);
+    nameField.value = 'edited printer';
+    nameField.fire('input');
+
+    // Assert that the "Save" button is enabled.
+    const saveButton = dialog.$$('.action-button');
+    assertTrue(!!saveButton);
+    assertTrue(!saveButton.disabled);
+  });
+
+  /**
+   * Test that the save button is disabled when the printer address or name is
+   * invalid.
+   */
+  test('EditPrinter', function() {
+    dialog.pendingPrinter_ = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '192.168.1.13',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: '',
+      printerManufacturer: '',
+      printerModel: 'HP',
+      printerMakeAndModel: 'Printmaster2000',
+      printerName: 'My Test Printer',
+      printerPPDPath: 'http://myfakeppddownload.com',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'ipps',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+
+    assertTrue(!!dialog.$$('#printerName'));
+    assertTrue(!!dialog.$$('#printerAddress'));
+
+    const saveButton = dialog.$$('.action-button');
+    assertTrue(!!saveButton);
+    assertTrue(saveButton.disabled);
+
+    // Change printer name to something valid.
+    printerName = dialog.$.printerName;
+    printerName.value = 'new printer name';
+    printerName.fire('input');
+    assertFalse(saveButton.disabled);
+
+    // Change printer address to something invalid.
+    dialog.$.printerAddress.value = 'abcdef:';
+    assertTrue(saveButton.disabled);
+
+    // Change back to something valid.
+    dialog.$.printerAddress.value = 'abcdef:1234';
+    assertFalse(saveButton.disabled);
+
+    // Change printer name to empty.
+    dialog.$.printerName.value = '';
+    assertTrue(saveButton.disabled);
+  });
+
+  test('CloseEditDialogDoesNotModifyActivePrinter', function() {
+    const expectedPrinter = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: 'test123',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: 'id_123',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'ipp',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+
+    dialog.activePrinter = Object.assign({}, expectedPrinter);
+
+    const nameField = dialog.$$('.printer-name-input');
+    assertTrue(!!nameField);
+    nameField.value = 'edited printer name';
+
+    const addressField = dialog.$$('#printerAddress');
+    assertTrue(!!addressField);
+    addressField.value = '9.9.9.9';
+
+    const queueField = dialog.$$('#printerQueue');
+    assertTrue(!!queueField);
+    queueField.value = 'edited/print';
+
+    const protocolField = dialog.$$('.md-select');
+    assertTrue(!!protocolField);
+    protocolField.value = 'http';
+
+    clickCancelButton(dialog);
+
+    // Assert that activePrinter properties were not changed.
+    assertEquals(expectedPrinter.printerName, dialog.activePrinter.printerName);
+    assertEquals(
+        expectedPrinter.printerAddress, dialog.activePrinter.printerAddress);
+    assertEquals(
+        expectedPrinter.printerQueue, dialog.activePrinter.printerQueue);
+    assertEquals(
+        expectedPrinter.printerProtocol, dialog.activePrinter.printerProtocol);
+  });
+
+  test('TestEditNameAndSave', function() {
+    dialog.pendingPrinter_ = {
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: 'id_123',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '03f0/e414?serial=CD4234',
+      printerProtocol: 'usb',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+    setPpdManufacturerAndPpdModel('manufacture', 'model');
+
+    // Initializing activePrinter will set |needsReconfigured_| to true. Reset
+    // it so that any changes afterwards mimic user input.
+    dialog.needsReconfigured_ = false;
+
+    const expectedName = 'editedName';
+    const nameField = dialog.$$('.printer-name-input');
+    assertTrue(!!nameField);
+    nameField.value = expectedName;
+
+    Polymer.dom.flush();
+
+    const saveButton = dialog.$$('.action-button');
+    saveButton.click();
+
+    return cupsPrintersBrowserProxy.whenCalled('updateCupsPrinter')
+        .then(function() {
+          assertEquals(expectedName, dialog.activePrinter.printerName);
+        });
+  });
+
+  test('TestEditFieldsAndSave', function() {
+    dialog.pendingPrinter_ = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '03f0/e414?serial=CD4234',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: 'id_123',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'ipp',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+    setPpdManufacturerAndPpdModel('manufacture', 'model');
+
+    // Initializing activePrinter will set |needsReconfigured_| to true. Reset
+    // it so that any changes afterwards mimic user input.
+    dialog.needsReconfigured_ = false;
+
+    // Editing more than just the printer name requires reconfiguring the
+    // printer.
+    const expectedAddress = '9.9.9.9';
+    const addressField = dialog.$$('#printerAddress');
+    assertTrue(!!addressField);
+    addressField.value = expectedAddress;
+    assertTrue(dialog.needsReconfigured_);
+
+    // Reset |needsReconfigured_| to false to test changes to printerQueue will
+    // set it back to true.
+    dialog.needsReconfigured_ = false;
+
+    const expectedQueue = 'editedQueue';
+    const queueField = dialog.$$('#printerQueue');
+    assertTrue(!!queueField);
+    queueField.value = expectedQueue;
+    assertTrue(dialog.needsReconfigured_);
+
+    clickSaveButton(dialog);
+
+    return cupsPrintersBrowserProxy.whenCalled('reconfigureCupsPrinter')
+        .then(function() {
+          assertEquals(expectedAddress, dialog.activePrinter.printerAddress);
+          assertEquals(expectedQueue, dialog.activePrinter.printerQueue);
+        });
+  });
+
+  test('TestChangingNameEnablesSaveButton', function() {
+    dialog.pendingPrinter_ = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: 'test:123',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: 'id_123',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'ipp',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+    setPpdManufacturerAndPpdModel('manufacture', 'model');
+
+    const saveButton = dialog.$$('.action-button');
+    assertTrue(!!saveButton);
+    assertTrue(saveButton.disabled);
+
+    const nameField = dialog.$$('.printer-name-input');
+    assertTrue(!!nameField);
+    nameField.value = 'edited printer';
+    nameField.fire('input');
+
+    assertTrue(!saveButton.disabled);
+  });
+
+  test('TestChangingAddressEnablesSaveButton', function() {
+    dialog.pendingPrinter_ = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: 'test:123',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: 'id_123',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'ipp',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+    setPpdManufacturerAndPpdModel('manufacture', 'model');
+
+    const saveButton = dialog.$$('.action-button');
+    assertTrue(!!saveButton);
+    assertTrue(saveButton.disabled);
+
+    const addressField = dialog.$$('#printerAddress');
+    assertTrue(!!addressField);
+    addressField.value = 'newAddress:789';
+    addressField.fire('input');
+
+    assertTrue(!saveButton.disabled);
+  });
+
+  test('TestChangingQueueEnablesSaveButton', function() {
+    dialog.pendingPrinter_ = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: 'test:123',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: 'id_123',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'ipp',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+    setPpdManufacturerAndPpdModel('manufacture', 'model');
+
+    const saveButton = dialog.$$('.action-button');
+    assertTrue(!!saveButton);
+    assertTrue(saveButton.disabled);
+
+    const queueField = dialog.$$('#printerQueue');
+    assertTrue(!!queueField);
+    queueField.value = 'newqueueinfo';
+    queueField.fire('input');
+
+    assertTrue(!saveButton.disabled);
+  });
+
+  test('TestChangingProtocolEnablesSaveButton', function() {
+    dialog.pendingPrinter_ = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: 'test:123',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: 'id_123',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'ipp',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+    setPpdManufacturerAndPpdModel('manufacture', 'model');
+    Polymer.dom.flush();
+
+    const saveButton = dialog.$$('.action-button');
+    assertTrue(!!saveButton);
+    assertTrue(saveButton.disabled);
+
+    const dropDown = dialog.$$('.md-select');
+    dropDown.value = 'http';
+    dropDown.dispatchEvent(new CustomEvent('change'), {'bubbles': true});
+    Polymer.dom.flush();
+    assertTrue(!saveButton.disabled);
+  });
+
+  test('TestChangingModelEnablesSaveButton', function() {
+    dialog.pendingPrinter_ = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: 'test:123',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: 'id_123',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'ipp',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+    setPpdManufacturerAndPpdModel('manufacture', 'model');
+    // Printers are considered initialized for editing after PPD make/models
+    // are set.
+    dialog.arePrinterFieldsInitialized_ = true;
+
+    const saveButton = dialog.$$('.action-button');
+    assertTrue(!!saveButton);
+    assertTrue(saveButton.disabled);
+
+    makeDropDown = dialog.$$('#printerPPDManufacturer');
+    makeDropDown.value = 'HP';
+    makeDropDown.dispatchEvent(new CustomEvent('change'), {'bubbles': true});
+    // Saving is disabled until a model is selected.
+    assertTrue(saveButton.disabled);
+
+    modelDropDown = dialog.$$('#printerPPDModel');
+    modelDropDown.value = 'HP 910';
+    modelDropDown.dispatchEvent(new CustomEvent('change'), {'bubbles': true});
+    Polymer.dom.flush();
+    assertTrue(!saveButton.disabled);
   });
 });

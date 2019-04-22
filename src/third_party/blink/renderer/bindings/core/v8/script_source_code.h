@@ -122,6 +122,6 @@ class CORE_EXPORT ScriptSourceCode final {
 
 }  // namespace blink
 
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::ScriptSourceCode);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::ScriptSourceCode)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_SOURCE_CODE_H_

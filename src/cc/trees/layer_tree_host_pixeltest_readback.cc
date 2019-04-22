@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
@@ -125,12 +126,13 @@ class LayerTreeHostReadbackPixelTest
 
     gpu::Mailbox mailbox = result->GetTextureResult()->mailbox;
     gpu::SyncToken sync_token = result->GetTextureResult()->sync_token;
+    gfx::ColorSpace color_space = result->GetTextureResult()->color_space;
     EXPECT_EQ(result->GetTextureResult()->color_space, output_color_space_);
     std::unique_ptr<viz::SingleReleaseCallback> release_callback =
         result->TakeTextureOwnership();
 
     const SkBitmap bitmap =
-        CopyMailboxToBitmap(result->size(), mailbox, sync_token);
+        CopyMailboxToBitmap(result->size(), mailbox, sync_token, color_space);
     release_callback->Run(gpu::SyncToken(), false);
 
     ReadbackResultAsBitmap(std::make_unique<viz::CopyOutputSkBitmapResult>(
@@ -448,7 +450,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, MultipleReadbacksOnLayer) {
       background.get(), base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     LayerTreeHostReadbackPixelTests,
     LayerTreeHostReadbackPixelTest,
     ::testing::Values(
@@ -545,7 +547,7 @@ TEST_P(LayerTreeHostReadbackDeviceScalePixelTest, ReadbackNonRootLayerSubrect) {
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     LayerTreeHostReadbackDeviceScalePixelTests,
     LayerTreeHostReadbackDeviceScalePixelTest,
     ::testing::Values(
@@ -600,11 +602,11 @@ TEST_P(LayerTreeHostReadbackColorSpacePixelTest, Readback) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(LayerTreeHostReadbackColorSpacePixelTests,
-                        LayerTreeHostReadbackColorSpacePixelTest,
-                        ::testing::Values(ReadbackTestConfig(
-                            LayerTreeHostReadbackPixelTest::PIXEL_TEST_GL,
-                            READBACK_BITMAP)));
+INSTANTIATE_TEST_SUITE_P(LayerTreeHostReadbackColorSpacePixelTests,
+                         LayerTreeHostReadbackColorSpacePixelTest,
+                         ::testing::Values(ReadbackTestConfig(
+                             LayerTreeHostReadbackPixelTest::PIXEL_TEST_GL,
+                             READBACK_BITMAP)));
 
 }  // namespace
 }  // namespace cc

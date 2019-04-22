@@ -6,19 +6,18 @@
 
 namespace chromeos {
 
-using ::testing::AtLeast;
-using ::testing::_;
+MockWelcomeScreen::MockWelcomeScreen(
+    WelcomeView* view,
+    const base::RepeatingClosure& exit_callback)
+    : WelcomeScreen(view, exit_callback) {}
 
-MockWelcomeScreen::MockWelcomeScreen(BaseScreenDelegate* base_screen_delegate,
-                                     Delegate* delegate,
-                                     WelcomeView* view)
-    : WelcomeScreen(base_screen_delegate, delegate, view) {}
+void MockWelcomeScreen::ExitScreen() {
+  exit_callback()->Run();
+}
 
 MockWelcomeScreen::~MockWelcomeScreen() = default;
 
-MockWelcomeView::MockWelcomeView() {
-  EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));
-}
+MockWelcomeView::MockWelcomeView() = default;
 
 MockWelcomeView::~MockWelcomeView() {
   if (screen_)

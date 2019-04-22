@@ -136,6 +136,17 @@ if (window.testRunner) {
         finish();
     }
 
+    PerfTestRunner.formatException = function (text, exception) {
+        return "Got an exception while " + text +
+            " with name=" + exception.name +
+            ", message=" + exception.message +
+            "\n" + exception.stack;
+    }
+
+    PerfTestRunner.logException = function (text, exception) {
+      PerfTestRunner.logFatalError(PerfTestRunner.formatException(text, exception));
+    }
+
     PerfTestRunner.forceLayout = function(doc) {
         doc = doc || document;
         if (doc.body)
@@ -192,7 +203,7 @@ if (window.testRunner) {
             try {
                 runner();
             } catch (exception) {
-                PerfTestRunner.logFatalError("Got an exception while running test.run with name=" + exception.name + ", message=" + exception.message);
+              PerfTestRunner.logException("running test.run", exception);
             }
             return;
         }
@@ -208,8 +219,11 @@ if (window.testRunner) {
                     currentTest.setup();
 
                 var measuredValue = runner();
+
+                if (currentTest.teardown)
+                    currentTest.teardown();
             } catch (exception) {
-                PerfTestRunner.logFatalError("Got an exception while running test.run with name=" + exception.name + ", message=" + exception.message);
+                PerfTestRunner.logException("running test.run", exception);
                 return;
             }
 
@@ -218,7 +232,7 @@ if (window.testRunner) {
             try {
                 ignoreWarmUpAndLog(measuredValue);
             } catch (exception) {
-                PerfTestRunner.logFatalError("Got an exception while logging the result with name=" + exception.name + ", message=" + exception.message);
+                PerfTestRunner.logException("logging the result", exception);
                 return;
             }
 
@@ -257,7 +271,7 @@ if (window.testRunner) {
             if (currentTest.done)
                 currentTest.done();
         } catch (exception) {
-            logInDocument("Got an exception while finalizing the test with name=" + exception.name + ", message=" + exception.message);
+            logInDocument(PerfTestRunner.formatException("finalizing the test", exception));
         }
 
         if (window.testRunner) {

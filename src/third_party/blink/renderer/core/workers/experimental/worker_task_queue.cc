@@ -31,7 +31,7 @@ WorkerTaskQueue* WorkerTaskQueue::Create(ExecutionContext* context,
   DCHECK(type == "user-interaction" || type == "background");
   TaskType task_type = type == "user-interaction" ? TaskType::kUserInteraction
                                                   : TaskType::kIdleTask;
-  return new WorkerTaskQueue(document, task_type);
+  return MakeGarbageCollected<WorkerTaskQueue>(document, task_type);
 }
 
 WorkerTaskQueue::WorkerTaskQueue(Document* document, TaskType task_type)
@@ -39,26 +39,34 @@ WorkerTaskQueue::WorkerTaskQueue(Document* document, TaskType task_type)
 
 ScriptPromise WorkerTaskQueue::postFunction(
     ScriptState* script_state,
-    const ScriptValue& function,
+    V8Function* function,
     AbortSignal* signal,
-    const Vector<ScriptValue>& arguments) {
+    const Vector<ScriptValue>& arguments,
+    ExceptionState& exception_state) {
   DCHECK(document_->IsContextThread());
-  DCHECK(function.IsFunction());
 
-  Task* task = new Task(ThreadPool::From(*document_), script_state, function,
-                        arguments, task_type_);
+  Task* task = MakeGarbageCollected<Task>(
+      script_state, ThreadPool::From(*document_), function, arguments,
+      task_type_, exception_state);
+  if (exception_state.HadException())
+    return ScriptPromise();
+
   if (signal)
     signal->AddAlgorithm(WTF::Bind(&Task::cancel, WrapWeakPersistent(task)));
-  return task->result(script_state);
+  return task->result(script_state, exception_state);
 }
 
 Task* WorkerTaskQueue::postTask(ScriptState* script_state,
-                                const ScriptValue& function,
-                                const Vector<ScriptValue>& arguments) {
+                                V8Function* function,
+                                const Vector<ScriptValue>& arguments,
+                                ExceptionState& exception_state) {
   DCHECK(document_->IsContextThread());
-  DCHECK(function.IsFunction());
-  return new Task(ThreadPool::From(*document_), script_state, function,
-                  arguments, task_type_);
+  Task* task = MakeGarbageCollected<Task>(
+      script_state, ThreadPool::From(*document_), function, arguments,
+      task_type_, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+  return task;
 }
 
 void WorkerTaskQueue::Trace(blink::Visitor* visitor) {

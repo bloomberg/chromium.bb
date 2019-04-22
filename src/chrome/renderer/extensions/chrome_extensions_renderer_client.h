@@ -40,6 +40,13 @@ namespace url {
 class Origin;
 }
 
+namespace v8 {
+class Isolate;
+template <typename T>
+class Local;
+class Object;
+}  // namespace v8
+
 class ChromeExtensionsRendererClient
     : public extensions::ExtensionsRendererClient {
  public:
@@ -70,6 +77,9 @@ class ChromeExtensionsRendererClient
                        const url::Origin* initiator_origin,
                        GURL* new_url,
                        bool* attach_same_site_cookies);
+  v8::Local<v8::Object> GetScriptableObject(
+      const blink::WebElement& plugin_element,
+      v8::Isolate* isolate);
   void SetExtensionDispatcherForTest(
       std::unique_ptr<extensions::Dispatcher> extension_dispatcher);
   extensions::Dispatcher* GetExtensionDispatcherForTest();
@@ -87,8 +97,7 @@ class ChromeExtensionsRendererClient
       const blink::WebElement& plugin_element,
       const GURL& resource_url,
       const std::string& mime_type,
-      const content::WebPluginInfo& plugin_info,
-      int32_t element_instance_id);
+      const content::WebPluginInfo& plugin_info);
   static blink::WebFrame* FindFrame(blink::WebLocalFrame* relative_to_frame,
                                     const std::string& name);
 

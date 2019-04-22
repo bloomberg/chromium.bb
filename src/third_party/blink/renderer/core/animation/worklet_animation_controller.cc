@@ -110,6 +110,19 @@ WorkletAnimationController::EnsureMainThreadMutatorDispatcher(
   return mutator_dispatcher;
 }
 
+// TODO(yigu): Currently one animator name is synced back per registration.
+// Eventually all registered names should be synced in batch once a module
+// completes its loading in the worklet scope. https://crbug.com/920722.
+void WorkletAnimationController::SynchronizeAnimatorName(
+    const String& animator_name) {
+  animator_names_.insert(animator_name);
+}
+
+bool WorkletAnimationController::IsAnimatorRegistered(
+    const String& animator_name) const {
+  return animator_names_.Contains(animator_name);
+}
+
 void WorkletAnimationController::SetMutationUpdate(
     std::unique_ptr<AnimationWorkletOutput> output_state) {
   if (!output_state)
@@ -126,7 +139,8 @@ void WorkletAnimationController::MutateAnimations() {
   if (!main_thread_mutator_client_)
     return;
 
-  main_thread_mutator_client_->Mutator()->Mutate(CollectAnimationStates());
+  main_thread_mutator_client_->Mutator()->MutateSynchronously(
+      CollectAnimationStates());
 }
 
 std::unique_ptr<AnimationWorkletDispatcherInput>

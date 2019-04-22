@@ -16,9 +16,9 @@
 #include "remoting/signaling/signal_strategy.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
-#include "third_party/webrtc/rtc_base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/socket_address.h"
 
-using buzz::QName;
+using jingle_xmpp::QName;
 
 namespace remoting {
 namespace protocol {
@@ -64,11 +64,11 @@ void JingleSessionManager::OnSignalStrategyStateChange(
     SignalStrategy::State state) {}
 
 bool JingleSessionManager::OnSignalStrategyIncomingStanza(
-    const buzz::XmlElement* stanza) {
+    const jingle_xmpp::XmlElement* stanza) {
   if (!JingleMessage::IsJingleMessage(stanza))
     return false;
 
-  std::unique_ptr<buzz::XmlElement> stanza_copy(new buzz::XmlElement(*stanza));
+  std::unique_ptr<jingle_xmpp::XmlElement> stanza_copy(new jingle_xmpp::XmlElement(*stanza));
   std::unique_ptr<JingleMessage> message(new JingleMessage());
   std::string error;
   if (!message->ParseXml(stanza, &error)) {
@@ -87,7 +87,7 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
             signal_strategy_->GetLocalAddress().id(), message->from.id());
 
     JingleSession* session = new JingleSession(this);
-    session->InitializeIncomingConnection(stanza->Attr(buzz::QN_ID), *message,
+    session->InitializeIncomingConnection(stanza->Attr(jingle_xmpp::QN_ID), *message,
                                           std::move(authenticator));
     sessions_[session->session_id_] = session;
 
@@ -135,14 +135,14 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
   }
 
   it->second->OnIncomingMessage(
-      stanza->Attr(buzz::QN_ID), std::move(message),
+      stanza->Attr(jingle_xmpp::QN_ID), std::move(message),
       base::Bind(&JingleSessionManager::SendReply, base::Unretained(this),
                  base::Passed(std::move(stanza_copy))));
   return true;
 }
 
 void JingleSessionManager::SendReply(
-    std::unique_ptr<buzz::XmlElement> original_stanza,
+    std::unique_ptr<jingle_xmpp::XmlElement> original_stanza,
     JingleMessageReply::ErrorType error) {
   signal_strategy_->SendStanza(
       JingleMessageReply(error).ToXml(original_stanza.get()));

@@ -14,6 +14,7 @@
 #include "SkFontArguments.h"
 #include "SkFontParameters.h"
 #include "SkFontStyle.h"
+#include "SkFontTypes.h"
 #include "SkRect.h"
 #include "SkString.h"
 
@@ -176,36 +177,20 @@ public:
      */
     static sk_sp<SkTypeface> MakeDeserialize(SkStream*);
 
-    enum Encoding : uint8_t {
-        kUTF8_Encoding,
-        kUTF16_Encoding,
-        kUTF32_Encoding
-    };
-
     /**
-     *  Given an array of character codes, of the specified encoding,
-     *  optionally return their corresponding glyph IDs (if glyphs is not NULL).
+     *  Given an array of UTF32 character codes, return their corresponding glyph IDs.
      *
-     *  @param chars pointer to the array of character codes
-     *  @param encoding how the characters are encoded
-     *  @param glyphs (optional) returns the corresponding glyph IDs for each
-     *          character code, up to glyphCount values. If a character code is
-     *          not found in the typeface, the corresponding glyph ID will be 0.
-     *  @param glyphCount number of code points in 'chars' to process. If glyphs
-     *          is not NULL, then it must point sufficient memory to write
-     *          glyphCount values into it.
-     *  @return the number of number of continuous non-zero glyph IDs computed
-     *          from the beginning of chars. This value is valid, even if the
-     *          glyphs parameter is NULL.
+     *  @param chars pointer to the array of UTF32 chars
+     *  @param number of chars and glyphs
+     *  @param glyphs returns the corresponding glyph IDs for each character.
      */
-    int charsToGlyphs(const void* chars, Encoding encoding, SkGlyphID glyphs[],
-                      int glyphCount) const;
+    void unicharsToGlyphs(const SkUnichar uni[], int count, SkGlyphID glyphs[]) const;
 
     /**
      *  Return the glyphID that corresponds to the specified unicode code-point
      *  (in UTF32 encoding). If the unichar is not supported, returns 0.
      *
-     *  This is a short-cut for calling charsToGlyphs() with kUTF32_Encoding for one code-point.
+     *  This is a short-cut for calling unicharsToGlyphs().
      */
     SkGlyphID unicharToGlyph(SkUnichar unichar) const;
 
@@ -314,7 +299,7 @@ public:
      *  collection.
      *  The caller is responsible for deleting the stream.
      */
-    SkStreamAsset* openStream(int* ttcIndex) const;
+    std::unique_ptr<SkStreamAsset> openStream(int* ttcIndex) const;
 
     /**
      *  Return the font data, or nullptr on failure.
@@ -380,7 +365,7 @@ protected:
     // dstArray is non-null, and points to an array of size this->countGlyphs().
     virtual void getGlyphToUnicodeMap(SkUnichar* dstArray) const;
 
-    virtual SkStreamAsset* onOpenStream(int* ttcIndex) const = 0;
+    virtual std::unique_ptr<SkStreamAsset> onOpenStream(int* ttcIndex) const = 0;
     // TODO: make pure virtual.
     virtual std::unique_ptr<SkFontData> onMakeFontData() const;
 
@@ -393,8 +378,7 @@ protected:
 
     virtual void onGetFontDescriptor(SkFontDescriptor*, bool* isLocal) const = 0;
 
-    virtual int onCharsToGlyphs(const void* chars, Encoding, SkGlyphID glyphs[],
-                                int glyphCount) const = 0;
+    virtual void onCharsToGlyphs(const SkUnichar* chars, int count, SkGlyphID glyphs[]) const = 0;
     virtual int onCountGlyphs() const = 0;
 
     virtual int onGetUPEM() const = 0;
@@ -437,6 +421,7 @@ private:
 
     friend class SkFontPriv;       // GetDefaultTypeface
     friend class SkPaintPriv;      // GetDefaultTypeface
+    friend class SkFont;           // getGlyphToUnicodeMap
 
 private:
     SkFontID            fUniqueID;

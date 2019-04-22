@@ -81,7 +81,7 @@ static gpu::gles2::ContextGroup* GetContextGroup(
     return nullptr;
   }
 
-  return stub->context_group().get();
+  return stub->decoder_context()->GetContextGroup();
 }
 
 static std::unique_ptr<gpu::gles2::AbstractTexture> CreateAbstractTexture(
@@ -288,6 +288,7 @@ void GpuVideoDecodeAccelerator::PictureReady(const Picture& picture) {
   params.visible_rect = picture.visible_rect();
   params.color_space = picture.color_space();
   params.allow_overlay = picture.allow_overlay();
+  params.read_lock_fences_enabled = picture.read_lock_fences_enabled();
   params.size_changed = picture.size_changed();
   params.surface_texture = picture.texture_owner();
   params.wants_promotion_hint = picture.wants_promotion_hint();
@@ -423,7 +424,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
 
   gpu::DecoderContext* decoder_context = stub_->decoder_context();
   gpu::gles2::TextureManager* texture_manager =
-      stub_->context_group()->texture_manager();
+      stub_->decoder_context()->GetContextGroup()->texture_manager();
 
   std::vector<PictureBuffer> buffers;
   std::vector<std::vector<scoped_refptr<gpu::gles2::TextureRef>>> textures;
@@ -554,7 +555,7 @@ void GpuVideoDecodeAccelerator::SetTextureCleared(const Picture& picture) {
   for (auto texture_ref : it->second) {
     GLenum target = texture_ref->texture()->target();
     gpu::gles2::TextureManager* texture_manager =
-        stub_->context_group()->texture_manager();
+        stub_->decoder_context()->GetContextGroup()->texture_manager();
     texture_manager->SetLevelCleared(texture_ref.get(), target, 0, true);
   }
   uncleared_textures_.erase(it);

@@ -38,7 +38,7 @@ namespace views {
 class ImageViewTest : public ViewsTestBase,
                       public ::testing::WithParamInterface<Axis> {
  public:
-  ImageViewTest() {}
+  ImageViewTest() = default;
 
   // ViewsTestBase:
   void SetUp() override {
@@ -141,8 +141,8 @@ TEST_P(ImageViewTest, ImageOriginForCustomViewBounds) {
   EXPECT_EQ(image_view_bounds, image_view()->bounds());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ImageViewTest,
-                        ::testing::Values(Axis::kHorizontal, Axis::kVertical));
+INSTANTIATE_TEST_SUITE_P(,
+                         ImageViewTest,
+                         ::testing::Values(Axis::kHorizontal, Axis::kVertical));
 
 }  // namespace views

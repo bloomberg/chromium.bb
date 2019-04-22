@@ -44,7 +44,6 @@ struct TextRunPaintInfo;
 
 class PLATFORM_EXPORT CachingWordShaper final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(CachingWordShaper);
 
  public:
   explicit CachingWordShaper(const Font& font) : font_(font) {}
@@ -71,6 +70,8 @@ class PLATFORM_EXPORT CachingWordShaper final {
   ShapeCache* GetShapeCache() const;
 
   const Font& font_;
+
+  DISALLOW_COPY_AND_ASSIGN(CachingWordShaper);
 };
 
 }  // namespace blink

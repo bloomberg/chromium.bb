@@ -16,16 +16,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.util.List;
@@ -35,6 +36,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Unit test suite for AutofillProfilesFragment.
  */
+
 @RunWith(BaseJUnit4ClassRunner.class)
 public class AutofillProfilesFragmentTest {
     @Rule
@@ -79,10 +81,19 @@ public class AutofillProfilesFragmentTest {
         Assert.assertNotNull(addProfile);
 
         // Add a profile.
-        updatePreferencesAndWait(autofillProfileFragment, addProfile,
-                new String[] {"Alice Doe", "Google", "111 Added St", "Los Angeles",
-                    "CA", "90291", "650-253-0000", "add@profile.com"},
-                R.id.editor_dialog_done_button, false);
+        // TODO(jeffreycohen): Change this test into a parameterized test that exercises
+        // both branches of this if statement.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME)) {
+            updatePreferencesAndWait(autofillProfileFragment, addProfile,
+                    new String[] {"Alice Doe", "Google", "111 Added St", "Los Angeles", "CA",
+                            "90291", "650-253-0000", "add@profile.com"},
+                    R.id.editor_dialog_done_button, false);
+        } else {
+            updatePreferencesAndWait(autofillProfileFragment, addProfile,
+                    new String[] {"Alice Doe", "111 Added St", "Los Angeles", "CA", "90291",
+                            "650-253-0000", "add@profile.com"},
+                    R.id.editor_dialog_done_button, false);
+        }
 
         Assert.assertEquals(7 /* One toggle + one add button + five profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
@@ -172,11 +183,17 @@ public class AutofillProfilesFragmentTest {
         Assert.assertEquals("John Doe", johnProfile.getTitle());
 
         // Edit a profile.
-        updatePreferencesAndWait(autofillProfileFragment, johnProfile,
-                new String[] {"Emily Doe", "Google", "111 Edited St", "Los Angeles",
-                        "CA", "90291", "650-253-0000", "edit@profile.com"},
-                R.id.editor_dialog_done_button, false);
-
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME)) {
+            updatePreferencesAndWait(autofillProfileFragment, johnProfile,
+                    new String[] {"Emily Doe", "Google", "111 Edited St", "Los Angeles", "CA",
+                            "90291", "650-253-0000", "edit@profile.com"},
+                    R.id.editor_dialog_done_button, false);
+        } else {
+            updatePreferencesAndWait(autofillProfileFragment, johnProfile,
+                    new String[] {"Emily Doe", "111 Edited St", "Los Angeles", "CA", "90291",
+                            "650-253-0000", "edit@profile.com"},
+                    R.id.editor_dialog_done_button, false);
+        }
         // Check if the preferences are updated correctly.
         Assert.assertEquals(6 /* One toggle + one add button + four profiles. */,
                 autofillProfileFragment.getPreferenceScreen().getPreferenceCount());
@@ -261,14 +278,14 @@ public class AutofillProfilesFragmentTest {
         Assert.assertNotNull(addProfile);
 
         // Open AutofillProfileEditorPreference.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> PreferencesTest.clickPreference(fragment, addProfile));
         rule.setEditorDialogAndWait(addProfile.getEditorDialog());
         // The keyboard is shown as soon as AutofillProfileEditorPreference comes into view.
         waitForKeyboardStatus(true, activity);
 
         // Hide the keyboard.
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             List<EditText> fields = addProfile.getEditorDialog().getEditableTextFieldsForTest();
             KeyboardVisibilityDelegate.getInstance().hideKeyboard(fields.get(0));
         });
@@ -301,7 +318,7 @@ public class AutofillProfilesFragmentTest {
     private void updatePreferencesAndWait(AutofillProfilesFragment profileFragment,
             AutofillProfileEditorPreference profile, String[] values, int buttonId,
             boolean waitForError) throws TimeoutException, InterruptedException {
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> PreferencesTest.clickPreference(profileFragment, profile));
 
         rule.setEditorDialogAndWait(profile.getEditorDialog());

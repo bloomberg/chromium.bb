@@ -4,6 +4,7 @@
 
 #import "ios/web/public/test/fakes/test_web_state_observer_util.h"
 
+#include "ios/web/public/ssl_status.h"
 #import "ios/web/public/web_state/navigation_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -11,6 +12,10 @@
 #endif
 
 namespace web {
+TestDidChangeVisibleSecurityStateInfo::TestDidChangeVisibleSecurityStateInfo() {
+}
+TestDidChangeVisibleSecurityStateInfo::
+    ~TestDidChangeVisibleSecurityStateInfo() {}
 TestDidStartNavigationInfo::TestDidStartNavigationInfo() {}
 TestDidStartNavigationInfo::~TestDidStartNavigationInfo() = default;
 TestDidFinishNavigationInfo::TestDidFinishNavigationInfo() {}

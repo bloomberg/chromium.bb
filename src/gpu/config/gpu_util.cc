@@ -25,7 +25,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "ui/gfx/extension_set.h"
-#include "ui/gl/gl_features.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)
@@ -51,9 +51,7 @@ GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
   if (!gpu_preferences.enable_android_surface_control)
     return kGpuFeatureStatusDisabled;
 
-  if (!gl::SurfaceControl::IsSupported())
-    return kGpuFeatureStatusDisabled;
-
+  DCHECK(gl::SurfaceControl::IsSupported());
   return kGpuFeatureStatusEnabled;
 #endif
 }
@@ -82,6 +80,13 @@ GpuFeatureStatus GetOopRasterizationFeatureStatus(
     const base::CommandLine& command_line,
     const GpuPreferences& gpu_preferences,
     const GPUInfo& gpu_info) {
+#if defined(OS_WIN)
+  // On Windows, using the validating decoder causes a lot of errors.  This
+  // could be fixed independently, but validating decoder is going away.
+  // See: http://crbug.com/949773.
+  if (!gpu_info.passthrough_cmd_decoder)
+    return kGpuFeatureStatusDisabled;
+#endif
   // OOP rasterization requires GPU rasterization, so if blacklisted or
   // disabled, report the same.
   auto status =
@@ -228,9 +233,18 @@ void AppendWorkaroundsToCommandLine(const GpuFeatureInfo& gpu_feature_info,
   if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_ES3_GL_CONTEXT)) {
     command_line->AppendSwitch(switches::kDisableES3GLContext);
   }
+  if (gpu_feature_info.IsWorkaroundEnabled(
+          DISABLE_ES3_GL_CONTEXT_FOR_TESTING)) {
+    command_line->AppendSwitch(switches::kDisableES3GLContextForTesting);
+  }
+#if defined(OS_WIN)
   if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_DIRECT_COMPOSITION)) {
     command_line->AppendSwitch(switches::kDisableDirectComposition);
   }
+  if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_DIRECT_COMPOSITION_LAYERS)) {
+    command_line->AppendSwitch(switches::kDisableDirectCompositionLayers);
+  }
+#endif
 }
 
 // Adjust gpu feature status based on enabled gpu driver bug workarounds.

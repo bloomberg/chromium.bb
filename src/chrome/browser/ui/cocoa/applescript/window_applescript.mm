@@ -124,9 +124,10 @@
 - (void)setActiveTabIndex:(NSNumber*)anActiveTabIndex {
   // Note: applescript is 1-based, that is lists begin with index 1.
   int atIndex = [anActiveTabIndex intValue] - 1;
-  if (atIndex >= 0 && atIndex < browser_->tab_strip_model()->count())
-    browser_->tab_strip_model()->ActivateTabAt(atIndex, true);
-  else
+  if (atIndex >= 0 && atIndex < browser_->tab_strip_model()->count()) {
+    browser_->tab_strip_model()->ActivateTabAt(
+        atIndex, {TabStripModel::GestureType::kOther});
+  } else
     AppleScript::SetError(AppleScript::errInvalidTabIndex);
 }
 

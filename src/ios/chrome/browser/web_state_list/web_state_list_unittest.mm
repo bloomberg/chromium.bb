@@ -13,6 +13,7 @@
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,6 +23,7 @@ namespace {
 const char kURL0[] = "https://chromium.org/0";
 const char kURL1[] = "https://chromium.org/1";
 const char kURL2[] = "https://chromium.org/2";
+const char kURL3[] = "https://chromium.org/3";
 
 // WebStateList observer that records which events have been called by the
 // WebStateList.
@@ -168,10 +170,17 @@ class WebStateListTest : public PlatformTest {
                                    WebStateList::INSERT_NO_FLAGS, opener);
   }
 
+  void AppendNewWebState(std::unique_ptr<web::TestWebState> web_state) {
+    web_state_list_.InsertWebState(
+        WebStateList::kInvalidIndex, std::move(web_state),
+        WebStateList::INSERT_NO_FLAGS, WebStateOpener());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebStateListTest);
 };
 
+// Test that empty() matches count() != 0.
 TEST_F(WebStateListTest, IsEmpty) {
   EXPECT_EQ(0, web_state_list_.count());
   EXPECT_TRUE(web_state_list_.empty());
@@ -183,6 +192,7 @@ TEST_F(WebStateListTest, IsEmpty) {
   EXPECT_FALSE(web_state_list_.empty());
 }
 
+// Test that inserting a single webstate works.
 TEST_F(WebStateListTest, InsertUrlSingle) {
   AppendNewWebState(kURL0);
 
@@ -191,6 +201,7 @@ TEST_F(WebStateListTest, InsertUrlSingle) {
   EXPECT_EQ(kURL0, web_state_list_.GetWebStateAt(0)->GetVisibleURL().spec());
 }
 
+// Test that inserting multiple webstates puts them in the expected places.
 TEST_F(WebStateListTest, InsertUrlMultiple) {
   web_state_list_.InsertWebState(0, CreateWebState(kURL0),
                                  WebStateList::INSERT_FORCE_INDEX,
@@ -209,6 +220,7 @@ TEST_F(WebStateListTest, InsertUrlMultiple) {
   EXPECT_EQ(kURL0, web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec());
 }
 
+// Test webstate activation.
 TEST_F(WebStateListTest, ActivateWebState) {
   AppendNewWebState(kURL0);
   EXPECT_EQ(nullptr, web_state_list_.GetActiveWebState());
@@ -221,6 +233,7 @@ TEST_F(WebStateListTest, ActivateWebState) {
             web_state_list_.GetActiveWebState());
 }
 
+// Test activating a webstate as it is inserted.
 TEST_F(WebStateListTest, InsertActivate) {
   web_state_list_.InsertWebState(
       0, CreateWebState(kURL0),
@@ -233,6 +246,96 @@ TEST_F(WebStateListTest, InsertActivate) {
             web_state_list_.GetActiveWebState());
 }
 
+// Test finding a known webstate.
+TEST_F(WebStateListTest, GetIndexOfWebState) {
+  std::unique_ptr<web::TestWebState> web_state_0 = CreateWebState(kURL0);
+  web::WebState* target_web_state = web_state_0.get();
+  std::unique_ptr<web::TestWebState> other_web_state = CreateWebState(kURL1);
+
+  // Target not yet in list.
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfWebState(target_web_state));
+
+  AppendNewWebState(kURL2);
+  AppendNewWebState(std::move(web_state_0));
+  // Target in list at index 1.
+  EXPECT_EQ(1, web_state_list_.GetIndexOfWebState(target_web_state));
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfWebState(other_web_state.get()));
+
+  // Another webstate with the same URL as the target also in list.
+  AppendNewWebState(kURL0);
+  EXPECT_EQ(1, web_state_list_.GetIndexOfWebState(target_web_state));
+
+  // Another webstate inserted before target; target now at index 2.
+  web_state_list_.InsertWebState(0, CreateWebState(kURL3),
+                                 WebStateList::INSERT_FORCE_INDEX,
+                                 WebStateOpener());
+  EXPECT_EQ(2, web_state_list_.GetIndexOfWebState(target_web_state));
+}
+
+// Test finding a webstate by URL.
+TEST_F(WebStateListTest, GetIndexOfWebStateWithURL) {
+  // Empty list.
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfWebStateWithURL(GURL(kURL0)));
+
+  // One webstate with a different URL in list.
+  AppendNewWebState(kURL1);
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfWebStateWithURL(GURL(kURL0)));
+
+  // Target URL at index 1.
+  AppendNewWebState(kURL0);
+  EXPECT_EQ(1, web_state_list_.GetIndexOfWebStateWithURL(GURL(kURL0)));
+
+  // Another webstate with the target URL also at index 3.
+  AppendNewWebState(kURL2);
+  AppendNewWebState(kURL0);
+  EXPECT_EQ(1, web_state_list_.GetIndexOfWebStateWithURL(GURL(kURL0)));
+}
+
+// Test finding a non-active webstate by URL.
+TEST_F(WebStateListTest, GetIndexOfInactiveWebStateWithURL) {
+  // Empty list.
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+
+  // One webstate with a different URL in list.
+  AppendNewWebState(kURL1);
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+
+  // Target URL at index 1.
+  AppendNewWebState(kURL0);
+  EXPECT_EQ(1, web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+
+  // Activate webstate at index 1.
+  web_state_list_.ActivateWebStateAt(1);
+  EXPECT_EQ(WebStateList::kInvalidIndex,
+            web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+  // GetIndexOfWebStateWithURL still finds it.
+  EXPECT_EQ(1, web_state_list_.GetIndexOfWebStateWithURL(GURL(kURL0)));
+
+  // Another webstate with the target URL also at index 3.
+  AppendNewWebState(kURL2);
+  AppendNewWebState(kURL0);
+  EXPECT_EQ(3, web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+  EXPECT_EQ(1, web_state_list_.GetIndexOfWebStateWithURL(GURL(kURL0)));
+
+  // Activate the webstate at index 2, so there the target URL is both before
+  // and after the active webstate.
+  web_state_list_.ActivateWebStateAt(2);
+  EXPECT_EQ(1, web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+
+  // Remove the webstate at index 1, so the only webstate with the target URL
+  // is after the active webstate.
+  web_state_list_.DetachWebStateAt(1);
+  // Active webstate is now index 1, target URL is at index 2.
+  EXPECT_EQ(2, web_state_list_.GetIndexOfInactiveWebStateWithURL(GURL(kURL0)));
+}
+
+// Test that inserted webstates correctly inherit openers.
 TEST_F(WebStateListTest, InsertInheritOpener) {
   AppendNewWebState(kURL0);
   web_state_list_.ActivateWebStateAt(0);
@@ -250,12 +353,13 @@ TEST_F(WebStateListTest, InsertInheritOpener) {
             web_state_list_.GetOpenerOfWebStateAt(1).opener);
 }
 
+// Test moving webstates one place to the "right" (to a higher index).
 TEST_F(WebStateListTest, MoveWebStateAtRightByOne) {
   AppendNewWebState(kURL0);
   AppendNewWebState(kURL1);
   AppendNewWebState(kURL2);
 
-  // Sanity check before closing WebState.
+  // Coherence check before closing WebState.
   EXPECT_EQ(3, web_state_list_.count());
   EXPECT_EQ(kURL0, web_state_list_.GetWebStateAt(0)->GetVisibleURL().spec());
   EXPECT_EQ(kURL1, web_state_list_.GetWebStateAt(1)->GetVisibleURL().spec());
@@ -271,6 +375,7 @@ TEST_F(WebStateListTest, MoveWebStateAtRightByOne) {
   EXPECT_EQ(kURL2, web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec());
 }
 
+// Test moving webstates more than one place to the "right" (to a higher index).
 TEST_F(WebStateListTest, MoveWebStateAtRightByMoreThanOne) {
   AppendNewWebState(kURL0);
   AppendNewWebState(kURL1);
@@ -292,6 +397,7 @@ TEST_F(WebStateListTest, MoveWebStateAtRightByMoreThanOne) {
   EXPECT_EQ(kURL0, web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec());
 }
 
+// Test moving webstates one place to the "left" (to a lower index).
 TEST_F(WebStateListTest, MoveWebStateAtLeftByOne) {
   AppendNewWebState(kURL0);
   AppendNewWebState(kURL1);
@@ -313,6 +419,7 @@ TEST_F(WebStateListTest, MoveWebStateAtLeftByOne) {
   EXPECT_EQ(kURL1, web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec());
 }
 
+// Test moving webstates more than one place to the "left" (to a lower index).
 TEST_F(WebStateListTest, MoveWebStateAtLeftByMoreThanOne) {
   AppendNewWebState(kURL0);
   AppendNewWebState(kURL1);
@@ -334,6 +441,8 @@ TEST_F(WebStateListTest, MoveWebStateAtLeftByMoreThanOne) {
   EXPECT_EQ(kURL1, web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec());
 }
 
+// Test "moving" webstates (calling MoveWebStateAt with the same source and
+// destination indexes.
 TEST_F(WebStateListTest, MoveWebStateAtSameIndex) {
   AppendNewWebState(kURL0);
   AppendNewWebState(kURL1);
@@ -355,6 +464,7 @@ TEST_F(WebStateListTest, MoveWebStateAtSameIndex) {
   EXPECT_EQ(kURL2, web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec());
 }
 
+// Test replacing webstates.
 TEST_F(WebStateListTest, ReplaceWebStateAt) {
   AppendNewWebState(kURL0);
   AppendNewWebState(kURL1);
@@ -376,6 +486,7 @@ TEST_F(WebStateListTest, ReplaceWebStateAt) {
   EXPECT_EQ(kURL1, old_web_state->GetVisibleURL().spec());
 }
 
+// Test detaching webstates at index 0.
 TEST_F(WebStateListTest, DetachWebStateAtIndexBegining) {
   AppendNewWebState(kURL0);
   AppendNewWebState(kURL1);
@@ -396,6 +507,7 @@ TEST_F(WebStateListTest, DetachWebStateAtIndexBegining) {
   EXPECT_EQ(kURL2, web_state_list_.GetWebStateAt(1)->GetVisibleURL().spec());
 }
 
+// Test detaching webstates at an index that isn't 0 or the last index.
 TEST_F(WebStateListTest, DetachWebStateAtIndexMiddle) {
   AppendNewWebState(kURL0);
   AppendNewWebState(kURL1);
@@ -416,6 +528,7 @@ TEST_F(WebStateListTest, DetachWebStateAtIndexMiddle) {
   EXPECT_EQ(kURL2, web_state_list_.GetWebStateAt(1)->GetVisibleURL().spec());
 }
 
+// Test detaching webstates at the last index.
 TEST_F(WebStateListTest, DetachWebStateAtIndexLast) {
   AppendNewWebState(kURL0);
   AppendNewWebState(kURL1);
@@ -436,6 +549,7 @@ TEST_F(WebStateListTest, DetachWebStateAtIndexLast) {
   EXPECT_EQ(kURL1, web_state_list_.GetWebStateAt(1)->GetVisibleURL().spec());
 }
 
+// Test finding opended-by indexes on an empty list.
 TEST_F(WebStateListTest, OpenersEmptyList) {
   EXPECT_TRUE(web_state_list_.empty());
 
@@ -454,6 +568,7 @@ TEST_F(WebStateListTest, OpenersEmptyList) {
                 nullptr, WebStateList::kInvalidIndex, true));
 }
 
+// Test finding opended-by indexes when no webstates have been opened.
 TEST_F(WebStateListTest, OpenersNothingOpened) {
   AppendNewWebState(kURL0);
   AppendNewWebState(kURL1);
@@ -477,6 +592,8 @@ TEST_F(WebStateListTest, OpenersNothingOpened) {
   }
 }
 
+// Test finding opended-by indexes when the opened child is at an index after
+// the parent.
 TEST_F(WebStateListTest, OpenersChildsAfterOpener) {
   AppendNewWebState(kURL0);
   web::WebState* opener = web_state_list_.GetWebStateAt(0);
@@ -529,6 +646,8 @@ TEST_F(WebStateListTest, OpenersChildsAfterOpener) {
                    opener, start_index, true));
 }
 
+// Test finding opended-by indexes when the opened child is at an index before
+// the parent.
 TEST_F(WebStateListTest, OpenersChildsBeforeOpener) {
   AppendNewWebState(kURL0);
   web::WebState* opener = web_state_list_.GetWebStateAt(0);

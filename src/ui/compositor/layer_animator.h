@@ -11,7 +11,6 @@
 #include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -273,7 +272,7 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
 
   using RunningAnimations = std::vector<RunningAnimation>;
   using AnimationQueue =
-      base::circular_deque<linked_ptr<LayerAnimationSequence>>;
+      base::circular_deque<std::unique_ptr<LayerAnimationSequence>>;
 
   // Finishes all animations by either advancing them to their final state or by
   // aborting them.

@@ -26,27 +26,26 @@ class FakeRendererPpapiHost : public content::RendererPpapiHost {
   ~FakeRendererPpapiHost() override {}
 
   ppapi::host::PpapiHost* GetPpapiHost() override { return nullptr; }
-  bool IsValidInstance(PP_Instance instance) const override { return true; }
+  bool IsValidInstance(PP_Instance instance) override { return true; }
   content::PepperPluginInstance* GetPluginInstance(
-      PP_Instance instance) const override {
+      PP_Instance instance) override {
     return nullptr;
   }
   content::RenderFrame* GetRenderFrameForInstance(
-      PP_Instance instance) const override {
+      PP_Instance instance) override {
     return render_frame_;
   }
-  content::RenderView* GetRenderViewForInstance(
-      PP_Instance instance) const override {
+  content::RenderView* GetRenderViewForInstance(PP_Instance instance) override {
     return nullptr;
   }
   blink::WebPluginContainer* GetContainerForInstance(
-      PP_Instance instance) const override {
+      PP_Instance instance) override {
     return nullptr;
   }
-  bool HasUserGesture(PP_Instance instance) const override { return false; }
-  int GetRoutingIDForWidget(PP_Instance instance) const override { return 0; }
+  bool HasUserGesture(PP_Instance instance) override { return false; }
+  int GetRoutingIDForWidget(PP_Instance instance) override { return 0; }
   gfx::Point PluginPointToRenderFrame(PP_Instance instance,
-                                      const gfx::Point& pt) const override {
+                                      const gfx::Point& pt) override {
     return gfx::Point();
   }
   IPC::PlatformFileForTransit ShareHandleWithRemote(
@@ -66,15 +65,14 @@ class FakeRendererPpapiHost : public content::RendererPpapiHost {
       const base::ReadOnlySharedMemoryRegion& region) override {
     return base::ReadOnlySharedMemoryRegion();
   }
-  bool IsRunningInProcess() const override { return false; }
-  std::string GetPluginName() const override { return std::string(); }
+  bool IsRunningInProcess() override { return false; }
+  std::string GetPluginName() override { return std::string(); }
   void SetToExternalPluginHost() override {}
   void CreateBrowserResourceHosts(
       PP_Instance instance,
       const std::vector<IPC::Message>& nested_msgs,
-      const base::Callback<void(const std::vector<int>&)>& callback)
-      const override {}
-  GURL GetDocumentURL(PP_Instance instance) const override { return GURL(); }
+      base::OnceCallback<void(const std::vector<int>&)> callback) override {}
+  GURL GetDocumentURL(PP_Instance instance) override { return GURL(); }
 
  private:
   content::RenderFrame* render_frame_;

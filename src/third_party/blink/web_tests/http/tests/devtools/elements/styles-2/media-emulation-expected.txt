@@ -5,12 +5,17 @@ Original style:
 element.style { ()
 
 [expanded] 
-#main { (<style>…</style>)
+#main { (<style>)
     color: red;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
 
 print media emulated:
 [expanded] 
@@ -18,43 +23,58 @@ element.style { ()
 
 [expanded] 
 @media print
-#main { (<style>…</style>)
+#main { (<style>)
     color: black;
 
 [expanded] 
-#main { (<style>…</style>)
+#main { (<style>)
 /-- overloaded --/     color: red;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
 
 tty media emulated:
 [expanded] 
 element.style { ()
 
 [expanded] 
-#main { (<style>…</style>)
+#main { (<style>)
     color: green;
 
 [expanded] 
-#main { (<style>…</style>)
+#main { (<style>)
 /-- overloaded --/     color: red;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
+
 No media emulated:
 [expanded] 
 element.style { ()
 
 [expanded] 
-#main { (<style>…</style>)
+#main { (<style>)
     color: red;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
 
 

@@ -19,7 +19,7 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/string_compare.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -584,9 +584,17 @@ base::string16 GetDisplayNameForLocale(const std::string& locale,
     UErrorCode error = U_ZERO_ERROR;
     const int kBufferSize = 1024;
 
-    int actual_size = uloc_getDisplayName(
-        locale_code.c_str(), display_locale.c_str(),
-        base::WriteInto(&display_name, kBufferSize), kBufferSize - 1, &error);
+    int actual_size;
+    // For Country code in ICU64 we need to call uloc_getDisplayCountry
+    if (locale_code[0] == '-' || locale_code[0] == '_') {
+      actual_size = uloc_getDisplayCountry(
+          locale_code.c_str(), display_locale.c_str(),
+          base::WriteInto(&display_name, kBufferSize), kBufferSize - 1, &error);
+    } else {
+      actual_size = uloc_getDisplayName(
+          locale_code.c_str(), display_locale.c_str(),
+          base::WriteInto(&display_name, kBufferSize), kBufferSize - 1, &error);
+    }
     DCHECK(U_SUCCESS(error));
     display_name.resize(actual_size);
   }
@@ -918,7 +926,7 @@ const char* const* GetAcceptLanguageListForTesting() {
 }
 
 size_t GetAcceptLanguageListSizeForTesting() {
-  return arraysize(kAcceptLanguageList);
+  return base::size(kAcceptLanguageList);
 }
 
 }  // namespace l10n_util

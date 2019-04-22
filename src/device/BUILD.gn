@@ -20,6 +20,7 @@ is_linux_without_udev = is_linux && !use_udev
 test("device_unittests") {
   sources = [
     "base/synchronization/one_writer_seqlock_unittest.cc",
+    "bluetooth/bluetooth_adapter_mac_metrics_unittest.mm",
     "bluetooth/bluetooth_adapter_mac_unittest.mm",
     "bluetooth/bluetooth_adapter_unittest.cc",
     "bluetooth/bluetooth_adapter_win_unittest.cc",
@@ -99,9 +100,12 @@ test("device_unittests") {
     "fido/u2f_command_constructor_unittest.cc",
     "fido/u2f_register_operation_unittest.cc",
     "fido/u2f_sign_operation_unittest.cc",
+    "fido/win/type_conversions_unittest.cc",
     "gamepad/abstract_haptic_gamepad_unittest.cc",
+    "gamepad/gamepad_id_list_unittest.cc",
     "gamepad/gamepad_provider_unittest.cc",
     "gamepad/gamepad_service_unittest.cc",
+    "gamepad/hid_haptic_gamepad_base_unittest.cc",
     "gamepad/public/cpp/gamepad_mojom_traits_unittest.cc",
     "test/run_all_unittests.cc",
   ]
@@ -114,6 +118,7 @@ test("device_unittests") {
   }
 
   deps = [
+    "//base",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//components/apdu",
@@ -138,10 +143,16 @@ test("device_unittests") {
     "//testing/gtest",
     "//third_party/blink/public:blink_headers",
     "//tools/usb_gadget",
+    "//ui/base",
     "//url",
   ]
 
-  # U2F and Serial:
+  data_deps = [
+    "bluetooth/strings:bluetooth_test_strings",
+    "//ui/resources:ui_test_pak_data",
+  ]
+
+  # U2F:
   # Android doesn't compile.
   # Linux, requires udev.
   if (!is_linux_without_udev && !is_android) {
@@ -156,15 +167,6 @@ test("device_unittests") {
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/mojom",
     ]
-
-    # Serial is supported in below platforms. See //device/servial/BUILD.gn
-    if (is_win || is_linux || is_mac) {
-      sources += [ "serial/serial_device_enumerator_unittest.cc" ]
-      deps += [ "//device/serial" ]
-      if (is_linux || is_mac) {
-        sources += [ "serial/serial_io_handler_posix_unittest.cc" ]
-      }
-    }
   }
 
   if (use_udev) {
@@ -217,11 +219,8 @@ test("device_unittests") {
   }
 
   if (is_chromeos) {
-    deps += [
-      "//chromeos",
-      "//chromeos:test_support",
-      "//chromeos:test_support_without_gmock",
-    ]
+    sources += [ "bluetooth/chromeos/bluetooth_utils_unittest.cc" ]
+    deps += [ "//chromeos/constants" ]
   }
 
   if ((is_chromeos || is_linux) && use_dbus) {
@@ -354,6 +353,8 @@ test("device_unittests") {
     sources += [
       "vr/orientation/orientation_device_provider_unittest.cc",
       "vr/orientation/orientation_device_unittest.cc",
+      "vr/util/fps_meter_unittest.cc",
+      "vr/util/sliding_average_unittest.cc",
       "vr/vr_device_base_unittest.cc",
       "vr/vr_display_impl_unittest.cc",
     ]
@@ -371,6 +372,18 @@ test("device_unittests") {
       "//services/device/public/cpp/generic_sensor",
       "//ui/display",
       "//ui/display:test_support",
+    ]
+  }
+
+  # Some gamepad tests require the HID service. Only build these tests on
+  # platforms where the HID service is enabled.
+  if (!is_android && !is_fuchsia) {
+    sources += [ "gamepad/nintendo_data_fetcher_unittest.cc" ]
+
+    deps += [
+      "//services/device:test_support",
+      "//services/device/hid",
+      "//services/device/hid:mocks",
     ]
   }
 }
@@ -407,8 +420,8 @@ if (is_android) {
       "//base:base_java",
       "//components/location/android:location_java",
       "//device/bluetooth:java",
-      "//third_party/android_deps:android_support_annotations_java",
-      "//third_party/android_tools:android_test_mock_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/android_sdk:android_test_mock_java",
     ]
 
     srcjar_deps = [ ":bluetooth_test_javagen" ]
@@ -425,7 +438,7 @@ if (is_android) {
       "//base:base_junit_test_support",
       "//device/gamepad:java",
       "//mojo/public/java:bindings_java",
-      "//third_party/android_deps:android_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
     srcjar_deps = [ "//device/gamepad:java_enums_srcjar" ]
   }

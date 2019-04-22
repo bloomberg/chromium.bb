@@ -28,14 +28,54 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://w3c.github.io/webrtc-pc/#dom-rtcicecomponent
+enum RTCIceComponent {
+    "rtp",
+    "rtcp"
+};
+
+// https://w3c.github.io/webrtc-pc/#rtciceprotocol-enum
+enum RTCIceProtocol {
+    "udp",
+    "tcp"
+};
+
+// https://w3c.github.io/webrtc-pc/#rtcicecandidatetype-enum
+enum RTCIceCandidateType {
+    "host",
+    "srflx",
+    "prflx",
+    "relay"
+};
+
+// https://w3c.github.io/webrtc-pc/#rtcicetcpcandidatetype-enum
+enum RTCIceTcpCandidateType {
+    "active",
+    "passive",
+    "so"
+};
+
+// https://w3c.github.io/webrtc-pc/#rtcicecandidate-interface
 [
-    Constructor(RTCIceCandidateInit candidateInitDict),
+    Constructor(optional RTCIceCandidateInit candidateInitDict),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     Exposed=Window
 ] interface RTCIceCandidate {
-    attribute DOMString candidate;
-    attribute DOMString sdpMid;
-    attribute unsigned short sdpMLineIndex;
-    serializer = {attribute};
+    readonly attribute DOMString candidate;
+    readonly attribute DOMString? sdpMid;
+    readonly attribute unsigned short? sdpMLineIndex;
+    readonly attribute DOMString? foundation;
+    readonly attribute RTCIceComponent? component;
+    readonly attribute unsigned long? priority;
+    readonly attribute DOMString? address;
+    readonly attribute RTCIceProtocol? protocol;
+    readonly attribute unsigned short? port;
+    readonly attribute RTCIceCandidateType? type;
+    readonly attribute RTCIceTcpCandidateType? tcpType;
+    readonly attribute DOMString? relatedAddress;
+    readonly attribute unsigned short? relatedPort;
+    readonly attribute DOMString? usernameFragment;
+    // TODO(peria): Return type should be RTCIceCandidateInit.
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

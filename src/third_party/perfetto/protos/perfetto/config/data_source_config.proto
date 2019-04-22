@@ -19,11 +19,13 @@ option optimize_for = LITE_RUNTIME;
 
 package perfetto.protos;
 
-import "perfetto/config/profiling/heapprofd_config.proto";
+import "perfetto/config/android/android_log_config.proto";
 import "perfetto/config/chrome/chrome_config.proto";
 import "perfetto/config/ftrace/ftrace_config.proto";
 import "perfetto/config/inode_file/inode_file_config.proto";
+import "perfetto/config/power/android_power_config.proto";
 import "perfetto/config/process_stats/process_stats_config.proto";
+import "perfetto/config/profiling/heapprofd_config.proto";
 import "perfetto/config/sys_stats/sys_stats_config.proto";
 import "perfetto/config/test_config.proto";
 
@@ -49,6 +51,11 @@ message DataSourceConfig {
   // DO NOT SET in consumer as this will be overridden by the service.
   optional uint32 trace_duration_ms = 3;
 
+  // Set by the service to indicate whether this tracing session has extra
+  // guardrails.
+  // DO NOT SET in consumer as this will be overridden by the service.
+  optional bool enable_extra_guardrails = 6;
+
   // Set by the service to indicate which tracing session the data source
   // belongs to. The intended use case for this is checking if two data sources,
   // one of which produces metadata for the other one, belong to the same trace
@@ -65,6 +72,8 @@ message DataSourceConfig {
   optional ProcessStatsConfig process_stats_config = 103;
   optional SysStatsConfig sys_stats_config = 104;
   optional HeapprofdConfig heapprofd_config = 105;
+  optional AndroidPowerConfig android_power_config = 106;
+  optional AndroidLogConfig android_log_config = 107;
 
   // This is a fallback mechanism to send a free-form text config to the
   // producer. In theory this should never be needed. All the code that

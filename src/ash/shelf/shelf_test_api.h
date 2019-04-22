@@ -5,7 +5,7 @@
 #ifndef ASH_SHELF_SHELF_TEST_API_H_
 #define ASH_SHELF_SHELF_TEST_API_H_
 
-#include "ash/public/interfaces/shelf_test_api.mojom.h"
+#include "ash/public/interfaces/shelf_test_api.test-mojom.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -24,7 +24,6 @@ class ShelfTestApi : public mojom::ShelfTestApi {
   // mojom::ShelfTestApi:
   void IsVisible(IsVisibleCallback cb) override;
   void UpdateVisibility(UpdateVisibilityCallback cb) override;
-  void HasOverlappingWindow(HasOverlappingWindowCallback cb) override;
   void IsAlignmentBottomLocked(IsAlignmentBottomLockedCallback cb) override;
 
  private:

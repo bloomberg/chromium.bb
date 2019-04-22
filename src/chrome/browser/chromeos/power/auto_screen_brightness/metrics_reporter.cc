@@ -22,17 +22,23 @@ constexpr base::TimeDelta kCheckDailyEventInternal =
     base::TimeDelta::FromSeconds(60);
 
 // Prefs corresponding to UserAdjustment values.
-constexpr std::array<const char*, 3> kDailyCountPrefs = {
-    prefs::kAutoScreenBrightnessMetricsNoAlsUserAdjustmentCount,
-    prefs::kAutoScreenBrightnessMetricsSupportedAlsUserAdjustmentCount,
-    prefs::kAutoScreenBrightnessMetricsUnsupportedAlsUserAdjustmentCount,
+constexpr std::array<const char*, MetricsReporter::kNumberAdjustmentTypes>
+    kDailyCountPrefs = {
+        prefs::kAutoScreenBrightnessMetricsNoAlsUserAdjustmentCount,
+        prefs::kAutoScreenBrightnessMetricsSupportedAlsUserAdjustmentCount,
+        prefs::kAutoScreenBrightnessMetricsUnsupportedAlsUserAdjustmentCount,
+        prefs::kAutoScreenBrightnessMetricsAtlasUserAdjustmentCount,
+        prefs::kAutoScreenBrightnessMetricsEveUserAdjustmentCount,
 };
 
 // Histograms corresponding to UserAdjustment values.
-constexpr std::array<const char*, 3> kDailyCountHistograms = {
-    MetricsReporter::kNoAlsUserAdjustmentName,
-    MetricsReporter::kSupportedAlsUserAdjustmentName,
-    MetricsReporter::kUnsupportedAlsUserAdjustmentName,
+constexpr std::array<const char*, MetricsReporter::kNumberAdjustmentTypes>
+    kDailyCountHistograms = {
+        MetricsReporter::kNoAlsUserAdjustmentName,
+        MetricsReporter::kSupportedAlsUserAdjustmentName,
+        MetricsReporter::kUnsupportedAlsUserAdjustmentName,
+        MetricsReporter::kAtlasUserAdjustmentName,
+        MetricsReporter::kEveUserAdjustmentName,
 };
 
 }  // namespace
@@ -41,6 +47,10 @@ constexpr char MetricsReporter::kDailyEventIntervalName[];
 constexpr char MetricsReporter::kNoAlsUserAdjustmentName[];
 constexpr char MetricsReporter::kSupportedAlsUserAdjustmentName[];
 constexpr char MetricsReporter::kUnsupportedAlsUserAdjustmentName[];
+constexpr char MetricsReporter::kAtlasUserAdjustmentName[];
+constexpr char MetricsReporter::kEveUserAdjustmentName[];
+
+constexpr int MetricsReporter::kNumberAdjustmentTypes;
 
 // This class is needed since metrics::DailyEvent requires taking ownership
 // of its observers. It just forwards events to MetricsReporter.

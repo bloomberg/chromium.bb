@@ -499,20 +499,18 @@ Sources.UISourceCodeFrame = class extends SourceFrame.SourceFrame {
   /**
    * @param {string} type
    */
-  _decorateTypeThrottled(type) {
+  async _decorateTypeThrottled(type) {
     if (this._typeDecorationsPending.has(type))
       return;
     this._typeDecorationsPending.add(type);
-    self.runtime.extensions(SourceFrame.LineDecorator)
-        .find(extension => extension.descriptor()['decoratorType'] === type)
-        .instance()
-        .then(decorator => {
-          this._typeDecorationsPending.delete(type);
-          this.textEditor.codeMirror().operation(() => {
-            decorator.decorate(
-                this._persistenceBinding ? this._persistenceBinding.network : this.uiSourceCode(), this.textEditor);
-          });
-        });
+    const decorator = await self.runtime.extensions(SourceFrame.LineDecorator)
+                          .find(extension => extension.descriptor()['decoratorType'] === type)
+                          .instance();
+    this._typeDecorationsPending.delete(type);
+    this.textEditor.codeMirror().operation(() => {
+      decorator.decorate(
+          this._persistenceBinding ? this._persistenceBinding.network : this.uiSourceCode(), this.textEditor, type);
+    });
   }
 
   _decorateAllTypes() {
@@ -584,7 +582,7 @@ Sources.UISourceCodeFrame.RowMessage = class {
     this._icon = this.element.createChild('label', '', 'dt-icon-label');
     this._icon.type = Sources.UISourceCodeFrame._iconClassPerLevel[message.level()];
     this._repeatCountElement =
-        this.element.createChild('label', 'text-editor-row-message-repeat-count hidden', 'dt-small-bubble');
+        this.element.createChild('span', 'text-editor-row-message-repeat-count hidden', 'dt-small-bubble');
     this._repeatCountElement.type = Sources.UISourceCodeFrame._bubbleTypePerLevel[message.level()];
     const linesContainer = this.element.createChild('div');
     const lines = this._message.text().split('\n');
@@ -636,7 +634,7 @@ Sources.UISourceCodeFrame.RowMessageBucket = class {
     this._decoration = createElementWithClass('div', 'text-editor-line-decoration');
     this._decoration._messageBucket = this;
     this._wave = this._decoration.createChild('div', 'text-editor-line-decoration-wave');
-    this._icon = this._wave.createChild('label', 'text-editor-line-decoration-icon', 'dt-icon-label');
+    this._icon = this._wave.createChild('span', 'text-editor-line-decoration-icon', 'dt-icon-label');
     /** @type {?number} */
     this._decorationStartColumn = null;
 

@@ -18,6 +18,7 @@
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/ime/mojo/ime.mojom.h"
 #include "ui/base/ui_base_types.h"
 
 namespace aura {
@@ -34,6 +35,7 @@ class ScopedInterfaceEndpointHandle;
 }
 
 namespace ui {
+class EventTarget;
 class KeyEvent;
 class OSExchangeData;
 class SystemInputInjector;
@@ -41,6 +43,7 @@ class SystemInputInjector;
 
 namespace ws {
 
+class TopLevelProxyWindow;
 class WindowManagerInterface;
 class WindowTree;
 
@@ -50,11 +53,15 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   // A client requested a new top-level window. Implementations should create a
   // new window, parenting it in the appropriate container. Return null to
   // reject the request.
+  // |top_level_proxy_window| is owned by the WindowService and may be used by
+  // the delegate to perform operations specific to the window. See
+  // TopLevelProxyWindow for details.
   // NOTE: it is recommended that when clients create a new window they use
   // WindowDelegateImpl as the WindowDelegate of the Window (this must be done
   // by the WindowServiceDelegate, as the Window's delegate can not be changed
   // after creation).
   virtual std::unique_ptr<aura::Window> NewTopLevel(
+      TopLevelProxyWindow* top_level_proxy_window,
       aura::PropertyConverter* property_converter,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties) = 0;
 
@@ -74,6 +81,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   virtual void RunWindowMoveLoop(aura::Window* window,
                                  mojom::MoveLoopSource source,
                                  const gfx::Point& cursor,
+                                 int window_component,
                                  DoneCallback callback);
 
   // Called to cancel an in-progress window move loop that was started by
@@ -97,6 +105,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   // Called to cancel an in-progress drag loop that was started by RunDragLoop.
   virtual void CancelDragLoop(aura::Window* window) {}
 
+  // Called to update resize shadow for the window.
+  virtual void SetWindowResizeShadow(aura::Window* window,
+                                     int window_component) {}
+
   // Called to update the text input state of the PlatformWindow associated with
   // |window|. It is a no-op if |window| is not focused.
   virtual void UpdateTextInputState(aura::Window* window,
@@ -116,6 +128,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   // remote client. A return value of null (the default) results in disallowing
   // injection.
   virtual ui::SystemInputInjector* GetSystemInputInjector();
+
+  // Returns the EventTarget which can process all of the events on the system.
+  virtual ui::EventTarget* GetGlobalEventTarget() = 0;
+
+  virtual aura::Window* GetRootWindowForDisplayId(int64_t display_id) = 0;
 
   // Returns the topmost visible window at the location in screen coordinate,
   // excluding |ignore|. |real_topmost| is updated to the topmost visible window
@@ -139,6 +156,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
       WindowTree* tree,
       const std::string& name,
       mojo::ScopedInterfaceEndpointHandle handle);
+
+  // Connects a particular client to the active input-method engine.
+  // This is called when a client that has the active focus requests the
+  // input-method engine (which typically happens every time focus changes).
+  virtual void ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
+                                  ime::mojom::ImeEngineClientPtr client) {}
 
  protected:
   virtual ~WindowServiceDelegate() = default;

@@ -170,7 +170,6 @@ video::-webkit-media-controls-timeline {
 /**
  * Media Buttons
  */
-
 audio::-webkit-media-controls-play-button,
 video::-webkit-media-controls-play-button,
 audio::-webkit-media-controls-mute-button,
@@ -191,13 +190,110 @@ video::-internal-media-controls-picture-in-picture-button {
   background-size: 24px;
   background-repeat: no-repeat;
   background-position: center center;
+
+  /*
+   * Width should change to 48px when we have new audio
+   * control specs. Button tap target in audio and video
+   * controls should be same.
+   */
   width: 32px;
-  height: 32px;
+  height: 48px;
   min-width: 32px;
   padding: 0;
   border-width: 0;
   background-color: initial;
   color: inherit;
+  cursor: pointer;
+
+  /* Cursor: pointer will cause a highlight when touch on it, this will disable it */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * Each hover background div's positioning rules
+ * are relative to their parent.
+ */
+video::-webkit-media-controls-play-button,
+audio::-webkit-media-controls-play-button,
+video::-webkit-media-controls-fullscreen-button,
+audio::-webkit-media-controls-fullscreen-button,
+video::-internal-media-controls-overflow-button,
+audio::-internal-media-controls-overflow-button {
+  position: relative;
+}
+
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
+  background-color: rgba(32, 33, 36, 0);
+  background-size: 24px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  left: 6px;
+  top: 6px;
+  transition: background-color .25s;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/*
+ * Audio control hover circle size should be same as video controls'. Due to increase of audio control tap target
+ * will break the layout when width is 300. We'll shrink the hover circle here. Should remove this rule once the new
+ * audio control layout specs are out
+ */
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
+  width: 32px;
+  height: 32px;
+  left: 0;
+  top: 8px;
+  border-radius: 16px;
+}
+
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]:enabled:focus::-internal-media-controls-button-hover-background {
+  background-color: rgba(32, 33, 36, 0.71);
+}
+
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-play-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-play-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-fullscreen-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-webkit-media-controls-fullscreen-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-internal-media-controls-overflow-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.audio-only input[pseudo="-internal-media-controls-overflow-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-play-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-webkit-media-controls-fullscreen-button" i]:enabled:focus::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]:enabled:hover::-internal-media-controls-button-hover-background,
+audio::-webkit-media-controls input[pseudo="-internal-media-controls-overflow-button" i]:enabled:focus::-internal-media-controls-button-hover-background {
+  background-color: rgba(32, 33, 36, 0.06);
+}
+
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.sizing-medium input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
+  background-size: 32px;
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  left: 10px;
+  top: 10px;
 }
 
 video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-play-button" i],
@@ -354,6 +450,97 @@ video::-webkit-media-controls-overlay-play-button {
   border: 0;
 }
 
+/*
+ * Volume control container
+ */
+audio::-webkit-media-controls-volume-control-container,
+video::-webkit-media-controls-volume-control-container {
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+  height: 48px;
+
+  /* 48(Mute button) + 52(Slider) + 16(Left padding) */
+  min-width: 116px;
+  transition: min-width .3s;
+}
+
+audio::-webkit-media-controls-volume-control-container.closed,
+video::-webkit-media-controls-volume-control-container.closed {
+  min-width: 48px;
+}
+
+/*
+ * Audio control hover container size should be same as video controls'. Due to increase of audio control tap target
+ * will break the layout when width is 300. We'll shrink the hover container here. Should remove the min-width rule
+ * once the new audio control layout specs are out.
+ */
+video::-webkit-media-controls.audio-only div[pseudo="-webkit-media-controls-volume-control-container" i],
+audio::-webkit-media-controls-volume-control-container {
+  min-width: 100px;
+}
+
+video::-webkit-media-controls.audio-only div[pseudo="-webkit-media-controls-volume-control-container" i].closed,
+audio::-webkit-media-controls-volume-control-container.closed {
+  min-width: 32px;
+}
+
+audio::-webkit-media-controls-volume-control-hover-background,
+video::-webkit-media-controls-volume-control-hover-background {
+  position: absolute;
+  z-index: -1;
+  background-color: #202124;
+  opacity: .71;
+  height: 36px;
+  width: 112px;
+  border-radius: 18px;
+  top: 6px;
+  right: 4px;
+  transition: width .3s ease, opacity .25s ease;
+}
+
+/*
+ * Audio control hover size should be same as video controls'. Due to increase of audio control tap target
+ * will break the layout when width is 300. We'll shrink the hover size here. Should remove this rule once the new
+ * audio control layout specs are out. (Don't remove the opacity rule)
+ */
+video::-webkit-media-controls.audio-only div[pseudo="-webkit-media-controls-volume-control-hover-background" i],
+audio::-webkit-media-controls-volume-control-hover-background {
+  height: 32px;
+  width: 100px;
+  border-radius: 16px;
+  top: 8px;
+  right: 0;
+  opacity: .06;
+}
+
+audio::-webkit-media-controls [pseudo="-webkit-media-controls-volume-control-container"].closed [pseudo="-webkit-media-controls-volume-control-hover-background"],
+video::-webkit-media-controls [pseudo="-webkit-media-controls-volume-control-container"].closed [pseudo="-webkit-media-controls-volume-control-hover-background"] {
+  width: 36px;
+  opacity: 0;
+}
+
+video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-volume-control-container" i] {
+  height: 64px;
+  min-width: 132px;
+}
+
+video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-volume-control-container" i].closed {
+  min-width: 64px;
+}
+
+video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-volume-control-hover-background" i] {
+  height: 44px;
+  width: 124px;
+  border-radius: 22px;
+  top: 10px;
+  right: 8px;
+}
+
+video::-webkit-media-controls.sizing-medum [pseudo="-webkit-media-controls-volume-control-container"].closed [pseudo="-webkit-media-controls-volume-control-hover-background"] {
+  width: 44px;
+}
+
 /**
  * The overlay-play-button is disabled if the video element is loaded via
  * MHTML, and a ruleset for input[type=button]:disabled in win.css has
@@ -392,7 +579,7 @@ input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-co
   background-image: -webkit-image-set(url(ic_pause.svg) 1x);
 }
 
-video::-webkit-media-controls.state-playing:not(.audio-only) input[pseudo="-webkit-media-controls-play-button" i] {
+video::-webkit-media-controls.state-playing:not(.audio-only) [pseudo="-webkit-media-controls-panel"] input[pseudo="-webkit-media-controls-play-button" i] {
   background-image: -webkit-image-set(url(ic_pause_white.svg) 1x);
 }
 
@@ -416,6 +603,11 @@ video::-webkit-media-controls-timeline {
   padding-right: 16px;
   margin: 0;
   background: transparent;
+  cursor: pointer;
+
+  /* Cursor: pointer will cause a highlight when touch on it, this will disable it */
+  -webkit-tap-highlight-color: transparent;
+
   /* This prevents layout issues in quirks mode */
   box-sizing: unset !important;
 }
@@ -574,6 +766,11 @@ video::-webkit-media-controls-volume-slider {
   margin: 0;
   padding: 22px 0; /* (48px button panel height - 4px slider height) / 2  */
   background: transparent;
+  cursor: pointer;
+
+  /* Cursor: pointer will cause a highlight when touch on it, this will disable it */
+  -webkit-tap-highlight-color: transparent;
+
   /* This prevents layout issues in quirks mode. */
   box-sizing: unset !important;
 }
@@ -627,6 +824,7 @@ video::-internal-media-controls-text-track-list,
 audio::-internal-media-controls-overflow-menu-list,
 video::-internal-media-controls-overflow-menu-list {
   position: fixed;
+  z-index: 2; /* Keep the menus above the loading animation at z-index 1. */
   max-width: 50%;
   max-height: 250px;
   min-width: 180px;
@@ -637,8 +835,13 @@ video::-internal-media-controls-overflow-menu-list {
   background: #FFFFFF;
   box-shadow: 0 1px 9px 0 rgba(0,0,0,0.40);
   border-radius: 2px;
-  transition: transform .2s ease-out, opacity .2s linear;
+  transition: transform .4s ease-out, opacity .3s linear;
   transform-origin: bottom right;
+}
+
+audio::-internal-media-controls-overflow-menu-list:focus,
+video::-internal-media-controls-overflow-menu-list:focus {
+  outline: none;
 }
 
 audio::-internal-media-controls-overflow-menu-list.closed,
@@ -646,19 +849,6 @@ video::-internal-media-controls-overflow-menu-list.closed {
   transform: scale(0);
   opacity: 0;
 }
-
-
-audio::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i].closed > *,
-video::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i].closed > * {
-  opacity: 0;
-}
-
-audio::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i] > *,
-video::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i] > * {
-  transition: opacity .2s linear .2s;
-}
-
-
 
 audio::-internal-media-controls-text-track-list-header,
 video::-internal-media-controls-text-track-list-header,
@@ -678,12 +868,22 @@ video::-internal-media-controls-overflow-menu-list-item {
   line-height: 48px;
   padding-left: 16px;
   padding-right: 16px;
+  cursor: pointer;
+  /* Cursor: pointer will cause a highlight when touch on it, this will disable it */
+  -webkit-tap-highlight-color: transparent;
+
+  /*
+   * Avoid slight text movement after item transition ends.
+   * By setting translateZ, we are using hardware acceleration,
+   * which allows a smoother transition.
+   */
+  transform: translateZ(0);
 }
 
-video::-internal-media-controls-text-track-list,
-video::-internal-media-controls-overflow-menu-list {
+video::-webkit-media-controls div[pseudo="-internal-media-controls-text-track-list" i].pip-presented,
+video::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i].pip-presented {
   max-width: 260px;
-  width: 95%;
+  width: 100%;
 }
 
 video::-webkit-media-controls.sizing-small label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input,
@@ -722,6 +922,55 @@ label[pseudo="-internal-media-controls-overflow-menu-list-item"] div span.subtit
   color: rgba(0,0,0,0.54);
 }
 
+/*
+ * Overflow menu list item animation
+ */
+audio::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i].closed > label,
+video::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i].closed > label {
+  transform: translate(0px, 15px);
+  opacity: 0;
+}
+
+audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i],
+video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i] {
+  transition: transform .3s, opacity .5s;
+}
+
+audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-0,
+video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-0 {
+  transition: opacity .5s .2s ease-in;
+}
+
+audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-1,
+video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-1 {
+  transition-delay: .25s;
+}
+
+audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-2,
+video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-2 {
+  transition-delay: .3s;
+}
+
+audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-3,
+video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-3 {
+  transition-delay: .35s;
+}
+
+audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-4,
+video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-4 {
+  transition-delay: .4s;
+}
+
+audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-5,
+video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-5 {
+  transition-delay: .45s
+}
+
+audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-6,
+video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-6 {
+  transition-delay: .5s
+}
+
 audio::-internal-media-controls-text-track-list-header:focus,
 video::-internal-media-controls-text-track-list-header:focus,
 audio::-internal-media-controls-overflow-menu-list-item:focus,
@@ -737,7 +986,7 @@ video::-internal-media-controls-text-track-list-header,
 audio::-internal-media-controls-text-track-list-item,
 video::-internal-media-controls-text-track-list-item {
   padding-left: 58px;
-  display: block;
+  justify-content: space-between;
 }
 
 audio::-internal-media-controls-text-track-list-header,
@@ -920,7 +1169,6 @@ video::cue {
     display: inline;
 
     background-color: rgba(0, 0, 0, 0.8);
-    padding: 2px 2px;
 }
 
 video::-webkit-media-text-track-region {
@@ -1082,6 +1330,15 @@ video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-control
   margin-left: -32px; /* play button width / -2 */
 }
 
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i],
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i] {
+  height: 43px;
+}
+
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i].closed,
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i].closed {
+  min-width: 43px;
+}
 
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-mute-button" i],
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i],
@@ -1111,6 +1368,13 @@ video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-contr
   border-radius: 4px;
 }
 
+/* Hide modern hover background */
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
+  display: none;
+}
+
 @media (-webkit-min-device-pixel-ratio: 2) {
   video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-panel" i] {
     background:
@@ -1120,7 +1384,7 @@ video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-contr
 }
 
 /**
- * Test mode styles to remove animations/transitions to make layout tests
+ * Test mode styles to remove animations/transitions to make web tests
  * simpler.
  */
 /* Hide the loading panel. */

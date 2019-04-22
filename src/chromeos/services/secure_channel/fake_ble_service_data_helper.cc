@@ -16,7 +16,7 @@ FakeBleServiceDataHelper::~FakeBleServiceDataHelper() = default;
 
 void FakeBleServiceDataHelper::SetAdvertisement(
     const DeviceIdPair& device_id_pair,
-    const cryptauth::DataWithTimestamp& service_data) {
+    const DataWithTimestamp& service_data) {
   device_id_pair_to_service_data_map_.insert({device_id_pair, service_data});
 }
 
@@ -27,20 +27,20 @@ void FakeBleServiceDataHelper::RemoveAdvertisement(
 
 void FakeBleServiceDataHelper::SetIdentifiedDevice(
     const std::string& service_data,
-    cryptauth::RemoteDeviceRef identified_device,
+    multidevice::RemoteDeviceRef identified_device,
     bool is_background_advertisement) {
   service_data_to_device_with_background_bool_map_.insert(
       {service_data, DeviceWithBackgroundBool(identified_device,
                                               is_background_advertisement)});
 }
 
-std::unique_ptr<cryptauth::DataWithTimestamp>
+std::unique_ptr<DataWithTimestamp>
 FakeBleServiceDataHelper::GenerateForegroundAdvertisement(
     const DeviceIdPair& device_id_pair) {
   if (!base::ContainsKey(device_id_pair_to_service_data_map_, device_id_pair))
     return nullptr;
 
-  return std::make_unique<cryptauth::DataWithTimestamp>(
+  return std::make_unique<DataWithTimestamp>(
       device_id_pair_to_service_data_map_.at(device_id_pair));
 }
 

@@ -78,6 +78,23 @@ assertComposition({
   {at: 1.5, is: 'rotateX(45deg) rotateY(540deg)'},
 ]);
 
+// Shorter list is extended with corresponding identity transforms for pairwise
+// interpolation.
+assertComposition({
+  property: 'transform',
+  underlying: 'rotateX(45deg)',
+  addFrom: 'none',
+  addTo: 'rotateY(360deg)',
+}, [
+  {at: -0.5, is: 'rotateX(45deg) rotateY(-180deg)'},
+  {at: 0, is: 'rotateX(45deg) rotateY(0deg)'},
+  {at: 0.25, is: 'rotateX(45deg) rotateY(90deg)'},
+  {at: 0.5, is: 'rotateX(45deg) rotateY(180deg)'},
+  {at: 0.75, is: 'rotateX(45deg) rotateY(270deg)'},
+  {at: 1, is: 'rotateX(45deg) rotateY(360deg)'},
+  {at: 1.5, is: 'rotateX(45deg) rotateY(540deg)'},
+]);
+
 // Matrix decomposition cases
 assertComposition({
   property: 'transform',
@@ -94,10 +111,11 @@ assertComposition({
   {at: 1.5, is: 'matrix3d(2.5, 0, 0, 0, 0, 5.55112e-16, 2.5, 0, 0, -1, 2.22045e-16, 0, -50, -3.06162e-15, -50, 1)'},
 ]);
 
+// Force a fallback to matrix interpolation.
 assertComposition({
   property: 'transform',
   underlying: 'rotateX(45deg)',
-  addFrom: 'none',
+  addFrom: 'scaleX(1)',
   addTo: 'rotateY(360deg)',
 }, [
   {at: -0.5, is: 'rotateX(45deg)'},
@@ -108,5 +126,6 @@ assertComposition({
   {at: 1, is: 'rotateX(45deg)'},
   {at: 1.5, is: 'rotateX(45deg)'},
 ]);
+
 </script>
 </body>

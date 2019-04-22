@@ -235,24 +235,27 @@ public class DownloadHistoryAdapter
 
     /**
      * Initializes the adapter.
+     * @param context The {@link Context} used for inflating views.
      * @param provider The {@link BackendProvider} that provides classes needed by the adapter.
      * @param uiConfig The UiConfig used to observe display style changes.
      */
-    public void initialize(BackendProvider provider, @Nullable UiConfig uiConfig) {
+    public void initialize(Context context, BackendProvider provider, @Nullable UiConfig uiConfig) {
         mBackendProvider = provider;
         mUiConfig = uiConfig;
 
-        generateHeaderItems();
+        generateHeaderItems(context);
 
         DownloadItemSelectionDelegate selectionDelegate =
                 (DownloadItemSelectionDelegate) mBackendProvider.getSelectionDelegate();
         selectionDelegate.initialize(this);
 
-        // Get all regular and (if necessary) off the record downloads.
-        DownloadDelegate downloadManager = getDownloadDelegate();
-        downloadManager.addDownloadObserver(this);
-        downloadManager.getAllDownloads(false);
-        if (mShowOffTheRecord) downloadManager.getAllDownloads(true);
+        if (!useNewDownloadPath()) {
+            // Get all regular and (if necessary) off the record downloads.
+            DownloadDelegate downloadManager = getDownloadDelegate();
+            downloadManager.addDownloadObserver(this);
+            downloadManager.getAllDownloads(false);
+            if (mShowOffTheRecord) downloadManager.getAllDownloads(true);
+        }
 
         // Fetch all Offline Items from OfflineContentProvider (Pages, Background Fetches etc).
         getAllOfflineItems();
@@ -272,6 +275,7 @@ public class DownloadHistoryAdapter
 
     @Override
     public void onAllDownloadsRetrieved(List<DownloadItem> result, boolean isOffTheRecord) {
+        if (useNewDownloadPath()) return;
         if (isOffTheRecord && !mShowOffTheRecord) return;
 
         BackendItems list = getDownloadItemList(isOffTheRecord);
@@ -411,15 +415,15 @@ public class DownloadHistoryAdapter
 
     /**
      * Initialize space display view in storage info header and generate header item for it.
+     * @param context The {@link Context} used for inflating views.
      */
-    private void generateHeaderItems() {
-        mSpaceDisplay = new SpaceDisplay(null, this);
+    private void generateHeaderItems(Context context) {
+        mSpaceDisplay = new SpaceDisplay(context, null, this);
         View view = mSpaceDisplay.getViewContainer();
         registerAdapterDataObserver(mSpaceDisplay);
         mSpaceDisplayHeaderItem = new HeaderItem(0, view);
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)) {
-            Context context = ContextUtils.getApplicationContext();
             View storageSummaryView =
                     LayoutInflater.from(context).inflate(R.layout.download_storage_summary, null);
             mStorageSummaryProvider =
@@ -436,6 +440,8 @@ public class DownloadHistoryAdapter
     /** Called when a new DownloadItem has been created by the native DownloadManager. */
     @Override
     public void onDownloadItemCreated(DownloadItem item) {
+        if (useNewDownloadPath()) return;
+
         boolean isOffTheRecord = item.getDownloadInfo().isOffTheRecord();
         if (isOffTheRecord && !mShowOffTheRecord) return;
 
@@ -452,6 +458,8 @@ public class DownloadHistoryAdapter
     /** Updates the list when new information about a download comes in. */
     @Override
     public void onDownloadItemUpdated(DownloadItem item) {
+        if (useNewDownloadPath()) return;
+
         DownloadItemWrapper newWrapper = createDownloadItemWrapper(item);
         if (newWrapper.isOffTheRecord() && !mShowOffTheRecord) return;
 
@@ -516,6 +524,8 @@ public class DownloadHistoryAdapter
      */
     @Override
     public void onDownloadItemRemoved(String guid, boolean isOffTheRecord) {
+        if (useNewDownloadPath()) return;
+
         if (isOffTheRecord && !mShowOffTheRecord) return;
         if (getDownloadItemList(isOffTheRecord).removeItem(guid) != null) {
             filter(mFilter);
@@ -763,6 +773,7 @@ public class DownloadHistoryAdapter
     }
 
     private DownloadItemWrapper createDownloadItemWrapper(DownloadItem item) {
+        assert !useNewDownloadPath();
         return new DownloadItemWrapper(item, mBackendProvider, mParentComponent);
     }
 
@@ -925,6 +936,10 @@ public class DownloadHistoryAdapter
                 for (TestObserver observer : mObservers) observer.onOfflineItemUpdated(item);
             }
         }
+    }
+
+    private static boolean useNewDownloadPath() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER);
     }
 
     private DownloadHistoryItemWrapper createDownloadHistoryItemWrapper(OfflineItem item) {

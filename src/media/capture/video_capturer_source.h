@@ -107,6 +107,12 @@ class CAPTURE_EXPORT VideoCapturerSource {
   // may still occur after this call, so the caller must take care to
   // use refcounted or weak references in |new_frame_callback|.
   virtual void StopCapture() = 0;
+
+  // Indicates to the source that a frame has been dropped.
+  virtual void OnFrameDropped(media::VideoCaptureFrameDropReason reason) {}
+
+  // Sends a log message to the source.
+  virtual void OnLog(const std::string& message) {}
 };
 
 }  // namespace media

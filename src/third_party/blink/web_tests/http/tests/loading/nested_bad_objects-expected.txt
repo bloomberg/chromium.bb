@@ -1,7 +1,8 @@
-main frame - didStartProvisionalLoadForFrame
+main frame - DidStartNavigation
+main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
 main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
-  PASS - nested image objects with bad mimetype do not cause a crash.
+ PASS - nested image objects with bad mimetype do not cause a crash.

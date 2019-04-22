@@ -318,12 +318,6 @@ IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, FocusAfterDetaching) {
 // commits in the original page while an interstitial is showing.
 // See https://crbug.com/729105.
 IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, UnderlyingSubframeCommit) {
-  // This test doesn't apply in PlzNavigate, since the subframe does not
-  // succesfully commit in that mode.
-  // TODO(creis, clamy): Determine if this is a bug that should be fixed.
-  if (IsBrowserSideNavigationEnabled())
-    return;
-
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load an initial page and inject an iframe that won't commit yet.

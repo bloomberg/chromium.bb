@@ -9,21 +9,25 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Application.ActivityLifecycleCallbacks;
 import android.os.Bundle;
+import android.support.annotation.AnyThread;
+import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 import android.view.Window;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.concurrent.GuardedBy;
 
 /**
  * Provides information about the current activity's status, and a way
@@ -67,13 +71,18 @@ public class ApplicationStatus {
         }
     }
 
-    private static final Object sCurrentApplicationStateLock = new Object();
+    /**
+     * A map of which observers listen to state changes from which {@link Activity}.
+     */
+    private static final Map<Activity, ActivityInfo> sActivityInfo =
+            Collections.synchronizedMap(new HashMap<Activity, ActivityInfo>());
 
     @SuppressLint("SupportAnnotationUsage")
     @ApplicationState
+    @GuardedBy("sActivityInfo")
     // The getStateForApplication() historically returned ApplicationState.HAS_DESTROYED_ACTIVITIES
     // when no activity has been observed.
-    private static Integer sCurrentApplicationState = ApplicationState.HAS_DESTROYED_ACTIVITIES;
+    private static int sCurrentApplicationState = ApplicationState.UNKNOWN;
 
     /** Last activity that was shown (or null if none or it was destroyed). */
     @SuppressLint("StaticFieldLeak")
@@ -81,13 +90,6 @@ public class ApplicationStatus {
 
     /** A lazily initialized listener that forwards application state changes to native. */
     private static ApplicationStateListener sNativeApplicationStateListener;
-
-    private static boolean sIsInitialized;
-
-    /**
-     * A map of which observers listen to state changes from which {@link Activity}.
-     */
-    private static final Map<Activity, ActivityInfo> sActivityInfo = new ConcurrentHashMap<>();
 
     /**
      * A list of observers to be notified when any {@link Activity} has a state change.
@@ -150,7 +152,9 @@ public class ApplicationStatus {
      * Registers a listener to receive window focus updates on activities in this application.
      * @param listener Listener to receive window focus events.
      */
+    @MainThread
     public static void registerWindowFocusChangedListener(WindowFocusChangedListener listener) {
+        assert isInitialized();
         sWindowFocusListeners.addObserver(listener);
     }
 
@@ -158,6 +162,7 @@ public class ApplicationStatus {
      * Unregisters a listener from receiving window focus updates on activities in this application.
      * @param listener Listener that doesn't want to receive window focus events.
      */
+    @MainThread
     public static void unregisterWindowFocusChangedListener(WindowFocusChangedListener listener) {
         sWindowFocusListeners.removeObserver(listener);
     }
@@ -211,14 +216,23 @@ public class ApplicationStatus {
         }
     }
 
+    public static boolean isInitialized() {
+        synchronized (sActivityInfo) {
+            return sCurrentApplicationState != ApplicationState.UNKNOWN;
+        }
+    }
+
     /**
      * Initializes the activity status for a specified application.
      *
      * @param application The application whose status you wish to monitor.
      */
+    @MainThread
     public static void initialize(Application application) {
-        if (sIsInitialized) return;
-        sIsInitialized = true;
+        assert !isInitialized();
+        synchronized (sActivityInfo) {
+            sCurrentApplicationState = ApplicationState.HAS_DESTROYED_ACTIVITIES;
+        }
 
         registerWindowFocusChangedListener(new WindowFocusChangedListener() {
             @Override
@@ -294,15 +308,6 @@ public class ApplicationStatus {
     }
 
     /**
-     * Asserts that initialize method has been called.
-     */
-    private static void assertInitialized() {
-        if (!sIsInitialized) {
-            throw new IllegalStateException("ApplicationStatus has not been initialized yet.");
-        }
-    }
-
-    /**
      * Must be called by the main activity when it changes state.
      *
      * @param activity Current activity.
@@ -321,7 +326,7 @@ public class ApplicationStatus {
         int oldApplicationState = getStateForApplication();
         ActivityInfo info;
 
-        synchronized (sCurrentApplicationStateLock) {
+        synchronized (sActivityInfo) {
             if (newState == ActivityState.CREATED) {
                 assert !sActivityInfo.containsKey(activity);
                 sActivityInfo.put(activity, new ActivityInfo());
@@ -337,7 +342,7 @@ public class ApplicationStatus {
                 if (activity == sActivity) sActivity = null;
             }
 
-            sCurrentApplicationState = determineApplicationState();
+            sCurrentApplicationState = determineApplicationStateLocked();
         }
 
         // Notify all state observers that are specifically listening to this activity.
@@ -363,6 +368,7 @@ public class ApplicationStatus {
      * Testing method to update the state of the specified activity.
      */
     @VisibleForTesting
+    @MainThread
     public static void onStateChangeForTesting(Activity activity, int newState) {
         onStateChange(activity, newState);
     }
@@ -371,6 +377,7 @@ public class ApplicationStatus {
      * @return The most recent focused {@link Activity} tracked by this class.  Being focused means
      *         out of all the activities tracked here, it has most recently gained window focus.
      */
+    @MainThread
     public static Activity getLastTrackedFocusedActivity() {
         return sActivity;
     }
@@ -378,13 +385,12 @@ public class ApplicationStatus {
     /**
      * @return A {@link List} of all non-destroyed {@link Activity}s.
      */
-    public static List<WeakReference<Activity>> getRunningActivities() {
-        assertInitialized();
-        List<WeakReference<Activity>> activities = new ArrayList<>();
-        for (Activity activity : sActivityInfo.keySet()) {
-            activities.add(new WeakReference<>(activity));
+    @AnyThread
+    public static List<Activity> getRunningActivities() {
+        assert isInitialized();
+        synchronized (sActivityInfo) {
+            return new ArrayList<>(sActivityInfo.keySet());
         }
-        return activities;
     }
 
     /**
@@ -431,8 +437,9 @@ public class ApplicationStatus {
      * @return The state of the specified activity (see {@link ActivityState}).
      */
     @ActivityState
+    @AnyThread
     public static int getStateForActivity(@Nullable Activity activity) {
-        ApplicationStatus.assertInitialized();
+        assert isInitialized();
         if (activity == null) return ActivityState.DESTROYED;
         ActivityInfo info = sActivityInfo.get(activity);
         return info != null ? info.getStatus() : ActivityState.DESTROYED;
@@ -441,10 +448,11 @@ public class ApplicationStatus {
     /**
      * @return The state of the application (see {@link ApplicationState}).
      */
+    @AnyThread
     @ApplicationState
     @CalledByNative
     public static int getStateForApplication() {
-        synchronized (sCurrentApplicationStateLock) {
+        synchronized (sActivityInfo) {
             return sCurrentApplicationState;
         }
     }
@@ -455,7 +463,9 @@ public class ApplicationStatus {
      * by another Activity's Fragment (e.g.).
      * @return Whether any Activity under this Application is visible.
      */
+    @AnyThread
     public static boolean hasVisibleActivities() {
+        assert isInitialized();
         int state = getStateForApplication();
         return state == ApplicationState.HAS_RUNNING_ACTIVITIES
                 || state == ApplicationState.HAS_PAUSED_ACTIVITIES;
@@ -465,7 +475,9 @@ public class ApplicationStatus {
      * Checks to see if there are any active Activity instances being watched by ApplicationStatus.
      * @return True if all Activities have been destroyed.
      */
+    @AnyThread
     public static boolean isEveryActivityDestroyed() {
+        assert isInitialized();
         return sActivityInfo.isEmpty();
     }
 
@@ -473,7 +485,9 @@ public class ApplicationStatus {
      * Registers the given listener to receive state changes for all activities.
      * @param listener Listener to receive state changes.
      */
+    @MainThread
     public static void registerStateListenerForAllActivities(ActivityStateListener listener) {
+        assert isInitialized();
         sGeneralActivityStateListeners.addObserver(listener);
     }
 
@@ -485,19 +499,14 @@ public class ApplicationStatus {
      * @param listener Listener to receive state changes.
      * @param activity Activity to track or {@code null} to track all activities.
      */
+    @MainThread
     @SuppressLint("NewApi")
-    public static void registerStateListenerForActivity(ActivityStateListener listener,
-            Activity activity) {
-        if (activity == null) {
-            throw new IllegalStateException("Attempting to register listener on a null activity.");
-        }
-        ApplicationStatus.assertInitialized();
+    public static void registerStateListenerForActivity(
+            ActivityStateListener listener, Activity activity) {
+        assert isInitialized();
+        assert activity != null;
 
         ActivityInfo info = sActivityInfo.get(activity);
-        if (info == null) {
-            throw new IllegalStateException(
-                    "Attempting to register listener on an untracked activity.");
-        }
         assert info.getStatus() != ActivityState.DESTROYED;
         info.getListeners().addObserver(listener);
     }
@@ -506,12 +515,15 @@ public class ApplicationStatus {
      * Unregisters the given listener from receiving activity state changes.
      * @param listener Listener that doesn't want to receive state changes.
      */
+    @MainThread
     public static void unregisterActivityStateListener(ActivityStateListener listener) {
         sGeneralActivityStateListeners.removeObserver(listener);
 
         // Loop through all observer lists for all activities and remove the listener.
-        for (ActivityInfo info : sActivityInfo.values()) {
-            info.getListeners().removeObserver(listener);
+        synchronized (sActivityInfo) {
+            for (ActivityInfo info : sActivityInfo.values()) {
+                info.getListeners().removeObserver(listener);
+            }
         }
     }
 
@@ -519,6 +531,7 @@ public class ApplicationStatus {
      * Registers the given listener to receive state changes for the application.
      * @param listener Listener to receive state state changes.
      */
+    @MainThread
     public static void registerApplicationStateListener(ApplicationStateListener listener) {
         sApplicationStateListeners.addObserver(listener);
     }
@@ -527,6 +540,7 @@ public class ApplicationStatus {
      * Unregisters the given listener from receiving state changes.
      * @param listener Listener that doesn't want to receive state changes.
      */
+    @MainThread
     public static void unregisterApplicationStateListener(ApplicationStateListener listener) {
         sApplicationStateListeners.removeObserver(listener);
     }
@@ -536,17 +550,17 @@ public class ApplicationStatus {
      * in static classes isn't reset. This function allows to reset the application status to avoid
      * being in a dirty state.
      */
+    @MainThread
     public static void destroyForJUnitTests() {
-        sApplicationStateListeners.clear();
-        sGeneralActivityStateListeners.clear();
-        sActivityInfo.clear();
-        sWindowFocusListeners.clear();
-        sIsInitialized = false;
-        synchronized (sCurrentApplicationStateLock) {
-            sCurrentApplicationState = determineApplicationState();
+        synchronized (sActivityInfo) {
+            sApplicationStateListeners.clear();
+            sGeneralActivityStateListeners.clear();
+            sActivityInfo.clear();
+            sWindowFocusListeners.clear();
+            sCurrentApplicationState = ApplicationState.UNKNOWN;
+            sActivity = null;
+            sNativeApplicationStateListener = null;
         }
-        sActivity = null;
-        sNativeApplicationStateListener = null;
     }
 
     /**
@@ -583,14 +597,14 @@ public class ApplicationStatus {
      *         HAS_DESTROYED_ACTIVITIES if none are running/paused/stopped.
      */
     @ApplicationState
-    private static int determineApplicationState() {
+    @GuardedBy("sActivityInfo")
+    private static int determineApplicationStateLocked() {
         boolean hasPausedActivity = false;
         boolean hasStoppedActivity = false;
 
         for (ActivityInfo info : sActivityInfo.values()) {
             int state = info.getStatus();
-            if (state != ActivityState.PAUSED
-                    && state != ActivityState.STOPPED
+            if (state != ActivityState.PAUSED && state != ActivityState.STOPPED
                     && state != ActivityState.DESTROYED) {
                 return ApplicationState.HAS_RUNNING_ACTIVITIES;
             } else if (state == ActivityState.PAUSED) {

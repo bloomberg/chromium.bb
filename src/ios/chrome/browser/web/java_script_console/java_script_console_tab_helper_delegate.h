@@ -7,10 +7,17 @@
 
 struct JavaScriptConsoleMessage;
 
+namespace web {
+class WebFrame;
+class WebState;
+}  // namespace web
+
 class JavaScriptConsoleTabHelperDelegate {
  public:
   // Called when a JavaScript message has been logged.
   virtual void DidReceiveConsoleMessage(
+      web::WebState* web_state,
+      web::WebFrame* sender_frame,
       const JavaScriptConsoleMessage& message) = 0;
 
   virtual ~JavaScriptConsoleTabHelperDelegate() {}

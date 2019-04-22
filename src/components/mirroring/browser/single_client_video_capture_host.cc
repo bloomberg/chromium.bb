@@ -4,6 +4,7 @@
 
 #include "components/mirroring/browser/single_client_video_capture_host.h"
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
@@ -50,7 +51,7 @@ class DeviceLauncherCallbacks final
 
 SingleClientVideoCaptureHost::SingleClientVideoCaptureHost(
     const std::string& device_id,
-    content::MediaStreamType type,
+    blink::MediaStreamType type,
     DeviceLauncherCreateCallback callback)
     : device_id_(device_id),
       type_(type),
@@ -172,6 +173,19 @@ void SingleClientVideoCaptureHost::GetDeviceFormatsInUse(
   std::move(callback).Run(media::VideoCaptureFormats());
 }
 
+void SingleClientVideoCaptureHost::OnFrameDropped(
+    int32_t device_id,
+    media::VideoCaptureFrameDropReason reason) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Ignore this call.
+}
+
+void SingleClientVideoCaptureHost::OnLog(int32_t device_id,
+                                         const std::string& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Ignore this call.
+}
+
 void SingleClientVideoCaptureHost::OnNewBuffer(
     int buffer_id,
     media::mojom::VideoBufferHandlePtr buffer_handle) {
@@ -250,6 +264,10 @@ void SingleClientVideoCaptureHost::OnStarted() {
 void SingleClientVideoCaptureHost::OnStartedUsingGpuDecode() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
+}
+
+void SingleClientVideoCaptureHost::OnStopped() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void SingleClientVideoCaptureHost::OnDeviceLaunched(

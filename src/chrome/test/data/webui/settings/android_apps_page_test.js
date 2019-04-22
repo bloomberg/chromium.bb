@@ -93,23 +93,20 @@ suite('AndroidAppsPageTests', function() {
 
     test('Sanity', function() {
       assertTrue(!!subpage.$$('#remove'));
-      assertTrue(!subpage.$$('settings-android-settings-element'));
+      assertTrue(!subpage.$$('#manageApps'));
     });
 
     test('ManageAppsUpdate', function() {
-      assertTrue(!subpage.$$('settings-android-settings-element'));
+      assertTrue(!subpage.$$('#manageApps'));
       setAndroidAppsState(true, true);
-      assertTrue(!!subpage.$$('settings-android-settings-element'));
-      assertTrue(
-          !!subpage.$$('settings-android-settings-element').$$('#manageApps'));
+      assertTrue(!!subpage.$$('#manageApps'));
       setAndroidAppsState(true, false);
-      assertTrue(!subpage.$$('settings-android-settings-element'));
+      assertTrue(!subpage.$$('#manageApps'));
     });
 
     test('ManageAppsOpenRequest', function() {
       setAndroidAppsState(true, true);
-      const button =
-          subpage.$$('settings-android-settings-element').$$('#manageApps');
+      const button = subpage.$$('#manageApps');
       assertTrue(!!button);
       const promise =
           androidAppsBrowserProxy.whenCalled('showAndroidAppsSettings');
@@ -165,9 +162,7 @@ suite('AndroidAppsPageTests', function() {
     test('Sanity', function() {
       Polymer.dom.flush();
       assertFalse(!!subpage.$$('#remove'));
-      assertTrue(!!subpage.$$('settings-android-settings-element'));
-      assertTrue(
-          !!subpage.$$('settings-android-settings-element').$$('#manageApps'));
+      assertTrue(!!subpage.$$('#manageApps'));
     });
   });
 
@@ -179,14 +174,11 @@ suite('AndroidAppsPageTests', function() {
     });
 
     test('Sanity', function() {
-      assertTrue(!!androidAppsPage.$$('settings-android-settings-element'));
-      assertTrue(!!androidAppsPage.$$('settings-android-settings-element')
-                       .$$('#manageApps'));
+      assertTrue(!!androidAppsPage.$$('#manageApps'));
     });
 
     test('ManageAppsOpenRequest', function() {
-      const button = androidAppsPage.$$('settings-android-settings-element')
-                         .$$('#manageApps');
+      const button = androidAppsPage.$$('#manageApps');
       assertTrue(!!button);
       const promise =
           androidAppsBrowserProxy.whenCalled('showAndroidAppsSettings');

@@ -4,12 +4,14 @@
 
 #include "chromecast/browser/cast_session_id_map.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_features.h"
 
 namespace chromecast {
 namespace shell {
@@ -51,7 +53,14 @@ CastSessionIdMap* CastSessionIdMap::GetInstance(
 void CastSessionIdMap::SetSessionId(std::string session_id,
                                     content::WebContents* web_contents) {
   base::UnguessableToken group_id = web_contents->GetAudioGroupId();
-  GetInstance()->SetSessionIdInternal(session_id, group_id, web_contents);
+  // Unretained is safe here, because the singleton CastSessionIdMap never gets
+  // destroyed.
+  auto destroyed_callback = base::BindOnce(&CastSessionIdMap::OnGroupDestroyed,
+                                           base::Unretained(GetInstance()));
+  auto group_observer = std::make_unique<GroupObserver>(
+      web_contents, std::move(destroyed_callback));
+  GetInstance()->SetSessionIdInternal(session_id, group_id,
+                                      std::move(group_observer));
 }
 
 // static
@@ -60,7 +69,9 @@ std::string CastSessionIdMap::GetSessionId(std::string group_id) {
 }
 
 CastSessionIdMap::CastSessionIdMap(base::SequencedTaskRunner* task_runner)
-    : task_runner_(task_runner), weak_factory_(this) {
+    : supports_group_id_(
+          base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams)),
+      task_runner_(task_runner) {
   DCHECK(task_runner_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -70,34 +81,35 @@ CastSessionIdMap::~CastSessionIdMap() = default;
 void CastSessionIdMap::SetSessionIdInternal(
     std::string session_id,
     base::UnguessableToken group_id,
-    content::WebContents* web_contents) {
+    std::unique_ptr<GroupObserver> group_observer) {
+  if (!supports_group_id_)
+    return;
+
   if (!task_runner_->RunsTasksInCurrentSequence()) {
+    // Unretained is safe here, because the singleton CastSessionIdMap never
+    // gets destroyed.
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CastSessionIdMap::SetSessionIdInternal,
-                       weak_factory_.GetWeakPtr(), std::move(session_id),
-                       group_id, web_contents));
+        FROM_HERE, base::BindOnce(&CastSessionIdMap::SetSessionIdInternal,
+                                  base::Unretained(this), std::move(session_id),
+                                  group_id, std::move(group_observer)));
     return;
   }
 
   // This check is required to bind to the current sequence.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(web_contents);
+  DCHECK(GetSessionIdInternal(group_id.ToString()).empty());
+  DCHECK(group_observer);
 
   VLOG(1) << "Mapping session_id=" << session_id
           << " to group_id=" << group_id.ToString();
-  // Unretained is safe because the GroupObserver is always owned by the
-  // CastSessionIdMap.
-  auto destroyed_callback = base::BindOnce(&CastSessionIdMap::OnGroupDestroyed,
-                                           base::Unretained(this));
-  auto group_observer = std::make_unique<GroupObserver>(
-      web_contents, std::move(destroyed_callback));
   auto group_data = std::make_pair(session_id, std::move(group_observer));
   mapping_.emplace(group_id.ToString(), std::move(group_data));
 }
 
 std::string CastSessionIdMap::GetSessionIdInternal(std::string group_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!supports_group_id_)
+    return std::string();
 
   auto it = mapping_.find(group_id);
   if (it != mapping_.end())
@@ -106,9 +118,11 @@ std::string CastSessionIdMap::GetSessionIdInternal(std::string group_id) {
 }
 
 void CastSessionIdMap::OnGroupDestroyed(base::UnguessableToken group_id) {
+  // Unretained is safe here, because the singleton CastSessionIdMap never gets
+  // destroyed.
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&CastSessionIdMap::RemoveGroupId,
-                                        weak_factory_.GetWeakPtr(), group_id));
+                                        base::Unretained(this), group_id));
 }
 
 void CastSessionIdMap::RemoveGroupId(base::UnguessableToken group_id) {

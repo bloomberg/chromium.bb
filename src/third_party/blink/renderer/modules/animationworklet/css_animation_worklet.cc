@@ -54,7 +54,7 @@ CSSAnimationWorklet& CSSAnimationWorklet::From(LocalDOMWindow& window) {
 
 CSSAnimationWorklet::CSSAnimationWorklet(Document* document)
     : ContextLifecycleObserver(document),
-      animation_worklet_(new AnimationWorklet(document)) {
+      animation_worklet_(MakeGarbageCollected<AnimationWorklet>(document)) {
   DCHECK(GetExecutionContext());
 }
 

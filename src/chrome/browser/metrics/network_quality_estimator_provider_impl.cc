@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/network_quality_estimator_provider_impl.h"
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
@@ -17,7 +18,7 @@ NetworkQualityEstimatorProviderImpl::NetworkQualityEstimatorProviderImpl()
 }
 
 NetworkQualityEstimatorProviderImpl::~NetworkQualityEstimatorProviderImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (callback_) {
     g_browser_process->network_quality_tracker()
@@ -27,7 +28,7 @@ NetworkQualityEstimatorProviderImpl::~NetworkQualityEstimatorProviderImpl() {
 
 void NetworkQualityEstimatorProviderImpl::PostReplyOnNetworkQualityChanged(
     base::RepeatingCallback<void(net::EffectiveConnectionType)> callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!content::BrowserThread::IsThreadInitialized(
           content::BrowserThread::IO)) {
     // IO thread is not yet initialized. Try again in the next message pump.
@@ -64,7 +65,7 @@ void NetworkQualityEstimatorProviderImpl::PostReplyOnNetworkQualityChanged(
 
 void NetworkQualityEstimatorProviderImpl::AddEffectiveConnectionTypeObserverNow(
     base::RepeatingCallback<void(net::EffectiveConnectionType)> callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!callback_);
 
   callback_ = callback;
@@ -75,7 +76,7 @@ void NetworkQualityEstimatorProviderImpl::AddEffectiveConnectionTypeObserverNow(
 
 void NetworkQualityEstimatorProviderImpl::OnEffectiveConnectionTypeChanged(
     net::EffectiveConnectionType type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   callback_.Run(type);
 }
 

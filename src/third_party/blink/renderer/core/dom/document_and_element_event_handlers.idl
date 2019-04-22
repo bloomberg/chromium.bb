@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#documentandelementeventhandlers
+// https://html.spec.whatwg.org/C/#documentandelementeventhandlers
 
 [
-    LegacyTreatAsPartialInterface,
-    NoInterfaceObject // Always used on target of 'implements'
-]  interface DocumentAndElementEventHandlers {
+    LegacyTreatAsPartialInterface
+] interface mixin DocumentAndElementEventHandlers {
   attribute EventHandler oncopy;
   attribute EventHandler oncut;
   attribute EventHandler onpaste;

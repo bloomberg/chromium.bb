@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/feature_list.h"
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/theme_copying_widget.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -156,7 +157,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
     OmniboxResultView* result_view = new OmniboxResultView(this, i);
     result_view->SetVisible(false);
-    AddChildViewAt(result_view, static_cast<int>(i));
+    AddChildView(result_view);
   }
 }
 
@@ -208,7 +209,7 @@ bool OmniboxPopupContentsView::IsSelectedIndex(size_t index) const {
 }
 
 bool OmniboxPopupContentsView::IsButtonSelected() const {
-  return model_->selected_line_state() == OmniboxPopupModel::TAB_SWITCH;
+  return model_->selected_line_state() == OmniboxPopupModel::BUTTON_FOCUSED;
 }
 
 void OmniboxPopupContentsView::UnselectButton() {
@@ -314,10 +315,6 @@ void OmniboxPopupContentsView::OnMatchIconUpdated(size_t match_index) {
   result_view_at(match_index)->OnMatchIconUpdated();
 }
 
-void OmniboxPopupContentsView::PaintUpdatesNow() {
-  // TODO(beng): remove this from the interface.
-}
-
 void OmniboxPopupContentsView::OnDragCanceled() {
   SetMouseHandler(nullptr);
 }
@@ -357,20 +354,26 @@ bool OmniboxPopupContentsView::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
-  const size_t event_location_index = GetIndexForPoint(event->location());
-  if (!HasMatchAt(event_location_index))
+  const size_t index = GetIndexForPoint(event->location());
+  if (!HasMatchAt(index))
     return;
 
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
     case ui::ET_GESTURE_SCROLL_BEGIN:
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      SetSelectedLine(event_location_index);
+      SetSelectedLine(index);
       break;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_SCROLL_END:
-      OpenMatch(event_location_index, WindowOpenDisposition::CURRENT_TAB,
-                event->time_stamp());
+      if (!(OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
+            model_->result().match_at(index).ShouldShowTabMatch())) {
+        OpenMatch(index, WindowOpenDisposition::CURRENT_TAB,
+                  event->time_stamp());
+      } else {
+        OpenMatch(index, WindowOpenDisposition::SWITCH_TO_TAB,
+                  event->time_stamp());
+      }
       break;
     default:
       return;

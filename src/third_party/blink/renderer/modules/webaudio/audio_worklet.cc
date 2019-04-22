@@ -16,10 +16,6 @@
 
 namespace blink {
 
-AudioWorklet* AudioWorklet::Create(BaseAudioContext* context) {
-  return new AudioWorklet(context);
-}
-
 AudioWorklet::AudioWorklet(BaseAudioContext* context)
     : Worklet(To<Document>(context->GetExecutionContext())),
       context_(context) {}
@@ -80,8 +76,10 @@ WorkletGlobalScopeProxy* AudioWorklet::CreateGlobalScope() {
   DCHECK_EQ(GetNumberOfGlobalScopes(), 0u);
 
   AudioWorkletMessagingProxy* proxy =
-      new AudioWorkletMessagingProxy(GetExecutionContext(), this);
-  proxy->Initialize(WorkerClients::Create(), ModuleResponsesMap());
+      MakeGarbageCollected<AudioWorkletMessagingProxy>(GetExecutionContext(),
+                                                       this);
+  proxy->Initialize(MakeGarbageCollected<WorkerClients>(),
+                    ModuleResponsesMap());
   return proxy;
 }
 

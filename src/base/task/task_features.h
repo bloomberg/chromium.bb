@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/metrics/field_trial_params.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -14,10 +15,21 @@ struct Feature;
 
 extern const BASE_EXPORT Feature kAllTasksUserBlocking;
 extern const BASE_EXPORT Feature kMergeBlockingNonBlockingPools;
-extern const BASE_EXPORT Feature kMayBlockTimings;
 
-extern const BASE_EXPORT FeatureParam<int> kMayBlockThresholdMicrosecondsParam;
-extern const BASE_EXPORT FeatureParam<int> kBlockedWorkersPollMicrosecondsParam;
+// Under this feature, unused threads in SchedulerWorkerPool are only detached
+// if the total number of threads in the pool is above the initial capacity.
+extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
+
+// Under this feature, workers blocked with MayBlock are replaced immediately
+// instead of waiting for a threshold.
+extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// Under this feature, ThreadPool will use a SchedulerWorkerPool backed by a
+// native thread pool implementation. The Windows Thread Pool API and
+// libdispatch are used on Windows and macOS/iOS respectively.
+extern const BASE_EXPORT Feature kUseNativeThreadPool;
+#endif
 
 }  // namespace base
 

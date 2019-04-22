@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_error_callback.h"
 #include "third_party/blink/renderer/modules/geolocation/position_options.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
@@ -23,14 +22,6 @@ class PositionError;
 class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
                           public NameClient {
  public:
-  static GeoNotifier* Create(Geolocation* geolocation,
-                             V8PositionCallback* position_callback,
-                             V8PositionErrorCallback* position_error_callback,
-                             const PositionOptions* options) {
-    return MakeGarbageCollected<GeoNotifier>(geolocation, position_callback,
-                                             position_error_callback, options);
-  }
-
   GeoNotifier(Geolocation*,
               V8PositionCallback*,
               V8PositionErrorCallback*,
@@ -65,14 +56,6 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   // timer should be stopped beforehand.
   class Timer final : public GarbageCollectedFinalized<Timer> {
    public:
-    static Timer* Create(
-        scoped_refptr<base::SingleThreadTaskRunner> web_task_runner,
-        GeoNotifier* notifier,
-        void (GeoNotifier::*member_func)(TimerBase*)) {
-      return MakeGarbageCollected<Timer>(web_task_runner, notifier,
-                                         member_func);
-    }
-
     explicit Timer(scoped_refptr<base::SingleThreadTaskRunner> web_task_runner,
                    GeoNotifier* notifier,
                    void (GeoNotifier::*member_func)(TimerBase*))
@@ -96,8 +79,8 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   void TimerFired(TimerBase*);
 
   Member<Geolocation> geolocation_;
-  TraceWrapperMember<V8PositionCallback> success_callback_;
-  TraceWrapperMember<V8PositionErrorCallback> error_callback_;
+  Member<V8PositionCallback> success_callback_;
+  Member<V8PositionErrorCallback> error_callback_;
   Member<const PositionOptions> options_;
   Member<Timer> timer_;
   Member<PositionError> fatal_error_;

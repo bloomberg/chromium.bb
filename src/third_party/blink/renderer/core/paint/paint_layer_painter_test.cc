@@ -20,24 +20,22 @@ class PaintLayerPainterTest : public PaintControllerPaintTest {
   USING_FAST_MALLOC(PaintLayerPainterTest);
 
  public:
-  void ExpectPaintedOutputInvisible(const char* element_name,
-                                    bool expected_value) {
+  void ExpectPaintedOutputInvisibleAndPaintsWithTransparency(
+      const char* element_name,
+      bool expected_invisible,
+      bool expected_paints_with_transparency) {
     // The optimization to skip painting for effectively-invisible content is
-    // limited to pre-SPv2.
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    // limited to pre-CAP.
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       return;
 
     PaintLayer* target_layer =
         ToLayoutBox(GetLayoutObjectByElementId(element_name))->Layer();
-    PaintLayerPaintingInfo painting_info(nullptr, CullRect(),
-                                         kGlobalPaintNormalPhase, LayoutSize());
-    bool invisible =
-        PaintLayerPainter(*target_layer)
-            .PaintedOutputInvisible(target_layer->GetLayoutObject().StyleRef(),
-                                    painting_info.GetGlobalPaintFlags());
-    EXPECT_EQ(expected_value, invisible)
-        << "Failed painted output visibility, expected=" << expected_value
-        << ", actual=" << invisible << "].";
+    bool invisible = PaintLayerPainter::PaintedOutputInvisible(
+        target_layer->GetLayoutObject().StyleRef());
+    EXPECT_EQ(expected_invisible, invisible);
+    EXPECT_EQ(expected_paints_with_transparency,
+              target_layer->PaintsWithTransparency(kGlobalPaintNormalPhase));
   }
 
   PaintController& MainGraphicsLayerPaintController() {
@@ -54,7 +52,7 @@ class PaintLayerPainterTest : public PaintControllerPaintTest {
   }
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(PaintLayerPainterTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PaintLayerPainterTest);
 
 TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   SetBodyInnerHTML(R"HTML(
@@ -208,8 +206,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnCullRectChange) {
   DisplayItemClient& content3 = *GetDisplayItemClientFromElementId("content3");
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  IntRect cull_rect(0, 0, 400, 300);
-  Paint(&cull_rect);
+  Paint(IntRect(0, 0, 400, 300));
 
   const auto& background_display_item_client = ViewScrollingBackgroundClient();
 
@@ -228,8 +225,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnCullRectChange) {
                           IsSameId(&content3, kBackgroundType)));
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  IntRect new_cull_rect(0, 100, 300, 1000);
-  EXPECT_TRUE(PaintWithoutCommit(&new_cull_rect));
+  EXPECT_TRUE(PaintWithoutCommit(IntRect(0, 100, 300, 1000)));
 
   // Container1 becomes partly in the interest rect, but uses cached subsequence
   // because it was fully painted before;
@@ -265,14 +261,12 @@ TEST_P(PaintLayerPainterTest,
 
   // |target| will be fully painted.
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  IntRect cull_rect(0, 0, 400, 300);
-  Paint(&cull_rect);
+  Paint(IntRect(0, 0, 400, 300));
 
   // |target| will be partially painted. Should not trigger under-invalidation
   // checking DCHECKs.
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  IntRect new_cull_rect(0, 100, 300, 1000);
-  Paint(&new_cull_rect);
+  Paint(IntRect(0, 100, 300, 1000));
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -291,8 +285,7 @@ TEST_P(PaintLayerPainterTest,
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // PaintResult of all subsequences will be MayBeClippedByCullRect.
-  IntRect cull_rect(0, 0, 50, 300);
-  Paint(&cull_rect);
+  Paint(IntRect(0, 0, 50, 300));
 
   DisplayItemClient& container1 =
       *GetDisplayItemClientFromElementId("container1");
@@ -315,7 +308,7 @@ TEST_P(PaintLayerPainterTest,
                      "position: absolute; width: 100px; height: 100px; "
                      "background-color: green");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_TRUE(PaintWithoutCommit(&cull_rect));
+  EXPECT_TRUE(PaintWithoutCommit(IntRect(0, 0, 50, 300)));
   EXPECT_EQ(4, NumCachedNewItems());
 
   CommitAndFinishCycle();
@@ -350,8 +343,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
   const auto& view_client = ViewScrollingBackgroundClient();
   // |target| is partially painted.
   EXPECT_EQ(kMayBeClippedByCullRect, target_layer->PreviousPaintResult());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // SPv2 doesn't clip the cull rect by the scrolling contents rect, which
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // CAP doesn't clip the cull rect by the scrolling contents rect, which
     // doesn't affect painted results.
     EXPECT_EQ(CullRect(IntRect(-4000, -4000, 8800, 8600)),
               target_layer->PreviousCullRect());
@@ -386,8 +379,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
 
   // |target| is still partially painted.
   EXPECT_EQ(kMayBeClippedByCullRect, target_layer->PreviousPaintResult());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // SPv2 doens't clip the cull rect by the scrolling contents rect, which
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // CAP doens't clip the cull rect by the scrolling contents rect, which
     // doesn't affect painted results.
     EXPECT_EQ(CullRect(IntRect(-4000, -4000, 8800, 8600)),
               target_layer->PreviousCullRect());
@@ -422,8 +415,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
 
   // |target| is still partially painted.
   EXPECT_EQ(kMayBeClippedByCullRect, target_layer->PreviousPaintResult());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // SPv2 doens't clip the cull rect by the scrolling contents rect, which
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // CAP doens't clip the cull rect by the scrolling contents rect, which
     // doesn't affect painted results.
     EXPECT_EQ(CullRect(IntRect(-4000, -1000, 8800, 8600)),
               target_layer->PreviousCullRect());
@@ -590,7 +583,11 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer) {
       GetDocument().getElementById("span")->GetLayoutObject());
   PaintLayer& span_layer = *span.Layer();
   ASSERT_TRUE(&span_layer == float_div.EnclosingLayer());
-  ASSERT_FALSE(span_layer.NeedsPaintPhaseFloat());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    ASSERT_TRUE(span_layer.NeedsPaintPhaseFloat());
+  } else {
+    ASSERT_FALSE(span_layer.NeedsPaintPhaseFloat());
+  }
   LayoutBoxModelObject& self_painting_layer_object = *ToLayoutBoxModelObject(
       GetDocument().getElementById("self-painting-layer")->GetLayoutObject());
   PaintLayer& self_painting_layer = *self_painting_layer_object.Layer();
@@ -602,9 +599,14 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer) {
            ->Layer();
   ASSERT_FALSE(non_self_painting_layer.IsSelfPaintingLayer());
 
-  EXPECT_TRUE(self_painting_layer.NeedsPaintPhaseFloat());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseFloat());
+    EXPECT_TRUE(span_layer.NeedsPaintPhaseFloat());
+  } else {
+    EXPECT_TRUE(self_painting_layer.NeedsPaintPhaseFloat());
+    EXPECT_FALSE(span_layer.NeedsPaintPhaseFloat());
+  }
   EXPECT_FALSE(non_self_painting_layer.NeedsPaintPhaseFloat());
-  EXPECT_FALSE(span_layer.NeedsPaintPhaseFloat());
   EXPECT_TRUE(DisplayItemListContains(
       RootPaintController().GetDisplayItemList(), float_div,
       DisplayItem::kBoxDecorationBackground));
@@ -834,21 +836,21 @@ TEST_P(PaintLayerPainterTest,
 TEST_P(PaintLayerPainterTest, DontPaintWithTinyOpacity) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001'></div>");
-  ExpectPaintedOutputInvisible("target", true);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", true, true);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithTinyOpacityAndWillChangeOpacity) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001; "
       "    will-change: opacity'></div>");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithTinyOpacityAndBackdropFilter) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001;"
       "    backdrop-filter: blur(2px);'></div>");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -856,20 +858,20 @@ TEST_P(PaintLayerPainterTest,
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001;"
       "    backdrop-filter: blur(2px); will-change: opacity'></div>");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithCompositedTinyOpacity) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001;"
       "    will-change: transform'></div>");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", true, false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithNonTinyOpacity) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.1'></div>");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, true);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithEffectAnimationZeroOpacity) {
@@ -888,7 +890,7 @@ TEST_P(PaintLayerPainterTest, DoPaintWithEffectAnimationZeroOpacity) {
     </style>
     <div id='target'></div>
   )HTML");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", true, false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithTransformAnimationZeroOpacity) {
@@ -906,7 +908,7 @@ TEST_P(PaintLayerPainterTest, DoPaintWithTransformAnimationZeroOpacity) {
     </style>
     <div id='target'>x</div></div>
   )HTML");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", true, false);
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -926,7 +928,7 @@ TEST_P(PaintLayerPainterTest,
     </style>
     <div id='target'>x</div></div>
   )HTML");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithWillChangeOpacity) {
@@ -940,7 +942,7 @@ TEST_P(PaintLayerPainterTest, DoPaintWithWillChangeOpacity) {
     </style>
     <div id='target'></div>
   )HTML");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithZeroOpacityAndWillChangeOpacity) {
@@ -955,7 +957,7 @@ TEST_P(PaintLayerPainterTest, DoPaintWithZeroOpacityAndWillChangeOpacity) {
     </style>
     <div id='target'></div>
   )HTML");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -971,14 +973,14 @@ TEST_P(PaintLayerPainterTest,
     </style>
     <div id='target'></div>
   )HTML");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
-using PaintLayerPainterTestSPv2 = PaintLayerPainterTest;
+using PaintLayerPainterTestCAP = PaintLayerPainterTest;
 
-INSTANTIATE_SPV2_TEST_CASE_P(PaintLayerPainterTestSPv2);
+INSTANTIATE_CAP_TEST_SUITE_P(PaintLayerPainterTestCAP);
 
-TEST_P(PaintLayerPainterTestSPv2, SimpleCullRect) {
+TEST_P(PaintLayerPainterTestCAP, SimpleCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
          style='width: 200px; height: 200px; position: relative'>
@@ -989,7 +991,7 @@ TEST_P(PaintLayerPainterTestSPv2, SimpleCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, TallLayerCullRect) {
+TEST_P(PaintLayerPainterTestCAP, TallLayerCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
          style='width: 200px; height: 10000px; position: relative'>
@@ -1001,7 +1003,7 @@ TEST_P(PaintLayerPainterTestSPv2, TallLayerCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, WideLayerCullRect) {
+TEST_P(PaintLayerPainterTestCAP, WideLayerCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
          style='width: 10000px; height: 200px; position: relative'>
@@ -1013,7 +1015,7 @@ TEST_P(PaintLayerPainterTestSPv2, WideLayerCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, TallScrolledLayerCullRect) {
+TEST_P(PaintLayerPainterTestCAP, TallScrolledLayerCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target' style='width: 200px; height: 10000px; position: relative'>
     </div>
@@ -1044,7 +1046,7 @@ TEST_P(PaintLayerPainterTestSPv2, TallScrolledLayerCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, WholeDocumentCullRect) {
+TEST_P(PaintLayerPainterTestCAP, WholeDocumentCullRect) {
   GetDocument().GetSettings()->SetMainFrameClipsContent(false);
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1100,7 +1102,7 @@ TEST_P(PaintLayerPainterTestSPv2, WholeDocumentCullRect) {
                    kBackgroundType)));
 }
 
-TEST_P(PaintLayerPainterTestSPv2, VerticalRightLeftWritingModeDocument) {
+TEST_P(PaintLayerPainterTestCAP, VerticalRightLeftWritingModeDocument) {
   SetBodyInnerHTML(R"HTML(
     <style>
       html { writing-mode: vertical-rl; }
@@ -1121,7 +1123,7 @@ TEST_P(PaintLayerPainterTestSPv2, VerticalRightLeftWritingModeDocument) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, ScaledCullRect) {
+TEST_P(PaintLayerPainterTestCAP, ScaledCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 transform: scaleX(2) scaleY(0.5)'>
@@ -1134,7 +1136,7 @@ TEST_P(PaintLayerPainterTestSPv2, ScaledCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, ScaledAndRotatedCullRect) {
+TEST_P(PaintLayerPainterTestCAP, ScaledAndRotatedCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 transform: scaleX(2) scaleY(0.5) rotateZ(45deg)'>
@@ -1147,7 +1149,7 @@ TEST_P(PaintLayerPainterTestSPv2, ScaledAndRotatedCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, 3DRotated90DegreesCullRect) {
+TEST_P(PaintLayerPainterTestCAP, 3DRotated90DegreesCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 transform: rotateY(90deg)'>
@@ -1161,7 +1163,7 @@ TEST_P(PaintLayerPainterTestSPv2, 3DRotated90DegreesCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, 3DRotatedNear90DegreesCullRect) {
+TEST_P(PaintLayerPainterTestCAP, 3DRotatedNear90DegreesCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 transform: rotateY(89.9999deg)'>
@@ -1177,7 +1179,7 @@ TEST_P(PaintLayerPainterTestSPv2, 3DRotatedNear90DegreesCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, PerspectiveCullRect) {
+TEST_P(PaintLayerPainterTestCAP, PerspectiveCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
          style='width: 100px; height: 100px; transform: perspective(1000px)'>
@@ -1189,7 +1191,7 @@ TEST_P(PaintLayerPainterTestSPv2, PerspectiveCullRect) {
       GetPaintLayerByElementId("target")->PreviousCullRect().IsInfinite());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, 3D45DegRotatedTallCullRect) {
+TEST_P(PaintLayerPainterTestCAP, 3D45DegRotatedTallCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
          style='width: 200px; height: 10000px; transform: rotateY(45deg)'>
@@ -1201,7 +1203,7 @@ TEST_P(PaintLayerPainterTestSPv2, 3D45DegRotatedTallCullRect) {
       GetPaintLayerByElementId("target")->PreviousCullRect().IsInfinite());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, FixedPositionCullRect) {
+TEST_P(PaintLayerPainterTestCAP, FixedPositionCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div id='target' style='width: 1000px; height: 2000px;
                             position: fixed; top: 100px; left: 200px;'>
@@ -1212,7 +1214,7 @@ TEST_P(PaintLayerPainterTestSPv2, FixedPositionCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, LayerOffscreenNearCullRect) {
+TEST_P(PaintLayerPainterTestCAP, LayerOffscreenNearCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 position: absolute; top: 3000px; left: 0px;'>
@@ -1224,7 +1226,7 @@ TEST_P(PaintLayerPainterTestSPv2, LayerOffscreenNearCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, LayerOffscreenFarCullRect) {
+TEST_P(PaintLayerPainterTestCAP, LayerOffscreenFarCullRect) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 position: absolute; top: 9000px'>
@@ -1237,7 +1239,7 @@ TEST_P(PaintLayerPainterTestSPv2, LayerOffscreenFarCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, ScrollingLayerCullRect) {
+TEST_P(PaintLayerPainterTestCAP, ScrollingLayerCullRect) {
   SetBodyInnerHTML(R"HTML(
     <style>
       div::-webkit-scrollbar { width: 5px; }
@@ -1258,7 +1260,7 @@ TEST_P(PaintLayerPainterTestSPv2, ScrollingLayerCullRect) {
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
-TEST_P(PaintLayerPainterTestSPv2, ClippedBigLayer) {
+TEST_P(PaintLayerPainterTestCAP, ClippedBigLayer) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 1px; height: 1px; overflow: hidden'>
       <div id='target'

@@ -11,7 +11,6 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/base/base_export.h"
 
@@ -22,8 +21,11 @@ namespace cc {
 class CC_BASE_EXPORT RollingTimeDeltaHistory {
  public:
   explicit RollingTimeDeltaHistory(size_t max_size);
+  RollingTimeDeltaHistory(const RollingTimeDeltaHistory&) = delete;
 
   ~RollingTimeDeltaHistory();
+
+  RollingTimeDeltaHistory& operator=(const RollingTimeDeltaHistory&) = delete;
 
   void InsertSample(base::TimeDelta time);
   size_t sample_count() const { return sample_set_.size(); }
@@ -44,8 +46,6 @@ class CC_BASE_EXPORT RollingTimeDeltaHistory {
   size_t max_size_;
 
   mutable base::flat_map<double, base::TimeDelta> percentile_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(RollingTimeDeltaHistory);
 };
 
 }  // namespace cc

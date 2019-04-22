@@ -37,6 +37,7 @@ PASS oldChildWindow.name is newChildWindow.name
 PASS oldChildWindow.navigator.appCodeName is newChildWindow.navigator.appCodeName
 PASS oldChildWindow.navigator.appName is newChildWindow.navigator.appName
 PASS oldChildWindow.navigator.appVersion is newChildWindow.navigator.appVersion
+PASS oldChildWindow.navigator.bluetooth.onadvertisementreceived is newChildWindow.navigator.bluetooth.onadvertisementreceived
 PASS oldChildWindow.navigator.connection.onchange is newChildWindow.navigator.connection.onchange
 PASS oldChildWindow.navigator.connection.ontypechange is newChildWindow.navigator.connection.ontypechange
 PASS oldChildWindow.navigator.connection.saveData is newChildWindow.navigator.connection.saveData
@@ -44,6 +45,8 @@ PASS oldChildWindow.navigator.cookieEnabled is newChildWindow.navigator.cookieEn
 PASS oldChildWindow.navigator.deviceMemory is newChildWindow.navigator.deviceMemory
 PASS oldChildWindow.navigator.doNotTrack is newChildWindow.navigator.doNotTrack
 PASS oldChildWindow.navigator.hardwareConcurrency is newChildWindow.navigator.hardwareConcurrency
+PASS oldChildWindow.navigator.hid.onconnect is newChildWindow.navigator.hid.onconnect
+PASS oldChildWindow.navigator.hid.ondisconnect is newChildWindow.navigator.hid.ondisconnect
 PASS oldChildWindow.navigator.language is newChildWindow.navigator.language
 PASS oldChildWindow.navigator.maxTouchPoints is newChildWindow.navigator.maxTouchPoints
 PASS oldChildWindow.navigator.mediaDevices.ondevicechange is newChildWindow.navigator.mediaDevices.ondevicechange
@@ -130,6 +133,7 @@ PASS oldChildWindow.onmouseup is newChildWindow.onmouseup
 PASS oldChildWindow.onmousewheel is newChildWindow.onmousewheel
 PASS oldChildWindow.onoffline is newChildWindow.onoffline
 PASS oldChildWindow.ononline is newChildWindow.ononline
+PASS oldChildWindow.onoverscroll is newChildWindow.onoverscroll
 PASS oldChildWindow.onpagehide is newChildWindow.onpagehide
 PASS oldChildWindow.onpageshow is newChildWindow.onpageshow
 PASS oldChildWindow.onpause is newChildWindow.onpause
@@ -145,12 +149,14 @@ PASS oldChildWindow.onpointerover is newChildWindow.onpointerover
 PASS oldChildWindow.onpointerrawmove is newChildWindow.onpointerrawmove
 PASS oldChildWindow.onpointerup is newChildWindow.onpointerup
 PASS oldChildWindow.onpopstate is newChildWindow.onpopstate
+PASS oldChildWindow.onportalactivate is newChildWindow.onportalactivate
 PASS oldChildWindow.onprogress is newChildWindow.onprogress
 PASS oldChildWindow.onratechange is newChildWindow.onratechange
 PASS oldChildWindow.onrejectionhandled is newChildWindow.onrejectionhandled
 PASS oldChildWindow.onreset is newChildWindow.onreset
 PASS oldChildWindow.onresize is newChildWindow.onresize
 PASS oldChildWindow.onscroll is newChildWindow.onscroll
+PASS oldChildWindow.onscrollend is newChildWindow.onscrollend
 PASS oldChildWindow.onsearch is newChildWindow.onsearch
 PASS oldChildWindow.onseeked is newChildWindow.onseeked
 PASS oldChildWindow.onseeking is newChildWindow.onseeking
@@ -185,9 +191,9 @@ PASS oldChildWindow.pageXOffset is newChildWindow.pageXOffset
 PASS oldChildWindow.pageYOffset is newChildWindow.pageYOffset
 PASS oldChildWindow.performance.navigation.redirectCount is newChildWindow.performance.navigation.redirectCount
 PASS oldChildWindow.performance.navigation.type is newChildWindow.performance.navigation.type
+PASS oldChildWindow.performance.onelementtimingbufferfull is newChildWindow.performance.onelementtimingbufferfull
 PASS oldChildWindow.performance.oneventtimingbufferfull is newChildWindow.performance.oneventtimingbufferfull
 PASS oldChildWindow.performance.onresourcetimingbufferfull is newChildWindow.performance.onresourcetimingbufferfull
-PASS oldChildWindow.performance.shouldYield is newChildWindow.performance.shouldYield
 PASS oldChildWindow.performance.timing.connectEnd is newChildWindow.performance.timing.connectEnd
 PASS oldChildWindow.performance.timing.connectStart is newChildWindow.performance.timing.connectStart
 PASS oldChildWindow.performance.timing.domComplete is newChildWindow.performance.timing.domComplete
@@ -210,6 +216,7 @@ PASS oldChildWindow.performance.timing.secureConnectionStart is newChildWindow.p
 PASS oldChildWindow.performance.timing.unloadEventEnd is newChildWindow.performance.timing.unloadEventEnd
 PASS oldChildWindow.performance.timing.unloadEventStart is newChildWindow.performance.timing.unloadEventStart
 PASS oldChildWindow.personalbar.visible is newChildWindow.personalbar.visible
+PASS oldChildWindow.portalHost is newChildWindow.portalHost
 PASS oldChildWindow.screen.availHeight is newChildWindow.screen.availHeight
 PASS oldChildWindow.screen.availLeft is newChildWindow.screen.availLeft
 PASS oldChildWindow.screen.availTop is newChildWindow.screen.availTop

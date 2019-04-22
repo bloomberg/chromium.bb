@@ -62,9 +62,9 @@ interface ImeControllerClient {
   // is installed.
   SwitchToNextIme();
 
-  // Switches to the previous input method. Does nothing if only one input
+  // Switches to the last used input method. Does nothing if only one input
   // method is installed.
-  SwitchToPreviousIme();
+  SwitchToLastUsedIme();
 
   // Switches to an input method by |id|. Does nothing if the input method is
   // not installed. The ID is usually the output of a call like
@@ -85,6 +85,14 @@ interface ImeControllerClient {
   // TODO(crbug/759435): Ideally this interaction should only be to disable the
   // caps lock.
   SetCapsLockEnabled(bool enabled);
+
+  // Notifies the mirroring state change to the client where IME lives (e.g.
+  // Chrome), so that the IME can behave according to the state.
+  UpdateMirroringState(bool enabled);
+
+  // Notifies the casting state change to the client where IME lives (e.g.
+  // Chrome), so that the IME can behave according to the state.
+  UpdateCastingState(bool enabled);
 
   // Overrides the keyboard keyset (emoji, handwriting or voice). If keyset is
   // 'kNone', we switch to the default keyset. Because this is asynchronous,

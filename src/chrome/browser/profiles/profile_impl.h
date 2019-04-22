@@ -14,11 +14,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/reporting_permissions_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl_io_data.h"
 #include "chrome/common/buildflags.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/content_browser_client.h"
 #include "extensions/buildflags/buildflags.h"
@@ -84,6 +86,8 @@ class ProfileImpl : public Profile {
       override;
   content::PermissionControllerDelegate* GetPermissionControllerDelegate()
       override;
+  content::ClientHintsControllerDelegate* GetClientHintsControllerDelegate()
+      override;
   content::BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
   content::BackgroundSyncController* GetBackgroundSyncController() override;
   net::URLRequestContextGetter* CreateRequestContext(
@@ -98,7 +102,13 @@ class ProfileImpl : public Profile {
   net::URLRequestContextGetter* CreateMediaRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory) override;
-  void RegisterInProcessServices(StaticServiceMap* services) override;
+  void SetCorsOriginAccessListForOrigin(
+      const url::Origin& source_origin,
+      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+      base::OnceClosure closure) override;
+  const content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList()
+      const override;
   std::unique_ptr<service_manager::Service> HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override;
@@ -121,6 +131,7 @@ class ProfileImpl : public Profile {
   bool IsSupervised() const override;
   bool IsChild() const override;
   bool IsLegacySupervised() const override;
+  bool AllowsBrowserWindows() const override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
@@ -129,12 +140,14 @@ class ProfileImpl : public Profile {
 #endif
   PrefService* GetOffTheRecordPrefs() override;
   PrefService* GetReadOnlyOffTheRecordPrefs() override;
+  policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;
   net::URLRequestContextGetter* GetRequestContext() override;
   base::OnceCallback<net::CookieStore*()> GetExtensionsCookieStoreGetter()
       override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
+  ProfileKey* GetProfileKey() const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   GURL GetHomePage() override;
@@ -191,11 +204,6 @@ class ProfileImpl : public Profile {
 
   void GetMediaCacheParameters(base::FilePath* cache_path, int* max_size);
 
-#if defined(OS_CHROMEOS)
-  std::unique_ptr<service_manager::Service> CreateDeviceSyncService();
-  std::unique_ptr<service_manager::Service> CreateMultiDeviceSetupService();
-#endif  // defined(OS_CHROMEOS)
-
   PrefChangeRegistrar pref_change_registrar_;
 
   base::FilePath path_;
@@ -247,6 +255,10 @@ class ProfileImpl : public Profile {
   // See GetStartTime for details.
   base::Time start_time_;
 
+  // The key to index KeyedService instances created by
+  // SimpleKeyedServiceFactory.
+  std::unique_ptr<ProfileKey> key_;
+
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::Preferences> chromeos_preferences_;
 
@@ -275,6 +287,9 @@ class ProfileImpl : public Profile {
   Profile::Delegate* delegate_;
 
   ReportingPermissionsCheckerFactory reporting_permissions_checker_factory_;
+
+  scoped_refptr<content::SharedCorsOriginAccessList>
+      shared_cors_origin_access_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

@@ -28,8 +28,8 @@ class CFX_V8 {
   v8::Local<v8::Number> NewNumber(double number);
   v8::Local<v8::Number> NewNumber(float number);
   v8::Local<v8::Boolean> NewBoolean(bool b);
-  v8::Local<v8::String> NewString(const ByteStringView& str);
-  v8::Local<v8::String> NewString(const WideStringView& str);
+  v8::Local<v8::String> NewString(ByteStringView str);
+  v8::Local<v8::String> NewString(WideStringView str);
   v8::Local<v8::Date> NewDate(double d);
 
   int ToInt32(v8::Local<v8::Value> pValue);
@@ -51,9 +51,9 @@ class CFX_V8 {
   // Objects.
   std::vector<WideString> GetObjectPropertyNames(v8::Local<v8::Object> pObj);
   v8::Local<v8::Value> GetObjectProperty(v8::Local<v8::Object> pObj,
-                                         const WideString& PropertyName);
+                                         ByteStringView bsUTF8PropertyName);
   void PutObjectProperty(v8::Local<v8::Object> pObj,
-                         const WideString& PropertyName,
+                         ByteStringView bsUTF8PropertyName,
                          v8::Local<v8::Value> pValue);
 
  protected:

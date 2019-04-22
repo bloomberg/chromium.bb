@@ -32,10 +32,10 @@ class NGFieldsetLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
       const NGConstraintSpace& space,
       NGBlockNode node) {
-    scoped_refptr<NGLayoutResult> result =
+    scoped_refptr<const NGLayoutResult> result =
         NGBlockLayoutAlgorithm(node, space).Layout();
 
-    return ToNGPhysicalBoxFragment(result->PhysicalFragment());
+    return To<NGPhysicalBoxFragment>(result->PhysicalFragment());
   }
 
   scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
@@ -53,7 +53,8 @@ class NGFieldsetLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
         NGLogicalSize(LayoutUnit(), LayoutUnit()));
 
     NGFieldsetLayoutAlgorithm algorithm(node, space);
-    MinMaxSizeInput input;
+    MinMaxSizeInput input(
+        /* percentage_resolution_block_size */ (LayoutUnit()));
     auto min_max = algorithm.ComputeMinMaxSize(input);
     EXPECT_TRUE(min_max.has_value());
     return *min_max;
@@ -273,9 +274,9 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendAutoSize) {
   offset:unplaced size:1000x323
     offset:0,0 size:126x323
       offset:13,0 size:50x200
-        offset:0,0 size:25x200
-        offset:25,0 size:25x200
         offset:50,0 size:0x0
+          offset:-50,0 size:25x200
+          offset:-25,0 size:25x200
       offset:3,200 size:120x120
         offset:10,10 size:100x100
 )DUMP";

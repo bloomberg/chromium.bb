@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -21,7 +22,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-class PrintPreviewHandler;
 struct PrintHostMsg_DidStartPreview_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_RequestPrintPreview_Params;
@@ -38,8 +38,9 @@ class Rect;
 }
 
 namespace printing {
+
+class PrintPreviewHandler;
 struct PageSizeMargins;
-}
 
 class PrintPreviewUI : public ConstrainedWebDialogUI {
  public:
@@ -48,8 +49,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   ~PrintPreviewUI() override;
 
   // Gets the print preview |data|. |index| is zero-based, and can be
-  // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to get the entire preview
-  // document.
+  // |COMPLETE_PREVIEW_DOCUMENT_INDEX| to get the entire preview document.
   virtual void GetPrintPreviewDataForIndex(
       int index,
       scoped_refptr<base::RefCountedMemory>* data) const;
@@ -84,6 +84,28 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Save pdf pages temporarily before ready to do N-up conversion.
   void AddPdfPageForNupConversion(base::ReadOnlySharedMemoryRegion pdf_page);
 
+  // PrintPreviewUI serves data for chrome://print requests.
+  //
+  // The format for requesting PDF data is as follows:
+  //   chrome://print/<PrintPreviewUIID>/<PageIndex>/print.pdf
+  //
+  // Required parameters:
+  //   <PrintPreviewUIID> = PrintPreview UI ID
+  //   <PageIndex> = Page index is zero-based or
+  //                 |COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent
+  //                 a print ready PDF.
+  //
+  // Example:
+  //   chrome://print/123/10/print.pdf
+  //
+  // ParseDataPath() takes a path (i.e. what comes after chrome://print/) and
+  // returns true if the path seems to be a valid data path. |ui_id| and
+  // |page_index| are set to the parsed values if the provided pointers aren't
+  // nullptr.
+  static bool ParseDataPath(const std::string& path,
+                            int* ui_id,
+                            int* page_index);
+
   // Set initial settings for PrintPreviewUI.
   static void SetInitialParams(
       content::WebContents* print_preview_dialog,
@@ -106,7 +128,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // Notifies the Web UI of the default page layout according to the currently
   // selected printer and page size.
-  void OnDidGetDefaultPageLayout(const printing::PageSizeMargins& page_layout,
+  void OnDidGetDefaultPageLayout(const PageSizeMargins& page_layout,
                                  const gfx::Rect& printable_area,
                                  bool has_custom_page_size_style,
                                  int request_id);
@@ -164,13 +186,16 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
       int request_id);
 
   // Allows tests to wait until the print preview dialog is loaded.
-  class TestingDelegate {
+  class TestDelegate {
    public:
     virtual void DidGetPreviewPageCount(int page_count) = 0;
     virtual void DidRenderPreviewPage(content::WebContents* preview_dialog) = 0;
+
+   protected:
+    virtual ~TestDelegate() = default;
   };
 
-  static void SetDelegateForTesting(TestingDelegate* delegate);
+  static void SetDelegateForTesting(TestDelegate* delegate);
 
   // Allows for tests to set a file path to print a PDF to. This also initiates
   // the printing without having to click a button on the print preview dialog.
@@ -211,11 +236,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
  private:
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewDialogControllerUnitTest,
                            TitleAfterReload);
-  friend class FakePrintPreviewUI;
 
   // Sets the print preview |data|. |index| is zero-based, and can be
-  // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to set the entire preview
-  // document.
+  // |COMPLETE_PREVIEW_DOCUMENT_INDEX| to set the entire preview document.
   void SetPrintPreviewDataForIndex(int index,
                                    scoped_refptr<base::RefCountedMemory> data);
 
@@ -267,5 +290,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };
+
+}  // namespace printing
 
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINT_PREVIEW_UI_H_

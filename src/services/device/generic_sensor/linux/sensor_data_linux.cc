@@ -4,6 +4,7 @@
 
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
 
+#include "base/bind.h"
 #include "base/system/sys_info.h"
 #include "base/version.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
@@ -140,9 +141,9 @@ void InitGyroscopeSensorData(SensorPathsLinux* data) {
       SensorTraits<SensorType::GYROSCOPE>::kDefaultFrequency);
 }
 
-// TODO(maksims): Verify magnitometer works correctly on a chromebook when
+// TODO(maksims): Verify magnetometer works correctly on a chromebook when
 // I get one with that sensor onboard.
-void InitMagnitometerSensorData(SensorPathsLinux* data) {
+void InitMagnetometerSensorData(SensorPathsLinux* data) {
   std::vector<std::string> file_names_x{"in_magn_x_raw"};
   std::vector<std::string> file_names_y{"in_magn_y_raw"};
   std::vector<std::string> file_names_z{"in_magn_z_raw"};
@@ -185,7 +186,7 @@ bool InitSensorData(SensorType type, SensorPathsLinux* data) {
       InitGyroscopeSensorData(data);
       break;
     case SensorType::MAGNETOMETER:
-      InitMagnitometerSensorData(data);
+      InitMagnetometerSensorData(data);
       break;
     default:
       return false;
@@ -211,5 +212,7 @@ SensorInfoLinux::SensorInfoLinux(
       device_reading_files(std::move(device_reading_files)) {}
 
 SensorInfoLinux::~SensorInfoLinux() = default;
+
+SensorInfoLinux::SensorInfoLinux(const SensorInfoLinux&) = default;
 
 }  // namespace device

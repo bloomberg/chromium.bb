@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/oobe_completion_tracker_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 
@@ -26,10 +25,11 @@ constexpr const char kDeclinedSetupUserAction[] = "setup-declined";
 }  // namespace
 
 MultiDeviceSetupScreen::MultiDeviceSetupScreen(
-    BaseScreenDelegate* base_screen_delegate,
-    MultiDeviceSetupScreenView* view)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_MULTIDEVICE_SETUP),
-      view_(view) {
+    MultiDeviceSetupScreenView* view,
+    const base::RepeatingClosure& exit_callback)
+    : BaseScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP),
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   view_->Bind(this);
 }
@@ -39,13 +39,6 @@ MultiDeviceSetupScreen::~MultiDeviceSetupScreen() {
 }
 
 void MultiDeviceSetupScreen::Show() {
-  // If multi-device flags are disabled, skip the associated setup flow.
-  if (!base::FeatureList::IsEnabled(features::kMultiDeviceApi) ||
-      !base::FeatureList::IsEnabled(features::kEnableUnifiedMultiDeviceSetup)) {
-    ExitScreen();
-    return;
-  }
-
   // Only attempt the setup flow for non-guest users.
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
     ExitScreen();
@@ -107,7 +100,7 @@ void MultiDeviceSetupScreen::RecordMultiDeviceSetupOOBEUserChoiceHistogram(
 }
 
 void MultiDeviceSetupScreen::ExitScreen() {
-  Finish(ScreenExitCode::MULTIDEVICE_SETUP_FINISHED);
+  exit_callback_.Run();
 }
 
 }  // namespace chromeos

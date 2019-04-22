@@ -17,7 +17,7 @@
 </div>
 
 <script>
-  const MOUSE_INPUT = 2;  // Gesture source type from synthetic_gesture_params.
+  const MOUSE_INPUT = GestureSourceType.MOUSE_INPUT;
   async function runTest() {
     promise_test( async () => {
       assert_true(typeof(window.internals) !== "undefined",

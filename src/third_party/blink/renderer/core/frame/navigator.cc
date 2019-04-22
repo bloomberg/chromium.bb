@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/frame/navigator.h"
 
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -32,13 +33,13 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/language.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 
 namespace blink {
 
-Navigator::Navigator(LocalFrame* frame) : DOMWindowClient(frame) {}
+Navigator::Navigator(LocalFrame* frame)
+    : NavigatorLanguage(frame->GetDocument()), DOMWindowClient(frame) {}
 
 String Navigator::productSub() const {
   return "20030107";
@@ -72,6 +73,14 @@ String Navigator::userAgent() const {
   return GetFrame()->Loader().UserAgent();
 }
 
+UserAgentMetadata Navigator::GetUserAgentMetadata() const {
+  // If the frame is already detached it no longer has a meaningful useragent.
+  if (!GetFrame() || !GetFrame()->GetPage())
+    return blink::UserAgentMetadata();
+
+  return GetFrame()->Loader().UserAgentMetadata();
+}
+
 bool Navigator::cookieEnabled() const {
   if (!GetFrame())
     return false;
@@ -83,38 +92,21 @@ bool Navigator::cookieEnabled() const {
   return CookiesEnabled(GetFrame()->GetDocument());
 }
 
-Vector<String> Navigator::languages() {
-  languages_changed_ = false;
-
+String Navigator::GetAcceptLanguages() {
   String accept_languages;
   if (GetFrame() && GetFrame()->GetPage()) {
     accept_languages =
         GetFrame()->GetPage()->GetChromeClient().AcceptLanguages();
+  } else {
+    accept_languages = DefaultLanguage();
   }
 
-  probe::applyAcceptLanguageOverride(GetFrame(), &accept_languages);
-
-  Vector<String> languages;
-  accept_languages.Split(',', languages);
-
-  // Sanitizing tokens. We could do that more extensively but we should assume
-  // that the accept languages are already sane and support BCP47. It is
-  // likely a waste of time to make sure the tokens matches that spec here.
-  for (wtf_size_t i = 0; i < languages.size(); ++i) {
-    String& token = languages[i];
-    token = token.StripWhiteSpace();
-    if (token.length() >= 3 && token[2] == '_')
-      token.replace(2, 1, "-");
-  }
-
-  if (languages.IsEmpty())
-    languages.push_back(DefaultLanguage());
-
-  return languages;
+  return accept_languages;
 }
 
 void Navigator::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
+  NavigatorLanguage::Trace(visitor);
   DOMWindowClient::Trace(visitor);
   Supplementable<Navigator>::Trace(visitor);
 }

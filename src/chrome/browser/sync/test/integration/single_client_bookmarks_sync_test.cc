@@ -16,11 +16,12 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/url_and_title.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 
@@ -494,6 +495,148 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, DownloadBookmarkFolder) {
   ASSERT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
 }
 
+// Legacy bookmark clients append a blank space to empty titles, ".", ".." tiles
+// before committing them because historically they were illegal server titles.
+// This test makes sure that this functionality is implemented for backward
+// compatibility with legacy clients.
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       ShouldCommitBookmarksWithIllegalServerNames) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  const std::vector<std::string> illegal_titles = {"", ".", ".."};
+  // Create 3 bookmarks under the bookmark bar with illegal titles.
+  for (const std::string& illegal_title : illegal_titles) {
+    ASSERT_TRUE(AddURL(kSingleProfileIndex, illegal_title,
+                       GURL("http://www.google.com")));
+  }
+
+  // Wait till all entities are committed.
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+
+  // Collect the titles committed on the server.
+  std::vector<sync_pb::SyncEntity> entities =
+      fake_server_->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
+  std::vector<std::string> committed_titles;
+  for (const sync_pb::SyncEntity& entity : entities) {
+    committed_titles.push_back(entity.specifics().bookmark().title());
+  }
+
+  // A space should have been appended to each illegal title before committing.
+  EXPECT_THAT(committed_titles,
+              testing::UnorderedElementsAre(" ", ". ", ".. "));
+}
+
+// This test the opposite functionality in the test above. Legacy bookmark
+// clients omit a blank space from blank space title, ". ", ".. " tiles upon
+// receiving the remote updates. An extra space has been appended during a
+// commit because historically they were considered illegal server titles. This
+// test makes sure that this functionality is implemented for backward
+// compatibility with legacy clients.
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       ShouldCreateLocalBookmarksWithIllegalServerNames) {
+  const std::vector<std::string> illegal_titles = {"", ".", ".."};
+
+  // Create 3 bookmarks on the server under BookmarkBar with illegal server
+  // titles with a blank space appended to simulate a commit from a legacy
+  // client.
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  for (const std::string& illegal_title : illegal_titles) {
+    fake_server::BookmarkEntityBuilder bookmark_builder =
+        entity_builder_factory.NewBookmarkEntityBuilder(illegal_title + " ");
+    fake_server_->InjectEntity(
+        bookmark_builder.BuildBookmark(GURL("http://www.google.com")));
+  }
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  DisableVerifier();
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // There should be bookmark with illegal title (without the appended space).
+  for (const std::string& illegal_title : illegal_titles) {
+    EXPECT_EQ(1, CountBookmarksWithTitlesMatching(kSingleProfileIndex,
+                                                  illegal_title));
+  }
+}
+
+// Legacy bookmark clients append a blank space to empty titles. This tests that
+// this is respected when merging local and remote hierarchies.
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       ShouldTruncateBlanksWhenMatchingTitles) {
+  const std::string remote_blank_title = " ";
+  const std::string local_empty_title = "";
+
+  // Create a folder on the server under BookmarkBar with a title with a blank
+  // space.
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(remote_blank_title);
+  fake_server_->InjectEntity(bookmark_builder.BuildFolder());
+
+  DisableVerifier();
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Create a folder on the client under BookmarkBar with an empty title.
+  const BookmarkNode* node =
+      AddFolder(kSingleProfileIndex, GetBookmarkBarNode(kSingleProfileIndex), 0,
+                local_empty_title);
+  ASSERT_TRUE(node);
+  ASSERT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex,
+                                              local_empty_title));
+
+  ASSERT_TRUE(SetupSync());
+  // There should be only one bookmark on the client. The remote node should
+  // have been merged with the local node and either the local or remote titles
+  // is picked.
+  EXPECT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex,
+                                              local_empty_title) +
+                   CountFoldersWithTitlesMatching(kSingleProfileIndex,
+                                                  remote_blank_title));
+}
+
+// Legacy bookmark clients truncate long titles up to 255 bytes. This tests that
+// this is respected when merging local and remote hierarchies.
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       ShouldTruncateLongTitles) {
+  const std::string remote_truncated_title =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst"
+      "uvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN"
+      "OPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh"
+      "ijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTU";
+  const std::string local_full_title =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst"
+      "uvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN"
+      "OPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh"
+      "ijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzAB"
+      "CDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  // Create a folder on the server under BookmarkBar with a truncated title.
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(remote_truncated_title);
+  fake_server_->InjectEntity(bookmark_builder.BuildFolder());
+
+  DisableVerifier();
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  // Create a folder on the client under BookmarkBar with a long title.
+  const BookmarkNode* node =
+      AddFolder(kSingleProfileIndex, GetBookmarkBarNode(kSingleProfileIndex), 0,
+                local_full_title);
+  ASSERT_TRUE(node);
+  ASSERT_EQ(
+      1, CountFoldersWithTitlesMatching(kSingleProfileIndex, local_full_title));
+
+  ASSERT_TRUE(SetupSync());
+  // There should be only one bookmark on the client. The remote node should
+  // have been merged with the local node and either the local or remote title
+  // is picked.
+  EXPECT_EQ(
+      1, CountFoldersWithTitlesMatching(kSingleProfileIndex, local_full_title) +
+             CountFoldersWithTitlesMatching(kSingleProfileIndex,
+                                            remote_truncated_title));
+}
+
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                        DownloadBookmarkFoldersWithPositions) {
   const std::string title0 = "Folder left";
@@ -584,8 +727,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                                          /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientBookmarksSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientBookmarksSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

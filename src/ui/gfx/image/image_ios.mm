@@ -109,18 +109,18 @@ scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
   return Get1xPNGBytesFromUIImage(image);
 }
 
-ImageSkia* ImageSkiaFromPNG(
+ImageSkia ImageSkiaFromPNG(
     const std::vector<gfx::ImagePNGRep>& image_png_reps) {
   // iOS does not expose libpng, so conversion from PNG to ImageSkia must go
   // through UIImage.
-  gfx::ImageSkia* image_skia = new gfx::ImageSkia();
+  ImageSkia image_skia;
   for (size_t i = 0; i < image_png_reps.size(); ++i) {
     base::scoped_nsobject<UIImage> uiimage(
         CreateUIImageFromImagePNGRep(image_png_reps[i]));
     gfx::ImageSkiaRep image_skia_rep = ImageSkiaRepOfScaleFromUIImage(
         uiimage, image_png_reps[i].scale);
     if (!image_skia_rep.is_null())
-      image_skia->AddRepresentation(image_skia_rep);
+      image_skia.AddRepresentation(image_skia_rep);
   }
   return image_skia;
 }

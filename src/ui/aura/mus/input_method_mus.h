@@ -5,6 +5,8 @@
 #ifndef UI_AURA_MUS_INPUT_METHOD_MUS_H_
 #define UI_AURA_MUS_INPUT_METHOD_MUS_H_
 
+#include <memory>
+
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -25,23 +27,27 @@ class InputMethodMusDelegate;
 class InputMethodMusTestApi;
 class TextInputClientImpl;
 
-class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
+class AURA_EXPORT InputMethodMus : public ui::InputMethodBase,
+                                   public ui::AsyncKeyDispatcher {
  public:
   using EventResultCallback = base::OnceCallback<void(ws::mojom::EventResult)>;
+  using KeyAckCallback = base::OnceCallback<void(bool)>;
 
   InputMethodMus(ui::internal::InputMethodDelegate* delegate,
                  InputMethodMusDelegate* input_method_mus_delegate);
   ~InputMethodMus() override;
 
   void Init(service_manager::Connector* connector);
-  ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event,
-                                            EventResultCallback ack_callback)
-      WARN_UNUSED_RESULT;
+
+  // Overridden from ui::AsyncKeyDispatcher:
+  void DispatchKeyEventAsync(ui::KeyEvent* event,
+                             KeyAckCallback ack_callback) override;
 
   // Overridden from ui::InputMethod:
   void OnFocus() override;
   void OnBlur() override;
   ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
+  ui::AsyncKeyDispatcher* GetAsyncKeyDispatcher() override;
   void OnTextInputTypeChanged(const ui::TextInputClient* client) override;
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
   void CancelComposition(const ui::TextInputClient* client) override;
@@ -52,6 +58,10 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
  private:
   friend class InputMethodMusTestApi;
   friend TextInputClientImpl;
+
+  ui::EventDispatchDetails DispatchKeyEventInternal(
+      ui::KeyEvent* event,
+      EventResultCallback ack_callback) WARN_UNUSED_RESULT;
 
   // Called from DispatchKeyEvent() to call to the InputMethod.
   ui::EventDispatchDetails SendKeyEventToInputMethod(
@@ -77,6 +87,10 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
       const ui::KeyEvent& event,
       bool handled);
 
+  // Callback for |text_input_client_| when the input client data may have
+  // changed.
+  void OnTextInputClientDataChanged(const ui::TextInputClient* client);
+
   // Delegate used to update window related ime state. This may be null in
   // tests.
   InputMethodMusDelegate* input_method_mus_delegate_;
@@ -93,6 +107,10 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
   // the response from the server. These are removed when the response is
   // received (ProcessKeyEventCallback()).
   base::circular_deque<EventResultCallback> pending_callbacks_;
+
+  // Data that was sent to RemoteTextInputClient. Used to suppress sending
+  // duplicate data.
+  ws::mojom::TextInputClientDataPtr last_sent_text_input_client_data_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMus);
 };

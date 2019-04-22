@@ -9,8 +9,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -39,6 +41,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system_logs/debug_log_writer.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/policy/policy_conversions.h"
+#include "chrome/common/logging_chrome.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
@@ -118,9 +122,16 @@ class NetInternalsMessageHandler
   void OnCloseIdleSockets(const base::ListValue* list);
   void OnFlushSocketPools(const base::ListValue* list);
 #if defined(OS_CHROMEOS)
+  void OnDumpPolicyLogsCompleted(const base::FilePath& path,
+                                 bool should_compress,
+                                 bool combined,
+                                 const char* received_event);
   void OnImportONCFile(const base::ListValue* list);
-  void OnStoreDebugLogs(const base::ListValue* list);
-  void OnStoreDebugLogsCompleted(const base::FilePath& log_path,
+  void OnStoreDebugLogs(bool combined,
+                        const char* received_event,
+                        const base::ListValue* list);
+  void OnStoreDebugLogsCompleted(const char* received_event,
+                                 const base::FilePath& log_path,
                                  bool succeeded);
   void OnSetNetworkDebugMode(const base::ListValue* list);
   void OnSetNetworkDebugModeCompleted(const std::string& subsystem,
@@ -189,7 +200,13 @@ void NetInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "storeDebugLogs",
       base::BindRepeating(&NetInternalsMessageHandler::OnStoreDebugLogs,
-                          base::Unretained(this)));
+                          base::Unretained(this), false /* combined */,
+                          "receivedStoreDebugLogs"));
+  web_ui()->RegisterMessageCallback(
+      "storeCombinedDebugLogs",
+      base::BindRepeating(&NetInternalsMessageHandler::OnStoreDebugLogs,
+                          base::Unretained(this), true /* combined */,
+                          "receivedStoreCombinedDebugLogs"));
   web_ui()->RegisterMessageCallback(
       "setNetworkDebugMode",
       base::BindRepeating(&NetInternalsMessageHandler::OnSetNetworkDebugMode,
@@ -402,31 +419,65 @@ void NetInternalsMessageHandler::OnImportONCFile(
                  onc_blob, passcode));
 }
 
-void NetInternalsMessageHandler::OnStoreDebugLogs(const base::ListValue* list) {
+void DumpPolicyLogs(base::FilePath file_path, std::string json_policies) {
+  file_path = logging::GenerateTimestampedName(file_path, base::Time::Now());
+  base::WriteFile(file_path, json_policies.data(), json_policies.size());
+}
+
+void NetInternalsMessageHandler::OnStoreDebugLogs(bool combined,
+                                                  const char* received_event,
+                                                  const base::ListValue* list) {
   DCHECK(list);
 
-  SendJavascriptCommand("receivedStoreDebugLogs",
-                        base::Value("Creating log file..."));
+  SendJavascriptCommand(received_event, base::Value("Creating log file..."));
   Profile* profile = Profile::FromWebUI(web_ui());
   const DownloadPrefs* const prefs = DownloadPrefs::FromBrowserContext(profile);
   base::FilePath path = prefs->DownloadPath();
   if (file_manager::util::IsUnderNonNativeLocalPath(profile, path))
     path = prefs->GetDefaultDownloadDirectoryForProfile();
-  chromeos::DebugLogWriter::StoreLogs(
-      path,
-      true,  // should_compress
-      base::Bind(&NetInternalsMessageHandler::OnStoreDebugLogsCompleted,
-                 AsWeakPtr()));
+  base::FilePath policies_path = path.Append("policies.json");
+  std::string json_policies = policy::GetAllPolicyValuesAsJSON(
+      web_ui()->GetWebContents()->GetBrowserContext(),
+      true /* with_user_policies */, false /* with_device_data */,
+      true /* is_pretty_print */);
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(DumpPolicyLogs, policies_path, json_policies),
+      base::BindOnce(&NetInternalsMessageHandler::OnDumpPolicyLogsCompleted,
+                     AsWeakPtr(), path, true /* should_compress */, combined,
+                     received_event));
+}
+
+void NetInternalsMessageHandler::OnDumpPolicyLogsCompleted(
+    const base::FilePath& path,
+    bool should_compress,
+    bool combined,
+    const char* received_event) {
+  if (combined) {
+    chromeos::DebugLogWriter::StoreCombinedLogs(
+        path,
+        base::BindOnce(&NetInternalsMessageHandler::OnStoreDebugLogsCompleted,
+                       AsWeakPtr(), received_event));
+  } else {
+    chromeos::DebugLogWriter::StoreLogs(
+        path, should_compress,
+        base::BindOnce(&NetInternalsMessageHandler::OnStoreDebugLogsCompleted,
+                       AsWeakPtr(), received_event));
+  }
 }
 
 void NetInternalsMessageHandler::OnStoreDebugLogsCompleted(
-    const base::FilePath& log_path, bool succeeded) {
+    const char* received_event,
+    const base::FilePath& log_path,
+    bool succeeded) {
   std::string status;
   if (succeeded)
     status = "Created log file: " + log_path.BaseName().AsUTF8Unsafe();
   else
     status = "Failed to create log file";
-  SendJavascriptCommand("receivedStoreDebugLogs", base::Value(status));
+  SendJavascriptCommand(received_event, base::Value(status));
 }
 
 void NetInternalsMessageHandler::OnSetNetworkDebugMode(

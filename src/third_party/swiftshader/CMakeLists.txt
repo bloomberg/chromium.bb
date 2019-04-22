@@ -2,12 +2,25 @@ cmake_minimum_required(VERSION 2.8)
 
 project(SwiftShader C CXX)
 
+# On Windows we use custom solution and project files, except for certain third-
+# party projects which use CMake-generated ones. They are manually (re)generated
+# and made path relative using build/cmake.sh, so they can be checked into the
+# repository. Therefore they should not be auto-regenerated and left using
+# absolute paths by CMake's ZERO_CHECK.
+if(WIN32)
+    # Disable automatically regenerating project files on CMakeLists.txt changes.
+    set(CMAKE_SUPPRESS_REGENERATION true)
+endif()
+
 ###########################################################
 # Detect system
 ###########################################################
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(LINUX ON)
+elseif(CMAKE_SYSTEM_NAME MATCHES "Android")
+    set(ANDROID ON)
+    set(CMAKE_CXX_FLAGS "-DANDROID_NDK_BUILD")
 elseif(WIN32)
 elseif(APPLE)
 else()
@@ -66,6 +79,8 @@ option (MSAN "Build with memory sanitizer" 0)
 option (ASAN "Build with address sanitizer" 0)
 option (TSAN "Build with thread sanitizer" 0)
 option (UBSAN "Build with undefined behavior sanitizer" 0)
+option (WARNINGS_AS_ERRORS "Treat all warnings as errors" 1)
+option (DCHECK_ALWAYS_ON "Check validation macros even in release builds" 0)
 
 if(ARCH STREQUAL "arm")
     set(DEFAULT_REACTOR_BACKEND "Subzero")
@@ -82,12 +97,12 @@ set(REACTOR_LLVM_VERSION "7" CACHE STRING "LLVM version used by Reactor")
 # it builds header files that could overwrite the orignal ones. Here we
 # want to include LLVM as a subdirectory and even though it wouldn't cause
 # the problem, if cmake . is called from the main dir, the condition that
-# LLVM checkes, "CMAKE_SOURCE_DIR == CMAKE_BINARY_DIR" will be true. So we
+# LLVM checkes, "CMAKE_CURRENT_SOURCE_DIR == CMAKE_CURRENT_BINARY_DIR" will be true. So we
 # disallow it ourselves too to. In addition if there are remining CMakeFiles
 # and CMakeCache in the directory, cmake .. from a subdirectory will still
 # try to build from the main directory so we instruct users to delete these
 # files when they get the error.
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     message(FATAL_ERROR "In source builds are not allowed by LLVM, please create a build/ directory and build from there. You may have to delete the CMakeCache.txt file and CMakeFiles directory that are next to the CMakeLists.txt.")
 endif()
 
@@ -97,13 +112,15 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Initialize submodules
 ###########################################################
 
-if(NOT EXISTS ${CMAKE_SOURCE_DIR}/third_party/googletest)
-    message(WARNING "
-  third_party/googletest submodule missing.
-  Running 'git submodule update --init' to download it:
-    ")
+if (NOT TARGET gtest)
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/.git)
+        message(WARNING "
+      third_party/googletest submodule missing.
+      Running 'git submodule update --init' to download it:
+        ")
 
-    execute_process(COMMAND git submodule update --init)
+        execute_process(COMMAND git submodule update --init)
+    endif()
 endif()
 
 ###########################################################
@@ -113,13 +130,13 @@ endif()
 # Recursively calls source_group on the files of the directory
 # so that Visual Studio has the files in a folder tree
 macro(group_all_sources directory)
-    file(GLOB files RELATIVE ${CMAKE_SOURCE_DIR}/${directory} ${CMAKE_SOURCE_DIR}/${directory}/*)
+    file(GLOB files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/${directory} ${CMAKE_CURRENT_SOURCE_DIR}/${directory}/*)
     foreach(file ${files})
-        if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/${directory}/${file})
+        if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${directory}/${file})
             group_all_sources(${directory}/${file})
         else()
             string(REPLACE "/" "\\" groupname ${directory})
-            source_group(${groupname} FILES ${CMAKE_SOURCE_DIR}/${directory}/${file})
+            source_group(${groupname} FILES ${CMAKE_CURRENT_SOURCE_DIR}/${directory}/${file})
         endif()
     endforeach()
 endmacro()
@@ -167,20 +184,20 @@ endif()
 # Directories
 ###########################################################
 
-set(SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
+set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(OPENGL_DIR ${SOURCE_DIR}/OpenGL)
 set(OPENGL_COMPILER_DIR ${OPENGL_DIR}/compiler)
 set(VULKAN_DIR ${SOURCE_DIR}/Vulkan)
 if(REACTOR_LLVM_VERSION EQUAL 3)
-    set(LLVM_DIR ${CMAKE_SOURCE_DIR}/third_party/LLVM)
+    set(LLVM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/LLVM)
 else()
-    set(LLVM_DIR ${CMAKE_SOURCE_DIR}/third_party/llvm-7.0/llvm)
-    set(LLVM_CONFIG_DIR ${CMAKE_SOURCE_DIR}/third_party/llvm-7.0/configs)
+    set(LLVM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/llvm-7.0/llvm)
+    set(LLVM_CONFIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/llvm-7.0/configs)
 endif()
-set(SUBZERO_DIR ${CMAKE_SOURCE_DIR}/third_party/subzero)
-set(SUBZERO_LLVM_DIR ${CMAKE_SOURCE_DIR}/third_party/llvm-subzero)
-set(TESTS_DIR ${CMAKE_SOURCE_DIR}/tests)
-set(HELLO2_DIR ${CMAKE_SOURCE_DIR}/third_party/PowerVR_SDK/Examples/Beginner/01_HelloAPI/OGLES2)
+set(SUBZERO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/subzero)
+set(SUBZERO_LLVM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/llvm-subzero)
+set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+set(HELLO2_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/PowerVR_SDK/Examples/Beginner/01_HelloAPI/OGLES2)
 
 ###########################################################
 # Compile flags
@@ -197,6 +214,7 @@ endmacro()
 if(MSVC)
     set_cpp_flag("/MP")
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions(-D_SBCS)  # Single Byte Character Set (ASCII)
 else()
     set_cpp_flag("--std=c++11")
     set_cpp_flag("-Wall")
@@ -205,8 +223,10 @@ else()
     set_cpp_flag("-Werror=missing-braces")
     set_cpp_flag("-fno-exceptions")
 
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
+       CLANG_VERSION_STRING VERSION_GREATER_EQUAL 5)
         set_cpp_flag("-Werror=unused-lambda-capture")
+        set_cpp_flag("-Werror=string-conversion")
     endif()
 
     # Remove xor, and, or and friends from the list of keywords, they are used
@@ -243,12 +263,37 @@ else()
 
     if(LINUX)
         set_cpp_flag("-DUSE_X11=1")
+        set_cpp_flag("-DVK_USE_PLATFORM_XLIB_KHR")
     endif()
 
     # Use -g3 to have even more debug info
     set_cpp_flag("-g -g3" DEBUG)
     set_cpp_flag("-g -g3" RELWITHDEBINFO)
-    set_cpp_flag("-s" RELEASE)
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        # Treated as an unused argument with clang
+        set_cpp_flag("-s" RELEASE)
+    endif()
+
+    if(WARNINGS_AS_ERRORS)
+        set_cpp_flag("-Werror") # Treat all warnings as errors
+    endif()
+
+    if(DCHECK_ALWAYS_ON)
+        set_cpp_flag("-DDCHECK_ALWAYS_ON")
+    endif()
+
+    # Disable pedanitc warnings
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        set_cpp_flag("-Wno-ignored-attributes")  # ignoring attributes on template argument 'X'
+        set_cpp_flag("-Wno-attributes")          # 'X' attribute ignored
+        set_cpp_flag("-Wno-strict-aliasing")     # dereferencing type-punned pointer will break strict-aliasing rules
+        set_cpp_flag("-Wno-comment")             # multi-line comment
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set_cpp_flag("-Wno-unneeded-internal-declaration") # function 'X' is not needed and will not be emitted
+        set_cpp_flag("-Wno-unused-private-field")          # private field 'offset' is not used - TODO: Consider enabling this once Vulkan is further implemented.
+        set_cpp_flag("-Wno-comment")                       # multi-line comment
+        set_cpp_flag("-Wno-undefined-var-template")        # instantiation of variable 'X' required here, but no definition is available
+    endif()
 
     # For distribution it is more important to be slim than super optimized
     set_cpp_flag("-Os" RELEASE)
@@ -273,7 +318,7 @@ else()
         elseif(TSAN)
             set_cpp_flag("-fsanitize=thread")
         elseif(UBSAN)
-            set_cpp_flag("-fsanitize=undefined -fsanitize-blacklist=${CMAKE_SOURCE_DIR}/third_party/LLVM/ubsan_blacklist.txt")
+            set_cpp_flag("-fsanitize=undefined -fsanitize-blacklist=${CMAKE_CURRENT_SOURCE_DIR}/third_party/LLVM/ubsan_blacklist.txt")
         endif()
     endif()
 endif()
@@ -282,7 +327,6 @@ if(WIN32)
     add_definitions(-DWINVER=0x501 -DNOMINMAX -DSTRICT)
     set(CMAKE_FIND_LIBRARY_PREFIXES ${CMAKE_FIND_LIBRARY_PREFIXES} "" "lib")
 endif()
-
 
 ###########################################################
 # LLVM
@@ -649,6 +693,8 @@ elseif(LINUX)
     set(LLVM_INCLUDE_DIR ${LLVM_DIR}/include-linux)
 elseif(APPLE)
     set(LLVM_INCLUDE_DIR ${LLVM_DIR}/include-osx)
+elseif(ANDROID)
+    set(LLVM_INCLUDE_DIR ${LLVM_DIR}/include-android)
 endif()
 
 list(APPEND LLVM_INCLUDE_DIR
@@ -747,6 +793,9 @@ set(LLVM_LIST
     ${LLVM_DIR}/lib/Analysis/ValueLatticeUtils.cpp
     ${LLVM_DIR}/lib/Analysis/ValueTracking.cpp
     ${LLVM_DIR}/lib/Analysis/VectorUtils.cpp
+    ${LLVM_DIR}/lib/AsmParser/LLLexer.cpp
+    ${LLVM_DIR}/lib/AsmParser/LLParser.cpp
+    ${LLVM_DIR}/lib/AsmParser/Parser.cpp
     ${LLVM_DIR}/lib/BinaryFormat/Dwarf.cpp
     ${LLVM_DIR}/lib/BinaryFormat/Magic.cpp
     ${LLVM_DIR}/lib/BinaryFormat/Wasm.cpp
@@ -1712,6 +1761,8 @@ elseif(LINUX)
     list(APPEND LLVM_INCLUDE_DIR ${LLVM_CONFIG_DIR}/linux/include)
 elseif(APPLE)
     list(APPEND LLVM_INCLUDE_DIR ${LLVM_CONFIG_DIR}/darwin/include)
+elseif(ANDROID)
+    list(APPEND LLVM_INCLUDE_DIR ${LLVM_CONFIG_DIR}/android/include)
 endif()
 
 list(APPEND LLVM_INCLUDE_DIR
@@ -1731,13 +1782,43 @@ list(APPEND LLVM_INCLUDE_DIR
 
 endif()  # REACTOR_LLVM_VERSION
 
+# Suppress known LLVM warnings
+set(LLVM_COMPILE_FLAGS)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    list(APPEND LLVM_COMPILE_FLAGS
+        "-Wno-noexcept-type"           # mangled name for ‘X’ will change in C++17 because the exception specification is part of a function type
+        "-Wno-maybe-uninitialized"     # ‘X’ may be used uninitialized in this function
+        "-Wno-unused-but-set-variable" # variable ‘X’ set but not used
+    )
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    set(LLVM_DISABLE_WARNINGS
+        "/wd4141" # 'inline': used more than once
+        "/wd4146" # unary minus operator applied to unsigned type, result still unsigned
+        "/wd4244" # 'X': conversion from 'uint64_t' to 'const unsigned int', possible loss of data
+        "/wd4267" # 'X': conversion from 'size_t' to 'unsigned int', possible loss of data
+        "/wd4291" # 'void X new(size_t,unsigned int,unsigned int)': no matching operator delete found; memory will not be freed if initialization throws an exception
+        "/wd4319" # 'X': zero extending 'unsigned int' to 'uint64_t' of greater size
+        "/wd4624" # 'X': destructor was implicitly defined as deleted
+        "/wd4805" # 'X': unsafe mix of type 'unsigned int' and type 'bool' in operation
+        "/wd4996" # 'X': Call to 'Y' with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct.
+    )
+    set(LLVM_COMPILE_FLAGS "/D \"_SCL_SECURE_NO_WARNINGS\" ${LLVM_DISABLE_WARNINGS}")
+endif()
+string (REPLACE ";" " " LLVM_COMPILE_FLAGS "${LLVM_COMPILE_FLAGS}")
+
 add_library(llvm STATIC ${LLVM_LIST})
 set_target_properties(llvm PROPERTIES
     POSITION_INDEPENDENT_CODE 1
     INCLUDE_DIRECTORIES "${LLVM_INCLUDE_DIR}"
+    COMPILE_FLAGS "${LLVM_COMPILE_FLAGS}"
     COMPILE_DEFINITIONS "__STDC_CONSTANT_MACROS; __STDC_LIMIT_MACROS;"
     FOLDER "LLVM"
 )
+
+# Add required libraries for LLVM
+if(LINUX)
+    target_link_libraries(llvm dl)
+endif(LINUX)
 
 ###########################################################
 # Subzero
@@ -1818,6 +1899,7 @@ if(${REACTOR_BACKEND} STREQUAL "Subzero")
     )
 
     set(SUBZERO_REACTOR_LIST
+        ${SOURCE_DIR}/Reactor/Reactor.cpp
         ${SOURCE_DIR}/Reactor/SubzeroReactor.cpp
         ${SOURCE_DIR}/Reactor/Routine.cpp
         ${SOURCE_DIR}/Reactor/Optimizer.cpp
@@ -1867,7 +1949,7 @@ endif()
 
 set(COMMON_INCLUDE_DIR
     ${SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${LLVM_INCLUDE_DIR}
 )
 set(OPENGL_INCLUDE_DIR
@@ -1876,7 +1958,6 @@ set(OPENGL_INCLUDE_DIR
 )
 
 set(VULKAN_INCLUDE_DIR
-    ${VULKAN_DIR}
     ${COMMON_INCLUDE_DIR}
 )
 
@@ -1911,6 +1992,7 @@ list(REMOVE_ITEM SWIFTSHADER_LIST
 )
 
 set(REACTOR_LLVM_LIST
+    ${SOURCE_DIR}/Reactor/Reactor.cpp
     ${SOURCE_DIR}/Reactor/LLVMReactor.cpp
     ${SOURCE_DIR}/Reactor/Nucleus.hpp
     ${SOURCE_DIR}/Reactor/Routine.cpp
@@ -1935,7 +2017,9 @@ file(GLOB_RECURSE EGL_LIST
     ${OPENGL_DIR}/common/Object.hpp
     ${OPENGL_DIR}/common/debug.cpp
     ${OPENGL_DIR}/common/debug.h
-    ${CMAKE_SOURCE_DIR}/include/*.h
+    ${SOURCE_DIR}/Common/SharedLibrary.cpp
+    ${SOURCE_DIR}/Common/SharedLibrary.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
 )
 
 file(GLOB_RECURSE GLES2_LIST
@@ -1945,9 +2029,11 @@ file(GLOB_RECURSE GLES2_LIST
     ${OPENGL_DIR}/common/*.cpp
     ${OPENGL_DIR}/common/*.h
     ${OPENGL_DIR}/common/*.hpp
-    ${CMAKE_SOURCE_DIR}/include/KHR/*.h
-    ${CMAKE_SOURCE_DIR}/include/GLES2/*.h
-    ${CMAKE_SOURCE_DIR}/include/GLES3/*.h
+    ${SOURCE_DIR}/Common/SharedLibrary.cpp
+    ${SOURCE_DIR}/Common/SharedLibrary.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/KHR/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GLES2/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GLES3/*.h
 )
 
 file(GLOB_RECURSE GLES_CM_LIST
@@ -1957,8 +2043,10 @@ file(GLOB_RECURSE GLES_CM_LIST
     ${OPENGL_DIR}/common/*.cpp
     ${OPENGL_DIR}/common/*.h
     ${OPENGL_DIR}/common/*.hpp
-    ${CMAKE_SOURCE_DIR}/include/KHR/*.h
-    ${CMAKE_SOURCE_DIR}/include/GLES/*.h
+    ${SOURCE_DIR}/Common/SharedLibrary.cpp
+    ${SOURCE_DIR}/Common/SharedLibrary.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/KHR/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GLES/*.h
 )
 
 file(GLOB_RECURSE OPENGL_COMPILER_LIST
@@ -1977,9 +2065,35 @@ file(GLOB_RECURSE VULKAN_LIST
     ${VULKAN_DIR}/*.cpp
     ${VULKAN_DIR}/*.h
     ${VULKAN_DIR}/*.hpp
+    ${SOURCE_DIR}/System/CPUID.cpp
+    ${SOURCE_DIR}/System/CPUID.hpp
+    ${SOURCE_DIR}/System/Configurator.cpp
+    ${SOURCE_DIR}/System/Configurator.hpp
+    ${SOURCE_DIR}/System/Debug.cpp
+    ${SOURCE_DIR}/System/Debug.hpp
+    ${SOURCE_DIR}/System/Half.cpp
+    ${SOURCE_DIR}/System/Half.hpp
+    ${SOURCE_DIR}/System/Math.cpp
+    ${SOURCE_DIR}/System/Math.hpp
     ${SOURCE_DIR}/System/Memory.cpp
     ${SOURCE_DIR}/System/Memory.hpp
-    ${CMAKE_SOURCE_DIR}/include/vulkan/*.h}
+    ${SOURCE_DIR}/System/Resource.cpp
+    ${SOURCE_DIR}/System/Resource.hpp
+    ${SOURCE_DIR}/System/Socket.cpp
+    ${SOURCE_DIR}/System/Socket.hpp
+    ${SOURCE_DIR}/System/Thread.cpp
+    ${SOURCE_DIR}/System/Thread.hpp
+    ${SOURCE_DIR}/System/Timer.cpp
+    ${SOURCE_DIR}/System/Timer.hpp
+    ${SOURCE_DIR}/Device/*.cpp
+    ${SOURCE_DIR}/Device/*.hpp
+    ${SOURCE_DIR}/Pipeline/*.cpp
+    ${SOURCE_DIR}/Pipeline/*.hpp
+    ${SOURCE_DIR}/WSI/VkSurfaceKHR.cpp
+    ${SOURCE_DIR}/WSI/VkSurfaceKHR.hpp
+    ${SOURCE_DIR}/WSI/VkSwapchainKHR.cpp
+    ${SOURCE_DIR}/WSI/VkSwapchainKHR.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/vulkan/*.h}
 )
 
 ###########################################################
@@ -2015,6 +2129,13 @@ elseif(LINUX)
     list(APPEND OPENGL_COMPILER_LIST
         ${OPENGL_COMPILER_DIR}/ossource_posix.cpp
     )
+
+    list(APPEND VULKAN_LIST
+        ${SOURCE_DIR}/WSI/libX11.cpp
+        ${SOURCE_DIR}/WSI/libX11.hpp
+        ${SOURCE_DIR}/WSI/XlibSurfaceKHR.cpp
+        ${SOURCE_DIR}/WSI/XlibSurfaceKHR.hpp
+    )
 elseif(APPLE)
     list(APPEND SWIFTSHADER_LIST
         ${SOURCE_DIR}/Main/FrameBufferOSX.mm
@@ -2023,6 +2144,14 @@ elseif(APPLE)
     list(APPEND EGL_LIST
         ${OPENGL_DIR}/libEGL/OSXUtils.mm
         ${OPENGL_DIR}/libEGL/OSXUtils.hpp
+    )
+    list(APPEND OPENGL_COMPILER_LIST
+        ${OPENGL_COMPILER_DIR}/ossource_posix.cpp
+    )
+elseif(ANDROID)
+    list(APPEND SWIFTSHADER_LIST
+        ${SOURCE_DIR}/Main/FrameBufferAndroid.cpp
+        ${SOURCE_DIR}/Main/FrameBufferAndroid.hpp
     )
     list(APPEND OPENGL_COMPILER_LIST
         ${OPENGL_COMPILER_DIR}/ossource_posix.cpp
@@ -2092,6 +2221,9 @@ if(BUILD_EGL)
         COMPILE_DEFINITIONS "EGL_EGLEXT_PROTOTYPES; EGLAPI=; NO_SANITIZE_FUNCTION=;"
         PREFIX ""
     )
+    if (ANDROID)
+        set_target_properties(libEGL PROPERTIES SUFFIX "_swiftshader.so")
+    endif ()
     set_shared_library_export_map(libEGL ${SOURCE_DIR}/OpenGL/libEGL)
     target_link_libraries(libEGL ${OS_LIBS})
     add_custom_command(
@@ -2099,8 +2231,8 @@ if(BUILD_EGL)
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:libEGL>/translator
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libEGL> $<TARGET_FILE_DIR:libEGL>/translator/${LIB_PREFIX}EGL_translator${CMAKE_SHARED_LIBRARY_SUFFIX}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libEGL> ${CMAKE_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libEGL> ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
     )
 endif()
 
@@ -2112,6 +2244,9 @@ if(BUILD_GLESv2)
         COMPILE_DEFINITIONS "GL_GLEXT_PROTOTYPES; GL_API=; GL_APICALL=; GLAPI=; NO_SANITIZE_FUNCTION=;"
         PREFIX ""
     )
+    if (ANDROID)
+        set_target_properties(libGLESv2 PROPERTIES SUFFIX "_swiftshader.so")
+    endif ()
     set_shared_library_export_map(libGLESv2 ${SOURCE_DIR}/OpenGL/libGLESv2)
     target_link_libraries(libGLESv2 SwiftShader ${Reactor} GLCompiler ${OS_LIBS})
     add_custom_command(
@@ -2119,8 +2254,8 @@ if(BUILD_GLESv2)
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:libGLESv2>/translator
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libGLESv2> $<TARGET_FILE_DIR:libGLESv2>/translator/${LIB_PREFIX}GLES_V2_translator${CMAKE_SHARED_LIBRARY_SUFFIX}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libGLESv2> ${CMAKE_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libGLESv2> ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
     )
 endif()
 
@@ -2132,6 +2267,9 @@ if(BUILD_GLES_CM)
         COMPILE_DEFINITIONS "GL_GLEXT_PROTOTYPES; EGLAPI=; GL_API=; GL_APICALL=; GLAPI=;"
         PREFIX ""
     )
+    if (ANDROID)
+        set_target_properties(libGLES_CM PROPERTIES SUFFIX "_swiftshader.so")
+    endif ()
     set_shared_library_export_map(libGLES_CM ${SOURCE_DIR}/OpenGL/libGLES_CM)
     target_link_libraries(libGLES_CM SwiftShader ${Reactor} GLCompiler ${OS_LIBS})
     add_custom_command(
@@ -2143,6 +2281,14 @@ if(BUILD_GLES_CM)
 endif()
 
 if(BUILD_VULKAN)
+    if (NOT TARGET SPIRV-Tools)
+        # This variable is also used by SPIRV-Tools to locate SPIRV-Headers
+        set(SPIRV-Headers_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/SPIRV-Headers")
+        list(APPEND VULKAN_INCLUDE_DIR "${SPIRV-Headers_SOURCE_DIR}/include")
+
+        add_subdirectory(third_party/SPIRV-Tools)
+    endif()
+
     add_library(libvk_swiftshader SHARED ${VULKAN_LIST})
     set_target_properties(libvk_swiftshader PROPERTIES
         INCLUDE_DIRECTORIES "${VULKAN_INCLUDE_DIR}"
@@ -2151,15 +2297,18 @@ if(BUILD_VULKAN)
         PREFIX ""
     )
     set_shared_library_export_map(libvk_swiftshader ${SOURCE_DIR}/Vulkan)
-    target_link_libraries(libvk_swiftshader ${OS_LIBS})
+    target_link_libraries(libvk_swiftshader ${Reactor} ${OS_LIBS} SPIRV-Tools SPIRV-Tools-opt)
     add_custom_command(
         TARGET libvk_swiftshader
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:libvk_swiftshader>/translator
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libvk_swiftshader> $<TARGET_FILE_DIR:libvk_swiftshader>/translator/${LIB_PREFIX}Vulkan_translator${CMAKE_SHARED_LIBRARY_SUFFIX}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libvk_swiftshader> ${CMAKE_SOURCE_DIR}/out/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:libvk_swiftshader> ${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/
     )
+    configure_file(
+        "${VULKAN_DIR}/vk_swiftshader_icd.json.tmpl"
+        "${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}/vk_swiftshader_icd.json")
 endif()
 
 ###########################################################
@@ -2170,7 +2319,7 @@ if(BUILD_SAMPLES)
     if(WIN32)
         add_executable(OGLES2HelloAPI ${HELLO2_DIR}/OGLES2HelloAPI_Windows.cpp)
         set_target_properties(OGLES2HelloAPI PROPERTIES
-            INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/include"
+            INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
             COMPILE_DEFINITIONS "GL_GLEXT_PROTOTYPES"
             FOLDER "Samples"
         )
@@ -2180,7 +2329,7 @@ if(BUILD_SAMPLES)
     elseif(LINUX)
         add_executable(OGLES2HelloAPI ${HELLO2_DIR}/OGLES2HelloAPI_LinuxX11.cpp)
         set_target_properties(OGLES2HelloAPI PROPERTIES
-            INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/include"
+            INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
             COMPILE_DEFINITIONS "GL_GLEXT_PROTOTYPES"
         )
         target_link_libraries(OGLES2HelloAPI dl X11 libEGL libGLESv2)   # Explicitly link our "lib*" targets, not the platform provided "EGL" and "GLESv2"
@@ -2190,8 +2339,9 @@ if(BUILD_SAMPLES)
             ${HELLO2_DIR}/Build/OSX/en.lproj/MainMenu.xib
         )
         set_target_properties(OGLES2HelloAPI PROPERTIES
-            INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/include"
+            INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
             COMPILE_DEFINITIONS "GL_GLEXT_PROTOTYPES"
+            COMPILE_FLAGS "-Wno-deprecated-declarations" # 'NSTitledWindowMask', 'NSClosableWindowMask' is deprecated
             MACOSX_BUNDLE_INFO_PLIST "${HELLO2_DIR}/Build/OSX/Info.plist"
         )
         target_link_libraries(OGLES2HelloAPI libEGL libGLESv2 ${OS_LIBS})
@@ -2204,12 +2354,12 @@ endif()
 if(BUILD_TESTS)
     set(REACTOR_UNIT_TESTS_LIST
         ${SOURCE_DIR}/Reactor/ReactorUnitTests.cpp
-        ${CMAKE_SOURCE_DIR}/third_party/googletest/googletest/src/gtest-all.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/src/gtest-all.cc
     )
 
     set(REACTOR_UNIT_TESTS_INCLUDE_DIR
-        ${CMAKE_SOURCE_DIR}/third_party/googletest/googletest/include
-        ${CMAKE_SOURCE_DIR}/third_party/googletest/googletest/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/
     )
 
     add_executable(ReactorUnitTests ${REACTOR_UNIT_TESTS_LIST})
@@ -2226,25 +2376,55 @@ if(BUILD_TESTS)
 endif()
 
 if(BUILD_TESTS)
-    set(UNITTESTS_LIST
-        ${CMAKE_SOURCE_DIR}/tests/GLESUnitTests/main.cpp
-        ${CMAKE_SOURCE_DIR}/tests/GLESUnitTests/unittests.cpp
-        ${CMAKE_SOURCE_DIR}/third_party/googletest/googletest/src/gtest-all.cc
+    set(GLES_UNITTESTS_LIST
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/GLESUnitTests/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/GLESUnitTests/unittests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/src/gtest-all.cc
     )
 
-    set(UNITTESTS_INCLUDE_DIR
-        ${CMAKE_SOURCE_DIR}/third_party/googletest/googletest/include/
-        ${CMAKE_SOURCE_DIR}/third_party/googletest/googlemock/include/
-        ${CMAKE_SOURCE_DIR}/third_party/googletest/googletest/
-        ${CMAKE_SOURCE_DIR}/include/
+    set(GLES_UNITTESTS_INCLUDE_DIR
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googlemock/include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/
     )
 
-    add_executable(unittests ${UNITTESTS_LIST})
-    set_target_properties(unittests PROPERTIES
-        INCLUDE_DIRECTORIES "${UNITTESTS_INCLUDE_DIR}"
+    add_executable(gles-unittests ${GLES_UNITTESTS_LIST})
+    set_target_properties(gles-unittests PROPERTIES
+        INCLUDE_DIRECTORIES "${GLES_UNITTESTS_INCLUDE_DIR}"
         FOLDER "Tests"
         COMPILE_DEFINITIONS "STANDALONE"
     )
 
-    target_link_libraries(unittests libEGL libGLESv2 ${OS_LIBS})
+    target_link_libraries(gles-unittests libEGL libGLESv2 ${OS_LIBS})
+    if(ANDROID)
+        target_link_libraries(gles-unittests -landroid)
+    endif()
+endif()
+
+if(BUILD_TESTS AND BUILD_VULKAN)
+    set(VK_UNITTESTS_LIST
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/VulkanUnitTests/Device.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/VulkanUnitTests/Driver.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/VulkanUnitTests/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/VulkanUnitTests/unittests.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/src/gtest-all.cc
+    )
+
+    set(VK_UNITTESTS_INCLUDE_DIR
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googlemock/include/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest/googletest/
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/SPIRV-Tools/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/
+    )
+
+    add_executable(vk-unittests ${VK_UNITTESTS_LIST})
+    set_target_properties(vk-unittests PROPERTIES
+        INCLUDE_DIRECTORIES "${VK_UNITTESTS_INCLUDE_DIR}"
+        FOLDER "Tests"
+        COMPILE_DEFINITIONS "STANDALONE"
+    )
+
+    target_link_libraries(vk-unittests ${OS_LIBS} SPIRV-Tools)
 endif()

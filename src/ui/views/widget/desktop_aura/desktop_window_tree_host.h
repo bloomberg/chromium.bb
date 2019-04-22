@@ -18,6 +18,7 @@ class Window;
 
 namespace client {
 class DragDropClient;
+class ScreenPositionClient;
 }
 }  // namespace aura
 
@@ -40,7 +41,7 @@ class DesktopNativeWidgetAura;
 
 class VIEWS_EXPORT DesktopWindowTreeHost {
  public:
-  virtual ~DesktopWindowTreeHost() {}
+  virtual ~DesktopWindowTreeHost() = default;
 
   static DesktopWindowTreeHost* Create(
       internal::NativeWidgetDelegate* native_widget_delegate,
@@ -69,6 +70,11 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   // DesktopWindowTreeHost.
   virtual std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
       DesktopNativeCursorManager* cursor_manager) = 0;
+
+  // Creates the ScreenPositionClient to use for the WindowTreeHost. Default
+  // implementation creates DesktopScreenPositionClient.
+  virtual std::unique_ptr<aura::client::ScreenPositionClient>
+  CreateScreenPositionClient();
 
   virtual void Close() = 0;
   virtual void CloseNow() = 0;
@@ -187,6 +193,13 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   // Returns whether a VisibilityController should be created.
   virtual bool ShouldCreateVisibilityController() const = 0;
+
+  // Sets the bounds in screen coordinate DIPs (WindowTreeHost generally
+  // operates in pixels). This function is implemented in terms of Screen.
+  virtual void SetBoundsInDIP(const gfx::Rect& bounds);
+
+  // See description in Widget::OnCanActivateChanged().
+  virtual void OnCanActivateChanged() {}
 };
 
 }  // namespace views

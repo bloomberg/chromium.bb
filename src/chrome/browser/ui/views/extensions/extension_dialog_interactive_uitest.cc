@@ -74,4 +74,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionDialogUiTest, MAYBE_TabFocusLoop) {
                   browser()->window()->GetNativeWindow(),
                   ui::VKEY_TAB, false, true, false, false));
   ASSERT_TRUE(button3_focus_listener.WaitUntilSatisfied());
-};
+}

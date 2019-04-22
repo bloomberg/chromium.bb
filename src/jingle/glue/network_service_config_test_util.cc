@@ -6,7 +6,12 @@
 
 #include "jingle/glue/network_service_config_test_util.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -36,6 +41,13 @@ NetworkServiceConfigTestUtil::NetworkServiceConfigTestUtil(
     wait_for_create.Wait();
   }
 }
+
+NetworkServiceConfigTestUtil::NetworkServiceConfigTestUtil(
+    NetworkContextGetter network_context_getter)
+    : net_runner_(base::CreateSingleThreadTaskRunnerWithTraits({})),
+      mojo_runner_(base::SequencedTaskRunnerHandle::Get()),
+      network_context_getter_(network_context_getter),
+      weak_ptr_factory_(this) {}
 
 NetworkServiceConfigTestUtil::~NetworkServiceConfigTestUtil() {
   if (!net_runner_->BelongsToCurrentThread()) {
@@ -80,7 +92,12 @@ void NetworkServiceConfigTestUtil::RequestSocket(
 void NetworkServiceConfigTestUtil::RequestSocketOnMojoRunner(
     base::WeakPtr<NetworkServiceConfigTestUtil> instance,
     network::mojom::ProxyResolvingSocketFactoryRequest request) {
-  if (instance) {
+  if (!instance)
+    return;
+  if (instance->network_context_getter_) {
+    instance->network_context_getter_.Run()->CreateProxyResolvingSocketFactory(
+        std::move(request));
+  } else {
     instance->network_context_ptr_->CreateProxyResolvingSocketFactory(
         std::move(request));
   }
@@ -92,7 +109,8 @@ void NetworkServiceConfigTestUtil::CreateNetworkContextOnNetworkRunner(
   DCHECK(net_runner_->RunsTasksInCurrentSequence());
   network_context_ = std::make_unique<network::NetworkContext>(
       nullptr, std::move(network_context_request),
-      url_request_context_getter_->GetURLRequestContext());
+      url_request_context_getter_->GetURLRequestContext(),
+      /*cors_exempt_header_list=*/std::vector<std::string>());
   if (notify)
     notify->Signal();
 }

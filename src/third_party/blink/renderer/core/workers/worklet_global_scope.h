@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -74,7 +73,7 @@ class CORE_EXPORT WorkletGlobalScope
 
   const base::UnguessableToken& GetAgentClusterID() const final {
     // Currently, worklet agents have no clearly defined owner. See
-    // https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism
+    // https://html.spec.whatwg.org/C/#integration-with-the-javascript-agent-cluster-formalism
     //
     // However, it is intended that a SharedArrayBuffer can be shared with a
     // worklet, e.g. the AudioWorklet. If this WorkletGlobalScope's creation
@@ -98,7 +97,7 @@ class CORE_EXPORT WorkletGlobalScope
   void FetchAndInvokeScript(
       const KURL& module_url_record,
       network::mojom::FetchCredentialsMode,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*);
 

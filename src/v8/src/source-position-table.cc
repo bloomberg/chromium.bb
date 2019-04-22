@@ -48,11 +48,12 @@ void SubtractFromEntry(PositionTableEntry& value,
 // Helper: Encode an integer.
 template <typename T>
 void EncodeInt(std::vector<byte>& bytes, T value) {
+  typedef typename std::make_unsigned<T>::type unsigned_type;
   // Zig-zag encoding.
   static const int kShift = sizeof(T) * kBitsPerByte - 1;
-  value = ((value << 1) ^ (value >> kShift));
+  value = ((static_cast<unsigned_type>(value) << 1) ^ (value >> kShift));
   DCHECK_GE(value, 0);
-  auto encoded = static_cast<typename std::make_unsigned<T>::type>(value);
+  unsigned_type encoded = static_cast<unsigned_type>(value);
   bool more;
   do {
     more = encoded > ValueBits::kMax;
@@ -158,13 +159,13 @@ Handle<ByteArray> SourcePositionTableBuilder::ToSourcePositionTable(
   DCHECK(!Omit());
 
   Handle<ByteArray> table = isolate->factory()->NewByteArray(
-      static_cast<int>(bytes_.size()), TENURED);
+      static_cast<int>(bytes_.size()), AllocationType::kOld);
   MemCopy(table->GetDataStartAddress(), bytes_.data(), bytes_.size());
 
 #ifdef ENABLE_SLOW_DCHECKS
   // Brute force testing: Record all positions and decode
   // the entire table to verify they are identical.
-  SourcePositionTableIterator it(*table);
+  SourcePositionTableIterator it(*table, SourcePositionTableIterator::kAll);
   CheckTableEquals(raw_entries_, it);
   // No additional source positions after creating the table.
   mode_ = OMIT_SOURCE_POSITIONS;
@@ -181,7 +182,8 @@ OwnedVector<byte> SourcePositionTableBuilder::ToSourcePositionTableVector() {
 #ifdef ENABLE_SLOW_DCHECKS
   // Brute force testing: Record all positions and decode
   // the entire table to verify they are identical.
-  SourcePositionTableIterator it(table.as_vector());
+  SourcePositionTableIterator it(table.as_vector(),
+                                 SourcePositionTableIterator::kAll);
   CheckTableEquals(raw_entries_, it);
   // No additional source positions after creating the table.
   mode_ = OMIT_SOURCE_POSITIONS;
@@ -189,14 +191,15 @@ OwnedVector<byte> SourcePositionTableBuilder::ToSourcePositionTableVector() {
   return table;
 }
 
-SourcePositionTableIterator::SourcePositionTableIterator(ByteArray byte_array)
-    : raw_table_(VectorFromByteArray(byte_array)) {
+SourcePositionTableIterator::SourcePositionTableIterator(ByteArray byte_array,
+                                                         IterationFilter filter)
+    : raw_table_(VectorFromByteArray(byte_array)), filter_(filter) {
   Advance();
 }
 
 SourcePositionTableIterator::SourcePositionTableIterator(
-    Handle<ByteArray> byte_array)
-    : table_(byte_array) {
+    Handle<ByteArray> byte_array, IterationFilter filter)
+    : table_(byte_array), filter_(filter) {
   Advance();
 #ifdef DEBUG
   // We can enable allocation because we keep the table in a handle.
@@ -205,8 +208,8 @@ SourcePositionTableIterator::SourcePositionTableIterator(
 }
 
 SourcePositionTableIterator::SourcePositionTableIterator(
-    Vector<const byte> bytes)
-    : raw_table_(bytes) {
+    Vector<const byte> bytes, IterationFilter filter)
+    : raw_table_(bytes), filter_(filter) {
   Advance();
 #ifdef DEBUG
   // We can enable allocation because the underlying vector does not move.
@@ -219,12 +222,19 @@ void SourcePositionTableIterator::Advance() {
       table_.is_null() ? raw_table_ : VectorFromByteArray(*table_);
   DCHECK(!done());
   DCHECK(index_ >= 0 && index_ <= bytes.length());
-  if (index_ >= bytes.length()) {
-    index_ = kDone;
-  } else {
-    PositionTableEntry tmp;
-    DecodeEntry(bytes, &index_, &tmp);
-    AddAndSetEntry(current_, tmp);
+  bool filter_satisfied = false;
+  while (!done() && !filter_satisfied) {
+    if (index_ >= bytes.length()) {
+      index_ = kDone;
+    } else {
+      PositionTableEntry tmp;
+      DecodeEntry(bytes, &index_, &tmp);
+      AddAndSetEntry(current_, tmp);
+      SourcePosition p = source_position();
+      filter_satisfied = (filter_ == kAll) ||
+                         (filter_ == kJavaScriptOnly && p.IsJavaScript()) ||
+                         (filter_ == kExternalOnly && p.IsExternal());
+    }
   }
 }
 

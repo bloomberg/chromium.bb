@@ -12,7 +12,8 @@
 #include <d3d11.h>
 #include <windows.h>
 
-#include "com_utils.h"
+#include "util/EGLWindow.h"
+#include "util/com_utils.h"
 
 namespace angle
 {
@@ -36,7 +37,7 @@ class D3DTextureTest : public ANGLETest
     {
         ANGLETest::SetUp();
 
-        const std::string vsSource =
+        constexpr char kVS[] =
             R"(precision highp float;
             attribute vec4 position;
             varying vec2 texcoord;
@@ -48,7 +49,7 @@ class D3DTextureTest : public ANGLETest
                 texcoord.y = 1.0 - texcoord.y;
             })";
 
-        const std::string textureFSSource =
+        constexpr char kTextureFS[] =
             R"(precision highp float;
             uniform sampler2D tex;
             varying vec2 texcoord;
@@ -58,7 +59,7 @@ class D3DTextureTest : public ANGLETest
                 gl_FragColor = texture2D(tex, texcoord);
             })";
 
-        const std::string textureFSSourceNoSampling =
+        constexpr char kTextureFSNoSampling[] =
             R"(precision highp float;
 
             void main()
@@ -66,13 +67,13 @@ class D3DTextureTest : public ANGLETest
                 gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
             })";
 
-        mTextureProgram = CompileProgram(vsSource, textureFSSource);
+        mTextureProgram = CompileProgram(kVS, kTextureFS);
         ASSERT_NE(0u, mTextureProgram) << "shader compilation failed.";
 
         mTextureUniformLocation = glGetUniformLocation(mTextureProgram, "tex");
         ASSERT_NE(-1, mTextureUniformLocation);
 
-        mTextureProgramNoSampling = CompileProgram(vsSource, textureFSSourceNoSampling);
+        mTextureProgramNoSampling = CompileProgram(kVS, kTextureFSNoSampling);
         ASSERT_NE(0u, mTextureProgramNoSampling) << "shader compilation failed.";
 
         mD3D11Module = LoadLibrary(TEXT("d3d11.dll"));
@@ -156,7 +157,7 @@ class D3DTextureTest : public ANGLETest
         EGLDisplay display = window->getDisplay();
         EGLConfig config   = window->getConfig();
 
-        ASSERT(mD3D11Device);
+        EXPECT_TRUE(mD3D11Device != nullptr);
         ID3D11Texture2D *texture = nullptr;
         CD3D11_TEXTURE2D_DESC desc(format, static_cast<UINT>(width), static_cast<UINT>(height), 1,
                                    1, bindFlags);
@@ -215,8 +216,8 @@ class D3DTextureTest : public ANGLETest
             };
 
             // Multisampled textures are not supported on D3D9.
-            ASSERT(sampleCount <= 1);
-            ASSERT(sampleQuality == 0);
+            EXPECT_TRUE(sampleCount <= 1);
+            EXPECT_TRUE(sampleQuality == 0);
 
             IDirect3DTexture9 *texture = nullptr;
             EXPECT_TRUE(SUCCEEDED(mD3D9Device->CreateTexture(
@@ -699,7 +700,7 @@ TEST_P(D3DTextureTest, TypelessD3DTextureNotSupported)
 TEST_P(D3DTextureTest, UnnecessaryWidthHeightAttributes)
 {
     ANGLE_SKIP_TEST_IF(!valid() || !IsD3D11());
-    ASSERT(mD3D11Device);
+    ASSERT_TRUE(mD3D11Device != nullptr);
     ID3D11Texture2D *texture = nullptr;
     CD3D11_TEXTURE2D_DESC desc(DXGI_FORMAT_R8G8B8A8_UNORM, 1, 1, 1, 1, D3D11_BIND_RENDER_TARGET);
     desc.SampleDesc.Count   = 1;

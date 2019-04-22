@@ -104,6 +104,16 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+          "rect": [415, 125, 150, 150],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
+          "rect": [415, 125, 150, 150],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) div id='html' class='outerBox'",
           "rect": [400, 100, 150, 150],
           "reason": "geometry"
         },
@@ -190,6 +200,16 @@
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [130, 150, 150, 150],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGRoot (positioned) svg id='svg'",
+          "rect": [115, 125, 150, 150],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGRoot (positioned) svg id='svg'",
+          "rect": [115, 125, 150, 150],
           "reason": "paint property change"
         },
         {
@@ -284,6 +304,16 @@
         },
         {
           "object": "LayoutBlockFlow div class='innerBox'",
+          "rect": [440, 150, 100, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow div class='innerBox'",
+          "rect": [440, 150, 100, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow div class='innerBox'",
           "rect": [425, 125, 100, 100],
           "reason": "geometry"
         },
@@ -370,6 +400,16 @@
         {
           "object": "LayoutSVGRoot (positioned) svg id='svg'",
           "rect": [155, 175, 100, 100],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGRoot (positioned) svg id='svg'",
+          "rect": [140, 150, 100, 100],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGRoot (positioned) svg id='svg'",
+          "rect": [140, 150, 100, 100],
           "reason": "paint property change"
         },
         {

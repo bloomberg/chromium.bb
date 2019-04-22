@@ -8,14 +8,12 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
 #include "services/service_manager/tests/lifecycle/app_client.h"
-#include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
+#include "services/service_manager/tests/lifecycle/lifecycle.test-mojom.h"
 
 namespace {
 
@@ -97,55 +95,39 @@ class PackagedApp : public service_manager::Service,
   DISALLOW_COPY_AND_ASSIGN(PackagedApp);
 };
 
-class Package : public service_manager::Service,
-                public service_manager::mojom::ServiceFactory {
+class Package : public service_manager::Service {
  public:
-  explicit Package(service_manager::mojom::ServiceRequest request,
-                   base::OnceClosure quit_closure)
-      : service_binding_(this, std::move(request)),
-        quit_closure_(std::move(quit_closure)),
-        app_client_(service_manager::mojom::ServiceRequest(),
-                    base::BindOnce(&Package::QuitFromAppClient,
-                                   base::Unretained(this))) {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(
-        base::BindRepeating(&Package::Create, base::Unretained(this)));
+  explicit Package(service_manager::mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)), app_client_(nullptr) {
+    app_client_.set_termination_closure(
+        base::BindOnce(&Package::Terminate, base::Unretained(this)));
   }
 
   ~Package() override = default;
 
  private:
-  void QuitFromAppClient() { std::move(quit_closure_).Run(); }
-
   // service_manager::Service:
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
-    if (!registry_.TryBindInterface(interface_name, &interface_pipe)) {
-      app_client_.OnBindInterface(source_info, interface_name,
-                                  std::move(interface_pipe));
-    }
+    app_client_.OnBindInterface(source_info, interface_name,
+                                std::move(interface_pipe));
   }
 
-  void OnDisconnected() override { std::move(quit_closure_).Run(); }
-
-  void Create(service_manager::mojom::ServiceFactoryRequest request) {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
-  // service_manager::mojom::ServiceFactory:
-  void CreateService(
-      service_manager::mojom::ServiceRequest request,
-      const std::string& name,
-      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
+  void CreatePackagedServiceInstance(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver,
+      CreatePackagedServiceInstanceCallback callback) override {
     ++service_manager_connection_refcount_;
     int id = next_id_++;
     auto app = std::make_unique<PackagedApp>(
-        std::move(request),
+        service_manager::mojom::ServiceRequest(std::move(receiver)),
         base::BindOnce(&Package::OnAppInstanceDisconnected,
                        base::Unretained(this)),
         base::BindOnce(&Package::DestroyAppInstance, base::Unretained(this),
                        id));
     app_instances_.emplace(id, std::move(app));
+    std::move(callback).Run(base::GetCurrentProcId());
   }
 
   void OnAppInstanceDisconnected() {
@@ -156,15 +138,12 @@ class Package : public service_manager::Service,
   void DestroyAppInstance(int id) {
     app_instances_.erase(id);
     if (app_instances_.empty())
-      std::move(quit_closure_).Run();
+      Terminate();
   }
 
   service_manager::ServiceBinding service_binding_;
-  base::OnceClosure quit_closure_;
   service_manager::test::AppClient app_client_;
   int service_manager_connection_refcount_ = 0;
-  service_manager::BinderRegistry registry_;
-  mojo::BindingSet<service_manager::mojom::ServiceFactory> bindings_;
 
   int next_id_ = 0;
   std::map<int, std::unique_ptr<PackagedApp>> app_instances_;
@@ -174,12 +153,7 @@ class Package : public service_manager::Service,
 
 }  // namespace
 
-MojoResult ServiceMain(MojoHandle service_request_handle) {
+void ServiceMain(service_manager::mojom::ServiceRequest request) {
   base::MessageLoop message_loop;
-  base::RunLoop run_loop;
-  Package package(service_manager::mojom::ServiceRequest(mojo::MakeScopedHandle(
-                      mojo::MessagePipeHandle(service_request_handle))),
-                  run_loop.QuitClosure());
-  run_loop.Run();
-  return MOJO_RESULT_OK;
+  Package(std::move(request)).RunUntilTermination();
 }

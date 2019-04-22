@@ -59,27 +59,6 @@ NamedLineCollection::NamedLineCollection(
                   : grid_container_style.GridAutoRepeatRows().size();
 }
 
-bool NamedLineCollection::IsValidNamedLineOrArea(
-    const String& named_line,
-    const ComputedStyle& grid_container_style,
-    GridPositionSide side) {
-  bool is_row_axis = DirectionFromSide(side) == kForColumns;
-  const NamedGridLinesMap& grid_line_names =
-      is_row_axis ? grid_container_style.NamedGridColumnLines()
-                  : grid_container_style.NamedGridRowLines();
-  const NamedGridLinesMap& auto_repeat_grid_line_names =
-      is_row_axis ? grid_container_style.AutoRepeatNamedGridColumnLines()
-                  : grid_container_style.AutoRepeatNamedGridRowLines();
-
-  if (grid_line_names.Contains(named_line) ||
-      auto_repeat_grid_line_names.Contains(named_line))
-    return true;
-
-  String implicit_name = ImplicitNamedGridLineForSide(named_line, side);
-  return grid_line_names.Contains(implicit_name) ||
-         auto_repeat_grid_line_names.Contains(implicit_name);
-}
-
 bool NamedLineCollection::HasNamedLines() {
   return named_lines_indexes_ || auto_repeat_named_lines_indexes_;
 }
@@ -161,7 +140,6 @@ GridPositionSide GridPositionsResolver::FinalPositionSide(
 }
 
 static void InitialAndFinalPositionsFromStyle(
-    const ComputedStyle& grid_container_style,
     const LayoutBox& grid_item,
     GridTrackSizingDirection direction,
     GridPosition& initial_position,
@@ -177,22 +155,6 @@ static void InitialAndFinalPositionsFromStyle(
   // StyleAdjuster because we don't want to overwrite the specified values.
   if (initial_position.IsSpan() && final_position.IsSpan())
     final_position.SetAutoPosition();
-
-  if (grid_item.IsOutOfFlowPositioned()) {
-    // Early detect the case of non existing named grid lines for positioned
-    // items.
-    if (initial_position.IsNamedGridArea() &&
-        !NamedLineCollection::IsValidNamedLineOrArea(
-            initial_position.NamedGridLine(), grid_container_style,
-            GridPositionsResolver::InitialPositionSide(direction)))
-      initial_position.SetAutoPosition();
-
-    if (final_position.IsNamedGridArea() &&
-        !NamedLineCollection::IsValidNamedLineOrArea(
-            final_position.NamedGridLine(), grid_container_style,
-            GridPositionsResolver::FinalPositionSide(direction)))
-      final_position.SetAutoPosition();
-  }
 
   // If the grid item has an automatic position and a grid span for a named line
   // in a given dimension, instead treat the grid span as one.
@@ -366,12 +328,11 @@ static GridSpan ResolveGridPositionAgainstOppositePosition(
 }
 
 size_t GridPositionsResolver::SpanSizeForAutoPlacedItem(
-    const ComputedStyle& grid_container_style,
     const LayoutBox& grid_item,
     GridTrackSizingDirection direction) {
   GridPosition initial_position, final_position;
-  InitialAndFinalPositionsFromStyle(grid_container_style, grid_item, direction,
-                                    initial_position, final_position);
+  InitialAndFinalPositionsFromStyle(grid_item, direction, initial_position,
+                                    final_position);
 
   // This method will only be used when both positions need to be resolved
   // against the opposite one.
@@ -457,8 +418,6 @@ static int ResolveGridPositionFromStyle(
       if (explicit_lines.HasNamedLines())
         return explicit_lines.FirstPosition();
 
-      DCHECK(!NamedLineCollection::IsValidNamedLineOrArea(
-          named_grid_line, grid_container_style, side));
       // If none of the above works specs mandate to assume that all the lines
       // in the implicit grid have this name.
       return last_line + 1;
@@ -480,8 +439,8 @@ GridSpan GridPositionsResolver::ResolveGridPositionsFromStyle(
     GridTrackSizingDirection direction,
     size_t auto_repeat_tracks_count) {
   GridPosition initial_position, final_position;
-  InitialAndFinalPositionsFromStyle(grid_container_style, grid_item, direction,
-                                    initial_position, final_position);
+  InitialAndFinalPositionsFromStyle(grid_item, direction, initial_position,
+                                    final_position);
 
   GridPositionSide initial_side = InitialPositionSide(direction);
   GridPositionSide final_side = FinalPositionSide(direction);

@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/system/sys_info.h"
 #include "base/task_runner.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 
@@ -54,10 +54,6 @@ const user_manager::User* FakeUserManager::AddUserWithAffiliation(
   user->SetAffiliation(is_affiliated);
   users_.push_back(user);
   return user;
-}
-
-void FakeUserManager::OnProfileInitialized(User* user) {
-  user->set_profile_ever_initialized(true);
 }
 
 void FakeUserManager::RemoveUserFromList(const AccountId& account_id) {
@@ -290,7 +286,7 @@ const std::string& FakeUserManager::GetApplicationLocale() const {
 }
 
 PrefService* FakeUserManager::GetLocalState() const {
-  return nullptr;
+  return local_state_;
 }
 
 bool FakeUserManager::IsEnterpriseManaged() const {

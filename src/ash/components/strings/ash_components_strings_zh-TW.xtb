@@ -6,7 +6,7 @@
 <translation id="1195667586424773550">將連結拖曳至該分頁的網址列</translation>
 <translation id="1204450209689312104">以無痕模式開啟新視窗</translation>
 <translation id="1251638888133819822">開啟或關閉全螢幕放大鏡</translation>
-<translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /> 鍵</translation>
+<translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">列印目前網頁</translation>
 <translation id="1383876407941801731">搜尋</translation>
@@ -16,7 +16,6 @@
 <translation id="152892567002884378">調高音量</translation>
 <translation id="1560480564179555003">按下 <ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> 鍵，然後按下 <ph name="ESC" /> 鍵</translation>
 <translation id="1652741121070700329">移至上一個字詞的開頭</translation>
-<translation id="1671169355475348905">切換至上一個語言的輸入法</translation>
 <translation id="1679841710523778799">調高亮度</translation>
 <translation id="168356808214100546">按住 <ph name="ALT" /> 鍵並輕觸 <ph name="TAB" /> 鍵，切換至你要開啟的視窗後放開按鍵。</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">顯示或隱藏書籤列</translation>
 <translation id="2185166372312820725">前往上一個分頁</translation>
 <translation id="2194790690264064655">按住 <ph name="CTRL" /> 鍵，然後按一下連結</translation>
+<translation id="2246352309084894470">開啟/關閉全螢幕啟動器</translation>
 <translation id="2382644247745281995">目前的鍵盤配置不支援這個按鍵</translation>
 <translation id="2397416548179033562">顯示 Chrome 選單</translation>
 <translation id="2424073332829844142">開啟及關閉 Caps Lock 鍵</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">重設網頁的縮放比例</translation>
 <translation id="2596078834055697711">擷取視窗螢幕畫面</translation>
 <translation id="2685170433750953446">按下 <ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> 鍵，然後按下 <ph name="TAB" /> 或 <ph name="RIGHT" /> 鍵</translation>
-<translation id="2687057317448262550">切換至下一個語言的輸入法</translation>
 <translation id="2699509451653686398">將目前網頁儲存為書籤</translation>
 <translation id="2750942583782703988">重新載入目前網頁</translation>
 <translation id="2764005613199379871">將焦點放在搜尋網址列</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">鎖定螢幕</translation>
 <translation id="6727005317916125192">上一個窗格</translation>
 <translation id="6740781404993465795">選取下一個字詞或字母</translation>
+<translation id="6755851152783057058">切換至最近一次使用的輸入法</translation>
 <translation id="6760706756348334449">調低音量</translation>
 <translation id="6941333068993625698">提供意見</translation>
 <translation id="6981982820502123353">協助工具</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">在網址列輸入網址，然後按下 <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> 鍵</translation>
 <translation id="7254764037241667478">讓裝置進入休眠模式 (暫停使用)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> 鍵或 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /> 鍵</translation>
+<translation id="7422707470576323858">切換至下一個可用的輸入法</translation>
 <translation id="743754632698445141">取消固定應用程式</translation>
 <translation id="7439718573248533901">刪除下一個字母 (向前刪除)</translation>
 <translation id="7611271430932669992">將焦點移至彈出式視窗和對話方塊</translation>

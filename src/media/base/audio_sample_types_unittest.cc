@@ -13,7 +13,7 @@ namespace media {
 template <typename TestConfig>
 class SampleTypeTraitsTest : public testing::Test {};
 
-TYPED_TEST_CASE_P(SampleTypeTraitsTest);
+TYPED_TEST_SUITE_P(SampleTypeTraitsTest);
 
 struct UnsignedInt8ToFloat32TestConfig {
   using SourceTraits = UnsignedInt8SampleTypeTraits;
@@ -209,7 +209,7 @@ TYPED_TEST_P(SampleTypeTraitsTest, ConvertExampleValues) {
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P(SampleTypeTraitsTest, ConvertExampleValues);
+REGISTER_TYPED_TEST_SUITE_P(SampleTypeTraitsTest, ConvertExampleValues);
 
 typedef ::testing::Types<UnsignedInt8ToFloat32TestConfig,
                          SignedInt16ToFloat32TestConfig,
@@ -224,6 +224,6 @@ typedef ::testing::Types<UnsignedInt8ToFloat32TestConfig,
                          Float64ToSignedInt16TestConfig,
                          Float64ToSignedInt32TestConfig>
     TestConfigs;
-INSTANTIATE_TYPED_TEST_CASE_P(CommonTypes, SampleTypeTraitsTest, TestConfigs);
+INSTANTIATE_TYPED_TEST_SUITE_P(CommonTypes, SampleTypeTraitsTest, TestConfigs);
 
 }  // namespace media

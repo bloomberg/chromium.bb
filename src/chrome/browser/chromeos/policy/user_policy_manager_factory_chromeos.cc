@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -29,13 +30,14 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_paths.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/settings/install_attributes.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/constants/dbus_paths.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/arc/arc_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -74,9 +76,6 @@ const base::FilePath::CharType kPolicyExternalDataDir[] =
 // How long we'll block session initialization to try to refresh policy.
 constexpr base::TimeDelta kPolicyRefreshTimeout =
     base::TimeDelta::FromSeconds(10);
-
-const char kUMAHasPolicyPrefNotMigrated[] =
-    "Enterprise.UserPolicyChromeOS.HasPolicyPrefNotMigrated";
 
 // Called when the user policy loading fails with a fatal error, and the user
 // session has to be terminated.
@@ -137,9 +136,7 @@ UserPolicyManagerFactoryChromeOS::CreateForProfile(
 UserPolicyManagerFactoryChromeOS::UserPolicyManagerFactoryChromeOS()
     : BrowserContextKeyedBaseFactory(
           "UserCloudPolicyManagerChromeOS",
-          BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(SchemaRegistryServiceFactory::GetInstance());
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
 UserPolicyManagerFactoryChromeOS::~UserPolicyManagerFactoryChromeOS() {}
 
@@ -239,11 +236,11 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
-  // If true, we don't know if we've ever checked for policy for this user -
-  // this typically means that we need to do a policy check during
-  // initialization (see comment below). If this is true, then |policy_required|
-  // must be false.
-  const bool cannot_tell_if_policy_required =
+  // If true, we don't know if we've ever checked for policy for this user, so
+  // we need to do a policy check during initialization. This differs from
+  // |policy_required| in that it's OK if the server says we don't have policy.
+  // If this is true, then |policy_required| must be false.
+  const bool policy_check_required =
       (requires_policy_user_property == ProfileRequiresPolicy::kUnknown) &&
       !is_stub_user && !is_active_directory &&
       !command_line->HasSwitch(chromeos::switches::kProfileRequiresPolicy) &&
@@ -256,7 +253,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   // exit the user session entirely - it means that there was a crash during
   // profile initialization, and we can't rely on the cached policy being valid
   // (so can't force immediate load of policy).
-  if (cannot_tell_if_policy_required && force_immediate_load) {
+  if (policy_check_required && force_immediate_load) {
     LOG(ERROR) << "Exiting non-stub session because browser restarted before"
                << " profile was initialized.";
     base::UmaHistogramEnumeration(
@@ -284,35 +281,6 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
        (command_line->GetSwitchValueASCII(
             chromeos::switches::kProfileRequiresPolicy) == "true"));
 
-  DCHECK(!(cannot_tell_if_policy_required && policy_required));
-
-  // If true, we must either load policy from disk, or else check the server
-  // for policy. This differs from |policy_required| in that it's OK if the
-  // server says we don't have policy.
-  bool policy_check_required = false;
-
-  if (cannot_tell_if_policy_required) {
-    // There is no preference telling us that the profile has policy. In
-    // general, this means that this is a new session, or else there was a crash
-    // before this preference could be set. However, there is also a chance that
-    // this user existed before we started tracking the ProfileRequiresPolicy
-    // flag, so we rely on profile_ever_initialized() instead in that case --
-    // otherwise, this would break offline login for pre-existing users.
-    // We track this case via UMA - once people stop hitting this migration
-    // path, we can remove the migration code here and in
-    // known_user::WasProfileEverInitialized().
-    // TODO(atwilson): Remove this when UMA stats show migration is complete
-    // (https://crbug.com/731726).
-    if (user->profile_ever_initialized()) {
-      LOG(WARNING) << "Migrating user with no policy status";
-      UMA_HISTOGRAM_BOOLEAN(kUMAHasPolicyPrefNotMigrated, true);
-    } else {
-      // Profile was truly never initialized - we have to block until we've
-      // checked for policy.
-      policy_check_required = true;
-    }
-  }
-
   // We should never have |policy_required| and |policy_check_required| both
   // set, since the |policy_required| implies that we already know that
   // the user requires policy.
@@ -338,9 +306,17 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
       (enforcement_type != PolicyEnforcement::kPolicyOptional) &&
       !force_immediate_load && !is_stub_user;
 
+  // If OAuth token is required for policy refresh for child user we should not
+  // block signin. Policy refresh will fail without the token that is available
+  // only after profile initialization.
+  const bool policy_refresh_requires_oauth_token =
+      user->GetType() == user_manager::USER_TYPE_CHILD &&
+      base::FeatureList::IsEnabled(features::kDMServerOAuthForChildUser);
+
   base::TimeDelta policy_refresh_timeout;
   if (block_profile_init_on_policy_refresh &&
-      enforcement_type == PolicyEnforcement::kPolicyRequired) {
+      enforcement_type == PolicyEnforcement::kPolicyRequired &&
+      !policy_refresh_requires_oauth_token) {
     // We already have policy, so block signin for a short period to check
     // for a policy update, so we can pick up any important policy changes
     // that can't easily change on the fly (like changes to the startup tabs).
@@ -360,15 +336,14 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   const base::FilePath external_data_dir =
       profile_dir.Append(kPolicy).Append(kPolicyExternalDataDir);
   base::FilePath policy_key_dir;
-  CHECK(
-      base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &policy_key_dir));
+  CHECK(base::PathService::Get(chromeos::dbus_paths::DIR_USER_POLICY_KEYS,
+                               &policy_key_dir));
 
   std::unique_ptr<UserCloudPolicyStoreChromeOS> store =
       std::make_unique<UserCloudPolicyStoreChromeOS>(
-          chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
-          chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-          background_task_runner, account_id, policy_key_dir,
-          is_active_directory);
+          chromeos::CryptohomeClient::Get(),
+          chromeos::SessionManagerClient::Get(), background_task_runner,
+          account_id, policy_key_dir, is_active_directory);
 
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
@@ -388,8 +363,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
                        MetricUserPolicyChromeOSSessionAbortType::
                            kInitWithActiveDirectoryManagement),
         std::move(store), std::move(external_data_manager));
-    manager->Init(
-        SchemaRegistryServiceFactory::GetForContext(profile)->registry());
+    manager->Init(profile->GetPolicySchemaRegistryService()->registry());
 
     active_directory_managers_[profile] = manager.get();
     return std::move(manager);
@@ -413,8 +387,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
       manager->EnableWildcardLoginCheck(account_id.GetUserEmail());
     }
 
-    manager->Init(
-        SchemaRegistryServiceFactory::GetForContext(profile)->registry());
+    manager->Init(profile->GetPolicySchemaRegistryService()->registry());
     manager->Connect(g_browser_process->local_state(),
                      device_management_service,
                      g_browser_process->shared_url_loader_factory());

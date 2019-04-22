@@ -16,6 +16,7 @@
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 class AutocompleteController;
@@ -26,7 +27,8 @@ class Profile;
 // AutocompleteController to OnResultChanged() and passes those results to
 // the OmniboxPage.
 class OmniboxPageHandler : public AutocompleteControllerDelegate,
-                           public mojom::OmniboxPageHandler {
+                           public mojom::OmniboxPageHandler,
+                           public OmniboxControllerEmitter::Observer {
  public:
   // OmniboxPageHandler is deleted when the supplied pipe is destroyed.
   OmniboxPageHandler(Profile* profile,
@@ -36,12 +38,22 @@ class OmniboxPageHandler : public AutocompleteControllerDelegate,
   // AutocompleteControllerDelegate overrides:
   void OnResultChanged(bool default_match_changed) override;
 
+  // OmniboxControllerEmitter::Observer overrides:
+  void OnOmniboxQuery(AutocompleteController* controller) override;
+  void OnOmniboxResultChanged(bool default_match_changed,
+                              AutocompleteController* controller) override;
+
   // mojom::OmniboxPageHandler overrides:
   void SetClientPage(mojom::OmniboxPagePtr page) override;
+  // current_url may be invalid, in which case, autocomplete input's url won't
+  // be set.
   void StartOmniboxQuery(const std::string& input_string,
+                         bool reset_autocomplete_controller,
                          int32_t cursor_position,
+                         bool zero_suggest,
                          bool prevent_inline_autocomplete,
                          bool prefer_keyword,
+                         const std::string& current_url,
                          int32_t page_classification) override;
 
  private:
@@ -73,6 +85,9 @@ class OmniboxPageHandler : public AutocompleteControllerDelegate,
   Profile* profile_;
 
   mojo::Binding<mojom::OmniboxPageHandler> binding_;
+
+  ScopedObserver<OmniboxControllerEmitter, OmniboxControllerEmitter::Observer>
+      observer_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPageHandler);
 };

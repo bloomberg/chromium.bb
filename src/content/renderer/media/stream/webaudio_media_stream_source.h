@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/time/time.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_push_fifo.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_audio_destination_consumer.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -22,10 +22,12 @@ namespace content {
 // MediaStreamAudioTracks. Audio data is transported directly to the tracks in
 // 10 ms chunks.
 class WebAudioMediaStreamSource final
-    : public MediaStreamAudioSource,
+    : public blink::MediaStreamAudioSource,
       public blink::WebAudioDestinationConsumer {
  public:
-  explicit WebAudioMediaStreamSource(blink::WebMediaStreamSource* blink_source);
+  WebAudioMediaStreamSource(
+      blink::WebMediaStreamSource* blink_source,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~WebAudioMediaStreamSource() override;
 
@@ -51,7 +53,7 @@ class WebAudioMediaStreamSource final
 
   // In debug builds, check that all methods that could cause object graph
   // or data flow changes are being called on the main thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // True while this WebAudioMediaStreamSource is registered with
   // |blink_source_| and is consuming audio.

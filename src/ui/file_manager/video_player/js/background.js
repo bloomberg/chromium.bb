@@ -53,50 +53,56 @@ function openVideoPlayerWindow(urls) {
   var windowId = null;
 
   return new Promise(function(fulfill, reject) {
-    util.URLsToEntries(urls).then(function(result) {
-      fulfill(result.entries);
-    }.wrap()).catch(reject);
-  }.wrap()).then(function(entries) {
-    if (entries.length === 0)
-      return Promise.reject('No file to open.');
+           util.URLsToEntries(urls)
+               .then(function(result) {
+                 fulfill(result.entries);
+               }.wrap())
+               .catch(reject);
+         }.wrap())
+      .then(function(entries) {
+        if (entries.length === 0) {
+          return Promise.reject('No file to open.');
+        }
 
-    // Adjusts the position to start playing.
-    var maybePosition = util.entriesToURLs(entries).indexOf(startUrl);
-    if (maybePosition !== -1)
-      position = maybePosition;
+        // Adjusts the position to start playing.
+        var maybePosition = util.entriesToURLs(entries).indexOf(startUrl);
+        if (maybePosition !== -1) {
+          position = maybePosition;
+        }
 
-    windowId = generateWindowId();
+        windowId = generateWindowId();
 
-    // Opens the video player window.
-    return new Promise(function(fulfill, reject) {
-      var urls = util.entriesToURLs(entries);
-      var videoPlayer = new AppWindowWrapper('video_player.html',
-          windowId,
-          windowCreateOptions);
+        // Opens the video player window.
+        return new Promise(function(fulfill, reject) {
+          var urls = util.entriesToURLs(entries);
+          var videoPlayer = new AppWindowWrapper(
+              'video_player.html', windowId, windowCreateOptions);
 
-      videoPlayer.launch(
-          {items: urls, position: position},
-          false,
-          fulfill.bind(null, videoPlayer));
-    }.wrap());
-  }.wrap()).then(function(videoPlayer) {
-    var appWindow = videoPlayer.rawAppWindow;
+          videoPlayer.launch(
+              {items: urls, position: position}, false,
+              fulfill.bind(null, videoPlayer));
+        }.wrap());
+      }.wrap())
+      .then(function(videoPlayer) {
+        var appWindow = videoPlayer.rawAppWindow;
 
-    appWindow.onClosed.addListener(function() {
-      chrome.power.releaseKeepAwake();
-    });
+        appWindow.onClosed.addListener(function() {
+          chrome.power.releaseKeepAwake();
+        });
 
-    if (chrome.test)
-      appWindow.contentWindow.loadMockCastExtensionForTest = true;
+        if (chrome.test) {
+          appWindow.contentWindow.loadMockCastExtensionForTest = true;
+        }
 
-    videoPlayer.setIcon(ICON_IMAGE);
-    appWindow.focus();
+        videoPlayer.setIcon(ICON_IMAGE);
+        appWindow.focus();
 
-    return windowId;
-  }.wrap()).catch(function(error) {
-    console.error('Launch failed' + error.stack || error);
-    return Promise.reject(error);
-  }.wrap());
+        return windowId;
+      }.wrap())
+      .catch(function(error) {
+        console.error('Launch failed: ' + (error.stack || error));
+        return Promise.reject(error);
+      }.wrap());
 }
 
 background.setLaunchHandler(openVideoPlayerWindow);

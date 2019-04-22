@@ -12,7 +12,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #import "ios/chrome/app/main_controller.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
@@ -22,6 +21,9 @@
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -250,7 +252,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // checks if all its views and buttons are visible. Checks that no alerts are
 // presented.
 - (void)showQRScannerAndCheckLayoutWithCameraMock:(id)mock {
-  UIViewController* bvc = [self currentBVC];
+  UIViewController* bvc = [self currentViewController];
   [self assertModalOfClass:[QRScannerViewController class]
           isNotPresentedBy:bvc];
   [self assertModalOfClass:[UIAlertController class] isNotPresentedBy:bvc];
@@ -270,14 +272,14 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   [self addCameraControllerDismissalExpectations:mock];
   TapButton(QrScannerCloseButton());
   [self waitForModalOfClass:[QRScannerViewController class]
-       toDisappearFromAbove:[self currentBVC]];
+       toDisappearFromAbove:[self currentViewController]];
 }
 
 // Returns the current BrowserViewController.
-- (UIViewController*)currentBVC {
+- (UIViewController*)currentViewController {
   // TODO(crbug.com/629516): Evaluate moving this into a common utility.
   MainController* mainController = chrome_test_util::GetMainController();
-  return [[mainController browserViewInformation] currentBVC];
+  return mainController.interfaceProvider.mainInterface.viewController;
 }
 
 // Checks that the omnibox is visible and contains |text|.
@@ -354,7 +356,8 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // that the title of this alert corresponds to |state|.
 - (void)assertQRScannerIsPresentingADialogForState:(CameraState)state {
   [self assertModalOfClass:[UIAlertController class]
-             isPresentedBy:[[self currentBVC] presentedViewController]];
+             isPresentedBy:[[self currentViewController]
+                               presentedViewController]];
   [[EarlGrey
       selectElementWithMatcher:grey_text([self dialogTitleForState:state])]
       assertWithMatcher:grey_notNil()];
@@ -412,20 +415,22 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
     (const GURL&)replacementURL {
   // The specific class to swizzle depends on whether the UIRefresh experiment
   // is enabled.
-    void (^loadGURLFromLocationBarBlock)(LocationBarCoordinator*, const GURL&,
-                                         ui::PageTransition) =
-        ^void(LocationBarCoordinator* self, const GURL& url,
-              ui::PageTransition transition) {
-          web::NavigationManager::WebLoadParams params(replacementURL);
-          params.transition_type = transition;
-          ChromeLoadParams chromeParams(params);
-          [self.URLLoader loadURLWithParams:chromeParams];
-          [self cancelOmniboxEdit];
-        };
-    load_GURL_from_location_bar_swizzler_.reset(new ScopedBlockSwizzler(
-        [LocationBarCoordinator class],
-        @selector(loadGURLFromLocationBar:transition:disposition:),
-        loadGURLFromLocationBarBlock));
+  void (^loadGURLFromLocationBarBlock)(LocationBarCoordinator*,
+                                       TemplateURLRef::PostContent*,
+                                       const GURL&, ui::PageTransition) =
+      ^void(LocationBarCoordinator* self,
+            TemplateURLRef::PostContent* postContent, const GURL& url,
+            ui::PageTransition transition) {
+        web::NavigationManager::WebLoadParams params(replacementURL);
+        params.transition_type = transition;
+        UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+            ->Load(UrlLoadParams::InCurrentTab(params));
+        [self cancelOmniboxEdit];
+      };
+  load_GURL_from_location_bar_swizzler_.reset(new ScopedBlockSwizzler(
+      [LocationBarCoordinator class],
+      @selector(loadGURLFromLocationBar:postContent:transition:disposition:),
+      loadGURLFromLocationBarBlock));
 }
 
 // Creates a new CameraController mock with camera permission granted if
@@ -443,28 +448,32 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // Calls |cameraStateChanged:| on the presented QRScannerViewController.
 - (void)callCameraStateChanged:(CameraState)state {
   QRScannerViewController* vc =
-      (QRScannerViewController*)[[self currentBVC] presentedViewController];
+      (QRScannerViewController*)[[self currentViewController]
+          presentedViewController];
   [vc cameraStateChanged:state];
 }
 
 // Calls |torchStateChanged:| on the presented QRScannerViewController.
 - (void)callTorchStateChanged:(BOOL)torchIsOn {
   QRScannerViewController* vc =
-      (QRScannerViewController*)[[self currentBVC] presentedViewController];
+      (QRScannerViewController*)[[self currentViewController]
+          presentedViewController];
   [vc torchStateChanged:torchIsOn];
 }
 
 // Calls |torchAvailabilityChanged:| on the presented QRScannerViewController.
 - (void)callTorchAvailabilityChanged:(BOOL)torchIsAvailable {
   QRScannerViewController* vc =
-      (QRScannerViewController*)[[self currentBVC] presentedViewController];
+      (QRScannerViewController*)[[self currentViewController]
+          presentedViewController];
   [vc torchAvailabilityChanged:torchIsAvailable];
 }
 
 // Calls |receiveQRScannerResult:| on the presented QRScannerViewController.
 - (void)callReceiveQRScannerResult:(NSString*)result {
   QRScannerViewController* vc =
-      (QRScannerViewController*)[[self currentBVC] presentedViewController];
+      (QRScannerViewController*)[[self currentViewController]
+          presentedViewController];
   [vc receiveQRScannerResult:result loadImmediately:NO];
 }
 
@@ -623,7 +632,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // Tests that a UIAlertController is presented instead of the
 // QRScannerViewController if the camera is unavailable.
 - (void)testCameraUnavailableDialog {
-  UIViewController* bvc = [self currentBVC];
+  UIViewController* bvc = [self currentViewController];
   [self assertModalOfClass:[QRScannerViewController class]
           isNotPresentedBy:bvc];
   [self assertModalOfClass:[UIAlertController class] isNotPresentedBy:bvc];
@@ -661,7 +670,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
     // Close the dialog.
     [self addCameraControllerDismissalExpectations:cameraControllerMock];
     TapButton(DialogCancelButton());
-    UIViewController* bvc = [self currentBVC];
+    UIViewController* bvc = [self currentViewController];
     [self waitForModalOfClass:[QRScannerViewController class]
          toDisappearFromAbove:bvc];
     [self assertModalOfClass:[UIAlertController class] isNotPresentedBy:bvc];
@@ -698,9 +707,9 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   [self addCameraControllerDismissalExpectations:cameraControllerMock];
   TapButton(DialogCancelButton());
   [self waitForModalOfClass:[QRScannerViewController class]
-       toDisappearFromAbove:[self currentBVC]];
+       toDisappearFromAbove:[self currentViewController]];
   [self assertModalOfClass:[UIAlertController class]
-          isNotPresentedBy:[self currentBVC]];
+          isNotPresentedBy:[self currentViewController]];
 
   [cameraControllerMock verify];
 }
@@ -756,7 +765,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   [self callReceiveQRScannerResult:base::SysUTF8ToNSString(result)];
 
   [self waitForModalOfClass:[QRScannerViewController class]
-       toDisappearFromAbove:[self currentBVC]];
+       toDisappearFromAbove:[self currentViewController]];
   [cameraControllerMock verify];
 
   // Optionally edit the text in the omnibox before pressing return.
@@ -772,7 +781,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
   [self assertModalOfClass:[QRScannerViewController class]
-          isNotPresentedBy:[self currentBVC]];
+          isNotPresentedBy:[self currentViewController]];
 }
 
 // Test that the correct page is loaded if the scanner result is a URL.

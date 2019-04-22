@@ -8,8 +8,15 @@ source_set("cpp") {
     "access_token_fetcher.h",
     "access_token_info.cc",
     "access_token_info.h",
-    "accounts_mutator.cc",
+    "accounts_cookie_mutator.h",
+    "accounts_cookie_mutator_impl.cc",
+    "accounts_cookie_mutator_impl.h",
+    "accounts_in_cookie_jar_info.cc",
+    "accounts_in_cookie_jar_info.h",
     "accounts_mutator.h",
+    "diagnostics_provider.h",
+    "diagnostics_provider_impl.cc",
+    "diagnostics_provider_impl.h",
     "identity_manager.cc",
     "identity_manager.h",
     "primary_account_access_token_fetcher.cc",
@@ -24,13 +31,25 @@ source_set("cpp") {
     ]
   }
 
+  if (!is_android && !is_ios) {
+    sources += [
+      "accounts_mutator_impl.cc",
+      "accounts_mutator_impl.h",
+    ]
+  }
+
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
     "//components/signin/core/browser:internals",
     "//components/signin/core/browser:shared",
+    "//components/signin/core/browser:signin_buildflags",
     "//services/identity/public/cpp:cpp_types",
     "//services/network/public/cpp",
+  ]
+
+  deps = [
+    "//components/prefs:prefs",
   ]
 }
 
@@ -55,21 +74,29 @@ source_set("test_support") {
     "identity_test_environment.h",
     "identity_test_utils.cc",
     "identity_test_utils.h",
+    "test_identity_manager_observer.cc",
+    "test_identity_manager_observer.h",
   ]
 
   public_deps = [
     ":cpp",
+    "//components/signin/core/browser:internals_test_support",
+    "//components/sync_preferences:test_support",
+    "//google_apis:test_support",
   ]
 
   deps = [
-    "//components/signin/core/browser:internals_test_support",
-    "//components/sync_preferences:test_support",
+    "//components/image_fetcher/core:test_support",
+    "//components/signin/core/browser",
   ]
 }
 
 source_set("tests") {
   testonly = true
   sources = [
+    "accounts_cookie_mutator_unittest.cc",
+    "accounts_mutator_unittest.cc",
+    "diagnostics_provider_unittest.cc",
     "primary_account_mutator_unittest.cc",
   ]
 
@@ -78,6 +105,23 @@ source_set("tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/signin/core/browser:internals_test_support",
+    "//components/sync_preferences:test_support",
+    "//services/network:test_support",
+    "//testing/gmock",
     "//testing/gtest",
+  ]
+}
+
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//services/identity/public/mojom",
+    "//services/service_manager/public/cpp",
   ]
 }

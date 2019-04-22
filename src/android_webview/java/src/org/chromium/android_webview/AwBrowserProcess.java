@@ -28,7 +28,9 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskRunner;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
@@ -50,9 +52,21 @@ public final class AwBrowserProcess {
 
     private static final String WEBVIEW_DIR_BASENAME = "webview";
     private static final String EXCLUSIVE_LOCK_FILE = "webview_data.lock";
+
+    // To avoid any potential synchronization issues we post all minidump-copying actions to
+    // the same sequence to be run serially.
+    private static final TaskRunner sSequencedTaskRunner =
+            PostTask.createSequencedTaskRunner(TaskTraits.BEST_EFFORT_MAY_BLOCK);
+
     private static RandomAccessFile sLockFile;
     private static FileLock sExclusiveFileLock;
     private static String sWebViewPackageName;
+
+    // TODO(ksolt): This is a temporary solution to avoid lifetime check errors.
+    // Will be fixed after we decide how to handle the destruction of static TaskRunners.
+    static {
+        sSequencedTaskRunner.disableLifetimeCheck();
+    }
 
     /**
      * Loads the native library, and performs basic static construction of objects needed
@@ -112,7 +126,7 @@ public final class AwBrowserProcess {
                 boolean multiProcess =
                         CommandLine.getInstance().hasSwitch(AwSwitches.WEBVIEW_SANDBOXED_RENDERER);
                 if (multiProcess) {
-                    ChildProcessLauncherHelper.warmUp(appContext);
+                    ChildProcessLauncherHelper.warmUp(appContext, true);
                 }
                 // The policies are used by browser startup, so we need to register the policy
                 // providers before starting the browser process. This only registers java objects
@@ -133,21 +147,6 @@ public final class AwBrowserProcess {
                     throw new RuntimeException("Cannot initialize WebView", e);
                 }
             });
-
-            // Only run cleanup task on N+ since on earlier versions there are no extra pak files.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                // Cleanup task to remove unnecessary extra pak files (crbug.com/752510).
-                // TODO(zpeng): Remove cleanup code after at least M64 (crbug.com/756580).
-                AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
-                    File extraPaksDir = new File(PathUtils.getDataDirectory(), "paks");
-                    if (extraPaksDir.exists()) {
-                        for (File pakFile : extraPaksDir.listFiles()) {
-                            pakFile.delete();
-                        }
-                        extraPaksDir.delete();
-                    }
-                });
-            }
         }
     }
 
@@ -243,89 +242,83 @@ public final class AwBrowserProcess {
      * minidumps, if we don't, delete them.
      */
     public static void handleMinidumps(final boolean userApproved) {
-        new AsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                final Context appContext = ContextUtils.getApplicationContext();
-                final File crashSpoolDir = new File(appContext.getCacheDir().getPath(), "WebView");
-                if (!crashSpoolDir.isDirectory()) return null;
-                final CrashFileManager crashFileManager = new CrashFileManager(crashSpoolDir);
+        sSequencedTaskRunner.postTask(() -> {
+            final Context appContext = ContextUtils.getApplicationContext();
+            final File crashSpoolDir = new File(appContext.getCacheDir().getPath(), "WebView");
+            if (!crashSpoolDir.isDirectory()) return;
+            final CrashFileManager crashFileManager = new CrashFileManager(crashSpoolDir);
 
-                // The lifecycle of a minidump in the app directory is very simple: foo.dmpNNNNN --
-                // where NNNNN is a Process ID (PID) -- gets created, and is either deleted or
-                // copied over to the shared crash directory for all WebView-using apps.
-                final File[] minidumpFiles = crashFileManager.getMinidumpsSansLogcat();
-                if (minidumpFiles.length == 0) return null;
+            // The lifecycle of a minidump in the app directory is very simple: foo.dmpNNNNN --
+            // where NNNNN is a Process ID (PID) -- gets created, and is either deleted or
+            // copied over to the shared crash directory for all WebView-using apps.
+            final File[] minidumpFiles = crashFileManager.getMinidumpsSansLogcat();
+            if (minidumpFiles.length == 0) return;
 
-                // Delete the minidumps if the user doesn't allow crash data uploading.
-                if (!userApproved) {
-                    for (File minidump : minidumpFiles) {
-                        if (!minidump.delete()) {
-                            Log.w(TAG, "Couldn't delete file " + minidump.getAbsolutePath());
-                        }
+            // Delete the minidumps if the user doesn't allow crash data uploading.
+            if (!userApproved) {
+                for (File minidump : minidumpFiles) {
+                    if (!minidump.delete()) {
+                        Log.w(TAG, "Couldn't delete file " + minidump.getAbsolutePath());
                     }
-                    return null;
                 }
-
-                final Intent intent = new Intent();
-                intent.setClassName(getWebViewPackageName(), CrashReceiverService.class.getName());
-
-                ServiceConnection connection = new ServiceConnection() {
-                    @Override
-                    public void onServiceConnected(ComponentName className, IBinder service) {
-                        // Pass file descriptors, pointing to our minidumps, to the minidump-copying
-                        // service so that the contents of the minidumps will be copied to WebView's
-                        // data directory. Delete our direct File-references to the minidumps after
-                        // creating the file-descriptors to resign from retrying to copy the
-                        // minidumps if anything goes wrong - this makes sense given that a failure
-                        // to copy a file usually means that retrying won't succeed either, e.g. the
-                        // disk being full, or the file system being corrupted.
-                        final ParcelFileDescriptor[] minidumpFds =
-                                new ParcelFileDescriptor[minidumpFiles.length];
-                        try {
-                            for (int i = 0; i < minidumpFiles.length; ++i) {
-                                try {
-                                    minidumpFds[i] = ParcelFileDescriptor.open(
-                                            minidumpFiles[i], ParcelFileDescriptor.MODE_READ_ONLY);
-                                } catch (FileNotFoundException e) {
-                                    minidumpFds[i] = null; // This is slightly ugly :)
-                                }
-                                if (!minidumpFiles[i].delete()) {
-                                    Log.w(TAG, "Couldn't delete file "
-                                            + minidumpFiles[i].getAbsolutePath());
-                                }
-                            }
-                            try {
-                                ICrashReceiverService.Stub.asInterface(service).transmitCrashes(
-                                        minidumpFds);
-                            } catch (RemoteException e) {
-                                // TODO(gsennton): add a UMA metric here to ensure we aren't losing
-                                // too many minidumps because of this.
-                            }
-                        } finally {
-                            // Close FDs
-                            for (int i = 0; i < minidumpFds.length; ++i) {
-                                try {
-                                    if (minidumpFds[i] != null) minidumpFds[i].close();
-                                } catch (IOException e) {
-                                }
-                            }
-                            appContext.unbindService(this);
-                        }
-                    }
-
-                    @Override
-                    public void onServiceDisconnected(ComponentName className) {}
-                };
-                if (!appContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
-                    Log.w(TAG, "Could not bind to Minidump-copying Service " + intent);
-                }
-                return null;
+                return;
             }
-            // To avoid any potential synchronization issues we post all minidump-copying actions to
-            // the same thread to be run serially.
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+
+            final Intent intent = new Intent();
+            intent.setClassName(getWebViewPackageName(), CrashReceiverService.class.getName());
+
+            ServiceConnection connection = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName className, IBinder service) {
+                    // Pass file descriptors, pointing to our minidumps, to the minidump-copying
+                    // service so that the contents of the minidumps will be copied to WebView's
+                    // data directory. Delete our direct File-references to the minidumps after
+                    // creating the file-descriptors to resign from retrying to copy the
+                    // minidumps if anything goes wrong - this makes sense given that a failure
+                    // to copy a file usually means that retrying won't succeed either, e.g. the
+                    // disk being full, or the file system being corrupted.
+                    final ParcelFileDescriptor[] minidumpFds =
+                            new ParcelFileDescriptor[minidumpFiles.length];
+                    try {
+                        for (int i = 0; i < minidumpFiles.length; ++i) {
+                            try {
+                                minidumpFds[i] = ParcelFileDescriptor.open(
+                                        minidumpFiles[i], ParcelFileDescriptor.MODE_READ_ONLY);
+                            } catch (FileNotFoundException e) {
+                                minidumpFds[i] = null; // This is slightly ugly :)
+                            }
+                            if (!minidumpFiles[i].delete()) {
+                                Log.w(TAG,
+                                        "Couldn't delete file "
+                                                + minidumpFiles[i].getAbsolutePath());
+                            }
+                        }
+                        try {
+                            ICrashReceiverService.Stub.asInterface(service).transmitCrashes(
+                                    minidumpFds);
+                        } catch (RemoteException e) {
+                            // TODO(gsennton): add a UMA metric here to ensure we aren't losing
+                            // too many minidumps because of this.
+                        }
+                    } finally {
+                        // Close FDs
+                        for (int i = 0; i < minidumpFds.length; ++i) {
+                            try {
+                                if (minidumpFds[i] != null) minidumpFds[i].close();
+                            } catch (IOException e) {
+                            }
+                        }
+                        appContext.unbindService(this);
+                    }
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName className) {}
+            };
+            if (!appContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
+                Log.w(TAG, "Could not bind to Minidump-copying Service " + intent);
+            }
+        });
     }
 
     // Do not instantiate this class.

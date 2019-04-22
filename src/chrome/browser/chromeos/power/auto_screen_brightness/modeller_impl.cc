@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
@@ -19,7 +20,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -29,31 +30,6 @@ namespace power {
 namespace auto_screen_brightness {
 
 namespace {
-
-// Creates a global/default brightness curve.
-// TODO(crbug.com/881215): default curve may be revised, if so, need to update
-// unit tests as well.
-MonotoneCubicSpline CreateGlobalCurve() {
-  const std::string global_curve = GetFieldTrialParamValueByFeature(
-      features::kAutoScreenBrightness, "global_curve");
-  if (!global_curve.empty()) {
-    const base::Optional<MonotoneCubicSpline> global_curve_spline =
-        MonotoneCubicSpline::FromString(global_curve);
-    if (global_curve_spline)
-      return *global_curve_spline;
-    // TODO(jiameng): log error to UMA.
-  }
-
-  const std::vector<double> default_log_lux = {
-      3.69, 4.83, 6.54, 7.68, 8.25, 8.82,
-  };
-
-  const std::vector<double> default_brightness = {
-      36.14, 47.62, 85.83, 93.27, 93.27, 100,
-  };
-
-  return MonotoneCubicSpline(default_log_lux, default_brightness);
-}
 
 // Loads curve from a specified location on disk. This should run in another
 // thread to be non-blocking to the main thread (if |is_testing| is false).
@@ -123,20 +99,19 @@ bool SetInitialCurves(Trainer* trainer,
 
 }  // namespace
 
-constexpr int ModellerImpl::kAmbientLightHorizonSeconds;
-constexpr base::TimeDelta ModellerImpl::kAmbientLightHorizon;
-constexpr int ModellerImpl::kNumberAmbientValuesToTrack;
 constexpr char ModellerImpl::kModelDir[];
 constexpr char ModellerImpl::kCurveFileName[];
 
 ModellerImpl::ModellerImpl(const Profile* profile,
                            AlsReader* als_reader,
                            BrightnessMonitor* brightness_monitor,
+                           ModelConfigLoader* model_config_loader,
                            ui::UserActivityDetector* user_activity_detector,
                            std::unique_ptr<Trainer> trainer)
     : ModellerImpl(profile,
                    als_reader,
                    brightness_monitor,
+                   model_config_loader,
                    user_activity_detector,
                    std::move(trainer),
                    base::CreateSequencedTaskRunnerWithTraits(
@@ -165,11 +140,11 @@ void ModellerImpl::RemoveObserver(Modeller::Observer* observer) {
 
 void ModellerImpl::OnAmbientLightUpdated(int lux) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (is_modeller_enabled_.has_value() && !*is_modeller_enabled_)
+  if (!is_modeller_enabled_.has_value() || !*is_modeller_enabled_)
     return;
 
-  const AmbientLightSample sample = {lux, tick_clock_->NowTicks()};
-  ambient_light_values_.SaveToBuffer(sample);
+  DCHECK(log_als_values_);
+  log_als_values_->SaveToBuffer({ConvertToLog(lux), tick_clock_->NowTicks()});
 }
 
 void ModellerImpl::OnAlsReaderInitialized(AlsReader::AlsInitStatus status) {
@@ -192,22 +167,37 @@ void ModellerImpl::OnBrightnessMonitorInitialized(bool success) {
 void ModellerImpl::OnUserBrightnessChanged(double old_brightness_percent,
                                            double new_brightness_percent) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (is_modeller_enabled_.has_value() && !*is_modeller_enabled_)
+  if (!is_modeller_enabled_.has_value() || !*is_modeller_enabled_)
     return;
 
+  DCHECK(log_als_values_);
+  const base::TimeTicks now = tick_clock_->NowTicks();
   // We don't add any training data if there is no ambient light sample.
-  if (ambient_light_values_.CurrentIndex() == 0)
+  const base::Optional<AlsAvgStdDev> log_als_avg_stddev =
+      log_als_values_->AverageAmbientWithStdDev(now);
+  if (!log_als_avg_stddev)
     return;
 
-  const double average_ambient_lux = AverageAmbient(ambient_light_values_, -1);
   data_cache_.push_back({old_brightness_percent, new_brightness_percent,
-                         ConvertToLog(average_ambient_lux),
-                         tick_clock_->NowTicks()});
+                         log_als_avg_stddev->avg, now});
 
   ScheduleTrainerStart();
 }
 
 void ModellerImpl::OnUserBrightnessChangeRequested() {}
+
+void ModellerImpl::OnModelConfigLoaded(
+    base::Optional<ModelConfig> model_config) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!model_config_exists_.has_value());
+
+  model_config_exists_ = model_config.has_value();
+  if (model_config_exists_.value()) {
+    model_config_ = model_config.value();
+  }
+
+  HandleStatusUpdate();
+}
 
 void ModellerImpl::OnUserActivity(const ui::Event* event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -220,19 +210,27 @@ std::unique_ptr<ModellerImpl> ModellerImpl::CreateForTesting(
     const Profile* profile,
     AlsReader* als_reader,
     BrightnessMonitor* brightness_monitor,
+    ModelConfigLoader* model_config_loader,
     ui::UserActivityDetector* user_activity_detector,
     std::unique_ptr<Trainer> trainer,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     const base::TickClock* tick_clock) {
   return base::WrapUnique(new ModellerImpl(
-      profile, als_reader, brightness_monitor, user_activity_detector,
-      std::move(trainer), blocking_task_runner, tick_clock,
-      true /* is_testing */));
+      profile, als_reader, brightness_monitor, model_config_loader,
+      user_activity_detector, std::move(trainer), blocking_task_runner,
+      tick_clock, true /* is_testing */));
 }
 
-double ModellerImpl::AverageAmbientForTesting() const {
+base::Optional<double> ModellerImpl::AverageAmbientForTesting(
+    base::TimeTicks now) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return AverageAmbient(ambient_light_values_, -1);
+  DCHECK(log_als_values_);
+  const base::Optional<AlsAvgStdDev> log_als_avg_stddev =
+      log_als_values_->AverageAmbientWithStdDev(now);
+  if (!log_als_avg_stddev)
+    return base::nullopt;
+
+  return log_als_avg_stddev->avg;
 }
 
 size_t ModellerImpl::NumberTrainingDataPointsForTesting() const {
@@ -242,7 +240,8 @@ size_t ModellerImpl::NumberTrainingDataPointsForTesting() const {
 
 MonotoneCubicSpline ModellerImpl::GetGlobalCurveForTesting() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return global_curve_;
+  DCHECK(global_curve_);
+  return *global_curve_;
 }
 
 size_t ModellerImpl::GetMaxTrainingDataPointsForTesting() const {
@@ -251,6 +250,10 @@ size_t ModellerImpl::GetMaxTrainingDataPointsForTesting() const {
 
 base::TimeDelta ModellerImpl::GetTrainingDelayForTesting() const {
   return training_delay_;
+}
+
+ModelConfig ModellerImpl::GetModelConfigForTesting() const {
+  return model_config_;
 }
 
 base::FilePath ModellerImpl::GetCurvePathFromProfile(const Profile* profile) {
@@ -274,6 +277,7 @@ ModellerImpl::ModellerImpl(
     const Profile* profile,
     AlsReader* als_reader,
     BrightnessMonitor* brightness_monitor,
+    ModelConfigLoader* model_config_loader,
     ui::UserActivityDetector* user_activity_detector,
     std::unique_ptr<Trainer> trainer,
     const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
@@ -282,16 +286,18 @@ ModellerImpl::ModellerImpl(
     : is_testing_(is_testing),
       als_reader_observer_(this),
       brightness_monitor_observer_(this),
+      model_config_loader_observer_(this),
       user_activity_observer_(this),
       blocking_task_runner_(blocking_task_runner),
       trainer_(trainer.release(),
                base::OnTaskRunnerDeleter(blocking_task_runner_)),
       tick_clock_(tick_clock),
       model_timer_(tick_clock_),
-      global_curve_(CreateGlobalCurve()),
       weak_ptr_factory_(this) {
   DCHECK(als_reader);
   DCHECK(brightness_monitor);
+  DCHECK(model_config_loader);
+
   DCHECK(trainer_);
   DCHECK(user_activity_detector);
 
@@ -313,22 +319,10 @@ ModellerImpl::ModellerImpl(
 
   als_reader_observer_.Add(als_reader);
   brightness_monitor_observer_.Add(brightness_monitor);
+  model_config_loader_observer_.Add(model_config_loader);
+
   user_activity_observer_.Add(user_activity_detector);
-
-  const int max_training_data_points = GetFieldTrialParamByFeatureAsInt(
-      features::kAutoScreenBrightness, "max_training_data_points", -1);
-  if (max_training_data_points > 0) {
-    max_training_data_points_ = max_training_data_points;
-  }
-
-  const int training_delay_in_seconds = GetFieldTrialParamByFeatureAsInt(
-      features::kAutoScreenBrightness, "training_delay_in_seconds",
-      training_delay_.InSeconds());
-  if (training_delay_in_seconds >= 0) {
-    training_delay_ = base::TimeDelta::FromSeconds(training_delay_in_seconds);
-  }
 }
-
 
 void ModellerImpl::HandleStatusUpdate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -355,11 +349,58 @@ void ModellerImpl::HandleStatusUpdate() {
     return;
   }
 
+  if (!model_config_exists_.has_value())
+    return;
+
+  if (!model_config_exists_.value()) {
+    is_modeller_enabled_ = false;
+    OnInitializationComplete();
+    return;
+  }
+
+  RunCustomization();
+
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
       base::BindOnce(&LoadCurveFromDisk, curve_path_, is_testing_),
       base::BindOnce(&ModellerImpl::OnCurveLoadedFromDisk,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ModellerImpl::RunCustomization() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  global_curve_.emplace(
+      MonotoneCubicSpline(model_config_.log_lux, model_config_.brightness));
+
+  // Get |model_als_horizon_seconds| from finch and use the value from
+  // |model_config_| as its default.
+  int model_als_horizon_seconds = GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "model_als_horizon_seconds",
+      model_config_.model_als_horizon_seconds);
+
+  // If finch param is invalid, use the value from |model_config_|, which is
+  // guaranteed to be valid.
+  if (model_als_horizon_seconds <= 0) {
+    // TODO(jiameng): log model param error.
+    model_als_horizon_seconds = model_config_.model_als_horizon_seconds;
+  }
+  log_als_values_ = std::make_unique<AmbientLightSampleBuffer>(
+      base::TimeDelta::FromSeconds(model_als_horizon_seconds));
+
+  // TODO(jiameng): the following params are probably not useful and can be
+  // removed.
+  const int max_training_data_points = GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "max_training_data_points", -1);
+  if (max_training_data_points > 0) {
+    max_training_data_points_ = max_training_data_points;
+  }
+
+  const int training_delay_in_seconds = GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "training_delay_in_seconds",
+      training_delay_.InSeconds());
+  if (training_delay_in_seconds >= 0) {
+    training_delay_ = base::TimeDelta::FromSeconds(training_delay_in_seconds);
+  }
 }
 
 void ModellerImpl::OnInitializationComplete() {
@@ -387,21 +428,34 @@ void ModellerImpl::NotifyObserverInitStatus(Modeller::Observer& observer) {
 void ModellerImpl::OnCurveLoadedFromDisk(
     const base::Optional<MonotoneCubicSpline>& curve) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(global_curve_);
+
+  if (curve) {
+    current_curve_.emplace(curve.value());
+  } else {
+    current_curve_.emplace(*global_curve_);
+  }
 
   // Run SetInitialCurves calculations on background thread to avoid blocking UI
   // thread.
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&SetInitialCurves, trainer_.get(), global_curve_,
-                     curve ? *curve : global_curve_, is_testing_),
+      base::BindOnce(&SetInitialCurves, trainer_.get(), *global_curve_,
+                     *current_curve_, is_testing_),
       base::BindOnce(&ModellerImpl::OnSetInitialCurves,
                      weak_ptr_factory_.GetWeakPtr(), curve));
 }
 
 void ModellerImpl::OnCurveSavedToDisk(bool is_successful) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(jiameng): log to UMA.
-  DCHECK(is_successful);
+  const base::TimeTicks now = tick_clock_->NowTicks();
+
+  UMA_HISTOGRAM_BOOLEAN("AutoScreenBrightness.NewCurveSaved.Success",
+                        is_successful);
+  if (is_successful) {
+    UMA_HISTOGRAM_TIMES("AutoScreenBrightness.NewCurveSaved.Duration",
+                        now - training_start_.value());
+  }
 }
 
 void ModellerImpl::OnSetInitialCurves(
@@ -413,9 +467,10 @@ void ModellerImpl::OnSetInitialCurves(
                         is_personal_curve_valid);
 
   has_initial_personal_curve_ = is_personal_curve_valid && loaded_curve;
-  DCHECK(trainer_->GetGlobalCurve() == global_curve_);
+  DCHECK(global_curve_);
+  DCHECK(trainer_->GetGlobalCurve() == *global_curve_);
   DCHECK(trainer_->GetCurrentCurve() ==
-         (has_initial_personal_curve_ ? *loaded_curve : global_curve_));
+         (has_initial_personal_curve_ ? *loaded_curve : *global_curve_));
 
   is_modeller_enabled_ = true;
   OnInitializationComplete();
@@ -448,6 +503,7 @@ void ModellerImpl::StartTraining() {
     return;
   }
 
+  training_start_ = tick_clock_->NowTicks();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
       base::BindOnce(&TrainModel, trainer_.get(), std::move(data_cache_),
@@ -458,7 +514,22 @@ void ModellerImpl::StartTraining() {
 }
 
 void ModellerImpl::OnTrainingFinished(const MonotoneCubicSpline& curve) {
+  const base::TimeTicks now = tick_clock_->NowTicks();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DCHECK(current_curve_);
+  if (current_curve_ == curve) {
+    // Only update current curve if it's different from before.
+    UMA_HISTOGRAM_TIMES(
+        "AutoScreenBrightness.TrainingCompleteDuration.NoNewCurve",
+        now - training_start_.value());
+    return;
+  }
+
+  UMA_HISTOGRAM_TIMES("AutoScreenBrightness.TrainingCompleteDuration.NewCurve",
+                      now - training_start_.value());
+
+  current_curve_.emplace(curve);
   for (auto& observer : observers_)
     observer.OnModelTrained(curve);
 

@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/win/win_client_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,10 +61,10 @@ TEST(BaseWinUtilTest, TestGetLoadedModulesSnapshot) {
   ASSERT_GT(original_snapshot_size, 0u);
   snapshot.clear();
 
-  // Load in a new module. Pick msvidc32.dll as it is present from WinXP to
-  // Win10 and yet rarely used.
-  const wchar_t dll_name[] = L"msvidc32.dll";
-  ASSERT_EQ(NULL, ::GetModuleHandle(dll_name));
+  // Load in a new module. Pick zipfldr.dll as it is present from WinXP to
+  // Win10, including ARM64 Win10, and yet rarely used.
+  const char16 dll_name[] = FILE_PATH_LITERAL("zipfldr.dll");
+  ASSERT_EQ(NULL, ::GetModuleHandle(as_wcstr(dll_name)));
 
   base::ScopedNativeLibrary new_dll((base::FilePath(dll_name)));
   ASSERT_NE(static_cast<HMODULE>(NULL), new_dll.get());

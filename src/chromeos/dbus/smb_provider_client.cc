@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/smb_provider_client.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
@@ -118,6 +120,25 @@ class SmbProviderClientImpl : public SmbProviderClient {
     writer.AppendFileDescriptor(password_fd.get());
 
     CallDefaultMethod(&method_call, &callback);
+  }
+
+  void Premount(const base::FilePath& share_path,
+                bool ntlm_enabled,
+                MountCallback callback) override {
+    smbprovider::PremountOptionsProto options;
+    options.set_path(share_path.value());
+
+    std::unique_ptr<smbprovider::MountConfigProto> config =
+        CreateMountConfigProto(ntlm_enabled);
+    options.set_allocated_mount_config(config.release());
+
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kPremountMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(options);
+
+    CallMethod(&method_call, &SmbProviderClientImpl::HandleMountCallback,
+               &callback);
   }
 
   void Unmount(int32_t mount_id, StatusCallback callback) override {
@@ -358,6 +379,40 @@ class SmbProviderClientImpl : public SmbProviderClient {
     CallMethod(&method_call,
                &SmbProviderClientImpl::HandleContinueReadDirectoryCallback,
                &callback);
+  }
+
+  void UpdateMountCredentials(int32_t mount_id,
+                              std::string workgroup,
+                              std::string username,
+                              base::ScopedFD password_fd,
+                              StatusCallback callback) override {
+    smbprovider::UpdateMountCredentialsOptionsProto options;
+    options.set_mount_id(mount_id);
+    options.set_workgroup(workgroup);
+    options.set_username(username);
+
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kUpdateMountCredentialsMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(options);
+    writer.AppendFileDescriptor(password_fd.get());
+
+    CallDefaultMethod(&method_call, &callback);
+  }
+
+  void UpdateSharePath(int32_t mount_id,
+                       const std::string& share_path,
+                       StatusCallback callback) override {
+    smbprovider::UpdateSharePathOptionsProto options;
+    options.set_mount_id(mount_id);
+    options.set_path(share_path);
+
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kUpdateSharePathMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(options);
+
+    CallDefaultMethod(&method_call, &callback);
   }
 
  protected:

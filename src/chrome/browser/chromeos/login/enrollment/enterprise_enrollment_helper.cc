@@ -10,15 +10,18 @@
 
 namespace chromeos {
 
-EnterpriseEnrollmentHelper::CreateMockEnrollmentHelper
-    EnterpriseEnrollmentHelper::create_mock_enrollment_helper_ = nullptr;
+EnterpriseEnrollmentHelper*
+    EnterpriseEnrollmentHelper::mock_enrollment_helper_ = nullptr;
 
 EnterpriseEnrollmentHelper::~EnterpriseEnrollmentHelper() {}
 
 // static
-void EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-    CreateMockEnrollmentHelper creator) {
-  create_mock_enrollment_helper_ = creator;
+void EnterpriseEnrollmentHelper::SetEnrollmentHelperMock(
+    std::unique_ptr<EnterpriseEnrollmentHelper> mock) {
+  if (mock_enrollment_helper_) {
+    delete mock_enrollment_helper_;
+  }
+  mock_enrollment_helper_ = mock.release();
 }
 
 // static
@@ -27,26 +30,26 @@ std::unique_ptr<EnterpriseEnrollmentHelper> EnterpriseEnrollmentHelper::Create(
     ActiveDirectoryJoinDelegate* ad_join_delegate,
     const policy::EnrollmentConfig& enrollment_config,
     const std::string& enrolling_user_domain) {
-  // Create a mock instance.
-  if (create_mock_enrollment_helper_) {
-    // The evaluated code might call |SetupEnrollmentHelperMock| to setup a new
-    // allocator, so we reset the enrollment helper to null before that.
-    auto enrollment_helper_allocator = create_mock_enrollment_helper_;
-    create_mock_enrollment_helper_ = nullptr;
-    EnterpriseEnrollmentHelper* helper = enrollment_helper_allocator(
-        status_consumer, enrollment_config, enrolling_user_domain);
-    return base::WrapUnique(helper);
-  }
+  std::unique_ptr<EnterpriseEnrollmentHelper> result;
 
-  return base::WrapUnique(new EnterpriseEnrollmentHelperImpl(
-      status_consumer, ad_join_delegate, enrollment_config,
-      enrolling_user_domain));
+  // Create a mock instance.
+  if (mock_enrollment_helper_) {
+    result = base::WrapUnique(mock_enrollment_helper_);
+    mock_enrollment_helper_ = nullptr;
+  } else {
+    result = std::make_unique<EnterpriseEnrollmentHelperImpl>();
+  }
+  result->set_status_consumer(status_consumer);
+  result->Setup(ad_join_delegate, enrollment_config, enrolling_user_domain);
+  return result;
 }
 
-EnterpriseEnrollmentHelper::EnterpriseEnrollmentHelper(
-    EnrollmentStatusConsumer* status_consumer)
-    : status_consumer_(status_consumer) {
+EnterpriseEnrollmentHelper::EnterpriseEnrollmentHelper() {}
+
+void EnterpriseEnrollmentHelper::set_status_consumer(
+    EnrollmentStatusConsumer* status_consumer) {
   DCHECK(status_consumer_);
+  status_consumer_ = status_consumer;
 }
 
 }  // namespace chromeos

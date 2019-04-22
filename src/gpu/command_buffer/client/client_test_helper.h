@@ -19,6 +19,7 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/decoder_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,7 +46,7 @@ class FakeCommandBufferServiceBase : public CommandBufferServiceBase {
 
   void FlushHelper(int32_t put_offset);
   void SetGetBufferHelper(int transfer_buffer_id, int32_t token);
-  scoped_refptr<gpu::Buffer> CreateTransferBufferHelper(size_t size,
+  scoped_refptr<gpu::Buffer> CreateTransferBufferHelper(uint32_t size,
                                                         int32_t* id);
   void DestroyTransferBufferHelper(int32_t id);
 
@@ -66,7 +67,7 @@ class MockClientCommandBuffer : public CommandBuffer,
                                 int32_t start,
                                 int32_t end) override;
   void SetGetBuffer(int transfer_buffer_id) override;
-  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
                                                   int32_t* id) override;
 
   // This is so we can use all the gmock functions when Flush is called.
@@ -134,7 +135,7 @@ class MockClientGpuControl : public GpuControl {
     DoSignalSyncToken(sync_token, &callback);
   }
 
-  MOCK_METHOD1(WaitSyncTokenHint, void(const SyncToken&));
+  MOCK_METHOD1(WaitSyncToken, void(const SyncToken&));
   MOCK_METHOD1(CanWaitUnverifiedSyncToken, bool(const SyncToken&));
   MOCK_METHOD2(CreateGpuFence,
                void(uint32_t gpu_fence_id, ClientGpuFence source));
@@ -145,6 +146,20 @@ class MockClientGpuControl : public GpuControl {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientGpuControl);
+};
+
+class FakeDecoderClient : public DecoderClient {
+ public:
+  ~FakeDecoderClient() override;
+  void OnConsoleMessage(int32_t id, const std::string& message) override;
+  void CacheShader(const std::string& key, const std::string& shader) override;
+  void OnFenceSyncRelease(uint64_t release) override;
+  void OnDescheduleUntilFinished() override;
+  void OnRescheduleAfterFinished() override;
+  void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
+  void ScheduleGrContextCleanup() override;
+  void SetActiveURL(GURL url) override;
+  void HandleReturnData(base::span<const uint8_t> data) override;
 };
 
 }  // namespace gpu

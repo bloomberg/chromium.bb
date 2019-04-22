@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -39,9 +40,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "url/url_constants.h"
-
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
 
 namespace {
 
@@ -701,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
 IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
                        MixedContentInsecureFaviconBlocked) {
   net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  ssl_server.AddDefaultHandlers(base::FilePath(kDocRoot));
+  ssl_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(ssl_server.Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -735,7 +733,7 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
 IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
                        MixedContentSecureFaviconAllowed) {
   net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  ssl_server.AddDefaultHandlers(base::FilePath(kDocRoot));
+  ssl_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(ssl_server.Start());
 
   const GURL favicon_url =

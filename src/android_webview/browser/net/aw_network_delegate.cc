@@ -10,6 +10,7 @@
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
 #include "base/android/build_info.h"
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -71,7 +72,7 @@ int AwNetworkDelegate::OnHeadersReceived(
     GURL* allowed_unsafe_redirect_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (original_response_headers->response_code() >= 400) {
-    const content::ResourceRequestInfo* request_info =
+    content::ResourceRequestInfo* request_info =
         content::ResourceRequestInfo::ForRequest(request);
     // A request info may not exist for requests not originating from content.
     if (request_info == nullptr)
@@ -94,8 +95,7 @@ bool AwNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
                                         const net::CookieList& cookie_list,
                                         bool allow_from_caller) {
   return allow_from_caller &&
-         AwCookieAccessPolicy::GetInstance()->OnCanGetCookies(request,
-                                                              cookie_list);
+         AwCookieAccessPolicy::GetInstance()->AllowCookies(request);
 }
 
 bool AwNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
@@ -103,8 +103,7 @@ bool AwNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
                                        net::CookieOptions* options,
                                        bool allow_from_caller) {
   return allow_from_caller &&
-         AwCookieAccessPolicy::GetInstance()->OnCanSetCookie(request, cookie,
-                                                             options);
+         AwCookieAccessPolicy::GetInstance()->AllowCookies(request);
 }
 
 bool AwNetworkDelegate::OnCanAccessFile(

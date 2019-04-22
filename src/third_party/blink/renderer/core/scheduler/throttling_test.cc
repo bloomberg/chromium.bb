@@ -44,9 +44,7 @@ TEST_F(DisableBackgroundThrottlingIsRespectedTest,
       "  f(5);"
       "</script>)");
 
-  ThreadScheduler::Current()
-      ->GetWebMainThreadSchedulerForTest()
-      ->SetRendererBackgrounded(true);
+  GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   // Run delayed tasks for 1 second. All tasks should be completed
   // with throttling disabled.
@@ -56,9 +54,9 @@ TEST_F(DisableBackgroundThrottlingIsRespectedTest,
                                              "called f", "called f"));
 }
 
-class BackgroundRendererThrottlingTest : public SimTest {};
+class BackgroundPageThrottlingTest : public SimTest {};
 
-TEST_F(BackgroundRendererThrottlingTest, BackgroundRenderersAreThrottled) {
+TEST_F(BackgroundPageThrottlingTest, BackgroundPagesAreThrottled) {
   SimRequest main_resource("https://example.com/", "text/html");
 
   LoadURL("https://example.com/");
@@ -73,9 +71,7 @@ TEST_F(BackgroundRendererThrottlingTest, BackgroundRenderersAreThrottled) {
       "  setTimeout(f, 10, 50);"
       "</script>)");
 
-  ThreadScheduler::Current()
-      ->GetWebMainThreadSchedulerForTest()
-      ->SetRendererBackgrounded(true);
+  GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   // Make sure that we run no more than one task a second.
   test::RunDelayedTasks(TimeDelta::FromMilliseconds(3000));

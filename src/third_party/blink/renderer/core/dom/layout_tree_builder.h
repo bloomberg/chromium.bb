@@ -29,13 +29,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_LAYOUT_TREE_BUILDER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -63,7 +62,6 @@ class LayoutTreeBuilder {
   LayoutTreeBuilder(NodeType& node, LayoutObject* layout_object_parent)
       : node_(node), layout_object_parent_(layout_object_parent) {
     DCHECK(!node.GetLayoutObject());
-    DCHECK(node.NeedsAttach());
     DCHECK(node.GetDocument().InStyleRecalc());
     DCHECK(node.InActiveDocument());
   }
@@ -74,7 +72,7 @@ class LayoutTreeBuilder {
     // Avoid an O(N^2) walk over the children when reattaching all children of a
     // node.
     if (layout_object_parent_->GetNode() &&
-        layout_object_parent_->GetNode()->NeedsAttach())
+        layout_object_parent_->GetNode()->NeedsReattachLayoutTree())
       return nullptr;
 
     LayoutObject* next =
@@ -86,7 +84,8 @@ class LayoutTreeBuilder {
     // AddChild() implementations to walk up the tree to find the correct
     // layout tree parent/siblings.
     if (next && next->IsText() && next->Parent()->IsAnonymous() &&
-        next->Parent()->IsInline()) {
+        next->Parent()->IsInline() &&
+        !ToLayoutInline(next->Parent())->IsFirstLineAnonymous()) {
       return next->Parent();
     }
     return next;
@@ -100,16 +99,16 @@ class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
  public:
   LayoutTreeBuilderForElement(Element&, ComputedStyle*);
 
-  void CreateLayoutObjectIfNeeded() {
+  void CreateLayoutObjectIfNeeded(LegacyLayout legacy) {
     if (ShouldCreateLayoutObject())
-      CreateLayoutObject();
+      CreateLayoutObject(legacy);
   }
 
  private:
   LayoutObject* ParentLayoutObject() const;
   LayoutObject* NextLayoutObject() const;
   bool ShouldCreateLayoutObject() const;
-  void CreateLayoutObject();
+  void CreateLayoutObject(LegacyLayout);
 
   scoped_refptr<ComputedStyle> style_;
 };
@@ -127,56 +126,6 @@ class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
   LayoutObject* CreateInlineWrapperForDisplayContentsIfNeeded();
 
   scoped_refptr<ComputedStyle> style_;
-};
-
-// Replaces LayoutNG objects to legacy layout objects when corresponding element
-// returns true for |ShouldForceLegacyLayout()|.
-//
-// This replacement is done by three phases:
-//  1. Collects layout objects establish block formatting context(BFC) and
-//     contain at least one layout object should be legacy layout.
-//  2. Marks descendant LayoutNG objects of collected layout objects to
-//     |NeedsReattachLayoutTree|.
-//  3. Invokes |RebuildLayoutTree()| to replaces to legacy layout objects.
-//
-// See https://goo.gl/8s5h96 for more details.
-class CORE_EXPORT ReattachLegacyLayoutObjectList final {
-  // Note: Make GC-plugin happy, this object doesn't have |STACK_ALLOCATED()|.
-  DISALLOW_NEW();
-
- public:
-  ReattachLegacyLayoutObjectList(Document&);
-  ~ReattachLegacyLayoutObjectList();
-
-  void AddForceLegacyAtBFCAncestor(const LayoutObject&);
-  bool IsCollecting() const;
-  bool IsForcingLegacyLayout() const {
-    return state_ == State::kForcingLegacyLayout;
-  }
-  void ForceLegacyLayoutIfNeeded();
-
-  void Trace(blink::Visitor*);
-
- private:
-  Member<Document> document_;
-
-  // A list of block formatting context or layout object associated to
-  // document element.
-  Vector<const LayoutObject*> blocks_;
-
-  enum class State {
-    kInvalid,
-    // Building legacy layout tree
-    kBuildingLegacyLayoutTree,
-    // Usage of this list is finished.
-    kClosed,
-    // Collecting block formatting context should be legacy layout.
-    kCollecting,
-    // Replaces LayoutNG objects to legacy layout objects.
-    kForcingLegacyLayout,
-  } state_ = State::kInvalid;
-
-  DISALLOW_COPY_AND_ASSIGN(ReattachLegacyLayoutObjectList);
 };
 
 }  // namespace blink

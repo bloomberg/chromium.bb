@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -76,8 +77,8 @@ void OmahaDOMHandler::HandleRequestDebugInformation(
 
 void OmahaDOMHandler::OnDebugInformationAvailable(
     base::DictionaryValue* debug_information) {
-  web_ui()->CallJavascriptFunction("updateOmahaDebugInformation",
-                                   *debug_information);
+  std::vector<const base::Value*> args{debug_information};
+  web_ui()->CallJavascriptFunction("updateOmahaDebugInformation", args);
 }
 
 }  // namespace

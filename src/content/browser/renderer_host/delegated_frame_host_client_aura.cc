@@ -64,4 +64,8 @@ DelegatedFrameHostClientAura::CollectSurfaceIdsForEviction() {
   return render_widget_host_view_->host()->CollectSurfaceIdsForEviction();
 }
 
+bool DelegatedFrameHostClientAura::ShouldShowStaleContentOnEviction() {
+  return render_widget_host_view_->ShouldShowStaleContentOnEviction();
+}
+
 }  // namespace content

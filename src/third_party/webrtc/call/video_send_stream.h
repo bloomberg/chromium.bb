@@ -18,8 +18,9 @@
 
 #include "absl/types/optional.h"
 #include "api/call/transport.h"
-#include "api/crypto/cryptooptions.h"
-#include "api/rtpparameters.h"
+#include "api/crypto/crypto_options.h"
+#include "api/media_transport_interface.h"
+#include "api/rtp_parameters.h"
 #include "api/video/video_content_type.h"
 #include "api/video/video_frame.h"
 #include "api/video/video_sink_interface.h"
@@ -27,6 +28,7 @@
 #include "api/video/video_stream_encoder_settings.h"
 #include "api/video_codecs/video_encoder_config.h"
 #include "call/rtp_config.h"
+#include "modules/rtp_rtcp/include/rtcp_statistics.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 
 namespace webrtc {
@@ -66,6 +68,8 @@ class VideoSendStream {
     int avg_encode_time_ms = 0;
     int encode_usage_percent = 0;
     uint32_t frames_encoded = 0;
+    // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-totalencodetime
+    uint64_t total_encode_time_ms = 0;
     uint32_t frames_dropped_by_capturer = 0;
     uint32_t frames_dropped_by_encoder_queue = 0;
     uint32_t frames_dropped_by_rate_limiter = 0;
@@ -96,6 +100,7 @@ class VideoSendStream {
    public:
     Config() = delete;
     Config(Config&&);
+    Config(Transport* send_transport, MediaTransportInterface* media_transport);
     explicit Config(Transport* send_transport);
 
     Config& operator=(Config&&);
@@ -118,9 +123,7 @@ class VideoSendStream {
     // Transport for outgoing packets.
     Transport* send_transport = nullptr;
 
-    // Called for each I420 frame before encoding the frame. Can be used for
-    // effects, snapshots etc. 'nullptr' disables the callback.
-    rtc::VideoSinkInterface<VideoFrame>* pre_encode_callback = nullptr;
+    MediaTransportInterface* media_transport = nullptr;
 
     // Expected delay needed by the renderer, i.e. the frame will be delivered
     // this many milliseconds, if possible, earlier than expected render time.

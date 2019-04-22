@@ -21,10 +21,11 @@ cr.define('cr.search_highlight_utils', function() {
    * @param {!Array<!Node>} wrappers
    */
   function removeHighlights(wrappers) {
-    for (let wrapper of wrappers) {
+    for (const wrapper of wrappers) {
       // If wrapper is already removed, do nothing.
-      if (!wrapper.parentElement)
+      if (!wrapper.parentElement) {
         continue;
+      }
 
       const textNode =
           wrapper.querySelector(`.${ORIGINAL_CONTENT_CSS_CLASS}`).firstChild;
@@ -78,7 +79,8 @@ cr.define('cr.search_highlight_utils', function() {
       } else {
         const hitSpan = document.createElement('span');
         hitSpan.classList.add(HIT_CSS_CLASS);
-        hitSpan.style.backgroundColor = '#ffeb3b';  // --var(--paper-yellow-500)
+        hitSpan.style.backgroundColor = '#ffeb3b';  // var(--paper-yellow-500)
+        hitSpan.style.color = '#202124';            // var(--google-grey-900)
         hitSpan.textContent = tokens[i];
         wrapper.appendChild(hitSpan);
       }
@@ -99,8 +101,9 @@ cr.define('cr.search_highlight_utils', function() {
     let searchBubble = element.querySelector(`.${SEARCH_BUBBLE_CSS_CLASS}`);
     // If the element has already been highlighted, there is no need to do
     // anything.
-    if (searchBubble)
+    if (searchBubble) {
       return null;
+    }
 
     searchBubble = document.createElement('div');
     searchBubble.classList.add(SEARCH_BUBBLE_CSS_CLASS);

@@ -16,7 +16,8 @@ import org.json.JSONObject;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,6 +47,7 @@ public class CronetPerfTestActivity extends Activity {
     // Benchmark configuration passed down from host via Intent data.
     // Call getConfig*(key) to extract individual configuration values.
     private Uri mConfig;
+
     // Functions that retrieve individual benchmark configuration values.
     private String getConfigString(String key) {
         return mConfig.getQueryParameter(key);
@@ -555,9 +557,16 @@ public class CronetPerfTestActivity extends Activity {
         }
     }
 
-    private class BenchmarkTask extends AsyncTask<Void> {
-        @Override
-        protected Void doInBackground() {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Initializing application context here due to lack of custom CronetPerfTestApplication.
+        ContextUtils.initApplicationContext(getApplicationContext());
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        mConfig = getIntent().getData();
+        // Execute benchmarks on another thread to avoid networking on main thread.
+
+        PostTask.postTask(TaskTraits.USER_BLOCKING, () -> {
             JSONObject results = new JSONObject();
             for (Mode mode : Mode.values()) {
                 for (Direction direction : Direction.values()) {
@@ -610,18 +619,6 @@ public class CronetPerfTestActivity extends Activity {
                 }
             }
             finish();
-            return null;
-        }
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // Initializing application context here due to lack of custom CronetPerfTestApplication.
-        ContextUtils.initApplicationContext(getApplicationContext());
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        mConfig = getIntent().getData();
-        // Execute benchmarks on another thread to avoid networking on main thread.
-        new BenchmarkTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        });
     }
 }

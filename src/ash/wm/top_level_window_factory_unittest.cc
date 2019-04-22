@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_properties.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/public/cpp/property_type_converters.h"
@@ -106,10 +107,8 @@ TEST_F(TopLevelWindowFactoryTest, CreateTopLevelWindow) {
   aura::Window* window = GetWindowTreeTestHelper()->NewTopLevelWindow(
       mojo::MapToFlatMap(std::move(properties)));
   ASSERT_TRUE(window->parent());
-  EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
+  EXPECT_EQ(desks_util::GetActiveDeskContainerId(), window->parent()->id());
   EXPECT_EQ(bounds, window->bounds());
-  EXPECT_EQ(WidgetCreationType::FOR_CLIENT,
-            window->GetProperty(kWidgetCreationTypeKey));
   EXPECT_FALSE(window->IsVisible());
 }
 

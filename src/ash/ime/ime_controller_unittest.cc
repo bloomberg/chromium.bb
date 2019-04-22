@@ -171,8 +171,8 @@ TEST_F(ImeControllerTest, SwitchIme) {
   controller->SwitchToNextIme();
   EXPECT_EQ(0, client.next_ime_count_);
 
-  controller->SwitchToPreviousIme();
-  EXPECT_EQ(0, client.previous_ime_count_);
+  controller->SwitchToLastUsedIme();
+  EXPECT_EQ(0, client.last_used_ime_count_);
 
   controller->SwitchImeById("ime1", true /* show_message */);
   EXPECT_EQ(0, client.switch_ime_count_);
@@ -183,9 +183,9 @@ TEST_F(ImeControllerTest, SwitchIme) {
   controller->FlushMojoForTesting();
   EXPECT_EQ(1, client.next_ime_count_);
 
-  controller->SwitchToPreviousIme();
+  controller->SwitchToLastUsedIme();
   controller->FlushMojoForTesting();
-  EXPECT_EQ(1, client.previous_ime_count_);
+  EXPECT_EQ(1, client.last_used_ime_count_);
 
   controller->SwitchImeById("ime1", true /* show_message */);
   controller->FlushMojoForTesting();

@@ -11,10 +11,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/gamepad/gamepad_consumer.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
 
@@ -31,7 +33,9 @@ GamepadService::GamepadService()
 
 GamepadService::GamepadService(
     std::unique_ptr<device::GamepadDataFetcher> fetcher)
-    : provider_(new device::GamepadProvider(this, std::move(fetcher))),
+    : provider_(new device::GamepadProvider(this,
+                                            std::move(fetcher),
+                                            std::unique_ptr<base::Thread>())),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       num_active_consumers_(0),
       gesture_callback_pending_(false) {
@@ -54,6 +58,16 @@ GamepadService* GamepadService::GetInstance() {
   if (!g_gamepad_service)
     g_gamepad_service = new GamepadService;
   return g_gamepad_service;
+}
+
+void GamepadService::StartUp(
+    std::unique_ptr<service_manager::Connector> service_manager_connector) {
+  if (!service_manager_connector_)
+    service_manager_connector_ = std::move(service_manager_connector);
+}
+
+service_manager::Connector* GamepadService::GetConnector() {
+  return service_manager_connector_.get();
 }
 
 void GamepadService::ConsumerBecameActive(device::GamepadConsumer* consumer) {
@@ -172,8 +186,6 @@ void GamepadService::PlayVibrationEffectOnce(
     mojom::GamepadHapticEffectType type,
     mojom::GamepadEffectParametersPtr params,
     mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-
   if (!provider_) {
     std::move(callback).Run(
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
@@ -187,8 +199,6 @@ void GamepadService::PlayVibrationEffectOnce(
 void GamepadService::ResetVibrationActuator(
     uint32_t pad_index,
     mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-
   if (!provider_) {
     std::move(callback).Run(
         mojom::GamepadHapticsResult::GamepadHapticsResultError);

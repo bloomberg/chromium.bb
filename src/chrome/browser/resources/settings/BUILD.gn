@@ -69,24 +69,16 @@ group("closure_compile") {
     ":settings_resources",
     "a11y_page:closure_compile",
     "about_page:closure_compile",
-    "android_apps_page:closure_compile",
-    "animation:closure_compile",
     "appearance_page:closure_compile",
     "autofill_page:closure_compile",
     "basic_page:closure_compile",
-    "bluetooth_page:closure_compile",
     "change_password_page:closure_compile",
     "chrome_cleanup_page:closure_compile",
     "clear_browsing_data_dialog:closure_compile",
     "controls:closure_compile",
-    "date_time_page:closure_compile",
-    "default_browser_page:closure_compile",
-    "device_page:closure_compile",
     "downloads_page:closure_compile",
     "incompatible_applications_page:closure_compile",
-    "internet_page:closure_compile",
     "languages_page:closure_compile",
-    "multidevice_page:closure_compile",
     "on_startup_page:closure_compile",
     "people_page:closure_compile",
     "prefs:closure_compile",
@@ -101,15 +93,34 @@ group("closure_compile") {
     "settings_ui:closure_compile",
     "site_settings:closure_compile",
     "site_settings_page:closure_compile",
-    "system_page:closure_compile",
   ]
+
+  if (!is_chromeos) {
+    deps += [
+      "default_browser_page:closure_compile",
+      "system_page:closure_compile",
+    ]
+  }
+
+  if (is_chromeos) {
+    deps += [
+      "android_apps_page:closure_compile",
+      "bluetooth_page:closure_compile",
+      "chromeos:closure_compile",
+      "crostini_page:closure_compile",
+      "date_time_page:closure_compile",
+      "device_page:closure_compile",
+      "internet_page:closure_compile",
+      "kiosk_next_shell_page:closure_compile",
+      "multidevice_page:closure_compile",
+      "plugin_vm_page:closure_compile",
+    ]
+  }
 }
 
 js_type_check("settings_resources") {
   deps = [
     ":extension_control_browser_proxy",
-    ":find_shortcut_behavior",
-    ":focus_row_behavior",
     ":global_scroll_target_behavior",
     ":lifetime_browser_proxy",
     ":open_window_proxy",
@@ -125,20 +136,6 @@ js_library("extension_control_browser_proxy") {
     "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]
-}
-
-js_library("find_shortcut_behavior") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js/cr/ui:command",
-  ]
-}
-
-js_library("focus_row_behavior") {
-  deps = [
-    "//ui/webui/resources/js/cr/ui:focus_row",
-  ]
 }
 
 js_library("global_scroll_target_behavior") {

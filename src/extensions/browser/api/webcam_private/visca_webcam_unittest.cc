@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -18,9 +19,8 @@ namespace {
 
 class TestSerialConnection : public SerialConnection {
  public:
-  TestSerialConnection(device::mojom::SerialIoHandlerPtrInfo io_handler_info)
-      : SerialConnection("dummy_path", "dummy_id", std::move(io_handler_info)) {
-  }
+  explicit TestSerialConnection(device::mojom::SerialPortPtrInfo port_ptr_info)
+      : SerialConnection("dummy_id", std::move(port_ptr_info)) {}
   ~TestSerialConnection() override {}
 
   void SetReceiveBuffer(const std::vector<uint8_t>& receive_buffer) {
@@ -39,11 +39,10 @@ class TestSerialConnection : public SerialConnection {
     NOTREACHED();
   }
 
-  bool Receive(ReceiveCompleteCallback callback) override {
-    std::move(callback).Run(std::move(receive_buffer_),
-                            api::serial::RECEIVE_ERROR_NONE);
+  void StartPolling(const ReceiveEventCallback& callback) override {
+    set_paused(false);
+    callback.Run(std::move(receive_buffer_), api::serial::RECEIVE_ERROR_NONE);
     receive_buffer_.clear();
-    return true;
   }
 
   bool Send(const std::vector<uint8_t>& data,
@@ -104,11 +103,11 @@ std::vector<uint8_t> ToByteVector(const char (&array)[N]) {
 class ViscaWebcamTest : public testing::Test {
  protected:
   ViscaWebcamTest() {
-    device::mojom::SerialIoHandlerPtrInfo io_handler_info;
-    mojo::MakeRequest(&io_handler_info);
+    device::mojom::SerialPortPtrInfo port_ptr_info;
+    mojo::MakeRequest(&port_ptr_info);
     webcam_ = new ViscaWebcam;
     webcam_->OpenForTesting(
-        std::make_unique<TestSerialConnection>(std::move(io_handler_info)));
+        std::make_unique<TestSerialConnection>(std::move(port_ptr_info)));
   }
   ~ViscaWebcamTest() override {}
 

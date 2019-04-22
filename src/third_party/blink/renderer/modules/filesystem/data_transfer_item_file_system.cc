@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/modules/filesystem/dragged_isolated_file_system_impl.h"
 #include "third_party/blink/renderer/modules/filesystem/entry.h"
 #include "third_party/blink/renderer/modules/filesystem/file_entry.h"
-#include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 
@@ -58,7 +57,7 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(ScriptState* script_state,
   // The clipboard may not be in a readable state.
   if (!file)
     return nullptr;
-  DCHECK(file->IsFile());
+  DCHECK(IsA<File>(file));
 
   DOMFileSystem* dom_file_system =
       DraggedIsolatedFileSystemImpl::GetDOMFileSystem(
@@ -71,17 +70,17 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(ScriptState* script_state,
 
   // The dropped entries are mapped as top-level entries in the isolated
   // filesystem.
-  String virtual_path = DOMFilePath::Append("/", ToFile(file)->name());
+  String virtual_path = DOMFilePath::Append("/", To<File>(file)->name());
 
   // FIXME: This involves synchronous file operation. Consider passing file type
   // data when we dispatch drag event.
   FileMetadata metadata;
-  if (!GetFileMetadata(ToFile(file)->GetPath(), metadata))
+  if (!GetFileMetadata(To<File>(file)->GetPath(), metadata))
     return nullptr;
 
   if (metadata.type == FileMetadata::kTypeDirectory)
-    return DirectoryEntry::Create(dom_file_system, virtual_path);
-  return FileEntry::Create(dom_file_system, virtual_path);
+    return MakeGarbageCollected<DirectoryEntry>(dom_file_system, virtual_path);
+  return MakeGarbageCollected<FileEntry>(dom_file_system, virtual_path);
 }
 
 }  // namespace blink

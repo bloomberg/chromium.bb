@@ -41,8 +41,7 @@ LoginPolicyTestBase::LoginPolicyTestBase() {
   set_open_about_blank_on_browser_launch(false);
 }
 
-LoginPolicyTestBase::~LoginPolicyTestBase() {
-}
+LoginPolicyTestBase::~LoginPolicyTestBase() = default;
 
 void LoginPolicyTestBase::SetUp() {
   base::DictionaryValue mandatory;
@@ -61,12 +60,12 @@ void LoginPolicyTestBase::SetUpCommandLine(base::CommandLine* command_line) {
 
 void LoginPolicyTestBase::SetUpOnMainThread() {
   SetMergeSessionParams();
-  SetupFakeGaiaForLogin(GetAccount(), "", kTestRefreshToken);
+  fake_gaia_.SetupFakeGaiaForLogin(GetAccount(), "", kTestRefreshToken);
   OobeBaseTest::SetUpOnMainThread();
 
   FakeGaia::MergeSessionParams params;
   params.id_token = GetIdToken();
-  fake_gaia_->UpdateMergeSessionParams(params);
+  fake_gaia_.fake_gaia()->UpdateMergeSessionParams(params);
 }
 
 std::string LoginPolicyTestBase::GetAccount() const {
@@ -97,7 +96,7 @@ void LoginPolicyTestBase::SetMergeSessionParams() {
   params.session_sid_cookie = kTestSessionSIDCookie;
   params.session_lsid_cookie = kTestSessionLSIDCookie;
   params.email = GetAccount();
-  fake_gaia_->SetMergeSessionParams(params);
+  fake_gaia_.fake_gaia()->SetMergeSessionParams(params);
 }
 
 void LoginPolicyTestBase::SkipToLoginScreen() {

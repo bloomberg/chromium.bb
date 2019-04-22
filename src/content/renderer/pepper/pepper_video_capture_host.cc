@@ -4,7 +4,6 @@
 
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 
-#include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/pepper/pepper_platform_video_capture.h"
@@ -20,6 +19,7 @@
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 
 using ppapi::HostResource;
 using ppapi::TrackedCallback;
@@ -132,7 +132,7 @@ void PepperVideoCaptureHost::OnFrameReady(
                                      &frame_rate))
       rounded_frame_rate = static_cast<int>(frame_rate + 0.5 /* round */);
     else
-      rounded_frame_rate = MediaStreamVideoSource::kUnknownFrameRate;
+      rounded_frame_rate = blink::MediaStreamVideoSource::kUnknownFrameRate;
     AllocBuffers(alloc_size_, rounded_frame_rate);
   }
 

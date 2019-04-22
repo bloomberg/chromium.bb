@@ -52,7 +52,7 @@ def SetExtraBrowserOptionsForMemoryMeasurement(options):
   # has anomalous results. This option causes us to flush caches
   # each time before Chrome starts so we effect even the first page
   # - avoiding the bug.
-  options.clear_sytem_cache_for_browser_and_profile_on_start = True
+  options.flush_os_page_caches_on_start = True
 
 
 def DefaultShouldAddValueForMemoryMeasurement(name):
@@ -119,62 +119,3 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
   @classmethod
   def ShouldAddValue(cls, name, _):
     return DefaultShouldAddValueForMemoryMeasurement(name)
-
-
-class _MemoryV8Benchmark(_MemoryInfra):
-
-  # Report only V8-specific and overall renderer memory values. Note that
-  # detailed values reported by the OS (such as native heap) are excluded.
-  _V8_AND_OVERALL_MEMORY_RE = re.compile(
-      r'renderer_processes:'
-      r'(reported_by_chrome:v8|reported_by_os:system_memory:[^:]+$)')
-
-  def CreateCoreTimelineBasedMeasurementOptions(self):
-    v8_categories = [
-        'blink.console', 'renderer.scheduler', 'v8', 'webkit.console']
-    memory_categories = ['blink.console', 'disabled-by-default-memory-infra']
-    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
-        ','.join(['-*'] + v8_categories + memory_categories))
-    options = timeline_based_measurement.Options(category_filter)
-    options.SetTimelineBasedMetrics(['v8AndMemoryMetrics'])
-    # Setting an empty memory dump config disables periodic dumps.
-    options.config.chrome_trace_config.SetMemoryDumpConfig(
-        chrome_trace_config.MemoryDumpConfig())
-    return options
-
-  @classmethod
-  def ShouldAddValue(cls, name, _):
-    if 'memory:chrome' in name:
-      # TODO(petrcermak): Remove the first two cases once
-      # https://codereview.chromium.org/2018503002/ lands in Catapult and rolls
-      # into Chromium.
-      return ('renderer:subsystem:v8' in name or
-              'renderer:vmstats:overall' in name or
-              bool(cls._V8_AND_OVERALL_MEMORY_RE.search(name)))
-    return 'v8' in name
-
-
-@benchmark.Info(emails=['ulan@chromium.org'])
-class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
-  """Use (recorded) real world web sites and measure memory consumption
-  of long running idle Gmail page """
-  page_set = page_sets.LongRunningIdleGmailPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'memory.long_running_idle_gmail_tbmv2'
-
-
-@benchmark.Info(emails=['ulan@chromium.org'])
-class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
-  """Use (recorded) real world web sites and measure memory consumption
-  of long running idle Gmail page """
-  page_set = page_sets.LongRunningIdleGmailBackgroundPageSet
-  SUPPORTED_PLATFORMS = [
-      story.expectations.ANDROID_NOT_WEBVIEW, # Requires tabs.
-      story.expectations.ALL_DESKTOP
-  ]
-
-  @classmethod
-  def Name(cls):
-    return 'memory.long_running_idle_gmail_background_tbmv2'

@@ -562,10 +562,16 @@ class RemoteAccess(object):
     if verbose:
       scp_cmd.append('-v')
 
-    if to_local:
-      scp_cmd += ['%s:%s' % (self.target_ssh_url, src), dest]
+    # Check for an IPv6 address
+    if ':' in self.remote_host:
+      target_ssh_url = '%s@[%s]' % (self.username, self.remote_host)
     else:
-      scp_cmd += glob.glob(src) + ['%s:%s' % (self.target_ssh_url, dest)]
+      target_ssh_url = self.target_ssh_url
+
+    if to_local:
+      scp_cmd += ['%s:%s' % (target_ssh_url, src), dest]
+    else:
+      scp_cmd += glob.glob(src) + ['%s:%s' % (target_ssh_url, dest)]
 
     rc_func = cros_build_lib.RunCommand
     if sudo:

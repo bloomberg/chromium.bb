@@ -29,7 +29,7 @@ const char kBackgroundHistogramServiceWorkerParseStart[] =
     "PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart."
     "Background";
 const char kHistogramServiceWorkerFirstInputDelay[] =
-    "PageLoad.Clients.ServiceWorker2.InteractiveTiming.FirstInputDelay";
+    "PageLoad.Clients.ServiceWorker2.InteractiveTiming.FirstInputDelay3";
 const char kHistogramServiceWorkerFirstPaint[] =
     "PageLoad.Clients.ServiceWorker2.PaintTiming.NavigationToFirstPaint";
 const char kHistogramServiceWorkerFirstContentfulPaint[] =
@@ -396,6 +396,8 @@ void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnLoadingBehaviorObserved(
+    content::RenderFrameHost* rfh,
+    int behavior_flags,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info) || logged_ukm_event_)
     return;

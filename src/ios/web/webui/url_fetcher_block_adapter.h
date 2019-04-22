@@ -16,7 +16,7 @@
 namespace network {
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
-};  // namespace network
+}  // namespace network
 
 namespace web {
 

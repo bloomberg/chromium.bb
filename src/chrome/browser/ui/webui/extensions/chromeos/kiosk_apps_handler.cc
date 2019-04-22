@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -111,9 +111,9 @@ KioskAppsHandler::KioskAppsHandler(OwnerSettingsServiceChromeOS* service)
       weak_ptr_factory_(this) {}
 
 KioskAppsHandler::~KioskAppsHandler() {
-  // TODO(scottchen): This is needed because OnJavascriptDisallowed only called
+  // TODO(tommycli): This is needed because OnJavascriptDisallowed only called
   // with refresh or off-page navigation, otherwise DCHECK triggered when
-  // exiting. Ask tommycli for more information.
+  // exiting.
   kiosk_app_manager_->RemoveObserver(this);
 }
 

@@ -79,9 +79,8 @@ class MediaControlSliderElement::MediaControlSliderElementResizeObserverDelegate
 };
 
 MediaControlSliderElement::MediaControlSliderElement(
-    MediaControlsImpl& media_controls,
-    MediaControlElementType display_type)
-    : MediaControlInputElement(media_controls, display_type),
+    MediaControlsImpl& media_controls)
+    : MediaControlInputElement(media_controls),
       before_segment_position_(0, 0),
       after_segment_position_(0, 0),
       segment_highlight_before_(nullptr),

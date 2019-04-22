@@ -71,7 +71,7 @@ enum MakeChromeDefaultResult {
 content::WebUIDataSource* CreateSetAsDefaultBrowserUIHTMLSource() {
   content::WebUIDataSource* data_source =
       content::WebUIDataSource::Create(chrome::kChromeUIMetroFlowHost);
-  data_source->AddLocalizedString("page-title", IDS_METRO_FLOW_TAB_TITLE);
+  data_source->AddLocalizedString("pageTitle", IDS_METRO_FLOW_TAB_TITLE);
   data_source->AddLocalizedString("flowTitle", IDS_METRO_FLOW_TITLE_SHORT);
   data_source->AddLocalizedString("flowDescription",
                                   IDS_METRO_FLOW_DESCRIPTION);
@@ -219,7 +219,8 @@ class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
   void OnDialogClosed(const std::string& json_retval) override;
   void OnCloseContents(WebContents* source, bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
-  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                         const content::ContextMenuParams& params) override;
 
   // Overridden from ResponseDelegate:
   void SetDialogInteractionResult(MakeChromeDefaultResult result) override;
@@ -347,6 +348,7 @@ bool SetAsDefaultBrowserDialogImpl::ShouldShowDialogTitle() const {
 }
 
 bool SetAsDefaultBrowserDialogImpl::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   return true;
 }

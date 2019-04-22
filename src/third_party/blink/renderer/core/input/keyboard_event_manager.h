@@ -55,7 +55,9 @@ class CORE_EXPORT KeyboardEventManager
   void DefaultBackspaceEventHandler(KeyboardEvent*);
   void DefaultTabEventHandler(KeyboardEvent*);
   void DefaultEscapeEventHandler(KeyboardEvent*);
+  void DefaultEnterEventHandler(KeyboardEvent*);
   void DefaultArrowEventHandler(KeyboardEvent*, Node*);
+  bool DefaultSpatNavBackEventHandler(KeyboardEvent*);
 
   const Member<LocalFrame> frame_;
 

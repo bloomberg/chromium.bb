@@ -24,7 +24,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/p2p/socket.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
-#include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
+#include "third_party/webrtc/rtc_base/async_packet_socket.h"
 
 namespace net {
 class NetLog;
@@ -94,13 +94,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
   WARN_UNUSED_RESULT bool HandleReadResult(int result);
   WARN_UNUSED_RESULT bool HandleSendResult(uint64_t packet_id,
                                            int32_t transport_sequence_number,
-                                           base::TimeTicks send_time,
+                                           int64_t send_time_ms,
                                            int result);
   WARN_UNUSED_RESULT bool DoSend(const PendingPacket& packet);
 
   void OnSend(uint64_t packet_id,
               int32_t transport_sequence_number,
-              base::TimeTicks send_time,
+              int64_t send_time_ms,
               int result);
 
   int SetSocketDiffServCodePointInternal(net::DiffServCodePoint dscp);

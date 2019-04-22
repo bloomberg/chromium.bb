@@ -18,6 +18,7 @@
 #include "base/allocator/buildflags.h"
 #include "base/at_exit.h"
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
@@ -28,6 +29,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_base.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -36,11 +38,11 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "components/download/public/common/download_task_runner.h"
-#include "components/tracing/common/trace_startup.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
@@ -56,15 +58,18 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/sandbox_init.h"
 #include "gin/v8_initializer.h"
 #include "media/base/media.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/network/public/cpp/features.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -155,6 +160,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #include "content/browser/android/browser_startup_controller.h"
 #endif
 
@@ -171,6 +177,12 @@ extern int UtilityMain(const MainFunctionParams&);
 namespace content {
 
 namespace {
+
+#if defined(OS_ANDROID)
+// Finch parameter key value for devices to always run in process.
+const base::FeatureParam<std::string> kDevicesForceInProcessParam{
+    &network::features::kNetworkService, "devices_force_in_process", ""};
+#endif
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA) && defined(OS_ANDROID)
 #if defined __LP64__
@@ -695,9 +707,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
 #endif  // !OS_ANDROID
 
 #if defined(OS_WIN)
-    // Enable exporting of events to ETW if requested on the command line.
-    if (command_line.HasSwitch(switches::kTraceExportEventsToETW))
-      base::trace_event::TraceEventETWExport::EnableETWExport();
+    base::trace_event::TraceEventETWExport::EnableETWExport();
 #endif  // OS_WIN
 
 #if !defined(OS_ANDROID)
@@ -790,6 +800,8 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
             service_manager::switches::kDisableInProcessStackTraces)) {
       base::debug::EnableInProcessStackDumping();
     }
+
+    base::debug::VerifyDebugger();
 #endif  // !defined(OFFICIAL_BUILD)
 
     delegate_->PreSandboxStartup();
@@ -875,6 +887,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
   if (is_browser_main_loop_started_)
     return -1;
 
+  bool should_start_service_manager_only = start_service_manager_only;
   if (!service_manager_context_) {
     if (delegate_->ShouldCreateFeatureList()) {
       DCHECK(!field_trial_list_);
@@ -882,10 +895,10 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
       delegate_->PostFieldTrialInitialization();
     }
 
-    if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
-      // Create and start the TaskScheduler early to allow upcoming code to use
+    if (GetContentClient()->browser()->ShouldCreateThreadPool()) {
+      // Create and start the ThreadPool early to allow upcoming code to use
       // the post_task.h API.
-      base::TaskScheduler::Create("Browser");
+      base::ThreadPool::Create("Browser");
     }
 
     delegate_->PreCreateMainMessageLoop();
@@ -898,22 +911,51 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     }
 #endif
 
-    // Create a MessageLoop if one does not already exist for the current
-    // thread. This thread won't be promoted as BrowserThread::UI until
-    // BrowserMainLoop::MainMessageLoopStart().
-    if (!base::MessageLoopCurrentForUI::IsSet())
-      main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
+    // Register the TaskExecutor for posting task to the BrowserThreads. It is
+    // incorrect to post to a BrowserThread before this point. This instantiates
+    // and binds the MessageLoopForUI on the main thread (but it's only labeled
+    // as BrowserThread::UI in BrowserMainLoop::MainMessageLoopStart).
+    BrowserTaskExecutor::Create();
 
     delegate_->PostEarlyInitialization(main_params.ui_task != nullptr);
 
-    if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
-      // The FeatureList needs to create before starting the TaskScheduler.
-      StartBrowserTaskScheduler();
+    if (GetContentClient()->browser()->ShouldCreateThreadPool()) {
+      // The FeatureList needs to create before starting the ThreadPool.
+      StartBrowserThreadPool();
     }
 
-    // Register the TaskExecutor for posting task to the BrowserThreads. It is
-    // incorrect to post to a BrowserThread before this point.
-    BrowserTaskExecutor::Create();
+    BrowserTaskExecutor::PostFeatureListSetup();
+
+    if (!base::FeatureList::IsEnabled(
+            features::kAllowStartingServiceManagerOnly)) {
+      should_start_service_manager_only = false;
+    }
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      bool force_in_process = false;
+      if (should_start_service_manager_only) {
+        force_in_process = true;
+      } else {
+#if defined(OS_ANDROID)
+        auto finch_value = kDevicesForceInProcessParam.Get();
+        auto devices = base::SplitString(
+            finch_value, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+        auto current_device =
+            std::string(base::android::BuildInfo::GetInstance()->model());
+        for (auto device : devices) {
+          if (device == current_device) {
+            force_in_process = true;
+            break;
+          }
+        }
+#endif
+      }
+
+      if (force_in_process) {
+        // This must be called before creating the ServiceManagerContext.
+        ForceInProcessNetworkService(true);
+      }
+    }
 
     // The thread used to start the ServiceManager is handed-off to
     // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
@@ -922,16 +964,15 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
         new ServiceManagerContext(service_manager_thread_->task_runner()));
     download::SetIOTaskRunner(service_manager_thread_->task_runner());
 #if defined(OS_ANDROID)
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ServiceManagerStartupComplete));
+    if (start_service_manager_only) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&ServiceManagerStartupComplete));
+    }
 #endif
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kAllowStartingServiceManagerOnly) &&
-      start_service_manager_only) {
+  if (should_start_service_manager_only)
     return -1;
-  }
 
   is_browser_main_loop_started_ = true;
   startup_data_ = std::make_unique<StartupDataImpl>();
@@ -956,8 +997,8 @@ void ContentMainRunnerImpl::Shutdown() {
   }
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-  // The message loop needs to be destroyed before |exit_manager_|.
-  main_message_loop_.reset();
+  // The BrowserTaskExecutor needs to be destroyed before |exit_manager_|.
+  BrowserTaskExecutor::Shutdown();
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 #if defined(OS_WIN)

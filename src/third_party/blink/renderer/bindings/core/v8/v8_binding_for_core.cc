@@ -117,32 +117,42 @@ static double EnforceRange(double x,
 }
 
 template <typename T>
+struct IntTypeNumberOfValues {
+  static constexpr unsigned value =
+      1 << (std::numeric_limits<T>::digits + std::is_signed<T>::value);
+};
+
+template <typename T>
 struct IntTypeLimits {};
 
 template <>
 struct IntTypeLimits<int8_t> {
-  static const int8_t kMinValue = -128;
-  static const int8_t kMaxValue = 127;
-  static const unsigned kNumberOfValues = 256;  // 2^8
+  static constexpr int8_t kMinValue = std::numeric_limits<int8_t>::min();
+  static constexpr int8_t kMaxValue = std::numeric_limits<int8_t>::max();
+  static constexpr unsigned kNumberOfValues =
+      IntTypeNumberOfValues<int8_t>::value;  // 2^8
 };
 
 template <>
 struct IntTypeLimits<uint8_t> {
-  static const uint8_t kMaxValue = 255;
-  static const unsigned kNumberOfValues = 256;  // 2^8
+  static constexpr uint8_t kMaxValue = std::numeric_limits<uint8_t>::max();
+  static constexpr unsigned kNumberOfValues =
+      IntTypeNumberOfValues<uint8_t>::value;  // 2^8
 };
 
 template <>
 struct IntTypeLimits<int16_t> {
-  static const short kMinValue = -32768;
-  static const short kMaxValue = 32767;
-  static const unsigned kNumberOfValues = 65536;  // 2^16
+  static constexpr int16_t kMinValue = std::numeric_limits<int16_t>::min();
+  static constexpr int16_t kMaxValue = std::numeric_limits<int16_t>::max();
+  static constexpr unsigned kNumberOfValues =
+      IntTypeNumberOfValues<int16_t>::value;  // 2^16
 };
 
 template <>
 struct IntTypeLimits<uint16_t> {
-  static const unsigned short kMaxValue = 65535;
-  static const unsigned kNumberOfValues = 65536;  // 2^16
+  static constexpr uint16_t kMaxValue = std::numeric_limits<uint16_t>::max();
+  static constexpr unsigned kNumberOfValues =
+      IntTypeNumberOfValues<uint16_t>::value;  // 2^16
 };
 
 template <typename T>
@@ -610,8 +620,8 @@ XPathNSResolver* ToXPathNSResolver(ScriptState* script_state,
   if (V8XPathNSResolver::HasInstance(value, script_state->GetIsolate())) {
     resolver = V8XPathNSResolver::ToImpl(v8::Local<v8::Object>::Cast(value));
   } else if (value->IsObject()) {
-    resolver =
-        V8CustomXPathNSResolver::Create(script_state, value.As<v8::Object>());
+    resolver = MakeGarbageCollected<V8CustomXPathNSResolver>(
+        script_state, value.As<v8::Object>());
   }
   return resolver;
 }
@@ -630,13 +640,19 @@ DOMWindow* ToDOMWindow(v8::Isolate* isolate, v8::Local<v8::Value> value) {
 LocalDOMWindow* ToLocalDOMWindow(v8::Local<v8::Context> context) {
   if (context.IsEmpty())
     return nullptr;
-  return ToLocalDOMWindow(
+  return To<LocalDOMWindow>(
       ToDOMWindow(context->GetIsolate(), context->Global()));
 }
 
 LocalDOMWindow* EnteredDOMWindow(v8::Isolate* isolate) {
   LocalDOMWindow* window =
       ToLocalDOMWindow(isolate->GetEnteredOrMicrotaskContext());
+  DCHECK(window);
+  return window;
+}
+
+LocalDOMWindow* IncumbentDOMWindow(v8::Isolate* isolate) {
+  LocalDOMWindow* window = ToLocalDOMWindow(isolate->GetIncumbentContext());
   DCHECK(window);
   return window;
 }
@@ -660,11 +676,11 @@ ExecutionContext* ToExecutionContext(v8::Local<v8::Context> context) {
     return nullptr;
 
   const WrapperTypeInfo* wrapper_type_info = ToWrapperTypeInfo(global_proxy);
-  if (wrapper_type_info->Equals(&V8Window::wrapper_type_info))
+  if (wrapper_type_info->Equals(V8Window::GetWrapperTypeInfo()))
     return V8Window::ToImpl(global_proxy)->GetExecutionContext();
-  if (wrapper_type_info->IsSubclass(&V8WorkerGlobalScope::wrapper_type_info))
+  if (wrapper_type_info->IsSubclass(V8WorkerGlobalScope::GetWrapperTypeInfo()))
     return V8WorkerGlobalScope::ToImpl(global_proxy)->GetExecutionContext();
-  if (wrapper_type_info->IsSubclass(&V8WorkletGlobalScope::wrapper_type_info))
+  if (wrapper_type_info->IsSubclass(V8WorkletGlobalScope::GetWrapperTypeInfo()))
     return V8WorkletGlobalScope::ToImpl(global_proxy)->GetExecutionContext();
 
   NOTREACHED();
@@ -697,7 +713,7 @@ void ToFlexibleArrayBufferView(v8::Isolate* isolate,
   }
   size_t length = buffer->ByteLength();
   buffer->CopyContents(storage, length);
-  result.SetSmall(storage, length);
+  result.SetSmall(storage, SafeCast<uint32_t>(length));
 }
 
 static ScriptState* ToScriptStateImpl(LocalFrame* frame,
@@ -870,22 +886,6 @@ bool HasCallableIteratorSymbol(v8::Isolate* isolate,
     return false;
   }
   return iterator_getter->IsFunction();
-}
-
-v8::Isolate* ToIsolate(const ExecutionContext* context) {
-  if (!context)
-    return nullptr;
-
-#if DCHECK_IS_ON()
-  v8::Isolate* isolate;
-  if (context && context->IsDocument())
-    isolate = V8PerIsolateData::MainThreadIsolate();
-  else
-    isolate = v8::Isolate::GetCurrent();
-  DCHECK(context->GetIsolate() == isolate);
-#endif
-
-  return context->GetIsolate();
 }
 
 v8::Isolate* ToIsolate(const LocalFrame* frame) {

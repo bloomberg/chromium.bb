@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.os.StrictMode;
+import android.support.annotation.Nullable;
 import android.util.Pair;
 import android.util.SparseBooleanArray;
 
@@ -15,9 +16,13 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.chrome.browser.TabState;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabPersistencePolicy;
@@ -27,7 +32,6 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,13 +43,13 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
-import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
  * Handles the Custom Tab specific behaviors of tab persistence.
  */
+@ActivityScope
 public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
-
     static final String SAVED_STATE_DIRECTORY = "custom_tabs";
 
     /** Threshold where old state files should be deleted (30 days). */
@@ -96,14 +100,21 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
     private AsyncTask<Void> mInitializationTask;
     private boolean mDestroyed;
 
+    @Inject
+    public CustomTabTabPersistencePolicy(ChromeActivity activity) {
+        mTaskId = activity.getTaskId();
+        mShouldRestore = (activity.getSavedInstanceState() != null);
+    }
+
     /**
-     * Constructs a persistence policy for a given Custom Tab.
+     * Constructor for slightly simplifying testing.
      *
      * @param taskId The task ID that the owning Custom Tab is in.
      * @param shouldRestore Whether an attempt to restore tab state information should be done on
      *                      startup.
      */
-    public CustomTabTabPersistencePolicy(int taskId, boolean shouldRestore) {
+    @VisibleForTesting
+    CustomTabTabPersistencePolicy(int taskId, boolean shouldRestore) {
         mTaskId = taskId;
         mShouldRestore = shouldRestore;
     }
@@ -131,7 +142,7 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
 
     @Override
     public boolean performInitialization(Executor executor) {
-        mInitializationTask = new AsyncTask<Void>() {
+        mInitializationTask = new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
                 File stateDir = getOrCreateStateDirectory();
@@ -282,10 +293,7 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
             Set<Integer> liveTabIds, Set<Integer> liveTaskIds) {
         ThreadUtils.assertOnUiThread();
 
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (int i = 0; i < activities.size(); i++) {
-            Activity activity = activities.get(i).get();
-            if (activity == null) continue;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (!(activity instanceof CustomTabActivity)) continue;
             getAllTabIdsForActivity((CustomTabActivity) activity, liveTabIds);
             liveTaskIds.add(activity.getTaskId());

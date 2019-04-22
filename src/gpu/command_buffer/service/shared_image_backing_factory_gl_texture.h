@@ -35,6 +35,12 @@ class ImageFactory;
 class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
     : public SharedImageBackingFactory {
  public:
+  struct UnpackStateAttribs {
+    bool es3_capable = false;
+    bool desktop_gl = false;
+    bool supports_unpack_subimage = false;
+  };
+
   SharedImageBackingFactoryGLTexture(const GpuPreferences& gpu_preferences,
                                      const GpuDriverBugWorkarounds& workarounds,
                                      const GpuFeatureInfo& gpu_feature_info,
@@ -47,7 +53,15 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
-      uint32_t usage) override;
+      uint32_t usage,
+      bool is_thread_safe) override;
+  std::unique_ptr<SharedImageBacking> CreateSharedImage(
+      const Mailbox& mailbox,
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage,
+      base::span<const uint8_t> pixel_data) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
       int client_id,
@@ -58,13 +72,23 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       const gfx::ColorSpace& color_space,
       uint32_t usage) override;
 
+  static std::unique_ptr<SharedImageBacking> CreateSharedImageForTest(
+      const Mailbox& mailbox,
+      GLenum target,
+      GLuint service_id,
+      bool is_cleared,
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      uint32_t usage);
+
  private:
   scoped_refptr<gl::GLImage> MakeGLImage(int client_id,
                                          gfx::GpuMemoryBufferHandle handle,
                                          gfx::BufferFormat format,
                                          SurfaceHandle surface_handle,
                                          const gfx::Size& size);
-  std::unique_ptr<SharedImageBacking> MakeBacking(
+  static std::unique_ptr<SharedImageBacking> MakeBacking(
+      bool passthrough,
       const Mailbox& mailbox,
       GLenum target,
       GLuint service_id,
@@ -78,7 +102,9 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
-      uint32_t usage);
+      uint32_t usage,
+      const UnpackStateAttribs& attribs);
+
   struct FormatInfo {
     FormatInfo();
     ~FormatInfo();
@@ -91,6 +117,9 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
 
     // Whether to allow SHARED_IMAGE_USAGE_SCANOUT.
     bool allow_scanout = false;
+
+    // Whether the texture is a compressed type.
+    bool is_compressed = false;
 
     GLenum gl_format = 0;
     GLenum gl_type = 0;
@@ -125,7 +154,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
   GpuMemoryBufferFormatSet gpu_memory_buffer_formats_;
   int32_t max_texture_size_ = 0;
   bool texture_usage_angle_ = false;
-  bool es3_capable_ = false;
+  UnpackStateAttribs attribs;
 };
 
 }  // namespace gpu

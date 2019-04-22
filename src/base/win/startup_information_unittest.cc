@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/win/startup_information.h"
+
 #include <windows.h>
 #include <stddef.h>
 
 #include <string>
 
 #include "base/command_line.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/test/multiprocess_test.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
-#include "base/win/startup_information.h"
 #include "testing/multiprocess_func_list.h"
 
 const wchar_t kSectionName[] = L"EventTestSection";
@@ -58,14 +61,15 @@ TEST_F(StartupInformationTest, InheritStdOut) {
       PROC_THREAD_ATTRIBUTE_HANDLE_LIST, &events[0],
       sizeof(events[0])));
 
-  std::wstring cmd_line =
+  base::string16 cmd_line =
       MakeCmdLine("FireInheritedEvents").GetCommandLineString();
 
   PROCESS_INFORMATION temp_process_info = {};
-  ASSERT_TRUE(::CreateProcess(NULL, &cmd_line[0],
-                              NULL, NULL, true, EXTENDED_STARTUPINFO_PRESENT,
-                              NULL, NULL, startup_info.startup_info(),
-                              &temp_process_info)) << ::GetLastError();
+  ASSERT_TRUE(::CreateProcess(NULL, base::as_writable_wcstr(cmd_line), NULL,
+                              NULL, true, EXTENDED_STARTUPINFO_PRESENT, NULL,
+                              NULL, startup_info.startup_info(),
+                              &temp_process_info))
+      << ::GetLastError();
   base::win::ScopedProcessInformation process_info(temp_process_info);
 
   // Only the first event should be signalled

@@ -57,28 +57,28 @@ test-docker:
 	mkdir -p $$SKIA_ROOT/out/dockerbuild
 
 	docker run --rm -v $$SKIA_ROOT:/SRC -v $$SKIA_ROOT/out/dockerbuild:/OUT \
-gcr.io/skia-public/emsdk-release:1.38.16_v1 /SRC/infra/pathkit/build_pathkit.sh
+gcr.io/skia-public/emsdk-release:prod /SRC/infra/pathkit/build_pathkit.sh
 	cp ../../out/dockerbuild/pathkit.js   ./npm-wasm/bin/test/pathkit.js
 	cp ../../out/dockerbuild/pathkit.wasm ./npm-wasm/bin/test/pathkit.wasm
 
 	docker run --rm -v $$SKIA_ROOT:/SRC -v $$SKIA_ROOT/out/dockerbuild:/OUT \
-gcr.io/skia-public/emsdk-release:1.38.16_v1 /SRC/infra/pathkit/build_pathkit.sh asm.js
+gcr.io/skia-public/emsdk-release:prod /SRC/infra/pathkit/build_pathkit.sh asm.js
 	cp ../../out/dockerbuild/pathkit.js     ./npm-asmjs/bin/test/pathkit.js
 	cp ../../out/dockerbuild/pathkit.js.mem ./npm-asmjs/bin/test/pathkit.js.mem
 
-	docker run --shm-size=2gb -v $$SKIA_ROOT:/SRC gcr.io/skia-public/karma-chrome-tests:68.0.3440.106_v4 \
+	docker run --shm-size=2gb -v $$SKIA_ROOT:/SRC gcr.io/skia-public/karma-chrome-tests:72.0.3626.121_v1 \
 karma start /SRC/modules/pathkit/karma.conf.js --single-run
-	docker run --shm-size=2gb -v $$SKIA_ROOT:/SRC -e ASM_JS=1 gcr.io/skia-public/karma-chrome-tests:68.0.3440.106_v4 \
+	docker run --shm-size=2gb -v $$SKIA_ROOT:/SRC -e ASM_JS=1 gcr.io/skia-public/karma-chrome-tests:72.0.3626.121_v1 \
 karma start /SRC/modules/pathkit/karma.conf.js --single-run
 
 test-docker-continuous:
 	echo "Assuming make npm-test has also been run by a user (if needed)"
-	docker run --shm-size=2gb -v $$SKIA_ROOT:/SRC gcr.io/skia-public/karma-chrome-tests:68.0.3440.106_v4 \
+	docker run --shm-size=2gb -v $$SKIA_ROOT:/SRC gcr.io/skia-public/karma-chrome-tests:72.0.3626.121_v1 \
 karma start /SRC/modules/pathkit/karma.conf.js --no-single-run
 
 test-docker-continuous-asmjs:
 	echo "Assuming make npm-test has also been run by a user (if needed)"
-	docker run --shm-size=2gb -v $$SKIA_ROOT:/SRC -e ASM_JS=1 gcr.io/skia-public/karma-chrome-tests:68.0.3440.106_v4 \
+	docker run --shm-size=2gb -v $$SKIA_ROOT:/SRC -e ASM_JS=1 gcr.io/skia-public/karma-chrome-tests:72.0.3626.121_v1 \
 karma start /SRC/modules/pathkit/karma.conf.js --no-single-run
 
 npm-test:

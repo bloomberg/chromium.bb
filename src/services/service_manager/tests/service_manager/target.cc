@@ -2,43 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
-#include "base/command_line.h"
 #include "base/macros.h"
-#include "services/service_manager/public/c/main.h"
+#include "base/message_loop/message_loop.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_runner.h"
-#include "services/service_manager/tests/service_manager/service_manager_unittest.mojom.h"
-
-using service_manager::test::mojom::CreateInstanceTestPtr;
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/tests/service_manager/service_manager.test-mojom.h"
+#include "services/service_manager/tests/service_manager/test_manifests.h"
 
 namespace {
 
 class Target : public service_manager::Service {
  public:
-  Target() {}
-  ~Target() override {}
+  explicit Target(service_manager::mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {}
+  ~Target() override = default;
 
  private:
   // service_manager::Service:
   void OnStart() override {
-    CreateInstanceTestPtr service;
-    context()->connector()->BindInterface("service_manager_unittest",
-                                          &service);
-    service->SetTargetIdentity(context()->identity());
+    service_manager::test::mojom::CreateInstanceTestPtr service;
+    service_binding_.GetConnector()->BindInterface(
+        service_manager::kTestServiceName, &service);
+    service->SetTargetIdentity(service_binding_.identity());
   }
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {}
+
+  service_manager::ServiceBinding service_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(Target);
 };
 
 }  // namespace
 
-MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(new Target);
-  return runner.Run(service_request_handle);
+void ServiceMain(service_manager::mojom::ServiceRequest request) {
+  base::MessageLoop message_loop;
+  Target(std::move(request)).RunUntilTermination();
 }

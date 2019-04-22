@@ -4,16 +4,24 @@
 
 #include "content/browser/renderer_host/web_database_host_impl.h"
 
+#include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/isolation_context.h"
+#include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 namespace {
+
 base::string16 ConstructVfsFileName(const url::Origin& origin,
                                     const base::string16& name,
                                     const base::string16& suffix) {
@@ -22,30 +30,18 @@ base::string16 ConstructVfsFileName(const url::Origin& origin,
          base::ASCIIToUTF16("#") + suffix;
 }
 
-class BadMessageObserver {
+class FakeMojoMessageDispatchContext {
  public:
-  BadMessageObserver()
-      : dummy_message_(0, 0, 0, 0, nullptr), context_(&dummy_message_) {
-    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
-        &BadMessageObserver::ReportBadMessage, base::Unretained(this)));
-  }
-
-  ~BadMessageObserver() {
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
-  }
-
-  const std::string& last_error() const { return last_error_; }
+  FakeMojoMessageDispatchContext()
+      : dummy_message_(0, 0, 0, 0, nullptr), context_(&dummy_message_) {}
 
  private:
-  void ReportBadMessage(const std::string& error) { last_error_ = error; }
-
   mojo::Message dummy_message_;
   mojo::internal::MessageDispatchContext context_;
-  std::string last_error_;
 
-  DISALLOW_COPY_AND_ASSIGN(BadMessageObserver);
+  DISALLOW_COPY_AND_ASSIGN(FakeMojoMessageDispatchContext);
 };
+
 }  // namespace
 
 class WebDatabaseHostImplTest : public ::testing::Test {
@@ -54,6 +50,9 @@ class WebDatabaseHostImplTest : public ::testing::Test {
   ~WebDatabaseHostImplTest() override = default;
 
   void SetUp() override {
+    render_process_host_ =
+        std::make_unique<MockRenderProcessHost>(&browser_context_);
+
     scoped_refptr<storage::DatabaseTracker> db_tracker =
         base::MakeRefCounted<storage::DatabaseTracker>(
             base::FilePath(), /*is_incognito=*/false,
@@ -68,24 +67,36 @@ class WebDatabaseHostImplTest : public ::testing::Test {
 
   template <typename Callable>
   void CheckUnauthorizedOrigin(const Callable& func) {
-    BadMessageObserver bad_message_observer;
+    FakeMojoMessageDispatchContext fake_dispatch_context;
+    mojo::test::BadMessageObserver bad_message_observer;
     func();
-    EXPECT_EQ("Unauthorized origin.", bad_message_observer.last_error());
+    EXPECT_EQ("Unauthorized origin.", bad_message_observer.WaitForBadMessage());
   }
 
   template <typename Callable>
   void CheckInvalidOrigin(const Callable& func) {
-    BadMessageObserver bad_message_observer;
+    FakeMojoMessageDispatchContext fake_dispatch_context;
+    mojo::test::BadMessageObserver bad_message_observer;
     func();
-    EXPECT_EQ("Invalid origin.", bad_message_observer.last_error());
+    EXPECT_EQ("Invalid origin.", bad_message_observer.WaitForBadMessage());
+  }
+
+  void CallRenderProcessHostCleanup() {
+    render_process_host_->Cleanup();
+
+    // Releasing our handle on this object because Cleanup() posts a task
+    // to delete the object and we need to avoid a double delete.
+    render_process_host_.release();
   }
 
   WebDatabaseHostImpl* host() { return host_.get(); }
-  int process_id() { return kProcessId; }
+  int process_id() const { return render_process_host_->GetID(); }
+  BrowserContext* browser_context() { return &browser_context_; }
 
  private:
-  static constexpr int kProcessId = 1234;
   TestBrowserThreadBundle thread_bundle_;
+  TestBrowserContext browser_context_;
+  std::unique_ptr<MockRenderProcessHost> render_process_host_;
   std::unique_ptr<WebDatabaseHostImpl> host_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseHostImplTest);
@@ -102,13 +113,14 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {
       ConstructVfsFileName(incorrect_origin, db_name, suffix);
 
   auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  security_policy->Add(process_id());
   security_policy->AddIsolatedOrigins({correct_origin, incorrect_origin});
-  security_policy->LockToOrigin(process_id(), correct_origin.GetURL());
-  ASSERT_TRUE(security_policy->CanAccessDataForOrigin(process_id(),
-                                                      correct_origin.GetURL()));
-  ASSERT_FALSE(security_policy->CanAccessDataForOrigin(
-      process_id(), incorrect_origin.GetURL()));
+
+  security_policy->LockToOrigin(IsolationContext(browser_context()),
+                                process_id(), correct_origin.GetURL());
+  ASSERT_TRUE(
+      security_policy->CanAccessDataForOrigin(process_id(), correct_origin));
+  ASSERT_FALSE(
+      security_policy->CanAccessDataForOrigin(process_id(), incorrect_origin));
 
   CheckUnauthorizedOrigin([&]() {
     host()->OpenFile(bad_vfs_file_name,
@@ -173,6 +185,66 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesInvalid) {
   CheckInvalidOrigin([&]() {
     host()->HandleSqliteError(opaque_origin, db_name, /*error=*/0);
   });
+}
+
+TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
+  const url::Origin correct_origin =
+      url::Origin::Create(GURL("http://correct.com"));
+  const url::Origin incorrect_origin =
+      url::Origin::Create(GURL("http://incorrect.net"));
+  const base::string16 db_name(base::ASCIIToUTF16("db_name"));
+  const base::string16 suffix(base::ASCIIToUTF16("suffix"));
+  const base::string16 bad_vfs_file_name =
+      ConstructVfsFileName(incorrect_origin, db_name, suffix);
+
+  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  security_policy->AddIsolatedOrigins({correct_origin, incorrect_origin});
+  security_policy->LockToOrigin(IsolationContext(browser_context()),
+                                process_id(), correct_origin.GetURL());
+
+  bool success_callback_was_called = false;
+  auto success_callback = base::BindLambdaForTesting(
+      [&](base::File) { success_callback_was_called = true; });
+  base::Optional<std::string> error_callback_message;
+
+  mojo::core::SetDefaultProcessErrorCallback(base::BindLambdaForTesting(
+      [&](const std::string& message) { error_callback_message = message; }));
+
+  // Verify that an error occurs with OpenFile() call before process shutdown.
+  {
+    FakeMojoMessageDispatchContext fake_dispatch_context;
+    host()->OpenFile(bad_vfs_file_name,
+                     /*desired_flags=*/0, success_callback);
+
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_FALSE(success_callback_was_called);
+    EXPECT_TRUE(error_callback_message.has_value());
+    EXPECT_EQ("Unauthorized origin.", error_callback_message.value());
+  }
+
+  success_callback_was_called = false;
+  error_callback_message.reset();
+
+  // Start cleanup of the RenderProcessHost. This causes
+  // RenderProcessHost::FromID() to return nullptr for the process_id.
+  CallRenderProcessHostCleanup();
+
+  // Attempt the call again and verify that no callbacks were called.
+  {
+    FakeMojoMessageDispatchContext fake_dispatch_context;
+    host()->OpenFile(bad_vfs_file_name,
+                     /*desired_flags=*/0, success_callback);
+
+    base::RunLoop().RunUntilIdle();
+
+    // Verify none of the callbacks were called.
+    EXPECT_FALSE(success_callback_was_called);
+    EXPECT_FALSE(error_callback_message.has_value());
+  }
+
+  mojo::core::SetDefaultProcessErrorCallback(
+      mojo::core::ProcessErrorCallback());
 }
 
 }  // namespace content

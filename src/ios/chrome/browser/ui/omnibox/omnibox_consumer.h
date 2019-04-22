@@ -13,6 +13,10 @@
 // highlighted autocomplete result.
 - (void)updateAutocompleteIcon:(UIImage*)icon;
 
+// Notifies the consumer to update after the search-by-image support status
+// changes. (This is usually when the default search engine changes).
+- (void)updateSearchByImageSupported:(BOOL)searchByImageSupported;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CONSUMER_H_

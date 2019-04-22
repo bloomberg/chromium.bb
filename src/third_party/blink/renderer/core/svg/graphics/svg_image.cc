@@ -78,6 +78,10 @@ class SVGImage::SVGImageLocalFrameClient : public EmptyLocalFrameClient {
   void ClearImage() { image_ = nullptr; }
 
  private:
+  std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
+    return Platform::Current()->CreateDefaultURLLoaderFactory();
+  }
+
   void DispatchDidHandleOnloadEvents() override {
     // The SVGImage was destructed before SVG load completion.
     if (!image_)
@@ -92,7 +96,7 @@ class SVGImage::SVGImageLocalFrameClient : public EmptyLocalFrameClient {
 
 SVGImage::SVGImage(ImageObserver* observer, bool is_multipart)
     : Image(observer, is_multipart),
-      paint_controller_(PaintController::Create()),
+      paint_controller_(std::make_unique<PaintController>()),
       has_pending_timeline_rewind_(false) {}
 
 SVGImage::~SVGImage() {
@@ -124,7 +128,7 @@ bool SVGImage::IsInSVGImage(const Node* node) {
 void SVGImage::CheckLoaded() const {
   CHECK(page_);
 
-  LocalFrame* frame = ToLocalFrame(page_->MainFrame());
+  auto* frame = To<LocalFrame>(page_->MainFrame());
 
   // Failures of this assertion might result in wrong origin tainting checks,
   // because CurrentFrameHasSingleSecurityOrigin() assumes all subresources of
@@ -136,7 +140,7 @@ bool SVGImage::CurrentFrameHasSingleSecurityOrigin() const {
   if (!page_)
     return true;
 
-  LocalFrame* frame = ToLocalFrame(page_->MainFrame());
+  auto* frame = To<LocalFrame>(page_->MainFrame());
 
   CheckLoaded();
 
@@ -167,7 +171,7 @@ bool SVGImage::CurrentFrameHasSingleSecurityOrigin() const {
 static SVGSVGElement* SvgRootElement(Page* page) {
   if (!page)
     return nullptr;
-  LocalFrame* frame = ToLocalFrame(page->MainFrame());
+  auto* frame = To<LocalFrame>(page->MainFrame());
   return frame->GetDocument()->AccessSVGExtensions().rootElement();
 }
 
@@ -368,9 +372,9 @@ void SVGImage::DrawPatternForContainer(GraphicsContext& context,
                                  phase.Y() + spaced_tile.Y());
 
   PaintFlags flags;
-  flags.setShader(PaintShader::MakePaintRecord(
-      record, spaced_tile, SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, &pattern_transform));
+  flags.setShader(
+      PaintShader::MakePaintRecord(record, spaced_tile, SkTileMode::kRepeat,
+                                   SkTileMode::kRepeat, &pattern_transform));
   // If the shader could not be instantiated (e.g. non-invertible matrix),
   // draw transparent.
   // Note: we can't simply bail, because of arbitrary blend mode.
@@ -380,6 +384,8 @@ void SVGImage::DrawPatternForContainer(GraphicsContext& context,
   flags.setBlendMode(composite_op);
   flags.setColorFilter(sk_ref_sp(context.GetColorFilter()));
   context.DrawRect(dst_rect, flags);
+
+  StartAnimation();
 }
 
 sk_sp<PaintRecord> SVGImage::PaintRecordForContainer(
@@ -423,6 +429,11 @@ static bool DrawNeedsLayer(const PaintFlags& flags) {
   if (SkColorGetA(flags.getColor()) < 255)
     return true;
 
+  // This is needed to preserve the dark mode filter that
+  // has been set in GraphicsContext.
+  if (flags.getColorFilter())
+    return true;
+
   return flags.getBlendMode() != SkBlendMode::kSrcOver;
 }
 
@@ -436,8 +447,8 @@ bool SVGImage::ApplyShaderInternal(PaintFlags& flags,
   IntRect bounds(IntPoint(), size);
 
   flags.setShader(PaintShader::MakePaintRecord(
-      PaintRecordForCurrentFrame(bounds, url), bounds,
-      SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &local_matrix));
+      PaintRecordForCurrentFrame(url), bounds, SkTileMode::kRepeat,
+      SkTileMode::kRepeat, &local_matrix));
 
   // Animation is normally refreshed in draw() impls, which we don't reach when
   // painting via shaders.
@@ -483,12 +494,9 @@ void SVGImage::Draw(
                should_respect_image_orientation, clamp_mode, NullURL());
 }
 
-sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(
-    const IntRect& bounds,
-    const KURL& url,
-    cc::PaintCanvas* canvas) {
+sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const KURL& url) {
   DCHECK(page_);
-  LocalFrameView* view = ToLocalFrame(page_->MainFrame())->View();
+  LocalFrameView* view = To<LocalFrame>(page_->MainFrame())->View();
   view->Resize(ContainerSize());
   page_->GetVisualViewport().SetSize(ContainerSize());
 
@@ -503,17 +511,15 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(
   // avoid setting timers from the latter.
   FlushPendingTimelineRewind();
 
-  PaintRecordBuilder builder(nullptr, nullptr, paint_controller_.get());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    view->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kOther);
+    return view->GetPaintRecord();
+  }
 
   view->UpdateAllLifecyclePhasesExceptPaint();
-  view->PaintWithLifecycleUpdate(builder.Context(), kGlobalPaintNormalPhase,
-                                 CullRect(bounds));
-  DCHECK(!view->NeedsLayout());
-
-  if (canvas) {
-    builder.EndRecording(*canvas);
-    return nullptr;
-  }
+  PaintRecordBuilder builder(nullptr, nullptr, paint_controller_.get());
+  view->PaintOutsideOfLifecycle(builder.Context(), kGlobalPaintNormalPhase);
   return builder.EndRecording();
 }
 
@@ -545,7 +551,7 @@ void SVGImage::DrawInternal(cc::PaintCanvas* canvas,
     canvas->save();
     canvas->clipRect(EnclosingIntRect(dst_rect));
     canvas->concat(AffineTransformToSkMatrix(transform));
-    PaintRecordForCurrentFrame(EnclosingIntRect(src_rect), url, canvas);
+    canvas->drawPicture(PaintRecordForCurrentFrame(url));
     canvas->restore();
   }
 
@@ -609,7 +615,7 @@ bool SVGImage::MaybeAnimated() {
   if (!root_element)
     return false;
   return root_element->TimeContainer()->HasAnimations() ||
-         ToLocalFrame(page_->MainFrame())
+         To<LocalFrame>(page_->MainFrame())
              ->GetDocument()
              ->Timeline()
              .HasPendingUpdates();
@@ -643,12 +649,12 @@ void SVGImage::ServiceAnimations(
   // actually generating painted output, not only for performance reasons,
   // but to preserve correct coherence of the cache of the output with
   // the needsRepaint bits of the PaintLayers in the image.
-  LocalFrameView* frame_view = ToLocalFrame(page_->MainFrame())->View();
+  LocalFrameView* frame_view = To<LocalFrame>(page_->MainFrame())->View();
   frame_view->UpdateAllLifecyclePhasesExceptPaint();
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    // For SPv2/BGPT we run UpdateAnimations after the paint phase, but per the
+    // For CAP/BGPT we run UpdateAnimations after the paint phase, but per the
     // above comment, we don't want to run lifecycle through to paint for SVG
     // images. Since we know SVG images never have composited animations we can
     // update animations directly without worrying about including
@@ -658,14 +664,6 @@ void SVGImage::ServiceAnimations(
     DocumentAnimations::UpdateAnimations(
         frame_view->GetLayoutView()->GetDocument(),
         DocumentLifecycle::kLayoutClean, composited_element_ids);
-
-    // Notify observers for image change. In SPv1 this is done through window
-    // rect invalidation during paint invalidation of the SVGImage's frame view.
-    auto* layer = frame_view->GetLayoutView()->Layer();
-    if (layer->NeedsRepaint()) {
-      if (auto* observer = GetImageObserver())
-        observer->Changed(this);
-    }
   }
 }
 
@@ -710,7 +708,7 @@ void SVGImage::LoadCompleted() {
       // Document::ImplicitClose(), we defer AsyncLoadCompleted() to avoid
       // potential bugs and timing dependencies around ImplicitClose() and
       // to make LoadEventFinished() true when AsyncLoadCompleted() is called.
-      ToLocalFrame(page_->MainFrame())
+      To<LocalFrame>(page_->MainFrame())
           ->GetTaskRunner(TaskType::kInternalLoading)
           ->PostTask(FROM_HERE, WTF::Bind(&SVGImage::NotifyAsyncLoadCompleted,
                                           scoped_refptr<SVGImage>(this)));
@@ -751,7 +749,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
 
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
-  chrome_client_ = SVGImageChromeClient::Create(this);
+  chrome_client_ = MakeGarbageCollected<SVGImageChromeClient>(this);
   page_clients.chrome_client = chrome_client_.Get();
 
   // FIXME: If this SVG ends up loading itself, we might leak the world.
@@ -763,7 +761,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   Page* page;
   {
     TRACE_EVENT0("blink", "SVGImage::dataChanged::createPage");
-    page = Page::Create(page_clients);
+    page = Page::CreateNonOrdinary(page_clients);
     page->GetSettings().SetScriptEnabled(false);
     page->GetSettings().SetPluginsEnabled(false);
 
@@ -797,7 +795,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   }
 
   FrameLoader& loader = frame->Loader();
-  loader.ForceSandboxFlags(kSandboxAll);
+  loader.ForceSandboxFlags(WebSandboxFlags::kAll);
 
   // SVG Images will always synthesize a viewBox, if it's not available, and
   // thus never see scrollbars.

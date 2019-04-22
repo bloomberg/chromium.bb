@@ -137,6 +137,7 @@ def prefixName (prefix, name):
 	name = name.replace("TEXTURE_LOD", "TEXTURE_LOD_")
 	name = name.replace("VIEWPORT_W", "VIEWPORT_W_")
 	name = name.replace("_IDPROPERTIES", "_ID_PROPERTIES")
+	name = name.replace("PHYSICAL_DEVICE_FLOAT_16_INT_8_FEATURES", "PHYSICAL_DEVICE_FLOAT16_INT8_FEATURES")
 
 	return prefix + name
 
@@ -588,6 +589,9 @@ def parseDefinitions (extensionName, src):
 	def skipDefinition (extensionName, definition):
 		if extensionName == None:
 			return True
+		# SPEC_VERSION enums
+		if definition[0].startswith(extensionName.upper()) and definition[1].isdigit():
+			return False
 		if definition[0].startswith(extensionName.upper()):
 			return True
 		if definition[1].isdigit():

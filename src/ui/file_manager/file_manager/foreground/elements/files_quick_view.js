@@ -36,7 +36,6 @@ var FilesQuickView = Polymer({
   },
 
   listeners: {
-    'close': 'clear',
     'files-safe-media-tap-outside': 'close',
   },
 
@@ -46,7 +45,7 @@ var FilesQuickView = Polymer({
    * @param {!Event} e
    */
   applyTextCss: function(e) {
-    var webview = /** @type {WebView} */ (e.target);
+    const webview = /** @type {WebView} */ (e.target);
     webview.insertCSS(
         {'file': 'foreground/elements/files_safe_text_webview_content.css'});
   },
@@ -85,8 +84,9 @@ var FilesQuickView = Polymer({
 
   // Closes the dialog.
   close: function() {
-    if (this.isOpened())
+    if (this.isOpened()) {
       this.$.dialog.close();
+    }
   },
 
   /**
@@ -123,10 +123,11 @@ var FilesQuickView = Polymer({
    * @private
    */
   onContentPanelTap_: function(event) {
-    var target = event.detail.sourceEvent.target;
+    let target = event.detail.sourceEvent.target;
     while (target) {
-      if (target.classList.contains('no-close-on-click'))
+      if (target.classList.contains('no-close-on-click')) {
         return;
+      }
       target = target.parentElement;
     }
     this.close();
@@ -181,7 +182,7 @@ var FilesQuickView = Polymer({
    * @private
    */
   audioUrl_: function(contentUrl, type) {
-    return this.isAudio_(type) ? contentUrl : "";
+    return this.isAudio_(type) ? contentUrl : '';
   },
 
   /**
@@ -195,4 +196,18 @@ var FilesQuickView = Polymer({
         !this.isAudio_(type) && !this.isHtml_(type, subtype) && !browsable;
   },
 
+  /** @private */
+  onDialogClose_: function(e) {
+    assert(e.target === this.$.dialog);
+
+    this.clear();
+
+    // TODO(dpapad): This is necessary to make the code work both for Polymer 1
+    // and Polymer 2. Remove once migration to Polymer 2 is completed.
+    e.stopPropagation();
+
+    // Catch and re-fire the 'close' event such that it bubbles across Shadow
+    // DOM v1.
+    this.fire('close');
+  }
 });

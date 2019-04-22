@@ -82,8 +82,9 @@ void HistoryBackendDBBaseTest::TearDown() {
 }
 
 void HistoryBackendDBBaseTest::CreateBackendAndDatabase() {
-  backend_ = new HistoryBackend(new BackendDelegate(this), nullptr,
-                                base::ThreadTaskRunnerHandle::Get());
+  backend_ = base::MakeRefCounted<HistoryBackend>(
+      std::make_unique<BackendDelegate>(this), nullptr,
+      base::ThreadTaskRunnerHandle::Get());
   backend_->Init(false,
                  TestHistoryDatabaseParamsForPath(history_dir_));
   db_ = backend_->db_.get();
@@ -92,8 +93,9 @@ void HistoryBackendDBBaseTest::CreateBackendAndDatabase() {
 }
 
 void HistoryBackendDBBaseTest::CreateBackendAndDatabaseAllowFail() {
-  backend_ = new HistoryBackend(new BackendDelegate(this), nullptr,
-                                base::ThreadTaskRunnerHandle::Get());
+  backend_ = base::MakeRefCounted<HistoryBackend>(
+      std::make_unique<BackendDelegate>(this), nullptr,
+      base::ThreadTaskRunnerHandle::Get());
   backend_->Init(false,
                  TestHistoryDatabaseParamsForPath(history_dir_));
   db_ = backend_->db_.get();

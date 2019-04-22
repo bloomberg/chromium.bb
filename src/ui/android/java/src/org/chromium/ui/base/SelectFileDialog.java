@@ -19,7 +19,7 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -29,7 +29,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.ui.ContactsPickerListener;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.R;
 import org.chromium.ui.UiUtils;
@@ -46,8 +47,7 @@ import java.util.concurrent.TimeUnit;
  * a set of accepted file types. The path of the selected file is passed to the native dialog.
  */
 @JNINamespace("ui")
-public class SelectFileDialog
-        implements WindowAndroid.IntentCallback, ContactsPickerListener, PhotoPickerListener {
+public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPickerListener {
     private static final String TAG = "SelectFileDialog";
     private static final String IMAGE_TYPE = "image/";
     private static final String VIDEO_TYPE = "video/";
@@ -155,12 +155,13 @@ public class SelectFileDialog
                         new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION));
 
         List<String> missingPermissions = new ArrayList<>();
-        if (shouldUseContactsPicker()) {
-            if (!window.hasPermission(Manifest.permission.READ_CONTACTS)) {
-                missingPermissions.add(Manifest.permission.READ_CONTACTS);
-            }
-        } else if (shouldUsePhotoPicker()) {
-            if (!window.hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+        if (shouldUsePhotoPicker()) {
+            if (BuildInfo.isAtLeastQ()) {
+                String newImagePermission = "android.permission.READ_MEDIA_IMAGES";
+                if (!window.hasPermission(newImagePermission)) {
+                    missingPermissions.add(newImagePermission);
+                }
+            } else if (!window.hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 missingPermissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
             }
         } else {
@@ -241,15 +242,9 @@ public class SelectFileDialog
         }
 
         Activity activity = mWindowAndroid.getActivity().get();
-        List<String> imageMimeTypes = convertToImageMimeTypes(mFileTypes);
-
-        // Use the new contacts picker, if available.
-        if (shouldUseContactsPicker()
-                && UiUtils.showContactsPicker(activity, this, mAllowMultiple, mFileTypes)) {
-            return;
-        }
 
         // Use the new photo picker, if available.
+        List<String> imageMimeTypes = convertToImageMimeTypes(mFileTypes);
         if (shouldUsePhotoPicker()
                 && UiUtils.showPhotoPicker(activity, this, mAllowMultiple, imageMimeTypes)) {
             return;
@@ -317,19 +312,6 @@ public class SelectFileDialog
     }
 
     /**
-     * Determines whether the contacts picker should be used for this select file request.  To be
-     * applicable for the contacts picker, the following must be true:
-     *   1.) Only text/json+contacts must be specicied as an accepted type.
-     *   2.) The contacts picker is supported by the embedder (i.e. Chrome).
-     *   3.) There is a valid Android Activity associated with the file request.
-     */
-    private boolean shouldUseContactsPicker() {
-        if (mFileTypes.size() != 1) return false;
-        if (!mFileTypes.get(0).equals("text/json+contacts")) return false;
-        return UiUtils.shouldShowContactsPicker() && mWindowAndroid.getActivity().get() != null;
-    }
-
-    /**
      * Converts a list of extensions and Mime types to a list of de-duped Mime types containing
      * image types only. If the input list contains a non-image type, then null is returned.
      * @param fileTypes the list of filetypes (extensions and Mime types) to convert.
@@ -373,7 +355,7 @@ public class SelectFileDialog
     }
 
     @Override
-    public void onPhotoPickerUserAction(@PhotoPickerAction int action, String[] photos) {
+    public void onPhotoPickerUserAction(@PhotoPickerAction int action, Uri[] photos) {
         switch (action) {
             case PhotoPickerAction.CANCEL:
                 onFileNotSelected();
@@ -385,21 +367,9 @@ public class SelectFileDialog
                     return;
                 }
 
-                if (photos.length == 1) {
-                    GetDisplayNameTask task =
-                            new GetDisplayNameTask(ContextUtils.getApplicationContext(), false,
-                                    new Uri[] {Uri.parse(photos[0])});
-                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                    return;
-                } else {
-                    Uri[] filePathArray = new Uri[photos.length];
-                    for (int i = 0; i < photos.length; ++i) {
-                        filePathArray[i] = Uri.parse(photos[i]);
-                    }
-                    GetDisplayNameTask task = new GetDisplayNameTask(
-                            ContextUtils.getApplicationContext(), true, filePathArray);
-                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                }
+                GetDisplayNameTask task = new GetDisplayNameTask(
+                        ContextUtils.getApplicationContext(), photos.length > 1, photos);
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 break;
 
             case PhotoPickerAction.LAUNCH_GALLERY:
@@ -430,23 +400,6 @@ public class SelectFileDialog
         }
     }
 
-    @Override
-    public void onContactsPickerUserAction(@ContactsPickerAction int action, String contacts) {
-        switch (action) {
-            case ContactsPickerAction.CANCEL:
-                onFileNotSelected();
-                break;
-
-            case ContactsPickerAction.CONTACTS_SELECTED:
-                nativeOnContactsSelected(mNativeSelectFileDialog, contacts);
-                break;
-
-            case ContactsPickerAction.SELECT_ALL:
-            case ContactsPickerAction.UNDO_SELECT_ALL:
-                break;
-        }
-    }
-
     private class GetCameraIntentTask extends AsyncTask<Uri> {
         private Boolean mDirectToCamera;
         private WindowAndroid mWindow;
@@ -463,8 +416,7 @@ public class SelectFileDialog
         public Uri doInBackground() {
             try {
                 Context context = ContextUtils.getApplicationContext();
-                return ApiCompatibilityUtils.getUriForImageCaptureFile(
-                        getFileForImageCapture(context));
+                return ContentUriUtils.getContentUriFromFile(getFileForImageCapture(context));
             } catch (IOException e) {
                 Log.e(TAG, "Cannot retrieve content uri from file", e);
                 return null;
@@ -762,24 +714,21 @@ public class SelectFileDialog
      * Clears all captured camera files.
      */
     public static void clearCapturedCameraFiles() {
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    File path = UiUtils.getDirectoryForImageCapture(
-                            ContextUtils.getApplicationContext());
-                    if (!path.isDirectory()) return;
-                    File[] files = path.listFiles();
-                    if (files == null) return;
-                    long now = System.currentTimeMillis();
-                    for (File file : files) {
-                        if (now - file.lastModified() > DURATION_BEFORE_FILE_CLEAN_UP_IN_MILLIS) {
-                            if (!file.delete()) Log.e(TAG, "Failed to delete: " + file);
-                        }
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            try {
+                File path =
+                        UiUtils.getDirectoryForImageCapture(ContextUtils.getApplicationContext());
+                if (!path.isDirectory()) return;
+                File[] files = path.listFiles();
+                if (files == null) return;
+                long now = System.currentTimeMillis();
+                for (File file : files) {
+                    if (now - file.lastModified() > DURATION_BEFORE_FILE_CLEAN_UP_IN_MILLIS) {
+                        if (!file.delete()) Log.e(TAG, "Failed to delete: " + file);
                     }
-                } catch (IOException e) {
-                    Log.w(TAG, "Failed to delete captured camera files.", e);
                 }
+            } catch (IOException e) {
+                Log.w(TAG, "Failed to delete captured camera files.", e);
             }
         });
     }

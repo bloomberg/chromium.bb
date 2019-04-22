@@ -10,10 +10,11 @@
       .layer {
           transform: translateZ(10px);
           opacity: 0.8;
+          background: blue;
       }
       #frame {
-        width: 200px;
-        height: 200px;
+          width: 200px;
+          height: 200px;
       }
       </style>
       <div id="a" style="width: 200px; height: 200px" class="layer">
@@ -34,6 +35,8 @@
           var b4 = document.createElement("div");
           b4.id = "b4";
           b4.className = "layer";
+          b4.style.width = "77px";
+          b4.style.height = "88px";
           document.getElementById("a").appendChild(b4);
       }
 

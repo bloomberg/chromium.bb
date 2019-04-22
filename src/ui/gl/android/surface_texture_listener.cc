@@ -4,6 +4,8 @@
 
 #include "ui/gl/android/surface_texture_listener.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -13,9 +15,9 @@ using base::android::JavaParamRef;
 
 namespace gl {
 
-SurfaceTextureListener::SurfaceTextureListener(const base::Closure& callback,
+SurfaceTextureListener::SurfaceTextureListener(base::RepeatingClosure callback,
                                                bool use_any_thread)
-    : callback_(callback),
+    : callback_(std::move(callback)),
       browser_loop_(base::ThreadTaskRunnerHandle::Get()),
       use_any_thread_(use_any_thread) {}
 

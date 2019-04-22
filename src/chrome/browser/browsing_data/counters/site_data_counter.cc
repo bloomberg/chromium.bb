@@ -4,11 +4,12 @@
 
 #include "chrome/browser/browsing_data/counters/site_data_counter.h"
 
+#include "base/bind.h"
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/counters/site_data_counting_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/pref_names.h"
+#include "components/sync/driver/sync_service.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -40,10 +41,11 @@ void SiteDataCounter::Count() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   base::Time begin = GetPeriodStart();
   auto done_callback =
-      base::Bind(&SiteDataCounter::Done, weak_ptr_factory_.GetWeakPtr());
+      base::BindOnce(&SiteDataCounter::Done, weak_ptr_factory_.GetWeakPtr());
   // Use a helper class that owns itself to avoid issues when SiteDataCounter is
   // deleted before counting finished.
-  auto* helper = new SiteDataCountingHelper(profile_, begin, done_callback);
+  auto* helper =
+      new SiteDataCountingHelper(profile_, begin, std::move(done_callback));
   helper->CountAndDestroySelfWhenFinished();
 }
 

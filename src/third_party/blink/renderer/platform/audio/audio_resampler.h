@@ -27,11 +27,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_RESAMPLER_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/audio_resampler_kernel.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -42,7 +43,6 @@ namespace blink {
 
 class PLATFORM_EXPORT AudioResampler {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(AudioResampler);
 
  public:
   AudioResampler();
@@ -70,6 +70,8 @@ class PLATFORM_EXPORT AudioResampler {
   double rate_;
   Vector<std::unique_ptr<AudioResamplerKernel>> kernels_;
   scoped_refptr<AudioBus> source_bus_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioResampler);
 };
 
 }  // namespace blink

@@ -15,9 +15,9 @@
 #include "rtc_base/checks.h"
 #include "rtc_base/flags.h"
 #include "rtc_base/numerics/safe_conversions.h"
-#include "test/testsupport/fileutils.h"
+#include "test/testsupport/file_utils.h"
 
-using testing::InitGoogleTest;
+using ::testing::InitGoogleTest;
 
 namespace webrtc {
 namespace test {
@@ -35,7 +35,7 @@ class NetEqIlbcQualityTest : public NetEqQualityTest {
       : NetEqQualityTest(FLAG_frame_size_ms,
                          kInputSampleRateKhz,
                          kOutputSampleRateKhz,
-                         NetEqDecoder::kDecoderILBC) {
+                         SdpAudioFormat("ilbc", 8000, 1)) {
     // Flag validation
     RTC_CHECK(FLAG_frame_size_ms == 20 || FLAG_frame_size_ms == 30 ||
               FLAG_frame_size_ms == 40 || FLAG_frame_size_ms == 60)

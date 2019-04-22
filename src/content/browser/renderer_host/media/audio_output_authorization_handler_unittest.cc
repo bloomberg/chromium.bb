@@ -166,18 +166,21 @@ class AudioOutputAuthorizationHandlerTest : public RenderViewHostTestHarness {
   void GetRawNondefaultIdOnIOThread(std::string* out) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-    devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+    devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
 
     media_stream_manager_->media_devices_manager()->EnumerateDevices(
         devices_to_enumerate,
         base::BindOnce(
             [](std::string* out, const MediaDeviceEnumeration& result) {
               // Index 0 is default, so use 1.
-              CHECK(result[MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT]
-                        .size() > 1)
+              CHECK(
+                  result[blink::MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT]
+                      .size() > 1)
                   << "Expected to have a nondefault device.";
-              *out = result[MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT][1]
-                         .device_id;
+              *out =
+                  result[blink::MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT]
+                        [1]
+                            .device_id;
             },
             base::Unretained(out)));
   }

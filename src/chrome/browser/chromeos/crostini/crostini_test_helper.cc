@@ -7,28 +7,41 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 
 using vm_tools::apps::App;
 using vm_tools::apps::ApplicationList;
 
 namespace crostini {
 
-CrostiniTestHelper::CrostiniTestHelper(Profile* profile)
-    : profile_(profile),
-      registry_service_(
-          crostini::CrostiniRegistryServiceFactory::GetForProfile(profile)) {
-  SetCrostiniUIAllowedForTesting(true);
-  EnableCrostini(profile);
+CrostiniTestHelper::CrostiniTestHelper(Profile* profile, bool enable_crostini)
+    : profile_(profile) {
+  scoped_feature_list_.InitAndEnableFeature(features::kCrostini);
+
+  chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
+  chromeos::MockUserManager* mock_user_manager =
+      new testing::NiceMock<chromeos::MockUserManager>();
+  mock_user_manager->SetActiveUser(
+      AccountId::FromUserEmail("test@example.com"));
+  scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+      base::WrapUnique(mock_user_manager));
+
+  if (enable_crostini)
+    EnableCrostini(profile);
+
   current_apps_.set_vm_name(kCrostiniDefaultVmName);
   current_apps_.set_container_name(kCrostiniDefaultContainerName);
 }
 
 CrostiniTestHelper::~CrostiniTestHelper() {
+  chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
   DisableCrostini(profile_);
-  SetCrostiniUIAllowedForTesting(false);
 }
 
 void CrostiniTestHelper::SetupDummyApps() {
@@ -57,6 +70,18 @@ void CrostiniTestHelper::RemoveApp(int i) {
   auto* apps = current_apps_.mutable_apps();
   apps->erase(apps->begin() + i);
   UpdateRegistry();
+}
+
+void CrostiniTestHelper::UpdateAppKeywords(
+    vm_tools::apps::App& app,
+    const std::map<std::string, std::set<std::string>>& keywords) {
+  for (const auto& keywords_entry : keywords) {
+    auto* strings_with_locale = app.mutable_keywords()->add_values();
+    strings_with_locale->set_locale(keywords_entry.first);
+    for (const auto& curr_keyword : keywords_entry.second) {
+      strings_with_locale->add_value(curr_keyword);
+    }
+  }
 }
 
 // static
@@ -103,7 +128,8 @@ ApplicationList CrostiniTestHelper::BasicAppList(
 }
 
 void CrostiniTestHelper::UpdateRegistry() {
-  registry_service_->UpdateApplicationList(current_apps_);
+  crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_)
+      ->UpdateApplicationList(current_apps_);
 }
 
 }  // namespace crostini

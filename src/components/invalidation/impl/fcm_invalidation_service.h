@@ -6,7 +6,7 @@
 #define COMPONENTS_INVALIDATION_IMPL_FCM_INVALIDATION_SERVICE_H_
 
 #include "base/macros.h"
-#include "base/timer/timer.h"
+#include "base/time/time.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/invalidation/impl/invalidation_logger.h"
 #include "components/invalidation/impl/invalidator_registrar_with_memory.h"
@@ -82,6 +82,24 @@ class FCMInvalidationService : public InvalidationService,
   void InitForTest(syncer::Invalidator* invalidator);
 
  private:
+  struct Diagnostics {
+    Diagnostics();
+
+    // Collect all the internal variables in a single readable dictionary.
+    base::DictionaryValue CollectDebugData() const;
+
+    base::Time active_account_login;
+    base::Time active_account_token_updated;
+    base::Time active_account_logged_out;
+    base::Time instance_id_requested;
+    base::Time instance_id_received;
+    base::Time service_was_stopped;
+    base::Time service_was_started;
+    bool was_already_started_on_login = false;
+    bool was_ready_to_start_on_login = false;
+    std::string active_account_id;
+  };
+
   bool IsReadyToStart();
   bool IsStarted() const;
 
@@ -111,6 +129,7 @@ class FCMInvalidationService : public InvalidationService,
   syncer::ParseJSONCallback parse_json_;
   network::mojom::URLLoaderFactory* loader_factory_;
   bool update_was_requested_ = false;
+  Diagnostics diagnostic_info_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

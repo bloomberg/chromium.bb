@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /** @typedef {function(!Array<string>):!Promise} */
-var LaunchHandler;
+let LaunchHandler;
 
 /**
  * Root class of the background page.
@@ -18,8 +18,8 @@ function BackgroundBase() {
   this.dialogs = {};
 
   // Initializes the strings. This needs for the volume manager.
-  this.initializationPromise_ = new Promise(function(fulfill, reject) {
-    chrome.fileManagerPrivate.getStrings(function(stringData) {
+  this.initializationPromise_ = new Promise((fulfill, reject) => {
+    chrome.fileManagerPrivate.getStrings(stringData => {
       if (chrome.runtime.lastError) {
         console.error(chrome.runtime.lastError.message);
         return;
@@ -45,31 +45,34 @@ function BackgroundBase() {
  */
 BackgroundBase.prototype.onLaunched_ = function(launchData) {
   // Skip if files are not selected.
-  if (!launchData || !launchData.items || launchData.items.length == 0)
+  if (!launchData || !launchData.items || launchData.items.length == 0) {
     return;
+  }
 
-  this.initializationPromise_.then(function() {
-    // Volume list needs to be initialized (more precisely,
-    // chrome.fileSystem.requestFileSystem needs to be called to grant access)
-    // before resolveIsolatedEntries().
-    return volumeManagerFactory.getInstance();
-  }).then(function() {
-    var isolatedEntries = launchData.items.map(function(item) {
-      return item.entry;
-    });
+  this.initializationPromise_
+      .then(() => {
+        // Volume list needs to be initialized (more precisely,
+        // chrome.fileSystem.requestFileSystem needs to be called to grant
+        // access) before resolveIsolatedEntries().
+        return volumeManagerFactory.getInstance();
+      })
+      .then(() => {
+        const isolatedEntries = launchData.items.map(item => {
+          return item.entry;
+        });
 
-    // Obtains entries in non-isolated file systems.
-    // The entries in launchData are stored in the isolated file system.
-    // We need to map the isolated entries to the normal entries to retrieve
-    // their parent directory.
-    chrome.fileManagerPrivate.resolveIsolatedEntries(
-        isolatedEntries,
-        function(externalEntries) {
-          var urls = util.entriesToURLs(externalEntries);
-          if (this.launchHandler_)
-            this.launchHandler_(urls);
-        }.bind(this));
-  }.bind(this));
+        // Obtains entries in non-isolated file systems.
+        // The entries in launchData are stored in the isolated file system.
+        // We need to map the isolated entries to the normal entries to retrieve
+        // their parent directory.
+        chrome.fileManagerPrivate.resolveIsolatedEntries(
+            isolatedEntries, externalEntries => {
+              const urls = util.entriesToURLs(externalEntries);
+              if (this.launchHandler_) {
+                this.launchHandler_(urls);
+              }
+            });
+      });
 };
 
 /**
@@ -83,5 +86,4 @@ BackgroundBase.prototype.setLaunchHandler = function(handler) {
 /**
  * Called when an app is restarted.
  */
-BackgroundBase.prototype.onRestarted_ = function() {
-};
+BackgroundBase.prototype.onRestarted_ = () => {};

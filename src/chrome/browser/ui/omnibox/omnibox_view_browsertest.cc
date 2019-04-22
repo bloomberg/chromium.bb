@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -336,7 +336,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   void SetupHistory() {
     // Add enough history pages containing |kSearchText| to trigger
     // open history page url in autocomplete result.
-    for (size_t i = 0; i < arraysize(kHistoryEntries); i++) {
+    for (size_t i = 0; i < base::size(kHistoryEntries); i++) {
       // Add everything in order of time. We don't want to have a time that
       // is "right now" or it will nondeterministically appear in the results.
       base::Time t = base::Time::Now() - base::TimeDelta::FromHours(i + 1);
@@ -345,7 +345,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
   }
 
   void SetupHostResolver() {
-    for (size_t i = 0; i < arraysize(kBlockedHostnames); ++i)
+    for (size_t i = 0; i < base::size(kBlockedHostnames); ++i)
       host_resolver()->AddSimulatedFailure(kBlockedHostnames[i]);
   }
 
@@ -405,7 +405,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
 };
 
 // Test if ctrl-* accelerators are workable in omnibox.
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BrowserAccelerators) {
+// Flaky. See https://crbug.com/751031.
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_BrowserAccelerators) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
@@ -536,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BackspaceInKeywordMode) {
 
   // Should stay in keyword mode while deleting search text by pressing
   // backspace.
-  for (size_t i = 0; i < arraysize(kSearchText) - 1; ++i) {
+  for (size_t i = 0; i < base::size(kSearchText) - 1; ++i) {
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
     ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
     ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(omnibox_view->model()->keyword()));
@@ -559,27 +560,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BackspaceInKeywordMode) {
   ASSERT_EQ(base::string16(), omnibox_view->model()->keyword());
   ASSERT_EQ(std::string(kSearchKeyword) + ' ' + kSearchText,
             UTF16ToUTF8(omnibox_view->GetText()));
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Escape) {
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIHistoryURL));
-  chrome::FocusLocationBar(browser());
-
-  OmniboxView* omnibox_view = NULL;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-
-  base::string16 old_text = omnibox_view->GetText();
-  EXPECT_FALSE(old_text.empty());
-  EXPECT_TRUE(omnibox_view->IsSelectAll());
-
-  // Delete all text in omnibox.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
-  EXPECT_TRUE(omnibox_view->GetText().empty());
-
-  // Escape shall revert the text in omnibox.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_ESCAPE, 0));
-  EXPECT_EQ(old_text, omnibox_view->GetText());
-  EXPECT_TRUE(omnibox_view->IsSelectAll());
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DesiredTLD) {
@@ -669,7 +649,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, ClearUserTextAfterBackgroundCommit) {
 
   // Switch back to the first tab.  The user text should be cleared, and the
   // omnibox should have the new URL.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(ASCIIToUTF16(url2.spec()), omnibox_view->GetText());
 }
 
@@ -723,8 +704,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EscapeToDefaultMatch) {
 
   base::string16 old_text = omnibox_view->GetText();
 
-  // Make sure inline autocomplete is triggerred.
-  EXPECT_GT(old_text.length(), arraysize(kInlineAutocompleteText) - 1);
+  // Make sure inline autocomplete is triggered.
+  EXPECT_GT(old_text.length(), base::size(kInlineAutocompleteText) - 1);
 
   size_t old_selected_line = popup_model->selected_line();
   EXPECT_EQ(0U, old_selected_line);
@@ -744,6 +725,63 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EscapeToDefaultMatch) {
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_ESCAPE, 0));
   EXPECT_EQ(old_text, omnibox_view->GetText());
   EXPECT_EQ(old_selected_line, popup_model->selected_line());
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
+                       RevertDefaultRevertInlineTextWhenSelectingDefaultMatch) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+  OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
+  ASSERT_TRUE(popup_model);
+
+  // Input something to trigger inline autocomplete.
+  ASSERT_NO_FATAL_FAILURE(SendKeySequence(kInlineAutocompleteTextKeys));
+  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+  ASSERT_TRUE(popup_model->IsOpen());
+
+  base::string16 old_text = omnibox_view->GetText();
+
+  // Make sure inline autocomplete is triggered.
+  EXPECT_GT(old_text.length(), base::size(kInlineAutocompleteText) - 1);
+
+  size_t old_selected_line = popup_model->selected_line();
+  EXPECT_EQ(0U, old_selected_line);
+
+  // Move to another line with different text.
+  size_t size = popup_model->result().size();
+  while (popup_model->selected_line() < size - 1) {
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DOWN, 0));
+    ASSERT_NE(old_selected_line, popup_model->selected_line());
+    if (old_text != omnibox_view->GetText())
+      break;
+  }
+
+  EXPECT_NE(old_text, omnibox_view->GetText());
+
+  // Move back to the first line
+  while (popup_model->selected_line() > 0)
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_UP, 0));
+
+  EXPECT_EQ(old_text, omnibox_view->GetText());
+  EXPECT_EQ(old_selected_line, popup_model->selected_line());
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
+                       RendererInitiatedFocusPreservesUserText) {
+  OmniboxView* omnibox_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+
+  // Type a single character.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, 0));
+  EXPECT_EQ(base::ASCIIToUTF16("a"), omnibox_view->GetText());
+
+  // Simulate a renderer-initated focus event.
+  browser()->SetFocusToLocationBar();
+
+  // Type an additional character and verify that we didn't clobber the
+  // character we already typed.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_B, 0));
+  EXPECT_EQ(base::ASCIIToUTF16("ab"), omnibox_view->GetText());
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
@@ -897,7 +935,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SearchDisabledDontCrashOnQuestionMark) {
   ASSERT_EQ(ASCIIToUTF16("?"), omnibox_view->GetText());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AcceptKeywordBySpace) {
+// Flaky on TSAN. https://crbug.com/911614
+#if defined(THREAD_SANITIZER)
+#define MAYBE_AcceptKeywordBySpace DISABLED_AcceptKeywordBySpace
+#else
+#define MAYBE_AcceptKeywordBySpace AcceptKeywordBySpace
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
@@ -1063,12 +1107,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AcceptKeywordBySpace) {
   omnibox_view->model()->OnUpOrDownKeyPressed(1);
   omnibox_view->model()->OnUpOrDownKeyPressed(-1);
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
   ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
   ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
@@ -1155,7 +1193,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, NonSubstitutingKeywordTest) {
             popup_model->result().default_match()->destination_url.spec());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DeleteItem) {
+// Flaky. See https://crbug.com/751031.
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_DeleteItem) {
   // Disable the search provider, to make sure the popup contains only history
   // items.
   TemplateURLService* model =
@@ -1233,7 +1272,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DeleteItem) {
 #if 0
   // TODO(mrossetti): http://crbug.com/82335
   // Delete the default item.
-  popup_model->TryDeletingCurrentItem();
+  popup_model->TryDeletingLine(popup_model->selected_line());
   ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
   // The selected line shouldn't be changed, but the default item should have
   // been changed.
@@ -1399,7 +1438,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PersistKeywordModeOnTabSwitch) {
   chrome::NewTab(browser());
 
   // Switch back to the first tab.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
 
   // Make sure we're still in keyword mode.
   ASSERT_TRUE(omnibox_view->model()->is_keyword_selected());
@@ -1410,8 +1450,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PersistKeywordModeOnTabSwitch) {
   ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
 
   // Switch to the second tab and back to the first.
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
 
   // Make sure we're still in keyword mode.
   ASSERT_TRUE(omnibox_view->model()->is_keyword_selected());
@@ -1433,8 +1475,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
 
   base::string16 old_text = omnibox_view->GetText();
 
-  // Make sure inline autocomplete is triggerred.
-  EXPECT_GT(old_text.length(), arraysize(kInlineAutocompleteText) - 1);
+  // Make sure inline autocomplete is triggered.
+  EXPECT_GT(old_text.length(), base::size(kInlineAutocompleteText) - 1);
 
   // Press ctrl key.
   omnibox_view->model()->OnControlKeyChanged(true);
@@ -1596,138 +1638,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Paste) {
   // TODO(msw): Test that AltGr+V does not paste.
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {
-  // Set permanent text thus making sure that omnibox treats 'google.com'
-  // as URL (not as ordinary user input).
-  OmniboxView* omnibox_view = NULL;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  SetTestToolbarPermanentText(ASCIIToUTF16("http://www.google.com"));
-
-  const char* target_url = "http://www.google.com/calendar";
-  omnibox_view->SetUserText(ASCIIToUTF16(target_url));
-
-  // Location bar must have focus.
-  chrome::FocusLocationBar(browser());
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-
-  // Select full URL and copy it to clipboard. General text and html should
-  // be available.
-  omnibox_view->SelectAll(true);
-  EXPECT_TRUE(omnibox_view->IsSelectAll());
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
-  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_COPY));
-  EXPECT_EQ(ASCIIToUTF16(target_url), omnibox_view->GetText());
-  EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::Clipboard::GetPlainTextFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
-
-  // Make sure HTML format isn't written. See
-  // BookmarkNodeData::WriteToClipboard() for details.
-  EXPECT_FALSE(clipboard->IsFormatAvailable(
-      ui::Clipboard::GetHtmlFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
-
-// Windows clipboard only supports text URLs.
-// Mac clipboard not reporting URL format available for some reason.
-// crbug.com/751031
-#if defined(OS_LINUX)
-  EXPECT_TRUE(clipboard->IsFormatAvailable(ui::Clipboard::GetUrlFormatType(),
-                                           ui::CLIPBOARD_TYPE_COPY_PASTE));
-#endif
-
-  std::string url;
-  clipboard->ReadAsciiText(ui::CLIPBOARD_TYPE_COPY_PASTE, &url);
-  EXPECT_EQ(target_url, url);
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CutURLToClipboard) {
-  // Set permanent text thus making sure that omnibox treats 'google.com'
-  // as URL (not as ordinary user input).
-  OmniboxView* omnibox_view = NULL;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  SetTestToolbarPermanentText(ASCIIToUTF16("http://www.google.com"));
-
-  const char* target_url = "http://www.google.com/calendar";
-  omnibox_view->SetUserText(ASCIIToUTF16(target_url));
-
-  // Location bar must have focus.
-  chrome::FocusLocationBar(browser());
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-
-  // Select full URL and cut it. General text and html should be available
-  // in the clipboard.
-  omnibox_view->SelectAll(true);
-  EXPECT_TRUE(omnibox_view->IsSelectAll());
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
-  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_CUT));
-  EXPECT_EQ(base::string16(), omnibox_view->GetText());
-  EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::Clipboard::GetPlainTextFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
-
-  // Make sure HTML format isn't written. See
-  // BookmarkNodeData::WriteToClipboard() for details.
-  EXPECT_FALSE(clipboard->IsFormatAvailable(
-      ui::Clipboard::GetHtmlFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
-
-// Windows clipboard only supports text URLs.
-// Mac clipboard not reporting URL format available for some reason.
-// crbug.com/751031
-#if defined(OS_LINUX)
-  EXPECT_TRUE(clipboard->IsFormatAvailable(ui::Clipboard::GetUrlFormatType(),
-                                           ui::CLIPBOARD_TYPE_COPY_PASTE));
-#endif
-
-  std::string url;
-  clipboard->ReadAsciiText(ui::CLIPBOARD_TYPE_COPY_PASTE, &url);
-  EXPECT_EQ(target_url, url);
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyTextToClipboard) {
-  OmniboxView* omnibox_view = NULL;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  const char* target_text = "foo";
-  omnibox_view->SetUserText(ASCIIToUTF16(target_text));
-
-  // Location bar must have focus.
-  chrome::FocusLocationBar(browser());
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-
-  // Select full text and copy it to the clipboard.
-  omnibox_view->SelectAll(true);
-  EXPECT_TRUE(omnibox_view->IsSelectAll());
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
-  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_COPY));
-  EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::Clipboard::GetPlainTextFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
-  EXPECT_FALSE(clipboard->IsFormatAvailable(
-      ui::Clipboard::GetHtmlFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
-  EXPECT_EQ(ASCIIToUTF16(target_text), omnibox_view->GetText());
-}
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CutTextToClipboard) {
-  OmniboxView* omnibox_view = NULL;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  const char* target_text = "foo";
-  omnibox_view->SetUserText(ASCIIToUTF16(target_text));
-
-  // Location bar must have focus.
-  chrome::FocusLocationBar(browser());
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-
-  // Select full text and cut it to the clipboard.
-  omnibox_view->SelectAll(true);
-  EXPECT_TRUE(omnibox_view->IsSelectAll());
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
-  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_CUT));
-  EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::Clipboard::GetPlainTextFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
-  EXPECT_FALSE(clipboard->IsFormatAvailable(
-      ui::Clipboard::GetHtmlFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE));
-  EXPECT_EQ(base::string16(), omnibox_view->GetText());
-}
-
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EditSearchEngines) {
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
@@ -1800,7 +1710,8 @@ size_t GetSelectionSize(OmniboxView* omnibox_view) {
 
 // Test that if the Omnibox has focus, and had everything selected before a
 // non-user-initiated update, then it retains the selection after the update.
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllStaysAfterUpdate) {
+// Flaky. See https://crbug.com/751031.
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_SelectAllStaysAfterUpdate) {
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 

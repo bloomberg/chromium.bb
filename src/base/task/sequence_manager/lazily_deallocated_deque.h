@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/debug/alias.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/time/time.h"
@@ -32,7 +33,7 @@ namespace internal {
 // MaybeShrinkQueue to avoid unnecessary churn.
 //
 // NB this queue isn't by itself thread safe.
-template <typename T>
+template <typename T, TimeTicks (*now_source)() = TimeTicks::Now>
 class LazilyDeallocatedDeque {
  public:
   enum {
@@ -86,6 +87,10 @@ class LazilyDeallocatedDeque {
 
     // Grow if needed, by the minimum amount.
     if (!head_->CanPush()) {
+      // TODO(alexclarke): Remove once we've understood the OOMs.
+      size_t size = size_;
+      base::debug::Alias(&size);
+
       std::unique_ptr<Ring> new_ring = std::make_unique<Ring>(kMinimumRingSize);
       new_ring->next_ = std::move(head_);
       head_ = std::move(new_ring);
@@ -105,6 +110,10 @@ class LazilyDeallocatedDeque {
 
     // Grow if needed.
     if (!tail_->CanPush()) {
+      // TODO(alexclarke): Remove once we've understood the OOMs.
+      size_t size = size_;
+      base::debug::Alias(&size);
+
       // Doubling the size is a common strategy, but one which can be wasteful
       // so we use a (somewhat) slower growth curve.
       tail_->next_ = std::make_unique<Ring>(2 + tail_->capacity() +
@@ -168,7 +177,7 @@ class LazilyDeallocatedDeque {
     DCHECK_GE(max_size_, size_);
 
     // Rate limit how often we shrink the queue because it's somewhat expensive.
-    TimeTicks current_time = TimeTicks::Now();
+    TimeTicks current_time = now_source();
     if (current_time < next_resize_time_)
       return;
 

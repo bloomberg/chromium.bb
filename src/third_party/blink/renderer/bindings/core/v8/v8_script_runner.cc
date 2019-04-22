@@ -115,7 +115,7 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
 
   // Allow inspector to use its own compilation cache store.
   v8::ScriptCompiler::CachedData* inspector_data = nullptr;
-  probe::consumeCompilationCache(execution_context, source_code,
+  probe::ConsumeCompilationCache(execution_context, source_code,
                                  &inspector_data);
   if (inspector_data) {
     v8::ScriptCompiler::Source source(code, origin, inspector_data);
@@ -155,11 +155,6 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
       }
       return script;
     }
-    // TODO(v8:8252): Remove the default case once deprecated options are
-    // removed from v8::ScriptCompiler::CompileOptions.
-    default:
-      NOTREACHED();
-      break;
   }
 
   // All switch branches should return and we should never get here.
@@ -227,12 +222,16 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
 
 v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
     v8::Isolate* isolate,
-    const String& source,
+    const String& source_text,
+    SingleCachedMetadataHandler* cache_handler,
     const String& file_name,
     const TextPosition& start_position,
+    v8::ScriptCompiler::CompileOptions compile_options,
+    v8::ScriptCompiler::NoCacheReason no_cache_reason,
     const ReferrerScriptInfo& referrer_info) {
-  TRACE_EVENT1("v8,devtools.timeline", "v8.compileModule", "fileName",
-               file_name.Utf8());
+  constexpr const char* kTraceEventCategoryGroup = "v8,devtools.timeline";
+  TRACE_EVENT_BEGIN1(kTraceEventCategoryGroup, "v8.compileModule", "fileName",
+                     file_name.Utf8());
 
   // |resource_is_shared_cross_origin| is always true and |resource_is_opaque|
   // is always false because CORS is enforced to module scripts.
@@ -248,8 +247,45 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
       v8::True(isolate),                 // is_module
       referrer_info.ToV8HostDefinedOptions(isolate));
 
-  v8::ScriptCompiler::Source script_source(V8String(isolate, source), origin);
-  return v8::ScriptCompiler::CompileModule(isolate, &script_source);
+  v8::Local<v8::String> code = V8String(isolate, source_text);
+
+  v8::MaybeLocal<v8::Module> script;
+  inspector_compile_script_event::V8CacheResult cache_result;
+
+  switch (compile_options) {
+    case v8::ScriptCompiler::kNoCompileOptions:
+    case v8::ScriptCompiler::kEagerCompile: {
+      v8::ScriptCompiler::Source source(code, origin);
+      script = v8::ScriptCompiler::CompileModule(
+          isolate, &source, compile_options, no_cache_reason);
+      break;
+    }
+
+    case v8::ScriptCompiler::kConsumeCodeCache: {
+      // Compile a script, and consume a V8 cache that was generated previously.
+      DCHECK(cache_handler);
+      v8::ScriptCompiler::CachedData* cached_data =
+          V8CodeCache::CreateCachedData(cache_handler);
+      v8::ScriptCompiler::Source source(code, origin, cached_data);
+      script = v8::ScriptCompiler::CompileModule(
+          isolate, &source, compile_options, no_cache_reason);
+      if (cached_data->rejected) {
+        cache_handler->ClearCachedMetadata(
+            CachedMetadataHandler::kSendToPlatform);
+      }
+      cache_result.consume_result = base::make_optional(
+          inspector_compile_script_event::V8CacheResult::ConsumeResult(
+              compile_options, cached_data->length, cached_data->rejected));
+      break;
+    }
+  }
+
+  TRACE_EVENT_END1(kTraceEventCategoryGroup, "v8.compileModule", "data",
+                   inspector_compile_script_event::Data(
+                       file_name, start_position, cache_result, false,
+                       ScriptStreamer::kModuleScript));
+
+  return script;
 }
 
 v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
@@ -364,9 +400,19 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallAsConstructor(
   v8::MicrotasksScope microtasks_scope(isolate,
                                        v8::MicrotasksScope::kRunMicrotasks);
   probe::CallFunction probe(context, function, depth);
+
+  if (!depth) {
+    TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data",
+                       inspector_function_call_event::Data(context, function));
+  }
+
   v8::MaybeLocal<v8::Value> result =
       constructor->CallAsConstructor(isolate->GetCurrentContext(), argc, argv);
   CHECK(!isolate->IsDead());
+
+  if (!depth)
+    TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
+
   return result;
 }
 
@@ -398,14 +444,21 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
   DCHECK(!frame || BindingSecurity::ShouldAllowAccessToFrame(
                        ToLocalDOMWindow(function->CreationContext()), frame,
                        BindingSecurity::ErrorReportOption::kDoNotReport));
-  CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
   v8::MicrotasksScope microtasks_scope(isolate,
                                        v8::MicrotasksScope::kRunMicrotasks);
+  if (!depth) {
+    TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data",
+                       inspector_function_call_event::Data(context, function));
+  }
+
   probe::CallFunction probe(context, function, depth);
   v8::MaybeLocal<v8::Value> result =
       function->Call(isolate->GetCurrentContext(), receiver, argc, args);
   CHECK(!isolate->IsDead());
+
+  if (!depth)
+    TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
 
   return result;
 }
@@ -420,7 +473,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallInternalFunction(
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
 
-  CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
   v8::MicrotasksScope microtasks_scope(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
@@ -446,7 +498,7 @@ void V8ScriptRunner::ReportException(v8::Isolate* isolate,
                                      v8::Local<v8::Value> exception) {
   DCHECK(!exception.IsEmpty());
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#report-the-error
+  // https://html.spec.whatwg.org/C/#report-the-error
   v8::Local<v8::Message> message =
       v8::Exception::CreateMessage(isolate, exception);
   if (IsMainThread())

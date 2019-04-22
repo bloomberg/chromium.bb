@@ -7,14 +7,13 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/history/core/browser/top_sites.h"
-#include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/web_state/navigation_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-DEFINE_WEB_STATE_USER_DATA_KEY(history::WebStateTopSitesObserver);
 
 namespace history {
 
@@ -38,16 +37,22 @@ WebStateTopSitesObserver::WebStateTopSitesObserver(web::WebState* web_state,
 WebStateTopSitesObserver::~WebStateTopSitesObserver() {
 }
 
-void WebStateTopSitesObserver::NavigationItemCommitted(
+void WebStateTopSitesObserver::DidFinishNavigation(
     web::WebState* web_state,
-    const web::LoadCommittedDetails& load_details) {
-  DCHECK(load_details.item);
-  if (top_sites_)
-    top_sites_->OnNavigationCommitted(load_details.item->GetURL());
+    web::NavigationContext* navigation_context) {
+  // TODO(crbug.com/931841): Remove GetLastCommittedItem nil check once
+  // HasComitted has been fixed.
+  if (top_sites_ && navigation_context->HasCommitted() &&
+      web_state->GetNavigationManager()->GetLastCommittedItem()) {
+    top_sites_->OnNavigationCommitted(
+        web_state->GetNavigationManager()->GetLastCommittedItem()->GetURL());
+  }
 }
 
 void WebStateTopSitesObserver::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveObserver(this);
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(WebStateTopSitesObserver)
 
 }  // namespace history

@@ -302,11 +302,30 @@ def GetCacheDir():
   return os.environ.get(constants.SHARED_CACHE_ENVVAR, FindCacheDir())
 
 
-def ToChrootPath(path):
-  """Resolves current environment |path| for use in the chroot."""
-  return ChrootPathResolver().ToChroot(path)
+def ToChrootPath(path, source_path=None):
+  """Resolves current environment |path| for use in the chroot.
+
+  Args:
+    path: string path to translate into chroot namespace.
+    source_path: string path to root of source checkout with chroot in it.
+
+  Returns:
+    The same path converted to "inside chroot" namespace.
+
+  Raises:
+    ValueError: If the path references a location not available in the chroot.
+  """
+  return ChrootPathResolver(source_path=source_path).ToChroot(path)
 
 
-def FromChrootPath(path):
-  """Resolves chroot |path| for use in the current environment."""
-  return ChrootPathResolver().FromChroot(path)
+def FromChrootPath(path, source_path=None):
+  """Resolves chroot |path| for use in the current environment.
+
+  Args:
+    path: string path to translate out of chroot namespace.
+    source_path: string path to root of source checkout with chroot in it.
+
+  Returns:
+    The same path converted to "outside chroot" namespace.
+  """
+  return ChrootPathResolver(source_path=source_path).FromChroot(path)

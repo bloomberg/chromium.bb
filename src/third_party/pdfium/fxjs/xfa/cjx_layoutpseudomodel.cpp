@@ -10,24 +10,25 @@
 #include <utility>
 
 #include "core/fxcrt/fx_coordinates.h"
-#include "fxjs/cfxjse_class.h"
-#include "fxjs/cfxjse_engine.h"
-#include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
+#include "fxjs/xfa/cfxjse_class.h"
+#include "fxjs/xfa/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
+#include "xfa/fxfa/layout/cxfa_contentlayoutitem.h"
+#include "xfa/fxfa/layout/cxfa_layoutitem.h"
+#include "xfa/fxfa/layout/cxfa_layoutprocessor.h"
+#include "xfa/fxfa/layout/cxfa_traversestrategy_layoutitem.h"
+#include "xfa/fxfa/layout/cxfa_viewlayoutitem.h"
 #include "xfa/fxfa/parser/cscript_layoutpseudomodel.h"
 #include "xfa/fxfa/parser/cxfa_arraynodelist.h"
-#include "xfa/fxfa/parser/cxfa_containerlayoutitem.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_form.h"
-#include "xfa/fxfa/parser/cxfa_layoutitem.h"
-#include "xfa/fxfa/parser/cxfa_layoutprocessor.h"
 #include "xfa/fxfa/parser/cxfa_measurement.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 #include "xfa/fxfa/parser/cxfa_nodeiteratortemplate.h"
-#include "xfa/fxfa/parser/cxfa_traversestrategy_layoutitem.h"
 
 const CJX_MethodSpec CJX_LayoutPseudoModel::MethodSpecs[] = {
     {"absPage", absPage_static},
@@ -57,6 +58,10 @@ CJX_LayoutPseudoModel::CJX_LayoutPseudoModel(CScript_LayoutPseudoModel* model)
 
 CJX_LayoutPseudoModel::~CJX_LayoutPseudoModel() {}
 
+bool CJX_LayoutPseudoModel::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
+
 void CJX_LayoutPseudoModel::ready(CFXJSE_Value* pValue,
                                   bool bSetting,
                                   XFA_Attribute eAttribute) {
@@ -64,7 +69,7 @@ void CJX_LayoutPseudoModel::ready(CFXJSE_Value* pValue,
   if (!pNotify)
     return;
   if (bSetting) {
-    ThrowException(L"Unable to set ready value.");
+    ThrowException(WideString::FromASCII("Unable to set ready value."));
     return;
   }
 
@@ -84,7 +89,7 @@ CJS_Result CJX_LayoutPseudoModel::HWXY(
   if (!pNode)
     return CJS_Result::Success();
 
-  WideString unit(L"pt");
+  WideString unit = WideString::FromASCII("pt");
   if (params.size() >= 2) {
     WideString tmp_unit = runtime->ToWideString(params[1]);
     if (!tmp_unit.IsEmpty())
@@ -92,9 +97,6 @@ CJS_Result CJX_LayoutPseudoModel::HWXY(
   }
   int32_t iIndex = params.size() >= 3 ? runtime->ToInt32(params[2]) : 0;
   CXFA_LayoutProcessor* pDocLayout = GetDocument()->GetLayoutProcessor();
-  if (!pDocLayout)
-    return CJS_Result::Success();
-
   CXFA_ContentLayoutItem* pLayoutItem =
       ToContentLayoutItem(pDocLayout->GetLayoutItem(pNode));
   if (!pLayoutItem)
@@ -125,8 +127,11 @@ CJS_Result CJX_LayoutPseudoModel::HWXY(
       break;
   }
 
-  float fValue =
-      measure.ToUnit(CXFA_Measurement::GetUnitFromString(unit.AsStringView()));
+  XFA_Unit eUnit = CXFA_Measurement::GetUnitFromString(unit.AsStringView());
+  if (eUnit == XFA_Unit::Unknown)
+    return CJS_Result::Failure(JSMessage::kValueError);
+
+  float fValue = measure.ToUnit(eUnit);
   return CJS_Result::Success(
       runtime->NewNumber(FXSYS_round(fValue * 1000) / 1000.0f));
 }
@@ -158,14 +163,11 @@ CJS_Result CJX_LayoutPseudoModel::y(
 CJS_Result CJX_LayoutPseudoModel::NumberedPageCount(CFX_V8* runtime,
                                                     bool bNumbered) {
   CXFA_LayoutProcessor* pDocLayout = GetDocument()->GetLayoutProcessor();
-  if (!pDocLayout)
-    return CJS_Result::Success();
-
   int32_t iPageCount = 0;
   int32_t iPageNum = pDocLayout->CountPages();
   if (bNumbered) {
     for (int32_t i = 0; i < iPageNum; i++) {
-      CXFA_ContainerLayoutItem* pLayoutPage = pDocLayout->GetPage(i);
+      CXFA_ViewLayoutItem* pLayoutPage = pDocLayout->GetPage(i);
       if (!pLayoutPage)
         continue;
 
@@ -197,9 +199,6 @@ CJS_Result CJX_LayoutPseudoModel::pageSpan(
     return CJS_Result::Success();
 
   CXFA_LayoutProcessor* pDocLayout = GetDocument()->GetLayoutProcessor();
-  if (!pDocLayout)
-    return CJS_Result::Success();
-
   CXFA_ContentLayoutItem* pLayoutItem =
       ToContentLayoutItem(pDocLayout->GetLayoutItem(pNode));
   if (!pLayoutItem)
@@ -222,19 +221,19 @@ std::vector<CXFA_Node*> CJX_LayoutPseudoModel::GetObjArray(
     int32_t iPageNo,
     const WideString& wsType,
     bool bOnPageArea) {
-  CXFA_ContainerLayoutItem* pLayoutPage = pDocLayout->GetPage(iPageNo);
+  CXFA_ViewLayoutItem* pLayoutPage = pDocLayout->GetPage(iPageNo);
   if (!pLayoutPage)
     return std::vector<CXFA_Node*>();
 
   std::vector<CXFA_Node*> retArray;
-  if (wsType == L"pageArea") {
+  if (wsType.EqualsASCII("pageArea")) {
     if (pLayoutPage->GetFormNode())
       retArray.push_back(pLayoutPage->GetFormNode());
     return retArray;
   }
-  if (wsType == L"contentArea") {
-    for (CXFA_LayoutItem* pItem = pLayoutPage->m_pFirstChild; pItem;
-         pItem = pItem->m_pNextSibling) {
+  if (wsType.EqualsASCII("contentArea")) {
+    for (CXFA_LayoutItem* pItem = pLayoutPage->GetFirstChild(); pItem;
+         pItem = pItem->GetNextSibling()) {
       if (pItem->GetFormNode()->GetElementType() == XFA_Element::ContentArea)
         retArray.push_back(pItem->GetFormNode());
     }
@@ -245,12 +244,12 @@ std::vector<CXFA_Node*> CJX_LayoutPseudoModel::GetObjArray(
     if (pLayoutPage->GetFormNode())
       retArray.push_back(pLayoutPage->GetFormNode());
 
-    for (CXFA_LayoutItem* pItem = pLayoutPage->m_pFirstChild; pItem;
-         pItem = pItem->m_pNextSibling) {
+    for (CXFA_LayoutItem* pItem = pLayoutPage->GetFirstChild(); pItem;
+         pItem = pItem->GetNextSibling()) {
       if (pItem->GetFormNode()->GetElementType() == XFA_Element::ContentArea) {
         retArray.push_back(pItem->GetFormNode());
         if (!bOnPageArea) {
-          CXFA_LayoutItemIterator iterator(pItem->m_pFirstChild);
+          CXFA_LayoutItemIterator iterator(pItem->GetFirstChild());
           for (CXFA_LayoutItem* pChild = iterator.GetCurrent(); pChild;
                pChild = iterator.MoveToNext()) {
             CXFA_ContentLayoutItem* pItemChild = pChild->AsContentLayoutItem();
@@ -296,21 +295,21 @@ std::vector<CXFA_Node*> CJX_LayoutPseudoModel::GetObjArray(
   }
 
   XFA_Element eType = XFA_Element::Unknown;
-  if (wsType == L"field")
+  if (wsType.EqualsASCII("field"))
     eType = XFA_Element::Field;
-  else if (wsType == L"draw")
+  else if (wsType.EqualsASCII("draw"))
     eType = XFA_Element::Draw;
-  else if (wsType == L"subform")
+  else if (wsType.EqualsASCII("subform"))
     eType = XFA_Element::Subform;
-  else if (wsType == L"area")
+  else if (wsType.EqualsASCII("area"))
     eType = XFA_Element::Area;
 
   if (eType != XFA_Element::Unknown) {
-    for (CXFA_LayoutItem* pItem = pLayoutPage->m_pFirstChild; pItem;
-         pItem = pItem->m_pNextSibling) {
+    for (CXFA_LayoutItem* pItem = pLayoutPage->GetFirstChild(); pItem;
+         pItem = pItem->GetNextSibling()) {
       if (pItem->GetFormNode()->GetElementType() == XFA_Element::ContentArea) {
         if (!bOnPageArea) {
-          CXFA_LayoutItemIterator iterator(pItem->m_pFirstChild);
+          CXFA_LayoutItemIterator iterator(pItem->GetFirstChild());
           for (CXFA_LayoutItem* pChild = iterator.GetCurrent(); pChild;
                pChild = iterator.MoveToNext()) {
             CXFA_ContentLayoutItem* pItemChild = pChild->AsContentLayoutItem();
@@ -371,9 +370,6 @@ CJS_Result CJX_LayoutPseudoModel::pageContent(
     return CJS_Result::Success();
 
   CXFA_LayoutProcessor* pDocLayout = GetDocument()->GetLayoutProcessor();
-  if (!pDocLayout)
-    return CJS_Result::Success();
-
   auto pArrayNodeList = pdfium::MakeUnique<CXFA_ArrayNodeList>(GetDocument());
   pArrayNodeList->SetArrayNodeList(
       GetObjArray(pDocLayout, iIndex, wsType, bOnPageArea));
@@ -406,13 +402,14 @@ CJS_Result CJX_LayoutPseudoModel::relayout(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
   CXFA_Node* pRootNode = GetDocument()->GetRoot();
+  CXFA_LayoutProcessor* pLayoutProcessor = GetDocument()->GetLayoutProcessor();
   CXFA_Form* pFormRoot =
       pRootNode->GetFirstChildByClass<CXFA_Form>(XFA_Element::Form);
-  CXFA_Node* pContentRootNode = pFormRoot->GetFirstChild();
-  CXFA_LayoutProcessor* pLayoutProcessor = GetDocument()->GetLayoutProcessor();
-  if (pContentRootNode)
-    pLayoutProcessor->AddChangedContainer(pContentRootNode);
-
+  if (pFormRoot) {
+    CXFA_Node* pContentRootNode = pFormRoot->GetFirstChild();
+    if (pContentRootNode)
+      pLayoutProcessor->AddChangedContainer(pContentRootNode);
+  }
   pLayoutProcessor->SetForceReLayout(true);
   return CJS_Result::Success();
 }
@@ -478,9 +475,6 @@ CJS_Result CJX_LayoutPseudoModel::PageInternals(
     return CJS_Result::Success(runtime->NewNumber(0));
 
   CXFA_LayoutProcessor* pDocLayout = GetDocument()->GetLayoutProcessor();
-  if (!pDocLayout)
-    return CJS_Result::Success();
-
   CXFA_ContentLayoutItem* pLayoutItem =
       ToContentLayoutItem(pDocLayout->GetLayoutItem(pNode));
   if (!pLayoutItem)

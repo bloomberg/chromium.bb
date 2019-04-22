@@ -13,11 +13,13 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
 #include "components/offline_pages/core/prefetch/tasks/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_download_client.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -39,15 +41,23 @@ class PrefetchDownloadFlowTest : public PrefetchTaskTestBase {
     PrefetchTaskTestBase::SetUp();
 
     prefetch_service_taco_.reset(new PrefetchServiceTestTaco);
+    prefetch_service_taco_->SetPrefService(std::move(prefs_));
+    prefetch_prefs::SetEnabledByServer(prefetch_service_taco_->pref_service(),
+                                       true);
+
     auto downloader = std::make_unique<PrefetchDownloaderImpl>(
-        &download_service_, kTestChannel);
+        &download_service_, kTestChannel,
+        prefetch_service_taco_->pref_service());
     download_client_ = std::make_unique<TestDownloadClient>(downloader.get());
     download_service_.set_client(download_client_.get());
     prefetch_service_taco_->SetPrefetchDispatcher(
-        std::make_unique<PrefetchDispatcherImpl>(prefs()));
+        std::make_unique<PrefetchDispatcherImpl>(
+            prefetch_service_taco_->pref_service()));
     prefetch_service_taco_->SetPrefetchStore(store_util()->ReleaseStore());
     prefetch_service_taco_->SetPrefetchDownloader(std::move(downloader));
     prefetch_service_taco_->CreatePrefetchService();
+    prefetch_service_taco_->prefetch_service()->SetCachedGCMToken(
+        "dummy_gcm_token");
     item_generator()->set_client_namespace(kSuggestedArticlesNamespace);
   }
 

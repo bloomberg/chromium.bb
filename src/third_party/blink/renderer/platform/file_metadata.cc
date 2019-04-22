@@ -57,7 +57,7 @@ FileMetadata FileMetadata::From(const base::File::Info& file_info) {
   return file_metadata;
 }
 
-bool GetFileSize(const String& path, long long& result) {
+bool GetFileSize(const String& path, int64_t& result) {
   FileMetadata metadata;
   if (!GetFileMetadata(path, metadata))
     return false;

@@ -82,7 +82,7 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
 
   // identity::IdentityManager::Observer implementation.
   void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
+      const CoreAccountInfo& previous_primary_account_info) override;
 
  private:
   friend class SigninManagerAndroidTest;

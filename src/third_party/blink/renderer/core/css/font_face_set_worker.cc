@@ -26,7 +26,6 @@ const char FontFaceSetWorker::kSupplementName[] = "FontFaceSetWorker";
 
 FontFaceSetWorker::FontFaceSetWorker(WorkerGlobalScope& worker)
     : FontFaceSet(worker), Supplement<WorkerGlobalScope>(worker) {
-  PauseIfNeeded();
 }
 
 FontFaceSetWorker::~FontFaceSetWorker() = default;
@@ -77,12 +76,12 @@ bool FontFaceSetWorker::ResolveFontStyle(const String& font_string,
   // CanvasRenderingContext2D.
   MutableCSSPropertyValueSet* parsed_style =
       MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
-  CSSParser::ParseValue(parsed_style, CSSPropertyFont, font_string, true,
+  CSSParser::ParseValue(parsed_style, CSSPropertyID::kFont, font_string, true,
                         GetExecutionContext()->GetSecureContextMode());
   if (parsed_style->IsEmpty())
     return false;
 
-  String font_value = parsed_style->GetPropertyValue(CSSPropertyFont);
+  String font_value = parsed_style->GetPropertyValue(CSSPropertyID::kFont);
   if (font_value == "inherit" || font_value == "initial")
     return false;
 
@@ -107,7 +106,7 @@ FontFaceSetWorker* FontFaceSetWorker::From(WorkerGlobalScope& worker) {
   FontFaceSetWorker* fonts =
       Supplement<WorkerGlobalScope>::From<FontFaceSetWorker>(worker);
   if (!fonts) {
-    fonts = FontFaceSetWorker::Create(worker);
+    fonts = MakeGarbageCollected<FontFaceSetWorker>(worker);
     ProvideTo(worker, fonts);
   }
 

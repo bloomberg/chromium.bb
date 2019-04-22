@@ -1010,10 +1010,9 @@ static void vpx_highbd_filter_block1d4_h4_avx2(
   }
 }
 
-void vpx_highbd_filter_block1d8_h4_avx2(const uint16_t *src_ptr,
-                                        ptrdiff_t src_stride, uint16_t *dst_ptr,
-                                        ptrdiff_t dst_stride, uint32_t height,
-                                        const int16_t *kernel, int bd) {
+static void vpx_highbd_filter_block1d8_h4_avx2(
+    const uint16_t *src_ptr, ptrdiff_t src_stride, uint16_t *dst_ptr,
+    ptrdiff_t dst_stride, uint32_t height, const int16_t *kernel, int bd) {
   // We will extract the middle four elements of the kernel into two registers
   // in the form
   // ... k[3] k[2] k[3] k[2]
@@ -1090,22 +1089,19 @@ void vpx_highbd_filter_block1d8_h4_avx2(const uint16_t *src_ptr,
 
   // Repeat for the last row if needed
   if (h > 0) {
-    src_reg = _mm256_loadu_si256((const __m256i *)src_ptr);
-    // Reorder into 2 1 1 2
-    src_reg = _mm256_permute4x64_epi64(src_reg, 0x94);
-
+    src_reg = mm256_loadu2_si128(src_ptr, src_ptr + 4);
     src_reg_shift_0 = _mm256_shuffle_epi8(src_reg, idx_shift_0);
     src_reg_shift_2 = _mm256_shuffle_epi8(src_reg, idx_shift_2);
 
     res_reg = mm256_madd_add_epi32(&src_reg_shift_0, &src_reg_shift_2,
                                    &kernel_reg_23, &kernel_reg_45);
 
-    res_reg = mm256_round_epi32(&res_first, &reg_round, CONV8_ROUNDING_BITS);
+    res_reg = mm256_round_epi32(&res_reg, &reg_round, CONV8_ROUNDING_BITS);
 
     res_reg = _mm256_packus_epi32(res_reg, res_reg);
-    res_reg = _mm256_permute4x64_epi64(res_reg, 0x8);
+    res_reg = _mm256_min_epi16(res_reg, reg_max);
 
-    _mm_store_si128((__m128i *)dst_ptr, _mm256_castsi256_si128(res_reg));
+    mm256_storeu2_epi64((__m128i *)dst_ptr, (__m128i *)(dst_ptr + 4), &res_reg);
   }
 }
 
@@ -1253,10 +1249,9 @@ static void vpx_highbd_filter_block1d8_v2_avg_avx2(
   } while (height > 0);
 }
 
-void vpx_highbd_filter_block1d4_v4_avx2(const uint16_t *src_ptr,
-                                        ptrdiff_t src_stride, uint16_t *dst_ptr,
-                                        ptrdiff_t dst_stride, uint32_t height,
-                                        const int16_t *kernel, int bd) {
+static void vpx_highbd_filter_block1d4_v4_avx2(
+    const uint16_t *src_ptr, ptrdiff_t src_stride, uint16_t *dst_ptr,
+    ptrdiff_t dst_stride, uint32_t height, const int16_t *kernel, int bd) {
   // We will load two rows of pixels and rearrange them into the form
   // ... s[1,0] s[0,0] s[0,0] s[-1,0]
   // so that we can call multiply and add with the kernel partial output. Then
@@ -1280,10 +1275,6 @@ void vpx_highbd_filter_block1d4_v4_avx2(const uint16_t *src_ptr,
   const ptrdiff_t src_stride_unrolled = src_stride << 1;
   const ptrdiff_t dst_stride_unrolled = dst_stride << 1;
   int h;
-
-  // We only need to go num_taps/2 - 1 row above the souce, so we move
-  // 3 - (num_taps/2 - 1) = 4 - num_taps/2 = 2 back down
-  src_ptr += src_stride_unrolled;
 
   // Load Kernel
   kernel_reg_128 = _mm_loadu_si128((const __m128i *)kernel);
@@ -1343,10 +1334,9 @@ void vpx_highbd_filter_block1d4_v4_avx2(const uint16_t *src_ptr,
   }
 }
 
-void vpx_highbd_filter_block1d8_v4_avx2(const uint16_t *src_ptr,
-                                        ptrdiff_t src_stride, uint16_t *dst_ptr,
-                                        ptrdiff_t dst_stride, uint32_t height,
-                                        const int16_t *kernel, int bd) {
+static void vpx_highbd_filter_block1d8_v4_avx2(
+    const uint16_t *src_ptr, ptrdiff_t src_stride, uint16_t *dst_ptr,
+    ptrdiff_t dst_stride, uint32_t height, const int16_t *kernel, int bd) {
   // We will load two rows of pixels and rearrange them into the form
   // ... s[1,0] s[0,0] s[0,0] s[-1,0]
   // so that we can call multiply and add with the kernel partial output. Then
@@ -1370,10 +1360,6 @@ void vpx_highbd_filter_block1d8_v4_avx2(const uint16_t *src_ptr,
   const ptrdiff_t src_stride_unrolled = src_stride << 1;
   const ptrdiff_t dst_stride_unrolled = dst_stride << 1;
   int h;
-
-  // We only need to go num_taps/2 - 1 row above the souce, so we move
-  // 3 - (num_taps/2 - 1) = 4 - num_taps/2 = 2 back down
-  src_ptr += src_stride_unrolled;
 
   // Load Kernel
   kernel_reg_128 = _mm_loadu_si128((const __m128i *)kernel);
@@ -1443,20 +1429,21 @@ void vpx_highbd_filter_block1d8_v4_avx2(const uint16_t *src_ptr,
   }
 }
 
-void vpx_highbd_filter_block1d16_v4_avx2(const uint16_t *src_ptr,
-                                         ptrdiff_t src_stride,
-                                         uint16_t *dst_ptr,
-                                         ptrdiff_t dst_stride, uint32_t height,
-                                         const int16_t *kernel, int bd) {
+static void vpx_highbd_filter_block1d16_v4_avx2(
+    const uint16_t *src_ptr, ptrdiff_t src_stride, uint16_t *dst_ptr,
+    ptrdiff_t dst_stride, uint32_t height, const int16_t *kernel, int bd) {
   vpx_highbd_filter_block1d8_v4_avx2(src_ptr, src_stride, dst_ptr, dst_stride,
                                      height, kernel, bd);
   vpx_highbd_filter_block1d8_v4_avx2(src_ptr + 8, src_stride, dst_ptr + 8,
                                      dst_stride, height, kernel, bd);
 }
 
+// From vpx_dsp/x86/vpx_high_subpixel_8t_sse2.asm.
 highbd_filter8_1dfunction vpx_highbd_filter_block1d4_h8_sse2;
-highbd_filter8_1dfunction vpx_highbd_filter_block1d4_h2_sse2;
 highbd_filter8_1dfunction vpx_highbd_filter_block1d4_v8_sse2;
+
+// From vpx_dsp/x86/vpx_high_subpixel_bilinear_sse2.asm.
+highbd_filter8_1dfunction vpx_highbd_filter_block1d4_h2_sse2;
 highbd_filter8_1dfunction vpx_highbd_filter_block1d4_v2_sse2;
 
 #define vpx_highbd_filter_block1d4_h8_avx2 vpx_highbd_filter_block1d4_h8_sse2
@@ -1464,6 +1451,7 @@ highbd_filter8_1dfunction vpx_highbd_filter_block1d4_v2_sse2;
 #define vpx_highbd_filter_block1d4_v8_avx2 vpx_highbd_filter_block1d4_v8_sse2
 #define vpx_highbd_filter_block1d4_v2_avx2 vpx_highbd_filter_block1d4_v2_sse2
 
+// Use the [vh]8 version because there is no [vh]4 implementation.
 #define vpx_highbd_filter_block1d16_v4_avg_avx2 \
   vpx_highbd_filter_block1d16_v8_avg_avx2
 #define vpx_highbd_filter_block1d16_h4_avg_avx2 \
@@ -1477,13 +1465,17 @@ highbd_filter8_1dfunction vpx_highbd_filter_block1d4_v2_sse2;
 #define vpx_highbd_filter_block1d4_h4_avg_avx2 \
   vpx_highbd_filter_block1d4_h8_avg_avx2
 
-HIGH_FUN_CONV_1D(horiz, x0_q4, x_step_q4, h, src, , avx2);
-HIGH_FUN_CONV_1D(vert, y0_q4, y_step_q4, v, src - src_stride * 3, , avx2);
-HIGH_FUN_CONV_2D(, avx2);
+HIGH_FUN_CONV_1D(horiz, x0_q4, x_step_q4, h, src, , avx2, 0);
+HIGH_FUN_CONV_1D(vert, y0_q4, y_step_q4, v,
+                 src - src_stride * (num_taps / 2 - 1), , avx2, 0);
+HIGH_FUN_CONV_2D(, avx2, 0);
 
+// From vpx_dsp/x86/vpx_high_subpixel_8t_sse2.asm.
 highbd_filter8_1dfunction vpx_highbd_filter_block1d4_h8_avg_sse2;
-highbd_filter8_1dfunction vpx_highbd_filter_block1d4_h2_avg_sse2;
 highbd_filter8_1dfunction vpx_highbd_filter_block1d4_v8_avg_sse2;
+
+// From vpx_dsp/x86/vpx_high_subpixel_bilinear_sse2.asm.
+highbd_filter8_1dfunction vpx_highbd_filter_block1d4_h2_avg_sse2;
 highbd_filter8_1dfunction vpx_highbd_filter_block1d4_v2_avg_sse2;
 
 #define vpx_highbd_filter_block1d4_h8_avg_avx2 \
@@ -1495,9 +1487,9 @@ highbd_filter8_1dfunction vpx_highbd_filter_block1d4_v2_avg_sse2;
 #define vpx_highbd_filter_block1d4_v2_avg_avx2 \
   vpx_highbd_filter_block1d4_v2_avg_sse2
 
-HIGH_FUN_CONV_1D(avg_horiz, x0_q4, x_step_q4, h, src, avg_, avx2);
-HIGH_FUN_CONV_1D(avg_vert, y0_q4, y_step_q4, v, src - src_stride * 3, avg_,
-                 avx2);
-HIGH_FUN_CONV_2D(avg_, avx2);
+HIGH_FUN_CONV_1D(avg_horiz, x0_q4, x_step_q4, h, src, avg_, avx2, 1);
+HIGH_FUN_CONV_1D(avg_vert, y0_q4, y_step_q4, v,
+                 src - src_stride * (num_taps / 2 - 1), avg_, avx2, 1);
+HIGH_FUN_CONV_2D(avg_, avx2, 1);
 
 #undef HIGHBD_FUNC

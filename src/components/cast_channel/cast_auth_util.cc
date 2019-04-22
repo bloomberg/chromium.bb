@@ -89,7 +89,7 @@ AuthResult ParseAuthMessage(const CastMessage& challenge_reply,
   if (auth_message->has_error()) {
     return AuthResult::CreateWithParseError(
         "Auth message error: " +
-            base::IntToString(auth_message->error().error_type()),
+            base::NumberToString(auth_message->error().error_type()),
         AuthResult::ERROR_MESSAGE_ERROR);
   }
   if (!auth_message->has_response()) {

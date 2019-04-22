@@ -142,8 +142,8 @@ void FakeArcSupport::UnsetMessageHost() {
 
 void FakeArcSupport::PostMessageFromNativeHost(
     const std::string& message_string) {
-  std::unique_ptr<base::DictionaryValue> message =
-      base::DictionaryValue::From(base::JSONReader::Read(message_string));
+  std::unique_ptr<base::DictionaryValue> message = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(message_string));
   DCHECK(message);
 
   std::string action;

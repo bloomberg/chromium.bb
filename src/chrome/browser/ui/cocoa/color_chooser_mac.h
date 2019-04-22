@@ -15,7 +15,7 @@ class ColorChooserMac;
 
 // A Listener class to act as a event target for NSColorPanel and send
 // the results to the C++ class, ColorChooserMac.
-@interface ColorPanelCocoa : NSObject<NSWindowDelegate> {
+@interface ColorPanelCocoa : NSObject {
  @protected
   // We don't call DidChooseColor if the change wasn't caused by the user
   // interacting with the panel.
@@ -25,6 +25,8 @@ class ColorChooserMac;
 }
 
 - (id)initWithChooser:(ColorChooserMac*)chooser;
+
+- (void)windowWillClose:(NSNotification*)notification;
 
 // Called from NSColorPanel.
 - (void)didChooseColor:(NSColorPanel*)panel;
@@ -45,7 +47,7 @@ class ColorChooserMac : public content::ColorChooser {
 
   // Called from ColorPanelCocoa.
   void DidChooseColorInColorPanel(SkColor color);
-  void DidCloseColorPabel();
+  void DidCloseColorPanel();
 
   // Set the color programmatically.
   void SetSelectedColor(SkColor color) override;

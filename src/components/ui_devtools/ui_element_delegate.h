@@ -15,8 +15,8 @@ class UIElement;
 
 class UIElementDelegate {
  public:
-  UIElementDelegate(){};
-  virtual ~UIElementDelegate(){};
+  UIElementDelegate() {}
+  virtual ~UIElementDelegate() {}
 
   virtual void OnUIElementAdded(UIElement* parent, UIElement* child) = 0;
 

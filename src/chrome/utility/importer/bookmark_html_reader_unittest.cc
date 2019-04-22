@@ -10,8 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -192,7 +192,7 @@ TEST(BookmarkHTMLReaderTest, CanImportURLAsSearchEngineTest) {
   };
 
   std::string search_engine_url;
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     EXPECT_EQ(test_cases[i].can_be_imported_as_search_engine,
         CanImportURLAsSearchEngine(GURL(test_cases[i].url),
                                    &search_engine_url));

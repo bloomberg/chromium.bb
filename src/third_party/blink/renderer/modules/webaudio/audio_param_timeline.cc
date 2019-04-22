@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/wtf/cpu.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
@@ -740,42 +739,49 @@ void AudioParamTimeline::CancelAndHoldAtTime(double cancel_time,
                                                       std::move(saved_event));
     } break;
     case ParamEvent::kSetTarget: {
-      // Don't want to remove the SetTarget event, so bump the index.  But
-      // we do want to insert a cancelEvent so that we stop this
-      // automation and hold the value when we get there.
-      ++cancelled_event_index;
+      if (cancelled_event->Time() < cancel_time) {
+        // Don't want to remove the SetTarget event if it started before the
+        // cancel time, so bump the index.  But we do want to insert a
+        // cancelEvent so that we stop this automation and hold the value when
+        // we get there.
+        ++cancelled_event_index;
 
-      new_event = ParamEvent::CreateCancelValuesEvent(cancel_time, nullptr);
+        new_event = ParamEvent::CreateCancelValuesEvent(cancel_time, nullptr);
+      }
     } break;
     case ParamEvent::kSetValueCurve: {
-      double new_duration = cancel_time - cancelled_event->Time();
+      // If the setValueCurve event started strictly before the cancel time,
+      // there might be something to do....
+      if (cancelled_event->Time() < cancel_time) {
+        if (cancel_time >
+            cancelled_event->Time() + cancelled_event->Duration()) {
+          // If the cancellation time is past the end of the curve there's
+          // nothing to do except remove the following events.
+          ++cancelled_event_index;
+        } else {
+          // Cancellation time is in the middle of the curve.  Therefore,
+          // create a new SetValueCurve event with the appropriate new
+          // parameters to cancel this event properly.  Since it's illegal
+          // to insert any event within a SetValueCurve event, we can
+          // compute the new end value now instead of doing when running
+          // the timeline.
+          double new_duration = cancel_time - cancelled_event->Time();
+          float end_value = ValueCurveAtTime(
+              cancel_time, cancelled_event->Time(), cancelled_event->Duration(),
+              cancelled_event->Curve().data(), cancelled_event->Curve().size());
 
-      if (cancel_time > cancelled_event->Time() + cancelled_event->Duration()) {
-        // If the cancellation time is past the end of the curve,
-        // there's nothing to do except remove the following events.
-        ++cancelled_event_index;
-      } else {
-        // Cancellation time is in the middle of the curve.  Therefore,
-        // create a new SetValueCurve event with the appropriate new
-        // parameters to cancel this event properly.  Since it's illegal
-        // to insert any event within a SetValueCurve event, we can
-        // compute the new end value now instead of doing when running
-        // the timeline.
-        float end_value = ValueCurveAtTime(
-            cancel_time, cancelled_event->Time(), cancelled_event->Duration(),
-            cancelled_event->Curve().data(), cancelled_event->Curve().size());
+          // Replace the existing SetValueCurve with this new one that is
+          // identical except for the duration.
+          new_event = ParamEvent::CreateGeneralEvent(
+              event_type, cancelled_event->Value(), cancelled_event->Time(),
+              cancelled_event->InitialValue(), cancelled_event->CallTime(),
+              cancelled_event->TimeConstant(), new_duration,
+              cancelled_event->Curve(), cancelled_event->CurvePointsPerSecond(),
+              end_value, nullptr);
 
-        // Replace the existing SetValueCurve with this new one that is
-        // identical except for the duration.
-        new_event = ParamEvent::CreateGeneralEvent(
-            event_type, cancelled_event->Value(), cancelled_event->Time(),
-            cancelled_event->InitialValue(), cancelled_event->CallTime(),
-            cancelled_event->TimeConstant(), new_duration,
-            cancelled_event->Curve(), cancelled_event->CurvePointsPerSecond(),
-            end_value, nullptr);
-
-        new_set_value_event = ParamEvent::CreateSetValueEvent(
-            end_value, cancelled_event->Time() + new_duration);
+          new_set_value_event = ParamEvent::CreateSetValueEvent(
+              end_value, cancelled_event->Time() + new_duration);
+        }
       }
     } break;
     case ParamEvent::kSetValue:
@@ -801,18 +807,16 @@ void AudioParamTimeline::CancelAndHoldAtTime(double cancel_time,
   }
 }
 
-float AudioParamTimeline::ValueForContextTime(
+std::tuple<bool, float> AudioParamTimeline::ValueForContextTime(
     AudioDestinationHandler& audio_destination,
     float default_value,
-    bool& has_value,
     float min_value,
     float max_value) {
   {
     MutexTryLocker try_locker(events_lock_);
     if (!try_locker.Locked() || !events_.size() ||
         audio_destination.CurrentTime() < events_[0]->Time()) {
-      has_value = false;
-      return default_value;
+      return std::make_tuple(false, default_value);
     }
   }
 
@@ -826,8 +830,7 @@ float AudioParamTimeline::ValueForContextTime(
       ValuesForFrameRange(start_frame, start_frame + 1, default_value, &value,
                           1, sample_rate, control_rate, min_value, max_value);
 
-  has_value = true;
-  return value;
+  return std::make_tuple(true, value);
 }
 
 float AudioParamTimeline::ValuesForFrameRange(size_t start_frame,
@@ -969,9 +972,9 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(size_t start_frame,
       fill_to_end_frame = static_cast<size_t>(ceil(time2 * sample_rate));
 
     DCHECK_GE(fill_to_end_frame, start_frame);
-    size_t fill_to_frame = fill_to_end_frame - start_frame;
-    fill_to_frame =
-        std::min(fill_to_frame, static_cast<size_t>(number_of_values));
+    unsigned fill_to_frame =
+        static_cast<unsigned>(fill_to_end_frame - start_frame);
+    fill_to_frame = std::min(fill_to_frame, number_of_values);
 
     const AutomationState current_state = {
         number_of_values,
@@ -1089,15 +1092,15 @@ std::tuple<size_t, unsigned> AudioParamTimeline::HandleFirstEvent(
   if (first_event_time > start_frame / sample_rate) {
     // |fillToFrame| is an exclusive upper bound, so use ceil() to compute the
     // bound from the firstEventTime.
-    size_t fill_to_frame = end_frame;
+    size_t fill_to_end_frame = end_frame;
     double first_event_frame = ceil(first_event_time * sample_rate);
     if (end_frame > first_event_frame)
-      fill_to_frame = static_cast<size_t>(first_event_frame);
-    DCHECK_GE(fill_to_frame, start_frame);
+      fill_to_end_frame = first_event_frame;
+    DCHECK_GE(fill_to_end_frame, start_frame);
 
-    fill_to_frame -= start_frame;
-    fill_to_frame =
-        std::min(fill_to_frame, static_cast<size_t>(number_of_values));
+    unsigned fill_to_frame =
+        static_cast<unsigned>(fill_to_end_frame - start_frame);
+    fill_to_frame = std::min(fill_to_frame, number_of_values);
     write_index =
         FillWithDefault(values, default_value, fill_to_frame, write_index);
 
@@ -1316,7 +1319,8 @@ AudioParamTimeline::HandleCancelValues(const ParamEvent* current_event,
   ParamEvent::Type next_event_type =
       next_event ? next_event->GetType() : ParamEvent::kLastType;
 
-  if (next_event && next_event->GetType() == ParamEvent::kCancelValues) {
+  if (next_event && next_event->GetType() == ParamEvent::kCancelValues &&
+      next_event->SavedEvent()) {
     float value1 = current_event->Value();
     double time1 = current_event->Time();
 
@@ -1412,7 +1416,12 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessLinearRamp(
   auto sample_rate = current_state.sample_rate;
 
   double delta_time = time2 - time1;
-  float k = delta_time > 0 ? 1 / delta_time : 0;
+  DCHECK_GE(delta_time, 0);
+  // Since delta_time is a double, 1/delta_time can easily overflow a float.
+  // Thus, if delta_time is close enough to zero (less than float min), treat it
+  // as zero.
+  float k =
+      delta_time <= std::numeric_limits<float>::min() ? 0 : 1 / delta_time;
   const float value_delta = value2 - value1;
 #if defined(ARCH_CPU_X86_FAMILY)
   if (fill_to_frame > write_index) {
@@ -1703,10 +1712,10 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessSetValueCurve(
   // has not yet started. In this case, |fillToFrame| is clipped to
   // |time1|+|duration| above, but |startFrame| will keep increasing
   // (because the current time is increasing).
-  fill_to_frame =
-      (fill_to_end_frame < start_frame) ? 0 : fill_to_end_frame - start_frame;
-  fill_to_frame =
-      std::min(fill_to_frame, static_cast<size_t>(number_of_values));
+  fill_to_frame = (fill_to_end_frame < start_frame)
+                      ? 0
+                      : static_cast<unsigned>(fill_to_end_frame - start_frame);
+  fill_to_frame = std::min(fill_to_frame, number_of_values);
 
   // Index into the curve data using a floating-point value.
   // We're scaling the number of curve points by the duration (see

@@ -144,17 +144,31 @@ void disassembleSpirV (size_t binarySizeInWords, const deUint32* binary, std::os
 	}
 }
 
-bool validateSpirV (size_t binarySizeInWords, const deUint32* binary, std::ostream* infoLog, deUint32 vulkanVersion, SpirvVersion, bool relaxedLayout)
+bool validateSpirV (size_t binarySizeInWords, const deUint32* binary, std::ostream* infoLog, const SpirvValidatorOptions &val_options)
 {
-	const spv_context	context		= spvContextCreate(mapVulkanVersionToSpirvToolsEnv(vulkanVersion));
+	const spv_context	context		= spvContextCreate(mapVulkanVersionToSpirvToolsEnv(val_options.vulkanVersion));
 	spv_diagnostic		diagnostic	= DE_NULL;
 
 	try
 	{
 		spv_const_binary_t		cbinary	= { binary, binarySizeInWords };
 
-		spv_validator_options	options	= spvValidatorOptionsCreate();
-		spvValidatorOptionsSetRelaxBlockLayout(options, relaxedLayout);
+		spv_validator_options options = spvValidatorOptionsCreate();
+
+		switch (val_options.blockLayout)
+		{
+			case SpirvValidatorOptions::kDefaultBlockLayout:
+				break;
+			case SpirvValidatorOptions::kNoneBlockLayout:
+				spvValidatorOptionsSetSkipBlockLayout(options, true);
+				break;
+			case SpirvValidatorOptions::kRelaxedBlockLayout:
+				spvValidatorOptionsSetRelaxBlockLayout(options, true);
+				break;
+			case SpirvValidatorOptions::kScalarBlockLayout:
+				spvValidatorOptionsSetScalarBlockLayout(options, true);
+				break;
+		}
 
 		const spv_result_t		valid	= spvValidateWithOptions(context, options, &cbinary, &diagnostic);
 		const bool				passed	= (valid == SPV_SUCCESS);
@@ -200,7 +214,7 @@ void disassembleSpirV (size_t, const deUint32*, std::ostream*, SpirvVersion)
 	TCU_THROW(NotSupportedError, "SPIR-V disassembling not supported (DEQP_HAVE_SPIRV_TOOLS not defined)");
 }
 
-bool validateSpirV (size_t, const deUint32*, std::ostream*, SpirvVersion)
+bool validateSpirV (size_t, const deUint32*, std::ostream*, const SpirvValidatorOptions&)
 {
 	TCU_THROW(NotSupportedError, "SPIR-V validation not supported (DEQP_HAVE_SPIRV_TOOLS not defined)");
 }

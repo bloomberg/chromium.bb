@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -65,11 +66,12 @@ class NetworkFetch {
 
  private:
   void StartAccessTokenFetch();
-  void AccessTokenFetchFinished(GoogleServiceAuthError error,
+  void AccessTokenFetchFinished(base::TimeTicks token_start_ticks,
+                                GoogleServiceAuthError error,
                                 identity::AccessTokenInfo access_token_info);
   void StartLoader();
   std::unique_ptr<network::SimpleURLLoader> MakeLoader();
-  net::HttpRequestHeaders MakeHeaders(const std::string& auth_header) const;
+  void SetRequestHeaders(network::ResourceRequest* request) const;
   void PopulateRequestBody(network::SimpleURLLoader* loader);
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response);
 
@@ -84,7 +86,13 @@ class NetworkFetch {
   network::SharedURLLoaderFactory* loader_factory_;
   const std::string api_key_;
   const base::TickClock* tick_clock_;
-  base::TimeTicks start_ticks_;
+
+  // Set when the NetworkFetch is constructed, before token and article fetch.
+  const base::TimeTicks entire_send_start_ticks_;
+
+  // Should be set right before the article fetch, and after the token fetch if
+  // there is one.
+  base::TimeTicks loader_only_start_ticks_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkFetch);
 };
@@ -103,7 +111,7 @@ NetworkFetch::NetworkFetch(const GURL& url,
       loader_factory_(loader_factory),
       api_key_(api_key),
       tick_clock_(tick_clock),
-      start_ticks_(tick_clock_->NowTicks()) {}
+      entire_send_start_ticks_(tick_clock_->NowTicks()) {}
 
 void NetworkFetch::Start(FeedNetworkingHost::ResponseCallback done_callback) {
   done_callback_ = std::move(done_callback);
@@ -123,20 +131,27 @@ void NetworkFetch::StartAccessTokenFetch() {
   token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
       "feed", identity_manager_, scopes,
       base::BindOnce(&NetworkFetch::AccessTokenFetchFinished,
-                     base::Unretained(this)),
+                     base::Unretained(this), tick_clock_->NowTicks()),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void NetworkFetch::AccessTokenFetchFinished(
+    base::TimeTicks token_start_ticks,
     GoogleServiceAuthError error,
     identity::AccessTokenInfo access_token_info) {
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.Network.TokenFetchStatus",
                             error.state(), GoogleServiceAuthError::NUM_STATES);
+
+  base::TimeDelta token_duration = tick_clock_->NowTicks() - token_start_ticks;
+  UMA_HISTOGRAM_MEDIUM_TIMES("ContentSuggestions.Feed.Network.TokenDuration",
+                             token_duration);
+
   access_token_ = access_token_info.token;
   StartLoader();
 }
 
 void NetworkFetch::StartLoader() {
+  loader_only_start_ticks_ = tick_clock_->NowTicks();
   simple_loader_ = MakeLoader();
   simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory_, base::BindOnce(&NetworkFetch::OnSimpleLoaderComplete,
@@ -144,12 +159,6 @@ void NetworkFetch::StartLoader() {
 }
 
 std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
-  std::string auth_header =
-      access_token_.empty()
-          ? std::string()
-          : base::StringPrintf(kAuthorizationRequestHeaderFormat,
-                               access_token_.c_str());
-  net::HttpRequestHeaders headers = MakeHeaders(auth_header);
   // TODO(pnoland): Add data use measurement once it's supported for simple
   // url loader.
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -186,8 +195,8 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
 
   resource_request->load_flags = net::LOAD_BYPASS_CACHE;
   resource_request->allow_credentials = false;
-  resource_request->headers = headers;
   resource_request->method = request_type_;
+  SetRequestHeaders(resource_request.get());
 
   auto simple_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -198,22 +207,23 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
   return simple_loader;
 }
 
-net::HttpRequestHeaders NetworkFetch::MakeHeaders(
-    const std::string& auth_header) const {
-  net::HttpRequestHeaders headers;
-  headers.SetHeader(net::HttpRequestHeaders::kContentType, kContentType);
-  headers.SetHeader(kContentEncoding, kGzip);
+void NetworkFetch::SetRequestHeaders(network::ResourceRequest* request) const {
+  request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                             kContentType);
+  request->headers.SetHeader(kContentEncoding, kGzip);
 
-  bool is_authorized = !auth_header.empty();
-  if (is_authorized)
-    headers.SetHeader(net::HttpRequestHeaders::kAuthorization, auth_header);
+  variations::SignedIn signed_in_status = variations::SignedIn::kNo;
+  if (!access_token_.empty()) {
+    std::string auth_header = base::StringPrintf(
+        kAuthorizationRequestHeaderFormat, access_token_.c_str());
+    request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
+                               auth_header);
+    signed_in_status = variations::SignedIn::kYes;
+  }
 
-  variations::SignedIn signed_in_status =
-      is_authorized ? variations::SignedIn::kYes : variations::SignedIn::kNo;
   // Add X-Client-Data header with experiment IDs from field trials.
-  variations::AppendVariationHeaders(url_, variations::InIncognito::kNo,
-                                     signed_in_status, &headers);
-  return headers;
+  variations::AppendVariationsHeader(url_, variations::InIncognito::kNo,
+                                     signed_in_status, request);
 }
 
 void NetworkFetch::PopulateRequestBody(network::SimpleURLLoader* loader) {
@@ -254,9 +264,16 @@ void NetworkFetch::OnSimpleLoaderComplete(
     response_body.assign(begin, end);
   }
 
-  base::TimeDelta duration = tick_clock_->NowTicks() - start_ticks_;
+  base::TimeDelta entire_send_duration =
+      tick_clock_->NowTicks() - entire_send_start_ticks_;
   UMA_HISTOGRAM_MEDIUM_TIMES("ContentSuggestions.Feed.Network.Duration",
-                             duration);
+                             entire_send_duration);
+
+  base::TimeDelta loader_only_duration =
+      tick_clock_->NowTicks() - loader_only_start_ticks_;
+  // This histogram purposefully matches name and bucket size used in
+  // RemoteSuggestionsFetcherImpl.
+  UMA_HISTOGRAM_TIMES("NewTabPage.Snippets.FetchTime", loader_only_duration);
 
   base::UmaHistogramSparse("ContentSuggestions.Feed.Network.RequestStatusCode",
                            status_code);

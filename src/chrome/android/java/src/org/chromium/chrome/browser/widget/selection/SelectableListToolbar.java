@@ -11,10 +11,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.CallSuper;
 import android.support.annotation.StringRes;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -53,8 +50,6 @@ import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 /**
  * A toolbar that changes its view depending on whether a selection is established. The toolbar
  * also optionally shows a search view depending on whether {@link #initializeSearchView()} has
@@ -83,12 +78,10 @@ public class SelectableListToolbar<E>
 
     /** No navigation button is displayed. **/
     public static final int NAVIGATION_BUTTON_NONE = 0;
-    /** Button to open the DrawerLayout. Only valid if mDrawerLayout is set. **/
-    public static final int NAVIGATION_BUTTON_MENU = 1;
     /** Button to navigate back. This calls {@link #onNavigationBack()}. **/
-    public static final int NAVIGATION_BUTTON_BACK = 2;
+    public static final int NAVIGATION_BUTTON_BACK = 1;
     /** Button to clear the selection. **/
-    public static final int NAVIGATION_BUTTON_SELECTION_BACK = 3;
+    public static final int NAVIGATION_BUTTON_SELECTION_BACK = 2;
 
     protected boolean mIsSelectionEnabled;
     protected SelectionDelegate<E> mSelectionDelegate;
@@ -105,8 +98,6 @@ public class SelectableListToolbar<E>
     private boolean mUpdateStatusBarColor;
 
     protected NumberRollView mNumberRollView;
-    private DrawerLayout mDrawerLayout;
-    private ActionBarDrawerToggle mActionBarDrawerToggle;
     private TintedDrawable mNormalMenuButton;
     private TintedDrawable mSelectionMenuButton;
     private TintedDrawable mNavigationIconDrawable;
@@ -163,23 +154,17 @@ public class SelectableListToolbar<E>
      * @param delegate The SelectionDelegate that will inform the toolbar of selection changes.
      * @param titleResId The resource id of the title string. May be 0 if this class shouldn't set
      *                   set a title when the selection is cleared.
-     * @param drawerLayout The DrawerLayout whose navigation icon is displayed in this toolbar.
      * @param normalGroupResId The resource id of the menu group to show when a selection isn't
      *                         established.
      * @param selectedGroupResId The resource id of the menu item to show when a selection is
      *                           established.
-     * @param normalBackgroundColorResId The resource id of the color to use as the background color
-     *                                   when selection is not enabled. If null the default appbar
-     *                                   background color will be used.
      * @param updateStatusBarColor Whether the status bar color should be updated to match the
      *                             toolbar color. If true, the status bar will only be updated if
      *                             the current device fully supports theming and is on Android M+.
      */
-    public void initialize(SelectionDelegate<E> delegate, int titleResId,
-            @Nullable DrawerLayout drawerLayout, int normalGroupResId, int selectedGroupResId,
-            @Nullable Integer normalBackgroundColorResId, boolean updateStatusBarColor) {
+    public void initialize(SelectionDelegate<E> delegate, int titleResId, int normalGroupResId,
+            int selectedGroupResId, boolean updateStatusBarColor) {
         mTitleResId = titleResId;
-        mDrawerLayout = drawerLayout;
         mNormalGroupResId = normalGroupResId;
         mSelectedGroupResId = selectedGroupResId;
         // TODO(twellington): Setting the status bar color crashes on Nokia devices. Re-enable
@@ -197,31 +182,27 @@ public class SelectableListToolbar<E>
         mModernToolbarSearchIconOffsetPx = getResources().getDimensionPixelSize(
                 R.dimen.selectable_list_search_icon_end_padding);
 
-        if (mDrawerLayout != null) initActionBarDrawerToggle();
-
-        normalBackgroundColorResId = normalBackgroundColorResId != null
-                ? normalBackgroundColorResId
-                : ColorUtils.getDefaultThemeColor(getResources(), false);
         mNormalBackgroundColor =
-                ApiCompatibilityUtils.getColor(getResources(), normalBackgroundColorResId);
+                ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color);
         setBackgroundColor(mNormalBackgroundColor);
 
         mSelectionBackgroundColor = ApiCompatibilityUtils.getColor(
                 getResources(), R.color.light_active_color);
 
         mDarkIconColorList =
-                AppCompatResources.getColorStateList(getContext(), R.color.dark_mode_tint);
-        mLightIconColorList =
-                AppCompatResources.getColorStateList(getContext(), R.color.white_mode_tint);
+                AppCompatResources.getColorStateList(getContext(), R.color.standard_mode_tint);
+        mLightIconColorList = AppCompatResources.getColorStateList(
+                getContext(), R.color.default_icon_color_inverse);
 
+        setTitleTextAppearance(getContext(), R.style.TextAppearance_BlackHeadline);
         if (mTitleResId != 0) setTitle(mTitleResId);
 
         // TODO(twellington): add the concept of normal & selected tint to apply to all toolbar
         //                    buttons.
         mNormalMenuButton = TintedDrawable.constructTintedDrawable(
                 getContext(), R.drawable.ic_more_vert_black_24dp);
-        mSelectionMenuButton = TintedDrawable.constructTintedDrawable(
-                getContext(), R.drawable.ic_more_vert_black_24dp, R.color.white_mode_tint);
+        mSelectionMenuButton = TintedDrawable.constructTintedDrawable(getContext(),
+                R.drawable.ic_more_vert_black_24dp, R.color.default_icon_color_inverse);
         mNavigationIconDrawable = TintedDrawable.constructTintedDrawable(
                 getContext(), R.drawable.ic_arrow_back_white_24dp);
 
@@ -237,7 +218,7 @@ public class SelectableListToolbar<E>
         MenuItem extraMenuItem = getMenu().findItem(mExtraMenuItemId);
         if (extraMenuItem != null) {
             Drawable iconDrawable = TintedDrawable.constructTintedDrawable(
-                    getContext(), R.drawable.ic_more_vert_black_24dp, R.color.dark_mode_tint);
+                    getContext(), R.drawable.ic_more_vert_black_24dp, R.color.standard_mode_tint);
             extraMenuItem.setIcon(iconDrawable);
         }
     }
@@ -351,9 +332,6 @@ public class SelectableListToolbar<E>
         switch (mNavigationButton) {
             case NAVIGATION_BUTTON_NONE:
                 break;
-            case NAVIGATION_BUTTON_MENU:
-                // ActionBarDrawerToggle handles this.
-                break;
             case NAVIGATION_BUTTON_BACK:
                 onNavigationBack();
                 break;
@@ -383,24 +361,7 @@ public class SelectableListToolbar<E>
     protected void setNavigationButton(int navigationButton) {
         int contentDescriptionId = 0;
 
-        if (navigationButton == NAVIGATION_BUTTON_MENU && mDrawerLayout == null) {
-            mNavigationButton = NAVIGATION_BUTTON_NONE;
-        } else {
-            mNavigationButton = navigationButton;
-        }
-
-        if (mNavigationButton == NAVIGATION_BUTTON_MENU) {
-            initActionBarDrawerToggle();
-            // ActionBarDrawerToggle will take care of icon and content description, so just return.
-            return;
-        }
-
-        if (mActionBarDrawerToggle != null) {
-            mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);
-            mDrawerLayout.removeDrawerListener(mActionBarDrawerToggle);
-            mActionBarDrawerToggle = null;
-        }
-
+        mNavigationButton = navigationButton;
         setNavigationOnClickListener(this);
 
         switch (mNavigationButton) {
@@ -493,7 +454,6 @@ public class SelectableListToolbar<E>
 
         mSelectionDelegate.clearSelection();
         if (mIsSearching) hideSearchView();
-        if (mDrawerLayout != null) mDrawerLayout.closeDrawer(GravityCompat.START);
     }
 
     /**
@@ -563,20 +523,6 @@ public class SelectableListToolbar<E>
         return mSelectionDelegate;
     }
 
-    /**
-     * Set up ActionBarDrawerToggle, a.k.a. hamburger button.
-     */
-    private void initActionBarDrawerToggle() {
-        // Sadly, the only way to set correct toolbar button listener for ActionBarDrawerToggle
-        // is constructing, so we will need to construct every time we re-show this button.
-        mActionBarDrawerToggle = new ActionBarDrawerToggle((Activity) getContext(),
-                mDrawerLayout, this,
-                R.string.accessibility_drawer_toggle_btn_open,
-                R.string.accessibility_drawer_toggle_btn_close);
-        mDrawerLayout.addDrawerListener(mActionBarDrawerToggle);
-        mActionBarDrawerToggle.syncState();
-    }
-
     protected void showNormalView() {
         getMenu().setGroupVisible(mNormalGroupResId, true);
         getMenu().setGroupVisible(mSelectedGroupResId, false);
@@ -585,7 +531,7 @@ public class SelectableListToolbar<E>
             updateSearchMenuItem();
         }
 
-        setNavigationButton(NAVIGATION_BUTTON_MENU);
+        setNavigationButton(NAVIGATION_BUTTON_NONE);
         setBackgroundColor(mNormalBackgroundColor);
         setOverflowIcon(mNormalMenuButton);
         if (mTitleResId != 0) setTitle(mTitleResId);
@@ -704,7 +650,7 @@ public class SelectableListToolbar<E>
             if (mShowInfoIcon) {
                 Drawable iconDrawable =
                         TintedDrawable.constructTintedDrawable(getContext(), R.drawable.btn_info,
-                                infoShowing ? R.color.blue_mode_tint : R.color.dark_mode_tint);
+                                infoShowing ? R.color.blue_mode_tint : R.color.standard_mode_tint);
 
                 infoMenuItem.setIcon(iconDrawable);
             }

@@ -188,6 +188,153 @@ TEST_F(FPDFTransformEmbedderTest, NoArtBox) {
   UnloadPage(page);
 }
 
+TEST_F(FPDFTransformEmbedderTest, SetCropBox) {
+  const char kOriginalMD5[] = "0a90de37f52127619c3dfb642b5fa2fe";
+  const char kCroppedMD5[] = "9937883715d5144c079fb8f7e3d4f395";
+
+  {
+    ASSERT_TRUE(OpenDocument("rectangles.pdf"));
+    FPDF_PAGE page = LoadPage(0);
+    ASSERT_TRUE(page);
+
+    {
+      // Render the page as is.
+      FS_RECTF cropbox;
+      EXPECT_FALSE(FPDFPage_GetCropBox(page, &cropbox.left, &cropbox.bottom,
+                                       &cropbox.right, &cropbox.top));
+      const int page_width = static_cast<int>(FPDF_GetPageWidth(page));
+      const int page_height = static_cast<int>(FPDF_GetPageHeight(page));
+      EXPECT_EQ(200, page_width);
+      EXPECT_EQ(300, page_height);
+      ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+      CompareBitmap(bitmap.get(), page_width, page_height, kOriginalMD5);
+    }
+
+    FPDFPage_SetCropBox(page, 10, 20, 100, 150);
+
+    {
+      // Render the page after setting the CropBox.
+      // Note that the change affects the rendering, as expected.
+      // It behaves just like the case below, rather than the case above.
+      FS_RECTF cropbox;
+      EXPECT_TRUE(FPDFPage_GetCropBox(page, &cropbox.left, &cropbox.bottom,
+                                      &cropbox.right, &cropbox.top));
+      EXPECT_EQ(10, cropbox.left);
+      EXPECT_EQ(20, cropbox.bottom);
+      EXPECT_EQ(100, cropbox.right);
+      EXPECT_EQ(150, cropbox.top);
+      const int page_width = static_cast<int>(FPDF_GetPageWidth(page));
+      const int page_height = static_cast<int>(FPDF_GetPageHeight(page));
+      EXPECT_EQ(90, page_width);
+      EXPECT_EQ(130, page_height);
+      ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+      CompareBitmap(bitmap.get(), page_width, page_height, kCroppedMD5);
+    }
+
+    UnloadPage(page);
+  }
+
+  {
+    // Save a copy, open the copy, and render it.
+    // Note that it renders the rotation.
+    EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+    ASSERT_TRUE(OpenSavedDocument());
+    FPDF_PAGE saved_page = LoadSavedPage(0);
+    ASSERT_TRUE(saved_page);
+
+    FS_RECTF cropbox;
+    EXPECT_TRUE(FPDFPage_GetCropBox(saved_page, &cropbox.left, &cropbox.bottom,
+                                    &cropbox.right, &cropbox.top));
+    EXPECT_EQ(10, cropbox.left);
+    EXPECT_EQ(20, cropbox.bottom);
+    EXPECT_EQ(100, cropbox.right);
+    EXPECT_EQ(150, cropbox.top);
+    const int page_width = static_cast<int>(FPDF_GetPageWidth(saved_page));
+    const int page_height = static_cast<int>(FPDF_GetPageHeight(saved_page));
+    EXPECT_EQ(90, page_width);
+    EXPECT_EQ(130, page_height);
+    ScopedFPDFBitmap bitmap = RenderSavedPage(saved_page);
+    CompareBitmap(bitmap.get(), page_width, page_height, kCroppedMD5);
+
+    CloseSavedPage(saved_page);
+    CloseSavedDocument();
+  }
+}
+
+TEST_F(FPDFTransformEmbedderTest, SetMediaBox) {
+  const char kOriginalMD5[] = "0a90de37f52127619c3dfb642b5fa2fe";
+  const char kShrunkMD5[] = "eab5958f62f7ce65d7c32de98389fee1";
+
+  {
+    ASSERT_TRUE(OpenDocument("rectangles.pdf"));
+    FPDF_PAGE page = LoadPage(0);
+    ASSERT_TRUE(page);
+
+    {
+      // Render the page as is.
+      FS_RECTF mediabox;
+      EXPECT_FALSE(FPDFPage_GetMediaBox(page, &mediabox.left, &mediabox.bottom,
+                                        &mediabox.right, &mediabox.top));
+      const int page_width = static_cast<int>(FPDF_GetPageWidth(page));
+      const int page_height = static_cast<int>(FPDF_GetPageHeight(page));
+      EXPECT_EQ(200, page_width);
+      EXPECT_EQ(300, page_height);
+      ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+      CompareBitmap(bitmap.get(), page_width, page_height, kOriginalMD5);
+    }
+
+    FPDFPage_SetMediaBox(page, 20, 30, 100, 150);
+
+    {
+      // Render the page after setting the MediaBox.
+      // Note that the change affects the rendering, as expected.
+      // It behaves just like the case below, rather than the case above.
+      FS_RECTF mediabox;
+      EXPECT_TRUE(FPDFPage_GetMediaBox(page, &mediabox.left, &mediabox.bottom,
+                                       &mediabox.right, &mediabox.top));
+      EXPECT_EQ(20, mediabox.left);
+      EXPECT_EQ(30, mediabox.bottom);
+      EXPECT_EQ(100, mediabox.right);
+      EXPECT_EQ(150, mediabox.top);
+      const int page_width = static_cast<int>(FPDF_GetPageWidth(page));
+      const int page_height = static_cast<int>(FPDF_GetPageHeight(page));
+      EXPECT_EQ(80, page_width);
+      EXPECT_EQ(120, page_height);
+      ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+      CompareBitmap(bitmap.get(), page_width, page_height, kShrunkMD5);
+    }
+
+    UnloadPage(page);
+  }
+
+  {
+    // Save a copy, open the copy, and render it.
+    // Note that it renders the rotation.
+    EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+    ASSERT_TRUE(OpenSavedDocument());
+    FPDF_PAGE saved_page = LoadSavedPage(0);
+    ASSERT_TRUE(saved_page);
+
+    FS_RECTF mediabox;
+    EXPECT_TRUE(FPDFPage_GetMediaBox(saved_page, &mediabox.left,
+                                     &mediabox.bottom, &mediabox.right,
+                                     &mediabox.top));
+    EXPECT_EQ(20, mediabox.left);
+    EXPECT_EQ(30, mediabox.bottom);
+    EXPECT_EQ(100, mediabox.right);
+    EXPECT_EQ(150, mediabox.top);
+    const int page_width = static_cast<int>(FPDF_GetPageWidth(saved_page));
+    const int page_height = static_cast<int>(FPDF_GetPageHeight(saved_page));
+    EXPECT_EQ(80, page_width);
+    EXPECT_EQ(120, page_height);
+    ScopedFPDFBitmap bitmap = RenderSavedPage(saved_page);
+    CompareBitmap(bitmap.get(), page_width, page_height, kShrunkMD5);
+
+    CloseSavedPage(saved_page);
+    CloseSavedDocument();
+  }
+}
+
 TEST_F(FPDFTransformEmbedderTest, ClipPath) {
   ASSERT_TRUE(OpenDocument("hello_world.pdf"));
 
@@ -206,5 +353,42 @@ TEST_F(FPDFTransformEmbedderTest, ClipPath) {
   // TODO(tsepez): test how inserting path affects page rendering.
 
   FPDF_DestroyClipPath(clip);
+  UnloadPage(page);
+}
+
+TEST_F(FPDFTransformEmbedderTest, TransFormWithClip) {
+  const FS_MATRIX half_matrix{0.5, 0, 0, 0.5, 0, 0};
+  const FS_RECTF clip_rect = {0.0f, 0.0f, 20.0f, 10.0f};
+
+  ASSERT_TRUE(OpenDocument("hello_world.pdf"));
+
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  EXPECT_FALSE(FPDFPage_TransFormWithClip(nullptr, nullptr, nullptr));
+  EXPECT_FALSE(FPDFPage_TransFormWithClip(nullptr, &half_matrix, nullptr));
+  EXPECT_FALSE(FPDFPage_TransFormWithClip(nullptr, nullptr, &clip_rect));
+  EXPECT_FALSE(FPDFPage_TransFormWithClip(nullptr, &half_matrix, &clip_rect));
+  EXPECT_FALSE(FPDFPage_TransFormWithClip(page, nullptr, nullptr));
+  EXPECT_TRUE(FPDFPage_TransFormWithClip(page, &half_matrix, nullptr));
+  EXPECT_TRUE(FPDFPage_TransFormWithClip(page, nullptr, &clip_rect));
+  EXPECT_TRUE(FPDFPage_TransFormWithClip(page, &half_matrix, &clip_rect));
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFTransformEmbedderTest, TransFormWithClipWithPatterns) {
+  const FS_MATRIX half_matrix{0.5, 0, 0, 0.5, 0, 0};
+  const FS_RECTF clip_rect = {0.0f, 0.0f, 20.0f, 10.0f};
+
+  ASSERT_TRUE(OpenDocument("bug_547706.pdf"));
+
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  EXPECT_TRUE(FPDFPage_TransFormWithClip(page, &half_matrix, nullptr));
+  EXPECT_TRUE(FPDFPage_TransFormWithClip(page, nullptr, &clip_rect));
+  EXPECT_TRUE(FPDFPage_TransFormWithClip(page, &half_matrix, &clip_rect));
+
   UnloadPage(page);
 }

@@ -11,8 +11,8 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -133,7 +133,7 @@ const TemplateURLService::Initializer KeywordProviderTest::kTestData[] = {
 void KeywordProviderTest::SetUpClientAndKeywordProvider() {
   client_.reset(new MockAutocompleteProviderClient());
   client_->set_template_url_service(
-      std::make_unique<TemplateURLService>(kTestData, arraysize(kTestData)));
+      std::make_unique<TemplateURLService>(kTestData, base::size(kTestData)));
   kw_provider_ = new KeywordProvider(client_.get(), nullptr);
 }
 
@@ -267,7 +267,7 @@ TEST_F(KeywordProviderTest, Edit) {
   };
 
   SetUpClientAndKeywordProvider();
-  RunTest<base::string16>(edit_cases, arraysize(edit_cases),
+  RunTest<base::string16>(edit_cases, base::size(edit_cases),
                           &AutocompleteMatch::fill_into_edit);
 }
 
@@ -318,7 +318,7 @@ TEST_F(KeywordProviderTest, DomainMatches) {
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
   SetUpClientAndKeywordProvider();
-  RunTest<base::string16>(edit_cases, arraysize(edit_cases),
+  RunTest<base::string16>(edit_cases, base::size(edit_cases),
                           &AutocompleteMatch::fill_into_edit);
 }
 
@@ -363,7 +363,7 @@ TEST_F(KeywordProviderTest, IgnoreRegistryForScoring) {
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
   SetUpClientAndKeywordProvider();
-  RunTest<base::string16>(edit_cases, arraysize(edit_cases),
+  RunTest<base::string16>(edit_cases, base::size(edit_cases),
                           &AutocompleteMatch::fill_into_edit);
 }
 
@@ -401,7 +401,7 @@ TEST_F(KeywordProviderTest, URL) {
   };
 
   SetUpClientAndKeywordProvider();
-  RunTest<GURL>(url_cases, arraysize(url_cases),
+  RunTest<GURL>(url_cases, base::size(url_cases),
                 &AutocompleteMatch::destination_url);
 }
 
@@ -452,7 +452,7 @@ TEST_F(KeywordProviderTest, Contents) {
   };
 
   SetUpClientAndKeywordProvider();
-  RunTest<base::string16>(contents_cases, arraysize(contents_cases),
+  RunTest<base::string16>(contents_cases, base::size(contents_cases),
                           &AutocompleteMatch::contents);
 }
 
@@ -577,7 +577,7 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
       base::string16::npos },
   };
   SetUpClientAndKeywordProvider();
-  for (size_t i = 0; i < arraysize(cases); i++) {
+  for (size_t i = 0; i < base::size(cases); i++) {
     AutocompleteInput input(
         ASCIIToUTF16(cases[i].text), cases[i].cursor_position,
         metrics::OmniboxEventProto::OTHER, TestingSchemeClassifier());
@@ -608,7 +608,7 @@ TEST_F(KeywordProviderTest, ExtraQueryParams) {
   };
 
   SetUpClientAndKeywordProvider();
-  RunTest<GURL>(url_cases, arraysize(url_cases),
+  RunTest<GURL>(url_cases, base::size(url_cases),
                 &AutocompleteMatch::destination_url);
 }
 

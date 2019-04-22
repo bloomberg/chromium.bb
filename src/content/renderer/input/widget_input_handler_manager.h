@@ -18,8 +18,12 @@
 namespace blink {
 namespace scheduler {
 class WebThreadScheduler;
-};  // namespace scheduler
-};  // namespace blink
+}  // namespace scheduler
+}  // namespace blink
+
+namespace gfx {
+struct PresentationFeedback;
+}  // namespace gfx
 
 namespace content {
 class MainThreadEventQueue;
@@ -29,14 +33,16 @@ class SynchronousCompositorProxyRegistry;
 // This class maintains the compositor InputHandlerProxy and is
 // responsible for passing input events on the compositor and main threads.
 // The lifecycle of this object matches that of the RenderWidget.
-class CONTENT_EXPORT WidgetInputHandlerManager
+class CONTENT_EXPORT WidgetInputHandlerManager final
     : public base::RefCountedThreadSafe<WidgetInputHandlerManager>,
-      public ui::InputHandlerProxyClient {
+      public ui::InputHandlerProxyClient,
+      public base::SupportsWeakPtr<WidgetInputHandlerManager> {
  public:
   static scoped_refptr<WidgetInputHandlerManager> Create(
       base::WeakPtr<RenderWidget> render_widget,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-      blink::scheduler::WebThreadScheduler* main_thread_scheduler);
+      blink::scheduler::WebThreadScheduler* main_thread_scheduler,
+      bool needs_input_handler);
   void AddAssociatedInterface(
       mojom::WidgetInputHandlerAssociatedRequest interface_request,
       mojom::WidgetInputHandlerHostPtr host);
@@ -85,6 +91,13 @@ class CONTENT_EXPORT WidgetInputHandlerManager
   content::SynchronousCompositorRegistry* GetSynchronousCompositorRegistry();
 #endif
 
+  void InvokeInputProcessedCallback();
+  void InputWasProcessed(const gfx::PresentationFeedback& feedback);
+  void WaitForInputProcessed(base::OnceClosure callback);
+
+  void FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
+  void FallbackCursorModeSetCursorVisibility(bool visible);
+
  protected:
   friend class base::RefCountedThreadSafe<WidgetInputHandlerManager>;
   ~WidgetInputHandlerManager() override;
@@ -94,8 +107,8 @@ class CONTENT_EXPORT WidgetInputHandlerManager
       base::WeakPtr<RenderWidget> render_widget,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       blink::scheduler::WebThreadScheduler* main_thread_scheduler);
-  void Init();
-  void InitOnCompositorThread(
+  void InitInputHandler();
+  void InitOnInputHandlingThread(
       const base::WeakPtr<cc::InputHandler>& input_handler,
       bool smooth_scroll_enabled,
       bool sync_compositing);
@@ -118,9 +131,14 @@ class CONTENT_EXPORT WidgetInputHandlerManager
       const ui::LatencyInfo& latency_info,
       std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
       base::Optional<cc::TouchAction> touch_action);
-  void ObserveGestureEventOnCompositorThread(
+  void ObserveGestureEventOnInputHandlingThread(
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
+
+  // Returns the task runner for the thread that receives input. i.e. the
+  // "Mojo-bound" thread.
+  const scoped_refptr<base::SingleThreadTaskRunner>& InputThreadTaskRunner()
+      const;
 
   // Only valid to be called on the main thread.
   base::WeakPtr<RenderWidget> render_widget_;
@@ -147,6 +165,15 @@ class CONTENT_EXPORT WidgetInputHandlerManager
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
   base::Optional<cc::TouchAction> white_listed_touch_action_;
+
+  // Callback used to respond to the WaitForInputProcessed Mojo message. This
+  // callback is set from and must be invoked from the Mojo-bound thread (i.e.
+  // the InputThreadTaskRunner thread), it will invoke the Mojo reply.
+  base::OnceClosure input_processed_callback_;
+
+  // Whether this widget uses an InputHandler or forwards all input to the
+  // WebWidget (Popups, Plugins).
+  bool uses_input_handler_ = false;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<SynchronousCompositorProxyRegistry>

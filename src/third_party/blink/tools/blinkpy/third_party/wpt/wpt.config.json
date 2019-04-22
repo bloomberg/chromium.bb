@@ -3,6 +3,7 @@
   "ws_doc_root": null,
   "check_subdomains": false,
   "server_host": "127.0.0.1",
+  "log_level": "info",
   "ports": {
     "http": [8001, 8081],
     "https": [8444],
@@ -18,6 +19,10 @@
     }
   },
   "aliases": [
+    {
+      "url-path": "/wpt_internal/",
+      "local-dir": "../../../../../web_tests/wpt_internal"
+    },
     {
       "url-path": "/wpt_automation/",
       "local-dir": "../../../../../web_tests/external/wpt_automation"

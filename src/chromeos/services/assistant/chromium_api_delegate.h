@@ -12,6 +12,10 @@
 #include "base/macros.h"
 #include "libassistant/shared/internal_api/fuchsia_api_helper.h"
 
+namespace network {
+class SharedURLLoaderFactoryInfo;
+}  // namespace network
+
 namespace chromeos {
 namespace assistant {
 
@@ -19,8 +23,9 @@ class ChromiumHttpConnectionFactory;
 
 class ChromiumApiDelegate : public assistant_client::FuchsiaApiDelegate {
  public:
-  ChromiumApiDelegate(
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  explicit ChromiumApiDelegate(
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          url_loader_factory_info);
   ~ChromiumApiDelegate() override;
   // assistant_client::FuchsiaApiDelegate overrides:
   assistant_client::HttpConnectionFactory* GetHttpConnectionFactory() override;

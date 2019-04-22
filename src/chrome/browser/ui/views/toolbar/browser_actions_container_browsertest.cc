@@ -24,6 +24,7 @@
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/controls/resize_area.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/view.h"
 
@@ -85,13 +86,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
 
   const extensions::ExtensionSet& extension_set =
       extensions::ExtensionRegistry::Get(profile())->enabled_extensions();
-  const std::vector<ToolbarActionsModel::ToolbarItem>& toolbar_items =
-      toolbar_model()->toolbar_items();
+  const std::vector<ToolbarActionsModel::ActionId>& toolbar_action_ids =
+      toolbar_model()->action_ids();
 
   // This order should be reflected in the underlying model.
-  EXPECT_EQ(extension_b(), extension_set.GetByID(toolbar_items[0].id));
-  EXPECT_EQ(extension_a(), extension_set.GetByID(toolbar_items[1].id));
-  EXPECT_EQ(extension_c(), extension_set.GetByID(toolbar_items[2].id));
+  EXPECT_EQ(extension_b(), extension_set.GetByID(toolbar_action_ids[0]));
+  EXPECT_EQ(extension_a(), extension_set.GetByID(toolbar_action_ids[1]));
+  EXPECT_EQ(extension_c(), extension_set.GetByID(toolbar_action_ids[2]));
 
   // Simulate a drag and drop to the left.
   ui::OSExchangeData drop_data2;
@@ -235,6 +236,230 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_TRUE(browser_actions_bar()->CanBeResized());
+}
+
+namespace {
+
+// Wraps an existing browser actions container (BAC) delegate and forwards all
+// calls to it, except for reporting the max width available to the BAC, which
+// it intercepts. Injected into a live BAC for testing.
+class ForwardingDelegate : public BrowserActionsContainer::Delegate {
+ public:
+  explicit ForwardingDelegate(BrowserActionsContainer::Delegate* forward_to);
+  virtual ~ForwardingDelegate() = default;
+
+  BrowserActionsContainer::Delegate* forward_to() { return forward_to_; }
+  void set_max_browser_actions_width(
+      const base::Optional<int>& max_browser_actions_width) {
+    max_browser_actions_width_ = max_browser_actions_width;
+  }
+
+ protected:
+  // BrowserActionsContainer::Delegate:
+  views::MenuButton* GetOverflowReferenceView() override;
+  std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
+      ToolbarActionsBarDelegate* delegate,
+      Browser* browser,
+      ToolbarActionsBar* main_bar) const override;
+  base::Optional<int> GetMaxBrowserActionsWidth() const override;
+
+ private:
+  BrowserActionsContainer::Delegate* const forward_to_;
+  base::Optional<int> max_browser_actions_width_;
+};
+
+ForwardingDelegate::ForwardingDelegate(
+    BrowserActionsContainer::Delegate* forward_to)
+    : forward_to_(forward_to),
+      max_browser_actions_width_(forward_to->GetMaxBrowserActionsWidth()) {}
+
+views::MenuButton* ForwardingDelegate::GetOverflowReferenceView() {
+  return forward_to_->GetOverflowReferenceView();
+}
+
+std::unique_ptr<ToolbarActionsBar> ForwardingDelegate::CreateToolbarActionsBar(
+    ToolbarActionsBarDelegate* delegate,
+    Browser* browser,
+    ToolbarActionsBar* main_bar) const {
+  return forward_to_->CreateToolbarActionsBar(delegate, browser, main_bar);
+}
+
+base::Optional<int> ForwardingDelegate::GetMaxBrowserActionsWidth() const {
+  return max_browser_actions_width_;
+}
+
+}  // namespace
+
+// Contains (mostly regression) tests that rely on direct access to the browser
+// action container's internal members. This test fixture is a friend of
+// BrowserActionContainer.
+class BrowserActionsContainerBrowserTest : public BrowserActionsBarBrowserTest {
+ public:
+  BrowserActionsContainerBrowserTest() = default;
+  ~BrowserActionsContainerBrowserTest() override = default;
+
+  ForwardingDelegate* test_delegate() { return test_delegate_.get(); }
+
+  views::ResizeArea* GetResizeArea();
+  void UpdateResizeArea();
+  int GetMinimumSize();
+  int GetMaximumSize();
+
+ protected:
+  // BrowserActionsBarBrowserTest:
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
+
+ private:
+  BrowserActionsContainer* GetContainer();
+
+  std::unique_ptr<ForwardingDelegate> test_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainerBrowserTest);
+};
+
+views::ResizeArea* BrowserActionsContainerBrowserTest::GetResizeArea() {
+  return GetContainer()->resize_area_;
+}
+
+void BrowserActionsContainerBrowserTest::UpdateResizeArea() {
+  return GetContainer()->UpdateResizeArea();
+}
+
+int BrowserActionsContainerBrowserTest::GetMinimumSize() {
+  return GetContainer()->GetWidthForIconCount(1);
+}
+
+int BrowserActionsContainerBrowserTest::GetMaximumSize() {
+  return GetContainer()->GetWidthWithAllActionsVisible();
+}
+
+void BrowserActionsContainerBrowserTest::SetUpOnMainThread() {
+  BrowserActionsBarBrowserTest::SetUpOnMainThread();
+  BrowserActionsContainer* const container = GetContainer();
+  // Create and inject a test delegate. We need to do const-fu because in the
+  // production code the delegate is (rightly) a const pointer.
+  test_delegate_ = std::make_unique<ForwardingDelegate>(container->delegate_);
+  *const_cast<BrowserActionsContainer::Delegate**>(&container->delegate_) =
+      test_delegate_.get();
+  LoadExtensions();
+}
+
+void BrowserActionsContainerBrowserTest::TearDownOnMainThread() {
+  if (test_delegate_) {
+    BrowserActionsContainer* const container = GetContainer();
+    // De-inject the test delegate. We need to do const-fu because in the
+    // production code the delegate is (rightly) a const pointer.
+    *const_cast<BrowserActionsContainer::Delegate**>(&container->delegate_) =
+        test_delegate_->forward_to();
+    test_delegate_.reset();
+  }
+  BrowserActionsBarBrowserTest::TearDownOnMainThread();
+}
+
+BrowserActionsContainer* BrowserActionsContainerBrowserTest::GetContainer() {
+  return BrowserView::GetBrowserViewForBrowser(browser())
+      ->toolbar()
+      ->browser_actions();
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
+                       CanResize_InHighlightMode) {
+  views::ResizeArea* const resize_area = GetResizeArea();
+  UpdateResizeArea();
+
+  // Resize area should be enabled by default.
+  EXPECT_TRUE(resize_area->enabled());
+
+  std::vector<std::string> action_ids;
+  action_ids.push_back(extension_a()->id());
+  action_ids.push_back(extension_b()->id());
+  toolbar_model()->HighlightActions(action_ids,
+                                    ToolbarActionsModel::HIGHLIGHT_WARNING);
+
+  UpdateResizeArea();
+
+  // Resize area is disabled in highlight mode.
+  EXPECT_FALSE(resize_area->enabled());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
+                       CanResize_AtMinimumWidth) {
+  views::ResizeArea* const resize_area = GetResizeArea();
+  UpdateResizeArea();
+
+  // Resize area should be enabled by default.
+  EXPECT_TRUE(resize_area->enabled());
+
+  // Resize area should be enabled when there is enough space for one icon.
+  const int required_space = GetMinimumSize();
+  test_delegate()->set_max_browser_actions_width(required_space);
+  UpdateResizeArea();
+  EXPECT_TRUE(resize_area->enabled());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
+                       CanResize_AboveMaximumWidth) {
+  views::ResizeArea* const resize_area = GetResizeArea();
+  UpdateResizeArea();
+
+  // Resize area should be enabled by default.
+  EXPECT_TRUE(resize_area->enabled());
+
+  // Resize area should be enabled when there is more than the maximum space
+  // requested.
+  const int max_space = GetMaximumSize();
+  test_delegate()->set_max_browser_actions_width(max_space + 1);
+  UpdateResizeArea();
+  EXPECT_TRUE(resize_area->enabled());
+
+  // Resize area should remain enabled when the space shrinks to the minimum
+  // required.
+  const int required_space = GetMinimumSize();
+  test_delegate()->set_max_browser_actions_width(required_space);
+  UpdateResizeArea();
+  EXPECT_TRUE(resize_area->enabled());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
+                       CannotResize_AtZeroWidth) {
+  views::ResizeArea* const resize_area = GetResizeArea();
+  UpdateResizeArea();
+
+  // Resize area should be enabled by default.
+  EXPECT_TRUE(resize_area->enabled());
+
+  // Resize area should be disabled when there is zero space available.
+  test_delegate()->set_max_browser_actions_width(0);
+  UpdateResizeArea();
+  EXPECT_FALSE(resize_area->enabled());
+
+  // Resize area should be re-enabled when there is enough space.
+  const int required_space = GetMinimumSize();
+  test_delegate()->set_max_browser_actions_width(required_space);
+  UpdateResizeArea();
+  EXPECT_TRUE(resize_area->enabled());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
+                       CannotResize_BelowMinimumWidth) {
+  views::ResizeArea* const resize_area = GetResizeArea();
+  UpdateResizeArea();
+
+  // Resize area should be enabled by default.
+  EXPECT_TRUE(resize_area->enabled());
+
+  // Resize area should be disabled when there is less than the minimum space
+  // for one icon.
+  const int required_space = GetMinimumSize();
+  test_delegate()->set_max_browser_actions_width(required_space - 1);
+  UpdateResizeArea();
+  EXPECT_FALSE(resize_area->enabled());
+
+  // Resize area should be re-enabled when there is enough space.
+  test_delegate()->set_max_browser_actions_width(required_space);
+  UpdateResizeArea();
+  EXPECT_TRUE(resize_area->enabled());
 }
 
 // Test the behavior of the overflow container for Extension Actions.

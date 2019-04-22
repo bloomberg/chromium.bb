@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/one_shot_event.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/version.h"
@@ -33,7 +34,6 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/default_locale_handler.h"
 #include "extensions/common/message_bundle.h"
-#include "extensions/common/one_shot_event.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserContext;
@@ -94,14 +94,15 @@ bool LoadScriptContent(const HostID& host_id,
       script_file->extension_root(), script_file->relative_path(),
       ExtensionResource::SYMLINKS_MUST_RESOLVE_WITHIN_ROOT);
   if (path.empty()) {
-    int resource_id = 0;
+    ComponentExtensionResourceInfo resource_info;
     if (ExtensionsBrowserClient::Get()
             ->GetComponentExtensionResourceManager()
             ->IsComponentExtensionResource(script_file->extension_root(),
                                            script_file->relative_path(),
-                                           &resource_id)) {
+                                           &resource_info)) {
+      DCHECK(!resource_info.gzipped);
       const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      content = rb.GetRawDataResource(resource_id).as_string();
+      content = rb.GetRawDataResource(resource_info.resource_id).as_string();
     } else {
       LOG(WARNING) << "Failed to get file path to "
                    << script_file->relative_path().value() << " from "
@@ -216,8 +217,8 @@ ExtensionUserScriptLoader::ExtensionUserScriptLoader(
     ExtensionSystem::Get(browser_context)
         ->ready()
         .Post(FROM_HERE,
-              base::Bind(&ExtensionUserScriptLoader::OnExtensionSystemReady,
-                         weak_factory_.GetWeakPtr()));
+              base::BindOnce(&ExtensionUserScriptLoader::OnExtensionSystemReady,
+                             weak_factory_.GetWeakPtr()));
   } else {
     SetReady(true);
   }

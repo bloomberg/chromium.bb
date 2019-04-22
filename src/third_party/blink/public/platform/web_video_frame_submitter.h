@@ -18,20 +18,20 @@ enum VideoRotation : int;
 }
 
 namespace viz {
-class ContextProvider;
+class RasterContextProvider;
 }  // namespace viz
 
 namespace blink {
 
 // Sets the proper context_provider and compositing mode onto the Submitter.
 using WebSubmitterConfigurationCallback =
-    base::OnceCallback<void(bool, scoped_refptr<viz::ContextProvider>)>;
-// Callback to obtain the media ContextProvider and a bool indicating whether
-// we are in software compositing mode.
+    base::OnceCallback<void(bool, scoped_refptr<viz::RasterContextProvider>)>;
+
+// Callback to obtain the media RasterContextProvider and a bool indicating
+// whether we are in software compositing mode.
 using WebContextProviderCallback =
-    base::RepeatingCallback<void(scoped_refptr<viz::ContextProvider>,
+    base::RepeatingCallback<void(scoped_refptr<viz::RasterContextProvider>,
                                  WebSubmitterConfigurationCallback)>;
-using WebFrameSinkDestroyedCallback = base::RepeatingCallback<void()>;
 
 // Exposes the VideoFrameSubmitter, which submits CompositorFrames containing
 // decoded VideoFrames from the VideoFrameProvider to the compositor for
@@ -50,22 +50,22 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
   virtual void Initialize(cc::VideoFrameProvider*) = 0;
 
   // Set the rotation state of the video to be used while appending frames.
+  //
+  // TODO(dalecurtis): This could be removed in favor of getting it from each
+  // VideoFrame, but today that information isn't set everywhere.
   virtual void SetRotation(media::VideoRotation) = 0;
 
-  // Set if the video is opaque or not.
-  virtual void SetIsOpaque(bool) = 0;
-
   // Prepares the compositor frame sink to accept frames by providing
-  // a SurfaceId, with its associated allocation time. The callback is to be
-  // used when on context loss to prevent the submitter from continuing to
-  // submit frames with invalid resources.
-  virtual void EnableSubmission(viz::SurfaceId,
-                                base::TimeTicks,
-                                WebFrameSinkDestroyedCallback) = 0;
+  // a SurfaceId, with its associated allocation time.
+  virtual void EnableSubmission(viz::SurfaceId, base::TimeTicks) = 0;
 
-  // Updates whether we should submit frames or not based on whether the video
-  // is visible on screen.
-  virtual void UpdateSubmissionState(bool) = 0;
+  // Set whether the surface is visible within the current view port. Stops
+  // submission if not unless SetForceSubmit(true) has been called.
+  virtual void SetIsSurfaceVisible(bool) = 0;
+
+  // Set whether the page containing the video element is visible. Stops
+  // submission if not unless SetForceSubmit(true) has been called.
+  virtual void SetIsPageVisible(bool) = 0;
 
   // Set whether frames should always be submitted regardless of visibility.
   virtual void SetForceSubmit(bool) = 0;

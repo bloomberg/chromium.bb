@@ -12,7 +12,7 @@
 #include "base/format_macros.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,7 +33,7 @@ namespace {
 // the C++ 0x UTF-16 literal is well-supported by compilers.
 string16 BuildString16(const wchar_t* s) {
 #if defined(WCHAR_T_IS_UTF16)
-  return string16(s);
+  return WideToUTF16(s);
 #elif defined(WCHAR_T_IS_UTF32)
   string16 u16;
   while (*s != 0) {
@@ -163,7 +163,7 @@ static const struct {
 };
 
 TEST(ICUStringConversionsTest, ConvertBetweenCodepageAndUTF16) {
-  for (size_t i = 0; i < arraysize(kConvertCodepageCases); ++i) {
+  for (size_t i = 0; i < base::size(kConvertCodepageCases); ++i) {
     SCOPED_TRACE(base::StringPrintf(
                      "Test[%" PRIuS "]: <encoded: %s> <codepage: %s>", i,
                      kConvertCodepageCases[i].encoded,
@@ -218,7 +218,7 @@ static const struct {
 };
 TEST(ICUStringConversionsTest, ConvertToUtf8AndNormalize) {
   std::string result;
-  for (size_t i = 0; i < arraysize(kConvertAndNormalizeCases); ++i) {
+  for (size_t i = 0; i < base::size(kConvertAndNormalizeCases); ++i) {
     SCOPED_TRACE(base::StringPrintf(
                      "Test[%" PRIuS "]: <encoded: %s> <codepage: %s>", i,
                      kConvertAndNormalizeCases[i].encoded,

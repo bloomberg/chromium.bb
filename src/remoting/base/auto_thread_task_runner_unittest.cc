@@ -30,7 +30,7 @@ TEST(AutoThreadTaskRunnerTest, StartAndStop) {
   // Post a task to make sure it is executed.
   bool success = false;
   message_loop.task_runner()->PostTask(FROM_HERE,
-                                       base::Bind(&SetFlagTask, &success));
+                                       base::BindOnce(&SetFlagTask, &success));
 
   task_runner = NULL;
   run_loop.Run();

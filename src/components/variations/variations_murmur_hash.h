@@ -32,9 +32,9 @@ class VariationsMurmurHash {
   // it produces the same results that MurmurHash3_x86_32 would produce on a
   // little-endian platform.
   //
-  // |length| is the number of bytes to hash. It mustn't exceed
-  // padded_data.size() * 4. If length % 4 != 0, Hash will consume the
-  // less-significant bytes of the last uint32_t first.
+  // |length| is the number of bytes to hash. It mustn't exceed data.size() * 4.
+  // If length % 4 != 0, Hash will consume the less-significant bytes of the
+  // last uint32_t first.
   //
   // MurmurHash3_x86_32 takes a seed, for which 0 is the typical value. Hash
   // hard-codes the seed to 0, since NormalizedMurmurHashEntropyProvider doesn't

@@ -16,15 +16,21 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   auto packet = base::MakeRefCounted<net::IOBufferWithSize>(size);
   memcpy(packet->data(), data, size);
+
+  net::DnsResponse received_response(packet, size);
+  received_response.InitParseWithoutQuery(size);
+
   base::Optional<net::DnsQuery> query;
   query.emplace(packet);
   if (!query->Parse(size)) {
     return 0;
   }
+
   net::DnsResponse response(query->id(), true /* is_authoritative */,
-                            {} /* answers */, {} /* additional records */,
-                            query);
+                            {} /* answers */, {} /* authority_records */,
+                            {} /* additional records */, query);
   std::string out =
       base::HexEncode(response.io_buffer()->data(), response.io_buffer_size());
+
   return 0;
 }

@@ -597,6 +597,13 @@ GLuint TestGLES2Interface::CreateAndConsumeTextureCHROMIUM(
   return texture_id;
 }
 
+GLuint TestGLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM(
+    const GLbyte* mailbox) {
+  GLuint texture_id;
+  GenTextures(1, &texture_id);
+  return texture_id;
+}
+
 void TestGLES2Interface::ResizeCHROMIUM(GLuint width,
                                         GLuint height,
                                         float device_scale,

@@ -94,6 +94,7 @@ uint32_t GetPlatformSpecificTextureTarget() {
 #elif defined(OS_WIN)
   return GL_TEXTURE_2D;
 #else
+  NOTREACHED();
   return 0;
 #endif
 }
@@ -104,6 +105,27 @@ GPU_EXPORT uint32_t GetBufferTextureTarget(gfx::BufferUsage usage,
   bool found = base::ContainsValue(capabilities.texture_target_exception_list,
                                    gfx::BufferUsageAndFormat(usage, format));
   return found ? gpu::GetPlatformSpecificTextureTarget() : GL_TEXTURE_2D;
+}
+
+GPU_EXPORT bool NativeBufferNeedsPlatformSpecificTextureTarget(
+    gfx::BufferFormat format) {
+#if defined(USE_OZONE)
+  // Always use GL_TEXTURE_2D as the target for RGB textures.
+  // https://crbug.com/916728
+  if (format == gfx::BufferFormat::R_8 || format == gfx::BufferFormat::RG_88 ||
+      format == gfx::BufferFormat::RGBA_8888 ||
+      format == gfx::BufferFormat::BGRA_8888 ||
+      format == gfx::BufferFormat::RGBX_8888 ||
+      format == gfx::BufferFormat::BGRX_8888) {
+    return false;
+  }
+#elif defined(OS_ANDROID)
+  if (format == gfx::BufferFormat::BGR_565 ||
+      format == gfx::BufferFormat::RGBA_8888) {
+    return false;
+  }
+#endif
+  return true;
 }
 
 }  // namespace gpu

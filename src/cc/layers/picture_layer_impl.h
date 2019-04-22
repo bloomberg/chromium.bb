@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer.h"
@@ -37,7 +36,10 @@ class CC_EXPORT PictureLayerImpl
   Create(LayerTreeImpl* tree_impl, int id, Layer::LayerMaskType mask_type) {
     return base::WrapUnique(new PictureLayerImpl(tree_impl, id, mask_type));
   }
+  PictureLayerImpl(const PictureLayerImpl&) = delete;
   ~PictureLayerImpl() override;
+
+  PictureLayerImpl& operator=(const PictureLayerImpl&) = delete;
 
   Layer::LayerMaskType mask_type() const { return mask_type_; }
   void SetLayerMaskType(Layer::LayerMaskType type);
@@ -205,8 +207,6 @@ class CC_EXPORT PictureLayerImpl
   // of comparing pointers, since objects pointed to are not guaranteed to
   // exist.
   std::vector<PictureLayerTiling*> last_append_quads_tilings_;
-
-  DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);
 };
 
 }  // namespace cc

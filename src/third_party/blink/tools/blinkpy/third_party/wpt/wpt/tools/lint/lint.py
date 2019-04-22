@@ -16,6 +16,7 @@ from . import fnmatch
 from .. import localpaths
 from ..gitignore.gitignore import PathFilter
 from ..wpt import testfiles
+from ..manifest.vcs import walk
 
 from manifest.sourcefile import SourceFile, js_meta_re, python_meta_re, space_chars, get_any_variants, get_default_any_variants
 from six import binary_type, iteritems, itervalues
@@ -67,14 +68,14 @@ def all_filesystem_paths(repo_root, subdir=None):
         expanded_path = subdir
     else:
         expanded_path = repo_root
-    for dirpath, dirnames, filenames in os.walk(expanded_path):
-        for filename in filenames:
-            path = os.path.relpath(os.path.join(dirpath, filename), repo_root)
-            if path_filter(path):
-                yield path
-        dirnames[:] = [item for item in dirnames if
-                       path_filter(os.path.relpath(os.path.join(dirpath, item) + "/",
-                                                   repo_root)+"/")]
+    for dirpath, dirnames, filenames in path_filter(walk(expanded_path)):
+        for filename, _ in filenames:
+            path = os.path.join(dirpath, filename)
+            if subdir:
+                path = os.path.join(subdir, path)
+            assert not os.path.isabs(path), path
+            yield path
+
 
 def _all_files_equal(paths):
     """
@@ -131,6 +132,28 @@ def check_worker_collision(repo_root, path):
                      path,
                      None)]
     return []
+
+
+def check_gitignore_file(repo_root, path):
+    if not path.endswith(".gitignore"):
+        return []
+
+    path_parts = path.split(os.path.sep)
+    if len(path_parts) == 1:
+        return []
+
+    if path_parts[-1] != ".gitignore":
+        return []
+
+    if (path_parts[0] in ["tools", "docs"] or
+        path_parts[:2] == ["resources", "webidl2"] or
+        path_parts[:3] == ["css", "tools", "apiclient"]):
+        return []
+
+    return [("GITIGNORE",
+             ".gitignore found outside the root",
+             path,
+             None)]
 
 
 def check_ahem_copy(repo_root, path):
@@ -913,7 +936,7 @@ def lint(repo_root, paths, output_format, ignore_glob):
                 logger.info(line)
     return sum(itervalues(error_count))
 
-path_lints = [check_path_length, check_worker_collision, check_ahem_copy]
+path_lints = [check_path_length, check_worker_collision, check_ahem_copy, check_gitignore_file]
 all_paths_lints = [check_css_globally_unique]
 file_lints = [check_regexp_line, check_parsed, check_python_ast, check_script_metadata]
 

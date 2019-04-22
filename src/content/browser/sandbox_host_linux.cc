@@ -6,7 +6,7 @@
 
 #include <sys/socket.h>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"
 
 namespace content {
@@ -16,7 +16,8 @@ SandboxHostLinux::SandboxHostLinux() = default;
 
 // static
 SandboxHostLinux* SandboxHostLinux::GetInstance() {
-  return base::Singleton<SandboxHostLinux>::get();
+  static base::NoDestructor<SandboxHostLinux> instance;
+  return instance.get();
 }
 
 void SandboxHostLinux::Init() {
@@ -51,21 +52,6 @@ void SandboxHostLinux::Init() {
   ipc_thread_.reset(
       new base::DelegateSimpleThread(ipc_handler_.get(), "sandbox_ipc_thread"));
   ipc_thread_->Start();
-}
-
-bool SandboxHostLinux::ShutdownIPCChannel() {
-  return IGNORE_EINTR(close(childs_lifeline_fd_)) == 0;
-}
-
-SandboxHostLinux::~SandboxHostLinux() {
-  if (initialized_) {
-    if (!ShutdownIPCChannel())
-      LOG(ERROR) << "ShutdownIPCChannel failed";
-    if (IGNORE_EINTR(close(child_socket_)) < 0)
-      PLOG(ERROR) << "close";
-
-    ipc_thread_->Join();
-  }
 }
 
 }  // namespace content

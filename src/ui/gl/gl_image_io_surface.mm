@@ -17,10 +17,10 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/mac/display_icc_profiles.h"
 #include "ui/gfx/mac/io_surface.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
-#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/yuv_to_rgb_converter.h"
@@ -244,6 +244,13 @@ unsigned GLImageIOSurface::GetInternalFormat() {
   return internalformat_;
 }
 
+GLImageIOSurface::BindOrCopy GLImageIOSurface::ShouldBindOrCopy() {
+  // YUV_420_BIPLANAR is not supported by BindTexImage.
+  // CopyTexImage is supported by this format as that performs conversion to RGB
+  // as part of the copy operation.
+  return format_ == gfx::BufferFormat::YUV_420_BIPLANAR ? COPY : BIND;
+}
+
 bool GLImageIOSurface::BindTexImage(unsigned target) {
   return BindTexImageWithInternalformat(target, 0);
 }
@@ -251,14 +258,9 @@ bool GLImageIOSurface::BindTexImage(unsigned target) {
 bool GLImageIOSurface::BindTexImageWithInternalformat(unsigned target,
                                                       unsigned internalformat) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(BIND, ShouldBindOrCopy());
   TRACE_EVENT0("gpu", "GLImageIOSurface::BindTexImage");
   base::TimeTicks start_time = base::TimeTicks::Now();
-
-  // YUV_420_BIPLANAR is not supported by BindTexImage.
-  // CopyTexImage is supported by this format as that performs conversion to RGB
-  // as part of the copy operation.
-  if (format_ == gfx::BufferFormat::YUV_420_BIPLANAR)
-    return false;
 
   if (target != GL_TEXTURE_RECTANGLE_ARB) {
     // This might be supported in the future. For now, perform strict
@@ -299,9 +301,7 @@ bool GLImageIOSurface::BindTexImageImpl(unsigned internalformat) {
 
 bool GLImageIOSurface::CopyTexImage(unsigned target) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (format_ != gfx::BufferFormat::YUV_420_BIPLANAR)
-    return false;
+  DCHECK_EQ(COPY, ShouldBindOrCopy());
 
   GLContext* gl_context = GLContext::GetCurrent();
   DCHECK(gl_context);
@@ -453,7 +453,7 @@ GLImage::Type GLImageIOSurface::GetType() const {
 void GLImageIOSurface::SetColorSpace(const gfx::ColorSpace& color_space) {
   if (color_space_ == color_space)
     return;
-  color_space_ = color_space;
+  GLImage::SetColorSpace(color_space);
 
   // Prefer to use data from DisplayICCProfiles, which will give a byte-for-byte
   // match for color spaces of the system displays. Note that DisplayICCProfiles

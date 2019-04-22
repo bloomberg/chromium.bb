@@ -10,10 +10,6 @@
 #include "base/macros.h"
 #include "ui/display/manager/display_configurator.h"
 
-namespace chromeos {
-class PowerManagerClient;
-}
-
 namespace ash {
 
 class ASH_EXPORT ProjectingObserver
@@ -35,11 +31,6 @@ class ASH_EXPORT ProjectingObserver
  private:
   friend class ProjectingObserverTest;
 
-  void set_power_manager_client_for_test(
-      chromeos::PowerManagerClient* power_manager_client) {
-    power_manager_client_for_test_ = power_manager_client;
-  }
-
   // Sends the current projecting state to power manager.
   void SetIsProjecting();
 
@@ -54,9 +45,6 @@ class ASH_EXPORT ProjectingObserver
 
   // Number of outstanding casting sessions.
   int casting_session_count_ = 0;
-
-  // Weak pointer to the DBusClient PowerManagerClient for testing;
-  chromeos::PowerManagerClient* power_manager_client_for_test_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ProjectingObserver);
 };

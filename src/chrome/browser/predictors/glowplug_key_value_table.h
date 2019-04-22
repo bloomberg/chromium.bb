@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/stringprintf.h"
 #include "sql/statement.h"
 
 namespace google {

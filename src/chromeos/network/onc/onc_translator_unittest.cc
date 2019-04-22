@@ -40,7 +40,7 @@ TEST_P(ONCTranslatorOncToShillTest, Translate) {
 
 // Test different network types, such that each ONC object type is tested at
 // least once.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ONCTranslatorOncToShillTest,
     ONCTranslatorOncToShillTest,
     ::testing::Values(
@@ -104,7 +104,7 @@ TEST_P(ONCTranslatorShillToOncTest, Translate) {
                                  translation.get()));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ONCTranslatorShillToOncTest,
     ONCTranslatorShillToOncTest,
     ::testing::Values(

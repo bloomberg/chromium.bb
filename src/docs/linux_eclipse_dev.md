@@ -20,7 +20,7 @@ developing Chromium. It's unpolished, but here's what works:
 
 ### Get & Configure Eclipse
 
-Eclipse 4.3 (Kepler) is known to work with Chromium for Linux.
+Eclipse 4.6.1 (Neon) is known to work with Chromium for Linux.
 
 *   [Download](http://www.eclipse.org/downloads/) the distribution appropriate
     for your OS. For example, for Linux 64-bit/Java 64-bit, use the Linux 64 bit
@@ -115,14 +115,14 @@ Create a single Eclipse project for everything:
 1.  Select toolchain: Linux GCC
 1.  Click Finish.
 
-Chromium uses C++11, so tell the indexer about it. Otherwise it will get
+Chromium uses C++14, so tell the indexer about it. Otherwise it will get
 confused about things like std::unique_ptr.
 
 1.  Right-click on "src" and select "Properties..."
 1.  Navigate to C/C++ General > Preprocess Include Paths, Macros etc. >
     Providers
 1.  Select CDT GCC Built-in Compiler Settings
-1.  In the text box entitled Command to get compiler specs append "-std=c++11"
+1.  In the text box entitled Command to get compiler specs append "-std=c++14"
     (leaving out the quotes)
 
 Chromium has a huge amount of code, enough that Eclipse can take a very long
@@ -165,6 +165,15 @@ most header files, however. Give it more help finding them:
 
 Now the indexer will find many more include files, regardless of which approach
 you take below.
+
+Eclipse will still complain about unresolved includes or invalid declarations
+(semantic errors or code analysis errors in the ```Problems``` tab),
+which you can set eclipse to ignore:
+
+1.  Right-click on "src" and select "Properties..."
+    * Open C++ General > Code Analysis
+    * Change the severity from ```Error``` to ```Warning``` for each of the
+    settings that you want eclipse to ignore.
 
 #### Optional: Manual header paths and symbols
 
@@ -255,6 +264,18 @@ If you want to build multiple different targets in Eclipse (`chrome`,
 You can also drag the toolbar to the bottom of your window to save vertical
 space.
 
+### Optional: Running inside eclipse
+
+Running inside eclipse is fairly straightforward:
+
+1. Create a ```C/C++ Application```:
+     1. ```Run``` > ```Run configurations```
+     2. Double click on ```C/C++ Application```
+     3. Pick a  name (e.g. ```shell```)
+     4. Point to ```C/C++ Application```
+        (e.g. ```src/out/Default/content_shell```)
+     6. Click ```Debug``` to run the program.
+
 ### Optional: Debugging
 
 1.  From the toolbar at the top, click the arrow next to the debug icon and
@@ -268,6 +289,46 @@ space.
     in (main)" unless you want this.
 1.  Set a breakpoint somewhere in your code and click the debug icon to start
     debugging.
+
+#### Multi-process debugging
+
+If you set breakpoints and your debugger session doesn't stop it is because
+both ```chrome``` and ```content_shell ``` spawn sub-processes.
+To debug, you need to attach a debugger to one of those sub-processes.
+
+Eclipse can attach automatically to forked processes
+(Run -> Debug configurations -> Debugger tab), but that doesn't seem to
+work well.
+
+The overall idea is described [here](https://www.chromium.org/blink/getting-started-with-blink-debugging)
+, but one way to accomplish this in eclipse is to run two ```Debug configurations```:
+
+1. Create a ```C/C++ Application```:
+     1. ```Run``` > ```Debug configurations```
+     2. Double click on ```C/C++ Application```
+     3. Pick a  name (e.g. ```shell```)
+     4. Point to ```C/C++ Application```
+        (e.g. ```src/out/Default/content_shell```)
+     5. In the arguments tab, add the following the to program arguments:
+        ```--no-sandbox --renderer-startup-dialog test.html```
+     6. Click ```Debug``` to run the program.
+     7. That will run the application and it will stop with a message like the
+         following:
+       ```Renderer (239930) paused waiting for debugger to attach. Send SIGUSR1 to unpause.```
+     9. ```239930``` is the number of the process running waiting for the ```signal```.
+2. Create a ```C/C++ Attach to Application```:
+    1. ```Run``` > ```Debug configurations```
+    2. Double click on ```C/C++ Attach to Application```
+    3. Pick  a name (e.g. ```shell proc```)
+    4. Click ```Debug``` to run the configuration.
+    5. In the ```Select Processes``` dialog, pick the process that was
+        spawned above (if you type ```content_shell``` it will filter by
+        name)
+    6. Click on ```Debugger console``` to access the ```gdb``` console.
+    7. Send the original process a signal
+        ```signal SIGUSR1```
+    8. That should unblock the original process and you should now be able to
+        set breakpoints.
 
 ### Optional: Accurate symbol information
 
@@ -391,3 +452,5 @@ in practice than the simpler (and less bug-prone) approach above.
     is helpful:
 1.  For improved performance, I use medium-granularity projects (eg. one for
     WebKit/Source) instead of putting all of 'src/' in one project.
+1. Running [```content_shell```](https://www.chromium.org/developers/content-module)
+   as opposed to all of ```chrome```  is a lot faster/smaller.

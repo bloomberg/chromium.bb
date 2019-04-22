@@ -16,7 +16,6 @@
 <translation id="152892567002884378">ஒலியளவை அதிகரிக்கும்</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, பின்னர் <ph name="ESC" />ஐ அழுத்தவும்</translation>
 <translation id="1652741121070700329">முந்தைய சொல்லின் தொடக்கத்திற்கு நகர்த்தும்</translation>
-<translation id="1671169355475348905">முந்தைய மொழியின் உள்ளீட்டு முறைக்கு மாற்றும்</translation>
 <translation id="1679841710523778799">ஒளிர்வை அதிகரிக்கும்</translation>
 <translation id="168356808214100546"><ph name="ALT" />ஐ அழுத்திப் பிடித்து, நீங்கள் திறக்க விரும்பும் சாளரத்திற்குச் செல்லும் வரை <ph name="TAB" />ஐத் தட்டி, பின்னர் விடுவிக்கவும்.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">புக்மார்க் பட்டியைக் காட்டும் அல்லது மறைக்கும்</translation>
 <translation id="2185166372312820725">முந்தைய தாவலுக்குச் செல்லும்</translation>
 <translation id="2194790690264064655"><ph name="CTRL" />ஐ அழுத்தி, இணைப்பைக் கிளிக் செய்யவும்</translation>
+<translation id="2246352309084894470">முழுத்திரைத் தொடக்கியைத் திறக்கும்/மூடும்</translation>
 <translation id="2382644247745281995">தற்போதைய விசைப்பலகைத் தளவமைப்புக்கு ஆதரிக்கப்படாது</translation>
 <translation id="2397416548179033562">Chrome மெனுவைக் காட்டு</translation>
 <translation id="2424073332829844142">கேப்ஸ்லாக்கை இயக்கும் மற்றும் முடக்கும்</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">பக்கத்தில், இயல்பான அளவிற்குக் காட்சியை மீட்டமைக்கும்</translation>
 <translation id="2596078834055697711">சாளரத்தை ஸ்கிரீன்ஷாட் எடுக்கும்</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, பின்னர் <ph name="TAB" /> அல்லது <ph name="RIGHT" />ஐ அழுத்தவும்</translation>
-<translation id="2687057317448262550">அடுத்த மொழியின் உள்ளீட்டு முறைக்கு மாற்றும்</translation>
 <translation id="2699509451653686398">உங்கள் தற்போதைய இணையப் பக்கத்தை புக்மார்க்காகச் சேமிக்கும்</translation>
 <translation id="2750942583782703988">உங்கள் தற்போதைய பக்கத்தை மீண்டும் ஏற்றும்</translation>
 <translation id="2764005613199379871">தேடல் முகவரிப் பட்டியில் ஃபோகஸ் செய்யும்</translation>
@@ -55,7 +54,7 @@
 <translation id="2872353916818027657">முதன்மை மானிட்டர்களை இடம் மாற்று</translation>
 <translation id="2914313326123580426">டெவெலப்பர் கருவிகள் பேனலைக் காட்டும் அல்லது மறைக்கும்</translation>
 <translation id="292495055542441795">முழுத்திரைக்குச் செல்லும்/வெளியேறும்</translation>
-<translation id="3020183492814296499">குறுக்குவழிகள்</translation>
+<translation id="3020183492814296499">ஷார்ட்கட்கள்</translation>
 <translation id="3084301071537457911">உங்கள் ஷெல்ஃபில் அடுத்த உருப்படியைத் தனிப்படுத்தும்</translation>
 <translation id="309173601632226815">உங்கள் ஷெல்ஃபில் தொடக்கிப் பொத்தானைத் தனிப்படுத்தும்</translation>
 <translation id="3105917916468784889">ஸ்கிரீன் ஷாட்டை எடுக்கும்</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">திரையைப் பூட்டு</translation>
 <translation id="6727005317916125192">முந்தைய பலகம்</translation>
 <translation id="6740781404993465795">அடுத்த சொல் அல்லது எழுத்தைத் தேர்ந்தெடுக்கும்</translation>
+<translation id="6755851152783057058">கடைசியாகப் பயன்படுத்திய உள்ளீட்டு முறைக்கு மாறும்</translation>
 <translation id="6760706756348334449">ஒலியளவைக் குறைக்கும்</translation>
 <translation id="6941333068993625698">கருத்தைச் சமர்ப்பி</translation>
 <translation id="6981982820502123353">அணுகல் தன்மை</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">முகவரிப் பட்டியில் இணைய முகவரியைத் தட்டச்சு செய்து, <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" />ஐ அழுத்தவும்</translation>
 <translation id="7254764037241667478">சாதனத்தை உறக்கப் பயன்முறைக்கு அமைக்கும் (இடைநிறுத்தம்)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> அல்லது <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">அடுத்த உள்ளீட்டு முறைக்கு மாறும்</translation>
 <translation id="743754632698445141">ஆப்ஸைப் பிரித்தெடுக்கும்</translation>
 <translation id="7439718573248533901">அடுத்த எழுத்தை நீக்கும் (முன்னோக்கி நீக்குதல்)</translation>
 <translation id="7611271430932669992">பாப்அப்களுக்கும் உரையாடல்களுக்கும் ஃபோகஸை நகர்த்தும்</translation>

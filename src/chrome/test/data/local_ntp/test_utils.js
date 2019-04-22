@@ -193,12 +193,16 @@ function elementIsVisible(elem) {
 /**
  * Creates and initializes a LocalNTP object.
  * @param {boolean} isGooglePage Whether to make it a Google-branded NTP.
+ * @param {?boolean=} removeFakebox Whether the fakebox should be hidden.
+ * @return {!Object} The LocalNTP object.
  */
-function initLocalNTP(isGooglePage) {
+function initLocalNTP(isGooglePage, removeFakebox = false) {
   configData.isGooglePage = isGooglePage;
+  configData.removeFakebox = removeFakebox;
   var localNTP = LocalNTP();
   localNTP.disableIframesAndVoiceSearchForTesting();
   localNTP.init();
+  return localNTP;
 }
 
 

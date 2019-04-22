@@ -17,6 +17,9 @@ class FullscreenModelObserver {
   FullscreenModelObserver() = default;
   virtual ~FullscreenModelObserver() = default;
 
+  // Invoked when |model|'s toolbar heights have been updated.
+  virtual void FullscreenModelToolbarHeightsUpdated(FullscreenModel* model) {}
+
   // Invoked when |model|'s calculated progress() value is updated.
   virtual void FullscreenModelProgressUpdated(FullscreenModel* model) {}
 

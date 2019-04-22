@@ -6,7 +6,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
@@ -20,9 +20,11 @@ namespace blink {
 
 using BlockPainterTest = PaintControllerPaintTest;
 
-INSTANTIATE_SPV2_TEST_CASE_P(BlockPainterTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(BlockPainterTest);
 
 TEST_P(BlockPainterTest, ScrollHitTestProperties) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -36,7 +38,7 @@ TEST_P(BlockPainterTest, ScrollHitTestProperties) {
     </div>
   )HTML");
 
-  auto& container = ToLayoutBlock(*GetLayoutObjectByElementId("container"));
+  auto& container = To<LayoutBlock>(*GetLayoutObjectByElementId("container"));
   auto& child = *GetLayoutObjectByElementId("child");
 
   // The scroll hit test should be after the container background but before the
@@ -75,34 +77,34 @@ TEST_P(BlockPainterTest, ScrollHitTestProperties) {
 
   // The document should not scroll so there should be no scroll offset
   // transform.
-  const auto* root_transform = paint_chunks[0].properties.Transform();
-  EXPECT_EQ(nullptr, root_transform->ScrollNode());
+  const auto& root_transform = paint_chunks[0].properties.Transform();
+  EXPECT_EQ(nullptr, root_transform.ScrollNode());
 
   // The container's background chunk should not scroll and therefore should use
   // the root transform. Its local transform is actually a paint offset
   // transform.
-  const auto* container_transform = paint_chunks[1].properties.Transform();
-  EXPECT_EQ(root_transform, container_transform->Parent());
-  EXPECT_EQ(nullptr, container_transform->ScrollNode());
+  const auto& container_transform = paint_chunks[1].properties.Transform();
+  EXPECT_EQ(&root_transform, container_transform.Parent());
+  EXPECT_EQ(nullptr, container_transform.ScrollNode());
 
   // The scroll hit test should not be scrolled and should not be clipped.
   // Its local transform is actually a paint offset transform.
   const auto& scroll_hit_test_chunk = paint_chunks[2];
-  const auto* scroll_hit_test_transform =
+  const auto& scroll_hit_test_transform =
       scroll_hit_test_chunk.properties.Transform();
-  EXPECT_EQ(nullptr, scroll_hit_test_transform->ScrollNode());
-  EXPECT_EQ(root_transform, scroll_hit_test_transform->Parent());
-  const auto* scroll_hit_test_clip = scroll_hit_test_chunk.properties.Clip();
-  EXPECT_EQ(FloatRect(0, 0, 800, 600), scroll_hit_test_clip->ClipRect().Rect());
+  EXPECT_EQ(nullptr, scroll_hit_test_transform.ScrollNode());
+  EXPECT_EQ(&root_transform, scroll_hit_test_transform.Parent());
+  const auto& scroll_hit_test_clip = scroll_hit_test_chunk.properties.Clip();
+  EXPECT_EQ(FloatRect(0, 0, 800, 600), scroll_hit_test_clip.ClipRect().Rect());
 
   // The scrolled contents should be scrolled and clipped.
   const auto& contents_chunk = RootPaintController().PaintChunks()[3];
-  const auto* contents_transform = contents_chunk.properties.Transform();
-  const auto* contents_scroll = contents_transform->ScrollNode();
+  const auto& contents_transform = contents_chunk.properties.Transform();
+  const auto* contents_scroll = contents_transform.ScrollNode();
   EXPECT_EQ(IntSize(200, 300), contents_scroll->ContentsSize());
   EXPECT_EQ(IntRect(0, 0, 200, 200), contents_scroll->ContainerRect());
-  const auto* contents_clip = contents_chunk.properties.Clip();
-  EXPECT_EQ(FloatRect(0, 0, 200, 200), contents_clip->ClipRect().Rect());
+  const auto& contents_clip = contents_chunk.properties.Clip();
+  EXPECT_EQ(FloatRect(0, 0, 200, 200), contents_clip.ClipRect().Rect());
 
   // The scroll hit test display item maintains a reference to a scroll offset
   // translation node and the contents should be scrolled by this node.
@@ -110,11 +112,13 @@ TEST_P(BlockPainterTest, ScrollHitTestProperties) {
       static_cast<const ScrollHitTestDisplayItem&>(
           RootPaintController()
               .GetDisplayItemList()[scroll_hit_test_chunk.begin_index]);
-  EXPECT_EQ(contents_transform,
+  EXPECT_EQ(&contents_transform,
             &scroll_hit_test_display_item.scroll_offset_node());
 }
 
 TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -125,7 +129,7 @@ TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
   )HTML");
 
   auto& html =
-      ToLayoutBlock(*GetDocument().documentElement()->GetLayoutObject());
+      To<LayoutBlock>(*GetDocument().documentElement()->GetLayoutObject());
   auto& child = *GetLayoutObjectByElementId("child");
 
   // The scroll hit test should be after the document background but before the
@@ -156,21 +160,21 @@ TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
 
   // The scroll hit test should not be scrolled and should not be clipped.
   const auto& scroll_hit_test_chunk = RootPaintController().PaintChunks()[0];
-  const auto* scroll_hit_test_transform =
+  const auto& scroll_hit_test_transform =
       scroll_hit_test_chunk.properties.Transform();
-  EXPECT_EQ(nullptr, scroll_hit_test_transform->ScrollNode());
-  const auto* scroll_hit_test_clip = scroll_hit_test_chunk.properties.Clip();
+  EXPECT_EQ(nullptr, scroll_hit_test_transform.ScrollNode());
+  const auto& scroll_hit_test_clip = scroll_hit_test_chunk.properties.Clip();
   EXPECT_EQ(FloatRect(LayoutRect::InfiniteIntRect()),
-            scroll_hit_test_clip->ClipRect().Rect());
+            scroll_hit_test_clip.ClipRect().Rect());
 
   // The scrolled contents should be scrolled and clipped.
   const auto& contents_chunk = RootPaintController().PaintChunks()[2];
-  const auto* contents_transform = contents_chunk.properties.Transform();
-  const auto* contents_scroll = contents_transform->ScrollNode();
+  const auto& contents_transform = contents_chunk.properties.Transform();
+  const auto* contents_scroll = contents_transform.ScrollNode();
   EXPECT_EQ(IntSize(800, 2000), contents_scroll->ContentsSize());
   EXPECT_EQ(IntRect(0, 0, 800, 600), contents_scroll->ContainerRect());
-  const auto* contents_clip = contents_chunk.properties.Clip();
-  EXPECT_EQ(FloatRect(0, 0, 800, 600), contents_clip->ClipRect().Rect());
+  const auto& contents_clip = contents_chunk.properties.Clip();
+  EXPECT_EQ(FloatRect(0, 0, 800, 600), contents_clip.ClipRect().Rect());
 
   // The scroll hit test display item maintains a reference to a scroll offset
   // translation node and the contents should be scrolled by this node.
@@ -178,20 +182,43 @@ TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
       static_cast<const ScrollHitTestDisplayItem&>(
           RootPaintController()
               .GetDisplayItemList()[scroll_hit_test_chunk.begin_index]);
-  EXPECT_EQ(contents_transform,
+  EXPECT_EQ(&contents_transform,
             &scroll_hit_test_display_item.scroll_offset_node());
 }
 
-class BlockPainterTestWithPaintTouchAction
-    : public PaintControllerPaintTestBase,
-      private ScopedPaintTouchActionRectsForTest {
- public:
-  BlockPainterTestWithPaintTouchAction()
-      : PaintControllerPaintTestBase(),
-        ScopedPaintTouchActionRectsForTest(true) {}
-};
+TEST_P(BlockPainterTest, OverflowRectForCullRectTesting) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='scroller' style='width: 50px; height: 50px; overflow: scroll'>
+      <div style='width: 50px; height: 5000px'></div>
+    </div>
+  )HTML");
+  auto* scroller = To<LayoutBlock>(GetLayoutObjectByElementId("scroller"));
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(LayoutRect(0, 0, 50, 5000),
+              BlockPainter(*scroller).OverflowRectForCullRectTesting(false));
+  } else {
+    EXPECT_EQ(LayoutRect(0, 0, 50, 50),
+              BlockPainter(*scroller).OverflowRectForCullRectTesting(false));
+  }
+}
 
-TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
+TEST_P(BlockPainterTest, OverflowRectCompositedScrollingForCullRectTesting) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='scroller' style='width: 50px; height: 50px; overflow: scroll; will-change: transform'>
+      <div style='width: 50px; height: 5000px'></div>
+    </div>
+  )HTML");
+  auto* scroller = To<LayoutBlock>(GetLayoutObjectByElementId("scroller"));
+  EXPECT_EQ(LayoutRect(0, 0, 50, 5000),
+            BlockPainter(*scroller).OverflowRectForCullRectTesting(false));
+}
+
+// TODO(pdr): These touch action tests should be run for all paint test
+// parameters (using INSTANTIATE_PAINT_TEST_SUITE_P) but they are currently
+// run without flags (i.e., stable configuration).
+class BlockPainterTouchActionTest : public PaintControllerPaintTestBase {};
+
+TEST_F(BlockPainterTouchActionTest, TouchActionRectsWithoutPaint) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -236,8 +263,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
       ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType)));
 }
 
-TEST_F(BlockPainterTestWithPaintTouchAction,
-       TouchActionRectSubsequenceCaching) {
+TEST_F(BlockPainterTouchActionTest, TouchActionRectSubsequenceCaching) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -298,7 +324,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction,
                                hit_test_chunk_properties, hit_test_data)));
 }
 
-TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintCaching) {
+TEST_F(BlockPainterTouchActionTest, TouchActionRectPaintCaching) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -359,7 +385,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintCaching) {
                                hit_test_chunk_properties, hit_test_data)));
 }
 
-TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
+TEST_F(BlockPainterTouchActionTest, TouchActionRectScrollingContents) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -417,7 +443,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
                   GetLayoutView().FirstFragment().ContentsProperties())));
 }
 
-TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintChunkChanges) {
+TEST_F(BlockPainterTouchActionTest, TouchActionRectPaintChunkChanges) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -477,19 +503,13 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectPaintChunkChanges) {
 }
 
 namespace {
-class BlockPainterMockEventListener final : public EventListener {
+class BlockPainterMockEventListener final : public NativeEventListener {
  public:
-  BlockPainterMockEventListener() : EventListener(kCPPEventListenerType) {}
-
-  bool operator==(const EventListener& other) const final {
-    return this == &other;
-  }
-
   void Invoke(ExecutionContext*, Event*) final {}
 };
 }  // namespace
 
-TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
+TEST_F(BlockPainterTouchActionTest, TouchHandlerRectsWithoutPaint) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -511,7 +531,8 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
 
   // Add an event listener to parent and ensure that hit test display items are
   // created for both the parent and child.
-  BlockPainterMockEventListener* callback = new BlockPainterMockEventListener();
+  BlockPainterMockEventListener* callback =
+      MakeGarbageCollected<BlockPainterMockEventListener>();
   auto* parent_element = GetElementById("parent");
   parent_element->addEventListener(event_type_names::kTouchstart, callback);
   UpdateAllLifecyclePhasesForTest();
@@ -532,8 +553,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
       ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType)));
 }
 
-TEST_F(BlockPainterTestWithPaintTouchAction,
-       TouchActionRectsAcrossPaintChanges) {
+TEST_F(BlockPainterTouchActionTest, TouchActionRectsAcrossPaintChanges) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -564,7 +584,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction,
                           IsSameId(child, DisplayItem::kHitTest)));
 }
 
-TEST_F(BlockPainterTestWithPaintTouchAction, ScrolledHitTestChunkProperties) {
+TEST_F(BlockPainterTouchActionTest, ScrolledHitTestChunkProperties) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -587,7 +607,8 @@ TEST_F(BlockPainterTestWithPaintTouchAction, ScrolledHitTestChunkProperties) {
   )HTML");
 
   const auto& scrolling_client = ViewScrollingBackgroundClient();
-  const auto* scroller = ToLayoutBlock(GetLayoutObjectByElementId("scroller"));
+  const auto* scroller =
+      To<LayoutBlock>(GetLayoutObjectByElementId("scroller"));
   const auto* child = GetLayoutObjectByElementId("child");
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&scrolling_client, kDocumentBackgroundType),
@@ -620,14 +641,14 @@ TEST_F(BlockPainterTestWithPaintTouchAction, ScrolledHitTestChunkProperties) {
               scrolled_hit_test_data)));
 
   const auto& scroller_paint_chunk = paint_chunks[1];
-  EXPECT_EQ(FloatRect(0, 0, 100, 100), scroller_paint_chunk.bounds);
+  EXPECT_EQ(IntRect(0, 0, 100, 100), scroller_paint_chunk.bounds);
   // The hit test rect for the scroller itself should not be scrolled.
-  EXPECT_FALSE(scroller_paint_chunk.properties.Transform()->ScrollNode());
+  EXPECT_FALSE(scroller_paint_chunk.properties.Transform().ScrollNode());
 
   const auto& scrolled_paint_chunk = paint_chunks[2];
-  EXPECT_EQ(FloatRect(0, 0, 200, 50), scrolled_paint_chunk.bounds);
+  EXPECT_EQ(IntRect(0, 0, 200, 50), scrolled_paint_chunk.bounds);
   // The hit test rect for the scrolled contents should be scrolled.
-  EXPECT_TRUE(scrolled_paint_chunk.properties.Transform()->ScrollNode());
+  EXPECT_TRUE(scrolled_paint_chunk.properties.Transform().ScrollNode());
 }
 
 }  // namespace blink

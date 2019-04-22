@@ -20,11 +20,11 @@
 #include "SkImageFilterPriv.h"
 #include "SkMakeUnique.h"
 #include "SkMatrix.h"
-#include "SkPDFCanon.h"
 #include "SkPDFDevice.h"
-#include "SkPDFDocument.h"
+#include "SkPDFDocumentPriv.h"
 #include "SkPDFFont.h"
 #include "SkPDFTypes.h"
+#include "SkPDFUnion.h"
 #include "SkPDFUtils.h"
 #include "SkReadBuffer.h"
 #include "SkScalar.h"
@@ -32,7 +32,7 @@
 #include "SkStream.h"
 #include "SkTo.h"
 #include "SkTypes.h"
-#include "sk_tool_utils.h"
+#include "ToolUtils.h"
 
 #include <cstdlib>
 #include <cmath>
@@ -77,97 +77,17 @@ static void assert_emit_eq(skiatest::Reporter* reporter,
     assert_eq(reporter, result, string);
 }
 
-static void TestPDFStream(skiatest::Reporter* reporter) {
-    char streamBytes[] = "Test\nFoo\tBar";
-    auto streamData = skstd::make_unique<SkMemoryStream>(
-            streamBytes, strlen(streamBytes), true);
-    auto stream = sk_make_sp<SkPDFStream>(std::move(streamData));
-    assert_emit_eq(reporter,
-                   *stream,
-                   "<</Length 12>> stream\nTest\nFoo\tBar\nendstream");
-    stream->dict()->insertInt("Attribute", 42);
-    assert_emit_eq(reporter,
-                   *stream,
-                   "<</Length 12\n/Attribute 42>> stream\n"
-                   "Test\nFoo\tBar\nendstream");
-
-    {
-        char streamBytes2[] = "This is a longer string, so that compression "
-                              "can do something with it. With shorter strings, "
-                              "the short circuit logic cuts in and we end up "
-                              "with an uncompressed string.";
-        auto stream = sk_make_sp<SkPDFStream>(
-                SkData::MakeWithCopy(streamBytes2, strlen(streamBytes2)));
-
-        SkDynamicMemoryWStream compressedByteStream;
-        SkDeflateWStream deflateWStream(&compressedByteStream);
-        deflateWStream.write(streamBytes2, strlen(streamBytes2));
-        deflateWStream.finalize();
-
-        SkDynamicMemoryWStream expected;
-        expected.writeText("<</Filter /FlateDecode\n/Length 116>> stream\n");
-        compressedByteStream.writeToStream(&expected);
-        compressedByteStream.reset();
-        expected.writeText("\nendstream");
-        sk_sp<SkData> expectedResultData2(expected.detachAsData());
-        SkString result = emit_to_string(*stream);
-        #ifndef SK_PDF_LESS_COMPRESSION
-        assert_eql(reporter,
-                   result,
-                   (const char*)expectedResultData2->data(),
-                   expectedResultData2->size());
-        #endif
-    }
-}
-
-static void TestObjectNumberMap(skiatest::Reporter* reporter) {
-    SkPDFObjNumMap objNumMap;
-    sk_sp<SkPDFArray> a1(new SkPDFArray);
-    sk_sp<SkPDFArray> a2(new SkPDFArray);
-    sk_sp<SkPDFArray> a3(new SkPDFArray);
-
-    objNumMap.addObjectRecursively(a1.get());
-    objNumMap.addObjectRecursively(a2.get());
-    objNumMap.addObjectRecursively(a3.get());
-
-    // The objects should be numbered in the order they are added,
-    // starting with 1.
-    REPORTER_ASSERT(reporter, objNumMap.getObjectNumber(a1.get()) == 1);
-    REPORTER_ASSERT(reporter, objNumMap.getObjectNumber(a2.get()) == 2);
-    REPORTER_ASSERT(reporter, objNumMap.getObjectNumber(a3.get()) == 3);
-    // Assert that repeated calls to get the object number return
-    // consistent result.
-    REPORTER_ASSERT(reporter, objNumMap.getObjectNumber(a1.get()) == 1);
-}
-
-static void TestObjectRef(skiatest::Reporter* reporter) {
-    sk_sp<SkPDFArray> a1(new SkPDFArray);
-    sk_sp<SkPDFArray> a2(new SkPDFArray);
-    a2->appendObjRef(a1);
-
-    SkPDFObjNumMap catalog;
-    catalog.addObjectRecursively(a1.get());
-    REPORTER_ASSERT(reporter, catalog.getObjectNumber(a1.get()) == 1);
-
-    SkString result = emit_to_string(*a2);
-    // If appendObjRef misbehaves, then the result would
-    // be [[]], not [1 0 R].
-    assert_eq(reporter, result, "[1 0 R]");
-}
-
 // This test used to assert without the fix submitted for
 // http://code.google.com/p/skia/issues/detail?id=1083.
 // SKP files might have invalid glyph ids. This test ensures they are ignored,
 // and there is no assert on input data in Debug mode.
 static void test_issue1083() {
     SkDynamicMemoryWStream outStream;
-    sk_sp<SkDocument> doc(SkPDF::MakeDocument(&outStream));
+    auto doc = SkPDF::MakeDocument(&outStream);
     SkCanvas* canvas = doc->beginPage(100.0f, 100.0f);
-    SkPaint paint;
-    paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
     uint16_t glyphID = 65000;
-    canvas->drawText(&glyphID, 2, 0, 0, paint);
+    canvas->drawSimpleText(&glyphID, 2, kGlyphID_SkTextEncoding, 0, 0, SkFont(), SkPaint());
 
     doc->close();
 }
@@ -226,7 +146,7 @@ static void TestPDFUnion(skiatest::Reporter* reporter) {
 }
 
 static void TestPDFArray(skiatest::Reporter* reporter) {
-    sk_sp<SkPDFArray> array(new SkPDFArray);
+    std::unique_ptr<SkPDFArray> array(new SkPDFArray);
     assert_emit_eq(reporter, *array, "[]");
 
     array->appendInt(42);
@@ -256,28 +176,16 @@ static void TestPDFArray(skiatest::Reporter* reporter) {
                    "[42 .5 0 true /ThisName /AnotherName (This String) "
                    "(Another String)]");
 
-    sk_sp<SkPDFArray> innerArray(new SkPDFArray);
+    std::unique_ptr<SkPDFArray> innerArray(new SkPDFArray);
     innerArray->appendInt(-1);
     array->appendObject(std::move(innerArray));
     assert_emit_eq(reporter, *array,
                    "[42 .5 0 true /ThisName /AnotherName (This String) "
                    "(Another String) [-1]]");
-
-    sk_sp<SkPDFArray> referencedArray(new SkPDFArray);
-    SkPDFObjNumMap catalog;
-    catalog.addObjectRecursively(referencedArray.get());
-    REPORTER_ASSERT(reporter, catalog.getObjectNumber(
-                            referencedArray.get()) == 1);
-    array->appendObjRef(std::move(referencedArray));
-
-    SkString result = emit_to_string(*array);
-    assert_eq(reporter, result,
-              "[42 .5 0 true /ThisName /AnotherName (This String) "
-              "(Another String) [-1] 1 0 R]");
 }
 
 static void TestPDFDict(skiatest::Reporter* reporter) {
-    sk_sp<SkPDFDict> dict(new SkPDFDict);
+    std::unique_ptr<SkPDFDict> dict(new SkPDFDict);
     assert_emit_eq(reporter, *dict, "<<>>");
 
     dict->insertInt("n1", SkToSizeT(42));
@@ -292,7 +200,7 @@ static void TestPDFDict(skiatest::Reporter* reporter) {
     dict->insertScalar("n2", SK_ScalarHalf);
 
     SkString n3("n3");
-    sk_sp<SkPDFArray> innerArray(new SkPDFArray);
+    std::unique_ptr<SkPDFArray> innerArray(new SkPDFArray);
     innerArray->appendInt(-100);
     dict->insertObject(n3, std::move(innerArray));
     assert_emit_eq(reporter, *dict, "<</n1 42\n/n2 .5\n/n3 [-100]>>");
@@ -326,24 +234,12 @@ static void TestPDFDict(skiatest::Reporter* reporter) {
 
     dict.reset(new SkPDFDict("DType"));
     assert_emit_eq(reporter, *dict, "<</Type /DType>>");
-
-    sk_sp<SkPDFArray> referencedArray(new SkPDFArray);
-    SkPDFObjNumMap catalog;
-    catalog.addObjectRecursively(referencedArray.get());
-    REPORTER_ASSERT(reporter, catalog.getObjectNumber(
-                            referencedArray.get()) == 1);
-    dict->insertObjRef("n1", std::move(referencedArray));
-    SkString result = emit_to_string(*dict);
-    assert_eq(reporter, result, "<</Type /DType\n/n1 1 0 R>>");
 }
 
 DEF_TEST(SkPDF_Primitives, reporter) {
     TestPDFUnion(reporter);
     TestPDFArray(reporter);
     TestPDFDict(reporter);
-    TestPDFStream(reporter);
-    TestObjectNumberMap(reporter);
-    TestObjectRef(reporter);
     test_issue1083();
 }
 
@@ -363,9 +259,6 @@ protected:
         fVisited = true;
         offset->fX = offset->fY = 0;
         return sk_ref_sp<SkSpecialImage>(source);
-    }
-    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override {
-        return sk_ref_sp(const_cast<DummyImageFilter*>(this));
     }
 
 private:
@@ -390,7 +283,7 @@ sk_sp<SkFlattenable> DummyImageFilter::CreateProc(SkReadBuffer& buffer) {
 DEF_TEST(SkPDF_ImageFilter, reporter) {
     REQUIRE_PDF_DOCUMENT(SkPDF_ImageFilter, reporter);
     SkDynamicMemoryWStream stream;
-    sk_sp<SkDocument> doc(SkPDF::MakeDocument(&stream));
+    auto doc = SkPDF::MakeDocument(&stream);
     SkCanvas* canvas = doc->beginPage(100.0f, 100.0f);
 
     sk_sp<DummyImageFilter> filter(DummyImageFilter::Make());
@@ -409,18 +302,18 @@ DEF_TEST(SkPDF_ImageFilter, reporter) {
 // Check that PDF rendering of image filters successfully falls back to
 // CPU rasterization.
 DEF_TEST(SkPDF_FontCanEmbedTypeface, reporter) {
-    SkPDFCanon canon;
+    SkNullWStream nullWStream;
+    SkPDFDocument doc(&nullWStream, SkPDF::Metadata());
 
     const char resource[] = "fonts/Roboto2-Regular_NoEmbed.ttf";
     sk_sp<SkTypeface> noEmbedTypeface(MakeResourceAsTypeface(resource));
     if (noEmbedTypeface) {
         REPORTER_ASSERT(reporter,
-                        !SkPDFFont::CanEmbedTypeface(noEmbedTypeface.get(), &canon));
+                        !SkPDFFont::CanEmbedTypeface(noEmbedTypeface.get(), &doc));
     }
-    sk_sp<SkTypeface> portableTypeface(
-            sk_tool_utils::create_portable_typeface(nullptr, SkFontStyle()));
+    sk_sp<SkTypeface> portableTypeface(ToolUtils::create_portable_typeface(nullptr, SkFontStyle()));
     REPORTER_ASSERT(reporter,
-                    SkPDFFont::CanEmbedTypeface(portableTypeface.get(), &canon));
+                    SkPDFFont::CanEmbedTypeface(portableTypeface.get(), &doc));
 }
 
 
@@ -486,9 +379,9 @@ DEF_TEST(SkPDF_Primitives_Color, reporter) {
 }
 
 static SkGlyphRun make_run(size_t len, const SkGlyphID* glyphs, SkPoint* pos,
-                           SkPaint paint, const uint32_t* clusters,
+                           const SkFont& font, const uint32_t* clusters,
                            size_t utf8TextByteLength, const char* utf8Text) {
-    return SkGlyphRun(paint, SkRunFont{paint},
+    return SkGlyphRun(font,
                       SkSpan<const SkPoint>{pos, len},
                       SkSpan<const SkGlyphID>{glyphs, len},
                       SkSpan<const char>{utf8Text, utf8TextByteLength},
@@ -496,8 +389,7 @@ static SkGlyphRun make_run(size_t len, const SkGlyphID* glyphs, SkPoint* pos,
 }
 
 DEF_TEST(SkPDF_Clusterator, reporter) {
-    SkPaint paint;
-    paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+    SkFont font;
     {
         constexpr unsigned len = 11;
         const uint32_t clusters[len] = { 3, 2, 2, 1, 0, 4, 4, 7, 6, 6, 5 };
@@ -505,7 +397,7 @@ DEF_TEST(SkPDF_Clusterator, reporter) {
         SkPoint pos[len] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0},
                                   {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
         const char text[] = "abcdefgh";
-        SkGlyphRun run = make_run(len, glyphs, pos, paint, clusters, strlen(text), text);
+        SkGlyphRun run = make_run(len, glyphs, pos, font, clusters, strlen(text), text);
         SkClusterator clusterator(run);
         SkClusterator::Cluster expectations[] = {
             {&text[3], 1, 0, 1},
@@ -528,7 +420,7 @@ DEF_TEST(SkPDF_Clusterator, reporter) {
         const SkGlyphID glyphs[len] = { 43, 167, 79, 79, 82, };
         SkPoint pos[len] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
         const char text[] = "Ha\xCC\x8A" "llo";
-        SkGlyphRun run = make_run(len, glyphs, pos, paint, clusters, strlen(text), text);
+        SkGlyphRun run = make_run(len, glyphs, pos, font, clusters, strlen(text), text);
         SkClusterator clusterator(run);
         SkClusterator::Cluster expectations[] = {
             {&text[0], 1, 0, 1},

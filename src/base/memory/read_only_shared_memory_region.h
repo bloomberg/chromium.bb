@@ -102,8 +102,19 @@ class BASE_EXPORT ReadOnlySharedMemoryRegion {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest,
+                           SerializeSharedMemoryRegionMetadata);
+  friend class FieldTrialList;
+
   explicit ReadOnlySharedMemoryRegion(
       subtle::PlatformSharedMemoryRegion handle);
+
+  // Returns a platform shared memory handle. |this| remains the owner of the
+  // handle.
+  subtle::PlatformSharedMemoryRegion::PlatformHandle GetPlatformHandle() const {
+    DCHECK(IsValid());
+    return handle_.GetPlatformHandle();
+  }
 
   subtle::PlatformSharedMemoryRegion handle_;
 

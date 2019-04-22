@@ -1,6 +1,7 @@
 #ifndef _RAR_CMDDATA_
 #define _RAR_CMDDATA_
 
+namespace third_party_unrar {
 
 #define DefaultStoreList L"7z;ace;arj;bz2;cab;gz;jpeg;jpg;lha;lz;lzh;mp3;rar;taz;tgz;xz;z;zip;zipx"
 
@@ -60,5 +61,7 @@ class CommandData:public RAROptions
     StringList ArcNames;
     StringList StoreArgs;
 };
+
+}  // namespace third_party_unrar
 
 #endif

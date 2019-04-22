@@ -32,9 +32,9 @@
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -42,9 +42,11 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace blink {
+namespace cc {
+class AnimationHost;
+}
 
-class CompositorAnimationHost;
+namespace blink {
 class CompositorAnimationTimeline;
 class GraphicsLayer;
 class LayoutBox;
@@ -86,12 +88,17 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual ScrollResult UserScroll(ScrollGranularity, const ScrollOffset&);
 
+  using ScrollCallback = base::OnceClosure;
   virtual void SetScrollOffset(const ScrollOffset&,
                                ScrollType,
-                               ScrollBehavior = kScrollBehaviorInstant);
-  virtual void ScrollBy(const ScrollOffset&,
-                        ScrollType,
-                        ScrollBehavior = kScrollBehaviorInstant);
+                               ScrollBehavior,
+                               ScrollCallback on_finish);
+  void SetScrollOffset(const ScrollOffset&,
+                       ScrollType,
+                       ScrollBehavior = kScrollBehaviorInstant);
+  void ScrollBy(const ScrollOffset&,
+                ScrollType,
+                ScrollBehavior = kScrollBehaviorInstant);
   void SetScrollOffsetSingleAxis(ScrollbarOrientation,
                                  float,
                                  ScrollType,
@@ -151,7 +158,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return programmatic_scroll_animator_;
   }
 
-  virtual CompositorAnimationHost* GetCompositorAnimationHost() const {
+  virtual cc::AnimationHost* GetCompositorAnimationHost() const {
     return nullptr;
   }
   virtual CompositorAnimationTimeline* GetCompositorAnimationTimeline() const {
@@ -444,7 +451,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,
                            PopupOverlayScrollbarShouldNotFadeOut);
 
-  void ProgrammaticScrollHelper(const ScrollOffset&, ScrollBehavior, bool);
+  void ProgrammaticScrollHelper(const ScrollOffset&,
+                                ScrollBehavior,
+                                bool,
+                                ScrollCallback on_finish);
   void UserScrollHelper(const ScrollOffset&, ScrollBehavior);
 
   void FadeOverlayScrollbarsTimerFired(TimerBase*);

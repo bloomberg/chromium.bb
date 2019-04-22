@@ -5,6 +5,9 @@
 #include "third_party/blink/renderer/core/inspector/inspector_highlight.h"
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -190,6 +193,61 @@ const ShapeOutsideInfo* ShapeOutsideInfoForNode(Node* node,
   return shape_outside_info;
 }
 
+String ToHEXA(const Color& color) {
+  return String::Format("#%02X%02X%02X%02X", color.Red(), color.Green(),
+                        color.Blue(), color.Alpha());
+}
+
+void AppendStyleInfo(Node* node,
+                     protocol::DictionaryValue* element_info,
+                     const InspectorHighlightContrastInfo& node_contrast) {
+  std::unique_ptr<protocol::DictionaryValue> computed_style =
+      protocol::DictionaryValue::create();
+  CSSStyleDeclaration* style =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
+  Vector<AtomicString> properties;
+
+  // For text nodes, we can show color & font properties.
+  bool has_text_children = false;
+  for (Node* child = node->firstChild(); !has_text_children && child;
+       child = child->nextSibling()) {
+    has_text_children = child->IsTextNode();
+  }
+  if (has_text_children) {
+    properties.push_back("color");
+    properties.push_back("font-family");
+    properties.push_back("font-size");
+    properties.push_back("line-height");
+  }
+
+  properties.push_back("padding");
+  properties.push_back("margin");
+  properties.push_back("background-color");
+
+  for (size_t i = 0; i < properties.size(); ++i) {
+    const CSSValue* value = style->GetPropertyCSSValueInternal(properties[i]);
+    if (!value)
+      continue;
+    if (value->IsColorValue()) {
+      Color color = static_cast<const cssvalue::CSSColorValue*>(value)->Value();
+      computed_style->setString(properties[i], ToHEXA(color));
+    } else {
+      computed_style->setString(properties[i], value->CssText());
+    }
+  }
+  element_info->setValue("style", std::move(computed_style));
+
+  if (!node_contrast.font_size.IsEmpty()) {
+    std::unique_ptr<protocol::DictionaryValue> contrast =
+        protocol::DictionaryValue::create();
+    contrast->setString("fontSize", node_contrast.font_size);
+    contrast->setString("fontWeight", node_contrast.font_weight);
+    contrast->setString("backgroundColor",
+                        ToHEXA(node_contrast.background_color));
+    element_info->setValue("contrast", std::move(contrast));
+  }
+}
+
 std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   std::unique_ptr<protocol::DictionaryValue> element_info =
       protocol::DictionaryValue::create();
@@ -236,7 +294,6 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   DOMRect* bounding_box = element->getBoundingClientRect();
   element_info->setString("nodeWidth", String::Number(bounding_box->width()));
   element_info->setString("nodeHeight", String::Number(bounding_box->height()));
-
   return element_info;
 }
 
@@ -250,50 +307,43 @@ std::unique_ptr<protocol::DictionaryValue> BuildTextNodeInfo(Text* text_node) {
   text_info->setString("nodeWidth", bounding_box.Width().ToString());
   text_info->setString("nodeHeight", bounding_box.Height().ToString());
   text_info->setString("tagName", "#text");
-
   return text_info;
 }
 
-std::unique_ptr<protocol::Value> BuildGapAndPositions(
-    double origin,
-    LayoutUnit gap,
-    const Vector<LayoutUnit>& positions,
-    float scale) {
-  std::unique_ptr<protocol::DictionaryValue> result =
-      protocol::DictionaryValue::create();
-  result->setDouble("origin", floor(origin * scale));
-  result->setDouble("gap", round(gap * scale));
-
-  std::unique_ptr<protocol::ListValue> spans = protocol::ListValue::create();
-  for (const LayoutUnit& position : positions) {
-    spans->pushValue(
-        protocol::FundamentalValue::create(round(position * scale)));
-  }
-  result->setValue("positions", std::move(spans));
-
-  return result;
-}
-
 std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
+    LocalFrameView* containing_view,
     LayoutGrid* layout_grid,
-    FloatPoint origin,
     Color color,
     float scale,
     bool isPrimary) {
   std::unique_ptr<protocol::DictionaryValue> grid_info =
       protocol::DictionaryValue::create();
 
-  grid_info->setValue(
-      "rows", BuildGapAndPositions(origin.Y(),
-                                   layout_grid->GridGap(kForRows) +
-                                       layout_grid->GridItemOffset(kForRows),
-                                   layout_grid->RowPositions(), scale));
-  grid_info->setValue(
-      "columns",
-      BuildGapAndPositions(origin.X(),
-                           layout_grid->GridGap(kForColumns) +
-                               layout_grid->GridItemOffset(kForColumns),
-                           layout_grid->ColumnPositions(), scale));
+  const auto& rows = layout_grid->RowPositions();
+  const auto& columns = layout_grid->ColumnPositions();
+
+  PathBuilder cell_builder;
+  auto row_gap =
+      layout_grid->GridGap(kForRows) + layout_grid->GridItemOffset(kForRows);
+  auto column_gap = layout_grid->GridGap(kForColumns) +
+                    layout_grid->GridItemOffset(kForColumns);
+
+  for (size_t i = 1; i < rows.size(); ++i) {
+    for (size_t j = 1; j < columns.size(); ++j) {
+      FloatPoint position(columns.at(j - 1), rows.at(i - 1));
+      FloatSize size(columns.at(j) - columns.at(j - 1),
+                     rows.at(i) - rows.at(i - 1));
+      if (i != rows.size() - 1)
+        size.Expand(0, -row_gap);
+      if (j != columns.size() - 1)
+        size.Expand(-column_gap, 0);
+      FloatRect cell(position, size);
+      FloatQuad cell_quad = layout_grid->LocalToAbsoluteQuad(cell);
+      FrameQuadToViewport(containing_view, cell_quad);
+      cell_builder.AppendPath(QuadToPath(cell_quad), scale);
+    }
+  }
+  grid_info->setValue("cells", cell_builder.Release());
   grid_info->setString("color", color.Serialized());
   grid_info->setBoolean("isPrimaryGrid", isPrimary);
   return grid_info;
@@ -309,7 +359,8 @@ void CollectQuadsRecursive(Node* node, Vector<FloatQuad>& out_quads) {
   // elements like images should use their intristic height and expand the
   // linebox  as needed. To get an appropriate quads we descend
   // into the children and have them add their boxes.
-  if (layout_object->IsLayoutInline()) {
+  if (layout_object->IsLayoutInline() &&
+      LayoutTreeBuilderTraversal::FirstChild(*node)) {
     for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node); child;
          child = LayoutTreeBuilderTraversal::NextSibling(*child))
       CollectQuadsRecursive(child, out_quads);
@@ -335,23 +386,22 @@ InspectorHighlight::InspectorHighlight(float scale)
     : highlight_paths_(protocol::ListValue::create()),
       show_rulers_(false),
       show_extension_lines_(false),
-      display_as_material_(false),
       scale_(scale) {}
 
 InspectorHighlightConfig::InspectorHighlightConfig()
     : show_info(false),
+      show_styles(false),
       show_rulers(false),
-      show_extension_lines(false),
-      display_as_material(false) {}
+      show_extension_lines(false) {}
 
 InspectorHighlight::InspectorHighlight(
     Node* node,
     const InspectorHighlightConfig& highlight_config,
+    const InspectorHighlightContrastInfo& node_contrast,
     bool append_element_info)
     : highlight_paths_(protocol::ListValue::create()),
       show_rulers_(highlight_config.show_rulers),
       show_extension_lines_(highlight_config.show_extension_lines),
-      display_as_material_(highlight_config.display_as_material),
       scale_(1.f) {
   LocalFrameView* frame_view = node->GetDocument().View();
   if (frame_view)
@@ -362,6 +412,8 @@ InspectorHighlight::InspectorHighlight(
     element_info_ = BuildElementInfo(ToElement(node));
   else if (append_element_info && node->IsTextNode())
     element_info_ = BuildTextNodeInfo(ToText(node));
+  if (element_info_ && highlight_config.show_styles)
+    AppendStyleInfo(node, element_info_.get(), node_contrast);
 }
 
 InspectorHighlight::~InspectorHighlight() = default;
@@ -463,18 +515,18 @@ void InspectorHighlight::AppendNodeHighlight(
     return;
   grid_info_ = protocol::ListValue::create();
   if (layout_object->IsLayoutGrid()) {
-    grid_info_->pushValue(BuildGridInfo(ToLayoutGrid(layout_object),
-                                        border.P1(), highlight_config.css_grid,
-                                        scale_, true));
+    grid_info_->pushValue(
+        BuildGridInfo(node->GetDocument().View(), ToLayoutGrid(layout_object),
+                      highlight_config.css_grid, scale_, true));
   }
   LayoutObject* parent = layout_object->Parent();
   if (!parent || !parent->IsLayoutGrid())
     return;
   if (!BuildNodeQuads(parent->GetNode(), &content, &padding, &border, &margin))
     return;
-  grid_info_->pushValue(BuildGridInfo(ToLayoutGrid(parent), border.P1(),
-                                      highlight_config.css_grid, scale_,
-                                      false));
+  grid_info_->pushValue(
+      BuildGridInfo(node->GetDocument().View(), ToLayoutGrid(parent),
+                    highlight_config.css_grid, scale_, false));
 }
 
 std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
@@ -486,7 +538,6 @@ std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
   object->setBoolean("showExtensionLines", show_extension_lines_);
   if (element_info_)
     object->setValue("elementInfo", element_info_->clone());
-  object->setBoolean("displayAsMaterial", display_as_material_);
   if (grid_info_ && grid_info_->size() > 0)
     object->setValue("gridInfo", grid_info_->clone());
   return object;
@@ -711,9 +762,9 @@ InspectorHighlightConfig InspectorHighlight::DefaultConfig() {
   config.shape = Color(0, 0, 0, 0);
   config.shape_margin = Color(128, 128, 128, 0);
   config.show_info = true;
+  config.show_styles = false;
   config.show_rulers = true;
   config.show_extension_lines = true;
-  config.display_as_material = false;
   config.css_grid = Color(128, 128, 128, 0);
   return config;
 }

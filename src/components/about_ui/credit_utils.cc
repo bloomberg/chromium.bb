@@ -53,9 +53,7 @@ std::string GetCredits(bool include_scripts) {
 
 #if defined(OS_ANDROID)
 static base::android::ScopedJavaLocalRef<jbyteArray>
-JNI_CreditUtils_GetJavaWrapperCredits(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
+JNI_CreditUtils_GetJavaWrapperCredits(JNIEnv* env) {
   std::string html_content = GetCredits(false);
   const char* html_content_arr = html_content.c_str();
   return base::android::ToJavaByteArray(

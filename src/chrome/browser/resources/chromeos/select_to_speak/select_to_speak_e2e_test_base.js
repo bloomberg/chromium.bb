@@ -29,7 +29,7 @@ SelectToSpeakE2ETest.prototype = {
 
   /** @override */
   testGenCppIncludes: function() {
-    GEN_BLOCK(function() { /*!
+    GEN(`
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -37,12 +37,12 @@ SelectToSpeakE2ETest.prototype = {
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "ui/keyboard/keyboard_util.h"
-    */ });
+    `);
   },
 
   /** @override */
   testGenPreamble: function() {
-    GEN_BLOCK(function() { /*!
+    GEN(`
   //keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_ENABLED);
   //ash::Shell::Get()->CreateKeyboard();
   base::Closure load_cb =
@@ -51,7 +51,7 @@ SelectToSpeakE2ETest.prototype = {
           true);
   chromeos::AccessibilityManager::Get()->SetSelectToSpeakEnabled(true);
   WaitForExtension(extension_misc::kSelectToSpeakExtensionId, load_cb);
-    */ });
+    `);
   },
 
   /**

@@ -15,6 +15,7 @@
 #include "libANGLE/Context.h"
 #include "libANGLE/ErrorStrings.h"
 #include "libANGLE/Framebuffer.h"
+#include "libANGLE/VertexArray.h"
 
 #include <GLES2/gl2.h>
 #include <GLES3/gl3.h>
@@ -42,7 +43,7 @@ bool ValidTexture2DTarget(const Context *context, TextureType type);
 bool ValidTexture3DTarget(const Context *context, TextureType target);
 bool ValidTextureExternalTarget(const Context *context, TextureType target);
 bool ValidTexture2DDestinationTarget(const Context *context, TextureTarget target);
-bool ValidTexture3DDestinationTarget(const Context *context, TextureType target);
+bool ValidTexture3DDestinationTarget(const Context *context, TextureTarget target);
 bool ValidTexLevelDestinationTarget(const Context *context, TextureType type);
 bool ValidFramebufferTarget(const Context *context, GLenum target);
 bool ValidMipLevel(const Context *context, TextureType type, GLint level);
@@ -79,7 +80,7 @@ bool ValidImageDataSize(Context *context,
 bool ValidQueryType(const Context *context, QueryType queryType);
 
 bool ValidateWebGLVertexAttribPointer(Context *context,
-                                      GLenum type,
+                                      VertexAttribType type,
                                       GLboolean normalized,
                                       GLsizei stride,
                                       const void *ptr,
@@ -286,12 +287,34 @@ bool ValidateCopyTexImageParametersBase(Context *context,
                                         GLint border,
                                         Format *textureFormatOut);
 
-bool ValidateDrawBase(Context *context, PrimitiveMode mode, GLsizei count);
-bool ValidateDrawArraysCommon(Context *context,
-                              PrimitiveMode mode,
-                              GLint first,
-                              GLsizei count,
-                              GLsizei primcount);
+void RecordDrawModeError(Context *context, PrimitiveMode mode);
+const char *ValidateDrawElementsStates(Context *context);
+
+ANGLE_INLINE bool ValidateDrawBase(Context *context, PrimitiveMode mode)
+{
+    if (!context->getStateCache().isValidDrawMode(mode))
+    {
+        RecordDrawModeError(context, mode);
+        return false;
+    }
+
+    intptr_t drawStatesError = context->getStateCache().getBasicDrawStatesError(context);
+    if (drawStatesError)
+    {
+        const char *errorMessage = reinterpret_cast<const char *>(drawStatesError);
+
+        // All errors from ValidateDrawStates should return INVALID_OPERATION except Framebuffer
+        // Incomplete.
+        GLenum errorCode =
+            (errorMessage == err::kDrawFramebufferIncomplete ? GL_INVALID_FRAMEBUFFER_OPERATION
+                                                             : GL_INVALID_OPERATION);
+        context->validationError(errorCode, errorMessage);
+        return false;
+    }
+
+    return true;
+}
+
 bool ValidateDrawArraysInstancedBase(Context *context,
                                      PrimitiveMode mode,
                                      GLint first,
@@ -302,28 +325,33 @@ bool ValidateDrawArraysInstancedANGLE(Context *context,
                                       GLint first,
                                       GLsizei count,
                                       GLsizei primcount);
+bool ValidateDrawArraysInstancedEXT(Context *context,
+                                    PrimitiveMode mode,
+                                    GLint first,
+                                    GLsizei count,
+                                    GLsizei primcount);
 
-bool ValidateDrawElementsBase(Context *context, PrimitiveMode mode, GLenum type);
-bool ValidateDrawElementsCommon(Context *context,
-                                PrimitiveMode mode,
-                                GLsizei count,
-                                GLenum type,
-                                const void *indices,
-                                GLsizei primcount);
-
-bool ValidateDrawElementsInstancedCommon(Context *context,
-                                         PrimitiveMode mode,
-                                         GLsizei count,
-                                         GLenum type,
-                                         const void *indices,
-                                         GLsizei primcount);
+bool ValidateDrawElementsInstancedBase(Context *context,
+                                       PrimitiveMode mode,
+                                       GLsizei count,
+                                       DrawElementsType type,
+                                       const void *indices,
+                                       GLsizei primcount);
 bool ValidateDrawElementsInstancedANGLE(Context *context,
                                         PrimitiveMode mode,
                                         GLsizei count,
-                                        GLenum type,
+                                        DrawElementsType type,
                                         const void *indices,
                                         GLsizei primcount);
+bool ValidateDrawElementsInstancedEXT(Context *context,
+                                      PrimitiveMode mode,
+                                      GLsizei count,
+                                      DrawElementsType type,
+                                      const void *indices,
+                                      GLsizei primcount);
+
 bool ValidateDrawInstancedANGLE(Context *context);
+bool ValidateDrawInstancedEXT(Context *context);
 
 bool ValidateFramebufferTextureBase(Context *context,
                                     GLenum target,
@@ -473,11 +501,61 @@ bool ValidateGetVertexAttribBase(Context *context,
                                  bool pointer,
                                  bool pureIntegerEntryPoint);
 
-bool ValidateVertexFormatBase(Context *context,
-                              GLuint attribIndex,
-                              GLint size,
-                              GLenum type,
-                              GLboolean pureInteger);
+ANGLE_INLINE bool ValidateVertexFormat(Context *context,
+                                       GLuint index,
+                                       GLint size,
+                                       VertexAttribTypeCase validation)
+{
+    const Caps &caps = context->getCaps();
+    if (index >= caps.maxVertexAttributes)
+    {
+        context->validationError(GL_INVALID_VALUE, err::kIndexExceedsMaxVertexAttribute);
+        return false;
+    }
+
+    switch (validation)
+    {
+        case VertexAttribTypeCase::Invalid:
+            context->validationError(GL_INVALID_ENUM, err::kInvalidType);
+            return false;
+        case VertexAttribTypeCase::Valid:
+            if (size < 1 || size > 4)
+            {
+                context->validationError(GL_INVALID_VALUE, err::kInvalidVertexAttrSize);
+                return false;
+            }
+            break;
+        case VertexAttribTypeCase::ValidSize4Only:
+            if (size != 4)
+            {
+                context->validationError(GL_INVALID_OPERATION,
+                                         err::kInvalidVertexAttribSize2101010);
+                return false;
+            }
+            break;
+    }
+
+    return true;
+}
+
+// Note: These byte, short, and int types are all converted to float for the shader.
+ANGLE_INLINE bool ValidateFloatVertexFormat(Context *context,
+                                            GLuint index,
+                                            GLint size,
+                                            VertexAttribType type)
+{
+    return ValidateVertexFormat(context, index, size,
+                                context->getStateCache().getVertexAttribTypeValidation(type));
+}
+
+ANGLE_INLINE bool ValidateIntegerVertexFormat(Context *context,
+                                              GLuint index,
+                                              GLint size,
+                                              VertexAttribType type)
+{
+    return ValidateVertexFormat(
+        context, index, size, context->getStateCache().getIntegerVertexAttribTypeValidation(type));
+}
 
 bool ValidateWebGLFramebufferAttachmentClearType(Context *context,
                                                  GLint drawbuffer,
@@ -596,8 +674,8 @@ bool ValidateSampleMaskiBase(Context *context, GLuint maskNumber, GLbitfield mas
 // Utility macro for handling implementation methods inside Validation.
 #define ANGLE_HANDLE_VALIDATION_ERR(X) \
     (void)(X);                         \
-    return false;
-#define ANGLE_VALIDATION_TRY(EXPR) ANGLE_TRY_TEMPLATE(EXPR, ANGLE_HANDLE_VALIDATION_ERR);
+    return false
+#define ANGLE_VALIDATION_TRY(EXPR) ANGLE_TRY_TEMPLATE(EXPR, ANGLE_HANDLE_VALIDATION_ERR)
 
 // We should check with Khronos if returning INVALID_FRAMEBUFFER_OPERATION is OK when querying
 // implementation format info for incomplete framebuffers. It seems like these queries are
@@ -616,6 +694,258 @@ ANGLE_INLINE bool ValidateFramebufferComplete(Context *context, Framebuffer *fra
 }
 
 const char *ValidateDrawStates(Context *context);
+
+void RecordDrawAttribsError(Context *context);
+
+ANGLE_INLINE bool ValidateDrawAttribs(Context *context, int64_t maxVertex)
+{
+    if (maxVertex > context->getStateCache().getNonInstancedVertexElementLimit())
+    {
+        RecordDrawAttribsError(context);
+        return false;
+    }
+
+    return true;
+}
+
+ANGLE_INLINE bool ValidateDrawArraysAttribs(Context *context, GLint first, GLsizei count)
+{
+    if (!context->isBufferAccessValidationEnabled())
+    {
+        return true;
+    }
+
+    // Check the computation of maxVertex doesn't overflow.
+    // - first < 0 has been checked as an error condition.
+    // - if count <= 0, skip validating no-op draw calls.
+    // From this we know maxVertex will be positive, and only need to check if it overflows GLint.
+    ASSERT(first >= 0);
+    ASSERT(count > 0);
+    int64_t maxVertex = static_cast<int64_t>(first) + static_cast<int64_t>(count) - 1;
+    if (maxVertex > static_cast<int64_t>(std::numeric_limits<GLint>::max()))
+    {
+        context->validationError(GL_INVALID_OPERATION, err::kIntegerOverflow);
+        return false;
+    }
+
+    return ValidateDrawAttribs(context, maxVertex);
+}
+
+ANGLE_INLINE bool ValidateDrawInstancedAttribs(Context *context, GLint primcount)
+{
+    if (!context->isBufferAccessValidationEnabled())
+    {
+        return true;
+    }
+
+    if ((primcount - 1) > context->getStateCache().getInstancedVertexElementLimit())
+    {
+        RecordDrawAttribsError(context);
+        return false;
+    }
+
+    return true;
+}
+
+ANGLE_INLINE bool ValidateDrawArraysCommon(Context *context,
+                                           PrimitiveMode mode,
+                                           GLint first,
+                                           GLsizei count,
+                                           GLsizei primcount)
+{
+    if (first < 0)
+    {
+        context->validationError(GL_INVALID_VALUE, err::kNegativeStart);
+        return false;
+    }
+
+    if (count <= 0)
+    {
+        if (count < 0)
+        {
+            context->validationError(GL_INVALID_VALUE, err::kNegativeCount);
+            return false;
+        }
+
+        // Early exit.
+        return ValidateDrawBase(context, mode);
+    }
+
+    if (!ValidateDrawBase(context, mode))
+    {
+        return false;
+    }
+
+    if (context->getStateCache().isTransformFeedbackActiveUnpaused())
+    {
+        const State &state                      = context->getState();
+        TransformFeedback *curTransformFeedback = state.getCurrentTransformFeedback();
+        if (!curTransformFeedback->checkBufferSpaceForDraw(count, primcount))
+        {
+            context->validationError(GL_INVALID_OPERATION, err::kTransformFeedbackBufferTooSmall);
+            return false;
+        }
+    }
+
+    return ValidateDrawArraysAttribs(context, first, count);
+}
+
+ANGLE_INLINE bool ValidateDrawElementsBase(Context *context,
+                                           PrimitiveMode mode,
+                                           DrawElementsType type)
+{
+    if (!context->getStateCache().isValidDrawElementsType(type))
+    {
+        if (type == DrawElementsType::UnsignedInt)
+        {
+            context->validationError(GL_INVALID_ENUM, err::kTypeNotUnsignedShortByte);
+            return false;
+        }
+
+        ASSERT(type == DrawElementsType::InvalidEnum);
+        context->validationError(GL_INVALID_ENUM, err::kEnumNotSupported);
+        return false;
+    }
+
+    intptr_t drawElementsError = context->getStateCache().getBasicDrawElementsError(context);
+    if (drawElementsError)
+    {
+        // All errors from ValidateDrawElementsStates return INVALID_OPERATION.
+        const char *errorMessage = reinterpret_cast<const char *>(drawElementsError);
+        context->validationError(GL_INVALID_OPERATION, errorMessage);
+        return false;
+    }
+
+    // Note that we are missing overflow checks for active transform feedback buffers.
+    return true;
+}
+
+ANGLE_INLINE bool ValidateDrawElementsCommon(Context *context,
+                                             PrimitiveMode mode,
+                                             GLsizei count,
+                                             DrawElementsType type,
+                                             const void *indices,
+                                             GLsizei primcount)
+{
+    if (!ValidateDrawElementsBase(context, mode, type))
+    {
+        return false;
+    }
+
+    ASSERT(isPow2(GetDrawElementsTypeSize(type)) && GetDrawElementsTypeSize(type) > 0);
+
+    if (context->getExtensions().webglCompatibility)
+    {
+        GLuint typeBytes = GetDrawElementsTypeSize(type);
+
+        if ((reinterpret_cast<uintptr_t>(indices) & static_cast<uintptr_t>(typeBytes - 1)) != 0)
+        {
+            // [WebGL 1.0] Section 6.4 Buffer Offset and Stride Requirements
+            // The offset arguments to drawElements and [...], must be a multiple of the size of the
+            // data type passed to the call, or an INVALID_OPERATION error is generated.
+            context->validationError(GL_INVALID_OPERATION, err::kOffsetMustBeMultipleOfType);
+            return false;
+        }
+
+        // [WebGL 1.0] Section 6.4 Buffer Offset and Stride Requirements
+        // In addition the offset argument to drawElements must be non-negative or an INVALID_VALUE
+        // error is generated.
+        if (reinterpret_cast<intptr_t>(indices) < 0)
+        {
+            context->validationError(GL_INVALID_VALUE, err::kNegativeOffset);
+            return false;
+        }
+    }
+
+    if (count <= 0)
+    {
+        if (count < 0)
+        {
+            context->validationError(GL_INVALID_VALUE, err::kNegativeCount);
+            return false;
+        }
+
+        // Early exit.
+        return ValidateDrawBase(context, mode);
+    }
+
+    if (!ValidateDrawBase(context, mode))
+    {
+        return false;
+    }
+
+    const State &state         = context->getState();
+    const VertexArray *vao     = state.getVertexArray();
+    Buffer *elementArrayBuffer = vao->getElementArrayBuffer();
+
+    if (!elementArrayBuffer)
+    {
+        if (!indices)
+        {
+            // This is an application error that would normally result in a crash, but we catch
+            // it and return an error
+            context->validationError(GL_INVALID_OPERATION, err::kElementArrayNoBufferOrPointer);
+            return false;
+        }
+    }
+    else
+    {
+        // The max possible type size is 8 and count is on 32 bits so doing the multiplication
+        // in a 64 bit integer is safe. Also we are guaranteed that here count > 0.
+        static_assert(std::is_same<int, GLsizei>::value, "GLsizei isn't the expected type");
+        constexpr uint64_t kMaxTypeSize = 8;
+        constexpr uint64_t kIntMax      = std::numeric_limits<int>::max();
+        constexpr uint64_t kUint64Max   = std::numeric_limits<uint64_t>::max();
+        static_assert(kIntMax < kUint64Max / kMaxTypeSize, "");
+
+        uint64_t elementCount = static_cast<uint64_t>(count);
+        ASSERT(elementCount > 0 && GetDrawElementsTypeSize(type) <= kMaxTypeSize);
+
+        // Doing the multiplication here is overflow-safe
+        uint64_t elementDataSizeNoOffset = elementCount << GetDrawElementsTypeShift(type);
+
+        // The offset can be any value, check for overflows
+        uint64_t offset = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(indices));
+        uint64_t elementDataSizeWithOffset = elementDataSizeNoOffset + offset;
+        if (elementDataSizeWithOffset < elementDataSizeNoOffset)
+        {
+            context->validationError(GL_INVALID_OPERATION, err::kIntegerOverflow);
+            return false;
+        }
+
+        if (elementDataSizeWithOffset > static_cast<uint64_t>(elementArrayBuffer->getSize()))
+        {
+            context->validationError(GL_INVALID_OPERATION, err::kInsufficientBufferSize);
+            return false;
+        }
+    }
+
+    if (context->isBufferAccessValidationEnabled() && primcount > 0)
+    {
+        // Use the parameter buffer to retrieve and cache the index range.
+        IndexRange indexRange{IndexRange::Undefined()};
+        ANGLE_VALIDATION_TRY(vao->getIndexRange(context, type, count, indices, &indexRange));
+
+        // If we use an index greater than our maximum supported index range, return an error.
+        // The ES3 spec does not specify behaviour here, it is undefined, but ANGLE should
+        // always return an error if possible here.
+        if (static_cast<GLuint64>(indexRange.end) >= context->getCaps().maxElementIndex)
+        {
+            context->validationError(GL_INVALID_OPERATION, err::kExceedsMaxElement);
+            return false;
+        }
+
+        if (!ValidateDrawAttribs(context, static_cast<GLint>(indexRange.end)))
+        {
+            return false;
+        }
+
+        // No op if there are no real indices in the index data (all are primitive restart).
+        return (indexRange.vertexIndexCount > 0);
+    }
+
+    return true;
+}
 }  // namespace gl
 
 #endif  // LIBANGLE_VALIDATION_ES_H_

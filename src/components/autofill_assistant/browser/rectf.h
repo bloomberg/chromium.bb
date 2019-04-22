@@ -20,9 +20,6 @@ struct RectF {
 
   // Checks whether the rectangle is empty.
   bool empty() const;
-
-  // Checks whether the rectangle contains the given point.
-  bool Contains(float x, float y) const;
 };
 
 }  // namespace autofill_assistant

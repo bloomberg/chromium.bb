@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/app_categorizer.h"
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -37,11 +38,11 @@ const char* kBadChatAppURLs[] = {
 }  // namespace
 
 TEST(AppCategorizerTest, IsHangoutsUrl) {
-  for (size_t i = 0; i < arraysize(kChatAppURLs); ++i) {
+  for (size_t i = 0; i < base::size(kChatAppURLs); ++i) {
     EXPECT_TRUE(AppCategorizer::IsHangoutsUrl(GURL(kChatAppURLs[i])));
   }
 
-  for (size_t i = 0; i < arraysize(kBadChatAppURLs); ++i) {
+  for (size_t i = 0; i < base::size(kBadChatAppURLs); ++i) {
     EXPECT_FALSE(AppCategorizer::IsHangoutsUrl(GURL(kBadChatAppURLs[i])));
   }
 }
@@ -49,12 +50,12 @@ TEST(AppCategorizerTest, IsHangoutsUrl) {
 TEST(AppCategorizerTest, IsWhitelistedApp) {
   // Hangouts app
   {
-    EXPECT_EQ(arraysize(kChatAppURLs), arraysize(kChatManifestFSs));
-    for (size_t i = 0; i < arraysize(kChatAppURLs); ++i) {
+    EXPECT_EQ(base::size(kChatAppURLs), base::size(kChatManifestFSs));
+    for (size_t i = 0; i < base::size(kChatAppURLs); ++i) {
       EXPECT_TRUE(AppCategorizer::IsWhitelistedApp(
           GURL(kChatManifestFSs[i]), GURL(kChatAppURLs[i])));
     }
-    for (size_t i = 0; i < arraysize(kBadChatAppURLs); ++i) {
+    for (size_t i = 0; i < base::size(kBadChatAppURLs); ++i) {
       EXPECT_FALSE(AppCategorizer::IsWhitelistedApp(
           GURL("filesystem:https://irrelevant.com/"),
           GURL(kBadChatAppURLs[i])));

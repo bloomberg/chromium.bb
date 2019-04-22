@@ -61,6 +61,9 @@ class GlobalTestConfig(object):
   RUN_NETWORK_TESTS = False
   UPDATE_GENERATED_FILES = False
   NETWORK_TESTS_SKIPPED = 0
+  # By default, disable all config skew tests.
+  RUN_CONFIG_SKEW_TESTS = False
+  CONFIG_SKEW_TESTS_SKIPPED = 0
 
 
 def NetworkTest(reason='Skipping network test (re-run w/--network)'):
@@ -81,6 +84,28 @@ def NetworkTest(reason='Skipping network test (re-run w/--network)'):
       return test_item
     else:
       return NetworkWrapper
+
+  return Decorator
+
+
+def ConfigSkewTest(reason=''):
+  """Decorator for unit tests. Skip test if --config_skew is not specified."""
+  def Decorator(test_item):
+    @functools.wraps(test_item)
+    def ConfigSkewWrapper(*args, **kwargs):
+      if not GlobalTestConfig.RUN_CONFIG_SKEW_TESTS:
+        GlobalTestConfig.CONFIG_SKEW_TESTS_SKIPPED += 1
+        raise unittest.SkipTest(reason)
+      test_item(*args, **kwargs)
+
+    # We can't check GlobalTestConfig.RUN_CONFIG_SKEW_TESTS here because
+    # __main__ hasn't run yet. Wrap each test so that we check the flag before
+    # running it.
+    if isinstance(test_item, type) and issubclass(test_item, TestCase):
+      test_item.setUp = Decorator(test_item.setUp)
+      return test_item
+    else:
+      return ConfigSkewWrapper
 
   return Decorator
 
@@ -1196,7 +1221,7 @@ class GerritTestCase(MockTempDirTestCase):
   def _create_gerrit_instance(self, tmp_dir):
     default_host = 't3st-chr0m3'
     git_host = os.environ.get('CROS_TEST_GIT_HOST',
-                              '%s.googlesource.com' % default_host)
+                              constants.GOB_HOST % default_host)
     gerrit_host = os.environ.get('CROS_TEST_GERRIT_HOST',
                                  '%s-review.googlesource.com' % default_host)
     ip = socket.gethostbyname(socket.gethostname())
@@ -1319,16 +1344,10 @@ class GerritTestCase(MockTempDirTestCase):
 
     site_params.update(self.patched_params)
 
-    # site_config.params shouldn't be being used, but just to be safe...
-    site_config = config_lib.GetConfig()
-    site_config._site_params.update(self.patched_params)
-
   def tearDown(self):
     # Restore the 'patched' site parameters.
     site_params = config_lib.GetSiteParams()
     site_params.update(self.saved_params)
-    site_config = config_lib.GetConfig()
-    site_config._site_params.update(self.saved_params)
 
   def createProject(self, suffix, description='Test project', owners=None,
                     submit_type='CHERRY_PICK'):
@@ -1692,6 +1711,9 @@ class TestProgram(unittest.TestProgram):
     parser.add_argument('--network', default=False, action='store_true',
                         help='Run tests that depend on good network '
                              'connectivity')
+    parser.add_argument('--config_skew', default=False, action='store_true',
+                        help='Run tests that check if new config matches legacy'
+                             ' config')
     parser.add_argument('--no-wipe', default=True, action='store_false',
                         dest='wipe',
                         help='Do not wipe the temporary working directory '
@@ -1743,6 +1765,9 @@ class TestProgram(unittest.TestProgram):
     # Then handle the chromite extensions.
     if opts.network:
       GlobalTestConfig.RUN_NETWORK_TESTS = True
+
+    if opts.config_skew:
+      GlobalTestConfig.RUN_CONFIG_SKEW_TESTS = True
 
     if opts.update:
       GlobalTestConfig.UPDATE_GENERATED_FILES = True

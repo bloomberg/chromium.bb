@@ -31,9 +31,10 @@ class CONTENT_EXPORT URLLoaderThrottleProvider {
   // Used to copy a URLLoaderThrottleProvider between worker threads.
   virtual std::unique_ptr<URLLoaderThrottleProvider> Clone() = 0;
 
-  // For requests from frames and dedicated workers, |render_frame_id| should be
-  // set to the corresponding frame. For requests from shared or
-  // service workers, |render_frame_id| should be set to MSG_ROUTING_NONE.
+  // For requests from frames and dedicated workers, this is called on the main
+  // thread and |render_frame_id| will be set to the corresponding frame. For
+  // requests from shared or service workers, this is called on the worker
+  // thread and |render_frame_id| will be set to MSG_ROUTING_NONE.
   virtual std::vector<std::unique_ptr<URLLoaderThrottle>> CreateThrottles(
       int render_frame_id,
       const blink::WebURLRequest& request,

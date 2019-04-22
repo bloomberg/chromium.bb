@@ -57,6 +57,10 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // a leading and trailing space, e.g. " 123 234 345 ".
   std::string GetVariationsString();
 
+  // Returns the collection of of variation ids matching the given |key|. Each
+  // entry in the returned vector will be unique.
+  std::vector<VariationID> GetVariationsVector(IDCollectionKey key);
+
   // Result of ForceVariationIds() call.
   enum class ForceIdsResult {
     SUCCESS,
@@ -95,6 +99,8 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
                            OnFieldTrialGroupFinalized);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            GetVariationsString);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           GetVariationsVector);
 
   VariationsHttpHeaderProvider();
   ~VariationsHttpHeaderProvider() override;

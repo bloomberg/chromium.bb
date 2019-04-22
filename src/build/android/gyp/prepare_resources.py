@@ -36,6 +36,9 @@ def _ParseArgs(args):
   """
   parser, input_opts, output_opts = resource_utils.ResourceArgsParser()
 
+  input_opts.add_argument(
+      '--aapt-path', required=True, help='Path to the Android aapt tool')
+
   input_opts.add_argument('--resource-dirs',
                         default='[]',
                         help='A list of input directories containing resources '
@@ -72,6 +75,11 @@ def _ParseArgs(args):
       '--v14-skip',
       action="store_true",
       help='Do not generate nor verify v14 resources.')
+
+  input_opts.add_argument(
+      '--strip-drawables',
+      action="store_true",
+      help='Remove drawables from the resources.')
 
   options = parser.parse_args(args)
 
@@ -143,10 +151,17 @@ def _GenerateRTxt(options, dep_subdirs, gen_dir):
   for j in options.include_resources:
     package_command += ['-I', j]
 
+  ignore_pattern = _AAPT_IGNORE_PATTERN
+  if options.strip_drawables:
+    ignore_pattern += ':*drawable*'
   package_command += [
-                     '--output-text-symbols', gen_dir,
-                     '-J', gen_dir,  # Required for R.txt generation.
-                     '--ignore-assets', _AAPT_IGNORE_PATTERN]
+      '--output-text-symbols',
+      gen_dir,
+      '-J',
+      gen_dir,  # Required for R.txt generation.
+      '--ignore-assets',
+      ignore_pattern
+  ]
 
   # Adding all dependencies as sources is necessary for @type/foo references
   # to symbols within dependencies to resolve. However, it has the side-effect
@@ -165,8 +180,8 @@ def _GenerateRTxt(options, dep_subdirs, gen_dir):
       package_command, print_stdout=False, print_stderr=False)
 
 
-def _GenerateResourcesZip(output_resource_zip, input_resource_dirs,
-                          v14_skip, temp_dir):
+def _GenerateResourcesZip(output_resource_zip, input_resource_dirs, v14_skip,
+                          strip_drawables, temp_dir):
   """Generate a .resources.zip file fron a list of input resource dirs.
 
   Args:
@@ -188,8 +203,10 @@ def _GenerateResourcesZip(output_resource_zip, input_resource_dirs,
 
     input_resource_dirs.append(v14_dir)
 
-  _ZipResources(input_resource_dirs, output_resource_zip,
-                _AAPT_IGNORE_PATTERN)
+  ignore_pattern = _AAPT_IGNORE_PATTERN
+  if strip_drawables:
+    ignore_pattern += ':*drawable*'
+  _ZipResources(input_resource_dirs, output_resource_zip, ignore_pattern)
 
 
 def _OnStaleMd5(options):
@@ -240,7 +257,8 @@ def _OnStaleMd5(options):
 
     if options.resource_zip_out:
       _GenerateResourcesZip(options.resource_zip_out, options.resource_dirs,
-                            options.v14_skip, build.temp_dir)
+                            options.v14_skip, options.strip_drawables,
+                            build.temp_dir)
 
 
 def main(args):
@@ -259,9 +277,10 @@ def main(args):
   # List python deps in input_strings rather than input_paths since the contents
   # of them does not change what gets written to the depsfile.
   input_strings = options.extra_res_packages + [
-    options.custom_package,
-    options.shared_resources,
-    options.v14_skip,
+      options.custom_package,
+      options.shared_resources,
+      options.v14_skip,
+      options.strip_drawables,
   ]
 
   possible_input_paths = [

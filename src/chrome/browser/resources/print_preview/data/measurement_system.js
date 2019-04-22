@@ -77,20 +77,6 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * Sets the measurement system based on the delimeters and unit type.
-     * @param {string} thousandsDelimeter The thousands delimeter to use
-     * @param {string} decimalDelimeter The decimal delimeter to use
-     * @param {!print_preview.MeasurementSystemUnitType} unitType Measurement
-     *     unit type of the system.
-     */
-    setSystem(thousandsDelimeter, decimalDelimeter, unitType) {
-      this.thousandsDelimeter_ = thousandsDelimeter;
-      this.decimalDelimeter_ = decimalDelimeter;
-      assert(measurementSystemPrefs.has(unitType));
-      this.measurementSystemPrefs_ = measurementSystemPrefs.get(unitType);
-    }
-
-    /**
      * Rounds a value in the local system's units to the appropriate precision.
      * @param {number} value Value to round.
      * @return {number} Rounded value.

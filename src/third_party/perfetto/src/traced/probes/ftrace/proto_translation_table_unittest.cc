@@ -20,6 +20,7 @@
 #include "gtest/gtest.h"
 #include "perfetto/trace/ftrace/ftrace_event.pbzero.h"
 #include "perfetto/trace/ftrace/generic.pbzero.h"
+#include "src/base/test/gtest_test_suite.h"
 #include "src/traced/probes/ftrace/event_info.h"
 #include "src/traced/probes/ftrace/ftrace_procfs.h"
 
@@ -36,6 +37,7 @@ using testing::Pointee;
 
 namespace perfetto {
 namespace {
+using protozero::proto_utils::ProtoSchemaType;
 
 class MockFtraceProcfs : public FtraceProcfs {
  public:
@@ -82,7 +84,7 @@ TEST_P(AllTranslationTableTest, Create) {
     for (const Field& field : event.fields) {
       EXPECT_TRUE(field.proto_field_id);
       EXPECT_TRUE(field.ftrace_type);
-      EXPECT_TRUE(field.proto_field_type);
+      EXPECT_TRUE(static_cast<int>(field.proto_field_type));
     }
   }
   ASSERT_EQ(table_->common_fields().size(), 1u);
@@ -95,13 +97,13 @@ TEST_P(AllTranslationTableTest, Create) {
     EXPECT_TRUE(event);
     EXPECT_EQ(std::string(event->name), "print");
     EXPECT_EQ(std::string(event->group), "ftrace");
-    EXPECT_EQ(event->fields.at(1).proto_field_type, kProtoString);
+    EXPECT_EQ(event->fields.at(1).proto_field_type, ProtoSchemaType::kString);
     EXPECT_EQ(event->fields.at(1).ftrace_type, kFtraceCString);
     EXPECT_EQ(event->fields.at(1).strategy, kCStringToString);
   }
 }
 
-INSTANTIATE_TEST_CASE_P(ByDevice, AllTranslationTableTest, ValuesIn(kDevices));
+INSTANTIATE_TEST_SUITE_P(ByDevice, AllTranslationTableTest, ValuesIn(kDevices));
 
 TEST(TranslationTableTest, Seed) {
   std::string path =
@@ -109,6 +111,7 @@ TEST(TranslationTableTest, Seed) {
   FtraceProcfs ftrace_procfs(path);
   auto table = ProtoTranslationTable::Create(
       &ftrace_procfs, GetStaticEventInfo(), GetStaticCommonFieldsInfo());
+  PERFETTO_CHECK(table);
   const Field& pid_field = table->common_fields().at(0);
   EXPECT_EQ(std::string(pid_field.ftrace_name), "common_pid");
   EXPECT_EQ(pid_field.proto_field_id, 2u);
@@ -186,7 +189,7 @@ print fmt: "some format")"));
       event->fields.emplace_back(Field{});
       Field* field = &event->fields.back();
       field->proto_field_id = 501;
-      field->proto_field_type = kProtoString;
+      field->proto_field_type = ProtoSchemaType::kString;
       field->ftrace_name = "field_a";
     }
 
@@ -195,7 +198,7 @@ print fmt: "some format")"));
       event->fields.emplace_back(Field{});
       Field* field = &event->fields.back();
       field->proto_field_id = 502;
-      field->proto_field_type = kProtoString;
+      field->proto_field_type = ProtoSchemaType::kString;
       field->ftrace_name = "field_b";
     }
 
@@ -204,7 +207,7 @@ print fmt: "some format")"));
       event->fields.emplace_back(Field{});
       Field* field = &event->fields.back();
       field->proto_field_id = 503;
-      field->proto_field_type = kProtoString;
+      field->proto_field_type = ProtoSchemaType::kString;
       field->ftrace_name = "field_c";
     }
 
@@ -213,7 +216,7 @@ print fmt: "some format")"));
       event->fields.emplace_back(Field{});
       Field* field = &event->fields.back();
       field->proto_field_id = 504;
-      field->proto_field_type = kProtoUint64;
+      field->proto_field_type = ProtoSchemaType::kUint64;
       field->ftrace_name = "field_e";
     }
   }
@@ -228,6 +231,7 @@ print fmt: "some format")"));
 
   auto table = ProtoTranslationTable::Create(&ftrace, std::move(events),
                                              std::move(common_fields));
+  PERFETTO_CHECK(table);
   EXPECT_EQ(table->largest_id(), 42ul);
   EXPECT_EQ(table->EventToFtraceId(GroupAndName("group", "foo")), 42ul);
   EXPECT_EQ(table->EventToFtraceId(GroupAndName("group", "bar")), 0ul);
@@ -253,7 +257,7 @@ print fmt: "some format")"));
   EXPECT_EQ(field_e.strategy, kUint32ToUint64);
 }
 
-INSTANTIATE_TEST_CASE_P(BySize, TranslationTableCreationTest, Values(4, 8));
+INSTANTIATE_TEST_SUITE_P(BySize, TranslationTableCreationTest, Values(4, 8));
 
 TEST(TranslationTableTest, InferFtraceType) {
   FtraceFieldType type;
@@ -390,6 +394,7 @@ print fmt: "some format")"));
 
   auto table = ProtoTranslationTable::Create(&ftrace, std::move(events),
                                              std::move(common_fields));
+  PERFETTO_CHECK(table);
   EXPECT_EQ(table->largest_id(), 0ul);
   GroupAndName group_and_name("group", "foo");
   const Event* e = table->GetOrCreateEvent(group_and_name);
@@ -411,7 +416,7 @@ print fmt: "some format")"));
   EXPECT_STREQ(str_field.ftrace_name, "field_a");
   EXPECT_EQ(str_field.proto_field_id,
             protos::pbzero::GenericFtraceEvent::Field::kStrValueFieldNumber);
-  EXPECT_EQ(str_field.proto_field_type, kProtoString);
+  EXPECT_EQ(str_field.proto_field_type, ProtoSchemaType::kString);
   EXPECT_EQ(str_field.ftrace_type, kFtraceFixedCString);
   EXPECT_EQ(str_field.ftrace_size, 16);
   EXPECT_EQ(str_field.ftrace_offset, 8);
@@ -421,7 +426,7 @@ print fmt: "some format")"));
   EXPECT_STREQ(bool_field.ftrace_name, "field_b");
   EXPECT_EQ(bool_field.proto_field_id,
             protos::pbzero::GenericFtraceEvent::Field::kUintValueFieldNumber);
-  EXPECT_EQ(bool_field.proto_field_type, kProtoUint64);
+  EXPECT_EQ(bool_field.proto_field_type, ProtoSchemaType::kUint64);
   EXPECT_EQ(bool_field.ftrace_type, kFtraceBool);
   EXPECT_EQ(bool_field.ftrace_size, 1);
   EXPECT_EQ(bool_field.ftrace_offset, 24);
@@ -431,7 +436,7 @@ print fmt: "some format")"));
   EXPECT_STREQ(int_field.ftrace_name, "field_c");
   EXPECT_EQ(int_field.proto_field_id,
             protos::pbzero::GenericFtraceEvent::Field::kIntValueFieldNumber);
-  EXPECT_EQ(int_field.proto_field_type, kProtoInt64);
+  EXPECT_EQ(int_field.proto_field_type, ProtoSchemaType::kInt64);
   EXPECT_EQ(int_field.ftrace_type, kFtraceInt32);
   EXPECT_EQ(int_field.ftrace_size, 4);
   EXPECT_EQ(int_field.ftrace_offset, 25);
@@ -441,7 +446,7 @@ print fmt: "some format")"));
   EXPECT_STREQ(uint_field.ftrace_name, "field_d");
   EXPECT_EQ(uint_field.proto_field_id,
             protos::pbzero::GenericFtraceEvent::Field::kUintValueFieldNumber);
-  EXPECT_EQ(uint_field.proto_field_type, kProtoUint64);
+  EXPECT_EQ(uint_field.proto_field_type, ProtoSchemaType::kUint64);
   EXPECT_EQ(uint_field.ftrace_type, kFtraceUint32);
   EXPECT_EQ(uint_field.ftrace_size, 4);
   EXPECT_EQ(uint_field.ftrace_offset, 33);

@@ -20,6 +20,8 @@
 
 namespace download {
 
+class SimpleDownloadManagerCoordinator;
+
 struct DriverEntry;
 
 // Aggregates and handles all interaction between download service and content
@@ -31,7 +33,9 @@ class DownloadDriverImpl : public DownloadDriver,
   static DriverEntry CreateDriverEntry(const download::DownloadItem* item);
 
   // Create the driver.
-  DownloadDriverImpl(content::DownloadManager* manager);
+  DownloadDriverImpl(
+      content::DownloadManager* manager,
+      SimpleDownloadManagerCoordinator* download_manager_coordinator);
   ~DownloadDriverImpl() override;
 
   // DownloadDriver implementation.
@@ -62,6 +66,8 @@ class DownloadDriverImpl : public DownloadDriver,
   void OnDownloadRemoved(content::DownloadManager* manager,
                          download::DownloadItem* item) override;
 
+  void OnUploadProgress(const std::string& guid, uint64_t bytes_uploaded);
+
   void OnHardRecoverComplete(bool success);
 
   // Remove the download, used to be posted to the task queue.
@@ -78,6 +84,10 @@ class DownloadDriverImpl : public DownloadDriver,
 
   // Pending guid set of downloads that will be removed soon.
   std::set<std::string> guid_to_remove_;
+
+  // Coordinator for handling the actual download when |download_manager_| is
+  // no longer used.
+  SimpleDownloadManagerCoordinator* download_manager_coordinator_;
 
   // Only used to post tasks on the same thread.
   base::WeakPtrFactory<DownloadDriverImpl> weak_ptr_factory_;

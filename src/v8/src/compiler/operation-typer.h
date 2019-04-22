@@ -57,10 +57,19 @@ class V8_EXPORT_PRIVATE OperationTyper {
   Type SameValue(Type lhs, Type rhs);
   Type StrictEqual(Type lhs, Type rhs);
 
+  // String operators.
+  Type StringConcat(Type length, Type first, Type second);
+
   // Check operators.
   Type CheckBounds(Type index, Type length);
   Type CheckFloat64Hole(Type type);
   Type CheckNumber(Type type);
+  Type CheckInternalizedString(Type type);
+  Type CheckNonEmptyString(Type type);
+  Type CheckNonEmptyOneByteString(Type type);
+  Type CheckNonEmptyTwoByteString(Type type);
+  Type CheckString(Type type);
+
   Type ConvertTaggedHoleToUndefined(Type type);
 
   Type TypeTypeGuard(const Operator* sigma_op, Type input);
@@ -76,7 +85,7 @@ class V8_EXPORT_PRIVATE OperationTyper {
   Type singleton_the_hole() const { return singleton_the_hole_; }
 
  private:
-  typedef base::Flags<ComparisonOutcomeFlags> ComparisonOutcome;
+  using ComparisonOutcome = base::Flags<ComparisonOutcomeFlags>;
 
   ComparisonOutcome Invert(ComparisonOutcome);
   Type Invert(Type);
@@ -93,7 +102,7 @@ class V8_EXPORT_PRIVATE OperationTyper {
   Zone* zone() const { return zone_; }
 
   Zone* const zone_;
-  TypeCache const& cache_;
+  TypeCache const* cache_;
 
   Type infinity_;
   Type minus_infinity_;

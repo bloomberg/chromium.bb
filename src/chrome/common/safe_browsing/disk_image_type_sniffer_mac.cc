@@ -21,7 +21,8 @@ DiskImageTypeSnifferMac::DiskImageTypeSnifferMac() {}
 bool DiskImageTypeSnifferMac::IsAppleDiskImage(const base::FilePath& dmg_file) {
   // TODO(drubery): Macs accept DMGs with koly blocks at the beginning of the
   // file. Investigate if this is a problem, and if so, update this function.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::File file(dmg_file, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid())

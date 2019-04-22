@@ -93,35 +93,6 @@ class JSBinopReduction final {
            BothInputsMaybe(Type::Symbol());
   }
 
-  // Check if a string addition will definitely result in creating a ConsString,
-  // i.e. if the combined length of the resulting string exceeds the ConsString
-  // minimum length.
-  bool ShouldCreateConsString() {
-    DCHECK_EQ(IrOpcode::kJSAdd, node_->opcode());
-    DCHECK(OneInputIs(Type::String()));
-    if (BothInputsAre(Type::String()) ||
-        BinaryOperationHintOf(node_->op()) == BinaryOperationHint::kString) {
-      HeapObjectBinopMatcher m(node_);
-      JSHeapBroker* broker = lowering_->broker();
-      if (m.right().HasValue() && m.right().Ref(broker).IsString()) {
-        StringRef right_string = m.right().Ref(broker).AsString();
-        if (right_string.length() >= ConsString::kMinLength) return true;
-      }
-      if (m.left().HasValue() && m.left().Ref(broker).IsString()) {
-        StringRef left_string = m.left().Ref(broker).AsString();
-        if (left_string.length() >= ConsString::kMinLength) {
-          // The invariant for ConsString requires the left hand side to be
-          // a sequential or external string if the right hand side is the
-          // empty string. Since we don't know anything about the right hand
-          // side here, we must ensure that the left hand side satisfy the
-          // constraints independent of the right hand side.
-          return left_string.IsSeqString() || left_string.IsExternalString();
-        }
-      }
-    }
-    return false;
-  }
-
   // Inserts a CheckReceiver for the left input.
   void CheckLeftInputToReceiver() {
     Node* left_input = graph()->NewNode(simplified()->CheckReceiver(), left(),
@@ -188,6 +159,64 @@ class JSBinopReduction final {
     if (!right_type().Is(Type::Symbol())) {
       Node* right_input = graph()->NewNode(simplified()->CheckSymbol(), right(),
                                            effect(), control());
+      node_->ReplaceInput(1, right_input);
+      update_effect(right_input);
+    }
+  }
+
+  // Checks that both inputs are NonEmptyOneByteString, and if we don't know
+  // statically that one side is already a NonEmptyOneByteString, insert a
+  // CheckNonEmptyOneByteString node.
+  void CheckInputsToNonEmptyOneByteString() {
+    if (!left_type().Is(Type::NonEmptyOneByteString())) {
+      Node* left_input =
+          graph()->NewNode(simplified()->CheckNonEmptyOneByteString(), left(),
+                           effect(), control());
+      node_->ReplaceInput(0, left_input);
+      update_effect(left_input);
+    }
+    if (!right_type().Is(Type::NonEmptyOneByteString())) {
+      Node* right_input =
+          graph()->NewNode(simplified()->CheckNonEmptyOneByteString(), right(),
+                           effect(), control());
+      node_->ReplaceInput(1, right_input);
+      update_effect(right_input);
+    }
+  }
+
+  // Checks that both inputs are NonEmptyTwoByteString, and if we don't know
+  // statically that one side is already a NonEmptyTwoByteString, insert a
+  // CheckNonEmptyTwoByteString node.
+  void CheckInputsToNonEmptyTwoByteString() {
+    if (!left_type().Is(Type::NonEmptyTwoByteString())) {
+      Node* left_input =
+          graph()->NewNode(simplified()->CheckNonEmptyTwoByteString(), left(),
+                           effect(), control());
+      node_->ReplaceInput(0, left_input);
+      update_effect(left_input);
+    }
+    if (!right_type().Is(Type::NonEmptyTwoByteString())) {
+      Node* right_input =
+          graph()->NewNode(simplified()->CheckNonEmptyTwoByteString(), right(),
+                           effect(), control());
+      node_->ReplaceInput(1, right_input);
+      update_effect(right_input);
+    }
+  }
+
+  // Checks that both inputs are NonEmptyString, and if we don't know
+  // statically that one side is already a NonEmptyString, insert a
+  // CheckNonEmptyString node.
+  void CheckInputsToNonEmptyString() {
+    if (!left_type().Is(Type::NonEmptyString())) {
+      Node* left_input = graph()->NewNode(simplified()->CheckNonEmptyString(),
+                                          left(), effect(), control());
+      node_->ReplaceInput(0, left_input);
+      update_effect(left_input);
+    }
+    if (!right_type().Is(Type::NonEmptyString())) {
+      Node* right_input = graph()->NewNode(simplified()->CheckNonEmptyString(),
+                                           right(), effect(), control());
       node_->ReplaceInput(1, right_input);
       update_effect(right_input);
     }
@@ -426,11 +455,9 @@ JSTypedLowering::JSTypedLowering(Editor* editor, JSGraph* jsgraph,
     : AdvancedReducer(editor),
       jsgraph_(jsgraph),
       broker_(broker),
-      empty_string_type_(Type::HeapConstant(broker, factory()->empty_string(),
-                                            graph()->zone())),
       pointer_comparable_type_(
           Type::Union(Type::Oddball(),
-                      Type::Union(Type::SymbolOrReceiver(), empty_string_type_,
+                      Type::Union(Type::SymbolOrReceiver(), Type::EmptyString(),
                                   graph()->zone()),
                       graph()->zone())),
       type_cache_(TypeCache::Get()) {}
@@ -524,24 +551,38 @@ Reduction JSTypedLowering::ReduceJSAdd(Node* node) {
   }
 
   // Always bake in String feedback into the graph.
-  if (BinaryOperationHintOf(node->op()) == BinaryOperationHint::kString) {
+  BinaryOperationHint const hint = BinaryOperationHintOf(node->op());
+  if (hint == BinaryOperationHint::kConsOneByteString) {
+    r.CheckInputsToNonEmptyOneByteString();
+  } else if (hint == BinaryOperationHint::kConsTwoByteString) {
+    r.CheckInputsToNonEmptyTwoByteString();
+  } else if (hint == BinaryOperationHint::kConsString) {
+    r.CheckInputsToNonEmptyString();
+  } else if (hint == BinaryOperationHint::kString) {
     r.CheckInputsToString();
   }
 
   // Strength-reduce concatenation of empty strings if both sides are
   // primitives, as in that case the ToPrimitive on the other side is
   // definitely going to be a no-op.
+  // TODO(bmeurer): Put this empty string magic into the StringConcat
+  // optimization, and instead go with just doing the input ToString()
+  // magic here.
   if (r.BothInputsAre(Type::Primitive())) {
-    if (r.LeftInputIs(empty_string_type_)) {
+    if (r.LeftInputIs(Type::EmptyString())) {
       // JSAdd("", x:primitive) => JSToString(x)
       NodeProperties::ReplaceValueInputs(node, r.right());
       NodeProperties::ChangeOp(node, javascript()->ToString());
+      NodeProperties::SetType(
+          node, Type::Intersect(r.type(), Type::String(), graph()->zone()));
       Reduction const reduction = ReduceJSToString(node);
       return reduction.Changed() ? reduction : Changed(node);
-    } else if (r.RightInputIs(empty_string_type_)) {
+    } else if (r.RightInputIs(Type::EmptyString())) {
       // JSAdd(x:primitive, "") => JSToString(x)
       NodeProperties::ReplaceValueInputs(node, r.left());
       NodeProperties::ChangeOp(node, javascript()->ToString());
+      NodeProperties::SetType(
+          node, Type::Intersect(r.type(), Type::String(), graph()->zone()));
       Reduction const reduction = ReduceJSToString(node);
       return reduction.Changed() ? reduction : Changed(node);
     }
@@ -608,23 +649,35 @@ Reduction JSTypedLowering::ReduceJSAdd(Node* node) {
       }
       control = graph()->NewNode(common()->IfTrue(), branch);
       length = effect =
-          graph()->NewNode(common()->TypeGuard(type_cache_.kStringLengthType),
+          graph()->NewNode(common()->TypeGuard(type_cache_->kStringLengthType),
                            length, effect, control);
     }
 
-    // TODO(bmeurer): Ideally this should always use StringConcat and decide to
-    // optimize to NewConsString later during SimplifiedLowering, but for that
-    // to work we need to know that it's safe to create a ConsString.
-    Operator const* const op = r.ShouldCreateConsString()
-                                   ? simplified()->NewConsString()
-                                   : simplified()->StringConcat();
+    if (hint == BinaryOperationHint::kConsString ||
+        hint == BinaryOperationHint::kConsOneByteString ||
+        hint == BinaryOperationHint::kConsTwoByteString) {
+      Node* check = graph()->NewNode(
+          simplified()->NumberLessThan(),
+          jsgraph()->Constant(ConsString::kMinLength - 1), length);
+      effect = graph()->NewNode(
+          simplified()->CheckIf(DeoptimizeReason::kWrongLength), check, effect,
+          control);
+      length = effect = graph()->NewNode(
+          common()->TypeGuard(type_cache_->kConsStringLengthType), length,
+          effect, control);
+    }
+
+    Operator const* const op = simplified()->StringConcat();
     Node* value = graph()->NewNode(op, length, r.left(), r.right());
     ReplaceWithValue(node, value, effect, control);
     return Replace(value);
   }
 
   // We never get here when we had String feedback.
-  DCHECK_NE(BinaryOperationHint::kString, BinaryOperationHintOf(node->op()));
+  DCHECK_NE(BinaryOperationHint::kConsString, hint);
+  DCHECK_NE(BinaryOperationHint::kConsOneByteString, hint);
+  DCHECK_NE(BinaryOperationHint::kConsTwoByteString, hint);
+  DCHECK_NE(BinaryOperationHint::kString, hint);
   if (r.OneInputIs(Type::String())) {
     StringAddFlags flags = STRING_ADD_CHECK_NONE;
     if (!r.LeftInputIs(Type::String())) {
@@ -923,7 +976,7 @@ Reduction JSTypedLowering::ReduceJSToName(Node* node) {
 Reduction JSTypedLowering::ReduceJSToLength(Node* node) {
   Node* input = NodeProperties::GetValueInput(node, 0);
   Type input_type = NodeProperties::GetType(input);
-  if (input_type.Is(type_cache_.kIntegerOrMinusZero)) {
+  if (input_type.Is(type_cache_->kIntegerOrMinusZero)) {
     if (input_type.IsNone() || input_type.Max() <= 0.0) {
       input = jsgraph()->ZeroConstant();
     } else if (input_type.Min() >= kMaxSafeInteger) {
@@ -959,8 +1012,9 @@ Reduction JSTypedLowering::ReduceJSToNumberInput(Node* input) {
   }
   if (input_type.IsHeapConstant()) {
     HeapObjectRef input_value = input_type.AsHeapConstant()->Ref();
-    if (input_value.map().oddball_type() != OddballType::kNone) {
-      return Replace(jsgraph()->Constant(input_value.OddballToNumber()));
+    double value;
+    if (input_value.OddballToNumber().To(&value)) {
+      return Replace(jsgraph()->Constant(value));
     }
   }
   if (input_type.Is(Type::Number())) {
@@ -1611,7 +1665,7 @@ Reduction JSTypedLowering::ReduceJSCallForwardVarargs(Node* node) {
 Reduction JSTypedLowering::ReduceJSCall(Node* node) {
   DCHECK_EQ(IrOpcode::kJSCall, node->opcode());
   CallParameters const& p = CallParametersOf(node->op());
-  int const arity = static_cast<int>(p.arity() - 2);
+  int arity = static_cast<int>(p.arity() - 2);
   ConvertReceiverMode convert_mode = p.convert_mode();
   Node* target = NodeProperties::GetValueInput(node, 0);
   Type target_type = NodeProperties::GetType(target);
@@ -1669,21 +1723,52 @@ Reduction JSTypedLowering::ReduceJSCall(Node* node) {
     // Compute flags for the call.
     CallDescriptor::Flags flags = CallDescriptor::kNeedsFrameState;
     Node* new_target = jsgraph()->UndefinedConstant();
-    Node* argument_count = jsgraph()->Constant(arity);
 
     if (NeedsArgumentAdaptorFrame(shared, arity)) {
-      // Patch {node} to an indirect call via the ArgumentsAdaptorTrampoline.
-      Callable callable = CodeFactory::ArgumentAdaptor(isolate());
-      node->InsertInput(graph()->zone(), 0,
-                        jsgraph()->HeapConstant(callable.code()));
-      node->InsertInput(graph()->zone(), 2, new_target);
-      node->InsertInput(graph()->zone(), 3, argument_count);
-      node->InsertInput(
-          graph()->zone(), 4,
-          jsgraph()->Constant(shared.internal_formal_parameter_count()));
-      NodeProperties::ChangeOp(
-          node, common()->Call(Linkage::GetStubCallDescriptor(
-                    graph()->zone(), callable.descriptor(), 1 + arity, flags)));
+      // Check if it's safe to skip the arguments adaptor for {shared},
+      // that is whether the target function anyways cannot observe the
+      // actual arguments. Details can be found in this document at
+      // https://bit.ly/v8-faster-calls-with-arguments-mismatch and
+      // on the tracking bug at https://crbug.com/v8/8895
+      if (shared.is_safe_to_skip_arguments_adaptor()) {
+        // Currently we only support skipping arguments adaptor frames
+        // for strict mode functions, since there's Function.arguments
+        // legacy accessor, which is still available in sloppy mode.
+        DCHECK_EQ(LanguageMode::kStrict, shared.language_mode());
+
+        // Massage the arguments to match the expected number of arguments.
+        int expected_argument_count = shared.internal_formal_parameter_count();
+        for (; arity > expected_argument_count; --arity) {
+          node->RemoveInput(arity + 1);
+        }
+        for (; arity < expected_argument_count; ++arity) {
+          node->InsertInput(graph()->zone(), arity + 2,
+                            jsgraph()->UndefinedConstant());
+        }
+
+        // Patch {node} to a direct call.
+        node->InsertInput(graph()->zone(), arity + 2, new_target);
+        node->InsertInput(graph()->zone(), arity + 3,
+                          jsgraph()->Constant(arity));
+        NodeProperties::ChangeOp(node,
+                                 common()->Call(Linkage::GetJSCallDescriptor(
+                                     graph()->zone(), false, 1 + arity,
+                                     flags | CallDescriptor::kCanUseRoots)));
+      } else {
+        // Patch {node} to an indirect call via the ArgumentsAdaptorTrampoline.
+        Callable callable = CodeFactory::ArgumentAdaptor(isolate());
+        node->InsertInput(graph()->zone(), 0,
+                          jsgraph()->HeapConstant(callable.code()));
+        node->InsertInput(graph()->zone(), 2, new_target);
+        node->InsertInput(graph()->zone(), 3, jsgraph()->Constant(arity));
+        node->InsertInput(
+            graph()->zone(), 4,
+            jsgraph()->Constant(shared.internal_formal_parameter_count()));
+        NodeProperties::ChangeOp(
+            node,
+            common()->Call(Linkage::GetStubCallDescriptor(
+                graph()->zone(), callable.descriptor(), 1 + arity, flags)));
+      }
     } else if (shared.HasBuiltinId() &&
                Builtins::HasCppImplementation(shared.builtin_id())) {
       // Patch {node} to a direct CEntry call.
@@ -1701,12 +1786,12 @@ Reduction JSTypedLowering::ReduceJSCall(Node* node) {
       Node* stub_code = jsgraph()->HeapConstant(callable.code());
       node->InsertInput(graph()->zone(), 0, stub_code);  // Code object.
       node->InsertInput(graph()->zone(), 2, new_target);
-      node->InsertInput(graph()->zone(), 3, argument_count);
+      node->InsertInput(graph()->zone(), 3, jsgraph()->Constant(arity));
       NodeProperties::ChangeOp(node, common()->Call(call_descriptor));
     } else {
       // Patch {node} to a direct call.
       node->InsertInput(graph()->zone(), arity + 2, new_target);
-      node->InsertInput(graph()->zone(), arity + 3, argument_count);
+      node->InsertInput(graph()->zone(), arity + 3, jsgraph()->Constant(arity));
       NodeProperties::ChangeOp(node,
                                common()->Call(Linkage::GetJSCallDescriptor(
                                    graph()->zone(), false, 1 + arity,
@@ -1986,8 +2071,7 @@ Reduction JSTypedLowering::ReduceJSLoadMessage(Node* node) {
   ExternalReference const ref =
       ExternalReference::address_of_pending_message_obj(isolate());
   node->ReplaceInput(0, jsgraph()->ExternalConstant(ref));
-  NodeProperties::ChangeOp(
-      node, simplified()->LoadField(AccessBuilder::ForExternalTaggedValue()));
+  NodeProperties::ChangeOp(node, simplified()->LoadMessage());
   return Changed(node);
 }
 
@@ -1998,8 +2082,7 @@ Reduction JSTypedLowering::ReduceJSStoreMessage(Node* node) {
   Node* value = NodeProperties::GetValueInput(node, 0);
   node->ReplaceInput(0, jsgraph()->ExternalConstant(ref));
   node->ReplaceInput(1, value);
-  NodeProperties::ChangeOp(
-      node, simplified()->StoreField(AccessBuilder::ForExternalTaggedValue()));
+  NodeProperties::ChangeOp(node, simplified()->StoreMessage());
   return Changed(node);
 }
 
@@ -2227,9 +2310,9 @@ Reduction JSTypedLowering::ReduceJSParseInt(Node* node) {
   Type radix_type = NodeProperties::GetType(radix);
   // We need kTenOrUndefined and kZeroOrUndefined because
   // the type representing {0,10} would become the range 1-10.
-  if (value_type.Is(type_cache_.kSafeInteger) &&
-      (radix_type.Is(type_cache_.kTenOrUndefined) ||
-       radix_type.Is(type_cache_.kZeroOrUndefined))) {
+  if (value_type.Is(type_cache_->kSafeInteger) &&
+      (radix_type.Is(type_cache_->kTenOrUndefined) ||
+       radix_type.Is(type_cache_->kZeroOrUndefined))) {
     // Number.parseInt(a:safe-integer) -> a
     // Number.parseInt(a:safe-integer,b:#0\/undefined) -> a
     // Number.parseInt(a:safe-integer,b:#10\/undefined) -> a

@@ -92,10 +92,10 @@ TEST_P(RequestExtensionCHROMIUMTest, Basic) {
     EXPECT_GE(extensions.size(), extensions_size_before_request);
   }
 }
-INSTANTIATE_TEST_CASE_P(WithContextTypes,
-                        RequestExtensionCHROMIUMTest,
-                        ::testing::Values(CONTEXT_TYPE_WEBGL1,
-                                          CONTEXT_TYPE_WEBGL2,
-                                          CONTEXT_TYPE_OPENGLES2,
-                                          CONTEXT_TYPE_OPENGLES3));
+INSTANTIATE_TEST_SUITE_P(WithContextTypes,
+                         RequestExtensionCHROMIUMTest,
+                         ::testing::Values(CONTEXT_TYPE_WEBGL1,
+                                           CONTEXT_TYPE_WEBGL2,
+                                           CONTEXT_TYPE_OPENGLES2,
+                                           CONTEXT_TYPE_OPENGLES3));
 }

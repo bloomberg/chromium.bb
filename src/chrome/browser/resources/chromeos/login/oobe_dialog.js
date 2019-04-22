@@ -100,6 +100,7 @@ Polymer({
     this.fire('show-dialog');
   },
 
+  /** @private */
   onfullScreenDialogChanged_: function() {
     if (this.fullScreenDialog)
       document.documentElement.setAttribute('full-screen-dialog', true);

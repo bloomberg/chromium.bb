@@ -18,8 +18,10 @@ namespace blink {
 // spaces are approximately the same for different CanvasColorParam objects.
 TEST(CanvasColorParamsTest, MatchSkColorSpaceWithGfxColorSpace) {
   CanvasColorSpace canvas_color_spaces[] = {
-      kSRGBCanvasColorSpace, kLinearRGBCanvasColorSpace,
-      kRec2020CanvasColorSpace, kP3CanvasColorSpace,
+      kSRGBCanvasColorSpace,
+      kLinearRGBCanvasColorSpace,
+      kRec2020CanvasColorSpace,
+      kP3CanvasColorSpace,
   };
   for (int iter_color_space = 0; iter_color_space < 4; iter_color_space++) {
     CanvasColorParams color_params(canvas_color_spaces[iter_color_space],

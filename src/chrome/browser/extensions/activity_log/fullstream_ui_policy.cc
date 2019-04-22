@@ -6,14 +6,15 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
@@ -47,7 +48,7 @@ const char* const FullStreamUIPolicy::kTableFieldTypes[] = {
   "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR"
 };
 const int FullStreamUIPolicy::kTableFieldCount =
-    arraysize(FullStreamUIPolicy::kTableContentFields);
+    base::size(FullStreamUIPolicy::kTableContentFields);
 
 FullStreamUIPolicy::FullStreamUIPolicy(Profile* profile)
     : ActivityLogDatabasePolicy(
@@ -58,11 +59,9 @@ FullStreamUIPolicy::~FullStreamUIPolicy() {}
 
 bool FullStreamUIPolicy::InitDatabase(sql::Database* db) {
   // Create the unified activity log entry table.
-  return ActivityDatabase::InitializeTable(db,
-                                           kTableName,
-                                           kTableContentFields,
+  return ActivityDatabase::InitializeTable(db, kTableName, kTableContentFields,
                                            kTableFieldTypes,
-                                           arraysize(kTableContentFields));
+                                           base::size(kTableContentFields));
 }
 
 bool FullStreamUIPolicy::FlushDatabase(sql::Database* db) {
@@ -143,7 +142,7 @@ std::unique_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
     where_next = " AND ";
   }
   if (!api_name.empty()) {
-    where_str += where_next + "api_name=?";
+    where_str += where_next + "api_name LIKE ?";
     where_next = " AND ";
   }
   if (type != Action::ACTION_ANY) {
@@ -170,7 +169,7 @@ std::unique_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
   if (!extension_id.empty())
     query.BindString(++i, extension_id);
   if (!api_name.empty())
-    query.BindString(++i, api_name);
+    query.BindString(++i, api_name + "%");
   if (type != Action::ACTION_ANY)
     query.BindInt(++i, static_cast<int>(type));
   if (!page_url.empty())
@@ -193,9 +192,9 @@ std::unique_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
                    static_cast<Action::ActionType>(query.ColumnInt(2)),
                    query.ColumnString(3), query.ColumnInt64(9));
 
-    if (query.ColumnType(4) != sql::COLUMN_TYPE_NULL) {
+    if (query.GetColumnType(4) != sql::ColumnType::kNull) {
       std::unique_ptr<base::Value> parsed_value =
-          base::JSONReader::Read(query.ColumnString(4));
+          base::JSONReader::ReadDeprecated(query.ColumnString(4));
       if (parsed_value && parsed_value->is_list()) {
         action->set_args(base::WrapUnique(
             static_cast<base::ListValue*>(parsed_value.release())));
@@ -206,9 +205,9 @@ std::unique_ptr<Action::ActionVector> FullStreamUIPolicy::DoReadFilteredData(
     action->set_page_title(query.ColumnString(6));
     action->ParseArgUrl(query.ColumnString(7));
 
-    if (query.ColumnType(8) != sql::COLUMN_TYPE_NULL) {
+    if (query.GetColumnType(8) != sql::ColumnType::kNull) {
       std::unique_ptr<base::Value> parsed_value =
-          base::JSONReader::Read(query.ColumnString(8));
+          base::JSONReader::ReadDeprecated(query.ColumnString(8));
       if (parsed_value && parsed_value->is_dict()) {
         action->set_other(base::WrapUnique(
             static_cast<base::DictionaryValue*>(parsed_value.release())));

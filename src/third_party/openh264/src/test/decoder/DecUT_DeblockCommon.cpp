@@ -540,6 +540,17 @@ TEST (DecoderDeblocking, DeblockingInit) {
   DeblockingInit (&sDBFunc, 0x000004);
   DB_FUNC_CPUFLAG (AArch64_neon)
 #endif
+
+#ifdef HAVE_MMI
+  // pure C
+  DeblockingInit (&sDBFunc, 0x00000000);
+  DB_FUNC_CPUFLAG (c)
+
+  // mmi
+  DeblockingInit (&sDBFunc, 0x00000001);
+  DB_FUNC_CPUFLAG (mmi)
+#endif
+
 }
 
 TEST (DecoderDeblocking, WelsDeblockingFilterSlice) {
@@ -889,6 +900,7 @@ TEST (Deblocking, WelsDeblockingMb) {
   // void WelsDeblockingMb (PDqLayer pCurDqLayer, PDeblockingFilter  pFilter, int32_t iBoundryFlag)
   /* Deblock one MB, calculate the Bs inside the function, only consider the intra / intra block */
   SDqLayer sDqLayer;
+  sDqLayer.sLayerInfo.sSliceInLayer.sSliceHeaderExt.sSliceHeader.eSliceType = P_SLICE;
 
   SDeblockingFilter sFilter;
   SDeblockingFunc sDBFunc;
@@ -925,7 +937,7 @@ TEST (Deblocking, WelsDeblockingMb) {
   sDqLayer.pLumaQp = iLumaQP;
   sDqLayer.pChromaQp = iChromaQP;
 
-  int16_t iMbType[2];
+  uint32_t iMbType[2];
   sDqLayer.pMbType = iMbType;
   sDqLayer.pMbType[0] = MB_TYPE_INTRA4x4;
   sDqLayer.pMbType[1] = MB_TYPE_INTRA4x4;

@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -19,6 +20,7 @@
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "components/viz/client/client_resource_provider.h"
+#include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -38,6 +40,7 @@
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
@@ -48,7 +51,40 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/init/gl_factory.h"
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/vulkan/init/vulkan_factory.h"
+#include "gpu/vulkan/vulkan_implementation.h"
+#endif
+
 namespace cc {
+namespace {
+
+// A wrapper around SkiaOutputSurfaceImpl that can be used to change settings
+// for tests.
+class PixelTestSkiaOutputSurfaceImpl : public viz::SkiaOutputSurfaceImpl {
+ public:
+  PixelTestSkiaOutputSurfaceImpl(viz::GpuServiceImpl* gpu_service,
+                                 gpu::SurfaceHandle surface_handle,
+                                 const viz::RendererSettings& renderer_settings,
+                                 bool flipped_output_surface)
+      : SkiaOutputSurfaceImpl(gpu_service,
+                              surface_handle,
+                              viz::UpdateVSyncParametersCallback(),
+                              renderer_settings),
+        flipped_output_surface_(flipped_output_surface) {}
+
+  // |capabilities_| is set in InitializeForGL(), so wrap BindToClient() and set
+  // |flipped_output_surface| once that is complete.
+  void BindToClient(viz::OutputSurfaceClient* client) override {
+    SkiaOutputSurfaceImpl::BindToClient(client);
+    SetCapabilitiesForTesting(flipped_output_surface_);
+  }
+
+ private:
+  const bool flipped_output_surface_;
+};
+
+}  // namespace
 
 PixelTest::PixelTest()
     : device_viewport_size_(gfx::Size(200, 200)),
@@ -149,13 +185,13 @@ bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
   return comparator.Compare(*result_bitmap_, ref_pixels_bitmap);
 }
 
-void PixelTest::ReadbackResult(base::Closure quit_run_loop,
+void PixelTest::ReadbackResult(base::OnceClosure quit_run_loop,
                                std::unique_ptr<viz::CopyOutputResult> result) {
   ASSERT_FALSE(result->IsEmpty());
   EXPECT_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_BITMAP);
   result_bitmap_ = std::make_unique<SkBitmap>(result->AsSkBitmap());
   EXPECT_TRUE(result_bitmap_->readyToDraw());
-  quit_run_loop.Run();
+  std::move(quit_run_loop).Run();
 }
 
 bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
@@ -224,8 +260,9 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
       /*enable_oop_rasterization=*/false, /*support_locking=*/false);
   result = child_context_provider_->BindToCurrentThread();
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
+  constexpr bool sync_token_verification = false;
   child_resource_provider_ =
-      std::make_unique<viz::ClientResourceProvider>(true);
+      std::make_unique<viz::ClientResourceProvider>(sync_token_verification);
 }
 
 void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
@@ -237,27 +274,38 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   renderer_->SetVisible(true);
 }
 
-void PixelTest::SetUpSkiaRenderer() {
-  SetUpGLWithoutRenderer(false);
-  renderer_ = std::make_unique<viz::SkiaRenderer>(
-      &renderer_settings_, output_surface_.get(), resource_provider_.get(),
-      nullptr /* skia_output_surface */, viz::SkiaRenderer::DrawMode::GL);
-  renderer_->Initialize();
-  renderer_->SetVisible(true);
-}
-
 void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
   ASSERT_TRUE(gpu_thread_->task_runner()->BelongsToCurrentThread());
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  gpu::GpuPreferences gpu_preferences =
+      gpu::gles2::ParseGpuPreferences(command_line);
+  if (gpu_preferences.enable_vulkan) {
+#if BUILDFLAG(ENABLE_VULKAN)
+    vulkan_implementation_ = gpu::CreateVulkanImplementation();
+    if (!vulkan_implementation_ ||
+        !vulkan_implementation_->InitializeVulkanInstance(
+            !gpu_preferences.disable_vulkan_surface)) {
+      LOG(FATAL) << "Failed to create and initialize Vulkan implementation.";
+    }
+#else
+    NOTREACHED();
+#endif
+  }
   gpu::GpuFeatureInfo gpu_feature_info;
   // To test SkiaRenderer with DDL, we need enable OOP-R.
   gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       gpu::kGpuFeatureStatusEnabled;
   gpu_service_ = std::make_unique<viz::GpuServiceImpl>(
       gpu::GPUInfo(), nullptr /* watchdog_thread */, io_thread_->task_runner(),
-      gpu_feature_info, gpu::GpuPreferences(),
+      gpu_feature_info, gpu_preferences,
       gpu::GPUInfo() /* gpu_info_for_hardware_gpu */,
       gpu::GpuFeatureInfo() /* gpu_feature_info_for_hardware_gpu */,
+#if BUILDFLAG(ENABLE_VULKAN)
+      vulkan_implementation_.get(),
+#else
       nullptr /* vulkan_implementation */,
+#endif
       base::DoNothing() /* exit_callback */);
 
   // Uses a null gpu_host here, because we don't want to receive any message.
@@ -268,8 +316,9 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
   gpu_service_->InitializeWithHost(
       std::move(gpu_host_proxy), gpu::GpuProcessActivityFlags(),
       gl::init::CreateOffscreenGLSurface(gfx::Size()),
-      nullptr /* sync_point_manager */, nullptr /* shutdown_event */);
-  task_executor_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
+      nullptr /* sync_point_manager */, nullptr /* shared_image_manager */,
+      nullptr /* shutdown_event */);
+  task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
       gpu_thread_->task_runner(), gpu_service_->scheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
       gpu_service_->share_group(),
@@ -277,14 +326,15 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
           ->default_offscreen_surface()
           ->GetFormat(),
       gpu_service_->gpu_feature_info(),
-      gpu_service_->gpu_channel_manager()->gpu_preferences());
+      gpu_service_->gpu_channel_manager()->gpu_preferences(),
+      gpu_service_->shared_image_manager(),
+      gpu_service_->gpu_channel_manager()->program_cache());
   event->Signal();
 }
 
-void PixelTest::SetUpSkiaRendererDDL() {
+void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface) {
   // Set up the GPU service.
-  const char enable_features[] =
-      "VizDisplayCompositor,UseSkiaRenderer,UseSkiaDeferredDisplayList";
+  const char enable_features[] = "VizDisplayCompositor,UseSkiaRenderer";
   const char disable_features[] = "";
   scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list_->InitFromCommandLine(enable_features, disable_features);
@@ -301,10 +351,9 @@ void PixelTest::SetUpSkiaRendererDDL() {
   event.Wait();
 
   // Set up the skia renderer.
-  output_surface_ = std::make_unique<viz::SkiaOutputSurfaceImpl>(
-      gpu_service_.get(), gpu::kNullSurfaceHandle,
-      nullptr /* synthetic_begin_frame_source */,
-      renderer_settings_.show_overdraw_feedback);
+  output_surface_ = std::make_unique<PixelTestSkiaOutputSurfaceImpl>(
+      gpu_service_.get(), gpu::kNullSurfaceHandle, renderer_settings_,
+      flipped_output_surface);
   output_surface_->BindToClient(output_surface_client_.get());
   resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       viz::DisplayResourceProvider::kGpu,
@@ -312,7 +361,7 @@ void PixelTest::SetUpSkiaRendererDDL() {
       nullptr /* shared_bitmap_manager */);
   renderer_ = std::make_unique<viz::SkiaRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get(),
-      static_cast<viz::SkiaOutputSurfaceImpl*>(output_surface_.get()),
+      static_cast<viz::SkiaOutputSurface*>(output_surface_.get()),
       viz::SkiaRenderer::DrawMode::DDL);
   renderer_->Initialize();
   renderer_->SetVisible(true);
@@ -325,15 +374,22 @@ void PixelTest::SetUpSkiaRendererDDL() {
   gpu::ImageFactory* image_factory = gpu_service_->gpu_image_factory();
   auto* gpu_channel_manager_delegate =
       gpu_service_->gpu_channel_manager()->delegate();
+  viz::RendererSettings renderer_settings;
+  renderer_settings.requires_alpha_channel = false;
+#if defined(OS_ANDROID)
+  // Pick a reasonable arbitrary size for tests - used to set memory limits.
+  renderer_settings.initial_screen_size = gfx::Size(1920, 1080);
+  renderer_settings.color_space = gfx::ColorSpace::CreateSRGB();
+#endif
   child_context_provider_ =
       base::MakeRefCounted<viz::VizProcessContextProvider>(
-          task_executor_, gpu::kNullSurfaceHandle,
+          task_executor_.get(), gpu::kNullSurfaceHandle,
           gpu_memory_buffer_manager_.get(), image_factory,
-          gpu_channel_manager_delegate, gpu::SharedMemoryLimits(),
-          false /* requires_alpha_channel */);
+          gpu_channel_manager_delegate, renderer_settings);
   child_context_provider_->BindToCurrentThread();
+  constexpr bool sync_token_verification = false;
   child_resource_provider_ =
-      std::make_unique<viz::ClientResourceProvider>(true);
+      std::make_unique<viz::ClientResourceProvider>(sync_token_verification);
 }
 
 void PixelTest::TearDownGpuServiceOnGpuThread(base::WaitableEvent* event) {
@@ -381,8 +437,9 @@ void PixelTest::SetUpSoftwareRenderer() {
   resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       viz::DisplayResourceProvider::kSoftware, nullptr,
       shared_bitmap_manager_.get());
+  constexpr bool sync_token_verification = false;
   child_resource_provider_ =
-      std::make_unique<viz::ClientResourceProvider>(true);
+      std::make_unique<viz::ClientResourceProvider>(sync_token_verification);
 
   auto renderer = std::make_unique<viz::SoftwareRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get());

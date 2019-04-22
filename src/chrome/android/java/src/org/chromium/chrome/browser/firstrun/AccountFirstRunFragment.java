@@ -64,10 +64,7 @@ public class AccountFirstRunFragment
             @Override
             public void onAccountSelected(
                     String accountName, boolean isDefaultAccount, boolean settingsClicked) {
-                getPageDelegate().acceptSignIn(accountName, isDefaultAccount);
-                if (settingsClicked) {
-                    getPageDelegate().askToOpenSignInSettings();
-                }
+                getPageDelegate().acceptSignIn(accountName, isDefaultAccount, settingsClicked);
                 getPageDelegate().advanceToNextPage();
             }
 

@@ -18,6 +18,9 @@ namespace media {
 class MediaLogTest : public testing::Test {
  public:
   static constexpr size_t kMaxUrlLength = MediaLog::kMaxUrlLength;
+
+ protected:
+  MediaLog media_log;
 };
 
 constexpr size_t MediaLogTest::kMaxUrlLength;
@@ -28,14 +31,14 @@ TEST_F(MediaLogTest, DontTruncateShortUrlString) {
 
   // Verify that CreatedEvent does not truncate the short URL.
   std::unique_ptr<MediaLogEvent> created_event =
-      MediaLog().CreateCreatedEvent(short_url);
+      media_log.CreateCreatedEvent(short_url);
   std::string stored_url;
   created_event->params.GetString("origin_url", &stored_url);
   EXPECT_EQ(stored_url, short_url);
 
   // Verify that LoadEvent does not truncate the short URL.
   std::unique_ptr<MediaLogEvent> load_event =
-      MediaLog().CreateLoadEvent(short_url);
+      media_log.CreateLoadEvent(short_url);
   load_event->params.GetString("url", &stored_url);
   EXPECT_EQ(stored_url, short_url);
 }
@@ -52,7 +55,7 @@ TEST_F(MediaLogTest, TruncateLongUrlStrings) {
 
   // Verify that long CreatedEvent URL...
   std::unique_ptr<MediaLogEvent> created_event =
-      MediaLog().CreateCreatedEvent(long_url);
+      media_log.CreateCreatedEvent(long_url);
   std::string stored_url;
   created_event->params.GetString("origin_url", &stored_url);
 
@@ -67,7 +70,7 @@ TEST_F(MediaLogTest, TruncateLongUrlStrings) {
 
   // Verify that long LoadEvent URL...
   std::unique_ptr<MediaLogEvent> load_event =
-      MediaLog().CreateCreatedEvent(long_url);
+      media_log.CreateCreatedEvent(long_url);
   load_event->params.GetString("url", &stored_url);
   // ... is truncated
   EXPECT_EQ(stored_url.length(), MediaLogTest::kMaxUrlLength);

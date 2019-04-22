@@ -47,31 +47,14 @@ CanvasColorParams::CanvasColorParams(CanvasColorSpace color_space,
 CanvasColorParams::CanvasColorParams(const SkImageInfo& info)
     : CanvasColorParams(info.refColorSpace(), info.colorType()) {}
 
-bool CanvasColorParams::NeedsSkColorSpaceXformCanvas() const {
-  return color_space_ == kSRGBCanvasColorSpace &&
-         pixel_format_ == kRGBA8CanvasPixelFormat;
-}
-
-std::unique_ptr<cc::PaintCanvas> CanvasColorParams::WrapCanvas(
-    SkCanvas* canvas) const {
-  if (NeedsSkColorSpaceXformCanvas())
-    return std::make_unique<cc::SkiaPaintCanvas>(canvas, GetSkColorSpace());
-  // |canvas| already does its own color correction.
-  return std::make_unique<cc::SkiaPaintCanvas>(canvas);
-}
-
 sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpaceForSkSurfaces() const {
-  if (NeedsSkColorSpaceXformCanvas())
-    return nullptr;
   return GetSkColorSpace();
 }
 
 bool CanvasColorParams::NeedsColorConversion(
     const CanvasColorParams& dest_color_params) const {
   if ((color_space_ == dest_color_params.ColorSpace() &&
-       pixel_format_ == dest_color_params.PixelFormat()) ||
-      (NeedsSkColorSpaceXformCanvas() &&
-       dest_color_params.NeedsSkColorSpaceXformCanvas()))
+       pixel_format_ == dest_color_params.PixelFormat()))
     return false;
   return true;
 }
@@ -140,24 +123,24 @@ sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpace() const {
 
 sk_sp<SkColorSpace> CanvasColorParams::CanvasColorSpaceToSkColorSpace(
     CanvasColorSpace color_space) {
-  SkColorSpace::Gamut gamut = SkColorSpace::kSRGB_Gamut;
-  SkColorSpace::RenderTargetGamma gamma = SkColorSpace::kSRGB_RenderTargetGamma;
+  skcms_Matrix3x3 gamut = SkNamedGamut::kSRGB;
+  skcms_TransferFunction transferFn = SkNamedTransferFn::kSRGB;
   switch (color_space) {
     case kSRGBCanvasColorSpace:
       break;
     case kLinearRGBCanvasColorSpace:
-      gamma = SkColorSpace::kLinear_RenderTargetGamma;
+      transferFn = SkNamedTransferFn::kLinear;
       break;
     case kRec2020CanvasColorSpace:
-      gamut = SkColorSpace::kRec2020_Gamut;
-      gamma = SkColorSpace::kLinear_RenderTargetGamma;
+      gamut = SkNamedGamut::kRec2020;
+      transferFn = SkNamedTransferFn::kLinear;
       break;
     case kP3CanvasColorSpace:
-      gamut = SkColorSpace::kDCIP3_D65_Gamut;
-      gamma = SkColorSpace::kLinear_RenderTargetGamma;
+      gamut = SkNamedGamut::kDCIP3;
+      transferFn = SkNamedTransferFn::kLinear;
       break;
   }
-  return SkColorSpace::MakeRGB(gamma, gamut);
+  return SkColorSpace::MakeRGB(transferFn, gamut);
 }
 
 gfx::BufferFormat CanvasColorParams::GetBufferFormat() const {
@@ -240,14 +223,14 @@ CanvasColorParams::CanvasColorParams(const sk_sp<SkColorSpace> color_space,
     color_space_ = kLinearRGBCanvasColorSpace;
   } else if (SkColorSpace::Equals(
                  color_space.get(),
-                 SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                                       SkColorSpace::kRec2020_Gamut)
+                 SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
+                                       SkNamedGamut::kRec2020)
                      .get())) {
     color_space_ = kRec2020CanvasColorSpace;
   } else if (SkColorSpace::Equals(
                  color_space.get(),
-                 SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                                       SkColorSpace::kDCIP3_D65_Gamut)
+                 SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
+                                       SkNamedGamut::kDCIP3)
                      .get())) {
     color_space_ = kP3CanvasColorSpace;
   }

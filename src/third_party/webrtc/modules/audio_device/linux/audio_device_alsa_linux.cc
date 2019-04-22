@@ -14,7 +14,6 @@
 #include "modules/audio_device/linux/audio_device_alsa_linux.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/system/arch.h"
-#include "system_wrappers/include/event_wrapper.h"
 #include "system_wrappers/include/sleep.h"
 
 WebRTCAlsaSymbolTable* GetAlsaSymbolTable() {
@@ -51,7 +50,7 @@ void WebrtcAlsaErrorHandler(const char* file,
                             const char* function,
                             int err,
                             const char* fmt,
-                            ...){};
+                            ...) {}
 
 namespace webrtc {
 static const unsigned int ALSA_PLAYOUT_FREQ = 48000;

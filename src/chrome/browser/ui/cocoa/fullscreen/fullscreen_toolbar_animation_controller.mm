@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_animation_controller.h"
 
+#include "base/bind.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #include "content/public/browser/web_contents.h"
 

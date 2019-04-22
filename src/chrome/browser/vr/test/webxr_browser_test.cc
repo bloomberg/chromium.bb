@@ -18,27 +18,27 @@ void WebXrBrowserTestBase::EnterSessionWithUserGestureAndWait(
 }
 
 bool WebXrBrowserTestBase::XrDeviceFound() {
-  return XrDeviceFound(GetFirstTabWebContents());
+  return XrDeviceFound(GetCurrentWebContents());
 }
 
 void WebXrBrowserTestBase::EnterSessionWithUserGesture() {
-  EnterSessionWithUserGesture(GetFirstTabWebContents());
+  EnterSessionWithUserGesture(GetCurrentWebContents());
 }
 
 void WebXrBrowserTestBase::EnterSessionWithUserGestureAndWait() {
-  EnterSessionWithUserGestureAndWait(GetFirstTabWebContents());
+  EnterSessionWithUserGestureAndWait(GetCurrentWebContents());
 }
 
 void WebXrBrowserTestBase::EnterSessionWithUserGestureOrFail() {
-  EnterSessionWithUserGestureOrFail(GetFirstTabWebContents());
+  EnterSessionWithUserGestureOrFail(GetCurrentWebContents());
 }
 
 void WebXrBrowserTestBase::EndSession() {
-  EndSession(GetFirstTabWebContents());
+  EndSession(GetCurrentWebContents());
 }
 
 void WebXrBrowserTestBase::EndSessionOrFail() {
-  EndSessionOrFail(GetFirstTabWebContents());
+  EndSessionOrFail(GetCurrentWebContents());
 }
 
 }  // namespace vr

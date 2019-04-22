@@ -35,12 +35,12 @@ public:
         const char* atlasSizeInvName;
         fAtlasSizeInvUniform = uniformHandler->addUniform(kVertex_GrShaderFlag,
                                                           kFloat2_GrSLType,
-                                                          kHigh_GrSLPrecision,
                                                           "AtlasSizeInv",
                                                           &atlasSizeInvName);
 
         GrGLSLVarying uv(kFloat2_GrSLType);
-        GrGLSLVarying texIdx(kFloat_GrSLType);
+        GrSLType texIdxType = args.fShaderCaps->integerSupport() ? kInt_GrSLType : kFloat_GrSLType;
+        GrGLSLVarying texIdx(texIdxType);
         append_index_uv_varyings(args, btgp.inTextureCoords().name(), atlasSizeInvName, &uv,
                                  &texIdx, nullptr);
 
@@ -120,6 +120,7 @@ private:
 
 GrBitmapTextGeoProc::GrBitmapTextGeoProc(const GrShaderCaps& caps,
                                          const SkPMColor4f& color,
+                                         bool wideColor,
                                          const sk_sp<GrTextureProxy>* proxies,
                                          int numActiveProxies,
                                          const GrSamplerState& params, GrMaskFormat format,
@@ -140,7 +141,7 @@ GrBitmapTextGeoProc::GrBitmapTextGeoProc(const GrShaderCaps& caps,
     bool hasVertexColor = kA8_GrMaskFormat == fMaskFormat ||
                           kA565_GrMaskFormat == fMaskFormat;
     if (hasVertexColor) {
-        fInColor = {"inColor", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
+        fInColor = MakeColorAttribute("inColor", wideColor);
     }
 
     fInTextureCoords = {"inTextureCoords", kUShort2_GrVertexAttribType,
@@ -224,6 +225,7 @@ sk_sp<GrGeometryProcessor> GrBitmapTextGeoProc::TestCreate(GrProcessorTestData* 
 
     return GrBitmapTextGeoProc::Make(*d->caps()->shaderCaps(),
                                      SkPMColor4f::FromBytes_RGBA(GrRandomColor(d->fRandom)),
+                                     d->fRandom->nextBool(),
                                      proxies, 1, samplerState, format,
                                      GrTest::TestMatrix(d->fRandom), d->fRandom->nextBool());
 }

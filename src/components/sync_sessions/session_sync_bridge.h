@@ -45,7 +45,6 @@ class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~SessionSyncBridge() override;
 
-  void ScheduleGarbageCollection();
   FaviconCache* GetFaviconCache();
   SessionsGlobalIdMapper* GetGlobalIdMapper();
   OpenTabsUIDelegate* GetOpenTabsUIDelegate();
@@ -65,9 +64,8 @@ class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
-  StopSyncResponse ApplyStopSyncChanges(
-      std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list)
-      override;
+  void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
+                                delete_metadata_change_list) override;
 
   // LocalSessionEventHandlerImpl::Delegate implementation.
   std::unique_ptr<LocalSessionEventHandlerImpl::WriteBatch>
@@ -84,7 +82,7 @@ class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
       std::unique_ptr<syncer::MetadataBatch> metadata_batch);
   void StartLocalSessionEventHandler();
   void DeleteForeignSessionFromUI(const std::string& tag);
-  void DoGarbageCollection();
+  void DoGarbageCollection(SessionStore::WriteBatch* write_batch);
   std::unique_ptr<SessionStore::WriteBatch> CreateSessionStoreWriteBatch();
   void DeleteForeignSessionWithBatch(const std::string& session_tag,
                                      SessionStore::WriteBatch* batch);
@@ -97,14 +95,13 @@ class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
 
   FaviconCache favicon_cache_;
   SessionsGlobalIdMapper global_id_mapper_;
-  SessionStore::Factory session_store_factory_;
+  std::unique_ptr<SessionStore> store_;
 
   // All data dependent on sync being starting or started.
   struct SyncingState {
     SyncingState();
     ~SyncingState();
 
-    std::unique_ptr<SessionStore> store;
     std::unique_ptr<OpenTabsUIDelegateImpl> open_tabs_ui_delegate;
     std::unique_ptr<LocalSessionEventHandlerImpl> local_session_event_handler;
 
@@ -118,6 +115,7 @@ class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
     bool local_data_out_of_sync = false;
   };
 
+  // TODO(mastiz): We should rather rename this to |syncing_state_|.
   base::Optional<SyncingState> syncing_;
 
   base::WeakPtrFactory<SessionSyncBridge> weak_ptr_factory_;

@@ -157,14 +157,14 @@ WebrtcAudioSourceAdapter::~WebrtcAudioSourceAdapter() {
 void WebrtcAudioSourceAdapter::Start(
     std::unique_ptr<AudioSource> audio_source) {
   audio_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::Start, base::Unretained(core_.get()),
-                            base::Passed(&audio_source)));
+      FROM_HERE, base::BindOnce(&Core::Start, base::Unretained(core_.get()),
+                                std::move(audio_source)));
 }
 
 void WebrtcAudioSourceAdapter::Pause(bool pause) {
   audio_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Core::Pause, base::Unretained(core_.get()), pause));
+      base::BindOnce(&Core::Pause, base::Unretained(core_.get()), pause));
 }
 
 WebrtcAudioSourceAdapter::SourceState WebrtcAudioSourceAdapter::state() const {

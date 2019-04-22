@@ -9,10 +9,6 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace blink {
-struct PictureInPictureControlInfo;
-}
-
 namespace gfx {
 class Rect;
 class Size;
@@ -37,6 +33,12 @@ class OverlayWindow {
     kEndOfVideo,
   };
 
+  enum MutedState {
+    kMuted = 0,
+    kUnmuted,
+    kNoAudio,
+  };
+
   OverlayWindow() = default;
   virtual ~OverlayWindow() = default;
 
@@ -47,7 +49,7 @@ class OverlayWindow {
 
   virtual bool IsActive() const = 0;
   virtual void Close() = 0;
-  virtual void Show() = 0;
+  virtual void ShowInactive() = 0;
   virtual void Hide() = 0;
   virtual bool IsVisible() const = 0;
   virtual bool IsAlwaysOnTop() const = 0;
@@ -56,9 +58,11 @@ class OverlayWindow {
   virtual gfx::Rect GetBounds() const = 0;
   virtual void UpdateVideoSize(const gfx::Size& natural_size) = 0;
   virtual void SetPlaybackState(PlaybackState playback_state) = 0;
-  virtual void SetPictureInPictureCustomControls(
-      const std::vector<blink::PictureInPictureControlInfo>& controls) = 0;
   virtual void SetAlwaysHidePlayPauseButton(bool is_visible) = 0;
+  virtual void SetMutedState(MutedState muted_state) = 0;
+  virtual void SetSkipAdButtonVisibility(bool is_visible) = 0;
+  virtual void SetNextTrackButtonVisibility(bool is_visible) = 0;
+  virtual void SetPreviousTrackButtonVisibility(bool is_visible) = 0;
 
   // Retrieves the ui::Layers corresponding to the window and video.
   virtual ui::Layer* GetWindowBackgroundLayer() = 0;

@@ -51,7 +51,7 @@ const net::BackoffEntry::Policy ReadingListEntry::kBackoffPolicy = {
 ReadingListEntry::ReadingListEntry(const GURL& url,
                                    const std::string& title,
                                    const base::Time& now)
-    : ReadingListEntry(url, title, now, nullptr){};
+    : ReadingListEntry(url, title, now, nullptr) {}
 
 ReadingListEntry::ReadingListEntry(const GURL& url,
                                    const std::string& title,

@@ -19,13 +19,13 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -254,9 +254,10 @@ class HistoryBackendTestBase : public testing::Test {
     if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
                                       &test_dir_))
       return;
-    backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
-                                  history_client_.CreateBackendClient(),
-                                  base::ThreadTaskRunnerHandle::Get());
+    backend_ = base::MakeRefCounted<HistoryBackend>(
+        std::make_unique<HistoryBackendTestDelegate>(this),
+        history_client_.CreateBackendClient(),
+        base::ThreadTaskRunnerHandle::Get());
     backend_->Init(false, TestHistoryDatabaseParamsForPath(test_dir_));
   }
 
@@ -844,7 +845,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   history_client_.AddBookmark(row2.url());
 
   // Delete url 2.
-  backend_->expirer_.DeleteURL(row2.url());
+  backend_->expirer_.DeleteURL(row2.url(), base::Time::Max());
   EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), nullptr));
   VisitVector visits;
   backend_->db_->GetVisitsForURL(row2_id, &visits);
@@ -941,8 +942,8 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
 
   // Expire the visits.
   std::set<GURL> restrict_urls;
-  backend_->expire_backend()->ExpireHistoryBetween(restrict_urls, visit_time,
-                                                   base::Time::Now());
+  backend_->expire_backend()->ExpireHistoryBetween(
+      restrict_urls, visit_time, base::Time::Now(), /*user_initiated*/ true);
 
   // The visit should have been nuked.
   visits.clear();
@@ -1165,8 +1166,8 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   rows.push_back(row2);
   backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);
   URLRow url_row1, url_row2;
-  EXPECT_FALSE(backend_->db_->GetRowForURL(row1.url(), &url_row1) == 0);
-  EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), &url_row2) == 0);
+  EXPECT_NE(0, backend_->db_->GetRowForURL(row1.url(), &url_row1));
+  EXPECT_NE(0, backend_->db_->GetRowForURL(row2.url(), &url_row2));
   EXPECT_EQ(1u, NumIconMappingsForPageURL(row1.url(), IconType::kFavicon));
   EXPECT_EQ(0u, NumIconMappingsForPageURL(row2.url(), IconType::kFavicon));
 
@@ -1181,8 +1182,8 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   favicon.urls.insert(row2.url());
   favicons.push_back(favicon);
   backend_->SetImportedFavicons(favicons);
-  EXPECT_FALSE(backend_->db_->GetRowForURL(row1.url(), &url_row1) == 0);
-  EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), &url_row2) == 0);
+  EXPECT_NE(0, backend_->db_->GetRowForURL(row1.url(), &url_row1));
+  EXPECT_NE(0, backend_->db_->GetRowForURL(row2.url(), &url_row2));
 
   std::vector<IconMapping> mappings;
   EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
@@ -1207,13 +1208,13 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   favicons.push_back(favicon);
   backend_->SetImportedFavicons(favicons);
   URLRow url_row3;
-  EXPECT_TRUE(backend_->db_->GetRowForURL(url3, &url_row3) == 0);
+  EXPECT_EQ(0, backend_->db_->GetRowForURL(url3, &url_row3));
 
   // If the URL is bookmarked, it should get added to history with 0 visits.
   history_client_.AddBookmark(url3);
   backend_->SetImportedFavicons(favicons);
-  EXPECT_FALSE(backend_->db_->GetRowForURL(url3, &url_row3) == 0);
-  EXPECT_TRUE(url_row3.visit_count() == 0);
+  EXPECT_NE(0, backend_->db_->GetRowForURL(url3, &url_row3));
+  EXPECT_EQ(0, url_row3.visit_count());
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -1666,9 +1667,10 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   base::FilePath new_history_file = new_history_path.Append(kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history_path, new_history_file));
 
-  backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
-                                history_client_.CreateBackendClient(),
-                                base::ThreadTaskRunnerHandle::Get());
+  backend_ = base::MakeRefCounted<HistoryBackend>(
+      std::make_unique<HistoryBackendTestDelegate>(this),
+      history_client_.CreateBackendClient(),
+      base::ThreadTaskRunnerHandle::Get());
   backend_->Init(false, TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();
   backend_ = nullptr;
@@ -3360,9 +3362,10 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   base::FilePath new_history_file = new_history_path.Append(kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history, new_history_file));
 
-  backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
-                                history_client_.CreateBackendClient(),
-                                base::ThreadTaskRunnerHandle::Get());
+  backend_ = base::MakeRefCounted<HistoryBackend>(
+      std::make_unique<HistoryBackendTestDelegate>(this),
+      history_client_.CreateBackendClient(),
+      base::ThreadTaskRunnerHandle::Get());
   backend_->Init(false, TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();
   backend_ = nullptr;
@@ -3411,7 +3414,7 @@ TEST_F(HistoryBackendTest, ExpireHistoryForTimes) {
   ASSERT_TRUE(backend_.get());
 
   HistoryAddPageArgs args[10];
-  for (size_t i = 0; i < arraysize(args); ++i) {
+  for (size_t i = 0; i < base::size(args); ++i) {
     args[i].url = GURL("http://example" +
                        std::string((i % 2 == 0 ? ".com" : ".net")));
     args[i].time = base::Time::FromInternalValue(i);
@@ -3420,7 +3423,7 @@ TEST_F(HistoryBackendTest, ExpireHistoryForTimes) {
   EXPECT_EQ(base::Time(), backend_->GetFirstRecordedTimeForTest());
 
   URLRow row;
-  for (size_t i = 0; i < arraysize(args); ++i) {
+  for (size_t i = 0; i < base::size(args); ++i) {
     EXPECT_TRUE(backend_->GetURL(args[i].url, &row));
   }
 
@@ -3469,14 +3472,14 @@ TEST_F(HistoryBackendTest, ExpireHistory) {
 
   // Insert 4 entries into the database.
   HistoryAddPageArgs args[4];
-  for (size_t i = 0; i < arraysize(args); ++i) {
+  for (size_t i = 0; i < base::size(args); ++i) {
     args[i].url = GURL("http://example" + base::NumberToString(i) + ".com");
     args[i].time = reference_time + base::TimeDelta::FromDays(i);
     backend_->AddPage(args[i]);
   }
 
   URLRow url_rows[4];
-  for (unsigned int i = 0; i < arraysize(args); ++i)
+  for (unsigned int i = 0; i < base::size(args); ++i)
     ASSERT_TRUE(backend_->GetURL(args[i].url, &url_rows[i]));
 
   std::vector<ExpireHistoryArgs> expire_list;
@@ -3510,7 +3513,7 @@ TEST_F(HistoryBackendTest, ExpireHistory) {
   EXPECT_EQ(backend_->GetFirstRecordedTimeForTest(), args[1].time);
 
   // Now delete the rest of the visits in one call.
-  for (unsigned int i = 1; i < arraysize(args); ++i) {
+  for (unsigned int i = 1; i < base::size(args); ++i) {
     expire_list.resize(expire_list.size() + 1);
     expire_list[i].SetTimeRangeForOneDay(args[i].time);
     expire_list[i].urls.insert(args[i].url);
@@ -3654,7 +3657,8 @@ TEST_F(HistoryBackendTest, DatabaseErrorSynchronouslyKillAndNotifyBridge) {
   // history.
   backend_->ExpireHistoryBetween(/*restrict_urls=*/std::set<GURL>(),
                                  /*begin_time=*/base::Time(),
-                                 /*end_time=*/base::Time::Max());
+                                 /*end_time=*/base::Time::Max(),
+                                 /*user_initiated*/ true);
 
   // Run loop to let the posted task to kill the DB run.
   base::RunLoop().RunUntilIdle();
@@ -3662,7 +3666,8 @@ TEST_F(HistoryBackendTest, DatabaseErrorSynchronouslyKillAndNotifyBridge) {
   // effect but it should not crash).
   backend_->ExpireHistoryBetween(/*restrict_urls=*/std::set<GURL>(),
                                  /*begin_time=*/base::Time(),
-                                 /*end_time=*/base::Time::Max());
+                                 /*end_time=*/base::Time::Max(),
+                                 /*user_initiated*/ true);
 }
 
 // Tests that a typed navigation which results in a redirect from HTTP to HTTPS

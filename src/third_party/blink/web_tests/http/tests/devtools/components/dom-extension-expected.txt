@@ -4,12 +4,12 @@ This test checks dom extensions.
 Running: traverseNextNodeInShadowDom
 #document-fragment
 DIV.shadow-component1
-CONTENT
+SLOT
 DIV.component1-content
 text 1
 SPAN.component1-content
 text 4
-CONTENT
+SLOT
 SPAN
 text 3
 DIV.component2
@@ -18,9 +18,11 @@ DIV.shadow-component1
 DIV.mid-div
 DIV
 component2-text
-CONTENT
+SLOT
+SLOT
 DIV.component2-content
 text 2
+SLOT
 DIV.component2-content
 component2 light dom text
 

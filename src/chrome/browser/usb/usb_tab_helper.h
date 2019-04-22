@@ -67,6 +67,8 @@ class UsbTabHelper : public content::WebContentsObserver,
 
   FrameUsbServicesMap frame_usb_services_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(UsbTabHelper);
 };
 

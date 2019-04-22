@@ -27,9 +27,10 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
-#include "content/public/browser/url_data_source.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/base/directory_lister.h"
 #include "net/base/escape.h"
@@ -42,47 +43,36 @@ using content::WebContents;
 using content::WebUIMessageHandler;
 using system_logs::SystemLogsResponse;
 
-class SystemInfoUIHTMLSource : public content::URLDataSource{
- public:
-  SystemInfoUIHTMLSource();
-  ~SystemInfoUIHTMLSource() override {}
+namespace {
 
-  // content::URLDataSource implementation.
-  std::string GetSource() const override;
-  void StartDataRequest(
-      const std::string& path,
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const content::URLDataSource::GotDataCallback& callback) override;
-  std::string GetMimeType(const std::string&) const override {
-    return "text/html";
-  }
-  std::string GetContentSecurityPolicyScriptSrc() const override {
-    // 'unsafe-eval' and 'unsafe-inline' are added to script-src.
-    return "script-src 'self' chrome://resources 'unsafe-eval' "
-        "'unsafe-inline';";
-  }
+content::WebUIDataSource* CreateSystemInfoUIDataSource() {
+  content::WebUIDataSource* html_source =
+      content::WebUIDataSource::Create(chrome::kChromeUISystemInfoHost);
 
-  std::string GetContentSecurityPolicyStyleSrc() const override {
-    return "style-src 'self' chrome://resources 'unsafe-inline';";
-  }
+  html_source->AddLocalizedString("title", IDS_ABOUT_SYS_TITLE);
+  html_source->AddLocalizedString("description", IDS_ABOUT_SYS_DESC);
+  html_source->AddLocalizedString("tableTitle", IDS_ABOUT_SYS_TABLE_TITLE);
 
- private:
-  void SysInfoComplete(std::unique_ptr<SystemLogsResponse> response);
-  void RequestComplete();
-  void WaitForData();
+  html_source->AddLocalizedString("logFileTableTitle",
+                                  IDS_ABOUT_SYS_LOG_FILE_TABLE_TITLE);
+  html_source->AddLocalizedString("expandAllBtn", IDS_ABOUT_SYS_EXPAND_ALL);
+  html_source->AddLocalizedString("collapseAllBtn", IDS_ABOUT_SYS_COLLAPSE_ALL);
+  html_source->AddLocalizedString("expandBtn", IDS_ABOUT_SYS_EXPAND);
+  html_source->AddLocalizedString("collapseBtn", IDS_ABOUT_SYS_COLLAPSE);
+  html_source->AddLocalizedString("parseError", IDS_ABOUT_SYS_PARSE_ERROR);
 
-  // Stored data from StartDataRequest()
-  std::string path_;
-  content::URLDataSource::GotDataCallback callback_;
+  html_source->AddResourcePath("about_sys.js", IDR_ABOUT_SYS_JS);
+  html_source->AddResourcePath("about_sys.css", IDR_ABOUT_SYS_CSS);
+  html_source->SetDefaultResource(IDR_ABOUT_SYS_HTML);
+  html_source->SetJsonPath("strings.js");
+  html_source->UseGzip();
+  return html_source;
+}
 
-  std::unique_ptr<SystemLogsResponse> response_;
-  base::WeakPtrFactory<SystemInfoUIHTMLSource> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(SystemInfoUIHTMLSource);
-};
+}  // namespace
 
 // The handler for Javascript messages related to the "system" view.
-class SystemInfoHandler : public WebUIMessageHandler,
-                          public base::SupportsWeakPtr<SystemInfoHandler> {
+class SystemInfoHandler : public WebUIMessageHandler {
  public:
   SystemInfoHandler();
   ~SystemInfoHandler() override;
@@ -90,97 +80,55 @@ class SystemInfoHandler : public WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
+  // Callback for the "requestSystemInfo" message. This asynchronously requests
+  // system info and eventually returns it to the front end.
+  void HandleRequestSystemInfo(const base::ListValue*);
+
+  void OnSystemInfo(std::unique_ptr<SystemLogsResponse> sys_info);
+
  private:
+  base::WeakPtrFactory<SystemInfoHandler> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SystemInfoHandler);
 };
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// SystemInfoUIHTMLSource
-//
-////////////////////////////////////////////////////////////////////////////////
-
-SystemInfoUIHTMLSource::SystemInfoUIHTMLSource() : weak_ptr_factory_(this) {}
-
-std::string SystemInfoUIHTMLSource::GetSource() const {
-  return chrome::kChromeUISystemInfoHost;
-}
-
-void SystemInfoUIHTMLSource::StartDataRequest(
-    const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
-  path_ = path;
-  callback_ = callback;
-
-  system_logs::SystemLogsFetcher* fetcher =
-      system_logs::BuildAboutSystemLogsFetcher();
-  fetcher->Fetch(base::Bind(&SystemInfoUIHTMLSource::SysInfoComplete,
-                            weak_ptr_factory_.GetWeakPtr()));
-}
-
-void SystemInfoUIHTMLSource::SysInfoComplete(
-    std::unique_ptr<SystemLogsResponse> sys_info) {
-  response_ = std::move(sys_info);
-  RequestComplete();
-}
-
-void SystemInfoUIHTMLSource::RequestComplete() {
-  base::DictionaryValue strings;
-  strings.SetString("title", l10n_util::GetStringUTF16(IDS_ABOUT_SYS_TITLE));
-  strings.SetString("description",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_DESC));
-  strings.SetString("tableTitle",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_TABLE_TITLE));
-  strings.SetString(
-      "logFileTableTitle",
-      l10n_util::GetStringUTF16(IDS_ABOUT_SYS_LOG_FILE_TABLE_TITLE));
-  strings.SetString("expandAllBtn",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_EXPAND_ALL));
-  strings.SetString("collapseAllBtn",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_COLLAPSE_ALL));
-  strings.SetString("expandBtn",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_EXPAND));
-  strings.SetString("collapseBtn",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_COLLAPSE));
-  strings.SetString("parseError",
-                    l10n_util::GetStringUTF16(IDS_ABOUT_SYS_PARSE_ERROR));
-
-  const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, &strings);
-
-  if (response_.get()) {
-    auto details = std::make_unique<base::ListValue>();
-    for (SystemLogsResponse::const_iterator it = response_->begin();
-         it != response_->end();
-         ++it) {
-      std::unique_ptr<base::DictionaryValue> val(new base::DictionaryValue);
-      val->SetString("statName", it->first);
-      val->SetString("statValue", it->second);
-      details->Append(std::move(val));
-    }
-    strings.Set("details", std::move(details));
-  }
-  static const base::StringPiece systeminfo_html(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_ABOUT_SYS_HTML));
-  std::string full_html = webui::GetI18nTemplateHtml(systeminfo_html, &strings);
-  callback_.Run(base::RefCountedString::TakeString(&full_html));
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
 // SystemInfoHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
-SystemInfoHandler::SystemInfoHandler() {
-}
+SystemInfoHandler::SystemInfoHandler() : weak_ptr_factory_(this) {}
 
-SystemInfoHandler::~SystemInfoHandler() {
-}
+SystemInfoHandler::~SystemInfoHandler() {}
 
 void SystemInfoHandler::RegisterMessages() {
-  // TODO(stevenjb): add message registration, callbacks...
+  web_ui()->RegisterMessageCallback(
+      "requestSystemInfo",
+      base::BindRepeating(&SystemInfoHandler::HandleRequestSystemInfo,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SystemInfoHandler::HandleRequestSystemInfo(const base::ListValue*) {
+  AllowJavascript();
+  system_logs::SystemLogsFetcher* fetcher =
+      system_logs::BuildAboutSystemLogsFetcher();
+  fetcher->Fetch(base::BindOnce(&SystemInfoHandler::OnSystemInfo,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SystemInfoHandler::OnSystemInfo(
+    std::unique_ptr<SystemLogsResponse> sys_info) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!sys_info)
+    return;
+  base::ListValue data;
+  for (SystemLogsResponse::const_iterator it = sys_info->begin();
+       it != sys_info->end(); ++it) {
+    auto val = std::make_unique<base::DictionaryValue>();
+    val->SetString("statName", it->first);
+    val->SetString("statValue", it->second);
+    data.Append(std::move(val));
+  }
+  CallJavascriptFunction("returnSystemInfo", data);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -193,6 +141,6 @@ SystemInfoUI::SystemInfoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<SystemInfoHandler>());
 
   // Set up the chrome://system/ source.
-  content::URLDataSource::Add(Profile::FromWebUI(web_ui),
-                              std::make_unique<SystemInfoUIHTMLSource>());
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
+                                CreateSystemInfoUIDataSource());
 }

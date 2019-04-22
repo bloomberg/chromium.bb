@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download.home.empty;
 import android.content.Context;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
-import android.support.v7.content.res.AppCompatResources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +15,7 @@ import android.widget.TextView;
 import org.chromium.chrome.browser.download.home.empty.EmptyProperties.State;
 import org.chromium.chrome.browser.widget.LoadingView;
 import org.chromium.chrome.download.R;
+import org.chromium.ui.UiUtils;
 
 /** A view that represents the visuals required for the empty state of the download home list. */
 class EmptyView {
@@ -54,7 +54,8 @@ class EmptyView {
 
     /** Sets the icon resource to use for the empty view. */
     public void setEmptyIcon(@DrawableRes int iconId) {
-        mEmptyView.setCompoundDrawablesWithIntrinsicBounds(
-                null, AppCompatResources.getDrawable(mView.getContext(), iconId), null, null);
+        mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null,
+                UiUtils.getTintedDrawable(mView.getContext(), iconId, R.color.light_icon_color),
+                null, null);
     }
 }

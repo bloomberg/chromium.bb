@@ -12,8 +12,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -28,11 +28,9 @@ class GeolocationHandlerTest : public testing::Test {
   ~GeolocationHandlerTest() override = default;
 
   void SetUp() override {
-    // Initialize DBusThreadManager with a stub implementation.
-    DBusThreadManager::Initialize();
+    shill_clients::InitializeFakes();
     // Get the test interface for manager / device.
-    manager_test_ =
-        DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
+    manager_test_ = ShillManagerClient::Get()->GetTestInterface();
     ASSERT_TRUE(manager_test_);
     geolocation_handler_.reset(new GeolocationHandler());
     geolocation_handler_->Init();
@@ -41,7 +39,7 @@ class GeolocationHandlerTest : public testing::Test {
 
   void TearDown() override {
     geolocation_handler_.reset();
-    DBusThreadManager::Shutdown();
+    shill_clients::Shutdown();
   }
 
   bool GetWifiAccessPoints() {
@@ -60,8 +58,8 @@ class GeolocationHandlerTest : public testing::Test {
     std::string mac_address =
         base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
                            idx, 0, 0, 0, 0, 0);
-    std::string channel = base::IntToString(idx);
-    std::string strength = base::IntToString(idx * 10);
+    std::string channel = base::NumberToString(idx);
+    std::string strength = base::NumberToString(idx * 10);
     properties.SetKey(shill::kGeoMacAddressProperty, base::Value(mac_address));
     properties.SetKey(shill::kGeoChannelProperty, base::Value(channel));
     properties.SetKey(shill::kGeoSignalStrengthProperty, base::Value(strength));
@@ -76,10 +74,10 @@ class GeolocationHandlerTest : public testing::Test {
     // Multiplications, additions, and string concatenations
     // are intended solely to differentiate the various fields
     // in a predictable way, while preserving 3 digits for MCC and MNC.
-    std::string ci = base::IntToString(idx) + "D3A15F2";
-    std::string lac = "7FF" + base::IntToString(idx);
-    std::string mcc = base::IntToString(idx * 100);
-    std::string mnc = base::IntToString(idx * 100 + 1);
+    std::string ci = base::NumberToString(idx) + "D3A15F2";
+    std::string lac = "7FF" + base::NumberToString(idx);
+    std::string mcc = base::NumberToString(idx * 100);
+    std::string mnc = base::NumberToString(idx * 100 + 1);
 
     properties.SetKey(shill::kGeoCellIdProperty, base::Value(ci));
     properties.SetKey(shill::kGeoLocationAreaCodeProperty, base::Value(lac));

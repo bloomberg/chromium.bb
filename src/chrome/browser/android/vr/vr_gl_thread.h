@@ -130,10 +130,11 @@ class VrGLThread : public base::android::JavaHandlerThread,
       const CapturingStateModel& potential_capturing) override;
   void ShowExitVrPrompt(UiUnsupportedMode reason) override;
   void SetSpeechRecognitionEnabled(bool enabled) override;
+  void SetHasOrCanRequestRecordAudioPermission(
+      bool has_or_can_request_record_audio) override;
   void SetRecognitionResult(const base::string16& result) override;
   void OnSpeechRecognitionStateChanged(int new_state) override;
-  void SetOmniboxSuggestions(
-      std::unique_ptr<OmniboxSuggestions> result) override;
+  void SetOmniboxSuggestions(std::vector<OmniboxSuggestion> result) override;
   void OnAssetsLoaded(AssetsLoadStatus status,
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version) override;

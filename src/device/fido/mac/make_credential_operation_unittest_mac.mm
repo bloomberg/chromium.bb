@@ -59,7 +59,7 @@ API_AVAILABLE(macosx(10.12.2)) {
   EXPECT_EQ(CtapDeviceResponseCode::kSuccess, error);
   auto opt_response = std::move(std::get<1>(result));
   ASSERT_TRUE(opt_response);
-};
+}
 
 }  // namespace
 }  // namespace mac

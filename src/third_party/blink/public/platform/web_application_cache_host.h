@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_H_
 
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-shared.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -46,39 +48,6 @@ class WebURLResponse;
 // instances, and calls delete when the instance is no longer needed.
 class WebApplicationCacheHost {
  public:
-  // These values must match blink::ApplicationCacheHost::Status values
-  enum Status {
-    kUncached,
-    kIdle,
-    kChecking,
-    kDownloading,
-    kUpdateReady,
-    kObsolete
-  };
-
-  // These values must match blink::ApplicationCacheHost::EventID values
-  enum EventID {
-    kCheckingEvent,
-    kErrorEvent,
-    kNoUpdateEvent,
-    kDownloadingEvent,
-    kProgressEvent,
-    kUpdateReadyEvent,
-    kCachedEvent,
-    kObsoleteEvent
-  };
-
-  enum ErrorReason {
-    kManifestError,
-    kSignatureError,
-    kResourceError,
-    kChangedError,
-    kAbortError,
-    kQuotaError,
-    kPolicyError,
-    kUnknownError
-  };
-
   static const int kAppCacheNoHostId = 0;
 
   virtual ~WebApplicationCacheHost() = default;
@@ -100,11 +69,11 @@ class WebApplicationCacheHost {
 
   // Called as the main resource is retrieved.
   virtual void DidReceiveResponseForMainResource(const WebURLResponse&) {}
-  virtual void DidReceiveDataForMainResource(const char* data, size_t len) {}
-  virtual void DidFinishLoadingMainResource(bool success) {}
 
   // Called on behalf of the scriptable interface.
-  virtual Status GetStatus() { return kUncached; }
+  virtual mojom::AppCacheStatus GetStatus() {
+    return mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+  }
   virtual bool StartUpdate() { return false; }
   virtual bool SwapCache() { return false; }
   virtual void Abort() {}
@@ -114,19 +83,32 @@ class WebApplicationCacheHost {
     WebURL manifest_url;  // Empty if there is no associated cache.
     double creation_time;
     double update_time;
-    long long total_size;
-    CacheInfo() : creation_time(0), update_time(0), total_size(0) {}
+    // Sums up the sizes of all the responses in this cache.
+    int64_t response_sizes;
+    // Sums up the padding sizes for all opaque responses in the cache.
+    int64_t padding_sizes;
+    CacheInfo()
+        : creation_time(0),
+          update_time(0),
+          response_sizes(0),
+          padding_sizes(0) {}
   };
   struct ResourceInfo {
     WebURL url;
-    long long size;
+    // Disk space consumed by this resource.
+    int64_t response_size;
+    // Padding added when the Quota API counts this resource.
+    //
+    // Non-zero only for opaque responses.
+    int64_t padding_size;
     bool is_master;
     bool is_manifest;
     bool is_explicit;
     bool is_foreign;
     bool is_fallback;
     ResourceInfo()
-        : size(0),
+        : response_size(0),
+          padding_size(0),
           is_master(false),
           is_manifest(false),
           is_explicit(false),

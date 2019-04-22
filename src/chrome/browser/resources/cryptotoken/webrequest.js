@@ -22,14 +22,16 @@ var JS_API_VERSION = 1.1;
 function getOriginFromUrl(url) {
   var re = new RegExp('^(https?://)[^/]*/?');
   var originarray = re.exec(url);
-  if (originarray == null)
+  if (originarray == null) {
     return originarray;
+  }
   var origin = originarray[0];
   while (origin.charAt(origin.length - 1) == '/') {
     origin = origin.substring(0, origin.length - 1);
   }
-  if (origin == 'http:' || origin == 'https:')
+  if (origin == 'http:' || origin == 'https:') {
     return null;
+  }
   return origin;
 }
 
@@ -44,8 +46,9 @@ function isValidRegisteredKey(registeredKey, appIdRequired) {
   if (appIdRequired && !registeredKey.hasOwnProperty('appId')) {
     return false;
   }
-  if (!registeredKey.hasOwnProperty('keyHandle'))
+  if (!registeredKey.hasOwnProperty('keyHandle')) {
     return false;
+  }
   if (registeredKey['version']) {
     if (registeredKey['version'] != 'U2F_V1' &&
         registeredKey['version'] != 'U2F_V2') {
@@ -101,8 +104,9 @@ function isValidSignChallengeArray(
   for (var i = 0; i < signChallenges.length; i++) {
     var incomingChallenge = signChallenges[i];
     if (challengeValueRequired &&
-        !incomingChallenge.hasOwnProperty('challenge'))
+        !incomingChallenge.hasOwnProperty('challenge')) {
       return false;
+    }
     if (!isValidRegisteredKey(incomingChallenge, appIdRequired)) {
       return false;
     }

@@ -17,10 +17,18 @@
 namespace testing {
 namespace internal {
 
+static std::string StringFromNSString(NSString* string) {
+  // Note that -[NSString UTF8String] is banned in chromium code because
+  // base::SysNSStringToUTF8() is safer, but //testing isn't allowed to depend
+  // on //base, so deliberately ignore that function ban.
+  const char* utf_string = [string UTF8String];
+  return utf_string ? std::string(utf_string) : std::string("(nil nsstring)");
+}
+
 // Handles nil values for |obj| properly by using safe printing of %@ in
 // -stringWithFormat:.
-static inline const char* StringDescription(id<NSObject> obj) {
-  return [[NSString stringWithFormat:@"%@", obj] UTF8String];
+std::string StringDescription(id<NSObject> obj) {
+  return StringFromNSString([NSString stringWithFormat:@"%@", obj]);
 }
 
 // This overloaded version allows comparison between ObjC objects that conform
@@ -32,10 +40,8 @@ GTEST_API_ AssertionResult CmpHelperNSEQ(const char* expected_expression,
   if (expected == actual || [expected isEqual:actual]) {
     return AssertionSuccess();
   }
-  return EqFailure(expected_expression,
-                   actual_expression,
-                   std::string(StringDescription(expected)),
-                   std::string(StringDescription(actual)),
+  return EqFailure(expected_expression, actual_expression,
+                   StringDescription(expected), StringDescription(actual),
                    false);
 }
 
@@ -64,12 +70,9 @@ GTEST_API_ AssertionResult CmpHelperNSEQ(const char* expected_expression,
   if (NSEqualRects(expected, actual)) {
     return AssertionSuccess();
   }
-  return EqFailure(expected_expression,
-                   actual_expression,
-                   [NSStringFromRect(expected) UTF8String],
-                   [NSStringFromRect(actual) UTF8String],
-                   false);
-
+  return EqFailure(expected_expression, actual_expression,
+                   StringFromNSString(NSStringFromRect(expected)),
+                   StringFromNSString(NSStringFromRect(actual)), false);
 }
 
 GTEST_API_ AssertionResult CmpHelperNSNE(const char* expected_expression,
@@ -81,8 +84,8 @@ GTEST_API_ AssertionResult CmpHelperNSNE(const char* expected_expression,
   }
   Message msg;
   msg << "Expected: (" << expected_expression << ") != (" << actual_expression
-      << "), actual: " << [NSStringFromRect(expected) UTF8String]
-      << " vs " << [NSStringFromRect(actual) UTF8String];
+      << "), actual: " << StringFromNSString(NSStringFromRect(expected))
+      << " vs " << StringFromNSString(NSStringFromRect(actual));
   return AssertionFailure(msg);
 
 }
@@ -94,12 +97,9 @@ GTEST_API_ AssertionResult CmpHelperNSEQ(const char* expected_expression,
   if (NSEqualPoints(expected, actual)) {
     return AssertionSuccess();
   }
-  return EqFailure(expected_expression,
-                   actual_expression,
-                   [NSStringFromPoint(expected) UTF8String],
-                   [NSStringFromPoint(actual) UTF8String],
-                   false);
-
+  return EqFailure(expected_expression, actual_expression,
+                   StringFromNSString(NSStringFromPoint(expected)),
+                   StringFromNSString(NSStringFromPoint(actual)), false);
 }
 
 GTEST_API_ AssertionResult CmpHelperNSNE(const char* expected_expression,
@@ -111,10 +111,35 @@ GTEST_API_ AssertionResult CmpHelperNSNE(const char* expected_expression,
   }
   Message msg;
   msg << "Expected: (" << expected_expression << ") != (" << actual_expression
-      << "), actual: " << [NSStringFromPoint(expected) UTF8String]
-      << " vs " << [NSStringFromPoint(actual) UTF8String];
+      << "), actual: " << StringFromNSString(NSStringFromPoint(expected))
+      << " vs " << StringFromNSString(NSStringFromPoint(actual));
   return AssertionFailure(msg);
+}
 
+GTEST_API_ AssertionResult CmpHelperNSEQ(const char* expected_expression,
+                                         const char* actual_expression,
+                                         const NSRange& expected,
+                                         const NSRange& actual) {
+  if (NSEqualRanges(expected, actual)) {
+    return AssertionSuccess();
+  }
+  return EqFailure(expected_expression, actual_expression,
+                   StringFromNSString(NSStringFromRange(expected)),
+                   StringFromNSString(NSStringFromRange(actual)), false);
+}
+
+GTEST_API_ AssertionResult CmpHelperNSNE(const char* expected_expression,
+                                         const char* actual_expression,
+                                         const NSRange& expected,
+                                         const NSRange& actual) {
+  if (!NSEqualRanges(expected, actual)) {
+    return AssertionSuccess();
+  }
+  Message msg;
+  msg << "Expected: (" << expected_expression << ") != (" << actual_expression
+      << "), actual: " << StringFromNSString(NSStringFromRange(expected))
+      << " vs " << StringFromNSString(NSStringFromRange(actual));
+  return AssertionFailure(msg);
 }
 
 #endif  // !GTEST_OS_IOS

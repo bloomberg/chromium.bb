@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/serialized_var.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "ipc/ipc_message_utils.h"
 #include "ppapi/c/pp_instance.h"

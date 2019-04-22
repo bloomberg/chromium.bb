@@ -78,6 +78,7 @@ using testing::Expectation;
 using testing::ExpectationSet;
 using testing::GMOCK_FLAG(verbose);
 using testing::Gt;
+using testing::IgnoreResult;
 using testing::InSequence;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
@@ -1952,17 +1953,17 @@ TEST(DeletingMockEarlyTest, Failure2) {
 class EvenNumberCardinality : public CardinalityInterface {
  public:
   // Returns true iff call_count calls will satisfy this cardinality.
-  virtual bool IsSatisfiedByCallCount(int call_count) const {
+  bool IsSatisfiedByCallCount(int call_count) const override {
     return call_count % 2 == 0;
   }
 
   // Returns true iff call_count calls will saturate this cardinality.
-  virtual bool IsSaturatedByCallCount(int /* call_count */) const {
+  bool IsSaturatedByCallCount(int /* call_count */) const override {
     return false;
   }
 
   // Describes self to an ostream.
-  virtual void DescribeTo(::std::ostream* os) const {
+  void DescribeTo(::std::ostream* os) const override {
     *os << "called even number of times";
   }
 };
@@ -2023,7 +2024,9 @@ class VerboseFlagPreservingFixture : public testing::Test {
   VerboseFlagPreservingFixture()
       : saved_verbose_flag_(GMOCK_FLAG(verbose)) {}
 
-  ~VerboseFlagPreservingFixture() { GMOCK_FLAG(verbose) = saved_verbose_flag_; }
+  ~VerboseFlagPreservingFixture() override {
+    GMOCK_FLAG(verbose) = saved_verbose_flag_;
+  }
 
  private:
   const std::string saved_verbose_flag_;

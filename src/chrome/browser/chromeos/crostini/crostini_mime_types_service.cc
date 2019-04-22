@@ -75,8 +75,9 @@ void CrostiniMimeTypesService::ClearMimeTypes(
   std::vector<std::string> removed_ids;
   for (const auto& item : mime_type_mappings->DictItems()) {
     if (item.second.FindKey(kAppVmNameKey)->GetString() == vm_name &&
-        item.second.FindKey(kAppContainerNameKey)->GetString() ==
-            container_name) {
+        (container_name.empty() ||
+         item.second.FindKey(kAppContainerNameKey)->GetString() ==
+             container_name)) {
       removed_ids.push_back(item.first);
     }
   }

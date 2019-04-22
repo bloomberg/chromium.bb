@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -123,7 +122,7 @@ static FeatureEntry kEntries[] = {
     {kFlags4, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::MULTI_VALUE, "", "", "", "", nullptr,
-     arraysize(kMultiChoices), kMultiChoices, nullptr, nullptr},
+     base::size(kMultiChoices), kMultiChoices, nullptr, nullptr},
     {kFlags5, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
      FeatureEntry::ENABLE_DISABLE_VALUE, kSwitch1, kEnableDisableValue1,
@@ -157,14 +156,14 @@ class FlagsStateTest : public ::testing::Test {
   FlagsStateTest() : flags_storage_(&prefs_), trial_list_(nullptr) {
     prefs_.registry()->RegisterListPref(prefs::kEnabledLabsExperiments);
 
-    for (size_t i = 0; i < arraysize(kEntries); ++i)
+    for (size_t i = 0; i < base::size(kEntries); ++i)
       kEntries[i].supported_platforms = FlagsState::GetCurrentPlatform();
 
     int os_other_than_current = 1;
     while (os_other_than_current == FlagsState::GetCurrentPlatform())
       os_other_than_current <<= 1;
     kEntries[2].supported_platforms = os_other_than_current;
-    flags_state_.reset(new FlagsState(kEntries, arraysize(kEntries)));
+    flags_state_.reset(new FlagsState(kEntries, base::size(kEntries)));
   }
 
   ~FlagsStateTest() override {
@@ -558,7 +557,7 @@ TEST_F(FlagsStateTest, RemoveFlagSwitches_Features) {
       {2, "A,B", "C", "A,B", "C,FeatureName1"},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf(
         "Test[%" PRIuS "]: %d [%s] [%s]", i, cases[i].enabled_choice,
         cases[i].existing_enable_features ? cases[i].existing_enable_features
@@ -853,7 +852,7 @@ TEST_F(FlagsStateTest, FeatureValues) {
       {2, nullptr, "Foo,Bar", "", "Foo,Bar,FeatureName1"},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf(
         "Test[%" PRIuS "]: %d [%s] [%s]", i, cases[i].enabled_choice,
         cases[i].existing_enable_features ? cases[i].existing_enable_features
@@ -895,7 +894,7 @@ TEST_F(FlagsStateTest, GetFlagFeatureEntries) {
   // All |kEntries| except for |kFlags3| should be supported.
   EXPECT_EQ(10u, supported_entries.GetSize());
   EXPECT_EQ(1u, unsupported_entries.GetSize());
-  EXPECT_EQ(arraysize(kEntries),
+  EXPECT_EQ(base::size(kEntries),
             supported_entries.GetSize() + unsupported_entries.GetSize());
 }
 

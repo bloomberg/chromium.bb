@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <iomanip>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -36,10 +37,14 @@
 #include "src/objects-inl.h"
 #include "src/objects.h"
 #include "src/ostreams.h"
+#include "src/parsing/parse-info.h"
+#include "src/parsing/parsing.h"
+#include "src/parsing/scanner-character-streams.h"
 #include "src/snapshot/natives.h"
 #include "src/trap-handler/trap-handler.h"
 #include "src/utils.h"
 #include "src/v8.h"
+#include "src/vm-state-inl.h"
 #include "src/wasm/wasm-engine.h"
 
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -409,7 +414,7 @@ class BackgroundCompileThread : public base::Thread {
   BackgroundCompileThread(Isolate* isolate, Local<String> source)
       : base::Thread(GetThreadOptions("BackgroundCompileThread")),
         source_(source),
-        streamed_source_(new DummySourceStream(source, isolate),
+        streamed_source_(base::make_unique<DummySourceStream>(source, isolate),
                          v8::ScriptCompiler::StreamedSource::UTF8),
         task_(v8::ScriptCompiler::StartStreamingScript(isolate,
                                                        &streamed_source_)) {}
@@ -464,6 +469,27 @@ bool Shell::ExecuteString(Isolate* isolate, Local<String> source,
                           Local<Value> name, PrintResult print_result,
                           ReportExceptions report_exceptions,
                           ProcessMessageQueue process_message_queue) {
+  if (i::FLAG_parse_only) {
+    i::Isolate* i_isolate = reinterpret_cast<i::Isolate*>(isolate);
+    i::VMState<PARSER> state(i_isolate);
+    i::Handle<i::String> str = Utils::OpenHandle(*(source));
+
+    // Set up ParseInfo.
+    i::ParseInfo parse_info(i_isolate);
+    parse_info.set_toplevel();
+    parse_info.set_allow_lazy_parsing();
+    parse_info.set_language_mode(
+        i::construct_language_mode(i::FLAG_use_strict));
+    parse_info.set_script(
+        parse_info.CreateScript(i_isolate, str, options.compile_options));
+
+    if (!i::parsing::ParseProgram(&parse_info, i_isolate)) {
+      fprintf(stderr, "Failed parsing\n");
+      return false;
+    }
+    return true;
+  }
+
   HandleScope handle_scope(isolate);
   TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
@@ -939,14 +965,9 @@ PerIsolateData::RealmScope::~RealmScope() {
     Global<Context>& realm = data_->realms_[i];
     if (realm.IsEmpty()) continue;
     DisposeModuleEmbedderData(realm.Get(data_->isolate_));
-    // TODO(adamk): No need to reset manually, Globals reset when destructed.
-    realm.Reset();
   }
   data_->realm_count_ = 0;
   delete[] data_->realms_;
-  // TODO(adamk): No need to reset manually, Globals reset when destructed.
-  if (!data_->realm_shared_.IsEmpty())
-    data_->realm_shared_.Reset();
 }
 
 
@@ -1096,8 +1117,36 @@ void Shell::RealmNavigate(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   Local<Context> context = Local<Context>::New(isolate, data->realms_[index]);
   v8::MaybeLocal<Value> global_object = context->Global();
+
+  // Context::Global doesn't return JSGlobalProxy if DetachGlobal is called in
+  // advance.
+  if (!global_object.IsEmpty()) {
+    HandleScope scope(isolate);
+    if (!Utils::OpenHandle(*global_object.ToLocalChecked())
+             ->IsJSGlobalProxy()) {
+      global_object = v8::MaybeLocal<Value>();
+    }
+  }
+
   DisposeRealm(args, index);
   CreateRealm(args, index, global_object);
+}
+
+// Realm.detachGlobal(i) detaches the global objects of realm i from realm i.
+void Shell::RealmDetachGlobal(const v8::FunctionCallbackInfo<v8::Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  PerIsolateData* data = PerIsolateData::Get(isolate);
+  int index = data->RealmIndexOrThrow(args, 0);
+  if (index == -1) return;
+  if (index == 0 || index == data->realm_current_ ||
+      index == data->realm_switch_) {
+    Throw(args.GetIsolate(), "Invalid realm index");
+    return;
+  }
+
+  HandleScope scope(isolate);
+  Local<Context> realm = Local<Context>::New(isolate, data->realms_[index]);
+  realm->DetachGlobal();
 }
 
 // Realm.dispose(i) disposes the reference to the realm i.
@@ -1665,18 +1714,11 @@ Local<String> Shell::Stringify(Isolate* isolate, Local<Value> value) {
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate, evaluation_context_);
   if (stringify_function_.IsEmpty()) {
-    int source_index = i::NativesCollection<i::D8>::GetIndex("d8");
-    i::Vector<const char> source_string =
-        i::NativesCollection<i::D8>::GetScriptSource(source_index);
-    i::Vector<const char> source_name =
-        i::NativesCollection<i::D8>::GetScriptName(source_index);
     Local<String> source =
-        String::NewFromUtf8(isolate, source_string.start(),
-                            NewStringType::kNormal, source_string.length())
+        String::NewFromUtf8(isolate, stringify_source_, NewStringType::kNormal)
             .ToLocalChecked();
     Local<String> name =
-        String::NewFromUtf8(isolate, source_name.start(),
-                            NewStringType::kNormal, source_name.length())
+        String::NewFromUtf8(isolate, "d8-stringify", NewStringType::kNormal)
             .ToLocalChecked();
     ScriptOrigin origin(name);
     Local<Script> script =
@@ -1749,6 +1791,14 @@ Local<ObjectTemplate> Shell::CreateGlobalTemplate(Isolate* isolate) {
       String::NewFromUtf8(isolate, "waitUntilDone", NewStringType::kNormal)
           .ToLocalChecked(),
       FunctionTemplate::New(isolate, WaitUntilDone));
+  // Reliable access to quit functionality. The "quit" method function
+  // installed on the global object can be hidden with the --omit-quit flag
+  // (e.g. on asan bots).
+  test_template->Set(
+      String::NewFromUtf8(isolate, "quit", NewStringType::kNormal)
+          .ToLocalChecked(),
+      FunctionTemplate::New(isolate, Quit));
+
   global_template->Set(
       String::NewFromUtf8(isolate, "version", NewStringType::kNormal)
           .ToLocalChecked(),
@@ -1785,6 +1835,10 @@ Local<ObjectTemplate> Shell::CreateGlobalTemplate(Isolate* isolate) {
       String::NewFromUtf8(isolate, "navigate", NewStringType::kNormal)
           .ToLocalChecked(),
       FunctionTemplate::New(isolate, RealmNavigate));
+  realm_template->Set(
+      String::NewFromUtf8(isolate, "detachGlobal", NewStringType::kNormal)
+          .ToLocalChecked(),
+      FunctionTemplate::New(isolate, RealmDetachGlobal));
   realm_template->Set(
       String::NewFromUtf8(isolate, "dispose", NewStringType::kNormal)
           .ToLocalChecked(),
@@ -1957,16 +2011,6 @@ Local<Context> Shell::CreateEvaluationContext(Isolate* isolate) {
   return handle_scope.Escape(context);
 }
 
-struct CounterAndKey {
-  Counter* counter;
-  const char* key;
-};
-
-
-inline bool operator<(const CounterAndKey& lhs, const CounterAndKey& rhs) {
-  return strcmp(lhs.key, rhs.key) < 0;
-}
-
 void Shell::WriteIgnitionDispatchCountersFile(v8::Isolate* isolate) {
   HandleScope handle_scope(isolate);
   Local<Context> context = Context::New(isolate);
@@ -2080,54 +2124,52 @@ void Shell::OnExit(v8::Isolate* isolate) {
   isolate->Dispose();
 
   if (i::FLAG_dump_counters || i::FLAG_dump_counters_nvp) {
-    const int number_of_counters = static_cast<int>(counter_map_->size());
-    CounterAndKey* counters = new CounterAndKey[number_of_counters];
-    int j = 0;
-    for (auto map_entry : *counter_map_) {
-      counters[j].counter = map_entry.second;
-      counters[j].key = map_entry.first;
-      j++;
-    }
-    std::sort(counters, counters + number_of_counters);
+    std::vector<std::pair<std::string, Counter*>> counters(
+        counter_map_->begin(), counter_map_->end());
+    std::sort(counters.begin(), counters.end());
 
     if (i::FLAG_dump_counters_nvp) {
       // Dump counters as name-value pairs.
-      for (j = 0; j < number_of_counters; j++) {
-        Counter* counter = counters[j].counter;
-        const char* key = counters[j].key;
+      for (auto pair : counters) {
+        std::string key = pair.first;
+        Counter* counter = pair.second;
         if (counter->is_histogram()) {
-          printf("\"c:%s\"=%i\n", key, counter->count());
-          printf("\"t:%s\"=%i\n", key, counter->sample_total());
+          std::cout << "\"c:" << key << "\"=" << counter->count() << "\n";
+          std::cout << "\"t:" << key << "\"=" << counter->sample_total()
+                    << "\n";
         } else {
-          printf("\"%s\"=%i\n", key, counter->count());
+          std::cout << "\"" << key << "\"=" << counter->count() << "\n";
         }
       }
     } else {
       // Dump counters in formatted boxes.
-      printf(
-          "+----------------------------------------------------------------+"
-          "-------------+\n");
-      printf(
-          "| Name                                                           |"
-          " Value       |\n");
-      printf(
-          "+----------------------------------------------------------------+"
-          "-------------+\n");
-      for (j = 0; j < number_of_counters; j++) {
-        Counter* counter = counters[j].counter;
-        const char* key = counters[j].key;
+      constexpr int kNameBoxSize = 64;
+      constexpr int kValueBoxSize = 13;
+      std::cout << "+" << std::string(kNameBoxSize, '-') << "+"
+                << std::string(kValueBoxSize, '-') << "+\n";
+      std::cout << "| Name" << std::string(kNameBoxSize - 5, ' ') << "| Value"
+                << std::string(kValueBoxSize - 6, ' ') << "|\n";
+      std::cout << "+" << std::string(kNameBoxSize, '-') << "+"
+                << std::string(kValueBoxSize, '-') << "+\n";
+      for (auto pair : counters) {
+        std::string key = pair.first;
+        Counter* counter = pair.second;
         if (counter->is_histogram()) {
-          printf("| c:%-60s | %11i |\n", key, counter->count());
-          printf("| t:%-60s | %11i |\n", key, counter->sample_total());
+          std::cout << "| c:" << std::setw(kNameBoxSize - 4) << std::left << key
+                    << " | " << std::setw(kValueBoxSize - 2) << std::right
+                    << counter->count() << " |\n";
+          std::cout << "| t:" << std::setw(kNameBoxSize - 4) << std::left << key
+                    << " | " << std::setw(kValueBoxSize - 2) << std::right
+                    << counter->sample_total() << " |\n";
         } else {
-          printf("| %-62s | %11i |\n", key, counter->count());
+          std::cout << "| " << std::setw(kNameBoxSize - 2) << std::left << key
+                    << " | " << std::setw(kValueBoxSize - 2) << std::right
+                    << counter->count() << " |\n";
         }
       }
-      printf(
-          "+----------------------------------------------------------------+"
-          "-------------+\n");
+      std::cout << "+" << std::string(kNameBoxSize, '-') << "+"
+                << std::string(kValueBoxSize, '-') << "+\n";
     }
-    delete [] counters;
   }
 
   delete counters_file_;
@@ -2233,7 +2275,8 @@ void Shell::ReadBuffer(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Reads a file into a v8 string.
 Local<String> Shell::ReadFile(Isolate* isolate, const char* name) {
   std::unique_ptr<base::OS::MemoryMappedFile> file(
-      base::OS::MemoryMappedFile::open(name));
+      base::OS::MemoryMappedFile::open(
+          name, base::OS::MemoryMappedFile::FileMode::kReadOnly));
   if (!file) return Local<String>();
 
   int size = static_cast<int>(file->size());
@@ -2297,6 +2340,7 @@ class InspectorFrontend final : public v8_inspector::V8Inspector::Channel {
 
   void Send(const v8_inspector::StringView& string) {
     v8::Isolate::AllowJavascriptExecutionScope allow_script(isolate_);
+    v8::HandleScope handle_scope(isolate_);
     int length = static_cast<int>(string.length());
     DCHECK_LT(length, v8::String::kMaxLength);
     Local<String> message =
@@ -2394,7 +2438,10 @@ class InspectorClient : public v8_inspector::V8InspectorClient {
     std::unique_ptr<uint16_t[]> buffer(new uint16_t[length]);
     message->Write(isolate, buffer.get(), 0, length);
     v8_inspector::StringView message_view(buffer.get(), length);
-    session->dispatchProtocolMessage(message_view);
+    {
+      v8::SealHandleScope seal_handle_scope(isolate);
+      session->dispatchProtocolMessage(message_view);
+    }
     args.GetReturnValue().Set(True(isolate));
   }
 
@@ -2421,8 +2468,8 @@ bool ends_with(const char* input, const char* suffix) {
   return false;
 }
 
-void SourceGroup::Execute(Isolate* isolate) {
-  bool exception_was_thrown = false;
+bool SourceGroup::Execute(Isolate* isolate) {
+  bool success = true;
   for (int i = begin_offset_; i < end_offset_; ++i) {
     const char* arg = argv_[i];
     if (strcmp(arg, "-e") == 0 && i + 1 < end_offset_) {
@@ -2438,7 +2485,7 @@ void SourceGroup::Execute(Isolate* isolate) {
       if (!Shell::ExecuteString(isolate, source, file_name,
                                 Shell::kNoPrintResult, Shell::kReportExceptions,
                                 Shell::kNoProcessMessageQueue)) {
-        exception_was_thrown = true;
+        success = false;
         break;
       }
       ++i;
@@ -2446,7 +2493,7 @@ void SourceGroup::Execute(Isolate* isolate) {
     } else if (ends_with(arg, ".mjs")) {
       Shell::set_script_executed();
       if (!Shell::ExecuteModule(isolate, arg)) {
-        exception_was_thrown = true;
+        success = false;
         break;
       }
       continue;
@@ -2455,7 +2502,7 @@ void SourceGroup::Execute(Isolate* isolate) {
       arg = argv_[++i];
       Shell::set_script_executed();
       if (!Shell::ExecuteModule(isolate, arg)) {
-        exception_was_thrown = true;
+        success = false;
         break;
       }
       continue;
@@ -2478,13 +2525,11 @@ void SourceGroup::Execute(Isolate* isolate) {
     if (!Shell::ExecuteString(isolate, source, file_name, Shell::kNoPrintResult,
                               Shell::kReportExceptions,
                               Shell::kProcessMessageQueue)) {
-      exception_was_thrown = true;
+      success = false;
       break;
     }
   }
-  if (exception_was_thrown != Shell::options.expected_to_throw) {
-    base::OS::ExitProcess(1);
-  }
+  return success;
 }
 
 Local<String> SourceGroup::ReadFile(Isolate* isolate, const char* name) {
@@ -2941,10 +2986,11 @@ int Shell::RunMain(Isolate* isolate, int argc, char* argv[], bool last_run) {
   for (int i = 1; i < options.num_isolates; ++i) {
     options.isolate_sources[i].StartExecuteInThread();
   }
+  bool success = true;
   {
     SetWaitUntilDone(isolate, false);
     if (options.lcov_file) {
-      debug::Coverage::SelectMode(isolate, debug::Coverage::kBlockCount);
+      debug::Coverage::SelectMode(isolate, debug::CoverageMode::kBlockCount);
     }
     HandleScope scope(isolate);
     Local<Context> context = CreateEvaluationContext(isolate);
@@ -2957,8 +3003,8 @@ int Shell::RunMain(Isolate* isolate, int argc, char* argv[], bool last_run) {
       Context::Scope cscope(context);
       InspectorClient inspector_client(context, options.enable_inspector);
       PerIsolateData::RealmScope realm_scope(PerIsolateData::Get(isolate));
-      options.isolate_sources[0].Execute(isolate);
-      CompleteMessageLoop(isolate);
+      if (!options.isolate_sources[0].Execute(isolate)) success = false;
+      if (!CompleteMessageLoop(isolate)) success = false;
     }
     if (!use_existing_context) {
       DisposeModuleEmbedderData(context);
@@ -2974,7 +3020,8 @@ int Shell::RunMain(Isolate* isolate, int argc, char* argv[], bool last_run) {
     }
   }
   CleanupWorkers();
-  return 0;
+  // In order to finish successfully, success must be != expected_to_throw.
+  return success == Shell::options.expected_to_throw ? 1 : 0;
 }
 
 
@@ -3008,12 +3055,11 @@ bool ProcessMessages(
     const std::function<platform::MessageLoopBehavior()>& behavior) {
   while (true) {
     i::Isolate* i_isolate = reinterpret_cast<i::Isolate*>(isolate);
-    i::SaveContext saved_context(i_isolate);
-    i_isolate->set_context(i::Context());
+    i::SaveAndSwitchContext saved_context(i_isolate, i::Context());
     SealHandleScope shs(isolate);
     while (v8::platform::PumpMessageLoop(g_default_platform, isolate,
                                          behavior())) {
-      isolate->RunMicrotasks();
+      MicrotasksScope::PerformCheckpoint(isolate);
     }
     if (g_default_platform->IdleTasksEnabled(isolate)) {
       v8::platform::RunIdleTasks(g_default_platform, isolate,
@@ -3037,7 +3083,7 @@ bool ProcessMessages(
 }
 }  // anonymous namespace
 
-void Shell::CompleteMessageLoop(Isolate* isolate) {
+bool Shell::CompleteMessageLoop(Isolate* isolate) {
   auto get_waiting_behaviour = [isolate]() {
     base::MutexGuard guard(isolate_status_lock_.Pointer());
     DCHECK_GT(isolate_status_.count(isolate), 0);
@@ -3049,7 +3095,7 @@ void Shell::CompleteMessageLoop(Isolate* isolate) {
     return should_wait ? platform::MessageLoopBehavior::kWaitForWork
                        : platform::MessageLoopBehavior::kDoNotWait;
   };
-  ProcessMessages(isolate, get_waiting_behaviour);
+  return ProcessMessages(isolate, get_waiting_behaviour);
 }
 
 bool Shell::EmptyMessageQueues(Isolate* isolate) {
@@ -3121,7 +3167,7 @@ class Serializer : public ValueSerializer::Delegate {
   }
 
   Maybe<uint32_t> GetWasmModuleTransferId(
-      Isolate* isolate, Local<WasmCompiledModule> module) override {
+      Isolate* isolate, Local<WasmModuleObject> module) override {
     DCHECK_NOT_NULL(data_);
     for (size_t index = 0; index < wasm_modules_.size(); ++index) {
       if (wasm_modules_[index] == module) {
@@ -3202,13 +3248,13 @@ class Serializer : public ValueSerializer::Delegate {
     for (const auto& global_array_buffer : array_buffers_) {
       Local<ArrayBuffer> array_buffer =
           Local<ArrayBuffer>::New(isolate_, global_array_buffer);
-      if (!array_buffer->IsNeuterable()) {
+      if (!array_buffer->IsDetachable()) {
         Throw(isolate_, "ArrayBuffer could not be transferred");
         return Nothing<bool>();
       }
 
       ArrayBuffer::Contents contents = MaybeExternalize(array_buffer);
-      array_buffer->Neuter();
+      array_buffer->Detach();
       data_->array_buffer_contents_.push_back(contents);
     }
 
@@ -3220,7 +3266,7 @@ class Serializer : public ValueSerializer::Delegate {
   std::unique_ptr<SerializationData> data_;
   std::vector<Global<ArrayBuffer>> array_buffers_;
   std::vector<Global<SharedArrayBuffer>> shared_array_buffers_;
-  std::vector<Global<WasmCompiledModule>> wasm_modules_;
+  std::vector<Global<WasmModuleObject>> wasm_modules_;
   std::vector<ExternalizedContents> externalized_contents_;
   size_t current_memory_usage_;
 
@@ -3256,7 +3302,7 @@ class Deserializer : public ValueDeserializer::Delegate {
       Isolate* isolate, uint32_t clone_id) override {
     DCHECK_NOT_NULL(data_);
     if (clone_id < data_->shared_array_buffer_contents().size()) {
-      SharedArrayBuffer::Contents contents =
+      const SharedArrayBuffer::Contents contents =
           data_->shared_array_buffer_contents().at(clone_id);
       return SharedArrayBuffer::New(isolate_, contents.Data(),
                                     contents.ByteLength());
@@ -3264,14 +3310,14 @@ class Deserializer : public ValueDeserializer::Delegate {
     return MaybeLocal<SharedArrayBuffer>();
   }
 
-  MaybeLocal<WasmCompiledModule> GetWasmModuleFromId(
+  MaybeLocal<WasmModuleObject> GetWasmModuleFromId(
       Isolate* isolate, uint32_t transfer_id) override {
     DCHECK_NOT_NULL(data_);
     if (transfer_id < data_->transferrable_modules().size()) {
-      return WasmCompiledModule::FromTransferrableModule(
+      return WasmModuleObject::FromTransferrableModule(
           isolate_, data_->transferrable_modules().at(transfer_id));
     }
-    return MaybeLocal<WasmCompiledModule>();
+    return MaybeLocal<WasmModuleObject>();
   }
 
  private:
@@ -3409,7 +3455,8 @@ int Shell::Main(int argc, char* argv[]) {
       base::SysInfo::AmountOfVirtualMemory());
 
   Shell::counter_map_ = new CounterMap();
-  if (i::FLAG_dump_counters || i::FLAG_dump_counters_nvp || i::FLAG_gc_stats) {
+  if (i::FLAG_dump_counters || i::FLAG_dump_counters_nvp ||
+      i::TracingFlags::is_gc_stats_enabled()) {
     create_params.counter_lookup_callback = LookupCounter;
     create_params.create_histogram_callback = CreateHistogram;
     create_params.add_histogram_sample_callback = AddHistogramSample;

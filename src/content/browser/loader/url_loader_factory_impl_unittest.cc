@@ -77,15 +77,14 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
             nullptr,
             nullptr,
             nullptr,
-            BrowserContext::GetSharedCorsOriginAccessList(
-                browser_context_.get()),
             base::Bind(&URLLoaderFactoryImplTest::GetContexts,
                        base::Unretained(this)),
             base::CreateSingleThreadTaskRunnerWithTraits(
                 {BrowserThread::IO}))) {
     // Some tests specify request.report_raw_headers, but the RDH checks the
     // CanReadRawCookies permission before enabling it.
-    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kChildId);
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kChildId,
+                                                       browser_context_.get());
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
         kChildId);
 
@@ -430,9 +429,9 @@ TEST_P(URLLoaderFactoryImplTest, CancelFromRenderer) {
   ASSERT_FALSE(rdh_.GetURLRequest(GlobalRequestID(kChildId, kRequestId)));
 }
 
-INSTANTIATE_TEST_CASE_P(URLLoaderFactoryImplTest,
-                        URLLoaderFactoryImplTest,
-                        ::testing::Values(128, 32 * 1024));
+INSTANTIATE_TEST_SUITE_P(URLLoaderFactoryImplTest,
+                         URLLoaderFactoryImplTest,
+                         ::testing::Values(128, 32 * 1024));
 
 }  // namespace
 

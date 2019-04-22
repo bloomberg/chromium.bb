@@ -27,11 +27,11 @@ WebURLError TestResponseGenerator::GenerateError() {
 
 WebURLResponse TestResponseGenerator::Generate200() {
   WebURLResponse response(gurl_);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
 
-  response.SetHTTPHeaderField(
+  response.SetHttpHeaderField(
       WebString::FromUTF8("Content-Length"),
-      WebString::FromUTF8(base::Int64ToString(content_length_)));
+      WebString::FromUTF8(base::NumberToString(content_length_)));
   response.SetExpectedContentLength(content_length_);
   return response;
 }
@@ -58,10 +58,10 @@ WebURLResponse TestResponseGenerator::GeneratePartial206(
   int64_t range_content_length = content_length_ - first_byte_offset;
 
   WebURLResponse response(gurl_);
-  response.SetHTTPStatusCode(206);
+  response.SetHttpStatusCode(206);
 
   if ((flags & kNoAcceptRanges) == 0) {
-    response.SetHTTPHeaderField(WebString::FromUTF8("Accept-Ranges"),
+    response.SetHttpHeaderField(WebString::FromUTF8("Accept-Ranges"),
                                 WebString::FromUTF8("bytes"));
   }
 
@@ -73,14 +73,14 @@ WebURLResponse TestResponseGenerator::GeneratePartial206(
       content_range += "*";
     else
       content_range += base::StringPrintf("%" PRId64, content_length_);
-    response.SetHTTPHeaderField(WebString::FromUTF8("Content-Range"),
+    response.SetHttpHeaderField(WebString::FromUTF8("Content-Range"),
                                 WebString::FromUTF8(content_range));
   }
 
   if ((flags & kNoContentLength) == 0) {
-    response.SetHTTPHeaderField(
+    response.SetHttpHeaderField(
         WebString::FromUTF8("Content-Length"),
-        WebString::FromUTF8(base::Int64ToString(range_content_length)));
+        WebString::FromUTF8(base::NumberToString(range_content_length)));
     response.SetExpectedContentLength(range_content_length);
   }
   return response;
@@ -88,7 +88,7 @@ WebURLResponse TestResponseGenerator::GeneratePartial206(
 
 WebURLResponse TestResponseGenerator::GenerateResponse(int code) {
   WebURLResponse response(gurl_);
-  response.SetHTTPStatusCode(code);
+  response.SetHttpStatusCode(code);
   return response;
 }
 
@@ -99,7 +99,7 @@ WebURLResponse TestResponseGenerator::Generate404() {
 WebURLResponse TestResponseGenerator::GenerateFileResponse(
     int64_t first_byte_offset) {
   WebURLResponse response(gurl_);
-  response.SetHTTPStatusCode(0);
+  response.SetHttpStatusCode(0);
 
   if (first_byte_offset >= 0) {
     response.SetExpectedContentLength(content_length_ - first_byte_offset);

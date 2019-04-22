@@ -1,0 +1,2 @@
+SelectionItem_ElementSelected on role=listitem, name=Orange
+ValueValue changed on role=combobox

@@ -26,8 +26,8 @@ const char kPref3[] = "path3";
 const char kPref4[] = "path4";
 }  // namespace
 
-static base::Value* CreateVal(const char* str) {
-  return new base::Value(str);
+static base::Value CreateVal(const char* str) {
+  return base::Value(str);
 }
 
 static base::Time CreateTime(int64_t t) {
@@ -90,12 +90,12 @@ TEST_F(ExtensionPrefValueMapTest, SetAndGetPrefValue) {
   RegisterExtension(kExt1, CreateTime(10));
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   EXPECT_EQ("val1", GetValue(kPref1, false));
-};
+}
 
 TEST_F(ExtensionPrefValueMapTest, GetNotSetPrefValue) {
   RegisterExtension(kExt1, CreateTime(10));
   EXPECT_EQ(std::string(), GetValue(kPref1, false));
-};
+}
 
 // Make sure the last-installed extension wins for each preference.
 TEST_F(ExtensionPrefValueMapTest, Override) {
@@ -400,7 +400,7 @@ TEST_P(ExtensionPrefValueMapTestIncognitoTests, OverrideIncognito) {
   epvm_.UnregisterExtension(kExt2);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ExtensionPrefValueMapTestIncognitoTestsInstance,
     ExtensionPrefValueMapTestIncognitoTests,
     testing::Values(
@@ -409,37 +409,36 @@ INSTANTIATE_TEST_CASE_P(
         // "val7"
         // --> the winning regular value is "val1", the winning incognito
         //     value is "val7".
-        OverrideIncognitoTestCase(true, true, 1, 0, 0, 0,  0, 0, 0, 0,  1, 1),
-        OverrideIncognitoTestCase(true, true, 1, 2, 0, 0,  0, 0, 0, 0,  2, 1),
-        OverrideIncognitoTestCase(true, true, 1, 0, 3, 0,  0, 0, 0, 0,  1, 3),
-        OverrideIncognitoTestCase(true, true, 1, 0, 0, 4,  0, 0, 0, 0,  1, 4),
-        OverrideIncognitoTestCase(true, true, 1, 0, 3, 4,  0, 0, 0, 0,  1, 4),
-        OverrideIncognitoTestCase(true, true, 1, 2, 3, 0,  0, 0, 0, 0,  2, 3),
-        OverrideIncognitoTestCase(true, true, 1, 0, 0, 0,  5, 0, 0, 0,  5, 5),
-        OverrideIncognitoTestCase(true, true, 1, 2, 3, 0,  5, 0, 0, 0,  5, 5),
-        OverrideIncognitoTestCase(true, true, 1, 0, 0, 0,  0, 6, 0, 0,  6, 1),
-        OverrideIncognitoTestCase(true, true, 1, 0, 3, 0,  5, 6, 0, 0,  6, 5),
-        OverrideIncognitoTestCase(true, true, 1, 0, 0, 4,  5, 6, 0, 0,  6, 5),
-        OverrideIncognitoTestCase(true, true, 1, 0, 0, 0,  0, 0, 7, 0,  1, 7),
-        OverrideIncognitoTestCase(true, true, 1, 2, 0, 0,  5, 0, 7, 0,  5, 7),
-        OverrideIncognitoTestCase(true, true, 1, 2, 0, 0,  5, 0, 0, 8,  5, 8),
-        OverrideIncognitoTestCase(true, true, 1, 2, 0, 0,  5, 0, 7, 8,  5, 8),
-        OverrideIncognitoTestCase(true, true, 1, 2, 3, 0,  0, 6, 7, 0,  6, 7),
+        OverrideIncognitoTestCase(true, true, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1),
+        OverrideIncognitoTestCase(true, true, 1, 2, 0, 0, 0, 0, 0, 0, 2, 1),
+        OverrideIncognitoTestCase(true, true, 1, 0, 3, 0, 0, 0, 0, 0, 1, 3),
+        OverrideIncognitoTestCase(true, true, 1, 0, 0, 4, 0, 0, 0, 0, 1, 4),
+        OverrideIncognitoTestCase(true, true, 1, 0, 3, 4, 0, 0, 0, 0, 1, 4),
+        OverrideIncognitoTestCase(true, true, 1, 2, 3, 0, 0, 0, 0, 0, 2, 3),
+        OverrideIncognitoTestCase(true, true, 1, 0, 0, 0, 5, 0, 0, 0, 5, 5),
+        OverrideIncognitoTestCase(true, true, 1, 2, 3, 0, 5, 0, 0, 0, 5, 5),
+        OverrideIncognitoTestCase(true, true, 1, 0, 0, 0, 0, 6, 0, 0, 6, 1),
+        OverrideIncognitoTestCase(true, true, 1, 0, 3, 0, 5, 6, 0, 0, 6, 5),
+        OverrideIncognitoTestCase(true, true, 1, 0, 0, 4, 5, 6, 0, 0, 6, 5),
+        OverrideIncognitoTestCase(true, true, 1, 0, 0, 0, 0, 0, 7, 0, 1, 7),
+        OverrideIncognitoTestCase(true, true, 1, 2, 0, 0, 5, 0, 7, 0, 5, 7),
+        OverrideIncognitoTestCase(true, true, 1, 2, 0, 0, 5, 0, 0, 8, 5, 8),
+        OverrideIncognitoTestCase(true, true, 1, 2, 0, 0, 5, 0, 7, 8, 5, 8),
+        OverrideIncognitoTestCase(true, true, 1, 2, 3, 0, 0, 6, 7, 0, 6, 7),
         // Same tests as above but w/o incognito permission.
-        OverrideIncognitoTestCase(false, false, 1, 0, 0, 0,  0, 0, 0, 0,  1, 0),
-        OverrideIncognitoTestCase(false, false, 1, 2, 0, 0,  0, 0, 0, 0,  2, 0),
-        OverrideIncognitoTestCase(false, false, 1, 0, 3, 0,  0, 0, 0, 0,  1, 0),
-        OverrideIncognitoTestCase(false, false, 1, 0, 0, 4,  0, 0, 0, 0,  1, 0),
-        OverrideIncognitoTestCase(false, false, 1, 0, 3, 4,  0, 0, 0, 0,  1, 0),
-        OverrideIncognitoTestCase(false, false, 1, 2, 3, 0,  0, 0, 0, 0,  2, 0),
-        OverrideIncognitoTestCase(false, false, 1, 0, 0, 0,  5, 0, 0, 0,  5, 0),
-        OverrideIncognitoTestCase(false, false, 1, 2, 3, 0,  5, 0, 0, 0,  5, 0),
-        OverrideIncognitoTestCase(false, false, 1, 0, 0, 0,  0, 6, 0, 0,  6, 0),
-        OverrideIncognitoTestCase(false, false, 1, 0, 3, 0,  5, 6, 0, 0,  6, 0),
-        OverrideIncognitoTestCase(false, false, 1, 0, 0, 4,  5, 6, 0, 0,  6, 0),
-        OverrideIncognitoTestCase(false, false, 1, 0, 0, 0,  0, 0, 7, 0,  1, 0),
-        OverrideIncognitoTestCase(false, false, 1, 2, 0, 0,  5, 0, 7, 0,  5, 0),
-        OverrideIncognitoTestCase(false, false, 1, 2, 0, 0,  5, 0, 0, 8,  5, 0),
-        OverrideIncognitoTestCase(false, false, 1, 2, 0, 0,  5, 0, 7, 8,  5, 0),
-        OverrideIncognitoTestCase(false, false, 1, 2, 3, 0,  0, 6, 7, 0,  6, 0)
-        ));
+        OverrideIncognitoTestCase(false, false, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 0, 0, 0, 0, 0, 0, 2, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 3, 0, 0, 0, 0, 0, 1, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 0, 4, 0, 0, 0, 0, 1, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 3, 4, 0, 0, 0, 0, 1, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 3, 0, 0, 0, 0, 0, 2, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 0, 0, 5, 0, 0, 0, 5, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 3, 0, 5, 0, 0, 0, 5, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 0, 0, 0, 6, 0, 0, 6, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 3, 0, 5, 6, 0, 0, 6, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 0, 4, 5, 6, 0, 0, 6, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 0, 0, 0, 0, 7, 0, 1, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 0, 0, 5, 0, 7, 0, 5, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 0, 0, 5, 0, 0, 8, 5, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 0, 0, 5, 0, 7, 8, 5, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 3, 0, 0, 6, 7, 0, 6, 0)));

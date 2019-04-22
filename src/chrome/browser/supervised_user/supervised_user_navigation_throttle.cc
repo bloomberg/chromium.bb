@@ -176,8 +176,8 @@ void SupervisedUserNavigationThrottle::ShowInterstitial(
   // SupervisedUserNavigationObserver.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&SupervisedUserNavigationThrottle::ShowInterstitialAsync,
-                 weak_ptr_factory_.GetWeakPtr(), reason));
+      base::BindOnce(&SupervisedUserNavigationThrottle::ShowInterstitialAsync,
+                     weak_ptr_factory_.GetWeakPtr(), reason));
 }
 
 void SupervisedUserNavigationThrottle::ShowInterstitialAsync(

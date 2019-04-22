@@ -32,6 +32,7 @@
 
 namespace ui {
 enum class DomCode;
+class Layer;
 class ScopedPasswordInputEnabler;
 }
 
@@ -99,21 +100,21 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void InitAsChild(gfx::NativeView parent_view) override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
-  gfx::NativeView GetNativeView() const override;
+  gfx::NativeView GetNativeView() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  bool HasFocus() const override;
+  bool HasFocus() override;
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
   void WasUnOccluded() override;
   void WasOccluded() override;
-  gfx::Rect GetViewBounds() const override;
+  gfx::Rect GetViewBounds() override;
   bool IsMouseLocked() override;
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override;
   void SpeakSelection() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
-  void GetScreenInfo(ScreenInfo* screen_info) const override;
+  void GetScreenInfo(ScreenInfo* screen_info) override;
   void SetWantsAnimateOnlyBeginFrames() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 
@@ -132,14 +133,14 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
   void DisplayTooltipText(const base::string16& tooltip_text) override;
-  gfx::Size GetRequestedRendererSize() const override;
+  gfx::Size GetRequestedRendererSize() override;
   uint32_t GetCaptureSequenceNumber() const override;
-  bool IsSurfaceAvailableForCopy() const override;
+  bool IsSurfaceAvailableForCopy() override;
   void CopyFromSurface(
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
-  void EnsureSurfaceSynchronizedForLayoutTest() override;
+  void EnsureSurfaceSynchronizedForWebTest() override;
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
   void DidCreateNewRendererCompositorFrameSink(
@@ -156,9 +157,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
-  base::Optional<SkColor> GetBackgroundColor() const override;
+  gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
+      override;
+  base::Optional<SkColor> GetBackgroundColor() override;
 
-  void SetParentUiLayer(ui::Layer* parent_ui_layer) override;
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
@@ -184,8 +186,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   const viz::FrameSinkId& GetFrameSinkId() const override;
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
       const override;
-  // Returns true when we can do SurfaceHitTesting for the event type.
-  bool ShouldRouteEvent(const blink::WebInputEvent& event) const;
+  // Returns true when we can hit test input events with location data to be
+  // sent to the targeted RenderWidgetHost.
+  bool ShouldRouteEvents() const;
   // This method checks |event| to see if a GesturePinch or double tap event
   // can be routed according to ShouldRouteEvent, and if not, sends it directly
   // to the view's RenderWidgetHost.
@@ -197,7 +200,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Inject synthetic touch events.
   void InjectTouchEvent(const blink::WebTouchEvent& event,
-                        const ui::LatencyInfo& latency_info) override;
+                        const ui::LatencyInfo& latency_info);
 
   bool TransformPointToLocalCoordSpaceLegacy(
       const gfx::PointF& point,
@@ -206,8 +209,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
-      gfx::PointF* transformed_point,
-      viz::EventSource source = viz::EventSource::ANY) override;
+      gfx::PointF* transformed_point) override;
   viz::FrameSinkId GetRootFrameSinkId() override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
 
@@ -301,6 +303,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // RenderWidgetHostNSViewClientHelper implementation.
   id GetRootBrowserAccessibilityElement() override;
   id GetFocusedBrowserAccessibilityElement() override;
+  void SetAccessibilityWindow(NSWindow* window) override;
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
                             const ui::LatencyInfo& latency_info) override;
   void ForwardKeyboardEventWithCommands(
@@ -320,8 +323,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SmartMagnify(const blink::WebGestureEvent& smart_magnify_event) override;
 
   // mojom::RenderWidgetHostNSViewClient implementation.
-  void SyncIsRenderViewHost(SyncIsRenderViewHostCallback callback) override;
-  bool SyncIsRenderViewHost(bool* is_render_view) override;
+  void SyncIsWidgetForMainFrame(
+      SyncIsWidgetForMainFrameCallback callback) override;
+  bool SyncIsWidgetForMainFrame(bool* is_for_main_frame) override;
   void RequestShutdown() override;
   void OnFirstResponderChanged(bool is_first_responder) override;
   void OnWindowIsKeyChanged(bool is_key) override;
@@ -389,10 +393,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void StopSpeaking() override;
   bool SyncIsSpeaking(bool* is_speaking) override;
   void SyncIsSpeaking(SyncIsSpeakingCallback callback) override;
-  void SyncConnectAccessibilityElements(
-      const std::vector<uint8_t>& window_token,
-      const std::vector<uint8_t>& view_token,
-      SyncConnectAccessibilityElementsCallback callback) override;
+  void SetRemoteAccessibilityWindowToken(
+      const std::vector<uint8_t>& window_token) override;
 
   // BrowserCompositorMacClient implementation.
   SkColor BrowserCompositorMacGetGutterColor() const override;
@@ -458,6 +460,17 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void MigrateNSViewBridge(NSViewBridgeFactoryHost* bridge_factory_host,
                            uint64_t parent_ns_view_id);
 
+  // Specify a ui::Layer into which the renderer's content should be
+  // composited. If nullptr is specified, then this layer will create a
+  // separate ui::Compositor as needed (e.g, for tab capture).
+  void SetParentUiLayer(ui::Layer* parent_ui_layer);
+
+  // Specify the element to return as the accessibility parent of the
+  // |cocoa_view_|.
+  void SetParentAccessibilityElement(id parent_accessibility_element);
+
+  MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
+
  protected:
   // This class is to be deleted through the Destroy method.
   ~RenderWidgetHostViewMac() override;
@@ -473,8 +486,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // expects to have a FrameSinkId. FrameSinkIds generated by this method do not
   // collide with FrameSinkIds used by RenderWidgetHostImpls.
   static viz::FrameSinkId AllocateFrameSinkIdForGuestViewHack();
-
-  MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
   // Shuts down the render_widget_host_.  This is a separate function so we can
   // invoke it from the message loop.
@@ -629,14 +640,13 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Latest capture sequence number which is incremented when the caller
   // requests surfaces be synchronized via
-  // EnsureSurfaceSynchronizedForLayoutTest().
+  // EnsureSurfaceSynchronizedForWebTest().
   uint32_t latest_capture_sequence_number_ = 0u;
 
-  // Remote accessibility objects corresponding to the NSWindow and its root
-  // NSView.
+  // Remote accessibility objects corresponding to the NSWindow that this is
+  // displayed to the user in.
   base::scoped_nsobject<NSAccessibilityRemoteUIElement>
       remote_window_accessible_;
-  base::scoped_nsobject<NSAccessibilityRemoteUIElement> remote_view_accessible_;
 
   // Used to force the NSApplication's focused accessibility element to be the
   // content::BrowserAccessibilityCocoa accessibility tree when the NSView for

@@ -9,12 +9,6 @@ from __future__ import print_function
 
 import os
 
-# TODO(akeshet): Once constants.py is more completely split, and the callers are
-# all updated, remove these *-imports. See crbug.com/746047 for context.
-# pylint: disable=wildcard-import
-# pylint: disable=unused-wildcard-import
-from chromite.lib.const.waterfall import *
-
 def _FindSourceRoot():
   """Try and find the root check out of the chromiumos tree"""
   source_root = path = os.path.realpath(os.path.join(
@@ -30,7 +24,6 @@ def _FindSourceRoot():
 
 SOURCE_ROOT = _FindSourceRoot()
 CHROOT_SOURCE_ROOT = '/mnt/host/source'
-CHROOT_WORKSPACE_ROOT = '/mnt/host/workspace'
 CHROOT_CACHE_ROOT = '/var/cache/chromeos-cache'
 DEPOT_TOOLS_SUBPATH = 'chromium/tools/depot_tools'
 
@@ -43,6 +36,7 @@ CHROMITE_BIN_SUBDIR = 'chromite/bin'
 CHROMITE_BIN_DIR = os.path.join(CHROMITE_DIR, 'bin')
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
+DEFAULT_CHROOT_PATH = os.path.join(SOURCE_ROOT, DEFAULT_CHROOT_DIR)
 
 CHROMEOS_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'config', 'config_dump.json')
 WATERFALL_CONFIG_FILE = os.path.join(
@@ -62,6 +56,9 @@ SDK_OVERLAYS_OUTPUT = 'tmp/sdk-overlays'
 
 AUTOTEST_BUILD_PATH = 'usr/local/build/autotest'
 UNITTEST_PKG_PATH = 'test-packages'
+GUEST_IMAGES_PINS_PATH = 'opt/google/containers/pins'
+PIN_KEY_FILENAME = 'filename'
+PIN_KEY_GSURI = 'gsuri'
 
 # Path to the lsb-release file on the device.
 LSB_RELEASE_PATH = '/etc/lsb-release'
@@ -118,6 +115,8 @@ BUILDER_ALL_STATUSES = (BUILDER_STATUS_FAILED,
 BUILDER_NON_FAILURE_STATUSES = (BUILDER_STATUS_PLANNED,
                                 BUILDER_STATUS_PASSED,
                                 BUILDER_STATUS_SKIPPED,
+                                # Quick fix for Buildbucket race problems.
+                                BUILDER_STATUS_INFLIGHT,
                                 BUILDER_STATUS_FORGIVEN)
 
 # CL status strings
@@ -281,7 +280,7 @@ PRODUCT_TOOLCHAIN_STAGE = 'Product-Toolchain'
 # Major is used for tracking heavy API breakage- for example, no longer
 # supporting the --resume option.
 REEXEC_API_MAJOR = 0
-REEXEC_API_MINOR = 9
+REEXEC_API_MINOR = 10
 REEXEC_API_VERSION = '%i.%i' % (REEXEC_API_MAJOR, REEXEC_API_MINOR)
 
 # Support --master-build-id
@@ -298,6 +297,8 @@ REEXEC_API_SANITY_CHECK_BUILD = 7
 REEXEC_API_PREVIOUS_BUILD_STATE = 8
 # Support --workspace
 REEXEC_API_WORKSPACE = 9
+# Support --master-buildbucket-id
+REEXEC_API_MASTER_BUILDBUCKET_ID = 10
 
 # We rely on the (waterfall, builder name, build number) to uniquely identify
 # a build. However, future migrations or state wipes of the buildbot master may
@@ -347,14 +348,16 @@ ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
 ANDROID_MST_BUILD_BRANCH = 'git_master-arc-dev'
 ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
 ANDROID_PI_BUILD_BRANCH = 'git_pi-arc'
+ANDROID_VMPI_BUILD_BRANCH = 'git_pi-arcvm-dev'
 ANDROID_GTS_BUILD_TARGETS = {
     # "gts_arm64" is the build maintained by GMS team.
     'XTS': ('linux-gts_arm64', r'\.zip$'),
 }
 ANDROID_MST_BUILD_TARGETS = {
-    'ARM': ('linux-cheets_arm-user', r'\.zip$'),
+    # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),
     'ARM64': ('linux-cheets_arm64-user', r'\.zip$'),
-    'X86': ('linux-cheets_x86-user', r'\.zip$'),
+    'X86': ('linux-cheets_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
     'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
     'ARM64_USERDEBUG': ('linux-cheets_arm64-userdebug', r'\.zip$'),
@@ -378,20 +381,28 @@ ANDROID_NYC_BUILD_TARGETS = {
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
 }
 ANDROID_PI_BUILD_TARGETS = {
-    'ARM': ('linux-cheets_arm-user', r'\.zip$'),
-    'X86': ('linux-cheets_x86-user', r'\.zip$'),
-    'X86_NDK_TRANSLATION': ('linux-cheets_x86_ndk_translation-user', r'\.zip$'),
+    # Roll XkbToKcmConverter with system image. It's a host executable and
+    # doesn't depend on the target as long as it's pi-arc branch. The converter
+    # is ARC specific and not a part of Android SDK. Having a custom target like
+    # SDK_TOOLS might be better in the long term, but let's use one from ARM or
+    # X86 target as there's no other similar executables right now.
+    # We put it in two buckets because we have separate ACLs for arm and x86.
+    # http://b/128405786
+    'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),
+    'X86': ('linux-cheets_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
     'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
-    'X86_NDK_TRANSLATION_USERDEBUG': (
-        'linux-cheets_x86_ndk_translation-userdebug', r'\.zip$'
-    ),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
     'SDK_GOOGLE_X86_USERDEBUG': ('linux-sdk_cheets_x86-userdebug',
                                  r'\.zip$'),
     'SDK_GOOGLE_X86_64_USERDEBUG': ('linux-sdk_cheets_x86_64-userdebug',
                                     r'\.zip$'),
+}
+ANDROID_VMPI_BUILD_TARGETS = {
+    'ARM_USERDEBUG': ('linux-bertha_arm-userdebug', r'\.zip$'),
+    'X86_USERDEBUG': ('linux-bertha_x86-userdebug', r'\.zip$'),
+    'X86_64_USERDEBUG': ('linux-bertha_x86_64-userdebug', r'\.zip$'),
 }
 
 ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
@@ -399,12 +410,10 @@ ARC_BUCKET_ACLS = {
     'ARM': 'googlestorage_acl_arm.txt',
     'ARM64': 'googlestorage_acl_arm.txt',
     'X86': 'googlestorage_acl_x86.txt',
-    'X86_NDK_TRANSLATION': 'googlestorage_acl_ndk.txt',
     'X86_64': 'googlestorage_acl_x86.txt',
     'ARM_USERDEBUG': 'googlestorage_acl_arm.txt',
     'ARM64_USERDEBUG': 'googlestorage_acl_arm.txt',
     'X86_USERDEBUG': 'googlestorage_acl_x86.txt',
-    'X86_NDK_TRANSLATION_USERDEBUG': 'googlestorage_acl_ndk.txt',
     'X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
     'AOSP_ARM_USERDEBUG': 'googlestorage_acl_arm.txt',
     'AOSP_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
@@ -429,9 +438,7 @@ ANDROID_SYMBOLS_FILE = 'android-symbols.zip'
 ARC_BUILDS_NEED_ARTIFACTS_RENAMED = {
     'ARM_USERDEBUG',
     'ARM64_USERDEBUG',
-    'X86_NDK_TRANSLATION',
     'X86_USERDEBUG',
-    'X86_NDK_TRANSLATION_USERDEBUG',
     'X86_64_USERDEBUG',
     'AOSP_ARM_USERDEBUG',
     'AOSP_X86_USERDEBUG',
@@ -503,6 +510,7 @@ CREATED_BRANCHES = [
 TARGET_OS_PKG = 'virtual/target-os'
 TARGET_OS_DEV_PKG = 'virtual/target-os-dev'
 TARGET_OS_TEST_PKG = 'virtual/target-os-test'
+TARGET_OS_FACTORY_PKG = 'virtual/target-os-factory'
 
 # Constants for uprevving Chrome
 
@@ -552,18 +560,6 @@ ANDROID_PACKAGE_NAME = 'android-container'
 ANDROID_REV_LATEST = 'latest_release'
 VALID_ANDROID_REVISIONS = [ANDROID_REV_LATEST]
 
-
-# Builder types supported
-BAREMETAL_BUILD_SLAVE_TYPE = 'baremetal'
-GCE_BEEFY_BUILD_SLAVE_TYPE = 'gce_beefy'
-GCE_BUILD_SLAVE_TYPE = 'gce'
-
-VALID_BUILD_SLAVE_TYPES = (
-    BAREMETAL_BUILD_SLAVE_TYPE,
-    GCE_BEEFY_BUILD_SLAVE_TYPE,
-    GCE_BUILD_SLAVE_TYPE,
-)
-
 # Build types supported.
 
 # TODO(sosa): Deprecate PFQ type.
@@ -601,8 +597,6 @@ PAYLOADS_TYPE = 'payloads'
 
 # Similar behavior to canary, but used to validate toolchain changes.
 TOOLCHAIN_TYPE = 'toolchain'
-
-BRANCH_UTIL_CONFIG = 'branch-util'
 
 # Generic type of tryjob only build configs.
 TRYJOB_TYPE = 'tryjob'
@@ -644,21 +638,17 @@ VALID_BUILD_TYPES = (
 # The default list of pre-cq configs to use.
 PRE_CQ_DEFAULT_CONFIGS = [
     # Betty is the designated board to run vmtest on N.
-    'betty-pre-cq',                   # vm board                  vmtest
-    'betty-arcnext-pre-cq',           # vm board                  arcnext
-    'cyan-no-vmtest-pre-cq',          # braswell     kernel 3.18
-    'daisy_spring-no-vmtest-pre-cq',  # arm32        kernel 3.8
-    'eve-no-vmtest-pre-cq',           # kabylake     kernel 4.4   cheets_user_64
-    'fizz-no-vmtest-pre-cq',          # kabylake     kernel 4.4
-    'grunt-no-vmtest-pre-cq',         # stoneyridge  kernel 4.14
-    'guado_moblab-no-vmtest-pre-cq',  # broadwell    kernel 3.14  moblab
-    'kevin-arcnext-no-vmtest-pre-cq', # arm64        kernel 4.4   arcnext
-    'lakitu-no-vmtest-pre-cq',        # container    kernel 4.14
-    'nyan_blaze-no-vmtest-pre-cq',    # arm32        kernel 3.10
-    'reef-no-vmtest-pre-cq',          # apollolake   kernel 4.4   vulkan
-    'samus-no-vmtest-pre-cq',         # broadwell    kernel 3.14
+    # betty-arcnext is disabled pending https://crbug.com/945016
+    # 'betty-arcnext-pre-cq',           # vm board    arcnext
+    'betty-pre-cq',                   # vm board    vmtest
+    'eve-no-vmtest-pre-cq',           # kabylake    cheets_64 vulkan(Intel)
+    'fizz-no-vmtest-pre-cq',          # kabylake
+    'grunt-no-vmtest-pre-cq',         # stoneyridge vulkan(AMD)
+    'guado_moblab-no-vmtest-pre-cq',  # broadwell   moblab
+    'kevin-arcnext-no-vmtest-pre-cq', # arm64       arcnext
+    'lakitu-no-vmtest-pre-cq',        # container
+    'nyan_blaze-no-vmtest-pre-cq',    # arm32
     'whirlwind-no-vmtest-pre-cq',     # brillo
-    'zako-no-vmtest-pre-cq',          # haswell      kernel 3.8
 ]
 
 # The name of the pre-cq launching config.
@@ -681,14 +671,16 @@ CQ_CONFIG_PRE_CQ_CONFIGS = 'pre-cq-configs'
 CQ_CONFIG_PRE_CQ_CONFIGS_REGEX = CQ_CONFIG_PRE_CQ_CONFIGS + ':'
 
 # Define pool of machines for Hardware tests.
+# TODO(akeshet): Delete constants for deprecated pools, and references to them.
 HWTEST_TRYBOT_NUM = 3
 HWTEST_MACH_POOL = 'bvt'
-HWTEST_MACH_POOL_UNI = 'bvt-uni'
-HWTEST_PALADIN_POOL = 'cq'
-HWTEST_TOT_PALADIN_POOL = 'tot-cq'
+HWTEST_MACH_POOL_UNI = 'bvt-uni'        # Deprecated
+HWTEST_PALADIN_POOL = 'cq'              # Deprecated
+HWTEST_QUOTA_POOL = 'quota'
+HWTEST_TOT_PALADIN_POOL = 'tot-cq'      # Deprecated
 HWTEST_PFQ_POOL = 'pfq'
 HWTEST_SUITES_POOL = 'suites'
-HWTEST_CHROME_PERF_POOL = 'chromeperf'
+HWTEST_CHROME_PERF_POOL = 'chromeperf'  # Probably deprecated, no existing DUTS.
 HWTEST_TRYBOT_POOL = HWTEST_SUITES_POOL
 HWTEST_WIFICELL_PRE_CQ_POOL = 'wificell-pre-cq'
 HWTEST_BLUESTREAK_PRE_CQ_POOL = 'bluestreak-pre-cq'
@@ -722,6 +714,8 @@ HWTEST_TAST_CQ_SUITE = 'bvt-tast-cq'
 HWTEST_TAST_CHROME_PFQ_SUITE = 'bvt-tast-chrome-pfq'
 # Runs non-informational Tast tests exercising ARC.
 HWTEST_TAST_ANDROID_PFQ_SUITE = 'bvt-tast-android-pfq'
+# Runs all Tast informational tests.
+HWTEST_TAST_INFORMATIONAL_SUITE = 'bvt-tast-informational'
 HWTEST_AFDO_SUITE = 'AFDO_record'
 HWTEST_JETSTREAM_COMMIT_SUITE = 'jetstream_cq'
 HWTEST_MOBLAB_SUITE = 'moblab'
@@ -787,6 +781,12 @@ SKYLAB_HWTEST_PRIORITIES_MAP = {
     HWTEST_CQ_PRIORITY: 50,
 }
 
+# The environment for executing tests.
+ENV_SKYLAB = 'skylab'
+ENV_AUTOTEST = 'autotest'
+
+# The cipd package for skylab tool
+CIPD_SKYLAB_PACKAGE = 'chromiumos/infra/skylab/linux-amd64'
 
 # HWTest result statuses
 HWTEST_STATUS_PASS = 'pass'
@@ -832,10 +832,16 @@ VALID_GCE_TEST_SUITES = ['gce-smoke', 'gce-sanity']
 MOBLAB_VM_SMOKE_TEST_TYPE = 'moblab_smoke_test'
 
 CHROMIUMOS_OVERLAY_DIR = 'src/third_party/chromiumos-overlay'
+CHROMEOS_PARTNER_OVERLAY_DIR = 'src/private-overlays/chromeos-partner-overlay/'
+PUBLIC_BINHOST_CONF_DIR = os.path.join(CHROMIUMOS_OVERLAY_DIR,
+                                       'chromeos/binhost')
+PRIVATE_BINHOST_CONF_DIR = os.path.join(CHROMEOS_PARTNER_OVERLAY_DIR,
+                                        'chromeos/binhost')
+
 VERSION_FILE = os.path.join(CHROMIUMOS_OVERLAY_DIR,
                             'chromeos/config/chromeos_version.sh')
-SDK_VERSION_FILE = os.path.join(CHROMIUMOS_OVERLAY_DIR,
-                                'chromeos/binhost/host/sdk_version.conf')
+SDK_VERSION_FILE = os.path.join(PUBLIC_BINHOST_CONF_DIR,
+                                'host/sdk_version.conf')
 SDK_GS_BUCKET = 'chromiumos-sdk'
 
 PUBLIC = 'public'
@@ -876,7 +882,7 @@ _QUERIES = {
 }
 
 #
-# Please note that requiring the +2 code review (or Trybot-Ready) for all CQ
+# Please note that requiring the +2 code review (or CQ+1 for try) for all CQ
 # and PreCQ runs is a security requirement. Otherwise arbitrary people can
 # run code on our servers.
 #
@@ -887,23 +893,22 @@ _QUERIES = {
 
 # Default gerrit query used to find changes for CQ.
 CQ_READY_QUERY = (
-    '%(open)s AND %(approved)s AND label:Commit-Queue>=1' % _QUERIES,
+    '%(open)s AND %(approved)s AND label:Commit-Queue>=2 AND '
+    '-label:Legacy-Commit-Queue=-1' % _QUERIES,
     lambda change: change.IsMergeable())
 
-# The PreCQ does not require the CQ bit to be set if it's a recent CL, or if
-# the Trybot-Ready flag has been set.
+# The PreCQ does not require the CQ+2 bit to be set if it's a recent CL, or if
+# the Commit-Queue +1 flag has been set.
 PRECQ_READY_QUERY = (
-    '%(open)s AND (%(approved)s AND label:Commit-Queue>=1 OR '
-    'label:Code-Review=+2 AND -age:2h OR label:Trybot-Ready=+1)' % _QUERIES,
-    lambda change: (not change.IsBeingMerged() and
-                    change.HasApproval('CRVW', '2') or
-                    change.HasApproval('TRY', '1')))
+    '%(open)s AND (%(approved)s AND label:Commit-Queue>=2 OR '
+    'label:Code-Review=+2 AND -age:2h OR label:Commit-Queue=+1) AND '
+    '-label:Legacy-Commit-Queue=-1' % _QUERIES,
+    lambda change: not change.IsBeingMerged())
 
 GERRIT_ON_BORG_LABELS = {
     'Code-Review': 'CRVW',
     'Commit-Queue': 'COMR',
     'Verified': 'VRIF',
-    'Trybot-Ready': 'TRY',
 }
 
 # Actions that a CQ run can take on a CL
@@ -1106,7 +1111,7 @@ VM_IMAGE_BIN = '%s.bin' % VM_IMAGE_NAME
 VM_IMAGE_TAR = '%s.tar.xz' % VM_IMAGE_NAME
 VM_DISK_PREFIX = 'chromiumos_qemu_disk.bin'
 VM_MEM_PREFIX = 'chromiumos_qemu_mem.bin'
-VM_NUM_RETRIES = 1
+VM_NUM_RETRIES = 0
 TAST_VM_TEST_RESULTS = 'tast_vm_test_results_%(attempt)s'
 
 TEST_IMAGE_NAME = 'chromiumos_test_image'
@@ -1164,16 +1169,11 @@ LAB_STATUS_URL = 'http://chromiumos-lab.appspot.com/current?format=json'
 
 GOLO_SMTP_SERVER = 'mail.golo.chromium.org'
 
-# Valid sherrif types.
 CHROME_GARDENER = 'chrome'
-
-# URLs to retrieve sheriff names from the waterfall.
-CHROME_GARDENER_URL = 'https://go/legoland-chrome-pfq'
-
-SHERIFF_TYPE_TO_URL = {
-    CHROME_GARDENER: (CHROME_GARDENER_URL,)
-}
-
+# URL to retrieve gardener names from the waterfall.
+CHROME_GARDENER_URL = (
+    'https://rota-ng.appspot.com/legacy/sheriff_cr_cros_gardeners.json'
+)
 
 # Useful config targets.
 CQ_MASTER = 'master-paladin'
@@ -1185,6 +1185,7 @@ BLUESTREAK_PRE_CQ = 'bluestreak-pre-cq'
 MST_ANDROID_PFQ_MASTER = 'master-mst-android-pfq'
 NYC_ANDROID_PFQ_MASTER = 'master-nyc-android-pfq'
 PI_ANDROID_PFQ_MASTER = 'master-pi-android-pfq'
+VMPI_ANDROID_PFQ_MASTER = 'master-vmpi-android-pfq'
 TOOLCHAIN_MASTTER = 'master-toolchain'
 
 
@@ -1267,3 +1268,19 @@ PART_ROOT_A = 'ROOT-A'
 PART_ROOT_B = 'ROOT-B'
 PART_KERN_A = 'KERN-A'
 PART_KERN_B = 'KERN-B'
+
+# Mock build and stage IDs.
+MOCK_STAGE_ID = 313377
+MOCK_BUILD_ID = 31337
+
+# Topology dictionary copied from CIDB.
+TOPOLOGY_DICT = {
+    '/buildbucket/host':'cr-buildbucket.appspot.com',
+    '/chrome_swarming_proxy/host':'chromeos-swarming.appspot.com',
+    '/datastore/creds_file':('/creds/service_accounts/service-account-chromeos'
+                             '-datastore-writer-prod.json'),
+    '/sheriffomatic/host':'sheriff-o-matic.appspot.com',
+    '/statsd/es_host':'104.154.79.237',
+    '/statsd/host':'104.154.79.237',
+    '/swarming_proxy/host':'chromeos-proxy.appspot.com',
+}

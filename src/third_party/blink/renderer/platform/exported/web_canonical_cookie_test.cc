@@ -26,7 +26,7 @@ TEST(WebCanonicalCookieTest, Defaults) {
   EXPECT_EQ(base::Time(), cookie.LastAccessDate());
   EXPECT_FALSE(cookie.IsSecure());
   EXPECT_FALSE(cookie.IsHttpOnly());
-  EXPECT_EQ(WebCanonicalCookie::kDefaultSameSiteMode, cookie.SameSite());
+  EXPECT_EQ(network::mojom::CookieSameSite::NO_RESTRICTION, cookie.SameSite());
   EXPECT_EQ(WebCanonicalCookie::kDefaultPriority, cookie.Priority());
 }
 
@@ -41,7 +41,7 @@ TEST(WebCanonicalCookieTest, CreationFailure) {
   EXPECT_FALSE(WebCanonicalCookie::Create(
                    "\x01", "value", "domain", "/path", base::Time::Now(),
                    base::Time::Now(), base::Time::Now(), false, false,
-                   WebCanonicalCookie::kDefaultSameSiteMode,
+                   network::mojom::CookieSameSite::NO_RESTRICTION,
                    WebCanonicalCookie::kDefaultPriority)
                    .has_value());
 }
@@ -76,8 +76,7 @@ TEST(WebCanonicalCookieTest, Properties) {
   // Exercise WebCookieSameSite values.
   for (auto same_site : {network::mojom::CookieSameSite::NO_RESTRICTION,
                          network::mojom::CookieSameSite::LAX_MODE,
-                         network::mojom::CookieSameSite::STRICT_MODE,
-                         WebCanonicalCookie::kDefaultSameSiteMode}) {
+                         network::mojom::CookieSameSite::STRICT_MODE}) {
     EXPECT_EQ(same_site,
               WebCanonicalCookie::Create("name", "value", "domain", "/path", t1,
                                          t2, t3, false, false, same_site,
@@ -93,7 +92,7 @@ TEST(WebCanonicalCookieTest, Properties) {
     EXPECT_EQ(priority,
               WebCanonicalCookie::Create(
                   "name", "value", "domain", "/path", t1, t2, t3, false, false,
-                  WebCanonicalCookie::kDefaultSameSiteMode, priority)
+                  network::mojom::CookieSameSite::NO_RESTRICTION, priority)
                   ->Priority());
   }
 }

@@ -9,7 +9,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/common/autofill_switches.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -27,14 +28,19 @@ class FieldIsTokenBoundarySubstringCaseTest
 
 TEST_P(FieldIsTokenBoundarySubstringCaseTest,
        FieldIsSuggestionSubstringStartingOnTokenBoundary) {
-  // FieldIsSuggestionSubstringStartingOnTokenBoundary should not work yet
-  // without a flag.
-  EXPECT_FALSE(FieldIsSuggestionSubstringStartingOnTokenBoundary(
-      base::ASCIIToUTF16("ab@cd.b"), base::ASCIIToUTF16("b"), false));
+  {
+    base::test::ScopedFeatureList features_disabled;
+    features_disabled.InitAndDisableFeature(
+        features::kAutofillTokenPrefixMatching);
 
-  // Token matching is currently behind a flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableSuggestionsWithSubstringMatch);
+    // FieldIsSuggestionSubstringStartingOnTokenBoundary should not work yet
+    // without a flag.
+    EXPECT_FALSE(FieldIsSuggestionSubstringStartingOnTokenBoundary(
+        base::ASCIIToUTF16("ab@cd.b"), base::ASCIIToUTF16("b"), false));
+  }
+
+  base::test::ScopedFeatureList features_enabled;
+  features_enabled.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
   auto test_case = GetParam();
   SCOPED_TRACE(testing::Message()
@@ -49,7 +55,7 @@ TEST_P(FieldIsTokenBoundarySubstringCaseTest,
                 test_case.case_sensitive));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillUtilTest,
     FieldIsTokenBoundarySubstringCaseTest,
     testing::Values(
@@ -91,7 +97,7 @@ TEST_P(PrefixEndingOnTokenBoundaryTest, IsPrefixOfEmailEndingWithAtSign) {
                 base::ASCIIToUTF16(test_case.field_contents)));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillUtilTest,
     PrefixEndingOnTokenBoundaryTest,
     testing::Values(AtSignPrefixCase{"ab@cd.b", "a", false},
@@ -136,7 +142,7 @@ TEST_P(GetTextSelectionStartTest, GetTextSelectionStart) {
                             test_case.case_sensitive));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillUtilTest,
     GetTextSelectionStartTest,
     testing::Values(
@@ -172,7 +178,7 @@ TEST_P(LowercaseAndTokenizeAttributeStringTest,
             LowercaseAndTokenizeAttributeString(test_case.attribute));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillUtilTest,
     LowercaseAndTokenizeAttributeStringTest,
     testing::Values(

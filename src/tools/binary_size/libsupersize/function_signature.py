@@ -120,31 +120,47 @@ def _NormalizeTopLevelClangLambda(name, left_paren_idx):
       name[:dollar_idx], number, name[left_paren_idx:])
 
 
-def ParseJava(name):
-  """Breaks java method signature into parts.
+def ParseJava(full_name):
+  """Breaks java full_name into parts.
 
   See unit tests for example signatures.
 
   Returns:
-    A tuple of:
-    * name, including package, return type, and params (symbol.full_name),
-    * name, including package, no return type or params (symbol.template_name),
-    * name, no package, return type, or params (symbol.name)
+    A tuple of (full_name, template_name, name), where:
+      * full_name = "class_with_package#member(args): type"
+      * template_name = "class_with_package#member"
+      * name = "class_without_package#member
   """
-  full_name = name
-  if '(' in name:
-    package, method_sig = name.split(' ', 1)
-    class_name = package.split('.')[-1]
-    # E.g. <init>()  <-- no return type
-    if method_sig.startswith('<'):
-      method_name = method_sig
+  hash_idx = full_name.find('#')
+  if hash_idx != -1:
+    # Parse an already parsed full_name.
+    # Format: Class#symbol: type
+    full_class_name = full_name[:hash_idx]
+    colon_idx = full_name.find(':')
+    if colon_idx == -1:
+      member = full_name[hash_idx + 1:]
+      member_type = ''
     else:
-      method_name = method_sig.split(' ', 1)[1]
-    name = '{}#{}'.format(class_name, method_name[:method_name.index('(')])
-    template_name = name
+      member = full_name[hash_idx + 1:colon_idx]
+      member_type = full_name[colon_idx:]
   else:
-    template_name = full_name
+    parts = full_name.split(' ')
+    full_class_name = parts[0]
+    member = parts[-1] if len(parts) > 1 else None
+    member_type = '' if len(parts) < 3 else ': ' + parts[1]
 
+  short_class_name = full_class_name.split('.')[-1]
+
+  if member is None:
+    return full_name, full_name, short_class_name
+
+  full_name = '{}#{}{}'.format(full_class_name, member, member_type)
+  paren_idx = member.find('(')
+  if paren_idx != -1:
+    member = member[:paren_idx]
+
+  name = '{}#{}'.format(short_class_name, member)
+  template_name = '{}#{}'.format(full_class_name, member)
   return full_name, template_name, name
 
 

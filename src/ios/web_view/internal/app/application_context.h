@@ -9,14 +9,10 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "ios/web/public/network_context_owner.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace net {
 class URLRequestContextGetter;
@@ -75,7 +71,7 @@ class ApplicationContext {
   void PostDestroyThreads();
 
  private:
-  friend struct base::DefaultSingletonTraits<ApplicationContext>;
+  friend class base::NoDestructor<ApplicationContext>;
 
   ApplicationContext();
   ~ApplicationContext();

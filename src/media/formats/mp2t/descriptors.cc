@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "media/base/bit_reader.h"
 #include "media/base/encryption_pattern.h"
-#include "media/base/encryption_scheme.h"
 #include "media/formats/mp2t/mp2t_common.h"
 
 namespace media {
@@ -115,7 +114,7 @@ bool Descriptors::HasCADescriptor(int* system_id,
 
 bool Descriptors::HasCADescriptorCenc(int* ca_pid,
                                       int* pssh_pid,
-                                      EncryptionScheme* scheme) const {
+                                      EncryptionMode* mode) const {
   DCHECK(ca_pid);
   DCHECK(pssh_pid);
   int system_id;
@@ -146,8 +145,8 @@ bool Descriptors::HasCADescriptorCenc(int* ca_pid,
   RCHECK(reader.ReadBits(13, pssh_pid));
   // The pattern is actually set differently for audio and video, so OK not to
   // set it here. Important thing is to set the cipher mode.
-  *scheme = EncryptionScheme(EncryptionScheme::CIPHER_MODE_AES_CBC,
-                             EncryptionPattern());
+  *mode = EncryptionMode::kCbcs;
+
   return true;
 }
 

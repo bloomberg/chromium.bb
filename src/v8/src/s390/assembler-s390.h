@@ -55,6 +55,7 @@
 #include "src/label.h"
 #include "src/objects/smi.h"
 #include "src/s390/constants-s390.h"
+#include "src/s390/register-s390.h"
 
 #define ABI_USES_FUNCTION_DESCRIPTORS 0
 
@@ -77,272 +78,10 @@
 
 #define ABI_CALL_VIA_IP 1
 
-#define INSTR_AND_DATA_CACHE_COHERENCY LWSYNC
-
 namespace v8 {
 namespace internal {
 
-// clang-format off
-#define GENERAL_REGISTERS(V)                              \
-  V(r0)  V(r1)  V(r2)  V(r3)  V(r4)  V(r5)  V(r6)  V(r7)  \
-  V(r8)  V(r9)  V(r10) V(fp) V(ip) V(r13) V(r14) V(sp)
-
-#define ALLOCATABLE_GENERAL_REGISTERS(V)                  \
-  V(r2)  V(r3)  V(r4)  V(r5)  V(r6)  V(r7)                \
-  V(r8)  V(r9)  V(r13)
-
-#define DOUBLE_REGISTERS(V)                               \
-  V(d0)  V(d1)  V(d2)  V(d3)  V(d4)  V(d5)  V(d6)  V(d7)  \
-  V(d8)  V(d9)  V(d10) V(d11) V(d12) V(d13) V(d14) V(d15)
-
-#define FLOAT_REGISTERS DOUBLE_REGISTERS
-#define SIMD128_REGISTERS DOUBLE_REGISTERS
-
-#define ALLOCATABLE_DOUBLE_REGISTERS(V)                   \
-  V(d1)  V(d2)  V(d3)  V(d4)  V(d5)  V(d6)  V(d7)         \
-  V(d8)  V(d9)  V(d10) V(d11) V(d12) V(d15) V(d0)
-
-#define C_REGISTERS(V)                                            \
-  V(cr0)  V(cr1)  V(cr2)  V(cr3)  V(cr4)  V(cr5)  V(cr6)  V(cr7)  \
-  V(cr8)  V(cr9)  V(cr10) V(cr11) V(cr12) V(cr15)
-// clang-format on
-
-// Register list in load/store instructions
-// Note that the bit values must match those used in actual instruction encoding
-const int kNumRegs = 16;
-
-// Caller-saved/arguments registers
-const RegList kJSCallerSaved = 1 << 1 | 1 << 2 |  // r2  a1
-                               1 << 3 |           // r3  a2
-                               1 << 4 |           // r4  a3
-                               1 << 5;            // r5  a4
-
-const int kNumJSCallerSaved = 5;
-
-// Callee-saved registers preserved when switching from C to JavaScript
-const RegList kCalleeSaved =
-    1 << 6 |   // r6 (argument passing in CEntryStub)
-               //    (HandleScope logic in MacroAssembler)
-    1 << 7 |   // r7 (argument passing in CEntryStub)
-               //    (HandleScope logic in MacroAssembler)
-    1 << 8 |   // r8 (argument passing in CEntryStub)
-               //    (HandleScope logic in MacroAssembler)
-    1 << 9 |   // r9 (HandleScope logic in MacroAssembler)
-    1 << 10 |  // r10 (Roots register in Javascript)
-    1 << 11 |  // r11 (fp in Javascript)
-    1 << 12 |  // r12 (ip in Javascript)
-    1 << 13;   // r13 (cp in Javascript)
-// 1 << 15;   // r15 (sp in Javascript)
-
-const int kNumCalleeSaved = 8;
-
-#ifdef V8_TARGET_ARCH_S390X
-
-const RegList kCallerSavedDoubles = 1 << 0 |  // d0
-                                    1 << 1 |  // d1
-                                    1 << 2 |  // d2
-                                    1 << 3 |  // d3
-                                    1 << 4 |  // d4
-                                    1 << 5 |  // d5
-                                    1 << 6 |  // d6
-                                    1 << 7;   // d7
-
-const int kNumCallerSavedDoubles = 8;
-
-const RegList kCalleeSavedDoubles = 1 << 8 |   // d8
-                                    1 << 9 |   // d9
-                                    1 << 10 |  // d10
-                                    1 << 11 |  // d11
-                                    1 << 12 |  // d12
-                                    1 << 13 |  // d12
-                                    1 << 14 |  // d12
-                                    1 << 15;   // d13
-
-const int kNumCalleeSavedDoubles = 8;
-
-#else
-
-const RegList kCallerSavedDoubles = 1 << 14 |  // d14
-                                    1 << 15 |  // d15
-                                    1 << 0 |   // d0
-                                    1 << 1 |   // d1
-                                    1 << 2 |   // d2
-                                    1 << 3 |   // d3
-                                    1 << 5 |   // d5
-                                    1 << 7 |   // d7
-                                    1 << 8 |   // d8
-                                    1 << 9 |   // d9
-                                    1 << 10 |  // d10
-                                    1 << 11 |  // d10
-                                    1 << 12 |  // d10
-                                    1 << 13;   // d11
-
-const int kNumCallerSavedDoubles = 14;
-
-const RegList kCalleeSavedDoubles = 1 << 4 |  // d4
-                                    1 << 6;   // d6
-
-const int kNumCalleeSavedDoubles = 2;
-
-#endif
-
-// Number of registers for which space is reserved in safepoints. Must be a
-// multiple of 8.
-// TODO(regis): Only 8 registers may actually be sufficient. Revisit.
-const int kNumSafepointRegisters = 16;
-
-// Define the list of registers actually saved at safepoints.
-// Note that the number of saved registers may be smaller than the reserved
-// space, i.e. kNumSafepointSavedRegisters <= kNumSafepointRegisters.
-const RegList kSafepointSavedRegisters = kJSCallerSaved | kCalleeSaved;
-const int kNumSafepointSavedRegisters = kNumJSCallerSaved + kNumCalleeSaved;
-
-// The following constants describe the stack frame linkage area as
-// defined by the ABI.
-
-#if V8_TARGET_ARCH_S390X
-// [0] Back Chain
-// [1] Reserved for compiler use
-// [2] GPR 2
-// [3] GPR 3
-// ...
-// [15] GPR 15
-// [16] FPR 0
-// [17] FPR 2
-// [18] FPR 4
-// [19] FPR 6
-const int kNumRequiredStackFrameSlots = 20;
-const int kStackFrameRASlot = 14;
-const int kStackFrameSPSlot = 15;
-const int kStackFrameExtraParamSlot = 20;
-#else
-// [0] Back Chain
-// [1] Reserved for compiler use
-// [2] GPR 2
-// [3] GPR 3
-// ...
-// [15] GPR 15
-// [16..17] FPR 0
-// [18..19] FPR 2
-// [20..21] FPR 4
-// [22..23] FPR 6
-const int kNumRequiredStackFrameSlots = 24;
-const int kStackFrameRASlot = 14;
-const int kStackFrameSPSlot = 15;
-const int kStackFrameExtraParamSlot = 24;
-#endif
-
-// zLinux ABI requires caller frames to include sufficient space for
-// callee preserved register save area.
-#if V8_TARGET_ARCH_S390X
-const int kCalleeRegisterSaveAreaSize = 160;
-#elif V8_TARGET_ARCH_S390
-const int kCalleeRegisterSaveAreaSize = 96;
-#else
-const int kCalleeRegisterSaveAreaSize = 0;
-#endif
-
-enum RegisterCode {
-#define REGISTER_CODE(R) kRegCode_##R,
-  GENERAL_REGISTERS(REGISTER_CODE)
-#undef REGISTER_CODE
-      kRegAfterLast
-};
-
-class Register : public RegisterBase<Register, kRegAfterLast> {
- public:
-#if V8_TARGET_LITTLE_ENDIAN
-  static constexpr int kMantissaOffset = 0;
-  static constexpr int kExponentOffset = 4;
-#else
-  static constexpr int kMantissaOffset = 4;
-  static constexpr int kExponentOffset = 0;
-#endif
-
- private:
-  friend class RegisterBase;
-  explicit constexpr Register(int code) : RegisterBase(code) {}
-};
-
-ASSERT_TRIVIALLY_COPYABLE(Register);
-static_assert(sizeof(Register) == sizeof(int),
-              "Register can efficiently be passed by value");
-
-#define DEFINE_REGISTER(R) \
-  constexpr Register R = Register::from_code<kRegCode_##R>();
-GENERAL_REGISTERS(DEFINE_REGISTER)
-#undef DEFINE_REGISTER
-constexpr Register no_reg = Register::no_reg();
-
-// Register aliases
-constexpr Register kRootRegister = r10;   // Roots array pointer.
-constexpr Register cp = r13;              // JavaScript context pointer.
-
-constexpr bool kPadArguments = false;
-constexpr bool kSimpleFPAliasing = true;
-constexpr bool kSimdMaskRegisters = false;
-
-enum DoubleRegisterCode {
-#define REGISTER_CODE(R) kDoubleCode_##R,
-  DOUBLE_REGISTERS(REGISTER_CODE)
-#undef REGISTER_CODE
-      kDoubleAfterLast
-};
-
-// Double word VFP register.
-class DoubleRegister : public RegisterBase<DoubleRegister, kDoubleAfterLast> {
- public:
-  // A few double registers are reserved: one as a scratch register and one to
-  // hold 0.0, that does not fit in the immediate field of vmov instructions.
-  // d14: 0.0
-  // d15: scratch register.
-  static constexpr int kSizeInBytes = 8;
-  inline static int NumRegisters();
-
- private:
-  friend class RegisterBase;
-
-  explicit constexpr DoubleRegister(int code) : RegisterBase(code) {}
-};
-
-ASSERT_TRIVIALLY_COPYABLE(DoubleRegister);
-static_assert(sizeof(DoubleRegister) == sizeof(int),
-              "DoubleRegister can efficiently be passed by value");
-
-typedef DoubleRegister FloatRegister;
-
-// TODO(john.yan) Define SIMD registers.
-typedef DoubleRegister Simd128Register;
-
-#define DEFINE_REGISTER(R) \
-  constexpr DoubleRegister R = DoubleRegister::from_code<kDoubleCode_##R>();
-DOUBLE_REGISTERS(DEFINE_REGISTER)
-#undef DEFINE_REGISTER
-constexpr DoubleRegister no_dreg = DoubleRegister::no_reg();
-
-constexpr DoubleRegister kDoubleRegZero = d14;
-constexpr DoubleRegister kScratchDoubleReg = d13;
-
-Register ToRegister(int num);
-
-enum CRegisterCode {
-#define REGISTER_CODE(R) kCCode_##R,
-  C_REGISTERS(REGISTER_CODE)
-#undef REGISTER_CODE
-      kCAfterLast
-};
-
-// Coprocessor register
-class CRegister : public RegisterBase<CRegister, kCAfterLast> {
-  friend class RegisterBase;
-  explicit constexpr CRegister(int code) : RegisterBase(code) {}
-};
-
-constexpr CRegister no_creg = CRegister::no_reg();
-#define DECLARE_C_REGISTER(R) \
-  constexpr CRegister R = CRegister::from_code<kCCode_##R>();
-C_REGISTERS(DECLARE_C_REGISTER)
-#undef DECLARE_C_REGISTER
+class SafepointTableBuilder;
 
 // -----------------------------------------------------------------------------
 // Machine instruction Operands
@@ -483,21 +222,26 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   // for a detailed comment on the layout (globals.h).
   //
   // If the provided buffer is nullptr, the assembler allocates and grows its
-  // own buffer, and buffer_size determines the initial buffer size. The buffer
-  // is owned by the assembler and deallocated upon destruction of the
-  // assembler.
-  //
-  // If the provided buffer is not nullptr, the assembler uses the provided
-  // buffer for code generation and assumes its size to be buffer_size. If the
-  // buffer is too small, a fatal error occurs. No deallocation of the buffer is
-  // done upon destruction of the assembler.
-  Assembler(const AssemblerOptions& options, void* buffer, int buffer_size);
+  // own buffer. Otherwise it takes ownership of the provided buffer.
+  explicit Assembler(const AssemblerOptions&,
+                     std::unique_ptr<AssemblerBuffer> = {});
+
   virtual ~Assembler() {}
 
-  // GetCode emits any pending (non-emitted) code and fills the descriptor
-  // desc. GetCode() is idempotent; it returns the same result if no other
-  // Assembler functions are invoked in between GetCode() calls.
-  void GetCode(Isolate* isolate, CodeDesc* desc);
+  // GetCode emits any pending (non-emitted) code and fills the descriptor desc.
+  static constexpr int kNoHandlerTable = 0;
+  static constexpr SafepointTableBuilder* kNoSafepointTable = nullptr;
+  void GetCode(Isolate* isolate, CodeDesc* desc,
+               SafepointTableBuilder* safepoint_table_builder,
+               int handler_table_offset);
+
+  // Convenience wrapper for code without safepoint or handler tables.
+  void GetCode(Isolate* isolate, CodeDesc* desc) {
+    GetCode(isolate, desc, kNoSafepointTable, kNoHandlerTable);
+  }
+
+  // Unused on this architecture.
+  void MaybeEmitOutOfLineConstantPool() {}
 
   // Label operations & relative jumps (PPUM Appendix D)
   //
@@ -586,16 +330,6 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   // for BRASL calls
   // Patch will be appiled to other FIXED_SEQUENCE call
   static constexpr int kCallTargetAddressOffset = 6;
-
-// The length of FIXED_SEQUENCE call
-// iihf    r8, <address_hi>  // <64-bit only>
-// iilf    r8, <address_lo>
-// basr    r14, r8
-#if V8_TARGET_ARCH_S390X
-  static constexpr int kCallSequenceLength = 14;
-#else
-  static constexpr int kCallSequenceLength = 8;
-#endif
 
   // ---------------------------------------------------------------------------
   // Code generation
@@ -771,7 +505,7 @@ inline void rsy_format(Opcode op, int f1, int f2, int f3, int f4) {
   void name(Register r1, Register r3, const MemOperand& opnd) {            \
     name(r1, r3, opnd.getBaseRegister(), Operand(opnd.getDisplacement())); \
   }
-  S390_RSY_A_OPCODE_LIST(DECLARE_S390_RSY_A_INSTRUCTIONS);
+  S390_RSY_A_OPCODE_LIST(DECLARE_S390_RSY_A_INSTRUCTIONS)
 #undef DECLARE_S390_RSY_A_INSTRUCTIONS
 
 #define DECLARE_S390_RSY_B_INSTRUCTIONS(name, op_name, op_value)            \
@@ -781,7 +515,7 @@ inline void rsy_format(Opcode op, int f1, int f2, int f3, int f4) {
   void name(Register r1, Condition m3, const MemOperand& opnd) {            \
     name(r1, m3, opnd.getBaseRegister(), Operand(opnd.getDisplacement()));  \
   }
-  S390_RSY_B_OPCODE_LIST(DECLARE_S390_RSY_B_INSTRUCTIONS);
+  S390_RSY_B_OPCODE_LIST(DECLARE_S390_RSY_B_INSTRUCTIONS)
 #undef DECLARE_S390_RSY_B_INSTRUCTIONS
 
 
@@ -801,7 +535,7 @@ inline void rs_format(Opcode op, int f1, int f2, int f3, const int f4) {
   void name(Register r1, Register r3, const MemOperand& opnd) {             \
     name(r1, r3, opnd.getBaseRegister(), Operand(opnd.getDisplacement()));  \
   }
-  S390_RS_A_OPCODE_LIST(DECLARE_S390_RS_A_INSTRUCTIONS);
+  S390_RS_A_OPCODE_LIST(DECLARE_S390_RS_A_INSTRUCTIONS)
 #undef DECLARE_S390_RS_A_INSTRUCTIONS
 
 #define DECLARE_S390_RS_B_INSTRUCTIONS(name, op_name, op_value)             \
@@ -811,7 +545,7 @@ inline void rs_format(Opcode op, int f1, int f2, int f3, const int f4) {
   void name(Register r1, Condition m3, const MemOperand& opnd) {            \
     name(r1, m3, opnd.getBaseRegister(), Operand(opnd.getDisplacement()));  \
   }
-  S390_RS_B_OPCODE_LIST(DECLARE_S390_RS_B_INSTRUCTIONS);
+  S390_RS_B_OPCODE_LIST(DECLARE_S390_RS_B_INSTRUCTIONS)
 #undef DECLARE_S390_RS_B_INSTRUCTIONS
 
 #define DECLARE_S390_RS_SHIFT_FORMAT(name, opcode)                          \
@@ -857,7 +591,7 @@ inline void rxe_format(Opcode op, int f1, int f2, int f3, int f4, int f5 = 0) {
     name(Register::from_code(r1.code()), opnd.rx(), opnd.rb(),             \
          Operand(opnd.offset()));                                          \
   }
-  S390_RXE_OPCODE_LIST(DECLARE_S390_RXE_INSTRUCTIONS);
+  S390_RXE_OPCODE_LIST(DECLARE_S390_RXE_INSTRUCTIONS)
 #undef DECLARE_S390_RXE_INSTRUCTIONS
 
 
@@ -876,7 +610,7 @@ inline void ri_format(Opcode opcode, int f1, int f2) {
     DCHECK(is_uint16(i2.immediate()) || is_int16(i2.immediate()));         \
     ri_format(op_name, r.code(), i2.immediate());                          \
   }
-  S390_RI_A_OPCODE_LIST(DECLARE_S390_RI_A_INSTRUCTIONS);
+  S390_RI_A_OPCODE_LIST(DECLARE_S390_RI_A_INSTRUCTIONS)
 #undef DECLARE_S390_RI_A_INSTRUCTIONS
 
 #define DECLARE_S390_RI_B_INSTRUCTIONS(name, op_name, op_value)            \
@@ -887,7 +621,7 @@ inline void ri_format(Opcode opcode, int f1, int f2) {
     halfwordOp.setBits(16);                                                \
     ri_format(op_name, r1.code(), halfwordOp.immediate());                 \
   }
-  S390_RI_B_OPCODE_LIST(DECLARE_S390_RI_B_INSTRUCTIONS);
+  S390_RI_B_OPCODE_LIST(DECLARE_S390_RI_B_INSTRUCTIONS)
 #undef DECLARE_S390_RI_B_INSTRUCTIONS
 
 #define DECLARE_S390_RI_C_INSTRUCTIONS(name, op_name, op_value)            \
@@ -898,7 +632,7 @@ inline void ri_format(Opcode opcode, int f1, int f2) {
            is_int16(i2.immediate()) : is_uint16(i2.immediate()));          \
     ri_format(op_name, m, i2.immediate());                                 \
   }
-  S390_RI_C_OPCODE_LIST(DECLARE_S390_RI_C_INSTRUCTIONS);
+  S390_RI_C_OPCODE_LIST(DECLARE_S390_RI_C_INSTRUCTIONS)
 #undef DECLARE_S390_RI_C_INSTRUCTIONS
 
 
@@ -918,7 +652,7 @@ inline void rrf_format(Opcode op, int f1, int f2, int f3, int f4) {
   void name(Register r1, Register r2, Register r3) {                       \
     name(r1, Condition(0), r2, r3);                                        \
   }
-  S390_RRF_A_OPCODE_LIST(DECLARE_S390_RRF_A_INSTRUCTIONS);
+  S390_RRF_A_OPCODE_LIST(DECLARE_S390_RRF_A_INSTRUCTIONS)
 #undef DECLARE_S390_RRF_A_INSTRUCTIONS
 
 
@@ -929,7 +663,7 @@ inline void rrf_format(Opcode op, int f1, int f2, int f3, int f4) {
   void name(Register r1, Register r2, Register r3) {                       \
     name(r1, Condition(0), r2, r3);                                        \
   }
-  S390_RRF_B_OPCODE_LIST(DECLARE_S390_RRF_B_INSTRUCTIONS);
+  S390_RRF_B_OPCODE_LIST(DECLARE_S390_RRF_B_INSTRUCTIONS)
 #undef DECLARE_S390_RRF_B_INSTRUCTIONS
 
 
@@ -942,7 +676,7 @@ inline void rrf_format(Opcode op, int f1, int f2, int f3, int f4) {
   void name(Condition m3, R1 r1, R2 r2) {                                  \
     name(m3, Condition(0), r1, r2);                                        \
   }
-  S390_RRF_C_OPCODE_LIST(DECLARE_S390_RRF_C_INSTRUCTIONS);
+  S390_RRF_C_OPCODE_LIST(DECLARE_S390_RRF_C_INSTRUCTIONS)
 #undef DECLARE_S390_RRF_C_INSTRUCTIONS
 
 
@@ -955,7 +689,7 @@ inline void rrf_format(Opcode op, int f1, int f2, int f3, int f4) {
   void name(Condition m3, R1 r1, R2 r2) {                                  \
     name(m3, Condition(0), r1, r2);                                        \
   }
-  S390_RRF_D_OPCODE_LIST(DECLARE_S390_RRF_D_INSTRUCTIONS);
+  S390_RRF_D_OPCODE_LIST(DECLARE_S390_RRF_D_INSTRUCTIONS)
 #undef DECLARE_S390_RRF_D_INSTRUCTIONS
 
 
@@ -968,7 +702,7 @@ inline void rrf_format(Opcode op, int f1, int f2, int f3, int f4) {
   void name(M3 m3, R1 r1, R2 r2) {                                         \
     name(m3, Condition(0), r1, r2);                                        \
   }
-  S390_RRF_E_OPCODE_LIST(DECLARE_S390_RRF_E_INSTRUCTIONS);
+  S390_RRF_E_OPCODE_LIST(DECLARE_S390_RRF_E_INSTRUCTIONS)
 #undef DECLARE_S390_RRF_E_INSTRUCTIONS
 
 enum FIDBRA_FLAGS {
@@ -995,7 +729,7 @@ inline void rsi_format(Opcode op, int f1, int f2, int f3) {
   void name(Register r1, Register r3, const Operand& i2) {               \
     rsi_format(op_name, r1.code(), r3.code(), i2.immediate());           \
   }
-  S390_RSI_OPCODE_LIST(DECLARE_S390_RSI_INSTRUCTIONS);
+  S390_RSI_OPCODE_LIST(DECLARE_S390_RSI_INSTRUCTIONS)
 #undef DECLARE_S390_RSI_INSTRUCTIONS
 
 
@@ -1017,7 +751,7 @@ inline void rsl_format(Opcode op, uint16_t f1, int f2, int f3, int f4,
     uint16_t L = static_cast<uint16_t>(l1.immediate() << 8);             \
     rsl_format(op_name, L, b1.code(), d1.immediate(), 0, 0);             \
   }
-  S390_RSL_A_OPCODE_LIST(DECLARE_S390_RSL_A_INSTRUCTIONS);
+  S390_RSL_A_OPCODE_LIST(DECLARE_S390_RSL_A_INSTRUCTIONS)
 #undef DECLARE_S390_RSL_A_INSTRUCTIONS
 
 #define DECLARE_S390_RSL_B_INSTRUCTIONS(name, op_name, op_value)         \
@@ -1026,7 +760,7 @@ inline void rsl_format(Opcode op, uint16_t f1, int f2, int f3, int f4,
     uint16_t L = static_cast<uint16_t>(l2.immediate());                  \
     rsl_format(op_name, L, b2.code(), d2.immediate(), r1.code(), m3);    \
   }
-  S390_RSL_B_OPCODE_LIST(DECLARE_S390_RSL_B_INSTRUCTIONS);
+  S390_RSL_B_OPCODE_LIST(DECLARE_S390_RSL_B_INSTRUCTIONS)
 #undef DECLARE_S390_RSL_B_INSTRUCTIONS
 
 
@@ -1051,7 +785,7 @@ inline void s_format(Opcode op, int f1, int f2) {
     Operand d2 = Operand(opnd.getDisplacement());                        \
     name(opnd.getBaseRegister(), d2);                                    \
   }
-  S390_S_OPCODE_LIST(DECLARE_S390_S_INSTRUCTIONS);
+  S390_S_OPCODE_LIST(DECLARE_S390_S_INSTRUCTIONS)
 #undef DECLARE_S390_S_INSTRUCTIONS
 
 
@@ -1070,7 +804,7 @@ inline void si_format(Opcode op, int f1, int f2, int f3) {
   void name(const MemOperand& opnd, const Operand& i2) {                 \
     name(i2, opnd.getBaseRegister(), Operand(opnd.getDisplacement()));   \
   }
-  S390_SI_OPCODE_LIST(DECLARE_S390_SI_INSTRUCTIONS);
+  S390_SI_OPCODE_LIST(DECLARE_S390_SI_INSTRUCTIONS)
 #undef DECLARE_S390_SI_INSTRUCTIONS
 
 
@@ -1094,7 +828,7 @@ inline void siy_format(Opcode op, int f1, int f2, int f3) {
   void name(const MemOperand& opnd, const Operand& i2) {                 \
     name(i2, opnd.getBaseRegister(), Operand(opnd.getDisplacement()));   \
   }
-  S390_SIY_OPCODE_LIST(DECLARE_S390_SIY_INSTRUCTIONS);
+  S390_SIY_OPCODE_LIST(DECLARE_S390_SIY_INSTRUCTIONS)
 #undef DECLARE_S390_SIY_INSTRUCTIONS
 
 
@@ -1122,7 +856,7 @@ inline void rrs_format(Opcode op, int f1, int f2, int f3, int f4, int f5) {
     name(r1, r2, opnd.getBaseRegister(),                                 \
          Operand(opnd.getDisplacement()), m3);                           \
   }
-  S390_RRS_OPCODE_LIST(DECLARE_S390_RRS_INSTRUCTIONS);
+  S390_RRS_OPCODE_LIST(DECLARE_S390_RRS_INSTRUCTIONS)
 #undef DECLARE_S390_RRS_INSTRUCTIONS
 
 
@@ -1151,7 +885,7 @@ inline void ris_format(Opcode op, int f1, int f2, int f3, int f4, int f5) {
     name(r1, m3, opnd.getBaseRegister(),                                 \
          Operand(opnd.getDisplacement()), i2);                           \
   }
-  S390_RIS_OPCODE_LIST(DECLARE_S390_RIS_INSTRUCTIONS);
+  S390_RIS_OPCODE_LIST(DECLARE_S390_RIS_INSTRUCTIONS)
 #undef DECLARE_S390_RIS_INSTRUCTIONS
 
 
@@ -1173,7 +907,7 @@ inline void sil_format(Opcode op, int f1, int f2, int f3) {
   void name(const MemOperand& opnd, const Operand& i2) {                 \
     name(opnd.getBaseRegister(), Operand(opnd.getDisplacement()), i2);   \
   }
-  S390_SIL_OPCODE_LIST(DECLARE_S390_SIL_INSTRUCTIONS);
+  S390_SIL_OPCODE_LIST(DECLARE_S390_SIL_INSTRUCTIONS)
 #undef DECLARE_S390_SIL_INSTRUCTIONS
 
 
@@ -1405,7 +1139,6 @@ inline void ss_a_format(Opcode op, int f1, int f2, int f3, int f4, int f5) {
   }
 
   void call(Handle<Code> target, RelocInfo::Mode rmode);
-  void call(CodeStub* stub);
   void jump(Handle<Code> target, RelocInfo::Mode rmode, Condition cond);
 
 // S390 instruction generation
@@ -1491,10 +1224,6 @@ inline void ss_a_format(Opcode op, int f1, int f2, int f3, int f4, int f5) {
     return pc_offset() - label->pos();
   }
 
-  // Record a comment relocation entry that can be used by a disassembler.
-  // Use --code-comments to enable.
-  void RecordComment(const char* msg);
-
   // Record a deoptimization reason that can be used by a log or cpu profiler.
   // Use --trace-deopt to enable.
   void RecordDeoptReason(DeoptimizeReason reason, SourcePosition position,
@@ -1509,16 +1238,16 @@ inline void ss_a_format(Opcode op, int f1, int f2, int f3, int f4, int f5) {
 
   // Read/patch instructions
   SixByteInstr instr_at(int pos) {
-    return Instruction::InstructionBits(buffer_ + pos);
+    return Instruction::InstructionBits(buffer_start_ + pos);
   }
   template <typename T>
   void instr_at_put(int pos, T instr) {
-    Instruction::SetInstructionBits<T>(buffer_ + pos, instr);
+    Instruction::SetInstructionBits<T>(buffer_start_ + pos, instr);
   }
 
   // Decodes instruction at pos, and returns its length
   int32_t instr_length_at(int pos) {
-    return Instruction::InstructionLength(buffer_ + pos);
+    return Instruction::InstructionLength(buffer_start_ + pos);
   }
 
   static SixByteInstr instr_at(byte* pc) {
@@ -1549,7 +1278,7 @@ inline void ss_a_format(Opcode op, int f1, int f2, int f3, int f4, int f5) {
   void emit_label_addr(Label* label);
 
  public:
-  byte* buffer_pos() const { return buffer_; }
+  byte* buffer_pos() const { return buffer_start_; }
 
  protected:
   int buffer_space() const { return reloc_info_writer.pos() - pc_; }
@@ -1655,6 +1384,8 @@ inline void ss_a_format(Opcode op, int f1, int f2, int f3, int f4, int f5) {
 
   void AllocateAndInstallRequestedHeapObjects(Isolate* isolate);
 
+  int WriteCodeComments();
+
   friend class RegExpMacroAssemblerS390;
   friend class RelocInfo;
   friend class EnsureSpace;
@@ -1664,11 +1395,6 @@ class EnsureSpace {
  public:
   explicit EnsureSpace(Assembler* assembler) { assembler->CheckBuffer(); }
 };
-
-// Define {RegisterName} methods for the register types.
-DEFINE_REGISTER_NAMES(Register, GENERAL_REGISTERS);
-DEFINE_REGISTER_NAMES(DoubleRegister, DOUBLE_REGISTERS);
-
 
 }  // namespace internal
 }  // namespace v8

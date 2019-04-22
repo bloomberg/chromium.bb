@@ -5,14 +5,10 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_CLIENT_POLICY_CONTROLLER_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_CLIENT_POLICY_CONTROLLER_H_
 
-#include <stdint.h>
-
 #include <map>
-#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/time/time.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
 
 namespace offline_pages {
@@ -22,15 +18,10 @@ namespace offline_pages {
 class ClientPolicyController {
  public:
   ClientPolicyController();
+  ClientPolicyController(const ClientPolicyController&) = delete;
   ~ClientPolicyController();
 
-  // Generates a client policy from the input values.
-  static const OfflinePageClientPolicy MakePolicy(
-      const std::string& name_space,
-      LifetimePolicy::LifetimeType lifetime_type,
-      const base::TimeDelta& expiration_period,
-      size_t page_limit,
-      size_t pages_allowed_per_url);
+  ClientPolicyController& operator=(const ClientPolicyController&) = delete;
 
   // Get the client policy for |name_space|.
   const OfflinePageClientPolicy& GetPolicy(const std::string& name_space) const;
@@ -62,12 +53,8 @@ class ClientPolicyController {
   // Note: For this restriction to work offline pages saved to this namespace
   // must have the respective tab id set to their ClientId::id field.
   bool IsRestrictedToTabFromClientId(const std::string& name_space) const;
-  const std::vector<std::string>& GetNamespacesRestrictedToTabFromClientId()
-      const;
 
   bool IsDisabledWhenPrefetchDisabled(const std::string& name_space) const;
-  const std::vector<std::string>& GetNamespacesDisabledWhenPrefetchDisabled()
-      const;
 
   // Returns whether pages for |name_space| originate from suggested URLs and
   // are downloaded on behalf of user.
@@ -77,27 +64,15 @@ class ClientPolicyController {
   // downloads.
   bool ShouldAllowDownloads(const std::string& name_space) const;
 
-  void AddPolicyForTest(const std::string& name_space,
-                        const OfflinePageClientPolicyBuilder& builder);
-
  private:
   // The map from name_space to a client policy. Will be generated
   // as pre-defined values for now.
   std::map<std::string, OfflinePageClientPolicy> policies_;
 
-  // Memoizing results.
-  mutable std::unique_ptr<std::vector<std::string>>
-      cache_reset_namespace_cache_;
-  mutable std::unique_ptr<std::vector<std::string>> download_namespace_cache_;
-  mutable std::unique_ptr<std::vector<std::string>>
-      user_requested_download_namespace_cache_;
-  mutable std::unique_ptr<std::vector<std::string>> recent_tab_namespace_cache_;
-  mutable std::unique_ptr<std::vector<std::string>>
-      restricted_to_tab_from_client_id_cache_;
-  mutable std::unique_ptr<std::vector<std::string>>
-      disabled_when_prefetch_disabled_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientPolicyController);
+  std::vector<std::string> cache_reset_namespaces_;
+  std::vector<std::string> download_namespaces_;
+  std::vector<std::string> user_requested_download_namespaces_;
+  std::vector<std::string> recent_tab_namespaces_;
 };
 
 }  // namespace offline_pages

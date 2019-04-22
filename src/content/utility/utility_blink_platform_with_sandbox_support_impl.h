@@ -43,7 +43,6 @@ class UtilityBlinkPlatformWithSandboxSupportImpl : public blink::Platform {
   std::unique_ptr<blink::WebSandboxSupport> sandbox_support_;
 #endif
 #if defined(OS_LINUX)
-  class SandboxSupport;
   sk_sp<font_service::FontLoader> font_loader_;
 #endif
 

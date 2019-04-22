@@ -54,8 +54,8 @@ class ExtensionViewHost
 
   // Handles keyboard events that were not handled by HandleKeyboardEvent().
   // Platform specific implementation may override this method to handle the
-  // event in platform specific way.
-  virtual void UnhandledKeyboardEvent(
+  // event in platform specific way. Returns whether the events are handled.
+  virtual bool UnhandledKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event);
 

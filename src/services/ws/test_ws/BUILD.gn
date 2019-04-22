@@ -3,12 +3,10 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/service_manager/public/cpp/service.gni")
-import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 
-service("test_ws") {
+service_executable("test_ws") {
   testonly = true
-
   sources = [
     "test_ws.cc",
   ]
@@ -55,12 +53,18 @@ source_set("lib") {
   ]
 }
 
-service_manifest("manifest") {
+source_set("manifest") {
   testonly = true
-
-  name = "test_ws"
-  source = "manifest.json"
-  packaged_services = [ "//services/ws:manifest" ]
+  sources = [
+    "test_manifest.cc",
+    "test_manifest.h",
+  ]
+  deps = [
+    ":mojom",
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//services/ws/public/cpp:manifest",
+  ]
 }
 
 mojom("mojom") {

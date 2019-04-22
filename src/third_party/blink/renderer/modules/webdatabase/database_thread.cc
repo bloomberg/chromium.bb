@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/database_thread.h"
 
 #include <memory>
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/webdatabase/database.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_task.h"
@@ -36,7 +37,6 @@
 #include "third_party/blink/renderer/modules/webdatabase/sql_transaction_coordinator.h"
 #include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
@@ -59,7 +59,7 @@ void DatabaseThread::Start() {
   DCHECK(IsMainThread());
   if (thread_)
     return;
-  thread_ = WebThreadSupportingGC::Create(
+  thread_ = std::make_unique<WebThreadSupportingGC>(
       ThreadCreationParams(WebThreadType::kDatabaseThread));
   thread_->PostTask(FROM_HERE,
                     CrossThreadBind(&DatabaseThread::SetupDatabaseThread,
@@ -74,7 +74,7 @@ void DatabaseThread::SetupDatabaseThread() {
 
 void DatabaseThread::Terminate() {
   DCHECK(IsMainThread());
-  WaitableEvent sync;
+  base::WaitableEvent sync;
   {
     MutexLocker lock(termination_requested_mutex_);
     DCHECK(!termination_requested_);

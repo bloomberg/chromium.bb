@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -40,16 +41,30 @@ typedef std::map<std::pair<ContentSettingsPattern, std::string>,
                  OnePatternSettings>
     AllPatternsSettings;
 
+// TODO(https://crbug.com/854329): Once the Site Settings WebUI is capable of
+// displaying the new chooser exception object format, remove the typedefs that
+// are currently used for organizing the chooser exceptions.
+// Maps from a primary URL pattern/source pair to a set of secondary URL
+// patterns/incognito status pair.
+using ChooserExceptionDetails =
+    std::map<std::pair<GURL, std::string>, std::set<std::pair<GURL, bool>>>;
+
+// Maps from a chooser exception name/object pair to a ChooserExceptionDetails.
+// This will group and sort the exceptions by the UI string and object for
+// display.
+using AllChooserObjects =
+    std::map<std::pair<std::string, base::Value>, ChooserExceptionDetails>;
+
+constexpr char kChooserType[] = "chooserType";
 constexpr char kDisplayName[] = "displayName";
 constexpr char kEmbeddingOrigin[] = "embeddingOrigin";
 constexpr char kIncognito[] = "incognito";
+constexpr char kObject[] = "object";
 constexpr char kOrigin[] = "origin";
 constexpr char kOriginForFavicon[] = "originForFavicon";
 constexpr char kSetting[] = "setting";
+constexpr char kSites[] = "sites";
 constexpr char kSource[] = "source";
-
-// Group types.
-constexpr char kGroupTypeUsb[] = "usb-devices";
 
 enum class SiteSettingSource {
   kAdsFilterBlacklist,
@@ -144,11 +159,24 @@ struct ContentSettingsTypeNameEntry {
 
 const ChooserTypeNameEntry* ChooserTypeFromGroupName(const std::string& name);
 
-// Fills in |exceptions| with Values for the given |chooser_type| from map.
-void GetChooserExceptionsFromProfile(Profile* profile,
-                                     bool incognito,
-                                     const ChooserTypeNameEntry& chooser_type,
-                                     base::ListValue* exceptions);
+// Creates a chooser exception object for the object with |display_name|. The
+// object contains the following properties
+// * displayName: string,
+// * object: Object,
+// * chooserType: string,
+// * sites: Array<SiteException>
+// The structure of the SiteException objects is the same as the objects
+// returned by GetExceptionForPage().
+std::unique_ptr<base::DictionaryValue> CreateChooserExceptionObject(
+    const std::string& display_name,
+    const base::Value& object,
+    const std::string& chooser_type,
+    const ChooserExceptionDetails& chooser_exception_details);
+
+// Returns an array of chooser exception objects.
+std::unique_ptr<base::ListValue> GetChooserExceptionListFromProfile(
+    Profile* profile,
+    const ChooserTypeNameEntry& chooser_type);
 
 }  // namespace site_settings
 

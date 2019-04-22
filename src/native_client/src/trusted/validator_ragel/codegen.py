@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import sys
 import os
 
@@ -100,9 +102,9 @@ class Generator(object):
 
 def main():
   if len(sys.argv[1:]) != 3:
-    print 'Usage:'
-    print '   %s <rl file> <xml file> <output c file>' % os.path.basename(
-        __file__)
+    print('Usage:')
+    print('   %s <rl file> <xml file> <output c file>' %
+          os.path.basename(__file__))
     sys.exit(1)
   rl_filename, xml_filename, c_filename = sys.argv[1:]
 

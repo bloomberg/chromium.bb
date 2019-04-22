@@ -30,7 +30,7 @@ class TestRebaselineTest(BaseTestCase):
 
         port = self.tool.port_factory.get('test-win-win7')
         baseline_relative_path = 'platform/test-win-win10/failures/expected/image-expected.txt'
-        baseline_local_absolute_path = port.host.filesystem.join(port.layout_tests_dir(), baseline_relative_path)
+        baseline_local_absolute_path = port.host.filesystem.join(port.web_tests_dir(), baseline_relative_path)
         self._write(baseline_local_absolute_path, 'original win10 result')
         actual_result_url = ('https://test-results.appspot.com/data/layout_results/MOCK_Win10/' +
                              'results/layout-test-results/failures/expected/image-actual.txt')
@@ -58,7 +58,7 @@ class TestRebaselineTest(BaseTestCase):
         self.assertMultiLineEqual(self._read(baseline_local_absolute_path),
                                   'new win10 result')
         self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(
-            port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt')))
+            port.web_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt')))
         self.assertMultiLineEqual(
             out, '{"remove-lines": [{"test": "failures/expected/image.html", "port_name": "test-win-win10"}]}\n')
 

@@ -5,8 +5,8 @@
 // https://wicg.github.io/background-fetch/#background-fetch-record
 
 [
-    Exposed=(ServiceWorker),
-    OriginTrialEnabled=BackgroundFetch
+    Exposed=(Window,Worker),
+    RuntimeEnabled=BackgroundFetch
 ] interface BackgroundFetchRecord {
     readonly attribute Request request;
     [CallWith=ScriptState] readonly attribute Promise<Response> responseReady;

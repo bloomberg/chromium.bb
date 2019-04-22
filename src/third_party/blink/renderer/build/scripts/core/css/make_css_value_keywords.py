@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-
-import os.path
 import subprocess
-from name_utilities import enum_for_css_keyword
+from name_utilities import enum_key_for_css_keyword
 import json5_generator
 
 import template_expander
@@ -27,7 +22,7 @@ class CSSValueKeywordsWriter(json5_generator.Writer):
         first_keyword_id = 1
         for offset, keyword in enumerate(self._value_keywords):
             keyword['lower_name'] = keyword['name'].original.lower()
-            keyword['enum_name'] = enum_for_css_keyword(keyword['name'])
+            keyword['enum_name'] = enum_key_for_css_keyword(keyword['name'])
             keyword['enum_value'] = first_keyword_id + offset
             if keyword['name'].original.startswith('-internal-'):
                 assert keyword['mode'] is None, 'Can\'t specify mode for ' \

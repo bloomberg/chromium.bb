@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.metrics;
 
-import android.os.SystemClock;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.webapps.SplashscreenObserver;
 
@@ -27,7 +25,7 @@ public class WebApkSplashscreenMetrics implements SplashscreenObserver {
     }
 
     @Override
-    public void onSplashscreenHidden(int reason) {
+    public void onSplashscreenHidden(long timestamp) {
         if (mShellApkLaunchTimeMs == -1) return;
 
         if (UmaUtils.hasComeToForeground() && !UmaUtils.hasComeToBackground()) {
@@ -35,15 +33,14 @@ public class WebApkSplashscreenMetrics implements SplashscreenObserver {
             // splashscreen is shown.
             WebApkUma.recordShellApkLaunchToSplashscreenVisible(
                     mSplashScreenShownTimeMs - mShellApkLaunchTimeMs);
-            WebApkUma.recordShellApkLaunchToSplashscreenHidden(
-                    SystemClock.elapsedRealtime() - mShellApkLaunchTimeMs);
+            WebApkUma.recordShellApkLaunchToSplashscreenHidden(timestamp - mShellApkLaunchTimeMs);
         }
     }
 
     @Override
-    public void onSplashscreenShown() {
+    public void onSplashscreenShown(long timestamp) {
         assert mSplashScreenShownTimeMs == -1;
         if (mShellApkLaunchTimeMs == -1) return;
-        mSplashScreenShownTimeMs = SystemClock.elapsedRealtime();
+        mSplashScreenShownTimeMs = timestamp;
     }
 }

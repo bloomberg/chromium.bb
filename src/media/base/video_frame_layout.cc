@@ -4,6 +4,7 @@
 
 #include "media/base/video_frame_layout.h"
 
+#include <string.h>
 #include <numeric>
 #include <sstream>
 
@@ -56,6 +57,7 @@ size_t VideoFrameLayout::NumPlanes(VideoPixelFormat format) {
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
     case PIXEL_FORMAT_MT21:
+    case PIXEL_FORMAT_P016LE:
       return 2;
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_YV12:
@@ -141,13 +143,15 @@ size_t VideoFrameLayout::GetTotalBufferSize() const {
 
 std::ostream& operator<<(std::ostream& ostream,
                          const VideoFrameLayout::Plane& plane) {
-  ostream << "(" << plane.stride << ", " << plane.offset << ")";
+  ostream << "(" << plane.stride << ", " << plane.offset << ", "
+          << plane.modifier << ")";
   return ostream;
 }
 
 bool VideoFrameLayout::Plane::operator==(
     const VideoFrameLayout::Plane& rhs) const {
-  return stride == rhs.stride && offset == rhs.offset;
+  return stride == rhs.stride && offset == rhs.offset &&
+         modifier == rhs.modifier;
 }
 
 bool VideoFrameLayout::Plane::operator!=(
@@ -157,7 +161,8 @@ bool VideoFrameLayout::Plane::operator!=(
 
 bool VideoFrameLayout::operator==(const VideoFrameLayout& rhs) const {
   return format_ == rhs.format_ && coded_size_ == rhs.coded_size_ &&
-         planes_ == rhs.planes_ && buffer_sizes_ == rhs.buffer_sizes_;
+         planes_ == rhs.planes_ && buffer_sizes_ == rhs.buffer_sizes_ &&
+         buffer_addr_align_ == rhs.buffer_addr_align_;
 }
 
 bool VideoFrameLayout::operator!=(const VideoFrameLayout& rhs) const {
@@ -168,7 +173,8 @@ std::ostream& operator<<(std::ostream& ostream,
                          const VideoFrameLayout& layout) {
   ostream << "VideoFrameLayout(format: " << layout.format()
           << ", coded_size: " << layout.coded_size().ToString()
-          << ", planes (stride, offset): " << VectorToString(layout.planes())
+          << ", planes (stride, offset, modifier): "
+          << VectorToString(layout.planes())
           << ", buffer_sizes: " << VectorToString(layout.buffer_sizes()) << ")";
   return ostream;
 }

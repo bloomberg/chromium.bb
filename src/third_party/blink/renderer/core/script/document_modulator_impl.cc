@@ -4,37 +4,33 @@
 
 #include "third_party/blink/renderer/core/script/document_modulator_impl.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 
-ModulatorImplBase* DocumentModulatorImpl::Create(
-    ScriptState* script_state,
-    ResourceFetcher* resource_fetcher) {
-  return MakeGarbageCollected<DocumentModulatorImpl>(script_state,
-                                                     resource_fetcher);
-}
+DocumentModulatorImpl::DocumentModulatorImpl(ScriptState* script_state)
+    : ModulatorImplBase(script_state) {}
 
 ModuleScriptFetcher* DocumentModulatorImpl::CreateModuleScriptFetcher(
     ModuleScriptCustomFetchType custom_fetch_type) {
   DCHECK_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
-  return MakeGarbageCollected<DocumentModuleScriptFetcher>(fetcher_);
-}
-
-void DocumentModulatorImpl::Trace(blink::Visitor* visitor) {
-  visitor->Trace(fetcher_);
-  ModulatorImplBase::Trace(visitor);
-}
-
-DocumentModulatorImpl::DocumentModulatorImpl(ScriptState* script_state,
-                                             ResourceFetcher* resource_fetcher)
-    : ModulatorImplBase(script_state), fetcher_(resource_fetcher) {
-  DCHECK(fetcher_);
+  return MakeGarbageCollected<DocumentModuleScriptFetcher>();
 }
 
 bool DocumentModulatorImpl::IsDynamicImportForbidden(String* reason) {
   return false;
+}
+
+V8CacheOptions DocumentModulatorImpl::GetV8CacheOptions() const {
+  Document* document = To<Document>(GetExecutionContext());
+  const Settings* settings = document->GetFrame()->GetSettings();
+  if (settings)
+    return settings->GetV8CacheOptions();
+  return kV8CacheOptionsDefault;
 }
 
 }  // namespace blink

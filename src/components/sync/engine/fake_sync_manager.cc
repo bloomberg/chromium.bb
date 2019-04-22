@@ -210,10 +210,6 @@ const std::string FakeSyncManager::cache_guid() {
   return test_user_share_.user_share()->directory->cache_guid();
 }
 
-bool FakeSyncManager::ReceivedExperiment(Experiments* experiments) {
-  return false;
-}
-
 bool FakeSyncManager::HasUnsyncedItemsForTest() {
   NOTIMPLEMENTED();
   return false;
@@ -259,14 +255,14 @@ void FakeSyncManager::SetInvalidatorEnabled(bool invalidator_enabled) {
   // Do nothing.
 }
 
-void FakeSyncManager::ClearServerData(const base::Closure& callback) {
-  callback.Run();
-}
-
 void FakeSyncManager::OnCookieJarChanged(bool account_mismatch,
                                          bool empty_jar) {}
 
 void FakeSyncManager::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
+  NOTIMPLEMENTED();
+}
+
+void FakeSyncManager::UpdateInvalidationClientId(const std::string&) {
   NOTIMPLEMENTED();
 }
 

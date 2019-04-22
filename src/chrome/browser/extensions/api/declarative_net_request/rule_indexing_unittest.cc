@@ -8,8 +8,10 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
@@ -27,6 +29,7 @@
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/url_pattern.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -77,13 +80,20 @@ class RuleIndexingTest : public DNRTestBase {
     // Ensure no load errors were reported.
     EXPECT_TRUE(error_reporter()->GetErrors()->empty());
 
-    tester.ExpectTotalCount(kIndexRulesTimeHistogram, 1);
-    tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram, 1);
-    tester.ExpectBucketCount(kManifestRulesCountHistogram,
-                             expected_indexed_rules_count, 1);
+    // The histograms below are not logged for unpacked extensions.
+    if (GetParam() == ExtensionLoadType::PACKED) {
+      tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram,
+                              1 /* count */);
+      tester.ExpectBucketCount(kManifestRulesCountHistogram,
+                               expected_indexed_rules_count, 1 /* count */);
+    }
   }
 
   void LoadAndExpectError(const std::string& expected_error) {
+    // The error should be prepended with the JSON filename.
+    std::string error_with_filename = base::StringPrintf(
+        "%s: %s", kJSONRulesFilename, expected_error.c_str());
+
     base::HistogramTester tester;
     WriteExtensionData();
 
@@ -101,10 +111,9 @@ class RuleIndexingTest : public DNRTestBase {
     const std::vector<base::string16>* errors = error_reporter()->GetErrors();
     ASSERT_EQ(1u, errors->size());
     EXPECT_NE(base::string16::npos,
-              errors->at(0).find(base::UTF8ToUTF16(expected_error)))
-        << "expected: " << expected_error << " actual: " << errors->at(0);
+              errors->at(0).find(base::UTF8ToUTF16(error_with_filename)))
+        << "expected: " << error_with_filename << " actual: " << errors->at(0);
 
-    tester.ExpectTotalCount(kIndexRulesTimeHistogram, 0u);
     tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram, 0u);
     tester.ExpectTotalCount(kManifestRulesCountHistogram, 0u);
   }
@@ -174,8 +183,9 @@ TEST_P(RuleIndexingTest, DuplicateResourceTypes) {
       std::vector<std::string>({"image", "stylesheet"});
   rule.condition->excluded_resource_types = std::vector<std::string>({"image"});
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED, 0u)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(
+      ParseInfo(ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED, *rule.id)
+          .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, EmptyRedirectRulePriority) {
@@ -184,8 +194,8 @@ TEST_P(RuleIndexingTest, EmptyRedirectRulePriority) {
   rule.action->redirect_url = std::string("https://google.com");
   AddRule(rule);
   LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY, 0u)
-          .GetErrorDescription(kJSONRulesFilename));
+      ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY, *rule.id)
+          .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, EmptyRedirectRuleUrl) {
@@ -198,16 +208,16 @@ TEST_P(RuleIndexingTest, EmptyRedirectRuleUrl) {
   rule.priority = kMinValidPriority;
   AddRule(rule);
 
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_URL, 1u)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_URL, *rule.id)
+                         .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, InvalidRuleID) {
   TestRule rule = CreateGenericRule();
   rule.id = kMinValidID - 1;
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_INVALID_RULE_ID, 0u)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(ParseInfo(ParseResult::ERROR_INVALID_RULE_ID, *rule.id)
+                         .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, InvalidRedirectRulePriority) {
@@ -217,8 +227,8 @@ TEST_P(RuleIndexingTest, InvalidRedirectRulePriority) {
   rule.priority = kMinValidPriority - 1;
   AddRule(rule);
   LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY, 0u)
-          .GetErrorDescription(kJSONRulesFilename));
+      ParseInfo(ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY, *rule.id)
+          .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, NoApplicableResourceTypes) {
@@ -229,32 +239,33 @@ TEST_P(RuleIndexingTest, NoApplicableResourceTypes) {
        "other"});
   AddRule(rule);
   LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES, 0u)
-          .GetErrorDescription(kJSONRulesFilename));
+      ParseInfo(ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES, *rule.id)
+          .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, EmptyDomainsList) {
   TestRule rule = CreateGenericRule();
   rule.condition->domains = std::vector<std::string>();
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_DOMAINS_LIST, 0u)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_DOMAINS_LIST, *rule.id)
+                         .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, EmptyResourceTypeList) {
   TestRule rule = CreateGenericRule();
   rule.condition->resource_types = std::vector<std::string>();
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST, 0u)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(
+      ParseInfo(ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST, *rule.id)
+          .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, EmptyURLFilter) {
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string();
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_URL_FILTER, 0u)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_URL_FILTER, *rule.id)
+                         .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, InvalidRedirectURL) {
@@ -263,22 +274,22 @@ TEST_P(RuleIndexingTest, InvalidRedirectURL) {
   rule.action->redirect_url = std::string("google");
   rule.priority = kMinValidPriority;
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_INVALID_REDIRECT_URL, 0u)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(
+      ParseInfo(ParseResult::ERROR_INVALID_REDIRECT_URL, *rule.id)
+          .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, ListNotPassed) {
   SetRules(std::make_unique<base::DictionaryValue>());
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_LIST_NOT_PASSED)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(kErrorListNotPassed);
 }
 
 TEST_P(RuleIndexingTest, DuplicateIDS) {
   TestRule rule = CreateGenericRule();
   AddRule(rule);
   AddRule(rule);
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, 1u)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, *rule.id)
+                         .GetErrorDescription());
 }
 
 // Ensure that we limit the number of parse failure warnings shown.
@@ -311,26 +322,29 @@ TEST_P(RuleIndexingTest, TooManyParseFailures) {
         extension()->install_warnings();
     ASSERT_EQ(1u + kMaxUnparsedRulesWarnings, expected_warnings.size());
 
-    InstallWarning warning(ErrorUtils::FormatErrorMessage(
-        kTooManyParseFailuresWarning,
-        std::to_string(kMaxUnparsedRulesWarnings)));
+    InstallWarning warning("");
     warning.key = manifest_keys::kDeclarativeNetRequestKey;
     warning.specific = manifest_keys::kDeclarativeRuleResourcesKey;
-    EXPECT_EQ(warning, expected_warnings[0]);
 
-    // The subsequent warnings should correspond to the first
+    // The initial warnings should correspond to the first
     // |kMaxUnparsedRulesWarnings| rules, which couldn't be parsed.
     for (size_t i = 0; i < kMaxUnparsedRulesWarnings; i++) {
-      warning.message = ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning,
-                                                       std::to_string(i));
-      EXPECT_EQ(expected_warnings[i + 1], warning);
+      EXPECT_EQ(expected_warnings[i].key, warning.key);
+      EXPECT_EQ(expected_warnings[i].specific, warning.specific);
+      EXPECT_THAT(expected_warnings[i].message,
+                  ::testing::HasSubstr("Parse error"));
     }
+
+    warning.message = ErrorUtils::FormatErrorMessage(
+        kTooManyParseFailuresWarning,
+        std::to_string(kMaxUnparsedRulesWarnings));
+    EXPECT_EQ(warning, expected_warnings[kMaxUnparsedRulesWarnings]);
   }
 }
 
 // Ensures that rules which can't be parsed are ignored and cause an install
 // warning.
-TEST_P(RuleIndexingTest, InvalidJSONRule) {
+TEST_P(RuleIndexingTest, InvalidJSONRules_StrongTypes) {
   {
     TestRule rule = CreateGenericRule();
     rule.id = 1;
@@ -366,12 +380,69 @@ TEST_P(RuleIndexingTest, InvalidJSONRule) {
     ASSERT_EQ(2u, extension()->install_warnings().size());
     std::vector<InstallWarning> expected_warnings;
 
+    for (const auto& warning : extension()->install_warnings()) {
+      EXPECT_EQ(extensions::manifest_keys::kDeclarativeNetRequestKey,
+                warning.key);
+      EXPECT_EQ(extensions::manifest_keys::kDeclarativeRuleResourcesKey,
+                warning.specific);
+      EXPECT_THAT(warning.message, ::testing::HasSubstr("Parse error"));
+    }
+  }
+}
+
+// Ensures that rules which can't be parsed are ignored and cause an install
+// warning.
+TEST_P(RuleIndexingTest, InvalidJSONRules_Parsed) {
+  const char* kRules = R"(
+    [
+      {
+        "id" : 1,
+        "condition" : [],
+        "action" : {"type" : "block" }
+      },
+      {
+        "id" : 2,
+        "condition" : {"urlFilter" : "abc"},
+        "action" : {"type" : "block" }
+      },
+      {
+        "id" : 3,
+        "invalidKey" : "invalidKeyValue",
+        "condition" : {"urlFilter" : "example"},
+        "action" : {"type" : "block" }
+      },
+      {
+        "id" : "6",
+        "condition" : {"urlFilter" : "google"},
+        "action" : {"type" : "block" }
+      }
+    ]
+  )";
+  SetRules(base::JSONReader::ReadDeprecated(kRules));
+
+  extension_loader()->set_ignore_manifest_warnings(true);
+  LoadAndExpectSuccess(1 /* rules count */);
+
+  // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
+  // which causes it to lose the install warning. This should be fixed.
+  if (GetParam() != ExtensionLoadType::PACKED) {
+    ASSERT_EQ(3u, extension()->install_warnings().size());
+    std::vector<InstallWarning> expected_warnings;
+
     expected_warnings.emplace_back(
-        ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, "1"),
+        ErrorUtils::FormatErrorMessage(
+            kRuleNotParsedWarning, "id 1",
+            "'condition': expected dictionary, got list"),
         manifest_keys::kDeclarativeNetRequestKey,
         manifest_keys::kDeclarativeRuleResourcesKey);
     expected_warnings.emplace_back(
-        ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, "3"),
+        ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, "id 3",
+                                       "found unexpected key 'invalidKey'"),
+        manifest_keys::kDeclarativeNetRequestKey,
+        manifest_keys::kDeclarativeRuleResourcesKey);
+    expected_warnings.emplace_back(
+        ErrorUtils::FormatErrorMessage(kRuleNotParsedWarning, "index 4",
+                                       "'id': expected id, got string"),
         manifest_keys::kDeclarativeNetRequestKey,
         manifest_keys::kDeclarativeRuleResourcesKey);
     EXPECT_EQ(expected_warnings, extension()->install_warnings());
@@ -416,9 +487,9 @@ TEST_P(RuleIndexingTest, RuleCountLimitExceeded) {
 
 TEST_P(RuleIndexingTest, InvalidJSONFile) {
   set_persist_invalid_json_file();
-  // The error is returned by the JSON parser we use. Hence just test that it's
-  // prepended with |kJSONRulesFilename|.
-  LoadAndExpectError(base::StringPrintf("%s: ", kJSONRulesFilename));
+  // The error is returned by the JSON parser we use. Hence just test an error
+  // is raised.
+  LoadAndExpectError("");
 }
 
 TEST_P(RuleIndexingTest, EmptyRuleset) {
@@ -439,41 +510,6 @@ TEST_P(RuleIndexingTest, AddTwoRules) {
   LoadAndExpectSuccess(2 /* rules count */);
 }
 
-TEST_P(RuleIndexingTest, ReloadExtension) {
-  AddRule(CreateGenericRule());
-  LoadAndExpectSuccess(1 /* rules count */);
-
-  base::HistogramTester tester;
-  TestExtensionRegistryObserver registry_observer(registry());
-
-  service()->ReloadExtension(extension()->id());
-  // Reloading should invalidate pointers to existing extension(). Hence reset
-  // it.
-  set_extension(
-      base::WrapRefCounted(registry_observer.WaitForExtensionLoaded()));
-
-  // Reloading the extension should cause the rules to be re-indexed in the
-  // case of unpacked extensions.
-  int expected_histogram_count = -1;
-  switch (GetParam()) {
-    case ExtensionLoadType::PACKED:
-      expected_histogram_count = 0;
-      break;
-    case ExtensionLoadType::UNPACKED:
-      expected_histogram_count = 1;
-      break;
-  }
-
-  tester.ExpectTotalCount(kIndexRulesTimeHistogram, expected_histogram_count);
-  tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram,
-                          expected_histogram_count);
-  tester.ExpectBucketCount(kManifestRulesCountHistogram, 1 /* rules count */,
-                           expected_histogram_count);
-
-  // Ensure no install warnings were raised on reload.
-  EXPECT_TRUE(extension()->install_warnings().empty());
-}
-
 // Test that we do not use an extension provided indexed ruleset.
 TEST_P(RuleIndexingTest, ExtensionWithIndexedRuleset) {
   set_persist_initial_indexed_ruleset();
@@ -481,10 +517,10 @@ TEST_P(RuleIndexingTest, ExtensionWithIndexedRuleset) {
   LoadAndExpectSuccess(1 /* rules count */);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        RuleIndexingTest,
-                        ::testing::Values(ExtensionLoadType::PACKED,
-                                          ExtensionLoadType::UNPACKED));
+INSTANTIATE_TEST_SUITE_P(,
+                         RuleIndexingTest,
+                         ::testing::Values(ExtensionLoadType::PACKED,
+                                           ExtensionLoadType::UNPACKED));
 
 }  // namespace
 }  // namespace declarative_net_request

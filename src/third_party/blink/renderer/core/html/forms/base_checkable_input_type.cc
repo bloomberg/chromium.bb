@@ -42,7 +42,7 @@ namespace blink {
 
 using namespace html_names;
 
-void BaseCheckableInputType::Trace(blink::Visitor* visitor) {
+void BaseCheckableInputType::Trace(Visitor* visitor) {
   InputTypeView::Trace(visitor);
   InputType::Trace(visitor);
 }

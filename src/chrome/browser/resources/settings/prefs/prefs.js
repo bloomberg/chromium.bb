@@ -23,19 +23,22 @@
  * @return {boolean} True if the values are recursively equal.
  */
 function deepEqual(val1, val2) {
-  if (val1 === val2)
+  if (val1 === val2) {
     return true;
+  }
 
   if (Array.isArray(val1) || Array.isArray(val2)) {
-    if (!Array.isArray(val1) || !Array.isArray(val2))
+    if (!Array.isArray(val1) || !Array.isArray(val2)) {
       return false;
+    }
     return arraysEqual(
         /** @type {!Array} */ (val1),
         /** @type {!Array} */ (val2));
   }
 
-  if (val1 instanceof Object && val2 instanceof Object)
+  if (val1 instanceof Object && val2 instanceof Object) {
     return objectsEqual(val1, val2);
+  }
 
   return false;
 }
@@ -46,12 +49,14 @@ function deepEqual(val1, val2) {
  * @return {boolean} True if the arrays are recursively equal.
  */
 function arraysEqual(arr1, arr2) {
-  if (arr1.length != arr2.length)
+  if (arr1.length != arr2.length) {
     return false;
+  }
 
   for (let i = 0; i < arr1.length; i++) {
-    if (!deepEqual(arr1[i], arr2[i]))
+    if (!deepEqual(arr1[i], arr2[i])) {
       return false;
+    }
   }
 
   return true;
@@ -65,13 +70,15 @@ function arraysEqual(arr1, arr2) {
 function objectsEqual(obj1, obj2) {
   const keys1 = Object.keys(obj1);
   const keys2 = Object.keys(obj2);
-  if (keys1.length != keys2.length)
+  if (keys1.length != keys2.length) {
     return false;
+  }
 
   for (let i = 0; i < keys1.length; i++) {
     const key = keys1[i];
-    if (!deepEqual(obj1[key], obj2[key]))
+    if (!deepEqual(obj1[key], obj2[key])) {
       return false;
+    }
   }
 
   return true;
@@ -85,8 +92,9 @@ function objectsEqual(obj1, obj2) {
  * @return {*} A deep copy of the value.
  */
 function deepCopy(val) {
-  if (!(val instanceof Object))
+  if (!(val instanceof Object)) {
     return val;
+  }
   return Array.isArray(val) ? deepCopyArray(/** @type {!Array} */ (val)) :
                               deepCopyObject(val);
 }
@@ -97,8 +105,9 @@ function deepCopy(val) {
  */
 function deepCopyArray(arr) {
   const copy = [];
-  for (let i = 0; i < arr.length; i++)
+  for (let i = 0; i < arr.length; i++) {
     copy.push(deepCopy(arr[i]));
+  }
   return copy;
 }
 
@@ -152,8 +161,9 @@ Polymer({
 
   /** @override */
   created: function() {
-    if (!CrSettingsPrefs.deferInitialization)
+    if (!CrSettingsPrefs.deferInitialization) {
       this.initialize();
+    }
   },
 
   /** @override */
@@ -167,12 +177,14 @@ Polymer({
    */
   initialize: function(opt_settingsApi) {
     // Only initialize once (or after resetForTesting() is called).
-    if (this.initialized_)
+    if (this.initialized_) {
       return;
+    }
     this.initialized_ = true;
 
-    if (opt_settingsApi)
+    if (opt_settingsApi) {
       this.settingsApi_ = opt_settingsApi;
+    }
 
     /** @private {function(!Array<!chrome.settingsPrivate.PrefObject>)} */
     this.boundPrefsChanged_ = this.onSettingsPrivatePrefsChanged_.bind(this);
@@ -187,8 +199,9 @@ Polymer({
    */
   prefsChanged_: function(e) {
     // |prefs| can be directly set or unset in tests.
-    if (!CrSettingsPrefs.isInitialized || e.path == 'prefs')
+    if (!CrSettingsPrefs.isInitialized || e.path == 'prefs') {
       return;
+    }
 
     const key = this.getPrefKeyFromPath_(e.path);
     const prefStoreValue = this.lastPrefValues_[key];
@@ -214,8 +227,9 @@ Polymer({
    * @private
    */
   onSettingsPrivatePrefsChanged_: function(prefs) {
-    if (CrSettingsPrefs.isInitialized)
+    if (CrSettingsPrefs.isInitialized) {
       this.updatePrefs_(prefs);
+    }
   },
 
   /**
@@ -235,8 +249,9 @@ Polymer({
    * @private
    */
   setPrefCallback_: function(key, success) {
-    if (!success)
+    if (!success) {
       this.refresh(key);
+    }
   },
 
   /**
@@ -267,12 +282,14 @@ Polymer({
         // Add the pref to |prefs|.
         cr.exportPath(newPrefObj.key, newPrefObj, prefs);
         // If this.prefs already exists, notify listeners of the change.
-        if (prefs == this.prefs)
+        if (prefs == this.prefs) {
           this.notifyPath('prefs.' + newPrefObj.key, newPrefObj);
+        }
       }
     }, this);
-    if (!this.prefs)
+    if (!this.prefs) {
       this.prefs = prefs;
+    }
   },
 
   /**
@@ -292,8 +309,9 @@ Polymer({
     for (let i = 1; i <= parts.length; i++) {
       const key = parts.slice(0, i).join('.');
       // The lastPrefValues_ keys match the pref keys.
-      if (this.lastPrefValues_.hasOwnProperty(key))
+      if (this.lastPrefValues_.hasOwnProperty(key)) {
         return key;
+      }
     }
     return '';
   },
@@ -302,8 +320,9 @@ Polymer({
    * Resets the element so it can be re-initialized with a new prefs state.
    */
   resetForTesting: function() {
-    if (!this.initialized_)
+    if (!this.initialized_) {
       return;
+    }
     this.prefs = undefined;
     this.lastPrefValues_ = {};
     this.initialized_ = false;

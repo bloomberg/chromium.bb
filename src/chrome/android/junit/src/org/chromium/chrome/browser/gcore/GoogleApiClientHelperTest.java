@@ -39,14 +39,12 @@ public class GoogleApiClientHelperTest {
 
     @Before
     public void setUp() {
-        ApplicationStatus.destroyForJUnitTests();
         LifecycleHook.destroyInstanceForJUnitTests();
         mMockClient = mock(GoogleApiClient.class);
     }
 
     @After
     public void tearDown() {
-        ApplicationStatus.destroyForJUnitTests();
         LifecycleHook.destroyInstanceForJUnitTests();
     }
 

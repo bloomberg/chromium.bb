@@ -10,26 +10,23 @@
 #include <set>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/memory/scoped_refptr.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "url/gurl.h"
 
 namespace storage {
-class QuotaManagerProxy;
-}
-
-namespace storage {
 
 class FileSystemContext;
+class QuotaManagerProxy;
 class QuotaReservation;
 
 // An abstract interface that provides common quota-related utility functions
 // for file_system_quota_client.
 // All the methods of this class are synchronous and need to be called on
 // the thread that the method name implies.
-class STORAGE_EXPORT FileSystemQuotaUtil {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaUtil {
  public:
   virtual ~FileSystemQuotaUtil() {}
 
@@ -37,22 +34,26 @@ class STORAGE_EXPORT FileSystemQuotaUtil {
   // to the quota manager via |proxy|.
   virtual base::File::Error DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
-      storage::QuotaManagerProxy* proxy,
+      QuotaManagerProxy* proxy,
       const GURL& origin_url,
       FileSystemType type) = 0;
 
-  virtual void GetOriginsForTypeOnFileTaskRunner(storage::FileSystemType type,
+  virtual void PerformStorageCleanupOnFileTaskRunner(FileSystemContext* context,
+                                                     QuotaManagerProxy* proxy,
+                                                     FileSystemType type) = 0;
+
+  virtual void GetOriginsForTypeOnFileTaskRunner(FileSystemType type,
                                                  std::set<GURL>* origins) = 0;
 
-  virtual void GetOriginsForHostOnFileTaskRunner(storage::FileSystemType type,
+  virtual void GetOriginsForHostOnFileTaskRunner(FileSystemType type,
                                                  const std::string& host,
                                                  std::set<GURL>* origins) = 0;
 
   // Returns the amount of data used for the origin for usage tracking.
   virtual int64_t GetOriginUsageOnFileTaskRunner(
-      storage::FileSystemContext* file_system_context,
+      FileSystemContext* file_system_context,
       const GURL& origin_url,
-      storage::FileSystemType type) = 0;
+      FileSystemType type) = 0;
 
   // Creates new reservation object for the origin and the type.
   virtual scoped_refptr<QuotaReservation>

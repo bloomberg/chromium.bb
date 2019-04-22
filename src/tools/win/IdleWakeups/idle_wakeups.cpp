@@ -255,6 +255,7 @@ void PrintHeader() {
       "------------------------------------------------------------------------"
       "----------\n");
   printf(
+      "                                                            Private\n"
       "                       Context switches/sec    CPU usage    Working set "
       "     Power\n");
   printf(

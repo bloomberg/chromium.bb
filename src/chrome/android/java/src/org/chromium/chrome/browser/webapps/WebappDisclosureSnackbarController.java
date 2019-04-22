@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
@@ -72,8 +73,13 @@ public class WebappDisclosureSnackbarController implements SnackbarManager.Snack
             return false;
         }
 
+        // This UI isn't great for no-touch and will be handled a different way.
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            return false;
+        }
+
         // This will be null for Webapps or bound WebAPKs.
-        String packageName = activity.getNativeClientPackageName();
+        String packageName = activity.getWebApkPackageName();
         // Show for unbound WebAPKs.
         return packageName != null
                 && !packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);

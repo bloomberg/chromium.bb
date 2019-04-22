@@ -4,9 +4,10 @@
 
 #include "components/gwp_asan/crash_handler/crash_analyzer.h"
 
-#include <algorithm>
-
 #include <stddef.h>
+#include <algorithm>
+#include <memory>
+#include <string>
 
 #include "base/logging.h"
 #include "base/process/process_metrics.h"
@@ -14,6 +15,7 @@
 #include "build/build_config.h"
 #include "components/gwp_asan/common/allocator_state.h"
 #include "components/gwp_asan/common/crash_key_name.h"
+#include "components/gwp_asan/common/pack_stack_trace.h"
 #include "components/gwp_asan/crash_handler/crash.pb.h"
 #include "third_party/crashpad/crashpad/client/annotation.h"
 #include "third_party/crashpad/crashpad/snapshot/cpu_context.h"
@@ -25,10 +27,8 @@
 namespace gwp_asan {
 namespace internal {
 
+using GetMetadataReturnType = AllocatorState::GetMetadataReturnType;
 using GwpAsanCrashAnalysisResult = CrashAnalyzer::GwpAsanCrashAnalysisResult;
-
-// TODO: Delete out-of-line constexpr defininitons once C++17 is in use.
-constexpr size_t CrashAnalyzer::kMaxStackTraceLen;
 
 GwpAsanCrashAnalysisResult CrashAnalyzer::GetExceptionInfo(
     const crashpad::ProcessSnapshot& process_snapshot,
@@ -56,15 +56,11 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::GetExceptionInfo(
   if (exception->Context()->Is64Bit() != is_64_bit)
     return GwpAsanCrashAnalysisResult::kErrorMismatchedBitness;
 
-  crashpad::VMAddress crash_addr = GetAccessAddress(*exception);
-  if (!crash_addr)
-    return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
-
   if (!process_snapshot.Memory())
     return GwpAsanCrashAnalysisResult::kErrorNullProcessMemory;
 
-  return AnalyzeCrashedAllocator(*process_snapshot.Memory(), gpa_ptr,
-                                 crash_addr, proto);
+  return AnalyzeCrashedAllocator(*process_snapshot.Memory(), *exception,
+                                 gpa_ptr, proto);
 }
 
 crashpad::VMAddress CrashAnalyzer::GetAllocatorAddress(
@@ -94,8 +90,8 @@ crashpad::VMAddress CrashAnalyzer::GetAllocatorAddress(
 
 GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
     const crashpad::ProcessMemory& memory,
+    const crashpad::ExceptionSnapshot& exception,
     crashpad::VMAddress gpa_addr,
-    crashpad::VMAddress exception_addr,
     gwp_asan::Crash* proto) {
   AllocatorState unsafe_state;
   if (!memory.Read(gpa_addr, sizeof(unsafe_state), &unsafe_state)) {
@@ -109,67 +105,120 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   }
   const AllocatorState& valid_state = unsafe_state;
 
-  SlotMetadata slot;
-  AllocatorState::ErrorType error_type;
+  crashpad::VMAddress exception_addr = GetAccessAddress(exception);
+  if (valid_state.double_free_address)
+    exception_addr = valid_state.double_free_address;
+  else if (valid_state.free_invalid_address)
+    exception_addr = valid_state.free_invalid_address;
+
+  if (!exception_addr || !valid_state.PointerIsMine(exception_addr))
+    return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
+  // All errors that occur below happen for an exception known to be related to
+  // GWP-ASan.
+
+  // Read the allocator's entire metadata array.
+  auto metadata_arr = std::make_unique<AllocatorState::SlotMetadata[]>(
+      valid_state.num_metadata);
+  if (!memory.Read(
+          valid_state.metadata_addr,
+          sizeof(AllocatorState::SlotMetadata) * valid_state.num_metadata,
+          metadata_arr.get())) {
+    DLOG(ERROR) << "Failed to read metadata from process.";
+    return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadata;
+  }
+
+  // Read the allocator's slot_to_metadata mapping.
+  auto slot_to_metadata =
+      std::make_unique<AllocatorState::MetadataIdx[]>(valid_state.total_pages);
+  if (!memory.Read(
+          valid_state.slot_to_metadata_addr,
+          sizeof(AllocatorState::MetadataIdx) * valid_state.total_pages,
+          slot_to_metadata.get())) {
+    DLOG(ERROR) << "Failed to read slot_to_metadata from process.";
+    return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadataMapping;
+  }
+
+  AllocatorState::MetadataIdx metadata_idx;
   auto ret =
-      valid_state.GetMetadataForAddress(exception_addr, &slot, &error_type);
-  if (ret == AllocatorState::GetMetadataReturnType::kErrorBadSlot) {
+      valid_state.GetMetadataForAddress(exception_addr, metadata_arr.get(),
+                                        slot_to_metadata.get(), &metadata_idx);
+  if (ret == GetMetadataReturnType::kErrorBadSlot) {
     DLOG(ERROR) << "Allocator computed a bad slot index!";
     return GwpAsanCrashAnalysisResult::kErrorBadSlot;
   }
-  if (ret == AllocatorState::GetMetadataReturnType::kUnrelatedCrash)
-    return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
+  if (ret == GetMetadataReturnType::kErrorBadMetadataIndex) {
+    DLOG(ERROR) << "Allocator state held a bad metadata index!";
+    return GwpAsanCrashAnalysisResult::kErrorBadMetadataIndex;
+  }
+  if (ret == GetMetadataReturnType::kErrorOutdatedMetadataIndex) {
+    DLOG(ERROR) << "Metadata index was outdated!";
+    return GwpAsanCrashAnalysisResult::kErrorOutdatedMetadataIndex;
+  }
 
-  proto->set_error_type(static_cast<Crash_ErrorType>(error_type));
-  proto->set_allocation_address(slot.alloc_ptr);
-  proto->set_allocation_size(slot.alloc_size);
-  if (slot.alloc.tid != base::kInvalidThreadId || slot.alloc.trace_len)
-    ReadAllocationInfo(memory, slot.alloc, proto->mutable_allocation());
-  if (slot.dealloc.tid != base::kInvalidThreadId || slot.dealloc.trace_len)
-    ReadAllocationInfo(memory, slot.dealloc, proto->mutable_deallocation());
+  bool missing_metadata =
+      (ret == GetMetadataReturnType::kGwpAsanCrashWithMissingMetadata);
+  proto->set_missing_metadata(missing_metadata);
+
+  if (!missing_metadata) {
+    SlotMetadata& metadata = metadata_arr[metadata_idx];
+    AllocatorState::ErrorType error =
+        valid_state.GetErrorType(exception_addr, metadata.alloc.trace_collected,
+                                 metadata.dealloc.trace_collected);
+    proto->set_error_type(static_cast<Crash_ErrorType>(error));
+    proto->set_allocation_address(metadata.alloc_ptr);
+    proto->set_allocation_size(metadata.alloc_size);
+    if (metadata.alloc.tid != base::kInvalidThreadId ||
+        metadata.alloc.trace_len)
+      ReadAllocationInfo(metadata.stack_trace_pool, 0, metadata.alloc,
+                         proto->mutable_allocation());
+    if (metadata.dealloc.tid != base::kInvalidThreadId ||
+        metadata.dealloc.trace_len)
+      ReadAllocationInfo(metadata.stack_trace_pool, metadata.alloc.trace_len,
+                         metadata.dealloc, proto->mutable_deallocation());
+  }
+
+  proto->set_region_start(valid_state.pages_base_addr);
+  proto->set_region_size(valid_state.pages_end_addr -
+                         valid_state.pages_base_addr);
+  if (valid_state.free_invalid_address)
+    proto->set_free_invalid_address(valid_state.free_invalid_address);
 
   return GwpAsanCrashAnalysisResult::kGwpAsanCrash;
 }
 
-bool CrashAnalyzer::ReadAllocationInfo(
-    const crashpad::ProcessMemory& memory,
+void CrashAnalyzer::ReadAllocationInfo(
+    const uint8_t* stack_trace,
+    size_t stack_trace_offset,
     const SlotMetadata::AllocationInfo& slot_info,
     gwp_asan::Crash_AllocationInfo* proto_info) {
   if (slot_info.tid != base::kInvalidThreadId)
     proto_info->set_thread_id(slot_info.tid);
 
-  if (!slot_info.trace_len)
-    return true;
+  if (!slot_info.trace_len || !slot_info.trace_collected)
+    return;
 
-  size_t trace_len = std::min(slot_info.trace_len, kMaxStackTraceLen);
-  // On 32-bit platforms we can't read directly to
-  // proto_info->mutable_stack_trace()->mutable_data(), so we read to an
-  // intermediate uintptr_t array.
-  uintptr_t trace[kMaxStackTraceLen];
-  if (!ReadStackTrace(memory,
-                      static_cast<crashpad::VMAddress>(slot_info.trace_addr),
-                      trace, trace_len))
-    return false;
-
-  proto_info->mutable_stack_trace()->Resize(trace_len, 0);
-  uint64_t* output = proto_info->mutable_stack_trace()->mutable_data();
-  for (size_t i = 0; i < trace_len; i++)
-    output[i] = trace[i];
-
-  return true;
-}
-
-bool CrashAnalyzer::ReadStackTrace(const crashpad::ProcessMemory& memory,
-                                   crashpad::VMAddress crashing_trace_addr,
-                                   uintptr_t* trace_output,
-                                   size_t trace_len) {
-  if (!memory.Read(crashing_trace_addr, sizeof(uintptr_t) * trace_len,
-                   trace_output)) {
-    DLOG(ERROR) << "Memory read should always succeed.";
-    return false;
+  if (slot_info.trace_len > AllocatorState::kMaxPackedTraceLength ||
+      stack_trace_offset + slot_info.trace_len >
+          AllocatorState::kMaxPackedTraceLength) {
+    DLOG(ERROR) << "Stack trace length is corrupted: " << slot_info.trace_len;
+    return;
   }
 
-  return true;
+  uintptr_t unpacked_stack_trace[AllocatorState::kMaxPackedTraceLength];
+  size_t unpacked_len =
+      Unpack(stack_trace + stack_trace_offset, slot_info.trace_len,
+             unpacked_stack_trace, AllocatorState::kMaxPackedTraceLength);
+  if (!unpacked_len) {
+    DLOG(ERROR) << "Failed to unpack stack trace.";
+    return;
+  }
+
+  // On 32-bit platforms we can't copy directly into
+  // proto_info->mutable_stack_trace()->mutable_data().
+  proto_info->mutable_stack_trace()->Resize(unpacked_len, 0);
+  uint64_t* output = proto_info->mutable_stack_trace()->mutable_data();
+  for (size_t i = 0; i < unpacked_len; i++)
+    output[i] = unpacked_stack_trace[i];
 }
 
 }  // namespace internal

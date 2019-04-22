@@ -21,9 +21,22 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
  public:
   static PerformanceElementTiming* Create(const AtomicString& name,
-                                          const IntRect& intersection_rect,
-                                          DOMHighResTimeStamp start_time);
+                                          const FloatRect& intersection_rect,
+                                          DOMHighResTimeStamp start_time,
+                                          DOMHighResTimeStamp response_end,
+                                          const AtomicString& identifier,
+                                          int naturalWidth,
+                                          int naturalHeight,
+                                          const AtomicString& id);
 
+  PerformanceElementTiming(const AtomicString& name,
+                           const FloatRect& intersection_rect,
+                           DOMHighResTimeStamp start_time,
+                           DOMHighResTimeStamp response_end,
+                           const AtomicString& identifier,
+                           int naturalWidth,
+                           int naturalHeight,
+                           const AtomicString& id);
   ~PerformanceElementTiming() override;
 
   AtomicString entryType() const override;
@@ -31,16 +44,27 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
   DOMRectReadOnly* intersectionRect() const { return intersection_rect_; }
 
+  DOMHighResTimeStamp responseEnd() const { return response_end_; }
+
+  AtomicString identifier() const { return identifier_; }
+
+  unsigned naturalWidth() const { return naturalWidth_; }
+
+  unsigned naturalHeight() const { return naturalHeight_; }
+
+  AtomicString id() const { return id_; }
+
   void Trace(blink::Visitor*) override;
 
  private:
-  PerformanceElementTiming(const AtomicString& name,
-                           const IntRect& intersection_rect,
-                           DOMHighResTimeStamp start_time);
-
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
   Member<DOMRectReadOnly> intersection_rect_;
+  DOMHighResTimeStamp response_end_;
+  AtomicString identifier_;
+  unsigned naturalWidth_;
+  unsigned naturalHeight_;
+  AtomicString id_;
 };
 
 }  // namespace blink

@@ -30,14 +30,16 @@ Polymer({
     // from sticky settings from a different destination or if the
     // destination's capabilities changed since the sticky settings were
     // generated.
-    if (!settings.hasOwnProperty(this.capability.id))
+    if (!settings.hasOwnProperty(this.capability.id)) {
       return;
+    }
 
     const value = settings[this.capability.id];
     if (this.isCapabilityTypeSelect_()) {
       // Ignore a value that can't be selected.
-      if (this.hasOptionWithValue_(value))
+      if (this.hasOptionWithValue_(value)) {
         this.currentValue_ = value;
+      }
     } else {
       this.currentValue_ = value;
       this.$$('cr-input').value = this.currentValue_;
@@ -52,8 +54,9 @@ Polymer({
    */
   getDisplayName_: function(item) {
     let displayName = item.display_name;
-    if (!displayName && item.display_name_localized)
+    if (!displayName && item.display_name_localized) {
       displayName = getStringForCurrentLocale(item.display_name_localized);
+    }
     return displayName || '';
   },
 
@@ -89,8 +92,9 @@ Polymer({
       return this.capability.typed_value_cap.default.toString() || '';
     }
     if (this.capability.type == 'RANGE' && this.capability.range_cap &&
-        this.capability.range_cap.default != undefined)
+        this.capability.range_cap.default != undefined) {
       return this.capability.range_cap.default.toString() || '';
+    }
     return '';
   },
 
@@ -109,17 +113,20 @@ Polymer({
    * @return {boolean} Whether the item has a match for the query.
    */
   hasMatch: function(query) {
-    if (!query || this.getDisplayName_(this.capability).match(query))
+    if (!query || this.getDisplayName_(this.capability).match(query)) {
       return true;
+    }
 
-    if (!this.isCapabilityTypeSelect_())
+    if (!this.isCapabilityTypeSelect_()) {
       return false;
+    }
 
-    for (let option of
+    for (const option of
          /** @type {!Array<!print_preview.VendorCapabilitySelectOption>} */ (
              this.capability.select_cap.option)) {
-      if (this.getDisplayName_(option).match(query))
+      if (this.getDisplayName_(option).match(query)) {
         return true;
+      }
     }
     return false;
   },

@@ -15,15 +15,12 @@ class CFWL_ComboBoxTP final : public CFWL_WidgetTP {
   ~CFWL_ComboBoxTP() override;
 
   // CFWL_WidgetTP
-  void DrawBackground(CFWL_ThemeBackground* pParams) override;
+  void DrawBackground(const CFWL_ThemeBackground& pParams) override;
 
  private:
-  void DrawDropDownButton(CFWL_ThemeBackground* pParams,
+  void DrawDropDownButton(const CFWL_ThemeBackground& pParams,
                           uint32_t dwStates,
-                          CFX_Matrix* pMatrix);
-  void DrawStrethHandler(CFWL_ThemeBackground* pParams,
-                         uint32_t dwStates,
-                         CFX_Matrix* pMatrix);
+                          const CFX_Matrix& matrix);
 };
 
 #endif  // XFA_FWL_THEME_CFWL_COMBOBOXTP_H_

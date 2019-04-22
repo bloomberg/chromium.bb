@@ -13,11 +13,9 @@
 
 #include <stddef.h>
 #include <stdio.h>
-
-#include <memory>
 #include <string>
 
-#include "api/rtceventlogoutput.h"
+#include "api/rtc_event_log_output.h"
 #include "rtc_base/platform_file.h"  // Can't neatly forward PlatformFile.
 
 namespace webrtc {

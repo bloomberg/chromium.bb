@@ -6,8 +6,9 @@
 #include <string.h>
 
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,9 +34,9 @@ IN_PROC_BROWSER_TEST_P(InProcessBrowserTestP, TestP) {
   EXPECT_EQ(0, strcmp("foo", GetParam()));
 }
 
-INSTANTIATE_TEST_CASE_P(IPBTP,
-                        InProcessBrowserTestP,
-                        ::testing::Values("foo"));
+INSTANTIATE_TEST_SUITE_P(IPBTP,
+                         InProcessBrowserTestP,
+                         ::testing::Values("foo"));
 
 // WebContents observer that can detect provisional load failures.
 class LoadFailObserver : public content::WebContentsObserver {
@@ -77,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, ExternalConnectionFail) {
     "http://www.google.com/",
     "http://www.cnn.com/"
   };
-  for (size_t i = 0; i < arraysize(kURLs); ++i) {
+  for (size_t i = 0; i < base::size(kURLs); ++i) {
     GURL url(kURLs[i]);
     LoadFailObserver observer(contents);
     ui_test_utils::NavigateToURL(browser(), url);
@@ -92,5 +94,28 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, ExternalConnectionFail) {
 IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, AfterStartupTaskUtils) {
   EXPECT_TRUE(AfterStartupTaskUtils::IsBrowserStartupComplete());
 }
+
+// On Mac this crashes inside cc::SingleThreadProxy::SetNeedsCommit. See
+// https://ci.chromium.org/b/8923336499994443392
+#if !defined(OS_MACOSX)
+class SingleProcessBrowserTest : public InProcessBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kSingleProcess);
+  }
+};
+
+#if defined(OS_LINUX)
+// TODO(https://crbug.com/931233): Reenable
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
+
+IN_PROC_BROWSER_TEST_F(SingleProcessBrowserTest, MAYBE_Test) {
+  // Should not crash.
+}
+
+#endif
 
 }  // namespace

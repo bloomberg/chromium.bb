@@ -10,6 +10,7 @@
 
 #include "common/mathutil.h"
 #include "test_utils/gl_raii.h"
+#include "util/EGLWindow.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOSurface/IOSurface.h>
@@ -211,14 +212,14 @@ class IOSurfaceClientBufferTest : public ANGLETest
         GLTexture texture;
         bindIOSurfaceToTexture(ioSurface, 1, 1, 0, internalFormat, type, &pbuffer, &texture);
 
-        const std::string vs =
+        constexpr char kVS[] =
             "attribute vec4 position;\n"
             "void main()\n"
             "{\n"
             "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
             "}\n";
 
-        const std::string fs =
+        constexpr char kFS[] =
             "#extension GL_ARB_texture_rectangle : require\n"
             "precision mediump float;\n"
             "uniform sampler2DRect tex;\n"
@@ -227,7 +228,7 @@ class IOSurfaceClientBufferTest : public ANGLETest
             "    gl_FragColor = texture2DRect(tex, vec2(0, 0));\n"
             "}\n";
 
-        ANGLE_GL_PROGRAM(program, vs, fs);
+        ANGLE_GL_PROGRAM(program, kVS, kFS);
         glUseProgram(program);
 
         GLint location = glGetUniformLocation(program, "tex");
@@ -707,8 +708,8 @@ TEST_P(IOSurfaceClientBufferTest, NegativeValidationBadAttributes)
     }
 }
 
-// Test IOSurface pbuffers cannot be made current
-TEST_P(IOSurfaceClientBufferTest, MakeCurrentDisallowed)
+// Test IOSurface pbuffers can be made current
+TEST_P(IOSurfaceClientBufferTest, MakeCurrent)
 {
     ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(10, 10, 'BGRA', 4);
 
@@ -717,8 +718,13 @@ TEST_P(IOSurfaceClientBufferTest, MakeCurrentDisallowed)
 
     EGLContext context = getEGLWindow()->getContext();
     EGLBoolean result  = eglMakeCurrent(mDisplay, pbuffer, pbuffer, context);
-    EXPECT_EGL_FALSE(result);
-    EXPECT_EGL_ERROR(EGL_BAD_SURFACE);
+    EXPECT_EGL_TRUE(result);
+    EXPECT_EGL_SUCCESS();
+    // The test harness expects the EGL state to be restored before the test exits.
+    result = eglMakeCurrent(mDisplay, getEGLWindow()->getSurface(), getEGLWindow()->getSurface(),
+                            context);
+    EXPECT_EGL_TRUE(result);
+    EXPECT_EGL_SUCCESS();
 }
 
 // TODO(cwallez@chromium.org): Test setting width and height to less than the IOSurface's work as

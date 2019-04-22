@@ -16,6 +16,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import retry_util
 from chromite.lib import signing
 
 
@@ -49,11 +50,20 @@ class LoopbackPartitions(object):
     path: Path to the backing file.
     losetup: Path to the losetup utility. The default uses the system PATH.
   """
-  def __init__(self, path, util_path=None):
+  def __init__(self, path, destination=None, util_path=None):
     self._util_path = util_path
     self.path = path
+    self.destination = destination
     self.dev = None
     self.parts = {}
+    self._destination_created = False
+    self._gpt_table = cros_build_lib.GetImageDiskPartitionInfo(path)
+    # Set of _gpt_table elements currently mounted.
+    self._mounted = set()
+    # Set of dirs that need to be removed in close().
+    self._to_be_rmdir = set()
+    # Set of symlinks created.
+    self._symlinks = set()
 
     try:
       cmd = ['losetup', '--show', '-f', self.path]
@@ -86,14 +96,159 @@ class LoopbackPartitions(object):
       cmd = [newcmd] + cmd[1:]
     return cros_build_lib.SudoRunCommand(cmd, **kwargs)
 
+  def GetPartitionDevName(self, part_id):
+    """Return the loopback device for a partition.
+
+    Args:
+      part_id: partition name (str) or number (int)
+
+    Returns:
+      String with name of loopback device (e.g. '/dev/loop3p2').  If there are
+      multiple partitions that match part_id, then the first one from the
+      partition table is returned.
+    """
+    for part in self._gpt_table:
+      if part_id == part.name or part_id == part.number:
+        return '%sp%d' % (self.dev, part.number)
+    raise KeyError(repr(part_id))
+
+  def _GetMountPointAndSymlink(self, part):
+    """Return tuple of mount point and symlink for a given PartitionInfo.
+
+    Args:
+      part: A PartitionInfo object.
+
+    Returns:
+      (mount_point, symlink) tuple.
+    """
+    dest_number = os.path.join(self.destination, 'dir-%d' % part.number)
+    dest_label = os.path.join(self.destination, 'dir-%s' % part.name)
+    return (dest_number, dest_label)
+
+  def Mount(self, part_ids, mount_opts=('ro',)):
+    """Mount the given part_ids in subdirectories of the given destination.
+
+    Args:
+      part_ids: list of partition names (str) or numbers (int)
+      mount_opts: list of mount options to be applied for these partitions.
+
+    Returns:
+      List of mountpoint paths.
+    """
+    ret = []
+    for part_id in part_ids:
+      for part in self._gpt_table:
+        if part_id == part.name or part_id == part.number:
+          ret.append(self._Mount(part, mount_opts))
+          break
+      else:
+        raise KeyError(repr(part_id))
+    return ret
+
+  def Unmount(self, part_ids):
+    """Mount the given part_ids in subdirectories of the given destination.
+
+    Args:
+      part_ids: list of partition names (str) or numbers (int)
+      mount_opts: list of mount options to be applied for these partitions.
+    """
+    for part_id in part_ids:
+      for part in self._gpt_table:
+        if part_id == part.name or part_id == part.number:
+          self._Unmount(part)
+          break
+      else:
+        raise KeyError(repr(part_id))
+
+  def _IsExt2(self, part_id, offset=0):
+    """Is the given partition an ext2 file system?"""
+    dev = self.GetPartitionDevName(part_id)
+    magic_ofs = offset + 0x438
+    ret = cros_build_lib.SudoRunCommand(
+        ['dd', 'if=%s' % dev, 'skip=%d' % magic_ofs,
+         'conv=notrunc', 'count=2', 'bs=1'],
+        capture_output=True, error_code_ok=True)
+    if ret.returncode:
+      return False
+    return ret.output == b'\x53\xef'
+
+  def EnableRwMount(self, part_id, offset=0):
+    """Enable RW mounts of the specified partition."""
+    dev = self.GetPartitionDevName(part_id)
+    if not self._IsExt2(part_id, offset):
+      logging.error('EnableRwMount called on non-ext2 fs: %s %s',
+                    part_id, offset)
+      return
+    ro_compat_ofs = offset + 0x464 + 3
+    logging.info('Enabling RW mount writing 0x00 to %d', ro_compat_ofs)
+    cros_build_lib.SudoRunCommand(
+        ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
+         'conv=notrunc', 'count=1', 'bs=1'],
+        input=b'\0', redirect_stderr=True)
+
+  def DisableRwMount(self, part_id, offset=0):
+    """Disable RW mounts of the specified partition."""
+    dev = self.GetPartitionDevName(part_id)
+    if not self._IsExt2(part_id, offset):
+      logging.error('DisableRwMount called on non-ext2 fs: %s %s',
+                    part_id, offset)
+      return
+    ro_compat_ofs = offset + 0x464 + 3
+    logging.info('Disabling RW mount writing 0xff to %d', ro_compat_ofs)
+    cros_build_lib.SudoRunCommand(
+        ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
+         'conv=notrunc', 'count=1', 'bs=1'],
+        input=b'\xff', redirect_stderr=True)
+
+  def _Mount(self, part, mount_opts):
+    dest_number, dest_label = self._GetMountPointAndSymlink(part)
+    if part in self._mounted and 'remount' not in mount_opts:
+      return dest_number
+
+    if not self.destination:
+      self.destination = osutils.TempDir()
+      self._destination_created = True
+
+    osutils.MountDir(self.GetPartitionDevName(part.number), dest_number,
+                     makedirs=True, skip_mtab=False, sudo=True,
+                     mount_opts=mount_opts)
+    self._mounted.add(part)
+
+    osutils.SafeSymlink(os.path.basename(dest_number), dest_label)
+    self._symlinks.add(dest_label)
+
+    return dest_number
+
+  def _Unmount(self, part):
+    """Unmount a partition that was mounted by _Mount."""
+    dest_number, _ = self._GetMountPointAndSymlink(part)
+    # Due to crosbug/358933, the RmDir call might fail. So we skip the cleanup.
+    osutils.UmountDir(dest_number, cleanup=False)
+    self._mounted.remove(part)
+    self._to_be_rmdir.add(dest_number)
 
   def close(self):
     if self.dev:
+      for part in list(self._mounted):
+        self._Unmount(part)
+
+      # We still need to remove some directories, since _Unmount did not.
+      for link in self._symlinks:
+        osutils.SafeUnlink(link)
+      self._symlinks = set()
+      for path in self._to_be_rmdir:
+        retry_util.RetryException(cros_build_lib.RunCommandError, 60,
+                                  osutils.RmDir, path, sudo=True, sleep=1)
+      self._to_be_rmdir = set()
       cmd = ['partx', '-d', self.dev]
       self._au_safe_sudo(cmd, quiet=True, error_code_ok=True)
       self._au_safe_sudo(['losetup', '--detach', self.dev])
       self.dev = None
       self.parts = {}
+      self._gpt_table = None
+      if self._destination_created:
+        self.destination = None
+        self._destination_created = False
 
   def __enter__(self):
     return self
@@ -128,10 +283,19 @@ def WriteLsbRelease(sysroot, fields):
   osutils.WriteFile(path, content, mode='w', makedirs=True, sudo=True)
 
 
-def GetLatestImageLink(board):
-  """Get the path for the `latest` image symlink for the given board."""
-  return os.path.join(constants.SOURCE_ROOT, 'src/build/images', board,
-                      'latest')
+def GetLatestImageLink(board, force_chroot=False):
+  """Get the path for the `latest` image symlink for the given board.
+
+  Args:
+    board (str): The name of the board.
+    force_chroot (bool): Get the path as if we are inside the chroot, whether
+      or not we actually are.
+
+  Returns:
+    str - The `latest` image symlink path.
+  """
+  base = constants.CHROOT_SOURCE_ROOT if force_chroot else constants.SOURCE_ROOT
+  return os.path.join(base, 'src/build/images', board, 'latest')
 
 
 class ImageDoesNotExistError(Error):

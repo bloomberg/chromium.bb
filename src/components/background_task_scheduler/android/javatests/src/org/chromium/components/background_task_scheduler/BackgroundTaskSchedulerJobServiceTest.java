@@ -145,7 +145,7 @@ public class BackgroundTaskSchedulerJobServiceTest {
 
         jobInfo = BackgroundTaskSchedulerJobService.createJobInfoFromTaskInfo(
                 InstrumentationRegistry.getTargetContext(),
-                taskBuilder.setRequiredNetworkType(TaskInfo.NETWORK_TYPE_UNMETERED).build());
+                taskBuilder.setRequiredNetworkType(TaskInfo.NetworkType.UNMETERED).build());
         Assert.assertEquals(JobInfo.NETWORK_TYPE_UNMETERED, jobInfo.getNetworkType());
 
         jobInfo = BackgroundTaskSchedulerJobService.createJobInfoFromTaskInfo(

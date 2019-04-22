@@ -34,6 +34,12 @@ cr_slider.SliderTick;
     return Math.min(max, Math.max(min, value));
   }
 
+  /**
+   * The following are the events emitted from cr-slider.
+   *
+   * cr-slider-value-changed: fired when updating slider via the UI.
+   * dragging-changed: fired on pointer down and on pointer up.
+   */
   Polymer({
     is: 'cr-slider',
 
@@ -109,28 +115,6 @@ cr_slider.SliderTick;
       value: {
         type: Number,
         value: 0,
-        notify: true,
-        observer: 'onValueChanged_',
-      },
-
-      /**
-       * If true, |value| is updated while dragging happens. If false, |value|
-       * is updated only once, when drag gesture finishes.
-       */
-      updateValueInstantly: {
-        type: Boolean,
-        value: true,
-      },
-
-      /**
-       * |immediateValue_| has the most up-to-date value and is used to render
-       * the slider UI. When dragging, |immediateValue_| is always updated, and
-       * |value| is updated at least once when dragging is stopped.
-       * @private
-       */
-      immediateValue_: {
-        type: Number,
-        value: 0,
       },
 
       /** @private */
@@ -153,6 +137,20 @@ cr_slider.SliderTick;
         value: false,
         reflectToAttribute: true,
       },
+
+      /**
+       * |transiting_| is set to true when bar is touched or clicked. This
+       * triggers a single position transition effect to take place for the
+       * knob, bar and label. When the transition is complete, |transiting_| is
+       * set to false resulting in no transition effect during dragging, manual
+       * value updates and keyboard events.
+       * @private
+       */
+      transiting_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
     },
 
     hostAttributes: {
@@ -161,8 +159,9 @@ cr_slider.SliderTick;
 
     observers: [
       'onTicksChanged_(ticks.*)',
-      'updateLabelAndAria_(immediateValue_, min, max)',
-      'updateKnobAndBar_(immediateValue_, min, max)',
+      'updateLabelAndAria_(value, min, max)',
+      'updateKnobAndBar_(value, min, max)',
+      'updateValue_(value, min, max)',
     ],
 
     listeners: {
@@ -217,7 +216,7 @@ cr_slider.SliderTick;
      * @private
      */
     getMarkerClass_: function(index) {
-      const currentStep = (this.markerCount - 1) * this.getRatio_();
+      const currentStep = (this.markerCount - 1) * this.getRatio();
       return index < currentStep ? 'active-marker' : 'inactive-marker';
     },
 
@@ -227,21 +226,9 @@ cr_slider.SliderTick;
      * This is a helper function used to calculate the bar width, knob location
      * and label location.
      * @return {number}
-     * @private
      */
-    getRatio_: function() {
-      return (this.immediateValue_ - this.min) / (this.max - this.min);
-    },
-
-    /** @private */
-    ensureValidValue_: function() {
-      if (this.immediateValue_ == undefined || this.value == undefined)
-        return;
-      let validValue = clamp(this.min, this.max, this.immediateValue_);
-      validValue = this.snaps ? Math.round(validValue) : validValue;
-      this.immediateValue_ = validValue;
-      if (!this.dragging || this.updateValueInstantly)
-        this.value = validValue;
+    getRatio: function() {
+      return (this.value - this.min) / (this.max - this.min);
     },
 
     /**
@@ -250,9 +237,6 @@ cr_slider.SliderTick;
      * @private
      */
     stopDragging_: function(pointerId) {
-      // Update |value| before updating |dragging| so dragging-changed event
-      // handlers will have access to the updated |value|.
-      this.value = this.immediateValue_;
       this.draggingEventTracker_.removeAll();
       this.releasePointerCapture(pointerId);
       this.dragging = false;
@@ -270,13 +254,19 @@ cr_slider.SliderTick;
 
     /** @private */
     onDisabledChanged_: function() {
-      this.$.knob.setAttribute('tabindex', this.disabled_ ? '-1' : '0');
+      this.setAttribute('tabindex', this.disabled_ ? -1 : 0);
+      this.$.knob.setAttribute('tabindex', this.disabled_ ? -1 : 0);
       this.blur();
     },
 
     /** @private */
     onFocus_: function() {
       this.holdDown_ = true;
+
+      if (this.shadowRoot.activeElement == this.$.knob) {
+        return;
+      }
+      this.$.knob.focus();
     },
 
     /** @private */
@@ -289,32 +279,57 @@ cr_slider.SliderTick;
      * @private
      */
     onKeyDown_: function(event) {
-      if (this.disabled_ || this.noKeybindings)
+      if (this.disabled_ || this.noKeybindings) {
         return;
+      }
 
-      if (event.metaKey || event.shiftKey || event.altKey || event.ctrlKey)
+      if (event.metaKey || event.shiftKey || event.altKey || event.ctrlKey) {
         return;
+      }
 
-      let handled = true;
+      /** @type {number|undefined} */
+      let newValue;
       if (event.key == 'Home') {
-        this.immediateValue_ = this.min;
+        newValue = this.min;
       } else if (event.key == 'End') {
-        this.immediateValue_ = this.max;
+        newValue = this.max;
       } else if (this.deltaKeyMap_.has(event.key)) {
-        const newValue = this.value + this.deltaKeyMap_.get(event.key);
-        this.immediateValue_ = clamp(this.min, this.max, newValue);
-      } else {
-        handled = false;
+        newValue = this.value + this.deltaKeyMap_.get(event.key);
       }
 
-      if (handled) {
-        this.value = this.immediateValue_;
-        event.preventDefault();
-        event.stopPropagation();
-        setTimeout(() => {
-          this.holdDown_ = true;
-        });
+      if (newValue == undefined) {
+        return;
       }
+
+      if (this.updateValue_(newValue)) {
+        this.fire('cr-slider-value-changed');
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      setTimeout(() => {
+        this.holdDown_ = true;
+      });
+    },
+
+    /**
+     * This code is taken from cr-input. See https://crbug.com/832177#c31 for
+     * the CL that handles escaping focus from the shadow DOM.
+     * TODO(aee): see if a common behavior can be extracted from cr-slider and
+     *     cr-input with regards to focusing an element in the shadow DOM and
+     *     also being a focusable component. It may be useful for other
+     *     components.
+     * @param {!KeyboardEvent} e
+     * @private
+     */
+    onKnobKeydown_: function(e) {
+      if (e.shiftKey && e.key === 'Tab') {
+        this.focus();
+      }
+    },
+
+    /** @private */
+    onKnobTransitionEnd_: function() {
+      this.transiting_ = false;
     },
 
     /**
@@ -324,10 +339,13 @@ cr_slider.SliderTick;
      * @private
      */
     onPointerDown_: function(event) {
-      if (this.disabled_ || event.buttons != 1 && event.pointerType == 'mouse')
+      if (this.disabled_ ||
+          event.buttons != 1 && event.pointerType == 'mouse') {
         return;
+      }
 
       this.dragging = true;
+      this.transiting_ = true;
       this.updateValueFromClientX_(event.clientX);
       // If there is a ripple animation in progress, setTimeout will hold off on
       // updating |holdDown_|.
@@ -353,41 +371,25 @@ cr_slider.SliderTick;
       this.draggingEventTracker_.add(this, 'pointerdown', stopDragging);
       this.draggingEventTracker_.add(this, 'pointerup', stopDragging);
       this.draggingEventTracker_.add(this, 'keydown', e => {
-        if (e.key == 'Escape' || e.key == 'Tab')
+        if (e.key == 'Escape' || e.key == 'Tab') {
           stopDragging();
+        }
       });
     },
 
     /** @private */
     onTicksChanged_: function() {
-      if (this.ticks.length == 0) {
-        this.snaps = false;
-      } else if (this.ticks.length > 1) {
+      if (this.ticks.length > 1) {
         this.snaps = true;
         this.max = this.ticks.length - 1;
         this.min = 0;
       }
-      this.ensureValidValue_();
-      this.updateLabelAndAria_();
-    },
-
-    /**
-     * Update |immediateValue_| which is used for rendering when |value| is
-     * updated either programmatically or from a keyboard input or a mouse drag
-     * (when |updateValueInstantly| is true).
-     * @private
-     */
-    onValueChanged_: function() {
-      if (this.immediateValue_ == this.value)
-        return;
-
-      this.immediateValue_ = this.value;
-      this.ensureValidValue_();
+      this.updateValue_(this.value);
     },
 
     /** @private */
     updateKnobAndBar_: function() {
-      const percent = `${this.getRatio_() * 100}%`;
+      const percent = `${this.getRatio() * 100}%`;
       this.$.bar.style.width = percent;
       this.$.knob.style.marginInlineStart = percent;
     },
@@ -395,7 +397,7 @@ cr_slider.SliderTick;
     /** @private */
     updateLabelAndAria_: function() {
       const ticks = this.ticks;
-      const index = this.immediateValue_;
+      const index = this.value;
       if (!ticks || ticks.length == 0 || index >= ticks.length ||
           !Number.isInteger(index) || !this.snaps) {
         this.setAttribute('aria-valuetext', index);
@@ -408,24 +410,21 @@ cr_slider.SliderTick;
       this.label_ = Number.isFinite(tick) ? '' : tick.label;
 
       // Update label location after it has been rendered.
-      this.async(() => {
+      setTimeout(() => {
         const label = this.$.label;
         const parentWidth = label.parentElement.offsetWidth;
         const labelWidth = label.offsetWidth;
         // The left and right margin are 16px.
         const margin = 16;
-        const knobLocation = parentWidth * this.getRatio_() + margin;
+        const knobLocation = parentWidth * this.getRatio() + margin;
         const offsetStart = knobLocation - (labelWidth / 2);
-        // The label should be centered over the knob. Clamping the offset to a
-        // min and max value prevents the label from being cutoff.
-        const max = parentWidth + 2 * margin - labelWidth;
-        label.style.marginInlineStart =
-            `${Math.round(clamp(0, max, offsetStart))}px`;
+        label.style.marginInlineStart = `${Math.round(offsetStart)}px`;
       });
 
       const ariaValues = [tick, ticks[0], ticks[ticks.length - 1]].map(t => {
-        if (Number.isFinite(t))
+        if (Number.isFinite(t)) {
           return t;
+        }
         return Number.isFinite(t.ariaValue) ? t.ariaValue : t.value;
       });
       this.setAttribute(
@@ -437,16 +436,40 @@ cr_slider.SliderTick;
     },
 
     /**
+     * @param {number} value
+     * @return {boolean}
+     * @private
+     */
+    updateValue_: function(value) {
+      if (this.snaps) {
+        // Skip update if |value| has not passed the next value .8 units away.
+        // The value will update as the drag approaches the next value.
+        if (Math.abs(this.value - value) < .8) {
+          return false;
+        }
+        value = Math.round(value);
+      }
+      value = clamp(this.min, this.max, value);
+      if (this.value == value) {
+        return false;
+      }
+      this.value = value;
+      return true;
+    },
+
+    /**
      * @param {number} clientX
      * @private
      */
     updateValueFromClientX_: function(clientX) {
       const rect = this.$.barContainer.getBoundingClientRect();
       let ratio = (clientX - rect.left) / rect.width;
-      if (this.isRtl_)
+      if (this.isRtl_) {
         ratio = 1 - ratio;
-      this.immediateValue_ = ratio * (this.max - this.min) + this.min;
-      this.ensureValidValue_();
+      }
+      if (this.updateValue_(ratio * (this.max - this.min) + this.min)) {
+        this.fire('cr-slider-value-changed');
+      }
     },
 
     _createRipple: function() {

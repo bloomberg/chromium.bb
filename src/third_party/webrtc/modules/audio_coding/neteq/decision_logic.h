@@ -13,7 +13,7 @@
 
 #include "modules/audio_coding/neteq/defines.h"
 #include "modules/audio_coding/neteq/tick_timer.h"
-#include "rtc_base/constructormagic.h"
+#include "rtc_base/constructor_magic.h"
 
 namespace webrtc {
 
@@ -108,10 +108,6 @@ class DecisionLogic final {
   }
   void set_prev_time_scale(bool value) { prev_time_scale_ = value; }
 
-  int postpone_decoding_level_for_test() const {
-    return postpone_decoding_level_;
-  }
-
  private:
   // The value 5 sets maximum time-stretch rate to about 100 ms/s.
   static const int kMinTimescaleInterval = 5;
@@ -120,7 +116,7 @@ class DecisionLogic final {
 
   // Updates the |buffer_level_filter_| with the current buffer level
   // |buffer_size_packets|.
-  void FilterBufferLevel(size_t buffer_size_packets, Modes prev_mode);
+  void FilterBufferLevel(size_t buffer_size_packets);
 
   // Returns the operation given that the next available packet is a comfort
   // noise payload (RFC 3389 only, not codec-internal).
@@ -184,7 +180,6 @@ class DecisionLogic final {
   bool disallow_time_stretching_;
   std::unique_ptr<TickTimer::Countdown> timescale_countdown_;
   int num_consecutive_expands_;
-  const int postpone_decoding_level_;
 
   RTC_DISALLOW_COPY_AND_ASSIGN(DecisionLogic);
 };

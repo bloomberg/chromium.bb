@@ -34,22 +34,22 @@ class PLATFORM_EXPORT LengthBox {
  public:
   LengthBox() = default;
 
-  LengthBox(LengthType t) : left_(t), right_(t), top_(t), bottom_(t) {}
+  LengthBox(Length::Type t) : left_(t), right_(t), top_(t), bottom_(t) {}
 
   LengthBox(int v)
-      : left_(Length(v, kFixed)),
-        right_(Length(v, kFixed)),
-        top_(Length(v, kFixed)),
-        bottom_(Length(v, kFixed)) {}
+      : left_(Length::Fixed(v)),
+        right_(Length::Fixed(v)),
+        top_(Length::Fixed(v)),
+        bottom_(Length::Fixed(v)) {}
 
   LengthBox(const Length& t, const Length& r, const Length& b, const Length& l)
       : left_(l), right_(r), top_(t), bottom_(b) {}
 
   LengthBox(int t, int r, int b, int l)
-      : left_(Length(l, kFixed)),
-        right_(Length(r, kFixed)),
-        top_(Length(t, kFixed)),
-        bottom_(Length(b, kFixed)) {}
+      : left_(Length::Fixed(l)),
+        right_(Length::Fixed(r)),
+        top_(Length::Fixed(t)),
+        bottom_(Length::Fixed(b)) {}
 
   const Length& Left() const { return left_; }
   const Length& Right() const { return right_; }

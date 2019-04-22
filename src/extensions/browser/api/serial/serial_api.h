@@ -5,7 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_SERIAL_SERIAL_API_H_
 #define EXTENSIONS_BROWSER_API_SERIAL_SERIAL_API_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
@@ -18,7 +20,7 @@ class SerialConnection;
 
 namespace api {
 
-class SerialEventDispatcher;
+class SerialPortManager;
 
 class SerialAsyncApiFunction : public AsyncApiFunction {
  public:
@@ -50,9 +52,7 @@ class SerialGetDevicesFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void OnGotDevices(std::vector<device::mojom::SerialDeviceInfoPtr> devices);
-
-  device::mojom::SerialDeviceEnumeratorPtr enumerator_;
+  void OnGotDevices(std::vector<device::mojom::SerialPortInfoPtr> devices);
 
   DISALLOW_COPY_AND_ASSIGN(SerialGetDevicesFunction);
 };
@@ -78,20 +78,20 @@ class SerialConnectFunction : public SerialAsyncApiFunction {
 
   std::unique_ptr<serial::Connect::Params> params_;
 
-  // SerialEventDispatcher is owned by a BrowserContext.
-  SerialEventDispatcher* serial_event_dispatcher_;
+  // SerialPortManager is owned by a BrowserContext.
+  SerialPortManager* serial_port_manager_;
 
   // This connection is created within SerialConnectFunction.
   // From there its ownership is transferred to the
   // ApiResourceManager<SerialConnection> upon success.
   std::unique_ptr<SerialConnection> connection_;
 
-  device::mojom::SerialIoHandlerPtrInfo io_handler_info_;
+  device::mojom::SerialPortPtrInfo serial_port_info_;
 };
 
 class SerialUpdateFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("serial.update", SERIAL_UPDATE);
+  DECLARE_EXTENSION_FUNCTION("serial.update", SERIAL_UPDATE)
 
   SerialUpdateFunction();
 
@@ -140,7 +140,7 @@ class SerialSetPausedFunction : public SerialAsyncApiFunction {
 
  private:
   std::unique_ptr<serial::SetPaused::Params> params_;
-  SerialEventDispatcher* serial_event_dispatcher_;
+  SerialPortManager* serial_port_manager_;
 };
 
 class SerialGetInfoFunction : public SerialAsyncApiFunction {
@@ -165,7 +165,7 @@ class SerialGetInfoFunction : public SerialAsyncApiFunction {
 
 class SerialGetConnectionsFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("serial.getConnections", SERIAL_GETCONNECTIONS);
+  DECLARE_EXTENSION_FUNCTION("serial.getConnections", SERIAL_GETCONNECTIONS)
 
   SerialGetConnectionsFunction();
 
@@ -309,9 +309,9 @@ namespace mojo {
 
 template <>
 struct TypeConverter<extensions::api::serial::DeviceInfo,
-                     device::mojom::SerialDeviceInfoPtr> {
+                     device::mojom::SerialPortInfoPtr> {
   static extensions::api::serial::DeviceInfo Convert(
-      const device::mojom::SerialDeviceInfoPtr& input);
+      const device::mojom::SerialPortInfoPtr& input);
 };
 
 }  // namespace mojo

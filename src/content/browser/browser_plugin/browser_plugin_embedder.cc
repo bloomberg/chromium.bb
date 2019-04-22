@@ -4,6 +4,7 @@
 
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 
+#include "base/bind.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"

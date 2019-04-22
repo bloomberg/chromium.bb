@@ -19,7 +19,7 @@ source_set("client") {
 
   deps = [
     "//base",
-    "//chromeos/components/proximity_auth/logging",
+    "//chromeos/components/multidevice/logging",
     "//chromeos/services/secure_channel/public/cpp/shared",
     "//chromeos/services/secure_channel/public/mojom",
     "//mojo/public/cpp/bindings",
@@ -63,12 +63,12 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//chromeos/components/multidevice",
+    "//chromeos/components/multidevice:test_support",
     "//chromeos/services/secure_channel",
     "//chromeos/services/secure_channel:test_support",
     "//chromeos/services/secure_channel/public/cpp/shared",
     "//chromeos/services/secure_channel/public/mojom",
-    "//components/cryptauth",
-    "//components/cryptauth:test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
   ]

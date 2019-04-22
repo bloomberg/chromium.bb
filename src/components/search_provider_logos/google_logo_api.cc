@@ -150,8 +150,9 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
   std::string error_string;
   int error_line;
   int error_col;
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      response_sp, 0, &error_code, &error_string, &error_line, &error_col);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          response_sp, 0, &error_code, &error_string, &error_line, &error_col);
   if (!value) {
     LOG(WARNING) << error_string << " at " << error_line << ":" << error_col;
     return nullptr;
@@ -198,6 +199,34 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
     logo->metadata.animated_url = ParseUrl(*image, "url", base_url);
     if (!logo->metadata.animated_url.is_valid())
       return nullptr;
+  }
+
+  const bool is_eligible_for_share_button =
+      (logo->metadata.type == LogoType::ANIMATED ||
+       logo->metadata.type == LogoType::SIMPLE);
+
+  if (is_eligible_for_share_button) {
+    const base::DictionaryValue* share_button = nullptr;
+    std::string short_link_str;
+    // The short link in the doodle proto is an incomplete URL with the format
+    // //g.co/*, //doodle.gle/* or //google.com?doodle=*.
+    // Complete the URL if possible.
+    if (ddljson->GetDictionary("share_button", &share_button) &&
+        ddljson->GetString("short_link", &short_link_str) &&
+        short_link_str.find("//") == 0) {
+      short_link_str.insert(0, "https:");
+      logo->metadata.short_link = GURL(short_link_str);
+      if (logo->metadata.short_link.is_valid()) {
+        share_button->GetInteger("offset_x", &logo->metadata.share_button_x);
+        share_button->GetInteger("offset_y", &logo->metadata.share_button_y);
+        share_button->GetDouble("opacity",
+                                &logo->metadata.share_button_opacity);
+        share_button->GetString("icon_image",
+                                &logo->metadata.share_button_icon);
+        share_button->GetString("background_color",
+                                &logo->metadata.share_button_bg);
+      }
+    }
   }
 
   logo->metadata.full_page_url =

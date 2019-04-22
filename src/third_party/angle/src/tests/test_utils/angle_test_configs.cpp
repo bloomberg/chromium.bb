@@ -6,44 +6,27 @@
 
 #include "test_utils/angle_test_configs.h"
 
+#include "common/platform.h"
+#include "util/util_gl.h"
+
 namespace angle
 {
-
-CompilerParameters::CompilerParameters()
-{
-    output = SH_HLSL_4_1_OUTPUT;
-}
-
-CompilerParameters::CompilerParameters(ShShaderOutput output) : output(output) {}
-
-const char *CompilerParameters::str() const
-{
-    switch (output)
-    {
-        case SH_HLSL_4_1_OUTPUT:
-            return "HLSL_4_1";
-        case SH_GLSL_450_CORE_OUTPUT:
-            return "GLSL_4_50";
-        case SH_ESSL_OUTPUT:
-            return "ESSL";
-        default:
-            UNREACHABLE();
-            return "unk";
-    }
-}
-
-std::ostream &operator<<(std::ostream &stream, const CompilerParameters &p)
-{
-    stream << p.str();
-    return stream;
-}
 
 PlatformParameters::PlatformParameters() : PlatformParameters(2, 0, EGLPlatformParameters()) {}
 
 PlatformParameters::PlatformParameters(EGLint majorVersion,
                                        EGLint minorVersion,
                                        const EGLPlatformParameters &eglPlatformParameters)
-    : majorVersion(majorVersion), minorVersion(minorVersion), eglParameters(eglPlatformParameters)
+    : majorVersion(majorVersion),
+      minorVersion(minorVersion),
+      eglParameters(eglPlatformParameters),
+      driver(GLESDriverType::AngleEGL)
+{}
+
+PlatformParameters::PlatformParameters(EGLint majorVersion,
+                                       EGLint minorVersion,
+                                       GLESDriverType driver)
+    : majorVersion(majorVersion), minorVersion(minorVersion), driver(driver)
 {}
 
 EGLint PlatformParameters::getRenderer() const
@@ -80,31 +63,47 @@ std::ostream &operator<<(std::ostream &stream, const PlatformParameters &pp)
         stream << pp.minorVersion << "_";
     }
 
-    switch (pp.eglParameters.renderer)
+    switch (pp.driver)
     {
-        case EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE:
-            stream << "DEFAULT";
+        case GLESDriverType::AngleEGL:
+        {
+            switch (pp.eglParameters.renderer)
+            {
+                case EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE:
+                    stream << "DEFAULT";
+                    break;
+                case EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE:
+                    stream << "D3D9";
+                    break;
+                case EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE:
+                    stream << "D3D11";
+                    break;
+                case EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE:
+                    stream << "NULL";
+                    break;
+                case EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE:
+                    stream << "OPENGL";
+                    break;
+                case EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE:
+                    stream << "OPENGLES";
+                    break;
+                case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
+                    stream << "VULKAN";
+                    break;
+                default:
+                    stream << "UNDEFINED";
+                    break;
+            }
             break;
-        case EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE:
-            stream << "D3D9";
+        }
+        case GLESDriverType::SystemWGL:
+            stream << "WGL";
             break;
-        case EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE:
-            stream << "D3D11";
-            break;
-        case EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE:
-            stream << "NULL";
-            break;
-        case EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE:
-            stream << "OPENGL";
-            break;
-        case EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE:
-            stream << "OPENGLES";
-            break;
-        case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
-            stream << "VULKAN";
+        case GLESDriverType::SystemEGL:
+            stream << "GLES";
             break;
         default:
-            stream << "UNDEFINED";
+            stream << "ERROR";
             break;
     }
 
@@ -138,7 +137,7 @@ std::ostream &operator<<(std::ostream &stream, const PlatformParameters &pp)
             break;
 
         default:
-            UNREACHABLE();
+            stream << "_ERR";
             break;
     }
 
@@ -157,7 +156,7 @@ std::ostream &operator<<(std::ostream &stream, const PlatformParameters &pp)
             break;
 
         default:
-            UNREACHABLE();
+            stream << "_ERR";
             break;
     }
 
@@ -383,11 +382,6 @@ PlatformParameters ES2_D3D9()
     return PlatformParameters(2, 0, egl_platform::D3D9());
 }
 
-PlatformParameters ES2_D3D9_REFERENCE()
-{
-    return PlatformParameters(2, 0, egl_platform::D3D9_REFERENCE());
-}
-
 PlatformParameters ES1_D3D11()
 {
     return PlatformParameters(1, 0, egl_platform::D3D11());
@@ -528,26 +522,6 @@ PlatformParameters ES3_D3D11_FL10_1_WARP()
     return PlatformParameters(3, 0, egl_platform::D3D11_FL10_1_WARP());
 }
 
-PlatformParameters ES3_D3D11_REFERENCE()
-{
-    return PlatformParameters(3, 0, egl_platform::D3D11_REFERENCE());
-}
-
-PlatformParameters ES3_D3D11_FL11_1_REFERENCE()
-{
-    return PlatformParameters(3, 0, egl_platform::D3D11_FL11_1_REFERENCE());
-}
-
-PlatformParameters ES3_D3D11_FL11_0_REFERENCE()
-{
-    return PlatformParameters(3, 0, egl_platform::D3D11_FL11_0_REFERENCE());
-}
-
-PlatformParameters ES3_D3D11_FL10_1_REFERENCE()
-{
-    return PlatformParameters(3, 0, egl_platform::D3D11_FL10_1_REFERENCE());
-}
-
 PlatformParameters ES1_OPENGLES()
 {
     return PlatformParameters(1, 0, egl_platform::OPENGLES());
@@ -668,4 +642,13 @@ PlatformParameters ES3_VULKAN_NULL()
     return PlatformParameters(3, 0, egl_platform::VULKAN_NULL());
 }
 
+PlatformParameters ES2_WGL()
+{
+    return PlatformParameters(2, 0, GLESDriverType::SystemWGL);
+}
+
+PlatformParameters ES3_WGL()
+{
+    return PlatformParameters(3, 0, GLESDriverType::SystemWGL);
+}
 }  // namespace angle

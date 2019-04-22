@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -158,9 +159,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
   std::unique_ptr<extensions::ExtensionUninstallDialog> dialog;
   {
     base::RunLoop run_loop;
-    dialog.reset(extensions::ExtensionUninstallDialog::Create(
+    dialog = extensions::ExtensionUninstallDialog::Create(
         app_browser->profile(), app_browser->window()->GetNativeWindow(),
-        nullptr));
+        nullptr);
     run_loop.RunUntilIdle();
   }
 
@@ -231,11 +232,8 @@ IN_PROC_BROWSER_TEST_P(ParameterizedExtensionUninstallDialogViewBrowserTest,
 // on the ExtensionUninstallDialog, the extension's uninstall url (when it is
 // specified) and the CWS Report Abuse survey are opened in the browser, also
 // testing that the CWS survey is the active tab.
-// TODO(catmullings): Disabled due to flake on Windows and Linux.
-// http://crbug.com/725197
-IN_PROC_BROWSER_TEST_F(
-    ExtensionUninstallDialogViewBrowserTest,
-    DISABLED_EnsureCWSReportAbusePageIsActiveTabAfterUninstall) {
+IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
+                       EnsureCWSReportAbusePageIsActiveTabAfterUninstall) {
   scoped_refptr<const extensions::Extension> extension(BuildTestExtension());
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser()->profile())
@@ -316,9 +314,9 @@ class ExtensionUninstallDialogViewInteractiveBrowserTest
         ->extension_service()
         ->AddExtension(extension_.get());
 
-    dialog_.reset(extensions::ExtensionUninstallDialog::Create(
+    dialog_ = extensions::ExtensionUninstallDialog::Create(
         browser()->profile(), browser()->window()->GetNativeWindow(),
-        &delegate_));
+        &delegate_);
     if (uninstall_method_ == UNINSTALL_BY_EXTENSION) {
       triggering_extension_ =
           extensions::ExtensionBuilder("TestExtensionRemover").Build();
@@ -387,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
   RunTest(UNINSTALL_BY_EXTENSION, EXTENSION_FROM_WEBSTORE);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     ParameterizedExtensionUninstallDialogViewBrowserTest,
     testing::Values(extensions::UNINSTALL_REASON_USER_INITIATED,

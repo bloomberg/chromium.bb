@@ -1,7 +1,8 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 </head>
 <body>
 
@@ -35,30 +36,27 @@
   <span style="float:left">Hello</span><span style="float:right">World</span>
 </div>
 
-<div id="console"></div>
 <script>
-if (window.testRunner && window.accessibilityController) {
-    testRunner.dumpAsText();
-
+test((t) => {
     function accessibleTitle(id) {
       var axObject = accessibilityController.accessibleElementById(id);
       return axObject.name.replace('', '');
     }
 
-    shouldBe('accessibleTitle("n1")', '"HelloWorld"');
-    shouldBe('accessibleTitle("n2")', '"HelloWorld"');
-    shouldBe('accessibleTitle("n3")', '"HelloWorld"');
-    shouldBe('accessibleTitle("n4")', '"HelloWorld"');
-    shouldBe('accessibleTitle("n5")', '"HelloWorld"');
-    shouldBe('accessibleTitle("n6")', '"HelloWorld"');
+    assert_equals(accessibleTitle("n1"), "HelloWorld");
+    assert_equals(accessibleTitle("n2"), "HelloWorld");
+    assert_equals(accessibleTitle("n3"), "HelloWorld");
+    assert_equals(accessibleTitle("n4"), "HelloWorld");
+    assert_equals(accessibleTitle("n5"), "HelloWorld");
+    assert_equals(accessibleTitle("n6"), "HelloWorld");
 
-    shouldBe('accessibleTitle("y1")', '"Hello World"');
-    shouldBe('accessibleTitle("y2")', '"Hello World"');
-    shouldBe('accessibleTitle("y3")', '"Hello World"');
-    shouldBe('accessibleTitle("y4")', '"Hello World"');
-    shouldBe('accessibleTitle("y5")', '"Hello World"');
-    shouldBe('accessibleTitle("y6")', '"Hello World"');
-}
+    assert_equals(accessibleTitle("y1"), "Hello World");
+    assert_equals(accessibleTitle("y2"), "Hello World");
+    assert_equals(accessibleTitle("y3"), "Hello World");
+    assert_equals(accessibleTitle("y4"), "Hello World");
+    assert_equals(accessibleTitle("y5"), "Hello World");
+    assert_equals(accessibleTitle("y6"), "Hello World");
+});
 </script>
 
 </body>

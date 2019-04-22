@@ -25,7 +25,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 #include "third_party/blink/renderer/core/svg/svg_path_data.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 
@@ -33,7 +33,7 @@ class CORE_EXPORT SVGPathStringSource {
   STACK_ALLOCATED();
 
  public:
-  explicit SVGPathStringSource(const String&);
+  explicit SVGPathStringSource(StringView);
 
   bool HasMoreData() const {
     if (is_8bit_source_)
@@ -63,7 +63,7 @@ class CORE_EXPORT SVGPathStringSource {
 
   SVGPathSegType previous_command_;
   SVGParsingError error_;
-  String string_;
+  StringView source_;
 
   DISALLOW_COPY_AND_ASSIGN(SVGPathStringSource);
 };

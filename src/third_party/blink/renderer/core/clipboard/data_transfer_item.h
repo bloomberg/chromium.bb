@@ -50,9 +50,7 @@ class CORE_EXPORT DataTransferItem final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DataTransferItem* Create(DataTransfer*, DataObjectItem*);
-
-  DataTransferItem(DataTransfer*, DataObjectItem*);
+  explicit DataTransferItem(DataTransfer*, DataObjectItem*);
 
   String kind() const;
   String type() const;

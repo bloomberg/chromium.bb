@@ -11,7 +11,7 @@ namespace content {
 namespace {
 
 SkFontHinting RendererPreferencesToSkiaHinting(
-    const RendererPreferences& prefs) {
+    const blink::mojom::RendererPreferences& prefs) {
   switch (prefs.hinting) {
     case gfx::FontRenderParams::HINTING_NONE:
       return SkFontHinting::kNone;
@@ -30,7 +30,7 @@ SkFontHinting RendererPreferencesToSkiaHinting(
 }  // namespace
 
 void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
-  const RendererPreferences& prefs = renderer_preferences_;
+  const blink::mojom::RendererPreferences& prefs = renderer_preferences_;
   blink::WebFontRenderStyle::SetHinting(
       RendererPreferencesToSkiaHinting(prefs));
   blink::WebFontRenderStyle::SetAutoHint(prefs.use_autohinter);

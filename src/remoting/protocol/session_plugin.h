@@ -24,10 +24,10 @@ class SessionPlugin {
 
   // Returns an XmlElement if the SessionPlugin requires to attach some data
   // into the outgoing message.
-  virtual std::unique_ptr<buzz::XmlElement> GetNextMessage() = 0;
+  virtual std::unique_ptr<jingle_xmpp::XmlElement> GetNextMessage() = 0;
 
   // Handles messages in |attachments|.
-  virtual void OnIncomingMessage(const buzz::XmlElement& attachments) = 0;
+  virtual void OnIncomingMessage(const jingle_xmpp::XmlElement& attachments) = 0;
 };
 
 }  // namespace protocol

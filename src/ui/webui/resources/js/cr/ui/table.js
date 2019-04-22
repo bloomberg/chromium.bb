@@ -7,12 +7,12 @@
  */
 
 cr.define('cr.ui', function() {
-  /** @const */ var ListSelectionModel = cr.ui.ListSelectionModel;
-  /** @const */ var ListSelectionController = cr.ui.ListSelectionController;
-  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
-  /** @const */ var TableColumnModel = cr.ui.table.TableColumnModel;
-  /** @const */ var TableList = cr.ui.table.TableList;
-  /** @const */ var TableHeader = cr.ui.table.TableHeader;
+  /** @const */ const ListSelectionModel = cr.ui.ListSelectionModel;
+  /** @const */ const ListSelectionController = cr.ui.ListSelectionController;
+  /** @const */ const ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ const TableColumnModel = cr.ui.table.TableColumnModel;
+  /** @const */ const TableList = cr.ui.table.TableList;
+  /** @const */ const TableHeader = cr.ui.table.TableHeader;
 
   /**
    * Creates a new table element.
@@ -20,7 +20,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {HTMLDivElement}
    */
-  var Table = cr.ui.define('div');
+  const Table = cr.ui.define('div');
 
   Table.prototype = {
     __proto__: HTMLDivElement.prototype,
@@ -77,12 +77,14 @@ cr.define('cr.ui', function() {
     },
     set columnModel(columnModel) {
       if (this.columnModel_ != columnModel) {
-        if (this.columnModel_)
+        if (this.columnModel_) {
           this.columnModel_.removeEventListener('resize', this.boundResize_);
+        }
         this.columnModel_ = columnModel;
 
-        if (this.columnModel_)
+        if (this.columnModel_) {
           this.columnModel_.addEventListener('resize', this.boundResize_);
+        }
         this.list_.invalidate();
         this.redraw();
       }
@@ -99,8 +101,9 @@ cr.define('cr.ui', function() {
     },
     set selectionModel(selectionModel) {
       if (this.list_.selectionModel != selectionModel) {
-        if (this.dataModel)
+        if (this.dataModel) {
           selectionModel.adjustLength(this.dataModel.length);
+        }
         this.list_.selectionModel = selectionModel;
       }
     },
@@ -139,16 +142,17 @@ cr.define('cr.ui', function() {
       // `This` must not be accessed here, since it may be anything, especially
       // not a pointer to this object.
 
-      var cm = table.columnModel;
-      var listItem = cr.ui.List.prototype.createItem.call(table.list, '');
+      const cm = table.columnModel;
+      const listItem = cr.ui.List.prototype.createItem.call(table.list, '');
       listItem.className = 'table-row';
 
-      for (var i = 0; i < cm.size; i++) {
-        var cell = table.ownerDocument.createElement('div');
+      for (let i = 0; i < cm.size; i++) {
+        const cell = table.ownerDocument.createElement('div');
         cell.style.width = cm.getWidth(i) + 'px';
         cell.className = 'table-row-cell';
-        if (cm.isEndAlign(i))
+        if (cm.isEndAlign(i)) {
           cell.style.textAlign = 'end';
+        }
         cell.hidden = !cm.isVisible(i);
         cell.appendChild(
             cm.getRenderFunction(i).call(null, dataItem, cm.getId(i), table));
@@ -166,8 +170,9 @@ cr.define('cr.ui', function() {
      *     function.
      */
     setRenderFunction: function(renderFunction) {
-      if (renderFunction === this.renderFunction_)
+      if (renderFunction === this.renderFunction_) {
         return;
+      }
 
       this.renderFunction_ = renderFunction;
       cr.dispatchSimpleEvent(this, 'change');
@@ -292,16 +297,17 @@ cr.define('cr.ui', function() {
      * @param {number} i The index of the column to sort by.
      */
     sort: function(i) {
-      var cm = this.columnModel_;
-      var sortStatus = this.list_.dataModel.sortStatus;
+      const cm = this.columnModel_;
+      const sortStatus = this.list_.dataModel.sortStatus;
       if (sortStatus.field == cm.getId(i)) {
-        var sortDirection = sortStatus.direction == 'desc' ? 'asc' : 'desc';
+        const sortDirection = sortStatus.direction == 'desc' ? 'asc' : 'desc';
         this.list_.dataModel.sort(sortStatus.field, sortDirection);
       } else {
         this.list_.dataModel.sort(cm.getId(i), cm.getDefaultOrder(i));
       }
-      if (this.selectionModel.selectedIndex == -1)
+      if (this.selectionModel.selectedIndex == -1) {
         this.list_.scrollTop = 0;
+      }
     },
 
     /**
@@ -329,11 +335,11 @@ cr.define('cr.ui', function() {
       // When the blur event happens we do not know who is getting focus so we
       // delay this a bit until we know if the new focus node is outside the
       // table.
-      var table = this;
-      var list = this.list_;
-      var doc = e.target.ownerDocument;
+      const table = this;
+      const list = this.list_;
+      const doc = e.target.ownerDocument;
       window.setTimeout(function() {
-        var activeElement = doc.activeElement;
+        const activeElement = doc.activeElement;
         if (!table.contains(activeElement)) {
           table.hasElementFocus = false;
           // Force styles based on hasElementFocus to take effect.
@@ -347,20 +353,20 @@ cr.define('cr.ui', function() {
      * @param {number} index Index of the column to adjust width.
      */
     fitColumn: function(index) {
-      var list = this.list_;
-      var listHeight = list.clientHeight;
+      const list = this.list_;
+      const listHeight = list.clientHeight;
 
-      var cm = this.columnModel_;
-      var dm = this.dataModel;
-      var columnId = cm.getId(index);
-      var doc = this.ownerDocument;
-      var render = cm.getRenderFunction(index);
-      var table = this;
-      var MAXIMUM_ROWS_TO_MEASURE = 1000;
+      const cm = this.columnModel_;
+      const dm = this.dataModel;
+      const columnId = cm.getId(index);
+      const doc = this.ownerDocument;
+      const render = cm.getRenderFunction(index);
+      const table = this;
+      const MAXIMUM_ROWS_TO_MEASURE = 1000;
 
       // Create a temporaty list item, put all cells into it and measure its
       // width. Then remove the item. It fits "list > *" CSS rules.
-      var container = doc.createElement('li');
+      const container = doc.createElement('li');
       container.style.display = 'inline-block';
       container.style.textAlign = 'start';
       // The container will have width of the longest cell.
@@ -369,20 +375,20 @@ cr.define('cr.ui', function() {
       // Ensure all needed data available.
       dm.prepareSort(columnId, function() {
         // Select at most MAXIMUM_ROWS_TO_MEASURE items around visible area.
-        var items = list.getItemsInViewPort(list.scrollTop, listHeight);
-        var firstIndex = Math.floor(Math.max(
+        const items = list.getItemsInViewPort(list.scrollTop, listHeight);
+        const firstIndex = Math.floor(Math.max(
             0, (items.last + items.first - MAXIMUM_ROWS_TO_MEASURE) / 2));
-        var lastIndex =
+        const lastIndex =
             Math.min(dm.length, firstIndex + MAXIMUM_ROWS_TO_MEASURE);
-        for (var i = firstIndex; i < lastIndex; i++) {
-          var item = dm.item(i);
-          var div = doc.createElement('div');
+        for (let i = firstIndex; i < lastIndex; i++) {
+          const item = dm.item(i);
+          const div = doc.createElement('div');
           div.className = 'table-row-cell';
           div.appendChild(render(item, columnId, table));
           container.appendChild(div);
         }
         list.appendChild(container);
-        var width = parseFloat(window.getComputedStyle(container).width);
+        const width = parseFloat(window.getComputedStyle(container).width);
         list.removeChild(container);
         cm.setWidth(index, width);
       });

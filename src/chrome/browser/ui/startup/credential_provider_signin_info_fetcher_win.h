@@ -69,6 +69,7 @@ class CredentialProviderSigninInfoFetcher
 
   std::string token_handle_;
   std::string full_name_;
+  std::string picture_url_;
   std::string mdm_id_token_;
 
   std::unique_ptr<OAuth2AccessTokenFetcher> scoped_access_token_fetcher_;

@@ -61,9 +61,8 @@ public class ContextUtils {
     public static void initApplicationContext(Context appContext) {
         // Conceding that occasionally in tests, native is loaded before the browser process is
         // started, in which case the browser process re-sets the application context.
-        if (sApplicationContext != null && sApplicationContext != appContext) {
-            throw new RuntimeException("Attempting to set multiple global application contexts.");
-        }
+        assert sApplicationContext == null || sApplicationContext == appContext
+                || ((ContextWrapper) sApplicationContext).getBaseContext() == appContext;
         initJavaSideApplicationContext(appContext);
     }
 
@@ -96,20 +95,15 @@ public class ContextUtils {
      */
     @VisibleForTesting
     public static void initApplicationContextForTests(Context appContext) {
-        // ApplicationStatus.initialize should be called to setup activity tracking for tests
-        // that use Robolectric and set the application context manually. Instead of changing all
-        // tests that do so, the call was put here instead.
-        // TODO(mheikal): Require param to be of type Application
-        if (appContext instanceof Application) {
-            ApplicationStatus.initialize((Application) appContext);
-        }
         initJavaSideApplicationContext(appContext);
         Holder.sSharedPreferences = fetchAppSharedPreferences();
     }
 
     private static void initJavaSideApplicationContext(Context appContext) {
-        if (appContext == null) {
-            throw new RuntimeException("Global application context cannot be set to null.");
+        assert appContext != null;
+        // Guard against anyone trying to downcast.
+        if (BuildConfig.DCHECK_IS_ON && appContext instanceof Application) {
+            appContext = new ContextWrapper(appContext);
         }
         sApplicationContext = appContext;
     }

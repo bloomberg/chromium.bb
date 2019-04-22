@@ -182,7 +182,7 @@ void DeviceSettingsService::GetOwnershipStatusAsync(
   if (GetOwnershipStatus() != OWNERSHIP_UNKNOWN) {
     // Report status immediately.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, GetOwnershipStatus()));
+        FROM_HERE, base::BindOnce(callback, GetOwnershipStatus()));
   } else {
     // If the key hasn't been loaded yet, enqueue the callback to be fired when
     // the next SessionManagerOperation completes. If no operation is pending,

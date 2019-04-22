@@ -7,23 +7,9 @@
  * This is used to debug the contents of the Local State file.
  */
 
-cr.define('localState', function() {
-  'use strict';
-
-  /**
-   * Sets the page content to the specified |localState| string, called
-   * from C++.
-   * @param {string} localState the JSON-formatted local state data,
-   *                 or an error message.
-   */
-  function setLocalState(localState) {
-    $('content').textContent = localState;
-  }
-
-  return {setLocalState: setLocalState};
-});
-
 // When the page loads, request the JSON local state data from C++.
 document.addEventListener('DOMContentLoaded', function() {
-  chrome.send('requestJson');
+  cr.sendWithPromise('requestJson').then(localState => {
+    $('content').textContent = localState;
+  });
 });

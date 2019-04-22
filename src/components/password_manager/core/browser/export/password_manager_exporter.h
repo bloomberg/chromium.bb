@@ -33,6 +33,8 @@ class PasswordManagerExporter {
       base::RepeatingCallback<int(const base::FilePath&, const char*, int)>;
   using DeleteCallback =
       base::RepeatingCallback<bool(const base::FilePath&, bool)>;
+  using SetPosixFilePermissionsCallback =
+      base::RepeatingCallback<bool(const base::FilePath&, int)>;
 
   explicit PasswordManagerExporter(
       password_manager::CredentialProviderInterface*
@@ -62,6 +64,11 @@ class PasswordManagerExporter {
   // Replace the function which writes to the filesystem with a custom action.
   // The return value is true when deleting successfully.
   void SetDeleteForTesting(DeleteCallback delete_callback);
+
+  // Replace the function which sets file permissions on Posix with a custom
+  // action. The return values is true when successful.
+  void SetSetPosixFilePermissionsForTesting(
+      SetPosixFilePermissionsCallback set_permissions_callback);
 
  private:
   // Caches the serialised password list. It proceeds to export, if all the
@@ -119,6 +126,11 @@ class PasswordManagerExporter {
   // The function which does the actual deleting of a file. It should wrap
   // base::DeleteFile, unless it's changed for testing purposes.
   DeleteCallback delete_function_;
+
+  // Set the file permissions on a file. It should wrap
+  // base::SetPosixFilePermissions, unless this is not Posix or it's changed for
+  // testing purposes.
+  SetPosixFilePermissionsCallback set_permissions_function_;
 
   // |task_runner_| is used for time-consuming tasks during exporting. The tasks
   // will dereference a WeakPtr to |*this|, which means they all need to run on

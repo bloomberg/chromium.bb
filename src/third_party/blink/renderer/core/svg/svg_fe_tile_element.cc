@@ -23,12 +23,13 @@
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_tile.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 inline SVGFETileElement::SVGFETileElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFETileTag, document),
-      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)) {
+      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)) {
   AddToPropertyMap(in1_);
 }
 
@@ -55,7 +56,7 @@ FilterEffect* SVGFETileElement::Build(SVGFilterBuilder* filter_builder,
       AtomicString(in1_->CurrentValue()->Value()));
   DCHECK(input1);
 
-  FilterEffect* effect = FETile::Create(filter);
+  auto* effect = MakeGarbageCollected<FETile>(filter);
   effect->InputEffects().push_back(input1);
   return effect;
 }

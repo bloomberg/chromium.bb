@@ -5,66 +5,50 @@
 #include "chrome/browser/search/ntp_features.h"
 
 #include "build/build_config.h"
-#include "components/ntp_tiles/constants.h"
 #include "ui/base/ui_base_features.h"
 
 namespace features {
 
+// If enabled, the user will see the second version of the customization picker.
+const base::Feature kNtpCustomizationMenuV2{"NtpCustomizationMenuV2",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, the user will see Doodles on the New Tab Page.
 const base::Feature kDoodlesOnLocalNtp{"DoodlesOnLocalNtp",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, the user will see a configuration UI, and be able to select
-// background images to set on the New Tab Page. Implicitly enables |kNtpIcons|.
-const base::Feature kNtpBackgrounds{"NewTabPageBackgrounds",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// If enabled, the user will see the Most Visited tiles updated with Material
-// Design elements. Implicitly enables |kNtpUIMd|.
-const base::Feature kNtpIcons{"NewTabPageIcons",
-                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// If enabled, the user will see the New Tab Page updated with Material Design
-// elements.
-const base::Feature kNtpUIMd{"NewTabPageUIMd",
-                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the user will sometimes see promos on the NTP.
 const base::Feature kPromosOnLocalNtp{"PromosOnLocalNtp",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, the fakebox will not be shown on the NTP.
+const base::Feature kRemoveNtpFakebox{"RemoveNtpFakebox",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, the user will sometimes see search suggestions on the NTP.
 const base::Feature kSearchSuggestionsOnLocalNtp{
-    "SearchSuggestionsOnLocalNtp", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SearchSuggestionsOnLocalNtp", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables using the local NTP if Google is the default search engine.
 const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
-bool IsCustomLinksEnabled() {
-  return ntp_tiles::IsCustomLinksEnabled();
-}
+// If enabled, show a search icon (magnifier glass) in the NTP fakebox.
+const base::Feature kFakeboxSearchIconOnNtp{"FakeboxSearchIconOnNtp",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsCustomBackgroundsEnabled() {
-  return base::FeatureList::IsEnabled(kNtpBackgrounds) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
-}
+// If enabled, the NTP fakebox will be changed to the Google search style. Also
+// implicitly enabled by |kFakeboxSearchIconOnNtp|.
+const base::Feature kUseAlternateFakeboxOnNtp{
+    "UseAlternateFakeboxOnNtp", base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsMDIconsEnabled() {
-  return base::FeatureList::IsEnabled(kNtpIcons) ||
-         base::FeatureList::IsEnabled(kNtpBackgrounds) ||
-         base::FeatureList::IsEnabled(ntp_tiles::kNtpCustomLinks) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
-}
+// If enabled, the shortcuts will not be shown on the NTP.
+const base::Feature kHideShortcutsOnNtp{"HideShortcutsOnNtp",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsMDUIEnabled() {
-  return base::FeatureList::IsEnabled(kNtpUIMd) ||
-         // MD UI changes are implicitly enabled if Material Design icons,
-         // custom link, or custom backgrounds are enabled.
-         base::FeatureList::IsEnabled(kNtpIcons) ||
-         base::FeatureList::IsEnabled(kNtpBackgrounds) ||
-         base::FeatureList::IsEnabled(ntp_tiles::kNtpCustomLinks) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+bool IsUseAlternateFakeboxOnNtpEnabled() {
+  return base::FeatureList::IsEnabled(kFakeboxSearchIconOnNtp) ||
+         base::FeatureList::IsEnabled(kUseAlternateFakeboxOnNtp);
 }
 
 }  // namespace features

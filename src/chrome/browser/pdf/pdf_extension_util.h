@@ -7,6 +7,12 @@
 
 #include <string>
 
+#include "pdf/buildflags.h"
+
+#if !BUILDFLAG(ENABLE_PDF)
+#error "PDF must be enabled"
+#endif
+
 namespace pdf_extension_util {
 
 // Return the extensions manifest for PDF. The manifest is loaded from

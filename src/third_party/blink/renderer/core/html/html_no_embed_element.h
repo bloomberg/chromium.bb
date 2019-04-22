@@ -41,9 +41,9 @@ class HTMLNoEmbedElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLNoEmbedElement);
 
- private:
   explicit HTMLNoEmbedElement(Document&);
 
+ private:
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
 };
 

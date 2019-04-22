@@ -12,10 +12,10 @@
 
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -68,6 +68,8 @@ constexpr ProviderNamesSourceMapEntry kProviderNamesSourceMap[] = {
     {"policy", content_settings::SETTING_SOURCE_POLICY},
     {"supervised_user", content_settings::SETTING_SOURCE_SUPERVISED},
     {"extension", content_settings::SETTING_SOURCE_EXTENSION},
+    {"installed_webapp_provider",
+      content_settings::SETTING_SOURCE_INSTALLED_WEBAPP},
     {"notification_android", content_settings::SETTING_SOURCE_USER},
     {"ephemeral", content_settings::SETTING_SOURCE_USER},
     {"preference", content_settings::SETTING_SOURCE_USER},
@@ -77,7 +79,7 @@ constexpr ProviderNamesSourceMapEntry kProviderNamesSourceMap[] = {
 };
 
 static_assert(
-    arraysize(kProviderNamesSourceMap) ==
+    base::size(kProviderNamesSourceMap) ==
         HostContentSettingsMap::NUM_PROVIDER_TYPES,
     "kProviderNamesSourceMap should have NUM_PROVIDER_TYPES elements");
 
@@ -340,7 +342,7 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSettingFromProvider(
       content_settings::Rule rule = rule_iterator->Next();
       if (rule.primary_pattern == wildcard &&
           rule.secondary_pattern == wildcard) {
-        return content_settings::ValueToContentSetting(rule.value.get());
+        return content_settings::ValueToContentSetting(&rule.value);
       }
     }
   }
@@ -559,14 +561,14 @@ content_settings::PatternPair HostContentSettingsMap::GetNarrowestPatterns (
   ContentSettingsPattern::Relation r1 =
       info.primary_pattern.Compare(patterns.first);
   if (r1 == ContentSettingsPattern::PREDECESSOR) {
-    patterns.first = info.primary_pattern;
+    patterns.first = std::move(info.primary_pattern);
   } else if (r1 == ContentSettingsPattern::IDENTITY) {
     ContentSettingsPattern::Relation r2 =
         info.secondary_pattern.Compare(patterns.second);
     DCHECK(r2 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
            r2 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
     if (r2 == ContentSettingsPattern::PREDECESSOR)
-      patterns.second = info.secondary_pattern;
+      patterns.second = std::move(info.secondary_pattern);
   }
 
   return patterns;
@@ -812,9 +814,9 @@ void HostContentSettingsMap::AddSettingsForOneType(
     return;
 
   while (rule_iterator->HasNext()) {
-    const content_settings::Rule& rule = rule_iterator->Next();
+    content_settings::Rule rule = rule_iterator->Next();
     settings->emplace_back(
-        rule.primary_pattern, rule.secondary_pattern, rule.value->Clone(),
+        rule.primary_pattern, rule.secondary_pattern, std::move(rule.value),
         kProviderNamesSourceMap[provider_type].provider_name, incognito);
   }
 }
@@ -868,7 +870,7 @@ std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSetting(
 // static
 HostContentSettingsMap::ProviderType
 HostContentSettingsMap::GetProviderTypeFromSource(const std::string& source) {
-  for (size_t i = 0; i < arraysize(kProviderNamesSourceMap); ++i) {
+  for (size_t i = 0; i < base::size(kProviderNamesSourceMap); ++i) {
     if (source == kProviderNamesSourceMap[i].provider_name)
       return static_cast<ProviderType>(i);
   }
@@ -967,7 +969,7 @@ HostContentSettingsMap::GetContentSettingValueAndPatterns(
           *primary_pattern = rule.primary_pattern;
         if (secondary_pattern)
           *secondary_pattern = rule.secondary_pattern;
-        return base::WrapUnique(rule.value->DeepCopy());
+        return rule.value.CreateDeepCopy();
       }
     }
   }

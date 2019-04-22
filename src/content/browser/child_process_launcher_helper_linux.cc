@@ -56,7 +56,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
         std::make_pair(sandbox_fd, service_manager::GetSandboxFD()));
   }
 
-  options->environ = delegate_->GetEnvironment();
+  options->environment = delegate_->GetEnvironment();
 
   return true;
 }
@@ -164,7 +164,7 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
 // static
 void ChildProcessLauncherHelper::SetRegisteredFilesForService(
     const std::string& service_name,
-    catalog::RequiredFileMap required_files) {
+    std::map<std::string, base::FilePath> required_files) {
   SetFilesToShareForServicePosix(service_name, std::move(required_files));
 }
 

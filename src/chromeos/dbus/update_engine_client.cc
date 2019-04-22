@@ -15,11 +15,11 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/dbus_switches.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -246,7 +246,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
       const std::string& update_version,
       int64_t update_size,
       const UpdateOverCellularOneTimePermissionCallback& callback) override {
-    // TODO(weidongg): Change 'kSetUpdateOverCellularTarget' to
+    // TODO(https://crbug.com/927439): Change 'kSetUpdateOverCellularTarget' to
     // 'kSetUpdateOverCellularOneTimePermission'
     dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
                                  update_engine::kSetUpdateOverCellularTarget);
@@ -722,10 +722,10 @@ bool UpdateEngineClient::IsTargetChannelMoreStable(
     const std::string& target_channel) {
   const char** cix = std::find(
       kReleaseChannelsList,
-      kReleaseChannelsList + arraysize(kReleaseChannelsList), current_channel);
+      kReleaseChannelsList + base::size(kReleaseChannelsList), current_channel);
   const char** tix = std::find(
       kReleaseChannelsList,
-      kReleaseChannelsList + arraysize(kReleaseChannelsList), target_channel);
+      kReleaseChannelsList + base::size(kReleaseChannelsList), target_channel);
   return tix > cix;
 }
 

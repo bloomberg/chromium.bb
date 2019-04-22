@@ -358,9 +358,9 @@ FIFOTestParam g_feature_test_params[] = {
      // - Output bus samples (index, expectedValue) = (0, 0), (143, 0)
      {0, 0, 0, 4, {{0, 0}, {1023, 0}}, {{0, 0}, {143, 0}}}}};
 
-INSTANTIATE_TEST_CASE_P(PushPullFIFOFeatureTest,
-                        PushPullFIFOFeatureTest,
-                        testing::ValuesIn(g_feature_test_params));
+INSTANTIATE_TEST_SUITE_P(PushPullFIFOFeatureTest,
+                         PushPullFIFOFeatureTest,
+                         testing::ValuesIn(g_feature_test_params));
 
 }  // namespace
 

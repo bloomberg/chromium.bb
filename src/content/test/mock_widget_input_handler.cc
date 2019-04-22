@@ -52,6 +52,11 @@ void MockWidgetInputHandler::CursorVisibilityChanged(bool visible) {
       std::make_unique<DispatchedMessage>("CursorVisibilityChanged"));
 }
 
+void MockWidgetInputHandler::FallbackCursorModeToggled(bool is_on) {
+  dispatched_messages_.emplace_back(
+      std::make_unique<DispatchedMessage>("FallbackCursorModeToggled"));
+}
+
 void MockWidgetInputHandler::ImeSetComposition(
     const base::string16& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
@@ -102,6 +107,11 @@ void MockWidgetInputHandler::DispatchNonBlockingEvent(
     std::unique_ptr<content::InputEvent> event) {
   dispatched_messages_.emplace_back(std::make_unique<DispatchedEventMessage>(
       std::move(event), DispatchEventCallback()));
+}
+
+void MockWidgetInputHandler::WaitForInputProcessed(
+    WaitForInputProcessedCallback callback) {
+  NOTREACHED();
 }
 
 MockWidgetInputHandler::MessageVector

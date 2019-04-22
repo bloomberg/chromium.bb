@@ -21,10 +21,10 @@
 #include "SkImageEncoder.h"
 #include "SkJpegCodec.h"
 #include "SkPaint.h"
-#include "SkPaintPriv.h"
 #include "SkParsePath.h"
 #include "SkPngCodec.h"
 #include "SkShader.h"
+#include "SkShaderBase.h"
 #include "SkStream.h"
 #include "SkTHash.h"
 #include "SkTo.h"
@@ -117,14 +117,14 @@ bool RequiresViewportReset(const SkPaint& paint) {
   if (!shader)
     return false;
 
-  SkShader::TileMode xy[2];
+  SkTileMode xy[2];
   SkImage* image = shader->isAImage(nullptr, xy);
 
   if (!image)
     return false;
 
   for (int i = 0; i < 2; i++) {
-    if (xy[i] == SkShader::kRepeat_TileMode)
+    if (xy[i] == SkTileMode::kRepeat)
       return true;
   }
   return false;
@@ -191,9 +191,12 @@ public:
         fWriter->startElement(name);
     }
 
-    AutoElement(const char name[], SkXMLWriter* writer, ResourceBucket* bucket,
-                const MxCp& mc, const SkPaint& paint)
-        : fWriter(writer)
+    AutoElement(const char name[], const std::unique_ptr<SkXMLWriter>& writer)
+        : AutoElement(name, writer.get()) {}
+
+    AutoElement(const char name[], const std::unique_ptr<SkXMLWriter>& writer,
+                ResourceBucket* bucket, const MxCp& mc, const SkPaint& paint)
+        : fWriter(writer.get())
         , fResourceBucket(bucket) {
 
         Resources res = this->addResources(mc, paint);
@@ -240,7 +243,7 @@ public:
 
     void addRectAttributes(const SkRect&);
     void addPathAttributes(const SkPath&);
-    void addTextAttributes(const SkPaint&);
+    void addTextAttributes(const SkFont&);
 
 private:
     Resources addResources(const MxCp&, const SkPaint& paint);
@@ -440,7 +443,7 @@ void SkSVGDevice::AutoElement::addImageShaderResources(const SkShader* shader, c
                                                        Resources* resources) {
     SkMatrix outMatrix;
 
-    SkShader::TileMode xy[2];
+    SkTileMode xy[2];
     SkImage* image = shader->isAImage(&outMatrix, xy);
     SkASSERT(image);
 
@@ -454,7 +457,7 @@ void SkSVGDevice::AutoElement::addImageShaderResources(const SkShader* shader, c
     for (int i = 0; i < 2; i++) {
         int imageDimension = i == 0 ? imageSize.width() : imageSize.height();
         switch (xy[i]) {
-            case SkShader::kRepeat_TileMode:
+            case SkTileMode::kRepeat:
                 patternDims[i].appendScalar(imageDimension);
             break;
             default:
@@ -545,8 +548,8 @@ SkString SkSVGDevice::AutoElement::addLinearGradientDef(const SkShader::Gradient
         gradient.addAttribute("x2", info.fPoint[1].x());
         gradient.addAttribute("y2", info.fPoint[1].y());
 
-        if (!shader->getLocalMatrix().isIdentity()) {
-            this->addAttribute("gradientTransform", svg_transform(shader->getLocalMatrix()));
+        if (!as_SB(shader)->getLocalMatrix().isIdentity()) {
+            this->addAttribute("gradientTransform", svg_transform(as_SB(shader)->getLocalMatrix()));
         }
 
         SkASSERT(info.fColorCount >= 2);
@@ -588,12 +591,12 @@ void SkSVGDevice::AutoElement::addPathAttributes(const SkPath& path) {
     this->addAttribute("d", pathData);
 }
 
-void SkSVGDevice::AutoElement::addTextAttributes(const SkPaint& paint) {
-    this->addAttribute("font-size", paint.getTextSize());
+void SkSVGDevice::AutoElement::addTextAttributes(const SkFont& font) {
+    this->addAttribute("font-size", font.getSize());
 
     SkString familyName;
     SkTHashSet<SkString> familySet;
-    sk_sp<SkTypeface> tface = SkPaintPriv::RefTypefaceOrDefault(paint);
+    sk_sp<SkTypeface> tface = font.refTypefaceOrDefault();
 
     SkASSERT(tface);
     SkFontStyle style = tface->fontStyle();
@@ -635,21 +638,18 @@ void SkSVGDevice::AutoElement::addTextAttributes(const SkPaint& paint) {
     }
 }
 
-SkBaseDevice* SkSVGDevice::Create(const SkISize& size, SkXMLWriter* writer) {
-    if (!writer) {
-        return nullptr;
-    }
-
-    return new SkSVGDevice(size, writer);
+sk_sp<SkBaseDevice> SkSVGDevice::Make(const SkISize& size, std::unique_ptr<SkXMLWriter> writer) {
+    return writer ? sk_sp<SkBaseDevice>(new SkSVGDevice(size, std::move(writer)))
+                  : nullptr;
 }
 
-SkSVGDevice::SkSVGDevice(const SkISize& size, SkXMLWriter* writer)
+SkSVGDevice::SkSVGDevice(const SkISize& size, std::unique_ptr<SkXMLWriter> writer)
     : INHERITED(SkImageInfo::MakeUnknown(size.fWidth, size.fHeight),
                 SkSurfaceProps(0, kUnknown_SkPixelGeometry))
-    , fWriter(writer)
+    , fWriter(std::move(writer))
     , fResourceBucket(new ResourceBucket)
 {
-    SkASSERT(writer);
+    SkASSERT(fWriter);
 
     fWriter->writeHeader();
 
@@ -662,8 +662,7 @@ SkSVGDevice::SkSVGDevice(const SkISize& size, SkXMLWriter* writer)
     fRootElement->addAttribute("height", size.height());
 }
 
-SkSVGDevice::~SkSVGDevice() {
-}
+SkSVGDevice::~SkSVGDevice() = default;
 
 void SkSVGDevice::drawPaint(const SkPaint& paint) {
     AutoElement rect("rect", fWriter, fResourceBucket.get(), MxCp(this), paint);
@@ -808,16 +807,6 @@ void SkSVGDevice::drawBitmapCommon(const MxCp& mc, const SkBitmap& bm, const SkP
     }
 }
 
-void SkSVGDevice::drawBitmap(const SkBitmap& bitmap, SkScalar x, SkScalar y,
-                             const SkPaint& paint) {
-    MxCp mc(this);
-    SkMatrix adjustedMatrix = *mc.fMatrix;
-    adjustedMatrix.preTranslate(x, y);
-    mc.fMatrix = &adjustedMatrix;
-
-    drawBitmapCommon(mc, bitmap, paint);
-}
-
 void SkSVGDevice::drawSprite(const SkBitmap& bitmap,
                              int x, int y, const SkPaint& paint) {
     MxCp mc(this);
@@ -852,10 +841,9 @@ public:
     SVGTextBuilder(SkPoint origin, const SkGlyphRun& glyphRun)
             : fOrigin(origin)
             , fLastCharWasWhitespace(true) { // start off in whitespace mode to strip all leadingspace
-        const SkPaint& paint = glyphRun.paint();
         auto runSize = glyphRun.runSize();
         SkAutoSTArray<64, SkUnichar> unichars(runSize);
-        paint.glyphsToUnichars(glyphRun.glyphsIDs().data(), runSize, unichars.get());
+        glyphRun.font().glyphsToUnichars(glyphRun.glyphsIDs().data(), runSize, unichars.get());
         auto positions = glyphRun.positions();
         for (size_t i = 0; i < runSize; ++i) {
             this->appendUnichar(unichars[i], positions[i]);
@@ -929,10 +917,10 @@ private:
 
 void SkSVGDevice::drawGlyphRunList(const SkGlyphRunList& glyphRunList)  {
 
-    auto processGlyphRun = [this](SkPoint origin, const SkGlyphRun& glyphRun) {
-        const SkPaint& paint = glyphRun.paint();
-        AutoElement elem("text", fWriter, fResourceBucket.get(), MxCp(this), paint);
-        elem.addTextAttributes(paint);
+    auto processGlyphRun = [this]
+                           (SkPoint origin, const SkGlyphRun& glyphRun, const SkPaint& runPaint) {
+        AutoElement elem("text", fWriter, fResourceBucket.get(), MxCp(this), runPaint);
+        elem.addTextAttributes(glyphRun.font());
 
         SVGTextBuilder builder(origin, glyphRun);
         elem.addAttribute("x", builder.posX());
@@ -941,7 +929,7 @@ void SkSVGDevice::drawGlyphRunList(const SkGlyphRunList& glyphRunList)  {
     };
 
     for (auto& glyphRun : glyphRunList) {
-        processGlyphRun(glyphRunList.origin(), glyphRun);
+        processGlyphRun(glyphRunList.origin(), glyphRun, glyphRunList.paint());
     }
 }
 

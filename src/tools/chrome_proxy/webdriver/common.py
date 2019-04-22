@@ -76,6 +76,10 @@ def ParseFlags():
   parser.add_argument('--via_header_value',
     default='1.1 Chrome-Compression-Proxy', help='What the via should match to '
     'be considered valid')
+  parser.add_argument('--aceh_header_value',
+    default='Chrome-Proxy,Chrome-Proxy-Content-Transform,Via', help='Comma '
+    'separated list of values that should be in the '
+    'Access-Control-Expose-Headers header.')
   parser.add_argument('--android', help='If given, attempts to run the test on '
     'Android via adb. Ignores usage of --chrome_exec', action='store_true')
   parser.add_argument('--android_package',
@@ -259,8 +263,14 @@ class TestDriver:
         arg_key = GetDictKey(override_arg)
         if (arg_key in original_args
             and original_args[arg_key] in self._chrome_args):
-          self._chrome_args.remove(original_args[arg_key])
-          self._logger.info('Removed Chrome flag. %s', original_args[arg_key])
+          if arg_key == '--enable-features':
+            new_features = override_arg[len('--enable-features='):]
+            self._chrome_args.remove(original_args[arg_key])
+            override_arg = original_args[arg_key]+','+new_features
+            self._logger.info('Appended features. %s', new_features)
+          else:
+            self._chrome_args.remove(original_args[arg_key])
+            self._logger.info('Removed Chrome flag. %s', original_args[arg_key])
         self._chrome_args.add(override_arg)
         self._logger.info('Added Chrome flag. %s', override_arg)
     # Always add the flag that allows histograms to be queried in javascript.
@@ -764,19 +774,40 @@ class IntegrationTest(unittest.TestCase):
   unittest.TestCase class.
   """
 
-  def assertHasChromeProxyViaHeader(self, http_response):
-    """Asserts that the Via header in the given HTTPResponse matches the
-    expected value as given on the command line.
+  def assertHasProxyHeaders(self, http_response):
+    """Asserts that Proxy headers are present contain the expected values
+    as provided on the command line.
+
+    The Proxy adds two headers: Via, and Access-Control-Expose-Headers.
+    This checks that both headers contain the values enumerated in both
+    --via_header_value and --aceh_header_value. Both headers are additive,
+    so there may be more values in the headers than expected.
 
     Args:
       http_response: The HTTPResponse object to check.
     """
+    # Via header check
     self.assertIn('via', http_response.response_headers)
-    expected_via_header = ParseFlags().via_header_value
-    actual_via_headers = http_response.response_headers['via'].split(',')
+    expected_via_header = ParseFlags().via_header_value.lower()
+    actual_via_headers = set(
+      [h.lower() for h in http_response.response_headers['via'].split(',')])
     self.assertIn(expected_via_header, actual_via_headers, "Via header not in "
       "response headers! Expected: %s, Actual: %s" %
       (expected_via_header, actual_via_headers))
+
+    # Access-Control-Expose-Headers header check.
+    if ParseFlags().aceh_header_value:
+      aceh = 'access-control-expose-headers'
+      self.assertIn(aceh,  http_response.response_headers)
+      expected_aceh_header = set(
+          [h.lower() for h in ParseFlags().aceh_header_value.split(',')])
+      actual_aceh_header = set(
+          [h.lower() for h in http_response.response_headers[aceh].split(',')])
+      diff = expected_aceh_header - actual_aceh_header
+      self.assertTrue(len(diff) == 0, "Access-Control-Expose-Headers missing "
+        "values (%s)! Expected: [%s], Actual: [%s]" %
+        (",".join(diff), ",".join(expected_aceh_header),
+         ",".join(actual_aceh_header)))
 
   def assertNotHasChromeProxyViaHeader(self, http_response):
     """Asserts that the Via header in the given HTTPResponse does not match the
@@ -791,6 +822,48 @@ class IntegrationTest(unittest.TestCase):
       self.assertNotIn(expected_via_header, actual_via_headers, "Via header "
         "found in response headers! Not expected: %s, Actual: %s" %
         (expected_via_header, actual_via_headers))
+
+  def determinePreviewShownViaHistogram(self, test_driver, preview_type):
+    """Determines if the preview type was shown by histogram check.
+
+    Checks both InfoBar and Android Omnibox histograms for the given type.
+
+    Args:
+      test_driver: The TestDriver instance.
+      preview_type: The preview type to check for.
+
+    Returns:
+      Whether a preview UI was displayed.
+    """
+    infobar_histogram_name = 'Previews.InfoBarAction.%s' % preview_type
+    android_histogram_name = 'Previews.OmniboxAction.%s' % preview_type
+
+    infobar_histogram = test_driver.GetHistogram(infobar_histogram_name, 5)
+    android_histogram = test_driver.GetHistogram(android_histogram_name, 5)
+
+    count = (infobar_histogram.get('count', 0)
+             + android_histogram.get('count', 0))
+    return count > 0
+
+  def assertPreviewShownViaHistogram(self, test_driver, preview_type):
+    """Asserts that |determinePreviewShownViaHistogram| returns true.
+
+    Args:
+      test_driver: The TestDriver instance.
+      preview_type: The preview type to check for.
+    """
+    self.assertTrue(
+      self.determinePreviewShownViaHistogram(test_driver, preview_type))
+
+  def assertPreviewNotShownViaHistogram(self, test_driver, preview_type):
+    """Asserts that |determinePreviewShownViaHistogram| returns false.
+
+    Args:
+      test_driver: The TestDriver instance.
+      preview_type: The preview type to check for.
+    """
+    self.assertFalse(
+      self.determinePreviewShownViaHistogram(test_driver, preview_type))
 
   def checkLoFiResponse(self, http_response, expected_lo_fi):
     """Asserts that if expected the response headers contain the Lo-Fi directive
@@ -809,7 +882,7 @@ class IntegrationTest(unittest.TestCase):
     """
 
     if (expected_lo_fi) :
-      self.assertHasChromeProxyViaHeader(http_response)
+      self.assertHasProxyHeaders(http_response)
       content_length = http_response.response_headers['content-length']
       cpat_request = http_response.request_headers[
                        'chrome-proxy-accept-transform']
@@ -843,7 +916,7 @@ class IntegrationTest(unittest.TestCase):
       Whether the response was a Lite Page.
     """
 
-    self.assertHasChromeProxyViaHeader(http_response)
+    self.assertHasProxyHeaders(http_response)
     if ('chrome-proxy-content-transform' not in http_response.response_headers):
       return False;
     cpct_response = http_response.response_headers[

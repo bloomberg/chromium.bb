@@ -115,6 +115,23 @@ class MEDIA_EXPORT AudioRendererMixerInput
   // Source of audio data which is provided to the mixer.
   AudioRendererSink::RenderCallback* callback_ = nullptr;
 
+  // SwitchOutputDevice() and GetOutputDeviceInfoAsync() must be mutually
+  // exclusive when executing; these flags indicate whether one or the other is
+  // in progress. Each method will use the other method's to defer its action.
+  bool godia_in_progress_ = false;
+  bool switch_output_device_in_progress_ = false;
+
+  // Set by GetOutputDeviceInfoAsync() if a SwitchOutputDevice() call is in
+  // progress. GetOutputDeviceInfoAsync() will be invoked again with this value
+  // once OnDeviceSwitchReady() from the SwitchOutputDevice() call completes.
+  OutputDeviceInfoCB pending_device_info_cb_;
+
+  // Set by SwitchOutputDevice() if a GetOutputDeviceInfoAsync() call is in
+  // progress. SwitchOutputDevice() will be invoked again with these values once
+  // the OnDeviceInfoReceived() from the GODIA() call completes.
+  std::string pending_device_id_;
+  OutputDeviceStatusCB pending_switch_cb_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerInput);
 };
 

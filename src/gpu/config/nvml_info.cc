@@ -43,10 +43,8 @@ bool GetNvmlDeviceInfo(uint32_t pci_device_id,
   }
   dll_path = dll_path.Append(L"NVIDIA Corporation\\NVSMI\\nvml.dll");
 
-  std::unique_ptr<FileVersionInfoWin> file_version_info(
-      static_cast<FileVersionInfoWin*>(
-          FileVersionInfoWin::CreateFileVersionInfo(dll_path)));
-
+  std::unique_ptr<FileVersionInfoWin> file_version_info =
+      FileVersionInfoWin::CreateFileVersionInfoWin(dll_path);
   if (!file_version_info) {
     return false;
   }

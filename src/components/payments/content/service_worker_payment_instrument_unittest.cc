@@ -8,8 +8,10 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/payments/core/payment_request_delegate.h"
 #include "content/public/browser/stored_payment_app.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -70,6 +72,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     total->amount = std::move(amount);
     details->total = std::move(total);
     details->id = base::Optional<std::string>("123456");
+    details->modifiers = std::vector<mojom::PaymentDetailsModifierPtr>();
 
     mojom::PaymentDetailsModifierPtr modifier_1 =
         mojom::PaymentDetailsModifier::New();
@@ -79,7 +82,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     modifier_1->total->amount->value = "4.00";
     modifier_1->method_data = mojom::PaymentMethodData::New();
     modifier_1->method_data->supported_method = "basic-card";
-    details->modifiers.push_back(std::move(modifier_1));
+    details->modifiers->push_back(std::move(modifier_1));
 
     mojom::PaymentDetailsModifierPtr modifier_2 =
         mojom::PaymentDetailsModifier::New();
@@ -89,7 +92,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     modifier_2->total->amount->value = "3.00";
     modifier_2->method_data = mojom::PaymentMethodData::New();
     modifier_2->method_data->supported_method = "https://bobpay.com";
-    details->modifiers.push_back(std::move(modifier_2));
+    details->modifiers->push_back(std::move(modifier_2));
 
     mojom::PaymentDetailsModifierPtr modifier_3 =
         mojom::PaymentDetailsModifier::New();
@@ -99,7 +102,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     modifier_3->total->amount->value = "2.00";
     modifier_3->method_data = mojom::PaymentMethodData::New();
     modifier_3->method_data->supported_method = "https://alicepay.com";
-    details->modifiers.push_back(std::move(modifier_3));
+    details->modifiers->push_back(std::move(modifier_3));
 
     std::vector<mojom::PaymentMethodDataPtr> method_data;
     mojom::PaymentMethodDataPtr entry_1 = mojom::PaymentMethodData::New();
@@ -237,6 +240,23 @@ TEST_F(ServiceWorkerPaymentInstrumentTest, CreateCanMakePaymentEvent) {
   EXPECT_EQ(event_data->modifiers[0]->total->amount->currency, "USD");
   EXPECT_EQ(event_data->modifiers[0]->method_data->supported_method,
             "https://bobpay.com");
+}
+
+// Test the case when CanMakePaymentEvent cannot be fired. The instrument should
+// be considered valid, but not ready for payment.
+TEST_F(ServiceWorkerPaymentInstrumentTest, ValidateCanMakePayment) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPaymentRequestHasEnrolledInstrument);
+
+  // CanMakePaymentEvent is not fired because this test instrument does not have
+  // any explicitly verified methods.
+  CreateServiceWorkerPaymentInstrument(/*with_url_method=*/true);
+  GetInstrument()->ValidateCanMakePayment(
+      base::BindOnce([](ServiceWorkerPaymentInstrument*, bool result) {
+        EXPECT_TRUE(result);
+      }));
+  EXPECT_FALSE(GetInstrument()->IsValidForCanMakePayment());
 }
 
 // Test modifiers can be matched based on capabilities.

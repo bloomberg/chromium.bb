@@ -4,7 +4,7 @@
 
 #include "chromeos/components/proximity_auth/proximity_auth_system.h"
 
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_client.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle_impl.h"
 #include "chromeos/components/proximity_auth/unlock_manager_impl.h"
@@ -58,8 +58,8 @@ void ProximityAuthSystem::Stop() {
 
 void ProximityAuthSystem::SetRemoteDevicesForUser(
     const AccountId& account_id,
-    const cryptauth::RemoteDeviceRefList& remote_devices,
-    base::Optional<cryptauth::RemoteDeviceRef> local_device) {
+    const chromeos::multidevice::RemoteDeviceRefList& remote_devices,
+    base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device) {
   remote_devices_map_[account_id] = remote_devices;
   local_device_map_.emplace(account_id, *local_device);
 
@@ -71,10 +71,11 @@ void ProximityAuthSystem::SetRemoteDevicesForUser(
   }
 }
 
-cryptauth::RemoteDeviceRefList ProximityAuthSystem::GetRemoteDevicesForUser(
+chromeos::multidevice::RemoteDeviceRefList
+ProximityAuthSystem::GetRemoteDevicesForUser(
     const AccountId& account_id) const {
   if (remote_devices_map_.find(account_id) == remote_devices_map_.end())
-    return cryptauth::RemoteDeviceRefList();
+    return chromeos::multidevice::RemoteDeviceRefList();
   return remote_devices_map_.at(account_id);
 }
 
@@ -111,8 +112,8 @@ void ProximityAuthSystem::CancelConnectionAttempt() {
 
 std::unique_ptr<RemoteDeviceLifeCycle>
 ProximityAuthSystem::CreateRemoteDeviceLifeCycle(
-    cryptauth::RemoteDeviceRef remote_device,
-    base::Optional<cryptauth::RemoteDeviceRef> local_device) {
+    chromeos::multidevice::RemoteDeviceRef remote_device,
+    base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device) {
   return std::make_unique<RemoteDeviceLifeCycleImpl>(
       remote_device, local_device, secure_channel_client_);
 }
@@ -166,9 +167,10 @@ void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
 
   // TODO(tengs): We currently assume each user has only one RemoteDevice, so we
   // can simply take the first item in the list.
-  cryptauth::RemoteDeviceRef remote_device = remote_devices_map_[account_id][0];
+  chromeos::multidevice::RemoteDeviceRef remote_device =
+      remote_devices_map_[account_id][0];
 
-  base::Optional<cryptauth::RemoteDeviceRef> local_device;
+  base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device;
   local_device = local_device_map_.at(account_id);
 
   if (!suspended_) {

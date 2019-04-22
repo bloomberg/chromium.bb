@@ -13,12 +13,25 @@
 namespace blink {
 
 // static
-BLINK_COMMON_EXPORT GURL ManifestIconSelector::FindBestMatchingIcon(
+BLINK_COMMON_EXPORT GURL ManifestIconSelector::FindBestMatchingSquareIcon(
     const std::vector<blink::Manifest::ImageResource>& icons,
     int ideal_icon_size_in_px,
     int minimum_icon_size_in_px,
     blink::Manifest::ImageResource::Purpose purpose) {
-  DCHECK(minimum_icon_size_in_px <= ideal_icon_size_in_px);
+  return FindBestMatchingIcon(icons, ideal_icon_size_in_px,
+                              minimum_icon_size_in_px,
+                              1 /*max_width_to_height_ratio */, purpose);
+}
+
+// static
+BLINK_COMMON_EXPORT GURL ManifestIconSelector::FindBestMatchingIcon(
+    const std::vector<blink::Manifest::ImageResource>& icons,
+    int ideal_icon_height_in_px,
+    int minimum_icon_height_in_px,
+    float max_width_to_height_ratio,
+    blink::Manifest::ImageResource::Purpose purpose) {
+  DCHECK_LE(minimum_icon_height_in_px, ideal_icon_height_in_px);
+  DCHECK_GE(max_width_to_height_ratio, 1.0);
 
   // Icon with exact matching size has priority over icon with size "any", which
   // has priority over icon with closest matching size.
@@ -47,20 +60,24 @@ BLINK_COMMON_EXPORT GURL ManifestIconSelector::FindBestMatchingIcon(
         continue;
       }
 
-      // Check for squareness.
-      if (size.width() != size.height())
+      // Check for minimum size.
+      if (size.height() < minimum_icon_height_in_px)
         continue;
 
-      // Check for minimum size.
-      if (size.width() < minimum_icon_size_in_px)
+      // Check for width to height ratio.
+      float width = static_cast<float>(size.width());
+      float height = static_cast<float>(size.height());
+      DCHECK_GT(height, 0);
+      float ratio = width / height;
+      if (ratio < 1 || ratio > max_width_to_height_ratio)
         continue;
 
       // Check for ideal size. Return this icon immediately.
-      if (size.width() == ideal_icon_size_in_px)
+      if (size.height() == ideal_icon_height_in_px)
         return icon.src;
 
       // Check for closest match.
-      int delta = size.width() - ideal_icon_size_in_px;
+      int delta = size.height() - ideal_icon_height_in_px;
 
       // Smallest icon larger than ideal size has priority over largest icon
       // smaller than ideal size.

@@ -49,7 +49,6 @@ HatsFinchConfig CreateHatsFinchConfig() {
                                .Get()));
   return config;
 }
-
 }  // namespace
 
 HatsFinchConfig::HatsFinchConfig() = default;

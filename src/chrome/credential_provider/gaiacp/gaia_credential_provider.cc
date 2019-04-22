@@ -4,24 +4,29 @@
 
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 
-#include <netlistmgr.h>
-
 #include <iomanip>
 #include <map>
+#include <utility>
 
+#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/associated_user_validator.h"
+#include "chrome/credential_provider/gaiacp/auth_utils.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_other_user.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
-#include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
 
 namespace credential_provider {
 
@@ -29,7 +34,11 @@ namespace credential_provider {
 
 static const CREDENTIAL_PROVIDER_FIELD_DESCRIPTOR g_field_desc[] = {
     {FID_DESCRIPTION, CPFT_LARGE_TEXT, W2CW(L"Description"), GUID_NULL},
+    {FID_CURRENT_PASSWORD_FIELD, CPFT_PASSWORD_TEXT, W2CW(L"Windows Password"),
+     GUID_NULL},
     {FID_SUBMIT, CPFT_SUBMIT_BUTTON, W2CW(L"Submit button"), GUID_NULL},
+    {FID_FORGOT_PASSWORD_LINK, CPFT_COMMAND_LINK, W2CW(L"Forgot Password"),
+     GUID_NULL},
     {FID_PROVIDER_LOGO, CPFT_TILE_IMAGE, W2CW(L"Provider logo"),
      CPFG_CREDENTIAL_PROVIDER_LOGO},
     {FID_PROVIDER_LABEL, CPFT_LARGE_TEXT, W2CW(L"Provider label"),
@@ -39,43 +48,242 @@ static const CREDENTIAL_PROVIDER_FIELD_DESCRIPTOR g_field_desc[] = {
 static_assert(base::size(g_field_desc) == FIELD_COUNT,
               "g_field_desc does not match FIELDID enum");
 
+namespace {
+
+// Initializes an object that implements IReauthCredential.
+HRESULT InitializeReauthCredential(CGaiaCredentialProvider* provider,
+                                   const base::string16& sid,
+                                   const base::string16& domain,
+                                   const base::string16& username,
+                                   const CComPtr<IGaiaCredential>& gaia_cred) {
+  CComPtr<IReauthCredential> reauth;
+  HRESULT hr = gaia_cred.QueryInterface(&reauth);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Could not get reauth credential interface hr=" << putHR(hr);
+    return hr;
+  }
+
+  hr = gaia_cred->Initialize(provider);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Could not initialize credential hr=" << putHR(hr);
+    return hr;
+  }
+
+  // Get the user's email address.  If not found, proceed anyway.  The net
+  // effect is that the user will need to enter their email address manually
+  // instead of it being pre-filled.
+  wchar_t email[64];
+  ULONG email_length = base::size(email);
+  hr = GetUserProperty(sid.c_str(), kUserEmail, email, &email_length);
+  if (FAILED(hr))
+    email[0] = 0;
+
+  hr = reauth->SetOSUserInfo(CComBSTR(W2COLE(sid.c_str())),
+                             CComBSTR(W2COLE(domain.c_str())),
+                             CComBSTR(W2COLE(username.c_str())));
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "cred->SetOSUserInfo hr=" << putHR(hr);
+    return hr;
+  }
+
+  if (email[0]) {
+    hr = reauth->SetEmailForReauth(CComBSTR(email));
+    if (FAILED(hr))
+      LOGFN(ERROR) << "reauth->SetEmailForReauth hr=" << putHR(hr);
+  }
+
+  return S_OK;
+}
+
+}  // namespace
+
+// Class that when constructed automatically starts a thread that tries
+// to update the validity of available token handles. If the background
+// thread detects that any token handle has changed, then it will notify
+// the provider |event_handler| object of this event.
+class BackgroundTokenHandleUpdater {
+ public:
+  BackgroundTokenHandleUpdater(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
+                               ICredentialUpdateEventsHandler* event_handler);
+  ~BackgroundTokenHandleUpdater();
+
+ private:
+  static unsigned __stdcall PeriodicTokenHandleUpdate(void* param);
+
+  CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus_;
+
+  // Raw pointer to the interface on CGaiaCredentialProvider that is used
+  // to notify that token handle validity has changed. Any instance of this
+  // class should be owned by the CGaiaCredentialProvider to ensure that
+  // this pointer outlives the updater.
+  ICredentialUpdateEventsHandler* event_handler_;
+
+  base::win::ScopedHandle token_update_thread_;
+  base::WaitableEvent token_update_quit_event_;
+};
+
+BackgroundTokenHandleUpdater::BackgroundTokenHandleUpdater(
+    CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
+    ICredentialUpdateEventsHandler* event_handler)
+    : cpus_(cpus), event_handler_(event_handler) {
+  unsigned wait_thread_id;
+  uintptr_t wait_thread =
+      _beginthreadex(nullptr, 0, PeriodicTokenHandleUpdate,
+                     reinterpret_cast<void*>(this), 0, &wait_thread_id);
+  if (wait_thread != 0) {
+    token_update_thread_.Set(
+        reinterpret_cast<base::win::ScopedHandle::Handle>(wait_thread));
+  }
+}
+
+BackgroundTokenHandleUpdater::~BackgroundTokenHandleUpdater() {
+  if (token_update_thread_.IsValid()) {
+    // Tell the background thread to quit and then make sure it does.  This
+    // prevents it from accessing data members that have been freed.
+    token_update_quit_event_.Signal();
+    ::WaitForSingleObject(token_update_thread_.Get(), INFINITE);
+  }
+}
+
+unsigned __stdcall BackgroundTokenHandleUpdater::PeriodicTokenHandleUpdate(
+    void* param) {
+  BackgroundTokenHandleUpdater* updater =
+      reinterpret_cast<BackgroundTokenHandleUpdater*>(param);
+  ICredentialUpdateEventsHandler* event_handler = updater->event_handler_;
+  base::WaitableEvent& stop_event = updater->token_update_quit_event_;
+
+  while (true) {
+    HRESULT hr = ::WaitForSingleObject(
+        stop_event.handle(),
+        AssociatedUserValidator::kTokenHandleValidityLifetime.InMilliseconds());
+
+    if (hr != WAIT_TIMEOUT)
+      break;
+
+    bool user_access_changed =
+        AssociatedUserValidator::Get()
+            ->DenySigninForUsersWithInvalidTokenHandles(updater->cpus_);
+    if (user_access_changed) {
+      LOGFN(INFO) << "A user token handle has been invalidated. Refreshing "
+                     "credentials";
+    }
+    event_handler->UpdateCredentialsIfNeeded(user_access_changed);
+  }
+
+  return 0;
+}
+
+CGaiaCredentialProvider::ComPtrStorage::ComPtrStorage() = default;
+CGaiaCredentialProvider::ComPtrStorage::~ComPtrStorage() = default;
+
+CGaiaCredentialProvider::ProviderConcurrentState::ProviderConcurrentState() =
+    default;
+CGaiaCredentialProvider::ProviderConcurrentState::~ProviderConcurrentState() =
+    default;
+
+bool CGaiaCredentialProvider::ProviderConcurrentState::
+    RequestUserRefreshIfNeeded(bool user_access_changed) {
+  base::AutoLock locker(state_update_lock_);
+  if (auto_logon_credential_) {
+    // Auto logon has precedence and has already signalled a credential changed,
+    // save the user refresh for a later update and don't signal the change
+    // again.
+    if (user_access_changed)
+      pending_users_refresh_needed_ = user_access_changed;
+    return false;
+  }
+
+  // No auto logon present and there is a user access change or a pending
+  // refresh to be executed. We clear the pending the refresh and just set
+  // |users_need_to_be_refreshed_| to notify that a refresh is needed on the
+  // next GetCredentialCount.
+  if (user_access_changed || pending_users_refresh_needed_) {
+    users_need_to_be_refreshed_ = true;
+    pending_users_refresh_needed_ = false;
+  }
+
+  return users_need_to_be_refreshed_;
+}
+
+bool CGaiaCredentialProvider::ProviderConcurrentState::SetAutoLogonCredential(
+    const CComPtr<IGaiaCredential>& auto_logon_credential) {
+  base::AutoLock locker(state_update_lock_);
+  // Always update the credential.
+  auto_logon_credential_ = auto_logon_credential;
+  if (auto_logon_credential_) {
+    // If a previous user refresh was signalled, then the credential changed
+    // was already sent. Don't need to send it again, but we need save the
+    // user refresh for a later credential change event since auto logon has
+    // precedence.
+    if (users_need_to_be_refreshed_) {
+      pending_users_refresh_needed_ = users_need_to_be_refreshed_;
+      users_need_to_be_refreshed_ = false;
+      return false;
+    }
+
+    return true;
+  }
+
+  // No auto logon credential was set, no need to send credential changed event.
+  return false;
+}
+
+void CGaiaCredentialProvider::ProviderConcurrentState::GetUpdatedState(
+    bool* needs_to_refresh_users,
+    ComPtrStorage* auto_logon_credential) {
+  DCHECK(needs_to_refresh_users);
+  DCHECK(auto_logon_credential);
+  base::AutoLock locker(state_update_lock_);
+
+  // States need to be mutually exclusive.
+  DCHECK(!users_need_to_be_refreshed_ || !auto_logon_credential_);
+
+  *needs_to_refresh_users = users_need_to_be_refreshed_;
+  auto_logon_credential->gaia_cred = auto_logon_credential_;
+
+  // No specific state set this cycle, maybe there was a user update pending
+  // that should now be processed.
+  if (!users_need_to_be_refreshed_ && !auto_logon_credential_) {
+    *needs_to_refresh_users = pending_users_refresh_needed_;
+    // Can now reset the pending refresh since it has been processed.
+    pending_users_refresh_needed_ = false;
+  }
+
+  // State has been extracted for use, reset back to the default state.
+  InternalReset();
+}
+
+void CGaiaCredentialProvider::ProviderConcurrentState::Reset() {
+  base::AutoLock locker(state_update_lock_);
+  InternalReset();
+
+  // This is a full explicit reset, we also need to reset any pending refresh
+  // that may be needed.
+  pending_users_refresh_needed_ = false;
+}
+
+void CGaiaCredentialProvider::ProviderConcurrentState::InternalReset() {
+  users_need_to_be_refreshed_ = false;
+  auto_logon_credential_.Release();
+}
+
 CGaiaCredentialProvider::CGaiaCredentialProvider() {}
 
 CGaiaCredentialProvider::~CGaiaCredentialProvider() {}
 
 HRESULT CGaiaCredentialProvider::FinalConstruct() {
   LOGFN(INFO);
-  CleanupStaleTokenHandles();
+  CleanupOlderVersions();
   return S_OK;
 }
 
 void CGaiaCredentialProvider::FinalRelease() {
   LOGFN(INFO);
+  CHECK(!token_handle_updater_);
   ClearTransient();
-}
-
-HRESULT CGaiaCredentialProvider::CreateGaiaCredential() {
-  if (users_.size() > 0) {
-    LOG(ERROR) << "Users should be empty";
-    return E_UNEXPECTED;
-  }
-
-  CComPtr<IGaiaCredential> cred;
-  HRESULT hr = CComCreator<CComObject<CGaiaCredential>>::CreateInstance(
-      nullptr, IID_IGaiaCredential, (void**)&cred);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Could not create credential hr=" << putHR(hr);
-    return hr;
-  }
-
-  hr = cred->Initialize(this);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Could not initialize credential hr=" << putHR(hr);
-    return hr;
-  }
-
-  users_.emplace_back(cred);
-  return S_OK;
+  // Unlock all the users that had their access locked due to invalid token
+  // handles.
+  AssociatedUserValidator::Get()->AllowSigninForUsersWithInvalidTokenHandles();
 }
 
 HRESULT CGaiaCredentialProvider::DestroyCredentials() {
@@ -89,317 +297,290 @@ HRESULT CGaiaCredentialProvider::DestroyCredentials() {
 
 void CGaiaCredentialProvider::ClearTransient() {
   LOGFN(INFO);
+  CHECK(!token_handle_updater_);
   // Reset event support.
   advise_context_ = 0;
   events_.Release();
-  new_user_sid_.Empty();
-  index_ = std::numeric_limits<size_t>::max();
+  set_serialization_sid_.clear();
+  concurrent_state_.Reset();
+  user_array_.Release();
 }
 
-void CGaiaCredentialProvider::CleanupStaleTokenHandles() {
-  LOGFN(INFO);
-  std::map<base::string16, base::string16> handles;
+void CGaiaCredentialProvider::CleanupOlderVersions() {
+  base::FilePath versions_directory = GetInstallDirectory();
+  if (!versions_directory.empty())
+    DeleteVersionsExcept(versions_directory, TEXT(CHROME_VERSION_STRING));
+}
 
-  HRESULT hr = GetUserTokenHandles(&handles);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetUserTokenHandles hr=" << putHR(hr);
-    return;
+HRESULT CGaiaCredentialProvider::CreateAnonymousCredentialIfNeeded(
+    bool showing_other_user) {
+  CComPtr<IGaiaCredential> cred;
+  HRESULT hr = E_FAIL;
+  if (showing_other_user) {
+    hr = CComCreator<CComObject<COtherUserGaiaCredential>>::CreateInstance(
+        nullptr, IID_IGaiaCredential, reinterpret_cast<void**>(&cred));
+  } else if (CanNewUsersBeCreated(cpus_)) {
+    hr = CComCreator<CComObject<CGaiaCredential>>::CreateInstance(
+        nullptr, IID_IGaiaCredential, reinterpret_cast<void**>(&cred));
+  } else {
+    return S_OK;
   }
 
-  OSUserManager* manager = OSUserManager::Get();
-  for (auto it = handles.cbegin(); it != handles.cend(); ++it) {
-    HRESULT hr = manager->FindUserBySID(it->first.c_str(), nullptr, 0);
-    if (hr == HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)) {
-      RemoveAllUserProperties(it->first.c_str());
-    } else if (FAILED(hr)) {
-      LOGFN(ERROR) << "manager->FindUserBySID hr=" << putHR(hr);
+  if (SUCCEEDED(hr)) {
+    hr = cred->Initialize(this);
+    if (SUCCEEDED(hr)) {
+      AddCredentialAndCheckAutoLogon(cred, base::string16(), nullptr);
+    } else {
+      LOG(ERROR) << "Could not create credential hr=" << putHR(hr);
     }
+  }
+
+  return hr;
+}
+
+HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
+    ICredentialProviderUserArray* users,
+    ComPtrStorage* auto_logon_credential) {
+  std::map<base::string16, std::pair<base::string16, base::string16>>
+      sid_to_username;
+
+  OSUserManager* manager = OSUserManager::Get();
+
+  // Get the SIDs of all users being shown in the logon UI.
+  if (!users) {
+    LOGFN(ERROR) << "hr=" << putHR(E_INVALIDARG);
+    return E_INVALIDARG;
+  }
+
+  HRESULT hr = users->SetProviderFilter(Identity_LocalUserProvider);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "users->SetProviderFilter hr=" << putHR(hr);
+    return hr;
+  }
+
+  DWORD count;
+  hr = users->GetCount(&count);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "users->GetCount hr=" << putHR(hr);
+    return hr;
+  }
+
+  LOGFN(INFO) << "count=" << count;
+
+  for (DWORD i = 0; i < count; ++i) {
+    CComPtr<ICredentialProviderUser> user;
+    hr = users->GetAt(i, &user);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "users->GetAt hr=" << putHR(hr);
+      return hr;
+    }
+
+    wchar_t* sid_buffer = nullptr;
+
+    hr = user->GetSid(&sid_buffer);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "user->GetSid hr=" << putHR(hr);
+      continue;
+    }
+
+    base::string16 sid = sid_buffer;
+    ::CoTaskMemFree(sid_buffer);
+
+    wchar_t username[kWindowsUsernameBufferLength];
+    wchar_t domain[kWindowsDomainBufferLength];
+
+    hr = manager->FindUserBySID(sid.c_str(), username, base::size(username),
+                                domain, base::size(domain));
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "Can't get sid or username hr=" << putHR(hr);
+      continue;
+    }
+
+    // If the token handle is valid, no need to create a reauth credential.
+    // The user can just sign in using their password.
+    if (AssociatedUserValidator::Get()->IsTokenHandleValidForUser(sid))
+      continue;
+
+    CComPtr<IGaiaCredential> cred;
+    HRESULT hr = CComCreator<CComObject<CReauthCredential>>::CreateInstance(
+        nullptr, IID_IGaiaCredential, reinterpret_cast<void**>(&cred));
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Could not create credential hr=" << putHR(hr);
+      return hr;
+    }
+
+    hr = InitializeReauthCredential(this, sid, domain, username, cred);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "InitializeReauthCredential hr=" << putHR(hr);
+      return hr;
+    }
+
+    AddCredentialAndCheckAutoLogon(cred, sid, auto_logon_credential);
+  }
+
+  return S_OK;
+}
+
+void CGaiaCredentialProvider::AddCredentialAndCheckAutoLogon(
+    const CComPtr<IGaiaCredential>& cred,
+    const base::string16& sid,
+    ComPtrStorage* auto_logon_credential) {
+  USES_CONVERSION;
+  users_.emplace_back(cred);
+
+  if (!auto_logon_credential)
+    return;
+
+  if (sid.empty())
+    return;
+
+  if (set_serialization_sid_.empty())
+    return;
+
+  // If serialization sid is set, then try to see if this credential is a reauth
+  // credential that needs to be auto signed in.
+  CComPtr<IReauthCredential> associated_user;
+  if (FAILED(cred.QueryInterface(&associated_user)))
+    return;
+
+  if (set_serialization_sid_ != sid)
+    return;
+
+  auto_logon_credential->gaia_cred = cred;
+  set_serialization_sid_.clear();
+}
+
+void CGaiaCredentialProvider::RecreateCredentials(
+    ComPtrStorage* auto_logon_credential) {
+  LOGFN(INFO);
+  DCHECK(user_array_);
+
+  DestroyCredentials();
+
+  CREDENTIAL_PROVIDER_ACCOUNT_OPTIONS options;
+  HRESULT hr = user_array_->GetAccountOptions(&options);
+  bool showing_other_user =
+      SUCCEEDED(hr) && options != CPAO_EMPTY_CONNECTED && options != CPAO_NONE;
+  hr = CreateAnonymousCredentialIfNeeded(showing_other_user);
+  if (FAILED(hr))
+    LOG(ERROR) << "Could not create anonymous credential hr=" << putHR(hr);
+
+  hr = CreateReauthCredentials(user_array_, auto_logon_credential);
+  if (FAILED(hr))
+    LOG(ERROR) << "CreateReauthCredentials hr=" << putHR(hr);
+}
+
+// Static.
+bool CGaiaCredentialProvider::IsUsageScenarioSupported(
+    CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
+  return cpus == CPUS_LOGON || cpus == CPUS_UNLOCK_WORKSTATION;
+}
+
+// Static.
+bool CGaiaCredentialProvider::CanNewUsersBeCreated(
+    CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
+  // When in an unlock usage, only the user that locked the computer will be
+  // allowed to sign in, so no new users can be added.
+  if (cpus == CPUS_UNLOCK_WORKSTATION)
+    return false;
+
+  // If MDM enrollment is required and multiple users is not supported, only
+  // allow a new associated user to be created if there does not yet exist an
+  // OS user created from a Google account.
+  if (MdmEnrollmentEnabled()) {
+    DWORD multi_user_supported = 0;
+    HRESULT hr = GetGlobalFlag(kRegMdmSupportsMultiUser, &multi_user_supported);
+    if (FAILED(hr) || multi_user_supported == 0) {
+      if (AssociatedUserValidator::Get()->GetAssociatedUsersCount() > 0)
+        return false;
+    }
+  }
+
+  return true;
+}
+
+// ICredentialUpdateEventsHandler //////////////////////////////////////////////
+
+void CGaiaCredentialProvider::UpdateCredentialsIfNeeded(
+    bool user_access_changed) {
+  // Defer refresh of the users to the next GetCredentialCount that will be
+  // called after the credentials changed event. This prevents potential
+  // contention of the |users_| list in multiple places. If the call to
+  // RequestUserRefreshIfNeeded returns true, this means we are allowed to
+  // proceed with a credentials changed event. Otherwise either no credentials
+  // need to be updated (|user_access_changed| == false) or a higher priority
+  // update is pending (e.g. auto logon) and thus we cannot send a
+  // credentials changed event.
+  if (concurrent_state_.RequestUserRefreshIfNeeded(user_access_changed) &&
+      events_) {
+    events_->CredentialsChanged(advise_context_);
   }
 }
 
 // IGaiaCredentialProvider ////////////////////////////////////////////////////
 
-HRESULT CGaiaCredentialProvider::OnUserAuthenticated(IUnknown* credential,
-                                                     BSTR /*username*/,
-                                                     BSTR /*password*/,
-                                                     BSTR sid) {
+HRESULT CGaiaCredentialProvider::GetUsageScenario(DWORD* cpus) {
+  DCHECK(cpus);
+  *cpus = static_cast<DWORD>(cpus_);
+  return S_OK;
+}
+
+HRESULT CGaiaCredentialProvider::OnUserAuthenticated(
+    IUnknown* credential,
+    BSTR /*username*/,
+    BSTR /*password*/,
+    BSTR sid,
+    BOOL fire_credentials_changed) {
   DCHECK(!credential || sid);
 
-  // |credential| should be in the |users_|.  Find its index.
-  index_ = std::numeric_limits<size_t>::max();
-  for (size_t i = 0; i < users_.size(); ++i) {
-    if (users_[i].IsEqualObject(credential)) {
-      index_ = i;
-      break;
-    }
-  }
-  if (index_ == std::numeric_limits<size_t>::max()) {
-    LOGFN(INFO) << "Could not find credential";
-    return E_INVALIDARG;
-  }
-
-  new_user_sid_ = sid;
-
-  // Tell winlogon.exe that credential info has changed.  This provider will
-  // make the newly created user the default login credential with auto
-  // logon enabled.  See GetCredentialCount() for more detais.
-  HRESULT hr = S_OK;
-  if (events_)
-    hr = events_->CredentialsChanged(advise_context_);
-
-  LOGFN(INFO) << "hr=" << putHR(hr) << " sid=" << new_user_sid_.m_str
-              << " index=" << index_;
-  return hr;
-}
-
-HRESULT CGaiaCredentialProvider::HasInternetConnection() {
-  if (has_internet_connection_ != kHicCheckAlways)
-    return has_internet_connection_ == kHicForceYes ? S_OK : S_FALSE;
-
-  // If any errors occur, return that internet connection is available.  At
-  // worst the credential provider will try to connect and fail.
-
-  CComPtr<INetworkListManager> manager;
-  HRESULT hr = manager.CoCreateInstance(CLSID_NetworkListManager);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "CoCreateInstance(NetworkListManager) hr=" << putHR(hr);
+  if (!fire_credentials_changed)
     return S_OK;
+
+  // Ensure that user access cannot be denied at this time so that the user
+  // that is about to sign in won't be locked. If a ScopedLockDenyAccessUpdate
+  // is created before calling this function this should guarantee that
+  // situation because the call to BlockDenyAccessUpdate is locked with the
+  // same lock that is used in DenySigninForUsersWithInvalidTokenHandles.
+  // So either the call to Deny has finished and no new deny will occur
+  // afterwards or the Deny will be disabled because the block has been
+  // incremented first.
+  CHECK(!credential ||
+        AssociatedUserValidator::Get()->IsDenyAccessUpdateBlocked());
+
+  CComPtr<IGaiaCredential> gaia_credential;
+  if (credential->QueryInterface(IID_IGaiaCredential,
+                                 reinterpret_cast<void**>(&gaia_credential)) ==
+      S_OK) {
+    // Try to set the auto logon credential. If it succeeds we can raise a
+    // credential changed event.
+    if (concurrent_state_.SetAutoLogonCredential(gaia_credential) && events_)
+      events_->CredentialsChanged(advise_context_);
   }
 
-  VARIANT_BOOL is_connected;
-  hr = manager->get_IsConnectedToInternet(&is_connected);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "manager->get_IsConnectedToInternet hr=" << putHR(hr);
-    return S_OK;
-  }
-
-  // Normally VARIANT_TRUE/VARIANT_FALSE are used with the type VARIANT_BOOL
-  // but in this case the docs explicitly say to use FALSE.
-  // https://docs.microsoft.com/en-us/windows/desktop/api/Netlistmgr/
-  //     nf-netlistmgr-inetworklistmanager-get_isconnectedtointernet
-  return is_connected != FALSE ? S_OK : S_FALSE;
-}
-
-// IGaiaCredentialProviderForTesting //////////////////////////////////////////
-
-HRESULT CGaiaCredentialProvider::SetReauthCheckDoneEvent(INT_PTR event) {
-  DCHECK(event);
-  reauth_check_done_event_ = reinterpret_cast<HANDLE>(event);
+  LOGFN(INFO) << "Signing in authenticated sid=" << OLE2CW(sid);
   return S_OK;
 }
 
-HRESULT CGaiaCredentialProvider::SetHasInternetConnection(
-    HasInternetConnectionCheckType has_internet_connection) {
-  has_internet_connection_ = has_internet_connection;
-  return S_OK;
-}
-
-// ICredentialProvider ////////////////////////////////////////////////////////
+// ICredentialProviderSetUserArray ////////////////////////////////////////////
 
 HRESULT CGaiaCredentialProvider::SetUserArray(
     ICredentialProviderUserArray* users) {
   LOGFN(INFO);
-  std::map<base::string16, base::string16> sid_to_username;
+  CHECK(!token_handle_updater_);
 
-  // Get the SIDs of all users being shown in the logon UI.
-  {
-    if (!users) {
-      LOGFN(ERROR) << "hr=" << putHR(E_INVALIDARG);
-      return E_INVALIDARG;
-    }
+  if (!IsUsageScenarioSupported(cpus_))
+    return S_OK;
 
-    HRESULT hr = users->SetProviderFilter(Identity_LocalUserProvider);
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "users->SetProviderFilter hr=" << putHR(hr);
-      return hr;
-    }
-
-    DWORD count;
-    hr = users->GetCount(&count);
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "users->GetCount hr=" << putHR(hr);
-      return hr;
-    }
-
-    LOGFN(INFO) << "count=" << count;
-
-    for (DWORD i = 0; i < count; ++i) {
-      CComPtr<ICredentialProviderUser> user;
-      hr = users->GetAt(i, &user);
-      if (FAILED(hr)) {
-        LOGFN(ERROR) << "users->GetAt hr=" << putHR(hr);
-        return hr;
-      }
-
-      wchar_t* sid = nullptr;
-      wchar_t* username = nullptr;
-
-      hr = user->GetSid(&sid);
-      if (SUCCEEDED(hr))
-        hr = user->GetStringValue(PKEY_Identity_UserName, &username);
-
-      if (SUCCEEDED(hr)) {
-        sid_to_username.emplace(sid, username);
-      } else {
-        LOGFN(ERROR) << "Can't get sid or username hr=" << putHR(hr);
-      }
-
-      ::CoTaskMemFree(username);
-      ::CoTaskMemFree(sid);
-    }
+  if (users_.size() > 0) {
+    LOG(ERROR) << "Users should be empty";
+    return E_UNEXPECTED;
   }
 
-  // For each SID, check to see if this user requires reauth.
-  for (const auto& kv : sid_to_username) {
-    DWORD needs_reauth = 0;
-    HRESULT hr = GetUserProperty(kv.first.c_str(), kUserNeedsReauth,
-                                 &needs_reauth);
-    if (FAILED(hr)) {
-      needs_reauth = 0;
-      hr = S_OK;
-    }
-
-    if (needs_reauth) {
-      // Get the user's email address.  If not found, proceed anyway.  The net
-      // effect is that the user will need to enter their email address
-      // manually instead of it being pre-filled.  Need to see if it would be
-      // better to just fail.
-      wchar_t email[64];
-      ULONG length = base::size(email);
-      hr = GetUserProperty(kv.first.c_str(), kUserEmail, email, &length);
-      if (FAILED(hr)) {
-        LOGFN(ERROR) << "GetUserProperty(" << kv.first << ", email)"
-                     << " hr=" << putHR(hr);
-        email[0] = 0;
-        hr = S_OK;
-      }
-
-      LOGFN(INFO) << "User needs reauth sid=" << kv.first
-                  << " user=" << kv.second << " email=" << email;
-
-      CComPtr<IGaiaCredential> cred;
-      hr = CComCreator<CComObject<CReauthCredential>>::CreateInstance(
-          nullptr, IID_IGaiaCredential, (void**)&cred);
-      if (FAILED(hr)) {
-        LOG(ERROR) << "Could not create credential hr=" << putHR(hr);
-        return hr;
-      }
-
-      hr = cred->Initialize(this);
-      if (FAILED(hr)) {
-        LOG(ERROR) << "Could not initialize credential hr=" << putHR(hr);
-        return hr;
-      }
-
-      CComPtr<IReauthCredential> reauth;
-      reauth = cred;
-      hr = reauth->SetUserInfo(CComBSTR(W2COLE(kv.first.c_str())),
-                               CComBSTR(email));
-      if (FAILED(hr)) {
-        LOG(ERROR) << "reauth->SetUserInfo hr=" << putHR(hr);
-        return hr;
-      }
-
-      users_.emplace_back(cred);
-    }
-  }
-
-  // Fire off a thread to check with Gaia if a re-auth is required.  This
-  // sets the kUserNeedsReauth bit if needed.  If there is no internet
-  // connection, don't bother.
-  if (HasInternetConnection() == S_OK) {
-    unsigned wait_thread_id;
-    uintptr_t wait_thread = _beginthreadex(
-        nullptr, 0, CheckReauthStatus,
-        reinterpret_cast<void*>(reauth_check_done_event_), 0, &wait_thread_id);
-    if (wait_thread != 0) {
-      LOGFN(INFO) << "Started check re-auth thread id=" << wait_thread_id;
-      ::CloseHandle(reinterpret_cast<HANDLE>(wait_thread));
-    } else {
-      HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-      LOGFN(ERROR) << "Unable to start check re-auth thread hr=" << putHR(hr);
-      if (reauth_check_done_event_ != INVALID_HANDLE_VALUE)
-        ::SetEvent(reauth_check_done_event_);
-    }
-  } else {
-    LOGFN(INFO) << "No internet connection, not checking re-auth";
-    if (reauth_check_done_event_ != INVALID_HANDLE_VALUE)
-      ::SetEvent(reauth_check_done_event_);
-  }
+  user_array_ = users;
+  // Force refresh of all users on the next GetCredentialCount.
+  concurrent_state_.RequestUserRefreshIfNeeded(true);
 
   return S_OK;
-}
-
-// static
-unsigned __stdcall CGaiaCredentialProvider::CheckReauthStatus(void* param) {
-  LOGFN(INFO) << "Start";
-  DCHECK(param);
-  HANDLE reauth_check_done_event = reinterpret_cast<HANDLE>(param);
-  std::map<base::string16, base::string16> handles;
-
-  auto fetcher = WinHttpUrlFetcher::Create(
-      GURL("https://www.googleapis.com/oauth2/v2/tokeninfo"));
-
-  if (fetcher) {
-    fetcher->SetRequestHeader("Content-Type",
-                              "application/x-www-form-urlencoded");
-
-    GetUserTokenHandles(&handles);
-    for (const auto& kv : handles) {
-      DWORD needs_reauth;
-      HRESULT hr =
-          GetUserProperty(kv.first.c_str(), kUserNeedsReauth, &needs_reauth);
-      if (SUCCEEDED(hr) && needs_reauth) {
-        LOGFN(INFO) << "Already needs reath sid=" << kv.first;
-        continue;
-      }
-
-      std::string body =
-          base::StringPrintf("token_handle=%S", kv.second.c_str());
-      hr = fetcher->SetRequestBody(body.c_str());
-      if (FAILED(hr)) {
-        LOGFN(ERROR) << "fetcher.SetRequestBody sid=" << kv.first
-                     << " hr=" << putHR(hr);
-        continue;
-      }
-
-      std::string response;
-      hr = fetcher->Fetch(&response);
-      if (FAILED(hr)) {
-        LOGFN(INFO) << "fetcher.Fetch sid=" << kv.first << " hr=" << putHR(hr);
-        continue;
-      }
-
-      base::DictionaryValue* dict = nullptr;
-      std::unique_ptr<base::Value> properties(
-          base::JSONReader::Read(response, base::JSON_ALLOW_TRAILING_COMMAS));
-      if (properties.get() == nullptr || !properties->GetAsDictionary(&dict)) {
-        LOGFN(ERROR) << "base::JSONReader::Read failed";
-        continue;
-      }
-
-      int expires_in;
-      if (dict->HasKey("error") ||
-          !dict->GetInteger("expires_in", &expires_in) || expires_in < 0) {
-        LOGFN(INFO) << "Needs reauth sid=" << kv.first;
-        hr = SetUserProperty(kv.first.c_str(), kUserNeedsReauth, 1);
-        if (FAILED(hr)) {
-          LOGFN(ERROR) << "SetUserProperty sid=" << kv.first
-                       << " hr=" << putHR(hr);
-        }
-      } else {
-        LOGFN(INFO) << "No reauth sid=" << kv.first;
-      }
-    }
-  }
-
-  // This event handle is used only in tests to wait for the reauth check
-  // to complete.
-  if (reauth_check_done_event != INVALID_HANDLE_VALUE)
-    ::SetEvent(reauth_check_done_event);
-
-  LOGFN(INFO) << "Done";
-  return 0;
 }
 
 // ICredentialProvider ////////////////////////////////////////////////////////
@@ -408,43 +589,39 @@ HRESULT CGaiaCredentialProvider::SetUsageScenario(
     CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
     DWORD flags) {
   ClearTransient();
+  CHECK(!token_handle_updater_);
 
   cpus_ = cpus;
   cpus_flags_ = flags;
 
-  // This credential provider only supports signing in and unlocking the screen.
-  HRESULT hr = E_INVALIDARG;
-  switch (cpus) {
-    case CPUS_LOGON:
-    case CPUS_UNLOCK_WORKSTATION:
-      hr = CreateGaiaCredential();
-      break;
-    case CPUS_CHANGE_PASSWORD:
-    case CPUS_CREDUI:
-    case CPUS_PLAP:
-    default:
-      hr = E_NOTIMPL;
-      break;
-  }
-
-  LOGFN(INFO) << "hr=" << putHR(hr) << " cpu=" << cpus
-              << " flags=" << std::setbase(16) << flags;
-  return hr;
+  LOGFN(INFO) << " cpu=" << cpus << " flags=" << std::setbase(16) << flags;
+  return IsUsageScenarioSupported(cpus_) ? S_OK : E_NOTIMPL;
 }
 
 HRESULT CGaiaCredentialProvider::SetSerialization(
     const CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs) {
   DCHECK(pcpcs);
+  CHECK(!token_handle_updater_);
 
-  // NOTE: we only need to support this method if we want to support the
-  // CredUI or support remote login with gaia creds.  We are likely to want
-  // to support both, but not for prototype.
-  if (pcpcs->clsidCredentialProvider == CLSID_GaiaCredentialProvider) {
-    // Unmarshall the serialized buffer and fill in partial fields as needed.
-    // Examine cpusflags for things like admin-only, cred-in-only, etc.
-    LOGFN(INFO) << " authpkg=" << pcpcs->ulAuthenticationPackage
-                << " setsize=" << pcpcs->cbSerialization;
-  }
+  if (pcpcs->clsidCredentialProvider != CLSID_GaiaCredentialProvider)
+    return E_NOTIMPL;
+
+  ULONG auth_package_id;
+  HRESULT hr = GetAuthenticationPackageId(&auth_package_id);
+  if (FAILED(hr))
+    return E_NOTIMPL;
+
+  if (pcpcs->ulAuthenticationPackage != auth_package_id)
+    return E_NOTIMPL;
+
+  if (pcpcs->cbSerialization == 0)
+    return E_NOTIMPL;
+
+  // If serialziation data is set, try to extract the sid for the user
+  // referenced in the serialization data.
+  hr = DetermineUserSidFromAuthenticationBuffer(pcpcs, &set_serialization_sid_);
+  if (FAILED(hr))
+    LOGFN(ERROR) << "DetermineUserSidFromAuthenticationBuffer hr=" << putHR(hr);
 
   return S_OK;
 }
@@ -452,24 +629,50 @@ HRESULT CGaiaCredentialProvider::SetSerialization(
 HRESULT CGaiaCredentialProvider::Advise(ICredentialProviderEvents* pcpe,
                                         UINT_PTR context) {
   DCHECK(pcpe);
+  CHECK(!token_handle_updater_);
 
-  bool had_previous = events_.p != nullptr;
   events_ = pcpe;
   advise_context_ = context;
-  LOGFN(INFO) << " had=" << had_previous;
+
+  if (AssociatedUserValidator::Get()->IsUserAccessBlockingEnforced(cpus_)) {
+    token_handle_updater_ =
+        std::make_unique<BackgroundTokenHandleUpdater>(cpus_, this);
+  }
+
   return S_OK;
 }
 
 HRESULT CGaiaCredentialProvider::UnAdvise() {
+  // Kill the updater thread (if any).
+  token_handle_updater_.reset();
+
   ClearTransient();
-  HRESULT hr = DestroyCredentials();
-  LOGFN(INFO) << "hr=" << putHR(hr);
+  DestroyCredentials();
+
+  // Delete the startup sentinel file if any still exists. It can still exist in
+  // 2 cases:
+
+  // 1. The UnAdvise should only occur after the user has logged in, so if they
+  // never selected any gaia credential and just used normal credentials this
+  // function will be called in that situation and it is guaranteed that the
+  // user has at least been able provide some input to winlogon.
+  // 2. When no usage scenario is supported, none of the credentials will be
+  // selected and thus the gcpw startup sentinel file will not be deleted. So in
+  // the case where the user is asked for CPUS_CRED_UI enough times, the
+  // sentinel file size will keep growing without being deleted and eventually
+  // GCPW will be disabled completely. In the unsupported usage scenario,
+  // FinalRelease will be called shortly after SetUsageScenario if the function
+  // returns E_NOTIMPL so try to catch potential crashes of the destruction of
+  // the provider when it is not used because crashes in this case will prevent
+  // the cred ui from coming up and not allow the user to access their desired
+  // resource.
+  DeleteStartupSentinel();
+
   return S_OK;
 }
 
 HRESULT CGaiaCredentialProvider::GetFieldDescriptorCount(DWORD* count) {
   *count = FIELD_COUNT;
-  LOGFN(INFO) << " count=" << *count;
   return S_OK;
 }
 
@@ -499,7 +702,6 @@ HRESULT CGaiaCredentialProvider::GetFieldDescriptorAt(
     }
   }
 
-  LOGFN(INFO) << "hr=" << putHR(hr) << " index=" << index;
   return hr;
 }
 
@@ -507,20 +709,38 @@ HRESULT CGaiaCredentialProvider::GetCredentialCount(
     DWORD* count,
     DWORD* default_index,
     BOOL* autologin_with_default) {
+  bool needs_to_refresh_users = false;
+  ComPtrStorage local_auto_logon_credential;
+
+  // Get the mutually exclusive state of the provider so that we can
+  // determine the correct next step (recreate credentials or auto logon).
+  concurrent_state_.GetUpdatedState(&needs_to_refresh_users,
+                                    &local_auto_logon_credential);
+
   // NOTE: assumes SetUserArray() is called before this.
+  if (needs_to_refresh_users)
+    RecreateCredentials(&local_auto_logon_credential);
+
   *count = users_.size();
   *default_index = CREDENTIAL_PROVIDER_NO_DEFAULT;
   *autologin_with_default = false;
 
   // If a user was authenticated, winlogon was notified of credentials changes
   // and is re-enumerating the credentials.  Make sure autologin is enabled.
-  if (index_ < users_.size() && new_user_sid_.Length() > 0) {
-    *default_index = index_;
-    *autologin_with_default = true;
+  if (local_auto_logon_credential.gaia_cred) {
+    // Find the index of the credential that should contain the authentication
+    // information.
+    for (size_t i = 0;
+         i < users_.size() && *default_index == CREDENTIAL_PROVIDER_NO_DEFAULT;
+         ++i) {
+      if (local_auto_logon_credential.gaia_cred.IsEqualObject(users_[i]))
+        *default_index = i;
+    }
+
+    *autologin_with_default = *default_index != CREDENTIAL_PROVIDER_NO_DEFAULT;
   }
 
-  LOGFN(INFO) << " count=" << *count
-              << " default=" << *default_index
+  LOGFN(INFO) << " count=" << *count << " default=" << *default_index
               << " auto=" << *autologin_with_default;
   return S_OK;
 }
@@ -529,7 +749,7 @@ HRESULT CGaiaCredentialProvider::GetCredentialAt(
     DWORD index,
     ICredentialProviderCredential** ppcpc) {
   HRESULT hr = E_INVALIDARG;
-  if (!ppcpc || (index > 1)) {
+  if (!ppcpc || index >= users_.size()) {
     LOG(ERROR) << "hr=" << putHR(hr) << " index=" << index;
     return hr;
   }

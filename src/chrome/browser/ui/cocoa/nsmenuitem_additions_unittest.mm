@@ -340,14 +340,8 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
 
   // On Czech layout, cmd + '+' should instead trigger cmd + '1'.
   key = KeyEvent(0x100108, @"1", @"+", 18);
-  ExpectKeyDoesntFireItem(key, MenuItem(@"1", NSCommandKeyMask),
-                          /*compareCocoa=*/false);
-  SetIsInputSourceCzechForTesting(true);
   ExpectKeyFiresItem(key, MenuItem(@"1", NSCommandKeyMask),
                      /*compareCocoa=*/false);
-  SetIsInputSourceCzechForTesting(false);
-  ExpectKeyDoesntFireItem(key, MenuItem(@"1", NSCommandKeyMask),
-                          /*compareCocoa=*/false);
 
   // On Vietnamese layout, cmd + '' [vkeycode = 18] should instead trigger cmd +
   // '1'. Ditto for other number keys.
@@ -360,14 +354,12 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
 
   // On French AZERTY layout, cmd + '&' [vkeycode = 18] should instead trigger
   // cmd + '1'. Ditto for other number keys.
-  SetIsInputSourceAbcAzertyForTesting(true);
   key = KeyEvent(0x100108, @"&", @"&", 18);
   ExpectKeyFiresItem(key, MenuItem(@"1", NSCommandKeyMask),
                      /*compareCocoa=*/false);
   key = KeyEvent(0x100108, @"é", @"é", 19);
   ExpectKeyFiresItem(key, MenuItem(@"2", NSCommandKeyMask),
                      /*compareCocoa=*/false);
-  SetIsInputSourceAbcAzertyForTesting(false);
 }
 
 NSString* keyCodeToCharacter(NSUInteger keyCode,
@@ -435,7 +427,16 @@ TEST(NSMenuItemAdditionsTest, TestMOnDifferentLayouts) {
     NSString* chars = keyCodeToCharacter(keyCode, modifiers, ref);
     NSString* charsIgnoringMods = keyCodeToCharacter(keyCode, 0, ref);
     NSEvent* key = KeyEvent(0x100000, chars, charsIgnoringMods, keyCode);
-    ExpectKeyFiresItem(key, item, false);
+    if ([layoutId isEqualToString:@"com.apple.keylayout.Dvorak-Left"] ||
+        [layoutId isEqualToString:@"com.apple.keylayout.Dvorak-Right"]) {
+      // On Dvorak, we expect this comparison to fail because the cmd + <keycode
+      // for numerical key> will always trigger tab switching. This causes
+      // Chrome to match the behavior of Safari, and has been expected by users
+      // of every other keyboard layout.
+      ExpectKeyDoesntFireItem(key, item, false);
+    } else {
+      ExpectKeyFiresItem(key, item, false);
+    }
 
     if ([layoutId isEqualToString:@"com.apple.keylayout.DVORAK-QWERTYCMD"]) {
       SetIsInputSourceDvorakQwertyForTesting(false);

@@ -207,6 +207,7 @@ class JsCheckerTest(SuperMoxTestBase):
         "this.$.id",
         "this.$.localId",
         "this.$['fancy-id']",
+        "this.page.$.flushForTesting()",
     ]
     for line in lines:
       self.ShouldPassPolymerLocalIdCheck(line)

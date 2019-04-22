@@ -47,7 +47,7 @@ class ModelTypeProcessor {
   // Informs this object that there are some incoming updates it should
   // handle.
   virtual void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
-                                const UpdateResponseDataList& updates) = 0;
+                                UpdateResponseDataList updates) = 0;
 };
 
 }  // namespace syncer

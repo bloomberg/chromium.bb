@@ -30,16 +30,17 @@ class GLReadbackTest : public testing::Test {
 
   void TearDown() override { gl_.Destroy(); }
 
-  void WaitForQueryCallback(int q, base::Closure cb) {
+  void WaitForQueryCallback(int q, base::OnceClosure cb) {
     unsigned int done = 0;
     gl_.PerformIdleWork();
     glGetQueryObjectuivEXT(q, GL_QUERY_RESULT_AVAILABLE_EXT, &done);
     if (done) {
-      cb.Run();
+      std::move(cb).Run();
     } else {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&GLReadbackTest::WaitForQueryCallback,
-                                base::Unretained(this), q, cb),
+          FROM_HERE,
+          base::BindOnce(&GLReadbackTest::WaitForQueryCallback,
+                         base::Unretained(this), q, std::move(cb)),
           base::TimeDelta::FromMilliseconds(3));
     }
   }

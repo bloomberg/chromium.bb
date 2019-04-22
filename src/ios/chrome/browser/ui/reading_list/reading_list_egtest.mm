@@ -6,15 +6,18 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#include <functional>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/reading_list/core/reading_list_model.h"
-#include "ios/chrome/browser/experimental_flags.h"
+#import "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_controller.h"
@@ -33,7 +36,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
-#include "ios/web/public/features.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/reload_type.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -394,8 +396,35 @@ void OpenPageSecurityInfoBubble() {
       tapToolsMenuButton:grey_accessibilityID(kToolsMenuSiteInformation)];
 }
 
-// Tests that the correct version of kDistillableURL is displayed.
-void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
+void AssertIsShowingDistillablePageNoNativeContent(
+    bool online,
+    const GURL& distillable_url) {
+  [ChromeEarlGrey waitForWebViewContainingText:kContentToKeep];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          distillable_url.GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // Test that the offline and online pages are properly displayed.
+  if (online) {
+    [ChromeEarlGrey waitForWebViewContainingText:kContentToRemove];
+    [ChromeEarlGrey waitForWebViewContainingText:kContentToKeep];
+  } else {
+    [ChromeEarlGrey waitForWebViewNotContainingText:kContentToRemove];
+    [ChromeEarlGrey waitForWebViewContainingText:kContentToKeep];
+  }
+
+  // Test the presence of the omnibox offline chip.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(chrome_test_util::PageSecurityInfoIndicator(),
+                            chrome_test_util::ImageViewWithImageNamed(
+                                @"location_bar_offline"),
+                            nil)]
+      assertWithMatcher:online ? grey_nil() : grey_notNil()];
+}
+
+void AssertIsShowingDistillablePageNativeContent(bool online,
+                                                 const GURL& distillable_url) {
   NSString* contentToKeep = base::SysUTF8ToNSString(kContentToKeep);
   // There will be multiple reloads, wait for the page to be displayed.
   if (online) {
@@ -437,6 +466,15 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
       assertWithMatcher:online ? grey_nil() : grey_notNil()];
 }
 
+// Tests that the correct version of kDistillableURL is displayed.
+void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
+  if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
+    return AssertIsShowingDistillablePageNoNativeContent(online,
+                                                         distillable_url);
+  }
+  return AssertIsShowingDistillablePageNativeContent(online, distillable_url);
+}
+
 }  // namespace
 
 // Test class for the Reading List menu.
@@ -462,13 +500,13 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
   self.testServer->RegisterRequestHandler(base::BindRepeating(
       &net::test_server::HandlePrefixedRequest, kDistillableURL,
       base::BindRepeating(&HandleQueryOrCloseSocket,
-                          base::ConstRef(_serverRespondsWithContent),
-                          base::ConstRef(_serverResponseDelay), true)));
+                          std::cref(_serverRespondsWithContent),
+                          std::cref(_serverResponseDelay), true)));
   self.testServer->RegisterRequestHandler(base::BindRepeating(
       &net::test_server::HandlePrefixedRequest, kNonDistillableURL,
       base::BindRepeating(&HandleQueryOrCloseSocket,
-                          base::ConstRef(_serverRespondsWithContent),
-                          base::ConstRef(_serverResponseDelay), false)));
+                          std::cref(_serverRespondsWithContent),
+                          std::cref(_serverResponseDelay), false)));
   self.serverRespondsWithContent = true;
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 }
@@ -531,10 +569,6 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads online version by tapping on entry.
 - (void)testSavingToReadingListAndLoadNormal {
-  // TODO(crbug.com/874649): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
@@ -554,7 +588,7 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
   AssertEntryVisible(pageTitle);
   WaitForDistillation();
 
-  // Long press the entry, and open it offline.
+  // Press the entry, and open it online.
   TapEntry(pageTitle);
 
   AssertIsShowingDistillablePage(true, distillableURL);
@@ -572,10 +606,6 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
 - (void)testSavingToReadingListAndLoadNoNetwork {
-  // TODO(crbug.com/874649): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
@@ -623,10 +653,6 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry with delayed web server.
 - (void)testSavingToReadingListAndLoadBadNetwork {
-  // TODO(crbug.com/905839): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();

@@ -27,26 +27,55 @@ void SyntheticTouchDriver::DispatchEvent(SyntheticGestureTarget* target,
 void SyntheticTouchDriver::Press(float x,
                                  float y,
                                  int index,
-                                 SyntheticPointerActionParams::Button button) {
+                                 SyntheticPointerActionParams::Button button,
+                                 int key_modifiers,
+                                 float width,
+                                 float height,
+                                 float rotation_angle,
+                                 float force,
+                                 const base::TimeTicks& timestamp) {
   DCHECK_GE(index, 0);
   DCHECK(pointer_id_map_.find(index) == pointer_id_map_.end());
-  int touch_index = touch_event_.PressPoint(x, y);
+  int touch_index = touch_event_.PressPoint(x, y, width / 2.f, height / 2.f,
+                                            rotation_angle, force);
   touch_event_.touches[touch_index].id = index;
   pointer_id_map_[index] = touch_index;
+  touch_event_.SetModifiers(key_modifiers);
 }
 
-void SyntheticTouchDriver::Move(float x, float y, int index) {
+void SyntheticTouchDriver::Move(float x,
+                                float y,
+                                int index,
+                                int key_modifiers,
+                                float width,
+                                float height,
+                                float rotation_angle,
+                                float force) {
   DCHECK_GE(index, 0);
   DCHECK(pointer_id_map_.find(index) != pointer_id_map_.end());
-  touch_event_.MovePoint(pointer_id_map_[index], x, y);
+  touch_event_.MovePoint(pointer_id_map_[index], x, y, width / 2.f,
+                         height / 2.f, rotation_angle, force);
+  touch_event_.SetModifiers(key_modifiers);
 }
 
-void SyntheticTouchDriver::Release(
-    int index,
-    SyntheticPointerActionParams::Button button) {
+void SyntheticTouchDriver::Release(int index,
+                                   SyntheticPointerActionParams::Button button,
+                                   int key_modifiers) {
   DCHECK_GE(index, 0);
   DCHECK(pointer_id_map_.find(index) != pointer_id_map_.end());
   touch_event_.ReleasePoint(pointer_id_map_[index]);
+  touch_event_.SetModifiers(key_modifiers);
+  pointer_id_map_.erase(index);
+}
+
+void SyntheticTouchDriver::Cancel(int index,
+                                  SyntheticPointerActionParams::Button button,
+                                  int key_modifiers) {
+  DCHECK_GE(index, 0);
+  DCHECK(pointer_id_map_.find(index) != pointer_id_map_.end());
+  touch_event_.CancelPoint(pointer_id_map_[index]);
+  touch_event_.SetModifiers(key_modifiers);
+  touch_event_.dispatch_type = blink::WebInputEvent::kEventNonBlocking;
   pointer_id_map_.erase(index);
 }
 
@@ -90,6 +119,8 @@ void SyntheticTouchDriver::ResetPointerIdIndexMap() {
     if (touch_event_.touches[i].state !=
         blink::WebTouchPoint::kStateUndefined) {
       touch_event_.touches[free_index] = touch_event_.touches[i];
+      if (free_index != i)
+        touch_event_.touches[i] = blink::WebTouchPoint();
       int pointer_id = GetIndexFromMap(i);
       pointer_id_map_[pointer_id] = free_index;
       free_index++;

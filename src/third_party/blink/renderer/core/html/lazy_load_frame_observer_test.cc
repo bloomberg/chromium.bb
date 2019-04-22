@@ -98,11 +98,12 @@ class LazyLoadFramesParamsTest
         scoped_restrict_lazy_frame_loading_to_data_saver_for_test_(false) {}
 
   void SetUp() override {
-    SetEffectiveConnectionTypeForTesting(
+    WebFrameClient().SetEffectiveConnectionTypeForTesting(
         std::get<WebEffectiveConnectionType>(GetParam()));
 
     SimTest::SetUp();
-    WebView().Resize(WebSize(kViewportWidth, kViewportHeight));
+    WebView().MainFrameWidget()->Resize(
+        WebSize(kViewportWidth, kViewportHeight));
 
     Settings& settings = WebView().GetPage()->GetSettings();
 
@@ -114,7 +115,8 @@ class LazyLoadFramesParamsTest
     settings.SetLazyFrameLoadingDistanceThresholdPx2G(500);
     settings.SetLazyFrameLoadingDistanceThresholdPx3G(600);
     settings.SetLazyFrameLoadingDistanceThresholdPx4G(700);
-    settings.SetLazyLoadEnabled(true);
+    settings.SetLazyLoadEnabled(
+        RuntimeEnabledFeatures::LazyFrameLoadingEnabled());
   }
 
   int GetLoadingDistanceThreshold() const {
@@ -717,11 +719,11 @@ TEST_P(LazyLoadFramesParamsTest, JavascriptStringFrameUrl) {
         </body>)HTML",
       kViewportHeight + GetLoadingDistanceThreshold() + 100));
 
-  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
-  EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
-
   Compositor().BeginFrame();
   test::RunPendingTasks();
+
+  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
 
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
   histogram_tester()->ExpectTotalCount(
@@ -748,7 +750,7 @@ TEST_P(LazyLoadFramesParamsTest,
         <body onload='console.log("main body onload");'>
         <div style='height: %dpx;'></div>
         <iframe src='https://crossorigin.com/subframe.html'
-             style='width: 200px; height: 200px;' lazyload='off'
+             style='width: 200px; height: 200px;' loading='eager'
              onload='console.log("child frame element onload");'></iframe>
         </body>)HTML",
       kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -796,7 +798,7 @@ TEST_P(LazyLoadFramesParamsTest,
           <body onload='console.log("main body onload");'>
           <div style='height: %dpx;'></div>
           <iframe src='https://example.com/subframe.html'
-               style='width: 400px; height: 400px;' lazyload='on'
+               style='width: 400px; height: 400px;' loading='lazy'
                onload='console.log("child frame element onload");'></iframe>
           </body>)HTML",
       kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -914,7 +916,7 @@ TEST_P(LazyLoadFramesParamsTest,
 
   Element* child_frame_element = GetDocument().getElementById("child_frame");
   ASSERT_TRUE(child_frame_element);
-  child_frame_element->setAttribute(html_names::kLazyloadAttr, "off");
+  child_frame_element->setAttribute(html_names::kLoadingAttr, "eager");
 
   ExpectInitialDeferralActionHistogramSamplesIfApplicable(
       LazyLoadFrameObserver::FrameInitialDeferralAction::kDeferred, 1);
@@ -960,14 +962,14 @@ TEST_P(LazyLoadFramesParamsTest,
   // There's another nested cross origin iframe inside the first child frame,
   // even further down such that it's not near the viewport. If LazyLoad is
   // enabled, it should be deferred even though it's nested inside a frame that
-  // was previously deferred, because it has the attribute lazyload=on.
+  // was previously deferred, because it has the attribute loading=lazy.
   base::Optional<SimRequest> nested_frame_resource;
   if (!RuntimeEnabledFeatures::LazyFrameLoadingEnabled())
     nested_frame_resource.emplace("https://test.com/", "text/html");
 
   child_frame_resource->Complete(
       String::Format("<div style='height: %dpx;'></div>"
-                     "<iframe src='https://test.com/' lazyload='on'"
+                     "<iframe src='https://test.com/' loading='lazy'"
                      "     style='width: 200px; height: 200px;'>"
                      "</iframe>",
                      kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -999,7 +1001,7 @@ TEST_P(LazyLoadFramesParamsTest,
         <body onload='console.log("main body onload");'>
         <div style='height: %dpx;'></div>
         <iframe src='https://crossorigin.com/subframe.html'
-             style='width: 200px; height: 200px;' lazyload='off'
+             style='width: 200px; height: 200px;' loading='eager'
              onload='console.log("child frame element onload");'></iframe>
         </body>)HTML",
       kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -1009,15 +1011,16 @@ TEST_P(LazyLoadFramesParamsTest,
 
   // There's another nested cross origin iframe inside the first child frame,
   // even further down such that it's not near the viewport. If LazyLoad is
-  // enabled, it should be deferred because it has the attribute lazyload=on,
-  // even though it's nested inside a frame that has the attribute lazyload=off.
+  // enabled, it should be deferred because it has the attribute loading=lazy,
+  // even though it's nested inside a frame that has the attribute
+  // loading=eager.
   base::Optional<SimRequest> nested_frame_resource;
   if (!RuntimeEnabledFeatures::LazyFrameLoadingEnabled())
     nested_frame_resource.emplace("https://test.com/", "text/html");
 
   child_frame_resource.Complete(
       String::Format("<div style='height: %dpx;'></div>"
-                     "<iframe src='https://test.com/' lazyload='on'"
+                     "<iframe src='https://test.com/' loading='lazy'"
                      "     style='width: 200px; height: 200px;'>"
                      "</iframe>",
                      kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -1049,7 +1052,7 @@ TEST_P(LazyLoadFramesParamsTest,
         <body onload='console.log("main body onload");'>
         <div style='height: %dpx;'></div>
         <iframe src='https://crossorigin.com/subframe.html'
-             style='width: 200px; height: 200px;' lazyload='off'
+             style='width: 200px; height: 200px;' loading='eager'
              onload='console.log("child frame element onload");'></iframe>
         </body>)HTML",
       kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -1059,14 +1062,14 @@ TEST_P(LazyLoadFramesParamsTest,
 
   // There's another nested cross origin iframe inside the first child frame,
   // even further down such that it's not near the viewport. Since it has the
-  // attribute lazyload=off, it shouldn't be deferred. Note that this also
-  // matches the default behavior that would happen if the lazyload attribute
-  // was omitted on the nested iframe entirely.
+  // attribute loading=eager, it shouldn't be deferred. Note that this also
+  // matches the default behavior that would happen if the load attribute was
+  // omitted on the nested iframe entirely.
   SimRequest nested_frame_resource("https://test.com/", "text/html");
 
   child_frame_resource.Complete(
       String::Format("<div style='height: %dpx;'></div>"
-                     "<iframe src='https://test.com/' lazyload='off'"
+                     "<iframe src='https://test.com/' loading='eager'"
                      "     style='width: 200px; height: 200px;'>"
                      "</iframe>",
                      kViewportHeight + GetLoadingDistanceThreshold() + 100));
@@ -1083,7 +1086,7 @@ TEST_P(LazyLoadFramesParamsTest,
   EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     LazyFrameLoading,
     LazyLoadFramesParamsTest,
     ::testing::Combine(
@@ -1105,11 +1108,12 @@ class LazyLoadFramesTest : public SimTest {
   static constexpr int kLoadingDistanceThresholdPx = 1000;
 
   void SetUp() override {
-    SetEffectiveConnectionTypeForTesting(
+    WebFrameClient().SetEffectiveConnectionTypeForTesting(
         WebEffectiveConnectionType::kTypeUnknown);
 
     SimTest::SetUp();
-    WebView().Resize(WebSize(kViewportWidth, kViewportHeight));
+    WebView().MainFrameWidget()->Resize(
+        WebSize(kViewportWidth, kViewportHeight));
 
     Settings& settings = WebView().GetPage()->GetSettings();
     settings.SetLazyFrameLoadingDistanceThresholdPxUnknown(
@@ -1208,7 +1212,7 @@ TEST_F(LazyLoadFramesTest,
   ScopedRestrictLazyFrameLoadingToDataSaverForTest
       scoped_restrict_lazy_frame_loading_to_data_saver_for_test_(false);
 
-  TestCrossOriginFrameIsImmediatelyLoaded("lazyload='off'");
+  TestCrossOriginFrameIsImmediatelyLoaded("loading='eager'");
 }
 
 TEST_F(LazyLoadFramesTest, LazyLoadWhenDataSaverDisabledAndRestricted) {
@@ -1228,6 +1232,7 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenDataSaverEnabledHoldbackAndRestricted) {
 
   GetNetworkStateNotifier().SetSaveDataEnabled(true);
   WebView().GetPage()->GetSettings().SetDataSaverHoldbackWebApi(true);
+  TestCrossOriginFrameIsLazilyLoaded("loading='lazy'");
   TestCrossOriginFrameIsImmediatelyLoaded("");
 }
 
@@ -1248,7 +1253,10 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenDataSaverDisabledAndRestrictedAttrOn) {
 
   GetNetworkStateNotifier().SetSaveDataEnabled(false);
   WebView().GetPage()->GetSettings().SetDataSaverHoldbackWebApi(false);
-  TestCrossOriginFrameIsLazilyLoaded("lazyload='on'");
+
+  // Even when restricted to data saver, the attribute should be respected.
+  TestCrossOriginFrameIsLazilyLoaded("loading='lazy'");
+  TestCrossOriginFrameIsImmediatelyLoaded("");
 }
 
 }  // namespace

@@ -3,7 +3,7 @@ Short Name: nasm
 URL: https://www.nasm.us/
 Version: bfa1ed0ae9cb15b54b008431d122db3c22cd45eb
 License: 2-Clause BSD
-License File: src/LICENSE
+License File: LICENSE
 Security Critical: no
 Source: https://repo.or.cz/nasm.git
 

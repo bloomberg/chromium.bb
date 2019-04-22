@@ -123,7 +123,7 @@ BookmarkNodeData::~BookmarkNodeData() {
 // static
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
-      ui::Clipboard::GetFormatType(kClipboardFormatString),
+      ui::ClipboardFormatType::GetType(kClipboardFormatString),
       ui::CLIPBOARD_TYPE_COPY_PASTE);
 }
 #endif
@@ -159,10 +159,8 @@ bool BookmarkNodeData::ReadFromTuple(const GURL& url,
 }
 
 #if !defined(OS_MACOSX)
-void BookmarkNodeData::WriteToClipboard(ui::ClipboardType clipboard_type) {
-  DCHECK(clipboard_type == ui::CLIPBOARD_TYPE_COPY_PASTE ||
-         clipboard_type == ui::CLIPBOARD_TYPE_SELECTION);
-  ui::ScopedClipboardWriter scw(clipboard_type);
+void BookmarkNodeData::WriteToClipboard() {
+  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
 
 #if defined(OS_WIN)
   const base::string16 kEOL(L"\r\n");
@@ -177,16 +175,7 @@ void BookmarkNodeData::WriteToClipboard(ui::ClipboardType clipboard_type) {
     const std::string url = elements[0].url.spec();
 
     scw.WriteBookmark(title, url);
-
-    // Don't call scw.WriteHyperlink() here, since some rich text editors will
-    // change fonts when such data is pasted in; besides, most such editors
-    // auto-linkify at some point anyway.
-
-    // Also write the URL to the clipboard as text so that it can be pasted
-    // into text fields. We use WriteText instead of WriteURL because we don't
-    // want to clobber the X clipboard when the user copies out of the omnibox
-    // on Linux (on Windows and Mac, there is no difference between these
-    // functions).
+    scw.WriteHyperlink(title, url);
     scw.WriteText(base::UTF8ToUTF16(url));
   } else {
     // We have either more than one URL, a folder, or a combination of URLs
@@ -208,15 +197,15 @@ void BookmarkNodeData::WriteToClipboard(ui::ClipboardType clipboard_type) {
 
   base::Pickle pickle;
   WriteToPickle(base::FilePath(), &pickle);
-  scw.WritePickledData(pickle,
-                       ui::Clipboard::GetFormatType(kClipboardFormatString));
+  scw.WritePickledData(
+      pickle, ui::ClipboardFormatType::GetType(kClipboardFormatString));
 }
 
 bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
   DCHECK_EQ(type, ui::CLIPBOARD_TYPE_COPY_PASTE);
   std::string data;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->ReadData(ui::Clipboard::GetFormatType(kClipboardFormatString),
+  clipboard->ReadData(ui::ClipboardFormatType::GetType(kClipboardFormatString),
                       &data);
 
   if (!data.empty()) {

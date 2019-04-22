@@ -200,12 +200,7 @@ TEST_F(ElementAnimationsTest, AddRemoveAnimations) {
       animation_impl_->keyframe_effect()->element_animations();
   EXPECT_TRUE(element_animations_impl);
 
-  const ElementAnimations::KeyframeEffectsList& keyframe_effects =
-      element_animations_impl_->keyframe_effects_list();
-  int list_size_before = 0;
-  for (auto it = keyframe_effects.begin(); it != keyframe_effects.end(); ++it)
-    ++list_size_before;
-  EXPECT_EQ(3, list_size_before);
+  EXPECT_EQ(3u, element_animations_impl_->CountKeyframesForTesting());
 
   animation2->DetachElement();
   EXPECT_FALSE(animation2->keyframe_effect()->element_animations());
@@ -218,10 +213,7 @@ TEST_F(ElementAnimationsTest, AddRemoveAnimations) {
   EXPECT_EQ(element_animations_impl,
             animation_impl_->keyframe_effect()->element_animations());
 
-  int list_size_after = 0;
-  for (auto it = keyframe_effects.begin(); it != keyframe_effects.end(); ++it)
-    ++list_size_after;
-  EXPECT_EQ(2, list_size_after);
+  EXPECT_EQ(2u, element_animations_impl_->CountKeyframesForTesting());
 }
 
 TEST_F(ElementAnimationsTest, SyncNewAnimation) {
@@ -318,7 +310,7 @@ class TestAnimationDelegateThatDestroysAnimation
     // Detaching animation from the timeline ensures that the timeline doesn't
     // hold a reference to the animation and the animation is destroyed.
     timeline_->DetachAnimation(animation_);
-  };
+  }
 
   void setTimelineAndAnimation(
       scoped_refptr<AnimationTimeline> timeline,

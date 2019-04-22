@@ -248,7 +248,7 @@ std::string DeltaFileBackend::Dump() {
   std::unique_ptr<leveldb::Iterator> db_it(db_->NewIterator(options));
   int num_entries = 0;
   for (db_it->SeekToFirst(); db_it->Valid(); db_it->Next()) num_entries++;
-  dump.append(base::IntToString(num_entries));
+  dump.append(base::NumberToString(num_entries));
   dump.append("]");
   return dump;
 }

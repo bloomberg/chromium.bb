@@ -4,19 +4,28 @@
 
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
-#include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/browser/webdata/autofill_entry.h"
+#include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/prefs/pref_service.h"
+#include "components/version_info/version_info.h"
+
+using NotificationType = autofill::AutofillObserver::NotificationType;
 
 namespace autofill {
 namespace {
@@ -69,52 +78,113 @@ void AutocompleteHistoryManager::UMARecorder::OnWebDataServiceRequestDone(
   AutofillMetrics::LogAutocompleteSuggestions(has_suggestion);
 }
 
-AutocompleteHistoryManager::AutocompleteHistoryManager(
-    AutofillDriver* driver,
-    AutofillClient* autofill_client)
-    : driver_(driver),
-      database_(autofill_client->GetDatabase()),
-      pending_query_handle_(0),
-      query_id_(0),
-      external_delegate_(nullptr),
-      autofill_client_(autofill_client) {
-  DCHECK(autofill_client_);
-}
+AutocompleteHistoryManager::QueryHandler::QueryHandler(
+    int client_query_id,
+    bool autoselect_first_suggestion,
+    base::string16 prefix,
+    base::WeakPtr<SuggestionsHandler> handler)
+    : client_query_id_(client_query_id),
+      autoselect_first_suggestion_(autoselect_first_suggestion),
+      prefix_(prefix),
+      handler_(std::move(handler)) {}
+
+AutocompleteHistoryManager::QueryHandler::QueryHandler(
+    const QueryHandler& original) = default;
+
+AutocompleteHistoryManager::QueryHandler::~QueryHandler() = default;
+
+AutocompleteHistoryManager::AutocompleteHistoryManager()
+    // It is safe to base::Unretained a raw pointer to the current instance,
+    // as it is already being owned elsewhere and will be cleaned-up properly.
+    // Also, the map of callbacks will be deleted when this instance is
+    // destroyed, which means we won't attempt to run one of these callbacks
+    // beyond the life of this instance.
+    : request_callbacks_(
+          {{AUTOFILL_VALUE_RESULT,
+            base::BindRepeating(
+                &AutocompleteHistoryManager::OnAutofillValuesReturned,
+                base::Unretained(this))},
+           {AUTOFILL_CLEANUP_RESULT,
+            base::BindRepeating(
+                &AutocompleteHistoryManager::OnAutofillCleanupReturned,
+                base::Unretained(this))}}),
+      weak_ptr_factory_(this) {}
 
 AutocompleteHistoryManager::~AutocompleteHistoryManager() {
-  CancelPendingQuery();
+  CancelAllPendingQueries();
+}
+
+void AutocompleteHistoryManager::Init(
+    scoped_refptr<AutofillWebDataService> profile_database,
+    PrefService* pref_service,
+    bool is_off_the_record) {
+  profile_database_ = profile_database;
+  pref_service_ = pref_service;
+  is_off_the_record_ = is_off_the_record;
+
+  if (!profile_database_) {
+    // In some tests, there are no dbs.
+    return;
+  }
+
+  // No need to run the retention policy in OTR.
+  if (!is_off_the_record_ &&
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutocompleteRetentionPolicyEnabled)) {
+    // Upon successful cleanup, the last cleaned-up major version is being
+    // stored in this pref.
+    int last_cleaned_version = pref_service_->GetInteger(
+        prefs::kAutocompleteLastVersionRetentionPolicy);
+    if (CHROME_VERSION_MAJOR > last_cleaned_version) {
+      // Trigger the cleanup.
+      profile_database_->RemoveExpiredAutocompleteEntries(this);
+    }
+  }
+}
+
+base::WeakPtr<AutocompleteHistoryManager>
+AutocompleteHistoryManager::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
     int query_id,
+    bool is_autocomplete_enabled,
+    bool autoselect_first_suggestion,
     const base::string16& name,
     const base::string16& prefix,
-    const std::string& form_control_type) {
-  CancelPendingQuery();
+    const std::string& form_control_type,
+    base::WeakPtr<SuggestionsHandler> handler) {
+  CancelPendingQueries(handler.get());
 
-  query_id_ = query_id;
-  if (!autofill_client_->IsAutocompleteEnabled() ||
-      form_control_type == "textarea" ||
+  if (!is_autocomplete_enabled || form_control_type == "textarea" ||
       IsInAutofillSuggestionsDisabledExperiment()) {
-    SendSuggestions(nullptr);
+    SendSuggestions({}, QueryHandler(query_id, autoselect_first_suggestion,
+                                     prefix, handler));
     uma_recorder_.OnGetAutocompleteSuggestions(name,
                                                0 /* pending_query_handle */);
     return;
   }
 
-  if (database_) {
-    pending_query_handle_ = database_->GetFormValuesForElementName(
+  if (profile_database_) {
+    auto query_handle = profile_database_->GetFormValuesForElementName(
         name, prefix, kMaxAutocompleteMenuItems, this);
-    uma_recorder_.OnGetAutocompleteSuggestions(name, pending_query_handle_);
+    uma_recorder_.OnGetAutocompleteSuggestions(name, query_handle);
+
+    // We can simply insert, since |query_handle| is always unique.
+    pending_queries_.insert(
+        {query_handle,
+         QueryHandler(query_id, autoselect_first_suggestion, prefix, handler)});
   }
 }
 
-void AutocompleteHistoryManager::OnWillSubmitForm(const FormData& form) {
-  if (!autofill_client_->IsAutocompleteEnabled())
+void AutocompleteHistoryManager::OnWillSubmitForm(
+    const FormData& form,
+    bool is_autocomplete_enabled) {
+  if (!is_autocomplete_enabled || is_off_the_record_) {
+    Notify(NotificationType::AutocompleteFormSkipped);
     return;
-
-  if (driver_->IsIncognito())
-    return;
+  }
 
   // We put the following restriction on stored FormFields:
   //  - non-empty name
@@ -137,67 +207,166 @@ void AutocompleteHistoryManager::OnWillSubmitForm(const FormData& form) {
     }
   }
 
-  if (!values.empty() && database_.get())
-    database_->AddFormFields(values);
+  if (!values.empty() && profile_database_.get()) {
+    profile_database_->AddFormFields(values);
+
+    Notify(NotificationType::AutocompleteFormSubmitted);
+  }
 }
 
 void AutocompleteHistoryManager::OnRemoveAutocompleteEntry(
     const base::string16& name, const base::string16& value) {
-  if (database_)
-    database_->RemoveFormValueForElementName(name, value);
+  if (profile_database_)
+    profile_database_->RemoveFormValueForElementName(name, value);
 }
 
-void AutocompleteHistoryManager::SetExternalDelegate(
-    AutofillExternalDelegate* delegate) {
-  external_delegate_ = delegate;
-}
-
-void AutocompleteHistoryManager::CancelPendingQuery() {
-  if (pending_query_handle_) {
-    if (database_)
-      database_->CancelRequest(pending_query_handle_);
-    pending_query_handle_ = 0;
-  }
-}
-
-void AutocompleteHistoryManager::SendSuggestions(
-    const std::vector<base::string16>* autocomplete_results) {
-  std::vector<Suggestion> suggestions;
-  if (autocomplete_results) {
-    for (const auto& result : *autocomplete_results) {
-      suggestions.push_back(Suggestion(result));
-    }
-  }
-
-  external_delegate_->OnSuggestionsReturned(query_id_, suggestions, false);
-  query_id_ = 0;
-}
-
-void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
-    WebDataServiceBase::Handle h,
-    std::unique_ptr<WDTypedResult> result) {
-  DCHECK(pending_query_handle_);
-  auto current_query_handle = pending_query_handle_;
-  pending_query_handle_ = 0;
-
-  DCHECK(result);
-  // Returning early here if |result| is NULL.  We've seen this happen on
-  // Linux due to NFS dismounting and causing sql failures.
-  // See http://crbug.com/68783.
-  if (!result) {
-    SendSuggestions(nullptr);
-    uma_recorder_.OnWebDataServiceRequestDone(current_query_handle,
-                                              false /* has_suggestion */);
+void AutocompleteHistoryManager::OnAutocompleteEntrySelected(
+    const base::string16& value) {
+  // Try to find the AutofillEntry associated with the given suggestion.
+  auto last_entries_iter = last_entries_.find(value);
+  if (last_entries_iter == last_entries_.end()) {
+    // Not found, therefore nothing to do. Most likely there was a race
+    // condition, but it's not that big of a deal in the current scenario
+    // (logging metrics).
+    NOTREACHED();
     return;
   }
 
+  // The AutofillEntry was found, use it to log the DaysSinceLastUsed.
+  const AutofillEntry& entry = last_entries_iter->second;
+  base::TimeDelta time_delta = AutofillClock::Now() - entry.date_last_used();
+  AutofillMetrics::LogAutocompleteDaysSinceLastUse(time_delta.InDays());
+}
+
+void AutocompleteHistoryManager::CancelPendingQueries(
+    const SuggestionsHandler* handler) {
+  if (handler && profile_database_) {
+    for (auto iter : pending_queries_) {
+      const QueryHandler& query_handler = iter.second;
+
+      if (query_handler.handler_ && query_handler.handler_.get() == handler) {
+        profile_database_->CancelRequest(iter.first);
+      }
+    }
+  }
+
+  // Cleaning up the map with the cancelled handler to remove cancelled
+  // requests.
+  CleanupEntries(handler);
+}
+
+void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
+    WebDataServiceBase::Handle current_handle,
+    std::unique_ptr<WDTypedResult> result) {
+  DCHECK(current_handle);
+
+  if (!result) {
+    // Returning early here if |result| is null.  We've seen this happen on
+    // Linux due to NFS dismounting and causing sql failures.
+    // See http://crbug.com/68783.
+    return;
+  }
+
+  WDResultType result_type = result->GetType();
+
+  auto request_callbacks_iter = request_callbacks_.find(result_type);
+  if (request_callbacks_iter == request_callbacks_.end()) {
+    // There are no callbacks for this response, hence nothing to do.
+    return;
+  }
+
+  request_callbacks_iter->second.Run(current_handle, std::move(result));
+}
+
+void AutocompleteHistoryManager::SendSuggestions(
+    const std::vector<AutofillEntry>& entries,
+    const QueryHandler& query_handler) {
+  if (!query_handler.handler_) {
+    // Either the handler has been destroyed, or it is invalid.
+    return;
+  }
+
+  // If there is only one suggestion that is the exact same string as
+  // what is in the input box, then don't show the suggestion.
+  bool hide_suggestions =
+      entries.size() == 1 && query_handler.prefix_ == entries[0].key().value();
+
+  std::vector<Suggestion> suggestions;
+  last_entries_.clear();
+
+  if (!hide_suggestions) {
+    for (const AutofillEntry& entry : entries) {
+      suggestions.push_back(Suggestion(entry.key().value()));
+      last_entries_.insert({entry.key().value(), AutofillEntry(entry)});
+    }
+  }
+
+  query_handler.handler_->OnSuggestionsReturned(
+      query_handler.client_query_id_,
+      query_handler.autoselect_first_suggestion_, suggestions);
+}
+
+void AutocompleteHistoryManager::OnAutofillValuesReturned(
+    WebDataServiceBase::Handle current_handle,
+    std::unique_ptr<WDTypedResult> result) {
+  DCHECK(result);
   DCHECK_EQ(AUTOFILL_VALUE_RESULT, result->GetType());
-  const WDResult<std::vector<base::string16>>* autofill_result =
-      static_cast<const WDResult<std::vector<base::string16>>*>(result.get());
-  std::vector<base::string16> suggestions = autofill_result->GetValue();
-  SendSuggestions(&suggestions);
+
+  auto pending_queries_iter = pending_queries_.find(current_handle);
+  if (pending_queries_iter == pending_queries_.end()) {
+    // There's no handler for this query, hence nothing to do.
+    return;
+  }
+
+  // Moving the handler since we're erasing the entry.
+  auto query_handler = std::move(pending_queries_iter->second);
+
+  // Removing the query, as it is no longer pending.
+  pending_queries_.erase(pending_queries_iter);
+
+  const WDResult<std::vector<AutofillEntry>>* autofill_result =
+      static_cast<const WDResult<std::vector<AutofillEntry>>*>(result.get());
+  std::vector<AutofillEntry> entries = autofill_result->GetValue();
+  SendSuggestions(entries, query_handler);
   uma_recorder_.OnWebDataServiceRequestDone(
-      current_query_handle, !suggestions.empty() /* has_suggestion */);
+      current_handle, !entries.empty() /* has_suggestion */);
+}
+
+void AutocompleteHistoryManager::OnAutofillCleanupReturned(
+    WebDataServiceBase::Handle current_handle,
+    std::unique_ptr<WDTypedResult> result) {
+  DCHECK(result);
+  DCHECK_EQ(AUTOFILL_CLEANUP_RESULT, result->GetType());
+
+  const WDResult<size_t>* cleanup_wdresult =
+      static_cast<const WDResult<size_t>*>(result.get());
+
+  AutofillMetrics::LogNumberOfAutocompleteEntriesCleanedUp(
+      cleanup_wdresult->GetValue());
+
+  // Cleanup was successful, update the latest run milestone.
+  pref_service_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
+                            CHROME_VERSION_MAJOR);
+
+  Notify(NotificationType::AutocompleteCleanupDone);
+}
+
+void AutocompleteHistoryManager::CancelAllPendingQueries() {
+  if (profile_database_) {
+    for (const auto& pending_query : pending_queries_) {
+      profile_database_->CancelRequest(pending_query.first);
+    }
+  }
+
+  pending_queries_.clear();
+}
+
+void AutocompleteHistoryManager::CleanupEntries(
+    const SuggestionsHandler* handler) {
+  base::EraseIf(pending_queries_, [handler](const auto& pending_query) {
+    const QueryHandler& query_handler = pending_query.second;
+    return !query_handler.handler_ || query_handler.handler_.get() == handler;
+  });
 }
 
 }  // namespace autofill

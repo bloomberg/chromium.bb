@@ -17,6 +17,11 @@ class CFX_CSSComputedStyle;
 class CFX_XMLNode;
 class CXFA_Node;
 
+struct CXFA_BlockHeight {
+  size_t szBlockIndex;
+  float fHeight;
+};
+
 struct CXFA_LoaderContext {
   CXFA_LoaderContext();
   ~CXFA_LoaderContext();
@@ -28,12 +33,13 @@ struct CXFA_LoaderContext {
   float fLastPos = 0;
   float fStartLineOffset = 0;
   int32_t iChar = 0;
+  // TODO(thestig): Make this size_t?
   int32_t iTotalLines = -1;
   UnownedPtr<const CFX_XMLNode> pXMLNode;
   UnownedPtr<CXFA_Node> pNode;
   RetainPtr<CFX_CSSComputedStyle> pParentStyle;
   std::vector<float> lineHeights;
-  std::vector<float> blocksHeight;
+  std::vector<CXFA_BlockHeight> blockHeights;
 };
 
 #endif  // XFA_FXFA_CXFA_LOADERCONTEXT_H_

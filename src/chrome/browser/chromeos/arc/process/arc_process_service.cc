@@ -30,8 +30,9 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/arc_util.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -68,6 +69,12 @@ base::ProcessId GetArcInitProcessId(
 
 std::vector<ArcProcess> GetArcSystemProcessList() {
   std::vector<ArcProcess> ret_processes;
+
+  if (arc::IsArcVmEnabled()) {
+    // TODO(b/122992194): Fix this for ARCVM.
+    return ret_processes;
+  }
+
   const base::ProcessIterator::ProcessEntries& entry_list =
       base::ProcessIterator(nullptr).Snapshot();
   const base::ProcessId arc_init_pid = GetArcInitProcessId(entry_list);
@@ -152,17 +159,29 @@ std::vector<ArcProcess> FilterProcessList(
     std::vector<mojom::RunningAppProcessInfoPtr> processes) {
   std::vector<ArcProcess> ret_processes;
   for (const auto& entry : processes) {
-    const auto it = pid_map.find(entry->pid);
-    // The nspid could be missing due to race condition. For example, the
-    // process is still running when we get the process snapshot and ends when
-    // we update the nspid to pid mapping.
-    if (it == pid_map.end() || it->second == base::kNullProcessId) {
-      continue;
+    base::ProcessId pid;
+    if (arc::IsArcVmEnabled()) {
+      // When VM is enabled, there is no external pid. Set the pid here to the
+      // guest pid. Setting the pid to zero was considered but the task manager
+      // groups tasks by pid and this can cause incorrect aggregated stats to
+      // be displayed. The task manager will handle these cases by checking if
+      // the task is in VM (via Task::IsRunningInVM) and know to partition off
+      // these processes.
+      pid = entry->pid;
+    } else {
+      const auto it = pid_map.find(entry->pid);
+      // The nspid could be missing due to race condition. For example, the
+      // process is still running when we get the process snapshot and ends when
+      // we update the nspid to pid mapping.
+      if (it == pid_map.end() || it->second == base::kNullProcessId) {
+        continue;
+      }
+      pid = it->second;
     }
     // Constructs the ArcProcess instance if the mapping is found.
-    ArcProcess arc_process(entry->pid, pid_map.at(entry->pid),
-                           entry->process_name, entry->process_state,
-                           entry->is_focused, entry->last_activity_time);
+    ArcProcess arc_process(entry->pid, pid, entry->process_name,
+                           entry->process_state, entry->is_focused,
+                           entry->last_activity_time);
     // |entry->packages| is provided only when process.mojom's verion is >=4.
     if (entry->packages) {
       for (const auto& package : *entry->packages) {
@@ -178,26 +197,28 @@ std::vector<ArcProcess> UpdateAndReturnProcessList(
     scoped_refptr<ArcProcessService::NSPidToPidMap> nspid_map,
     std::vector<mojom::RunningAppProcessInfoPtr> processes) {
   ArcProcessService::NSPidToPidMap& pid_map = *nspid_map;
-  // Cleanup dead pids in the cache |pid_map|.
-  std::unordered_set<ProcessId> nspid_to_remove;
-  for (const auto& entry : pid_map) {
-    nspid_to_remove.insert(entry.first);
-  }
-  bool unmapped_nspid = false;
-  for (const auto& entry : processes) {
-    // erase() returns 0 if coudln't find the key. It means a new process.
-    if (nspid_to_remove.erase(entry->pid) == 0) {
-      pid_map[entry->pid] = base::kNullProcessId;
-      unmapped_nspid = true;
+  if (!arc::IsArcVmEnabled()) {
+    // Cleanup dead pids in the cache |pid_map|.
+    std::unordered_set<ProcessId> nspid_to_remove;
+    for (const auto& entry : pid_map) {
+      nspid_to_remove.insert(entry.first);
     }
-  }
-  for (const auto& entry : nspid_to_remove) {
-    pid_map.erase(entry);
-  }
+    bool unmapped_nspid = false;
+    for (const auto& entry : processes) {
+      // erase() returns 0 if coudln't find the key. It means a new process.
+      if (nspid_to_remove.erase(entry->pid) == 0) {
+        pid_map[entry->pid] = base::kNullProcessId;
+        unmapped_nspid = true;
+      }
+    }
+    for (const auto& entry : nspid_to_remove) {
+      pid_map.erase(entry);
+    }
 
-  // The operation is costly so avoid calling it when possible.
-  if (unmapped_nspid) {
-    UpdateNspidToPidMap(nspid_map);
+    // The operation is costly so avoid calling it when possible.
+    if (unmapped_nspid) {
+      UpdateNspidToPidMap(nspid_map);
+    }
   }
 
   return FilterProcessList(pid_map, std::move(processes));
@@ -207,34 +228,36 @@ std::unique_ptr<memory_instrumentation::GlobalMemoryDump>
 UpdateAndReturnMemoryInfo(
     scoped_refptr<ArcProcessService::NSPidToPidMap> nspid_map,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
-  ArcProcessService::NSPidToPidMap& pid_map = *nspid_map;
-  // Cleanup dead processes in pid_map
-  // TODO(wvk) should we be cleaning dead processes here too ?
-  base::flat_set<ProcessId> nspid_to_remove;
-  for (const auto& entry : pid_map)
-    nspid_to_remove.insert(entry.first);
+  if (!arc::IsArcVmEnabled()) {
+    ArcProcessService::NSPidToPidMap& pid_map = *nspid_map;
+    // Cleanup dead processes in pid_map
+    // TODO(wvk) should we be cleaning dead processes here too ?
+    base::flat_set<ProcessId> nspid_to_remove;
+    for (const auto& entry : pid_map)
+      nspid_to_remove.insert(entry.first);
 
-  bool unmapped_nspid = false;
-  for (const auto& proc : dump->process_dumps) {
-    // erase() returns 0 if couldn't find the key (new process)
-    if (nspid_to_remove.erase(proc->pid) == 0) {
-      pid_map[proc->pid] = base::kNullProcessId;
-      unmapped_nspid = true;
+    bool unmapped_nspid = false;
+    for (const auto& proc : dump->process_dumps) {
+      // erase() returns 0 if couldn't find the key (new process)
+      if (nspid_to_remove.erase(proc->pid) == 0) {
+        pid_map[proc->pid] = base::kNullProcessId;
+        unmapped_nspid = true;
+      }
     }
-  }
-  for (const auto& old_nspid : nspid_to_remove)
-    pid_map.erase(old_nspid);
+    for (const auto& old_nspid : nspid_to_remove)
+      pid_map.erase(old_nspid);
 
-  if (unmapped_nspid)
-    UpdateNspidToPidMap(nspid_map);
+    if (unmapped_nspid)
+      UpdateNspidToPidMap(nspid_map);
 
-  // Return memory info only for processes that have a mapping nspid->pid
-  for (auto& proc : dump->process_dumps) {
-    auto it = pid_map.find(proc->pid);
-    proc->pid = it == pid_map.end() ? kNullProcessId : it->second;
+    // Return memory info only for processes that have a mapping nspid->pid
+    for (auto& proc : dump->process_dumps) {
+      auto it = pid_map.find(proc->pid);
+      proc->pid = it == pid_map.end() ? kNullProcessId : it->second;
+    }
+    base::EraseIf(dump->process_dumps,
+                  [](const auto& proc) { return proc->pid == kNullProcessId; });
   }
-  base::EraseIf(dump->process_dumps,
-                [](const auto& proc) { return proc->pid == kNullProcessId; });
   return memory_instrumentation::GlobalMemoryDump::MoveFrom(std::move(dump));
 }
 
@@ -305,11 +328,11 @@ void ArcProcessService::RequestSystemProcessList(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::PostTaskAndReplyWithResult(task_runner_.get(), FROM_HERE,
-                                   base::Bind(&GetArcSystemProcessList),
-                                   callback);
+                                   base::BindOnce(&GetArcSystemProcessList),
+                                   std::move(callback));
 }
 
-bool ArcProcessService::RequestAppProcessList(
+void ArcProcessService::RequestAppProcessList(
     RequestProcessListCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -317,18 +340,21 @@ bool ArcProcessService::RequestAppProcessList(
   // process list, it can produce a lot of logspam when the board is ARC-ready
   // but the user has not opted into ARC. This redundant check avoids that
   // logspam.
-  if (!connection_ready_)
-    return false;
+  if (!connection_ready_) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
 
   mojom::ProcessInstance* process_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->process(), RequestProcessList);
-  if (!process_instance)
-    return false;
+  if (!process_instance) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
 
   process_instance->RequestProcessList(
       base::BindOnce(&ArcProcessService::OnReceiveProcessList,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
-  return true;
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 bool ArcProcessService::RequestAppMemoryInfo(
@@ -362,14 +388,14 @@ bool ArcProcessService::RequestSystemMemoryInfo(
 }
 
 void ArcProcessService::OnReceiveProcessList(
-    const RequestProcessListCallback& callback,
+    RequestProcessListCallback callback,
     std::vector<mojom::RunningAppProcessInfoPtr> processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&UpdateAndReturnProcessList, nspid_to_pid_,
-                 base::Passed(&processes)),
-      callback);
+      base::BindOnce(&UpdateAndReturnProcessList, nspid_to_pid_,
+                     std::move(processes)),
+      std::move(callback));
 }
 
 void ArcProcessService::OnReceiveMemoryInfo(
@@ -393,8 +419,11 @@ void ArcProcessService::OnGetSystemProcessList(
     return;
   }
   std::vector<uint32_t> nspids;
-  for (const auto& proc : procs)
-    nspids.push_back(proc.nspid());
+  if (!arc::IsArcVmEnabled()) {
+    for (const auto& proc : procs)
+      nspids.push_back(proc.nspid());
+  }
+  // TODO(b/122992194): Fix this for ARCVM.
   process_instance->RequestSystemProcessMemoryInfo(
       nspids,
       base::BindOnce(&ArcProcessService::OnReceiveMemoryInfo,

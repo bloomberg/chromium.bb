@@ -48,19 +48,19 @@ struct JingleMessage {
   ~JingleMessage();
 
   // Caller keeps ownership of |stanza|.
-  static bool IsJingleMessage(const buzz::XmlElement* stanza);
+  static bool IsJingleMessage(const jingle_xmpp::XmlElement* stanza);
   static std::string GetActionName(ActionType action);
 
   // Caller keeps ownership of |stanza|. |error| is set to debug error
   // message when parsing fails.
-  bool ParseXml(const buzz::XmlElement* stanza, std::string* error);
+  bool ParseXml(const jingle_xmpp::XmlElement* stanza, std::string* error);
 
   // Adds an XmlElement into |attachments|. This function implicitly creates
   // |attachments| if it's empty, and |attachment| should not be an empty
   // unique_ptr.
-  void AddAttachment(std::unique_ptr<buzz::XmlElement> attachment);
+  void AddAttachment(std::unique_ptr<jingle_xmpp::XmlElement> attachment);
 
-  std::unique_ptr<buzz::XmlElement> ToXml() const;
+  std::unique_ptr<jingle_xmpp::XmlElement> ToXml() const;
 
   SignalingAddress from;
   SignalingAddress to;
@@ -71,14 +71,14 @@ struct JingleMessage {
 
   std::unique_ptr<ContentDescription> description;
 
-  std::unique_ptr<buzz::XmlElement> transport_info;
+  std::unique_ptr<jingle_xmpp::XmlElement> transport_info;
 
   // Content of session-info messages.
-  std::unique_ptr<buzz::XmlElement> info;
+  std::unique_ptr<jingle_xmpp::XmlElement> info;
 
   // Content of plugin message. The node is read or written by all plugins, and
   // ActionType independent.
-  std::unique_ptr<buzz::XmlElement> attachments;
+  std::unique_ptr<jingle_xmpp::XmlElement> attachments;
 
   // Value from the <reason> tag if it is present in the
   // message. Useful mainly for session-terminate messages, but Jingle
@@ -113,8 +113,8 @@ struct JingleMessageReply {
   // Formats reply stanza for the specified |request_stanza|. Id and
   // recepient as well as other information needed to generate a valid
   // reply are taken from |request_stanza|.
-  std::unique_ptr<buzz::XmlElement> ToXml(
-      const buzz::XmlElement* request_stanza) const;
+  std::unique_ptr<jingle_xmpp::XmlElement> ToXml(
+      const jingle_xmpp::XmlElement* request_stanza) const;
 
   ReplyType type;
   ErrorType error_type;
@@ -146,8 +146,8 @@ struct IceTransportInfo {
 
   // Caller keeps ownership of |stanza|. |error| is set to debug error
   // message when parsing fails.
-  bool ParseXml(const buzz::XmlElement* stanza);
-  std::unique_ptr<buzz::XmlElement> ToXml() const;
+  bool ParseXml(const jingle_xmpp::XmlElement* stanza);
+  std::unique_ptr<jingle_xmpp::XmlElement> ToXml() const;
 
   std::list<IceCredentials> ice_credentials;
   std::list<NamedCandidate> candidates;

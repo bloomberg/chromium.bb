@@ -25,11 +25,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-#include "base/test/scoped_feature_list.h"
-#include "ui/base/ui_base_features.h"
-#endif
-
 // Check the default account consistency method.
 TEST(AccountConsistencyModeManagerTest, DefaultValue) {
   content::TestBrowserThreadBundle test_thread_bundle;
@@ -60,7 +55,6 @@ TEST(AccountConsistencyModeManagerTest, Basic) {
     bool expect_dice_enabled;
   } test_cases[] = {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    {signin::AccountConsistencyMethod::kDiceFixAuthErrors, false, false},
     {signin::AccountConsistencyMethod::kDiceMigration, false, false},
     {signin::AccountConsistencyMethod::kDice, false, true},
 #else
@@ -115,7 +109,7 @@ TEST(AccountConsistencyModeManagerTest, SigninAllowedChangesDiceState) {
     EXPECT_FALSE(
         profile.GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
     // Dice should be disabled.
-    EXPECT_EQ(signin::AccountConsistencyMethod::kDiceFixAuthErrors,
+    EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
               manager.GetAccountConsistencyMethod());
   }
 }
@@ -136,7 +130,7 @@ TEST(AccountConsistencyModeManagerTest, DisallowSigninSwitch) {
     EXPECT_TRUE(
         profile.GetPrefs()->GetBoolean(prefs::kSigninAllowedOnNextStartup));
     // Dice should be disabled.
-    EXPECT_EQ(signin::AccountConsistencyMethod::kDiceFixAuthErrors,
+    EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
               manager.GetAccountConsistencyMethod());
   }
 
@@ -169,16 +163,6 @@ TEST(AccountConsistencyModeManagerTest, MigrateAtCreation) {
 
   AccountConsistencyModeManager::SetDiceMigrationOnStartup(profile.GetPrefs(),
                                                            true);
-
-  {
-    // Migration does not happen if Dice is not enabled.
-    ScopedAccountConsistencyDiceFixAuthErrors scoped_dice_fix_errors;
-    AccountConsistencyModeManager manager(&profile);
-    EXPECT_TRUE(manager.IsReadyForDiceMigration(&profile));
-    EXPECT_NE(signin::AccountConsistencyMethod::kDice,
-              manager.GetAccountConsistencyMethod());
-  }
-
   {
     // Migration happens.
     ScopedAccountConsistencyDiceMigration scoped_dice_migration;
@@ -225,6 +209,8 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
         AccountConsistencyModeManager::IsDiceEnabledForProfile(&profile));
     EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
               AccountConsistencyModeManager::GetMethodForProfile(&profile));
+    EXPECT_TRUE(
+        AccountConsistencyModeManager::ShouldBuildServiceForProfile(&profile));
 
     // Incognito profile.
     Profile* incognito_profile = profile.GetOffTheRecordProfile();
@@ -233,8 +219,10 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
     EXPECT_FALSE(
         AccountConsistencyModeManager::GetForProfile(incognito_profile));
     EXPECT_EQ(
-        signin::AccountConsistencyMethod::kDiceFixAuthErrors,
+        signin::AccountConsistencyMethod::kDisabled,
         AccountConsistencyModeManager::GetMethodForProfile(incognito_profile));
+    EXPECT_FALSE(AccountConsistencyModeManager::ShouldBuildServiceForProfile(
+        incognito_profile));
   }
 
   {
@@ -246,8 +234,10 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
     EXPECT_FALSE(
         AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
     EXPECT_EQ(
-        signin::AccountConsistencyMethod::kDiceFixAuthErrors,
+        signin::AccountConsistencyMethod::kDisabled,
         AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
+    EXPECT_FALSE(AccountConsistencyModeManager::ShouldBuildServiceForProfile(
+        profile.get()));
   }
 
   {
@@ -259,7 +249,7 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
     EXPECT_FALSE(
         AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
     EXPECT_EQ(
-        signin::AccountConsistencyMethod::kDiceFixAuthErrors,
+        signin::AccountConsistencyMethod::kDisabled,
         AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
   }
 }
@@ -317,21 +307,3 @@ TEST(AccountConsistencyModeManagerTest, MirrorChildAccount) {
             AccountConsistencyModeManager::GetMethodForProfile(&profile));
 }
 #endif  // BUILDFLAG(ENABLE_MIRROR)
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-// Checks that the kExperimentalUi enables Dice migration.
-TEST(AccountConsistencyModeManagerTest, ExperimentalUI) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kExperimentalUi);
-
-  content::TestBrowserThreadBundle test_thread_bundle;
-  TestingProfile profile;
-#if defined(OS_CHROMEOS)
-  EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
-            AccountConsistencyModeManager::GetMethodForProfile(&profile));
-#else
-  EXPECT_EQ(signin::AccountConsistencyMethod::kDiceMigration,
-            AccountConsistencyModeManager::GetMethodForProfile(&profile));
-#endif
-}
-#endif

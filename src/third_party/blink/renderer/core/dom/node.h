@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 // This needs to be here because element.cc also depends on it.
@@ -92,9 +91,6 @@ enum StyleChangeType {
   kLocalStyleChange = 1 << kNodeStyleChangeShift,
   // This node and all of its flat-tree descendeants need style recalculation.
   kSubtreeStyleChange = 2 << kNodeStyleChangeShift,
-  // This node and all of its descendants are detached and need style
-  // recalculation.
-  kNeedsReattachStyleChange = 3 << kNodeStyleChangeShift,
 };
 
 enum class CustomElementState {
@@ -114,8 +110,16 @@ enum class SlotChangeType {
 
 enum class CloneChildrenFlag { kClone, kSkip };
 
-class Node;
-WILL_NOT_BE_EAGERLY_TRACED_CLASS(Node);
+// Whether or not to force creation of a legacy layout object (i.e. disallow
+// LayoutNG).
+enum class LegacyLayout {
+  // Allow LayoutNG, if nothing else is preventing it (runtime feature disabled,
+  // specific object type not yet implemented, Element says no, etc.)
+  kAuto,
+
+  // Force legacy layout object creation.
+  kForce
+};
 
 // A Node is a base class for all objects in the DOM tree.
 // The spec governing this interface can be found here:
@@ -263,13 +267,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   bool SupportsAltText();
 
-  void SetNonAttachedStyle(scoped_refptr<ComputedStyle> non_attached_style);
-
-  ComputedStyle* GetNonAttachedStyle() const {
-    return HasRareData()
-               ? data_.rare_data_->GetNodeRenderingData()->GetNonAttachedStyle()
-               : data_.node_layout_data_->GetNonAttachedStyle();
-  }
+  void SetComputedStyle(scoped_refptr<ComputedStyle> computed_style);
 
   // Other methods (not part of DOM)
 
@@ -317,6 +315,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   virtual bool IsMediaControlElement() const { return false; }
   virtual bool IsMediaControls() const { return false; }
+  virtual bool IsMediaElement() const { return false; }
   virtual bool IsTextTrackContainer() const { return false; }
   virtual bool IsVTTElement() const { return false; }
   virtual bool IsAttributeNode() const { return false; }
@@ -428,17 +427,9 @@ class CORE_EXPORT Node : public EventTarget {
     return IsUserActionElement() && IsUserActionElementHasFocusWithin();
   }
 
-  bool NeedsAttach() const {
-    return GetStyleChangeType() == kNeedsReattachStyleChange;
-  }
   // True if the style recalc process should recalculate style for this node.
   bool NeedsStyleRecalc() const {
-    // We do not ClearNeedsStyleRecalc() if the recalc triggers a layout re-
-    // attachment (see Element::RecalcStyle()). In order to avoid doing an extra
-    // StyleForLayoutObject for slotted elements, also check if we have been
-    // marked for re-attachment (which mean we have already gone through
-    // RecalcStyleForReattachment as a slot-assigned element).
-    return GetStyleChangeType() != kNoStyleChange && !NeedsReattachLayoutTree();
+    return GetStyleChangeType() != kNoStyleChange;
   }
   StyleChangeType GetStyleChangeType() const {
     return static_cast<StyleChangeType>(node_flags_ & kStyleChangeMask);
@@ -469,6 +460,17 @@ class CORE_EXPORT Node : public EventTarget {
   // Propagates a dirty bit breadcrumb for this element up the ancestor chain.
   void MarkAncestorsWithChildNeedsStyleRecalc();
 
+  // Nodes which are not connected are style clean. Mark them for style recalc
+  // when inserting them into a document. This method was added as a light-
+  // weight alternative to SetNeedsStyleRecalc because using that method caused
+  // a micro-benchmark regression (https://crbug.com/926343).
+  void SetStyleChangeOnInsertion() {
+    DCHECK(isConnected());
+    if (!NeedsStyleRecalc())
+      SetStyleChange(kLocalStyleChange);
+    MarkAncestorsWithChildNeedsStyleRecalc();
+  }
+
   bool NeedsReattachLayoutTree() const {
     return GetFlag(kNeedsReattachLayoutTree);
   }
@@ -488,8 +490,12 @@ class CORE_EXPORT Node : public EventTarget {
 
   void MarkAncestorsWithChildNeedsReattachLayoutTree();
 
-  void SetForceReattachLayoutTree() { SetFlag(kForceReattachLayoutTree); }
-  bool GetForceReattachLayoutTree() {
+  // Mark node for forced layout tree re-attach during next lifecycle update.
+  // This is to trigger layout tree re-attachment when we cannot detect that we
+  // need to re-attach based on the computed style changes. This can happen when
+  // re-slotting shadow host children, for instance.
+  void SetForceReattachLayoutTree();
+  bool GetForceReattachLayoutTree() const {
     return GetFlag(kForceReattachLayoutTree);
   }
 
@@ -572,7 +578,7 @@ class CORE_EXPORT Node : public EventTarget {
   virtual bool ShouldHaveFocusAppearance() const;
 
   // Whether the node is inert:
-  // https://html.spec.whatwg.org/multipage/interaction.html#inert
+  // https://html.spec.whatwg.org/C/#inert
   // https://github.com/WICG/inert/blob/master/README.md
   // This can't be in Element because text nodes must be recognized as
   // inert to prevent text selection.
@@ -671,6 +677,8 @@ class CORE_EXPORT Node : public EventTarget {
     bool performing_reattach = false;
     // True if the previous_in_flow member is up-to-date, even if it is nullptr.
     bool use_previous_in_flow = false;
+    // True if we need to force legacy layout objects for the entire subtree.
+    bool force_legacy_layout = false;
 
     AttachContext() {}
   };
@@ -691,11 +699,11 @@ class CORE_EXPORT Node : public EventTarget {
     ReattachLayoutTree(context);
   }
   void ReattachLayoutTree(AttachContext&);
-  void LazyReattachIfAttached();
 
-  // Returns true if recalcStyle should be called on the object, if there is
-  // such a method (on Document and Element).
-  bool ShouldCallRecalcStyle(StyleRecalcChange);
+  // TODO(futhark): Get rid of this method by replacing it with
+  // SetForceReattachLayoutTree + SetNeedsStyleRecalc, or DetachLayoutTree as
+  // appropriate.
+  void LazyReattachIfAttached();
 
   // ---------------------------------------------------------------------------
   // Inline ComputedStyle accessors
@@ -703,13 +711,10 @@ class CORE_EXPORT Node : public EventTarget {
   // Note that the following 'inline' functions are not defined in this header,
   // but in node_computed_style.h. Please include that file if you want to use
   // these functions.
-
-  // Wrapper for nodes that don't have a layoutObject, but still cache the style
-  // (like HTMLOptionElement).
-  inline ComputedStyle* MutableComputedStyle() const;
-  inline const ComputedStyle* GetComputedStyle() const;
-  inline const ComputedStyle* ParentComputedStyle() const;
-  inline const ComputedStyle& ComputedStyleRef() const;
+  ComputedStyle* MutableComputedStyle() const;
+  const ComputedStyle* GetComputedStyle() const;
+  const ComputedStyle* ParentComputedStyle() const;
+  const ComputedStyle& ComputedStyleRef() const;
 
   const ComputedStyle* EnsureComputedStyle(
       PseudoId pseudo_element_specifier = kPseudoIdNone) {
@@ -786,18 +791,15 @@ class CORE_EXPORT Node : public EventTarget {
 
   virtual bool WillRespondToMouseMoveEvents();
   virtual bool WillRespondToMouseClickEvents();
-  virtual bool WillRespondToTouchEvents();
 
   enum ShadowTreesTreatment {
     kTreatShadowTreesAsDisconnected,
     kTreatShadowTreesAsComposed
   };
 
-  unsigned short compareDocumentPosition(
+  uint16_t compareDocumentPosition(
       const Node*,
       ShadowTreesTreatment = kTreatShadowTreesAsDisconnected) const;
-
-  Node* ToNode() final;
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const final;
@@ -856,7 +858,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   StaticNodeList* getDestinationInsertionPoints();
   HTMLSlotElement* AssignedSlot() const;
-  HTMLSlotElement* FinalDestinationSlot() const;
   HTMLSlotElement* assignedSlotForBinding();
 
   bool IsFinishedParsingChildren() const {
@@ -869,6 +870,13 @@ class CORE_EXPORT Node : public EventTarget {
   }
   void CheckSlotChangeBeforeRemoved() {
     CheckSlotChange(SlotChangeType::kSignalSlotChangeEvent);
+  }
+
+  void FlatTreeParentChanged();
+  void RemovedFromFlatTree() {
+    // This node was previously part of the flat tree, but due to slot re-
+    // assignment it no longer is. We need to detach the layout tree.
+    DetachLayoutTree();
   }
 
   void SetHasDuplicateAttributes() { SetFlag(kHasDuplicateAttributes); }
@@ -888,7 +896,7 @@ class CORE_EXPORT Node : public EventTarget {
   // If the node is a plugin, then this returns its WebPluginContainer.
   WebPluginContainerImpl* GetWebPluginContainer() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   enum NodeFlags {
@@ -945,8 +953,7 @@ class CORE_EXPORT Node : public EventTarget {
 
     kForceReattachLayoutTree = 1 << 30,
 
-    kDefaultNodeFlags =
-        kIsFinishedParsingChildrenFlag | kNeedsReattachStyleChange
+    kDefaultNodeFlags = kIsFinishedParsingChildrenFlag,
   };
 
   // 1 bit remaining.
@@ -962,8 +969,7 @@ class CORE_EXPORT Node : public EventTarget {
   enum ConstructionType {
     kCreateOther = kIsFinishedParsingChildrenFlag,
     kCreateText = kDefaultNodeFlags | kIsTextFlag,
-    kCreateContainer =
-        kDefaultNodeFlags | kChildNeedsStyleRecalcFlag | kIsContainerFlag,
+    kCreateContainer = kDefaultNodeFlags | kIsContainerFlag,
     kCreateElement = kCreateContainer | kIsElementFlag,
     kCreateShadowRoot =
         kCreateContainer | kIsDocumentFragmentFlag | kIsInShadowTreeFlag,
@@ -1005,11 +1011,6 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   void SetTreeScope(TreeScope* scope) { tree_scope_ = scope; }
-
-  static void MarkAncestorsWithChildNeedsStyleRecalc(Node* child) {
-    child->MarkAncestorsWithChildNeedsStyleRecalc();
-  }
-
   void SetIsFinishedParsingChildren(bool value) {
     SetFlag(value, kIsFinishedParsingChildrenFlag);
   }
@@ -1022,6 +1023,8 @@ class CORE_EXPORT Node : public EventTarget {
   // per-thread.
   virtual String DebugNodeName() const;
 
+  Node* ToNode() final;
+
   bool IsUserActionElementActive() const;
   bool IsUserActionElementInActiveChain() const;
   bool IsUserActionElementDragged() const;
@@ -1032,7 +1035,9 @@ class CORE_EXPORT Node : public EventTarget {
   void UpdateDistributionInternal();
   void RecalcDistribution();
 
-  void SetStyleChange(StyleChangeType);
+  void SetStyleChange(StyleChangeType change_type) {
+    node_flags_ = (node_flags_ & ~kStyleChangeMask) | change_type;
+  }
 
   virtual const ComputedStyle* VirtualEnsureComputedStyle(
       PseudoId = kPseudoIdNone);
@@ -1041,16 +1046,16 @@ class CORE_EXPORT Node : public EventTarget {
 
   NodeRareData& CreateRareData();
 
-  const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
+  const HeapVector<Member<MutationObserverRegistration>>*
   MutationObserverRegistry();
-  const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
+  const HeapHashSet<Member<MutationObserverRegistration>>*
   TransientMutationObserverRegistry();
 
   uint32_t node_flags_;
-  TraceWrapperMember<Node> parent_or_shadow_host_node_;
+  Member<Node> parent_or_shadow_host_node_;
   Member<TreeScope> tree_scope_;
-  TraceWrapperMember<Node> previous_;
-  TraceWrapperMember<Node> next_;
+  Member<Node> previous_;
+  Member<Node> next_;
   // When a node has rare data we move the layoutObject into the rare data.
   union DataUnion {
     DataUnion() : node_layout_data_(&NodeRenderingData::SharedEmptyData()) {}
@@ -1071,28 +1076,6 @@ inline ContainerNode* Node::ParentOrShadowHostNode() const {
   return reinterpret_cast<ContainerNode*>(parent_or_shadow_host_node_.Get());
 }
 
-inline void Node::LazyReattachIfAttached() {
-  if (NeedsAttach())
-    return;
-  if (!InActiveDocument())
-    return;
-
-  AttachContext context;
-  context.performing_reattach = true;
-
-  DetachLayoutTree(context);
-  // Comments and processing instructions are never marked dirty.
-  if (NeedsStyleRecalc())
-    MarkAncestorsWithChildNeedsStyleRecalc();
-}
-
-inline bool Node::ShouldCallRecalcStyle(StyleRecalcChange change) {
-  if (NeedsReattachLayoutTree())
-    return false;
-  return change >= kIndependentInherit || NeedsStyleRecalc() ||
-         ChildNeedsStyleRecalc();
-}
-
 // Allow equality comparisons of Nodes by reference or pointer, interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Node)
 
@@ -1106,7 +1089,7 @@ DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Node)
 
 #define DECLARE_NODE_FACTORY(T) static T* Create(Document&)
 #define DEFINE_NODE_FACTORY(T) \
-  T* T::Create(Document& document) { return new T(document); }
+  T* T::Create(Document& document) { return MakeGarbageCollected<T>(document); }
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const Node&);
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const Node*);

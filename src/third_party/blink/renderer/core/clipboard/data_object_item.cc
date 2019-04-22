@@ -128,7 +128,7 @@ File* DataObjectItem::GetAsFile() const {
       return file_.Get();
     DCHECK(shared_buffer_);
     // FIXME: This code is currently impossible--we never populate
-    // m_sharedBuffer when dragging in. At some point though, we may need to
+    // |shared_buffer_| when dragging in. At some point though, we may need to
     // support correctly converting a shared buffer into a file.
     return nullptr;
   }
@@ -139,7 +139,7 @@ File* DataObjectItem::GetAsFile() const {
         mojom::ClipboardBuffer::kStandard);
     std::vector<unsigned char> png_data;
     if (gfx::PNGCodec::FastEncodeBGRASkBitmap(image, false, &png_data)) {
-      std::unique_ptr<BlobData> data = BlobData::Create();
+      auto data = std::make_unique<BlobData>();
       data->SetContentType(kMimeTypeImagePng);
       data->AppendBytes(png_data.data(), png_data.size());
       const uint64_t length = data->length();

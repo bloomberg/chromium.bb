@@ -6,10 +6,8 @@
 import cStringIO
 import contextlib
 import copy
-import difflib
 import glob
 import itertools
-import logging
 import os
 import unittest
 import re
@@ -24,6 +22,7 @@ import describe
 import diff
 import file_format
 import models
+import test_util
 
 
 _SCRIPT_DIR = os.path.dirname(__file__)
@@ -43,6 +42,7 @@ _TEST_APK_PAK_PATH = os.path.join(_TEST_APK_ROOT_DIR, 'assets/resources.pak')
 # The following files are dynamically created.
 _TEST_ELF_PATH = os.path.join(_TEST_OUTPUT_DIR, 'elf')
 _TEST_APK_PATH = os.path.join(_TEST_OUTPUT_DIR, 'test.apk')
+_TEST_MINIMAL_APKS_PATH = os.path.join(_TEST_OUTPUT_DIR, 'Bundle.minimal.apks')
 
 # Generated file paths relative to apk
 _TEST_APK_SO_PATH = 'test.so'
@@ -50,15 +50,6 @@ _TEST_APK_SMALL_SO_PATH = 'smalltest.so'
 _TEST_APK_DEX_PATH = 'test.dex'
 _TEST_APK_OTHER_FILE_PATH = 'assets/icudtl.dat'
 _TEST_APK_RES_FILE_PATH = 'res/drawable-v13/test.xml'
-
-update_goldens = False
-
-
-def _AssertGolden(expected_lines, actual_lines, golden_path):
-  expected = list(expected_lines)
-  actual = list(l + '\n' for l in actual_lines)
-  assert actual == expected, (('Did not match %s.\n' % golden_path) +
-      ''.join(difflib.unified_diff(expected, actual, 'expected', 'actual')))
 
 
 def _CompareWithGolden(name=None):
@@ -74,14 +65,8 @@ def _CompareWithGolden(name=None):
                       for l in actual_lines)
       actual_lines = (re.sub(r'(Loaded from ).*', r'\1{redacted}', l)
                       for l in actual_lines)
+      test_util.Golden.CheckOrUpdate(golden_path, actual_lines)
 
-      if update_goldens:
-        with open(golden_path, 'w') as file_obj:
-          describe.WriteLines(actual_lines, file_obj.write)
-        logging.info('Wrote %s', golden_path)
-      else:
-        with open(golden_path) as file_obj:
-          _AssertGolden(file_obj, actual_lines, golden_path)
     return inner
   return real_decorator
 
@@ -137,6 +122,7 @@ class IntegrationTest(unittest.TestCase):
     # Exactly 128MB of data (2^27), extra bytes will be accounted in overhead.
     with open(_TEST_ELF_PATH, 'a') as elf_file:
       elf_file.write(IntegrationTest._CreateBlankData(27))
+
     with zipfile.ZipFile(_TEST_APK_PATH, 'w') as apk_file:
       apk_file.write(_TEST_ELF_PATH, _TEST_APK_SO_PATH)
       # Exactly 4MB of data (2^22).
@@ -157,18 +143,27 @@ class IntegrationTest(unittest.TestCase):
       apk_file.writestr(
           _TEST_APK_DEX_PATH, IntegrationTest._CreateBlankData(23))
 
+    with zipfile.ZipFile(_TEST_MINIMAL_APKS_PATH, 'w') as apk_file:
+      apk_file.write(_TEST_APK_PATH, 'splits/base-master.apk')
+      apk_file.writestr('splits/base-en.apk', 'x' * 10)
+      apk_file.writestr('splits/vr-master.apk', 'x' * 20)
+      apk_file.writestr('splits/vr-en.apk', 'x' * 40)
+      apk_file.writestr('toc.pb', 'x' * 80)
+
   @classmethod
   def tearDownClass(cls):
     IntegrationTest._SafeRemoveFiles([
       _TEST_ELF_PATH,
       _TEST_APK_PATH,
+      _TEST_MINIMAL_APKS_PATH,
     ])
 
   def _CloneSizeInfo(self, use_output_directory=True, use_elf=True,
-                     use_apk=False, use_pak=False):
+                     use_apk=False, use_minimal_apks=False, use_pak=False):
     assert not use_elf or use_output_directory
     assert not (use_apk and use_pak)
-    cache_key = (use_output_directory, use_elf, use_apk, use_pak)
+    cache_key = (
+        use_output_directory, use_elf, use_apk, use_minimal_apks, use_pak)
     if cache_key not in IntegrationTest.cached_size_info:
       elf_path = _TEST_ELF_PATH if use_elf else None
       output_directory = _TEST_OUTPUT_DIR if use_output_directory else None
@@ -178,10 +173,24 @@ class IntegrationTest(unittest.TestCase):
       knobs.max_same_name_alias_count = 3
       knobs.src_root = _TEST_SOURCE_DIR
       apk_path = None
+      minimal_apks_path = None
       apk_so_path = None
+      size_info_prefix = None
+      extracted_minimal_apk_path = None
       if use_apk:
         apk_path = _TEST_APK_PATH
+      elif use_minimal_apks:
+        minimal_apks_path = _TEST_MINIMAL_APKS_PATH
+        extracted_minimal_apk_path = _TEST_APK_PATH
+      if use_apk or use_minimal_apks:
         apk_so_path = _TEST_APK_SO_PATH
+        if output_directory:
+          if use_apk:
+            orig_path = _TEST_APK_PATH
+          else:
+            orig_path = _TEST_MINIMAL_APKS_PATH.replace('.minimal.apks', '.aab')
+          size_info_prefix = os.path.join(
+              output_directory, 'size-info', os.path.basename(orig_path))
       pak_files = None
       pak_info_file = None
       if use_pak:
@@ -192,20 +201,22 @@ class IntegrationTest(unittest.TestCase):
       if use_elf:
         with _AddMocksToPath():
           metadata = archive.CreateMetadata(
-              _TEST_MAP_PATH, elf_path, apk_path, _TEST_TOOL_PREFIX,
-              output_directory, linker_name)
+              _TEST_MAP_PATH, elf_path, apk_path, minimal_apks_path,
+              _TEST_TOOL_PREFIX, output_directory, linker_name)
       section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
           map_path=_TEST_MAP_PATH, tool_prefix=_TEST_TOOL_PREFIX,
           elf_path=elf_path, output_directory=output_directory,
-          apk_path=apk_path, apk_so_path=apk_so_path, metadata=metadata,
-          pak_files=pak_files, pak_info_file=pak_info_file,
-          linker_name=linker_name, knobs=knobs)
+          apk_path=apk_path or extracted_minimal_apk_path,
+          apk_so_path=apk_so_path, metadata=metadata, pak_files=pak_files,
+          pak_info_file=pak_info_file, linker_name=linker_name,
+          size_info_prefix=size_info_prefix, knobs=knobs)
       IntegrationTest.cached_size_info[cache_key] = archive.CreateSizeInfo(
           section_sizes, raw_symbols, metadata=metadata)
     return copy.deepcopy(IntegrationTest.cached_size_info[cache_key])
 
   def _DoArchive(self, archive_path, use_output_directory=True, use_elf=True,
-                 use_apk=False, use_pak=False, debug_measures=False):
+                 use_apk=False, use_minimal_apks=False, use_pak=False,
+                 debug_measures=False):
     args = [
       archive_path,
       '--map-file', _TEST_MAP_PATH,
@@ -217,10 +228,15 @@ class IntegrationTest(unittest.TestCase):
         args += ['--output-directory', _TEST_OUTPUT_DIR]
     else:
       args += ['--no-source-paths']
-    if use_elf:
-      args += ['--elf-file', _TEST_ELF_PATH]
     if use_apk:
-      args += ['--apk-file', _TEST_APK_PATH]
+      args += ['-f', _TEST_APK_PATH]
+    elif use_minimal_apks:
+      args += ['-f', _TEST_MINIMAL_APKS_PATH]
+    if use_elf:
+      if use_apk or use_minimal_apks:
+        args += ['--elf-file', _TEST_ELF_PATH]
+      else:
+        args += ['-f', _TEST_ELF_PATH]
     if use_pak:
       args += ['--pak-file', _TEST_APK_LOCALE_PAK_PATH,
                '--pak-file', _TEST_APK_PAK_PATH,
@@ -228,17 +244,18 @@ class IntegrationTest(unittest.TestCase):
     _RunApp('archive', args, debug_measures=debug_measures)
 
   def _DoArchiveTest(self, use_output_directory=True, use_elf=True,
-                     use_apk=False, use_pak=False, debug_measures=False):
+                     use_apk=False, use_minimal_apks=False, use_pak=False,
+                     debug_measures=False):
     with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
       self._DoArchive(
           temp_file.name, use_output_directory=use_output_directory,
-          use_elf=use_elf, use_apk=use_apk, use_pak=use_pak,
-          debug_measures=debug_measures)
+          use_elf=use_elf, use_apk=use_apk, use_minimal_apks=use_minimal_apks,
+          use_pak=use_pak, debug_measures=debug_measures)
       size_info = archive.LoadAndPostProcessSizeInfo(temp_file.name)
     # Check that saving & loading is the same as directly parsing.
     expected_size_info = self._CloneSizeInfo(
         use_output_directory=use_output_directory, use_elf=use_elf,
-        use_apk=use_apk, use_pak=use_pak)
+        use_apk=use_apk, use_minimal_apks=use_minimal_apks, use_pak=use_pak)
     self.assertEquals(expected_size_info.metadata, size_info.metadata)
     # Don't cluster.
     expected_size_info.symbols = expected_size_info.raw_symbols
@@ -270,6 +287,10 @@ class IntegrationTest(unittest.TestCase):
   @_CompareWithGolden()
   def test_Archive_Apk(self):
     return self._DoArchiveTest(use_apk=True)
+
+  @_CompareWithGolden()
+  def test_Archive_MinimalApks(self):
+    return self._DoArchiveTest(use_minimal_apks=True)
 
   @_CompareWithGolden()
   def test_Archive_Pak_Files(self):
@@ -516,8 +537,7 @@ def main():
   argv = sys.argv
   if len(argv) > 1 and argv[1] == '--update':
     argv.pop(0)
-    global update_goldens
-    update_goldens = True
+    test_util.Golden.EnableUpdate()
     for f in glob.glob(os.path.join(_TEST_DATA_DIR, '*.golden')):
       os.unlink(f)
 

@@ -1,10 +1,12 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 static int SleepTime=0;
 
 void InitSystemOptions(int SleepTime)
 {
-  ::SleepTime=SleepTime;
+  ::third_party_unrar::SleepTime=SleepTime;
 }
 
 
@@ -115,11 +117,13 @@ void Shutdown(POWER_MODE Mode)
     AdjustTokenPrivileges(hToken,FALSE,&tkp,0,(PTOKEN_PRIVILEGES)NULL,0);
   }
   if (Mode==POWERMODE_OFF)
-    ExitWindowsEx(EWX_SHUTDOWN|EWX_FORCE|EWX_POWEROFF,SHTDN_REASON_FLAG_PLANNED);
+    ExitWindowsEx(EWX_SHUTDOWN|EWX_FORCE,SHTDN_REASON_FLAG_PLANNED);
   if (Mode==POWERMODE_SLEEP)
     SetSuspendState(FALSE,FALSE,FALSE);
   if (Mode==POWERMODE_HIBERNATE)
     SetSuspendState(TRUE,FALSE,FALSE);
+  if (Mode==POWERMODE_RESTART)
+    ExitWindowsEx(EWX_REBOOT|EWX_FORCE,SHTDN_REASON_FLAG_PLANNED);
 }
 #endif
 
@@ -178,3 +182,5 @@ SSE_VERSION GetSSEVersion()
   return SSE_NONE;
 }
 #endif
+
+}  // namespace third_party_unrar

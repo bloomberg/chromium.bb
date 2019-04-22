@@ -14,12 +14,15 @@
 // This file contains classes for dealing with the STUN protocol, as specified
 // in RFC 5389, and its descendants.
 
+#include <stddef.h>
+#include <stdint.h>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "rtc_base/bytebuffer.h"
-#include "rtc_base/socketaddress.h"
+#include "rtc_base/byte_buffer.h"
+#include "rtc_base/ip_address.h"
+#include "rtc_base/socket_address.h"
 
 namespace cricket {
 
@@ -107,7 +110,7 @@ const size_t kStunHeaderSize = 20;
 const size_t kStunTransactionIdOffset = 8;
 const size_t kStunTransactionIdLength = 12;
 const uint32_t kStunMagicCookie = 0x2112A442;
-const size_t kStunMagicCookieLength = sizeof(kStunMagicCookie);
+constexpr size_t kStunMagicCookieLength = sizeof(kStunMagicCookie);
 
 // Following value corresponds to an earlier version of STUN from
 // RFC3489.
@@ -116,14 +119,15 @@ const size_t kStunLegacyTransactionIdLength = 16;
 // STUN Message Integrity HMAC length.
 const size_t kStunMessageIntegritySize = 20;
 
-class StunAttribute;
 class StunAddressAttribute;
-class StunXorAddressAttribute;
-class StunUInt32Attribute;
-class StunUInt64Attribute;
+class StunAttribute;
 class StunByteStringAttribute;
 class StunErrorCodeAttribute;
+
 class StunUInt16ListAttribute;
+class StunUInt32Attribute;
+class StunUInt64Attribute;
+class StunXorAddressAttribute;
 
 // Records a complete STUN/TURN message.  Each message consists of a type and
 // any number of attributes.  Each attribute is parsed into an instance of an
@@ -137,6 +141,7 @@ class StunMessage {
   int type() const { return type_; }
   size_t length() const { return length_; }
   const std::string& transaction_id() const { return transaction_id_; }
+  uint32_t reduced_transaction_id() const { return reduced_transaction_id_; }
 
   // Returns true if the message confirms to RFC3489 rather than
   // RFC5389. The main difference between two version of the STUN
@@ -210,6 +215,7 @@ class StunMessage {
   uint16_t type_;
   uint16_t length_;
   std::string transaction_id_;
+  uint32_t reduced_transaction_id_;
   std::vector<std::unique_ptr<StunAttribute>> attrs_;
   uint32_t stun_magic_cookie_;
 };

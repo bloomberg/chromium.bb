@@ -188,6 +188,45 @@ class TestImporterTest(LoggingTestCase):
             importer.git_cl.calls,
             [['git', 'cl', 'try'], ['git', 'cl', 'set-close']])
 
+    def test_submit_cl_timeout_and_already_merged(self):
+        # Here we simulate a case where we timeout waiting for the CQ to submit a
+        # CL because we miss the notification that it was merged. We then get an
+        # error when trying to close the CL because it's already been merged.
+        host = MockHost()
+        host.filesystem.write_text_file(MOCK_WEB_TESTS + 'W3CImportExpectations', '')
+        importer = TestImporter(host)
+        # Define some error text that looks like a typical ScriptError.
+        git_error_text = (
+            'This is a git Script Error\n'
+            '...there is usually a stack trace here with some calls\n'
+            '...and maybe other calls\n'
+            'And finally, there is the exception:\n'
+            'GerritError: Conflict: change is merged\n'
+        )
+        importer.git_cl = MockGitCL(
+            host, status='lgtm', git_error_output={'set-close': git_error_text},
+            # Only the latest job for each builder is counted.
+            try_job_results={
+                Build('cq-builder-a', 120): TryJobStatus('COMPLETED', 'FAILURE'),
+                Build('cq-builder-a', 123): TryJobStatus('COMPLETED', 'SUCCESS')})
+        importer.git_cl.wait_for_closed_status = lambda: False
+        success = importer.run_commit_queue_for_cl()
+        # Since the CL is already merged, we absorb the error and treat it as success.
+        self.assertTrue(success)
+        self.assertLog([
+            'INFO: Triggering CQ try jobs.\n',
+            'INFO: All jobs finished.\n',
+            'INFO: CQ appears to have passed; trying to commit.\n',
+            'ERROR: Cannot submit CL; aborting.\n',
+            'ERROR: CL is already merged; treating as success.\n',
+        ])
+        self.assertEqual(importer.git_cl.calls, [
+            ['git', 'cl', 'try'],
+            ['git', 'cl', 'upload', '-f', '--send-mail'],
+            ['git', 'cl', 'set-commit'],
+            ['git', 'cl', 'set-close'],
+        ])
+
     def test_apply_exportable_commits_locally(self):
         # TODO(robertma): Consider using MockLocalWPT.
         host = MockHost()
@@ -460,6 +499,7 @@ class TestImporterTest(LoggingTestCase):
                     '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
                     'manifest',
                     '--work',
+                    '--no-download',
                     '--tests-root',
                     MOCK_WEB_TESTS + 'external/wpt',
                 ]
@@ -547,6 +587,10 @@ class TestImporterTest(LoggingTestCase):
         host.filesystem.write_text_file(dest_path + '/foo-test-expected.txt', '')
         host.filesystem.write_text_file(dest_path + '/OWNERS', '')
         host.filesystem.write_text_file(dest_path + '/bar/baz/OWNERS', '')
+        # TODO(crbug.com/927187): Delete it once webdrive/tests manual import is done.
+        host.filesystem.write_text_file(dest_path + '/webdriver/tests/A.txt', '')
+        host.filesystem.write_text_file(dest_path + '/webdriver/tests/test/assert.py', '')
+        host.filesystem.write_text_file(dest_path + '/webdriver/META.yml', '')
         # When the destination path is cleared, OWNERS files and baselines
         # are kept.
         importer._clear_out_dest_path()
@@ -554,3 +598,7 @@ class TestImporterTest(LoggingTestCase):
         self.assertTrue(host.filesystem.exists(dest_path + '/foo-test-expected.txt'))
         self.assertTrue(host.filesystem.exists(dest_path + '/OWNERS'))
         self.assertTrue(host.filesystem.exists(dest_path + '/bar/baz/OWNERS'))
+
+        self.assertTrue(host.filesystem.exists(dest_path + '/webdriver/tests/A.txt'))
+        self.assertTrue(host.filesystem.exists(dest_path + '/webdriver/tests/test/assert.py'))
+        self.assertTrue(host.filesystem.exists(dest_path + '/webdriver/META.yml'))

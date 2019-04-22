@@ -28,11 +28,14 @@
 #include "third_party/blink/renderer/core/css/css_reflection_direction.h"
 #include "third_party/blink/renderer/core/style/nine_piece_image.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
 class StyleReflection : public RefCounted<StyleReflection> {
+  USING_FAST_MALLOC(StyleReflection);
+
  public:
   static scoped_refptr<StyleReflection> Create() {
     return base::AdoptRef(new StyleReflection);
@@ -45,7 +48,7 @@ class StyleReflection : public RefCounted<StyleReflection> {
   bool operator!=(const StyleReflection& o) const { return !(*this == o); }
 
   CSSReflectionDirection Direction() const { return direction_; }
-  Length Offset() const { return offset_; }
+  const Length& Offset() const { return offset_; }
   const NinePieceImage& Mask() const { return mask_; }
 
   void SetDirection(CSSReflectionDirection dir) { direction_ = dir; }
@@ -55,7 +58,7 @@ class StyleReflection : public RefCounted<StyleReflection> {
  private:
   StyleReflection()
       : direction_(kReflectionBelow),
-        offset_(0, kFixed),
+        offset_(Length::Fixed(0)),
         mask_(NinePieceImage::MaskDefaults()) {}
 
   CSSReflectionDirection direction_;

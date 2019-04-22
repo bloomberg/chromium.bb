@@ -1,7 +1,7 @@
-liblouis 2.6.0 has been released
+liblouis 3.7.0 has been released
 
 The liblouis developer team is proud to announce the liblouis release
-2.6.0 The release is available for download at:
+3.7.0. The release is available for download at:
 
     https://github.com/liblouis/liblouis/releases
 
@@ -12,97 +12,128 @@ Liblouis is an open-source braille translator and back-translator. It
 features support for computer, literary and math braille, supports
 contracted and uncontracted translation for many, many languages[1].
 It plays an important role in an open source accessibility stack and
-is used by screenreaders such as NVDA and Orca. A companion project
-liblouisutdml[2] deals with formatting of braille.
-
-Next release
-============
-
-The next release will be published on December 1st so please keep
-those improvements coming.
+is used by screenreaders such as NVDA, Orca and JAWS. A companion
+project liblouisutdml[2] deals with formatting of braille.
 
 Changes in this release
 =======================
 
-This is the first release by the new maintainer team. A lot of work by
-people from across the community contributed to this release. There
-are massive additions and updates to the Braille tables (e.g.
-Afrikaans, Hebrew, many Indian languages, Korean) and also changes to
-the C API to enable call backs for error messages and warnings.
+This release implements major improvements for back-translation thanks
+to concerted efforts by Bue Vester-Andersen, Bert Frees, Timothy Lee
+and others. In particular the input/output positions are now correct
+also for back-translation. There are new and improved Chinese Braille
+tables and some long awaited improvements to UEB. The release also has
+some code cleanups and documentation improvements.
+
+For a detailed list of all the changes refer to the list of closed
+issues[3].
 
 New features
 ~~~~~~~~~~~~
 
-New Braille tables
-------------------
-
-Tables for Afrikaans, Cherokee, Hawaiian, Maori, Sotho and Tswana were
-donated by Greg Kearney. Afrikaans, Cherokee, Maori and Hawaiian all
-are grade 1 tables and with the exception of Cherokee were derived
-from World Braille Usage 2013. The Cherokee was taken from the
-specification published at www.cbtbc.org/cherokee/.
-
-Logging callback
-----------------
-
-There is now a callback system in place to get error messages and
-warnings. This can be used from programs that use liblouis to log
-warnings for example.
+- Added a new opcode `midendnumericmodechars'. Characters defined with
+  this opcode can appear in the middle or at the end of a number
+  without canceling numeric mode. Thanks to Bue Vester-Andersen.
 
 Bug fixes
 ~~~~~~~~~
 
-- fix back translation problems when word gets split in unusual places
-  causing back translation of whole words for example K5 back
-  translates to Knowledgeen, M>k back translates to Moreark, and M5
-  back translates to Moren. This caused over 8400 extra back
-  translation errors in en-us-g2 and 5000 in en-ueb-g2. Thanks to Ken
-  Perry.
-- Fixed bug to prevent removal of \xffff between largesign rules. This
-  solves a Liblouisutdml bug where \xffff is used as a segment
-  delimiter.
-- Fixed a bug in back translation, when a letsign was encountered, the
-  letsign was being applied beyond the element it applied to.
-- Fix memory leaks in the default table resolver introduced in the
-  previous release.
-- Fixes to the build system by Simon Aittamaa
+- Fix another stack-based buffer overflow in input parsing reported by
+  Henri Salo thanks to Christian Egli.
+- Fix input/output positions for back-translation. Thanks to excellent
+  bug reports and patches by Timothy Lee, Bert Frees heroically sat
+  down and reworked the handling of the input/output positions for
+  back-translation. This solves numerous issues with backward
+  translation.
+- The returned `inlen' and `outlen' now always match thanks to the
+  above work on input/output positions by Bert Frees.
+- Major improvements in the back-translation of capitalized words
+  (`capsword') in conjunction with punctuation and numbers. Thanks to
+  Bue Vester-Andersen
+- Fixed a problem in the back-translation of numbers in conjunction
+  with punctuation and letters. Thanks to Rimas Kudelis and Bue
+  Vester-Andersen
+- Fix a buffer overflow in `matchCurrentInput'. Thanks to Hongxu Chen
+  for reporting and to Christian Egli for fixing it.
 
 Braille table improvements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Major improvements to Indian tables thanks to the Indian National
-  Institute for Visually Handicapped, in particular Dipendra Manocha,
-  Mesar Hameed, Dinesh Kaushall and Sreeja Parameswaran:
-  - Corrected opcodes for letters, punctuation marks, digits, signs
-    etc.
-  - Updated braille codes according to prescribed braille codes for
-    each Unicode character by the Braille Council of India for all
-    Indian languages.
-  - defined rules for dealing with Nukhta character in Hindi table
-  - defined rule to insert dot-1 between consonant followed by full
-    vowel character in all Indian Languages
-  - defined rules for shifting of halant character before the
-    consonant. This character is placed after the consonant in normal
-    typing but need to be before the consonant in braille. This rule
-    is applicable for all Indian languages.
-  - defined rules for two conjunct characters "ksha and gya" used in
-    all Indian Languages for which there are specific codes in
-    Braille.
-- New Hebrew table that is based on the new unified Hebrew Braille
-  code standard that was put together on January 2014 after a
-  conference with all of the specialists in this field in Israel. It
-  includes improved representation of Hebrew letters, special letters
-  that are called Nikud, and punctuation symbols. The old Braille
-  standard is not relevant any more. Thanks to Adi Kushnir.
-- UEB table fixes: Fix ity contraction, fixed the missing end word
-  contraction ;n ;d sign 46. thanks to Ken Perry.
-- Fix for Norwegian where letsign is affecting some extra characters
-  thanks to Lars Bjørndal
-- Much improved hyphenation for Norwegian thanks to Lars Bjørndal
-- Korean Grade 2 now includes support for reading English text using
-  grade 2.
-- en-us-g1.ctb and en-ueb.g1.ctb are now able to display 8 dot Unicode
-  braille.
+- Danish grade 2 tables: Reduced hyphenation to only the hyphens
+  necessary for correct Braille translation. Replaced the longer rules
+  with hyphenation for better cursor positioning. Corrected some
+  words. Thanks to Bue Vester-Andersen.
+- New Chinese Mandarin Braille Codes (Grade 1) and (Grade 2) thanks to
+  Sunian Loomee. The first one is for Chinese Common Braille, commonly
+  known as the old Braille where a Chinese character is composed of
+  three Braille Symbols, consonants, vowels and tones. The second
+  table is for Chinese double spelling Braille, commonly known as the
+  new Braille where Chinese character is composed of two Braille
+  Symbols, consonants and vowels and the tones are included in vowels.
+- Major update to the Urdu tables thanks to Jake Kyle.
+- Back-translation of numbers in Latvian, Polish, Portuguese, Serbian,
+  and Swedish has been fixed thanks to Bue Vester-Andersen.
+- Improvements to UEB such as handling of /BLT/, /BLVD/ and /LLC/,
+  number sign placement, final-letter groupsign usage and final-letter
+  back-translation thanks to Mike Gray.
+- Significant changes to Bopomofo-based Chinese Braille. Among other
+  things there is now complete the support of /CJK Unified Ideographs
+  Extension A/ and some symbols were added for Nemeth. Thanks to
+  Sponge Jhan and 黃偉豪.
+
+Other changes
+~~~~~~~~~~~~~
+
+- Added documentation of opcodes which were previously introduced as
+  part of the UEB work. Thanks to Bue Vester-Andersen.
+- Test suite improvements: In addition to checking the translation the
+  tests now also check if the provided `inlen' is the same as the
+  returned `inlen' and retry the test with a larger output buffer.
+- Fix a problem in the Makefiles that prevented liblouis from being
+  built with automake 1.16. This is fixed now thanks to a patch from
+  Samuel Thibault.
+- Removal of the code for the /scripting language/ for multipass
+  opcodes. This code was originally introduced in 2012 but never
+  documented. Consequently it was never used. Meanwhile the original
+  code for multipass opcodes was much improved. So there is no more
+  need for this (duplicate) code and we are removing it.
+- The nightly snapshots of pre-built windows binaries are now built
+  with UCS4 enabled.
+
+Deprecation notice
+~~~~~~~~~~~~~~~~~~
+
+- None
+
+Backwards incompatible changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- None
+
+New, renamed or removed tables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+New
+---
+
+  - zhcn-g1.ctb
+  - zhcn-g2.ctb
+
+Renamed
+-------
+
+  - None
+
+Removed
+-------
+
+  - None
+
+Next release
+============
+
+The next release will be published on December 3 2018 so please keep
+up the excellent work and keep those improvements coming.
 
 Share and Enjoy!
 
@@ -111,6 +142,6 @@ Share and Enjoy!
 Footnotes
 =========
 
-[1]  See https://github.com/liblouis/liblouis/tree/master/tables
-[2]  See http://code.google.com/p/liblouisutdml/ 
-
+[1]  https://github.com/liblouis/liblouis/tree/master/tables
+[2]  https://github.com/liblouis/liblouisutdml
+[3]  https://github.com/liblouis/liblouis/milestone/17?closed=1

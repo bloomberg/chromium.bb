@@ -30,15 +30,9 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
     DCHECK_EQ(cache_generation_, s_global_generation);
   }
 
-  const TransformationMatrix& to_2d_translation_root() const {
-    DCHECK(to_2d_translation_root_.IsIdentityOr2DTranslation());
+  const FloatSize& to_2d_translation_root() const {
     return to_2d_translation_root_;
   }
-  const TransformationMatrix& from_2d_translation_root() const {
-    DCHECK(from_2d_translation_root_.IsIdentityOr2DTranslation());
-    return from_2d_translation_root_;
-  }
-
   const TransformPaintPropertyNode* root_of_2d_translation() const {
     return root_of_2d_translation_;
   }
@@ -51,31 +45,56 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   // These getters must be called after UpdateScreenTransform() when screen
   // transform data is really needed.
   const TransformationMatrix& to_screen() const {
-    CheckScreenTransformUpdated();
-    return UNLIKELY(screen_transform_) ? screen_transform_->to_screen
-                                       : to_plane_root();
+    DCHECK(screen_transform_);
+    return screen_transform_->to_screen;
   }
   const TransformationMatrix& projection_from_screen() const {
-    CheckScreenTransformUpdated();
-    return UNLIKELY(screen_transform_)
-               ? screen_transform_->projection_from_screen
-               : from_plane_root();
+    DCHECK(screen_transform_);
+    return screen_transform_->projection_from_screen;
   }
   bool projection_from_screen_is_valid() const {
+#if DCHECK_IS_ON()
     CheckScreenTransformUpdated();
+#endif
     return LIKELY(!screen_transform_) ||
            screen_transform_->projection_from_screen_is_valid;
   }
+  void ApplyToScreen(TransformationMatrix& m) const {
+    if (UNLIKELY(screen_transform_))
+      m.Multiply(to_screen());
+    else
+      ApplyToPlaneRoot(m);
+  }
+  void ApplyProjectionFromScreen(TransformationMatrix& m) const {
+    if (UNLIKELY(screen_transform_))
+      m.Multiply(projection_from_screen());
+    else
+      ApplyFromPlaneRoot(m);
+  }
 
   const TransformationMatrix& to_plane_root() const {
-    return UNLIKELY(plane_root_transform_)
-               ? plane_root_transform_->to_plane_root
-               : to_2d_translation_root_;
+    DCHECK(plane_root_transform_);
+    return plane_root_transform_->to_plane_root;
   }
   const TransformationMatrix& from_plane_root() const {
-    return UNLIKELY(plane_root_transform_)
-               ? plane_root_transform_->from_plane_root
-               : from_2d_translation_root_;
+    DCHECK(plane_root_transform_);
+    return plane_root_transform_->from_plane_root;
+  }
+  void ApplyToPlaneRoot(TransformationMatrix& m) const {
+    if (UNLIKELY(plane_root_transform_)) {
+      m.Multiply(to_plane_root());
+    } else {
+      m.Translate(to_2d_translation_root_.Width(),
+                  to_2d_translation_root_.Height());
+    }
+  }
+  void ApplyFromPlaneRoot(TransformationMatrix& m) const {
+    if (UNLIKELY(plane_root_transform_)) {
+      m.Multiply(from_plane_root());
+    } else {
+      m.Translate(-to_2d_translation_root_.Width(),
+                  -to_2d_translation_root_.Height());
+    }
   }
   const TransformPaintPropertyNode* plane_root() const {
     return UNLIKELY(plane_root_transform_) ? plane_root_transform_->plane_root
@@ -87,17 +106,14 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
 
 #if DCHECK_IS_ON()
   void CheckScreenTransformUpdated() const;
-#else
-  void CheckScreenTransformUpdated() const {}
 #endif
 
   void Update(const TransformPaintPropertyNode&);
 
   static unsigned s_global_generation;
 
-  // The accumulated transform to/from root_of_2d_translation().
-  TransformationMatrix to_2d_translation_root_;
-  TransformationMatrix from_2d_translation_root_;
+  // The accumulated 2d translation to root_of_2d_translation().
+  FloatSize to_2d_translation_root_;
 
   // The parent of the root of consecutive identity or 2d translations from the
   // transform node, or the root of the tree if the whole path from the

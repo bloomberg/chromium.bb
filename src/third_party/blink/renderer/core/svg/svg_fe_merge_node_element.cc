@@ -21,12 +21,13 @@
 #include "third_party/blink/renderer/core/svg/svg_fe_merge_node_element.h"
 
 #include "third_party/blink/renderer/core/svg/svg_filter_primitive_standard_attributes.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 inline SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
     : SVGElement(svg_names::kFEMergeNodeTag, document),
-      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)) {
+      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)) {
   AddToPropertyMap(in1_);
 }
 

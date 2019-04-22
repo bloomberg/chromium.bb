@@ -117,13 +117,9 @@ DWORD RestrictedToken::GetRestrictedToken(
 
   bool result = true;
   HANDLE new_token_handle = nullptr;
-  // The SANDBOX_INERT flag did nothing in XP and it was just a way to tell
-  // if a token has ben restricted given the limiations of IsTokenRestricted()
-  // but it appears that in Windows 7 it hints the AppLocker subsystem to
-  // leave us alone.
   if (deny_size || restrict_size || privileges_size) {
     result = ::CreateRestrictedToken(
-        effective_token_.Get(), SANDBOX_INERT, static_cast<DWORD>(deny_size),
+        effective_token_.Get(), 0, static_cast<DWORD>(deny_size),
         deny_only_array, static_cast<DWORD>(privileges_size),
         privileges_to_disable_array, static_cast<DWORD>(restrict_size),
         sids_to_restrict_array, &new_token_handle);

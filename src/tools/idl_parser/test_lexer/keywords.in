@@ -15,7 +15,6 @@ ENUM enum
 FALSE false
 FLOAT float
 GETTER getter
-IMPLEMENTS implements
 INFINITY Infinity
 INHERIT inherit
 INTERFACE interface
@@ -37,7 +36,6 @@ RECORD record
 REGEXP RegExp
 REQUIRED required
 SEQUENCE sequence
-SERIALIZER serializer
 SETLIKE setlike
 SETTER setter
 SHORT short

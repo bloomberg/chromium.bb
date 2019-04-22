@@ -19,8 +19,7 @@ class CORE_EXPORT PerformanceLayoutJank final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceLayoutJank* Create(double fraction);
-
+  explicit PerformanceLayoutJank(double fraction);
   ~PerformanceLayoutJank() override;
 
   AtomicString entryType() const override;
@@ -31,8 +30,6 @@ class CORE_EXPORT PerformanceLayoutJank final : public PerformanceEntry {
   void Trace(blink::Visitor*) override;
 
  private:
-  PerformanceLayoutJank(double fraction);
-
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
   double fraction_;

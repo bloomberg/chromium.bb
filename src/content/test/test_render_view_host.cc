@@ -15,6 +15,8 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/frame_messages.h"
@@ -83,6 +85,12 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
 
   host()->SetView(this);
 
+  if (host()->delegate() && host()->delegate()->GetInputEventRouter() &&
+      GetFrameSinkId().is_valid()) {
+    host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
+        GetFrameSinkId(), this);
+  }
+
 #if defined(USE_AURA)
   window_.reset(new aura::Window(
       aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate()));
@@ -97,7 +105,7 @@ TestRenderWidgetHostView::~TestRenderWidgetHostView() {
     manager->InvalidateFrameSinkId(frame_sink_id_);
 }
 
-gfx::NativeView TestRenderWidgetHostView::GetNativeView() const {
+gfx::NativeView TestRenderWidgetHostView::GetNativeView() {
 #if defined(USE_AURA)
   return window_.get();
 #else
@@ -113,7 +121,7 @@ ui::TextInputClient* TestRenderWidgetHostView::GetTextInputClient() {
   return &text_input_client_;
 }
 
-bool TestRenderWidgetHostView::HasFocus() const {
+bool TestRenderWidgetHostView::HasFocus() {
   return true;
 }
 
@@ -145,7 +153,7 @@ void TestRenderWidgetHostView::RenderProcessGone(base::TerminationStatus status,
 
 void TestRenderWidgetHostView::Destroy() { delete this; }
 
-gfx::Rect TestRenderWidgetHostView::GetViewBounds() const {
+gfx::Rect TestRenderWidgetHostView::GetViewBounds() {
   return gfx::Rect();
 }
 
@@ -213,6 +221,12 @@ void TestRenderWidgetHostView::OnFrameTokenChanged(uint32_t frame_token) {
   OnFrameTokenChangedForView(frame_token);
 }
 
+std::unique_ptr<SyntheticGestureTarget>
+TestRenderWidgetHostView::CreateSyntheticGestureTarget() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 void TestRenderWidgetHostView::UpdateBackgroundColor() {}
 
 TestRenderViewHost::TestRenderViewHost(
@@ -278,7 +292,7 @@ bool TestRenderViewHost::CreateRenderView(
   return true;
 }
 
-MockRenderProcessHost* TestRenderViewHost::GetProcess() const {
+MockRenderProcessHost* TestRenderViewHost::GetProcess() {
   return static_cast<MockRenderProcessHost*>(RenderViewHostImpl::GetProcess());
 }
 
@@ -290,14 +304,18 @@ void TestRenderViewHost::SimulateWasShown() {
   GetWidget()->WasShown(false /* record_presentation_time */);
 }
 
-WebPreferences TestRenderViewHost::TestComputeWebkitPrefs() {
-  return ComputeWebkitPrefs();
+WebPreferences TestRenderViewHost::TestComputeWebPreferences() {
+  return ComputeWebPreferences();
 }
 
 void TestRenderViewHost::OnWebkitPreferencesChanged() {
   RenderViewHostImpl::OnWebkitPreferencesChanged();
   if (webkit_preferences_changed_counter_)
     ++*webkit_preferences_changed_counter_;
+}
+
+bool TestRenderViewHost::IsTestRenderViewHost() const {
+  return true;
 }
 
 void TestRenderViewHost::TestOnStartDragging(

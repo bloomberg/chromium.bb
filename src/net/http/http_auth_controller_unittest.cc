@@ -10,6 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_mock.h"
@@ -71,11 +72,11 @@ void RunSingleRoundAuthTest(HandlerRunMode run_mode,
                                        handler_rv);
   auth_handler_factory.AddMockHandler(auth_handler, HttpAuth::AUTH_PROXY);
   auth_handler_factory.set_do_init_from_challenge(true);
+  auto host_resolver = std::make_unique<MockHostResolver>();
 
-  scoped_refptr<HttpAuthController> controller(
-      new HttpAuthController(HttpAuth::AUTH_PROXY,
-                             GURL("http://example.com"),
-                             &dummy_auth_cache, &auth_handler_factory));
+  scoped_refptr<HttpAuthController> controller(new HttpAuthController(
+      HttpAuth::AUTH_PROXY, GURL("http://example.com"), &dummy_auth_cache,
+      &auth_handler_factory, host_resolver.get()));
   SSLInfo null_ssl_info;
   ASSERT_EQ(OK, controller->HandleAuthChallenge(headers, null_ssl_info, false,
                                                 false, dummy_log));
@@ -217,10 +218,11 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
       HttpAuth::AUTH_SERVER);
   auth_handler_factory.set_do_init_from_challenge(true);
 
-  scoped_refptr<HttpAuthController> controller(
-      new HttpAuthController(HttpAuth::AUTH_SERVER,
-                             GURL("http://example.com"),
-                             &dummy_auth_cache, &auth_handler_factory));
+  auto host_resolver = std::make_unique<MockHostResolver>();
+
+  scoped_refptr<HttpAuthController> controller(new HttpAuthController(
+      HttpAuth::AUTH_SERVER, GURL("http://example.com"), &dummy_auth_cache,
+      &auth_handler_factory, host_resolver.get()));
   SSLInfo null_ssl_info;
   ASSERT_EQ(OK, controller->HandleAuthChallenge(headers, null_ssl_info, false,
                                                 false, dummy_log));

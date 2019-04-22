@@ -4,8 +4,6 @@
 
 #include "extensions/browser/test_event_router_observer.h"
 
-#include "base/memory/ptr_util.h"
-
 namespace extensions {
 
 TestEventRouterObserver::TestEventRouterObserver(EventRouter* event_router)
@@ -26,12 +24,12 @@ void TestEventRouterObserver::ClearEvents() {
 
 void TestEventRouterObserver::OnWillDispatchEvent(const Event& event) {
   DCHECK(!event.event_name.empty());
-  events_[event.event_name] = base::WrapUnique(event.DeepCopy());
+  events_[event.event_name] = event.DeepCopy();
 }
 
 void TestEventRouterObserver::OnDidDispatchEventToProcess(const Event& event) {
   DCHECK(!event.event_name.empty());
-  dispatched_events_[event.event_name] = base::WrapUnique(event.DeepCopy());
+  dispatched_events_[event.event_name] = event.DeepCopy();
 }
 
 }  // namespace extensions

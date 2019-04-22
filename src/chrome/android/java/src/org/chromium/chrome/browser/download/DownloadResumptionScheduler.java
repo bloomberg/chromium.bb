@@ -5,15 +5,16 @@
 package org.chromium.chrome.browser.download;
 
 import android.annotation.SuppressLint;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskInfo.NetworkType;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Class for scheduing download resumption tasks.
@@ -36,6 +37,8 @@ public class DownloadResumptionScheduler {
      * if there are resumable downloads available.
      */
     public void scheduleIfNecessary() {
+        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
+
         List<DownloadSharedPreferenceEntry> entries =
                 DownloadSharedPreferenceHelper.getInstance().getEntries();
 
@@ -54,17 +57,17 @@ public class DownloadResumptionScheduler {
 
         if (scheduleAutoResumption) {
             @NetworkType
-            int networkType = allowMeteredConnection ? TaskInfo.NETWORK_TYPE_ANY
-                                                     : TaskInfo.NETWORK_TYPE_UNMETERED;
+            int networkType = allowMeteredConnection ? TaskInfo.NetworkType.ANY
+                                                     : TaskInfo.NetworkType.UNMETERED;
 
-            TaskInfo task = TaskInfo.createOneOffTask(TaskIds.DOWNLOAD_RESUMPTION_JOB_ID,
-                                            DownloadResumptionBackgroundTask.class,
-                                            TimeUnit.DAYS.toMillis(1))
-                                    .setUpdateCurrent(true)
-                                    .setRequiredNetworkType(networkType)
-                                    .setRequiresCharging(false)
-                                    .setIsPersisted(true)
-                                    .build();
+            TaskInfo task =
+                    TaskInfo.createOneOffTask(TaskIds.DOWNLOAD_RESUMPTION_JOB_ID,
+                                    DownloadResumptionBackgroundTask.class, DateUtils.DAY_IN_MILLIS)
+                            .setUpdateCurrent(true)
+                            .setRequiredNetworkType(networkType)
+                            .setRequiresCharging(false)
+                            .setIsPersisted(true)
+                            .build();
 
             BackgroundTaskSchedulerFactory.getScheduler().schedule(
                     ContextUtils.getApplicationContext(), task);

@@ -36,6 +36,7 @@ BrokerHost::BrokerHost(base::ProcessHandle client_process,
   base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
 
   channel_ = Channel::Create(this, std::move(connection_params),
+                             Channel::HandlePolicy::kAcceptHandles,
                              base::ThreadTaskRunnerHandle::Get());
   channel_->Start();
 }
@@ -114,10 +115,10 @@ void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
         region.PassPlatformHandle(), &h[0], &h[1]);
     handles[0] = PlatformHandleInTransit(std::move(h[0]));
     handles[1] = PlatformHandleInTransit(std::move(h[1]));
-#if !defined(OS_POSIX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+#if !defined(OS_POSIX) || defined(OS_ANDROID) || \
     (defined(OS_MACOSX) && !defined(OS_IOS))
-    // Non-POSIX systems, as well as Android, Fuchsia, and non-iOS Mac, only use
-    // a single handle to represent a writable region.
+    // Non-POSIX systems, as well as Android, and non-iOS Mac, only use a single
+    // handle to represent a writable region.
     DCHECK(!handles[1].handle().is_valid());
     handles.resize(1);
 #else

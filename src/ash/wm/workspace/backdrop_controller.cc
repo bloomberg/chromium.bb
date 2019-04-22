@@ -9,16 +9,16 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
-#include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/views/app_list_view.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/backdrop_delegate.h"
@@ -28,7 +28,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -73,6 +72,7 @@ BackdropController::BackdropController(aura::Window* container)
     : container_(container) {
   DCHECK(container_);
   Shell::Get()->AddShellObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->accessibility_controller()->AddObserver(this);
   Shell::Get()->wallpaper_controller()->AddObserver(this);
 }
@@ -80,6 +80,8 @@ BackdropController::BackdropController(aura::Window* container)
 BackdropController::~BackdropController() {
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
+  if (Shell::Get()->overview_controller())
+    Shell::Get()->overview_controller()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   // TODO(oshima): animations won't work right with mus:
   // http://crbug.com/548396.
@@ -121,10 +123,9 @@ void BackdropController::SetBackdropDelegate(
 
 void BackdropController::UpdateBackdrop() {
   // No need to continue update for recursive calls or in overview mode.
-  WindowSelectorController* window_selector_controller =
-      Shell::Get()->window_selector_controller();
-  if (pause_update_ || (window_selector_controller &&
-                        window_selector_controller->IsSelecting())) {
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  if (pause_update_ ||
+      (overview_controller && overview_controller->IsSelecting())) {
     return;
   }
 
@@ -146,7 +147,15 @@ void BackdropController::UpdateBackdrop() {
   if (window->GetRootWindow() != backdrop_window_->GetRootWindow())
     return;
 
+  // Update the animation type of |backdrop_window_| based on current top most
+  // window with backdrop.
+  SetBackdropAnimationType(wm::GetWindowState(window)->CanMaximize()
+                               ? wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END
+                               : ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+
   Show();
+
+  SetBackdropAnimationType(::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
 
   // Since the backdrop needs to be immediately behind the window and the
   // stacking functions only guarantee a "it's above or below", we need
@@ -155,34 +164,26 @@ void BackdropController::UpdateBackdrop() {
   container_->StackChildAbove(window, backdrop_window_);
 }
 
-void BackdropController::OnOverviewModeStarting() {
-  if (backdrop_window_)
-    backdrop_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
-  Hide();
-}
-
-void BackdropController::OnOverviewModeEnding() {
-  pause_update_ = true;
-}
-
-void BackdropController::OnOverviewModeEndingAnimationComplete(bool canceled) {
-  pause_update_ = false;
-  UpdateBackdrop();
-  if (backdrop_window_)
-    backdrop_window_->ClearProperty(aura::client::kAnimationsDisabledKey);
-}
-
-void BackdropController::OnAppListVisibilityChanged(bool shown,
-                                                    aura::Window* root_window) {
-  UpdateBackdrop();
-}
-
 void BackdropController::OnSplitViewModeStarting() {
   Shell::Get()->split_view_controller()->AddObserver(this);
 }
 
 void BackdropController::OnSplitViewModeEnded() {
   Shell::Get()->split_view_controller()->RemoveObserver(this);
+}
+
+void BackdropController::OnOverviewModeStarting() {
+  Hide(/*animate=*/false);
+}
+
+void BackdropController::OnOverviewModeEnding(
+    OverviewSession* overview_session) {
+  pause_update_ = true;
+}
+
+void BackdropController::OnOverviewModeEndingAnimationComplete(bool canceled) {
+  pause_update_ = false;
+  UpdateBackdrop();
 }
 
 void BackdropController::OnAccessibilityStatusChanged() {
@@ -223,8 +224,9 @@ void BackdropController::EnsureBackdropWidget() {
   backdrop_->Init(params);
   backdrop_window_ = backdrop_->GetNativeWindow();
   backdrop_window_->SetName("Backdrop");
-  ::wm::SetWindowVisibilityAnimationType(
-      backdrop_window_, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  // The backdrop window in always on top container can be reparented without
+  // this when the window is set to fullscreen.
+  AlwaysOnTopController::SetDisallowReparent(backdrop_window_);
   backdrop_window_->layer()->SetColor(SK_ColorBLACK);
 
   wm::GetWindowState(backdrop_window_)->set_allow_set_bounds_direct(true);
@@ -235,7 +237,7 @@ void BackdropController::UpdateAccessibilityMode() {
     return;
 
   bool enabled =
-      Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
+      Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
   if (enabled) {
     if (!backdrop_event_handler_) {
       backdrop_event_handler_ = std::make_unique<BackdropEventHandler>();
@@ -276,7 +278,7 @@ bool BackdropController::WindowShouldHaveBackdrop(aura::Window* window) {
   if (window->GetProperty(aura::client::kAppType) ==
           static_cast<int>(AppType::ARC_APP) &&
       wm::IsActiveWindow(window) &&
-      Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled()) {
+      Shell::Get()->accessibility_controller()->spoken_feedback_enabled()) {
     return true;
   }
 
@@ -288,9 +290,26 @@ void BackdropController::Show() {
   backdrop_->Show();
 }
 
-void BackdropController::Hide() {
+void BackdropController::Hide(bool animate) {
   if (!backdrop_)
     return;
+
+  DCHECK(backdrop_window_);
+  const aura::Window::Windows windows = container_->children();
+  auto window_iter =
+      std::find(windows.begin(), windows.end(), backdrop_window_);
+  ++window_iter;
+  if (window_iter != windows.end()) {
+    aura::Window* window_above_backdrop = *window_iter;
+    wm::WindowState* window_state = wm::GetWindowState(window_above_backdrop);
+    if (!animate || (window_state && window_state->CanMaximize()))
+      backdrop_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
+  } else {
+    // Window with backdrop may be destroyed before |backdrop_window_|. Hide the
+    // backdrop window without animation in this case.
+    backdrop_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
+  }
+
   backdrop_->Close();
   backdrop_ = nullptr;
   backdrop_window_ = nullptr;
@@ -345,6 +364,15 @@ void BackdropController::Layout() {
   } else {
     backdrop_->SetBounds(GetBackdropBounds());
   }
+}
+
+void BackdropController::SetBackdropAnimationType(int type) {
+  if (!backdrop_window_ ||
+      ::wm::GetWindowVisibilityAnimationType(backdrop_window_) == type) {
+    return;
+  }
+
+  ::wm::SetWindowVisibilityAnimationType(backdrop_window_, type);
 }
 
 }  // namespace ash

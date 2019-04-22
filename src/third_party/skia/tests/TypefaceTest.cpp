@@ -5,6 +5,7 @@
  * found in the LICENSE file.
  */
 
+#include "Resources.h"
 #include "SkAdvancedTypefaceMetrics.h"
 #include "SkData.h"
 #include "SkFixed.h"
@@ -12,14 +13,13 @@
 #include "SkFontMgr.h"
 #include "SkMakeUnique.h"
 #include "SkOTTable_OS_2.h"
+#include "SkRefCnt.h"
 #include "SkSFNTHeader.h"
 #include "SkStream.h"
-#include "SkRefCnt.h"
-#include "SkTestEmptyTypeface.h"
 #include "SkTypeface.h"
 #include "SkTypefaceCache.h"
-#include "Resources.h"
 #include "Test.h"
+#include "TestEmptyTypeface.h"
 
 #include <memory>
 
@@ -104,7 +104,7 @@ DEF_TEST(TypefaceRoundTrip, reporter) {
     }
 
     int fontIndex;
-    std::unique_ptr<SkStreamAsset> stream(typeface->openStream(&fontIndex));
+    std::unique_ptr<SkStreamAsset> stream = typeface->openStream(&fontIndex);
 
     sk_sp<SkFontMgr> fm = SkFontMgr::RefDefault();
     sk_sp<SkTypeface> typeface2 = fm->makeFromStream(std::move(stream), fontIndex);
@@ -271,21 +271,21 @@ static bool count_proc(SkTypeface* face, void* ctx) {
 }
 static int count(skiatest::Reporter* reporter, const SkTypefaceCache& cache) {
     int count = 0;
-    SkTypeface* none = cache.findByProcAndRef(count_proc, &count);
+    sk_sp<SkTypeface> none = cache.findByProcAndRef(count_proc, &count);
     REPORTER_ASSERT(reporter, none == nullptr);
     return count;
 }
 
 DEF_TEST(TypefaceCache, reporter) {
-    sk_sp<SkTypeface> t1(SkTestEmptyTypeface::Make());
+    sk_sp<SkTypeface> t1(TestEmptyTypeface::Make());
     {
         SkTypefaceCache cache;
         REPORTER_ASSERT(reporter, count(reporter, cache) == 0);
         {
-            sk_sp<SkTypeface> t0(SkTestEmptyTypeface::Make());
-            cache.add(t0.get());
+            sk_sp<SkTypeface> t0(TestEmptyTypeface::Make());
+            cache.add(t0);
             REPORTER_ASSERT(reporter, count(reporter, cache) == 1);
-            cache.add(t1.get());
+            cache.add(t1);
             REPORTER_ASSERT(reporter, count(reporter, cache) == 2);
             cache.purgeAll();
             REPORTER_ASSERT(reporter, count(reporter, cache) == 2);

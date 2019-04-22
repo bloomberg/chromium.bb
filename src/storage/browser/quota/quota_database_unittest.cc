@@ -23,6 +23,7 @@
 #include "storage/browser/quota/quota_database.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 #include "url/gurl.h"
 
 using storage::QuotaDatabase;

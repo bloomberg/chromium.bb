@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/pref_names.h"
@@ -55,7 +56,6 @@ void HistoryStatisticsReporter::ScheduleReportStatistics() {
   base::Time last_report_time = prefs_->GetTime(kWeeklyStatsReportingTimestamp);
   if (last_report_time > clock_->Now() - base::TimeDelta::FromDays(7))
     return;
-  prefs_->SetTime(kWeeklyStatsReportingTimestamp, clock_->Now());
 
   base::TimeDelta computeStatisticsDelay =
       base::TimeDelta::FromSeconds(kComputeStatisticsDelaySeconds);
@@ -102,5 +102,7 @@ void HistoryStatisticsReporter::ReportStatistics(
   if (!result.success)
     return;
   UMA_HISTOGRAM_COUNTS_1000("ExploreSites.MonthlyHostCount", result.count);
+  // Remember when stats were reported to skip attempts until next week.
+  prefs_->SetTime(kWeeklyStatsReportingTimestamp, clock_->Now());
 }
 }  // namespace explore_sites

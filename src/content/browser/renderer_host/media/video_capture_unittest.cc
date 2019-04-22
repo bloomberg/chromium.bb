@@ -22,7 +22,6 @@
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/common/media/media_devices.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -36,6 +35,7 @@
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/mediastream/media_devices.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -54,12 +54,13 @@ namespace {
 void VideoInputDevicesEnumerated(base::Closure quit_closure,
                                  const std::string& salt,
                                  const url::Origin& security_origin,
-                                 MediaDeviceInfoArray* out,
+                                 blink::WebMediaDeviceInfoArray* out,
                                  const MediaDeviceEnumeration& enumeration) {
-  for (const auto& info : enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT]) {
+  for (const auto& info : enumeration[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT]) {
     std::string device_id = MediaStreamManager::GetHMACForMediaDeviceID(
         salt, security_origin, info.device_id);
-    out->push_back(MediaDeviceInfo(device_id, info.label, std::string()));
+    out->push_back(
+        blink::WebMediaDeviceInfo(device_id, info.label, std::string()));
   }
   std::move(quit_closure).Run();
 }
@@ -136,11 +137,11 @@ class VideoCaptureTest : public testing::Test,
     ASSERT_TRUE(opened_device_label_.empty());
 
     // Enumerate video devices.
-    MediaDeviceInfoArray video_devices;
+    blink::WebMediaDeviceInfoArray video_devices;
     {
       base::RunLoop run_loop;
       MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-      devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+      devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
       media_stream_manager_->media_devices_manager()->EnumerateDevices(
           devices_to_enumerate,
           base::BindOnce(&VideoInputDevicesEnumerated, run_loop.QuitClosure(),
@@ -155,7 +156,7 @@ class VideoCaptureTest : public testing::Test,
       base::RunLoop run_loop;
       media_stream_manager_->OpenDevice(
           render_process_id, render_frame_id, requester_id, page_request_id,
-          video_devices[0].device_id, MEDIA_DEVICE_VIDEO_CAPTURE,
+          video_devices[0].device_id, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
           MediaDeviceSaltAndOrigin{browser_context_.GetMediaDeviceIDSalt(),
                                    browser_context_.GetMediaDeviceIDSalt(),
                                    security_origin},
@@ -164,7 +165,7 @@ class VideoCaptureTest : public testing::Test,
           MediaStreamManager::DeviceStoppedCallback());
       run_loop.Run();
     }
-    ASSERT_NE(MediaStreamDevice::kNoId, opened_session_id_);
+    ASSERT_NE(blink::MediaStreamDevice::kNoId, opened_session_id_);
   }
 
   void CloseSession() {
@@ -292,7 +293,7 @@ class VideoCaptureTest : public testing::Test,
   void OnDeviceOpened(base::Closure quit_closure,
                       bool success,
                       const std::string& label,
-                      const MediaStreamDevice& opened_device) {
+                      const blink::MediaStreamDevice& opened_device) {
     if (success) {
       opened_device_label_ = label;
       opened_session_id_ = opened_device.session_id;

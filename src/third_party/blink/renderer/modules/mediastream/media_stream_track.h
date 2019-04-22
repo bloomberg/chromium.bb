@@ -29,7 +29,7 @@
 #include <memory>
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
@@ -91,9 +91,9 @@ class MODULES_EXPORT MediaStreamTrack
   MediaTrackSettings* getSettings() const;
   ScriptPromise applyConstraints(ScriptState*, const MediaTrackConstraints*);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(mute, kMute);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute, kUnmute);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(ended, kEnded);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(mute, kMute)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute, kUnmute)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(ended, kEnded)
 
   MediaStreamComponent* Component() { return component_; }
   bool Ended() const;
@@ -111,7 +111,8 @@ class MODULES_EXPORT MediaStreamTrack
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
-  std::unique_ptr<AudioSourceProvider> CreateWebAudioSource();
+  std::unique_ptr<AudioSourceProvider> CreateWebAudioSource(
+      int context_sample_rate);
 
   void Trace(blink::Visitor*) override;
 

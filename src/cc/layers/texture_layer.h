@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -43,13 +42,20 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
     class CC_EXPORT MainThreadReference {
      public:
       explicit MainThreadReference(TransferableResourceHolder* holder);
+      MainThreadReference(const MainThreadReference&) = delete;
       ~MainThreadReference();
+
+      MainThreadReference& operator=(const MainThreadReference&) = delete;
+
       TransferableResourceHolder* holder() { return holder_.get(); }
 
      private:
       scoped_refptr<TransferableResourceHolder> holder_;
-      DISALLOW_COPY_AND_ASSIGN(MainThreadReference);
     };
+
+    TransferableResourceHolder(const TransferableResourceHolder&) = delete;
+    TransferableResourceHolder& operator=(const TransferableResourceHolder&) =
+        delete;
 
     const viz::TransferableResource& resource() const { return resource_; }
     void Return(const gpu::SyncToken& sync_token, bool is_lost);
@@ -102,12 +108,14 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
     gpu::SyncToken sync_token_;
     bool is_lost_ = false;
     base::ThreadChecker main_thread_checker_;
-    DISALLOW_COPY_AND_ASSIGN(TransferableResourceHolder);
   };
 
   // Used when mailbox names are specified instead of texture IDs.
   static scoped_refptr<TextureLayer> CreateForMailbox(
       TextureLayerClient* client);
+
+  TextureLayer(const TextureLayer&) = delete;
+  TextureLayer& operator=(const TextureLayer&) = delete;
 
   // Resets the client, which also resets the texture.
   void ClearClient();
@@ -215,8 +223,6 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
   std::vector<viz::SharedBitmapId> to_unregister_bitmap_ids_;
 
   base::WeakPtrFactory<TextureLayer> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextureLayer);
 };
 
 }  // namespace cc

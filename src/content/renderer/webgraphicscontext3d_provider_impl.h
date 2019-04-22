@@ -54,6 +54,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   cc::ImageDecodeCache* ImageDecodeCache(
       SkColorType color_type,
       sk_sp<SkColorSpace> color_space) override;
+  gpu::SharedImageInterface* SharedImageInterface() override;
 
   ws::ContextProviderCommandBuffer* context_provider() const {
     return provider_.get();

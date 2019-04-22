@@ -12,19 +12,19 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "storage/browser/blob/blob_memory_controller.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 class BlobDataHandle;
 class ShareableBlobDataItem;
 
 // Represents a blob in BlobStorageRegistry. Exported only for unit tests.
-class STORAGE_EXPORT BlobEntry {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobEntry {
  public:
   using TransportAllowedCallback = base::OnceCallback<
       void(BlobStatus, std::vector<BlobMemoryController::FileCreationInfo>)>;
@@ -32,7 +32,7 @@ class STORAGE_EXPORT BlobEntry {
 
   // Records a copy from a referenced blob. Copies happen after referenced blobs
   // are complete & quota for the copies is granted.
-  struct STORAGE_EXPORT ItemCopyEntry {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) ItemCopyEntry {
     ItemCopyEntry(scoped_refptr<ShareableBlobDataItem> source_item,
                   size_t source_item_offset,
                   scoped_refptr<ShareableBlobDataItem> dest_item);
@@ -52,8 +52,8 @@ class STORAGE_EXPORT BlobEntry {
   // 1. Waiting for quota to be granted for transport data (PENDING_QUOTA)
   // 2. Waiting for user population of data after quota (PENDING_TRANSPORT)
   // 3. Waiting for blobs we reference to complete & quota granted for possible
-  //    copies. (PENDING_INTERNALS)
-  struct STORAGE_EXPORT BuildingState {
+  //    copies. (PENDING_REFERENCED_BLOBS)
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) BuildingState {
     // |transport_allowed_callback| is not null when data needs population. See
     // BlobStorageContext::BuildBlob for when the callback is called.
     BuildingState(bool transport_items_present,
@@ -110,8 +110,8 @@ class STORAGE_EXPORT BlobEntry {
 
   // Returns if we're a pending blob that can finish building.
   bool CanFinishBuilding() const {
-    // PENDING_INTERNALS means transport is finished.
-    return status_ == BlobStatus::PENDING_INTERNALS && building_state_ &&
+    // PENDING_REFERENCED_BLOBS means transport is finished.
+    return status_ == BlobStatus::PENDING_REFERENCED_BLOBS && building_state_ &&
            !building_state_->copy_quota_request &&
            building_state_->num_building_dependent_blobs == 0;
   }
@@ -127,7 +127,7 @@ class STORAGE_EXPORT BlobEntry {
   }
 
   // Total size of this blob in bytes.
-  uint64_t total_size() const { return size_; };
+  uint64_t total_size() const { return size_; }
 
   // We record the cumulative offsets of each blob item (except for the first,
   // which would always be 0) to enable binary searching for an item at a

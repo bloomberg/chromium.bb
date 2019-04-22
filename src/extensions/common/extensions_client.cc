@@ -105,10 +105,6 @@ bool ExtensionsClient::ExtensionAPIEnabledInExtensionServiceWorkers() const {
   return false;
 }
 
-std::string ExtensionsClient::GetUserAgent() const {
-  return std::string();
-}
-
 void ExtensionsClient::AddOriginAccessPermissions(
     const Extension& extension,
     bool is_extension_active,

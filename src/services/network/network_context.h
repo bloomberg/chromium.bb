@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -127,7 +128,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // TODO(mmenke):  Remove this constructor when the network service ships.
   NetworkContext(NetworkService* network_service,
                  mojom::NetworkContextRequest request,
-                 net::URLRequestContext* url_request_context);
+                 net::URLRequestContext* url_request_context,
+                 const std::vector<std::string>& cors_exempt_header_list);
 
   ~NetworkContext() override;
 
@@ -150,6 +152,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   ResourceScheduler* resource_scheduler() { return resource_scheduler_.get(); }
 
   CookieManager* cookie_manager() { return cookie_manager_.get(); }
+
+  const std::unordered_set<std::string>& cors_exempt_header_list() const {
+    return cors_exempt_header_list_;
+  }
 
 #if defined(OS_ANDROID)
   base::android::ApplicationStatusListener* app_status_listener() const {
@@ -183,6 +189,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ComputeHttpCacheSize(base::Time start_time,
                             base::Time end_time,
                             ComputeHttpCacheSizeCallback callback) override;
+  void NotifyExternalCacheHit(
+      const GURL& url,
+      const std::string& http_method,
+      const base::Optional<url::Origin>& top_frame_origin) override;
   void WriteCacheMetadata(const GURL& url,
                           net::RequestPriority priority,
                           base::Time expected_response_time,
@@ -267,7 +277,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                        int32_t process_id,
                        int32_t render_frame_id,
                        const url::Origin& origin,
-                       mojom::AuthenticationHandlerPtr auth_handler) override;
+                       uint32_t options,
+                       mojom::AuthenticationHandlerPtr auth_handler,
+                       mojom::TrustedHeaderClientPtr header_client) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
   void ResolveHost(const net::HostPortPair& host,
                    mojom::ResolveHostParametersPtr optional_parameters,
@@ -322,12 +334,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                    const GURL& url,
                    const base::Optional<std::string>& user_agent,
                    base::Value body) override;
+  void QueueSignedExchangeReport(
+      mojom::SignedExchangeReportPtr report) override;
+
   void AddDomainReliabilityContextForTesting(
       const GURL& origin,
       const GURL& upload_url,
       AddDomainReliabilityContextForTestingCallback callback) override;
   void ForceDomainReliabilityUploadsForTesting(
       ForceDomainReliabilityUploadsForTestingCallback callback) override;
+  void SaveHttpAuthCache(SaveHttpAuthCacheCallback callback) override;
+  void LoadHttpAuthCache(const base::UnguessableToken& cache_key,
+                         LoadHttpAuthCacheCallback callback) override;
   void LookupBasicAuthCredentials(
       const GURL& url,
       LookupBasicAuthCredentialsCallback callback) override;
@@ -342,6 +360,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // no open pipes.
   void DestroyURLLoaderFactory(cors::CorsURLLoaderFactory* url_loader_factory);
 
+  // The following methods are used to track the number of requests per process
+  // and ensure it doesn't go over a reasonable limit.
+  void LoaderCreated(uint32_t process_id);
+  void LoaderDestroyed(uint32_t process_id);
+  bool CanCreateLoader(uint32_t process_id);
+
+  void set_max_loaders_per_process_for_testing(uint32_t count) {
+    max_loaders_per_process_ = count;
+  }
+
   size_t GetNumOutstandingResolveHostRequestsForTesting() const;
 
   size_t pending_proxy_lookup_requests_for_testing() const {
@@ -350,11 +378,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   NetworkServiceProxyDelegate* proxy_delegate() const {
     return proxy_delegate_.get();
-  }
-
-  void set_host_resolver_factory_for_testing(
-      std::unique_ptr<net::HostResolver::Factory> factory) {
-    host_resolver_factory_ = std::move(factory);
   }
 
   void set_network_qualities_pref_delegate_for_testing(
@@ -367,6 +390,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   cors::PreflightController* cors_preflight_controller() {
     return &cors_preflight_controller_;
   }
+
+  // Returns true if reports should unconditionally be sent without first
+  // consulting NetworkContextClient.OnCanSendReportingReports()
+  bool SkipReportingPermissionCheck() const;
 
  private:
   class ContextNetworkDelegate;
@@ -415,7 +442,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnSetExpectCTTestReportFailure();
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
-  void InitializeCorsOriginAccessList();
+  void InitializeCorsParams();
 
   NetworkService* const network_service_;
 
@@ -469,6 +496,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
            base::UniquePtrComparator>
       url_loader_factories_;
 
+  // A count of outstanding requests per initiating process.
+  std::map<uint32_t, uint32_t> loader_count_per_process_;
+
+  static constexpr uint32_t kMaxOutstandingRequestsPerProcess = 2700;
+  uint32_t max_loaders_per_process_ = kMaxOutstandingRequestsPerProcess;
+
   base::flat_map<P2PSocketManager*, std::unique_ptr<P2PSocketManager>>
       socket_managers_;
 
@@ -478,6 +511,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   mojo::StrongBindingSet<mojom::NetLogExporter> net_log_exporter_bindings_;
 
+  // Ordering: this must be after |cookie_manager_| since it points to its
+  // CookieSettings object.
   mojo::StrongBindingSet<mojom::RestrictedCookieManager>
       restricted_cookie_manager_bindings_;
 
@@ -519,8 +554,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
            std::unique_ptr<net::HostResolver>,
            base::UniquePtrComparator>
       host_resolvers_;
-  // Factory used to create any needed private internal net::HostResolvers.
-  std::unique_ptr<net::HostResolver::Factory> host_resolver_factory_;
 
   std::unique_ptr<NetworkServiceProxyDelegate> proxy_delegate_;
 
@@ -543,6 +576,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Manages allowed origin access lists.
   cors::OriginAccessList cors_origin_access_list_;
+
+  // Manages header keys that are allowed to be used in
+  // ResourceRequest::cors_exempt_headers.
+  std::unordered_set<std::string> cors_exempt_header_list_;
 
   // Manages CORS preflight requests and its cache.
   cors::PreflightController cors_preflight_controller_;

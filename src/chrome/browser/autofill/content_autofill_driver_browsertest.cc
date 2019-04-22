@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_process.h"
@@ -33,9 +34,6 @@
 
 namespace autofill {
 namespace {
-
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
 
 class MockAutofillClient : public TestAutofillClient {
  public:
@@ -104,7 +102,6 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
         web_contents, &autofill_client(), "en-US",
         AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
-    embedded_test_server()->AddDefaultHandlers(base::FilePath(kDocRoot));
     // Serve both a.com and b.com (and any other domain).
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());

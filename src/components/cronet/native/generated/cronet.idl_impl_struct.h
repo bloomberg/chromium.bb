@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 
 // Struct Cronet_Error.
 struct Cronet_Error {
@@ -148,9 +149,54 @@ struct Cronet_UrlRequestParams {
   Cronet_ExecutorPtr upload_data_provider_executor = nullptr;
   bool allow_direct_executor = false;
   std::vector<Cronet_RawDataPtr> annotations;
+  Cronet_RequestFinishedInfoListenerPtr request_finished_listener = nullptr;
+  Cronet_ExecutorPtr request_finished_executor = nullptr;
 
  private:
   DISALLOW_ASSIGN(Cronet_UrlRequestParams);
+};
+
+// Struct Cronet_DateTime.
+struct Cronet_DateTime {
+ public:
+  Cronet_DateTime();
+  explicit Cronet_DateTime(const Cronet_DateTime& from);
+  explicit Cronet_DateTime(Cronet_DateTime&& from);
+  ~Cronet_DateTime();
+
+  int64_t value = 0;
+
+ private:
+  DISALLOW_ASSIGN(Cronet_DateTime);
+};
+
+// Struct Cronet_Metrics.
+struct Cronet_Metrics {
+ public:
+  Cronet_Metrics();
+  explicit Cronet_Metrics(const Cronet_Metrics& from);
+  explicit Cronet_Metrics(Cronet_Metrics&& from);
+  ~Cronet_Metrics();
+
+  base::Optional<Cronet_DateTime> request_start;
+  base::Optional<Cronet_DateTime> dns_start;
+  base::Optional<Cronet_DateTime> dns_end;
+  base::Optional<Cronet_DateTime> connect_start;
+  base::Optional<Cronet_DateTime> connect_end;
+  base::Optional<Cronet_DateTime> ssl_start;
+  base::Optional<Cronet_DateTime> ssl_end;
+  base::Optional<Cronet_DateTime> sending_start;
+  base::Optional<Cronet_DateTime> sending_end;
+  base::Optional<Cronet_DateTime> push_start;
+  base::Optional<Cronet_DateTime> push_end;
+  base::Optional<Cronet_DateTime> response_start;
+  base::Optional<Cronet_DateTime> request_end;
+  bool socket_reused = false;
+  int64_t sent_byte_count = -1;
+  int64_t received_byte_count = -1;
+
+ private:
+  DISALLOW_ASSIGN(Cronet_Metrics);
 };
 
 // Struct Cronet_RequestFinishedInfo.
@@ -160,6 +206,13 @@ struct Cronet_RequestFinishedInfo {
   explicit Cronet_RequestFinishedInfo(const Cronet_RequestFinishedInfo& from);
   explicit Cronet_RequestFinishedInfo(Cronet_RequestFinishedInfo&& from);
   ~Cronet_RequestFinishedInfo();
+
+  base::Optional<Cronet_Metrics> metrics;
+  std::vector<Cronet_RawDataPtr> annotations;
+  Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason =
+      Cronet_RequestFinishedInfo_FINISHED_REASON_SUCCEEDED;
+  base::Optional<Cronet_UrlResponseInfo> response_info;
+  base::Optional<Cronet_Error> error;
 
  private:
   DISALLOW_ASSIGN(Cronet_RequestFinishedInfo);

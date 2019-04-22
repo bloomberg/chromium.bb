@@ -138,6 +138,11 @@ bool WideToCharMap(const wchar *Src,char *Dest,size_t DestSize,bool &Success)
   if (wcschr(Src,(wchar)MappedStringMark)==NULL)
     return false;
 
+  // Seems to be that wcrtomb in some memory analyzing libraries
+  // can produce uninitilized output while reporting success on garbage input.
+  // So we clean the destination to calm analyzers.
+  memset(Dest,0,DestSize);
+
   Success=true;
   uint SrcPos=0,DestPos=0;
   while (Src[SrcPos]!=0 && DestPos<DestSize-MB_CUR_MAX)
@@ -299,7 +304,7 @@ size_t WideToUtfSize(const wchar *Src)
       if (*Src<0x800)
         Size+=2;
       else
-        if ((uint)*Src<0x10000)
+        if ((uint)*Src<0x10000) //(uint) to avoid Clang/win "always true" warning for 16-bit wchar_t.
         {
           if (Src[0]>=0xd800 && Src[0]<=0xdbff && Src[1]>=0xdc00 && Src[1]<=0xdfff)
           {
@@ -310,7 +315,7 @@ size_t WideToUtfSize(const wchar *Src)
             Size+=3;
         }
         else
-          if ((uint)*Src<0x200000)
+          if ((uint)*Src<0x200000) //(uint) to avoid Clang/win "always true" warning for 16-bit wchar_t.
             Size+=4;
   return Size+1; // Include terminating zero.
 }
@@ -544,7 +549,7 @@ int atoiw(const wchar *s)
 int64 atoilw(const wchar *s)
 {
   bool sign=false;
-  if (*s=='-')
+  if (*s=='-') // We do use signed integers here, for example, in GUI SFX.
   {
     s++;
     sign=true;

@@ -18,7 +18,7 @@ public_headers = [
   "//ui/gfx/geometry/vector3d_f.h",
 ]
 traits_headers = [ "//ui/gfx/geometry/mojo/geometry_struct_traits.h" ]
-deps = [
+public_deps = [
   "//ui/gfx/geometry/mojo:struct_traits",
 ]
 type_mappings = [

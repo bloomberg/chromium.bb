@@ -29,12 +29,6 @@ cr.define('settings', function() {
     restartComputer() {}
 
     /**
-     * Updates the cleanup logs upload permission status.
-     * @param {boolean} enabled
-     */
-    setLogsUploadPermission(enabled) {}
-
-    /**
      * Notifies Chrome that the state of the details section changed.
      * @param {boolean} enabled
      */
@@ -84,11 +78,6 @@ cr.define('settings', function() {
     /** @override */
     restartComputer() {
       chrome.send('restartComputer');
-    }
-
-    /** @override */
-    setLogsUploadPermission(enabled) {
-      chrome.send('setLogsUploadPermission', [enabled]);
     }
 
     /** @override */

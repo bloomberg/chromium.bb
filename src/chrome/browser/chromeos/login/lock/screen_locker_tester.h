@@ -8,31 +8,48 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/interfaces/login_screen_test_api.test-mojom.h"
+#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
+
 class AccountId;
 
 namespace chromeos {
 
-class UserContext;
-
-// ScreenLockerTester provides a high-level API to test the lock screen. This
-// API is meant to be representation independent.
+// ScreenLockerTester provides a high-level API to test the lock screen.
 class ScreenLockerTester {
  public:
-  // Create a new tester.
-  static std::unique_ptr<ScreenLockerTester> Create();
-
   ScreenLockerTester();
-  virtual ~ScreenLockerTester();
+  ~ScreenLockerTester();
+
+  // Synchronously lock the device.
+  void Lock();
+
+  // Injects authenticators that only authenticate with the given password.
+  void SetUnlockPassword(const AccountId& account_id,
+                         const std::string& password);
 
   // Returns true if the screen is locked.
-  virtual bool IsLocked() = 0;
+  bool IsLocked();
 
-  // Injects StubAuthenticator that uses the credentials in |user_context|.
-  virtual void InjectStubUserContext(const UserContext& user_context);
+  // Returns true if Restart button is visible.
+  bool IsLockRestartButtonShown();
 
-  // Enters and submits the given password.
-  virtual void EnterPassword(const AccountId& account_id,
-                             const std::string& password) = 0;
+  // Returns true if Shutdown button is visible.
+  bool IsLockShutdownButtonShown();
+
+  // Enters and submits the given password for the given account.
+  void UnlockWithPassword(const AccountId& account_id,
+                          const std::string& password);
+
+  // LoginScreenTester proxy methods:
+  int64_t GetUiUpdateCount();
+  void WaitForUiUpdate(int64_t previous_update_count);
+
+ private:
+  test::LoginScreenTester login_screen_tester_;
+  ash::mojom::LoginScreenTestApiPtr test_api_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenLockerTester);
 };
 
 }  // namespace chromeos

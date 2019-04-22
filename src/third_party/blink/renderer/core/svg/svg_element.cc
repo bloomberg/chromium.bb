@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 
 #include "base/auto_reset.h"
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/effect_stack.h"
@@ -58,6 +59,7 @@
 #include "third_party/blink/renderer/core/svg/svg_use_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xml_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
@@ -70,7 +72,9 @@ SVGElement::SVGElement(const QualifiedName& tag_name,
                        ConstructionType construction_type)
     : Element(tag_name, &document, construction_type),
       svg_rare_data_(nullptr),
-      class_name_(SVGAnimatedString::Create(this, html_names::kClassAttr)) {
+      class_name_(
+          MakeGarbageCollected<SVGAnimatedString>(this,
+                                                  html_names::kClassAttr)) {
   AddToPropertyMap(class_name_);
   SetHasCustomStyleCallbacks();
 }
@@ -108,13 +112,13 @@ int SVGElement::tabIndex() const {
   return -1;
 }
 
-void SVGElement::WillRecalcStyle(StyleRecalcChange change) {
+void SVGElement::WillRecalcStyle(const StyleRecalcChange change) {
   if (!HasSVGRareData())
     return;
   // If the style changes because of a regular property change (not induced by
   // SMIL animations themselves) reset the "computed style without SMIL style
   // properties", so the base value change gets reflected.
-  if (change > kNoChange || NeedsStyleRecalc())
+  if (change.ShouldRecalcStyleFor(*this))
     SvgRareData()->SetNeedsOverrideComputedStyleUpdate();
 }
 
@@ -159,7 +163,8 @@ void SVGElement::ReportAttributeParsingError(SVGParsingError error,
   if (value.IsNull())
     return;
   GetDocument().AddConsoleMessage(
-      ConsoleMessage::Create(kRenderingMessageSource, kErrorMessageLevel,
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                             mojom::ConsoleMessageLevel::kError,
                              "Error: " + error.Format(tagName(), name, value)));
 }
 
@@ -315,16 +320,23 @@ static inline bool TransformUsesBoxSize(const ComputedStyle& style) {
   return false;
 }
 
-static FloatRect ComputeTransformReferenceBox(const SVGElement& element) {
-  const LayoutObject& layout_object = *element.GetLayoutObject();
+FloatRect ComputeSVGTransformReferenceBox(const LayoutObject& layout_object) {
   const ComputedStyle& style = layout_object.StyleRef();
-  if (style.TransformBox() == ETransformBox::kFillBox)
-    return layout_object.ObjectBoundingBox();
-  DCHECK_EQ(style.TransformBox(), ETransformBox::kViewBox);
-  SVGLengthContext length_context(&element);
-  FloatSize viewport_size;
-  length_context.DetermineViewport(viewport_size);
-  return FloatRect(FloatPoint(), viewport_size);
+  FloatRect reference_box;
+  if (style.TransformBox() == ETransformBox::kFillBox) {
+    reference_box = layout_object.ObjectBoundingBox();
+  } else {
+    DCHECK_EQ(style.TransformBox(), ETransformBox::kViewBox);
+    SVGLengthContext length_context(
+        ToSVGElementOrNull(layout_object.GetNode()));
+    FloatSize viewport_size;
+    length_context.DetermineViewport(viewport_size);
+    reference_box.SetSize(viewport_size);
+  }
+  const float zoom = style.EffectiveZoom();
+  if (zoom != 1)
+    reference_box.Scale(zoom);
+  return reference_box;
 }
 
 AffineTransform SVGElement::CalculateTransform(
@@ -336,7 +348,6 @@ AffineTransform SVGElement::CalculateTransform(
   // set).
   AffineTransform matrix;
   if (style && style->HasTransform()) {
-    FloatRect reference_box = ComputeTransformReferenceBox(*this);
     if (TransformUsesBoxSize(*style))
       UseCounter::Count(GetDocument(), WebFeature::kTransformUsesBoxSizeOnSVG);
 
@@ -344,21 +355,21 @@ AffineTransform SVGElement::CalculateTransform(
     // SVG (which applies the zoom factor globally, at the root level) we
     //
     //   * pre-scale the reference box (to bring it into the same space as the
-    //     other CSS values)
+    //     other CSS values) (Handled by ComputeSVGTransformReferenceBox)
     //   * invert the zoom factor (to effectively compute the CSS transform
     //     under a 1.0 zoom)
     //
     // Note: objectBoundingBox is an emptyRect for elements like pattern or
     // clipPath. See
     // https://svgwg.org/svg2-draft/coords.html#ObjectBoundingBoxUnits
-    float zoom = style->EffectiveZoom();
     TransformationMatrix transform;
-    if (zoom != 1)
-      reference_box.Scale(zoom);
+    FloatRect reference_box =
+        ComputeSVGTransformReferenceBox(*GetLayoutObject());
     style->ApplyTransform(
         transform, reference_box, ComputedStyle::kIncludeTransformOrigin,
         ComputedStyle::kIncludeMotionPath,
         ComputedStyle::kIncludeIndependentTransformProperties);
+    const float zoom = style->EffectiveZoom();
     if (zoom != 1)
       transform.Zoom(1 / zoom);
     // Flatten any 3D transform.
@@ -429,7 +440,7 @@ void SVGElement::ChildrenChanged(const ChildrenChange& change) {
 CSSPropertyID SVGElement::CssPropertyIdForSVGAttributeName(
     const QualifiedName& attr_name) {
   if (!attr_name.NamespaceURI().IsNull())
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
 
   static HashMap<StringImpl*, CSSPropertyID>* property_name_to_id_map = nullptr;
   if (!property_name_to_id_map) {
@@ -496,9 +507,9 @@ CSSPropertyID SVGElement::CssPropertyIdForSVGAttributeName(
         &kWordSpacingAttr,
         &kWritingModeAttr,
     };
-    for (size_t i = 0; i < arraysize(attr_names); i++) {
+    for (size_t i = 0; i < base::size(attr_names); i++) {
       CSSPropertyID property_id = cssPropertyID(attr_names[i]->LocalName());
-      DCHECK_GT(property_id, 0);
+      DCHECK_GT(property_id, CSSPropertyID::kInvalid);
       property_name_to_id_map->Set(attr_names[i]->LocalName().Impl(),
                                    property_id);
     }
@@ -780,7 +791,7 @@ AnimatedPropertyType SVGElement::AnimatedPropertyTypeForCSSAttribute(
         {kVisibilityAttr, kAnimatedString},
         {kWordSpacingAttr, kAnimatedLength},
     };
-    for (size_t i = 0; i < arraysize(attr_to_types); i++)
+    for (size_t i = 0; i < base::size(attr_to_types); i++)
       css_property_map.Set(attr_to_types[i].attr, attr_to_types[i].prop_type);
   }
   return css_property_map.at(attribute_name);
@@ -808,7 +819,7 @@ bool SVGElement::IsAnimatableCSSProperty(const QualifiedName& attr_name) {
 bool SVGElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (const SVGAnimatedPropertyBase* property = PropertyFromAttribute(name))
     return property->HasPresentationAttributeMapping();
-  return CssPropertyIdForSVGAttributeName(name) > 0;
+  return CssPropertyIdForSVGAttributeName(name) > CSSPropertyID::kInvalid;
 }
 
 bool SVGElement::IsPresentationAttributeWithSVGDOM(
@@ -822,7 +833,7 @@ void SVGElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   CSSPropertyID property_id = CssPropertyIdForSVGAttributeName(name);
-  if (property_id > 0)
+  if (property_id > CSSPropertyID::kInvalid)
     AddPropertyToPresentationAttributeStyle(style, property_id, value);
 }
 
@@ -955,7 +966,7 @@ void SVGElement::AttributeChanged(const AttributeModificationParams& params) {
 void SVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   CSSPropertyID prop_id =
       SVGElement::CssPropertyIdForSVGAttributeName(attr_name);
-  if (prop_id > 0) {
+  if (prop_id > CSSPropertyID::kInvalid) {
     InvalidateInstances();
     return;
   }
@@ -1020,7 +1031,8 @@ void SVGElement::SynchronizeAnimatedSVGAttribute(
 }
 
 scoped_refptr<ComputedStyle> SVGElement::CustomStyleForLayoutObject() {
-  if (!CorrespondingElement())
+  // TODO(http://crbug.com/953263): Eliminate isConnected check.
+  if (!CorrespondingElement() || !CorrespondingElement()->isConnected())
     return GetDocument().EnsureStyleResolver().StyleForElement(this);
 
   const ComputedStyle* style = nullptr;

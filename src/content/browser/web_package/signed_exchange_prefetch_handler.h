@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_PREFETCH_HANDLER_H_
 #define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_PREFETCH_HANDLER_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -40,20 +42,17 @@ class SignedExchangePrefetchHandler final
   // creates this handler).
   SignedExchangePrefetchHandler(
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
-      bool report_raw_headers,
-      int load_flags,
-      const base::Optional<base::UnguessableToken>& throttling_profile_id,
+      const network::ResourceRequest& resource_request,
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr network_loader,
       network::mojom::URLLoaderClientRequest network_client_request,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
-      url::Origin request_initiator,
-      const GURL& outer_request_url,
       URLLoaderThrottlesGetter loader_throttles_getter,
       ResourceContext* resource_context,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       network::mojom::URLLoaderClient* forwarding_client,
-      scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder);
+      scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
+      const std::string& accept_langs);
 
   ~SignedExchangePrefetchHandler() override;
 
@@ -84,8 +83,6 @@ class SignedExchangePrefetchHandler final
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader_;
 
   network::mojom::URLLoaderClient* forwarding_client_;
-
-  const GURL outer_request_url_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangePrefetchHandler);
 };

@@ -25,7 +25,10 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_TRACK_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_TRACK_H_
 
+#include <memory>
+
 #include "base/optional.h"
+#include "media/mojo/interfaces/display_media_information.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -36,20 +39,13 @@ class MediaStreamComponent;
 class MediaStreamTrack;
 class WebAudioSourceProvider;
 class WebMediaConstraints;
-class WebMediaStream;
 class WebMediaStreamSource;
+class WebPlatformMediaStreamTrack;
 class WebString;
 
 class WebMediaStreamTrack {
  public:
   enum class FacingMode { kNone, kUser, kEnvironment, kLeft, kRight };
-  enum class DisplayCaptureSurfaceType {
-    kMonitor,
-    kWindow,
-    kApplication,
-    kBrowser
-  };
-  enum class CursorCaptureType { kNever, kAlways, kMotion };
 
   BLINK_PLATFORM_EXPORT static const char kResizeModeNone[];
   BLINK_PLATFORM_EXPORT static const char kResizeModeRescale[];
@@ -66,10 +62,6 @@ class WebMediaStreamTrack {
     bool HasLatency() const { return latency >= 0; }
     bool HasVolume() const { return volume >= 0; }
     bool HasVideoKind() const { return !video_kind.IsNull(); }
-    bool HasFocalLengthX() const { return focal_length_x >= 0.0; }
-    bool HasFocalLengthY() const { return focal_length_y >= 0.0; }
-    bool HasDepthNear() const { return depth_near >= 0.0; }
-    bool HasDepthFar() const { return depth_far >= 0.0; }
     // The variables are read from
     // MediaStreamTrack::GetSettings only.
     double frame_rate = -1.0;
@@ -92,22 +84,11 @@ class WebMediaStreamTrack {
 
     // Media Capture Depth Stream Extensions.
     WebString video_kind;
-    double focal_length_x = -1.0;
-    double focal_length_y = -1.0;
-    double depth_near = -1.0;
-    double depth_far = -1.0;
 
     // Screen Capture extensions
-    base::Optional<DisplayCaptureSurfaceType> display_surface;
+    base::Optional<media::mojom::DisplayCaptureSurfaceType> display_surface;
     base::Optional<bool> logical_surface;
-    base::Optional<CursorCaptureType> cursor;
-  };
-
-  class TrackData {
-   public:
-    TrackData() = default;
-    virtual ~TrackData() = default;
-    virtual void GetSettings(Settings&) = 0;
+    base::Optional<media::mojom::CursorCaptureType> cursor;
   };
 
   enum class ContentHintType {
@@ -146,12 +127,9 @@ class WebMediaStreamTrack {
   BLINK_PLATFORM_EXPORT WebMediaConstraints Constraints() const;
   BLINK_PLATFORM_EXPORT void SetConstraints(const WebMediaConstraints&);
 
-  // Extra data associated with this WebMediaStream.
-  // If non-null, the extra data pointer will be deleted when the object is
-  // destroyed.  Setting the track data pointer will cause any existing non-null
-  // track data pointer to be deleted.
-  BLINK_PLATFORM_EXPORT TrackData* GetTrackData() const;
-  BLINK_PLATFORM_EXPORT void SetTrackData(TrackData*);
+  BLINK_PLATFORM_EXPORT WebPlatformMediaStreamTrack* GetPlatformTrack() const;
+  BLINK_PLATFORM_EXPORT void SetPlatformTrack(
+      std::unique_ptr<WebPlatformMediaStreamTrack>);
 
   // The lifetime of the WebAudioSourceProvider should outlive the
   // WebMediaStreamTrack, and clients are responsible for calling

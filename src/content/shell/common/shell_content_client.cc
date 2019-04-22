@@ -12,7 +12,6 @@
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/user_agent.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/grit/shell_resources.h"
 #include "third_party/blink/public/resources/grit/blink_image_resources.h"
@@ -21,21 +20,9 @@
 
 namespace content {
 
-std::string GetShellUserAgent() {
-  std::string product = "Chrome/" CONTENT_SHELL_VERSION;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
-    product += " Mobile";
-  return BuildUserAgentFromProduct(product);
-}
-
 ShellContentClient::ShellContentClient() {}
 
 ShellContentClient::~ShellContentClient() {}
-
-std::string ShellContentClient::GetUserAgent() const {
-  return GetShellUserAgent();
-}
 
 base::string16 ShellContentClient::GetLocalizedString(int message_id) const {
   if (switches::IsRunWebTestsSwitchPresent()) {

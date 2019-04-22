@@ -4,7 +4,7 @@ Tests that CSSOM-modified shorthands are reporting their "important" bits.
 element.style { ()
 
 [expanded] 
-#inspected { (<style>…</style>)
+#inspected { (<style>)
     margin-top: 10px;
     padding: 10px 50px !important;
         padding-top: 10px !important;
@@ -15,5 +15,10 @@ element.style { ()
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 

@@ -18,7 +18,7 @@ class RendererFactorySelectorTest : public testing::Test {
 
   class FakeFactory : public RendererFactory {
    public:
-    FakeFactory(FactoryType type) : type_(type){};
+    FakeFactory(FactoryType type) : type_(type) {}
 
     std::unique_ptr<Renderer> CreateRenderer(
         const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
@@ -37,11 +37,10 @@ class RendererFactorySelectorTest : public testing::Test {
   };
 
   RendererFactorySelectorTest() = default;
-  ;
 
   void AddFactory(FactoryType type) {
     selector_.AddFactory(type, std::make_unique<FakeFactory>(type));
-  };
+  }
 
   FactoryType GetCurrentlySelectedFactoryType() {
     return reinterpret_cast<FakeFactory*>(selector_.GetCurrentFactory())

@@ -13,6 +13,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
@@ -323,8 +325,8 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
     // end. It needs to happen on the BatteryStatusNotificationThread.
     task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&BatteryStatusNotificationThread::ShutdownDBusConnection,
-                   base::Unretained(this)));
+        base::BindOnce(&BatteryStatusNotificationThread::ShutdownDBusConnection,
+                       base::Unretained(this)));
 
     // Drain the message queue of the BatteryStatusNotificationThread and stop.
     Stop();
@@ -476,7 +478,7 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
     // Shutdown DBus connection later because there may be pending tasks on
     // this thread.
     task_runner()->PostTask(
-        FROM_HERE, base::Bind(&dbus::Bus::ShutdownAndBlock, system_bus_));
+        FROM_HERE, base::BindOnce(&dbus::Bus::ShutdownAndBlock, system_bus_));
     system_bus_ = nullptr;
   }
 
@@ -582,8 +584,9 @@ bool BatteryStatusManagerLinux::StartListeningBatteryChange() {
     return false;
 
   notifier_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BatteryStatusNotificationThread::StartListening,
-                            base::Unretained(notifier_thread_.get())));
+      FROM_HERE,
+      base::BindOnce(&BatteryStatusNotificationThread::StartListening,
+                     base::Unretained(notifier_thread_.get())));
   return true;
 }
 
@@ -592,8 +595,8 @@ void BatteryStatusManagerLinux::StopListeningBatteryChange() {
     return;
 
   notifier_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BatteryStatusNotificationThread::StopListening,
-                            base::Unretained(notifier_thread_.get())));
+      FROM_HERE, base::BindOnce(&BatteryStatusNotificationThread::StopListening,
+                                base::Unretained(notifier_thread_.get())));
 }
 
 bool BatteryStatusManagerLinux::StartNotifierThreadIfNecessary() {

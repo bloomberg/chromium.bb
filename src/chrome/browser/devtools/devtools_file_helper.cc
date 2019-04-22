@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
+#include "base/hash/md5.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -240,8 +240,11 @@ void DevToolsFileHelper::Save(const std::string& url,
   base::FilePath initial_path;
 
   const base::Value* path_value;
-  if (file_map->Get(base::MD5String(url), &path_value))
-    base::GetValueAsFilePath(*path_value, &initial_path);
+  if (file_map->Get(base::MD5String(url), &path_value)) {
+    // Ignore base::GetValueAsFilePath() failure since we handle empty
+    // |initial_path| below.
+    ignore_result(base::GetValueAsFilePath(*path_value, &initial_path));
+  }
 
   if (initial_path.empty()) {
     GURL gurl(url);

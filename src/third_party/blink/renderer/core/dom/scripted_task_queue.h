@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SCRIPTED_TASK_QUEUE_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -18,15 +18,17 @@ class V8TaskQueuePostCallback;
 
 // This class corresponds to the ScriptedTaskQueue interface.
 class CORE_EXPORT ScriptedTaskQueue final : public ScriptWrappable,
-                                            public PausableObject {
+                                            public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ScriptedTaskQueue);
 
  public:
   static ScriptedTaskQueue* Create(ExecutionContext* context,
                                    TaskType task_type) {
-    return new ScriptedTaskQueue(context, task_type);
+    return MakeGarbageCollected<ScriptedTaskQueue>(context, task_type);
   }
+
+  explicit ScriptedTaskQueue(ExecutionContext*, TaskType);
 
   using CallbackId = int;
 
@@ -36,23 +38,17 @@ class CORE_EXPORT ScriptedTaskQueue final : public ScriptWrappable,
 
   void CallbackFired(CallbackId id);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
-  explicit ScriptedTaskQueue(ExecutionContext*, TaskType);
-
-  // PausableObject interface.
+  // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext*) override;
-  void Pause() override;
-  void Unpause() override;
 
   void AbortTask(CallbackId id);
 
   class WrappedCallback;
-  HeapHashMap<CallbackId, TraceWrapperMember<WrappedCallback>> pending_tasks_;
-  Vector<CallbackId> paused_tasks_;
+  HeapHashMap<CallbackId, Member<WrappedCallback>> pending_tasks_;
   CallbackId next_callback_id_ = 1;
-  bool paused_ = false;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 

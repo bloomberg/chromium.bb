@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/audio/push_pull_fifo.h"
 
 #include <memory>
+#include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
@@ -14,7 +15,7 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -24,6 +25,8 @@ namespace {
 // Base FIFOClient with an extra thread for looping and jitter control. The
 // child class must define a specific task to run on the thread.
 class FIFOClient {
+  USING_FAST_MALLOC(FIFOClient);
+
  public:
   FIFOClient(PushPullFIFO* fifo, size_t bus_length, size_t jitter_range_ms)
       : fifo_(fifo),
@@ -31,10 +34,12 @@ class FIFOClient {
         client_thread_(Platform::Current()->CreateThread(
             ThreadCreationParams(WebThreadType::kTestThread)
                 .SetThreadNameForTest("FIFOClientThread"))),
-        done_event_(std::make_unique<WaitableEvent>()),
+        done_event_(std::make_unique<base::WaitableEvent>(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED)),
         jitter_range_ms_(jitter_range_ms) {}
 
-  WaitableEvent* Start(double duration_ms, double interval_ms) {
+  base::WaitableEvent* Start(double duration_ms, double interval_ms) {
     duration_ms_ = duration_ms;
     interval_ms_ = interval_ms;
     PostCrossThreadTask(*client_thread_->GetTaskRunner(), FROM_HERE,
@@ -77,7 +82,7 @@ class FIFOClient {
   PushPullFIFO* fifo_;
   scoped_refptr<AudioBus> bus_;
   std::unique_ptr<Thread> client_thread_;
-  std::unique_ptr<WaitableEvent> done_event_;
+  std::unique_ptr<base::WaitableEvent> done_event_;
 
   // Test duration.
   double duration_ms_;
@@ -167,7 +172,7 @@ TEST_P(PushPullFIFOSmokeTest, SmokeTests) {
   std::unique_ptr<PushClient> push_client = std::make_unique<PushClient>(
       test_fifo.get(), param.push_buffer_size, param.push_jitter_range_ms);
 
-  Vector<WaitableEvent*> done_events;
+  std::vector<base::WaitableEvent*> done_events;
   done_events.push_back(
       pull_client->Start(param.test_duration_ms, pull_interval_ms));
   done_events.push_back(
@@ -176,8 +181,8 @@ TEST_P(PushPullFIFOSmokeTest, SmokeTests) {
   LOG(INFO) << "PushPullFIFOSmokeTest - Started";
 
   // We have to wait both of events to be signaled.
-  WaitableEvent::WaitMultiple(done_events);
-  WaitableEvent::WaitMultiple(done_events);
+  base::WaitableEvent::WaitMany(done_events.data(), done_events.size());
+  base::WaitableEvent::WaitMany(done_events.data(), done_events.size());
 }
 
 FIFOSmokeTestParam smoke_test_params[] = {
@@ -216,9 +221,9 @@ FIFOSmokeTestParam smoke_test_params[] = {
     // Test case 7 (Longer test duration): 256 Pull, 128 Push. 2.5 seconds.
     {48000, 2, 8192, 2500, 256, 0, 128, 1}};
 
-INSTANTIATE_TEST_CASE_P(PushPullFIFOSmokeTest,
-                        PushPullFIFOSmokeTest,
-                        testing::ValuesIn(smoke_test_params));
+INSTANTIATE_TEST_SUITE_P(PushPullFIFOSmokeTest,
+                         PushPullFIFOSmokeTest,
+                         testing::ValuesIn(smoke_test_params));
 
 }  // namespace
 

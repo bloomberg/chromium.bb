@@ -9,8 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/video_detector.h"
 #include "base/macros.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 
 namespace ash {
 
@@ -22,7 +21,7 @@ class VideoActivityNotifierTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     power_client_ = static_cast<chromeos::FakePowerManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+        chromeos::PowerManagerClient::Get());
     detector_ = std::make_unique<VideoDetector>();
     notifier_.reset(new VideoActivityNotifier(detector_.get()));
   }

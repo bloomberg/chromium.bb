@@ -1,28 +1,24 @@
 # liblouis: Hungarian Grade 1 table
 #
-#  Based on the Linux screenreader BRLTTY, copyright (C) 1999-2011 by the BRLTTY Team
+#  Copyright (C) 2011-2017 Attila Hammer from IT Foundation for the Visually Impaired - Hungary. www.infoalap.hu
 #
-#  Copyright (C) 2011-2012, IT Foundation for the Visually Impaired - Hungary. Homepage: www.infoalap.hu 
-#  All rights reserved
+#  This file is part of liblouis.
 #
-#  This file is free software; you can redistribute it and/or modify it
-#   under the terms of the Lesser or Library GNU General Public License
-#  as published by the
-#  Free Software Foundation; either version 3, or (at your option) any
-#  later version.
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
 #
-#  This file is distributed in the hope that it will be useful, but
+#  liblouis is distributed in the hope that it will be useful, but
 #  WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  Library GNU General Public License for more details.
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
 #
-#  You should have received a copy of the Library GNU General Public
-#  License along with this program; see the file COPYING.  If not, write
-#  to
-#  the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-#  Boston, MA 02110-1301, USA.
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
 #
-#  Maintained by Attila Hammer  hammer.attila@infoalap.hu"
+#  Maintained by Attila Hammer  hammer.attila@infoalap.hu
 #
 # If you found bugs with hungarian grade1 table, report it with following address:
 # Attila Hammer <hammer.attila@infoalap.hu
@@ -34,17 +30,17 @@ include braille-patterns.cti
 
 #Braille indicators
 numsign 3456
-capsign 46
-begcaps 46-46
-firstwordital 46-46
-lastworditalbefore 46
-lenitalphrase 4
-firstletterital 46-3
-lastletterital 46-36
-singleletterital 46-25
-firstwordbold 456-456
-lastwordboldbefore 456
-lenboldphrase 4
+capsletter 46
+begcapsword 46-46
+emphclass italic
+emphclass underline
+emphclass bold
+begemph italic 356
+endemph italic  236
+begemph bold 356
+endemph bold 236
+begemph underline 356
+endemph underline 236
 begcomp 456-346
 endcomp 456-156
 midnum : 3
@@ -53,8 +49,15 @@ hyphen - 36
 decpoint , 2
 midnum . 3-3456
 endnum . 3
-
+endnum – 36-36
 #Following part implementing the new braille standard changes
+#When some punctuation character have after end of numbers, need add a dot6 prefix before the punctuation character dots
+endnum : 6-25
+endnum ? 6-26
+endnum ; 6-23
+endnum ! 6-235
+endnum " 6-236
+
 always . 3
 always ' 6-3
 postpunc . 256
@@ -68,6 +71,7 @@ endnum . 3
 always • 6-35
 # literary forms of the decimal digits
 include litdigits6Dots.uti
+midendnumericmodechars ,:.-
 
 #Special letter replacements
 always cs 146	General need replacing cs letters with a combined dot combination
@@ -93,6 +97,10 @@ always zzs 345-345	General need replacing zs letters with a combined dot combina
 #Special punctuation simbols
 prepunc " 236	Opening quotation simbol
 postpunc " 356	Closing quotation simbol
+prepunc « 236
+postpunc » 356
+prepunc » 236
+postpunc « 356
 always " 236	Need this rule to present one left quotation mark if the user firsttyping the " character
 prepunc ( 2346	Opening left parenthese
 postpunc ) 1356	Closing right parenthese
@@ -123,14 +131,23 @@ always < 5-13
 always > 46-2
 always / 5-2
 always | 45
-always { 12345
-always } 12456
-always [ 12356
-always ] 23456
+always { 5-2346
+always } 5-1356
+always [ 46-2346
+always ] 46-1356
 always \\ 16
 always ^ 2346
 always ` 4
 always Æ 1
 always lyú 456-346
 always lysz 456-156
+space \x000c 0
+space \x001b 1b
+space \e 1b
+space \f 0
+always ä 5-1
+noback context $l$p["–"] @36-36
+noback context $l["–"] @36-36
+noback always \\_ 6 letter sign before Roman page numbers
+noback pass2 @3456-356 @356-3456
 undefined 26

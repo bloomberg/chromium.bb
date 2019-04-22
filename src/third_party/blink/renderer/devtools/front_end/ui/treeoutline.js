@@ -177,6 +177,10 @@ UI.TreeOutline = class extends Common.Object {
       this.contentElement.focus();
   }
 
+  useLightSelectionColor() {
+    this._useLightSelectionColor = true;
+  }
+
   /**
    * @param {!UI.TreeElement} element
    */
@@ -225,10 +229,16 @@ UI.TreeOutline = class extends Common.Object {
     return true;
   }
 
+  forceSelect() {
+    if (this.selectedTreeElement)
+      this.selectedTreeElement.deselect();
+    this._selectFirst();
+  }
+
   /**
    * @return {boolean}
    */
-  selectFirst() {
+  _selectFirst() {
     let first = this.firstChild();
     while (first && !first.selectable)
       first = first.traverseNextTreeElement(true);
@@ -279,7 +289,7 @@ UI.TreeOutline = class extends Common.Object {
     } else if (event.keyCode === UI.KeyboardShortcut.Keys.Space.code) {
       handled = this.selectedTreeElement.onspace();
     } else if (event.key === 'Home') {
-      handled = this.selectFirst();
+      handled = this._selectFirst();
     } else if (event.key === 'End') {
       handled = this._selectLast();
     }
@@ -1086,11 +1096,15 @@ UI.TreeElement = class {
   }
 
   _onFocus() {
+    if (this.treeOutline._useLightSelectionColor)
+      return;
     if (!this.treeOutline.contentElement.classList.contains('hide-selection-when-blurred'))
       this._listItemNode.classList.add('force-white-icons');
   }
 
   _onBlur() {
+    if (this.treeOutline._useLightSelectionColor)
+      return;
     if (!this.treeOutline.contentElement.classList.contains('hide-selection-when-blurred'))
       this._listItemNode.classList.remove('force-white-icons');
   }

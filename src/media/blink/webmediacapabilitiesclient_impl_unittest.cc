@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/blink/webmediacapabilitiesclient_impl.h"
+#include "media/mojo/interfaces/media_types.mojom.h"
 #include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"

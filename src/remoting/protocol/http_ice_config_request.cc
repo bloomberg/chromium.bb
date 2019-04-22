@@ -75,7 +75,7 @@ void HttpIceConfigRequest::Send(const OnIceConfigCallback& callback) {
   on_ice_config_callback_ = callback;
 
   if (oauth_token_getter_) {
-    oauth_token_getter_->CallWithToken(base::Bind(
+    oauth_token_getter_->CallWithToken(base::BindOnce(
         &HttpIceConfigRequest::OnOAuthToken, weak_factory_.GetWeakPtr()));
   } else {
     SendRequest();

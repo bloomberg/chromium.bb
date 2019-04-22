@@ -5,8 +5,6 @@
 [
 ##############################################################################
 [ALWAYS, {
-  # https://crbug.com/v8/7767
-  'debugger/wasm-imports': [SKIP],
   # https://crbug.com/v8/7932
   'runtime/command-line-api-without-side-effects': [SKIP],
 
@@ -35,9 +33,33 @@
 }],  # variant != default
 
 ##############################################################################
+['lite_mode or variant == jitless', {
+  # Lite mode does not allocate feedback vector.
+  'type-profiler/type-profile-start-stop': [SKIP],
+  'type-profiler/type-profile': [SKIP],
+  'type-profiler/type-profile-with-to-string-tag': [SKIP],
+  'type-profiler/type-profile-with-classes': [SKIP],
+  'type-profiler/type-profile-disable': [SKIP],
+
+  # TODO(v8:7777): Re-enable once wasm is supported in jitless mode.
+  'debugger/asm-js-stack': [SKIP],
+  'debugger/asm-js-breakpoint-before-exec': [SKIP],
+  'debugger/asm-js-breakpoint-during-exec': [SKIP],
+  'debugger/wasm-*': [SKIP],
+  'cpu-profiler/console-profile-wasm': [SKIP],
+}],  # 'lite_mode or variant == jitless'
+
+##############################################################################
+['variant == jitless', {
+  # https://crbug.com/v8/7777
+  'cpu-profiler/coverage': [SKIP],
+  'cpu-profiler/coverage-block': [SKIP],
+}], # variant == jitless
+
+##############################################################################
 ['(arch == arm or arch == arm64) and simulator_run', {
   # Slow tests: https://crbug.com/v8/7783
-  'runtime/console-messages-limits': [PASS, NO_VARIANTS, ['mode == debug or dcheck_always_on', SKIP]],
+  'runtime/console-messages-limits': [PASS, NO_VARIANTS, ['mode == debug', SKIP]],
 }],  # (arch == arm or arch == arm64) and simulator_run
 
 ##############################################################################
@@ -50,4 +72,16 @@
   # Stack manipulations in LiveEdit is not implemented for this arch.
   'debugger/set-script-source-stack-padding': [SKIP],
 }],  # 'arch == s390 or arch == s390x'
+
+##############################################################################
+['no_snap == True', {
+  # https://crbug.com/v8/8521
+  'debugger/pause-on-oom': [SKIP],
+}],
+
+##############################################################################
+['variant == jitless and not embedded_builtins', {
+  '*': [SKIP],
+}], # variant == jitless and not embedded_builtins
+
 ]

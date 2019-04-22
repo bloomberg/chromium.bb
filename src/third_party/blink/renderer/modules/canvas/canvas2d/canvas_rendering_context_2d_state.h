@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_STATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_STATE_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/clip_list.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
@@ -26,14 +27,9 @@ class Element;
 class CanvasRenderingContext2DState final
     : public GarbageCollectedFinalized<CanvasRenderingContext2DState>,
       public FontSelectorClient {
-  WTF_MAKE_NONCOPYABLE(CanvasRenderingContext2DState);
   USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2DState);
 
  public:
-  static CanvasRenderingContext2DState* Create() {
-    return MakeGarbageCollected<CanvasRenderingContext2DState>();
-  }
-
   enum ClipListCopyMode { kCopyClipList, kDontCopyClipList };
 
   CanvasRenderingContext2DState();
@@ -52,7 +48,7 @@ class CanvasRenderingContext2DState final
   static CanvasRenderingContext2DState* Create(
       const CanvasRenderingContext2DState& other,
       ClipListCopyMode mode) {
-    return new CanvasRenderingContext2DState(other, mode);
+    return MakeGarbageCollected<CanvasRenderingContext2DState>(other, mode);
   }
 
   // FontSelectorClient implementation
@@ -258,6 +254,8 @@ class CanvasRenderingContext2DState final
   SkFilterQuality image_smoothing_quality_;
 
   ClipList clip_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(CanvasRenderingContext2DState);
 };
 
 }  // namespace blink

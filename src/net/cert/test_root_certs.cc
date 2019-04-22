@@ -64,7 +64,7 @@ ScopedTestRoot::ScopedTestRoot(X509Certificate* cert) {
 }
 
 ScopedTestRoot::~ScopedTestRoot() {
-  Reset(NULL);
+  Reset(nullptr);
 }
 
 void ScopedTestRoot::Reset(X509Certificate* cert) {

@@ -15,7 +15,8 @@ struct DefaultSingletonTraits;
 }
 
 namespace ui {
-class EVENTS_DEVICES_EXPORT InputDeviceObserverWin {
+
+class EVENTS_DEVICES_EXPORT InputDeviceObserverWin final {
  public:
   static InputDeviceObserverWin* GetInstance();
   ~InputDeviceObserverWin();
@@ -23,22 +24,19 @@ class EVENTS_DEVICES_EXPORT InputDeviceObserverWin {
   void AddObserver(InputDeviceEventObserver* observer);
   void RemoveObserver(InputDeviceEventObserver* observer);
 
- protected:
+ private:
+  friend struct base::DefaultSingletonTraits<InputDeviceObserverWin>;
+
   InputDeviceObserverWin();
 
- private:
-  void OnRegistryKeyChanged(base::win::RegKey* key);
-  bool IsSlateModeEnabled(base::win::RegKey* key);
+  void OnRegistryKeyChanged();
+  bool IsSlateModeEnabled();
   void NotifyObserversKeyboardDeviceConfigurationChanged();
   void NotifyObserversTouchpadDeviceConfigurationChanged();
 
-  std::unique_ptr<base::win::RegKey> registry_key_;
+  bool slate_mode_enabled_ = false;
+  base::win::RegKey registry_key_;
   base::ObserverList<InputDeviceEventObserver>::Unchecked observers_;
-  bool slate_mode_enabled_;
-
-  friend struct base::DefaultSingletonTraits<InputDeviceObserverWin>;
-
-  base::WeakPtrFactory<InputDeviceObserverWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InputDeviceObserverWin);
 };

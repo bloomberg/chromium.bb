@@ -54,13 +54,13 @@ String SVGEnumerationBase::ValueAsString() const {
   return g_empty_string;
 }
 
-void SVGEnumerationBase::SetValue(unsigned short value) {
+void SVGEnumerationBase::SetValue(uint16_t value) {
   value_ = value;
   NotifyChange();
 }
 
 SVGParsingError SVGEnumerationBase::SetValueAsString(const String& string) {
-  unsigned short value = map_.ValueFromName(string);
+  uint16_t value = map_.ValueFromName(string);
   if (value) {
     value_ = value;
     NotifyChange();
@@ -83,14 +83,14 @@ void SVGEnumerationBase::CalculateAnimatedValue(
     SVGPropertyBase*,
     SVGElement*) {
   DCHECK(animation_element);
-  unsigned short from_enumeration =
+  uint16_t from_enumeration =
       animation_element->GetAnimationMode() == kToAnimation
           ? value_
           : ToSVGEnumerationBase(from)->Value();
-  unsigned short to_enumeration = ToSVGEnumerationBase(to)->Value();
+  uint16_t to_enumeration = ToSVGEnumerationBase(to)->Value();
 
-  animation_element->AnimateDiscreteType<unsigned short>(
-      percentage, from_enumeration, to_enumeration, value_);
+  animation_element->AnimateDiscreteType<uint16_t>(percentage, from_enumeration,
+                                                   to_enumeration, value_);
 }
 
 float SVGEnumerationBase::CalculateDistance(SVGPropertyBase*, SVGElement*) {
@@ -98,11 +98,11 @@ float SVGEnumerationBase::CalculateDistance(SVGPropertyBase*, SVGElement*) {
   return -1;
 }
 
-unsigned short SVGEnumerationBase::MaxExposedEnumValue() const {
+uint16_t SVGEnumerationBase::MaxExposedEnumValue() const {
   return map_.MaxExposedValue();
 }
 
-unsigned short SVGEnumerationBase::MaxInternalEnumValue() const {
+uint16_t SVGEnumerationBase::MaxInternalEnumValue() const {
   return map_.ValueOfLast();
 }
 

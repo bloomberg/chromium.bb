@@ -2,12 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-suite('<app-management-app>', function() {
-  test('loads', function(done) {
-    app_management.BrowserProxy.getInstance().handler.getApps();
+'use strict';
 
-    let callbackRouter =
-        app_management.BrowserProxy.getInstance().callbackRouter;
-    callbackRouter.onAppsAdded.addListener(() => done());
+suite('<app-management-app>', function() {
+  let app;
+
+  setup(function() {
+    app = document.createElement('app-management-app');
+    replaceBody(app);
+  });
+
+  test('loads', async function() {
+    // Check that the browser responds to the getApps() message.
+    const {apps: initialApps} =
+        await app_management.BrowserProxy.getInstance().handler.getApps();
+  });
+
+  test('Searching switches to search page', async function() {
+    app.$$('cr-toolbar').fire('search-changed', 'SearchTest');
+    assert(app.$$('app-management-search-view'));
   });
 });

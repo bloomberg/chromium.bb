@@ -4,7 +4,7 @@
 
 import("//build/config/android/config.gni")
 
-if (use_order_profiling && target_cpu == "arm") {
+if (use_order_profiling && (target_cpu == "arm" || target_cpu == "arm64")) {
   static_library("orderfile_instrumentation") {
     sources = [
       "orderfile_instrumentation.cc",

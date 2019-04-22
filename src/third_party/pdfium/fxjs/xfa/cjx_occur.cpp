@@ -8,12 +8,16 @@
 
 #include <algorithm>
 
-#include "fxjs/cfxjse_value.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cxfa_occur.h"
 
 CJX_Occur::CJX_Occur(CXFA_Occur* node) : CJX_Node(node) {}
 
 CJX_Occur::~CJX_Occur() = default;
+
+bool CJX_Occur::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
 
 void CJX_Occur::max(CFXJSE_Value* pValue,
                     bool bSetting,
@@ -35,22 +39,4 @@ void CJX_Occur::min(CFXJSE_Value* pValue,
     return;
   }
   occur->SetMin(pValue->ToInteger());
-}
-
-void CJX_Occur::use(CFXJSE_Value* pValue,
-                    bool bSetting,
-                    XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_Occur::initial(CFXJSE_Value* pValue,
-                        bool bSetting,
-                        XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_Occur::usehref(CFXJSE_Value* pValue,
-                        bool bSetting,
-                        XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
 }

@@ -5,8 +5,9 @@
 #include <ios>
 #include <ostream>
 
-#include "base/logging.h"
 #include "chrome/browser/web_applications/web_app.h"
+
+#include "base/logging.h"
 #include "ui/gfx/color_utils.h"
 
 namespace web_app {
@@ -35,6 +36,11 @@ void WebApp::SetScope(const GURL& scope) {
 
 void WebApp::SetThemeColor(base::Optional<SkColor> theme_color) {
   theme_color_ = theme_color;
+}
+
+void WebApp::SetIcons(Icons icons) {
+  DCHECK(!icons.empty());
+  icons_ = std::move(icons);
 }
 
 std::ostream& operator<<(std::ostream& out, const WebApp& app) {

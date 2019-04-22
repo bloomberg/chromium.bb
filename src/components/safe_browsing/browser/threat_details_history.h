@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
@@ -19,7 +18,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/completion_callback.h"
 
 namespace safe_browsing {
 

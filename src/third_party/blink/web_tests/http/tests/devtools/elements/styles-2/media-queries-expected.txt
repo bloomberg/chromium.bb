@@ -13,11 +13,16 @@ element.style { ()
     border: 1px solid black;
 
 [expanded] 
-#main { (<style>…</style>)
+#main { (<style>)
     background: blue;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
 
 

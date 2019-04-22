@@ -1,9 +1,9 @@
 This is a testharness.js-based test.
-Found 438 tests; 405 PASS, 33 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 408 tests; 384 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Element: original interface defined
 PASS Partial interface CSSStyleRule: original interface defined
-PASS Partial interface ElementCSSInlineStyle: original interface defined
+PASS Partial interface mixin ElementCSSInlineStyle: original interface mixin defined
 PASS Partial namespace CSS: original namespace defined
 PASS CSSStyleValue interface: existence and properties of interface object
 PASS CSSStyleValue interface object length
@@ -20,16 +20,11 @@ PASS StylePropertyMapReadOnly interface object name
 PASS StylePropertyMapReadOnly interface: existence and properties of interface prototype object
 PASS StylePropertyMapReadOnly interface: existence and properties of interface prototype object's "constructor" property
 PASS StylePropertyMapReadOnly interface: existence and properties of interface prototype object's @@unscopables property
-PASS Testing Symbol.iterator property of iterable interface StylePropertyMapReadOnly
-PASS Testing pair iterable interface StylePropertyMapReadOnly
+PASS StylePropertyMapReadOnly interface: iterable<USVString, [object Object]>
 PASS StylePropertyMapReadOnly interface: operation get(USVString)
 PASS StylePropertyMapReadOnly interface: operation getAll(USVString)
 PASS StylePropertyMapReadOnly interface: operation has(USVString)
 PASS StylePropertyMapReadOnly interface: attribute size
-PASS StylePropertyMapReadOnly interface: operation entries()
-PASS StylePropertyMapReadOnly interface: operation keys()
-PASS StylePropertyMapReadOnly interface: operation values()
-PASS StylePropertyMapReadOnly interface: operation forEach(function, any)
 PASS StylePropertyMap interface: existence and properties of interface object
 PASS StylePropertyMap interface object length
 PASS StylePropertyMap interface object name
@@ -56,30 +51,14 @@ PASS StylePropertyMapReadOnly interface: calling getAll(USVString) on styleMap w
 PASS StylePropertyMapReadOnly interface: styleMap must inherit property "has(USVString)" with the proper type
 PASS StylePropertyMapReadOnly interface: calling has(USVString) on styleMap with too few arguments must throw TypeError
 PASS StylePropertyMapReadOnly interface: styleMap must inherit property "size" with the proper type
-PASS StylePropertyMapReadOnly interface: styleMap must inherit property "entries()" with the proper type
-PASS StylePropertyMapReadOnly interface: styleMap must inherit property "keys()" with the proper type
-PASS StylePropertyMapReadOnly interface: styleMap must inherit property "values()" with the proper type
-PASS StylePropertyMapReadOnly interface: styleMap must inherit property "forEach(function, any)" with the proper type
-PASS StylePropertyMapReadOnly interface: calling forEach(function, any) on styleMap with too few arguments must throw TypeError
 PASS CSSUnparsedValue interface: existence and properties of interface object
 PASS CSSUnparsedValue interface object length
 PASS CSSUnparsedValue interface object name
 PASS CSSUnparsedValue interface: existence and properties of interface prototype object
 PASS CSSUnparsedValue interface: existence and properties of interface prototype object's "constructor" property
 PASS CSSUnparsedValue interface: existence and properties of interface prototype object's @@unscopables property
-PASS Testing Symbol.iterator property of iterable interface CSSUnparsedValue
-PASS Testing value iterable interface CSSUnparsedValue
+PASS CSSUnparsedValue interface: iterable<CSSUnparsedSegment>
 PASS CSSUnparsedValue interface: attribute length
-FAIL CSSUnparsedValue interface: operation entries() assert_throws: calling operation with this = {} didn't throw TypeError function "function() {
-            fn.apply(obj, args);
-        }" did not throw
-FAIL CSSUnparsedValue interface: operation keys() assert_throws: calling operation with this = {} didn't throw TypeError function "function() {
-            fn.apply(obj, args);
-        }" did not throw
-FAIL CSSUnparsedValue interface: operation values() assert_throws: calling operation with this = {} didn't throw TypeError function "function() {
-            fn.apply(obj, args);
-        }" did not throw
-PASS CSSUnparsedValue interface: operation forEach(function, any)
 PASS CSSVariableReferenceValue interface: existence and properties of interface object
 PASS CSSVariableReferenceValue interface object length
 PASS CSSVariableReferenceValue interface object name
@@ -242,50 +221,23 @@ PASS CSSNumericArray interface object name
 PASS CSSNumericArray interface: existence and properties of interface prototype object
 PASS CSSNumericArray interface: existence and properties of interface prototype object's "constructor" property
 PASS CSSNumericArray interface: existence and properties of interface prototype object's @@unscopables property
-PASS Testing Symbol.iterator property of iterable interface CSSNumericArray
-PASS Testing value iterable interface CSSNumericArray
+PASS CSSNumericArray interface: iterable<CSSNumericValue>
 PASS CSSNumericArray interface: attribute length
-FAIL CSSNumericArray interface: operation entries() assert_throws: calling operation with this = {} didn't throw TypeError function "function() {
-            fn.apply(obj, args);
-        }" did not throw
-FAIL CSSNumericArray interface: operation keys() assert_throws: calling operation with this = {} didn't throw TypeError function "function() {
-            fn.apply(obj, args);
-        }" did not throw
-FAIL CSSNumericArray interface: operation values() assert_throws: calling operation with this = {} didn't throw TypeError function "function() {
-            fn.apply(obj, args);
-        }" did not throw
-PASS CSSNumericArray interface: operation forEach(function, any)
 PASS CSSTransformValue interface: existence and properties of interface object
 PASS CSSTransformValue interface object length
 PASS CSSTransformValue interface object name
 PASS CSSTransformValue interface: existence and properties of interface prototype object
 PASS CSSTransformValue interface: existence and properties of interface prototype object's "constructor" property
 PASS CSSTransformValue interface: existence and properties of interface prototype object's @@unscopables property
-PASS Testing Symbol.iterator property of iterable interface CSSTransformValue
-PASS Testing value iterable interface CSSTransformValue
+PASS CSSTransformValue interface: iterable<CSSTransformComponent>
 PASS CSSTransformValue interface: attribute length
 PASS CSSTransformValue interface: attribute is2D
 PASS CSSTransformValue interface: operation toMatrix()
-FAIL CSSTransformValue interface: operation entries() assert_throws: calling operation with this = {} didn't throw TypeError function "function() {
-            fn.apply(obj, args);
-        }" did not throw
-FAIL CSSTransformValue interface: operation keys() assert_throws: calling operation with this = {} didn't throw TypeError function "function() {
-            fn.apply(obj, args);
-        }" did not throw
-FAIL CSSTransformValue interface: operation values() assert_throws: calling operation with this = {} didn't throw TypeError function "function() {
-            fn.apply(obj, args);
-        }" did not throw
-PASS CSSTransformValue interface: operation forEach(function, any)
 PASS CSSTransformValue must be primary interface of transformValue
 PASS Stringification of transformValue
 PASS CSSTransformValue interface: transformValue must inherit property "length" with the proper type
 PASS CSSTransformValue interface: transformValue must inherit property "is2D" with the proper type
 PASS CSSTransformValue interface: transformValue must inherit property "toMatrix()" with the proper type
-PASS CSSTransformValue interface: transformValue must inherit property "entries()" with the proper type
-PASS CSSTransformValue interface: transformValue must inherit property "keys()" with the proper type
-PASS CSSTransformValue interface: transformValue must inherit property "values()" with the proper type
-PASS CSSTransformValue interface: transformValue must inherit property "forEach(function, any)" with the proper type
-PASS CSSTransformValue interface: calling forEach(function, any) on transformValue with too few arguments must throw TypeError
 PASS CSSStyleValue interface: transformValue must inherit property "parse(USVString, USVString)" with the proper type
 FAIL CSSStyleValue interface: calling parse(USVString, USVString) on transformValue with too few arguments must throw TypeError assert_own_property: interface object must have static operation as own property expected property "parse" missing
 PASS CSSStyleValue interface: transformValue must inherit property "parseAll(USVString, USVString)" with the proper type

@@ -18,6 +18,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/ui_base_features.h"
 
+#if defined(OS_MACOSX)
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
+#endif
+
 namespace {
 
 // Javascript snippet used to verify the keyboard lock API exists.
@@ -103,6 +107,10 @@ class KeyboardLockInteractiveBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_test_server_;
 
+#if defined(OS_MACOSX)
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardLockInteractiveBrowserTest);
 };
 
@@ -114,17 +122,14 @@ KeyboardLockInteractiveBrowserTest::~KeyboardLockInteractiveBrowserTest() =
 
 void KeyboardLockInteractiveBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  // Ensure the KeyboardLockAPI is enabled and system keyboard lock is disabled.
   // It is important to disable system keyboard lock as the low-level test
   // utility functions install a keyboard hook to listen for key events and the
   // keyboard lock hook can interfere with it.
-  scoped_feature_list_.InitWithFeatures({features::kKeyboardLockAPI},
-                                        {features::kSystemKeyboardLock});
+  scoped_feature_list_.InitWithFeatures({}, {features::kSystemKeyboardLock});
 }
 
 void KeyboardLockInteractiveBrowserTest::SetUpOnMainThread() {
-  GetEmbeddedTestServer()->AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  GetEmbeddedTestServer()->AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(GetEmbeddedTestServer()->Start());
   FullscreenKeyboardBrowserTestBase::SetUpOnMainThread();
 }

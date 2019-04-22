@@ -16,6 +16,7 @@
 #include "src/isolate.h"
 #include "src/objects.h"
 #include "src/objects/intl-objects.h"
+#include "src/objects/js-objects.h"
 #include "src/objects/managed.h"
 
 // Has to be the last include (doesn't have include guards):
@@ -39,7 +40,7 @@ class JSCollator : public JSObject {
   static Handle<JSObject> ResolvedOptions(Isolate* isolate,
                                           Handle<JSCollator> collator);
 
-  static std::set<std::string> GetAvailableLocales();
+  V8_EXPORT_PRIVATE static const std::set<std::string>& GetAvailableLocales();
 
   DECL_CAST(JSCollator)
   DECL_PRINTER(JSCollator)
@@ -56,10 +57,9 @@ class JSCollator : public JSObject {
 #undef JS_COLLATOR_FIELDS
 
   DECL_ACCESSORS(icu_collator, Managed<icu::Collator>)
-  DECL_ACCESSORS(bound_compare, Object);
+  DECL_ACCESSORS(bound_compare, Object)
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSCollator);
+  OBJECT_CONSTRUCTORS(JSCollator, JSObject);
 };
 
 }  // namespace internal

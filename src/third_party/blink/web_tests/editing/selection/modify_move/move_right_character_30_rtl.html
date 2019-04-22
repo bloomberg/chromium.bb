@@ -3,6 +3,8 @@
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../assert_selection.js"></script>
 <script>
+const usesBidiAffinity = window.internals && internals.runtimeFlags.bidiCaretAffinityEnabled;
+
 selection_test(
   '<div contenteditable dir="rtl">|\u05D0\u05D1\u05D2abc<span>def</span></div>',
   selection => selection.modify('move', 'right', 'character'),
@@ -24,7 +26,9 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">\u05D0\u05D1\u05D2|abc<span>def</span></div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl">\u05D0\u05D1|\u05D2abc<span>def</span></div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl">\u05d0\u05d1\u05d2a|bc<span>def</span></div>'
+      : '<div contenteditable dir="rtl">\u05D0\u05D1|\u05D2abc<span>def</span></div>',
   '30-3 rtl right character');
 
 selection_test(
@@ -60,18 +64,24 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">\u05D0\u05D1\u05D2abc<span>de|f</span></div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl">\u05D0\u05D1\u05D2|abc<span>def</span></div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl">\u05d0\u05d1\u05d2abc<span>def|</span></div>'
+      : '<div contenteditable dir="rtl">\u05D0\u05D1\u05D2|abc<span>def</span></div>',
   '30-9 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">\u05D0\u05D1\u05D2abc<span>def|</span></div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl">\u05D0\u05D1\u05D2a|bc<span>def</span></div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl">\u05d0\u05d1|\u05d2abc<span>def</span></div>'
+      : '<div contenteditable dir="rtl">\u05D0\u05D1\u05D2a|bc<span>def</span></div>',
   '30-10 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl">\u05D0\u05D1\u05D2abc<span>def</span>|</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl">\u05D0\u05D1\u05D2a|bc<span>def</span></div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl">\u05d0\u05d1|\u05d2abc<span>def</span></div>'
+      : '<div contenteditable dir="rtl">\u05D0\u05D1\u05D2a|bc<span>def</span></div>',
   '30-11 rtl right character');
 </script>

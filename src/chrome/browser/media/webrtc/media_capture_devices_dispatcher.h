@@ -16,8 +16,9 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "content/public/browser/media_observer.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 class MediaAccessHandler;
 class MediaStreamCaptureIndicator;
@@ -40,19 +41,18 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
     // Handle an information update consisting of a up-to-date audio capture
     // device lists. This happens when a microphone is plugged in or unplugged.
     virtual void OnUpdateAudioDevices(
-        const content::MediaStreamDevices& devices) {}
+        const blink::MediaStreamDevices& devices) {}
 
     // Handle an information update consisting of a up-to-date video capture
     // device lists. This happens when a camera is plugged in or unplugged.
     virtual void OnUpdateVideoDevices(
-        const content::MediaStreamDevices& devices) {}
+        const blink::MediaStreamDevices& devices) {}
 
     // Handle an information update related to a media stream request.
-    virtual void OnRequestUpdate(
-        int render_process_id,
-        int render_frame_id,
-        content::MediaStreamType stream_type,
-        const content::MediaRequestState state) {}
+    virtual void OnRequestUpdate(int render_process_id,
+                                 int render_frame_id,
+                                 blink::MediaStreamType stream_type,
+                                 const content::MediaRequestState state) {}
 
     // Handle an information update that a new stream is being created.
     virtual void OnCreatingAudioStream(int render_process_id,
@@ -74,8 +74,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
   // on destruction.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-  const content::MediaStreamDevices& GetAudioCaptureDevices();
-  const content::MediaStreamDevices& GetVideoCaptureDevices();
+  const blink::MediaStreamDevices& GetAudioCaptureDevices();
+  const blink::MediaStreamDevices& GetVideoCaptureDevices();
 
   // Method called from WebCapturerDelegate implementations to process access
   // requests. |extension| is set to NULL if request was made from a drive-by
@@ -89,12 +89,12 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
   // access permission. Note that this does not query the user.
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type);
+                                  blink::MediaStreamType type);
 
   // Same as above but for an |extension|, which may not be NULL.
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type,
+                                  blink::MediaStreamType type,
                                   const extensions::Extension* extension);
 
   // Helper to get the default devices which can be used by the media request.
@@ -105,27 +105,27 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
   void GetDefaultDevicesForProfile(Profile* profile,
                                    bool audio,
                                    bool video,
-                                   content::MediaStreamDevices* devices);
+                                   blink::MediaStreamDevices* devices);
 
   // Helper to get default device IDs. If the returned value is an empty string,
   // it means that there is no default device for the given device |type|. The
-  // only supported |type| values are content::MEDIA_DEVICE_AUDIO_CAPTURE and
-  // content::MEDIA_DEVICE_VIDEO_CAPTURE.
+  // only supported |type| values are blink::MEDIA_DEVICE_AUDIO_CAPTURE and
+  // blink::MEDIA_DEVICE_VIDEO_CAPTURE.
   // Must be called on the UI thread.
   std::string GetDefaultDeviceIDForProfile(Profile* profile,
-                                           content::MediaStreamType type);
+                                           blink::MediaStreamType type);
 
   // Helpers for picking particular requested devices, identified by raw id.
   // If the device requested is not available it will return NULL.
-  const content::MediaStreamDevice*
-  GetRequestedAudioDevice(const std::string& requested_audio_device_id);
-  const content::MediaStreamDevice*
-  GetRequestedVideoDevice(const std::string& requested_video_device_id);
+  const blink::MediaStreamDevice* GetRequestedAudioDevice(
+      const std::string& requested_audio_device_id);
+  const blink::MediaStreamDevice* GetRequestedVideoDevice(
+      const std::string& requested_video_device_id);
 
   // Returns the first available audio or video device, or NULL if no devices
   // are available.
-  const content::MediaStreamDevice* GetFirstAvailableAudioDevice();
-  const content::MediaStreamDevice* GetFirstAvailableVideoDevice();
+  const blink::MediaStreamDevice* GetFirstAvailableAudioDevice();
+  const blink::MediaStreamDevice* GetFirstAvailableVideoDevice();
 
   // Unittests that do not require actual device enumeration should call this
   // API on the singleton. It is safe to call this multiple times on the
@@ -139,14 +139,14 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
                                   int render_frame_id,
                                   int page_request_id,
                                   const GURL& security_origin,
-                                  content::MediaStreamType stream_type,
+                                  blink::MediaStreamType stream_type,
                                   content::MediaRequestState state) override;
   void OnCreatingAudioStream(int render_process_id,
                              int render_frame_id) override;
   void OnSetCapturingLinkSecured(int render_process_id,
                                  int render_frame_id,
                                  int page_request_id,
-                                 content::MediaStreamType stream_type,
+                                 blink::MediaStreamType stream_type,
                                  bool is_secure) override;
 
   scoped_refptr<MediaStreamCaptureIndicator> GetMediaStreamCaptureIndicator();
@@ -158,8 +158,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
                                      int render_frame_id);
 
   // Only for testing.
-  void SetTestAudioCaptureDevices(const content::MediaStreamDevices& devices);
-  void SetTestVideoCaptureDevices(const content::MediaStreamDevices& devices);
+  void SetTestAudioCaptureDevices(const blink::MediaStreamDevices& devices);
+  void SetTestVideoCaptureDevices(const blink::MediaStreamDevices& devices);
 
  private:
   friend struct base::DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
@@ -170,26 +170,25 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
   // Called by the MediaObserver() functions, executed on UI thread.
   void NotifyAudioDevicesChangedOnUIThread();
   void NotifyVideoDevicesChangedOnUIThread();
-  void UpdateMediaRequestStateOnUIThread(
-      int render_process_id,
-      int render_frame_id,
-      int page_request_id,
-      const GURL& security_origin,
-      content::MediaStreamType stream_type,
-      content::MediaRequestState state);
+  void UpdateMediaRequestStateOnUIThread(int render_process_id,
+                                         int render_frame_id,
+                                         int page_request_id,
+                                         const GURL& security_origin,
+                                         blink::MediaStreamType stream_type,
+                                         content::MediaRequestState state);
   void OnCreatingAudioStreamOnUIThread(int render_process_id,
                                        int render_frame_id);
-  void UpdateCapturingLinkSecured(int render_process_id,
-                                  int render_frame_id,
-                                  int page_request_id,
-                                  content::MediaStreamType stream_type,
-                                  bool is_secure);
+  void UpdateVideoScreenCaptureStatus(int render_process_id,
+                                      int render_frame_id,
+                                      int page_request_id,
+                                      blink::MediaStreamType stream_type,
+                                      bool is_secure);
 
   // Only for testing, a list of cached audio capture devices.
-  content::MediaStreamDevices test_audio_devices_;
+  blink::MediaStreamDevices test_audio_devices_;
 
   // Only for testing, a list of cached video capture devices.
-  content::MediaStreamDevices test_video_devices_;
+  blink::MediaStreamDevices test_video_devices_;
 
   // A list of observers for the device update notifications.
   base::ObserverList<Observer>::Unchecked observers_;

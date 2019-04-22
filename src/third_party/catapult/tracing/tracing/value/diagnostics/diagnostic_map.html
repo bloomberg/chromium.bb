@@ -66,6 +66,13 @@ tr.exportTo('tr.v.d', function() {
       Map.prototype.delete.call(this, name);
     }
 
+    deserializeAdd(data, deserializer) {
+      for (const id of data) {
+        const {name, diagnostic} = deserializer.getDiagnostic(id);
+        this.set(name, diagnostic);
+      }
+    }
+
     /**
      * Add Diagnostics from a dictionary of dictionaries.
      *
@@ -73,9 +80,14 @@ tr.exportTo('tr.v.d', function() {
      */
     addDicts(dict) {
       for (const [name, diagnosticDict] of Object.entries(dict)) {
+        if (name === 'tagmap') continue;
         if (typeof diagnosticDict === 'string') {
           this.set(name, new tr.v.d.DiagnosticRef(diagnosticDict));
-        } else {
+        } else if (diagnosticDict.type !== 'RelatedHistogramMap' &&
+                   diagnosticDict.type !== 'RelatedHistogramBreakdown' &&
+                   diagnosticDict.type !== 'TagMap') {
+          // Ignore RelatedHistograms and TagMaps.
+          // TODO(benjhayden): Forget about them in 2019 Q2.
           this.set(name, tr.v.d.Diagnostic.fromDict(diagnosticDict));
         }
       }
@@ -97,12 +109,26 @@ tr.exportTo('tr.v.d', function() {
       }
     }
 
+    serialize(serializer) {
+      const data = [];
+      for (const [name, diagnostic] of this) {
+        data.push(serializer.getOrAllocateDiagnosticId(name, diagnostic));
+      }
+      return data;
+    }
+
     asDict() {
       const dict = {};
       for (const [name, diagnostic] of this) {
         dict[name] = diagnostic.asDictOrReference();
       }
       return dict;
+    }
+
+    static deserialize(data, deserializer) {
+      const diagnostics = new DiagnosticMap();
+      diagnostics.deserializeAdd(data, deserializer);
+      return diagnostics;
     }
 
     static fromDict(d) {
@@ -120,6 +146,7 @@ tr.exportTo('tr.v.d', function() {
       const diagnostics = new DiagnosticMap();
       if (!(obj instanceof Map)) obj = Object.entries(obj);
       for (const [name, diagnostic] of obj) {
+        if (!diagnostic) continue;
         diagnostics.set(name, diagnostic);
       }
       return diagnostics;
@@ -127,12 +154,6 @@ tr.exportTo('tr.v.d', function() {
 
     addDiagnostics(other) {
       for (const [name, otherDiagnostic] of other) {
-        if (name === tr.v.d.RESERVED_NAMES.MERGED_FROM ||
-            name === tr.v.d.RESERVED_NAMES.MERGED_TO ||
-            name === tr.v.d.RESERVED_NAMES.GROUPING_PATH) {
-          continue;
-        }
-
         const myDiagnostic = this.get(name);
 
         if (myDiagnostic !== undefined &&
@@ -170,39 +191,8 @@ tr.exportTo('tr.v.d', function() {
             [myDiagnostic, clone]));
       }
     }
-
-    /**
-     * RelatedHistogram diagnostics cannot be merged when Histograms are merged
-     * because the related Histograms might not exist yet.
-     * This method assumes that all related Histograms exist and that duplicate
-     * Diagnostics have been deduplicated.
-     *
-     * @param {!tr.v.Histogram} parentHist
-     */
-    mergeRelationships(parentHist) {
-      for (const [name, diagnostic] of this) {
-        if (!(diagnostic instanceof tr.v.d.RelatedHistogramMap) &&
-            !(diagnostic instanceof tr.v.d.RelatedHistogramBreakdown) &&
-            !(diagnostic instanceof tr.v.d.UnmergeableDiagnosticSet)) {
-          continue;
-        }
-
-        for (const [unusedName, otherHist] of
-          this.get(tr.v.d.RESERVED_NAMES.MERGED_FROM)) {
-          const otherDiagnostic = otherHist.diagnostics.get(name);
-          if (!(otherDiagnostic instanceof tr.v.d.RelatedHistogramMap) &&
-              !(otherDiagnostic instanceof tr.v.d.RelatedHistogramBreakdown) &&
-              !(otherDiagnostic instanceof tr.v.d.UnmergeableDiagnosticSet)) {
-            continue;
-          }
-          diagnostic.mergeRelationships(otherDiagnostic, parentHist, otherHist);
-        }
-      }
-    }
   }
 
-  return {
-    DiagnosticMap,
-  };
+  return {DiagnosticMap};
 });
 </script>

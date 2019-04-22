@@ -22,7 +22,7 @@ class WebOmniboxEditControllerImpl : public WebOmniboxEditController {
 
   void SetURLLoader(id<LocationBarURLLoader> URLLoader) {
     URLLoader_ = URLLoader;
-  };
+  }
 
   // WebOmniboxEditController methods.
   web::WebState* GetWebState() override;
@@ -31,6 +31,7 @@ class WebOmniboxEditControllerImpl : public WebOmniboxEditController {
 
   // OmniboxEditController methods.
   void OnAutocompleteAccept(const GURL& destination_url,
+                            TemplateURLRef::PostContent* post_content,
                             WindowOpenDisposition disposition,
                             ui::PageTransition transition,
                             AutocompleteMatchType::Type match_type,

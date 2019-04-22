@@ -67,7 +67,7 @@ class TokenWebDataBackend
 TokenResult::TokenResult()
     : db_result(TokenServiceTable::TOKEN_DB_RESULT_SQL_INVALID_STATEMENT) {}
 TokenResult::TokenResult(const TokenResult& other) = default;
-TokenResult::~TokenResult(){};
+TokenResult::~TokenResult() {}
 
 TokenWebData::TokenWebData(
     scoped_refptr<WebDatabaseService> wdbs,

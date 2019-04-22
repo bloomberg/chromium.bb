@@ -12,44 +12,44 @@ from recipe_engine import recipe_api
 class DepotToolsApi(recipe_api.RecipeApi):
   @property
   def download_from_google_storage_path(self):
-    return self.package_repo_resource('download_from_google_storage.py')
+    return self.repo_resource('download_from_google_storage.py')
 
   @property
   def upload_to_google_storage_path(self):
-    return self.package_repo_resource('upload_to_google_storage.py')
+    return self.repo_resource('upload_to_google_storage.py')
 
   @property
   def root(self):
     """Returns (Path): The "depot_tools" root directory."""
-    return self.package_repo_resource()
+    return self.repo_resource()
 
   @property
   def cros_path(self):
-    return self.package_repo_resource('cros')
+    return self.repo_resource('cros')
 
   @property
   def gn_py_path(self):
-    return self.package_repo_resource('gn.py')
+    return self.repo_resource('gn.py')
 
   # TODO(dnj): Remove this once everything uses the "gsutil" recipe module
   # version.
   @property
   def gsutil_py_path(self):
-    return self.package_repo_resource('gsutil.py')
+    return self.repo_resource('gsutil.py')
 
   @property
   def ninja_path(self):
     ninja_exe = 'ninja.exe' if self.m.platform.is_win else 'ninja'
-    return self.package_repo_resource(ninja_exe)
+    return self.repo_resource(ninja_exe)
 
   @property
   def autoninja_path(self):
     autoninja = 'autoninja.bat' if self.m.platform.is_win else 'autoninja'
-    return self.package_repo_resource(autoninja)
+    return self.repo_resource(autoninja)
 
   @property
   def presubmit_support_py_path(self):
-    return self.package_repo_resource('presubmit_support.py')
+    return self.repo_resource('presubmit_support.py')
 
   @contextlib.contextmanager
   def on_path(self):

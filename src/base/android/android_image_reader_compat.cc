@@ -10,11 +10,17 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 
+// Helper function to log errors from dlsym. Calling DLOG(ERROR) inside a macro
+// crashes clang code coverage. https://crbug.com/843356
+static void LogDlsymError(const char* func) {
+  DLOG(ERROR) << "Unable to load function " << func;
+}
+
 #define LOAD_FUNCTION(lib, func)                            \
   do {                                                      \
     func##_ = reinterpret_cast<p##func>(dlsym(lib, #func)); \
     if (!func##_) {                                         \
-      DLOG(ERROR) << "Unable to load function " << #func;   \
+      LogDlsymError(#func);                                 \
       return false;                                         \
     }                                                       \
   } while (0)
@@ -50,9 +56,10 @@ bool AndroidImageReader::LoadFunctions() {
   // devices, this is unlikely to happen in the foreseeable future, so we use
   // dynamic loading.
 
-  // Functions are not present for android version older than OREO
+  // Functions are not present for android version older than OREO.
+  // Currently we want to enable AImageReader only for android P+ devices.
   if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_OREO) {
+      base::android::SDK_VERSION_P) {
     return false;
   }
 
@@ -70,6 +77,7 @@ bool AndroidImageReader::LoadFunctions() {
   LOAD_FUNCTION(libmediandk, AImageReader_newWithUsage);
   LOAD_FUNCTION(libmediandk, AImageReader_setImageListener);
   LOAD_FUNCTION(libmediandk, AImageReader_delete);
+  LOAD_FUNCTION(libmediandk, AImageReader_getFormat);
   LOAD_FUNCTION(libmediandk, AImageReader_getWindow);
   LOAD_FUNCTION(libmediandk, AImageReader_acquireLatestImageAsync);
 
@@ -127,6 +135,12 @@ media_status_t AndroidImageReader::AImageReader_setImageListener(
 
 void AndroidImageReader::AImageReader_delete(AImageReader* reader) {
   AImageReader_delete_(reader);
+}
+
+media_status_t AndroidImageReader::AImageReader_getFormat(
+    const AImageReader* reader,
+    int32_t* format) {
+  return AImageReader_getFormat_(reader, format);
 }
 
 media_status_t AndroidImageReader::AImageReader_getWindow(

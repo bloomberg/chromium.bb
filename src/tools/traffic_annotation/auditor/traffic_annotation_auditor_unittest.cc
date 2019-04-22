@@ -88,7 +88,7 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
   }
 
   const base::FilePath source_path() const { return source_path_; }
-  const base::FilePath tests_folder() const { return tests_folder_; };
+  const base::FilePath tests_folder() const { return tests_folder_; }
   TrafficAnnotationAuditor& auditor() { return *auditor_; }
   TrafficAnnotationIDChecker& id_checker() { return *id_checker_; }
   std::vector<AuditorResult>* errors() { return &errors_; }
@@ -201,7 +201,7 @@ TEST_F(TrafficAnnotationAuditorTest, GetFilesFromGit) {
 
   const std::vector<std::string> git_files = filter.git_files();
 
-  EXPECT_EQ(git_files.size(), arraysize(kRelevantFiles));
+  EXPECT_EQ(git_files.size(), base::size(kRelevantFiles));
   for (const char* filepath : kRelevantFiles) {
     EXPECT_TRUE(base::ContainsValue(git_files, filepath));
   }

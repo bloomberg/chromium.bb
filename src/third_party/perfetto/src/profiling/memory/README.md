@@ -1,11 +1,44 @@
 # heapprofd - Android Heap Profiler
 
-_These are temporary instructions while heapprofd is under development. They are
-subject to frequent change and will be obsoleted once heapprofd is integrated
-into Perfetto._
+Googlers, for design doc see: http://go/heapprofd-design
 
-Currently heapprofd only works with SELinux disabled and when run as root.
+**heapprofd requires Android Q.**
 
+## Using convenience script
+
+<!-- This uses github because gitiles does not allow to get the raw file. -->
+
+Use the `tools/heap_profile` script to heap profile a process. If you are
+having trouble make sure you are using the [latest version](
+https://raw.githubusercontent.com/catapult-project/perfetto/master/tools/heap_profile).
+
+See all the arguments using `tools/heap_profile -h`, or use the defaults
+and just profile a process (e.g. `system_server`):
+
+```
+tools/heap_profile --name system_server
+```
+
+This will create a heap dump when Ctrl+C is pressed.
+
+The resulting profile proto contains four views on the data
+
+* space: how many bytes were allocated but not freed at this callstack the
+  moment the dump was created.
+* alloc\_space: how many bytes were allocated (including ones freed at the
+  moment of the dump) at this callstack
+* objects: how many allocations without matching frees were done at this
+  callstack.
+* alloc\_objects: how many allocations (including ones with matching frees) were
+  done at this callstack.
+
+**Googlers:** Head to http://pprof/ and upload the gzipped protos to get a
+visualization.
+
+[Speedscope](https://speedscope.app) can also be used to visualize the heap
+dump, but will only show the space view.
+
+## Manual
 To start profiling the process `${PID}`, run the following sequence of commands.
 Adjust the `INTERVAL` to trade-off runtime impact for higher accuracy of the
 results. If `INTERVAL=1`, every allocation is sampled for maximum accuracy.
@@ -38,7 +71,7 @@ data_sources {
 }
 
 duration_ms: 20000
-' | adb shell perfetto -t -c - -o /data/misc/perfetto-traces/trace
+' | adb shell perfetto --txt -c - -o /data/misc/perfetto-traces/trace
 
 adb pull /data/misc/perfetto-traces/trace /tmp/trace
 ```

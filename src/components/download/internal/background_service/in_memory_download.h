@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/download/internal/background_service/blob_task_proxy.h"
@@ -47,6 +48,7 @@ class InMemoryDownload {
     virtual void OnDownloadStarted(InMemoryDownload* download) = 0;
     virtual void OnDownloadProgress(InMemoryDownload* download) = 0;
     virtual void OnDownloadComplete(InMemoryDownload* download) = 0;
+    virtual void OnUploadProgress(InMemoryDownload* download) = 0;
 
    protected:
     virtual ~Delegate() = default;
@@ -58,6 +60,7 @@ class InMemoryDownload {
     virtual std::unique_ptr<InMemoryDownload> Create(
         const std::string& guid,
         const RequestParams& request_params,
+        scoped_refptr<network::ResourceRequestBody> request_body,
         const net::NetworkTrafficAnnotationTag& traffic_annotation,
         Delegate* delegate) = 0;
 
@@ -110,6 +113,7 @@ class InMemoryDownload {
   scoped_refptr<const net::HttpResponseHeaders> response_headers() const {
     return response_headers_;
   }
+  uint64_t bytes_uploaded() const { return bytes_uploaded_; }
 
  protected:
   InMemoryDownload(const std::string& guid);
@@ -133,6 +137,8 @@ class InMemoryDownload {
 
   uint64_t bytes_downloaded_;
 
+  uint64_t bytes_uploaded_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InMemoryDownload);
 };
@@ -151,6 +157,7 @@ class InMemoryDownloadImpl : public network::SimpleURLLoaderStreamConsumer,
   InMemoryDownloadImpl(
       const std::string& guid,
       const RequestParams& request_params,
+      scoped_refptr<network::ResourceRequestBody> request_body,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       Delegate* delegate,
       network::mojom::URLLoaderFactory* url_loader_factory,
@@ -196,11 +203,16 @@ class InMemoryDownloadImpl : public network::SimpleURLLoaderStreamConsumer,
   void OnResponseStarted(const GURL& final_url,
                          const network::ResourceResponseHead& response_head);
 
+  void OnUploadProgress(uint64_t position, uint64_t total);
+
   // Resets local states.
   void Reset();
 
   // Request parameters of the download.
   const RequestParams request_params_;
+
+  // The request body to upload (if any).
+  scoped_refptr<network::ResourceRequestBody> request_body_;
 
   // Traffic annotation of the request.
   const net::NetworkTrafficAnnotationTag traffic_annotation_;

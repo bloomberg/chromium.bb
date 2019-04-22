@@ -1,5 +1,5 @@
-/* minizip.c
-   Version 2.7.5, November 13, 2018
+/* zip_fuzzer.c - Zip fuzzer for libFuzzer
+   Version 2.8.1, December 1, 2018
    part of the MiniZip project
 
    Copyright (C) 2018 The Chromium Authors
@@ -11,10 +11,6 @@
    See the accompanying LICENSE file for the full text of the license.
 */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 
 #include "mz.h"
 #include "mz_strm.h"

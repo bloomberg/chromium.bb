@@ -42,8 +42,8 @@ void SelectRuleFeatureSet::CollectFeaturesFromSelectorList(
        selector = CSSSelectorList::Next(*selector)) {
     for (const CSSSelector* component = selector; component;
          component = component->TagHistory()) {
-      if (InvalidationSetForSimpleSelector(*component, kInvalidateDescendants,
-                                           kSubject)) {
+      if (InvalidationSetForSimpleSelector(
+              *component, InvalidationType::kInvalidateDescendants, kSubject)) {
         continue;
       }
 

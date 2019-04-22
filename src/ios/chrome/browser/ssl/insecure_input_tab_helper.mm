@@ -65,38 +65,6 @@ InsecureInputTabHelper* InsecureInputTabHelper::GetOrCreateForWebState(
   return helper;
 }
 
-void InsecureInputTabHelper::DidShowPasswordFieldInInsecureContext() {
-  DCHECK(!web::IsOriginSecure(web_state_->GetLastCommittedURL()));
-
-  security_state::SSLStatusInputEventData* input_events =
-      GetOrCreateSSLStatusInputEventData(web_state_);
-  if (!input_events)
-    return;
-
-  // If the first password field for the web contents was just
-  // shown, update the SSLStatusInputEventData.
-  if (!input_events->input_events()->password_field_shown) {
-    input_events->input_events()->password_field_shown = true;
-    web_state_->DidChangeVisibleSecurityState();
-  }
-}
-
-void InsecureInputTabHelper::DidInteractWithNonsecureCreditCardInput() {
-  DCHECK(!web::IsOriginSecure(web_state_->GetLastCommittedURL()));
-
-  security_state::SSLStatusInputEventData* input_events =
-      GetOrCreateSSLStatusInputEventData(web_state_);
-  if (!input_events)
-    return;
-
-  // If the first credit card field for the web contents was just
-  // shown, update the SSLStatusInputEventData.
-  if (!input_events->input_events()->credit_card_field_edited) {
-    input_events->input_events()->credit_card_field_edited = true;
-    web_state_->DidChangeVisibleSecurityState();
-  }
-}
-
 void InsecureInputTabHelper::DidEditFieldInInsecureContext() {
   DCHECK(!web::IsOriginSecure(web_state_->GetLastCommittedURL()));
 
@@ -156,3 +124,5 @@ void InsecureInputTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state_->RemoveObserver(this);
   web_state_ = nullptr;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(InsecureInputTabHelper)

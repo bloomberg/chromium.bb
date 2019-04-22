@@ -113,7 +113,7 @@ class AnimationGallery : public View,
       animated_image_view_->SetImageSize(gfx::Size(size_, size_));
     else
       animated_image_view_->ResetImageSize();
-    Layout();
+    InvalidateLayout();
   }
 
   AnimatedImageView* animated_image_view_;
@@ -132,7 +132,7 @@ class AnimationGallery : public View,
 AnimatedImageViewExample::AnimatedImageViewExample()
     : ExampleBase("Animated Image View") {}
 
-AnimatedImageViewExample::~AnimatedImageViewExample() {}
+AnimatedImageViewExample::~AnimatedImageViewExample() = default;
 
 void AnimatedImageViewExample::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());

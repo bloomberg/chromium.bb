@@ -82,7 +82,7 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
   // iterate over all <col> elements
   unsigned n_eff_cols = table_->NumEffectiveColumns();
   width_.resize(n_eff_cols);
-  width_.Fill(Length(kAuto));
+  width_.Fill(Length::Auto());
 
   unsigned current_effective_column = 0;
   for (LayoutTableCol* col = table_->FirstColumn(); col;
@@ -98,7 +98,7 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
     if (col->IsTableColumnGroupWithColumnChildren())
       continue;
 
-    Length col_style_logical_width = col->StyleRef().LogicalWidth();
+    const Length& col_style_logical_width = col->StyleRef().LogicalWidth();
     int effective_col_width = 0;
     if (col_style_logical_width.IsFixed() &&
         col_style_logical_width.Value() > 0)
@@ -160,7 +160,7 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
       fixed_border_box_logical_width =
           cell->AdjustBorderBoxLogicalWidthForBoxSizing(logical_width.Value())
               .ToInt();
-      logical_width.SetValue(fixed_border_box_logical_width);
+      logical_width = Length::Fixed(fixed_border_box_logical_width);
     }
 
     unsigned used_span = 0;
@@ -196,7 +196,7 @@ void TableLayoutAlgorithmFixed::ComputeIntrinsicLogicalWidths(
 void TableLayoutAlgorithmFixed::ApplyPreferredLogicalWidthQuirks(
     LayoutUnit& min_width,
     LayoutUnit& max_width) const {
-  Length table_logical_width = table_->StyleRef().LogicalWidth();
+  const Length& table_logical_width = table_->StyleRef().LogicalWidth();
   if (table_logical_width.IsFixed() && table_logical_width.IsPositive()) {
     min_width = max_width = LayoutUnit(
         max(min_width,
@@ -267,7 +267,7 @@ void TableLayoutAlgorithmFixed::UpdateLayout() {
     }
   }
 
-  int hspacing = table_->HBorderSpacing();
+  int16_t hspacing = table_->HBorderSpacing();
   int total_width = total_fixed_width + total_percent_width;
   if (!num_auto || total_width > table_logical_width) {
     // If there are no auto columns, or if the total is too wide, take

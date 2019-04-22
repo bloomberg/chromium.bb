@@ -20,12 +20,14 @@ found in the LICENSE file.
 <link rel="import" href="/tracing/extras/importer/linux_perf/gesture_parser.html">
 <link rel="import" href="/tracing/extras/importer/linux_perf/i2c_parser.html">
 <link rel="import" href="/tracing/extras/importer/linux_perf/i915_parser.html">
+<link rel="import" href="/tracing/extras/importer/linux_perf/ion_heap_parser.html">
 <link rel="import" href="/tracing/extras/importer/linux_perf/irq_parser.html">
 <link rel="import" href="/tracing/extras/importer/linux_perf/kfunc_parser.html">
 <link rel="import" href="/tracing/extras/importer/linux_perf/mali_parser.html">
 <link rel="import" href="/tracing/extras/importer/linux_perf/memreclaim_parser.html">
 <link rel="import" href="/tracing/extras/importer/linux_perf/power_parser.html">
 <link rel="import" href="/tracing/extras/importer/linux_perf/regulator_parser.html">
+<link rel="import" href="/tracing/extras/importer/linux_perf/rss_parser.html">
 <link rel="import" href="/tracing/extras/importer/linux_perf/sched_parser.html">
 <link rel="import" href="/tracing/extras/importer/linux_perf/sync_parser.html">
 <link rel="import" href="/tracing/extras/importer/linux_perf/workqueue_parser.html">
@@ -346,6 +348,10 @@ tr.exportTo('tr.e.importer.linux_perf', function() {
      * Imports the data in this.events_ into model_.
      */
     importEvents() {
+      // On ChromeOS, the trace can sometimes be completely empty, lacking
+      // even a clock sync marker. Exit early to avoid clock sync problems.
+      if (this.lines_.length === 0) return;
+
       const modelTimeTransformer =
           this.model_.clockSyncManager.getModelTimeTransformer(
               this.clockDomainId_);

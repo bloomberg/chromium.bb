@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/program_cache.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace gpu {
 

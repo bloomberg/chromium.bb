@@ -85,8 +85,13 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
   accessible_alert_ = new views::View();
   AddChildView(accessible_alert_);
 
-  new_item_animation_.SetSlideDuration(kNewItemAnimationDurationMs);
-  shelf_animation_.SetSlideDuration(kShelfAnimationDurationMs);
+  if (gfx::Animation::ShouldRenderRichAnimation()) {
+    new_item_animation_.SetSlideDuration(kNewItemAnimationDurationMs);
+    shelf_animation_.SetSlideDuration(kShelfAnimationDurationMs);
+  } else {
+    new_item_animation_.SetSlideDuration(0);
+    shelf_animation_.SetSlideDuration(0);
+  }
 
   GetViewAccessibility().OverrideName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_DOWNLOADS_BAR));
@@ -106,6 +111,7 @@ void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
   mouse_watcher_.Stop();
 
   DCHECK(view);
+  const bool was_empty = download_views_.empty();
   download_views_.push_back(view);
 
   // Insert the new view as the first child, so the logical child order matches
@@ -117,6 +123,10 @@ void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
 
   new_item_animation_.Reset();
   new_item_animation_.Show();
+  if (was_empty && !shelf_animation_.is_animating() && visible()) {
+    // Force a re-layout of the parent to adjust height of shelf properly.
+    parent_->ToolbarSizeChanged(shelf_animation_.IsShowing());
+  }
 }
 
 void DownloadShelfView::DoAddDownload(
@@ -155,8 +165,9 @@ void DownloadShelfView::ConfigureButtonForTheme(views::MdTextButton* button) {
           ->UsingDefaultTheme()) {
     // For custom themes, we have to make up a background color for the
     // button. Use a slight tint of the shelf background.
-    bg_color = color_utils::BlendTowardOppositeLuma(
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR), 0x10);
+    bg_color = color_utils::BlendTowardMaxContrast(
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF),
+        0x10);
   }
   button->SetBgColorOverride(bg_color);
 }
@@ -305,7 +316,7 @@ void DownloadShelfView::UpdateColorsFromTheme() {
   ConfigureButtonForTheme(show_all_view_);
 
   SetBackground(views::CreateSolidBackground(
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF)));
 
   views::SetImageFromVectorIcon(
       close_button_, vector_icons::kCloseRoundedIcon,

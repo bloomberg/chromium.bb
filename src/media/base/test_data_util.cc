@@ -12,6 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "media/base/decoder_buffer.h"
 
 namespace media {
@@ -221,13 +222,13 @@ scoped_refptr<DecoderBuffer> ReadTestDataFile(const std::string& name) {
 bool LookupTestKeyVector(const std::vector<uint8_t>& key_id,
                          bool allow_rotation,
                          std::vector<uint8_t>* key) {
-  std::vector<uint8_t> starting_key_id(kKeyId, kKeyId + arraysize(kKeyId));
+  std::vector<uint8_t> starting_key_id(kKeyId, kKeyId + base::size(kKeyId));
   size_t rotate_limit = allow_rotation ? starting_key_id.size() : 1;
   for (size_t pos = 0; pos < rotate_limit; ++pos) {
     std::rotate(starting_key_id.begin(), starting_key_id.begin() + pos,
                 starting_key_id.end());
     if (key_id == starting_key_id) {
-      key->assign(kSecretKey, kSecretKey + arraysize(kSecretKey));
+      key->assign(kSecretKey, kSecretKey + base::size(kSecretKey));
       std::rotate(key->begin(), key->begin() + pos, key->end());
       return true;
     }

@@ -167,7 +167,8 @@ TEST(ProfilingJsonExporterTest, Simple) {
 
   // JSON should parse.
   base::JSONReader reader(base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  std::unique_ptr<base::Value> root =
+      reader.ReadToValueDeprecated(stream.str());
   ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
       << reader.GetErrorMessage();
   ASSERT_TRUE(root);
@@ -320,7 +321,8 @@ TEST(ProfilingJsonExporterTest, Sampling) {
 
   // JSON should parse.
   base::JSONReader reader(base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  std::unique_ptr<base::Value> root =
+      reader.ReadToValueDeprecated(stream.str());
   ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
       << reader.GetErrorMessage();
   ASSERT_TRUE(root);
@@ -392,7 +394,8 @@ TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
 
   // JSON should parse.
   base::JSONReader reader(base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  std::unique_ptr<base::Value> root =
+      reader.ReadToValueDeprecated(stream.str());
   ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
       << reader.GetErrorMessage();
   ASSERT_TRUE(root);
@@ -463,7 +466,8 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
 
   // JSON should parse.
   base::JSONReader reader(base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  std::unique_ptr<base::Value> root =
+      reader.ReadToValueDeprecated(stream.str());
   ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
       << reader.GetErrorMessage();
   ASSERT_TRUE(root);
@@ -523,7 +527,8 @@ TEST(ProfilingJsonExporterTest, Context) {
 
   // JSON should parse.
   base::JSONReader reader(base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  std::unique_ptr<base::Value> root =
+      reader.ReadToValueDeprecated(stream.str());
   ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
       << reader.GetErrorMessage();
   ASSERT_TRUE(root);

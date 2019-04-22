@@ -9,7 +9,9 @@
 
 #include "src/heap/heap-write-barrier.h"
 #include "src/objects-inl.h"
+#include "src/objects/dictionary-inl.h"
 #include "src/objects/fixed-array-inl.h"
+#include "src/objects/js-objects-inl.h"
 #include "src/objects/map-inl.h"
 #include "src/objects/regexp-match-info.h"
 #include "src/objects/scope-info.h"
@@ -22,7 +24,7 @@ namespace v8 {
 namespace internal {
 
 OBJECT_CONSTRUCTORS_IMPL(ScriptContextTable, FixedArray)
-CAST_ACCESSOR2(ScriptContextTable)
+CAST_ACCESSOR(ScriptContextTable)
 
 int ScriptContextTable::used() const { return Smi::ToInt(get(kUsedSlotIndex)); }
 
@@ -34,63 +36,66 @@ void ScriptContextTable::set_used(int used) {
 Handle<Context> ScriptContextTable::GetContext(Isolate* isolate,
                                                Handle<ScriptContextTable> table,
                                                int i) {
-  DCHECK(i < table->used());
-  return Handle<Context>::cast(
-      FixedArray::get(*table, i + kFirstContextSlotIndex, isolate));
+  return handle(table->get_context(i), isolate);
 }
 
-OBJECT_CONSTRUCTORS_IMPL(Context, HeapObjectPtr)
+Context ScriptContextTable::get_context(int i) const {
+  DCHECK_LT(i, used());
+  return Context::cast(this->get(i + kFirstContextSlotIndex));
+}
+
+OBJECT_CONSTRUCTORS_IMPL(Context, HeapObject)
 NEVER_READ_ONLY_SPACE_IMPL(Context)
-CAST_ACCESSOR2(Context)
+CAST_ACCESSOR(Context)
 SMI_ACCESSORS(Context, length, kLengthOffset)
 
-CAST_ACCESSOR2(NativeContext)
+CAST_ACCESSOR(NativeContext)
 
-Object* Context::get(int index) const {
+Object Context::get(int index) const {
   DCHECK_LT(static_cast<unsigned>(index),
             static_cast<unsigned>(this->length()));
-  return RELAXED_READ_FIELD(this, OffsetOfElementAt(index));
+  return RELAXED_READ_FIELD(*this, OffsetOfElementAt(index));
 }
 
-void Context::set(int index, Object* value) {
+void Context::set(int index, Object value) {
   DCHECK_LT(static_cast<unsigned>(index),
             static_cast<unsigned>(this->length()));
   int offset = OffsetOfElementAt(index);
-  RELAXED_WRITE_FIELD(this, offset, value);
-  WRITE_BARRIER(this, offset, value);
+  RELAXED_WRITE_FIELD(*this, offset, value);
+  WRITE_BARRIER(*this, offset, value);
 }
 
-void Context::set(int index, Object* value, WriteBarrierMode mode) {
+void Context::set(int index, Object value, WriteBarrierMode mode) {
   DCHECK_LT(static_cast<unsigned>(index),
             static_cast<unsigned>(this->length()));
   int offset = OffsetOfElementAt(index);
-  RELAXED_WRITE_FIELD(this, offset, value);
-  CONDITIONAL_WRITE_BARRIER(this, offset, value, mode);
+  RELAXED_WRITE_FIELD(*this, offset, value);
+  CONDITIONAL_WRITE_BARRIER(*this, offset, value, mode);
 }
 
 void Context::set_scope_info(ScopeInfo scope_info) {
   set(SCOPE_INFO_INDEX, scope_info);
 }
 
+Object Context::unchecked_previous() { return get(PREVIOUS_INDEX); }
+
 Context Context::previous() {
-  Object* result = get(PREVIOUS_INDEX);
+  Object result = get(PREVIOUS_INDEX);
   DCHECK(IsBootstrappingOrValidParentContext(result, *this));
   return Context::unchecked_cast(result);
 }
 void Context::set_previous(Context context) { set(PREVIOUS_INDEX, context); }
 
-Object* Context::next_context_link() { return get(Context::NEXT_CONTEXT_LINK); }
+Object Context::next_context_link() { return get(Context::NEXT_CONTEXT_LINK); }
 
 bool Context::has_extension() { return !extension()->IsTheHole(); }
-HeapObject* Context::extension() {
+HeapObject Context::extension() {
   return HeapObject::cast(get(EXTENSION_INDEX));
 }
-void Context::set_extension(HeapObject* object) {
-  set(EXTENSION_INDEX, object);
-}
+void Context::set_extension(HeapObject object) { set(EXTENSION_INDEX, object); }
 
 NativeContext Context::native_context() const {
-  Object* result = get(NATIVE_CONTEXT_INDEX);
+  Object result = get(NATIVE_CONTEXT_INDEX);
   DCHECK(IsBootstrappingOrNativeContext(this->GetIsolate(), result));
   return NativeContext::unchecked_cast(result);
 }
@@ -141,15 +146,15 @@ bool Context::HasSameSecurityTokenAs(Context that) const {
 }
 
 #define NATIVE_CONTEXT_FIELD_ACCESSORS(index, type, name) \
-  void Context::set_##name(type##ArgType value) {         \
+  void Context::set_##name(type value) {                  \
     DCHECK(IsNativeContext());                            \
     set(index, value);                                    \
   }                                                       \
-  bool Context::is_##name(type##ArgType value) const {    \
+  bool Context::is_##name(type value) const {             \
     DCHECK(IsNativeContext());                            \
     return type::cast(get(index)) == value;               \
   }                                                       \
-  type##ArgType Context::name() const {                   \
+  type Context::name() const {                            \
     DCHECK(IsNativeContext());                            \
     return type::cast(get(index));                        \
   }
@@ -163,8 +168,7 @@ NATIVE_CONTEXT_FIELDS(NATIVE_CONTEXT_FIELD_ACCESSORS)
   CHECK_FOLLOWS2(v3, v4)
 
 int Context::FunctionMapIndex(LanguageMode language_mode, FunctionKind kind,
-                              bool has_prototype_slot, bool has_shared_name,
-                              bool needs_home_object) {
+                              bool has_shared_name, bool needs_home_object) {
   if (IsClassConstructor(kind)) {
     // Like the strict function map, but with no 'name' accessor. 'name'
     // needs to be the last property and it is added during instantiation,
@@ -194,8 +198,7 @@ int Context::FunctionMapIndex(LanguageMode language_mode, FunctionKind kind,
 
     base = ASYNC_FUNCTION_MAP_INDEX;
 
-  } else if (IsArrowFunction(kind) || IsConciseMethod(kind) ||
-             IsAccessorFunction(kind)) {
+  } else if (IsStrictFunctionWithoutPrototype(kind)) {
     DCHECK_IMPLIES(IsArrowFunction(kind), !needs_home_object);
     CHECK_FOLLOWS4(STRICT_FUNCTION_WITHOUT_PROTOTYPE_MAP_INDEX,
                    METHOD_WITH_NAME_MAP_INDEX,
@@ -228,18 +231,18 @@ Map Context::GetInitialJSArrayMap(ElementsKind kind) const {
   DCHECK(IsNativeContext());
   if (!IsFastElementsKind(kind)) return Map();
   DisallowHeapAllocation no_gc;
-  Object* const initial_js_array_map = get(Context::ArrayMapIndex(kind));
+  Object const initial_js_array_map = get(Context::ArrayMapIndex(kind));
   DCHECK(!initial_js_array_map->IsUndefined());
   return Map::cast(initial_js_array_map);
 }
 
 MicrotaskQueue* NativeContext::microtask_queue() const {
   return reinterpret_cast<MicrotaskQueue*>(
-      READ_INTPTR_FIELD(this, kMicrotaskQueueOffset));
+      READ_INTPTR_FIELD(*this, kMicrotaskQueueOffset));
 }
 
 void NativeContext::set_microtask_queue(MicrotaskQueue* microtask_queue) {
-  WRITE_INTPTR_FIELD(this, kMicrotaskQueueOffset,
+  WRITE_INTPTR_FIELD(*this, kMicrotaskQueueOffset,
                      reinterpret_cast<intptr_t>(microtask_queue));
 }
 

@@ -19,6 +19,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "util/file/directory_reader.h"
 #include "util/file/file_io.h"
@@ -92,7 +93,7 @@ bool DirectPtraceConnection::Threads(std::vector<pid_t>* threads) {
   DCHECK(threads->empty());
 
   char path[32];
-  snprintf(path, arraysize(path), "/proc/%d/task", pid_);
+  snprintf(path, base::size(path), "/proc/%d/task", pid_);
   DirectoryReader reader;
   if (!reader.Open(base::FilePath(path))) {
     return false;

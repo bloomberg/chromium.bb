@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build_overrides/build.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/toolchain.gni")
+import("//build_overrides/build.gni")
 
 if (is_ios) {
   import("//build/config/ios/ios_sdk.gni")
@@ -179,6 +179,9 @@ config("default_sanitizer_ldflags") {
         ldflags += [ "-fsanitize-address-use-after-scope" ]
       }
     }
+    if (is_hwasan) {
+      ldflags += [ "-fsanitize=hwaddress" ]
+    }
     if (is_lsan) {
       ldflags += [ "-fsanitize=leak" ]
     }
@@ -201,6 +204,11 @@ config("default_sanitizer_ldflags") {
     if (use_sanitizer_coverage) {
       if (use_libfuzzer) {
         ldflags += [ "-fsanitize=fuzzer-no-link" ]
+        if (is_mac) {
+          # TODO(crbug.com/926588): on macOS, dead code stripping does not work
+          # well with `pc-table` instrumentation enabled by `fuzzer-no-link`.
+          ldflags += [ "-fno-sanitize-coverage=pc-table" ]
+        }
       } else {
         ldflags += [ "-fsanitize-coverage=$sanitizer_coverage_flags" ]
       }
@@ -254,7 +262,6 @@ config("default_sanitizer_ldflags") {
       # Incremental linking causes padding that messes up SanitizerCoverage.
       # Don't do it.
       ldflags = [ "/INCREMENTAL:NO" ]
-      libs = [ "clang_rt.fuzzer_no_main-x86_64.lib" ]
     }
   }
 }
@@ -293,19 +300,22 @@ config("asan_flags") {
         "-asan-globals=0",
       ]
     }
-    if (is_win) {
-      if (!defined(asan_win_blacklist_path)) {
-        asan_win_blacklist_path =
-            rebase_path("//tools/memory/asan/blacklist_win.txt", root_build_dir)
+    if (asan_use_blacklist) {
+      if (is_win) {
+        if (!defined(asan_win_blacklist_path)) {
+          asan_win_blacklist_path =
+              rebase_path("//tools/memory/asan/blacklist_win.txt",
+                          root_build_dir)
+        }
+        cflags += [ "-fsanitize-blacklist=$asan_win_blacklist_path" ]
+      } else {
+        # TODO(rnk): Remove this as discussed in http://crbug.com/427202.
+        if (!defined(asan_blacklist_path)) {
+          asan_blacklist_path =
+              rebase_path("//tools/memory/asan/blacklist.txt", root_build_dir)
+        }
+        cflags += [ "-fsanitize-blacklist=$asan_blacklist_path" ]
       }
-      cflags += [ "-fsanitize-blacklist=$asan_win_blacklist_path" ]
-    } else {
-      # TODO(rnk): Remove this as discussed in http://crbug.com/427202.
-      if (!defined(asan_blacklist_path)) {
-        asan_blacklist_path =
-            rebase_path("//tools/memory/asan/blacklist.txt", root_build_dir)
-      }
-      cflags += [ "-fsanitize-blacklist=$asan_blacklist_path" ]
     }
   }
 }
@@ -399,6 +409,11 @@ config("coverage_flags") {
 
     if (use_libfuzzer) {
       cflags += [ "-fsanitize=fuzzer-no-link" ]
+      if (is_mac) {
+        # TODO(crbug.com/926588): on macOS, dead code stripping does not work
+        # well with `pc-table` instrumentation enabled by `fuzzer-no-link`.
+        cflags += [ "-fno-sanitize-coverage=pc-table" ]
+      }
     } else {
       cflags += [
         "-fsanitize-coverage=$sanitizer_coverage_flags",
@@ -413,6 +428,12 @@ config("coverage_flags") {
         ]
       }
     }
+  }
+}
+
+config("hwasan_flags") {
+  if (is_hwasan) {
+    cflags = [ "-fsanitize=hwaddress" ]
   }
 }
 
@@ -550,6 +571,7 @@ all_sanitizer_configs = [
   ":default_sanitizer_ldflags",
   ":asan_flags",
   ":cfi_flags",
+  ":hwasan_flags",
   ":lsan_flags",
   ":msan_flags",
   ":tsan_flags",
@@ -571,6 +593,10 @@ all_sanitizer_configs = [
 # Keep this list in sync with default_sanitizer_flags_but_ubsan_vptr.
 config("default_sanitizer_flags") {
   configs = all_sanitizer_configs
+
+  if (use_sanitizer_configs_without_instrumentation) {
+    configs = []
+  }
 }
 
 # This config is equivalent to default_sanitizer_flags, but excludes ubsan_vptr.
@@ -579,10 +605,18 @@ config("default_sanitizer_flags") {
 # is a requirement for ubsan_vptr.
 config("default_sanitizer_flags_but_ubsan_vptr") {
   configs = all_sanitizer_configs - [ ":ubsan_vptr_flags" ]
+
+  if (use_sanitizer_configs_without_instrumentation) {
+    configs = []
+  }
 }
 
 config("default_sanitizer_flags_but_coverage") {
   configs = all_sanitizer_configs - [ ":coverage_flags" ]
+
+  if (use_sanitizer_configs_without_instrumentation) {
+    configs = []
+  }
 }
 
 # This config is used by parts of code that aren't targeted in fuzzers and

@@ -146,7 +146,7 @@ class JsonParser {
   int source_length_;
   Handle<SeqOneByteString> seq_source_;
 
-  PretenureFlag pretenure_;
+  AllocationType allocation_;
   Isolate* isolate_;
   Zone zone_;
   Handle<JSFunction> object_constructor_;
@@ -156,6 +156,10 @@ class JsonParser {
   // Property handles are stored here inside ParseJsonObject.
   ZoneVector<Handle<Object>> properties_;
 };
+
+// Explicit instantiation declarations.
+extern template class JsonParser<true>;
+extern template class JsonParser<false>;
 
 }  // namespace internal
 }  // namespace v8

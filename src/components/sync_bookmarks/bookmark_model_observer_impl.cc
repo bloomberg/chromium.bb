@@ -86,10 +86,10 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
 
   const SyncedBookmarkTracker::Entity* parent_entity =
       bookmark_tracker_->GetEntityForBookmarkNode(parent);
-  if (!parent_entity) {
-    DLOG(WARNING) << "Bookmark parent lookup failed";
-    return;
-  }
+  // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+  // Should be removed after figuring out the reason for the crash.
+  CHECK(parent_entity);
+
   // Similar to the directory implementation here:
   // https://cs.chromium.org/chromium/src/components/sync/syncable/mutable_entry.cc?l=237&gsn=CreateEntryKernel
   // Assign a temp server id for the entity. Will be overriden by the actual
@@ -118,6 +118,7 @@ void BookmarkModelObserverImpl::OnWillRemoveBookmarks(
   if (!model->client()->CanSyncNode(node)) {
     return;
   }
+  bookmark_tracker_->CheckAllNodesTracked(model);
   ProcessDelete(parent, node);
   nudge_for_commit_closure_.Run();
 }
@@ -130,6 +131,7 @@ void BookmarkModelObserverImpl::BookmarkNodeRemoved(
     const std::set<GURL>& removed_urls) {
   // All the work should have already been done in OnWillRemoveBookmarks.
   DCHECK(bookmark_tracker_->GetEntityForBookmarkNode(node) == nullptr);
+  bookmark_tracker_->CheckAllNodesTracked(model);
 }
 
 void BookmarkModelObserverImpl::OnWillRemoveAllUserBookmarks(

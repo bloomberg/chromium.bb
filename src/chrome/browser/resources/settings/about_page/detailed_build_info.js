@@ -76,8 +76,9 @@ Polymer({
    * @private
    */
   getChangeChannelIndicatorType_: function(canChangeChannel) {
-    if (canChangeChannel)
+    if (canChangeChannel) {
       return CrPolicyIndicatorType.NONE;
+    }
     return loadTimeData.getBoolean('aboutEnterpriseManaged') ?
         CrPolicyIndicatorType.DEVICE_POLICY :
         CrPolicyIndicatorType.OWNER;

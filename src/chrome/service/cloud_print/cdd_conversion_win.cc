@@ -35,7 +35,7 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
   {
     ColorTicketItem color;
     if (color.LoadFrom(description)) {
-      bool is_color = color.value().type == STANDARD_COLOR;
+      bool is_color = color.value().type == ColorType::STANDARD_COLOR;
       dev_mode = printing::CreateDevModeWithColor(printer.Get(), printer_name,
                                                   is_color);
     } else {
@@ -60,7 +60,7 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
 
   if (orientation.LoadFrom(description)) {
     dev_mode->dmFields |= DM_ORIENTATION;
-    if (orientation.value() == LANDSCAPE) {
+    if (orientation.value() == OrientationType::LANDSCAPE) {
       dev_mode->dmOrientation = DMORIENT_LANDSCAPE;
     } else {
       dev_mode->dmOrientation = DMORIENT_PORTRAIT;
@@ -69,9 +69,9 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
 
   if (color.LoadFrom(description)) {
     dev_mode->dmFields |= DM_COLOR;
-    if (color.value().type == STANDARD_MONOCHROME) {
+    if (color.value().type == ColorType::STANDARD_MONOCHROME) {
       dev_mode->dmColor = DMCOLOR_MONOCHROME;
-    } else if (color.value().type == STANDARD_COLOR) {
+    } else if (color.value().type == ColorType::STANDARD_COLOR) {
       dev_mode->dmColor = DMCOLOR_COLOR;
     } else {
       NOTREACHED();
@@ -80,11 +80,11 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
 
   if (duplex.LoadFrom(description)) {
     dev_mode->dmFields |= DM_DUPLEX;
-    if (duplex.value() == NO_DUPLEX) {
+    if (duplex.value() == DuplexType::NO_DUPLEX) {
       dev_mode->dmDuplex = DMDUP_SIMPLEX;
-    } else if (duplex.value() == LONG_EDGE) {
+    } else if (duplex.value() == DuplexType::LONG_EDGE) {
       dev_mode->dmDuplex = DMDUP_VERTICAL;
-    } else if (duplex.value() == SHORT_EDGE) {
+    } else if (duplex.value() == DuplexType::SHORT_EDGE) {
       dev_mode->dmDuplex = DMDUP_HORIZONTAL;
     } else {
       NOTREACHED();

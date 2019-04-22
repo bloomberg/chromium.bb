@@ -49,72 +49,13 @@
 
 namespace blink {
 
-namespace {
-constexpr float kmax_oversize_ratio = 2.0f;
-
-bool CheckForOptimizedImagePolicy(const Document& document,
-                                  ImageResourceContent* new_image) {
-  // Render the image as a placeholder image if the document does not have the
-  // 'legacy-image-formats' feature enabled, and the image is not one of the
-  // allowed formats.
-  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !document.IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kLegacyImageFormats)) {
-    if (!new_image->IsAcceptableContentType()) {
-      return true;
-    }
-  }
-  // Render the image as a placeholder image if the document does not have the
-  // 'unoptimized-images' feature enabled and the image is not
-  // sufficiently-well-compressed.
-  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !document.IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kUnoptimizedImages)) {
-    if (!new_image->IsAcceptableCompressionRatio())
-      return true;
-  }
-  return false;
-}
-
-bool CheckForOversizedImagesPolicy(const Document& document,
-                                   ImageResourceContent* new_image,
-                                   LayoutImage* layout_image) {
-  DCHECK(new_image);
-  if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() ||
-      document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kOversizedImages))
-    return false;
-  if (auto* image = new_image->GetImage()) {
-    // Render the image as a placeholder image if the image's size is more
-    // than 2 times bigger than the size it is being laid-out by.
-    LayoutUnit layout_width = layout_image->ContentWidth();
-    LayoutUnit layout_height = layout_image->ContentHeight();
-    int image_width = image->width();
-    int image_height = image->height();
-
-    if (layout_width > 0 && layout_height > 0 && image_width > 0 &&
-        image_height > 0) {
-      double device_pixel_ratio = document.GetFrame()->DevicePixelRatio();
-      if (LayoutUnit(image_width / (kmax_oversize_ratio * device_pixel_ratio)) >
-              layout_width ||
-          LayoutUnit(image_height / (kmax_oversize_ratio *
-                                     device_pixel_ratio)) > layout_height)
-        return true;
-    }
-  }
-  return false;
-}
-
-}  // namespace
-
 using namespace html_names;
 
 LayoutImage::LayoutImage(Element* element)
     : LayoutReplaced(element, LayoutSize()),
       did_increment_visually_non_empty_pixel_count_(false),
       is_generated_content_(false),
-      image_device_pixel_ratio_(1.0f),
-      is_legacy_format_or_unoptimized_image_(false),
-      is_oversized_image_(false) {}
+      image_device_pixel_ratio_(1.0f) {}
 
 LayoutImage* LayoutImage::CreateAnonymous(PseudoElement& pseudo) {
   LayoutImage* image = new LayoutImage(nullptr);
@@ -127,7 +68,7 @@ LayoutImage::~LayoutImage() = default;
 void LayoutImage::WillBeDestroyed() {
   DCHECK(image_resource_);
   image_resource_->Shutdown();
-  if (RuntimeEnabledFeatures::ElementTimingEnabled()) {
+  if (RuntimeEnabledFeatures::ElementTimingEnabled(&GetDocument())) {
     if (LocalDOMWindow* window = GetDocument().domWindow())
       ImageElementTiming::From(*window).NotifyWillBeDestroyed(this);
   }
@@ -185,8 +126,7 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image,
   // https://github.com/igrigorik/http-client-hints/blob/master/draft-grigorik-http-client-hints-01.txt#L255
   if (image_resource_->CachedImage() &&
       image_resource_->CachedImage()->HasDevicePixelRatioHeaderValue()) {
-    UseCounter::Count(&(View()->GetFrameView()->GetFrame()),
-                      WebFeature::kClientHintsContentDPR);
+    UseCounter::Count(GetDocument(), WebFeature::kClientHintsContentDPR);
     image_device_pixel_ratio_ =
         1 / image_resource_->CachedImage()->DevicePixelRatioHeaderValue();
   }
@@ -210,6 +150,23 @@ void LayoutImage::UpdateIntrinsicSizeIfNeeded(const LayoutSize& new_size) {
   SetIntrinsicSize(new_size);
 }
 
+bool LayoutImage::NeedsLayoutOnIntrinsicSizeChange() const {
+  // If the actual area occupied by the image has changed and it is not
+  // constrained by style then a layout is required.
+  bool image_size_is_constrained =
+      StyleRef().LogicalWidth().IsSpecified() &&
+      StyleRef().LogicalHeight().IsSpecified() &&
+      !HasAutoHeightOrContainingBlockWithAutoHeight(
+          kDontRegisterPercentageDescendant);
+  if (!image_size_is_constrained)
+    return true;
+  // FIXME: We only need to recompute the containing block's preferred size if
+  // the containing block's size depends on the image's size (i.e., the
+  // container uses shrink-to-fit sizing). There's no easy way to detect that
+  // shrink-to-fit is needed, always force a layout.
+  return HasRelativeLogicalWidth();
+}
+
 void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
     CanDeferInvalidation defer) {
   LayoutSize old_intrinsic_size = IntrinsicSize();
@@ -225,30 +182,14 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
   if (!ContainingBlock())
     return;
 
-  bool image_source_has_changed_size = old_intrinsic_size != new_intrinsic_size;
-  if (image_source_has_changed_size)
+  if (old_intrinsic_size != new_intrinsic_size) {
     SetPreferredLogicalWidthsDirty();
 
-  // If the actual area occupied by the image has changed and it is not
-  // constrained by style then a layout is required.
-  bool image_size_is_constrained = StyleRef().LogicalWidth().IsSpecified() &&
-                                   StyleRef().LogicalHeight().IsSpecified();
-
-  // FIXME: We only need to recompute the containing block's preferred size if
-  // the containing block's size depends on the image's size (i.e., the
-  // container uses shrink-to-fit sizing). There's no easy way to detect that
-  // shrink-to-fit is needed, always force a layout.
-  bool containing_block_needs_to_recompute_preferred_size =
-      StyleRef().LogicalWidth().IsPercentOrCalc() ||
-      StyleRef().LogicalMaxWidth().IsPercentOrCalc() ||
-      StyleRef().LogicalMinWidth().IsPercentOrCalc();
-
-  if (image_source_has_changed_size &&
-      (!image_size_is_constrained ||
-       containing_block_needs_to_recompute_preferred_size)) {
-    SetNeedsLayoutAndFullPaintInvalidation(
-        layout_invalidation_reason::kSizeChanged);
-    return;
+    if (NeedsLayoutOnIntrinsicSizeChange()) {
+      SetNeedsLayoutAndFullPaintInvalidation(
+          layout_invalidation_reason::kSizeChanged);
+      return;
+    }
   }
 
   SetShouldDoFullPaintInvalidationWithoutGeometryChange(
@@ -263,17 +204,12 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
 }
 
 void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
+  LayoutObject::ImageNotifyFinished(new_image);
   if (!image_resource_)
     return;
 
   if (DocumentBeingDestroyed())
     return;
-
-  InvalidateBackgroundObscurationStatus();
-
-  // Check for optimized image policies.
-  if (IsHTMLImageElement(GetNode()))
-    ValidateImagePolicies();
 
   if (new_image == image_resource_->CachedImage()) {
     // tell any potential compositing layers
@@ -318,7 +254,7 @@ bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
   // Background shows in padding area.
   if ((background_clip == EFillBox::kBorder ||
        background_clip == EFillBox::kPadding) &&
-      StyleRef().HasPadding())
+      StyleRef().MayHavePadding())
     return false;
   // Object-position may leave parts of the content box empty, regardless of the
   // value of object-fit.
@@ -412,6 +348,7 @@ bool LayoutImage::OverrideIntrinsicSizingInfo(
 
 void LayoutImage::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  DCHECK(!ShouldApplySizeContainment());
   if (!OverrideIntrinsicSizingInfo(intrinsic_sizing_info)) {
     if (SVGImage* svg_image = EmbeddedSVGImage()) {
       svg_image->GetIntrinsicSizingInfo(intrinsic_sizing_info);
@@ -432,8 +369,7 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
     // Our intrinsicSize is empty if we're laying out generated images with
     // relative width/height. Figure out the right intrinsic size to use.
     if (intrinsic_sizing_info.size.IsEmpty() &&
-        image_resource_->ImageHasRelativeSize() &&
-        !IsLayoutNGListMarkerImage()) {
+        !image_resource_->HasIntrinsicSize() && !IsLayoutNGListMarkerImage()) {
       if (HasOverrideContainingBlockContentLogicalWidth() &&
           HasOverrideContainingBlockContentLogicalHeight()) {
         intrinsic_sizing_info.size.SetWidth(
@@ -482,30 +418,17 @@ SVGImage* LayoutImage::EmbeddedSVGImage() const {
   return ToSVGImageOrNull(cached_image->GetImage());
 }
 
-bool LayoutImage::IsImagePolicyViolated() const {
-  return is_oversized_image_ || is_legacy_format_or_unoptimized_image_;
-}
-
-void LayoutImage::ValidateImagePolicies() {
-  if (image_resource_ && image_resource_->CachedImage()) {
-    is_oversized_image_ = CheckForOversizedImagesPolicy(
-        GetDocument(), image_resource_->CachedImage(), this);
-    is_legacy_format_or_unoptimized_image_ = CheckForOptimizedImagePolicy(
-        GetDocument(), image_resource_->CachedImage());
-  }
-}
-
 void LayoutImage::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   Node* node = GetNode();
 
+  // Check for oversized-images policy.
+  // TODO(loonybear): Support oversized-images policy on other image types
+  // in addition to HTMLImageElement.
   if (auto* image_element = ToHTMLImageElementOrNull(node)) {
-    // Check for optimized image policies.
-    ValidateImagePolicies();
-
     // Report violation of unsized-media policy.
-    if (image_element->IsDefaultIntrinsicSize())
-      media_element_parser_helpers::ReportUnsizedMediaViolation(this);
+    media_element_parser_helpers::ReportUnsizedMediaViolation(
+        this, image_element->IsDefaultIntrinsicSize());
   }
 }
 

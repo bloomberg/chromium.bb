@@ -7,10 +7,11 @@
 #include <cmath>
 #include <string>
 
-#include "content/renderer/media/stream/media_stream_source.h"
+#include "base/stl_util.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 
 namespace content {
@@ -20,7 +21,7 @@ namespace {
 const double kDefaultScreenCastAspectRatio =
     static_cast<double>(kDefaultScreenCastWidth) / kDefaultScreenCastHeight;
 
-void CheckNonResolutionDefaults(const VideoCaptureSettings& result) {
+void CheckNonResolutionDefaults(const blink::VideoCaptureSettings& result) {
   EXPECT_EQ(kDefaultScreenCastFrameRate, result.FrameRate());
   EXPECT_EQ(base::Optional<double>(), result.min_frame_rate());
   EXPECT_EQ(base::Optional<double>(), result.max_frame_rate());
@@ -29,14 +30,15 @@ void CheckNonResolutionDefaults(const VideoCaptureSettings& result) {
   EXPECT_FALSE(result.min_frame_rate().has_value());
 }
 
-void CheckNonFrameRateDefaults(const VideoCaptureSettings& result) {
+void CheckNonFrameRateDefaults(const blink::VideoCaptureSettings& result) {
   EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
   EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
   EXPECT_EQ(base::Optional<bool>(), result.noise_reduction());
   EXPECT_EQ(std::string(), result.device_id());
 }
 
-void CheckTrackAdapterSettingsEqualsFormat(const VideoCaptureSettings& result) {
+void CheckTrackAdapterSettingsEqualsFormat(
+    const blink::VideoCaptureSettings& result) {
   // For content capture, resolution and frame rate should always be the same
   // for source and track.
   EXPECT_TRUE(result.track_adapter_settings().target_size().has_value());
@@ -46,7 +48,7 @@ void CheckTrackAdapterSettingsEqualsFormat(const VideoCaptureSettings& result) {
 }
 
 void CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(
-    const VideoCaptureSettings& result) {
+    const blink::VideoCaptureSettings& result) {
   EXPECT_EQ(
       static_cast<double>(kMinScreenCastDimension) / kMaxScreenCastDimension,
       result.track_adapter_settings().min_aspect_ratio());
@@ -60,8 +62,9 @@ void CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(
 
 class MediaStreamConstraintsUtilVideoContentTest : public testing::Test {
  protected:
-  VideoCaptureSettings SelectSettings(
-      MediaStreamType stream_type = MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
+  blink::VideoCaptureSettings SelectSettings(
+      blink::MediaStreamType stream_type =
+          blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
     blink::WebMediaConstraints constraints =
         constraint_factory_.CreateWebMediaConstraints();
     return SelectSettingsVideoContentCapture(constraints, stream_type,
@@ -2020,13 +2023,13 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedDeviceID) {
   blink::WebString id_vector1[] = {blink::WebString::FromASCII(kDeviceID1),
                                    blink::WebString::FromASCII(kDeviceID2)};
   advanced1.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
+      blink::WebVector<blink::WebString>(id_vector1, base::size(id_vector1)));
   blink::WebString id_vector2[] = {blink::WebString::FromASCII(kDeviceID2),
                                    blink::WebString::FromASCII(kDeviceID3)};
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
   advanced2.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
+      blink::WebVector<blink::WebString>(id_vector2, base::size(id_vector2)));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kDeviceID2 must be selected because it is the only one that satisfies both
@@ -2047,13 +2050,13 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   blink::WebString id_vector1[] = {blink::WebString::FromASCII(kDeviceID1),
                                    blink::WebString::FromASCII(kDeviceID2)};
   advanced1.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
+      blink::WebVector<blink::WebString>(id_vector1, base::size(id_vector1)));
   blink::WebString id_vector2[] = {blink::WebString::FromASCII(kDeviceID3),
                                    blink::WebString::FromASCII(kDeviceID4)};
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
   advanced2.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
+      blink::WebVector<blink::WebString>(id_vector2, base::size(id_vector2)));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // The second advanced set must be ignored because it contradicts the first
@@ -2072,12 +2075,12 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedIdealDeviceID) {
   blink::WebString id_vector1[] = {blink::WebString::FromASCII(kDeviceID1),
                                    blink::WebString::FromASCII(kDeviceID2)};
   advanced.device_id.SetExact(
-      blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
+      blink::WebVector<blink::WebString>(id_vector1, base::size(id_vector1)));
 
   blink::WebString id_vector2[] = {blink::WebString::FromASCII(kDeviceID2),
                                    blink::WebString::FromASCII(kDeviceID3)};
   constraint_factory_.basic().device_id.SetIdeal(
-      blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
+      blink::WebVector<blink::WebString>(id_vector2, base::size(id_vector2)));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Should select kDeviceID2, which appears in ideal and satisfies the advanced
@@ -2130,7 +2133,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   }
   {
     constraint_factory_.Reset();
-    auto result = SelectSettings(MEDIA_GUM_TAB_VIDEO_CAPTURE);
+    auto result = SelectSettings(blink::MEDIA_GUM_TAB_VIDEO_CAPTURE);
     EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
     EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
     // Default policy for tab capture is fixed resolution.

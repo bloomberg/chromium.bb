@@ -14,7 +14,7 @@
 
 namespace autofill {
 
-using ConsoleLevel = blink::WebConsoleMessage::Level;
+using ConsoleLevel = blink::mojom::ConsoleMessageLevel;
 
 // ConsoleLogger provides a convenient interface for logging messages to the
 // DevTools console, both in terms of wrapping and formatting console messages
@@ -22,9 +22,11 @@ using ConsoleLevel = blink::WebConsoleMessage::Level;
 // warnings are displayed first.
 class PageFormAnalyserLogger {
  public:
-  static const ConsoleLevel kError = blink::WebConsoleMessage::kLevelError;
-  static const ConsoleLevel kWarning = blink::WebConsoleMessage::kLevelWarning;
-  static const ConsoleLevel kVerbose = blink::WebConsoleMessage::kLevelVerbose;
+  static const ConsoleLevel kError = blink::mojom::ConsoleMessageLevel::kError;
+  static const ConsoleLevel kWarning =
+      blink::mojom::ConsoleMessageLevel::kWarning;
+  static const ConsoleLevel kVerbose =
+      blink::mojom::ConsoleMessageLevel::kVerbose;
 
   explicit PageFormAnalyserLogger(blink::WebLocalFrame* frame);
   ~PageFormAnalyserLogger();

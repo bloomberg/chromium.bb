@@ -198,6 +198,11 @@ class SyncedBookmarkTracker {
   // confirmed the deletion yet.
   size_t TrackedUncommittedTombstonesCountForDebugging() const;
 
+  // Checks whther all nodes in |bookmark_model| that *should* be tracked as per
+  // CanSyncNode() are tracked.
+  void CheckAllNodesTracked(
+      const bookmarks::BookmarkModel* bookmark_model) const;
+
  private:
   // Reorders |entities| that represents local non-deletions such that parent
   // creation/update is before child creation/update. Returns the ordered list.

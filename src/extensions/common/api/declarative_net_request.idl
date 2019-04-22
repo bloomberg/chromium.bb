@@ -4,6 +4,7 @@
 
 // The <code>chrome.declarativeNetRequest</code> API is used to block or
 // redirect network requests by specifying declarative rules.
+[generate_error_messages]
 namespace declarativeNetRequest {
   // This describes the resource type of the network request.
   enum ResourceType {
@@ -32,6 +33,14 @@ namespace declarativeNetRequest {
     thirdParty
   };
 
+  // This describes the headers which can be removed from the network request.
+  [nodoc]
+  enum RemoveHeaderType {
+    cookie,
+    referer,
+    setCookie
+  };
+
   // Describes the kind of action to take if a given RuleCondition matches.
   enum RuleActionType {
     // Block the network request.
@@ -40,7 +49,9 @@ namespace declarativeNetRequest {
     redirect,
     // Allow the network request. The request won't be blocked even if there
     // is a blocking rule which matches it.
-    allow
+    allow,
+    // Remove request/response headers from the network request.
+    [nodoc] removeHeaders
   };
 
   dictionary RuleCondition {
@@ -57,8 +68,8 @@ namespace declarativeNetRequest {
     //               specifies the start of a (sub-)domain of the URL.
     //
     // <b>'^'</b>  : Separator character: This matches anything except a letter, a
-    //               digit or one of the following: _ - . %.
-    //
+    //               digit or one of the following: _ - . %. This can also match
+    //               the end of the URL.
     //
     // Therefore <code>urlFilter</code> is composed of the following parts:
     // (optional Left/Domain name anchor) + pattern + (optional Right anchor).
@@ -117,6 +128,10 @@ namespace declarativeNetRequest {
 
     // The redirect url. Only valid if RuleActionType is "redirect".
     DOMString? redirectUrl;
+
+    // The headers to remove from the request. Only valid if RuleActionType is
+    // "removeHeaders".
+    [nodoc] RemoveHeaderType[]? removeHeadersList;
   };
 
   dictionary Rule {
@@ -136,8 +151,16 @@ namespace declarativeNetRequest {
 
   callback EmptyCallback = void();
   callback GetAllowedPagesCallback = void(DOMString[] result);
+  callback GetRulesCallback = void(Rule[] rules);
 
   interface Functions {
+
+    // TODO(crbug.com/930961): Enable documentation for these functions once
+    // they are implemented.
+    [nodoc] static void addDynamicRules(Rule[] rules, optional EmptyCallback callback);
+    [nodoc] static void removeDynamicRules(long[] rule_ids, optional EmptyCallback callback);
+    [nodoc] static void getDynamicRules(GetRulesCallback callback);
+
     // Adds <code>page_patterns</code> to the set of allowed pages. Requests
     // from these pages are not intercepted by the extension. These are
     // persisted across browser sessions.
@@ -145,7 +168,9 @@ namespace declarativeNetRequest {
     // MAX_NUMBER_OF_ALLOWED_PAGES</a> is the maximum number of
     // allowed page an extension can add. Also, adding page patterns is
     // atomic. In case of an error, no page pattern is added.
-    // |page_patterns| : Array of match patterns which are to be allowed.
+    // |page_patterns| : Array of
+    // <a href="/extensions/match_patterns">match patterns</a> which are to be
+    // allowed.
     // |callback|: Called after the <code>page_patterns</code> have been added.
     // chrome.runtime.lastError will be set in case of an error, for example if
     // an invalid page pattern is specified or the extension exceeded the
@@ -156,7 +181,9 @@ namespace declarativeNetRequest {
     // Removes <code>page_patterns</code> from the set of allowed pages.
     // Note: Removing page patterns is atomic. In case of an error, no page
     // pattern is removed.
-    // |page_patterns| : Array of match patterns which are to removed.
+    // |page_patterns| : Array of
+    // <a href="/extensions/match_patterns">match patterns</a> which are to be
+    // removed.
     // |callback|: Called after the <code>page_patterns</code> have been
     // removed. chrome.runtime.lastError will be set in case of an error.
     static void removeAllowedPages(DOMString[] page_patterns, optional EmptyCallback callback);
@@ -174,5 +201,8 @@ namespace declarativeNetRequest {
     // resources file. Any excess rules will be ignored and an install warning
     // will be raised.
     [value=30000] static long MAX_NUMBER_OF_RULES();
+
+    // The maximum number of dynamic rules that an extension can add.
+    [value=5000] static long MAX_NUMBER_OF_DYNAMIC_RULES();
   };
 };

@@ -23,11 +23,4 @@ FidoTask::FidoTask(FidoDevice* device) : device_(device), weak_factory_(this) {
 
 FidoTask::~FidoTask() = default;
 
-void FidoTask::CancelTask() {
-  if (device()->supported_protocol() != ProtocolVersion::kCtap)
-    return;
-
-  device()->Cancel();
-}
-
 }  // namespace device

@@ -37,6 +37,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/shared_user_script_master.h"
+#include "extensions/browser/user_script_loader.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
@@ -155,9 +156,9 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     extensions::SharedUserScriptMaster* master =
         extensions::ExtensionSystem::Get(browser()->profile())
             ->shared_user_script_master();
-    if (!master->scripts_ready())
+    if (!master->script_loader()->initial_load_complete())
       user_scripts_observer.Wait();
-    ASSERT_TRUE(master->scripts_ready());
+    ASSERT_TRUE(master->script_loader()->initial_load_complete());
   }
 
   void TestInjection(bool expect_css, bool expect_script) {

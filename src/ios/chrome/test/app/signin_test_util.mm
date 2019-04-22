@@ -8,16 +8,14 @@
 #include "base/strings/stringprintf.h"
 #import "base/test/ios/wait_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
@@ -145,13 +143,6 @@ bool SignOutAndClearAccounts() {
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
   if (authentication_service->IsAuthenticated()) {
     authentication_service->SignOut(signin_metrics::SIGNOUT_TEST, nil);
-  }
-
-  // Clear the tracked accounts.
-  AccountTrackerService* account_tracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state);
-  for (const AccountInfo& info : account_tracker->GetAccounts()) {
-    account_tracker->RemoveAccount(info.account_id);
   }
 
   // Clear last signed in user preference.

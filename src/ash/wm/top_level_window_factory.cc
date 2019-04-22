@@ -6,6 +6,8 @@
 
 #include "ash/disconnected_app_handler.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
@@ -18,6 +20,7 @@
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
+#include "services/ws/top_level_proxy_window.h"
 #include "services/ws/window_delegate_impl.h"
 #include "services/ws/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
@@ -118,6 +121,7 @@ gfx::Rect CalculateDefaultBounds(
 // Does the real work of CreateAndParentTopLevelWindow() once the appropriate
 // RootWindowController was found.
 aura::Window* CreateAndParentTopLevelWindowInRoot(
+    ws::TopLevelProxyWindow* top_level_proxy_window,
     RootWindowController* root_window_controller,
     ws::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
@@ -138,13 +142,12 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
                                             property_converter, properties);
 
   const bool provide_non_client_frame =
-      window_type == ws::mojom::WindowType::WINDOW ||
-      window_type == ws::mojom::WindowType::PANEL;
+      window_type == ws::mojom::WindowType::WINDOW;
   if (provide_non_client_frame) {
     // See NonClientFrameController for details on lifetime.
     NonClientFrameController* non_client_frame_controller =
-        new NonClientFrameController(container_window, context, bounds,
-                                     window_type, property_converter,
+        new NonClientFrameController(top_level_proxy_window, container_window,
+                                     context, bounds, property_converter,
                                      properties);
     return non_client_frame_controller->window();
   }
@@ -156,7 +159,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
   window_delegate->set_window(window);
   aura::SetWindowType(window, window_type);
   ApplyProperties(window, property_converter, *properties);
-  window->Init(ui::LAYER_TEXTURED);
+  window->Init(ui::LAYER_NOT_DRAWN);
 
   if (container_window) {
     // |bounds| are in local coordinates.
@@ -176,6 +179,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
 }  // namespace
 
 aura::Window* CreateAndParentTopLevelWindow(
+    ws::TopLevelProxyWindow* top_level_proxy_window,
     ws::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
     std::map<std::string, std::vector<uint8_t>>* properties) {
@@ -185,18 +189,9 @@ aura::Window* CreateAndParentTopLevelWindow(
   RootWindowController* root_window_controller =
       GetRootWindowControllerForNewTopLevelWindow(properties);
   aura::Window* window = CreateAndParentTopLevelWindowInRoot(
-      root_window_controller, window_type, property_converter, properties);
+      top_level_proxy_window, root_window_controller, window_type,
+      property_converter, properties);
   DisconnectedAppHandler::Create(window);
-
-  auto ignored_by_shelf_iter = properties->find(
-      ws::mojom::WindowManager::kWindowIgnoredByShelf_InitProperty);
-  if (ignored_by_shelf_iter != properties->end()) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
-    window_state->set_ignored_by_shelf(
-        mojo::ConvertTo<bool>(ignored_by_shelf_iter->second));
-    // No need to persist this value.
-    properties->erase(ignored_by_shelf_iter);
-  }
 
   // TODO: kFocusable_InitProperty should be removed. http://crbug.com/837713.
   auto focusable_iter =
@@ -207,7 +202,7 @@ aura::Window* CreateAndParentTopLevelWindow(
         NonClientFrameController::Get(window);
     window->SetProperty(ws::kCanFocus, can_focus);
     if (non_client_frame_controller)
-      non_client_frame_controller->set_can_activate(can_focus);
+      non_client_frame_controller->SetCanActivate(can_focus);
     // No need to persist this value.
     properties->erase(focusable_iter);
   }
@@ -219,6 +214,16 @@ aura::Window* CreateAndParentTopLevelWindow(
     window->SetTransparent(translucent);
     // No need to persist this value.
     properties->erase(translucent_iter);
+  }
+
+  auto hide_in_overview_iter =
+      properties->find(ash::mojom::kHideInOverview_Property);
+  if (hide_in_overview_iter != properties->end()) {
+    bool hide_in_overview =
+        mojo::ConvertTo<bool>(hide_in_overview_iter->second);
+    window->SetProperty(kHideInOverviewKey, hide_in_overview);
+    // No need to persist this value.
+    properties->erase(hide_in_overview_iter);
   }
 
   return window;

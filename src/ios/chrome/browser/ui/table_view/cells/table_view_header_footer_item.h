@@ -23,10 +23,6 @@
                        withStyler:(ChromeTableViewStyler*)styler
     NS_REQUIRES_SUPER;
 
-// TODO(crbug.com/850814):Use only dynamic sizing once we stop supporting iOS10,
-// we can delete this method then. Returns the height this item's header would
-// need to be to fit within |width|.
-- (CGFloat)headerHeightForWidth:(CGFloat)width;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_CELLS_TABLE_VIEW_HEADER_FOOTER_ITEM_H_

@@ -148,6 +148,19 @@ expect_failure_implied = (skip_worker) => {
   }
 };
 
+// These tests verify that any gated parts of the API are not available
+// for a trial with invalid OS
+expect_failure_invalid_os = (skip_worker) => {
+
+  test(() => {
+    expect_member_fails('invalidOSAttribute');
+  }, 'Invalid OS attribute should not exist, even with the trial token present.');
+
+  if (!skip_worker) {
+    fetch_tests_from_worker(new Worker('resources/invalid-os-worker.js'));
+  }
+}
+
 // These tests verify that the API functions correctly with an enabled trial.
 expect_success = () => {
 

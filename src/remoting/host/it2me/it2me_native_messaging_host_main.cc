@@ -11,9 +11,10 @@
 #include "base/i18n/icu_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
+#include "net/base/network_change_notifier.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -101,7 +102,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
 
   mojo::core::Init();
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("It2Me");
+  base::ThreadPool::CreateAndStartWithDefaultParams("It2Me");
 
   remoting::LoadResources("");
 
@@ -201,6 +202,10 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
   base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;
 
+  // NetworkChangeNotifier must be initialized after MessageLoop.
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
+      net::NetworkChangeNotifier::Create());
+
   std::unique_ptr<It2MeHostFactory> factory(new It2MeHostFactory());
 
   std::unique_ptr<NativeMessagingPipe> native_messaging_pipe(
@@ -227,7 +232,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
   run_loop.Run();
 
   // Block until tasks blocking shutdown have completed their execution.
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   return kSuccessExitCode;
 }

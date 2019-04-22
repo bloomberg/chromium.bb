@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -37,7 +38,7 @@ class ObfuscatedFileUtil;
 class SpecialStoragePolicy;
 class WatcherManager;
 
-class STORAGE_EXPORT PluginPrivateFileSystemBackend
+class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
     : public FileSystemBackend,
       public FileSystemQuotaUtil {
  public:
@@ -107,6 +108,9 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
       storage::QuotaManagerProxy* proxy,
       const GURL& origin_url,
       FileSystemType type) override;
+  void PerformStorageCleanupOnFileTaskRunner(FileSystemContext* context,
+                                             storage::QuotaManagerProxy* proxy,
+                                             FileSystemType type) override;
   void GetOriginsForTypeOnFileTaskRunner(FileSystemType type,
                                          std::set<GURL>* origins) override;
   void GetOriginsForHostOnFileTaskRunner(FileSystemType type,

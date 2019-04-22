@@ -9,10 +9,17 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 
 namespace base {
 class DictionaryValue;
 }
+
+namespace net {
+namespace test_server {
+class EmbeddedTestServer;
+}
+}  // namespace net
 
 namespace policy {
 
@@ -22,15 +29,23 @@ namespace test {
 
 // Passes |data| to |destination| and invokes |done_callback| to indicate that
 // the |data| has been retrieved.
-void ExternalDataFetchCallback(std::unique_ptr<std::string>* destination,
-                               const base::Closure& done_callback,
-                               std::unique_ptr<std::string> data);
+void ExternalDataFetchCallback(std::unique_ptr<std::string>* data_destination,
+                               base::FilePath* file_path_destination,
+                               base::OnceClosure done_callback,
+                               std::unique_ptr<std::string> data,
+                               const base::FilePath& file_path);
 
 // Constructs a value that points a policy referencing external data at |url|
 // and sets the expected hash of the external data to that of |data|.
 std::unique_ptr<base::DictionaryValue> ConstructExternalDataReference(
     const std::string& url,
     const std::string& data);
+
+// Constructs the external data policy from the content of the file located on
+// |external_data_path|.
+std::string ConstructExternalDataPolicy(
+    const net::test_server::EmbeddedTestServer& test_server,
+    const std::string& external_data_path);
 
 // TODO(bartfab): Makes an arbitrary |policy| in |core| reference external data
 // as specified in |metadata|. This is only done because there are no policies

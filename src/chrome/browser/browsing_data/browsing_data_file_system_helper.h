@@ -10,12 +10,13 @@
 
 #include <list>
 #include <map>
+#include <set>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace storage {
 class FileSystemContext;
@@ -23,8 +24,6 @@ class FileSystemContext;
 
 class Profile;
 
-// Defines an interface for classes that deal with aggregating and deleting
-// browsing data stored in an origin's file systems.
 // BrowsingDataFileSystemHelper instances for a specific profile should be
 // created via the static Create method. Each instance will lazily fetch file
 // system data when a client calls StartFetching from the UI thread, and will
@@ -40,20 +39,21 @@ class Profile;
 class BrowsingDataFileSystemHelper
     : public base::RefCountedThreadSafe<BrowsingDataFileSystemHelper> {
  public:
-  // Detailed information about a file system, including it's origin GURL,
-  // the amount of data (in bytes) for each sandboxed filesystem type.
+  // Detailed information about a file system, including its origin and the
+  // amount of data (in bytes) for each sandboxed filesystem type.
   struct FileSystemInfo {
-    explicit FileSystemInfo(const GURL& origin);
+    explicit FileSystemInfo(const url::Origin& origin);
     FileSystemInfo(const FileSystemInfo& other);
     ~FileSystemInfo();
 
     // The origin for which the information is relevant.
-    GURL origin;
+    url::Origin origin;
     // FileSystemType to usage (in bytes) map.
     std::map<storage::FileSystemType, int64_t> usage_map;
   };
 
-  using FetchCallback = base::Callback<void(const std::list<FileSystemInfo>&)>;
+  using FetchCallback =
+      base::OnceCallback<void(const std::list<FileSystemInfo>&)>;
 
   // Creates a BrowsingDataFileSystemHelper instance for the file systems
   // stored in |profile|'s user data directory. The BrowsingDataFileSystemHelper
@@ -72,37 +72,52 @@ class BrowsingDataFileSystemHelper
   //
   // BrowsingDataFileSystemHelper takes ownership of the Callback1, and is
   // responsible for deleting it once it's no longer needed.
-  virtual void StartFetching(const FetchCallback& callback) = 0;
+  virtual void StartFetching(FetchCallback callback);
 
   // Deletes any temporary or persistent file systems associated with |origin|
   // from the disk. Deletion will occur asynchronously on the FILE thread, but
   // this function must be called only on the UI thread.
-  virtual void DeleteFileSystemOrigin(const GURL& origin) = 0;
+  virtual void DeleteFileSystemOrigin(const url::Origin& origin);
 
  protected:
   friend class base::RefCountedThreadSafe<BrowsingDataFileSystemHelper>;
 
-  BrowsingDataFileSystemHelper() {}
-  virtual ~BrowsingDataFileSystemHelper() {}
+  explicit BrowsingDataFileSystemHelper(
+      storage::FileSystemContext* filesystem_context);
+
+  virtual ~BrowsingDataFileSystemHelper();
+
+ private:
+  // Enumerates all filesystem files, storing the resulting list into
+  // file_system_file_ for later use. This must be called on the file
+  // task runner.
+  void FetchFileSystemInfoInFileThread(FetchCallback callback);
+
+  // Deletes all file systems associated with |origin|. This must be called on
+  // the file task runner.
+  void DeleteFileSystemOriginInFileThread(const url::Origin& origin);
+
+  // Returns the file task runner for the |filesystem_context_|.
+  base::SequencedTaskRunner* file_task_runner();
+
+  // Keep a reference to the FileSystemContext object for the current profile
+  // for use on the file task runner.
+  scoped_refptr<storage::FileSystemContext> filesystem_context_;
 };
 
 // An implementation of the BrowsingDataFileSystemHelper interface that can
 // be manually populated with data, rather than fetching data from the file
-// systems created in a particular Profile.
+// systems created in a particular Profile. Only kTemporary file systems
+// are supported.
 class CannedBrowsingDataFileSystemHelper
     : public BrowsingDataFileSystemHelper {
  public:
-  // |profile| is unused in this canned implementation, but it's the interface
-  // we're writing to, so we'll accept it, but not store it.
-  explicit CannedBrowsingDataFileSystemHelper(Profile* profile);
+  explicit CannedBrowsingDataFileSystemHelper(
+      storage::FileSystemContext* filesystem_context);
 
   // Manually adds a filesystem to the set of canned file systems that this
-  // helper returns via StartFetching. If an origin contains both a temporary
-  // and a persistent filesystem, AddFileSystem must be called twice (once for
-  // each file system type).
-  void AddFileSystem(const GURL& origin,
-                     storage::FileSystemType type,
-                     int64_t size);
+  // helper returns via StartFetching.
+  void Add(const url::Origin& origin);
 
   // Clear this helper's list of canned filesystems.
   void Reset();
@@ -111,27 +126,20 @@ class CannedBrowsingDataFileSystemHelper
   bool empty() const;
 
   // Returns the number of currently stored filesystems.
-  size_t GetFileSystemCount() const;
+  size_t GetCount() const;
 
   // Returns the current list of filesystems.
-  const std::list<FileSystemInfo>& GetFileSystemInfo() {
-    return file_system_info_;
-  }
+  const std::set<url::Origin>& GetOrigins() const { return pending_origins_; }
 
   // BrowsingDataFileSystemHelper implementation.
-  void StartFetching(const FetchCallback& callback) override;
-
-  // Note that this doesn't actually have an implementation for this canned
-  // class. It hasn't been necessary for anything that uses the canned
-  // implementation, as the canned class is only used in tests, or in read-only
-  // contexts (like the non-modal cookie dialog).
-  void DeleteFileSystemOrigin(const GURL& origin) override {}
+  void StartFetching(FetchCallback callback) override;
+  void DeleteFileSystemOrigin(const url::Origin& origin) override;
 
  private:
   ~CannedBrowsingDataFileSystemHelper() override;
 
   // Holds the current list of filesystems returned to the client.
-  std::list<FileSystemInfo> file_system_info_;
+  std::set<url::Origin> pending_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataFileSystemHelper);
 };

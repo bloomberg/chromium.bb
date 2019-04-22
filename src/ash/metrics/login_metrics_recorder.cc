@@ -143,6 +143,10 @@ void LoginMetricsRecorder::RecordUserShelfButtonClick(
       // Should not be called in LOCKED nor LOGIN_PRIMARY states.
       NOTREACHED();
       break;
+    case ShelfButtonClickTarget::kParentAccessButton:
+      DCHECK(is_lock);
+      LogUserClickOnLock(LockScreenUserClickTarget::kParentAccessButton);
+      break;
     case ShelfButtonClickTarget::kTargetCount:
       NOTREACHED();
       break;

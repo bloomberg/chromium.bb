@@ -10,13 +10,14 @@
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/dataplan_usage_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/settings_utils.h"
+#import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -50,7 +51,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   PrefChangeRegistrar _prefChangeRegistrarApplicationContext;
 
   // Updatable Items
-  SettingsDetailItem* _preloadWebpagesDetailItem;
+  TableViewDetailIconItem* _preloadWebpagesDetailItem;
 }
 
 @end
@@ -58,9 +59,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @implementation BandwidthManagementTableViewController
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
-  self =
-      [super initWithTableViewStyle:UITableViewStyleGrouped
-                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? UITableViewStylePlain
+                               : UITableViewStyleGrouped;
+  self = [super initWithTableViewStyle:style
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS);
     _browserState = browserState;
@@ -153,14 +156,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Private
 
-// Returns a newly created SettingsDetailItem for the preload webpages menu.
-- (SettingsDetailItem*)preloadWebpagesItem {
+// Returns a newly created TableViewDetailIconItem for the preload webpages
+// menu.
+- (TableViewDetailIconItem*)preloadWebpagesItem {
   NSString* detailText = [DataplanUsageTableViewController
       currentLabelForPreference:_browserState->GetPrefs()
                        basePref:prefs::kNetworkPredictionEnabled
                        wifiPref:prefs::kNetworkPredictionWifiOnly];
   _preloadWebpagesDetailItem =
-      [[SettingsDetailItem alloc] initWithType:ItemTypePreload];
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypePreload];
 
   _preloadWebpagesDetailItem.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_PRELOAD_WEBPAGES);

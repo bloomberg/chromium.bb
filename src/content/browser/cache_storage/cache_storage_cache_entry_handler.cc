@@ -6,6 +6,7 @@
 
 #include "base/guid.h"
 #include "base/optional.h"
+#include "content/browser/background_fetch/storage/cache_entry_handler_impl.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -38,18 +39,20 @@ CacheStorageCacheEntryHandler::BlobDataHandle::~BlobDataHandle() {
     entry_handler_->EraseBlobDataHandle(this);
 }
 
-PutContext::PutContext(std::unique_ptr<ServiceWorkerFetchRequest> request,
+PutContext::PutContext(blink::mojom::FetchAPIRequestPtr request,
                        blink::mojom::FetchAPIResponsePtr response,
                        blink::mojom::BlobPtr blob,
                        uint64_t blob_size,
                        blink::mojom::BlobPtr side_data_blob,
-                       uint64_t side_data_blob_size)
+                       uint64_t side_data_blob_size,
+                       int64_t trace_id)
     : request(std::move(request)),
       response(std::move(response)),
       blob(std::move(blob)),
       blob_size(blob_size),
       side_data_blob(std::move(side_data_blob)),
-      side_data_blob_size(side_data_blob_size) {}
+      side_data_blob_size(side_data_blob_size),
+      trace_id(trace_id) {}
 
 PutContext::~PutContext() = default;
 
@@ -58,12 +61,14 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
  public:
   CacheStorageCacheEntryHandlerImpl(
       base::WeakPtr<storage::BlobStorageContext> blob_context)
-      : CacheStorageCacheEntryHandler(std::move(blob_context)) {}
+      : CacheStorageCacheEntryHandler(std::move(blob_context)),
+        weak_ptr_factory_(this) {}
   ~CacheStorageCacheEntryHandlerImpl() override = default;
 
   std::unique_ptr<PutContext> CreatePutContext(
-      std::unique_ptr<ServiceWorkerFetchRequest> request,
-      blink::mojom::FetchAPIResponsePtr response) override {
+      blink::mojom::FetchAPIRequestPtr request,
+      blink::mojom::FetchAPIResponsePtr response,
+      int64_t trace_id) override {
     blink::mojom::BlobPtr blob;
     uint64_t blob_size = blink::BlobUtils::kUnknownSize;
     blink::mojom::BlobPtr side_data_blob;
@@ -80,12 +85,14 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
 
     return std::make_unique<PutContext>(
         std::move(request), std::move(response), std::move(blob), blob_size,
-        std::move(side_data_blob), side_data_blob_size);
+        std::move(side_data_blob), side_data_blob_size, trace_id);
   }
 
-  void PopulateResponseBody(CacheStorageCacheHandle handle,
-                            disk_cache::ScopedEntryPtr entry,
+  void PopulateResponseBody(scoped_refptr<BlobDataHandle> data_handle,
                             blink::mojom::FetchAPIResponse* response) override {
+    disk_cache::Entry* entry = data_handle->entry().get();
+    DCHECK(entry);
+
     // Create a blob with the response body data.
     response->blob = blink::mojom::SerializedBlob::New();
     response->blob->size =
@@ -94,15 +101,8 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
     auto blob_data =
         std::make_unique<storage::BlobDataBuilder>(response->blob->uuid);
 
-    disk_cache::Entry* temp_entry = entry.get();
-    auto data_handle =
-        base::MakeRefCounted<CacheStorageCacheEntryHandler::BlobDataHandle>(
-            weak_ptr_factory_.GetWeakPtr(), std::move(handle),
-            std::move(entry));
-    blob_data_handles_.insert(data_handle.get());
     blob_data->AppendDiskCacheEntryWithSideData(
-        std::move(data_handle), temp_entry,
-        CacheStorageCache::INDEX_RESPONSE_BODY,
+        std::move(data_handle), entry, CacheStorageCache::INDEX_RESPONSE_BODY,
         CacheStorageCache::INDEX_SIDE_DATA);
     auto blob_handle = blob_context_->AddFinishedBlob(std::move(blob_data));
 
@@ -110,14 +110,32 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
                               MakeRequest(&response->blob->blob));
   }
 
-  void PopulateRequestBody(CacheStorageCacheHandle handle,
-                           disk_cache::ScopedEntryPtr entry,
+  void PopulateRequestBody(scoped_refptr<BlobDataHandle> data_handle,
                            blink::mojom::FetchAPIRequest* request) override {}
+
+ private:
+  base::WeakPtr<CacheStorageCacheEntryHandler> GetWeakPtr() override {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  base::WeakPtrFactory<CacheStorageCacheEntryHandlerImpl> weak_ptr_factory_;
 };
 
 CacheStorageCacheEntryHandler::CacheStorageCacheEntryHandler(
     base::WeakPtr<storage::BlobStorageContext> blob_context)
-    : blob_context_(blob_context), weak_ptr_factory_(this) {}
+    : blob_context_(blob_context) {}
+
+scoped_refptr<CacheStorageCacheEntryHandler::BlobDataHandle>
+CacheStorageCacheEntryHandler::CreateBlobDataHandle(
+    CacheStorageCacheHandle cache_handle,
+    disk_cache::ScopedEntryPtr entry) {
+  auto handle =
+      base::MakeRefCounted<CacheStorageCacheEntryHandler::BlobDataHandle>(
+          GetWeakPtr(), std::move(cache_handle), std::move(entry));
+  DCHECK_EQ(blob_data_handles_.count(handle.get()), 0u);
+  blob_data_handles_.insert(handle.get());
+  return handle;
+}
 
 CacheStorageCacheEntryHandler::~CacheStorageCacheEntryHandler() = default;
 
@@ -140,8 +158,15 @@ std::unique_ptr<CacheStorageCacheEntryHandler>
 CacheStorageCacheEntryHandler::CreateCacheEntryHandler(
     CacheStorageOwner owner,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  return std::make_unique<CacheStorageCacheEntryHandlerImpl>(
-      std::move(blob_context));
+  switch (owner) {
+    case CacheStorageOwner::kCacheAPI:
+      return std::make_unique<CacheStorageCacheEntryHandlerImpl>(
+          std::move(blob_context));
+    case CacheStorageOwner::kBackgroundFetch:
+      return std::make_unique<background_fetch::CacheEntryHandlerImpl>(
+          std::move(blob_context));
+  }
+  NOTREACHED();
 }
 
 }  // namespace content

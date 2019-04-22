@@ -13,10 +13,11 @@
 #include "core/fpdfapi/font/cpdf_type3char.h"
 #include "core/fpdfapi/font/cpdf_type3font.h"
 #include "core/fpdfapi/render/cpdf_type3glyphs.h"
+#include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxge/cfx_glyphbitmap.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/fx_dib.h"
-#include "core/fxge/fx_font.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -122,8 +123,7 @@ std::unique_ptr<CFX_GlyphBitmap> CPDF_Type3Cache::RenderGlyph(
     return nullptr;
 
   CFX_Matrix text_matrix(pMatrix->a, pMatrix->b, pMatrix->c, pMatrix->d, 0, 0);
-  CFX_Matrix image_matrix = pChar->matrix();
-  image_matrix.Concat(text_matrix);
+  CFX_Matrix image_matrix = pChar->matrix() * text_matrix;
 
   RetainPtr<CFX_DIBitmap> pBitmap = pChar->GetBitmap();
   RetainPtr<CFX_DIBitmap> pResBitmap;
@@ -160,9 +160,7 @@ std::unique_ptr<CFX_GlyphBitmap> CPDF_Type3Cache::RenderGlyph(
   if (!pResBitmap)
     return nullptr;
 
-  auto pGlyph = pdfium::MakeUnique<CFX_GlyphBitmap>();
-  pGlyph->m_Left = left;
-  pGlyph->m_Top = -top;
-  pGlyph->m_pBitmap->TakeOver(std::move(pResBitmap));
+  auto pGlyph = pdfium::MakeUnique<CFX_GlyphBitmap>(left, -top);
+  pGlyph->GetBitmap()->TakeOver(std::move(pResBitmap));
   return pGlyph;
 }

@@ -33,6 +33,7 @@ class InMemoryDownloadFactory : public InMemoryDownload::Factory {
   std::unique_ptr<InMemoryDownload> Create(
       const std::string& guid,
       const RequestParams& request_params,
+      scoped_refptr<network::ResourceRequestBody> request_body,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       InMemoryDownload::Delegate* delegate) override;
 
@@ -75,6 +76,7 @@ class InMemoryDownloadDriver : public DownloadDriver,
   void OnDownloadStarted(InMemoryDownload* download) override;
   void OnDownloadProgress(InMemoryDownload* download) override;
   void OnDownloadComplete(InMemoryDownload* download) override;
+  void OnUploadProgress(InMemoryDownload* download) override;
 
   // The client that receives updates from low level download logic.
   DownloadDriver::Client* client_;

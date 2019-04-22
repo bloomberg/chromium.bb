@@ -32,17 +32,18 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLFrameElement::HTMLFrameElement(Document& document)
+HTMLFrameElement::HTMLFrameElement(Document& document)
     : HTMLFrameElementBase(kFrameTag, document),
       frame_border_(true),
       frame_border_set_(false) {}
 
 DEFINE_NODE_FACTORY(HTMLFrameElement)
 
-const HashSet<AtomicString>& HTMLFrameElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLFrameElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 bool HTMLFrameElement::LayoutObjectIsNeeded(const ComputedStyle&) const {
@@ -50,7 +51,8 @@ bool HTMLFrameElement::LayoutObjectIsNeeded(const ComputedStyle&) const {
   return ContentFrame();
 }
 
-LayoutObject* HTMLFrameElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLFrameElement::CreateLayoutObject(const ComputedStyle&,
+                                                   LegacyLayout) {
   return new LayoutFrame(this);
 }
 
@@ -89,10 +91,8 @@ ParsedFeaturePolicy HTMLFrameElement::ConstructContainerPolicy(
   // unable to use the API, regardless of origin.
   // https://fullscreen.spec.whatwg.org/#model
   ParsedFeaturePolicy container_policy;
-  ParsedFeaturePolicyDeclaration allowlist;
-  allowlist.feature = mojom::FeaturePolicyFeature::kFullscreen;
-  allowlist.matches_all_origins = false;
-  allowlist.disposition = mojom::FeaturePolicyDisposition::kEnforce;
+  ParsedFeaturePolicyDeclaration allowlist(
+      mojom::FeaturePolicyFeature::kFullscreen, mojom::PolicyValueType::kBool);
   container_policy.push_back(allowlist);
   return container_policy;
 }

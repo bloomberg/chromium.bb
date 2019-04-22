@@ -20,16 +20,16 @@ std::unique_ptr<WebThreadScheduler>
 WebThreadScheduler::CreateMainThreadScheduler(
     std::unique_ptr<base::MessagePump> message_pump,
     base::Optional<base::Time> initial_virtual_time) {
-  // Ensure categories appear as an option in chrome://tracing.
-  WarmupTracingCategories();
-  // Workers might be short-lived, so placing warmup here.
-  TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("worker.scheduler"));
+  auto settings = base::sequence_manager::SequenceManager::Settings{
+      base::MessageLoop::TYPE_DEFAULT,
+      /*randomised_sampling_enabled=*/true};
   auto sequence_manager =
       message_pump
           ? base::sequence_manager::
                 CreateSequenceManagerOnCurrentThreadWithPump(
-                    base::MessageLoop::TYPE_DEFAULT, std::move(message_pump))
-          : base::sequence_manager::CreateSequenceManagerOnCurrentThread();
+                    std::move(message_pump), std::move(settings))
+          : base::sequence_manager::CreateSequenceManagerOnCurrentThread(
+                std::move(settings));
   std::unique_ptr<MainThreadSchedulerImpl> scheduler(
       new MainThreadSchedulerImpl(std::move(sequence_manager),
                                   initial_virtual_time));
@@ -81,6 +81,12 @@ WebThreadScheduler::CleanupTaskRunner() {
   return nullptr;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+WebThreadScheduler::DeprecatedDefaultTaskRunner() {
+  NOTREACHED();
+  return nullptr;
+}
+
 std::unique_ptr<Thread> WebThreadScheduler::CreateMainThread() {
   NOTREACHED();
   return nullptr;
@@ -111,6 +117,16 @@ void WebThreadScheduler::DidCommitFrameToCompositor() {
 void WebThreadScheduler::DidHandleInputEventOnCompositorThread(
     const WebInputEvent& web_input_event,
     InputEventState event_state) {
+  NOTREACHED();
+}
+
+void WebThreadScheduler::WillPostInputEventToMainThread(
+    WebInputEvent::Type web_input_event_type) {
+  NOTREACHED();
+}
+
+void WebThreadScheduler::WillHandleInputEventOnMainThread(
+    WebInputEvent::Type web_input_event_type) {
   NOTREACHED();
 }
 
@@ -159,10 +175,6 @@ bool WebThreadScheduler::IsHighPriorityWorkAnticipated() {
 
 void WebThreadScheduler::SetTopLevelBlameContext(
     base::trace_event::BlameContext* blame_context) {
-  NOTREACHED();
-}
-
-void WebThreadScheduler::AddRAILModeObserver(WebRAILModeObserver* observer) {
   NOTREACHED();
 }
 

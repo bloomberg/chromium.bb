@@ -8,12 +8,15 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_util.h"
 
 class GURL;
+namespace url {
+class Origin;
+}
 
 namespace storage {
 class FileSystemMountOption;
@@ -23,9 +26,9 @@ class FileSystemURL;
 namespace storage {
 
 // Represents a set of mount points for File API.
-class STORAGE_EXPORT MountPoints {
+class COMPONENT_EXPORT(STORAGE_BROWSER) MountPoints {
  public:
-  struct STORAGE_EXPORT MountPointInfo {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) MountPointInfo {
     MountPointInfo();
     MountPointInfo(const std::string& name, const base::FilePath& path);
 
@@ -64,7 +67,7 @@ class STORAGE_EXPORT MountPoints {
   // If the the URL is not valid or does not belong to any of the mount points
   // registered in this context, returns empty, invalid FileSystemURL.
   virtual FileSystemURL CreateCrackedFileSystemURL(
-      const GURL& origin,
+      const url::Origin& origin,
       storage::FileSystemType type,
       const base::FilePath& path) const = 0;
 

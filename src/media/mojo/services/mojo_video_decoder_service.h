@@ -48,7 +48,8 @@ class MEDIA_MOJO_EXPORT MojoVideoDecoderService final
       mojom::VideoFrameHandleReleaserRequest video_frame_handle_releaser,
       mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe,
       mojom::CommandBufferIdPtr command_buffer_id,
-      const gfx::ColorSpace& target_color_space) final;
+      const gfx::ColorSpace& target_color_space,
+      mojom::VideoDecoderImplementation implementation) final;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   int32_t cdm_id,
@@ -75,6 +76,8 @@ class MEDIA_MOJO_EXPORT MojoVideoDecoderService final
 
   void OnDecoderReset();
   void OnDecoderOutput(const scoped_refptr<VideoFrame>& frame);
+
+  void OnDecoderWaiting(WaitingReason reason);
 
   void OnDecoderRequestedOverlayInfo(
       bool restart_for_transitions,

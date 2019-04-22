@@ -6,8 +6,10 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
+#include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/search_box_view.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -20,10 +22,10 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/window_state.h"
 #include "base/command_line.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/event.h"
@@ -83,19 +85,15 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
   const bool is_tablet_mode = IsTabletMode();
   aura::Window* parent_window =
       RootWindowController::ForWindow(root_window)
-          ->GetContainer(is_tablet_mode
-                             ? kShellWindowId_AppListTabletModeContainer
-                             : kShellWindowId_AppListContainer);
+          ->GetContainer(is_tablet_mode ? kShellWindowId_HomeScreenContainer
+                                        : kShellWindowId_AppListContainer);
   params.parent = parent_window;
   params.initial_apps_page = current_apps_page;
   params.is_tablet_mode = is_tablet_mode;
   params.is_side_shelf = IsSideShelf(root_window);
-
   view->Initialize(params);
 
   SnapAppListBoundsToDisplayEdge();
-  wm::GetWindowState(view->GetWidget()->GetNativeWindow())
-      ->set_ignored_by_shelf(true);
   Shell::Get()->AddPreTargetHandler(this);
 
   // By setting us as DnD recipient, the app list knows that we can
@@ -114,6 +112,7 @@ void AppListPresenterDelegateImpl::OnClosing() {
   DCHECK(is_visible_);
   DCHECK(view_);
   is_visible_ = false;
+  Shell::Get()->RemovePreTargetHandler(this);
   controller_->ViewClosing();
 }
 
@@ -167,18 +166,13 @@ aura::Window* AppListPresenterDelegateImpl::GetRootWindowForDisplayId(
   return ash::Shell::Get()->GetRootWindowForDisplayId(display_id);
 }
 
-void AppListPresenterDelegateImpl::OnVisibilityChanged(
-    bool visible,
-    aura::Window* root_window) {
-  // Notify Chrome the visibility change.
-  controller_->OnVisibilityChanged(visible);
-  // Notify Ash the visibility change
-  ash::Shell::Get()->NotifyAppListVisibilityChanged(visible, root_window);
+void AppListPresenterDelegateImpl::OnVisibilityChanged(bool visible,
+                                                       int64_t display_id) {
+  controller_->NotifyAppListVisibilityChanged(visible, display_id);
 }
 
 void AppListPresenterDelegateImpl::OnTargetVisibilityChanged(bool visible) {
-  // Notify Chrome the target visibility change.
-  controller_->OnTargetVisibilityChanged(visible);
+  controller_->NotifyAppListTargetVisibilityChanged(visible);
 }
 
 void AppListPresenterDelegateImpl::OnDisplayMetricsChanged(
@@ -200,47 +194,77 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
     return;
 
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (target) {
-    // If the event happened on a menu, then the event should not close the app
-    // list.
-    RootWindowController* root_controller =
-        RootWindowController::ForWindow(target);
-    if (root_controller) {
-      aura::Window* menu_container =
-          root_controller->GetContainer(kShellWindowId_MenuContainer);
-      if (menu_container->Contains(target))
-        return;
-      aura::Window* keyboard_container = root_controller->GetContainer(
-          kShellWindowId_VirtualKeyboardContainer);
-      if (keyboard_container->Contains(target))
-        return;
-    }
-
-    // If the event happened on the app list button, it'll get handled by the
-    // button.
-    AppListButton* app_list_button =
-        Shelf::ForWindow(target)->shelf_widget()->GetAppListButton();
-    if (app_list_button && app_list_button->GetWidget() &&
-        target == app_list_button->GetWidget()->GetNativeWindow() &&
-        app_list_button->bounds().Contains(event->location())) {
+  if (!target)
+    return;
+  // If the event happened on a menu, then the event should not close the app
+  // list.
+  RootWindowController* root_controller =
+      RootWindowController::ForWindow(target);
+  if (root_controller) {
+    aura::Window* menu_container =
+        root_controller->GetContainer(kShellWindowId_MenuContainer);
+    if (menu_container->Contains(target))
       return;
-    }
-
-    // If the event happened on the back button, it'll get handled by the
-    // button.
-    BackButton* back_button =
-        Shelf::ForWindow(target)->shelf_widget()->GetBackButton();
-    if (back_button && back_button->GetWidget() &&
-        target == back_button->GetWidget()->GetNativeWindow() &&
-        back_button->bounds().Contains(event->location())) {
+    aura::Window* keyboard_container =
+        root_controller->GetContainer(kShellWindowId_VirtualKeyboardContainer);
+    if (keyboard_container->Contains(target))
       return;
-    }
+  }
+
+  // If the event happened on the app list button, it'll get handled by the
+  // button.
+  Shelf* shelf = Shelf::ForWindow(target);
+  AppListButton* app_list_button = shelf->shelf_widget()->GetAppListButton();
+  if (app_list_button && app_list_button->GetWidget() &&
+      target == app_list_button->GetWidget()->GetNativeWindow() &&
+      app_list_button->bounds().Contains(event->location())) {
+    return;
+  }
+
+  // If the event happened on the back button, it'll get handled by the
+  // button.
+  BackButton* back_button = shelf->shelf_widget()->GetBackButton();
+  if (back_button && back_button->GetWidget() &&
+      target == back_button->GetWidget()->GetNativeWindow() &&
+      back_button->bounds().Contains(event->location())) {
+    return;
   }
 
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
-  if (!window->Contains(target) && !presenter_->CloseOpenedPage() &&
+  if (!window->Contains(target) && !presenter_->HandleCloseOpenFolder() &&
       !app_list::switches::ShouldNotDismissOnBlur() && !IsTabletMode()) {
-    presenter_->Dismiss(event->time_stamp());
+    const aura::Window* status_window =
+        shelf->shelf_widget()->status_area_widget()->GetNativeWindow();
+    const aura::Window* shelf_window = shelf->shelf_widget()->GetNativeWindow();
+    // Don't dismiss the auto-hide shelf if event happened in status area. Then
+    // the event can still be propagated to the status area tray to open the
+    // corresponding tray bubble.
+    base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
+    if (status_window && status_window->Contains(target))
+      auto_hide_lock.emplace(shelf);
+
+    // Since event happened outside the app list, close the open search box if
+    // it is open.
+    presenter_->HandleCloseOpenSearchBox();
+
+    // Keep app list opened if event happened in the shelf area.
+    if (!shelf_window || !shelf_window->Contains(target))
+      presenter_->Dismiss(event->time_stamp());
+  }
+
+  if (IsTabletMode() && presenter_->IsShowingEmbeddedAssistantUI()) {
+    auto* contents_view =
+        presenter_->GetView()->app_list_main_view()->contents_view();
+    if (target == contents_view->GetWidget()->GetNativeWindow() &&
+        contents_view->bounds().Contains(event->location())) {
+      // Keep Assistant open if event happen inside.
+      return;
+    }
+
+    // Touching anywhere else closes Assistant.
+    view_->Back();
+    view_->search_box_view()->ClearSearch();
+    view_->search_box_view()->SetSearchBoxActive(false, ui::ET_UNKNOWN);
   }
 }
 

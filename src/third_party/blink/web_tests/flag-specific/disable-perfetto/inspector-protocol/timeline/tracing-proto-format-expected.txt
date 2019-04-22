@@ -1,0 +1,3 @@
+Tests that tracing with proto format outputs something resembling protos.
+Start failed: Proto format is only supported with the perfetto backend.
+

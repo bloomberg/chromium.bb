@@ -6,8 +6,8 @@
 #define IOS_NET_COOKIES_COOKIE_CREATION_TIME_MANAGER_H_
 
 #include <set>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -44,7 +44,7 @@ class CookieCreationTimeManager {
   base::WeakPtr<CookieCreationTimeManager> GetWeakPtr();
 
  private:
-  base::hash_map<std::string, base::Time> creation_times_;
+  std::unordered_map<std::string, base::Time> creation_times_;
   std::set<base::Time> unique_times_;
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<CookieCreationTimeManager> weak_factory_;

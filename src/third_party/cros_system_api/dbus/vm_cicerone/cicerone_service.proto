@@ -19,18 +19,12 @@ message NotifyVmStartedRequest {
   // The owner of the VM.
   string owner_id = 2;
 
-  // The IPv4 subnet for containers within the VM in network byte order.
-  uint32 container_ipv4_subnet = 3;
-
-  // The netmask for the IPv4 subnet for containers within the VM in network
-  // byte order.
-  uint32 container_ipv4_netmask = 4;
-
-  // The IPv4 address of the VM in network byte order.
-  uint32 ipv4_address = 5;
-
   // The virtual socket context id assigned to the VM.
-  uint32 cid = 6;
+  uint32 cid = 3;
+
+  // The token to identify the VM, only used with plugin VMs that don't have
+  // containers.
+  string vm_token = 4;
 }
 
 // Message sent to cicerone when a VM stopped or failed to complete startup.
@@ -63,25 +57,6 @@ message ContainerTokenResponse {
   string container_token = 1;
 }
 
-// Message sent to cicerone to check whether or not a specific container is
-// currently running.
-message IsContainerRunningRequest {
-  // Name of the VM.
-  string vm_name = 1;
-
-  // Name of the container within the VM.
-  string container_name = 2;
-
-  // The owner of the VM.
-  string owner_id = 3;
-}
-
-// Reply to the IsContainerRunning method.
-message IsContainerRunningResponse {
-  // True if the container is running, false otherwise.
-  bool container_running = 1;
-}
-
 // Message used in the signal for when tremplin has started.
 message TremplinStartedSignal {
   // Name of the VM the container is in.
@@ -101,6 +76,12 @@ message ContainerStartedSignal {
 
   // The owner of the VM and container.
   string owner_id = 3;
+
+  // The username of uid 1000 in the container.
+  string container_username = 4;
+
+  // The home directory of uid 1000 in the container.
+  string container_homedir = 5;
 }
 
 // Message used in the signal for when a container has shut down.
@@ -226,7 +207,7 @@ message LaunchVshdResponse {
   uint32 cid = 3;
 }
 
-// Request to get information about a Linux package file in the container.
+// Request to get information about a Linux package in the container.
 message LinuxPackageInfoRequest {
   // Name of the VM to target.
   string vm_name = 1;
@@ -239,6 +220,10 @@ message LinuxPackageInfoRequest {
 
   // Path to the package file (e.g. .deb) in the container's filesystem.
   string file_path = 4;
+
+  // Name (not package_id) of package to look up. Used when |file_path| is
+  // empty.
+  string package_name = 5;
 }
 
 // Response sent back from a GetLinuxPackageInfo call.
@@ -274,7 +259,7 @@ message LinuxPackageInfoResponse {
   string summary = 8;
 }
 
-// Request to install a Linux package file in the container.
+// Request to install a Linux package in the container.
 message InstallLinuxPackageRequest {
   // Name of the VM to target.
   string vm_name = 1;
@@ -287,6 +272,10 @@ message InstallLinuxPackageRequest {
 
   // Path to the package file (e.g. .deb) in the container's filesystem.
   string file_path = 4;
+
+  // Package ID to install in the form "package_name;version;arch;data". Used
+  // when |file_path| is empty.
+  string package_id = 5;
 }
 
 // Response sent back from a InstallLinuxPackage call.
@@ -407,10 +396,7 @@ message UninstallPackageProgressSignal {
     SUCCEEDED = 0;
 
     // Uninstall failed to complete, the specific reason will be in
-    // failure_details. If the failure is due to another package(s) being
-    // dependent on this one, then dependency_list will also be populated with
-    // the list of those dependent packages.  No further signals will be sent
-    // after this one.
+    // failure_details. No further signals will be sent after this one.
     FAILED = 1;
 
     // This is sent while the uninstall is in progress. progress_percent will be
@@ -426,16 +412,6 @@ message UninstallPackageProgressSignal {
 
   // Details relating to the failure state.
   string failure_details = 6;
-
-  message Dependency {
-    // The package that depends on this one.
-    string package_id = 1;
-    // A one-line, human-readable summary of the package. Should be localized
-    // but depends on the package.
-    string summary = 2;
-  }
-
-  repeated Dependency dependency_list = 7;
 }
 
 // Request for creating an LXD container.
@@ -516,6 +492,96 @@ message LxdContainerCreatedSignal {
   string failure_reason = 5;
 }
 
+// Request for deleting an LXD container.
+message DeleteLxdContainerRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container to start within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+}
+
+// Response for deleting an LXD container.
+message DeleteLxdContainerResponse {
+  enum Status {
+    // The status of deleting the container is unknown
+    UNKNOWN = 0;
+
+    // The container is being deleted.
+    DELETING = 1;
+
+    // The named container doesn't exist.
+    DOES_NOT_EXIST = 2;
+
+    // The container could not be deleted.
+    FAILED = 3;
+  }
+
+  // Container creation status.
+  Status status = 1;
+
+  // The failure_reason if the container could not be created.
+  string failure_reason = 2;
+}
+
+// Message used in the LxdContainerDeleted signal for the outcome of an
+// LxdDeleteContainer message.
+message LxdContainerDeletedSignal {
+  enum Status {
+    // Deletion status is unknown.
+    UNKNOWN = 0;
+
+    // The container has been deleted.
+    DELETED = 1;
+
+    // The container deletion was cancelled.
+    CANCELLED = 2;
+
+    // One or more steps failed and the container could not be deleted.
+    FAILED = 3;
+  }
+
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Container deletion status.
+  Status status = 4;
+
+  // The failure_reason if the container was not successfully deleted.
+  string failure_reason = 5;
+}
+
+// Request to set timezone for all containers in all VMs known to cicerone.
+message SetTimezoneRequest {
+  // The timezone name to set, for example "America/Denver" or "Etc/UTC".
+  // See /usr/share/zoneinfo, 'timedatectl list-timezones', or the timezone-data
+  // package for other valid names.
+  //
+  // This name will also specify the zoneinfo file from which cicerone will
+  // parse a posix TZ string. That string will be used as a fallback in the
+  // case that the VM does not support zoneinfo files for timezones.
+  string timezone_name = 1;
+}
+
+// Response to setting timezone for all containers in all VMs known to cicerone.
+message SetTimezoneResponse {
+  // The number of containers for which the timezone was successfully set.
+  int32 successes = 1;
+
+  // The failure reason for each container for which the timezone could not be
+  // set.
+  repeated string failure_reasons = 2;
+}
+
 // Message used in the signal for when a container is downloading.
 message LxdContainerDownloadingSignal {
   // Name of the VM the container is in.
@@ -541,6 +607,15 @@ message StartLxdContainerRequest {
 
   // The owner of the VM and container.
   string owner_id = 3;
+
+  // If true, StartLxdContainer will return the final container start result
+  // as a signal. If false, StartLxdContainer will block until the container
+  // has started. This field will be required to be true once all clients are
+  // migrated to use async.
+  bool async = 4;
+
+  // Full path where drivefs is mounted (/media/fuse/drivefs-<drivefs-hash>).
+  string drivefs_mount_path = 5;
 }
 
 // Response for starting an LXD container.
@@ -549,7 +624,8 @@ message StartLxdContainerResponse {
     // The status of starting the container is unknown.
     UNKNOWN = 0;
 
-    // The container has started.
+    // The container has started. This is only valid if async was false in the
+    // request.
     STARTED = 1;
 
     // The container was already running.
@@ -557,6 +633,14 @@ message StartLxdContainerResponse {
 
     // The container could not be started.
     FAILED = 3;
+
+    // The container is starting. This is only valid if async was true in the
+    // request.
+    STARTING = 4;
+
+    // The container is remapping its rootfs uids/gids and will take longer than
+    // usual to start up. This is only valid if async was true in the request.
+    REMAPPING = 5;
   }
 
   // Container startup status.
@@ -564,6 +648,39 @@ message StartLxdContainerResponse {
 
   // The failure_reason if the container could not be started.
   string failure_reason = 2;
+}
+
+// Message used in the signal for when a container is starting.
+message LxdContainerStartingSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  enum Status {
+    // Start status is unknown.
+    UNKNOWN = 0;
+
+    // The container has started. No more signals are expected.
+    STARTED = 1;
+
+    // The container start was cancelled. No more signals are expected.
+    CANCELLED = 2;
+
+    // One or more steps failed and the container could not be started. No
+    // more signals are expected.
+    FAILED = 3;
+  }
+
+  // The current status of starting the container.
+  Status status = 4;
+
+  // The failure_reason if the container was not successfully started.
+  string failure_reason = 5;
 }
 
 // Request for getting the primary user for an LXD container.
@@ -608,6 +725,9 @@ message GetLxdContainerUsernameResponse {
 
   // The failure_reason if the username could not be retrieved.
   string failure_reason = 3;
+
+  // The home directory of uid 1000 in the container.
+  string homedir = 4;
 }
 // Request for setting up the user for an LXD container.
 message SetUpLxdContainerUserRequest {
@@ -645,6 +765,9 @@ message SetUpLxdContainerUserResponse {
 
   // The failure_reason if the user was not set up successfully.
   string failure_reason = 2;
+
+  // The username of uid 1000 in the container.
+  string container_username = 3;
 }
 
 // Request for debug information about virtual machine and container state.
@@ -655,4 +778,207 @@ message GetDebugInformationRequest {
 message GetDebugInformationResponse {
   // Debug information about virtual machine and container state in arbitrary format.
   string debug_information = 1;
+}
+
+// Request to search for Linux packages that are not installed and that match
+// the passed query.
+message AppSearchRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target, if empty the default
+  // container name will be used.
+  string container_name = 2;
+
+  // The owner of the vm and container.
+  string owner_id = 3;
+
+  // Query (plaintext) to search. Query is compared against the names of
+  // packages.
+  string query = 4;
+}
+
+// Response sent back by vm_concierge when it receives a AppSearchRequest D-Bus
+// message.
+message AppSearchResponse {
+  message AppSearchResult {
+    string package_name = 1;
+  }
+  // List of valid packages matching the search query.
+  repeated AppSearchResult packages = 1;
+}
+
+message ExportLxdContainerRequest {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container exporting.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Path to write the exported container.  This path, or a parent
+  // must have already been shared using seneschal.  It is the path relative
+  // to the VM root mount point (/mnt/shared) as returned in seneschal
+  // SharePathResponse.path.  E.g.: "MyFiles/export".  If path is a directory,
+  // it must already exist, and the export will be named <fingerprint>.tar.gz
+  // otherwise this path must already exist as a file, or its parent directory
+  // must exist.
+  string export_path = 4;
+}
+
+message ExportLxdContainerResponse {
+  enum Status {
+    // The result is unknown.
+    UNKNOWN = 0;
+
+    // The container is exporting. Further updates will be delievered via
+    // ExportLxdContainerProgressSignal.
+    EXPORTING = 1;
+
+    // One or more steps failed and the container could not be exported.
+    FAILED = 2;
+  }
+
+  // Current container status.
+  Status status = 1;
+
+  // Details relating to the failure state.
+  string failure_reason = 2;
+}
+
+message ExportLxdContainerProgressSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container exporting.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  enum Status {
+    // The result is unknown.
+    UNKNOWN = 0;
+
+    // Export is completed.
+    DONE = 1;
+
+    // One or more steps failed and the container could not be exported.
+    FAILED = 2;
+
+    // Deprecated.  The container is exporting into a tar file.
+    EXPORTING_TAR = 3;
+
+    // Deprecated.  The container tar file is being compressed into an image
+    // file.
+    EXPORTING_COMPRESS = 4;
+
+    // The exported image file is being downloaded.
+    EXPORTING_DOWNLOAD = 5;
+
+    // The exported image file is being packed.  This is equivalent to
+    // tar/compress.
+    EXPORTING_PACK = 6;
+  }
+
+  // Container status.
+  Status status = 4;
+
+  // Percentage progress for the current stage given in status.
+  uint32 progress_percent = 5;
+
+  // Speed (bytes per second) for the current stage given in status.
+  uint64 progress_speed = 6;
+
+  // Details relating to the failure state.
+  string failure_reason = 7;
+}
+
+message ImportLxdContainerRequest {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container importing.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Path to read the imported container.  This is a file which
+  // must have already been shared using seneschal.  It is the path relative
+  // to the VM root mount point (/mnt/shared) as returned in seneschal
+  // SharePathResponse.path.  E.g.: "MyFiles/export/backup.tar.gz".
+  string import_path = 4;
+}
+
+message ImportLxdContainerResponse {
+  enum Status {
+    // The result is unknown.
+    UNKNOWN = 0;
+
+    // The container is importing. Further updates will be delievered via
+    // ImportLxdContainerProgressSignal.
+    IMPORTING = 1;
+
+    // One or more steps failed and the container could not be imported.
+    FAILED = 2;
+  }
+
+  // Current container status.
+  Status status = 1;
+
+  // Details relating to the failure state.
+  string failure_reason = 2;
+}
+
+message ImportLxdContainerProgressSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container importing.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  enum Status {
+    // The result is unknown.
+    UNKNOWN = 0;
+
+    // Import is completed.
+    DONE = 1;
+
+    // One or more steps failed and the container could not be imported.
+    FAILED = 2;
+
+    // The image is being uploaded.
+    IMPORTING_UPLOAD = 3;
+
+    // The image is being unpacked to create a container.
+    IMPORTING_UNPACK = 4;
+
+    // The container could be imported due to mismatched architecture.
+    FAILED_ARCHITECTURE = 5;
+  }
+
+  // Container status.
+  Status status = 4;
+
+  // Percentage progress for the current stage given in status.
+  uint32 progress_percent = 5;
+
+  // Speed (bytes per second) for the current stage given in status.
+  uint64 progress_speed = 6;
+
+  // Details relating to the failure state.
+  string failure_reason = 7;
+
+  // Architecture of device.  Set when status is FAILED_ARCHITECTURE.
+  string architecture_device = 8;
+
+  // Architecture of container which failed to import.
+  // Set when status is FAILED_ARCHITECTURE.
+  string architecture_container = 9;
 }

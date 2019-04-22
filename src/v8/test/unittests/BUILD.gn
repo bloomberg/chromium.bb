@@ -144,11 +144,13 @@ v8_source_set("unittests_sources") {
     "compiler/typer-unittest.cc",
     "compiler/value-numbering-reducer-unittest.cc",
     "compiler/zone-stats-unittest.cc",
+    "conversions-unittest.cc",
     "counters-unittest.cc",
     "detachable-vector-unittest.cc",
     "eh-frame-iterator-unittest.cc",
     "eh-frame-writer-unittest.cc",
     "heap/barrier-unittest.cc",
+    "heap/bitmap-test-utils.h",
     "heap/bitmap-unittest.cc",
     "heap/embedder-tracing-unittest.cc",
     "heap/gc-idle-time-handler-unittest.cc",
@@ -180,6 +182,7 @@ v8_source_set("unittests_sources") {
     "interpreter/interpreter-assembler-unittest.cc",
     "interpreter/interpreter-assembler-unittest.h",
     "libplatform/default-platform-unittest.cc",
+    "libplatform/default-worker-threads-task-runner-unittest.cc",
     "libplatform/task-queue-unittest.cc",
     "libplatform/worker-thread-unittest.cc",
     "locked-queue-unittest.cc",
@@ -188,6 +191,7 @@ v8_source_set("unittests_sources") {
     "parser/ast-value-unittest.cc",
     "parser/preparser-unittest.cc",
     "register-configuration-unittest.cc",
+    "regress/regress-crbug-938251-unittest.cc",
     "run-all-unittests.cc",
     "source-position-table-unittest.cc",
     "strings-storage-unittest.cc",
@@ -196,7 +200,11 @@ v8_source_set("unittests_sources") {
     "test-utils.cc",
     "test-utils.h",
     "torque/earley-parser-unittest.cc",
+    "torque/ls-json-unittest.cc",
+    "torque/ls-message-unittest.cc",
+    "torque/ls-server-data-unittest.cc",
     "torque/torque-unittest.cc",
+    "torque/torque-utils-unittest.cc",
     "unicode-unittest.cc",
     "utils-unittest.cc",
     "value-serializer-unittest.cc",
@@ -208,10 +216,10 @@ v8_source_set("unittests_sources") {
     "wasm/module-decoder-unittest.cc",
     "wasm/streaming-decoder-unittest.cc",
     "wasm/wasm-code-manager-unittest.cc",
+    "wasm/wasm-compiler-unittest.cc",
     "wasm/wasm-macro-gen-unittest.cc",
     "wasm/wasm-module-builder-unittest.cc",
     "wasm/wasm-opcodes-unittest.cc",
-    "zone/segmentpool-unittest.cc",
     "zone/zone-allocator-unittest.cc",
     "zone/zone-chunk-list-unittest.cc",
     "zone/zone-unittest.cc",
@@ -255,6 +263,7 @@ v8_source_set("unittests_sources") {
     sources += [
       "assembler/turbo-assembler-x64-unittest.cc",
       "compiler/x64/instruction-selector-x64-unittest.cc",
+      "wasm/trap-handler-x64-unittest.cc",
     ]
   } else if (v8_current_cpu == "ppc" || v8_current_cpu == "ppc64") {
     sources += [
@@ -282,6 +291,7 @@ v8_source_set("unittests_sources") {
   ]
 
   deps = [
+    "..:common_test_headers",
     "../..:v8_for_testing",
     "../..:v8_libbase",
     "../..:v8_libplatform",

@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.annotation.ColorRes;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.TextView;
 
@@ -23,11 +25,12 @@ public abstract class InfoBar implements InfoBarView {
 
     private final int mIconDrawableId;
     private final Bitmap mIconBitmap;
+    private final @ColorRes int mIconTintId;
     private final CharSequence mMessage;
 
-    private InfoBarContainer mContainer;
-    private View mView;
-    private Context mContext;
+    private @Nullable InfoBarContainer mContainer;
+    private @Nullable View mView;
+    private @Nullable Context mContext;
 
     private boolean mIsDismissed;
     private boolean mControlsEnabled = true;
@@ -38,12 +41,15 @@ public abstract class InfoBar implements InfoBarView {
     /**
      * Constructor for regular infobars.
      * @param iconDrawableId ID of the resource to use for the Icon.  If 0, no icon will be shown.
-     * @param iconBitmap Icon to draw, in bitmap form.  Used mainly for generated icons.
+     * @param iconTintId The {@link ColorRes} used as tint for the {@code iconDrawableId}.
      * @param message The message to show in the infobar.
+     * @param iconBitmap Icon to draw, in bitmap form.  Used mainly for generated icons.
      */
-    public InfoBar(int iconDrawableId, Bitmap iconBitmap, CharSequence message) {
+    public InfoBar(
+            int iconDrawableId, @ColorRes int iconTintId, CharSequence message, Bitmap iconBitmap) {
         mIconDrawableId = iconDrawableId;
         mIconBitmap = iconBitmap;
+        mIconTintId = iconTintId;
         mMessage = message;
     }
 
@@ -73,9 +79,10 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     /**
-     * @return The Context used to create the InfoBar.  This will be null until the InfoBar is added
-     *         to the InfoBarContainer, and should never be null afterward.
+     * @return The {@link Context} used to create the InfoBar. This will be null before the InfoBar
+     *         is added to an {@link InfoBarContainer}, or after the InfoBar is closed.
      */
+    @Nullable
     protected Context getContext() {
         return mContext;
     }
@@ -88,13 +95,13 @@ public abstract class InfoBar implements InfoBarView {
         assert mContext != null;
 
         if (usesCompactLayout()) {
-            InfoBarCompactLayout layout =
-                    new InfoBarCompactLayout(mContext, this, mIconDrawableId, mIconBitmap);
+            InfoBarCompactLayout layout = new InfoBarCompactLayout(
+                    mContext, this, mIconDrawableId, mIconTintId, mIconBitmap);
             createCompactLayoutContent(layout);
             mView = layout;
         } else {
-            InfoBarLayout layout =
-                    new InfoBarLayout(mContext, this, mIconDrawableId, mIconBitmap, mMessage);
+            InfoBarLayout layout = new InfoBarLayout(
+                    mContext, this, mIconDrawableId, mIconTintId, mIconBitmap, mMessage);
             createContent(layout);
             layout.onContentCreated();
             mView = layout;
@@ -190,6 +197,9 @@ public abstract class InfoBar implements InfoBarView {
                 onStartedHiding();
                 mContainer.removeInfoBar(this);
             }
+            mContainer = null;
+            mView = null;
+            mContext = null;
             return true;
         }
         return false;

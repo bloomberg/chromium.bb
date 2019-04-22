@@ -83,7 +83,7 @@ class CC_EXPORT RasterBufferProvider {
   // have a pending callback, 0 should be passed for |pending_callback_id|.
   virtual uint64_t SetReadyToDrawCallback(
       const std::vector<const ResourcePool::InUsePoolResource*>& resources,
-      const base::Callback<void()>& callback,
+      base::OnceClosure callback,
       uint64_t pending_callback_id) const = 0;
 
   // Shutdown for doing cleanup.

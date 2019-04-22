@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/drag_event.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
@@ -172,13 +173,14 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
   if (!cull_rect.Intersects(FrameRect()))
     return;
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && layer_) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && layer_) {
     layer_->SetOffsetToTransformParent(
         gfx::Vector2dF(frame_rect_.X(), frame_rect_.Y()));
     layer_->SetBounds(gfx::Size(frame_rect_.Size()));
     layer_->SetIsDrawable(true);
-    // With Slimming Paint v2, composited plugins should have their layers
-    // inserted rather than invoking WebPlugin::paint.
+    layer_->SetHitTestable(true);
+    // When compositing is after paint, composited plugins should have their
+    // layers inserted rather than invoking WebPlugin::paint.
     RecordForeignLayer(context, DisplayItem::kForeignLayerPlugin, layer_);
     return;
   }
@@ -367,8 +369,10 @@ void WebPluginContainerImpl::SetCcLayer(cc::Layer* new_layer,
 
   if (layer_)
     GraphicsLayer::UnregisterContentsLayer(layer_);
-  if (new_layer)
+  if (new_layer) {
     GraphicsLayer::RegisterContentsLayer(new_layer);
+    new_layer->set_owner_node_id(DOMNodeIds::IdForNode(element_.Get()));
+  }
 
   layer_ = new_layer;
   prevent_contents_opaque_changes_ = prevent_contents_opaque_changes;
@@ -391,10 +395,6 @@ void WebPluginContainerImpl::CancelFullscreen() {
 
 bool WebPluginContainerImpl::SupportsPaginatedPrint() const {
   return web_plugin_->SupportsPaginatedPrint();
-}
-
-bool WebPluginContainerImpl::IsPrintScalingDisabled() const {
-  return web_plugin_->IsPrintScalingDisabled();
 }
 
 bool WebPluginContainerImpl::GetPrintPresetOptionsFromDocument(
@@ -432,6 +432,7 @@ void WebPluginContainerImpl::Copy() {
 
   SystemClipboard::GetInstance().WriteHTML(
       web_plugin_->SelectionAsMarkup(), KURL(), web_plugin_->SelectionAsText());
+  SystemClipboard::GetInstance().CommitWrite();
 }
 
 bool WebPluginContainerImpl::ExecuteEditCommand(const WebString& name) {
@@ -467,8 +468,8 @@ WebDocument WebPluginContainerImpl::GetDocument() {
 
 void WebPluginContainerImpl::DispatchProgressEvent(const WebString& type,
                                                    bool length_computable,
-                                                   unsigned long long loaded,
-                                                   unsigned long long total,
+                                                   uint64_t loaded,
+                                                   uint64_t total,
                                                    const WebString& url) {
   ProgressEvent* event;
   if (url.IsEmpty()) {
@@ -547,10 +548,13 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
   const KURL& kurl = url;
   DCHECK(kurl.ProtocolIs("javascript"));
 
-  String script = DecodeURLEscapeSequences(kurl.GetString());
+  String script = DecodeURLEscapeSequences(kurl.GetString(),
+                                           DecodeURLMode::kUTF8OrIsomorphic);
 
-  if (!element_->GetDocument().GetContentSecurityPolicy()->AllowJavaScriptURLs(
-          element_, script, element_->GetDocument().Url(), OrdinalNumber())) {
+  if (!element_->GetDocument().GetContentSecurityPolicy()->AllowInline(
+          ContentSecurityPolicy::InlineType::kNavigation, element_, script,
+          String() /* nonce */, element_->GetDocument().Url(),
+          OrdinalNumber())) {
     return WebString();
   }
   script = script.Substring(strlen("javascript:"));
@@ -1135,9 +1139,9 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
 void WebPluginContainerImpl::CalculateGeometry(IntRect& window_rect,
                                                IntRect& clip_rect,
                                                IntRect& unobscured_rect) {
-  // document().layoutView() can be null when we receive messages from the
+  // GetDocument().LayoutView() can be null when we receive messages from the
   // plugins while we are destroying a frame.
-  // FIXME: Can we just check m_element->document().isActive() ?
+  // TODO: Can we just check element_->GetDocument().IsActive() ?
   if (element_->GetLayoutObject()->GetDocument().GetLayoutView()) {
     // Take our element and get the clip rect from the enclosing layer and
     // frame view.

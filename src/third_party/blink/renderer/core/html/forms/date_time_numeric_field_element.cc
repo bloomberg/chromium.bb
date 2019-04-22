@@ -70,8 +70,9 @@ DateTimeNumericFieldElement::DateTimeNumericFieldElement(
     if (dir == WTF::unicode::kLeftToRight ||
         dir == WTF::unicode::kEuropeanNumber ||
         dir == WTF::unicode::kArabicNumber) {
-      SetInlineStyleProperty(CSSPropertyUnicodeBidi, CSSValueBidiOverride);
-      SetInlineStyleProperty(CSSPropertyDirection, CSSValueLtr);
+      SetInlineStyleProperty(CSSPropertyID::kUnicodeBidi,
+                             CSSValueID::kBidiOverride);
+      SetInlineStyleProperty(CSSPropertyID::kDirection, CSSValueID::kLtr);
     }
   }
 }
@@ -95,10 +96,10 @@ int DateTimeNumericFieldElement::DefaultValueForStepUp() const {
 void DateTimeNumericFieldElement::SetFocused(bool value,
                                              WebFocusType focus_type) {
   if (!value) {
-    int value = TypeAheadValue();
+    int type_ahead_value = TypeAheadValue();
     type_ahead_buffer_.Clear();
-    if (value >= 0)
-      SetValueAsInteger(value, kDispatchEvent);
+    if (type_ahead_value >= 0)
+      SetValueAsInteger(type_ahead_value, kDispatchEvent);
   }
   DateTimeFieldElement::SetFocused(value, focus_type);
 }

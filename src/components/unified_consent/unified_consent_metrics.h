@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_UNIFIED_CONSENT_UNIFIED_CONSENT_METRICS_H_
 #define COMPONENTS_UNIFIED_CONSENT_UNIFIED_CONSENT_METRICS_H_
 
-#include "components/unified_consent/unified_consent_service_client.h"
+class PrefService;
+
+namespace syncer {
+class SyncUserSettings;
+}
 
 namespace unified_consent {
-
 namespace metrics {
 
 // Google services that can be toggled in user settings.
@@ -26,32 +29,16 @@ enum class SettingsHistogramValue {
   kMaxValue = kAllServicesWereEnabled
 };
 
-// Records settings entries in the kSyncAndGoogleServicesSettingsHistogram.
+// Records settings entries in the SyncAndGoogleServicesSettings.
 // kNone is recorded when none of the settings is enabled.
-void RecordSettingsHistogram(UnifiedConsentServiceClient* service_client,
-                             PrefService* pref_service);
+void RecordSettingsHistogram(PrefService* pref_service);
 
-// Records a sample in the kSyncAndGoogleServicesSettingsHistogram. Wrapped in a
-// function to avoid code size issues caused by histogram macros.
-void RecordSettingsHistogramSample(SettingsHistogramValue value);
-
-// Checks if a pref is enabled and if so, records a sample in the
-// kSyncAndGoogleServicesSettingsHistogram. Returns true if a sample was
-// recorded.
-bool RecordSettingsHistogramFromPref(const char* pref_name,
-                                     PrefService* pref_service,
-                                     SettingsHistogramValue value);
-
-// Checks if a service is enabled and if so, records a sample in the
-// kSyncAndGoogleServicesSettingsHistogram. Returns true if a sample was
-// recorded.
-bool RecordSettingsHistogramFromService(
-    UnifiedConsentServiceClient* client,
-    UnifiedConsentServiceClient::Service service,
-    SettingsHistogramValue value);
+// Records the sync data types that were turned off during the advanced sync
+// opt-in flow. When none of the data types were turned off, kNone is recorded.
+void RecordSyncSetupDataTypesHistrogam(syncer::SyncUserSettings* sync_settings,
+                                       PrefService* pref_service);
 
 }  // namespace metrics
-
 }  // namespace unified_consent
 
 #endif  // COMPONENTS_UNIFIED_CONSENT_UNIFIED_CONSENT_METRICS_H_

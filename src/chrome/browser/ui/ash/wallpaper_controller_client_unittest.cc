@@ -7,16 +7,20 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
 class WallpaperControllerClientTest : public testing::Test {
  public:
-  WallpaperControllerClientTest() = default;
+  WallpaperControllerClientTest()
+      : local_state_(TestingBrowserProcess::GetGlobal()) {}
   ~WallpaperControllerClientTest() override = default;
 
  private:
+  ScopedTestingLocalState local_state_;
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 

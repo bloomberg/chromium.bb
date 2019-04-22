@@ -6,11 +6,6 @@
 
 namespace download {
 
-// When manually setting the Zone Identifier, this feature controls whether the
-// HostUrl and ReferrerUrl values are set.
-const base::Feature kAugmentedZoneIdentifier{"AugmentedZoneIdentifier",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 // This feature controls whether the InvokeAttachmentServices function will be
 // called. Has no effect on machines that are domain-joined, where the function
 // is always called.

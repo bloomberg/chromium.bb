@@ -7,14 +7,15 @@
 
 #include "Resources.h"
 #include "SkImage.h"
+#include "ToolUtils.h"
 #include "gm.h"
-#include "sk_tool_utils.h"
 
-static void draw_rotated_image(SkCanvas* canvas, const SkImage* image) {
-    sk_tool_utils::draw_checkerboard(canvas, SkColorSetRGB(156, 154, 156),
-                                     SK_ColorWHITE, 12);
+static skiagm::DrawResult draw_rotated_image(SkCanvas* canvas, const SkImage* image,
+                                             SkString* errorMsg) {
+    ToolUtils::draw_checkerboard(canvas, SkColorSetRGB(156, 154, 156), SK_ColorWHITE, 12);
     if (!image) {
-        return;
+        *errorMsg = "No image. Did you forget to set the resourcePath?";
+        return skiagm::DrawResult::kFail;
     }
     SkRect rect = SkRect::MakeLTRB(-68.0f, -68.0f, 68.0f, 68.0f);
     SkPaint paint;
@@ -32,12 +33,13 @@ static void draw_rotated_image(SkCanvas* canvas, const SkImage* image) {
             canvas->drawImage(image, point[0], point[1]);
         }
     }
+    return skiagm::DrawResult::kOk;
 }
 
-DEF_SIMPLE_GM(repeated_bitmap, canvas, 576, 576) {
-    draw_rotated_image(canvas, GetResourceAsImage("images/randPixels.png").get());
+DEF_SIMPLE_GM_CAN_FAIL(repeated_bitmap, canvas, errorMsg, 576, 576) {
+    return draw_rotated_image(canvas, GetResourceAsImage("images/randPixels.png").get(), errorMsg);
 }
 
-DEF_SIMPLE_GM(repeated_bitmap_jpg, canvas, 576, 576) {
-    draw_rotated_image(canvas, GetResourceAsImage("images/color_wheel.jpg").get());
+DEF_SIMPLE_GM_CAN_FAIL(repeated_bitmap_jpg, canvas, errorMsg, 576, 576) {
+    return draw_rotated_image(canvas, GetResourceAsImage("images/color_wheel.jpg").get(), errorMsg);
 }

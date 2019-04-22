@@ -234,7 +234,7 @@ class TestSimpleChromeBuilder(cros_test_lib.MockTempDirTestCase):
         ['bash', '-c', 'gn gen out_%s/Release --args="$GN_ARGS"' % self.BOARD],
         run_args=self.log_output_args)
     chrome_sdk_ninja_mock.assert_called_with(
-        targets=['chrome', 'chrome_sandbox', 'nacl_helper'],
+        targets=['chrome', 'nacl_helper'],
         run_args=self.log_output_args)
 
   def testBuildNoArchive(self):
@@ -268,7 +268,7 @@ class TestSimpleChromeBuilder(cros_test_lib.MockTempDirTestCase):
         ['bash', '-c', 'gn gen out_%s/Release --args="$GN_ARGS"' % self.BOARD],
         run_args=self.log_output_args)
     chrome_sdk_ninja_mock.assert_called_with(
-        targets=['chrome', 'chrome_sandbox', 'nacl_helper'],
+        targets=['chrome', 'nacl_helper'],
         run_args=self.log_output_args)
 
   def testDeploy(self):

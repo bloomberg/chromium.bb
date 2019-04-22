@@ -8,13 +8,15 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
+#include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "ui/views/controls/scroll_view.h"
 
 class AppMenu;
+class AppMenuButton;
 class Browser;
 class BrowserActionsContainer;
-class ToolbarActionsBar;
 
 namespace views {
 class MenuItemView;
@@ -25,18 +27,12 @@ class MenuItemView;
 // the app menu.
 // In the event that the app menu was opened for an Extension Action drag-and-
 // drop, this will also close the menu upon completion.
-class ExtensionToolbarMenuView : public views::ScrollView,
+class ExtensionToolbarMenuView : public AppMenuButtonObserver,
+                                 public views::ScrollView,
                                  public ToolbarActionsBarObserver {
  public:
-  ExtensionToolbarMenuView(Browser* browser,
-                           AppMenu* app_menu,
-                           views::MenuItemView* menu_item);
+  ExtensionToolbarMenuView(Browser* browser, views::MenuItemView* menu_item);
   ~ExtensionToolbarMenuView() override;
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-  int GetHeightForWidth(int width) const override;
-  void Layout() override;
 
   BrowserActionsContainer* container_for_testing() {
     return container_;
@@ -44,28 +40,36 @@ class ExtensionToolbarMenuView : public views::ScrollView,
 
   // Sets the time delay the app menu takes to close after a drag-and-drop
   // operation.
-  static void set_close_menu_delay_for_testing(int delay);
+  static void set_close_menu_delay_for_testing(base::TimeDelta delay);
+
+ protected:
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
   // ToolbarActionsBarObserver:
   void OnToolbarActionsBarDestroyed() override;
   void OnToolbarActionDragDone() override;
-  void OnToolbarActionsBarDidStartResize() override;
+
+  // AppMenuButtonObserver:
+  void AppMenuShown() override;
 
   // Closes the |app_menu_|.
   void CloseAppMenu();
 
-  // Resizes and lays out the view.
-  void Redraw();
+  // Updates our margins and invalidates layout.
+  void UpdateMargins();
 
-  // Returns the padding before the BrowserActionsContainer in the menu.
-  int start_padding() const;
+  // The padding before and after the BrowserActionsContainer in the menu.
+  int GetStartPadding() const;
+  int GetEndPadding() const;
 
   // The associated browser.
   Browser* const browser_;
 
   // The app menu, which may need to be closed after a drag-and-drop.
-  AppMenu* app_menu_;
+  AppMenu* app_menu_ = nullptr;
 
   // The MenuItemView this view is contained within.
   views::MenuItemView* menu_item_;
@@ -77,9 +81,11 @@ class ExtensionToolbarMenuView : public views::ScrollView,
   int max_height_ = 0;
 
   ScopedObserver<ToolbarActionsBar, ToolbarActionsBarObserver>
-      toolbar_actions_bar_observer_;
+      toolbar_actions_bar_observer_{this};
+  ScopedObserver<AppMenuButton, AppMenuButtonObserver>
+      app_menu_button_observer_{this};
 
-  base::WeakPtrFactory<ExtensionToolbarMenuView> weak_factory_;
+  base::WeakPtrFactory<ExtensionToolbarMenuView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionToolbarMenuView);
 };

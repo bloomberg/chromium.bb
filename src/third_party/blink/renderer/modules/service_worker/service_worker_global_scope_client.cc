@@ -109,7 +109,7 @@ void ServiceWorkerGlobalScopeClient::OpenWindowForPaymentHandler(
 }
 
 void ServiceWorkerGlobalScopeClient::SetCachedMetadata(const KURL& url,
-                                                       const char* data,
+                                                       const uint8_t* data,
                                                        size_t size) {
   Vector<uint8_t> meta_data;
   meta_data.Append(data, SafeCast<wtf_size_t>(size));
@@ -300,12 +300,21 @@ void ServiceWorkerGlobalScopeClient::WillDestroyWorkerContext() {
   service_worker_host_.reset();
 }
 
+int ServiceWorkerGlobalScopeClient::WillStartTask() {
+  return client_.WillStartTask();
+}
+
+void ServiceWorkerGlobalScopeClient::DidEndTask(int task_id) {
+  client_.DidEndTask(task_id);
+}
+
 const char ServiceWorkerGlobalScopeClient::kSupplementName[] =
     "ServiceWorkerGlobalScopeClient";
 
 ServiceWorkerGlobalScopeClient* ServiceWorkerGlobalScopeClient::From(
     ExecutionContext* context) {
-  // TODO(horo): Replace CHECK() to DCHECK() when crbug.com/749930 is fixed.
+  // TODO(crbug.com/920854): Replace CHECK() with DCHECK() after crashes are
+  // gone.
   CHECK(context);
   WorkerClients* worker_clients = To<WorkerGlobalScope>(context)->Clients();
   CHECK(worker_clients);

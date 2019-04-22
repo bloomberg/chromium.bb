@@ -4,10 +4,11 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 
+#include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
-#include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -16,9 +17,12 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream_event.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport_stats.h"
 
 namespace blink {
 namespace {
+// QUIC requires 128 bits of entropy for the pre shared key.
+const size_t kPreSharedKeyLength = 128 / 8;
 
 // This class wraps a P2PQuicTransportFactoryImpl but does not construct it
 // until CreateQuicTransport is called for the first time. This ensures that it
@@ -60,6 +64,12 @@ class DefaultP2PQuicTransportFactory : public P2PQuicTransportFactory {
 
 }  // namespace
 
+RTCQuicTransport* RTCQuicTransport::Create(ExecutionContext* context,
+                                           RTCIceTransport* transport,
+                                           ExceptionState& exception_state) {
+  return Create(context, transport, {}, exception_state);
+}
+
 RTCQuicTransport* RTCQuicTransport::Create(
     ExecutionContext* context,
     RTCIceTransport* transport,
@@ -80,9 +90,9 @@ RTCQuicTransport* RTCQuicTransport::Create(
   DCHECK(transport);
   DCHECK(p2p_quic_transport_factory);
   if (transport->IsClosed()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot construct an RTCQuicTransport with a closed RTCIceTransport.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Cannot construct an RTCQuicTransport "
+                                      "with a closed RTCIceTransport.");
     return nullptr;
   }
   if (transport->HasConsumer()) {
@@ -95,25 +105,33 @@ RTCQuicTransport* RTCQuicTransport::Create(
   for (const auto& certificate : certificates) {
     if (certificate->expires() < ConvertSecondsToDOMTimeStamp(CurrentTime())) {
       exception_state.ThrowTypeError(
-          "Cannot construct an RTCQuicTransport with an expired certificate.");
+          "Cannot construct an RTCQuicTransport with an expired "
+          "certificate.");
       return nullptr;
     }
   }
+  uint8_t generated_key[kPreSharedKeyLength];
+  quic::QuicRandom::GetInstance()->RandBytes(generated_key,
+                                             base::size(generated_key));
   return MakeGarbageCollected<RTCQuicTransport>(
-      context, transport, certificates, exception_state,
-      std::move(p2p_quic_transport_factory));
+      context, transport,
+      DOMArrayBuffer::Create(generated_key, base::size(generated_key)),
+      certificates, exception_state, std::move(p2p_quic_transport_factory));
 }
 
 RTCQuicTransport::RTCQuicTransport(
     ExecutionContext* context,
     RTCIceTransport* transport,
+    DOMArrayBuffer* key,
     const HeapVector<Member<RTCCertificate>>& certificates,
     ExceptionState& exception_state,
     std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory)
     : ContextClient(context),
       transport_(transport),
+      key_(key),
       certificates_(certificates),
       p2p_quic_transport_factory_(std::move(p2p_quic_transport_factory)) {
+  DCHECK_GT(key_->ByteLength(), 0u);
   transport->ConnectConsumer(this);
 }
 
@@ -139,6 +157,44 @@ String RTCQuicTransport::state() const {
       return "failed";
   }
   return String();
+}
+
+DOMArrayBuffer* RTCQuicTransport::getKey() const {
+  return DOMArrayBuffer::Create(key_->Data(), key_->ByteLength());
+}
+
+void RTCQuicTransport::connect(ExceptionState& exception_state) {
+  if (RaiseExceptionIfClosed(exception_state)) {
+    return;
+  }
+  if (RaiseExceptionIfStarted(exception_state)) {
+    return;
+  }
+  start_reason_ = StartReason::kClientConnecting;
+  std::string pre_shared_key(static_cast<const char*>(key_->Data()),
+                             key_->ByteLength());
+  StartConnection(quic::Perspective::IS_CLIENT,
+                  P2PQuicTransport::StartConfig(pre_shared_key));
+}
+
+void RTCQuicTransport::listen(const DOMArrayPiece& remote_key,
+                              ExceptionState& exception_state) {
+  if (remote_key.ByteLength() == 0u) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "Cannot listen with an empty key.");
+    return;
+  }
+  if (RaiseExceptionIfClosed(exception_state)) {
+    return;
+  }
+  if (RaiseExceptionIfStarted(exception_state)) {
+    return;
+  }
+  start_reason_ = StartReason::kServerListening;
+  std::string pre_shared_key(static_cast<const char*>(remote_key.Data()),
+                             remote_key.ByteLength());
+  StartConnection(quic::Perspective::IS_SERVER,
+                  P2PQuicTransport::StartConfig(pre_shared_key));
 }
 
 RTCQuicParameters* RTCQuicTransport::getLocalParameters() const {
@@ -184,22 +240,6 @@ static quic::Perspective QuicPerspectiveFromIceRole(cricket::IceRole ice_role) {
   return quic::Perspective::IS_CLIENT;
 }
 
-void RTCQuicTransport::start(const RTCQuicParameters* remote_parameters,
-                             ExceptionState& exception_state) {
-  if (RaiseExceptionIfClosed(exception_state)) {
-    return;
-  }
-  if (remote_parameters_) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot start() multiple times.");
-    return;
-  }
-  remote_parameters_ = const_cast<RTCQuicParameters*>(remote_parameters);
-  if (transport_->IsStarted()) {
-    StartConnection();
-  }
-}
-
 static std::unique_ptr<rtc::SSLFingerprint> RTCDtlsFingerprintToSSLFingerprint(
     const RTCDtlsFingerprint* dtls_fingerprint) {
   std::string algorithm = WebString(dtls_fingerprint->algorithm()).Utf8();
@@ -210,45 +250,77 @@ static std::unique_ptr<rtc::SSLFingerprint> RTCDtlsFingerprintToSSLFingerprint(
   return rtc_fingerprint;
 }
 
-void RTCQuicTransport::StartConnection() {
+void RTCQuicTransport::start(RTCQuicParameters* remote_parameters,
+                             ExceptionState& exception_state) {
+  if (RaiseExceptionIfClosed(exception_state)) {
+    return;
+  }
+  if (RaiseExceptionIfStarted(exception_state)) {
+    return;
+  }
+  remote_parameters_ = remote_parameters;
+  start_reason_ = StartReason::kP2PWithRemoteFingerprints;
+  if (transport_->IsStarted()) {
+    std::vector<std::unique_ptr<rtc::SSLFingerprint>> rtc_fingerprints;
+    for (const RTCDtlsFingerprint* fingerprint :
+         remote_parameters_->fingerprints()) {
+      rtc_fingerprints.push_back(
+          RTCDtlsFingerprintToSSLFingerprint(fingerprint));
+    };
+    StartConnection(QuicPerspectiveFromIceRole(transport_->GetRole()),
+                    P2PQuicTransport::StartConfig(std::move(rtc_fingerprints)));
+  }
+}
+
+void RTCQuicTransport::StartConnection(
+    quic::Perspective perspective,
+    P2PQuicTransport::StartConfig start_config) {
   DCHECK_EQ(state_, RTCQuicTransportState::kNew);
-  DCHECK(remote_parameters_);
+  DCHECK_NE(start_reason_, StartReason::kNotStarted);
 
   state_ = RTCQuicTransportState::kConnecting;
-
+  // We don't create the underlying transports until we are starting
+  // to connect.
   std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> rtc_certificates;
   for (const auto& certificate : certificates_) {
     rtc_certificates.push_back(certificate->Certificate());
   }
   IceTransportProxy* transport_proxy = transport_->ConnectConsumer(this);
-  // TODO(https://crbug.com/874296): Use the proper read/write buffer sizees
-  // once write() and readInto() are implemented.
-  const uint32_t stream_buffer_size = 24 * 1024 * 1024;
   P2PQuicTransportConfig quic_transport_config(
-      QuicPerspectiveFromIceRole(transport_->GetRole()), rtc_certificates,
-      /*stream_delegate_read_buffer_size_in=*/stream_buffer_size,
-      /*stream_write_buffer_size_in=*/stream_buffer_size);
+      perspective, rtc_certificates,
+      /*stream_delegate_read_buffer_size_in=*/RTCQuicStream::kReadBufferSize,
+      /*stream_write_buffer_size_in=*/RTCQuicStream::kWriteBufferSize);
   proxy_.reset(new QuicTransportProxy(this, transport_proxy,
                                       std::move(p2p_quic_transport_factory_),
                                       quic_transport_config));
-
-  std::vector<std::unique_ptr<rtc::SSLFingerprint>> rtc_fingerprints;
-  for (const RTCDtlsFingerprint* fingerprint :
-       remote_parameters_->fingerprints()) {
-    rtc_fingerprints.push_back(RTCDtlsFingerprintToSSLFingerprint(fingerprint));
-  }
-  proxy_->Start(std::move(rtc_fingerprints));
+  proxy_->Start(std::move(start_config));
 }
 
 void RTCQuicTransport::OnIceTransportStarted() {
-  // The RTCIceTransport has now been started.
-  if (remote_parameters_) {
-    StartConnection();
+  // If start() has already been called, we now start up the connection,
+  // since start() determines its quic::Perspective based upon ICE.
+  if (start_reason_ == StartReason::kP2PWithRemoteFingerprints) {
+    DCHECK(remote_parameters_);
+    std::vector<std::unique_ptr<rtc::SSLFingerprint>> rtc_fingerprints;
+    for (const RTCDtlsFingerprint* fingerprint :
+         remote_parameters_->fingerprints()) {
+      rtc_fingerprints.push_back(
+          RTCDtlsFingerprintToSSLFingerprint(fingerprint));
+    };
+    StartConnection(QuicPerspectiveFromIceRole(transport_->GetRole()),
+                    P2PQuicTransport::StartConfig(std::move(rtc_fingerprints)));
   }
 }
 
 void RTCQuicTransport::stop() {
   if (IsClosed()) {
+    // The transport could have already been closed due to the context being
+    // destroyed, the RTCIceTransport closing or a remote/local stop().
+    return;
+  }
+  if (IsDisposed()) {
+    // This occurs in the "failed" state.
+    state_ = RTCQuicTransportState::kClosed;
     return;
   }
   Close(CloseReason::kLocalStopped);
@@ -266,8 +338,29 @@ RTCQuicStream* RTCQuicTransport::createStream(ExceptionState& exception_state) {
   return AddStream(proxy_->CreateStream());
 }
 
+ScriptPromise RTCQuicTransport::getStats(ScriptState* script_state,
+                                         ExceptionState& exception_state) {
+  // TODO(https://crbug.com/874296): If a shutdown procedure is implemented, we
+  // can cache the stats before the underlying transport is torn down. This
+  // would allow getting stats after your transport has closed.
+  if (state_ != RTCQuicTransportState::kConnected &&
+      state_ != RTCQuicTransportState::kConnecting) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The RTCQuicTransport's state is not 'connecting' or 'connected'.");
+    return ScriptPromise();
+  }
+  auto* promise_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  uint32_t request_id = ++get_stats_id_counter_;
+  stats_promise_map_.Set(request_id, promise_resolver);
+  proxy_->GetStats(request_id);
+  return promise_resolver->Promise();
+}
+
 RTCQuicStream* RTCQuicTransport::AddStream(QuicStreamProxy* stream_proxy) {
-  auto* stream = new RTCQuicStream(GetExecutionContext(), this, stream_proxy);
+  auto* stream = MakeGarbageCollected<RTCQuicStream>(GetExecutionContext(),
+                                                     this, stream_proxy);
   stream_proxy->set_delegate(stream);
   streams_.insert(stream);
   return stream;
@@ -296,7 +389,49 @@ void RTCQuicTransport::OnRemoteStopped() {
 
 void RTCQuicTransport::OnStream(QuicStreamProxy* stream_proxy) {
   RTCQuicStream* stream = AddStream(stream_proxy);
-  DispatchEvent(*RTCQuicStreamEvent::Create(stream));
+  DispatchEvent(*MakeGarbageCollected<RTCQuicStreamEvent>(stream));
+}
+
+static RTCQuicTransportStats* CreateRTCQuicTransportStats(
+    const P2PQuicTransportStats& p2p_stats) {
+  RTCQuicTransportStats* rtc_stats = RTCQuicTransportStats::Create();
+  rtc_stats->setTimestamp(
+      ConvertTimeTicksToDOMHighResTimeStamp(p2p_stats.timestamp));
+  rtc_stats->setBytesSent(p2p_stats.bytes_sent);
+  rtc_stats->setPacketsSent(p2p_stats.packets_sent);
+  rtc_stats->setStreamBytesSent(p2p_stats.stream_bytes_sent);
+  rtc_stats->setStreamBytesReceived(p2p_stats.stream_bytes_received);
+  rtc_stats->setNumOutgoingStreamsCreated(
+      p2p_stats.num_outgoing_streams_created);
+  rtc_stats->setNumIncomingStreamsCreated(
+      p2p_stats.num_incoming_streams_created);
+  rtc_stats->setBytesReceived(p2p_stats.bytes_received);
+  rtc_stats->setPacketsReceived(p2p_stats.packets_received);
+  rtc_stats->setPacketsProcessed(p2p_stats.packets_processed);
+  rtc_stats->setBytesRetransmitted(p2p_stats.bytes_retransmitted);
+  rtc_stats->setPacketsRetransmitted(p2p_stats.packets_retransmitted);
+  rtc_stats->setPacketsLost(p2p_stats.packets_lost);
+  rtc_stats->setPacketsDropped(p2p_stats.packets_dropped);
+  rtc_stats->setCryptoRetransmitCount(p2p_stats.crypto_retransmit_count);
+  rtc_stats->setMinRttUs(p2p_stats.min_rtt_us);
+  rtc_stats->setSmoothedRttUs(p2p_stats.srtt_us);
+  rtc_stats->setMaxPacketSize(p2p_stats.max_packet_size);
+  rtc_stats->setMaxReceivedPacketSize(p2p_stats.max_received_packet_size);
+  rtc_stats->setEstimatedBandwidthBps(p2p_stats.estimated_bandwidth_bps);
+  rtc_stats->setPacketsReordered(p2p_stats.packets_reordered);
+  rtc_stats->setBlockedFramesReceived(p2p_stats.blocked_frames_received);
+  rtc_stats->setBlockedFramesSent(p2p_stats.blocked_frames_sent);
+  rtc_stats->setConnectivityProbingPacketsReceived(
+      p2p_stats.connectivity_probing_packets_received);
+  return rtc_stats;
+}
+
+void RTCQuicTransport::OnStats(uint32_t request_id,
+                               const P2PQuicTransportStats& stats) {
+  auto it = stats_promise_map_.find(request_id);
+  DCHECK(it != stats_promise_map_.end());
+  it->value->Resolve(CreateRTCQuicTransportStats(stats));
+  stats_promise_map_.erase(it);
 }
 
 void RTCQuicTransport::OnIceTransportClosed(
@@ -309,7 +444,7 @@ void RTCQuicTransport::OnIceTransportClosed(
 }
 
 void RTCQuicTransport::Close(CloseReason reason) {
-  DCHECK(!IsClosed());
+  DCHECK(!IsDisposed());
 
   // Disconnect from the RTCIceTransport, allowing a new RTCQuicTransport to
   // connect to it.
@@ -336,8 +471,8 @@ void RTCQuicTransport::Close(CloseReason reason) {
       break;
     case CloseReason::kRemoteStopped:
     case CloseReason::kFailed:
-      // The QuicTransportProxy has already been closed by the event, so just go
-      // ahead and delete it.
+      // The QuicTransportProxy has already been closed by the event, so just
+      // go ahead and delete it.
       proxy_.reset();
       state_ =
           (reason == CloseReason::kFailed ? RTCQuicTransportState::kFailed
@@ -346,8 +481,13 @@ void RTCQuicTransport::Close(CloseReason reason) {
       break;
   }
 
+  if (reason != CloseReason::kContextDestroyed) {
+    // Cannot reject/resolve promises when ExecutionContext is being destroyed.
+    RejectPendingStatsPromises();
+  }
+
   DCHECK(!proxy_);
-  DCHECK(IsClosed());
+  DCHECK(IsDisposed());
 }
 
 bool RTCQuicTransport::RaiseExceptionIfClosed(
@@ -359,6 +499,42 @@ bool RTCQuicTransport::RaiseExceptionIfClosed(
     return true;
   }
   return false;
+}
+
+bool RTCQuicTransport::RaiseExceptionIfStarted(
+    ExceptionState& exception_state) const {
+  if (start_reason_ == StartReason::kServerListening) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The RTCQuicTransport has already called listen().");
+    return true;
+  }
+  if (start_reason_ == StartReason::kClientConnecting) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The RTCQuicTransport has already called connect().");
+    return true;
+  }
+  if (start_reason_ == StartReason::kP2PWithRemoteFingerprints) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The RTCQuicTransport has already called start().");
+    return true;
+  }
+  return false;
+}
+
+void RTCQuicTransport::RejectPendingStatsPromises() {
+  for (ScriptPromiseResolver* promise_resolver : stats_promise_map_.Values()) {
+    ScriptState::Scope scope(promise_resolver->GetScriptState());
+    ExceptionState exception_state(
+        promise_resolver->GetScriptState()->GetIsolate(),
+        ExceptionState::kExecutionContext, "RTCQuicStream", "getStats");
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The RTCQuicTransport is closed.");
+    promise_resolver->Reject(exception_state);
+  }
+  stats_promise_map_.clear();
 }
 
 const AtomicString& RTCQuicTransport::InterfaceName() const {
@@ -375,6 +551,8 @@ void RTCQuicTransport::Trace(blink::Visitor* visitor) {
   visitor->Trace(remote_certificates_);
   visitor->Trace(remote_parameters_);
   visitor->Trace(streams_);
+  visitor->Trace(key_);
+  visitor->Trace(stats_promise_map_);
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);
 }

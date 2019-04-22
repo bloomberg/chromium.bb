@@ -8,10 +8,12 @@ include_rules = [
   "+chrome/install_static",
   "+chrome/installer/util",
   "+chrome/notification_helper/notification_helper_constants.h",
+  "+chrome/services/app_service/public/mojom",
   "+chrome/services/cups_ipp_parser/public",
   "+chrome/services/diagnosticsd/public",
   "+chrome/services/file_util/public",
   "+chrome/services/media_gallery_util/public",
+  "+chrome/services/noop/public",
   "+chrome/services/printing/public",
   "+chrome/services/removable_storage_writer/public",
   "+chrome/services/util_win/public",
@@ -21,6 +23,11 @@ include_rules = [
   "+chrome_elf/dll_hash",
   "+chromeos",
   "+components",
+  # Use identity_manager.h instead of the below files;
+  # see https://groups.google.com/a/chromium.org/d/msg/chromium-dev/dgFLuxqZt1o/iEqkyoQQBwAJ for help and info.
+  "!components/signin/core/browser/fake_profile_oauth2_token_service.h",
+  "!components/signin/core/browser/signin_manager.h",
+  "!components/signin/core/browser/signin_manager_base.h",
   "+content/public/browser",
   "+content/public/common",
   "+courgette",
@@ -43,6 +50,7 @@ include_rules = [
   "+installer_util_strings",  # For generated headers
   "+jni",
   "+mash/public/mojom",
+  "+media/media_buildflags.h",
   "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
   "+media/capabilities", # For InMemoryVideoDecodeStatsDB
@@ -63,6 +71,7 @@ include_rules = [
   "+services/data_decoder/public",
   "+services/device/public",
   "+services/identity/public",
+  "+services/image_annotation/public",
   "+services/media_session/public",
   "+services/metrics/metrics_mojo_service.h",
   "+services/metrics/public",
@@ -72,6 +81,7 @@ include_rules = [
   "+services/network/network_service.h",
   "+services/network/public",
   "+services/network/test",
+  "+services/network/trial_comparison_cert_verifier_mojo.h",
   "+services/network/url_request_context_owner.h",
   "+services/network/url_request_context_builder_mojo.h",
   "+services/preferences/public/cpp",
@@ -84,13 +94,13 @@ include_rules = [
   "+services/shape_detection/public/mojom",
   "+services/video_capture/public",
   "+services/viz/privileged",
+  "+services/viz/public/interfaces",
   "+services/ws/common",
   "+services/ws/public",
   "+skia/ext",
   "+third_party/boringssl/src/include",
   "+third_party/crashpad",
   "+third_party/cros_system_api",
-  "+third_party/libaom/av1_buildflags.h",
   "+third_party/metrics_proto",
   "+third_party/widevine/cdm/buildflags.h",
   "+third_party/widevine/cdm/widevine_cdm_common.h",
@@ -99,7 +109,6 @@ include_rules = [
   # interfaces in //ash/public/interfaces. See //ash/README.md.
   "-ash",
   "+ash/public",
-  "+ash/components/quick_launch/public/mojom",
   "+ash/components/shortcut_viewer/public/mojom",
   "+ash/components/tap_visualizer/public/mojom",
 
@@ -184,22 +193,8 @@ include_rules = [
 
   # Allow mojo generated files in WebKit. These files use STL types and
   # don't use WTF types.
-  "+third_party/blink/public/platform/autoplay.mojom.h",
-  "+third_party/blink/public/platform/web_feature.mojom.h",
-  "+third_party/blink/public/platform/modules/app_banner/app_banner.mojom.h",
-  "+third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h",
   "+third_party/blink/public/platform/modules/budget_service/budget_service.mojom.h",
-  "+third_party/blink/public/platform/modules/insecure_input/insecure_input_service.mojom.h",
-  "+third_party/blink/public/platform/modules/installation/installation.mojom.h",
-  "+third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h",
-  "+third_party/blink/public/platform/modules/permissions/permission_status.mojom.h",
   "+third_party/blink/public/platform/modules/presentation/presentation.mojom.h",
-  "+third_party/blink/public/platform/modules/webauthn/authenticator.mojom.h",
-  "+third_party/blink/public/platform/modules/webshare/webshare.mojom.h",
-  "+third_party/blink/public/platform/modules/badging/badging.mojom.h",
-  "+third_party/blink/public/platform/oom_intervention.mojom.h",
-  "+third_party/blink/public/platform/site_engagement.mojom.h",
-  "+third_party/blink/public/web/window_features.mojom.h",
 
   # The following restrictions are for ChromeOS and in particular mus/mash where
   # Ozone does not run in process. If the linux build transitions to Ozone then
@@ -251,5 +246,9 @@ specific_include_rules = {
   # should be the responsibility of code in chrome/browser/notifications/
   "browser_process_impl.cc": [
     "+ui/message_center/message_center.h",
+  ],
+  # To share values of UMA enums between product code and tests.
+  "translate_manager_browsertest.cc": [
+    "+services/network/initiator_lock_compatibility.h",
   ],
 }

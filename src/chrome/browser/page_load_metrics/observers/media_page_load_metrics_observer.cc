@@ -23,13 +23,17 @@ MediaPageLoadMetricsObserver::MediaPageLoadMetricsObserver()
 
 MediaPageLoadMetricsObserver::~MediaPageLoadMetricsObserver() = default;
 
-void MediaPageLoadMetricsObserver::OnLoadedResource(
-    const page_load_metrics::ExtraRequestCompleteInfo&
-        extra_request_complete_info) {
-  if (extra_request_complete_info.was_cached) {
-    cache_bytes_ += extra_request_complete_info.raw_body_bytes;
-  } else {
-    network_bytes_ += extra_request_complete_info.raw_body_bytes;
+void MediaPageLoadMetricsObserver::OnResourceDataUseObserved(
+    content::RenderFrameHost* rfh,
+    const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+        resources) {
+  for (auto const& resource : resources) {
+    if (resource->is_complete) {
+      if (!resource->was_fetched_via_cache)
+        network_bytes_ += resource->encoded_body_length;
+      else
+        cache_bytes_ += resource->encoded_body_length;
+    }
   }
 }
 
@@ -57,7 +61,7 @@ void MediaPageLoadMetricsObserver::OnComplete(
 
 void MediaPageLoadMetricsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
-    bool is_in_main_frame) {
+    content::RenderFrameHost* render_frame_host) {
   if (played_media_)
     return;
   // Track media (audio or video) in all frames of the page load.

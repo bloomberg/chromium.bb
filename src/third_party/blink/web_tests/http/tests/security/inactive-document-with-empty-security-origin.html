@@ -36,7 +36,7 @@ blankWindow.onload = function() {
                 alertFunc(targetFunc("return document.documentElement.innerHTML")());
             });
         } + ")()")( function(s) { alert(s) });
-    }, 0);
+    }, 10);
 }
 
 window.addEventListener('message', function(evt) {

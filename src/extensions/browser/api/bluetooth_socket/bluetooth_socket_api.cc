@@ -5,9 +5,11 @@
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_api.h"
 
 #include <stdint.h>
+#include <unordered_set>
 #include <utility>
 
-#include "base/hash.h"
+#include "base/bind.h"
+#include "base/hash/hash.h"
 #include "base/metrics/histogram_functions.h"
 #include "content/public/browser/browser_context.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -115,19 +117,6 @@ bool IsValidPsm(int psm) {
   return true;
 }
 
-// Generates a hash from a UUID suitable for
-// base::UmaHistogramSparse(positive int).
-//
-// Hash values can be produced manually using tool: bluetooth_metrics_hash.
-int HashUUID(const device::BluetoothUUID& uuid) {
-  // TODO(520284): Other than verifying that |uuid| contains a value, this logic
-  // should be migrated to a dedicated histogram macro for hashed strings.
-  uint32_t data = base::PersistentHash(uuid.canonical_value());
-
-  // Strip off the sign bit to make the hash look nicer.
-  return static_cast<int>(data & 0x7fffffff);
-}
-
 }  // namespace
 
 BluetoothSocketAsyncApiFunction::BluetoothSocketAsyncApiFunction() {}
@@ -175,7 +164,7 @@ void BluetoothSocketAsyncApiFunction::RemoveSocket(int api_resource_id) {
   manager_->Remove(extension_id(), api_resource_id);
 }
 
-base::hash_set<int>* BluetoothSocketAsyncApiFunction::GetSocketIds() {
+std::unordered_set<int>* BluetoothSocketAsyncApiFunction::GetSocketIds() {
   return manager_->GetResourceIds(extension_id());
 }
 
@@ -262,7 +251,7 @@ bool BluetoothSocketListenFunction::PreRunValidation(std::string* error) {
 ExtensionFunction::ResponseAction BluetoothSocketListenFunction::Run() {
   DCHECK_CURRENTLY_ON(work_thread_id());
   device::BluetoothAdapterFactory::GetClassicAdapter(
-      base::Bind(&BluetoothSocketListenFunction::OnGetAdapter, this));
+      base::BindOnce(&BluetoothSocketListenFunction::OnGetAdapter, this));
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
@@ -357,9 +346,6 @@ void BluetoothSocketListenUsingRfcommFunction::CreateService(
       service_options.channel.reset(new int(*(options->channel)));
   }
 
-  base::UmaHistogramSparse("Extensions.BluetoothSocket.ListenRFCOMM.Service",
-                           HashUUID(uuid));
-
   adapter->CreateRfcommService(uuid, service_options, callback, error_callback);
 }
 
@@ -410,9 +396,6 @@ void BluetoothSocketListenUsingL2capFunction::CreateService(
     }
   }
 
-  base::UmaHistogramSparse("Extensions.BluetoothSocket.ListenL2CAP.Service",
-                           HashUUID(uuid));
-
   adapter->CreateL2capService(uuid, service_options, callback, error_callback);
 }
 
@@ -443,8 +426,8 @@ bool BluetoothSocketAbstractConnectFunction::PreRunValidation(
 ExtensionFunction::ResponseAction
 BluetoothSocketAbstractConnectFunction::Run() {
   DCHECK_CURRENTLY_ON(work_thread_id());
-  device::BluetoothAdapterFactory::GetClassicAdapter(
-      base::Bind(&BluetoothSocketAbstractConnectFunction::OnGetAdapter, this));
+  device::BluetoothAdapterFactory::GetClassicAdapter(base::BindOnce(
+      &BluetoothSocketAbstractConnectFunction::OnGetAdapter, this));
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
@@ -513,9 +496,6 @@ BluetoothSocketConnectFunction::~BluetoothSocketConnectFunction() {}
 void BluetoothSocketConnectFunction::ConnectToService(
     device::BluetoothDevice* device,
     const device::BluetoothUUID& uuid) {
-  base::UmaHistogramSparse("Extensions.BluetoothSocket.Connect.Service",
-                           HashUUID(uuid));
-
   device->ConnectToService(
       uuid,
       base::Bind(&BluetoothSocketConnectFunction::OnConnect, this),
@@ -621,7 +601,7 @@ BluetoothSocketGetSocketsFunction::~BluetoothSocketGetSocketsFunction() {}
 
 ExtensionFunction::ResponseAction BluetoothSocketGetSocketsFunction::Run() {
   std::vector<bluetooth_socket::SocketInfo> socket_infos;
-  base::hash_set<int>* resource_ids = GetSocketIds();
+  std::unordered_set<int>* resource_ids = GetSocketIds();
   if (resource_ids) {
     for (int socket_id : *resource_ids) {
       BluetoothApiSocket* socket = GetSocket(socket_id);

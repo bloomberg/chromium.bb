@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/json/json_writer.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -16,7 +15,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "chromeos/network/network_handler.h"
@@ -67,7 +65,7 @@ ACTION_TEMPLATE(SaveTimestamp,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(out)) {
   *out = testing::get<k>(args).timestamp();
-};
+}
 
 int64_t GetCurrentTimestamp() {
   return (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
@@ -98,7 +96,7 @@ void SetPolicy(policy::PolicyMap* map,
 class AppInstallEventLoggerTest : public testing::Test {
  protected:
   AppInstallEventLoggerTest()
-      : scoped_task_environment_(
+      : browser_thread_bundle_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI,
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
 
@@ -106,9 +104,9 @@ class AppInstallEventLoggerTest : public testing::Test {
     RegisterLocalState(pref_service_.registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&pref_service_);
 
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        std::make_unique<chromeos::FakePowerManagerClient>());
     chromeos::DBusThreadManager::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
+
     chromeos::NetworkHandler::Initialize();
 
     disk_mount_manager_ = new chromeos::disks::MockDiskMountManager;
@@ -126,7 +124,8 @@ class AppInstallEventLoggerTest : public testing::Test {
 
   void TearDown() override {
     logger_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    browser_thread_bundle_.RunUntilIdle();
+    chromeos::PowerManagerClient::Shutdown();
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     chromeos::disks::DiskMountManager::Shutdown();
@@ -163,7 +162,6 @@ class AppInstallEventLoggerTest : public testing::Test {
     event_.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
   TestingProfile profile_;
   TestingPrefServiceSimple pref_service_;
@@ -256,7 +254,7 @@ TEST_F(AppInstallEventLoggerTest, AddSetsDiskSpaceInfo) {
   EXPECT_CALL(*disk_mount_manager_, disks());
   EXPECT_CALL(delegate_,
               Add(std::set<std::string>{kPackageName}, MatchProto(event_)));
-  scoped_task_environment_.RunUntilIdle();
+  browser_thread_bundle_.RunUntilIdle();
 }
 
 // Adds an event without a timestamp, requesting that disk space information be
@@ -288,7 +286,7 @@ TEST_F(AppInstallEventLoggerTest, AddSetsTimestampAndDiskSpaceInfo) {
   EXPECT_CALL(delegate_, Add(std::set<std::string>{kPackageName},
                              MatchEventExceptTimestamp(event_)))
       .WillOnce(SaveTimestamp<1>(&timestamp));
-  scoped_task_environment_.RunUntilIdle();
+  browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_LE(before, timestamp);
   EXPECT_GE(after, timestamp);
@@ -347,7 +345,7 @@ TEST_F(AppInstallEventLoggerTest, UpdatePolicy) {
   EXPECT_CALL(delegate_, Add(std::set<std::string>{kPackageName, kPackageName3},
                              MatchEventExceptTimestamp(event_)));
   EXPECT_CALL(*disk_mount_manager_, disks());
-  scoped_task_environment_.RunUntilIdle();
+  browser_thread_bundle_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&delegate_);
 
   // To avoid extra logging.

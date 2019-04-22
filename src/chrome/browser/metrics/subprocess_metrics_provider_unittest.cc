@@ -48,8 +48,7 @@ class HistogramFlattenerDeltaRecorder : public base::HistogramFlattener {
 
 class SubprocessMetricsProviderTest : public testing::Test {
  protected:
-  SubprocessMetricsProviderTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT) {
+  SubprocessMetricsProviderTest() {
     // MergeHistogramDeltas needs to be called beause it uses a histogram
     // macro which caches a pointer to a histogram. If not done before setting
     // a persistent global allocator, then it would point into memory that

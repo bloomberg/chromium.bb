@@ -44,9 +44,6 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
     INVALID,
     NORMAL,
     MISSED,
-    // Not a real type, but used by the IPC system. Should always remain the
-    // *last* value in this enum.
-    BEGIN_FRAME_ARGS_TYPE_MAX,
   };
   static const char* TypeToString(BeginFrameArgsType type);
 
@@ -83,13 +80,31 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
                                base::TimeDelta interval,
                                BeginFrameArgsType type);
 
-  // This is the default delta that will be used to adjust the deadline when
-  // proper draw-time estimations are not yet available.
-  static base::TimeDelta DefaultEstimatedParentDrawTime();
+  // This is the default interval assuming 60Hz to use to avoid sprinkling the
+  // code with magic numbers.
+  static constexpr base::TimeDelta DefaultInterval() {
+    return base::TimeDelta::FromMicroseconds(16666);
+  }
 
-  // This is the default interval to use to avoid sprinkling the code with
-  // magic numbers.
-  static base::TimeDelta DefaultInterval();
+  // This is the preferred interval to use when the producer can animate at the
+  // max interval supported by the Display.
+  static constexpr base::TimeDelta MinInterval() {
+    return base::TimeDelta::Min();
+  }
+
+  // This is a hard-coded deadline adjustment used by the display compositor.
+  // Using 1/3 of the vsync as the default adjustment gives the display
+  // compositor the last 1/3 of a frame to produce output, the client impl
+  // thread the middle 1/3 of a frame to produce output, and the client's main
+  // thread the first 1/3 of a frame to produce output.
+  static constexpr float kDefaultEstimatedDisplayDrawTimeRatio = 1.f / 3;
+
+  // Returns how much time the display should reserve for draw and swap if the
+  // BeginFrame interval is |interval|.
+  static base::TimeDelta DefaultEstimatedDisplayDrawTime(
+      base::TimeDelta interval) {
+    return interval * kDefaultEstimatedDisplayDrawTimeRatio;
+  }
 
   bool IsValid() const { return interval >= base::TimeDelta(); }
 

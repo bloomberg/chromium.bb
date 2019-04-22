@@ -23,7 +23,7 @@
     ],
     "cwd": "[START_DIR]/src",
     "env": {
-      "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:<PATH>"
+      "PATH": "RECIPE_REPO[depot_tools]:<PATH>"
     },
     "infra_step": true,
     "name": "git fetch"
@@ -157,14 +157,15 @@
     "infra_step": true,
     "name": "git status can_fail_build",
     "~followup_annotations": [
-      "step returned non-zero exit code: 1",
       "@@@STEP_EXCEPTION@@@"
     ]
   },
   {
     "failure": {
-      "failure": {
-        "step": "git status can_fail_build"
+      "exception": {
+        "traceback": [
+          "<omitted by recipe engine>"
+        ]
       },
       "humanReason": "Infra Failure: Step('git status can_fail_build') returned 1"
     },

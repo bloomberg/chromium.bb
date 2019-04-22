@@ -19,6 +19,10 @@ namespace blink {
 struct Manifest;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace web_app {
 
 struct BitmapAndSource;
@@ -64,6 +68,10 @@ std::vector<BitmapAndSource> FilterSquareIcons(
 void ResizeDownloadedIconsGenerateMissing(
     std::vector<BitmapAndSource> downloaded_icons,
     WebApplicationInfo* web_app_info);
+
+// Record an app banner added to homescreen event to ensure banners are not
+// shown for this app.
+void RecordAppBanner(content::WebContents* contents, const GURL& app_url);
 
 }  // namespace web_app
 

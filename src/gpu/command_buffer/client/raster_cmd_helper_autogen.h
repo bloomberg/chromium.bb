@@ -11,16 +11,6 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_RASTER_CMD_HELPER_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_RASTER_CMD_HELPER_AUTOGEN_H_
 
-void DeleteTexturesImmediate(GLsizei n, const GLuint* textures) {
-  const uint32_t size = raster::cmds::DeleteTexturesImmediate::ComputeSize(n);
-  raster::cmds::DeleteTexturesImmediate* c =
-      GetImmediateCmdSpaceTotalSize<raster::cmds::DeleteTexturesImmediate>(
-          size);
-  if (c) {
-    c->Init(n, textures);
-  }
-}
-
 void Finish() {
   raster::cmds::Finish* c = GetCmdSpace<raster::cmds::Finish>();
   if (c) {
@@ -86,29 +76,9 @@ void LoseContextCHROMIUM(GLenum current, GLenum other) {
   }
 }
 
-void InsertFenceSyncCHROMIUM(GLuint64 release_count) {
-  raster::cmds::InsertFenceSyncCHROMIUM* c =
-      GetCmdSpace<raster::cmds::InsertFenceSyncCHROMIUM>();
-  if (c) {
-    c->Init(release_count);
-  }
-}
-
-void WaitSyncTokenCHROMIUM(GLint namespace_id,
-                           GLuint64 command_buffer_id,
-                           GLuint64 release_count) {
-  raster::cmds::WaitSyncTokenCHROMIUM* c =
-      GetCmdSpace<raster::cmds::WaitSyncTokenCHROMIUM>();
-  if (c) {
-    c->Init(namespace_id, command_buffer_id, release_count);
-  }
-}
-
 void BeginRasterCHROMIUMImmediate(GLuint sk_color,
                                   GLuint msaa_sample_count,
                                   GLboolean can_use_lcd_text,
-                                  GLint color_type,
-                                  GLuint color_space_transfer_cache_id,
                                   const GLbyte* mailbox) {
   const uint32_t size =
       raster::cmds::BeginRasterCHROMIUMImmediate::ComputeSize();
@@ -116,8 +86,7 @@ void BeginRasterCHROMIUMImmediate(GLuint sk_color,
       GetImmediateCmdSpaceTotalSize<raster::cmds::BeginRasterCHROMIUMImmediate>(
           size);
   if (c) {
-    c->Init(sk_color, msaa_sample_count, can_use_lcd_text, color_type,
-            color_space_transfer_cache_id, mailbox);
+    c->Init(sk_color, msaa_sample_count, can_use_lcd_text, mailbox);
   }
 }
 
@@ -203,32 +172,20 @@ void ClearPaintCacheINTERNAL() {
   }
 }
 
-void CreateAndConsumeTextureINTERNALImmediate(GLuint texture_id,
-                                              bool use_buffer,
-                                              gfx::BufferUsage buffer_usage,
-                                              viz::ResourceFormat format,
-                                              const GLbyte* mailbox) {
+void CopySubTextureINTERNALImmediate(GLint xoffset,
+                                     GLint yoffset,
+                                     GLint x,
+                                     GLint y,
+                                     GLsizei width,
+                                     GLsizei height,
+                                     const GLbyte* mailboxes) {
   const uint32_t size =
-      raster::cmds::CreateAndConsumeTextureINTERNALImmediate::ComputeSize();
-  raster::cmds::CreateAndConsumeTextureINTERNALImmediate* c =
+      raster::cmds::CopySubTextureINTERNALImmediate::ComputeSize();
+  raster::cmds::CopySubTextureINTERNALImmediate* c =
       GetImmediateCmdSpaceTotalSize<
-          raster::cmds::CreateAndConsumeTextureINTERNALImmediate>(size);
+          raster::cmds::CopySubTextureINTERNALImmediate>(size);
   if (c) {
-    c->Init(texture_id, use_buffer, buffer_usage, format, mailbox);
-  }
-}
-
-void CopySubTexture(GLuint source_id,
-                    GLuint dest_id,
-                    GLint xoffset,
-                    GLint yoffset,
-                    GLint x,
-                    GLint y,
-                    GLsizei width,
-                    GLsizei height) {
-  raster::cmds::CopySubTexture* c = GetCmdSpace<raster::cmds::CopySubTexture>();
-  if (c) {
-    c->Init(source_id, dest_id, xoffset, yoffset, x, y, width, height);
+    c->Init(xoffset, yoffset, x, y, width, height, mailboxes);
   }
 }
 

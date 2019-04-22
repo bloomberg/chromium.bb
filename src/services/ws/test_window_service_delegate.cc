@@ -6,6 +6,7 @@
 
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
+#include "ui/display/screen.h"
 
 namespace ws {
 
@@ -26,6 +27,7 @@ TestWindowServiceDelegate::TakeDragLoopCallback() {
 }
 
 std::unique_ptr<aura::Window> TestWindowServiceDelegate::NewTopLevel(
+    TopLevelProxyWindow* top_level_proxy_window,
     aura::PropertyConverter* property_converter,
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   std::unique_ptr<aura::Window> window =
@@ -49,6 +51,7 @@ void TestWindowServiceDelegate::OnUnhandledKeyEvent(
 void TestWindowServiceDelegate::RunWindowMoveLoop(aura::Window* window,
                                                   mojom::MoveLoopSource source,
                                                   const gfx::Point& cursor,
+                                                  int window_component,
                                                   DoneCallback callback) {
   move_loop_callback_ = std::move(callback);
 }
@@ -71,6 +74,17 @@ void TestWindowServiceDelegate::CancelDragLoop(aura::Window* window) {
   cancel_drag_loop_called_ = true;
 }
 
+ui::EventTarget* TestWindowServiceDelegate::GetGlobalEventTarget() {
+  return top_level_parent_->GetRootWindow();
+}
+
+aura::Window* TestWindowServiceDelegate::GetRootWindowForDisplayId(
+    int64_t display_id) {
+  if (display::Screen::GetScreen()->GetAllDisplays().size() > 1)
+    NOTIMPLEMENTED_LOG_ONCE() << "Add test support for multiple displays.";
+  return top_level_parent_->GetRootWindow();
+}
+
 aura::Window* TestWindowServiceDelegate::GetTopmostWindowAtPoint(
     const gfx::Point& location_in_screen,
     const std::set<aura::Window*>& ignore,
@@ -78,6 +92,12 @@ aura::Window* TestWindowServiceDelegate::GetTopmostWindowAtPoint(
   if (real_topmost)
     *real_topmost = real_topmost_;
   return topmost_;
+}
+
+void TestWindowServiceDelegate::ConnectToImeEngine(
+    ime::mojom::ImeEngineRequest engine_request,
+    ime::mojom::ImeEngineClientPtr client) {
+  ime_engine_connected_ = true;
 }
 
 }  // namespace ws

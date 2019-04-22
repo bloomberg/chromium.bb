@@ -5,6 +5,8 @@
 #include "cc/layers/picture_layer.h"
 
 #include "base/auto_reset.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
@@ -48,6 +50,9 @@ std::unique_ptr<LayerImpl> PictureLayer::CreateLayerImpl(
 }
 
 void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
+  // TODO(enne): http://crbug.com/918126 debugging
+  CHECK(this);
+
   Layer::PushPropertiesTo(base_layer);
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "PictureLayer::PushPropertiesTo");
@@ -60,6 +65,22 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
       ShouldUseTransformedRasterization());
   layer_impl->set_gpu_raster_max_texture_size(
       layer_tree_host()->device_viewport_size());
+
+  // TODO(enne): http://crbug.com/918126 debugging
+  CHECK(this);
+  if (!recording_source_) {
+    bool valid_host = layer_tree_host();
+    bool has_parent = parent();
+    bool parent_has_host = parent() && parent()->layer_tree_host();
+
+    auto str = base::StringPrintf("vh: %d, hp: %d, phh: %d", valid_host,
+                                  has_parent, parent_has_host);
+    static auto* crash_key = base::debug::AllocateCrashKeyString(
+        "issue918126", base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(crash_key, str);
+    base::debug::DumpWithoutCrashing();
+  }
+
   layer_impl->UpdateRasterSource(recording_source_->CreateRasterSource(),
                                  &last_updated_invalidation_, nullptr);
   DCHECK(last_updated_invalidation_.IsEmpty());
@@ -133,6 +154,7 @@ bool PictureLayer::Update() {
         layer_tree_host()->recording_scale_factor());
 
     SetNeedsPushProperties();
+    paint_count_++;
   } else {
     // If this invalidation did not affect the recording source, then it can be
     // cleared as an optimization.
@@ -224,6 +246,28 @@ bool PictureLayer::HasDrawableContent() const {
 
 void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {
   benchmark->RunOnLayer(this);
+}
+
+void PictureLayer::CaptureContent(const gfx::Rect& rect,
+                                  std::vector<NodeHolder>* content) {
+  if (!DrawsContent())
+    return;
+
+  const DisplayItemList* display_item_list = GetDisplayItemList();
+  if (!display_item_list)
+    return;
+
+  gfx::Transform inverse_screen_space_transform;
+  if (!ScreenSpaceTransform().GetInverse(&inverse_screen_space_transform))
+    return;
+  gfx::Rect transformed = MathUtil::ProjectEnclosingClippedRect(
+      inverse_screen_space_transform, rect);
+
+  transformed.Intersect(gfx::Rect(bounds()));
+  if (transformed.IsEmpty())
+    return;
+
+  display_item_list->CaptureContent(transformed, content);
 }
 
 void PictureLayer::DropRecordingSourceContentIfInvalid() {

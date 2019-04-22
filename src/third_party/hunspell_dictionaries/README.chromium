@@ -25,7 +25,9 @@ URL: http://bgoffice.sourceforge.net/
      http://www.dicollecte.org/
      http://www.justlocal.com.au/
      http://sourceforge.net/projects/lilak/
-License: MPL 1.1/GPL 2.0/LGPL 2.1
+     http://techiaith.cymru/hunspell/cy_GB/
+     https://github.com/hyspell/HySpell_3.0.1/tree/master/Dictionaries/Dictr
+License: MPL 1.1/GPL 2.0/LGPL 2.1/LPGL 3.0
 Security Critical: no
 Version: unknown
 
@@ -78,6 +80,8 @@ ca_ES:  Added words
 
 cs_CZ:  Added words
 
+cy_GB:  No changes
+
 da_DK:  Added words
         Changed "øvrigt/mk" to "øvrigt/" in da_DK.dic to make convert_dict work.
 
@@ -101,7 +105,7 @@ fa_IR:  Removed IGNORE from affix file, because we don't support it.
 
 fo_FO:  No changes
 
-fr_FR:  Added words to 4.8 (modern) downloaded from 
+fr_FR:  Added words to 4.8 (modern) downloaded from
         http://www.dicollecte.org/download.php?prj=fr
 
 he_IL:  Added words
@@ -111,6 +115,9 @@ hi_IN:  Added words
 hr_HR:  Added words
 
 hu-HU:  Added words
+
+hy:     Removed a newline on line 6002 (word and affixes were split on 2 lines,
+          probably by mistake, and that broke our convert_dict)
 
 id_ID:  Added words
 

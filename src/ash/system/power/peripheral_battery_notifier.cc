@@ -17,7 +17,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -164,18 +163,16 @@ const char PeripheralBatteryNotifier::kStylusNotificationId[] =
 PeripheralBatteryNotifier::PeripheralBatteryNotifier()
     : weakptr_factory_(
           new base::WeakPtrFactory<PeripheralBatteryNotifier>(this)) {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
   device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&PeripheralBatteryNotifier::InitializeOnBluetoothReady,
-                 weakptr_factory_->GetWeakPtr()));
+      base::BindOnce(&PeripheralBatteryNotifier::InitializeOnBluetoothReady,
+                     weakptr_factory_->GetWeakPtr()));
 }
 
 PeripheralBatteryNotifier::~PeripheralBatteryNotifier() {
   if (bluetooth_adapter_.get())
     bluetooth_adapter_->RemoveObserver(this);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 void PeripheralBatteryNotifier::PeripheralBatteryStatusReceived(

@@ -9,7 +9,9 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "build/build_config.h"
 #include "public/cpp/fpdf_scopers.h"
 #include "public/fpdf_dataavail.h"
 #include "public/fpdf_ext.h"
@@ -17,8 +19,8 @@
 #include "public/fpdf_save.h"
 #include "public/fpdfview.h"
 #include "testing/fake_file_access.h"
+#include "testing/free_deleter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/test_support.h"
 
 class TestLoader;
 
@@ -157,6 +159,15 @@ class EmbedderTest : public ::testing::Test,
                                               FPDF_FORMHANDLE handle,
                                               int flags);
 
+  // Simplified form of RenderPageWithFlags() with no handle and no flags.
+  static ScopedFPDFBitmap RenderPage(FPDF_PAGE page);
+
+#if defined(OS_WIN)
+  // Convert |page| into EMF with the specified page rendering |flags|.
+  static std::vector<uint8_t> RenderPageWithFlagsToEmf(FPDF_PAGE page,
+                                                       int flags);
+#endif
+
  protected:
   using PageNumberToHandleMap = std::map<int, FPDF_PAGE>;
 
@@ -195,7 +206,8 @@ class EmbedderTest : public ::testing::Test,
                                 unsigned long size);
 
   // See comments in the respective non-Saved versions of these methods.
-  FPDF_DOCUMENT OpenSavedDocument(const char* password);
+  FPDF_DOCUMENT OpenSavedDocument();
+  FPDF_DOCUMENT OpenSavedDocumentWithPassword(const char* password);
   void CloseSavedDocument();
   FPDF_PAGE LoadSavedPage(int page_number);
   void CloseSavedPage(FPDF_PAGE page);
@@ -221,7 +233,7 @@ class EmbedderTest : public ::testing::Test,
   std::unique_ptr<FakeFileAccess> fake_file_access_;  // must outlive |avail_|.
 
   void* external_isolate_ = nullptr;
-  TestLoader* loader_ = nullptr;
+  std::unique_ptr<TestLoader> loader_;
   size_t file_length_ = 0;
   std::unique_ptr<char, pdfium::FreeDeleter> file_contents_;
   PageNumberToHandleMap page_map_;

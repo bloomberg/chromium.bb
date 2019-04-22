@@ -10,10 +10,10 @@ _ios_conceptually_bad_dependencies = [
   "//dbus/*",
   "//jingle:jingle",
   "//media/*",
+  "//third_party/blink/*",
   "//third_party/ffmpeg/*",
   "//third_party/hunspell_dictionaries/*",
   "//third_party/webgl/*",
-  "//third_party/WebKit/*",
   "//third_party/webrtc:webrtc",
 ]
 

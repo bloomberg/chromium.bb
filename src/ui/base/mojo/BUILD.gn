@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojo") {
   sources = [
     "clipboard.mojom",
+    "cursor.mojom",
     "ui_base_types.mojom",
     "window_open_disposition.mojom",
   ]
@@ -14,6 +15,7 @@ mojom("mojo") {
   public_deps = [
     "//mojo/public/mojom/base",
     "//skia/public/interfaces",
+    "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
   ]
 }
@@ -32,5 +34,21 @@ source_set("lib") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//ui/base",
+    "//ui/base/clipboard",
+  ]
+}
+
+source_set("unittests") {
+  testonly = true
+  sources = [
+    "cursor_struct_traits_unittest.cc",
+  ]
+  deps = [
+    ":mojo",
+    "//skia/public/interfaces",
+    "//testing/gtest",
+    "//ui/base",
+    "//ui/events",
+    "//ui/gfx/geometry/mojo:struct_traits",
   ]
 }

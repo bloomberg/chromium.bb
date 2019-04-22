@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "sandbox/win/src/nt_internals.h"
 
@@ -17,10 +18,10 @@ namespace sandbox {
 
 // Prefix for path used by NT calls.
 const wchar_t kNTPrefix[] = L"\\??\\";
-const size_t kNTPrefixLen = arraysize(kNTPrefix) - 1;
+const size_t kNTPrefixLen = base::size(kNTPrefix) - 1;
 
 const wchar_t kNTDevicePrefix[] = L"\\Device\\";
-const size_t kNTDevicePrefixLen = arraysize(kNTDevicePrefix) - 1;
+const size_t kNTDevicePrefixLen = base::size(kNTDevicePrefix) - 1;
 
 // Automatically acquires and releases a lock when the object is
 // is destroyed.

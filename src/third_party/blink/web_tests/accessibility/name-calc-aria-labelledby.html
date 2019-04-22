@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
     <div id="div">Div Contents</div>
 </div>
@@ -150,9 +144,4 @@ test(function(t){
     assert_equals(axLabelledby8.nameElementCount(), 1);
     assert_equals(axLabelledby8.nameElementAtIndex(0).role, "AXRole: AXHeading");
 }, "Button with aria-labelledby reference to display-none element.");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

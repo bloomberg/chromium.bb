@@ -5,12 +5,12 @@
 #include "chrome/browser/ash_service_registry.h"
 
 #include "ash/ash_service.h"
-#include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
-#include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
+#include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -35,13 +35,12 @@ struct Service {
 
 // Services shared between mash and non-mash configs.
 constexpr Service kCommonServices[] = {
-    {quick_launch::mojom::kServiceName, IDS_ASH_QUICK_LAUNCH_APP_NAME},
     {shortcut_viewer::mojom::kServiceName, IDS_ASH_SHORTCUT_VIEWER_APP_NAME},
     {tap_visualizer::mojom::kServiceName, IDS_ASH_TAP_VISUALIZER_APP_NAME},
 };
 
 // Services unique to mash. Note that the non-mash case also has an Ash service,
-// it's just registered differently (see RegisterInProcessServices()).
+// it's just handled differently (see HandleServiceRequest()).
 constexpr Service kMashServices[] = {
     {ash::mojom::kServiceName, IDS_ASH_ASH_SERVICE_NAME},
     {ws::mojom::kServiceName, IDS_ASH_UI_SERVICE_NAME},
@@ -71,35 +70,19 @@ void RegisterOutOfProcessServices(
   }
 }
 
-void RegisterInProcessServices(
-    content::ContentBrowserClient::StaticServiceMap* services,
-    content::ServiceManagerConnection* connection) {
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory =
-        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
-          return std::make_unique<AshPrefConnector>();
-        });
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    (*services)[ash::mojom::kPrefConnectorServiceName] = info;
+std::unique_ptr<service_manager::Service> HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  if (!features::IsMultiProcessMash() &&
+      service_name == ash::mojom::kServiceName) {
+    return std::make_unique<ash::AshService>(std::move(request));
   }
+  if (service_name == ash::mojom::kPrefConnectorServiceName)
+    return std::make_unique<AshPrefConnector>(std::move(request));
+  if (service_name == ax::mojom::kAXHostServiceName)
+    return std::make_unique<AXHostService>(std::move(request));
 
-  {
-    // Register the accessibility host service.
-    service_manager::EmbeddedServiceInfo info;
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    info.factory =
-        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
-          return std::make_unique<AXHostService>();
-        });
-    (*services)[ax::mojom::kAXHostServiceName] = info;
-  }
-
-  if (features::IsMultiProcessMash())
-    return;
-
-  (*services)[ash::mojom::kServiceName] =
-      ash::AshService::CreateEmbeddedServiceInfo();
+  return nullptr;
 }
 
 bool IsAshRelatedServiceName(const std::string& name) {

@@ -14,9 +14,9 @@
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -24,17 +24,11 @@
 #include "content/public/browser/notification_service.h"
 #include "ui/base/webui/web_ui_util.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.AutolaunchScreen";
-
-}  // namespace
-
 namespace chromeos {
 
-KioskAutolaunchScreenHandler::KioskAutolaunchScreenHandler()
-    : BaseScreenHandler(kScreenId) {
-  set_call_js_prefix(kJsScreenPath);
+KioskAutolaunchScreenHandler::KioskAutolaunchScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   KioskAppManager::Get()->AddObserver(this);
 }
 
@@ -81,7 +75,7 @@ void KioskAutolaunchScreenHandler::UpdateKioskApp() {
     icon_url = webui::GetBitmapDataUrl(*app.icon.bitmap());
 
   app_info.SetString("appIconUrl", icon_url);
-  CallJSWithPrefix("updateApp", app_info);
+  CallJS("login.AutolaunchScreen.updateApp", app_info);
 }
 
 void KioskAutolaunchScreenHandler::DeclareLocalizedValues(

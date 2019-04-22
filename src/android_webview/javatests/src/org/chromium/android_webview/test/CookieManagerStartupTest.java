@@ -10,6 +10,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,7 +27,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.util.TestWebServer;
-
 
 /**
  * Tests for CookieManager/Chromium startup ordering weirdness.
@@ -52,7 +52,7 @@ public class CookieManagerStartupTest {
     @Before
     public void setUp() throws Exception {
         ThreadUtils.setUiThread(null);
-        ThreadUtils.setWillOverrideUiThread();
+        ThreadUtils.setWillOverrideUiThread(true);
 
         // CookieManager assumes that native is loaded, but webview browser should not be loaded for
         // these tests as webview is not necessarily loaded when CookieManager is called.
@@ -61,6 +61,11 @@ public class CookieManagerStartupTest {
                                      .getApplicationContext();
         ContextUtils.initApplicationContext(appContext);
         AwBrowserProcess.loadLibrary(null);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        ThreadUtils.setWillOverrideUiThread(false);
     }
 
     private void startChromium() throws Exception {

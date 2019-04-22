@@ -97,10 +97,10 @@ public class ItemChooserDialog {
 
             if (icon == null ^ mIcon == null) return false;
 
-            // On Android O and above, Drawable#getConstantState() always returns a different value,
-            // so it does not make sense to compare it.
+            // On Android NMR1 and above, Drawable#getConstantState() always returns a different
+            // value, so it does not make sense to compare it.
             // TODO(crbug.com/773043): Find a way to compare the icons.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && mIcon != null
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1 && mIcon != null
                     && !mIcon.getConstantState().equals(icon.getConstantState())) {
                 return false;
             }

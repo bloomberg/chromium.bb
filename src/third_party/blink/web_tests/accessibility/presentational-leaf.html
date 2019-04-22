@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container" id="container1">
   <img id="img1" src="missing-image.png" alt="Missing">
 </div>
@@ -32,9 +26,4 @@ test(function(t) {
     assert_equals(axContainer2.role, "AXRole: AXGenericContainer");
     assert_equals(axContainer2.childrenCount, 0);
 }, "A presentational image is missing from the accessibility tree entirely.");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

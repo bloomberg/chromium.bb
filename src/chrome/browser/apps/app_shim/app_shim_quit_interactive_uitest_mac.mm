@@ -5,6 +5,8 @@
 // Tests behavior when quitting apps with app shims.
 
 #import <Cocoa/Cocoa.h>
+#include <unistd.h>
+
 #include <vector>
 
 #include "apps/switches.h"
@@ -34,7 +36,7 @@ namespace {
 // Test class used to expose protected methods of AppShimHostBootstrap.
 class TestAppShimHostBootstrap : public AppShimHostBootstrap {
  public:
-  TestAppShimHostBootstrap() {}
+  TestAppShimHostBootstrap() : AppShimHostBootstrap(getpid()) {}
   using AppShimHostBootstrap::LaunchApp;
 
  private:

@@ -7,8 +7,8 @@
 #ifndef FXJS_XFA_CJX_HANDLER_H_
 #define FXJS_XFA_CJX_HANDLER_H_
 
-#include "fxjs/jse_define.h"
 #include "fxjs/xfa/cjx_textnode.h"
+#include "fxjs/xfa/jse_define.h"
 
 class CXFA_Handler;
 
@@ -17,10 +17,16 @@ class CJX_Handler final : public CJX_TextNode {
   explicit CJX_Handler(CXFA_Handler* node);
   ~CJX_Handler() override;
 
-  JSE_PROP(type);
-  JSE_PROP(use);
+  // CJX_Object:
+  bool DynamicTypeIs(TypeTag eType) const override;
+
   JSE_PROP(version);
-  JSE_PROP(usehref);
+
+ private:
+  using Type__ = CJX_Handler;
+  using ParentType__ = CJX_TextNode;
+
+  static const TypeTag static_type__ = TypeTag::Handler;
 };
 
 #endif  // FXJS_XFA_CJX_HANDLER_H_

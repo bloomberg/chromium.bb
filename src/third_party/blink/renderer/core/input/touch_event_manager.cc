@@ -79,12 +79,6 @@ const AtomicString& TouchEventNameForPointerEventType(
   }
 }
 
-enum TouchEventDispatchResultType {
-  kUnhandledTouches,  // Unhandled touch events.
-  kHandledTouches,    // Handled touch events.
-  kTouchEventDispatchResultTypeMax,
-};
-
 WebTouchPoint::State TouchPointStateFromPointerEventType(
     WebInputEvent::Type type,
     bool stale) {
@@ -221,10 +215,10 @@ Touch* TouchEventManager::CreateDomTouch(
       FloatSize(transformed_event.width / 2.f, transformed_event.height / 2.f)
           .ScaledBy(scale_factor);
 
-  return Touch::Create(target_frame, touch_node, point_attr->event_.id,
-                       transformed_event.PositionInScreen(), document_point,
-                       adjusted_radius, transformed_event.rotation_angle,
-                       transformed_event.force, region_id);
+  return MakeGarbageCollected<Touch>(
+      target_frame, touch_node, point_attr->event_.id,
+      transformed_event.PositionInScreen(), document_point, adjusted_radius,
+      transformed_event.rotation_angle, transformed_event.force, region_id);
 }
 
 WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
@@ -518,7 +512,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
   touch_attribute_map_.Set(event.id,
                            MakeGarbageCollected<TouchPointAttributes>(event));
 
-  Node* touch_node = pointer_event_target.target_node;
+  Node* touch_node = pointer_event_target.target_element;
   String region = pointer_event_target.region;
 
   HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kTouchEvent |

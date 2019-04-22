@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/discardable_memory.h"
 #include "build/build_config.h"
@@ -17,7 +18,6 @@
 #include "content/public/utility/utility_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/base/ui_base_features.h"
 
@@ -32,12 +32,11 @@
 
 namespace {
 
-void OnPdfCompositorRequest(const std::string& creator,
-                            service_manager::ServiceKeepalive* keepalive,
+void OnPdfCompositorRequest(service_manager::ServiceKeepalive* keepalive,
                             printing::mojom::PdfCompositorRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<printing::PdfCompositorImpl>(
-                              creator, keepalive->CreateRef()),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      std::make_unique<printing::PdfCompositorImpl>(keepalive->CreateRef()),
+      std::move(request));
 }
 
 }  // namespace
@@ -45,10 +44,8 @@ void OnPdfCompositorRequest(const std::string& creator,
 namespace printing {
 
 PdfCompositorService::PdfCompositorService(
-    const std::string& creator,
     service_manager::mojom::ServiceRequest request)
-    : creator_(creator.empty() ? "Chromium" : creator),
-      binding_(this, std::move(request)),
+    : binding_(this, std::move(request)),
       keepalive_(&binding_, base::TimeDelta{}) {}
 
 PdfCompositorService::~PdfCompositorService() {
@@ -59,19 +56,17 @@ PdfCompositorService::~PdfCompositorService() {
 
 // static
 std::unique_ptr<service_manager::Service> PdfCompositorService::Create(
-    const std::string& creator,
     service_manager::mojom::ServiceRequest request) {
 #if defined(OS_WIN)
   // Initialize direct write font proxy so skia can use it.
   content::InitializeDWriteFontProxy();
 #endif
-  return std::make_unique<printing::PdfCompositorService>(creator,
-                                                          std::move(request));
+  return std::make_unique<printing::PdfCompositorService>(std::move(request));
 }
 
 void PdfCompositorService::OnStart() {
   registry_.AddInterface(
-      base::BindRepeating(&OnPdfCompositorRequest, creator_, &keepalive_));
+      base::BindRepeating(&OnPdfCompositorRequest, &keepalive_));
 
   if (skip_initialization_for_testing_)
     return;

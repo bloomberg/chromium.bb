@@ -322,7 +322,7 @@ void LayoutGeometryMap::Push(const LayoutObject* layout_object,
   step.offset_for_fixed_position_ = offset_for_fixed_position;
 
   if (!t.IsIntegerTranslation())
-    step.transform_ = TransformationMatrix::Create(t);
+    step.transform_ = std::make_unique<TransformationMatrix>(t);
   else
     step.offset_ = LayoutSize(LayoutUnit(t.E()), LayoutUnit(t.F()));
 

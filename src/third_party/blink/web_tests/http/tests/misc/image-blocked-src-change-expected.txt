@@ -4,5 +4,3 @@ Test case for bug 17897 : Not Rendering Images Imported from XHTML Document
 You should see PASSED once and 250 x 50 green box. The console should also show a blocked attempt to load a local resource.
 
 PASSED
-
-

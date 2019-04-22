@@ -30,7 +30,8 @@ class RegExpBuiltinsAssembler : public CodeStubAssembler {
   TNode<Object> RegExpCreate(TNode<Context> context, TNode<Map> initial_map,
                              TNode<Object> regexp_string, TNode<String> flags);
 
- protected:
+  TNode<BoolT> IsRegExp(TNode<Context> context, TNode<Object> maybe_receiver);
+
   TNode<Smi> SmiZero();
   TNode<IntPtrT> IntPtrZero();
 
@@ -73,6 +74,10 @@ class RegExpBuiltinsAssembler : public CodeStubAssembler {
   TNode<RegExpMatchInfo> RegExpPrototypeExecBodyWithoutResult(
       TNode<Context> context, TNode<JSReceiver> maybe_regexp,
       TNode<String> string, Label* if_didnotmatch, const bool is_fastpath);
+  TNode<RegExpMatchInfo> RegExpPrototypeExecBodyWithoutResultFast(
+      TNode<Context> context, TNode<JSReceiver> maybe_regexp,
+      TNode<String> string, Label* if_didnotmatch);
+
   TNode<HeapObject> RegExpPrototypeExecBody(TNode<Context> context,
                                             TNode<JSReceiver> maybe_regexp,
                                             TNode<String> string,
@@ -104,6 +109,12 @@ class RegExpBuiltinsAssembler : public CodeStubAssembler {
   Node* FlagsGetter(Node* const context, Node* const regexp, bool is_fastpath);
 
   TNode<Int32T> FastFlagGetter(TNode<JSRegExp> regexp, JSRegExp::Flag flag);
+  TNode<BoolT> FastFlagGetterGlobal(TNode<JSRegExp> regexp) {
+    return ReinterpretCast<BoolT>(FastFlagGetter(regexp, JSRegExp::kGlobal));
+  }
+  TNode<BoolT> FastFlagGetterUnicode(TNode<JSRegExp> regexp) {
+    return ReinterpretCast<BoolT>(FastFlagGetter(regexp, JSRegExp::kUnicode));
+  }
   TNode<Int32T> SlowFlagGetter(TNode<Context> context, TNode<Object> regexp,
                                JSRegExp::Flag flag);
   TNode<Int32T> FlagGetter(TNode<Context> context, TNode<Object> regexp,
@@ -112,8 +123,6 @@ class RegExpBuiltinsAssembler : public CodeStubAssembler {
   void FlagGetter(Node* context, Node* receiver, JSRegExp::Flag flag,
                   int counter, const char* method_name);
 
-  Node* IsRegExp(Node* const context, Node* const maybe_receiver);
-
   Node* RegExpInitialize(Node* const context, Node* const regexp,
                          Node* const maybe_pattern, Node* const maybe_flags);
 
@@ -121,6 +130,11 @@ class RegExpBuiltinsAssembler : public CodeStubAssembler {
 
   Node* AdvanceStringIndex(Node* const string, Node* const index,
                            Node* const is_unicode, bool is_fastpath);
+
+  Node* AdvanceStringIndexFast(Node* const string, Node* const index,
+                               Node* const is_unicode) {
+    return AdvanceStringIndex(string, index, is_unicode, true);
+  }
 
   void RegExpPrototypeMatchBody(Node* const context, Node* const regexp,
                                 TNode<String> const string,
@@ -137,9 +151,6 @@ class RegExpBuiltinsAssembler : public CodeStubAssembler {
 
   Node* ReplaceGlobalCallableFastPath(Node* context, Node* regexp, Node* string,
                                       Node* replace_callable);
-  Node* ReplaceSimpleStringFastPath(Node* context, Node* regexp,
-                                    TNode<String> string,
-                                    TNode<String> replace_string);
 };
 
 class RegExpMatchAllAssembler : public RegExpBuiltinsAssembler {

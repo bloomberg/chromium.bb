@@ -46,13 +46,24 @@ class ASH_EXPORT UnifiedMessageListView
   // removed from MessageCenter at the beginning of the animation.
   void ClearAllWithAnimation();
 
-  // Get the height of the notification at the bottom. If no notification is
-  // added, it returns 0.
-  int GetLastNotificationHeight() const;
+  // Return the bounds of the specified notification view. If the given id is
+  // invalid, return an empty rect.
+  gfx::Rect GetNotificationBounds(const std::string& id) const;
+
+  // Return the bounds of the last notification view. If there is no view,
+  // return an empty rect.
+  gfx::Rect GetLastNotificationBounds() const;
+
+  // Return the bounds of the first notification whose bottom is below
+  // |y_offset|.
+  gfx::Rect GetNotificationBoundsBelowY(int y_offset) const;
 
   // Count the number of notifications whose bottom position is above
   // |y_offset|. O(n) where n is number of notifications.
   int CountNotificationsAboveY(int y_offset) const;
+
+  // Returns the total number of notifications in the list.
+  int GetTotalNotificationCount() const;
 
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -72,6 +83,10 @@ class ASH_EXPORT UnifiedMessageListView
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
+
+  bool is_deleting_removed_notifications() const {
+    return is_deleting_removed_notifications_;
+  }
 
  protected:
   // Virtual for testing.
@@ -107,8 +122,17 @@ class ASH_EXPORT UnifiedMessageListView
     CLEAR_ALL_VISIBLE
   };
 
-  MessageViewContainer* GetContainer(int index);
-  const MessageViewContainer* GetContainer(int index) const;
+  // Syntactic sugar to downcast.
+  static const MessageViewContainer* AsMVC(const views::View* v);
+  static MessageViewContainer* AsMVC(views::View* v);
+
+  // Returns the notification with the provided |id|.
+  const MessageViewContainer* GetNotificationById(const std::string& id) const;
+  MessageViewContainer* GetNotificationById(const std::string& id) {
+    return const_cast<MessageViewContainer*>(
+        static_cast<const UnifiedMessageListView*>(this)->GetNotificationById(
+            id));
+  }
 
   // Returns the first removable notification from the top.
   MessageViewContainer* GetNextRemovableNotification();
@@ -171,6 +195,11 @@ class ASH_EXPORT UnifiedMessageListView
   // The final height of the UnifiedMessageListView. If not animating, it's same
   // as height().
   int ideal_height_ = 0;
+
+  // True if the UnifiedMessageListView is currently deleting notifications
+  // marked for removal. This check is needed to prevent re-entrancing issues
+  // (e.g. crbug.com/933327) caused by the View destructor.
+  bool is_deleting_removed_notifications_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMessageListView);
 };

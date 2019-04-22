@@ -113,6 +113,14 @@ bool IsCorsSafelistedLowerCaseContentType(const std::string& value) {
          mime_type == "multipart/form-data" || mime_type == "text/plain";
 }
 
+bool IsNoCorsSafelistedHeaderNameLowerCase(const std::string& lower_name) {
+  if (lower_name != "accept" && lower_name != "accept-language" &&
+      lower_name != "content-language" && lower_name != "content-type") {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 namespace network {
@@ -318,32 +326,6 @@ bool IsCorsEnabledRequestMode(mojom::FetchRequestMode mode) {
          mode == mojom::FetchRequestMode::kCorsWithForcedPreflight;
 }
 
-mojom::FetchResponseType CalculateResponseTainting(
-    const GURL& url,
-    mojom::FetchRequestMode request_mode,
-    const base::Optional<url::Origin>& origin,
-    bool cors_flag) {
-  if (url.SchemeIs(url::kDataScheme))
-    return mojom::FetchResponseType::kBasic;
-
-  if (cors_flag) {
-    DCHECK(IsCorsEnabledRequestMode(request_mode));
-    return mojom::FetchResponseType::kCors;
-  }
-
-  if (!origin) {
-    // This is actually not defined in the fetch spec, but in this case CORS
-    // is disabled so no one should care this value.
-    return mojom::FetchResponseType::kBasic;
-  }
-
-  if (request_mode == mojom::FetchRequestMode::kNoCors &&
-      !origin->IsSameOriginWith(url::Origin::Create(url))) {
-    return mojom::FetchResponseType::kOpaque;
-  }
-  return mojom::FetchResponseType::kBasic;
-}
-
 bool IsCorsSafelistedMethod(const std::string& method) {
   // https://fetch.spec.whatwg.org/#cors-safelisted-method
   // "A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`."
@@ -377,15 +359,38 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
   // Treat 'Intervention' as a CORS-safelisted header, since it is added by
   // Chrome when an intervention is (or may be) applied.
   static const char* const safe_names[] = {
-      "accept", "accept-language", "content-language", "intervention",
-      "content-type", "save-data",
+      "accept",
+      "accept-language",
+      "content-language",
+      "intervention",
+      "content-type",
+      "save-data",
       // The Device Memory header field is a number that indicates the client’s
       // device memory i.e. approximate amount of ram in GiB. The header value
       // must satisfy ABNF  1*DIGIT [ "." 1*DIGIT ]
       // See
       // https://w3c.github.io/device-memory/#sec-device-memory-client-hint-header
       // for more details.
-      "device-memory", "dpr", "width", "viewport-width"};
+      "device-memory",
+      "dpr",
+      "width",
+      "viewport-width",
+
+      // The `Sec-CH-Lang` header field is a proposed replacement for
+      // `Accept-Language`, using the Client Hints infrastructure.
+      //
+      // https://tools.ietf.org/html/draft-west-lang-client-hint
+      "sec-ch-lang",
+
+      // The `Sec-CH-UA-*` header fields are proposed replacements for
+      // `User-Agent`, using the Client Hints infrastructure.
+      //
+      // https://tools.ietf.org/html/draft-west-ua-client-hints
+      "sec-ch-ua",
+      "sec-ch-ua-platform",
+      "sec-ch-ua-arch",
+      "sec-ch-ua-model",
+  };
   const std::string lower_name = base::ToLowerASCII(name);
   if (std::find(std::begin(safe_names), std::end(safe_names), lower_name) ==
       std::end(safe_names))
@@ -393,7 +398,8 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
 
   // Client hints are device specific, and not origin specific. As such all
   // client hint headers are considered as safe.
-  // See third_party/WebKit/public/platform/web_client_hints_types.mojom.
+  // See
+  // third_party/blink/public/mojom/web_client_hints/web_client_hints_types.mojom.
   // Client hint headers can be added by Chrome automatically or via JavaScript.
   if (lower_name == "device-memory" || lower_name == "dpr")
     return IsSimilarToDoubleABNF(value);
@@ -421,15 +427,20 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
   return true;
 }
 
+bool IsNoCorsSafelistedHeaderName(const std::string& name) {
+  return IsNoCorsSafelistedHeaderNameLowerCase(base::ToLowerASCII(name));
+}
+
+bool IsPrivilegedNoCorsHeaderName(const std::string& name) {
+  return base::ToLowerASCII(name) == "range";
+}
+
 bool IsNoCorsSafelistedHeader(const std::string& name,
                               const std::string& value) {
   const std::string lower_name = base::ToLowerASCII(name);
 
-  if (lower_name != "accept" && lower_name != "accept-language" &&
-      lower_name != "content-language" && lower_name != "content-type") {
+  if (!IsNoCorsSafelistedHeaderNameLowerCase(lower_name))
     return false;
-  }
-
   return IsCorsSafelistedHeader(lower_name, value);
 }
 

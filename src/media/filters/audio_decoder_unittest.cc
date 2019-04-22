@@ -11,8 +11,8 @@
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/format_macros.h"
+#include "base/hash/md5.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -247,7 +247,7 @@ class AudioDecoderTest
     decoder_->Initialize(
         config, nullptr, NewExpectedBoolCB(success),
         base::Bind(&AudioDecoderTest::OnDecoderOutput, base::Unretained(this)),
-        base::NullCallback());
+        base::DoNothing());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -363,7 +363,7 @@ class AudioDecoderTest
     // Generate a lossy hash of the audio used for comparison across platforms.
     AudioHash audio_hash;
     audio_hash.Update(output.get(), output->frames());
-    EXPECT_TRUE(audio_hash.IsEquivalent(sample_info.hash, 0.02))
+    EXPECT_TRUE(audio_hash.IsEquivalent(sample_info.hash, 0.03))
         << "Audio hashes differ. Expected: " << sample_info.hash
         << " Actual: " << audio_hash.ToString();
 
@@ -394,7 +394,7 @@ class AudioDecoderTest
 
   base::MessageLoop message_loop_;
 
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   scoped_refptr<DecoderBuffer> data_;
   std::unique_ptr<InMemoryUrlProtocol> protocol_;
   std::unique_ptr<AudioFileReader> reader_;
@@ -642,15 +642,15 @@ TEST_P(AudioDecoderTest, NoTimestamp) {
   EXPECT_EQ(DecodeStatus::DECODE_ERROR, last_decode_status());
 }
 
-INSTANTIATE_TEST_CASE_P(FFmpeg,
-                        AudioDecoderTest,
-                        Combine(Values(FFMPEG), ValuesIn(kFFmpegTestParams)));
+INSTANTIATE_TEST_SUITE_P(FFmpeg,
+                         AudioDecoderTest,
+                         Combine(Values(FFMPEG), ValuesIn(kFFmpegTestParams)));
 
 #if defined(OS_ANDROID)
-INSTANTIATE_TEST_CASE_P(MediaCodec,
-                        AudioDecoderTest,
-                        Combine(Values(MEDIA_CODEC),
-                                ValuesIn(kMediaCodecTestParams)));
+INSTANTIATE_TEST_SUITE_P(MediaCodec,
+                         AudioDecoderTest,
+                         Combine(Values(MEDIA_CODEC),
+                                 ValuesIn(kMediaCodecTestParams)));
 #endif  // defined(OS_ANDROID)
 
 }  // namespace media

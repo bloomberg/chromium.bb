@@ -30,8 +30,8 @@ class CORE_EXPORT CanvasRenderingContextFactory {
       const CanvasContextCreationAttributesCore&) = 0;
 
   virtual CanvasRenderingContext::ContextType GetContextType() const = 0;
-  virtual void OnError(HTMLCanvasElement*, const String& error){};
-  virtual void OnError(OffscreenCanvas*, const String& error){};
+  virtual void OnError(HTMLCanvasElement*, const String& error) {}
+  virtual void OnError(OffscreenCanvas*, const String& error) {}
 
   DISALLOW_COPY_AND_ASSIGN(CanvasRenderingContextFactory);
 };

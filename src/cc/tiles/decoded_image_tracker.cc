@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/tiles/decoded_image_tracker.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 
 namespace cc {
@@ -27,7 +28,7 @@ DecodedImageTracker::DecodedImageTracker(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : image_controller_(controller),
       task_runner_(std::move(task_runner)),
-      now_fn_(base::Bind(&base::TimeTicks::Now)),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       weak_ptr_factory_(this) {
   DCHECK(image_controller_);
 }
@@ -38,7 +39,7 @@ DecodedImageTracker::~DecodedImageTracker() {
 
 void DecodedImageTracker::QueueImageDecode(
     const PaintImage& image,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   size_t frame_index = PaintImage::kDefaultFrameIndex;
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "DecodedImageTracker::QueueImageDecode", "frame_key",
@@ -50,9 +51,9 @@ void DecodedImageTracker::QueueImageDecode(
   DrawImage draw_image(image, image_bounds, kNone_SkFilterQuality,
                        SkMatrix::I(), frame_index);
   image_controller_->QueueImageDecode(
-      draw_image,
-      base::Bind(&DecodedImageTracker::ImageDecodeFinished,
-                 base::Unretained(this), callback, image.stable_id()));
+      draw_image, base::BindOnce(&DecodedImageTracker::ImageDecodeFinished,
+                                 base::Unretained(this), std::move(callback),
+                                 image.stable_id()));
 }
 
 void DecodedImageTracker::UnlockAllImages() {
@@ -66,7 +67,7 @@ void DecodedImageTracker::OnImagesUsedInDraw(
 }
 
 void DecodedImageTracker::ImageDecodeFinished(
-    const base::Callback<void(bool)>& callback,
+    base::OnceCallback<void(bool)> callback,
     PaintImage::Id image_id,
     ImageController::ImageDecodeRequestId request_id,
     ImageController::ImageDecodeResult result) {
@@ -78,13 +79,14 @@ void DecodedImageTracker::ImageDecodeFinished(
     // decode.
     locked_images_.erase(image_id);
     locked_images_.emplace(
-        image_id, std::make_unique<ImageLock>(this, request_id, now_fn_.Run()));
+        image_id,
+        std::make_unique<ImageLock>(this, request_id, tick_clock_->NowTicks()));
     EnqueueTimeout();
   }
   bool decode_succeeded =
       result == ImageController::ImageDecodeResult::SUCCESS ||
       result == ImageController::ImageDecodeResult::DECODE_NOT_REQUIRED;
-  callback.Run(decode_succeeded);
+  std::move(callback).Run(decode_succeeded);
 }
 
 void DecodedImageTracker::OnTimeoutImages() {
@@ -92,7 +94,7 @@ void DecodedImageTracker::OnTimeoutImages() {
   if (locked_images_.size() == 0)
     return;
 
-  auto now = now_fn_.Run();
+  auto now = tick_clock_->NowTicks();
   auto timeout = base::TimeDelta::FromMilliseconds(kTimeoutDurationMs);
   for (auto it = locked_images_.begin(); it != locked_images_.end();) {
     auto& image = it->second;
@@ -115,8 +117,8 @@ void DecodedImageTracker::EnqueueTimeout() {
   timeout_pending_ = true;
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&DecodedImageTracker::OnTimeoutImages,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&DecodedImageTracker::OnTimeoutImages,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kTimeoutDurationMs));
 }
 

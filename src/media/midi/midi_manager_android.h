@@ -10,10 +10,10 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/containers/hash_tables.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "media/midi/midi_input_port_android.h"
@@ -79,11 +79,11 @@ class MidiManagerAndroid final : public MidiManager,
   std::vector<MidiInputPortAndroid*> all_input_ports_;
   // A dictionary from a port to its index.
   // input_port_to_index_[all_input_ports_[i]] == i for each valid |i|.
-  base::hash_map<MidiInputPortAndroid*, size_t> input_port_to_index_;
+  std::unordered_map<MidiInputPortAndroid*, size_t> input_port_to_index_;
 
   // Ditto for output ports.
   std::vector<MidiOutputPortAndroid*> all_output_ports_;
-  base::hash_map<MidiOutputPortAndroid*, size_t> output_port_to_index_;
+  std::unordered_map<MidiOutputPortAndroid*, size_t> output_port_to_index_;
 
   base::android::ScopedJavaGlobalRef<jobject> raw_manager_;
 };

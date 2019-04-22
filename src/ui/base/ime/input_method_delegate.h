@@ -6,7 +6,18 @@
 #define UI_BASE_IME_INPUT_METHOD_DELEGATE_H_
 
 #include "base/callback_forward.h"
-#include "ui/base/ime/ui_base_ime_export.h"
+#include "base/component_export.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+
+namespace ime {
+namespace mojom {
+
+class ImeEngine;
+class ImeEngineClient;
+
+}  // namespace mojom
+}  // namespace ime
 
 namespace ui {
 
@@ -18,23 +29,30 @@ namespace internal {
 
 // An interface implemented by the object that handles events sent back from an
 // ui::InputMethod implementation.
-class UI_BASE_IME_EXPORT InputMethodDelegate {
+class COMPONENT_EXPORT(UI_BASE_IME) InputMethodDelegate {
  public:
   virtual ~InputMethodDelegate() {}
 
+  using DispatchKeyEventPostIMECallback = base::OnceCallback<void(bool, bool)>;
   // Dispatch a key event already processed by the input method. Returns the
-  // status of processing, as well as running the callback |ack_callback| with
-  // the result of processing. |ack_callback| may be run asynchronously (if the
-  // delegate does processing async). |ack_callback| may not be null.
-  // Subclasses can use CallDispatchKeyEventPostIMEAck() to run the callback.
+  // status of processing, as well as running the callback |callback| with the
+  // result of processing. |callback| may be run asynchronously (if the
+  // delegate does processing async). Subclasses can use
+  // RunDispatchKeyEventPostIMECallback() to run the callback. |callback| is
+  // supplied two booleans that correspond to event->handled() and
+  // event->stopped_propagation().
   virtual EventDispatchDetails DispatchKeyEventPostIME(
       KeyEvent* key_event,
-      base::OnceCallback<void(bool)> ack_callback) = 0;
+      DispatchKeyEventPostIMECallback callback) = 0;
+
+  virtual bool ConnectToImeEngine(
+      mojo::InterfaceRequest<::ime::mojom::ImeEngine> engine_request,
+      mojo::InterfacePtr<::ime::mojom::ImeEngineClient> client);
 
  protected:
-  static void CallDispatchKeyEventPostIMEAck(
+  static void RunDispatchKeyEventPostIMECallback(
       KeyEvent* key_event,
-      base::OnceCallback<void(bool)> ack_callback);
+      DispatchKeyEventPostIMECallback callback);
 };
 
 }  // namespace internal

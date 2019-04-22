@@ -154,7 +154,7 @@ class SerializerReferenceMap
                                        base::KeyEqualityMatcher<intptr_t>,
                                        base::DefaultAllocationPolicy> {
  public:
-  typedef base::TemplateHashMapEntry<uintptr_t, SerializerReference> Entry;
+  using Entry = base::TemplateHashMapEntry<uintptr_t, SerializerReference>;
 
   SerializerReferenceMap() : attached_reference_index_(0) {}
 
@@ -186,7 +186,7 @@ class SerializerReferenceMap
 
   static uint32_t Hash(uintptr_t key) { return static_cast<uint32_t>(key); }
 
-  DISALLOW_HEAP_ALLOCATION(no_allocation_);
+  DISALLOW_HEAP_ALLOCATION(no_allocation_)
   int attached_reference_index_;
   DISALLOW_COPY_AND_ASSIGN(SerializerReferenceMap);
 };

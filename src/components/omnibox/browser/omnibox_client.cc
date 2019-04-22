@@ -65,15 +65,15 @@ bookmarks::BookmarkModel* OmniboxClient::GetBookmarkModel() {
   return nullptr;
 }
 
+OmniboxControllerEmitter* OmniboxClient::GetOmniboxControllerEmitter() {
+  return nullptr;
+}
+
 TemplateURLService* OmniboxClient::GetTemplateURLService() {
   return nullptr;
 }
 
 AutocompleteClassifier* OmniboxClient::GetAutocompleteClassifier() {
-  return nullptr;
-}
-
-QueryInOmnibox* OmniboxClient::GetQueryInOmnibox() {
   return nullptr;
 }
 
@@ -106,6 +106,12 @@ gfx::Image OmniboxClient::GetFaviconForPageUrl(
 }
 
 gfx::Image OmniboxClient::GetFaviconForDefaultSearchProvider(
+    FaviconFetchedCallback on_favicon_fetched) {
+  return gfx::Image();
+}
+
+gfx::Image OmniboxClient::GetFaviconForKeywordSearchProvider(
+    const TemplateURL* template_url,
     FaviconFetchedCallback on_favicon_fetched) {
   return gfx::Image();
 }

@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
@@ -40,6 +40,14 @@ class ArcIntentHelperTest : public testing::Test {
     // OpenUrlDelegate:
     void OpenUrlFromArc(const GURL& url) override { last_opened_url_ = url; }
     void OpenWebAppFromArc(const GURL& url) override { last_opened_url_ = url; }
+    void OpenArcCustomTab(
+        const GURL& url,
+        int32_t task_id,
+        int32_t surface_id,
+        int32_t top_margin,
+        mojom::IntentHelperHost::OnOpenCustomTabCallback callback) override {
+      std::move(callback).Run(nullptr);
+    }
 
     GURL TakeLastOpenedUrl() {
       GURL result = std::move(last_opened_url_);

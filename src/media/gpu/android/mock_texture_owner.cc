@@ -13,11 +13,14 @@ using testing::Return;
 
 MockTextureOwner::MockTextureOwner(GLuint fake_texture_id,
                                    gl::GLContext* fake_context,
-                                   gl::GLSurface* fake_surface)
-    : TextureOwner(std::make_unique<MockAbstractTexture>(fake_texture_id)),
+                                   gl::GLSurface* fake_surface,
+                                   bool binds_texture_on_update)
+    : TextureOwner(binds_texture_on_update,
+                   std::make_unique<MockAbstractTexture>(fake_texture_id)),
       fake_context(fake_context),
       fake_surface(fake_surface),
-      expecting_frame_available(false) {
+      expecting_frame_available(false),
+      expect_update_tex_image(!binds_texture_on_update) {
   ON_CALL(*this, GetTextureId()).WillByDefault(Return(fake_texture_id));
   ON_CALL(*this, GetContext()).WillByDefault(Return(fake_context));
   ON_CALL(*this, GetSurface()).WillByDefault(Return(fake_surface));
@@ -31,6 +34,9 @@ MockTextureOwner::MockTextureOwner(GLuint fake_texture_id,
   ON_CALL(*this, WaitForFrameAvailable())
       .WillByDefault(
           Invoke(this, &MockTextureOwner::FakeWaitForFrameAvailable));
+  ON_CALL(*this, EnsureTexImageBound()).WillByDefault(Invoke([this] {
+    CHECK(expect_update_tex_image);
+  }));
 }
 
 MockTextureOwner::~MockTextureOwner() {

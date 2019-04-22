@@ -27,11 +27,6 @@ namespace {
 // fling on Android and Aura.
 const int kPointerAssumedStoppedTimeMs = 100;
 
-// SyntheticGestureTargetBase passes input events straight on to the renderer
-// without going through a gesture recognition framework. There is thus no touch
-// slop.
-const float kTouchSlopInDips = 0.0f;
-
 }  // namespace
 
 SyntheticGestureTargetBase::SyntheticGestureTargetBase(
@@ -90,7 +85,7 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
     const WebGestureEvent& web_pinch =
         static_cast<const WebGestureEvent&>(event);
     // Touchscreen pinches should be injected as touch events.
-    DCHECK_EQ(blink::kWebGestureDeviceTouchpad, web_pinch.SourceDevice());
+    DCHECK_EQ(blink::WebGestureDevice::kTouchpad, web_pinch.SourceDevice());
     if (event.GetType() == WebInputEvent::kGesturePinchBegin &&
         !PointIsWithinContents(web_pinch.PositionInWidget().x,
                                web_pinch.PositionInWidget().y)) {
@@ -103,7 +98,7 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
     const WebGestureEvent& web_fling =
         static_cast<const WebGestureEvent&>(event);
     // Touchscreen swipe should be injected as touch events.
-    DCHECK_EQ(blink::kWebGestureDeviceTouchpad, web_fling.SourceDevice());
+    DCHECK_EQ(blink::WebGestureDevice::kTouchpad, web_fling.SourceDevice());
     if (event.GetType() == WebInputEvent::kGestureFlingStart &&
         !PointIsWithinContents(web_fling.PositionInWidget().x,
                                web_fling.PositionInWidget().y)) {
@@ -117,45 +112,9 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
   }
 }
 
-void SyntheticGestureTargetBase::DispatchWebTouchEventToPlatform(
-      const blink::WebTouchEvent& web_touch,
-      const ui::LatencyInfo& latency_info) {
-  // We assume that platforms supporting touch have their own implementation of
-  // SyntheticGestureTarget to route the events through their respective input
-  // stack.
-  LOG(ERROR) << "Touch events not supported for this browser.";
-}
-
-void SyntheticGestureTargetBase::DispatchWebMouseWheelEventToPlatform(
-      const blink::WebMouseWheelEvent& web_wheel,
-      const ui::LatencyInfo& latency_info) {
-  host_->ForwardWheelEventWithLatencyInfo(web_wheel, latency_info);
-}
-
-void SyntheticGestureTargetBase::DispatchWebGestureEventToPlatform(
-    const blink::WebGestureEvent& web_gesture,
-    const ui::LatencyInfo& latency_info) {
-  host_->ForwardGestureEventWithLatencyInfo(web_gesture, latency_info);
-}
-
-void SyntheticGestureTargetBase::DispatchWebMouseEventToPlatform(
-      const blink::WebMouseEvent& web_mouse,
-      const ui::LatencyInfo& latency_info) {
-  host_->ForwardMouseEventWithLatencyInfo(web_mouse, latency_info);
-}
-
-SyntheticGestureParams::GestureSourceType
-SyntheticGestureTargetBase::GetDefaultSyntheticGestureSourceType() const {
-  return SyntheticGestureParams::MOUSE_INPUT;
-}
-
 base::TimeDelta SyntheticGestureTargetBase::PointerAssumedStoppedTime()
     const {
   return base::TimeDelta::FromMilliseconds(kPointerAssumedStoppedTimeMs);
-}
-
-float SyntheticGestureTargetBase::GetTouchSlopInDips() const {
-  return kTouchSlopInDips;
 }
 
 float SyntheticGestureTargetBase::GetSpanSlopInDips() const {
@@ -164,15 +123,15 @@ float SyntheticGestureTargetBase::GetSpanSlopInDips() const {
   return 2.f * GetTouchSlopInDips();
 }
 
-float SyntheticGestureTargetBase::GetMinScalingSpanInDips() const {
-  // The minimum scaling distance is only relevant for touch gestures and the
-  // base target doesn't support touch.
-  NOTREACHED();
-  return 0.0f;
-}
-
 int SyntheticGestureTargetBase::GetMouseWheelMinimumGranularity() const {
   return host_->GetView()->GetMouseWheelMinimumGranularity();
+}
+
+void SyntheticGestureTargetBase::WaitForTargetAck(
+    SyntheticGestureParams::GestureType type,
+    SyntheticGestureParams::GestureSourceType source,
+    base::OnceClosure callback) const {
+  host_->WaitForInputProcessed(type, source, std::move(callback));
 }
 
 bool SyntheticGestureTargetBase::PointIsWithinContents(int x, int y) const {

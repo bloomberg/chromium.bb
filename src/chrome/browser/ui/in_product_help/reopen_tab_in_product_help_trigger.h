@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_IN_PRODUCT_HELP_REOPEN_TAB_IN_PRODUCT_HELP_TRIGGER_H_
 #define CHROME_BROWSER_UI_IN_PRODUCT_HELP_REOPEN_TAB_IN_PRODUCT_HELP_TRIGGER_H_
 
+#include <map>
+#include <string>
+
 #include "base/callback.h"
 #include "base/time/tick_clock.h"
 
@@ -45,9 +48,9 @@ class ReopenTabInProductHelpTrigger {
   // callback is called.
   void HelpDismissed();
 
-  // Timeout constants. Exposed for unit testing.
-  static const base::TimeDelta kTabMinimumActiveDuration;
-  static const base::TimeDelta kNewTabOpenedTimeout;
+  static std::map<std::string, std::string> GetFieldTrialParamsForTest(
+      int tab_minimum_active_duration_seconds,
+      int new_tab_opened_timeout_seconds);
 
  private:
   // Sets state as if user has not performed any actions.
@@ -57,6 +60,9 @@ class ReopenTabInProductHelpTrigger {
   const base::TickClock* const clock_;
 
   ShowHelpCallback cb_;
+
+  const base::TimeDelta tab_minimum_active_duration_;
+  const base::TimeDelta new_tab_opened_timeout_;
 
   enum TriggerState {
     NO_ACTIONS_SEEN,

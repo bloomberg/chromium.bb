@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -23,17 +25,14 @@
 #include "rlz/buildflags/buildflags.h"
 #include "url/gurl.h"
 
-namespace {
-constexpr char kJsScreenPath[] = "login.EulaScreen";
-}
-
 namespace chromeos {
 
-EulaScreenHandler::EulaScreenHandler(CoreOobeView* core_oobe_view)
-    : BaseScreenHandler(kScreenId),
+EulaScreenHandler::EulaScreenHandler(JSCallsContainer* js_calls_container,
+                                     CoreOobeView* core_oobe_view)
+    : BaseScreenHandler(kScreenId, js_calls_container),
       core_oobe_view_(core_oobe_view),
       weak_factory_(this) {
-  set_call_js_prefix(kJsScreenPath);
+  set_user_acted_method_path("login.EulaScreen.userActed");
 }
 
 EulaScreenHandler::~EulaScreenHandler() {
@@ -66,7 +65,6 @@ void EulaScreenHandler::Unbind() {
 
 void EulaScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
-  builder->Add("eulaScreenTitle", IDS_EULA_SCREEN_TITLE);
   builder->Add("eulaScreenAccessibleTitle", IDS_EULA_SCREEN_ACCESSIBLE_TITLE);
   builder->Add("checkboxLogging", IDS_EULA_CHECKBOX_ENABLE_LOGGING);
   builder->Add("back", IDS_EULA_BACK_BUTTON);
@@ -111,6 +109,8 @@ void EulaScreenHandler::DeclareJSCallbacks() {
   AddCallback("eulaOnLearnMore", &EulaScreenHandler::HandleOnLearnMore);
   AddCallback("eulaOnInstallationSettingsPopupOpened",
               &EulaScreenHandler::HandleOnInstallationSettingsPopupOpened);
+  AddCallback("EulaScreen.usageStatsEnabled",
+              &EulaScreenHandler::HandleUsageStatsEnabled);
 }
 
 void EulaScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
@@ -139,13 +139,19 @@ void EulaScreenHandler::OnPasswordFetched(const std::string& tpm_password) {
 
 void EulaScreenHandler::HandleOnLearnMore() {
   if (!help_app_.get())
-    help_app_ = new HelpAppLauncher(GetNativeWindow());
+    help_app_ = new HelpAppLauncher(
+        LoginDisplayHost::default_host()->GetNativeWindow());
   help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
 }
 
 void EulaScreenHandler::HandleOnInstallationSettingsPopupOpened() {
   if (screen_)
     screen_->InitiatePasswordFetch();
+}
+
+void EulaScreenHandler::HandleUsageStatsEnabled(bool enabled) {
+  if (screen_)
+    screen_->SetUsageStatsEnabled(enabled);
 }
 
 void EulaScreenHandler::UpdateLocalizedValues(

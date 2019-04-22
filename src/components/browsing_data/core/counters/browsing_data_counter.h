@@ -169,7 +169,6 @@ class BrowsingDataCounter {
   Callback callback_;
 
   // The boolean preference indicating whether this data type is to be deleted.
-  // If false, we will not count it.
   BooleanPrefMember pref_;
 
   // The integer preference describing the time period for which this data type

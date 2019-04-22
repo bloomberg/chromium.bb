@@ -37,7 +37,7 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   // only used as the return value for path().
   // |task_runner| is used to perform file operations. It must not be NULL.
   //
-  // TODO(mmenke): Remove |task_runner| argument, and use the TaskScheduler
+  // TODO(mmenke): Remove |task_runner| argument, and use the ThreadPool
   // instead.
   UploadFileElementReader(base::TaskRunner* task_runner,
                           base::File file,

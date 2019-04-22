@@ -48,10 +48,6 @@ class HTMLImportChild;
 class V0CustomElementMicrotaskImportStep final
     : public V0CustomElementMicrotaskStep {
  public:
-  static V0CustomElementMicrotaskImportStep* Create(HTMLImportChild* import) {
-    return MakeGarbageCollected<V0CustomElementMicrotaskImportStep>(import);
-  }
-
   explicit V0CustomElementMicrotaskImportStep(HTMLImportChild*);
   ~V0CustomElementMicrotaskImportStep() override;
 
@@ -59,7 +55,7 @@ class V0CustomElementMicrotaskImportStep final
   void Invalidate();
   void ImportDidFinishLoading();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DidUpgradeAllCustomElements();

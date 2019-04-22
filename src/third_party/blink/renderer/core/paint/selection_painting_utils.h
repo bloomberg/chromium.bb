@@ -8,6 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -19,6 +20,8 @@ struct TextPaintStyle;
 struct PaintInfo;
 
 class CORE_EXPORT SelectionPaintingUtils {
+  STATIC_ONLY(SelectionPaintingUtils);
+
  public:
   static Color SelectionBackgroundColor(const Document&,
                                         const ComputedStyle&,

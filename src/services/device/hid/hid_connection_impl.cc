@@ -10,15 +10,33 @@
 namespace device {
 
 HidConnectionImpl::HidConnectionImpl(
-    scoped_refptr<device::HidConnection> connection)
-    : hid_connection_(std::move(connection)), weak_factory_(this) {}
+    scoped_refptr<device::HidConnection> connection,
+    mojom::HidConnectionClientPtr connection_client)
+    : hid_connection_(std::move(connection)), weak_factory_(this) {
+  if (connection_client) {
+    hid_connection_->SetClient(this);
+    client_ = std::move(connection_client);
+  }
+}
 
 HidConnectionImpl::~HidConnectionImpl() {
   DCHECK(hid_connection_);
+  hid_connection_->SetClient(nullptr);
 
   // Close |hid_connection_| on destruction because this class is owned by a
   // mojo::StrongBinding and will be destroyed when the pipe is closed.
   hid_connection_->Close();
+}
+
+void HidConnectionImpl::OnInputReport(
+    scoped_refptr<base::RefCountedBytes> buffer,
+    size_t size) {
+  DCHECK(client_);
+  uint8_t report_id = buffer->data()[0];
+  uint8_t* begin = &buffer->data()[1];
+  uint8_t* end = &buffer->data()[size];
+  std::vector<uint8_t> data(begin, end);
+  client_->OnInputReport(report_id, data);
 }
 
 void HidConnectionImpl::Read(ReadCallback callback) {

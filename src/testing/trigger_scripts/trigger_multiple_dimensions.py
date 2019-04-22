@@ -113,8 +113,9 @@ class MultiDimensionTestTriggerer(base_test_triggerer.BaseTestTriggerer):
 
   def select_config_indices(self, args, verbose):
     selected_indices = []
-    for _ in xrange(args.shards):
-      selected_indices.append(self.pick_bot_configuration(verbose))
+    for shard_index in self.indices_to_trigger(args):
+      selected_indices.append(
+          (shard_index, self.pick_bot_configuration(verbose)))
     return selected_indices
 
   def prune_test_specific_configs(self, args, verbose):

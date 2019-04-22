@@ -165,8 +165,10 @@ class SpellcheckWordIterator {
   //    length into |word_string|, |word_start|, and |word_length| respectively.
   //
   //  - Returns IS_END_OF_TEXT if the iterator has reached the end of |text_|.
-  SpellcheckWordIterator::WordIteratorStatus
-  GetNextWord(base::string16* word_string, int* word_start, int* word_length);
+  SpellcheckWordIterator::WordIteratorStatus GetNextWord(
+      base::string16* word_string,
+      size_t* word_start,
+      size_t* word_length);
 
   // Releases all the resources attached to this object.
   void Reset();
@@ -179,8 +181,8 @@ class SpellcheckWordIterator {
   // alternative characters supported by our spellchecker. This function also
   // calls SpellcheckWordIterator::OutputChar() to filter out false-positive
   // characters.
-  bool Normalize(int input_start,
-                 int input_length,
+  bool Normalize(size_t input_start,
+                 size_t input_length,
                  base::string16* output_string) const;
 
   // The pointer to the input string from which we are extracting words.

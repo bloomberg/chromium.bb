@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <functional>
 #include <utility>
 #include <vector>
 
@@ -112,11 +113,11 @@ TEST(ProcessStatsSenderTest, ReportUsage) {
         stats->reset();
         run_loop->Quit();
       },
-      base::Unretained(&stats), base::ConstRef(stub), base::ConstRef(agent),
+      base::Unretained(&stats), std::cref(stub), std::cref(agent),
       base::Unretained(&run_loop)));
   message_loop.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<ProcessStatsSender>* stats,
              FakeProcessStatsStub* stub, FakeProcessStatsAgent* agent) -> void {
             stats->reset(new ProcessStatsSender(
@@ -151,11 +152,11 @@ TEST(ProcessStatsSenderTest, MergeUsage) {
         stats->reset();
         run_loop->Quit();
       },
-      base::Unretained(&stats), base::ConstRef(stub), base::ConstRef(agent1),
-      base::ConstRef(agent2), base::Unretained(&run_loop)));
+      base::Unretained(&stats), std::cref(stub), std::cref(agent1),
+      std::cref(agent2), base::Unretained(&run_loop)));
   message_loop.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<ProcessStatsSender>* stats,
              FakeProcessStatsStub* stub, FakeProcessStatsAgent* agent1,
              FakeProcessStatsAgent* agent2) -> void {

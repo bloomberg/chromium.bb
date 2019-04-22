@@ -68,9 +68,10 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
    * @param {!SDK.RemoteObject} object
    * @param {!Components.Linkifier=} linkifier
    * @param {boolean=} skipProto
+   * @param {boolean=} readOnly
    * @return {!Element}
    */
-  static defaultObjectPresentation(object, linkifier, skipProto) {
+  static defaultObjectPresentation(object, linkifier, skipProto, readOnly) {
     const componentRoot = createElementWithClass('span', 'source-code');
     const shadowRoot = UI.createShadowRootWithCoreStyles(componentRoot, 'object_ui/objectValue.css');
     shadowRoot.appendChild(
@@ -82,6 +83,8 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
     objectPropertiesSection.editable = false;
     if (skipProto)
       objectPropertiesSection.skipProto();
+    if (readOnly)
+      objectPropertiesSection.setEditable(false);
 
     return objectPropertiesSection.element;
   }
@@ -344,9 +347,10 @@ ObjectUI.ObjectPropertiesSection = class extends UI.TreeOutlineInShadow {
    * @param {!Element} element
    * @param {boolean} linkify
    * @param {boolean=} includePreview
+   * @return {!Promise}
    */
   static formatObjectAsFunction(func, element, linkify, includePreview) {
-    func.debuggerModel().functionDetailsPromise(func).then(didGetDetails);
+    return func.debuggerModel().functionDetailsPromise(func).then(didGetDetails);
 
     /**
      * @param {?SDK.DebuggerModel.FunctionDetails} response
@@ -431,7 +435,7 @@ ObjectUI.ObjectPropertiesSection.RootElement = class extends UI.TreeElement {
    * @param {!Array.<!SDK.RemoteObjectProperty>=} extraProperties
    */
   constructor(object, linkifier, emptyPlaceholder, ignoreHasOwnProperty, extraProperties) {
-    const contentElement = createElement('content');
+    const contentElement = createElement('slot');
     super(contentElement);
 
     this._object = object;

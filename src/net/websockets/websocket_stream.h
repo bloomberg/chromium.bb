@@ -34,16 +34,15 @@ namespace net {
 
 class AuthChallengeInfo;
 class AuthCredentials;
-class HostPortPair;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
+class IPEndPoint;
 class NetLogWithSource;
 class URLRequest;
 class URLRequestContext;
 struct WebSocketFrame;
 class WebSocketBasicHandshakeStream;
 class WebSocketHttp2HandshakeStream;
-class WebSocketHandshakeStreamCreateHelper;
 
 // WebSocketStreamRequest is the caller's handle to the process of creation of a
 // WebSocketStream. Deleting the object before the ConnectDelegate OnSuccess or
@@ -130,9 +129,9 @@ class NET_EXPORT_PRIVATE WebSocketStream {
     // async case) cancels authentication. Otherwise the new credentials are set
     // and the opening handshake will be retried with the credentials.
     virtual int OnAuthRequired(
-        scoped_refptr<AuthChallengeInfo> auth_info,
+        const AuthChallengeInfo& auth_info,
         scoped_refptr<HttpResponseHeaders> response_headers,
-        const HostPortPair& host_port_pair,
+        const IPEndPoint& remote_endpoint,
         base::OnceCallback<void(const AuthCredentials*)> callback,
         base::Optional<AuthCredentials>* credentials) = 0;
   };
@@ -151,7 +150,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   // it is safe to delete.
   static std::unique_ptr<WebSocketStreamRequest> CreateAndConnectStream(
       const GURL& socket_url,
-      std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
+      const std::vector<std::string>& requested_subprotocols,
       const url::Origin& origin,
       const GURL& site_for_cookies,
       const HttpRequestHeaders& additional_headers,
@@ -166,7 +165,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   static std::unique_ptr<WebSocketStreamRequest>
   CreateAndConnectStreamForTesting(
       const GURL& socket_url,
-      std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
+      const std::vector<std::string>& requested_subprotocols,
       const url::Origin& origin,
       const GURL& site_for_cookies,
       const HttpRequestHeaders& additional_headers,
@@ -276,7 +275,7 @@ void WebSocketDispatchOnFinishOpeningHandshake(
     WebSocketStream::ConnectDelegate* connect_delegate,
     const GURL& gurl,
     const scoped_refptr<HttpResponseHeaders>& headers,
-    const HostPortPair& socket_address,
+    const IPEndPoint& remote_endpoint,
     base::Time response_time);
 
 }  // namespace net

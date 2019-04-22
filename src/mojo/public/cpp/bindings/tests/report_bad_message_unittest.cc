@@ -187,7 +187,7 @@ TEST_P(ReportBadMessageTest, ResponseSyncDeferred) {
   EXPECT_TRUE(error);
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(ReportBadMessageTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(ReportBadMessageTest);
 
 }  // namespace
 }  // namespace test

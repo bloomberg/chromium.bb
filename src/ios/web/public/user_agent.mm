@@ -74,15 +74,7 @@ std::string BuildKernelVersion() {
   // Freeze the kernel version for iOS 11.3 and later (as Safari does).
   if (@available(iOS 11.3, *))
     return "15E148";
-
-  int mib[2] = {CTL_KERN, KERN_OSVERSION};
-  unsigned int namelen = sizeof(mib) / sizeof(mib[0]);
-  size_t bufferSize = 0;
-  sysctl(mib, namelen, nullptr, &bufferSize, nullptr, 0);
-  char kernel_version[bufferSize];
-  int result = sysctl(mib, namelen, kernel_version, &bufferSize, nullptr, 0);
-  DCHECK(result == 0);
-  return kernel_version;
+  return base::SysInfo::GetIOSBuildNumber();
 }
 
 }  // namespace

@@ -33,35 +33,30 @@
     "comment": "light green",
     "location": [ 43, 247 ],
     "size": [ 1, 1 ],
-    "color": [ 214, 232, 186 ],
-    "tolerance": 3
+    "color": [ 214, 232, 186 ]
   },
   {
     "comment": "darker green",
     "location": [ 326, 111 ],
     "size": [ 1, 1 ],
-    "color": [ 203, 230, 163 ],
-    "tolerance": 3
+    "color": [ 203, 230, 163 ]
   },
   {
     "comment": "blue lake",
     "location": [ 593, 393 ],
     "size": [ 1, 1 ],
-    "color": [ 163, 205, 255 ],
-    "tolerance": 3
+    "color": [ 163, 205, 255 ]
   },
   {
     "comment": "gray",
     "location": [ 95, 117 ],
     "size": [ 1, 1 ],
-    "color": [ 232, 232, 232 ],
-    "tolerance": 3
+    "color": [ 232, 232, 232 ]
   },
   {
     "comment": "tan",
     "location": [ 344, 263 ],
     "size": [ 1, 1 ],
-    "color": [ 240, 237, 230 ],
-    "tolerance": 3
+    "color": [ 240, 237, 230 ]
   }
 ]

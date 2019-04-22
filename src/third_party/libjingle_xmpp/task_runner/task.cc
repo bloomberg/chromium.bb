@@ -9,10 +9,11 @@
  */
 
 #include "third_party/libjingle_xmpp/task_runner/task.h"
-#include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
-#include "third_party/webrtc/rtc_base/checks.h"
 
-namespace rtc {
+#include "base/logging.h"
+#include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
+
+namespace jingle_xmpp {
 
 int32_t Task::unique_id_seed_ = 0;
 
@@ -31,16 +32,16 @@ Task::Task(TaskParent *parent)
   unique_id_ = unique_id_seed_++;
 
   // sanity check that we didn't roll-over our id seed
-  RTC_DCHECK(unique_id_ < unique_id_seed_);
+  DCHECK(unique_id_ < unique_id_seed_);
 }
 
 Task::~Task() {
   // Is this task being deleted in the correct manner?
-#if RTC_DCHECK_IS_ON
-  RTC_DCHECK(!done_ || GetRunner()->is_ok_to_delete(this));
+#if DCHECK_IS_ON
+  DCHECK(!done_ || GetRunner()->is_ok_to_delete(this));
 #endif
-  RTC_DCHECK(state_ == STATE_INIT || done_);
-  RTC_DCHECK(state_ == STATE_INIT || blocked_);
+  DCHECK(state_ == STATE_INIT || done_);
+  DCHECK(state_ == STATE_INIT || blocked_);
 
   // If the task is being deleted without being done, it
   // means that it hasn't been removed from its parent.
@@ -50,31 +51,19 @@ Task::~Task() {
   }
 }
 
-int64_t Task::CurrentTime() {
-  return GetRunner()->CurrentTime();
-}
-
-int64_t Task::ElapsedTime() {
-  return CurrentTime() - start_time_;
-}
-
 void Task::Start() {
   if (state_ != STATE_INIT)
     return;
-  // Set the start time before starting the task.  Otherwise if the task
-  // finishes quickly and deletes the Task object, setting start_time_
-  // will crash.
-  start_time_ = CurrentTime();
   GetRunner()->StartTask(this);
 }
 
 void Task::Step() {
   if (done_) {
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
     // we do not know how !blocked_ happens when done_ - should be impossible.
     // But it causes problems, so in retail build, we force blocked_, and
     // under debug we assert.
-    RTC_DCHECK(blocked_);
+    DCHECK(blocked_);
 #else
     blocked_ = true;
 #endif
@@ -90,9 +79,9 @@ void Task::Step() {
 //   SignalDone();
 
     Stop();
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
     // verify that stop removed this from its parent
-    RTC_DCHECK(!parent()->IsChildTask(this));
+    DCHECK(!parent()->IsChildTask(this));
 #endif
     return;
   }
@@ -112,7 +101,6 @@ void Task::Step() {
   } else {
     state_ = new_state;
     blocked_ = false;
-    ResetTimeout();
   }
 
   if (new_state == STATE_DONE) {
@@ -127,9 +115,9 @@ void Task::Step() {
 //    SignalDone();
 
     Stop();
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
     // verify that stop removed this from its parent
-    RTC_DCHECK(!parent()->IsChildTask(this));
+    DCHECK(!parent()->IsChildTask(this));
 #endif
     blocked_ = true;
   }
@@ -152,9 +140,9 @@ void Task::Abort(bool nowake) {
     // "done_" is set before calling "Stop()" to ensure that this code
     // doesn't execute more than once (recursively) for the same task.
     Stop();
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
     // verify that stop removed this from its parent
-    RTC_DCHECK(!parent()->IsChildTask(this));
+    DCHECK(!parent()->IsChildTask(this));
 #endif
     if (!nowake) {
       // WakeTasks to self-delete.
@@ -196,26 +184,20 @@ std::string Task::GetStateName(int state) const {
 int Task::Process(int state) {
   int newstate = STATE_ERROR;
 
-  if (TimedOut()) {
-    ClearTimeout();
-    newstate = OnTimeout();
-    SignalTimeout();
-  } else {
-    switch (state) {
-      case STATE_INIT:
-        newstate = STATE_START;
-        break;
-      case STATE_START:
-        newstate = ProcessStart();
-        break;
-      case STATE_RESPONSE:
-        newstate = ProcessResponse();
-        break;
-      case STATE_DONE:
-      case STATE_ERROR:
-        newstate = STATE_BLOCKED;
-        break;
-    }
+  switch (state) {
+    case STATE_INIT:
+      newstate = STATE_START;
+      break;
+    case STATE_START:
+      newstate = ProcessStart();
+      break;
+    case STATE_RESPONSE:
+      newstate = ProcessResponse();
+      break;
+    case STATE_DONE:
+    case STATE_ERROR:
+      newstate = STATE_BLOCKED;
+      break;
   }
 
   return newstate;
@@ -230,54 +212,4 @@ int Task::ProcessResponse() {
   return STATE_DONE;
 }
 
-void Task::set_timeout_seconds(const int timeout_seconds) {
-  timeout_seconds_ = timeout_seconds;
-  ResetTimeout();
-}
-
-bool Task::TimedOut() {
-  return timeout_seconds_ &&
-    timeout_time_ &&
-    CurrentTime() >= timeout_time_;
-}
-
-void Task::ResetTimeout() {
-  int64_t previous_timeout_time = timeout_time_;
-  bool timeout_allowed = (state_ != STATE_INIT)
-                      && (state_ != STATE_DONE)
-                      && (state_ != STATE_ERROR);
-  if (timeout_seconds_ && timeout_allowed && !timeout_suspended_)
-    timeout_time_ = CurrentTime() +
-                    (timeout_seconds_ * kSecToMsec * kMsecTo100ns);
-  else
-    timeout_time_ = 0;
-
-  GetRunner()->UpdateTaskTimeout(this, previous_timeout_time);
-}
-
-void Task::ClearTimeout() {
-  int64_t previous_timeout_time = timeout_time_;
-  timeout_time_ = 0;
-  GetRunner()->UpdateTaskTimeout(this, previous_timeout_time);
-}
-
-void Task::SuspendTimeout() {
-  if (!timeout_suspended_) {
-    timeout_suspended_ = true;
-    ResetTimeout();
-  }
-}
-
-void Task::ResumeTimeout() {
-  if (timeout_suspended_) {
-    timeout_suspended_ = false;
-    ResetTimeout();
-  }
-}
-
-int Task::OnTimeout() {
-  // by default, we are finished after timing out
-  return STATE_DONE;
-}
-
-} // namespace rtc
+} // namespace jingle_xmpp

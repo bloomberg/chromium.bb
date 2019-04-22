@@ -4,9 +4,9 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
@@ -68,7 +68,7 @@ const TestPageData kTestPages[] = {
     },
 };
 
-const size_t kTestPagesLength = arraysize(kTestPages);
+const size_t kTestPagesLength = base::size(kTestPages);
 
 // Blocks till the current page uses a specific icon URL.
 class FaviconWaiter : public favicon::FaviconDriverObserver {
@@ -92,7 +92,7 @@ class FaviconWaiter : public favicon::FaviconDriverObserver {
 
  private:
   GURL GetCurrentFaviconURL() {
-    const content::NavigationController& controller =
+    content::NavigationController& controller =
         driver_->web_contents()->GetController();
     content::NavigationEntry* entry = controller.GetLastCommittedEntry();
     return entry ? entry->GetFavicon().url : GURL();

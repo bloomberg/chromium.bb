@@ -28,6 +28,7 @@ extern const base::Feature kEnableQuic;
 extern const base::Feature kTripleBuffer720;
 extern const base::Feature kSingleBuffer;
 extern const base::Feature kDisableIdleSocketsCloseOnMemoryPressure;
+extern const base::Feature kEnableGeneralAudienceBrowsing;
 
 // Get an iterable list of all of the cast features for checking all features as
 // a collection.
@@ -50,7 +51,8 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
                            const base::ListValue& dcs_experiment_ids,
                            const std::string& cmd_line_enable_features,
                            const std::string& cmd_line_disable_features,
-                           const std::string& extra_enable_features);
+                           const std::string& extra_enable_features,
+                           const std::string& extra_disable_features);
 
 // Determine whether or not a feature is enabled. This replaces
 // base::FeatureList::IsEnabled for Cast builds.

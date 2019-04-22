@@ -47,11 +47,10 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
+#include "media/capture/video/chromeos/public/cros_features.h"
 #include "media/capture/video/chromeos/video_capture_device_chromeos_halv3.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #endif
@@ -181,11 +180,12 @@ class MockImageCaptureClient
     if (strcmp("image/jpeg", blob->mime_type.c_str()) == 0) {
       ASSERT_GT(blob->data.size(), 4u);
       // Check some bytes that univocally identify |data| as a JPEG File.
-      // https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format#File_format_structure
+      // The first two bytes must be the SOI marker.
+      // The next two bytes must be a marker, such as APPn, DTH etc.
+      // cf. Section B.2 at https://www.w3.org/Graphics/JPEG/itu-t81.pdf
       EXPECT_EQ(0xFF, blob->data[0]);         // First SOI byte
       EXPECT_EQ(0xD8, blob->data[1]);         // Second SOI byte
-      EXPECT_EQ(0xFF, blob->data[2]);         // First JFIF-APP0 byte
-      EXPECT_EQ(0xE0, blob->data[3] & 0xF0);  // Second JFIF-APP0 byte
+      EXPECT_EQ(0xFF, blob->data[2]);         // First byte of the next marker
       OnCorrectPhotoTaken();
     } else if (strcmp("image/png", blob->mime_type.c_str()) == 0) {
       ASSERT_GT(blob->data.size(), 4u);
@@ -257,13 +257,12 @@ class VideoCaptureDeviceTest
 #if defined(OS_CHROMEOS)
     local_gpu_memory_buffer_manager_ =
         std::make_unique<LocalGpuMemoryBufferManager>();
-    dbus_setter_ = chromeos::DBusThreadManager::GetSetterForTesting();
     VideoCaptureDeviceFactoryChromeOS::SetGpuBufferManager(
         local_gpu_memory_buffer_manager_.get());
     if (!CameraHalDispatcherImpl::GetInstance()->IsStarted()) {
       CameraHalDispatcherImpl::GetInstance()->Start(
           base::DoNothing::Repeatedly<
-              media::mojom::JpegDecodeAcceleratorRequest>(),
+              media::mojom::MjpegDecodeAcceleratorRequest>(),
           base::DoNothing::Repeatedly<
               media::mojom::JpegEncodeAcceleratorRequest>());
     }
@@ -274,8 +273,7 @@ class VideoCaptureDeviceTest
 
   void SetUp() override {
 #if defined(OS_CHROMEOS)
-    dbus_setter_->SetPowerManagerClient(
-        std::make_unique<chromeos::FakePowerManagerClient>());
+    chromeos::PowerManagerClient::InitializeFake();
 #endif
 #if defined(OS_ANDROID)
     static_cast<VideoCaptureDeviceFactoryAndroid*>(
@@ -285,6 +283,12 @@ class VideoCaptureDeviceTest
     static_cast<VideoCaptureDeviceFactoryWin*>(
         video_capture_device_factory_.get())
         ->set_use_media_foundation_for_testing(UseWinMediaFoundation());
+#endif
+  }
+
+  void TearDown() override {
+#if defined(OS_CHROMEOS)
+    chromeos::PowerManagerClient::Shutdown();
 #endif
   }
 
@@ -299,7 +303,7 @@ class VideoCaptureDeviceTest
     ON_CALL(*result, OnError(_, _, _)).WillByDefault(Invoke(DumpError));
     EXPECT_CALL(*result, ReserveOutputBuffer(_, _, _, _)).Times(0);
     EXPECT_CALL(*result, DoOnIncomingCapturedBuffer(_, _, _, _)).Times(0);
-    EXPECT_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _))
+    EXPECT_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _, _))
         .Times(0);
     ON_CALL(*result, OnIncomingCapturedData(_, _, _, _, _, _, _))
         .WillByDefault(
@@ -462,7 +466,6 @@ class VideoCaptureDeviceTest
   VideoCaptureFormat last_format_;
 #if defined(OS_CHROMEOS)
   std::unique_ptr<LocalGpuMemoryBufferManager> local_gpu_memory_buffer_manager_;
-  std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter_;
 #endif
   std::unique_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
 };
@@ -564,7 +567,7 @@ const VideoCaptureImplementationTweak kCaptureImplementationTweaks[] = {
 #endif
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     VideoCaptureDeviceTests,
     VideoCaptureDeviceTest,
     testing::Combine(testing::ValuesIn(kCaptureSizes),
@@ -657,6 +660,13 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_UsingRealWebcam_CaptureMjpeg) {
                              base::Unretained(this)));
 }
 void VideoCaptureDeviceTest::RunCaptureMjpegTestCase() {
+#if defined(OS_CHROMEOS)
+  if (media::ShouldUseCrosCameraService()) {
+    VLOG(1)
+        << "Skipped on Chrome OS device where HAL v3 camera service is used";
+    return;
+  }
+#endif
   std::unique_ptr<VideoCaptureDeviceDescriptor> device_descriptor =
       GetFirstDeviceDescriptorSupportingPixelFormat(PIXEL_FORMAT_MJPEG);
   ASSERT_TRUE(device_descriptor);
@@ -869,4 +879,4 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest,
 }
 #endif
 
-};  // namespace media
+}  // namespace media

@@ -35,7 +35,7 @@ namespace {
 // Returns a suffix for Download.IOSDownloadARModelState histogram for the
 // |download_task|.
 std::string GetMimeTypeSuffix(web::DownloadTask* download_task) {
-  DCHECK(download_task->GetOriginalMimeType() == kUsdzMimeType);
+  DCHECK(IsUsdzFileFormat(download_task->GetOriginalMimeType()));
   return kUsdzMimeTypeHistogramSuffix;
 }
 
@@ -50,7 +50,7 @@ IOSDownloadARModelState GetHistogramEnum(web::DownloadTask* download_task) {
     return IOSDownloadARModelState::kStarted;
   }
   DCHECK(download_task->IsDone());
-  if (download_task->GetMimeType() != kUsdzMimeType) {
+  if (!IsUsdzFileFormat(download_task->GetMimeType())) {
     return IOSDownloadARModelState::kWrongMimeTypeFailure;
   }
   if (download_task->GetHttpCode() == 401 ||
@@ -73,10 +73,8 @@ void LogHistogram(web::DownloadTask* download_task) {
 
 }  // namespace
 
-ARQuickLookTabHelper::ARQuickLookTabHelper(
-    web::WebState* web_state,
-    id<ARQuickLookTabHelperDelegate> delegate)
-    : web_state_(web_state), delegate_(delegate) {
+ARQuickLookTabHelper::ARQuickLookTabHelper(web::WebState* web_state)
+    : web_state_(web_state) {
   DCHECK(web_state_);
 }
 
@@ -86,14 +84,11 @@ ARQuickLookTabHelper::~ARQuickLookTabHelper() {
   }
 }
 
-void ARQuickLookTabHelper::CreateForWebState(
-    web::WebState* web_state,
-    id<ARQuickLookTabHelperDelegate> delegate) {
+void ARQuickLookTabHelper::CreateForWebState(web::WebState* web_state) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
-    web_state->SetUserData(
-        UserDataKey(),
-        std::make_unique<ARQuickLookTabHelper>(web_state, delegate));
+    web_state->SetUserData(UserDataKey(),
+                           std::make_unique<ARQuickLookTabHelper>(web_state));
   }
 }
 
@@ -125,7 +120,7 @@ void ARQuickLookTabHelper::DidFinishDownload() {
   // Inform the delegate only if the download has been successful.
   if (download_task_->GetHttpCode() == 401 ||
       download_task_->GetHttpCode() == 403 || download_task_->GetErrorCode() ||
-      download_task_->GetMimeType() != kUsdzMimeType) {
+      !IsUsdzFileFormat(download_task_->GetMimeType())) {
     return;
   }
 
@@ -202,3 +197,5 @@ void ARQuickLookTabHelper::OnDownloadUpdated(web::DownloadTask* download_task) {
       NOTREACHED() << "Invalid state.";
   }
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(ARQuickLookTabHelper)

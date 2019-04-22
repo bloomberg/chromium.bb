@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "ToolUtils.h"
 #include "gm.h"
-#include "sk_tool_utils.h"
 
 static void make_bm(SkBitmap* bm) {
     const SkColor colors[4] = {
@@ -44,21 +44,22 @@ static SkScalar draw_row(SkCanvas* canvas, const SkBitmap& bm) {
     SkAutoCanvasRestore acr(canvas, true);
 
     SkPaint paint;
+    paint.setAntiAlias(true);
+
     SkScalar x = 0;
     const int scale = 32;
 
-    paint.setAntiAlias(true);
-    sk_tool_utils::set_portable_typeface(&paint);
-    const char* name = sk_tool_utils::colortype_name(bm.colorType());
+    SkFont      font(ToolUtils::create_portable_typeface());
+    const char* name = ToolUtils::colortype_name(bm.colorType());
     canvas->drawString(name, x, SkIntToScalar(bm.height())*scale*5/8,
-                     paint);
+                       font, paint);
     canvas->translate(SkIntToScalar(48), 0);
 
     canvas->scale(SkIntToScalar(scale), SkIntToScalar(scale));
 
     x += draw_set(canvas, bm, 0, &paint);
     paint.reset();
-    paint.setAlpha(0x80);
+    paint.setAlphaf(0.5f);
     draw_set(canvas, bm, x, &paint);
     return x * scale / 3;
 }
@@ -66,8 +67,8 @@ static SkScalar draw_row(SkCanvas* canvas, const SkBitmap& bm) {
 class FilterGM : public skiagm::GM {
     void onOnceBeforeDraw() override {
         make_bm(&fBM32);
-        sk_tool_utils::copy_to(&fBM4444, kARGB_4444_SkColorType, fBM32);
-        sk_tool_utils::copy_to(&fBM16, kRGB_565_SkColorType, fBM32);
+        ToolUtils::copy_to(&fBM4444, kARGB_4444_SkColorType, fBM32);
+        ToolUtils::copy_to(&fBM16, kRGB_565_SkColorType, fBM32);
     }
 
 public:
@@ -119,7 +120,6 @@ class TestExtractAlphaGM : public skiagm::GM {
         paint.setStrokeWidth(20);
 
         canvas.drawCircle(50, 50, 39, paint);
-        canvas.flush();
 
         fBitmap.extractAlpha(&fAlpha);
     }

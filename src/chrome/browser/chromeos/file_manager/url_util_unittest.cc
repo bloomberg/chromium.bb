@@ -11,7 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +25,7 @@ base::Value ParseJsonQueryString(const std::string& query) {
   const std::string json = net::UnescapeURLComponent(
       query, net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
                  net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   return value ? std::move(*value) : base::Value();
 }
 

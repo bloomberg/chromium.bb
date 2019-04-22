@@ -326,8 +326,8 @@ bool GrCCFiller::prepareToDraw(GrOnFlushResourceProvider* onFlushRP) {
     fBaseInstances[1].fConics = fBaseInstances[0].fConics + fTotalPrimitiveCounts[0].fConics;
     int quadEndIdx = fBaseInstances[1].fConics + fTotalPrimitiveCounts[1].fConics;
 
-    fInstanceBuffer = onFlushRP->makeBuffer(kVertex_GrBufferType,
-                                            quadEndIdx * sizeof(QuadPointInstance));
+    fInstanceBuffer =
+            onFlushRP->makeBuffer(GrGpuBufferType::kVertex, quadEndIdx * sizeof(QuadPointInstance));
     if (!fInstanceBuffer) {
         SkDebugf("WARNING: failed to allocate CCPR fill instance buffer.\n");
         return false;
@@ -459,54 +459,57 @@ bool GrCCFiller::prepareToDraw(GrOnFlushResourceProvider* onFlushRP) {
     return true;
 }
 
-void GrCCFiller::drawFills(GrOpFlushState* flushState, BatchID batchID,
-                           const SkIRect& drawBounds) const {
+void GrCCFiller::drawFills(GrOpFlushState* flushState, GrCCCoverageProcessor* proc,
+                           BatchID batchID, const SkIRect& drawBounds) const {
     using PrimitiveType = GrCCCoverageProcessor::PrimitiveType;
 
     SkASSERT(fInstanceBuffer);
 
+    GrResourceProvider* rp = flushState->resourceProvider();
     const PrimitiveTallies& batchTotalCounts = fBatches[batchID].fTotalPrimitiveCounts;
 
-    GrPipeline pipeline(flushState->drawOpArgs().fProxy, GrScissorTest::kEnabled,
-                        SkBlendMode::kPlus);
+    GrPipeline pipeline(GrScissorTest::kEnabled, SkBlendMode::kPlus);
 
     if (batchTotalCounts.fTriangles) {
-        this->drawPrimitives(flushState, pipeline, batchID, PrimitiveType::kTriangles,
-                             &PrimitiveTallies::fTriangles, drawBounds);
+        proc->reset(PrimitiveType::kTriangles, rp);
+        this->drawPrimitives(
+                flushState, *proc, pipeline, batchID, &PrimitiveTallies::fTriangles, drawBounds);
     }
 
     if (batchTotalCounts.fWeightedTriangles) {
-        this->drawPrimitives(flushState, pipeline, batchID, PrimitiveType::kWeightedTriangles,
-                             &PrimitiveTallies::fWeightedTriangles, drawBounds);
+        proc->reset(PrimitiveType::kWeightedTriangles, rp);
+        this->drawPrimitives(
+                flushState, *proc, pipeline, batchID, &PrimitiveTallies::fWeightedTriangles,
+                drawBounds);
     }
 
     if (batchTotalCounts.fQuadratics) {
-        this->drawPrimitives(flushState, pipeline, batchID, PrimitiveType::kQuadratics,
-                             &PrimitiveTallies::fQuadratics, drawBounds);
+        proc->reset(PrimitiveType::kQuadratics, rp);
+        this->drawPrimitives(
+                flushState, *proc, pipeline, batchID, &PrimitiveTallies::fQuadratics, drawBounds);
     }
 
     if (batchTotalCounts.fCubics) {
-        this->drawPrimitives(flushState, pipeline, batchID, PrimitiveType::kCubics,
-                             &PrimitiveTallies::fCubics, drawBounds);
+        proc->reset(PrimitiveType::kCubics, rp);
+        this->drawPrimitives(
+                flushState, *proc, pipeline, batchID, &PrimitiveTallies::fCubics, drawBounds);
     }
 
     if (batchTotalCounts.fConics) {
-        this->drawPrimitives(flushState, pipeline, batchID, PrimitiveType::kConics,
-                             &PrimitiveTallies::fConics, drawBounds);
+        proc->reset(PrimitiveType::kConics, rp);
+        this->drawPrimitives(
+                flushState, *proc, pipeline, batchID, &PrimitiveTallies::fConics, drawBounds);
     }
 }
 
-void GrCCFiller::drawPrimitives(GrOpFlushState* flushState, const GrPipeline& pipeline,
-                                BatchID batchID, GrCCCoverageProcessor::PrimitiveType primitiveType,
-                                int PrimitiveTallies::*instanceType,
-                                const SkIRect& drawBounds) const {
+void GrCCFiller::drawPrimitives(
+        GrOpFlushState* flushState, const GrCCCoverageProcessor& proc, const GrPipeline& pipeline,
+        BatchID batchID, int PrimitiveTallies::*instanceType, const SkIRect& drawBounds) const {
     SkASSERT(pipeline.isScissorEnabled());
 
     // Don't call reset(), as that also resets the reserve count.
     fMeshesScratchBuffer.pop_back_n(fMeshesScratchBuffer.count());
     fScissorRectScratchBuffer.pop_back_n(fScissorRectScratchBuffer.count());
-
-    GrCCCoverageProcessor proc(flushState->resourceProvider(), primitiveType);
 
     SkASSERT(batchID > 0);
     SkASSERT(batchID < fBatches.count());
@@ -519,7 +522,7 @@ void GrCCFiller::drawPrimitives(GrOpFlushState* flushState, const GrPipeline& pi
         SkASSERT(instanceCount > 0);
         int baseInstance = fBaseInstances[(int)GrScissorTest::kDisabled].*instanceType +
                            previousBatch.fEndNonScissorIndices.*instanceType;
-        proc.appendMesh(fInstanceBuffer.get(), instanceCount, baseInstance, &fMeshesScratchBuffer);
+        proc.appendMesh(fInstanceBuffer, instanceCount, baseInstance, &fMeshesScratchBuffer);
         fScissorRectScratchBuffer.push_back().setXYWH(0, 0, drawBounds.width(),
                                                       drawBounds.height());
         SkDEBUGCODE(totalInstanceCount += instanceCount);
@@ -537,8 +540,8 @@ void GrCCFiller::drawPrimitives(GrOpFlushState* flushState, const GrPipeline& pi
             continue;
         }
         SkASSERT(instanceCount > 0);
-        proc.appendMesh(fInstanceBuffer.get(), instanceCount,
-                        baseScissorInstance + startIndex, &fMeshesScratchBuffer);
+        proc.appendMesh(fInstanceBuffer, instanceCount, baseScissorInstance + startIndex,
+                        &fMeshesScratchBuffer);
         fScissorRectScratchBuffer.push_back() = scissorSubBatch.fScissor;
         SkDEBUGCODE(totalInstanceCount += instanceCount);
     }

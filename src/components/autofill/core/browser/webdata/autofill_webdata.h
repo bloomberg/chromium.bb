@@ -72,6 +72,14 @@ class AutofillWebData {
   virtual WebDataServiceBase::Handle GetServerProfiles(
       WebDataServiceConsumer* consumer) = 0;
 
+  // Schedules a task to convert server profiles to local profiles, comparing
+  // profiles using |app_locale| and filling in |primary_account_email| into
+  // newly converted profiles. The task only converts profiles that have not
+  // been converted before.
+  virtual void ConvertWalletAddressesAndUpdateWalletCards(
+      const std::string& app_locale,
+      const std::string& primary_account_email) = 0;
+
   // Schedules a task to count the number of unique autofill values contained
   // in the time interval [|begin|, |end|). |begin| and |end| can be null
   // to indicate no time limitation.

@@ -15,7 +15,9 @@
 #include "base/containers/queue.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/gpu/image_processor.h"
@@ -115,7 +117,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // encode.
   void FrameProcessed(bool force_keyframe,
                       base::TimeDelta timestamp,
-                      int output_buffer_index,
+                      size_t output_buffer_index,
                       scoped_refptr<VideoFrame> frame);
 
   // Error callback for handling image processor errors.
@@ -211,8 +213,12 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // false otherwise.
   bool IsCtrlExposed(uint32_t ctrl_id);
 
+  // Allocates video frames for image processor's output buffers.
+  // Returns false if there's something wrong.
+  bool AllocateImageProcessorOutputBuffers();
+
   // Recycle output buffer of image processor with |output_buffer_index|.
-  void ReuseImageProcessorOutputBuffer(int output_buffer_index);
+  void ReuseImageProcessorOutputBuffer(size_t output_buffer_index);
 
   // Copy encoded stream data from an output V4L2 buffer at |bitstream_data|
   // of size |bitstream_size| into a BitstreamBuffer referenced by |buffer_ref|,
@@ -222,17 +228,22 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
                               size_t bitstream_size,
                               std::unique_ptr<BitstreamBufferRef> buffer_ref);
 
+  // Initializes input_memory_type_.
+  bool InitInputMemoryType(const Config& config);
+
   // Our original calling task runner for the child thread.
   const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
 
   gfx::Size visible_size_;
-  // Input allocated size required by the device.
+  // Layout of device accepted input VideoFrame.
+  base::Optional<VideoFrameLayout> device_input_layout_;
+  // Input allocated size calculated by
+  // V4L2Device::AllocatedSizeFromV4L2Format().
+  // TODO(crbug.com/914700): Remove this once Client::RequireBitstreamBuffers
+  // uses input's VideoFrameLayout to allocate input buffer.
   gfx::Size input_allocated_size_;
-  size_t output_buffer_byte_size_;
 
-  // Formats for input frames and the output stream.
-  VideoPixelFormat device_input_format_;
-  size_t input_planes_count_;
+  size_t output_buffer_byte_size_;
   uint32_t output_format_fourcc_;
 
   //
@@ -296,14 +307,18 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // Image processor, if one is in use.
   std::unique_ptr<ImageProcessor> image_processor_;
+  // Video frames for image processor output / VideoEncodeAccelerator input.
+  // Only accessed on child thread.
+  std::vector<scoped_refptr<VideoFrame>> image_processor_output_buffers_;
   // Indexes of free image processor output buffers. Only accessed on child
   // thread.
-  std::vector<int> free_image_processor_output_buffers_;
+  std::vector<size_t> free_image_processor_output_buffer_indices_;
   // Video frames ready to be processed. Only accessed on child thread.
   base::queue<InputFrameInfo> image_processor_input_queue_;
 
-  // This thread services tasks posted from the VEA API entry points by the
-  // child thread and device service callbacks posted from the device thread.
+  // This thread services tasks posted from the VideoEncodeAccelerator API entry
+  // points by the child thread and device service callbacks posted from the
+  // device thread.
   base::Thread encoder_thread_;
 
   // The device polling thread handles notifications of V4L2 device changes.

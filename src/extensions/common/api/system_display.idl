@@ -90,6 +90,9 @@ namespace system.display {
 
     // True if the display mode is currently selected.
     boolean isSelected;
+
+    // True if this mode is interlaced.
+    boolean isInterlaced;
   };
 
   // Layout position, i.e. edge of parent that the display is attached to.

@@ -96,7 +96,7 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
 
   // Construct a clockwise path along the outer edge of the outline.
   SkRegion region;
-  int width = style.OutlineWidth();
+  uint16_t width = style.OutlineWidth();
   int outset = style.OutlineOffset() + style.OutlineWidth();
   for (auto& r : rects) {
     IntRect rect = r;
@@ -499,9 +499,10 @@ void ObjectPainterBase::PaintOutlineRects(
 
   Color color = style.VisitedDependentColor(GetCSSPropertyOutlineColor());
   if (style.OutlineStyleIsAuto()) {
-    paint_info.context.DrawFocusRing(pixel_snapped_outline_rects,
-                                     style.GetOutlineStrokeWidthForFocusRing(),
-                                     style.OutlineOffset(), color);
+    paint_info.context.DrawFocusRing(
+        pixel_snapped_outline_rects, style.GetOutlineStrokeWidthForFocusRing(),
+        style.OutlineOffset(), color,
+        LayoutTheme::GetTheme().IsFocusRingOutset());
     return;
   }
 

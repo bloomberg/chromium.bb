@@ -16,7 +16,6 @@ namespace media {
 class AudioBuffer;
 class DecoderBuffer;
 class DecryptConfig;
-struct CdmKeyInformation;
 }
 
 // These are specializations of mojo::TypeConverter and have to be in the mojo
@@ -45,19 +44,6 @@ struct TypeConverter<scoped_refptr<media::DecoderBuffer>,
                      media::mojom::DecoderBufferPtr> {
   static scoped_refptr<media::DecoderBuffer> Convert(
       const media::mojom::DecoderBufferPtr& input);
-};
-
-template <>
-struct TypeConverter<media::mojom::CdmKeyInformationPtr,
-                     media::CdmKeyInformation> {
-  static media::mojom::CdmKeyInformationPtr Convert(
-      const media::CdmKeyInformation& input);
-};
-template <>
-struct TypeConverter<std::unique_ptr<media::CdmKeyInformation>,
-                     media::mojom::CdmKeyInformationPtr> {
-  static std::unique_ptr<media::CdmKeyInformation> Convert(
-      const media::mojom::CdmKeyInformationPtr& input);
 };
 
 template <>

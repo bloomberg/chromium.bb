@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -155,7 +156,7 @@ void TCPServerSocketEventDispatcher::AcceptCallback(
     // calling StartAccept at this point would error with ERR_IO_PENDING.
     base::PostTaskWithTraits(
         FROM_HERE, {params.thread_id},
-        base::Bind(&TCPServerSocketEventDispatcher::StartAccept, params));
+        base::BindOnce(&TCPServerSocketEventDispatcher::StartAccept, params));
   } else {
     // Dispatch "onAcceptError" event but don't start another accept to avoid
     // potential infinite "accepts" if we have a persistent network error.
@@ -186,8 +187,8 @@ void TCPServerSocketEventDispatcher::PostEvent(const AcceptParams& params,
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&DispatchEvent, params.browser_context_id, params.extension_id,
-                 base::Passed(std::move(event))));
+      base::BindOnce(&DispatchEvent, params.browser_context_id,
+                     params.extension_id, std::move(event)));
 }
 
 // static

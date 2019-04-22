@@ -5,7 +5,8 @@
 // https://w3c.github.io/webrtc-pc/#idl-def-rtcicecandidateinit
 
 dictionary RTCIceCandidateInit {
-    DOMString candidate;
-    DOMString sdpMid;
-    unsigned short sdpMLineIndex;
+    DOMString candidate = "";
+    DOMString? sdpMid = null;
+    unsigned short? sdpMLineIndex = null;
+    DOMString usernameFragment;
 };

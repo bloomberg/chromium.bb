@@ -76,7 +76,7 @@ ByteString ByteString::FormatInteger(int i) {
 // static
 ByteString ByteString::FormatFloat(float d) {
   char buf[32];
-  return ByteString(buf, FX_ftoa(d, buf));
+  return ByteString(buf, FloatToString(d, buf));
 }
 
 // static
@@ -142,13 +142,13 @@ ByteString::ByteString(char ch) {
 ByteString::ByteString(const char* ptr)
     : ByteString(ptr, ptr ? strlen(ptr) : 0) {}
 
-ByteString::ByteString(const ByteStringView& stringSrc) {
+ByteString::ByteString(ByteStringView stringSrc) {
   if (!stringSrc.IsEmpty())
     m_pData.Reset(StringData::Create(stringSrc.unterminated_c_str(),
                                      stringSrc.GetLength()));
 }
 
-ByteString::ByteString(const ByteStringView& str1, const ByteStringView& str2) {
+ByteString::ByteString(ByteStringView str1, ByteStringView str2) {
   FX_SAFE_SIZE_T nSafeLen = str1.GetLength();
   nSafeLen += str2.GetLength();
 
@@ -198,7 +198,7 @@ const ByteString& ByteString::operator=(const char* pStr) {
   return *this;
 }
 
-const ByteString& ByteString::operator=(const ByteStringView& stringSrc) {
+const ByteString& ByteString::operator=(ByteStringView stringSrc) {
   if (stringSrc.IsEmpty())
     clear();
   else
@@ -240,7 +240,7 @@ const ByteString& ByteString::operator+=(const ByteString& str) {
   return *this;
 }
 
-const ByteString& ByteString::operator+=(const ByteStringView& str) {
+const ByteString& ByteString::operator+=(ByteStringView str) {
   if (!str.IsEmpty())
     Concat(str.unterminated_c_str(), str.GetLength());
 
@@ -258,7 +258,7 @@ bool ByteString::operator==(const char* ptr) const {
          memcmp(ptr, m_pData->m_String, m_pData->m_nDataLength) == 0;
 }
 
-bool ByteString::operator==(const ByteStringView& str) const {
+bool ByteString::operator==(ByteStringView str) const {
   if (!m_pData)
     return str.IsEmpty();
 
@@ -294,7 +294,7 @@ bool ByteString::operator<(const char* ptr) const {
   return result < 0 || (result == 0 && len < other_len);
 }
 
-bool ByteString::operator<(const ByteStringView& str) const {
+bool ByteString::operator<(ByteStringView str) const {
   return Compare(str) < 0;
 }
 
@@ -308,7 +308,7 @@ bool ByteString::operator<(const ByteString& other) const {
   return result < 0 || (result == 0 && len < other_len);
 }
 
-bool ByteString::EqualNoCase(const ByteStringView& str) const {
+bool ByteString::EqualNoCase(ByteStringView str) const {
   if (!m_pData)
     return str.IsEmpty();
 
@@ -425,8 +425,7 @@ size_t ByteString::Delete(size_t index, size_t count) {
     return 0;
 
   size_t old_length = m_pData->m_nDataLength;
-  if (count == 0 ||
-      index != pdfium::clamp(index, static_cast<size_t>(0), old_length))
+  if (count == 0 || index != pdfium::clamp<size_t>(index, 0, old_length))
     return old_length;
 
   size_t removal_length = index + count;
@@ -456,10 +455,12 @@ void ByteString::Concat(const char* pSrcData, size_t nSrcLen) {
     return;
   }
 
+  size_t nConcatLen = std::max(m_pData->m_nDataLength / 2, nSrcLen);
   RetainPtr<StringData> pNewData(
-      StringData::Create(m_pData->m_nDataLength + nSrcLen));
+      StringData::Create(m_pData->m_nDataLength + nConcatLen));
   pNewData->CopyContents(*m_pData);
   pNewData->CopyContentsAt(m_pData->m_nDataLength, pSrcData, nSrcLen);
+  pNewData->m_nDataLength = m_pData->m_nDataLength + nSrcLen;
   m_pData.Swap(pNewData);
 }
 
@@ -518,7 +519,7 @@ void ByteString::SetAt(size_t index, char c) {
 }
 
 size_t ByteString::Insert(size_t location, char ch) {
-  const size_t cur_length = m_pData ? m_pData->m_nDataLength : 0;
+  const size_t cur_length = GetLength();
   if (!IsValidLength(location))
     return cur_length;
 
@@ -544,8 +545,7 @@ Optional<size_t> ByteString::Find(char ch, size_t start) const {
               : Optional<size_t>();
 }
 
-Optional<size_t> ByteString::Find(const ByteStringView& subStr,
-                                  size_t start) const {
+Optional<size_t> ByteString::Find(ByteStringView subStr, size_t start) const {
   if (!m_pData)
     return Optional<size_t>();
 
@@ -588,7 +588,7 @@ void ByteString::MakeUpper() {
 }
 
 size_t ByteString::Remove(char chRemove) {
-  if (!m_pData || m_pData->m_nDataLength < 1)
+  if (!m_pData || m_pData->m_nDataLength == 0)
     return 0;
 
   char* pstrSource = m_pData->m_String;
@@ -621,8 +621,7 @@ size_t ByteString::Remove(char chRemove) {
   return nCount;
 }
 
-size_t ByteString::Replace(const ByteStringView& pOld,
-                           const ByteStringView& pNew) {
+size_t ByteString::Replace(ByteStringView pOld, ByteStringView pNew) {
   if (!m_pData || pOld.IsEmpty())
     return 0;
 
@@ -668,7 +667,7 @@ size_t ByteString::Replace(const ByteStringView& pOld,
   return nCount;
 }
 
-int ByteString::Compare(const ByteStringView& str) const {
+int ByteString::Compare(ByteStringView str) const {
   if (!m_pData)
     return str.IsEmpty() ? 0 : -1;
 
@@ -694,7 +693,7 @@ void ByteString::Trim(char target) {
   TrimLeft(targets);
 }
 
-void ByteString::Trim(const ByteStringView& targets) {
+void ByteString::Trim(ByteStringView targets) {
   TrimRight(targets);
   TrimLeft(targets);
 }
@@ -707,7 +706,7 @@ void ByteString::TrimLeft(char target) {
   TrimLeft(ByteStringView(target));
 }
 
-void ByteString::TrimLeft(const ByteStringView& targets) {
+void ByteString::TrimLeft(ByteStringView targets) {
   if (!m_pData || targets.IsEmpty())
     return;
 
@@ -741,7 +740,7 @@ void ByteString::TrimRight(char target) {
   TrimRight(ByteStringView(target));
 }
 
-void ByteString::TrimRight(const ByteStringView& targets) {
+void ByteString::TrimRight(ByteStringView targets) {
   if (!m_pData || targets.IsEmpty())
     return;
 
@@ -768,8 +767,32 @@ std::ostream& operator<<(std::ostream& os, const ByteString& str) {
   return os.write(str.c_str(), str.GetLength());
 }
 
-std::ostream& operator<<(std::ostream& os, const ByteStringView& str) {
+std::ostream& operator<<(std::ostream& os, ByteStringView str) {
   return os.write(str.unterminated_c_str(), str.GetLength());
 }
 
 }  // namespace fxcrt
+
+uint32_t FX_HashCode_GetA(ByteStringView str, bool bIgnoreCase) {
+  uint32_t dwHashCode = 0;
+  if (bIgnoreCase) {
+    for (ByteStringView::UnsignedType c : str)
+      dwHashCode = 31 * dwHashCode + tolower(c);
+  } else {
+    for (ByteStringView::UnsignedType c : str)
+      dwHashCode = 31 * dwHashCode + c;
+  }
+  return dwHashCode;
+}
+
+uint32_t FX_HashCode_GetAsIfW(ByteStringView str, bool bIgnoreCase) {
+  uint32_t dwHashCode = 0;
+  if (bIgnoreCase) {
+    for (ByteStringView::UnsignedType c : str)
+      dwHashCode = 1313 * dwHashCode + FXSYS_towlower(c);
+  } else {
+    for (ByteStringView::UnsignedType c : str)
+      dwHashCode = 1313 * dwHashCode + c;
+  }
+  return dwHashCode;
+}

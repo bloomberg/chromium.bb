@@ -25,14 +25,18 @@ cr.define('settings', function() {
 
   FakeBluetooth.prototype = {
     // Public testing methods.
-    /** @param {boolean} enabled */
-    setEnabled: function(enabled) {
-      this.setAdapterState({powered: enabled});
-    },
 
-    /** @param {!chrome.bluetooth.AdapterState} state*/
-    setAdapterState: function(state) {
-      Object.assign(this.adapterState_, state);
+    /**
+     * @param {!{
+     *    address: (string|undefined),
+     *    name: (string|undefined),
+     *    powered: (boolean|undefined),
+     *    available: (boolean|undefined),
+     *    discovering: (boolean|undefined)
+     *  }} newState
+     */
+    simulateAdapterStateChangedForTest: function(newState) {
+      Object.assign(this.adapterState_, newState);
       this.onAdapterStateChanged.callListeners(
           Object.assign({}, this.adapterState_));
     },
@@ -42,13 +46,66 @@ cr.define('settings', function() {
       return Object.assign({}, this.adapterState_);
     },
 
+    clearDevicesForTest: function() {
+      this.devices.length = 0;
+    },
+
     /** @param {!Array<!chrome.bluetooth.Device>} devices */
-    setDevicesForTest: function(devices) {
-      for (const d of this.devices)
-        this.onDeviceRemoved.callListeners(d);
-      this.devices = devices.slice();
-      for (const d of this.devices)
-        this.onDeviceAdded.callListeners(d);
+    simulateDevicesAddedForTest: function(devices) {
+      let newDevices = devices.slice();
+      // Make sure the new devices don't already exist.
+      for (const d of newDevices) {
+        const found = this.devices.find(element => {
+          return element.address == d.address;
+        });
+        assert(
+            !found,
+            'Device already added. Use ' +
+                'simulateDeviceUpdatedForTest to update existing ' +
+                'devices.');
+      }
+      this.devices.push(...newDevices);
+      // The underlying Bluetooth API always returns the devices sorted by
+      // address.
+      this.devices.sort((d1, d2) => {
+        if (d1.address < d2.address) {
+          return -1;
+        }
+        if (d1.address > d2.address) {
+          return 1;
+        }
+        return 0;
+      });
+
+      for (const newDevice of newDevices) {
+        this.onDeviceAdded.callListeners(newDevice);
+      }
+    },
+
+    /** @param {!Array<!String>} devices */
+    simulateDevicesRemovedForTest: function(deviceAddresses) {
+      for (const deviceAddress of deviceAddresses) {
+        const removedDeviceIndex = this.devices.findIndex(element => {
+          return element.address == deviceAddress;
+        });
+        assert(
+            removedDeviceIndex !== -1,
+            'Tried to remove a non-existent device.');
+
+        const [removedDevice] = this.devices.splice(removedDeviceIndex, 1);
+        this.onDeviceRemoved.callListeners(removedDevice);
+      }
+    },
+
+    /** @param {!chrome.bluetooth.Device} updateDevice */
+    simulateDeviceUpdatedForTest: function(updatedDevice) {
+      const updatedDeviceIndex = this.devices.findIndex(element => {
+        return element.address === updatedDevice.address;
+      });
+      assert(
+          updatedDeviceIndex !== -1, 'Tried to update a non-existent device.');
+      this.devices[updatedDeviceIndex] = updatedDevice;
+      this.onDeviceChanged.callListeners(updatedDevice);
     },
 
     /**
@@ -59,20 +116,6 @@ cr.define('settings', function() {
       return this.devices.find(function(d) {
         return d.address == address;
       });
-    },
-
-    /** @param {!chrome.bluetooth.Device} device */
-    updateDeviceForTest: function(device, opt_callback) {
-      const index = this.devices.findIndex(function(d) {
-        return d.address == device.address;
-      });
-      if (index == -1) {
-        this.devices.push(device);
-        this.onDeviceAdded.callListeners(device);
-        return;
-      }
-      this.devices[index] = device;
-      this.onDeviceChanged.callListeners(device);
     },
 
     // Bluetooth overrides.
@@ -86,8 +129,9 @@ cr.define('settings', function() {
 
     /** @override */
     getDevices: function(opt_filter, opt_callback) {
-      if (opt_callback)
+      if (opt_callback) {
         opt_callback(this.devices.slice());
+      }
     },
 
     /** @override */

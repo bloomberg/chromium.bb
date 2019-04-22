@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
@@ -68,12 +68,12 @@ class MockSettingsResetPromptModel
             profile,
             std::make_unique<NiceMock<MockSettingsResetPromptConfig>>(),
             std::make_unique<NiceMock<MockProfileResetter>>(profile)) {
-    EXPECT_LE(params.startup_pages, arraysize(kStartupUrls));
+    EXPECT_LE(params.startup_pages, base::size(kStartupUrls));
 
     // Set up startup URLs to be returned by member functions based on the
     // constructor arguments.
     for (size_t i = 0;
-         i < std::min(arraysize(kStartupUrls), params.startup_pages); ++i) {
+         i < std::min(base::size(kStartupUrls), params.startup_pages); ++i) {
       startup_urls_.push_back(GURL(kStartupUrls[i]));
     }
 

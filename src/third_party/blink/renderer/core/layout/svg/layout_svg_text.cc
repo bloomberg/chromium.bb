@@ -283,9 +283,7 @@ void LayoutSVGText::UpdateLayout() {
     update_parent_boundaries = true;
   }
 
-  overflow_.reset();
-  AddSelfVisualOverflow(LayoutRect(new_boundaries));
-  AddVisualEffectOverflow();
+  ClearLayoutOverflow();
 
   // Invalidate all resources of this client if our layout changed.
   if (EverHadLayout() && SelfNeedsLayout())
@@ -299,7 +297,14 @@ void LayoutSVGText::UpdateLayout() {
   DCHECK(!needs_transform_update_);
   DCHECK(!needs_text_metrics_update_);
   DCHECK(!needs_positioning_values_update_);
+  ClearSelfNeedsLayoutOverflowRecalc();
   ClearNeedsLayout();
+}
+
+void LayoutSVGText::RecalcVisualOverflow() {
+  LayoutObject::RecalcVisualOverflow();
+  AddSelfVisualOverflow(LayoutRect(ObjectBoundingBox()));
+  AddVisualEffectOverflow();
 }
 
 RootInlineBox* LayoutSVGText::CreateRootInlineBox() {
@@ -321,7 +326,8 @@ bool LayoutSVGText::NodeAtPoint(HitTestResult& result,
                                             LocalToSVGParentTransform());
   if (!local_location)
     return false;
-  if (!SVGLayoutSupport::IntersectsClipPath(*this, *local_location))
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, ObjectBoundingBox(),
+                                            *local_location))
     return false;
 
   if (LayoutBlock::NodeAtPoint(result, *local_location, accumulated_offset,

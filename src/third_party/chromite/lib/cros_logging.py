@@ -78,7 +78,7 @@ def PrintBuildbotLink(text, url, handle=None):
   _PrintForBuildbot(handle, _annotations.StepLink, text, url)
 
 
-def PrintBuildbotSetBuildProperty(name, data, handle=None):
+def PrintKitchenSetBuildProperty(name, data, handle=None):
   """Prints out a request to set a build property to a JSON value."""
   _PrintForBuildbot(handle, _annotations.SetBuildProperty, name, data)
 
@@ -90,6 +90,8 @@ def PrintBuildbotStepText(text, handle=None):
 
 def PrintBuildbotStepWarnings(handle=None):
   """Marks a stage as having warnings."""
+  PrintBuildbotStepText('[FAILED BUT FORGIVEN]', handle=handle)
+  # Warnings not supported by LUCI, so working around until re-added.
   _PrintForBuildbot(handle, _annotations.StepWarnings)
 
 

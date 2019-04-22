@@ -16,7 +16,7 @@ class ResourceFetcher;
 // WorkletModuleScriptFetcher is an implementation of ModuleScriptFetcher
 // interface for Worklets. This implements the custom "perform the fetch" hook
 // defined in the Worklets spec:
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts-perform-fetch
+// https://html.spec.whatwg.org/C/#fetching-scripts-perform-fetch
 // https://drafts.css-houdini.org/worklets/#fetch-a-worklet-script
 //
 // WorkletModuleScriptFetcher either fetchs a cached result from
@@ -28,21 +28,19 @@ class CORE_EXPORT WorkletModuleScriptFetcher final
   USING_GARBAGE_COLLECTED_MIXIN(WorkletModuleScriptFetcher);
 
  public:
-  WorkletModuleScriptFetcher(ResourceFetcher*, WorkletModuleResponsesMap*);
+  explicit WorkletModuleScriptFetcher(WorkletModuleResponsesMap*);
 
   // Implements ModuleScriptFetcher.
   void Fetch(FetchParameters&,
+             ResourceFetcher*,
+             const Modulator* modulator_for_built_in_modules,
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
-
-  void Trace(blink::Visitor*) override;
 
  private:
   // Implements ResourceClient
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "WorkletModuleScriptFetcher"; }
-
-  const Member<ResourceFetcher> fetcher_;
 
   // TODO(nhiroki): In general, CrossThreadPersistent is heavy and should not be
   // owned by objects that can frequently be created like this class. Instead of

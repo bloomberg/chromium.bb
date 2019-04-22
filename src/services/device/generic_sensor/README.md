@@ -67,7 +67,7 @@ platform.
 | AMBIENT_LIGHT                     | TYPE_LIGHT                | in_illuminance                        | AppleLMUController                    | SENSOR_TYPE_AMBIENT_LIGHT                 |
 | PROXIMITY                         |                           |                                       |                                       |                                           |
 | ACCELEROMETER                     | TYPE_ACCELEROMETER        | in_accel                              | SMCMotionSensor                       | SENSOR_TYPE_ACCELEROMETER_3D              |
-| LINEAR_ACCELEROMETER              | TYPE_LINEAR_ACCELEROMETER | ACCELEROMETER (*)                     |                                       | ACCELEROMETER (*)                         |
+| LINEAR_ACCELEROMETER              | See below                 | ACCELEROMETER (*)                     |                                       | ACCELEROMETER (*)                         |
 | GYROSCOPE                         | TYPE_GYROSCOPE            | in_anglvel                            |                                       | SENSOR_TYPE_GYROMETER_3D                  |
 | MAGNETOMETER                      | TYPE_MAGNETIC_FIELD       | in_magn                               |                                       | SENSOR_TYPE_COMPASS_3D                    |
 | PRESSURE                          |                           |                                       |                                       |                                           |
@@ -86,6 +86,10 @@ Sensors are implemented by passing through values provided by the
 class. The TYPE_* values in the below descriptions correspond to the integer
 constants from the android.hardware.Sensor used to provide data for a
 SensorType.
+
+For LINEAR_ACCELEROMETER, the following sensor fallback is used:
+1. Use TYPE_LINEAR_ACCELERATION directly
+2. ACCELEROMETER, with a low-pass filter to isolate the effect of gravity
 
 For ABSOLUTE_ORIENTATION_EULER_ANGLES, the following sensor fallback is used:
 1. ABSOLUTE_ORIENTATION_QUATERNION (if it uses TYPE_ROTATION_VECTOR

@@ -20,6 +20,7 @@
  *            listener: (EventListener|Function),
  *            capture: boolean}}
  */
+// eslint-disable-next-line no-var
 var EventTrackerEntry;
 
 /**
@@ -46,8 +47,8 @@ EventTracker.prototype = {
    * @param {boolean=} opt_capture Whether to invoke during the capture phase.
    */
   add: function(target, eventType, listener, opt_capture) {
-    var capture = !!opt_capture;
-    var h = {
+    const capture = !!opt_capture;
+    const h = {
       target: target,
       eventType: eventType,
       listener: listener,

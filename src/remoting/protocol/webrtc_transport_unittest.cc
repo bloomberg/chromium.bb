@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -166,14 +168,14 @@ class WebrtcTransportTest : public testing::Test {
 
   void ProcessTransportInfo(std::unique_ptr<WebrtcTransport>* target_transport,
                             bool normalize_line_endings,
-                            std::unique_ptr<buzz::XmlElement> transport_info) {
+                            std::unique_ptr<jingle_xmpp::XmlElement> transport_info) {
     ASSERT_TRUE(target_transport);
 
     // Reformat the message to normalize line endings by removing CR symbol.
     if (normalize_line_endings) {
       std::string xml = transport_info->Str();
       base::ReplaceChars(xml, "\r", std::string(), &xml);
-      transport_info.reset(buzz::XmlElement::ForStr(xml));
+      transport_info.reset(jingle_xmpp::XmlElement::ForStr(xml));
     }
 
     EXPECT_TRUE(

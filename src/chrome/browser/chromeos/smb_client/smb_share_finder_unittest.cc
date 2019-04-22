@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -61,6 +62,12 @@ class SmbShareFinderTest : public testing::Test {
     expected_shares_.insert(server_url + share);
   }
 
+  // Adds a share lookup failure for |resolved_url|.
+  void AddShareFailure(const std::string& resolved_url,
+                       smbprovider::ErrorType error) {
+    fake_client_->AddGetSharesFailure(resolved_url, error);
+  }
+
   // Helper function when expecting shares to be found in the network.
   void StartDiscoveryWhileExpectingSharesFound() {
     share_finder_->GatherSharesInNetwork(
@@ -98,7 +105,10 @@ class SmbShareFinderTest : public testing::Test {
   }
 
   // Helper function that expects expected_shares_ to be empty.
-  void ExpectAllSharesHaveBeenFound() { EXPECT_TRUE(expected_shares_.empty()); }
+  void ExpectAllSharesHaveBeenFound() {
+    EXPECT_TRUE(expected_shares_.empty());
+    EXPECT_TRUE(share_discovery_callback_called_);
+  }
 
   // Helper function that expects |url| to resolve to |expected|.
   void ExpectResolvedHost(const SmbUrl& url, const std::string& expected) {
@@ -140,17 +150,21 @@ class SmbShareFinderTest : public testing::Test {
     for (const SmbUrl& url : shares_found) {
       EXPECT_EQ(1u, expected_shares_.erase(url.ToString()));
     }
+    share_discovery_callback_called_ = true;
   }
 
   void SharesFoundSizeCallback(const std::vector<SmbUrl>& shares_found) {
     EXPECT_GE(shares_found.size(), 0u);
+    share_discovery_callback_called_ = true;
   }
 
   void EmptySharesCallback(const std::vector<SmbUrl>& shares_found) {
     EXPECT_EQ(0u, shares_found.size());
+    share_discovery_callback_called_ = true;
   }
 
   bool discovery_callback_called_ = false;
+  bool share_discovery_callback_called_ = false;
 
   // Keeps track of expected shares across multiple hosts.
   std::set<std::string> expected_shares_;
@@ -188,6 +202,14 @@ TEST_F(SmbShareFinderTest, SharesFoundWithSingleHost) {
   ExpectAllSharesHaveBeenFound();
 }
 
+TEST_F(SmbShareFinderTest, ErroWrithSingleHost) {
+  AddDefaultHost();
+  AddShareFailure(kDefaultResolvedUrl, smbprovider::ErrorType::ERROR_FAILED);
+
+  StartDiscoveryWhileExpectingSharesFound();
+  ExpectAllSharesHaveBeenFound();
+}
+
 TEST_F(SmbShareFinderTest, SharesFoundWithMultipleHosts) {
   AddDefaultHost();
   AddShareToDefaultHost("share1");
@@ -199,6 +221,24 @@ TEST_F(SmbShareFinderTest, SharesFoundWithMultipleHosts) {
   const std::string share2 = "share2";
   AddHost(host2, address2);
   AddShare(resolved_server_url2, server_url2, share2);
+
+  StartDiscoveryWhileExpectingSharesFound();
+  ExpectAllSharesHaveBeenFound();
+}
+
+TEST_F(SmbShareFinderTest, SharesFoundWithMultipleHostsAndLastFailed) {
+  AddDefaultHost();
+  AddShareToDefaultHost("share1");
+
+  const std::string host2 = "host2";
+  const std::string address2 = "4.5.6.7";
+  const std::string resolved_server_url2 = kSmbSchemePrefix + address2;
+  AddHost(host2, address2);
+  // Note: This assumes that hosts will be queried for shares in lexicographical
+  // order. This is currently true because SmbShareFinder receives hosts in an
+  // ordered std::map<>.
+  AddShareFailure(resolved_server_url2,
+                  smbprovider::ErrorType::ERROR_SMB1_UNSUPPORTED);
 
   StartDiscoveryWhileExpectingSharesFound();
   ExpectAllSharesHaveBeenFound();

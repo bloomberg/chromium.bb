@@ -48,28 +48,6 @@
 
 namespace blink {
 
-namespace {
-
-class URLResponseExtraDataContainer : public ResourceResponse::ExtraData {
- public:
-  static scoped_refptr<URLResponseExtraDataContainer> Create(
-      WebURLResponse::ExtraData* extra_data) {
-    return base::AdoptRef(new URLResponseExtraDataContainer(extra_data));
-  }
-
-  ~URLResponseExtraDataContainer() override = default;
-
-  WebURLResponse::ExtraData* GetExtraData() const { return extra_data_.get(); }
-
- private:
-  explicit URLResponseExtraDataContainer(WebURLResponse::ExtraData* extra_data)
-      : extra_data_(base::WrapUnique(extra_data)) {}
-
-  std::unique_ptr<WebURLResponse::ExtraData> extra_data_;
-};
-
-}  // namespace
-
 WebURLResponse::~WebURLResponse() = default;
 
 WebURLResponse::WebURLResponse()
@@ -81,8 +59,9 @@ WebURLResponse::WebURLResponse(const WebURLResponse& r)
           std::make_unique<ResourceResponse>(*r.resource_response_)),
       resource_response_(owned_resource_response_.get()) {}
 
-WebURLResponse::WebURLResponse(const WebURL& url) : WebURLResponse() {
-  SetURL(url);
+WebURLResponse::WebURLResponse(const WebURL& current_request_url)
+    : WebURLResponse() {
+  SetCurrentRequestUrl(current_request_url);
 }
 
 WebURLResponse& WebURLResponse::operator=(const WebURLResponse& r) {
@@ -99,12 +78,16 @@ bool WebURLResponse::IsNull() const {
   return resource_response_->IsNull();
 }
 
-WebURL WebURLResponse::Url() const {
-  return resource_response_->Url();
+WebURL WebURLResponse::CurrentRequestUrl() const {
+  return resource_response_->CurrentRequestUrl();
 }
 
-void WebURLResponse::SetURL(const WebURL& url) {
-  resource_response_->SetURL(url);
+void WebURLResponse::SetCurrentRequestUrl(const WebURL& url) {
+  resource_response_->SetCurrentRequestUrl(url);
+}
+
+WebURL WebURLResponse::ResponseUrl() const {
+  return resource_response_->ResponseUrl();
 }
 
 void WebURLResponse::SetConnectionID(unsigned connection_id) {
@@ -133,16 +116,15 @@ WebString WebURLResponse::MimeType() const {
   return resource_response_->MimeType();
 }
 
-void WebURLResponse::SetMIMEType(const WebString& mime_type) {
+void WebURLResponse::SetMimeType(const WebString& mime_type) {
   resource_response_->SetMimeType(mime_type);
 }
 
-long long WebURLResponse::ExpectedContentLength() const {
+int64_t WebURLResponse::ExpectedContentLength() const {
   return resource_response_->ExpectedContentLength();
 }
 
-void WebURLResponse::SetExpectedContentLength(
-    long long expected_content_length) {
+void WebURLResponse::SetExpectedContentLength(int64_t expected_content_length) {
   resource_response_->SetExpectedContentLength(expected_content_length);
 }
 
@@ -154,8 +136,8 @@ WebURLResponse::HTTPVersion WebURLResponse::HttpVersion() const {
   return static_cast<HTTPVersion>(resource_response_->HttpVersion());
 }
 
-void WebURLResponse::SetHTTPVersion(HTTPVersion version) {
-  resource_response_->SetHTTPVersion(
+void WebURLResponse::SetHttpVersion(HTTPVersion version) {
+  resource_response_->SetHttpVersion(
       static_cast<ResourceResponse::HTTPVersion>(version));
 }
 
@@ -171,51 +153,51 @@ int WebURLResponse::HttpStatusCode() const {
   return resource_response_->HttpStatusCode();
 }
 
-void WebURLResponse::SetHTTPStatusCode(int http_status_code) {
-  resource_response_->SetHTTPStatusCode(http_status_code);
+void WebURLResponse::SetHttpStatusCode(int http_status_code) {
+  resource_response_->SetHttpStatusCode(http_status_code);
 }
 
 WebString WebURLResponse::HttpStatusText() const {
   return resource_response_->HttpStatusText();
 }
 
-void WebURLResponse::SetHTTPStatusText(const WebString& http_status_text) {
-  resource_response_->SetHTTPStatusText(http_status_text);
+void WebURLResponse::SetHttpStatusText(const WebString& http_status_text) {
+  resource_response_->SetHttpStatusText(http_status_text);
 }
 
 WebString WebURLResponse::HttpHeaderField(const WebString& name) const {
   return resource_response_->HttpHeaderField(name);
 }
 
-void WebURLResponse::SetHTTPHeaderField(const WebString& name,
+void WebURLResponse::SetHttpHeaderField(const WebString& name,
                                         const WebString& value) {
-  resource_response_->SetHTTPHeaderField(name, value);
+  resource_response_->SetHttpHeaderField(name, value);
 }
 
-void WebURLResponse::AddHTTPHeaderField(const WebString& name,
+void WebURLResponse::AddHttpHeaderField(const WebString& name,
                                         const WebString& value) {
   if (name.IsNull() || value.IsNull())
     return;
 
-  resource_response_->AddHTTPHeaderField(name, value);
+  resource_response_->AddHttpHeaderField(name, value);
 }
 
-void WebURLResponse::ClearHTTPHeaderField(const WebString& name) {
-  resource_response_->ClearHTTPHeaderField(name);
+void WebURLResponse::ClearHttpHeaderField(const WebString& name) {
+  resource_response_->ClearHttpHeaderField(name);
 }
 
-void WebURLResponse::VisitHTTPHeaderFields(
+void WebURLResponse::VisitHttpHeaderFields(
     WebHTTPHeaderVisitor* visitor) const {
   const HTTPHeaderMap& map = resource_response_->HttpHeaderFields();
   for (HTTPHeaderMap::const_iterator it = map.begin(); it != map.end(); ++it)
     visitor->VisitHeader(it->key, it->value);
 }
 
-long long WebURLResponse::AppCacheID() const {
+int64_t WebURLResponse::AppCacheID() const {
   return resource_response_->AppCacheID();
 }
 
-void WebURLResponse::SetAppCacheID(long long app_cache_id) {
+void WebURLResponse::SetAppCacheID(int64_t app_cache_id) {
   resource_response_->SetAppCacheID(app_cache_id);
 }
 
@@ -255,10 +237,6 @@ void WebURLResponse::SetCTPolicyCompliance(
           ResourceResponse::kCTPolicyComplianceDetailsNotAvailable);
       break;
   };
-}
-
-void WebURLResponse::SetIsLegacySymantecCert(bool value) {
-  resource_response_->SetIsLegacySymantecCert(value);
 }
 
 void WebURLResponse::SetIsLegacyTLSVersion(bool value) {
@@ -346,21 +324,19 @@ network::mojom::FetchResponseType WebURLResponse::GetType() const {
   return resource_response_->GetType();
 }
 
-void WebURLResponse::SetURLListViaServiceWorker(
+void WebURLResponse::SetUrlListViaServiceWorker(
     const WebVector<WebURL>& url_list_via_service_worker) {
   Vector<KURL> url_list(url_list_via_service_worker.size());
   std::transform(url_list_via_service_worker.begin(),
                  url_list_via_service_worker.end(), url_list.begin(),
                  [](const WebURL& url) { return url; });
-  resource_response_->SetURLListViaServiceWorker(url_list);
+  resource_response_->SetUrlListViaServiceWorker(url_list);
 }
 
-WebURL WebURLResponse::OriginalURLViaServiceWorker() const {
-  return resource_response_->OriginalURLViaServiceWorker();
-}
-
-void WebURLResponse::SetMultipartBoundary(const char* bytes, size_t size) {
-  resource_response_->SetMultipartBoundary(bytes, size);
+bool WebURLResponse::HasUrlListViaServiceWorker() const {
+  DCHECK(resource_response_->UrlListViaServiceWorker().size() == 0 ||
+         WasFetchedViaServiceWorker());
+  return resource_response_->UrlListViaServiceWorker().size() > 0;
 }
 
 void WebURLResponse::SetCacheStorageCacheName(
@@ -391,15 +367,15 @@ void WebURLResponse::SetRemoteIPAddress(const WebString& remote_ip_address) {
   resource_response_->SetRemoteIPAddress(remote_ip_address);
 }
 
-unsigned short WebURLResponse::RemotePort() const {
+uint16_t WebURLResponse::RemotePort() const {
   return resource_response_->RemotePort();
 }
 
-void WebURLResponse::SetRemotePort(unsigned short remote_port) {
+void WebURLResponse::SetRemotePort(uint16_t remote_port) {
   resource_response_->SetRemotePort(remote_port);
 }
 
-void WebURLResponse::SetEncodedDataLength(long long length) {
+void WebURLResponse::SetEncodedDataLength(int64_t length) {
   resource_response_->SetEncodedDataLength(length);
 }
 
@@ -407,26 +383,6 @@ void WebURLResponse::SetIsSignedExchangeInnerResponse(
     bool is_signed_exchange_inner_response) {
   resource_response_->SetIsSignedExchangeInnerResponse(
       is_signed_exchange_inner_response);
-}
-
-WebURLResponse::ExtraData* WebURLResponse::GetExtraData() const {
-  scoped_refptr<ResourceResponse::ExtraData> data =
-      resource_response_->GetExtraData();
-  if (!data)
-    return nullptr;
-  return static_cast<URLResponseExtraDataContainer*>(data.get())
-      ->GetExtraData();
-}
-
-void WebURLResponse::SetExtraData(WebURLResponse::ExtraData* extra_data) {
-  if (extra_data != GetExtraData()) {
-    resource_response_->SetExtraData(
-        URLResponseExtraDataContainer::Create(extra_data));
-  }
-}
-
-void WebURLResponse::AppendRedirectResponse(const WebURLResponse& response) {
-  resource_response_->AppendRedirectResponse(response.ToResourceResponse());
 }
 
 WebString WebURLResponse::AlpnNegotiatedProtocol() const {

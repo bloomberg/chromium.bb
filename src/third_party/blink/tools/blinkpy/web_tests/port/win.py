@@ -160,7 +160,7 @@ class WinPort(base.Port):
         return 'win'
 
     def relative_test_filename(self, filename):
-        path = filename[len(self.layout_tests_dir()) + 1:]
+        path = filename[len(self.web_tests_dir()) + 1:]
         return path.replace('\\', '/')
 
     def uses_apache(self):

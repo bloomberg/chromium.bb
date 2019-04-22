@@ -65,6 +65,11 @@ PACKAGE_INFO.update({
         'org.chromium.chromedriver_webview_shell.Main',
         None,
         None),
+    'android_webview_cts': chrome.PackageInfo(
+        'com.android.webview',
+        'com.android.cts.webkit.WebViewStartupCtsActivity',
+        'webview-command-line',
+        None),
 })
 
 
@@ -97,8 +102,8 @@ SCREENSHOTS_DIR = os.path.join(DIR_SOURCE_ROOT, 'out_screenshots')
 
 ANDROID_SDK_VERSION = version_codes.OREO_MR1
 ANDROID_SDK_BUILD_TOOLS_VERSION = '27.0.3'
-ANDROID_SDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
-                                'third_party', 'android_tools', 'sdk')
+ANDROID_SDK_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'android_sdk',
+                                'public')
 ANDROID_SDK_TOOLS = os.path.join(ANDROID_SDK_ROOT,
                                  'build-tools', ANDROID_SDK_BUILD_TOOLS_VERSION)
 ANDROID_NDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
@@ -124,24 +129,27 @@ UBSAN_OPTIONS = (
 
 # TODO(jbudorick): Rework this into testing/buildbot/
 PYTHON_UNIT_TEST_SUITES = {
-  'pylib_py_unittests': {
-    'path': os.path.join(DIR_SOURCE_ROOT, 'build', 'android'),
-    'test_modules': [
-      'devil.android.device_utils_test',
-      'devil.android.md5sum_test',
-      'devil.utils.cmd_helper_test',
-      'pylib.results.json_results_test',
-      'pylib.utils.proguard_test',
-    ]
-  },
-  'gyp_py_unittests': {
-    'path': os.path.join(DIR_SOURCE_ROOT, 'build', 'android', 'gyp'),
-    'test_modules': [
-      'java_cpp_enum_tests',
-      'java_google_api_keys_tests',
-      'extract_unwind_tables_tests',
-    ]
-  },
+    'pylib_py_unittests': {
+        'path':
+        os.path.join(DIR_SOURCE_ROOT, 'build', 'android'),
+        'test_modules': [
+            'devil.android.device_utils_test',
+            'devil.android.md5sum_test',
+            'devil.utils.cmd_helper_test',
+            'pylib.results.json_results_test',
+            'pylib.utils.proguard_test',
+        ]
+    },
+    'gyp_py_unittests': {
+        'path':
+        os.path.join(DIR_SOURCE_ROOT, 'build', 'android', 'gyp'),
+        'test_modules': [
+            'java_cpp_enum_tests',
+            'java_cpp_strings_tests',
+            'java_google_api_keys_tests',
+            'extract_unwind_tables_tests',
+        ]
+    },
 }
 
 LOCAL_MACHINE_TESTS = ['junit', 'python']

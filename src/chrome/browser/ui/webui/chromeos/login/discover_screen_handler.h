@@ -18,7 +18,7 @@ class DiscoverScreen;
 class DiscoverScreenHandler : public BaseScreenHandler,
                               public DiscoverScreenView {
  public:
-  DiscoverScreenHandler();
+  explicit DiscoverScreenHandler(JSCallsContainer* js_calls_container);
   ~DiscoverScreenHandler() override;
 
   // BaseScreenHandler:

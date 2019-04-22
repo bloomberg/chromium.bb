@@ -8,11 +8,15 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/eventlog/gcp_eventlog_messages.h"
+#include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_provider_filter.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gcp_crash_reporting.h"
+#include "chrome/credential_provider/gaiacp/grit/gaia_static_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "content/public/common/content_switches.h"
@@ -51,11 +55,17 @@ CGaiaCredentialProviderModule::UpdateRegistryAppId(BOOL do_register) throw() {
   eventlog_path =
       eventlog_path.Append(FILE_PATH_LITERAL("gcp_eventlog_provider.dll"));
 
-  wchar_t guid_in_wchar[64];
-  StringFromGUID2(CLSID_GaiaCredentialProvider, guid_in_wchar, base::size(guid_in_wchar));
+  wchar_t provider_guid_in_wchar[64];
+  StringFromGUID2(CLSID_GaiaCredentialProvider, provider_guid_in_wchar,
+                  base::size(provider_guid_in_wchar));
+
+  wchar_t filter_guid_in_wchar[64];
+  StringFromGUID2(__uuidof(CGaiaCredentialProviderFilter), filter_guid_in_wchar,
+                  base::size(filter_guid_in_wchar));
 
   ATL::_ATL_REGMAP_ENTRY regmap[] = {
-      {L"CREDENTIAL_PROVIDER_CLASS_GUID", guid_in_wchar},
+      {L"CP_CLASS_GUID", provider_guid_in_wchar},
+      {L"CP_FILTER_CLASS_GUID", filter_guid_in_wchar},
       {L"VERSION", TEXT(CHROME_VERSION_STRING)},
       {L"EVENTLOG_PATH", eventlog_path.value().c_str()},
       {nullptr, nullptr},
@@ -63,6 +73,14 @@ CGaiaCredentialProviderModule::UpdateRegistryAppId(BOOL do_register) throw() {
 
   return ATL::_pAtlModule->UpdateRegistryFromResource(
       IDR_GAIACREDENTIALPROVIDER, do_register, regmap);
+}
+
+void CGaiaCredentialProviderModule::RefreshTokenHandleValidity() {
+  if (!token_handle_validity_refreshed_) {
+    credential_provider::AssociatedUserValidator::Get()
+        ->StartRefreshingTokenHandleValidity();
+    token_handle_validity_refreshed_ = true;
+  }
 }
 
 BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
@@ -99,7 +117,9 @@ BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
         credential_provider::ConfigureGcpCrashReporting(*cmd_line);
       }
 
-      LOGFN(INFO) << "DllMain(DLL_PROCESS_ATTACH)";
+      LOGFN(INFO) << "DllMain(DLL_PROCESS_ATTACH) Build: "
+                  << base::win::OSInfo::GetInstance()->Kernel32BaseVersion()
+                  << " Version:" << GetWindowsVersion();
       break;
     }
     case DLL_PROCESS_DETACH:

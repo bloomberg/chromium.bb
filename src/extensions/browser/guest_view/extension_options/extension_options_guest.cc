@@ -199,6 +199,7 @@ void ExtensionOptionsGuest::CloseContents(WebContents* source) {
 }
 
 bool ExtensionOptionsGuest::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   if (!extension_options_guest_delegate_)
     return false;

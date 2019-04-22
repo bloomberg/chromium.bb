@@ -28,9 +28,9 @@ class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle,
                                int render_frame_id);
   ~WebSocketSBHandshakeThrottle() override;
 
-  void ThrottleHandshake(
-      const blink::WebURL& url,
-      blink::WebCallbacks<void, const blink::WebString&>* callbacks) override;
+  void ThrottleHandshake(const blink::WebURL& url,
+                         blink::WebSocketHandshakeThrottle::OnCompletion
+                             completion_callback) override;
 
  private:
   // These values are logged to UMA so do not renumber or reuse.
@@ -53,7 +53,7 @@ class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle,
 
   const int render_frame_id_;
   GURL url_;
-  blink::WebCallbacks<void, const blink::WebString&>* callbacks_;
+  blink::WebSocketHandshakeThrottle::OnCompletion completion_callback_;
   mojom::SafeBrowsingUrlCheckerPtr url_checker_;
   mojom::SafeBrowsing* safe_browsing_;
   std::unique_ptr<mojo::Binding<mojom::UrlCheckNotifier>> notifier_binding_;

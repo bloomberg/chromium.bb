@@ -297,6 +297,10 @@ def main():
       if f in missing:
         print count[f], f
 
+  if args.json:
+    # Assume running on the bots. Temporarily return 0 before
+    # https://crbug.com/937847 is fixed.
+    return 0
   return 1
 
 

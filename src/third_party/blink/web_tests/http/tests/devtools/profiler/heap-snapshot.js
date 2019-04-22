@@ -359,7 +359,7 @@
         TestRunner.assertEquals('b', names.join(','), 'edges provider names');
       },
 
-      function heapSnapshotLoaderTest() {
+      async function heapSnapshotLoaderTest() {
         var source = HeapProfilerTestRunner.createHeapSnapshotMockRaw();
         var sourceStringified = JSON.stringify(source);
         var partSize = sourceStringified.length >> 3;
@@ -368,6 +368,7 @@
         for (var i = 0, l = sourceStringified.length; i < l; i += partSize)
           loader.write(sourceStringified.slice(i, i + partSize));
         loader.close();
+        await 0;  // Make sure loader parses the input.
         var result = loader.buildSnapshot(false);
         result.nodes = new Uint32Array(result.nodes);
         result.containmentEdges = new Uint32Array(result.containmentEdges);

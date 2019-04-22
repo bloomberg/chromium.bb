@@ -20,6 +20,9 @@ class MODULES_EXPORT RTCQuicStreamEvent final : public Event {
   static RTCQuicStreamEvent* Create(const AtomicString& type,
                                     const RTCQuicStreamEventInit* init);
 
+  RTCQuicStreamEvent(RTCQuicStream* stream);
+  RTCQuicStreamEvent(const AtomicString& type,
+                     const RTCQuicStreamEventInit* init);
   ~RTCQuicStreamEvent() override;
 
   // rtc_quic_stream_event.idl
@@ -32,10 +35,6 @@ class MODULES_EXPORT RTCQuicStreamEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  RTCQuicStreamEvent(RTCQuicStream* stream);
-  RTCQuicStreamEvent(const AtomicString& type,
-                     const RTCQuicStreamEventInit* init);
-
   Member<RTCQuicStream> stream_;
 };
 

@@ -12,7 +12,6 @@
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/signin/core/browser/signin_manager.h"
 
 SigninStatusMetricsProvider::SigninStatusMetricsProvider(
     std::unique_ptr<SigninStatusMetricsProviderDelegate> delegate,
@@ -29,8 +28,8 @@ SigninStatusMetricsProvider::SigninStatusMetricsProvider(
 
   // Postpone the initialization until all threads are created.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SigninStatusMetricsProvider::Initialize,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&SigninStatusMetricsProvider::Initialize,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 SigninStatusMetricsProvider::~SigninStatusMetricsProvider() {}
@@ -53,30 +52,30 @@ SigninStatusMetricsProvider::CreateInstance(
       new SigninStatusMetricsProvider(std::move(delegate), false));
 }
 
-void SigninStatusMetricsProvider::OnSigninManagerCreated(
-    SigninManagerBase* manager) {
-  // Whenever a new profile is created, a new SigninManagerBase will be created
+void SigninStatusMetricsProvider::OnIdentityManagerCreated(
+    identity::IdentityManager* identity_manager) {
+  // Whenever a new profile is created, a new IdentityManager will be created
   // for it. This ensures that all sign-in or sign-out actions of all opened
   // profiles are being monitored.
-  scoped_observer_.Add(manager);
+  scoped_observer_.Add(identity_manager);
 
   // If the status is unknown, it means this is the first created
-  // SigninManagerBase and the corresponding profile should be the only opened
+  // IdentityManager and the corresponding profile should be the only opened
   // profile.
   if (signin_status() == UNKNOWN_SIGNIN_STATUS) {
-    size_t signed_in_count = manager->IsAuthenticated() ? 1 : 0;
+    size_t signed_in_count = identity_manager->HasPrimaryAccount() ? 1 : 0;
     UpdateInitialSigninStatus(1, signed_in_count);
   }
 }
 
-void SigninStatusMetricsProvider::OnSigninManagerShutdown(
-    SigninManagerBase* manager) {
-  if (scoped_observer_.IsObserving(manager))
-    scoped_observer_.Remove(manager);
+void SigninStatusMetricsProvider::OnIdentityManagerShutdown(
+    identity::IdentityManager* identity_manager) {
+  if (scoped_observer_.IsObserving(identity_manager))
+    scoped_observer_.Remove(identity_manager);
 }
 
-void SigninStatusMetricsProvider::GoogleSigninSucceeded(
-    const AccountInfo& account_info) {
+void SigninStatusMetricsProvider::OnPrimaryAccountSet(
+    const CoreAccountInfo& account_info) {
   SigninStatus recorded_signin_status = signin_status();
   if (recorded_signin_status == ALL_PROFILES_NOT_SIGNED_IN) {
     UpdateSigninStatus(MIXED_SIGNIN_STATUS);
@@ -87,8 +86,8 @@ void SigninStatusMetricsProvider::GoogleSigninSucceeded(
   }
 }
 
-void SigninStatusMetricsProvider::GoogleSignedOut(
-    const AccountInfo& account_info) {
+void SigninStatusMetricsProvider::OnPrimaryAccountCleared(
+    const CoreAccountInfo& account_info) {
   SigninStatus recorded_signin_status = signin_status();
   if (recorded_signin_status == ALL_PROFILES_SIGNED_IN) {
     UpdateSigninStatus(MIXED_SIGNIN_STATUS);
@@ -102,13 +101,14 @@ void SigninStatusMetricsProvider::GoogleSignedOut(
 void SigninStatusMetricsProvider::Initialize() {
   delegate_->Initialize();
 
-  // Start observing all already-created SigninManagers.
-  for (SigninManager* manager : delegate_->GetSigninManagersForAllAccounts()) {
+  // Start observing all already-created IdentityManagers.
+  for (identity::IdentityManager* manager :
+       delegate_->GetIdentityManagersForAllAccounts()) {
     DCHECK(!scoped_observer_.IsObserving(manager));
     scoped_observer_.Add(manager);
   }
 
-  // It is possible that when this object is created, no SigninManager is
+  // It is possible that when this object is created, no IdentityManager is
   // created yet, for example, when Chrome is opened for the first time after
   // installation on desktop, or when Chrome on Android is loaded into memory.
   if (delegate_->GetStatusOfAllAccounts().num_accounts == 0) {

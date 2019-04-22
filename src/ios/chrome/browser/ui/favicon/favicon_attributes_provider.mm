@@ -106,7 +106,7 @@
   // Always call LargeIconService in case the favicon was updated.
   CGFloat faviconSize = [UIScreen mainScreen].scale * self.faviconSize;
   CGFloat minFaviconSize = [UIScreen mainScreen].scale * self.minSize;
-  self.largeIconService->GetLargeIconOrFallbackStyle(
+  self.largeIconService->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       URL, minFaviconSize, faviconSize,
       base::BindRepeating(faviconBlockSaveToCache), &_faviconTaskTracker);
 }

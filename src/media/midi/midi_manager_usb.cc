@@ -24,16 +24,16 @@ MidiManagerUsb::MidiManagerUsb(MidiService* service,
     : MidiManager(service), device_factory_(std::move(factory)) {}
 
 MidiManagerUsb::~MidiManagerUsb() {
-  bool result = service()->task_service()->UnbindInstance();
-  CHECK(result);
+  if (!service()->task_service()->UnbindInstance())
+    return;
+
+  // Finalization steps should be implemented after the UnbindInstance() call
+  // above, if we need.
 }
 
 void MidiManagerUsb::StartInitialization() {
-  if (!service()->task_service()->BindInstance()) {
-    NOTREACHED();
-    CompleteInitialization(Result::INITIALIZATION_ERROR);
-    return;
-  }
+  if (!service()->task_service()->BindInstance())
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
 
   Initialize();
 }

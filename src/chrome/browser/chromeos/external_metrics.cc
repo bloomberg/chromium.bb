@@ -20,7 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/metrics/serialization/metric_sample.h"
 #include "components/metrics/serialization/serialization_utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -97,7 +97,7 @@ void ExternalMetrics::RecordActionUI(const std::string& action_string) {
 void ExternalMetrics::RecordAction(const std::string& action) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&ExternalMetrics::RecordActionUI, this, action));
+      base::BindOnce(&ExternalMetrics::RecordActionUI, this, action));
 }
 
 void ExternalMetrics::RecordCrashUI(const std::string& crash_kind) {
@@ -107,7 +107,7 @@ void ExternalMetrics::RecordCrashUI(const std::string& crash_kind) {
 void ExternalMetrics::RecordCrash(const std::string& crash_kind) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&ExternalMetrics::RecordCrashUI, this, crash_kind));
+      base::BindOnce(&ExternalMetrics::RecordCrashUI, this, crash_kind));
 }
 
 void ExternalMetrics::RecordHistogram(const metrics::MetricSample& sample) {

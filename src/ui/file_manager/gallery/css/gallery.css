@@ -366,8 +366,8 @@ paper-ripple {
 /* Filename */
 
 .filename-spacer {
-  -webkit-margin-start: 16px;
   flex: 1 0 auto;
+  margin-inline-start: 16px;
 }
 
 /* Bubble */
@@ -541,9 +541,9 @@ html[dir='rtl'] .gallery .toolbar .bubble {
 }
 
 .gallery .edit-mode-toolbar .exit-button-spacer paper-button {
-  -webkit-margin-end: 8px;
   color: white;
   font-weight: bold;
+  margin-inline-end: 8px;
   text-transform: uppercase;
 }
 
@@ -562,7 +562,7 @@ html[dir='rtl'] .gallery .toolbar .bubble {
 }
 
 .edit-mode-toolbar .overwrite-original {
-  -webkit-margin-start: 16px;
+  margin-inline-start: 16px;
 }
 
 .edit-mode-toolbar .overwrite-original[disabled] {
@@ -570,8 +570,8 @@ html[dir='rtl'] .gallery .toolbar .bubble {
 }
 
 .gallery .edit-mode-toolbar .saved {
-  -webkit-margin-start: 14px;
   cursor: inherit;
+  margin-inline-start: 14px;
   opacity: 0;
   pointer-events: none;
   transition-duration: 120ms;
@@ -870,11 +870,11 @@ button[disabled] {
 
 /* Action buttons */
 .edit-modal-wrapper .action-buttons button {
-  -webkit-margin-end: 8px;
   align-items: center;
   display: flex;
   height: 32px;
   justify-content: center;
+  margin-inline-end: 8px;
   outline: none;
   width: 70px;
 }
@@ -924,17 +924,17 @@ button[disabled] {
 }
 
 .edit-modal .range:not(:last-child) {
-  -webkit-margin-end: 16px;
+  margin-inline-end: 16px;
 }
 
 .edit-modal .range > .icon {
-  -webkit-margin-end: 8px;
   display: block;
   height: 16px;
+  margin-inline-end: 8px;
   width: 16px;
 }
 
-paper-slider {
+cr-slider {
   width: 172px;
 }
 
@@ -1308,10 +1308,10 @@ files-toast {
 }
 
 .slideshow-toolbar > .slideshow-end {
-  -webkit-margin-start: 4px;
   background-image: -webkit-image-set(
       url(../images/100/slideshow_close.png) 1x,
       url(../images/200/slideshow_close.png) 2x);
+  margin-inline-start: 4px;
 }
 
 .debug-me .load-target-content-metadata::before,
@@ -1350,17 +1350,17 @@ files-toast {
 }
 
 .thumbnail-view ul {
-  -webkit-padding-end: 4px;
-  -webkit-padding-start: 0;
   margin: 0;
   padding-bottom: 0;
+  padding-inline-end: 4px;
+  padding-inline-start: 0;
   padding-top: 52px; /* Toolbar height (48px) + Margin (4px) */
 }
 
 .thumbnail-view .thumbnail {
-  -webkit-margin-start: 4px;
   display: block;
   margin-bottom: 4px;
+  margin-inline-start: 4px;
   position: relative;
 }
 
@@ -1403,9 +1403,9 @@ html[dir='rtl'] .thumbnail-view .scrollbar {
 }
 
 .thumbnail-view .scrollbar .thumb {
-  -webkit-margin-end: 4px;
   background-color: white;
   border-radius: 2px;
+  margin-inline-end: 4px;
   opacity: 0.4;
   width: 4px;
 }

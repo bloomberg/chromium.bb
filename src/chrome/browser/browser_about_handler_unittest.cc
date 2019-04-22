@@ -85,13 +85,9 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForMDSettings) {
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForHistory) {
   TestWillHandleBrowserAboutURL(std::vector<AboutURLTestCase>({
       {GURL("about:history"), GURL("chrome://history/")},
-      {GURL("about:history-frame"), GURL("chrome://history/")},
       {GURL("chrome://history"), GURL("chrome://history/")},
-      {GURL("chrome://history-frame"), GURL("chrome://history/")},
       {GURL("chrome://history/"), GURL("chrome://history/")},
-      {GURL("chrome://history-frame/"), GURL("chrome://history/")},
       {GURL("chrome://history/?q=foo"), GURL("chrome://history/?q=foo")},
-      {GURL("chrome://history-frame/?q=foo"), GURL("chrome://history/?q=foo")},
   }));
 }
 

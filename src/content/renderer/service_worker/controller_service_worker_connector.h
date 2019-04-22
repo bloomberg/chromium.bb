@@ -11,9 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/controller_service_worker.mojom.h"
-#include "content/common/service_worker/service_worker_container.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 
 namespace content {
 
@@ -26,7 +26,7 @@ class ServiceWorkerContainerHost;
 // ServiceWorkerProviderContext::ControlleeState and
 // ServiceWorkerSubresourceLoader{,Factory}.
 class CONTENT_EXPORT ControllerServiceWorkerConnector
-    : public mojom::ControllerServiceWorkerConnector,
+    : public blink::mojom::ControllerServiceWorkerConnector,
       public base::RefCounted<ControllerServiceWorkerConnector> {
  public:
   // Observes the connection to the controller.
@@ -63,14 +63,14 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   // will be created on a different thread from the thread that has the
   // original |container_host|).
   ControllerServiceWorkerConnector(
-      mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
-      mojom::ControllerServiceWorkerPtr controller_ptr,
+      blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
+      blink::mojom::ControllerServiceWorkerPtr controller_ptr,
       const std::string& client_id);
 
   // This may return nullptr if the connection to the ContainerHost (in the
   // browser process) is already terminated.
-  mojom::ControllerServiceWorker* GetControllerServiceWorker(
-      mojom::ControllerServiceWorkerPurpose purpose);
+  blink::mojom::ControllerServiceWorker* GetControllerServiceWorker(
+      blink::mojom::ControllerServiceWorkerPurpose purpose);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -78,11 +78,12 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   void OnContainerHostConnectionClosed();
   void OnControllerConnectionClosed();
 
-  void AddBinding(mojom::ControllerServiceWorkerConnectorRequest request);
+  void AddBinding(
+      blink::mojom::ControllerServiceWorkerConnectorRequest request);
 
-  // mojom::ControllerServiceWorkerConnector:
+  // blink::mojom::ControllerServiceWorkerConnector:
   void UpdateController(
-      mojom::ControllerServiceWorkerPtr controller_ptr) override;
+      blink::mojom::ControllerServiceWorkerPtr controller_ptr) override;
 
   State state() const { return state_; }
 
@@ -90,21 +91,21 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
 
  private:
   void SetControllerServiceWorkerPtr(
-      mojom::ControllerServiceWorkerPtr controller_ptr);
+      blink::mojom::ControllerServiceWorkerPtr controller_ptr);
 
   State state_ = State::kDisconnected;
 
   friend class base::RefCounted<ControllerServiceWorkerConnector>;
   ~ControllerServiceWorkerConnector() override;
 
-  mojo::BindingSet<mojom::ControllerServiceWorkerConnector> bindings_;
+  mojo::BindingSet<blink::mojom::ControllerServiceWorkerConnector> bindings_;
 
   // Connection to the container host in the browser process.
-  mojom::ServiceWorkerContainerHostPtr container_host_ptr_;
+  blink::mojom::ServiceWorkerContainerHostPtr container_host_ptr_;
 
   // Connection to the controller service worker, which lives in a renderer
   // process that's not necessarily the same as this connector.
-  mojom::ControllerServiceWorkerPtr controller_service_worker_;
+  blink::mojom::ControllerServiceWorkerPtr controller_service_worker_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

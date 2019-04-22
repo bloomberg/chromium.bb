@@ -4,7 +4,7 @@
  *
  *   Auto-fitter warping algorithm (specification).
  *
- * Copyright 2006-2018 by
+ * Copyright (C) 2006-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -53,7 +53,7 @@ FT_BEGIN_HEADER
                      AF_GlyphHints  hints,
                      AF_Dimension   dim,
                      FT_Fixed      *a_scale,
-                     FT_Fixed      *a_delta );
+                     FT_Pos        *a_delta );
 #endif
 
 

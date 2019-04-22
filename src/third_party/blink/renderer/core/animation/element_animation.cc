@@ -28,12 +28,14 @@ namespace {
 void ReportFeaturePolicyViolationsIfNecessary(
     const Document& document,
     const KeyframeEffectModelBase& effect) {
-  if (document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kLayoutAnimations))
-    return;
-  for (const auto* blocked_property :
-       LayoutAnimationsPolicy::AffectedCSSProperties()) {
-    if (effect.Affects(PropertyHandle(*blocked_property)))
-      LayoutAnimationsPolicy::ReportViolation(*blocked_property, document);
+  for (const auto& property_handle : effect.Properties()) {
+    if (!property_handle.IsCSSProperty())
+      continue;
+    const auto& css_property = property_handle.GetCSSProperty();
+    if (LayoutAnimationsPolicy::AffectedCSSProperties().Contains(
+            &css_property)) {
+      LayoutAnimationsPolicy::ReportViolation(css_property, document);
+    }
   }
 }
 

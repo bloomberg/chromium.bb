@@ -30,7 +30,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Class that detects the network connectivity. We will get the connectivity info from Android
@@ -47,9 +46,9 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
     public static final int PROBE_WITH_URL_COUNT = 2;
 
     // Denotes the connection state.
-    @Retention(RetentionPolicy.SOURCE)
     @IntDef({ConnectionState.NONE, ConnectionState.DISCONNECTED, ConnectionState.NO_INTERNET,
             ConnectionState.CAPTIVE_PORTAL, ConnectionState.VALIDATED})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface ConnectionState {
         // Initial state or connection state can't be evaluated.
         int NONE = 0;
@@ -67,10 +66,10 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
     }
 
     // Denotes how the connectivity check is done.
-    @Retention(RetentionPolicy.SOURCE)
     @IntDef({ConnectivityCheckingState.NOT_STARTED, ConnectivityCheckingState.FROM_SYSTEM,
             ConnectivityCheckingState.PROBE_DEFAULT_URL,
             ConnectivityCheckingState.PROBE_FALLBACK_URL})
+    @Retention(RetentionPolicy.SOURCE)
     private @interface ConnectivityCheckingState {
         // Not started.
         int NOT_STARTED = 0;
@@ -85,11 +84,11 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
     // The result of the HTTP probing. Defined in tools/metrics/histograms/enums.xml.
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.
-    @Retention(RetentionPolicy.SOURCE)
     @IntDef({ProbeResult.NO_INTERNET, ProbeResult.SERVER_ERROR, ProbeResult.NOT_VALIDATED,
             ProbeResult.VALIDATED_WITH_NO_CONTENT,
             ProbeResult.VALIDATED_WITH_OK_BUT_ZERO_CONTENT_LENGTH,
             ProbeResult.VALIDATED_WITH_OK_BUT_NO_CONTENT_LENGTH})
+    @Retention(RetentionPolicy.SOURCE)
     private @interface ProbeResult {
         // The network is connected, but it can't reach the Internet, i.e. connecting to a hotspot
         // that is not conencted to Internet.
@@ -498,8 +497,7 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
                         : PROBE_WITH_FALLBACK_URL,
                 PROBE_WITH_URL_COUNT);
         RecordHistogram.recordLongTimesHistogram("ConnectivityDetector.Probe.ValidationTime",
-                SystemClock.elapsedRealtime() - mConnectivityCheckStartTimeMs,
-                TimeUnit.MILLISECONDS);
+                SystemClock.elapsedRealtime() - mConnectivityCheckStartTimeMs);
     }
 
     @VisibleForTesting

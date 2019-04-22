@@ -49,8 +49,9 @@ void NetworkDelegateErrorObserver::Core::NotifyPACScriptError(
     int line_number,
     const base::string16& error) {
   if (!origin_runner_->BelongsToCurrentThread()) {
-    origin_runner_->PostTask(FROM_HERE, base::Bind(&Core::NotifyPACScriptError,
-                                                   this, line_number, error));
+    origin_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&Core::NotifyPACScriptError, this, line_number, error));
     return;
   }
   if (network_delegate_)
@@ -59,7 +60,7 @@ void NetworkDelegateErrorObserver::Core::NotifyPACScriptError(
 
 void NetworkDelegateErrorObserver::Core::Shutdown() {
   CHECK(origin_runner_->BelongsToCurrentThread());
-  network_delegate_ = NULL;
+  network_delegate_ = nullptr;
 }
 
 // NetworkDelegateErrorObserver -----------------------------------------------

@@ -121,10 +121,10 @@ ClientSideDetectionService::~ClientSideDetectionService() {
 }
 
 // static
-ClientSideDetectionService* ClientSideDetectionService::Create(
+std::unique_ptr<ClientSideDetectionService> ClientSideDetectionService::Create(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return new ClientSideDetectionService(url_loader_factory);
+  return base::WrapUnique(new ClientSideDetectionService(url_loader_factory));
 }
 
 void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {

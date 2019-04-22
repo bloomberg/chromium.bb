@@ -15,6 +15,9 @@
 #if defined(USE_AURA)
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/base/test/ui_controls_aura.h"
+#if defined(USE_OZONE) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
 #if defined(USE_X11)
 #include "ui/views/test/ui_controls_factory_desktop_aurax11.h"
 #endif
@@ -38,29 +41,23 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 
     ChromeTestSuite::Initialize();
 
-    // Only allow ui_controls to be used in interactive_ui_tests, since they
-    // depend on focus and can't be sharded.
-    ui_controls::EnableUIControls();
-
 #if defined(OS_CHROMEOS)
     // Do not InstallUIControlsAura in ChromeOS, it will be installed in
     // InProcessBrowserTest::PreRunTestOnMainThread().
-#elif defined(USE_AURA)
-#if defined(OS_WIN)
+#elif defined(OS_WIN)
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
-#endif
-
-#if defined(OS_LINUX)
-#if defined(USE_OZONE)
-    NOTIMPLEMENTED();
-#else
+    ui_controls::InstallUIControlsAura(
+        aura::test::CreateUIControlsAura(nullptr));
+#elif defined(USE_OZONE) && defined(OS_LINUX)
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::EnsureInstance()->InitializeForUI(std::move(params));
+#elif defined(OS_LINUX)
     ui_controls::InstallUIControlsAura(
         views::test::CreateUIControlsDesktopAura());
-#endif  // defined(USE_OZONE)
 #else
-    ui_controls::InstallUIControlsAura(aura::test::CreateUIControlsAura(NULL));
-#endif  // defined(OS_LINUX)
-#endif  // defined(USE_AURA)
+    ui_controls::EnableUIControls();
+#endif
   }
 
   void Shutdown() override {
@@ -138,6 +135,14 @@ class InteractiveUITestSuiteRunner : public ChromeTestSuiteRunner {
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
+
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+  // Force software-gl. This is necessary for mus tests to avoid an msan warning
+  // in gl init.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kOverrideUseSoftwareGLForTests);
+#endif
+
   // TODO(sky): this causes a crash in an autofill test on macosx, figure out
   // why: http://crbug.com/641969.
 #if !defined(OS_MACOSX)

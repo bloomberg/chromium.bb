@@ -6,17 +6,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NINE_PIECE_IMAGE_GRID_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/style/nine_piece_image.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
-#include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 class IntRectOutsets;
-class NinePieceImage;
 
 enum NinePiece {
   kMinPiece = 0,
@@ -82,8 +81,8 @@ class CORE_EXPORT NinePieceImageGrid {
     // center pieces.
     FloatSize tile_scale;
     struct {
-      Image::TileRule horizontal;
-      Image::TileRule vertical;
+      ENinePieceImageRule horizontal;
+      ENinePieceImageRule vertical;
     } tile_rule;
   };
   NinePieceDrawInfo GetNinePieceDrawInfo(NinePiece, float) const;
@@ -103,8 +102,8 @@ class CORE_EXPORT NinePieceImageGrid {
 
   IntRect border_image_area_;
   IntSize image_size_;
-  Image::TileRule horizontal_tile_rule_;
-  Image::TileRule vertical_tile_rule_;
+  ENinePieceImageRule horizontal_tile_rule_;
+  ENinePieceImageRule vertical_tile_rule_;
   bool fill_;
 
   Edge top_;

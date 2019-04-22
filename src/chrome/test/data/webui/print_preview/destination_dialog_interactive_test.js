@@ -22,13 +22,16 @@ cr.define('destination_dialog_interactive_test', function() {
     let nativeLayer = null;
 
     /** @override */
+    suiteSetup(function() {
+      print_preview_test_utils.setupTestListenerElement();
+    });
+
+    /** @override */
     setup(function() {
       // Create destinations.
       nativeLayer = new print_preview.NativeLayerStub();
       print_preview.NativeLayer.setInstance(nativeLayer);
-      const userInfo = new print_preview.UserInfo();
-      destinationStore = new print_preview.DestinationStore(
-          userInfo, new WebUIListenerTracker());
+      destinationStore = print_preview_test_utils.createDestinationStore();
       const localDestinations = [];
       const destinations = print_preview_test_utils.getDestinations(
           nativeLayer, localDestinations);
@@ -42,9 +45,10 @@ cr.define('destination_dialog_interactive_test', function() {
 
       // Set up dialog
       dialog = document.createElement('print-preview-destination-dialog');
-      dialog.userInfo = userInfo;
+      dialog.activeUser = '';
+      dialog.users = [];
       dialog.destinationStore = destinationStore;
-      dialog.invitationStore = new print_preview.InvitationStore(userInfo);
+      dialog.invitationStore = new print_preview.InvitationStore();
       dialog.recentDestinations = recentDestinations;
       document.body.appendChild(dialog);
       return nativeLayer.whenCalled('getPrinterCapabilities');

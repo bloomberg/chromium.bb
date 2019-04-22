@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
 #include "third_party/blink/renderer/core/svg/svg_boolean.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -53,7 +54,7 @@ class SVGAnimatedBoolean final : public ScriptWrappable,
                      const QualifiedName& attribute_name)
       : SVGAnimatedProperty<SVGBoolean>(context_element,
                                         attribute_name,
-                                        SVGBoolean::Create()) {}
+                                        MakeGarbageCollected<SVGBoolean>()) {}
 
   void Trace(blink::Visitor* visitor) override {
     SVGAnimatedProperty<SVGBoolean>::Trace(visitor);

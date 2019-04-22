@@ -83,8 +83,11 @@ class UserScriptLoader : public content::NotificationObserver {
   // Initiates procedure to start loading scripts on the file thread.
   void StartLoad();
 
+  // Returns true if the scripts for the given |host_id| have been loaded.
+  bool HasLoadedScripts(const HostID& host_id) const;
+
   // Returns true if we have any scripts ready.
-  bool scripts_ready() const { return shared_memory_.get() != NULL; }
+  bool initial_load_complete() const { return shared_memory_.get() != nullptr; }
 
   // Pickle user scripts and return pointer to the shared memory.
   static std::unique_ptr<base::SharedMemory> Serialize(
@@ -136,8 +139,8 @@ class UserScriptLoader : public content::NotificationObserver {
                   const std::set<HostID>& changed_hosts);
 
   bool is_loading() const {
-    // Ownership of |user_scripts_| is passed to the file thread when loading.
-    return user_scripts_.get() == nullptr;
+    // |loaded_scripts_| is reset when loading.
+    return loaded_scripts_.get() == nullptr;
   }
 
   // Manages our notification registrations.
@@ -146,8 +149,9 @@ class UserScriptLoader : public content::NotificationObserver {
   // Contains the scripts that were found the last time scripts were updated.
   std::unique_ptr<base::SharedMemory> shared_memory_;
 
-  // List of scripts from currently-installed extensions we should load.
-  std::unique_ptr<UserScriptList> user_scripts_;
+  // List of scripts that are currently loaded. This is null when a load is in
+  // progress.
+  std::unique_ptr<UserScriptList> loaded_scripts_;
 
   // The mutually-exclusive information about sets of scripts that were added or
   // removed since the last script load. These maps are keyed by script ids.
@@ -169,7 +173,7 @@ class UserScriptLoader : public content::NotificationObserver {
   // If list of user scripts is modified while we're loading it, we note
   // that we're currently mid-load and then start over again once the load
   // finishes.  This boolean tracks whether another load is pending.
-  bool pending_load_;
+  bool queued_load_;
 
   // The browser_context for which the scripts managed here are installed.
   content::BrowserContext* browser_context_;

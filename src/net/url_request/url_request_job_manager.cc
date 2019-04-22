@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "net/base/load_flags.h"
@@ -75,7 +76,7 @@ URLRequestJob* URLRequestJobManager::CreateJob(
     return job;
 
   // See if the request should be handled by a built-in protocol factory.
-  for (size_t i = 0; i < arraysize(kBuiltinFactories); ++i) {
+  for (size_t i = 0; i < base::size(kBuiltinFactories); ++i) {
     if (scheme == kBuiltinFactories[i].scheme) {
       URLRequestJob* new_job =
           (kBuiltinFactories[i].factory)(request, network_delegate, scheme);
@@ -98,15 +99,15 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptRedirect(
   DCHECK(IsAllowedThread());
   if (!request->url().is_valid() ||
       request->status().status() == URLRequestStatus::CANCELED) {
-    return NULL;
+    return nullptr;
   }
 
-  const URLRequestJobFactory* job_factory = NULL;
+  const URLRequestJobFactory* job_factory = nullptr;
   job_factory = request->context()->job_factory();
 
   const std::string& scheme = request->url().scheme();  // already lowercase
   if (!job_factory->IsHandledProtocol(scheme))
-    return NULL;
+    return nullptr;
 
   URLRequestJob* job =
       request->context()->job_factory()->MaybeInterceptRedirect(
@@ -114,7 +115,7 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptRedirect(
   if (job)
     return job;
 
-  return NULL;
+  return nullptr;
 }
 
 URLRequestJob* URLRequestJobManager::MaybeInterceptResponse(
@@ -122,15 +123,15 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptResponse(
   DCHECK(IsAllowedThread());
   if (!request->url().is_valid() ||
       request->status().status() == URLRequestStatus::CANCELED) {
-    return NULL;
+    return nullptr;
   }
 
-  const URLRequestJobFactory* job_factory = NULL;
+  const URLRequestJobFactory* job_factory = nullptr;
   job_factory = request->context()->job_factory();
 
   const std::string& scheme = request->url().scheme();  // already lowercase
   if (!job_factory->IsHandledProtocol(scheme))
-    return NULL;
+    return nullptr;
 
   URLRequestJob* job =
       request->context()->job_factory()->MaybeInterceptResponse(
@@ -138,12 +139,12 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptResponse(
   if (job)
     return job;
 
-  return NULL;
+  return nullptr;
 }
 
 // static
 bool URLRequestJobManager::SupportsScheme(const std::string& scheme) {
-  for (size_t i = 0; i < arraysize(kBuiltinFactories); ++i) {
+  for (size_t i = 0; i < base::size(kBuiltinFactories); ++i) {
     if (base::LowerCaseEqualsASCII(scheme, kBuiltinFactories[i].scheme))
       return true;
   }

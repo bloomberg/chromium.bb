@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -36,7 +37,7 @@ void StorageObserverList::RemoveObserver(StorageObserver* observer) {
   observer_state_map_.erase(observer);
 }
 
-int StorageObserverList::ObserverCount() const {
+size_t StorageObserverList::ObserverCount() const {
   return observer_state_map_.size();
 }
 

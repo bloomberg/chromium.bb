@@ -9,8 +9,6 @@ var tests = [
     conditions: {
       dataSaver: false,
       cellular: false,
-      lowEndDevice: false,
-      dataSaverMediaApiHoldback: false,
     },
     expectations: {
       default: 'metadata',
@@ -22,8 +20,6 @@ var tests = [
     conditions: {
       dataSaver: false,
       cellular: true,
-      lowEndDevice: false,
-      dataSaverMediaApiHoldback: false,
     },
     expectations: {
       default: 'metadata',
@@ -35,12 +31,10 @@ var tests = [
     conditions: {
       dataSaver: true,
       cellular: true,
-      lowEndDevice: false,
-      dataSaverMediaApiHoldback: false,
     },
     expectations: {
-      default: 'none',
-      allowed: [ 'none' ]
+      default: 'metadata',
+      allowed: [ 'none', 'metadata' ]
     }
   },
   {
@@ -48,38 +42,10 @@ var tests = [
     conditions: {
       dataSaver: true,
       cellular: false,
-      lowEndDevice: false,
-      dataSaverMediaApiHoldback: false,
-    },
-    expectations: {
-      default: 'none',
-      allowed: [ 'none' ]
-    }
-  },
-  {
-    name: 'Data Saver with holdback',
-    conditions: {
-      dataSaver: true,
-      cellular: false,
-      lowEndDevice: false,
-      dataSaverMediaApiHoldback: true,
     },
     expectations: {
       default: 'metadata',
       allowed: [ 'none', 'metadata', 'auto' ]
-    }
-  },
-  {
-    name: 'low end device',
-    conditions: {
-      dataSaver: false,
-      cellular: false,
-      lowEndDevice: true,
-      dataSaverMediaApiHoldback: false,
-    },
-    expectations: {
-      default: 'none',
-      allowed: [ 'none' ]
     }
   },
 ];
@@ -115,22 +81,16 @@ function runTest(t, test) {
   // Sanity checks for 'conditions'.
   assert_true('dataSaver' in test.conditions);
   assert_true('cellular' in test.conditions);
-  assert_true('lowEndDevice' in test.conditions);
-  assert_true('dataSaverMediaApiHoldback' in test.conditions);
 
   internals.setSaveDataEnabled(test.conditions.dataSaver);
   if (test.conditions.cellular)
     internals.setNetworkConnectionInfoOverride(true, 'cellular3g', '4g', 100, 2.0);
   else
     internals.setNetworkConnectionInfoOverride(true, 'wifi', '4g', 100, 2.0);
-  internals.settings.setForcePreloadNoneForMediaElements(test.conditions.lowEndDevice);
-  internals.settings.setDataSaverHoldbackMediaApi(test.conditions.dataSaverMediaApiHoldback);
 
   t.add_cleanup(() => {
     internals.setSaveDataEnabled(false);
     internals.clearNetworkConnectionInfoOverride();
-    internals.settings.setForcePreloadNoneForMediaElements(false);
-    internals.settings.setDataSaverHoldbackMediaApi(false);
   });
 
   var media = document.createElement('video');

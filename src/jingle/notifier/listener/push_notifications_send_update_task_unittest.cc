@@ -13,7 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
 }
 
@@ -26,7 +26,7 @@ class PushNotificationsSendUpdateTaskTest : public testing::Test {
   }
 
  protected:
-  const buzz::Jid to_jid_bare_;
+  const jingle_xmpp::Jid to_jid_bare_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PushNotificationsSendUpdateTaskTest);
@@ -40,7 +40,7 @@ TEST_F(PushNotificationsSendUpdateTaskTest, MakeUpdateMessage) {
   std::string base64_data;
   base::Base64Encode(notification.data, &base64_data);
 
-  std::unique_ptr<buzz::XmlElement> message(
+  std::unique_ptr<jingle_xmpp::XmlElement> message(
       PushNotificationsSendUpdateTask::MakeUpdateMessage(notification,
                                                          to_jid_bare_));
 

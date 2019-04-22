@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1600 tests; 1477 PASS, 123 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1600 tests; 1474 PASS, 126 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS SVGElement interface: existence and properties of interface object
@@ -373,7 +373,7 @@ PASS SVGSVGElement interface: operation createSVGPoint()
 PASS SVGSVGElement interface: operation createSVGMatrix()
 PASS SVGSVGElement interface: operation createSVGRect()
 PASS SVGSVGElement interface: operation createSVGTransform()
-PASS SVGSVGElement interface: operation createSVGTransformFromMatrix(DOMMatrixReadOnly)
+FAIL SVGSVGElement interface: operation createSVGTransformFromMatrix(DOMMatrix2DInit) assert_equals: property has wrong .length expected 0 but got 1
 PASS SVGSVGElement interface: operation getElementById(DOMString)
 PASS SVGSVGElement interface: operation suspendRedraw(unsigned long)
 PASS SVGSVGElement interface: operation unsuspendRedraw(unsigned long)
@@ -412,8 +412,8 @@ PASS SVGSVGElement interface: objects.svg must inherit property "createSVGPoint(
 PASS SVGSVGElement interface: objects.svg must inherit property "createSVGMatrix()" with the proper type
 PASS SVGSVGElement interface: objects.svg must inherit property "createSVGRect()" with the proper type
 PASS SVGSVGElement interface: objects.svg must inherit property "createSVGTransform()" with the proper type
-PASS SVGSVGElement interface: objects.svg must inherit property "createSVGTransformFromMatrix(DOMMatrixReadOnly)" with the proper type
-PASS SVGSVGElement interface: calling createSVGTransformFromMatrix(DOMMatrixReadOnly) on objects.svg with too few arguments must throw TypeError
+PASS SVGSVGElement interface: objects.svg must inherit property "createSVGTransformFromMatrix(DOMMatrix2DInit)" with the proper type
+PASS SVGSVGElement interface: calling createSVGTransformFromMatrix(DOMMatrix2DInit) on objects.svg with too few arguments must throw TypeError
 PASS SVGSVGElement interface: objects.svg must inherit property "getElementById(DOMString)" with the proper type
 PASS SVGSVGElement interface: calling getElementById(DOMString) on objects.svg with too few arguments must throw TypeError
 PASS SVGSVGElement interface: objects.svg must inherit property "suspendRedraw(unsigned long)" with the proper type
@@ -658,7 +658,7 @@ PASS SVGTransform interface: constant SVG_TRANSFORM_SKEWY on interface prototype
 PASS SVGTransform interface: attribute type
 PASS SVGTransform interface: attribute matrix
 PASS SVGTransform interface: attribute angle
-PASS SVGTransform interface: operation setMatrix(DOMMatrixReadOnly)
+FAIL SVGTransform interface: operation setMatrix(DOMMatrix2DInit) assert_equals: property has wrong .length expected 0 but got 1
 PASS SVGTransform interface: operation setTranslate(float, float)
 PASS SVGTransform interface: operation setScale(float, float)
 PASS SVGTransform interface: operation setRotate(float, float, float)
@@ -676,8 +676,8 @@ PASS SVGTransform interface: objects.svg.createSVGTransform() must inherit prope
 PASS SVGTransform interface: objects.svg.createSVGTransform() must inherit property "type" with the proper type
 FAIL SVGTransform interface: objects.svg.createSVGTransform() must inherit property "matrix" with the proper type Unrecognized type DOMMatrix
 PASS SVGTransform interface: objects.svg.createSVGTransform() must inherit property "angle" with the proper type
-PASS SVGTransform interface: objects.svg.createSVGTransform() must inherit property "setMatrix(DOMMatrixReadOnly)" with the proper type
-PASS SVGTransform interface: calling setMatrix(DOMMatrixReadOnly) on objects.svg.createSVGTransform() with too few arguments must throw TypeError
+PASS SVGTransform interface: objects.svg.createSVGTransform() must inherit property "setMatrix(DOMMatrix2DInit)" with the proper type
+PASS SVGTransform interface: calling setMatrix(DOMMatrix2DInit) on objects.svg.createSVGTransform() with too few arguments must throw TypeError
 PASS SVGTransform interface: objects.svg.createSVGTransform() must inherit property "setTranslate(float, float)" with the proper type
 PASS SVGTransform interface: calling setTranslate(float, float) on objects.svg.createSVGTransform() with too few arguments must throw TypeError
 PASS SVGTransform interface: objects.svg.createSVGTransform() must inherit property "setScale(float, float)" with the proper type
@@ -703,7 +703,7 @@ PASS SVGTransformList interface: operation insertItemBefore(SVGTransform, unsign
 PASS SVGTransformList interface: operation replaceItem(SVGTransform, unsigned long)
 PASS SVGTransformList interface: operation removeItem(unsigned long)
 PASS SVGTransformList interface: operation appendItem(SVGTransform)
-PASS SVGTransformList interface: operation createSVGTransformFromMatrix(DOMMatrixReadOnly)
+FAIL SVGTransformList interface: operation createSVGTransformFromMatrix(DOMMatrix2DInit) assert_equals: property has wrong .length expected 0 but got 1
 PASS SVGTransformList interface: operation consolidate()
 PASS SVGTransformList must be primary interface of objects.pattern.patternTransform.baseVal
 PASS Stringification of objects.pattern.patternTransform.baseVal
@@ -722,8 +722,8 @@ PASS SVGTransformList interface: objects.pattern.patternTransform.baseVal must i
 PASS SVGTransformList interface: calling removeItem(unsigned long) on objects.pattern.patternTransform.baseVal with too few arguments must throw TypeError
 PASS SVGTransformList interface: objects.pattern.patternTransform.baseVal must inherit property "appendItem(SVGTransform)" with the proper type
 PASS SVGTransformList interface: calling appendItem(SVGTransform) on objects.pattern.patternTransform.baseVal with too few arguments must throw TypeError
-PASS SVGTransformList interface: objects.pattern.patternTransform.baseVal must inherit property "createSVGTransformFromMatrix(DOMMatrixReadOnly)" with the proper type
-PASS SVGTransformList interface: calling createSVGTransformFromMatrix(DOMMatrixReadOnly) on objects.pattern.patternTransform.baseVal with too few arguments must throw TypeError
+PASS SVGTransformList interface: objects.pattern.patternTransform.baseVal must inherit property "createSVGTransformFromMatrix(DOMMatrix2DInit)" with the proper type
+PASS SVGTransformList interface: calling createSVGTransformFromMatrix(DOMMatrix2DInit) on objects.pattern.patternTransform.baseVal with too few arguments must throw TypeError
 PASS SVGTransformList interface: objects.pattern.patternTransform.baseVal must inherit property "consolidate()" with the proper type
 PASS SVGAnimatedTransformList interface: existence and properties of interface object
 PASS SVGAnimatedTransformList interface object length

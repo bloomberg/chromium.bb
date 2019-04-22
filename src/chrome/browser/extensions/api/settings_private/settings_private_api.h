@@ -16,8 +16,7 @@ namespace extensions {
 class SettingsPrivateSetPrefFunction : public UIThreadExtensionFunction {
  public:
   SettingsPrivateSetPrefFunction() {}
-  DECLARE_EXTENSION_FUNCTION("settingsPrivate.setPref",
-                             SETTINGSPRIVATE_SETPREF);
+  DECLARE_EXTENSION_FUNCTION("settingsPrivate.setPref", SETTINGSPRIVATE_SETPREF)
 
  protected:
   ~SettingsPrivateSetPrefFunction() override;
@@ -33,7 +32,7 @@ class SettingsPrivateGetAllPrefsFunction : public UIThreadExtensionFunction {
  public:
   SettingsPrivateGetAllPrefsFunction() {}
   DECLARE_EXTENSION_FUNCTION("settingsPrivate.getAllPrefs",
-                             SETTINGSPRIVATE_GETALLPREFS);
+                             SETTINGSPRIVATE_GETALLPREFS)
 
  protected:
   ~SettingsPrivateGetAllPrefsFunction() override;
@@ -48,8 +47,7 @@ class SettingsPrivateGetAllPrefsFunction : public UIThreadExtensionFunction {
 class SettingsPrivateGetPrefFunction : public UIThreadExtensionFunction {
  public:
   SettingsPrivateGetPrefFunction() {}
-  DECLARE_EXTENSION_FUNCTION("settingsPrivate.getPref",
-                             SETTINGSPRIVATE_GETPREF);
+  DECLARE_EXTENSION_FUNCTION("settingsPrivate.getPref", SETTINGSPRIVATE_GETPREF)
 
  protected:
   ~SettingsPrivateGetPrefFunction() override;
@@ -66,7 +64,7 @@ class SettingsPrivateGetDefaultZoomFunction
  public:
   SettingsPrivateGetDefaultZoomFunction() {}
   DECLARE_EXTENSION_FUNCTION("settingsPrivate.getDefaultZoom",
-                             SETTINGSPRIVATE_GETDEFAULTZOOMFUNCTION);
+                             SETTINGSPRIVATE_GETDEFAULTZOOMFUNCTION)
 
  protected:
   ~SettingsPrivateGetDefaultZoomFunction() override;
@@ -83,7 +81,7 @@ class SettingsPrivateSetDefaultZoomFunction
  public:
   SettingsPrivateSetDefaultZoomFunction() {}
   DECLARE_EXTENSION_FUNCTION("settingsPrivate.setDefaultZoom",
-                             SETTINGSPRIVATE_SETDEFAULTZOOMFUNCTION);
+                             SETTINGSPRIVATE_SETDEFAULTZOOMFUNCTION)
 
  protected:
   ~SettingsPrivateSetDefaultZoomFunction() override;

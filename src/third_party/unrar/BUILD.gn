@@ -53,6 +53,7 @@ if (safe_browsing_mode == 1) {
       "src/ui.cpp",
       "src/unicode.cpp",
       "src/unpack.cpp",
+      "src/unrar_wrapper.cc",
       "src/volume.cpp",
     ]
     if (is_win) {
@@ -67,6 +68,7 @@ if (safe_browsing_mode == 1) {
       "LARGEFILE_SOURCE",
       "RAR_SMP",
       "SILENT",
+      "NOVOLUME",
 
       # The following is set to disable certain macro definitions in the unrar
       # source code.

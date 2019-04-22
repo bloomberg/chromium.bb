@@ -702,7 +702,7 @@ TEST_P(AnimatedContentSamplerParameterizedTest,
               max_acceptable_error.InMicroseconds());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     AnimatedContentSamplerParameterizedTest,
     ::testing::Values(

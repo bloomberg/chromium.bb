@@ -37,4 +37,5 @@
 ] interface TextEncoder {
     readonly attribute DOMString encoding;
     [MeasureAs=TextEncoderEncode] Uint8Array encode(optional USVString input = "");
+    [MeasureAs=TextEncoderEncodeInto] TextEncoderEncodeIntoResult encodeInto(USVString source, Uint8Array destination);
 };

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -18,11 +19,11 @@
 namespace net {
 
 URLFetcherStringWriter* URLFetcherResponseWriter::AsStringWriter() {
-  return NULL;
+  return nullptr;
 }
 
 URLFetcherFileWriter* URLFetcherResponseWriter::AsFileWriter() {
-  return NULL;
+  return nullptr;
 }
 
 URLFetcherStringWriter::URLFetcherStringWriter() = default;
@@ -165,10 +166,9 @@ void URLFetcherFileWriter::CloseAndDeleteFile() {
 
   file_stream_.reset();
   DisownFile();
-  file_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(base::IgnoreResult(&base::DeleteFile),
-                                         file_path_,
-                                         false /* recursive */));
+  file_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                file_path_, false /* recursive */));
 }
 
 void URLFetcherFileWriter::DidCreateTempFile(base::FilePath* temp_file_path,

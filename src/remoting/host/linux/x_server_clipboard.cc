@@ -5,7 +5,7 @@
 #include "remoting/host/linux/x_server_clipboard.h"
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/util.h"
@@ -62,7 +62,7 @@ void XServerClipboard::Init(Display* display,
     "TIMESTAMP",
     "UTF8_STRING"
   };
-  static const int kNumAtomNames = arraysize(kAtomNames);
+  static const int kNumAtomNames = base::size(kAtomNames);
 
   Atom atoms[kNumAtomNames];
   if (XInternAtoms(display_, const_cast<char**>(kAtomNames), kNumAtomNames,

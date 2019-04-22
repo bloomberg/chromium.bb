@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -85,10 +86,9 @@ ValueStore* Param(const base::FilePath& file_path) {
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(
-    PolicyValueStoreTest,
-    ValueStoreTest,
-    testing::Values(&Param));
+INSTANTIATE_TEST_SUITE_P(PolicyValueStoreTest,
+                         ValueStoreTest,
+                         testing::Values(&Param));
 
 class PolicyValueStoreTest : public testing::Test {
  public:

@@ -48,7 +48,7 @@ HTMLMediaElement& MediaControls::MediaElement() const {
   return *media_element_;
 }
 
-void MediaControls::Trace(blink::Visitor* visitor) {
+void MediaControls::Trace(Visitor* visitor) {
   visitor->Trace(media_element_);
 }
 

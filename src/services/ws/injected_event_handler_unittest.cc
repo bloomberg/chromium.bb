@@ -5,15 +5,14 @@
 #include "services/ws/injected_event_handler.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
-#include "services/ws/host_event_queue.h"
 #include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
-#include "services/ws/test_host_event_dispatcher.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_service_test_setup.h"
 #include "services/ws/window_tree.h"
@@ -21,6 +20,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/window_event_dispatcher_test_api.h"
 #include "ui/aura/window.h"
+#include "ui/events/event.h"
+#include "ui/events/event_rewriter.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ws {
@@ -80,11 +82,6 @@ TEST(InjectedEventHandlerTest, WindowTreeHostDeletedWhileWaiting) {
       aura::WindowTreeHost::Create(
           ui::PlatformWindowInitProperties{gfx::Rect(20, 30, 100, 50)});
   second_host->InitHost();
-  auto host_event_dispatcher =
-      std::make_unique<TestHostEventDispatcher>(second_host.get());
-  auto host_event_queue = test_setup.service()->RegisterHostEventDispatcher(
-      second_host.get(), host_event_dispatcher.get());
-
   second_host->window()->Show();
 
   // Create a top-level in |second_host|.
@@ -148,6 +145,56 @@ TEST(InjectedEventHandlerTest, HeldEvent) {
       test_setup.root()->GetHost()->dispatcher())
       .WaitUntilPointerMovesDispatched();
   EXPECT_TRUE(was_callback_run);
+}
+
+class DiscardingEventRewriter : public ui::EventRewriter {
+ public:
+  DiscardingEventRewriter() = default;
+  ~DiscardingEventRewriter() override = default;
+
+  bool got_rewrite_event() const { return got_rewrite_event_; }
+
+  // ui::EventRewriter:
+  ui::EventDispatchDetails RewriteEvent(
+      const ui::Event& event,
+      const Continuation continuation) override {
+    got_rewrite_event_ = true;
+    return DiscardEvent(continuation);
+  }
+
+ private:
+  bool got_rewrite_event_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(DiscardingEventRewriter);
+};
+
+TEST(InjectedEventHandlerTest, RewriterDiscards) {
+  // Create a single window and give it focus.
+  DiscardingEventRewriter rewriter;
+  WindowServiceTestSetup test_setup;
+  test_setup.aura_test_helper()->root_window()->GetHost()->AddEventRewriter(
+      &rewriter);
+  aura::Window* top_level =
+      test_setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
+  top_level->Show();
+  top_level->Focus();
+  EXPECT_TRUE(top_level->HasFocus());
+
+  // Dispatch an event. Because the rewriter discards the event, the callback
+  // should be run immediately.
+  bool was_callback_run = false;
+  InjectedEventHandler injected_event_handler(test_setup.service(),
+                                              test_setup.root()->GetHost());
+
+  ui::KeyEvent char_event('A', ui::VKEY_A, ui::DomCode::NONE, 0);
+  injected_event_handler.Inject(
+      ui::Event::Clone(char_event),
+      base::BindOnce([](bool* was_run) { *was_run = true; },
+                     &was_callback_run));
+  EXPECT_TRUE(was_callback_run);
+  EXPECT_TRUE(rewriter.got_rewrite_event());
 }
 
 }  // namespace ws

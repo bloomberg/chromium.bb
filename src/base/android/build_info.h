@@ -122,6 +122,8 @@ class BASE_EXPORT BuildInfo {
     return sdk_int_;
   }
 
+  bool is_at_least_q() const { return is_at_least_q_; }
+
  private:
   friend struct BuildInfoSingletonTraits;
 
@@ -154,6 +156,7 @@ class BASE_EXPORT BuildInfo {
   const char* const resources_version_;
   // Not needed by breakpad.
   const std::string extracted_file_suffix_;
+  const bool is_at_least_q_;
 
   DISALLOW_COPY_AND_ASSIGN(BuildInfo);
 };

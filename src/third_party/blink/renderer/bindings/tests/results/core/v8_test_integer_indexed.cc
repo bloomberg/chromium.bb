@@ -10,12 +10,15 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/core/v8_test_integer_indexed.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_document.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_for_each_iterator_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -24,6 +27,7 @@
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -34,7 +38,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestIntegerIndexed::wrapper_type_info = {
+const WrapperTypeInfo v8_test_integer_indexed_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestIntegerIndexed::DomTemplate,
     nullptr,
@@ -51,7 +55,7 @@ const WrapperTypeInfo V8TestIntegerIndexed::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestIntegerIndexed.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestIntegerIndexed::wrapper_type_info_ = V8TestIntegerIndexed::wrapper_type_info;
+const WrapperTypeInfo& TestIntegerIndexed::wrapper_type_info_ = v8_test_integer_indexed_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -154,10 +158,10 @@ static void ForEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  ScriptValue callback;
+  V8ForEachIteratorCallback* callback;
   ScriptValue this_arg;
   if (info[0]->IsFunction()) {
-    callback = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
+    callback = V8ForEachIteratorCallback::Create(info[0].As<v8::Function>());
   } else {
     exception_state.ThrowTypeError("The callback provided as parameter 1 is not a function.");
     return;
@@ -347,7 +351,7 @@ static void InstallV8TestIntegerIndexedTemplate(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestIntegerIndexed::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestIntegerIndexed::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestIntegerIndexed::GetWrapperTypeInfo()->interface_name, v8::Local<v8::FunctionTemplate>(), V8TestIntegerIndexed::kInternalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
@@ -413,18 +417,18 @@ void V8TestIntegerIndexed::InstallRuntimeEnabledFeaturesOnTemplate(
 v8::Local<v8::FunctionTemplate> V8TestIntegerIndexed::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestIntegerIndexed::GetWrapperTypeInfo()),
       InstallV8TestIntegerIndexedTemplate);
 }
 
 bool V8TestIntegerIndexed::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestIntegerIndexed::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestIntegerIndexed::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestIntegerIndexed::GetWrapperTypeInfo(), v8_value);
 }
 
 TestIntegerIndexed* V8TestIntegerIndexed::ToImplWithTypeCheck(

@@ -22,11 +22,8 @@ struct SystemHotkey;
 class CONTENT_EXPORT SystemHotkeyMap {
  public:
   SystemHotkeyMap();
+  SystemHotkeyMap(SystemHotkeyMap&&);
   ~SystemHotkeyMap();
-
-  // Converts the plist stored in |data| into an NSDictionary. Returns nil on
-  // error.
-  static NSDictionary* DictionaryFromData(NSData* data);
 
   // Parses the property list data commonly stored at
   // ~/Library/Preferences/com.apple.symbolichotkeys.plist

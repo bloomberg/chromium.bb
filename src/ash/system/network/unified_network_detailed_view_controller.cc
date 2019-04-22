@@ -7,14 +7,14 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/network/network_list.h"
-#include "ash/system/unified/unified_detailed_view_delegate.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 
 namespace ash {
 
 UnifiedNetworkDetailedViewController::UnifiedNetworkDetailedViewController(
     UnifiedSystemTrayController* tray_controller)
     : detailed_view_delegate_(
-          std::make_unique<UnifiedDetailedViewDelegate>(tray_controller)),
+          std::make_unique<DetailedViewDelegate>(tray_controller)),
       network_state_observer_(
           std::make_unique<TrayNetworkStateObserver>(this)) {}
 

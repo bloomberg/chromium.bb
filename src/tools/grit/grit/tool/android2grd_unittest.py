@@ -16,9 +16,9 @@ import xml.dom.minidom
 from grit import grd_reader
 from grit import util
 from grit.node import empty
-from grit.node import io
 from grit.node import message
 from grit.node import misc
+from grit.node import node_io
 from grit.tool import android2grd
 
 
@@ -99,7 +99,7 @@ class Android2GrdUnittest(unittest.TestCase):
     # Check that the structure of the GritNode is as expected.
     messages = grd.GetChildrenOfType(message.MessageNode)
     translations = grd.GetChildrenOfType(empty.TranslationsNode)
-    files = grd.GetChildrenOfType(io.FileNode)
+    files = grd.GetChildrenOfType(node_io.FileNode)
 
     self.assertEqual(len(translations), 1)
     self.assertEqual(len(files), 3)
@@ -123,7 +123,7 @@ class Android2GrdUnittest(unittest.TestCase):
   def testTranslations(self):
     grd = self.__ParseAndroidXml(['--languages', 'en-US,en-GB,ru,id'])
 
-    files = grd.GetChildrenOfType(io.FileNode)
+    files = grd.GetChildrenOfType(node_io.FileNode)
     us_file = filter(lambda x: x.attrs['lang'] == 'en-US', files)
     self.assertTrue(us_file)
     self.assertEqual(us_file[0].GetInputPath(),
@@ -141,7 +141,7 @@ class Android2GrdUnittest(unittest.TestCase):
                                   '--xtb-dir', 'xtb/dir',
                                   '--xml-dir', 'xml/dir'])
 
-    outputs = grd.GetChildrenOfType(io.OutputNode)
+    outputs = grd.GetChildrenOfType(node_io.OutputNode)
     self.assertEqual(len(outputs), 7)
 
     header_outputs = filter(lambda x: x.GetType() == 'rc_header', outputs)
@@ -153,7 +153,7 @@ class Android2GrdUnittest(unittest.TestCase):
     self.assertEqual(len(xml_outputs), 3)
 
     # The header node should have an "<emit>" child and the proper filename.
-    self.assertTrue(header_outputs[0].GetChildrenOfType(io.EmitNode))
+    self.assertTrue(header_outputs[0].GetChildrenOfType(node_io.EmitNode))
     self.assertEqual(util.normpath(header_outputs[0].GetFilename()),
                      util.normpath('header/dir/chrome_android_strings.h'))
 

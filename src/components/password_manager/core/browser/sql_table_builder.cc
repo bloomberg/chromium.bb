@@ -213,25 +213,30 @@ void SQLTableBuilder::DropIndex(const std::string& name) {
   index->max_version = sealed_version_;
 }
 
-unsigned SQLTableBuilder::SealVersion() {
-  if (sealed_version_ == kInvalidVersion) {
-    DCHECK_EQ(std::string(), constraints_);
-    // First sealed version, time to compute the PRIMARY KEY and UNIQUE string.
-    std::string primary_key;
-    std::string unique_key;
-    for (const Column& column : columns_) {
-      if (column.part_of_primary_key)
-        Append(column.name, &primary_key);
-      if (column.part_of_unique_key)
-        Append(column.name, &unique_key);
-    }
-    DCHECK(!primary_key.empty() || !unique_key.empty());
-    if (!primary_key.empty())
-      Append("PRIMARY KEY (" + primary_key + ")", &constraints_);
-    if (!unique_key.empty())
-      Append("UNIQUE (" + unique_key + ")", &constraints_);
+std::string SQLTableBuilder::ComputeConstraints(unsigned version) const {
+  std::string primary_key;
+  std::string unique_key;
+  for (const Column& column : columns_) {
+    // Ignore dropped columns.
+    if (column.max_version < version)
+      continue;
+    // Ignore columns columns from future versions.
+    if (column.min_version > version)
+      continue;
+    if (column.part_of_primary_key)
+      Append(column.name, &primary_key);
+    if (column.part_of_unique_key)
+      Append(column.name, &unique_key);
   }
-  DCHECK(!constraints_.empty());
+  std::string constraints;
+  if (!primary_key.empty())
+    Append("PRIMARY KEY (" + primary_key + ")", &constraints);
+  if (!unique_key.empty())
+    Append("UNIQUE (" + unique_key + ")", &constraints);
+  return constraints;
+}
+
+unsigned SQLTableBuilder::SealVersion() {
   return ++sealed_version_;
 }
 
@@ -247,10 +252,10 @@ bool SQLTableBuilder::MigrateFrom(unsigned old_version,
 
 bool SQLTableBuilder::CreateTable(sql::Database* db) const {
   DCHECK(IsVersionLastAndSealed(sealed_version_));
-  DCHECK(!constraints_.empty());
-
   if (db->DoesTableExist(table_name_.c_str()))
     return true;
+  std::string constraints = ComputeConstraints(sealed_version_);
+  DCHECK(!constraints.empty());
 
   std::string names;  // Names and types of the current columns.
   for (const Column& column : columns_) {
@@ -267,12 +272,11 @@ bool SQLTableBuilder::CreateTable(sql::Database* db) const {
           base::JoinString(index.columns, ", ").c_str()));
     }
   }
-
   sql::Transaction transaction(db);
   return transaction.Begin() &&
          db->Execute(base::StringPrintf("CREATE TABLE %s (%s, %s)",
                                         table_name_.c_str(), names.c_str(),
-                                        constraints_.c_str())
+                                        constraints.c_str())
                          .c_str()) &&
          std::all_of(create_index_sqls.begin(), create_index_sqls.end(),
                      [&db](const std::string& sql) {
@@ -306,8 +310,7 @@ std::string SQLTableBuilder::ListAllUniqueKeyNames() const {
   DCHECK(IsVersionLastAndSealed(sealed_version_));
   std::string result;
   for (const Column& column : columns_) {
-    if (IsColumnInLastVersion(column) &&
-        (column.part_of_primary_key || column.part_of_unique_key)) {
+    if (IsColumnInLastVersion(column) && column.part_of_unique_key) {
       if (!result.empty())
         result += " AND ";
       result += column.name + "=?";
@@ -359,13 +362,17 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
   DCHECK_LT(old_version, sealed_version_);
   DCHECK_GE(old_version, 0u);
   DCHECK(IsVersionLastAndSealed(sealed_version_));
-  DCHECK(!constraints_.empty());
 
-  // Names of columns from old version, values of which are copied.
-  std::string old_names;
+  // Names of columns from old version, values of which are copied. This
+  // contains only the names without their types.
+  std::string old_names_of_existing_columns_without_types;
   // Names of columns in new version, except for added ones.
-  std::string new_names;
-  std::vector<std::string> added_names;  // Names of added columns.
+  std::string new_names_of_existing_columns;
+  // Names of columns in new version, except for added ones. This contains only
+  // the names without their types.
+  std::string new_names_of_existing_columns_without_types;
+  std::vector<std::string>
+      names_of_new_columns_list;  // Names of added columns.
 
   // A temporary table will be needed if some columns are dropped or renamed,
   // because that is not supported by a single SQLite command.
@@ -373,8 +380,6 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
 
   for (auto column = columns_.begin(); column != columns_.end(); ++column) {
     if (column->max_version == old_version) {
-      DCHECK(!column->part_of_primary_key);
-      DCHECK(!column->part_of_unique_key);
       // This column was deleted after |old_version|. It can have two reasons:
       needs_temp_table = true;
       auto next_column = std::next(column);
@@ -382,24 +387,32 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
         // (1) The column is being renamed.
         DCHECK_EQ(column->type, next_column->type);
         DCHECK_NE(column->name, next_column->name);
-        Append(column->name, &old_names);
-        Append(next_column->name + " " + next_column->type, &new_names);
+        Append(column->name, &old_names_of_existing_columns_without_types);
+        Append(next_column->name + " " + next_column->type,
+               &new_names_of_existing_columns);
+        Append(next_column->name, &new_names_of_existing_columns_without_types);
         ++column;  // Avoid processing next_column in the next loop.
       } else {
         // (2) The column is being dropped.
       }
     } else if (column->min_version == old_version + 1) {
       // This column was added after old_version.
-      DCHECK(!column->part_of_primary_key);
-      DCHECK(!column->part_of_unique_key);
-      added_names.push_back(column->name + " " + column->type);
+      if (column->part_of_primary_key || column->part_of_unique_key)
+        needs_temp_table = true;
+      names_of_new_columns_list.push_back(column->name + " " + column->type);
     } else if (column->min_version <= old_version &&
                (column->max_version == kInvalidVersion ||
                 column->max_version > old_version)) {
       // This column stays.
-      Append(column->name, &old_names);
-      Append(column->name + " " + column->type, &new_names);
+      Append(column->name, &old_names_of_existing_columns_without_types);
+      Append(column->name + " " + column->type, &new_names_of_existing_columns);
+      Append(column->name, &new_names_of_existing_columns_without_types);
     }
+  }
+
+  if (old_names_of_existing_columns_without_types.empty()) {
+    // Table didn't exist in this version, and nothing to migrate.
+    return true;
   }
 
   if (needs_temp_table) {
@@ -411,21 +424,31 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
     // copied into it. After that, the new table is renamed to the current
     // one.
 
+    std::string constraints = ComputeConstraints(old_version + 1);
+    DCHECK(!constraints.empty());
+
     // Foreign key constraints are not enabled for the login database, so no
     // PRAGMA foreign_keys=off needed.
     const std::string temp_table_name = "temp_" + table_name_;
+
+    std::string names_of_all_columns = new_names_of_existing_columns;
+    for (const std::string& new_column : names_of_new_columns_list) {
+      Append(new_column, &names_of_all_columns);
+    }
 
     sql::Transaction transaction(db);
     if (!(transaction.Begin() &&
           db->Execute(base::StringPrintf(
                           "CREATE TABLE %s (%s, %s)", temp_table_name.c_str(),
-                          new_names.c_str(), constraints_.c_str())
+                          names_of_all_columns.c_str(), constraints.c_str())
                           .c_str()) &&
-          db->Execute(
-              base::StringPrintf("INSERT OR REPLACE INTO %s SELECT %s FROM %s",
-                                 temp_table_name.c_str(), old_names.c_str(),
-                                 table_name_.c_str())
-                  .c_str()) &&
+          db->Execute(base::StringPrintf(
+                          "INSERT OR REPLACE INTO %s (%s) SELECT %s FROM %s",
+                          temp_table_name.c_str(),
+                          new_names_of_existing_columns_without_types.c_str(),
+                          old_names_of_existing_columns_without_types.c_str(),
+                          table_name_.c_str())
+                          .c_str()) &&
           db->Execute(base::StringPrintf("DROP TABLE %s", table_name_.c_str())
                           .c_str()) &&
           db->Execute(base::StringPrintf("ALTER TABLE %s RENAME TO %s",
@@ -435,12 +458,13 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
           transaction.Commit())) {
       return false;
     }
-  }
-
-  if (!added_names.empty()) {
+  } else if (!names_of_new_columns_list.empty()) {
+    // If no new table has been created, we need to add the new columns here if
+    // any.
     sql::Transaction transaction(db);
     if (!(transaction.Begin() &&
-          std::all_of(added_names.begin(), added_names.end(),
+          std::all_of(names_of_new_columns_list.begin(),
+                      names_of_new_columns_list.end(),
                       [this, &db](const std::string& name) {
                         return db->Execute(
                             base::StringPrintf("ALTER TABLE %s ADD COLUMN %s",

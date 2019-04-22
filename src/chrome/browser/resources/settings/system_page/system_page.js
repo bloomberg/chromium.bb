@@ -46,8 +46,9 @@ Polymer({
 
   /** @private */
   onProxyTap_: function() {
-    if (!this.isProxyEnforcedByPolicy_)
+    if (!this.isProxyEnforcedByPolicy_) {
       settings.SystemPageBrowserProxyImpl.getInstance().showProxySettings();
+    }
   },
 
   /** @private */

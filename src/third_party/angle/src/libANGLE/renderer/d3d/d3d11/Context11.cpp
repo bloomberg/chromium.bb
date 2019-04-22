@@ -36,7 +36,7 @@ namespace
 {
 ANGLE_INLINE bool DrawCallHasDynamicAttribs(const gl::Context *context)
 {
-    VertexArray11 *vertexArray11 = GetImplAs<VertexArray11>(context->getGLState().getVertexArray());
+    VertexArray11 *vertexArray11 = GetImplAs<VertexArray11>(context->getState().getVertexArray());
     return vertexArray11->hasActiveDynamicAttrib(context);
 }
 
@@ -51,7 +51,7 @@ bool DrawCallHasStreamingVertexArrays(const gl::Context *context, gl::PrimitiveM
         return true;
     }
 
-    ProgramD3D *programD3D = GetImplAs<ProgramD3D>(context->getGLState().getProgram());
+    ProgramD3D *programD3D = GetImplAs<ProgramD3D>(context->getState().getProgram());
     if (InstancedPointSpritesActive(programD3D, mode))
     {
         return true;
@@ -60,16 +60,17 @@ bool DrawCallHasStreamingVertexArrays(const gl::Context *context, gl::PrimitiveM
     return false;
 }
 
-bool DrawCallHasStreamingElementArray(const gl::Context *context, GLenum srcType)
+bool DrawCallHasStreamingElementArray(const gl::Context *context, gl::DrawElementsType srcType)
 {
-    const gl::State &glState       = context->getGLState();
+    const gl::State &glState       = context->getState();
     gl::Buffer *elementArrayBuffer = glState.getVertexArray()->getElementArrayBuffer();
 
     bool primitiveRestartWorkaround =
         UsePrimitiveRestartWorkaround(glState.isPrimitiveRestartEnabled(), srcType);
-    const GLenum dstType = (srcType == GL_UNSIGNED_INT || primitiveRestartWorkaround)
-                               ? GL_UNSIGNED_INT
-                               : GL_UNSIGNED_SHORT;
+    const gl::DrawElementsType dstType =
+        (srcType == gl::DrawElementsType::UnsignedInt || primitiveRestartWorkaround)
+            ? gl::DrawElementsType::UnsignedInt
+            : gl::DrawElementsType::UnsignedShort;
 
     // Not clear where the offset comes from here.
     switch (ClassifyIndexStorage(glState, elementArrayBuffer, srcType, dstType, 0))
@@ -95,7 +96,7 @@ angle::Result ReadbackIndirectBuffer(const gl::Context *context,
                                      const void *indirect,
                                      const IndirectBufferT **bufferPtrOut)
 {
-    const gl::State &glState       = context->getGLState();
+    const gl::State &glState       = context->getState();
     gl::Buffer *drawIndirectBuffer = glState.getTargetBuffer(gl::BufferBinding::DrawIndirect);
     ASSERT(drawIndirectBuffer);
     Buffer11 *storage = GetImplAs<Buffer11>(drawIndirectBuffer);
@@ -106,19 +107,19 @@ angle::Result ReadbackIndirectBuffer(const gl::Context *context,
     ASSERT(bufferData);
 
     *bufferPtrOut = reinterpret_cast<const IndirectBufferT *>(bufferData + offset);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 }  // anonymous namespace
 
-Context11::Context11(const gl::ContextState &state, Renderer11 *renderer)
-    : ContextD3D(state), mRenderer(renderer)
+Context11::Context11(const gl::State &state, gl::ErrorSet *errorSet, Renderer11 *renderer)
+    : ContextD3D(state, errorSet), mRenderer(renderer)
 {}
 
 Context11::~Context11() {}
 
 angle::Result Context11::initialize()
 {
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void Context11::onDestroy(const gl::Context *context)
@@ -230,6 +231,12 @@ std::vector<PathImpl *> Context11::createPaths(GLsizei)
     return std::vector<PathImpl *>();
 }
 
+MemoryObjectImpl *Context11::createMemoryObject()
+{
+    UNREACHABLE();
+    return nullptr;
+}
+
 angle::Result Context11::flush(const gl::Context *context)
 {
     return mRenderer->flush(this);
@@ -246,8 +253,8 @@ angle::Result Context11::drawArrays(const gl::Context *context,
                                     GLsizei count)
 {
     ASSERT(count > 0);
-    ANGLE_TRY(mRenderer->getStateManager()->updateState(context, mode, first, count, GL_NONE,
-                                                        nullptr, 0, 0));
+    ANGLE_TRY(mRenderer->getStateManager()->updateState(
+        context, mode, first, count, gl::DrawElementsType::InvalidEnum, nullptr, 0, 0));
     return mRenderer->drawArrays(context, mode, first, count, 0);
 }
 
@@ -258,15 +265,15 @@ angle::Result Context11::drawArraysInstanced(const gl::Context *context,
                                              GLsizei instanceCount)
 {
     ASSERT(count > 0);
-    ANGLE_TRY(mRenderer->getStateManager()->updateState(context, mode, first, count, GL_NONE,
-                                                        nullptr, instanceCount, 0));
+    ANGLE_TRY(mRenderer->getStateManager()->updateState(
+        context, mode, first, count, gl::DrawElementsType::InvalidEnum, nullptr, instanceCount, 0));
     return mRenderer->drawArrays(context, mode, first, count, instanceCount);
 }
 
 ANGLE_INLINE angle::Result Context11::drawElementsImpl(const gl::Context *context,
                                                        gl::PrimitiveMode mode,
                                                        GLsizei indexCount,
-                                                       GLenum indexType,
+                                                       gl::DrawElementsType indexType,
                                                        const void *indices,
                                                        GLsizei instanceCount)
 {
@@ -275,7 +282,7 @@ ANGLE_INLINE angle::Result Context11::drawElementsImpl(const gl::Context *contex
     if (DrawCallHasDynamicAttribs(context))
     {
         gl::IndexRange indexRange;
-        ANGLE_TRY(context->getGLState().getVertexArray()->getIndexRange(
+        ANGLE_TRY(context->getState().getVertexArray()->getIndexRange(
             context, indexType, indexCount, indices, &indexRange));
         ANGLE_TRY(mRenderer->getStateManager()->updateState(
             context, mode, indexRange.start, indexCount, indexType, indices, instanceCount, 0));
@@ -294,7 +301,7 @@ ANGLE_INLINE angle::Result Context11::drawElementsImpl(const gl::Context *contex
 angle::Result Context11::drawElements(const gl::Context *context,
                                       gl::PrimitiveMode mode,
                                       GLsizei count,
-                                      GLenum type,
+                                      gl::DrawElementsType type,
                                       const void *indices)
 {
     return drawElementsImpl(context, mode, count, type, indices, 0);
@@ -303,7 +310,7 @@ angle::Result Context11::drawElements(const gl::Context *context,
 angle::Result Context11::drawElementsInstanced(const gl::Context *context,
                                                gl::PrimitiveMode mode,
                                                GLsizei count,
-                                               GLenum type,
+                                               gl::DrawElementsType type,
                                                const void *indices,
                                                GLsizei instances)
 {
@@ -315,7 +322,7 @@ angle::Result Context11::drawRangeElements(const gl::Context *context,
                                            GLuint start,
                                            GLuint end,
                                            GLsizei count,
-                                           GLenum type,
+                                           gl::DrawElementsType type,
                                            const void *indices)
 {
     return drawElementsImpl(context, mode, count, type, indices, 0);
@@ -330,21 +337,22 @@ angle::Result Context11::drawArraysIndirect(const gl::Context *context,
         const gl::DrawArraysIndirectCommand *cmd = nullptr;
         ANGLE_TRY(ReadbackIndirectBuffer(context, indirect, &cmd));
 
-        ANGLE_TRY(mRenderer->getStateManager()->updateState(
-            context, mode, cmd->first, cmd->count, GL_NONE, nullptr, cmd->instanceCount, 0));
+        ANGLE_TRY(mRenderer->getStateManager()->updateState(context, mode, cmd->first, cmd->count,
+                                                            gl::DrawElementsType::InvalidEnum,
+                                                            nullptr, cmd->instanceCount, 0));
         return mRenderer->drawArrays(context, mode, cmd->first, cmd->count, cmd->instanceCount);
     }
     else
     {
-        ANGLE_TRY(
-            mRenderer->getStateManager()->updateState(context, mode, 0, 0, GL_NONE, nullptr, 0, 0));
+        ANGLE_TRY(mRenderer->getStateManager()->updateState(
+            context, mode, 0, 0, gl::DrawElementsType::InvalidEnum, nullptr, 0, 0));
         return mRenderer->drawArraysIndirect(context, indirect);
     }
 }
 
 angle::Result Context11::drawElementsIndirect(const gl::Context *context,
                                               gl::PrimitiveMode mode,
-                                              GLenum type,
+                                              gl::DrawElementsType type,
                                               const void *indirect)
 {
     if (DrawCallHasStreamingVertexArrays(context, mode) ||
@@ -353,16 +361,16 @@ angle::Result Context11::drawElementsIndirect(const gl::Context *context,
         const gl::DrawElementsIndirectCommand *cmd = nullptr;
         ANGLE_TRY(ReadbackIndirectBuffer(context, indirect, &cmd));
 
-        const gl::Type &typeInfo = gl::GetTypeInfo(type);
-        const void *indices      = reinterpret_cast<const void *>(
-            static_cast<uintptr_t>(cmd->firstIndex * typeInfo.bytes));
+        const GLuint typeBytes = gl::GetDrawElementsTypeSize(type);
+        const void *indices =
+            reinterpret_cast<const void *>(static_cast<uintptr_t>(cmd->firstIndex * typeBytes));
 
         // We must explicitly resolve the index range for the slow-path indirect drawElements to
         // make sure we are using the correct 'baseVertex'. This parameter does not exist for the
         // direct drawElements.
         gl::IndexRange indexRange;
-        ANGLE_TRY(context->getGLState().getVertexArray()->getIndexRange(context, type, cmd->count,
-                                                                        indices, &indexRange));
+        ANGLE_TRY(context->getState().getVertexArray()->getIndexRange(context, type, cmd->count,
+                                                                      indices, &indexRange));
 
         GLint startVertex;
         ANGLE_TRY(ComputeStartVertex(GetImplAs<Context11>(context), indexRange, cmd->baseVertex,
@@ -382,7 +390,7 @@ angle::Result Context11::drawElementsIndirect(const gl::Context *context,
     }
 }
 
-GLenum Context11::getResetStatus()
+gl::GraphicsResetStatus Context11::getResetStatus()
 {
     return mRenderer->getResetStatus();
 }
@@ -419,10 +427,10 @@ void Context11::popGroupMarker()
     }
 }
 
-void Context11::pushDebugGroup(GLenum source, GLuint id, GLsizei length, const char *message)
+void Context11::pushDebugGroup(GLenum source, GLuint id, const std::string &message)
 {
     // Fall through to the EXT_debug_marker functions
-    pushGroupMarker(length, message);
+    pushGroupMarker(message.size(), message.c_str());
 }
 
 void Context11::popDebugGroup()
@@ -436,7 +444,7 @@ angle::Result Context11::syncState(const gl::Context *context,
                                    const gl::State::DirtyBits &bitMask)
 {
     mRenderer->getStateManager()->syncState(context, dirtyBits);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 GLint Context11::getGPUDisjoint()
@@ -511,7 +519,7 @@ angle::Result Context11::dispatchComputeIndirect(const gl::Context *context, GLi
 angle::Result Context11::triggerDrawCallProgramRecompilation(const gl::Context *context,
                                                              gl::PrimitiveMode drawMode)
 {
-    const auto &glState    = context->getGLState();
+    const auto &glState    = context->getState();
     const auto *va11       = GetImplAs<VertexArray11>(glState.getVertexArray());
     const auto *drawFBO    = glState.getDrawFramebuffer();
     gl::Program *program   = glState.getProgram();
@@ -521,12 +529,12 @@ angle::Result Context11::triggerDrawCallProgramRecompilation(const gl::Context *
     programD3D->updateCachedOutputLayout(context, drawFBO);
 
     bool recompileVS = !programD3D->hasVertexExecutableForCachedInputLayout();
-    bool recompileGS = !programD3D->hasGeometryExecutableForPrimitiveType(drawMode);
+    bool recompileGS = !programD3D->hasGeometryExecutableForPrimitiveType(glState, drawMode);
     bool recompilePS = !programD3D->hasPixelExecutableForCachedOutputLayout();
 
     if (!recompileVS && !recompileGS && !recompilePS)
     {
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     // Load the compiler if necessary and recompile the programs.
@@ -549,9 +557,9 @@ angle::Result Context11::triggerDrawCallProgramRecompilation(const gl::Context *
     if (recompileGS)
     {
         ShaderExecutableD3D *geometryExe = nullptr;
-        ANGLE_TRY(programD3D->getGeometryExecutableForPrimitiveType(
-            this, mState.getCaps(), drawMode, &geometryExe, &infoLog));
-        if (!programD3D->hasGeometryExecutableForPrimitiveType(drawMode))
+        ANGLE_TRY(programD3D->getGeometryExecutableForPrimitiveType(this, glState, drawMode,
+                                                                    &geometryExe, &infoLog));
+        if (!programD3D->hasGeometryExecutableForPrimitiveType(glState, drawMode))
         {
             ASSERT(infoLog.getLength() > 0);
             ERR() << "Error compiling dynamic geometry executable: " << infoLog.str();
@@ -577,17 +585,55 @@ angle::Result Context11::triggerDrawCallProgramRecompilation(const gl::Context *
         mMemoryProgramCache->updateProgram(context, program);
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
+}
+
+angle::Result Context11::triggerDispatchCallProgramRecompilation(const gl::Context *context)
+{
+    const auto &glState    = context->getState();
+    gl::Program *program   = glState.getProgram();
+    ProgramD3D *programD3D = GetImplAs<ProgramD3D>(program);
+
+    programD3D->updateCachedComputeImage2DBindLayout(context);
+
+    bool recompileCS = !programD3D->hasComputeExecutableForCachedImage2DBindLayout();
+
+    if (!recompileCS)
+    {
+        return angle::Result::Continue;
+    }
+
+    // Load the compiler if necessary and recompile the programs.
+    ANGLE_TRY(mRenderer->ensureHLSLCompilerInitialized(this));
+
+    gl::InfoLog infoLog;
+
+    ShaderExecutableD3D *computeExe = nullptr;
+    ANGLE_TRY(programD3D->getComputeExecutableForImage2DBindLayout(this, &computeExe, &infoLog));
+    if (!programD3D->hasComputeExecutableForCachedImage2DBindLayout())
+    {
+        ASSERT(infoLog.getLength() > 0);
+        ERR() << "Dynamic recompilation error log: " << infoLog.str();
+        ANGLE_TRY_HR(this, E_FAIL, "Error compiling dynamic compute executable");
+    }
+
+    // Refresh the program cache entry.
+    if (mMemoryProgramCache)
+    {
+        mMemoryProgramCache->updateProgram(context, program);
+    }
+
+    return angle::Result::Continue;
 }
 
 angle::Result Context11::memoryBarrier(const gl::Context *context, GLbitfield barriers)
 {
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Context11::memoryBarrierByRegion(const gl::Context *context, GLbitfield barriers)
 {
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Context11::getIncompleteTexture(const gl::Context *context,

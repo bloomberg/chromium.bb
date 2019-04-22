@@ -36,7 +36,7 @@ void CrashDoubleFree(void) {
 
 void CrashNullPointerDereference(void) {
   // Cause the program to segfault with a NULL pointer dereference
-  int *p = NULL;
+  int* p = nullptr;
   *p = 0;
 }
 
@@ -62,7 +62,7 @@ bool ReadTestCase(const char* filename,
     return false;
   }
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   if (!value.get()) {
     LOG(ERROR) << filename << ": couldn't parse JSON.";
     return false;

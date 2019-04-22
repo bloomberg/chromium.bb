@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/mac/foundation_util.h"

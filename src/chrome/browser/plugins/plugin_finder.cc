@@ -100,10 +100,12 @@ std::unique_ptr<PluginMetadata> CreatePluginMetadata(
   DCHECK(success);
   std::string language_str;
   plugin_dict->GetString("lang", &language_str);
+  bool plugin_is_deprecated = false;
+  plugin_dict->GetBoolean("plugin_is_deprecated", &plugin_is_deprecated);
 
   std::unique_ptr<PluginMetadata> plugin = std::make_unique<PluginMetadata>(
       identifier, name, display_url, GURL(url), GURL(help_url),
-      group_name_matcher, language_str);
+      group_name_matcher, language_str, plugin_is_deprecated);
   const base::ListValue* versions = NULL;
   if (plugin_dict->GetList("versions", &versions)) {
     for (auto it = versions->begin(); it != versions->end(); ++it) {
@@ -171,8 +173,9 @@ std::unique_ptr<base::DictionaryValue> PluginFinder::LoadBuiltInPluginList() {
           IDR_PLUGIN_DB_JSON));
   std::string error_str;
   int error_code = base::JSONReader::JSON_NO_ERROR;
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      json_resource, base::JSON_PARSE_RFC, &error_code, &error_str);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          json_resource, base::JSON_PARSE_RFC, &error_code, &error_str);
   if (!value) {
     DLOG(ERROR) << error_str;
     switch (error_code) {
@@ -282,11 +285,11 @@ std::unique_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(
   }
 
   // The plugin metadata was not found, create a dummy one holding
-  // the name, identifier and group name only.
+  // the name, identifier and group name only. Dummy plugin is not deprecated.
   std::string identifier = GetIdentifier(plugin);
   std::unique_ptr<PluginMetadata> metadata = std::make_unique<PluginMetadata>(
       identifier, GetGroupName(plugin), false, GURL(), GURL(), plugin.name,
-      std::string());
+      std::string(), false /* plugin_is_deprecated */);
   for (size_t i = 0; i < plugin.mime_types.size(); ++i)
     metadata->AddMatchingMimeType(plugin.mime_types[i].mime_type);
 

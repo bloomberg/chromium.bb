@@ -21,7 +21,7 @@
 
 #include "fxbarcode/cbc_pdf417i.h"
 
-#include <memory>
+#include <vector>
 
 #include "fxbarcode/pdf417/BC_PDF417Writer.h"
 #include "third_party/base/ptr_util.h"
@@ -31,15 +31,12 @@ CBC_PDF417I::CBC_PDF417I()
 
 CBC_PDF417I::~CBC_PDF417I() {}
 
-bool CBC_PDF417I::Encode(const WideStringView& contents) {
-  int32_t outWidth;
-  int32_t outHeight;
+bool CBC_PDF417I::Encode(WideStringView contents) {
+  int32_t width;
+  int32_t height;
   auto* pWriter = GetPDF417Writer();
-  std::unique_ptr<uint8_t, FxFreeDeleter> data(
-      pWriter->Encode(WideString(contents), &outWidth, &outHeight));
-  if (!data)
-    return false;
-  return pWriter->RenderResult(data.get(), outWidth, outHeight);
+  std::vector<uint8_t> data = pWriter->Encode(contents, &width, &height);
+  return pWriter->RenderResult(data, width, height);
 }
 
 bool CBC_PDF417I::RenderDevice(CFX_RenderDevice* device,

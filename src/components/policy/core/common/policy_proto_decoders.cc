@@ -89,7 +89,7 @@ std::unique_ptr<base::Value> DecodeJsonProto(const em::StringPolicyProto& proto,
                                              std::string* error) {
   const std::string& json = proto.value();
   std::unique_ptr<base::Value> parsed_value =
-      base::JSONReader::ReadAndReturnError(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
           json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, error);
 
   if (!parsed_value) {

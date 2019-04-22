@@ -4,13 +4,12 @@
 
 /**
  * @fileoverview Polymer element for displaying the IP Config properties for
- * a network state. TODO(stevenjb): Allow editing of static IP configurations
- * when 'editable' is true.
+ * a network state.
  */
 Polymer({
   is: 'network-ip-config',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, CrPolicyNetworkBehavior],
 
   properties: {
     /**
@@ -21,14 +20,6 @@ Polymer({
     networkProperties: {
       type: Object,
       observer: 'networkPropertiesChanged_',
-    },
-
-    /**
-     * Whether or not the IP Address can be edited.
-     */
-    editable: {
-      type: Boolean,
-      value: false,
     },
 
     /**
@@ -78,12 +69,14 @@ Polymer({
    * Polymer networkProperties changed method.
    */
   networkPropertiesChanged_: function(newValue, oldValue) {
-    if (!this.networkProperties)
+    if (!this.networkProperties) {
       return;
+    }
 
     const properties = this.networkProperties;
-    if (newValue.GUID != (oldValue && oldValue.GUID))
+    if (newValue.GUID != (oldValue && oldValue.GUID)) {
       this.savedStaticIp_ = undefined;
+    }
 
     // Update the 'automatic' property.
     if (properties.IPAddressConfigType) {
@@ -108,6 +101,18 @@ Polymer({
     }
   },
 
+  /**
+   * Checks whether IP address config type can be changed.
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean} true only if 'IPAddressConfigType' as well as all other
+   * IP address config related fields are editable.
+   * @private
+   */
+  canChangeIPConfigType_: function(networkProperties) {
+    return !this.isNetworkPolicyPathEnforced(
+        networkProperties, 'IPAddressConfigType');
+  },
+
   /** @private */
   onAutomaticChange_: function() {
     if (!this.automatic_) {
@@ -119,17 +124,19 @@ Polymer({
       };
       // Ensure that there is a valid IPConfig object. Copy any set properties
       // over the default properties to ensure all properties are set.
-      if (this.ipConfig_)
+      if (this.ipConfig_) {
         this.ipConfig_.ipv4 = Object.assign(defaultIpv4, this.ipConfig_.ipv4);
-      else
+      } else {
         this.ipConfig_ = {ipv4: defaultIpv4};
+      }
       this.sendStaticIpConfig_();
       return;
     }
 
     // Save the static IP configuration when switching to automatic.
-    if (this.ipConfig_)
+    if (this.ipConfig_) {
       this.savedStaticIp_ = this.ipConfig_.ipv4;
+    }
     // Send the change.
     this.fire('ip-change', {
       field: 'IPAddressConfigType',
@@ -145,15 +152,17 @@ Polymer({
    * @private
    */
   getIPConfigUIProperties_: function(ipconfig) {
-    if (!ipconfig)
+    if (!ipconfig) {
       return undefined;
+    }
     const result = {};
     for (const key in ipconfig) {
       const value = ipconfig[key];
-      if (key == 'RoutingPrefix')
+      if (key == 'RoutingPrefix') {
         result.RoutingPrefix = CrOnc.getRoutingPrefixAsNetmask(value);
-      else
+      } else {
         result[key] = value;
+      }
     }
     return result;
   },
@@ -168,10 +177,11 @@ Polymer({
     const result = {};
     for (const key in ipconfig) {
       const value = ipconfig[key];
-      if (key == 'RoutingPrefix')
+      if (key == 'RoutingPrefix') {
         result.RoutingPrefix = CrOnc.getRoutingPrefixAsLength(value);
-      else
+      } else {
         result[key] = value;
+      }
     }
     return result;
   },
@@ -181,13 +191,29 @@ Polymer({
    * @private
    */
   hasIpConfigFields_: function() {
-    if (!this.ipConfigFields_)
+    if (!this.ipConfigFields_) {
       return false;
+    }
     for (let i = 0; i < this.ipConfigFields_.length; ++i) {
-      if (this.get(this.ipConfigFields_[i], this.ipConfig_) != undefined)
+      if (this.get(this.ipConfigFields_[i], this.ipConfig_) != undefined) {
         return true;
+      }
     }
     return false;
+  },
+
+  /**
+   * @param {string} path path to a property inside of |networkProperties|
+   * dictionary.
+   * @return {string|undefined} Edit type to be used in network-property-list
+   * for the given path.
+   * @private
+   */
+  getIPFieldEditType_: function(path) {
+    return this.networkProperties &&
+            this.isNetworkPolicyPathEnforced(this.networkProperties, path) ?
+        undefined :
+        'String';
   },
 
   /**
@@ -195,24 +221,27 @@ Polymer({
    * @private
    */
   getIPEditFields_: function() {
-    if (!this.editable || this.automatic_)
+    if (this.automatic_ || !this.networkProperties) {
       return {};
+    }
     return {
-      'ipv4.IPAddress': 'String',
-      'ipv4.RoutingPrefix': 'String',
-      'ipv4.Gateway': 'String'
+      'ipv4.IPAddress': this.getIPFieldEditType_('StaticIPConfig.IPAddress'),
+      'ipv4.RoutingPrefix':
+          this.getIPFieldEditType_('StaticIPConfig.RoutingPrefix'),
+      'ipv4.Gateway': this.getIPFieldEditType_('StaticIPConfig.Gateway')
     };
   },
 
   /**
    * Event triggered when the network property list changes.
-   * @param {!{detail: {field: string, value: string}}} event The
+   * @param {!CustomEvent<!{field: string, value: string}>} event The
    *     network-property-list change event.
    * @private
    */
   onIPChange_: function(event) {
-    if (!this.ipConfig_)
+    if (!this.ipConfig_) {
       return;
+    }
     const field = event.detail.field;
     const value = event.detail.value;
     // Note: |field| includes the 'ipv4.' prefix.

@@ -15,13 +15,13 @@ class ServiceWorkerGlobalScopeBackgroundFetch {
 
  public:
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(backgroundfetchsuccess,
-                                         kBackgroundfetchsuccess);
+                                         kBackgroundfetchsuccess)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(backgroundfetchfail,
-                                         kBackgroundfetchfail);
+                                         kBackgroundfetchfail)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(backgroundfetchabort,
-                                         kBackgroundfetchabort);
+                                         kBackgroundfetchabort)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(backgroundfetchclick,
-                                         kBackgroundfetchclick);
+                                         kBackgroundfetchclick)
 };
 
 }  // namespace blink

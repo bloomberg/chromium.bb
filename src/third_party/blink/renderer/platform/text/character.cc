@@ -33,6 +33,8 @@
 #include <unicode/uobject.h>
 #include <unicode/uscript.h>
 #include <algorithm>
+
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/text/character_property_data.h"
 #include "third_party/blink/renderer/platform/text/icu_error.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -61,9 +63,9 @@ static icu::UnicodeSet* createUnicodeSet(const UChar32* characters,
   return unicodeSet;
 }
 
-#define CREATE_UNICODE_SET(name)                                      \
-  createUnicodeSet(name##Array, arraysize(name##Array), name##Ranges, \
-                   arraysize(name##Ranges))
+#define CREATE_UNICODE_SET(name)                                       \
+  createUnicodeSet(name##Array, base::size(name##Array), name##Ranges, \
+                   base::size(name##Ranges))
 
 #define RETURN_HAS_PROPERTY(c, name)            \
   static icu::UnicodeSet* unicodeSet = nullptr; \
@@ -256,12 +258,10 @@ bool Character::CanReceiveTextEmphasis(UChar32 c) {
   return true;
 }
 
-bool Character::IsEmojiFlagSequenceTag(UChar32 c) {
-  // Only allow valid sequences from
+bool Character::IsEmojiTagSequence(UChar32 c) {
   // http://www.unicode.org/reports/tr51/proposed.html#valid-emoji-tag-sequences
   return (c >= kTagDigitZero && c <= kTagDigitNine) ||
-         (c >= kTagLatinSmallLetterA && c <= kTagLatinSmallLetterZ) ||
-         c == kCancelTag;
+         (c >= kTagLatinSmallLetterA && c <= kTagLatinSmallLetterZ);
 }
 
 template <typename CharacterType>

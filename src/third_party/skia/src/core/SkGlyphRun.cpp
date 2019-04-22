@@ -7,29 +7,19 @@
 
 #include "SkGlyphRun.h"
 
-#include "SkGlyphCache.h"
+#include "SkDevice.h"
+#include "SkFont.h"
+#include "SkFontPriv.h"
 #include "SkPaint.h"
-#include "SkPaintPriv.h"
+#include "SkStrike.h"
 #include "SkStrikeCache.h"
 #include "SkTextBlob.h"
 #include "SkTextBlobPriv.h"
 #include "SkTo.h"
 #include "SkUtils.h"
 
-namespace {
-static SkTypeface::Encoding convert_encoding(SkPaint::TextEncoding encoding) {
-    switch (encoding) {
-        case  SkPaint::kUTF8_TextEncoding: return SkTypeface::kUTF8_Encoding;
-        case SkPaint::kUTF16_TextEncoding: return SkTypeface::kUTF16_Encoding;
-        case SkPaint::kUTF32_TextEncoding: return SkTypeface::kUTF32_Encoding;
-        default: return SkTypeface::kUTF32_Encoding;
-    }
-}
-}  // namespace
-
 // -- SkGlyphRun -----------------------------------------------------------------------------------
-SkGlyphRun::SkGlyphRun(const SkPaint& basePaint,
-                       const SkRunFont& runFont,
+SkGlyphRun::SkGlyphRun(const SkFont& font,
                        SkSpan<const SkPoint> positions,
                        SkSpan<const SkGlyphID> glyphIDs,
                        SkSpan<const char> text,
@@ -38,34 +28,14 @@ SkGlyphRun::SkGlyphRun(const SkPaint& basePaint,
         , fGlyphIDs{glyphIDs}
         , fText{text}
         , fClusters{clusters}
-        , fRunPaint{basePaint, runFont} {}
+        , fFont{font} {}
 
-SkGlyphRun::SkGlyphRun(const SkGlyphRun& that, const SkPaint& paint)
+SkGlyphRun::SkGlyphRun(const SkGlyphRun& that, const SkFont& font)
     : fPositions{that.fPositions}
     , fGlyphIDs{that.fGlyphIDs}
     , fText{that.fText}
     , fClusters{that.fClusters}
-    , fRunPaint{paint} {}
-
-void SkGlyphRun::eachGlyphToGlyphRun(SkGlyphRun::PerGlyph perGlyph) {
-    SkPoint point;
-    SkGlyphID glyphID;
-    SkGlyphRun run{
-        fRunPaint,
-        SkRunFont{fRunPaint},
-        SkSpan<const SkPoint>{&point, 1},
-        SkSpan<const SkGlyphID>{&glyphID, 1},
-        SkSpan<const char>{},
-        SkSpan<const uint32_t>{}
-    };
-
-    auto runSize = fGlyphIDs.size();
-    for (size_t i = 0; i < runSize; i++) {
-        glyphID = fGlyphIDs[i];
-        point = fPositions[i];
-        perGlyph(run);
-    }
-}
+    , fFont{font} {}
 
 void SkGlyphRun::filloutGlyphsAndPositions(SkGlyphID* glyphIDs, SkPoint* positions) {
     memcpy(glyphIDs, fGlyphIDs.data(), fGlyphIDs.size_bytes());
@@ -84,8 +54,8 @@ SkGlyphRunList::SkGlyphRunList(
         , fOrigin{origin}
         , fGlyphRuns{glyphRunList} { }
 
-SkGlyphRunList::SkGlyphRunList(const SkGlyphRun& glyphRun)
-        : fOriginalPaint{&glyphRun.paint()}
+SkGlyphRunList::SkGlyphRunList(const SkGlyphRun& glyphRun, const SkPaint& paint)
+        : fOriginalPaint{&paint}
         , fOriginalTextBlob{nullptr}
         , fOrigin{SkPoint::Make(0, 0)}
         , fGlyphRuns{SkSpan<const SkGlyphRun>{&glyphRun, 1}} {}
@@ -97,7 +67,7 @@ uint64_t SkGlyphRunList::uniqueID() const {
 
 bool SkGlyphRunList::anyRunsLCD() const {
     for (const auto& r : fGlyphRuns) {
-        if (r.paint().isLCDRenderText()) {
+        if (r.font().getEdging() == SkFont::Edging::kSubpixelAntiAlias) {
             return true;
         }
     }
@@ -106,11 +76,20 @@ bool SkGlyphRunList::anyRunsLCD() const {
 
 bool SkGlyphRunList::anyRunsSubpixelPositioned() const {
     for (const auto& r : fGlyphRuns) {
-        if (r.paint().isSubpixelText()) {
+        if (r.font().isSubpixel()) {
             return true;
         }
     }
     return false;
+}
+
+bool SkGlyphRunList::allFontsFinite() const {
+    for (const auto& r : fGlyphRuns) {
+        if (!SkFontPriv::IsFinite(r.font())) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void SkGlyphRunList::temporaryShuntBlobNotifyAddedToCache(uint32_t cacheID) const {
@@ -181,64 +160,19 @@ SkSpan<const SkGlyphID> SkGlyphIDSet::uniquifyGlyphIDs(
 }
 
 // -- SkGlyphRunBuilder ----------------------------------------------------------------------------
-void SkGlyphRunBuilder::drawTextAtOrigin(
-        const SkPaint& paint, const void* bytes, size_t byteLength) {
-    auto glyphIDs = textToGlyphIDs(paint, bytes, byteLength);
+void SkGlyphRunBuilder::drawTextUTF8(const SkPaint& paint, const SkFont& font, const void* bytes,
+                                     size_t byteLength, SkPoint origin) {
+    auto glyphIDs = textToGlyphIDs(font, bytes, byteLength, kUTF8_SkTextEncoding);
     if (!glyphIDs.empty()) {
         this->initialize(glyphIDs.size());
-    }
-
-    auto positions = SkSpan<const SkPoint>{fPositions, glyphIDs.size()};
-
-    // Every glyph is at the origin.
-    sk_bzero((void *)positions.data(), positions.size_bytes());
-
-    this->makeGlyphRun(
-            paint,
-            SkRunFont{paint},
-            glyphIDs,
-            positions,
-            SkSpan<const char>{},
-            SkSpan<const uint32_t>{});
-    this->makeGlyphRunList(paint, nullptr, SkPoint::Make(0, 0));
-}
-
-void SkGlyphRunBuilder::drawText(
-        const SkPaint& paint, const void* bytes, size_t byteLength, SkPoint origin) {
-    auto glyphIDs = textToGlyphIDs(paint, bytes, byteLength);
-    if (!glyphIDs.empty()) {
-        this->initialize(glyphIDs.size());
-        this->simplifyDrawText(paint, SkRunFont{paint}, glyphIDs, origin, fPositions);
+        this->simplifyDrawText(font, glyphIDs, origin, fPositions);
     }
 
     this->makeGlyphRunList(paint, nullptr, SkPoint::Make(0, 0));
 }
 
-void SkGlyphRunBuilder::drawPosTextH(const SkPaint& paint, const void* bytes,
-                                     size_t byteLength, const SkScalar* xpos,
-                                     SkScalar constY) {
-    auto glyphIDs = textToGlyphIDs(paint, bytes, byteLength);
-    if (!glyphIDs.empty()) {
-        this->initialize(glyphIDs.size());
-        this->simplifyDrawPosTextH(
-                paint, SkRunFont{paint}, glyphIDs, xpos, constY, fPositions);
-    }
-
-    this->makeGlyphRunList(paint, nullptr, SkPoint::Make(0, 0));
-}
-
-void SkGlyphRunBuilder::drawPosText(const SkPaint& paint, const void* bytes,
-                                    size_t byteLength, const SkPoint* pos) {
-    auto glyphIDs = textToGlyphIDs(paint, bytes, byteLength);
-    if (!glyphIDs.empty()) {
-        this->initialize(glyphIDs.size());
-        this->simplifyDrawPosText(paint, SkRunFont{paint}, glyphIDs, pos);
-    }
-
-    this->makeGlyphRunList(paint, nullptr, SkPoint::Make(0, 0));
-}
-
-void SkGlyphRunBuilder::drawTextBlob(const SkPaint& paint, const SkTextBlob& blob, SkPoint origin) {
+void SkGlyphRunBuilder::drawTextBlob(const SkPaint& paint, const SkTextBlob& blob, SkPoint origin,
+                                     SkBaseDevice* device) {
     // Figure out all the storage needed to pre-size everything below.
     size_t totalGlyphs = 0;
     for (SkTextBlobRunIterator it(&blob); !it.done(); it.next()) {
@@ -263,32 +197,47 @@ void SkGlyphRunBuilder::drawTextBlob(const SkPaint& paint, const SkTextBlob& blo
         switch (it.positioning()) {
             case SkTextBlobRunIterator::kDefault_Positioning: {
                 this->simplifyDrawText(
-                        paint, it.runFont(), glyphIDs, offset, positions, text, clusters);
+                        it.font(), glyphIDs, offset, positions, text, clusters);
             }
                 break;
             case SkTextBlobRunIterator::kHorizontal_Positioning: {
                 auto constY = offset.y();
                 this->simplifyDrawPosTextH(
-                        paint, it.runFont(), glyphIDs, it.pos(), constY, positions, text, clusters);
+                        it.font(), glyphIDs, it.pos(), constY, positions, text, clusters);
             }
                 break;
             case SkTextBlobRunIterator::kFull_Positioning:
                 this->simplifyDrawPosText(
-                        paint, it.runFont(), glyphIDs, (const SkPoint*)it.pos(), text, clusters);
+                        it.font(), glyphIDs, (const SkPoint*)it.pos(), text, clusters);
                 break;
+            case SkTextBlobRunIterator::kRSXform_Positioning: {
+                if (!this->empty()) {
+                    this->makeGlyphRunList(paint, &blob, origin);
+                    device->drawGlyphRunList(this->useGlyphRunList());
+                }
+
+                device->drawGlyphRunRSXform(it.font(), it.glyphs(), (const SkRSXform*)it.pos(),
+                                            runSize, origin, paint);
+
+                // re-init in case we keep looping and need the builder again
+                this->initialize(totalGlyphs);
+            } break;
         }
 
         positions += runSize;
     }
 
-    this->makeGlyphRunList(paint, &blob, origin);
+    if (!this->empty()) {
+        this->makeGlyphRunList(paint, &blob, origin);
+        device->drawGlyphRunList(this->useGlyphRunList());
+    }
 }
 
-void SkGlyphRunBuilder::drawGlyphPos(
-        const SkPaint& paint, SkSpan<const SkGlyphID> glyphIDs, const SkPoint* pos) {
+void SkGlyphRunBuilder::drawGlyphsWithPositions(const SkPaint& paint, const SkFont& font,
+                                            SkSpan<const SkGlyphID> glyphIDs, const SkPoint* pos) {
     if (!glyphIDs.empty()) {
         this->initialize(glyphIDs.size());
-        this->simplifyDrawPosText(paint, SkRunFont{paint}, glyphIDs, pos);
+        this->simplifyDrawPosText(font, glyphIDs, pos);
         this->makeGlyphRunList(paint, nullptr, SkPoint::Make(0, 0));
     }
 }
@@ -308,16 +257,12 @@ void SkGlyphRunBuilder::initialize(size_t totalRunSize) {
 }
 
 SkSpan<const SkGlyphID> SkGlyphRunBuilder::textToGlyphIDs(
-        const SkPaint& paint, const void* bytes, size_t byteLength) {
-    auto encoding = paint.getTextEncoding();
-    if (encoding != SkPaint::kGlyphID_TextEncoding) {
-        auto tfEncoding = convert_encoding(encoding);
-        int utfSize = SkUTFN_CountUnichars(tfEncoding, bytes, byteLength);
-        if (utfSize > 0) {
-            size_t runSize = SkTo<size_t>(utfSize);
-            fScratchGlyphIDs.resize(runSize);
-            auto typeface = SkPaintPriv::GetTypefaceOrDefault(paint);
-            typeface->charsToGlyphs(bytes, tfEncoding, fScratchGlyphIDs.data(), runSize);
+        const SkFont& font, const void* bytes, size_t byteLength, SkTextEncoding encoding) {
+    if (encoding != kGlyphID_SkTextEncoding) {
+        int count = font.countText(bytes, byteLength, encoding);
+        if (count > 0) {
+            fScratchGlyphIDs.resize(count);
+            font.textToGlyphs(bytes, byteLength, encoding, fScratchGlyphIDs.data(), count);
             return SkSpan<const SkGlyphID>{fScratchGlyphIDs};
         } else {
             return SkSpan<const SkGlyphID>();
@@ -328,8 +273,7 @@ SkSpan<const SkGlyphID> SkGlyphRunBuilder::textToGlyphIDs(
 }
 
 void SkGlyphRunBuilder::makeGlyphRun(
-        const SkPaint& basePaint,
-        const SkRunFont& runFont,
+        const SkFont& font,
         SkSpan<const SkGlyphID> glyphIDs,
         SkSpan<const SkPoint> positions,
         SkSpan<const char> text,
@@ -338,8 +282,7 @@ void SkGlyphRunBuilder::makeGlyphRun(
     // Ignore empty runs.
     if (!glyphIDs.empty()) {
         fGlyphRunListStorage.emplace_back(
-                basePaint,
-                runFont,
+                font,
                 positions,
                 glyphIDs,
                 text,
@@ -356,20 +299,17 @@ void SkGlyphRunBuilder::makeGlyphRunList(
 }
 
 void SkGlyphRunBuilder::simplifyDrawText(
-        const SkPaint& paint, const SkRunFont& runFont, SkSpan<const SkGlyphID> glyphIDs,
+        const SkFont& font, SkSpan<const SkGlyphID> glyphIDs,
         SkPoint origin, SkPoint* positions,
         SkSpan<const char> text, SkSpan<const uint32_t> clusters) {
     SkASSERT(!glyphIDs.empty());
 
     auto runSize = glyphIDs.size();
 
-    SkPaint runPaint{paint, runFont};
-
     if (!glyphIDs.empty()) {
         fScratchAdvances.resize(runSize);
         {
-            const SkFont font = SkFont::LEGACY_ExtractFromPaint(runPaint);
-            auto cache = SkStrikeCache::FindOrCreateStrikeWithNoDeviceExclusive(font, runPaint);
+            auto cache = SkStrikeCache::FindOrCreateStrikeWithNoDeviceExclusive(font);
             cache->getAdvances(glyphIDs, fScratchAdvances.data());
         }
 
@@ -381,8 +321,7 @@ void SkGlyphRunBuilder::simplifyDrawText(
         }
 
         this->makeGlyphRun(
-                paint,
-                runFont,
+                font,
                 glyphIDs,
                 SkSpan<const SkPoint>{positions, runSize},
                 text,
@@ -391,7 +330,7 @@ void SkGlyphRunBuilder::simplifyDrawText(
 }
 
 void SkGlyphRunBuilder::simplifyDrawPosTextH(
-        const SkPaint& paint, const SkRunFont& runFont, SkSpan<const SkGlyphID> glyphIDs,
+        const SkFont& font, SkSpan<const SkGlyphID> glyphIDs,
         const SkScalar* xpos, SkScalar constY, SkPoint* positions,
         SkSpan<const char> text, SkSpan<const uint32_t> clusters) {
 
@@ -400,18 +339,17 @@ void SkGlyphRunBuilder::simplifyDrawPosTextH(
         *posCursor++ = SkPoint::Make(x, constY);
     }
 
-    simplifyDrawPosText(paint, runFont, glyphIDs, positions, text, clusters);
+    simplifyDrawPosText(font, glyphIDs, positions, text, clusters);
 }
 
 void SkGlyphRunBuilder::simplifyDrawPosText(
-        const SkPaint& paint, const SkRunFont& runFont, SkSpan<const SkGlyphID> glyphIDs,
+        const SkFont& font, SkSpan<const SkGlyphID> glyphIDs,
         const SkPoint* pos,
         SkSpan<const char> text, SkSpan<const uint32_t> clusters) {
     auto runSize = glyphIDs.size();
 
     this->makeGlyphRun(
-            paint,
-            runFont,
+            font,
             glyphIDs,
             SkSpan<const SkPoint>{pos, runSize},
             text,

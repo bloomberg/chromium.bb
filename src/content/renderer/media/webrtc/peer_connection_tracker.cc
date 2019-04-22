@@ -12,12 +12,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
@@ -34,7 +34,6 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 
-using webrtc::MediaConstraintsInterface;
 using webrtc::StatsReport;
 using webrtc::StatsReports;
 using blink::WebRTCPeerConnectionHandlerClient;
@@ -500,10 +499,7 @@ bool PeerConnectionTracker::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PeerConnectionTracker, message)
     IPC_MESSAGE_HANDLER(PeerConnectionTracker_GetAllStats, OnGetAllStats)
     IPC_MESSAGE_HANDLER(PeerConnectionTracker_OnSuspend, OnSuspend)
-    IPC_MESSAGE_HANDLER(PeerConnectionTracker_StartEventLogFile,
-                        OnStartEventLogFile)
-    IPC_MESSAGE_HANDLER(PeerConnectionTracker_StartEventLogOutput,
-                        OnStartEventLogOutput)
+    IPC_MESSAGE_HANDLER(PeerConnectionTracker_StartEventLog, OnStartEventLog)
     IPC_MESSAGE_HANDLER(PeerConnectionTracker_StopEventLog, OnStopEventLog)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -514,8 +510,8 @@ void PeerConnectionTracker::OnGetAllStats() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
 
   const std::string empty_track_id;
-  for (auto it = peer_connection_id_map_.begin();
-       it != peer_connection_id_map_.end(); ++it) {
+  for (auto it = peer_connection_local_id_map_.begin();
+       it != peer_connection_local_id_map_.end(); ++it) {
     rtc::scoped_refptr<InternalStatsObserver> observer(
         new rtc::RefCountedObject<InternalStatsObserver>(
             it->second, main_thread_task_runner_));
@@ -535,48 +531,27 @@ RenderThread* PeerConnectionTracker::SendTarget() {
 
 void PeerConnectionTracker::OnSuspend() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-  for (auto it = peer_connection_id_map_.begin();
-       it != peer_connection_id_map_.end(); ++it) {
+  for (auto it = peer_connection_local_id_map_.begin();
+       it != peer_connection_local_id_map_.end(); ++it) {
     it->first->CloseClientPeerConnection();
   }
 }
 
-void PeerConnectionTracker::OnStartEventLogFile(
-    int peer_connection_id,
-    IPC::PlatformFileForTransit file) {
+void PeerConnectionTracker::OnStartEventLog(int peer_connection_local_id,
+                                            int output_period_ms) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-  for (auto& it : peer_connection_id_map_) {
-    if (it.second == peer_connection_id) {
-#if defined(OS_ANDROID)
-      // A lower maximum filesize is used on Android because storage space is
-      // more scarce on mobile. This upper limit applies to each peer connection
-      // individually, so the total amount of used storage can be a multiple of
-      // this.
-      const int64_t kMaxFilesizeBytes = 10000000;
-#else
-      const int64_t kMaxFilesizeBytes = 60000000;
-#endif
-      it.first->StartEventLog(file, kMaxFilesizeBytes);
-      return;
-    }
-  }
-}
-
-void PeerConnectionTracker::OnStartEventLogOutput(int peer_connection_id,
-                                                  int output_period_ms) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-  for (auto& it : peer_connection_id_map_) {
-    if (it.second == peer_connection_id) {
+  for (auto& it : peer_connection_local_id_map_) {
+    if (it.second == peer_connection_local_id) {
       it.first->StartEventLog(output_period_ms);
       return;
     }
   }
 }
 
-void PeerConnectionTracker::OnStopEventLog(int peer_connection_id) {
+void PeerConnectionTracker::OnStopEventLog(int peer_connection_local_id) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-  for (auto& it : peer_connection_id_map_) {
-    if (it.second == peer_connection_id) {
+  for (auto& it : peer_connection_local_id_map_) {
+    if (it.second == peer_connection_local_id) {
       it.first->StopEventLog();
       return;
     }
@@ -595,9 +570,6 @@ void PeerConnectionTracker::RegisterPeerConnection(
   PeerConnectionInfo info;
 
   info.lid = GetNextLocalID();
-  // RTCPeerConnection.id is guaranteed to be an ASCII string. The ID's origin
-  // is local, so this conversion is safe.
-  info.peer_connection_id = pc_handler->Id().Ascii();
   info.rtc_configuration = SerializeConfiguration(config);
 
   info.constraints = SerializeMediaConstraints(constraints);
@@ -607,7 +579,7 @@ void PeerConnectionTracker::RegisterPeerConnection(
     info.url = "test:testing";
   SendTarget()->Send(new PeerConnectionTrackerHost_AddPeerConnection(info));
 
-  peer_connection_id_map_.insert(std::make_pair(pc_handler, info.lid));
+  peer_connection_local_id_map_.insert(std::make_pair(pc_handler, info.lid));
 }
 
 void PeerConnectionTracker::UnregisterPeerConnection(
@@ -615,9 +587,9 @@ void PeerConnectionTracker::UnregisterPeerConnection(
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   DVLOG(1) << "PeerConnectionTracker::UnregisterPeerConnection()";
 
-  auto it = peer_connection_id_map_.find(pc_handler);
+  auto it = peer_connection_local_id_map_.find(pc_handler);
 
-  if (it == peer_connection_id_map_.end()) {
+  if (it == peer_connection_local_id_map_.end()) {
     // The PeerConnection might not have been registered if its initilization
     // failed.
     return;
@@ -625,7 +597,7 @@ void PeerConnectionTracker::UnregisterPeerConnection(
 
   GetPeerConnectionTrackerHost()->RemovePeerConnection(it->second);
 
-  peer_connection_id_map_.erase(it);
+  peer_connection_local_id_map_.erase(it);
 }
 
 void PeerConnectionTracker::TrackCreateOffer(
@@ -709,10 +681,12 @@ void PeerConnectionTracker::TrackAddIceCandidate(
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
-  std::string value =
-      "sdpMid: " + candidate->SdpMid().Utf8() + ", " +
-      "sdpMLineIndex: " + base::UintToString(candidate->SdpMLineIndex()) +
-      ", " + "candidate: " + candidate->Candidate().Utf8();
+  std::string value = "sdpMid: " + candidate->SdpMid().Utf8() + ", " +
+                      "sdpMLineIndex: " +
+                      (candidate->SdpMLineIndex()
+                           ? base::NumberToString(*candidate->SdpMLineIndex())
+                           : "null") +
+                      ", " + "candidate: " + candidate->Candidate().Utf8();
 
   // OnIceCandidate always succeeds as it's a callback from the browser.
   DCHECK(source != SOURCE_LOCAL || succeeded);
@@ -789,7 +763,7 @@ void PeerConnectionTracker::TrackTransceiver(
         blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
     result += "getReceivers()";
   }
-  result += "[" + base::UintToString(transceiver_index) + "]:";
+  result += "[" + base::NumberToString(transceiver_index) + "]:";
   result += SerializeTransceiver(transceiver);
   SendPeerConnectionUpdate(id, callback_type, result);
 }
@@ -885,6 +859,19 @@ void PeerConnectionTracker::TrackSessionDescriptionCallback(
   SendPeerConnectionUpdate(id, update_type.c_str(), value);
 }
 
+void PeerConnectionTracker::TrackSessionId(RTCPeerConnectionHandler* pc_handler,
+                                           const std::string& session_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
+  DCHECK(pc_handler);
+  DCHECK(!session_id.empty());
+  const int local_id = GetLocalIDForHandler(pc_handler);
+  if (local_id == -1) {
+    return;
+  }
+  GetPeerConnectionTrackerHost().get()->OnPeerConnectionSessionIdSet(
+      local_id, session_id);
+}
+
 void PeerConnectionTracker::TrackOnRenegotiationNeeded(
     RTCPeerConnectionHandler* pc_handler) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
@@ -925,8 +912,8 @@ int PeerConnectionTracker::GetNextLocalID() {
 int PeerConnectionTracker::GetLocalIDForHandler(
     RTCPeerConnectionHandler* handler) const {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-  const auto found = peer_connection_id_map_.find(handler);
-  if (found == peer_connection_id_map_.end())
+  const auto found = peer_connection_local_id_map_.find(handler);
+  if (found == peer_connection_local_id_map_.end())
     return -1;
   DCHECK_NE(found->second, -1);
   return found->second;

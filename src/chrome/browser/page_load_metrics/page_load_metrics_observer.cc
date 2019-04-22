@@ -22,7 +22,8 @@ PageLoadExtraInfo::PageLoadExtraInfo(
     const base::Optional<base::TimeDelta>& page_end_time,
     const mojom::PageLoadMetadata& main_frame_metadata,
     const mojom::PageLoadMetadata& subframe_metadata,
-    const mojom::PageRenderData& main_frame_render_data,
+    const PageRenderData& page_render_data,
+    const PageRenderData& main_frame_render_data,
     ukm::SourceId source_id)
     : navigation_start(navigation_start),
       first_background_time(first_background_time),
@@ -37,6 +38,7 @@ PageLoadExtraInfo::PageLoadExtraInfo(
       page_end_time(page_end_time),
       main_frame_metadata(main_frame_metadata),
       subframe_metadata(subframe_metadata),
+      page_render_data(page_render_data),
       main_frame_render_data(main_frame_render_data),
       source_id(source_id) {}
 
@@ -57,13 +59,13 @@ PageLoadExtraInfo PageLoadExtraInfo::CreateForTesting(
       page_load_metrics::END_NONE,
       page_load_metrics::UserInitiatedInfo::NotUserInitiated(),
       base::TimeDelta(), page_load_metrics::mojom::PageLoadMetadata(),
-      page_load_metrics::mojom::PageLoadMetadata(),
-      page_load_metrics::mojom::PageRenderData(), 0 /* source_id */);
+      page_load_metrics::mojom::PageLoadMetadata(), PageRenderData(),
+      PageRenderData(), 0 /* source_id */);
 }
 
 ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     const GURL& url,
-    const net::HostPortPair& host_port_pair,
+    const net::IPEndPoint& remote_endpoint,
     int frame_tree_node_id,
     bool was_cached,
     int64_t raw_body_bytes,
@@ -74,7 +76,7 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     int net_error,
     std::unique_ptr<net::LoadTimingInfo> load_timing_info)
     : url(url),
-      host_port_pair(host_port_pair),
+      remote_endpoint(remote_endpoint),
       frame_tree_node_id(frame_tree_node_id),
       was_cached(was_cached),
       raw_body_bytes(raw_body_bytes),
@@ -87,7 +89,7 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
 ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     const ExtraRequestCompleteInfo& other)
     : url(other.url),
-      host_port_pair(other.host_port_pair),
+      remote_endpoint(other.remote_endpoint),
       frame_tree_node_id(other.frame_tree_node_id),
       was_cached(other.was_cached),
       raw_body_bytes(other.raw_body_bytes),
@@ -157,6 +159,44 @@ PageLoadMetricsObserver::ShouldObserveMimeType(
 bool PageLoadMetricsObserver::IsStandardWebPageMimeType(
     const std::string& mime_type) {
   return mime_type == "text/html" || mime_type == "application/xhtml+xml";
+}
+
+// static
+bool PageLoadMetricsObserver::AssignTimeAndSizeForLargestContentfulPaint(
+    const page_load_metrics::mojom::PaintTimingPtr& paint_timing,
+    base::Optional<base::TimeDelta>* largest_content_paint_time,
+    uint64_t* largest_content_paint_size,
+    LargestContentType* largest_content_type) {
+  base::Optional<base::TimeDelta>& text_time = paint_timing->largest_text_paint;
+  base::Optional<base::TimeDelta>& image_time =
+      paint_timing->largest_image_paint;
+  uint64_t text_size = paint_timing->largest_text_paint_size;
+  uint64_t image_size = paint_timing->largest_image_paint_size;
+
+  // Size being 0 means the paint time is not recorded.
+  if (!text_size && !image_size)
+    return false;
+
+  if ((text_size > image_size) ||
+      (text_size == image_size && text_time < image_time)) {
+    *largest_content_paint_time = text_time;
+    *largest_content_paint_size = text_size;
+    *largest_content_type = LargestContentType::kText;
+  } else {
+    *largest_content_paint_time = image_time;
+    *largest_content_paint_size = image_size;
+    *largest_content_type = LargestContentType::kImage;
+  }
+  return true;
+}
+
+PageLoadMetricsObserverDelegate* PageLoadMetricsObserver::GetDelegate() const {
+  return delegate_;
+}
+
+void PageLoadMetricsObserver::SetDelegate(
+    PageLoadMetricsObserverDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 }  // namespace page_load_metrics

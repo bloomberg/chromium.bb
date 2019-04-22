@@ -16,6 +16,10 @@ class MenuModelDelegate {
   // delegate should assume the entire contents of the model has changed.
   virtual void OnMenuStructureChanged() {}
 
+  // Invoked when |MenuModel| is clearing its current delegate field. This
+  // indicates to |this| that it is not that MenuModel's delegate anymore.
+  virtual void OnMenuClearingDelegate() {}
+
  protected:
   virtual ~MenuModelDelegate() {}
 };

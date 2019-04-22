@@ -6,14 +6,16 @@
 
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/network/active_network_icon.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using chromeos::NetworkConnectionHandler;
@@ -26,26 +28,48 @@ namespace ash {
 
 namespace {
 
-bool IsActive() {
-  return NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
-             NetworkTypePattern::NonVirtual()) != nullptr;
+const NetworkState* GetCurrentConnectedNetwork() {
+  NetworkStateHandler* state_handler =
+      NetworkHandler::Get()->network_state_handler();
+  const NetworkState* connected_network =
+      state_handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
+
+  if (!connected_network)
+    return nullptr;
+
+  // It is possible that a device type has been disabled but a network
+  // corresponding to that device has not yet been updated. If this is the case,
+  // that network should not be considered connected in this UI surface.
+  if (!state_handler->IsTechnologyEnabled(
+          NetworkTypePattern::Primitive(connected_network->type()))) {
+    return nullptr;
+  }
+
+  return connected_network;
+}
+
+bool ShouldToggleBeOn() {
+  // The toggle should always be on if Wi-Fi is enabled.
+  if (NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
+          NetworkTypePattern::WiFi())) {
+    return true;
+  }
+
+  // Otherwise, the toggle should be on if there is a connected network.
+  return GetCurrentConnectedNetwork() != nullptr;
 }
 
 const NetworkState* GetCurrentNetwork() {
   NetworkStateHandler* state_handler =
       NetworkHandler::Get()->network_state_handler();
-  NetworkConnectionHandler* connect_handler =
-      NetworkHandler::Get()->network_connection_handler();
-  const NetworkState* connected_network =
-      state_handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
+  const NetworkState* connected_network = GetCurrentConnectedNetwork();
   const NetworkState* connecting_network =
       state_handler->ConnectingNetworkByType(NetworkTypePattern::Wireless());
-  // If we are connecting to a network, and there is either no connected
-  // network, or the connection was user requested, or shill triggered a
-  // reconnection, use the connecting network.
+
+  // If connecting to a network, and there is either no connected network or
+  // the connection was user requested, use the connecting network.
   if (connecting_network &&
-      (!connected_network || connecting_network->IsReconnecting() ||
-       connect_handler->HasConnectingNetwork(connecting_network->path()))) {
+      (!connected_network || connecting_network->connect_requested())) {
     return connecting_network;
   }
 
@@ -61,6 +85,72 @@ const NetworkState* GetCurrentNetwork() {
   }
 
   return nullptr;
+}
+
+base::string16 GetSubLabelForConnectedNetwork(const NetworkState* network) {
+  DCHECK(network && network->IsConnectedState());
+
+  if (NetworkTypePattern::Cellular().MatchesType(network->type())) {
+    if (network->network_technology() == shill::kNetworkTechnology1Xrtt) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_ONE_X);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyGsm) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_GSM);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyGprs) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_GPRS);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyEdge) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_EDGE);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyEvdo ||
+        network->network_technology() == shill::kNetworkTechnologyUmts) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_THREE_G);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyHspa) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_HSPA);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyHspaPlus) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_HSPA_PLUS);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyLte) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_LTE);
+    }
+    if (network->network_technology() == shill::kNetworkTechnologyLteAdvanced) {
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_LTE_PLUS);
+    }
+
+    // All connectivity types exposed by Shill should be covered above. However,
+    // as a fail-safe, return the default "Connected" string here to protect
+    // against Shill providing an unexpected value.
+    NOTREACHED();
+    return l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED);
+  }
+
+  switch (network_icon::GetSignalStrengthForNetwork(network)) {
+    case network_icon::SignalStrength::WEAK:
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK_SUBLABEL);
+    case network_icon::SignalStrength::MEDIUM:
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_MEDIUM_SUBLABEL);
+    case network_icon::SignalStrength::STRONG:
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG_SUBLABEL);
+    default:
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED);
+  }
 }
 
 }  // namespace
@@ -89,20 +179,16 @@ void NetworkFeaturePodButton::NetworkStateChanged(bool notify_a11y) {
 }
 
 void NetworkFeaturePodButton::Update() {
-  gfx::ImageSkia image;
   bool animating = false;
-  network_icon::GetDefaultNetworkImageAndLabel(
-      network_icon::ICON_TYPE_DEFAULT_VIEW, &image, nullptr, &animating);
-
+  gfx::ImageSkia image =
+      Shell::Get()->system_tray_model()->active_network_icon()->GetSingleImage(
+          network_icon::ICON_TYPE_DEFAULT_VIEW, &animating);
   if (animating)
     network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
   else
     network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
 
-  SetToggled(
-      IsActive() ||
-      NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
-          NetworkTypePattern::WiFi()));
+  SetToggled(ShouldToggleBeOn());
   icon_button()->SetImage(views::Button::STATE_NORMAL, image);
 
   const NetworkState* network = GetCurrentNetwork();
@@ -123,7 +209,7 @@ void NetworkFeaturePodButton::Update() {
 
   SetLabel(network_name);
 
-  if (network->IsReconnecting() || network->IsConnectingState()) {
+  if (network->IsConnectingState()) {
     SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING_SUBLABEL));
     SetTooltipState(l10n_util::GetStringFUTF16(
@@ -132,26 +218,7 @@ void NetworkFeaturePodButton::Update() {
   }
 
   if (network->IsConnectedState()) {
-    switch (network_icon::GetSignalStrengthForNetwork(network)) {
-      case network_icon::SignalStrength::WEAK:
-        SetSubLabel(l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK_SUBLABEL));
-        break;
-      case network_icon::SignalStrength::MEDIUM:
-        SetSubLabel(l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_MEDIUM_SUBLABEL));
-        break;
-      case network_icon::SignalStrength::STRONG:
-        SetSubLabel(l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG_SUBLABEL));
-        break;
-      case network_icon::SignalStrength::NONE:
-        FALLTHROUGH;
-      case network_icon::SignalStrength::NOT_WIRELESS:
-        SetSubLabel(l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
-        break;
-    }
+    SetSubLabel(GetSubLabelForConnectedNetwork(network));
     SetTooltipState(l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_TOOLTIP, network_name));
     return;

@@ -43,7 +43,9 @@ static const int kInvalidSessionId = -1;
 // SpeechRecognizerDelegate via a weak pointer that is only ever referenced from
 // the UI thread.
 class SpeechRecognizer::EventListener
-    : public base::RefCountedThreadSafe<SpeechRecognizer::EventListener>,
+    : public base::RefCountedThreadSafe<
+          SpeechRecognizer::EventListener,
+          content::BrowserThread::DeleteOnIOThread>,
       public content::SpeechRecognitionEventListener {
  public:
   EventListener(const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
@@ -59,7 +61,9 @@ class SpeechRecognizer::EventListener
   void StopOnIOThread();
 
  private:
-  friend class base::RefCountedThreadSafe<SpeechRecognizer::EventListener>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::IO>;
+  friend class base::DeleteHelper<SpeechRecognizer::EventListener>;
   ~EventListener() override;
 
   void NotifyRecognitionStateChanged(SpeechRecognizerStatus new_state);
@@ -182,8 +186,8 @@ void SpeechRecognizer::EventListener::NotifyRecognitionStateChanged(
     SpeechRecognizerStatus new_state) {
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&SpeechRecognizerDelegate::OnSpeechRecognitionStateChanged,
-                 delegate_, new_state));
+      base::BindOnce(&SpeechRecognizerDelegate::OnSpeechRecognitionStateChanged,
+                     delegate_, new_state));
 }
 
 void SpeechRecognizer::EventListener::StartSpeechTimeout(int timeout_seconds) {
@@ -227,8 +231,8 @@ void SpeechRecognizer::EventListener::OnRecognitionResults(
   }
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&SpeechRecognizerDelegate::OnSpeechResult, delegate_,
-                 result_str, final_count == results.size()));
+      base::BindOnce(&SpeechRecognizerDelegate::OnSpeechResult, delegate_,
+                     result_str, final_count == results.size()));
 
   // Stop the moment we have a final result. If we receive any new or changed
   // text, restart the timer to give the user more time to speak. (The timer is
@@ -274,8 +278,8 @@ void SpeechRecognizer::EventListener::OnAudioLevelsChange(int session_id,
   int16_t sound_level = static_cast<int16_t>(INT16_MAX * volume);
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&SpeechRecognizerDelegate::OnSpeechSoundLevelChanged,
-                 delegate_, sound_level));
+      base::BindOnce(&SpeechRecognizerDelegate::OnSpeechSoundLevelChanged,
+                     delegate_, sound_level));
 }
 
 void SpeechRecognizer::EventListener::OnEnvironmentEstimationComplete(
@@ -314,14 +318,14 @@ void SpeechRecognizer::Start(
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&SpeechRecognizer::EventListener::StartOnIOThread,
-                 speech_event_listener_, auth_scope, auth_token, preamble));
+      base::BindOnce(&SpeechRecognizer::EventListener::StartOnIOThread,
+                     speech_event_listener_, auth_scope, auth_token, preamble));
 }
 
 void SpeechRecognizer::Stop() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&SpeechRecognizer::EventListener::StopOnIOThread,
-                 speech_event_listener_));
+      base::BindOnce(&SpeechRecognizer::EventListener::StopOnIOThread,
+                     speech_event_listener_));
 }

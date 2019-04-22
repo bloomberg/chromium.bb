@@ -135,11 +135,10 @@ PolicyProviderTestHarness* TestHarness::CreateRecommended() {
 }
 
 // Instantiate abstract test case for basic policy reading tests.
-INSTANTIATE_TEST_CASE_P(
-    UserCloudPolicyManagerProviderTest,
-    ConfigurationPolicyProviderTest,
-    testing::Values(TestHarness::CreateMandatory,
-                    TestHarness::CreateRecommended));
+INSTANTIATE_TEST_SUITE_P(UserCloudPolicyManagerProviderTest,
+                         ConfigurationPolicyProviderTest,
+                         testing::Values(TestHarness::CreateMandatory,
+                                         TestHarness::CreateRecommended));
 
 class TestCloudPolicyManager : public CloudPolicyManager {
  public:

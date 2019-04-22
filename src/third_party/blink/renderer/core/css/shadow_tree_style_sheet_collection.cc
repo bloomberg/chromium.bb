@@ -57,7 +57,7 @@ void ShadowTreeStyleSheetCollection::CollectStyleSheets(
 
     collection.AppendSheetForList(sheet);
     if (candidate.CanBeActivated(g_null_atom)) {
-      CSSStyleSheet* css_sheet = ToCSSStyleSheet(sheet);
+      CSSStyleSheet* css_sheet = To<CSSStyleSheet>(sheet);
       collection.AppendActiveStyleSheet(
           std::make_pair(css_sheet, master_engine.RuleSetForSheet(*css_sheet)));
     }
@@ -65,24 +65,19 @@ void ShadowTreeStyleSheetCollection::CollectStyleSheets(
   if (!GetTreeScope().HasAdoptedStyleSheets())
     return;
 
-  StyleSheetList& adopted_style_sheets = GetTreeScope().AdoptedStyleSheets();
-  unsigned length = adopted_style_sheets.length();
-  for (unsigned index = 0; index < length; ++index) {
-    StyleSheet* sheet = adopted_style_sheets.item(index);
-    if (!sheet)
+  for (CSSStyleSheet* sheet : GetTreeScope().AdoptedStyleSheets()) {
+    if (!sheet || !sheet->CanBeActivated(g_null_atom))
       continue;
-    CSSStyleSheet* css_sheet = ToCSSStyleSheet(sheet);
-    if (!css_sheet || !css_sheet->CanBeActivated(g_null_atom))
-      continue;
+    DCHECK_EQ(GetTreeScope().GetDocument(), sheet->AssociatedDocument());
     collection.AppendActiveStyleSheet(
-        std::make_pair(css_sheet, master_engine.RuleSetForSheet(*css_sheet)));
+        std::make_pair(sheet, master_engine.RuleSetForSheet(*sheet)));
   }
 }
 
 void ShadowTreeStyleSheetCollection::UpdateActiveStyleSheets(
     StyleEngine& master_engine) {
   // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
-  StyleSheetCollection* collection = StyleSheetCollection::Create();
+  auto* collection = MakeGarbageCollected<StyleSheetCollection>();
   CollectStyleSheets(master_engine, *collection);
   ApplyActiveStyleSheetChanges(*collection);
 }

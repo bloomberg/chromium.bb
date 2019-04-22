@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -28,11 +29,13 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 class Browser;
 class Profile;
+class SwitchAccessEventHandlerDelegate;
 
 namespace gfx {
 class Rect;
@@ -43,7 +46,6 @@ namespace chromeos {
 class AccessibilityExtensionLoader;
 class DictationChromeos;
 class SelectToSpeakEventHandlerDelegate;
-class SwitchAccessEventHandler;
 
 enum AccessibilityNotificationType {
   ACCESSIBILITY_MANAGER_SHUTDOWN,
@@ -53,6 +55,7 @@ enum AccessibilityNotificationType {
   ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
   ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
   ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK,
+  ACCESSIBILITY_TOGGLE_SWITCH_ACCESS,
   ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
   ACCESSIBILITY_TOGGLE_MONO_AUDIO,
   ACCESSIBILITY_TOGGLE_CARET_HIGHLIGHT,
@@ -275,24 +278,31 @@ class AccessibilityManager
   // Set the keys to be captured by Switch Access.
   void SetSwitchAccessKeys(const std::set<int>& key_codes);
 
+  // Hides the Switch Access menu.
+  void HideSwitchAccessMenu();
+
+  // Shows the Switch Access menu.
+  void ShowSwitchAccessMenu(const gfx::Rect& element_bounds,
+                            int menu_width,
+                            int menu_height,
+                            bool back_button_only = false);
+
   // Starts or stops dictation (type what you speak).
   bool ToggleDictation();
 
-  // Sets the focus ring color.
-  void SetFocusRingColor(SkColor color, std::string caller_id);
-
-  // Resets the focus ring color back to the default.
-  void ResetFocusRingColor(std::string caller_id);
-
-  // Draws a focus ring around the given set of rects in screen coordinates. Use
-  // |focus_ring_behavior| to specify whether the focus ring should persist or
-  // fade out.
-  void SetFocusRing(const std::vector<gfx::Rect>& rects_in_screen,
-                    ash::mojom::FocusRingBehavior focus_ring_behavior,
-                    std::string caller_id);
+  // Sets the focus ring with the given ID based on |focus_ring|.
+  void SetFocusRing(std::string focus_ring_id,
+                    ash::mojom::FocusRingPtr focus_ring);
 
   // Hides focus ring on screen.
   void HideFocusRing(std::string caller_id);
+
+  // Initializes the focus rings when an extension loads.
+  void InitializeFocusRings(const std::string& extension_id);
+
+  // Hides all focus rings for the extension, and removes that extension from
+  // |focus_ring_names_for_extension_id_|.
+  void RemoveFocusRings(const std::string& extension_id);
 
   // Draws a highlight at the given rects in screen coordinates. Rects may be
   // overlapping and will be merged into one layer. This looks similar to
@@ -319,6 +329,10 @@ class AccessibilityManager
   // Sets the bluetooth braille display device address for the current user.
   void UpdateBluetoothBrailleDisplayAddress(const std::string& address);
 
+  // Create a focus ring ID from the extension ID and the name of the ring.
+  const std::string GetFocusRingId(const std::string& extension_id,
+                                   const std::string& focus_ring_name);
+
   // Test helpers:
   void SetProfileForTest(Profile* profile);
   static void SetBrailleControllerForTest(
@@ -339,7 +353,9 @@ class AccessibilityManager
   void PostUnloadChromeVox();
   void PostSwitchChromeVoxProfile();
 
+  void PostLoadSelectToSpeak();
   void PostUnloadSelectToSpeak();
+
   void PostLoadSwitchAccess();
   void PostUnloadSwitchAccess();
 
@@ -441,8 +457,8 @@ class AccessibilityManager
 
   std::unique_ptr<AccessibilityExtensionLoader> switch_access_loader_;
 
-  std::unique_ptr<chromeos::SwitchAccessEventHandler>
-      switch_access_event_handler_;
+  std::unique_ptr<SwitchAccessEventHandlerDelegate>
+      switch_access_event_handler_delegate_;
 
   // Ash's mojom::AccessibilityController used to request Ash's a11y feature.
   ash::mojom::AccessibilityControllerPtr accessibility_controller_;
@@ -452,6 +468,9 @@ class AccessibilityManager
   ash::mojom::AccessibilityFocusRingControllerPtr
       accessibility_focus_ring_controller_;
 
+  std::map<std::string, std::set<std::string>>
+      focus_ring_names_for_extension_id_;
+
   bool app_terminating_ = false;
 
   std::unique_ptr<DictationChromeos> dictation_;
@@ -460,6 +479,9 @@ class AccessibilityManager
   base::RepeatingCallback<void()> select_to_speak_state_observer_for_test_;
   base::RepeatingCallback<void(const gfx::Rect&)>
       caret_bounds_observer_for_test_;
+
+  // Used to set the audio focus enforcement type for ChromeVox.
+  media_session::mojom::AudioFocusManagerPtr audio_focus_manager_ptr_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 

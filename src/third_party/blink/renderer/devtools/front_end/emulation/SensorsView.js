@@ -41,31 +41,47 @@ Emulation.SensorsView = class extends UI.VBox {
    */
   _createGeolocationSection(geolocation) {
     const geogroup = this.contentElement.createChild('section', 'sensors-group');
-    geogroup.createChild('div', 'sensors-group-title').textContent = Common.UIString('Geolocation');
+    const geogroupTitle = UI.createLabel(ls`Geolocation`, 'sensors-group-title');
+    geogroup.appendChild(geogroupTitle);
     const fields = geogroup.createChild('div', 'geo-fields');
 
     const noOverrideOption = {
       title: Common.UIString('No override'),
       location: Emulation.SensorsView.NonPresetOptions.NoOverride
     };
+
+    this._locationSelectElement = fields.createChild('select', 'chrome-select');
+    UI.bindLabelToControl(geogroupTitle, this._locationSelectElement);
+
+    // No override
+    this._locationSelectElement.appendChild(new Option(noOverrideOption.title, noOverrideOption.location));
+
+    // Locations
+    this._customLocationsGroup = this._locationSelectElement.createChild('optgroup');
+    this._customLocationsGroup.label = ls`Overrides`;
+    const customGeolocations = Common.moduleSetting('emulation.geolocations');
+    fields.appendChild(UI.createTextButton(ls`Manage`, () => Common.Revealer.reveal(customGeolocations)));
+    const fillCustomSettings = () => {
+      this._customLocationsGroup.removeChildren();
+      for (const geolocation of customGeolocations.get())
+        this._customLocationsGroup.appendChild(new Option(geolocation.title, JSON.stringify(geolocation)));
+    };
+    customGeolocations.addChangeListener(fillCustomSettings);
+    fillCustomSettings();
+
+    // Other location
     const customLocationOption = {
-      title: Common.UIString('Custom location...'),
+      title: Common.UIString('Other\u2026'),
       location: Emulation.SensorsView.NonPresetOptions.Custom
     };
-    this._locationSelectElement = this.contentElement.createChild('select', 'chrome-select');
-    this._locationSelectElement.appendChild(new Option(noOverrideOption.title, noOverrideOption.location));
     this._locationSelectElement.appendChild(new Option(customLocationOption.title, customLocationOption.location));
 
-    const locationGroups = Emulation.SensorsView.PresetLocations;
-    for (let i = 0; i < locationGroups.length; ++i) {
-      const group = locationGroups[i].value;
-      const groupElement = this._locationSelectElement.createChild('optgroup');
-      groupElement.label = locationGroups[i].title;
-      for (let j = 0; j < group.length; ++j)
-        groupElement.appendChild(new Option(group[j].title, group[j].location));
-    }
+    // Error location.
+    const group = this._locationSelectElement.createChild('optgroup');
+    group.label = ls`Error`;
+    group.appendChild(new Option(ls`Location unavailable`, Emulation.SensorsView.NonPresetOptions.Unavailable));
+
     this._locationSelectElement.selectedIndex = 0;
-    fields.appendChild(this._locationSelectElement);
     this._locationSelectElement.addEventListener('change', this._geolocationSelectChanged.bind(this));
 
     // Validated input fieldset.
@@ -99,8 +115,8 @@ Emulation.SensorsView = class extends UI.VBox {
     this._latitudeInput.title = modifierKeyMessage;
     this._longitudeInput.title = modifierKeyMessage;
 
-    latitudeGroup.createChild('div', 'latlong-title').textContent = Common.UIString('Latitude');
-    longitudeGroup.createChild('div', 'latlong-title').textContent = Common.UIString('Longitude');
+    latitudeGroup.appendChild(UI.createLabel(ls`Latitude`, 'latlong-title', this._latitudeInput));
+    longitudeGroup.appendChild(UI.createLabel(ls`Longitude`, 'latlong-title', this._longitudeInput));
   }
 
   _geolocationSelectChanged() {
@@ -111,15 +127,20 @@ Emulation.SensorsView = class extends UI.VBox {
       this._fieldsetElement.disabled = true;
     } else if (value === Emulation.SensorsView.NonPresetOptions.Custom) {
       this._geolocationOverrideEnabled = true;
+      const geolocation = SDK.EmulationModel.Geolocation.parseUserInput(
+          this._latitudeInput.value.trim(), this._longitudeInput.value.trim(), '');
+      if (!geolocation)
+        return;
+      this._geolocation = geolocation;
     } else if (value === Emulation.SensorsView.NonPresetOptions.Unavailable) {
       this._geolocationOverrideEnabled = true;
       this._geolocation = new SDK.EmulationModel.Geolocation(0, 0, true);
     } else {
       this._geolocationOverrideEnabled = true;
       const coordinates = JSON.parse(value);
-      this._geolocation = new SDK.EmulationModel.Geolocation(coordinates[0], coordinates[1], false);
-      this._latitudeSetter(coordinates[0]);
-      this._longitudeSetter(coordinates[1]);
+      this._geolocation = new SDK.EmulationModel.Geolocation(coordinates.lat, coordinates.long, false);
+      this._latitudeSetter(coordinates.lat);
+      this._longitudeSetter(coordinates.long);
     }
 
     this._applyGeolocation();
@@ -147,7 +168,8 @@ Emulation.SensorsView = class extends UI.VBox {
 
   _createDeviceOrientationSection() {
     const orientationGroup = this.contentElement.createChild('section', 'sensors-group');
-    orientationGroup.createChild('div', 'sensors-group-title').textContent = Common.UIString('Orientation');
+    const orientationTitle = UI.createLabel(ls`Orientation`, 'sensors-group-title');
+    orientationGroup.appendChild(orientationTitle);
     const orientationContent = orientationGroup.createChild('div', 'orientation-content');
     const fields = orientationContent.createChild('div', 'orientation-fields');
 
@@ -160,6 +182,7 @@ Emulation.SensorsView = class extends UI.VBox {
       orientation: Emulation.SensorsView.NonPresetOptions.Custom
     };
     this._orientationSelectElement = this.contentElement.createChild('select', 'chrome-select');
+    UI.bindLabelToControl(orientationTitle, this._orientationSelectElement);
     this._orientationSelectElement.appendChild(
         new Option(orientationOffOption.title, orientationOffOption.orientation));
     this._orientationSelectElement.appendChild(
@@ -302,7 +325,7 @@ Emulation.SensorsView = class extends UI.VBox {
   _createAxisInput(parentElement, input, label) {
     const div = parentElement.createChild('div', 'orientation-axis-input-container');
     div.appendChild(input);
-    div.createTextChild(label);
+    div.appendChild(UI.createLabel(label, /* className */ '', input));
     input.type = 'number';
     return UI.bindInput(
         input, this._applyDeviceOrientationUserInput.bind(this), SDK.EmulationModel.DeviceOrientation.validator, true);
@@ -332,8 +355,10 @@ Emulation.SensorsView = class extends UI.VBox {
     this._gammaSetter = this._createAxisInput(cellElement, this._gammaElement, Common.UIString('\u03B3 (gamma)'));
     this._gammaSetter(String(deviceOrientation.gamma));
 
-    cellElement.appendChild(UI.createTextButton(
-        Common.UIString('Reset'), this._resetDeviceOrientation.bind(this), 'orientation-reset-button'));
+    const resetButton = UI.createTextButton(
+        Common.UIString('Reset'), this._resetDeviceOrientation.bind(this), 'orientation-reset-button');
+    resetButton.setAttribute('type', 'reset');
+    cellElement.appendChild(resetButton);
     return fieldsetElement;
   }
 
@@ -427,11 +452,12 @@ Emulation.SensorsView = class extends UI.VBox {
 
   _appendTouchControl() {
     const groupElement = this.contentElement.createChild('div', 'sensors-group');
-    const title = groupElement.createChild('div', 'sensors-group-title');
+    const title = UI.createLabel(ls`Touch`, 'sensors-group-title');
+    groupElement.appendChild(title);
     const fieldsElement = groupElement.createChild('div', 'sensors-group-fields');
 
-    title.textContent = Common.UIString('Touch');
     const select = fieldsElement.createChild('select', 'chrome-select');
+    UI.bindLabelToControl(title, select);
     select.appendChild(new Option(Common.UIString('Device-based'), 'auto'));
     select.appendChild(new Option(Common.UIString('Force enabled'), 'enabled'));
     select.addEventListener('change', applyTouch, false);
@@ -462,34 +488,10 @@ Emulation.SensorsView.DeviceOrientationModificationSource = {
 
 /** {string} */
 Emulation.SensorsView.NonPresetOptions = {
-  'NoOverride': 'noOverride',
-  'Custom': 'custom',
-  'Unavailable': 'unavailable'
+  NoOverride: 'noOverride',
+  Custom: 'custom',
+  Unavailable: 'unavailable'
 };
-
-/** @type {!Array.<{title: string, value: !Array.<{title: string, location: string}>}>} */
-Emulation.SensorsView.PresetLocations = [
-  {
-    title: 'Presets',
-    value: [
-      {title: Common.UIString('Berlin'), location: '[52.520007, 13.404954]'},
-      {title: Common.UIString('London'), location: '[51.507351, -0.127758]'},
-      {title: Common.UIString('Moscow'), location: '[55.755826, 37.617300]'},
-      {title: Common.UIString('Mountain View'), location: '[37.386052, -122.083851]'},
-      {title: Common.UIString('Mumbai'), location: '[19.075984, 72.877656]'},
-      {title: Common.UIString('San Francisco'), location: '[37.774929, -122.419416]'},
-      {title: Common.UIString('Shanghai'), location: '[31.230416, 121.473701]'},
-      {title: Common.UIString('São Paulo'), location: '[-23.550520, -46.633309]'},
-      {title: Common.UIString('Tokyo'), location: '[35.689487, 139.691706]'},
-    ]
-  },
-  {
-    title: 'Error',
-    value: [
-      {title: Common.UIString('Location unavailable'), location: Emulation.SensorsView.NonPresetOptions.Unavailable}
-    ]
-  }
-];
 
 /** @type {!Array.<{title: string, value: !Array.<{title: string, orientation: string}>}>} */
 Emulation.SensorsView.PresetOrientations = [{

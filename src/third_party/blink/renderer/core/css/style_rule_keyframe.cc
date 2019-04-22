@@ -48,7 +48,7 @@ const Vector<double>& StyleRuleKeyframe::Keys() const {
 MutableCSSPropertyValueSet& StyleRuleKeyframe::MutableProperties() {
   if (!properties_->IsMutable())
     properties_ = properties_->MutableCopy();
-  return *ToMutableCSSPropertyValueSet(properties_.Get());
+  return *To<MutableCSSPropertyValueSet>(properties_.Get());
 }
 
 String StyleRuleKeyframe::CssText() const {

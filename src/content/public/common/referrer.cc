@@ -150,9 +150,6 @@ network::mojom::ReferrerPolicy Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
       return network::mojom::ReferrerPolicy::kStrictOrigin;
     case net::URLRequest::NO_REFERRER:
       return network::mojom::ReferrerPolicy::kNever;
-    case net::URLRequest::MAX_REFERRER_POLICY:
-      NOTREACHED();
-      return network::mojom::ReferrerPolicy::kDefault;
   }
   NOTREACHED();
   return network::mojom::ReferrerPolicy::kDefault;

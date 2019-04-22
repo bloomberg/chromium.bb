@@ -11,10 +11,13 @@
 #include "ash/shell_init_params.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui_factory.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/gpu_interface_provider_factory.h"
 #include "content/public/common/service_manager_connection.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -36,6 +39,12 @@ void CreateClassicShell() {
   shell_init_params.initial_display_prefs =
       ash::DisplayPrefs::GetInitialDisplayPrefsFromPrefService(
           g_browser_process->local_state());
+  if (!features::IsUsingWindowService()) {
+    shell_init_params.keyboard_ui_factory =
+        std::make_unique<ChromeKeyboardUIFactory>();
+  }
+  shell_init_params.dbus_bus =
+      chromeos::DBusThreadManager::Get()->GetSystemBus();
 
   ash::Shell::CreateInstance(std::move(shell_init_params));
 }

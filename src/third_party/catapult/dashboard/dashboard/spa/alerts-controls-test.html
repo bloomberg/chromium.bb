@@ -8,6 +8,7 @@ found in the LICENSE file.
 <script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
 <script src="/bower_components/web-component-tester/browser.js"></script>
 <link rel="import" href="/dashboard/spa/alerts-controls.html">
+<script src="/dashboard/spa/import-module.js">
 
 <test-fixture id="test">
   <template>
@@ -17,18 +18,23 @@ found in the LICENSE file.
 
 <script>
 'use strict';
+window.AUTH_CLIENT_ID = '';
+
 suite('alerts-controls', function() {
   let originalFetch;
   setup(() => {
     originalFetch = window.fetch;
     window.fetch = async(url, options) => {
-      if (url === '/api/report/names') {
-        return {
-          async json() {
+      return {
+        async json() {
+          if (url === cp.ReportNamesRequest.URL) {
             return [{name: 'aaa', id: 42, modified: new Date()}];
           }
-        };
-      }
+          if (url === cp.SheriffsRequest.URL) {
+            return ['ccc', 'ddd'];
+          }
+        },
+      };
     };
     localStorage.setItem('recentlyModifiedBugs', JSON.stringify([
       {id: 42, summary: 'bbb'},
@@ -42,27 +48,6 @@ suite('alerts-controls', function() {
     localStorage.removeItem('recentlyModifiedBugs');
   });
 
-  test('summary', function() {
-    assert.strictEqual('', cp.AlertsControls.summary(undefined, undefined));
-    assert.strictEqual('', cp.AlertsControls.summary(true, undefined));
-
-    assert.strictEqual('1 alert in 1 group', cp.AlertsControls.summary(
-        true, [{alerts: [{}]}]));
-    assert.strictEqual('2 alerts in 1 group', cp.AlertsControls.summary(
-        true, [{alerts: [{}, {}]}]));
-    assert.strictEqual('2 alerts in 2 groups', cp.AlertsControls.summary(
-        true, [{alerts: [{}]}, {alerts: [{}]}]));
-
-    assert.strictEqual('0 alerts in 0 groups', cp.AlertsControls.summary(
-        false, [{triaged: {count: 1}, alerts: [{}]}]));
-    assert.strictEqual('1 alert in 1 group', cp.AlertsControls.summary(
-        false, [{triaged: {count: 1}, alerts: [{}, {}]}]));
-    assert.strictEqual('1 alert in 1 group', cp.AlertsControls.summary(false, [
-      {triaged: {count: 0}, alerts: [{}]},
-      {triaged: {count: 1}, alerts: [{}]},
-    ]));
-  });
-
   test('connected', async function() {
     const controls = fixture('test');
     await cp.afterRender();
@@ -71,14 +56,13 @@ suite('alerts-controls', function() {
       e.tagName === 'A' && e.href === 'http://crbug.com/42' &&
       e.textContent.trim() === '42'));
     assert.isDefined(tr.ui.b.findDeepElementWithTextContent(controls, /bbb/));
+    assert.isDefined(tr.ui.b.findDeepElementWithTextContent(controls, /ccc/));
+    assert.isDefined(tr.ui.b.findDeepElementWithTextContent(controls, /ddd/));
   });
 
   test('change', async function() {
+    await importModule('./cp-checkbox.js');
     const controls = fixture('test');
-    controls.dispatch(Redux.UPDATE('test.sheriff', cp.MenuInput.buildState({
-      label: 'Sheriff',
-      options: ['ccc', 'ddd'],
-    })));
     let sources;
     controls.addEventListener('sources', e => {
       sources = e.detail.sources;
@@ -89,41 +73,42 @@ suite('alerts-controls', function() {
     await cp.afterRender();
     assert.lengthOf(sources, 1);
     assert.strictEqual('ccc', sources[0].sheriff);
+    sources = [];
 
-    controls.$['min-revision'].dispatchEvent(new CustomEvent('keyup', {
-      detail: {value: '10'},
-    }));
-    await cp.afterRender();
+    controls.$['min-revision'].value = '10';
+    controls.$['min-revision'].dispatchEvent(new CustomEvent('keyup'));
+    await cp.timeout(cp.AlertsControls.TYPING_DEBOUNCE_MS + 10);
     assert.lengthOf(sources, 1);
     assert.strictEqual('ccc', sources[0].sheriff);
-    assert.strictEqual(10, sources[0].minRevision);
+    assert.strictEqual(10, sources[0].min_end_revision);
+    sources = [];
 
-    controls.$['max-revision'].dispatchEvent(new CustomEvent('keyup', {
-      detail: {value: '20'},
-    }));
-    await cp.afterRender();
+    controls.$['max-revision'].value = '20';
+    controls.$['max-revision'].dispatchEvent(new CustomEvent('keyup'));
+    await cp.timeout(cp.AlertsControls.TYPING_DEBOUNCE_MS + 10);
     assert.lengthOf(sources, 1);
     assert.strictEqual('ccc', sources[0].sheriff);
-    assert.strictEqual(10, sources[0].minRevision);
-    assert.strictEqual(20, sources[0].maxRevision);
-    assert.isFalse(sources[0].improvements);
+    assert.strictEqual(10, sources[0].min_end_revision);
+    assert.strictEqual(20, sources[0].max_start_revision);
+    assert.isFalse(sources[0].is_improvement);
+    sources = [];
 
     controls.$.improvements.click();
-    await cp.afterRender();
+    await cp.timeout(cp.AlertsControls.TYPING_DEBOUNCE_MS + 10);
     assert.strictEqual('ccc', sources[0].sheriff);
-    assert.isTrue(sources[0].improvements);
-    assert.strictEqual(10, sources[0].minRevision);
-    assert.strictEqual(20, sources[0].maxRevision);
+    assert.isTrue(sources[0].is_improvement);
+    assert.strictEqual(10, sources[0].min_end_revision);
+    assert.strictEqual(20, sources[0].max_start_revision);
 
     tr.ui.b.findDeepElementWithTextContent(controls, /ddd/).click();
     await cp.afterRender();
     assert.lengthOf(sources, 2);
     assert.strictEqual('ccc', sources[0].sheriff);
-    assert.strictEqual(10, sources[0].minRevision);
-    assert.strictEqual(20, sources[0].maxRevision);
+    assert.strictEqual(10, sources[0].min_end_revision);
+    assert.strictEqual(20, sources[0].max_start_revision);
     assert.strictEqual('ddd', sources[1].sheriff);
-    assert.strictEqual(10, sources[1].minRevision);
-    assert.strictEqual(20, sources[1].maxRevision);
+    assert.strictEqual(10, sources[1].min_end_revision);
+    assert.strictEqual(20, sources[1].max_start_revision);
 
     tr.ui.b.findDeepElementWithTextContent(controls, /ccc/).click();
     tr.ui.b.findDeepElementWithTextContent(controls, /ddd/).click();
@@ -131,8 +116,8 @@ suite('alerts-controls', function() {
     await cp.afterRender();
     assert.lengthOf(sources, 1);
     assert.strictEqual(42, sources[0].report);
-    assert.strictEqual(10, sources[0].minRevision);
-    assert.strictEqual(20, sources[0].maxRevision);
+    assert.strictEqual(10, sources[0].min_end_revision);
+    assert.strictEqual(20, sources[0].max_start_revision);
 
     tr.ui.b.findDeepElementWithTextContent(controls, /aaa/).click();
     controls.$.bug.dispatchEvent(new CustomEvent('input-keyup', {
@@ -142,9 +127,9 @@ suite('alerts-controls', function() {
     tr.ui.b.findDeepElementWithTextContent(controls, /123/).click();
     await cp.afterRender();
     assert.lengthOf(sources, 1);
-    assert.strictEqual('123', sources[0].bug);
-    assert.strictEqual(10, sources[0].minRevision);
-    assert.strictEqual(20, sources[0].maxRevision);
+    assert.strictEqual('123', sources[0].bug_id);
+    assert.strictEqual(10, sources[0].min_end_revision);
+    assert.strictEqual(20, sources[0].max_start_revision);
   });
 });
 </script>

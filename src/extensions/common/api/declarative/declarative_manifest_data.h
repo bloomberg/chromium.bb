@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/strings/string16.h"
 #include "extensions/common/api/events.h"
 #include "extensions/common/extension.h"
@@ -19,7 +18,7 @@ namespace extensions {
 // The parsed form of the "event_rules" manifest entry.
 class DeclarativeManifestData : public Extension::ManifestData {
  public:
-  typedef extensions::api::events::Rule Rule;
+  using Rule = extensions::api::events::Rule;
 
   DeclarativeManifestData();
   ~DeclarativeManifestData() override;
@@ -34,11 +33,10 @@ class DeclarativeManifestData : public Extension::ManifestData {
       const base::Value& value,
       base::string16* error);
 
-  std::vector<linked_ptr<DeclarativeManifestData::Rule>>& RulesForEvent(
-      const std::string& event);
+  std::vector<Rule> RulesForEvent(const std::string& event);
 
  private:
-  std::map<std::string, std::vector<linked_ptr<Rule>>> event_rules_map_;
+  std::map<std::string, std::vector<Rule>> event_rules_map_;
   DISALLOW_COPY_AND_ASSIGN(DeclarativeManifestData);
 };
 

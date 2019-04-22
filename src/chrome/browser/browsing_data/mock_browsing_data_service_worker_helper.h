@@ -36,7 +36,7 @@ class MockBrowsingDataServiceWorkerHelper
   bool AllDeleted();
 
   // BrowsingDataServiceWorkerHelper.
-  void StartFetching(const FetchCallback& callback) override;
+  void StartFetching(FetchCallback callback) override;
   void DeleteServiceWorkers(const GURL& origin) override;
 
  private:

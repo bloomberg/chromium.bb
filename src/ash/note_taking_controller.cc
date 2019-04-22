@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/note_taking_controller.h"
+#include "base/bind.h"
 
 namespace ash {
 

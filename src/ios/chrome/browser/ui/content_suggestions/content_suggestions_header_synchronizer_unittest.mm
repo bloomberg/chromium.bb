@@ -58,7 +58,7 @@ TEST_F(ContentSuggestionsHeaderSynchronizerTest, shiftUp) {
   OCMExpect([collectionController setScrolledToTop:YES]);
 
   // Action.
-  [Synchronizer() shiftTilesUpWithCompletionBlock:nil];
+  [Synchronizer() shiftTilesUpWithAnimations:nil completion:nil];
 
   // Tests.
   EXPECT_OCMOCK_VERIFY(collectionController);

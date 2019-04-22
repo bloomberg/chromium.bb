@@ -73,7 +73,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
                           const net::RedirectInfo& redirect_info,
                           bool* defer) override;
   void OnAuthRequired(net::URLRequest* request,
-                      net::AuthChallengeInfo* info) override;
+                      const net::AuthChallengeInfo& info) override;
   void OnCertificateRequested(net::URLRequest* request,
                               net::SSLCertRequestInfo* info) override;
   void OnSSLCertificateError(net::URLRequest* request,
@@ -98,17 +98,19 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   // |called_from_resource_controller| is true if called directly from a
   // ResourceController, in which case |resource_handler_| must not be invoked
   // or destroyed synchronously to avoid re-entrancy issues, and false
-  // otherwise. |modified_request_headers| is used for redirects only.
-  void Resume(
-      bool called_from_resource_controller,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+  // otherwise. |modified_headers| and |removed_headers| are used
+  // for redirects only.
+  void Resume(bool called_from_resource_controller,
+              const std::vector<std::string>& removed_headers,
+              const net::HttpRequestHeaders& modified_headers);
   void Cancel();
   void CancelWithError(int error_code);
 
   void StartRequestInternal();
   void CancelRequestInternal(int error, bool from_renderer);
   void FollowDeferredRedirectInternal(
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers);
   void CompleteResponseStarted();
   // If |handle_result_async| is true, the result of the following read will be
   // handled asynchronously if it completes synchronously, unless it's EOF or an
@@ -161,7 +163,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   std::unique_ptr<ResourceHandler> handler_;
   ResourceLoaderDelegate* delegate_;
 
-  scoped_refptr<LoginDelegate> login_delegate_;
+  std::unique_ptr<LoginDelegate> login_delegate_;
   std::unique_ptr<SSLClientAuthHandler> ssl_client_auth_handler_;
 
   base::TimeTicks read_deferral_start_time_;

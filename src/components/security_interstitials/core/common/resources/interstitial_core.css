@@ -14,6 +14,7 @@ body {
   --google-gray-500: rgb(154, 160, 166);
   --google-gray-600: rgb(128, 134, 139);
   --google-gray-700: rgb(95, 99, 104);
+  --google-gray-900: rgb(32, 33, 36);
   background-color: #fff;
   color: var(--google-gray-700);
   word-wrap: break-word;

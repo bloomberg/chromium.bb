@@ -7,28 +7,31 @@
 
 #include <stdint.h>
 
+#include <bitset>
 #include <map>
 #include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/appcache_info.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/resource_intercept_policy.h"
 #include "content/public/common/was_activated_option.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -36,7 +39,6 @@
 
 namespace content {
 
-// PlzNavigate
 // Struct keeping track of the Javascript SourceLocation that triggered the
 // navigation. This is initialized based on information from Blink at the start
 // of navigation, and passed back to Blink when the navigation commits.
@@ -79,46 +81,82 @@ struct CONTENT_EXPORT InitiatorCSPInfo {
   base::Optional<CSPSource> initiator_self_source;
 };
 
-// This enum controls how navigations behave when they turn into downloads.
-// Disallow options are enumerated to make metrics logging possible at
-// download-discovery time.
+// Navigation type that affects the download decision and relevant metrics to be
+// reported at download-discovery time.
 //
 // This enum backs a histogram. Please keep enums.xml up to date with any
 // changes, and new entries should be appended at the end. Never re-arrange /
 // re-use values.
-enum class NavigationDownloadPolicy {
-  kAllow = 0,
-  kDisallowViewSource = 1,
-  kDisallowInterstitial = 2,
+enum class NavigationDownloadType {
+  // An entry reserved just for histogram. The client code is not expected to
+  // set or query this type in a policy.
+  kDefaultAllow = 0,
 
-  // TODO(csharrison): Temporary to collect metrics. Some opener navigations
-  // should be disallowed from creating downloads. See http://crbug.com/632514.
-  // All of these policies are mutually exclusive, and more specific policies
-  // will be set if their conditions match.
-  //
-  // The navigation was initiated on an opener.
-  kAllowOpener = 3,
-  // Opener navigation without a user gesture.
-  kAllowOpenerNoGesture = 4,
-  // Opener navigation initiated by a site that is cross origin from the target.
-  kAllowOpenerCrossOrigin = 5,
-  // Opener navigation initiated by a site that is cross origin from the target,
-  // and without a user gesture.
-  kAllowOpenerCrossOriginNoGesture = 6,
+  kViewSource = 1,
+  kInterstitial = 2,
 
-  kMaxValue = kAllowOpenerCrossOriginNoGesture
+  // The navigation was initiated on a x-origin opener.
+  kOpenerCrossOrigin = 5,
+
+  // The navigation was initiated from or occurred in an iframe with
+  // |WebSandboxFlags::kDownloads| flag set and without user activation.
+  kSandboxNoGesture = 7,
+
+  // The navigation was initiated from or occurred in an ad frame without user
+  // activation.
+  kAdFrameNoGesture = 8,
+
+  // The navigation was initiated from or occurred in an ad frame with user
+  // activation.
+  kAdFrameGesture = 9,
+
+  kMaxValue = kAdFrameGesture
 };
 
-// Returns whether the given |policy| should allow for a download. This function
-// should be removed when http://crbug.com/632514 is resolved, when callers will
-// just compare with kAllow.
-bool IsNavigationDownloadAllowed(NavigationDownloadPolicy policy);
+// Stores the navigation types that may be of interest to the download-related
+// metrics to be reported at download-discovery time. Also controls how
+// navigations behave when they turn into downloads. By default, navigation is
+// allowed to become a download.
+struct CONTENT_EXPORT NavigationDownloadPolicy {
+  NavigationDownloadPolicy();
+  ~NavigationDownloadPolicy();
+  NavigationDownloadPolicy(const NavigationDownloadPolicy&);
+
+  // Stores |type| to |observed_types|.
+  void SetAllowed(NavigationDownloadType type);
+
+  // Stores |type| to both |observed_types| and |disallowed_types|.
+  void SetDisallowed(NavigationDownloadType type);
+
+  // Returns if |observed_types| contains |type|.
+  bool IsType(NavigationDownloadType type) const;
+
+  // Get the ResourceInterceptPolicy derived from |disallowed_types|.
+  ResourceInterceptPolicy GetResourceInterceptPolicy() const;
+
+  // Returns if download is allowed based on |disallowed_types|.
+  bool IsDownloadAllowed() const;
+
+  // Record the download policy to histograms from |observed_types|.
+  void RecordHistogram() const;
+
+  // A bitset of navigation types observed that may be of interest to the
+  // download-related metrics to be reported at download-discovery time.
+  std::bitset<static_cast<size_t>(NavigationDownloadType::kMaxValue) + 1>
+      observed_types;
+
+  // A bitset of navigation types observed where if the navigation turns into
+  // a download, the download should be dropped.
+  std::bitset<static_cast<size_t>(NavigationDownloadType::kMaxValue) + 1>
+      disallowed_types;
+};
 
 // Used by all navigation IPCs.
 struct CONTENT_EXPORT CommonNavigationParams {
   CommonNavigationParams();
   CommonNavigationParams(
       const GURL& url,
+      const base::Optional<url::Origin>& initiator_origin,
       const Referrer& referrer,
       ui::PageTransition transition,
       FrameMsg_Navigate_Type::Value navigation_type,
@@ -140,8 +178,13 @@ struct CONTENT_EXPORT CommonNavigationParams {
   ~CommonNavigationParams();
 
   // The URL to navigate to.
-  // PlzNavigate: May be modified when the navigation is ready to commit.
+  // May be modified when the navigation is ready to commit.
   GURL url;
+
+  // When a frame navigates another frame, this is the origin of the document
+  // which initiated the navigation. This parameter can be null for
+  // browser-initiated navigations.
+  base::Optional<url::Origin> initiator_origin;
 
   // The URL to send in the "Referer" header field. Can be empty if there is
   // no referrer.
@@ -154,15 +197,13 @@ struct CONTENT_EXPORT CommonNavigationParams {
   FrameMsg_Navigate_Type::Value navigation_type =
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
 
-  // Enum which governs how downloads are handled by this navigation. By
-  // default, the navigation is allowed to become a download. Multiple values
-  // for disallowed downloads helps with metrics.
-  NavigationDownloadPolicy download_policy = NavigationDownloadPolicy::kAllow;
+  // Governs how downloads are handled by this navigation.
+  NavigationDownloadPolicy download_policy;
 
   // Informs the RenderView the pending navigation should replace the current
   // history entry when it commits. This is used for cross-process redirects so
   // the transferred navigation can recover the navigation state.
-  // PlzNavigate: this is used by client-side redirects to indicate that when
+  // This is used by client-side redirects to indicate that when
   // the navigation commits, it should commit in the existing page.
   bool should_replace_current_entry = false;
 
@@ -181,7 +222,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // The navigationStart time exposed through the Navigation Timing API to JS.
   // If this is for a browser-initiated navigation, this can override the
   // navigation_start value in Blink.
-  // PlzNavigate: For renderer initiated navigations, this will be set on the
+  // For renderer initiated navigations, this will be set on the
   // renderer side and sent with FrameHostMsg_BeginNavigation.
   base::TimeTicks navigation_start = base::TimeTicks::Now();
 
@@ -191,7 +232,6 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // Body of HTTP POST request.
   scoped_refptr<network::ResourceRequestBody> post_data;
 
-  // PlzNavigate
   // Information about the Javascript source for this navigation. Used for
   // providing information in console error messages triggered by the
   // navigation. If the navigation was not caused by Javascript, this should
@@ -223,9 +263,8 @@ struct CONTENT_EXPORT CommonNavigationParams {
 
 // Provided by the browser -----------------------------------------------------
 
-// PlzNavigate
 // Timings collected in the browser during navigation for the
-// Navigation Timing API. Sent to Blink in RequestNavigationParams when
+// Navigation Timing API. Sent to Blink in CommitNavigationParams when
 // the navigation is ready to be committed.
 struct CONTENT_EXPORT NavigationTiming {
   base::TimeTicks redirect_start;
@@ -233,29 +272,36 @@ struct CONTENT_EXPORT NavigationTiming {
   base::TimeTicks fetch_start;
 };
 
-// Used by FrameMsg_Navigate. Holds the parameters needed by the renderer to
-// start a browser-initiated navigation besides those in CommonNavigationParams.
-// PlzNavigate: sent to the renderer to make it issue a stream request for a
-// navigation that is ready to commit.
-struct CONTENT_EXPORT RequestNavigationParams {
-  RequestNavigationParams();
-  RequestNavigationParams(bool is_overriding_user_agent,
-                          const std::vector<GURL>& redirects,
-                          const GURL& original_url,
-                          const std::string& original_method,
-                          bool can_load_local_resources,
-                          const PageState& page_state,
-                          int nav_entry_id,
-                          bool is_history_navigation_in_new_child,
-                          std::map<std::string, bool> subframe_unique_names,
-                          bool intended_as_new_entry,
-                          int pending_history_list_offset,
-                          int current_history_list_offset,
-                          int current_history_list_length,
-                          bool is_view_source,
-                          bool should_clear_history_list);
-  RequestNavigationParams(const RequestNavigationParams& other);
-  ~RequestNavigationParams();
+// Used by commit IPC messages. Holds the parameters needed by the renderer to
+// commit a navigation besides those in CommonNavigationParams.
+struct CONTENT_EXPORT CommitNavigationParams {
+  CommitNavigationParams();
+  CommitNavigationParams(const base::Optional<url::Origin>& origin_to_commit,
+                         bool is_overriding_user_agent,
+                         const std::vector<GURL>& redirects,
+                         const GURL& original_url,
+                         const std::string& original_method,
+                         bool can_load_local_resources,
+                         const PageState& page_state,
+                         int nav_entry_id,
+                         bool is_history_navigation_in_new_child,
+                         std::map<std::string, bool> subframe_unique_names,
+                         bool intended_as_new_entry,
+                         int pending_history_list_offset,
+                         int current_history_list_offset,
+                         int current_history_list_length,
+                         bool is_view_source,
+                         bool should_clear_history_list);
+  CommitNavigationParams(const CommitNavigationParams& other);
+  ~CommitNavigationParams();
+
+  // The origin to be used for committing the navigation, if specified.
+  // This will be an origin that's compatible with the |url| in the
+  // CommonNavigationParams; if |url| is data: or about:blank, or the frame has
+  // sandbox attributes, this determines the origin of the resulting document.
+  // It is specified for session history navigations, for which the origin is
+  // known and saved in the FrameNavigationEntry.
+  base::Optional<url::Origin> origin_to_commit;
 
   // Whether or not the user agent override string should be used.
   bool is_overriding_user_agent = false;
@@ -267,15 +313,12 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // The ResourceResponseInfos received during redirects.
   std::vector<network::ResourceResponseHead> redirect_response;
 
-  // PlzNavigate
   // The RedirectInfos received during redirects.
   std::vector<net::RedirectInfo> redirect_infos;
 
-  // PlzNavigate
   // The content type from the request headers for POST requests.
   std::string post_content_type;
 
-  // PlzNavigate
   // The original URL & method for this navigation.
   GURL original_url;
   std::string original_method;
@@ -338,20 +381,11 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // navigation commits.
   bool should_clear_history_list = false;
 
-  // Whether a ServiceWorkerProviderHost should be created for the window.
-  bool should_create_service_worker = false;
-
-  // PlzNavigate
   // Timing of navigation events.
   NavigationTiming navigation_timing;
 
-  // The ServiceWorkerProviderHost ID used for navigations, if it was already
-  // created by the browser. Set to kInvalidServiceWorkerProviderId otherwise.
-  int service_worker_provider_id = kInvalidServiceWorkerProviderId;
-
-  // PlzNavigate
   // The AppCache host id to be used to identify this navigation.
-  int appcache_host_id = kAppCacheNoHostId;
+  int appcache_host_id = blink::mojom::kAppCacheNoHostId;
 
   // Set to |kYes| if a navigation is following the rules of user activation
   // propagation. This is different from |has_user_gesture|
@@ -362,6 +396,12 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // start it. `was_activated` will answer the former question while
   // `user_gesture` will answer the latter.
   WasActivatedOption was_activated = WasActivatedOption::kUnknown;
+
+  // A token that should be passed to the browser process in
+  // DidCommitProvisionalLoadParams.
+  // TODO(clamy): Remove this once NavigationClient has shipped and
+  // same-document browser-initiated navigations are properly handled as well.
+  base::UnguessableToken navigation_token;
 
 #if defined(OS_ANDROID)
   // The real content of the data: URL. Only used in Android WebView for

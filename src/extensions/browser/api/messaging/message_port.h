@@ -19,7 +19,9 @@ class RenderFrameHost;
 
 namespace extensions {
 struct Message;
+struct MessagingEndpoint;
 struct PortId;
+struct PortContext;
 
 // One side of the communication handled by extensions::MessageService.
 class MessagePort {
@@ -51,6 +53,10 @@ class MessagePort {
   // is not used and the channel is closed.
   virtual bool IsValidPort() = 0;
 
+  // Triggers the check of whether the port is still valid. If the port is
+  // determined to be invalid, the channel will be closed.
+  virtual void RevalidatePort();
+
   // Notifies the port that the channel has been opened.
   virtual void DispatchOnConnect(
       const std::string& channel_name,
@@ -58,10 +64,9 @@ class MessagePort {
       int source_frame_id,
       int guest_process_id,
       int guest_render_frame_routing_id,
-      const std::string& source_extension_id,
+      const MessagingEndpoint& source_endpoint,
       const std::string& target_extension_id,
-      const GURL& source_url,
-      const std::string& tls_channel_id);
+      const GURL& source_url);
 
   // Notifies the port that the channel has been closed. If |error_message| is
   // non-empty, it indicates an error occurred while opening the connection.
@@ -70,11 +75,11 @@ class MessagePort {
   // Dispatches a message to this end of the communication.
   virtual void DispatchOnMessage(const Message& message) = 0;
 
-  // Marks the port as opened by the specific frame.
-  virtual void OpenPort(int process_id, int routing_id);
+  // Marks the port as opened by the specific frame or service worker.
+  virtual void OpenPort(int process_id, const PortContext& port_context);
 
-  // Closes the port for the given frame.
-  virtual void ClosePort(int process_id, int routing_id);
+  // Closes the port for the given frame or service worker.
+  virtual void ClosePort(int process_id, int routing_id, int worker_thread_id);
 
   // MessagePorts that target extensions will need to adjust their keepalive
   // counts for their lazy background page.

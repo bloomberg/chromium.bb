@@ -5,6 +5,8 @@
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
 
 #include <xf86drm.h>
+#include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/stl_util.h"

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 defines = [ "LEVELDB_PLATFORM_CHROMIUM=1" ]
@@ -12,17 +13,6 @@ config("leveldb_config") {
     "src",
     "src/include",
   ]
-
-  if (is_win) {
-    # windows.h #defines DeleteFile to DeleteFileW on Unicode builds. This
-    # definition is in effect in a large part of Chromium's compilation units.
-    # leveldb::Env has a DeleteFile method, which becomes DeleteFileW when the
-    # definition is in effect.
-    #
-    # Define the macro everywhere, to avoid reasoning about which headers bring
-    # windows.h in.
-    defines += [ "DeleteFile=DeleteFileW" ]
-  }
 }
 
 leveldb_sources = [
@@ -451,4 +441,15 @@ if (!is_ios && !is_android) {
       ":leveldb_write_batch_test",
     ]
   }
+}
+
+fuzzer_test("leveldb_put_get_delete_fuzzer") {
+  sources = [
+    "leveldb_put_get_delete_fuzzer.cc",
+  ]
+  deps = [
+    ":leveldatabase",
+    ":leveldb_testutil",
+    "//base/test:test_support",
+  ]
 }

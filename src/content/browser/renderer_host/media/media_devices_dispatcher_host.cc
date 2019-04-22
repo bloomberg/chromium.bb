@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/task/post_task.h"
@@ -16,18 +17,18 @@
 #include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/common/media/media_devices.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_system.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_facing.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/mediastream/media_devices.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "url/origin.h"
 
 namespace content {
@@ -101,23 +102,30 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
     bool request_video_input,
     bool request_audio_output,
     bool request_video_input_capabilities,
+    bool request_audio_input_capabilities,
     EnumerateDevicesCallback client_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!request_audio_input && !request_video_input && !request_audio_output) {
+  if ((!request_audio_input && !request_video_input && !request_audio_output) ||
+      (request_video_input_capabilities && !request_video_input) ||
+      (request_audio_input_capabilities && !request_audio_input)) {
     bad_message::ReceivedBadMessage(
         render_process_id_, bad_message::MDDH_INVALID_DEVICE_TYPE_REQUEST);
     return;
   }
 
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = request_audio_input;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = request_video_input;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = request_audio_output;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] =
+      request_audio_input;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] =
+      request_video_input;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] =
+      request_audio_output;
 
   media_stream_manager_->media_devices_manager()->EnumerateDevices(
       render_process_id_, render_frame_id_, devices_to_enumerate,
-      request_video_input_capabilities, std::move(client_callback));
+      request_video_input_capabilities, request_audio_input_capabilities,
+      std::move(client_callback));
 }
 
 void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
@@ -176,9 +184,12 @@ void MediaDevicesDispatcherHost::AddMediaDevicesListener(
   }
 
   MediaDevicesManager::BoolDeviceTypes devices_to_subscribe;
-  devices_to_subscribe[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = subscribe_audio_input;
-  devices_to_subscribe[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = subscribe_video_input;
-  devices_to_subscribe[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = subscribe_audio_output;
+  devices_to_subscribe[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] =
+      subscribe_audio_input;
+  devices_to_subscribe[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] =
+      subscribe_video_input;
+  devices_to_subscribe[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] =
+      subscribe_audio_output;
 
   uint32_t subscription_id = media_stream_manager_->media_devices_manager()
                                  ->SubscribeDeviceChangeNotifications(
@@ -192,7 +203,8 @@ void MediaDevicesDispatcherHost::GetDefaultVideoInputDeviceID(
     MediaDeviceSaltAndOrigin salt_and_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GetDefaultMediaDeviceID(
-      MEDIA_DEVICE_TYPE_VIDEO_INPUT, render_process_id_, render_frame_id_,
+      blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT, render_process_id_,
+      render_frame_id_,
       base::Bind(&MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID,
                  weak_factory_.GetWeakPtr(), base::Passed(&client_callback),
                  std::move(salt_and_origin)));
@@ -206,7 +218,7 @@ void MediaDevicesDispatcherHost::GotDefaultVideoInputDeviceID(
   MediaDevicesManager::BoolDeviceTypes requested_types;
   // Also request audio devices to make sure the heuristic to determine
   // the video group ID works.
-  requested_types[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  requested_types[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   media_stream_manager_->media_devices_manager()->EnumerateDevices(
       requested_types,
       base::BindOnce(
@@ -223,7 +235,8 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
       video_input_capabilities;
-  for (const auto& device_info : enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT]) {
+  for (const auto& device_info :
+       enumeration[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT]) {
     std::string hmac_device_id =
         GetHMACForMediaDeviceID(salt_and_origin.device_id_salt,
                                 salt_and_origin.origin, device_info.device_id);
@@ -318,7 +331,8 @@ void MediaDevicesDispatcherHost::GetDefaultAudioInputDeviceID(
 
   DCHECK(current_audio_input_capabilities_.empty());
   GetDefaultMediaDeviceID(
-      MEDIA_DEVICE_TYPE_AUDIO_INPUT, render_process_id_, render_frame_id_,
+      blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT, render_process_id_,
+      render_frame_id_,
       base::Bind(&MediaDevicesDispatcherHost::GotDefaultAudioInputDeviceID,
                  weak_factory_.GetWeakPtr()));
 }
@@ -329,7 +343,7 @@ void MediaDevicesDispatcherHost::GotDefaultAudioInputDeviceID(
   DCHECK_GT(pending_audio_input_capabilities_requests_.size(), 0U);
   DCHECK(current_audio_input_capabilities_.empty());
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
   media_stream_manager_->media_devices_manager()->EnumerateDevices(
       devices_to_enumerate,
       base::BindOnce(&MediaDevicesDispatcherHost::GotAudioInputEnumeration,
@@ -343,10 +357,13 @@ void MediaDevicesDispatcherHost::GotAudioInputEnumeration(
   DCHECK_GT(pending_audio_input_capabilities_requests_.size(), 0U);
   DCHECK(current_audio_input_capabilities_.empty());
   DCHECK_EQ(num_pending_audio_input_parameters_, 0U);
-  for (const auto& device_info : enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
+  for (const auto& device_info :
+       enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
+    auto parameters = media::AudioParameters::UnavailableDeviceParams();
     blink::mojom::AudioInputDeviceCapabilities capabilities(
-        device_info.device_id, device_info.group_id,
-        media::AudioParameters::UnavailableDeviceParams());
+        device_info.device_id, device_info.group_id, parameters,
+        parameters.IsValid(), parameters.channels(), parameters.sample_rate(),
+        parameters.GetBufferDuration());
     if (device_info.device_id == default_device_id)
       current_audio_input_capabilities_.insert(
           current_audio_input_capabilities_.begin(), std::move(capabilities));

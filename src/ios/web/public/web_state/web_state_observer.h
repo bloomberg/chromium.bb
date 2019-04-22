@@ -16,7 +16,6 @@ namespace web {
 
 struct FaviconURL;
 class NavigationContext;
-struct LoadCommittedDetails;
 class WebFrame;
 class WebState;
 
@@ -33,26 +32,14 @@ class WebStateObserver {
   virtual void WasHidden(WebState* web_state) {}
 
   // This method is invoked when committed navigation items have been pruned.
+  // DEPRECATED. DidChangeBackForwardState is a superset of this callback and
+  // should be used instead of NavigationItemsPruned in the future.
+  // NavigationItemsPruned is not called when slim-navigation-manager is enabled
+  // and DidChangeBackForwardState is not called when slim-navigation-manager is
+  // disabled. So for now the clients should implement both callbacks.
+  // TODO(crbug.com/910894): Remove this method.
   virtual void NavigationItemsPruned(WebState* web_state,
                                      size_t pruned_item_count) {}
-
-  // This method is invoked either when NavigationItem's titile did change or
-  // when window.location.replace JavaScript API was called.
-  // DEPRECATED. Use |TitleWasSet| to listen for title changes and
-  // |DidFinishNavigation| for |window.location.replace|.
-  // TODO(crbug.com/720786): Remove this method.
-  virtual void NavigationItemChanged(WebState* web_state) {}
-
-  // This method is invoked when a new non-pending navigation item is created.
-  // This corresponds to one NavigationManager item being created
-  // (in the case of new navigations) or renavigated to (for back/forward
-  // navigations).
-  // DEPRECATED. Use |DidFinishNavigation| to listen for
-  // "navigation item committed" signals.
-  // TODO(crbug.com/720786): Remove this method.
-  virtual void NavigationItemCommitted(
-      WebState* web_state,
-      const LoadCommittedDetails& load_details) {}
 
   // Called when a navigation started in the WebState for the main frame.
   // |navigation_context| is unique to a specific navigation. The same

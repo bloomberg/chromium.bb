@@ -16,34 +16,17 @@ suite('ExtensionsActivityLogTest', function() {
    * @type {extensions.ActivityLog}
    */
   let activityLog;
+
+  /**
+   * Backing extension info for the activity log.
+   * @type {chrome.developerPrivate.ExtensionInfo}
+   */
+  let extensionInfo;
+
   let proxyDelegate;
   let testVisible;
 
-  const testActivities = {
-    activities: [
-      {
-        activityId: '299',
-        activityType: 'api_call',
-        apiCall: 'i18n.getUILanguage',
-        args: 'null',
-        count: 10,
-        extensionId: EXTENSION_ID,
-        time: 1541203132002.664
-      },
-      {
-        activityId: '309',
-        activityType: 'dom_access',
-        apiCall: 'Storage.getItem',
-        args: 'null',
-        count: 9,
-        extensionId: EXTENSION_ID,
-        other: {domVerb: 'method'},
-        pageTitle: 'Test Extension',
-        pageUrl: `chrome-extension://${EXTENSION_ID}/index.html`,
-        time: 1541203131994.837
-      },
-    ]
-  };
+  const testActivities = {activities: []};
 
   // Initialize an extension activity log before each test.
   setup(function() {
@@ -52,11 +35,17 @@ suite('ExtensionsActivityLogTest', function() {
     activityLog = new extensions.ActivityLog();
     testVisible = extension_test_util.testVisible.bind(null, activityLog);
 
-    activityLog.extensionId = EXTENSION_ID;
+    extensionInfo = extension_test_util.createExtensionInfo({
+      id: EXTENSION_ID,
+    });
+    activityLog.extensionInfo = extensionInfo;
+
     proxyDelegate = new extensions.TestService();
     activityLog.delegate = proxyDelegate;
     proxyDelegate.testActivities = testActivities;
     document.body.appendChild(activityLog);
+
+    activityLog.fire('view-enter-start');
 
     // Wait until we have finished making the call to fetch the activity log.
     return proxyDelegate.whenCalled('getExtensionActivityLog');
@@ -64,42 +53,6 @@ suite('ExtensionsActivityLogTest', function() {
 
   teardown(function() {
     activityLog.remove();
-  });
-
-  test('activities are present for extension', function() {
-    Polymer.dom.flush();
-
-    testVisible('#no-activities', false);
-    testVisible('#loading-activities', false);
-    testVisible('#activity-list', true);
-    expectEquals(
-        activityLog.shadowRoot.querySelectorAll('activity-log-item').length, 2);
-  });
-
-  test('message shown when no activities present for extension', function() {
-    // Spoof an API call and pretend that the extension has no activities.
-    activityLog.activityData_ = {
-      activities: [],
-    };
-
-    Polymer.dom.flush();
-
-    testVisible('#no-activities', true);
-    testVisible('#loading-activities', false);
-    testVisible('#activity-list', false);
-    expectEquals(
-        activityLog.shadowRoot.querySelectorAll('activity-log-item').length, 0);
-  });
-
-  test('message shown when activities are being fetched', function() {
-    // Pretend the activity log is still loading.
-    activityLog.pageState_ = ActivityLogPageState.LOADING;
-
-    Polymer.dom.flush();
-
-    testVisible('#no-activities', false);
-    testVisible('#loading-activities', true);
-    testVisible('#activity-list', false);
   });
 
   test('clicking on back button navigates to the details page', function() {
@@ -110,8 +63,28 @@ suite('ExtensionsActivityLogTest', function() {
       currentPage = newPage;
     });
 
-    activityLog.$$('#close-button').click();
+    activityLog.$$('#closeButton').click();
     expectDeepEquals(
         currentPage, {page: Page.DETAILS, extensionId: EXTENSION_ID});
+  });
+
+  test('tab transitions', function() {
+    Polymer.dom.flush();
+    // Default view should be the history view.
+    testVisible('activity-log-history', true);
+
+    // Navigate to the activity log stream.
+    activityLog.$$('#real-time-tab').click();
+    Polymer.dom.flush();
+    testVisible('activity-log-stream', true);
+
+    // Navigate back to the activity log history tab.
+    activityLog.$$('#history-tab').click();
+
+    // Expect a refresh of the activity log.
+    proxyDelegate.whenCalled('getExtensionActivityLog').then(() => {
+      Polymer.dom.flush();
+      testVisible('activity-log-history', true);
+    });
   });
 });

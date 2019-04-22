@@ -7,6 +7,7 @@
 
 #include "src/objects.h"
 #include "src/objects/heap-object.h"
+#include "torque-generated/class-definitions-from-dsl.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -16,7 +17,7 @@ namespace internal {
 
 // The Name abstract class captures anything that can be used as a property
 // name, i.e., strings and symbols.  All names store a hash value.
-class Name : public HeapObjectPtr {
+class Name : public HeapObject {
  public:
   // Get and set the hash field of the name.
   inline uint32_t hash_field();
@@ -61,15 +62,16 @@ class Name : public HeapObjectPtr {
   V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToFunctionName(
       Isolate* isolate, Handle<Name> name, Handle<String> prefix);
 
-  DECL_CAST2(Name)
+  DECL_CAST(Name)
 
   DECL_PRINTER(Name)
   void NameShortPrint();
   int NameShortPrint(Vector<char> str);
 
-  // Layout description.
-  static const int kHashFieldOffset = HeapObject::kHeaderSize;
-  static const int kHeaderSize = kHashFieldOffset + kInt32Size;
+  DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize,
+                                TORQUE_GENERATED_NAME_FIELDS)
+
+  static const int kHeaderSize = kSize;
 
   // Mask constant for checking if a name has a computed hash code
   // and if it is a string that is an array index.  The least significant bit
@@ -131,7 +133,7 @@ class Name : public HeapObjectPtr {
  protected:
   static inline bool IsHashFieldComputed(uint32_t field);
 
-  OBJECT_CONSTRUCTORS(Name, HeapObjectPtr);
+  OBJECT_CONSTRUCTORS(Name, HeapObject);
 };
 
 // ES6 symbols.
@@ -169,21 +171,14 @@ class Symbol : public Name {
   inline bool is_private_name() const;
   inline void set_is_private_name();
 
-  DECL_CAST2(Symbol)
+  DECL_CAST(Symbol)
 
   // Dispatched behavior.
   DECL_PRINTER(Symbol)
   DECL_VERIFIER(Symbol)
 
-  // Layout description.
-#define SYMBOL_FIELDS(V)      \
-  V(kFlagsOffset, kInt32Size) \
-  V(kNameOffset, kTaggedSize) \
-  /* Header size. */          \
-  V(kSize, 0)
-
-  DEFINE_FIELD_OFFSET_CONSTANTS(Name::kHeaderSize, SYMBOL_FIELDS)
-#undef SYMBOL_FIELDS
+  DEFINE_FIELD_OFFSET_CONSTANTS(Name::kHeaderSize,
+                                TORQUE_GENERATED_SYMBOL_FIELDS)
 
 // Flags layout.
 #define FLAGS_BIT_FIELDS(V, _)          \
@@ -196,7 +191,7 @@ class Symbol : public Name {
   DEFINE_BIT_FIELDS(FLAGS_BIT_FIELDS)
 #undef FLAGS_BIT_FIELDS
 
-  typedef FixedBodyDescriptor<kNameOffset, kSize, kSize> BodyDescriptor;
+  using BodyDescriptor = FixedBodyDescriptor<kNameOffset, kSize, kSize>;
 
   void SymbolShortPrint(std::ostream& os);
 

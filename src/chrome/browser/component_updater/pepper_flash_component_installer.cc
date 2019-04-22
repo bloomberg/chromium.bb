@@ -81,7 +81,7 @@ const uint8_t kFlashSha2Hash[] = {
     0x86, 0x8c, 0x86, 0x2c, 0x11, 0xb9, 0x40, 0xc5, 0x55, 0xaf, 0x08,
     0x63, 0x70, 0x54, 0xf9, 0x56, 0xd3, 0xe7, 0x88, 0xba, 0x8c};
 #endif  // defined(OS_CHROMEOS)
-static_assert(arraysize(kFlashSha2Hash) == crypto::kSHA256Length,
+static_assert(base::size(kFlashSha2Hash) == crypto::kSHA256Length,
               "Wrong hash length");
 
 #if defined(OS_CHROMEOS)
@@ -339,7 +339,7 @@ base::FilePath FlashComponentInstallerPolicy::GetRelativeInstallDir() const {
 }
 
 void FlashComponentInstallerPolicy::GetHash(std::vector<uint8_t>* hash) const {
-  hash->assign(kFlashSha2Hash, kFlashSha2Hash + arraysize(kFlashSha2Hash));
+  hash->assign(kFlashSha2Hash, kFlashSha2Hash + base::size(kFlashSha2Hash));
 }
 
 std::string FlashComponentInstallerPolicy::GetName() const {

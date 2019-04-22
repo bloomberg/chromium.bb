@@ -73,3 +73,5 @@ void MixedContentSettingsTabHelper::DidFinishNavigation(
     is_running_insecure_content_allowed_ = false;
   }
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(MixedContentSettingsTabHelper)

@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -77,7 +78,6 @@ class MockConnectClientSocket : public TransportClientSocket {
   const NetLogWithSource& NetLog() const override { return net_log_; }
 
   bool WasEverUsed() const override { return false; }
-  void EnableTCPFastOpenIfSupported() override {}
   bool WasAlpnNegotiated() const override { return false; }
   NextProto GetNegotiatedProtocol() const override { return kProtoUnknown; }
   bool GetSSLInfo(SSLInfo* ssl_info) override { return false; }
@@ -145,7 +145,6 @@ class MockFailingClientSocket : public TransportClientSocket {
   const NetLogWithSource& NetLog() const override { return net_log_; }
 
   bool WasEverUsed() const override { return false; }
-  void EnableTCPFastOpenIfSupported() override {}
   bool WasAlpnNegotiated() const override { return false; }
   NextProto GetNegotiatedProtocol() const override { return kProtoUnknown; }
   bool GetSSLInfo(SSLInfo* ssl_info) override { return false; }
@@ -277,7 +276,6 @@ class MockTriggerableClientSocket : public TransportClientSocket {
   const NetLogWithSource& NetLog() const override { return net_log_; }
 
   bool WasEverUsed() const override { return false; }
-  void EnableTCPFastOpenIfSupported() override {}
   bool WasAlpnNegotiated() const override { return false; }
   NextProto GetNegotiatedProtocol() const override { return kProtoUnknown; }
   bool GetSSLInfo(SSLInfo* ssl_info) override { return false; }
@@ -373,7 +371,7 @@ MockTransportClientSocketFactory::MockTransportClientSocketFactory(
     : net_log_(net_log),
       allocation_count_(0),
       client_socket_type_(MOCK_CLIENT_SOCKET),
-      client_socket_types_(NULL),
+      client_socket_types_(nullptr),
       client_socket_index_(0),
       client_socket_index_max_(0),
       delay_(base::TimeDelta::FromMilliseconds(
@@ -446,7 +444,7 @@ MockTransportClientSocketFactory::CreateTransportClientSocket(
 
 std::unique_ptr<SSLClientSocket>
 MockTransportClientSocketFactory::CreateSSLClientSocket(
-    std::unique_ptr<ClientSocketHandle> transport_socket,
+    std::unique_ptr<StreamSocket> stream_socket,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context) {
@@ -456,21 +454,19 @@ MockTransportClientSocketFactory::CreateSSLClientSocket(
 
 std::unique_ptr<ProxyClientSocket>
 MockTransportClientSocketFactory::CreateProxyClientSocket(
-    std::unique_ptr<ClientSocketHandle> transport_socket,
+    std::unique_ptr<StreamSocket> stream_socket,
     const std::string& user_agent,
     const HostPortPair& endpoint,
+    const ProxyServer& proxy_server,
     HttpAuthController* http_auth_controller,
     bool tunnel,
     bool using_spdy,
     NextProto negotiated_protocol,
+    ProxyDelegate* proxy_delegate,
     bool is_https_proxy,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   NOTIMPLEMENTED();
   return nullptr;
-}
-
-void MockTransportClientSocketFactory::ClearSSLSessionCache() {
-  NOTIMPLEMENTED();
 }
 
 void MockTransportClientSocketFactory::set_client_socket_types(

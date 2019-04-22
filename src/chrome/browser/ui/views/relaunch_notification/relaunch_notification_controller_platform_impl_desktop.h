@@ -19,17 +19,17 @@ class RelaunchNotificationControllerPlatformImpl
   RelaunchNotificationControllerPlatformImpl();
 
   // Shows the relaunch recommended notification if it is not already open.
-  void NotifyRelaunchRecommended(base::TimeTicks detection_time);
+  void NotifyRelaunchRecommended(base::Time detection_time);
 
   // Shows the relaunch required notification if it is not already open.
-  void NotifyRelaunchRequired(base::TimeTicks deadline);
+  void NotifyRelaunchRequired(base::Time deadline);
 
   // Closes the bubble or dialog if either is still open.
   void CloseRelaunchNotification();
 
   // Sets the relaunch deadline to |deadline| and refreshes the notification's
   // title accordingly.
-  void SetDeadline(base::TimeTicks deadline);
+  void SetDeadline(base::Time deadline);
 
   // Checks whether the required dialog is shown or not.
   bool IsRequiredNotificationShown() const;

@@ -8,7 +8,6 @@
 #include <sstream>
 #include <string>
 
-#include "src/code-stubs.h"
 #include "src/compiler/all-nodes.h"
 #include "src/compiler/backend/register-allocator.h"
 #include "src/compiler/compiler-source-position-table.h"
@@ -27,6 +26,7 @@
 #include "src/optimized-compilation-info.h"
 #include "src/ostreams.h"
 #include "src/source-position.h"
+#include "src/vector.h"
 
 namespace v8 {
 namespace internal {
@@ -63,6 +63,30 @@ std::ostream& operator<<(std::ostream& out, const NodeOriginAsJSON& asJSON) {
   return out;
 }
 
+class JSONEscaped {
+ public:
+  explicit JSONEscaped(const std::ostringstream& os) : str_(os.str()) {}
+
+  friend std::ostream& operator<<(std::ostream& os, const JSONEscaped& e) {
+    for (char c : e.str_) PipeCharacter(os, c);
+    return os;
+  }
+
+ private:
+  static std::ostream& PipeCharacter(std::ostream& os, char c) {
+    if (c == '"') return os << "\\\"";
+    if (c == '\\') return os << "\\\\";
+    if (c == '\b') return os << "\\b";
+    if (c == '\f') return os << "\\f";
+    if (c == '\n') return os << "\\n";
+    if (c == '\r') return os << "\\r";
+    if (c == '\t') return os << "\\t";
+    return os << c;
+  }
+
+  const std::string str_;
+};
+
 void JsonPrintFunctionSource(std::ostream& os, int source_id,
                              std::unique_ptr<char[]> function_name,
                              Handle<Script> script, Isolate* isolate,
@@ -76,10 +100,12 @@ void JsonPrintFunctionSource(std::ostream& os, int source_id,
   int start = 0;
   int end = 0;
   if (!script.is_null() && !script->IsUndefined(isolate) && !shared.is_null()) {
-    Object* source_name = script->name();
+    Object source_name = script->name();
     os << ", \"sourceName\": \"";
     if (source_name->IsString()) {
-      os << String::cast(source_name)->ToCString().get();
+      std::ostringstream escaped_name;
+      escaped_name << String::cast(source_name)->ToCString().get();
+      os << JSONEscaped(escaped_name);
     }
     os << "\"";
     {
@@ -88,7 +114,8 @@ void JsonPrintFunctionSource(std::ostream& os, int source_id,
       end = shared->EndPosition();
       os << ", \"sourceText\": \"";
       int len = shared->EndPosition() - start;
-      SubStringRange source(String::cast(script->source()), start, len);
+      SubStringRange source(String::cast(script->source()), no_allocation,
+                            start, len);
       for (const auto& c : source) {
         os << AsEscapedUC16ForJSON(c);
       }
@@ -139,7 +166,8 @@ void JsonPrintAllSourceWithPositions(std::ostream& os,
   AllowDeferredHandleDereference allow_deference_for_print_code;
   os << "\"sources\" : {";
   Handle<Script> script =
-      (info->shared_info().is_null() || !info->shared_info()->script())
+      (info->shared_info().is_null() ||
+       info->shared_info()->script() == Object())
           ? Handle<Script>()
           : handle(Script::cast(info->shared_info()->script()), isolate);
   JsonPrintFunctionSource(os, -1,
@@ -189,7 +217,7 @@ std::unique_ptr<char[]> GetVisualizerLogFileName(OptimizedCompilationInfo* info,
   bool source_available = false;
   if (FLAG_trace_file_names && info->has_shared_info() &&
       info->shared_info()->script()->IsScript()) {
-    Object* source_name = Script::cast(info->shared_info()->script())->name();
+    Object source_name = Script::cast(info->shared_info()->script())->name();
     if (source_name->IsString()) {
       String str = String::cast(source_name);
       if (str->length() > 0) {
@@ -237,30 +265,6 @@ static int SafeId(Node* node) { return node == nullptr ? -1 : node->id(); }
 static const char* SafeMnemonic(Node* node) {
   return node == nullptr ? "null" : node->op()->mnemonic();
 }
-
-class JSONEscaped {
- public:
-  explicit JSONEscaped(const std::ostringstream& os) : str_(os.str()) {}
-
-  friend std::ostream& operator<<(std::ostream& os, const JSONEscaped& e) {
-    for (char c : e.str_) PipeCharacter(os, c);
-    return os;
-  }
-
- private:
-  static std::ostream& PipeCharacter(std::ostream& os, char c) {
-    if (c == '"') return os << "\\\"";
-    if (c == '\\') return os << "\\\\";
-    if (c == '\b') return os << "\\b";
-    if (c == '\f') return os << "\\f";
-    if (c == '\n') return os << "\\n";
-    if (c == '\r') return os << "\\r";
-    if (c == '\t') return os << "\\t";
-    return os << c;
-  }
-
-  const std::string str_;
-};
 
 class JSONGraphNodeWriter {
  public:
@@ -775,7 +779,11 @@ void GraphC1Visualizer::PrintLiveRange(const LiveRange* range, const char* type,
     os_ << " " << parent->vreg() << ":" << parent->relative_id();
 
     // TODO(herhut) Find something useful to print for the hint field
-    os_ << " unknown";
+    if (range->get_bundle() != nullptr) {
+      os_ << " B" << range->get_bundle()->id();
+    } else {
+      os_ << " unknown";
+    }
 
     for (const UseInterval* interval = range->first_interval();
          interval != nullptr; interval = interval->next()) {
@@ -1065,7 +1073,7 @@ std::ostream& operator<<(std::ostream& os, const InstructionOperandAsJSON& o) {
         if (allocated->register_code() < Register::kNumRegisters) {
           os << Register::from_code(allocated->register_code());
         } else {
-          os << Assembler::GetSpecialRegisterName(allocated->register_code());
+          os << Register::GetSpecialRegisterName(allocated->register_code());
         }
       } else if (op->IsDoubleRegister()) {
         os << DoubleRegister::from_code(allocated->register_code());
@@ -1164,7 +1172,8 @@ std::ostream& operator<<(std::ostream& os, const InstructionBlockAsJSON& b) {
   const InstructionSequence* code = b.code_;
   os << "{";
   os << "\"id\": " << block->rpo_number() << ",";
-  os << "\"deferred\": " << block->IsDeferred() << ",";
+  os << "\"deferred\": " << (block->IsDeferred() ? "true" : "false");
+  os << ",";
   os << "\"loop_header\": " << block->IsLoopHeader() << ",";
   if (block->IsLoopHeader()) {
     os << "\"loop_end\": " << block->loop_end() << ",";

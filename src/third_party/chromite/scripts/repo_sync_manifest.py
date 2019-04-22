@@ -55,11 +55,14 @@ def GetParser():
       '--manifest-file', type='path',
       help='Sync to an existing local manifest file.')
 
-  manifest_group.add_argument(
+  manifest_url_ex = manifest_group.add_mutually_exclusive_group()
+  manifest_url_ex.add_argument(
       '--external', action='store_true', default=False,
       help='Sync to the external version of a manifest. Switch from '
            'manifest-versions-internal to manifest-versions for buildspecs. '
            'Not usable with --manifest.')
+  manifest_url_ex.add_argument(
+      '--manifest-url', help='Manually set URL to fetch repo manifest from.')
 
   patch_group = parser.add_argument_group(
       'Patch',
@@ -96,6 +99,8 @@ def GetParser():
   optimization_group.add_argument(
       '--git-cache-dir', type='path',
       help='Git cache directory to use.')
+  optimization_group.add_argument(
+      '--repo-url', help='Repo repository location.')
 
   return parser
 
@@ -179,7 +184,9 @@ def main(argv):
   if local_manifest:
     logging.info('Using local_manifest: %s', local_manifest)
 
-  if options.external:
+  if options.manifest_url:
+    manifest_url = options.manifest_url
+  elif options.external:
     manifest_url = config_lib.GetSiteParams().MANIFEST_URL
   else:
     manifest_url = config_lib.GetSiteParams().MANIFEST_INT_URL
@@ -189,7 +196,8 @@ def main(argv):
       manifest_repo_url=manifest_url,
       directory=options.repo_root,
       branch=options.branch,
-      git_cache_dir=options.git_cache_dir)
+      git_cache_dir=options.git_cache_dir,
+      repo_url=options.repo_url)
 
   if options.copy_repo:
     repo.PreLoad(options.copy_repo)
@@ -209,4 +217,9 @@ def main(argv):
     series = patch_series.PatchSeries(
         path=options.repo_root, helper_pool=helper_pool, forced_manifest=None)
 
-    series.Apply(patches)
+    _, failed_tot, failed_inflight = series.Apply(patches)
+
+    failed = failed_tot + failed_inflight
+    if failed:
+      logging.error('Failed to apply: %s', ', '.join(str(p) for p in failed))
+      return 1

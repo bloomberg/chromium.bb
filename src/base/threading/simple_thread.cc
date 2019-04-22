@@ -29,7 +29,7 @@ SimpleThread::~SimpleThread() {
 
 void SimpleThread::Start() {
   StartAsync();
-  ThreadRestrictions::ScopedAllowWait allow_wait;
+  ScopedAllowBaseSyncPrimitives allow_wait;
   event_.Wait();  // Wait for the thread to complete initialization.
 }
 
@@ -62,7 +62,6 @@ PlatformThreadId SimpleThread::tid() {
 }
 
 bool SimpleThread::HasBeenStarted() {
-  ThreadRestrictions::ScopedAllowWait allow_wait;
   return event_.IsSignaled();
 }
 
@@ -71,7 +70,7 @@ void SimpleThread::ThreadMain() {
   // Construct our full name of the form "name_prefix_/TID".
   std::string name(name_prefix_);
   name.push_back('/');
-  name.append(IntToString(tid_));
+  name.append(NumberToString(tid_));
   PlatformThread::SetName(name);
 
   // We've initialized our new thread, signal that we're done to Start().

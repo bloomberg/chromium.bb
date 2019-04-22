@@ -96,24 +96,24 @@ function getTree(desktop) {
            leaf4, leaf5, leaf6, leaf7 };
 }
 
-TEST_F('SwitchAccessPredicateTest', 'IsSubtreeLeaf', function() {
+TEST_F('SwitchAccessPredicateTest', 'IsInteresting', function() {
   this.runWithLoadedTree(testWebsite(),
       function(desktop) {
         const t = getTree(desktop);
 
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.root, t.root));
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.upper1, t.root));
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.upper2, t.root));
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.lower1, t.upper1));
-        assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.lower2, t.upper1));
-        assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.lower3, t.root));
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.leaf1, t.lower1));
-        assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.leaf2, t.lower1));
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.leaf3, t.lower1));
-        assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.leaf4, t.upper1));
-        assertTrue(SwitchAccessPredicate.isSubtreeLeaf(t.leaf5, t.upper1));
-        assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.leaf6, t.lower3));
-        assertFalse(SwitchAccessPredicate.isSubtreeLeaf(t.leaf7, t.lower3));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.root, t.root));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.upper1, t.root));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.upper2, t.root));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.lower1, t.upper1));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.lower2, t.upper1));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.lower3, t.root));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.leaf1, t.lower1));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf2, t.lower1));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.leaf3, t.lower1));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf4, t.upper1));
+        assertTrue(SwitchAccessPredicate.isInteresting(t.leaf5, t.upper1));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf6, t.lower3));
+        assertFalse(SwitchAccessPredicate.isInteresting(t.leaf7, t.lower3));
       }
   );
 });
@@ -169,7 +169,8 @@ TEST_F('SwitchAccessPredicateTest', 'IsActionable', function() {
       '<a href="https://www.google.com/" aria-label="link1">link1</a>' +
       '<input type="text" aria-label="input1">input1</input>' +
       '<button>button3</button>' +
-      '<div aria-label="div1"><p>p1</p></div>'
+      '<div aria-label="listitem" role="listitem" onclick="2+2"></div>' +
+      '<div aria-label="div1"><p>p1</p></div>';
   this.runWithLoadedTree('data:text/html;charset=utf-8,' + treeString,
       function(desktop) {
         this.setDesktop(desktop);
@@ -201,6 +202,10 @@ TEST_F('SwitchAccessPredicateTest', 'IsActionable', function() {
         const button3 = this.getNodeByName('button3');
         assertTrue(SwitchAccessPredicate.isActionable(button3));
 
+        // List items with a default action of click are actionable.
+        const listitem = this.getNodeByName('listitem');
+        assertTrue(SwitchAccessPredicate.isActionable(listitem));
+
         // Divs are not generally actionable.
         const div1 = this.getNodeByName('div1');
         assertFalse(SwitchAccessPredicate.isActionable(div1));
@@ -212,6 +217,52 @@ TEST_F('SwitchAccessPredicateTest', 'IsActionable', function() {
   );
 });
 
+TEST_F('SwitchAccessPredicateTest', 'IsActionableFocusableElements', function()
+{
+  const treeString =
+      '<div aria-label="noChildren" tabindex="0"></div>' +
+      '<div aria-label="oneInterestingChild" tabindex="1">' +
+        '<div><div><div><button>button1</button></div></div></div>' +
+      '</div>' +
+      '<div aria-label="oneUninterestingChild" tabindex="2">' +
+        '<p>p1</p>' +
+      '</div>' +
+      '<div aria-label="interestingChildren" tabindex="3">' +
+        '<button>button2</button>' +
+        '<button>button3</button>' +
+      '</div>' +
+      '<div aria-label="uninterestingChildren" tabindex="4">' +
+        '<p>p2</p>' +
+        '<p>p3</p>' +
+      '</div>';
+  this.runWithLoadedTree('data:text/html;charset=utf-8,' + treeString,
+      function(desktop) {
+        this.setDesktop(desktop);
+
+        // Focusable element with no children should be actionable.
+        const noChildren = this.getNodeByName('noChildren');
+        assertTrue(SwitchAccessPredicate.isActionable(noChildren));
+
+        // Focusable elements with one or more interesting children should not
+        // be actionable.
+        const oneInterestingChild = this.getNodeByName('oneInterestingChild');
+        assertFalse(SwitchAccessPredicate.isActionable(oneInterestingChild));
+
+        const interestingChildren = this.getNodeByName('interestingChildren');
+        assertFalse(SwitchAccessPredicate.isActionable(interestingChildren));
+
+        // Focusable elements with children that are all uninteresting should
+        // be actionable.
+        const oneUninterestingChild =
+            this.getNodeByName('oneUninterestingChild');
+        assertTrue(SwitchAccessPredicate.isActionable(oneUninterestingChild));
+
+        const uninterestingChildren =
+            this.getNodeByName('uninterestingChildren');
+        assertTrue(SwitchAccessPredicate.isActionable(uninterestingChildren));
+      }
+  );
+});
 
 TEST_F('SwitchAccessPredicateTest', 'LeafPredicate', function() {
   this.runWithLoadedTree(testWebsite(),

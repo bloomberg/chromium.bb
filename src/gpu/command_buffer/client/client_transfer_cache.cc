@@ -11,7 +11,7 @@ ClientTransferCache::ClientTransferCache(Client* client) : client_(client) {}
 ClientTransferCache::~ClientTransferCache() = default;
 
 void* ClientTransferCache::MapEntry(MappedMemoryManager* mapped_memory,
-                                    size_t size) {
+                                    uint32_t size) {
   DCHECK(!mapped_ptr_);
   DCHECK(!transfer_buffer_ptr_);
   mapped_ptr_.emplace(size, client_->cmd_buffer_helper(), mapped_memory);
@@ -24,7 +24,7 @@ void* ClientTransferCache::MapEntry(MappedMemoryManager* mapped_memory,
 
 void* ClientTransferCache::MapTransferBufferEntry(
     TransferBufferInterface* transfer_buffer,
-    size_t size) {
+    uint32_t size) {
   DCHECK(!mapped_ptr_);
   DCHECK(!transfer_buffer_ptr_);
   transfer_buffer_ptr_.emplace(size, client_->cmd_buffer_helper(),
@@ -41,8 +41,13 @@ void ClientTransferCache::UnmapAndCreateEntry(uint32_t type, uint32_t id) {
 
   base::AutoLock hold(lock_);
   auto handle = CreateDiscardableHandle(key);
-  if (!handle.IsValid())
+  if (!handle.IsValid()) {
+    // Release any data pointers. Keeping these alive longer can lead to issues
+    // with transfer buffer reallocation.
+    mapped_ptr_ = base::nullopt;
+    transfer_buffer_ptr_ = base::nullopt;
     return;
+  }
 
   if (mapped_ptr_) {
     DCHECK(!transfer_buffer_ptr_);
@@ -64,7 +69,7 @@ void ClientTransferCache::AddTransferCacheEntry(uint32_t type,
                                                 uint32_t id,
                                                 uint32_t shm_id,
                                                 uint32_t shm_offset,
-                                                size_t size) {
+                                                uint32_t size) {
   DCHECK(!mapped_ptr_);
   EntryKey key(type, id);
 

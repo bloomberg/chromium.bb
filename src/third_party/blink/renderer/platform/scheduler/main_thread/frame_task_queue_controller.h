@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -38,6 +39,8 @@ class MainThreadSchedulerImpl;
 // MainThreadTaskQueues for non-loading queues, for accessing task queues and
 // their related voters, and for creating new task queues.
 class PLATFORM_EXPORT FrameTaskQueueController {
+  USING_FAST_MALLOC(FrameTaskQueueController);
+
  public:
   using TaskQueueAndEnabledVoterPair =
       std::pair<MainThreadTaskQueue*,
@@ -71,6 +74,9 @@ class PLATFORM_EXPORT FrameTaskQueueController {
 
   // Return the inspector task queue and create it if it doesn't exist.
   scoped_refptr<MainThreadTaskQueue> InspectorTaskQueue();
+
+  // Return the best effort task queue and create it if it doesn't exist.
+  scoped_refptr<MainThreadTaskQueue> BestEffortTaskQueue();
 
   enum WebSchedulingTaskQueueType : unsigned {
     kWebSchedulingUserVisiblePriority,
@@ -138,6 +144,8 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   // Keep the inspector queue separately. It needs to mimic the IPC task queue
   // behavior as far as virtual time is concerned.
   scoped_refptr<MainThreadTaskQueue> inspector_task_queue_;
+
+  scoped_refptr<MainThreadTaskQueue> best_effort_task_queue_;
 
   scoped_refptr<MainThreadTaskQueue>
       web_scheduling_task_queues_[kWebSchedulingPriorityCount];

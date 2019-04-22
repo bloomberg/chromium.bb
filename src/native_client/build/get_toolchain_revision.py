@@ -7,6 +7,8 @@
 getting the toolchain revision. Speed matters when running gn gen, for example.
 """
 
+from __future__ import print_function
+
 import json
 import os.path
 import sys
@@ -18,17 +20,17 @@ DEFAULT_REVISIONS_DIR = os.path.join(NACL_DIR, 'toolchain_revisions')
 
 def main():
   if len(sys.argv) < 2:
-    print 'usage: %s toolchain_package_names...' % sys.argv[0]
+    print('usage: %s toolchain_package_names...' % sys.argv[0])
     sys.exit(1)
   for package in sys.argv[1:]:
     revisions_file = os.path.join(DEFAULT_REVISIONS_DIR, package + '.json')
     if not os.path.exists(revisions_file):
-      print 'unknown toolchain %s' % package
+      print('unknown toolchain %s' % package)
       sys.exit(1)
     f = open(revisions_file)
     data = json.load(f)
     f.close()
-    print data['revision']
+    print(data['revision'])
 
 
 if __name__ == '__main__':

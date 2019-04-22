@@ -69,19 +69,19 @@ bool LayoutScrollbarTheme::HasThumb(const Scrollbar& scrollbar) {
 }
 
 int LayoutScrollbarTheme::MinimumThumbLength(const Scrollbar& scrollbar) {
-  return ToLayoutScrollbar(scrollbar).MinimumThumbLength();
+  return To<LayoutScrollbar>(scrollbar).MinimumThumbLength();
 }
 
 IntRect LayoutScrollbarTheme::BackButtonRect(const Scrollbar& scrollbar,
                                              ScrollbarPart part_type,
                                              bool) {
-  return ToLayoutScrollbar(scrollbar).ButtonRect(part_type);
+  return To<LayoutScrollbar>(scrollbar).ButtonRect(part_type);
 }
 
 IntRect LayoutScrollbarTheme::ForwardButtonRect(const Scrollbar& scrollbar,
                                                 ScrollbarPart part_type,
                                                 bool) {
-  return ToLayoutScrollbar(scrollbar).ButtonRect(part_type);
+  return To<LayoutScrollbar>(scrollbar).ButtonRect(part_type);
 }
 
 IntRect LayoutScrollbarTheme::TrackRect(const Scrollbar& scrollbar, bool) {
@@ -92,16 +92,17 @@ IntRect LayoutScrollbarTheme::TrackRect(const Scrollbar& scrollbar, bool) {
   int end_length;
   ButtonSizesAlongTrackAxis(scrollbar, start_length, end_length);
 
-  return ToLayoutScrollbar(scrollbar).TrackRect(start_length, end_length);
+  return To<LayoutScrollbar>(scrollbar).TrackRect(start_length, end_length);
 }
 
 IntRect LayoutScrollbarTheme::ConstrainTrackRectToTrackPieces(
     const Scrollbar& scrollbar,
     const IntRect& rect) {
-  IntRect back_rect = ToLayoutScrollbar(scrollbar).TrackPieceRectWithMargins(
+  IntRect back_rect = To<LayoutScrollbar>(scrollbar).TrackPieceRectWithMargins(
       kBackTrackPart, rect);
-  IntRect forward_rect = ToLayoutScrollbar(scrollbar).TrackPieceRectWithMargins(
-      kForwardTrackPart, rect);
+  IntRect forward_rect =
+      To<LayoutScrollbar>(scrollbar).TrackPieceRectWithMargins(
+          kForwardTrackPart, rect);
   IntRect result = rect;
   if (scrollbar.Orientation() == kHorizontalScrollbar) {
     result.SetX(back_rect.X());
@@ -130,14 +131,14 @@ void LayoutScrollbarTheme::PaintScrollCorner(
 void LayoutScrollbarTheme::PaintScrollbarBackground(
     GraphicsContext& context,
     const Scrollbar& scrollbar) {
-  ScrollbarPainter(ToLayoutScrollbar(scrollbar))
+  ScrollbarPainter(To<LayoutScrollbar>(scrollbar))
       .PaintPart(context, kScrollbarBGPart, scrollbar.FrameRect());
 }
 
 void LayoutScrollbarTheme::PaintTrackBackground(GraphicsContext& context,
                                                 const Scrollbar& scrollbar,
                                                 const IntRect& rect) {
-  ScrollbarPainter(ToLayoutScrollbar(scrollbar))
+  ScrollbarPainter(To<LayoutScrollbar>(scrollbar))
       .PaintPart(context, kTrackBGPart, rect);
 }
 
@@ -145,20 +146,22 @@ void LayoutScrollbarTheme::PaintTrackPiece(GraphicsContext& context,
                                            const Scrollbar& scrollbar,
                                            const IntRect& rect,
                                            ScrollbarPart part) {
-  ScrollbarPainter(ToLayoutScrollbar(scrollbar)).PaintPart(context, part, rect);
+  ScrollbarPainter(To<LayoutScrollbar>(scrollbar))
+      .PaintPart(context, part, rect);
 }
 
 void LayoutScrollbarTheme::PaintButton(GraphicsContext& context,
                                        const Scrollbar& scrollbar,
                                        const IntRect& rect,
                                        ScrollbarPart part) {
-  ScrollbarPainter(ToLayoutScrollbar(scrollbar)).PaintPart(context, part, rect);
+  ScrollbarPainter(To<LayoutScrollbar>(scrollbar))
+      .PaintPart(context, part, rect);
 }
 
 void LayoutScrollbarTheme::PaintThumb(GraphicsContext& context,
                                       const Scrollbar& scrollbar,
                                       const IntRect& rect) {
-  ScrollbarPainter(ToLayoutScrollbar(scrollbar))
+  ScrollbarPainter(To<LayoutScrollbar>(scrollbar))
       .PaintPart(context, kThumbPart, rect);
 }
 

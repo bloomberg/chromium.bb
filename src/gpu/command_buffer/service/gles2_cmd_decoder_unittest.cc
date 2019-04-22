@@ -7,7 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -464,9 +466,8 @@ TEST_P(GLES3DecoderTest, GetInternalformativValidArgsSamples) {
                                         GL_NUM_SAMPLE_COUNTS, 1, _))
       .WillOnce(SetArgPointee<4>(kNumSampleCounts))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetInternalformativ(GL_RENDERBUFFER, GL_RGBA8,
-                                        GL_SAMPLES, kNumSampleCounts,
-                                        result->GetData()))
+  EXPECT_CALL(*gl_, GetInternalformativ(GL_RENDERBUFFER, GL_RGBA8, GL_SAMPLES,
+                                        kNumSampleCounts, _))
       .Times(1)
       .RetiresOnSaturation();
   result->size = 0;
@@ -925,7 +926,7 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
 }
 
 TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryIdFails) {
-  for (size_t i = 0; i < arraysize(kQueryTypes); ++i) {
+  for (size_t i = 0; i < base::size(kQueryTypes); ++i) {
     CheckBeginEndQueryBadMemoryFails(this, kNewClientId, kQueryTypes[i],
                                      kInvalidSharedMemoryId,
                                      kSharedMemoryOffset);
@@ -933,7 +934,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryIdFails) {
 }
 
 TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryOffsetFails) {
-  for (size_t i = 0; i < arraysize(kQueryTypes); ++i) {
+  for (size_t i = 0; i < base::size(kQueryTypes); ++i) {
     // Out-of-bounds.
     CheckBeginEndQueryBadMemoryFails(this, kNewClientId, kQueryTypes[i],
                                      shared_memory_id_,
@@ -945,7 +946,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryOffsetFails) {
 }
 
 TEST_P(GLES2DecoderManualInitTest, QueryReuseTest) {
-  for (size_t i = 0; i < arraysize(kQueryTypes); ++i) {
+  for (size_t i = 0; i < base::size(kQueryTypes); ++i) {
     const QueryType& query_type = kQueryTypes[i];
 
     GLES2DecoderTestBase::InitState init;
@@ -1256,7 +1257,7 @@ TEST_P(GLES2DecoderTest, IsEnabledReturnsCachedValue) {
   static const GLenum kStates[] = {
       GL_DEPTH_TEST, GL_STENCIL_TEST,
   };
-  for (size_t ii = 0; ii < arraysize(kStates); ++ii) {
+  for (size_t ii = 0; ii < base::size(kStates); ++ii) {
     Enable enable_cmd;
     GLenum state = kStates[ii];
     enable_cmd.Init(state);
@@ -1851,31 +1852,43 @@ void GLES3DecoderRGBBackbufferTest::SetUp() {
   SetupDefaultProgram();
 }
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES2DecoderTest, ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderWithShaderTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderWithShaderTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderManualInitTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderManualInitTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderRGBBackbufferTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderRGBBackbufferTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderDoCommandsTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderDoCommandsTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderDescheduleUntilFinishedTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderDescheduleUntilFinishedTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES3DecoderTest, ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderWithShaderTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, WebGL2DecoderTest, ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderManualInitTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES3DecoderWithShaderTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES3DecoderRGBBackbufferTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES3DecoderManualInitTest,
+                         ::testing::Bool());
+
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES3DecoderRGBBackbufferTest,
+                         ::testing::Bool());
 
 }  // namespace gles2
 }  // namespace gpu

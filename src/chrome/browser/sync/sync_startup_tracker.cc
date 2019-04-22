@@ -4,26 +4,21 @@
 
 #include "chrome/browser/sync/sync_startup_tracker.h"
 
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
-SyncStartupTracker::SyncStartupTracker(Profile* profile, Observer* observer)
-    : profile_(profile),
-      observer_(observer) {
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (service)
-    service->AddObserver(this);
+SyncStartupTracker::SyncStartupTracker(syncer::SyncService* sync_service,
+                                       Observer* observer)
+    : sync_service_(sync_service), observer_(observer) {
+  if (sync_service_)
+    sync_service_->AddObserver(this);
 
   CheckServiceState();
 }
 
 SyncStartupTracker::~SyncStartupTracker() {
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (service)
-    service->RemoveObserver(this);
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
 }
 
 void SyncStartupTracker::OnStateChanged(syncer::SyncService* sync) {
@@ -33,7 +28,7 @@ void SyncStartupTracker::OnStateChanged(syncer::SyncService* sync) {
 void SyncStartupTracker::CheckServiceState() {
   // Note: the observer may free this object so it is not allowed to access
   // this object after invoking the observer callback below.
-  switch (GetSyncServiceState(profile_)) {
+  switch (GetSyncServiceState(sync_service_)) {
     case SYNC_STARTUP_ERROR:
       observer_->SyncStartupFailed();
       break;
@@ -48,28 +43,21 @@ void SyncStartupTracker::CheckServiceState() {
 
 // static
 SyncStartupTracker::SyncServiceState SyncStartupTracker::GetSyncServiceState(
-    Profile* profile) {
-  // If sync is not allowed, treat this as a startup error.
-  if (!profile->IsSyncAllowed())
-    return SYNC_STARTUP_ERROR;
-
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-
+    syncer::SyncService* sync_service) {
   // If no service exists or it can't be started, treat as a startup error.
-  if (!service || !service->CanSyncFeatureStart())
+  if (!sync_service || !sync_service->CanSyncFeatureStart())
     return SYNC_STARTUP_ERROR;
 
   // If the sync engine has started up, notify the callback.
-  if (service->IsEngineInitialized())
+  if (sync_service->IsEngineInitialized())
     return SYNC_STARTUP_COMPLETE;
 
   // If the sync service has some kind of error, report to the user.
-  if (service->HasUnrecoverableError())
+  if (sync_service->HasUnrecoverableError())
     return SYNC_STARTUP_ERROR;
 
   // If we have an auth error, exit.
-  if (service->GetAuthError().state() != GoogleServiceAuthError::NONE)
+  if (sync_service->GetAuthError().state() != GoogleServiceAuthError::NONE)
     return SYNC_STARTUP_ERROR;
 
   // No error detected yet, but the sync engine hasn't started up yet, so

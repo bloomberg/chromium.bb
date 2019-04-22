@@ -14,15 +14,13 @@
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 using web::NavigationItem;
-
-DEFINE_WEB_STATE_USER_DATA_KEY(IOSChromeSyncedTabDelegate);
 
 namespace {
 
@@ -81,8 +79,9 @@ GURL IOSChromeSyncedTabDelegate::GetVirtualURLAtIndex(int i) const {
 }
 
 GURL IOSChromeSyncedTabDelegate::GetFaviconURLAtIndex(int i) const {
+  DCHECK_GE(i, 0);
   NavigationItem* item = GetPossiblyPendingItemAtIndex(web_state_, i);
-  return (item->GetFavicon().valid ? item->GetFavicon().url : GURL());
+  return (item && item->GetFavicon().valid ? item->GetFavicon().url : GURL());
 }
 
 ui::PageTransition IOSChromeSyncedTabDelegate::GetTransitionAtIndex(
@@ -135,3 +134,5 @@ bool IOSChromeSyncedTabDelegate::ShouldSync(
   }
   return false;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(IOSChromeSyncedTabDelegate)

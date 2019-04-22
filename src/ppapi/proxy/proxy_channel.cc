@@ -26,18 +26,21 @@ ProxyChannel::~ProxyChannel() {
   DVLOG(1) << "ProxyChannel::~ProxyChannel()";
 }
 
-bool ProxyChannel::InitWithChannel(Delegate* delegate,
-                                   base::ProcessId peer_pid,
-                                   const IPC::ChannelHandle& channel_handle,
-                                   bool is_client) {
+bool ProxyChannel::InitWithChannel(
+    Delegate* delegate,
+    base::ProcessId peer_pid,
+    const IPC::ChannelHandle& channel_handle,
+    bool is_client,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   delegate_ = delegate;
   peer_pid_ = peer_pid;
   IPC::Channel::Mode mode = is_client
       ? IPC::Channel::MODE_CLIENT
       : IPC::Channel::MODE_SERVER;
-  channel_ = IPC::SyncChannel::Create(
-      channel_handle, mode, this, delegate->GetIPCTaskRunner(),
-      base::ThreadTaskRunnerHandle::Get(), true, delegate->GetShutdownEvent());
+  DCHECK(task_runner->BelongsToCurrentThread());
+  channel_ = IPC::SyncChannel::Create(channel_handle, mode, this,
+                                      delegate->GetIPCTaskRunner(), task_runner,
+                                      true, delegate->GetShutdownEvent());
   return true;
 }
 

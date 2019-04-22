@@ -54,25 +54,9 @@ Transform::Transform(SkMScalar col1row1,
                      SkMScalar col3row4,
                      SkMScalar col4row4)
     : matrix_(SkMatrix44::kUninitialized_Constructor) {
-  matrix_.set(0, 0, col1row1);
-  matrix_.set(1, 0, col1row2);
-  matrix_.set(2, 0, col1row3);
-  matrix_.set(3, 0, col1row4);
-
-  matrix_.set(0, 1, col2row1);
-  matrix_.set(1, 1, col2row2);
-  matrix_.set(2, 1, col2row3);
-  matrix_.set(3, 1, col2row4);
-
-  matrix_.set(0, 2, col3row1);
-  matrix_.set(1, 2, col3row2);
-  matrix_.set(2, 2, col3row3);
-  matrix_.set(3, 2, col3row4);
-
-  matrix_.set(0, 3, col4row1);
-  matrix_.set(1, 3, col4row2);
-  matrix_.set(2, 3, col4row3);
-  matrix_.set(3, 3, col4row4);
+  matrix_.set4x4(col1row1, col1row2, col1row3, col1row4, col2row1, col2row2,
+                 col2row3, col2row4, col3row1, col3row2, col3row3, col3row4,
+                 col4row1, col4row2, col4row3, col4row4);
 }
 
 Transform::Transform(SkMScalar col1row1,

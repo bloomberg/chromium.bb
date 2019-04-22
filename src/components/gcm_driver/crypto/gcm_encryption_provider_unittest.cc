@@ -14,12 +14,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/crypto/gcm_key_store.h"
@@ -63,13 +64,13 @@ class GCMEncryptionProviderTest : public ::testing::Test {
 
     encryption_provider_.reset(new GCMEncryptionProvider);
     encryption_provider_->Init(scoped_temp_dir_.GetPath(),
-                               message_loop_.task_runner());
+                               base::ThreadTaskRunnerHandle::Get());
   }
 
   void TearDown() override {
     encryption_provider_.reset();
 
-    // |encryption_provider_| owns a ProtoDatabaseImpl whose destructor deletes
+    // |encryption_provider_| owns a ProtoDatabase whose destructor deletes
     // the underlying LevelDB database on the task runner.
     base::RunLoop().RunUntilIdle();
   }
@@ -156,7 +157,7 @@ class GCMEncryptionProviderTest : public ::testing::Test {
     decrypted_message_ = message;
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::ScopedTempDir scoped_temp_dir_;
   base::HistogramTester histogram_tester_;
 

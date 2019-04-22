@@ -29,8 +29,10 @@ class TabRestorePageLoadMetricsObserver
       content::NavigationHandle* navigation_handle,
       const GURL& currently_committed_url,
       bool started_in_foreground) override;
-  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
-                            extra_request_complete_info) override;
+  void OnResourceDataUseObserved(
+      content::RenderFrameHost* rfh,
+      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+          resources) override;
   page_load_metrics::PageLoadMetricsObserver::ObservePolicy
   FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,

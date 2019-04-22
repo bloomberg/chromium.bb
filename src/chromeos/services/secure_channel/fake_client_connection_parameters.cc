@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromeos/services/secure_channel/fake_client_connection_parameters.h"
+#include "base/bind.h"
 
 namespace chromeos {
 

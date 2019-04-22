@@ -13,6 +13,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gfx/font.h"
 
 namespace gfx {
@@ -26,9 +27,23 @@ typedef std::map<std::string, std::vector<Font> > FallbackCache;
 base::LazyInstance<FallbackCache>::Leaky g_fallback_cache =
     LAZY_INSTANCE_INITIALIZER;
 
+std::string GetFilenameFromFcPattern(FcPattern* pattern) {
+  const char* c_filename = nullptr;
+  if (FcPatternGetString(pattern, FC_FILE, 0,
+                         reinterpret_cast<FcChar8**>(const_cast<char**>(
+                             &c_filename))) != FcResultMatch) {
+    return std::string();
+  }
+  const char* sysroot =
+      reinterpret_cast<const char*>(FcConfigGetSysRoot(nullptr));
+  return std::string(sysroot ? sysroot : "") + c_filename;
+}
+
 }  // namespace
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
+  TRACE_EVENT0("fonts", "gfx::GetFallbackFonts");
+
   std::string font_family = font.GetFontName();
   std::vector<Font>* fallback_fonts =
       &g_fallback_cache.Get()[font_family];
@@ -79,7 +94,7 @@ class CachedFont {
     DCHECK(pattern);
     DCHECK(char_set);
     fallback_font_.name = GetFontName(pattern);
-    fallback_font_.filename = GetFontFilename(pattern);
+    fallback_font_.filename = GetFilenameFromFcPattern(pattern);
     fallback_font_.ttc_index = GetFontTtcIndex(pattern);
     fallback_font_.is_bold = IsFontBold(pattern);
     fallback_font_.is_italic = IsFontItalic(pattern);
@@ -97,13 +112,6 @@ class CachedFont {
     if (FcPatternGetString(pattern, FC_FAMILY, 0, &familyName) != FcResultMatch)
       return std::string();
     return std::string(reinterpret_cast<const char*>(familyName));
-  }
-
-  static std::string GetFontFilename(FcPattern* pattern) {
-    FcChar8* c_filename = nullptr;
-    if (FcPatternGetString(pattern, FC_FILE, 0, &c_filename) != FcResultMatch)
-      return std::string();
-    return std::string(reinterpret_cast<const char*>(c_filename));
   }
 
   static int GetFontTtcIndex(FcPattern* pattern) {
@@ -149,6 +157,8 @@ class CachedFontSet {
   }
 
   FallbackFontData GetFallbackFontForChar(UChar32 c) {
+    TRACE_EVENT0("fonts", "gfx::CachedFontSet::GetFallbackFontForChar");
+
     for (const auto& cached_font : fallback_list_) {
       if (cached_font.HasGlyphForCharacter(c))
         return cached_font.fallback_font();
@@ -192,6 +202,8 @@ class CachedFontSet {
   }
 
   void FillFallbackList() {
+    TRACE_EVENT0("fonts", "gfx::CachedFontSet::FillFallbackList");
+
     DCHECK(fallback_list_.empty());
     if (!font_set_)
       return;
@@ -209,10 +221,8 @@ class CachedFontSet {
 
       // Ignore any fonts FontConfig knows about, but that we don't have
       // permission to read.
-      FcChar8* c_filename;
-      if (FcPatternGetString(pattern, FC_FILE, 0, &c_filename) != FcResultMatch)
-        continue;
-      if (access(reinterpret_cast<char*>(c_filename), R_OK))
+      std::string filename = GetFilenameFromFcPattern(pattern);
+      if (access(filename.c_str(), R_OK))
         continue;
 
       // Take only supported font formats on board.

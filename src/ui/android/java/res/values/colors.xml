@@ -7,39 +7,77 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- TODO(huayinz): remove tools:ignore once these colors are used in ui/android -->
     <!-- Common text colors -->
-    <color name="default_text_color">@color/modern_grey_900</color>
+    <color name="default_text_color">@color/default_text_color_dark</color>
+    <color name="default_text_color_inverse">@color/default_text_color_light</color>
     <color name="default_text_color_secondary">@color/modern_grey_700</color>
+    <color name="default_text_color_tertiary" tools:ignore="UnusedResources">@color/modern_grey_900_alpha_38</color>
+    <!-- Text color for non-clickable blue text. -->
+    <color name="default_text_color_blue" tools:ignore="UnusedResources">@color/modern_blue_600</color>
+    <!-- Text color for clickable text. -->
     <color name="default_text_color_link">@color/modern_blue_600</color>
-    <color name="disabled_text_color">@color/black_alpha_38</color>
+    <color name="disabled_text_color_link">@color/modern_grey_800_alpha_38</color>
+    <color name="error_text_color">@color/default_red</color>
 
     <!-- Common icon colors for drawables. -->
-    <color name="default_icon_color" tools:ignore="UnusedResources">@color/modern_grey_800</color>
+    <color name="default_icon_color" tools:ignore="UnusedResources">
+        @color/default_icon_color_dark
+    </color>
+    <color name="default_icon_color_disabled" tools:ignore="UnusedResources">
+        @color/default_icon_color_dark_disabled
+    </color>
+    <color name="default_icon_color_inverse" tools:ignore="UnusedResources">
+        @color/default_icon_color_white
+    </color>
+    <color name="default_icon_color_inverse_disabled" tools:ignore="UnusedResources">
+        @color/white_alpha_38
+    </color>
     <color name="default_icon_color_blue" tools:ignore="UnusedResources">
         @color/modern_blue_600
     </color>
-    <color name="default_icon_color_white" tools:ignore="UnusedResources">
-        @android:color/white
+    <color name="light_icon_color" tools:ignore="UnusedResources">@color/modern_grey_500</color>
+    <color name="hairline_stroke_color">@color/modern_grey_300</color>
+
+    <!-- Common background and branding color. -->
+    <!-- TODO(huayinz): Change primary and secondary color to default_bg_color*. -->
+    <color name="modern_primary_color" tools:ignore="UnusedResources">@color/default_bg_color_light</color>
+    <color name="modern_secondary_color" tools:ignore="UnusedResources">@color/modern_grey_100</color>
+
+    <!-- TODO(huayinz): Introduce a semantic bg reference for modern_grey_100. -->
+    <!-- Background colors that are used to show layers and their relative elevation. In light mode,
+         we use a combination of shadows and colors. In night mode, we use different colors to show
+         elevation. -->
+    <color name="default_bg_color_elev_0" tools:ignore="UnusedResources">
+        @color/modern_grey_100
     </color>
-    <color name="hairline_stroke_color" tools:ignore="UnusedResources">@color/modern_grey_300</color>
+    <color name="default_bg_color_elev_1" tools:ignore="UnusedResources">
+        @color/default_bg_color_light
+    </color>
+    <color name="default_bg_color_elev_2" tools:ignore="UnusedResources">
+        @color/default_bg_color_light
+    </color>
+    <color name="default_bg_color_elev_3" tools:ignore="UnusedResources">
+        @color/default_bg_color_light
+    </color>
+    <color name="default_bg_color_elev_4">@color/default_bg_color_light</color>
 
-    <!-- Modern color palette -->
-    <color name="modern_blue_300">#8AB4F8</color>
-    <color name="modern_blue_600">#1A73E8</color>
-    <color name="modern_grey_50" tools:ignore="UnusedResources">#F8F9FA</color>
-    <color name="modern_grey_100" tools:ignore="UnusedResources">#F1F3F4</color>
-    <color name="modern_grey_200" tools:ignore="UnusedResources">#E8EAED</color>
-    <color name="modern_grey_300" tools:ignore="UnusedResources">#DADCE0</color>
-    <color name="modern_grey_400" tools:ignore="UnusedResources">#BDC1C6</color>
-    <color name="modern_grey_500" tools:ignore="UnusedResources">#9AA0A6</color>
-    <color name="modern_grey_600" tools:ignore="UnusedResources">#80868B</color>
-    <color name="modern_grey_700">#5F6368</color>
-    <color name="modern_grey_800" tools:ignore="UnusedResources">#3C4043</color>
-    <color name="modern_grey_900">#202124</color>
-
-    <color name="black_alpha_38">#61000000</color>
-    <color name="white_alpha_70">#B3FFFFFF</color>
+    <!-- Popup colors -->
+    <color name="popup_bg_color">@color/default_bg_color_elev_4</color>
 
     <color name="dropdown_divider_color">#E5E5E5</color>
     <color name="dropdown_dark_divider_color">#C0C0C0</color>
-</resources>
 
+    <!-- Ripple colors for clickable widgets -->
+    <color name="ripple_color_blue">@color/modern_blue_600</color>
+
+    <!-- Chip colors -->
+    <color name="chip_text_color_default">@color/default_text_color_secondary</color>
+    <color name="chip_text_color_selected">@color/default_text_color_link</color>
+    <color name="chip_background_color_disabled">@color/modern_grey_100_alpha_38</color>
+
+    <!-- Other colors -->
+    <color name="default_red">@color/default_red_dark</color>
+    <color name="default_green" tools:ignore="UnusedResources">@color/default_green_dark</color>
+    <color name="filled_button_bg_color">@color/modern_blue_600</color>
+    <color name="filled_button_bg_color_disabled">@color/modern_grey_800_alpha_38</color>
+    <color name="divider_bg_color" tools:ignore="UnusedResources">@color/modern_grey_300</color>
+</resources>

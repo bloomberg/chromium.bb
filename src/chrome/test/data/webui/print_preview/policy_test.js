@@ -72,12 +72,14 @@ cr.define('policy_tests', function() {
     }
 
     function toggleMoreSettings() {
-      const moreSettingsElement = page.$$('print-preview-more-settings');
+      const moreSettingsElement =
+          page.$$('print-preview-sidebar').$$('print-preview-more-settings');
       moreSettingsElement.$.label.click();
     }
 
     function getCheckbox() {
-      return page.$$('print-preview-other-options-settings')
+      return page.$$('print-preview-sidebar')
+          .$$('print-preview-other-options-settings')
           .$$('#headerFooter');
     }
 

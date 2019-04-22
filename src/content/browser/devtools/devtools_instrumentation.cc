@@ -11,11 +11,13 @@
 #include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/common/navigation_params.mojom.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/ssl/ssl_info.h"
@@ -191,38 +193,110 @@ void ApplyNetworkRequestOverrides(FrameTreeNode* frame_tree_node,
   begin_params->headers = headers.ToString();
 }
 
+namespace {
+template <typename HandlerType>
+bool MaybeCreateProxyForInterception(
+    DevToolsAgentHostImpl* agent_host,
+    RenderProcessHost* rph,
+    const base::UnguessableToken& frame_token,
+    bool is_navigation,
+    bool is_download,
+    network::mojom::URLLoaderFactoryRequest* target_factory_request) {
+  if (!agent_host)
+    return false;
+  bool had_interceptors = false;
+  const auto& handlers = HandlerType::ForAgentHost(agent_host);
+  for (auto it = handlers.rbegin(); it != handlers.rend(); ++it) {
+    had_interceptors = (*it)->MaybeCreateProxyForInterception(
+                           rph, frame_token, is_navigation, is_download,
+                           target_factory_request) ||
+                       had_interceptors;
+  }
+  return had_interceptors;
+}
+
+}  // namespace
+
 bool WillCreateURLLoaderFactory(
     RenderFrameHostImpl* rfh,
     bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* target_factory_request) {
   DCHECK(!is_download || is_navigation);
-  bool had_interceptors = false;
-  // TODO(caseq): assure deterministic order of browser agents (or sessions).
-  for (auto* agent_host : BrowserDevToolsAgentHost::Instances()) {
-    const auto& fetch_handlers =
-        protocol::FetchHandler::ForAgentHost(agent_host);
-    for (auto it = fetch_handlers.rbegin(); it != fetch_handlers.rend(); ++it) {
-      had_interceptors =
-          (*it)->MaybeCreateProxyForInterception(
-              rfh, is_navigation, is_download, target_factory_request) ||
-          had_interceptors;
-    }
-  }
-  DevToolsAgentHostImpl* agent_host =
+
+  // Order of targets and sessions matters -- the latter proxy is created,
+  // the closer it is to the network. So start with frame's NetworkHandler,
+  // then process frame's FetchHandler and then browser's FetchHandler.
+  // Within the target, the agents added earlier are closer to network.
+
+  DevToolsAgentHostImpl* frame_agent_host =
       RenderFrameDevToolsAgentHost::GetFor(rfh->frame_tree_node());
-  if (!agent_host)
-    return had_interceptors;
-  const auto& network_handlers =
-      protocol::NetworkHandler::ForAgentHost(agent_host);
-  for (auto it = network_handlers.rbegin(); it != network_handlers.rend();
-       ++it) {
-    had_interceptors =
-        (*it)->MaybeCreateProxyForInterception(rfh, is_navigation, is_download,
-                                               target_factory_request) ||
-        had_interceptors;
+  RenderProcessHost* rph = rfh->GetProcess();
+  const base::UnguessableToken& frame_token = rfh->GetDevToolsFrameToken();
+
+  bool had_interceptors =
+      MaybeCreateProxyForInterception<protocol::NetworkHandler>(
+          frame_agent_host, rph, frame_token, is_navigation, is_download,
+          target_factory_request);
+
+  had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
+                         frame_agent_host, rph, frame_token, is_navigation,
+                         is_download, target_factory_request) ||
+                     had_interceptors;
+
+  // TODO(caseq): assure deterministic order of browser agents (or sessions).
+  for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
+    had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
+                           browser_agent_host, rph, frame_token, is_navigation,
+                           is_download, target_factory_request) ||
+                       had_interceptors;
   }
   return had_interceptors;
+}
+
+bool WillCreateURLLoaderFactoryForServiceWorker(
+    RenderProcessHost* rph,
+    int routing_id,
+    network::mojom::URLLoaderFactoryRequest* loader_factory_request) {
+  ServiceWorkerDevToolsAgentHost* worker_agent_host =
+      ServiceWorkerDevToolsManager::GetInstance()
+          ->GetDevToolsAgentHostForWorker(rph->GetID(), routing_id);
+  if (!worker_agent_host) {
+    NOTREACHED();
+    return false;
+  }
+  const base::UnguessableToken& worker_token =
+      worker_agent_host->devtools_worker_token();
+
+  bool had_interceptors =
+      MaybeCreateProxyForInterception<protocol::FetchHandler>(
+          worker_agent_host, rph, worker_token, false, false,
+          loader_factory_request);
+
+  // TODO(caseq): assure deterministic order of browser agents (or sessions).
+  for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
+    had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
+                           browser_agent_host, rph, worker_token, false, false,
+                           loader_factory_request) ||
+                       had_interceptors;
+  }
+  return had_interceptors;
+}
+
+bool WillCreateURLLoaderFactory(
+    RenderFrameHostImpl* rfh,
+    bool is_navigation,
+    bool is_download,
+    std::unique_ptr<network::mojom::URLLoaderFactory>* factory) {
+  network::mojom::URLLoaderFactoryPtrInfo proxied_factory;
+  network::mojom::URLLoaderFactoryRequest request =
+      mojo::MakeRequest(&proxied_factory);
+  if (!WillCreateURLLoaderFactory(rfh, is_navigation, is_download, &request))
+    return false;
+  mojo::MakeStrongBinding(std::move(*factory), std::move(request));
+  *factory = std::make_unique<DevToolsURLLoaderFactoryAdapter>(
+      mojo::MakeProxy(std::move(proxied_factory)));
+  return true;
 }
 
 void OnNavigationRequestWillBeSent(

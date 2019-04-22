@@ -13,14 +13,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/controller_service_worker.mojom.h"
-#include "content/common/service_worker/service_worker_container.mojom.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/platform/web_feature.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
 namespace content {
 
@@ -36,16 +36,13 @@ struct ServiceWorkerProviderStateForClient {
   // Keeps version id of the current controller service worker object.
   int64_t controller_version_id = blink::mojom::kInvalidServiceWorkerVersionId;
 
-  // S13nServiceWorker:
   // Used to intercept requests from the controllee and dispatch them
   // as events to the controller ServiceWorker.
   network::mojom::URLLoaderFactoryPtr subresource_loader_factory;
 
-  // S13nServiceWorker:
   // Used when we create |subresource_loader_factory|.
   scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory;
 
-  // S13nServiceWorker:
   // The Client#id value of the client.
   std::string client_id;
 
@@ -57,8 +54,9 @@ struct ServiceWorkerProviderStateForClient {
   // Tracks feature usage for UseCounter.
   std::set<blink::mojom::WebFeature> used_features;
 
-  // Corresponds to a ServiceWorkerContainer. We notify it when
-  // ServiceWorkerContainer#controller should be changed.
+  // Corresponds to this client's ServiceWorkerContainer. May be null when not
+  // yet created, when already destroyed, or when this client is not a Document
+  // and therefore doesn't support navigator.serviceWorker.
   base::WeakPtr<WebServiceWorkerProviderImpl> web_service_worker_provider;
 
   // Keeps ServiceWorkerWorkerClient pointers of dedicated or shared workers
@@ -68,13 +66,12 @@ struct ServiceWorkerProviderStateForClient {
   // - If this ServiceWorkerProviderContext is for a SharedWorker (technically
   //   speaking, for its shadow page), then |worker_clients| has one element:
   //   the shared worker.
-  std::vector<mojom::ServiceWorkerWorkerClientPtr> worker_clients;
+  std::vector<blink::mojom::ServiceWorkerWorkerClientPtr> worker_clients;
 
   // For adding new ServiceWorkerWorkerClients.
-  mojo::BindingSet<mojom::ServiceWorkerWorkerClientRegistry>
+  mojo::BindingSet<blink::mojom::ServiceWorkerWorkerClientRegistry>
       worker_client_registry_bindings;
 
-  // S13nServiceWorker
   // Used in |subresource_loader_factory| to get the connection to the
   // controller service worker.
   //
@@ -88,8 +85,8 @@ struct ServiceWorkerProviderStateForClient {
   // subresource loader factory and lives on a background thread. This is
   // populated when GetSubresourceLoader() creates the subresource loader
   // factory and takes |controller_endpoint|.
-  mojom::ControllerServiceWorkerPtrInfo controller_endpoint;
-  mojom::ControllerServiceWorkerConnectorPtr controller_connector;
+  blink::mojom::ControllerServiceWorkerPtrInfo controller_endpoint;
+  blink::mojom::ControllerServiceWorkerConnectorPtr controller_connector;
 };
 
 }  // namespace content

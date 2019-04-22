@@ -19,9 +19,7 @@ namespace android {
 // Native implementation of PowerMonitor.java. Note: This will be invoked by
 // PowerMonitor.java shortly after startup to set the correct initial value for
 // "is on battery power."
-void JNI_PowerMonitor_OnBatteryChargingChanged(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+void JNI_PowerMonitor_OnBatteryChargingChanged(JNIEnv* env) {
   ProcessPowerEventHelper(PowerMonitorSource::POWER_STATE_EVENT);
 }
 

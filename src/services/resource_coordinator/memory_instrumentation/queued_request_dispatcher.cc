@@ -6,9 +6,13 @@
 
 #include <inttypes.h>
 
+#include "base/android/library_loader/anchor_functions_buildflags.h"
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -66,6 +70,69 @@ uint32_t CalculatePrivateFootprintKb(const mojom::RawOSMemDump& os_dump,
   return 0;
 #endif
 }
+
+#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
+void LogNativeCodeResidentPages(const std::set<size_t>& accessed_pages_set) {
+  // |SUPPORTS_CODE_ORDERING| can only be enabled on Android.
+  const auto kResidentPagesPath = base::FilePath(
+      "/data/local/tmp/chrome/native-library-resident-pages.txt");
+
+  auto file = base::File(kResidentPagesPath, base::File::FLAG_CREATE_ALWAYS |
+                                                 base::File::FLAG_WRITE);
+
+  if (!file.IsValid()) {
+    DLOG(ERROR) << "Could not open " << kResidentPagesPath;
+    return;
+  }
+
+  for (size_t page : accessed_pages_set) {
+    std::string page_str = base::StringPrintf("%" PRIuS "\n", page);
+
+    if (file.WriteAtCurrentPos(page_str.c_str(),
+                               static_cast<int>(page_str.size())) < 0) {
+      DLOG(WARNING) << "Error while dumping Resident pages";
+      return;
+    }
+  }
+}
+
+size_t ReportGlobalNativeCodeResidentMemoryKb(
+    const std::map<base::ProcessId, mojom::RawOSMemDump*>& pid_to_pmd) {
+  std::vector<uint8_t> common_map;
+
+  for (const auto& pmd : pid_to_pmd) {
+    if (!pmd.second || pmd.second->native_library_pages_bitmap.empty()) {
+      DLOG(WARNING) << "No process pagemap entry for " << pmd.first;
+      return 0;
+    }
+
+    if (common_map.size() < pmd.second->native_library_pages_bitmap.size()) {
+      common_map.resize(pmd.second->native_library_pages_bitmap.size());
+    }
+    for (size_t i = 0; i < pmd.second->native_library_pages_bitmap.size();
+         ++i) {
+      common_map[i] |= pmd.second->native_library_pages_bitmap[i];
+    }
+  }
+
+  // |accessed_pages_set| will be ~40kB on 32 bit mode and ~80kB on 64 bit mode.
+  std::set<size_t> accessed_pages_set;
+  for (size_t i = 0; i < common_map.size(); i++) {
+    for (int j = 0; j < 8; j++) {
+      if (common_map[i] & (1 << j))
+        accessed_pages_set.insert(i * 8 + j);
+    }
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "log-native-library-residency")) {
+    LogNativeCodeResidentPages(accessed_pages_set);
+  }
+
+  const size_t kPageSize = base::GetPageSize();
+  return accessed_pages_set.size() * kPageSize / 1024;
+}
+#endif  // #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
 
 memory_instrumentation::mojom::OSMemDumpPtr CreatePublicOSDump(
     const mojom::RawOSMemDump& internal_os_dump,
@@ -442,6 +509,7 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
   mojom::GlobalMemoryDumpPtr global_dump(mojom::GlobalMemoryDump::New());
   global_dump->start_time = request->start_time;
   global_dump->process_dumps.reserve(request->responses.size());
+  global_dump->aggregated_metrics = mojom::AggregatedMetrics::New();
   for (const auto& response : request->responses) {
     base::ProcessId pid = response.second.process_id;
 
@@ -544,6 +612,13 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
 
     global_dump->process_dumps.push_back(std::move(pmd));
   }
+
+#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
+  size_t native_resident_kb =
+      ReportGlobalNativeCodeResidentMemoryKb(pid_to_os_dump);
+  global_dump->aggregated_metrics->native_library_resident_kb =
+      native_resident_kb;
+#endif  // BUILDFLAG(SUPPORTS_CODE_ORDERING)
 
   const bool global_success = request->failed_memory_dump_count == 0;
 

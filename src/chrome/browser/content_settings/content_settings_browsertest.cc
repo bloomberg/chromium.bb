@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
@@ -93,7 +94,7 @@ MATCHER(IsErrorTooManyRedirects, "") {
 class ContentSettingsTest : public InProcessBrowserTest {
  public:
   ContentSettingsTest() : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
   void SetUpOnMainThread() override {
@@ -325,7 +326,46 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesUsingExceptions) {
   ASSERT_FALSE(GetCookies(browser()->profile(), unblocked_url).empty());
 }
 
-INSTANTIATE_TEST_CASE_P(
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksCacheStorage) {
+  ui_test_utils::NavigateToURL(browser(), GetPageURL());
+  content_settings::CookieSettings* settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile()).get();
+  settings->SetCookieSetting(GetPageURL(), CONTENT_SETTING_BLOCK);
+
+  const char kBaseExpected[] =
+      "%s - SecurityError: An attempt was made to break through the security "
+      "policy of the user agent.";
+
+  const char kBaseScript[] =
+      "(async function() {"
+      "  const name = `%s`;"
+      "  try {"
+      "    await %s;"
+      "  } catch(e) {"
+      "    return `${name} - ${e.toString()}`;"
+      "  }"
+      "  return `${name} - success`;"
+      "}())";
+
+  const std::vector<std::string> kTestOps({
+      "caches.open('foo')",
+      "caches.has('foo')",
+      "caches.keys()",
+      "caches.delete('foo')",
+      "caches.match('/')",
+  });
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  for (auto& op : kTestOps) {
+    EXPECT_EQ(
+        base::StringPrintf(kBaseExpected, op.data()),
+        EvalJs(tab, base::StringPrintf(kBaseScript, op.data(), op.data())));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     CookieSettingsTest,
     ::testing::Values(CookieMode::kJSReadJSWrite,
@@ -412,7 +452,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsStrictSecureCookiesBrowserTest, Cookies) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  https_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_server.Start());
 
   GURL http_url = embedded_test_server()->GetURL("/setsecurecookie.html");
@@ -424,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsStrictSecureCookiesBrowserTest, Cookies) {
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("/setsecurecookie.html"));
   EXPECT_FALSE(GetSiteSettingsCookieContainer(browser())->cookies()->empty());
-};
+}
 
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
   GURL url("data:text/html,<title>Data URL</title><script>alert(1)</script>");

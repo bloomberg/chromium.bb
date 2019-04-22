@@ -7,6 +7,7 @@
 
 #include <oleacc.h>
 #include <wrl/client.h>
+#include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -52,12 +53,11 @@ class AXPlatformRelationWin : public CComObjectRootEx<CComMultiThreadModel>,
   // |out_ia2_relation| and |out_targets| (both of which must not be null),
   // and it will return 1 on success, and 0 if none were found matching that
   // criteria.
-  static int EnumerateRelationships(const AXNodeData& node_data,
-                                    AXPlatformNodeDelegate* delegate,
+  static int EnumerateRelationships(AXPlatformNodeBase* node,
                                     int desired_index,
                                     const base::string16& desired_ia2_relation,
                                     base::string16* out_ia2_relation,
-                                    std::set<int32_t>* out_targets);
+                                    std::set<AXPlatformNode*>* out_targets);
 
   void Initialize(const base::string16& type);
   void Invalidate();
@@ -79,4 +79,4 @@ class AXPlatformRelationWin : public CComObjectRootEx<CComMultiThreadModel>,
 
 }  // namespace ui
 
-#endif  // UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_WIN_H_
+#endif  // UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_RELATION_WIN_H_

@@ -2,8 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import os
 import platform
+import socket
+import subprocess
 import sys
 
 DIR_SOURCE_ROOT = os.path.abspath(
@@ -39,3 +42,45 @@ def GetQemuRootForPlatform():
   return os.path.join(DIR_SOURCE_ROOT, 'third_party',
                       'qemu-' + GetHostOsFromPlatform() + '-' +
                        GetHostArchFromPlatform())
+
+def ConnectPortForwardingTask(target, local_port, remote_port = 0):
+  """Establishes a port forwarding SSH task to a localhost TCP endpoint hosted
+  at port |local_port|. Blocks until port forwarding is established.
+
+  Returns the remote port number."""
+
+  forwarding_flags = ['-O', 'forward',  # Send SSH mux control signal.
+                      '-R', '%d:localhost:%d' % (remote_port, local_port),
+                      '-v',   # Get forwarded port info from stderr.
+                      '-NT']  # Don't execute command; don't allocate terminal.
+
+  if remote_port != 0:
+    # Forward to a known remote port.
+    task = target.RunCommand([], ssh_args=forwarding_flags)
+    if task.returncode != 0:
+      raise Exception('Could not establish a port forwarding connection.')
+    return
+
+  task = target.RunCommandPiped([],
+                                ssh_args=forwarding_flags,
+                                stdout=subprocess.PIPE,
+                                stderr=open('/dev/null'))
+  output = task.stdout.readlines()
+  task.wait()
+  if task.returncode != 0:
+    raise Exception('Got an error code when requesting port forwarding: %d' %
+                    task.returncode)
+
+  parsed_port = int(output[0].strip())
+  logging.debug('Port forwarding established (local=%d, device=%d)' %
+                (local_port, parsed_port))
+  return parsed_port
+
+
+def GetAvailableTcpPort():
+  """Finds a (probably) open port by opening and closing a listen socket."""
+  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  sock.bind(("", 0))
+  port = sock.getsockname()[1]
+  sock.close()
+  return port

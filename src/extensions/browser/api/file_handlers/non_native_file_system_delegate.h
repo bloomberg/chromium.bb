@@ -28,6 +28,11 @@ class NonNativeFileSystemDelegate {
   virtual bool IsUnderNonNativeLocalPath(content::BrowserContext* context,
                                          const base::FilePath& path) = 0;
 
+  // Checks whether |path| points to a filesystem that requires special handling
+  // for retrieving mime types.
+  virtual bool HasNonNativeMimeTypeProvider(content::BrowserContext* context,
+                                            const base::FilePath& path) = 0;
+
   // Returns the mime type of the file pointed by |path|, and asynchronously
   // sends the result to |callback|.
   virtual void GetNonNativeLocalPathMimeType(

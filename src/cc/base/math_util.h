@@ -30,12 +30,13 @@ namespace gfx {
 class QuadF;
 class Rect;
 class RectF;
+class RRectF;
 class SizeF;
 class Transform;
 class Vector2dF;
 class Vector2d;
 class Vector3dF;
-}
+}  // namespace gfx
 
 namespace cc {
 
@@ -278,6 +279,9 @@ class CC_BASE_EXPORT MathUtil {
   static void AddToTracedValue(const char* name,
                                const gfx::BoxF& box,
                                base::trace_event::TracedValue* res);
+  static void AddToTracedValue(const char* name,
+                               const gfx::RRectF& rect,
+                               base::trace_event::TracedValue* res);
 
   // Returns a base::Value representation of the floating point value.
   // If the value is inf, returns max double/float representation.
@@ -312,13 +316,16 @@ class CC_BASE_EXPORT MathUtil {
 class CC_BASE_EXPORT ScopedSubnormalFloatDisabler {
  public:
   ScopedSubnormalFloatDisabler();
+  ScopedSubnormalFloatDisabler(const ScopedSubnormalFloatDisabler&) = delete;
   ~ScopedSubnormalFloatDisabler();
 
- private:
+  ScopedSubnormalFloatDisabler& operator=(const ScopedSubnormalFloatDisabler&) =
+      delete;
+
 #if defined(ARCH_CPU_X86_FAMILY)
+ private:
   unsigned int orig_state_;
 #endif
-  DISALLOW_COPY_AND_ASSIGN(ScopedSubnormalFloatDisabler);
 };
 
 }  // namespace cc

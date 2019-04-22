@@ -38,8 +38,8 @@
 
   XCTAssertGreaterThan([stacklines count], (NSUInteger)3,
                        @"stack trace must have > 3 lines");
-  XCTAssertLessThan([stacklines count], (NSUInteger)35,
-                    @"stack trace must have < 35 lines");
+  XCTAssertLessThan([stacklines count], (NSUInteger)100,
+                    @"stack trace must have < 100 lines");
 
   NSString *firstFrame = [stacklines objectAtIndex:0];
   NSRange range = [firstFrame rangeOfString:@"testStackTraceBasic"];
@@ -103,8 +103,8 @@
 
   XCTAssertGreaterThan([stacklines count], (NSUInteger)4,
                        @"stack trace must have > 4 lines\n%@", stacktrace);
-  XCTAssertLessThan([stacklines count], (NSUInteger)40,
-                    @"stack trace must have < 40 lines\n%@", stacktrace);
+  XCTAssertLessThan([stacklines count], (NSUInteger)100,
+                    @"stack trace must have < 100 lines\n%@", stacktrace);
   XCTAssertEqual([stacklines count],
                  [[exception callStackReturnAddresses] count],
                  @"stack trace should have the same number of lines as the "

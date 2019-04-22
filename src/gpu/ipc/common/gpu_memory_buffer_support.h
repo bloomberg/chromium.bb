@@ -58,7 +58,7 @@ class GPU_EXPORT GpuMemoryBufferSupport {
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      const GpuMemoryBufferImpl::DestructionCallback& callback);
+      GpuMemoryBufferImpl::DestructionCallback callback);
 
  private:
 #if defined(OS_LINUX) || defined(USE_OZONE)

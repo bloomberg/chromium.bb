@@ -12,6 +12,16 @@
 // Color to set in interactable elements for manual fill (0.1, 0.45, 0.91 RGB).
 @property(class, nonatomic, readonly) UIColor* cr_manualFillTintColor;
 
+// Color for the text in manual fill chips.
+@property(class, nonatomic, readonly) UIColor* cr_manualFillChipDarkTextColor;
+
+// Color for the manual fill chips.
+@property(class, nonatomic, readonly) UIColor* cr_manualFillChipColor;
+
+// Color for the highlighted manual fill chips.
+@property(class, nonatomic, readonly)
+    UIColor* cr_manualFillHighlightedChipColor;
+
 // Color for the line separators in manual fill (0.66, 0.66, 0.66 RGB).
 @property(class, nonatomic, readonly) UIColor* cr_manualFillSeparatorColor;
 

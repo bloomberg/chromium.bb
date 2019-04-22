@@ -282,6 +282,20 @@ inline VkSampleLocationsInfoEXT makeSampleLocationsInfo (const MultisamplePixelG
 	return info;
 }
 
+inline VkSampleLocationsInfoEXT makeEmptySampleLocationsInfo ()
+{
+	const VkSampleLocationsInfoEXT info =
+	{
+		VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT,				// VkStructureType               sType;
+		DE_NULL,													// const void*                   pNext;
+		(VkSampleCountFlagBits)0,									// VkSampleCountFlagBits         sampleLocationsPerPixel;
+		makeExtent2D(0,0),											// VkExtent2D                    sampleLocationGridSize;
+		0,															// uint32_t                      sampleLocationsCount;
+		DE_NULL,													// const VkSampleLocationEXT*    pSampleLocations;
+	};
+	return info;
+}
+
 void logPixelGrid (tcu::TestLog& log, const VkPhysicalDeviceSampleLocationsPropertiesEXT& sampleLocationsProperties, const MultisamplePixelGrid& pixelGrid)
 {
 	log << tcu::TestLog::Section("pixelGrid", "Multisample pixel grid configuration:")
@@ -1600,7 +1614,7 @@ protected:
 
 			pipeline = makeGraphicsPipelineSinglePassColor(
 				vk, device, dynamicState, *pipelineLayout, rt.getRenderPass(), *vertexModule, *fragmentModule, viewport, scissor,
-				m_params.numSamples, /*use sample locations*/ true, VkSampleLocationsInfoEXT(), vertexInputConfig, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+				m_params.numSamples, /*use sample locations*/ true, makeEmptySampleLocationsInfo(), vertexInputConfig, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 		}
 		else
 		{
@@ -1643,7 +1657,7 @@ protected:
 		endCommandBuffer(vk, *cmdBuffer);
 		submitCommandsAndWait(vk, device, m_context.getUniversalQueue(), *cmdBuffer);
 
-		invalidateMappedMemoryRange(vk, device, m_colorBufferAlloc->getMemory(), m_colorBufferAlloc->getOffset(), VK_WHOLE_SIZE);
+		invalidateAlloc(vk, device, *m_colorBufferAlloc);
 	}
 
 	void createSampleDataBufferAndDescriptors (const VkDeviceSize bufferSize)
@@ -1677,7 +1691,7 @@ protected:
 		SampleDataSSBO::gridSize		(m_sampleDataBufferAlloc->getHostPtr()) = m_pixelGrid->size();
 		SampleDataSSBO::samplesPerPixel	(m_sampleDataBufferAlloc->getHostPtr()) = m_pixelGrid->samplesPerPixel();
 
-		flushMappedMemoryRange(vk, device, m_sampleDataBufferAlloc->getMemory(), m_sampleDataBufferAlloc->getOffset(), VK_WHOLE_SIZE);
+		flushAlloc(vk, device, *m_sampleDataBufferAlloc);
 	}
 
 	template<typename Vertex>
@@ -1693,7 +1707,7 @@ protected:
 		m_vertexBufferAlloc = bindBuffer(vk, device, allocator, *m_vertexBuffer, MemoryRequirement::HostVisible);
 
 		deMemcpy(m_vertexBufferAlloc->getHostPtr(), dataOrNullPtr(vertices), static_cast<std::size_t>(vertexBufferSize));
-		flushMappedMemoryRange(vk, device, m_vertexBufferAlloc->getMemory(), m_vertexBufferAlloc->getOffset(), VK_WHOLE_SIZE);
+		flushAlloc(vk, device, *m_vertexBufferAlloc);
 	}
 
 	const TestParams									m_params;
@@ -1792,7 +1806,7 @@ public:
 			DE_ASSERT(locations.size() == numDataEntries);
 			std::copy(locations.begin(), locations.end(), pSampleData);
 
-			flushMappedMemoryRange(m_context.getDeviceInterface(), m_context.getDevice(), m_sampleDataBufferAlloc->getMemory(), m_sampleDataBufferAlloc->getOffset(), VK_WHOLE_SIZE);
+			flushAlloc(m_context.getDeviceInterface(), m_context.getDevice(), *m_sampleDataBufferAlloc);
 		}
 
 		drawSinglePass(VERTEX_INPUT_VEC4_VEC4);	// sample locations are taken from the pixel grid
@@ -2089,7 +2103,7 @@ public:
 			m_vertexBufferAlloc = bindBuffer(vk, device, allocator, *m_vertexBuffer, MemoryRequirement::HostVisible);
 
 			deMemcpy(m_vertexBufferAlloc->getHostPtr(), dataOrNullPtr(vertices), static_cast<std::size_t>(vertexBufferSize));
-			flushMappedMemoryRange(vk, device, m_vertexBufferAlloc->getMemory(), m_vertexBufferAlloc->getOffset(), VK_WHOLE_SIZE);
+			flushAlloc(vk, device, *m_vertexBufferAlloc);
 		}
 
 		// Multisample pixel grids - set up two sample patterns for two draw passes
@@ -2325,7 +2339,7 @@ protected:
 		endCommandBuffer(vk, *cmdBuffer);
 		submitCommandsAndWait(vk, device, m_context.getUniversalQueue(), *cmdBuffer);
 
-		invalidateMappedMemoryRange(vk, device, m_colorBufferAlloc->getMemory(), m_colorBufferAlloc->getOffset(), VK_WHOLE_SIZE);
+		invalidateAlloc(vk, device, *m_colorBufferAlloc);
 	}
 
 	//! Draw two shapes with distinct sample patterns, each in its own render pass
@@ -2467,7 +2481,7 @@ protected:
 			{
 				pipeline[passNdx] = makeGraphicsPipeline(
 					vk, device, dynamicState, *pipelineLayout, rt[passNdx].getRenderPass(), *vertexModule, *fragmentModule,
-					/*subpass index*/ 0u, viewport, scissor, m_params.numSamples, /*use sample locations*/ true, VkSampleLocationsInfoEXT(),
+					/*subpass index*/ 0u, viewport, scissor, m_params.numSamples, /*use sample locations*/ true, makeEmptySampleLocationsInfo(),
 					useDepth(), useStencil(), VERTEX_INPUT_VEC4_VEC4, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, stencilOpStateDrawOnce());
 			}
 		}
@@ -2693,7 +2707,7 @@ protected:
 			VK_CHECK(vk.waitForFences(device, 1u, &fence.get(), DE_TRUE, ~0ull));
 		}
 
-		invalidateMappedMemoryRange(vk, device, m_colorBufferAlloc->getMemory(), m_colorBufferAlloc->getOffset(), VK_WHOLE_SIZE);
+		invalidateAlloc(vk, device, *m_colorBufferAlloc);
 	}
 
 	void recordFirstPassContents (const VkCommandBuffer				cmdBuffer,
@@ -2842,7 +2856,7 @@ protected:
 			{
 				pipeline[passNdx] = makeGraphicsPipeline(
 					vk, device, dynamicState, *pipelineLayout, rt.getRenderPass(), *vertexModule, *fragmentModule,
-					/*subpass*/ passNdx, viewport, scissor, m_params.numSamples, /*use sample locations*/ true, VkSampleLocationsInfoEXT(),
+					/*subpass*/ passNdx, viewport, scissor, m_params.numSamples, /*use sample locations*/ true, makeEmptySampleLocationsInfo(),
 					useDepth(), useStencil(), VERTEX_INPUT_VEC4_VEC4, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, stencilOpStateDrawOnce());
 			}
 		}
@@ -2910,7 +2924,7 @@ protected:
 		endCommandBuffer(vk, *cmdBuffer);
 
 		submitCommandsAndWait(vk, device, m_context.getUniversalQueue(), *cmdBuffer);
-		invalidateMappedMemoryRange(vk, device, m_colorBufferAlloc->getMemory(), m_colorBufferAlloc->getOffset(), VK_WHOLE_SIZE);
+		invalidateAlloc(vk, device, *m_colorBufferAlloc);
 	}
 
 	//! Draw two shapes within the same subpass of a renderpass
@@ -3008,7 +3022,7 @@ protected:
 			{
 				pipeline[passNdx] = makeGraphicsPipeline(
 					vk, device, dynamicState, *pipelineLayout, rt.getRenderPass(), *vertexModule, *fragmentModule,
-					/*subpass*/ 0u, viewport, scissor, m_params.numSamples, /*use sample locations*/ true, VkSampleLocationsInfoEXT(),
+					/*subpass*/ 0u, viewport, scissor, m_params.numSamples, /*use sample locations*/ true, makeEmptySampleLocationsInfo(),
 					useDepth(), useStencil(), VERTEX_INPUT_VEC4_VEC4, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, stencilOpStateDrawOnce());
 			}
 		}
@@ -3065,7 +3079,7 @@ protected:
 		endCommandBuffer(vk, *cmdBuffer);
 
 		submitCommandsAndWait(vk, device, m_context.getUniversalQueue(), *cmdBuffer);
-		invalidateMappedMemoryRange(vk, device, m_colorBufferAlloc->getMemory(), m_colorBufferAlloc->getOffset(), VK_WHOLE_SIZE);
+		invalidateAlloc(vk, device, *m_colorBufferAlloc);
 	}
 
 	const TestParams									m_params;

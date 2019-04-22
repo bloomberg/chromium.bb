@@ -9,6 +9,8 @@
 
 #include <link.h>
 #include <sys/mman.h>
+#include <sys/resource.h>
+#include <sys/time.h>
 
 #include "base/bit_cast.h"
 #include "base/logging.h"
@@ -60,6 +62,10 @@ static void* GetTransparentHugepageMapping(const size_t hsize) {
     PLOG(INFO) << "no transparent hugepage support, fall back to small page";
     munmap(haddr, hsize);
     return NULL;
+  }
+
+  if (mlock(haddr, hsize)) {
+    PLOG(INFO) << "Mlocking text pages failed";
   }
   return haddr;
 }
@@ -143,6 +149,9 @@ static void RemapHugetlbText(void* vaddr, const size_t segsize) {
 // it and find the first segment that has PT_LOAD and is executable, call
 // RemapHugetlbText().
 //
+// Additionally, since these pages are important, we attempt to lock them into
+// memory.
+//
 // Inputs: info: pointer to a struct dl_phdr_info that describes the DSO.
 //         size: size of the above structure (not used in this function).
 //         data: user param (not used in this function).
@@ -150,6 +159,11 @@ static void RemapHugetlbText(void* vaddr, const size_t segsize) {
 static int FilterElfHeader(struct dl_phdr_info* info, size_t size, void* data) {
   void* vaddr;
   int segsize;
+
+  // From dl_iterate_phdr's man page: "The first object visited by callback is
+  // the main program.  For the main program, the dlpi_name field will be an
+  // empty string." Hence, no "is this the Chrome we're looking for?" checks are
+  // necessary.
 
   for (int i = 0; i < info->dlpi_phnum; i++) {
     if (info->dlpi_phdr[i].p_type == PT_LOAD &&
@@ -166,11 +180,11 @@ static int FilterElfHeader(struct dl_phdr_info* info, size_t size, void* data) {
   return 1;
 }
 
-// Main library function.  This function will iterate all ELF segments and
-// attempt to remap text segment from small page to hugepage.
-// If remapping is successful.  All error conditions are soft fail such that
-// effect will be rolled back and remap operation will be aborted.
-void ReloadElfTextInHugePages(void) {
+// Main function. This function will iterate all ELF segments, attempt to remap
+// parts of the text segment from small page to hugepage, and mlock in all of
+// the hugepages. Any errors will cause the failing piece of this to be rolled
+// back, so nothing world-ending can come from this function (hopefully ;) ).
+void InitHugepagesAndMlockSelf(void) {
   dl_iterate_phdr(FilterElfHeader, 0);
 }
 

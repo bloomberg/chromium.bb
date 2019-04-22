@@ -42,7 +42,7 @@ class SearchSuggestionParser {
   //           highly fragmented SearchProvider logic for each Result type.
   class Result {
    public:
-    Result(bool from_keyword_provider,
+    Result(bool from_keyword,
            int relevance,
            bool relevance_from_server,
            AutocompleteMatchType::Type type,
@@ -51,7 +51,7 @@ class SearchSuggestionParser {
     Result(const Result& other);
     virtual ~Result();
 
-    bool from_keyword_provider() const { return from_keyword_provider_; }
+    bool from_keyword() const { return from_keyword_; }
 
     const base::string16& match_contents() const { return match_contents_; }
     const ACMatchClassifications& match_contents_class() const {
@@ -89,8 +89,8 @@ class SearchSuggestionParser {
     base::string16 match_contents_;
     ACMatchClassifications match_contents_class_;
 
-    // True if the result came from the keyword provider.
-    bool from_keyword_provider_;
+    // True if the result came from a keyword suggestion.
+    bool from_keyword_;
 
     AutocompleteMatchType::Type type_;
 
@@ -127,7 +127,7 @@ class SearchSuggestionParser {
     SuggestResult(const base::string16& suggestion,
                   AutocompleteMatchType::Type type,
                   int subtype_identifier,
-                  bool from_keyword_provider,
+                  bool from_keyword,
                   int relevance,
                   bool relevance_from_server,
                   const base::string16& input_text);
@@ -141,7 +141,7 @@ class SearchSuggestionParser {
                   const std::string& deletion_url,
                   const std::string& image_dominant_color,
                   const std::string& image_url,
-                  bool from_keyword_provider,
+                  bool from_keyword,
                   int relevance,
                   bool relevance_from_server,
                   bool should_prefetch,
@@ -220,14 +220,18 @@ class SearchSuggestionParser {
                      int subtype_identifier,
                      const base::string16& description,
                      const std::string& deletion_url,
-                     bool from_keyword_provider,
+                     bool from_keyword,
                      int relevance,
                      bool relevance_from_server,
                      const base::string16& input_text);
+    NavigationResult(const NavigationResult& other);
     ~NavigationResult() override;
 
     const GURL& url() const { return url_; }
     const base::string16& description() const { return description_; }
+    const ACMatchClassifications& description_class() const {
+      return description_class_;
+    }
     const base::string16& formatted_url() const { return formatted_url_; }
 
     // Fills in |match_contents_| and |match_contents_class_| to reflect how
@@ -242,6 +246,8 @@ class SearchSuggestionParser {
                            bool keyword_provider_requested) const override;
 
    private:
+    void ClassifyDescription(const base::string16& input_text);
+
     // The suggested url for navigation.
     GURL url_;
 
@@ -251,6 +257,7 @@ class SearchSuggestionParser {
 
     // The suggested navigational result description; generally the site name.
     base::string16 description_;
+    ACMatchClassifications description_class_;
   };
 
   typedef std::vector<SuggestResult> SuggestResults;
@@ -330,16 +337,6 @@ class SearchSuggestionParser {
       int default_result_relevance,
       bool is_keyword_result,
       Results* results);
-
-  // Creates or returns a WordMap for |input_text|. A WordMap is a mapping from
-  // characters to groups of words that start with those characters. See
-  // comments by AutocompleteProvider::CreateWordMapForString() for details.
-  static const AutocompleteProvider::WordMap& GetOrCreateWordMapForInputText(
-      const base::string16& input_text);
-
- private:
-  static std::pair<base::string16, AutocompleteProvider::WordMap>&
-  GetWordMapCache();
 
   DISALLOW_COPY_AND_ASSIGN(SearchSuggestionParser);
 };

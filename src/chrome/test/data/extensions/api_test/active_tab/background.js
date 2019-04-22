@@ -100,8 +100,7 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
           'respective host.'));
 
   chrome.automation.getTree(callbackFail(
-      'Cannot request automation tree on url "' + details.url +
-      '". Extension manifest must request permission to access this host.'));
+      'Failed request of automation on a page'));
 
   assertFalse(canXhr(details.url));
 });

@@ -192,7 +192,7 @@ void ResourceReporter::OnTasksRefreshedWithBackgroundCalculations(
   // Schedule reporting the samples.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ResourceReporter::ReportSamples, base::Unretained(this)));
+      base::BindOnce(&ResourceReporter::ReportSamples, base::Unretained(this)));
 }
 
 ResourceReporter::ResourceReporter()

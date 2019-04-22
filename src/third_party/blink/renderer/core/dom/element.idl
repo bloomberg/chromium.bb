@@ -140,10 +140,10 @@ interface Element : Node {
     attribute EventHandler onbeforepaste;
     attribute EventHandler onsearch;
 
-    // Display locking.
-    [RuntimeEnabled=DisplayLocking, CallWith=ScriptState] Promise acquireDisplayLock(DisplayLockCallback callback);
+    // Display locking. Returns a display lock context.
+    [RuntimeEnabled=DisplayLocking, ImplementedAs=getDisplayLockForBindings] readonly attribute DisplayLockContext displayLock;
 };
 
-Element implements ParentNode;
-Element implements ChildNode;
-Element implements NonDocumentTypeChildNode;
+Element includes ParentNode;
+Element includes ChildNode;
+Element includes NonDocumentTypeChildNode;

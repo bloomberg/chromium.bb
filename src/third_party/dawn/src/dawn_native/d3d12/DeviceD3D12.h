@@ -31,53 +31,52 @@ namespace dawn_native { namespace d3d12 {
     class MapRequestTracker;
     class PlatformFunctions;
     class ResourceAllocator;
-    class ResourceUploader;
 
     void ASSERT_SUCCESS(HRESULT hr);
 
     // Definition of backend types
     class Device : public DeviceBase {
       public:
-        Device();
+        Device(Adapter* adapter, ComPtr<ID3D12Device> d3d12Device);
         ~Device();
 
-        BindGroupBase* CreateBindGroup(BindGroupBuilder* builder) override;
-        BlendStateBase* CreateBlendState(BlendStateBuilder* builder) override;
-        BufferViewBase* CreateBufferView(BufferViewBuilder* builder) override;
-        CommandBufferBase* CreateCommandBuffer(CommandBufferBuilder* builder) override;
-        DepthStencilStateBase* CreateDepthStencilState(DepthStencilStateBuilder* builder) override;
-        InputStateBase* CreateInputState(InputStateBuilder* builder) override;
-        RenderPassDescriptorBase* CreateRenderPassDescriptor(
-            RenderPassDescriptorBuilder* builder) override;
-        RenderPipelineBase* CreateRenderPipeline(RenderPipelineBuilder* builder) override;
-        SwapChainBase* CreateSwapChain(SwapChainBuilder* builder) override;
+        CommandBufferBase* CreateCommandBuffer(CommandEncoderBase* encoder) override;
 
+        Serial GetCompletedCommandSerial() const final override;
+        Serial GetLastSubmittedCommandSerial() const final override;
         void TickImpl() override;
 
-        const dawn_native::PCIInfo& GetPCIInfo() const override;
+        ComPtr<ID3D12Device> GetD3D12Device() const;
+        ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
 
-        ComPtr<IDXGIFactory4> GetFactory();
-        ComPtr<ID3D12Device> GetD3D12Device();
-        ComPtr<ID3D12CommandQueue> GetCommandQueue();
-
-        DescriptorHeapAllocator* GetDescriptorHeapAllocator();
+        DescriptorHeapAllocator* GetDescriptorHeapAllocator() const;
         MapRequestTracker* GetMapRequestTracker() const;
-        const PlatformFunctions* GetFunctions();
-        ResourceAllocator* GetResourceAllocator();
-        ResourceUploader* GetResourceUploader();
+        ResourceAllocator* GetResourceAllocator() const;
+
+        const PlatformFunctions* GetFunctions() const;
+        ComPtr<IDXGIFactory4> GetFactory() const;
 
         void OpenCommandList(ComPtr<ID3D12GraphicsCommandList>* commandList);
         ComPtr<ID3D12GraphicsCommandList> GetPendingCommandList();
+        Serial GetPendingCommandSerial() const override;
 
-        uint64_t GetSerial() const;
         void NextSerial();
-        void WaitForSerial(uint64_t serial);
+        void WaitForSerial(Serial serial);
 
         void ReferenceUntilUnused(ComPtr<IUnknown> object);
 
         void ExecuteCommandLists(std::initializer_list<ID3D12CommandList*> commandLists);
 
+        ResultOrError<std::unique_ptr<StagingBufferBase>> CreateStagingBuffer(size_t size) override;
+        MaybeError CopyFromStagingToBuffer(StagingBufferBase* source,
+                                           uint64_t sourceOffset,
+                                           BufferBase* destination,
+                                           uint64_t destinationOffset,
+                                           uint64_t size) override;
+
       private:
+        ResultOrError<BindGroupBase*> CreateBindGroupImpl(
+            const BindGroupDescriptor* descriptor) override;
         ResultOrError<BindGroupLayoutBase*> CreateBindGroupLayoutImpl(
             const BindGroupLayoutDescriptor* descriptor) override;
         ResultOrError<BufferBase*> CreateBufferImpl(const BufferDescriptor* descriptor) override;
@@ -86,25 +85,23 @@ namespace dawn_native { namespace d3d12 {
         ResultOrError<PipelineLayoutBase*> CreatePipelineLayoutImpl(
             const PipelineLayoutDescriptor* descriptor) override;
         ResultOrError<QueueBase*> CreateQueueImpl() override;
+        ResultOrError<RenderPipelineBase*> CreateRenderPipelineImpl(
+            const RenderPipelineDescriptor* descriptor) override;
         ResultOrError<SamplerBase*> CreateSamplerImpl(const SamplerDescriptor* descriptor) override;
         ResultOrError<ShaderModuleBase*> CreateShaderModuleImpl(
             const ShaderModuleDescriptor* descriptor) override;
+        ResultOrError<SwapChainBase*> CreateSwapChainImpl(
+            const SwapChainDescriptor* descriptor) override;
         ResultOrError<TextureBase*> CreateTextureImpl(const TextureDescriptor* descriptor) override;
         ResultOrError<TextureViewBase*> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
-        void CollectPCIInfo();
 
-        // Keep mFunctions as the first member so that in the destructor it is freed. Otherwise the
-        // D3D12 DLLs are unloaded before we are done using it.
-        std::unique_ptr<PlatformFunctions> mFunctions;
-
-        uint64_t mSerial = 0;
+        Serial mCompletedSerial = 0;
+        Serial mLastSubmittedSerial = 0;
         ComPtr<ID3D12Fence> mFence;
         HANDLE mFenceEvent;
 
-        ComPtr<IDXGIFactory4> mFactory;
-        ComPtr<IDXGIAdapter1> mHardwareAdapter;
         ComPtr<ID3D12Device> mD3d12Device;
         ComPtr<ID3D12CommandQueue> mCommandQueue;
 
@@ -119,7 +116,6 @@ namespace dawn_native { namespace d3d12 {
         std::unique_ptr<DescriptorHeapAllocator> mDescriptorHeapAllocator;
         std::unique_ptr<MapRequestTracker> mMapRequestTracker;
         std::unique_ptr<ResourceAllocator> mResourceAllocator;
-        std::unique_ptr<ResourceUploader> mResourceUploader;
 
         dawn_native::PCIInfo mPCIInfo;
     };

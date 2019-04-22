@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <xf86drmMode.h>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -70,6 +71,9 @@ class HardwareDisplayPlaneManager {
   // Sets the color transform matrix (a 3x3 matrix represented in vector form)
   // on the CRTC with ID |crtc_id|.
   bool SetColorMatrix(uint32_t crtc_id, const std::vector<float>& color_matrix);
+
+  // Sets the background color on the CRTC object with ID |crtc_id|.
+  void SetBackgroundColor(uint32_t crtc_id, const uint64_t background_color);
 
   // Sets the degamma/gamma luts on the CRTC object with ID |crtc_id|.
   bool SetGammaCorrection(
@@ -141,6 +145,7 @@ class HardwareDisplayPlaneManager {
     DrmDevice::Property degamma_lut;
     DrmDevice::Property degamma_lut_size;
     DrmDevice::Property out_fence_ptr;
+    DrmDevice::Property background_color;
   };
 
   struct CrtcState {

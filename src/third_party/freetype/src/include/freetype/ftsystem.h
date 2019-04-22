@@ -4,7 +4,7 @@
  *
  *   FreeType low-level system interface definition (specification).
  *
- * Copyright 1996-2018 by
+ * Copyright (C) 1996-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -281,7 +281,7 @@ FT_BEGIN_HEADER
    * @input:
    *   base ::
    *     For memory-based streams, this is the address of the first stream
-   *     byte in memory.  This field should always be set to NULL for
+   *     byte in memory.  This field should always be set to `NULL` for
    *     disk-based streams.
    *
    *   size ::

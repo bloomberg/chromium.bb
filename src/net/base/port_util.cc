@@ -107,7 +107,7 @@ bool IsWellKnownPort(int port) {
   return port >= 0 && port < 1024;
 }
 
-bool IsPortAllowedForScheme(int port, const std::string& url_scheme) {
+bool IsPortAllowedForScheme(int port, base::StringPiece url_scheme) {
   // Reject invalid ports.
   if (!IsPortValid(port))
     return false;

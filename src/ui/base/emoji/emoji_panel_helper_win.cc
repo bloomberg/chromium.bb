@@ -6,18 +6,15 @@
 
 #include <windows.h>
 
-#include "base/feature_list.h"
 #include "base/win/windows_version.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 
 namespace ui {
 
 bool IsEmojiPanelSupported() {
-  return base::FeatureList::IsEnabled(features::kEnableEmojiContextMenu) &&
-         // Emoji picker is supported on Windows 10's Spring 2018 Update and
-         // above.
-         base::win::GetVersion() >= base::win::Version::VERSION_WIN10_RS4;
+  // Emoji picker is supported on Windows 10's Spring 2018 Update and
+  // above.
+  return base::win::GetVersion() >= base::win::Version::VERSION_WIN10_RS4;
 }
 
 void ShowEmojiPanel() {

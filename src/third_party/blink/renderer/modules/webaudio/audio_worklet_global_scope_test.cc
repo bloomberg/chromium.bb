@@ -6,10 +6,11 @@
 
 #include <memory>
 
+#include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -68,21 +69,24 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
     Document* document = &GetDocument();
     thread->Start(
         std::make_unique<GlobalScopeCreationParams>(
-            document->Url(), mojom::ScriptType::kModule, document->UserAgent(),
-            nullptr /* web_worker_fetch_context */, Vector<CSPHeaderAndType>(),
-            document->GetReferrerPolicy(), document->GetSecurityOrigin(),
-            document->IsSecureContext(), document->GetHttpsState(),
-            nullptr /* worker_clients */, document->AddressSpace(),
+            document->Url(), mojom::ScriptType::kModule,
+            OffMainThreadWorkerScriptFetchOption::kEnabled, "AudioWorklet",
+            document->UserAgent(), nullptr /* web_worker_fetch_context */,
+            Vector<CSPHeaderAndType>(), document->GetReferrerPolicy(),
+            document->GetSecurityOrigin(), document->IsSecureContext(),
+            document->GetHttpsState(), nullptr /* worker_clients */,
+            document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             base::UnguessableToken::Create(), nullptr /* worker_settings */,
-            kV8CacheOptionsDefault, new WorkletModuleResponsesMap),
+            kV8CacheOptionsDefault,
+            MakeGarbageCollected<WorkletModuleResponsesMap>()),
         base::nullopt, std::make_unique<WorkerDevToolsParams>(),
         ParentExecutionContextTaskRunners::Create());
     return thread;
   }
 
   void RunBasicTest(WorkerThread* thread) {
-    WaitableEvent waitable_event;
+    base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
         CrossThreadBind(
@@ -93,7 +97,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
   }
 
   void RunSimpleProcessTest(WorkerThread* thread) {
-    WaitableEvent waitable_event;
+    base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
         CrossThreadBind(
@@ -104,7 +108,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
   }
 
   void RunParsingTest(WorkerThread* thread) {
-    WaitableEvent waitable_event;
+    base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
         CrossThreadBind(
@@ -115,7 +119,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
   }
 
   void RunParsingParameterDescriptorTest(WorkerThread* thread) {
-    WaitableEvent waitable_event;
+    base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
         CrossThreadBind(&AudioWorkletGlobalScopeTest::
@@ -134,7 +138,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         global_scope->ScriptController()->GetScriptState();
     EXPECT_TRUE(script_state);
     KURL js_url("https://example.com/worklet.js");
-    ScriptModule module = ScriptModule::Compile(
+    ModuleRecord module = ModuleRecord::Compile(
         script_state->GetIsolate(), source_code, js_url, js_url,
         ScriptFetchOptions(), TextPosition::MinimumPosition(),
         ASSERT_NO_EXCEPTION);
@@ -150,7 +154,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
   // if the class definition is correctly registered, then instantiate an
   // AudioWorkletProcessor instance from the definition.
   void RunBasicTestOnWorkletThread(WorkerThread* thread,
-                                   WaitableEvent* wait_event) {
+                                   base::WaitableEvent* wait_event) {
     EXPECT_TRUE(thread->IsCurrentThread());
 
     auto* global_scope = To<AudioWorkletGlobalScope>(thread->GlobalScope());
@@ -178,9 +182,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         global_scope->FindDefinition("testProcessor");
     EXPECT_TRUE(definition);
     EXPECT_EQ(definition->GetName(), "testProcessor");
-    EXPECT_TRUE(definition->ConstructorLocal(isolate)->IsFunction());
-    EXPECT_TRUE(definition->ProcessLocal(isolate)->IsFunction());
-    MessageChannel* channel = MessageChannel::Create(thread->GlobalScope());
+    auto* channel = MakeGarbageCollected<MessageChannel>(thread->GlobalScope());
     MessagePortChannel dummy_port_channel = channel->port2()->Disentangle();
 
     AudioWorkletProcessor* processor =
@@ -198,7 +200,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
 
   // Test if various class definition patterns are parsed correctly.
   void RunParsingTestOnWorkletThread(WorkerThread* thread,
-                                     WaitableEvent* wait_event) {
+                                     base::WaitableEvent* wait_event) {
     EXPECT_TRUE(thread->IsCurrentThread());
 
     auto* global_scope = To<AudioWorkletGlobalScope>(thread->GlobalScope());
@@ -253,7 +255,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
   // Test if the invocation of process() method in AudioWorkletProcessor and
   // AudioWorkletGlobalScope is performed correctly.
   void RunSimpleProcessTestOnWorkletThread(WorkerThread* thread,
-                                           WaitableEvent* wait_event) {
+                                           base::WaitableEvent* wait_event) {
     EXPECT_TRUE(thread->IsCurrentThread());
 
     auto* global_scope = To<AudioWorkletGlobalScope>(thread->GlobalScope());
@@ -281,7 +283,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         )JS";
     ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
 
-    MessageChannel* channel = MessageChannel::Create(thread->GlobalScope());
+    auto* channel = MakeGarbageCollected<MessageChannel>(thread->GlobalScope());
     MessagePortChannel dummy_port_channel = channel->port2()->Disentangle();
     AudioWorkletProcessor* processor =
         global_scope->CreateProcessor("testProcessor",
@@ -319,7 +321,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
 
   void RunParsingParameterDescriptorTestOnWorkletThread(
       WorkerThread* thread,
-      WaitableEvent* wait_event) {
+      base::WaitableEvent* wait_event) {
     EXPECT_TRUE(thread->IsCurrentThread());
 
     auto* global_scope = To<AudioWorkletGlobalScope>(thread->GlobalScope());

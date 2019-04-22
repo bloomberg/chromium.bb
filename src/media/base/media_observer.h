@@ -77,7 +77,8 @@ class MEDIA_EXPORT MediaObserver {
   // Called when the data source is asynchronously initialized.
   virtual void OnDataSourceInitialized(const GURL& url_after_redirects) = 0;
 
-  // Set the MediaObserverClient.
+  // Set the MediaObserverClient. May be called with nullptr to disconnect the
+  // the client from the observer.
   virtual void SetClient(MediaObserverClient* client) = 0;
 };
 

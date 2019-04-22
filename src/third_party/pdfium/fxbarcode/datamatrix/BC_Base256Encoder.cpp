@@ -43,8 +43,8 @@ CBC_Base256Encoder::CBC_Base256Encoder() = default;
 
 CBC_Base256Encoder::~CBC_Base256Encoder() = default;
 
-int32_t CBC_Base256Encoder::getEncodingMode() {
-  return BASE256_ENCODATION;
+CBC_HighLevelEncoder::Encoding CBC_Base256Encoder::GetEncodingMode() {
+  return CBC_HighLevelEncoder::Encoding::BASE256;
 }
 
 bool CBC_Base256Encoder::Encode(CBC_EncoderContext* context) {
@@ -55,14 +55,15 @@ bool CBC_Base256Encoder::Encode(CBC_EncoderContext* context) {
     wchar_t c = context->getCurrentChar();
     buffer += c;
     context->m_pos++;
-    int32_t newMode = CBC_HighLevelEncoder::lookAheadTest(
-        context->m_msg, context->m_pos, getEncodingMode());
-    if (newMode != getEncodingMode()) {
-      context->signalEncoderChange(newMode);
+    CBC_HighLevelEncoder::Encoding newMode =
+        CBC_HighLevelEncoder::LookAheadTest(context->m_msg, context->m_pos,
+                                            GetEncodingMode());
+    if (newMode != GetEncodingMode()) {
+      context->SignalEncoderChange(newMode);
       break;
     }
   }
-  int32_t dataCount = buffer.GetLength() - 1;
+  size_t dataCount = buffer.GetLength() - 1;
   char buf[128];
   FXSYS_itoa(dataCount, buf, 10);
   buffer.SetAt(0, static_cast<wchar_t>(*buf) - '0');

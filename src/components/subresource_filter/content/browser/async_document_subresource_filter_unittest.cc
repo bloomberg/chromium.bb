@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
@@ -75,9 +75,9 @@ class AsyncDocumentSubresourceFilterTest : public ::testing::Test {
   testing::TestRulesetPair test_ruleset_pair_;
 
   // Note: ADSF assumes a task runner is associated with the current thread.
-  // Instantiate a MessageLoop on the current thread and use RunLoop to handle
-  // the replies ADSF tasks generate.
-  base::MessageLoop message_loop_;
+  // Instantiate a MessageLoop on the current thread and use base::RunLoop to
+  // handle the replies ADSF tasks generate.
+  base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> blocking_task_runner_ =
       new base::TestSimpleTaskRunner;
 
@@ -408,7 +408,7 @@ TEST_F(SubresourceFilterComputeActivationStateTest,
        MakeState(true, true)},
   };
 
-  for (size_t i = 0, size = arraysize(kTestCases); i != size; ++i) {
+  for (size_t i = 0, size = base::size(kTestCases); i != size; ++i) {
     SCOPED_TRACE(::testing::Message() << "Test number: " << i);
     const auto& test_case = kTestCases[i];
 

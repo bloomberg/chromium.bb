@@ -264,13 +264,14 @@ TEST_F(ProcessUtilTest, HandleTransfersOverrideClones) {
 
   // Attach the tempdir to "data", but also try to duplicate the existing "data"
   // directory.
-  options.paths_to_clone.push_back(base::FilePath("/data"));
+  options.paths_to_clone.push_back(
+      base::FilePath(base::fuchsia::kPersistedDataDirectoryPath));
   options.paths_to_clone.push_back(base::FilePath("/tmp"));
   options.paths_to_transfer.push_back(
-      {FilePath("/data"),
-       fuchsia::GetHandleFromFile(
-           base::File(base::FilePath(tmpdir_with_staged.GetPath()),
-                      base::File::FLAG_OPEN | base::File::FLAG_READ))
+      {FilePath(base::fuchsia::kPersistedDataDirectoryPath),
+       base::fuchsia::OpenDirectory(
+           base::FilePath(tmpdir_with_staged.GetPath()))
+           .TakeChannel()
            .release()});
 
   // Verify from that "/data/staged" exists from the child process' perspective.
@@ -307,14 +308,14 @@ TEST_F(ProcessUtilTest, TransferHandleToPath) {
   staged_file.Close();
 
   // Mount the tempdir to "/foo".
-  zx::handle tmp_handle = fuchsia::GetHandleFromFile(
-      base::File(base::FilePath(new_tmpdir.GetPath()),
-                 base::File::FLAG_OPEN | base::File::FLAG_READ));
-  ASSERT_TRUE(tmp_handle.is_valid());
+  zx::channel tmp_channel =
+      base::fuchsia::OpenDirectory(new_tmpdir.GetPath()).TakeChannel();
+
+  ASSERT_TRUE(tmp_channel.is_valid());
   LaunchOptions options;
   options.paths_to_clone.push_back(base::FilePath("/tmp"));
   options.paths_to_transfer.push_back(
-      {base::FilePath("/foo"), tmp_handle.release()});
+      {base::FilePath("/foo"), tmp_channel.release()});
   options.spawn_flags = FDIO_SPAWN_CLONE_STDIO;
 
   // Verify from that "/foo/staged" exists from the child process' perspective.
@@ -513,7 +514,7 @@ MULTIPROCESS_TEST_MAIN(CheckCwdProcess) {
       BindRepeating(&WaitableEvent::Signal, Unretained(&event));
 
   // Test that a non-main thread has the right cwd.
-  task_runner->PostTask(FROM_HERE, Bind(&CheckCwdIsExpected, temp_dir));
+  task_runner->PostTask(FROM_HERE, BindOnce(&CheckCwdIsExpected, temp_dir));
   task_runner->PostTask(FROM_HERE, signal_event);
 
   event.Wait();
@@ -525,8 +526,8 @@ MULTIPROCESS_TEST_MAIN(CheckCwdProcess) {
   // Change the cwd on the secondary thread. IgnoreResult is used when setting
   // because it is checked immediately after.
   task_runner->PostTask(FROM_HERE,
-                        Bind(IgnoreResult(&SetCurrentDirectory), home_dir));
-  task_runner->PostTask(FROM_HERE, Bind(&CheckCwdIsExpected, home_dir));
+                        BindOnce(IgnoreResult(&SetCurrentDirectory), home_dir));
+  task_runner->PostTask(FROM_HERE, BindOnce(&CheckCwdIsExpected, home_dir));
   task_runner->PostTask(FROM_HERE, signal_event);
 
   event.Wait();
@@ -539,14 +540,14 @@ MULTIPROCESS_TEST_MAIN(CheckCwdProcess) {
   CheckCwdIsExpected(temp_dir);
 
   // Ensure that the secondary thread sees the new cwd too.
-  task_runner->PostTask(FROM_HERE, Bind(&CheckCwdIsExpected, temp_dir));
+  task_runner->PostTask(FROM_HERE, BindOnce(&CheckCwdIsExpected, temp_dir));
   task_runner->PostTask(FROM_HERE, signal_event);
 
   event.Wait();
 
   // Change the cwd on the secondary thread one more time and join the thread.
   task_runner->PostTask(FROM_HERE,
-                        Bind(IgnoreResult(&SetCurrentDirectory), home_dir));
+                        BindOnce(IgnoreResult(&SetCurrentDirectory), home_dir));
   thread.Stop();
 
   // Make sure that the main thread picked up the new cwd.
@@ -892,7 +893,7 @@ TEST_F(ProcessUtilTest, GetAppOutputWithExitCode) {
   const int kExpectedExitCode = 42;
   command = base::CommandLine(test_helper_path_);
   command.AppendArg("-x");
-  command.AppendArg(base::IntToString(kExpectedExitCode));
+  command.AppendArg(base::NumberToString(kExpectedExitCode));
   command.AppendArg(kEchoMessage2);
 #if defined(OS_WIN)
   // On Windows, anything that quits with a nonzero status code is handled as a
@@ -1212,96 +1213,6 @@ TEST_F(ProcessUtilTest, LaunchWithHandleTransfer) {
 
 #endif  // defined(OS_FUCHSIA)
 
-namespace {
-
-std::string TestLaunchProcess(const std::vector<std::string>& args,
-                              const EnvironmentMap& env_changes,
-                              const bool clear_environ,
-                              const int clone_flags) {
-  int fds[2];
-  PCHECK(pipe(fds) == 0);
-
-  LaunchOptions options;
-  options.wait = true;
-  options.environ = env_changes;
-  options.clear_environ = clear_environ;
-  options.fds_to_remap.emplace_back(fds[1], 1);
-#if defined(OS_LINUX)
-  options.clone_flags = clone_flags;
-#else
-  CHECK_EQ(0, clone_flags);
-#endif  // defined(OS_LINUX)
-  EXPECT_TRUE(LaunchProcess(args, options).IsValid());
-  PCHECK(IGNORE_EINTR(close(fds[1])) == 0);
-
-  char buf[512];
-  const ssize_t n = HANDLE_EINTR(read(fds[0], buf, sizeof(buf)));
-
-  PCHECK(IGNORE_EINTR(close(fds[0])) == 0);
-
-  return std::string(buf, n);
-}
-
-const char kLargeString[] =
-    "0123456789012345678901234567890123456789012345678901234567890123456789"
-    "0123456789012345678901234567890123456789012345678901234567890123456789"
-    "0123456789012345678901234567890123456789012345678901234567890123456789"
-    "0123456789012345678901234567890123456789012345678901234567890123456789"
-    "0123456789012345678901234567890123456789012345678901234567890123456789"
-    "0123456789012345678901234567890123456789012345678901234567890123456789"
-    "0123456789012345678901234567890123456789012345678901234567890123456789";
-
-}  // namespace
-
-TEST_F(ProcessUtilTest, LaunchProcess) {
-  const int no_clone_flags = 0;
-  const bool no_clear_environ = false;
-  const char kBaseTest[] = "BASE_TEST";
-  const std::vector<std::string> kPrintEnvCommand = {test_helper_path_.value(),
-                                                     "-e", kBaseTest};
-
-  EnvironmentMap env_changes;
-  env_changes[kBaseTest] = "bar";
-  EXPECT_EQ("bar", TestLaunchProcess(kPrintEnvCommand, env_changes,
-                                     no_clear_environ, no_clone_flags));
-  env_changes.clear();
-
-  EXPECT_EQ(0, setenv(kBaseTest, "testing", 1 /* override */));
-  EXPECT_EQ("testing", TestLaunchProcess(kPrintEnvCommand, env_changes,
-                                         no_clear_environ, no_clone_flags));
-
-  env_changes[kBaseTest] = std::string();
-  EXPECT_EQ("", TestLaunchProcess(kPrintEnvCommand, env_changes,
-                                  no_clear_environ, no_clone_flags));
-
-  env_changes[kBaseTest] = "foo";
-  EXPECT_EQ("foo", TestLaunchProcess(kPrintEnvCommand, env_changes,
-                                     no_clear_environ, no_clone_flags));
-
-  env_changes.clear();
-  EXPECT_EQ(0, setenv(kBaseTest, kLargeString, 1 /* override */));
-  EXPECT_EQ(std::string(kLargeString),
-            TestLaunchProcess(kPrintEnvCommand, env_changes, no_clear_environ,
-                              no_clone_flags));
-
-  env_changes[kBaseTest] = "wibble";
-  EXPECT_EQ("wibble", TestLaunchProcess(kPrintEnvCommand, env_changes,
-                                        no_clear_environ, no_clone_flags));
-
-#if defined(OS_LINUX)
-  // Test a non-trival value for clone_flags.
-  EXPECT_EQ("wibble", TestLaunchProcess(kPrintEnvCommand, env_changes,
-                                        no_clear_environ, CLONE_FS));
-
-  EXPECT_EQ("wibble",
-            TestLaunchProcess(kPrintEnvCommand, env_changes,
-                              true /* clear_environ */, no_clone_flags));
-  env_changes.clear();
-  EXPECT_EQ("", TestLaunchProcess(kPrintEnvCommand, env_changes,
-                                  true /* clear_environ */, no_clone_flags));
-#endif  // defined(OS_LINUX)
-}
-
 // There's no such thing as a parent process id on Fuchsia.
 #if !defined(OS_FUCHSIA)
 TEST_F(ProcessUtilTest, GetParentProcessId) {
@@ -1350,7 +1261,119 @@ TEST_F(ProcessUtilTest, PreExecHook) {
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
+
+namespace {
+
+std::string TestLaunchProcess(const CommandLine& cmdline,
+                              const EnvironmentMap& env_changes,
+                              const bool clear_environment,
+                              const int clone_flags) {
+  LaunchOptions options;
+  options.wait = true;
+  options.environment = env_changes;
+  options.clear_environment = clear_environment;
+
+#if defined(OS_WIN)
+  HANDLE read_handle, write_handle;
+  PCHECK(CreatePipe(&read_handle, &write_handle, nullptr, 0));
+  File read_pipe(read_handle);
+  File write_pipe(write_handle);
+  options.stdin_handle = INVALID_HANDLE_VALUE;
+  options.stdout_handle = write_handle;
+  options.stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+  options.handles_to_inherit.push_back(write_handle);
+#else
+  int fds[2];
+  PCHECK(pipe(fds) == 0);
+  File read_pipe(fds[0]);
+  File write_pipe(fds[1]);
+  options.fds_to_remap.emplace_back(fds[1], STDOUT_FILENO);
+#endif  // defined(OS_WIN)
+
+#if defined(OS_LINUX)
+  options.clone_flags = clone_flags;
+#else
+  CHECK_EQ(0, clone_flags);
+#endif  // defined(OS_LINUX)
+
+  EXPECT_TRUE(LaunchProcess(cmdline, options).IsValid());
+  write_pipe.Close();
+
+  char buf[512];
+  int n = read_pipe.ReadAtCurrentPos(buf, sizeof(buf));
+#if defined(OS_WIN)
+  // Closed pipes fail with ERROR_BROKEN_PIPE on Windows, rather than
+  // successfully reporting EOF.
+  if (n < 0 && GetLastError() == ERROR_BROKEN_PIPE) {
+    n = 0;
+  }
+#endif  // OS_WIN
+  PCHECK(n >= 0);
+
+  return std::string(buf, n);
+}
+
+const char kLargeString[] =
+    "0123456789012345678901234567890123456789012345678901234567890123456789"
+    "0123456789012345678901234567890123456789012345678901234567890123456789"
+    "0123456789012345678901234567890123456789012345678901234567890123456789"
+    "0123456789012345678901234567890123456789012345678901234567890123456789"
+    "0123456789012345678901234567890123456789012345678901234567890123456789"
+    "0123456789012345678901234567890123456789012345678901234567890123456789"
+    "0123456789012345678901234567890123456789012345678901234567890123456789";
+
+}  // namespace
+
+TEST_F(ProcessUtilTest, LaunchProcess) {
+  const int no_clone_flags = 0;
+  const bool no_clear_environ = false;
+  const FilePath::CharType kBaseTest[] = FILE_PATH_LITERAL("BASE_TEST");
+  const CommandLine kPrintEnvCommand(CommandLine::StringVector(
+      {test_helper_path_.value(), FILE_PATH_LITERAL("-e"), kBaseTest}));
+  std::unique_ptr<Environment> env = Environment::Create();
+
+  EnvironmentMap env_changes;
+  env_changes[kBaseTest] = FILE_PATH_LITERAL("bar");
+  EXPECT_EQ("bar", TestLaunchProcess(kPrintEnvCommand, env_changes,
+                                     no_clear_environ, no_clone_flags));
+  env_changes.clear();
+
+  EXPECT_TRUE(env->SetVar("BASE_TEST", "testing"));
+  EXPECT_EQ("testing", TestLaunchProcess(kPrintEnvCommand, env_changes,
+                                         no_clear_environ, no_clone_flags));
+
+  env_changes[kBaseTest] = FilePath::StringType();
+  EXPECT_EQ("", TestLaunchProcess(kPrintEnvCommand, env_changes,
+                                  no_clear_environ, no_clone_flags));
+
+  env_changes[kBaseTest] = FILE_PATH_LITERAL("foo");
+  EXPECT_EQ("foo", TestLaunchProcess(kPrintEnvCommand, env_changes,
+                                     no_clear_environ, no_clone_flags));
+
+  env_changes.clear();
+  EXPECT_TRUE(env->SetVar("BASE_TEST", kLargeString));
+  EXPECT_EQ(std::string(kLargeString),
+            TestLaunchProcess(kPrintEnvCommand, env_changes, no_clear_environ,
+                              no_clone_flags));
+
+  env_changes[kBaseTest] = FILE_PATH_LITERAL("wibble");
+  EXPECT_EQ("wibble", TestLaunchProcess(kPrintEnvCommand, env_changes,
+                                        no_clear_environ, no_clone_flags));
+
+#if defined(OS_LINUX)
+  // Test a non-trival value for clone_flags.
+  EXPECT_EQ("wibble", TestLaunchProcess(kPrintEnvCommand, env_changes,
+                                        no_clear_environ, CLONE_FS));
+#endif  // defined(OS_LINUX)
+
+  EXPECT_EQ("wibble",
+            TestLaunchProcess(kPrintEnvCommand, env_changes,
+                              true /* clear_environ */, no_clone_flags));
+  env_changes.clear();
+  EXPECT_EQ("", TestLaunchProcess(kPrintEnvCommand, env_changes,
+                                  true /* clear_environ */, no_clone_flags));
+}
 
 #if defined(OS_LINUX)
 MULTIPROCESS_TEST_MAIN(CheckPidProcess) {

@@ -15,7 +15,7 @@ import argparse
 import sys
 import tempfile
 
-from compile2 import Checker
+from compiler import Compiler
 
 
 def Minify(source):
@@ -27,8 +27,7 @@ def Minify(source):
        tempfile.NamedTemporaryFile(suffix='.js') as t2:
     t1.write(source)
     t1.seek(0)
-    checker = Checker()
-    (compile_error, compile_stderr) = checker.check(
+    (compile_error, compile_stderr) = Compiler().run(
         [t1.name],
         out_file=t2.name,
         closure_args=args.closure_args)

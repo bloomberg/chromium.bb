@@ -16,13 +16,11 @@ source_set("public") {
     "download_params.cc",
     "download_params.h",
     "download_service.h",
-    "download_task_types.h",
     "features.cc",
     "features.h",
     "logger.h",
     "navigation_monitor.h",
     "service_config.h",
-    "task_scheduler.h",
   ]
 
   deps = [
@@ -37,26 +35,8 @@ source_set("public") {
 
   public_deps = [
     "//base",
+    "//components/download/public/task:public",
     "//net",
     "//url",
   ]
-}
-
-if (is_android) {
-  android_library("public_java") {
-    srcjar_deps = [ ":jni_enums" ]
-
-    deps = [
-      "//base:base_java",
-      "//third_party/android_deps:android_support_annotations_java",
-    ]
-  }
-
-  java_cpp_enum("jni_enums") {
-    visibility = [ "*" ]
-
-    sources = [
-      "download_task_types.h",
-    ]
-  }
 }

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "media/capture/video/mac/video_capture_device_factory_mac.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/capture/video/mac/video_capture_device_mac.h"
@@ -44,4 +45,4 @@ TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesAVFoundation) {
   }));
 }
 
-};  // namespace media
+}  // namespace media

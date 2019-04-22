@@ -10,9 +10,9 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "components/onc/onc_constants.h"
@@ -51,7 +51,7 @@ class NetworkPolicyObserver;
 // error, including a symbolic name for the error and often some error message
 // that is suitable for logging. None of the error message text is meant for
 // user consumption.
-class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
  public:
   using GuidToPolicyMap =
       std::map<std::string, std::unique_ptr<base::DictionaryValue>>;

@@ -23,9 +23,8 @@ ChromeVoxPanelTest.prototype = {
   testGenCppIncludes: function() {
     ChromeVoxE2ETest.prototype.  testGenCppIncludes.call(this);
 
-    // Flaky on dbg, see https://crbug.com/795840
-    GEN_BLOCK(function() { /*!
-
+    // See https://crbug.com/795840 for details and history.
+    GEN(`
 #if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
 #define MAYBE_ActivateMenu DISABLED_ActivateMenu
 #else
@@ -37,7 +36,7 @@ ChromeVoxPanelTest.prototype = {
 #else
 #define MAYBE_LinkMenu LinkMenu
 #endif
-    */});
+    `);
   },
 
   /**

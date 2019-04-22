@@ -27,6 +27,9 @@
         "browse:media:flickr_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
         },
+        "browse:media:googleplaystore:2019": {
+            "DEFAULT": "system_health_mobile_4413a28712.wprgo"
+        },
         "browse:media:imgur": {
             "DEFAULT": "system_health_mobile_035.wprgo"
         },
@@ -66,6 +69,12 @@
         "browse:news:washingtonpost": {
             "DEFAULT": "system_health_mobile_021.wprgo"
         },
+        "browse:search:amp:2018": {
+            "DEFAULT": "system_health_mobile_0483ae239d.wprgo"
+        },
+        "browse:search:amp:sxg:2019": {
+            "DEFAULT": "system_health_mobile_d7a7409e72.wprgo"
+        },
         "browse:shopping:amazon": {
             "DEFAULT": "system_health_mobile_053.wprgo"
         },
@@ -95,6 +104,9 @@
         },
         "browse:social:tumblr_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
+        },
+        "browse:social:tumblr_infinite_scroll:2018": {
+            "DEFAULT": "system_health_mobile_d5a778aa6f.wprgo"
         },
         "browse:social:twitter": {
             "DEFAULT": "system_health_mobile_023.wprgo"

@@ -116,7 +116,11 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
       return Promise.resolve();
     this._debuggerEnabled = true;
 
-    const enablePromise = this._agent.enable();
+    // Set a limit for the total size of collected script sources retained by debugger.
+    // 10MB for remote frontends, 100MB for others.
+    const isRemoteFrontend = Runtime.queryParam('remoteFrontend') || Runtime.queryParam('ws');
+    const maxScriptsCacheSize = isRemoteFrontend ? 10e6 : 100e6;
+    const enablePromise = this._agent.enable(maxScriptsCacheSize);
     enablePromise.then(this._registerDebugger.bind(this));
     this._pauseOnExceptionStateChanged();
     this._asyncStackTracesStateChanged();
@@ -228,9 +232,6 @@ SDK.DebuggerModel = class extends SDK.SDKModel {
   }
 
   scheduleStepIntoAsync() {
-    // Node v8.x does not support breakOnAsyncCall flag but supports old style schdeuleStepIntoAsync.
-    // End-of-life of Node 8.x is around December 2019.
-    this._agent.scheduleStepIntoAsync();
     this._agent.invoke_stepInto({breakOnAsyncCall: true});
   }
 

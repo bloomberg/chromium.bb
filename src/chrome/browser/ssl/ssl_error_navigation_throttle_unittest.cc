@@ -8,12 +8,12 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/ssl/certificate_reporting_test_utils.cc"
+#include "chrome/browser/ssl/certificate_reporting_test_utils.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -90,22 +90,17 @@ class SSLErrorNavigationThrottleTest
     scoped_feature_list_.InitAndEnableFeature(
         features::kSSLCommittedInterstitials);
 
+    handle_ = std::make_unique<content::MockNavigationHandle>(web_contents());
+    handle_->set_has_committed(true);
     async_ = GetParam();
-    handle_ = content::NavigationHandle::CreateNavigationHandleForTesting(
-        GURL(), main_rfh(), true /* committed */, net::ERR_CERT_INVALID);
-
-    std::unique_ptr<TestSSLErrorNavigationThrottle> throttle =
-        std::make_unique<TestSSLErrorNavigationThrottle>(
-            handle_.get(), async_,
-            base::BindOnce(
-                &SSLErrorNavigationThrottleTest::RecordDeferredResult,
-                base::Unretained(this)));
-    handle_->RegisterThrottleForTesting(std::move(throttle));
+    throttle_ = std::make_unique<TestSSLErrorNavigationThrottle>(
+        handle_.get(), async_,
+        base::BindOnce(&SSLErrorNavigationThrottleTest::RecordDeferredResult,
+                       base::Unretained(this)));
   }
 
   // content::RenderViewHostTestHarness:
   void TearDown() override {
-    handle_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -116,7 +111,8 @@ class SSLErrorNavigationThrottleTest
 
  protected:
   bool async_ = false;
-  std::unique_ptr<content::NavigationHandle> handle_;
+  std::unique_ptr<content::MockNavigationHandle> handle_;
+  std::unique_ptr<TestSSLErrorNavigationThrottle> throttle_;
   content::NavigationThrottle::ThrottleCheckResult deferred_result_ =
       content::NavigationThrottle::DEFER;
 
@@ -125,34 +121,19 @@ class SSLErrorNavigationThrottleTest
   DISALLOW_COPY_AND_ASSIGN(SSLErrorNavigationThrottleTest);
 };
 
-// Tests that the throttle ignores a request without SSL info.
-TEST_P(SSLErrorNavigationThrottleTest, NoSSLInfo) {
+// Tests that the throttle ignores a request with a non SSL related network
+// error code.
+TEST_P(SSLErrorNavigationThrottleTest, NoSSLError) {
   SCOPED_TRACE(::testing::Message()
                << "Asynchronous MockHandleSSLError: " << async_);
 
+  handle_->set_net_error_code(net::ERR_BLOCKED_BY_CLIENT);
   content::NavigationThrottle::ThrottleCheckResult result =
-      handle_->CallWillFailRequestForTesting(main_rfh(), base::nullopt);
-
-  EXPECT_FALSE(handle_->GetSSLInfo().is_valid());
+      throttle_->WillFailRequest();
   EXPECT_EQ(content::NavigationThrottle::PROCEED, result);
 }
 
-// Tests that the throttle ignores a request with a cert status that is not an
-// cert error.
-TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithoutCertError) {
-  SCOPED_TRACE(::testing::Message()
-               << "Asynchronous MockHandleSSLError: " << async_);
-
-  net::SSLInfo ssl_info;
-  ssl_info.cert_status = net::CERT_STATUS_IS_EV;
-  content::NavigationThrottle::ThrottleCheckResult result =
-      handle_->CallWillFailRequestForTesting(main_rfh(), ssl_info);
-
-  EXPECT_EQ(net::CERT_STATUS_IS_EV, handle_->GetSSLInfo().cert_status);
-  EXPECT_EQ(content::NavigationThrottle::PROCEED, result);
-}
-
-// Tests that the throttle defers and cancels a request with a cert status that
+// Tests that the throttle defers and cancels a request with a net error that
 // is a cert error.
 TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithCertError) {
   SCOPED_TRACE(::testing::Message()
@@ -162,8 +143,10 @@ TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithCertError) {
   ssl_info.cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   ssl_info.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+  handle_->set_net_error_code(net::ERR_CERT_INVALID);
+  handle_->set_ssl_info(ssl_info);
   content::NavigationThrottle::ThrottleCheckResult synchronous_result =
-      handle_->CallWillFailRequestForTesting(main_rfh(), ssl_info);
+      throttle_->WillFailRequest();
 
   EXPECT_EQ(content::NavigationThrottle::DEFER, synchronous_result.action());
   base::RunLoop().RunUntilIdle();
@@ -173,8 +156,8 @@ TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithCertError) {
   EXPECT_TRUE(deferred_result_.error_page_content().has_value());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLErrorNavigationThrottleTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLErrorNavigationThrottleTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

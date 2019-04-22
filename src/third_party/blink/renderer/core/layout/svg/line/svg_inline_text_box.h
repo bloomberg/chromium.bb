@@ -31,7 +31,7 @@ class TextMatchMarker;
 
 class SVGInlineTextBox final : public InlineTextBox {
  public:
-  SVGInlineTextBox(LineLayoutItem, int start, unsigned short length);
+  SVGInlineTextBox(LineLayoutItem, int start, uint16_t length);
 
   bool IsSVGInlineTextBox() const override { return true; }
 

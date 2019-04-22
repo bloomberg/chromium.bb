@@ -10,8 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -64,11 +64,9 @@ const char* const ActivityDatabaseTestPolicy::kTableFieldTypes[] = {
     "LONGVARCHAR NOT NULL", "INTEGER", "INTEGER", "LONGVARCHAR"};
 
 bool ActivityDatabaseTestPolicy::InitDatabase(sql::Database* db) {
-  return ActivityDatabase::InitializeTable(db,
-                                           kTableName,
-                                           kTableContentFields,
+  return ActivityDatabase::InitializeTable(db, kTableName, kTableContentFields,
                                            kTableFieldTypes,
-                                           arraysize(kTableContentFields));
+                                           base::size(kTableContentFields));
 }
 
 bool ActivityDatabaseTestPolicy::FlushDatabase(sql::Database* db) {

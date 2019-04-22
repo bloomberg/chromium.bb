@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -40,7 +40,7 @@ bool IsLocaleSupported() {
   // an API. See http://crbug.com/101357
   const std::string& locale = g_browser_process->GetApplicationLocale();
   static const char* const unsupported_locales[] = {"CN", "TR", "IR"};
-  for (size_t i = 0; i < arraysize(unsupported_locales); ++i) {
+  for (size_t i = 0; i < base::size(unsupported_locales); ++i) {
     if (base::EndsWith(locale, unsupported_locales[i],
                        base::CompareCase::INSENSITIVE_ASCII)) {
       return false;

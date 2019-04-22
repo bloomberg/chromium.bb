@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -30,6 +31,7 @@ TEST(RedirectInfoTest, MethodForRedirect) {
 
   const GURL kOriginalUrl = GURL("https://foo.test/original");
   const GURL kOriginalSiteForCookies = GURL("https://foo.test/");
+  const url::Origin kOriginalTopFrameOrigin = url::Origin::Create(kOriginalUrl);
   const URLRequest::FirstPartyURLPolicy kOriginalFirstPartyUrlPolicy =
       net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
   const URLRequest::ReferrerPolicy kOriginalReferrerPolicy =
@@ -46,10 +48,10 @@ TEST(RedirectInfoTest, MethodForRedirect) {
 
     RedirectInfo redirect_info = RedirectInfo::ComputeRedirectInfo(
         test.original_method, kOriginalUrl, kOriginalSiteForCookies,
-        kOriginalFirstPartyUrlPolicy, kOriginalReferrerPolicy,
-        kOriginalReferrer, nullptr /* response_headers */,
-        test.http_status_code, kNewLocation, kInsecureSchemeWasUpgraded,
-        kCopyFragment);
+        kOriginalTopFrameOrigin, kOriginalFirstPartyUrlPolicy,
+        kOriginalReferrerPolicy, kOriginalReferrer, test.http_status_code,
+        kNewLocation, base::nullopt /* referrer_policy_header */,
+        kInsecureSchemeWasUpgraded, kCopyFragment);
 
     EXPECT_EQ(test.expected_new_method, redirect_info.new_method);
     EXPECT_EQ(test.http_status_code, redirect_info.status_code);
@@ -97,12 +99,15 @@ TEST(RedirectInfoTest, CopyFragment) {
 
     RedirectInfo redirect_info = RedirectInfo::ComputeRedirectInfo(
         KOriginalMethod, GURL(test.original_url), kOriginalSiteForCookies,
+        url::Origin::Create(GURL(test.original_url)),
         kOriginalFirstPartyUrlPolicy, kOriginalReferrerPolicy,
-        kOriginalReferrer, nullptr /* response_headers */, kHttpStatusCode,
-        GURL(test.new_location), kInsecureSchemeWasUpgraded,
+        kOriginalReferrer, kHttpStatusCode, GURL(test.new_location),
+        base::nullopt /* referrer_policy_header */, kInsecureSchemeWasUpgraded,
         test.copy_fragment);
 
     EXPECT_EQ(GURL(test.expected_new_url), redirect_info.new_url);
+    EXPECT_EQ(url::Origin::Create(GURL(test.original_url)),
+              redirect_info.new_top_frame_origin);
   }
 }
 
@@ -135,12 +140,19 @@ TEST(RedirectInfoTest, FirstPartyURLPolicy) {
 
     RedirectInfo redirect_info = RedirectInfo::ComputeRedirectInfo(
         KOriginalMethod, kOriginalUrl, kOriginalSiteForCookies,
-        test.original_first_party_url_policy, kOriginalReferrerPolicy,
-        kOriginalReferrer, nullptr /* response_headers */, kHttpStatusCode,
-        kNewLocation, kInsecureSchemeWasUpgraded, kCopyFragment);
+        url::Origin::Create(kOriginalUrl), test.original_first_party_url_policy,
+        kOriginalReferrerPolicy, kOriginalReferrer, kHttpStatusCode,
+        kNewLocation, base::nullopt /* referrer_policy_header */,
+        kInsecureSchemeWasUpgraded, kCopyFragment);
 
     EXPECT_EQ(GURL(test.expected_new_site_for_cookies),
               redirect_info.new_site_for_cookies);
+    url::Origin expected_top_frame_origin =
+        test.original_first_party_url_policy ==
+                URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
+            ? url::Origin::Create(GURL(test.expected_new_site_for_cookies))
+            : url::Origin::Create(kOriginalUrl);
+    EXPECT_EQ(expected_top_frame_origin, redirect_info.new_top_frame_origin);
   }
 }
 
@@ -448,9 +460,10 @@ TEST(RedirectInfoTest, ReferrerPolicy) {
 
     RedirectInfo redirect_info = RedirectInfo::ComputeRedirectInfo(
         KOriginalMethod, original_url, kOriginalSiteForCookies,
-        kOriginalFirstPartyUrlPolicy, test.original_referrer_policy,
-        test.original_referrer, response_headers.get(),
+        url::Origin::Create(original_url), kOriginalFirstPartyUrlPolicy,
+        test.original_referrer_policy, test.original_referrer,
         response_headers->response_code(), new_location,
+        RedirectUtil::GetReferrerPolicyHeader(response_headers.get()),
         kInsecureSchemeWasUpgraded, kCopyFragment);
 
     EXPECT_EQ(test.expected_new_referrer_policy,

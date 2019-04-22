@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/i18n/encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
@@ -533,11 +534,9 @@ std::string GetDocumentMetadata(FPDF_DOCUMENT doc, const std::string& key) {
 gin::IsolateHolder* g_isolate_holder = nullptr;
 
 void SetUpV8() {
-  static const char kNoExposeWasm[] = "--no-expose-wasm";
-  v8::V8::SetFlagsFromString(kNoExposeWasm, strlen(kNoExposeWasm));
-
+  const char* recommended = FPDF_GetRecommendedV8Flags();
+  v8::V8::SetFlagsFromString(recommended, strlen(recommended));
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
-                                 gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
   DCHECK(!g_isolate_holder);
   g_isolate_holder = new gin::IsolateHolder(
@@ -646,7 +645,7 @@ wchar_t SimplifyForSearch(wchar_t c) {
       return L'\"';
     case kHebrewPunctuationGereshCharacter:
     case kLeftSingleQuotationMarkCharacter:
-    case kRightSingleQuotationMarkCharacter:;
+    case kRightSingleQuotationMarkCharacter:
       return L'\'';
     default:
       return c;
@@ -1225,6 +1224,15 @@ pp::Buffer_Dev PDFiumEngine::ConvertPdfToBufferDev(
 void PDFiumEngine::KillFormFocus() {
   FORM_ForceToKillFocus(form());
   SetInFormTextArea(false);
+}
+
+uint32_t PDFiumEngine::GetLoadedByteSize() {
+  return doc_loader_->GetDocumentSize();
+}
+
+bool PDFiumEngine::ReadLoadedBytes(uint32_t length, void* buffer) {
+  DCHECK_LE(length, GetLoadedByteSize());
+  return doc_loader_->GetBlock(0, length, buffer);
 }
 
 void PDFiumEngine::SetFormSelectedText(FPDF_FORMHANDLE form_handle,
@@ -2084,10 +2092,8 @@ void PDFiumEngine::AddFindResult(const PDFiumRange& result) {
 }
 
 bool PDFiumEngine::SelectFindResult(bool forward) {
-  if (find_results_.empty()) {
-    NOTREACHED();
+  if (find_results_.empty())
     return false;
-  }
 
   SelectionChangeInvalidator selection_invalidator(this);
 
@@ -2640,12 +2646,9 @@ bool PDFiumEngine::TryLoadingDoc(const std::string& password,
     return true;
   }
 
-  const char* password_cstr = nullptr;
-  if (!password.empty()) {
-    password_cstr = password.c_str();
+  if (!password.empty())
     password_tries_remaining_--;
-  }
-  document_->LoadDocument(password_cstr);
+  document_->LoadDocument(password);
   if (!doc()) {
     if (FPDF_GetLastError() == FPDF_ERR_PASSWORD)
       *needs_password = true;
@@ -3033,8 +3036,6 @@ void PDFiumEngine::FinishPaint(int progressive_index,
 
   FPDF_RenderPage_Close(pages_[page_index]->GetPage());
   progressive_paints_.erase(progressive_paints_.begin() + progressive_index);
-
-  client_->DocumentPaintOccurred();
 }
 
 void PDFiumEngine::CancelPaints() {
@@ -3619,7 +3620,7 @@ bool PDFiumEngine::IsPointInEditableFormTextArea(FPDF_PAGE page,
   if (!annot)
     return false;
 
-  int flags = FPDFAnnot_GetFormFieldFlags(page, annot.get());
+  int flags = FPDFAnnot_GetFormFieldFlags(form(), page, annot.get());
   return CheckIfEditableFormTextArea(flags, form_type);
 }
 

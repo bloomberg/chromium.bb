@@ -4,8 +4,9 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
-import("//third_party/protobuf/proto_library.gni")
 import("//gpu/vulkan/features.gni")
+import("//third_party/protobuf/proto_library.gni")
+import("//ui/gl/features.gni")
 
 group("service") {
   if (is_component_build) {
@@ -107,6 +108,8 @@ target(link_target_type, "gles2_sources") {
 
   sources = [
     "abstract_texture.h",
+    "abstract_texture_impl_shared_context_state.cc",
+    "abstract_texture_impl_shared_context_state.h",
     "buffer_manager.cc",
     "buffer_manager.h",
     "client_service_map.h",
@@ -183,6 +186,8 @@ target(link_target_type, "gles2_sources") {
     "mailbox_manager_sync.h",
     "memory_program_cache.cc",
     "memory_program_cache.h",
+    "multi_draw_manager.cc",
+    "multi_draw_manager.h",
     "passthrough_abstract_texture_impl.cc",
     "passthrough_abstract_texture_impl.h",
     "passthrough_discardable_manager.cc",
@@ -203,8 +208,6 @@ target(link_target_type, "gles2_sources") {
     "raster_cmd_validation_implementation_autogen.h",
     "raster_decoder.cc",
     "raster_decoder.h",
-    "raster_decoder_context_state.cc",
-    "raster_decoder_context_state.h",
     "renderbuffer_manager.cc",
     "renderbuffer_manager.h",
     "sampler_manager.cc",
@@ -223,6 +226,8 @@ target(link_target_type, "gles2_sources") {
     "shader_translator.h",
     "shader_translator_cache.cc",
     "shader_translator_cache.h",
+    "shared_context_state.cc",
+    "shared_context_state.h",
     "shared_image_backing.cc",
     "shared_image_backing.h",
     "shared_image_backing_factory.h",
@@ -258,12 +263,10 @@ target(link_target_type, "gles2_sources") {
     "wrapped_sk_image.h",
   ]
 
-  if (is_android) {
+  if (use_dawn) {
     sources += [
-      "ahardwarebuffer_utils.cc",
-      "ahardwarebuffer_utils.h",
-      "shared_image_backing_factory_ahardwarebuffer.cc",
-      "shared_image_backing_factory_ahardwarebuffer.h",
+      "webgpu_decoder_impl.cc",
+      "webgpu_decoder_impl.h",
     ]
   }
 
@@ -279,17 +282,19 @@ target(link_target_type, "gles2_sources") {
   include_dirs = [ "//third_party/mesa_headers" ]
 
   public_deps = [
+    "//cc/paint",
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_sources",
     "//gpu/command_buffer/common:raster_sources",
     "//gpu/command_buffer/common:webgpu_sources",
+    "//skia",
+    "//third_party/dawn/src/dawn:dawn_headers",
   ]
   deps = [
     ":disk_cache_proto",
     ":service",
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//cc/paint",
     "//components/viz/common:resource_format_utils",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/common:gles2_utils",
@@ -307,25 +312,77 @@ target(link_target_type, "gles2_sources") {
     "//ui/gfx/geometry",
     "//ui/gfx/ipc/color",
     "//ui/gl",
+    "//ui/gl:buildflags",
     "//ui/gl/init",
   ]
 
+  if (use_dawn) {
+    deps += [ "//third_party/dawn:libdawn_native" ]
+  }
+
   if (enable_vulkan) {
-    deps += [ "//components/viz/common:vulkan_context_provider" ]
+    deps += [
+      "//components/viz/common:vulkan_context_provider",
+      "//gpu/vulkan",
+    ]
+
+    if (is_linux || is_fuchsia) {
+      sources += [
+        "external_vk_image_backing.cc",
+        "external_vk_image_backing.h",
+        "external_vk_image_factory.cc",
+        "external_vk_image_factory.h",
+        "external_vk_image_gl_representation.cc",
+        "external_vk_image_gl_representation.h",
+        "external_vk_image_skia_representation.cc",
+        "external_vk_image_skia_representation.h",
+      ]
+    }
+  }
+
+  if (use_dawn) {
+    deps += [ "//third_party/dawn:libdawn_native" ]
   }
 
   if (is_mac) {
+    sources += [
+      "shared_image_backing_factory_iosurface.h",
+      "shared_image_backing_factory_iosurface.mm",
+    ]
+
     # Required by gles2_cmd_decoder.cc on Mac.
     libs = [
+      "Cocoa.framework",
       "IOSurface.framework",
       "OpenGL.framework",
     ]
   }
 
-  if (is_android && !is_debug) {
-    # On Android optimize more since this component can be a bottleneck.
-    configs -= [ "//build/config/compiler:default_optimization" ]
-    configs += [ "//build/config/compiler:optimize_max" ]
+  if (is_android) {
+    if (!is_debug) {
+      # On Android optimize more since this component can be a bottleneck.
+      configs -= [ "//build/config/compiler:default_optimization" ]
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
+    sources += [
+      "ahardwarebuffer_utils.cc",
+      "ahardwarebuffer_utils.h",
+      "shared_image_backing_factory_ahardwarebuffer.cc",
+      "shared_image_backing_factory_ahardwarebuffer.h",
+    ]
+
+    # TODO(cblume): http://crbug.com/911313
+    # Abstract out the platform specific defines. Right now we need the android
+    # platform specific define here to be able to include android specific
+    # functions.
+    defines = [ "VK_USE_PLATFORM_ANDROID_KHR" ]
+    deps += [ "//third_party/libsync" ]
+    if (enable_vulkan) {
+      deps += [
+        "//gpu/ipc/common:android_image_reader_utils",
+        "//gpu/vulkan:vulkan",
+      ]
+    }
   }
 }
 

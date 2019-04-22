@@ -44,16 +44,16 @@ static String Substring(XPathArguments& args) {
 
 static String Substring(const char* string, double pos) {
   XPathArguments args;
-  args.push_back(new xpath::StringExpression(string));
-  args.push_back(new xpath::Number(pos));
+  args.push_back(MakeGarbageCollected<xpath::StringExpression>(string));
+  args.push_back(MakeGarbageCollected<xpath::Number>(pos));
   return Substring(args);
 }
 
 static String Substring(const char* string, double pos, double len) {
   XPathArguments args;
-  args.push_back(new xpath::StringExpression(string));
-  args.push_back(new xpath::Number(pos));
-  args.push_back(new xpath::Number(len));
+  args.push_back(MakeGarbageCollected<xpath::StringExpression>(string));
+  args.push_back(MakeGarbageCollected<xpath::Number>(pos));
+  args.push_back(MakeGarbageCollected<xpath::Number>(len));
   return Substring(args);
 }
 
@@ -102,14 +102,15 @@ TEST(XPathFunctionsTest, substring_negativePosition) {
   EXPECT_EQ("hello", Substring("hello, world!", -4.0, 10.0))
       << "negative start positions should impinge on the result length";
   // Try to underflow the length adjustment for negative positions.
-  EXPECT_EQ("", Substring("hello", std::numeric_limits<long>::min() + 1, 1.0));
+  EXPECT_EQ("",
+            Substring("hello", std::numeric_limits<int32_t>::min() + 1, 1.0));
 }
 
 TEST(XPathFunctionsTest, substring_negativeLength) {
   EXPECT_EQ("", Substring("hello, world!", 1.0, -3.0))
       << "negative lengths should result in an empty string";
 
-  EXPECT_EQ("", Substring("foo", std::numeric_limits<long>::min(), 1.0))
+  EXPECT_EQ("", Substring("foo", std::numeric_limits<int32_t>::min(), 1.0))
       << "large (but long representable) negative position should result in "
       << "an empty string";
 }

@@ -37,11 +37,9 @@ def build(build_config, target_device, extra_gn_options, extra_ninja_options):
       of the ninja build command.
   """
   if target_device == 'iphoneos':
-    target_cpu = 'arm'
-    additional_cpu = 'arm64'
+    target_cpu = 'arm64'
   else:
-    target_cpu = 'x86'
-    additional_cpu = 'x64'
+    target_cpu = 'x64'
 
   if build_config == 'Debug':
     build_config_gn_args = 'is_debug=true'
@@ -55,9 +53,8 @@ def build(build_config, target_device, extra_gn_options, extra_ninja_options):
             'disable_file_support=true disable_ftp_support=true '
             'disable_brotli_filter=true ios_enable_code_signing=false '
             'enable_dsyms=true '
-            'target_cpu="%s" additional_target_cpus = ["%s"] %s %s' %
-            (target_cpu, additional_cpu, build_config_gn_args,
-             extra_gn_options))
+            'target_cpu="%s" %s %s' %
+            (target_cpu, build_config_gn_args, extra_gn_options))
 
   gn_command = 'gn gen %s --args=\'%s\'' % (build_dir, gn_args)
   print gn_command
@@ -236,8 +233,6 @@ def main():
   else:
     extra_gn_options += 'ios_web_view_enable_autofill=false '
   extra_gn_options += 'ios_web_view_output_name="%s" ' % output_name
-  # This is needed until all clients drop iOS 10 support.
-  extra_gn_options += 'ios_deployment_target="10.0" '
   # This prevents Breakpad from being included in the final binary to avoid
   # duplicate symbols with the client app.
   extra_gn_options += 'use_crash_key_stubs=true '

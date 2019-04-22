@@ -79,7 +79,7 @@ std::unique_ptr&lt;<a href='SkCanvas_Reference#SkCanvas'>SkCanvas</a>&gt; SK_API
 
 ---
 
-<a name='SkDebugCanvas'></a>
+<a name='DebugCanvas'></a>
 
 ---
 
@@ -570,12 +570,6 @@ int32_t <a href='#SkISize_height'>height</a>() const
   <tr><th style='text-align: left; border: 2px solid #dddddd; padding: 8px; '>Const</th>
 <th style='text-align: center; border: 2px solid #dddddd; padding: 8px; '>Value</th>
 <th style='text-align: left; border: 2px solid #dddddd; padding: 8px; '>Description</th></tr>
-  <tr style='background-color: #f0f0f0; '>
-    <td style='text-align: left; border: 2px solid #dddddd; padding: 8px; '><a name='SkPaintDefaults_Flags'><code>SkPaintDefaults_Flags</code></a></td>
-    <td style='text-align: center; border: 2px solid #dddddd; padding: 8px; '>0</td>
-    <td style='text-align: left; border: 2px solid #dddddd; padding: 8px; '>
-</td>
-  </tr>
   <tr>
     <td style='text-align: left; border: 2px solid #dddddd; padding: 8px; '><a name='SkPaintDefaults_Hinting'><code>SkPaintDefaults_Hinting</code></a></td>
     <td style='text-align: center; border: 2px solid #dddddd; padding: 8px; '>2</td>

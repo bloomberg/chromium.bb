@@ -26,6 +26,13 @@
 
 namespace base {
 
+#if defined(OS_ANDROID)
+// Some Android (Cast) test devices have a large portion of physical memory
+// reserved. During investigation, around 115-150 MB were seen reserved, so we
+// track this here with a factory of safety of 2.
+static constexpr int kReservedPhysicalMemory = 300 * 1024;  // In _K_bytes.
+#endif  // defined(OS_ANDROID)
+
 using SysInfoTest = PlatformTest;
 
 TEST_F(SysInfoTest, NumProcs) {
@@ -53,13 +60,20 @@ TEST_F(SysInfoTest, MAYBE_AmountOfAvailablePhysicalMemory) {
   SystemMemoryInfoKB info;
   ASSERT_TRUE(GetSystemMemoryInfo(&info));
   EXPECT_GT(info.free, 0);
-
   if (info.available != 0) {
     // If there is MemAvailable from kernel.
     EXPECT_LT(info.available, info.total);
     const int64_t amount = SysInfo::AmountOfAvailablePhysicalMemory(info);
     // We aren't actually testing that it's correct, just that it's sane.
-    EXPECT_GT(amount, static_cast<int64_t>(info.free) * 1024);
+    // Available memory is |free - reserved + reclaimable (inactive, non-free)|.
+    // On some android platforms, reserved is a substantial portion.
+    const int available =
+#if defined(OS_ANDROID)
+        info.free - kReservedPhysicalMemory;
+#else
+        info.free;
+#endif  // defined(OS_ANDROID)
+    EXPECT_GT(amount, static_cast<int64_t>(available) * 1024);
     EXPECT_LT(amount / 1024, info.available);
     // Simulate as if there is no MemAvailable.
     info.available = 0;
@@ -113,6 +127,13 @@ TEST_F(SysInfoTest, OperatingSystemVersionNumbers) {
   EXPECT_GT(os_bugfix_version, -1);
 }
 #endif
+
+#if defined(OS_IOS)
+TEST_F(SysInfoTest, GetIOSBuildNumber) {
+  std::string build_number(SysInfo::GetIOSBuildNumber());
+  EXPECT_GT(build_number.length(), 0U);
+}
+#endif  // defined(OS_IOS)
 
 TEST_F(SysInfoTest, Uptime) {
   TimeDelta up_time_1 = SysInfo::Uptime();

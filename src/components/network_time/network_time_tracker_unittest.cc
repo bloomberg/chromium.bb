@@ -8,9 +8,10 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
@@ -853,7 +854,7 @@ MultipleGoodTimeResponseHandler::ResponseHandler(
   net::test_server::BasicHttpResponse* response =
       new net::test_server::BasicHttpResponse();
 
-  if (next_time_index_ >= arraysize(kGoodTimeResponseBody)) {
+  if (next_time_index_ >= base::size(kGoodTimeResponseBody)) {
     response->set_code(net::HTTP_BAD_REQUEST);
     return std::unique_ptr<net::test_server::HttpResponse>(response);
   }
@@ -868,7 +869,7 @@ MultipleGoodTimeResponseHandler::ResponseHandler(
 }
 
 base::Time MultipleGoodTimeResponseHandler::GetTimeAtIndex(unsigned int i) {
-  if (i >= arraysize(kGoodTimeResponseHandlerJsTime))
+  if (i >= base::size(kGoodTimeResponseHandlerJsTime))
     return base::Time();
   return base::Time::FromJsTime(kGoodTimeResponseHandlerJsTime[i]);
 }

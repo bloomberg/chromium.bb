@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/win/event_trace_controller.h"
@@ -161,14 +162,14 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath temp;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &temp));
+  ASSERT_TRUE(CreateTemporaryFileInDir(temp_dir.GetPath(), &temp));
 
   EtwTraceController controller;
   HRESULT hr = controller.StartFileSession(session_name_.c_str(),
-                                           temp.value().c_str());
+                                           as_wcstr(temp.value()));
   if (hr == E_ACCESSDENIED) {
     VLOG(1) << "You must be an administrator to run this test on Vista";
-    base::DeleteFile(temp, false);
+    DeleteFile(temp, false);
     return;
   }
 
@@ -178,7 +179,7 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
   EXPECT_HRESULT_SUCCEEDED(controller.Stop(NULL));
   EXPECT_EQ(0u, controller.session());
   EXPECT_STREQ(L"", controller.session_name());
-  base::DeleteFile(temp, false);
+  DeleteFile(temp, false);
 }
 
 // This test is flaky for unclear reasons. See bugs 525297 and 534184
@@ -231,7 +232,7 @@ TEST_F(EtwTraceControllerTest, DISABLED_EnableDisable) {
 
   // Windows 7 does not call the callback when Stop() is called so we
   // can't wait, and enable_level and enable_flags are not zeroed.
-  if (base::win::GetVersion() >= VERSION_WIN8) {
+  if (GetVersion() >= VERSION_WIN8) {
     provider.WaitForCallback();
 
     // Session should have wound down.

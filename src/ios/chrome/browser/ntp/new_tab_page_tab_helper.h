@@ -15,6 +15,10 @@
 
 @protocol NewTabPageTabHelperDelegate;
 
+namespace web {
+class NavigationItem;
+}
+
 // NewTabPageTabHelper which manages a single NTP per tab.
 class NewTabPageTabHelper : public web::WebStateObserver,
                             public web::WebStateUserData<NewTabPageTabHelper> {
@@ -41,6 +45,8 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   bool IgnoreLoadRequests() const;
 
  private:
+  friend class web::WebStateUserData<NewTabPageTabHelper>;
+
   NewTabPageTabHelper(web::WebState* web_state,
                       id<NewTabPageTabHelperDelegate> delegate);
 
@@ -56,7 +62,7 @@ class NewTabPageTabHelper : public web::WebStateObserver,
 
   // Sets the NTP's NavigationItem title and virtualURL to the appropriate
   // string and chrome://newtab respectively.
-  void UpdatePendingItem();
+  void UpdateItem(web::NavigationItem* item);
 
   // Returns true if an |url| is either chrome://newtab or about://newtab.
   bool IsNTPURL(const GURL& url);
@@ -84,6 +90,8 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   // Ensure the ignore_load_requests_ flag is never set to NO for more than
   // |kMaximumIgnoreLoadRequestsTime| seconds.
   std::unique_ptr<base::OneShotTimer> ignore_load_requests_timer_ = nullptr;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageTabHelper);
 };

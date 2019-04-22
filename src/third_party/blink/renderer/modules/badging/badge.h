@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BADGING_BADGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BADGING_BADGE_H_
 
-#include "third_party/blink/public/platform/modules/badging/badging.mojom-blink.h"
+#include "third_party/blink/public/mojom/badging/badging.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
@@ -14,7 +14,6 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 class ScriptState;
-class USVStringOrLong;
 
 class Badge final : public ScriptWrappable,
                     public Supplement<ExecutionContext> {
@@ -26,21 +25,21 @@ class Badge final : public ScriptWrappable,
 
   static Badge* From(ExecutionContext*);
 
+  explicit Badge(ExecutionContext*);
   ~Badge() override;
 
   // Badge IDL interface.
   static void set(ScriptState*, ExceptionState&);
-  static void set(ScriptState*, USVStringOrLong&, ExceptionState&);
+  static void set(ScriptState*, uint64_t content, ExceptionState&);
   static void clear(ScriptState*);
 
-  void Set(USVStringOrLong*, ExceptionState&);
+  void SetInteger(uint64_t content);
+  void SetFlag();
   void Clear();
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit Badge(ExecutionContext*);
-
   static Badge* BadgeFromState(ScriptState* script_state);
 
   blink::mojom::blink::BadgeServicePtr badge_service_;

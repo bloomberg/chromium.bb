@@ -52,7 +52,7 @@ class GfxTestSuite : public base::TestSuite {
     ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
 #if defined(OS_WIN)
-    gfx::win::MaybeInitializeDirectWrite();
+    gfx::win::InitializeDirectWrite();
     // Force antialiasing to true if DirectWrite is enabled for font metrics.
     // With antialiasing off, Skia returns GDI compatible metrics which are
     // larger by 1-2 points which cause some tests to fail.

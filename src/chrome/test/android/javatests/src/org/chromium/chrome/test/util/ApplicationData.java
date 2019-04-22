@@ -8,7 +8,6 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.support.v4.content.ContextCompat;
 
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -50,8 +49,6 @@ public final class ApplicationData {
                     @SuppressLint({"ApplySharedPref", "CommitPrefEdits"})
                     @Override
                     public boolean isSatisfied() {
-                        SharedPreferences multidexPrefs =
-                                targetContext.getSharedPreferences("multidex.version", 0);
                         if (!mDataRemoved && !removeAppData(targetContext)) {
                             return false;
                         }
@@ -60,11 +57,6 @@ public final class ApplicationData {
                         // will try to create it otherwise and will fail for sandbox processes with
                         // a NullPointerException.
                         File cacheDir = new File(ContextCompat.getDataDir(targetContext), "cache");
-                        // Removing app data cleared out all shared prefs. Multidex uses shared
-                        // prefs to cache hashes of the secondary dexes it has extracted; without
-                        // them, it'll attempt to reextract the dexes the next time the tests
-                        // start up.
-                        multidexPrefs.edit().commit();
                         return cacheDir.exists() || cacheDir.mkdir();
                     }
                 },
@@ -74,8 +66,6 @@ public final class ApplicationData {
     /**
      * Remove all files and directories under the given application directory, except 'lib'.
      *
-     * @param appDir the application directory to remove.
-     *
      * @return whether removal succeeded.
      */
     private static boolean removeAppData(final Context targetContext) {
@@ -84,13 +74,36 @@ public final class ApplicationData {
         File[] files = dataDir.listFiles();
         if (files == null) return true;
         for (File file : files) {
-            if (!(file.getName().equals("lib") || file.getName().equals("incremental-install-files")
-                        || file.getName().equals(codeCacheDir.getName()))
-                    && !removeFile(file)) {
+            // Symlink to app's native libraries.
+            if (file.getName().equals("lib")) {
+                continue;
+            }
+            if (file.getName().equals("incremental-install-files")) {
+                continue;
+            }
+            if (file.getName().equals(codeCacheDir.getName())) {
+                continue;
+            }
+            // SharedPreferences are cached in memory, so clearing their files doesn't help anyways.
+            // Some preferences need to persist (e.g. multidex.version.xml).
+            if (file.getName().equals("shared_prefs")) {
+                removeSharedPrefs(file);
+                continue;
+            }
+            if (!removeFile(file)) {
                 return false;
             }
         }
         return true;
+    }
+
+    // TODO(agrieve): Use InMemorySharedPrefs rather than having to delete from disk.
+    private static void removeSharedPrefs(File sharedPrefsDir) {
+        for (File f : sharedPrefsDir.listFiles()) {
+            if (!f.getName().endsWith("multidex.version.xml")) {
+                f.delete();
+            }
+        }
     }
 
     /**

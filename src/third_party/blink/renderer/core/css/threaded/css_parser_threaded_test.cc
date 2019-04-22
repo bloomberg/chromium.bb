@@ -34,32 +34,33 @@ class CSSParserThreadedTest : public MultiThreadedTest {
 
 TSAN_TEST_F(CSSParserThreadedTest, SinglePropertyFilter) {
   RunOnThreads([]() {
-    TestSingle(CSSPropertyFilter, "sepia(50%)");
-    TestSingle(CSSPropertyFilter, "blur(10px)");
-    TestSingle(CSSPropertyFilter, "brightness(50%) invert(100%)");
+    TestSingle(CSSPropertyID::kFilter, "sepia(50%)");
+    TestSingle(CSSPropertyID::kFilter, "blur(10px)");
+    TestSingle(CSSPropertyID::kFilter, "brightness(50%) invert(100%)");
   });
 }
 
 TSAN_TEST_F(CSSParserThreadedTest, SinglePropertyFont) {
   RunOnThreads([]() {
-    TestSingle(CSSPropertyFontFamily, "serif");
-    TestSingle(CSSPropertyFontFamily, "monospace");
-    TestSingle(CSSPropertyFontFamily, "times");
-    TestSingle(CSSPropertyFontFamily, "arial");
+    TestSingle(CSSPropertyID::kFontFamily, "serif");
+    TestSingle(CSSPropertyID::kFontFamily, "monospace");
+    TestSingle(CSSPropertyID::kFontFamily, "times");
+    TestSingle(CSSPropertyID::kFontFamily, "arial");
 
-    TestSingle(CSSPropertyFontWeight, "normal");
-    TestSingle(CSSPropertyFontWeight, "bold");
+    TestSingle(CSSPropertyID::kFontWeight, "normal");
+    TestSingle(CSSPropertyID::kFontWeight, "bold");
 
-    TestSingle(CSSPropertyFontSize, "10px");
-    TestSingle(CSSPropertyFontSize, "20em");
+    TestSingle(CSSPropertyID::kFontSize, "10px");
+    TestSingle(CSSPropertyID::kFontSize, "20em");
   });
 }
 
 TSAN_TEST_F(CSSParserThreadedTest, ValuePropertyFont) {
   RunOnThreads([]() {
-    MutableCSSPropertyValueSet* v = TestValue(CSSPropertyFont, "15px arial");
-    EXPECT_EQ(v->GetPropertyValue(CSSPropertyFontFamily), "arial");
-    EXPECT_EQ(v->GetPropertyValue(CSSPropertyFontSize), "15px");
+    MutableCSSPropertyValueSet* v =
+        TestValue(CSSPropertyID::kFont, "15px arial");
+    EXPECT_EQ(v->GetPropertyValue(CSSPropertyID::kFontFamily), "arial");
+    EXPECT_EQ(v->GetPropertyValue(CSSPropertyID::kFontSize), "15px");
   });
 }
 
@@ -68,7 +69,7 @@ TSAN_TEST_F(CSSParserThreadedTest, FontFaceDescriptor) {
     CSSParserContext* ctx = CSSParserContext::Create(
         kCSSFontFaceRuleMode, SecureContextMode::kInsecureContext);
     const CSSValue* v = CSSParser::ParseFontFaceDescriptor(
-        CSSPropertySrc, "url(myfont.ttf)", ctx);
+        CSSPropertyID::kSrc, "url(myfont.ttf)", ctx);
     ASSERT_TRUE(v);
     EXPECT_EQ(v->CssText(), "url(\"myfont.ttf\")");
   });

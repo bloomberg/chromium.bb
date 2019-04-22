@@ -41,9 +41,9 @@ public interface ChromeActivityNativeDelegate {
     void onStopWithNative();
 
     /**
-     * @return Whether the activity linked to the delegate has been destroyed.
+     * @return Whether the activity linked to the delegate has been destroyed or is finishing.
      */
-    boolean isActivityDestroyed();
+    boolean isActivityFinishingOrDestroyed();
 
     /**
      * Carry out native code dependent tasks that relate to processing a new intent coming to

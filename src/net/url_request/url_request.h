@@ -21,7 +21,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/base/auth.h"
-#include "net/base/completion_callback.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_error_details.h"
@@ -53,7 +53,6 @@ class Value;
 namespace net {
 
 class CookieOptions;
-class HostPortPair;
 class IOBuffer;
 struct LoadTimingInfo;
 struct RedirectInfo;
@@ -119,7 +118,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
     // Always clear the referrer regardless of the request destination.
     NO_REFERRER,
-    MAX_REFERRER_POLICY
+    MAX_REFERRER_POLICY = NO_REFERRER
   };
 
   // First-party URL redirect policy: During server redirects, the first-party
@@ -188,7 +187,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     // When it does so, the request will be reissued, restarting the sequence
     // of On* callbacks.
     virtual void OnAuthRequired(URLRequest* request,
-                                AuthChallengeInfo* auth_info);
+                                const AuthChallengeInfo& auth_info);
 
     // Called when we receive an SSL CertificateRequest message for client
     // authentication.  The delegate should call
@@ -286,6 +285,15 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   const GURL& site_for_cookies() const { return site_for_cookies_; }
   // This method may only be called before Start().
   void set_site_for_cookies(const GURL& site_for_cookies);
+
+  // The origin of the top frame of the page making the request (where
+  // applicable). Note that this is experimental and may not always be set.
+  const base::Optional<url::Origin>& top_frame_origin() const {
+    return top_frame_origin_;
+  }
+  void set_top_frame_origin(const base::Optional<url::Origin>& origin) {
+    top_frame_origin_ = origin;
+  }
 
   // Indicate whether SameSite cookies should be attached even though the
   // request is cross-site.
@@ -491,11 +499,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Indicate if this response was fetched from disk cache.
   bool was_cached() const { return response_info_.was_cached; }
 
-  // Returns true if the URLRequest was delivered through a proxy.
-  bool was_fetched_via_proxy() const {
-    return response_info_.was_fetched_via_proxy;
-  }
-
   // Returns true if the URLRequest was delivered over SPDY.
   bool was_fetched_via_spdy() const {
     return response_info_.was_fetched_via_spdy;
@@ -503,7 +506,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // Returns the host and port that the content was fetched from.  See
   // http_response_info.h for caveats relating to cached content.
-  HostPortPair GetSocketAddress() const;
+  IPEndPoint GetResponseRemoteEndpoint() const;
 
   // Get all response headers, as a HttpResponseHeaders object.  See comments
   // in HttpResponseHeaders class as to the format of the data.
@@ -527,14 +530,15 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Gets the remote endpoint of the most recent socket that the network stack
   // used to make this request.
   //
-  // Note that GetSocketAddress returns the |socket_address| field from
+  // Note that GetResponseRemoteEndpoint returns the |socket_address| field from
   // HttpResponseInfo, which is only populated once the response headers are
   // received, and can return cached values for cache revalidation requests.
-  // GetRemoteEndpoint will only return addresses from the current request.
+  // GetTransactionRemoteEndpoint will only return addresses from the current
+  // request.
   //
   // Returns true and fills in |endpoint| if the endpoint is available; returns
   // false and leaves |endpoint| unchanged if it is unavailable.
-  bool GetRemoteEndpoint(IPEndPoint* endpoint) const;
+  bool GetTransactionRemoteEndpoint(IPEndPoint* endpoint) const;
 
   // Get the mime type.  This method may only be called once the delegate's
   // OnResponseStarted method has been called.
@@ -628,10 +632,11 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // This method may be called to follow a redirect that was deferred in
   // response to an OnReceivedRedirect call. If non-null,
-  // |modified_request_headers| are changes applied to the request headers after
+  // |modified_headers| are changes applied to the request headers after
   // updating them for the redirect.
   void FollowDeferredRedirect(
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers);
 
   // One of the following two methods should be called in response to an
   // OnAuthRequired() callback (and only then).
@@ -751,11 +756,12 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   void set_status(URLRequestStatus status);
 
   // Allow the URLRequestJob to redirect this request. If non-null,
-  // |modified_request_headers| are changes applied to the request headers after
-  // updating them for the redirect.
+  // |removed_headers| and |modified_headers| are changes
+  // applied to the request headers after updating them for the redirect.
   void Redirect(
       const RedirectInfo& redirect_info,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers);
 
   // Called by URLRequestJob to allow interception when a redirect occurs.
   void NotifyReceivedRedirect(const RedirectInfo& redirect_info,
@@ -818,7 +824,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // These functions delegate to |delegate_|.  See URLRequest::Delegate for the
   // meaning of these functions.
-  void NotifyAuthRequired(AuthChallengeInfo* auth_info);
+  void NotifyAuthRequired(std::unique_ptr<AuthChallengeInfo> auth_info);
   void NotifyAuthRequiredComplete(NetworkDelegate::AuthRequiredResponse result);
   void NotifyCertificateRequested(SSLCertRequestInfo* cert_request_info);
   void NotifySSLCertificateError(const SSLInfo& ssl_info, bool fatal);
@@ -855,6 +861,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   std::vector<GURL> url_chain_;
   GURL site_for_cookies_;
+  base::Optional<url::Origin> top_frame_origin_;
+
   bool attach_same_site_cookies_;
   base::Optional<url::Origin> initiator_;
   GURL delegate_redirect_url_;
@@ -940,7 +948,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // |NotifyAuthRequired| on the NetworkDelegate. |auth_info_| holds
   // the authentication challenge being handled by |NotifyAuthRequired|.
   AuthCredentials auth_credentials_;
-  scoped_refptr<AuthChallengeInfo> auth_info_;
+  std::unique_ptr<AuthChallengeInfo> auth_info_;
 
   int64_t received_response_content_length_;
 

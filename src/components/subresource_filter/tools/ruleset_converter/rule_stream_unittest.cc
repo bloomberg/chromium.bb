@@ -77,7 +77,7 @@ std::vector<std::string> GetManyRules() {
       text_rule += "@@";
     if (i & 1)
       text_rule += "sub.";
-    text_rule += "example" + base::IntToString(i) + ".com";
+    text_rule += "example" + base::NumberToString(i) + ".com";
     text_rule += '$';
     text_rule += (i & 7) ? "script" : "image";
     if (i & 1)
@@ -90,7 +90,7 @@ std::vector<std::string> GetManyRules() {
     if (i & 1)
       text_rule += ",~but_not.domain.com";
     text_rule += (i & 3) ? "##" : "#@#";
-    text_rule += "#id" + base::IntToString(i);
+    text_rule += "#id" + base::NumberToString(i);
     text_rules.push_back(text_rule);
   }
 

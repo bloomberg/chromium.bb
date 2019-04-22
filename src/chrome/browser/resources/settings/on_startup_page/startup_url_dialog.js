@@ -8,7 +8,7 @@
  * Describe the current URL input error status.
  * @enum {number}
  */
-let UrlInputError = {
+const UrlInputError = {
   NONE: 0,
   INVALID_URL: 1,
   TOO_LONG: 2,
@@ -103,8 +103,9 @@ Polymer({
         this.browserProxy_.addStartupPage(this.url_);
 
     whenDone.then(success => {
-      if (success)
+      if (success) {
         this.$.dialog.close();
+      }
       // If the URL was invalid, there is nothing to do, just leave the dialog
       // open and let the user fix the URL or cancel.
     });

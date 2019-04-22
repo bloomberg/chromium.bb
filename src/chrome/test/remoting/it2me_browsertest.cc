@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "chrome/test/remoting/remote_desktop_browsertest.h"
+#include "chrome/test/remoting/remote_test_helper.h"
 
 namespace remoting {
 

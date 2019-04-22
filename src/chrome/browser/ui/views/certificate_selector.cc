@@ -26,6 +26,7 @@
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
@@ -228,13 +229,15 @@ void CertificateSelector::InitWithText(
   }
   columns.push_back(ui::TableColumn(IDS_CERT_SELECTOR_SERIAL_COLUMN,
                                     ui::TableColumn::LEFT, -1, 0.2f));
-  table_ = new views::TableView(model_.get(), columns, views::TEXT_ONLY,
-                                true /* single_selection */);
-  table_->set_observer(this);
+  auto table = std::make_unique<views::TableView>(
+      model_.get(), columns, views::TEXT_ONLY, true /* single_selection */);
+  table_ = table.get();
+  table->set_observer(this);
   layout->StartRow(1.0, kColumnSetId);
-  layout->AddView(table_->CreateParentIfNecessary(), 1, 1,
-                  views::GridLayout::FILL, views::GridLayout::FILL,
-                  kTableViewWidth, kTableViewHeight);
+  layout->AddView(
+      views::TableView::CreateScrollViewWithTable(std::move(table)).release(),
+      1, 1, views::GridLayout::FILL, views::GridLayout::FILL, kTableViewWidth,
+      kTableViewHeight);
 
   layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
 }

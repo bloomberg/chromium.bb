@@ -7,7 +7,9 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
+#include "base/process/process.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/common/child.mojom.h"
@@ -63,11 +65,18 @@ class ChildConnection::IOThreadContext
     }
   }
 
-  void SetProcessHandle(base::ProcessHandle handle) {
+  void SetProcess(base::Process process) {
     DCHECK(io_task_runner_);
     io_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&IOThreadContext::SetProcessHandleOnIOThread,
-                                  this, handle));
+        FROM_HERE, base::BindOnce(&IOThreadContext::SetProcessOnIOThread, this,
+                                  std::move(process)));
+  }
+
+  void ForceCrash() {
+    DCHECK(io_task_runner_);
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IOThreadContext::ForceCrashOnIOThread, this));
   }
 
  private:
@@ -95,11 +104,14 @@ class ChildConnection::IOThreadContext
     pid_receiver_.reset();
   }
 
-  void SetProcessHandleOnIOThread(base::ProcessHandle handle) {
+  void SetProcessOnIOThread(base::Process process) {
     DCHECK(pid_receiver_.is_bound());
-    pid_receiver_->SetPID(base::GetProcId(handle));
+    pid_receiver_->SetPID(process.Pid());
     pid_receiver_.reset();
+    process_ = std::move(process);
   }
+
+  void ForceCrashOnIOThread() { child_->Crash(); }
 
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   // Usable from the IO thread only.
@@ -108,6 +120,9 @@ class ChildConnection::IOThreadContext
   // ServiceManagerConnection in the child monitors the lifetime of this pipe.
   mojom::ChildPtr child_;
   service_manager::mojom::PIDReceiverPtr pid_receiver_;
+  // Hold onto the process, and thus its process handle, so that the pid will
+  // remain valid.
+  base::Process process_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadContext);
 };
@@ -136,9 +151,12 @@ void ChildConnection::BindInterface(
   context_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void ChildConnection::SetProcessHandle(base::ProcessHandle handle) {
-  process_handle_ = handle;
-  context_->SetProcessHandle(handle);
+void ChildConnection::SetProcess(base::Process process) {
+  context_->SetProcess(std::move(process));
+}
+
+void ChildConnection::ForceCrash() {
+  context_->ForceCrash();
 }
 
 }  // namespace content

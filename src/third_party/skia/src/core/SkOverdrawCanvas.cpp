@@ -8,9 +8,10 @@
 #include "SkOverdrawCanvas.h"
 
 #include "SkColorFilter.h"
+#include "SkDevice.h"
 #include "SkDrawShadowInfo.h"
 #include "SkDrawable.h"
-#include "SkFindAndPlaceGlyph.h"
+#include "SkGlyphRunPainter.h"
 #include "SkImagePriv.h"
 #include "SkLatticeIter.h"
 #include "SkPatchUtils.h"
@@ -21,26 +22,6 @@
 #include "SkTextBlob.h"
 #include "SkTextBlobPriv.h"
 #include "SkTo.h"
-
-namespace {
-class ProcessOneGlyphBounds {
-public:
-    ProcessOneGlyphBounds(SkOverdrawCanvas* canvas)
-        : fCanvas(canvas)
-    {}
-
-    void operator()(const SkGlyph& glyph, SkPoint position, SkPoint rounding) {
-        int left = SkScalarFloorToInt(position.fX) + glyph.fLeft;
-        int top = SkScalarFloorToInt(position.fY) + glyph.fTop;
-        int right = left + glyph.fWidth;
-        int bottom = top + glyph.fHeight;
-        fCanvas->onDrawRect(SkRect::MakeLTRB(left, top, right, bottom), SkPaint());
-    }
-
-private:
-    SkOverdrawCanvas* fCanvas;
-};
-};
 
 SkOverdrawCanvas::SkOverdrawCanvas(SkCanvas* canvas)
     : INHERITED(canvas->onImageInfo().width(), canvas->onImageInfo().height())
@@ -58,112 +39,45 @@ SkOverdrawCanvas::SkOverdrawCanvas(SkCanvas* canvas)
 
     fPaint.setAntiAlias(false);
     fPaint.setBlendMode(SkBlendMode::kPlus);
-    fPaint.setColorFilter(SkColorFilter::MakeMatrixFilterRowMajor255(kIncrementAlpha));
+    fPaint.setColorFilter(SkColorFilters::MatrixRowMajor255(kIncrementAlpha));
 }
 
-void SkOverdrawCanvas::onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y,
-                                  const SkPaint& paint) {
-    SK_ABORT("This canvas does not support draw text.");
-}
+namespace {
+class TextDevice : public SkNoPixelsDevice, public SkGlyphRunListPainter::BitmapDevicePainter {
+public:
+    TextDevice(SkCanvas* overdrawCanvas, const SkSurfaceProps& props)
+            : SkNoPixelsDevice{SkIRect::MakeWH(32767, 32767), props},
+              fOverdrawCanvas{overdrawCanvas},
+              fPainter{props, kN32_SkColorType, nullptr, SkStrikeCache::GlobalStrikeCache()} {}
 
-void SkOverdrawCanvas::drawPosTextCommon(const void* text, size_t byteLength, const SkScalar pos[],
-                                         int scalarsPerPos, const SkPoint& offset,
-                                         const SkPaint& paint) {
-    ProcessOneGlyphBounds processBounds(this);
-    SkSurfaceProps props(0, kUnknown_SkPixelGeometry);
-    this->getProps(&props);
-    auto cache = SkStrikeCache::FindOrCreateStrikeExclusive(
-                                SkFont::LEGACY_ExtractFromPaint(paint), paint, props,
-                                SkScalerContextFlags::kNone, this->getTotalMatrix());
-    SkFindAndPlaceGlyph::ProcessPosText(paint.getTextEncoding(), (const char*) text, byteLength,
-                                        SkPoint::Make(0, 0), SkMatrix(), (const SkScalar*) pos, 2,
-                                        cache.get(), processBounds);
-}
+    void paintPaths(SkSpan<const SkPathPos> pathsAndPositions, SkScalar scale,
+                    const SkPaint& paint) const override {}
 
-void SkOverdrawCanvas::onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[],
-                                     const SkPaint& paint) {
-    this->drawPosTextCommon(text, byteLength, (SkScalar*) pos, 2, SkPoint::Make(0, 0), paint);
-}
-
-void SkOverdrawCanvas::onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xs[],
-                                      SkScalar y, const SkPaint& paint) {
-    this->drawPosTextCommon(text, byteLength, (SkScalar*) xs, 1, SkPoint::Make(0, y), paint);
-}
-
-typedef int (*CountTextProc)(const char* text, const char* stop);
-static int count_utf16(const char* text, const char* stop) {
-    const uint16_t* prev = (const uint16_t*)text;
-    (void)SkUTF::NextUTF16(&prev, (const uint16_t*)stop);
-    return SkToInt((const char*)prev - text);
-}
-static int return_4(const char* text, const char* stop) { return 4; }
-static int return_2(const char* text, const char* stop) { return 2; }
-static int count_utf8(const char* text, const char* stop) {
-    const char* ptr = text;
-    (void)SkUTF::NextUTF8(&ptr, stop);
-    return SkToInt(ptr - text);
-}
-
-void SkOverdrawCanvas::onDrawTextRSXform(const void* text, size_t byteLength,
-                                         const SkRSXform xform[], const SkRect*,
-                                         const SkPaint& paint) {
-    const char* stop = (const char*)text + byteLength;
-    CountTextProc proc = nullptr;
-    switch (paint.getTextEncoding()) {
-        case SkPaint::kUTF8_TextEncoding:
-            proc = count_utf8;
-            break;
-        case SkPaint::kUTF16_TextEncoding:
-            proc = count_utf16;
-            break;
-        case SkPaint::kUTF32_TextEncoding:
-            proc = return_4;
-            break;
-        case SkPaint::kGlyphID_TextEncoding:
-            proc = return_2;
-            break;
+    void paintMasks(SkSpan<const SkMask> masks, const SkPaint& paint) const override {
+        for (auto& mask : masks) {
+            fOverdrawCanvas->drawRect(SkRect::Make(mask.fBounds), SkPaint());
+        }
     }
-    SkASSERT(proc);
 
-    SkMatrix matrix;
-    const void* stopText = (const char*)text + byteLength;
-    while ((const char*)text < (const char*)stopText) {
-        matrix.setRSXform(*xform++);
-        matrix.setConcat(this->getTotalMatrix(), matrix);
-        int subLen = proc((const char*)text, stop);
-        SkASSERT(subLen > 0);
-
-        this->save();
-        this->concat(matrix);
-        this->drawText(text, subLen, 0, 0, paint);
-        this->restore();
-
-        text = (const char*)text + subLen;
+protected:
+    void drawGlyphRunList(const SkGlyphRunList& glyphRunList) override {
+        fPainter.drawForBitmapDevice(glyphRunList, fOverdrawCanvas->getTotalMatrix(), this);
     }
-}
+
+private:
+    SkCanvas* const fOverdrawCanvas;
+    SkGlyphRunListPainter fPainter;
+};
+}  // namespace
 
 void SkOverdrawCanvas::onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
                                       const SkPaint& paint) {
-    SkPaint runPaint = paint;
-    SkTextBlobRunIterator it(blob);
-    for (;!it.done(); it.next()) {
-        size_t textLen = it.glyphCount() * sizeof(uint16_t);
-        const SkPoint& offset = it.offset();
-        it.applyFontToPaint(&runPaint);
-        switch (it.positioning()) {
-            case SkTextBlobRunIterator::kDefault_Positioning:
-                this->onDrawText(it.glyphs(), textLen, x + offset.x(), y + offset.y(), runPaint);
-                break;
-            case SkTextBlobRunIterator::kHorizontal_Positioning:
-                this->drawPosTextCommon(it.glyphs(), textLen, it.pos(), 1,
-                                        SkPoint::Make(x, y + offset.y()), runPaint);
-                break;
-            case SkTextBlobRunIterator::kFull_Positioning:
-                this->drawPosTextCommon(it.glyphs(), textLen, it.pos(), 2, SkPoint::Make(x, y),
-                                        runPaint);
-                break;
-        }
-    }
+    SkGlyphRunBuilder b;
+    SkSurfaceProps props{0, kUnknown_SkPixelGeometry};
+    this->getProps(&props);
+    TextDevice device{this, props};
+
+    b.drawTextBlob(paint, *blob, {x, y}, &device);
 }
 
 void SkOverdrawCanvas::onDrawPatch(const SkPoint cubics[12], const SkColor colors[4],
@@ -273,13 +187,6 @@ void SkOverdrawCanvas::onDrawImageLattice(const SkImage* image, const Lattice& l
     }
 }
 
-void SkOverdrawCanvas::onDrawImageSet(const ImageSetEntry set[], int count, SkFilterQuality,
-                                      SkBlendMode) {
-    for (int i = 0; i < count; ++i) {
-        fList[0]->onDrawRect(set[i].fDstRect, fPaint);
-    }
-}
-
 void SkOverdrawCanvas::onDrawBitmap(const SkBitmap& bitmap, SkScalar x, SkScalar y,
                                     const SkPaint*) {
     fList[0]->onDrawRect(SkRect::MakeXYWH(x, y, bitmap.width(), bitmap.height()), fPaint);
@@ -316,6 +223,41 @@ void SkOverdrawCanvas::onDrawShadowRec(const SkPath& path, const SkDrawShadowRec
     SkRect bounds;
     SkDrawShadowMetrics::GetLocalBounds(path, rec, this->getTotalMatrix(), &bounds);
     fList[0]->onDrawRect(bounds, fPaint);
+}
+
+void SkOverdrawCanvas::onDrawEdgeAAQuad(const SkRect& rect, const SkPoint clip[4],
+                                        QuadAAFlags aa, SkColor color, SkBlendMode mode) {
+    if (clip) {
+        SkPath path;
+        path.addPoly(clip, 4, true);
+        fList[0]->onDrawPath(path, fPaint);
+    } else {
+        fList[0]->onDrawRect(rect, fPaint);
+    }
+}
+
+void SkOverdrawCanvas::onDrawEdgeAAImageSet(const ImageSetEntry set[], int count,
+                                            const SkPoint dstClips[],
+                                            const SkMatrix preViewMatrices[], const SkPaint* paint,
+                                            SrcRectConstraint constraint) {
+    int clipIndex = 0;
+    for (int i = 0; i < count; ++i) {
+        if (set[i].fMatrixIndex >= 0) {
+            fList[0]->save();
+            fList[0]->concat(preViewMatrices[set[i].fMatrixIndex]);
+        }
+        if (set[i].fHasClip) {
+            SkPath path;
+            path.addPoly(dstClips + clipIndex, 4, true);
+            clipIndex += 4;
+            fList[0]->onDrawPath(path, fPaint);
+        } else {
+            fList[0]->onDrawRect(set[i].fDstRect, fPaint);
+        }
+        if (set[i].fMatrixIndex >= 0) {
+            fList[0]->restore();
+        }
+    }
 }
 
 inline SkPaint SkOverdrawCanvas::overdrawPaint(const SkPaint& paint) {

@@ -68,8 +68,9 @@ Polymer({
    */
   next_: function() {
     this.index_ = this.index_ || this.modeName_.indexOf(this.repeatMode);
-    if(this.index_ === -1)
+    if (this.index_ === -1) {
       return;
+    }
 
     var nextIndex = (this.index_ + 1) % this.modeName_.length;
     this.repeatMode = this.modeName_[nextIndex];

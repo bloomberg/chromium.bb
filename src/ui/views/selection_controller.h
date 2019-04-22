@@ -85,9 +85,12 @@ class VIEWS_EXPORT SelectionController {
   // Returns whether |point| is inside any substring of the text.
   bool IsInsideText(const gfx::Point& point);
 
-  // A timer and point used to modify the selection when dragging.
+  // A timer and point used to modify the selection when dragging. The
+  // |first_drag_location_| field is used to store where the drag-to-select
+  // started.
   base::RepeatingTimer drag_selection_timer_;
   gfx::Point last_drag_location_;
+  gfx::Point first_drag_location_;
 
   // State variables used to track the last click time and location.
   base::TimeTicks last_click_time_;
@@ -95,7 +98,7 @@ class VIEWS_EXPORT SelectionController {
 
   // Used to track double and triple clicks. Can take the values 0, 1 and 2
   // which specify a single, double and triple click respectively. Alternates
-  // between a double and triple click for continous clicks.
+  // between a double and triple click for continuous clicks.
   size_t aggregated_clicks_;
 
   // The range selected on a double click.

@@ -151,7 +151,11 @@ void CastContentWindowAura::EnableTouchInput(bool enabled) {
 }
 
 void CastContentWindowAura::RequestVisibility(
-    VisibilityPriority visibility_priority){};
+    VisibilityPriority visibility_priority) {}
+
+void CastContentWindowAura::SetActivityContext(base::Value activity_context) {}
+
+void CastContentWindowAura::SetHostContext(base::Value host_context) {}
 
 void CastContentWindowAura::NotifyVisibilityChange(
     VisibilityType visibility_type) {
@@ -161,7 +165,7 @@ void CastContentWindowAura::NotifyVisibilityChange(
   }
 }
 
-void CastContentWindowAura::RequestMoveOut(){};
+void CastContentWindowAura::RequestMoveOut() {}
 
 void CastContentWindowAura::OnWindowVisibilityChanged(aura::Window* window,
                                                       bool visible) {

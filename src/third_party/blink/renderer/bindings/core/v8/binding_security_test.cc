@@ -128,21 +128,21 @@ class BindingSecurityCounterTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(WindowProperties,
-                        BindingSecurityCounterTest,
-                        testing::Values("window",
-                                        "self",
-                                        "location",
-                                        "close",
-                                        "closed",
-                                        "focus",
-                                        "blur",
-                                        "frames",
-                                        "length",
-                                        "top",
-                                        "opener",
-                                        "parent",
-                                        "postMessage"));
+INSTANTIATE_TEST_SUITE_P(WindowProperties,
+                         BindingSecurityCounterTest,
+                         testing::Values("window",
+                                         "self",
+                                         "location",
+                                         "close",
+                                         "closed",
+                                         "focus",
+                                         "blur",
+                                         "frames",
+                                         "length",
+                                         "top",
+                                         "opener",
+                                         "parent",
+                                         "postMessage"));
 
 TEST_P(BindingSecurityCounterTest, CrossOriginWindow) {
   LoadWindowAndAccessProperty(OriginDisposition::CrossOrigin, GetParam());

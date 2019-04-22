@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VR_MODEL_CAMERA_MODEL_H_
 #define CHROME_BROWSER_VR_MODEL_CAMERA_MODEL_H_
 
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 
@@ -17,7 +17,7 @@ enum EyeType {
   kRightEye,
 };
 
-struct VR_EXPORT CameraModel {
+struct VR_BASE_EXPORT CameraModel {
   EyeType eye_type;
   gfx::Rect viewport;
   gfx::Transform view_matrix;

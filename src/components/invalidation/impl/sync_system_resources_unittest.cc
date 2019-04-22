@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/invalidation/impl/push_client_channel.h"
 #include "components/invalidation/impl/state_writer.h"
 #include "google/cacheinvalidation/include/types.h"
@@ -85,7 +85,7 @@ class SyncSystemResourcesTest : public testing::Test {
   }
 
   // Needed by |sync_system_resources_|.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   MockStateWriter mock_state_writer_;
   PushClientChannel push_client_channel_;
   SyncSystemResources sync_system_resources_;

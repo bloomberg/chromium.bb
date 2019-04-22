@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/host/host_cursor_proxy.h"
 
+#include <utility>
+
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"

@@ -13,14 +13,6 @@ static_library("tether") {
     "asynchronous_shutdown_object_container.h",
     "asynchronous_shutdown_object_container_impl.cc",
     "asynchronous_shutdown_object_container_impl.h",
-    "ble_advertisement_device_queue.cc",
-    "ble_advertisement_device_queue.h",
-    "ble_advertiser.cc",
-    "ble_advertiser.h",
-    "ble_connection_manager.cc",
-    "ble_connection_manager.h",
-    "ble_scanner.cc",
-    "ble_scanner.h",
     "connect_tethering_operation.cc",
     "connect_tethering_operation.h",
     "connection_preserver.cc",
@@ -124,32 +116,28 @@ static_library("tether") {
 
   deps = [
     "//base",
-    "//chromeos",
-    "//chromeos/components/proximity_auth/logging",
+    "//chromeos/components/multidevice/logging",
     "//chromeos/components/tether/proto",
+    "//chromeos/constants",
+    "//chromeos/dbus/power",
+    "//chromeos/login/login_state",
+    "//chromeos/network",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/multidevice_setup/public/cpp:cpp",
     "//chromeos/services/multidevice_setup/public/mojom:mojom",
     "//chromeos/services/secure_channel/public/cpp/client",
-    "//chromeos/services/secure_channel/public/mojom",
-
-    # TODO(hansberry): Remove //chromeos/services/secure_channel dependency when
-    # SecureChannelClient migration is complete.
-    "//chromeos/services/secure_channel",
     "//chromeos/services/secure_channel/public/cpp/shared",
-    "//components/cryptauth",
-    "//components/cryptauth/ble",
+    "//chromeos/services/secure_channel/public/mojom",
     "//components/pref_registry",
     "//components/prefs",
     "//components/session_manager/core",
-    "//components/signin/core/browser",
     "//device/bluetooth",
     "//ui/gfx",
     "//ui/message_center",
   ]
 
   public_deps = [
-    "//components/cryptauth/proto",
+    "//chromeos/services/device_sync/proto",
   ]
 }
 
@@ -161,12 +149,6 @@ static_library("test_support") {
     "fake_active_host.h",
     "fake_asynchronous_shutdown_object_container.cc",
     "fake_asynchronous_shutdown_object_container.h",
-    "fake_ble_advertiser.cc",
-    "fake_ble_advertiser.h",
-    "fake_ble_connection_manager.cc",
-    "fake_ble_connection_manager.h",
-    "fake_ble_scanner.cc",
-    "fake_ble_scanner.h",
     "fake_connection_preserver.cc",
     "fake_connection_preserver.h",
     "fake_crash_recovery_manager.cc",
@@ -209,6 +191,8 @@ static_library("test_support") {
     "mock_tether_host_response_recorder.h",
     "proto_test_util.cc",
     "proto_test_util.h",
+    "test_timer_factory.cc",
+    "test_timer_factory.h",
   ]
 
   public_deps = [
@@ -217,18 +201,15 @@ static_library("test_support") {
 
   deps = [
     "//base",
-    "//chromeos",
+    "//base/test:test_support",
+    "//chromeos/components/multidevice",
+    "//chromeos/components/multidevice:test_support",
     "//chromeos/components/tether/proto",
+    "//chromeos/constants",
+    "//chromeos/network:test_support",
     "//chromeos/services/device_sync/public/cpp:test_support",
-
-    # TODO(hansberry): Remove //chromeos/services/secure_channel dependency when
-    # SecureChannelClient migration is complete.
-    "//chromeos/services/secure_channel",
     "//chromeos/services/secure_channel/public/cpp/client:test_support",
     "//chromeos/services/secure_channel/public/cpp/shared",
-    "//components/cryptauth",
-    "//components/cryptauth:test_support",
-    "//components/cryptauth/ble:test_support",
     "//device/bluetooth",
     "//testing/gmock",
     "//testing/gtest",
@@ -243,8 +224,6 @@ source_set("unit_tests") {
     "active_host_network_state_updater_unittest.cc",
     "active_host_unittest.cc",
     "asynchronous_shutdown_object_container_impl_unittest.cc",
-    "ble_advertisement_device_queue_unittest.cc",
-    "ble_connection_manager_unittest.cc",
     "connect_tethering_operation_unittest.cc",
     "connection_preserver_impl_unittest.cc",
     "crash_recovery_manager_impl_unittest.cc",
@@ -285,27 +264,24 @@ source_set("unit_tests") {
     ":test_support",
     ":tether",
     "//base/test:test_support",
-    "//chromeos",
-    "//chromeos:test_support",
+    "//chromeos/components/multidevice",
+    "//chromeos/components/multidevice:test_support",
     "//chromeos/components/tether/proto",
+    "//chromeos/constants",
+    "//chromeos/dbus/power",
+    "//chromeos/login/login_state",
+    "//chromeos/network:test_support",
+    "//chromeos/services/device_sync:test_support",
+    "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/cpp:test_support",
-
-    # TODO(hansberry): Remove //chromeos/services/secure_channel dependency when
-    # SecureChannelClient migration is complete.
     "//chromeos/services/device_sync/public/mojom",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/mojom:mojom",
-    "//chromeos/services/secure_channel",
     "//chromeos/services/secure_channel:test_support",
     "//chromeos/services/secure_channel/public/cpp/client:test_support",
     "//chromeos/services/secure_channel/public/cpp/shared",
-    "//components/cryptauth",
-    "//components/cryptauth:test_support",
-    "//components/cryptauth/ble",
-    "//components/cryptauth/ble:test_support",
     "//components/prefs:test_support",
     "//components/session_manager/core",
-    "//components/signin/core/browser:test_support",
     "//components/sync_preferences:test_support",
     "//device/bluetooth",
     "//device/bluetooth:mocks",

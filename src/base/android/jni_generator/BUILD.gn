@@ -23,6 +23,7 @@ android_library("jni_sample_java") {
 
   deps = [
     "//base:base_java",
+    "//base:jni_java",
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -32,6 +33,7 @@ android_library("jni_annotation_sample_java") {
   java_files = [ "java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java" ]
   deps = [
     "//base:base_java",
+    "//base:jni_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
@@ -66,6 +68,7 @@ android_apk("sample_jni_apk") {
   deps = [
     ":jni_sample_java",
     "//base:base_java",
+    "//base:jni_java",
   ]
   shared_libraries = [ ":jni_sample_lib" ]
   jni_registration_header = _registration_header
@@ -84,7 +87,7 @@ java_cpp_template("processor_args_java") {
   sources = [
     "ProcessorArgs.template",
   ]
-  defines = [ "IS_JAVA_DEBUG_VALUE=$is_java_debug" ]
+  defines = [ "HASH_JNI_NAMES_VALUE=$use_hashed_jni_names" ]
 }
 
 java_annotation_processor("jni_processor") {

@@ -71,7 +71,7 @@ class SparseSidetable {
 // necessary node revisitations happen.
 class ReduceScope {
  public:
-  typedef EffectGraphReducer::Reduction Reduction;
+  using Reduction = EffectGraphReducer::Reduction;
   explicit ReduceScope(Node* node, Reduction* reduction)
       : current_node_(node), reduction_(reduction) {}
 
@@ -96,9 +96,9 @@ class VariableTracker {
  private:
   // The state of all variables at one point in the effect chain.
   class State {
-    typedef PersistentMap<Variable, Node*> Map;
-
    public:
+    using Map = PersistentMap<Variable, Node*>;
+
     explicit State(Zone* zone) : map_(zone) {}
     Node* Get(Variable var) const {
       CHECK(var != Variable::Invalid());
@@ -503,7 +503,7 @@ int OffsetOfFieldAccess(const Operator* op) {
 int OffsetOfElementAt(ElementAccess const& access, int index) {
   DCHECK_GE(index, 0);
   DCHECK_GE(ElementSizeLog2Of(access.machine_type.representation()),
-            kPointerSizeLog2);
+            kTaggedSizeLog2);
   return access.header_size +
          (index << ElementSizeLog2Of(access.machine_type.representation()));
 }
@@ -754,7 +754,7 @@ void ReduceNode(const Operator* op, EscapeAnalysisTracker::Scope* current,
           current->Get(map_field).To(&object_map)) {
         if (object_map) {
           current->SetReplacement(LowerCompareMapsWithoutLoad(
-              object_map, CompareMapsParametersOf(op).maps(), jsgraph));
+              object_map, CompareMapsParametersOf(op), jsgraph));
           break;
         } else {
           // If the variable has no value, we have not reached the fixed-point
@@ -846,9 +846,9 @@ const VirtualObject* EscapeAnalysisResult::GetVirtualObject(Node* node) {
 VirtualObject::VirtualObject(VariableTracker* var_states, VirtualObject::Id id,
                              int size)
     : Dependable(var_states->zone()), id_(id), fields_(var_states->zone()) {
-  DCHECK_EQ(0, size % kPointerSize);
+  DCHECK(IsAligned(size, kTaggedSize));
   TRACE("Creating VirtualObject id:%d size:%d\n", id, size);
-  int num_fields = size / kPointerSize;
+  int num_fields = size / kTaggedSize;
   fields_.reserve(num_fields);
   for (int i = 0; i < num_fields; ++i) {
     fields_.push_back(var_states->NewVariable());

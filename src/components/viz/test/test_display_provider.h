@@ -25,8 +25,8 @@ class TestDisplayProvider : public DisplayProvider {
       gpu::SurfaceHandle surface_handle,
       bool gpu_compositing,
       mojom::DisplayClient* display_client,
-      ExternalBeginFrameSource* external_begin_frame_source,
-      SyntheticBeginFrameSource* synthetic_begin_frame_source,
+      BeginFrameSource* begin_frame_source,
+      UpdateVSyncParametersCallback update_vsync_callback,
       const RendererSettings& renderer_settings,
       bool send_swap_size_notifications) override;
   uint32_t GetRestartId() const override;

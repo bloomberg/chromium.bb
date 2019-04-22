@@ -12,28 +12,29 @@
 #include <memory>
 #include "stdlib.h"
 #include "string.h"
-#include "assert.h"
+#include "SkSLLexer.h"
+#include "SkSLDefines.h"
 #include "SkSLString.h"
 #include "SkSLStringStream.h"
 
-#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
+#ifndef SKSL_STANDALONE
+#include "SkTypes.h"
+#if SK_SUPPORT_GPU
 #include "GrContextOptions.h"
 #include "GrShaderCaps.h"
-#endif
-
-#ifdef SKSL_STANDALONE
-#if defined(_WIN32) || defined(__SYMBIAN32__)
-#define SKSL_BUILD_FOR_WIN
-#endif
-#else
-#ifdef SK_BUILD_FOR_WIN
-#define SKSL_BUILD_FOR_WIN
-#endif // SK_BUILD_FOR_WIN
+#endif // SK_SUPPORT_GPU
 #endif // SKSL_STANDALONE
 
 class GrShaderCaps;
 
 namespace SkSL {
+
+class OutputStream;
+class StringStream;
+
+#ifdef SKSL_STANDALONE
+#define SK_API
+#endif
 
 #if defined(SKSL_STANDALONE) || !SK_SUPPORT_GPU
 
@@ -102,6 +103,10 @@ public:
     }
 
     bool multisampleInterpolationSupport() const {
+        return true;
+    }
+
+    bool sampleVariablesSupport() const {
         return true;
     }
 
@@ -392,30 +397,15 @@ public:
 
 void write_stringstream(const StringStream& d, OutputStream& out);
 
-#if _MSC_VER
-#define NORETURN __declspec(noreturn)
-#else
-#define NORETURN __attribute__((__noreturn__))
-#endif
+// Returns true if op is '=' or any compound assignment operator ('+=', '-=', etc.)
+bool is_assignment(Token::Kind op);
+
+// Given a compound assignment operator, returns the non-assignment version of the operator (e.g.
+// '+=' becomes '+')
+Token::Kind remove_assignment(Token::Kind op);
 
 NORETURN void sksl_abort();
 
 } // namespace
-
-#ifdef SKSL_STANDALONE
-#define SkASSERT(x)
-#define SkAssertResult(x) x
-#define SkDEBUGCODE(x)
-#endif
-
-#define SKSL_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
-
-#if defined(__clang__) || defined(__GNUC__)
-#define SKSL_PRINTF_LIKE(A, B) __attribute__((format(printf, (A), (B))))
-#else
-#define SKSL_PRINTF_LIKE(A, B)
-#endif
-
-#define ABORT(...) (printf(__VA_ARGS__), sksl_abort())
 
 #endif

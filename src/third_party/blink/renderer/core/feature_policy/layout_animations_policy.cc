@@ -35,15 +35,16 @@ LayoutAnimationsPolicy::AffectedCSSProperties() {
 }
 
 // static
-
-// static
 void LayoutAnimationsPolicy::ReportViolation(
     const CSSProperty& animated_property,
     const SecurityContext& security_context) {
   DCHECK(AffectedCSSProperties().Contains(&animated_property));
   auto state = security_context.GetFeatureEnabledState(
       mojom::FeaturePolicyFeature::kLayoutAnimations);
-  DCHECK_NE(FeatureEnabledState::kEnabled, state);
+  security_context.CountPotentialFeaturePolicyViolation(
+      mojom::FeaturePolicyFeature::kLayoutAnimations);
+  if (state == FeatureEnabledState::kEnabled)
+    return;
   security_context.ReportFeaturePolicyViolation(
       mojom::FeaturePolicyFeature::kLayoutAnimations,
       state == FeatureEnabledState::kReportOnly

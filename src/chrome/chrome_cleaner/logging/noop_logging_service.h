@@ -67,14 +67,26 @@ class NoOpLoggingService : public LoggingServiceAPI {
                                bool autodetect) override;
   void SetWinHttpProxySettings(const base::string16& config,
                                const base::string16& bypass) override;
-  void AddInstalledExtension(const base::string16& extension_id,
-                             ExtensionInstallMethod install_method) override;
+  void AddInstalledExtension(
+      const base::string16& extension_id,
+      ExtensionInstallMethod install_method,
+      const std::vector<internal::FileInformation>& extension_files) override;
   void AddScheduledTask(
       const base::string16& name,
       const base::string16& description,
       const std::vector<internal::FileInformation>& actions) override;
+
+  void AddShortcutData(
+      const base::string16& lnk_path,
+      const base::string16& executable_path,
+      const std::string& executable_hash,
+      const std::vector<base::string16>& command_line_arguments) override;
+  void SetFoundModifiedChromeShortcuts(bool found_modified_shortcuts) override;
+  void SetScannedLocations(const std::vector<UwS::TraceLocation>&) override;
+
   void LogProcessInformation(SandboxType process_type,
                              const SystemResourceUsage& usage) override;
+
   bool AllExpectedRemovalsConfirmed() const override;
   std::string RawReportContent() override;
   bool ReadContentFromFile(const base::FilePath& log_file) override;

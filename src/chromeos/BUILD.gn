@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/chromeos/rules.gni")
 import("//build/config/ui.gni")
-import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -15,95 +15,31 @@ config("chromeos_implementation") {
   defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
+buildflag_header("chromeos_buildflags") {
+  header = "chromeos_buildflags.h"
+  flags = [ "IS_CROS_CHROME_SDK=$is_cros_chrome_sdk" ]
+}
+
 component("chromeos") {
   configs += [
     ":chromeos_implementation",
     "//build/config/linux/nss:system_nss_no_ssl_config",
   ]
   public_deps = [
-    ":chromeos_constants",
-    ":chromeos_export",
-    ":login_event_recorder",
-    ":policy_certificate_provider",
-    ":tools",
-    "//chromeos/cryptohome",
-    "//chromeos/dbus",
-    "//chromeos/login",
-    "//chromeos/network",
-    "//chromeos/settings",
-    "//dbus",
+    "//chromeos/constants",
   ]
   deps = [
-    ":account_manager_proto",
-    ":attestation_proto",
-    ":authpolicy_proto",
-    ":biod_proto",
-    ":cicerone_proto",
-    ":concierge_proto",
-    ":cryptohome_proto",
-    ":login_manager_proto",
-    ":media_perception_proto",
-    ":metrics_event_proto",
-    ":oobe_config_proto",
-    ":power_manager_proto",
-    ":seneschal_proto",
-    ":smbprovider_proto",
-    ":vm_applications_apps_proto",
+    ":chromeos_export",
     "//base",
     "//base:i18n",
-    "//base/third_party/dynamic_annotations",
-    "//components/account_id",
-    "//components/device_event_log",
-    "//components/policy:cloud_policy_proto_generated_compile",
+    "//chromeos/dbus",
+    "//chromeos/dbus/constants",
     "//components/policy/proto",
-    "//components/pref_registry",
-    "//components/prefs",
-    "//components/user_manager",
-    "//crypto:platform",
     "//google_apis",
-    "//media/base:video_facing",
     "//services/network/public/cpp:cpp",
     "//third_party/protobuf:protobuf_lite",
-    "//ui/gfx/geometry",  # For accelerometer.
   ]
   sources = [
-    "accelerometer/accelerometer_reader.cc",
-    "accelerometer/accelerometer_reader.h",
-    "accelerometer/accelerometer_types.cc",
-    "accelerometer/accelerometer_types.h",
-    "account_manager/account_manager.cc",
-    "account_manager/account_manager.h",
-    "account_manager/account_manager_factory.cc",
-    "account_manager/account_manager_factory.h",
-    "app_mode/kiosk_oem_manifest_parser.cc",
-    "app_mode/kiosk_oem_manifest_parser.h",
-    "attestation/attestation_flow.cc",
-    "attestation/attestation_flow.h",
-    "audio/audio_device.cc",
-    "audio/audio_device.h",
-    "audio/audio_devices_pref_handler.h",
-    "audio/audio_devices_pref_handler_impl.cc",
-    "audio/audio_devices_pref_handler_impl.h",
-    "audio/audio_devices_pref_handler_stub.cc",
-    "audio/audio_devices_pref_handler_stub.h",
-    "audio/audio_pref_observer.h",
-    "audio/chromeos_sounds.h",
-    "audio/cras_audio_handler.cc",
-    "audio/cras_audio_handler.h",
-    "disks/disk.cc",
-    "disks/disk.h",
-    "disks/disk_mount_manager.cc",
-    "disks/disk_mount_manager.h",
-    "disks/suspend_unmount_manager.cc",
-    "disks/suspend_unmount_manager.h",
-    "geolocation/geoposition.cc",
-    "geolocation/geoposition.h",
-    "geolocation/simple_geolocation_provider.cc",
-    "geolocation/simple_geolocation_provider.h",
-    "geolocation/simple_geolocation_request.cc",
-    "geolocation/simple_geolocation_request.h",
-    "geolocation/simple_geolocation_request_test_monitor.cc",
-    "geolocation/simple_geolocation_request_test_monitor.h",
     "hugepage_text/hugepage_text.cc",
     "hugepage_text/hugepage_text.h",
     "policy/weekly_time/time_utils.cc",
@@ -112,6 +48,8 @@ component("chromeos") {
     "policy/weekly_time/weekly_time.h",
     "policy/weekly_time/weekly_time_interval.cc",
     "policy/weekly_time/weekly_time_interval.h",
+    "printing/epson_driver_matching.cc",
+    "printing/epson_driver_matching.h",
     "printing/ppd_cache.cc",
     "printing/ppd_cache.h",
     "printing/ppd_line_reader.cc",
@@ -130,34 +68,6 @@ component("chromeos") {
     "process_proxy/process_proxy.h",
     "process_proxy/process_proxy_registry.cc",
     "process_proxy/process_proxy_registry.h",
-    "system/cpu_temperature_reader.cc",
-    "system/cpu_temperature_reader.h",
-    "system/devicemode.cc",
-    "system/devicemode.h",
-    "system/devicetype.cc",
-    "system/devicetype.h",
-    "system/factory_ping_embargo_check.cc",
-    "system/factory_ping_embargo_check.h",
-
-    # Used when running mash, both on Linux and on real devices.
-    "system/fake_statistics_provider.cc",
-    "system/fake_statistics_provider.h",
-    "system/name_value_pairs_parser.cc",
-    "system/name_value_pairs_parser.h",
-    "system/statistics_provider.cc",
-    "system/statistics_provider.h",
-    "timezone/timezone_provider.cc",
-    "timezone/timezone_provider.h",
-    "timezone/timezone_request.cc",
-    "timezone/timezone_request.h",
-    "timezone/timezone_resolver.cc",
-    "timezone/timezone_resolver.h",
-    "tpm/tpm_password_fetcher.cc",
-    "tpm/tpm_password_fetcher.h",
-    "tpm/tpm_token_info_getter.cc",
-    "tpm/tpm_token_info_getter.h",
-    "tpm/tpm_token_loader.cc",
-    "tpm/tpm_token_loader.h",
   ]
   if (current_cpu == "arm" || current_cpu == "x86") {
     defines = [ "BINDER_IPC_32BIT" ]
@@ -170,64 +80,6 @@ source_set("chromeos_export") {
   ]
   sources = [
     "chromeos_export.h",
-  ]
-}
-
-source_set("chromeos_constants") {
-  configs += [ ":chromeos_implementation" ]
-  deps = [
-    ":chromeos_export",
-    "//base",
-    "//base:i18n",
-    "//chromeos/dbus:dbus_switches",
-    "//third_party/icu",
-  ]
-  sources = [
-    "chromeos_constants.cc",
-    "chromeos_constants.h",
-    "chromeos_features.cc",
-    "chromeos_features.h",
-    "chromeos_paths.cc",
-    "chromeos_paths.h",
-    "chromeos_pref_names.cc",
-    "chromeos_pref_names.h",
-    "chromeos_switches.cc",
-    "chromeos_switches.h",
-  ]
-}
-
-source_set("login_event_recorder") {
-  configs += [ ":chromeos_implementation" ]
-  deps = [
-    ":chromeos_export",
-    "//base",
-  ]
-  sources = [
-    "login_event_recorder.cc",
-    "login_event_recorder.h",
-  ]
-}
-
-source_set("policy_certificate_provider") {
-  configs += [ ":chromeos_implementation" ]
-  deps = [
-    ":chromeos_export",
-    "//base",
-  ]
-  sources = [
-    "policy_certificate_provider.h",
-  ]
-}
-
-source_set("tools") {
-  configs += [ ":chromeos_implementation" ]
-  deps = [
-    ":chromeos_export",
-    "//base",
-  ]
-  sources = [
-    "tools/variable_expander.cc",
-    "tools/variable_expander.h",
   ]
 }
 
@@ -246,63 +98,33 @@ static_library("test_support") {
 source_set("test_support_source_set") {
   testonly = true
   public_deps = [
-    ":attestation_proto",
-    ":biod_proto",
     ":chromeos",
-    ":cryptohome_proto",
-    ":power_manager_proto",
-    "//chromeos/dbus:test_support",
+    ":test_utils",
   ]
   deps = [
-    "//components/account_id",
+    "//chromeos/attestation:test_support",
+    "//chromeos/cryptohome:test_support",
+    "//chromeos/dbus:test_support",
+    "//chromeos/disks:test_support",
+    "//chromeos/login/auth:test_support",
+    "//chromeos/login/login_state:test_support",
+    "//chromeos/network:test_support",
+    "//chromeos/tpm:test_support",
     "//google_apis",
     "//net:test_support",
     "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
-  sources = [
-    "attestation/mock_attestation_flow.cc",
-    "attestation/mock_attestation_flow.h",
-    "chromeos_test_utils.cc",
-    "chromeos_test_utils.h",
-    "cryptohome/mock_async_method_caller.cc",
-    "cryptohome/mock_async_method_caller.h",
-    "cryptohome/mock_homedir_methods.cc",
-    "cryptohome/mock_homedir_methods.h",
-    "disks/mock_disk_mount_manager.cc",
-    "disks/mock_disk_mount_manager.h",
-    "login/auth/fake_extended_authenticator.cc",
-    "login/auth/fake_extended_authenticator.h",
-    "login/auth/mock_auth_attempt_state_resolver.cc",
-    "login/auth/mock_auth_attempt_state_resolver.h",
-    "login/auth/mock_auth_status_consumer.cc",
-    "login/auth/mock_auth_status_consumer.h",
-    "login/auth/mock_url_fetchers.cc",
-    "login/auth/mock_url_fetchers.h",
-    "login/scoped_test_public_session_login_state.cc",
-    "login/scoped_test_public_session_login_state.h",
-    "network/fake_network_device_handler.cc",
-    "network/fake_network_device_handler.h",
-    "network/mock_managed_network_configuration_handler.cc",
-    "network/mock_managed_network_configuration_handler.h",
-    "network/mock_network_device_handler.cc",
-    "network/mock_network_device_handler.h",
-    "network/mock_network_state_handler.cc",
-    "network/mock_network_state_handler.h",
-    "network/network_state_test.cc",
-    "network/network_state_test.h",
-    "network/onc/onc_test_utils.cc",
-    "network/onc/onc_test_utils.h",
-    "network/portal_detector/mock_network_portal_detector.cc",
-    "network/portal_detector/mock_network_portal_detector.h",
-  ]
 }
 
-static_library("test_support_without_gmock") {
-  testonly = true
-  public_deps = [
-    "//chromeos/dbus",
+source_set("test_utils") {
+  deps = [
+    "//base",
+  ]
+  sources = [
+    "test/chromeos_test_utils.cc",
+    "test/chromeos_test_utils.h",
   ]
 }
 
@@ -312,32 +134,33 @@ test("chromeos_unittests") {
     "//build/config/linux/nss:system_nss_no_ssl_config",
   ]
   deps = [
-    ":attestation_proto",
-    ":authpolicy_proto",
-    ":biod_proto",
-    ":cryptohome_proto",
-    ":oobe_config_proto",
-    ":power_manager_proto",
+    ":chromeos_buildflags",
     ":test_support",
-    ":test_support_without_gmock",
     "//base/test:test_support",
+    "//chromeos/attestation:unit_tests",
+    "//chromeos/audio:unit_tests",
     "//chromeos/cryptohome:unit_tests",
+    "//chromeos/dbus:test_support",
     "//chromeos/dbus:unit_tests",
-    "//chromeos/login:unit_tests",
+    "//chromeos/dbus/services:unit_tests",
+    "//chromeos/disks:unit_tests",
+    "//chromeos/geolocation:unit_tests",
+    "//chromeos/login/auth:unit_tests",
+    "//chromeos/login/login_state:unit_tests",
+    "//chromeos/network:test_support",
     "//chromeos/network:unit_tests",
     "//chromeos/services:unit_tests",
     "//chromeos/settings:unit_tests",
-    "//components/account_id",
+    "//chromeos/system:unit_tests",
+    "//chromeos/timezone:unit_tests",
+    "//chromeos/tpm:unit_tests",
     "//components/onc",
     "//components/policy:generated",
     "//components/policy/proto",
     "//components/prefs:test_support",
     "//components/proxy_config",
-    "//crypto",
-    "//crypto:test_support",
     "//dbus:test_support",
     "//google_apis",
-    "//media/base:video_facing",
     "//mojo/core/embedder",
     "//net",
     "//net:test_support",
@@ -349,18 +172,10 @@ test("chromeos_unittests") {
     "//url",
   ]
   sources = [
-    "account_manager/account_manager_unittest.cc",
-    "app_mode/kiosk_oem_manifest_parser_unittest.cc",
-    "attestation/attestation_flow_unittest.cc",
-    "audio/audio_devices_pref_handler_impl_unittest.cc",
-    "audio/cras_audio_handler_unittest.cc",
-    "disks/disk_mount_manager_unittest.cc",
-    "disks/disk_unittest.cc",
-    "disks/suspend_unmount_manager_unittest.cc",
-    "geolocation/simple_geolocation_unittest.cc",
     "policy/weekly_time/time_utils_unittest.cc",
     "policy/weekly_time/weekly_time_interval_unittest.cc",
     "policy/weekly_time/weekly_time_unittest.cc",
+    "printing/epson_driver_matching_unittest.cc",
     "printing/ppd_cache_unittest.cc",
     "printing/ppd_line_reader_unittest.cc",
     "printing/ppd_provider_unittest.cc",
@@ -368,13 +183,7 @@ test("chromeos_unittests") {
     "printing/printer_translator_unittest.cc",
     "process_proxy/process_output_watcher_unittest.cc",
     "process_proxy/process_proxy_unittest.cc",
-    "run_all_unittests.cc",
-    "system/cpu_temperature_reader_unittest.cc",
-    "system/factory_ping_embargo_check_unittest.cc",
-    "system/name_value_pairs_parser_unittest.cc",
-    "timezone/timezone_unittest.cc",
-    "tools/variable_expander_unittest.cc",
-    "tpm/tpm_token_info_getter_unittest.cc",
+    "test/run_all_unittests.cc",
   ]
 
   data = [
@@ -386,8 +195,8 @@ test("chromeos_unittests") {
 # linux-chromeos). See the following for reference:
 # https://chromium.googlesource.com/chromium/src/+/master/docs/chromeos_build_instructions.md
 # https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md
-if (is_chromeos_chrome) {
-  generate_vm_runner_script("cros_vm_launcher") {
+if (is_cros_chrome_sdk) {
+  generate_runner_script("cros_vm_launcher") {
     generated_script = "$root_build_dir/bin/launch_cros_vm"
 
     # Assume every time we build cros_vm_launcher, we also build chrome and
@@ -395,10 +204,10 @@ if (is_chromeos_chrome) {
     deploy_chrome = true
   }
 
-  # The sanity test's actual binary is baked into the vm image. All we need to
+  # The sanity test's actual binary is baked into the OS image. All we need to
   # do is build the test wrapper and build our own browser to push to the VM
   # before testing it.
-  generate_vm_runner_script("cros_vm_sanity_test") {
+  generate_runner_script("cros_vm_sanity_test") {
     testonly = true
     test_exe = "cros_vm_sanity_test"
     generated_script = "$root_build_dir/bin/run_cros_vm_sanity_test"
@@ -421,10 +230,18 @@ if (is_chromeos_chrome) {
   # Tast test sources live in the Chromium OS repository.
   # To diagnose tast failures or disable tests, see go/tast-failures
   tast_test("chrome_all_tast_tests") {
-    tast_conditional = "(!disabled && !\"group:*\" && !informational" +
-                       " && (\"dep:chrome\" || \"dep:chrome_login\")" +
-                       # Disabled due to flake. https://crbug.com/909736
-                       " && !\"name:ui.MashLogin\")"
+    # To disable a specific test, add it the following list.
+    tast_disabled_tests = []
+  }
+  tast_test("chrome_kevin_tast_tests") {
+    # Tests that fail on Kevin devices.
+    tast_disabled_tests = [
+      # Disabled due to misleading USE flags on full boards. crbug.com/916367
+      "arc.Boot",
+      "arc.BuildProperties",
+      "security.NetworkListenersARC",
+      "video.WebRTCPeerConnCameraVP8",  # crbug.com/923061
+    ]
   }
 
   group("cros_chrome_deploy") {
@@ -446,154 +263,4 @@ if (is_chromeos_chrome) {
       "$root_out_dir/resources/chromeos/",
     ]
   }
-}
-
-fuzzer_test("variable_expander_fuzzer") {
-  sources = [
-    "tools/variable_expander_fuzzer.cc",
-  ]
-  seed_corpus = "//chromeos/test/data/variable_expander/fuzzer_corpus"
-  dict = "//chromeos/test/data/variable_expander/fuzzer.dict"
-  deps = [
-    ":chromeos",
-    "//base/test:test_support",
-  ]
-}
-
-proto_library("power_manager_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/power_manager/backlight.proto",
-    "//third_party/cros_system_api/dbus/power_manager/idle.proto",
-    "//third_party/cros_system_api/dbus/power_manager/input_event.proto",
-    "//third_party/cros_system_api/dbus/power_manager/peripheral_battery_status.proto",
-    "//third_party/cros_system_api/dbus/power_manager/policy.proto",
-    "//third_party/cros_system_api/dbus/power_manager/power_supply_properties.proto",
-    "//third_party/cros_system_api/dbus/power_manager/suspend.proto",
-    "//third_party/cros_system_api/dbus/power_manager/switch_states.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/power_manager"
-}
-
-proto_library("metrics_event_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/metrics_event/metrics_event.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/metrics_event"
-}
-
-proto_library("attestation_proto") {
-  sources = [
-    "dbus/proto/attestation.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/attestation"
-}
-
-proto_library("authpolicy_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/authpolicy/active_directory_info.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/authpolicy"
-}
-
-proto_library("biod_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/biod/constants.proto",
-    "//third_party/cros_system_api/dbus/biod/messages.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/biod"
-}
-
-proto_library("cicerone_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/vm_cicerone/cicerone_service.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/cicerone"
-}
-
-proto_library("concierge_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/vm_concierge/service.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/concierge"
-}
-
-proto_library("cryptohome_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/cryptohome/key.proto",
-    "//third_party/cros_system_api/dbus/cryptohome/rpc.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/cryptohome"
-}
-
-proto_library("cryptohome_signkey_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/cryptohome/signed_secret.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/cryptohome"
-}
-
-proto_library("login_manager_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/login_manager/arc.proto",
-    "//third_party/cros_system_api/dbus/login_manager/policy_descriptor.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/login_manager"
-}
-
-proto_library("media_perception_proto") {
-  sources = [
-    "dbus/proto/media_perception.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/media_perception"
-}
-
-proto_library("oobe_config_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/oobe_config/oobe_config.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/oobe_config"
-}
-
-proto_library("seneschal_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/seneschal/seneschal_service.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/seneschal"
-}
-
-proto_library("smbprovider_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/smbprovider/directory_entry.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/smbprovider"
-}
-
-proto_library("vm_applications_apps_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/vm_applications/apps.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/vm_applications"
-}
-
-proto_library("account_manager_proto") {
-  sources = [
-    "account_manager/tokens.proto",
-  ]
-
-  proto_out_dir = "chromeos/account_manager"
 }

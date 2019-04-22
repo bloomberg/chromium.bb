@@ -36,11 +36,6 @@ class ModelTypeSyncBridge {
   using DataCallback = base::OnceCallback<void(std::unique_ptr<DataBatch>)>;
   using StorageKeyList = std::vector<std::string>;
 
-  enum class StopSyncResponse {
-    kModelStillReadyToSync,
-    kModelNoLongerReadyToSync
-  };
-
   ModelTypeSyncBridge(
       std::unique_ptr<ModelTypeChangeProcessor> change_processor);
 
@@ -155,7 +150,7 @@ class ModelTypeSyncBridge {
   // guaranteed not to match (both be deleted or have identical specifics). A
   // default implementation chooses the server data unless it is a deletion.
   virtual ConflictResolution ResolveConflict(
-      const EntityData& local_data,
+      const std::string& storage_key,
       const EntityData& remote_data) const;
 
   // Similar to ApplySyncChanges() but called by the processor when sync
@@ -164,7 +159,7 @@ class ModelTypeSyncBridge {
   // was disabled), and |*delete_metadata_change_list| contains a change list to
   // remove all metadata that the processor knows about (the bridge may decide
   // to implement deletion by other means).
-  virtual StopSyncResponse ApplyStopSyncChanges(
+  virtual void ApplyStopSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list);
 
   // Returns an estimate of memory usage attributed to sync (that is, excludes
@@ -178,15 +173,7 @@ class ModelTypeSyncBridge {
   // Put(). The changing metadata should be stored to persistent storage
   // before or atomically with the model changes.
   ModelTypeChangeProcessor* change_processor();
-
-  // Similar to ApplySyncChanges(), but notifies the bridge that the processor
-  // is about to recommit all data due to encryption changes.
-  // TODO(crbug.com/856941): Remove when PASSWORDS are migrated to USS, which
-  // will likely make this API unnecessary.
-  virtual base::Optional<ModelError>
-  ApplySyncChangesWithNewEncryptionRequirements(
-      std::unique_ptr<MetadataChangeList> metadata_change_list,
-      EntityChangeList entity_changes);
+  const ModelTypeChangeProcessor* change_processor() const;
 
  private:
   std::unique_ptr<ModelTypeChangeProcessor> change_processor_;

@@ -45,17 +45,20 @@ UI.Toolbar = class {
     this._enabled = true;
     this._shadowRoot = UI.createShadowRootWithCoreStyles(this.element, 'ui/toolbar.css');
     this._contentElement = this._shadowRoot.createChild('div', 'toolbar-shadow');
-    this._insertionPoint = this._contentElement.createChild('content');
+    this._insertionPoint = this._contentElement.createChild('slot');
   }
 
   /**
    * @param {!UI.Action} action
    * @param {!Array<!UI.ToolbarButton>=} toggledOptions
    * @param {!Array<!UI.ToolbarButton>=} untoggledOptions
+   * @param {boolean=} showLabel
    * @return {!UI.ToolbarToggle}
    */
-  static createActionButton(action, toggledOptions, untoggledOptions) {
+  static createActionButton(action, toggledOptions, untoggledOptions, showLabel) {
     const button = new UI.ToolbarToggle(action.title(), action.icon(), action.toggledIcon());
+    if (showLabel)
+      button.setText(action.title());
     button.setToggleWithRedColor(action.toggleWithRedColor());
     button.addEventListener(UI.ToolbarButton.Events.Click, action.execute, action);
     action.addEventListener(UI.Action.Events.Enabled, enabledChanged);
@@ -185,11 +188,13 @@ UI.Toolbar = class {
 
   /**
    * @param {string} actionId
+   * @param {boolean=} showLabel
    * @return {!UI.ToolbarToggle}
    */
-  static createActionButtonForId(actionId) {
+  static createActionButtonForId(actionId, showLabel) {
     const action = UI.actionRegistry.action(actionId);
-    return UI.Toolbar.createActionButton(/** @type {!UI.Action} */ (action));
+    return UI.Toolbar.createActionButton(
+        /** @type {!UI.Action} */ (action), undefined, undefined, showLabel);
   }
 
   /**
@@ -222,6 +227,13 @@ UI.Toolbar = class {
 
   renderAsLinks() {
     this._contentElement.classList.add('toolbar-render-as-links');
+  }
+
+  /**
+   * @return {boolean}
+   */
+  empty() {
+    return !this._items.length;
   }
 
   /**
@@ -265,7 +277,7 @@ UI.Toolbar = class {
       delete item._toolbar;
     this._items = [];
     this._contentElement.removeChildren();
-    this._insertionPoint = this._contentElement.createChild('content');
+    this._insertionPoint = this._contentElement.createChild('slot');
   }
 
   /**
@@ -315,50 +327,20 @@ UI.Toolbar = class {
 
   /**
    * @param {string} location
+   * @return {!Promise}
    */
-  appendLocationItems(location) {
+  async appendItemsAtLocation(location) {
     const extensions = self.runtime.extensions(UI.ToolbarItem.Provider);
-    const promises = [];
-    for (let i = 0; i < extensions.length; ++i) {
-      if (extensions[i].descriptor()['location'] === location)
-        promises.push(resolveItem(extensions[i]));
-    }
-    Promise.all(promises).then(appendItemsInOrder.bind(this));
-
-    /**
-     * @param {!Runtime.Extension} extension
-     * @return {!Promise<?UI.ToolbarItem>}
-     */
-    function resolveItem(extension) {
+    const filtered = extensions.filter(e => e.descriptor()['location'] === location);
+    const items = await Promise.all(filtered.map(extension => {
       const descriptor = extension.descriptor();
       if (descriptor['separator'])
-        return Promise.resolve(/** @type {?UI.ToolbarItem} */ (new UI.ToolbarSeparator()));
-      if (descriptor['actionId']) {
-        return Promise.resolve(
-            /** @type {?UI.ToolbarItem} */ (UI.Toolbar.createActionButtonForId(descriptor['actionId'])));
-      }
-      return extension.instance().then(fetchItemFromProvider);
-
-      /**
-       * @param {!Object} provider
-       * @return {?UI.ToolbarItem}
-       */
-      function fetchItemFromProvider(provider) {
-        return /** @type {!UI.ToolbarItem.Provider} */ (provider).item();
-      }
-    }
-
-    /**
-     * @param {!Array.<?UI.ToolbarItem>} items
-     * @this {UI.Toolbar}
-     */
-    function appendItemsInOrder(items) {
-      for (let i = 0; i < items.length; ++i) {
-        const item = items[i];
-        if (item)
-          this.appendToolbarItem(item);
-      }
-    }
+        return new UI.ToolbarSeparator();
+      if (descriptor['actionId'])
+        return UI.Toolbar.createActionButtonForId(descriptor['actionId'], descriptor['showLabel']);
+      return extension.instance().then(p => p.item());
+    }));
+    items.filter(item => item).forEach(item => this.appendToolbarItem(item));
   }
 };
 
@@ -470,7 +452,6 @@ UI.ToolbarButton = class extends UI.ToolbarItem {
     super(createElementWithClass('button', 'toolbar-button'));
     this.element.addEventListener('click', this._clicked.bind(this), false);
     this.element.addEventListener('mousedown', this._mouseDown.bind(this), false);
-    this.element.addEventListener('mouseup', this._mouseUp.bind(this), false);
 
     this._glyphElement = UI.Icon.create('', 'toolbar-glyph hidden');
     this.element.appendChild(this._glyphElement);
@@ -546,21 +527,11 @@ UI.ToolbarButton = class extends UI.ToolbarItem {
       return;
     this.dispatchEventToListeners(UI.ToolbarButton.Events.MouseDown, event);
   }
-
-  /**
-   * @param {!Event} event
-   */
-  _mouseUp(event) {
-    if (!this._enabled)
-      return;
-    this.dispatchEventToListeners(UI.ToolbarButton.Events.MouseUp, event);
-  }
 };
 
 UI.ToolbarButton.Events = {
   Click: Symbol('Click'),
-  MouseDown: Symbol('MouseDown'),
-  MouseUp: Symbol('MouseUp')
+  MouseDown: Symbol('MouseDown')
 };
 
 UI.ToolbarInput = class extends UI.ToolbarItem {
@@ -596,7 +567,7 @@ UI.ToolbarInput = class extends UI.ToolbarItem {
     const clearButton = this.element.createChild('div', 'toolbar-input-clear-button');
     clearButton.appendChild(UI.Icon.create('mediumicon-gray-cross-hover', 'search-cancel-button'));
     clearButton.addEventListener('click', () => {
-      this._internalSetValue('', true);
+      this.setValue('', true);
       this._prompt.focus();
     });
 
@@ -613,16 +584,9 @@ UI.ToolbarInput = class extends UI.ToolbarItem {
 
   /**
    * @param {string} value
+   * @param {boolean=} notify
    */
-  setValue(value) {
-    this._internalSetValue(value, false);
-  }
-
-  /**
-   * @param {string} value
-   * @param {boolean} notify
-   */
-  _internalSetValue(value, notify) {
+  setValue(value, notify) {
     this._prompt.setText(value);
     if (notify)
       this._onChangeCallback();
@@ -642,7 +606,7 @@ UI.ToolbarInput = class extends UI.ToolbarItem {
   _onKeydownCallback(event) {
     if (!isEscKey(event) || !this._prompt.text())
       return;
-    this._internalSetValue('', true);
+    this.setValue('', true);
     event.consume(true);
   }
 

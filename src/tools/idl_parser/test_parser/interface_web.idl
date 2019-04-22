@@ -77,7 +77,15 @@ interface mixin IFaceMixin {
  *    Arguments()
  *    Type()
  *      PrimitiveType(void)
+ *  Attribute(baz)
+ *    Type()
+ *      PrimitiveType(long)
+ *    ExtAttributes()
+ *      ExtAttribute(XAttr)
  *  Attribute(bar)
+ *    Type()
+ *      StringType(DOMString)
+ *  Attribute(readonlyAttr)
  *    READONLY: True
  *    Type()
  *      StringType(DOMString)
@@ -85,7 +93,9 @@ interface mixin IFaceMixin {
 interface mixin IFaceMixin {
   const double pi = 3.14159;
   void foo();
-  readonly attribute DOMString bar;
+  [XAttr] attribute long baz;
+  attribute DOMString bar;
+  readonly attribute DOMString readonlyAttr;
 };
 
 /** TREE
@@ -342,12 +352,7 @@ interface MyExtendedAttributeInterface {
  *      Promise(Promise)
  *        Type()
  *          Any()
- *  Operation(method4)
- *    Arguments()
- *    Type()
- *      Promise(Promise)
- *        Type()
- *          Any()
+ *  Error(Unexpected identifier "method4" after keyword "Promise".)
  */
 interface MyIfacePromise {
   Promise<void> method1();
@@ -449,64 +454,6 @@ interface MyIfaceSetlike {
   readonly setlike<long>;
   setlike<double>;
   setlike<[EnforceRange] long>;
-};
-
-/** TREE
- *Interface(MyIfaceSerializer)
- *  Serializer()
- *  Serializer()
- *    Operation(toJSON)
- *      Arguments()
- *      Type()
- *        Any()
- *  Serializer()
- *    ATTRIBUTE: name
- *  Serializer()
- *    Map()
- *  Serializer()
- *    Map()
- *      GETTER: True
- *  Serializer()
- *    Map()
- *      ATTRIBUTE: True
- *  Serializer()
- *    Map()
- *      ATTRIBUTE: True
- *      INHERIT: True
- *  Serializer()
- *    Map()
- *      INHERIT: True
- *      ATTRIBUTES: None
- *  Serializer()
- *    Map()
- *      INHERIT: True
- *      ATTRIBUTES: ['name1', 'name2']
- *  Serializer()
- *    Map()
- *      ATTRIBUTES: ['name1', 'name2']
- *  Serializer()
- *    List()
- *  Serializer()
- *    List()
- *      GETTER: True
- *  Serializer()
- *    List()
- *      ATTRIBUTES: ['name1', 'name2']
- */
-interface MyIfaceSerializer {
-  serializer;
-  serializer any toJSON();
-  serializer = name;
-  serializer = {};
-  serializer = { getter };
-  serializer = { attribute };
-  serializer = { inherit, attribute };
-  serializer = { inherit };
-  serializer = { inherit, name1, name2 };
-  serializer = { name1, name2 };
-  serializer = [];
-  serializer = [getter];
-  serializer = [name1, name2];
 };
 
 /** TREE
@@ -668,12 +615,6 @@ interface MyIFaceArgumentWithAnnotatedType2 {
  *        Error(Unexpected ,.)
  */
 [ Exposed(Window, Worker) ] interface InterfaceExposedError { };
-
-/** TREE
- *Implements(Foo)
- *  REFERENCE: Bar
- */
-Foo implements Bar;
 
 /** TREE
  *Includes(Foo)

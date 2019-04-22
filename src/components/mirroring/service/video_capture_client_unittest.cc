@@ -4,6 +4,7 @@
 
 #include "components/mirroring/service/video_capture_client.h"
 
+#include "base/bind.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
@@ -11,6 +12,7 @@
 #include "components/mirroring/service/fake_video_capture_host.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -135,8 +137,8 @@ TEST_P(VideoCaptureClientTest, Basic) {
   OnBufferReady(0, gfx::Size(320, 180));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        VideoCaptureClientTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoCaptureClientTest,
+                         ::testing::Values(true, false));
 
 }  // namespace mirroring

@@ -51,7 +51,7 @@ function ImageOrientation(a, b, c, d) {
  * @param {number} orientation 1-based orientation number defined by EXIF.
  * @return {!ImageOrientation}
  */
-ImageOrientation.fromExifOrientation = function(orientation) {
+ImageOrientation.fromExifOrientation = orientation => {
   switch (~~orientation) {
     case 1:
       return new ImageOrientation(1, 0, 0, 1);
@@ -79,7 +79,7 @@ ImageOrientation.fromExifOrientation = function(orientation) {
  * @param {number} rotation90 Clockwise degrees / 90.
  * @return {!ImageOrientation}
  */
-ImageOrientation.fromClockwiseRotation = function(rotation90) {
+ImageOrientation.fromClockwiseRotation = rotation90 => {
   switch (~~(rotation90 % 4)) {
     case 0:
       return new ImageOrientation(1, 0, 0, 1);
@@ -103,12 +103,12 @@ ImageOrientation.fromClockwiseRotation = function(rotation90) {
  * @param {ImageTransformParam} transform
  * @return {!ImageOrientation}
  */
-ImageOrientation.fromRotationAndScale = function(transform) {
-  var scaleX = transform.scaleX;
-  var scaleY = transform.scaleY;
-  var rotate90 = transform.rotate90;
+ImageOrientation.fromRotationAndScale = transform => {
+  const scaleX = transform.scaleX;
+  const scaleY = transform.scaleY;
+  const rotate90 = transform.rotate90;
 
-  var orientation = ImageOrientation.fromClockwiseRotation(rotate90);
+  const orientation = ImageOrientation.fromClockwiseRotation(rotate90);
 
   // Flip X and Y.
   // In the Files app., CSS transformations are applied like
@@ -118,10 +118,8 @@ ImageOrientation.fromRotationAndScale = function(transform) {
   // |a c| |s_x 0 | |x|   |a*s_x c*s_y| |x|
   // |b d| | 0 s_y| |y| = |b*s_x d*s_y| |y|
   return new ImageOrientation(
-    orientation.a * scaleX,
-    orientation.b * scaleX,
-    orientation.c * scaleY,
-    orientation.d * scaleY);
+      orientation.a * scaleX, orientation.b * scaleX, orientation.c * scaleY,
+      orientation.d * scaleY);
 };
 
 /**
@@ -132,11 +130,11 @@ ImageOrientation.fromRotationAndScale = function(transform) {
  */
 ImageOrientation.prototype.getSizeAfterCancelling = function(
     imageWidth, imageHeight) {
-  var projectedX = this.a * imageWidth + this.c * imageHeight;
-  var projectedY = this.b * imageWidth + this.d * imageHeight;
+  const projectedX = this.a * imageWidth + this.c * imageHeight;
+  const projectedY = this.b * imageWidth + this.d * imageHeight;
   return {
     width: Math.abs(projectedX),
-    height: Math.abs(projectedY)
+    height: Math.abs(projectedY),
   };
 };
 
@@ -150,12 +148,12 @@ ImageOrientation.prototype.getSizeAfterCancelling = function(
 ImageOrientation.prototype.cancelImageOrientation = function(
     context, imageWidth, imageHeight) {
   // Calculate where to project the point of (imageWidth, imageHeight).
-  var projectedX = this.a * imageWidth + this.c * imageHeight;
-  var projectedY = this.b * imageWidth + this.d * imageHeight;
+  const projectedX = this.a * imageWidth + this.c * imageHeight;
+  const projectedY = this.b * imageWidth + this.d * imageHeight;
 
   // If the projected point coordinates are negative, add offset to cancel it.
-  var offsetX = projectedX < 0 ? -projectedX : 0;
-  var offsetY = projectedY < 0 ? -projectedY : 0;
+  const offsetX = projectedX < 0 ? -projectedX : 0;
+  const offsetY = projectedY < 0 ? -projectedY : 0;
 
   // Apply the transform.
   context.setTransform(this.a, this.b, this.c, this.d, offsetX, offsetY);

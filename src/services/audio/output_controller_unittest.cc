@@ -707,10 +707,10 @@ TEST_P(WithSnoopingMode, SnoopWhileMuting) {
   EXPECT_EQ(mute_stream, last_closed_stream());
 }
 
-INSTANTIATE_TEST_CASE_P(OutputControllerSnoopingTest,
-                        WithSnoopingMode,
-                        ::testing::Values(Snoopable::SnoopingMode::kDeferred,
-                                          Snoopable::SnoopingMode::kRealtime));
+INSTANTIATE_TEST_SUITE_P(OutputControllerSnoopingTest,
+                         WithSnoopingMode,
+                         ::testing::Values(Snoopable::SnoopingMode::kDeferred,
+                                           Snoopable::SnoopingMode::kRealtime));
 
 TEST_F(OutputControllerTest, InformsStreamMonitorsAlreadyInGroup) {
   MockStreamMonitor monitor;

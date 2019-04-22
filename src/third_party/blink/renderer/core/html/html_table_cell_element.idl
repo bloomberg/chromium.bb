@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#attributes-common-to-td-and-th-elements
+// https://html.spec.whatwg.org/C/#attributes-common-to-td-and-th-elements
 [HTMLConstructor]
 interface HTMLTableCellElement : HTMLElement {
     [CEReactions] attribute unsigned long colSpan;
@@ -29,7 +29,7 @@ interface HTMLTableCellElement : HTMLElement {
     readonly attribute long cellIndex;
 
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLTableCellElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLTableCellElement-partial
     [CEReactions, Reflect] attribute DOMString align;
     [CEReactions, Reflect] attribute DOMString axis;
     [CEReactions, Reflect] attribute DOMString height;

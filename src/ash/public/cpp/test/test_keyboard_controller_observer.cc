@@ -42,4 +42,11 @@ void TestKeyboardControllerObserver::OnKeyboardVisibleBoundsChanged(
 void TestKeyboardControllerObserver::OnKeyboardOccludedBoundsChanged(
     const gfx::Rect& bounds) {}
 
+void TestKeyboardControllerObserver::OnLoadKeyboardContentsRequested() {
+  controller_->KeyboardContentsLoaded(base::UnguessableToken::Create(),
+                                      gfx::Size(100, 100));
+}
+
+void TestKeyboardControllerObserver::OnKeyboardUIDestroyed() {}
+
 }  // namespace ash

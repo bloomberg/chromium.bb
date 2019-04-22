@@ -1,7 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 </head>
 <body id="body">
 <input id="text1" type="text" aria-disabled="true" size=20>
@@ -22,41 +23,38 @@
 
 <script>
 
-    description("This tests that the aria-disabled attribute works. The text field should not be enabled.");
+test((t) => {
+    var textField = accessibilityController.accessibleElementById("text1");
+    assert_equals(textField.restriction, "disabled");
 
-    if (window.accessibilityController) {
+    textField = accessibilityController.accessibleElementById("text2");
+    assert_equals(textField.restriction, "none");
 
-          var textField = accessibilityController.accessibleElementById("text1");
-          shouldBeEqualToString("textField.restriction", "disabled");
+    var group = accessibilityController.accessibleElementById("group1");
+    assert_equals(group.restriction, "disabled");
 
-          textField = accessibilityController.accessibleElementById("text2");
-          shouldBeEqualToString("textField.restriction", "none");
+    var link = accessibilityController.accessibleElementById("link1");
+    assert_equals(link.restriction, "disabled");
 
-          var group = accessibilityController.accessibleElementById("group1");
-          shouldBeEqualToString("group.restriction", "disabled");
+    var button = accessibilityController.accessibleElementById("button1");
+    assert_equals(button.restriction, "none");
 
-          var link = accessibilityController.accessibleElementById("link1");
-          shouldBeEqualToString("link.restriction", "disabled");
+    var treeitem = accessibilityController.accessibleElementById("treeitem1");
+    assert_equals(treeitem.restriction, "disabled");
 
-          var button = accessibilityController.accessibleElementById("button1");
-          shouldBeEqualToString("button.restriction", "none");
+    var option = accessibilityController.accessibleElementById("option1");
+    assert_equals(option.restriction, "disabled");
 
-          var treeitem = accessibilityController.accessibleElementById("treeitem1");
-          shouldBeEqualToString("treeitem.restriction", "disabled");
+    var tab = accessibilityController.accessibleElementById("tab1");
+    assert_equals(tab.restriction, "disabled");
 
-          var option = accessibilityController.accessibleElementById("option1");
-          shouldBeEqualToString("option.restriction", "disabled");
+    var gridcell = accessibilityController.accessibleElementById("gridcell1");
+    assert_equals(gridcell.restriction, "disabled");
 
-          var tab = accessibilityController.accessibleElementById("tab1");
-          shouldBeEqualToString("tab.restriction", "disabled");
+    var checkbox = accessibilityController.accessibleElementById("checkbox1");
+    assert_equals(checkbox.restriction, "disabled");
+    }, "This tests that the aria-disabled attribute works. The text field should not be enabled.");
 
-          var gridcell = accessibilityController.accessibleElementById("gridcell1");
-          shouldBeEqualToString("gridcell.restriction", "disabled");
-
-          var checkbox = accessibilityController.accessibleElementById("checkbox1");
-          shouldBeEqualToString("checkbox.restriction", "disabled");
-
-      }
 </script>
 
 </body>

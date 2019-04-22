@@ -135,25 +135,15 @@ std::unique_ptr<GlobalActivityAnalyzer> GlobalActivityAnalyzer::CreateWithFile(
 // static
 std::unique_ptr<GlobalActivityAnalyzer>
 GlobalActivityAnalyzer::CreateWithSharedMemory(
-    std::unique_ptr<SharedMemory> shm) {
-  if (shm->mapped_size() == 0 ||
-      !SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(*shm)) {
+    base::ReadOnlySharedMemoryMapping mapping) {
+  if (!mapping.IsValid() ||
+      !ReadOnlySharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(
+          mapping)) {
     return nullptr;
   }
-  return CreateWithAllocator(std::make_unique<SharedPersistentMemoryAllocator>(
-      std::move(shm), 0, StringPiece(), /*readonly=*/true));
-}
-
-// static
-std::unique_ptr<GlobalActivityAnalyzer>
-GlobalActivityAnalyzer::CreateWithSharedMemoryHandle(
-    const SharedMemoryHandle& handle,
-    size_t size) {
-  std::unique_ptr<SharedMemory> shm(
-      new SharedMemory(handle, /*readonly=*/true));
-  if (!shm->Map(size))
-    return nullptr;
-  return CreateWithSharedMemory(std::move(shm));
+  return CreateWithAllocator(
+      std::make_unique<ReadOnlySharedPersistentMemoryAllocator>(
+          std::move(mapping), 0, StringPiece()));
 }
 
 int64_t GlobalActivityAnalyzer::GetFirstProcess() {

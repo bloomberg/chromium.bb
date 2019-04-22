@@ -37,13 +37,3 @@ source_set("unit_test") {
     "//ui/gfx/range",
   ]
 }
-
-source_set("struct_traits") {
-  sources = [
-    "range_struct_traits.h",
-  ]
-  public_deps = [
-    ":mojo_shared_cpp_sources",
-    "//ui/gfx/range",
-  ]
-}

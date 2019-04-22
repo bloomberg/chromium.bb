@@ -26,6 +26,12 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/autofill/manual_filling_controller_impl.h"
+
+using FillingSource = ManualFillingController::FillingSource;
+#endif
+
 using base::WeakPtr;
 
 namespace autofill {
@@ -64,6 +70,7 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction)
     : controller_common_(element_bounds, text_direction, container_view),
+      web_contents_(web_contents),
       layout_model_(this, delegate->GetPopupType() == PopupType::kCreditCards),
       delegate_(delegate) {
   ClearState();
@@ -109,6 +116,10 @@ void AutofillPopupControllerImpl::Show(
 #endif
 
   if (just_created) {
+#if defined(OS_ANDROID)
+    ManualFillingController::GetOrCreate(web_contents_)
+        ->ShowWhenKeyboardIsVisible(FillingSource::AUTOFILL);
+#endif
     view_->Show();
     if (autoselect_first_suggestion)
       SetSelectedLine(0);
@@ -179,8 +190,12 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
   elided_labels_.insert(elided_labels_.begin(), values.size(),
                         base::string16());
   for (size_t i = 0; i < values.size(); i++) {
+    // A suggestion's label has one line of disambiguating information to show
+    // to the user. However, when the two-line suggestion display experiment is
+    // enabled on desktop, label is replaced by additional label.
     suggestions_[i].value = values[i];
     suggestions_[i].label = labels[i];
+    suggestions_[i].additional_label = labels[i];
     suggestions_[i].frontend_id = POPUP_ITEM_ID_DATALIST_ENTRY;
 
     // TODO(brettw) it looks like these should be elided.
@@ -256,6 +271,9 @@ void AutofillPopupControllerImpl::OnSuggestionsChanged() {
   // It is unclear if it is better to keep the popup where it was, or if it
   // should try and move to its desired position.
   layout_model_.UpdatePopupBounds();
+#else
+  ManualFillingController::GetOrCreate(web_contents_)
+      ->ShowWhenKeyboardIsVisible(FillingSource::AUTOFILL);
 #endif
 
   // Platform-specific draw call.
@@ -538,6 +556,11 @@ void AutofillPopupControllerImpl::ClearState() {
 }
 
 void AutofillPopupControllerImpl::HideViewAndDie() {
+#if defined(OS_ANDROID)
+  ManualFillingController::GetOrCreate(web_contents_)
+      ->Hide(FillingSource::AUTOFILL);
+#endif
+
   if (view_)
     view_->Hide();
 

@@ -15,16 +15,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
-#include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
+#include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
-#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
-#include "third_party/blink/renderer/core/testing/garbage_collected_script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
@@ -37,19 +34,14 @@ using ::testing::Mock;
 
 class TransformStreamTest : public ::testing::Test {
  public:
-  void TearDown() override {
-    if (holder_)
-      ClearHolder();
-  }
+  TransformStream* Stream() const { return stream_; }
 
   void Init(TransformStreamTransformer* transformer,
             ScriptState* script_state,
             ExceptionState& exception_state) {
-    holder_ = new Holder(script_state);
-    holder_->Stream()->Init(transformer, script_state, exception_state);
+    stream_ = MakeGarbageCollected<TransformStream>();
+    stream_->Init(transformer, script_state, exception_state);
   }
-
-  TransformStream* Stream() const { return holder_->Stream(); }
 
   // This takes the |readable| and |writable| properties of the TransformStream
   // and copies them onto the global object so they can be accessed by Eval().
@@ -70,56 +62,19 @@ class TransformStreamTest : public ::testing::Test {
                     .IsJust());
   }
 
-  void ClearHolder() {
-    holder_->Destroy();
-    holder_ = nullptr;
-  }
-
  private:
-  // In normal use, TransformStream will be referenced by a ScriptWrappable and
-  // so will be visible to the V8 garbage collector via wrapper tracing. For
-  // testing purposes we need a dummy ScriptWrappable object to do the same
-  // thing.
-  // TODO(ricea): Remove this once unified GC has replaced wrapper tracing.
-  class Holder : public GarbageCollectedScriptWrappable {
-   public:
-    explicit Holder(ScriptState* script_state)
-        : GarbageCollectedScriptWrappable("Holder"),
-          this_as_v8_value_(
-              ScriptValue(script_state, ToV8(this, script_state))),
-          stream_(MakeGarbageCollected<TransformStream>()) {}
-
-    // Destroy() must be called to break the reference cycle.
-    void Destroy() {
-      this_as_v8_value_.Clear();
-      stream_ = nullptr;
-    }
-
-    TransformStream* Stream() const { return stream_.Get(); }
-
-    void Trace(Visitor* visitor) override {
-      visitor->Trace(stream_);
-      GarbageCollectedScriptWrappable::Trace(visitor);
-    }
-
-   private:
-    // Self-reference to keep this object referenced from V8.
-    ScriptValue this_as_v8_value_;
-    TraceWrapperMember<TransformStream> stream_;
-  };
-
-  Persistent<Holder> holder_;
+  Persistent<TransformStream> stream_;
 };
 
 class IdentityTransformer final : public TransformStreamTransformer {
  public:
   void Transform(v8::Local<v8::Value> chunk,
-                 TransformStreamDefaultController* controller,
+                 TransformStreamDefaultControllerInterface* controller,
                  ExceptionState& exception_state) override {
     controller->Enqueue(chunk, exception_state);
   }
 
-  void Flush(TransformStreamDefaultController* controller,
+  void Flush(TransformStreamDefaultControllerInterface* controller,
              ExceptionState& exception_state) override {}
 };
 
@@ -127,21 +82,25 @@ class MockTransformStreamTransformer : public TransformStreamTransformer {
  public:
   MOCK_METHOD3(Transform,
                void(v8::Local<v8::Value> chunk,
-                    TransformStreamDefaultController*,
+                    TransformStreamDefaultControllerInterface*,
                     ExceptionState&));
-  MOCK_METHOD2(Flush, void(TransformStreamDefaultController*, ExceptionState&));
+  MOCK_METHOD2(Flush,
+               void(TransformStreamDefaultControllerInterface*,
+                    ExceptionState&));
 };
 
 // If this doesn't work then nothing else will.
 TEST_F(TransformStreamTest, Construct) {
   V8TestingScope scope;
-  Init(new IdentityTransformer(), scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  Init(MakeGarbageCollected<IdentityTransformer>(), scope.GetScriptState(),
+       ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(Stream());
 }
 
 TEST_F(TransformStreamTest, Accessors) {
   V8TestingScope scope;
-  Init(new IdentityTransformer(), scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  Init(MakeGarbageCollected<IdentityTransformer>(), scope.GetScriptState(),
+       ASSERT_NO_EXCEPTION);
   ReadableStream* readable = Stream()->Readable();
   WritableStream* writable = Stream()->Writable();
   EXPECT_TRUE(readable);
@@ -150,7 +109,7 @@ TEST_F(TransformStreamTest, Accessors) {
 
 TEST_F(TransformStreamTest, TransformIsCalled) {
   V8TestingScope scope;
-  auto* mock = new ::testing::StrictMock<MockTransformStreamTransformer>();
+  auto* mock = MakeGarbageCollected<MockTransformStreamTransformer>();
   Init(mock, scope.GetScriptState(), ASSERT_NO_EXCEPTION);
   // Need to run microtasks so the startAlgorithm promise resolves.
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
@@ -170,7 +129,7 @@ TEST_F(TransformStreamTest, TransformIsCalled) {
 
 TEST_F(TransformStreamTest, FlushIsCalled) {
   V8TestingScope scope;
-  auto* mock = new ::testing::StrictMock<MockTransformStreamTransformer>();
+  auto* mock = MakeGarbageCollected<MockTransformStreamTransformer>();
   Init(mock, scope.GetScriptState(), ASSERT_NO_EXCEPTION);
   // Need to run microtasks so the startAlgorithm promise resolves.
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
@@ -189,14 +148,14 @@ TEST_F(TransformStreamTest, FlushIsCalled) {
 class ExpectNotReached : public ScriptFunction {
  public:
   static v8::Local<v8::Function> Create(ScriptState* script_state) {
-    auto* self = new ExpectNotReached(script_state);
+    auto* self = MakeGarbageCollected<ExpectNotReached>(script_state);
     return self->BindToV8Function();
   }
 
- private:
   explicit ExpectNotReached(ScriptState* script_state)
       : ScriptFunction(script_state) {}
 
+ private:
   ScriptValue Call(ScriptValue) override {
     ADD_FAILURE() << "ExpectNotReached was reached";
     return ScriptValue();
@@ -210,16 +169,17 @@ class ExpectChunkIsString : public ScriptFunction {
   static v8::Local<v8::Function> Create(ScriptState* script_state,
                                         const String& expected,
                                         bool* called) {
-    auto* self = new ExpectChunkIsString(script_state, expected, called);
+    auto* self = MakeGarbageCollected<ExpectChunkIsString>(script_state,
+                                                           expected, called);
     return self->BindToV8Function();
   }
 
- private:
   ExpectChunkIsString(ScriptState* script_state,
                       const String& expected,
                       bool* called)
       : ScriptFunction(script_state), expected_(expected), called_(called) {}
 
+ private:
   ScriptValue Call(ScriptValue value) override {
     *called_ = true;
     if (!value.IsObject()) {
@@ -248,16 +208,17 @@ class ExpectTypeError : public ScriptFunction {
   static v8::Local<v8::Function> Create(ScriptState* script_state,
                                         const String& message,
                                         bool* called) {
-    auto* self = new ExpectTypeError(script_state, message, called);
+    auto* self =
+        MakeGarbageCollected<ExpectTypeError>(script_state, message, called);
     return self->BindToV8Function();
   }
 
- private:
   ExpectTypeError(ScriptState* script_state,
                   const String& message,
                   bool* called)
       : ScriptFunction(script_state), message_(message), called_(called) {}
 
+ private:
   ScriptValue Call(ScriptValue value) override {
     *called_ = true;
     EXPECT_TRUE(IsTypeError(GetScriptState(), value, message_));
@@ -298,7 +259,8 @@ class ExpectTypeError : public ScriptFunction {
 TEST_F(TransformStreamTest, EnqueueFromTransform) {
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
-  Init(new IdentityTransformer(), script_state, ASSERT_NO_EXCEPTION);
+  Init(MakeGarbageCollected<IdentityTransformer>(), script_state,
+       ASSERT_NO_EXCEPTION);
 
   CopyReadableAndWritableToGlobal(scope);
 
@@ -324,9 +286,9 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
         : global_(global), isolate_(isolate) {}
 
     void Transform(v8::Local<v8::Value>,
-                   TransformStreamDefaultController*,
+                   TransformStreamDefaultControllerInterface*,
                    ExceptionState&) override {}
-    void Flush(TransformStreamDefaultController* controller,
+    void Flush(TransformStreamDefaultControllerInterface* controller,
                ExceptionState& exception_state) override {
       controller->Enqueue(ToV8("a", global_, isolate_), exception_state);
     }
@@ -337,8 +299,8 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
   };
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
-  Init(new EnqueueFromFlushTransformer(scope.GetContext()->Global(),
-                                       scope.GetIsolate()),
+  Init(MakeGarbageCollected<EnqueueFromFlushTransformer>(
+           scope.GetContext()->Global(), scope.GetIsolate()),
        script_state, ASSERT_NO_EXCEPTION);
 
   CopyReadableAndWritableToGlobal(scope);
@@ -362,15 +324,17 @@ TEST_F(TransformStreamTest, ThrowFromTransform) {
   class ThrowFromTransformTransformer : public TransformStreamTransformer {
    public:
     void Transform(v8::Local<v8::Value>,
-                   TransformStreamDefaultController*,
+                   TransformStreamDefaultControllerInterface*,
                    ExceptionState& exception_state) override {
       exception_state.ThrowTypeError(kMessage);
     }
-    void Flush(TransformStreamDefaultController*, ExceptionState&) override {}
+    void Flush(TransformStreamDefaultControllerInterface*,
+               ExceptionState&) override {}
   };
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
-  Init(new ThrowFromTransformTransformer(), script_state, ASSERT_NO_EXCEPTION);
+  Init(MakeGarbageCollected<ThrowFromTransformTransformer>(), script_state,
+       ASSERT_NO_EXCEPTION);
 
   CopyReadableAndWritableToGlobal(scope);
 
@@ -401,16 +365,17 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
   class ThrowFromFlushTransformer : public TransformStreamTransformer {
    public:
     void Transform(v8::Local<v8::Value>,
-                   TransformStreamDefaultController*,
+                   TransformStreamDefaultControllerInterface*,
                    ExceptionState&) override {}
-    void Flush(TransformStreamDefaultController*,
+    void Flush(TransformStreamDefaultControllerInterface*,
                ExceptionState& exception_state) override {
       exception_state.ThrowTypeError(kMessage);
     }
   };
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
-  Init(new ThrowFromFlushTransformer(), script_state, ASSERT_NO_EXCEPTION);
+  Init(MakeGarbageCollected<ThrowFromFlushTransformer>(), script_state,
+       ASSERT_NO_EXCEPTION);
 
   CopyReadableAndWritableToGlobal(scope);
 
@@ -434,6 +399,17 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   EXPECT_TRUE(readableTypeErrorThrown);
   EXPECT_TRUE(writableTypeErrorThrown);
+}
+
+TEST_F(TransformStreamTest, CreateFromReadableWritablePair) {
+  V8TestingScope scope;
+  ReadableStream* readable =
+      ReadableStream::Create(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  WritableStream* writable =
+      WritableStream::Create(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  TransformStream transform(readable, writable);
+  EXPECT_EQ(readable, transform.Readable());
+  EXPECT_EQ(writable, transform.Writable());
 }
 
 }  // namespace

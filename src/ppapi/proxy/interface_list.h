@@ -63,7 +63,7 @@ class PPAPI_PROXY_EXPORT InterfaceList {
     // Permission required to return non-null for this interface. This will
     // be checked with the value set via SetProcessGlobalPermissionBits when
     // an interface is requested.
-    Permission required_permission() { return required_permission_; };
+    Permission required_permission() { return required_permission_; }
 
     // Call this any time the interface is requested. It will log a UMA count
     // only the first time. This is safe to call from any thread, regardless of

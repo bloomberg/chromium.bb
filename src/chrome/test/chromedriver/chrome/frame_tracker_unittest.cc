@@ -20,7 +20,7 @@ TEST(FrameTracker, GetContextIdForFrame) {
 
   const char context[] = "{\"id\":100,\"frameId\":\"f\"}";
   base::DictionaryValue params;
-  params.Set("context", base::JSONReader::Read(context));
+  params.Set("context", base::JSONReader::ReadDeprecated(context));
   ASSERT_EQ(kOk,
             tracker.OnEvent(&client, "Runtime.executionContextCreated", params)
                 .code());
@@ -51,7 +51,7 @@ TEST(FrameTracker, AuxData) {
 
   const char context[] = "{\"id\":100,\"auxData\":{}}";
   base::DictionaryValue params;
-  params.Set("context", base::JSONReader::Read(context));
+  params.Set("context", base::JSONReader::ReadDeprecated(context));
   params.SetString("context.auxData.frameId", "f");
   params.SetBoolean("context.auxData.isDefault", true);
   ASSERT_EQ(kOk,
@@ -70,7 +70,7 @@ TEST(FrameTracker, CanUpdateFrameContextId) {
 
   const char context[] = "{\"id\":1,\"frameId\":\"f\"}";
   base::DictionaryValue params;
-  params.Set("context", base::JSONReader::Read(context));
+  params.Set("context", base::JSONReader::ReadDeprecated(context));
   ASSERT_EQ(kOk,
             tracker.OnEvent(&client, "Runtime.executionContextCreated", params)
                 .code());
@@ -92,7 +92,7 @@ TEST(FrameTracker, DontTrackContentScriptContexts) {
 
   const char context[] = "{\"id\":1,\"frameId\":\"f\"}";
   base::DictionaryValue params;
-  params.Set("context", base::JSONReader::Read(context));
+  params.Set("context", base::JSONReader::ReadDeprecated(context));
   ASSERT_EQ(kOk,
             tracker.OnEvent(&client, "Runtime.executionContextCreated", params)
                 .code());

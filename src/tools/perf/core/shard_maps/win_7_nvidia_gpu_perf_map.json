@@ -20,90 +20,74 @@
             "jetstream": {},
             "kraken": {},
             "loading.desktop": {},
-            "loading.mobile": {},
             "media.desktop": {
-                "end": 2
+                "end": 25
             }
         }
     },
     "1": {
         "benchmarks": {
             "media.desktop": {
-                "begin": 2
+                "begin": 25
             },
-            "media.mobile": {},
             "memory.desktop": {},
-            "memory.long_running_idle_gmail_background_tbmv2": {},
-            "memory.long_running_idle_gmail_tbmv2": {},
-            "memory.top_10_mobile": {},
             "octane": {},
-            "oortonline_tbmv2": {},
             "power.desktop": {},
-            "power.typical_10_mobile": {},
             "rasterize_and_record_micro.partial_invalidation": {},
             "rasterize_and_record_micro.top_25": {},
-            "rendering.desktop": {
-                "end": 176
+            "rendering.desktop": {},
+            "speedometer": {},
+            "speedometer-future": {},
+            "speedometer2": {},
+            "speedometer2-future": {},
+            "system_health.common_desktop": {
+                "end": 16
             }
         }
     },
     "2": {
         "benchmarks": {
-            "rendering.desktop": {
-                "begin": 176
+            "system_health.common_desktop": {
+                "begin": 16
             },
-            "rendering.mobile": {},
-            "smoothness.gpu_rasterization.tough_pinch_zoom_cases": {},
-            "smoothness.tough_pinch_zoom_cases": {},
-            "speedometer": {},
-            "speedometer-future": {},
-            "speedometer2": {},
-            "speedometer2-future": {},
-            "startup.mobile": {},
-            "system_health.common_desktop": {},
-            "system_health.common_mobile": {},
             "system_health.memory_desktop": {
-                "end": 19
+                "end": 39
             }
         }
     },
     "3": {
         "benchmarks": {
             "system_health.memory_desktop": {
-                "begin": 19
+                "begin": 39
             },
-            "system_health.memory_mobile": {},
-            "system_health.webview_startup": {},
             "tab_switching.typical_25": {},
             "tracing.tracing_with_background_memory_infra": {},
             "v8.browsing_desktop": {
-                "end": 28
+                "end": 16
             }
         }
     },
     "4": {
         "benchmarks": {
             "v8.browsing_desktop": {
-                "begin": 28
+                "begin": 16
             },
             "v8.browsing_desktop-future": {},
-            "v8.browsing_mobile": {},
-            "v8.browsing_mobile-future": {},
             "v8.runtime_stats.top_25": {},
             "wasm": {},
             "webrtc": {}
         }
     },
     "extra_infos": {
-        "num_stories": 2037,
-        "predicted_min_shard_time": 15194.0,
-        "predicted_min_shard_index": 4,
-        "predicted_max_shard_time": 15418.0,
-        "predicted_max_shard_index": 3,
-        "shard #0": 15284.0,
-        "shard #1": 15272.0,
-        "shard #2": 15218.0,
-        "shard #3": 15418.0,
-        "shard #4": 15194.0
+        "num_stories": 1240,
+        "predicted_min_shard_time": 11350.0,
+        "predicted_min_shard_index": 1,
+        "predicted_max_shard_time": 11420.0,
+        "predicted_max_shard_index": 2,
+        "shard #0": 11370.0,
+        "shard #1": 11350.0,
+        "shard #2": 11420.0,
+        "shard #3": 11382.0,
+        "shard #4": 11364.0
     }
 }

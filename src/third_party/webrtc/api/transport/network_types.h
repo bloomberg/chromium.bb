@@ -18,6 +18,7 @@
 #include "api/units/data_size.h"
 #include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
+#include "rtc_base/deprecation.h"
 
 namespace webrtc {
 
@@ -31,13 +32,15 @@ struct StreamsConfig {
   StreamsConfig(const StreamsConfig&);
   ~StreamsConfig();
   Timestamp at_time = Timestamp::PlusInfinity();
-  bool requests_alr_probing = false;
+  absl::optional<bool> requests_alr_probing;
   absl::optional<double> pacing_factor;
-  absl::optional<DataRate> min_pacing_rate;
+  union {
+    absl::optional<DataRate> min_total_allocated_bitrate = absl::nullopt;
+    // Use min_total_allocated_bitrate instead.
+    RTC_DEPRECATED absl::optional<DataRate> min_pacing_rate;
+  };
   absl::optional<DataRate> max_padding_rate;
   absl::optional<DataRate> max_total_allocated_bitrate;
-  // The send rate of traffic for which feedback is not received.
-  DataRate unacknowledged_rate_allocation = DataRate::Zero();
 };
 
 struct TargetRateConstraints {
@@ -136,6 +139,7 @@ struct TransportPacketsFeedback {
   ~TransportPacketsFeedback();
 
   Timestamp feedback_time = Timestamp::PlusInfinity();
+  Timestamp first_unacked_send_time = Timestamp::PlusInfinity();
   DataSize data_in_flight = DataSize::Zero();
   DataSize prior_in_flight = DataSize::Zero();
   std::vector<PacketResult> packet_feedbacks;
@@ -177,6 +181,7 @@ struct ProbeClusterConfig {
   DataRate target_data_rate = DataRate::Zero();
   TimeDelta target_duration = TimeDelta::Zero();
   int32_t target_probe_count = 0;
+  int32_t id = 0;
 };
 
 struct TargetTransferRate {
@@ -201,7 +206,27 @@ struct NetworkControlUpdate {
 
 // Process control
 struct ProcessInterval {
+  ProcessInterval();
+  ProcessInterval(const ProcessInterval&);
+  ~ProcessInterval();
   Timestamp at_time = Timestamp::PlusInfinity();
+  absl::optional<DataSize> pacer_queue;
+};
+
+// Under development, subject to change without notice.
+struct NetworkStateEstimate {
+  Timestamp last_feed_time = Timestamp::MinusInfinity();
+  Timestamp last_send_time = Timestamp::MinusInfinity();
+  TimeDelta time_delta = TimeDelta::MinusInfinity();
+  DataRate link_capacity = DataRate::MinusInfinity();
+  DataRate link_capacity_std_dev = DataRate::MinusInfinity();
+  DataRate link_capacity_min = DataRate::MinusInfinity();
+  double cross_traffic_ratio;
+  TimeDelta pre_link_buffer_delay = TimeDelta::MinusInfinity();
+  TimeDelta post_link_buffer_delay = TimeDelta::MinusInfinity();
+  TimeDelta propagation_delay = TimeDelta::MinusInfinity();
+  double cross_delay_rate;
+  double spike_delay_rate;
 };
 }  // namespace webrtc
 

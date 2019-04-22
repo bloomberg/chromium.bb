@@ -11,8 +11,11 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/metrics/stability_metrics_manager.h"
 
 namespace arc {
 
@@ -59,23 +62,29 @@ ArcEnabledState ComputeEnabledState(bool enabled, const Profile* profile) {
 
 }  // namespace
 
+void UpdateEnabledStateByUserTypeUMA() {
+  const Profile* profile = ProfileManager::GetPrimaryUserProfile();
+
+  // Don't record UMA if current primary user profile should be ignored in the
+  // first place, or we're currently in guest session.
+  if (!IsRealUserProfile(profile) || profile->IsGuestSession())
+    return;
+
+  base::Optional<bool> enabled_state;
+  if (auto* stability_metrics_manager = StabilityMetricsManager::Get())
+    enabled_state = stability_metrics_manager->GetArcEnabledState();
+
+  base::UmaHistogramEnumeration(
+      GetHistogramName("Arc.StateByUserType.", profile),
+      ComputeEnabledState(enabled_state.value_or(false), profile));
+}
+
 void UpdateOptInActionUMA(OptInActionType type) {
   UMA_HISTOGRAM_ENUMERATION("Arc.OptInAction", type);
 }
 
 void UpdateOptInCancelUMA(OptInCancelReason reason) {
   UMA_HISTOGRAM_ENUMERATION("Arc.OptInCancel", reason);
-}
-
-void UpdateEnabledStateUMA(bool enabled) {
-  // Equivalent to UMA_HISTOGRAM_BOOLEAN with the stability flag set.
-  UMA_STABILITY_HISTOGRAM_ENUMERATION("Arc.State", enabled ? 1 : 0, 2);
-}
-
-void UpdateEnabledStateByUserTypeUMA(bool enabled, const Profile* profile) {
-  base::UmaHistogramEnumeration(
-      GetHistogramName("Arc.StateByUserType.", profile),
-      ComputeEnabledState(enabled, profile));
 }
 
 void UpdateOptInFlowResultUMA(OptInFlowResult result) {
@@ -110,6 +119,20 @@ void UpdateReauthorizationResultUMA(ProvisioningResult result,
                                     const Profile* profile) {
   base::UmaHistogramEnumeration(
       GetHistogramName("Arc.Reauthorization.Result.", profile), result);
+}
+
+void UpdatePlayAutoInstallRequestState(mojom::PaiFlowState state,
+                                       const Profile* profile) {
+  base::UmaHistogramEnumeration(
+      GetHistogramName("Arc.PlayAutoInstallRequest.State.", profile), state);
+}
+
+void UpdatePlayAutoInstallRequestTime(const base::TimeDelta& elapsed_time,
+                                      const Profile* profile) {
+  base::UmaHistogramCustomTimes(
+      GetHistogramName("Arc.PlayAutoInstallRequest.TimeDelta.", profile),
+      elapsed_time, base::TimeDelta::FromSeconds(1),
+      base::TimeDelta::FromMinutes(10), 50);
 }
 
 void UpdatePlayStoreShowTime(const base::TimeDelta& elapsed_time,

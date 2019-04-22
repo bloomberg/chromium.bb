@@ -45,4 +45,10 @@
         boolean showDialog,
         optional SetShowBeforeUnloadDialogCallback callback);
   };
+
+  interface Events {
+    // Fired when the browser wants the listener to perform a save.
+    // |streamUrl|: Unique ID for the instance that should perform the save.
+    static void onSave(DOMString streamUrl);
+  };
 };

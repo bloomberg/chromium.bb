@@ -11,7 +11,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-RelaunchRequiredTimer::RelaunchRequiredTimer(base::TimeTicks deadline,
+RelaunchRequiredTimer::RelaunchRequiredTimer(base::Time deadline,
                                              base::RepeatingClosure callback)
     : deadline_(deadline), callback_(std::move(callback)) {
   ScheduleNextTitleRefresh();
@@ -22,7 +22,8 @@ RelaunchRequiredTimer::~RelaunchRequiredTimer() {}
 void RelaunchRequiredTimer::ScheduleNextTitleRefresh() {
   // Refresh at the next second, minute, hour, or day boundary; depending on the
   // relaunch deadline.
-  const base::TimeDelta deadline_offset = deadline_ - base::TimeTicks::Now();
+  const base::Time now = base::Time::Now();
+  const base::TimeDelta deadline_offset = deadline_ - now;
 
   // Don't start the timer if the deadline is in the past or right now.
   if (deadline_offset <= base::TimeDelta())
@@ -31,11 +32,11 @@ void RelaunchRequiredTimer::ScheduleNextTitleRefresh() {
   const base::TimeDelta refresh_delta =
       relaunch_notification::ComputeNextRefreshDelta(deadline_offset);
 
-  refresh_timer_.Start(FROM_HERE, refresh_delta, this,
+  refresh_timer_.Start(FROM_HERE, now + refresh_delta, this,
                        &RelaunchRequiredTimer::OnTitleRefresh);
 }
 
-void RelaunchRequiredTimer::SetDeadline(base::TimeTicks deadline) {
+void RelaunchRequiredTimer::SetDeadline(base::Time deadline) {
   if (deadline != deadline_) {
     deadline_ = deadline;
     // Refresh the title immediately.
@@ -55,7 +56,7 @@ base::string16 RelaunchRequiredTimer::GetWindowTitle() const {
   // "3..2..1.." countdown to change precisely on the per-second boundaries.
   const base::TimeDelta rounded_offset =
       relaunch_notification::ComputeDeadlineDelta(deadline_ -
-                                                  base::TimeTicks::Now());
+                                                  base::Time::Now());
 
   int amount = rounded_offset.InSeconds();
   int message_id = IDS_RELAUNCH_REQUIRED_TITLE_SECONDS;

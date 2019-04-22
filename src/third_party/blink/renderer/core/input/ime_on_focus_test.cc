@@ -22,10 +22,10 @@ using blink::url_test_helpers::RegisterMockedURLLoadFromBase;
 
 namespace blink {
 
-class ImeRequestTrackingWebViewClient
+class ImeRequestTrackingWebWidgetClient
     : public frame_test_helpers::TestWebWidgetClient {
  public:
-  ImeRequestTrackingWebViewClient() : virtual_keyboard_request_count_(0) {}
+  ImeRequestTrackingWebWidgetClient() : virtual_keyboard_request_count_(0) {}
 
   // WebWidgetClient methods
   void ShowVirtualKeyboardOnElementFocus() override {
@@ -69,7 +69,7 @@ void ImeOnFocusTest::SendGestureTap(WebView* web_view, IntPoint client_point) {
   WebGestureEvent web_gesture_event(WebInputEvent::kGestureTap,
                                     WebInputEvent::kNoModifiers,
                                     WebInputEvent::GetStaticTimeStampForTests(),
-                                    kWebGestureDeviceTouchscreen);
+                                    WebGestureDevice::kTouchscreen);
   // GestureTap is only ever from touch screens.
   web_gesture_event.SetPositionInWidget(FloatPoint(client_point));
   web_gesture_event.SetPositionInScreen(FloatPoint(client_point));
@@ -92,13 +92,13 @@ void ImeOnFocusTest::RunImeOnFocusTest(
     IntPoint tap_point,
     const AtomicString& focus_element,
     std::string frame) {
-  ImeRequestTrackingWebViewClient client;
+  ImeRequestTrackingWebWidgetClient client;
   RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
                                 test::CoreTestDataPath(),
                                 WebString::FromUTF8(file_name));
   WebViewImpl* web_view =
       web_view_helper_.Initialize(nullptr, nullptr, &client);
-  web_view->Resize(WebSize(800, 1200));
+  web_view->MainFrameWidget()->Resize(WebSize(800, 1200));
   LoadFrame(web_view->MainFrameImpl(), base_url_ + file_name);
   document_ = web_view_helper_.GetWebView()
                   ->MainFrameImpl()

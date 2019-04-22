@@ -70,20 +70,18 @@ JNI_GENERATOR_EXPORT jlong Java_org_chromium_TestJni_nativeAddBookmark(
 }
 
 static base::android::ScopedJavaLocalRef<jstring> JNI_TestJni_GetDomainAndRegistry(JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jstring>& url);
 
 JNI_GENERATOR_EXPORT jstring Java_org_chromium_TestJni_nativeGetDomainAndRegistry(
     JNIEnv* env,
     jclass jcaller,
     jstring url) {
-  return JNI_TestJni_GetDomainAndRegistry(env, base::android::JavaParamRef<jclass>(env, jcaller),
-      base::android::JavaParamRef<jstring>(env, url)).Release();
+  return JNI_TestJni_GetDomainAndRegistry(env, base::android::JavaParamRef<jstring>(env,
+      url)).Release();
 }
 
 static void JNI_TestJni_CreateHistoricalTabFromState(JNIEnv* env, const
-    base::android::JavaParamRef<jclass>& jcaller,
-    const base::android::JavaParamRef<jbyteArray>& state,
+    base::android::JavaParamRef<jbyteArray>& state,
     jint tab_index);
 
 JNI_GENERATOR_EXPORT void Java_org_chromium_TestJni_nativeCreateHistoricalTabFromState(
@@ -91,8 +89,8 @@ JNI_GENERATOR_EXPORT void Java_org_chromium_TestJni_nativeCreateHistoricalTabFro
     jclass jcaller,
     jbyteArray state,
     jint tab_index) {
-  return JNI_TestJni_CreateHistoricalTabFromState(env, base::android::JavaParamRef<jclass>(env,
-      jcaller), base::android::JavaParamRef<jbyteArray>(env, state), tab_index);
+  return JNI_TestJni_CreateHistoricalTabFromState(env, base::android::JavaParamRef<jbyteArray>(env,
+      state), tab_index);
 }
 
 static base::android::ScopedJavaLocalRef<jbyteArray> JNI_TestJni_GetStateAsByteArray(JNIEnv* env,
@@ -108,13 +106,12 @@ JNI_GENERATOR_EXPORT jbyteArray Java_org_chromium_TestJni_nativeGetStateAsByteAr
 }
 
 static base::android::ScopedJavaLocalRef<jobjectArray> JNI_TestJni_GetAutofillProfileGUIDs(JNIEnv*
-    env, const base::android::JavaParamRef<jclass>& jcaller);
+    env);
 
 JNI_GENERATOR_EXPORT jobjectArray Java_org_chromium_TestJni_nativeGetAutofillProfileGUIDs(
     JNIEnv* env,
     jclass jcaller) {
-  return JNI_TestJni_GetAutofillProfileGUIDs(env, base::android::JavaParamRef<jclass>(env,
-      jcaller)).Release();
+  return JNI_TestJni_GetAutofillProfileGUIDs(env).Release();
 }
 
 static void JNI_TestJni_SetRecognitionResults(JNIEnv* env, const
@@ -164,14 +161,12 @@ JNI_GENERATOR_EXPORT jint Java_org_chromium_TestJni_nativeFindAll(
       base::android::JavaParamRef<jstring>(env, find));
 }
 
-static base::android::ScopedJavaLocalRef<jobject> JNI_TestJni_GetInnerClass(JNIEnv* env, const
-    base::android::JavaParamRef<jclass>& jcaller);
+static base::android::ScopedJavaLocalRef<jobject> JNI_TestJni_GetInnerClass(JNIEnv* env);
 
 JNI_GENERATOR_EXPORT jobject Java_org_chromium_TestJni_nativeGetInnerClass(
     JNIEnv* env,
     jclass jcaller) {
-  return JNI_TestJni_GetInnerClass(env, base::android::JavaParamRef<jclass>(env,
-      jcaller)).Release();
+  return JNI_TestJni_GetInnerClass(env).Release();
 }
 
 JNI_GENERATOR_EXPORT jobject Java_org_chromium_TestJni_nativeQueryBitmap(
@@ -207,15 +202,14 @@ JNI_GENERATOR_EXPORT void Java_org_chromium_TestJni_nativeGotOrientation(
 }
 
 static base::android::ScopedJavaLocalRef<jthrowable> JNI_TestJni_MessWithJavaException(JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jthrowable>& e);
 
 JNI_GENERATOR_EXPORT jthrowable Java_org_chromium_TestJni_nativeMessWithJavaException(
     JNIEnv* env,
     jclass jcaller,
     jthrowable e) {
-  return JNI_TestJni_MessWithJavaException(env, base::android::JavaParamRef<jclass>(env, jcaller),
-      base::android::JavaParamRef<jthrowable>(env, e)).Release();
+  return JNI_TestJni_MessWithJavaException(env, base::android::JavaParamRef<jthrowable>(env,
+      e)).Release();
 }
 
 

@@ -134,7 +134,7 @@ template("fidl_library") {
 
     inputs = [
       # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
-      rebase_path("$fuchsia_sdk/.hash"),
+      "${fuchsia_sdk}/.hash",
       _response_file,
     ]
 
@@ -161,7 +161,7 @@ template("fidl_library") {
 
       inputs = [
         # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
-        rebase_path("$fuchsia_sdk/.hash"),
+        "${fuchsia_sdk}/.hash",
         _json_representation,
       ]
 
@@ -177,11 +177,11 @@ template("fidl_library") {
         "-generators",
         "cpp",
         "-json",
-        rebase_path(_json_representation),
+        rebase_path(_json_representation, root_build_dir),
         "-include-base",
-        rebase_path(_output_gen_dir),
+        rebase_path(_output_gen_dir, root_build_dir),
         "-output-base",
-        rebase_path("${_output_base}"),
+        rebase_path("${_output_base}", root_build_dir),
       ]
     }
   }
@@ -198,7 +198,7 @@ template("fidl_library") {
 
       inputs = [
         # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
-        rebase_path("$fuchsia_sdk/.hash"),
+        "${fuchsia_sdk}/.hash",
         _json_representation,
         "//build/fuchsia/fidlgen_js/fidl.py",  # The schema helper file.
       ]
@@ -210,14 +210,14 @@ template("fidl_library") {
       script = "//build/fuchsia/fidlgen_js/gen.py"
 
       args = [
-        rebase_path(_json_representation),
+        rebase_path(_json_representation, root_build_dir),
         "--output",
-        rebase_path("${_output_js_path}"),
+        rebase_path("${_output_js_path}", root_build_dir),
       ]
 
       data = []
       foreach(o, outputs) {
-        data += [ rebase_path(o) ]
+        data += [ o ]
       }
     }
   }

@@ -271,13 +271,23 @@ class Parser(object):
     p[0] = p[1]
 
   def p_basictypename(self, p):
-    """basictypename : identifier
+    """basictypename : remotetype
+                     | receivertype
+                     | identifier
                      | ASSOCIATED identifier
                      | handletype"""
     if len(p) == 2:
       p[0] = p[1]
     else:
       p[0] = "asso<" + p[2] + ">"
+
+  def p_remotetype(self, p):
+    """remotetype : PENDING_REMOTE LANGLE identifier RANGLE"""
+    p[0] = "rmt<%s>" % p[3]
+
+  def p_receivertype(self, p):
+    """receivertype : PENDING_RECEIVER LANGLE identifier RANGLE"""
+    p[0] = "rcv<%s>" % p[3]
 
   def p_handletype(self, p):
     """handletype : HANDLE

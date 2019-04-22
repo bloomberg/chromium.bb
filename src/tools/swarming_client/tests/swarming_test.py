@@ -7,7 +7,6 @@ import datetime
 import json
 import logging
 import os
-import re
 import StringIO
 import sys
 import tempfile
@@ -33,8 +32,9 @@ from utils import logging_utils
 from utils import subprocess42
 from utils import tools
 
-import httpserver_mock
-import isolateserver_mock
+import httpserver
+import isolateserver_fake
+import swarmingserver_fake
 
 
 FILE_HASH = u'1' * 40
@@ -181,40 +181,6 @@ class NonBlockingEvent(threading._Event):  # pylint: disable=W0212
     return super(NonBlockingEvent, self).wait(0)
 
 
-class SwarmingServerHandler(httpserver_mock.MockHandler):
-  """An extremely minimal implementation of the swarming server API v1.0."""
-
-  def do_GET(self):
-    logging.info('S GET %s', self.path)
-    if self.path == '/auth/api/v1/server/oauth_config':
-      self.send_json({
-          'client_id': 'c',
-          'client_not_so_secret': 's',
-          'primary_url': self.server.url})
-    elif self.path == '/auth/api/v1/accounts/self':
-      self.send_json({'identity': 'user:joe', 'xsrf_token': 'foo'})
-    else:
-      m = re.match(r'/_ah/api/swarming/v1/task/(\d+)/request', self.path)
-      if m:
-        logging.info('%s', m.group(1))
-        self.send_json(self.server.tasks[int(m.group(1))])
-      else:
-        self.send_json( {'a': 'b'})
-        #raise NotImplementedError(self.path)
-
-  def do_POST(self):
-    logging.info('POST %s', self.path)
-    raise NotImplementedError(self.path)
-
-
-class MockSwarmingServer(httpserver_mock.MockServer):
-  _HANDLER_CLS = SwarmingServerHandler
-
-  def __init__(self):
-    super(MockSwarmingServer, self).__init__()
-    self._server.tasks = {}
-
-
 class Common(object):
   def setUp(self):
     self._tempdir = None
@@ -275,8 +241,8 @@ class TestIsolated(auto_stub.TestCase, Common):
   def setUp(self):
     auto_stub.TestCase.setUp(self)
     Common.setUp(self)
-    self._isolate = isolateserver_mock.MockIsolateServer()
-    self._swarming = MockSwarmingServer()
+    self._isolate = isolateserver_fake.FakeIsolateServer()
+    self._swarming = swarmingserver_fake.FakeSwarmingServer()
 
   def tearDown(self):
     try:
@@ -429,6 +395,71 @@ class TestSwarmingTrigger(NetTestCase):
         'shard_index': 1,
         'task_id': '12400',
         'view_url': 'https://localhost:1/user/task/12400',
+      },
+    }
+    self.assertEqual(expected, tasks)
+
+  def test_trigger_task_shard_custom_index(self):
+    task_request = swarming.NewTaskRequest(
+        name=TEST_NAME,
+        parent_task_id=None,
+        pool_task_template='AUTO',
+        priority=101,
+        task_slices=[
+          swarming.TaskSlice(
+              expiration_secs=60*60,
+              properties=swarming.TaskProperties(
+                  caches=[],
+                  cipd_input=None,
+                  command=['a', 'b'],
+                  relative_cwd=None,
+                  dimensions=[('os', 'Mac'), ('pool', 'default')],
+                  env={'GTEST_SHARD_INDEX' : '2', 'GTEST_TOTAL_SHARDS' : '4'},
+                  env_prefixes=[],
+                  execution_timeout_secs=60,
+                  extra_args=[],
+                  grace_period_secs=30,
+                  idempotent=False,
+                  inputs_ref={
+                    'isolated': None,
+                    'isolatedserver': '',
+                    'namespace': 'default-gzip',
+                  },
+                  io_timeout_secs=60,
+                  outputs=[],
+                  secret_bytes=None),
+              wait_for_capacity=False),
+        ],
+        service_account=None,
+        tags=['tag:a', 'tag:b'],
+        user='joe@localhost')
+
+    request_1 = swarming.task_request_to_raw_request(task_request)
+    request_1['name'] = u'unit_tests:2:4'
+    request_1['task_slices'][0]['properties']['env'] = [
+      {'key': 'GTEST_SHARD_INDEX', 'value': '2'},
+      {'key': 'GTEST_TOTAL_SHARDS', 'value': '4'},
+    ]
+    result_1 = gen_request_response(request_1)
+
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            {'data': request_1},
+            result_1,
+          ),
+        ])
+
+    tasks = swarming.trigger_task_shards(
+        swarming='https://localhost:1',
+        task_request=task_request,
+        shards=1)
+    expected = {
+      u'unit_tests:2:4': {
+        'shard_index': 2,
+        'task_id': '12300',
+        'view_url': 'https://localhost:1/user/task/12300',
       },
     }
     self.assertEqual(expected, tasks)
@@ -1447,7 +1478,7 @@ class TestMain(NetTestCase):
     with open(isolated, 'wb') as f:
       f.write(content)
 
-    isolated_hash = isolateserver_mock.hash_content(content)
+    isolated_hash = isolateserver_fake.hash_content(content)
     request = gen_request_data(
         task_slices=[
           {

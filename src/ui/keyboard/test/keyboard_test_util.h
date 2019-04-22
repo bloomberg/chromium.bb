@@ -5,7 +5,6 @@
 #ifndef UI_KEYBOARD_TEST_KEYBOARD_TEST_UTIL_H_
 #define UI_KEYBOARD_TEST_KEYBOARD_TEST_UTIL_H_
 
-#include "ui/aura/test/test_window_delegate.h"
 #include "ui/keyboard/keyboard_ui.h"
 
 namespace gfx {
@@ -13,6 +12,14 @@ class Rect;
 }
 
 namespace keyboard {
+
+// TODO(shend): Move other methods into test namespace.
+namespace test {
+
+// Waits until the keyboard window finishes loading.
+bool WaitUntilLoaded();
+
+}  // namespace test
 
 // Waits until the keyboard is fully shown, with no pending animations.
 bool WaitUntilShown();
@@ -30,25 +37,6 @@ bool IsKeyboardHiding();
 // may be specified by |keyboard_height|, or a default height is used.
 gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
                                        int keyboard_height = 100);
-
-class TestKeyboardUI : public KeyboardUI {
- public:
-  TestKeyboardUI(ui::InputMethod* input_method);
-  ~TestKeyboardUI() override;
-
-  // Overridden from KeyboardUI:
-  aura::Window* LoadKeyboardWindow(LoadCallback callback) override;
-  aura::Window* GetKeyboardWindow() const override;
-  ui::InputMethod* GetInputMethod() override;
-  void ReloadKeyboardIfNeeded() override {}
-
- private:
-  std::unique_ptr<aura::Window> window_;
-  aura::test::TestWindowDelegate delegate_;
-  ui::InputMethod* input_method_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestKeyboardUI);
-};
 
 }  // namespace keyboard
 

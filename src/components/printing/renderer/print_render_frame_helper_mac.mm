@@ -15,7 +15,6 @@
 #include "components/printing/common/print_messages.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
-#include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
@@ -58,7 +57,7 @@ void PrintRenderFrameHelper::PrintPageInternal(
   if (!canvas)
     return;
 
-  MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, metafile);
+  canvas->SetPrintingMetafile(metafile);
   if (params.display_header_footer) {
     PrintHeaderAndFooter(canvas, page_number + 1, page_count, *frame,
                          final_scale_factor, page_layout_in_points, params);

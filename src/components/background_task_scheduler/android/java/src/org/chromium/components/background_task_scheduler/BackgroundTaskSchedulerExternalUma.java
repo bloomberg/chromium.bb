@@ -18,4 +18,21 @@ public final class BackgroundTaskSchedulerExternalUma {
     public static void reportTaskStartedNative(int taskId) {
         BackgroundTaskSchedulerUma.getInstance().reportTaskStartedNative(taskId);
     }
+
+    /**
+     * Report metrics for starting a NativeBackgroundTask. This does not consider tasks that are
+     * short-circuited before any work is done.
+     */
+    public static void reportNativeTaskStarted(int taskId) {
+        BackgroundTaskSchedulerUma.getInstance().reportNativeTaskStarted(taskId);
+    }
+
+    /**
+     * Reports metrics that a NativeBackgroundTask has been finished cleanly (i.e., no unexpected
+     * exits because of chrome crash or OOM). This includes tasks that have been stopped due to
+     * timeout.
+     */
+    public static void reportNativeTaskFinished(int taskId) {
+        BackgroundTaskSchedulerUma.getInstance().reportNativeTaskFinished(taskId);
+    }
 }

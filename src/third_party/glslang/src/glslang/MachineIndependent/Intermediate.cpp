@@ -1,7 +1,7 @@
 //
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2012-2015 LunarG, Inc.
-// Copyright (C) 2015-2016 Google, Inc.
+// Copyright (C) 2015-2018 Google, Inc.
 // Copyright (C) 2017 ARM Limited.
 //
 // All rights reserved.
@@ -489,7 +489,7 @@ bool TIntermediate::isConversionAllowed(TOperator op, TIntermTyped* node) const
 // This is 'mechanism' here, it does any conversion told.
 // It is about basic type, not about shape.
 // The policy comes from the shader or the calling code.
-TIntermUnary* TIntermediate::createConversion(TBasicType convertTo, TIntermTyped* node) const
+TIntermTyped* TIntermediate::createConversion(TBasicType convertTo, TIntermTyped* node) const
 {
     //
     // Add a new newNode for the conversion.
@@ -712,13 +712,22 @@ TIntermUnary* TIntermediate::createConversion(TBasicType convertTo, TIntermTyped
     TType newType(convertTo, EvqTemporary, node->getVectorSize(), node->getMatrixCols(), node->getMatrixRows());
     newNode = addUnaryNode(newOp, node, node->getLoc(), newType);
 
-    // TODO: it seems that some unary folding operations should occur here, but are not
+    if (node->getAsConstantUnion()) {
+        TIntermTyped* folded = node->getAsConstantUnion()->fold(newOp, newType);
+        if (folded)
+            return folded;
+    }
 
     // Propagate specialization-constant-ness, if allowed
     if (node->getType().getQualifier().isSpecConstant() && isSpecializationOperation(*newNode))
         newNode->getWritableType().getQualifier().makeSpecConstant();
 
     return newNode;
+}
+
+TIntermTyped* TIntermediate::addConversion(TBasicType convertTo, TIntermTyped* node) const
+{
+    return createConversion(convertTo, node);
 }
 
 // For converting a pair of operands to a binary operation to compatible
@@ -734,7 +743,7 @@ TIntermUnary* TIntermediate::createConversion(TBasicType convertTo, TIntermTyped
 // Returns the converted pair of nodes.
 // Returns <nullptr, nullptr> when there is no conversion.
 std::tuple<TIntermTyped*, TIntermTyped*>
-TIntermediate::addConversion(TOperator op, TIntermTyped* node0, TIntermTyped* node1) const
+TIntermediate::addConversion(TOperator op, TIntermTyped* node0, TIntermTyped* node1)
 {
     if (!isConversionAllowed(op, node0) || !isConversionAllowed(op, node1))
         return std::make_tuple(nullptr, nullptr);
@@ -747,6 +756,10 @@ TIntermediate::addConversion(TOperator op, TIntermTyped* node0, TIntermTyped* no
         // If differing arrays, then no conversions.
         if (node0->getType().isArray() || node1->getType().isArray())
             return std::make_tuple(nullptr, nullptr);
+
+        // No implicit conversions for operations involving cooperative matrices
+        if (node0->getType().isCoopMat() || node1->getType().isCoopMat())
+            return std::make_tuple(node0, node1);
     }
 
     auto promoteTo = std::make_tuple(EbtNumTypes, EbtNumTypes);
@@ -863,7 +876,7 @@ TIntermediate::addConversion(TOperator op, TIntermTyped* node0, TIntermTyped* no
 //
 // Return nullptr if a conversion can't be done.
 //
-TIntermTyped* TIntermediate::addConversion(TOperator op, const TType& type, TIntermTyped* node) const
+TIntermTyped* TIntermediate::addConversion(TOperator op, const TType& type, TIntermTyped* node)
 {
     if (!isConversionAllowed(op, node))
         return nullptr;
@@ -903,28 +916,28 @@ TIntermTyped* TIntermediate::addConversion(TOperator op, const TType& type, TInt
         break;
     case EOpConstructFloat16:
         promoteTo = EbtFloat16;
-        canPromoteConstant = extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types) ||
-                             extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types_float16);
+        canPromoteConstant = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                             extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_float16);
         break;
     case EOpConstructInt8:
         promoteTo = EbtInt8;
-        canPromoteConstant = extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types) ||
-                             extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types_int8);
+        canPromoteConstant = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                             extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int8);
         break;
     case EOpConstructUint8:
         promoteTo = EbtUint8;
-        canPromoteConstant = extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types) ||
-                             extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types_int8);
+        canPromoteConstant = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                             extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int8);
         break;
     case EOpConstructInt16:
         promoteTo = EbtInt16;
-        canPromoteConstant = extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types) ||
-                             extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types_int16);
+        canPromoteConstant = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                             extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int16);
         break;
     case EOpConstructUint16:
         promoteTo = EbtUint16;
-        canPromoteConstant = extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types) ||
-                             extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types_int16);
+        canPromoteConstant = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                             extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int16);
         break;
     case EOpConstructInt:
         promoteTo = EbtInt;
@@ -979,6 +992,15 @@ TIntermTyped* TIntermediate::addConversion(TOperator op, const TType& type, TInt
 
     case EOpSequence:
     case EOpConstructStruct:
+    case EOpConstructCooperativeMatrix:
+
+        if (type.getBasicType() == EbtReference || node->getType().getBasicType() == EbtReference) {
+            // types must match to assign a reference
+            if (type == node->getType())
+                return node;
+            else
+                return nullptr;
+        }
 
         if (type.getBasicType() == node->getType().getBasicType())
             return node;
@@ -986,7 +1008,7 @@ TIntermTyped* TIntermediate::addConversion(TOperator op, const TType& type, TInt
         if (canImplicitlyPromote(node->getBasicType(), type.getBasicType(), op))
             promoteTo = type.getBasicType();
         else
-           return nullptr;
+            return nullptr;
         break;
 
     // For GLSL, there are no conversions needed; the shift amount just needs to be an
@@ -1021,7 +1043,7 @@ TIntermTyped* TIntermediate::addConversion(TOperator op, const TType& type, TInt
     //
     // Add a new newNode for the conversion.
     //
-    TIntermUnary* newNode = createConversion(promoteTo, node);
+    TIntermTyped* newNode = createConversion(promoteTo, node);
 
     return newNode;
 }
@@ -1119,9 +1141,12 @@ void TIntermediate::addBiShapeConversion(TOperator op, TIntermTyped*& lhsNode, T
         rhsNode = addUniShapeConversion(op, lhsNode->getType(), rhsNode);
         return;
 
+    case EOpMul:
+        // matrix multiply does not change shapes
+        if (lhsNode->isMatrix() && rhsNode->isMatrix())
+            return;
     case EOpAdd:
     case EOpSub:
-    case EOpMul:
     case EOpDiv:
         // want to support vector * scalar native ops in AST and lower, not smear, similarly for
         // matrix * vector, etc.
@@ -1194,9 +1219,19 @@ TIntermTyped* TIntermediate::addShapeConversion(const TType& type, TIntermTyped*
     // The new node that handles the conversion
     TOperator constructorOp = mapTypeToConstructorOp(type);
 
-    // HLSL has custom semantics for scalar->mat shape conversions.
     if (source == EShSourceHlsl) {
-        if (node->getType().isScalarOrVec1() && type.isMatrix()) {
+        // HLSL rules for scalar, vector and matrix conversions:
+        // 1) scalar can become anything, initializing every component with its value
+        // 2) vector and matrix can become scalar, first element is used (warning: truncation)
+        // 3) matrix can become matrix with less rows and/or columns (warning: truncation)
+        // 4) vector can become vector with less rows size (warning: truncation)
+        // 5a) vector 4 can become 2x2 matrix (special case) (same packing layout, its a reinterpret)
+        // 5b) 2x2 matrix can become vector 4 (special case) (same packing layout, its a reinterpret)
+
+        const TType &sourceType = node->getType();
+
+        // rule 1 for scalar to matrix is special
+        if (sourceType.isScalarOrVec1() && type.isMatrix()) {
 
             // HLSL semantics: the scalar (or vec1) is replicated to every component of the matrix.  Left to its
             // own devices, the constructor from a scalar would populate the diagonal.  This forces replication
@@ -1204,7 +1239,7 @@ TIntermTyped* TIntermediate::addShapeConversion(const TType& type, TIntermTyped*
 
             // Note that if the node is complex (e.g, a function call), we don't want to duplicate it here
             // repeatedly, so we copy it to a temp, then use the temp.
-            const int matSize = type.getMatrixRows() * type.getMatrixCols();
+            const int matSize = type.computeNumComponents();
             TIntermAggregate* rhsAggregate = new TIntermAggregate();
 
             const bool isSimple = (node->getAsSymbolNode() != nullptr) || (node->getAsConstantUnion() != nullptr);
@@ -1212,11 +1247,43 @@ TIntermTyped* TIntermediate::addShapeConversion(const TType& type, TIntermTyped*
             if (!isSimple) {
                 assert(0); // TODO: use node replicator service when available.
             }
-            
-            for (int x=0; x<matSize; ++x)
+
+            for (int x = 0; x < matSize; ++x)
                 rhsAggregate->getSequence().push_back(node);
 
             return setAggregateOperator(rhsAggregate, constructorOp, type, node->getLoc());
+        }
+
+        // rule 1 and 2
+        if ((sourceType.isScalar() && !type.isScalar()) || (!sourceType.isScalar() && type.isScalar()))
+            return setAggregateOperator(makeAggregate(node), constructorOp, type, node->getLoc());
+
+        // rule 3 and 5b
+        if (sourceType.isMatrix()) {
+            // rule 3
+            if (type.isMatrix()) {
+                if ((sourceType.getMatrixCols() != type.getMatrixCols() || sourceType.getMatrixRows() != type.getMatrixRows()) &&
+                    sourceType.getMatrixCols() >= type.getMatrixCols() && sourceType.getMatrixRows() >= type.getMatrixRows())
+                    return setAggregateOperator(makeAggregate(node), constructorOp, type, node->getLoc());
+            // rule 5b
+            } else if (type.isVector()) {
+                if (type.getVectorSize() == 4 && sourceType.getMatrixCols() == 2 && sourceType.getMatrixRows() == 2)
+                    return setAggregateOperator(makeAggregate(node), constructorOp, type, node->getLoc());
+            }
+        }
+
+        // rule 4 and 5a
+        if (sourceType.isVector()) {
+            // rule 4
+            if (type.isVector())
+            {
+                if (sourceType.getVectorSize() > type.getVectorSize())
+                    return setAggregateOperator(makeAggregate(node), constructorOp, type, node->getLoc());
+            // rule 5a
+            } else if (type.isMatrix()) {
+                if (sourceType.getVectorSize() == 4 && type.getMatrixCols() == 2 && type.getMatrixRows() == 2)
+                    return setAggregateOperator(makeAggregate(node), constructorOp, type, node->getLoc());
+            }
         }
     }
 
@@ -1436,14 +1503,14 @@ bool TIntermediate::canImplicitlyPromote(TBasicType from, TBasicType to, TOperat
         }
     }
 
-    bool explicitTypesEnabled = extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types) ||
-                                extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types_int8) ||
-                                extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types_int16) ||
-                                extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types_int32) ||
-                                extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types_int64) ||
-                                extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types_float16) ||
-                                extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types_float32) ||
-                                extensionRequested(E_GL_KHX_shader_explicit_arithmetic_types_float64);
+    bool explicitTypesEnabled = extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+                                extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int8) ||
+                                extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int16) ||
+                                extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int32) ||
+                                extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int64) ||
+                                extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_float16) ||
+                                extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_float32) ||
+                                extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_float64);
 
     if (explicitTypesEnabled) {
         // integral promotions
@@ -1790,6 +1857,9 @@ TOperator TIntermediate::mapTypeToConstructorOp(const TType& type) const
     if (type.getQualifier().nonUniform)
         return EOpConstructNonuniform;
 
+    if (type.isCoopMat())
+        return EOpConstructCooperativeMatrix;
+
     switch (type.getBasicType()) {
     case EbtStruct:
         op = EOpConstructStruct;
@@ -2081,6 +2151,9 @@ TOperator TIntermediate::mapTypeToConstructorOp(const TType& type) const
             default: break; // some compilers want this
             }
         }
+        break;
+    case EbtReference:
+        op = EOpConstructReference;
         break;
     default:
         break;
@@ -3257,6 +3330,40 @@ bool TIntermediate::promoteBinary(TIntermBinary& node)
 
     default:
         break;
+    }
+
+    if (left->getType().isCoopMat() || right->getType().isCoopMat()) {
+        if (left->getType().isCoopMat() && right->getType().isCoopMat() &&
+            *left->getType().getTypeParameters() != *right->getType().getTypeParameters()) {
+            return false;
+        }
+        switch (op) {
+        case EOpMul:
+        case EOpMulAssign:
+            if (left->getType().isCoopMat() && right->getType().isCoopMat()) {
+                return false;
+            }
+            if (op == EOpMulAssign && right->getType().isCoopMat()) {
+                return false;
+            }
+            node.setOp(op == EOpMulAssign ? EOpMatrixTimesScalarAssign : EOpMatrixTimesScalar);
+            if (right->getType().isCoopMat()) {
+                node.setType(right->getType());
+            }
+            return true;
+        case EOpAdd:
+        case EOpSub:
+        case EOpDiv:
+        case EOpAssign:
+            // These require both to be cooperative matrices
+            if (!left->getType().isCoopMat() || !right->getType().isCoopMat()) {
+                return false;
+            }
+            return true;
+        default:
+            break;
+        }
+        return false;
     }
 
     // Finish handling the case, for all ops, where both operands are scalars.

@@ -15,12 +15,11 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/gsm_sms_client.h"
-#include "chromeos/dbus/modem_messaging_client.h"
-#include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/sms_client.h"
+#include "chromeos/dbus/shill/gsm_sms_client.h"
+#include "chromeos/dbus/shill/modem_messaging_client.h"
+#include "chromeos/dbus/shill/shill_device_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/shill/sms_client.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -88,13 +87,13 @@ ModemManagerNetworkSmsDeviceHandler::ModemManagerNetworkSmsDeviceHandler(
       deleting_messages_(false),
       weak_ptr_factory_(this) {
   // Set the handler for received Sms messaages.
-  DBusThreadManager::Get()->GetGsmSMSClient()->SetSmsReceivedHandler(
+  GsmSMSClient::Get()->SetSmsReceivedHandler(
       service_name_, object_path_,
       base::Bind(&ModemManagerNetworkSmsDeviceHandler::SmsReceivedCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 
   // List the existing messages.
-  DBusThreadManager::Get()->GetGsmSMSClient()->List(
+  GsmSMSClient::Get()->List(
       service_name_, object_path_,
       base::BindOnce(
           &NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::ListCallback,
@@ -102,8 +101,7 @@ ModemManagerNetworkSmsDeviceHandler::ModemManagerNetworkSmsDeviceHandler(
 }
 
 void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::RequestUpdate() {
-  DBusThreadManager::Get()->GetGsmSMSClient()->RequestUpdate(
-      service_name_, object_path_);
+  GsmSMSClient::Get()->RequestUpdate(service_name_, object_path_);
 }
 
 void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::ListCallback(
@@ -136,7 +134,7 @@ void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::DeleteMessages() {
   deleting_messages_ = true;
   uint32_t index = delete_queue_.back();
   delete_queue_.pop_back();
-  DBusThreadManager::Get()->GetGsmSMSClient()->Delete(
+  GsmSMSClient::Get()->Delete(
       service_name_, object_path_, index,
       base::BindOnce(&NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::
                          DeleteCallback,
@@ -155,7 +153,7 @@ void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::
   // Only handle complete messages.
   if (!complete)
     return;
-  DBusThreadManager::Get()->GetGsmSMSClient()->Get(
+  GsmSMSClient::Get()->Get(
       service_name_, object_path_, index,
       base::BindOnce(
           &NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::GetCallback,
@@ -225,15 +223,14 @@ ModemManager1NetworkSmsDeviceHandler::ModemManager1NetworkSmsDeviceHandler(
       retrieving_messages_(false),
       weak_ptr_factory_(this) {
   // Set the handler for received Sms messaages.
-  DBusThreadManager::Get()->GetModemMessagingClient()->SetSmsReceivedHandler(
+  ModemMessagingClient::Get()->SetSmsReceivedHandler(
       service_name_, object_path_,
-      base::Bind(
-          &NetworkSmsHandler::
-          ModemManager1NetworkSmsDeviceHandler::SmsReceivedCallback,
-          weak_ptr_factory_.GetWeakPtr()));
+      base::Bind(&NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::
+                     SmsReceivedCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // List the existing messages.
-  DBusThreadManager::Get()->GetModemMessagingClient()->List(
+  ModemMessagingClient::Get()->List(
       service_name_, object_path_,
       base::BindOnce(&NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::
                          ListCallback,
@@ -243,7 +240,7 @@ ModemManager1NetworkSmsDeviceHandler::ModemManager1NetworkSmsDeviceHandler(
 void NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::RequestUpdate() {
   // Calling List using the service "AddSMS" causes the stub
   // implementation to deliver new sms messages.
-  DBusThreadManager::Get()->GetModemMessagingClient()->List(
+  ModemMessagingClient::Get()->List(
       std::string("AddSMS"), dbus::ObjectPath("/"),
       base::BindOnce(&NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::
                          ListCallback,
@@ -277,7 +274,7 @@ void NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::DeleteMessages() {
   deleting_messages_ = true;
   dbus::ObjectPath sms_path = std::move(delete_queue_.back());
   delete_queue_.pop_back();
-  DBusThreadManager::Get()->GetModemMessagingClient()->Delete(
+  ModemMessagingClient::Get()->Delete(
       service_name_, object_path_, sms_path,
       base::BindOnce(&NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::
                          DeleteCallback,
@@ -303,7 +300,7 @@ void NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::GetMessages() {
   retrieving_messages_ = true;
   dbus::ObjectPath sms_path = retrieval_queue_.front();
   retrieval_queue_.pop_front();
-  DBusThreadManager::Get()->GetSMSClient()->GetAll(
+  SMSClient::Get()->GetAll(
       service_name_, sms_path,
       base::BindOnce(
           &NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::GetCallback,
@@ -358,17 +355,15 @@ NetworkSmsHandler::NetworkSmsHandler()
 }
 
 NetworkSmsHandler::~NetworkSmsHandler() {
-  DBusThreadManager::Get()->GetShillManagerClient()->
-      RemovePropertyChangedObserver(this);
+  ShillManagerClient::Get()->RemovePropertyChangedObserver(this);
 }
 
 void NetworkSmsHandler::Init() {
   // Add as an observer here so that new devices added after this call are
   // recognized.
-  DBusThreadManager::Get()->GetShillManagerClient()->AddPropertyChangedObserver(
-      this);
+  ShillManagerClient::Get()->AddPropertyChangedObserver(this);
   // Request network manager properties so that we can get the list of devices.
-  DBusThreadManager::Get()->GetShillManagerClient()->GetProperties(
+  ShillManagerClient::Get()->GetProperties(
       base::Bind(&NetworkSmsHandler::ManagerPropertiesCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -449,11 +444,10 @@ void NetworkSmsHandler::UpdateDevices(const base::ListValue* devices) {
     if (!device_path.empty()) {
       // Request device properties.
       VLOG(1) << "GetDeviceProperties: " << device_path;
-      DBusThreadManager::Get()->GetShillDeviceClient()->GetProperties(
+      ShillDeviceClient::Get()->GetProperties(
           dbus::ObjectPath(device_path),
           base::Bind(&NetworkSmsHandler::DevicePropertiesCallback,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     device_path));
+                     weak_ptr_factory_.GetWeakPtr(), device_path));
     }
   }
 }

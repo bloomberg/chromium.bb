@@ -6,7 +6,7 @@
 #define MEDIA_WEBRTC_AUDIO_PROCESSOR_CONTROLS_H_
 
 #include "base/callback.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace media {
 

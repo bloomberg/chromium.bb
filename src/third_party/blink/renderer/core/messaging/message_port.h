@@ -37,9 +37,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -57,8 +57,6 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
 
  public:
-  static MessagePort* Create(ExecutionContext&);
-
   explicit MessagePort(ExecutionContext&);
   ~MessagePort() override;
 

@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">See kuu</translation>
 <translation id="1637811476055996098">Vali failid</translation>
 <translation id="1650423536718072820">tsitaat</translation>
+<translation id="1727886345390570319">peida subtiitrite menüü</translation>
 <translation id="1729654308190250600">Sisestage mittetühi e-posti aadress.</translation>
 <translation id="1758486001363313524">Muu ...</translation>
 <translation id="1806710327868736751">hoiatusdialoog</translation>
@@ -41,6 +42,7 @@
 <translation id="2291999235780842123">märkeruut</translation>
 <translation id="2311842470354187719">leheküljepiir</translation>
 <translation id="2335594187091864976">kuupäeva ja kellaaja valija</translation>
+<translation id="245932805758469625">video allesjäänud sekundite arv</translation>
 <translation id="248395913932153421">päev</translation>
 <translation id="2507943997699731163">Täitke see väli.</translation>
 <translation id="2508569020611168319">vahelehtede loend</translation>
@@ -50,7 +52,6 @@
 <translation id="2653659639078652383">Esita</translation>
 <translation id="2657045182931379222">graafika objekt</translation>
 <translation id="2674318244760992338">jalus</translation>
-<translation id="2706474812903655270">Videot esitatakse režiimis Pilt pildis</translation>
 <translation id="2709516037105925701">Automaatne täitmine</translation>
 <translation id="2723001399770238859">heli</translation>
 <translation id="2746543609216772311">Väärtus peab olema <ph name="MINIMUM_DATE_OR_TIME" /> või hilisem.</translation>
@@ -71,11 +72,10 @@
 <translation id="3450233048674729344">Väärtus peab olema väiksem või võrdne <ph name="MAXIMUM" />-ga.</translation>
 <translation id="3486220673238053218">definitsioon</translation>
 <translation id="3557673793733683882">päis <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">filmi järelejäänud aeg sekundites</translation>
+<translation id="3685101356851116974">Sildita pilt</translation>
 <translation id="3706100364254443312">lüliti</translation>
 <translation id="3732799496749320381">kk</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">video ajakursor</translation>
 <translation id="3808586225841795776">termin</translation>
 <translation id="3822383571486410024">Pikendage teksti vähemalt <ph name="MIN_CHARACTERS" /> tähemärgini (kasutate praegu <ph name="CURRENT_LENGTH" /> tähemärki).</translation>
 <translation id="383465348367842624">Märgile „<ph name="ATSIGN" />” eelnev osa ei tohi sisaldada sümbolit „<ph name="INVALIDCHARACTER" />”.</translation>
@@ -94,8 +94,10 @@
 <translation id="4360991593054037559">Sisestage kehtiv väärtus. Kaks lähimat kehtivat väärtust on <ph name="VALID_VALUE_LOW" /> ja <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Küsimused ja vastused</translation>
 <translation id="4413860115965805769">menüünupp</translation>
+<translation id="4444765639179266822">Näib ütlevat: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">sõnastiku viide</translation>
 <translation id="4522570452068850558">Üksikasjad</translation>
+<translation id="4542388879936266156">järelejäänud aeg: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">vorm</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Märgile „<ph name="ATSIGN" />” järgnev osa ei tohi sisaldada sümbolit „<ph name="INVALIDCHARACTER" />”.</translation>
@@ -111,6 +113,7 @@
 <translation id="4992066212339426712">Tühista vaigistus</translation>
 <translation id="49969490063480558">Sisestage märgile „<ph name="ATSIGN" />” järgnev osa. Aadress „<ph name="INVALIDADDRESS" />” pole täielik.</translation>
 <translation id="5034860022980953847">edenemise näidik</translation>
+<translation id="5090250355906949916">video ajakursor</translation>
 <translation id="5093189678851173835">epigraaf</translation>
 <translation id="5117590920725113268">Järgmise kuu kuvamine</translation>
 <translation id="512758898067543763">rea päis</translation>
@@ -118,6 +121,7 @@
 <translation id="5164977714490026579">Väärtus peab olema suurem või võrdne <ph name="MINIMUM" />-ga.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Sisestage märgile „<ph name="ATSIGN" />” eelnev osa. Aadress „<ph name="INVALIDADDRESS" />” pole täielik.</translation>
+<translation id="5334352251556557839">Meediasisu ei saa esitada.</translation>
 <translation id="5406322316791861025">joonis</translation>
 <translation id="5453733299334684579">puuüksus</translation>
 <translation id="5466621249238537318">Valige üks või mitu faili.</translation>
@@ -144,12 +148,16 @@
 <translation id="6150588977291308318">bibliograafia</translation>
 <translation id="6164829606128959761">mõõdik</translation>
 <translation id="6166809985690652833">järelsõna</translation>
+<translation id="6209276755895393898">Näib olevat: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">sõnastik</translation>
+<translation id="628938136236500310">Esitatakse režiimis Pilt pildis</translation>
 <translation id="6398862346408813489">Kuu valikupaneeli kuvamine</translation>
 <translation id="6404546809543547843">heli ajamõõdik</translation>
+<translation id="6443871981718447451">kuva subtiitrite menüü</translation>
 <translation id="6453774872122745852">tunnustused</translation>
 <translation id="648732519525291180">kellaaja valija</translation>
 <translation id="6550675742724504774">Valikud</translation>
+<translation id="6572309429103589720">Grammatikavead</translation>
 <translation id="658823671542763450">kuvamine täisekraanil</translation>
 <translation id="663493177488814956">voog</translation>
 <translation id="6637586476836377253">logi</translation>
@@ -162,7 +170,6 @@
 <translation id="6820355525329141109">Pistikprogrammi ei saanud laadida.</translation>
 <translation id="6820615603175220800">kasutatud kirjandus</translation>
 <translation id="6843725295806269523">vaigista</translation>
-<translation id="6853785296079745596">subtiitrite peitmine</translation>
 <translation id="6885760532393684712">kataloog</translation>
 <translation id="689129560213475294">kolofoon</translation>
 <translation id="6934078000481955284">plokktsitaat</translation>
@@ -170,25 +177,29 @@
 <translation id="6981594929165378967">lisamine</translation>
 <translation id="6989848892321993519">Pikendage teksti vähemalt <ph name="MIN_CHARACTERS" /> tähemärgini (kasutate praegu ühte tähemärki).</translation>
 <translation id="709897737746224366">Vastendage nõutav vorming.</translation>
+<translation id="7118469954320184356">Kirjeldust pole.</translation>
 <translation id="7139483182332611405">eessõna</translation>
-<translation id="7223624360433298498">möödunud aeg</translation>
 <translation id="7263440858009898357">Valige loendist element.</translation>
 <translation id="727747134524199931">veeru päis</translation>
+<translation id="7320576522385648310">puhverdamine</translation>
 <translation id="7353453495576941748">autor(id)</translation>
 <translation id="7364796246159120393">Vali fail</translation>
 <translation id="739024184232394898">Muu ...</translation>
 <translation id="7405738980073107433">järelmärkused</translation>
+<translation id="7410239719251593705">Näib sisaldavat täiskasvanutele mõeldud sisu. Kirjeldust pole.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">Tabulaator</translation>
 <translation id="7514365320538308">Laadi alla</translation>
 <translation id="7529102961911894712">tagasilink</translation>
+<translation id="7533959249147584474">Sildita graafika</translation>
 <translation id="7647456547678091388">nõuanne</translation>
 <translation id="7661956066982048809">graafika dokument</translation>
 <translation id="7673697353781729403">Tunnid</translation>
 <translation id="7681220483256441252">register</translation>
-<translation id="7720026100085573005">järelejäänud aeg</translation>
 <translation id="7740050170769002709">HTML-sisu</translation>
+<translation id="7745230546936012372">Puuduvate pildikirjelduste hankimiseks avage kontekstimenüü.</translation>
 <translation id="7750228210027921155">Pilt pildis</translation>
+<translation id="775297008183122718">Kehtetu kirje</translation>
 <translation id="7789962463072032349">peata</translation>
 <translation id="7802800022689234070">avalikustamise kolmnurk</translation>
 <translation id="7888071071722539607">Lisage e-posti aadressile märk „<ph name="ATSIGN" />”. Aadressist „<ph name="INVALIDADDRESS" />” puudub märk „<ph name="ATSIGN" />”.</translation>
@@ -197,10 +208,13 @@
 <translation id="8053789581856978548">otsinguteksti väli</translation>
 <translation id="8057695513531652401">teatis</translation>
 <translation id="8105797009065549151">märkuse viide</translation>
+<translation id="811583516810654505">Kirjelduse hankimine …</translation>
 <translation id="8117451130807776954">See nädal</translation>
 <translation id="8199524924445686405">aaaa</translation>
+<translation id="8261464734335370856">Õigekirjavead</translation>
 <translation id="8284326494547611709">Subtiitrid</translation>
 <translation id="835897206747267392">Kehtetu väärtus.</translation>
+<translation id="8403857369060869934">möödunud aeg: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">osa</translation>
 <translation id="8433900881053900389">tööriistariba</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> faili</translation>
@@ -225,7 +239,6 @@
 <translation id="8987927404178983737">kuu</translation>
 <translation id="901493112792887934">praegune aeg sekundites</translation>
 <translation id="9048119486235211610">navigeerimine</translation>
-<translation id="9050748414552849310">subtiitrite kuvamine</translation>
 <translation id="9062295712474918030">dokument</translation>
 <translation id="9093215626363556771">välju režiimist Pilt pildis</translation>
 <translation id="9108370397979208512">matemaatika</translation>

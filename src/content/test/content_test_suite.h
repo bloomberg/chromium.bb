@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/test/test_discardable_memory_allocator.h"
 #include "build/build_config.h"
 #include "content/public/test/content_test_suite_base.h"
 
@@ -27,6 +28,8 @@ class ContentTestSuite : public ContentTestSuiteBase {
   void Initialize() override;
 
  private:
+  base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
+
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer com_initializer_;
 #endif

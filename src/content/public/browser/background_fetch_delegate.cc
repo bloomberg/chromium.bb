@@ -6,8 +6,8 @@
 
 namespace content {
 
-BackgroundFetchDelegate::BackgroundFetchDelegate() {}
+BackgroundFetchDelegate::BackgroundFetchDelegate() = default;
 
-BackgroundFetchDelegate::~BackgroundFetchDelegate() {}
+BackgroundFetchDelegate::~BackgroundFetchDelegate() = default;
 
 }  // namespace content

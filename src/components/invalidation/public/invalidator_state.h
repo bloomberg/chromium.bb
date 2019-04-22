@@ -26,7 +26,19 @@ enum InvalidatorState {
   // Called just before shutdown so handlers can unregister themselves.
   INVALIDATOR_SHUTTING_DOWN = 3,
 
-  kMaxValue = INVALIDATOR_SHUTTING_DOWN
+  // The subscription to at least one topic has failed.
+  SUBSCRIPTION_FAILURE = 4,
+
+  // Invalidator was stopped.
+  STOPPED = 5,
+
+  // Starting was attempted, but failed due to absence of active account.
+  NOT_STARTED_NO_ACTIVE_ACCOUNT = 6,
+
+  // Starting was attempted, but failed due to absence of active account.
+  NOT_STARTED_NO_REFRESH_TOKEN = 7,
+
+  kMaxValue = NOT_STARTED_NO_REFRESH_TOKEN,
 };
 
 INVALIDATION_EXPORT const char* InvalidatorStateToString(

@@ -5,23 +5,28 @@
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
-#include "ash/public/cpp/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
+#include "chrome/browser/ui/views/chrome_web_dialog_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "components/user_manager/user_manager.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_features.h"
+#include "net/base/url_util.h"
+#include "ui/views/widget/widget.h"
 
 namespace chromeos {
 
@@ -31,26 +36,44 @@ bool is_active = false;
 
 constexpr int kAssistantOptInDialogWidth = 768;
 constexpr int kAssistantOptInDialogHeight = 640;
+constexpr char kFlowTypeParamKey[] = "flow-type";
+
+GURL CreateAssistantOptInURL(ash::mojom::FlowType type) {
+  // TODO(updowndota): Directly use mojom enum types in js.
+  auto gurl = net::AppendOrReplaceQueryParameter(
+      GURL(chrome::kChromeUIAssistantOptInURL), kFlowTypeParamKey,
+      std::to_string(static_cast<int>(type)));
+  return gurl;
+}
+
+void DisablePolymer2(content::URLDataSource* shared_source) {
+  if (shared_source)
+    shared_source->DisablePolymer2ForHost(chrome::kChromeUIAssistantOptInHost);
+}
 
 }  // namespace
 
 AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
-    : ui::WebDialogUI(web_ui), weak_factory_(this) {
+    : ui::WebDialogUI(web_ui) {
   // Set up the chrome://assistant-optin source.
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIAssistantOptInHost);
 
-  auto assistant_handler = std::make_unique<AssistantOptInFlowScreenHandler>();
-  auto* assistant_handler_ptr = assistant_handler.get();
+  auto assistant_handler =
+      std::make_unique<AssistantOptInFlowScreenHandler>(&js_calls_container_);
+  assistant_handler_ptr_ = assistant_handler.get();
   web_ui->AddMessageHandler(std::move(assistant_handler));
-  assistant_handler_ptr->SetupAssistantConnection();
+  assistant_handler_ptr_->set_on_initialized(base::BindOnce(
+      &AssistantOptInUI::Initialize, weak_factory_.GetWeakPtr()));
+  assistant_handler_ptr_->SetupAssistantConnection();
 
   base::DictionaryValue localized_strings;
-  assistant_handler_ptr->GetLocalizedStrings(&localized_strings);
+  assistant_handler_ptr_->GetLocalizedStrings(&localized_strings);
   source->AddLocalizedStrings(localized_strings);
   source->SetJsonPath("strings.js");
   source->AddResourcePath("assistant_optin.js", IDR_ASSISTANT_OPTIN_JS);
   source->AddResourcePath("assistant_logo.png", IDR_ASSISTANT_LOGO_PNG);
+  source->AddBoolean("hotwordDspAvailable", chromeos::IsHotwordDspAvailable());
   source->SetDefaultResource(IDR_ASSISTANT_OPTIN_HTML);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 
@@ -59,27 +82,46 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
       content::HostZoomMap::GetForWebContents(web_ui->GetWebContents());
   DCHECK(zoom_map);
   zoom_map->SetZoomLevelForHost(web_ui->GetWebContents()->GetURL().host(), 0);
+
+  // If allowed, request that the shared resources send this page Polymer 1
+  // resources instead of Polymer 2.
+  // TODO (https://crbug.com/739611): Remove this exception by migrating to
+  // Polymer 2.
+  if (base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions)) {
+    content::URLDataSource::GetSourceForURL(
+        Profile::FromWebUI(web_ui),
+        GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"),
+        base::BindOnce(DisablePolymer2));
+  }
 }
 
 AssistantOptInUI::~AssistantOptInUI() = default;
+
+void AssistantOptInUI::OnDialogClosed() {
+  if (assistant_handler_ptr_) {
+    assistant_handler_ptr_->OnDialogClosed();
+  }
+}
+
+void AssistantOptInUI::Initialize() {
+  js_calls_container_.ExecuteDeferredJSCalls(web_ui());
+}
 
 // AssistantOptInDialog
 
 // static
 void AssistantOptInDialog::Show(
+    ash::mojom::FlowType type,
     ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback) {
-  DCHECK(!is_active);
-  AssistantOptInDialog* dialog = new AssistantOptInDialog(std::move(callback));
+  if (is_active)
+    return;
+  AssistantOptInDialog* dialog =
+      new AssistantOptInDialog(type, std::move(callback));
 
-  int container_id = dialog->GetDialogModalType() == ui::MODAL_TYPE_NONE
-                         ? ash::kShellWindowId_DefaultContainer
-                         : ash::kShellWindowId_LockSystemModalContainer;
-  auto* window = chrome::ShowWebDialogInContainer(
-      container_id, ProfileManager::GetActiveUserProfile(), dialog, true);
-
-  MultiUserWindowManager::GetInstance()->SetWindowOwner(
-      window,
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
+  views::Widget::InitParams extra_params = ash_util::GetFramelessInitParams();
+  chrome::ShowWebDialogWithParams(nullptr /* parent */,
+                                  ProfileManager::GetActiveUserProfile(),
+                                  dialog, &extra_params);
 }
 
 // static
@@ -88,9 +130,9 @@ bool AssistantOptInDialog::IsActive() {
 }
 
 AssistantOptInDialog::AssistantOptInDialog(
+    ash::mojom::FlowType type,
     ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback)
-    : SystemWebDialogDelegate(GURL(chrome::kChromeUIAssistantOptInURL),
-                              base::string16()),
+    : SystemWebDialogDelegate(CreateAssistantOptInURL(type), base::string16()),
       callback_(std::move(callback)) {
   DCHECK(!is_active);
   is_active = true;
@@ -112,13 +154,27 @@ bool AssistantOptInDialog::ShouldShowDialogTitle() const {
   return false;
 }
 
+void AssistantOptInDialog::OnDialogShown(
+    content::WebUI* webui,
+    content::RenderViewHost* render_view_host) {
+  assistant_ui_ = static_cast<AssistantOptInUI*>(webui->GetController());
+}
+
 void AssistantOptInDialog::OnDialogClosed(const std::string& json_retval) {
+  if (assistant_ui_)
+    assistant_ui_->OnDialogClosed();
+
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   const bool completed =
       prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled) &&
-      prefs->GetBoolean(arc::prefs::kArcVoiceInteractionValuePropAccepted);
+      (::assistant::prefs::GetConsentStatus(prefs) ==
+       ash::mojom::ConsentStatus::kActivityControlAccepted);
   std::move(callback_).Run(completed);
   SystemWebDialogDelegate::OnDialogClosed(json_retval);
+}
+
+bool AssistantOptInDialog::CanCloseDialog() const {
+  return false;
 }
 
 }  // namespace chromeos

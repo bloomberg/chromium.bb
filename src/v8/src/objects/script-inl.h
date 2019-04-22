@@ -17,6 +17,10 @@
 namespace v8 {
 namespace internal {
 
+OBJECT_CONSTRUCTORS_IMPL(Script, Struct)
+
+NEVER_READ_ONLY_SPACE_IMPL(Script)
+
 CAST_ACCESSOR(Script)
 
 ACCESSORS(Script, source, Object, kSourceOffset)
@@ -25,7 +29,7 @@ SMI_ACCESSORS(Script, id, kIdOffset)
 SMI_ACCESSORS(Script, line_offset, kLineOffsetOffset)
 SMI_ACCESSORS(Script, column_offset, kColumnOffsetOffset)
 ACCESSORS(Script, context_data, Object, kContextOffset)
-SMI_ACCESSORS(Script, type, kTypeOffset)
+SMI_ACCESSORS(Script, type, kScriptTypeOffset)
 ACCESSORS(Script, line_ends, Object, kLineEndsOffset)
 ACCESSORS_CHECKED(Script, eval_from_shared_or_wrapped_arguments, Object,
                   kEvalFromSharedOrWrappedArgumentsOffset,
@@ -37,7 +41,7 @@ ACCESSORS(Script, shared_function_infos, WeakFixedArray,
 SMI_ACCESSORS(Script, flags, kFlagsOffset)
 ACCESSORS(Script, source_url, Object, kSourceUrlOffset)
 ACCESSORS(Script, source_mapping_url, Object, kSourceMappingUrlOffset)
-ACCESSORS2(Script, host_defined_options, FixedArray, kHostDefinedOptionsOffset)
+ACCESSORS(Script, host_defined_options, FixedArray, kHostDefinedOptionsOffset)
 ACCESSORS_CHECKED(Script, wasm_module_object, Object,
                   kEvalFromSharedOrWrappedArgumentsOffset,
                   this->type() == TYPE_WASM)
@@ -50,13 +54,13 @@ bool Script::has_eval_from_shared() const {
   return eval_from_shared_or_wrapped_arguments()->IsSharedFunctionInfo();
 }
 
-void Script::set_eval_from_shared(SharedFunctionInfo* shared,
+void Script::set_eval_from_shared(SharedFunctionInfo shared,
                                   WriteBarrierMode mode) {
   DCHECK(!is_wrapped());
   set_eval_from_shared_or_wrapped_arguments(shared, mode);
 }
 
-SharedFunctionInfo* Script::eval_from_shared() const {
+SharedFunctionInfo Script::eval_from_shared() const {
   DCHECK(has_eval_from_shared());
   return SharedFunctionInfo::cast(eval_from_shared_or_wrapped_arguments());
 }
@@ -99,7 +103,7 @@ void Script::set_origin_options(ScriptOriginOptions origin_options) {
 }
 
 bool Script::HasValidSource() {
-  Object* src = this->source();
+  Object src = this->source();
   if (!src->IsString()) return true;
   String src_str = String::cast(src);
   if (!StringShape(src_str).IsExternal()) return true;

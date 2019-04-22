@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_RENDERER_SCHEDULER_TEST_SUPPORT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_RENDERER_SCHEDULER_TEST_SUPPORT_H_
 
+#include <memory>
+
 #include "base/bind.h"
 
 namespace base {
@@ -17,8 +19,19 @@ namespace blink {
 namespace scheduler {
 
 class WebThreadScheduler;
+class WebMockThreadScheduler;
 
+// Creates simple scheduling infrastructure for unit tests.
+// It allows creation of FrameSchedulers and PageSchedulers, but doesn't provide
+// any task running infrastructure, relying on the presence of
+// ThreadTaskRunnerHandle::Get() instead, meaning that the users also have to
+// create base::debug::ScopedTaskEnvironment.
 std::unique_ptr<WebThreadScheduler> CreateWebMainThreadSchedulerForTests();
+
+// Simple scheduling infrastructure for unit tests, with the addition of mocked
+// methods.
+std::unique_ptr<WebMockThreadScheduler>
+CreateMockWebMainThreadSchedulerForTests();
 
 void RunIdleTasksForTesting(WebThreadScheduler* scheduler,
                             base::OnceClosure callback);

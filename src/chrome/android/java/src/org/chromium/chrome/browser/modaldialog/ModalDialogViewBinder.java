@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.modaldialog;
 
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
+import android.text.TextUtils;
+
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * This class is responsible for binding view properties from {@link ModalDialogProperties} to a
@@ -26,16 +29,18 @@ public class ModalDialogViewBinder
         } else if (ModalDialogProperties.CUSTOM_VIEW == propertyKey) {
             view.setCustomView(model.get(ModalDialogProperties.CUSTOM_VIEW));
         } else if (ModalDialogProperties.POSITIVE_BUTTON_TEXT == propertyKey) {
-            view.setButtonText(ModalDialogView.ButtonType.POSITIVE,
+            assert checkFilterTouchConsistency(model);
+            view.setButtonText(ModalDialogProperties.ButtonType.POSITIVE,
                     model.get(ModalDialogProperties.POSITIVE_BUTTON_TEXT));
         } else if (ModalDialogProperties.POSITIVE_BUTTON_DISABLED == propertyKey) {
-            view.setButtonEnabled(ModalDialogView.ButtonType.POSITIVE,
+            view.setButtonEnabled(ModalDialogProperties.ButtonType.POSITIVE,
                     !model.get(ModalDialogProperties.POSITIVE_BUTTON_DISABLED));
         } else if (ModalDialogProperties.NEGATIVE_BUTTON_TEXT == propertyKey) {
-            view.setButtonText(ModalDialogView.ButtonType.NEGATIVE,
+            assert checkFilterTouchConsistency(model);
+            view.setButtonText(ModalDialogProperties.ButtonType.NEGATIVE,
                     model.get(ModalDialogProperties.NEGATIVE_BUTTON_TEXT));
         } else if (ModalDialogProperties.NEGATIVE_BUTTON_DISABLED == propertyKey) {
-            view.setButtonEnabled(ModalDialogView.ButtonType.NEGATIVE,
+            view.setButtonEnabled(ModalDialogProperties.ButtonType.NEGATIVE,
                     !model.get(ModalDialogProperties.NEGATIVE_BUTTON_DISABLED));
         } else if (ModalDialogProperties.TITLE_SCROLLABLE == propertyKey) {
             view.setTitleScrollable(model.get(ModalDialogProperties.TITLE_SCROLLABLE));
@@ -45,10 +50,26 @@ public class ModalDialogViewBinder
             });
         } else if (ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE == propertyKey) {
             // Intentionally left empty since this is a property for the dialog container.
+        } else if (ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY == propertyKey) {
+            assert checkFilterTouchConsistency(model);
+            view.setFilterTouchForSecurity(
+                    model.get(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY));
         } else if (ModalDialogProperties.CONTENT_DESCRIPTION == propertyKey) {
             // Intentionally left empty since this is a property used for the dialog container.
         } else {
             assert false : "Unhandled property detected in ModalDialogViewBinder!";
         }
+    }
+
+    /**
+     * Checks if FILTER_TOUCH_FOR_SECURITY flag is consistent with the set of enabled buttons.
+     * Touch event filtering in ModalDialogView is only applied to standard buttons. When buttons
+     * are hidden, filtering touch events doesn't have effect.
+     * @return false if security sensitive dialog doesn't have standard buttons.
+     */
+    static boolean checkFilterTouchConsistency(PropertyModel model) {
+        return !model.get(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY)
+                || !TextUtils.isEmpty(model.get(ModalDialogProperties.POSITIVE_BUTTON_TEXT))
+                || !TextUtils.isEmpty(model.get(ModalDialogProperties.NEGATIVE_BUTTON_TEXT));
     }
 }

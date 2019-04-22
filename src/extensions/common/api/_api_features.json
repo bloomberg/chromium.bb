@@ -85,6 +85,9 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://bluetooth-pairing/*",
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -101,6 +104,9 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://bluetooth-pairing/*",
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -125,6 +131,21 @@
   "declarativeNetRequest": {
     "dependencies": ["permission:declarativeNetRequest"],
     "contexts": ["blessed_extension"]
+  },
+  "declarativeNetRequest.addDynamicRules": {
+    "dependencies": ["permission:declarativeNetRequest"],
+    "contexts": ["blessed_extension"],
+    "channel": "trunk"
+  },
+  "declarativeNetRequest.removeDynamicRules": {
+    "dependencies": ["permission:declarativeNetRequest"],
+    "contexts": ["blessed_extension"],
+    "channel": "trunk"
+  },
+  "declarativeNetRequest.getDynamicRules": {
+    "dependencies": ["permission:declarativeNetRequest"],
+    "contexts": ["blessed_extension"],
+    "channel": "trunk"
   },
   "declarativeWebRequest": {
     "dependencies": ["permission:declarativeWebRequest"],
@@ -205,9 +226,11 @@
         "chrome://extensions/*",
         "chrome://home/*",
         "chrome://chrome-signin/*",
+        "chrome://hats/*",
         "chrome://media-router/*",
         "chrome://mobilesetup/*",
         "chrome://oobe/*",
+        "chrome://password-change/*",
         "chrome://assistant-optin/*"
       ]
     }
@@ -224,6 +247,9 @@
   "idle": {
     "dependencies": ["permission:idle"],
     "contexts": ["blessed_extension"]
+  },
+  "idle.getAutoLockDelay": {
+    "platforms": ["chromeos"]
   },
   "lockScreen.data": {
     "dependencies": ["permission:lockScreen"],
@@ -243,6 +269,9 @@
       "chrome://extensions/*",
       "chrome://extensions-frame/*",
       "chrome://chrome/extensions/*",
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -255,6 +284,11 @@
     "dependencies": [],
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+  },
+  "management.installReplacementWebApp": {
+    "dependencies": ["manifest:replacement_web_app"],
+    "channel": "dev",
+    "extension_types": ["extension"]
   },
   "management.uninstallSelf": {
     "dependencies": [],
@@ -275,6 +309,9 @@
     "matches": [
       "chrome://bookmarks/*",
       "chrome://extensions/*",
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*",
       "chrome://sync-confirmation/*",
       "chrome://welcome/*"
@@ -313,7 +350,9 @@
       "0136FCB13DB29FD5CD442F56E59E53B61F1DF96F",  // http://crbug.com/642141
       "46578A13607D38F1DC8E280C4F499FB0A2F9565C",  // http://crbug.com/819404
       "898FB5A39687D210766B8998BA4530B99C9E6586",  // http://crbug.com/819404
-      "82F30B65397BC3E4ADE627BBD857AB8A58210648"   // http://crbug.com/819404
+      "82F30B65397BC3E4ADE627BBD857AB8A58210648",  // http://crbug.com/819404
+      "A3E3DE9E9F16B41D4A2FAD106BD6CA76B94A0C94",  // http://crbug.com/932466
+      "B41E7F08E1179CC03CBD1F49E57CF353A40ADE07"   // http://crbug.com/932466
     ]
   },
   "mimeHandlerPrivate": {
@@ -326,7 +365,9 @@
     "extension_types": ["platform_app", "extension"],
     "whitelist": [
       "63ED55E43214C211F82122ED56407FF1A807F2A3",   // Media Router Dev
-      "226CF815E39A363090A1E547D53063472B8279FA"    // Media Router Stable
+      "226CF815E39A363090A1E547D53063472B8279FA",   // Media Router Stable
+      "B41E7F08E1179CC03CBD1F49E57CF353A40ADE07",   // Chrome Camera App Dev
+      "A3E3DE9E9F16B41D4A2FAD106BD6CA76B94A0C94"    // Chrome Camera App Stable
     ]
   },
   "networking.config": {
@@ -355,6 +396,9 @@
       "chrome://oobe/*",
       "chrome://internet-config-dialog/*",
       "chrome://internet-detail-dialog/*",
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -392,13 +436,14 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "web_page"
+      "web_page",
+      "extension_service_worker"
     ],
     "matches": ["<all_urls>"]
   },
   "runtime.connectNative": {
     "dependencies": ["permission:nativeMessaging"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension", "extension_service_worker"]
   },
   "runtime.getURL": {
     "contexts": [
@@ -426,15 +471,22 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script"
+      "content_script",
+      "extension_service_worker"
     ]
+  },
+  "runtime.onConnectNative": {
+    "dependencies": ["permission:nativeMessaging"],
+    "channel": "trunk",
+    "contexts": ["blessed_extension"]
   },
   "runtime.onMessage": {
     "contexts": [
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script"
+      "content_script",
+      "extension_service_worker"
     ]
   },
   "runtime.sendMessage": {
@@ -445,13 +497,14 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "web_page"
+      "web_page",
+      "extension_service_worker"
     ],
     "matches": ["<all_urls>"]
   },
   "runtime.sendNativeMessage": {
     "dependencies": ["permission:nativeMessaging"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension", "extension_service_worker"]
   },
   "serial": {
     "dependencies": ["permission:serial"],
@@ -475,7 +528,8 @@
   },
   "storage": {
     "dependencies": ["permission:storage"],
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script",
+                 "extension_service_worker"]
   },
   "system.cpu": {
     "dependencies": ["permission:system.cpu"],
@@ -488,6 +542,9 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      // TODO(maybelle): Audit and remove chrome://settings or
+      // chrome://os-settings as appropriate
+      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -538,13 +595,6 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "contexts": ["blessed_extension"]
   },
-  "types.private": {
-    // preferencesPrivate is the only API that uses types.private.
-    // If any other APIs need it then they'll need to be added in
-    // separate rules.
-    "dependencies": ["permission:preferencesPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "usb": {
     "dependencies": ["permission:usb"],
     "contexts": ["blessed_extension"]
@@ -559,12 +609,12 @@
   },
   "webRequest": {
     "dependencies": ["permission:webRequest"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension", "extension_service_worker"]
   },
   "webRequestInternal": [{
     "internal": true,
     "channel": "stable",
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension", "extension_service_worker"]
   }, {
     // webview uses webRequestInternal API.
     "channel": "stable",
@@ -573,10 +623,12 @@
     "matches": [
       "chrome://chrome-signin/*",
       "chrome://discards/*",
+      "chrome://hats/*",
       "chrome://home/*",
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
+      "chrome://password-change/*",
       "chrome://assistant-optin/*"
     ]
   }],
@@ -591,10 +643,12 @@
     "matches": [
       "chrome://chrome-signin/*",
       "chrome://discards/*",
+      "chrome://hats/*",
       "chrome://home/*",
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
+      "chrome://password-change/*",
       "chrome://assistant-optin/*"
     ]
   }],
@@ -607,6 +661,7 @@
     "matches": [
       "chrome://chrome-signin/*",
       "chrome://discards/*",
+      "chrome://hats/*",
       "chrome://home/*",
       "chrome://media-router/*",
       "chrome://mobilesetup/*",

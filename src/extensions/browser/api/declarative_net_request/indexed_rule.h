@@ -6,21 +6,14 @@
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_INDEXED_RULE_H_
 
 #include <stdint.h>
-#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
+#include "extensions/common/api/declarative_net_request.h"
 
 namespace extensions {
-
-namespace api {
-namespace declarative_net_request {
-struct Rule;
-}  // namespace declarative_net_request
-}  // namespace api
-
 namespace declarative_net_request {
 
 enum class ParseResult;
@@ -35,9 +28,11 @@ struct IndexedRule {
   IndexedRule& operator=(IndexedRule&& other);
 
   static ParseResult CreateIndexedRule(
-      std::unique_ptr<extensions::api::declarative_net_request::Rule>
-          parsed_rule,
+      extensions::api::declarative_net_request::Rule parsed_rule,
       IndexedRule* indexed_rule);
+
+  api::declarative_net_request::RuleActionType action_type =
+      api::declarative_net_request::RULE_ACTION_TYPE_NONE;
 
   // These fields correspond to the attributes of a flatbuffer UrlRule, as
   // specified by the url_pattern_index component.
@@ -59,6 +54,9 @@ struct IndexedRule {
 
   // The redirect url, valid iff this is a redirect rule.
   std::string redirect_url;
+
+  // List of headers to remove, valid iff this is a remove headers rule.
+  std::set<api::declarative_net_request::RemoveHeaderType> remove_headers_set;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedRule);
 };

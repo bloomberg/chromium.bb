@@ -3,6 +3,7 @@
 <title>Test that sizing changes are reflected in CSS classes.</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script src="../media-controls.js"></script>
 <video controls width=200 preload=none></video>
 <script>
@@ -26,7 +27,7 @@ async_test(t => {
   function runTestCase(index) {
     let test = testCases[index];
     video.width = test.width;
-    testRunner.layoutAndPaintAsyncThen(t.step_func(() => {
+    runAfterLayoutAndPaint(t.step_func(() => {
       test.expect();
       let nextIndex = index + 1;
       if (nextIndex === testCases.length) {

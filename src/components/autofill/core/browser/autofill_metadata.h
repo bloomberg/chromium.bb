@@ -15,10 +15,15 @@ namespace autofill {
 // abstract the data from the metadata.
 struct AutofillMetadata {
  public:
-  AutofillMetadata(){};
-  ~AutofillMetadata(){};
+  AutofillMetadata() {}
+  ~AutofillMetadata() {}
 
   bool operator==(const AutofillMetadata&) const;
+  bool operator!=(const AutofillMetadata&) const;
+
+  // Returns whether the metadata is deletable: if it has not been used for
+  // longer than |kDisusedAddressDeletionTimeDelta|.
+  bool IsDeletable() const;
 
   // The ID for the model. This should be the guid for local data and server_id
   // for the server data.
@@ -38,6 +43,9 @@ struct AutofillMetadata {
   // card.
   std::string billing_address_id;
 };
+
+// So we can compare AutofillMetadata with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const AutofillMetadata& metadata);
 
 }  // namespace autofill
 

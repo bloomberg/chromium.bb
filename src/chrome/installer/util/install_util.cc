@@ -16,10 +16,10 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -63,26 +63,6 @@ void LogStartMenuShortcutStatus(StartMenuShortcutStatus status) {
   UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.StartMenuShortcutStatus",
                             status);
 }
-
-#if defined(GOOGLE_CHROME_BUILD)
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class ToastActivatorCLSIDMismatchReason {
-  kShortcutClsidIsStable = 0,
-  kShortcutClsidIsBeta = 1,
-  kShortcutClsidIsDev = 2,
-  kShortcutClsidIsChromium = 3,
-  kShortcutClsidIsNull = 4,
-  kShortcutClsidIsUnknown = 5,
-  kMaxValue = kShortcutClsidIsUnknown,
-};
-
-void RecordToastActivatorCLSIDMismatchReason(
-    ToastActivatorCLSIDMismatchReason reason) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Notifications.Windows.ToastActivatorCLSIDMismatchReason", reason);
-}
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 // Creates a zero-sized non-decorated foreground window that doesn't appear
 // in the taskbar. This is used as a parent window for calls to ShellExecuteEx
@@ -355,52 +335,10 @@ bool InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled() {
     return false;
   }
 
-  const CLSID& shortcut_clsid = properties.toast_activator_clsid;
-
-  if (!::IsEqualCLSID(shortcut_clsid,
+  if (!::IsEqualCLSID(properties.toast_activator_clsid,
                       install_static::GetToastActivatorClsid())) {
     LogStartMenuShortcutStatus(
         StartMenuShortcutStatus::kToastActivatorClsidIncorrect);
-
-#if defined(GOOGLE_CHROME_BUILD)
-    // Record the reason for CLSID mismatch between shortcut and installer. We
-    // only care about Canary.
-    const auto& details = install_static::InstallDetails::Get();
-    if (details.install_mode_index() == install_static::CANARY_INDEX) {
-      ToastActivatorCLSIDMismatchReason reason =
-          ToastActivatorCLSIDMismatchReason::kShortcutClsidIsUnknown;
-
-      // Stolen from chrome/install_static/chromium_install_modes.cc:
-      static constexpr CLSID kChromiumToastActivatorClsid = {
-          0x635EFA6F,
-          0x08D6,
-          0x4EC9,
-          {0xBD, 0x14, 0x8A, 0x0F, 0xDE, 0x97, 0x51, 0x59}};
-
-      if (::IsEqualCLSID(
-              shortcut_clsid,
-              install_static::kInstallModes[install_static::STABLE_INDEX]
-                  .toast_activator_clsid)) {
-        reason = ToastActivatorCLSIDMismatchReason::kShortcutClsidIsStable;
-      } else if (::IsEqualCLSID(
-                     shortcut_clsid,
-                     install_static::kInstallModes[install_static::BETA_INDEX]
-                         .toast_activator_clsid)) {
-        reason = ToastActivatorCLSIDMismatchReason::kShortcutClsidIsBeta;
-      } else if (::IsEqualCLSID(
-                     shortcut_clsid,
-                     install_static::kInstallModes[install_static::DEV_INDEX]
-                         .toast_activator_clsid)) {
-        reason = ToastActivatorCLSIDMismatchReason::kShortcutClsidIsDev;
-      } else if (::IsEqualCLSID(shortcut_clsid, kChromiumToastActivatorClsid)) {
-        reason = ToastActivatorCLSIDMismatchReason::kShortcutClsidIsChromium;
-      } else if (::IsEqualCLSID(shortcut_clsid, CLSID_NULL)) {
-        reason = ToastActivatorCLSIDMismatchReason::kShortcutClsidIsNull;
-      }
-
-      RecordToastActivatorCLSIDMismatchReason(reason);
-    }
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
     return false;
   }
@@ -575,9 +513,9 @@ void InstallUtil::AppendModeSwitch(base::CommandLine* command_line) {
 // static
 base::string16 InstallUtil::GetCurrentDate() {
   static const wchar_t kDateFormat[] = L"yyyyMMdd";
-  wchar_t date_str[arraysize(kDateFormat)] = {0};
-  int len = GetDateFormatW(LOCALE_INVARIANT, 0, NULL, kDateFormat,
-                           date_str, arraysize(date_str));
+  wchar_t date_str[base::size(kDateFormat)] = {0};
+  int len = GetDateFormatW(LOCALE_INVARIANT, 0, NULL, kDateFormat, date_str,
+                           base::size(date_str));
   if (len) {
     --len;  // Subtract terminating \0.
   } else {

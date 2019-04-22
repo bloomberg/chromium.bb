@@ -8,13 +8,17 @@
 
 #include "libANGLE/renderer/vulkan/GlslangWrapper.h"
 
+// glslang has issues with some specific warnings.
+ANGLE_DISABLE_EXTRA_SEMI_WARNING
+
 // glslang's version of ShaderLang.h, not to be confused with ANGLE's.
-// Our function defs conflict with theirs, but we carefully manage our includes to prevent this.
-#include <ShaderLang.h>
+#include <glslang/Public/ShaderLang.h>
 
 // Other glslang includes.
 #include <SPIRV/GlslangToSpv.h>
 #include <StandAlone/ResourceLimits.h>
+
+ANGLE_REENABLE_EXTRA_SEMI_WARNING
 
 #include <array>
 
@@ -391,6 +395,6 @@ angle::Result GlslangWrapper::GetShaderCodeImpl(vk::Context *context,
     glslang::GlslangToSpv(*vertexStage, *vertexCodeOut);
     glslang::GlslangToSpv(*fragmentStage, *fragmentCodeOut);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 }  // namespace rx

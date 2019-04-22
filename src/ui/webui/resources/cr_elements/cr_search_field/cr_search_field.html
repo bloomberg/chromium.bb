@@ -1,0 +1,102 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="../cr_icon_button/cr_icon_button.html">
+<link rel="import" href="../cr_input/cr_input.html">
+<link rel="import" href="../icons.html">
+<link rel="import" href="../shared_style_css.html">
+<link rel="import" href="../shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="cr_search_field_behavior.html">
+
+<dom-module id="cr-search-field">
+  <template>
+    <style include="cr-shared-style">
+      :host {
+        display: flex;
+        user-select: none;
+      }
+
+      #searchIcon {
+        align-self: center;
+        height: 16px;
+        padding: 4px;
+        vertical-align: middle;
+        width: 16px;
+      }
+
+      cr-input {
+        --cr-input-background-color: white;
+        --cr-input-row-container: {
+          height: 100%;
+        }
+        --cr-input-container: {
+          border-radius: 0;
+          height: 100%;
+        }
+        --cr-input-inner-container: {
+          height: 100%;
+        }
+        --cr-input-error-display: none;
+        --cr-input-input: {
+          height: 100%;
+          border-bottom: 1px solid var(--cr-secondary-text-color);
+        }
+        --cr-input-padding-end: 0;
+        --cr-input-padding-start: 0;
+        --cr-input-padding-bottom: 2px;
+        --cr-input-padding-top: 2px;
+        align-self: stretch;
+        display: block;
+        vertical-align: middle;
+        width: 160px;  /* Special width for search input. */
+      }
+
+      :host-context([dark]) cr-input {
+        /* TODO(dbeam): needing to use inherit here seems silly. In light mode,
+         * the background color is just matched (i.e. the parent's background is
+         * white, but this element also explicitly sets its background and the
+         * background of the container cr-input to white). Can we just not set
+         * these rules? */
+        --cr-input-background-color: inherit;
+      }
+
+      :host([has-search-text]) cr-input {
+        --cr-input-padding-end: 20px;
+      }
+
+      #searchInput {
+        font-size: 92.3076923%;  /* To 12px from 13px. */
+        min-height: 24px;
+      }
+
+      #searchInput {
+        color: var(--cr-primary-text-color);
+      }
+
+      #clearSearch {
+        /* A 16px icon that fits on the input line. */
+        --cr-icon-button-icon-size: 16px;
+        --cr-icon-button-size: 24px;
+        margin-inline-end: -4px;
+        margin-inline-start: 4px;
+        position: absolute;
+        right: 0;
+      }
+
+      :host-context([dir='rtl']) #clearSearch {
+        left: 0;
+        right: auto;
+      }
+    </style>
+    <iron-icon id="searchIcon" icon="cr:search"></iron-icon>
+    <cr-input id="searchInput" on-search="onSearchTermSearch"
+        on-input="onSearchTermInput" aria-label$="[[label]]" type="search"
+        autofocus="[[autofocus]]" placeholder="[[label]]" spellcheck="false">
+      <cr-icon-button id="clearSearch" class="icon-cancel"
+          hidden$="[[!hasSearchText]]" slot="suffix" on-click="onTapClear_"
+          title="[[clearLabel]]">
+      </cr-icon-button>
+    </cr-input>
+  </template>
+  <script src="cr_search_field.js"></script>
+</dom-module>

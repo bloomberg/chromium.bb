@@ -29,94 +29,102 @@ U2fSignOperation::~U2fSignOperation() = default;
 void U2fSignOperation::Start() {
   const auto& allow_list = request().allow_list();
   if (allow_list && !allow_list->empty()) {
-    const auto it = allow_list->cbegin();
-    DispatchDeviceRequest(
-        ConvertToU2fSignCommand(request(), ApplicationParameterType::kPrimary,
-                                it->id(), true /* is_check_only */),
-        base::BindOnce(&U2fSignOperation::OnCheckForKeyHandlePresence,
-                       weak_factory_.GetWeakPtr(),
-                       ApplicationParameterType::kPrimary, it));
+    if (request().alternative_application_parameter().has_value()) {
+      // Try the alternative value first. This is because the U2F Zero
+      // authenticator (at least) crashes if we try the wrong AppID first.
+      app_param_type_ = ApplicationParameterType::kAlternative;
+    }
+    TrySign();
   } else {
     // In order to make U2F authenticators blink on sign request with an empty
-    // allow list, we send fake enrollment to the device and error out if the
-    // user has provided user presence.
-    SendFakeEnrollment();
+    // allow list, we send fake enrollment to the device and error out when the
+    // user has provided presence.
+    TryFakeEnrollment();
   }
 }
 
-void U2fSignOperation::SendFakeEnrollment() {
-  DispatchDeviceRequest(
-      ConstructBogusU2fRegistrationCommand(),
-      base::BindOnce(&U2fSignOperation::OnSignResponseReceived,
-                     weak_factory_.GetWeakPtr(), true /* is_fake_enrollment */,
-                     ApplicationParameterType::kPrimary,
-                     std::vector<uint8_t>()));
+void U2fSignOperation::Cancel() {
+  canceled_ = true;
 }
 
-void U2fSignOperation::RetrySign(
-    bool is_fake_enrollment,
-    ApplicationParameterType application_parameter_type,
-    const std::vector<uint8_t>& key_handle) {
-  auto cmd = is_fake_enrollment
-                 ? ConstructBogusU2fRegistrationCommand()
-                 : ConvertToU2fSignCommand(
-                       request(), application_parameter_type, key_handle);
+void U2fSignOperation::TrySign() {
   DispatchDeviceRequest(
-      std::move(cmd),
+      ConvertToU2fSignCommand(request(), app_param_type_, key_handle()),
       base::BindOnce(&U2fSignOperation::OnSignResponseReceived,
-                     weak_factory_.GetWeakPtr(), is_fake_enrollment,
-                     application_parameter_type, key_handle));
+                     weak_factory_.GetWeakPtr()));
 }
 
 void U2fSignOperation::OnSignResponseReceived(
-    bool is_fake_enrollment,
-    ApplicationParameterType application_parameter_type,
-    const std::vector<uint8_t>& key_handle,
     base::Optional<std::vector<uint8_t>> device_response) {
+  if (canceled_) {
+    return;
+  }
+
+  auto result = apdu::ApduResponse::Status::SW_WRONG_DATA;
   const auto apdu_response =
       device_response
           ? apdu::ApduResponse::CreateFromMessage(std::move(*device_response))
           : base::nullopt;
-  auto return_code = apdu_response ? apdu_response->status()
-                                   : apdu::ApduResponse::Status::SW_WRONG_DATA;
+  if (apdu_response) {
+    result = apdu_response->status();
+  }
 
-  switch (return_code) {
+  // Older U2F devices may respond with the length of the input as an error
+  // response if the length is unexpected.
+  if (result == static_cast<apdu::ApduResponse::Status>(key_handle().size())) {
+    result = apdu::ApduResponse::Status::SW_WRONG_LENGTH;
+  }
+
+  switch (result) {
     case apdu::ApduResponse::Status::SW_NO_ERROR: {
-      if (is_fake_enrollment) {
+      auto application_parameter =
+          app_param_type_ == ApplicationParameterType::kPrimary
+              ? fido_parsing_utils::CreateSHA256Hash(request().rp_id())
+              : request().alternative_application_parameter().value_or(
+                    std::array<uint8_t, kRpIdHashLength>());
+      auto sign_response =
+          AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
+              std::move(application_parameter), apdu_response->data(),
+              key_handle());
+      if (!sign_response) {
         std::move(callback())
-            .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
-      } else {
-        auto application_parameter =
-            application_parameter_type == ApplicationParameterType::kPrimary
-                ? fido_parsing_utils::CreateSHA256Hash(request().rp_id())
-                : request().alternative_application_parameter().value_or(
-                      std::array<uint8_t, kRpIdHashLength>());
-        auto sign_response =
-            AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
-                std::move(application_parameter), apdu_response->data(),
-                key_handle);
-        if (!sign_response) {
-          std::move(callback())
-              .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
-          return;
-        }
-
-        std::move(callback())
-            .Run(CtapDeviceResponseCode::kSuccess, std::move(sign_response));
+            .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
+        return;
       }
+      std::move(callback())
+          .Run(CtapDeviceResponseCode::kSuccess, std::move(sign_response));
       break;
     }
 
-    case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED: {
+    case apdu::ApduResponse::Status::SW_WRONG_DATA:
+    case apdu::ApduResponse::Status::SW_WRONG_LENGTH:
+      if (app_param_type_ == ApplicationParameterType::kAlternative) {
+        // |application_parameter_| failed, but there is also
+        // the primary value to try.
+        app_param_type_ = ApplicationParameterType::kPrimary;
+        TrySign();
+      } else if (++current_key_handle_index_ < request().allow_list()->size()) {
+        // Key is not for this device. Try signing with the next key.
+        if (request().alternative_application_parameter().has_value()) {
+          app_param_type_ = ApplicationParameterType::kAlternative;
+        }
+        TrySign();
+      } else {
+        // No provided key was accepted by this device. Send registration
+        // (i.e. fake enroll) request to device.
+        TryFakeEnrollment();
+      }
+      break;
+
+    case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
       // Waiting for user touch. Retry after 200 milliseconds delay.
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::BindOnce(&U2fSignOperation::RetrySign,
-                         weak_factory_.GetWeakPtr(), is_fake_enrollment,
-                         application_parameter_type, key_handle),
+          base::BindOnce(&U2fSignOperation::TrySign,
+                         weak_factory_.GetWeakPtr()),
           kU2fRetryDelay);
       break;
-    }
+
     default:
       // Some sort of failure occurred. Abandon this device and move on.
       std::move(callback())
@@ -125,71 +133,54 @@ void U2fSignOperation::OnSignResponseReceived(
   }
 }
 
-void U2fSignOperation::OnCheckForKeyHandlePresence(
-    ApplicationParameterType application_parameter_type,
-    AllowedListIterator it,
+void U2fSignOperation::TryFakeEnrollment() {
+  DispatchDeviceRequest(
+      ConstructBogusU2fRegistrationCommand(),
+      base::BindOnce(&U2fSignOperation::OnEnrollmentResponseReceived,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void U2fSignOperation::OnEnrollmentResponseReceived(
     base::Optional<std::vector<uint8_t>> device_response) {
-  DCHECK(request().allow_list());
-  const auto& apdu_response =
-      device_response
-          ? apdu::ApduResponse::CreateFromMessage(std::move(*device_response))
-          : base::nullopt;
-  auto return_code = apdu_response ? apdu_response->status()
-                                   : apdu::ApduResponse::Status::SW_WRONG_DATA;
+  if (canceled_) {
+    return;
+  }
 
-  // Older U2F devices may respond with the length of the input as an error
-  // response if the length is unexpected.
-  if (return_code == static_cast<apdu::ApduResponse::Status>(it->id().size()))
-    return_code = apdu::ApduResponse::Status::SW_WRONG_LENGTH;
+  auto result = apdu::ApduResponse::Status::SW_WRONG_DATA;
+  if (device_response) {
+    const auto apdu_response =
+        apdu::ApduResponse::CreateFromMessage(std::move(*device_response));
+    if (apdu_response) {
+      result = apdu_response->status();
+    }
+  }
 
-  switch (return_code) {
+  switch (result) {
     case apdu::ApduResponse::Status::SW_NO_ERROR:
-    case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED: {
-      DispatchDeviceRequest(
-          ConvertToU2fSignCommand(request(), application_parameter_type,
-                                  it->id()),
-          base::BindOnce(&U2fSignOperation::OnSignResponseReceived,
-                         weak_factory_.GetWeakPtr(),
-                         false /* is_fake_enrollment */,
-                         application_parameter_type, it->id()));
+      std::move(callback())
+          .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
       break;
-    }
-    case apdu::ApduResponse::Status::SW_WRONG_DATA:
-    case apdu::ApduResponse::Status::SW_WRONG_LENGTH: {
-      if (application_parameter_type == ApplicationParameterType::kPrimary &&
-          request().alternative_application_parameter()) {
-        // |application_parameter_| failed, but there is also
-        // |alternative_application_parameter_| to try.
-        DispatchDeviceRequest(
-            ConvertToU2fSignCommand(request(),
-                                    ApplicationParameterType::kAlternative,
-                                    it->id(), true /* is_check_only */),
-            base::BindOnce(&U2fSignOperation::OnCheckForKeyHandlePresence,
-                           weak_factory_.GetWeakPtr(),
-                           ApplicationParameterType::kAlternative, it));
-      } else if (++it != request().allow_list()->cend()) {
-        // Key is not for this device. Try signing with the next key.
-        DispatchDeviceRequest(
-            ConvertToU2fSignCommand(request(),
-                                    ApplicationParameterType::kPrimary,
-                                    it->id(), true /* check_only */),
-            base::BindOnce(&U2fSignOperation::OnCheckForKeyHandlePresence,
-                           weak_factory_.GetWeakPtr(),
-                           ApplicationParameterType::kPrimary, it));
-      } else {
-        // No provided key was accepted by this device. Send registration
-        // (Fake enroll) request to device.
-        SendFakeEnrollment();
-      }
 
+    case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
+      // Waiting for user touch. Retry after 200 milliseconds delay.
+      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&U2fSignOperation::TryFakeEnrollment,
+                         weak_factory_.GetWeakPtr()),
+          kU2fRetryDelay);
       break;
-    }
+
     default:
       // Some sort of failure occurred. Abandon this device and move on.
       std::move(callback())
           .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
-      break;
+      return;
   }
+}
+
+const std::vector<uint8_t>& U2fSignOperation::key_handle() const {
+  DCHECK_LT(current_key_handle_index_, request().allow_list()->size());
+  return request().allow_list().value()[current_key_handle_index_].id();
 }
 
 }  // namespace device

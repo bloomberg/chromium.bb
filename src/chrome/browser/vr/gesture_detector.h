@@ -96,6 +96,9 @@ class VR_EXPORT GestureDetector {
   base::TimeTicks last_timestamp_;
   bool last_touching_state_ = false;
 
+  bool should_fake_timestamp_ = false;
+  base::TimeTicks last_touch_timestamp_local_timebase_;
+
   bool touch_position_changed_;
 
   base::TimeTicks menu_button_down_timestamp_;

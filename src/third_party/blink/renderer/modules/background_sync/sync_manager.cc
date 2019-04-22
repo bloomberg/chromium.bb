@@ -32,11 +32,11 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
                              "Registration failed - no active Service Worker"));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  mojom::blink::SyncRegistrationPtr sync_registration =
-      mojom::blink::SyncRegistration::New();
+  mojom::blink::SyncRegistrationOptionsPtr sync_registration =
+      mojom::blink::SyncRegistrationOptions::New();
   sync_registration->tag = tag;
 
   GetBackgroundSyncServicePtr()->Register(
@@ -48,7 +48,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
 }
 
 ScriptPromise SyncManager::getTags(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   GetBackgroundSyncServicePtr()->GetRegistrations(
@@ -68,9 +68,10 @@ SyncManager::GetBackgroundSyncServicePtr() {
   return background_sync_service_;
 }
 
-void SyncManager::RegisterCallback(ScriptPromiseResolver* resolver,
-                                   mojom::blink::BackgroundSyncError error,
-                                   mojom::blink::SyncRegistrationPtr options) {
+void SyncManager::RegisterCallback(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::BackgroundSyncError error,
+    mojom::blink::SyncRegistrationOptionsPtr options) {
   // TODO(iclelland): Determine the correct error message to return in each case
   switch (error) {
     case mojom::blink::BackgroundSyncError::NONE:
@@ -81,8 +82,11 @@ void SyncManager::RegisterCallback(ScriptPromiseResolver* resolver,
       resolver->Resolve();
       // Let the service know that the registration promise is resolved so that
       // it can fire the event.
+
       GetBackgroundSyncServicePtr()->DidResolveRegistration(
-          registration_->RegistrationId(), options->tag);
+          mojom::blink::BackgroundSyncRegistrationInfo::New(
+              registration_->RegistrationId(), options->tag,
+              mojom::blink::BackgroundSyncType::ONE_SHOT));
       break;
     case mojom::blink::BackgroundSyncError::NOT_FOUND:
       NOTREACHED();
@@ -112,7 +116,7 @@ void SyncManager::RegisterCallback(ScriptPromiseResolver* resolver,
 void SyncManager::GetRegistrationsCallback(
     ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundSyncError error,
-    WTF::Vector<mojom::blink::SyncRegistrationPtr> registrations) {
+    WTF::Vector<mojom::blink::SyncRegistrationOptionsPtr> registrations) {
   // TODO(iclelland): Determine the correct error message to return in each case
   switch (error) {
     case mojom::blink::BackgroundSyncError::NONE: {

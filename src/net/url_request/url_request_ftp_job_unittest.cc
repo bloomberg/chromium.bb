@@ -126,7 +126,7 @@ class SimpleProxyConfigService : public ProxyConfigService {
 
   void RemoveObserver(Observer* observer) override {
     if (observer_ == observer) {
-      observer_ = NULL;
+      observer_ = nullptr;
     }
   }
 
@@ -148,7 +148,7 @@ class TestURLRequestFtpJob : public URLRequestFtpJob {
   TestURLRequestFtpJob(URLRequest* request,
                        FtpTransactionFactory* ftp_factory,
                        FtpAuthCache* ftp_auth_cache)
-      : URLRequestFtpJob(request, NULL, ftp_factory, ftp_auth_cache) {}
+      : URLRequestFtpJob(request, nullptr, ftp_factory, ftp_auth_cache) {}
   ~TestURLRequestFtpJob() override = default;
 
   using URLRequestFtpJob::SetPriority;
@@ -165,8 +165,8 @@ class URLRequestFtpJobPriorityTest : public TestWithScopedTaskEnvironment {
  protected:
   URLRequestFtpJobPriorityTest()
       : proxy_resolution_service_(std::make_unique<SimpleProxyConfigService>(),
-                                  NULL,
-                                  NULL),
+                                  nullptr,
+                                  nullptr),
         req_(context_.CreateRequest(GURL("ftp://ftp.example.com"),
                                     DEFAULT_PRIORITY,
                                     &delegate_,

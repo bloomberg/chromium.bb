@@ -10,11 +10,7 @@ It is evaluated through Python.
 import fnmatch
 
 
-_REVISION_NEGATIVE_FILTER = {}
-_REVISION_NEGATIVE_FILTER['HEAD'] = [
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
-    'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
-
+_NEGATIVE_FILTER = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
@@ -24,35 +20,62 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2661
     'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2854
+    'ChromeOptionsFunctionalTest.canSetAcceptInsecureCerts',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2835
+    'CookieImplementationTest.deleteAllCookies',
+    'CookieImplementationTest.canHandleHttpOnlyCookie',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2858
+    'ElementFindingTest.testFindingMultipleElementsByInvalidClassNameShouldThrow',
+    'ElementFindingTest.testFindingMultipleElementsByCompoundClassNameShouldThrow',
+    'ElementFindingTest.testFindingMultipleElementsByEmptyIdShouldReturnEmptyList',
+    'FormHandlingTest.testShouldNotBeAbleToSubmitAFormThatDoesNotExist',
+    'PositionAndSizeTest.testShouldGetCoordinatesInViewPortOfAnElementInAFrame',
+    'PositionAndSizeTest.testShouldGetCoordinatesInViewPortOfAnElementInANestedFrame',
+    'DragAndDropTest.testDragAndDropElementWithOffsetInScrolledDiv',
+    'DragAndDropTest.canDragAnElementNotVisibleInTheCurrentViewportDueToAParentOverflow',
+    'LocationContextTest.testShouldSetAndGetLatitude',
+    'LocationContextTest.testShouldSetAndGetLongitude',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1960
+    'CombinedInputActionsTest.testChordControlCutAndPaste',
 ]
 
-_REVISION_READY_TO_RUN_FILTER = {}
-_REVISION_READY_TO_RUN_FILTER['HEAD'] = [
+_READY_TO_RUN_FILTER = [
     # marked as not yet implemented with chrome but already works
+    'ProxySettingTest.canUsePACThatOnlyProxiesCertainHosts',
 ]
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2855
+    'WindowTest.canFullscreenTheWindow',
+    'WindowTest.canFullscreenTheWindowFromIframe',
+    'WindowTest.testCanMaximizeTheWindowFromIframe',
+    'WindowTest.testCanMaximizeTheWindow',
+    'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
 ]
 _OS_NEGATIVE_FILTER['linux'] = [
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2664
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2663
     'WindowTest.canFullscreenTheWindow',
     'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
     'WindowTest.testSetsTheSizeOfTheCurrentWindowFromFrame',
     'WindowTest.canFullscreenTheWindowFromFrame',
     'WindowTest.canFullscreenTheWindowFromIframe',
     'WindowTest.testSetsTheSizeOfTheCurrentWindow',
-    'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
-]
-
-_SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
-_SPECIFIC_OS_REVISION_NEGATIVE_FILTER['mac_69'] = [
-    # Maximize window doesn't always increase window size on Mac 69
     'WindowTest.testCanMaximizeTheWindowFromFrame',
     'WindowTest.testCanMaximizeTheWindowFromIframe',
     'WindowTest.testCanMaximizeTheWindow',
+    'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2856
+    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
+    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrame',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome'] = [
@@ -126,8 +149,8 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     # Test is written using local files; doesn't work on Android.
     'UploadTest.testFileUploading',
 
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
-    'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2861
+    'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToLoadAfterClick',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=604
     'I18nTest.testShouldBeAbleToActivateIMEEngine',
@@ -168,7 +191,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'CorrectEventFiringTest.testShouldFireTwoClickEventsWhenClickingOnALabel',
     'CorrectEventFiringTest.testShouldIssueClickEvents',
     'CorrectEventFiringTest.testShouldFireMouseMoveEventWhenClicking',
-    'CombinedInputActionsTest.testChordControlCutAndPaste',
     'BasicKeyboardInterfaceTest.testSendingKeysWithShiftPressed',
     'BasicKeyboardInterfaceTest.testBasicKeyboardInputOnActiveElement',
     'BasicKeyboardInterfaceTest.testSendingKeyUp',
@@ -191,6 +213,12 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2611
     'CorrectEventFiringTest.testClickAnElementThatDisappear',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2697
+    'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2860
+    'UploadTest.testUploadingWithInvisibleFileInput',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
@@ -224,58 +252,41 @@ _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
 )
 
 
-def _GetRevisionNegativeFilter(chrome_version):
-  if chrome_version in _REVISION_NEGATIVE_FILTER:
-    return _REVISION_NEGATIVE_FILTER[chrome_version]
-  return _REVISION_NEGATIVE_FILTER['HEAD']
+def _GetNegativeFilter():
+  return _NEGATIVE_FILTER
 
-def _GetRevisionReadyToRunFilter(chrome_version):
-  if chrome_version in _REVISION_READY_TO_RUN_FILTER:
-    return _REVISION_READY_TO_RUN_FILTER[chrome_version]
-  return _REVISION_READY_TO_RUN_FILTER['HEAD']
+def _GetReadyToRunFilter():
+  return _READY_TO_RUN_FILTER
 
-def _GetSpecificOsRevisionNegativeFilter(operating_system, chrome_version):
-  os_version = operating_system + "_" + chrome_version
-  if os_version in _SPECIFIC_OS_REVISION_NEGATIVE_FILTER:
-    return _SPECIFIC_OS_REVISION_NEGATIVE_FILTER[os_version]
-  return []
-
-
-def GetDisabledTestMatchers(operating_system, chrome_version):
+def GetDisabledTestMatchers(operating_system):
   """Returns the list of disabled test matchers for the specific configuration.
 
   Args:
     operating_system: The operating system, one of 'linux', 'mac', 'win', or
         'android'.
-    chrome_version: Chrome version to test against, e.g., 'HEAD' or '26'.
 
   Returns:
     List of disabled test matchers, which may contain '*' wildcards.
   """
   return (_OS_NEGATIVE_FILTER[operating_system] +
-          _GetRevisionNegativeFilter(chrome_version) +
-          _GetSpecificOsRevisionNegativeFilter(operating_system,
-                                               chrome_version))[:]
+          _GetNegativeFilter())[:]
 
-def GetReadyToRunTestMatchers(chrome_version):
-  return (_GetRevisionReadyToRunFilter(chrome_version))[:]
+def GetReadyToRunTestMatchers():
+  return (_GetReadyToRunFilter())[:]
 
-def ApplyJavaTestFilter(operating_system, chrome_version, tests):
+def ApplyJavaTestFilter(operating_system, tests):
   """Applies the test filter to the given list of tests.
 
   Args:
     operating_system: The operating system, one of 'linux', 'mac', 'win', or
         'android'.
-    chrome_version: Chrome version to test against, e.g., 'HEAD' or '26'.
     test: list of test names to filter.
 
   Returns:
     Set of passed test names.
   """
   filters = (_OS_NEGATIVE_FILTER[operating_system] +
-             _GetRevisionNegativeFilter(chrome_version) +
-             _GetSpecificOsRevisionNegativeFilter(operating_system,
-                                                  chrome_version))
+             _GetNegativeFilter())
   passed = set(tests)
   for f in filters:
     passed.difference_update(set(t for t in tests if fnmatch.fnmatch(t, f)))

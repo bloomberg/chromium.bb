@@ -12,6 +12,7 @@
 #include "base/test/null_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/fake_channel.h"
 #include "chromeos/services/secure_channel/fake_secure_channel.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel_impl.h"
@@ -23,7 +24,6 @@
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_initializer.h"
 #include "chromeos/services/secure_channel/secure_channel_service.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -120,9 +120,9 @@ class SecureChannelClientImplTest : public testing::Test {
  protected:
   SecureChannelClientImplTest()
       : test_remote_device_list_(
-            cryptauth::CreateRemoteDeviceListForTest(kNumTestDevices)),
+            multidevice::CreateRemoteDeviceListForTest(kNumTestDevices)),
         test_remote_device_ref_list_(
-            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
+            multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
 
   // testing::Test:
   void SetUp() override {
@@ -147,16 +147,12 @@ class SecureChannelClientImplTest : public testing::Test {
     test_connection_attempt_delegate_ =
         std::make_unique<TestConnectionAttemptDelegate>();
 
-    auto secure_channel_service = std::make_unique<SecureChannelService>();
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(secure_channel_service));
-
-    connector_ = connector_factory_->CreateConnector();
+    service_ = std::make_unique<SecureChannelService>(
+        connector_factory_.RegisterInstance(mojom::kServiceName));
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
     client_ = SecureChannelClientImpl::Factory::Get()->BuildInstance(
-        connector_.get(), test_task_runner_);
+        connector_factory_.GetDefaultConnector(), test_task_runner_);
   }
 
   void TearDown() override {
@@ -164,8 +160,8 @@ class SecureChannelClientImplTest : public testing::Test {
   }
 
   std::unique_ptr<FakeConnectionAttempt> CallListenForConnectionFromDevice(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) {
     auto connection_attempt = client_->ListenForConnectionFromDevice(
@@ -183,8 +179,8 @@ class SecureChannelClientImplTest : public testing::Test {
   }
 
   std::unique_ptr<FakeConnectionAttempt> CallInitiateConnectionToDevice(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) {
     auto connection_attempt = client_->InitiateConnectionToDevice(
@@ -205,7 +201,7 @@ class SecureChannelClientImplTest : public testing::Test {
     static_cast<SecureChannelClientImpl*>(client_.get())->FlushForTesting();
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   FakeSecureChannel* fake_secure_channel_;
   std::unique_ptr<FakeSecureChannelInitializerFactory>
@@ -216,14 +212,14 @@ class SecureChannelClientImplTest : public testing::Test {
       fake_client_channel_impl_factory_;
   std::unique_ptr<TestConnectionAttemptDelegate>
       test_connection_attempt_delegate_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<SecureChannelService> service_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 
   std::unique_ptr<SecureChannelClient> client_;
 
-  const cryptauth::RemoteDeviceList test_remote_device_list_;
-  const cryptauth::RemoteDeviceRefList test_remote_device_ref_list_;
+  const multidevice::RemoteDeviceList test_remote_device_list_;
+  const multidevice::RemoteDeviceRefList test_remote_device_ref_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SecureChannelClientImplTest);

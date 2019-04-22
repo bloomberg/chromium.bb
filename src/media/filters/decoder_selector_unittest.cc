@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/gmock_callback_support.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/filters/decoder_selector.h"
@@ -92,8 +93,7 @@ class AudioDecoderSelectorTestParam {
         .WillRepeatedly(
             [capability](const AudioDecoderConfig& config, CdmContext*,
                          const AudioDecoder::InitCB& init_cb,
-                         const AudioDecoder::OutputCB&,
-                         const AudioDecoder::WaitingForDecryptionKeyCB&) {
+                         const AudioDecoder::OutputCB&, const WaitingCB&) {
               init_cb.Run(IsConfigSupported(capability, config.is_encrypted()));
             });
   }
@@ -129,8 +129,7 @@ class VideoDecoderSelectorTestParam {
         .WillRepeatedly(
             [capability](const VideoDecoderConfig& config, bool low_delay,
                          CdmContext*, const VideoDecoder::InitCB& init_cb,
-                         const VideoDecoder::OutputCB&,
-                         const VideoDecoder::WaitingForDecryptionKeyCB&) {
+                         const VideoDecoder::OutputCB&, const WaitingCB&) {
               init_cb.Run(IsConfigSupported(capability, config.is_encrypted()));
             });
   }
@@ -162,7 +161,7 @@ class DecoderSelectorTest : public ::testing::Test {
       : traits_(TypeParam::CreateStreamTraits(&media_log_)),
         demuxer_stream_(TypeParam::kStreamType) {}
 
-  void OnWaitingForDecryptionKey() { NOTREACHED(); }
+  void OnWaiting(WaitingReason reason) { NOTREACHED(); }
   void OnOutput(const scoped_refptr<Output>& output) { NOTREACHED(); }
 
   MOCK_METHOD2_T(OnDecoderSelected,
@@ -249,8 +248,7 @@ class DecoderSelectorTest : public ::testing::Test {
             &media_log_);
     decoder_selector_->Initialize(
         traits_.get(), &demuxer_stream_, cdm_context_.get(),
-        base::BindRepeating(&Self::OnWaitingForDecryptionKey,
-                            base::Unretained(this)));
+        base::BindRepeating(&Self::OnWaiting, base::Unretained(this)));
   }
 
   void UseClearDecoderConfig() {
@@ -291,7 +289,7 @@ class DecoderSelectorTest : public ::testing::Test {
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
 
   std::unique_ptr<StreamTraits> traits_;
   StrictMock<MockDemuxerStream> demuxer_stream_;
@@ -311,7 +309,7 @@ class DecoderSelectorTest : public ::testing::Test {
 using DecoderSelectorTestParams =
     ::testing::Types<AudioDecoderSelectorTestParam,
                      VideoDecoderSelectorTestParam>;
-TYPED_TEST_CASE(DecoderSelectorTest, DecoderSelectorTestParams);
+TYPED_TEST_SUITE(DecoderSelectorTest, DecoderSelectorTestParams);
 
 // Tests for clear streams. CDM will not be used for clear streams so
 // DecryptorCapability doesn't really matter.

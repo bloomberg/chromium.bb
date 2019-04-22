@@ -19,7 +19,9 @@ class ShellContentUtilityClient : public ContentUtilityClient {
 
   // ContentUtilityClient:
   void UtilityThreadStarted() override;
-  void RegisterServices(StaticServiceMap* services) override;
+  bool HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request) override;
   void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) override;
   void RegisterAudioBinders(service_manager::BinderRegistry* registry) override;

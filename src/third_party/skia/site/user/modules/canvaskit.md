@@ -51,11 +51,11 @@ Samples
 </style>
 
 <div id=demo>
-  <h3>An Interactive Path</h3>
+  <h3>Go beyond the HTML Canvas2D</h3>
   <figure>
     <canvas id=patheffect width=400 height=400></canvas>
     <figcaption>
-      <a href="https://jsfiddle.skia.org/canvaskit/bb98ad306a0c826b6dc8e8b8f709fca75fee95210c529679def945f0be7ed90c"
+      <a href="https://jsfiddle.skia.org/canvaskit/ea89749ae8c90bce807ea2e7e34fb7b09b950cee70d9db0a9cdfd2d67bd48ef0"
           target=_blank rel=noopener>
         Star JSFiddle</a>
     </figcaption>
@@ -87,11 +87,15 @@ Samples
     <canvas id=sk_onboarding width=500 height=500></canvas>
   </a>
 
-  <h3>Nima (click for fiddle)</h3>
-  <a href="https://jsfiddle.skia.org/canvaskit/8f72aa124b91d28c77ef38c849ad7b3b0a4c207010ecca6dccba2b273329895c"
-     target=_blank rel=noopener>
-    <canvas id=nima_robot width=300 height=300></canvas>
-  </a>
+  <h3>Text Shaping using ICU and Harfbuzz</h3>
+  <figure>
+    <canvas id=shaping width=400 height=400></canvas>
+    <figcaption>
+      <a href="https://jsfiddle.skia.org/canvaskit/d5c61a106d57ff4ada119a46ddc3bfa479d343330d0c9e50da21f4ef113d0dee"
+          target=_blank rel=noopener>
+        Text Shaping JSFiddle</a>
+    </figcaption>
+  </figure>
 
 </div>
 
@@ -102,7 +106,7 @@ Samples
   var locate_file = '';
   if (window.WebAssembly && typeof window.WebAssembly.compile === 'function') {
     console.log('WebAssembly is supported!');
-    locate_file = 'https://storage.googleapis.com/skia-cdn/canvaskit-wasm/0.2.1/bin/';
+    locate_file = 'https://unpkg.com/canvaskit-wasm@0.4.0/bin/';
   } else {
     console.log('WebAssembly is not supported (yet) on this browser.');
     document.getElementById('demo').innerHTML = "<div>WASM not supported by your browser. Try a recent version of Chrome, Firefox, Edge, or Safari.</div>";
@@ -115,24 +119,20 @@ Samples
   var drinksJSON = null;
   var confettiJSON = null;
   var onboardingJSON = null;
-  var nimaFile = null;
-  var nimaTexture = null;
   var fullBounds = {fLeft: 0, fTop: 0, fRight: 500, fBottom: 500};
   CanvasKitInit({
     locateFile: (file) => locate_file + file,
-  }).then((CK) => {
-    CK.initFonts();
+  }).ready().then((CK) => {
     CanvasKit = CK;
     DrawingExample(CanvasKit);
     InkExample(CanvasKit);
+    ShapingExample(CanvasKit);
      // Set bounds to fix the 4:3 resolution of the legos
     SkottieExample(CanvasKit, 'sk_legos', legoJSON, {fLeft: -50, fTop: 0, fRight: 350, fBottom: 300});
     // Re-size to fit
     SkottieExample(CanvasKit, 'sk_drinks', drinksJSON, fullBounds);
     SkottieExample(CanvasKit, 'sk_party', confettiJSON, fullBounds);
     SkottieExample(CanvasKit, 'sk_onboarding', onboardingJSON, fullBounds);
-
-    NimaExample(CanvasKit, nimaFile, nimaTexture);
   });
 
   fetch('https://storage.googleapis.com/skia-cdn/misc/lego_loader.json').then((resp) => {
@@ -163,28 +163,6 @@ Samples
     });
   });
 
-  fetch('https://storage.googleapis.com/skia-cdn/misc/robot.nima').then((resp) => {
-    resp.blob().then((blob) => {
-      let reader = new FileReader();
-      reader.addEventListener('loadend', function() {
-          nimaFile = reader.result;
-          NimaExample(CanvasKit, nimaFile, nimaTexture);
-      });
-      reader.readAsArrayBuffer(blob);
-    });
-  });
-
-  fetch('https://storage.googleapis.com/skia-cdn/misc/robot.nima.png').then((resp) => {
-    resp.blob().then((blob) => {
-      let reader = new FileReader();
-      reader.addEventListener('loadend', function() {
-          nimaTexture = reader.result;
-          NimaExample(CanvasKit, nimaFile, nimaTexture);
-      });
-      reader.readAsArrayBuffer(blob);
-    });
-  });
-
   function preventScrolling(canvas) {
     canvas.addEventListener('touchmove', (e) => {
       // Prevents touch events in the canvas from scrolling the canvas.
@@ -206,8 +184,9 @@ Samples
 
     const textPaint = new CanvasKit.SkPaint();
     textPaint.setColor(CanvasKit.Color(40, 0, 0, 1.0));
-    textPaint.setTextSize(30);
     textPaint.setAntiAlias(true);
+
+    const textFont = new CanvasKit.SkFont(null, 30);
 
     let i = 0;
 
@@ -229,7 +208,7 @@ Samples
       canvas.clear(CanvasKit.Color(255, 255, 255, 1.0));
 
       canvas.drawPath(path, paint);
-      canvas.drawText('Try Clicking!', 10, 380, textPaint);
+      canvas.drawText('Try Clicking!', 10, 380, textPaint, textFont);
       canvas.flush();
       dpe.delete();
       path.delete();
@@ -249,8 +228,9 @@ Samples
     document.getElementById('patheffect').addEventListener('pointerdown', interact);
     preventScrolling(document.getElementById('patheffect'));
 
-    // A client would need to delete this if it didn't go on for ever.
-    //paint.delete();
+    // A client would need to delete this if it didn't go on forever.
+    // font.delete();
+    // paint.delete();
   }
 
   function InkExample(CanvasKit) {
@@ -327,6 +307,66 @@ Samples
     window.requestAnimationFrame(drawFrame);
   }
 
+  function ShapingExample(CanvasKit) {
+    const surface = CanvasKit.MakeCanvasSurface('shaping');
+    if (!surface) {
+      console.log('Could not make surface');
+      return;
+    }
+    const context = CanvasKit.currentContext();
+    const skcanvas = surface.getCanvas();
+    const paint = new CanvasKit.SkPaint();
+    paint.setColor(CanvasKit.BLUE);
+    paint.setStyle(CanvasKit.PaintStyle.Stroke);
+
+    const textPaint = new CanvasKit.SkPaint();
+    const bigFont = new CanvasKit.SkFont(null, 30);
+    const smallFont = new CanvasKit.SkFont(null, 14);
+
+    const TEXT = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris ac leo vitae ipsum hendrerit euismod quis rutrum nibh. Quisque non suscipit urna. Donec enim urna, facilisis vitae volutpat in, mattis at elit. Sed quis augue et dolor dignissim fringilla. Sed non massa eu neque tristique malesuada. ';
+
+    let X = 280;
+    let Y = 190;
+
+    function drawFrame() {
+      CanvasKit.setCurrentContext(context);
+      skcanvas.clear(CanvasKit.TRANSPARENT);
+
+      const shapedText = new CanvasKit.ShapedText({
+        font: smallFont,
+        leftToRight: true,
+        text: TEXT,
+        width: X - 10,
+      });
+
+      skcanvas.drawRect(CanvasKit.LTRBRect(10, 10, X, Y), paint);
+      skcanvas.drawText(shapedText, 10, 10, textPaint, smallFont);
+      skcanvas.drawText('Try dragging the box!', 10, 380, textPaint, bigFont);
+
+      surface.flush();
+
+      shapedText.delete();
+
+      window.requestAnimationFrame(drawFrame);
+    }
+    window.requestAnimationFrame(drawFrame);
+
+    // Make animation interactive
+    let interact = (e) => {
+      if (!e.pressure) {
+        return;
+      }
+      X = e.offsetX;
+      Y = e.offsetY;
+    };
+    document.getElementById('shaping').addEventListener('pointermove', interact);
+    document.getElementById('shaping').addEventListener('pointerdown', interact);
+    document.getElementById('shaping').addEventListener('lostpointercapture', interact);
+    document.getElementById('shaping').addEventListener('pointerup', interact);
+    preventScrolling(document.getElementById('shaping'));
+    window.requestAnimationFrame(drawFrame);
+  }
+
   function starPath(CanvasKit, X=128, Y=128, R=116) {
     let p = new CanvasKit.SkPath();
     p.moveTo(X + R, Y);
@@ -369,42 +409,6 @@ Samples
     window.requestAnimationFrame(drawFrame);
     //animation.delete();
   }
-
-  function NimaExample(CanvasKit, nimaFile, nimaTexture) {
-    if (!CanvasKit || !nimaFile || !nimaTexture) {
-      return;
-    }
-    const animation = CanvasKit.MakeNimaActor(nimaFile, nimaTexture);
-    if (!animation) {
-      console.error('could not make animation');
-      return;
-    }
-
-    const surface = CanvasKit.MakeCanvasSurface('nima_robot');
-    if (!surface) {
-      console.error('Could not make surface');
-      return;
-    }
-
-    const context = CanvasKit.currentContext();
-    const canvas = surface.getCanvas();
-    canvas.translate(125, 275);
-    canvas.scale(0.4, -0.4);
-
-    let firstFrame = Date.now();
-    animation.setAnimationByName('attack');
-
-    function drawFrame() {
-      let seek = ((Date.now() - firstFrame) / 1000.0);
-      CanvasKit.setCurrentContext(context);
-      canvas.clear(CanvasKit.Color(255, 255, 255, 0.0));
-      animation.seek(seek);
-      animation.render(canvas);
-      surface.flush();
-      window.requestAnimationFrame(drawFrame);
-    }
-    window.requestAnimationFrame(drawFrame);
-  }
   }
   document.head.appendChild(s);
 })();
@@ -416,14 +420,10 @@ Lottie files courtesy of the lottiefiles.com community:
 [Confetti](https://www.lottiefiles.com/1370-confetti),
 [Onboarding](https://www.lottiefiles.com/1134-onboarding-1)
 
-Nima files courtesy of 2dimensions.com:
-[Robot](https://www.2dimensions.com/s/281-robot)
-
-
 Test server
 -----------
 Test your code on our [CanvasKit Fiddle](https://jsfiddle.skia.org/canvaskit)
 
 Download
 --------
-Work is underway on an npm download. Check back soon.
+Get [CanvasKit on NPM](https://www.npmjs.com/package/canvaskit-wasm)

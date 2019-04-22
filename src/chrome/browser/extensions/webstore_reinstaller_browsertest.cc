@@ -89,13 +89,10 @@ IN_PROC_BROWSER_TEST_F(WebstoreReinstallerBrowserTest, TestWebstoreReinstall) {
 
   // Create and run a WebstoreReinstaller.
   base::RunLoop run_loop;
-  scoped_refptr<WebstoreReinstaller> reinstaller(
-      new WebstoreReinstaller(
-          active_web_contents,
-          kTestExtensionId,
-          base::Bind(&WebstoreReinstallerBrowserTest::OnInstallCompletion,
-                     base::Unretained(this),
-                     run_loop.QuitClosure())));
+  scoped_refptr<WebstoreReinstaller> reinstaller(new WebstoreReinstaller(
+      active_web_contents, kTestExtensionId,
+      base::BindOnce(&WebstoreReinstallerBrowserTest::OnInstallCompletion,
+                     base::Unretained(this), run_loop.QuitClosure())));
   reinstaller->BeginReinstall();
   run_loop.Run();
 
@@ -108,13 +105,10 @@ IN_PROC_BROWSER_TEST_F(WebstoreReinstallerBrowserTest, TestWebstoreReinstall) {
   // Now accept the repair prompt.
   AutoAcceptInstall();
   base::RunLoop run_loop2;
-  reinstaller =
-      new WebstoreReinstaller(
-          active_web_contents,
-          kTestExtensionId,
-          base::Bind(&WebstoreReinstallerBrowserTest::OnInstallCompletion,
-                     base::Unretained(this),
-                     run_loop2.QuitClosure()));
+  reinstaller = new WebstoreReinstaller(
+      active_web_contents, kTestExtensionId,
+      base::BindOnce(&WebstoreReinstallerBrowserTest::OnInstallCompletion,
+                     base::Unretained(this), run_loop2.QuitClosure()));
   reinstaller->BeginReinstall();
   run_loop2.Run();
 

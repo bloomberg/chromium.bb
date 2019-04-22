@@ -81,6 +81,10 @@ inline CoreProbeSink* ToCoreProbeSink(Document* document) {
   return document ? ToCoreProbeSink(*document) : nullptr;
 }
 
+inline CoreProbeSink* ToCoreProbeSink(CoreProbeSink* sink) {
+  return sink;
+}
+
 inline CoreProbeSink* ToCoreProbeSink(ExecutionContext* context) {
   return context ? context->GetProbeSink() : nullptr;
 }

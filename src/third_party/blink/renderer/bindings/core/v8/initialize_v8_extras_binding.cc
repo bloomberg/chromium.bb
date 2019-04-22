@@ -44,14 +44,14 @@ constexpr WebFeatureIdNameLookupEntry web_feature_id_name_lookup_table[] = {
 class CountUseForBindings : public ScriptFunction {
  public:
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
-    auto* self = new CountUseForBindings(script_state);
+    auto* self = MakeGarbageCollected<CountUseForBindings>(script_state);
     return self->BindToV8Function();
   }
 
- private:
   explicit CountUseForBindings(ScriptState* script_state)
       : ScriptFunction(script_state) {}
 
+ private:
   ScriptValue Call(ScriptValue value) override {
     String string_id;
     if (!value.ToString(string_id)) {
@@ -131,11 +131,18 @@ void AddOriginals(ScriptState* script_state, v8::Local<v8::Object> binding) {
   };
 
   v8::Local<v8::Value> message_port = ObjectGet(global, "MessagePort");
+  v8::Local<v8::Value> dom_exception = ObjectGet(global, "DOMException");
 
-  // Some Worklets don't have MessagePort. In this case, serialization will
-  // be disabled.
-  if (message_port->IsUndefined())
+  // Most Worklets don't have MessagePort. In this case, serialization will
+  // fail. AudioWorklet has MessagePort but no DOMException, so it can't use
+  // serialization for now.
+  if (message_port->IsUndefined() || dom_exception->IsUndefined()) {
+    // Allow V8 Extras JavaScript to safely detect that MessagePort is not
+    // available. Without this, lookups of MessagePort_postMessage will follow
+    // the prototype chain.
+    Bind("MessagePort_postMessage", v8::Undefined(isolate));
     return;
+  }
 
   v8::Local<v8::Value> event_target_prototype =
       GetPrototype(ObjectGet(global, "EventTarget"));
@@ -153,7 +160,6 @@ void AddOriginals(ScriptState* script_state, v8::Local<v8::Object> binding) {
 
   Bind("MessageEvent_data_get", GetOwnPDGet(message_event_prototype, "data"));
 
-  v8::Local<v8::Value> dom_exception = ObjectGet(global, "DOMException");
   Bind("DOMException", dom_exception);
 
   v8::Local<v8::Value> dom_exception_prototype = GetPrototype(dom_exception);

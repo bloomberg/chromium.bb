@@ -3,6 +3,8 @@
 #ifdef RAR_SMP
 #include "threadmisc.cpp"
 
+namespace third_party_unrar {
+
 #ifdef _WIN_ALL
 int ThreadPool::ThreadPriority=THREAD_PRIORITY_NORMAL;
 #endif
@@ -211,4 +213,6 @@ void ThreadPool::WaitDone()
   pthread_mutex_unlock(&AnyActiveMutex);
 #endif
 }
+
+}  // namespace third_party_unrar
 #endif // RAR_SMP

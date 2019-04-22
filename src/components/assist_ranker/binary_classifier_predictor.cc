@@ -19,8 +19,8 @@ namespace assist_ranker {
 
 BinaryClassifierPredictor::BinaryClassifierPredictor(
     const PredictorConfig& config)
-    : BasePredictor(config){};
-BinaryClassifierPredictor::~BinaryClassifierPredictor(){};
+    : BasePredictor(config) {}
+BinaryClassifierPredictor::~BinaryClassifierPredictor() {}
 
 // static
 std::unique_ptr<BinaryClassifierPredictor> BinaryClassifierPredictor::Create(

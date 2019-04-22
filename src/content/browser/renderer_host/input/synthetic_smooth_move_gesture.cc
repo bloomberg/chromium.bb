@@ -282,8 +282,8 @@ void SyntheticSmoothMoveGesture::ForwardFlingGestureEvent(
     SyntheticGestureTarget* target,
     const blink::WebInputEvent::Type type) const {
   blink::WebGestureEvent fling_gesture_event =
-      SyntheticWebGestureEventBuilder::Build(type,
-                                             blink::kWebGestureDeviceTouchpad);
+      SyntheticWebGestureEventBuilder::Build(
+          type, blink::WebGestureDevice::kTouchpad);
   fling_gesture_event.data.fling_start.velocity_x = params_.fling_velocity_x;
   fling_gesture_event.data.fling_start.velocity_y = params_.fling_velocity_y;
   fling_gesture_event.SetPositionInWidget(current_move_segment_start_position_);

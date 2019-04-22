@@ -19,18 +19,17 @@ class Accelerometer : public Sensor {
                                ExceptionState&);
   static Accelerometer* Create(ExecutionContext*, ExceptionState&);
 
-  double x(bool& is_null) const;
-  double y(bool& is_null) const;
-  double z(bool& is_null) const;
-
-  void Trace(blink::Visitor*) override;
-
- protected:
   Accelerometer(ExecutionContext*,
                 const SpatialSensorOptions*,
                 ExceptionState&,
                 device::mojom::blink::SensorType,
                 const Vector<mojom::FeaturePolicyFeature>&);
+
+  double x(bool& is_null) const;
+  double y(bool& is_null) const;
+  double z(bool& is_null) const;
+
+  void Trace(blink::Visitor*) override;
 };
 
 }  // namespace blink

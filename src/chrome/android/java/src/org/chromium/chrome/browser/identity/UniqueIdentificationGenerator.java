@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.identity;
 
-import javax.annotation.Nullable;
+import android.support.annotation.Nullable;
 
 /**
  * Interface used for uniquely identifying an installation of Chrome. To get an instance you should

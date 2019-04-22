@@ -31,39 +31,34 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CONSOLE_MESSAGE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CONSOLE_MESSAGE_H_
 
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_node.h"
+
+namespace v8 {
+class Context;
+template <typename T>
+class Local;
+}  // namespace v8
 
 namespace blink {
 
 struct WebConsoleMessage {
-  enum Level {
-    kLevelVerbose,
-    kLevelInfo,
-    kLevelWarning,
-    kLevelError,
-    kLevelLast = kLevelError
-  };
-
-  Level level;
+  mojom::ConsoleMessageLevel level = mojom::ConsoleMessageLevel::kInfo;
   WebString text;
   WebVector<blink::WebNode> nodes;
   WebString url;
-  unsigned line_number;
-  unsigned column_number;
+  unsigned line_number = 0;
+  unsigned column_number = 0;
 
-  WebConsoleMessage() : level(kLevelInfo), line_number(0), column_number(0) {}
-  WebConsoleMessage(Level level,
+  WebConsoleMessage() = default;
+  WebConsoleMessage(mojom::ConsoleMessageLevel level,
                     const WebString& text,
                     const WebVector<blink::WebNode>& nodes)
-      : level(level),
-        text(text),
-        nodes(nodes),
-        line_number(0),
-        column_number(0) {}
-  WebConsoleMessage(Level level, const WebString& text)
+      : level(level), text(text), nodes(nodes) {}
+  WebConsoleMessage(mojom::ConsoleMessageLevel level, const WebString& text)
       : WebConsoleMessage(level, text, WebVector<blink::WebNode>()) {}
-  WebConsoleMessage(Level level,
+  WebConsoleMessage(mojom::ConsoleMessageLevel level,
                     const WebString& text,
                     const WebString url,
                     unsigned line_number,
@@ -73,6 +68,11 @@ struct WebConsoleMessage {
         url(url),
         line_number(line_number),
         column_number(column_number) {}
+
+  // Logs the console message for the given v8::Context.
+  BLINK_EXPORT static void LogWebConsoleMessage(
+      v8::Local<v8::Context> context,
+      const WebConsoleMessage& message);
 };
 
 }  // namespace blink

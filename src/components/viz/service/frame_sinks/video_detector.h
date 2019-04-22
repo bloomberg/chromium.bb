@@ -34,7 +34,7 @@ class VIZ_SERVICE_EXPORT VideoDetector : public SurfaceObserver {
       SurfaceManager* surface_manager,
       const base::TickClock* tick_clock = base::DefaultTickClock::GetInstance(),
       scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr);
-  virtual ~VideoDetector();
+  ~VideoDetector() override;
 
   // Adds an observer. The observer can be removed by closing the mojo
   // connection.
@@ -76,10 +76,10 @@ class VIZ_SERVICE_EXPORT VideoDetector : public SurfaceObserver {
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override {}
   void OnSurfaceActivated(const SurfaceId& surface_id,
                           base::Optional<base::TimeDelta> duration) override {}
-  void OnSurfaceDestroyed(const SurfaceId& surface_id) override {}
+  void OnSurfaceMarkedForDestruction(const SurfaceId& surface_id) override {}
   bool OnSurfaceDamaged(const SurfaceId& surface_id,
                         const BeginFrameAck& ack) override;
-  void OnSurfaceDiscarded(const SurfaceId& surface_id) override {}
+  void OnSurfaceDestroyed(const SurfaceId& surface_id) override {}
   void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                const BeginFrameArgs& args) override {}
   void OnSurfaceWillBeDrawn(Surface* surface) override;

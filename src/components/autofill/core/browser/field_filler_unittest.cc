@@ -10,8 +10,8 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -108,6 +108,29 @@ void TestFillingExpirationMonth(const std::vector<const char*>& values,
   filler.FillFormField(field, card, &field, /*cvc=*/base::string16());
   GetIndexOfValue(field.option_values, field.value, &content_index);
   EXPECT_EQ(ASCIIToUTF16("Nov"), field.option_contents[content_index]);
+}
+
+void TestFillingInvalidFields(const base::string16& state,
+                              const base::string16& city) {
+  AutofillProfile profile = test::GetFullProfile();
+  profile.SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::INVALID,
+                           AutofillProfile::SERVER);
+  profile.SetValidityState(ADDRESS_HOME_CITY, AutofillProfile::INVALID,
+                           AutofillProfile::CLIENT);
+
+  AutofillField field_state;
+  field_state.set_heuristic_type(ADDRESS_HOME_STATE);
+  AutofillField field_city;
+  field_city.set_heuristic_type(ADDRESS_HOME_CITY);
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  filler.FillFormField(field_state, profile, &field_state,
+                       /*cvc=*/base::string16());
+  EXPECT_EQ(state, field_state.value);
+
+  filler.FillFormField(field_city, profile, &field_city,
+                       /*cvc=*/base::string16());
+  EXPECT_EQ(city, field_city.value);
 }
 
 struct CreditCardTestCase {
@@ -388,6 +411,82 @@ TEST_F(AutofillFieldFillerTest, FillFormField_AutocompleteOff_CreditCardField) {
   EXPECT_EQ(ASCIIToUTF16("4111111111111111"), field.value);
 }
 
+// Verify that when the relevant feature is enabled, the invalid fields don't
+// get filled.
+TEST_F(AutofillFieldFillerTest, FillFormField_Validity_ServerClient) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillProfileServerValidation,
+                            features::kAutofillProfileClientValidation},
+      /*disabled_features=*/{});
+  // State's validity is set by server and city's validity by client.
+  TestFillingInvalidFields(/*state=*/base::string16(),
+                           /*city=*/base::string16());
+}
+
+TEST_F(AutofillFieldFillerTest, FillFormField_Validity_OnlyServer) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillProfileServerValidation},
+      /*disabled_features=*/{features::kAutofillProfileClientValidation});
+  // State's validity is set by server and city's validity by client.
+  TestFillingInvalidFields(/*state=*/base::string16(),
+                           /*city=*/ASCIIToUTF16("Elysium"));
+}
+
+TEST_F(AutofillFieldFillerTest, FillFormField_Validity_OnlyClient) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillProfileClientValidation},
+      /*disabled_features=*/{features::kAutofillProfileServerValidation});
+  // State's validity is set by server and city's validity by client.
+  TestFillingInvalidFields(/*state=*/ASCIIToUTF16("CA"),
+                           /*city=*/base::string16());
+}
+
+TEST_F(AutofillFieldFillerTest, FillFormField_NoValidity) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{features::kAutofillProfileServerValidation,
+                             features::kAutofillProfileClientValidation});
+  // State's validity is set by server and city's validity by client.
+  TestFillingInvalidFields(/*state=*/ASCIIToUTF16("CA"),
+                           /*city=*/ASCIIToUTF16("Elysium"));
+}
+
+// Tests that using only client side validation, if the country is empty, the
+// address fields will get filled regardless of their invalidity.
+TEST_F(AutofillFieldFillerTest, FillFormField_Validity_CountryEmpty) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillProfileClientValidation},
+      /*disabled_features=*/{features::kAutofillProfileServerValidation});
+  AutofillProfile profile = test::GetFullProfile();
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16(""));
+  profile.SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::INVALID,
+                           AutofillProfile::CLIENT);
+  profile.SetValidityState(EMAIL_ADDRESS, AutofillProfile::INVALID,
+                           AutofillProfile::CLIENT);
+
+  AutofillField field_state;
+  field_state.set_heuristic_type(ADDRESS_HOME_STATE);
+  AutofillField field_email;
+  field_email.set_heuristic_type(EMAIL_ADDRESS);
+
+  FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
+  // State is filled, because it's an address field.
+  filler.FillFormField(field_state, profile, &field_state,
+                       /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16("CA"), field_state.value);
+
+  // Email is not filled, because it's not an address field, and it doesn't
+  // depend on the country.
+  filler.FillFormField(field_email, profile, &field_email,
+                       /*cvc=*/base::string16());
+  EXPECT_EQ(ASCIIToUTF16(""), field_email.value);
+}
+
 struct AutofillFieldFillerTestCase {
   HtmlFieldType field_type;
   size_t field_max_length;
@@ -413,7 +512,7 @@ TEST_P(PhoneNumberTest, FillPhoneNumber) {
   EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillFieldFillerTest,
     PhoneNumberTest,
     testing::Values(
@@ -463,7 +562,7 @@ TEST_P(ExpirationYearTest, FillExpirationYearInput) {
   EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillFieldFillerTest,
     ExpirationYearTest,
     testing::Values(
@@ -527,7 +626,7 @@ TEST_P(ExpirationDateTest, FillExpirationDateInput) {
   EXPECT_EQ(response, test_case.expected_response);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillFieldFillerTest,
     ExpirationDateTest,
     testing::Values(
@@ -717,7 +816,7 @@ TEST_P(AutofillSelectWithStatesTest, FillSelectWithStates) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillFieldFillerTest,
     AutofillSelectWithStatesTest,
     testing::Values(
@@ -805,7 +904,7 @@ TEST_P(AutofillSelectWithExpirationMonthTest,
                              test_case.select_values.size());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillFieldFillerTest,
     AutofillSelectWithExpirationMonthTest,
     testing::Values(
@@ -1139,10 +1238,10 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithEqualSizeSplits) {
   test.card_number_ = "5187654321098765";
   test.total_splits_ = 4;
   int splits[] = {4, 4, 4, 4};
-  test.splits_ = std::vector<int>(splits, splits + arraysize(splits));
+  test.splits_ = std::vector<int>(splits, splits + base::size(splits));
   std::string results[] = {"5187", "6543", "2109", "8765"};
   test.expected_results_ =
-      std::vector<std::string>(results, results + arraysize(results));
+      std::vector<std::string>(results, results + base::size(results));
 
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   for (size_t i = 0; i < test.total_splits_; ++i) {
@@ -1181,10 +1280,10 @@ TEST_F(AutofillFieldFillerTest, FillCreditCardNumberWithUnequalSizeSplits) {
   test.card_number_ = "423456789012345";
   test.total_splits_ = 3;
   int splits[] = {4, 6, 5};
-  test.splits_ = std::vector<int>(splits, splits + arraysize(splits));
+  test.splits_ = std::vector<int>(splits, splits + base::size(splits));
   std::string results[] = {"4234", "567890", "12345"};
   test.expected_results_ =
-      std::vector<std::string>(results, results + arraysize(results));
+      std::vector<std::string>(results, results + base::size(results));
 
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   // Start executing test cases to verify parts and full credit card number.
@@ -1291,7 +1390,7 @@ TEST_P(AutofillStateTextTest, FillStateText) {
   EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillFieldFillerTest,
     AutofillStateTextTest,
     testing::Values(

@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "fxjs/cfx_v8.h"
-#include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_template.h"
 
@@ -27,6 +27,10 @@ CJX_Template::CJX_Template(CXFA_Template* tmpl) : CJX_Model(tmpl) {
 }
 
 CJX_Template::~CJX_Template() {}
+
+bool CJX_Template::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
 
 CJS_Result CJX_Template::formNodes(
     CFX_V8* runtime,

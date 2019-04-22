@@ -67,7 +67,10 @@ class PrintCompositeClient
       const PrintHostMsg_DidPrintContent_Params& content,
       mojom::PdfCompositor::CompositeDocumentToPdfCallback callback);
 
+  void SetUserAgent(const std::string& user_agent) { user_agent_ = user_agent; }
+
  private:
+  friend class content::WebContentsUserData<PrintCompositeClient>;
   // Callback functions for getting the replies.
   static void OnDidCompositePageToPdf(
       mojom::PdfCompositor::CompositePageToPdfCallback callback,
@@ -81,7 +84,7 @@ class PrintCompositeClient
       base::ReadOnlySharedMemoryRegion region);
 
   // Get the request or create a new one if none exists.
-  // Since printed pages always share content with it document, they share the
+  // Since printed pages always share content with its document, they share the
   // same composite request.
   mojom::PdfCompositorPtr& GetCompositeRequest(int cookie);
 
@@ -103,6 +106,10 @@ class PrintCompositeClient
   // Stores the mapping between document cookie and all the printed subframes
   // for that document.
   std::map<int, base::flat_set<uint64_t>> printed_subframes_;
+
+  std::string user_agent_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PrintCompositeClient);
 };

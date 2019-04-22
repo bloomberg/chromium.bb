@@ -187,6 +187,15 @@ ObjectTemplateBuilder& ObjectTemplateBuilder::SetPropertyImpl(
   return *this;
 }
 
+ObjectTemplateBuilder& ObjectTemplateBuilder::SetLazyDataPropertyImpl(
+    const base::StringPiece& name,
+    v8::AccessorNameGetterCallback callback,
+    v8::Local<v8::Value> data) {
+  template_->SetLazyDataProperty(StringToSymbol(isolate_, name), callback,
+                                 data);
+  return *this;
+}
+
 v8::Local<v8::ObjectTemplate> ObjectTemplateBuilder::Build() {
   v8::Local<v8::ObjectTemplate> result = template_;
   template_.Clear();

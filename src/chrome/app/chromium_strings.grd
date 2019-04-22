@@ -428,22 +428,42 @@ Chromium is unable to recover your settings.
                desc="Message shown on the download shelf when the download is known to change settings in the browser in a malicious way.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> may be dangerous, so Chromium has blocked it.
       </message>
+      <message name="IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS_IN_ADVANCED_PROTECTION"
+               desc="Message shown on the download shelf when the download is known to change settings in the browser in a malicious way. This variant is shown when the user is enrolled in the Advanced Protection program.">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> may be dangerous, so Chromium has blocked it. You're defended by Advanced Protection.
+      </message>
 
       <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_URL"
          desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database.">
         This file is dangerous, so Chromium has blocked it.
       </message>
+      <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_URL_IN_ADVANCED_PROTECTION"
+         desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database. This variant is shown when the user is enrolled in this Advanced Protection program.">
+        This file is dangerous, so Chromium has blocked it. You're defended by Advanced Protection.
+      </message>
       <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT"
          desc="Message shown to the user to validate the download when the download content is classified to lead to malware by safebrowsing.">
         <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> is dangerous, so Chromium has blocked it.
+      </message>
+      <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION"
+         desc="Message shown to the user to validate the download when the download content is classified to lead to malware by safebrowsing. This variant is shown when the user is enrolled in the Advanced Protection program.">
+        <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> is dangerous, so Chromium has blocked it. You're defended by Advanced Protection.
       </message>
       <message name="IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is malware.">
         This file is dangerous, so Chromium has blocked it.
       </message>
+      <message name="IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD_IN_ADVANCED_PROTECTION"
+         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is malware. This variant is shown when the user is enrolled in the Advanced Protection program.">
+        This file is dangerous, so Chromium has blocked it. You're defended by Advanced Protection.
+      </message>
       <message name="IDS_BLOCK_REASON_UNWANTED_DOWNLOAD"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is unwanted sofware.">
         This file may be dangerous, so Chromium has blocked it.
+      </message>
+      <message name="IDS_BLOCK_REASON_UNWANTED_DOWNLOAD_IN_ADVANCED_PROTECTION"
+         desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is unwanted sofware. This variant is shown when the user is enrolled in the Advanced Protection program.">
+        This file may be dangerous, so Chromium has blocked it. You're defended by Advanced Protection.
       </message>
 
       <!-- Abandon in-progress downloads confirmation dialog -->
@@ -522,6 +542,11 @@ Chromium is unable to recover your settings.
           sign in to Chromium
         </message>
 
+        <!-- Extension uninstall prompt -->
+        <message name="IDS_EXTENSION_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX" desc="Checkbox text to ask the user whether they want to remove associated data at uninstall time. Only used when uninstalling an app associated with a particular website.">
+          Also clear data from Chromium (<ph name="URL">$1<ex>www.google.com</ex></ph>)
+        </message>
+
         <!-- Extension context menu -->
         <if expr="not use_titlecase">
           <message name="IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU" desc="The extension context menu item to hide the button in the application menu (sentence case).">
@@ -547,7 +572,7 @@ Chromium is unable to recover your settings.
       <message name="IDS_EXTENSIONS_UNINSTALL" desc="The link for uninstalling extensions.">
         Remove from Chromium...
       </message>
-      <message name="IDS_MD_EXTENSIONS_SHORTCUT_SCOPE_IN_CHROME" desc="The label to indicate that a shortcut will be triggerable only from within the Chrome application.">
+      <message name="IDS_EXTENSIONS_SHORTCUT_SCOPE_IN_CHROME" desc="The label to indicate that a shortcut will be triggerable only from within the Chrome application.">
         In Chromium
       </message>
 
@@ -567,6 +592,10 @@ Chromium is unable to recover your settings.
 
       <message name="IDS_APPMENU_TOOLTIP_UPDATE_AVAILABLE" desc="The tooltip to show for the browser menu when an update is available">
         Customize and control Chromium. Update is available.
+      </message>
+
+      <message name="IDS_APPMENU_TOOLTIP_ALERT" desc="The tooltip to show for the browser menu when a non-update alert is displayed">
+        Customize and control Chromium. Something needs your attention - click for details.
       </message>
 
       <message name="IDS_OPEN_IN_CHROME" desc="The text label of the Open in Chrome menu item for the Hosted App app menu">
@@ -680,6 +709,16 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
+      <!-- about:browser-switch strings -->
+      <if expr="is_win or is_macosx or (is_linux and not is_chromeos)">
+        <message name="IDS_ABOUT_BROWSER_SWITCH_DESCRIPTION_UNKNOWN_BROWSER" desc="Description shown while waiting for an alternative browser to open, when the browser name is not auto-detected">
+          Your system administrator has configured Chromium to open an alternative browser to access <ph name="TARGET_URL_HOSTNAME">$1<ex>example.com</ex></ph>.
+        </message>
+        <message name="IDS_ABOUT_BROWSER_SWITCH_DESCRIPTION_KNOWN_BROWSER" desc="Description shown while waiting for an alternative browser to open, when the browser name is auto-detected">
+          Your system administrator has configured Chromium to open <ph name="ALTERNATIVE_BROWSER_NAME">$2<ex>Internet Explorer</ex></ph> to access <ph name="TARGET_URL_HOSTNAME">$1<ex>example.com</ex></ph>.
+        </message>
+      </if>
+
       <!-- Signin Email Confirmation tab modal dialog -->
       <if expr="not chromeos">
         <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_TITLE" desc="Title of the signin email confirmation tab modal dialog.">
@@ -692,7 +731,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
                  omitting them brings up a hash collision error. -->
       <if expr="is_win">
         <message name="IDS_CHROME_CLEANUP_PROMPT_EXPLANATION" desc="Description in the Chrome Cleanup dialog that Chromium browser shows when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Appears under the title asking 'Remove harmful software?' Actor is Chromium; we are asking, Do you want Chromium to remove harmful software? 'it' is harmful software. User has the option of clicking 'Remove' to proceed with a cleanup, or 'Details' to see more details. The description is also shown on the Chrome Cleanup section of the Settings page, under 'Remove harmful software' title. Preferrably, the translation for this string should parallel IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_CURRENTLY_REMOVING.">
-          There's harmful software on your computer. Chromium can remove it and restore your settings to make your browser work normally again.
+          There's harmful software on your computer. Chromium can remove it, restore your settings, and disable extensions to make your browser work normally again.
         </message>
       </if>
 
@@ -712,6 +751,9 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
       <if expr="chromeos">
+        <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_DISPLAY_SOURCE" desc="Context title shown in the notification header of sign-in error notification for Chromium OS Secondary Accounts.">
+          Chromium OS System
+        </message>
         <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error notification when the user needs to update their sync passphrase.">
           Chromium OS could not sync your data. Please update your Sync passphrase.
         </message>
@@ -829,7 +871,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
 
         <!-- User pod remove sync warning text -->
         <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC" desc="Main text shown as a warning when attempting to remove an user.">
-          This person's browsing data will be deleted from this device. To recover the data, sign in to Chromium as $2.
+          This person's browsing data will be deleted from this device. To recover the data, sign in to Chromium as <ph name="USER_EMAIL">$2<ex>foo@example.com</ex></ph>.
         </message>
 
         <!-- Tutorial -->
@@ -904,8 +946,14 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
       </if>
 
       <if expr="not is_android">
+        <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the accessibility labels service of Google to Chromium.">
+          If an image doesn’t have a useful description, Chromium will try to provide one for you. To create descriptions, images are sent to Google. You can turn this off in settings at any time.
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_BUBBLE_TEXT_ONCE" desc="The text of a bubble that confirms users allows integrating the accessibility labels service of Google to Chromium just once.">
+          If an image doesn’t have a useful description, Chromium will try to provide one for you. To create descriptions, images are sent to Google.
+        </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
-          Chromium can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
+          This uses the same spellchecker that's used in Google search. Text you type in the browser is sent to Google. You can always change this behavior in settings.
         </message>
         <if expr="not use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP" desc="The name of the command to open a link in a newly created browser tab when the user is in an app window">
@@ -977,9 +1025,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
       </message>
 
       <!-- User menu errors -->
-      <message name="IDS_SYNC_ERROR_USER_MENU_SUPERVISED_SIGNIN_MESSAGE" desc="Message of the out-of-date signin token error for supervised users in the header of desktop user menu.">
-        Your manager must remove and add you back to Chromium.
-      </message>
       <message name="IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE" desc="Message of the out-of-date Chrome client error in the header of desktop user menu.">
         Chromium is out of date
       </message>

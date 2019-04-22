@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "chromeos/services/assistant/public/mojom/settings.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 class Profile;
 
@@ -23,16 +25,21 @@ class GoogleAssistantHandler : public ::settings::SettingsPageUIHandler {
   void OnJavascriptDisallowed() override;
 
  private:
-  // WebUI call to enable the Google Assistant.
-  void HandleSetGoogleAssistantEnabled(const base::ListValue* args);
-  // WebUI call to enable context for the Google Assistant.
-  void HandleSetGoogleAssistantContextEnabled(const base::ListValue* args);
   // WebUI call to launch into the Google Assistant app settings.
   void HandleShowGoogleAssistantSettings(const base::ListValue* args);
-  // WebUI call to launch assistant runtime flow.
-  void HandleTurnOnGoogleAssistant(const base::ListValue* args);
+  // WebUI call to retrain Assistant voice model.
+  void HandleRetrainVoiceModel(const base::ListValue* args);
+  // WebUI call to sync Assistant voice model status.
+  void HandleSyncVoiceModelStatus(const base::ListValue* args);
+
+  // Bind to assistant settings manager.
+  void BindAssistantSettingsManager();
 
   Profile* const profile_;
+
+  assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
+
+  base::WeakPtrFactory<GoogleAssistantHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleAssistantHandler);
 };

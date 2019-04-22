@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/paint/compositing/compositing_triggers.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -22,42 +21,29 @@ class CORE_EXPORT CompositingReasonFinder {
   DISALLOW_NEW();
 
  public:
-  explicit CompositingReasonFinder(LayoutView&);
+  static CompositingReasons PotentialCompositingReasonsFromStyle(
+      const LayoutObject&);
 
-  CompositingReasons PotentialCompositingReasonsFromStyle(LayoutObject&) const;
+  static CompositingReasons NonStyleDeterminedDirectReasons(const PaintLayer&);
 
-  CompositingReasons NonStyleDeterminedDirectReasons(
-      const PaintLayer*,
-      bool ignore_lcd_text) const;
-  LayoutView& layout_view_;
-  CompositingTriggerFlags compositing_triggers_;
   DISALLOW_COPY_AND_ASSIGN(CompositingReasonFinder);
 
-  // Returns the direct reasons for compositing the given layer. If
-  // |ignoreLCDText| is true promotion will not try to preserve subpixel text
-  // rendering (i.e. partially transparent layers will be promoted).
-  CompositingReasons DirectReasons(const PaintLayer*,
-                                   bool ignore_lcd_text) const;
+  // Returns the direct reasons for compositing the given layer.
+  static CompositingReasons DirectReasons(const PaintLayer&);
 
-  void UpdateTriggers();
+  static CompositingReasons DirectReasonsForPaintProperties(
+      const LayoutObject&);
 
-  bool RequiresCompositingForScrollableFrame() const;
+  static bool RequiresCompositingForScrollableFrame(const LayoutView&);
   static CompositingReasons CompositingReasonsForAnimation(
       const ComputedStyle&);
-  static bool RequiresCompositingForOpacityAnimation(const ComputedStyle&);
-  static bool RequiresCompositingForFilterAnimation(const ComputedStyle&);
-  static bool RequiresCompositingForBackdropFilterAnimation(
+  static CompositingReasons CompositingReasonsForWillChange(
       const ComputedStyle&);
-  static bool RequiresCompositingForTransformAnimation(const ComputedStyle&);
-  static bool RequiresCompositingForTransform(const LayoutObject&);
+  static bool RequiresCompositingFor3DTransform(const LayoutObject&);
   static bool RequiresCompositingForRootScroller(const PaintLayer&);
+  static bool RequiresCompositingForScrollTimeline(const PaintLayer&);
 
-  bool RequiresCompositingForScrollDependentPosition(
-      const PaintLayer*,
-      bool ignore_lcd_text) const;
-
- private:
-  bool IsMainFrame() const;
+  static bool RequiresCompositingForScrollDependentPosition(const PaintLayer&);
 };
 
 }  // namespace blink

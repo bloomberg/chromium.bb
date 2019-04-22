@@ -399,7 +399,8 @@ ScopedIppPtr GetPrinterAttributes(http_t* http,
 
   DCHECK_EQ(ippValidateAttributes(request.get()), 1);
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   auto response = WrapIpp(cupsDoRequest(http, request.release(), rp.c_str()));
   *status = ippGetStatusCode(response.get());
 
@@ -516,7 +517,8 @@ bool GetCupsJobs(http_t* http,
     return false;
   }
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   // cupsDoRequest will delete the request.
   auto response = WrapIpp(cupsDoRequest(http, request.release(), "/"));
 

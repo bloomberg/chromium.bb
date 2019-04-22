@@ -26,6 +26,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/buildflags/buildflags.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -58,6 +59,7 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
       std::vector<mojom::PageLoadTimingPtr>* updated_timings,
       std::vector<mojom::PageLoadTimingPtr>* updated_subframe_timings,
       std::vector<mojom::PageLoadTimingPtr>* complete_timings,
+      std::vector<mojom::CpuTimingPtr>* updated_cpu_timings,
       std::vector<ExtraRequestCompleteInfo>* loaded_resources,
       std::vector<GURL>* observed_committed_urls,
       std::vector<GURL>* observed_aborted_urls,
@@ -65,6 +67,7 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
       : updated_timings_(updated_timings),
         updated_subframe_timings_(updated_subframe_timings),
         complete_timings_(complete_timings),
+        updated_cpu_timings_(updated_cpu_timings),
         loaded_resources_(loaded_resources),
         observed_features_(observed_features),
         observed_committed_urls_(observed_committed_urls),
@@ -88,6 +91,11 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
     }
   }
 
+  void OnCpuTimingUpdate(content::RenderFrameHost* subframe_rfh,
+                         const mojom::CpuTiming& timing) override {
+    updated_cpu_timings_->push_back(timing.Clone());
+  }
+
   void OnComplete(const mojom::PageLoadTiming& timing,
                   const PageLoadExtraInfo& extra_info) override {
     complete_timings_->push_back(timing.Clone());
@@ -104,7 +112,8 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
     loaded_resources_->emplace_back(extra_request_complete_info);
   }
 
-  void OnFeaturesUsageObserved(const mojom::PageLoadFeatures& features,
+  void OnFeaturesUsageObserved(content::RenderFrameHost* rfh,
+                               const mojom::PageLoadFeatures& features,
                                const PageLoadExtraInfo& extra_info) override {
     observed_features_->push_back(features);
   }
@@ -118,6 +127,7 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
   std::vector<mojom::PageLoadTimingPtr>* const updated_timings_;
   std::vector<mojom::PageLoadTimingPtr>* const updated_subframe_timings_;
   std::vector<mojom::PageLoadTimingPtr>* const complete_timings_;
+  std::vector<mojom::CpuTimingPtr>* const updated_cpu_timings_;
   std::vector<ExtraRequestCompleteInfo>* const loaded_resources_;
   std::vector<mojom::PageLoadFeatures>* const observed_features_;
   std::vector<GURL>* const observed_committed_urls_;
@@ -167,8 +177,8 @@ class TestPageLoadMetricsEmbedderInterface
   void RegisterObservers(PageLoadTracker* tracker) override {
     tracker->AddObserver(std::make_unique<TestPageLoadMetricsObserver>(
         &updated_timings_, &updated_subframe_timings_, &complete_timings_,
-        &loaded_resources_, &observed_committed_urls_, &observed_aborted_urls_,
-        &observed_features_));
+        &updated_cpu_timings_, &loaded_resources_, &observed_committed_urls_,
+        &observed_aborted_urls_, &observed_features_));
     tracker->AddObserver(std::make_unique<FilteringPageLoadMetricsObserver>(
         &completed_filtered_urls_));
   }
@@ -182,6 +192,9 @@ class TestPageLoadMetricsEmbedderInterface
   }
   const std::vector<mojom::PageLoadTimingPtr>& complete_timings() const {
     return complete_timings_;
+  }
+  const std::vector<mojom::CpuTimingPtr>& updated_cpu_timings() const {
+    return updated_cpu_timings_;
   }
   const std::vector<mojom::PageLoadTimingPtr>& updated_subframe_timings()
       const {
@@ -214,6 +227,7 @@ class TestPageLoadMetricsEmbedderInterface
   std::vector<mojom::PageLoadTimingPtr> updated_timings_;
   std::vector<mojom::PageLoadTimingPtr> updated_subframe_timings_;
   std::vector<mojom::PageLoadTimingPtr> complete_timings_;
+  std::vector<mojom::CpuTimingPtr> updated_cpu_timings_;
   std::vector<GURL> observed_committed_urls_;
   std::vector<GURL> observed_aborted_urls_;
   std::vector<ExtraRequestCompleteInfo> loaded_resources_;
@@ -234,7 +248,11 @@ void PopulatePageLoadTiming(mojom::PageLoadTiming* timing) {
 
 class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
  public:
-  MetricsWebContentsObserverTest() : num_errors_(0) {}
+  MetricsWebContentsObserverTest() : num_errors_(0) {
+    mojom::PageLoadTiming timing;
+    PopulatePageLoadTiming(&timing);
+    previous_timing_ = timing.Clone();
+  }
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -256,6 +274,17 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
     SimulateTimingUpdate(timing, web_contents()->GetMainFrame());
   }
 
+  void SimulateCpuTimingUpdate(const mojom::CpuTiming& timing,
+                               content::RenderFrameHost* render_frame_host) {
+    observer()->OnTimingUpdated(
+        render_frame_host, previous_timing_->Clone(),
+        mojom::PageLoadMetadataPtr(base::in_place),
+        mojom::PageLoadFeaturesPtr(base::in_place),
+        std::vector<mojom::ResourceDataUpdatePtr>(),
+        mojom::FrameRenderDataUpdatePtr(base::in_place), timing.Clone(),
+        mojom::DeferredResourceCountsPtr(base::in_place));
+  }
+
   void SimulateTimingUpdate(const mojom::PageLoadTiming& timing,
                             content::RenderFrameHost* render_frame_host) {
     SimulateTimingUpdateWithoutFiringDispatchTimer(timing, render_frame_host);
@@ -270,11 +299,15 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
   void SimulateTimingUpdateWithoutFiringDispatchTimer(
       const mojom::PageLoadTiming& timing,
       content::RenderFrameHost* render_frame_host) {
-    observer()->OnTimingUpdated(render_frame_host, timing.Clone(),
-                                mojom::PageLoadMetadataPtr(base::in_place),
-                                mojom::PageLoadFeaturesPtr(base::in_place),
-                                std::vector<mojom::ResourceDataUpdatePtr>(),
-                                mojom::PageRenderDataPtr(base::in_place));
+    previous_timing_ = timing.Clone();
+    observer()->OnTimingUpdated(
+        render_frame_host, timing.Clone(),
+        mojom::PageLoadMetadataPtr(base::in_place),
+        mojom::PageLoadFeaturesPtr(base::in_place),
+        std::vector<mojom::ResourceDataUpdatePtr>(),
+        mojom::FrameRenderDataUpdatePtr(base::in_place),
+        mojom::CpuTimingPtr(base::in_place),
+        mojom::DeferredResourceCountsPtr(base::in_place));
   }
 
   void AttachObserver() {
@@ -312,6 +345,9 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
   const std::vector<mojom::PageLoadTimingPtr>& updated_timings() const {
     return embedder_interface_->updated_timings();
   }
+  const std::vector<mojom::CpuTimingPtr>& updated_cpu_timings() const {
+    return embedder_interface_->updated_cpu_timings();
+  }
   const std::vector<mojom::PageLoadTimingPtr>& complete_timings() const {
     return embedder_interface_->complete_timings();
   }
@@ -321,6 +357,7 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
   }
   int CountCompleteTimingReported() { return complete_timings().size(); }
   int CountUpdatedTimingReported() { return updated_timings().size(); }
+  int CountUpdatedCpuTimingReported() { return updated_cpu_timings().size(); }
   int CountUpdatedSubFrameTimingReported() {
     return updated_subframe_timings().size();
   }
@@ -355,6 +392,11 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 
  private:
   int num_errors_;
+  // Since we have two types of updates, both CpuTiming and PageLoadTiming, and
+  // these feed into a singular OnTimingUpdated, we need to pass in an unchanged
+  // PageLoadTiming structure to this function, so we need to keep track of the
+  // previous structure that was passed when updating the PageLoadTiming.
+  mojom::PageLoadTimingPtr previous_timing_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserverTest);
 };
@@ -1434,6 +1476,11 @@ TEST_F(MetricsWebContentsObserverTest, DispatchDelayedMetricsOnPageClose) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdateWithoutFiringDispatchTimer(timing, main_rfh());
 
+  // Throw in a cpu timing update, shouldn't affect the page timing results.
+  mojom::CpuTiming cpu_timing;
+  cpu_timing.task_time = base::TimeDelta::FromMilliseconds(1000);
+  SimulateCpuTimingUpdate(cpu_timing, main_rfh());
+
   EXPECT_TRUE(GetMostRecentTimer()->IsRunning());
   ASSERT_EQ(0, CountUpdatedTimingReported());
   ASSERT_EQ(0, CountCompleteTimingReported());
@@ -1443,9 +1490,33 @@ TEST_F(MetricsWebContentsObserverTest, DispatchDelayedMetricsOnPageClose) {
   NavigateToUntrackedUrl();
 
   ASSERT_EQ(1, CountUpdatedTimingReported());
+  ASSERT_EQ(1, CountUpdatedCpuTimingReported());
   ASSERT_EQ(1, CountCompleteTimingReported());
   EXPECT_TRUE(timing.Equals(*updated_timings().back()));
   EXPECT_TRUE(timing.Equals(*complete_timings().back()));
+  EXPECT_TRUE(cpu_timing.Equals(*updated_cpu_timings().back()));
+
+  CheckNoErrorEvents();
+}
+
+// Make sure the dispatch of CPU occurs immediately.
+TEST_F(MetricsWebContentsObserverTest, DispatchCpuMetricsImmediately) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  mojom::CpuTiming timing;
+  timing.task_time = base::TimeDelta::FromMilliseconds(1000);
+  SimulateCpuTimingUpdate(timing, main_rfh());
+  ASSERT_EQ(1, CountUpdatedCpuTimingReported());
+  EXPECT_TRUE(timing.Equals(*updated_cpu_timings().back()));
+
+  // Navigate to a new page. This should force dispatch of the buffered timing
+  // update.
+  NavigateToUntrackedUrl();
+
+  ASSERT_EQ(1, CountUpdatedCpuTimingReported());
+  EXPECT_TRUE(timing.Equals(*updated_cpu_timings().back()));
 
   CheckNoErrorEvents();
 }
@@ -1466,7 +1537,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_MainFrame) {
   const auto request_id = navigation_simulator->GetGlobalRequestID();
 
   observer()->OnRequestComplete(
-      main_resource_url, net::HostPortPair(), frame_tree_node_id, request_id,
+      main_resource_url, net::IPEndPoint(), frame_tree_node_id, request_id,
       web_contents()->GetMainFrame(),
       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, false, nullptr, 0, 0,
       base::TimeTicks::Now(), net::OK, nullptr);
@@ -1478,7 +1549,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_MainFrame) {
   // Deliver a second main frame resource. This one should be ignored, since the
   // specified |request_id| is no longer associated with any tracked page loads.
   observer()->OnRequestComplete(
-      main_resource_url, net::HostPortPair(), frame_tree_node_id, request_id,
+      main_resource_url, net::IPEndPoint(), frame_tree_node_id, request_id,
       web_contents()->GetMainFrame(),
       content::ResourceType::RESOURCE_TYPE_MAIN_FRAME, false, nullptr, 0, 0,
       base::TimeTicks::Now(), net::OK, nullptr);
@@ -1492,7 +1563,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_Subresource) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   GURL loaded_resource_url("http://www.other.com/");
   observer()->OnRequestComplete(
-      loaded_resource_url, net::HostPortPair(),
+      loaded_resource_url, net::IPEndPoint(),
       web_contents()->GetMainFrame()->GetFrameTreeNodeId(),
       content::GlobalRequestID(), web_contents()->GetMainFrame(),
       content::RESOURCE_TYPE_SCRIPT, false, nullptr, 0, 0,
@@ -1518,7 +1589,7 @@ TEST_F(MetricsWebContentsObserverTest,
       content::WebContentsTester::CreateTestWebContents(browser_context(),
                                                         nullptr));
   observer()->OnRequestComplete(
-      GURL("http://www.other.com/"), net::HostPortPair(),
+      GURL("http://www.other.com/"), net::IPEndPoint(),
       other_web_contents->GetMainFrame()->GetFrameTreeNodeId(),
       content::GlobalRequestID(), other_web_contents->GetMainFrame(),
       content::RESOURCE_TYPE_SCRIPT, false, nullptr, 0, 0,
@@ -1534,7 +1605,7 @@ TEST_F(MetricsWebContentsObserverTest,
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   GURL loaded_resource_url("data:text/html,Hello world");
   observer()->OnRequestComplete(
-      loaded_resource_url, net::HostPortPair(),
+      loaded_resource_url, net::IPEndPoint(),
       web_contents()->GetMainFrame()->GetFrameTreeNodeId(),
       content::GlobalRequestID(), web_contents()->GetMainFrame(),
       content::RESOURCE_TYPE_SCRIPT, false, nullptr, 0, 0,

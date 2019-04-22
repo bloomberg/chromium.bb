@@ -35,6 +35,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -50,6 +51,29 @@ public class UrlBar extends AutocompleteEditText {
 
     private static final boolean DEBUG = false;
 
+    private static final CachedMetrics.ActionEvent ACTION_LONG_PRESS_COPY =
+            new CachedMetrics.ActionEvent("Omnibox.LongPress.Copy");
+    private static final CachedMetrics.ActionEvent ACTION_LONG_PRESS_CUT =
+            new CachedMetrics.ActionEvent("Omnibox.LongPress.Cut");
+    private static final CachedMetrics.ActionEvent ACTION_LONG_PRESS_SHARE =
+            new CachedMetrics.ActionEvent("Omnibox.LongPress.Share");
+
+    private static final CachedMetrics.TimesHistogramSample TIME_UNTIL_COPY =
+            new CachedMetrics.TimesHistogramSample("Omnibox.TimeUntilFirst.Copy");
+    private static final CachedMetrics.TimesHistogramSample TIME_UNTIL_CUT =
+            new CachedMetrics.TimesHistogramSample("Omnibox.TimeUntilFirst.Cut");
+    private static final CachedMetrics.TimesHistogramSample TIME_UNTIL_SHARE =
+            new CachedMetrics.TimesHistogramSample("Omnibox.TimeUntilFirst.Share");
+
+    @IntDef({OmniboxAction.CUT, OmniboxAction.COPY, OmniboxAction.SHARE})
+    @Retention(RetentionPolicy.SOURCE)
+    /** Actions that can be taken from the omnibox. */
+    public @interface OmniboxAction {
+        int CUT = 0;
+        int COPY = 1;
+        int SHARE = 2;
+    }
+
     // TODO(tedchoc): Replace with EditorInfoCompat#IME_FLAG_NO_PERSONALIZED_LEARNING or
     //                EditorInfo#IME_FLAG_NO_PERSONALIZED_LEARNING as soon as either is available in
     //                all build config types.
@@ -59,6 +83,12 @@ public class UrlBar extends AutocompleteEditText {
     // of what is displayed to the user, see limitDisplayableLength().
     private static final int MAX_DISPLAYABLE_LENGTH = 4000;
     private static final int MAX_DISPLAYABLE_LENGTH_LOW_END = 1000;
+
+    /** The last time that the omnibox was focused. */
+    private long mLastOmniboxFocusTime;
+
+    /** Whether a timing event should be recorded. This will be true once per omnibox focus. */
+    private boolean mShouldRecordTimingEvent;
 
     private boolean mFirstDrawComplete;
 
@@ -256,6 +286,30 @@ public class UrlBar extends AutocompleteEditText {
     }
 
     /**
+     * Record than an action occurred in the omnibox.
+     * @param actionTaken The action taken that triggered the recording.
+     * @param lastOmniboxFocusTime The time that the last omnibox focus event occurred.
+     */
+    public static void recordTimedActionForMetrics(
+            @OmniboxAction int actionTaken, long lastOmniboxFocusTime) {
+        final long finalTime = System.currentTimeMillis() - lastOmniboxFocusTime;
+        assert finalTime >= 0;
+        switch (actionTaken) {
+            case OmniboxAction.COPY:
+                TIME_UNTIL_COPY.record(finalTime);
+                break;
+            case OmniboxAction.CUT:
+                TIME_UNTIL_CUT.record(finalTime);
+                break;
+            case OmniboxAction.SHARE:
+                TIME_UNTIL_SHARE.record(finalTime);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
      * Initialize the delegate that allows interaction with the Window.
      */
     public void setWindowDelegate(WindowDelegate windowDelegate) {
@@ -296,7 +350,9 @@ public class UrlBar extends AutocompleteEditText {
 
         if (focused) {
             mPendingScroll = false;
+            mLastOmniboxFocusTime = System.currentTimeMillis();
         }
+        mShouldRecordTimingEvent = focused;
 
         fixupTextDirection();
     }
@@ -323,12 +379,12 @@ public class UrlBar extends AutocompleteEditText {
         // insertion point when an RTL user enters RTL text). Also render text normally when the
         // text field is empty (because then it displays an instruction that is not a URL).
         if (mFocused || length() == 0 || !mUrlBarDelegate.shouldForceLTR()) {
-            ApiCompatibilityUtils.setTextDirection(this, TEXT_DIRECTION_INHERIT);
+            setTextDirection(TEXT_DIRECTION_INHERIT);
         } else {
-            ApiCompatibilityUtils.setTextDirection(this, TEXT_DIRECTION_LTR);
+            setTextDirection(TEXT_DIRECTION_LTR);
         }
         // Always align to the same as the paragraph direction (LTR = left, RTL = right).
-        ApiCompatibilityUtils.setTextAlignment(this, TEXT_ALIGNMENT_TEXT_START);
+        setTextAlignment(TEXT_ALIGNMENT_TEXT_START);
     }
 
     @Override
@@ -564,6 +620,17 @@ public class UrlBar extends AutocompleteEditText {
 
         if ((id == android.R.id.cut || id == android.R.id.copy)
                 && !mUrlBarDelegate.shouldCutCopyVerbatim()) {
+            if (id == android.R.id.cut) {
+                ACTION_LONG_PRESS_CUT.record();
+            } else {
+                ACTION_LONG_PRESS_COPY.record();
+            }
+            if (mShouldRecordTimingEvent) {
+                recordTimedActionForMetrics(
+                        id == android.R.id.copy ? OmniboxAction.COPY : OmniboxAction.CUT,
+                        mLastOmniboxFocusTime);
+                mShouldRecordTimingEvent = false;
+            }
             String currentText = getText().toString();
             String replacementCutCopyText = mTextContextMenuDelegate.getReplacementCutCopyText(
                     currentText, getSelectionStart(), getSelectionEnd());
@@ -587,6 +654,14 @@ public class UrlBar extends AutocompleteEditText {
             }
 
             return retVal;
+        }
+
+        if (id == android.R.id.shareText) {
+            ACTION_LONG_PRESS_SHARE.record();
+            if (mShouldRecordTimingEvent) {
+                recordTimedActionForMetrics(OmniboxAction.SHARE, mLastOmniboxFocusTime);
+                mShouldRecordTimingEvent = false;
+            }
         }
 
         return super.onTextContextMenuItem(id);
@@ -642,7 +717,7 @@ public class UrlBar extends AutocompleteEditText {
         setSelection(0);
 
         float currentTextSize = getTextSize();
-        boolean currentIsRtl = ApiCompatibilityUtils.isLayoutRtl(this);
+        boolean currentIsRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
 
         int measuredWidth = getMeasuredWidth() - (getPaddingLeft() + getPaddingRight());
         if (scrollType == mPreviousScrollType && TextUtils.equals(text, mPreviousScrollText)
@@ -682,7 +757,7 @@ public class UrlBar extends AutocompleteEditText {
         Editable text = getText();
         float scrollPos = 0f;
         if (TextUtils.isEmpty(text)) {
-            if (ApiCompatibilityUtils.isLayoutRtl(this)
+            if (getLayoutDirection() == LAYOUT_DIRECTION_RTL
                     && BidiFormatter.getInstance().isRtl(getHint())) {
                 // Compared to below that uses getPrimaryHorizontal(1) due to 0 returning an
                 // invalid value, if the text is empty, getPrimaryHorizontal(0) returns the actual

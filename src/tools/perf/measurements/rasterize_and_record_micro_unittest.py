@@ -40,68 +40,68 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
 
     rasterize_time = results.FindAllPageSpecificValuesNamed('rasterize_time')
     self.assertEquals(len(rasterize_time), 1)
-    self.assertGreater(rasterize_time[0].GetRepresentativeNumber(), 0)
+    self.assertGreater(rasterize_time[0].value, 0)
 
     record_time = results.FindAllPageSpecificValuesNamed('record_time')
     self.assertEquals(len(record_time), 1)
-    self.assertGreater(record_time[0].GetRepresentativeNumber(), 0)
+    self.assertGreater(record_time[0].value, 0)
 
     rasterized_pixels = results.FindAllPageSpecificValuesNamed(
         'pixels_rasterized')
     self.assertEquals(len(rasterized_pixels), 1)
-    self.assertGreater(rasterized_pixels[0].GetRepresentativeNumber(), 0)
+    self.assertGreater(rasterized_pixels[0].value, 0)
 
     recorded_pixels = results.FindAllPageSpecificValuesNamed('pixels_recorded')
     self.assertEquals(len(recorded_pixels), 1)
-    self.assertGreater(recorded_pixels[0].GetRepresentativeNumber(), 0)
+    self.assertGreater(recorded_pixels[0].value, 0)
 
     pixels_rasterized_with_non_solid_color = \
         results.FindAllPageSpecificValuesNamed(
             'pixels_rasterized_with_non_solid_color')
     self.assertEquals(len(pixels_rasterized_with_non_solid_color), 1)
     self.assertGreater(
-        pixels_rasterized_with_non_solid_color[0].GetRepresentativeNumber(), 0)
+        pixels_rasterized_with_non_solid_color[0].value, 0)
 
     pixels_rasterized_as_opaque = \
         results.FindAllPageSpecificValuesNamed('pixels_rasterized_as_opaque')
     self.assertEquals(len(pixels_rasterized_as_opaque), 1)
     self.assertGreater(
-        pixels_rasterized_as_opaque[0].GetRepresentativeNumber(), 0)
+        pixels_rasterized_as_opaque[0].value, 0)
 
     total_layers = results.FindAllPageSpecificValuesNamed('total_layers')
     self.assertEquals(len(total_layers), 1)
-    self.assertGreater(total_layers[0].GetRepresentativeNumber(), 0)
+    self.assertGreater(total_layers[0].value, 0)
 
     total_picture_layers = \
         results.FindAllPageSpecificValuesNamed('total_picture_layers')
     self.assertEquals(len(total_picture_layers), 1)
-    self.assertGreater(total_picture_layers[0].GetRepresentativeNumber(), 0)
+    self.assertGreater(total_picture_layers[0].value, 0)
 
     total_picture_layers_with_no_content = \
         results.FindAllPageSpecificValuesNamed(
             'total_picture_layers_with_no_content')
     self.assertEquals(len(total_picture_layers_with_no_content), 1)
     self.assertGreater(
-        total_picture_layers_with_no_content[0].GetRepresentativeNumber(), 0)
+        total_picture_layers_with_no_content[0].value, 0)
 
     total_picture_layers_off_screen = \
         results.FindAllPageSpecificValuesNamed(
             'total_picture_layers_off_screen')
     self.assertEquals(len(total_picture_layers_off_screen), 1)
     self.assertEqual(
-        total_picture_layers_off_screen[0].GetRepresentativeNumber(), 0)
+        total_picture_layers_off_screen[0].value, 0)
 
     painter_memory_usage = results.FindAllPageSpecificValuesNamed(
         'painter_memory_usage')
     self.assertEquals(len(painter_memory_usage), 1)
-    self.assertGreater(painter_memory_usage[0].GetRepresentativeNumber(), 0)
+    self.assertGreater(painter_memory_usage[0].value, 0)
 
     paint_op_memory_usage = results.FindAllPageSpecificValuesNamed(
         'paint_op_memory_usage')
     self.assertEquals(len(paint_op_memory_usage), 1)
-    self.assertGreater(paint_op_memory_usage[0].GetRepresentativeNumber(), 0)
+    self.assertGreater(paint_op_memory_usage[0].value, 0)
 
     paint_op_count = results.FindAllPageSpecificValuesNamed(
         'paint_op_count')
     self.assertEquals(len(paint_op_count), 1)
-    self.assertGreater(paint_op_count[0].GetRepresentativeNumber(), 0)
+    self.assertGreater(paint_op_count[0].value, 0)

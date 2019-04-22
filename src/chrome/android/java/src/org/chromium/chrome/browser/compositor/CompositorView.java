@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.compositor;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.graphics.Color;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -29,6 +31,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.AndroidResourceType;
@@ -44,7 +47,6 @@ import java.util.List;
 public class CompositorView
         extends FrameLayout implements CompositorSurfaceManager.SurfaceManagerCallbackTarget {
     private static final String TAG = "CompositorView";
-    private static final long NANOSECONDS_PER_MILLISECOND = 1000000;
 
     // Cache objects that should not be created every frame
     private final Rect mCacheAppRect = new Rect();
@@ -75,6 +77,34 @@ public class CompositorView
     private boolean mPreloadedResources;
     private List<Runnable> mDrawingFinishedCallbacks;
 
+    private boolean mIsInVr;
+
+    // On P and above, toggling the screen off gets us in a state where the Surface is destroyed but
+    // it is never recreated when it is turned on again. This is the only workaround that seems to
+    // be working, see crbug.com/931195.
+    class ScreenStateReceiverWorkaround extends BroadcastReceiver {
+        ScreenStateReceiverWorkaround() {
+            IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
+            getContext().getApplicationContext().registerReceiver(this, filter);
+        }
+
+        void shutDown() {
+            getContext().getApplicationContext().unregisterReceiver(this);
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)
+                    && mCompositorSurfaceManager != null && !mIsInVr
+                    && mNativeCompositorView != 0) {
+                mCompositorSurfaceManager.shutDown();
+                createCompositorSurfaceManager();
+            }
+        }
+    }
+
+    private ScreenStateReceiverWorkaround mScreenStateReceiver;
+
     /**
      * Creates a {@link CompositorView}. This can be called only after the native library is
      * properly loaded.
@@ -101,11 +131,14 @@ public class CompositorView
         }
 
         mCompositorSurfaceManager = new CompositorSurfaceManagerImpl(this, this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            mScreenStateReceiver = new ScreenStateReceiverWorkaround();
+        }
 
         // Cover the black surface before it has valid content.  Set this placeholder view to
         // visible, but don't yet make SurfaceView visible, in order to delay
         // surfaceCreate/surfaceChanged calls until the native library is loaded.
-        setBackgroundColor(Color.WHITE);
+        setBackgroundColor(ColorUtils.getPrimaryBackgroundColor(getResources(), false));
         super.setVisibility(View.VISIBLE);
 
         // Request the opaque surface.  We might need the translucent one, but
@@ -184,6 +217,7 @@ public class CompositorView
      */
     public void shutDown() {
         mCompositorSurfaceManager.shutDown();
+        if (mScreenStateReceiver != null) mScreenStateReceiver.shutDown();
         if (mNativeCompositorView != 0) nativeDestroy(mNativeCompositorView);
         mNativeCompositorView = 0;
     }
@@ -356,6 +390,12 @@ public class CompositorView
         }
     }
 
+    @CalledByNative
+    private void notifyWillUseSurfaceControl() {
+        mAlwaysTranslucent = true;
+        mCompositorSurfaceManager.requestSurface(getSurfacePixelFormat());
+    }
+
     /**
      * Converts the layout into compositor layers. This is to be called on every frame the layout
      * is changing.
@@ -439,6 +479,8 @@ public class CompositorView
      */
     public void replaceSurfaceManagerForVr(
             CompositorSurfaceManager vrCompositorSurfaceManager, WindowAndroid window) {
+        mIsInVr = true;
+
         mCompositorSurfaceManager.shutDown();
         nativeSetCompositorWindow(mNativeCompositorView, window);
         mCompositorSurfaceManager = vrCompositorSurfaceManager;
@@ -454,10 +496,16 @@ public class CompositorView
      * @param windowToRestore The non-VR WindowAndroid to restore.
      */
     public void onExitVr(WindowAndroid windowToRestore) {
+        mIsInVr = false;
+
         if (mNativeCompositorView == 0) return;
         setWindowAndroid(windowToRestore);
         mCompositorSurfaceManager.shutDown();
         nativeSetCompositorWindow(mNativeCompositorView, mWindowAndroid);
+        createCompositorSurfaceManager();
+    }
+
+    private void createCompositorSurfaceManager() {
         mCompositorSurfaceManager = new CompositorSurfaceManagerImpl(this, this);
         mCompositorSurfaceManager.requestSurface(getSurfacePixelFormat());
         nativeSetNeedsComposite(mNativeCompositorView);

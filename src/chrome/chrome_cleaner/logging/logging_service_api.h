@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/chrome_cleaner/logging/utils.h"
+#include "chrome/chrome_cleaner/os/disk_util_types.h"
 #include "chrome/chrome_cleaner/os/process.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 #include "chrome/chrome_cleaner/settings/settings_types.h"
@@ -161,14 +162,31 @@ class LoggingServiceAPI {
                                        const base::string16& bypass) = 0;
 
   // Add an installed extension to the system report.
-  virtual void AddInstalledExtension(const base::string16& extension_id,
-                                     ExtensionInstallMethod install_method) = 0;
+  virtual void AddInstalledExtension(
+      const base::string16& extension_id,
+      ExtensionInstallMethod install_method,
+      const std::vector<internal::FileInformation>& extension_files) = 0;
 
   // Add a scheduled task to the system report.
   virtual void AddScheduledTask(
       const base::string16& name,
       const base::string16& description,
       const std::vector<internal::FileInformation>& actions) = 0;
+
+  // Add a ShortcutData to the system report.
+  virtual void AddShortcutData(
+      const base::string16& lnk_path,
+      const base::string16& executable_path,
+      const std::string& executable_hash,
+      const std::vector<base::string16>& command_line_arguments) = 0;
+
+  // Set |found_modified_shortcuts| in the |reporter_logs|.
+  virtual void SetFoundModifiedChromeShortcuts(
+      bool found_modified_shortcuts) = 0;
+
+  // Set |scanned_locations| in the reporter log.
+  virtual void SetScannedLocations(
+      const std::vector<UwS::TraceLocation>& scanned_locations) = 0;
 
   // Log resource usage of a Chrome Cleanup process identified by
   // |process_type|.

@@ -42,6 +42,9 @@ namespace {
 base::LazyInstance<ui::GestureRecognizerImplMac>::Leaky
     g_gesture_recognizer_instance = LAZY_INSTANCE_INITIALIZER;
 
+static base::RepeatingCallback<void(NativeWidgetMac*)>*
+    g_init_native_widget_callback = nullptr;
+
 NSInteger StyleMaskForParams(const Widget::InitParams& params) {
   // If the Widget is modal, it will be displayed as a sheet. This works best if
   // it has NSTitledWindowMask. For example, with NSBorderlessWindowMask, the
@@ -96,10 +99,8 @@ void NativeWidgetMac::WindowDestroyed() {
     delete this;
 }
 
-int NativeWidgetMac::SheetPositionY() {
-  NSView* view = GetNativeView().GetNativeNSView();
-  return
-      [view convertPoint:NSMakePoint(0, NSHeight([view frame])) toView:nil].y;
+int32_t NativeWidgetMac::SheetOffsetY() {
+  return 0;
 }
 
 void NativeWidgetMac::GetWindowFrameTitlebarHeight(
@@ -107,6 +108,15 @@ void NativeWidgetMac::GetWindowFrameTitlebarHeight(
     float* titlebar_height) {
   *override_titlebar_height = false;
   *titlebar_height = 0;
+}
+
+bool NativeWidgetMac::ExecuteCommand(
+    int32_t command,
+    WindowOpenDisposition window_open_disposition,
+    bool is_before_first_responder) {
+  // This is supported only by subclasses in chrome/browser/ui.
+  NOTIMPLEMENTED();
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -142,13 +152,14 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   }
   bridge_host_->SetParent(parent_host);
   bridge_host_->InitWindow(params);
+  OnWindowInitialized();
 
   // Only set always-on-top here if it is true since setting it may affect how
   // the window is treated by Expose.
   if (params.keep_on_top)
     SetAlwaysOnTop(true);
 
-  delegate_->OnNativeWidgetCreated(true);
+  delegate_->OnNativeWidgetCreated();
 
   DCHECK(GetWidget()->GetRootView());
   bridge_host_->SetRootView(GetWidget()->GetRootView());
@@ -160,6 +171,9 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   }
 
   bridge_host_->CreateCompositor(params);
+
+  if (g_init_native_widget_callback)
+    g_init_native_widget_callback->Run(this);
 }
 
 void NativeWidgetMac::OnWidgetInitDone() {
@@ -354,13 +368,36 @@ void NativeWidgetMac::SetSize(const gfx::Size& size) {
 }
 
 void NativeWidgetMac::StackAbove(gfx::NativeView native_view) {
-  NSInteger view_parent = native_view.GetNativeNSView().window.windowNumber;
-  [GetNativeWindow().GetNativeNSWindow() orderWindow:NSWindowAbove
-                                          relativeTo:view_parent];
+  if (!bridge())
+    return;
+
+  auto* sibling_host =
+      BridgedNativeWidgetHostImpl::GetFromNativeView(native_view);
+
+  if (!sibling_host) {
+    // This will only work if |this| is in-process.
+    DCHECK(!bridge_host_->bridge_factory_host());
+    NSInteger view_parent = native_view.GetNativeNSView().window.windowNumber;
+    [GetNativeWindow().GetNativeNSWindow() orderWindow:NSWindowAbove
+                                            relativeTo:view_parent];
+    return;
+  }
+
+  if (bridge_host_->bridge_factory_host() ==
+      sibling_host->bridge_factory_host()) {
+    // Check if |native_view|'s BridgedNativeWidgetHostImpl corresponds to the
+    // same process as |this|.
+    bridge()->StackAbove(sibling_host->bridged_native_widget_id());
+    return;
+  }
+
+  NOTREACHED() << "|native_view|'s BridgedNativeWidgetHostImpl isn't same "
+                  "process |this|";
 }
 
 void NativeWidgetMac::StackAtTop() {
-  NOTIMPLEMENTED();
+  if (bridge())
+    bridge()->StackAtTop();
 }
 
 void NativeWidgetMac::SetShape(std::unique_ptr<Widget::ShapeRects> shape) {
@@ -373,9 +410,9 @@ void NativeWidgetMac::Close() {
 }
 
 void NativeWidgetMac::CloseNow() {
-  if (bridge())
-    bridge()->CloseWindowNow();
-  // Note: |bridge_host_| will be deleted her, and |this| will be deleted here
+  if (bridge_host_)
+    bridge_host_->CloseWindowNow();
+  // Note: |bridge_host_| will be deleted here, and |this| will be deleted here
   // when ownership_ == NATIVE_WIDGET_OWNS_WIDGET,
 }
 
@@ -492,6 +529,14 @@ bool NativeWidgetMac::IsFullscreen() const {
   return bridge_host_ && bridge_host_->target_fullscreen_state();
 }
 
+void NativeWidgetMac::SetCanAppearInExistingFullscreenSpaces(
+    bool can_appear_in_existing_fullscreen_spaces) {
+  if (!bridge())
+    return;
+  bridge()->SetCanAppearInExistingFullscreenSpaces(
+      can_appear_in_existing_fullscreen_spaces);
+}
+
 void NativeWidgetMac::SetOpacity(float opacity) {
   if (!bridge())
     return;
@@ -531,9 +576,22 @@ void NativeWidgetMac::SchedulePaintInRect(const gfx::Rect& rect) {
     bridge_host_->layer()->SchedulePaint(rect);
 }
 
+void NativeWidgetMac::ScheduleLayout() {
+  ui::Compositor* compositor = GetCompositor();
+  if (compositor)
+    compositor->ScheduleDraw();
+}
+
 void NativeWidgetMac::SetCursor(gfx::NativeCursor cursor) {
   if (bridge_impl())
     bridge_impl()->SetCursor(cursor);
+}
+
+void NativeWidgetMac::ShowEmojiPanel() {
+  // We must plumb the call to ui::ShowEmojiPanel() over the bridge so that it
+  // is called from the correct process.
+  if (bridge())
+    bridge()->ShowEmojiPanel();
 }
 
 bool NativeWidgetMac::IsMouseEventsEnabled() const {
@@ -626,12 +684,23 @@ void NativeWidgetMac::OnSizeConstraintsChanged() {
                                widget->widget_delegate()->CanMaximize());
 }
 
-void NativeWidgetMac::RepostNativeEvent(gfx::NativeEvent native_event) {
-  NOTIMPLEMENTED();
-}
-
 std::string NativeWidgetMac::GetName() const {
   return name_;
+}
+
+// static
+void NativeWidgetMac::SetInitNativeWidgetCallback(
+    base::RepeatingCallback<void(NativeWidgetMac*)> callback) {
+  DCHECK(!g_init_native_widget_callback || callback.is_null());
+  if (callback.is_null()) {
+    if (g_init_native_widget_callback) {
+      delete g_init_native_widget_callback;
+      g_init_native_widget_callback = nullptr;
+    }
+    return;
+  }
+  g_init_native_widget_callback =
+      new base::RepeatingCallback<void(NativeWidgetMac*)>(std::move(callback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -644,22 +713,6 @@ NativeWidgetMacNSWindow* NativeWidgetMac::CreateNSWindow(
 
 BridgeFactoryHost* NativeWidgetMac::GetBridgeFactoryHost() {
   return nullptr;
-}
-
-bool NativeWidgetMac::RedispatchKeyEvent(NSEvent* event) {
-  // If the target window is in-process, then redispatch the event directly,
-  // and give an accurate return value.
-  if (bridge_impl())
-    return bridge_impl()->RedispatchKeyEvent(event);
-
-  // If the target window is out of process then always report the event as
-  // handled (because it should never be handled in this process).
-  bridge()->RedispatchKeyEvent(
-      [event type], [event modifierFlags], [event timestamp],
-      base::SysNSStringToUTF16([event characters]),
-      base::SysNSStringToUTF16([event charactersIgnoringModifiers]),
-      [event keyCode]);
-  return true;
 }
 
 views_bridge_mac::mojom::BridgedNativeWidget* NativeWidgetMac::bridge() const {

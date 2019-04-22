@@ -36,7 +36,7 @@ void PermissionsUpdaterDelegateChromeOS::InitializePermissions(
   api_permission_set.insert(APIPermission::kClipboardRead);
   *granted_permissions = PermissionSet::CreateDifference(
       **granted_permissions,
-      PermissionSet(api_permission_set, ManifestPermissionSet(),
+      PermissionSet(std::move(api_permission_set), ManifestPermissionSet(),
                     URLPatternSet(), URLPatternSet()));
 }
 

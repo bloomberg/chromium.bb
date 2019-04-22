@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace chromeos {
 
@@ -16,7 +16,7 @@ namespace chromeos {
 // authentication. This includes information about the public key of the
 // cryptographic key to be challenged, as well as the signature algorithms
 // supported for the challenge.
-class CHROMEOS_EXPORT ChallengeResponseKey {
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ChallengeResponseKey {
  public:
   // Cryptographic signature algorithm type for challenge requests.
   enum class SignatureAlgorithm {

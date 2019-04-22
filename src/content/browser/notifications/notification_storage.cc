@@ -4,9 +4,12 @@
 
 #include "content/browser/notifications/notification_storage.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "content/browser/notifications/notification_database_data_conversions.h"
+#include "content/browser/notifications/notification_database_conversions.h"
 
 namespace content {
 
@@ -44,13 +47,13 @@ NotificationStorage::~NotificationStorage() = default;
 
 void NotificationStorage::WriteNotificationData(
     const NotificationDatabaseData& data,
-    const PlatformNotificationContext::WriteResultCallback& callback) {
+    PlatformNotificationContext::WriteResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::string serialized_data;
   if (!SerializeNotificationDatabaseData(data, &serialized_data)) {
     DLOG(ERROR) << "Unable to serialize data for a notification belonging "
                 << "to: " << data.origin;
-    callback.Run(/* success= */ false, std::string());
+    std::move(callback).Run(/* success= */ false, std::string());
     return;
   }
 
@@ -58,18 +61,19 @@ void NotificationStorage::WriteNotificationData(
       data.service_worker_registration_id, data.origin,
       {{CreateDataKey(data.notification_id), std::move(serialized_data)}},
       base::BindOnce(&NotificationStorage::OnWriteComplete,
-                     weak_ptr_factory_.GetWeakPtr(), data, callback));
+                     weak_ptr_factory_.GetWeakPtr(), data,
+                     std::move(callback)));
 }
 
 void NotificationStorage::OnWriteComplete(
     const NotificationDatabaseData& data,
-    const PlatformNotificationContext::WriteResultCallback& callback,
+    PlatformNotificationContext::WriteResultCallback callback,
     blink::ServiceWorkerStatusCode status) {
   if (status == blink::ServiceWorkerStatusCode::kOk) {
-    callback.Run(/* success= */ true, data.notification_id);
+    std::move(callback).Run(/* success= */ true, data.notification_id);
   } else {
-    callback.Run(/* success= */ false,
-                 /* notification_id= */ std::string());
+    std::move(callback).Run(/* success= */ false,
+                            /* notification_id= */ std::string());
   }
 }
 
@@ -77,23 +81,24 @@ void NotificationStorage::ReadNotificationDataAndRecordInteraction(
     int64_t service_worker_registration_id,
     const std::string& notification_id,
     PlatformNotificationContext::Interaction interaction,
-    const PlatformNotificationContext::ReadResultCallback& callback) {
+    PlatformNotificationContext::ReadResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_worker_context_->GetRegistrationUserData(
       service_worker_registration_id, {CreateDataKey(notification_id)},
       base::BindOnce(&NotificationStorage::OnReadCompleteUpdateInteraction,
                      weak_ptr_factory_.GetWeakPtr(),
-                     service_worker_registration_id, interaction, callback));
+                     service_worker_registration_id, interaction,
+                     std::move(callback)));
 }
 
 void NotificationStorage::OnReadCompleteUpdateInteraction(
     int64_t service_worker_registration_id,
     PlatformNotificationContext::Interaction interaction,
-    const PlatformNotificationContext::ReadResultCallback& callback,
+    PlatformNotificationContext::ReadResultCallback callback,
     const std::vector<std::string>& database_data,
     blink::ServiceWorkerStatusCode status) {
   if (status != blink::ServiceWorkerStatusCode::kOk || database_data.empty()) {
-    callback.Run(/* success= */ false, NotificationDatabaseData());
+    std::move(callback).Run(/* success= */ false, NotificationDatabaseData());
     return;
   }
 
@@ -101,7 +106,7 @@ void NotificationStorage::OnReadCompleteUpdateInteraction(
   if (!DeserializeNotificationDatabaseData(database_data[0], data.get())) {
     DLOG(ERROR) << "Unable to deserialize data for a notification belonging "
                 << "to: " << data->origin;
-    callback.Run(/* success= */ false, NotificationDatabaseData());
+    std::move(callback).Run(/* success= */ false, NotificationDatabaseData());
     return;
   }
 
@@ -125,7 +130,7 @@ void NotificationStorage::OnReadCompleteUpdateInteraction(
   if (!SerializeNotificationDatabaseData(*data, &serialized_data)) {
     DLOG(ERROR) << "Unable to serialize data for a notification belonging "
                 << "to: " << data->origin;
-    callback.Run(/* success= */ false, NotificationDatabaseData());
+    std::move(callback).Run(/* success= */ false, NotificationDatabaseData());
     return;
   }
 
@@ -136,18 +141,18 @@ void NotificationStorage::OnReadCompleteUpdateInteraction(
       {{CreateDataKey(notification_id), std::move(serialized_data)}},
       base::BindOnce(&NotificationStorage::OnInteractionUpdateComplete,
                      weak_ptr_factory_.GetWeakPtr(), std::move(data),
-                     callback));
+                     std::move(callback)));
 }
 
 void NotificationStorage::OnInteractionUpdateComplete(
     std::unique_ptr<NotificationDatabaseData> data,
-    const PlatformNotificationContext::ReadResultCallback& callback,
+    PlatformNotificationContext::ReadResultCallback callback,
     blink::ServiceWorkerStatusCode status) {
   DCHECK(data);
   if (status == blink::ServiceWorkerStatusCode::kOk)
-    callback.Run(/* success= */ true, *data);
+    std::move(callback).Run(/* success= */ true, *data);
   else
-    callback.Run(/* success= */ false, NotificationDatabaseData());
+    std::move(callback).Run(/* success= */ false, NotificationDatabaseData());
 }
 
 }  // namespace content

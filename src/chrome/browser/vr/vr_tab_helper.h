@@ -21,11 +21,23 @@ class VrTabHelper : public content::WebContentsUserData<VrTabHelper> {
   // up on the WebContents.
   void SetIsInVr(bool is_in_vr);
 
+  bool is_content_displayed_in_headset() const {
+    return is_content_displayed_in_headset_;
+  }
+
+  void SetIsContentDisplayedInHeadset(bool state);
+
   static bool IsInVr(content::WebContents* contents);
+
+  static bool IsContentDisplayedInHeadset(content::WebContents* contents);
+  static void SetIsContentDisplayedInHeadset(content::WebContents* contents,
+                                             bool state);
 
   // If suppressed, this function will log a UMA stat.
   static bool IsUiSuppressedInVr(content::WebContents* contents,
                                  UiSuppressedElement element);
+
+  static void ExitVrPresentation();
 
  private:
   explicit VrTabHelper(content::WebContents* contents);
@@ -33,7 +45,23 @@ class VrTabHelper : public content::WebContentsUserData<VrTabHelper> {
   friend class content::WebContentsUserData<VrTabHelper>;
 
   content::WebContents* web_contents_;
+
+  // If is_in_vr_ is true, that means that the only content displayed is
+  // inside vr (for example, VR browsing or immersive experience
+  // on an Android phone with headset on).
+  // If is_content_displayed_in_headset_ is true, it means content is displayed
+  // both in VR and on the desktop (example: presenting WebXR
+  // content from a browser on Windows).
+  //
+  // If we have external monitors on Android, we'd want
+  // is_content_displayed_in_headset_ to be true there, and likewise
+  // is_in_vr_ could be true if content was only available in-headset on
+  // Windows.
+  // TODO(cassew): Rename below vars to more intuitive names.
   bool is_in_vr_ = false;
+  bool is_content_displayed_in_headset_ = false;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(VrTabHelper);
 };

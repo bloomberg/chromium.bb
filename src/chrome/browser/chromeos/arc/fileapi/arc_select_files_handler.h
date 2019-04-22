@@ -10,7 +10,9 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "components/arc/common/file_system.mojom.h"
+#include "content/public/browser/render_frame_host.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class Profile;
@@ -21,6 +23,14 @@ class BrowserContext;
 
 namespace arc {
 
+class SelectFileDialogHolder;
+
+// Exposed for testing.
+extern const char kScriptClickOk[];
+extern const char kScriptClickDirectory[];
+extern const char kScriptClickFile[];
+extern const char kScriptGetElements[];
+
 // Handler for FileSystemHost.SelectFiles.
 class ArcSelectFilesHandler : public ui::SelectFileDialog::Listener {
  public:
@@ -30,6 +40,13 @@ class ArcSelectFilesHandler : public ui::SelectFileDialog::Listener {
   void SelectFiles(const mojom::SelectFilesRequestPtr& request,
                    mojom::FileSystemHost::SelectFilesCallback callback);
 
+  void OnFileSelectorEvent(
+      mojom::FileSelectorEventPtr event,
+      mojom::FileSystemHost::OnFileSelectorEventCallback callback);
+
+  void GetFileSelectorElements(
+      mojom::FileSystemHost::GetFileSelectorElementsCallback callback);
+
   // ui::SelectFileDialog::Listener overrides:
   void FileSelected(const base::FilePath& path,
                     int index,
@@ -38,20 +55,41 @@ class ArcSelectFilesHandler : public ui::SelectFileDialog::Listener {
                           void* params) override;
   void FileSelectionCanceled(void* params) override;
 
-  void SetSelectFileDialogForTesting(ui::SelectFileDialog* dialog);
-
  private:
   friend class ArcSelectFilesHandlerTest;
 
   void FilesSelectedInternal(const std::vector<base::FilePath>& files,
                              void* params);
 
+  void SetDialogHolderForTesting(
+      std::unique_ptr<SelectFileDialogHolder> dialog_holder);
+
   Profile* const profile_;
 
   mojom::FileSystemHost::SelectFilesCallback callback_;
-  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
+  std::unique_ptr<SelectFileDialogHolder> dialog_holder_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSelectFilesHandler);
+};
+
+// Wrapper for SelectFileDialogExtension.
+// Since it is not easy to create a mock class for SelectFileDialogExtension,
+// this class is replaced with a mock class instead in unit tests.
+class SelectFileDialogHolder {
+ public:
+  explicit SelectFileDialogHolder(ui::SelectFileDialog::Listener* listener);
+  virtual ~SelectFileDialogHolder();
+
+  virtual void SelectFile(ui::SelectFileDialog::Type type,
+                          const base::FilePath& default_path,
+                          const ui::SelectFileDialog::FileTypeInfo* file_types);
+
+  virtual void ExecuteJavaScript(
+      const std::string& script,
+      content::RenderFrameHost::JavaScriptResultCallback callback);
+
+ private:
+  scoped_refptr<SelectFileDialogExtension> select_file_dialog_;
 };
 
 }  // namespace arc

@@ -11,10 +11,6 @@ Make sure you have followed
 build/android/gradle/generate_gradle.py --output-directory out/Debug
 ```
 
-```shell
-build/android/gradle/generate_gradle.py --output-directory out/Debug --sdk AndroidStudioDefault
-```
-
 The above commands create a project dir `gradle` under your output directory.
 Use `--project-dir <project-dir>` to change this.
 
@@ -25,14 +21,9 @@ To import the project:
 See [android_test_instructions.md](android_test_instructions.md#Using-Emulators)
 for more information about building and running emulators.
 
-If you're asked to use Studio's Android SDK:
-* No.
-    * Selecting No ensures that the SDK used by Android Studio is the same as
-      the one set by `generate_gradle.py`. If you want a different SDK pass
-      `--sdk` to `generate_gradle.py`.
+If you're asked to use Studio's Android SDK: No.
 
-If you're asked to use Studio's Gradle wrapper:
-* Yes.
+If you're asked to use Studio's Gradle wrapper: Yes.
 
 You need to re-run `generate_gradle.py` whenever `BUILD.gn` files change.
 
@@ -89,11 +80,15 @@ in order to try it out. The target must be the full path and name of a valid gn
 target (no shorthands). This will require you to install `cmake` and `ndk` when
 prompted. Accept Android Studio's prompts for these SDK packages.
 
+You need to disable a new gradle option in order to edit native files:
+File -&gt; Settings -&gt; Experimental
+-&gt; Gradle and uncheck "Only resolve selected variants".
+
 This is not necessary, but to avoid "This file is not part of the project...",
 you can either add an extra `--native-target` flag or simply copy and paste the
 absolute path to that file into the CMakeLists.txt file alongside the existing
-file paths. Note that these changes will be overwritten on your next invocation
-of `generate_gradle.py`.
+file paths. Note that changes to CMakeLists.txt will be overwritten on your next
+invocation of `generate_gradle.py`.
 
 Example:
 

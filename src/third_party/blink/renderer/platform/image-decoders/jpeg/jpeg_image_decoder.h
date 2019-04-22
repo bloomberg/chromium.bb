@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_JPEG_JPEG_IMAGE_DECODER_H_
 
 #include <memory>
+
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 
 namespace blink {
@@ -34,8 +35,6 @@ namespace blink {
 class JPEGImageReader;
 
 class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
-  WTF_MAKE_NONCOPYABLE(JPEGImageDecoder);
-
  public:
   JPEGImageDecoder(AlphaOption, const ColorBehavior&, size_t max_decoded_bytes);
   ~JPEGImageDecoder() override;
@@ -48,7 +47,7 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   IntSize DecodedYUVSize(int component) const override;
   size_t DecodedYUVWidthBytes(int component) const override;
   bool CanDecodeToYUV() override;
-  bool DecodeToYUV() override;
+  void DecodeToYUV() override;
   void SetImagePlanes(std::unique_ptr<ImagePlanes>) override;
   std::vector<SkISize> GetSupportedDecodeSizes() const override;
   bool HasImagePlanes() const { return image_planes_.get(); }
@@ -64,6 +63,9 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   void SetDecodedSize(unsigned width, unsigned height);
 
   void SetSupportedDecodeSizes(std::vector<SkISize> sizes);
+  void SetDecodeToYuvForTesting(bool decode_to_yuv) {
+    decode_to_yuv_for_testing_ = decode_to_yuv;
+  }
 
  private:
   // ImageDecoder:
@@ -79,6 +81,9 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   std::unique_ptr<ImagePlanes> image_planes_;
   IntSize decoded_size_;
   std::vector<SkISize> supported_decode_sizes_;
+  bool decode_to_yuv_for_testing_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(JPEGImageDecoder);
 };
 
 }  // namespace blink

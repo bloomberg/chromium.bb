@@ -7,12 +7,13 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/download/download_test_util.h"
 #include "ios/chrome/browser/download/features.h"
 #include "ios/chrome/browser/download/usdz_mime_type.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -94,9 +95,12 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   // QLPreviewController UI is rendered out of host process so EarlGrey matcher
   // can not find QLPreviewController UI. Instead this test relies on view
   // controller presentation as the signal that QLPreviewController UI is shown.
-  UIViewController* BVC = GetMainController().browserViewInformation.mainBVC;
+  id<BrowserInterface> interface =
+      GetMainController().interfaceProvider.mainInterface;
+  UIViewController* viewController = interface.viewController;
   bool shown = WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
-    UIViewController* presentedController = BVC.presentedViewController;
+    UIViewController* presentedController =
+        viewController.presentedViewController;
     return [presentedController class] == [QLPreviewController class];
   });
   GREYAssert(shown, @"QLPreviewController was not shown.");
@@ -116,9 +120,12 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   // QLPreviewController UI is rendered out of host process so EarlGrey matcher
   // can not find QLPreviewController UI. Instead this test relies on view
   // controller presentation as the signal that QLPreviewController UI is shown.
-  UIViewController* BVC = GetMainController().browserViewInformation.mainBVC;
+  id<BrowserInterface> interface =
+      GetMainController().interfaceProvider.mainInterface;
+  UIViewController* viewController = interface.viewController;
   bool shown = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-    UIViewController* presentedController = BVC.presentedViewController;
+    UIViewController* presentedController =
+        viewController.presentedViewController;
     return [presentedController class] == [QLPreviewController class];
   });
   GREYAssertFalse(shown, @"QLPreviewController should not have shown.");
@@ -138,9 +145,12 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   // QLPreviewController UI is rendered out of host process so EarlGrey matcher
   // can not find QLPreviewController UI. Instead this test relies on view
   // controller presentation as the signal that QLPreviewController UI is shown.
-  UIViewController* BVC = GetMainController().browserViewInformation.mainBVC;
+  id<BrowserInterface> interface =
+      GetMainController().interfaceProvider.mainInterface;
+  UIViewController* viewController = interface.viewController;
   bool shown = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-    UIViewController* presentedController = BVC.presentedViewController;
+    UIViewController* presentedController =
+        viewController.presentedViewController;
     return [presentedController class] == [QLPreviewController class];
   });
   GREYAssertFalse(shown, @"QLPreviewController should not have shown.");
@@ -160,9 +170,12 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   // QLPreviewController UI is rendered out of host process so EarlGrey matcher
   // can not find QLPreviewController UI. Instead this test relies on view
   // controller presentation as the signal that QLPreviewController UI is shown.
-  UIViewController* BVC = GetMainController().browserViewInformation.mainBVC;
+  id<BrowserInterface> interface =
+      GetMainController().interfaceProvider.mainInterface;
+  UIViewController* viewController = interface.viewController;
   bool shown = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-    UIViewController* presentedController = BVC.presentedViewController;
+    UIViewController* presentedController =
+        viewController.presentedViewController;
     return [presentedController class] == [QLPreviewController class];
   });
   GREYAssertFalse(shown, @"QLPreviewController should not have shown.");

@@ -35,10 +35,9 @@ class TestNavigationURLLoader
                           NavigationURLLoaderDelegate* delegate);
 
   // NavigationURLLoader implementation.
-  void FollowRedirect(const base::Optional<std::vector<std::string>>&
-                          to_be_removed_request_headers,
-                      const base::Optional<net::HttpRequestHeaders>&
-                          modified_request_headers) override;
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      PreviewsState new_previews_state) override;
   void ProceedWithResponse() override;
 
   NavigationRequestInfo* request_info() const { return request_info_.get(); }
@@ -46,6 +45,8 @@ class TestNavigationURLLoader
   void SimulateServerRedirect(const GURL& redirect_url);
 
   void SimulateError(int error_code);
+  void SimulateErrorWithStatus(
+      const network::URLLoaderCompletionStatus& status);
 
   void CallOnRequestRedirected(
       const net::RedirectInfo& redirect_info,

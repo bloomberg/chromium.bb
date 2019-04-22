@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_EVENT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/payments/payment_request_event_init.h"
@@ -22,7 +23,6 @@ class ScriptState;
 
 class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(PaymentRequestEvent);
 
  public:
   static PaymentRequestEvent* Create(const AtomicString& type,
@@ -63,6 +63,8 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   String instrument_key_;
 
   Member<RespondWithObserver> observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestEvent);
 };
 
 }  // namespace blink

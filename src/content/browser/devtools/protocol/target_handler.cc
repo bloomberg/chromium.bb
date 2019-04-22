@@ -5,6 +5,8 @@
 #include "content/browser/devtools/protocol/target_handler.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -26,7 +28,9 @@ namespace protocol {
 
 namespace {
 
-const char kNotAllowedError[] = "Not allowed.";
+static const char kNotAllowedError[] = "Not allowed";
+static const char kMethod[] = "method";
+static const char kResumeMethod[] = "Runtime.runIfWaitingForDebugger";
 
 static const char kInitializerScript[] = R"(
   (function() {
@@ -173,7 +177,8 @@ class BrowserToPageConnector {
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) {
     if (agent_host == page_host_.get()) {
-      std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
+      std::unique_ptr<base::Value> value =
+          base::JSONReader::ReadDeprecated(message);
       if (!value || !value->is_dict())
         return;
       // Make sure this is a binding call.
@@ -198,8 +203,9 @@ class BrowserToPageConnector {
 
     std::string encoded;
     base::Base64Encode(message, &encoded);
-    std::string eval_code = "window." + binding_name_ + ".onmessage(atob(\"";
-    std::string eval_suffix = "\"))";
+    std::string eval_code =
+        "try { window." + binding_name_ + ".onmessage(atob(\"";
+    std::string eval_suffix = "\")); } catch(e) { console.error(e); }";
     eval_code.reserve(eval_code.size() + encoded.size() + eval_suffix.size());
     eval_code.append(encoded);
     eval_code.append(eval_suffix);
@@ -311,8 +317,12 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
 
   void SendMessageToAgentHost(const std::string& message) {
     if (throttle_) {
-      std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
-      if (DevToolsSession::IsRuntimeResumeCommand(value.get()))
+      auto* client = handler_->root_session_->client();
+      std::unique_ptr<protocol::DictionaryValue> value =
+          protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
+              message, client->UsesBinaryProtocol()));
+      std::string method;
+      if (value->getString(kMethod, &method) && method == kResumeMethod)
         ResumeIfThrottled();
     }
 
@@ -321,6 +331,11 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
 
   bool IsAttachedTo(const std::string& target_id) {
     return agent_host_->GetId() == target_id;
+  }
+
+  bool UsesBinaryProtocol() override {
+    auto* client = handler_->root_session_->client();
+    return client->UsesBinaryProtocol();
   }
 
  private:
@@ -456,14 +471,14 @@ void TargetHandler::SetRenderer(int process_host_id,
 }
 
 Response TargetHandler::Disable() {
-  SetAutoAttach(false, false, false);
+  SetAutoAttachInternal(false, false, false, base::DoNothing());
   SetDiscoverTargets(false);
   auto_attached_sessions_.clear();
   attached_sessions_.clear();
   return Response::OK();
 }
 
-void TargetHandler::DidCommitNavigation() {
+void TargetHandler::DidFinishNavigation() {
   auto_attacher_.UpdateServiceWorkers();
 }
 
@@ -480,6 +495,17 @@ void TargetHandler::ClearThrottles() {
   for (Throttle* throttle : copy)
     throttle->Clear();
   throttles_.clear();
+}
+
+void TargetHandler::SetAutoAttachInternal(bool auto_attach,
+                                          bool wait_for_debugger_on_start,
+                                          bool flatten,
+                                          base::OnceClosure callback) {
+  flatten_auto_attach_ = flatten;
+  auto_attacher_.SetAutoAttach(auto_attach, wait_for_debugger_on_start,
+                               std::move(callback));
+  if (!auto_attacher_.ShouldThrottleFramesNavigation())
+    ClearThrottles();
 }
 
 void TargetHandler::AutoAttach(DevToolsAgentHost* host,
@@ -539,14 +565,14 @@ Response TargetHandler::SetDiscoverTargets(bool discover) {
   return Response::OK();
 }
 
-Response TargetHandler::SetAutoAttach(bool auto_attach,
-                                      bool wait_for_debugger_on_start,
-                                      Maybe<bool> flatten) {
-  flatten_auto_attach_ = flatten.fromMaybe(false);
-  auto_attacher_.SetAutoAttach(auto_attach, wait_for_debugger_on_start);
-  if (!auto_attacher_.ShouldThrottleFramesNavigation())
-    ClearThrottles();
-  return Response::OK();
+void TargetHandler::SetAutoAttach(
+    bool auto_attach,
+    bool wait_for_debugger_on_start,
+    Maybe<bool> flatten,
+    std::unique_ptr<SetAutoAttachCallback> callback) {
+  SetAutoAttachInternal(
+      auto_attach, wait_for_debugger_on_start, flatten.fromMaybe(false),
+      base::BindOnce(&SetAutoAttachCallback::sendSuccess, std::move(callback)));
 }
 
 Response TargetHandler::SetRemoteLocations(

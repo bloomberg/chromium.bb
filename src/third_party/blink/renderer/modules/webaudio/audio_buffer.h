@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -41,6 +42,7 @@ namespace blink {
 class AudioBus;
 class AudioBufferOptions;
 class ExceptionState;
+class SharedAudioBuffer;
 
 class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -64,13 +66,17 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
                                           uint32_t number_of_frames,
                                           float sample_rate);
 
-  // Returns 0 if data is not a valid audio file.
-  static AudioBuffer* CreateFromAudioFileData(const void* data,
-                                              size_t data_size,
-                                              bool mix_to_mono,
-                                              float sample_rate);
-
   static AudioBuffer* CreateFromAudioBus(AudioBus*);
+
+  explicit AudioBuffer(AudioBus*);
+  // How to initialize the contents of an AudioBuffer.  Default is to
+  // zero-initialize (|kZeroInitialize|).  Otherwise, leave the array
+  // uninitialized (|kDontInitialize|).
+  enum InitializationPolicy { kZeroInitialize, kDontInitialize };
+  AudioBuffer(unsigned number_of_channels,
+              uint32_t number_of_frames,
+              float sample_rate,
+              InitializationPolicy allocation_policy = kZeroInitialize);
 
   // Format
   uint32_t length() const { return length_; }
@@ -106,28 +112,43 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
     ScriptWrappable::Trace(visitor);
   }
 
+  std::unique_ptr<SharedAudioBuffer> CreateSharedAudioBuffer();
+
  private:
-  // How to initialize the contents of an AudioBuffer.  Default is to
-  // zero-initialize (|kZeroInitialize|).  Otherwise, leave the array
-  // uninitialized (|kDontInitialize|).
-  enum InitializationPolicy { kZeroInitialize, kDontInitialize };
-
-  explicit AudioBuffer(AudioBus*);
-
   static DOMFloat32Array* CreateFloat32ArrayOrNull(
       uint32_t length,
       InitializationPolicy allocation_policy = kZeroInitialize);
 
-  AudioBuffer(unsigned number_of_channels,
-              uint32_t number_of_frames,
-              float sample_rate,
-              InitializationPolicy allocation_policy = kZeroInitialize);
   bool CreatedSuccessfully(unsigned desired_number_of_channels) const;
 
   float sample_rate_;
   uint32_t length_;
 
   HeapVector<Member<DOMFloat32Array>> channels_;
+};
+
+// Shared data that audio threads can hold onto.
+class SharedAudioBuffer final {
+  USING_FAST_MALLOC(SharedAudioBuffer);
+
+ public:
+  explicit SharedAudioBuffer(AudioBuffer*);
+
+  unsigned numberOfChannels() const { return channels_.size(); }
+  uint32_t length() const { return length_; }
+  double duration() const {
+    return length() / static_cast<double>(sampleRate());
+  }
+  float sampleRate() const { return sample_rate_; }
+
+  const Vector<WTF::ArrayBufferContents>& channels() { return channels_; }
+
+  void Zero();
+
+ private:
+  float sample_rate_;
+  uint32_t length_;
+  Vector<WTF::ArrayBufferContents> channels_;
 };
 
 }  // namespace blink

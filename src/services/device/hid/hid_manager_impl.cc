@@ -4,6 +4,8 @@
 
 #include "services/device/hid/hid_manager_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
@@ -69,22 +71,28 @@ void HidManagerImpl::CreateDeviceList(
 }
 
 void HidManagerImpl::Connect(const std::string& device_guid,
+                             mojom::HidConnectionClientPtr connection_client,
                              ConnectCallback callback) {
   hid_service_->Connect(
       device_guid,
-      base::Bind(&HidManagerImpl::CreateConnection, weak_factory_.GetWeakPtr(),
-                 base::Passed(&callback)));
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &HidManagerImpl::CreateConnection, weak_factory_.GetWeakPtr(),
+          std::move(callback), std::move(connection_client))));
 }
 
-void HidManagerImpl::CreateConnection(ConnectCallback callback,
-                                      scoped_refptr<HidConnection> connection) {
+void HidManagerImpl::CreateConnection(
+    ConnectCallback callback,
+    mojom::HidConnectionClientPtr connection_client,
+    scoped_refptr<HidConnection> connection) {
   if (!connection) {
     std::move(callback).Run(nullptr);
     return;
   }
 
   mojom::HidConnectionPtr client;
-  mojo::MakeStrongBinding(std::make_unique<HidConnectionImpl>(connection),
+  auto connection_impl = std::make_unique<HidConnectionImpl>(
+      connection, std::move(connection_client));
+  mojo::MakeStrongBinding(std::move(connection_impl),
                           mojo::MakeRequest(&client));
   std::move(callback).Run(std::move(client));
 }

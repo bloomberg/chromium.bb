@@ -47,7 +47,7 @@ class SSLServerSocket : public SSLSocket {
 
 class SSLServerContext {
  public:
-  virtual ~SSLServerContext(){};
+  virtual ~SSLServerContext() {}
 
   // Creates an SSL server socket over an already-connected transport socket.
   // The caller must ensure the returned socket does not outlive the server

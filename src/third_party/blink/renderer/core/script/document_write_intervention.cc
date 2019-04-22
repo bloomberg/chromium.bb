@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/script/document_write_intervention.h"
 
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -32,7 +32,8 @@ void EmitWarningMayBeBlocked(const String& url, Document& document) {
       "See https://www.chromestatus.com/feature/5718547946799104 "
       "for more details.";
   document.AddConsoleMessage(
-      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, message));
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                             mojom::ConsoleMessageLevel::kWarning, message));
   DVLOG(1) << message.Utf8().data();
 }
 
@@ -43,7 +44,8 @@ void EmitWarningNotBlocked(const String& url, Document& document) {
       "be blocked by the browser in future page loads with poor network "
       "connectivity.";
   document.AddConsoleMessage(
-      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, message));
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                             mojom::ConsoleMessageLevel::kWarning, message));
 }
 
 void EmitErrorBlocked(const String& url, Document& document) {
@@ -53,19 +55,20 @@ void EmitErrorBlocked(const String& url, Document& document) {
       url +
       ", invoked via document.write was BLOCKED by the browser due to poor "
       "network connectivity. ";
-  document.AddConsoleMessage(ConsoleMessage::Create(
-      kInterventionMessageSource, kErrorMessageLevel, message));
+  document.AddConsoleMessage(
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kIntervention,
+                             mojom::ConsoleMessageLevel::kError, message));
 }
 
 void AddWarningHeader(FetchParameters* params) {
-  params->MutableResourceRequest().AddHTTPHeaderField(
+  params->MutableResourceRequest().AddHttpHeaderField(
       "Intervention",
       "<https://www.chromestatus.com/feature/5718547946799104>; "
       "level=\"warning\"");
 }
 
 void AddHeader(FetchParameters* params) {
-  params->MutableResourceRequest().AddHTTPHeaderField(
+  params->MutableResourceRequest().AddHttpHeaderField(
       "Intervention",
       "<https://www.chromestatus.com/feature/5718547946799104>");
 }
@@ -121,7 +124,7 @@ bool MaybeDisallowFetchForDocWrittenScript(FetchParameters& params,
   if (params.Defer() != FetchParameters::kNoDefer)
     return false;
 
-  probe::documentWriteFetchScript(&document);
+  probe::DocumentWriteFetchScript(&document);
 
   if (!params.Url().ProtocolIsInHTTPFamily())
     return false;

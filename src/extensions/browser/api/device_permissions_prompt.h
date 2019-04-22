@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
@@ -25,7 +26,6 @@ class WebContents;
 
 namespace device {
 class HidDeviceFilter;
-class UsbDevice;
 }
 
 namespace extensions {
@@ -36,8 +36,8 @@ class Extension;
 // (similar to choosing files).
 class DevicePermissionsPrompt {
  public:
-  using UsbDevicesCallback = base::Callback<void(
-      const std::vector<scoped_refptr<device::UsbDevice>>&)>;
+  using UsbDevicesCallback =
+      base::Callback<void(std::vector<device::mojom::UsbDeviceInfoPtr>)>;
   using HidDevicesCallback =
       base::Callback<void(std::vector<device::mojom::HidDeviceInfoPtr>)>;
 
@@ -123,7 +123,7 @@ class DevicePermissionsPrompt {
     DISALLOW_COPY_AND_ASSIGN(Prompt);
   };
 
-  DevicePermissionsPrompt(content::WebContents* web_contents);
+  explicit DevicePermissionsPrompt(content::WebContents* web_contents);
   virtual ~DevicePermissionsPrompt();
 
   void AskForUsbDevices(const Extension* extension,

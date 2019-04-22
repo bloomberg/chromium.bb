@@ -4,9 +4,13 @@
 
 #include <memory>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "chromeos/services/device_sync/public/cpp/fake_gcm_device_info_provider.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_feature_state_observer.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_observer.h"
@@ -19,8 +23,6 @@
 #include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/fake_gcm_device_info_provider.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +46,7 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
       FakeAndroidSmsAppHelperDelegate* expected_android_sms_app_helper_delegate,
       FakeAndroidSmsPairingStateTracker*
           expected_android_sms_pairing_state_tracker,
-      const cryptauth::FakeGcmDeviceInfoProvider*
+      const device_sync::FakeGcmDeviceInfoProvider*
           expected_gcm_device_info_provider)
       : expected_testing_pref_service_(expected_testing_pref_service),
         expected_device_sync_client_(expected_device_sync_client),
@@ -66,11 +68,9 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
       device_sync::DeviceSyncClient* device_sync_client,
       AuthTokenValidator* auth_token_validator,
       OobeCompletionTracker* oobe_completion_tracker,
-      std::unique_ptr<AndroidSmsAppHelperDelegate>
-          android_sms_app_helper_delegate,
-      std::unique_ptr<AndroidSmsPairingStateTracker>
-          android_sms_pairing_state_tracker,
-      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
+      AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+      AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
+      const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider)
       override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(expected_testing_pref_service_, pref_service);
@@ -78,9 +78,9 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
     EXPECT_EQ(expected_auth_token_validator_, auth_token_validator);
     EXPECT_EQ(expected_oobe_completion_tracker_, oobe_completion_tracker);
     EXPECT_EQ(expected_android_sms_app_helper_delegate_,
-              android_sms_app_helper_delegate.get());
+              android_sms_app_helper_delegate);
     EXPECT_EQ(expected_android_sms_pairing_state_tracker_,
-              android_sms_pairing_state_tracker.get());
+              android_sms_pairing_state_tracker);
     EXPECT_EQ(expected_gcm_device_info_provider_, gcm_device_info_provider);
 
     auto instance = std::make_unique<FakeMultiDeviceSetup>();
@@ -95,7 +95,7 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
   FakeAndroidSmsAppHelperDelegate* expected_android_sms_app_helper_delegate_;
   FakeAndroidSmsPairingStateTracker*
       expected_android_sms_pairing_state_tracker_;
-  const cryptauth::FakeGcmDeviceInfoProvider*
+  const device_sync::FakeGcmDeviceInfoProvider*
       expected_gcm_device_info_provider_;
 
   FakeMultiDeviceSetup* instance_ = nullptr;
@@ -109,7 +109,7 @@ class MultiDeviceSetupServiceTest : public testing::Test {
  protected:
   MultiDeviceSetupServiceTest()
       : test_devices_(
-            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
+            multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
   ~MultiDeviceSetupServiceTest() override = default;
 
   // testing::Test:
@@ -120,16 +120,12 @@ class MultiDeviceSetupServiceTest : public testing::Test {
         std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_auth_token_validator_ = std::make_unique<FakeAuthTokenValidator>();
     fake_oobe_completion_tracker_ = std::make_unique<OobeCompletionTracker>();
-    auto fake_android_sms_app_helper_delegate =
-        std::make_unique<FakeAndroidSmsAppHelperDelegate>();
     fake_android_sms_app_helper_delegate_ =
-        fake_android_sms_app_helper_delegate.get();
-    auto fake_android_sms_pairing_state_tracker =
-        std::make_unique<FakeAndroidSmsPairingStateTracker>();
+        std::make_unique<FakeAndroidSmsAppHelperDelegate>();
     fake_android_sms_pairing_state_tracker_ =
-        fake_android_sms_pairing_state_tracker.get();
+        std::make_unique<FakeAndroidSmsPairingStateTracker>();
     fake_gcm_device_info_provider_ =
-        std::make_unique<cryptauth::FakeGcmDeviceInfoProvider>(
+        std::make_unique<device_sync::FakeGcmDeviceInfoProvider>(
             cryptauth::GcmDeviceInfo());
 
     fake_multidevice_setup_factory_ =
@@ -137,24 +133,21 @@ class MultiDeviceSetupServiceTest : public testing::Test {
             test_pref_service_.get(), fake_device_sync_client_.get(),
             fake_auth_token_validator_.get(),
             fake_oobe_completion_tracker_.get(),
-            fake_android_sms_app_helper_delegate_,
-            fake_android_sms_pairing_state_tracker_,
+            fake_android_sms_app_helper_delegate_.get(),
+            fake_android_sms_pairing_state_tracker_.get(),
             fake_gcm_device_info_provider_.get());
     MultiDeviceSetupImpl::Factory::SetFactoryForTesting(
         fake_multidevice_setup_factory_.get());
 
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::make_unique<MultiDeviceSetupService>(
-                test_pref_service_.get(), fake_device_sync_client_.get(),
-                fake_auth_token_validator_.get(),
-                fake_oobe_completion_tracker_.get(),
-                std::move(fake_android_sms_app_helper_delegate),
-                std::move(fake_android_sms_pairing_state_tracker),
-                fake_gcm_device_info_provider_.get()));
+    service_ = std::make_unique<MultiDeviceSetupService>(
+        connector_factory_.RegisterInstance(mojom::kServiceName),
+        test_pref_service_.get(), fake_device_sync_client_.get(),
+        fake_auth_token_validator_.get(), fake_oobe_completion_tracker_.get(),
+        fake_android_sms_app_helper_delegate_.get(),
+        fake_android_sms_pairing_state_tracker_.get(),
+        fake_gcm_device_info_provider_.get());
 
-    auto connector = connector_factory_->CreateConnector();
-
+    auto* connector = connector_factory_.GetDefaultConnector();
     connector->BindInterface(mojom::kServiceName, &multidevice_setup_ptr_);
     multidevice_setup_ptr_.FlushForTesting();
 
@@ -208,22 +201,25 @@ class MultiDeviceSetupServiceTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  const multidevice::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       test_pref_service_;
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<FakeAuthTokenValidator> fake_auth_token_validator_;
   std::unique_ptr<OobeCompletionTracker> fake_oobe_completion_tracker_;
-  FakeAndroidSmsAppHelperDelegate* fake_android_sms_app_helper_delegate_;
-  FakeAndroidSmsPairingStateTracker* fake_android_sms_pairing_state_tracker_;
-  std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
+  std::unique_ptr<FakeAndroidSmsAppHelperDelegate>
+      fake_android_sms_app_helper_delegate_;
+  std::unique_ptr<FakeAndroidSmsPairingStateTracker>
+      fake_android_sms_pairing_state_tracker_;
+  std::unique_ptr<device_sync::FakeGcmDeviceInfoProvider>
       fake_gcm_device_info_provider_;
 
   std::unique_ptr<FakeMultiDeviceSetupFactory> fake_multidevice_setup_factory_;
 
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<MultiDeviceSetupService> service_;
   base::Optional<bool> last_debug_event_success_;
 
   mojom::MultiDeviceSetupPtr multidevice_setup_ptr_;

@@ -21,8 +21,7 @@ class EncryptionMigrationScreen
   using ContinueLoginCallback = base::OnceCallback<void(const UserContext&)>;
   using RestartLoginCallback = base::OnceCallback<void(const UserContext&)>;
 
-  EncryptionMigrationScreen(BaseScreenDelegate* base_screen_delegate,
-                            EncryptionMigrationScreenView* view);
+  explicit EncryptionMigrationScreen(EncryptionMigrationScreenView* view);
   ~EncryptionMigrationScreen() override;
 
   // BaseScreen implementation:
@@ -30,7 +29,6 @@ class EncryptionMigrationScreen
   void Hide() override;
 
   // EncryptionMigrationScreenView::Delegate implementation:
-  void OnExit() override;
   void OnViewDestroyed(EncryptionMigrationScreenView* view) override;
 
   // Sets the UserContext for a user whose cryptohome should be migrated.

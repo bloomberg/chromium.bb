@@ -15,12 +15,12 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/drag_data.h"
+#include "third_party/blink/renderer/core/page/drag_image.h"
 #include "third_party/blink/renderer/core/page/drag_state.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
-#include "third_party/blink/renderer/platform/drag_image.h"
 
 namespace blink {
 
@@ -44,9 +44,9 @@ class DragMockChromeClient : public EmptyChromeClient {
 class DragControllerTest : public RenderingTest {
  protected:
   DragControllerTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()),
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
 
-        chrome_client_(new DragMockChromeClient) {}
+        chrome_client_(MakeGarbageCollected<DragMockChromeClient>()) {}
   LocalFrame& GetFrame() const { return *GetDocument().GetFrame(); }
   DragMockChromeClient& GetChromeClient() const override {
     return *chrome_client_;
@@ -84,7 +84,7 @@ class DragControllerSimTest : public SimTest {};
 // https://crbug.com/733996.
 TEST_F(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
   WebView().GetPage()->GetSettings().SetNavigateOnDragDrop(false);
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/test.html", "text/html");
 
   LoadURL("https://example.com/test.html");
@@ -124,7 +124,7 @@ TEST_F(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
 // Regression test for https://crbug.com/685030
 TEST_F(DragControllerSimTest, ThrottledDocumentHandled) {
   WebView().GetPage()->GetSettings().SetNavigateOnDragDrop(false);
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/test.html", "text/html");
 
   LoadURL("https://example.com/test.html");
@@ -256,7 +256,7 @@ TEST_F(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
     <div>abcdefg</div>
   )HTML");
   UpdateAllLifecyclePhasesForTest();
-  auto& child_frame = *ToLocalFrame(GetFrame().Tree().FirstChild());
+  auto& child_frame = *To<LocalFrame>(GetFrame().Tree().FirstChild());
   child_frame.Selection().SelectAll();
 
   // The iframe's selection rect is in the frame's local coordinates and should
@@ -336,7 +336,7 @@ TEST_F(DragControllerTest,
   const int page_scale_factor = 2;
   GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
   UpdateAllLifecyclePhasesForTest();
-  auto& child_frame = *ToLocalFrame(GetFrame().Tree().FirstChild());
+  auto& child_frame = *To<LocalFrame>(GetFrame().Tree().FirstChild());
   child_frame.Selection().SelectAll();
 
   // The iframe's selection rect is in the frame's local coordinates and should

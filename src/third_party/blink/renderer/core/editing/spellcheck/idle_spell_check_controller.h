@@ -34,6 +34,8 @@ class CORE_EXPORT IdleSpellCheckController final
 
  public:
   static IdleSpellCheckController* Create(LocalFrame&);
+
+  explicit IdleSpellCheckController(LocalFrame&);
   ~IdleSpellCheckController();
 
   enum class State {
@@ -61,12 +63,10 @@ class CORE_EXPORT IdleSpellCheckController final
   void SkipColdModeTimerForTesting();
   int IdleCallbackHandle() const { return idle_callback_handle_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   class IdleCallback;
-
-  explicit IdleSpellCheckController(LocalFrame&);
 
   LocalFrame& GetFrame() const { return *frame_; }
 

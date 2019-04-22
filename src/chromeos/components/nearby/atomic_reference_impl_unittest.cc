@@ -4,6 +4,7 @@
 
 #include "chromeos/components/nearby/atomic_reference_impl.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
 #include "base/test/test_timeouts.h"

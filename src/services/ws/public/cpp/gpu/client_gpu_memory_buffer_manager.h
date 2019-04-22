@@ -33,8 +33,6 @@ class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   explicit ClientGpuMemoryBufferManager(mojom::GpuMemoryBufferFactoryPtr gpu);
   ~ClientGpuMemoryBufferManager() override;
 
-  void SetOptionalDestructionCallback(base::OnceClosure callback);
-
  private:
   void InitThread(mojom::GpuMemoryBufferFactoryPtrInfo gpu_info);
   void TearDownThread();
@@ -64,7 +62,6 @@ class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   // TODO(sad): Explore the option of doing this from an existing thread.
   base::Thread thread_;
   mojom::GpuMemoryBufferFactoryPtr gpu_;
-  base::OnceClosure optional_destruction_callback_;
   base::WeakPtr<ClientGpuMemoryBufferManager> weak_ptr_;
   std::set<base::WaitableEvent*> pending_allocation_waiters_;
   std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support_;

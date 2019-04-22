@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
+#include "net/base/load_timing_info.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -99,13 +100,12 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       recv_window_size_(max_recv_window_size),
       unacked_recv_window_bytes_(0),
       session_(session),
-      delegate_(NULL),
+      delegate_(nullptr),
       request_headers_valid_(false),
       pending_send_status_(MORE_DATA_TO_SEND),
       request_time_(base::Time::Now()),
       response_state_(READY_FOR_HEADERS),
       io_state_(STATE_IDLE),
-      response_status_(OK),
       net_log_(net_log),
       raw_received_bytes_(0),
       raw_sent_bytes_(0),
@@ -138,7 +138,8 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
   if (io_state_ == STATE_HALF_CLOSED_LOCAL_UNCLAIMED) {
     DCHECK_EQ(type_, SPDY_PUSH_STREAM);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SpdyStream::PushedStreamReplay, GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&SpdyStream::PushedStreamReplay, GetWeakPtr()));
   }
 }
 
@@ -166,7 +167,7 @@ void SpdyStream::PushedStreamReplay() {
     std::unique_ptr<SpdyBuffer> buffer = std::move(pending_recv_data_.at(0));
     pending_recv_data_.erase(pending_recv_data_.begin());
 
-    bool eof = (buffer == NULL);
+    bool eof = (buffer == nullptr);
 
     CHECK(delegate_);
     delegate_->OnDataReceived(std::move(buffer));
@@ -203,7 +204,7 @@ std::unique_ptr<spdy::SpdySerializedFrame> SpdyStream::ProduceHeadersFrame() {
 
 void SpdyStream::DetachDelegate() {
   DCHECK(!IsClosed());
-  delegate_ = NULL;
+  delegate_ = nullptr;
   Cancel(ERR_ABORTED);
 }
 
@@ -344,9 +345,9 @@ void SpdyStream::DecreaseRecvWindowSize(int32_t delta_window_size) {
   if (delta_window_size > recv_window_size_ - unacked_recv_window_bytes_) {
     session_->ResetStream(
         stream_id_, ERR_SPDY_FLOW_CONTROL_ERROR,
-        "delta_window_size is " + base::IntToString(delta_window_size) +
+        "delta_window_size is " + base::NumberToString(delta_window_size) +
             " in DecreaseRecvWindowSize, which is larger than the receive " +
-            "window size of " + base::IntToString(recv_window_size_));
+            "window size of " + base::NumberToString(recv_window_size_));
     return;
   }
 
@@ -382,39 +383,42 @@ void SpdyStream::OnHeadersReceived(
     base::Time response_time,
     base::TimeTicks recv_first_byte_time) {
   switch (response_state_) {
-    case READY_FOR_HEADERS:
+    case READY_FOR_HEADERS: {
       // No header block has been received yet.
       DCHECK(response_headers_.empty());
 
-      {
-        spdy::SpdyHeaderBlock::const_iterator it =
-            response_headers.find(spdy::kHttp2StatusHeader);
-        if (it == response_headers.end()) {
-          const std::string error("Response headers do not include :status.");
-          LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-          session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
-          return;
-        }
+      spdy::SpdyHeaderBlock::const_iterator it =
+          response_headers.find(spdy::kHttp2StatusHeader);
+      if (it == response_headers.end()) {
+        const std::string error("Response headers do not include :status.");
+        LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
+        session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
+        return;
+      }
 
-        int status;
-        if (!StringToInt(it->second, &status)) {
-          const std::string error("Cannot parse :status.");
-          LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-          session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
-          return;
-        }
+      int status;
+      if (!StringToInt(it->second, &status)) {
+        const std::string error("Cannot parse :status.");
+        LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
+        session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
+        return;
+      }
 
-        base::UmaHistogramSparse("Net.SpdyResponseCode", status);
+      base::UmaHistogramSparse("Net.SpdyResponseCode", status);
 
-        // Ignore informational headers like 103 Early Hints.
-        // TODO(bnc): Add support for 103 Early Hints, https://crbug.com/671310.
-        // However, do not ignore 101 Switching Protocols, because broken
-        // servers might send this as a response to a WebSocket request,
-        // in which case it needs to pass through so that the WebSocket layer
-        // can signal an error.
-        if (status / 100 == 1 && status != 101) {
-          return;
-        }
+      // Include 1XX responses in the TTFB as per the resource timing spec
+      // for responseStart.
+      if (recv_first_byte_time_.is_null())
+        recv_first_byte_time_ = recv_first_byte_time;
+
+      // Ignore informational headers like 103 Early Hints.
+      // TODO(bnc): Add support for 103 Early Hints, https://crbug.com/671310.
+      // However, do not ignore 101 Switching Protocols, because broken
+      // servers might send this as a response to a WebSocket request,
+      // in which case it needs to pass through so that the WebSocket layer
+      // can signal an error.
+      if (status / 100 == 1 && status != 101) {
+        return;
       }
 
       response_state_ = READY_FOR_DATA_OR_TRAILERS;
@@ -448,11 +452,10 @@ void SpdyStream::OnHeadersReceived(
       DCHECK_NE(io_state_, STATE_IDLE);
 
       response_time_ = response_time;
-      recv_first_byte_time_ = recv_first_byte_time;
-      SaveResponseHeaders(response_headers);
+      SaveResponseHeaders(response_headers, status);
 
       break;
-
+    }
     case READY_FOR_DATA_OR_TRAILERS:
       // Second header block is trailers.
       if (type_ == SPDY_PUSH_STREAM) {
@@ -530,7 +533,7 @@ void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
     if (buffer) {
       pending_recv_data_.push_back(std::move(buffer));
     } else {
-      pending_recv_data_.push_back(NULL);
+      pending_recv_data_.push_back(nullptr);
       // Note: we leave the stream open in the session until the stream
       //       is claimed.
     }
@@ -660,7 +663,7 @@ int SpdyStream::OnDataSent(size_t frame_size) {
     QueueNextDataFrame();
     return ERR_IO_PENDING;
   } else {
-    pending_send_data_ = NULL;
+    pending_send_data_ = nullptr;
     return OK;
   }
 }
@@ -682,9 +685,8 @@ void SpdyStream::OnClose(int status) {
       status = OK;
     }
   }
-  response_status_ = status;
   Delegate* delegate = delegate_;
-  delegate_ = NULL;
+  delegate_ = nullptr;
   if (delegate)
     delegate->OnClose(status);
   // Unset |stream_id_| last so that the delegate can look it up.
@@ -816,6 +818,11 @@ bool SpdyStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
     if (done_receiving)
       load_timing_info->push_end = recv_last_byte_time_;
   }
+  // TODO(acomminos): recv_first_byte_time_ is actually the time after all
+  // headers have been parsed. We should add support for reporting the time the
+  // first bytes of the HEADERS frame were received to BufferedSpdyFramer
+  // (https://crbug.com/568024).
+  load_timing_info->receive_headers_start = recv_first_byte_time_;
   return result;
 }
 
@@ -904,7 +911,8 @@ void SpdyStream::QueueNextDataFrame() {
 }
 
 void SpdyStream::SaveResponseHeaders(
-    const spdy::SpdyHeaderBlock& response_headers) {
+    const spdy::SpdyHeaderBlock& response_headers,
+    int status) {
   DCHECK(response_headers_.empty());
   if (response_headers.find("transfer-encoding") != response_headers.end()) {
     session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR,
@@ -915,6 +923,17 @@ void SpdyStream::SaveResponseHeaders(
   for (spdy::SpdyHeaderBlock::const_iterator it = response_headers.begin();
        it != response_headers.end(); ++it) {
     response_headers_.insert(*it);
+  }
+
+  // Reject pushed stream with unsupported status code regardless of whether
+  // delegate is already attached or not.
+  if (type_ == SPDY_PUSH_STREAM &&
+      (status / 100 != 2 && status / 100 != 3 && status != 416)) {
+    SpdySession::RecordSpdyPushedStreamFateHistogram(
+        SpdyPushedStreamFate::kUnsupportedStatusCode);
+    session_->ResetStream(stream_id_, ERR_SPDY_CLIENT_REFUSED_STREAM,
+                          "Unsupported status code for pushed stream.");
+    return;
   }
 
   // If delegate is not yet attached, OnHeadersReceived() will be called after

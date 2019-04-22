@@ -217,8 +217,10 @@ scoped_refptr<net::IOBufferWithSize> CreateResolutionResponse(
   //
   // Section 6. mDNS responses MUST NOT contain any questions.
   // Section 18.1. In mDNS responses, ID MUST be set to zero.
-  net::DnsResponse response(0 /* id */, true /* is_authoritative */, answers,
-                            additional_records, base::nullopt /* query */);
+  net::DnsResponse response(
+      0 /* id */, true /* is_authoritative */, answers,
+      std::vector<net::DnsResourceRecord>() /* authority_records */,
+      additional_records, base::nullopt /* query */, 0 /* rcode */);
   DCHECK(response.io_buffer() != nullptr);
   auto buf =
       base::MakeRefCounted<net::IOBufferWithSize>(response.io_buffer_size());
@@ -234,9 +236,10 @@ scoped_refptr<net::IOBufferWithSize> CreateNegativeResponse(
   std::vector<net::DnsResourceRecord> additional_records =
       CreateAddressResourceRecords(name_addr_map,
                                    kDefaultTtlForRecordWithHostname);
-  net::DnsResponse response(0 /* id */, true /* is_authoritative */,
-                            nsec_records, additional_records,
-                            base::nullopt /* query */);
+  net::DnsResponse response(
+      0 /* id */, true /* is_authoritative */, nsec_records,
+      std::vector<net::DnsResourceRecord>() /* authority_records */,
+      additional_records, base::nullopt /* query */, 0 /* rcode */);
   DCHECK(response.io_buffer() != nullptr);
   auto buf =
       base::MakeRefCounted<net::IOBufferWithSize>(response.io_buffer_size());
@@ -380,7 +383,7 @@ class MdnsResponderManager::SocketHandler::ResponseScheduler {
     NO_LIMIT,
   };
 
-  ResponseScheduler(MdnsResponderManager::SocketHandler* handler)
+  explicit ResponseScheduler(MdnsResponderManager::SocketHandler* handler)
       : handler_(handler),
         task_runner_(base::SequencedTaskRunnerHandle::Get()),
         tick_clock_(base::DefaultTickClock::GetInstance()),
@@ -403,9 +406,10 @@ class MdnsResponderManager::SocketHandler::ResponseScheduler {
       if (CanBeRetriedAfterSendFailure(*option)) {
         ++option->num_send_retries_done;
         handler_->DoSend(std::move(buf), std::move(option));
-      } else
+      } else {
         VLOG(1) << "Response cannot be sent after " << kMaxMdnsResponseRetries
                 << " retries.";
+      }
     }
   }
 
@@ -803,6 +807,13 @@ MdnsResponder::~MdnsResponder() {
 void MdnsResponder::CreateNameForAddress(
     const net::IPAddress& address,
     mojom::MdnsResponder::CreateNameForAddressCallback callback) {
+  DCHECK(address.IsValid() || address.empty());
+  if (!address.IsValid()) {
+    LOG(ERROR) << "Invalid IP address to create a name for";
+    binding_.Close();
+    manager_->OnMojoConnectionError(this);
+    return;
+  }
   std::string name;
   auto it = FindNameCreatedForAddress(address);
   bool announcement_sched_at_least_once = false;
@@ -843,6 +854,7 @@ void MdnsResponder::CreateNameForAddress(
 void MdnsResponder::RemoveNameForAddress(
     const net::IPAddress& address,
     mojom::MdnsResponder::RemoveNameForAddressCallback callback) {
+  DCHECK(address.IsValid() || address.empty());
   auto it = FindNameCreatedForAddress(address);
   if (it == name_addr_map_.end()) {
     std::move(callback).Run(false /* removed */, false /* goodbye_scheduled */);
@@ -951,7 +963,7 @@ MdnsResponder::FindNameCreatedForAddress(const net::IPAddress& address) {
     if (it->second == address) {
       ret = it;
       ++count;
-      DCHECK(count <= 1);
+      DCHECK_LE(count, 1u);
     }
   }
   return ret;

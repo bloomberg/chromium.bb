@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "chrome/browser/vr/browser_renderer_browser_interface.h"
@@ -247,6 +248,11 @@ void BrowserRenderer::AcceptDoffPromptForTesting() {
   ui_->AcceptDoffPromptForTesting();
 }
 
+void BrowserRenderer::SetBrowserRendererBrowserInterfaceForTesting(
+    BrowserRendererBrowserInterface* interface_ptr) {
+  browser_ = interface_ptr;
+}
+
 void BrowserRenderer::UpdateUi(const RenderInfo& render_info,
                                base::TimeTicks current_time,
                                FrameType frame_type) {
@@ -317,7 +323,9 @@ base::TimeDelta BrowserRenderer::ProcessControllerInput(
       input_delegate_->GetControllerModel(render_info.head_pose);
   ui_->HandleInput(current_time, render_info, controller_model, &reticle_model,
                    &input_event_list);
-  ui_->OnControllerUpdated(controller_model, reticle_model);
+  std::vector<ControllerModel> controller_models;
+  controller_models.push_back(controller_model);
+  ui_->OnControllersUpdated(controller_models, reticle_model);
 
   auto controller_time = base::TimeTicks::Now() - timing_start;
   ui_controller_update_time_.AddSample(controller_time);

@@ -21,6 +21,9 @@ Polymer({
     /** @type {!CertificateType} */
     certificateType: String,
 
+    /** @type {boolean} */
+    importAllowed: Boolean,
+
     // 'if expr="chromeos"' here is breaking vulcanize. TODO(stevenjb/dpapad):
     // Restore after migrating to polymer-bundler, crbug.com/731881.
     /** @private */
@@ -49,8 +52,9 @@ Polymer({
    * @private
    */
   getDescription_: function() {
-    if (this.certificates.length == 0)
+    if (this.certificates.length == 0) {
       return this.i18n('certificateManagerNoCertificates');
+    }
 
     switch (this.certificateType) {
       case CertificateType.PERSONAL:
@@ -71,7 +75,8 @@ Polymer({
    * @private
    */
   canImport_: function() {
-    return !this.isKiosk_ && this.certificateType != CertificateType.OTHER;
+    return !this.isKiosk_ && this.certificateType != CertificateType.OTHER &&
+        this.importAllowed;
   },
 
   // <if expr="chromeos">
@@ -80,7 +85,8 @@ Polymer({
    * @private
    */
   canImportAndBind_: function() {
-    return !this.isGuest_ && this.certificateType == CertificateType.PERSONAL;
+    return !this.isGuest_ && this.certificateType == CertificateType.PERSONAL &&
+        this.importAllowed;
   },
   // </if>
 
@@ -145,13 +151,14 @@ Polymer({
    * @private
    */
   handleImport_: function(useHardwareBacked, anchor) {
-    var browserProxy =
+    const browserProxy =
         certificate_manager.CertificatesBrowserProxyImpl.getInstance();
     if (this.certificateType == CertificateType.PERSONAL) {
       browserProxy.importPersonalCertificate(useHardwareBacked)
           .then(showPasswordPrompt => {
-            if (showPasswordPrompt)
+            if (showPasswordPrompt) {
               this.dispatchImportActionEvent_(null, anchor);
+            }
           }, this.onRejected_.bind(this, anchor));
     } else if (this.certificateType == CertificateType.CA) {
       browserProxy.importCaCertificate().then(certificateName => {

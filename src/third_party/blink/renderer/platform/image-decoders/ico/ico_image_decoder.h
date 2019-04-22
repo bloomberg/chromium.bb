@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_ICO_ICO_IMAGE_DECODER_H_
 
 #include <memory>
+
 #include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_reader.h"
 #include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
 
@@ -41,8 +42,6 @@ class PNGImageDecoder;
 
 // This class decodes the ICO and CUR image formats.
 class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
-  WTF_MAKE_NONCOPYABLE(ICOImageDecoder);
-
  public:
   ICOImageDecoder(AlphaOption, const ColorBehavior&, size_t max_decoded_bytes);
   ~ICOImageDecoder() override;
@@ -179,6 +178,8 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
 
   // Used to pass on to an internally created PNG decoder.
   const ColorBehavior color_behavior_;
+
+  DISALLOW_COPY_AND_ASSIGN(ICOImageDecoder);
 };
 
 }  // namespace blink

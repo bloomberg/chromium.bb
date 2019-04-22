@@ -17,29 +17,22 @@
 #include "chrome/common/chrome_features.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/prefs/pref_service.h"
-#include "net/base/mock_network_change_notifier.h"
-#include "net/base/network_change_notifier_factory.h"
+#include "content/public/test/network_connection_change_simulator.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-// ChromeBrowserMainExtraParts used to install a MockNetworkChangeNotifier and
-// FakeCrOSComponentManager.
+// ChromeBrowserMainExtraParts used to install a FakeCrOSComponentManager.
 class CrostiniBrowserTestChromeBrowserMainExtraParts
     : public ChromeBrowserMainExtraParts {
  public:
   explicit CrostiniBrowserTestChromeBrowserMainExtraParts(bool register_termina)
       : register_termina_(register_termina) {}
 
-  ~CrostiniBrowserTestChromeBrowserMainExtraParts() override {
-    // |network_change_notifier_| needs to be destroyed before |net_installer_|.
-    network_change_notifier_.reset();
-  }
-
-  net::test::MockNetworkChangeNotifier* network_change_notifier() {
-    return network_change_notifier_.get();
-  }
-
   component_updater::FakeCrOSComponentManager* cros_component_manager() {
     return cros_component_manager_ptr_;
+  }
+
+  content::NetworkConnectionChangeSimulator* connection_change_simulator() {
+    return &connection_change_simulator_;
   }
 
   // ChromeBrowserMainExtraParts:
@@ -66,14 +59,12 @@ class CrostiniBrowserTestChromeBrowserMainExtraParts
     browser_process_platform_part_test_api_->InitializeCrosComponentManager(
         std::move(cros_component_manager));
   }
-  void PostMainMessageLoopStart() override {
-    ASSERT_TRUE(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
-    net_installer_ =
-        std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
-    network_change_notifier_ =
-        std::make_unique<net::test::MockNetworkChangeNotifier>();
-    network_change_notifier_->SetConnectionType(
-        net::NetworkChangeNotifier::CONNECTION_WIFI);
+  // Ideally we'd call SetConnectionType in ServiceManagerConnectionStarted,
+  // but currently we have to wait for PreProfileInit to complete, since that
+  // creates the ash::Shell that AshService needs in order to start.
+  void PostProfileInit() override {
+    connection_change_simulator_.SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_WIFI);
   }
   void PostMainMessageLoopRun() override {
     cros_component_manager_ptr_ = nullptr;
@@ -89,15 +80,15 @@ class CrostiniBrowserTestChromeBrowserMainExtraParts
   component_updater::FakeCrOSComponentManager* cros_component_manager_ptr_ =
       nullptr;
 
-  std::unique_ptr<net::test::MockNetworkChangeNotifier>
-      network_change_notifier_;
-  std::unique_ptr<net::NetworkChangeNotifier::DisableForTest> net_installer_;
+  content::NetworkConnectionChangeSimulator connection_change_simulator_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniBrowserTestChromeBrowserMainExtraParts);
 };
 
 CrostiniDialogBrowserTest::CrostiniDialogBrowserTest(bool register_termina)
-    : register_termina_(register_termina) {}
+    : register_termina_(register_termina) {
+  scoped_feature_list_.InitAndEnableFeature(features::kCrostini);
+}
 
 CrostiniDialogBrowserTest::~CrostiniDialogBrowserTest() = default;
 
@@ -111,7 +102,6 @@ void CrostiniDialogBrowserTest::CreatedBrowserMainParts(
 }
 
 void CrostiniDialogBrowserTest::SetUp() {
-  crostini::SetCrostiniUIAllowedForTesting(true);
   DialogBrowserTest::SetUp();
 }
 
@@ -121,8 +111,9 @@ void CrostiniDialogBrowserTest::SetUpOnMainThread() {
 }
 
 void CrostiniDialogBrowserTest::SetConnectionType(
-    net::NetworkChangeNotifier::ConnectionType connection_type) {
-  extra_parts_->network_change_notifier()->SetConnectionType(connection_type);
+    network::mojom::ConnectionType connection_type) {
+  extra_parts_->connection_change_simulator()->SetConnectionType(
+      connection_type);
 }
 
 void CrostiniDialogBrowserTest::UnregisterTermina() {

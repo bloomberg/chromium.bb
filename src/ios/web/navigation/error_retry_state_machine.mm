@@ -74,7 +74,12 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFailProvisionalNavigation(
     case ErrorRetryState::kDisplayingNativeErrorForFailedNavigation:
     // Retry of a previous failure still fails.
     case ErrorRetryState::kDisplayingWebErrorForFailedNavigation:
-      return BackForwardOrReloadFailed(web_view_url, error_url);
+      if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+        state_ = ErrorRetryState::kLoadingPlaceholder;
+        return ErrorRetryCommand::kLoadPlaceholder;
+      } else {
+        return BackForwardOrReloadFailed(web_view_url, error_url);
+      }
 
     case ErrorRetryState::kLoadingPlaceholder:
     case ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:
@@ -145,6 +150,18 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
         // to prepare for retry.
         state_ = ErrorRetryState::kNavigatingToFailedNavigationItem;
         return ErrorRetryCommand::kRewriteWebViewURL;
+      }
+
+      if (wk_navigation_util::IsRestoreSessionUrl(web_view_url)) {
+        GURL target_url;
+        if (wk_navigation_util::ExtractTargetURL(web_view_url, &target_url) &&
+            target_url == url_) {
+          // (10) Back/forward navigation to a restored session entry in offline
+          // mode. It is OK to consider this load succeeded for now because the
+          // failure delegate will be triggered again if the load fails.
+          state_ = ErrorRetryState::kNoNavigationError;
+          return ErrorRetryCommand::kDoNothing;
+        }
       }
 
       // (5) This is either a reload of the original URL that succeeded in

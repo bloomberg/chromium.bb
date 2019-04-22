@@ -7,10 +7,11 @@
 
 #include "HelloWorld.h"
 
-#include "GrContext.h"
 #include "SkCanvas.h"
+#include "SkFont.h"
 #include "SkGradientShader.h"
 #include "SkGraphics.h"
+#include "SkSurface.h"
 
 using namespace sk_app;
 
@@ -53,7 +54,9 @@ void HelloWorld::onBackendCreated() {
     fWindow->inval();
 }
 
-void HelloWorld::onPaint(SkCanvas* canvas) {
+void HelloWorld::onPaint(SkSurface* surface) {
+    auto canvas = surface->getCanvas();
+
     // Clear background
     canvas->clear(SK_ColorWHITE);
 
@@ -69,7 +72,7 @@ void HelloWorld::onPaint(SkCanvas* canvas) {
         SkPoint linearPoints[] = { { 0, 0 }, { 300, 300 } };
         SkColor linearColors[] = { SK_ColorGREEN, SK_ColorBLACK };
         paint.setShader(SkGradientShader::MakeLinear(linearPoints, linearColors, nullptr, 2,
-                                                     SkShader::kMirror_TileMode));
+                                                     SkTileMode::kMirror));
         paint.setAntiAlias(true);
 
         canvas->drawCircle(200, 200, 64, paint);
@@ -79,9 +82,10 @@ void HelloWorld::onPaint(SkCanvas* canvas) {
     }
 
     // Draw a message with a nice black paint
-    paint.setSubpixelText(true);
+    SkFont font;
+    font.setSubpixel(true);
+    font.setSize(20);
     paint.setColor(SK_ColorBLACK);
-    paint.setTextSize(20);
 
     canvas->save();
     static const char message[] = "Hello World";
@@ -95,7 +99,7 @@ void HelloWorld::onPaint(SkCanvas* canvas) {
     canvas->rotate(fRotationAngle);
 
     // Draw the text
-    canvas->drawText(message, strlen(message), 0, 0, paint);
+    canvas->drawSimpleText(message, strlen(message), kUTF8_SkTextEncoding, 0, 0, font, paint);
 
     canvas->restore();
 }

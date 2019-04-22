@@ -32,13 +32,14 @@
 
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 SVGNumber::SVGNumber(float value) : value_(value) {}
 
 SVGNumber* SVGNumber::Clone() const {
-  return Create(value_);
+  return MakeGarbageCollected<SVGNumber>(value_);
 }
 
 String SVGNumber::ValueAsString() const {
@@ -100,7 +101,7 @@ float SVGNumber::CalculateDistance(SVGPropertyBase* other, SVGElement*) {
 }
 
 SVGNumber* SVGNumberAcceptPercentage::Clone() const {
-  return Create(value_);
+  return MakeGarbageCollected<SVGNumberAcceptPercentage>(value_);
 }
 
 template <typename CharType>

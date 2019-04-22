@@ -71,16 +71,16 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void InitAsChild(gfx::NativeView parent_view) override {}
   void SetSize(const gfx::Size& size) override {}
   void SetBounds(const gfx::Rect& rect) override {}
-  gfx::NativeView GetNativeView() const override;
+  gfx::NativeView GetNativeView() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   ui::TextInputClient* GetTextInputClient() override;
-  bool HasFocus() const override;
+  bool HasFocus() override;
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
   void WasUnOccluded() override;
   void WasOccluded() override;
-  gfx::Rect GetViewBounds() const override;
+  gfx::Rect GetViewBounds() override;
 #if defined(OS_MACOSX)
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override {}
@@ -98,12 +98,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   // Advances the fallback surface to the first surface after navigation. This
   // ensures that stale surfaces are not presented to the user for an indefinite
   // period of time.
-  void ResetFallbackToFirstNavigationSurface() override{};
+  void ResetFallbackToFirstNavigationSurface() override {}
 
   void SetNeedsBeginFrames(bool needs_begin_frames) override {}
   void SetWantsAnimateOnlyBeginFrames() override {}
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
-  void EnsureSurfaceSynchronizedForLayoutTest() override {}
+  void EnsureSurfaceSynchronizedForWebTest() override {}
 
   // RenderWidgetHostViewBase:
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -123,6 +123,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
       const override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
+  std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
+      override;
 
   bool is_showing() const { return is_showing_; }
   bool is_occluded() const { return is_occluded_; }
@@ -219,7 +221,7 @@ class TestRenderViewHost
   // RenderViewHostImpl, see below.
   void SimulateWasHidden() override;
   void SimulateWasShown() override;
-  WebPreferences TestComputeWebkitPrefs() override;
+  WebPreferences TestComputeWebPreferences() override;
 
   void TestOnUpdateStateWithFile(const base::FilePath& file_path);
 
@@ -240,21 +242,23 @@ class TestRenderViewHost
   int opener_frame_route_id() const { return opener_frame_route_id_; }
 
   // RenderWidgetHost overrides (same value, but in the Mock* type)
-  MockRenderProcessHost* GetProcess() const override;
+  MockRenderProcessHost* GetProcess() override;
 
   bool CreateTestRenderView(const base::string16& frame_name,
                             int opener_frame_route_id,
                             int proxy_route_id,
                             bool window_was_created_with_opener) override;
 
-  // RenderViewHost overrides --------------------------------------------------
-
+  // RenderViewHost:
   bool CreateRenderView(int opener_frame_route_id,
                         int proxy_route_id,
                         const base::UnguessableToken& devtools_frame_token,
                         const FrameReplicationState& replicated_frame_state,
                         bool window_was_created_with_opener) override;
   void OnWebkitPreferencesChanged() override;
+
+  // RenderViewHostImpl:
+  bool IsTestRenderViewHost() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "extensions/browser/api/display_source/display_source_connection_delegate_factory.h"
 #include "extensions/common/api/display_source.h"
 

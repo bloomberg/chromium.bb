@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
@@ -114,6 +115,36 @@ void FakeConciergeClient::GetContainerSshKeys(
       base::BindOnce(std::move(callback), container_ssh_keys_response_));
 }
 
+void FakeConciergeClient::AttachUsbDevice(base::ScopedFD fd,
+    const vm_tools::concierge::AttachUsbDeviceRequest& request,
+    DBusMethodCallback<vm_tools::concierge::AttachUsbDeviceResponse> callback) {
+  attach_usb_device_called_ = true;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), attach_usb_device_response_));
+}
+
+void FakeConciergeClient::DetachUsbDevice(
+    const vm_tools::concierge::DetachUsbDeviceRequest& request,
+    DBusMethodCallback<vm_tools::concierge::DetachUsbDeviceResponse> callback) {
+  detach_usb_device_called_ = true;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), detach_usb_device_response_));
+}
+
+void FakeConciergeClient::ListUsbDevices(
+    const vm_tools::concierge::ListUsbDeviceRequest& request,
+    DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse> callback) {
+  list_usb_devices_called_ = true;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), list_usb_devices_response_));
+}
+
 void FakeConciergeClient::InitializeProtoResponses() {
   create_disk_image_response_.Clear();
   create_disk_image_response_.set_status(
@@ -137,6 +168,16 @@ void FakeConciergeClient::InitializeProtoResponses() {
   container_ssh_keys_response_.set_container_public_key("pubkey");
   container_ssh_keys_response_.set_host_private_key("privkey");
   container_ssh_keys_response_.set_hostname("hostname");
+
+  attach_usb_device_response_.Clear();
+  attach_usb_device_response_.set_success(true);
+  attach_usb_device_response_.set_guest_port(0);
+
+  detach_usb_device_response_.Clear();
+  detach_usb_device_response_.set_success(true);
+
+  list_usb_devices_response_.Clear();
+  list_usb_devices_response_.set_success(true);
 }
 
 }  // namespace chromeos

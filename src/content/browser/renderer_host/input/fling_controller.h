@@ -83,7 +83,11 @@ class CONTENT_EXPORT FlingController {
   // Used to halt an active fling progress whenever needed.
   void StopFling();
 
-  bool FilterGestureEvent(const GestureEventWithLatencyInfo& gesture_event);
+  // The fling controller needs to observe all gesture events. It may consume
+  // or filter some events.  It will return true if the event was consumed or
+  // filtered and should not be propagated further.
+  bool ObserveAndMaybeConsumeGestureEvent(
+      const GestureEventWithLatencyInfo& gesture_event);
 
   void ProcessGestureFlingStart(
       const GestureEventWithLatencyInfo& gesture_event);
@@ -172,8 +176,15 @@ class CONTENT_EXPORT FlingController {
   // for determining if the fling start time should be re-initialized.
   bool has_fling_animation_started_;
 
+  // The last time fling progress events were sent.
+  base::TimeTicks last_progress_time_;
+
   // The clock used; overridable for tests.
   const base::TickClock* clock_;
+
+  // Time of the last seen scroll update that wasn't filtered. Used to know the
+  // starting time for a possible fling gesture curve.
+  base::TimeTicks last_seen_scroll_update_;
 
   base::WeakPtrFactory<FlingController> weak_ptr_factory_;
 

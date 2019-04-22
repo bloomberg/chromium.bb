@@ -114,9 +114,6 @@ void DebugInfoEventListener::OnPassphraseTypeChanged(
   CreateAndAddEvent(sync_pb::SyncEnums::PASSPHRASE_TYPE_CHANGED);
 }
 
-void DebugInfoEventListener::OnLocalSetPassphraseEncryption(
-    const SyncEncryptionHandler::NigoriState& nigori_state) {}
-
 void DebugInfoEventListener::OnActionableError(
     const SyncProtocolError& sync_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

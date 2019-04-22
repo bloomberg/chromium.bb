@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/scoped_generic.h"
 #include "base/win/core_winrt_util.h"
+#include "base/win/post_async_results.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -18,9 +19,16 @@ namespace shape_detection {
 
 namespace {
 
+using ABI::Windows::Foundation::IAsyncOperation;
+using ABI::Windows::Graphics::Imaging::BitmapPixelFormat;
+using ABI::Windows::Graphics::Imaging::ISoftwareBitmapStatics;
+using ABI::Windows::Media::FaceAnalysis::FaceDetector;
+using ABI::Windows::Media::FaceAnalysis::IFaceDetector;
 using ABI::Windows::Media::FaceAnalysis::IFaceDetectorStatics;
-using base::win::ScopedHString;
+
 using base::win::GetActivationFactory;
+using base::win::ScopedHString;
+using Microsoft::WRL::ComPtr;
 
 BitmapPixelFormat GetPreferredPixelFormat(IFaceDetectorStatics* factory) {
   static constexpr BitmapPixelFormat kFormats[] = {
@@ -53,7 +61,7 @@ void FaceDetectionProviderWin::CreateFaceDetection(
     return;
   }
 
-  Microsoft::WRL::ComPtr<IFaceDetectorStatics> factory;
+  ComPtr<IFaceDetectorStatics> factory;
   HRESULT hr = GetActivationFactory<
       IFaceDetectorStatics,
       RuntimeClass_Windows_Media_FaceAnalysis_FaceDetector>(&factory);
@@ -78,7 +86,7 @@ void FaceDetectionProviderWin::CreateFaceDetection(
   }
 
   // Create an instance of FaceDetector asynchronously.
-  AsyncOperation<FaceDetector>::IAsyncOperationPtr async_op;
+  ComPtr<IAsyncOperation<FaceDetector*>> async_op;
   hr = factory->CreateAsync(&async_op);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Create FaceDetector failed: "
@@ -88,11 +96,11 @@ void FaceDetectionProviderWin::CreateFaceDetection(
 
   // Use WeakPtr to bind the callback so that the once callback will not be run
   // if this object has been already destroyed.
-  hr = AsyncOperation<FaceDetector>::BeginAsyncOperation(
+  hr = base::win::PostAsyncResults(
+      std::move(async_op),
       base::BindOnce(&FaceDetectionProviderWin::OnFaceDetectorCreated,
                      weak_factory_.GetWeakPtr(), std::move(request),
-                     pixel_format),
-      std::move(async_op));
+                     pixel_format));
   if (FAILED(hr)) {
     DLOG(ERROR) << "Begin async operation failed: "
                 << logging::SystemErrorCodeToString(hr);
@@ -113,19 +121,14 @@ FaceDetectionProviderWin::~FaceDetectionProviderWin() = default;
 void FaceDetectionProviderWin::OnFaceDetectorCreated(
     shape_detection::mojom::FaceDetectionRequest request,
     BitmapPixelFormat pixel_format,
-    AsyncOperation<FaceDetector>::IAsyncOperationPtr async_op) {
+    ComPtr<IFaceDetector> face_detector) {
   binding_->ResumeIncomingMethodCallProcessing();
 
-  Microsoft::WRL::ComPtr<IFaceDetector> face_detector;
-  HRESULT hr = async_op ? async_op->GetResults(&face_detector) : E_FAIL;
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "GetResults failed: "
-                << logging::SystemErrorCodeToString(hr);
+  if (!face_detector)
     return;
-  }
 
-  Microsoft::WRL::ComPtr<ISoftwareBitmapStatics> bitmap_factory;
-  hr = GetActivationFactory<
+  ComPtr<ISoftwareBitmapStatics> bitmap_factory;
+  const HRESULT hr = GetActivationFactory<
       ISoftwareBitmapStatics,
       RuntimeClass_Windows_Graphics_Imaging_SoftwareBitmap>(&bitmap_factory);
   if (FAILED(hr)) {

@@ -88,6 +88,19 @@ def CMDchanges(parser, args):
   write_result(result, opt)
 
 
+@subcommand.usage('')
+def CMDabandon(parser, args):
+  parser.add_option('-c', '--change', type=int, help='change number')
+  parser.add_option('-m', '--message', default='', help='reason for abandoning')
+
+  (opt, args) = parser.parse_args(args)
+  result = gerrit_util.AbandonChange(
+      urlparse.urlparse(opt.host).netloc,
+      opt.change, opt.message)
+  logging.info(result)
+  write_result(result, opt)
+
+
 class OptionParser(optparse.OptionParser):
   """Creates the option parse and add --verbose support."""
   def __init__(self, *args, **kwargs):

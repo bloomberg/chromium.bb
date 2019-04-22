@@ -4,6 +4,8 @@
 
 #include "chromecast/browser/cast_media_blocker.h"
 
+#include <utility>
+
 #include "base/threading/thread_checker.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
@@ -12,11 +14,15 @@ namespace chromecast {
 namespace shell {
 
 CastMediaBlocker::CastMediaBlocker(content::MediaSession* media_session)
-    : content::MediaSessionObserver(media_session),
-      blocked_(false),
+    : blocked_(false),
       paused_by_user_(true),
       suspended_(true),
-      controllable_(false) {}
+      controllable_(false),
+      media_session_(media_session) {
+  media_session::mojom::MediaSessionObserverPtr observer;
+  observer_binding_.Bind(mojo::MakeRequest(&observer));
+  media_session_->AddObserver(std::move(observer));
+}
 
 CastMediaBlocker::~CastMediaBlocker() {}
 
@@ -46,16 +52,19 @@ void CastMediaBlocker::BlockMediaLoading(bool blocked) {
   }
 }
 
-void CastMediaBlocker::MediaSessionStateChanged(bool is_controllable,
-                                                bool is_suspended) {
+void CastMediaBlocker::MediaSessionInfoChanged(
+    media_session::mojom::MediaSessionInfoPtr session_info) {
+  bool is_suspended = session_info->playback_state ==
+                      media_session::mojom::MediaPlaybackState::kPaused;
+
   LOG(INFO) << __FUNCTION__ << " blocked=" << blocked_
             << " is_suspended=" << is_suspended
-            << " is_controllable=" << is_controllable
+            << " is_controllable=" << session_info->is_controllable
             << " paused_by_user=" << paused_by_user_;
 
   // Process controllability first.
-  if (controllable_ != is_controllable) {
-    controllable_ = is_controllable;
+  if (controllable_ != session_info->is_controllable) {
+    controllable_ = session_info->is_controllable;
 
     // If not blocked, and we regain control and the media wasn't paused when
     // blocked, resume media if suspended.
@@ -91,19 +100,19 @@ void CastMediaBlocker::MediaSessionStateChanged(bool is_controllable,
 }
 
 void CastMediaBlocker::Suspend() {
-  if (!media_session())
+  if (!media_session_)
     return;
 
   LOG(INFO) << "Suspending media session.";
-  media_session()->Suspend(content::MediaSession::SuspendType::kSystem);
+  media_session_->Suspend(content::MediaSession::SuspendType::kSystem);
 }
 
 void CastMediaBlocker::Resume() {
-  if (!media_session())
+  if (!media_session_)
     return;
 
   LOG(INFO) << "Resuming media session.";
-  media_session()->Resume(content::MediaSession::SuspendType::kSystem);
+  media_session_->Resume(content::MediaSession::SuspendType::kSystem);
 }
 
 }  // namespace shell

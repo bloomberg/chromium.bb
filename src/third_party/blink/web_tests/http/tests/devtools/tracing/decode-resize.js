@@ -31,6 +31,7 @@
 
     </style>
   `);
+  await TestRunner.addScriptTag('../../../resources/run-after-layout-and-paint.js');
 
   await TestRunner.evaluateInPagePromise(`
     var images = [
@@ -47,7 +48,7 @@
     {
         for (let image of images) {
             await addImage(image);
-            await new Promise(fulfill => testRunner.layoutAndPaintAsyncThen(fulfill));
+            await new Promise(fulfill => runAfterLayoutAndPaint(fulfill));
         }
         return generateFrames(3);
 

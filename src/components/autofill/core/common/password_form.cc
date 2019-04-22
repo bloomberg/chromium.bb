@@ -37,6 +37,8 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("username_value", form.username_value);
   target->SetString("password_element", form.password_element);
   target->SetString("password_value", form.password_value);
+  target->SetInteger("password_element_renderer_id",
+                     form.password_element_renderer_id);
   target->SetString("new_password_element", form.new_password_element);
   target->SetInteger("password_element_renderer_id",
                      form.password_element_renderer_id);
@@ -45,6 +47,8 @@ void PasswordFormToJSON(const PasswordForm& form,
                      form.new_password_marked_by_site);
   target->SetString("confirmation_password_element",
                     form.confirmation_password_element);
+  target->SetInteger("confirmation_password_element_renderer_id",
+                     form.confirmation_password_element_renderer_id);
   target->SetString("other_possible_usernames",
                     ValueElementVectorToString(form.other_possible_usernames));
   target->SetString("all_possible_passwords",
@@ -71,9 +75,10 @@ void PasswordFormToJSON(const PasswordForm& form,
   std::ostringstream submission_event_string_stream;
   submission_event_string_stream << form.submission_event;
   target->SetString("submission_event", submission_event_string_stream.str());
-  target->SetBoolean("only_for_fallback_saving", form.only_for_fallback_saving);
+  target->SetBoolean("only_for_fallback", form.only_for_fallback);
   target->SetBoolean("is_gaia_with_skip_save_password_form",
                      form.is_gaia_with_skip_save_password_form);
+  target->SetBoolean("is_new_password_reliable", form.is_new_password_reliable);
 }
 
 }  // namespace
@@ -93,7 +98,7 @@ PasswordForm::PasswordForm()
       is_public_suffix_match(false),
       is_affiliation_based_match(false),
       submission_event(SubmissionIndicatorEvent::NONE),
-      only_for_fallback_saving(false),
+      only_for_fallback(false),
       is_gaia_with_skip_save_password_form(false) {}
 
 PasswordForm::PasswordForm(const PasswordForm& other) = default;
@@ -114,6 +119,16 @@ bool PasswordForm::IsPossibleChangePasswordFormWithoutUsername() const {
   return IsPossibleChangePasswordForm() && username_element.empty();
 }
 
+bool PasswordForm::HasPasswordElement() const {
+  return has_renderer_ids ? password_element_renderer_id !=
+                                FormFieldData::kNotSetFormControlRendererId
+                          : !password_element.empty();
+}
+
+bool PasswordForm::IsFederatedCredential() const {
+  return !federation_origin.opaque();
+}
+
 bool PasswordForm::operator==(const PasswordForm& form) const {
   return scheme == form.scheme && signon_realm == form.signon_realm &&
          origin == form.origin && action == form.action &&
@@ -130,7 +145,12 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          password_element_renderer_id == form.password_element_renderer_id &&
          password_value == form.password_value &&
          new_password_element == form.new_password_element &&
+         confirmation_password_element_renderer_id ==
+             form.confirmation_password_element_renderer_id &&
          new_password_marked_by_site == form.new_password_marked_by_site &&
+         confirmation_password_element == form.confirmation_password_element &&
+         confirmation_password_element_renderer_id ==
+             form.confirmation_password_element_renderer_id &&
          new_password_value == form.new_password_value &&
          preferred == form.preferred && date_created == form.date_created &&
          date_synced == form.date_synced &&
@@ -151,9 +171,10 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          app_display_name == form.app_display_name &&
          app_icon_url == form.app_icon_url &&
          submission_event == form.submission_event &&
-         only_for_fallback_saving == form.only_for_fallback_saving &&
+         only_for_fallback == form.only_for_fallback &&
          is_gaia_with_skip_save_password_form ==
-             form.is_gaia_with_skip_save_password_form;
+             form.is_gaia_with_skip_save_password_form &&
+         is_new_password_reliable == form.is_new_password_reliable;
 }
 
 bool PasswordForm::operator!=(const PasswordForm& form) const {
@@ -199,6 +220,12 @@ base::string16 ValueElementVectorToString(
                    return p.first + base::ASCIIToUTF16("+") + p.second;
                  });
   return base::JoinString(pairs, base::ASCIIToUTF16(", "));
+}
+
+bool IsHttpAuthScheme(PasswordForm::Scheme scheme) {
+  return scheme == PasswordForm::SCHEME_BASIC ||
+         scheme == PasswordForm::SCHEME_DIGEST ||
+         scheme == PasswordForm::SCHEME_OTHER;
 }
 
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {

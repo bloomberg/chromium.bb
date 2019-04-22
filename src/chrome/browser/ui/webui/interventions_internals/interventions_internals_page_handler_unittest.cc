@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -39,6 +40,7 @@
 #include "components/previews/core/previews_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/base/features.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -50,6 +52,7 @@ namespace {
 // The HTML DOM ID used in Javascript.
 constexpr char kPreviewsAllowedHtmlId[] = "previews-allowed-status";
 constexpr char kOfflinePreviewsHtmlId[] = "offline-preview-status";
+constexpr char kLitePageRedirectHtmlId[] = "lite-page-redirect-status";
 constexpr char kResourceLoadingHintsHtmlId[] = "resource-loading-hints-status";
 constexpr char kNoScriptPreviewsHtmlId[] = "noscript-preview-status";
 constexpr char kClientLoFiPreviewsHtmlId[] = "client-lofi-preview-status";
@@ -57,6 +60,8 @@ constexpr char kClientLoFiPreviewsHtmlId[] = "client-lofi-preview-status";
 // Descriptions for previews.
 constexpr char kPreviewsAllowedDescription[] = "Previews Allowed";
 constexpr char kOfflineDesciption[] = "Offline Previews";
+constexpr char kLitePageRedirectDescription[] =
+    "Lite Page Redirect / Server Previews";
 constexpr char kResourceLoadingHintsDescription[] =
     "ResourceLoadingHints Previews";
 constexpr char kNoScriptDescription[] = "NoScript Previews";
@@ -64,6 +69,7 @@ constexpr char kClientLoFiDescription[] = "Client LoFi Previews";
 
 // The HTML DOM ID used in Javascript.
 constexpr char kOfflinePageFlagHtmlId[] = "offline-page-flag";
+constexpr char kLitePageRedirectFlagHtmlId[] = "lite-page-redirect-flag";
 constexpr char kResourceLoadingHintsFlagHtmlId[] =
     "resource-loading-hints-flag";
 constexpr char kNoScriptFlagHtmlId[] = "noscript-flag";
@@ -76,6 +82,8 @@ constexpr char kDataSaverAltConfigHtmlId[] =
 // Links to flags in chrome://flags.
 constexpr char kOfflinePageFlagLink[] =
     "chrome://flags/#enable-offline-previews";
+constexpr char kLitePageRedirectFlagLink[] =
+    "chrome://flags/#enable-lite-page-server-previews";
 constexpr char kResourceLoadingHintsFlagLink[] =
     "chrome://flags/#enable-resource-loading-hints";
 constexpr char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
@@ -88,6 +96,7 @@ constexpr char kDataSaverAltConfigLink[] =
 
 // Flag features names.
 constexpr char kOfflinePageFeatureName[] = "OfflinePreviews";
+constexpr char kLitePageRedirectFeatureName[] = "LitePageServerPreviews";
 constexpr char kResourceLoadingHintsFeatureName[] = "ResourceLoadingHints";
 constexpr char kNoScriptFeatureName[] = "NoScriptPreviews";
 
@@ -150,7 +159,9 @@ class TestInterventionsInternalsPage
   void OnBlacklistCleared(int64_t time) override {
     blacklist_cleared_time_ = time;
   }
-  void OnEffectiveConnectionTypeChanged(const std::string& type) override {
+  void UpdateEffectiveConnectionType(
+      const std::string& type,
+      const std::string& max_intervention_type) override {
     // Ignore.
     // TODO(thanhdle): Add integration test to test behavior of the pipeline end
     // to end. crbug.com/777936
@@ -270,21 +281,29 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
 
     mojom::InterventionsInternalsPageHandlerPtr page_handler_ptr;
-    handler_request_ = mojo::MakeRequest(&page_handler_ptr);
+
+    mojom::InterventionsInternalsPageHandlerRequest handler_request =
+        mojo::MakeRequest(&page_handler_ptr);
     page_handler_ = std::make_unique<InterventionsInternalsPageHandler>(
-        std::move(handler_request_), previews_ui_service_.get());
+        std::move(handler_request), previews_ui_service_.get(),
+        &test_network_quality_tracker_);
 
     mojom::InterventionsInternalsPagePtr page_ptr;
-    page_request_ = mojo::MakeRequest(&page_ptr);
+    mojom::InterventionsInternalsPageRequest page_request =
+        mojo::MakeRequest(&page_ptr);
     page_ = std::make_unique<TestInterventionsInternalsPage>(
-        std::move(page_request_));
+        std::move(page_request));
 
     page_handler_->SetClientPage(std::move(page_ptr));
 
     scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   }
 
-  void TearDown() override { profile_manager_.DeleteAllTestingProfiles(); }
+  void TearDown() override {
+    profile_manager_.DeleteAllTestingProfiles();
+    page_handler_.reset();
+    page_.reset();
+  }
 
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -296,11 +315,9 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
   std::unique_ptr<TestPreviewsUIService> previews_ui_service_;
 
   // InterventionsInternalPageHandler's variables.
-  mojom::InterventionsInternalsPageHandlerRequest handler_request_;
   std::unique_ptr<InterventionsInternalsPageHandler> page_handler_;
 
   // InterventionsInternalPage's variables.
-  mojom::InterventionsInternalsPageRequest page_request_;
   std::unique_ptr<TestInterventionsInternalsPage> page_;
 
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
@@ -310,7 +327,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetPreviewsEnabledCount) {
   page_handler_->GetPreviewsEnabled(
       base::BindOnce(&MockGetPreviewsEnabledCallback));
 
-  constexpr size_t expected = 5;
+  constexpr size_t expected = 6;
   EXPECT_EQ(expected, passed_in_modes.size());
 }
 
@@ -445,11 +462,39 @@ TEST_F(InterventionsInternalsPageHandlerTest, OfflinePreviewsEnabled) {
   EXPECT_TRUE(offline_previews->second->enabled);
 }
 
+TEST_F(InterventionsInternalsPageHandlerTest, LitePageRedirectDisabled) {
+  // Init with kLitePageRedirect disabled.
+  scoped_feature_list_->InitWithFeatures(
+      {}, {previews::features::kLitePageServerPreviews});
+
+  page_handler_->GetPreviewsEnabled(
+      base::BindOnce(&MockGetPreviewsEnabledCallback));
+  auto resource_loading_hints = passed_in_modes.find(kLitePageRedirectHtmlId);
+  ASSERT_NE(passed_in_modes.end(), resource_loading_hints);
+  EXPECT_EQ(kLitePageRedirectDescription,
+            resource_loading_hints->second->description);
+  EXPECT_FALSE(resource_loading_hints->second->enabled);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, LitePageRedirectEnabled) {
+  // Init with kLitePageRedirect enabled.
+  scoped_feature_list_->InitWithFeatures(
+      {previews::features::kLitePageServerPreviews}, {});
+
+  page_handler_->GetPreviewsEnabled(
+      base::BindOnce(&MockGetPreviewsEnabledCallback));
+  auto resource_loading_hints = passed_in_modes.find(kLitePageRedirectHtmlId);
+  ASSERT_NE(passed_in_modes.end(), resource_loading_hints);
+  EXPECT_EQ(kLitePageRedirectDescription,
+            resource_loading_hints->second->description);
+  EXPECT_TRUE(resource_loading_hints->second->enabled);
+}
+
 TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsCount) {
   page_handler_->GetPreviewsFlagsDetails(
       base::BindOnce(&MockGetPreviewsFlagsCallback));
 
-  constexpr size_t expected = 7;
+  constexpr size_t expected = 8;
   EXPECT_EQ(expected, passed_in_flags.size());
 }
 
@@ -499,8 +544,8 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsEctForceFieldtrialValue) {
 
   std::map<std::string, std::string> params;
   params[net::kForceEffectiveConnectionType] = expected_ect;
-  ASSERT_TRUE(base::AssociateFieldTrialParams(trial_name, group_name, params));
-  base::FieldTrialList::CreateFieldTrial(trial_name, group_name);
+  scoped_feature_list_->InitAndEnableFeatureWithParameters(
+      net::features::kNetworkQualityEstimator, params);
 
   page_handler_->GetPreviewsFlagsDetails(
       base::BindOnce(&MockGetPreviewsFlagsCallback));
@@ -642,6 +687,38 @@ TEST_F(InterventionsInternalsPageHandlerTest,
   EXPECT_EQ(kDisabledFlagValue, resource_loading_hints_flag->second->value);
   EXPECT_EQ(kResourceLoadingHintsFlagLink,
             resource_loading_hints_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest,
+       GetFlagsLitePageRedirectDefaultValue) {
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto lite_page_redirect_flag =
+      passed_in_flags.find(kLitePageRedirectFlagHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), lite_page_redirect_flag);
+  EXPECT_EQ(flag_descriptions::kEnableLitePageServerPreviewsName,
+            lite_page_redirect_flag->second->description);
+  EXPECT_EQ(kDefaultFlagValue, lite_page_redirect_flag->second->value);
+  EXPECT_EQ(kLitePageRedirectFlagLink, lite_page_redirect_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsLitePageRedirectEnabled) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                  kLitePageRedirectFeatureName);
+
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto lite_page_redirect_flag =
+      passed_in_flags.find(kLitePageRedirectFlagHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), lite_page_redirect_flag);
+  EXPECT_EQ(flag_descriptions::kEnableLitePageServerPreviewsName,
+            lite_page_redirect_flag->second->description);
+  EXPECT_EQ(kEnabledFlagValue, lite_page_redirect_flag->second->value);
+  EXPECT_EQ(kLitePageRedirectFlagLink, lite_page_redirect_flag->second->link);
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsAltConfigCustomValue) {

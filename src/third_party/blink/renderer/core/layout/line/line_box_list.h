@@ -120,7 +120,7 @@ class InlineBoxList {
     STACK_ALLOCATED();
 
    public:
-    explicit ReverseRange(InlineBoxType* last) : last_(last){};
+    explicit ReverseRange(InlineBoxType* last) : last_(last) {}
     ReverseIterator begin() const { return ReverseIterator(last_); }
     ReverseIterator end() const { return ReverseIterator(nullptr); }
 

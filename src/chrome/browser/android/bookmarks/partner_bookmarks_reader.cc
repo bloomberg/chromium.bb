@@ -94,8 +94,8 @@ void PrepareAndSetFavicon(jbyte* icon_bytes,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&SetFaviconCallback, profile, node->url(), fake_icon_url,
-                 image_data, icon_type, &event));
+      base::BindOnce(&SetFaviconCallback, profile, node->url(), fake_icon_url,
+                     image_data, icon_type, &event));
   // TODO(aruslan): http://b/6397072 If possible - avoid using favicon service
   event.Wait();
 }
@@ -259,7 +259,7 @@ void PartnerBookmarksReader::GetFaviconFromCacheOrServer(
     bool from_server,
     int desired_favicon_size_px,
     FaviconFetchedCallback callback) {
-  GetLargeIconService()->GetLargeIconOrFallbackStyle(
+  GetLargeIconService()->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       page_url, kPartnerBookmarksMinimumFaviconSizePx, desired_favicon_size_px,
       base::Bind(&PartnerBookmarksReader::OnGetFaviconFromCacheFinished,
                  base::Unretained(this), page_url,
@@ -363,8 +363,7 @@ void PartnerBookmarksReader::OnFaviconFetched(
 // ----------------------------------------------------------------
 
 static void JNI_PartnerBookmarksReader_DisablePartnerBookmarksEditing(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+    JNIEnv* env) {
   PartnerBookmarksShim::DisablePartnerBookmarksEditing();
 }
 
@@ -381,7 +380,6 @@ static jlong JNI_PartnerBookmarksReader_Init(JNIEnv* env,
 static base::android::ScopedJavaLocalRef<jstring>
 JNI_PartnerBookmarksReader_GetNativeUrlString(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_url) {
   GURL url(ConvertJavaStringToUTF8(j_url));
   return ConvertUTF8ToJavaString(env, url.spec());

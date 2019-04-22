@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "ui/gl/gl_switches.h"
+
+#include "base/stl_util.h"
 
 namespace gl {
 
@@ -40,6 +41,11 @@ const char kDisableD3D11[]                  = "disable-d3d11";
 
 // Disables use of ES3 backend (use ES2 backend instead).
 const char kDisableES3GLContext[]           = "disable-es3-gl-context";
+
+// Disables use of ES3 backend at a lower level, for testing purposes.
+// This isn't guaranteed to work everywhere, so it's test-only.
+const char kDisableES3GLContextForTesting[] =
+    "disable-es3-gl-context-for-testing";
 
 // Stop the GPU from synchronizing presentation with vblank.
 const char kDisableGpuVsync[]               = "disable-gpu-vsync";
@@ -117,6 +123,7 @@ const char* const kGLSwitchesCopiedFromGpuProcessHost[] = {
     kDisableGpuVsync,
     kDisableD3D11,
     kDisableES3GLContext,
+    kDisableES3GLContextForTesting,
     kEnableGPUServiceLogging,
     kEnableGPUServiceTracing,
     kEnableSgiVideoSync,
@@ -130,17 +137,11 @@ const char* const kGLSwitchesCopiedFromGpuProcessHost[] = {
     kDisableDirectCompositionLayers,
 };
 const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
-    arraysize(kGLSwitchesCopiedFromGpuProcessHost);
+    base::size(kGLSwitchesCopiedFromGpuProcessHost);
 
 }  // namespace switches
 
 namespace features {
-
-// Allow putting a video swapchain underneath the main swapchain, so overlays
-// can be used even if there are controls on top of the video. This requires
-// the DirectCompositionOverlays feature to be enabled.
-const base::Feature kDirectCompositionUnderlays{
-    "DirectCompositionUnderlays", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allow putting content with complex transforms (e.g. rotations) into an
 // overlay.

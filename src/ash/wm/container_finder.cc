@@ -95,7 +95,6 @@ aura::Window* GetDefaultParent(aura::Window* window,
   switch (window->type()) {
     case aura::client::WINDOW_TYPE_NORMAL:
     case aura::client::WINDOW_TYPE_POPUP:
-    case aura::client::WINDOW_TYPE_PANEL:
       if (window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM)
         return GetSystemModalContainer(target_root, window);
       if (HasTransientParentWindow(window))

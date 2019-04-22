@@ -62,6 +62,11 @@ typedef enum {{enum_name}} {
 
 {%   endfor %}
 
+// Declare constants
+{%- for constant in module.constants %}
+{{constant|format_constant_declaration}};
+{%- endfor %}
+
 {#--- Interface Stubs -#}
 {%  for interface in interfaces %}
 {%- set interface_name = interface|get_name_for_kind %}
@@ -151,9 +156,13 @@ typedef void
 {{export_macro}}
 {%-  set kind = packed_field.field.kind %}
 {%-  if kind|is_array_kind %}
-void {{struct_name}}_{{packed_field.field.name}}_add({{struct_name}}Ptr self, {{kind.kind|c_wrapper_type}} element);
+void {{struct_name}}_{{packed_field.field.name}}_add({{struct_name}}Ptr self, const {{kind.kind|c_wrapper_type}} element);
 {%-  else %}
-void {{struct_name}}_{{packed_field.field.name}}_set({{struct_name}}Ptr self, {{packed_field.field.kind|c_wrapper_type}} {{packed_field.field.name}});
+void {{struct_name}}_{{packed_field.field.name}}_set({{struct_name}}Ptr self, const {{packed_field.field.kind|c_wrapper_type}} {{packed_field.field.name}});
+{%- endif %}
+{%-  if kind|is_struct_kind %}
+// Move data from |{{packed_field.field.name}}|. The caller retains ownership of |{{packed_field.field.name}}| and must destroy it.
+void {{struct_name}}_{{packed_field.field.name}}_move({{struct_name}}Ptr self, {{packed_field.field.kind|c_wrapper_type}} {{packed_field.field.name}});
 {%- endif %}
 {%- endfor %}
 // {{struct_name}} getters.
@@ -161,13 +170,13 @@ void {{struct_name}}_{{packed_field.field.name}}_set({{struct_name}}Ptr self, {{
 {{export_macro}}
 {%-  set kind = packed_field.field.kind %}
 {%-  if kind|is_array_kind %}
-uint32_t {{struct_name}}_{{packed_field.field.name}}_size({{struct_name}}Ptr self);
+uint32_t {{struct_name}}_{{packed_field.field.name}}_size(const {{struct_name}}Ptr self);
 {{export_macro}}
-{{kind.kind|c_wrapper_type}} {{struct_name}}_{{packed_field.field.name}}_at({{struct_name}}Ptr self, uint32_t index);
+{{kind.kind|c_wrapper_type}} {{struct_name}}_{{packed_field.field.name}}_at(const {{struct_name}}Ptr self, uint32_t index);
 {{export_macro}}
 void {{struct_name}}_{{packed_field.field.name}}_clear({{struct_name}}Ptr self);
 {%-  else %}
-{{packed_field.field.kind|c_wrapper_type}} {{struct_name}}_{{packed_field.field.name}}_get({{struct_name}}Ptr self);
+{{packed_field.field.kind|c_wrapper_type}} {{struct_name}}_{{packed_field.field.name}}_get(const {{struct_name}}Ptr self);
 {%- endif %}
 {%- endfor %}
 {%- endfor %}

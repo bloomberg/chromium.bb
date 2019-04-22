@@ -1,12 +1,10 @@
 include_rules = [
   "+cc",
   "+content/public/test",
-  "+content/renderer",
   "+device/gamepad/public/cpp",
   "+device/gamepad/public/mojom",
   "+gin",
   "+gpu/command_buffer/client",
-  "+media/midi/midi_service.mojom.h",
   "+mojo/public",
   "+net/base",
   "+services/device/public/cpp/generic_sensor",
@@ -23,3 +21,22 @@ include_rules = [
   "+ui/gfx",
   "+v8/include",
 ]
+
+# //content/renderer is allowed for web tests helpers, but should not leak out
+# to other parts of //content/shell unrelated to web tests. So we limit access
+# to things that are not used elsewhere.
+specific_include_rules = {
+  # Only used for testing.
+  "pixel_dump\.cc": [
+    "+printing",
+  ],
+  # These classes subclass RenderView and RenderWidget to inject behaviour
+  # for web tests.
+  "web_(frame|view|widget)_test_proxy\.h": [
+    "+content/renderer",
+  ],
+  # cc files will not leak //content/renderer includes.
+  ".*\.cc": [
+    "+content/renderer",
+  ],
+}

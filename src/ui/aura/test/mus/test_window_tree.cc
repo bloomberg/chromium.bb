@@ -7,6 +7,9 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/mus/test_window_tree_delegate.h"
 
@@ -57,9 +60,13 @@ void TestWindowTree::AddEmbedRootForToken(const base::UnguessableToken& token) {
   embedder_window_data->window_id =
       (kFakeEmbedderClientId << 32) | kFakeEmbedderWindowId;
   embedder_window_data->bounds = gfx::Rect(320, 240);
+  embedder_window_data->visible = true;
 
-  client_->OnEmbedFromToken(token, std::move(embedder_window_data), 0,
-                            base::nullopt);
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator;
+  parent_local_surface_id_allocator.GenerateId();
+  client_->OnEmbedFromToken(
+      token, std::move(embedder_window_data), 0,
+      parent_local_surface_id_allocator.GetCurrentLocalSurfaceIdAllocation());
 }
 
 void TestWindowTree::RemoveEmbedderWindow(ws::Id embedder_window_id) {
@@ -166,12 +173,23 @@ void TestWindowTree::SetWindowBounds(
     uint32_t change_id,
     ws::Id window_id,
     const gfx::Rect& bounds,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {
   window_id_ = window_id;
-  last_local_surface_id_ = local_surface_id;
+  if (local_surface_id_allocation)
+    last_local_surface_id_ = local_surface_id_allocation->local_surface_id();
+  else
+    last_local_surface_id_.reset();
   second_last_set_window_bounds_ = last_set_window_bounds_;
   last_set_window_bounds_ = bounds;
   OnChangeReceived(change_id, WindowTreeChangeType::BOUNDS);
+}
+
+void TestWindowTree::UpdateLocalSurfaceIdFromChild(
+    ws::Id transport_window_id,
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
+  ++update_local_surface_id_from_child_count_;
+  last_local_surface_id_ = local_surface_id_allocation.local_surface_id();
 }
 
 void TestWindowTree::SetWindowTransform(uint32_t change_id,
@@ -194,12 +212,24 @@ void TestWindowTree::SetHitTestInsets(ws::Id window_id,
   last_touch_hit_test_insets_ = touch;
 }
 
-void TestWindowTree::SetCanAcceptDrops(ws::Id window_id, bool accepts_drops) {}
+void TestWindowTree::SetShape(ws::Id window_id,
+                              const std::vector<gfx::Rect>& shape) {}
+
+void TestWindowTree::SetCanAcceptDrops(ws::Id window_id, bool accepts_drops) {
+  last_accepts_drops_ = accepts_drops;
+  ++accepts_drops_count_;
+}
 
 void TestWindowTree::SetWindowVisibility(uint32_t change_id,
                                          ws::Id window_id,
                                          bool visible) {
   OnChangeReceived(change_id, WindowTreeChangeType::VISIBLE);
+}
+
+void TestWindowTree::SetWindowTransparent(uint32_t change_id,
+                                          ws::Id window_id,
+                                          bool transparent) {
+  OnChangeReceived(change_id);
 }
 
 void TestWindowTree::SetWindowProperty(
@@ -324,10 +354,14 @@ void TestWindowTree::AttachFrameSinkId(uint64_t window_id,
 void TestWindowTree::UnattachFrameSinkId(uint64_t window_id) {}
 
 void TestWindowTree::SetFocus(uint32_t change_id, ws::Id window_id) {
+  last_focused_window_id_ = window_id;
   OnChangeReceived(change_id, WindowTreeChangeType::FOCUS);
 }
 
-void TestWindowTree::SetCanFocus(ws::Id window_id, bool can_focus) {}
+void TestWindowTree::SetCanFocus(ws::Id window_id, bool can_focus) {
+  ++can_focus_count_;
+  last_can_focus_ = can_focus;
+}
 
 void TestWindowTree::SetEventTargetingPolicy(
     ws::Id window_id,
@@ -335,8 +369,9 @@ void TestWindowTree::SetEventTargetingPolicy(
 
 void TestWindowTree::SetCursor(uint32_t change_id,
                                ws::Id transport_window_id,
-                               ui::CursorData cursor_data) {
+                               ui::Cursor cursor) {
   OnChangeReceived(change_id);
+  last_cursor_ = cursor;
 }
 
 void TestWindowTree::SetWindowTextInputState(
@@ -387,7 +422,9 @@ void TestWindowTree::CancelDragDrop(ws::Id window_id) {}
 void TestWindowTree::PerformWindowMove(uint32_t change_id,
                                        ws::Id window_id,
                                        ws::mojom::MoveLoopSource source,
-                                       const gfx::Point& cursor_location) {
+                                       const gfx::Point& cursor_location,
+                                       int hit_test) {
+  last_move_hit_test_ = hit_test;
   OnChangeReceived(change_id);
 }
 
@@ -396,6 +433,11 @@ void TestWindowTree::CancelWindowMove(ws::Id window_id) {}
 void TestWindowTree::ObserveTopmostWindow(ws::mojom::MoveLoopSource source,
                                           ws::Id window_id) {}
 void TestWindowTree::StopObservingTopmostWindow() {}
+
+void TestWindowTree::SetWindowResizeShadow(ws::Id window_id, int hit_test) {
+  window_resize_shadow_count_++;
+  last_window_resize_shadow_ = hit_test;
+}
 
 void TestWindowTree::CancelActiveTouchesExcept(ws::Id not_cancelled_window_id) {
   last_not_cancelled_window_id_ = not_cancelled_window_id;
@@ -428,5 +470,9 @@ void TestWindowTree::UnpauseWindowOcclusionTracking() {
   if (delegate_)
     delegate_->UnpauseWindowOcclusionTracking();
 }
+
+void TestWindowTree::ConnectToImeEngine(
+    ime::mojom::ImeEngineRequest engine_request,
+    ime::mojom::ImeEngineClientPtr client) {}
 
 }  // namespace aura

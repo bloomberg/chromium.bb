@@ -12,71 +12,68 @@
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_update_job.h"
 #include "content/browser/appcache/mock_appcache_service.h"
-#include "content/common/appcache_interfaces.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace {
 
-class TestAppCacheFrontend : public content::AppCacheFrontend {
+class TestAppCacheFrontend : public blink::mojom::AppCacheFrontend {
  public:
   TestAppCacheFrontend()
       : last_host_id_(-1),
         last_cache_id_(-1),
-        last_status_(content::AppCacheStatus::APPCACHE_STATUS_OBSOLETE) {}
+        last_status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE) {}
 
-  void OnCacheSelected(int host_id,
-                       const content::AppCacheInfo& info) override {
-    last_host_id_ = host_id;
-    last_cache_id_ = info.cache_id;
-    last_status_ = info.status;
+  void CacheSelected(blink::mojom::AppCacheInfoPtr info) override {
+    last_host_id_ = bindings_.dispatch_context();
+    last_cache_id_ = info->cache_id;
+    last_status_ = info->status;
   }
 
-  void OnStatusChanged(const std::vector<int>& host_ids,
-                       content::AppCacheStatus status) override {}
+  void EventRaised(blink::mojom::AppCacheEventID event_id) override {}
 
-  void OnEventRaised(const std::vector<int>& host_ids,
-                     content::AppCacheEventID event_id) override {}
+  void ErrorEventRaised(
+      blink::mojom::AppCacheErrorDetailsPtr details) override {}
 
-  void OnErrorEventRaised(
-      const std::vector<int>& host_ids,
-      const content::AppCacheErrorDetails& details) override {}
+  void ProgressEventRaised(const GURL& url,
+                           int32_t num_total,
+                           int32_t num_complete) override {}
 
-  void OnProgressEventRaised(const std::vector<int>& host_ids,
-                             const GURL& url,
-                             int num_total,
-                             int num_complete) override {}
+  void LogMessage(blink::mojom::ConsoleMessageLevel log_level,
+                  const std::string& message) override {}
 
-  void OnLogMessage(int host_id,
-                    content::AppCacheLogLevel log_level,
-                    const std::string& message) override {}
-
-  void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
-
-  void OnSetSubresourceFactory(
-      int host_id,
+  void SetSubresourceFactory(
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 
-  int last_host_id_;
+  blink::mojom::AppCacheFrontendPtr Bind(int32_t host_id) {
+    blink::mojom::AppCacheFrontendPtr result;
+    bindings_.AddBinding(this, mojo::MakeRequest(&result), host_id);
+    return result;
+  }
+
+  int32_t last_host_id_;
   int64_t last_cache_id_;
-  content::AppCacheStatus last_status_;
+  blink::mojom::AppCacheStatus last_status_;
+  mojo::BindingSet<blink::mojom::AppCacheFrontend, int32_t> bindings_;
 };
 
-}  // namespace anon
+}  // namespace
 
 namespace content {
 
 class TestUpdateObserver : public AppCacheGroup::UpdateObserver {
  public:
-  TestUpdateObserver() : update_completed_(false), group_has_cache_(false) {
-  }
+  TestUpdateObserver() : update_completed_(false), group_has_cache_(false) {}
 
   void OnUpdateComplete(AppCacheGroup* group) override {
     update_completed_ = true;
     group_has_cache_ = group->HasCache();
   }
 
-  virtual void OnContentBlocked(AppCacheGroup* group) {
-  }
+  virtual void OnContentBlocked(AppCacheGroup* group) {}
 
   bool update_completed_;
   bool group_has_cache_;
@@ -84,11 +81,15 @@ class TestUpdateObserver : public AppCacheGroup::UpdateObserver {
 
 class TestAppCacheHost : public AppCacheHost {
  public:
-  TestAppCacheHost(int host_id, AppCacheFrontend* frontend,
+  TestAppCacheHost(int host_id,
+                   TestAppCacheFrontend* frontend,
                    AppCacheServiceImpl* service)
-      : AppCacheHost(host_id, frontend, service),
-        update_completed_(false) {
-  }
+      : AppCacheHost(host_id,
+                     /*process_id=*/456,
+                     /*render_frame_id=*/789,
+                     frontend->Bind(host_id),
+                     service),
+        update_completed_(false) {}
 
   void OnUpdateComplete(AppCacheGroup* group) override {
     update_completed_ = true;
@@ -158,9 +159,9 @@ TEST_F(AppCacheGroupTest, AddRemoveCache) {
   group->RemoveCache(cache5.get());
   EXPECT_FALSE(cache5->owning_group());
   EXPECT_EQ(cache4.get(), group->newest_complete_cache());  // newest unchanged
-  group->RemoveCache(cache4.get());                   // newest removed
+  group->RemoveCache(cache4.get());                         // newest removed
   EXPECT_FALSE(cache4->owning_group());
-  EXPECT_FALSE(group->newest_complete_cache());       // no more newest cache
+  EXPECT_FALSE(group->newest_complete_cache());  // no more newest cache
 
   // Can remove newest cache if there are older caches.
   group->AddCache(cache1.get());
@@ -178,8 +179,10 @@ TEST_F(AppCacheGroupTest, CleanupUnusedGroup) {
   AppCacheGroup* group =
       new AppCacheGroup(service.storage(), GURL("http://foo.com"), 111);
 
-  AppCacheHost host1(1, &frontend, &service);
-  AppCacheHost host2(2, &frontend, &service);
+  AppCacheHost host1(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+                     frontend.Bind(/*host_id=*/1), &service);
+  AppCacheHost host2(/*host_id=*/2, /*process_id=*/2, /*render_frame_id=*/2,
+                     frontend.Bind(/*host_id=*/2), &service);
 
   base::Time now = base::Time::Now();
 
@@ -190,14 +193,18 @@ TEST_F(AppCacheGroupTest, CleanupUnusedGroup) {
   EXPECT_EQ(cache1, group->newest_complete_cache());
 
   host1.AssociateCompleteCache(cache1);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(frontend.last_host_id_, host1.host_id());
   EXPECT_EQ(frontend.last_cache_id_, cache1->cache_id());
-  EXPECT_EQ(frontend.last_status_, AppCacheStatus::APPCACHE_STATUS_IDLE);
+  EXPECT_EQ(frontend.last_status_,
+            blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE);
 
   host2.AssociateCompleteCache(cache1);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(frontend.last_host_id_, host2.host_id());
   EXPECT_EQ(frontend.last_cache_id_, cache1->cache_id());
-  EXPECT_EQ(frontend.last_status_, AppCacheStatus::APPCACHE_STATUS_IDLE);
+  EXPECT_EQ(frontend.last_status_,
+            blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE);
 
   AppCache* cache2 = new AppCache(service.storage(), 222);
   cache2->set_complete(true);
@@ -208,9 +215,11 @@ TEST_F(AppCacheGroupTest, CleanupUnusedGroup) {
   // Unassociate all hosts from older cache.
   host1.AssociateNoCache(GURL());
   host2.AssociateNoCache(GURL());
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(frontend.last_host_id_, host2.host_id());
-  EXPECT_EQ(frontend.last_cache_id_, kAppCacheNoCacheId);
-  EXPECT_EQ(frontend.last_status_, AppCacheStatus::APPCACHE_STATUS_UNCACHED);
+  EXPECT_EQ(frontend.last_cache_id_, blink::mojom::kAppCacheNoCacheId);
+  EXPECT_EQ(frontend.last_status_,
+            blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED);
 }
 
 TEST_F(AppCacheGroupTest, StartUpdate) {
@@ -228,8 +237,7 @@ TEST_F(AppCacheGroupTest, StartUpdate) {
   group->StartUpdateWithHost(nullptr);
   EXPECT_EQ(update, group->update_job_);
 
-  // Deleting the update should restore the group to
-  // AppCacheStatus::APPCACHE_STATUS_IDLE.
+  // Deleting the update should restore the group to AppCacheGroup::IDLE.
   delete update;
   EXPECT_TRUE(group->update_job_ == nullptr);
   EXPECT_EQ(AppCacheGroup::IDLE, group->update_status());

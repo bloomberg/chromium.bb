@@ -15,6 +15,9 @@ void CallInterfaceDescriptorData::InitializePlatformSpecific(
 
   register_param_count_ = register_parameter_count;
 
+  // UBSan doesn't like creating zero-length arrays.
+  if (register_parameter_count == 0) return;
+
   // InterfaceDescriptor owns a copy of the registers array.
   register_params_ = NewArray<Register>(register_parameter_count, no_reg);
   for (int i = 0; i < register_parameter_count; i++) {
@@ -45,7 +48,7 @@ void CallInterfaceDescriptorData::InitializePlatformIndependent(
     for (int i = 0; i < types_length; i++) machine_types_[i] = machine_types[i];
   }
 
-  DCHECK(AllStackParametersAreTagged());
+  if (!(flags_ & kNoStackScan)) DCHECK(AllStackParametersAreTagged());
 }
 
 #ifdef DEBUG
@@ -125,6 +128,11 @@ const char* CallInterfaceDescriptor::DebugName() const {
   return "";
 }
 
+#if !defined(V8_TARGET_ARCH_MIPS) && !defined(V8_TARGET_ARCH_MIPS64)
+bool CallInterfaceDescriptor::IsValidFloatParameterRegister(Register reg) {
+  return true;
+}
+#endif
 
 void VoidDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
@@ -318,7 +326,7 @@ void GrowArrayElementsDescriptor::InitializePlatformSpecific(
 
 void NewArgumentsElementsDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
-  DefaultInitializePlatformSpecific(data, 3);
+  DefaultInitializePlatformSpecific(data, kParameterCount);
 }
 
 void ArrayNoArgumentConstructorDescriptor::InitializePlatformSpecific(
@@ -351,22 +359,60 @@ void WasmMemoryGrowDescriptor::InitializePlatformSpecific(
   DefaultInitializePlatformSpecific(data, kParameterCount);
 }
 
+void WasmTableGetDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  DefaultInitializePlatformSpecific(data, kParameterCount);
+}
+
+void WasmTableSetDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  DefaultInitializePlatformSpecific(data, kParameterCount);
+}
+
 void WasmThrowDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
   DefaultInitializePlatformSpecific(data, kParameterCount);
 }
 
-void WasmAtomicWakeDescriptor::InitializePlatformSpecific(
+void WasmAtomicNotifyDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
   DefaultInitializePlatformSpecific(data, kParameterCount);
 }
 
+#if !defined(V8_TARGET_ARCH_MIPS) && !defined(V8_TARGET_ARCH_MIPS64)
 void WasmI32AtomicWaitDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
   DefaultInitializePlatformSpecific(data, kParameterCount);
 }
 
+void WasmI64AtomicWaitDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  DefaultInitializePlatformSpecific(data, kParameterCount);
+}
+#endif
+
 void CloneObjectWithVectorDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  DefaultInitializePlatformSpecific(data, kParameterCount);
+}
+
+// static
+Register RunMicrotasksDescriptor::MicrotaskQueueRegister() {
+  return CallDescriptors::call_descriptor_data(CallDescriptors::RunMicrotasks)
+      ->register_param(0);
+}
+
+void RunMicrotasksDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  DefaultInitializePlatformSpecific(data, kParameterCount);
+}
+
+void I64ToBigIntDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  DefaultInitializePlatformSpecific(data, kParameterCount);
+}
+
+void BigIntToI64Descriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
   DefaultInitializePlatformSpecific(data, kParameterCount);
 }

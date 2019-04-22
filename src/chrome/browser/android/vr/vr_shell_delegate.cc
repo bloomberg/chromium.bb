@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/android/jni_android.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_device_provider.h"
 #include "chrome/browser/android/vr/metrics_util_android.h"
@@ -331,16 +332,12 @@ jlong JNI_VrShellDelegate_Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(new VrShellDelegate(env, obj));
 }
 
-static void JNI_VrShellDelegate_OnLibraryAvailable(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static void JNI_VrShellDelegate_OnLibraryAvailable(JNIEnv* env) {
   device::GvrDelegateProviderFactory::Install(
       std::make_unique<VrShellDelegateProviderFactory>());
 }
 
-static void JNI_VrShellDelegate_RegisterVrAssetsComponent(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static void JNI_VrShellDelegate_RegisterVrAssetsComponent(JNIEnv* env) {
   component_updater::RegisterVrAssetsComponent(
       g_browser_process->component_updater());
 }

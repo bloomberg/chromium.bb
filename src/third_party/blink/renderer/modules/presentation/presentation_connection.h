@@ -8,8 +8,8 @@
 #include <memory>
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -64,10 +64,10 @@ class PresentationConnection : public EventTargetWithInlineData,
   String binaryType() const;
   void setBinaryType(const String&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(terminate, kTerminate);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(terminate, kTerminate)
 
   // Returns true if this connection's id equals to |id| and its url equals to
   // |url|.
@@ -153,6 +153,8 @@ class PresentationConnection : public EventTargetWithInlineData,
   HeapDeque<Member<Message>> messages_;
 
   BinaryType binary_type_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 };
 
 // Represents the controller side of a connection of either a 1-UA or 2-UA

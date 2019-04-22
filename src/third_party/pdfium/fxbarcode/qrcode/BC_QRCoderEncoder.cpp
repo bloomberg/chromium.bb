@@ -66,8 +66,8 @@ int32_t GetAlphaNumericCode(int32_t code) {
 }
 
 bool AppendNumericBytes(const ByteString& content, CBC_QRCoderBitVector* bits) {
-  int32_t length = content.GetLength();
-  int32_t i = 0;
+  size_t length = content.GetLength();
+  size_t i = 0;
   while (i < length) {
     int32_t num1 = content[i] - '0';
     if (i + 2 < length) {
@@ -89,8 +89,8 @@ bool AppendNumericBytes(const ByteString& content, CBC_QRCoderBitVector* bits) {
 
 bool AppendAlphaNumericBytes(const ByteString& content,
                              CBC_QRCoderBitVector* bits) {
-  int32_t length = content.GetLength();
-  int32_t i = 0;
+  size_t length = content.GetLength();
+  size_t i = 0;
   while (i < length) {
     int32_t code1 = GetAlphaNumericCode(content[i]);
     if (code1 == -1)
@@ -112,9 +112,9 @@ bool AppendAlphaNumericBytes(const ByteString& content,
 }
 
 bool AppendGBKBytes(const ByteString& content, CBC_QRCoderBitVector* bits) {
-  int32_t length = content.GetLength();
+  size_t length = content.GetLength();
   uint32_t value = 0;
-  for (int32_t i = 0; i < length; i += 2) {
+  for (size_t i = 0; i < length; i += 2) {
     value = (uint32_t)(content[i] << 8 | content[i + 1]);
     if (value <= 0xAAFE && value >= 0xA1A1)
       value -= 0xA1A1;
@@ -200,10 +200,8 @@ bool AppendBytes(const ByteString& content,
 
 bool InitQRCode(int32_t numInputBytes,
                 const CBC_QRCoderErrorCorrectionLevel* ecLevel,
-                CBC_QRCoderMode* mode,
                 CBC_QRCoder* qrCode) {
   qrCode->SetECLevel(ecLevel);
-  qrCode->SetMode(mode);
   for (int32_t i = 1; i <= CBC_QRCoderVersion::kMaxVersion; ++i) {
     const auto* version = CBC_QRCoderVersion::GetVersionForNumber(i);
     int32_t numBytes = version->GetTotalCodeWords();
@@ -320,66 +318,6 @@ bool TerminateBits(int32_t numDataBytes, CBC_QRCoderBitVector* bits) {
   return bits->Size() == capacity;
 }
 
-void SplitString(const ByteString& content,
-                 std::vector<ModeStringPair>* result) {
-  size_t index = 0;
-  while (index < content.GetLength()) {
-    uint8_t c = static_cast<uint8_t>(content[index]);
-    if (!((c >= 0xA1 && c <= 0xAA) || (c >= 0xB0 && c <= 0xFA)))
-      break;
-    index += 2;
-  }
-  if (index)
-    result->push_back({CBC_QRCoderMode::sGBK, content.Left(index)});
-  if (index >= content.GetLength())
-    return;
-
-  size_t flag = index;
-  while (GetAlphaNumericCode(content[index]) == -1 &&
-         index < content.GetLength()) {
-    uint8_t c = static_cast<uint8_t>(content[index]);
-    if (((c >= 0xA1 && c <= 0xAA) || (c >= 0xB0 && c <= 0xFA)))
-      break;
-#if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-    bool high = !!IsDBCSLeadByte(content[index]);
-#else
-    bool high = content[index] > 127;
-#endif
-    ++index;
-    if (high)
-      ++index;
-  }
-  if (index != flag) {
-    result->push_back(
-        {CBC_QRCoderMode::sBYTE, content.Mid(flag, index - flag)});
-  }
-  flag = index;
-  if (index >= content.GetLength())
-    return;
-
-  while (index < content.GetLength() && isdigit(content[index]))
-    ++index;
-
-  if (index != flag) {
-    result->push_back(
-        {CBC_QRCoderMode::sNUMERIC, content.Mid(flag, index - flag)});
-  }
-  flag = index;
-  if (index >= content.GetLength())
-    return;
-
-  while (index < content.GetLength() &&
-         GetAlphaNumericCode(content[index]) != -1) {
-    ++index;
-  }
-  if (index != flag) {
-    result->push_back(
-        {CBC_QRCoderMode::sALPHANUMERIC, content.Mid(flag, index - flag)});
-  }
-  if (index < content.GetLength())
-    SplitString(content.Right(content.GetLength() - index), result);
-}
-
 CBC_QRCoderMode* ChooseMode(const ByteString& content, ByteString encoding) {
   if (encoding.Compare("SHIFT_JIS") == 0)
     return CBC_QRCoderMode::sKANJI;
@@ -462,17 +400,17 @@ bool InterleaveWithECBytes(CBC_QRCoderBitVector* bits,
 }  // namespace
 
 // static
-bool CBC_QRCoderEncoder::Encode(const WideString& content,
+bool CBC_QRCoderEncoder::Encode(WideStringView content,
                                 const CBC_QRCoderErrorCorrectionLevel* ecLevel,
                                 CBC_QRCoder* qrCode) {
   ByteString encoding = "utf8";
-  ByteString utf8Data = content.ToUTF8();
+  ByteString utf8Data = FX_UTF8Encode(content);
   CBC_QRCoderMode* mode = ChooseMode(utf8Data, encoding);
   CBC_QRCoderBitVector dataBits;
   if (!AppendBytes(utf8Data, mode, &dataBits, encoding))
     return false;
   int32_t numInputBytes = dataBits.sizeInBytes();
-  if (!InitQRCode(numInputBytes, ecLevel, mode, qrCode))
+  if (!InitQRCode(numInputBytes, ecLevel, qrCode))
     return false;
   CBC_QRCoderBitVector headerAndDataBits;
   AppendModeInfo(mode, &headerAndDataBits);

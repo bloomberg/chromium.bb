@@ -29,17 +29,19 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 #include <stdint.h>
+
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "net/base/url_util.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/url_security_origin_map.h"
-#include "third_party/blink/renderer/platform/wtf/hex_number.h"
-#include "third_party/blink/renderer/platform/wtf/not_found.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -222,8 +224,14 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
 
   scoped_refptr<SecurityOrigin> tuple_origin;
   if (!tuple.IsInvalid()) {
-    tuple_origin = Create(String::FromUTF8(tuple.scheme().c_str()),
-                          String::FromUTF8(tuple.host().c_str()), tuple.port());
+    String scheme = String::FromUTF8(tuple.scheme().c_str());
+    String host = String::FromUTF8(tuple.host().c_str());
+    uint16_t port = tuple.port();
+
+    // url::Origin is percent encoded and SecurityOrigin is percent decoded.
+    host = DecodeURLEscapeSequences(host, DecodeURLMode::kUTF8OrIsomorphic);
+
+    tuple_origin = Create(scheme, host, port);
   }
   base::Optional<base::UnguessableToken> nonce_if_opaque =
       origin.GetNonceForSerialization();
@@ -264,6 +272,17 @@ void SecurityOrigin::SetDomainFromDOM(const String& new_domain) {
   domain_ = new_domain;
 }
 
+String SecurityOrigin::RegistrableDomain() const {
+  if (IsOpaque())
+    return String();
+
+  OriginAccessEntry entry(
+      Protocol(), Host(),
+      network::mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains);
+  String domain = entry.registrable_domain();
+  return domain.IsEmpty() ? String() : domain;
+}
+
 bool SecurityOrigin::IsSecure(const KURL& url) {
   if (SchemeRegistry::ShouldTreatURLSchemeAsSecure(url.Protocol()))
     return true;
@@ -273,7 +292,7 @@ bool SecurityOrigin::IsSecure(const KURL& url) {
                                     ExtractInnerURL(url).Protocol()))
     return true;
 
-  if (SecurityPolicy::IsUrlWhiteListedTrustworthy(url))
+  if (SecurityPolicy::IsUrlTrustworthySafelisted(url))
     return true;
 
   return false;
@@ -306,6 +325,9 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other,
     return true;
   }
 
+  // This is needed to ensure an origin can access to itself under nullified
+  // document.domain.
+  // TODO(tzik): Update the nulled domain handling and remove this condition.
   if (this == other) {
     detail = AccessResultDomainDetail::kDomainNotRelevant;
     return true;
@@ -313,11 +335,11 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other,
 
   if (IsOpaque() || other->IsOpaque()) {
     detail = AccessResultDomainDetail::kDomainNotRelevant;
-    return false;
+    return nonce_if_opaque_ == other->nonce_if_opaque_;
   }
 
   // document.domain handling, as per
-  // https://html.spec.whatwg.org/multipage/browsers.html#dom-document-domain:
+  // https://html.spec.whatwg.org/C/#dom-document-domain:
   //
   // 1) Neither document has set document.domain. In this case, we insist
   //    that the scheme, host, and port of the URLs match.
@@ -332,10 +354,7 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other,
       if (host_ == other->host_ && port_ == other->port_)
         can_access = true;
     } else if (domain_was_set_in_dom_ && other->domain_was_set_in_dom_) {
-      // TODO(mkwst): If/when we ship this behavior, change this to check
-      // IsNull() rather than relying on string comparison.
-      // https://crbug.com/733150
-      if (domain_ == other->domain_ && domain_ != "null") {
+      if (domain_ == other->domain_) {
         can_access = true;
         detail = (host_ == other->host_ && port_ == other->port_)
                      ? AccessResultDomainDetail::kDomainMatchUnnecessary
@@ -433,6 +452,10 @@ bool SecurityOrigin::CanDisplay(const KURL& url) const {
 }
 
 bool SecurityOrigin::IsPotentiallyTrustworthy() const {
+  // TODO(lukasza): The code below can hopefully be eventually deleted and
+  // IsOriginPotentiallyTrustworthy can be used instead (from
+  // //services/network/public/cpp/is_potentially_trustworthy.h).
+
   DCHECK_NE(protocol_, "data");
 
   if (IsOpaque())
@@ -443,7 +466,7 @@ bool SecurityOrigin::IsPotentiallyTrustworthy() const {
     return true;
   }
 
-  if (SecurityPolicy::IsOriginWhiteListedTrustworthy(*this))
+  if (SecurityPolicy::IsOriginTrustworthySafelisted(*this))
     return true;
 
   return false;
@@ -537,21 +560,23 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromString(
 scoped_refptr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
                                                      const String& host,
                                                      uint16_t port) {
-  DCHECK_EQ(host, DecodeURLEscapeSequences(host));
+  DCHECK_EQ(host,
+            DecodeURLEscapeSequences(host, DecodeURLMode::kUTF8OrIsomorphic));
 
   String port_part = port ? ":" + String::Number(port) : String();
   return Create(KURL(NullURL(), protocol + "://" + host + port_part + "/"));
 }
 
 bool SecurityOrigin::IsSameSchemeHostPort(const SecurityOrigin* other) const {
+  // This is needed to ensure a local origin considered to have the same scheme,
+  // host, and port to itself.
+  // TODO(tzik): Make the local origin unique but not opaque, and remove this
+  // condition.
   if (this == other)
     return true;
 
-  if (IsOpaque() || other->IsOpaque()) {
-    // TODO(dcheng|nasko): Add nonce equality check here, such that opaque
-    // origins that are copy of each other can be equal.
-    return false;
-  }
+  if (IsOpaque() || other->IsOpaque())
+    return nonce_if_opaque_ == other->nonce_if_opaque_;
 
   if (host_ != other->host_)
     return false;
@@ -617,7 +642,6 @@ const SecurityOrigin* SecurityOrigin::GetOriginOrPrecursorOriginIfOpaque()
     return this;
 
   DCHECK(IsOpaque());
-  DCHECK(!precursor_origin_->IsOpaque());
   return precursor_origin_.get();
 }
 
@@ -626,9 +650,8 @@ String SecurityOrigin::CanonicalizeHost(const String& host, bool* success) {
   url::RawCanonOutputT<char> canon_output;
   if (host.Is8Bit()) {
     StringUTF8Adaptor utf8(host);
-    *success =
-        url::CanonicalizeHost(utf8.Data(), url::Component(0, utf8.length()),
-                              &canon_output, &out_host);
+    *success = url::CanonicalizeHost(
+        utf8.data(), url::Component(0, utf8.size()), &canon_output, &out_host);
   } else {
     *success = url::CanonicalizeHost(host.Characters16(),
                                      url::Component(0, host.length()),

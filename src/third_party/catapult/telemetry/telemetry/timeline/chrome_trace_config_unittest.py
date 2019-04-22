@@ -131,3 +131,34 @@ class ChromeTraceConfigTests(unittest.TestCase):
     self.assertTrue(config.requires_modern_devtools_tracing_start_api)
     with self.assertRaises(AssertionError):
       config.GetChromeTraceCategoriesAndOptionsForDevTools()
+
+  def testUMAHistograms(self):
+    config = chrome_trace_config.ChromeTraceConfig()
+    config.EnableUMAHistograms('Event.Latency.ScrollUpdate.Touch.Metric1')
+    self.assertEquals({
+        'histogramNames': ['Event.Latency.ScrollUpdate.Touch.Metric1'],
+        'recordMode': 'recordAsMuchAsPossible'
+    }, config.GetChromeTraceConfigForDevTools())
+
+    config.EnableUMAHistograms('Event.Latency.ScrollUpdate.Touch.Metric2')
+    self.assertEquals({
+        'histogramNames': ['Event.Latency.ScrollUpdate.Touch.Metric1',
+                           'Event.Latency.ScrollUpdate.Touch.Metric2'],
+        'recordMode': 'recordAsMuchAsPossible'
+    }, config.GetChromeTraceConfigForDevTools())
+
+    config.EnableUMAHistograms('AnotherMetric', 'LastMetric')
+    self.assertEquals({
+        'histogramNames': ['Event.Latency.ScrollUpdate.Touch.Metric1',
+                           'Event.Latency.ScrollUpdate.Touch.Metric2',
+                           'AnotherMetric', 'LastMetric'],
+        'recordMode': 'recordAsMuchAsPossible'
+    }, config.GetChromeTraceConfigForDevTools())
+
+  def testTraceBufferSize(self):
+    config = chrome_trace_config.ChromeTraceConfig()
+    config.SetTraceBufferSizeInKb(42)
+    self.assertEquals({
+        'recordMode': 'recordAsMuchAsPossible',
+        'traceBufferSizeInKb': 42
+    }, config.GetChromeTraceConfigForDevTools())

@@ -179,9 +179,11 @@ public class BookmarkAddEditFolderActivity extends SynchronousInitializationActi
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (mIsAddMode) {
-            mSaveButton = menu.add(R.string.save)
-                    .setIcon(R.drawable.bookmark_check_gray)
-                    .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+            mSaveButton =
+                    menu.add(R.string.save)
+                            .setIcon(TintedDrawable.constructTintedDrawable(this,
+                                    R.drawable.bookmark_check_gray, R.color.default_icon_color))
+                            .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
         } else {
             mDeleteButton = menu.add(R.string.bookmark_action_bar_delete)
                                     .setIcon(TintedDrawable.constructTintedDrawable(

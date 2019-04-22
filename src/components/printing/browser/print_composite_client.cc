@@ -240,9 +240,8 @@ mojom::PdfCompositorPtr& PrintCompositeClient::GetCompositeRequest(int cookie) {
     return iter->second;
   }
 
-  auto iterator =
-      compositor_map_.emplace(cookie, CreateCompositeRequest()).first;
-  return iterator->second;
+  iter = compositor_map_.emplace(cookie, CreateCompositeRequest()).first;
+  return iter->second;
 }
 
 void PrintCompositeClient::RemoveCompositeRequest(int cookie) {
@@ -261,7 +260,10 @@ mojom::PdfCompositorPtr PrintCompositeClient::CreateCompositeRequest() {
   mojom::PdfCompositorPtr compositor;
   connector_->BindInterface(mojom::kServiceName, &compositor);
   compositor->SetWebContentsURL(web_contents()->GetLastCommittedURL());
+  compositor->SetUserAgent(user_agent_);
   return compositor;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintCompositeClient)
 
 }  // namespace printing

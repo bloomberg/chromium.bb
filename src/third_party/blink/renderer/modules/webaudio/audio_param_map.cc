@@ -47,7 +47,7 @@ AudioParamMap::AudioParamMap(
 
 PairIterable<String, AudioParam*>::IterationSource*
     AudioParamMap::StartIteration(ScriptState*, ExceptionState&) {
-  return new AudioParamMapIterationSource(parameter_map_);
+  return MakeGarbageCollected<AudioParamMapIterationSource>(parameter_map_);
 }
 
 bool AudioParamMap::GetMapEntry(ScriptState*,

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/time/default_tick_clock.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/frame_stats.h"

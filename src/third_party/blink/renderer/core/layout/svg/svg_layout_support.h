@@ -40,7 +40,6 @@ class LayoutGeometryMap;
 class LayoutBoxModelObject;
 class LayoutObject;
 class ComputedStyle;
-class LayoutSVGRoot;
 class SVGLengthContext;
 class StrokeData;
 class TransformState;
@@ -73,8 +72,13 @@ class CORE_EXPORT SVGLayoutSupport {
   // Determine if the LayoutObject references a filter resource object.
   static bool HasFilterResource(const LayoutObject&);
 
-  // Determine whether the passed location intersects the clip path of |object|.
-  static bool IntersectsClipPath(const LayoutObject&, const HitTestLocation&);
+  // Determine whether the passed location intersects a clip path referenced by
+  // the passed LayoutObject.
+  // |reference_box| is used to resolve 'objectBoundingBox' units/percentages,
+  // and can differ from the reference box of the passed LayoutObject.
+  static bool IntersectsClipPath(const LayoutObject&,
+                                 const FloatRect& reference_box,
+                                 const HitTestLocation&);
 
   // Shared child hit-testing code between LayoutSVGRoot/LayoutSVGContainer.
   static bool HitTestChildren(LayoutObject* last_child,
@@ -94,7 +98,8 @@ class CORE_EXPORT SVGLayoutSupport {
   static FloatRect LocalVisualRect(const LayoutObject&);
   static LayoutRect VisualRectInAncestorSpace(
       const LayoutObject&,
-      const LayoutBoxModelObject& ancestor);
+      const LayoutBoxModelObject& ancestor,
+      VisualRectFlags = kDefaultVisualRectFlags);
   static LayoutRect TransformVisualRect(const LayoutObject&,
                                         const AffineTransform&,
                                         const FloatRect&);
@@ -132,9 +137,6 @@ class CORE_EXPORT SVGLayoutSupport {
 
   // Determines if any ancestor's layout size has changed.
   static bool LayoutSizeOfNearestViewportChanged(const LayoutObject*);
-
-  // FIXME: These methods do not belong here.
-  static const LayoutSVGRoot* FindTreeRootObject(const LayoutObject*);
 
   // Helper method for determining if a LayoutObject marked as text (isText()==
   // true) can/will be laid out as part of a <text>.

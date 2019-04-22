@@ -156,7 +156,7 @@ void FileSystemManagerImpl::BindRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-void FileSystemManagerImpl::Open(const GURL& origin_url,
+void FileSystemManagerImpl::Open(const url::Origin& origin,
                                  blink::mojom::FileSystemType file_system_type,
                                  OpenCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -166,11 +166,12 @@ void FileSystemManagerImpl::Open(const GURL& origin_url,
     RecordAction(base::UserMetricsAction("OpenFileSystemPersistent"));
   }
   context_->OpenFileSystem(
-      origin_url, mojo::ConvertTo<storage::FileSystemType>(file_system_type),
+      origin.GetURL(),
+      mojo::ConvertTo<storage::FileSystemType>(file_system_type),
       storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindOnce(&FileSystemManagerImpl::DidOpenFileSystem, GetWeakPtr(),
                      std::move(callback)));
-};
+}
 
 void FileSystemManagerImpl::ResolveURL(const GURL& filesystem_url,
                                        ResolveURLCallback callback) {
@@ -573,7 +574,7 @@ void FileSystemManagerImpl::CreateWriter(const GURL& file_path,
                                          CreateWriterCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kNativeFilesystemAPI)) {
     bindings_.ReportBadMessage("FileSystemManager.CreateWriter");
     return;
   }
@@ -603,7 +604,7 @@ void FileSystemManagerImpl::ChooseEntry(
     bool include_accepts_all,
     ChooseEntryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kNativeFilesystemAPI)) {
     bindings_.ReportBadMessage("FSMI_WRITABLE_FILES_DISABLED");
     return;
   }
@@ -833,12 +834,21 @@ void FileSystemManagerImpl::GetPlatformPathOnFileThread(
     storage::FileSystemContext* context,
     base::WeakPtr<FileSystemManagerImpl> file_system_manager,
     GetPlatformPathCallback callback) {
-  base::FilePath platform_path;
-  SyncGetPlatformPath(context, process_id, path, &platform_path);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&FileSystemManagerImpl::DidGetPlatformPath,
-                     file_system_manager, std::move(callback), platform_path));
+  DCHECK(context->default_file_task_runner()->RunsTasksInCurrentSequence());
+
+  SyncGetPlatformPath(
+      context, process_id, path,
+      base::BindOnce(
+          [](base::WeakPtr<FileSystemManagerImpl> file_system_manager,
+             GetPlatformPathCallback callback,
+             const base::FilePath& platform_path) {
+            base::PostTaskWithTraits(
+                FROM_HERE, {BrowserThread::IO},
+                base::BindOnce(&FileSystemManagerImpl::DidGetPlatformPath,
+                               std::move(file_system_manager),
+                               std::move(callback), platform_path));
+          },
+          std::move(file_system_manager), std::move(callback)));
 }
 
 base::Optional<base::File::Error> FileSystemManagerImpl::ValidateFileSystemURL(

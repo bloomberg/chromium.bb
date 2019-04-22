@@ -18,8 +18,8 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_mach_port.h"
 #import "base/mac/sdk_forward_declarations.h"
-#include "base/macros.h"
 #include "base/process/process_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 
@@ -31,7 +31,7 @@ namespace {
 // system or the empty string on failure.
 std::string GetSysctlValue(const char* key_name) {
   char value[256];
-  size_t len = arraysize(value);
+  size_t len = base::size(value);
   if (sysctlbyname(key_name, &value, &len, nullptr, 0) == 0) {
     DCHECK_GE(len, 1u);
     DCHECK_EQ('\0', value[len - 1]);

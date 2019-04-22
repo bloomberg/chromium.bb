@@ -46,8 +46,9 @@ WebContentsDisplayObserverView::~WebContentsDisplayObserverView() {
 void WebContentsDisplayObserverView::OnBrowserSetLastActive(Browser* browser) {
   // This gets called when a browser tab detaches from a window or gets merged
   // into another window. We update the widget to observe, if necessary.
-  // If |widget_| is null, then we no longer have WebContents to observe.
-  if (!widget_)
+  // If |web_contents_| or |widget_| is null, then we no longer have WebContents
+  // to observe.
+  if (!web_contents_ || !widget_)
     return;
 
   views::Widget* new_widget = views::Widget::GetWidgetForNativeWindow(
@@ -77,6 +78,10 @@ void WebContentsDisplayObserverView::OnWidgetBoundsChanged(
 const display::Display& WebContentsDisplayObserverView::GetCurrentDisplay()
     const {
   return display_;
+}
+
+void WebContentsDisplayObserverView::WebContentsDestroyed() {
+  web_contents_ = nullptr;
 }
 
 void WebContentsDisplayObserverView::CheckForDisplayChange() {

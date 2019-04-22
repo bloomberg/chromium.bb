@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
+#include "google_apis/google_api_keys.h"
 
 namespace previews {
 
@@ -45,6 +46,8 @@ const char kSessionMaxECTTrigger[] = "session_max_ect_trigger";
 // Inflation parameters for estimating NoScript data savings.
 const char kNoScriptInflationPercent[] = "NoScriptInflationPercent";
 const char kNoScriptInflationBytes[] = "NoScriptInflationBytes";
+
+const char kOptimizationGuideServiceURL[] = "";
 
 // Inflation parameters for estimating ResourceLoadingHints data savings.
 const char kResourceLoadingHintsInflationPercent[] =
@@ -111,6 +114,12 @@ size_t MaxInMemoryHostsInBlackList() {
                               "max_hosts_in_blacklist", 100);
 }
 
+size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
+  return GetFieldTrialParamByFeatureAsInt(
+      features::kOptimizationHintsFetching,
+      "max_hosts_for_optimization_guide_service_hints_fetch", 30);
+}
+
 int PerHostBlackListOptOutThreshold() {
   return GetParamValueAsInt(kClientSidePreviewsFieldTrial,
                             "per_host_opt_out_threshold", 2);
@@ -173,6 +182,11 @@ int LitePageRedirectPreviewMaxServerBlacklistByteSize() {
       250 * 1024 /* 250KB */);
 }
 
+size_t LitePageRedirectPreviewMaxNavigationRestarts() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kLitePageServerPreviews, "max_navigation_restart", 5);
+}
+
 int PreviewServerLoadshedMaxSeconds() {
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kLitePageServerPreviews, "loadshed_max_seconds",
@@ -212,6 +226,34 @@ GURL GetLitePagePreviewsDomainURL() {
     return variable_host;
   }
   return GURL("https://litepages.googlezip.net/");
+}
+
+std::string GetOptimizationGuideServiceAPIKey() {
+  // Command line override takes priority.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kOptimizationGuideServiceAPIKey)) {
+    return command_line->GetSwitchValueASCII(
+        switches::kOptimizationGuideServiceAPIKey);
+  }
+
+  return google_apis::GetAPIKey();
+}
+
+GURL GetOptimizationGuideServiceURL() {
+  // Command line override takes priority.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kOptimizationGuideServiceURL)) {
+    // Assume the command line switch is correct and return it.
+    return GURL(command_line->GetSwitchValueASCII(
+        switches::kOptimizationGuideServiceURL));
+  }
+
+  std::string url = base::GetFieldTrialParamValueByFeature(
+      features::kOptimizationHintsFetching, "optimization_guide_service_url");
+  if (url.empty())
+    return GURL(kOptimizationGuideServiceURL);
+
+  return GURL(url);
 }
 
 std::string LitePageRedirectPreviewExperiment() {
@@ -322,10 +364,8 @@ bool IsOptimizationHintsEnabled() {
   return base::FeatureList::IsEnabled(features::kOptimizationHints);
 }
 
-net::EffectiveConnectionType EffectiveConnectionTypeThresholdForClientLoFi() {
-  return GetParamValueAsECTByFeature(features::kClientLoFi,
-                                     kEffectiveConnectionTypeThreshold,
-                                     net::EFFECTIVE_CONNECTION_TYPE_2G);
+bool IsHintsFetchingEnabled() {
+  return base::FeatureList::IsEnabled(features::kOptimizationHintsFetching);
 }
 
 int NoScriptPreviewsInflationPercent() {
@@ -339,11 +379,6 @@ int NoScriptPreviewsInflationPercent() {
 int NoScriptPreviewsInflationBytes() {
   return GetFieldTrialParamByFeatureAsInt(features::kNoScriptPreviews,
                                           kNoScriptInflationBytes, 0);
-}
-
-bool NoScriptPreviewsUsesTopLevelHints() {
-  return base::FeatureList::IsEnabled(
-      features::kNoScriptPreviewsUsesTopLevelHints);
 }
 
 int ResourceLoadingHintsPreviewsInflationPercent() {

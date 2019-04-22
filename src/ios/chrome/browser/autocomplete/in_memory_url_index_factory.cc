@@ -6,7 +6,8 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/bind.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
@@ -51,7 +52,8 @@ InMemoryURLIndex* InMemoryURLIndexFactory::GetForBrowserState(
 
 // static
 InMemoryURLIndexFactory* InMemoryURLIndexFactory::GetInstance() {
-  return base::Singleton<InMemoryURLIndexFactory>::get();
+  static base::NoDestructor<InMemoryURLIndexFactory> instance;
+  return instance.get();
 }
 
 InMemoryURLIndexFactory::InMemoryURLIndexFactory()

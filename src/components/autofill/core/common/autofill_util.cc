@@ -51,8 +51,7 @@ struct Compare : base::CaseInsensitiveCompareASCII<Char> {
 }  // namespace
 
 bool IsFeatureSubstringMatchEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSuggestionsWithSubstringMatch);
+  return base::FeatureList::IsEnabled(features::kAutofillTokenPrefixMatching);
 }
 
 bool IsShowAutofillSignaturesEnabled() {

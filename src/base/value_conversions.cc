@@ -45,20 +45,37 @@ bool GetValueAsFilePath(const Value& value, FilePath* file_path) {
   return true;
 }
 
+// It is recommended in time.h to use ToDeltaSinceWindowsEpoch() and
+// FromDeltaSinceWindowsEpoch() for opaque serialization and
+// deserialization of time values.
+Value CreateTimeValue(const Time& time) {
+  return CreateTimeDeltaValue(time.ToDeltaSinceWindowsEpoch());
+}
+
+bool GetValueAsTime(const Value& value, Time* time) {
+  TimeDelta time_delta;
+  if (!GetValueAsTimeDelta(value, &time_delta))
+    return false;
+
+  if (time)
+    *time = Time::FromDeltaSinceWindowsEpoch(time_delta);
+  return true;
+}
+
 // |Value| does not support 64-bit integers, and doubles do not have enough
 // precision, so we store the 64-bit time value as a string instead.
-Value CreateTimeDeltaValue(const TimeDelta& time) {
-  std::string string_value = base::Int64ToString(time.ToInternalValue());
+Value CreateTimeDeltaValue(const TimeDelta& time_delta) {
+  std::string string_value = base::NumberToString(time_delta.InMicroseconds());
   return Value(string_value);
 }
 
-bool GetValueAsTimeDelta(const Value& value, TimeDelta* time) {
+bool GetValueAsTimeDelta(const Value& value, TimeDelta* time_delta) {
   std::string str;
   int64_t int_value;
   if (!value.GetAsString(&str) || !base::StringToInt64(str, &int_value))
     return false;
-  if (time)
-    *time = TimeDelta::FromInternalValue(int_value);
+  if (time_delta)
+    *time_delta = TimeDelta::FromMicroseconds(int_value);
   return true;
 }
 

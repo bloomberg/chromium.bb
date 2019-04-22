@@ -268,8 +268,7 @@ void LineBoxList::DirtyLinesFromChangedChild(LineLayoutItem container,
 
   // If we are attaching children dirtying lines is unnecessary as we will do a
   // full layout of the inline's contents anyway.
-  if (inline_container && inline_container.GetNode() &&
-      inline_container.GetNode()->NeedsAttach())
+  if (inline_container && !inline_container.EverHadLayout())
     return;
 
   InlineBox* first_box = inline_container

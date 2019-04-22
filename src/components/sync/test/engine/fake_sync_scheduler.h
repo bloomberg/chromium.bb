@@ -32,7 +32,6 @@ class FakeSyncScheduler : public SyncScheduler {
       std::unique_ptr<InvalidationInterface> interface,
       const base::Location& nudge_location) override;
   void ScheduleConfiguration(const ConfigurationParams& params) override;
-  void ScheduleClearServerData(const ClearParams& params) override;
 
   void ScheduleInitialSyncNudge(ModelType model_type) override;
   void SetNotificationsEnabled(bool notifications_enabled) override;
@@ -46,9 +45,7 @@ class FakeSyncScheduler : public SyncScheduler {
                         const base::TimeDelta& throttle_duration) override;
   void OnTypesBackedOff(ModelTypeSet types) override;
   bool IsAnyThrottleOrBackoff() override;
-  void OnReceivedShortPollIntervalUpdate(
-      const base::TimeDelta& new_interval) override;
-  void OnReceivedLongPollIntervalUpdate(
+  void OnReceivedPollIntervalUpdate(
       const base::TimeDelta& new_interval) override;
   void OnReceivedCustomNudgeDelays(
       const std::map<ModelType, base::TimeDelta>& nudge_delays) override;

@@ -13,7 +13,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/download/internal/common/parallel_download_utils.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_destination_observer.h"
@@ -24,6 +26,10 @@
 #include "mojo/public/c/system/types.h"
 #include "net/base/io_buffer.h"
 #include "services/network/public/cpp/features.h"
+
+#if defined(OS_ANDROID)
+#include "components/download/internal/common/android/download_collection_bridge.h"
+#endif  // defined(OS_ANDROID)
 
 namespace download {
 
@@ -313,6 +319,30 @@ void DownloadFileImpl::RenameAndAnnotate(
   RenameWithRetryInternal(std::move(parameters));
 }
 
+#if defined(OS_ANDROID)
+void DownloadFileImpl::CreateIntermediateUriForPublish(
+    const GURL& original_url,
+    const GURL& referrer_url,
+    const base::FilePath& file_name,
+    const std::string& mime_type,
+    const RenameCompletionCallback& callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::FilePath content_path =
+      DownloadCollectionBridge::CreateIntermediateUriForPublish(
+          original_url, referrer_url, file_name, mime_type);
+  DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
+  if (!content_path.empty())
+    reason = file_.Rename(content_path);
+  OnRenameComplete(reason, content_path, callback);
+}
+
+void DownloadFileImpl::PublishDownload(
+    const RenameCompletionCallback& callback) {
+  DownloadInterruptReason reason = file_.PublishDownload();
+  OnRenameComplete(reason, file_.full_path(), callback);
+}
+#endif  // defined(OS_ANDROID)
+
 base::TimeDelta DownloadFileImpl::GetRetryDelayForFailedRename(
     int attempt_number) {
   DCHECK_GE(attempt_number, 0);
@@ -350,11 +380,7 @@ void DownloadFileImpl::RenameWithRetryInternal(
   base::FilePath new_path = parameters->new_path;
 
   if ((parameters->option & UNIQUIFY) && new_path != file_.full_path()) {
-    int uniquifier =
-        base::GetUniquePathNumber(new_path, base::FilePath::StringType());
-    if (uniquifier > 0)
-      new_path = new_path.InsertBeforeExtensionASCII(
-          base::StringPrintf(" (%d)", uniquifier));
+    new_path = base::GetUniquePath(new_path);
   }
 
   DownloadInterruptReason reason = file_.Rename(new_path);
@@ -391,6 +417,13 @@ void DownloadFileImpl::RenameWithRetryInternal(
                                                  parameters->referrer_url);
   }
 
+  OnRenameComplete(reason, new_path, parameters->completion_callback);
+}
+
+void DownloadFileImpl::OnRenameComplete(
+    DownloadInterruptReason reason,
+    const base::FilePath& new_path,
+    const RenameCompletionCallback& callback) {
   if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
     // Make sure our information is updated, since we're about to
     // error out.
@@ -401,13 +434,13 @@ void DownloadFileImpl::RenameWithRetryInternal(
     // the download being interrupted.
     for (auto& stream : source_streams_)
       stream.second->ClearDataReadyCallback();
-
-    new_path.clear();
   }
 
   main_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(parameters->completion_callback, reason, new_path));
+      FROM_HERE, base::BindOnce(callback, reason,
+                                reason == DOWNLOAD_INTERRUPT_REASON_NONE
+                                    ? new_path
+                                    : base::FilePath()));
 }
 
 void DownloadFileImpl::Detach() {

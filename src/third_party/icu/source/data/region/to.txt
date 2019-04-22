@@ -182,7 +182,7 @@ to{
         MF{"Sā Mātini (fakafalanisē)"}
         MG{"Matakasika"}
         MH{"ʻOtumotu Māsolo"}
-        MK{"Masetōnia (FYROM)"}
+        MK{"Masetōnia"}
         ML{"Māli"}
         MM{"Mianimā (Pema)"}
         MN{"Mongokōlia"}
@@ -302,6 +302,7 @@ to{
         CD{"Kongo (LTK)"}
         CG{"Kongo (Lepupelika)"}
         CZ{"Lepupelika Seki"}
+        MK{"Masetōnia (FYROM)"}
     }
-    Version{"2.1.44.88"}
+    Version{"2.1.47.82"}
 }

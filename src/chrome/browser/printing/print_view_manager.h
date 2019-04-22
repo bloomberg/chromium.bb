@@ -43,8 +43,12 @@ class PrintViewManager : public PrintViewManagerBase,
   // a particular WebNode.
   void PrintPreviewForWebNode(content::RenderFrameHost* rfh);
 
-  // Notify PrintViewManager that print preview has finished. Unfreeze the
-  // renderer in the case of scripted print preview.
+  // Notify PrintViewManager that print preview is about to finish. Unblock the
+  // renderer in the case of scripted print preview if needed.
+  void PrintPreviewAlmostDone();
+
+  // Notify PrintViewManager that print preview has finished. Unblock the
+  // renderer in the case of scripted print preview if needed.
   void PrintPreviewDone();
 
   // content::WebContentsObserver implementation.
@@ -77,6 +81,8 @@ class PrintViewManager : public PrintViewManagerBase,
                                   bool source_is_modifiable);
   void OnScriptedPrintPreviewReply(IPC::Message* reply_msg);
 
+  void MaybeUnblockScriptedPreviewRPH();
+
   base::OnceClosure on_print_dialog_shown_callback_;
 
   // Current state of print preview for this view.
@@ -89,9 +95,14 @@ class PrintViewManager : public PrintViewManagerBase,
   // Keeps track of the pending callback during scripted print preview.
   content::RenderProcessHost* scripted_print_preview_rph_ = nullptr;
 
+  // True if |scripted_print_preview_rph_| needs to be unblocked.
+  bool scripted_print_preview_rph_set_blocked_ = false;
+
   // Indicates whether we're switching from print preview to system dialog. This
   // flag is true between PrintForSystemDialogNow() and PrintPreviewDone().
   bool is_switching_to_system_dialog_ = false;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PrintViewManager);
 };

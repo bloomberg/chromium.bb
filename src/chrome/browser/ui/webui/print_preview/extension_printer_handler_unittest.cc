@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
+#include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
@@ -27,13 +28,13 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_utils.h"
-#include "device/base/mock_device_client.h"
-#include "device/usb/mock_usb_device.h"
-#include "device/usb/mock_usb_service.h"
+#include "device/usb/public/cpp/fake_usb_device_manager.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
+#include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/value_builder.h"
 #include "printing/pdf_render_settings.h"
@@ -43,14 +44,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
-using device::MockUsbDevice;
-using device::MockUsbService;
+using device::mojom::UsbDeviceInfoPtr;
 using extensions::DictionaryBuilder;
 using extensions::Extension;
 using extensions::PrinterProviderAPI;
 using extensions::PrinterProviderPrintJob;
 using extensions::TestExtensionEnvironment;
-using printing::PwgRasterConverter;
+
+namespace printing {
 
 namespace {
 
@@ -68,29 +69,6 @@ const char kPrinterDescriptionList[] =
     "  \"description\": \"Test printer 2\""
     "}]";
 
-// Printer capability for printer that supports all content types.
-const char kAllContentTypesSupportedPrinter[] =
-    "{"
-    "  \"version\": \"1.0\","
-    "  \"printer\": {"
-    "    \"supported_content_type\": ["
-    "      {\"content_type\": \"*/*\"}"
-    "    ]"
-    "  }"
-    "}";
-
-// Printer capability for a printer that supports PDF.
-const char kPdfSupportedPrinter[] =
-    "{"
-    "  \"version\": \"1.0\","
-    "  \"printer\": {"
-    "    \"supported_content_type\": ["
-    "      {\"content_type\": \"application/pdf\"},"
-    "      {\"content_type\": \"image/pwg-raster\"}"
-    "    ]"
-    "  }"
-    "}";
-
 // Printer capability for a printer that supportd only PWG raster.
 const char kPWGRasterOnlyPrinterSimpleDescription[] =
     "{"
@@ -99,30 +77,6 @@ const char kPWGRasterOnlyPrinterSimpleDescription[] =
     "    \"supported_content_type\": ["
     "      {\"content_type\": \"image/pwg-raster\"}"
     "    ]"
-    "  }"
-    "}";
-
-// Printer capability for a printer that supportd only PWG raster that has
-// options other that supported_content_type set.
-const char kPWGRasterOnlyPrinter[] =
-    "{"
-    "  \"version\": \"1.0\","
-    "  \"printer\": {"
-    "    \"supported_content_type\": ["
-    "      {\"content_type\": \"image/pwg-raster\"}"
-    "    ],"
-    "    \"pwg_raster_config\": {"
-    "      \"document_sheet_back\": \"FLIPPED\","
-    "      \"reverse_order_streaming\": true,"
-    "      \"rotate_all_pages\": true"
-    "    },"
-    "    \"dpi\": {"
-    "      \"option\": [{"
-    "        \"horizontal_dpi\": 100,"
-    "        \"vertical_dpi\": 200,"
-    "        \"is_default\": true"
-    "      }]"
-    "    }"
     "  }"
     "}";
 
@@ -182,6 +136,99 @@ const char kExtension2[] =
     "  }"
     "}";
 
+const char kPdfSettings[] = R"({
+  "deviceName": "printer_id",
+  "capabilities": "{
+      \"version\": \"1.0\",
+      \"printer\": {
+        \"supported_content_type\": [
+          {\"content_type\": \"application/pdf\"},
+          {\"content_type\": \"image/pwg-raster\"}
+        ]
+      }
+    }",
+  "ticket": "{\"version\": \"1.0\"}",
+  "pageWidth": 100,
+  "pageHeight": 50
+})";
+
+const char kAllTypesSettings[] = R"({
+  "deviceName": "printer_id",
+  "capabilities": "{
+      \"version\": \"1.0\",
+      \"printer\": {
+        \"supported_content_type\": [
+          {\"content_type\": \"*/*\"}
+        ]
+      }
+    }",
+  "ticket": "{\"version\": \"1.0\"}",
+  "pageWidth": 100,
+  "pageHeight": 50
+})";
+
+const char kSimpleRasterSettings[] = R"({
+  "deviceName": "printer_id",
+  "capabilities": "{
+      \"version\": \"1.0\",
+      \"printer\": {
+        \"supported_content_type\": [
+          {\"content_type\": \"image/pwg-raster\"}
+        ]
+      }
+    }",
+  "ticket": "{\"version\": \"1.0\"}",
+  "pageWidth": 100,
+  "pageHeight": 50
+})";
+
+const char kInvalidSettings[] = R"({
+  "deviceName": "printer_id",
+  "capabilities": "{
+      \"version\": \"1.0\",
+      \"printer\": {
+        \"supported_content_type\": [
+          {\"content_type\": \"image/pwg-raster\"}
+        ]
+      }
+    }",
+  "ticket": "{}",
+  "pageWidth": 100,
+  "pageHeight": 50
+})";
+
+const char kDuplexSettings[] = R"({
+  "deviceName": "printer_id",
+  "capabilities": "{
+      \"version\": \"1.0\",
+      \"printer\": {
+        \"supported_content_type\": [
+          {\"content_type\": \"image/pwg-raster\"}
+        ],
+        \"pwg_raster_config\": {
+          \"document_sheet_back\": \"FLIPPED\",
+          \"reverse_order_streaming\": true,
+          \"rotate_all_pages\": true
+        },
+        \"dpi\": {
+          \"option\": [{
+            \"horizontal_dpi\": 100,
+            \"vertical_dpi\": 200,
+            \"is_default\": true
+          }]
+        }
+      }
+    }",
+  "ticket": "{
+      \"version\": \"1.0\",
+      \"print\": {
+        \"duplex\": {\"type\": \"LONG_EDGE\"}
+      }
+    }",
+  "pageWidth": 100,
+  "pageHeight": 50
+})";
+
 const char kContentTypePDF[] = "application/pdf";
 const char kContentTypePWG[] = "image/pwg-raster";
 
@@ -210,12 +257,12 @@ void RecordPrintersDone(bool* is_done_out) {
 // Increases |*call_count| and records values returned by StartGetCapability.
 void RecordCapability(size_t* call_count,
                       std::unique_ptr<base::DictionaryValue>* capability_out,
-                      std::unique_ptr<base::DictionaryValue> capability) {
+                      base::Value capability) {
   ++(*call_count);
   const base::Value* capabilities = nullptr;
-  if (capability) {
-    capabilities = capability->FindKeyOfType(printing::kSettingCapabilities,
-                                             base::Value::Type::DICTIONARY);
+  if (capability.is_dict()) {
+    capabilities = capability.FindKeyOfType(kSettingCapabilities,
+                                            base::Value::Type::DICTIONARY);
   }
   *capability_out =
       capabilities ? base::DictionaryValue::From(
@@ -282,8 +329,8 @@ class FakePwgRasterConverter : public PwgRasterConverter {
   // PwgRasterConverter implementation. It writes |data| to shared memory.
   // Also, remembers conversion and bitmap settings passed into the method.
   void Start(const base::RefCountedMemory* data,
-             const printing::PdfRenderSettings& conversion_settings,
-             const printing::PwgRasterSettings& bitmap_settings,
+             const PdfRenderSettings& conversion_settings,
+             const PwgRasterSettings& bitmap_settings,
              ResultCallback callback) override {
     base::ReadOnlySharedMemoryRegion invalid_pwg_region;
     if (fail_conversion_) {
@@ -308,17 +355,15 @@ class FakePwgRasterConverter : public PwgRasterConverter {
   // Makes |Start| method always return an error.
   void FailConversion() { fail_conversion_ = true; }
 
-  const printing::PdfRenderSettings& conversion_settings() const {
+  const PdfRenderSettings& conversion_settings() const {
     return conversion_settings_;
   }
 
-  const printing::PwgRasterSettings& bitmap_settings() const {
-    return bitmap_settings_;
-  }
+  const PwgRasterSettings& bitmap_settings() const { return bitmap_settings_; }
 
  private:
-  printing::PdfRenderSettings conversion_settings_;
-  printing::PwgRasterSettings bitmap_settings_;
+  PdfRenderSettings conversion_settings_;
+  PwgRasterSettings bitmap_settings_;
   bool fail_conversion_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakePwgRasterConverter);
@@ -350,21 +395,21 @@ class FakePrinterProviderAPI : public PrinterProviderAPI {
   }
 
   void DispatchPrintRequested(
-      const PrinterProviderPrintJob& job,
+      PrinterProviderPrintJob job,
       PrinterProviderAPI::PrintCallback callback) override {
     PrintRequestInfo request_info;
     request_info.callback = std::move(callback);
-    request_info.job = job;
+    request_info.job = std::move(job);
 
     pending_print_requests_.push(std::move(request_info));
   }
 
   void DispatchGetUsbPrinterInfoRequested(
       const std::string& extension_id,
-      scoped_refptr<device::UsbDevice> device,
+      const device::mojom::UsbDeviceInfo& device,
       PrinterProviderAPI::GetPrinterInfoCallback callback) override {
     EXPECT_EQ("fake extension id", extension_id);
-    EXPECT_TRUE(device);
+    EXPECT_FALSE(device.guid.empty());
     pending_usb_info_callbacks_.push(std::move(callback));
   }
 
@@ -460,6 +505,13 @@ class ExtensionPrinterHandlerTest : public testing::Test {
     pwg_raster_converter_ = pwg_raster_converter.get();
     extension_printer_handler_->SetPwgRasterConverterForTesting(
         std::move(pwg_raster_converter));
+
+    // Set fake USB device manager for extensions::UsbDeviceManager.
+    device::mojom::UsbDeviceManagerPtr usb_manager_ptr;
+    fake_usb_manager_.AddBinding(mojo::MakeRequest(&usb_manager_ptr));
+    extensions::UsbDeviceManager::Get(env_.profile())
+        ->SetDeviceManagerForTesting(std::move(usb_manager_ptr));
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -469,11 +521,7 @@ class ExtensionPrinterHandlerTest : public testing::Test {
             ->GetForBrowserContext(env_.profile()));
   }
 
-  device::MockUsbService& usb_service() {
-    return *device_client_.usb_service();
-  }
-
-  device::MockDeviceClient device_client_;
+  device::FakeUsbDeviceManager fake_usb_manager_;
   TestExtensionEnvironment env_;
   std::unique_ptr<ExtensionPrinterHandler> extension_printer_handler_;
 
@@ -539,21 +587,22 @@ TEST_F(ExtensionPrinterHandlerTest, GetPrinters_Reset) {
 }
 
 TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
-  auto device0 =
-      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "USB Printer", "");
-  usb_service().AddDevice(device0);
-  auto device1 =
-      base::MakeRefCounted<MockUsbDevice>(0, 1, "Google", "USB Printer", "");
-  usb_service().AddDevice(device1);
+  UsbDeviceInfoPtr device0 =
+      fake_usb_manager_.CreateAndAddDevice(0, 0, "Google", "USB Printer", "");
+  UsbDeviceInfoPtr device1 =
+      fake_usb_manager_.CreateAndAddDevice(0, 1, "Google", "USB Printer", "");
+  base::RunLoop().RunUntilIdle();
 
-  const Extension* extension_1 = env_.MakeExtension(
-      *base::test::ParseJson(kExtension1), "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  const Extension* extension_2 = env_.MakeExtension(
-      *base::test::ParseJson(kExtension2), "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  const Extension* extension_1 =
+      env_.MakeExtension(*base::test::ParseJsonDeprecated(kExtension1),
+                         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  const Extension* extension_2 =
+      env_.MakeExtension(*base::test::ParseJsonDeprecated(kExtension2),
+                         "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
 
   extensions::DevicePermissionsManager* permissions_manager =
       extensions::DevicePermissionsManager::Get(env_.profile());
-  permissions_manager->AllowUsbDevice(extension_2->id(), device0);
+  permissions_manager->AllowUsbDevice(extension_2->id(), *device0);
 
   size_t call_count = 0;
   std::unique_ptr<base::ListValue> printers;
@@ -576,7 +625,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
       DictionaryBuilder()
           .Set("id", base::StringPrintf("provisional-usb:%s:%s",
                                         extension_1->id().c_str(),
-                                        device0->guid().c_str()))
+                                        device0->guid.c_str()))
           .Set("name", "USB Printer")
           .Set("extensionName", "Provider 1")
           .Set("extensionId", extension_1->id())
@@ -586,7 +635,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
       DictionaryBuilder()
           .Set("id", base::StringPrintf("provisional-usb:%s:%s",
                                         extension_2->id().c_str(),
-                                        device1->guid().c_str()))
+                                        device1->guid.c_str()))
           .Set("name", "USB Printer")
           .Set("extensionName", "Provider 2")
           .Set("extensionId", extension_2->id())
@@ -665,8 +714,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPdfSupportedPrinter, title, kEmptyPrintTicket,
-      gfx::Size(100, 100), print_data,
+      title, *base::JSONReader::Read(kPdfSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -679,7 +727,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
   EXPECT_EQ(title, print_job->job_title);
-  EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
+  EXPECT_EQ(*base::JSONReader::Read(kEmptyPrintTicket), print_job->ticket);
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
@@ -702,8 +750,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf_Reset) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPdfSupportedPrinter, title, kEmptyPrintTicket,
-      gfx::Size(100, 100), print_data,
+      title, *base::JSONReader::Read(kPdfSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -728,8 +775,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kAllContentTypesSupportedPrinter, title, kEmptyPrintTicket,
-      gfx::Size(100, 100), print_data,
+      title, *base::JSONReader::Read(kAllTypesSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -743,7 +789,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
   EXPECT_EQ(title, print_job->job_title);
-  EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
+  EXPECT_EQ(*base::JSONReader::Read(kEmptyPrintTicket), print_job->ticket);
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
@@ -766,8 +812,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
-      kEmptyPrintTicket, gfx::Size(100, 50), print_data,
+      title, *base::JSONReader::Read(kSimpleRasterSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -778,13 +823,13 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
   ASSERT_TRUE(fake_api);
   ASSERT_EQ(1u, fake_api->pending_print_count());
 
-  EXPECT_EQ(printing::TRANSFORM_NORMAL,
+  EXPECT_EQ(TRANSFORM_NORMAL,
             pwg_raster_converter_->bitmap_settings().odd_page_transform);
   EXPECT_FALSE(pwg_raster_converter_->bitmap_settings().rotate_all_pages);
   EXPECT_FALSE(pwg_raster_converter_->bitmap_settings().reverse_page_order);
   EXPECT_TRUE(pwg_raster_converter_->bitmap_settings().use_color);
 
-  EXPECT_EQ(gfx::Size(printing::kDefaultPdfDpi, printing::kDefaultPdfDpi),
+  EXPECT_EQ(gfx::Size(kDefaultPdfDpi, kDefaultPdfDpi),
             pwg_raster_converter_->conversion_settings().dpi);
   EXPECT_TRUE(pwg_raster_converter_->conversion_settings().autorotate);
   // size = vertically_oriented_size * vertical_dpi / points_per_inch x
@@ -797,7 +842,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
   EXPECT_EQ(title, print_job->job_title);
-  EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
+  EXPECT_EQ(*base::JSONReader::Read(kEmptyPrintTicket), print_job->ticket);
   EXPECT_EQ(kContentTypePWG, print_job->content_type);
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
@@ -820,8 +865,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinter, title, kPrintTicketWithDuplex,
-      gfx::Size(100, 50), print_data,
+      title, *base::JSONReader::Read(kDuplexSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -832,7 +876,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
   ASSERT_TRUE(fake_api);
   ASSERT_EQ(1u, fake_api->pending_print_count());
 
-  EXPECT_EQ(printing::TRANSFORM_FLIP_VERTICAL,
+  EXPECT_EQ(TRANSFORM_FLIP_VERTICAL,
             pwg_raster_converter_->bitmap_settings().odd_page_transform);
   EXPECT_TRUE(pwg_raster_converter_->bitmap_settings().rotate_all_pages);
   EXPECT_TRUE(pwg_raster_converter_->bitmap_settings().reverse_page_order);
@@ -851,7 +895,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
   EXPECT_EQ(title, print_job->job_title);
-  EXPECT_EQ(kPrintTicketWithDuplex, print_job->ticket_json);
+  EXPECT_EQ(*base::JSONReader::Read(kPrintTicketWithDuplex), print_job->ticket);
   EXPECT_EQ(kContentTypePWG, print_job->content_type);
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
@@ -874,8 +918,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_Reset) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
-      kEmptyPrintTicket, gfx::Size(100, 50), print_data,
+      title, *base::JSONReader::Read(kSimpleRasterSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -903,8 +946,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_InvalidTicket) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
-      "{}" /* ticket */, gfx::Size(100, 100), print_data,
+      title, *base::JSONReader::Read(kInvalidSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(1u, call_count);
@@ -925,8 +967,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_FailedConversion) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
-      kEmptyPrintTicket, gfx::Size(100, 100), print_data,
+      title, *base::JSONReader::Read(kSimpleRasterSettings), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(1u, call_count);
@@ -936,15 +977,15 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_FailedConversion) {
 }
 
 TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess) {
-  auto device =
-      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "USB Printer", "");
-  usb_service().AddDevice(device);
+  UsbDeviceInfoPtr device =
+      fake_usb_manager_.CreateAndAddDevice(0, 0, "Google", "USB Printer", "");
+  base::RunLoop().RunUntilIdle();
 
   size_t call_count = 0;
   std::unique_ptr<base::DictionaryValue> printer_info;
 
   std::string printer_id = base::StringPrintf(
-      "provisional-usb:fake extension id:%s", device->guid().c_str());
+      "provisional-usb:fake extension id:%s", device->guid.c_str());
   extension_printer_handler_->StartGrantPrinterAccess(
       printer_id, base::Bind(&RecordPrinterInfo, &call_count, &printer_info));
 
@@ -968,16 +1009,16 @@ TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess) {
 }
 
 TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess_Reset) {
-  auto device =
-      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "USB Printer", "");
-  usb_service().AddDevice(device);
+  UsbDeviceInfoPtr device =
+      fake_usb_manager_.CreateAndAddDevice(0, 0, "Google", "USB Printer", "");
+  base::RunLoop().RunUntilIdle();
 
   size_t call_count = 0;
   std::unique_ptr<base::DictionaryValue> printer_info;
 
   extension_printer_handler_->StartGrantPrinterAccess(
       base::StringPrintf("provisional-usb:fake extension id:%s",
-                         device->guid().c_str()),
+                         device->guid.c_str()),
       base::Bind(&RecordPrinterInfo, &call_count, &printer_info));
 
   EXPECT_FALSE(printer_info.get());
@@ -998,3 +1039,5 @@ TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess_Reset) {
   EXPECT_EQ(0u, call_count);
   EXPECT_FALSE(printer_info.get());
 }
+
+}  // namespace printing

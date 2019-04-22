@@ -7,21 +7,41 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol OmniboxPopupPositioner;
+@class OmniboxPopupPresenter;
+
+@protocol OmniboxPopupPresenterDelegate
+
+// View to which the popup view should be added as subview.
+- (UIView*)popupParentViewForPresenter:(OmniboxPopupPresenter*)presenter;
+
+// The view controller that will parent the popup.
+- (UIViewController*)popupParentViewControllerForPresenter:
+    (OmniboxPopupPresenter*)presenter;
+
+// Alert the delegate that the popup opened.
+- (void)popupDidOpenForPresenter:(OmniboxPopupPresenter*)presenter;
+
+// Alert the delegate that the popup closed.
+- (void)popupDidCloseForPresenter:(OmniboxPopupPresenter*)presenter;
+
+@end
 
 // The UI Refresh implementation of the popup presenter.
+// TODO(crbug.com/936833): This class should be refactored to handle a nil
+// delegate.
 @interface OmniboxPopupPresenter : NSObject
 
-// Updates appearance depending on the content size of the presented view
-// controller by changing the visible height of the popup. When the popup was
-// not previously shown, it will appear with "expansion" animation.
-- (void)updateHeightAndAnimateAppearanceIfNecessary;
-// Call this to hide the popup with animation.
-- (void)animateCollapse;
+// Whether the popup is open
+@property(nonatomic, assign, getter=isOpen) BOOL open;
 
-- (instancetype)initWithPopupPositioner:(id<OmniboxPopupPositioner>)positioner
-                    popupViewController:(UIViewController*)viewController
-                              incognito:(BOOL)incognito;
+// Uses the popup's intrinsic content size to add or remove the popup view
+// if necessary.
+- (void)updatePopup;
+
+- (instancetype)initWithPopupPresenterDelegate:
+                    (id<OmniboxPopupPresenterDelegate>)presenterDelegate
+                           popupViewController:(UIViewController*)viewController
+                                     incognito:(BOOL)incognito;
 
 @end
 

@@ -10,7 +10,9 @@
 
 #include <memory>
 
+#import "ios/chrome/browser/sessions/session_window_restoring.h"
 #import "ios/web/public/navigation_manager.h"
+
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -45,7 +47,7 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // The model knows about the currently selected tab in order to maintain
 // consistency between multiple views that need the current tab to be
 // synchronized.
-@interface TabModel : NSObject
+@interface TabModel : NSObject <SessionWindowRestoring>
 
 // Currently active tab.
 @property(nonatomic, weak) Tab* currentTab;
@@ -79,22 +81,11 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // session service before they are deallocated. |window| can be nil to create
 // an empty TabModel. In that case no notification will be sent during object
 // creation.
-- (instancetype)initWithSessionWindow:(SessionWindowIOS*)window
-                       sessionService:(SessionServiceIOS*)service
-                         browserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithSessionService:(SessionServiceIOS*)service
+                          browserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
-
-// Restores the given session window after a crash. If there is only one tab,
-// showing the NTP, then this tab is clobberred, otherwise, the tab from the
-// sessions are added at the end of the tab model.
-// Returns YES if the single NTP tab is closed.
-- (BOOL)restoreSessionWindow:(SessionWindowIOS*)window;
-
-// Uses the SessionServiceIOS to persist the tab model to disk, either
-// immediately or deferred based on the value of |immediately|.
-- (void)saveSessionImmediately:(BOOL)immediately;
 
 // Accesses the tab at the given index.
 - (Tab*)tabAtIndex:(NSUInteger)index;
@@ -150,22 +141,9 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Notifies observers that the given |tab| was changed.
 - (void)notifyTabChanged:(Tab*)tab;
 
-// Notifies observers that the given tab is loading a new URL.
-- (void)notifyTabLoading:(Tab*)tab;
-
-// Notifies observers that the given tab finished loading.
-- (void)notifyTabFinishedLoading:(Tab*)tab;
-
 // Notifies observers that the given tab will open. If it isn't the active tab,
 // |background| is YES, NO otherwise.
 - (void)notifyNewTabWillOpen:(Tab*)tab inBackground:(BOOL)background;
-
-// Notifies observers that the snapshot for the given |tab| changed was changed
-// to |image|.
-- (void)notifyTabSnapshotChanged:(Tab*)tab withImage:(UIImage*)image;
-
-// Notifies observers that |tab| was deselected.
-- (void)notifyTabWasDeselected:(Tab*)tab;
 
 // Adds |observer| to the list of observers. |observer| is not retained. Does
 // nothing if |observer| is already in the list. Any added observers must be
@@ -184,19 +162,10 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Sets whether the user is primarily interacting with this tab model.
 - (void)setPrimary:(BOOL)primary;
 
-// Returns a set with the names of the files received from other applications
-// that are still referenced by an open or recently closed tab.
-- (NSSet*)currentlyReferencedExternalFiles;
-
 // Called when the browser state provided to this instance is being destroyed.
 // At this point the tab model will no longer ever be active, and will likely be
 // deallocated soon.
 - (void)browserStateDestroyed;
-// Called by |tab| to inform the model that a navigation has taken place.
-// TODO(crbug.com/661983): once more of the navigation state has moved into WC,
-// replace this with WebStateObserver.
-- (void)navigationCommittedInTab:(Tab*)tab
-                    previousItem:(web::NavigationItem*)previousItem;
 
 @end
 

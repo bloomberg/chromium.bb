@@ -11,6 +11,7 @@ namespace prefs {
 extern const char kAccountConsistencyMirrorRequired[];
 #endif
 extern const char kAccountIdMigrationState[];
+extern const char kAccountInfo[];
 extern const char kAutologinEnabled[];
 extern const char kGaiaCookieHash[];
 extern const char kGaiaCookieChangedTime[];
@@ -25,6 +26,7 @@ extern const char kGoogleServicesUsername[];
 extern const char kGoogleServicesUsernamePattern[];
 extern const char kReverseAutologinRejectedEmailList[];
 extern const char kSignedInTime[];
+extern const char kSignedInWithCredentialProvider[];
 extern const char kSigninAllowed[];
 extern const char kTokenServiceDiceCompatible[];
 extern const char kTokenServiceExcludeAllSecondaryAccounts[];

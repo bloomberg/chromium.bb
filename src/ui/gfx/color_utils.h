@@ -6,6 +6,7 @@
 #define UI_GFX_COLOR_UTILS_H_
 
 #include <string>
+#include <tuple>
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/gfx_export.h"
@@ -97,34 +98,30 @@ GFX_EXPORT double CalculateBoringScore(const SkBitmap& bitmap);
 // |alpha| == 0) to |foreground| (for |alpha| == 255). The alpha channels of
 // the supplied colors are also taken into account, so the returned color may
 // be partially transparent.
-GFX_EXPORT SkColor AlphaBlend(SkColor foreground, SkColor background,
+GFX_EXPORT SkColor AlphaBlend(SkColor foreground,
+                              SkColor background,
                               SkAlpha alpha);
+
+// As above, but with alpha specified as 0..1.
+GFX_EXPORT SkColor AlphaBlend(SkColor foreground,
+                              SkColor background,
+                              float alpha);
 
 // Returns the color that results from painting |foreground| on top of
 // |background|.
 GFX_EXPORT SkColor GetResultingPaintColor(SkColor foreground,
                                           SkColor background);
 
-// Returns true if the luma of |color| is closer to black than white.
+// Returns true if |color| contrasts more with white than the darkest color.
 GFX_EXPORT bool IsDark(SkColor color);
 
-// Makes a dark color lighter or a light color darker by blending |color| with
-// white or black depending on its current luma.  |alpha| controls the amount of
-// white or black that will be alpha-blended into |color|.
-GFX_EXPORT SkColor BlendTowardOppositeLuma(SkColor color, SkAlpha alpha);
+// Returns whichever of white or the darkest available color contrasts more with
+// |color|.
+GFX_EXPORT SkColor GetColorWithMaxContrast(SkColor color);
 
-// This is a copy of |getThemedAssetColor()| in ColorUtils.java.
-GFX_EXPORT SkColor GetThemedAssetColor(SkColor theme_color);
-
-// Given a foreground and background color, try to return a foreground color
-// that is "readable" over the background color by luma-inverting the foreground
-// color and then using PickContrastingColor() to pick the one with greater
-// contrast.  During this process, alpha values will be ignored; the returned
-// color will have the same alpha as |foreground|.
-//
-// NOTE: This won't do anything but waste time if the supplied foreground color
-// has a luma value close to the midpoint (0.5 in the HSL representation).
-GFX_EXPORT SkColor GetReadableColor(SkColor foreground, SkColor background);
+// Blends towards the color with max contrast by |alpha|. The alpha of
+// the original color is preserved.
+GFX_EXPORT SkColor BlendTowardMaxContrast(SkColor color, SkAlpha alpha);
 
 // Returns whichever of |foreground1| or |foreground2| has higher contrast with
 // |background|.
@@ -185,11 +182,12 @@ GFX_EXPORT std::string SkColorToRgbaString(SkColor color);
 // Creates an rgb string for an SkColor. For example: '255,0,255'.
 GFX_EXPORT std::string SkColorToRgbString(SkColor color);
 
-// Sets the color_utils darkest color to |color| from the SK_ColorBLACK default.
-GFX_EXPORT void SetDarkestColor(SkColor color);
+// Sets the darkest available color to |color|.  Returns the previous darkest
+// color.
+GFX_EXPORT SkColor SetDarkestColorForTesting(SkColor color);
 
-// Returns the current color_utils darkest color so tests can clean up.
-GFX_EXPORT SkColor GetDarkestColor();
+// Returns the luminance of the darkest, midpoint, and lightest colors.
+GFX_EXPORT std::tuple<float, float, float> GetLuminancesForTesting();
 
 }  // namespace color_utils
 

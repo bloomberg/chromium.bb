@@ -18,10 +18,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner.h"
@@ -145,7 +145,7 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
     char path[128];
   } file_info;
   file_info.data_size = data.size();
-  strlcpy(file_info.path, path.value().c_str(), arraysize(file_info.path));
+  strlcpy(file_info.path, path.value().c_str(), base::size(file_info.path));
   debug::Alias(&file_info);
 #endif
 
@@ -187,7 +187,7 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
 
   if (bytes_written < data_length) {
     LogFailure(path, histogram_suffix, FAILED_WRITING,
-               "error writing, bytes_written=" + IntToString(bytes_written));
+               "error writing, bytes_written=" + NumberToString(bytes_written));
     DeleteTmpFile(tmp_file_path, histogram_suffix);
     return false;
   }

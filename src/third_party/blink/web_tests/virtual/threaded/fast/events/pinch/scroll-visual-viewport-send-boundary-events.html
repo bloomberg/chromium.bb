@@ -22,7 +22,7 @@ const TEST_Y = 150;
 const TEST_SCALE = 2;
 const EPSILON = 0.001;
 const SCROLL_TOLERANCE = 10;
-const MOUSE_INPUT = 2;  // Gesture source type from synthetic_gesture_params.h
+const MOUSE_INPUT = GestureSourceType.MOUSE_INPUT;
 
 function waitForVisualViewportOffset(x, y) {
   return new Promise(function(resolve, reject) {

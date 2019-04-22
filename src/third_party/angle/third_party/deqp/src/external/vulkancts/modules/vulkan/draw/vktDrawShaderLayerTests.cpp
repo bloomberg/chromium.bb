@@ -788,13 +788,8 @@ public:
 
 		m_vertexBuffer		= Buffer::createAndAlloc	(vk, device, makeBufferCreateInfo(vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT), allocator, MemoryRequirement::HostVisible);
 
-		{
-			deMemcpy(m_vertexBuffer->getBoundMemory().getHostPtr(), &m_vertices[0], static_cast<std::size_t>(vertexBufferSize));
-			flushMappedMemoryRange(vk, device,
-								   m_vertexBuffer->getBoundMemory().getMemory(),
-								   m_vertexBuffer->getBoundMemory().getOffset(),
-								   vertexBufferSize);
-		}
+		deMemcpy(m_vertexBuffer->getBoundMemory().getHostPtr(), &m_vertices[0], static_cast<std::size_t>(vertexBufferSize));
+		flushAlloc(vk, device, m_vertexBuffer->getBoundMemory());
 
 		if (shader == TESSELLATION)
 		{
@@ -851,61 +846,7 @@ public:
 		vk.cmdDraw(*m_cmdBuffer, static_cast<deUint32>(m_numLayers * 6), 1u, 0u, 0u);	// two triangles per layer
 		vk.cmdEndRenderPass(*m_cmdBuffer);
 
-		// Prepare color image for copy
-		{
-			const VkImageMemoryBarrier barriers[] =
-			{
-				{
-					VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,						// VkStructureType			sType;
-					DE_NULL,													// const void*				pNext;
-					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,						// VkAccessFlags			outputMask;
-					VK_ACCESS_TRANSFER_READ_BIT,								// VkAccessFlags			inputMask;
-					VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,					// VkImageLayout			oldLayout;
-					VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,						// VkImageLayout			newLayout;
-					VK_QUEUE_FAMILY_IGNORED,									// deUint32					srcQueueFamilyIndex;
-					VK_QUEUE_FAMILY_IGNORED,									// deUint32					destQueueFamilyIndex;
-					*m_colorImage,												// VkImage					image;
-					m_colorSubresourceRange,									// VkImageSubresourceRange	subresourceRange;
-				},
-			};
-
-			vk.cmdPipelineBarrier(*m_cmdBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0u,
-				0u, DE_NULL, 0u, DE_NULL, DE_LENGTH_OF_ARRAY(barriers), barriers);
-		}
-		// Color image -> host buffer
-		{
-			const VkBufferImageCopy region =
-			{
-				0ull,																		// VkDeviceSize                bufferOffset;
-				0u,																			// uint32_t                    bufferRowLength;
-				0u,																			// uint32_t                    bufferImageHeight;
-				makeImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, m_numLayers),	// VkImageSubresourceLayers    imageSubresource;
-				makeOffset3D(0, 0, 0),														// VkOffset3D                  imageOffset;
-				makeExtent3D(m_renderSize.x(), m_renderSize.y(), 1u),						// VkExtent3D                  imageExtent;
-			};
-
-			vk.cmdCopyImageToBuffer(*m_cmdBuffer, *m_colorImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, colorBuffer, 1u, &region);
-		}
-		// Buffer write barrier
-		{
-			const VkBufferMemoryBarrier barriers[] =
-			{
-				{
-					VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,		// VkStructureType    sType;
-					DE_NULL,										// const void*        pNext;
-					VK_ACCESS_TRANSFER_WRITE_BIT,					// VkAccessFlags      srcAccessMask;
-					VK_ACCESS_HOST_READ_BIT,						// VkAccessFlags      dstAccessMask;
-					VK_QUEUE_FAMILY_IGNORED,						// uint32_t           srcQueueFamilyIndex;
-					VK_QUEUE_FAMILY_IGNORED,						// uint32_t           dstQueueFamilyIndex;
-					colorBuffer,									// VkBuffer           buffer;
-					0ull,											// VkDeviceSize       offset;
-					VK_WHOLE_SIZE,									// VkDeviceSize       size;
-				},
-			};
-
-			vk.cmdPipelineBarrier(*m_cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0u,
-				0u, DE_NULL, DE_LENGTH_OF_ARRAY(barriers), barriers, DE_NULL, 0u);
-		}
+		copyImageToBuffer(vk, *m_cmdBuffer, *m_colorImage, colorBuffer, tcu::IVec2(m_renderSize.x(), m_renderSize.y()), VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, m_colorSubresourceRange.layerCount);
 
 		VK_CHECK(vk.endCommandBuffer(*m_cmdBuffer));
 		submitCommandsAndWait(vk, device, queue, *m_cmdBuffer);
@@ -981,7 +922,7 @@ tcu::TestStatus testVertexShader (Context& context, const int numLayers)
 	{
 		const Allocation alloc = colorBuffer->getBoundMemory();
 		deMemset(alloc.getHostPtr(), 0, static_cast<std::size_t>(colorBufferSize));
-		flushMappedMemoryRange(vk, device, alloc.getMemory(), alloc.getOffset(), colorBufferSize);
+		flushAlloc(vk, device, alloc);
 	}
 
 	{
@@ -1043,7 +984,7 @@ tcu::TestStatus testTessellationShader (Context& context, const int numLayers)
 	{
 		const Allocation alloc = colorBuffer->getBoundMemory();
 		deMemset(alloc.getHostPtr(), 0, static_cast<std::size_t>(colorBufferSize));
-		flushMappedMemoryRange(vk, device, alloc.getMemory(), alloc.getOffset(), colorBufferSize);
+		flushAlloc(vk, device, alloc);
 	}
 
 	{

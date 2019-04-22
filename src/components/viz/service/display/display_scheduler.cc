@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
@@ -36,7 +37,7 @@ DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
       wait_for_all_surfaces_before_draw_(wait_for_all_surfaces_before_draw),
       observing_begin_frame_source_(false),
       weak_ptr_factory_(this) {
-  begin_frame_deadline_closure_ = base::Bind(
+  begin_frame_deadline_closure_ = base::BindRepeating(
       &DisplayScheduler::OnBeginFrameDeadline, weak_ptr_factory_.GetWeakPtr());
 
   // The DisplayScheduler handles animate_only BeginFrames as if they were
@@ -182,9 +183,9 @@ bool DisplayScheduler::UpdateHasPendingSurfaces() {
       continue;
     }
 
-    // Surface is ready if there is an undrawn active CompositorFrame, because
+    // Surface is ready if there is an unacked active CompositorFrame, because
     // its producer is CompositorFrameAck throttled.
-    if (client_->SurfaceHasUndrawnFrame(entry.first))
+    if (client_->SurfaceHasUnackedFrame(entry.first))
       continue;
 
     has_pending_surfaces_ = true;
@@ -232,7 +233,7 @@ bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
     // CompositorFrame for a SurfaceFactory).
     DCHECK_EQ(args.type, BeginFrameArgs::MISSED);
     DCHECK(missed_begin_frame_task_.IsCancelled());
-    missed_begin_frame_task_.Reset(base::Bind(
+    missed_begin_frame_task_.Reset(base::BindOnce(
         base::IgnoreResult(&DisplayScheduler::OnBeginFrameDerivedImpl),
         // The CancelableCallback will not run after it is destroyed, which
         // happens when |this| is destroyed.
@@ -258,7 +259,7 @@ bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   // Schedule the deadline.
   current_begin_frame_args_ = save_args;
   current_begin_frame_args_.deadline -=
-      BeginFrameArgs::DefaultEstimatedParentDrawTime();
+      BeginFrameArgs::DefaultEstimatedDisplayDrawTime(save_args.interval);
   inside_begin_frame_deadline_interval_ = true;
   UpdateHasPendingSurfaces();
   ScheduleBeginFrameDeadline();
@@ -316,7 +317,8 @@ void DisplayScheduler::OnSurfaceActivated(
     const SurfaceId& surface_id,
     base::Optional<base::TimeDelta> duration) {}
 
-void DisplayScheduler::OnSurfaceDestroyed(const SurfaceId& surface_id) {
+void DisplayScheduler::OnSurfaceMarkedForDestruction(
+    const SurfaceId& surface_id) {
   auto it = surface_states_.find(surface_id);
   if (it == surface_states_.end())
     return;
@@ -333,8 +335,8 @@ bool DisplayScheduler::OnSurfaceDamaged(const SurfaceId& surface_id,
   return damaged;
 }
 
-void DisplayScheduler::OnSurfaceDiscarded(const SurfaceId& surface_id) {
-  client_->SurfaceDiscarded(surface_id);
+void DisplayScheduler::OnSurfaceDestroyed(const SurfaceId& surface_id) {
+  client_->SurfaceDestroyed(surface_id);
 }
 
 void DisplayScheduler::OnSurfaceDamageExpected(const SurfaceId& surface_id,

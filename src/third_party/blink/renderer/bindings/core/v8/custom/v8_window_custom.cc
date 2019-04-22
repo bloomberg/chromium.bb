@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/location.h"
+#include "third_party/blink/renderer/core/frame/remote_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
@@ -81,7 +82,7 @@ void V8Window::LocationAttributeGetterCustom(
   // whether or not |window| is cross-origin. If |window| is local, the
   // |location| property must always return the same wrapper, even if the
   // cross-origin status changes by changing properties like |document.domain|.
-  if (window->IsRemoteDOMWindow()) {
+  if (IsA<RemoteDOMWindow>(window)) {
     DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
     const auto* location_wrapper_type = location->GetWrapperTypeInfo();
     v8::Local<v8::Object> new_wrapper =
@@ -101,7 +102,7 @@ void V8Window::LocationAttributeGetterCustom(
 
 void V8Window::EventAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::ToImpl(info.Holder()));
+  LocalDOMWindow* impl = To<LocalDOMWindow>(V8Window::ToImpl(info.Holder()));
   v8::Isolate* isolate = info.GetIsolate();
   ExceptionState exception_state(isolate, ExceptionState::kGetterContext,
                                  "Window", "event");
@@ -137,7 +138,7 @@ void V8Window::EventAttributeGetterCustom(
 
 void V8Window::FrameElementAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::ToImpl(info.Holder()));
+  LocalDOMWindow* impl = To<LocalDOMWindow>(V8Window::ToImpl(info.Holder()));
   Element* frameElement = impl->frameElement();
 
   if (!BindingSecurity::ShouldAllowAccessTo(
@@ -175,7 +176,7 @@ void V8Window::OpenerAttributeSetterCustom(
     // impl->frame() has to be a non-null LocalFrame.  Otherwise, the
     // same-origin check would have failed.
     DCHECK(impl->GetFrame());
-    ToLocalFrame(impl->GetFrame())->Loader().SetOpener(nullptr);
+    To<LocalFrame>(impl->GetFrame())->Loader().SetOpener(nullptr);
   }
 
   // Delete the accessor from the inner object.
@@ -210,11 +211,11 @@ void V8Window::NamedPropertyGetterCustom(
 
   // Note that named access on WindowProxy is allowed in the cross-origin case.
   // 7.4.5 [[GetOwnProperty]] (P), step 6.
-  // https://html.spec.whatwg.org/multipage/browsers.html#windowproxy-getownproperty
+  // https://html.spec.whatwg.org/C/#windowproxy-getownproperty
   //
   // 7.3.3 Named access on the Window object
   // The document-tree child browsing context name property set
-  // https://html.spec.whatwg.org/multipage/browsers.html#document-tree-child-browsing-context-name-property-set
+  // https://html.spec.whatwg.org/C/#document-tree-child-browsing-context-name-property-set
   Frame* child = frame->Tree().ScopedChild(name);
   if (child) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
@@ -252,7 +253,7 @@ void V8Window::NamedPropertyGetterCustom(
           CurrentDOMWindow(info.GetIsolate()), window,
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
     // HTML 7.2.3.3 CrossOriginGetOwnPropertyHelper ( O, P )
-    // https://html.spec.whatwg.org/multipage/browsers.html#crossorigingetownpropertyhelper-(-o,-p-)
+    // https://html.spec.whatwg.org/C/#crossorigingetownpropertyhelper-(-o,-p-)
     // step 3. If P is "then", @@toStringTag, @@hasInstance, or
     //   @@isConcatSpreadable, then return PropertyDescriptor{ [[Value]]:
     //   undefined, [[Writable]]: false, [[Enumerable]]: false,
@@ -268,7 +269,7 @@ void V8Window::NamedPropertyGetterCustom(
   }
 
   // Search named items in the document.
-  Document* doc = ToLocalFrame(frame)->GetDocument();
+  Document* doc = To<LocalFrame>(frame)->GetDocument();
   if (!doc || !doc->IsHTMLDocument())
     return;
 

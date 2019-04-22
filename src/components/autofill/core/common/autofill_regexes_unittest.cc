@@ -32,23 +32,23 @@ struct InputPatternTestCase {
                                ASCIIToUTF16(test_case.pattern)));
   }
 
-  INSTANTIATE_TEST_CASE_P(AutofillRegexes,
-                          PositiveSampleTest,
-                          testing::Values(
-                              // Empty pattern
-                              InputPatternTestCase{"", ""},
-                              InputPatternTestCase{
-                                  "Look, ma' -- a non-empty string!", ""},
-                              // Substring
-                              InputPatternTestCase{"string", "tri"},
-                              // Substring at beginning
-                              InputPatternTestCase{"string", "str"},
-                              InputPatternTestCase{"string", "^str"},
-                              // Substring at end
-                              InputPatternTestCase{"string", "ring"},
-                              InputPatternTestCase{"string", "ring$"},
-                              // Case-insensitive
-                              InputPatternTestCase{"StRiNg", "string"}));
+  INSTANTIATE_TEST_SUITE_P(AutofillRegexes,
+                           PositiveSampleTest,
+                           testing::Values(
+                               // Empty pattern
+                               InputPatternTestCase{"", ""},
+                               InputPatternTestCase{
+                                   "Look, ma' -- a non-empty string!", ""},
+                               // Substring
+                               InputPatternTestCase{"string", "tri"},
+                               // Substring at beginning
+                               InputPatternTestCase{"string", "str"},
+                               InputPatternTestCase{"string", "^str"},
+                               // Substring at end
+                               InputPatternTestCase{"string", "ring"},
+                               InputPatternTestCase{"string", "ring$"},
+                               // Case-insensitive
+                               InputPatternTestCase{"StRiNg", "string"}));
 
   class NegativeSampleTest
       : public testing::TestWithParam<InputPatternTestCase> {};
@@ -61,20 +61,20 @@ struct InputPatternTestCase {
                                 ASCIIToUTF16(test_case.pattern)));
 }
 
-INSTANTIATE_TEST_CASE_P(AutofillRegexes,
-                        NegativeSampleTest,
-                        testing::Values(
-                            // Empty string
-                            InputPatternTestCase{
-                                "", "Look, ma' -- a non-empty pattern!"},
-                            // Substring
-                            InputPatternTestCase{"string", "trn"},
-                            // Substring at beginning
-                            InputPatternTestCase{"string", " str"},
-                            InputPatternTestCase{"string", "^tri"},
-                            // Substring at end
-                            InputPatternTestCase{"string", "ring "},
-                            InputPatternTestCase{"string", "rin$"}));
+INSTANTIATE_TEST_SUITE_P(AutofillRegexes,
+                         NegativeSampleTest,
+                         testing::Values(
+                             // Empty string
+                             InputPatternTestCase{
+                                 "", "Look, ma' -- a non-empty pattern!"},
+                             // Substring
+                             InputPatternTestCase{"string", "trn"},
+                             // Substring at beginning
+                             InputPatternTestCase{"string", " str"},
+                             InputPatternTestCase{"string", "^tri"},
+                             // Substring at end
+                             InputPatternTestCase{"string", "ring "},
+                             InputPatternTestCase{"string", "rin$"}));
 
 struct InputTestCase {
   const char* const input;
@@ -90,7 +90,7 @@ struct InputTestCase {
     EXPECT_TRUE(MatchesPattern(ASCIIToUTF16(test_case.input), pattern));
   }
 
-  INSTANTIATE_TEST_CASE_P(
+  INSTANTIATE_TEST_SUITE_P(
       AutofillRegexes,
       ExpirationDate2DigitYearPositive,
       testing::Values(InputTestCase{"mm / yy"},
@@ -124,7 +124,7 @@ struct InputTestCase {
     EXPECT_FALSE(MatchesPattern(ASCIIToUTF16(test_case.input), pattern));
   }
 
-  INSTANTIATE_TEST_CASE_P(
+  INSTANTIATE_TEST_SUITE_P(
       AutofillRegexes,
       ExpirationDate2DigitYearNegative,
       testing::Values(InputTestCase{""},
@@ -164,30 +164,30 @@ struct InputTestCase {
     EXPECT_TRUE(MatchesPattern(ASCIIToUTF16(test_case.input), pattern));
   }
 
-  INSTANTIATE_TEST_CASE_P(AutofillRegexes,
-                          ExpirationDate4DigitYearPositive,
-                          testing::Values(
-                              // Simple four year cases
-                              InputTestCase{"mm / yyyy"},
-                              InputTestCase{"mm/ yyyy"},
-                              InputTestCase{"mm /yyyy"},
-                              InputTestCase{"mm/yyyy"},
-                              InputTestCase{"mm - yyyy"},
-                              InputTestCase{"mm- yyyy"},
-                              InputTestCase{"mm -yyyy"},
-                              InputTestCase{"mm-yyyy"},
-                              InputTestCase{"mmyyyy"},
-                              // Complex four year cases
-                              InputTestCase{"Expiration Date (MM / YYYY)"},
-                              InputTestCase{"Expiration Date (MM/YYYY)"},
-                              InputTestCase{"Expiration Date (MM - YYYY)"},
-                              InputTestCase{"Expiration Date (MM-YYYY)"},
-                              InputTestCase{"Expiration Date MM / YYYY"},
-                              InputTestCase{"Expiration Date MM/YYYY"},
-                              InputTestCase{"Expiration Date MM - YYYY"},
-                              InputTestCase{"Expiration Date MM-YYYY"},
-                              InputTestCase{"expiration date yyyy"},
-                              InputTestCase{"Exp Date     (MM / YYYY)"}));
+  INSTANTIATE_TEST_SUITE_P(AutofillRegexes,
+                           ExpirationDate4DigitYearPositive,
+                           testing::Values(
+                               // Simple four year cases
+                               InputTestCase{"mm / yyyy"},
+                               InputTestCase{"mm/ yyyy"},
+                               InputTestCase{"mm /yyyy"},
+                               InputTestCase{"mm/yyyy"},
+                               InputTestCase{"mm - yyyy"},
+                               InputTestCase{"mm- yyyy"},
+                               InputTestCase{"mm -yyyy"},
+                               InputTestCase{"mm-yyyy"},
+                               InputTestCase{"mmyyyy"},
+                               // Complex four year cases
+                               InputTestCase{"Expiration Date (MM / YYYY)"},
+                               InputTestCase{"Expiration Date (MM/YYYY)"},
+                               InputTestCase{"Expiration Date (MM - YYYY)"},
+                               InputTestCase{"Expiration Date (MM-YYYY)"},
+                               InputTestCase{"Expiration Date MM / YYYY"},
+                               InputTestCase{"Expiration Date MM/YYYY"},
+                               InputTestCase{"Expiration Date MM - YYYY"},
+                               InputTestCase{"Expiration Date MM-YYYY"},
+                               InputTestCase{"expiration date yyyy"},
+                               InputTestCase{"Exp Date     (MM / YYYY)"}));
 
   class ExpirationDate4DigitYearNegative
       : public testing::TestWithParam<InputTestCase> {};
@@ -199,7 +199,7 @@ struct InputTestCase {
     EXPECT_FALSE(MatchesPattern(ASCIIToUTF16(test_case.input), pattern));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillRegexes,
     ExpirationDate4DigitYearNegative,
     testing::Values(InputTestCase{""},

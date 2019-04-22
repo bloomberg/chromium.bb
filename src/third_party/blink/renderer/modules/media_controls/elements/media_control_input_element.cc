@@ -20,7 +20,7 @@
 namespace {
 
 // The default size of an overflow button in pixels.
-constexpr int kDefaultButtonSize = 36;
+constexpr int kDefaultButtonSize = 48;
 
 const char kOverflowContainerWithSubtitleCSSClass[] = "with-subtitle";
 const char kOverflowSubtitleCSSClass[] = "subtitle";
@@ -55,30 +55,34 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
     return nullptr;
 
   // We don't want the button visible within the overflow menu.
-  button->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  button->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
 
   overflow_menu_text_ = HTMLSpanElement::Create(GetDocument());
   overflow_menu_text_->setInnerText(button->GetOverflowMenuString(),
                                     ASSERT_NO_EXCEPTION);
 
-  HTMLLabelElement* element = HTMLLabelElement::Create(GetDocument());
-  element->SetShadowPseudoId(
+  overflow_label_element_ = HTMLLabelElement::Create(GetDocument());
+  overflow_label_element_->SetShadowPseudoId(
       AtomicString("-internal-media-controls-overflow-menu-list-item"));
+  overflow_label_element_->setAttribute(html_names::kRoleAttr, "menuitem");
   // Appending a button to a label element ensures that clicks on the label
   // are passed down to the button, performing the action we'd expect.
-  element->ParserAppendChild(button);
+  overflow_label_element_->ParserAppendChild(button);
 
   // Allows to focus the list entry instead of the button.
-  element->setTabIndex(0);
+  overflow_label_element_->setTabIndex(0);
   button->setTabIndex(-1);
 
   if (MediaControlsImpl::IsModern()) {
     overflow_menu_container_ = HTMLDivElement::Create(GetDocument());
     overflow_menu_container_->ParserAppendChild(overflow_menu_text_);
+    overflow_menu_container_->setAttribute(html_names::kAriaHiddenAttr, "true");
+    aria_label_ = button->getAttribute(html_names::kAriaLabelAttr) + " " +
+                  button->GetOverflowMenuString();
     UpdateOverflowSubtitleElement(button->GetOverflowMenuSubtitleString());
-    element->ParserAppendChild(overflow_menu_container_);
+    overflow_label_element_->ParserAppendChild(overflow_menu_container_);
   } else {
-    element->ParserAppendChild(overflow_menu_text_);
+    overflow_label_element_->ParserAppendChild(overflow_menu_text_);
   }
 
   // Initialize the internal states of the main element and the overflow one.
@@ -88,10 +92,11 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   // Keeping the element hidden by default. This is setting the style in
   // addition of calling ShouldShowButtonInOverflowMenu() to guarantee that the
   // internal state matches the CSS state.
-  element->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  overflow_label_element_->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                                  CSSValueID::kNone);
   SetOverflowElementIsWanted(false);
 
-  return element;
+  return overflow_label_element_;
 }
 
 void MediaControlInputElement::UpdateOverflowSubtitleElement(String text) {
@@ -100,6 +105,7 @@ void MediaControlInputElement::UpdateOverflowSubtitleElement(String text) {
   if (!text) {
     // If setting the text to null, we want to remove the element.
     RemoveOverflowSubtitleElement();
+    UpdateOverflowLabelAriaLabel("");
     return;
   }
 
@@ -116,6 +122,7 @@ void MediaControlInputElement::UpdateOverflowSubtitleElement(String text) {
     overflow_menu_container_->setAttribute(
         "class", kOverflowContainerWithSubtitleCSSClass);
   }
+  UpdateOverflowLabelAriaLabel(text);
 }
 
 void MediaControlInputElement::RemoveOverflowSubtitleElement() {
@@ -127,10 +134,20 @@ void MediaControlInputElement::RemoveOverflowSubtitleElement() {
   overflow_menu_subtitle_ = nullptr;
 }
 
+bool MediaControlInputElement::OverflowElementIsWanted() {
+  return overflow_element_ && overflow_element_->IsWanted();
+}
+
 void MediaControlInputElement::SetOverflowElementIsWanted(bool wanted) {
   if (!overflow_element_)
     return;
   overflow_element_->SetIsWanted(wanted);
+}
+
+void MediaControlInputElement::UpdateOverflowLabelAriaLabel(String subtitle) {
+  String full_aria_label = aria_label_ + " " + subtitle;
+  overflow_label_element_->setAttribute(html_names::kAriaLabelAttr,
+                                        WTF::AtomicString(full_aria_label));
 }
 
 void MediaControlInputElement::MaybeRecordDisplayed() {
@@ -164,10 +181,9 @@ void MediaControlInputElement::UpdateOverflowString() {
 }
 
 MediaControlInputElement::MediaControlInputElement(
-    MediaControlsImpl& media_controls,
-    MediaControlElementType display_type)
+    MediaControlsImpl& media_controls)
     : HTMLInputElement(media_controls.GetDocument(), CreateElementFlags()),
-      MediaControlElementBase(media_controls, display_type, this) {
+      MediaControlElementBase(media_controls, this) {
   CreateUserAgentShadowRoot();
   CreateShadowSubtree();
 }
@@ -184,10 +200,12 @@ void MediaControlInputElement::UpdateShownState() {
     DCHECK(parent);
     DCHECK(IsHTMLLabelElement(parent));
 
-    if (IsWanted() && DoesFit())
-      parent->RemoveInlineStyleProperty(CSSPropertyDisplay);
-    else
-      parent->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    if (IsWanted() && DoesFit()) {
+      parent->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
+    } else {
+      parent->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                     CSSValueID::kNone);
+    }
 
     // Don't update the shown state of the element if we want to hide
     // icons on the overflow menu.
@@ -199,8 +217,15 @@ void MediaControlInputElement::UpdateShownState() {
 }
 
 void MediaControlInputElement::DefaultEventHandler(Event& event) {
-  if (event.type() == event_type_names::kClick)
+  if (!IsDisabled() && (event.type() == event_type_names::kClick ||
+                        event.type() == event_type_names::kGesturetap)) {
     MaybeRecordInteracted();
+  }
+
+  // Unhover the element if the hover is triggered by a tap on
+  // a touch screen device to avoid showing hover circle indefinitely.
+  if (event.IsGestureEvent() && IsHovered())
+    SetHovered(false);
 
   HTMLInputElement::DefaultEventHandler(event);
 }
@@ -241,8 +266,8 @@ String MediaControlInputElement::GetOverflowMenuSubtitleString() const {
 }
 
 void MediaControlInputElement::RecordCTREvent(CTREvent event) {
-  String histogram_name("Media.Controls.CTR.");
-  histogram_name.append(GetNameForHistograms());
+  String histogram_name =
+      StringView("Media.Controls.CTR.") + GetNameForHistograms();
   EnumerationHistogram ctr_histogram(histogram_name.Ascii().data(),
                                      static_cast<int>(CTREvent::kCount));
   ctr_histogram.Count(static_cast<int>(event));
@@ -262,9 +287,7 @@ void MediaControlInputElement::UpdateDisplayType() {
 }
 
 WebSize MediaControlInputElement::GetSizeOrDefault() const {
-  if (HasOverflowButton()) {
-    // If this has an overflow button then it is a button control and therefore
-    // has a default size of kDefaultButtonSize.
+  if (IsControlPanelButton()) {
     return MediaControlElementsHelper::GetSizeOrDefault(
         *this, WebSize(kDefaultButtonSize, kDefaultButtonSize));
   }
@@ -282,6 +305,7 @@ void MediaControlInputElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(overflow_menu_container_);
   visitor->Trace(overflow_menu_text_);
   visitor->Trace(overflow_menu_subtitle_);
+  visitor->Trace(overflow_label_element_);
 }
 
 }  // namespace blink

@@ -18,8 +18,8 @@
 #include "chrome/browser/android/vr/gvr_graphics_delegate.h"
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
 #include "chrome/browser/vr/base_scheduler_delegate.h"
-#include "chrome/browser/vr/sliding_average.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/util/sliding_average.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/transform.h"
 
@@ -173,18 +173,12 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
 
   SchedulerBrowserRendererInterface* browser_renderer_ = nullptr;
 
-  // Set from feature flags.
-  const bool webvr_vsync_align_;
-
   WebXrPresentationState webxr_;
   bool showing_vr_dialog_ = false;
   bool cardboard_gamepad_ = false;
 
-  // WebXR currently supports multiple render path choices, with runtime
-  // selection based on underlying support being available and feature flags.
-  // The webxr_use_* booleans choose among the implementations. Please don't
-  // check WebXrRenderPath or other feature flags in individual code paths
-  // directly to avoid inconsistent logic.
+  // WebXR supports multiple render paths, the choice is selected at runtime
+  // depending on what is supported by the hardware and OS version.
   bool webxr_use_gpu_fence_ = false;
   bool webxr_use_shared_buffer_draw_ = false;
 
@@ -231,18 +225,18 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   std::unique_ptr<MailboxToSurfaceBridge> mailbox_bridge_;
   std::unique_ptr<ScopedGpuTrace> gpu_trace_;
 
-  FPSMeter vr_ui_fps_meter_;
+  device::FPSMeter vr_ui_fps_meter_;
 
   // Render time is from JS submitFrame to estimated render completion.
   // This is an estimate when submitting incomplete frames to GVR.
   // If submitFrame blocks, that means the previous frame wasn't done
   // rendering yet.
-  SlidingTimeDeltaAverage webvr_render_time_;
+  device::SlidingTimeDeltaAverage webvr_render_time_;
   // JS time is from SendVSync (pose time) to incoming JS submitFrame.
-  SlidingTimeDeltaAverage webvr_js_time_;
+  device::SlidingTimeDeltaAverage webvr_js_time_;
   // JS wait time is spent waiting for the previous frame to complete
   // rendering, as reported from the Renderer via mojo.
-  SlidingTimeDeltaAverage webvr_js_wait_time_;
+  device::SlidingTimeDeltaAverage webvr_js_wait_time_;
 
   base::WeakPtrFactory<GvrSchedulerDelegate> weak_ptr_factory_;
 

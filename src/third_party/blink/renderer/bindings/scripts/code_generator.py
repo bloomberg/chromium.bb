@@ -19,7 +19,7 @@ from v8_methods import method_filters
 from v8_utilities import capitalize
 from utilities import (idl_filename_to_component, is_valid_component_dependency,
                        format_remove_duplicates, format_blink_cpp_source_code,
-                       to_snake_case)
+                       to_snake_case, normalize_path)
 import v8_utilities
 
 # Path handling for libraries and templates
@@ -124,6 +124,8 @@ def normalize_and_sort_includes(include_paths):
 def render_template(template, context):
     filename = str(template.filename)
     filename = filename[filename.rfind('third_party'):]
+    filename = normalize_path(filename)
+
     context['jinja_template_filename'] = filename
     return template.render(context)
 
@@ -180,6 +182,7 @@ class CodeGeneratorBase(object):
         raise NotImplementedError()
 
     def normalize_this_header_path(self, header_path):
+        header_path = normalize_path(header_path)
         match = re.search('(third_party/blink/.*)$', header_path)
         assert match, 'Unkown style of path to output: ' + header_path
         return match.group(1)

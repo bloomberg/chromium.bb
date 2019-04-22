@@ -76,7 +76,7 @@ void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
 }
 
 void UserPolicySigninServiceBase::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   ShutdownUserCloudPolicyManager();
 }
 

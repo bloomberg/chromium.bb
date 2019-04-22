@@ -8,7 +8,7 @@
 class DropdownBarHostDelegate {
  public:
   // Claims focus for the text field and selects its contents.
-  virtual void SetFocusAndSelection(bool select_all) = 0;
+  virtual void FocusAndSelectAll() = 0;
 
  protected:
   virtual ~DropdownBarHostDelegate() {}

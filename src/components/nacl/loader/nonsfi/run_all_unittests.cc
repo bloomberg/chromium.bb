@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

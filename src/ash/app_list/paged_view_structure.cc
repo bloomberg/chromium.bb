@@ -237,6 +237,8 @@ int PagedViewStructure::GetTargetModelIndexForMove(
     target_model_index += page.size();
 
     // Skip the item view to be moved in the page if found.
+    // Decrement |target_model_index| if |moved_view| is in this page because it
+    // is represented by a placeholder.
     auto iter = std::find(page.begin(), page.end(), moved_view);
     if (iter != page.end())
       --target_model_index;
@@ -305,6 +307,10 @@ bool PagedViewStructure::IsValidReorderTargetIndex(
   }
 
   return false;
+}
+
+void PagedViewStructure::AppendPage() {
+  pages_.emplace_back();
 }
 
 bool PagedViewStructure::IsFullPage(int page_index) const {

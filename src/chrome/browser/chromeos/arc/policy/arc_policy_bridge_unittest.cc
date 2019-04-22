@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
@@ -17,8 +18,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_policy_instance.h"
 #include "components/policy/core/common/mock_policy_service.h"
@@ -197,7 +198,7 @@ class ArcPolicyBridgeTestBase {
       const std::string& compliance_report) {
     Mock::VerifyAndClearExpectations(&observer_);
     std::unique_ptr<base::Value> compliance_report_value =
-        base::JSONReader::Read(compliance_report);
+        base::JSONReader::ReadDeprecated(compliance_report);
     if (compliance_report_value && compliance_report_value->is_dict()) {
       EXPECT_CALL(observer_, OnComplianceReportReceived(
                                  ValueEquals(compliance_report_value.get())));
@@ -271,7 +272,7 @@ TEST_F(ArcPolicyBridgeTest, EmptyPolicyTest) {
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() + "\"}");
 }
 
-TEST_F(ArcPolicyBridgeTest, ArcPolicyTest) {
+TEST_F(ArcPolicyBridgeTest, DISABLED_ArcPolicyTest) {
   policy_map().Set(
       policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
@@ -547,7 +548,7 @@ TEST_F(ArcPolicyBridgeTest, VpnConfigAllowedTest) {
                              "\",\"vpnConfigDisabled\":true}");
 }
 
-TEST_P(ArcPolicyBridgeAffiliatedTest, ApkCacheEnabledTest) {
+TEST_P(ArcPolicyBridgeAffiliatedTest, DISABLED_ApkCacheEnabledTest) {
   const std::string apk_cache_enabled_policy(
       "{\"apkCacheEnabled\":true,\"guid\":\"" + instance_guid() + "\"}");
   policy_map().Set(policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
@@ -563,8 +564,8 @@ TEST_P(ArcPolicyBridgeAffiliatedTest, ApkCacheEnabledTest) {
 
 // Boolean parameter means if user is affiliated on the device. Affiliated
 // users belong to the domain that owns the device.
-INSTANTIATE_TEST_CASE_P(ArcPolicyBridgeAffiliatedTestInstance,
-                        ArcPolicyBridgeAffiliatedTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(ArcPolicyBridgeAffiliatedTestInstance,
+                         ArcPolicyBridgeAffiliatedTest,
+                         testing::Bool());
 
 }  // namespace arc

@@ -24,8 +24,6 @@
 
 namespace {
 
-const char kJsScreenPath[] = "login.AppLaunchSplashScreen";
-
 // Returns network name by service path.
 std::string GetNetworkName(const std::string& service_path) {
   const chromeos::NetworkState* network =
@@ -41,12 +39,12 @@ std::string GetNetworkName(const std::string& service_path) {
 namespace chromeos {
 
 AppLaunchSplashScreenHandler::AppLaunchSplashScreenHandler(
+    JSCallsContainer* js_calls_container,
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     ErrorScreen* error_screen)
-    : BaseScreenHandler(kScreenId),
+    : BaseScreenHandler(kScreenId, js_calls_container),
       network_state_informer_(network_state_informer),
       error_screen_(error_screen) {
-  set_call_js_prefix(kJsScreenPath);
   network_state_informer_->AddObserver(this);
 }
 
@@ -114,7 +112,7 @@ void AppLaunchSplashScreenHandler::Hide() {
 }
 
 void AppLaunchSplashScreenHandler::ToggleNetworkConfig(bool visible) {
-  CallJSWithPrefix("toggleNetworkConfig", visible);
+  CallJS("login.AppLaunchSplashScreen.toggleNetworkConfig", visible);
 }
 
 void AppLaunchSplashScreenHandler::UpdateAppLaunchState(AppLaunchState state) {
@@ -228,7 +226,7 @@ void AppLaunchSplashScreenHandler::PopulateAppInfo(
 }
 
 void AppLaunchSplashScreenHandler::SetLaunchText(const std::string& text) {
-  CallJSWithPrefix("updateMessage", text);
+  CallJS("login.AppLaunchSplashScreen.updateMessage", text);
 }
 
 int AppLaunchSplashScreenHandler::GetProgressMessageFromState(

@@ -28,6 +28,8 @@ class ShellExtensionWebContentsObserver
   explicit ShellExtensionWebContentsObserver(
       content::WebContents* web_contents);
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionWebContentsObserver);
 };
 

@@ -15,6 +15,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/pending_task.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
@@ -217,25 +218,19 @@ TEST_F(ActivityAnalyzerTest, GlobalAnalyzerConstruction) {
 }
 
 TEST_F(ActivityAnalyzerTest, GlobalAnalyzerFromSharedMemory) {
-  SharedMemoryHandle handle1;
-  SharedMemoryHandle handle2;
+  base::MappedReadOnlyRegion shm =
+      base::ReadOnlySharedMemoryRegion::Create(kMemorySize);
+  ASSERT_TRUE(shm.IsValid());
+  base::WritableSharedMemoryMapping rw_mapping = std::move(shm.mapping);
+  base::ReadOnlySharedMemoryMapping ro_mapping = shm.region.Map();
+  ASSERT_TRUE(ro_mapping.IsValid());
 
-  {
-    std::unique_ptr<SharedMemory> shmem(new SharedMemory());
-    ASSERT_TRUE(shmem->CreateAndMapAnonymous(kMemorySize));
-    handle1 = shmem->handle().Duplicate();
-    ASSERT_TRUE(handle1.IsValid());
-    handle2 = shmem->handle().Duplicate();
-    ASSERT_TRUE(handle2.IsValid());
-  }
-
-  GlobalActivityTracker::CreateWithSharedMemoryHandle(handle1, kMemorySize, 0,
-                                                      "", 3);
+  GlobalActivityTracker::CreateWithSharedMemory(std::move(rw_mapping), 0, "",
+                                                3);
   GlobalActivityTracker::Get()->process_data().SetString("foo", "bar");
 
   std::unique_ptr<GlobalActivityAnalyzer> analyzer =
-      GlobalActivityAnalyzer::CreateWithSharedMemoryHandle(handle2,
-                                                           kMemorySize);
+      GlobalActivityAnalyzer::CreateWithSharedMemory(std::move(ro_mapping));
 
   const int64_t pid = analyzer->GetFirstProcess();
   ASSERT_NE(0, pid);

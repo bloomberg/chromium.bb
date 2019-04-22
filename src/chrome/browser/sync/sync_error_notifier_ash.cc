@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -24,7 +25,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/account_id/account_id.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -49,9 +50,8 @@ void ShowSyncSetup(Profile* profile) {
 
 }  // namespace
 
-SyncErrorNotifier::SyncErrorNotifier(
-    browser_sync::ProfileSyncService* sync_service,
-    Profile* profile)
+SyncErrorNotifier::SyncErrorNotifier(syncer::SyncService* sync_service,
+                                     Profile* profile)
     : sync_service_(sync_service),
       profile_(profile),
       notification_displayed_(false) {
@@ -127,6 +127,7 @@ void SyncErrorNotifier::OnStateChanged(syncer::SyncService* service) {
           ash::kNotificationWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
 
-  display_service->Display(NotificationHandler::Type::TRANSIENT, *notification);
+  display_service->Display(NotificationHandler::Type::TRANSIENT, *notification,
+                           /*metadata=*/nullptr);
   notification_displayed_ = true;
 }

@@ -8,11 +8,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -54,6 +57,17 @@ net::NetworkTrafficAnnotationTag traffic_annotation =
 
 namespace autofill_assistant {
 
+// static
+std::unique_ptr<Service> Service::Create(content::BrowserContext* context,
+                                         Client* client) {
+  GURL server_url(client->GetServerUrl());
+  DCHECK(server_url.is_valid());
+
+  return std::make_unique<Service>(
+      client->GetApiKey(), server_url, context, client->GetAccessTokenFetcher(),
+      client->GetLocale(), client->GetCountryCode());
+}
+
 Service::Service(const std::string& api_key,
                  const GURL& server_url,
                  content::BrowserContext* context,
@@ -78,25 +92,25 @@ Service::Service(const std::string& api_key,
   url::StringPieceReplacements<std::string> action_replacements;
   action_replacements.SetPathStr(kActionEndpoint);
   script_action_server_url_ = server_url.ReplaceComponents(action_replacements);
+  VLOG(1) << "Using script domain " << script_action_server_url_.host();
 }
 
 Service::~Service() {}
 
-void Service::GetScriptsForUrl(
-    const GURL& url,
-    const std::map<std::string, std::string>& parameters,
-    ResponseCallback callback) {
+void Service::GetScriptsForUrl(const GURL& url,
+                               const TriggerContext* trigger_context,
+                               ResponseCallback callback) {
   DCHECK(url.is_valid());
 
-  SendRequest(AddLoader(
-      script_server_url_,
-      ProtocolUtils::CreateGetScriptsRequest(url, parameters, client_context_),
-      std::move(callback)));
+  SendRequest(AddLoader(script_server_url_,
+                        ProtocolUtils::CreateGetScriptsRequest(
+                            url, *trigger_context, client_context_),
+                        std::move(callback)));
 }
 
 void Service::GetActions(const std::string& script_path,
                          const GURL& url,
-                         const std::map<std::string, std::string>& parameters,
+                         const TriggerContext* trigger_context,
                          const std::string& global_payload,
                          const std::string& script_payload,
                          ResponseCallback callback) {
@@ -104,21 +118,23 @@ void Service::GetActions(const std::string& script_path,
 
   SendRequest(AddLoader(script_action_server_url_,
                         ProtocolUtils::CreateInitialScriptActionsRequest(
-                            script_path, url, parameters, global_payload,
+                            script_path, url, *trigger_context, global_payload,
                             script_payload, client_context_),
                         std::move(callback)));
 }
 
 void Service::GetNextActions(
+    const TriggerContext* trigger_context,
     const std::string& previous_global_payload,
     const std::string& previous_script_payload,
     const std::vector<ProcessedActionProto>& processed_actions,
     ResponseCallback callback) {
-  SendRequest(AddLoader(script_action_server_url_,
-                        ProtocolUtils::CreateNextScriptActionsRequest(
-                            previous_global_payload, previous_script_payload,
-                            processed_actions, client_context_),
-                        std::move(callback)));
+  SendRequest(AddLoader(
+      script_action_server_url_,
+      ProtocolUtils::CreateNextScriptActionsRequest(
+          *trigger_context, previous_global_payload, previous_script_payload,
+          processed_actions, client_context_),
+      std::move(callback)));
 }
 
 void Service::SendRequest(Loader* loader) {
@@ -158,8 +174,10 @@ void Service::StartLoader(Loader* loader) {
   resource_request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
   if (access_token_.empty()) {
+    std::string query_str = base::StrCat({"key=", api_key_});
+    // query_str must remain valid until ReplaceComponents() has returned.
     url::StringPieceReplacements<std::string> add_key;
-    add_key.SetQueryStr(base::StrCat({"key=", api_key_}));
+    add_key.SetQueryStr(query_str);
     resource_request->url = loader->url.ReplaceComponents(add_key);
   } else {
     resource_request->url = loader->url;
@@ -216,6 +234,8 @@ void Service::OnURLLoaderComplete(Loader* loader,
                << loader_instance->loader->NetError()
                << " response_code=" << response_code << " message="
                << (response_body == nullptr ? "" : *response_body);
+    // TODO(crbug.com/806868): Pass an enum to be able to distinguish errors
+    // downstream. Also introduce a metric for this.
     std::move(loader_instance->callback).Run(false, response_body_str);
     return;
   }

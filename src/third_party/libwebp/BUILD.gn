@@ -4,6 +4,7 @@
 
 import("//build/config/arm.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 config("libwebp_config") {
   include_dirs = [ "./src" ]
@@ -149,6 +150,7 @@ static_library("libwebp_dsp") {
     "src/dsp/mips_macro.h",
     "src/dsp/msa_macro.h",
     "src/dsp/neon.h",
+    "src/dsp/quant.h",
     "src/dsp/rescaler.c",
     "src/dsp/rescaler_mips32.c",
     "src/dsp/rescaler_mips_dsp_r2.c",
@@ -178,7 +180,7 @@ static_library("libwebp_dsp") {
     ":libwebp_webp",
   ]
   if (is_android) {
-    deps += [ "//third_party/android_tools:cpu_features" ]
+    deps += [ "//third_party/android_sdk:cpu_features" ]
   }
   if (current_cpu == "x86" || current_cpu == "x64") {
     defines = [
@@ -251,6 +253,7 @@ if (use_dsp_neon) {
   static_library("libwebp_dsp_neon") {
     sources = [
       "src/dsp/alpha_processing_neon.c",
+      "src/dsp/cost_neon.c",
       "src/dsp/dec_neon.c",
       "src/dsp/enc_neon.c",
       "src/dsp/filters_neon.c",
@@ -388,7 +391,9 @@ group("libwebp") {
     ":libwebp_mux",
     ":libwebp_utils",
   ]
-  public_deps = [ ":libwebp_webp" ]
+  public_deps = [
+    ":libwebp_webp",
+  ]
   public_configs = [ ":libwebp_config" ]
   if (use_dsp_neon) {
     deps += [ ":libwebp_dsp_neon" ]
@@ -547,4 +552,85 @@ if (current_toolchain == host_toolchain) {
       configs += [ "//build/config/compiler:optimize_max" ]
     }
   }
+}
+
+############################################################################## #
+# Fuzzers
+# TODO(https://bugs.chromium.org/p/webp/issues/detail?id=409):
+#     Eliminated need for cflags_cc.
+
+fuzzer_test("libwebp_simple_api_fuzzer") {
+  sources = [
+    "fuzzing/fuzz_simple_api.cc",
+  ]
+  dict = "fuzzing/fuzz.dict"
+  seed_corpus = "fuzzing/fuzz_seed_corpus"
+  deps = [
+    ":libwebp",
+    ":libwebp_webp",
+  ]
+  cflags_cc = [ "-Wno-unused-function" ]
+  defines = [ "WEBP_MAX_IMAGE_SIZE=838860800" ]
+  additional_configs = [ ":libwebp_config_internal" ]
+}
+
+fuzzer_test("libwebp_advanced_api_fuzzer") {
+  sources = [
+    "fuzzing/fuzz_advanced_api.cc",
+  ]
+  dict = "fuzzing/fuzz.dict"
+  seed_corpus = "fuzzing/fuzz_seed_corpus"
+  deps = [
+    ":libwebp",
+    ":libwebp_webp",
+  ]
+  cflags_cc = [ "-Wno-unused-function" ]
+  defines = [ "WEBP_MAX_IMAGE_SIZE=838860800" ]
+  additional_configs = [ ":libwebp_config_internal" ]
+}
+
+fuzzer_test("libwebp_animation_api_fuzzer") {
+  sources = [
+    "fuzzing/fuzz_animation_api.cc",
+    "src/demux/anim_decode.c",
+  ]
+  dict = "fuzzing/fuzz.dict"
+  seed_corpus = "fuzzing/fuzz_seed_corpus"
+  deps = [
+    ":libwebp",
+    ":libwebp_webp",
+  ]
+  cflags_cc = [ "-Wno-unused-function" ]
+  defines = [ "WEBP_MAX_IMAGE_SIZE=838860800" ]
+  additional_configs = [ ":libwebp_config_internal" ]
+}
+
+fuzzer_test("libwebp_demux_api_fuzzer") {
+  sources = [
+    "fuzzing/fuzz_demux_api.cc",
+  ]
+  dict = "fuzzing/fuzz.dict"
+  seed_corpus = "fuzzing/fuzz_seed_corpus"
+  deps = [
+    ":libwebp",
+    ":libwebp_webp",
+  ]
+  cflags_cc = [ "-Wno-unused-function" ]
+  defines = [ "WEBP_MAX_IMAGE_SIZE=838860800" ]
+  additional_configs = [ ":libwebp_config_internal" ]
+}
+
+fuzzer_test("libwebp_enc_dec_api_fuzzer") {
+  sources = [
+    "fuzzing/fuzz_webp_enc_dec.cc",
+  ]
+  dict = "fuzzing/fuzz.dict"
+  seed_corpus = "fuzzing/fuzz_seed_corpus"
+  deps = [
+    ":libwebp",
+    ":libwebp_webp",
+  ]
+  cflags_cc = [ "-Wno-unused-function" ]
+  defines = [ "WEBP_MAX_IMAGE_SIZE=838860800" ]
+  additional_configs = [ ":libwebp_config_internal" ]
 }

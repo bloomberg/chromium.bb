@@ -2,9 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
+#include "ash/system/accessibility/autoclick_menu_view.h"
 #include "ash/test/ash_test_base.h"
+#include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -69,10 +76,17 @@ class MouseEventCapturer : public ui::EventHandler {
 
 class AutoclickTest : public AshTestBase {
  public:
-  AutoclickTest() = default;
+  AutoclickTest() {
+    DestroyScopedTaskEnvironment();
+    scoped_task_environment_ =
+        std::make_unique<base::test::ScopedTaskEnvironment>(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME);
+  }
   ~AutoclickTest() override = default;
 
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExperimentalAccessibilityAutoclick);
     AshTestBase::SetUp();
     Shell::Get()->AddPreTargetHandler(&mouse_event_capturer_);
     GetAutoclickController()->SetAutoclickDelay(base::TimeDelta());
@@ -83,7 +97,7 @@ class AutoclickTest : public AshTestBase {
     // Make sure the display is initialized so we don't fail the test due to any
     // input events caused from creating the display.
     Shell::Get()->display_manager()->UpdateDisplays();
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
@@ -99,12 +113,41 @@ class AutoclickTest : public AshTestBase {
 
   const std::vector<ui::MouseEvent>& WaitForMouseEvents() {
     ClearMouseEvents();
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
     return GetMouseEvents();
+  }
+
+  void FastForwardBy(int milliseconds) {
+    scoped_task_environment_->FastForwardBy(
+        base::TimeDelta::FromMilliseconds(milliseconds));
   }
 
   AutoclickController* GetAutoclickController() {
     return Shell::Get()->autoclick_controller();
+  }
+
+  // Calculates and returns full delay from the animation delay, after setting
+  // that delay on the autoclick controller.
+  int UpdateAnimationDelayAndGetFullDelay(float animation_delay) {
+    float ratio =
+        GetAutoclickController()->GetStartGestureDelayRatioForTesting();
+    int full_delay = ceil(1.0 / ratio) * animation_delay;
+    GetAutoclickController()->SetAutoclickDelay(
+        base::TimeDelta::FromMilliseconds(full_delay));
+    return full_delay;
+  }
+
+  AutoclickMenuView* GetAutoclickMenuView() {
+    return GetAutoclickController()
+        ->GetMenuBubbleControllerForTesting()
+        ->menu_view_;
+  }
+
+  views::View* GetMenuButton(AutoclickMenuView::ButtonId view_id) {
+    AutoclickMenuView* menu_view = GetAutoclickMenuView();
+    if (!menu_view)
+      return nullptr;
+    return menu_view->GetViewByID(static_cast<int>(view_id));
   }
 
   void ClearMouseEvents() { mouse_event_capturer_.Reset(); }
@@ -115,6 +158,7 @@ class AutoclickTest : public AshTestBase {
 
  private:
   MouseEventCapturer mouse_event_capturer_;
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickTest);
 };
@@ -184,14 +228,14 @@ TEST_F(AutoclickTest, MouseMovement) {
 
 TEST_F(AutoclickTest, MovementThreshold) {
   UpdateDisplay("1280x1024,800x600");
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2u, root_windows.size());
 
   // Try at a couple different thresholds.
   for (int movement_threshold = 10; movement_threshold < 50;
        movement_threshold += 10) {
-    GetAutoclickController()->set_movement_threshold(movement_threshold);
+    GetAutoclickController()->SetMovementThreshold(movement_threshold);
 
     // Run test for the secondary display too to test fix for crbug.com/449870.
     for (auto* root_window : root_windows) {
@@ -225,7 +269,36 @@ TEST_F(AutoclickTest, MovementThreshold) {
   }
 
   // Reset to default threshold.
-  GetAutoclickController()->set_movement_threshold(20);
+  GetAutoclickController()->SetMovementThreshold(20);
+}
+
+TEST_F(AutoclickTest, MovementWithinThresholdWhileTimerRunning) {
+  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetMovementThreshold(20);
+  int animation_delay = 5;
+  int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
+
+  GetEventGenerator()->MoveMouseTo(100, 100);
+  FastForwardBy(animation_delay + 1);
+
+  // Move the mouse within the threshold. It shouldn't change the eventual
+  // target of the event, or cancel the click.
+  GetEventGenerator()->MoveMouseTo(110, 110);
+
+  ClearMouseEvents();
+  FastForwardBy(full_delay);
+  std::vector<ui::MouseEvent> events = GetMouseEvents();
+
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(gfx::Point(100, 100), events[0].location());
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, events[0].type());
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, events[0].flags());
+  EXPECT_EQ(gfx::Point(100, 100), events[1].location());
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[1].type());
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, events[1].flags());
+
+  // Reset delay.
+  GetAutoclickController()->SetAutoclickDelay(base::TimeDelta());
 }
 
 TEST_F(AutoclickTest, SingleKeyModifier) {
@@ -308,6 +381,15 @@ TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
                                       100, 3, 2);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
+
+  // However, just starting a scroll doesn't cancel. If you tap a touchpad on
+  // an Eve chromebook, for example, it can send an ET_SCROLL_FLING_CANCEL
+  // event, which shouldn't actually cancel autoclick.
+  GetEventGenerator()->MoveMouseTo(100, 100);
+  GetEventGenerator()->ScrollSequence(gfx::Point(100, 100), base::TimeDelta(),
+                                      0, 0, 0, 1);
+  events = WaitForMouseEvents();
+  EXPECT_EQ(2u, events.size());
 }
 
 TEST_F(AutoclickTest, SynthesizedMouseMovesIgnored) {
@@ -482,6 +564,219 @@ TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
   ASSERT_EQ(2u, events.size());
   EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[0].flags());
   EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[1].flags());
+}
+
+TEST_F(AutoclickTest, WaitsToDrawAnimationAfterDwellBegins) {
+  int animation_delay = 5;
+  int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
+  GetAutoclickController()->SetEnabled(true);
+  std::vector<ui::MouseEvent> events;
+
+  // Start a dwell at (210, 210).
+  GetEventGenerator()->MoveMouseTo(210, 210);
+
+  // The center should change to (205, 205) if the adjustment is made before
+  // the animation starts.
+  FastForwardBy(animation_delay - 1);
+  GetEventGenerator()->MoveMouseTo(205, 205);
+
+  // Now wait the full delay to ensure the click has happened, then check
+  // the result.
+  FastForwardBy(full_delay);
+  events = GetMouseEvents();
+  ASSERT_EQ(2u, events.size());
+  EXPECT_EQ(gfx::Point(205, 205), events[0].location());
+
+  // Start another dwell at (100, 100).
+  ClearMouseEvents();
+  GetEventGenerator()->MoveMouseTo(100, 100);
+
+  // Move the mouse a little to (105, 105), which should become the center.
+  FastForwardBy(animation_delay - 1);
+  GetEventGenerator()->MoveMouseTo(105, 105);
+
+  // Fast forward until the animation would have started. Now moving the mouse
+  // a little does not change the center point.
+  FastForwardBy(animation_delay);
+  GetEventGenerator()->MoveMouseTo(110, 110);
+
+  // Now wait until the click. It should be at the center point from before
+  // the animation started.
+  FastForwardBy(full_delay);
+  events = GetMouseEvents();
+  ASSERT_EQ(2u, events.size());
+  EXPECT_EQ(gfx::Point(105, 105), events[0].location());
+}
+
+TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  // Enable autoclick from the accessibility controller so that the bubble is
+  // constructed too.
+  accessibility_controller->SetAutoclickEnabled(true);
+  GetAutoclickController()->set_revert_to_left_click(false);
+  std::vector<ui::MouseEvent> events;
+
+  // Test at different screen sizes and densities because the fake click on
+  // the button involves coordinating between dips and pixels. Try two different
+  // positions to ensure offsets are calculated correctly.
+  const struct {
+    const std::string display_spec;
+    float scale;
+    mojom::AutoclickMenuPosition position;
+  } kTestCases[] = {
+      {"800x600", 1.0f, mojom::AutoclickMenuPosition::kBottomRight},
+      {"1024x800*2.0", 2.0f, mojom::AutoclickMenuPosition::kBottomRight},
+      {"800x600", 1.0f, mojom::AutoclickMenuPosition::kTopLeft},
+      {"1024x800*2.0", 2.0f, mojom::AutoclickMenuPosition::kTopLeft},
+  };
+  for (const auto& test : kTestCases) {
+    UpdateDisplay(test.display_spec);
+    accessibility_controller->SetAutoclickMenuPosition(test.position);
+    accessibility_controller->SetAutoclickEventType(
+        mojom::AutoclickEventType::kRightClick);
+
+    AutoclickMenuView* menu = GetAutoclickMenuView();
+    ASSERT_TRUE(menu);
+
+    // Outside of the bubble, a right-click still occurs.
+    // Move to a central position which will not have any menu but will still be
+    // on-screen.
+    GetEventGenerator()->MoveMouseTo(200 * test.scale, 200 * test.scale);
+    events = WaitForMouseEvents();
+    ASSERT_EQ(2u, events.size());
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[0].flags());
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[1].flags());
+
+    // Over the bubble, we get no real click, although the autoclick event
+    // type does get changed properly over a button.
+    gfx::Point button_location = gfx::ScaleToRoundedPoint(
+        GetMenuButton(AutoclickMenuView::ButtonId::kDoubleClick)
+            ->GetBoundsInScreen()
+            .CenterPoint(),
+        test.scale);
+    GetEventGenerator()->MoveMouseTo(button_location);
+    events = WaitForMouseEvents();
+    EXPECT_EQ(0u, events.size());
+    // But the event type did change with a the hover on the button.
+    EXPECT_EQ(mojom::AutoclickEventType::kDoubleClick,
+              accessibility_controller->GetAutoclickEventType());
+
+    // Change to a pause action type.
+    accessibility_controller->SetAutoclickEventType(
+        mojom::AutoclickEventType::kNoAction);
+
+    // Outside the bubble, no action occurs.
+    GetEventGenerator()->MoveMouseTo(200 * test.scale, 200 * test.scale);
+    events = WaitForMouseEvents();
+    EXPECT_EQ(0u, events.size());
+
+    // If we move over the bubble but not over any button than no real click
+    // occurs.
+    button_location = gfx::ScaleToRoundedPoint(
+        GetAutoclickMenuView()->GetBoundsInScreen().CenterPoint(), test.scale);
+    GetEventGenerator()->MoveMouseTo(button_location);
+    events = WaitForMouseEvents();
+    EXPECT_EQ(0u, events.size());
+    // The event type did not change because we were not over any button.
+    EXPECT_EQ(mojom::AutoclickEventType::kNoAction,
+              accessibility_controller->GetAutoclickEventType());
+
+    // Leaving the bubble we are still paused.
+    GetEventGenerator()->MoveMouseTo(200 * test.scale, 200 * test.scale);
+    events = WaitForMouseEvents();
+    EXPECT_EQ(0u, events.size());
+
+    // Moving over another button takes an action.
+    button_location = gfx::ScaleToRoundedPoint(
+        GetMenuButton(AutoclickMenuView::ButtonId::kLeftClick)
+            ->GetBoundsInScreen()
+            .CenterPoint(),
+        test.scale);
+    GetEventGenerator()->MoveMouseTo(button_location);
+    events = WaitForMouseEvents();
+    EXPECT_EQ(0u, events.size());
+    EXPECT_EQ(mojom::AutoclickEventType::kLeftClick,
+              accessibility_controller->GetAutoclickEventType());
+  }
+
+  // Reset state.
+  accessibility_controller->SetAutoclickEnabled(false);
+}
+
+TEST_F(AutoclickTest,
+       StartsGestureOnBubbleButDoesNotClickIfMouseMovedWhenPaused) {
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  GetAutoclickController()->set_revert_to_left_click(false);
+  GetAutoclickController()->SetAutoclickEventType(
+      mojom::AutoclickEventType::kNoAction);
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      mojom::AutoclickMenuPosition::kBottomRight);
+
+  int animation_delay = 5;
+  int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
+
+  std::vector<ui::MouseEvent> events;
+  AutoclickMenuView* menu = GetAutoclickMenuView();
+  ASSERT_TRUE(menu);
+
+  // Start a dwell over the bubble.
+  GetEventGenerator()->MoveMouseTo(menu->GetBoundsInScreen().origin());
+
+  // Move back off the bubble before anything happens.
+  FastForwardBy(animation_delay - 1);
+  GetEventGenerator()->MoveMouseTo(30, 30);
+
+  // Now wait the full delay to ensure pause could have happened.
+  FastForwardBy(full_delay);
+  events = GetMouseEvents();
+  ASSERT_EQ(0u, events.size());
+
+  // This time, dwell over the bubble long enough for the animation to begin.
+  // No action should occur if we move off during the dwell.
+  GetEventGenerator()->MoveMouseTo(menu->GetBoundsInScreen().origin());
+
+  // Move back off the bubble after the animation begins, but before a click
+  // would occur.
+  FastForwardBy(animation_delay + 1);
+  GetEventGenerator()->MoveMouseTo(30, 30);
+
+  // Now wait the full delay to ensure pause could have happened.
+  FastForwardBy(full_delay);
+  events = GetMouseEvents();
+  ASSERT_EQ(0u, events.size());
+
+  // Reset state.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+}
+
+// The autoclick tray shouldn't stop the shelf from auto-hiding.
+TEST_F(AutoclickTest, ShelfAutohidesWithAutoclickBubble) {
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+  Shelf* shelf = GetPrimaryShelf();
+
+  // Create a visible window so auto-hide behavior is enforced.
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.context = CurrentContext();
+  views::Widget* widget = new views::Widget;
+  widget->Init(params);
+  widget->Show();
+
+  // Turn on auto-hide for the shelf.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Enable autoclick. The shelf should remain invisible.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  AutoclickMenuView* menu = GetAutoclickMenuView();
+  ASSERT_TRUE(menu);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Reset state.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
 }
 
 }  // namespace ash

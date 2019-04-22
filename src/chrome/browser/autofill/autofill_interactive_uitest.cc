@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -31,7 +32,7 @@
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/ssl/cert_verifier_browser_test.h"
+#include "chrome/browser/ssl/chrome_mock_cert_verifier.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
@@ -1120,31 +1121,9 @@ class AutofillCompanyInteractiveTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Test params:
-//  - bool popup_views_enabled_: whether feature AutofillExpandedPopupViews
-//        is enabled.
-//  - bool single_click_enabled_: whether AutofillSingleClick is enabled.
-class AutofillSingleClickTest : public AutofillInteractiveTestBase,
-                                public testing::WithParamInterface<bool> {
- protected:
-  AutofillSingleClickTest() : single_click_enabled_(GetParam()) {}
-
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatureState(features::kSingleClickAutofill,
-                                              single_click_enabled_);
-    AutofillInteractiveTestBase::SetUp();
-  }
-
-  const bool single_click_enabled_;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Depending on whether or not AutofillSingleClick is enabled, makes sure that
-// the first click does or does not activate the autofill popup on the initial
-// click within a fillable field.
-IN_PROC_BROWSER_TEST_P(AutofillSingleClickTest, Click) {
+// Makes sure that the first click does or does not activate the autofill popup
+// on the initial click within a fillable field.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, Click) {
   // Make sure autofill data exists.
   CreateTestProfile();
 
@@ -1152,16 +1131,6 @@ IN_PROC_BROWSER_TEST_P(AutofillSingleClickTest, Click) {
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_NO_FATAL_FAILURE(
       ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
-
-  // If AutofillSingleClick is NOT enabled, then the first time we click on the
-  // first name field, nothing should happen.
-  if (!single_click_enabled_) {
-    // Click the first name field while it's out of focus, then twiddle our
-    // thumbs a bit. If the autofill popup shows, it will hit the CHECKs in
-    // AutofillManagerTestDelegateImpl while we're waiting.
-    ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
-    ASSERT_NO_FATAL_FAILURE(MakeSurePopupDoesntAppear());
-  }
 
   // This click should activate the autofill popup.
   test_delegate()->Reset();
@@ -1241,18 +1210,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnDeleteValueAfterAutofill) {
 
 // Test that an input field is not rendered with the yellow autofilled
 // background color when choosing an option from the datalist suggestion list.
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    defined(OS_LINUX)
-// Flakily triggers and assert on Mac; flakily gets empty string instead
-// of "Adam" on ChromeOS.
-// http://crbug.com/419868, http://crbug.com/595385.
-// Flaky on Windows and Linux as well: http://crbug.com/595385
-#define MAYBE_OnSelectOptionFromDatalist DISABLED_OnSelectOptionFromDatalist
-#else
-#define MAYBE_OnSelectOptionFromDatalist OnSelectOptionFromDatalist
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_OnSelectOptionFromDatalist) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnSelectOptionFromDatalist) {
   static const char kTestForm[] =
       "<form action=\"http://www.example.com/\" method=\"POST\">"
       "  <input list=\"dl\" type=\"search\" id=\"firstname\"><br>"
@@ -1276,10 +1234,55 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        {ObservedUiEvents::kSuggestionShown});
   SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);
   SendKeyToDataListPopup(ui::DomKey::ENTER);
-  ExpectFieldValue("firstname", "Adam");
+  // Pressing the down arrow preselects the first item. Pressing it again
+  // selects the second item.
+  ExpectFieldValue("firstname", "Bob");
   std::string color;
   GetFieldBackgroundColor("firstname", &color);
   EXPECT_EQ(color, orginalcolor);
+}
+
+// Test that an <input> field with a <datalist> has a working drop down even if
+// it was dynamically changed to <input type="password"> temporarily. This is a
+// regression test for crbug.com/918351.
+IN_PROC_BROWSER_TEST_F(
+    AutofillInteractiveTest,
+    OnSelectOptionFromDatalistTurningToPasswordFieldAndBack) {
+  static const char kTestForm[] =
+      "<form action=\"http://www.example.com/\" method=\"POST\">"
+      "  <input list=\"dl\" type=\"search\" id=\"firstname\"><br>"
+      "  <datalist id=\"dl\">"
+      "  <option value=\"Adam\"></option>"
+      "  <option value=\"Bob\"></option>"
+      "  <option value=\"Carl\"></option>"
+      "  </datalist>"
+      "</form>";
+
+  // Load the test page.
+  SetTestUrlResponse(kTestForm);
+  ASSERT_NO_FATAL_FAILURE(
+      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      GetWebContents(),
+      "document.getElementById('firstname').type = 'password';"));
+  // At this point, the IsPasswordFieldForAutofill() function returns true and
+  // will continue to return true for the field, even when the type is changed
+  // back to 'search'.
+  ASSERT_TRUE(content::ExecuteScript(
+      GetWebContents(),
+      "document.getElementById('firstname').type = 'search';"));
+
+  // Regression test for crbug.com/918351 whether the datalist becomes available
+  // again.
+  FocusFirstNameField();
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN,
+                       {ObservedUiEvents::kSuggestionShown});
+  SendKeyToDataListPopup(ui::DomKey::ARROW_DOWN);
+  SendKeyToDataListPopup(ui::DomKey::ENTER);
+  // Pressing the down arrow preselects the first item. Pressing it again
+  // selects the second item.
+  ExpectFieldValue("firstname", "Bob");
 }
 
 // Test that a JavaScript oninput event is fired after auto-filling a form.
@@ -1931,6 +1934,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ComparePhoneNumbers) {
   profile.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("San Jose"));
   profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
   profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("95110"));
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1-408-555-4567"));
   SetTestProfile(browser(), profile);
 
@@ -2147,14 +2151,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   std::vector<AutofillProfile> profiles;
   for (int i = 0; i < kNumProfiles; i++) {
     AutofillProfile profile;
-    base::string16 name(base::IntToString16(i));
+    base::string16 name(base::NumberToString16(i));
     base::string16 email(name + ASCIIToUTF16("@example.com"));
-    base::string16 street = ASCIIToUTF16(
-        base::IntToString(base::RandInt(0, 10000)) + " " +
-        streets[base::RandInt(0, streets.size() - 1)]);
+    base::string16 street =
+        ASCIIToUTF16(base::NumberToString(base::RandInt(0, 10000)) + " " +
+                     streets[base::RandInt(0, streets.size() - 1)]);
     base::string16 city =
         ASCIIToUTF16(cities[base::RandInt(0, cities.size() - 1)]);
-    base::string16 zip(base::IntToString16(base::RandInt(0, 10000)));
+    base::string16 zip(base::NumberToString16(base::RandInt(0, 10000)));
     profile.SetRawInfo(NAME_FIRST, name);
     profile.SetRawInfo(EMAIL_ADDRESS, email);
     profile.SetRawInfo(ADDRESS_HOME_LINE1, street);
@@ -2210,36 +2214,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // autofilled form.
   SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
                         {ObservedUiEvents::kPreviewFormData});
-}
-
-// Test that dynamic forms don't get filled when the feature is disabled.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicChangingFormFill) {
-  // Explicitly disable the filling of dynamic forms.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kAutofillDynamicForms);
-
-  CreateTestProfile();
-
-  GURL url =
-      embedded_test_server()->GetURL("/autofill/dynamic_form_disabled.html");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
-
-  TriggerFormFill("firstname");
-
-  // Wait for the re-fill to happen.
-  bool has_refilled = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetWebContents(), "hasRefilled()", &has_refilled));
-  ASSERT_FALSE(has_refilled);
-
-  // Make sure that the new form was not filled.
-  ExpectFieldValue("firstname_form1", "");
-  ExpectFieldValue("address_form1", "");
-  ExpectFieldValue("state_form1", "CA");  // Default value.
-  ExpectFieldValue("city_form1", "");
-  ExpectFieldValue("company_form1", "");
-  ExpectFieldValue("email_form1", "");
-  ExpectFieldValue("phone_form1", "");
 }
 
 // Test that a page with 2 forms with no name and id containing fields with no
@@ -2306,8 +2280,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        Dynamic_MultipleNoNameForms_BadNames_FourthForm) {
   CreateTestProfile();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/multiple_noname_forms_badnames.html");
@@ -2334,8 +2306,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        Dynamic_MultipleNoNameForms_BadNames_ThirdForm) {
   CreateTestProfile();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/multiple_noname_forms_badnames.html");
@@ -2362,8 +2332,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        Dynamic_MultipleNoNameForms_BadNames_SecondForm) {
   CreateTestProfile();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/multiple_noname_forms_badnames.html");
@@ -2387,8 +2355,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                        Dynamic_MultipleNoNameForms_BadNames_FirstForm) {
   CreateTestProfile();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/multiple_noname_forms_badnames.html");
@@ -2846,12 +2812,6 @@ class AutofillDynamicFormInteractiveTest
     } else {
       disabled_features.push_back(features::kAutofillEnableCompanyName);
     }
-
-    // Explicitly enable the filling of dynamic forms and disabled the
-    // requirement for a secure context to fill credit cards.
-    enabled_features.push_back(features::kAutofillDynamicForms);
-    disabled_features.push_back(
-        features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
 
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     AutofillInteractiveTestBase::SetUp();
@@ -3463,17 +3423,13 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("phone", "15125551234");
 }
 
-INSTANTIATE_TEST_CASE_P(All, AutofillCompanyInteractiveTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, AutofillCompanyInteractiveTest, testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(All,
-                        AutofillDynamicFormInteractiveTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         AutofillDynamicFormInteractiveTest,
+                         testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(All,
-                        AutofillSingleClickTest,
-                        testing::Bool());
-
-INSTANTIATE_TEST_CASE_P(All,
-                        AutofillRestrictUnownedFieldsTest,
-                        testing::Combine(testing::Bool(), testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         AutofillRestrictUnownedFieldsTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 }  // namespace autofill

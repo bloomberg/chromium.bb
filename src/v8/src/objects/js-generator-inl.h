@@ -16,19 +16,24 @@
 namespace v8 {
 namespace internal {
 
+OBJECT_CONSTRUCTORS_IMPL(JSGeneratorObject, JSObject)
+OBJECT_CONSTRUCTORS_IMPL(JSAsyncFunctionObject, JSGeneratorObject)
+OBJECT_CONSTRUCTORS_IMPL(JSAsyncGeneratorObject, JSGeneratorObject)
+OBJECT_CONSTRUCTORS_IMPL(AsyncGeneratorRequest, Struct)
+
 CAST_ACCESSOR(JSAsyncFunctionObject)
 CAST_ACCESSOR(JSAsyncGeneratorObject)
 CAST_ACCESSOR(JSGeneratorObject)
 CAST_ACCESSOR(AsyncGeneratorRequest)
 
 ACCESSORS(JSGeneratorObject, function, JSFunction, kFunctionOffset)
-ACCESSORS2(JSGeneratorObject, context, Context, kContextOffset)
+ACCESSORS(JSGeneratorObject, context, Context, kContextOffset)
 ACCESSORS(JSGeneratorObject, receiver, Object, kReceiverOffset)
 ACCESSORS(JSGeneratorObject, input_or_debug_pos, Object, kInputOrDebugPosOffset)
 SMI_ACCESSORS(JSGeneratorObject, resume_mode, kResumeModeOffset)
 SMI_ACCESSORS(JSGeneratorObject, continuation, kContinuationOffset)
-ACCESSORS2(JSGeneratorObject, parameters_and_registers, FixedArray,
-           kParametersAndRegistersOffset)
+ACCESSORS(JSGeneratorObject, parameters_and_registers, FixedArray,
+          kParametersAndRegistersOffset)
 
 ACCESSORS(AsyncGeneratorRequest, next, Object, kNextOffset)
 SMI_ACCESSORS(AsyncGeneratorRequest, resume_mode, kResumeModeOffset)

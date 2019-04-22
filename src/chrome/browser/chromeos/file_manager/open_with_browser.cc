@@ -9,8 +9,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -58,7 +59,7 @@ constexpr const base::FilePath::CharType* kFileExtensionsViewableInBrowser[] = {
 
 // Returns true if |file_path| is viewable in the browser (ex. HTML file).
 bool IsViewableInBrowser(const base::FilePath& file_path) {
-  for (size_t i = 0; i < arraysize(kFileExtensionsViewableInBrowser); i++) {
+  for (size_t i = 0; i < base::size(kFileExtensionsViewableInBrowser); i++) {
     if (file_path.MatchesExtension(kFileExtensionsViewableInBrowser[i]))
       return true;
   }
@@ -84,8 +85,9 @@ bool IsPepperPluginEnabled(Profile* profile,
 bool IsPdfPluginEnabled(Profile* profile) {
   DCHECK(profile);
 
-  static const base::FilePath plugin_path(ChromeContentClient::kPDFPluginPath);
-  return IsPepperPluginEnabled(profile, plugin_path);
+  static const base::NoDestructor<base::FilePath> plugin_path(
+      ChromeContentClient::kPDFPluginPath);
+  return IsPepperPluginEnabled(profile, *plugin_path);
 }
 
 bool IsFlashPluginEnabled(Profile* profile) {
@@ -156,7 +158,8 @@ void OpenHostedDriveFsFile(const base::FilePath& file_path,
 }  // namespace
 
 bool OpenFileWithBrowser(Profile* profile,
-                         const storage::FileSystemURL& file_system_url) {
+                         const storage::FileSystemURL& file_system_url,
+                         const std::string& action_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile);
 
@@ -165,7 +168,8 @@ bool OpenFileWithBrowser(Profile* profile,
   // For things supported natively by the browser, we should open it
   // in a tab.
   if (IsViewableInBrowser(file_path) ||
-      ShouldBeOpenedWithPlugin(profile, file_path.Extension())) {
+      ShouldBeOpenedWithPlugin(profile, file_path.Extension(), action_id) ||
+      (action_id == "view-in-browser" && file_path.Extension() == "")) {
     // Use external file URL if it is provided for the file system.
     GURL page_url = chromeos::FileSystemURLToExternalFileURL(file_system_url);
     if (page_url.is_empty())
@@ -207,14 +211,14 @@ bool OpenFileWithBrowser(Profile* profile,
 }
 
 // If a bundled plugin is enabled, we should open pdf/swf files in a tab.
-bool ShouldBeOpenedWithPlugin(
-    Profile* profile,
-    const base::FilePath::StringType& file_extension) {
+bool ShouldBeOpenedWithPlugin(Profile* profile,
+                              const base::FilePath::StringType& file_extension,
+                              const std::string& action_id) {
   DCHECK(profile);
 
   const base::FilePath file_path =
       base::FilePath::FromUTF8Unsafe("dummy").AddExtension(file_extension);
-  if (file_path.MatchesExtension(kPdfExtension))
+  if (file_path.MatchesExtension(kPdfExtension) || action_id == "view-pdf")
     return IsPdfPluginEnabled(profile);
   if (file_path.MatchesExtension(kSwfExtension))
     return IsFlashPluginEnabled(profile);

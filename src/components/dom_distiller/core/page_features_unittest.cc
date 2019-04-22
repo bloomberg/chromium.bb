@@ -38,11 +38,12 @@ TEST(DomDistillerPageFeaturesTest, TestCalculateDerivedFeatures) {
           "components/test/data/dom_distiller/derived_features.json"),
       &expected_output_data));
 
-  std::unique_ptr<base::Value> input_json = base::JSONReader::Read(input_data);
+  std::unique_ptr<base::Value> input_json =
+      base::JSONReader::ReadDeprecated(input_data);
   ASSERT_TRUE(input_json);
 
   std::unique_ptr<base::Value> expected_output_json =
-      base::JSONReader::Read(expected_output_data);
+      base::JSONReader::ReadDeprecated(expected_output_data);
   ASSERT_TRUE(expected_output_json);
 
   base::ListValue* input_entries;

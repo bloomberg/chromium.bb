@@ -5,19 +5,20 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_COUNTERS_SITE_DATA_COUNTING_HELPER_H_
 #define CHROME_BROWSER_BROWSING_DATA_COUNTERS_SITE_DATA_COUNTING_HELPER_H_
 
+#include <list>
 #include <set>
+#include <string>
+#include <vector>
+
+#include "base/callback.h"
+#include "chrome/browser/browsing_data/browsing_data_media_license_helper.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/ssl/channel_id_store.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 class Profile;
 class BrowsingDataFlashLSOHelper;
 class HostContentSettingsMap;
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace content {
 struct SessionStorageUsageInfo;
@@ -39,7 +40,7 @@ class SiteDataCountingHelper {
   explicit SiteDataCountingHelper(
       Profile* profile,
       base::Time begin,
-      base::Callback<void(int)> completion_callback);
+      base::OnceCallback<void(int)> completion_callback);
   ~SiteDataCountingHelper();
 
   void CountAndDestroySelfWhenFinished();
@@ -59,19 +60,19 @@ class SiteDataCountingHelper {
   void GetQuotaOriginsCallback(const std::set<url::Origin>& origin_set,
                                blink::mojom::StorageType type);
   void SitesWithFlashDataCallback(const std::vector<std::string>& sites);
-  void GetChannelIDsOnIOThread(
-      const scoped_refptr<net::URLRequestContextGetter>& rq_context);
-  void GetChannelIDsCallback(
-      const net::ChannelIDStore::ChannelIDList& channel_ids);
+  void SitesWithMediaLicensesCallback(
+      const std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>&
+          media_license_info_list);
 
   void Done(const std::vector<GURL>& origins);
 
   Profile* profile_;
   base::Time begin_;
-  base::Callback<void(int)> completion_callback_;
+  base::OnceCallback<void(int)> completion_callback_;
   int tasks_;
   std::set<std::string> unique_hosts_;
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
+  scoped_refptr<BrowsingDataMediaLicenseHelper> media_license_helper_;
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_COUNTERS_SITE_DATA_COUNTING_HELPER_H_

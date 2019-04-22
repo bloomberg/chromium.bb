@@ -202,8 +202,11 @@ void NetExportMessageHandler::NotifyUIWithState(
     std::unique_ptr<base::DictionaryValue> file_writer_state) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(web_ui());
-  web_ui()->CallJavascriptFunction(net_log::kOnExportNetLogInfoChanged,
-                                   *file_writer_state);
+
+  base::Value state = file_writer_state->Clone();
+
+  std::vector<const base::Value*> args{&state};
+  web_ui()->CallJavascriptFunction(net_log::kOnExportNetLogInfoChanged, args);
 }
 
 }  // namespace

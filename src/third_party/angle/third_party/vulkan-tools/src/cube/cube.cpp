@@ -32,10 +32,6 @@
 #include <csignal>
 #include <memory>
 
-#if defined(VK_USE_PLATFORM_MIR_KHR)
-#warning "Cubepp does not have code for Mir at this time"
-#endif
-
 #define VULKAN_HPP_NO_SMART_HANDLE
 #define VULKAN_HPP_NO_EXCEPTIONS
 #include <vulkan/vulkan.hpp>
@@ -49,7 +45,7 @@
 #define VERIFY(x) ((void)(x))
 #endif
 
-#define APP_SHORT_NAME "cube"
+#define APP_SHORT_NAME "vkcube"
 #ifdef _WIN32
 #define APP_NAME_STR_LEN 80
 #endif
@@ -265,7 +261,6 @@ struct Demo {
     void create_window();
 #elif defined(VK_USE_PLATFORM_MACOS_MVK)
     void run();
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
     vk::Result create_display_surface();
     void run_display();
@@ -295,7 +290,6 @@ struct Demo {
     wl_seat *seat;
     wl_pointer *pointer;
     wl_keyboard *keyboard;
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
     void *window;
 #endif
@@ -504,7 +498,6 @@ static void registry_handle_global(void *data, wl_registry *registry, uint32_t i
 static void registry_handle_global_remove(void *data, wl_registry *registry, uint32_t name) {}
 
 static const wl_registry_listener registry_listener = {registry_handle_global, registry_handle_global_remove};
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #endif
 
 Demo::Demo()
@@ -533,7 +526,6 @@ Demo::Demo()
       seat{nullptr},
       pointer{nullptr},
       keyboard{nullptr},
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #endif
       prepared{false},
       use_staging_buffer{false},
@@ -678,7 +670,6 @@ void Demo::cleanup() {
     wl_compositor_destroy(compositor);
     wl_registry_destroy(registry);
     wl_display_disconnect(display);
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #endif
 
     inst.destroy(nullptr);
@@ -1011,7 +1002,6 @@ void Demo::init_connection() {
     registry = wl_display_get_registry(display);
     wl_registry_add_listener(registry, &registry_listener, this);
     wl_display_dispatch(display);
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #endif
 }
 
@@ -1032,7 +1022,7 @@ void Demo::init_vk() {
     // Look for validation layers
     vk::Bool32 validation_found = VK_FALSE;
     if (validate) {
-        auto result = vk::enumerateInstanceLayerProperties(&instance_layer_count, nullptr);
+        auto result = vk::enumerateInstanceLayerProperties(&instance_layer_count, static_cast<vk::LayerProperties *>(nullptr));
         VERIFY(result == vk::Result::eSuccess);
 
         instance_validation_layers = instance_validation_layers_alt1;
@@ -1073,7 +1063,8 @@ void Demo::init_vk() {
     vk::Bool32 platformSurfaceExtFound = VK_FALSE;
     memset(extension_names, 0, sizeof(extension_names));
 
-    auto result = vk::enumerateInstanceExtensionProperties(nullptr, &instance_extension_count, nullptr);
+    auto result = vk::enumerateInstanceExtensionProperties(nullptr, &instance_extension_count,
+                                                           static_cast<vk::ExtensionProperties *>(nullptr));
     VERIFY(result == vk::Result::eSuccess);
 
     if (instance_extension_count > 0) {
@@ -1106,7 +1097,6 @@ void Demo::init_vk() {
                 platformSurfaceExtFound = 1;
                 extension_names[enabled_extension_count++] = VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
             }
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
             if (!strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, instance_extensions[i].extensionName)) {
                 platformSurfaceExtFound = 1;
@@ -1155,7 +1145,6 @@ void Demo::init_vk() {
                  "Do you have a compatible Vulkan installable client driver (ICD) installed?\n"
                  "Please look at the Getting Started guide for additional information.\n",
                  "vkCreateInstance Failure");
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
         ERR_EXIT("vkEnumerateInstanceExtensionProperties failed to find the " VK_KHR_XLIB_SURFACE_EXTENSION_NAME
                  " extension.\n\n"
@@ -1218,7 +1207,7 @@ void Demo::init_vk() {
 
     /* Make initial call to query gpu_count, then second call for gpu info*/
     uint32_t gpu_count;
-    result = inst.enumeratePhysicalDevices(&gpu_count, nullptr);
+    result = inst.enumeratePhysicalDevices(&gpu_count, static_cast<vk::PhysicalDevice *>(nullptr));
     VERIFY(result == vk::Result::eSuccess);
 
     if (gpu_count > 0) {
@@ -1241,7 +1230,8 @@ void Demo::init_vk() {
     enabled_extension_count = 0;
     memset(extension_names, 0, sizeof(extension_names));
 
-    result = gpu.enumerateDeviceExtensionProperties(nullptr, &device_extension_count, nullptr);
+    result =
+        gpu.enumerateDeviceExtensionProperties(nullptr, &device_extension_count, static_cast<vk::ExtensionProperties *>(nullptr));
     VERIFY(result == vk::Result::eSuccess);
 
     if (device_extension_count > 0) {
@@ -1269,7 +1259,7 @@ void Demo::init_vk() {
     gpu.getProperties(&gpu_props);
 
     /* Call with nullptr data to get count */
-    gpu.getQueueFamilyProperties(&queue_family_count, nullptr);
+    gpu.getQueueFamilyProperties(&queue_family_count, static_cast<vk::QueueFamilyProperties *>(nullptr));
     assert(queue_family_count >= 1);
 
     queue_props.reset(new vk::QueueFamilyProperties[queue_family_count]);
@@ -1298,7 +1288,6 @@ void Demo::init_vk_swapchain() {
         auto result = inst.createWaylandSurfaceKHR(&createInfo, nullptr, &surface);
         VERIFY(result == vk::Result::eSuccess);
     }
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif defined(VK_USE_PLATFORM_XLIB_KHR)
     {
         auto const createInfo = vk::XlibSurfaceCreateInfoKHR().setDpy(display).setWindow(xlib_window);
@@ -1387,7 +1376,7 @@ void Demo::init_vk_swapchain() {
 
     // Get the list of VkFormat's that are supported:
     uint32_t formatCount;
-    auto result = gpu.getSurfaceFormatsKHR(surface, &formatCount, nullptr);
+    auto result = gpu.getSurfaceFormatsKHR(surface, &formatCount, static_cast<vk::SurfaceFormatKHR *>(nullptr));
     VERIFY(result == vk::Result::eSuccess);
 
     std::unique_ptr<vk::SurfaceFormatKHR[]> surfFormats(new vk::SurfaceFormatKHR[formatCount]);
@@ -1519,7 +1508,7 @@ void Demo::prepare_buffers() {
     VERIFY(result == vk::Result::eSuccess);
 
     uint32_t presentModeCount;
-    result = gpu.getSurfacePresentModesKHR(surface, &presentModeCount, nullptr);
+    result = gpu.getSurfacePresentModesKHR(surface, &presentModeCount, static_cast<vk::PresentModeKHR *>(nullptr));
     VERIFY(result == vk::Result::eSuccess);
 
     std::unique_ptr<vk::PresentModeKHR[]> presentModes(new vk::PresentModeKHR[presentModeCount]);
@@ -1656,7 +1645,7 @@ void Demo::prepare_buffers() {
         device.destroySwapchainKHR(oldSwapchain, nullptr);
     }
 
-    result = device.getSwapchainImagesKHR(swapchain, &swapchainImageCount, nullptr);
+    result = device.getSwapchainImagesKHR(swapchain, &swapchainImageCount, static_cast<vk::Image *>(nullptr));
     VERIFY(result == vk::Result::eSuccess);
 
     std::unique_ptr<vk::Image[]> swapchainImages(new vk::Image[swapchainImageCount]);
@@ -2411,7 +2400,7 @@ void Demo::run() {
     draw();
     curFrame++;
 
-    if (frameCount != INT_MAX && curFrame == frameCount) {
+    if (frameCount != UINT32_MAX && curFrame == frameCount) {
         PostQuitMessage(validation_error);
     }
 }
@@ -2706,7 +2695,6 @@ void Demo::run() {
         quit = true;
     }
 }
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
 
 vk::Result Demo::create_display_surface() {
@@ -2849,7 +2837,7 @@ void Demo::run_display() {
         draw();
         curFrame++;
 
-        if (frameCount != INT32_MAX && curFrame == frameCount) {
+        if (frameCount != UINT32_MAX && curFrame == frameCount) {
             quit = true;
         }
     }
@@ -2886,6 +2874,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 demo.resize();
             }
             break;
+        case WM_KEYDOWN:
+            switch (wParam) {
+                case VK_ESCAPE:
+                    PostQuitMessage(validation_error);
+                    break;
+                case VK_LEFT:
+                    demo.spin_angle -= demo.spin_increment;
+                    break;
+                case VK_RIGHT:
+                    demo.spin_angle += demo.spin_increment;
+                    break;
+                case VK_SPACE:
+                    demo.pause = !demo.pause;
+                    break;
+            }
+            return 0;
         default:
             break;
     }
@@ -2946,7 +2950,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     }
 
     demo.connection = hInstance;
-    strncpy(demo.name, "cube", APP_NAME_STR_LEN);
+    strncpy(demo.name, "Vulkan Cube", APP_NAME_STR_LEN);
     demo.create_window();
     demo.init_vk_swapchain();
 
@@ -2956,6 +2960,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 
     // main message loop
     while (!done) {
+        if (demo.pause) {
+            const BOOL succ = WaitMessage();
+
+            if (!succ) {
+                const auto &suppress_popups = demo.suppress_popups;
+                ERR_EXIT("WaitMessage() failed on paused demo", "event loop error");
+            }
+        }
+
         PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE);
         if (msg.message == WM_QUIT)  // check for a quit message
         {
@@ -2987,7 +3000,6 @@ int main(int argc, char **argv) {
     demo.create_xlib_window();
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
     demo.create_window();
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #endif
 
     demo.init_vk_swapchain();
@@ -3000,7 +3012,6 @@ int main(int argc, char **argv) {
     demo.run_xlib();
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
     demo.run();
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
     demo.run_display();
 #endif

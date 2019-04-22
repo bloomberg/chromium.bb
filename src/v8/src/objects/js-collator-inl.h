@@ -18,10 +18,12 @@
 namespace v8 {
 namespace internal {
 
-ACCESSORS(JSCollator, icu_collator, Managed<icu::Collator>, kICUCollatorOffset)
-ACCESSORS(JSCollator, bound_compare, Object, kBoundCompareOffset);
+OBJECT_CONSTRUCTORS_IMPL(JSCollator, JSObject)
 
-CAST_ACCESSOR(JSCollator);
+ACCESSORS(JSCollator, icu_collator, Managed<icu::Collator>, kICUCollatorOffset)
+ACCESSORS(JSCollator, bound_compare, Object, kBoundCompareOffset)
+
+CAST_ACCESSOR(JSCollator)
 
 }  // namespace internal
 }  // namespace v8

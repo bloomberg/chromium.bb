@@ -10,8 +10,9 @@ import android.os.Bundle;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SecureRandomInitializer;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -164,7 +165,7 @@ public class CipherFactory {
                     mData = data;
 
                     // Posting an asynchronous task to notify the observers.
-                    ThreadUtils.postOnUiThread(new Runnable() {
+                    PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                         @Override
                         public void run() {
                             notifyCipherDataGenerated();

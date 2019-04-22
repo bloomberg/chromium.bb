@@ -380,44 +380,40 @@ class PickleWriter final : public TracedValue::Writer {
         case kTypeBool: {
           bool value;
           CHECK(it.ReadBool(&value));
-          base::Value new_bool(value);
           if (cur_dict) {
-            cur_dict->SetKey(ReadKeyName(it), std::move(new_bool));
+            cur_dict->SetBoolKey(ReadKeyName(it), value);
           } else {
-            cur_list->GetList().push_back(std::move(new_bool));
+            cur_list->GetList().emplace_back(value);
           }
         } break;
 
         case kTypeInt: {
           int value;
           CHECK(it.ReadInt(&value));
-          base::Value new_int(value);
           if (cur_dict) {
-            cur_dict->SetKey(ReadKeyName(it), std::move(new_int));
+            cur_dict->SetIntKey(ReadKeyName(it), value);
           } else {
-            cur_list->GetList().push_back(std::move(new_int));
+            cur_list->GetList().emplace_back(value);
           }
         } break;
 
         case kTypeDouble: {
           double value;
           CHECK(it.ReadDouble(&value));
-          base::Value new_double(value);
           if (cur_dict) {
-            cur_dict->SetKey(ReadKeyName(it), std::move(new_double));
+            cur_dict->SetDoubleKey(ReadKeyName(it), value);
           } else {
-            cur_list->GetList().push_back(std::move(new_double));
+            cur_list->GetList().emplace_back(value);
           }
         } break;
 
         case kTypeString: {
           std::string value;
           CHECK(it.ReadString(&value));
-          base::Value new_str(std::move(value));
           if (cur_dict) {
-            cur_dict->SetKey(ReadKeyName(it), std::move(new_str));
+            cur_dict->SetStringKey(ReadKeyName(it), std::move(value));
           } else {
-            cur_list->GetList().push_back(std::move(new_str));
+            cur_list->GetList().emplace_back(std::move(value));
           }
         } break;
 
@@ -456,10 +452,11 @@ void TracedValue::SetWriterFactoryCallback(WriterFactoryCallback callback) {
 
 TracedValue::TracedValue() : TracedValue(0) {}
 
-TracedValue::TracedValue(size_t capacity) {
+TracedValue::TracedValue(size_t capacity, bool force_json) {
   DEBUG_PUSH_CONTAINER(kStackTypeDict);
 
-  writer_ = CreateWriter(capacity);
+  writer_ = force_json ? std::make_unique<PickleWriter>(capacity)
+                       : CreateWriter(capacity);
 }
 
 TracedValue::~TracedValue() {

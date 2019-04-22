@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/paint/inline_flow_box_painter.h"
 
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/line/inline_flow_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
@@ -42,8 +44,7 @@ InlineFlowBoxPainter::InlineFlowBoxPainter(const InlineFlowBox& flow_box)
           GetNode(GetBoxModelObject(flow_box)),
           flow_box.GetLineLayoutItem().StyleRef(),
           flow_box.GetLineLayoutItem().StyleRef(flow_box.IsFirstLineStyle())),
-      inline_flow_box_(flow_box) {
-}
+      inline_flow_box_(flow_box) {}
 
 void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset,
@@ -169,8 +170,7 @@ InlineFlowBoxPainter::GetBorderPaintType(const LayoutRect& adjusted_frame_rect,
     // The simple case is where we either have no border image or we are the
     // only box for this object.  In those cases only a single call to draw is
     // required.
-    if (!has_border_image || (!inline_flow_box_.PrevForSameLayoutObject() &&
-                              !inline_flow_box_.NextForSameLayoutObject()))
+    if (!has_border_image || !object_has_multiple_boxes)
       return kPaintBordersWithoutClip;
 
     // We have a border image that spans multiple lines.
@@ -186,8 +186,7 @@ void InlineFlowBoxPainter::PaintBackgroundBorderShadow(
     const LayoutPoint& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground);
 
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    RecordHitTestData(paint_info, paint_offset);
+  RecordHitTestData(paint_info, paint_offset);
 
   if (inline_flow_box_.GetLineLayoutItem().StyleRef().Visibility() !=
       EVisibility::kVisible)
@@ -267,8 +266,7 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
 
   // The simple case is where we are the only box for this object. In those
   // cases only a single call to draw is required.
-  if (!inline_flow_box_.PrevForSameLayoutObject() &&
-      !inline_flow_box_.NextForSameLayoutObject()) {
+  if (!object_has_multiple_boxes) {
     NinePieceImagePainter::Paint(paint_info.context, box_model,
                                  box_model.GetDocument(), GetNode(&box_model),
                                  paint_rect, box_model.StyleRef(),
@@ -318,6 +316,10 @@ LayoutRect InlineFlowBoxPainter::FrameRectClampedToLineTopAndBottomIfNeeded()
       rect.SetX(logical_top);
       rect.SetWidth(logical_height);
     }
+    if (rect != inline_flow_box_.FrameRect()) {
+      UseCounter::Count(inline_flow_box_.GetLineLayoutItem().GetDocument(),
+                        WebFeature::kQuirkyLineBoxBackgroundSize);
+    }
   }
   return rect;
 }
@@ -340,7 +342,7 @@ void InlineFlowBoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (layout_object->StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  auto touch_action = layout_object->EffectiveWhitelistedTouchAction();
+  auto touch_action = layout_object->EffectiveAllowedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 

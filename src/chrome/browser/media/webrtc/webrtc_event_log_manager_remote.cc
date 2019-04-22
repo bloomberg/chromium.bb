@@ -91,16 +91,14 @@ bool TimePointInRange(const base::Time& time_point,
 
 // Do not attempt to upload when there is no active connection.
 // Do not attempt to upload if the connection is known to be a mobile one.
-// Err on the side of caution with unknown connection types (by not uploading).
 // Note #1: A device may have multiple connections, so this is not bullet-proof.
 // Note #2: Does not attempt to recognize mobile hotspots.
 bool UploadSupportedUsingConnectionType(
     network::mojom::ConnectionType connection) {
-  if (connection == network::mojom::ConnectionType::CONNECTION_ETHERNET ||
-      connection == network::mojom::ConnectionType::CONNECTION_WIFI) {
-    return true;
-  }
-  return false;
+  return connection != network::mojom::ConnectionType::CONNECTION_NONE &&
+         connection != network::mojom::ConnectionType::CONNECTION_2G &&
+         connection != network::mojom::ConnectionType::CONNECTION_3G &&
+         connection != network::mojom::ConnectionType::CONNECTION_4G;
 }
 
 // Produce a history file for a given file.
@@ -356,13 +354,12 @@ void WebRtcRemoteEventLogManager::DisableForBrowserContext(
 }
 
 bool WebRtcRemoteEventLogManager::PeerConnectionAdded(
-    const PeerConnectionKey& key,
-    const std::string& peer_connection_id) {
+    const PeerConnectionKey& key) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   PrunePendingLogs();  // Infrequent event - good opportunity to prune.
 
-  const auto result = active_peer_connections_.emplace(key, peer_connection_id);
+  const auto result = active_peer_connections_.emplace(key, std::string());
 
   // An upload about to start might need to be suppressed.
   ManageUploadSchedule();
@@ -390,10 +387,37 @@ bool WebRtcRemoteEventLogManager::PeerConnectionRemoved(
   return true;
 }
 
+bool WebRtcRemoteEventLogManager::PeerConnectionSessionIdSet(
+    const PeerConnectionKey& key,
+    const std::string& session_id) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  PrunePendingLogs();  // Infrequent event - good opportunity to prune.
+
+  if (session_id.empty()) {
+    LOG(ERROR) << "Empty session ID.";
+    return false;
+  }
+
+  auto peer_connection = active_peer_connections_.find(key);
+  if (peer_connection == active_peer_connections_.end()) {
+    return false;  // Unknown peer connection; already closed?
+  }
+
+  if (!peer_connection->second.empty()) {
+    LOG(ERROR) << "Session ID already set.";
+    return false;
+  }
+
+  peer_connection->second = session_id;
+
+  return true;
+}
+
 bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     int render_process_id,
     BrowserContextId browser_context_id,
-    const std::string& peer_connection_id,
+    const std::string& session_id,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
     int output_period_ms,
@@ -415,26 +439,37 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     // |error_message| will have been set by AreLogParametersValid().
     DCHECK(!error_message->empty()) << "AreLogParametersValid() reported an "
                                        "error without an error message.";
+    UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kInvalidArguments);
+    return false;
+  }
+
+  if (session_id.empty()) {
+    *error_message = kStartRemoteLoggingFailureUnknownOrInactivePeerConnection;
+    UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kIllegalSessionId);
     return false;
   }
 
   if (!BrowserContextEnabled(browser_context_id)) {
     *error_message = kStartRemoteLoggingFailureGeneric;
+    UmaRecordWebRtcEventLoggingApi(
+        WebRtcEventLoggingApiUma::kDisabledBrowserContext);
     return false;
   }
 
   PeerConnectionKey key;
-  if (!FindPeerConnection(render_process_id, peer_connection_id, &key)) {
+  if (!FindPeerConnection(render_process_id, session_id, &key)) {
     *error_message = kStartRemoteLoggingFailureUnknownOrInactivePeerConnection;
+    UmaRecordWebRtcEventLoggingApi(
+        WebRtcEventLoggingApiUma::kUnknownOrInvalidPeerConnection);
     return false;
   }
 
   // May not restart active remote logs.
   auto it = active_logs_.find(key);
   if (it != active_logs_.end()) {
-    LOG(ERROR) << "Remote logging already underway for " << peer_connection_id
-               << ".";
+    LOG(ERROR) << "Remote logging already underway for " << session_id << ".";
     *error_message = kStartRemoteLoggingFailureAlreadyLogging;
+    UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kAlreadyLogging);
     return false;
   }
 
@@ -447,6 +482,8 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     // as there being too many other peer connections on other tabs that might
     // also be logging.
     *error_message = kStartRemoteLoggingFailureGeneric;
+    UmaRecordWebRtcEventLoggingApi(
+        WebRtcEventLoggingApiUma::kNoAdditionalLogsAllowed);
     return false;
   }
 
@@ -488,7 +525,8 @@ void WebRtcRemoteEventLogManager::ClearCacheForBrowserContext(
   //    by ClearCacheForBrowserContext() could accidentally replace it.
   // 5. Explicitly consider uploading, now that things have changed.
   MaybeCancelActiveLogs(delete_begin, delete_end, browser_context_id);
-  MaybeRemovePendingLogs(delete_begin, delete_end, browser_context_id);
+  MaybeRemovePendingLogs(delete_begin, delete_end, browser_context_id,
+                         /*is_cache_clear=*/true);
   MaybeRemoveHistoryFiles(delete_begin, delete_end, browser_context_id);
   MaybeCancelUpload(delete_begin, delete_end, browser_context_id);
   ManageUploadSchedule();
@@ -694,7 +732,7 @@ WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it,
 
   const PeerConnectionKey peer_connection = it->first;  // Copy, not reference.
 
-  bool valid_file = it->second->Close();  // !valid_file -> Close() deletes.
+  const bool valid_file = it->second->Close();
   if (valid_file) {
     if (make_pending) {
       // The current time is a good enough approximation of the file's last
@@ -712,6 +750,10 @@ WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it,
         LOG(ERROR) << "Failed to delete " << log_file_path << ".";
       }
     }
+  } else {  // !valid_file
+    // Close() deleted the file.
+    UmaRecordWebRtcEventLoggingUpload(
+        WebRtcEventLoggingUploadUma::kLogFileWriteError);
   }
 
   it = active_logs_.erase(it);
@@ -819,11 +861,15 @@ bool WebRtcRemoteEventLogManager::LoadPendingLogInfo(
   if (base::PathExists(history_path)) {
     // Log file has associated history file, indicating an upload was started
     // for it. We should delete the original log from disk.
+    UmaRecordWebRtcEventLoggingUpload(
+        WebRtcEventLoggingUploadUma::kIncompletePastUpload);
     return false;
   }
 
   const base::Time now = base::Time::Now();
   if (last_modified + kRemoteBoundWebRtcEventLogsMaxRetention < now) {
+    UmaRecordWebRtcEventLoggingUpload(
+        WebRtcEventLoggingUploadUma::kExpiredLogFileAtChromeStart);
     return false;
   }
 
@@ -961,6 +1007,8 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   if (base::PathExists(log_path)) {
     LOG(ERROR) << "Previously used ID selected.";
     *error_message_out = kStartRemoteLoggingFailureGeneric;
+    UmaRecordWebRtcEventLoggingApi(
+        WebRtcEventLoggingApiUma::kLogPathNotAvailable);
     return false;
   }
 
@@ -969,6 +1017,8 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   if (base::PathExists(history_file_path)) {
     LOG(ERROR) << "Previously used ID selected.";
     *error_message_out = kStartRemoteLoggingFailureGeneric;
+    UmaRecordWebRtcEventLoggingApi(
+        WebRtcEventLoggingApiUma::kHistoryPathNotAvailable);
     return false;
   }
 
@@ -980,6 +1030,8 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
     // TODO(crbug.com/775415): Add UMA for exact failure type.
     LOG(ERROR) << "Failed to initialize remote-bound WebRTC event log file.";
     *error_message_out = kStartRemoteLoggingFailureGeneric;
+    UmaRecordWebRtcEventLoggingApi(
+        WebRtcEventLoggingApiUma::kFileCreationError);
     return false;
   }
   const auto it = active_logs_.emplace(key, std::move(log_file));
@@ -987,6 +1039,8 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
 
   observer_->OnRemoteLogStarted(key, it.first->second->path(),
                                 output_period_ms);
+
+  UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kSuccess);
 
   *log_id_out = log_id;
   return true;
@@ -1012,7 +1066,7 @@ void WebRtcRemoteEventLogManager::PrunePendingLogs(
   MaybeRemovePendingLogs(
       base::Time::Min(),
       base::Time::Now() - kRemoteBoundWebRtcEventLogsMaxRetention,
-      browser_context_id);
+      browser_context_id, /*is_cache_clear=*/false);
 }
 
 void WebRtcRemoteEventLogManager::RecurringlyPrunePendingLogs() {
@@ -1062,6 +1116,8 @@ void WebRtcRemoteEventLogManager::MaybeCancelActiveLogs(
     // Since the file is active, assume it's still being modified.
     if (MatchesFilter(it->first.browser_context_id, base::Time::Now(),
                       browser_context_id, delete_begin, delete_end)) {
+      UmaRecordWebRtcEventLoggingUpload(
+          WebRtcEventLoggingUploadUma::kActiveLogCancelledDueToCacheClear);
       it = CloseLogFile(it, /*make_pending=*/false);
     } else {
       ++it;
@@ -1072,18 +1128,26 @@ void WebRtcRemoteEventLogManager::MaybeCancelActiveLogs(
 void WebRtcRemoteEventLogManager::MaybeRemovePendingLogs(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    base::Optional<BrowserContextId> browser_context_id) {
+    base::Optional<BrowserContextId> browser_context_id,
+    bool is_cache_clear) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   for (auto it = pending_logs_.begin(); it != pending_logs_.end();) {
     if (MatchesFilter(it->browser_context_id, it->last_modified,
                       browser_context_id, delete_begin, delete_end)) {
+      UmaRecordWebRtcEventLoggingUpload(
+          is_cache_clear
+              ? WebRtcEventLoggingUploadUma::kPendingLogDeletedDueToCacheClear
+              : WebRtcEventLoggingUploadUma::kExpiredLogFileDuringSession);
+
       if (!base::DeleteFile(it->path, /*recursive=*/false)) {
         LOG(ERROR) << "Failed to delete " << it->path << ".";
       }
 
       // Produce a history file (they have longer retention) to replace the log.
-      CreateHistoryFile(it->path, it->last_modified);
+      if (is_cache_clear) {  // Will be immediately deleted otherwise.
+        CreateHistoryFile(it->path, it->last_modified);
+      }
 
       it = pending_logs_.erase(it);
     } else {
@@ -1273,37 +1337,38 @@ void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete(
 
 bool WebRtcRemoteEventLogManager::FindPeerConnection(
     int render_process_id,
-    const std::string& peer_connection_id,
+    const std::string& session_id,
     PeerConnectionKey* key) const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(!session_id.empty());
 
   const auto it = FindNextPeerConnection(active_peer_connections_.cbegin(),
-                                         render_process_id, peer_connection_id);
+                                         render_process_id, session_id);
   if (it == active_peer_connections_.cend()) {
     return false;
   }
 
-  // Make sure that the peer connection ID is unique for the renderer process
-  // in which it exists, though not necessarily between renderer processes.
-  // (The helper exists just to allow this DCHECK.)
-  DCHECK(FindNextPeerConnection(std::next(it), render_process_id,
-                                peer_connection_id) ==
+  // Make sure that the session ID is unique for the renderer process,
+  // though not necessarily between renderer processes.
+  // (The helper exists solely to allow this DCHECK.)
+  DCHECK(FindNextPeerConnection(std::next(it), render_process_id, session_id) ==
          active_peer_connections_.cend());
 
   *key = it->first;
   return true;
 }
 
-std::map<WebRtcEventLogPeerConnectionKey, const std::string>::const_iterator
+WebRtcRemoteEventLogManager::PeerConnectionMap::const_iterator
 WebRtcRemoteEventLogManager::FindNextPeerConnection(
-    std::map<PeerConnectionKey, const std::string>::const_iterator begin,
+    PeerConnectionMap::const_iterator begin,
     int render_process_id,
-    const std::string& peer_connection_id) const {
+    const std::string& session_id) const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(!session_id.empty());
   const auto end = active_peer_connections_.cend();
   for (auto it = begin; it != end; ++it) {
     if (it->first.render_process_id == render_process_id &&
-        it->second == peer_connection_id) {
+        it->second == session_id) {
       return it;
     }
   }

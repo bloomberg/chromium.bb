@@ -150,8 +150,9 @@ Polymer({
    */
   onInputKeypress_: function(e) {
     // We are only listening for the user trying to enter their password.
-    if (e.key != 'Enter')
+    if (e.key != 'Enter') {
       return;
+    }
 
     this.fire('user-submitted-password');
   },

@@ -36,8 +36,8 @@
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -100,7 +100,7 @@ class PLATFORM_EXPORT Character {
 
   static bool IsUprightInMixedVertical(UChar32 character);
 
-  // https://html.spec.whatwg.org/multipage/scripting.html#prod-potentialcustomelementname
+  // https://html.spec.whatwg.org/C/#prod-potentialcustomelementname
   static bool IsPotentialCustomElementName8BitChar(LChar ch) {
     return IsASCIILower(ch) || IsASCIIDigit(ch) || ch == '-' || ch == '.' ||
            ch == '_' || ch == 0xb7 || (0xc0 <= ch && ch != 0xd7 && ch != 0xf7);
@@ -153,7 +153,7 @@ class PLATFORM_EXPORT Character {
   static bool IsRegionalIndicator(UChar32);
   static bool IsModifier(UChar32 c) { return c >= 0x1F3FB && c <= 0x1F3FF; }
   // http://www.unicode.org/reports/tr51/proposed.html#flag-emoji-tag-sequences
-  static bool IsEmojiFlagSequenceTag(UChar32);
+  static bool IsEmojiTagSequence(UChar32);
 
   static inline UChar NormalizeSpaces(UChar character) {
     if (TreatAsSpace(character))

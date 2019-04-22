@@ -142,8 +142,8 @@ void HTMLOptGroupElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   HTMLDivElement* label = HTMLDivElement::Create(GetDocument());
   label->setAttribute(kRoleAttr, AtomicString("group"));
   label->setAttribute(kAriaLabelAttr, AtomicString());
-  label->SetInlineStyleProperty(CSSPropertyPadding, label_padding);
-  label->SetInlineStyleProperty(CSSPropertyMinHeight, label_min_height);
+  label->SetInlineStyleProperty(CSSPropertyID::kPadding, label_padding);
+  label->SetInlineStyleProperty(CSSPropertyID::kMinHeight, label_min_height);
   label->SetIdAttribute(shadow_element_names::OptGroupLabel());
   root.AppendChild(label);
 

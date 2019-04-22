@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/modules/payments/payer_errors.h"
 #include "third_party/blink/renderer/modules/payments/payment_validation_errors.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace blink {
@@ -60,59 +61,10 @@ bool PaymentsValidators::IsValidCountryCodeFormat(
   return false;
 }
 
-bool PaymentsValidators::IsValidLanguageCodeFormat(
-    const String& code,
-    String* optional_error_message) {
-  if (ScriptRegexp("^([a-z]{2,3})?$", kTextCaseSensitive).Match(code) == 0)
-    return true;
-
-  if (optional_error_message)
-    *optional_error_message =
-        "'" + code +
-        "' is not a valid BCP-47 language code, should be "
-        "2-3 lower case letters [a-z]";
-
-  return false;
-}
-
-bool PaymentsValidators::IsValidScriptCodeFormat(
-    const String& code,
-    String* optional_error_message) {
-  if (ScriptRegexp("^([A-Z][a-z]{3})?$", kTextCaseSensitive).Match(code) == 0)
-    return true;
-
-  if (optional_error_message)
-    *optional_error_message =
-        "'" + code +
-        "' is not a valid ISO 15924 script code, should be "
-        "an upper case letter [A-Z] followed by 3 lower "
-        "case letters [a-z]";
-
-  return false;
-}
-
 bool PaymentsValidators::IsValidShippingAddress(
     const payments::mojom::blink::PaymentAddressPtr& address,
     String* optional_error_message) {
-  if (!IsValidCountryCodeFormat(address->country, optional_error_message))
-    return false;
-
-  if (!IsValidLanguageCodeFormat(address->language_code,
-                                 optional_error_message))
-    return false;
-
-  if (!IsValidScriptCodeFormat(address->script_code, optional_error_message))
-    return false;
-
-  if (address->language_code.IsEmpty() && !address->script_code.IsEmpty()) {
-    if (optional_error_message)
-      *optional_error_message =
-          "If language code is empty, then script code should also be empty";
-
-    return false;
-  }
-
-  return true;
+  return IsValidCountryCodeFormat(address->country, optional_error_message);
 }
 
 bool PaymentsValidators::IsValidErrorMsgFormat(const String& error,
@@ -141,9 +93,6 @@ bool PaymentsValidators::IsValidAddressErrorsFormat(
          (!errors->hasDependentLocality() ||
           IsValidErrorMsgFormat(errors->dependentLocality(),
                                 optional_error_message)) &&
-         (!errors->hasLanguageCode() ||
-          IsValidErrorMsgFormat(errors->languageCode(),
-                                optional_error_message)) &&
          (!errors->hasOrganization() ||
           IsValidErrorMsgFormat(errors->organization(),
                                 optional_error_message)) &&
@@ -156,9 +105,6 @@ bool PaymentsValidators::IsValidAddressErrorsFormat(
           IsValidErrorMsgFormat(errors->recipient(), optional_error_message)) &&
          (!errors->hasRegion() ||
           IsValidErrorMsgFormat(errors->region(), optional_error_message)) &&
-         (!errors->hasRegionCode() ||
-          IsValidErrorMsgFormat(errors->regionCode(),
-                                optional_error_message)) &&
          (!errors->hasSortingCode() ||
           IsValidErrorMsgFormat(errors->sortingCode(), optional_error_message));
 }
@@ -179,11 +125,33 @@ bool PaymentsValidators::IsValidPayerErrorsFormat(
 bool PaymentsValidators::IsValidPaymentValidationErrorsFormat(
     const PaymentValidationErrors* errors,
     String* optional_error_message) {
-  return (!errors->hasPayer() ||
+  return (!errors->hasError() ||
+          IsValidErrorMsgFormat(errors->error(), optional_error_message)) &&
+         (!errors->hasPayer() ||
           IsValidPayerErrorsFormat(errors->payer(), optional_error_message)) &&
          (!errors->hasShippingAddress() ||
           IsValidAddressErrorsFormat(errors->shippingAddress(),
                                      optional_error_message));
+}
+
+bool PaymentsValidators::IsValidMethodFormat(const String& identifier) {
+  KURL url(NullURL(), identifier);
+  if (url.IsValid()) {
+    // Allow localhost payment method for test.
+    if (SecurityOrigin::Create(url)->IsLocalhost())
+      return true;
+
+    // URL PMI validation rules:
+    // https://www.w3.org/TR/payment-method-id/#dfn-validate-a-url-based-payment-method-identifier
+    return url.Protocol() == "https" && url.User().IsEmpty() &&
+           url.Pass().IsEmpty();
+  } else {
+    // Syntax for a valid standardized PMI:
+    // https://www.w3.org/TR/payment-method-id/#dfn-syntax-of-a-standardized-payment-method-identifier
+    return ScriptRegexp("^[a-z]+[0-9a-z]*(-[a-z]+[0-9a-z]*)*$",
+                        kTextCaseSensitive)
+               .Match(identifier) == 0;
+  }
 }
 
 }  // namespace blink

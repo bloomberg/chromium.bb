@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/run_loop.h"
 #include "components/crx_file/id_util.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -35,6 +36,9 @@ ExtensionManagementPrefUpdaterBase::ExtensionManagementPrefUpdaterBase() {
 }
 
 ExtensionManagementPrefUpdaterBase::~ExtensionManagementPrefUpdaterBase() {
+  // Make asynchronous calls finished to deliver all preference changes to the
+  // NetworkService and extension processes.
+  base::RunLoop().RunUntilIdle();
 }
 
 // Helper functions for per extension settings ---------------------------------

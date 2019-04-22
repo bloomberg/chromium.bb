@@ -74,7 +74,7 @@ def GetBuilderClass(name):
   raise AttributeError('could not locate %s builder' % builder_class_name)
 
 
-def Builder(builder_run):
+def Builder(builder_run, buildstore):
   """Given a |builder_run| runtime, return an instantiated builder
 
   This is a helper wrapper that resolves the builder_class_name field in the
@@ -83,9 +83,10 @@ def Builder(builder_run):
 
   Args:
     builder_run: A cbuildbot_run.BuilderRun object.
+    buildstore: BuildStore instance to make DB calls with.
 
   Returns:
     An object of type generic_builders.Builder.
   """
   cls = GetBuilderClass(builder_run.config.builder_class_name)
-  return cls(builder_run)
+  return cls(builder_run, buildstore)

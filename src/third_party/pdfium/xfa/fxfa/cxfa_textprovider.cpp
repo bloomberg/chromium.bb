@@ -12,8 +12,8 @@
 
 #include "core/fxcrt/xml/cfx_xmlelement.h"
 #include "core/fxcrt/xml/cfx_xmlnode.h"
-#include "fxjs/cfxjse_engine.h"
-#include "fxjs/cfxjse_value.h"
+#include "fxjs/xfa/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "fxjs/xfa/cjx_object.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
@@ -29,7 +29,6 @@
 #include "xfa/fxfa/parser/cxfa_caption.h"
 #include "xfa/fxfa/parser/cxfa_font.h"
 #include "xfa/fxfa/parser/cxfa_items.h"
-#include "xfa/fxfa/parser/cxfa_layoutprocessor.h"
 #include "xfa/fxfa/parser/cxfa_localevalue.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 #include "xfa/fxfa/parser/cxfa_para.h"
@@ -37,9 +36,8 @@
 #include "xfa/fxfa/parser/xfa_resolvenode_rs.h"
 #include "xfa/fxfa/parser/xfa_utils.h"
 
-CXFA_Node* CXFA_TextProvider::GetTextNode(bool& bRichText) {
-  bRichText = false;
-
+CXFA_Node* CXFA_TextProvider::GetTextNode(bool* bRichText) {
+  *bRichText = false;
   if (m_eType == XFA_TEXTPROVIDERTYPE_Text) {
     CXFA_Value* pValueNode =
         m_pNode->GetChild<CXFA_Value>(0, XFA_Element::Value, false);
@@ -50,8 +48,10 @@ CXFA_Node* CXFA_TextProvider::GetTextNode(bool& bRichText) {
     if (pChildNode && pChildNode->GetElementType() == XFA_Element::ExData) {
       Optional<WideString> contentType = pChildNode->JSObject()->TryAttribute(
           XFA_Attribute::ContentType, false);
-      if (contentType && *contentType == L"text/html")
-        bRichText = true;
+      if (contentType.has_value() &&
+          contentType.value().EqualsASCII("text/html")) {
+        *bRichText = true;
+      }
     }
     return pChildNode;
   }
@@ -63,7 +63,7 @@ CXFA_Node* CXFA_TextProvider::GetTextNode(bool& bRichText) {
          pXMLChild = pXMLChild->GetNextSibling()) {
       CFX_XMLElement* pElement = ToXMLElement(pXMLChild);
       if (pElement && XFA_RecognizeRichText(pElement)) {
-        bRichText = true;
+        *bRichText = true;
         break;
       }
     }
@@ -85,8 +85,10 @@ CXFA_Node* CXFA_TextProvider::GetTextNode(bool& bRichText) {
     if (pChildNode && pChildNode->GetElementType() == XFA_Element::ExData) {
       Optional<WideString> contentType = pChildNode->JSObject()->TryAttribute(
           XFA_Attribute::ContentType, false);
-      if (contentType && *contentType == L"text/html")
-        bRichText = true;
+      if (contentType.has_value() &&
+          contentType.value().EqualsASCII("text/html")) {
+        *bRichText = true;
+      }
     }
     return pChildNode;
   }
@@ -99,9 +101,11 @@ CXFA_Node* CXFA_TextProvider::GetTextNode(bool& bRichText) {
   CXFA_Node* pNode = pItemNode->GetFirstChild();
   while (pNode) {
     WideString wsName = pNode->JSObject()->GetCData(XFA_Attribute::Name);
-    if (m_eType == XFA_TEXTPROVIDERTYPE_Rollover && wsName == L"rollover")
+    if (m_eType == XFA_TEXTPROVIDERTYPE_Rollover &&
+        wsName.EqualsASCII("rollover")) {
       return pNode;
-    if (m_eType == XFA_TEXTPROVIDERTYPE_Down && wsName == L"down")
+    }
+    if (m_eType == XFA_TEXTPROVIDERTYPE_Down && wsName.EqualsASCII("down"))
       return pNode;
 
     pNode = pNode->GetNextSibling();

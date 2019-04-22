@@ -12,17 +12,17 @@ namespace gpu {
 GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::GpuMemoryBufferId id,
                                          const gfx::Size& size,
                                          gfx::BufferFormat format,
-                                         const DestructionCallback& callback)
+                                         DestructionCallback callback)
     : id_(id),
       size_(size),
       format_(format),
-      callback_(callback),
+      callback_(std::move(callback)),
       mapped_(false) {}
 
 GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
   DCHECK(!mapped_);
   if (!callback_.is_null())
-    callback_.Run(destruction_sync_token_);
+    std::move(callback_).Run(destruction_sync_token_);
 }
 
 gfx::Size GpuMemoryBufferImpl::GetSize() const {

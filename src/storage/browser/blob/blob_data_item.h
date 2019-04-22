@@ -11,10 +11,10 @@
 #include <ostream>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "storage/browser/storage_browser_export.h"
 #include "url/gurl.h"
 
 namespace disk_cache {
@@ -31,7 +31,8 @@ class FileSystemContext;
 // this class is to allow the resource to stick around in the snapshot even
 // after the resource was swapped in the blob (either to disk or to memory) by
 // the BlobStorageContext.
-class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
+    : public base::RefCounted<BlobDataItem> {
  public:
   enum class Type {
     kBytes,
@@ -46,7 +47,8 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   // pending. If all blobs with this item are deleted or the item is swapped for
   // a different backend version (mem-to-disk or the reverse), then the item
   // will be destructed after all pending reads are complete.
-  class STORAGE_EXPORT DataHandle : public base::RefCounted<DataHandle> {
+  class COMPONENT_EXPORT(STORAGE_BROWSER) DataHandle
+      : public base::RefCounted<DataHandle> {
    public:
     virtual bool IsValid();
 
@@ -148,7 +150,8 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   friend class BlobDataBuilder;
   friend class BlobStorageContext;
   friend class base::RefCounted<BlobDataItem>;
-  friend STORAGE_EXPORT void PrintTo(const BlobDataItem& x, ::std::ostream* os);
+  friend COMPONENT_EXPORT(STORAGE_BROWSER) void PrintTo(const BlobDataItem& x,
+                                                        ::std::ostream* os);
 
   BlobDataItem(Type type, uint64_t offset, uint64_t length);
   virtual ~BlobDataItem();
@@ -198,8 +201,10 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
       file_system_context_;  // For Type::kFileFilesystem.
 };
 
-STORAGE_EXPORT bool operator==(const BlobDataItem& a, const BlobDataItem& b);
-STORAGE_EXPORT bool operator!=(const BlobDataItem& a, const BlobDataItem& b);
+COMPONENT_EXPORT(STORAGE_BROWSER)
+bool operator==(const BlobDataItem& a, const BlobDataItem& b);
+COMPONENT_EXPORT(STORAGE_BROWSER)
+bool operator!=(const BlobDataItem& a, const BlobDataItem& b);
 
 }  // namespace storage
 

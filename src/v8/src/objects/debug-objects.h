@@ -7,6 +7,7 @@
 
 #include "src/objects.h"
 #include "src/objects/fixed-array.h"
+#include "src/objects/struct.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -19,8 +20,9 @@ class BytecodeArray;
 
 // The DebugInfo class holds additional information for a function being
 // debugged.
-class DebugInfo : public Struct, public NeverReadOnlySpaceObject {
+class DebugInfo : public Struct {
  public:
+  NEVER_READ_ONLY_SPACE
   enum Flag {
     kNone = 0,
     kHasBreakInfo = 1 << 0,
@@ -31,7 +33,7 @@ class DebugInfo : public Struct, public NeverReadOnlySpaceObject {
     kDebugExecutionMode = 1 << 5
   };
 
-  typedef base::Flags<Flag> Flags;
+  using Flags = base::Flags<Flag>;
 
   // A bitfield that lists uses of the current instance.
   DECL_INT_ACCESSORS(flags)
@@ -90,7 +92,7 @@ class DebugInfo : public Struct, public NeverReadOnlySpaceObject {
   DECL_ACCESSORS(debug_bytecode_array, Object)
 
   // Fixed array holding status information for each active break point.
-  DECL_ACCESSORS2(break_points, FixedArray)
+  DECL_ACCESSORS(break_points, FixedArray)
 
   // Check if there is a break point at a source position.
   bool HasBreakPoint(Isolate* isolate, int source_position);
@@ -137,7 +139,7 @@ class DebugInfo : public Struct, public NeverReadOnlySpaceObject {
 
   // Id assigned to the function for debugging.
   // This could also be implemented as a weak hash table.
-  DECL_INT_ACCESSORS(debugging_id);
+  DECL_INT_ACCESSORS(debugging_id)
 
 // Bit positions in |debugger_hints|.
 #define DEBUGGER_HINTS_BIT_FIELDS(V, _)       \
@@ -186,9 +188,9 @@ class DebugInfo : public Struct, public NeverReadOnlySpaceObject {
 
  private:
   // Get the break point info object for a source position.
-  Object* GetBreakPointInfo(Isolate* isolate, int source_position);
+  Object GetBreakPointInfo(Isolate* isolate, int source_position);
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DebugInfo);
+  OBJECT_CONSTRUCTORS(DebugInfo, Struct);
 };
 
 // The BreakPointInfo class holds information for break points set in a
@@ -220,8 +222,7 @@ class BreakPointInfo : public Tuple2 {
   static const int kSourcePositionOffset = kValue1Offset;
   static const int kBreakPointsOffset = kValue2Offset;
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(BreakPointInfo);
+  OBJECT_CONSTRUCTORS(BreakPointInfo, Tuple2);
 };
 
 // Holds information related to block code coverage.
@@ -241,7 +242,7 @@ class CoverageInfo : public FixedArray {
     return slot_count * kSlotIndexCount + kFirstSlotIndex;
   }
 
-  DECL_CAST2(CoverageInfo)
+  DECL_CAST(CoverageInfo)
 
   // Print debug info.
   void Print(std::unique_ptr<char[]> function_name);
@@ -267,15 +268,14 @@ class CoverageInfo : public FixedArray {
 class BreakPoint : public Tuple2 {
  public:
   DECL_INT_ACCESSORS(id)
-  DECL_ACCESSORS2(condition, String)
+  DECL_ACCESSORS(condition, String)
 
   DECL_CAST(BreakPoint)
 
   static const int kIdOffset = kValue1Offset;
   static const int kConditionOffset = kValue2Offset;
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(BreakPoint);
+  OBJECT_CONSTRUCTORS(BreakPoint, Tuple2);
 };
 
 }  // namespace internal

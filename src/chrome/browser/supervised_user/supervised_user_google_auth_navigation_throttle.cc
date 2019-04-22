@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/supervised_user_google_auth_navigation_throttle.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
@@ -134,7 +135,7 @@ SupervisedUserGoogleAuthNavigationThrottle::ShouldProceed() {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-    AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
+    CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
     ReauthenticateChildAccount(
         web_contents, account_info.email,
         base::Bind(&SupervisedUserGoogleAuthNavigationThrottle::

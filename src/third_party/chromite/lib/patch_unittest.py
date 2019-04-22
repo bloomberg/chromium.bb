@@ -71,17 +71,9 @@ FAKE_LABELS_JSON = {
         'optional': True,
         'values': {
             ' 0': 'Not Ready',
-            '+1': 'Ready',
-            '+2': 'Sheriff only: Ready, allow in throttled tree',
+            '+1': 'Try ready',
+            '+2': 'Ready',
             '+3': 'Ignore this label',
-        },
-    },
-    'Trybot-Ready': {
-        'default_value': 0,
-        'optional': True,
-        'values': {
-            ' 0': 'Not Ready',
-            '+1': 'Ready',
         },
     },
     'Verified': {
@@ -99,7 +91,6 @@ FAKE_LABELS_JSON = {
 FAKE_PERMITTED_LABELS_JSON = {
     'Code-Review': ['-2', '-1', ' 0', '+1', '+2'],
     'Commit-Queue': [' 0', '+1', '+2'],
-    'Trybot-Ready': [' 0', '+1'],
     'Verified': ['-1', ' 0', '+1'],
 }
 
@@ -592,7 +583,7 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
   def _assertLookupAliases(self, remote):
     git1 = self._MakeRepo('git1', self.source)
     patch = self.CommitChangeIdFile(git1, remote=remote)
-    prefix = '*' if patch.internal else ''
+    prefix = 'chrome-internal:' if patch.internal else 'chromium:'
     vals = [patch.sha1, getattr(patch, 'gerrit_number', None),
             getattr(patch, 'original_sha1', None)]
     # Append full Change-ID if it exists.
@@ -637,12 +628,18 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     # Single key, single value.
     self._CheckPaladin(git1, cid1, [cid2],
                        'CQ-DEPEND=%s' % cid2)
+    self._CheckPaladin(git1, cid1, [cid2],
+                       'Cq-Depend: %s' % cid2)
     # Single key, gerrit number.
     self._CheckPaladin(git1, cid1, ['123'],
                        'CQ-DEPEND=%s' % 123)
+    self._CheckPaladin(git1, cid1, ['123'],
+                       'Cq-Depend: %s' % 123)
     # Single key, gerrit number.
     self._CheckPaladin(git1, cid1, ['123456'],
                        'CQ-DEPEND=%s' % 123456)
+    self._CheckPaladin(git1, cid1, ['123456'],
+                       'Cq-Depend: %s' % 123456)
     # Single key, gerrit number; ensure it
     # cuts off before a million changes (this
     # is done to avoid collisions w/ sha1 when
@@ -662,9 +659,13 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     # Single key, multiple values
     self._CheckPaladin(git1, cid1, [cid2, '1223'],
                        'CQ-DEPEND=%s %s' % (cid2, '1223'))
+    self._CheckPaladin(git1, cid1, [cid2, '1223'],
+                       'Cq-Depend:%s %s' % (cid2, '1223'))
     # Dumb comma behaviour
     self._CheckPaladin(git1, cid1, [cid2, cid3],
                        'CQ-DEPEND=%s, %s,' % (cid2, cid3))
+    self._CheckPaladin(git1, cid1, [cid2, cid3],
+                       'Cq-Depend: %s, %s,' % (cid2, cid3))
     # Multiple keys.
     self._CheckPaladin(git1, cid1, [cid2, '*245', cid4],
                        'CQ-DEPEND=%s, %s\nCQ-DEPEND=%s' % (cid2, '*245', cid4))
@@ -672,6 +673,8 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     # Ensure it goes boom on invalid data.
     self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
                       git1, cid1, [], 'CQ-DEPEND=monkeys')
+    self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
+                      git1, cid1, [], 'Cq-Depend:monkeys')
     self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
                       git1, cid1, [], 'CQ-DEPEND=%s monkeys' % (cid2,))
     # Validate numeric is allowed.
@@ -686,6 +689,8 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
                       git1, cid1, [], 'CQ_DEPEND=1')
     self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
                       git1, cid1, [], ' CQ-DEPEND=1')
+    self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
+                      git1, cid1, [], ' Cq-Depend:1')
 
   def testChangeIdMetadata(self):
     """Verify Change-Id is set in git metadata."""
@@ -1067,7 +1072,9 @@ class TestGerritPatch(TestGitRepoPatch):
 
     convert = str
     if remote == config_lib.GetSiteParams().INTERNAL_REMOTE:
-      convert = lambda val: '*%s' % (val,)
+      convert = lambda val: 'chrome-internal:%s' % (val,)
+    elif remote == config_lib.GetSiteParams().EXTERNAL_REMOTE:
+      convert = lambda val: 'chromium:%s' % (val,)
     git1 = self._MakeRepo('git1', self.source, remote=remote)
     patch = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'), remote=remote)
     cid1, cid2 = '1', '2'

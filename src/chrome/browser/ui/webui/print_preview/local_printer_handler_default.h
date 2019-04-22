@@ -18,6 +18,8 @@ namespace content {
 class WebContents;
 }
 
+namespace printing {
+
 class LocalPrinterHandlerDefault : public PrinterHandler {
  public:
   explicit LocalPrinterHandlerDefault(
@@ -31,12 +33,9 @@ class LocalPrinterHandlerDefault : public PrinterHandler {
                         GetPrintersDoneCallback done_callback) override;
   void StartGetCapability(const std::string& destination_id,
                           GetCapabilityCallback callback) override;
-  void StartPrint(const std::string& destination_id,
-                  const std::string& capability,
-                  const base::string16& job_title,
-                  const std::string& ticket_json,
-                  const gfx::Size& page_size,
-                  const scoped_refptr<base::RefCountedMemory>& print_data,
+  void StartPrint(const base::string16& job_title,
+                  base::Value settings,
+                  scoped_refptr<base::RefCountedMemory> print_data,
                   PrintCallback callback) override;
 
  private:
@@ -44,5 +43,7 @@ class LocalPrinterHandlerDefault : public PrinterHandler {
 
   DISALLOW_COPY_AND_ASSIGN(LocalPrinterHandlerDefault);
 };
+
+}  // namespace printing
 
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_LOCAL_PRINTER_HANDLER_DEFAULT_H_

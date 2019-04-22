@@ -8,24 +8,6 @@
 from __future__ import print_function
 
 import os
-import tempfile
-
-
-def CreateTempFileWithContents(contents, base_dir=None):
-  """Creates a temp file containing contents which self deletes when closed.
-
-  Args:
-    contents: The string to write into the temp file.
-    base_dir: The directory which files are created.
-
-  Returns:
-    tempfile.NamedTemporaryFile. A file object that will self delete
-    when closed.
-  """
-  message_file = tempfile.NamedTemporaryFile(dir=base_dir)
-  message_file.write(contents)
-  message_file.flush()
-  return message_file
 
 
 def ListdirFullpath(directory):

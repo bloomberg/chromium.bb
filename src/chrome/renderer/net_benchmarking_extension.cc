@@ -108,8 +108,8 @@ class NetBenchmarkingWrapper : public v8::Extension {
   }
 };
 
-v8::Extension* NetBenchmarkingExtension::Get() {
-  return new NetBenchmarkingWrapper();
+std::unique_ptr<v8::Extension> NetBenchmarkingExtension::Get() {
+  return std::make_unique<NetBenchmarkingWrapper>();
 }
 
 }  // namespace extensions_v8

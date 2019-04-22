@@ -24,6 +24,9 @@ SEARCH_BOX_EXPORT constexpr SkColor kSearchBoxBackgroundDefault = SK_ColorWHITE;
 // The background border corner radius of the search box.
 SEARCH_BOX_EXPORT constexpr int kSearchBoxBorderCornerRadius = 24;
 
+// The background border corner radius of the expanded search box.
+SEARCH_BOX_EXPORT constexpr int kSearchBoxBorderCornerRadiusSearchResult = 20;
+
 // Preferred height of search box.
 SEARCH_BOX_EXPORT constexpr int kSearchBoxPreferredHeight = 48;
 

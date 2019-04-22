@@ -84,27 +84,22 @@ void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
             GetDocument().GetStyleEngine().PreferredStylesheetSetName()))
       continue;
 
-    CSSStyleSheet* css_sheet = ToCSSStyleSheet(sheet);
+    CSSStyleSheet* css_sheet = To<CSSStyleSheet>(sheet);
     collector.AppendActiveStyleSheet(
         std::make_pair(css_sheet, master_engine.RuleSetForSheet(*css_sheet)));
   }
   if (!GetTreeScope().HasAdoptedStyleSheets())
     return;
 
-  StyleSheetList& adopted_style_sheets = GetTreeScope().AdoptedStyleSheets();
-  unsigned length = adopted_style_sheets.length();
-  for (unsigned index = 0; index < length; ++index) {
-    StyleSheet* sheet = adopted_style_sheets.item(index);
-    if (!sheet)
-      continue;
-    CSSStyleSheet* css_sheet = ToCSSStyleSheet(sheet);
-    if (!css_sheet ||
-        !css_sheet->CanBeActivated(
+  for (CSSStyleSheet* sheet : GetTreeScope().AdoptedStyleSheets()) {
+    if (!sheet ||
+        !sheet->CanBeActivated(
             GetDocument().GetStyleEngine().PreferredStylesheetSetName()))
       continue;
+    DCHECK_EQ(GetDocument(), sheet->AssociatedDocument());
     collector.AppendSheetForList(sheet);
     collector.AppendActiveStyleSheet(
-        std::make_pair(css_sheet, master_engine.RuleSetForSheet(*css_sheet)));
+        std::make_pair(sheet, master_engine.RuleSetForSheet(*sheet)));
   }
 }
 
@@ -129,7 +124,7 @@ void DocumentStyleSheetCollection::CollectStyleSheets(
 void DocumentStyleSheetCollection::UpdateActiveStyleSheets(
     StyleEngine& master_engine) {
   // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
-  StyleSheetCollection* collection = StyleSheetCollection::Create();
+  auto* collection = MakeGarbageCollected<StyleSheetCollection>();
   ActiveDocumentStyleSheetCollector collector(*collection);
   CollectStyleSheets(master_engine, collector);
   ApplyActiveStyleSheetChanges(*collection);
@@ -149,7 +144,7 @@ void DocumentStyleSheetCollection::CollectViewportRules(
             GetDocument().GetStyleEngine().PreferredStylesheetSetName()))
       continue;
     viewport_resolver.CollectViewportRulesFromAuthorSheet(
-        *ToCSSStyleSheet(sheet));
+        To<CSSStyleSheet>(*sheet));
   }
 }
 

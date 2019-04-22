@@ -39,7 +39,7 @@
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config_service.h"
-#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace base {
@@ -51,7 +51,6 @@ class ApplicationStatusListener;
 namespace net {
 
 class CertVerifier;
-class ChannelIDService;
 class CookieStore;
 class CTPolicyEnforcer;
 class CTVerifier;
@@ -59,6 +58,7 @@ class HttpAuthHandlerFactory;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class HttpServerProperties;
+class HostResolverManager;
 class NetworkQualityEstimator;
 class ProxyConfigService;
 class URLRequestContext;
@@ -172,14 +172,6 @@ class NET_EXPORT URLRequestContextBuilder {
     pac_quick_check_enabled_ = pac_quick_check_enabled;
   }
 
-  // Sets policy for sanitizing URLs before passing them to a PAC. Defaults to
-  // ProxyResolutionService::SanitizeUrlPolicy::SAFE. Ignored if
-  // a ProxyResolutionService is set directly.
-  void set_pac_sanitize_url_policy(
-      ProxyResolutionService::SanitizeUrlPolicy pac_sanitize_url_policy) {
-    pac_sanitize_url_policy_ = pac_sanitize_url_policy;
-  }
-
   // Sets the proxy service. If one is not provided, by default, uses system
   // libraries to evaluate PAC scripts, if available (And if not, skips PAC
   // resolution). Subclasses may override CreateProxyResolutionService for
@@ -238,15 +230,30 @@ class NET_EXPORT URLRequestContextBuilder {
   // set their own NetLog::Observers instead.
   void set_net_log(NetLog* net_log) { net_log_ = net_log; }
 
-  // By default host_resolver is constructed with CreateDefaultResolver.
+  // Sets a HostResolver instance to be used instead of default construction.
+  // Should not be used if set_host_resolver_manager(),
+  // set_host_mapping_rules(), or set_host_resolver_factory() are used. On
+  // building the context, will call HostResolver::SetRequestContext, so
+  // |host_resolver| may not already be associated with a context.
   void set_host_resolver(std::unique_ptr<HostResolver> host_resolver);
-  // Allows sharing the HostResolver with other URLRequestContexts. Should not
-  // be used if set_host_resolver() is used. The consumer must ensure the
-  // HostResolver outlives the URLRequestContext returned by the builder.
+
+  // If set to non-empty, the mapping rules will be applied to requests to the
+  // created host resolver. See MappedHostResolver for details. Should not be
+  // used if set_host_resolver() is used.
+  void set_host_mapping_rules(std::string host_mapping_rules);
+
+  // Sets a shared HostResolverManager to be used for created HostResolvers.
+  // Should not be used if set_host_resolver() is used. The consumer must ensure
+  // |manager| outlives the URLRequestContext returned by the builder.
   //
-  // TODO(mmenke): Figure out the cost/benefits of not supporting sharing
-  // HostResolvers between URLRequestContexts. See: https://crbug.com/743251.
-  void set_shared_host_resolver(HostResolver* host_resolver);
+  // TODO(crbug.com/934402): Make this required if set_host_resolver() not
+  // called to force sharing managers when reasonable.
+  void set_host_resolver_manager(HostResolverManager* manager);
+
+  // Sets the factory used for any HostResolverCreation. By default, a default
+  // implementation will be used. Should not be used if set_host_resolver() is
+  // used.
+  void set_host_resolver_factory(HostResolver::Factory* factory);
 
   // Uses BasicNetworkDelegate by default. Note that calling Build will unset
   // any custom delegate in builder, so this must be called each time before
@@ -337,18 +344,9 @@ class NET_EXPORT URLRequestContextBuilder {
   void set_create_intercepting_job_factory(
       CreateInterceptingJobFactory create_intercepting_job_factory);
 
-  // Override the default in-memory cookie store and channel id service.
-  // If both |cookie_store| and |channel_id_service| are NULL, CookieStore and
-  // ChannelIDService will be disabled for this context.
-  // If |cookie_store| is not NULL and |channel_id_service| is NULL,
-  // only ChannelIdService is disabled for this context.
-  // Note that a persistent cookie store should not be used with an in-memory
-  // channel id service, and one cookie store should not be shared between
-  // multiple channel-id stores (or used both with and without a channel id
-  // store).
-  void SetCookieAndChannelIdStores(
-      std::unique_ptr<CookieStore> cookie_store,
-      std::unique_ptr<ChannelIDService> channel_id_service);
+  // Override the default in-memory cookie store. If |cookie_store| is NULL,
+  // CookieStore will be disabled for this context.
+  void SetCookieStore(std::unique_ptr<CookieStore> cookie_store);
 
   // Sets a specific HttpServerProperties for use in the
   // URLRequestContext rather than creating a default HttpServerPropertiesImpl.
@@ -362,6 +360,8 @@ class NET_EXPORT URLRequestContextBuilder {
   void SetCreateHttpTransactionFactoryCallback(
       CreateHttpTransactionFactoryCallback
           create_http_network_transaction_factory);
+
+  void set_allow_copy() { allow_copy_ = true; }
 
   // Creates a mostly self-contained URLRequestContext. May only be called once
   // per URLRequestContextBuilder. After this is called, the Builder can be
@@ -382,60 +382,61 @@ class NET_EXPORT URLRequestContextBuilder {
 
  private:
   std::string name_;
-  bool enable_brotli_;
-  NetworkQualityEstimator* network_quality_estimator_;
+  bool enable_brotli_ = false;
+  NetworkQualityEstimator* network_quality_estimator_ = nullptr;
 
   std::string accept_language_;
   std::string user_agent_;
   std::unique_ptr<HttpUserAgentSettings> http_user_agent_settings_;
 
   // Include support for data:// requests.
-  bool data_enabled_;
+  bool data_enabled_ = false;
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
   // Include support for file:// requests.
-  bool file_enabled_;
+  bool file_enabled_ = false;
 #endif
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   // Include support for ftp:// requests.
-  bool ftp_enabled_;
+  bool ftp_enabled_ = false;
 #endif
-  bool http_cache_enabled_;
-  bool throttling_enabled_;
-  bool cookie_store_set_by_client_;
+  bool http_cache_enabled_ = true;
+  bool throttling_enabled_ = false;
+  bool cookie_store_set_by_client_ = false;
 
   HttpCacheParams http_cache_params_;
   HttpNetworkSession::Params http_network_session_params_;
   CreateHttpTransactionFactoryCallback create_http_network_transaction_factory_;
   base::FilePath transport_security_persister_path_;
-  NetLog* net_log_;
+  NetLog* net_log_ = nullptr;
   std::unique_ptr<HostResolver> host_resolver_;
-  HostResolver* shared_host_resolver_;
-  std::unique_ptr<ChannelIDService> channel_id_service_;
+  std::string host_mapping_rules_;
+  HostResolverManager* host_resolver_manager_ = nullptr;
+  HostResolver::Factory* host_resolver_factory_ = nullptr;
   std::unique_ptr<ProxyConfigService> proxy_config_service_;
-  bool pac_quick_check_enabled_;
-  ProxyResolutionService::SanitizeUrlPolicy pac_sanitize_url_policy_;
+  bool pac_quick_check_enabled_ = true;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<NetworkDelegate> network_delegate_;
   CreateLayeredNetworkDelegate create_layered_network_delegate_callback_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
-  ProxyDelegate* shared_proxy_delegate_;
+  ProxyDelegate* shared_proxy_delegate_ = nullptr;
   std::unique_ptr<CookieStore> cookie_store_;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
-  HttpAuthHandlerFactory* shared_http_auth_handler_factory_;
+  HttpAuthHandlerFactory* shared_http_auth_handler_factory_ = nullptr;
   std::unique_ptr<CertVerifier> cert_verifier_;
-  CertVerifier* shared_cert_verifier_;
+  CertVerifier* shared_cert_verifier_ = nullptr;
   std::unique_ptr<CTVerifier> ct_verifier_;
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer_;
 #if BUILDFLAG(ENABLE_REPORTING)
   std::unique_ptr<ReportingPolicy> reporting_policy_;
-  bool network_error_logging_enabled_;
+  bool network_error_logging_enabled_ = false;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
   std::vector<std::unique_ptr<URLRequestInterceptor>> url_request_interceptors_;
   CreateInterceptingJobFactory create_intercepting_job_factory_;
   std::unique_ptr<HttpServerProperties> http_server_properties_;
   std::map<std::string, std::unique_ptr<URLRequestJobFactory::ProtocolHandler>>
       protocol_handlers_;
+  bool allow_copy_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextBuilder);
 };

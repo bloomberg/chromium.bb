@@ -110,7 +110,7 @@ class GPU_EXPORT CommandBuffer {
 
   // Create a transfer buffer of the given size. Returns its ID or -1 on
   // error.
-  virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+  virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
                                                           int32_t* id) = 0;
 
   // Destroy a transfer buffer. The ID must be positive.

@@ -20,7 +20,6 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/host_resolver.h"
-#include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
@@ -31,8 +30,6 @@
 #include "net/log/net_log.h"
 #include "net/proxy_resolution/proxy_config_service_ios.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/data_protocol_handler.h"
@@ -54,12 +51,17 @@ WebViewURLRequestContextGetter::WebViewURLRequestContextGetter(
       network_task_runner_(network_task_runner),
       proxy_config_service_(
           new net::ProxyConfigServiceIOS(NO_TRAFFIC_ANNOTATION_YET)),
-      net_log_(new net::NetLog()) {}
+      net_log_(new net::NetLog()),
+      is_shutting_down_(false) {}
 
 WebViewURLRequestContextGetter::~WebViewURLRequestContextGetter() = default;
 
 net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
+
+  if (is_shutting_down_) {
+    return nullptr;
+  }
 
   if (!url_request_context_) {
     url_request_context_.reset(new net::URLRequestContext());
@@ -115,27 +117,15 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
             base::CreateSequencedTaskRunnerWithTraits(
                 {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
 
-    // Setup channel id store.
-    base::FilePath channel_id_path;
-    base::PathService::Get(base::DIR_APP_DATA, &channel_id_path);
-    channel_id_path =
-        channel_id_path.Append("ChromeWebView").Append("Channel ID");
-    scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
-        new net::SQLiteChannelIDStore(
-            channel_id_path,
-            base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
-    storage_->set_channel_id_service(std::make_unique<net::ChannelIDService>(
-        new net::DefaultChannelIDStore(channel_id_db.get())));
     storage_->set_http_server_properties(
         std::unique_ptr<net::HttpServerProperties>(
             new net::HttpServerPropertiesImpl()));
 
     std::unique_ptr<net::HostResolver> host_resolver(
-        net::HostResolver::CreateDefaultResolver(
+        net::HostResolver::CreateStandaloneResolver(
             url_request_context_->net_log()));
     storage_->set_http_auth_handler_factory(
-        net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
+        net::HttpAuthHandlerFactory::CreateDefault());
     storage_->set_host_resolver(std::move(host_resolver));
 
     net::HttpNetworkSession::Context network_session_context;
@@ -145,8 +135,6 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         url_request_context_->transport_security_state();
     network_session_context.cert_transparency_verifier =
         url_request_context_->cert_transparency_verifier();
-    network_session_context.channel_id_service =
-        url_request_context_->channel_id_service();
     network_session_context.net_log = url_request_context_->net_log();
     network_session_context.proxy_resolution_service =
         url_request_context_->proxy_resolution_service();
@@ -188,6 +176,19 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
 scoped_refptr<base::SingleThreadTaskRunner>
 WebViewURLRequestContextGetter::GetNetworkTaskRunner() const {
   return network_task_runner_;
+}
+
+void WebViewURLRequestContextGetter::ShutDown() {
+  is_shutting_down_ = true;
+
+  // Clean up some member variables now to avoid a use after free crash with
+  // |net_log_|.
+  transport_security_persister_.reset();
+  storage_.reset();
+  url_request_context_.reset();
+  network_delegate_.reset();
+
+  net::URLRequestContextGetter::NotifyContextShuttingDown();
 }
 
 }  // namespace ios_web_view

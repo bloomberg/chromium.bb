@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include "base/strings/string_number_conversions.h"
@@ -191,8 +192,8 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
                         outOfTotal:(int)resultCount {
   // Returns "<current> of <total>" search results label (e.g "1 of 5").
   NSString* expectedResultsString = l10n_util::GetNSStringF(
-      IDS_FIND_IN_PAGE_COUNT, base::IntToString16(resultIndex),
-      base::IntToString16(resultCount));
+      IDS_FIND_IN_PAGE_COUNT, base::NumberToString16(resultIndex),
+      base::NumberToString16(resultCount));
 
   ConditionBlock condition = ^{
     NSError* error = nil;

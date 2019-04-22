@@ -25,6 +25,11 @@ interface InputDeviceObserverMojo {
   // Is called when the list of touchpads changes.
   OnTouchpadDeviceConfigurationChanged(array<ui.mojom.InputDevice> devices);
 
+  // Is called when the list of uncategorized input devices (besides keyboards,
+  // touchscreens, mice and touchpads) changes.
+  OnUncategorizedDeviceConfigurationChanged(
+      array<ui.mojom.InputDevice> devices);
+
   // Is called once all of the input-device lists are available. This will
   // always be the first call that an observer receives.
   OnDeviceListsComplete(
@@ -32,6 +37,7 @@ interface InputDeviceObserverMojo {
       array<ui.mojom.TouchscreenDevice> touchscreen_devices,
       array<ui.mojom.InputDevice> mouse_devices,
       array<ui.mojom.InputDevice> touchpad_devices,
+      array<ui.mojom.InputDevice> uncategorized_devices,
       bool are_touchscreen_target_displays_valid);
 
   // Is called when a stylus is removed or inserted into the device.

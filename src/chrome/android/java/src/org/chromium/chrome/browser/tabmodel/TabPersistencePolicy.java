@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.Executor;
-
-import javax.annotation.Nullable;
 
 /**
  * Policy that handles the Activity specific behaviors regarding the persistence of tab data.

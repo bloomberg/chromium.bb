@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/version.h"
 #include "chrome/browser/android/vr/metrics_util_android.h"
+#include "chrome/browser/android/vr/ui_factory.h"
 #include "chrome/browser/android/vr/vr_input_connection.h"
 #include "chrome/browser/android/vr/vr_shell.h"
 #include "chrome/browser/vr/assets_loader.h"
@@ -18,7 +20,6 @@
 #include "chrome/browser/vr/model/location_bar_state.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
-#include "chrome/browser/vr/ui_factory.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/common/chrome_features.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
@@ -68,7 +69,7 @@ void VrGLThread::SetInputConnection(VrInputConnection* input_connection) {
 }
 
 void VrGLThread::Init() {
-  ui_factory_ = std::make_unique<UiFactory>();
+  ui_factory_ = CreateUiFactory();
   browser_renderer_ = BrowserRendererFactory::Create(
       this, ui_factory_.get(), std::move(factory_params_));
   weak_browser_ui_ = browser_renderer_->GetBrowserUiWeakPtr();
@@ -392,6 +393,16 @@ void VrGLThread::ShowExitVrPrompt(UiUnsupportedMode reason) {
                                          weak_browser_ui_, reason));
 }
 
+void VrGLThread::SetHasOrCanRequestRecordAudioPermission(
+    bool const has_or_can_request_record_audio) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &BrowserUiInterface::SetHasOrCanRequestRecordAudioPermission,
+          weak_browser_ui_, has_or_can_request_record_audio));
+}
+
 void VrGLThread::SetSpeechRecognitionEnabled(bool enabled) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
@@ -416,7 +427,7 @@ void VrGLThread::OnSpeechRecognitionStateChanged(int new_state) {
 }
 
 void VrGLThread::SetOmniboxSuggestions(
-    std::unique_ptr<OmniboxSuggestions> suggestions) {
+    std::vector<OmniboxSuggestion> suggestions) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(
       FROM_HERE,

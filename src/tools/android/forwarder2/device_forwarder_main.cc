@@ -75,8 +75,8 @@ class ServerDelegate : public Daemon::ServerDelegate {
     }
     controller_thread_->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&ServerDelegate::StartController, base::Unretained(this),
-                   GetExitNotifierFD(), base::Passed(&client_socket)));
+        base::BindOnce(&ServerDelegate::StartController, base::Unretained(this),
+                       GetExitNotifierFD(), std::move(client_socket)));
     initialized_ = true;
   }
 

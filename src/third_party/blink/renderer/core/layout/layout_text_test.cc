@@ -6,6 +6,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/selection_sample.h"
@@ -80,7 +81,7 @@ class ParameterizedLayoutTextTest : public testing::WithParamInterface<bool>,
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All, ParameterizedLayoutTextTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ParameterizedLayoutTextTest, testing::Bool());
 
 }  // namespace
 
@@ -212,9 +213,9 @@ class MapDOMOffsetToTextContentOffset
   MapDOMOffsetToTextContentOffset() : ScopedLayoutNGForTest(true) {}
 };
 
-INSTANTIATE_TEST_CASE_P(LayoutTextTest,
-                        MapDOMOffsetToTextContentOffset,
-                        testing::ValuesIn(offset_mapping_test_data));
+INSTANTIATE_TEST_SUITE_P(LayoutTextTest,
+                         MapDOMOffsetToTextContentOffset,
+                         testing::ValuesIn(offset_mapping_test_data));
 
 TEST_P(MapDOMOffsetToTextContentOffset, Basic) {
   const auto data = GetParam();
@@ -358,6 +359,84 @@ TEST_P(ParameterizedLayoutTextTest, ContainsCaretOffsetInPre) {
   EXPECT_TRUE(GetBasicText()->ContainsCaretOffset(5));  // "foo\nb|ar"
   EXPECT_TRUE(GetBasicText()->ContainsCaretOffset(6));  // "foo\nba|r"
   EXPECT_TRUE(GetBasicText()->ContainsCaretOffset(7));  // "foo\nbar|"
+}
+
+TEST_P(ParameterizedLayoutTextTest, GetTextBoxInfoWithCollapsedWhiteSpace) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>pre { font: 10px/1 Ahem; white-space: pre-line; }</style>
+    <pre id=target> abc  def
+    xyz   </pre>)HTML");
+  const LayoutText& layout_text = *GetLayoutTextById("target");
+
+  const auto& results = layout_text.GetTextBoxInfo();
+
+  ASSERT_EQ(4u, results.size());
+
+  EXPECT_EQ(1u, results[0].dom_start_offset);
+  EXPECT_EQ(4u, results[0].dom_length);
+  EXPECT_EQ(LayoutRect(LayoutPoint(0, 0), LayoutSize(40, 10)),
+            results[0].local_rect);
+
+  EXPECT_EQ(6u, results[1].dom_start_offset);
+  EXPECT_EQ(3u, results[1].dom_length);
+  EXPECT_EQ(LayoutRect(LayoutPoint(40, 0), LayoutSize(30, 10)),
+            results[1].local_rect);
+
+  EXPECT_EQ(9u, results[2].dom_start_offset);
+  EXPECT_EQ(1u, results[2].dom_length);
+  EXPECT_EQ(LayoutRect(LayoutPoint(70, 0), LayoutSize(0, 10)),
+            results[2].local_rect);
+
+  EXPECT_EQ(14u, results[3].dom_start_offset);
+  EXPECT_EQ(3u, results[3].dom_length);
+  EXPECT_EQ(LayoutRect(LayoutPoint(0, 10), LayoutSize(30, 10)),
+            results[3].local_rect);
+}
+
+TEST_P(ParameterizedLayoutTextTest, GetTextBoxInfoWithGeneratedContent) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div::before { content: '  a   bc'; }
+      div::first-letter { font-weight: bold; }
+      div { font: 10px/1 Ahem; }
+    </style>
+    <div id="target">XYZ</div>)HTML");
+  const Element& target = *GetElementById("target");
+  const Element& before =
+      *GetElementById("target")->GetPseudoElement(kPseudoIdBefore);
+  const LayoutText& layout_text_xyz =
+      *ToLayoutText(target.firstChild()->GetLayoutObject());
+  const LayoutText& layout_text_remaining =
+      ToLayoutText(*before.GetLayoutObject()->SlowLastChild());
+  const LayoutText& layout_text_first_letter =
+      *layout_text_remaining.GetFirstLetterPart();
+
+  auto boxes_xyz = layout_text_xyz.GetTextBoxInfo();
+  EXPECT_EQ(1u, boxes_xyz.size());
+  EXPECT_EQ(0u, boxes_xyz[0].dom_start_offset);
+  EXPECT_EQ(3u, boxes_xyz[0].dom_length);
+  EXPECT_EQ(LayoutRect(LayoutPoint(40, 0), LayoutSize(30, 10)),
+            boxes_xyz[0].local_rect);
+
+  auto boxes_first_letter = layout_text_first_letter.GetTextBoxInfo();
+  EXPECT_EQ(1u, boxes_first_letter.size());
+  EXPECT_EQ(2u, boxes_first_letter[0].dom_start_offset);
+  EXPECT_EQ(1u, boxes_first_letter[0].dom_length);
+  EXPECT_EQ(LayoutRect(LayoutPoint(0, 0), LayoutSize(10, 10)),
+            boxes_first_letter[0].local_rect);
+
+  auto boxes_remaining = layout_text_remaining.GetTextBoxInfo();
+  EXPECT_EQ(2u, boxes_remaining.size());
+  EXPECT_EQ(0u, boxes_remaining[0].dom_start_offset);
+  EXPECT_EQ(1u, boxes_remaining[0].dom_length) << "two spaces to one space";
+  EXPECT_EQ(LayoutRect(LayoutPoint(10, 0), LayoutSize(10, 10)),
+            boxes_remaining[0].local_rect);
+  EXPECT_EQ(3u, boxes_remaining[1].dom_start_offset);
+  EXPECT_EQ(2u, boxes_remaining[1].dom_length);
+  EXPECT_EQ(LayoutRect(LayoutPoint(20, 0), LayoutSize(20, 10)),
+            boxes_remaining[1].local_rect);
 }
 
 TEST_P(ParameterizedLayoutTextTest,
@@ -676,21 +755,21 @@ TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectVertical) {
       LayoutRect(0, 0, 20, 40),
       GetSelectionRectFor("<div style='writing-mode: vertical-lr; height: 2em'>"
                           "f^oo ba|r baz</div>"));
-  // TODO(yoichio): This is caused by mixing lrt between vertical and logical.
   EXPECT_EQ(
-      LayoutNGEnabled() ? LayoutRect(10, 0, 20, 40) : LayoutRect(0, 0, 20, 40),
+      LayoutRect(0, 0, 20, 40),
       GetSelectionRectFor("<div style='writing-mode: vertical-rl; height: 2em'>"
                           "f^oo ba|r baz</div>"));
 }
 
 TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectVerticalRTL) {
   LoadAhem();
+  // TODO(yoichio): Investigate diff (maybe soft line break treatment).
   EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(0, -10, 20, 30)
                               : LayoutRect(0, -10, 20, 40),
             GetSelectionRectFor(
                 "<div style='writing-mode: vertical-lr; height: 2em' dir=rtl>"
                 "f^oo ba|r baz</div>"));
-  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(10, -10, 20, 30)
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(0, -10, 20, 30)
                               : LayoutRect(0, -10, 20, 40),
             GetSelectionRectFor(
                 "<div style='writing-mode: vertical-rl; height: 2em' dir=rtl>"

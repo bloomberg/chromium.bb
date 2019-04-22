@@ -81,9 +81,11 @@ class ASH_EXPORT SplitViewDragIndicators {
   // root window than |widget_|, |widget_| will reparent.
   void SetIndicatorState(IndicatorState indicator_state,
                          const gfx::Point& event_location);
-  IndicatorState current_indicator_state() const {
-    return current_indicator_state_;
-  }
+
+  // Called by owner of this class when split view mode ends, so that this class
+  // can show the drag indicators which are usually hidden in split view mode.
+  // https://crbug.com/946601
+  void OnSplitViewModeEnded();
 
   // Called by owner of this class when display bounds changes are observed, so
   // that this class can relayout accordingly.
@@ -91,8 +93,12 @@ class ASH_EXPORT SplitViewDragIndicators {
 
   bool GetIndicatorTypeVisibilityForTesting(IndicatorType type) const;
 
+  IndicatorState current_indicator_state() const {
+    return current_indicator_state_;
+  }
+
  private:
-  FRIEND_TEST_ALL_PREFIXES(SplitViewWindowSelectorTest,
+  FRIEND_TEST_ALL_PREFIXES(SplitViewDragIndicatorsTest,
                            SplitViewDragIndicatorsWidgetReparenting);
   class RotatedImageLabelView;
   class SplitViewDragIndicatorsView;

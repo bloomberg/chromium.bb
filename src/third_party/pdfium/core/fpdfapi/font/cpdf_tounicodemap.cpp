@@ -12,6 +12,7 @@
 #include "core/fpdfapi/font/cpdf_cid2unicodemap.h"
 #include "core/fpdfapi/page/cpdf_pagemodule.h"
 #include "core/fpdfapi/parser/cpdf_simple_parser.h"
+#include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "third_party/base/numerics/safe_conversions.h"
@@ -54,7 +55,7 @@ uint32_t CPDF_ToUnicodeMap::ReverseLookup(wchar_t unicode) const {
 }
 
 // Static.
-uint32_t CPDF_ToUnicodeMap::StringToCode(const ByteStringView& str) {
+uint32_t CPDF_ToUnicodeMap::StringToCode(ByteStringView str) {
   int len = str.GetLength();
   if (len == 0)
     return 0;
@@ -91,7 +92,7 @@ static WideString StringDataAdd(WideString str) {
 }
 
 // Static.
-WideString CPDF_ToUnicodeMap::StringToWideString(const ByteStringView& str) {
+WideString CPDF_ToUnicodeMap::StringToWideString(ByteStringView str) {
   int len = str.GetLength();
   if (len == 0)
     return WideString();

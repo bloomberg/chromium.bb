@@ -16,7 +16,6 @@ namespace android {
 
 static jint JNI_MainRunner_RunMain(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jobjectArray>& command_line) {
   // Guards against process being reused.
   // In most cases, running main again will cause problems (static variables,

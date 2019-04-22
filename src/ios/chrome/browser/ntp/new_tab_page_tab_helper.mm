@@ -61,7 +61,7 @@ NewTabPageTabHelper::NewTabPageTabHelper(
 
   active_ = IsNTPURL(web_state->GetVisibleURL());
   if (active_) {
-    UpdatePendingItem();
+    UpdateItem(web_state_->GetNavigationManager()->GetPendingItem());
     [delegate_ newTabPageHelperDidChangeVisibility:this forWebState:web_state_];
 
     // If about://newtab is currently loading but has not yet committed, block
@@ -81,6 +81,7 @@ void NewTabPageTabHelper::Deactivate() {
 }
 
 bool NewTabPageTabHelper::IgnoreLoadRequests() const {
+  DCHECK(active_);
   return ignore_load_requests_;
 }
 
@@ -119,7 +120,7 @@ void NewTabPageTabHelper::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
   if (IsNTPURL(navigation_context->GetUrl())) {
-    UpdatePendingItem();
+    UpdateItem(web_state_->GetNavigationManager()->GetPendingItem());
   } else {
     SetActive(false);
   }
@@ -128,10 +129,13 @@ void NewTabPageTabHelper::DidStartNavigation(
 void NewTabPageTabHelper::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
-  if (navigation_context->IsSameDocument()) {
+  web::NavigationItem* item =
+      web_state_->GetNavigationManager()->GetLastCommittedItem();
+  if (navigation_context->IsSameDocument() || !item) {
     return;
   }
 
+  UpdateItem(web_state_->GetNavigationManager()->GetLastCommittedItem());
   DisableIgnoreLoadRequests();
   SetActive(IsNTPURL(web_state->GetLastCommittedURL()));
 }
@@ -148,10 +152,8 @@ void NewTabPageTabHelper::SetActive(bool active) {
   }
 }
 
-void NewTabPageTabHelper::UpdatePendingItem() {
-  web::NavigationManager* manager = web_state_->GetNavigationManager();
-  web::NavigationItem* item = manager->GetPendingItem();
-  if (item) {
+void NewTabPageTabHelper::UpdateItem(web::NavigationItem* item) {
+  if (item && item->GetURL() == GURL(kChromeUIAboutNewTabURL)) {
     item->SetVirtualURL(GURL(kChromeUINewTabURL));
     item->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   }
@@ -165,3 +167,5 @@ bool NewTabPageTabHelper::IsNTPURL(const GURL& url) {
   return url.GetOrigin() == kChromeUINewTabURL ||
          (url.SchemeIs(url::kAboutScheme) && url.path() == kAboutNewTabPath);
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(NewTabPageTabHelper)

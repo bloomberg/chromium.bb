@@ -203,13 +203,14 @@ std::unique_ptr<views::Painter> TrayPopupUtils::CreateFocusPainter() {
 }
 
 void TrayPopupUtils::ConfigureTrayPopupButton(views::Button* button) {
-  button->SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  button->SetInstallFocusRingOnFocus(true);
   button->SetFocusForPlatform();
 
   button->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
   button->set_has_ink_drop_action_on_click(true);
   button->set_ink_drop_base_color(kTrayPopupInkDropBaseColor);
   button->set_ink_drop_visible_opacity(kTrayPopupInkDropRippleOpacity);
+  button->set_ink_drop_highlight_opacity(kTrayPopupInkDropHighlightOpacity);
 }
 
 void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
@@ -223,12 +224,11 @@ void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
 void TrayPopupUtils::ShowStickyHeaderSeparator(views::View* view,
                                                bool show_separator) {
   if (show_separator) {
-    const int separator_width = ash::TrayConstants::separator_width();
     view->SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(0, 0, separator_width, 0,
+        views::CreateSolidSidedBorder(0, 0, kTraySeparatorWidth, 0,
                                       kMenuSeparatorColor),
         gfx::Insets(kMenuSeparatorVerticalPadding, 0,
-                    kMenuSeparatorVerticalPadding - separator_width, 0)));
+                    kMenuSeparatorVerticalPadding - kTraySeparatorWidth, 0)));
   } else {
     view->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
@@ -290,35 +290,31 @@ std::unique_ptr<views::InkDropHighlight> TrayPopupUtils::CreateInkDropHighlight(
   return highlight;
 }
 
-std::unique_ptr<views::InkDropMask> TrayPopupUtils::CreateInkDropMask(
+std::unique_ptr<SkPath> TrayPopupUtils::CreateHighlightPath(
     TrayPopupInkDropStyle ink_drop_style,
     const views::View* host) {
-  if (ink_drop_style == TrayPopupInkDropStyle::FILL_BOUNDS)
-    return nullptr;
+  auto path = std::make_unique<SkPath>();
 
-  const gfx::Size layer_size = host->size();
+  const gfx::Rect mask_bounds =
+      GetInkDropBounds(TrayPopupInkDropStyle::HOST_CENTERED, host);
   switch (ink_drop_style) {
     case TrayPopupInkDropStyle::HOST_CENTERED: {
-      const gfx::Rect mask_bounds =
-          GetInkDropBounds(TrayPopupInkDropStyle::HOST_CENTERED, host);
+      gfx::Point center_point = mask_bounds.CenterPoint();
       const int radius =
           std::min(mask_bounds.width(), mask_bounds.height()) / 2;
-      return std::make_unique<views::CircleInkDropMask>(
-          layer_size, mask_bounds.CenterPoint(), radius);
+      path->addCircle(center_point.x(), center_point.y(), radius);
+      break;
     }
-    case TrayPopupInkDropStyle::INSET_BOUNDS: {
-      const gfx::Insets mask_insets =
-          GetInkDropInsets(TrayPopupInkDropStyle::INSET_BOUNDS);
-      return std::make_unique<views::RoundRectInkDropMask>(
-          layer_size, mask_insets, kTrayPopupInkDropCornerRadius);
-    }
+    case TrayPopupInkDropStyle::INSET_BOUNDS:
+      path->addRoundRect(RectToSkRect(mask_bounds),
+                         kTrayPopupInkDropCornerRadius,
+                         kTrayPopupInkDropCornerRadius);
+      break;
     case TrayPopupInkDropStyle::FILL_BOUNDS:
-      // Handled by quick return above.
+      path->addRect(RectToSkRect(mask_bounds));
       break;
   }
-  // Required by some compilers.
-  NOTREACHED();
-  return nullptr;
+  return path;
 }
 
 gfx::Insets TrayPopupUtils::GetInkDropInsets(

@@ -97,11 +97,26 @@ void Headers::append(const String& name,
   //     name, return."
   if (guard_ == kRequestGuard && cors::IsForbiddenHeaderName(name))
     return;
-  // "5. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
-  //     no-CORS-safelisted header, return."
-  if (guard_ == kRequestNoCorsGuard &&
-      !cors::IsNoCorsSafelistedHeader(name, normalized_value)) {
-    return;
+  // 5. Otherwise, if guard is |request-no-cors|:
+  if (guard_ == kRequestNoCorsGuard) {
+    // Let |temporaryValue| be the result of getting name from |headers|’s
+    // header list.
+    String temp;
+    header_list_->Get(name, temp);
+
+    // If |temporaryValue| is null, then set |temporaryValue| to |value|.
+    // Otherwise, set |temporaryValue| to |temporaryValue|, followed by
+    // 0x2C 0x20, followed by |value|.
+    if (temp.IsNull()) {
+      temp = normalized_value;
+    } else {
+      temp = temp + ", " + normalized_value;
+    }
+
+    // If |name|/|temporaryValue| is not a no-CORS-safelisted request-header,
+    // then return.
+    if (!cors::IsNoCorsSafelistedHeader(name, temp))
+      return;
   }
   // "6. Otherwise, if guard is |response| and |name| is a forbidden response
   //     header name, return."
@@ -129,10 +144,12 @@ void Headers::remove(const String& name, ExceptionState& exception_state) {
   //     name, return."
   if (guard_ == kRequestGuard && cors::IsForbiddenHeaderName(name))
     return;
-  // "4. Otherwise, if guard is |request-no-CORS| and |name|/`invalid` is not
-  //     a no-CORS-safelisted header, return."
+  // "4. Otherwise, if the context object’s guard is |request-no-cors|, |name|
+  //     is not a no-CORS-safelisted request-header name, and |name| is not a
+  //     privileged no-CORS request-header name, return."
   if (guard_ == kRequestNoCorsGuard &&
-      !cors::IsNoCorsSafelistedHeader(name, "invalid")) {
+      !cors::IsNoCorsSafelistedHeaderName(name) &&
+      !cors::IsPrivilegedNoCorsHeaderName(name)) {
     return;
   }
   // "5. Otherwise, if guard is |response| and |name| is a forbidden response
@@ -269,7 +286,8 @@ void Headers::FillWith(const Vector<std::pair<String, String>>& object,
 }
 
 Headers::Headers()
-    : header_list_(FetchHeaderList::Create()), guard_(kNoneGuard) {}
+    : header_list_(MakeGarbageCollected<FetchHeaderList>()),
+      guard_(kNoneGuard) {}
 
 Headers::Headers(FetchHeaderList* header_list)
     : header_list_(header_list), guard_(kNoneGuard) {}
@@ -282,7 +300,7 @@ void Headers::Trace(blink::Visitor* visitor) {
 PairIterable<String, String>::IterationSource* Headers::StartIteration(
     ScriptState*,
     ExceptionState&) {
-  return new HeadersIterationSource(header_list_);
+  return MakeGarbageCollected<HeadersIterationSource>(header_list_);
 }
 
 }  // namespace blink

@@ -10,7 +10,10 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/hidsystem/ev_keymap.h>
 
+#include "base/containers/flat_set.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/remote_command_media_keys_listener_mac.h"
+#include "ui/base/now_playing/remote_command_center_delegate.h"
 
 namespace ui {
 
@@ -20,18 +23,18 @@ namespace {
 // http://lists.apple.com/archives/cocoa-dev/2007/Aug/msg00499.html
 const int kSystemDefinedEventMediaKeysSubtype = 8;
 
-ui::KeyboardCode MediaKeyCodeToKeyboardCode(int key_code) {
+KeyboardCode MediaKeyCodeToKeyboardCode(int key_code) {
   switch (key_code) {
     case NX_KEYTYPE_PLAY:
-      return ui::VKEY_MEDIA_PLAY_PAUSE;
+      return VKEY_MEDIA_PLAY_PAUSE;
     case NX_KEYTYPE_PREVIOUS:
     case NX_KEYTYPE_REWIND:
-      return ui::VKEY_MEDIA_PREV_TRACK;
+      return VKEY_MEDIA_PREV_TRACK;
     case NX_KEYTYPE_NEXT:
     case NX_KEYTYPE_FAST:
-      return ui::VKEY_MEDIA_NEXT_TRACK;
+      return VKEY_MEDIA_NEXT_TRACK;
   }
-  return ui::VKEY_UNKNOWN;
+  return VKEY_UNKNOWN;
 }
 
 class MediaKeysListenerImpl : public MediaKeysListener {
@@ -41,13 +44,12 @@ class MediaKeysListenerImpl : public MediaKeysListener {
   ~MediaKeysListenerImpl() override;
 
   // MediaKeysListener:
-  void StartWatchingMediaKeys() override;
-  void StopWatchingMediaKeys() override;
-  bool IsWatchingMediaKeys() const override;
+  bool StartWatchingMediaKey(KeyboardCode key_code) override;
+  void StopWatchingMediaKey(KeyboardCode key_code) override;
 
  private:
   // Callback on media key event.
-  MediaKeysHandleResult OnMediaKeyEvent(int media_key_code);
+  void OnMediaKeyEvent(KeyboardCode key_code);
 
   // The callback for when an event tap happens.
   static CGEventRef EventTapCallback(CGEventTapProxy proxy,
@@ -55,11 +57,16 @@ class MediaKeysListenerImpl : public MediaKeysListener {
                                      CGEventRef event,
                                      void* refcon);
 
+  // Internal methods to create or remove the event tap.
+  void StartEventTapIfNecessary();
+  void StopEventTapIfNecessary();
+
   MediaKeysListener::Delegate* delegate_;
   const Scope scope_;
   // Event tap for intercepting mac media keys.
   CFMachPortRef event_tap_ = nullptr;
   CFRunLoopSourceRef event_tap_source_ = nullptr;
+  base::flat_set<KeyboardCode> key_codes_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaKeysListenerImpl);
 };
@@ -72,12 +79,23 @@ MediaKeysListenerImpl::MediaKeysListenerImpl(
 }
 
 MediaKeysListenerImpl::~MediaKeysListenerImpl() {
-  if (event_tap_) {
-    StopWatchingMediaKeys();
-  }
+  StopEventTapIfNecessary();
 }
 
-void MediaKeysListenerImpl::StartWatchingMediaKeys() {
+bool MediaKeysListenerImpl::StartWatchingMediaKey(KeyboardCode key_code) {
+  key_codes_.insert(key_code);
+  StartEventTapIfNecessary();
+  return true;
+}
+
+void MediaKeysListenerImpl::StopWatchingMediaKey(KeyboardCode key_code) {
+  key_codes_.erase(key_code);
+
+  if (key_codes_.empty())
+    StopEventTapIfNecessary();
+}
+
+void MediaKeysListenerImpl::StartEventTapIfNecessary() {
   // Make sure there's no existing event tap.
   if (event_tap_) {
     return;
@@ -105,7 +123,7 @@ void MediaKeysListenerImpl::StartWatchingMediaKeys() {
                      kCFRunLoopCommonModes);
 }
 
-void MediaKeysListenerImpl::StopWatchingMediaKeys() {
+void MediaKeysListenerImpl::StopEventTapIfNecessary() {
   if (!event_tap_) {
     return;
   }
@@ -125,15 +143,9 @@ void MediaKeysListenerImpl::StopWatchingMediaKeys() {
   event_tap_source_ = nullptr;
 }
 
-bool MediaKeysListenerImpl::IsWatchingMediaKeys() const {
-  return event_tap_ != nullptr;
-}
-
-MediaKeysListener::MediaKeysHandleResult MediaKeysListenerImpl::OnMediaKeyEvent(
-    int media_key_code) {
-  const ui::KeyboardCode key_code = MediaKeyCodeToKeyboardCode(media_key_code);
+void MediaKeysListenerImpl::OnMediaKeyEvent(KeyboardCode key_code) {
   // Create an accelerator corresponding to the keyCode.
-  const ui::Accelerator accelerator(key_code, 0);
+  const Accelerator accelerator(key_code, 0);
   return delegate_->OnMediaKeysAccelerator(accelerator);
 }
 
@@ -191,16 +203,16 @@ CGEventRef MediaKeysListenerImpl::EventTapCallback(CGEventTapProxy proxy,
   if (!is_key_pressed)
     return event;
 
+  // If we don't care about the given key, ignore this event.
+  const KeyboardCode ui_key_code = MediaKeyCodeToKeyboardCode(key_code);
+  if (!shortcut_listener->key_codes_.contains(ui_key_code))
+    return event;
+
   // Now we have a media key that we care about. Send it to the caller.
-  auto result = shortcut_listener->OnMediaKeyEvent(key_code);
+  shortcut_listener->OnMediaKeyEvent(ui_key_code);
 
-  // Prevent event from proagating to other apps if handled by Chrome.
-  if (result == MediaKeysHandleResult::kSuppressPropagation) {
-    return nullptr;
-  }
-
-  // By default, pass the event through.
-  return event;
+  // Prevent event from proagating to other apps.
+  return nullptr;
 }
 
 }  // namespace
@@ -208,6 +220,19 @@ CGEventRef MediaKeysListenerImpl::EventTapCallback(CGEventTapProxy proxy,
 std::unique_ptr<MediaKeysListener> MediaKeysListener::Create(
     MediaKeysListener::Delegate* delegate,
     MediaKeysListener::Scope scope) {
+  // For Mac OS 10.12.2 or later, we want to use MPRemoteCommandCenter for
+  // getting media keys globally if there is a RemoteCommandCenterDelegate
+  // available.
+  if (@available(macOS 10.12.2, *)) {
+    if (scope == Scope::kGlobal &&
+        now_playing::RemoteCommandCenterDelegate::GetInstance()) {
+      auto listener =
+          std::make_unique<RemoteCommandMediaKeysListenerMac>(delegate);
+      listener->Initialize();
+      return std::move(listener);
+    }
+  }
+
   return std::make_unique<MediaKeysListenerImpl>(delegate, scope);
 }
 

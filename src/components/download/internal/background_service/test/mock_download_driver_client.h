@@ -23,6 +23,7 @@ class MockDriverClient : public DownloadDriver::Client {
   MOCK_METHOD1(OnDownloadSucceeded, void(const DriverEntry&));
   MOCK_METHOD1(OnDownloadUpdated, void(const DriverEntry&));
   MOCK_CONST_METHOD1(IsTrackingDownload, bool(const std::string&));
+  MOCK_CONST_METHOD2(OnUploadProgress, void(const std::string&, uint64_t));
 };
 
 }  // namespace download

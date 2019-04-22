@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "v8/include/v8.h"
 
@@ -81,23 +82,16 @@ class WorkerOrWorkletScriptController::ExecutionState final {
   // WorkerOrWorkletScriptController::evaluate(), with the contoller using it
   // during script evaluation. To handle nested evaluate() uses,
   // ExecutionStates are chained together;
-  // |m_outerState| keeps a pointer to the context object one level out
+  // |outer_state_| keeps a pointer to the context object one level out
   // (or 0, if outermost.) Upon return from evaluate(), the
   // WorkerOrWorkletScriptController's ExecutionState is popped and the
   // previous one restored (see above dtor.)
   //
-  // With Oilpan, |m_outerState| isn't traced. It'll be "up the stack"
+  // With Oilpan, |outer_state_| isn't traced. It'll be "up the stack"
   // and its fields will be traced when scanning the stack.
   Member<WorkerOrWorkletScriptController> controller_;
   ExecutionState* outer_state_;
 };
-
-WorkerOrWorkletScriptController* WorkerOrWorkletScriptController::Create(
-    WorkerOrWorkletGlobalScope* global_scope,
-    v8::Isolate* isolate) {
-  return MakeGarbageCollected<WorkerOrWorkletScriptController>(global_scope,
-                                                               isolate);
-}
 
 WorkerOrWorkletScriptController::WorkerOrWorkletScriptController(
     WorkerOrWorkletGlobalScope* global_scope,
@@ -140,13 +134,10 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
   script_state_->DissociateContext();
 }
 
-bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
-    const String& human_readable_name,
-    const KURL& url_for_debugger) {
+bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
   v8::HandleScope handle_scope(isolate_);
 
-  if (IsContextInitialized())
-    return true;
+  DCHECK(!IsContextInitialized());
 
   // Create a new v8::Context with the worker/worklet as the global object
   // (aka the inner global).
@@ -173,7 +164,7 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
   if (context.IsEmpty())
     return false;
 
-  script_state_ = ScriptState::Create(context, world_);
+  script_state_ = MakeGarbageCollected<ScriptState>(context, world_);
 
   ScriptState::Scope scope(script_state_);
 
@@ -220,12 +211,10 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
   V8PerContextData::From(context)->ConstructorForType(wrapper_type_info);
 
   if (global_scope_->IsMainThreadWorkletGlobalScope()) {
-    // Set the human readable name for the world if the call passes an actual
-    // |human_readable name|.
-    if (!human_readable_name.IsEmpty()) {
-      world_->SetNonMainWorldHumanReadableName(world_->GetWorldId(),
-                                               human_readable_name);
-    }
+    // Set the human readable name for the world.
+    DCHECK(!global_scope_->Name().IsEmpty());
+    world_->SetNonMainWorldHumanReadableName(world_->GetWorldId(),
+                                             global_scope_->Name());
   } else {
     // Name new context for debugging. For main thread worklet global scopes
     // this is done once the context is initialized.
@@ -284,7 +273,7 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
     maybe_result = V8ScriptRunner::RunCompiledScript(isolate_, compiled_script,
                                                      global_scope_);
     V8CodeCache::ProduceCache(isolate_, compiled_script, source_code,
-                              produce_cache_options, compile_options);
+                              produce_cache_options);
   }
 
   if (!block.CanContinue()) {

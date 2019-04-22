@@ -5,6 +5,7 @@
 
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
@@ -118,7 +119,7 @@ TEST(FileManagerFileAPIUtilTest,
   EXPECT_TRUE(result[2]->get_file_system()->url.is_valid());
   const storage::FileSystemURL url =
       context->CrackURL(result[2]->get_file_system()->url);
-  EXPECT_EQ(GURL("http://example.com"), url.origin());
+  EXPECT_EQ(GURL("http://example.com"), url.origin().GetURL());
   EXPECT_EQ(storage::kFileSystemTypeIsolated, url.mount_type());
   EXPECT_EQ(storage::kFileSystemTypeProvided, url.type());
   EXPECT_EQ(55u, result[2]->get_file_system()->length);

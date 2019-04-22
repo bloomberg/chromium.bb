@@ -54,6 +54,10 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // no session in progress or no active user.
   int NumberOfLoggedInUsers() const;
 
+  // Returns the active account. If no users are logged in this returns an empty
+  // AccountId.
+  AccountId GetActiveAccountId() const;
+
   // Gets the policy of adding a user session to ash.
   AddUserSessionPolicy GetAddUserPolicy() const;
 
@@ -131,6 +135,10 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // device (i.e. first time login on the device).
   bool IsUserFirstLogin() const;
 
+  // Returns true if should display managed icon for current session,
+  // and false otherwise.
+  bool ShouldDisplayManagedUI() const;
+
   // Locks the screen. The locking happens asynchronously.
   void LockScreen();
 
@@ -149,6 +157,9 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
 
   // Show the multi-profile login UI to add another user to this session.
   void ShowMultiProfileLogin();
+
+  // Forwards EmitAshInitialized to |client_|.
+  void EmitAshInitialized();
 
   // Returns the PrefService used at the signin screen, which is tied to an
   // incognito profile in chrome and is valid until the browser exits.
@@ -244,6 +255,10 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // via OnSigninScreenPrefServiceInitialized(). Otherwise, defer the
   // notification until that happens.
   void MaybeNotifyOnActiveUserPrefServiceChanged();
+
+  // Called when IsUserSessionBlocked() becomes true. If there isn't an active
+  // window, tries to activate one.
+  void EnsureActiveWindowAfterUnblockingUserSession();
 
   // Bindings for users of the mojom::SessionController interface.
   mojo::BindingSet<mojom::SessionController> bindings_;

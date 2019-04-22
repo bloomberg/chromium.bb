@@ -27,7 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #endif
 
 using testing::Mock;
@@ -42,13 +42,6 @@ class SettingsPrivateApiTest : public ExtensionApiTest {
  public:
   SettingsPrivateApiTest() {}
   ~SettingsPrivateApiTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-#if defined(OS_CHROMEOS)
-    command_line->AppendSwitch(chromeos::switches::kStubCrosSettings);
-#endif
-  }
 
   void SetUpInProcessBrowserTestFixture() override {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
@@ -76,6 +69,10 @@ class SettingsPrivateApiTest : public ExtensionApiTest {
 
  private:
   policy::MockConfigurationPolicyProvider provider_;
+
+#if defined(OS_CHROMEOS)
+  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateApiTest);
 };

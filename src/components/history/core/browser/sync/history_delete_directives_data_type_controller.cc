@@ -7,39 +7,41 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 
 namespace browser_sync {
 
 HistoryDeleteDirectivesDataTypeController::
     HistoryDeleteDirectivesDataTypeController(const base::Closure& dump_stack,
+                                              syncer::SyncService* sync_service,
                                               syncer::SyncClient* sync_client)
-    : syncer::AsyncDirectoryTypeController(syncer::HISTORY_DELETE_DIRECTIVES,
-                                           dump_stack,
-                                           sync_client,
-                                           syncer::GROUP_UI,
-                                           base::ThreadTaskRunnerHandle::Get()),
-      sync_client_(sync_client) {}
+    : syncer::AsyncDirectoryTypeController(
+          syncer::HISTORY_DELETE_DIRECTIVES,
+          dump_stack,
+          sync_service,
+          sync_client,
+          syncer::GROUP_UI,
+          base::ThreadTaskRunnerHandle::Get()) {}
 
 HistoryDeleteDirectivesDataTypeController::
     ~HistoryDeleteDirectivesDataTypeController() {}
 
 bool HistoryDeleteDirectivesDataTypeController::ReadyForStart() const {
   DCHECK(CalledOnValidThread());
-  return !sync_client_->GetSyncService()->IsEncryptEverythingEnabled();
+  return !sync_service()->GetUserSettings()->IsEncryptEverythingEnabled();
 }
 
 bool HistoryDeleteDirectivesDataTypeController::StartModels() {
   DCHECK(CalledOnValidThread());
   if (DisableTypeIfNecessary())
     return false;
-  sync_client_->GetSyncService()->AddObserver(this);
+  sync_service()->AddObserver(this);
   return true;
 }
 
 void HistoryDeleteDirectivesDataTypeController::StopModels() {
   DCHECK(CalledOnValidThread());
-  if (sync_client_->GetSyncService()->HasObserver(this))
-    sync_client_->GetSyncService()->RemoveObserver(this);
+  sync_service()->RemoveObserver(this);
 }
 
 void HistoryDeleteDirectivesDataTypeController::OnStateChanged(
@@ -49,14 +51,13 @@ void HistoryDeleteDirectivesDataTypeController::OnStateChanged(
 
 bool HistoryDeleteDirectivesDataTypeController::DisableTypeIfNecessary() {
   DCHECK(CalledOnValidThread());
-  if (!sync_client_->GetSyncService()->IsSyncFeatureActive())
+  if (!sync_service()->IsSyncFeatureActive())
     return false;
 
   if (ReadyForStart())
     return false;
 
-  if (sync_client_->GetSyncService()->HasObserver(this))
-    sync_client_->GetSyncService()->RemoveObserver(this);
+  sync_service()->RemoveObserver(this);
   syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
                           "Delete directives not supported with encryption.",
                           type());

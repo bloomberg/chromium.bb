@@ -17,9 +17,8 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -56,14 +55,11 @@ class DemoModeResourcesRemoverTest : public testing::Test {
     install_attributes_ = std::make_unique<ScopedStubInstallAttributes>(
         CreateInstallAttributes());
 
-    auto cryptohome_client = std::make_unique<FakeCryptohomeClient>();
-    cryptohome_client_ = cryptohome_client.get();
-
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::move(cryptohome_client));
+    CryptohomeClient::InitializeFake();
 
     demo_mode_test_helper_ = std::make_unique<DemoModeTestHelper>();
-    demo_resources_path_ = demo_mode_test_helper_->GetDemoResourcesPath();
+    demo_resources_path_ =
+        demo_mode_test_helper_->GetPreinstalledDemoResourcesPath();
 
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<FakeChromeUserManager>());
@@ -73,7 +69,7 @@ class DemoModeResourcesRemoverTest : public testing::Test {
 
   void TearDown() override {
     demo_mode_test_helper_.reset();
-    chromeos::DBusThreadManager::Shutdown();
+    CryptohomeClient::Shutdown();
   }
 
  protected:
@@ -163,8 +159,6 @@ class DemoModeResourcesRemoverTest : public testing::Test {
     activity_detector_.set_now_for_test(test_clock_.NowTicks());
   }
 
-  FakeCryptohomeClient* cryptohome_client_ = nullptr;
-
   TestingPrefServiceSimple local_state_;
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -251,7 +245,7 @@ TEST_F(DemoModeResourcesRemoverTest, LowDiskSpace) {
   ASSERT_TRUE(remover.get());
   EXPECT_EQ(DemoModeResourcesRemover::Get(), remover.get());
 
-  cryptohome_client_->NotifyLowDiskSpace(1024 * 1024 * 1024);
+  FakeCryptohomeClient::Get()->NotifyLowDiskSpace(1024 * 1024 * 1024);
   thread_bundle_.RunUntilIdle();
   EXPECT_FALSE(DemoModeResourcesExist());
 }
@@ -265,7 +259,7 @@ TEST_F(DemoModeResourcesRemoverTest, LowDiskSpaceInDemoSession) {
   EXPECT_FALSE(remover.get());
   EXPECT_FALSE(DemoModeResourcesRemover::Get());
 
-  cryptohome_client_->NotifyLowDiskSpace(1024 * 1024 * 1024);
+  FakeCryptohomeClient::Get()->NotifyLowDiskSpace(1024 * 1024 * 1024);
   thread_bundle_.RunUntilIdle();
   EXPECT_TRUE(DemoModeResourcesExist());
 }
@@ -278,7 +272,7 @@ TEST_F(DemoModeResourcesRemoverTest, NotCreatedAfterResourcesRemoved) {
   ASSERT_TRUE(remover.get());
   EXPECT_EQ(DemoModeResourcesRemover::Get(), remover.get());
 
-  cryptohome_client_->NotifyLowDiskSpace(1024 * 1024 * 1024);
+  FakeCryptohomeClient::Get()->NotifyLowDiskSpace(1024 * 1024 * 1024);
   thread_bundle_.RunUntilIdle();
   EXPECT_FALSE(DemoModeResourcesExist());
 
@@ -853,7 +847,7 @@ TEST_F(ManagedDemoModeResourcesRemoverTest, RemoveOnLowDiskInGuest) {
   ASSERT_TRUE(remover.get());
 
   AddAndLogInUser(TestUserType::kGuest, remover.get());
-  cryptohome_client_->NotifyLowDiskSpace(1024 * 1024 * 1024);
+  FakeCryptohomeClient::Get()->NotifyLowDiskSpace(1024 * 1024 * 1024);
   thread_bundle_.RunUntilIdle();
 
   EXPECT_FALSE(DemoModeResourcesExist());
@@ -903,7 +897,7 @@ TEST_F(DemoModeResourcesRemoverInLegacyDemoRetailModeTest,
   ASSERT_TRUE(remover.get());
 
   AddAndLogInUser(TestUserType::kPublicAccount, remover.get());
-  cryptohome_client_->NotifyLowDiskSpace(1024 * 1024 * 1024);
+  FakeCryptohomeClient::Get()->NotifyLowDiskSpace(1024 * 1024 * 1024);
   thread_bundle_.RunUntilIdle();
 
   EXPECT_FALSE(DemoModeResourcesExist());

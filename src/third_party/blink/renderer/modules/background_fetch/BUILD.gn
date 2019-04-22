@@ -10,8 +10,6 @@ blink_modules_sources("background_fetch") {
     "background_fetch_bridge.h",
     "background_fetch_event.cc",
     "background_fetch_event.h",
-    "background_fetch_fetch.cc",
-    "background_fetch_fetch.h",
     "background_fetch_icon_loader.cc",
     "background_fetch_icon_loader.h",
     "background_fetch_manager.cc",

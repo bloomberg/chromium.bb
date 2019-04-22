@@ -20,8 +20,8 @@
 #import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/web/public/test/http_server/http_server.h"
-#include "testing/coverage_util_ios.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -169,7 +169,7 @@ const CFTimeInterval kDrainTimeout = 5;
   [self closeAllTabs];
   chrome_test_util::SetContentSettingsBlockPopups(CONTENT_SETTING_DEFAULT);
 
-  coverage_util::ConfigureCoverageReportPath();
+  [CoverageUtils configureCoverageReportPath];
 }
 
 // Tear down called once for the class, to shutdown mock authentication and

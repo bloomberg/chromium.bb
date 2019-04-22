@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -49,9 +48,6 @@ class AdaptiveToolbarViewControllerTest : public PlatformTest {
 };
 
 TEST_F(AdaptiveToolbarViewControllerTest, DetectForceTouch) {
-  if (!IsUIRefreshPhase1Enabled())
-    return;
-
   id dispatcher = OCMProtocolMock(@protocol(PopupMenuCommands));
   id longPressDelegate = OCMProtocolMock(@protocol(PopupMenuLongPressDelegate));
   ToolbarButtonFactory* factory =

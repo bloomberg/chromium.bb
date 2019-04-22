@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
@@ -642,7 +643,7 @@ TEST_P(BindingSetTest, StrongBinding_RemoveBinding) {
   EXPECT_EQ(0, PingInstanceCounter::instance_count);
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(BindingSetTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(BindingSetTest);
 
 }  // namespace
 }  // namespace test

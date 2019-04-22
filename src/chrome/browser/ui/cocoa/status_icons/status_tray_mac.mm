@@ -9,8 +9,8 @@
 
 #include "chrome/browser/ui/cocoa/status_icons/status_icon_mac.h"
 
-StatusTray* StatusTray::Create() {
-  return new StatusTrayMac();
+std::unique_ptr<StatusTray> StatusTray::Create() {
+  return std::make_unique<StatusTrayMac>();
 }
 
 StatusTrayMac::StatusTrayMac() {

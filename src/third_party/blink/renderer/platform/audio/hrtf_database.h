@@ -30,11 +30,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_HRTF_DATABASE_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/audio/hrtf_elevation.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -43,10 +44,9 @@ class HRTFKernel;
 
 class PLATFORM_EXPORT HRTFDatabase {
   USING_FAST_MALLOC(HRTFDatabase);
-  WTF_MAKE_NONCOPYABLE(HRTFDatabase);
 
  public:
-  static std::unique_ptr<HRTFDatabase> Create(float sample_rate);
+  explicit HRTFDatabase(float sample_rate);
 
   // getKernelsFromAzimuthElevation() returns a left and right ear kernel, and
   // an interpolated left and right frame delay for the given azimuth and
@@ -75,8 +75,6 @@ class PLATFORM_EXPORT HRTFDatabase {
   static const unsigned kNumberOfRawElevations;
 
  private:
-  explicit HRTFDatabase(float sample_rate);
-
   // Minimum and maximum elevation angles (inclusive) for a HRTFDatabase.
   static const int kMinElevation;
   static const int kMaxElevation;
@@ -94,6 +92,8 @@ class PLATFORM_EXPORT HRTFDatabase {
 
   Vector<std::unique_ptr<HRTFElevation>> elevations_;
   float sample_rate_;
+
+  DISALLOW_COPY_AND_ASSIGN(HRTFDatabase);
 };
 
 }  // namespace blink

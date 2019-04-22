@@ -89,7 +89,7 @@ public class ContextualSearchInternalStateTest {
         }
 
         // Stub for doing work on some state.
-        private void stubForWorkOnState(InternalState state) {
+        private void stubForWorkOnState(@InternalState int state) {
             mInternalStateController.notifyStartingWorkOn(state);
             // Work completes (possibly async)
             mInternalStateController.notifyFinishedWorkOn(state);

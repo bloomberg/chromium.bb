@@ -392,7 +392,7 @@ TEST(RuleSetTest, RuleDataPositionLimit) {
 }
 
 TEST(RuleSetTest, RuleCountNotIncreasedByInvalidRuleData) {
-  RuleSet* rule_set = RuleSet::Create();
+  auto* rule_set = MakeGarbageCollected<RuleSet>();
   EXPECT_EQ(0u, rule_set->RuleCount());
 
   AddRuleFlags flags = kRuleHasNoSpecialState;

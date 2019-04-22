@@ -16,6 +16,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/wm/public/activation_client.h"
+#include "ui/wm/core/capture_controller.h"
 
 namespace exo {
 namespace {
@@ -142,10 +143,8 @@ const display::ManagedDisplayInfo& WMHelperChromeOS::GetDisplayInfo(
 
 const std::vector<uint8_t>& WMHelperChromeOS::GetDisplayIdentificationData(
     int64_t display_id) const {
-  const auto& displays = ash::Shell::Get()
-                             ->window_tree_host_manager()
-                             ->display_configurator()
-                             ->cached_displays();
+  const auto& displays =
+      ash::Shell::Get()->display_configurator()->cached_displays();
 
   for (display::DisplaySnapshot* display : displays)
     if (display->display_id() == display_id)
@@ -218,6 +217,14 @@ double WMHelperChromeOS::GetDefaultDeviceScaleFactor() const {
       display_manager->GetDisplayInfo(display::Display::InternalDisplayId());
   DCHECK(display_info.display_modes().size());
   return display_info.display_modes()[0].device_scale_factor();
+}
+
+WMHelper::LifetimeManager* WMHelperChromeOS::GetLifetimeManager() {
+  return &lifetime_manager_;
+}
+
+aura::client::CaptureClient* WMHelperChromeOS::GetCaptureClient() {
+  return wm::CaptureController::Get();
 }
 
 }  // namespace exo

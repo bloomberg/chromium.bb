@@ -14,12 +14,13 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/win/core_winrt_util.h"
@@ -123,8 +124,9 @@ void ForwardNotificationOperationOnUiThread(
 }  // namespace
 
 // static
-NotificationPlatformBridge* NotificationPlatformBridge::Create() {
-  return new NotificationPlatformBridgeWin();
+std::unique_ptr<NotificationPlatformBridge>
+NotificationPlatformBridge::Create() {
+  return std::make_unique<NotificationPlatformBridgeWin>();
 }
 
 // static
@@ -391,6 +393,7 @@ class NotificationPlatformBridgeWinImpl
     hr = notifier->Show(toast.Get());
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::SHOWING_TOAST_FAILED);
+      base::UmaHistogramSparse("Notifications.Windows.ShowFailedErrorCode", hr);
       DLOG(ERROR) << "Unable to display the notification " << std::hex << hr;
     } else {
       LogDisplayHistogram(DisplayStatus::SUCCESS);
@@ -547,7 +550,7 @@ class NotificationPlatformBridgeWinImpl
     std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
         notifications = GetNotifications(profile_id, incognito);
 
-    auto displayed_notifications = std::make_unique<std::set<std::string>>();
+    std::set<std::string> displayed_notifications;
     for (const auto& notification : notifications) {
       NotificationLaunchId launch_id(
           GetNotificationLaunchId(notification.Get()));
@@ -562,7 +565,7 @@ class NotificationPlatformBridgeWinImpl
         continue;
       }
       LogGetDisplayedLaunchIdStatus(GetDisplayedLaunchIdStatus::SUCCESS);
-      displayed_notifications->insert(launch_id.notification_id());
+      displayed_notifications.insert(launch_id.notification_id());
     }
 
     base::PostTaskWithTraits(
@@ -676,7 +679,7 @@ class NotificationPlatformBridgeWinImpl
                         bool incognito) {
     std::string payload = base::StringPrintf(
         "%s|%s|%d", notification_id.c_str(), profile_id.c_str(), incognito);
-    return base::UintToString16(base::Hash(payload));
+    return base::NumberToString16(base::Hash(payload));
   }
 
   HRESULT OnDismissed(
@@ -740,6 +743,8 @@ class NotificationPlatformBridgeWinImpl
                                                   &notifier_);
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::CREATE_TOAST_NOTIFIER_WITH_ID_FAILED);
+      base::UmaHistogramSparse(
+          "Notifications.Windows.CreateToastManagerErrorCode", hr);
       DLOG(ERROR) << "Unable to create the ToastNotifier " << std::hex << hr;
     }
     return hr;

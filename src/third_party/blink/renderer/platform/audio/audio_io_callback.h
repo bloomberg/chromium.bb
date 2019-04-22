@@ -35,6 +35,18 @@ namespace blink {
 
 class AudioBus;
 
+// For the calculation of "render capacity". The render capacity can be
+// calculated by dividing |render_duration| by |callback_interval|.
+struct AudioIOCallbackMetric {
+  // The time interval in seconds between the onset of previous callback
+  // function and the current one.
+  double callback_interval;
+
+  // The time duration spent on rendering render quanta (i.e. batch pulling of
+  // audio graph) per a device callback request.
+  double render_duration;
+};
+
 struct AudioIOPosition {
   // Audio stream position in seconds.
   double position;
@@ -50,7 +62,8 @@ class AudioIOCallback {
   // |destination_bus|.
   virtual void Render(AudioBus* destination_bus,
                       uint32_t frames_to_process,
-                      const AudioIOPosition& output_position) = 0;
+                      const AudioIOPosition& output_position,
+                      const AudioIOCallbackMetric& metric) = 0;
 
   virtual ~AudioIOCallback() = default;
 };

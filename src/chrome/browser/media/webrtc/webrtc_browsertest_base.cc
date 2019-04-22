@@ -68,6 +68,8 @@ const char WebRtcTestBase::kAudioVideoCallConstraints720p[] =
 const char WebRtcTestBase::kUseDefaultCertKeygen[] = "null";
 const char WebRtcTestBase::kUseDefaultAudioCodec[] = "";
 const char WebRtcTestBase::kUseDefaultVideoCodec[] = "";
+const char WebRtcTestBase::kVP9Profile0Specifier[] = "profile-id=0";
+const char WebRtcTestBase::kVP9Profile2Specifier[] = "profile-id=2";
 const char WebRtcTestBase::kUndefined[] = "undefined";
 
 namespace {
@@ -85,6 +87,10 @@ bool JavascriptErrorDetectingLogHandler(int severity,
                                         size_t message_start,
                                         const std::string& str) {
   if (file == NULL || std::string("CONSOLE") != file)
+    return false;
+
+  // TODO(crbug.com/918871): Fix AppRTC and stop ignoring this error.
+  if (str.find("Synchronous XHR in page dismissal") != std::string::npos)
     return false;
 
   bool contains_uncaught = str.find("\"Uncaught ") != std::string::npos;
@@ -134,7 +140,8 @@ class PermissionRequestObserver : public PermissionRequestManager::Observer {
 
 std::vector<std::string> JsonArrayToVectorOfStrings(
     const std::string& json_array) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json_array);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(json_array);
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->is_list());
   std::unique_ptr<base::ListValue> list =
@@ -554,8 +561,8 @@ scoped_refptr<content::TestStatsReportDictionary>
 WebRtcTestBase::GetStatsReportDictionary(content::WebContents* tab) const {
   std::string result = ExecuteJavascript("getStatsReportDictionary()", tab);
   EXPECT_TRUE(base::StartsWith(result, "ok-", base::CompareCase::SENSITIVE));
-  std::unique_ptr<base::Value> parsed_json = base::JSONReader::Read(
-      result.substr(3));
+  std::unique_ptr<base::Value> parsed_json =
+      base::JSONReader::ReadDeprecated(result.substr(3));
   base::DictionaryValue* dictionary;
   CHECK(parsed_json);
   CHECK(parsed_json->GetAsDictionary(&dictionary));
@@ -575,10 +582,10 @@ double WebRtcTestBase::MeasureGetStatsPerformance(
   return ms;
 }
 
-std::vector<std::string> WebRtcTestBase::GetWhitelistedStatsTypes(
+std::vector<std::string> WebRtcTestBase::GetMandatoryStatsTypes(
     content::WebContents* tab) const {
   return JsonArrayToVectorOfStrings(
-      ExecuteJavascript("getWhitelistedStatsTypes()", tab));
+      ExecuteJavascript("getMandatoryStatsTypes()", tab));
 }
 
 void WebRtcTestBase::SetDefaultAudioCodec(
@@ -590,11 +597,20 @@ void WebRtcTestBase::SetDefaultAudioCodec(
 
 void WebRtcTestBase::SetDefaultVideoCodec(content::WebContents* tab,
                                           const std::string& video_codec,
-                                          bool prefer_hw_codec) const {
-  EXPECT_EQ("ok",
-            ExecuteJavascript("setDefaultVideoCodec('" + video_codec + "'," +
-                                  (prefer_hw_codec ? "true" : "false") + ")",
-                              tab));
+                                          bool prefer_hw_codec,
+                                          const std::string& profile) const {
+  std::string codec_profile = profile;
+  // When no |profile| is given, we default VP9 to Profile 0.
+  if (video_codec.compare("VP9") == 0 && codec_profile.empty())
+    codec_profile = kVP9Profile0Specifier;
+
+  EXPECT_EQ("ok", ExecuteJavascript(
+                      "setDefaultVideoCodec('" + video_codec + "'," +
+                          (prefer_hw_codec ? "true" : "false") + "," +
+                          (codec_profile.empty() ? "null"
+                                                 : "'" + codec_profile + "'") +
+                          ")",
+                      tab));
 }
 
 void WebRtcTestBase::EnableOpusDtx(content::WebContents* tab) const {

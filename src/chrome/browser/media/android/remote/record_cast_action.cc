@@ -40,22 +40,18 @@ enum RemotePlaybackDeviceType {
 namespace remote_media {
 static void JNI_RecordCastAction_RecordRemotePlaybackDeviceSelected(
     JNIEnv*,
-    const JavaParamRef<jclass>&,
     jint device_type) {
   UMA_HISTOGRAM_ENUMERATION("Cast.Sender.DeviceType",
                             static_cast<RemotePlaybackDeviceType>(device_type),
                             REMOTE_PLAYBACK_DEVICE_TYPE_COUNT);
 }
 
-static void JNI_RecordCastAction_RecordCastPlayRequested(
-    JNIEnv*,
-    const JavaParamRef<jclass>&) {
+static void JNI_RecordCastAction_RecordCastPlayRequested(JNIEnv*) {
   base::RecordAction(base::UserMetricsAction("Cast_Sender_CastPlayRequested"));
 }
 
 static void JNI_RecordCastAction_RecordCastDefaultPlayerResult(
     JNIEnv*,
-    const JavaParamRef<jclass>&,
     jboolean cast_success) {
   if (cast_success) {
     UMA_HISTOGRAM_ENUMERATION("Cast.Sender.CastPlayerResult",
@@ -70,7 +66,6 @@ static void JNI_RecordCastAction_RecordCastDefaultPlayerResult(
 
 static void JNI_RecordCastAction_RecordCastYouTubePlayerResult(
     JNIEnv*,
-    const JavaParamRef<jclass>&,
     jboolean cast_success) {
   if (cast_success) {
     UMA_HISTOGRAM_ENUMERATION("Cast.Sender.CastPlayerResult", YT_PLAYER_SUCCESS,
@@ -83,7 +78,6 @@ static void JNI_RecordCastAction_RecordCastYouTubePlayerResult(
 
 static void JNI_RecordCastAction_RecordCastMediaType(
     JNIEnv*,
-    const JavaParamRef<jclass>&,
     jint media_type) {
   UMA_HISTOGRAM_ENUMERATION(
       "Cast.Sender.CastMediaType",
@@ -93,7 +87,6 @@ static void JNI_RecordCastAction_RecordCastMediaType(
 
 static void JNI_RecordCastAction_RecordCastEndedTimeRemaining(
     JNIEnv*,
-    const JavaParamRef<jclass>&,
     jint video_total_time,
     jint time_left_in_video) {
   int percent_remaining = 100;

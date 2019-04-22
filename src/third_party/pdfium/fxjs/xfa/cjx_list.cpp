@@ -8,10 +8,10 @@
 
 #include <vector>
 
-#include "fxjs/cfxjse_class.h"
-#include "fxjs/cfxjse_engine.h"
-#include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
+#include "fxjs/xfa/cfxjse_class.h"
+#include "fxjs/xfa/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "third_party/base/numerics/safe_conversions.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_list.h"
@@ -27,6 +27,10 @@ CJX_List::CJX_List(CXFA_List* list) : CJX_Object(list) {
 }
 
 CJX_List::~CJX_List() {}
+
+bool CJX_List::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
 
 CXFA_List* CJX_List::GetXFAList() {
   return ToList(GetXFAObject());
@@ -58,7 +62,9 @@ CJS_Result CJX_List::insert(CFX_V8* runtime,
 
   auto* pBeforeNode =
       ToNode(static_cast<CFXJSE_Engine*>(runtime)->ToXFAObject(params[1]));
-  GetXFAList()->Insert(pNewNode, pBeforeNode);
+  if (!GetXFAList()->Insert(pNewNode, pBeforeNode))
+    return CJS_Result::Failure(JSMessage::kValueError);
+
   return CJS_Result::Success();
 }
 

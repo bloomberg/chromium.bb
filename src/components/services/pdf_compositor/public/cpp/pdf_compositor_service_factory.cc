@@ -13,7 +13,6 @@
 namespace printing {
 
 std::unique_ptr<service_manager::Service> CreatePdfCompositorService(
-    const std::string& creator,
     service_manager::mojom::ServiceRequest request) {
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
   content::UtilityThread::Get()->EnsureBlinkInitializedWithSandboxSupport();
@@ -23,7 +22,7 @@ std::unique_ptr<service_manager::Service> CreatePdfCompositorService(
   // Hook up blink's codecs so skia can call them.
   SkGraphics::SetImageGeneratorFromEncodedDataFactory(
       blink::WebImageGenerator::CreateAsSkImageGenerator);
-  return printing::PdfCompositorService::Create(creator, std::move(request));
+  return printing::PdfCompositorService::Create(std::move(request));
 }
 
 }  // namespace printing

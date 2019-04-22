@@ -26,6 +26,7 @@ class SafeArchiveAnalyzer : public chrome::mojom::SafeArchiveAnalyzer {
   void AnalyzeDmgFile(base::File dmg_file,
                       AnalyzeDmgFileCallback callback) override;
   void AnalyzeRarFile(base::File rar_file,
+                      base::File temporary_file,
                       AnalyzeRarFileCallback callback) override;
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;

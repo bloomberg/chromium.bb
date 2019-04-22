@@ -20,6 +20,7 @@
 #include <zircon/syscalls/port.h>
 #include <zircon/types.h>
 
+#include "base/stl_util.h"
 #include "gtest/gtest.h"
 #include "test/multiprocess_exec.h"
 #include "test/test_paths.h"
@@ -34,17 +35,31 @@ TEST(ProcessReaderFuchsia, SelfBasic) {
   ASSERT_TRUE(process_reader.Initialize(*zx::process::self()));
 
   static constexpr char kTestMemory[] = "Some test memory";
-  char buffer[arraysize(kTestMemory)];
+  char buffer[base::size(kTestMemory)];
   ASSERT_TRUE(process_reader.Memory()->Read(
       reinterpret_cast<zx_vaddr_t>(kTestMemory), sizeof(kTestMemory), &buffer));
   EXPECT_STREQ(kTestMemory, buffer);
 
   const auto& modules = process_reader.Modules();
+  // The process should have at least one module, the executable, and then some
+  // shared libraries, no loadable modules.
   EXPECT_GT(modules.size(), 0u);
+  size_t num_executables = 0u;
+  size_t num_shared_libraries = 0u;
   for (const auto& module : modules) {
     EXPECT_FALSE(module.name.empty());
     EXPECT_NE(module.type, ModuleSnapshot::kModuleTypeUnknown);
+
+    if (module.type == ModuleSnapshot::kModuleTypeExecutable) {
+      EXPECT_EQ(module.name, "<_>");
+      num_executables++;
+    } else if (module.type == ModuleSnapshot::kModuleTypeSharedLibrary) {
+      EXPECT_NE(module.name, "<_>");
+      num_shared_libraries++;
+    }
   }
+  EXPECT_EQ(num_executables, 1u);
+  EXPECT_EQ(num_shared_libraries, modules.size() - num_executables);
 
   const auto& threads = process_reader.Threads();
   EXPECT_GT(threads.size(), 0u);

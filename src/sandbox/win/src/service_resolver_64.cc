@@ -168,7 +168,7 @@ bool IsAnyService(const void* source) {
 #error "Unsupported Windows 64-bit Arch"
 #endif
 
-};  // namespace
+}  // namespace
 
 namespace sandbox {
 

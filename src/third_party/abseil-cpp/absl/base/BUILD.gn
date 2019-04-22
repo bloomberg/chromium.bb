@@ -88,6 +88,7 @@ source_set("core_headers") {
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [
     "attributes.h",
+    "const_init.h",
     "macros.h",
     "optimization.h",
     "port.h",
@@ -95,7 +96,6 @@ source_set("core_headers") {
   ]
   deps = [
     ":config",
-    ":dynamic_annotations",
   ]
 }
 
@@ -136,6 +136,7 @@ source_set("base_internal") {
     "internal/identity.h",
     "internal/inline_variable.h",
     "internal/invoke.h",
+    "internal/scheduling_mode.h",
   ]
   visibility = []
   visibility += [ "../*" ]
@@ -196,7 +197,6 @@ source_set("throw_delegate") {
   deps = [
     ":base",
     ":config",
-    ":core_headers",
   ]
   visibility = []
   visibility += [ "../*" ]
@@ -251,13 +251,12 @@ source_set("pretty_function") {
 #     "internal/exception_safety_testing.h",
 #   ]
 #   deps = [
-#     ":base",
 #     ":config",
 #     ":pretty_function",
 #     "../memory",
 #     "../meta:type_traits",
 #     "../strings",
-#     "../types:optional",
+#     "../utility",
 #     "//testing/gtest",
 #   ]
 # }
@@ -310,6 +309,26 @@ source_set("bits") {
   ]
   deps = [
     ":core_headers",
+  ]
+  visibility = []
+  visibility += [ "../*" ]
+}
+
+source_set("scoped_set_env") {
+  testonly = true
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public = [
+    "internal/scoped_set_env.h",
+  ]
+  sources = [
+    "internal/scoped_set_env.cc",
+  ]
+  deps = [
+    ":base",
   ]
   visibility = []
   visibility += [ "../*" ]

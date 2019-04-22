@@ -64,13 +64,18 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
     return nodes.IsEmpty() ? nullptr : nodes.back().Get();
   }
 
+  Node* AssignedNodeNextTo(const Node&) const;
+  Node* AssignedNodePreviousTo(const Node&) const;
+
   void AppendAssignedNode(Node&);
+  void ClearAssignedNodes();
 
   const HeapVector<Member<Node>> FlattenedAssignedNodes();
 
   void WillRecalcAssignedNodes() { ClearAssignedNodes(); }
   void DidRecalcAssignedNodes() {
-    UpdateFlatTreeNodeDataForAssignedNodes();
+    if (RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled())
+      UpdateFlatTreeNodeDataForAssignedNodes();
     RecalcFlatTreeChildren();
   }
 
@@ -112,35 +117,34 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
     return assigned_nodes_candidates_;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   InsertionNotificationRequest InsertedInto(ContainerNode&) final;
   void RemovedFrom(ContainerNode&) final;
-  void DidRecalcStyle(StyleRecalcChange) final;
+  void DidRecalcStyle(const StyleRecalcChange) final;
 
   void EnqueueSlotChangeEvent();
 
   bool HasSlotableChild() const;
 
-  void LazyReattachNodesIfNeeded(const HeapVector<Member<Node>>& nodes1,
-                                 const HeapVector<Member<Node>>& nodes2);
-  static void LazyReattachNodesNaive(const HeapVector<Member<Node>>& nodes1,
-                                     const HeapVector<Member<Node>>& nodes2);
-  static void LazyReattachNodesByDynamicProgramming(
-      const HeapVector<Member<Node>>& nodes1,
-      const HeapVector<Member<Node>>& nodes2);
+  void NotifySlottedNodesOfFlatTreeChange(
+      const HeapVector<Member<Node>>& old_slotted,
+      const HeapVector<Member<Node>>& new_slotted);
+  static void NotifySlottedNodesOfFlatTreeChangeNaive(
+      const HeapVector<Member<Node>>& new_slotted);
+  static void NotifySlottedNodesOfFlatTreeChangeByDynamicProgramming(
+      const HeapVector<Member<Node>>& old_slotted,
+      const HeapVector<Member<Node>>& new_slotted);
 
   void SetNeedsDistributionRecalcWillBeSetNeedsAssignmentRecalc();
 
-  const HeapVector<Member<Node>>& GetDistributedNodes();
-
   void RecalcFlatTreeChildren();
   void UpdateFlatTreeNodeDataForAssignedNodes();
-  void ClearAssignedNodes();
   void ClearAssignedNodesAndFlatTreeChildren();
 
   HeapVector<Member<Node>> assigned_nodes_;
+  HeapHashMap<Member<const Node>, unsigned> assigned_nodes_index_;
   HeapVector<Member<Node>> flat_tree_children_;
 
   bool slotchange_event_enqueued_ = false;

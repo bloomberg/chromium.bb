@@ -23,9 +23,11 @@ class AwWebSocketHandshakeThrottleProvider final
   ~AwWebSocketHandshakeThrottleProvider() override;
 
   // Implements content::WebSocketHandshakeThrottleProvider.
-  std::unique_ptr<content::WebSocketHandshakeThrottleProvider> Clone() override;
+  std::unique_ptr<content::WebSocketHandshakeThrottleProvider> Clone(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebSocketHandshakeThrottle> CreateThrottle(
-      int render_frame_id) override;
+      int render_frame_id,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
   // This copy constructor works in conjunction with Clone(), not intended for

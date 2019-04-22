@@ -62,13 +62,6 @@ bool ArCoreImpl::Initialize(
     return false;
   }
 
-  // We just use the default config.
-  status = ArSession_checkSupported(session.get(), arcore_config.get());
-  if (status != AR_SUCCESS) {
-    DLOG(ERROR) << "ArSession_checkSupported failed: " << status;
-    return false;
-  }
-
   status = ArSession_configure(session.get(), arcore_config.get());
   if (status != AR_SUCCESS) {
     DLOG(ERROR) << "ArSession_configure failed: " << status;
@@ -115,8 +108,11 @@ std::vector<float> ArCoreImpl::TransformDisplayUvCoords(
   size_t num_elements = uvs.size();
   DCHECK(num_elements % 2 == 0);
   std::vector<float> uvs_out(num_elements);
-  ArFrame_transformDisplayUvCoords(arcore_session_.get(), arcore_frame_.get(),
-                                   num_elements, &uvs[0], &uvs_out[0]);
+
+  ArFrame_transformCoordinates2d(
+      arcore_session_.get(), arcore_frame_.get(),
+      AR_COORDINATES_2D_VIEW_NORMALIZED, num_elements / 2, &uvs[0],
+      AR_COORDINATES_2D_TEXTURE_NORMALIZED, &uvs_out[0]);
   return uvs_out;
 }
 
@@ -178,16 +174,22 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
 }
 
 void ArCoreImpl::Pause() {
+  DVLOG(2) << __func__;
+
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
+
   ArStatus status = ArSession_pause(arcore_session_.get());
   DLOG_IF(ERROR, status != AR_SUCCESS)
       << "ArSession_pause failed: status = " << status;
 }
 
 void ArCoreImpl::Resume() {
+  DVLOG(2) << __func__;
+
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
+
   ArStatus status = ArSession_resume(arcore_session_.get());
   DLOG_IF(ERROR, status != AR_SUCCESS)
       << "ArSession_resume failed: status = " << status;
@@ -214,11 +216,13 @@ gfx::Transform ArCoreImpl::GetProjectionMatrix(float near, float far) {
   return result;
 }
 
-// TODO(835948): remove image-size
 bool ArCoreImpl::RequestHitTest(
     const mojom::XRRayPtr& ray,
-    const gfx::Size& image_size,
     std::vector<mojom::XRHitResultPtr>* hit_results) {
+  DVLOG(2) << __func__ << ": ray origin=" << ray->origin.ToString()
+           << ", direction=" << ray->direction.ToString();
+
+  DCHECK(hit_results);
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
   DCHECK(arcore_frame_.is_valid());
@@ -234,21 +238,20 @@ bool ArCoreImpl::RequestHitTest(
     return false;
   }
 
-  gfx::PointF screen_point;
-  if (!TransformRayToScreenSpace(ray, image_size, &screen_point)) {
-    return false;
-  }
-
   // ArCore returns hit-results in sorted order, thus providing the guarantee
   // of sorted results promised by the WebXR spec for requestHitTest().
-  ArFrame_hitTest(arcore_session_.get(), arcore_frame_.get(),
-                  screen_point.x() * image_size.width(),
-                  screen_point.y() * image_size.height(),
-                  arcore_hit_result_list.get());
+  float origin[3] = {ray->origin.x(), ray->origin.y(), ray->origin.z()};
+  float direction[3] = {ray->direction.x(), ray->direction.y(),
+                        ray->direction.z()};
+
+  ArFrame_hitTestRay(arcore_session_.get(), arcore_frame_.get(), origin,
+                     direction, arcore_hit_result_list.get());
 
   int arcore_hit_result_list_size = 0;
   ArHitResultList_getSize(arcore_session_.get(), arcore_hit_result_list.get(),
                           &arcore_hit_result_list_size);
+  DVLOG(2) << __func__
+           << ": arcore_hit_result_list_size=" << arcore_hit_result_list_size;
 
   // Go through the list in reverse order so the first hit we encounter is the
   // furthest.
@@ -285,6 +288,8 @@ bool ArCoreImpl::RequestHitTest(
     // Only consider hits with plane trackables
     // TODO(874985): make this configurable or re-evaluate this decision
     if (AR_TRACKABLE_PLANE != ar_trackable_type) {
+      DVLOG(2) << __func__
+               << ": hit a trackable that is not a plane, ignoring it";
       continue;
     }
 
@@ -307,8 +312,12 @@ bool ArCoreImpl::RequestHitTest(
       ArPlane* ar_plane = ArAsPlane(ar_trackable.get());
       ArPlane_isPoseInPolygon(arcore_session_.get(), ar_plane,
                               arcore_pose.get(), &in_polygon);
-      if (!in_polygon)
+      if (!in_polygon) {
+        DVLOG(2) << __func__
+                 << ": hit a trackable that is not within detected polygon, "
+                    "ignoring it";
         continue;
+      }
     }
 
     mojom::XRHitResultPtr mojo_hit = mojom::XRHitResult::New();
@@ -319,61 +328,8 @@ bool ArCoreImpl::RequestHitTest(
     // Insert new results at head to preserver order from ArCore
     hit_results->insert(hit_results->begin(), std::move(mojo_hit));
   }
-  return true;
-}
 
-// TODO(835948): remove this method.
-bool ArCoreImpl::TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
-                                           const gfx::Size& image_size,
-                                           gfx::PointF* screen_point) {
-  DCHECK(IsOnGlThread());
-  DCHECK(arcore_session_.is_valid());
-  DCHECK(arcore_frame_.is_valid());
-
-  internal::ScopedArCoreObject<ArCamera*> arcore_camera;
-  ArFrame_acquireCamera(
-      arcore_session_.get(), arcore_frame_.get(),
-      internal::ScopedArCoreObject<ArCamera*>::Receiver(arcore_camera).get());
-  DCHECK(arcore_camera.is_valid())
-      << "ArFrame_acquireCamera failed despite documentation saying it cannot";
-
-  // Get the projection matrix.
-  float projection_matrix[16];
-  ArCamera_getProjectionMatrix(arcore_session_.get(), arcore_camera.get(), 0.1,
-                               1000, projection_matrix);
-  SkMatrix44 projection44;
-  projection44.setColMajorf(projection_matrix);
-  gfx::Transform projection_transform(projection44);
-
-  // Get the view matrix.
-  float view_matrix[16];
-  ArCamera_getViewMatrix(arcore_session_.get(), arcore_camera.get(),
-                         view_matrix);
-  SkMatrix44 view44;
-  view44.setColMajorf(view_matrix);
-  gfx::Transform view_transform(view44);
-
-  // Create the combined matrix.
-  gfx::Transform proj_view_transform = projection_transform * view_transform;
-
-  // Transform the ray into screen space.
-  gfx::Point3F screen_point_3d = ray->origin + ray->direction;
-
-  proj_view_transform.TransformPoint(&screen_point_3d);
-  if (screen_point_3d.x() < -1 || screen_point_3d.x() > 1 ||
-      screen_point_3d.y() < -1 || screen_point_3d.y() > 1) {
-    // The point does not project back into screen space, so this won't
-    // work with the screen-space-based hit-test API.
-    DLOG(ERROR) << "Invalid ray - does not originate from device screen.";
-    return false;
-  }
-
-  screen_point->set_x((screen_point_3d.x() + 1) / 2);
-  // The calculated point in GL's normalized device coordinates (NDC) ranges
-  // from -1..1, with -1, -1 at the bottom left of the screen, +1 at the top.
-  // The output screen space coordinates range from 0..1, with 0, 0 at the
-  // top left.
-  screen_point->set_y((-screen_point_3d.y() + 1) / 2);
+  DVLOG(2) << __func__ << ": hit_results->size()=" << hit_results->size();
   return true;
 }
 

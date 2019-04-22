@@ -4,6 +4,8 @@
 
 #include "services/network/proxy_config_service_mojo.h"
 
+#include <utility>
+
 namespace network {
 
 ProxyConfigServiceMojo::ProxyConfigServiceMojo(
@@ -37,6 +39,11 @@ void ProxyConfigServiceMojo::OnProxyConfigUpdated(
 
   for (auto& observer : observers_)
     observer.OnProxyConfigChanged(config_, CONFIG_VALID);
+}
+
+void ProxyConfigServiceMojo::FlushProxyConfig(
+    FlushProxyConfigCallback callback) {
+  std::move(callback).Run();
 }
 
 void ProxyConfigServiceMojo::AddObserver(Observer* observer) {

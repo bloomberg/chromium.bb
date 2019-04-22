@@ -11,14 +11,14 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
-#include "third_party/webrtc/rtc_base/thread.h"
 
-using buzz::QName;
-using buzz::XmlAttr;
-using buzz::XmlChild;
-using buzz::XmlElement;
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
+
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlAttr;
+using jingle_xmpp::XmlChild;
+using jingle_xmpp::XmlElement;
 
 std::ostream& operator<<(std::ostream& os, const QName& name) {
   os << name.Namespace() << ":" << name.LocalPart();
@@ -210,48 +210,4 @@ TEST(XmlElementTest, TestNameSearch) {
       NextNamed(QName("test-foo", "firstname")));
 
   delete element;
-}
-
-class XmlElementCreatorThread : public rtc::Thread {
- public:
-  XmlElementCreatorThread(int count, buzz::QName qname) :
-      count_(count), qname_(qname) {}
-
-  virtual ~XmlElementCreatorThread() {
-    Stop();
-  }
-
-  virtual void Run() {
-    std::vector<buzz::XmlElement*> elems;
-    for (int i = 0; i < count_; i++) {
-      elems.push_back(new XmlElement(qname_));
-    }
-    for (int i = 0; i < count_; i++) {
-      delete elems[i];
-    }
-  }
-
- private:
-  int count_;
-  buzz::QName qname_;
-};
-
-// If XmlElement creation and destruction isn't thread safe,
-// this test should crash.
-TEST(XmlElementTest, TestMultithread) {
-  int thread_count = 2;  // Was 100, but that's too slow.
-  int elem_count = 100;  // Was 100000, but that's too slow.
-  buzz::QName qname("foo", "bar");
-
-  std::vector<rtc::Thread*> threads;
-  for (int i = 0; i < thread_count; i++) {
-    threads.push_back(
-        new XmlElementCreatorThread(elem_count, qname));
-    threads[i]->Start();
-  }
-
-  for (int i = 0; i < thread_count; i++) {
-    threads[i]->Stop();
-    delete threads[i];
-  }
 }

@@ -4,6 +4,7 @@
 
 #include <string.h>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "chrome/browser/extensions/api/image_writer_private/destroy_partitions_operation.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"

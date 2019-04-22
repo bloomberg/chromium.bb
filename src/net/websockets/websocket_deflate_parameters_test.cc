@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "net/websockets/websocket_extension_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -218,7 +218,7 @@ std::vector<InitializeTestParameter> InitializeTestParameters() {
       {"; hogefuga", kUnknownParameter},
   };
   return std::vector<InitializeTestParameter>(
-      parameters, parameters + arraysize(parameters));
+      parameters, parameters + base::size(parameters));
 }
 
 const CompatibilityTestParameter kCompatibilityTestParameters[] = {
@@ -247,13 +247,13 @@ const CompatibilityTestParameter kCompatibilityTestParameters[] = {
     {"; client_max_window_bits=12", "; client_max_window_bits=13", true},
 };
 
-INSTANTIATE_TEST_CASE_P(WebSocketDeflateParametersInitializeTest,
-                        WebSocketDeflateParametersInitializeTest,
-                        ::testing::ValuesIn(InitializeTestParameters()));
+INSTANTIATE_TEST_SUITE_P(WebSocketDeflateParametersInitializeTest,
+                         WebSocketDeflateParametersInitializeTest,
+                         ::testing::ValuesIn(InitializeTestParameters()));
 
-INSTANTIATE_TEST_CASE_P(WebSocketDeflateParametersCompatibilityTest,
-                        WebSocketDeflateParametersCompatibilityTest,
-                        ::testing::ValuesIn(kCompatibilityTestParameters));
+INSTANTIATE_TEST_SUITE_P(WebSocketDeflateParametersCompatibilityTest,
+                         WebSocketDeflateParametersCompatibilityTest,
+                         ::testing::ValuesIn(kCompatibilityTestParameters));
 
 }  // namespace
 

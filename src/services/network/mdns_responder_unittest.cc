@@ -11,10 +11,12 @@
 #include "services/network/mdns_responder.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
-#include "base/test/test_mock_time_task_runner.h"
+#include "base/test/scoped_task_environment.h"
+#include "mojo/public/cpp/bindings/connector.h"
 #include "net/base/ip_address.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
@@ -73,7 +75,7 @@ std::string CreateNegativeResponse(
 class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
  public:
   MockFailingMdnsSocketFactory(
-      scoped_refptr<base::TestMockTimeTaskRunner> task_runner)
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : task_runner_(std::move(task_runner)) {}
 
   ~MockFailingMdnsSocketFactory() override = default;
@@ -112,7 +114,7 @@ class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
   }
 
  private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace
@@ -270,11 +272,8 @@ class SimpleNameGenerator : public MdnsResponderManager::NameGenerator {
 class MdnsResponderTest : public testing::Test {
  public:
   MdnsResponderTest()
-      : test_task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>()),
-        task_runner_override_scoped_cleanup_(
-            base::ThreadTaskRunnerHandle::OverrideForTesting(
-                test_task_runner_)),
-        failing_socket_factory_(test_task_runner_) {
+      : failing_socket_factory_(
+            scoped_task_environment_.GetMainThreadTaskRunner()) {
     Reset();
   }
 
@@ -290,7 +289,7 @@ class MdnsResponderTest : public testing::Test {
     host_manager_->SetNameGeneratorForTesting(
         std::make_unique<SimpleNameGenerator>());
     host_manager_->SetTickClockForTesting(
-        test_task_runner_->GetMockTickClock());
+        scoped_task_environment_.GetMockTickClock());
     CreateMdnsResponders();
   }
 
@@ -352,18 +351,18 @@ class MdnsResponderTest : public testing::Test {
   }
 
   void RunUntilNoTasksRemain() {
-    test_task_runner_->FastForwardUntilNoTasksRemain();
+    scoped_task_environment_.FastForwardUntilNoTasksRemain();
   }
   void RunFor(base::TimeDelta duration) {
-    test_task_runner_->FastForwardBy(duration);
+    scoped_task_environment_.FastForwardBy(duration);
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   mojom::MdnsResponderPtr client_[2];
   std::unique_ptr<MdnsResponderManager> host_manager_;
   // Overrides the current thread task runner, so we can simulate the passage
   // of time and avoid any actual sleeps.
-  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
-  base::ScopedClosureRunner task_runner_override_scoped_cleanup_;
   NiceMock<net::MockMDnsSocketFactory> socket_factory_;
   NiceMock<MockFailingMdnsSocketFactory> failing_socket_factory_;
   std::string last_name_created_;
@@ -539,6 +538,19 @@ TEST_F(MdnsResponderTest, SendNegativeResponseToQueryForNonAddressRecord) {
   }
 }
 
+// Test that the responder manager closes the connection after
+// an invalid IP address is given to create a name for.
+TEST_F(MdnsResponderTest,
+       HostClosesMojoConnectionWhenCreatingNameForInvalidAddress) {
+  const net::IPAddress addr;
+  ASSERT_TRUE(!addr.IsValid());
+  EXPECT_TRUE(client_[0].is_bound());
+  // No packet should be sent out from interfaces.
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(0);
+  CreateNameForAddress(0, addr);
+  EXPECT_FALSE(client_[0].is_bound());
+}
+
 // Test that the responder manager closes the connection after observing
 // conflicting name resolution in the network.
 TEST_F(MdnsResponderTest, HostClosesMojoConnectionAfterObservingNameConflict) {
@@ -556,7 +568,11 @@ TEST_F(MdnsResponderTest, HostClosesMojoConnectionAfterObservingNameConflict) {
   std::string expected_goodbye = CreateResolutionResponse(
       base::TimeDelta(), {{name1, addr1}, {name2, addr2}});
 
+  EXPECT_TRUE(client_[0].is_bound());
   // MockMdnsSocketFactory binds sockets to two interfaces.
+  // We should send only two goodbyes before closing the connection and no
+  // packet should be sent out from interfaces after the connection is closed.
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(0);
   EXPECT_CALL(socket_factory_, OnSendTo(expected_goodbye)).Times(2);
   socket_factory_.SimulateReceive(
       reinterpret_cast<const uint8_t*>(conflicting_response.data()),

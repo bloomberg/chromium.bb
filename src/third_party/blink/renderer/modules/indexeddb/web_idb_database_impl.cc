@@ -4,61 +4,39 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_impl.h"
 
-#include <stddef.h>
-
-#include <string>
-#include <vector>
-
 #include "base/format_macros.h"
-#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
-#include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/modules/indexeddb/indexed_db_key_builder.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_path.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
-#include "third_party/blink/public/platform/web_blob_info.h"
-#include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 WebIDBDatabaseImpl::WebIDBDatabaseImpl(
-    mojom::blink::IDBDatabaseAssociatedPtrInfo database_info)
-    : database_(std::move(database_info)) {}
+    mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)) {
+  database_.Bind(std::move(database_info), task_runner_);
+}
 
 WebIDBDatabaseImpl::~WebIDBDatabaseImpl() = default;
 
-void WebIDBDatabaseImpl::CreateObjectStore(long long transaction_id,
-                                           long long object_store_id,
-                                           const String& name,
-                                           const WebIDBKeyPath& key_path,
-                                           bool auto_increment) {
-  database_->CreateObjectStore(transaction_id, object_store_id, name, key_path,
-                               auto_increment);
-}
-
-void WebIDBDatabaseImpl::DeleteObjectStore(long long transaction_id,
-                                           long long object_store_id) {
-  database_->DeleteObjectStore(transaction_id, object_store_id);
-}
-
-void WebIDBDatabaseImpl::RenameObjectStore(long long transaction_id,
-                                           long long object_store_id,
+void WebIDBDatabaseImpl::RenameObjectStore(int64_t transaction_id,
+                                           int64_t object_store_id,
                                            const String& new_name) {
   database_->RenameObjectStore(transaction_id, object_store_id, new_name);
 }
 
 void WebIDBDatabaseImpl::CreateTransaction(
-    long long transaction_id,
+    mojom::blink::IDBTransactionAssociatedRequest transaction_request,
+    int64_t transaction_id,
     const Vector<int64_t>& object_store_ids,
     mojom::IDBTransactionMode mode) {
-  database_->CreateTransaction(transaction_id, object_store_ids, mode);
+  database_->CreateTransaction(std::move(transaction_request), transaction_id,
+                               object_store_ids, mode);
 }
 
 void WebIDBDatabaseImpl::Close() {
@@ -70,7 +48,7 @@ void WebIDBDatabaseImpl::VersionChangeIgnored() {
 }
 
 void WebIDBDatabaseImpl::AddObserver(
-    long long transaction_id,
+    int64_t transaction_id,
     int32_t observer_id,
     bool include_transaction,
     bool no_records,
@@ -87,233 +65,172 @@ void WebIDBDatabaseImpl::RemoveObservers(const Vector<int32_t>& observer_ids) {
   database_->RemoveObservers(observer_ids);
 }
 
-void WebIDBDatabaseImpl::Get(long long transaction_id,
-                             long long object_store_id,
-                             long long index_id,
-                             const WebIDBKeyRange& key_range,
+void WebIDBDatabaseImpl::Get(int64_t transaction_id,
+                             int64_t object_store_id,
+                             int64_t index_id,
+                             const IDBKeyRange* key_range,
                              bool key_only,
                              WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
-  database_->Get(transaction_id, object_store_id, index_id, key_range, key_only,
-                 GetCallbacksProxy(std::move(callbacks_impl)));
+  mojom::blink::IDBKeyRangePtr key_range_ptr =
+      mojom::blink::IDBKeyRange::From(key_range);
+  callbacks->SetState(nullptr, transaction_id);
+  database_->Get(transaction_id, object_store_id, index_id,
+                 std::move(key_range_ptr), key_only,
+                 GetCallbacksProxy(base::WrapUnique(callbacks)));
 }
 
-void WebIDBDatabaseImpl::GetAll(long long transaction_id,
-                                long long object_store_id,
-                                long long index_id,
-                                const WebIDBKeyRange& key_range,
-                                long long max_count,
+void WebIDBDatabaseImpl::GetAll(int64_t transaction_id,
+                                int64_t object_store_id,
+                                int64_t index_id,
+                                const IDBKeyRange* key_range,
+                                int64_t max_count,
                                 bool key_only,
                                 WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
-  database_->GetAll(transaction_id, object_store_id, index_id, key_range,
-                    key_only, max_count,
-                    GetCallbacksProxy(std::move(callbacks_impl)));
+  mojom::blink::IDBKeyRangePtr key_range_ptr =
+      mojom::blink::IDBKeyRange::From(key_range);
+  callbacks->SetState(nullptr, transaction_id);
+  database_->GetAll(transaction_id, object_store_id, index_id,
+                    std::move(key_range_ptr), key_only, max_count,
+                    GetCallbacksProxy(base::WrapUnique(callbacks)));
 }
 
-void WebIDBDatabaseImpl::Put(long long transaction_id,
-                             long long object_store_id,
-                             const WebData& value,
-                             const Vector<WebBlobInfo>& web_blob_info,
-                             WebIDBKeyView web_primary_key,
-                             mojom::IDBPutMode put_mode,
-                             WebIDBCallbacks* callbacks,
-                             const Vector<WebIDBIndexKeys>& index_keys) {
-  WebIDBKey primary_key = WebIDBKeyBuilder::Build(web_primary_key);
-
-  IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
-
-  auto mojo_value = mojom::blink::IDBValue::New();
-
-  // mojo_value->bits initialization.
-  value.ForEachSegment([&mojo_value](const char* segment, size_t segment_size,
-                                     size_t segment_offset) {
-    const auto& segment_span = base::make_span(segment, segment + segment_size);
-    mojo_value->bits.AppendRange(segment_span.begin(), segment_span.end());
-    return true;
-  });
-
-  // mojo_value->blob_or_file_info initialization.
-  mojo_value->blob_or_file_info.ReserveInitialCapacity(web_blob_info.size());
-  for (const WebBlobInfo& info : web_blob_info) {
-    auto blob_info = mojom::blink::IDBBlobInfo::New();
-    if (info.IsFile()) {
-      blob_info->file = mojom::blink::IDBFileInfo::New();
-      blob_info->file->path = WebStringToFilePath(info.FilePath());
-      String name = info.FileName();
-      if (name.IsNull())
-        name = g_empty_string;
-      blob_info->file->name = name;
-      blob_info->file->last_modified =
-          base::Time::FromDoubleT(info.LastModified());
-    }
-    blob_info->size = info.size();
-    blob_info->uuid = info.Uuid();
-    DCHECK(!blob_info->uuid.IsEmpty());
-    String mime_type = info.GetType();
-    if (mime_type.IsNull())
-      mime_type = g_empty_string;
-    blob_info->mime_type = mime_type;
-    blob_info->blob = mojom::blink::BlobPtrInfo(info.CloneBlobHandle(),
-                                                mojom::blink::Blob::Version_);
-    mojo_value->blob_or_file_info.push_back(std::move(blob_info));
-  }
-
-  size_t index_keys_size = 0;
-  for (const auto& index_key : index_keys) {
-    index_keys_size++;  // Account for index_key.first (int64_t).
-    for (const auto& key : index_key.second) {
-      index_keys_size += key.SizeEstimate();
-    }
-  }
-
-  size_t arg_size =
-      mojo_value->bits.size() + primary_key.SizeEstimate() + index_keys_size;
-  if (arg_size >= max_put_value_size_) {
-    callbacks->OnError(blink::WebIDBDatabaseError(
-        blink::kWebIDBDatabaseExceptionUnknownError,
-        WebString(
-            String::Format("The serialized keys and/or value are too large"
-                           " (size=%" PRIuS " bytes, max=%" PRIuS " bytes).",
-                           arg_size, max_put_value_size_))));
-    return;
-  }
-
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
-  database_->Put(transaction_id, object_store_id, std::move(mojo_value),
-                 std::move(primary_key), put_mode, index_keys,
-                 GetCallbacksProxy(std::move(callbacks_impl)));
-}
-
-void WebIDBDatabaseImpl::SetIndexKeys(
-    long long transaction_id,
-    long long object_store_id,
-    WebIDBKeyView primary_key,
-    const Vector<WebIDBIndexKeys>& index_keys) {
-  IndexedDBKey temp(IndexedDBKeyBuilder::Build(primary_key));
+void WebIDBDatabaseImpl::SetIndexKeys(int64_t transaction_id,
+                                      int64_t object_store_id,
+                                      std::unique_ptr<IDBKey> primary_key,
+                                      Vector<IDBIndexKeys> index_keys) {
   database_->SetIndexKeys(transaction_id, object_store_id,
-                          WebIDBKeyBuilder::Build(temp), std::move(index_keys));
+                          std::move(primary_key), std::move(index_keys));
 }
 
-void WebIDBDatabaseImpl::SetIndexesReady(long long transaction_id,
-                                         long long object_store_id,
+void WebIDBDatabaseImpl::SetIndexesReady(int64_t transaction_id,
+                                         int64_t object_store_id,
                                          const Vector<int64_t>& index_ids) {
   database_->SetIndexesReady(transaction_id, object_store_id,
                              std::move(index_ids));
 }
 
-void WebIDBDatabaseImpl::OpenCursor(long long transaction_id,
-                                    long long object_store_id,
-                                    long long index_id,
-                                    const WebIDBKeyRange& key_range,
+void WebIDBDatabaseImpl::OpenCursor(int64_t transaction_id,
+                                    int64_t object_store_id,
+                                    int64_t index_id,
+                                    const IDBKeyRange* key_range,
                                     mojom::IDBCursorDirection direction,
                                     bool key_only,
                                     mojom::IDBTaskType task_type,
                                     WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
-  database_->OpenCursor(transaction_id, object_store_id, index_id, key_range,
-                        direction, key_only, task_type,
-                        GetCallbacksProxy(std::move(callbacks_impl)));
+  mojom::blink::IDBKeyRangePtr key_range_ptr =
+      mojom::blink::IDBKeyRange::From(key_range);
+  callbacks->SetState(nullptr, transaction_id);
+  database_->OpenCursor(transaction_id, object_store_id, index_id,
+                        std::move(key_range_ptr), direction, key_only,
+                        task_type,
+                        GetCallbacksProxy(base::WrapUnique(callbacks)));
 }
 
-void WebIDBDatabaseImpl::Count(long long transaction_id,
-                               long long object_store_id,
-                               long long index_id,
-                               const WebIDBKeyRange& key_range,
+void WebIDBDatabaseImpl::Count(int64_t transaction_id,
+                               int64_t object_store_id,
+                               int64_t index_id,
+                               const IDBKeyRange* key_range,
                                WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
-  database_->Count(transaction_id, object_store_id, index_id, key_range,
-                   GetCallbacksProxy(std::move(callbacks_impl)));
+  mojom::blink::IDBKeyRangePtr key_range_ptr =
+      mojom::blink::IDBKeyRange::From(key_range);
+  callbacks->SetState(nullptr, transaction_id);
+  database_->Count(transaction_id, object_store_id, index_id,
+                   std::move(key_range_ptr),
+                   GetCallbacksProxy(base::WrapUnique(callbacks)));
 }
 
-void WebIDBDatabaseImpl::Delete(long long transaction_id,
-                                long long object_store_id,
-                                WebIDBKeyView primary_key,
+void WebIDBDatabaseImpl::Delete(int64_t transaction_id,
+                                int64_t object_store_id,
+                                const IDBKey* primary_key,
                                 WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
+  mojom::blink::IDBKeyRangePtr key_range_ptr =
+      mojom::blink::IDBKeyRange::From(IDBKeyRange::Create(primary_key));
+  callbacks->SetState(nullptr, transaction_id);
   database_->DeleteRange(transaction_id, object_store_id,
-                         WebIDBKeyRangeBuilder::Build(primary_key),
-                         GetCallbacksProxy(std::move(callbacks_impl)));
+                         std::move(key_range_ptr),
+                         GetCallbacksProxy(base::WrapUnique(callbacks)));
 }
 
-void WebIDBDatabaseImpl::DeleteRange(long long transaction_id,
-                                     long long object_store_id,
-                                     const WebIDBKeyRange& key_range,
+void WebIDBDatabaseImpl::DeleteRange(int64_t transaction_id,
+                                     int64_t object_store_id,
+                                     const IDBKeyRange* key_range,
                                      WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
-  database_->DeleteRange(transaction_id, object_store_id, key_range,
-                         GetCallbacksProxy(std::move(callbacks_impl)));
+  mojom::blink::IDBKeyRangePtr key_range_ptr =
+      mojom::blink::IDBKeyRange::From(key_range);
+  callbacks->SetState(nullptr, transaction_id);
+  database_->DeleteRange(transaction_id, object_store_id,
+                         std::move(key_range_ptr),
+                         GetCallbacksProxy(base::WrapUnique(callbacks)));
 }
 
-void WebIDBDatabaseImpl::Clear(long long transaction_id,
-                               long long object_store_id,
+void WebIDBDatabaseImpl::GetKeyGeneratorCurrentNumber(
+    int64_t transaction_id,
+    int64_t object_store_id,
+    WebIDBCallbacks* callbacks) {
+  callbacks->SetState(nullptr, transaction_id);
+  database_->GetKeyGeneratorCurrentNumber(
+      transaction_id, object_store_id,
+      GetCallbacksProxy(base::WrapUnique(callbacks)));
+}
+
+void WebIDBDatabaseImpl::Clear(int64_t transaction_id,
+                               int64_t object_store_id,
                                WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      base::WrapUnique(callbacks), transaction_id, nullptr);
+  callbacks->SetState(nullptr, transaction_id);
   database_->Clear(transaction_id, object_store_id,
-                   GetCallbacksProxy(std::move(callbacks_impl)));
+                   GetCallbacksProxy(base::WrapUnique(callbacks)));
 }
 
-void WebIDBDatabaseImpl::CreateIndex(long long transaction_id,
-                                     long long object_store_id,
-                                     long long index_id,
+void WebIDBDatabaseImpl::CreateIndex(int64_t transaction_id,
+                                     int64_t object_store_id,
+                                     int64_t index_id,
                                      const String& name,
-                                     const WebIDBKeyPath& key_path,
+                                     const IDBKeyPath& key_path,
                                      bool unique,
                                      bool multi_entry) {
   database_->CreateIndex(transaction_id, object_store_id, index_id, name,
                          key_path, unique, multi_entry);
 }
 
-void WebIDBDatabaseImpl::DeleteIndex(long long transaction_id,
-                                     long long object_store_id,
-                                     long long index_id) {
+void WebIDBDatabaseImpl::DeleteIndex(int64_t transaction_id,
+                                     int64_t object_store_id,
+                                     int64_t index_id) {
   database_->DeleteIndex(transaction_id, object_store_id, index_id);
 }
 
-void WebIDBDatabaseImpl::RenameIndex(long long transaction_id,
-                                     long long object_store_id,
-                                     long long index_id,
+void WebIDBDatabaseImpl::RenameIndex(int64_t transaction_id,
+                                     int64_t object_store_id,
+                                     int64_t index_id,
                                      const String& new_name) {
   DCHECK(!new_name.IsNull());
   database_->RenameIndex(transaction_id, object_store_id, index_id, new_name);
 }
 
-void WebIDBDatabaseImpl::Abort(long long transaction_id) {
+void WebIDBDatabaseImpl::Abort(int64_t transaction_id) {
   database_->Abort(transaction_id);
-}
-
-void WebIDBDatabaseImpl::Commit(long long transaction_id) {
-  database_->Commit(transaction_id);
 }
 
 mojom::blink::IDBCallbacksAssociatedPtrInfo
 WebIDBDatabaseImpl::GetCallbacksProxy(
-    std::unique_ptr<IndexedDBCallbacksImpl> callbacks) {
+    std::unique_ptr<WebIDBCallbacks> callbacks) {
   mojom::blink::IDBCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
-  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
+  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request),
+                                    task_runner_);
   return ptr_info;
 }
 

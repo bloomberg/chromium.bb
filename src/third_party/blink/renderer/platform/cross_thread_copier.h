@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CROSS_THREAD_COPIER_H_
 
 #include <memory>
+#include <vector>
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
@@ -186,6 +187,13 @@ template <wtf_size_t inlineCapacity, typename Allocator>
 struct CrossThreadCopier<Vector<uint8_t, inlineCapacity, Allocator>> {
   STATIC_ONLY(CrossThreadCopier);
   using Type = Vector<uint8_t, inlineCapacity, Allocator>;
+  static Type Copy(Type value) { return value; }
+};
+
+template <>
+struct CrossThreadCopier<std::vector<uint8_t>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = std::vector<uint8_t>;
   static Type Copy(Type value) { return value; }
 };
 

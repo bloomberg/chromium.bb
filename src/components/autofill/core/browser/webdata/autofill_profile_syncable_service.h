@@ -50,6 +50,9 @@ class AutofillProfileSyncableService
       public syncer::SyncableService,
       public AutofillWebDataServiceObserverOnDBSequence {
  public:
+  AutofillProfileSyncableService(AutofillWebDataBackend* webdata_backend,
+                                 const std::string& app_locale);
+
   ~AutofillProfileSyncableService() override;
 
   // Creates a new AutofillProfileSyncableService and hangs it off of
@@ -67,6 +70,7 @@ class AutofillProfileSyncableService
   static syncer::ModelType model_type() { return syncer::AUTOFILL_PROFILE; }
 
   // syncer::SyncableService implementation.
+  void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
@@ -87,9 +91,6 @@ class AutofillProfileSyncableService
       const syncer::SyncableService::StartSyncFlare& flare);
 
  protected:
-  AutofillProfileSyncableService(AutofillWebDataBackend* webdata_backend,
-                                 const std::string& app_locale);
-
   // A convenience wrapper of a bunch of state we pass around while
   // associating models, and send to the WebDatabase for persistence.
   // We do this so we hold the write lock for only a small period.

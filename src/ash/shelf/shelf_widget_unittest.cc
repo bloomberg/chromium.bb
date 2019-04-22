@@ -19,6 +19,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
+#include "base/bind_helpers.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -439,7 +440,7 @@ class ShelfWidgetViewsVisibilityTest : public AshTestBase {
     ASSERT_NE(nullptr, primary_shelf_widget_);
     secondary_shelf_widget_ = Shelf::ForWindow(root_windows[1])->shelf_widget();
     ASSERT_NE(nullptr, secondary_shelf_widget_);
-  };
+  }
 
   void ExpectVisible(session_manager::SessionState state,
                      ShelfVisibility primary_shelf_visibility,
@@ -479,8 +480,8 @@ TEST_F(ShelfWidgetViewsVisibilityTest, LoginWebUiLockViews) {
   // Both shelf views are hidden when session state hasn't been initialized.
   ExpectVisible(SessionState::UNKNOWN, kNone /*primary*/, kNone /*secondary*/);
   // Web UI login is used, so views shelf is not visible during login.
-  ExpectVisible(SessionState::OOBE, kNone, kNone);
-  ExpectVisible(SessionState::LOGIN_PRIMARY, kNone, kNone);
+  ExpectVisible(SessionState::OOBE, kLoginShelf, kNone);
+  ExpectVisible(SessionState::LOGIN_PRIMARY, kLoginShelf, kNone);
 
   SimulateUserLogin("user1@test.com");
 
@@ -500,7 +501,7 @@ TEST_F(ShelfWidgetViewsVisibilityTest, LoginViewsLockViews) {
   ASSERT_NO_FATAL_FAILURE(InitShelfVariables());
 
   ExpectVisible(SessionState::UNKNOWN, kNone /*primary*/, kNone /*secondary*/);
-  ExpectVisible(SessionState::OOBE, kNone, kNone);
+  ExpectVisible(SessionState::OOBE, kLoginShelf, kNone);
   ExpectVisible(SessionState::LOGIN_PRIMARY, kLoginShelf, kNone);
 
   SimulateUserLogin("user1@test.com");
@@ -513,29 +514,6 @@ TEST_F(ShelfWidgetViewsVisibilityTest, LoginViewsLockViews) {
   ExpectVisible(SessionState::ACTIVE, kShelf, kShelf);
 }
 
-TEST_F(ShelfWidgetViewsVisibilityTest, LoginWebUiLockWebUi) {
-  // Enable web UI lock and login.
-  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  cl->AppendSwitch(switches::kShowWebUiLogin);
-  cl->AppendSwitch(switches::kShowWebUiLock);
-  ASSERT_NO_FATAL_FAILURE(InitShelfVariables());
-
-  // Views based shelf is never visible.
-  ExpectVisible(SessionState::UNKNOWN, kNone /*primary*/, kNone /*secondary*/);
-  ExpectVisible(SessionState::OOBE, kNone, kNone);
-  ExpectVisible(SessionState::LOGIN_PRIMARY, kNone, kNone);
-
-  SimulateUserLogin("user1@test.com");
-
-  // Views based shelf is only visible on non-lock screen (ACTIVE session).
-  ExpectVisible(SessionState::LOGGED_IN_NOT_ACTIVE, kNone, kNone);
-  ExpectVisible(SessionState::ACTIVE, kShelf, kShelf);
-  ExpectVisible(SessionState::LOCKED, kNone, kNone);
-  ExpectVisible(SessionState::ACTIVE, kShelf, kShelf);
-  ExpectVisible(SessionState::LOGIN_SECONDARY, kNone, kNone);
-  ExpectVisible(SessionState::ACTIVE, kShelf, kShelf);
-}
-
 class ShelfWidgetVirtualKeyboardTest : public AshTestBase {
  protected:
   void SetUp() override {
@@ -543,10 +521,7 @@ class ShelfWidgetVirtualKeyboardTest : public AshTestBase {
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
     ASSERT_TRUE(keyboard::IsKeyboardEnabled());
-
-    keyboard_controller()->LoadKeyboardWindowInBackground();
-    // Wait for the keyboard window to load.
-    base::RunLoop().RunUntilIdle();
+    keyboard::test::WaitUntilLoaded();
 
     // These tests only apply to the floating virtual keyboard, as it is the
     // only case where both the virtual keyboard and the shelf are visible.

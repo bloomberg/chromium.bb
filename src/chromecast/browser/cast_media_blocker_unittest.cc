@@ -5,6 +5,7 @@
 #include "chromecast/browser/cast_media_blocker.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/time/time.h"
 #include "content/public/browser/media_session.h"
@@ -31,21 +32,24 @@ class MockMediaSession : public content::MediaSession {
   MOCK_METHOD1(Suspend, void(content::MediaSession::SuspendType));
   MOCK_METHOD1(Stop, void(content::MediaSession::SuspendType));
   MOCK_METHOD1(Seek, void(base::TimeDelta));
-  MOCK_CONST_METHOD0(IsControllable, bool());
-  MOCK_CONST_METHOD0(IsActuallyPaused, bool());
   MOCK_METHOD0(StartDucking, void());
   MOCK_METHOD0(StopDucking, void());
   MOCK_METHOD1(SetDuckingVolumeMultiplier, void(double));
   MOCK_METHOD1(DidReceiveAction,
                void(media_session::mojom::MediaSessionAction));
-  MOCK_METHOD1(AddObserver, void(content::MediaSessionObserver*));
   MOCK_METHOD1(AddObserver,
                void(media_session::mojom::MediaSessionObserverPtr));
-  MOCK_METHOD1(RemoveObserver, void(content::MediaSessionObserver*));
   MOCK_METHOD1(GetMediaSessionInfo, void(GetMediaSessionInfoCallback));
   MOCK_METHOD1(GetDebugInfo, void(GetDebugInfoCallback));
   MOCK_METHOD0(PreviousTrack, void());
   MOCK_METHOD0(NextTrack, void());
+  MOCK_METHOD0(SkipAd, void());
+  MOCK_METHOD1(SetAudioFocusGroupId, void(const base::UnguessableToken&));
+  MOCK_METHOD4(GetMediaImageBitmap,
+               void(const media_session::MediaImage&,
+                    int minimum_size_px,
+                    int desired_size_px,
+                    GetMediaImageBitmapCallback callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaSession);
@@ -67,7 +71,14 @@ class CastMediaBlockerTest : public content::RenderViewHostTestHarness {
   }
 
   void MediaSessionChanged(bool controllable, bool suspended) {
-    media_blocker_->MediaSessionStateChanged(controllable, suspended);
+    media_session::mojom::MediaSessionInfoPtr session_info(
+        media_session::mojom::MediaSessionInfo::New());
+    session_info->is_controllable = controllable;
+    session_info->playback_state =
+        suspended ? media_session::mojom::MediaPlaybackState::kPaused
+                  : media_session::mojom::MediaPlaybackState::kPlaying;
+
+    media_blocker_->MediaSessionInfoChanged(std::move(session_info));
   }
 
  protected:

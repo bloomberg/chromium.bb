@@ -522,7 +522,6 @@ MessageBundle* LoadMessageBundle(
       extension_l10n_util::LoadMessageCatalogs(
           locale_path,
           default_locale,
-          extension_l10n_util::CurrentLocaleOrDefault(),
           error);
 
   return message_bundle;

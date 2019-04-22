@@ -8,8 +8,8 @@
 #include "src/objects-inl.h"
 #include "src/parsing/parse-info.h"
 #include "src/parsing/parsing.h"
-#include "src/parsing/preparsed-scope-data-impl.h"
-#include "src/parsing/preparsed-scope-data.h"
+#include "src/parsing/preparse-data-impl.h"
+#include "src/parsing/preparse-data.h"
 
 #include "test/cctest/cctest.h"
 #include "test/cctest/scope-test-helper.h"
@@ -38,7 +38,7 @@ TEST(PreParserScopeAnalysis) {
   i::Factory* factory = isolate->factory();
   LocalContext env;
 
-  struct {
+  struct Outer {
     const char* code;
     bool strict_outer;
     bool strict_test_function;
@@ -688,34 +688,27 @@ TEST(PreParserScopeAnalysis) {
        [] { i::FLAG_harmony_private_fields = false; }},
   };
 
-  for (unsigned outer_ix = 0; outer_ix < arraysize(outers); ++outer_ix) {
-    for (unsigned inner_ix = 0; inner_ix < arraysize(inners); ++inner_ix) {
-      if (outers[outer_ix].strict_outer &&
-          (inners[inner_ix].skip & SKIP_STRICT_OUTER)) {
+  for (unsigned i = 0; i < arraysize(outers); ++i) {
+    struct Outer outer = outers[i];
+    for (unsigned j = 0; j < arraysize(inners); ++j) {
+      struct Inner inner = inners[j];
+      if (outer.strict_outer && (inner.skip & SKIP_STRICT_OUTER)) continue;
+      if (outer.strict_test_function && (inner.skip & SKIP_STRICT_FUNCTION)) {
         continue;
       }
-      if (outers[outer_ix].strict_test_function &&
-          (inners[inner_ix].skip & SKIP_STRICT_FUNCTION)) {
-        continue;
-      }
-      if (outers[outer_ix].arrow && (inners[inner_ix].skip & SKIP_ARROW)) {
-        continue;
-      }
+      if (outer.arrow && (inner.skip & SKIP_ARROW)) continue;
 
-      const char* code = outers[outer_ix].code;
+      const char* code = outer.code;
       int code_len = Utf8LengthHelper(code);
 
-      int params_len = Utf8LengthHelper(inners[inner_ix].params);
-      int source_len = Utf8LengthHelper(inners[inner_ix].source);
+      int params_len = Utf8LengthHelper(inner.params);
+      int source_len = Utf8LengthHelper(inner.source);
       int len = code_len + params_len + source_len;
 
-      if (inners[inner_ix].prologue != nullptr) {
-        inners[inner_ix].prologue();
-      }
+      if (inner.prologue != nullptr) inner.prologue();
 
       i::ScopedVector<char> program(len + 1);
-      i::SNPrintF(program, code, inners[inner_ix].params,
-                  inners[inner_ix].source);
+      i::SNPrintF(program, code, inner.params, inner.source);
 
       i::HandleScope scope(isolate);
 
@@ -730,23 +723,22 @@ TEST(PreParserScopeAnalysis) {
       i::Handle<i::JSFunction> f = i::Handle<i::JSFunction>::cast(o);
       i::Handle<i::SharedFunctionInfo> shared = i::handle(f->shared(), isolate);
 
-      if (inners[inner_ix].bailout == Bailout::BAILOUT_IF_OUTER_SLOPPY &&
-          !outers[outer_ix].strict_outer) {
-        CHECK(!shared->HasUncompiledDataWithPreParsedScope());
+      if (inner.bailout == Bailout::BAILOUT_IF_OUTER_SLOPPY &&
+          !outer.strict_outer) {
+        CHECK(!shared->HasUncompiledDataWithPreparseData());
         continue;
       }
 
-      CHECK(shared->HasUncompiledDataWithPreParsedScope());
-      i::Handle<i::PreParsedScopeData> produced_data_on_heap(
-          shared->uncompiled_data_with_pre_parsed_scope()
-              ->pre_parsed_scope_data(),
+      CHECK(shared->HasUncompiledDataWithPreparseData());
+      i::Handle<i::PreparseData> produced_data_on_heap(
+          shared->uncompiled_data_with_preparse_data()->preparse_data(),
           isolate);
 
       // Parse the lazy function using the scope data.
       i::ParseInfo using_scope_data(isolate, shared);
       using_scope_data.set_lazy_compile();
-      using_scope_data.set_consumed_preparsed_scope_data(
-          i::ConsumedPreParsedScopeData::For(isolate, produced_data_on_heap));
+      using_scope_data.set_consumed_preparse_data(
+          i::ConsumedPreparseData::For(isolate, produced_data_on_heap));
       CHECK(i::parsing::ParseFunction(&using_scope_data, shared, isolate));
 
       // Verify that we skipped at least one function inside that scope.
@@ -777,11 +769,9 @@ TEST(PreParserScopeAnalysis) {
       // scope data (and skipping functions), and when parsing without.
       i::ScopeTestHelper::CompareScopes(
           scope_without_skipped_functions, scope_with_skipped_functions,
-          inners[inner_ix].precise_maybe_assigned == PreciseMaybeAssigned::YES);
+          inner.precise_maybe_assigned == PreciseMaybeAssigned::YES);
 
-      if (inners[inner_ix].epilogue != nullptr) {
-        inners[inner_ix].epilogue();
-      }
+      if (inner.epilogue != nullptr) inner.epilogue();
     }
   }
 }
@@ -811,16 +801,33 @@ TEST(ProducingAndConsumingByteData) {
   LocalContext env;
 
   i::Zone zone(isolate->allocator(), ZONE_NAME);
-  i::PreParsedScopeDataBuilder::ByteData bytes(&zone);
+  std::vector<uint8_t> buffer;
+  i::PreparseDataBuilder::ByteData bytes;
+  bytes.Start(&buffer);
+
+  bytes.Reserve(32);
+  bytes.Reserve(32);
+  CHECK_EQ(buffer.size(), 32);
+  const int kBufferSize = 64;
+  bytes.Reserve(kBufferSize);
+  CHECK_EQ(buffer.size(), kBufferSize);
+
   // Write some data.
+#ifdef DEBUG
   bytes.WriteUint32(1983);  // This will be overwritten.
-  bytes.WriteUint32(2147483647);
+#else
+  bytes.WriteVarint32(1983);
+#endif
+  bytes.WriteVarint32(2147483647);
   bytes.WriteUint8(4);
   bytes.WriteUint8(255);
-  bytes.WriteUint32(0);
+  bytes.WriteVarint32(0);
   bytes.WriteUint8(0);
 #ifdef DEBUG
-  bytes.OverwriteFirstUint32(2017);
+  bytes.SaveCurrentSizeAtFirstUint32();
+  int saved_size = 21;
+  CHECK_EQ(buffer.size(), kBufferSize);
+  CHECK_EQ(bytes.length(), saved_size);
 #endif
   bytes.WriteUint8(100);
   // Write quarter bytes between uint8s and uint32s to verify they're stored
@@ -831,74 +838,134 @@ TEST(ProducingAndConsumingByteData) {
   bytes.WriteQuarter(1);
   bytes.WriteQuarter(0);
   bytes.WriteUint8(50);
+
   bytes.WriteQuarter(0);
   bytes.WriteQuarter(1);
   bytes.WriteQuarter(2);
-  bytes.WriteUint32(50);
+  bytes.WriteQuarter(3);
+  bytes.WriteVarint32(50);
+
+  // End with a lonely quarter.
+  bytes.WriteQuarter(0);
+  bytes.WriteQuarter(1);
+  bytes.WriteQuarter(2);
+  bytes.WriteVarint32(0xff);
+
   // End with a lonely quarter.
   bytes.WriteQuarter(2);
 
+  CHECK_EQ(buffer.size(), 64);
+#ifdef DEBUG
+  const int kDataSize = 42;
+#else
+  const int kDataSize = 21;
+#endif
+  CHECK_EQ(bytes.length(), kDataSize);
+  CHECK_EQ(buffer.size(), kBufferSize);
+
+  // Copy buffer for sanity checks later-on.
+  std::vector<uint8_t> copied_buffer(buffer);
+
+  // Move the data from the temporary buffer into the zone for later
+  // serialization.
+  bytes.Finalize(&zone);
+  CHECK_EQ(buffer.size(), 0);
+  CHECK_EQ(copied_buffer.size(), kBufferSize);
+
   {
-    // Serialize as a ZoneConsumedPreParsedScopeData, and read back data.
-    i::ZonePreParsedScopeData zone_serialized(&zone, bytes.begin(), bytes.end(),
-                                              0);
-    i::ZoneConsumedPreParsedScopeData::ByteData bytes_for_reading;
-    i::ZoneVectorWrapper wrapper(zone_serialized.byte_data());
-    i::ZoneConsumedPreParsedScopeData::ByteData::ReadingScope reading_scope(
+    // Serialize as a ZoneConsumedPreparseData, and read back data.
+    i::ZonePreparseData* data_in_zone = bytes.CopyToZone(&zone, 0);
+    i::ZoneConsumedPreparseData::ByteData bytes_for_reading;
+    i::ZoneVectorWrapper wrapper(data_in_zone->byte_data());
+    i::ZoneConsumedPreparseData::ByteData::ReadingScope reading_scope(
         &bytes_for_reading, wrapper);
 
+    CHECK_EQ(wrapper.data_length(), kDataSize);
+
+    for (int i = 0; i < kDataSize; i++) {
+      CHECK_EQ(copied_buffer.at(i), wrapper.get(i));
+    }
+
 #ifdef DEBUG
-    CHECK_EQ(bytes_for_reading.ReadUint32(), 2017);
+    CHECK_EQ(bytes_for_reading.ReadUint32(), saved_size);
 #else
-    CHECK_EQ(bytes_for_reading.ReadUint32(), 1983);
+    CHECK_EQ(bytes_for_reading.ReadVarint32(), 1983);
 #endif
-    CHECK_EQ(bytes_for_reading.ReadUint32(), 2147483647);
+    CHECK_EQ(bytes_for_reading.ReadVarint32(), 2147483647);
     CHECK_EQ(bytes_for_reading.ReadUint8(), 4);
     CHECK_EQ(bytes_for_reading.ReadUint8(), 255);
-    CHECK_EQ(bytes_for_reading.ReadUint32(), 0);
+    CHECK_EQ(bytes_for_reading.ReadVarint32(), 0);
     CHECK_EQ(bytes_for_reading.ReadUint8(), 0);
     CHECK_EQ(bytes_for_reading.ReadUint8(), 100);
+
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 3);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 0);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 2);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 1);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 0);
     CHECK_EQ(bytes_for_reading.ReadUint8(), 50);
+
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 0);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 1);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 2);
-    CHECK_EQ(bytes_for_reading.ReadUint32(), 50);
+    CHECK_EQ(bytes_for_reading.ReadQuarter(), 3);
+    CHECK_EQ(bytes_for_reading.ReadVarint32(), 50);
+
+    CHECK_EQ(bytes_for_reading.ReadQuarter(), 0);
+    CHECK_EQ(bytes_for_reading.ReadQuarter(), 1);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 2);
+    CHECK_EQ(bytes_for_reading.ReadVarint32(), 0xff);
+
+    CHECK_EQ(bytes_for_reading.ReadQuarter(), 2);
+    // We should have consumed all data at this point.
+    CHECK(!bytes_for_reading.HasRemainingBytes(1));
   }
 
   {
-    // Serialize as an OnHeapConsumedPreParsedScopeData, and read back data.
-    i::Handle<i::PodArray<uint8_t>> data_on_heap = bytes.Serialize(isolate);
-    i::OnHeapConsumedPreParsedScopeData::ByteData bytes_for_reading;
-    i::OnHeapConsumedPreParsedScopeData::ByteData::ReadingScope reading_scope(
+    // Serialize as an OnHeapConsumedPreparseData, and read back data.
+    i::Handle<i::PreparseData> data_on_heap = bytes.CopyToHeap(isolate, 0);
+    CHECK_EQ(data_on_heap->data_length(), kDataSize);
+    CHECK_EQ(data_on_heap->children_length(), 0);
+    i::OnHeapConsumedPreparseData::ByteData bytes_for_reading;
+    i::OnHeapConsumedPreparseData::ByteData::ReadingScope reading_scope(
         &bytes_for_reading, *data_on_heap);
 
+    for (int i = 0; i < kDataSize; i++) {
+      CHECK_EQ(copied_buffer[i], data_on_heap->get(i));
+    }
+
 #ifdef DEBUG
-    CHECK_EQ(bytes_for_reading.ReadUint32(), 2017);
+    CHECK_EQ(bytes_for_reading.ReadUint32(), saved_size);
 #else
-    CHECK_EQ(bytes_for_reading.ReadUint32(), 1983);
+    CHECK_EQ(bytes_for_reading.ReadVarint32(), 1983);
 #endif
-    CHECK_EQ(bytes_for_reading.ReadUint32(), 2147483647);
+    CHECK_EQ(bytes_for_reading.ReadVarint32(), 2147483647);
     CHECK_EQ(bytes_for_reading.ReadUint8(), 4);
     CHECK_EQ(bytes_for_reading.ReadUint8(), 255);
-    CHECK_EQ(bytes_for_reading.ReadUint32(), 0);
+    CHECK_EQ(bytes_for_reading.ReadVarint32(), 0);
     CHECK_EQ(bytes_for_reading.ReadUint8(), 0);
     CHECK_EQ(bytes_for_reading.ReadUint8(), 100);
+
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 3);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 0);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 2);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 1);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 0);
     CHECK_EQ(bytes_for_reading.ReadUint8(), 50);
+
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 0);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 1);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 2);
-    CHECK_EQ(bytes_for_reading.ReadUint32(), 50);
+    CHECK_EQ(bytes_for_reading.ReadQuarter(), 3);
+    CHECK_EQ(bytes_for_reading.ReadVarint32(), 50);
+
+    CHECK_EQ(bytes_for_reading.ReadQuarter(), 0);
+    CHECK_EQ(bytes_for_reading.ReadQuarter(), 1);
     CHECK_EQ(bytes_for_reading.ReadQuarter(), 2);
+    CHECK_EQ(bytes_for_reading.ReadVarint32(), 0xff);
+
+    CHECK_EQ(bytes_for_reading.ReadQuarter(), 2);
+    // We should have consumed all data at this point.
+    CHECK(!bytes_for_reading.HasRemainingBytes(1));
   }
 }

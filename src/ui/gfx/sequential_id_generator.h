@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include <map>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -39,7 +39,7 @@ class GFX_EXPORT SequentialIDGenerator {
   void ResetForTest();
 
  private:
-  typedef base::hash_map<uint32_t, uint32_t> IDMap;
+  typedef std::unordered_map<uint32_t, uint32_t> IDMap;
 
   uint32_t GetNextAvailableID();
 

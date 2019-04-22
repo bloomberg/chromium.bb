@@ -25,9 +25,11 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "client/client_argv_handling.h"
+#include "third_party/lss/lss.h"
 #include "util/file/file_io.h"
 #include "util/linux/exception_handler_client.h"
 #include "util/linux/exception_information.h"
+#include "util/linux/scoped_pr_set_dumpable.h"
 #include "util/linux/scoped_pr_set_ptracer.h"
 #include "util/misc/from_pointer_cast.h"
 #include "util/posix/double_fork_and_exec.h"
@@ -56,7 +58,7 @@ std::vector<std::string> BuildAppProcessArgs(
     const std::vector<std::string>& arguments,
     int socket) {
   std::vector<std::string> argv;
-#if defined(ARCH_CPU_64_BIT)
+#if defined(ARCH_CPU_64_BITS)
   argv.push_back("/system/bin/app_process64");
 #else
   argv.push_back("/system/bin/app_process32");
@@ -64,6 +66,36 @@ std::vector<std::string> BuildAppProcessArgs(
   argv.push_back("/system/bin");
   argv.push_back("--application");
   argv.push_back(class_name);
+
+  std::vector<std::string> handler_argv = BuildHandlerArgvStrings(
+      base::FilePath(), database, metrics_dir, url, annotations, arguments);
+
+  if (socket != kInvalidFileHandle) {
+    handler_argv.push_back(FormatArgumentInt("initial-client-fd", socket));
+  }
+
+  argv.insert(argv.end(), handler_argv.begin() + 1, handler_argv.end());
+  return argv;
+}
+
+std::vector<std::string> BuildArgsToLaunchWithLinker(
+    const std::string& handler_trampoline,
+    const std::string& handler_library,
+    bool is_64_bit,
+    const base::FilePath& database,
+    const base::FilePath& metrics_dir,
+    const std::string& url,
+    const std::map<std::string, std::string>& annotations,
+    const std::vector<std::string>& arguments,
+    int socket) {
+  std::vector<std::string> argv;
+  if (is_64_bit) {
+    argv.push_back("/system/bin/linker64");
+  } else {
+    argv.push_back("/system/bin/linker");
+  }
+  argv.push_back(handler_trampoline);
+  argv.push_back(handler_library);
 
   std::vector<std::string> handler_argv = BuildHandlerArgvStrings(
       base::FilePath(), database, metrics_dir, url, annotations, arguments);
@@ -118,7 +150,8 @@ class LaunchAtCrashHandler {
             context);
     exception_information_.thread_id = syscall(SYS_gettid);
 
-    ScopedPrSetPtracer set_ptracer(getpid(), /* may_log= */ false);
+    ScopedPrSetPtracer set_ptracer(sys_getpid(), /* may_log= */ false);
+    ScopedPrSetDumpable set_dumpable(/* may_log= */ false);
 
     pid_t pid = fork();
     if (pid < 0) {
@@ -249,6 +282,61 @@ bool CrashpadClient::StartJavaHandlerForClient(
   return DoubleForkAndExec(argv, env, socket, false, nullptr);
 }
 
+// static
+bool CrashpadClient::StartHandlerWithLinkerAtCrash(
+    const std::string& handler_trampoline,
+    const std::string& handler_library,
+    bool is_64_bit,
+    const std::vector<std::string>* env,
+    const base::FilePath& database,
+    const base::FilePath& metrics_dir,
+    const std::string& url,
+    const std::map<std::string, std::string>& annotations,
+    const std::vector<std::string>& arguments) {
+  std::vector<std::string> argv =
+      BuildArgsToLaunchWithLinker(handler_trampoline,
+                                  handler_library,
+                                  is_64_bit,
+                                  database,
+                                  metrics_dir,
+                                  url,
+                                  annotations,
+                                  arguments,
+                                  kInvalidFileHandle);
+  auto signal_handler = LaunchAtCrashHandler::Get();
+  if (signal_handler->Initialize(&argv, env)) {
+    DCHECK(!g_crash_handler);
+    g_crash_handler = signal_handler;
+    return true;
+  }
+  return false;
+}
+
+// static
+bool CrashpadClient::StartHandlerWithLinkerForClient(
+    const std::string& handler_trampoline,
+    const std::string& handler_library,
+    bool is_64_bit,
+    const std::vector<std::string>* env,
+    const base::FilePath& database,
+    const base::FilePath& metrics_dir,
+    const std::string& url,
+    const std::map<std::string, std::string>& annotations,
+    const std::vector<std::string>& arguments,
+    int socket) {
+  std::vector<std::string> argv =
+      BuildArgsToLaunchWithLinker(handler_trampoline,
+                                  handler_library,
+                                  is_64_bit,
+                                  database,
+                                  metrics_dir,
+                                  url,
+                                  annotations,
+                                  arguments,
+                                  socket);
+  return DoubleForkAndExec(argv, env, socket, false, nullptr);
+}
+
 #endif
 
 // static
@@ -290,7 +378,10 @@ bool CrashpadClient::StartHandlerForClient(
 
 // static
 void CrashpadClient::DumpWithoutCrash(NativeCPUContext* context) {
-  DCHECK(g_crash_handler);
+  if (!g_crash_handler) {
+    DLOG(ERROR) << "Crashpad isn't enabled";
+    return;
+  }
 
 #if defined(ARCH_CPU_ARMEL)
   memset(context->uc_regspace, 0, sizeof(context->uc_regspace));

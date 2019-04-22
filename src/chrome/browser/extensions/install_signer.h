@@ -61,8 +61,8 @@ struct InstallSignature {
 // that a set of ids are hosted in the webstore.
 class InstallSigner {
  public:
-  typedef base::Callback<void(std::unique_ptr<InstallSignature>)>
-      SignatureCallback;
+  using SignatureCallback =
+      base::OnceCallback<void(std::unique_ptr<InstallSignature>)>;
 
   // IMPORTANT NOTE: It is possible that only some, but not all, of the entries
   // in |ids| will be successfully signed by the backend. Callers should always
@@ -80,7 +80,7 @@ class InstallSigner {
   // Begins the process of fetching a signature from the backend. This should
   // only be called once! If you want to get another signature, make another
   // instance of this class.
-  void GetSignature(const SignatureCallback& callback);
+  void GetSignature(SignatureCallback callback);
 
   // Returns whether the signature in InstallSignature is properly signed with a
   // known public key.

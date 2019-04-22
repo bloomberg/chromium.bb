@@ -42,7 +42,6 @@ class Node;
 
 class MODULES_EXPORT AXNodeObject : public AXObject {
  public:
-  static AXNodeObject* Create(Node*, AXObjectCacheImpl&);
   AXNodeObject(Node*, AXObjectCacheImpl&);
   ~AXNodeObject() override;
   void Trace(blink::Visitor*) override;
@@ -55,6 +54,9 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // The accessibility role, not taking ARIA into account.
   ax::mojom::Role native_role_;
 
+  static base::Optional<String> GetCSSAltText(Node*);
+  AXObjectInclusion ShouldIncludeBasedOnSemantics(
+      IgnoredReasons* = nullptr) const;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
   const AXObject* InheritsPresentationalRoleFrom() const override;
   ax::mojom::Role DetermineAccessibilityRole() override;
@@ -149,6 +151,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool MaxValueForRange(float* out_value) const override;
   bool MinValueForRange(float* out_value) const override;
   bool StepValueForRange(float* out_value) const override;
+  KURL Url() const override;
   String StringValue() const override;
 
   // ARIA attributes.
@@ -171,6 +174,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                      DescriptionSources*,
                      AXRelatedObjectVector*) const override;
   String Placeholder(ax::mojom::NameFrom) const override;
+  String Title(ax::mojom::NameFrom) const override;
   bool NameFromLabelElement() const override;
 
   // Location
@@ -187,6 +191,11 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AXObject* RawFirstChild() const override;
   AXObject* RawNextSibling() const override;
   void AddChildren() override;
+  virtual void AddListMarker() {}
+  virtual void AddInlineTextBoxChildren(bool force) {}
+  virtual void AddImageMapChildren() {}
+  virtual void AddHiddenChildren() {}
+
   bool CanHaveChildren() const override;
   void AddChild(AXObject*);
   void InsertChild(AXObject*, unsigned index);
@@ -216,11 +225,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // Position in set and Size of set
   int PosInSet() const override;
   int SetSize() const override;
-  // Compute the number of siblings that have the same role before |this|,
-  // following rules for counting the number of items in a set.
-  int AutoPosInSet() const;
-  // Compute the number of unignored siblings with the same role as |this|.
-  int AutoSetSize() const;
 
   // Aria-owns.
   void ComputeAriaOwnsChildren(

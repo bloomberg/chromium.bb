@@ -15,7 +15,7 @@ LayoutNGFieldset::LayoutNGFieldset(Element* element)
 
 void LayoutNGFieldset::AddChild(LayoutObject* new_child,
                                 LayoutObject* before_child) {
-  LayoutBlock* fieldset_content = ToLayoutBlock(FirstChild());
+  LayoutBlock* fieldset_content = To<LayoutBlock>(FirstChild());
   if (!fieldset_content) {
     // We wrap everything inside an anonymous child, which will take care of the
     // fieldset contents. This parent will only be responsible for the fieldset
@@ -54,7 +54,7 @@ void LayoutNGFieldset::AddChild(LayoutObject* new_child,
     new_style->SetJustifyContent(StyleRef().JustifyContent());
 
     // TODO(mstensho): Inherit all properties listed here:
-    // https://html.spec.whatwg.org/multipage/rendering.html#the-fieldset-and-legend-elements
+    // https://html.spec.whatwg.org/C/#the-fieldset-and-legend-elements
 
     fieldset_content = LayoutBlock::CreateAnonymousWithParentAndDisplay(
         this, new_style->Display());

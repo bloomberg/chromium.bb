@@ -38,21 +38,21 @@ class ProcessProfilesTestCase(unittest.TestCase):
   def testGetOffsetToSymbolInfo(self):
     processor = TestSymbolOffsetProcessor(self.symbol_infos)
     self.assertListEqual(self.offset_to_symbol_info,
-                         processor._GetDumpOffsetToSymbolInfo())
+                         processor.GetDumpOffsetToSymbolInfo())
 
   def testOverlappingSymbols(self):
     symbol_1 = SimpleTestSymbol(self.START_SYMBOL, 6, 8)
     symbol_2 = SimpleTestSymbol('2', 10, 10)
     processor = TestSymbolOffsetProcessor([symbol_1, symbol_2])
     self.assertListEqual([symbol_1] * 4 + [symbol_2] * 3,
-                         processor._GetDumpOffsetToSymbolInfo())
+                         processor.GetDumpOffsetToSymbolInfo())
 
   def testSymbolsBeforeStart(self):
     self.symbol_infos = [SimpleTestSymbol(s.name, s.offset + 8, s.size)
                          for s in self.symbol_infos]
     self.symbol_infos.append(SimpleTestSymbol('early', 0, 4))
     processor = TestSymbolOffsetProcessor(self.symbol_infos)
-    self.assertRaises(AssertionError, processor._GetDumpOffsetToSymbolInfo)
+    self.assertRaises(AssertionError, processor.GetDumpOffsetToSymbolInfo)
 
   def testGetReachedOffsetsFromDump(self):
     processor = TestSymbolOffsetProcessor(self.symbol_infos)

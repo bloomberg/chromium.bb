@@ -69,7 +69,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
     const GPUCreateCommandBufferConfig& init_params,
     base::UnsafeSharedMemoryRegion shared_state_shm) {
   TRACE_EVENT0("gpu", "RasterBufferStub::Initialize");
-  FastSetActiveURL(active_url_, active_url_hash_, channel_);
+  UpdateActiveUrl();
 
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   DCHECK(manager);
@@ -93,42 +93,41 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
     return ContextResult::kFatalFailure;
   }
 
-  auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
-      manager->gpu_driver_bug_workarounds(), manager->gpu_feature_info());
-  gpu::GpuMemoryBufferFactory* gmb_factory =
-      manager->gpu_memory_buffer_factory();
-  context_group_ = base::MakeRefCounted<gles2::ContextGroup>(
-      manager->gpu_preferences(), gles2::PassthroughCommandDecoderSupported(),
-      manager->mailbox_manager(), CreateMemoryTracker(init_params),
-      manager->shader_translator_cache(),
-      manager->framebuffer_completeness_cache(), std::move(feature_info),
-      init_params.attribs.bind_generates_resource, channel_->image_manager(),
-      gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
-      /*progress_reporter=*/manager->watchdog(), manager->gpu_feature_info(),
-      manager->discardable_manager(),
-      manager->passthrough_discardable_manager(),
-      manager->shared_image_manager());
-
   ContextResult result;
-  auto raster_decoder_context_state =
-      manager->GetRasterDecoderContextState(&result);
-  if (!raster_decoder_context_state) {
+  auto shared_context_state = manager->GetSharedContextState(&result);
+  if (!shared_context_state) {
     LOG(ERROR) << "ContextResult::kFatalFailure: "
                   "Failed to create raster decoder state.";
     DCHECK_NE(result, gpu::ContextResult::kSuccess);
     return result;
   }
 
-  surface_ = raster_decoder_context_state->surface;
-  share_group_ = raster_decoder_context_state->share_group;
-  use_virtualized_gl_context_ =
-      raster_decoder_context_state->use_virtualized_gl_contexts;
+  if (!shared_context_state->IsGLInitialized()) {
+    if (!shared_context_state->MakeCurrent(nullptr) ||
+        !shared_context_state->InitializeGL(
+            manager->gpu_preferences(),
+            base::MakeRefCounted<gles2::FeatureInfo>(
+                manager->gpu_driver_bug_workarounds(),
+                manager->gpu_feature_info()))) {
+      LOG(ERROR) << "Failed to Initialize GL for SharedContextState";
+      return ContextResult::kFatalFailure;
+    }
+  }
 
-  command_buffer_ = std::make_unique<CommandBufferService>(
-      this, context_group_->transfer_buffer_manager());
+  surface_ = shared_context_state->surface();
+  share_group_ = shared_context_state->share_group();
+  use_virtualized_gl_context_ =
+      shared_context_state->use_virtualized_gl_contexts();
+
+  memory_tracker_ = CreateMemoryTracker(init_params);
+
+  command_buffer_ =
+      std::make_unique<CommandBufferService>(this, memory_tracker_.get());
   std::unique_ptr<raster::RasterDecoder> decoder(raster::RasterDecoder::Create(
-      this, command_buffer_.get(), manager->outputter(), context_group_.get(),
-      raster_decoder_context_state));
+      this, command_buffer_.get(), manager->outputter(),
+      manager->gpu_feature_info(), manager->gpu_preferences(),
+      memory_tracker_.get(), manager->shared_image_manager(),
+      shared_context_state));
 
   sync_point_client_state_ =
       channel_->sync_point_manager()->CreateSyncPointClientState(
@@ -138,34 +137,11 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
 
-  scoped_refptr<gl::GLContext> context = raster_decoder_context_state->context;
-  if (use_virtualized_gl_context_) {
-    context = base::MakeRefCounted<GLContextVirtual>(
-        share_group_.get(), context.get(), decoder->AsWeakPtr());
-    if (!context->Initialize(surface_.get(),
-                             GenerateGLContextAttribs(init_params.attribs,
-                                                      context_group_.get()))) {
-      // The real context created above for the default offscreen surface
-      // might not be compatible with this surface.
-      context = nullptr;
-      // TODO(piman): This might not be fatal, we could recurse into
-      // CreateGLContext to get more info, tho it should be exceedingly
-      // rare and may not be recoverable anyway.
-      LOG(ERROR) << "ContextResult::kFatalFailure: "
-                    "Failed to initialize virtual GL context.";
-      return gpu::ContextResult::kFatalFailure;
-    }
-  }
-
-  if (!context->MakeCurrent(surface_.get())) {
+  scoped_refptr<gl::GLContext> context = shared_context_state->context();
+  if (!shared_context_state->MakeCurrent(nullptr)) {
     LOG(ERROR) << "ContextResult::kTransientFailure: "
                   "Failed to make context current.";
     return gpu::ContextResult::kTransientFailure;
-  }
-
-  if (!context_group_->has_program_cache() &&
-      !context_group_->feature_info()->workarounds().disable_program_cache) {
-    context_group_->set_program_cache(manager->program_cache());
   }
 
   // Initialize the decoder with either the view or pbuffer GLContext.
@@ -194,44 +170,26 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
       std::move(shared_state_shm), std::move(shared_state_mapping)));
 
   if (!active_url_.is_empty())
-    manager->delegate()->DidCreateOffscreenContext(active_url_);
-
-  if (use_virtualized_gl_context_) {
-    // If virtualized GL contexts are in use, then real GL context state
-    // is in an indeterminate state, since the GLStateRestorer was not
-    // initialized at the time the GLContextVirtual was made current. In
-    // the case that this command decoder is the next one to be
-    // processed, force a "full virtual" MakeCurrent to be performed.
-    // Note that GpuChannel's initialization of the gpu::Capabilities
-    // expects the context to be left current.
-    context->ForceReleaseVirtuallyCurrent();
-    if (!context->MakeCurrent(surface_.get())) {
-      LOG(ERROR) << "ContextResult::kTransientFailure: "
-                    "Failed to make context current after initialization.";
-      return gpu::ContextResult::kTransientFailure;
-    }
-  }
+    manager->delegate()->DidCreateOffscreenContext(active_url_.url());
 
   manager->delegate()->DidCreateContextSuccessfully();
   initialized_ = true;
   return gpu::ContextResult::kSuccess;
 }
 
-// RasterInterface clients should not manipulate the front buffer.
-void RasterCommandBufferStub::OnTakeFrontBuffer(const Mailbox& mailbox) {
-  NOTREACHED();
+MemoryTracker* RasterCommandBufferStub::GetMemoryTracker() const {
+  return memory_tracker_.get();
 }
-void RasterCommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
-                                                  bool is_lost) {
-  NOTREACHED();
+
+bool RasterCommandBufferStub::HandleMessage(const IPC::Message& message) {
+  return false;
 }
 
 void RasterCommandBufferStub::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {}
 
 void RasterCommandBufferStub::SetActiveURL(GURL url) {
-  active_url_ = std::move(url);
-  active_url_hash_ = base::Hash(active_url_.possibly_invalid_spec());
-  FastSetActiveURL(active_url_, active_url_hash_, channel_);
+  active_url_ = ContextUrl(std::move(url));
+  UpdateActiveUrl();
 }
 
 }  // namespace gpu

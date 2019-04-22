@@ -13,8 +13,12 @@ namespace vr {
 class ArCoreInstallUtils {
  public:
   virtual ~ArCoreInstallUtils() = default;
+  // Returns true if AR module installation is supported, false otherwise.
+  virtual bool CanRequestInstallArModule() = 0;
+  // Returns true if AR module is not installed, false otherwise.
   virtual bool ShouldRequestInstallArModule() = 0;
-  virtual void RequestInstallArModule() = 0;
+  virtual void RequestInstallArModule(int render_process_id,
+                                      int render_frame_id) = 0;
   virtual bool ShouldRequestInstallSupportedArCore() = 0;
   virtual void RequestInstallSupportedArCore(int render_process_id,
                                              int render_frame_id) = 0;

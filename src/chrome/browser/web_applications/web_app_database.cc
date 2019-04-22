@@ -72,6 +72,12 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   if (web_app.theme_color())
     proto->set_theme_color(web_app.theme_color().value());
 
+  for (const WebApp::IconInfo& icon : web_app.icons()) {
+    WebAppIconInfoProto* icon_proto = proto->add_icons();
+    icon_proto->set_url(icon.url.spec());
+    icon_proto->set_size_in_px(icon.size_in_px);
+  }
+
   return proto;
 }
 
@@ -102,6 +108,26 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
 
   if (proto.has_theme_color())
     web_app->SetThemeColor(proto.theme_color());
+
+  if (proto.icons_size() == 0) {
+    LOG(ERROR) << "WebApp proto parse icons error: no icons";
+    return nullptr;
+  }
+
+  WebApp::Icons icons;
+  for (int i = 0; i < proto.icons_size(); ++i) {
+    const WebAppIconInfoProto& icon_proto = proto.icons(i);
+
+    GURL icon_url(icon_proto.url());
+    if (icon_url.is_empty() || !icon_url.is_valid()) {
+      LOG(ERROR) << "WebApp IconInfo proto url parse error: "
+                 << icon_url.possibly_invalid_spec();
+      return nullptr;
+    }
+
+    icons.push_back({icon_url, icon_proto.size_in_px()});
+  }
+  web_app->SetIcons(std::move(icons));
 
   return web_app;
 }

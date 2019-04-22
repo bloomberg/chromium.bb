@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/theme_source.h"
 
+#include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"

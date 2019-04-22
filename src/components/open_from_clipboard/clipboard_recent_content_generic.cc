@@ -22,9 +22,10 @@ const char* kAuthorizedSchemes[] = {
 
 ClipboardRecentContentGeneric::ClipboardRecentContentGeneric() {}
 
-bool ClipboardRecentContentGeneric::GetRecentURLFromClipboard(GURL* url) {
+base::Optional<GURL>
+ClipboardRecentContentGeneric::GetRecentURLFromClipboard() {
   if (GetClipboardContentAge() > MaximumAgeOfClipboard())
-    return false;
+    return base::nullopt;
 
   // Get and clean up the clipboard before processing.
   std::string gurl_string;
@@ -34,15 +35,15 @@ bool ClipboardRecentContentGeneric::GetRecentURLFromClipboard(GURL* url) {
                             &gurl_string);
 
   // Interpret the clipboard as a URL if possible.
-  DCHECK(url);
+  GURL url;
   // If there is mid-string whitespace, don't attempt to interpret the string
   // as a URL.  (Otherwise gurl will happily try to convert
   // "http://example.com extra words" into "http://example.com%20extra%20words",
   // which is not likely to be a useful or intended destination.)
   if (gurl_string.find_first_of(base::kWhitespaceASCII) != std::string::npos)
-    return false;
+    return base::nullopt;
   if (!gurl_string.empty()) {
-    *url = GURL(gurl_string);
+    url = GURL(gurl_string);
   } else {
     // Fall back to unicode / UTF16, as some URLs may use international domain
     // names, not punycode.
@@ -52,11 +53,24 @@ bool ClipboardRecentContentGeneric::GetRecentURLFromClipboard(GURL* url) {
                          &gurl_string16);
     if (gurl_string16.find_first_of(base::kWhitespaceUTF16) !=
         std::string::npos)
-      return false;
+      return base::nullopt;
     if (!gurl_string16.empty())
-      *url = GURL(gurl_string16);
+      url = GURL(gurl_string16);
   }
-  return url->is_valid() && IsAppropriateSuggestion(*url);
+  if (!url.is_valid() || !IsAppropriateSuggestion(url)) {
+    return base::nullopt;
+  }
+  return url;
+}
+
+base::Optional<base::string16>
+ClipboardRecentContentGeneric::GetRecentTextFromClipboard() {
+  return base::nullopt;
+}
+
+base::Optional<gfx::Image>
+ClipboardRecentContentGeneric::GetRecentImageFromClipboard() {
+  return base::nullopt;
 }
 
 base::TimeDelta ClipboardRecentContentGeneric::GetClipboardContentAge() const {

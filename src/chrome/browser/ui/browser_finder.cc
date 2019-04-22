@@ -20,7 +20,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "components/account_id/account_id.h"
 #endif
 
@@ -28,15 +28,14 @@ using content::WebContents;
 
 namespace {
 
-
 // Type used to indicate to match anything.
-const int kMatchAny                     = 0;
+const int kMatchAny = 0;
 
 // See BrowserMatches for details.
-const int kMatchOriginalProfile         = 1 << 0;
+const int kMatchOriginalProfile = 1 << 0;
 const int kMatchCanSupportWindowFeature = 1 << 1;
-const int kMatchTabbed                  = 1 << 2;
-const int kMatchDisplayId               = 1 << 3;
+const int kMatchTabbed = 1 << 2;
+const int kMatchDisplayId = 1 << 3;
 
 // Returns true if the specified |browser| matches the specified arguments.
 // |match_types| is a bitmask dictating what parameters to match:
@@ -58,13 +57,13 @@ bool BrowserMatches(Browser* browser,
 
 #if defined(OS_CHROMEOS)
   // Get the profile on which the window is currently shown.
-  // MultiUserWindowManager might be NULL under test scenario.
-  MultiUserWindowManager* const window_manager =
-      MultiUserWindowManager::GetInstance();
+  // MultiUserWindowManagerClient might be NULL under test scenario.
+  MultiUserWindowManagerClient* const client =
+      MultiUserWindowManagerClient::GetInstance();
   Profile* shown_profile = nullptr;
-  if (window_manager) {
-    const AccountId& shown_account_id = window_manager->GetUserPresentingWindow(
-        browser->window()->GetNativeWindow());
+  if (client) {
+    const AccountId& shown_account_id =
+        client->GetUserPresentingWindow(browser->window()->GetNativeWindow());
     shown_profile =
         shown_account_id.is_valid()
             ? multi_user_util::GetProfileFromAccountId(shown_account_id)
@@ -173,10 +172,8 @@ Browser* FindTabbedBrowser(Profile* profile,
                                         display_id);
 }
 
-Browser* FindAnyBrowser(Profile* profile,
-                        bool match_original_profiles) {
-  return FindBrowserWithTabbedOrAnyType(profile,
-                                        false,
+Browser* FindAnyBrowser(Profile* profile, bool match_original_profiles) {
+  return FindBrowserWithTabbedOrAnyType(profile, false,
                                         match_original_profiles);
 }
 

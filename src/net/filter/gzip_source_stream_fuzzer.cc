@@ -4,6 +4,8 @@
 
 #include "net/filter/gzip_source_stream.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/fuzzed_data_provider.h"
@@ -20,12 +22,19 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::unique_ptr<net::FuzzedSourceStream> fuzzed_source_stream(
       new net::FuzzedSourceStream(&data_provider));
 
+  // Gzip has a maximum compression ratio of 1032x. While, strictly speaking,
+  // linear, this means the fuzzer will often get stuck. Stop reading at a more
+  // modest compression ratio of 2x, or 512 KiB, whichever is larger. See
+  // https://crbug.com/921075.
+  size_t max_output = std::max(2u * size, static_cast<size_t>(512 * 1024));
+
   const net::SourceStream::SourceType kGzipTypes[] = {
       net::SourceStream::TYPE_GZIP, net::SourceStream::TYPE_DEFLATE};
   net::SourceStream::SourceType type =
       data_provider.PickValueInArray(kGzipTypes);
   std::unique_ptr<net::GzipSourceStream> gzip_stream =
       net::GzipSourceStream::Create(std::move(fuzzed_source_stream), type);
+  size_t bytes_read = 0;
   while (true) {
     scoped_refptr<net::IOBufferWithSize> io_buffer =
         base::MakeRefCounted<net::IOBufferWithSize>(64);
@@ -34,7 +43,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     // Releasing the pointer to IOBuffer immediately is more likely to lead to a
     // use-after-free.
     io_buffer = nullptr;
-    if (callback.GetResult(result) <= 0)
+    result = callback.GetResult(result);
+    if (result <= 0)
+      break;
+    bytes_read += static_cast<size_t>(result);
+    if (bytes_read >= max_output)
       break;
   }
 

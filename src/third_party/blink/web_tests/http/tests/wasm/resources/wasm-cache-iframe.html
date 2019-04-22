@@ -1,0 +1,10 @@
+<script src="../../../resources/testharness.js"></script>
+<script>
+// Instantiate a WASM test module and make sure it works.
+function instantiateModule(url)
+{
+  return WebAssembly.instantiateStreaming(fetch(url)).then(
+  	({module, instance}) => assert_equals(instance.exports.exported_func(), 42));
+}
+</script>
+

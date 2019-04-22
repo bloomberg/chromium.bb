@@ -14,6 +14,8 @@
 #include "base/message_loop/message_pump_win.h"
 #elif defined(OS_IOS)
 #include "base/message_loop/message_pump_io_ios.h"
+#elif defined(OS_MACOSX)
+#include "base/message_loop/message_pump_kqueue.h"
 #elif defined(OS_NACL_SFI)
 #include "base/message_loop/message_pump_default.h"
 #elif defined(OS_FUCHSIA)
@@ -29,6 +31,8 @@ namespace base {
 using MessagePumpForIO = MessagePumpForIO;
 #elif defined(OS_IOS)
 using MessagePumpForIO = MessagePumpIOSForIO;
+#elif defined(OS_MACOSX)
+using MessagePumpForIO = MessagePumpKqueue;
 #elif defined(OS_NACL_SFI)
 using MessagePumpForIO = MessagePumpDefault;
 #elif defined(OS_FUCHSIA)

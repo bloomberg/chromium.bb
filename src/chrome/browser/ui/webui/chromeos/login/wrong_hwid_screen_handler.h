@@ -17,7 +17,7 @@ namespace chromeos {
 class WrongHWIDScreenHandler : public WrongHWIDScreenView,
                                public BaseScreenHandler {
  public:
-  WrongHWIDScreenHandler();
+  explicit WrongHWIDScreenHandler(JSCallsContainer* js_calls_container);
   ~WrongHWIDScreenHandler() override;
 
   // WrongHWIDScreenActor implementation:

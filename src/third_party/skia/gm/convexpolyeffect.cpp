@@ -14,6 +14,8 @@
 #include "GrMemoryPool.h"
 #include "GrOpFlushState.h"
 #include "GrPathUtils.h"
+#include "GrRecordingContext.h"
+#include "GrRecordingContextPriv.h"
 #include "GrRenderTargetContextPriv.h"
 #include "SkColorPriv.h"
 #include "SkGeometry.h"
@@ -41,10 +43,10 @@ class PolyBoundsOp : public GrMeshDrawOp {
 public:
     DEFINE_OP_CLASS_ID
 
-    static std::unique_ptr<GrDrawOp> Make(GrContext* context,
+    static std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
                                           GrPaint&& paint,
                                           const SkRect& rect) {
-        GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
+        GrOpMemoryPool* pool = context->priv().opMemoryPool();
 
         return pool->allocate<PolyBoundsOp>(std::move(paint), rect);
     }
@@ -57,10 +59,11 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
 
-    RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override {
-        auto analysis = fProcessors.finalize(fColor, GrProcessorAnalysisCoverage::kNone, clip,
-                                             false, caps, &fColor);
-        return analysis.requiresDstTexture() ? RequiresDstTexture::kYes : RequiresDstTexture::kNo;
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                      GrFSAAType fsaaType, GrClampType clampType) override {
+        return fProcessors.finalize(
+                fColor, GrProcessorAnalysisCoverage::kNone, clip, &GrUserStencilSettings::kUnused,
+                fsaaType, caps, clampType, &fColor);
     }
 
 private:
@@ -93,9 +96,11 @@ private:
         }
 
         SkPointPriv::SetRectTriStrip(verts, fRect, sizeof(SkPoint));
+        helper.recordDraw(target, std::move(gp));
+    }
 
-        auto pipe = target->makePipeline(0, std::move(fProcessors), target->detachAppliedClip());
-        helper.recordDraw(target, std::move(gp), pipe.fPipeline, pipe.fFixedDynamicState);
+    void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
+        flushState->executeDrawsAndUploadsForMeshDrawOp(this, chainBounds, std::move(fProcessors));
     }
 
     SkPMColor4f fColor;
@@ -108,7 +113,7 @@ private:
 /**
  * This GM directly exercises a GrProcessor that draws convex polygons.
  */
-class ConvexPolyEffect : public GM {
+class ConvexPolyEffect : public GpuGM {
 public:
     ConvexPolyEffect() {
         this->setBGColor(0xFFFFFFFF);
@@ -140,8 +145,7 @@ protected:
         const SkPoint center = { kRadius, kRadius };
         for (int i = 0; i < GrConvexPolyEffect::kMaxEdges; ++i) {
             SkScalar angle = 2 * SK_ScalarPI * i / GrConvexPolyEffect::kMaxEdges;
-            SkPoint point;
-            point.fY = SkScalarSinCos(angle, &point.fX);
+            SkPoint point = { SkScalarCos(angle), SkScalarSin(angle) };
             point.scale(kRadius);
             point = center + point;
             if (0 == i) {
@@ -178,19 +182,8 @@ protected:
         fRects.addToTail(SkRect::MakeLTRB(100.f, 50.5f, 5.f, 0.5f));
     }
 
-    void onDraw(SkCanvas* canvas) override {
-        GrRenderTargetContext* renderTargetContext =
-            canvas->internal_private_accessTopLayerRenderTargetContext();
-        if (!renderTargetContext) {
-            skiagm::GM::DrawGpuOnlyMessage(canvas);
-            return;
-        }
-
-        GrContext* context = canvas->getGrContext();
-        if (!context) {
-            return;
-        }
-
+    void onDraw(GrContext* context, GrRenderTargetContext* renderTargetContext,
+                SkCanvas* canvas) override {
         SkScalar y = 0;
         constexpr SkScalar kDX = 12.f;
         for (PathList::Iter iter(fPaths, PathList::Iter::kHead_IterStart);

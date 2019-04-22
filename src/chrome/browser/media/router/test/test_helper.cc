@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/test/test_helper.h"
 
+#include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/media_router/media_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -122,7 +124,7 @@ void TestDialActivityManager::SetExpectedRequest(
 net::IPEndPoint CreateIPEndPoint(int num) {
   net::IPAddress ip_address;
   CHECK(ip_address.AssignFromIPLiteral(
-      base::StringPrintf("192.168.0.10%d", num)));
+      base::StringPrintf("192.168.0.%d", 100 + num)));
   return net::IPEndPoint(ip_address, 8009 + num);
 }
 
@@ -138,7 +140,7 @@ MediaSinkInternal CreateDialSink(int num) {
   extra_data.ip_address = ip_endpoint.address();
   extra_data.model_name = base::StringPrintf("model name %d", num);
   extra_data.app_url =
-      GURL(base::StringPrintf("http://192.168.0.10%d/apps", num));
+      GURL(base::StringPrintf("http://192.168.0.%d/apps", 100 + num));
   return media_router::MediaSinkInternal(sink, extra_data);
 }
 
@@ -175,7 +177,7 @@ std::unique_ptr<ParsedDialAppInfo> CreateParsedDialAppInfoPtr(
 
 std::unique_ptr<DialInternalMessage> ParseDialInternalMessage(
     const std::string& message) {
-  auto message_value = base::JSONReader::Read(message);
+  auto message_value = base::JSONReader::ReadDeprecated(message);
   std::string error_unused;
   return message_value ? DialInternalMessage::From(std::move(*message_value),
                                                    &error_unused)

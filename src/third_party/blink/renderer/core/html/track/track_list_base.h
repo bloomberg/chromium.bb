@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/track_event.h"
 #include "third_party/blink/renderer/core/html/track/track_event_init.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -37,9 +36,9 @@ class TrackListBase : public EventTargetWithInlineData {
     return nullptr;
   }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack, kAddtrack);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack, kRemovetrack);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack, kAddtrack)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack, kRemovetrack)
 
   // EventTarget interface
   ExecutionContext* GetExecutionContext() const override {
@@ -79,7 +78,7 @@ class TrackListBase : public EventTargetWithInlineData {
     ScheduleEvent(Event::Create(event_type_names::kChange));
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(tracks_);
     visitor->Trace(media_element_);
     EventTargetWithInlineData::Trace(visitor);
@@ -91,7 +90,7 @@ class TrackListBase : public EventTargetWithInlineData {
     media_element_->ScheduleEvent(event);
   }
 
-  HeapVector<TraceWrapperMember<T>> tracks_;
+  HeapVector<Member<T>> tracks_;
   Member<HTMLMediaElement> media_element_;
 };
 

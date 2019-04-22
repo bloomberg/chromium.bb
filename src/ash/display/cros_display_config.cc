@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/display/display.h"
@@ -109,8 +110,8 @@ std::vector<mojom::DisplayLayoutPtr> GetDisplayLayouts() {
     if (placement.display_id == display::kInvalidDisplayId)
       continue;
     auto layout = mojom::DisplayLayout::New();
-    layout->id = base::Int64ToString(placement.display_id);
-    layout->parent_id = base::Int64ToString(placement.parent_display_id);
+    layout->id = base::NumberToString(placement.display_id);
+    layout->parent_id = base::NumberToString(placement.parent_display_id);
     layout->position = GetMojomDisplayLayoutPosition(placement.position);
     layout->offset = placement.offset;
     layouts.emplace_back(std::move(layout));
@@ -138,8 +139,8 @@ std::vector<mojom::DisplayLayoutPtr> GetDisplayUnifiedLayouts() {
       const int64_t parent_id = column_index == 0
                                     ? matrix[row_index - 1][column_index]
                                     : row[column_index - 1];
-      layout->id = base::Int64ToString(display_id);
-      layout->parent_id = base::Int64ToString(parent_id);
+      layout->id = base::NumberToString(display_id);
+      layout->parent_id = base::NumberToString(parent_id);
       layout->position = column_index == 0
                              ? mojom::DisplayLayoutPosition::kBottom
                              : mojom::DisplayLayoutPosition::kRight;
@@ -228,6 +229,7 @@ mojom::DisplayModePtr GetDisplayMode(
   result->device_scale_factor = display_mode.device_scale_factor();
   result->refresh_rate = display_mode.refresh_rate();
   result->is_native = display_mode.native();
+  result->is_interlaced = display_mode.is_interlaced();
   return result;
 }
 
@@ -238,7 +240,7 @@ mojom::DisplayUnitInfoPtr GetDisplayUnitInfo(const display::Display& display,
       display_manager->GetDisplayInfo(display.id());
 
   auto info = mojom::DisplayUnitInfo::New();
-  info->id = base::Int64ToString(display.id());
+  info->id = base::NumberToString(display.id());
   info->name = display_manager->GetDisplayNameForId(display.id());
 
   if (!display_info.manufacturer_id().empty() ||
@@ -407,7 +409,8 @@ void SetDisplayLayoutFromBounds(const gfx::Rect& primary_display_bounds,
 // Attempts to set the display mode for display |id|.
 mojom::DisplayConfigResult SetDisplayMode(
     int64_t id,
-    const mojom::DisplayMode& display_mode) {
+    const mojom::DisplayMode& display_mode,
+    mojom::DisplayConfigSource source) {
   display::DisplayManager* display_manager = GetDisplayManager();
 
   display::ManagedDisplayMode current_mode;
@@ -415,8 +418,8 @@ mojom::DisplayConfigResult SetDisplayMode(
     return mojom::DisplayConfigResult::kInvalidDisplayIdError;
 
   display::ManagedDisplayMode new_mode(
-      display_mode.size_in_native_pixels, current_mode.refresh_rate(),
-      current_mode.is_interlaced(), display_mode.is_native,
+      display_mode.size_in_native_pixels, display_mode.refresh_rate,
+      display_mode.is_interlaced, display_mode.is_native,
       display_mode.device_scale_factor);
 
   if (!new_mode.IsEquivalent(current_mode)) {
@@ -428,7 +431,7 @@ mojom::DisplayConfigResult SetDisplayMode(
     if (!Shell::Get()
              ->resolution_notification_controller()
              ->PrepareNotificationAndSetDisplayMode(
-                 id, current_mode, new_mode, base::BindOnce([]() {
+                 id, current_mode, new_mode, source, base::BindOnce([]() {
                    Shell::Get()->display_prefs()->MaybeStoreDisplayPrefs();
                  }))) {
       return mojom::DisplayConfigResult::kSetDisplayModeError;
@@ -499,10 +502,10 @@ void CrosDisplayConfig::GetDisplayLayoutInfo(
   } else if (display_manager->IsInMirrorMode()) {
     info->layout_mode = mojom::DisplayLayoutMode::kMirrored;
     info->mirror_source_id =
-        base::Int64ToString(display_manager->mirroring_source_id());
+        base::NumberToString(display_manager->mirroring_source_id());
     info->mirror_destination_ids = std::vector<std::string>();
     for (int64_t id : display_manager->GetMirroringDestinationDisplayIdList())
-      info->mirror_destination_ids->emplace_back(base::Int64ToString(id));
+      info->mirror_destination_ids->emplace_back(base::NumberToString(id));
   } else {
     info->layout_mode = mojom::DisplayLayoutMode::kNormal;
   }
@@ -632,6 +635,7 @@ void CrosDisplayConfig::GetDisplayUnitInfoList(
 void CrosDisplayConfig::SetDisplayProperties(
     const std::string& id,
     mojom::DisplayConfigPropertiesPtr properties,
+    mojom::DisplayConfigSource source,
     SetDisplayPropertiesCallback callback) {
   const display::Display display = GetDisplay(id);
   mojom::DisplayConfigResult result =
@@ -689,7 +693,7 @@ void CrosDisplayConfig::SetDisplayProperties(
   // will have already been applied. TODO(stevenjb): Validate the display mode
   // before applying any properties.
   if (properties->display_mode) {
-    result = SetDisplayMode(display.id(), *properties->display_mode);
+    result = SetDisplayMode(display.id(), *properties->display_mode, source);
     if (result != mojom::DisplayConfigResult::kSuccess) {
       std::move(callback).Run(result);
       return;

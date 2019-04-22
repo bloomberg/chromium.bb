@@ -8,7 +8,6 @@ import android.support.annotation.IntDef;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.NativeCall;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.lang.annotation.Retention;
@@ -29,10 +28,9 @@ public class IntentHeadersRecorder {
         /* package */ boolean isCorsSafelistedHeader(String name, String value) {
             return nativeIsCorsSafelistedHeader(name, value);
         }
-
-        @NativeCall("HeaderClassifier")
-        private static native boolean nativeIsCorsSafelistedHeader(String name, String value);
     }
+
+    private static native boolean nativeIsCorsSafelistedHeader(String name, String value);
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({IntentHeadersResult.FIRST_PARTY_NO_HEADERS,

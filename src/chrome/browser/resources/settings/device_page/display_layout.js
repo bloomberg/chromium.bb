@@ -73,8 +73,9 @@ Polymer({
     const self = this;
     const retry = 100;  // ms
     function tryCalcVisualScale() {
-      if (!self.calculateVisualScale_())
+      if (!self.calculateVisualScale_()) {
         setTimeout(tryCalcVisualScale, retry);
+      }
     }
     tryCalcVisualScale();
 
@@ -160,8 +161,9 @@ Polymer({
     /** @type {number} */ const OFFSET = opt_offset || 0;
     /** @type {number} */ const PADDING = 3;
     const bounds = this.getCalculatedDisplayBounds(id, true /* notest */);
-    if (!bounds)
+    if (!bounds) {
       return '';
+    }
     const height = Math.round(bounds.height * this.visualScale) - BORDER * 2 -
         MARGIN * 2 - PADDING * 2;
     const width = Math.round(bounds.width * this.visualScale) - BORDER * 2 -
@@ -239,8 +241,9 @@ Polymer({
       newBounds = this.getCalculatedDisplayBounds(id);
     } else {
       // Make sure the dragged display is also selected.
-      if (id != this.selectedDisplay.id)
+      if (id != this.selectedDisplay.id) {
         this.fire('select-display', id);
+      }
 
       const calculatedBounds = this.getCalculatedDisplayBounds(id);
       newBounds =
@@ -249,8 +252,9 @@ Polymer({
       newBounds.left += Math.round(amount.x / this.visualScale);
       newBounds.top += Math.round(amount.y / this.visualScale);
 
-      if (this.displays.length >= 2)
+      if (this.displays.length >= 2) {
         newBounds = this.updateDisplayBounds(id, newBounds);
+      }
     }
     const left =
         this.visualOffset_.left + Math.round(newBounds.left * this.visualScale);

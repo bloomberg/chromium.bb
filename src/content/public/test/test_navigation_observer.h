@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/test/test_utils.h"
@@ -67,6 +68,10 @@ class TestNavigationObserver {
 
   bool last_navigation_succeeded() const { return last_navigation_succeeded_; }
 
+  const base::Optional<url::Origin>& last_initiator_origin() const {
+    return last_initiator_origin_;
+  }
+
   net::Error last_net_error_code() const { return last_net_error_code_; }
 
   NavigationType last_navigation_type() const { return last_navigation_type_; }
@@ -99,7 +104,7 @@ class TestNavigationObserver {
   void OnDidAttachInterstitialPage(WebContents* web_contents);
   void OnDidStartLoading(WebContents* web_contents);
   void OnDidStopLoading(WebContents* web_contents);
-  void OnDidStartNavigation();
+  void OnDidStartNavigation(NavigationHandle* navigation_handle);
   void EventTriggered();
 
   // The event that once triggered will quit the run loop.
@@ -123,6 +128,9 @@ class TestNavigationObserver {
   // True if the last navigation succeeded.
   bool last_navigation_succeeded_;
 
+  // The initiator origin of the last observed navigation.
+  base::Optional<url::Origin> last_initiator_origin_;
+
   // The net error code of the last navigation.
   net::Error last_net_error_code_;
 
@@ -136,7 +144,8 @@ class TestNavigationObserver {
   base::Callback<void(WebContents*)> web_contents_created_callback_;
 
   // Living TestWebContentsObservers created by this observer.
-  std::set<std::unique_ptr<TestWebContentsObserver>> web_contents_observers_;
+  std::set<std::unique_ptr<TestWebContentsObserver>, base::UniquePtrComparator>
+      web_contents_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationObserver);
 };

@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/modules/webmidi/midi_access_initializer.h"
 
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -38,10 +38,15 @@ void MIDIAccessInitializer::ContextDestroyed(ExecutionContext* context) {
 
 ScriptPromise MIDIAccessInitializer::Start() {
   ScriptPromise promise = this->Promise();
-  accessor_ = MIDIAccessor::Create(this);
 
-  ConnectToPermissionService(GetExecutionContext(),
-                             mojo::MakeRequest(&permission_service_));
+  // See https://bit.ly/2S0zRAS for task types.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+  accessor_ = std::make_unique<MIDIAccessor>(this, task_runner);
+
+  ConnectToPermissionService(
+      GetExecutionContext(),
+      mojo::MakeRequest(&permission_service_, std::move(task_runner)));
 
   Document& doc = To<Document>(*GetExecutionContext());
   permission_service_->RequestPermission(

@@ -13,6 +13,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "components/update_client/configurator.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -95,6 +96,8 @@ class ConfiguratorImpl {
   // serializer object instances.
   std::unique_ptr<update_client::ProtocolHandlerFactory>
   GetProtocolHandlerFactory() const;
+
+  update_client::RecoveryCRXElevator GetRecoveryCRXElevator() const;
 
  private:
   base::flat_map<std::string, std::string> extra_info_;

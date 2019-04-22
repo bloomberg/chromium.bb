@@ -128,7 +128,7 @@ std::string SystemLogDelegate::GetPolicyAsJSON() {
   }
   return policy::GetAllPolicyValuesAsJSON(
       ProfileManager::GetActiveUserProfile(), include_user_policies,
-      true /* with device identity */);
+      true /* with_device_data */, true /* is_pretty_print */);
 }
 
 void SystemLogDelegate::LoadSystemLogs(LogUploadCallback upload_callback) {

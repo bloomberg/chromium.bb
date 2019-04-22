@@ -37,8 +37,8 @@ class V8_EXPORT_PRIVATE RegExpMatchInfo : NON_EXPORTED_BASE(public FixedArray) {
   inline void SetLastSubject(String value);
 
   // Like LastSubject, but modifiable by the user.
-  inline Object* LastInput();
-  inline void SetLastInput(Object* value);
+  inline Object LastInput();
+  inline void SetLastInput(Object value);
 
   // Returns the i'th capture index, 0 <= i < NumberOfCaptures(). Capture(0) and
   // Capture(1) determine the start- and endpoint of the match itself.
@@ -49,7 +49,7 @@ class V8_EXPORT_PRIVATE RegExpMatchInfo : NON_EXPORTED_BASE(public FixedArray) {
   static Handle<RegExpMatchInfo> ReserveCaptures(
       Isolate* isolate, Handle<RegExpMatchInfo> match_info, int capture_count);
 
-  DECL_CAST2(RegExpMatchInfo)
+  DECL_CAST(RegExpMatchInfo)
 
   static const int kNumberOfCapturesIndex = 0;
   static const int kLastSubjectIndex = 1;
@@ -57,10 +57,8 @@ class V8_EXPORT_PRIVATE RegExpMatchInfo : NON_EXPORTED_BASE(public FixedArray) {
   static const int kFirstCaptureIndex = 3;
   static const int kLastMatchOverhead = kFirstCaptureIndex;
 
-  static const int kNumberOfCapturesOffset = FixedArray::kHeaderSize;
-  static const int kLastSubjectOffset = kNumberOfCapturesOffset + kPointerSize;
-  static const int kLastInputOffset = kLastSubjectOffset + kPointerSize;
-  static const int kFirstCaptureOffset = kLastInputOffset + kPointerSize;
+  DEFINE_FIELD_OFFSET_CONSTANTS(FixedArray::kHeaderSize,
+                                TORQUE_GENERATED_REG_EXP_MATCH_INFO_FIELDS)
 
   // Every match info is guaranteed to have enough space to store two captures.
   static const int kInitialCaptureIndices = 2;

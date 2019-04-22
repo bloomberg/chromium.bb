@@ -2,13 +2,13 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
-<script src="file:///gen/content/test/data/mojo_layouttest_test.mojom.js"></script>
+<script src="file:///gen/content/test/data/mojo_web_test_helper_test.mojom.js"></script>
 <script src="resources/helpers.js"></script>
 <script>
 
 promise_test(() => {
-  let helper = new content.mojom.MojoLayoutTestHelperPtr;
-  Mojo.bindInterface(content.mojom.MojoLayoutTestHelper.name,
+  let helper = new content.mojom.MojoWebTestHelperPtr;
+  Mojo.bindInterface(content.mojom.MojoWebTestHelper.name,
                      mojo.makeRequest(helper).handle);
 
   const kTestMessage = "hello world.";
@@ -21,14 +21,14 @@ promise_test(() => {
 promise_test(() => {
   let helperImpl = new TestHelperImpl;
   let interceptor =
-      new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
+      new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name);
   interceptor.oninterfacerequest = e => {
     helperImpl.bindRequest(e.handle);
   };
   interceptor.start();
 
-  let helper = new content.mojom.MojoLayoutTestHelperPtr;
-  Mojo.bindInterface(content.mojom.MojoLayoutTestHelper.name,
+  let helper = new content.mojom.MojoWebTestHelperPtr;
+  Mojo.bindInterface(content.mojom.MojoWebTestHelper.name,
                      mojo.makeRequest(helper).handle);
   interceptor.stop();
 
@@ -42,14 +42,14 @@ promise_test(async () => {
   // requested at "process" scope.
   let helperImpl = new TestHelperImpl;
   let interceptor =
-      new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
+      new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name);
   interceptor.oninterfacerequest = e => {
     helperImpl.bindRequest(e.handle);
   };
   interceptor.start();
 
-  let helper = new content.mojom.MojoLayoutTestHelperPtr;
-  Mojo.bindInterface(content.mojom.MojoLayoutTestHelper.name,
+  let helper = new content.mojom.MojoWebTestHelperPtr;
+  Mojo.bindInterface(content.mojom.MojoWebTestHelper.name,
                      mojo.makeRequest(helper).handle,
                      "process");
 
@@ -65,14 +65,14 @@ promise_test(async () => {
 promise_test(() => {
   let helperImpl = new TestHelperImpl;
   let interceptor = new MojoInterfaceInterceptor(
-      content.mojom.MojoLayoutTestHelper.name, "process");
+      content.mojom.MojoWebTestHelper.name, "process");
   interceptor.oninterfacerequest = e => {
     helperImpl.bindRequest(e.handle);
   };
   interceptor.start();
 
-  let helper = new content.mojom.MojoLayoutTestHelperPtr;
-  Mojo.bindInterface(content.mojom.MojoLayoutTestHelper.name,
+  let helper = new content.mojom.MojoWebTestHelperPtr;
+  Mojo.bindInterface(content.mojom.MojoWebTestHelper.name,
                      mojo.makeRequest(helper).handle,
                      "process");
   interceptor.stop();
@@ -83,8 +83,8 @@ promise_test(() => {
 }, "can intercept interfaces at process scope");
 
 test(() => {
-  let a = new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
-  let b = new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
+  let a = new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name);
+  let b = new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name);
   a.oninterfacerequest = () => {};
   b.oninterfacerequest = () => {};
   a.start();
@@ -93,9 +93,9 @@ test(() => {
 }, "interface interceptors are mutually exclusive");
 
 test(() => {
-  let a = new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name,
+  let a = new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name,
                                        "process");
-  let b = new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name,
+  let b = new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name,
                                        "process");
   a.oninterfacerequest = () => {};
   b.oninterfacerequest = () => {};
@@ -107,7 +107,7 @@ test(() => {
 promise_test(async t => {
   // First check that the interceptor can be started and intercepts requests.
   let interceptor =
-      new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
+      new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name);
   let promise = new Promise(resolve => {
     interceptor.oninterfacerequest = e => {
       resolve(e.handle);
@@ -116,7 +116,7 @@ promise_test(async t => {
   interceptor.start();
 
   let pipe = Mojo.createMessagePipe();
-  Mojo.bindInterface(content.mojom.MojoLayoutTestHelper.name, pipe.handle0);
+  Mojo.bindInterface(content.mojom.MojoWebTestHelper.name, pipe.handle0);
   let interceptedHandle = await promise;
   assert_true(interceptedHandle instanceof MojoHandle);
   interceptedHandle.close();
@@ -125,11 +125,11 @@ promise_test(async t => {
   // Stop the interceptor and make another request.
   interceptor.stop();
 
-  let helper = new content.mojom.MojoLayoutTestHelperPtr;
+  let helper = new content.mojom.MojoWebTestHelperPtr;
   interceptor.oninterfacerequest = t.step_func(() => {
     assert_unreached("unexpected 'interfacerequest' event after stop");
   });
-  Mojo.bindInterface(content.mojom.MojoLayoutTestHelper.name,
+  Mojo.bindInterface(content.mojom.MojoWebTestHelper.name,
                      mojo.makeRequest(helper).handle);
 
   // Enusre that the interface is functioning, i.e. the request definitely was
@@ -142,7 +142,7 @@ promise_test(async t => {
   // And ensure that we can start a new interceptor for the same interface since
   // the previous one was stopped.
   interceptor =
-      new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
+      new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name);
   interceptor.oninterfacerequest = e => {};
   interceptor.start();
   interceptor.stop();

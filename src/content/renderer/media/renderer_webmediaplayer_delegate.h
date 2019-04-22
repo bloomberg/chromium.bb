@@ -65,24 +65,6 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
       blink::WebFullscreenVideoStatus fullscreen_video_status) override;
   void DidPlayerSizeChange(int delegate_id, const gfx::Size& size) override;
   void DidPlayerMutedStatusChange(int delegate_id, bool muted) override;
-  void DidPictureInPictureModeStart(
-      int delegate_id,
-      const viz::SurfaceId&,
-      const gfx::Size&,
-      blink::WebMediaPlayer::PipWindowOpenedCallback,
-      bool show_play_pause_button) override;
-  void DidPictureInPictureModeEnd(int delegate_id, base::OnceClosure) override;
-  void DidSetPictureInPictureCustomControls(
-      int delegate_id,
-      const std::vector<blink::PictureInPictureControlInfo>& controls) override;
-  void DidPictureInPictureSurfaceChange(int delegate_id,
-                                        const viz::SurfaceId&,
-                                        const gfx::Size&,
-                                        bool show_play_pause_button) override;
-  void RegisterPictureInPictureWindowResizeCallback(
-      int player_id,
-      blink::WebMediaPlayer::PipWindowResizedCallback) override;
-  bool IsBackgroundMediaSuspendEnabled() override;
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;
@@ -105,21 +87,15 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   friend class RendererWebMediaPlayerDelegateTest;
 
  private:
-  void OnMediaDelegatePause(int player_id);
+  void OnMediaDelegatePause(int player_id, bool triggered_by_user);
   void OnMediaDelegatePlay(int player_id);
+  void OnMediaDelegateMuted(int player_id, bool muted);
   void OnMediaDelegateSeekForward(int player_id, base::TimeDelta seek_time);
   void OnMediaDelegateSeekBackward(int player_id, base::TimeDelta seek_time);
   void OnMediaDelegateSuspendAllMediaPlayers();
   void OnMediaDelegateVolumeMultiplierUpdate(int player_id, double multiplier);
   void OnMediaDelegateBecamePersistentVideo(int player_id, bool value);
   void OnPictureInPictureModeEnded(int player_id);
-  void OnPictureInPictureControlClicked(int player_id,
-                                        const std::string& control_id);
-  void OnPictureInPictureModeEndedAck(int player_id, int request_id);
-  void OnPictureInPictureModeStartedAck(int player_id,
-                                        int request_id,
-                                        const gfx::Size&);
-  void OnPictureInPictureWindowResize(int player_id, const gfx::Size&);
 
   // Schedules UpdateTask() to run soon.
   void ScheduleUpdateTask();
@@ -151,9 +127,6 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // Flag for gating if players should ever transition to a stale state after a
   // period of inactivity.
   bool allow_idle_cleanup_ = true;
-
-  // Flag for whether players should suspend when tab is in background.
-  bool background_suspend_enabled_ = true;
 
   // Tracks which players have entered an idle state. After some period of
   // inactivity these players will be notified and become stale.
@@ -188,35 +161,6 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // Determined at construction time based on system information; determines
   // when the idle cleanup timer should be fired more aggressively.
   bool is_jelly_bean_;
-
-  // Map associating a callback with a request sent to the browser process. The
-  // index is used as a unique request id that is passed to the browser process
-  // and will then ACK with the same id which will be used to run the right
-  // callback.
-  using ExitPictureInPictureCallbackMap =
-      base::flat_map<int, base::OnceClosure>;
-  ExitPictureInPictureCallbackMap exit_picture_in_picture_callback_map_;
-
-  // Map associating a callback with a request sent to the browser process. The
-  // index is used as a unique request id that is passed to the browser process
-  // and will then ACK with the same id which will be used to run the right
-  // callback.
-  using EnterPictureInPictureCallbackMap =
-      base::flat_map<int, blink::WebMediaPlayer::PipWindowOpenedCallback>;
-  EnterPictureInPictureCallbackMap enter_picture_in_picture_callback_map_;
-
-  // Counter that is used to use unique request id associated with
-  // picture-in-picture callbacks. It is incremented every time it is used.
-  int next_picture_in_picture_callback_id_ = 0;
-
-  // Associating a player id and a Picture-in-Picture window resize callback.
-  // It holds the callback alive and guarantees that the notification sent from
-  // the browser proccess matches the player currently in Picture-in-Picture in
-  // the renderer.
-  using PictureInPictureWindowResizeObserver =
-      std::pair<int, blink::WebMediaPlayer::PipWindowResizedCallback>;
-  base::Optional<PictureInPictureWindowResizeObserver>
-      picture_in_picture_window_resize_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebMediaPlayerDelegate);
 };

@@ -14,9 +14,11 @@
 #include "services/metrics/public/cpp/metrics_export.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/metrics/public/mojom/ukm_interface.mojom.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom-forward.h"
 #include "url/gurl.h"
 
+class BackgroundFetchDelegateImpl;
+class BackgroundSyncMetrics;
 class IOSChromePasswordManagerClient;
 class MediaEngagementSession;
 class PlatformNotificationServiceImpl;
@@ -28,7 +30,6 @@ class TestAutofillClient;
 
 namespace blink {
 class Document;
-class NavigatorVR;
 }  // namespace blink
 
 namespace cc {
@@ -94,7 +95,7 @@ class METRICS_EXPORT UkmRecorder {
   virtual void AddEntry(mojom::UkmEntryPtr entry) = 0;
 
   // Disables sampling for testing purposes.
-  virtual void DisableSamplingForTesting(){};
+  virtual void DisableSamplingForTesting() {}
 
  protected:
   // Type-safe wrappers for Update<X> functions.
@@ -102,6 +103,8 @@ class METRICS_EXPORT UkmRecorder {
   void RecordAppURL(base::UkmSourceId source_id, const GURL& url);
 
  private:
+  friend BackgroundFetchDelegateImpl;
+  friend BackgroundSyncMetrics;
   friend DelegatingUkmRecorder;
   friend IOSChromePasswordManagerClient;
   friend MediaEngagementSession;
@@ -110,7 +113,6 @@ class METRICS_EXPORT UkmRecorder {
   friend TestRecordingHelper;
   friend autofill::TestAutofillClient;
   friend blink::Document;
-  friend blink::NavigatorVR;
   friend cc::UkmManager;
   friend content::CrossSiteDocumentResourceHandler;
   friend content::PluginServiceImpl;

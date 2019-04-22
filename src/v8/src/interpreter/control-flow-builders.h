@@ -58,11 +58,6 @@ class V8_EXPORT_PRIVATE BreakableControlFlowBuilder
 
   BytecodeLabels* break_labels() { return &break_labels_; }
 
-  void set_needs_continuation_counter() { needs_continuation_counter_ = true; }
-  bool needs_continuation_counter() const {
-    return needs_continuation_counter_;
-  }
-
  protected:
   void EmitJump(BytecodeLabels* labels);
   void EmitJumpIfTrue(BytecodeArrayBuilder::ToBooleanMode mode,
@@ -81,7 +76,6 @@ class V8_EXPORT_PRIVATE BreakableControlFlowBuilder
   // A continuation counter (for block coverage) is needed e.g. when
   // encountering a break statement.
   AstNode* node_;
-  bool needs_continuation_counter_ = false;
   BlockCoverageBuilder* block_coverage_builder_;
 };
 
@@ -107,7 +101,6 @@ class V8_EXPORT_PRIVATE LoopBuilder final : public BreakableControlFlowBuilder {
       : BreakableControlFlowBuilder(builder, block_coverage_builder, node),
         continue_labels_(builder->zone()) {
     if (block_coverage_builder_ != nullptr) {
-      set_needs_continuation_counter();
       block_coverage_body_slot_ =
           block_coverage_builder_->AllocateBlockCoverageSlot(
               node, SourceRangeKind::kBody);
@@ -128,7 +121,7 @@ class V8_EXPORT_PRIVATE LoopBuilder final : public BreakableControlFlowBuilder {
   void ContinueIfNull() { EmitJumpIfNull(&continue_labels_); }
 
  private:
-  BytecodeLabel loop_header_;
+  BytecodeLoopHeader loop_header_;
 
   // Unbound labels that identify jumps for continue statements in the code and
   // jumps from checking the loop condition to the header for do-while loops.
@@ -195,7 +188,6 @@ class V8_EXPORT_PRIVATE TryCatchBuilder final : public ControlFlowBuilder {
  private:
   int handler_id_;
   HandlerTable::CatchPrediction catch_prediction_;
-  BytecodeLabel handler_;
   BytecodeLabel exit_;
 
   BlockCoverageBuilder* block_coverage_builder_;

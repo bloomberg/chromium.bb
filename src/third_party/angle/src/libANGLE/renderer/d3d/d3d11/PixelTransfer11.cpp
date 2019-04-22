@@ -50,7 +50,7 @@ angle::Result PixelTransfer11::loadResources(const gl::Context *context)
 {
     if (mResourcesLoaded)
     {
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     D3D11_RASTERIZER_DESC rasterDesc;
@@ -113,7 +113,7 @@ angle::Result PixelTransfer11::loadResources(const gl::Context *context)
 
     mResourcesLoaded = true;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void PixelTransfer11::setBufferToTextureCopyParams(const gl::Box &destArea,
@@ -125,8 +125,8 @@ void PixelTransfer11::setBufferToTextureCopyParams(const gl::Box &destArea,
 {
     StructZero(parametersOut);
 
-    float texelCenterX = 0.5f / static_cast<float>(destSize.width - 1);
-    float texelCenterY = 0.5f / static_cast<float>(destSize.height - 1);
+    float texelCenterX = 0.5f / static_cast<float>(destSize.width);
+    float texelCenterY = 0.5f / static_cast<float>(destSize.height);
 
     unsigned int bytesPerPixel  = gl::GetSizedInternalFormatInfo(internalFormat).pixelBytes;
     unsigned int alignmentBytes = static_cast<unsigned int>(unpack.alignment);
@@ -164,7 +164,7 @@ angle::Result PixelTransfer11::copyBufferToTexture(const gl::Context *context,
            destArea.z + destArea.depth <= destSize.depth);
 
     const gl::Buffer &sourceBuffer =
-        *context->getGLState().getTargetBuffer(gl::BufferBinding::PixelUnpack);
+        *context->getState().getTargetBuffer(gl::BufferBinding::PixelUnpack);
 
     ASSERT(mRenderer->supportsFastCopyBufferToTexture(destinationFormat));
 
@@ -226,7 +226,7 @@ angle::Result PixelTransfer11::copyBufferToTexture(const gl::Context *context,
     UINT numPixels = (destArea.width * destArea.height * destArea.depth);
     deviceContext->Draw(numPixels, 0);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result PixelTransfer11::buildShaderMap(const gl::Context *context)
@@ -252,7 +252,7 @@ angle::Result PixelTransfer11::buildShaderMap(const gl::Context *context)
     mBufferToTexturePSMap[GL_INT]          = std::move(bufferToTextureInt);
     mBufferToTexturePSMap[GL_UNSIGNED_INT] = std::move(bufferToTextureUint);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 const d3d11::PixelShader *PixelTransfer11::findBufferToTexturePS(GLenum internalFormat) const

@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 'use strict';
 
-var menu = null;
-var submenu = null;
-var separator = null;
+let menu = null;
+let submenu = null;
+let separator = null;
 
 document.write(`
     <command id="share" label="Share"></command>
-    <command id="manage-in-drive" i18n-values="Manage in Drive"></command>
+    <command id="manage-in-drive" label="Manage in Drive"></command>
     <command id="toggle-pinned" label="Toggle pinned"></command>
     <command id="remove-folder-shortcut" label="Remove folder shortcut">
     </command>
@@ -31,8 +31,8 @@ function setUp() {
 }
 
 function tearDown() {
-  var items = document.querySelectorAll('#menu cr-menu-item');
-  for (var i = 0; i < items.length; i++) {
+  const items = document.querySelectorAll('#menu cr-menu-item');
+  for (let i = 0; i < items.length; i++) {
     items[i].parentNode.removeChild(items[i]);
   }
   separator.hidden = true;
@@ -41,9 +41,8 @@ function tearDown() {
 function testSeparator() {
   assertTrue(separator.hidden);
 
-  submenu.setActionsModel(new MockActionsModel({
-    id: new MockActionModel('title', null)
-  }));
+  submenu.setActionsModel(
+      new MockActionsModel({id: new MockActionModel('title', null)}));
   assertFalse(separator.hidden);
 
   submenu.setActionsModel(new MockActionsModel([]));
@@ -51,32 +50,29 @@ function testSeparator() {
 }
 
 function testNullModel() {
-  submenu.setActionsModel(new MockActionsModel({
-    id: new MockActionModel('title', null)
-  }));
-  var item = menu.querySelector('cr-menu-item');
+  submenu.setActionsModel(
+      new MockActionsModel({id: new MockActionModel('title', null)}));
+  let item = menu.querySelector('cr-menu-item');
   assertTrue(!!item);
 
   submenu.setActionsModel(null);
-  var item = menu.querySelector('cr-menu-item');
+  item = menu.querySelector('cr-menu-item');
   assertFalse(!!item);
 }
 
 function testCustomActionRendering() {
-  submenu.setActionsModel(new MockActionsModel({
-    id: new MockActionModel('title', null)
-  }));
-  var item = menu.querySelector('cr-menu-item');
+  submenu.setActionsModel(
+      new MockActionsModel({id: new MockActionModel('title', null)}));
+  const item = menu.querySelector('cr-menu-item');
   assertTrue(!!item);
   assertEquals('title', item.textContent);
   assertEquals(null, item.command);
 }
 
 function testCommandActionRendering() {
-  submenu.setActionsModel(new MockActionsModel({
-    SHARE: new MockActionModel('share with me!', null)
-  }));
-  var item = menu.querySelector('cr-menu-item');
+  submenu.setActionsModel(new MockActionsModel(
+      {SHARE: new MockActionModel('share with me!', null)}));
+  const item = menu.querySelector('cr-menu-item');
   assertTrue(!!item);
   assertEquals('Share', item.textContent);
   assertEquals('share', item.command.id);

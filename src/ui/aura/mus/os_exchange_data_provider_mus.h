@@ -46,7 +46,7 @@ class AURA_EXPORT OSExchangeDataProviderMus
   void SetURL(const GURL& url, const base::string16& title) override;
   void SetFilename(const base::FilePath& path) override;
   void SetFilenames(const std::vector<ui::FileInfo>& file_names) override;
-  void SetPickledData(const ui::Clipboard::FormatType& format,
+  void SetPickledData(const ui::ClipboardFormatType& format,
                       const base::Pickle& data) override;
 
   bool GetString(base::string16* data) const override;
@@ -55,13 +55,13 @@ class AURA_EXPORT OSExchangeDataProviderMus
                       base::string16* title) const override;
   bool GetFilename(base::FilePath* path) const override;
   bool GetFilenames(std::vector<ui::FileInfo>* file_names) const override;
-  bool GetPickledData(const ui::Clipboard::FormatType& format,
+  bool GetPickledData(const ui::ClipboardFormatType& format,
                       base::Pickle* data) const override;
 
   bool HasString() const override;
   bool HasURL(ui::OSExchangeData::FilenameToURLPolicy policy) const override;
   bool HasFile() const override;
-  bool HasCustomFormat(const ui::Clipboard::FormatType& format) const override;
+  bool HasCustomFormat(const ui::ClipboardFormatType& format) const override;
 
 // Provider doesn't have a consistent interface between operating systems;
 // this wasn't seen as a problem when there was a single Provider subclass

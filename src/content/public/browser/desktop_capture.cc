@@ -30,6 +30,11 @@ webrtc::DesktopCaptureOptions CreateDesktopCaptureOptions() {
     options.set_allow_iosurface(true);
   }
 #endif
+#if defined(WEBRTC_USE_PIPEWIRE)
+  if (base::FeatureList::IsEnabled(features::kWebRtcPipeWireCapturer)) {
+    options.set_allow_pipewire(true);
+  }
+#endif  // defined(WEBRTC_USE_PIPEWIRE)
   return options;
 }
 

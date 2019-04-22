@@ -76,11 +76,15 @@ Polymer({
       type: Boolean,
       value: false,
     },
-  },
 
-  listeners: {
-    'auth-token-changed': 'onAuthTokenChanged_',
-    'close': 'onDialogClose_',
+    /**
+     * Authentication token provided by password-prompt-dialog.
+     * @private {string}
+     */
+    authToken_: {
+      type: String,
+      value: '',
+    },
   },
 
   /** @private {?settings.MultiDeviceBrowserProxy} */
@@ -164,29 +168,22 @@ Polymer({
   },
 
   /**
-   * Completes the transaction of setting the Smart Lock 'sign-in enabled' pref
-   * after the user authenticates.
-   * @param {!{detail: !Object}} event The event containing the auth token.
-   * @private
-   */
-  onAuthTokenChanged_: function(event) {
-    const authToken = event.detail.value;
-
-    // The auth-token-changed event fires after the expiration period (
-    // represented by the empty string), so only move forward when the auth
-    // token is non-empty.
-    if (authToken !== '') {
-      this.browserProxy_.setSmartLockSignInEnabled(
-          true /* enabled */, authToken);
-    }
-  },
-
-  /**
    * Updates the state of the password dialog controller flag when the UI
    * element closes.
    * @private
    */
-  onDialogClose_: function() {
+  onEnableSignInDialogClose_: function() {
     this.showPasswordPromptDialog_ = false;
+
+    // If |this.authToken_| is set when the dialog has been closed, this means
+    // that the user entered the correct password into the dialog when
+    // attempting to enable SignIn with Smart Lock.
+    if (this.authToken_ !== '') {
+      this.browserProxy_.setSmartLockSignInEnabled(
+          true /* enabled */, this.authToken_);
+    }
+
+    // Always require password entry if re-enabling SignIn with Smart Lock.
+    this.authToken_ = '';
   },
 });

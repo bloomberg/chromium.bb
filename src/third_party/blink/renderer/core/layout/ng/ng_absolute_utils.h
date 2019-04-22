@@ -60,8 +60,9 @@ CORE_EXPORT bool AbsoluteNeedsChildBlockSize(const ComputedStyle&);
 // Returns partially filled position.
 CORE_EXPORT NGAbsolutePhysicalPosition
 ComputePartialAbsoluteWithChildInlineSize(
-    const NGConstraintSpace& space,
-    const ComputedStyle& style,
+    const NGConstraintSpace&,
+    const ComputedStyle&,
+    const NGBoxStrut& border_padding,
     const NGStaticPosition&,
     const base::Optional<MinMaxSize>& child_minmax,
     const base::Optional<NGLogicalSize>& replaced_size,
@@ -70,8 +71,9 @@ ComputePartialAbsoluteWithChildInlineSize(
 
 // Compute rest of NGPhysicalRect that depends on child's block_size.
 CORE_EXPORT void ComputeFullAbsoluteWithChildBlockSize(
-    const NGConstraintSpace& space,
-    const ComputedStyle& style,
+    const NGConstraintSpace&,
+    const ComputedStyle&,
+    const NGBoxStrut& border_padding,
     const NGStaticPosition&,
     const base::Optional<LayoutUnit>& child_block_size,
     const base::Optional<NGLogicalSize>& replaced_size,

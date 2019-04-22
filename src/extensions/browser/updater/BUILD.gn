@@ -44,5 +44,6 @@ source_set("updater") {
     "//extensions/common",
     "//extensions/strings",
     "//services/data_decoder/public/cpp",
+    "//services/identity/public/cpp",
   ]
 }

@@ -233,7 +233,7 @@ class MockMediaController : public mojom::MediaController,
       mojom::HangoutsMediaRouteControllerRequest controller_request) override {
     hangouts_binding_.Bind(std::move(controller_request));
     ConnectHangoutsMediaRouteController();
-  };
+  }
   MOCK_METHOD0(ConnectHangoutsMediaRouteController, void());
   MOCK_METHOD1(SetLocalPresent, void(bool local_present));
 
@@ -333,6 +333,27 @@ class MediaRouterMojoTest : public ::testing::Test {
   std::unique_ptr<MockMediaSinksObserver> sinks_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoTest);
+};
+
+// An object whose Invoke method can be passed as a MediaRouteResponseCallback.
+class RouteResponseCallbackHandler {
+ public:
+  RouteResponseCallbackHandler();
+  ~RouteResponseCallbackHandler();
+
+  // Calls DoInvoke with the contents of |connection| and |result|.
+  void Invoke(mojom::RoutePresentationConnectionPtr connection,
+              const RouteRequestResult& result);
+
+  MOCK_METHOD5(DoInvoke,
+               void(const MediaRoute* route,
+                    const std::string& presentation_id,
+                    const std::string& error_text,
+                    RouteRequestResult::ResultCode result_code,
+                    mojom::RoutePresentationConnectionPtr& connection));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RouteResponseCallbackHandler);
 };
 
 }  // namespace media_router

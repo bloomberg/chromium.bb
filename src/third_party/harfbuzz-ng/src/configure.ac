@@ -1,6 +1,6 @@
 AC_PREREQ([2.64])
 AC_INIT([HarfBuzz],
-        [2.1.3],
+        [2.4.0],
         [https://github.com/harfbuzz/harfbuzz/issues/new],
         [harfbuzz],
         [http://harfbuzz.org/])
@@ -12,7 +12,6 @@ AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([1.13.0 gnits tar-ustar dist-bzip2 no-dist-gzip -Wall no-define color-tests -Wno-portability])
 AM_SILENT_RULES([yes])
 AX_CODE_COVERAGE
-AC_USE_SYSTEM_EXTENSIONS
 
 # Initialize libtool
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
@@ -24,7 +23,7 @@ AC_PROG_CC
 AC_PROG_CC_C99
 AM_PROG_CC_C_O
 AC_PROG_CXX
-dnl AX_CXX_COMPILE_STDCXX(11, noext, optional)
+AX_CXX_COMPILE_STDCXX(11,, optional)
 AC_SYS_LARGEFILE
 PKG_PROG_PKG_CONFIG([0.20])
 AM_MISSING_PROG([RAGEL], [ragel])
@@ -102,9 +101,6 @@ if test "x$GCC" = "xyes"; then
 	# Put -fno-rtti before $CXXFLAGS such that users can re-enable it
 	# by overriding CXXFLAGS.
 	CXXFLAGS="-fno-rtti $CXXFLAGS -fno-exceptions -fno-threadsafe-statics"
-
-	# Assorted warnings
-	CXXFLAGS="$CXXFLAGS -Wcast-align"
 
 	case "$host" in
 		*-*-mingw*)
@@ -518,6 +514,11 @@ docs/version.xml
 ])
 
 AC_OUTPUT
+
+echo
+echo "C++ compiler version:"
+$CXX --version
+echo
 
 AC_MSG_NOTICE([
 

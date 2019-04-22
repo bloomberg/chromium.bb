@@ -7,7 +7,7 @@
 namespace base {
 
 // static
-TimeTicks TimeTicks::FromUptimeMillis(jlong uptime_millis_value) {
+TimeTicks TimeTicks::FromUptimeMillis(int64_t uptime_millis_value) {
   // The implementation of the SystemClock.uptimeMillis() in AOSP uses the same
   // clock as base::TimeTicks::Now(): clock_gettime(CLOCK_MONOTONIC), see in
   // platform/system/code:

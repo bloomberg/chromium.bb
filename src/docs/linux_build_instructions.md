@@ -84,6 +84,10 @@ $ cd src
 Once you have checked out the code, and assuming you're using Ubuntu, run
 [build/install-build-deps.sh](/build/install-build-deps.sh)
 
+```shell
+$ ./build/install-build-deps.sh
+```
+
 You may need to adjust the build dependencies for other distros. There are
 some [notes](#notes) at the end of this document, but we make no guarantees
 for their accuracy.
@@ -158,7 +162,7 @@ symbols at all. Either will speed up the build compared to full symbols.
 
 Due to its extensive use of templates, the Blink code produces about half
 of our debug symbols. If you don't ever need to debug Blink, you can set
-the GN arg `remove_webcore_debug_symbols=true`.
+the GN arg `blink_symbol_level=0`.
 
 #### Use Icecc
 
@@ -364,37 +368,6 @@ because the ARM toolchain doesn't exist for this configuration:
 ```shell
 $ sudo install-build-deps.sh --no-arm
 ```
-
-### Debian
-
-Some tests require the `ttf-mscorefonts-installer` package from the `contrib`
-component. `contrib` packages may have dependencies on non-free software.
-
-If you need to run tests requiring MS TTF fonts, you can edit your apt
-`sources.list` by adding `contrib` to the end of each line beginning with `deb`.
-You might end up with something like this:
-
-```
-deb http://ftp.us.debian.org/debian/ jessie main contrib
-deb-src http://ftp.us.debian.org/debian/ jessie main contrib
-
-deb http://security.debian.org/ jessie/updates main contrib
-deb-src http://security.debian.org/ jessie/updates main contrib
-
-# jessie-updates, previously known as 'volatile'
-deb http://ftp.us.debian.org/debian/ jessie-updates main contrib
-deb-src http://ftp.us.debian.org/debian/ jessie-updates main contrib
-```
-
-Next, run:
-
-``` shell
-$ sudo apt-get update
-$ sudo apt-get install ttf-mscorefonts-installer
-```
-
-If you already have the `contrib` component enabled, `install-build-deps.sh`
-will install `ttf-mscorefonts-installer` for you.
 
 ### Fedora
 

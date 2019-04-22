@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
@@ -27,13 +28,17 @@ namespace app_list {
 class ArcAppShortcutSearchResult : public ChromeSearchResult,
                                    public AppIconLoaderDelegate {
  public:
+  // Constructor for ArcAppShortcutSearchResult. |is_recommendation|
+  // defines the display type of search results.
   ArcAppShortcutSearchResult(arc::mojom::AppShortcutItemPtr data,
                              Profile* profile,
-                             AppListControllerDelegate* list_controller);
+                             AppListControllerDelegate* list_controller,
+                             bool is_recommendation);
   ~ArcAppShortcutSearchResult() override;
 
   // ChromeSearchResult:
   void Open(int event_flags) override;
+  SearchResultType GetSearchResultType() const override;
 
  private:
   // AppIconLoaderDelegate:

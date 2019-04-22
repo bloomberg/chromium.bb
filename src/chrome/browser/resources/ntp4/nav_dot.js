@@ -22,7 +22,7 @@ cr.define('ntp', function() {
    * @implements {cr.ui.DragWrapperDelegate}
    */
   function NavDot(page, title, titleIsEditable, animate) {
-    var dot = cr.doc.createElement('li');
+    const dot = cr.doc.createElement('li');
     dot.__proto__ = NavDot.prototype;
     dot.initialize(page, title, titleIsEditable, animate);
 
@@ -38,7 +38,7 @@ cr.define('ntp', function() {
 
       this.page_ = page;
 
-      var selectionBar = this.ownerDocument.createElement('div');
+      const selectionBar = this.ownerDocument.createElement('div');
       selectionBar.className = 'selection-bar';
       this.appendChild(selectionBar);
 
@@ -66,7 +66,7 @@ cr.define('ntp', function() {
 
       if (animate) {
         this.classList.add('small');
-        var self = this;
+        const self = this;
         window.setTimeout(function() {
           self.classList.remove('small');
         }, 0);
@@ -97,10 +97,11 @@ cr.define('ntp', function() {
      * @param {boolean=} opt_animate Whether to animate the removal or not.
      */
     remove: function(opt_animate) {
-      if (opt_animate)
+      if (opt_animate) {
         this.classList.add('small');
-      else
+      } else {
         this.parentNode.removeChild(this);
+      }
     },
 
     /**
@@ -130,8 +131,9 @@ cr.define('ntp', function() {
       this.switchToPage();
       // The explicit focus call is necessary because of overriding the default
       // handling in onInputMouseDown_.
-      if (this.ownerDocument.activeElement != this.input_)
+      if (this.ownerDocument.activeElement != this.input_) {
         this.focus();
+      }
 
       e.stopPropagation();
     },
@@ -155,8 +157,9 @@ cr.define('ntp', function() {
      * @private
      */
     onInputMouseDown_: function(e) {
-      if (this.ownerDocument.activeElement != this.input_)
+      if (this.ownerDocument.activeElement != this.input_) {
         e.preventDefault();
+      }
     },
 
     /**
@@ -192,7 +195,7 @@ cr.define('ntp', function() {
 
     /** @override */
     doDragEnter: function(e) {
-      var self = this;
+      const self = this;
       function navPageClearTimeout() {
         self.switchToPage();
         self.dragNavTimeout = null;
@@ -207,18 +210,20 @@ cr.define('ntp', function() {
       // Prevent default handling so the <input> won't act as a drag target.
       e.preventDefault();
 
-      if (!this.dragWrapper_.isCurrentDragTarget)
+      if (!this.dragWrapper_.isCurrentDragTarget) {
         ntp.setCurrentDropEffect(e.dataTransfer, 'none');
-      else
+      } else {
         this.page_.setDropEffect(e.dataTransfer);
+      }
     },
 
     /** @override */
     doDrop: function(e) {
       e.stopPropagation();
-      var tile = ntp.getCurrentlyDraggingTile();
-      if (tile && tile.tilePage != this.page_)
+      const tile = ntp.getCurrentlyDraggingTile();
+      if (tile && tile.tilePage != this.page_) {
         this.page_.appendDraggingTile();
+      }
       // TODO(estade): handle non-tile drags.
 
       this.cancelDelayedSwitch_();
@@ -246,8 +251,9 @@ cr.define('ntp', function() {
      * @private
      */
     onTransitionEnd_: function(e) {
-      if (e.propertyName === 'max-width' && this.classList.contains('small'))
+      if (e.propertyName === 'max-width' && this.classList.contains('small')) {
         this.parentNode.removeChild(this);
+      }
     },
   };
 

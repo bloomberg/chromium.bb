@@ -91,8 +91,19 @@ class CONTENT_EXPORT SyntheticWebTouchEvent : public blink::WebTouchEvent {
   void ResetPoints();
 
   // Adds an additional point to the touch list, returning the point's index.
-  int PressPoint(float x, float y);
-  void MovePoint(int index, float x, float y);
+  int PressPoint(float x,
+                 float y,
+                 float radius_x = 20.f,
+                 float radius_y = 20.f,
+                 float rotation_angle = 0.f,
+                 float force = 1.f);
+  void MovePoint(int index,
+                 float x,
+                 float y,
+                 float radius_x = 20.f,
+                 float radius_y = 20.f,
+                 float rotation_angle = 0.f,
+                 float force = 1.f);
   void ReleasePoint(int index);
   void CancelPoint(int index);
 

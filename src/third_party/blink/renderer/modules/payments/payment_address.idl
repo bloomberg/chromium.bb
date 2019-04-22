@@ -9,11 +9,10 @@
     SecureContext,
     Exposed=Window
 ] interface PaymentAddress {
-    serializer = {attribute};
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
     readonly attribute DOMString city;
     readonly attribute DOMString country;
     readonly attribute DOMString dependentLocality;
-    [MeasureAs=PaymentAddressLanguageCode] readonly attribute DOMString languageCode;
     readonly attribute DOMString organization;
     readonly attribute DOMString phone;
     readonly attribute DOMString postalCode;

@@ -16,6 +16,7 @@ class PrefRegistrySimple;
 
 namespace base {
 class DictionaryValue;
+class Value;
 }
 
 namespace user_manager {
@@ -67,6 +68,21 @@ bool USER_MANAGER_EXPORT GetIntegerPref(const AccountId& account_id,
 void USER_MANAGER_EXPORT SetIntegerPref(const AccountId& account_id,
                                         const std::string& path,
                                         const int in_value);
+
+// Returns true if |account_id| preference by |path| does exist,
+// fills in |out_value|. Otherwise returns false.
+bool USER_MANAGER_EXPORT GetPref(const AccountId& account_id,
+                                 const std::string& path,
+                                 const base::Value** out_value);
+
+// Updates user's identified by |account_id| value preference |path|.
+void USER_MANAGER_EXPORT SetPref(const AccountId& account_id,
+                                 const std::string& path,
+                                 base::Value in_value);
+
+// Removes user's identified by |account_id| preference |path|.
+void USER_MANAGER_EXPORT RemovePref(const AccountId& account_id,
+                                    const std::string& path);
 
 // Returns the list of known AccountIds.
 std::vector<AccountId> USER_MANAGER_EXPORT GetKnownAccountIds();
@@ -136,17 +152,6 @@ void USER_MANAGER_EXPORT UpdateUsingSAML(const AccountId& account_id,
 // returns false.
 bool USER_MANAGER_EXPORT IsUsingSAML(const AccountId& account_id);
 
-// Returns true if the user's session has already completed initialization
-// (set to false when session is created, and then is set to true once
-// the profile is intiaiized - this allows us to detect crashes/restarts during
-// initial session creation so we can recover gracefully).
-bool USER_MANAGER_EXPORT WasProfileEverInitialized(const AccountId& account_id);
-
-// Sets the flag that denotes whether the session associated with a user has
-// completed initialization at least once.
-void USER_MANAGER_EXPORT SetProfileEverInitialized(const AccountId& account_id,
-                                                   bool initialized);
-
 // Enum describing whether a user's profile requires policy. If kPolicyRequired,
 // the profile initialization code will ensure that valid policy is loaded
 // before session initialization completes.
@@ -166,6 +171,10 @@ GetProfileRequiresPolicy(const AccountId& account_id);
 void USER_MANAGER_EXPORT
 SetProfileRequiresPolicy(const AccountId& account_id,
                          ProfileRequiresPolicy policy_required);
+
+// Clears information whether profile requires policy.
+void USER_MANAGER_EXPORT
+ClearProfileRequiresPolicy(const AccountId& account_id);
 
 // Saves why the user has to go through re-auth flow.
 void USER_MANAGER_EXPORT UpdateReauthReason(const AccountId& account_id,
@@ -192,10 +201,6 @@ void RemovePrefs(const AccountId& account_id);
 
 // Removes all ephemeral users.
 void CleanEphemeralUsers();
-
-// Clears kProfileEverInitialized for a user.
-void USER_MANAGER_EXPORT
-RemoveSetProfileEverInitializedPrefForTesting(const AccountId& account_id);
 
 // Register known user prefs.
 void USER_MANAGER_EXPORT RegisterPrefs(PrefRegistrySimple* registry);

@@ -5,25 +5,24 @@
 #ifndef CHROME_BROWSER_CONFLICTS_MODULE_INFO_WIN_H_
 #define CHROME_BROWSER_CONFLICTS_MODULE_INFO_WIN_H_
 
-#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
+#include "content/public/common/process_type.h"
 
 // ModuleInfoKey and ModuleInfoData are used in pair by the ModuleDatabase to
 // maintain information about a module, usually in a std::map.
-
-// Used by the ModuleDatabase as a unique identifier for a module.
-using ModuleId = uint32_t;
 
 // This is the constant portion of the module information, and is used to
 // uniquely identify one.
 struct ModuleInfoKey {
   ModuleInfoKey(const base::FilePath& module_path,
                 uint32_t module_size,
-                uint32_t module_time_date_stamp,
-                uint32_t module_id);
+                uint32_t module_time_date_stamp);
 
   // Less-than operator allowing this object to be used in std::map.
   bool operator<(const ModuleInfoKey& mi) const;
@@ -38,24 +37,26 @@ struct ModuleInfoKey {
   // The module time date stamp. Part of the key for a ModuleInfo. Taken from
   // TimeDateStamp from the module's IMAGE_FILE_HEADER.
   uint32_t module_time_date_stamp;
-
-  // The ID of this module. This is a strictly incrementing value, and is used
-  // by the ModuleDatabase to tie a module to the list of running processes in
-  // which it is found. It is not part of the key for the module, but it is
-  // immutable. This is simply the index of the module in the insertion order.
-  ModuleId module_id;
 };
 
 // Holds more detailed information about a given module. Because all of this
 // information is expensive to gather and requires disk access, it should be
 // collected via InspectModule() on a task runner that allow blocking.
+//
+// Note: Any modification to this structure should be reflected in
+//       SerializeInspectionResult() and DeserializeInspectionResult() in
+//       chrome/browser/conflicts/inspection_results_cache_win.cc.
 struct ModuleInspectionResult {
   ModuleInspectionResult();
+  ModuleInspectionResult(const ModuleInspectionResult& other);
+  ModuleInspectionResult(ModuleInspectionResult&& other);
+
+  ModuleInspectionResult& operator=(const ModuleInspectionResult& other);
+  ModuleInspectionResult& operator=(ModuleInspectionResult&& other);
+
   ~ModuleInspectionResult();
 
-  // The module path, not including the basename. This is cleaned and normalized
-  // so that common paths are converted to their environment variable mappings
-  // (ie, %systemroot%). This makes i18n localized paths easily comparable.
+  // The lowercase module path, not including the basename.
   base::string16 location;
 
   // The basename of the module.
@@ -108,18 +109,33 @@ struct ModuleInfoData {
   uint32_t module_properties;
 
   // The inspection result obtained via InspectModule().
-  std::unique_ptr<ModuleInspectionResult> inspection_result;
+  base::Optional<ModuleInspectionResult> inspection_result;
 };
 
-// Given a module identified by |module_key|, returns a populated
+// Given a module located at |module_path|, returns a populated
 // ModuleInspectionResult that contains detailed information about the module on
 // disk. This is a blocking task that requires access to disk.
-std::unique_ptr<ModuleInspectionResult> InspectModule(
-    const StringMapping& env_variable_mapping,
-    const ModuleInfoKey& module_key);
+ModuleInspectionResult InspectModule(const base::FilePath& module_path);
+
+// Returns the date stamp to be used in the inspection results cache.
+// Represents the number of hours between |time| and the Windows epoch
+// (1601-01-01 00:00:00 UTC).
+uint32_t CalculateTimeStamp(base::Time time);
 
 // Generate the code id of a module.
 std::string GenerateCodeId(const ModuleInfoKey& module_key);
+
+// Converts a valid |process_type| to a bit for use in a bitmask of process
+// values. Exposed in the header for testing.
+uint32_t ProcessTypeToBit(content::ProcessType process_type);
+
+// Converts a |bit_index| (which maps to the bit 1 << bit_index) to the
+// corresponding process type. Exposed in the header for testing.
+content::ProcessType BitIndexToProcessType(uint32_t bit_index);
+
+// Returns true if |process_types| has at least one bit corresponding to a
+// process type where the blocking of third-party modules is enabled.
+bool IsBlockingEnabledInProcessTypes(uint32_t process_types);
 
 namespace internal {
 

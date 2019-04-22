@@ -22,10 +22,14 @@
 #endif
 
 namespace {
+
 // Returns true if the module is signed by Google.
 bool IsGoogleModule(base::StringPiece16 subject) {
-  static const wchar_t kGoogle[] = L"Google Inc";
-  return subject == kGoogle;
+  static constexpr base::StringPiece16 kGoogleLlc(
+      STRING16_LITERAL("Google LLC"));
+  static constexpr base::StringPiece16 kGoogleInc(
+      STRING16_LITERAL("Google Inc"));
+  return subject == kGoogleLlc || subject == kGoogleInc;
 }
 
 }  // namespace
@@ -54,10 +58,10 @@ void ThirdPartyMetricsRecorder::OnNewModuleFound(
   const CertificateInfo& certificate_info =
       module_data.inspection_result->certificate_info;
   module_count_++;
-  if (certificate_info.type != CertificateType::NO_CERTIFICATE) {
+  if (certificate_info.type != CertificateInfo::Type::NO_CERTIFICATE) {
     ++signed_module_count_;
 
-    if (certificate_info.type == CertificateType::CERTIFICATE_IN_CATALOG)
+    if (certificate_info.type == CertificateInfo::Type::CERTIFICATE_IN_CATALOG)
       ++catalog_module_count_;
 
     base::StringPiece16 certificate_subject = certificate_info.subject;

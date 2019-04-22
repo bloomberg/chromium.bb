@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_COMMANDS_H_
 #define IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_COMMANDS_H_
 
+#import <Foundation/Foundation.h>
+
 // Commands issued to a model backing a grid UI.
 @protocol GridCommands
 // Tells the receiver to insert a new item at the end of the list.

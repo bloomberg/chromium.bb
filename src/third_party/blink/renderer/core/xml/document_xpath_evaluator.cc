@@ -72,7 +72,7 @@ XPathResult* DocumentXPathEvaluator::evaluate(Document& document,
                                               const String& expression,
                                               Node* context_node,
                                               XPathNSResolver* resolver,
-                                              unsigned short type,
+                                              uint16_t type,
                                               const ScriptValue&,
                                               ExceptionState& exception_state) {
   DocumentXPathEvaluator& suplement = From(document);

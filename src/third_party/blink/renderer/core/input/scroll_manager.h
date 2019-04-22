@@ -6,17 +6,18 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_SCROLL_MANAGER_H_
 
 #include <deque>
+#include <memory>
 
 #include "base/macros.h"
+#include "cc/input/snap_fling_controller.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_snap_data.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -37,7 +38,7 @@ class WebGestureEvent;
 // classes and they call into this class for doing the work.
 class CORE_EXPORT ScrollManager
     : public GarbageCollectedFinalized<ScrollManager>,
-      public SnapFlingClient {
+      public cc::SnapFlingClient {
  public:
   explicit ScrollManager(LocalFrame&);
   virtual ~ScrollManager() = default;
@@ -173,7 +174,7 @@ class CORE_EXPORT ScrollManager
 
   Member<PaintLayerScrollableArea> resize_scrollable_area_;
 
-  std::unique_ptr<SnapFlingController> snap_fling_controller_;
+  std::unique_ptr<cc::SnapFlingController> snap_fling_controller_;
 
   LayoutSize
       offset_from_resize_corner_;  // In the coords of m_resizeScrollableArea.

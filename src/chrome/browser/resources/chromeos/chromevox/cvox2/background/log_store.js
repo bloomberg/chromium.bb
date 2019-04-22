@@ -137,6 +137,25 @@ LogStore.logTypes = function() {
 };
 
 /**
+ * Creates logs of type |type| in order.
+ * This is not the best way to create logs fast but
+ * getLogsOfType() is not called often.
+ * @param {!TextLog.LogType} logType
+ * @return {!Array<BaseLog>}
+ */
+LogStore.prototype.getLogsOfType = function(logType) {
+  var returnLogs = [];
+  for (var i = 0; i < LogStore.LOG_LIMIT; i++) {
+    var index = (this.startIndex_ + i) % LogStore.LOG_LIMIT;
+    if (!this.logs_[index])
+      continue;
+    if (this.logs_[index].logType == logType)
+      returnLogs.push(this.logs_[index]);
+  }
+  return returnLogs;
+};
+
+/**
  * Create logs in order.
  * This is not the best way to create logs fast but
  * getLogs() is not called often.

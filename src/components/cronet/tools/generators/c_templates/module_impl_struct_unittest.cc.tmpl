@@ -49,7 +49,20 @@ TEST_F({{test_class_name}}StructTest, Test{{struct_name}}) {
 {%-     if kind|is_array_kind %}
   // TODO(mef): Test array |{{packed_field.field.name}}|.
 {%-     elif kind|is_struct_kind %}
-  // TODO(mef): Test substruct |{{packed_field.field.name}}|.
+  {{kind|cpp_wrapper_type}}Ptr test_{{packed_field.field.name}} = {{kind|cpp_wrapper_type}}_Create();
+  EXPECT_EQ({{struct_name}}_{{packed_field.field.name}}_get(first), nullptr);
+
+  {{struct_name}}_{{packed_field.field.name}}_set(first, test_{{packed_field.field.name}});
+  EXPECT_NE({{struct_name}}_{{packed_field.field.name}}_get(first), nullptr);
+  {{struct_name}}_{{packed_field.field.name}}_set(first, nullptr);
+  EXPECT_EQ({{struct_name}}_{{packed_field.field.name}}_get(first), nullptr);
+
+  {{struct_name}}_{{packed_field.field.name}}_move(first, test_{{packed_field.field.name}});
+  EXPECT_NE({{struct_name}}_{{packed_field.field.name}}_get(first), nullptr);
+  {{struct_name}}_{{packed_field.field.name}}_move(first, nullptr);
+  EXPECT_EQ({{struct_name}}_{{packed_field.field.name}}_get(first), nullptr);
+
+  {{kind|cpp_wrapper_type}}_Destroy(test_{{packed_field.field.name}});
 {%-     else %}
   {{struct_name}}_{{packed_field.field.name}}_set(second,
   {{struct_name}}_{{packed_field.field.name}}_get(first));

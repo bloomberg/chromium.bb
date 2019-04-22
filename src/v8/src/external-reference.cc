@@ -6,17 +6,22 @@
 
 #include "src/api.h"
 #include "src/base/ieee754.h"
-#include "src/codegen.h"
 #include "src/compiler/code-assembler.h"
 #include "src/counters.h"
+#include "src/cpu-features.h"
 #include "src/date.h"
 #include "src/debug/debug.h"
 #include "src/deoptimizer.h"
 #include "src/elements.h"
+#include "src/hash-seed-inl.h"
 #include "src/heap/heap.h"
+#include "src/objects/ordered-hash-table.h"
+// For IncrementalMarking::RecordWriteFromCode. TODO(jkummerow): Drop.
+#include "src/heap/heap-inl.h"
 #include "src/ic/stub-cache.h"
 #include "src/interpreter/interpreter.h"
 #include "src/isolate.h"
+#include "src/log.h"
 #include "src/math-random.h"
 #include "src/microtask-queue.h"
 #include "src/objects-inl.h"
@@ -26,7 +31,6 @@
 #include "src/wasm/wasm-external-refs.h"
 
 // Include native regexp-macro-assembler.
-#ifndef V8_INTERPRETED_REGEXP
 #if V8_TARGET_ARCH_IA32
 #include "src/regexp/ia32/regexp-macro-assembler-ia32.h"  // NOLINT
 #elif V8_TARGET_ARCH_X64
@@ -46,7 +50,6 @@
 #else  // Unknown architecture.
 #error "Unknown architecture."
 #endif  // Target architecture.
-#endif  // V8_INTERPRETED_REGEXP
 
 #ifdef V8_INTL_SUPPORT
 #include "src/objects/intl-objects.h"
@@ -64,27 +67,27 @@ constexpr uint64_t double_the_hole_nan_constant = kHoleNanInt64;
 constexpr double double_uint32_bias_constant =
     static_cast<double>(kMaxUInt32) + 1;
 
-constexpr struct V8_ALIGNED(16) {
+constexpr struct alignas(16) {
   uint32_t a;
   uint32_t b;
   uint32_t c;
   uint32_t d;
 } float_absolute_constant = {0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF};
 
-constexpr struct V8_ALIGNED(16) {
+constexpr struct alignas(16) {
   uint32_t a;
   uint32_t b;
   uint32_t c;
   uint32_t d;
 } float_negate_constant = {0x80000000, 0x80000000, 0x80000000, 0x80000000};
 
-constexpr struct V8_ALIGNED(16) {
+constexpr struct alignas(16) {
   uint64_t a;
   uint64_t b;
 } double_absolute_constant = {uint64_t{0x7FFFFFFFFFFFFFFF},
                               uint64_t{0x7FFFFFFFFFFFFFFF}};
 
-constexpr struct V8_ALIGNED(16) {
+constexpr struct alignas(16) {
   uint64_t a;
   uint64_t b;
 } double_negate_constant = {uint64_t{0x8000000000000000},
@@ -135,11 +138,6 @@ ExternalReference ExternalReference::builtins_address(Isolate* isolate) {
 ExternalReference ExternalReference::handle_scope_implementer_address(
     Isolate* isolate) {
   return ExternalReference(isolate->handle_scope_implementer_address());
-}
-
-ExternalReference ExternalReference::default_microtask_queue_address(
-    Isolate* isolate) {
-  return ExternalReference(isolate->default_microtask_queue_address());
 }
 
 ExternalReference ExternalReference::interpreter_dispatch_table_address(
@@ -236,7 +234,7 @@ struct IsValidExternalReferenceType<Result (Class::*)(Args...)> {
   }
 
 FUNCTION_REFERENCE(incremental_marking_record_write_function,
-                   IncrementalMarking::RecordWriteFromCode);
+                   IncrementalMarking::RecordWriteFromCode)
 
 ExternalReference ExternalReference::store_buffer_overflow_function() {
   return ExternalReference(
@@ -245,6 +243,9 @@ ExternalReference ExternalReference::store_buffer_overflow_function() {
 
 FUNCTION_REFERENCE(delete_handle_scope_extensions,
                    HandleScope::DeleteExtensions)
+
+FUNCTION_REFERENCE(ephemeron_key_write_barrier_function,
+                   Heap::EphemeronKeyWriteBarrierFromCode)
 
 FUNCTION_REFERENCE(get_date_field_function, JSDate::GetField)
 
@@ -307,6 +308,8 @@ FUNCTION_REFERENCE(wasm_word32_popcnt, wasm::word32_popcnt_wrapper)
 FUNCTION_REFERENCE(wasm_word64_popcnt, wasm::word64_popcnt_wrapper)
 FUNCTION_REFERENCE(wasm_word32_rol, wasm::word32_rol_wrapper)
 FUNCTION_REFERENCE(wasm_word32_ror, wasm::word32_ror_wrapper)
+FUNCTION_REFERENCE(wasm_memory_copy, wasm::memory_copy_wrapper)
+FUNCTION_REFERENCE(wasm_memory_fill, wasm::memory_fill_wrapper)
 
 static void f64_acos_wrapper(Address data) {
   double input = ReadUnalignedValue<double>(data);
@@ -421,8 +424,13 @@ ExternalReference ExternalReference::address_of_min_int() {
   return ExternalReference(reinterpret_cast<Address>(&double_min_int_constant));
 }
 
+ExternalReference
+ExternalReference::address_of_mock_arraybuffer_allocator_flag() {
+  return ExternalReference(&FLAG_mock_arraybuffer_allocator);
+}
+
 ExternalReference ExternalReference::address_of_runtime_stats_flag() {
-  return ExternalReference(&FLAG_runtime_stats);
+  return ExternalReference(&TracingFlags::runtime_stats);
 }
 
 ExternalReference ExternalReference::address_of_one_half() {
@@ -474,8 +482,6 @@ ExternalReference ExternalReference::invoke_accessor_getter_callback() {
   ApiFunction thunk_fun(thunk_address);
   return ExternalReference::Create(&thunk_fun, thunk_type);
 }
-
-#ifndef V8_INTERPRETED_REGEXP
 
 #if V8_TARGET_ARCH_X64
 #define re_stack_check_func RegExpMacroAssemblerX64::CheckStackGuardState
@@ -533,8 +539,6 @@ ExternalReference ExternalReference::address_of_regexp_stack_memory_size(
   return ExternalReference(isolate->regexp_stack()->memory_size_address());
 }
 
-#endif  // V8_INTERPRETED_REGEXP
-
 FUNCTION_REFERENCE_WITH_TYPE(ieee754_acos_function, base::ieee754::acos,
                              BUILTIN_FP_CALL)
 FUNCTION_REFERENCE_WITH_TYPE(ieee754_acosh_function, base::ieee754::acosh,
@@ -575,6 +579,8 @@ FUNCTION_REFERENCE_WITH_TYPE(ieee754_tan_function, base::ieee754::tan,
                              BUILTIN_FP_CALL)
 FUNCTION_REFERENCE_WITH_TYPE(ieee754_tanh_function, base::ieee754::tanh,
                              BUILTIN_FP_CALL)
+FUNCTION_REFERENCE_WITH_TYPE(ieee754_pow_function, base::ieee754::pow,
+                             BUILTIN_FP_FP_CALL)
 
 void* libc_memchr(void* string, int character, size_t search_length) {
   return memchr(string, character, search_length);
@@ -634,14 +640,15 @@ ExternalReference ExternalReference::search_string_raw_two_two() {
 
 FUNCTION_REFERENCE(orderedhashmap_gethash_raw, OrderedHashMap::GetHash)
 
-Address GetOrCreateHash(Isolate* isolate, Object* key) {
+Address GetOrCreateHash(Isolate* isolate, Address raw_key) {
   DisallowHeapAllocation no_gc;
-  return key->GetOrCreateHash(isolate).ptr();
+  return Object(raw_key)->GetOrCreateHash(isolate).ptr();
 }
 
 FUNCTION_REFERENCE(get_or_create_hash_raw, GetOrCreateHash)
 
-static Address JSReceiverCreateIdentityHash(Isolate* isolate, JSReceiver* key) {
+static Address JSReceiverCreateIdentityHash(Isolate* isolate, Address raw_key) {
+  JSReceiver key = JSReceiver::cast(Object(raw_key));
   return JSReceiver::CreateIdentityHash(isolate, key).ptr();
 }
 
@@ -650,7 +657,7 @@ FUNCTION_REFERENCE(jsreceiver_create_identity_hash,
 
 static uint32_t ComputeSeededIntegerHash(Isolate* isolate, uint32_t key) {
   DisallowHeapAllocation no_gc;
-  return ComputeSeededHash(key, isolate->heap()->HashSeed());
+  return ComputeSeededHash(key, HashSeed(isolate));
 }
 
 FUNCTION_REFERENCE(compute_integer_hash, ComputeSeededIntegerHash)
@@ -677,8 +684,8 @@ FUNCTION_REFERENCE(check_object_type, CheckObjectType)
 #ifdef V8_INTL_SUPPORT
 
 static Address ConvertOneByteToLower(Address raw_src, Address raw_dst) {
-  String src = String::cast(ObjectPtr(raw_src));
-  String dst = String::cast(ObjectPtr(raw_dst));
+  String src = String::cast(Object(raw_src));
+  String dst = String::cast(Object(raw_dst));
   return Intl::ConvertOneByteToLower(src, dst).ptr();
 }
 FUNCTION_REFERENCE(intl_convert_one_byte_to_lower, ConvertOneByteToLower)
@@ -698,11 +705,6 @@ template ExternalReference
 ExternalReference::search_string_raw<const uc16, const uint8_t>();
 template ExternalReference
 ExternalReference::search_string_raw<const uc16, const uc16>();
-
-ExternalReference ExternalReference::page_flags(Page* page) {
-  return ExternalReference(reinterpret_cast<Address>(page) +
-                           MemoryChunk::kFlagsOffset);
-}
 
 ExternalReference ExternalReference::FromRawAddress(Address address) {
   return ExternalReference(address);
@@ -758,61 +760,15 @@ ExternalReference ExternalReference::runtime_function_table_address(
 }
 
 static Address InvalidatePrototypeChainsWrapper(Address raw_map) {
-  Map map = Map::cast(ObjectPtr(raw_map));
+  Map map = Map::cast(Object(raw_map));
   return JSObject::InvalidatePrototypeChains(map).ptr();
 }
 
 FUNCTION_REFERENCE(invalidate_prototype_chains_function,
                    InvalidatePrototypeChainsWrapper)
 
-double power_helper(double x, double y) {
-  int y_int = static_cast<int>(y);
-  if (y == y_int) {
-    return power_double_int(x, y_int);  // Returns 1 if exponent is 0.
-  }
-  if (y == 0.5) {
-    lazily_initialize_fast_sqrt();
-    return (std::isinf(x)) ? V8_INFINITY
-                           : fast_sqrt(x + 0.0);  // Convert -0 to +0.
-  }
-  if (y == -0.5) {
-    lazily_initialize_fast_sqrt();
-    return (std::isinf(x)) ? 0 : 1.0 / fast_sqrt(x + 0.0);  // Convert -0 to +0.
-  }
-  return power_double_double(x, y);
-}
-
-// Helper function to compute x^y, where y is known to be an
-// integer. Uses binary decomposition to limit the number of
-// multiplications; see the discussion in "Hacker's Delight" by Henry
-// S. Warren, Jr., figure 11-6, page 213.
-double power_double_int(double x, int y) {
-  double m = (y < 0) ? 1 / x : x;
-  unsigned n = (y < 0) ? -y : y;
-  double p = 1;
-  while (n != 0) {
-    if ((n & 1) != 0) p *= m;
-    m *= m;
-    if ((n & 2) != 0) p *= m;
-    m *= m;
-    n >>= 2;
-  }
-  return p;
-}
-
-double power_double_double(double x, double y) {
-  // The checks for special cases can be dropped in ia32 because it has already
-  // been done in generated code before bailing out here.
-  if (std::isnan(y) || ((x == 1 || x == -1) && std::isinf(y))) {
-    return std::numeric_limits<double>::quiet_NaN();
-  }
-  return Pow(x, y);
-}
-
 double modulo_double_double(double x, double y) { return Modulo(x, y); }
 
-FUNCTION_REFERENCE_WITH_TYPE(power_double_double_function, power_double_double,
-                             BUILTIN_FP_FP_CALL)
 FUNCTION_REFERENCE_WITH_TYPE(mod_two_doubles_operation, modulo_double_double,
                              BUILTIN_FP_FP_CALL)
 
@@ -826,15 +782,20 @@ ExternalReference ExternalReference::debug_restart_fp_address(
   return ExternalReference(isolate->debug()->restart_fp_address());
 }
 
-ExternalReference ExternalReference::fixed_typed_array_base_data_offset() {
-  return ExternalReference(reinterpret_cast<void*>(
-      FixedTypedArrayBase::kDataOffset - kHeapObjectTag));
+ExternalReference ExternalReference::fast_c_call_caller_fp_address(
+    Isolate* isolate) {
+  return ExternalReference(
+      isolate->isolate_data()->fast_c_call_caller_fp_address());
 }
 
-ExternalReference ExternalReference::call_enqueue_microtask_function() {
+ExternalReference ExternalReference::fast_c_call_caller_pc_address(
+    Isolate* isolate) {
   return ExternalReference(
-      Redirect(FUNCTION_ADDR(MicrotaskQueue::CallEnqueueMicrotask)));
+      isolate->isolate_data()->fast_c_call_caller_pc_address());
 }
+
+FUNCTION_REFERENCE(call_enqueue_microtask_function,
+                   MicrotaskQueue::CallEnqueueMicrotask)
 
 static int64_t atomic_pair_load(intptr_t address) {
   return std::atomic_load(reinterpret_cast<std::atomic<int64_t>*>(address));
@@ -941,6 +902,15 @@ static uint64_t atomic_pair_compare_exchange(intptr_t address,
 
 FUNCTION_REFERENCE(atomic_pair_compare_exchange_function,
                    atomic_pair_compare_exchange)
+
+static int EnterMicrotaskContextWrapper(HandleScopeImplementer* hsi,
+                                        Address raw_context) {
+  Context context = Context::cast(Object(raw_context));
+  hsi->EnterMicrotaskContext(context);
+  return 0;
+}
+
+FUNCTION_REFERENCE(call_enter_context_function, EnterMicrotaskContextWrapper)
 
 bool operator==(ExternalReference lhs, ExternalReference rhs) {
   return lhs.address() == rhs.address();

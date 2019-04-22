@@ -214,7 +214,8 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
     return false;
 
   // getifaddrs() may require IO operations.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   ifaddrs* interfaces;
   if (getifaddrs(&interfaces) < 0) {

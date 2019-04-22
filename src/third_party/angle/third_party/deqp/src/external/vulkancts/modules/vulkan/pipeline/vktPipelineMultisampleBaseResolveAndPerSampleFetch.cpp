@@ -24,6 +24,7 @@
 
 #include "vktPipelineMultisampleBaseResolveAndPerSampleFetch.hpp"
 #include "vktPipelineMakeUtil.hpp"
+#include "vkBarrierUtil.hpp"
 #include "vkBuilderUtil.hpp"
 #include "vkQueryUtil.hpp"
 #include "vkTypeUtil.hpp"
@@ -378,7 +379,7 @@ tcu::TestStatus MSInstanceBaseResolveAndPerSampleFetch::iterate (void)
 
 	uploadVertexData(vertexBufferAllocation, vertexDataDesc);
 
-	flushMappedMemoryRange(deviceInterface, device, vertexBufferAllocation.getMemory(), vertexBufferAllocation.getOffset(), VK_WHOLE_SIZE);
+	flushAlloc(deviceInterface, device, vertexBufferAllocation);
 
 	const VkVertexInputBindingDescription vertexBinding =
 	{
@@ -457,7 +458,7 @@ tcu::TestStatus MSInstanceBaseResolveAndPerSampleFetch::iterate (void)
 
 		deMemcpy(vertexAllocPerSampleFetchPass.getHostPtr(), dataPointer(vertices), static_cast<std::size_t>(bufferPerSampleFetchPassSize));
 
-		flushMappedMemoryRange(deviceInterface, device, vertexAllocPerSampleFetchPass.getMemory(), vertexAllocPerSampleFetchPass.getOffset(), VK_WHOLE_SIZE);
+		flushAlloc(deviceInterface, device, vertexAllocPerSampleFetchPass);
 
 		for (deUint32 sampleNdx = 0u; sampleNdx < numSamples; ++sampleNdx)
 		{
@@ -512,7 +513,7 @@ tcu::TestStatus MSInstanceBaseResolveAndPerSampleFetch::iterate (void)
 
 		deMemcpy(bufferSampleID->getAllocation().getHostPtr(), sampleIDs, static_cast<deUint32>(uboOffsetAlignment * numSamples));
 
-		flushMappedMemoryRange(deviceInterface, device, bufferSampleID->getAllocation().getMemory(), bufferSampleID->getAllocation().getOffset(), VK_WHOLE_SIZE);
+		flushAlloc(deviceInterface, device, bufferSampleID->getAllocation());
 
 		delete[] sampleIDs;
 	}
@@ -734,7 +735,7 @@ tcu::TestStatus MSInstanceBaseResolveAndPerSampleFetch::iterate (void)
 	// Retrieve data from bufferRS to host memory
 	const Allocation& bufferRSAlloc = bufferRS->getAllocation();
 
-	invalidateMappedMemoryRange(deviceInterface, device, bufferRSAlloc.getMemory(), bufferRSAlloc.getOffset(), VK_WHOLE_SIZE);
+	invalidateAlloc(deviceInterface, device, bufferRSAlloc);
 
 	const tcu::ConstPixelBufferAccess bufferRSData (m_imageFormat,
 													imageRSInfo.extent.width,
@@ -757,7 +758,7 @@ tcu::TestStatus MSInstanceBaseResolveAndPerSampleFetch::iterate (void)
 	{
 		const Allocation& bufferAlloc = buffersPerSample[sampleNdx]->getAllocation();
 
-		invalidateMappedMemoryRange(deviceInterface, device, bufferAlloc.getMemory(), bufferAlloc.getOffset(), VK_WHOLE_SIZE);
+		invalidateAlloc(deviceInterface, device, bufferAlloc);
 
 		buffersPerSampleData[sampleNdx] = tcu::ConstPixelBufferAccess
 		(

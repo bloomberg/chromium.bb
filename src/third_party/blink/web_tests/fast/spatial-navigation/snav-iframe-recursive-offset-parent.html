@@ -1,14 +1,14 @@
 <table style="text-align: top;"  border="0" cellpadding="3px" cellspacing="3px">
   <tr>
     <td valign="top" width="10%">
-      <a id="start" href="http://google.com">Link</a><br>
+      <a id="start" href="">Link</a><br>
     </td>
     <td valign="top">
       <iframe id="frameA" width="50%" height="100px" frameborder="1" src="data:text/html,
       <body id='frameAbody'>
-        <a id='1' href='http://a'>b</a>
-        <a id='2' href='http://a'>c</a>
-        <a id='3' href='http://a'>d</a>
+        <a id='b' href=''>b</a>
+        <a id='c' href=''>c</a>
+        <a id='d' href=''>d</a>
       </body>
       "></iframe><br>
     </td>
@@ -20,12 +20,12 @@
 <script src="resources/snav-testharness.js"></script>
 <script>
   var resultMap = [
-    // ["Right", "frameA,frameAbody"],  crbug.com/801162
-    ["Right", "frameA,1"],
-    ["Right", "frameA,2"],
-    ["Right", "frameA,3"],
-    ["Left", "frameA,2"],
-    ["Left", "frameA,1"],
+    ["Right", "frameA,frameAbody"],
+    ["Right", "frameA,b"],
+    ["Right", "frameA,c"],
+    ["Right", "frameA,d"],
+    ["Left", "frameA,c"],
+    ["Left", "frameA,b"],
     ["Left", "start"],
   ];
   // Start at a known place.

@@ -9,20 +9,21 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "content/renderer/media/stream/apply_constraints_processor.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
@@ -126,7 +127,8 @@ UserMediaClientImpl::UserMediaClientImpl(
               std::move(media_stream_device_observer),
               base::BindRepeating(
                   &UserMediaClientImpl::GetMediaDevicesDispatcher,
-                  base::Unretained(this))),
+                  base::Unretained(this)),
+              render_frame->GetTaskRunner(blink::TaskType::kInternalMedia)),
           std::move(task_runner)) {}
 
 UserMediaClientImpl::~UserMediaClientImpl() {
@@ -134,7 +136,7 @@ UserMediaClientImpl::~UserMediaClientImpl() {
   // Force-close all outstanding user media requests and local sources here,
   // before the outstanding WeakPtrs are invalidated, to ensure a clean
   // shutdown.
-  WillCommitProvisionalLoad();
+  DeleteAllUserMediaRequests();
 }
 
 void UserMediaClientImpl::RequestUserMedia(
@@ -221,8 +223,9 @@ void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
                        base::Unretained(this)));
   } else {
     DCHECK(current_request.IsStopTrack());
-    MediaStreamTrack* track =
-        MediaStreamTrack::GetTrack(current_request.web_track_to_stop());
+    blink::WebPlatformMediaStreamTrack* track =
+        blink::WebPlatformMediaStreamTrack::GetTrack(
+            current_request.web_track_to_stop());
     if (track) {
       track->StopAndNotify(
           base::BindOnce(&UserMediaClientImpl::CurrentRequestCompleted,
@@ -250,7 +253,7 @@ void UserMediaClientImpl::CancelUserMediaRequest(
     const blink::WebUserMediaRequest& web_request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   {
-    // TODO(guidou): Remove this conditional logging. http://crbug.com/764293
+    // TODO(guidou): Remove this conditional logging. https://crbug.com/764293
     UserMediaRequest* request = user_media_processor_->CurrentRequest();
     if (request && request->web_request == web_request) {
       WebRtcLogMessage(base::StringPrintf(
@@ -277,7 +280,8 @@ void UserMediaClientImpl::CancelUserMediaRequest(
     // We can't abort the stream generation process.
     // Instead, erase the request. Once the stream is generated we will stop the
     // stream if the request does not exist.
-    LogUserMediaRequestWithNoResult(MEDIA_STREAM_REQUEST_EXPLICITLY_CANCELLED);
+    LogUserMediaRequestWithNoResult(
+        blink::MEDIA_STREAM_REQUEST_EXPLICITLY_CANCELLED);
   }
 }
 
@@ -288,7 +292,8 @@ void UserMediaClientImpl::DeleteAllUserMediaRequests() {
   pending_request_infos_.clear();
 }
 
-void UserMediaClientImpl::WillCommitProvisionalLoad() {
+void UserMediaClientImpl::ReadyToCommitNavigation(
+    blink::WebDocumentLoader* document_loader) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Cancel all outstanding UserMediaRequests.
   DeleteAllUserMediaRequests();

@@ -368,8 +368,9 @@ FileNetLogObserver::~FileNetLogObserver() {
     // StopObserving was not called.
     net_log()->RemoveObserver(this);
     file_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FileNetLogObserver::FileWriter::DeleteAllFiles,
-                              base::Unretained(file_writer_.get())));
+        FROM_HERE,
+        base::BindOnce(&FileNetLogObserver::FileWriter::DeleteAllFiles,
+                       base::Unretained(file_writer_.get())));
   }
   file_task_runner_->DeleteSoon(FROM_HERE, file_writer_.release());
 }
@@ -401,9 +402,7 @@ void FileNetLogObserver::StopObserving(std::unique_ptr<base::Value> polled_data,
 void FileNetLogObserver::OnAddEntry(const NetLogEntry& entry) {
   std::unique_ptr<std::string> json(new std::string);
 
-  // If |entry| cannot be converted to proper JSON, ignore it.
-  if (!base::JSONWriter::Write(*entry.ToValue(), json.get()))
-    return;
+  *json = SerializeNetLogValueToJson(*entry.ToValue());
 
   size_t queue_size = write_queue_->AddEntryToQueue(std::move(json));
 
@@ -414,8 +413,8 @@ void FileNetLogObserver::OnAddEntry(const NetLogEntry& entry) {
   if (queue_size == kNumWriteQueueEvents) {
     file_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&FileNetLogObserver::FileWriter::Flush,
-                   base::Unretained(file_writer_.get()), write_queue_));
+        base::BindOnce(&FileNetLogObserver::FileWriter::Flush,
+                       base::Unretained(file_writer_.get()), write_queue_));
   }
 }
 
@@ -479,9 +478,9 @@ FileNetLogObserver::FileNetLogObserver(
   if (!constants)
     constants = GetNetConstants();
   file_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FileNetLogObserver::FileWriter::Initialize,
-                            base::Unretained(file_writer_.get()),
-                            base::Passed(&constants)));
+      FROM_HERE, base::BindOnce(&FileNetLogObserver::FileWriter::Initialize,
+                                base::Unretained(file_writer_.get()),
+                                std::move(constants)));
 }
 
 FileNetLogObserver::WriteQueue::WriteQueue(uint64_t memory_max)
@@ -684,11 +683,7 @@ void FileNetLogObserver::FileWriter::WriteConstantsToFile(
     std::unique_ptr<base::Value> constants_value,
     base::File* file) {
   // Print constants to file and open events array.
-  std::string json;
-
-  // It should always be possible to convert constants to JSON.
-  if (!base::JSONWriter::Write(*constants_value, &json))
-    DCHECK(false);
+  std::string json = SerializeNetLogValueToJson(*constants_value);
   WriteToFile(file, "{\"constants\":", json, ",\n\"events\": [\n");
 }
 
@@ -802,6 +797,22 @@ void FileNetLogObserver::FileWriter::CreateInprogressDirectory() {
       "\n"
       "https://chromium.googlesource.com/chromium/src/+/master/net/tools/"
       "stitch_net_log_files.py\n");
+}
+
+std::string SerializeNetLogValueToJson(const base::Value& value) {
+  // Omit trailing ".0" when printing a DOUBLE that is representable as a 64-bit
+  // integer. This makes the values returned by NetLogNumberValue() look more
+  // pleasant (for representing integers between 32 and 53 bits large).
+  int options = base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION;
+
+  std::string json;
+  bool ok = base::JSONWriter::WriteWithOptions(value, options, &json);
+
+  // Serialization shouldn't fail. However it can if a consumer has passed a
+  // parameter of type BINARY, since JSON serialization can't handle that.
+  DCHECK(ok);
+
+  return json;
 }
 
 }  // namespace net

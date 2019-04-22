@@ -17,21 +17,12 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gtest/gtest.h"
+#include "test/process_type.h"
 #include "util/misc/from_pointer_cast.h"
-
-#if defined(OS_FUCHSIA)
-#include <lib/zx/process.h>
-
-#include "util/process/process_memory_fuchsia.h"
-#elif defined(OS_WIN)
-#include "util/process/process_memory_win.h"
-#else
-#include <unistd.h>
-
-#include "util/process/process_memory_linux.h"
-#endif
+#include "util/process/process_memory_native.h"
 
 namespace crashpad {
 namespace test {
@@ -49,16 +40,8 @@ TEST(ProcessMemoryRange, Basic) {
   constexpr bool is_64_bit = false;
 #endif  // ARCH_CPU_64_BITS
 
-#if defined(OS_FUCHSIA)
-  ProcessMemoryFuchsia memory;
-  ASSERT_TRUE(memory.Initialize(*zx::process::self()));
-#elif defined(OS_WIN)
-  ProcessMemoryWin memory;
-  ASSERT_TRUE(memory.Initialize(GetCurrentProcess()));
-#elif defined(OS_LINUX) || defined(OS_ANDROID)
-  ProcessMemoryLinux memory;
-  ASSERT_TRUE(memory.Initialize(getpid()));
-#endif  // OS_FUCHSIA
+  ProcessMemoryNative memory;
+  ASSERT_TRUE(memory.Initialize(GetSelfProcess()));
 
   ProcessMemoryRange range;
   ASSERT_TRUE(range.Initialize(&memory, is_64_bit));
@@ -76,28 +59,28 @@ TEST(ProcessMemoryRange, Basic) {
   auto string1_addr = FromPointerCast<VMAddress>(kTestObject.string1);
   auto string2_addr = FromPointerCast<VMAddress>(kTestObject.string2);
   ASSERT_TRUE(range.ReadCStringSizeLimited(
-      string1_addr, arraysize(kTestObject.string1), &string));
+      string1_addr, base::size(kTestObject.string1), &string));
   EXPECT_STREQ(string.c_str(), kTestObject.string1);
 
   ASSERT_TRUE(range.ReadCStringSizeLimited(
-      string2_addr, arraysize(kTestObject.string2), &string));
+      string2_addr, base::size(kTestObject.string2), &string));
   EXPECT_STREQ(string.c_str(), kTestObject.string2);
 
   // Limit the range to remove access to string2.
   ProcessMemoryRange range2;
   ASSERT_TRUE(range2.Initialize(range));
   ASSERT_TRUE(
-      range2.RestrictRange(string1_addr, arraysize(kTestObject.string1)));
+      range2.RestrictRange(string1_addr, base::size(kTestObject.string1)));
   EXPECT_TRUE(range2.ReadCStringSizeLimited(
-      string1_addr, arraysize(kTestObject.string1), &string));
+      string1_addr, base::size(kTestObject.string1), &string));
   EXPECT_FALSE(range2.ReadCStringSizeLimited(
-      string2_addr, arraysize(kTestObject.string2), &string));
+      string2_addr, base::size(kTestObject.string2), &string));
   EXPECT_FALSE(range2.Read(object_addr, sizeof(object), &object));
 
   // String reads fail if the NUL terminator is outside the range.
   ASSERT_TRUE(range2.RestrictRange(string1_addr, strlen(kTestObject.string1)));
   EXPECT_FALSE(range2.ReadCStringSizeLimited(
-      string1_addr, arraysize(kTestObject.string1), &string));
+      string1_addr, base::size(kTestObject.string1), &string));
 
   // New range outside the old range.
   EXPECT_FALSE(range2.RestrictRange(string1_addr - 1, 1));

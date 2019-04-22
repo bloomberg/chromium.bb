@@ -111,14 +111,14 @@ bool ImageData::ValidateConstructorArguments(
 
     if (!data->byteLength()) {
       return RaiseDOMExceptionAndReturnFalse(
-          exception_state, DOMExceptionCode::kIndexSizeError,
+          exception_state, DOMExceptionCode::kInvalidStateError,
           "The input data has zero elements.");
     }
 
     data_length = data->byteLength() / data->TypeSize();
     if (data_length % 4) {
       return RaiseDOMExceptionAndReturnFalse(
-          exception_state, DOMExceptionCode::kIndexSizeError,
+          exception_state, DOMExceptionCode::kInvalidStateError,
           "The input data length is not a multiple of 4.");
     }
 
@@ -355,9 +355,14 @@ ImageData* ImageData::Create(scoped_refptr<StaticBitmapImage> image,
     return image_data;
   }
 
+  base::CheckedNumeric<uint32_t> area = image->Size().Area();
+  area *= 4;
+
+  if (!area.IsValid())
+    return nullptr;
   // Create image data with f32 storage
-  DOMFloat32Array* f32_array = ImageData::AllocateAndValidateFloat32Array(
-      image->Size().Area() * 4, nullptr);
+  DOMFloat32Array* f32_array =
+      ImageData::AllocateAndValidateFloat32Array(area.ValueOrDie(), nullptr);
   if (!f32_array)
     return nullptr;
   image_info = image_info.makeColorType(kRGBA_F32_SkColorType);
@@ -823,14 +828,17 @@ bool ImageData::ImageDataInCanvasColorSettings(
     return data_transform_successful;
   }
 
+  base::CheckedNumeric<uint32_t> area = size_.Area();
+  if (!area.IsValid())
+    return false;
   bool data_transform_successful =
       skcms_Transform(src_data, src_pixel_format, src_alpha_format,
                       src_profile_ptr, converted_pixels, dst_pixel_format,
-                      dst_alpha_format, dst_profile_ptr, size_.Area());
+                      dst_alpha_format, dst_profile_ptr, area.ValueOrDie());
   return data_transform_successful;
 }
 
-void ImageData::Trace(blink::Visitor* visitor) {
+void ImageData::Trace(Visitor* visitor) {
   visitor->Trace(color_settings_);
   visitor->Trace(data_);
   visitor->Trace(data_u16_);

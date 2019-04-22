@@ -35,7 +35,7 @@ namespace rx
 class LinkEvent : angle::NonCopyable
 {
   public:
-    virtual ~LinkEvent(){};
+    virtual ~LinkEvent() {}
 
     // Please be aware that these methods may be called under a gl::Context other
     // than the one where the LinkEvent was created.
@@ -52,12 +52,21 @@ class LinkEventDone final : public LinkEvent
 {
   public:
     LinkEventDone(angle::Result result) : mResult(result) {}
-    angle::Result wait(const gl::Context *context) override { return mResult; }
-    bool isLinking() override { return false; }
+    angle::Result wait(const gl::Context *context) override;
+    bool isLinking() override;
 
   private:
     angle::Result mResult;
 };
+
+inline angle::Result LinkEventDone::wait(const gl::Context *context)
+{
+    return mResult;
+}
+inline bool LinkEventDone::isLinking()
+{
+    return false;
+}
 
 class ProgramImpl : angle::NonCopyable
 {
@@ -66,9 +75,9 @@ class ProgramImpl : angle::NonCopyable
     virtual ~ProgramImpl() {}
     virtual void destroy(const gl::Context *context) {}
 
-    virtual angle::Result load(const gl::Context *context,
-                               gl::InfoLog &infoLog,
-                               gl::BinaryInputStream *stream)                     = 0;
+    virtual std::unique_ptr<LinkEvent> load(const gl::Context *context,
+                                            gl::BinaryInputStream *stream,
+                                            gl::InfoLog &infoLog)                 = 0;
     virtual void save(const gl::Context *context, gl::BinaryOutputStream *stream) = 0;
     virtual void setBinaryRetrievableHint(bool retrievable)                       = 0;
     virtual void setSeparable(bool separable)                                     = 0;
@@ -163,7 +172,7 @@ class ProgramImpl : angle::NonCopyable
 inline angle::Result ProgramImpl::syncState(const gl::Context *context,
                                             const gl::Program::DirtyBits &dirtyBits)
 {
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 }  // namespace rx

@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/widget.h"
@@ -30,7 +31,7 @@ const int kMaxOvershootY = 50;
 
 // Returns true if a mouse drag while in "snap mode" at |location_in_screen|
 // would hover/press |button| or keep it hovered/pressed.
-bool HitTestButton(const FrameCaptionButton* button,
+bool HitTestButton(const views::FrameCaptionButton* button,
                    const gfx::Point& location_in_screen) {
   gfx::Rect expanded_bounds_in_screen = button->GetBoundsInScreen();
   if (button->state() == views::Button::STATE_HOVERED ||
@@ -40,21 +41,22 @@ bool HitTestButton(const FrameCaptionButton* button,
   return expanded_bounds_in_screen.Contains(location_in_screen);
 }
 
-mojom::SnapDirection GetSnapDirection(const FrameCaptionButton* to_hover) {
+mojom::SnapDirection GetSnapDirection(
+    const views::FrameCaptionButton* to_hover) {
   if (to_hover) {
     switch (to_hover->icon()) {
-      case CAPTION_BUTTON_ICON_LEFT_SNAPPED:
+      case views::CAPTION_BUTTON_ICON_LEFT_SNAPPED:
         return mojom::SnapDirection::kLeft;
-      case CAPTION_BUTTON_ICON_RIGHT_SNAPPED:
+      case views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED:
         return mojom::SnapDirection::kRight;
-      case CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE:
-      case CAPTION_BUTTON_ICON_MINIMIZE:
-      case CAPTION_BUTTON_ICON_CLOSE:
-      case CAPTION_BUTTON_ICON_BACK:
-      case CAPTION_BUTTON_ICON_LOCATION:
-      case CAPTION_BUTTON_ICON_MENU:
-      case CAPTION_BUTTON_ICON_ZOOM:
-      case CAPTION_BUTTON_ICON_COUNT:
+      case views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE:
+      case views::CAPTION_BUTTON_ICON_MINIMIZE:
+      case views::CAPTION_BUTTON_ICON_CLOSE:
+      case views::CAPTION_BUTTON_ICON_BACK:
+      case views::CAPTION_BUTTON_ICON_LOCATION:
+      case views::CAPTION_BUTTON_ICON_MENU:
+      case views::CAPTION_BUTTON_ICON_ZOOM:
+      case views::CAPTION_BUTTON_ICON_COUNT:
         NOTREACHED();
         break;
     }
@@ -65,11 +67,55 @@ mojom::SnapDirection GetSnapDirection(const FrameCaptionButton* to_hover) {
 
 }  // namespace
 
+// The class to observe the to-be-snapped window during the waiting-for-snap
+// mode. If the window's window state is changed or the window is put in
+// overview during the waiting mode, cancel the snap.
+class FrameSizeButton::SnappingWindowObserver : public aura::WindowObserver {
+ public:
+  SnappingWindowObserver(aura::Window* window, FrameSizeButton* size_button)
+      : window_(window), size_button_(size_button) {
+    window_->AddObserver(this);
+  }
+  ~SnappingWindowObserver() override {
+    if (window_) {
+      window_->RemoveObserver(this);
+      window_ = nullptr;
+    }
+  }
+
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    DCHECK_EQ(window_, window);
+    if ((key == kIsShowingInOverviewKey &&
+         window_->GetProperty(kIsShowingInOverviewKey)) ||
+        key == kWindowStateTypeKey) {
+      // If the window is put in overview while we're in waiting-for-snapping
+      // mode, or the window's window state has changed, cancel the snap.
+      size_button_->CancelSnap();
+    }
+  }
+
+  void OnWindowDestroying(aura::Window* window) override {
+    DCHECK_EQ(window_, window);
+    window_->RemoveObserver(this);
+    window_ = nullptr;
+    size_button_->CancelSnap();
+  }
+
+ private:
+  aura::Window* window_;
+  FrameSizeButton* size_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(SnappingWindowObserver);
+};
+
 FrameSizeButton::FrameSizeButton(views::ButtonListener* listener,
                                  FrameSizeButtonDelegate* delegate)
-    : FrameCaptionButton(listener,
-                         CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-                         HTMAXBUTTON),
+    : views::FrameCaptionButton(listener,
+                                views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+                                HTMAXBUTTON),
       delegate_(delegate),
       set_buttons_to_snap_mode_delay_ms_(kSetButtonsToSnapModeDelayMs),
       in_snap_mode_(false) {}
@@ -84,7 +130,7 @@ bool FrameSizeButton::OnMousePressed(const ui::MouseEvent& event) {
       delegate_->IsMinimizeButtonVisible() && delegate_->CanSnap()) {
     StartSetButtonsToSnapModeTimer(event);
   }
-  FrameCaptionButton::OnMousePressed(event);
+  views::FrameCaptionButton::OnMousePressed(event);
   return true;
 }
 
@@ -94,7 +140,7 @@ bool FrameSizeButton::OnMouseDragged(const ui::MouseEvent& event) {
   // leaves its bounds. Skip FrameCaptionButton's handling when
   // |in_snap_mode_| == true because we want different behavior.
   if (!in_snap_mode_)
-    FrameCaptionButton::OnMouseDragged(event);
+    views::FrameCaptionButton::OnMouseDragged(event);
   return true;
 }
 
@@ -102,18 +148,18 @@ void FrameSizeButton::OnMouseReleased(const ui::MouseEvent& event) {
   if (IsTriggerableEvent(event))
     CommitSnap(event);
 
-  FrameCaptionButton::OnMouseReleased(event);
+  views::FrameCaptionButton::OnMouseReleased(event);
 }
 
 void FrameSizeButton::OnMouseCaptureLost() {
   SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_YES);
-  FrameCaptionButton::OnMouseCaptureLost();
+  views::FrameCaptionButton::OnMouseCaptureLost();
 }
 
 void FrameSizeButton::OnMouseMoved(const ui::MouseEvent& event) {
   // Ignore any synthetic mouse moves during a drag.
   if (!in_snap_mode_)
-    FrameCaptionButton::OnMouseMoved(event);
+    views::FrameCaptionButton::OnMouseMoved(event);
 }
 
 void FrameSizeButton::OnGestureEvent(ui::GestureEvent* event) {
@@ -124,7 +170,7 @@ void FrameSizeButton::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP_DOWN && delegate_->CanSnap()) {
     StartSetButtonsToSnapModeTimer(*event);
     // Go through FrameCaptionButton's handling so that the button gets pressed.
-    FrameCaptionButton::OnGestureEvent(event);
+    views::FrameCaptionButton::OnGestureEvent(event);
     return;
   }
 
@@ -145,7 +191,7 @@ void FrameSizeButton::OnGestureEvent(ui::GestureEvent* event) {
     }
   }
 
-  FrameCaptionButton::OnGestureEvent(event);
+  views::FrameCaptionButton::OnGestureEvent(event);
 }
 
 void FrameSizeButton::StartSetButtonsToSnapModeTimer(
@@ -163,6 +209,10 @@ void FrameSizeButton::StartSetButtonsToSnapModeTimer(
 
 void FrameSizeButton::AnimateButtonsToSnapMode() {
   SetButtonsToSnapMode(FrameSizeButtonDelegate::ANIMATE_YES);
+
+  // Start observing the to-be-snapped window.
+  snapping_window_observer_ = std::make_unique<SnappingWindowObserver>(
+      delegate_->GetFrameWindow(), this);
 }
 
 void FrameSizeButton::SetButtonsToSnapMode(
@@ -172,11 +222,12 @@ void FrameSizeButton::SetButtonsToSnapMode(
   // When using a right-to-left layout the close button is left of the size
   // button and the minimize button is right of the size button.
   if (base::i18n::IsRTL()) {
-    delegate_->SetButtonIcons(CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-                              CAPTION_BUTTON_ICON_LEFT_SNAPPED, animate);
+    delegate_->SetButtonIcons(views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+                              views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, animate);
   } else {
-    delegate_->SetButtonIcons(CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-                              CAPTION_BUTTON_ICON_RIGHT_SNAPPED, animate);
+    delegate_->SetButtonIcons(views::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+                              views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+                              animate);
   }
 }
 
@@ -196,7 +247,7 @@ void FrameSizeButton::UpdateSnapPreview(const ui::LocatedEvent& event) {
     AnimateButtonsToSnapMode();
   }
 
-  const FrameCaptionButton* to_hover = GetButtonToHover(event);
+  const views::FrameCaptionButton* to_hover = GetButtonToHover(event);
   mojom::SnapDirection snap = GetSnapDirection(to_hover);
 
   gfx::Point event_location_in_screen(event.location());
@@ -215,14 +266,14 @@ void FrameSizeButton::UpdateSnapPreview(const ui::LocatedEvent& event) {
   delegate_->ShowSnapPreview(snap);
 }
 
-const FrameCaptionButton* FrameSizeButton::GetButtonToHover(
+const views::FrameCaptionButton* FrameSizeButton::GetButtonToHover(
     const ui::LocatedEvent& event) const {
   gfx::Point event_location_in_screen(event.location());
   views::View::ConvertPointToScreen(this, &event_location_in_screen);
-  const FrameCaptionButton* closest_button =
+  const views::FrameCaptionButton* closest_button =
       delegate_->GetButtonClosestTo(event_location_in_screen);
-  if ((closest_button->icon() == CAPTION_BUTTON_ICON_LEFT_SNAPPED ||
-       closest_button->icon() == CAPTION_BUTTON_ICON_RIGHT_SNAPPED) &&
+  if ((closest_button->icon() == views::CAPTION_BUTTON_ICON_LEFT_SNAPPED ||
+       closest_button->icon() == views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED) &&
       HitTestButton(closest_button, event_location_in_screen)) {
     return closest_button;
   }
@@ -230,6 +281,7 @@ const FrameCaptionButton* FrameSizeButton::GetButtonToHover(
 }
 
 bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
+  snapping_window_observer_.reset();
   mojom::SnapDirection snap = GetSnapDirection(GetButtonToHover(event));
   delegate_->CommitSnap(snap);
   delegate_->SetHoveredAndPressedButtons(nullptr, nullptr);
@@ -245,6 +297,13 @@ bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
 
   SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_NO);
   return true;
+}
+
+void FrameSizeButton::CancelSnap() {
+  snapping_window_observer_.reset();
+  delegate_->CommitSnap(mojom::SnapDirection::kNone);
+  delegate_->SetHoveredAndPressedButtons(nullptr, nullptr);
+  SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_YES);
 }
 
 void FrameSizeButton::SetButtonsToNormalMode(

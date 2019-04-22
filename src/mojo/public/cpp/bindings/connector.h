@@ -11,13 +11,15 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
+#include "base/containers/queue.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/sequence_local_sync_event_watcher.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/handle_signal_tracker.h"
@@ -39,7 +41,7 @@ namespace mojo {
 //   - Sending messages can be configured to be thread safe (please see comments
 //     of the constructor). Other than that, the object should only be accessed
 //     on the creating sequence.
-class MOJO_CPP_BINDINGS_EXPORT Connector : public MessageReceiver {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
  public:
   enum ConnectorConfig {
     // Connector::Accept() is only called from a single sequence.
@@ -101,6 +103,13 @@ class MOJO_CPP_BINDINGS_EXPORT Connector : public MessageReceiver {
   void set_enforce_errors_from_incoming_receiver(bool enforce) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     enforce_errors_from_incoming_receiver_ = enforce;
+  }
+
+  // If set to |true|, this Connector will always dispatch messages to its
+  // receiver as soon as they're read off the pipe, rather than scheduling
+  // individual dispatch tasks for each message.
+  void set_force_immediate_dispatch(bool force) {
+    force_immediate_dispatch_ = force;
   }
 
   // Sets the error handler to receive notifications when an error is
@@ -168,14 +177,6 @@ class MOJO_CPP_BINDINGS_EXPORT Connector : public MessageReceiver {
   // SyncHandleWatcher::AllowWokenUpBySyncWatchOnSameThread().
   void AllowWokenUpBySyncWatchOnSameThread();
 
-  // Watches |message_pipe_| (as well as other handles registered to be watched
-  // together) synchronously.
-  // This method:
-  //   - returns true when |should_stop| is set to true;
-  //   - return false when any error occurs, including |message_pipe_| being
-  //     closed.
-  bool SyncWatch(const bool* should_stop);
-
   // Whether currently the control flow is inside the sync handle watcher
   // callback.
   // It always returns false after CloseMessagePipe()/PassMessagePipe().
@@ -204,15 +205,35 @@ class MOJO_CPP_BINDINGS_EXPORT Connector : public MessageReceiver {
   void OnWatcherHandleReady(MojoResult result);
   // Callback of SyncHandleWatcher.
   void OnSyncHandleWatcherHandleReady(MojoResult result);
+
   void OnHandleReadyInternal(MojoResult result);
 
   void WaitToReadMore();
 
-  // Returns false if it is impossible to receive more messages in the future.
-  // |this| may have been destroyed in that case.
-  WARN_UNUSED_RESULT bool ReadSingleMessage(MojoResult* read_result);
+  // Attempts to read a single Message from the pipe. Returns |MOJO_RESULT_OK|
+  // and a valid message in |*message| iff a message was successfully read and
+  // prepared for dispatch.
+  MojoResult ReadMessage(Message* message);
 
-  // |this| can be destroyed during message dispatch.
+  // Dispatches |message| to the receiver. Returns |true| if the message was
+  // accepted by the receiver, and |false| otherwise (e.g. if it failed
+  // validation).
+  bool DispatchMessage(Message message);
+
+  // Used to schedule dispatch of a single message from the front of
+  // |dispatch_queue_|. Returns |true| if the dispatch succeeded and |false|
+  // otherwise (e.g. if the message failed validation).
+  bool DispatchNextMessageInQueue();
+
+  // Dispatches all queued messages to the receiver immediately. This is
+  // necessary to ensure proper ordering when beginning to wait for a sync
+  // response, because new incoming messages need to be dispatched as they
+  // arrive. Returns |true| if all queued messages were successfully dispatched,
+  // and |false| if any dispatch fails.
+  bool DispatchAllQueuedMessages();
+
+  // Reads all available messages off of the pipe, possibly dispatching one or
+  // more of them depending on the state of the Connector when this is called.
   void ReadAllAvailableMessages();
 
   // If |force_pipe_reset| is true, this method replaces the existing
@@ -225,6 +246,13 @@ class MOJO_CPP_BINDINGS_EXPORT Connector : public MessageReceiver {
   void CancelWait();
 
   void EnsureSyncWatcherExists();
+
+  // Indicates whether this Connector should immediately dispatch any message
+  // it reads off the pipe, rather than queuing and/or scheduling an
+  // asynchronous dispatch operation per message.
+  bool should_dispatch_messages_immediately() const {
+    return force_immediate_dispatch_ || during_sync_handle_watcher_callback();
+  }
 
   base::OnceClosure connection_error_handler_;
 
@@ -241,6 +269,21 @@ class MOJO_CPP_BINDINGS_EXPORT Connector : public MessageReceiver {
 
   bool paused_ = false;
 
+  // See |set_force_immediate_dispatch()|.
+  bool force_immediate_dispatch_;
+
+  // Messages which have been read off the pipe but not yet dispatched. This
+  // exists so that we can schedule individual dispatch tasks for each read
+  // message in parallel rather than having to do it in series as each message
+  // is read off the pipe.
+  base::queue<Message> dispatch_queue_;
+
+  // Indicates whether a non-fatal pipe error (i.e. peer closure and no more
+  // incoming messages) was detected while |dispatch_queue_| was non-empty.
+  // When |true|, ensures that an error will be propagated outward as soon as
+  // |dispatch_queue_| is fully flushed.
+  bool pending_error_dispatch_ = false;
+
   OutgoingSerializationMode outgoing_serialization_mode_;
   IncomingSerializationMode incoming_serialization_mode_;
 
@@ -249,6 +292,8 @@ class MOJO_CPP_BINDINGS_EXPORT Connector : public MessageReceiver {
   base::Optional<base::Lock> lock_;
 
   std::unique_ptr<SyncHandleWatcher> sync_watcher_;
+  std::unique_ptr<SequenceLocalSyncEventWatcher> dispatch_queue_watcher_;
+
   bool allow_woken_up_by_others_ = false;
   // If non-zero, currently the control flow is inside the sync handle watcher
   // callback.

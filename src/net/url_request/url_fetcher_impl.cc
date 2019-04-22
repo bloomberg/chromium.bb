@@ -15,7 +15,7 @@
 
 namespace net {
 
-static URLFetcherFactory* g_factory = NULL;
+static URLFetcherFactory* g_factory = nullptr;
 
 URLFetcherImpl::URLFetcherImpl(
     const GURL& url,
@@ -154,16 +154,12 @@ HttpResponseHeaders* URLFetcherImpl::GetResponseHeaders() const {
   return core_->GetResponseHeaders();
 }
 
-HostPortPair URLFetcherImpl::GetSocketAddress() const {
+IPEndPoint URLFetcherImpl::GetSocketAddress() const {
   return core_->GetSocketAddress();
 }
 
 const ProxyServer& URLFetcherImpl::ProxyServerUsed() const {
   return core_->ProxyServerUsed();
-}
-
-bool URLFetcherImpl::WasFetchedViaProxy() const {
-  return core_->WasFetchedViaProxy();
 }
 
 bool URLFetcherImpl::WasCached() const {

@@ -8,6 +8,7 @@
 #include "src/prototype.h"
 
 #include "src/handles-inl.h"
+#include "src/objects/js-proxy.h"
 #include "src/objects/map-inl.h"
 
 namespace v8 {
@@ -18,7 +19,6 @@ PrototypeIterator::PrototypeIterator(Isolate* isolate,
                                      WhereToStart where_to_start,
                                      WhereToEnd where_to_end)
     : isolate_(isolate),
-      object_(nullptr),
       handle_(receiver),
       where_to_end_(where_to_end),
       is_at_end_(false),
@@ -27,7 +27,7 @@ PrototypeIterator::PrototypeIterator(Isolate* isolate,
   if (where_to_start == kStartAtPrototype) Advance();
 }
 
-PrototypeIterator::PrototypeIterator(Isolate* isolate, JSReceiver* receiver,
+PrototypeIterator::PrototypeIterator(Isolate* isolate, JSReceiver receiver,
                                      WhereToStart where_to_start,
                                      WhereToEnd where_to_end)
     : isolate_(isolate),
@@ -55,7 +55,6 @@ PrototypeIterator::PrototypeIterator(Isolate* isolate, Map receiver_map,
 PrototypeIterator::PrototypeIterator(Isolate* isolate, Handle<Map> receiver_map,
                                      WhereToEnd where_to_end)
     : isolate_(isolate),
-      object_(nullptr),
       handle_(receiver_map->GetPrototypeChainRootMap(isolate_)->prototype(),
               isolate_),
       where_to_end_(where_to_end),
@@ -93,10 +92,10 @@ void PrototypeIterator::Advance() {
 }
 
 void PrototypeIterator::AdvanceIgnoringProxies() {
-  Object* object = handle_.is_null() ? object_ : *handle_;
+  Object object = handle_.is_null() ? object_ : *handle_;
   Map map = HeapObject::cast(object)->map();
 
-  Object* prototype = map->prototype();
+  HeapObject prototype = map->prototype();
   is_at_end_ = where_to_end_ == END_AT_NON_HIDDEN ? !map->has_hidden_prototype()
                                                   : prototype->IsNull(isolate_);
 
@@ -132,7 +131,7 @@ PrototypeIterator::AdvanceFollowingProxiesIgnoringAccessChecks() {
     isolate_->StackOverflow();
     return false;
   }
-  MaybeHandle<Object> proto =
+  MaybeHandle<HeapObject> proto =
       JSProxy::GetPrototype(Handle<JSProxy>::cast(handle_));
   if (!proto.ToHandle(&handle_)) return false;
   is_at_end_ = where_to_end_ == END_AT_NON_HIDDEN || handle_->IsNull(isolate_);

@@ -26,6 +26,8 @@ class MediaRouterDialogControllerWebUIImpl
  public:
   static MediaRouterDialogControllerWebUIImpl* GetOrCreateForWebContents(
       content::WebContents* web_contents);
+  using content::WebContentsUserData<
+      MediaRouterDialogControllerWebUIImpl>::FromWebContents;
 
   ~MediaRouterDialogControllerWebUIImpl() override;
 
@@ -64,6 +66,8 @@ class MediaRouterDialogControllerWebUIImpl
   bool media_router_dialog_pending_;
 
   base::WeakPtrFactory<MediaRouterDialogControllerWebUIImpl> weak_ptr_factory_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerWebUIImpl);
 };

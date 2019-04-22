@@ -98,7 +98,13 @@ TEST_F(FontUniqueNameLookupTest, TestBuildLookup) {
   ASSERT_GT(matcher_after_load.AvailableFonts(), 0u);
 }
 
-TEST_F(FontUniqueNameLookupTest, TestHandleFailedRead) {
+// http://crbug.com/928818
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_TestHandleFiledRead DISABLED_TestHandleFailedRead
+#else
+#define MAYBE_TestHandleFiledRead TestHandleFailedRead
+#endif
+TEST_F(FontUniqueNameLookupTest, MAYBE_TestHandleFiledRead) {
   base::DeleteFile(font_unique_name_lookup_->TableCacheFilePathForTesting(),
                    false);
   ASSERT_FALSE(font_unique_name_lookup_->LoadFromFile());
@@ -189,7 +195,7 @@ size_t GetNumTables(base::File& font_file) {
   uint16_t num_tables =
       static_cast<uint16_t>(num_tables_bytes[0] + (num_tables_bytes[1] << 8));
   return num_tables;
-};
+}
 
 const size_t kOffsetTableRecords = 13;
 const size_t kSizeOneTableRecord = 16;

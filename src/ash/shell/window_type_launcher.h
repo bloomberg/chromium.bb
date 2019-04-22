@@ -25,7 +25,11 @@ namespace shell {
 // is Run() when the user clicks on the views examples button. This should
 // be bound to either views::examples::ShowExamplesWindow() or
 // views::examples::ShowExamplesWindowWithContent().
-void InitWindowTypeLauncher(const base::Closure& show_views_examples_callback);
+// |create_embedded_browser_callback| is Run when user clicks the "embedded
+// browser" button.
+void InitWindowTypeLauncher(
+    base::RepeatingClosure show_views_examples_callback,
+    base::RepeatingClosure create_embedded_browser_callback);
 
 // The contents view/delegate of a window that shows some buttons that create
 // various window types.
@@ -34,8 +38,8 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
                            public views::MenuDelegate,
                            public views::ContextMenuController {
  public:
-  explicit WindowTypeLauncher(
-      const base::Closure& show_views_examples_callback);
+  WindowTypeLauncher(base::RepeatingClosure show_views_examples_callback,
+                     base::RepeatingClosure create_embedded_browser_callback);
   ~WindowTypeLauncher() override;
 
  private:
@@ -63,9 +67,9 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   void ExecuteCommand(int id, int event_flags) override;
 
   // Override from views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   views::Button* create_button_;
   views::Button* create_nonresizable_button_;
@@ -79,8 +83,12 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   views::Button* examples_button_;
   views::Button* show_hide_window_button_;
   views::Button* show_web_notification_;
+  views::Button* embedded_browser_button_;
+
   std::unique_ptr<views::MenuRunner> menu_runner_;
-  base::Closure show_views_examples_callback_;
+
+  base::RepeatingClosure show_views_examples_callback_;
+  base::RepeatingClosure create_embedded_browser_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);
 };

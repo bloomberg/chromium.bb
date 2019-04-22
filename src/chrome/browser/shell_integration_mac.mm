@@ -7,6 +7,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
@@ -34,17 +35,15 @@ bool IsIdentifierDefaultBrowser(NSString* identifier) {
 // application for the given protocol.
 bool IsIdentifierDefaultProtocolClient(NSString* identifier,
                                        NSString* protocol) {
-  CFStringRef default_client_cf =
-      LSCopyDefaultHandlerForURLScheme(base::mac::NSToCFCast(protocol));
-  NSString* default_client = static_cast<NSString*>(
-      base::mac::CFTypeRefToNSObjectAutorelease(default_client_cf));
+  base::ScopedCFTypeRef<CFStringRef> default_client(
+      LSCopyDefaultHandlerForURLScheme(base::mac::NSToCFCast(protocol)));
   if (!default_client)
     return false;
 
   // We need to ensure we do the comparison case-insensitive as LS doesn't
   // persist the case of our bundle id.
   NSComparisonResult result =
-      [default_client caseInsensitiveCompare:identifier];
+      [base::mac::CFToNSCast(default_client) caseInsensitiveCompare:identifier];
   return result == NSOrderedSame;
 }
 
@@ -121,17 +120,14 @@ DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
 base::string16 GetApplicationNameForProtocol(const GURL& url) {
   NSURL* ns_url = [NSURL URLWithString:
       base::SysUTF8ToNSString(url.possibly_invalid_spec())];
-  CFURLRef openingApp = NULL;
-  OSStatus status = LSGetApplicationForURL((CFURLRef)ns_url,
-                                           kLSRolesAll,
-                                           NULL,
-                                           &openingApp);
-  if (status != noErr) {
+  base::ScopedCFTypeRef<CFErrorRef> out_err;
+  base::ScopedCFTypeRef<CFURLRef> openingApp(LSCopyDefaultApplicationURLForURL(
+      (CFURLRef)ns_url, kLSRolesAll, out_err.InitializeInto()));
+  if (out_err) {
     // likely kLSApplicationNotFoundErr
     return base::string16();
   }
-  NSString* appPath = [(NSURL*)openingApp path];
-  CFRelease(openingApp);  // NOT A BUG; LSGetApplicationForURL retains for us
+  NSString* appPath = [base::mac::CFToNSCast(openingApp.get()) path];
   NSString* appDisplayName =
       [[NSFileManager defaultManager] displayNameAtPath:appPath];
   return base::SysNSStringToUTF16(appDisplayName);

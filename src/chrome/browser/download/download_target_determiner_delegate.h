@@ -10,8 +10,8 @@
 #include "base/callback_forward.h"
 #include "chrome/browser/download/download_confirmation_reason.h"
 #include "chrome/browser/download/download_confirmation_result.h"
-#include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_path_reservation_tracker.h"
 
 namespace base {
 class FilePath;
@@ -33,12 +33,13 @@ class DownloadTargetDeterminerDelegate {
   // ignored.
   typedef base::Callback<void(
       const base::FilePath& new_virtual_path,
-      DownloadPathReservationTracker::FilenameConflictAction conflict_action)>
-  NotifyExtensionsCallback;
+      download::DownloadPathReservationTracker::FilenameConflictAction
+          conflict_action)>
+      NotifyExtensionsCallback;
 
   // Callback to be invoked when ReserveVirtualPath() completes.
   using ReservedPathCallback =
-      DownloadPathReservationTracker::ReservedPathCallback;
+      download::DownloadPathReservationTracker::ReservedPathCallback;
 
   // Callback to be invoked when RequestConfirmation() completes.
   // |virtual_path|: The path chosen by the user. If the user cancels the file
@@ -90,7 +91,8 @@ class DownloadTargetDeterminerDelegate {
       download::DownloadItem* download,
       const base::FilePath& virtual_path,
       bool create_directory,
-      DownloadPathReservationTracker::FilenameConflictAction conflict_action,
+      download::DownloadPathReservationTracker::FilenameConflictAction
+          conflict_action,
       const ReservedPathCallback& callback) = 0;
 
   // Display a prompt to the user requesting that a download target be chosen.

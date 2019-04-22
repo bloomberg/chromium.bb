@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/optional.h"
+#include "build/build_config.h"
 #include "components/cloud_devices/common/description_items.h"
 
 // Defines printer options, CDD and CJT items.
@@ -20,11 +22,22 @@ namespace cloud_devices {
 
 namespace printer {
 
+struct SelectVendorCapabilityOption;
+class SelectVendorCapabilityTraits;
+typedef SelectionCapability<SelectVendorCapabilityOption,
+                            SelectVendorCapabilityTraits>
+    SelectVendorCapability;
+
 typedef std::string ContentType;
 
-enum DocumentSheetBack { NORMAL, ROTATED, MANUAL_TUMBLE, FLIPPED };
+enum class DocumentSheetBack {
+  NORMAL,
+  ROTATED,
+  MANUAL_TUMBLE,
+  FLIPPED,
+};
 
-enum PwgDocumentTypeSupported {
+enum class PwgDocumentTypeSupported {
   SGRAY_8 = 22,
   SRGB_8 = 23,
 };
@@ -39,7 +52,138 @@ struct PwgRasterConfig {
   bool rotate_all_pages;
 };
 
-enum ColorType {
+class RangeVendorCapability {
+ public:
+  enum class ValueType {
+    FLOAT,
+    INTEGER,
+  };
+
+  RangeVendorCapability();
+  RangeVendorCapability(ValueType value_type,
+                        const std::string& min_value,
+                        const std::string& max_value);
+  RangeVendorCapability(ValueType value_type,
+                        const std::string& min_value,
+                        const std::string& max_value,
+                        const std::string& default_value);
+  RangeVendorCapability(RangeVendorCapability&& other);
+  ~RangeVendorCapability();
+
+  RangeVendorCapability& operator=(RangeVendorCapability&& other);
+
+  bool operator==(const RangeVendorCapability& other) const;
+  bool operator!=(const RangeVendorCapability& other) const {
+    return !(*this == other);
+  }
+
+  bool IsValid() const;
+  bool LoadFrom(const base::Value& dict);
+  void SaveTo(base::Value* dict) const;
+
+ private:
+  ValueType value_type_;
+  std::string min_value_;
+  std::string max_value_;
+  std::string default_value_;
+
+  DISALLOW_COPY_AND_ASSIGN(RangeVendorCapability);
+};
+
+struct SelectVendorCapabilityOption {
+  SelectVendorCapabilityOption();
+  SelectVendorCapabilityOption(const std::string& value,
+                               const std::string& display_name);
+  ~SelectVendorCapabilityOption();
+
+  bool IsValid() const;
+  bool operator==(const SelectVendorCapabilityOption& other) const;
+  bool operator!=(const SelectVendorCapabilityOption& other) const {
+    return !(*this == other);
+  }
+
+  std::string value;
+  std::string display_name;
+};
+
+class TypedValueVendorCapability {
+ public:
+  enum class ValueType {
+    BOOLEAN,
+    FLOAT,
+    INTEGER,
+    STRING,
+  };
+
+  TypedValueVendorCapability();
+  explicit TypedValueVendorCapability(ValueType value_type);
+  TypedValueVendorCapability(ValueType value_type,
+                             const std::string& default_value);
+  TypedValueVendorCapability(TypedValueVendorCapability&& other);
+  ~TypedValueVendorCapability();
+
+  TypedValueVendorCapability& operator=(TypedValueVendorCapability&& other);
+
+  bool operator==(const TypedValueVendorCapability& other) const;
+  bool operator!=(const TypedValueVendorCapability& other) const {
+    return !(*this == other);
+  }
+
+  bool IsValid() const;
+  bool LoadFrom(const base::Value& dict);
+  void SaveTo(base::Value* dict) const;
+
+ private:
+  ValueType value_type_;
+  std::string default_value_;
+
+  DISALLOW_COPY_AND_ASSIGN(TypedValueVendorCapability);
+};
+
+class VendorCapability {
+ public:
+  enum class Type {
+    RANGE,
+    SELECT,
+    TYPED_VALUE,
+  };
+
+  VendorCapability();
+  VendorCapability(const std::string& id,
+                   const std::string& display_name,
+                   RangeVendorCapability range_capability);
+  VendorCapability(const std::string& id,
+                   const std::string& display_name,
+                   SelectVendorCapability select_capability);
+  VendorCapability(const std::string& id,
+                   const std::string& display_name,
+                   TypedValueVendorCapability typed_value_capability);
+  VendorCapability(VendorCapability&& other);
+  ~VendorCapability();
+
+  bool operator==(const VendorCapability& other) const;
+  bool operator!=(const VendorCapability& other) const {
+    return !(*this == other);
+  }
+
+  bool IsValid() const;
+  bool LoadFrom(const base::Value& dict);
+  void SaveTo(base::Value* dict) const;
+
+ private:
+  Type type_;
+  std::string id_;
+  std::string display_name_;
+
+  // If the CDD is valid, exactly one of the capabilities has non-nullopt value.
+  base::Optional<RangeVendorCapability> range_capability_;
+  base::Optional<SelectVendorCapability> select_capability_;
+  base::Optional<TypedValueVendorCapability> typed_value_capability_;
+
+  DISALLOW_COPY_AND_ASSIGN(VendorCapability);
+};
+
+enum class ColorType {
   STANDARD_COLOR,
   STANDARD_MONOCHROME,
   CUSTOM_COLOR,
@@ -60,19 +204,19 @@ struct Color {
   std::string custom_display_name;
 };
 
-enum DuplexType {
+enum class DuplexType {
   NO_DUPLEX,
   LONG_EDGE,
   SHORT_EDGE,
 };
 
-enum OrientationType {
+enum class OrientationType {
   PORTRAIT,
   LANDSCAPE,
   AUTO_ORIENTATION,
 };
 
-enum MarginsType {
+enum class MarginsType {
   NO_MARGINS,
   STANDARD_MARGINS,
   CUSTOM_MARGINS,
@@ -108,7 +252,7 @@ struct Dpi {
   int32_t vertical;
 };
 
-enum FitToPageType {
+enum class FitToPageType {
   NO_FITTING,
   FIT_TO_PAGE,
   GROW_TO_PAGE,
@@ -116,7 +260,7 @@ enum FitToPageType {
   FILL_PAGE,
 };
 
-enum MediaType {
+enum class MediaType {
   CUSTOM_MEDIA,
 
   // North American standard sheet media names.
@@ -338,6 +482,7 @@ typedef std::vector<Interval> PageRange;
 
 class ContentTypeTraits;
 class PwgRasterConfigTraits;
+class VendorCapabilityTraits;
 class ColorTraits;
 class DuplexTraits;
 class OrientationTraits;
@@ -352,6 +497,8 @@ class CollateTraits;
 typedef ListCapability<ContentType, ContentTypeTraits> ContentTypesCapability;
 typedef ValueCapability<PwgRasterConfig, PwgRasterConfigTraits>
     PwgRasterConfigCapability;
+typedef ListCapability<VendorCapability, VendorCapabilityTraits>
+    VendorCapabilities;
 typedef SelectionCapability<Color, ColorTraits> ColorCapability;
 typedef SelectionCapability<DuplexType, DuplexTraits> DuplexCapability;
 typedef SelectionCapability<OrientationType, OrientationTraits>
@@ -364,6 +511,11 @@ typedef EmptyCapability<class CopiesTraits> CopiesCapability;
 typedef EmptyCapability<class PageRangeTraits> PageRangeCapability;
 typedef BooleanCapability<class CollateTraits> CollateCapability;
 typedef BooleanCapability<class ReverseTraits> ReverseCapability;
+#if defined(OS_CHROMEOS)
+// This capability is not a part of standard CDD description. It's used for
+// providing PIN printing opportunity in Chrome OS native printing.
+typedef ValueCapability<bool, class PinTraits> PinCapability;
+#endif  // defined(OS_CHROMEOS)
 
 typedef TicketItem<PwgRasterConfig, PwgRasterConfigTraits>
     PwgRasterConfigTicketItem;

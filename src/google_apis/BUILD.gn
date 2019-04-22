@@ -124,8 +124,6 @@ template("google_apis_tmpl") {
       "gaia/oauth_multilogin_result.h",
       "gaia/oauth_request_signer.cc",
       "gaia/oauth_request_signer.h",
-      "gaia/ubertoken_fetcher.cc",
-      "gaia/ubertoken_fetcher.h",
       "google_api_keys.cc",
       "google_api_keys.h",
     ]
@@ -142,6 +140,10 @@ template("google_apis_tmpl") {
       "//mojo/public/cpp/bindings:struct_traits",
       "//services/network/public/cpp",
     ]
+
+    if (use_official_google_api_keys) {
+      deps += [ "internal:generate_metrics_key_header" ]
+    }
 
     if (defined(invoker.deps)) {
       deps += invoker.deps
@@ -219,7 +221,6 @@ test("google_apis_unittests") {
     "gaia/oauth2_token_service_unittest.cc",
     "gaia/oauth_multilogin_result_unittest.cc",
     "gaia/oauth_request_signer_unittest.cc",
-    "gaia/ubertoken_fetcher_unittest.cc",
     "google_api_keys_unittest.cc",
     "google_api_keys_unittest.h",
   ]

@@ -38,8 +38,8 @@ void CanMakePaymentRespondWithObserver::OnResponseFulfilled(
   DCHECK(GetExecutionContext());
   ExceptionState exception_state(value.GetIsolate(), context_type,
                                  interface_name, property_name);
-  bool response = ToBoolean(ToIsolate(GetExecutionContext()), value.V8Value(),
-                            exception_state);
+  bool response =
+      ToBoolean(value.GetIsolate(), value.V8Value(), exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     OnResponseRejected(blink::mojom::ServiceWorkerResponseError::kNoV8Instance);

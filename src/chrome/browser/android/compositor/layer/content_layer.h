@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/android/compositor/layer/layer.h"
+#include "ui/android/resources/nine_patch_resource.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -44,15 +45,13 @@ class ContentLayer : public Layer {
  protected:
   explicit ContentLayer(TabContentManager* tab_content_manager);
   ~ContentLayer() override;
-
- private:
   // This is an intermediate shim layer whose children are
   // both the static and content layers (or either, or none, depending on which
   // is available).
   scoped_refptr<cc::Layer> layer_;
-
   TabContentManager* tab_content_manager_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ContentLayer);
 };
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-namespace array {
+namespace array_lastindexof {
   macro LoadWithHoleCheck<Elements: type>(
       elements: FixedArrayBase, index: Smi): Object
       labels IfHole;
@@ -11,7 +11,7 @@ namespace array {
       elements: FixedArrayBase, index: Smi): Object
       labels IfHole {
     const elements: FixedArray = UnsafeCast<FixedArray>(elements);
-    const element: Object = elements[index];
+    const element: Object = elements.objects[index];
     if (element == Hole) goto IfHole;
     return element;
   }
@@ -58,9 +58,8 @@ namespace array {
     return -1;
   }
 
-  macro GetFromIndex(
-      context: Context, length: Number,
-      arguments: constexpr Arguments): Number {
+  transitioning macro
+  GetFromIndex(context: Context, length: Number, arguments: Arguments): Number {
     // 4. If fromIndex is present, let n be ? ToInteger(fromIndex);
     //    else let n be len - 1.
     const n: Number = arguments.length < 2 ?

@@ -27,6 +27,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_MARKUP_ACCUMULATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_MARKUP_ACCUMULATOR_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/editing/editing_strategy.h"
 #include "third_party/blink/renderer/core/editing/serializers/markup_formatter.h"
@@ -44,35 +46,60 @@ class MarkupAccumulator {
   STACK_ALLOCATED();
 
  public:
-  MarkupAccumulator(EAbsoluteURLs,
+  MarkupAccumulator(AbsoluteURLs,
                     SerializationType = SerializationType::kAsOwnerDocument);
   virtual ~MarkupAccumulator();
 
-  void AppendString(const String&);
-  virtual void AppendStartTag(Node&, Namespaces* = nullptr);
-  virtual void AppendEndTag(const Element&);
-  void AppendStartMarkup(StringBuilder&, Node&, Namespaces*);
-  void AppendEndMarkup(StringBuilder&, const Element&);
+  template <typename Strategy>
+  String SerializeNodes(const Node&, ChildrenOnly);
 
+ protected:
+  // Returns serialized prefix. It should be passed to AppendEndTag().
+  virtual AtomicString AppendElement(const Element&);
+  virtual void AppendAttribute(const Element&, const Attribute&);
+
+  MarkupFormatter formatter_;
+  StringBuilder markup_;
+
+ private:
   bool SerializeAsHTMLDocument(const Node&) const;
   String ToString() { return markup_.ToString(); }
 
-  virtual void AppendCustomAttributes(StringBuilder&,
-                                      const Element&,
-                                      Namespaces*);
+  void AppendString(const String&);
+  // Serialize a Node, without its children and its end tag.
+  void AppendStartMarkup(const Node&);
 
-  virtual void AppendText(StringBuilder&, Text&);
-  virtual bool ShouldIgnoreAttribute(const Element&, const Attribute&) const;
-  virtual bool ShouldIgnoreElement(const Element&) const;
-  virtual void AppendElement(StringBuilder&, const Element&, Namespaces*);
-  void AppendOpenTag(StringBuilder&, const Element&, Namespaces*);
-  void AppendCloseTag(StringBuilder&, const Element&);
-  virtual void AppendAttribute(StringBuilder&,
-                               const Element&,
-                               const Attribute&,
-                               Namespaces*);
+  class ElementSerializationData;
+  // Returns 'ignore namespace definition attribute' flag and the serialized
+  // prefix.
+  // If the flag is true, we should not serialize xmlns="..." on the element.
+  // The prefix should be used in end tag serialization.
+  ElementSerializationData AppendStartTagOpen(const Element&);
+  void AppendStartTagClose(const Element&);
+  void AppendNamespace(const AtomicString& prefix,
+                       const AtomicString& namespace_uri);
+  void AppendAttributeAsXMLWithNamespace(const Element& element,
+                                         const Attribute& attribute,
+                                         const String& value);
+  bool ShouldAddNamespaceAttribute(const Attribute& attribute,
+                                   const AtomicString& candidate_prefix);
+
+  void AppendEndTag(const Element&, const AtomicString& prefix);
 
   EntityMask EntityMaskForText(const Text&) const;
+
+  void PushNamespaces(const Element& element);
+  void PopNamespaces(const Element& element);
+  void RecordNamespaceInformation(const Element& element);
+  AtomicString RetrievePreferredPrefixString(const AtomicString& ns,
+                                             const AtomicString& prefix);
+  void AddPrefix(const AtomicString& prefix, const AtomicString& namespace_uri);
+  AtomicString LookupNamespaceURI(const AtomicString& prefix);
+  AtomicString GeneratePrefix(const AtomicString& new_namespace);
+
+  virtual void AppendCustomAttributes(const Element&);
+  virtual bool ShouldIgnoreAttribute(const Element&, const Attribute&) const;
+  virtual bool ShouldIgnoreElement(const Element&) const;
 
   // Returns an auxiliary DOM tree, i.e. shadow tree, that needs also to be
   // serialized. The root of auxiliary DOM tree is returned as an 1st element
@@ -83,19 +110,22 @@ class MarkupAccumulator {
   // tree content.
   virtual std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const;
 
- private:
-  MarkupFormatter formatter_;
-  StringBuilder markup_;
+  template <typename Strategy>
+  void SerializeNodesWithNamespaces(const Node& target_node,
+                                    ChildrenOnly children_only);
+
+  class NamespaceContext;
+  Vector<NamespaceContext> namespace_stack_;
+
+  // https://w3c.github.io/DOM-Parsing/#dfn-generated-namespace-prefix-index
+  uint32_t prefix_index_;
 
   DISALLOW_COPY_AND_ASSIGN(MarkupAccumulator);
 };
 
-template <typename Strategy>
-String SerializeNodes(MarkupAccumulator&, Node&, EChildrenOnly);
-
-extern template String SerializeNodes<EditingStrategy>(MarkupAccumulator&,
-                                                       Node&,
-                                                       EChildrenOnly);
+extern template String MarkupAccumulator::SerializeNodes<EditingStrategy>(
+    const Node&,
+    ChildrenOnly);
 
 }  // namespace blink
 

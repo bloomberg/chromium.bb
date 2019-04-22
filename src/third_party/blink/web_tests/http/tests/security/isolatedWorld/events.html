@@ -78,14 +78,18 @@ if (window.testRunner && window.eventSender) {
         testRunner.evaluateScriptInIsolatedWorld(worldId, String(eval(funcName)) + "\n" + funcName + "();");
     }
 
-    function runTest() 
+    function runTest()
     {
         newTest("Text attribute event listeners should always fire in main world");
+
+        // Clear any existing CSP or security origin for the isolated world to
+        // prevent side effects from other tests.
+        testRunner.setIsolatedWorldInfo(1, null, null);
         runTestInWorld(1, "textAttributeEventListener");
         var button1 = document.getElementById("button1");
         button1.click();
         button1.parentElement.removeChild(button1);
-        
+
         newTest("Function attribute event listeners should fire in the world where they were created");
         runTestInWorld(1, "functionAttributeEventListener");
         var testDiv = document.getElementById("test");

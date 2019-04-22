@@ -9,13 +9,12 @@ import android.view.View;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /** Mediator class responsible for initializing the model state. */
 public class PasswordGenerationDialogMediator {
-    private static class DialogController implements ModalDialogView.Controller {
+    private static class DialogController implements ModalDialogProperties.Controller {
         private final Callback<Boolean> mPasswordActionCallback;
 
         public DialogController(Callback<Boolean> passwordActionCallback) {
@@ -25,10 +24,10 @@ public class PasswordGenerationDialogMediator {
         @Override
         public void onClick(PropertyModel model, int buttonType) {
             switch (buttonType) {
-                case ModalDialogView.ButtonType.POSITIVE:
+                case ModalDialogProperties.ButtonType.POSITIVE:
                     mPasswordActionCallback.onResult(true);
                     break;
-                case ModalDialogView.ButtonType.NEGATIVE:
+                case ModalDialogProperties.ButtonType.NEGATIVE:
                     mPasswordActionCallback.onResult(false);
                     break;
                 default:

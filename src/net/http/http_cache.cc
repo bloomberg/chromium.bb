@@ -21,6 +21,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -31,6 +32,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "net/base/cache_type.h"
+#include "net/base/features.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -98,8 +100,8 @@ void HttpCache::DefaultBackend::SetAppStatusListener(
 
 //-----------------------------------------------------------------------------
 
-HttpCache::ActiveEntry::ActiveEntry(disk_cache::Entry* entry)
-    : disk_entry(entry) {}
+HttpCache::ActiveEntry::ActiveEntry(disk_cache::Entry* entry, bool opened_in)
+    : disk_entry(entry), opened(opened_in) {}
 
 HttpCache::ActiveEntry::~ActiveEntry() {
   if (disk_entry) {
@@ -135,7 +137,7 @@ bool HttpCache::ActiveEntry::TransactionInReaders(
 // This structure keeps track of work items that are attempting to create or
 // open cache entries or the backend itself.
 struct HttpCache::PendingOp {
-  PendingOp() : disk_entry(NULL), callback_will_delete(false) {}
+  PendingOp() : callback_will_delete(false) {}
   ~PendingOp() = default;
 
   // Returns the estimate of dynamically allocated memory in bytes.
@@ -146,7 +148,8 @@ struct HttpCache::PendingOp {
            base::trace_event::EstimateMemoryUsage(pending_queue);
   }
 
-  disk_cache::Entry* disk_entry;
+  disk_cache::EntryWithOpened disk_entry_struct;
+
   std::unique_ptr<disk_cache::Backend> backend;
   std::unique_ptr<WorkItem> writer;
   // True if there is a posted OnPendingOpComplete() task that might delete
@@ -159,30 +162,24 @@ struct HttpCache::PendingOp {
 
 //-----------------------------------------------------------------------------
 
-// The type of operation represented by a work item.
-enum WorkItemOperation {
-  WI_CREATE_BACKEND,
-  WI_OPEN_ENTRY,
-  WI_CREATE_ENTRY,
-  WI_DOOM_ENTRY
-};
-
 // A work item encapsulates a single request to the backend with all the
 // information needed to complete that request.
 class HttpCache::WorkItem {
  public:
-  WorkItem(WorkItemOperation operation, Transaction* trans, ActiveEntry** entry)
-      : operation_(operation),
-        trans_(trans),
-        entry_(entry),
-        backend_(NULL) {}
   WorkItem(WorkItemOperation operation,
-           Transaction* trans,
+           Transaction* transaction,
+           ActiveEntry** entry)
+      : operation_(operation),
+        transaction_(transaction),
+        entry_(entry),
+        backend_(nullptr) {}
+  WorkItem(WorkItemOperation operation,
+           Transaction* transaction,
            CompletionOnceCallback callback,
            disk_cache::Backend** backend)
       : operation_(operation),
-        trans_(trans),
-        entry_(NULL),
+        transaction_(transaction),
+        entry_(nullptr),
         callback_(std::move(callback)),
         backend_(backend) {}
   ~WorkItem() = default;
@@ -192,8 +189,8 @@ class HttpCache::WorkItem {
     DCHECK(!entry || entry->disk_entry);
     if (entry_)
       *entry_ = entry;
-    if (trans_)
-      trans_->io_callback().Run(result);
+    if (transaction_)
+      transaction_->io_callback().Run(result);
   }
 
   // Notifies the caller about the operation completion. Returns true if the
@@ -209,18 +206,22 @@ class HttpCache::WorkItem {
   }
 
   WorkItemOperation operation() { return operation_; }
-  void ClearTransaction() { trans_ = NULL; }
-  void ClearEntry() { entry_ = NULL; }
+  void ClearTransaction() { transaction_ = nullptr; }
+  void ClearEntry() { entry_ = nullptr; }
   void ClearCallback() { callback_.Reset(); }
-  bool Matches(Transaction* trans) const { return trans == trans_; }
-  bool IsValid() const { return trans_ || entry_ || !callback_.is_null(); }
+  bool Matches(Transaction* transaction) const {
+    return transaction == transaction_;
+  }
+  bool IsValid() const {
+    return transaction_ || entry_ || !callback_.is_null();
+  }
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const { return 0; }
 
  private:
   WorkItemOperation operation_;
-  Transaction* trans_;
+  Transaction* transaction_;
   ActiveEntry** entry_;
   CompletionOnceCallback callback_;  // User callback.
   disk_cache::Backend** backend_;
@@ -232,8 +233,8 @@ class HttpCache::WorkItem {
 // to a given entry.
 class HttpCache::MetadataWriter {
  public:
-  explicit MetadataWriter(HttpCache::Transaction* trans)
-      : verified_(false), buf_len_(0), transaction_(trans) {}
+  explicit MetadataWriter(HttpCache::Transaction* transaction)
+      : verified_(false), buf_len_(0), transaction_(transaction) {}
 
   ~MetadataWriter() = default;
 
@@ -432,12 +433,12 @@ void HttpCache::WriteMetadata(const GURL& url,
   // Do lazy initialization of disk cache if needed.
   if (!disk_cache_.get()) {
     // We don't care about the result.
-    CreateBackend(NULL, CompletionOnceCallback());
+    CreateBackend(nullptr, CompletionOnceCallback());
   }
 
-  HttpCache::Transaction* trans =
+  HttpCache::Transaction* transaction =
       new HttpCache::Transaction(priority, this);
-  MetadataWriter* writer = new MetadataWriter(trans);
+  MetadataWriter* writer = new MetadataWriter(transaction);
 
   // The writer will self destruct when done.
   writer->Write(url, expected_response_time, buf, buf_len);
@@ -455,36 +456,40 @@ void HttpCache::CloseIdleConnections() {
     session->CloseIdleConnections();
 }
 
-void HttpCache::OnExternalCacheHit(const GURL& url,
-                                   const std::string& http_method) {
+void HttpCache::OnExternalCacheHit(
+    const GURL& url,
+    const std::string& http_method,
+    base::Optional<url::Origin> top_frame_origin) {
   if (!disk_cache_.get() || mode_ == DISABLE)
     return;
 
   HttpRequestInfo request_info;
   request_info.url = url;
   request_info.method = http_method;
+  request_info.top_frame_origin = std::move(top_frame_origin);
   std::string key = GenerateCacheKey(&request_info);
   disk_cache_->OnExternalCacheHit(key);
 }
 
-int HttpCache::CreateTransaction(RequestPriority priority,
-                                 std::unique_ptr<HttpTransaction>* trans) {
+int HttpCache::CreateTransaction(
+    RequestPriority priority,
+    std::unique_ptr<HttpTransaction>* transaction) {
   // Do lazy initialization of disk cache if needed.
   if (!disk_cache_.get()) {
     // We don't care about the result.
-    CreateBackend(NULL, CompletionOnceCallback());
+    CreateBackend(nullptr, CompletionOnceCallback());
   }
 
-  HttpCache::Transaction* transaction =
+  HttpCache::Transaction* new_transaction =
       new HttpCache::Transaction(priority, this);
   if (bypass_lock_for_test_)
-    transaction->BypassLockForTest();
+    new_transaction->BypassLockForTest();
   if (bypass_lock_after_headers_for_test_)
-    transaction->BypassLockAfterHeadersForTest();
+    new_transaction->BypassLockAfterHeadersForTest();
   if (fail_conditionalization_for_test_)
-    transaction->FailConditionalizationForTest();
+    new_transaction->FailConditionalizationForTest();
 
-  trans->reset(transaction);
+  transaction->reset(new_transaction);
   return OK;
 }
 
@@ -524,6 +529,23 @@ void HttpCache::DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
 
 //-----------------------------------------------------------------------------
 
+net::Error HttpCache::CreateAndSetWorkItem(ActiveEntry** entry,
+                                           Transaction* transaction,
+                                           WorkItemOperation operation,
+                                           PendingOp* pending_op) {
+  auto item = std::make_unique<WorkItem>(operation, transaction, entry);
+
+  if (pending_op->writer) {
+    pending_op->pending_queue.push_back(std::move(item));
+    return ERR_IO_PENDING;
+  }
+
+  DCHECK(pending_op->pending_queue.empty());
+
+  pending_op->writer = std::move(item);
+  return OK;
+}
+
 int HttpCache::CreateBackend(disk_cache::Backend** backend,
                              CompletionOnceCallback callback) {
   if (!backend_factory_.get())
@@ -562,7 +584,7 @@ int HttpCache::CreateBackend(disk_cache::Backend** backend,
   return rv;
 }
 
-int HttpCache::GetBackendForTransaction(Transaction* trans) {
+int HttpCache::GetBackendForTransaction(Transaction* transaction) {
   if (disk_cache_.get())
     return OK;
 
@@ -570,7 +592,7 @@ int HttpCache::GetBackendForTransaction(Transaction* trans) {
     return ERR_FAILED;
 
   std::unique_ptr<WorkItem> item = std::make_unique<WorkItem>(
-      WI_CREATE_BACKEND, trans, CompletionOnceCallback(), nullptr);
+      WI_CREATE_BACKEND, transaction, CompletionOnceCallback(), nullptr);
   PendingOp* pending_op = GetPendingOp(std::string());
   DCHECK(pending_op->writer);
   pending_op->pending_queue.push_back(std::move(item));
@@ -580,7 +602,21 @@ int HttpCache::GetBackendForTransaction(Transaction* trans) {
 // Generate a key that can be used inside the cache.
 std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
   // Strip out the reference, username, and password sections of the URL.
-  std::string url = HttpUtil::SpecForRequest(request->url);
+  std::string url;
+
+  // If we're splitting the cache by top frame origin, then prefix the key with
+  // the origin.
+  if (request->top_frame_origin &&
+      base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin)) {
+    // Prepend the key with "_dk_" to mark it as double keyed (and makes it an
+    // invalid url so that it doesn't get confused with a single-keyed
+    // entry). Separate the origin and url with invalid whitespace and control
+    // characters.
+    url = base::StrCat({"_dk_", request->top_frame_origin->Serialize(), " \n",
+                        HttpUtil::SpecForRequest(request->url)});
+  } else {
+    url = HttpUtil::SpecForRequest(request->url);
+  }
 
   DCHECK_NE(DISABLE, mode_);
   // No valid URL can begin with numerals, so we should not have to worry
@@ -591,6 +627,7 @@ std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
                base::StringPrintf("%" PRId64 "/",
                                   request->upload_data_stream->identifier()));
   }
+
   return url;
 }
 
@@ -601,19 +638,19 @@ void HttpCache::DoomActiveEntry(const std::string& key) {
 
   // This is not a performance critical operation, this is handling an error
   // condition so it is OK to look up the entry again.
-  int rv = DoomEntry(key, NULL);
+  int rv = DoomEntry(key, nullptr);
   DCHECK_EQ(OK, rv);
 }
 
-int HttpCache::DoomEntry(const std::string& key, Transaction* trans) {
+int HttpCache::DoomEntry(const std::string& key, Transaction* transaction) {
   // Need to abandon the ActiveEntry, but any transaction attached to the entry
   // should not be impacted.  Dooming an entry only means that it will no
   // longer be returned by FindActiveEntry (and it will also be destroyed once
   // all consumers are finished with the entry).
   auto it = active_entries_.find(key);
   if (it == active_entries_.end()) {
-    DCHECK(trans);
-    return AsyncDoomEntry(key, trans);
+    DCHECK(transaction);
+    return AsyncDoomEntry(key, transaction);
   }
 
   std::unique_ptr<ActiveEntry> entry = std::move(it->second);
@@ -632,24 +669,19 @@ int HttpCache::DoomEntry(const std::string& key, Transaction* trans) {
   return OK;
 }
 
-int HttpCache::AsyncDoomEntry(const std::string& key, Transaction* trans) {
-  std::unique_ptr<WorkItem> item =
-      std::make_unique<WorkItem>(WI_DOOM_ENTRY, trans, nullptr);
+int HttpCache::AsyncDoomEntry(const std::string& key,
+                              Transaction* transaction) {
   PendingOp* pending_op = GetPendingOp(key);
-  if (pending_op->writer) {
-    pending_op->pending_queue.push_back(std::move(item));
-    return ERR_IO_PENDING;
-  }
-
-  DCHECK(pending_op->pending_queue.empty());
-
-  pending_op->writer = std::move(item);
-
-  net::RequestPriority priority = trans ? trans->priority() : net::LOWEST;
   int rv =
-      disk_cache_->DoomEntry(key, priority,
-                             base::BindOnce(&HttpCache::OnPendingOpComplete,
-                                            GetWeakPtr(), pending_op));
+      CreateAndSetWorkItem(nullptr, transaction, WI_DOOM_ENTRY, pending_op);
+  if (rv != OK)
+    return rv;
+
+  net::RequestPriority priority =
+      transaction ? transaction->priority() : net::LOWEST;
+  rv = disk_cache_->DoomEntry(key, priority,
+                              base::BindOnce(&HttpCache::OnPendingOpComplete,
+                                             GetWeakPtr(), pending_op));
   if (rv == ERR_IO_PENDING) {
     pending_op->callback_will_delete = true;
     return rv;
@@ -660,21 +692,24 @@ int HttpCache::AsyncDoomEntry(const std::string& key, Transaction* trans) {
   return rv;
 }
 
-void HttpCache::DoomMainEntryForUrl(const GURL& url) {
+void HttpCache::DoomMainEntryForUrl(
+    const GURL& url,
+    base::Optional<url::Origin> top_frame_origin) {
   if (!disk_cache_)
     return;
 
   HttpRequestInfo temp_info;
   temp_info.url = url;
   temp_info.method = "GET";
+  temp_info.top_frame_origin = std::move(top_frame_origin);
   std::string key = GenerateCacheKey(&temp_info);
 
   // Defer to DoomEntry if there is an active entry, otherwise call
   // AsyncDoomEntry without triggering a callback.
   if (active_entries_.count(key))
-    DoomEntry(key, NULL);
+    DoomEntry(key, nullptr);
   else
-    AsyncDoomEntry(key, NULL);
+    AsyncDoomEntry(key, nullptr);
 }
 
 void HttpCache::FinalizeDoomedEntry(ActiveEntry* entry) {
@@ -691,10 +726,10 @@ HttpCache::ActiveEntry* HttpCache::FindActiveEntry(const std::string& key) {
   return it != active_entries_.end() ? it->second.get() : nullptr;
 }
 
-HttpCache::ActiveEntry* HttpCache::ActivateEntry(
-    disk_cache::Entry* disk_entry) {
+HttpCache::ActiveEntry* HttpCache::ActivateEntry(disk_cache::Entry* disk_entry,
+                                                 bool opened) {
   DCHECK(!FindActiveEntry(disk_entry->GetKey()));
-  ActiveEntry* entry = new ActiveEntry(disk_entry);
+  ActiveEntry* entry = new ActiveEntry(disk_entry, opened);
   active_entries_[disk_entry->GetKey()] = base::WrapUnique(entry);
   return entry;
 }
@@ -739,8 +774,8 @@ HttpCache::PendingOp* HttpCache::GetPendingOp(const std::string& key) {
 
 void HttpCache::DeletePendingOp(PendingOp* pending_op) {
   std::string key;
-  if (pending_op->disk_entry)
-    key = pending_op->disk_entry->GetKey();
+  if (pending_op->disk_entry_struct.entry)
+    key = pending_op->disk_entry_struct.entry->GetKey();
 
   if (!key.empty()) {
     auto it = pending_ops_.find(key);
@@ -759,26 +794,22 @@ void HttpCache::DeletePendingOp(PendingOp* pending_op) {
   delete pending_op;
 }
 
-int HttpCache::OpenEntry(const std::string& key, ActiveEntry** entry,
-                         Transaction* trans) {
+int HttpCache::OpenOrCreateEntry(const std::string& key,
+                                 ActiveEntry** entry,
+                                 Transaction* transaction) {
   DCHECK(!FindActiveEntry(key));
 
-  std::unique_ptr<WorkItem> item =
-      std::make_unique<WorkItem>(WI_OPEN_ENTRY, trans, entry);
   PendingOp* pending_op = GetPendingOp(key);
-  if (pending_op->writer) {
-    pending_op->pending_queue.push_back(std::move(item));
-    return ERR_IO_PENDING;
-  }
+  int rv = CreateAndSetWorkItem(entry, transaction, WI_OPEN_OR_CREATE_ENTRY,
+                                pending_op);
+  if (rv != OK)
+    return rv;
 
-  DCHECK(pending_op->pending_queue.empty());
+  rv = disk_cache_->OpenOrCreateEntry(
+      key, transaction->priority(), &(pending_op->disk_entry_struct),
+      base::BindOnce(&HttpCache::OnPendingOpComplete, GetWeakPtr(),
+                     pending_op));
 
-  pending_op->writer = std::move(item);
-
-  int rv =
-      disk_cache_->OpenEntry(key, trans->priority(), &(pending_op->disk_entry),
-                             base::BindOnce(&HttpCache::OnPendingOpComplete,
-                                            GetWeakPtr(), pending_op));
   if (rv == ERR_IO_PENDING) {
     pending_op->callback_will_delete = true;
     return rv;
@@ -789,28 +820,55 @@ int HttpCache::OpenEntry(const std::string& key, ActiveEntry** entry,
   return rv;
 }
 
-int HttpCache::CreateEntry(const std::string& key, ActiveEntry** entry,
-                           Transaction* trans) {
+int HttpCache::OpenEntry(const std::string& key,
+                         ActiveEntry** entry,
+                         Transaction* transaction) {
+  DCHECK(!FindActiveEntry(key));
+
+  PendingOp* pending_op = GetPendingOp(key);
+  int rv = CreateAndSetWorkItem(entry, transaction, WI_OPEN_ENTRY, pending_op);
+  if (rv != OK)
+    return rv;
+
+  rv = disk_cache_->OpenEntry(key, transaction->priority(),
+                              &(pending_op->disk_entry_struct.entry),
+                              base::BindOnce(&HttpCache::OnPendingOpComplete,
+                                             GetWeakPtr(), pending_op));
+  // Manually set the opened flag as disk_cache::OpenEntry() doesn't use
+  // EntryWithOpened struct.
+  pending_op->disk_entry_struct.opened = true;
+
+  if (rv == ERR_IO_PENDING) {
+    pending_op->callback_will_delete = true;
+    return rv;
+  }
+
+  pending_op->writer->ClearTransaction();
+  OnPendingOpComplete(GetWeakPtr(), pending_op, rv);
+  return rv;
+}
+
+int HttpCache::CreateEntry(const std::string& key,
+                           ActiveEntry** entry,
+                           Transaction* transaction) {
   if (FindActiveEntry(key)) {
     return ERR_CACHE_RACE;
   }
 
-  std::unique_ptr<WorkItem> item =
-      std::make_unique<WorkItem>(WI_CREATE_ENTRY, trans, entry);
   PendingOp* pending_op = GetPendingOp(key);
-  if (pending_op->writer) {
-    pending_op->pending_queue.push_back(std::move(item));
-    return ERR_IO_PENDING;
-  }
+  int rv =
+      CreateAndSetWorkItem(entry, transaction, WI_CREATE_ENTRY, pending_op);
+  if (rv != OK)
+    return rv;
 
-  DCHECK(pending_op->pending_queue.empty());
+  rv = disk_cache_->CreateEntry(key, transaction->priority(),
+                                &(pending_op->disk_entry_struct.entry),
+                                base::BindOnce(&HttpCache::OnPendingOpComplete,
+                                               GetWeakPtr(), pending_op));
+  // Manually set the opened flag as disk_cache::CreateEntry() doesn't use
+  // EntryWithOpened struct.
+  pending_op->disk_entry_struct.opened = false;
 
-  pending_op->writer = std::move(item);
-
-  int rv = disk_cache_->CreateEntry(
-      key, trans->priority(), &(pending_op->disk_entry),
-      base::BindOnce(&HttpCache::OnPendingOpComplete, GetWeakPtr(),
-                     pending_op));
   if (rv == ERR_IO_PENDING) {
     pending_op->callback_will_delete = true;
     return rv;
@@ -990,7 +1048,8 @@ void HttpCache::DoomEntryValidationNoMatch(ActiveEntry* entry) {
   for (auto* transaction : entry->add_to_entry_queue) {
     transaction->ResetCachePendingState();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(transaction->io_callback(), net::ERR_CACHE_RACE));
+        FROM_HERE,
+        base::BindOnce(transaction->io_callback(), net::ERR_CACHE_RACE));
   }
   entry->add_to_entry_queue.clear();
 }
@@ -1059,8 +1118,8 @@ void HttpCache::ProcessQueuedTransactions(ActiveEntry* entry) {
   // Post a task instead of invoking the io callback of another transaction here
   // to avoid re-entrancy.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&HttpCache::OnProcessQueuedTransactions, GetWeakPtr(), entry));
+      FROM_HERE, base::BindOnce(&HttpCache::OnProcessQueuedTransactions,
+                                GetWeakPtr(), entry));
 }
 
 void HttpCache::ProcessAddToEntryQueue(ActiveEntry* entry) {
@@ -1206,8 +1265,8 @@ bool HttpCache::IsWritingInProgress(ActiveEntry* entry) const {
 }
 
 LoadState HttpCache::GetLoadStateForPendingTransaction(
-      const Transaction* trans) {
-  auto i = active_entries_.find(trans->key());
+    const Transaction* transaction) {
+  auto i = active_entries_.find(transaction->key());
   if (i == active_entries_.end()) {
     // If this is really a pending transaction, and it is not part of
     // active_entries_, we should be creating the backend or the entry.
@@ -1218,11 +1277,11 @@ LoadState HttpCache::GetLoadStateForPendingTransaction(
   return !writers ? LOAD_STATE_WAITING_FOR_CACHE : writers->GetLoadState();
 }
 
-void HttpCache::RemovePendingTransaction(Transaction* trans) {
-  auto i = active_entries_.find(trans->key());
+void HttpCache::RemovePendingTransaction(Transaction* transaction) {
+  auto i = active_entries_.find(transaction->key());
   bool found = false;
   if (i != active_entries_.end())
-    found = RemovePendingTransactionFromEntry(i->second.get(), trans);
+    found = RemovePendingTransactionFromEntry(i->second.get(), transaction);
 
   if (found)
     return;
@@ -1230,22 +1289,22 @@ void HttpCache::RemovePendingTransaction(Transaction* trans) {
   if (building_backend_) {
     auto j = pending_ops_.find(std::string());
     if (j != pending_ops_.end())
-      found = RemovePendingTransactionFromPendingOp(j->second, trans);
+      found = RemovePendingTransactionFromPendingOp(j->second, transaction);
 
     if (found)
       return;
   }
 
-  auto j = pending_ops_.find(trans->key());
+  auto j = pending_ops_.find(transaction->key());
   if (j != pending_ops_.end())
-    found = RemovePendingTransactionFromPendingOp(j->second, trans);
+    found = RemovePendingTransactionFromPendingOp(j->second, transaction);
 
   if (found)
     return;
 
   for (auto k = doomed_entries_.begin(); k != doomed_entries_.end() && !found;
        ++k) {
-    found = RemovePendingTransactionFromEntry(k->first, trans);
+    found = RemovePendingTransactionFromEntry(k->first, transaction);
   }
 
   DCHECK(found) << "Pending transaction not found";
@@ -1264,9 +1323,10 @@ bool HttpCache::RemovePendingTransactionFromEntry(ActiveEntry* entry,
   return true;
 }
 
-bool HttpCache::RemovePendingTransactionFromPendingOp(PendingOp* pending_op,
-                                                      Transaction* trans) {
-  if (pending_op->writer->Matches(trans)) {
+bool HttpCache::RemovePendingTransactionFromPendingOp(
+    PendingOp* pending_op,
+    Transaction* transaction) {
+  if (pending_op->writer->Matches(transaction)) {
     pending_op->writer->ClearTransaction();
     pending_op->writer->ClearEntry();
     return true;
@@ -1274,7 +1334,7 @@ bool HttpCache::RemovePendingTransactionFromPendingOp(PendingOp* pending_op,
   WorkItemList& pending_queue = pending_op->pending_queue;
 
   for (auto it = pending_queue.begin(); it != pending_queue.end(); ++it) {
-    if ((*it)->Matches(trans)) {
+    if ((*it)->Matches(transaction)) {
       pending_queue.erase(it);
       return true;
     }
@@ -1330,24 +1390,26 @@ void HttpCache::OnIOComplete(int result, PendingOp* pending_op) {
     return OnBackendCreated(result, pending_op);
 
   std::unique_ptr<WorkItem> item = std::move(pending_op->writer);
-  bool fail_requests = false;
+  bool try_restart_requests = false;
 
-  ActiveEntry* entry = NULL;
+  ActiveEntry* entry = nullptr;
   std::string key;
   if (result == OK) {
     if (op == WI_DOOM_ENTRY) {
       // Anything after a Doom has to be restarted.
-      fail_requests = true;
+      try_restart_requests = true;
     } else if (item->IsValid()) {
-      key = pending_op->disk_entry->GetKey();
-      entry = ActivateEntry(pending_op->disk_entry);
+      key = pending_op->disk_entry_struct.entry->GetKey();
+      entry = ActivateEntry(pending_op->disk_entry_struct.entry,
+                            pending_op->disk_entry_struct.opened);
     } else {
       // The writer transaction is gone.
-      if (op == WI_CREATE_ENTRY)
-        pending_op->disk_entry->Doom();
-      pending_op->disk_entry->Close();
-      pending_op->disk_entry = NULL;
-      fail_requests = true;
+      if (!pending_op->disk_entry_struct.opened)
+        pending_op->disk_entry_struct.entry->Doom();
+
+      pending_op->disk_entry_struct.entry->Close();
+      pending_op->disk_entry_struct.entry = nullptr;
+      try_restart_requests = true;
     }
   }
 
@@ -1374,36 +1436,48 @@ void HttpCache::OnIOComplete(int result, PendingOp* pending_op) {
 
     if (item->operation() == WI_DOOM_ENTRY) {
       // A queued doom request is always a race.
-      fail_requests = true;
+      try_restart_requests = true;
     } else if (result == OK) {
       entry = FindActiveEntry(key);
       if (!entry)
-        fail_requests = true;
+        try_restart_requests = true;
     }
 
-    if (fail_requests) {
-      item->NotifyTransaction(ERR_CACHE_RACE, NULL);
+    if (try_restart_requests) {
+      item->NotifyTransaction(ERR_CACHE_RACE, nullptr);
       continue;
     }
-
+    // At this point item->operation() is anything except Doom.
     if (item->operation() == WI_CREATE_ENTRY) {
       if (result == OK) {
-        // A second Create request, but the first request succeeded.
-        item->NotifyTransaction(ERR_CACHE_CREATE_FAILURE, NULL);
+        // Successful OpenOrCreate, Open, or Create followed by a Create.
+        item->NotifyTransaction(ERR_CACHE_CREATE_FAILURE, nullptr);
       } else {
-        if (op != WI_CREATE_ENTRY) {
-          // Failed Open followed by a Create.
-          item->NotifyTransaction(ERR_CACHE_RACE, NULL);
-          fail_requests = true;
+        if (op != WI_CREATE_ENTRY && op != WI_OPEN_OR_CREATE_ENTRY) {
+          // Failed Open or Doom followed by a Create.
+          item->NotifyTransaction(ERR_CACHE_RACE, nullptr);
+          try_restart_requests = true;
         } else {
           item->NotifyTransaction(result, entry);
         }
       }
-    } else {
+    }
+    // item->operation() is OpenOrCreate or Open
+    else if (item->operation() == WI_OPEN_OR_CREATE_ENTRY) {
+      if ((op == WI_OPEN_ENTRY || op == WI_CREATE_ENTRY) && result != OK) {
+        // Failed Open or Create followed by an OpenOrCreate.
+        item->NotifyTransaction(ERR_CACHE_RACE, nullptr);
+        try_restart_requests = true;
+      } else {
+        item->NotifyTransaction(result, entry);
+      }
+    }
+    // item->operation() is Open.
+    else {
       if (op == WI_CREATE_ENTRY && result != OK) {
         // Failed Create followed by an Open.
-        item->NotifyTransaction(ERR_CACHE_RACE, NULL);
-        fail_requests = true;
+        item->NotifyTransaction(ERR_CACHE_RACE, nullptr);
+        try_restart_requests = true;
       } else {
         item->NotifyTransaction(result, entry);
       }
@@ -1451,8 +1525,8 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
     pending_op->writer = std::move(pending_item);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&HttpCache::OnBackendCreated, GetWeakPtr(),
-                              result, pending_op));
+        FROM_HERE, base::BindOnce(&HttpCache::OnBackendCreated, GetWeakPtr(),
+                                  result, pending_op));
   } else {
     building_backend_ = false;
     DeletePendingOp(pending_op);
@@ -1460,7 +1534,7 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
 
   // The cache may be gone when we return from the callback.
   if (!item->DoCallback(result, disk_cache_.get()))
-    item->NotifyTransaction(result, NULL);
+    item->NotifyTransaction(result, nullptr);
 }
 
 }  // namespace net

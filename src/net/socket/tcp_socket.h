@@ -29,9 +29,6 @@ typedef TCPSocketWin TCPSocket;
 typedef TCPSocketPosix TCPSocket;
 #endif
 
-// Check if TCP FastOpen is supported by the OS.
-bool IsTCPFastOpenSupported();
-
 }  // namespace net
 
 #endif  // NET_SOCKET_TCP_SOCKET_H_

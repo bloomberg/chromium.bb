@@ -5,6 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_API_WEBCAM_PRIVATE_VISCA_WEBCAM_H_
 #define EXTENSIONS_BROWSER_API_WEBCAM_PRIVATE_VISCA_WEBCAM_H_
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
@@ -26,8 +31,8 @@ class ViscaWebcam : public Webcam {
   // steps (in order): 1. Open the serial port; 2. Request address; 3. Clear the
   // command buffer. After these three steps completes, |open_callback| will be
   // called.
-  void Open(const std::string& path,
-            const std::string& extension_id,
+  void Open(const std::string& extension_id,
+            device::mojom::SerialPortPtrInfo port_ptr_info,
             const OpenCompleteCallback& open_callback);
 
  private:
@@ -46,9 +51,8 @@ class ViscaWebcam : public Webcam {
   // Private because WebCam is base::RefCounted.
   ~ViscaWebcam() override;
 
-  void OpenOnIOThread(const std::string& path,
-                      const std::string& extension_id,
-                      device::mojom::SerialIoHandlerPtrInfo io_handler_info,
+  void OpenOnIOThread(const std::string& extension_id,
+                      device::mojom::SerialPortPtrInfo port_ptr_info,
                       const OpenCompleteCallback& open_callback);
 
   // Callback function that will be called after the serial connection has been
@@ -75,10 +79,9 @@ class ViscaWebcam : public Webcam {
   void OnSendCompleted(const CommandCompleteCallback& callback,
                        uint32_t bytes_sent,
                        api::serial::SendError error);
-  void ReceiveLoop(const CommandCompleteCallback& callback);
-  void OnReceiveCompleted(const CommandCompleteCallback& callback,
-                          std::vector<uint8_t> data,
-                          api::serial::ReceiveError error);
+  void OnReceiveEvent(const CommandCompleteCallback& callback,
+                      std::vector<uint8_t> data,
+                      api::serial::ReceiveError error);
 
   // Callback function that will be called after the send and reply of a command
   // are both completed.

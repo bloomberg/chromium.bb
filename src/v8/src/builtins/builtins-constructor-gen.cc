@@ -71,7 +71,6 @@ TF_BUILTIN(FastNewClosure, ConstructorBuiltinsAssembler) {
     Node* const feedback_cell_map = LoadMap(feedback_cell);
     Label no_closures(this), one_closure(this), cell_done(this);
 
-    GotoIf(IsNoFeedbackCellMap(feedback_cell_map), &cell_done);
     GotoIf(IsNoClosuresCellMap(feedback_cell_map), &no_closures);
     GotoIf(IsOneClosureCellMap(feedback_cell_map), &one_closure);
     CSA_ASSERT(this, IsManyClosuresCellMap(feedback_cell_map),
@@ -109,7 +108,7 @@ TF_BUILTIN(FastNewClosure, ConstructorBuiltinsAssembler) {
 
   // Create a new closure from the given function info in new space
   TNode<IntPtrT> instance_size_in_bytes =
-      TimesPointerSize(LoadMapInstanceSizeInWords(function_map));
+      TimesTaggedSize(LoadMapInstanceSizeInWords(function_map));
   TNode<Object> result = Allocate(instance_size_in_bytes);
   StoreMapNoWriteBarrier(result, function_map);
   InitializeJSObjectBodyNoSlackTracking(result, function_map,
@@ -134,14 +133,14 @@ TF_BUILTIN(FastNewClosure, ConstructorBuiltinsAssembler) {
     BIND(&done);
   }
 
-  STATIC_ASSERT(JSFunction::kSizeWithoutPrototype == 7 * kPointerSize);
+  STATIC_ASSERT(JSFunction::kSizeWithoutPrototype == 7 * kTaggedSize);
   StoreObjectFieldNoWriteBarrier(result, JSFunction::kFeedbackCellOffset,
                                  feedback_cell);
   StoreObjectFieldNoWriteBarrier(result, JSFunction::kSharedFunctionInfoOffset,
                                  shared_function_info);
   StoreObjectFieldNoWriteBarrier(result, JSFunction::kContextOffset, context);
-  Handle<Code> lazy_builtin_handle(
-      isolate()->builtins()->builtin(Builtins::kCompileLazy), isolate());
+  Handle<Code> lazy_builtin_handle =
+      isolate()->builtins()->builtin_handle(Builtins::kCompileLazy);
   Node* lazy_builtin = HeapConstant(lazy_builtin_handle);
   StoreObjectFieldNoWriteBarrier(result, JSFunction::kCodeOffset, lazy_builtin);
   Return(result);
@@ -297,6 +296,8 @@ Node* ConstructorBuiltinsAssembler::EmitCreateRegExpLiteral(
     Node* context) {
   Label call_runtime(this, Label::kDeferred), end(this);
 
+  GotoIf(IsUndefined(feedback_vector), &call_runtime);
+
   VARIABLE(result, MachineRepresentation::kTagged);
   TNode<Object> literal_site =
       CAST(LoadFeedbackVectorSlot(feedback_vector, slot, 0, INTPTR_PARAMETERS));
@@ -304,9 +305,9 @@ Node* ConstructorBuiltinsAssembler::EmitCreateRegExpLiteral(
   {
     Node* boilerplate = literal_site;
     CSA_ASSERT(this, IsJSRegExp(boilerplate));
-    int size = JSRegExp::kSize + JSRegExp::kInObjectFieldCount * kPointerSize;
+    int size = JSRegExp::kSize + JSRegExp::kInObjectFieldCount * kTaggedSize;
     Node* copy = Allocate(size);
-    for (int offset = 0; offset < size; offset += kPointerSize) {
+    for (int offset = 0; offset < size; offset += kTaggedSize) {
       Node* value = LoadObjectField(boilerplate, offset);
       StoreObjectFieldNoWriteBarrier(copy, offset, value);
     }
@@ -492,7 +493,7 @@ Node* ConstructorBuiltinsAssembler::EmitCreateShallowObjectLiteral(
   // barriers when copying all object fields.
   STATIC_ASSERT(JSObject::kMaxInstanceSize < kMaxRegularHeapObjectSize);
   TNode<IntPtrT> instance_size =
-      TimesPointerSize(LoadMapInstanceSizeInWords(boilerplate_map));
+      TimesTaggedSize(LoadMapInstanceSizeInWords(boilerplate_map));
   TNode<IntPtrT> allocation_size = instance_size;
   bool needs_allocation_memento = FLAG_allocation_site_pretenuring;
   if (needs_allocation_memento) {
@@ -545,7 +546,7 @@ Node* ConstructorBuiltinsAssembler::EmitCreateShallowObjectLiteral(
             LoadObjectField<IntPtrT>(boilerplate, offset.value());
         StoreObjectFieldNoWriteBarrier(copy, offset.value(), field);
       }
-      offset = IntPtrAdd(offset.value(), IntPtrConstant(kPointerSize));
+      offset = IntPtrAdd(offset.value(), IntPtrConstant(kTaggedSize));
       Branch(WordNotEqual(offset.value(), instance_size), &continue_fast,
              &done_init);
     }
@@ -561,33 +562,36 @@ Node* ConstructorBuiltinsAssembler::EmitCreateShallowObjectLiteral(
     BIND(&continue_with_write_barrier);
     {
       Comment("Copy in-object properties slow");
-      BuildFastLoop(offset.value(), instance_size,
-                    [=](Node* offset) {
-                      Node* field = LoadObjectField(boilerplate, offset);
-                      StoreObjectFieldNoWriteBarrier(copy, offset, field);
-                    },
-                    kPointerSize, INTPTR_PARAMETERS, IndexAdvanceMode::kPost);
+      BuildFastLoop(
+          offset.value(), instance_size,
+          [=](Node* offset) {
+            // TODO(ishell): value decompression is not necessary here.
+            Node* field = LoadObjectField(boilerplate, offset);
+            StoreObjectFieldNoWriteBarrier(copy, offset, field);
+          },
+          kTaggedSize, INTPTR_PARAMETERS, IndexAdvanceMode::kPost);
       Comment("Copy mutable HeapNumber values");
-      BuildFastLoop(offset.value(), instance_size,
-                    [=](Node* offset) {
-                      Node* field = LoadObjectField(copy, offset);
-                      Label copy_mutable_heap_number(this, Label::kDeferred),
-                          continue_loop(this);
-                      // We only have to clone complex field values.
-                      GotoIf(TaggedIsSmi(field), &continue_loop);
-                      Branch(IsMutableHeapNumber(field),
-                             &copy_mutable_heap_number, &continue_loop);
-                      BIND(&copy_mutable_heap_number);
-                      {
-                        Node* double_value = LoadHeapNumberValue(field);
-                        Node* mutable_heap_number =
-                            AllocateMutableHeapNumberWithValue(double_value);
-                        StoreObjectField(copy, offset, mutable_heap_number);
-                        Goto(&continue_loop);
-                      }
-                      BIND(&continue_loop);
-                    },
-                    kPointerSize, INTPTR_PARAMETERS, IndexAdvanceMode::kPost);
+      BuildFastLoop(
+          offset.value(), instance_size,
+          [=](Node* offset) {
+            Node* field = LoadObjectField(copy, offset);
+            Label copy_mutable_heap_number(this, Label::kDeferred),
+                continue_loop(this);
+            // We only have to clone complex field values.
+            GotoIf(TaggedIsSmi(field), &continue_loop);
+            Branch(IsMutableHeapNumber(field), &copy_mutable_heap_number,
+                   &continue_loop);
+            BIND(&copy_mutable_heap_number);
+            {
+              Node* double_value = LoadHeapNumberValue(field);
+              Node* mutable_heap_number =
+                  AllocateMutableHeapNumberWithValue(double_value);
+              StoreObjectField(copy, offset, mutable_heap_number);
+              Goto(&continue_loop);
+            }
+            BIND(&continue_loop);
+          },
+          kTaggedSize, INTPTR_PARAMETERS, IndexAdvanceMode::kPost);
       Goto(&done_init);
     }
     BIND(&done_init);

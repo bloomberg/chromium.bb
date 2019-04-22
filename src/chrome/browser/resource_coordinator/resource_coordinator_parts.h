@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/resource_coordinator/performance_measurement_manager.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_memory_metrics_reporter.h"
 

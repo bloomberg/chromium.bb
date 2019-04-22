@@ -22,15 +22,6 @@ Polymer({
     blockAutoplayEnabled: Boolean,
 
     /**
-     * The origin that this widget is showing details for.
-     * @private
-     */
-    origin: {
-      type: String,
-      observer: 'onOriginChanged_',
-    },
-
-    /**
      * Use the string representing the origin or extension name as the page
      * title of the settings-subpage parent.
      */
@@ -38,6 +29,12 @@ Polymer({
       type: String,
       notify: true,
     },
+
+    /**
+     * The origin that this widget is showing details for.
+     * @private
+     */
+    origin_: String,
 
     /**
      * The amount of data stored for the origin.
@@ -48,6 +45,23 @@ Polymer({
       value: '',
     },
 
+    /**
+     * The number of cookies stored for the origin.
+     * @private
+     */
+    numCookies_: {
+      type: String,
+      value: '',
+    },
+
+    /** @private */
+    enableExperimentalWebPlatformFeatures_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures');
+      },
+    },
+
     /** @private */
     enableSiteSettings_: {
       type: Boolean,
@@ -55,12 +69,6 @@ Polymer({
         return loadTimeData.getBoolean('enableSiteSettings');
       },
     },
-
-    /**
-     * The type of storage for the origin.
-     * @private
-     */
-    storageType_: Number,
   },
 
   listeners: {
@@ -93,23 +101,21 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function(route) {
-    const site = settings.getQueryParameters().get('site');
-    if (!site)
+    if (route != settings.routes.SITE_SETTINGS_SITE_DETAILS) {
       return;
-    this.origin = site;
-  },
-
-  /**
-   * Handler for when the origin changes.
-   * @private
-   */
-  onOriginChanged_: function() {
-    this.browserProxy.isOriginValid(this.origin).then((valid) => {
+    }
+    const site = settings.getQueryParameters().get('site');
+    if (!site) {
+      return;
+    }
+    this.origin_ = site;
+    this.browserProxy.isOriginValid(this.origin_).then((valid) => {
       if (!valid) {
         settings.navigateToPreviousRoute();
       } else {
-        if (this.enableSiteSettings_)
-          this.$.usageApi.fetchUsageTotal(this.toUrl(this.origin).hostname);
+        if (this.enableSiteSettings_) {
+          this.$.usageApi.fetchUsageTotal(this.toUrl(this.origin_).hostname);
+        }
 
         this.updatePermissions_(this.getCategoryList());
       }
@@ -118,24 +124,25 @@ Polymer({
 
   /**
    * Called when a site within a category has been changed.
-   * @param {!settings.ContentSettingsTypes} category The category that changed.
+   * @param {!settings.ContentSettingsTypes} category The category that
+   *     changed.
    * @param {string} origin The origin of the site that changed.
    * @param {string} embeddingOrigin The embedding origin of the site that
    *     changed.
    * @private
    */
   onPermissionChanged_: function(category, origin, embeddingOrigin) {
-    if (this.origin === undefined || this.origin == '' ||
+    if (this.origin_ === undefined || this.origin_ == '' ||
         origin === undefined || origin == '') {
       return;
     }
-    if (!this.getCategoryList().includes(category))
+    if (!this.getCategoryList().includes(category)) {
       return;
+    }
 
-    // Site details currently doesn't support embedded origins, so ignore it and
-    // just check whether the origins are the same.
-    if (this.toUrl(origin).origin == this.toUrl(this.origin).origin)
-      this.updatePermissions_([category]);
+    // Site details currently doesn't support embedded origins, so ignore it
+    // and just check whether the origins are the same.
+    this.updatePermissions_([category]);
   },
 
   // <if expr="chromeos">
@@ -146,32 +153,37 @@ Polymer({
 
   /**
    * Retrieves the permissions listed in |categoryList| from the backend for
-   * |this.origin|.
-   * @param {!Array<!settings.ContentSettingsTypes>} categoryList The list of
-   *     categories to update permissions for.
+   * |this.origin_|.
+   * @param {!Array<!settings.ContentSettingsTypes>} categoryList The list
+   *     of categories to update permissions for.
    * @private
    */
   updatePermissions_: function(categoryList) {
     const permissionsMap =
-        /** @type {!Object<!settings.ContentSettingsTypes,
-         *         !SiteDetailsPermissionElement>} */
+        /**
+         * @type {!Object<!settings.ContentSettingsTypes,
+         *         !SiteDetailsPermissionElement>}
+         */
         (Array.prototype.reduce.call(
             this.root.querySelectorAll('site-details-permission'),
             (map, element) => {
-              if (categoryList.includes(element.category))
+              if (categoryList.includes(element.category)) {
                 map[element.category] = element;
+              }
               return map;
             },
             {}));
 
-    this.browserProxy.getOriginPermissions(this.origin, categoryList)
+    this.browserProxy.getOriginPermissions(this.origin_, categoryList)
         .then((exceptionList) => {
           exceptionList.forEach((exception, i) => {
-            // |exceptionList| should be in the same order as |categoryList|.
+            // |exceptionList| should be in the same order as
+            // |categoryList|.
             permissionsMap[categoryList[i]].site = exception;
           });
 
-          // The displayName won't change, so just use the first exception.
+          // The displayName won't change, so just use the first
+          // exception.
           assert(exceptionList.length > 0);
           this.pageTitle = exceptionList[0].displayName;
         });
@@ -208,9 +220,11 @@ Polymer({
    */
   onResetSettings_: function(e) {
     this.browserProxy.setOriginPermissions(
-        this.origin, this.getCategoryList(), settings.ContentSetting.DEFAULT);
-    if (this.getCategoryList().includes(settings.ContentSettingsTypes.PLUGINS))
-      this.browserProxy.clearFlashPref(this.origin);
+        this.origin_, this.getCategoryList(), settings.ContentSetting.DEFAULT);
+    if (this.getCategoryList().includes(
+            settings.ContentSettingsTypes.PLUGINS)) {
+      this.browserProxy.clearFlashPref(this.origin_);
+    }
 
     this.onCloseDialog_(e);
   },
@@ -220,11 +234,11 @@ Polymer({
    * @private
    */
   onClearStorage_: function(e) {
-    // Since usage is only shown when "Site Settings" is enabled, don't clear it
-    // when it's not shown.
-    if (this.enableSiteSettings_ && this.storedData_ != '') {
-      this.$.usageApi.clearUsage(
-          this.toUrl(this.origin).href, this.storageType_);
+    // Since usage is only shown when "Site Settings" is enabled, don't
+    // clear it when it's not shown.
+    if (this.enableSiteSettings_ &&
+        this.hasUsage_(this.storedData_, this.numCookies_)) {
+      this.$.usageApi.clearUsage(this.toUrl(this.origin_).href);
     }
 
     this.onCloseDialog_(e);
@@ -233,17 +247,20 @@ Polymer({
   /**
    * Called when usage has been deleted for an origin via a non-Site Details
    * source, e.g. clear browsing data.
-   * @param {!{detail: !{origin: string}}} event
+   * @param {!CustomEvent<!{origin: string}>} event
    * @private
    */
   onUsageDeleted_: function(event) {
-    if (event.detail.origin == this.toUrl(this.origin).href)
+    if (event.detail.origin == this.toUrl(this.origin_).href) {
       this.storedData_ = '';
+      this.numCookies_ = '';
+    }
   },
 
   /**
    * Checks whether the permission list is standalone or has a heading.
-   * @return {string} CSS class applied when the permission list has no heading.
+   * @return {string} CSS class applied when the permission list has no
+   *     heading.
    * @private
    */
   permissionListClass_: function(hasHeading) {
@@ -256,8 +273,27 @@ Polymer({
    *     disk or battery).
    * @private
    */
-  hasUsage_: function(storage) {
-    return storage != '';
+  hasUsage_: function(storage, cookies) {
+    return storage != '' || cookies != '';
   },
 
+  /**
+   * Checks whether this site has both storage and cookies information to show.
+   * @return {boolean} Whether there are both storage and cookies information to
+   *     show.
+   * @private
+   */
+  hasDataAndCookies_: function(storage, cookies) {
+    return storage != '' && cookies != '';
+  },
+
+  /** @private */
+  onResetSettingsDialogClosed_: function() {
+    cr.ui.focusWithoutInk(assert(this.$$('#resetSettingsButton')));
+  },
+
+  /** @private */
+  onClearStorageDialogClosed_: function() {
+    cr.ui.focusWithoutInk(assert(this.$$('#clearStorage')));
+  },
 });

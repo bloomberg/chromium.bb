@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -109,6 +110,6 @@ class BrowserAssociatedInterface {
   DISALLOW_COPY_AND_ASSIGN(BrowserAssociatedInterface);
 };
 
-};
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_

@@ -13,8 +13,8 @@
 #include "SkRandom.h"
 #include "SkStream.h"
 #include "SkSurface.h"
+#include "ToolUtils.h"
 #include "gm.h"
-#include "sk_tool_utils.h"
 
 #include <functional>
 
@@ -113,34 +113,19 @@ protected:
     void onDraw(SkCanvas* canvas) override {
         canvas->scale(2, 2);
 
-        const char* kLabel1 = "Original Img";
-        const char* kLabel2 = "Modified Img";
-        const char* kLabel3 = "Cur Surface";
-        const char* kLabel4 = "Full Crop";
-        const char* kLabel5 = "Over-crop";
-        const char* kLabel6 = "Upper-left";
-        const char* kLabel7 = "No Crop";
+        SkFont font(ToolUtils::create_portable_typeface(), 8);
 
-        const char* kLabel8 = "Pre-Alloc Img";
-        const char* kLabel9 = "New Alloc Img";
-        const char* kLabel10 = "GPU";
+        canvas->drawString("Original Img",  10,  60, font, SkPaint());
+        canvas->drawString("Modified Img",  10, 140, font, SkPaint());
+        canvas->drawString("Cur Surface",   10, 220, font, SkPaint());
+        canvas->drawString("Full Crop",     10, 300, font, SkPaint());
+        canvas->drawString("Over-crop",     10, 380, font, SkPaint());
+        canvas->drawString("Upper-left",    10, 460, font, SkPaint());
+        canvas->drawString("No Crop",       10, 540, font, SkPaint());
 
-        SkPaint textPaint;
-        textPaint.setAntiAlias(true);
-        sk_tool_utils::set_portable_typeface(&textPaint);
-        textPaint.setTextSize(8);
-
-        canvas->drawString(kLabel1, 10,  60, textPaint);
-        canvas->drawString(kLabel2, 10, 140, textPaint);
-        canvas->drawString(kLabel3, 10, 220, textPaint);
-        canvas->drawString(kLabel4, 10, 300, textPaint);
-        canvas->drawString(kLabel5, 10, 380, textPaint);
-        canvas->drawString(kLabel6, 10, 460, textPaint);
-        canvas->drawString(kLabel7, 10, 540, textPaint);
-
-        canvas->drawString(kLabel8, 80, 10, textPaint);
-        canvas->drawString(kLabel9, 160, 10, textPaint);
-        canvas->drawString(kLabel10, 265, 10, textPaint);
+        canvas->drawString("Pre-Alloc Img", 80,  10, font, SkPaint());
+        canvas->drawString("New Alloc Img", 160, 10, font, SkPaint());
+        canvas->drawString( "GPU",          265, 10, font, SkPaint());
 
         canvas->translate(80, 20);
 
@@ -278,13 +263,7 @@ DEF_GM( return new ScalePixelsGM; )
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-DEF_SIMPLE_GM(new_texture_image, canvas, 280, 60) {
-    GrContext* context = canvas->getGrContext();
-    if (!context) {
-        skiagm::GM::DrawGpuOnlyMessage(canvas);
-        return;
-    }
-
+DEF_SIMPLE_GPU_GM(new_texture_image, context, rtc, canvas, 280, 60) {
     auto render_image = [](SkCanvas* canvas) {
         canvas->clear(SK_ColorBLUE);
         SkPaint paint;
@@ -417,12 +396,13 @@ static sk_sp<SkImage> serial_deserial(SkImage* img) {
     return reader.readImage();
 }
 
-DEF_SIMPLE_GM(image_subset, canvas, 440, 220) {
+DEF_SIMPLE_GM_CAN_FAIL(image_subset, canvas, errorMsg, 440, 220) {
     SkImageInfo info = SkImageInfo::MakeN32Premul(200, 200, nullptr);
-    auto surf = sk_tool_utils::makeSurface(canvas, info, nullptr);
+    auto        surf = ToolUtils::makeSurface(canvas, info, nullptr);
     auto img = make_lazy_image(surf.get());
     if (!img) {
-        return;
+        *errorMsg = "Failed to make lazy image.";
+        return skiagm::DrawResult::kFail;
     }
 
     canvas->drawImage(img, 10, 10, nullptr);
@@ -430,4 +410,5 @@ DEF_SIMPLE_GM(image_subset, canvas, 440, 220) {
     canvas->drawImage(sub, 220, 10);
     sub = serial_deserial(sub.get());
     canvas->drawImage(sub, 220+110, 10);
+    return skiagm::DrawResult::kOk;
 }

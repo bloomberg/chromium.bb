@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Šis mėnuo</translation>
 <translation id="1637811476055996098">Pasirinkti failus</translation>
 <translation id="1650423536718072820">citata</translation>
+<translation id="1727886345390570319">slėpti subtitrų meniu</translation>
 <translation id="1729654308190250600">Įveskite el. pašto adresą (nepalikite lauko tuščio).</translation>
 <translation id="1758486001363313524">Kita...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -41,6 +42,7 @@
 <translation id="2291999235780842123">žymimasis laukelis</translation>
 <translation id="2311842470354187719">puslapio lūžis</translation>
 <translation id="2335594187091864976">datos ir laiko rinkiklis</translation>
+<translation id="245932805758469625">likusių vaizdo įrašo sekundžių skaičius</translation>
 <translation id="248395913932153421">Diena</translation>
 <translation id="2507943997699731163">Užpildykite šį lauką.</translation>
 <translation id="2508569020611168319">skirtukų sąrašas</translation>
@@ -50,7 +52,6 @@
 <translation id="2653659639078652383">Pateikti</translation>
 <translation id="2657045182931379222">grafikos objektas</translation>
 <translation id="2674318244760992338">poraštė</translation>
-<translation id="2706474812903655270">Šis vaizdo įrašas leidžiamas vaizdo vaizde režimu</translation>
 <translation id="2709516037105925701">Automatinis pildymas</translation>
 <translation id="2723001399770238859">garso įrašas</translation>
 <translation id="2746543609216772311">Vertė turi būti <ph name="MINIMUM_DATE_OR_TIME" /> ar vėlesnė data.</translation>
@@ -71,11 +72,10 @@
 <translation id="3450233048674729344">Vertė turi būti <ph name="MAXIMUM" /> arba mažesnė.</translation>
 <translation id="3486220673238053218">apibrėžimas</translation>
 <translation id="3557673793733683882"><ph name="HEADING_LEVEL" /> antraštė</translation>
-<translation id="3639613635497528239">likusių filmo sekundžių skaičius</translation>
+<translation id="3685101356851116974">Nepažymėtas vaizdas</translation>
 <translation id="3706100364254443312">jungiklis</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">filmo laiko valdiklis</translation>
 <translation id="3808586225841795776">terminas</translation>
 <translation id="3822383571486410024">Pailginkite šį tekstą iki <ph name="MIN_CHARACTERS" /> simb. ar daugiau (šiuo metu naudojate <ph name="CURRENT_LENGTH" /> simb.).</translation>
 <translation id="383465348367842624">Prieš „<ph name="ATSIGN" />“ esančioje dalyje neturėtų būti simbolio „<ph name="INVALIDCHARACTER" />“.</translation>
@@ -94,8 +94,10 @@
 <translation id="4360991593054037559">Įveskite galiojančią vertę. Dvi artimiausios vertės yra <ph name="VALID_VALUE_LOW" /> ir <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Klausimai ir atsakymai</translation>
 <translation id="4413860115965805769">meniu mygtukas</translation>
+<translation id="4444765639179266822">Tai tikriausiai reiškia: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">aiškinamojo terminų žodyno nuoroda</translation>
 <translation id="4522570452068850558">Išsami informacija</translation>
+<translation id="4542388879936266156">likęs laikas: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">forma</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Po „<ph name="ATSIGN" />“ esančioje dalyje neturėtų būti simbolio „<ph name="INVALIDCHARACTER" />“.</translation>
@@ -111,6 +113,7 @@
 <translation id="4992066212339426712">Įjungti garsą</translation>
 <translation id="49969490063480558">Įveskite dalį po „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ nėra visas el. pašto adresas.</translation>
 <translation id="5034860022980953847">eigos indikatorius</translation>
+<translation id="5090250355906949916">vaizdo įrašo laiko valdiklis</translation>
 <translation id="5093189678851173835">epigrafas</translation>
 <translation id="5117590920725113268">Rodyti kitą mėnesį</translation>
 <translation id="512758898067543763">eilutės antraštė</translation>
@@ -118,6 +121,7 @@
 <translation id="5164977714490026579">Vertė turi būti <ph name="MINIMUM" /> arba didesnė.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Įveskite el. pašto adreso dalį iki „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ nėra visas el. pašto adresas.</translation>
+<translation id="5334352251556557839">Nepavyko paleisti medijos.</translation>
 <translation id="5406322316791861025">iliustracija</translation>
 <translation id="5453733299334684579">medžio elementas</translation>
 <translation id="5466621249238537318">Pasirinkite bent vieną failą.</translation>
@@ -144,12 +148,16 @@
 <translation id="6150588977291308318">bibliografija</translation>
 <translation id="6164829606128959761">matuoklis</translation>
 <translation id="6166809985690652833">baigiamasis žodis</translation>
+<translation id="6209276755895393898">Tai tikriausiai yra: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">aiškinamasis terminų žodynas</translation>
+<translation id="628938136236500310">Leidžiama vaizdo vaizde režimu</translation>
 <translation id="6398862346408813489">Rodyti mėnesio pasirinkimo skydelį</translation>
 <translation id="6404546809543547843">garso laiko valdiklis</translation>
+<translation id="6443871981718447451">rodyti subtitrų meniu</translation>
 <translation id="6453774872122745852">padėka</translation>
 <translation id="648732519525291180">laiko rinkiklis</translation>
 <translation id="6550675742724504774">Parinktys</translation>
+<translation id="6572309429103589720">Netinkama gramatika</translation>
 <translation id="658823671542763450">įjungti viso ekrano režimą</translation>
 <translation id="663493177488814956">sklaidos kanalas</translation>
 <translation id="6637586476836377253">log</translation>
@@ -162,7 +170,6 @@
 <translation id="6820355525329141109">Nepavyko įkelti papildinio.</translation>
 <translation id="6820615603175220800">bibliografijos nuoroda</translation>
 <translation id="6843725295806269523">nutildyti</translation>
-<translation id="6853785296079745596">slėpti subtitrus</translation>
 <translation id="6885760532393684712">katalogas</translation>
 <translation id="689129560213475294">informacija apie leidimą</translation>
 <translation id="6934078000481955284">citata</translation>
@@ -170,25 +177,29 @@
 <translation id="6981594929165378967">įterpimas</translation>
 <translation id="6989848892321993519">Pailginkite šį tekstą iki <ph name="MIN_CHARACTERS" /> simb. ar daugiau (šiuo metu naudojate 1 simbolį).</translation>
 <translation id="709897737746224366">Priderinkite reikalaujamą formatą.</translation>
+<translation id="7118469954320184356">Nepasiekiamas joks aprašas.</translation>
 <translation id="7139483182332611405">įvadas</translation>
-<translation id="7223624360433298498">praėjęs laikas</translation>
 <translation id="7263440858009898357">Pasirinkite sąraše pateiktą elementą.</translation>
 <translation id="727747134524199931">stulpelio antraštė</translation>
+<translation id="7320576522385648310">rašoma į buferį</translation>
 <translation id="7353453495576941748">padėka</translation>
 <translation id="7364796246159120393">Pasirinkti failą</translation>
 <translation id="739024184232394898">Kita...</translation>
 <translation id="7405738980073107433">išnašos</translation>
+<translation id="7410239719251593705">Panašu, kad yra turinio suaugusiesiems. Nepasiekiamas joks aprašas.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">Tabuliavimo klavišas</translation>
 <translation id="7514365320538308">Atsisiųsti</translation>
 <translation id="7529102961911894712">atgalinė nuoroda</translation>
+<translation id="7533959249147584474">Nepažymėtas grafinis elementas</translation>
 <translation id="7647456547678091388">patarimas</translation>
 <translation id="7661956066982048809">grafikos dokumentas</translation>
 <translation id="7673697353781729403">Valandos</translation>
 <translation id="7681220483256441252">rodyklė</translation>
-<translation id="7720026100085573005">likęs laikas</translation>
 <translation id="7740050170769002709">HTML turinys</translation>
+<translation id="7745230546936012372">Jei norite gauti trūkstamus vaizdų aprašus, atidarykite kontekstinį meniu.</translation>
 <translation id="7750228210027921155">Vaizdas vaizde</translation>
+<translation id="775297008183122718">Neteisingas įrašas</translation>
 <translation id="7789962463072032349">pristabdyti</translation>
 <translation id="7802800022689234070">paskelbimo trikampis</translation>
 <translation id="7888071071722539607">Į el. pašto adresą įtraukite „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ trūksta „<ph name="ATSIGN" />“.</translation>
@@ -197,10 +208,13 @@
 <translation id="8053789581856978548">paieškos teksto laukas</translation>
 <translation id="8057695513531652401">pranešimas</translation>
 <translation id="8105797009065549151">pastabos nuoroda</translation>
+<translation id="811583516810654505">Gaunamas aprašas...</translation>
 <translation id="8117451130807776954">Ši savaitė</translation>
 <translation id="8199524924445686405">mmmm</translation>
+<translation id="8261464734335370856">Netinkama rašyba</translation>
 <translation id="8284326494547611709">Subtitrai</translation>
 <translation id="835897206747267392">Neteisinga vertė.</translation>
+<translation id="8403857369060869934">praėjęs laikas: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">dalis</translation>
 <translation id="8433900881053900389">įrankių juosta</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> failai (-ų)</translation>
@@ -225,7 +239,6 @@
 <translation id="8987927404178983737">Mėnuo</translation>
 <translation id="901493112792887934">dabartinis laikas sekundėmis</translation>
 <translation id="9048119486235211610">naršymas</translation>
-<translation id="9050748414552849310">rodyti subtitrus</translation>
 <translation id="9062295712474918030">dokumentas</translation>
 <translation id="9093215626363556771">išeiti iš vaizdo vaizde</translation>
 <translation id="9108370397979208512">matematika</translation>

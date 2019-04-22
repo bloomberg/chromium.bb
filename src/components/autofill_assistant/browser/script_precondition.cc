@@ -15,65 +15,30 @@
 #include "url/gurl.h"
 
 namespace autofill_assistant {
+
 // Static
 std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
     const std::string& script_path,
     const ScriptPreconditionProto& script_precondition_proto) {
-  std::vector<Selector> elements_exist;
-  for (const auto& element : script_precondition_proto.elements_exist()) {
-    // TODO(crbug.com/806868): Check if we shouldn't skip the script when this
-    // happens.
-    if (element.selectors_size() == 0) {
-      DLOG(WARNING)
-          << "Empty selectors in script precondition for script path: "
-          << script_path << ".";
-      continue;
-    }
-
-    Selector a_selector;
-    for (const auto& selector : element.selectors()) {
-      a_selector.selectors.emplace_back(selector);
-    }
-    elements_exist.emplace_back(std::move(a_selector));
-  }
-
-  std::set<std::string> domain_match;
-  for (const auto& domain : script_precondition_proto.domain()) {
-    domain_match.emplace(domain);
-  }
-
   std::vector<std::unique_ptr<re2::RE2>> path_pattern;
   for (const auto& pattern : script_precondition_proto.path_pattern()) {
     auto re = std::make_unique<re2::RE2>(pattern);
     if (re->error_code() != re2::RE2::NoError) {
-      DLOG(ERROR) << "Invalid regexp in script precondition '" << pattern
-                  << "' for script path: " << script_path << ".";
+      DVLOG(1) << "Invalid regexp in script precondition '" << pattern
+               << "' for script path: " << script_path << ".";
       return nullptr;
     }
     path_pattern.emplace_back(std::move(re));
   }
 
-  std::vector<ScriptParameterMatchProto> parameter_match;
-  for (const auto& match : script_precondition_proto.script_parameter_match()) {
-    parameter_match.emplace_back(match);
-  }
-
-  std::vector<FormValueMatchProto> form_value_match;
-  for (const auto& match : script_precondition_proto.form_value_match()) {
-    form_value_match.emplace_back(match);
-  }
-
-  std::vector<ScriptStatusMatchProto> status_matches;
-  for (const auto& status_match :
-       script_precondition_proto.script_status_match()) {
-    status_matches.push_back(status_match);
-  }
-
   // TODO(crbug.com/806868): Detect unknown or unsupported conditions and
   // reject them.
   return std::make_unique<ScriptPrecondition>(
-      elements_exist, domain_match, std::move(path_pattern), parameter_match,
-      form_value_match, status_matches);
+      script_precondition_proto.domain(), std::move(path_pattern),
+      script_precondition_proto.script_status_match(),
+      script_precondition_proto.script_parameter_match(),
+      script_precondition_proto.elements_exist(),
+      script_precondition_proto.form_value_match());
 }
 
 ScriptPrecondition::~ScriptPrecondition() {}
@@ -89,49 +54,25 @@ void ScriptPrecondition::Check(
     std::move(callback).Run(false);
     return;
   }
-
-  pending_check_count_ = elements_exist_.size() + form_value_match_.size();
-  if (pending_check_count_ == 0) {
-    std::move(callback).Run(true);
-    return;
-  }
-
-  check_preconditions_callback_ = std::move(callback);
-  for (const auto& selector : elements_exist_) {
-    base::OnceCallback<void(bool)> callback =
-        base::BindOnce(&ScriptPrecondition::OnCheckElementExists,
-                       weak_ptr_factory_.GetWeakPtr());
-    batch_checks->AddElementCheck(kExistenceCheck, selector,
-                                  std::move(callback));
-  }
-  for (const auto& value_match : form_value_match_) {
-    DCHECK(!value_match.element().selectors().empty());
-    Selector a_selector;
-    for (const auto& selector : value_match.element().selectors()) {
-      a_selector.selectors.emplace_back(selector);
-    }
-
-    batch_checks->AddFieldValueCheck(
-        a_selector, base::BindOnce(&ScriptPrecondition::OnGetFieldValue,
-                                   weak_ptr_factory_.GetWeakPtr()));
-  }
+  element_precondition_.Check(batch_checks, std::move(callback));
 }
 
 ScriptPrecondition::ScriptPrecondition(
-    const std::vector<Selector>& elements_exist,
-    const std::set<std::string>& domain_match,
+    const google::protobuf::RepeatedPtrField<std::string>& domain_match,
     std::vector<std::unique_ptr<re2::RE2>> path_pattern,
-    const std::vector<ScriptParameterMatchProto>& parameter_match,
-    const std::vector<FormValueMatchProto>& form_value_match,
-    const std::vector<ScriptStatusMatchProto>& status_match)
-    : elements_exist_(elements_exist),
-      domain_match_(domain_match),
+    const google::protobuf::RepeatedPtrField<ScriptStatusMatchProto>&
+        status_match,
+    const google::protobuf::RepeatedPtrField<ScriptParameterMatchProto>&
+        parameter_match,
+    const google::protobuf::RepeatedPtrField<ElementReferenceProto>&
+        element_exists,
+    const google::protobuf::RepeatedPtrField<FormValueMatchProto>&
+        form_value_match)
+    : domain_match_(domain_match.begin(), domain_match.end()),
       path_pattern_(std::move(path_pattern)),
-      parameter_match_(parameter_match),
-      form_value_match_(form_value_match),
-      status_match_(status_match),
-      pending_check_count_(0),
-      weak_ptr_factory_(this) {}
+      parameter_match_(parameter_match.begin(), parameter_match.end()),
+      status_match_(status_match.begin(), status_match.end()),
+      element_precondition_(element_exists, form_value_match) {}
 
 bool ScriptPrecondition::MatchDomain(const GURL& url) const {
   if (domain_match_.empty())
@@ -202,31 +143,6 @@ bool ScriptPrecondition::MatchScriptStatus(
     }
   }
   return true;
-}
-
-void ScriptPrecondition::OnCheckElementExists(bool exists) {
-  ReportCheckResult(exists);
-}
-
-void ScriptPrecondition::OnGetFieldValue(bool exists,
-                                         const std::string& value) {
-  ReportCheckResult(!value.empty());
-}
-
-void ScriptPrecondition::ReportCheckResult(bool success) {
-  if (!check_preconditions_callback_)
-    return;
-
-  if (!success) {
-    std::move(check_preconditions_callback_).Run(false);
-    return;
-  }
-
-  --pending_check_count_;
-  if (pending_check_count_ <= 0) {
-    DCHECK_EQ(pending_check_count_, 0);
-    std::move(check_preconditions_callback_).Run(true);
-  }
 }
 
 }  // namespace autofill_assistant

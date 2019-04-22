@@ -9,6 +9,7 @@ import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,9 +21,13 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager.TabModelSelectorFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test for {@link TabWindowManager} APIs.  Makes sure the class handles multiple {@link Activity}s
@@ -30,6 +35,7 @@ import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class TabWindowManagerTest {
+    private List<Activity> mActivities = new ArrayList<>();
     private final TabModelSelectorFactory mMockTabModelSelectorFactory =
             new TabModelSelectorFactory() {
                 @Override
@@ -41,14 +47,28 @@ public class TabWindowManagerTest {
 
     private ChromeActivity buildActivity() {
         ChromeActivity activity = new CustomTabActivity();
+        mActivities.add(activity);
         ApplicationStatus.onStateChangeForTesting(activity, ActivityState.CREATED);
         return activity;
+    }
+
+    private void destroyActivity(Activity a) {
+        mActivities.remove(a);
+        ApplicationStatus.onStateChangeForTesting(a, ActivityState.DESTROYED);
     }
 
     private MockTabModelSelector requestSelector(ChromeActivity activity, int requestedIndex) {
         final TabWindowManager manager = TabWindowManager.getInstance();
         manager.setTabModelSelectorFactory(mMockTabModelSelectorFactory);
         return (MockTabModelSelector) manager.requestSelector(activity, activity, requestedIndex);
+    }
+
+    @After
+    public void tearDown() {
+        for (Activity a : mActivities) {
+            ApplicationStatus.onStateChangeForTesting(a, ActivityState.DESTROYED);
+        }
+        mActivities.clear();
     }
 
     @Rule
@@ -103,11 +123,13 @@ public class TabWindowManagerTest {
     @UiThreadTest
     public void testTooManyActivities() {
         for (int i = 0; i < TabWindowManager.MAX_SIMULTANEOUS_SELECTORS; i++) {
-            Assert.assertNotNull("Could not build selector", requestSelector(buildActivity(), 0));
+            ChromeActivity a = buildActivity();
+            Assert.assertNotNull("Could not build selector", requestSelector(a, 0));
         }
 
-        Assert.assertNull("Built selectors past the max number supported",
-                requestSelector(buildActivity(), 0));
+        ChromeActivity activity = buildActivity();
+        Assert.assertNull(
+                "Built selectors past the max number supported", requestSelector(activity, 0));
     }
 
     /**
@@ -176,7 +198,7 @@ public class TabWindowManagerTest {
         Assert.assertNotNull("Was not able to build the TabModelSelector", selector0);
         Assert.assertEquals("Unexpected model index", 0, manager.getIndexForWindow(activity0));
 
-        ApplicationStatus.onStateChangeForTesting(activity0, ActivityState.DESTROYED);
+        destroyActivity(activity0);
 
         Assert.assertEquals("Still found model", TabWindowManager.INVALID_WINDOW_INDEX,
                 manager.getIndexForWindow(activity0));
@@ -199,7 +221,7 @@ public class TabWindowManagerTest {
         Assert.assertNotNull("Was not able to build the TabModelSelector", selector0);
         Assert.assertEquals("Unexpected model index", 0, manager.getIndexForWindow(activity0));
 
-        ApplicationStatus.onStateChangeForTesting(activity0, ActivityState.DESTROYED);
+        destroyActivity(activity0);
 
         Assert.assertEquals("Still found model", TabWindowManager.INVALID_WINDOW_INDEX,
                 manager.getIndexForWindow(activity0));
@@ -235,7 +257,7 @@ public class TabWindowManagerTest {
         Assert.assertEquals("Unexpected model index", 0, manager.getIndexForWindow(activity0));
         Assert.assertEquals("Unexpected model index", 1, manager.getIndexForWindow(activity1));
 
-        ApplicationStatus.onStateChangeForTesting(activity1, ActivityState.DESTROYED);
+        destroyActivity(activity1);
 
         Assert.assertEquals("Still found model", TabWindowManager.INVALID_WINDOW_INDEX,
                 manager.getIndexForWindow(activity1));
@@ -273,7 +295,7 @@ public class TabWindowManagerTest {
         AsyncTabParamsManager.getAsyncTabParams().clear();
         final int asyncTabId = 123;
         final TabReparentingParams dummyParams =
-                new TabReparentingParams(new Tab(0, false, null), null, null);
+                new TabReparentingParams(new TabBuilder().setId(0).build(), null, null);
         Assert.assertFalse(manager.tabExistsInAnySelector(asyncTabId));
         AsyncTabParamsManager.add(asyncTabId, dummyParams);
         try {
@@ -308,7 +330,7 @@ public class TabWindowManagerTest {
         AsyncTabParamsManager.getAsyncTabParams().clear();
         final int asyncTabId = 123;
         final TabReparentingParams dummyParams =
-                new TabReparentingParams(new Tab(0, false, null), null, null);
+                new TabReparentingParams(new TabBuilder().setId(0).build(), null, null);
         Assert.assertNull(manager.getTabById(asyncTabId));
         AsyncTabParamsManager.add(asyncTabId, dummyParams);
         try {

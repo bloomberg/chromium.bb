@@ -172,7 +172,7 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
             layout.addView(mConfirmImportOption);
         }
 
-        return new AlertDialog.Builder(getActivity(), R.style.SigninAlertDialogTheme)
+        return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                 .setPositiveButton(R.string.continue_button, this)
                 .setNegativeButton(R.string.cancel, this)
                 .setView(v)

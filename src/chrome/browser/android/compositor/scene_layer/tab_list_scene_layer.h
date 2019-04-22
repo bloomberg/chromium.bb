@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/ui_resource_layer.h"
 #include "chrome/browser/android/compositor/layer/layer.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -46,10 +47,14 @@ class TabListSceneLayer : public SceneLayer {
       const base::android::JavaParamRef<jobject>& jlayer_title_cache,
       const base::android::JavaParamRef<jobject>& jtab_content_manager,
       const base::android::JavaParamRef<jobject>& jresource_manager);
+  // TODO(meiliang): This method needs another parameter, a resource that can be
+  // used to indicate the currently selected tab for the TabLayer.
   // TODO(dtrainor): This method is ridiculous.  Break this apart?
   void PutTabLayer(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& jobj,
                    jint id,
+                   const base::android::JavaRef<jintArray>& tab_ids_list,
+                   jboolean use_tab_ids_list,
                    jint toolbar_resource_id,
                    jint close_button_resource_id,
                    jint shadow_resource_id,
@@ -103,6 +108,14 @@ class TabListSceneLayer : public SceneLayer {
                    jfloat side_border_scale,
                    jboolean inset_border);
 
+  void PutCreateGroupTextButtonLayer(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      jint text_button_resource_id,
+      jfloat x,
+      jfloat y,
+      jboolean is_visible);
+
   void OnDetach() override;
   bool ShouldShowBackground() override;
   SkColor GetBackgroundColor() override;
@@ -120,6 +133,8 @@ class TabListSceneLayer : public SceneLayer {
   LayerTitleCache* layer_title_cache_;
   TabContentManager* tab_content_manager_;
   SkColor background_color_;
+
+  scoped_refptr<cc::UIResourceLayer> tab_group_layer_;
 
   scoped_refptr<cc::Layer> own_tree_;
 

@@ -6,5 +6,8 @@ sdefresne@chromium.org
 # structural changes, please get a review from an OWNER.
 per-file BUILD.gn=*
 
+# Translation artifacts:
+per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
+
 # TEAM: ios-directory-owners@chromium.org
 # OS: iOS

@@ -9,7 +9,7 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-function runWithKeyDown(fn)
+function runWithKeyDown(fn, key)
 {
     function thunk() {
         document.removeEventListener("keypress", thunk, false);
@@ -17,8 +17,10 @@ function runWithKeyDown(fn)
     }
     document.addEventListener("keypress", thunk, false);
 
-    if (window.eventSender)
-        eventSender.keyDown(" ", []);
+    if (window.eventSender) {
+      let character = key || " ";
+      eventSender.keyDown(character, []);
+    }
 }
 
 function logConsole()
@@ -140,7 +142,7 @@ function endTest()
     consoleWrite("END OF TEST");
     testEnded = true;
     if (window.testRunner)
-        testRunner.layoutAndPaintAsyncThen(() => testRunner.notifyDone());
+        testRunner.notifyDone();
 }
 
 function logResult(success, text)

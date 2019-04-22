@@ -15,15 +15,18 @@ import android.support.customtabs.CustomTabsClient;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsServiceConnection;
 import android.support.customtabs.CustomTabsSession;
+import android.support.customtabs.CustomTabsSessionToken;
 import android.support.test.InstrumentationRegistry;
 
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,6 +35,18 @@ import java.util.concurrent.atomic.AtomicReference;
  * Utility class that contains convenience calls related with custom tabs testing.
  */
 public class CustomTabsTestUtils {
+
+    /** A plain old data class that holds the return value from {@link #bindWithCallback}. */
+    public static class ClientAndSession {
+        public final CustomTabsClient client;
+        public final CustomTabsSession session;
+
+        /** Creates and populates the class. */
+        public ClientAndSession(CustomTabsClient client, CustomTabsSession session) {
+            this.client = client;
+            this.session = session;
+        }
+    }
 
     /**
      * Creates the simplest intent that is sufficient to let {@link ChromeLauncherActivity} launch
@@ -57,12 +72,13 @@ public class CustomTabsTestUtils {
     }
 
     public static void cleanupSessions(final CustomTabsConnection connection) {
-        ThreadUtils.runOnUiThreadBlocking(connection::cleanupAll);
+        TestThreadUtils.runOnUiThreadBlocking(connection::cleanupAll);
     }
 
-    public static CustomTabsSession bindWithCallback(final CustomTabsCallback callback)
+    public static ClientAndSession bindWithCallback(final CustomTabsCallback callback)
             throws InterruptedException, TimeoutException {
-        final AtomicReference<CustomTabsSession> sessionReference = new AtomicReference<>(null);
+        final AtomicReference<CustomTabsSession> sessionReference = new AtomicReference<>();
+        final AtomicReference<CustomTabsClient> clientReference = new AtomicReference<>();
         final CallbackHelper waitForConnection = new CallbackHelper();
         CustomTabsClient.bindCustomTabsService(InstrumentationRegistry.getContext(),
                 InstrumentationRegistry.getTargetContext().getPackageName(),
@@ -73,12 +89,13 @@ public class CustomTabsTestUtils {
                     @Override
                     public void onCustomTabsServiceConnected(
                             ComponentName name, CustomTabsClient client) {
+                        clientReference.set(client);
                         sessionReference.set(client.newSession(callback));
                         waitForConnection.notifyCalled();
                     }
                 });
         waitForConnection.waitForCallback(0);
-        return sessionReference.get();
+        return new ClientAndSession(clientReference.get(), sessionReference.get());
     }
 
     /** Calls warmup() and waits for all the tasks to complete. Fails the test otherwise. */
@@ -93,17 +110,25 @@ public class CustomTabsTestUtils {
                     startupCallbackHelper.notifyCalled();
                 }
             }
-        });
+        }).session;
         Assert.assertTrue(connection.warmup(0));
         startupCallbackHelper.waitForCallback(0);
         return connection;
     }
 
     public static void openAppMenuAndAssertMenuShown(CustomTabActivity activity) {
-        ThreadUtils.runOnUiThread(
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> { activity.onMenuOrKeyboardAction(R.id.show_menu, false); });
 
         CriteriaHelper.pollUiThread(
                 activity.getAppMenuHandler()::isAppMenuShowing, "App menu was not shown");
+    }
+
+    public static void setHideCctTopBarOnModuleManagedUrls(Intent intent, boolean hideCctTopBar)
+            throws InterruptedException, TimeoutException {
+        CustomTabsConnection connection = warmUpAndWait();
+        CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        connection.newSession(token);
+        connection.setHideCCTTopBarOnModuleManagedUrls(token, hideCctTopBar);
     }
 }

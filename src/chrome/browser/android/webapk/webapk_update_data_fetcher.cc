@@ -9,6 +9,7 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/color_helpers.h"
@@ -116,8 +117,8 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
   InstallableManager* installable_manager =
       InstallableManager::FromWebContents(web_contents());
   installable_manager->GetData(
-      params, base::Bind(&WebApkUpdateDataFetcher::OnDidGetInstallableData,
-                         weak_ptr_factory_.GetWeakPtr()));
+      params, base::BindOnce(&WebApkUpdateDataFetcher::OnDidGetInstallableData,
+                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebApkUpdateDataFetcher::OnDidGetInstallableData(
@@ -136,7 +137,7 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
   // observing too. It is based on our assumption that it is invalid for
   // web developers to change the Web Manifest location. When it does
   // change, we will treat the new Web Manifest as the one of another WebAPK.
-  if (data.error_code != NO_ERROR_DETECTED || data.manifest->IsEmpty() ||
+  if (!data.errors.empty() || data.manifest->IsEmpty() ||
       web_manifest_url_ != data.manifest_url ||
       !AreWebManifestUrlsWebApkCompatible(*data.manifest)) {
     return;

@@ -177,7 +177,8 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   network::mojom::NetworkContextPtr network_context_pipe;
   auto network_context = std::make_unique<network::NetworkContext>(
       nullptr, mojo::MakeRequest(&network_context_pipe),
-      request_context->GetURLRequestContext());
+      request_context->GetURLRequestContext(),
+      /*cors_exempt_header_list=*/std::vector<std::string>());
 
   if (test.is_hsts_enabled) {
     base::RunLoop run_loop;
@@ -239,9 +240,9 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   scoped_task_environment.RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        HttpCredentialCleanerTest,
-                        ::testing::ValuesIn(kCases));
+INSTANTIATE_TEST_SUITE_P(,
+                         HttpCredentialCleanerTest,
+                         ::testing::ValuesIn(kCases));
 
 TEST(HttpCredentialCleaner, StartCleanUpTest) {
   for (bool should_start_clean_up : {false, true}) {
@@ -272,9 +273,6 @@ TEST(HttpCredentialCleaner, StartCleanUpTest) {
     prefs.registry()->RegisterDoublePref(
         prefs::kLastTimeObsoleteHttpCredentialsRemoved, last_time);
 
-    EXPECT_EQ(should_start_clean_up,
-              HttpCredentialCleaner::ShouldRunCleanUp(&prefs));
-
     if (!should_start_clean_up) {
       password_store->ShutdownOnUIThread();
       scoped_task_environment.RunUntilIdle();
@@ -287,7 +285,8 @@ TEST(HttpCredentialCleaner, StartCleanUpTest) {
     network::mojom::NetworkContextPtr network_context_pipe;
     auto network_context = std::make_unique<network::NetworkContext>(
         nullptr, mojo::MakeRequest(&network_context_pipe),
-        request_context->GetURLRequestContext());
+        request_context->GetURLRequestContext(),
+        /*cors_exempt_header_list=*/std::vector<std::string>());
 
     MockCredentialsCleanerObserver observer;
     HttpCredentialCleaner cleaner(
@@ -302,6 +301,7 @@ TEST(HttpCredentialCleaner, StartCleanUpTest) {
           return network_context_pipe.get();
         }),
         &prefs);
+    EXPECT_TRUE(cleaner.NeedsCleaning());
     EXPECT_CALL(observer, CleaningCompleted);
     cleaner.StartCleaning(&observer);
     scoped_task_environment.RunUntilIdle();

@@ -24,6 +24,16 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace translate {
+// The number of times user should consecutively translate for "Always
+// Translate" to automatically trigger.
+const int kAutoAlwaysThreshold = 5;
+// The number of times user should consecutively dismiss the translate infobar
+// for "Never Translate" to automatically trigger.
+const int kAutoNeverThreshold = 10;
+// The maximum number of times "Always Translate" is automatically triggered.
+const int kMaxNumberOfAutoAlways = 2;
+// The maximum number of times "Never Translate" is automatically triggered.
+const int kMaxNumberOfAutoNever = 2;
 
 const base::Feature kTranslateCompactUI{"TranslateCompactUI",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -31,6 +41,8 @@ const base::Feature kTranslateCompactUI{"TranslateCompactUI",
 const size_t TranslateInfoBarDelegate::kNoIndex = TranslateUIDelegate::kNoIndex;
 
 TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
+  if (observer_)
+    observer_->OnTranslateInfoBarDelegateDestroyed(this);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -103,8 +115,24 @@ void TranslateInfoBarDelegate::Create(
     infobar_manager->AddInfoBar(std::move(infobar));
 }
 
+size_t TranslateInfoBarDelegate::num_languages() const {
+  return ui_delegate_.GetNumberOfLanguages();
+}
+
+std::string TranslateInfoBarDelegate::language_code_at(size_t index) const {
+  return ui_delegate_.GetLanguageCodeAt(index);
+}
+
+base::string16 TranslateInfoBarDelegate::language_name_at(size_t index) const {
+  return ui_delegate_.GetLanguageNameAt(index);
+}
+
 void TranslateInfoBarDelegate::SetObserver(Observer* observer) {
   observer_ = observer;
+}
+
+base::string16 TranslateInfoBarDelegate::original_language_name() const {
+  return language_name_at(ui_delegate_.GetOriginalLanguageIndex());
 }
 
 void TranslateInfoBarDelegate::UpdateOriginalLanguage(
@@ -118,6 +146,7 @@ void TranslateInfoBarDelegate::UpdateTargetLanguage(
 }
 
 void TranslateInfoBarDelegate::Translate() {
+  DCHECK_NE(original_language_code(), target_language_code());
   ui_delegate_.Translate();
 }
 
@@ -139,7 +168,7 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
   ui_delegate_.TranslationDeclined(true);
 }
 
-bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
+bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() const {
   TranslateClient* client = translate_manager_->translate_client();
   std::unique_ptr<TranslatePrefs> translate_prefs(client->GetTranslatePrefs());
   TranslateAcceptLanguages* accept_languages =
@@ -149,28 +178,18 @@ bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
 }
 
 void TranslateInfoBarDelegate::ToggleTranslatableLanguageByPrefs() {
-  if (ui_delegate_.IsLanguageBlocked()) {
-    ui_delegate_.SetLanguageBlocked(false);
-  } else {
-    ui_delegate_.SetLanguageBlocked(true);
-    infobar()->RemoveSelf();
-  }
+  ui_delegate_.SetLanguageBlocked(!ui_delegate_.IsLanguageBlocked());
 }
 
-bool TranslateInfoBarDelegate::IsSiteBlacklisted() {
+bool TranslateInfoBarDelegate::IsSiteBlacklisted() const {
   return ui_delegate_.IsSiteBlacklisted();
 }
 
 void TranslateInfoBarDelegate::ToggleSiteBlacklist() {
-  if (ui_delegate_.IsSiteBlacklisted()) {
-    ui_delegate_.SetSiteBlacklist(false);
-  } else {
-    ui_delegate_.SetSiteBlacklist(true);
-    infobar()->RemoveSelf();
-  }
+  ui_delegate_.SetSiteBlacklist(!ui_delegate_.IsSiteBlacklisted());
 }
 
-bool TranslateInfoBarDelegate::ShouldAlwaysTranslate() {
+bool TranslateInfoBarDelegate::ShouldAlwaysTranslate() const {
   return ui_delegate_.ShouldAlwaysTranslate();
 }
 
@@ -301,7 +320,52 @@ void TranslateInfoBarDelegate::ResetTranslationDeniedCount() {
   prefs_->ResetTranslationDeniedCount(original_language_code());
 }
 
-#if defined(OS_ANDROID)
+bool TranslateInfoBarDelegate::ShouldAutoAlwaysTranslate() {
+  // Don't trigger if it's off the record or already set to always translate.
+  if (is_off_the_record() || ShouldAlwaysTranslate()) {
+    return false;
+  }
+
+  bool always_translate =
+      (GetTranslationAcceptedCount() >= kAutoAlwaysThreshold &&
+       GetTranslationAutoAlwaysCount() < kMaxNumberOfAutoAlways);
+
+  if (always_translate) {
+    // Auto-always will be triggered. Need to increment the auto-always counter.
+    IncrementTranslationAutoAlwaysCount();
+    // Reset translateAcceptedCount so that auto-always could be triggered
+    // again.
+    ResetTranslationAcceptedCount();
+  }
+  return always_translate;
+}
+
+bool TranslateInfoBarDelegate::ShouldAutoNeverTranslate() {
+  // Don't trigger if it's off the record or language already blocked.
+  if (is_off_the_record() || !IsTranslatableLanguageByPrefs()) {
+    return false;
+  }
+
+  int auto_never_count = GetTranslationAutoNeverCount();
+
+  // At the beginning (auto_never_count == 0), deniedCount starts at 0 and is
+  // off-by-one (because this checking is done before increment). However, after
+  // auto-never is triggered once (auto_never_count > 0), deniedCount starts at
+  // 1.  So there is no off-by-one by then.
+  int off_by_one = auto_never_count == 0 ? 1 : 0;
+
+  bool never_translate =
+      (GetTranslationDeniedCount() + off_by_one >= kAutoNeverThreshold &&
+       auto_never_count < kMaxNumberOfAutoNever);
+  if (never_translate) {
+    // Auto-never will be triggered. Need to increment the auto-never counter.
+    IncrementTranslationAutoNeverCount();
+    // Reset translateDeniedCount so that auto-never could be triggered again.
+    ResetTranslationDeniedCount();
+  }
+  return never_translate;
+}
+
 int TranslateInfoBarDelegate::GetTranslationAutoAlwaysCount() {
   return prefs_->GetTranslationAutoAlwaysCount(original_language_code());
 }
@@ -317,7 +381,6 @@ void TranslateInfoBarDelegate::IncrementTranslationAutoAlwaysCount() {
 void TranslateInfoBarDelegate::IncrementTranslationAutoNeverCount() {
   prefs_->IncrementTranslationAutoNeverCount(original_language_code());
 }
-#endif
 
 // static
 void TranslateInfoBarDelegate::GetAfterTranslateStrings(

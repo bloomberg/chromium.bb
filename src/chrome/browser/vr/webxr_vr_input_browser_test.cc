@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "chrome/browser/vr/test/mock_openvr_device_hook_base.h"
+#include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
 #include "chrome/browser/vr/test/webvr_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
-#include "device/vr/openvr/test/test_hook.h"
 #include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
 #include "third_party/openvr/src/headers/openvr.h"
 
@@ -20,22 +19,20 @@ namespace vr {
 // input.
 void TestPresentationLocksFocusImpl(WebXrVrBrowserTestBase* t,
                                     std::string filename) {
-  t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
+  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
   t->EnterSessionWithUserGestureOrFail();
   t->ExecuteStepAndWait("stepSetupFocusLoss()");
   t->EndTest();
 }
 
-IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
-                       REQUIRES_GPU(TestPresentationLocksFocus)) {
+IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard, TestPresentationLocksFocus) {
   TestPresentationLocksFocusImpl(this, "test_presentation_locks_focus");
 }
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       REQUIRES_GPU(TestPresentationLocksFocus)) {
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestPresentationLocksFocus) {
   TestPresentationLocksFocusImpl(this, "webxr_test_presentation_locks_focus");
 }
 
-class WebXrControllerInputOpenVRMock : public MockOpenVRDeviceHookBase {
+class WebXrControllerInputMock : public MockXRDeviceHookBase {
  public:
   void OnFrameSubmitted(
       device_test::mojom::SubmittedFrameDataPtr frame_data,
@@ -75,7 +72,7 @@ class WebXrControllerInputOpenVRMock : public MockOpenVRDeviceHookBase {
   unsigned int target_submitted_frames_ = 0;
 };
 
-void WebXrControllerInputOpenVRMock::OnFrameSubmitted(
+void WebXrControllerInputMock::OnFrameSubmitted(
     device_test::mojom::SubmittedFrameDataPtr frame_data,
     device_test::mojom::XRTestHook::OnFrameSubmittedCallback callback) {
   num_submitted_frames_++;
@@ -89,8 +86,8 @@ void WebXrControllerInputOpenVRMock::OnFrameSubmitted(
 // Equivalent to
 // WebXrVrInputTest#testControllerClicksRegisteredOnDaydream_WebXr.
 IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       REQUIRES_GPU(TestControllerInputRegistered)) {
-  WebXrControllerInputOpenVRMock my_mock;
+                       TestControllerInputRegistered) {
+  WebXrControllerInputMock my_mock;
 
   // Connect a controller.
   auto controller_data = my_mock.CreateValidController(
@@ -99,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
 
   // Load the test page and enter presentation.
   this->LoadUrlAndAwaitInitialization(
-      this->GetHtmlTestFile("test_webxr_input"));
+      this->GetFileUrlForHtmlTestFile("test_webxr_input"));
   this->EnterSessionWithUserGestureOrFail();
 
   unsigned int num_iterations = 10;
@@ -121,8 +118,8 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
 // Equivalent to
 // WebXrVrInputTest#testControllerClicksRegisteredOnDaydream
 IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
-                       REQUIRES_GPU(TestControllerInputRegistered)) {
-  WebXrControllerInputOpenVRMock my_mock;
+                       TestControllerInputRegistered) {
+  WebXrControllerInputMock my_mock;
 
   // Connect a controller.
   auto controller_data = my_mock.CreateValidController(
@@ -134,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
 
   // Load the test page and enter presentation.
   this->LoadUrlAndAwaitInitialization(
-      this->GetHtmlTestFile("test_gamepad_button"));
+      this->GetFileUrlForHtmlTestFile("test_gamepad_button"));
   this->EnterSessionWithUserGestureOrFail();
 
   // We need to have this, otherwise the JavaScript side of the Gamepad API

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/thread_watcher_android.h"
 #include "base/android/application_status_listener.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/metrics/thread_watcher.h"

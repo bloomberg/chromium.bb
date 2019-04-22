@@ -14,8 +14,8 @@
 #include <random>
 #include <sstream>
 
-#include "Matrix.h"
-#include "shader_utils.h"
+#include "util/Matrix.h"
+#include "util/shader_utils.h"
 
 using namespace angle;
 
@@ -90,7 +90,6 @@ std::string UniformsParams::suffix() const
     }
     else
     {
-        ASSERT(dataType == DataType::MAT4);
         strstr << "_matrix";
     }
 
@@ -279,9 +278,9 @@ void UniformsBenchmark::initShaders()
     }
     fstrstr << "}";
 
-    mPrograms[0] = CompileProgram(vstrstr.str(), fstrstr.str());
+    mPrograms[0] = CompileProgram(vstrstr.str().c_str(), fstrstr.str().c_str());
     ASSERT_NE(0u, mPrograms[0]);
-    mPrograms[1] = CompileProgram(vstrstr.str(), fstrstr.str());
+    mPrograms[1] = CompileProgram(vstrstr.str().c_str(), fstrstr.str().c_str());
     ASSERT_NE(0u, mPrograms[1]);
 
     for (size_t i = 0; i < params.numVertexUniforms; ++i)

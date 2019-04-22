@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">این ماه</translation>
 <translation id="1637811476055996098">انتخاب فایل‌ها</translation>
 <translation id="1650423536718072820">نقل‌قول</translation>
+<translation id="1727886345390570319">پنهان کردن منوی زیرنویس ناشنوایان</translation>
 <translation id="1729654308190250600">لطفاً یک نشانی ایمیل غیرخالی وارد کنید.</translation>
 <translation id="1758486001363313524">موارد دیگر...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -41,6 +42,7 @@
 <translation id="2291999235780842123">کادر تأیید</translation>
 <translation id="2311842470354187719">جداساز صفحه</translation>
 <translation id="2335594187091864976">انتخابگر تاریخ و زمان</translation>
+<translation id="245932805758469625">ثانیه‌های باقی‌مانده از ویدیو</translation>
 <translation id="248395913932153421">روز</translation>
 <translation id="2507943997699731163">لطفاً این قسمت را تکمیل کنید.</translation>
 <translation id="2508569020611168319">فهرست برگه</translation>
@@ -50,7 +52,6 @@
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="2657045182931379222">شیء گرافیکی</translation>
 <translation id="2674318244760992338">پانویس</translation>
-<translation id="2706474812903655270">این ویدیو درحال پخش درحالت تصویردرتصویر است</translation>
 <translation id="2709516037105925701">تکمیل خودکار</translation>
 <translation id="2723001399770238859">صدا</translation>
 <translation id="2746543609216772311">مقدار باید <ph name="MINIMUM_DATE_OR_TIME" /> یا بعد از آن باشد.</translation>
@@ -71,11 +72,10 @@
 <translation id="3450233048674729344">مقدار باید کمتر یا برابر با <ph name="MAXIMUM" /> باشد.</translation>
 <translation id="3486220673238053218">معنی</translation>
 <translation id="3557673793733683882">عنوان <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">تعداد ثانیه‌های باقیمانده فیلم</translation>
+<translation id="3685101356851116974">تصویر بدون برچسب</translation>
 <translation id="3706100364254443312">تعویض</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> گیگابایت</translation>
-<translation id="3785482301506746191">حذف‌کننده زمان فیلم</translation>
 <translation id="3808586225841795776">اصطلاح</translation>
 <translation id="3822383571486410024">لطفاً این نوشتار را به <ph name="MIN_CHARACTERS" /> نویسه یا بیشتر افزایش دهید (درحال حاضر از <ph name="CURRENT_LENGTH" /> نویسه استفاده می‌کنید).</translation>
 <translation id="383465348367842624">قسمت قبل از «<ph name="ATSIGN" />» نباید حاوی نماد «<ph name="INVALIDCHARACTER" />» باشد.</translation>
@@ -94,8 +94,10 @@
 <translation id="4360991593054037559">لطفاً یک مقدار معتبر وارد کنید. نزدیک‌ترین مقادیر معتبر <ph name="VALID_VALUE_LOW" /> و <ph name="VALID_VALUE_HIGHER" /> هستند.</translation>
 <translation id="4384583879834880242">پرسش و پاسخ</translation>
 <translation id="4413860115965805769">دکمه منو</translation>
+<translation id="4444765639179266822">ظاهراً <ph name="OCR_TEXT" /> را نشان می‌دهد</translation>
 <translation id="4446524499724042288">مرجع واژه‌نامه</translation>
 <translation id="4522570452068850558">جزئیات</translation>
+<translation id="4542388879936266156">زمان باقی‌مانده: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">فرم</translation>
 <translation id="4661075872484491155">درخت</translation>
 <translation id="4664250907885839816">قسمت بعد از «<ph name="ATSIGN" />» نباید حاوی نماد «<ph name="INVALIDCHARACTER" />» باشد.</translation>
@@ -111,6 +113,7 @@
 <translation id="4992066212339426712">باصدا کردن</translation>
 <translation id="49969490063480558">لطفاً قسمت بعد از «<ph name="ATSIGN" />» را وارد کنید. «<ph name="INVALIDADDRESS" />» ناقص است.</translation>
 <translation id="5034860022980953847">نشانگر پیشرفت</translation>
+<translation id="5090250355906949916">انتخابگر زمان ویدیو</translation>
 <translation id="5093189678851173835">نقل‌قول آغازین</translation>
 <translation id="5117590920725113268">نمایش ماه بعدی</translation>
 <translation id="512758898067543763">عنوان ردیف</translation>
@@ -118,6 +121,7 @@
 <translation id="5164977714490026579">مقدار باید بیشتر یا مساوی با <ph name="MINIMUM" /> باشد.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> پتابایت</translation>
 <translation id="5307600278924710095">لطفاً قسمت قبل از «<ph name="ATSIGN" />» را وارد کنید. «<ph name="INVALIDADDRESS" />» ناقص است.</translation>
+<translation id="5334352251556557839">رسانه پخش نشد.</translation>
 <translation id="5406322316791861025">شکل</translation>
 <translation id="5453733299334684579">مورد درختی</translation>
 <translation id="5466621249238537318">لطفاً یک یا چند فایل را انتخاب کنید.</translation>
@@ -144,12 +148,16 @@
 <translation id="6150588977291308318">فهرست منابع</translation>
 <translation id="6164829606128959761">متر</translation>
 <translation id="6166809985690652833">سخن پایانی</translation>
+<translation id="6209276755895393898">به‌نظر می‌رسد <ph name="DESCRIPTION" /> باشد</translation>
 <translation id="6213469881011901533">واژه‌نامه</translation>
+<translation id="628938136236500310">پخش درحالت تصویردرتصویر</translation>
 <translation id="6398862346408813489">نمایش پانل انتخاب ماه</translation>
 <translation id="6404546809543547843">انتخابگر زمان صدا</translation>
+<translation id="6443871981718447451">نمایش منوی زیرنویس ناشنوایان</translation>
 <translation id="6453774872122745852">قدردانی</translation>
 <translation id="648732519525291180">انتخابگر زمان</translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
+<translation id="6572309429103589720">دستور زبان نامعتبر</translation>
 <translation id="658823671542763450">رفتن به حالت تمام صفحه</translation>
 <translation id="663493177488814956">خبرمایه</translation>
 <translation id="6637586476836377253">log</translation>
@@ -162,7 +170,6 @@
 <translation id="6820355525329141109">افزایه بارگیری نشد.</translation>
 <translation id="6820615603175220800">مرجع فهرست منابع</translation>
 <translation id="6843725295806269523">بیصداکردن</translation>
-<translation id="6853785296079745596">پنهان کردن زیرنویس ناشنوایان</translation>
 <translation id="6885760532393684712">فهرست راهنما</translation>
 <translation id="689129560213475294">انجامه</translation>
 <translation id="6934078000481955284">نقل‌قول</translation>
@@ -170,25 +177,29 @@
 <translation id="6981594929165378967">درج</translation>
 <translation id="6989848892321993519">لطفاً این نوشتار را به <ph name="MIN_CHARACTERS" /> نویسه یا بیشتر افزایش دهید (درحال‌حاضر از ۱ نویسه استفاده می‌کنید).</translation>
 <translation id="709897737746224366">لطفاً با قالب درخواستی مطابقت دهید.</translation>
+<translation id="7118469954320184356">توضیحی دردسترس نیست.</translation>
 <translation id="7139483182332611405">پیش‌گفتار</translation>
-<translation id="7223624360433298498">مدت سپری شده</translation>
 <translation id="7263440858009898357">لطفاً یک مورد را در فهرست انتخاب کنید.</translation>
 <translation id="727747134524199931">عنوان ستون</translation>
+<translation id="7320576522385648310">درحال بافر کردن</translation>
 <translation id="7353453495576941748">تأیید اعتبار</translation>
 <translation id="7364796246159120393">انتخاب فایل</translation>
 <translation id="739024184232394898">موارد دیگر...</translation>
 <translation id="7405738980073107433">ته‌نویس‌ها</translation>
+<translation id="7410239719251593705">ظاهراً حاوی محتوای بزرگسالان است. توضیحی در دسترس نیست.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ترابایت</translation>
 <translation id="7491962110804786152">برگه</translation>
 <translation id="7514365320538308">بارگیری</translation>
 <translation id="7529102961911894712">پیوند برگشت</translation>
+<translation id="7533959249147584474">گرافیک بدون برچسب</translation>
 <translation id="7647456547678091388">نکته</translation>
 <translation id="7661956066982048809">سند گرافیکی</translation>
 <translation id="7673697353781729403">ساعت</translation>
 <translation id="7681220483256441252">فهرست موضوعی</translation>
-<translation id="7720026100085573005">زمان باقی‌مانده</translation>
 <translation id="7740050170769002709">‏محتوای HTML</translation>
+<translation id="7745230546936012372">برای دریافت توضیحات تصویر جاافتاده، منوی بافت را باز کنید.</translation>
 <translation id="7750228210027921155">تصویردرتصویر</translation>
+<translation id="775297008183122718">ورودی نامعتبر</translation>
 <translation id="7789962463072032349">مکث</translation>
 <translation id="7802800022689234070">مثلث افشا</translation>
 <translation id="7888071071722539607">لطفاً نماد «<ph name="ATSIGN" />» را به نشانی ایمیل اضافه کنید. «<ph name="INVALIDADDRESS" />» در «<ph name="ATSIGN" />» موجود نیست.</translation>
@@ -197,10 +208,13 @@
 <translation id="8053789581856978548">فیلد نوشتاری جستجو</translation>
 <translation id="8057695513531652401">اطلاعیه</translation>
 <translation id="8105797009065549151">مرجع یادداشت</translation>
+<translation id="811583516810654505">درحال دریافت توضیح…</translation>
 <translation id="8117451130807776954">این هفته</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8261464734335370856">املای نامعتبر</translation>
 <translation id="8284326494547611709">زیرنویس‌ها</translation>
 <translation id="835897206747267392">مقدار نامعتبر.</translation>
+<translation id="8403857369060869934">زمان سپری‌شده: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">بخش</translation>
 <translation id="8433900881053900389">نوار ابزار</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> فایل</translation>
@@ -225,7 +239,6 @@
 <translation id="8987927404178983737">ماه</translation>
 <translation id="901493112792887934">زمان کنونی به ثانیه</translation>
 <translation id="9048119486235211610">پیمایش</translation>
-<translation id="9050748414552849310">نمایش زیرنویس ناشنوایان</translation>
 <translation id="9062295712474918030">سند</translation>
 <translation id="9093215626363556771">خروج از تصویر در تصویر</translation>
 <translation id="9108370397979208512">حساب</translation>

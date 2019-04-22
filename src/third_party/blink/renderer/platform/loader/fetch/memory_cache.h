@@ -26,14 +26,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_MEMORY_CACHE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_MEMORY_CACHE_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/memory_cache_dump_provider.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -49,17 +49,10 @@ class KURL;
 // when the prefinalizer is executed.
 class MemoryCacheEntry final : public GarbageCollected<MemoryCacheEntry> {
  public:
-  static MemoryCacheEntry* Create(Resource* resource) {
-    return MakeGarbageCollected<MemoryCacheEntry>(resource);
-  }
-
-  explicit MemoryCacheEntry(Resource* resource)
-      : last_decoded_access_time_(0.0), resource_(resource) {}
+  explicit MemoryCacheEntry(Resource* resource) : resource_(resource) {}
 
   void Trace(blink::Visitor*);
   Resource* GetResource() const { return resource_; }
-
-  double last_decoded_access_time_;  // Used as a thrash guard
 
  private:
   void ClearResourceWeak(Visitor*);
@@ -67,23 +60,18 @@ class MemoryCacheEntry final : public GarbageCollected<MemoryCacheEntry> {
   WeakMember<Resource> resource_;
 };
 
-WILL_NOT_BE_EAGERLY_TRACED_CLASS(MemoryCacheEntry);
-
 // This cache holds subresources used by Web pages: images, scripts,
 // stylesheets, etc.
 class PLATFORM_EXPORT MemoryCache final
     : public GarbageCollectedFinalized<MemoryCache>,
       public MemoryCacheDumpClient,
-      public MemoryCoordinatorClient {
+      public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(MemoryCache);
-  WTF_MAKE_NONCOPYABLE(MemoryCache);
 
  public:
-  static MemoryCache* Create(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
   explicit MemoryCache(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~MemoryCache() override;
+
   void Trace(blink::Visitor*) override;
 
   struct TypeStatistic {
@@ -95,6 +83,7 @@ class PLATFORM_EXPORT MemoryCache final
     size_t decoded_size;
     size_t encoded_size;
     size_t overhead_size;
+    size_t code_cache_size;
     size_t encoded_size_duplicated_in_data_urls;
 
     TypeStatistic()
@@ -103,6 +92,7 @@ class PLATFORM_EXPORT MemoryCache final
           decoded_size(0),
           encoded_size(0),
           overhead_size(0),
+          code_cache_size(0),
           encoded_size_duplicated_in_data_urls(0) {}
 
     void AddResource(Resource*);
@@ -208,6 +198,8 @@ class PLATFORM_EXPORT MemoryCache final
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   friend class MemoryCacheTest;
+
+  DISALLOW_COPY_AND_ASSIGN(MemoryCache);
 };
 
 // Returns the global cache.

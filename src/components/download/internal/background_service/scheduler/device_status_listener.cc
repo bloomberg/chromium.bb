@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/download/internal/background_service/scheduler/device_status_listener.h"
+#include "base/bind.h"
 
 namespace download {
 
@@ -44,7 +45,6 @@ DeviceStatusListener::DeviceStatusListener(
       observer_(nullptr),
       listening_(false),
       is_valid_state_(false),
-      startup_delay_(startup_delay),
       online_delay_(online_delay),
       battery_listener_(std::move(battery_listener)) {}
 
@@ -58,21 +58,27 @@ const DeviceStatus& DeviceStatusListener::CurrentDeviceStatus() {
   return status_;
 }
 
-void DeviceStatusListener::Start(DeviceStatusListener::Observer* observer) {
-  if (listening_)
-    return;
-
+void DeviceStatusListener::SetObserver(
+    DeviceStatusListener::Observer* observer) {
   DCHECK(observer);
   observer_ = observer;
+}
+
+void DeviceStatusListener::Start(const base::TimeDelta& start_delay) {
+  if (listening_ || !observer_)
+    return;
 
   // Network stack may shake off all connections after getting the IP address,
   // use a delay to wait for potential network setup.
-  timer_.Start(FROM_HERE, startup_delay_,
+  timer_.Start(FROM_HERE, start_delay,
                base::BindOnce(&DeviceStatusListener::StartAfterDelay,
                               base::Unretained(this)));
 }
 
 void DeviceStatusListener::StartAfterDelay() {
+  if (listening_ || !observer_)
+    return;
+
   // Listen to battery status changes.
   DCHECK(battery_listener_);
   battery_listener_->Start(this);

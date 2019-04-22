@@ -5,7 +5,11 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/browser/find_request_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -48,11 +52,9 @@ class FindRequestManagerTest : public ContentBrowserTest,
     contents()->SetDelegate(normal_delegate_);
   }
 
-#if !defined(OS_ANDROID)
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolateAllSitesForTesting(command_line);
   }
-#endif
 
  protected:
   // Navigates to |url| and waits for it to finish loading.
@@ -140,15 +142,9 @@ class FindRequestManagerTest : public ContentBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(FindRequestManagerTest);
 };
 
-// Frames are made cross-process when the test param is set to
-// true. Cross-process frames are not used on android.
-#if defined(OS_ANDROID)
-INSTANTIATE_TEST_CASE_P(
-    FindRequestManagerTests, FindRequestManagerTest, testing::Values(false));
-#else
-INSTANTIATE_TEST_CASE_P(
-    FindRequestManagerTests, FindRequestManagerTest, testing::Bool());
-#endif
+INSTANTIATE_TEST_SUITE_P(FindRequestManagerTests,
+                         FindRequestManagerTest,
+                         testing::Bool());
 
 // TODO(crbug.com/615291): These tests frequently fail on Android.
 #if defined(OS_ANDROID)
@@ -236,8 +232,13 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ScrollAndZoomIntoView) {
   web_contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
 
   LoadAndWait("/find_in_page_desktop.html");
+  // Note: for now, don't run this test on Android in OOPIF mode.
   if (GetParam())
+#if defined(OS_ANDROID)
+    return;
+#else
     MakeChildFrameCrossProcess();
+#endif  // defined(OS_ANDROID)
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
@@ -593,6 +594,32 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE_FindInPage_Issue627799) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, DetachFrameWithMatch) {
+  // Detaching an iframe with matches when the main document doesn't
+  // have matches should work and just remove the matches from the
+  // removed frame.
+  LoadAndWait("/find_in_page_two_frames.html");
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+
+  Find("result", options.Clone());
+  delegate()->WaitForFinalReply();
+  FindResults results = delegate()->GetFindResults();
+  EXPECT_EQ(last_request_id(), results.request_id);
+  EXPECT_EQ(6, results.number_of_matches);
+  EXPECT_EQ(1, results.active_match_ordinal);
+  EXPECT_TRUE(ExecuteScript(shell(),
+                            "document.body.removeChild("
+                            "document.querySelectorAll('iframe')[0])"));
+
+  Find("result", options.Clone());
+  delegate()->WaitForFinalReply();
+  results = delegate()->GetFindResults();
+  EXPECT_EQ(last_request_id(), results.request_id);
+  EXPECT_EQ(3, results.number_of_matches);
+  EXPECT_EQ(1, results.active_match_ordinal);
+}
+
 IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue644448)) {
   TestNavigationObserver navigation_observer(contents());
   NavigateToURL(shell(), GURL("about:blank"));
@@ -623,9 +650,13 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue644448)) {
 }
 
 #if defined(OS_ANDROID)
+// TODO(wjmaclean): This test, if re-enabled, may require work to make it
+// OOPIF-compatible.
 // Tests requesting find match rects.
 IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindMatchRects)) {
   LoadAndWait("/find_in_page.html");
+  if (GetParam())
+    MakeChildFrameCrossProcess();
 
   auto default_options = blink::mojom::FindOptions::New();
   default_options->run_synchronously_for_testing = true;
@@ -705,16 +736,83 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindMatchRects)) {
   EXPECT_GT(rects[17].y(), rects[18].y());
 }
 
+namespace {
+
+class ZoomToFindInPageRectMessageFilter : public content::BrowserMessageFilter {
+ public:
+  ZoomToFindInPageRectMessageFilter()
+      : content::BrowserMessageFilter(WidgetMsgStart),
+        widget_message_seen_(false) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    IPC_BEGIN_MESSAGE_MAP(ZoomToFindInPageRectMessageFilter, message)
+      IPC_MESSAGE_HANDLER(WidgetHostMsg_ZoomToFindInPageRectInMainFrame,
+                          OnWidgetHostMessage)
+    IPC_END_MESSAGE_MAP()
+    return false;
+  }
+
+  void Reset() {
+    widget_rect_seen_ = gfx::Rect();
+    widget_message_seen_ = false;
+  }
+
+  void WaitForWidgetHostMessage() {
+    if (widget_message_seen_)
+      return;
+
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  gfx::Rect& widget_message_rect() { return widget_rect_seen_; }
+
+ private:
+  ~ZoomToFindInPageRectMessageFilter() override {}
+
+  void OnWidgetHostMessage(const gfx::Rect& rect_to_zoom) {
+    widget_rect_seen_ = rect_to_zoom;
+    widget_message_seen_ = true;
+    if (!quit_closure_.is_null())
+      std::move(quit_closure_).Run();
+  }
+
+  gfx::Rect widget_rect_seen_;
+  bool widget_message_seen_;
+  base::OnceClosure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(ZoomToFindInPageRectMessageFilter);
+};
+
+}  // namespace
+
 // Tests activating the find match nearest to a given point.
-IN_PROC_BROWSER_TEST_F(FindRequestManagerTest,
-                       MAYBE(ActivateNearestFindMatch)) {
+IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ActivateNearestFindMatch) {
   LoadAndWait("/find_in_page.html");
+  bool test_with_oopif = GetParam();
+  if (test_with_oopif)
+    MakeChildFrameCrossProcess();
+
+  scoped_refptr<ZoomToFindInPageRectMessageFilter> message_filter_root =
+      new ZoomToFindInPageRectMessageFilter();
+  scoped_refptr<ZoomToFindInPageRectMessageFilter> message_filter_child =
+      new ZoomToFindInPageRectMessageFilter();
+
+  if (test_with_oopif) {
+    FrameTreeNode* root = contents()->GetFrameTree()->root();
+    FrameTreeNode* child = root->child_at(0);
+    child->current_frame_host()->GetProcess()->AddFilter(
+        message_filter_child.get());
+  }
 
   auto default_options = blink::mojom::FindOptions::New();
   default_options->run_synchronously_for_testing = true;
   Find("result", default_options.Clone());
   delegate()->WaitForFinalReply();
   EXPECT_EQ(19, delegate()->GetFindResults().number_of_matches);
+
+  auto* find_request_manager = contents()->GetFindRequestManagerForTesting();
 
   // Get the find match rects.
   contents()->RequestFindMatchRects(-1);
@@ -731,6 +829,16 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest,
     contents()->ActivateNearestFindResult(
         rects[order[i]].CenterPoint().x(), rects[order[i]].CenterPoint().y());
     delegate()->WaitForNextReply();
+
+    bool is_match_in_oopif = order[i] > 1 && test_with_oopif;
+    // Check widget message rect to make sure it matches.
+    if (is_match_in_oopif) {
+      message_filter_child->WaitForWidgetHostMessage();
+      EXPECT_EQ(find_request_manager->GetSelectionRectForTesting(),
+                message_filter_child->widget_message_rect());
+      message_filter_child->Reset();
+    }
+
     EXPECT_EQ(order[i] + 1, delegate()->GetFindResults().active_match_ordinal);
   }
 }

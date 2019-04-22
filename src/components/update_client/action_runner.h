@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "components/update_client/component_unpacker.h"
 
 namespace base {
@@ -39,15 +40,22 @@ class ActionRunner {
   void Run(Callback run_complete);
 
  private:
-  void Unpack(std::unique_ptr<service_manager::Connector> connector);
+  void RunOnTaskRunner(std::unique_ptr<Unzipper> unzipper,
+                       scoped_refptr<Patcher> patcher);
   void UnpackComplete(const ComponentUnpacker::Result& result);
 
   void RunCommand(const base::CommandLine& cmdline);
+  void RunRecoveryCRXElevated(const base::FilePath& crx_path);
 
   base::CommandLine MakeCommandLine(const base::FilePath& unpack_path) const;
 
   void WaitForCommand(base::Process process);
 
+#if defined(OS_WIN)
+  void RunRecoveryCRXElevatedInSTA(const base::FilePath& crx_path);
+#endif
+
+  bool is_per_user_install_ = false;
   const Component& component_;
 
   // Used to post callbacks to the main thread.

@@ -14,7 +14,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/test_support/mock_assistant.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 

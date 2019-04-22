@@ -100,7 +100,7 @@ LayoutView::LayoutView(Document* document)
       layout_counter_count_(0),
       hit_test_count_(0),
       hit_test_cache_hits_(0),
-      hit_test_cache_(HitTestCache::Create()),
+      hit_test_cache_(MakeGarbageCollected<HitTestCache>()),
       autosize_h_scrollbar_mode_(kScrollbarAuto),
       autosize_v_scrollbar_mode_(kScrollbarAuto) {
   // init LayoutObject attributes
@@ -433,16 +433,6 @@ void LayoutView::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     transform_state.Move(OffsetForFixedPosition());
 }
 
-void LayoutView::ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
-                                         const LayoutPoint&) const {
-  // Record the entire size of the contents of the frame. Note that we don't
-  // just use the viewport size (containing block) here because we want to
-  // ensure this includes all children (so we can avoid walking them
-  // explicitly).
-  rects.push_back(
-      LayoutRect(LayoutPoint::Zero(), LayoutSize(GetFrameView()->Size())));
-}
-
 void LayoutView::Paint(const PaintInfo& paint_info) const {
   ViewPainter(*this).Paint(paint_info);
 }
@@ -462,7 +452,7 @@ static void SetShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(
 }
 
 void LayoutView::SetShouldDoFullPaintInvalidationForViewAndAllDescendants() {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     SetSubtreeShouldDoFullPaintInvalidation();
   else
     SetShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(this);
@@ -549,7 +539,7 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
     // compute the subpixel offset of painting at this point in a a bottom-up
     // walk, round to the enclosing int rect, which will enclose the actual
     // visible rect.
-    rect = LayoutRect(EnclosingIntRect(rect));
+    rect.ExpandEdgesToPixelBoundaries();
 
     // Adjust for frame border.
     rect.Move(obj->PhysicalContentBoxOffset());
@@ -859,10 +849,10 @@ void LayoutView::UpdateFromStyle() {
     SetHasBoxDecorationBackground(true);
 }
 
-bool LayoutView::RecalcOverflow() {
-  if (!NeedsOverflowRecalc())
+bool LayoutView::RecalcLayoutOverflow() {
+  if (!NeedsLayoutOverflowRecalc())
     return false;
-  bool result = LayoutBlockFlow::RecalcOverflow();
+  bool result = LayoutBlockFlow::RecalcLayoutOverflow();
   if (result) {
     // Changing overflow should notify scrolling coordinator to ensures that it
     // updates non-fast scroll rects even if there is no layout.

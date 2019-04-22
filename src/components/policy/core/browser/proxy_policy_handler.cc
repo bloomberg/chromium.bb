@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
@@ -89,7 +89,7 @@ bool ProxyPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
     return true;
 
   bool is_valid_mode = false;
-  for (size_t i = 0; i != arraysize(kProxyModeValidationMap); ++i) {
+  for (size_t i = 0; i != base::size(kProxyModeValidationMap); ++i) {
     const ProxyModeValidationEntry& entry = kProxyModeValidationMap[i];
     if (entry.mode_value != mode_value)
       continue;
@@ -173,22 +173,19 @@ void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 
   switch (proxy_mode) {
     case ProxyPrefs::MODE_DIRECT:
-      prefs->SetValue(
-          proxy_config::prefs::kProxy,
-          std::make_unique<base::Value>(ProxyConfigDictionary::CreateDirect()));
+      prefs->SetValue(proxy_config::prefs::kProxy,
+                      ProxyConfigDictionary::CreateDirect());
       break;
     case ProxyPrefs::MODE_AUTO_DETECT:
       prefs->SetValue(proxy_config::prefs::kProxy,
-                      std::make_unique<base::Value>(
-                          ProxyConfigDictionary::CreateAutoDetect()));
+                      ProxyConfigDictionary::CreateAutoDetect());
       break;
     case ProxyPrefs::MODE_PAC_SCRIPT: {
       std::string pac_url_string;
       if (pac_url && pac_url->GetAsString(&pac_url_string)) {
         prefs->SetValue(
             proxy_config::prefs::kProxy,
-            std::make_unique<base::Value>(
-                ProxyConfigDictionary::CreatePacScript(pac_url_string, false)));
+            ProxyConfigDictionary::CreatePacScript(pac_url_string, false));
       } else {
         NOTREACHED();
       }
@@ -201,16 +198,14 @@ void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
         if (bypass_list)
           bypass_list->GetAsString(&bypass_list_string);
         prefs->SetValue(proxy_config::prefs::kProxy,
-                        std::make_unique<base::Value>(
-                            ProxyConfigDictionary::CreateFixedServers(
-                                proxy_server, bypass_list_string)));
+                        ProxyConfigDictionary::CreateFixedServers(
+                            proxy_server, bypass_list_string));
       }
       break;
     }
     case ProxyPrefs::MODE_SYSTEM:
-      prefs->SetValue(
-          proxy_config::prefs::kProxy,
-          std::make_unique<base::Value>(ProxyConfigDictionary::CreateSystem()));
+      prefs->SetValue(proxy_config::prefs::kProxy,
+                      ProxyConfigDictionary::CreateSystem());
       break;
     case ProxyPrefs::kModeCount:
       NOTREACHED();
@@ -324,10 +319,9 @@ bool ProxyPolicyHandler::CheckProxyModeAndServerMode(const PolicyMap& policies,
         *mode_value = ProxyPrefs::kSystemProxyModeName;
         break;
       default:
-        errors->AddError(key::kProxySettings,
-                         key::kProxyServerMode,
+        errors->AddError(key::kProxySettings, key::kProxyServerMode,
                          IDS_POLICY_OUT_OF_RANGE_ERROR,
-                         base::IntToString(server_mode_value));
+                         base::NumberToString(server_mode_value));
         return false;
     }
   }

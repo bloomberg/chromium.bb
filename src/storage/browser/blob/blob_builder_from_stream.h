@@ -5,12 +5,12 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_BUILDER_FROM_STREAM_H
 #define STORAGE_BROWSER_BLOB_BLOB_BUILDER_FROM_STREAM_H
 
+#include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 
 namespace storage {
@@ -41,10 +41,11 @@ namespace storage {
 // Finally you can pass an |length_hint| to the constructor. If this is done,
 // the size is used for an initial space allocation, and if the size is too
 // large to fit in memory anyway, the entire blob will be stored on disk.
-// TODO(mek): Actually deal with length_hint.
 //
-// If destroyed before building has finished this will not create a blob.
-class STORAGE_EXPORT BlobBuilderFromStream {
+// If this needs to be destroyed before building has finished, you should make
+// sure to call Abort() before destroying the instance. No blob will be created
+// in that case.
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobBuilderFromStream {
  public:
   using ResultCallback =
       base::OnceCallback<void(BlobBuilderFromStream*,
@@ -59,6 +60,8 @@ class STORAGE_EXPORT BlobBuilderFromStream {
       blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
       ResultCallback callback);
   ~BlobBuilderFromStream();
+
+  void Abort();
 
  private:
   class WritePipeToFileHelper;

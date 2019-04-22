@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
-#include <list>
 #include <map>
 #include <memory>
 #include <set>
@@ -15,6 +14,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_enumerator.h"
 #include "base/metrics/histogram_macros.h"
@@ -197,16 +197,18 @@ bool HistoryBackend::IsTypedIncrement(ui::PageTransition transition) {
 }
 
 HistoryBackend::HistoryBackend(
-    Delegate* delegate,
+    std::unique_ptr<Delegate> delegate,
     std::unique_ptr<HistoryBackendClient> backend_client,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : delegate_(delegate),
+    : delegate_(std::move(delegate)),
       scheduled_kill_db_(false),
       expirer_(this, backend_client.get(), task_runner),
       recent_redirects_(kMaxRedirectCount),
       segment_queried_(false),
       backend_client_(std::move(backend_client)),
-      task_runner_(task_runner) {}
+      task_runner_(task_runner) {
+  DCHECK(delegate_);
+}
 
 HistoryBackend::~HistoryBackend() {
   DCHECK(scheduled_commit_.IsCancelled()) << "Deleting without cleanup";
@@ -265,10 +267,6 @@ void HistoryBackend::Closing() {
   // Any scheduled commit will have a reference to us, we must make it
   // release that reference before we can be destroyed.
   CancelScheduledCommit();
-
-  // Release our reference to the delegate, this reference will be keeping the
-  // history service alive.
-  delegate_.reset();
 }
 
 #if defined(OS_IOS)
@@ -773,13 +771,10 @@ void HistoryBackend::InitImpl(
 
 void HistoryBackend::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  bool trim_aggressively =
-      memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
   if (db_)
-    db_->TrimMemory(trim_aggressively);
+    db_->TrimMemory();
   if (thumbnail_db_)
-    thumbnail_db_->TrimMemory(trim_aggressively);
+    thumbnail_db_->TrimMemory();
 }
 
 void HistoryBackend::CloseAllDatabases() {
@@ -1136,9 +1131,7 @@ void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
   }
 
   db_->SetKeywordSearchTermsForURL(row.id(), keyword_id, term);
-
-  if (delegate_)
-    delegate_->NotifyKeywordSearchTermUpdated(row, keyword_id, term);
+  delegate_->NotifyKeywordSearchTermUpdated(row, keyword_id, term);
 
   ScheduleCommit();
 }
@@ -1159,9 +1152,7 @@ void HistoryBackend::DeleteKeywordSearchTermForURL(const GURL& url) {
   if (!url_id)
     return;
   db_->DeleteKeywordSearchTermForURL(url_id);
-
-  if (delegate_)
-    delegate_->NotifyKeywordSearchTermDeleted(url_id);
+  delegate_->NotifyKeywordSearchTermDeleted(url_id);
 
   ScheduleCommit();
 }
@@ -1669,7 +1660,7 @@ void HistoryBackend::MergeFavicon(
         // Sync calls MergeFavicon() for all of the favicons that it manages at
         // startup. Do not update the "last updated" time if the favicon bitmap
         // data matches that in the database.
-        // TODO: Pass in boolean to MergeFavicon() if any users of
+        // TODO(pkotwicz): Pass in boolean to MergeFavicon() if any users of
         // MergeFavicon() want the last_updated time to be updated when the new
         // bitmap data is identical to the old.
         bitmap_identical = true;
@@ -1939,8 +1930,9 @@ void HistoryBackend::SetImportedFavicons(
         // save the favicon mapping. This will match with what history db does
         // for regular bookmarked URLs with favicons - when history db is
         // cleaned, we keep an entry in the db with 0 visits as long as that
-        // url is bookmarked.
-        if (backend_client_ && backend_client_->IsBookmarked(*url)) {
+        // url is bookmarked. The same is applicable to the saved credential's
+        // URLs.
+        if (backend_client_ && backend_client_->IsPinnedURL(*url)) {
           URLRow url_info(*url);
           url_info.set_visit_count(0);
           url_info.set_typed_count(0);
@@ -2422,7 +2414,7 @@ void HistoryBackend::ProcessDBTaskImpl() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void HistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
-  expirer_.DeleteURLs(urls);
+  expirer_.DeleteURLs(urls, base::Time::Max());
 
   db_->GetStartDate(&first_recorded_time_);
   // Force a commit, if the user is deleting something for privacy reasons, we
@@ -2431,8 +2423,19 @@ void HistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
 }
 
 void HistoryBackend::DeleteURL(const GURL& url) {
-  expirer_.DeleteURL(url);
+  expirer_.DeleteURL(url, base::Time::Max());
 
+  db_->GetStartDate(&first_recorded_time_);
+  // Force a commit, if the user is deleting something for privacy reasons, we
+  // want to get it on disk ASAP.
+  Commit();
+}
+
+void HistoryBackend::DeleteURLsUntil(
+    const std::vector<std::pair<GURL, base::Time>>& urls_and_timestamps) {
+  for (const auto& pair : urls_and_timestamps) {
+    expirer_.DeleteURL(pair.first, pair.second);
+  }
   db_->GetStartDate(&first_recorded_time_);
   // Force a commit, if the user is deleting something for privacy reasons, we
   // want to get it on disk ASAP.
@@ -2441,7 +2444,8 @@ void HistoryBackend::DeleteURL(const GURL& url) {
 
 void HistoryBackend::ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
                                           Time begin_time,
-                                          Time end_time) {
+                                          Time end_time,
+                                          bool user_initiated) {
   if (!db_)
     return;
 
@@ -2452,7 +2456,8 @@ void HistoryBackend::ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
     DeleteAllHistory();
   } else {
     // Clearing parts of history, have the expirer do the depend
-    expirer_.ExpireHistoryBetween(restrict_urls, begin_time, end_time);
+    expirer_.ExpireHistoryBetween(restrict_urls, begin_time, end_time,
+                                  user_initiated);
 
     // Force a commit, if the user is deleting something for privacy reasons,
     // we want to get it on disk ASAP.
@@ -2517,7 +2522,8 @@ void HistoryBackend::ExpireHistory(
     bool update_first_recorded_time = false;
 
     for (auto it = expire_list.begin(); it != expire_list.end(); ++it) {
-      expirer_.ExpireHistoryBetween(it->urls, it->begin_time, it->end_time);
+      expirer_.ExpireHistoryBetween(it->urls, it->begin_time, it->end_time,
+                                    true);
 
       if (it->begin_time < first_recorded_time_)
         update_first_recorded_time = true;
@@ -2550,7 +2556,7 @@ void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
     // that we can delete all associated icons in the case of deleting an
     // unvisited bookmarked URL.
     if (visits.empty())
-      expirer_.DeleteURL(*i);  // There are no more visits; nuke the URL.
+      expirer_.DeleteURL(*i, base::Time::Max());
   }
 }
 
@@ -2626,8 +2632,7 @@ void HistoryBackend::ProcessDBTask(
 
 void HistoryBackend::NotifyFaviconsChanged(const std::set<GURL>& page_urls,
                                            const GURL& icon_url) {
-  if (delegate_)
-    delegate_->NotifyFaviconsChanged(page_urls, icon_url);
+  delegate_->NotifyFaviconsChanged(page_urls, icon_url);
 }
 
 void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
@@ -2637,8 +2642,7 @@ void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
   for (HistoryBackendObserver& observer : observers_)
     observer.OnURLVisited(this, transition, row, redirects, visit_time);
 
-  if (delegate_)
-    delegate_->NotifyURLVisited(transition, row, redirects, visit_time);
+  delegate_->NotifyURLVisited(transition, row, redirects, visit_time);
 }
 
 void HistoryBackend::NotifyURLsModified(const URLRows& changed_urls,
@@ -2646,8 +2650,7 @@ void HistoryBackend::NotifyURLsModified(const URLRows& changed_urls,
   for (HistoryBackendObserver& observer : observers_)
     observer.OnURLsModified(this, changed_urls, is_from_expiration);
 
-  if (delegate_)
-    delegate_->NotifyURLsModified(changed_urls);
+  delegate_->NotifyURLsModified(changed_urls);
 }
 
 void HistoryBackend::NotifyURLsDeleted(DeletionInfo deletion_info) {
@@ -2664,47 +2667,45 @@ void HistoryBackend::NotifyURLsDeleted(DeletionInfo deletion_info) {
         deletion_info.deleted_rows(), deletion_info.favicon_urls());
   }
 
-  if (delegate_)
-    delegate_->NotifyURLsDeleted(std::move(deletion_info));
+  delegate_->NotifyURLsDeleted(std::move(deletion_info));
 }
 
 // Deleting --------------------------------------------------------------------
 
 void HistoryBackend::DeleteAllHistory() {
   // Our approach to deleting all history is:
-  //  1. Copy the bookmarks and their dependencies to new tables with temporary
-  //     names.
+  //  1. Copy the pinned URLs and their dependencies to new tables with
+  //     temporary names.
   //  2. Delete the original tables. Since tables can not share pages, we know
   //     that any data we don't want to keep is now in an unused page.
   //  3. Renaming the temporary tables to match the original.
   //  4. Vacuuming the database to delete the unused pages.
   //
-  // Since we are likely to have very few bookmarks and their dependencies
+  // Since we are likely to have very few pinned URLs and their dependencies
   // compared to all history, this is also much faster than just deleting from
   // the original tables directly.
 
-  // Get the bookmarked URLs.
-  std::vector<URLAndTitle> starred_url_and_titles;
+  // Get the pinned URLs.
+  std::vector<URLAndTitle> pinned_url;
   if (backend_client_)
-    backend_client_->GetBookmarks(&starred_url_and_titles);
+    pinned_url = backend_client_->GetPinnedURLs();
 
   URLRows kept_url_rows;
   std::vector<GURL> starred_urls;
-  for (const URLAndTitle& url_and_title : starred_url_and_titles) {
-    const GURL& url = url_and_title.url;
-    starred_urls.push_back(url);
-
+  for (URLAndTitle& url_and_title : pinned_url) {
     URLRow row;
-    if (db_->GetRowForURL(url, &row)) {
+    if (db_->GetRowForURL(url_and_title.url, &row)) {
       // Clear the last visit time so when we write these rows they are "clean."
       row.set_last_visit(Time());
       row.set_visit_count(0);
       row.set_typed_count(0);
       kept_url_rows.push_back(row);
     }
+
+    starred_urls.push_back(std::move(url_and_title.url));
   }
 
-  // Delete all cached favicons which are not used by bookmarks.
+  // Delete all cached favicons which are not used by the UI.
   if (!ClearAllThumbnailHistory(starred_urls)) {
     LOG(ERROR) << "Thumbnail history could not be cleared";
     // We continue in this error case. If the user wants to delete their
@@ -2749,7 +2750,7 @@ bool HistoryBackend::ClearAllThumbnailHistory(
   }
 
 #if defined(OS_ANDROID)
-  // TODO (michaelbai): Add the unit test once AndroidProviderBackend is
+  // TODO(michaelbai): Add the unit test once AndroidProviderBackend is
   // available in HistoryBackend.
   db_->ClearAndroidURLRows();
 #endif

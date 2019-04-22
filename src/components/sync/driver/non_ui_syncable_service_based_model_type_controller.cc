@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
 #include "components/sync/model_impl/syncable_service_based_bridge.h"
@@ -24,11 +25,8 @@ class LazyBridgeBuilder {
       NonUiSyncableServiceBasedModelTypeController::SyncableServiceProvider
           syncable_service_provider,
       const base::RepeatingClosure& dump_stack,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_refptr<SyncableServiceBasedBridge::ModelCryptographer>
-          cryptographer)
+      scoped_refptr<base::SequencedTaskRunner> task_runner)
       : type_(type),
-        cryptographer_(std::move(cryptographer)),
         store_factory_(std::move(store_factory)),
         syncable_service_provider_(std::move(syncable_service_provider)),
         dump_stack_(dump_stack),
@@ -47,15 +45,13 @@ class LazyBridgeBuilder {
           type_, std::move(store_factory_),
           std::make_unique<ClientTagBasedModelTypeProcessor>(type_,
                                                              dump_stack_),
-          syncable_service.get(), cryptographer_));
+          syncable_service.get()));
     }
     return bridge_->change_processor()->GetControllerDelegate();
   }
 
  private:
   const ModelType type_;
-  const scoped_refptr<SyncableServiceBasedBridge::ModelCryptographer>
-      cryptographer_;
   OnceModelTypeStoreFactory store_factory_;
   NonUiSyncableServiceBasedModelTypeController::SyncableServiceProvider
       syncable_service_provider_;
@@ -73,9 +69,7 @@ NonUiSyncableServiceBasedModelTypeController::
         OnceModelTypeStoreFactory store_factory,
         SyncableServiceProvider syncable_service_provider,
         const base::RepeatingClosure& dump_stack,
-        scoped_refptr<base::SequencedTaskRunner> task_runner,
-        scoped_refptr<SyncableServiceBasedBridge::ModelCryptographer>
-            cryptographer)
+        scoped_refptr<base::SequencedTaskRunner> task_runner)
     : ModelTypeController(
           type,
           std::make_unique<ProxyModelTypeControllerDelegate>(
@@ -86,8 +80,7 @@ NonUiSyncableServiceBasedModelTypeController::
                                       std::move(store_factory),
                                       std::move(syncable_service_provider),
                                       dump_stack,
-                                      task_runner,
-                                      std::move(cryptographer))))) {}
+                                      task_runner)))) {}
 
 NonUiSyncableServiceBasedModelTypeController::
     ~NonUiSyncableServiceBasedModelTypeController() {}

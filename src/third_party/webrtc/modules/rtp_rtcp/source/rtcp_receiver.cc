@@ -18,14 +18,15 @@
 #include <utility>
 #include <vector>
 
+#include "absl/memory/memory.h"
 #include "api/video/video_bitrate_allocation.h"
 #include "api/video/video_bitrate_allocator.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/rtp_rtcp/source/rtcp_packet/bye.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/common_header.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/compound_packet.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/extended_reports.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/fir.h"
+#include "modules/rtp_rtcp/source/rtcp_packet/loss_notification.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/nack.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/pli.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/rapid_resync_request.h"
@@ -73,6 +74,7 @@ struct RTCPReceiver::PacketInformation {
   uint32_t receiver_estimated_max_bitrate_bps = 0;
   std::unique_ptr<rtcp::TransportFeedback> transport_feedback;
   absl::optional<VideoBitrateAllocation> target_bitrate_allocation;
+  std::unique_ptr<rtcp::LossNotification> loss_notification;
 };
 
 // Structure for handing TMMBR and TMMBN rtcp messages (RFC5104, section 3.5.4).
@@ -129,6 +131,7 @@ RTCPReceiver::RTCPReceiver(
     RtcpPacketTypeCounterObserver* packet_type_counter_observer,
     RtcpBandwidthObserver* rtcp_bandwidth_observer,
     RtcpIntraFrameObserver* rtcp_intra_frame_observer,
+    RtcpLossNotificationObserver* rtcp_loss_notification_observer,
     TransportFeedbackObserver* transport_feedback_observer,
     VideoBitrateAllocationObserver* bitrate_allocation_observer,
     int report_interval_ms,
@@ -138,6 +141,7 @@ RTCPReceiver::RTCPReceiver(
       rtp_rtcp_(owner),
       rtcp_bandwidth_observer_(rtcp_bandwidth_observer),
       rtcp_intra_frame_observer_(rtcp_intra_frame_observer),
+      rtcp_loss_notification_observer_(rtcp_loss_notification_observer),
       transport_feedback_observer_(transport_feedback_observer),
       bitrate_allocation_observer_(bitrate_allocation_observer),
       report_interval_ms_(report_interval_ms),
@@ -376,7 +380,7 @@ bool RTCPReceiver::ParseCompoundPacket(const uint8_t* packet_begin,
           case rtcp::Fir::kFeedbackMessageType:
             HandleFir(rtcp_block, packet_information);
             break;
-          case rtcp::Remb::kFeedbackMessageType:
+          case rtcp::Psfb::kAfbMessageType:
             HandlePsfbApp(rtcp_block, packet_information);
             break;
           default:
@@ -437,7 +441,7 @@ void RTCPReceiver::HandleSenderReport(const CommonHeader& rtcp_block,
     packet_information->packet_type_flags |= kRtcpRr;
   }
 
-  for (const rtcp::ReportBlock report_block : sender_report.report_blocks())
+  for (const rtcp::ReportBlock& report_block : sender_report.report_blocks())
     HandleReportBlock(report_block, packet_information, remote_ssrc);
 }
 
@@ -869,12 +873,26 @@ void RTCPReceiver::HandleSrReq(const CommonHeader& rtcp_block,
 
 void RTCPReceiver::HandlePsfbApp(const CommonHeader& rtcp_block,
                                  PacketInformation* packet_information) {
-  rtcp::Remb remb;
-  if (remb.Parse(rtcp_block)) {
-    packet_information->packet_type_flags |= kRtcpRemb;
-    packet_information->receiver_estimated_max_bitrate_bps = remb.bitrate_bps();
-    return;
+  {
+    rtcp::Remb remb;
+    if (remb.Parse(rtcp_block)) {
+      packet_information->packet_type_flags |= kRtcpRemb;
+      packet_information->receiver_estimated_max_bitrate_bps =
+          remb.bitrate_bps();
+      return;
+    }
   }
+
+  {
+    auto loss_notification = absl::make_unique<rtcp::LossNotification>();
+    if (loss_notification->Parse(rtcp_block)) {
+      packet_information->packet_type_flags |= kRtcpLossNotification;
+      packet_information->loss_notification = std::move(loss_notification);
+      return;
+    }
+  }
+
+  RTC_LOG(LS_WARNING) << "Unknown PSFB-APP packet.";
 
   ++num_skipped_packets_;
 }
@@ -1001,6 +1019,18 @@ void RTCPReceiver::TriggerCallbacksFromRtcpPacket(
             << "Incoming FIR from SSRC " << packet_information.remote_ssrc;
       }
       rtcp_intra_frame_observer_->OnReceivedIntraFrameRequest(local_ssrc);
+    }
+  }
+  if (rtcp_loss_notification_observer_ &&
+      (packet_information.packet_type_flags & kRtcpLossNotification)) {
+    rtcp::LossNotification* loss_notification =
+        packet_information.loss_notification.get();
+    RTC_DCHECK(loss_notification);
+    if (loss_notification->media_ssrc() == local_ssrc) {
+      rtcp_loss_notification_observer_->OnReceivedLossNotification(
+          loss_notification->media_ssrc(), loss_notification->last_decoded(),
+          loss_notification->last_received(),
+          loss_notification->decodability_flag());
     }
   }
   if (rtcp_bandwidth_observer_) {

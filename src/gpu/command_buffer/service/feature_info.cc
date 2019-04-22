@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -31,16 +32,6 @@
 
 namespace gpu {
 namespace gles2 {
-
-namespace {
-
-struct FormatInfo {
-  GLenum format;
-  const GLenum* types;
-  size_t count;
-};
-
-}  // anonymous namespace.
 
 namespace {
 
@@ -258,34 +249,38 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
 
 void FeatureInfo::Initialize(ContextType context_type,
                              bool is_passthrough_cmd_decoder,
-                             const DisallowedFeatures& disallowed_features) {
+                             const DisallowedFeatures& disallowed_features,
+                             bool force_reinitialize) {
+  if (initialized_) {
+    DCHECK_EQ(context_type, context_type_);
+    DCHECK_EQ(is_passthrough_cmd_decoder, is_passthrough_cmd_decoder_);
+    DCHECK(disallowed_features == disallowed_features_);
+    if (!force_reinitialize)
+      return;
+  }
+
   disallowed_features_ = disallowed_features;
   context_type_ = context_type;
   is_passthrough_cmd_decoder_ = is_passthrough_cmd_decoder;
-  switch (context_type) {
-    case CONTEXT_TYPE_WEBGL1:
-    case CONTEXT_TYPE_OPENGLES2:
-      break;
-    default:
-      // https://crbug.com/826509
-      workarounds_.use_client_side_arrays_for_stream_buffers = false;
-      break;
-  }
   InitializeFeatures();
+  initialized_ = true;
 }
 
 void FeatureInfo::InitializeForTesting(
     const DisallowedFeatures& disallowed_features) {
+  initialized_ = false;
   Initialize(CONTEXT_TYPE_OPENGLES2, false /* is_passthrough_cmd_decoder */,
              disallowed_features);
 }
 
 void FeatureInfo::InitializeForTesting() {
+  initialized_ = false;
   Initialize(CONTEXT_TYPE_OPENGLES2, false /* is_passthrough_cmd_decoder */,
              DisallowedFeatures());
 }
 
 void FeatureInfo::InitializeForTesting(ContextType context_type) {
+  initialized_ = false;
   Initialize(context_type, false /* is_passthrough_cmd_decoder */,
              DisallowedFeatures());
 }
@@ -328,6 +323,13 @@ void FeatureInfo::EnableCHROMIUMTextureStorageImage() {
   if (!feature_flags_.chromium_texture_storage_image) {
     feature_flags_.chromium_texture_storage_image = true;
     AddExtensionString("GL_CHROMIUM_texture_storage_image");
+  }
+}
+
+void FeatureInfo::EnableEXTFloatBlend() {
+  if (!feature_flags_.ext_float_blend) {
+    AddExtensionString("GL_EXT_float_blend");
+    feature_flags_.ext_float_blend = true;
   }
 }
 
@@ -1493,7 +1495,10 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.ext_robustness =
       gfx::HasExtension(extensions, "GL_EXT_robustness");
   feature_flags_.ext_pixel_buffer_object =
+      gfx::HasExtension(extensions, "GL_ARB_pixel_buffer_object") ||
       gfx::HasExtension(extensions, "GL_NV_pixel_buffer_object");
+  feature_flags_.ext_unpack_subimage =
+      gfx::HasExtension(extensions, "GL_EXT_unpack_subimage");
   feature_flags_.oes_rgb8_rgba8 =
       gfx::HasExtension(extensions, "GL_OES_rgb8_rgba8");
   feature_flags_.angle_robust_resource_initialization =
@@ -1518,13 +1523,13 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_MESA_framebuffer_flip_y");
   }
 
-  // Only supporting ANGLE_multiview in passthrough mode - not implemented in
+  // Only supporting OVR_multiview in passthrough mode - not implemented in
   // validating command decoder. The extension is only available in ANGLE and in
   // that case Chromium should be using passthrough by default.
   if (is_passthrough_cmd_decoder_ &&
-      gfx::HasExtension(extensions, "GL_ANGLE_multiview")) {
-    AddExtensionString("GL_ANGLE_multiview");
-    feature_flags_.angle_multiview = true;
+      gfx::HasExtension(extensions, "GL_OVR_multiview2")) {
+    AddExtensionString("GL_OVR_multiview2");
+    feature_flags_.ovr_multiview2 = true;
   }
 
   if (is_passthrough_cmd_decoder_ &&
@@ -1541,6 +1546,29 @@ void FeatureInfo::InitializeFeatures() {
   if (gfx::HasExtension(extensions, "GL_KHR_robust_buffer_access_behavior")) {
     AddExtensionString("GL_KHR_robust_buffer_access_behavior");
     feature_flags_.khr_robust_buffer_access_behavior = true;
+  }
+
+  if (!is_passthrough_cmd_decoder_ ||
+      gfx::HasExtension(extensions, "GL_ANGLE_multi_draw")) {
+    feature_flags_.webgl_multi_draw = true;
+    AddExtensionString("GL_WEBGL_multi_draw");
+
+    if (gfx::HasExtension(extensions, "GL_ANGLE_instanced_arrays") ||
+        feature_flags_.angle_instanced_arrays || gl_version_info_->is_es3 ||
+        gl_version_info_->is_desktop_core_profile) {
+      feature_flags_.webgl_multi_draw_instanced = true;
+      AddExtensionString("GL_WEBGL_multi_draw_instanced");
+    }
+  }
+
+  if (gfx::HasExtension(extensions, "GL_NV_internalformat_sample_query")) {
+    feature_flags_.nv_internalformat_sample_query = true;
+  }
+
+  if (gfx::HasExtension(extensions,
+                        "GL_AMD_framebuffer_multisample_advanced")) {
+    feature_flags_.amd_framebuffer_multisample_advanced = true;
+    AddExtensionString("GL_AMD_framebuffer_multisample_advanced");
   }
 }
 
@@ -1645,6 +1673,14 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
     }
   }
 
+  // Assume all desktop (!gl_version_info_->is_es) supports float blend
+  if (!gl_version_info_->is_es ||
+      gfx::HasExtension(extensions, "GL_EXT_float_blend")) {
+    if (!disallowed_features_.ext_float_blend) {
+      EnableEXTFloatBlend();
+    }
+  }
+
   if (may_enable_chromium_color_buffer_float &&
       !had_native_chromium_color_buffer_float_ext) {
     static_assert(GL_RGBA32F_ARB == GL_RGBA32F &&
@@ -1692,8 +1728,8 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
       GLenum formats[] = {
           GL_RED, GL_RG, GL_RGBA, GL_RED, GL_RG, GL_RGB,
       };
-      DCHECK_EQ(arraysize(internal_formats), arraysize(formats));
-      for (size_t i = 0; i < arraysize(formats); ++i) {
+      DCHECK_EQ(base::size(internal_formats), base::size(formats));
+      for (size_t i = 0; i < base::size(formats); ++i) {
         glTexImage2D(GL_TEXTURE_2D, 0, internal_formats[i], width, width, 0,
                      formats[i], GL_FLOAT, nullptr);
         full_float_support &= glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==

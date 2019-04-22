@@ -9,8 +9,8 @@ namespace gpu {
 namespace {
 
 // Disabled by default as it requires DX11.
-INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GpuMemoryBufferImplDXGI,
-                              GpuMemoryBufferImplTest,
-                              GpuMemoryBufferImplDXGI);
+INSTANTIATE_TYPED_TEST_SUITE_P(DISABLED_GpuMemoryBufferImplDXGI,
+                               GpuMemoryBufferImplTest,
+                               GpuMemoryBufferImplDXGI);
 }  // namespace
 }  // namespace gpu

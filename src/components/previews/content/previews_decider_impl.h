@@ -116,7 +116,11 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   void SetIgnoreLongTermBlackListForServerPreviews(
       bool ignore_long_term_blacklist_for_server_previews);
 
-  bool LoadResourceHints(const GURL& url) override;
+  bool LoadPageHints(const GURL& url) override;
+
+  bool GetResourceLoadingHints(
+      const GURL& url,
+      std::vector<std::string>* out_resource_patterns_to_block) const override;
 
   void LogHintCacheMatch(const GURL& url, bool is_committed) const override;
 
@@ -127,12 +131,15 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   void SetEffectiveConnectionType(
       net::EffectiveConnectionType effective_connection_type);
 
- protected:
-  // Posts a task to deliver the resource patterns to the PreviewsUIService.
-  void OnResourceLoadingHints(
-      const GURL& document_gurl,
-      const std::vector<std::string>& patterns_to_block);
+  PreviewsOptimizationGuide* previews_opt_guide() const {
+    return previews_opt_guide_.get();
+  }
 
+  // When a preview is reloaded, this is called. No Previews are allowed for
+  // params::SingleOptOutDuration after that reload is reported.
+  void AddPreviewReload();
+
+ protected:
   // Sets a blacklist for testing.
   void SetPreviewsBlacklistForTesting(
       std::unique_ptr<PreviewsBlackList> previews_back_list);
@@ -178,10 +185,6 @@ class PreviewsDeciderImpl : public PreviewsDecider,
 
   std::unique_ptr<PreviewsBlackList> previews_black_list_;
 
-  // Only used when the blacklist has been disabled to allow "Show Original" to
-  // function as expected. The time of the most recent opt out event.
-  base::Time last_opt_out_time_;
-
   // Holds optimization guidance from the server.
   std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide_;
 
@@ -201,6 +204,8 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   base::Clock* clock_;
+
+  base::Optional<base::Time> recent_preview_reload_time_;
 
   // Whether the preview is enabled. Valid after Initialize() is called.
   PreviewsIsEnabledCallback is_enabled_callback_;

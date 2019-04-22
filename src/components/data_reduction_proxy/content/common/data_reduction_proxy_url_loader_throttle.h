@@ -45,8 +45,16 @@ class DataReductionProxyURLLoaderThrottle : public content::URLLoaderThrottle {
   void WillProcessResponse(const GURL& response_url,
                            network::ResourceResponseHead* response_head,
                            bool* defer) override;
+  void WillOnCompleteWithError(const network::URLLoaderCompletionStatus& status,
+                               bool* defer) override;
 
  private:
+  // Retry the request bypassing proxies or falling back to next proxy based on
+  // |net_error| and the response headers.
+  void MaybeRetry(const net::ProxyServer& proxy_server,
+                  const net::HttpResponseHeaders* headers,
+                  net::Error net_error,
+                  bool* defer);
   // Marks |bad_proxies| to be bypassed for |bypass_duration|. Once that action
   // has completed will call OnMarkProxiesAsBadComplete().
   void MarkProxiesAsBad(const std::vector<net::ProxyServer>& bad_proxies,
@@ -78,6 +86,9 @@ class DataReductionProxyURLLoaderThrottle : public content::URLLoaderThrottle {
 
   // The final load flags used to complete the request.
   int final_load_flags_ = 0;
+
+  // True if BeforeWillProcessResponse has been called.
+  bool before_will_process_response_received_ = false;
 
   base::WeakPtrFactory<DataReductionProxyURLLoaderThrottle> weak_factory_{this};
 };

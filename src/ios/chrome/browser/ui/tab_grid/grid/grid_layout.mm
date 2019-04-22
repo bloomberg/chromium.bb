@@ -16,9 +16,6 @@
 @end
 
 @implementation GridLayout
-@synthesize animatesItemUpdates = _animatesItemUpdates;
-@synthesize indexPathsOfDeletingItems = _indexPathsOfDeletingItems;
-@synthesize indexPathsOfInsertingItems = _indexPathsOfInsertingItems;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -39,8 +36,13 @@
   UIUserInterfaceSizeClass verticalSizeClass =
       self.collectionView.traitCollection.verticalSizeClass;
   CGFloat width = CGRectGetWidth(self.collectionView.bounds);
-  if (horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
-      verticalSizeClass == UIUserInterfaceSizeClassCompact) {
+  if (UIContentSizeCategoryIsAccessibilityCategory(
+          UIApplication.sharedApplication.preferredContentSizeCategory)) {
+    self.itemSize = kGridCellSizeAccessibility;
+    self.sectionInset = kGridLayoutInsetsRegularCompact;
+    self.minimumLineSpacing = kGridLayoutLineSpacingRegularCompact;
+  } else if (horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
+             verticalSizeClass == UIUserInterfaceSizeClassCompact) {
     self.itemSize = kGridCellSizeSmall;
     if (width < kGridLayoutCompactCompactLimitedWidth) {
       self.sectionInset = kGridLayoutInsetsCompactCompactLimitedWidth;

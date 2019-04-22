@@ -4,23 +4,20 @@
 
 #include "services/identity/identity_service.h"
 
-#include "services/identity/identity_manager_impl.h"
+#include <utility>
+
+#include "base/bind.h"
+#include "services/identity/identity_accessor_impl.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace identity {
 
-IdentityService::IdentityService(AccountTrackerService* account_tracker,
-                                 SigninManagerBase* signin_manager,
-                                 ProfileOAuth2TokenService* token_service,
+IdentityService::IdentityService(IdentityManager* identity_manager,
                                  service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)),
-      account_tracker_(account_tracker),
-      signin_manager_(signin_manager),
-      token_service_(token_service) {
-  registry_.AddInterface<mojom::IdentityManager>(
+      identity_manager_(identity_manager) {
+  registry_.AddInterface<mojom::IdentityAccessor>(
       base::Bind(&IdentityService::Create, base::Unretained(this)));
-  signin_manager_shutdown_subscription_ =
-      signin_manager_->RegisterOnShutdownCallback(
-          base::Bind(&IdentityService::ShutDown, base::Unretained(this)));
 }
 
 IdentityService::~IdentityService() {
@@ -38,23 +35,19 @@ void IdentityService::ShutDown() {
   if (IsShutDown())
     return;
 
-  signin_manager_ = nullptr;
-  signin_manager_shutdown_subscription_.reset();
-  token_service_ = nullptr;
-  account_tracker_ = nullptr;
+  identity_manager_ = nullptr;
 }
 
 bool IdentityService::IsShutDown() {
-  return (signin_manager_ == nullptr);
+  return (identity_manager_ == nullptr);
 }
 
-void IdentityService::Create(mojom::IdentityManagerRequest request) {
+void IdentityService::Create(mojom::IdentityAccessorRequest request) {
   // This instance cannot service requests if it has already been shut down.
   if (IsShutDown())
     return;
 
-  IdentityManagerImpl::Create(std::move(request), account_tracker_,
-                              signin_manager_, token_service_);
+  IdentityAccessorImpl::Create(std::move(request), identity_manager_);
 }
 
 }  // namespace identity

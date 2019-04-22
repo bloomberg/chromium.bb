@@ -10,26 +10,28 @@
 
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
-#include "content/public/common/console_message_level.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webplugininfo_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
+#include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_history_scroll_restoration_type.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_security_style.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
-#include "third_party/blink/public/web/window_features.mojom.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_tree_update.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
@@ -44,10 +46,8 @@ IPC_ENUM_TRAITS_VALIDATE(ui::PageTransition,
                          ((value &
                            ui::PageTransition::PAGE_TRANSITION_CORE_MASK) <=
                           ui::PageTransition::PAGE_TRANSITION_LAST_CORE))
-IPC_ENUM_TRAITS_MAX_VALUE(content::ConsoleMessageLevel,
-                          content::CONSOLE_MESSAGE_LEVEL_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFrameSerializerCacheControlPolicy,
-                          blink::WebFrameSerializerCacheControlPolicy::kLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ConsoleMessageLevel,
+                          blink::mojom::ConsoleMessageLevel::kError)
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::ReferrerPolicy,
                           network::mojom::ReferrerPolicy::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebHistoryScrollRestorationType,
@@ -60,10 +60,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::EditingBehavior,
                           content::EDITING_BEHAVIOR_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(WindowOpenDisposition,
                           WindowOpenDisposition::MAX_VALUE)
-IPC_ENUM_TRAITS_MAX_VALUE(content::V8CacheOptions,
-                          content::V8_CACHE_OPTIONS_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(content::SavePreviousDocumentResources,
-                          content::SavePreviousDocumentResources::LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::V8CacheOptions,
+                          blink::mojom::V8CacheOptions::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::PointerType,
                               ui::POINTER_TYPE_FIRST,
                               ui::POINTER_TYPE_LAST)
@@ -80,6 +78,9 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(
     content::AutoplayPolicy,
     content::AutoplayPolicy::kNoUserGestureRequired,
     content::AutoplayPolicy::kDocumentUserActivationRequired)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::PreferredColorScheme,
+                              blink::PreferredColorScheme::kNoPreference,
+                              blink::PreferredColorScheme::kLight)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebPoint)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -127,7 +128,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(dns_prefetching_enabled)
   IPC_STRUCT_TRAITS_MEMBER(data_saver_enabled)
   IPC_STRUCT_TRAITS_MEMBER(data_saver_holdback_web_api_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(data_saver_holdback_media_api_enabled)
   IPC_STRUCT_TRAITS_MEMBER(local_storage_enabled)
   IPC_STRUCT_TRAITS_MEMBER(databases_enabled)
   IPC_STRUCT_TRAITS_MEMBER(application_cache_enabled)
@@ -165,6 +165,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(strictly_block_blockable_mixed_content)
   IPC_STRUCT_TRAITS_MEMBER(block_mixed_plugin_content)
   IPC_STRUCT_TRAITS_MEMBER(enable_scroll_animator)
+  IPC_STRUCT_TRAITS_MEMBER(prefers_reduced_motion)
   IPC_STRUCT_TRAITS_MEMBER(password_echo_enabled)
   IPC_STRUCT_TRAITS_MEMBER(should_clear_document_background)
   IPC_STRUCT_TRAITS_MEMBER(touch_event_feature_detection_enabled)
@@ -195,16 +196,22 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(accelerated_video_decode_enabled)
   IPC_STRUCT_TRAITS_MEMBER(animation_policy)
   IPC_STRUCT_TRAITS_MEMBER(user_gesture_required_for_presentation)
+  IPC_STRUCT_TRAITS_MEMBER(text_track_background_color)
   IPC_STRUCT_TRAITS_MEMBER(text_track_margin_percentage)
-  IPC_STRUCT_TRAITS_MEMBER(save_previous_document_resources)
+  IPC_STRUCT_TRAITS_MEMBER(text_track_text_color)
+  IPC_STRUCT_TRAITS_MEMBER(text_track_text_size)
+  IPC_STRUCT_TRAITS_MEMBER(text_track_text_shadow)
+  IPC_STRUCT_TRAITS_MEMBER(text_track_font_family)
+  IPC_STRUCT_TRAITS_MEMBER(text_track_font_variant)
   IPC_STRUCT_TRAITS_MEMBER(text_autosizing_enabled)
   IPC_STRUCT_TRAITS_MEMBER(double_tap_to_zoom_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(dont_send_key_events_to_javascript)
+  IPC_STRUCT_TRAITS_MEMBER(web_app_scope)
 #if defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(font_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(device_scale_adjustment)
   IPC_STRUCT_TRAITS_MEMBER(force_enable_zoom)
   IPC_STRUCT_TRAITS_MEMBER(fullscreen_supported)
-  IPC_STRUCT_TRAITS_MEMBER(media_playback_gesture_whitelist_scope)
   IPC_STRUCT_TRAITS_MEMBER(default_video_poster_url)
   IPC_STRUCT_TRAITS_MEMBER(support_deprecated_target_density_dpi)
   IPC_STRUCT_TRAITS_MEMBER(use_legacy_background_size_shorthand_behavior)
@@ -226,9 +233,9 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(embedded_media_experience_enabled)
   IPC_STRUCT_TRAITS_MEMBER(immersive_mode_enabled)
   IPC_STRUCT_TRAITS_MEMBER(css_hex_alpha_color_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(enable_media_download_in_product_help)
   IPC_STRUCT_TRAITS_MEMBER(scroll_top_left_interop_enabled)
 #endif  // defined(OS_ANDROID)
+  IPC_STRUCT_TRAITS_MEMBER(force_dark_mode_enabled)
   IPC_STRUCT_TRAITS_MEMBER(default_minimum_page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(default_maximum_page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(hide_download_ui)
@@ -236,6 +243,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(media_controls_enabled)
   IPC_STRUCT_TRAITS_MEMBER(do_not_update_selection_on_mutating_selection_range)
   IPC_STRUCT_TRAITS_MEMBER(autoplay_policy)
+  IPC_STRUCT_TRAITS_MEMBER(preferred_color_scheme)
   IPC_STRUCT_TRAITS_MEMBER(low_priority_iframes_threshold)
   IPC_STRUCT_TRAITS_MEMBER(picture_in_picture_enabled)
   IPC_STRUCT_TRAITS_MEMBER(translate_service_available)
@@ -296,7 +304,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::Hinting,
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::SubpixelRendering,
                           gfx::FontRenderParams::SUBPIXEL_RENDERING_MAX)
 
-IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
+IPC_STRUCT_TRAITS_BEGIN(blink::mojom::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(can_accept_load_drops)
   IPC_STRUCT_TRAITS_MEMBER(should_antialias_text)
   IPC_STRUCT_TRAITS_MEMBER(hinting)
@@ -305,6 +313,10 @@ IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(subpixel_rendering)
   IPC_STRUCT_TRAITS_MEMBER(use_subpixel_positioning)
   IPC_STRUCT_TRAITS_MEMBER(focus_ring_color)
+#if defined(OS_ANDROID)
+  IPC_STRUCT_TRAITS_MEMBER(minimum_stroke_width_for_focus_ring)
+  IPC_STRUCT_TRAITS_MEMBER(is_focus_ring_outset)
+#endif
   IPC_STRUCT_TRAITS_MEMBER(active_selection_bg_color)
   IPC_STRUCT_TRAITS_MEMBER(active_selection_fg_color)
   IPC_STRUCT_TRAITS_MEMBER(inactive_selection_bg_color)
@@ -342,6 +354,49 @@ IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(arrow_bitmap_height_vertical_scroll_bar_in_dips)
   IPC_STRUCT_TRAITS_MEMBER(arrow_bitmap_width_horizontal_scroll_bar_in_dips)
 #endif
+IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS(blink::WebDragOperation)  // Bitmask.
+IPC_ENUM_TRAITS_MAX_VALUE(ui::DragDropTypes::DragEventSource,
+                          ui::DragDropTypes::DRAG_EVENT_SOURCE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::DropData::Kind,
+                          content::DropData::Kind::LAST)
+
+IPC_STRUCT_TRAITS_BEGIN(ui::FileInfo)
+  IPC_STRUCT_TRAITS_MEMBER(path)
+  IPC_STRUCT_TRAITS_MEMBER(display_name)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::DropData)
+  IPC_STRUCT_TRAITS_MEMBER(key_modifiers)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(url_title)
+  IPC_STRUCT_TRAITS_MEMBER(download_metadata)
+  IPC_STRUCT_TRAITS_MEMBER(referrer_policy)
+  IPC_STRUCT_TRAITS_MEMBER(filenames)
+  IPC_STRUCT_TRAITS_MEMBER(filesystem_id)
+  IPC_STRUCT_TRAITS_MEMBER(file_system_files)
+  IPC_STRUCT_TRAITS_MEMBER(text)
+  IPC_STRUCT_TRAITS_MEMBER(html)
+  IPC_STRUCT_TRAITS_MEMBER(html_base_url)
+  IPC_STRUCT_TRAITS_MEMBER(file_contents)
+  IPC_STRUCT_TRAITS_MEMBER(file_contents_source_url)
+  IPC_STRUCT_TRAITS_MEMBER(file_contents_filename_extension)
+  IPC_STRUCT_TRAITS_MEMBER(file_contents_content_disposition)
+  IPC_STRUCT_TRAITS_MEMBER(custom_data)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::DropData::FileSystemFileInfo)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(filesystem_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::DropData::Metadata)
+  IPC_STRUCT_TRAITS_MEMBER(kind)
+  IPC_STRUCT_TRAITS_MEMBER(mime_type)
+  IPC_STRUCT_TRAITS_MEMBER(filename)
+  IPC_STRUCT_TRAITS_MEMBER(file_system_url)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_

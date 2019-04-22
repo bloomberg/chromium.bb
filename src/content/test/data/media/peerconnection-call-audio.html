@@ -93,8 +93,8 @@
     localStream.getAudioTracks()[0].enabled = enabled;
   }
 
-  function callAndEnsureRemoteAudioTrackMutingWorks() {
-    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
+  function callAndEnsureRemoteAudioTrackMutingWorks(constraints) {
+    setupCallAndPromiseAudioPlaying(constraints).then(() => {
       // Call is up, now mute the remote track and check we stop playing out
       // audio (after a small delay, we don't expect it to happen instantly).
       enableRemoteAudio(gSecondConnection, false);
@@ -104,8 +104,8 @@
     .catch(failTest);
   }
 
-  function callAndEnsureLocalAudioTrackMutingWorks() {
-    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
+  function callAndEnsureLocalAudioTrackMutingWorks(constraints) {
+    setupCallAndPromiseAudioPlaying(constraints).then(() => {
       // Call is up, now mute the local track of the sending side and ensure
       // the receiving side stops receiving audio.
       enableLocalAudio(gFirstConnection, false);
@@ -115,8 +115,8 @@
     .catch(failTest);
   }
 
-  function callAndEnsureAudioTrackUnmutingWorks() {
-    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
+  function callAndEnsureAudioTrackUnmutingWorks(constraints) {
+    setupCallAndPromiseAudioPlaying(constraints).then(() => {
       // Mute, wait a while, unmute, verify audio gets back up.
       // (Also, ensure video muting doesn't affect audio).
       enableRemoteAudio(gSecondConnection, false);
@@ -134,16 +134,16 @@
     }).catch(failTest);
   }
 
-  function callAndEnsureLocalVideoMutingDoesntMuteAudio() {
-    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
+  function callAndEnsureLocalVideoMutingDoesntMuteAudio(constraints) {
+    setupCallAndPromiseAudioPlaying(constraints).then(() => {
       enableLocalVideo(gFirstConnection, false);
       return ensureAudioPlaying(gSecondConnection)
           .then(reportTestSuccess);
     });
   }
 
-  function callAndEnsureRemoteVideoMutingDoesntMuteAudio() {
-    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
+  function callAndEnsureRemoteVideoMutingDoesntMuteAudio(constraints) {
+    setupCallAndPromiseAudioPlaying(constraints).then(() => {
       enableRemoteVideo(gSecondConnection, false);
       return ensureAudioPlaying(gSecondConnection)
           .then(reportTestSuccess);

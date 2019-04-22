@@ -23,8 +23,8 @@ class CONTENT_EXPORT RenderMediaClient : public media::MediaClient {
       std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems)
       final;
   bool IsKeySystemsUpdateNeeded() final;
-  bool IsSupportedAudioConfig(const media::AudioConfig& config) final;
-  bool IsSupportedVideoConfig(const media::VideoConfig& config) final;
+  bool IsSupportedAudioType(const media::AudioType& type) final;
+  bool IsSupportedVideoType(const media::VideoType& type) final;
   bool IsSupportedBitstreamAudioCodec(media::AudioCodec codec) final;
 
  private:

@@ -30,6 +30,36 @@ namespace {
 // be deleted. When network service is disabled, this should always be null.
 ChromeDataUseMeasurement* g_chrome_data_use_measurement = nullptr;
 
+DataUseUserData::DataUseContentType GetContentType(const std::string& mime_type,
+                                                   bool is_main_frame_resource,
+                                                   bool is_app_background,
+                                                   bool is_tab_visible) {
+  if (mime_type == "text/html")
+    return is_main_frame_resource ? DataUseUserData::MAIN_FRAME_HTML
+                                  : DataUseUserData::NON_MAIN_FRAME_HTML;
+  if (mime_type == "text/css")
+    return DataUseUserData::CSS;
+  if (base::StartsWith(mime_type, "image/", base::CompareCase::SENSITIVE))
+    return DataUseUserData::IMAGE;
+  if (base::EndsWith(mime_type, "javascript", base::CompareCase::SENSITIVE) ||
+      base::EndsWith(mime_type, "ecmascript", base::CompareCase::SENSITIVE)) {
+    return DataUseUserData::JAVASCRIPT;
+  }
+  if (mime_type.find("font") != std::string::npos)
+    return DataUseUserData::FONT;
+  if (base::StartsWith(mime_type, "audio/", base::CompareCase::SENSITIVE))
+    return is_app_background
+               ? DataUseUserData::AUDIO_APPBACKGROUND
+               : (!is_tab_visible ? DataUseUserData::AUDIO_TABBACKGROUND
+                                  : DataUseUserData::AUDIO);
+  if (base::StartsWith(mime_type, "video/", base::CompareCase::SENSITIVE))
+    return is_app_background
+               ? DataUseUserData::VIDEO_APPBACKGROUND
+               : (!is_tab_visible ? DataUseUserData::VIDEO_TABBACKGROUND
+                                  : DataUseUserData::VIDEO);
+  return DataUseUserData::OTHER;
+}
+
 }  // namespace
 
 // static
@@ -116,6 +146,23 @@ void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
   bytes_transferred_since_last_traffic_stats_query_ += recv_bytes + sent_bytes;
   MaybeRecordNetworkBytesOS();
 #endif
+}
+
+void ChromeDataUseMeasurement::ReportUserTrafficDataUse(bool is_tab_visible,
+                                                        int64_t recv_bytes) {
+  RecordTrafficSizeMetric(true, true, is_tab_visible, recv_bytes);
+}
+
+void ChromeDataUseMeasurement::RecordContentTypeMetric(
+    const std::string& mime_type,
+    bool is_main_frame_resource,
+    bool is_tab_visible,
+    int64_t recv_bytes) {
+  DataUseUserData::DataUseContentType content_type = GetContentType(
+      mime_type, is_main_frame_resource,
+      CurrentAppState() == DataUseUserData::BACKGROUND, is_tab_visible);
+  UMA_HISTOGRAM_SCALED_ENUMERATION("DataUse.ContentType.UserTrafficKB",
+                                   content_type, recv_bytes, 1024);
 }
 
 void ChromeDataUseMeasurement::UpdateMetricsUsagePrefs(

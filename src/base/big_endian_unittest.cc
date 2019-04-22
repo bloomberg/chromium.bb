@@ -24,7 +24,7 @@ TEST(BigEndianReaderTest, ReadsValues) {
 
   EXPECT_TRUE(reader.Skip(2));
   EXPECT_EQ(data + 2, reader.ptr());
-  EXPECT_EQ(reader.remaining(), static_cast<int>(sizeof(data)) - 2);
+  EXPECT_EQ(reader.remaining(), sizeof(data) - 2);
   EXPECT_TRUE(reader.ReadBytes(buf, sizeof(buf)));
   EXPECT_EQ(0x2, buf[0]);
   EXPECT_EQ(0x3, buf[1]);
@@ -67,7 +67,7 @@ TEST(BigEndianReaderTest, RespectsLength) {
   EXPECT_TRUE(reader.Skip(1));
   // 0 left
   EXPECT_FALSE(reader.ReadU8(&u8));
-  EXPECT_EQ(0, reader.remaining());
+  EXPECT_EQ(0u, reader.remaining());
 }
 
 TEST(BigEndianWriterTest, WritesValues) {
@@ -110,7 +110,7 @@ TEST(BigEndianWriterTest, RespectsLength) {
   EXPECT_TRUE(writer.Skip(1));
   // 0 left
   EXPECT_FALSE(writer.WriteU8(u8));
-  EXPECT_EQ(0, writer.remaining());
+  EXPECT_EQ(0u, writer.remaining());
 }
 
 }  // namespace base

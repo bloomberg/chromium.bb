@@ -666,7 +666,8 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
 
   // Create an observer list for the media source and add |observer|
   // to it. Fail if |observer| is already registered.
-  const std::string& source_id = observer->source().id();
+  const std::string& source_id =
+      observer->source() ? observer->source()->id() : "";
   std::unique_ptr<MediaSinksQuery>& sinks_query = sinks_queries_[source_id];
   bool is_new_query = false;
   if (!sinks_query) {
@@ -693,7 +694,8 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
     MediaSinksObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  const MediaSource::Id& source_id = observer->source().id();
+  const std::string& source_id =
+      observer->source() ? observer->source()->id() : "";
   auto it = sinks_queries_.find(source_id);
   if (it == sinks_queries_.end() || !it->second->HasObserver(observer))
     return;

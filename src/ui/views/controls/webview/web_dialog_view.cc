@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/webview/web_dialog_view.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
@@ -38,9 +39,9 @@ namespace views {
 
 WebDialogView::WebDialogView(content::BrowserContext* context,
                              WebDialogDelegate* delegate,
-                             WebContentsHandler* handler)
+                             std::unique_ptr<WebContentsHandler> handler)
     : ClientView(nullptr, nullptr),
-      WebDialogWebContentsDelegate(context, handler),
+      WebDialogWebContentsDelegate(context, std::move(handler)),
       delegate_(delegate),
       web_view_(new views::WebView(context)) {
   web_view_->set_allow_accelerators(true);
@@ -56,8 +57,7 @@ WebDialogView::WebDialogView(content::BrowserContext* context,
   }
 }
 
-WebDialogView::~WebDialogView() {
-}
+WebDialogView::~WebDialogView() = default;
 
 content::WebContents* WebDialogView::web_contents() {
   return web_view_->web_contents();
@@ -268,10 +268,12 @@ bool WebDialogView::ShouldShowDialogTitle() const {
 }
 
 bool WebDialogView::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   if (delegate_)
-    return delegate_->HandleContextMenu(params);
-  return WebDialogWebContentsDelegate::HandleContextMenu(params);
+    return delegate_->HandleContextMenu(render_frame_host, params);
+  return WebDialogWebContentsDelegate::HandleContextMenu(render_frame_host,
+                                                         params);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -292,8 +294,8 @@ bool WebDialogView::HandleKeyboardEvent(content::WebContents* source,
   if (!event.os_event)
     return false;
 
-  GetWidget()->native_widget_private()->RepostNativeEvent(event.os_event);
-  return true;
+  return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+      event, GetFocusManager());
 }
 
 void WebDialogView::CloseContents(WebContents* source) {

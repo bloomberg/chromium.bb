@@ -14,9 +14,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_hammerd_client.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/hammerd/fake_hammerd_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,19 +85,12 @@ class DetachableBaseHandlerTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
+    chromeos::HammerdClient::InitializeFake();
+    hammerd_client_ = chromeos::FakeHammerdClient::Get();
 
-    auto hammerd_client = std::make_unique<chromeos::FakeHammerdClient>();
-    hammerd_client_ = hammerd_client.get();
-    dbus_setter->SetHammerdClient(std::move(hammerd_client));
-
-    auto power_manager_client =
-        std::make_unique<chromeos::FakePowerManagerClient>();
-    power_manager_client->SetTabletMode(
+    chromeos::PowerManagerClient::InitializeFake();
+    chromeos::FakePowerManagerClient::Get()->SetTabletMode(
         chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
-    power_manager_client_ = power_manager_client.get();
-    dbus_setter->SetPowerManagerClient(std::move(power_manager_client));
 
     default_user_ = CreateUser("user_1@foo.bar", "111111", UserType::kNormal);
 
@@ -107,20 +99,21 @@ class DetachableBaseHandlerTest : public testing::Test {
     handler_->OnLocalStatePrefServiceInitialized(&local_state_);
     handler_->AddObserver(&detachable_base_observer_);
   }
+
   void TearDown() override {
     handler_->RemoveObserver(&detachable_base_observer_);
     handler_.reset();
     hammerd_client_ = nullptr;
-    power_manager_client_ = nullptr;
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
+    chromeos::HammerdClient::Shutdown();
   }
 
  protected:
   // Simulates system events associated with the detachable base being switched.
   void ChangePairedBase(const std::vector<uint8_t>& base_id) {
-    power_manager_client_->SetTabletMode(
+    chromeos::FakePowerManagerClient::Get()->SetTabletMode(
         chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
-    power_manager_client_->SetTabletMode(
+    chromeos::FakePowerManagerClient::Get()->SetTabletMode(
         chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
     detachable_base_observer_.reset_pairing_status_changed_count();
 
@@ -144,9 +137,7 @@ class DetachableBaseHandlerTest : public testing::Test {
     handler_->OnLocalStatePrefServiceInitialized(&local_state_);
   }
 
-  // Owned by DBusThreadManager:
   chromeos::FakeHammerdClient* hammerd_client_ = nullptr;
-  chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
 
   TestBaseObserver detachable_base_observer_;
 
@@ -172,11 +163,11 @@ TEST_F(DetachableBaseHandlerTest, NoDetachableBase) {
 }
 
 TEST_F(DetachableBaseHandlerTest, TabletModeOnOnStartup) {
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
   RestartHandler();
 
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
   hammerd_client_->FirePairChallengeSucceededSignal({0x01, 0x02, 0x03, 0x04});
 
@@ -206,7 +197,7 @@ TEST_F(DetachableBaseHandlerTest, SuccessfullPairing) {
   detachable_base_observer_.reset_pairing_status_changed_count();
 
   // Assume the base has been detached when the device switches to tablet mode.
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
   EXPECT_EQ(1, detachable_base_observer_.pairing_status_changed_count());
   EXPECT_EQ(DetachableBasePairingStatus::kNone, handler_->GetPairingStatus());
@@ -215,7 +206,7 @@ TEST_F(DetachableBaseHandlerTest, SuccessfullPairing) {
 
   // When the device exits tablet mode again, the base should not be reported
   // as paired until it's finished pairing.
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
   EXPECT_EQ(DetachableBasePairingStatus::kNone, handler_->GetPairingStatus());
   EXPECT_FALSE(handler_->PairedBaseMatchesLastUsedByUser(*default_user_));
@@ -242,7 +233,7 @@ TEST_F(DetachableBaseHandlerTest, DetachableBasePairingFailure) {
   detachable_base_observer_.reset_pairing_status_changed_count();
 
   // Assume the base has been detached when the device switches to tablet mode.
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
   EXPECT_EQ(1, detachable_base_observer_.pairing_status_changed_count());
   EXPECT_EQ(DetachableBasePairingStatus::kNone, handler_->GetPairingStatus());
@@ -264,7 +255,7 @@ TEST_F(DetachableBaseHandlerTest, InvalidDetachableBase) {
   detachable_base_observer_.reset_pairing_status_changed_count();
 
   // Assume the base has been detached when the device switches to tablet mode.
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
   EXPECT_EQ(1, detachable_base_observer_.pairing_status_changed_count());
   EXPECT_EQ(DetachableBasePairingStatus::kNone, handler_->GetPairingStatus());
@@ -334,7 +325,7 @@ TEST_F(DetachableBaseHandlerTest, InvalidDeviceDuringInit) {
 
 TEST_F(DetachableBaseHandlerTest, TabletModeTurnedOnDuringHandlerInit) {
   hammerd_client_->FirePairChallengeSucceededSignal({0x01, 0x02, 0x03, 0x04});
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
 
   // Run loop so the callback for getting the initial power manager state gets
@@ -347,7 +338,7 @@ TEST_F(DetachableBaseHandlerTest, TabletModeTurnedOnDuringHandlerInit) {
 }
 
 TEST_F(DetachableBaseHandlerTest, DetachableBaseChangeDetection) {
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
   // Run loop so the callback for getting the initial power manager state gets
   // run.
@@ -468,9 +459,9 @@ TEST_F(DetachableBaseHandlerTest, SwitchToNonAuthenticatedBase) {
 
   // Switch to non-trusted base, and verify it's reported as such regardless
   // of whether the user had previously used a detachable base.
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
   detachable_base_observer_.reset_pairing_status_changed_count();
 
@@ -497,9 +488,9 @@ TEST_F(DetachableBaseHandlerTest, SwitchToInvalidBase) {
 
   // Switch to an invalid base, and verify it's reported as such regardless
   // of whether the user had previously used a base.
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
   detachable_base_observer_.reset_pairing_status_changed_count();
 
@@ -651,7 +642,7 @@ TEST_F(DetachableBaseHandlerTest, NotifyNoUpdateRequiredOnBaseDetach) {
   EXPECT_EQ(1, detachable_base_observer_.update_required_changed_count());
   EXPECT_TRUE(detachable_base_observer_.requires_update());
 
-  power_manager_client_->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
   EXPECT_EQ(2, detachable_base_observer_.update_required_changed_count());
   EXPECT_FALSE(detachable_base_observer_.requires_update());

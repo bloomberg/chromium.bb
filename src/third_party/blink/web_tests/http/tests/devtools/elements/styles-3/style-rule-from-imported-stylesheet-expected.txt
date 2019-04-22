@@ -5,7 +5,7 @@ Rules before toggling:
 element.style { ()
 
 [expanded] 
-.square { (imported-stylesheet.css:2 -> imported-stylesheet.css:2:2)
+.square { (imported-st…sheet.css:2 -> imported-stylesheet.css:2:2)
     background-color: red;
     display: inline-block;
 
@@ -13,17 +13,27 @@ element.style { ()
 div { (user agent stylesheet)
 /-- overloaded --/     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 Rules after toggling:
 [expanded] 
 element.style { ()
 
 [expanded] 
-.square { (imported-stylesheet.css:2 -> imported-stylesheet.css:2:2)
+.square { (imported-st…sheet.css:2 -> imported-stylesheet.css:2:2)
 /-- overloaded --/ /-- disabled --/     /* background-color: red; */
     display: inline-block;
 
 [expanded] 
 div { (user agent stylesheet)
 /-- overloaded --/     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 

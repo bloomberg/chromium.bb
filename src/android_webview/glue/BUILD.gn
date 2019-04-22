@@ -21,14 +21,14 @@ android_library("glue") {
   srcjar_deps = [ ":glue_resource_rewriter" ]
 
   alternative_android_sdk_dep =
-      "//third_party/android_system_sdk:public_framework_system_java"
+      "//third_party/android_sdk:public_framework_system_java"
 
   java_files = [
     "java/src/com/android/webview/chromium/CallbackConverter.java",
     "java/src/com/android/webview/chromium/ContentSettingsAdapter.java",
     "java/src/com/android/webview/chromium/CookieManagerAdapter.java",
+    "java/src/com/android/webview/chromium/DrawFunctor.java",
     "java/src/com/android/webview/chromium/DrawGLFunctor.java",
-    "java/src/com/android/webview/chromium/FontPreloadingWorkaround.java",
     "java/src/com/android/webview/chromium/GeolocationPermissionsAdapter.java",
     "java/src/com/android/webview/chromium/GlueApiHelperForM.java",
     "java/src/com/android/webview/chromium/GlueApiHelperForN.java",
@@ -44,7 +44,6 @@ android_library("glue") {
     "java/src/com/android/webview/chromium/SharedStatics.java",
     "java/src/com/android/webview/chromium/SharedTracingControllerAdapter.java",
     "java/src/com/android/webview/chromium/SplitApkWorkaround.java",
-    "java/src/com/android/webview/chromium/TokenBindingManagerAdapter.java",
     "java/src/com/android/webview/chromium/TracingControllerAdapter.java",
     "java/src/com/android/webview/chromium/WebBackForwardListChromium.java",
     "java/src/com/android/webview/chromium/WebHistoryItemChromium.java",
@@ -62,6 +61,8 @@ android_library("glue") {
     "java/src/com/android/webview/chromium/WebViewChromiumFactoryProviderForOMR1.java",
     "java/src/com/android/webview/chromium/WebViewChromiumFactoryProviderForP.java",
     "java/src/com/android/webview/chromium/SharedWebViewChromium.java",
+    "java/src/com/android/webview/chromium/SharedWebViewContentsClientAdapter.java",
+    "java/src/com/android/webview/chromium/SharedWebViewRendererClientAdapter.java",
     "java/src/com/android/webview/chromium/WebViewContentsClientAdapter.java",
     "java/src/com/android/webview/chromium/WebViewDatabaseAdapter.java",
     "java/src/com/android/webview/chromium/WebViewDelegateFactory.java",

@@ -119,10 +119,11 @@ class KWalletDBusTest
   DISALLOW_COPY_AND_ASSIGN(KWalletDBusTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        KWalletDBusTest,
-                        ::testing::Values(base::nix::DESKTOP_ENVIRONMENT_KDE4,
-                                          base::nix::DESKTOP_ENVIRONMENT_KDE5));
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    KWalletDBusTest,
+    ::testing::Values(base::nix::DESKTOP_ENVIRONMENT_KDE4,
+                      base::nix::DESKTOP_ENVIRONMENT_KDE5));
 
 // Matches a method call to the specified dbus target.
 MATCHER_P2(Calls, interface, member, "") {

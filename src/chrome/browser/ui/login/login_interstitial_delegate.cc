@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/login/login_interstitial_delegate.h"
 
+#include <utility>
+
 const content::InterstitialPageDelegate::TypeID
     LoginInterstitialDelegate::kTypeForTesting =
         &LoginInterstitialDelegate::kTypeForTesting;
@@ -11,8 +13,8 @@ const content::InterstitialPageDelegate::TypeID
 LoginInterstitialDelegate::LoginInterstitialDelegate(
     content::WebContents* web_contents,
     const GURL& request_url,
-    base::Closure& callback)
-    : callback_(callback),
+    base::OnceClosure callback)
+    : callback_(std::move(callback)),
       interstitial_page_(content::InterstitialPage::Create(web_contents,
                                                            true,
                                                            request_url,
@@ -39,7 +41,7 @@ LoginInterstitialDelegate::GetWeakPtr() {
 }
 
 void LoginInterstitialDelegate::CommandReceived(const std::string& command) {
-  callback_.Run();
+  std::move(callback_).Run();
 }
 
 content::InterstitialPageDelegate::TypeID

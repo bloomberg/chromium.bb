@@ -12,19 +12,19 @@ import android.util.AttributeSet;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.ui.widget.ChromeImageButton;
 
 /**
  * The close all tabs button.
  */
 class CloseAllTabsButton extends ChromeImageButton
-        implements ThemeColorObserver, IncognitoStateObserver, TabCountObserver {
+        implements TintObserver, IncognitoStateObserver, TabCountObserver {
     /** A provider that notifies when the theme color changes.*/
     private ThemeColorProvider mThemeColorProvider;
 
@@ -43,7 +43,7 @@ class CloseAllTabsButton extends ChromeImageButton
 
     void destroy() {
         if (mThemeColorProvider != null) {
-            mThemeColorProvider.removeObserver(this);
+            mThemeColorProvider.removeTintObserver(this);
             mThemeColorProvider = null;
         }
         if (mIncognitoStateProvider != null) {
@@ -58,17 +58,17 @@ class CloseAllTabsButton extends ChromeImageButton
 
     void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
         mThemeColorProvider = themeColorProvider;
-        mThemeColorProvider.addObserver(this);
+        mThemeColorProvider.addTintObserver(this);
     }
 
     @Override
-    public void onThemeColorChanged(ColorStateList tint, int primaryColor) {
+    public void onTintChanged(ColorStateList tint, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(this, tint);
     }
 
     void setIncognitoStateProvider(IncognitoStateProvider incognitoStateProvider) {
         mIncognitoStateProvider = incognitoStateProvider;
-        mIncognitoStateProvider.addObserver((IncognitoStateObserver) this);
+        mIncognitoStateProvider.addIncognitoStateObserverAndTrigger(this);
     }
 
     @Override
@@ -76,11 +76,11 @@ class CloseAllTabsButton extends ChromeImageButton
         @StringRes
         int resId;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)) {
-            resId = isIncognito ? R.string.menu_close_all_private_tabs
-                                : R.string.menu_close_all_tabs;
+            resId = isIncognito ? R.string.accessibility_toolbar_btn_close_all_private_tabs
+                                : R.string.accessibility_toolbar_btn_close_all_tabs;
         } else {
-            resId = isIncognito ? R.string.menu_close_all_incognito_tabs
-                                : R.string.menu_close_all_tabs;
+            resId = isIncognito ? R.string.accessibility_toolbar_btn_close_all_incognito_tabs
+                                : R.string.accessibility_toolbar_btn_close_all_tabs;
         }
         setContentDescription(getResources().getText(resId));
     }

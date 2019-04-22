@@ -29,14 +29,6 @@ void LoginKeyboardTestBase::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       keyboard::switches::kEnableVirtualKeyboard);
   LoginTestBase::SetUp();
-
-  Shell::Get()->ash_keyboard_controller()->ActivateKeyboard();
-}
-
-void LoginKeyboardTestBase::TearDown() {
-  Shell::Get()->ash_keyboard_controller()->DeactivateKeyboard();
-
-  LoginTestBase::TearDown();
 }
 
 void LoginKeyboardTestBase::ShowKeyboard() {

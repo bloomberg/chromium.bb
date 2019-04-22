@@ -316,7 +316,12 @@ unsigned GLImageMemory::GetInternalFormat() {
   return TextureFormat(format_);
 }
 
+GLImage::BindOrCopy GLImageMemory::ShouldBindOrCopy() {
+  return COPY;
+}
+
 bool GLImageMemory::BindTexImage(unsigned target) {
+  NOTREACHED();
   return false;
 }
 
@@ -324,7 +329,6 @@ bool GLImageMemory::CopyTexImage(unsigned target) {
   TRACE_EVENT2("gpu", "GLImageMemory::CopyTexImage", "width", size_.width(),
                "height", size_.height());
 
-  // GL_TEXTURE_EXTERNAL_OES is not a supported target.
   if (target == GL_TEXTURE_EXTERNAL_OES)
     return false;
 

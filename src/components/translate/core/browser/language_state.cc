@@ -27,7 +27,8 @@ LanguageState::~LanguageState() {
 void LanguageState::DidNavigate(bool is_same_document_navigation,
                                 bool is_main_frame,
                                 bool reload,
-                                const std::string& href_translate) {
+                                const std::string& href_translate,
+                                bool navigation_from_google) {
   is_same_document_navigation_ = is_same_document_navigation;
   if (is_same_document_navigation_ || !is_main_frame)
     return;  // Don't reset our states, the page has not changed.
@@ -50,6 +51,7 @@ void LanguageState::DidNavigate(bool is_same_document_navigation,
   translation_error_ = false;
   translation_declined_ = false;
   href_translate_ = href_translate;
+  navigation_from_google_ = navigation_from_google;
 
   SetTranslateEnabled(false);
 }
@@ -87,9 +89,6 @@ void LanguageState::SetCurrentLanguage(const std::string& language) {
 }
 
 std::string LanguageState::AutoTranslateTo() const {
-  if (!href_translate_.empty())
-    return href_translate_;
-
   if (InTranslateNavigation() && !is_page_translated_)
     return prev_current_lang_;
 

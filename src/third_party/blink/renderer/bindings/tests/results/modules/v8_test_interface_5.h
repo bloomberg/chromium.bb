@@ -27,6 +27,8 @@
 
 namespace blink {
 
+MODULES_EXPORT extern const WrapperTypeInfo v8_test_interface_5_wrapper_type_info;
+
 class V8TestInterface5 {
   STATIC_ONLY(V8TestInterface5);
  public:
@@ -37,7 +39,11 @@ class V8TestInterface5 {
     return ToScriptWrappable(object)->ToImpl<TestInterface5Implementation>();
   }
   MODULES_EXPORT static TestInterface5Implementation* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  MODULES_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  MODULES_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_interface_5_wrapper_type_info;
+  }
+
   static void LegacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 

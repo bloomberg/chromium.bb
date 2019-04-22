@@ -48,16 +48,13 @@ class AwCookieStoreWrapper : public net::CookieStore {
                                  const net::CookieOptions& options,
                                  SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<net::CanonicalCookie> cookie,
-                               bool secure_source,
-                               bool modify_http_only,
+                               std::string source_scheme,
+                               const net::CookieOptions& options,
                                SetCookiesCallback callback) override;
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const net::CookieOptions& options,
                                      GetCookieListCallback callback) override;
   void GetAllCookiesAsync(GetCookieListCallback callback) override;
-  void DeleteCookieAsync(const GURL& url,
-                         const std::string& cookie_name,
-                         base::OnceClosure callback) override;
   void DeleteCanonicalCookieAsync(const net::CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
   void DeleteAllCreatedInTimeRangeAsync(
@@ -69,6 +66,8 @@ class AwCookieStoreWrapper : public net::CookieStore {
   void FlushStore(base::OnceClosure callback) override;
   void SetForceKeepSessionState() override;
   net::CookieChangeDispatcher& GetChangeDispatcher() override;
+  void SetCookieableSchemes(const std::vector<std::string>& schemes,
+                            SetCookieableSchemesCallback callback) override;
   bool IsEphemeral() override;
 
  private:
@@ -98,6 +97,31 @@ class AwCookieStoreWrapper : public net::CookieStore {
       return std::move(callback);
     return base::BindOnce(
         &AwCookieStoreWrapper::RunCallbackOnClientThread<Type>,
+        base::RetainedRef(client_task_runner_), weak_factory_.GetWeakPtr(),
+        std::move(callback));
+  }
+
+  // These are the same as above, but specifically for GetCookieListCallback,
+  // which has two arguments
+  static void RunGetCookieListCallbackOnClientThread(
+      base::TaskRunner* task_runner,
+      base::WeakPtr<AwCookieStoreWrapper> weak_cookie_store,
+      net::CookieStore::GetCookieListCallback callback,
+      const net::CookieList& cookies,
+      const net::CookieStatusList& excluded_cookies) {
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &AwCookieStoreWrapper::RunClosureCallback, weak_cookie_store,
+            base::BindOnce(std::move(callback), cookies, excluded_cookies)));
+  }
+
+  net::CookieStore::GetCookieListCallback CreateWrappedGetCookieListCallback(
+      net::CookieStore::GetCookieListCallback callback) {
+    if (callback.is_null())
+      return callback;
+    return base::BindOnce(
+        &AwCookieStoreWrapper::RunGetCookieListCallbackOnClientThread,
         base::RetainedRef(client_task_runner_), weak_factory_.GetWeakPtr(),
         std::move(callback));
   }

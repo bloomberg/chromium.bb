@@ -2,10 +2,11 @@
 
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../data/destination.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="settings_behavior.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="state.html">
@@ -15,7 +16,6 @@
   <template>
     <style include="print-preview-shared paper-button-style">
       :host {
-        background-color: white;
         border-bottom: var(--print-preview-settings-border);
         display: block;
         padding-bottom: 8px;
@@ -24,16 +24,25 @@
         padding-top: 20px;
       }
 
+      :host-context(html:not([dark])) {
+        background-color: white;
+      }
+
+      .title-container {
+        display: flex;
+        padding-bottom: 12px;
+      }
+
       .title {
-        color: var(--google-grey-900);
+        color: var(--cr-primary-text-color);
         font-size: calc(16/13 * 1em);
         font-weight: 400;
         line-height: 1.54em;
         margin: 0;
-        padding-bottom: 12px;
       }
 
       .summary {
+        color: var(--cr-primary-text-color);
         display: block;
         height: 1em;
         min-height: 20px;
@@ -57,8 +66,21 @@
       #button-strip paper-button:last-child {
         margin-inline-end: 0;
       }
+
+      iron-icon {
+        align-self: center;
+        fill: var(--cr-secondary-text-color);
+        height: 16px;
+        margin-inline-start: 8px;
+        width: 16px;
+      }
     </style>
-    <h1 class="title">$i18n{title}</h1>
+    <div class="title-container">
+      <h1 class="title">$i18n{title}</h1>
+      <iron-icon hidden$="[[!managed]]" icon="print-preview:business"
+           alt="" title="$i18n{managedSettings}">
+      </iron-icon>
+    </div>
     <span class="summary" aria-label$="[[summaryLabel_]]"
         inner-h-t-m-l="[[summary_]]">
     </span>

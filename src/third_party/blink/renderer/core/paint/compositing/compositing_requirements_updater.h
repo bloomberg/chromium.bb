@@ -34,7 +34,6 @@
 
 namespace blink {
 
-class CompositingReasonFinder;
 class PaintLayer;
 class LayoutView;
 
@@ -42,7 +41,7 @@ class CompositingRequirementsUpdater {
   STACK_ALLOCATED();
 
  public:
-  CompositingRequirementsUpdater(LayoutView&, CompositingReasonFinder&);
+  CompositingRequirementsUpdater(LayoutView&);
   ~CompositingRequirementsUpdater();
 
   //  Recurse through the layers in z-index and overflow order (which is
@@ -72,7 +71,6 @@ class CompositingRequirementsUpdater {
                        CompositingReasonsStats&);
 
   LayoutView& layout_view_;
-  CompositingReasonFinder& compositing_reason_finder_;
 };
 
 }  // namespace blink

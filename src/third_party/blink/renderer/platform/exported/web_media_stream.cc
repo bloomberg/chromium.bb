@@ -28,6 +28,7 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
@@ -143,7 +144,7 @@ void WebMediaStream::Initialize(
     MediaStreamComponent* component = video_tracks[i];
     video.push_back(component);
   }
-  private_ = MediaStreamDescriptor::Create(label, audio, video);
+  private_ = MakeGarbageCollected<MediaStreamDescriptor>(label, audio, video);
 }
 
 void WebMediaStream::Assign(const WebMediaStream& other) {

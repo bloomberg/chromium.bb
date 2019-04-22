@@ -21,7 +21,7 @@ TEST(ContentDescriptionTest, FormatAndParse) {
       CandidateSessionConfig::CreateDefault();
   ContentDescription description(
       std::move(config), Authenticator::CreateEmptyAuthenticatorMessage());
-  std::unique_ptr<buzz::XmlElement> xml(description.ToXml());
+  std::unique_ptr<jingle_xmpp::XmlElement> xml(description.ToXml());
   LOG(ERROR) << xml->Str();
   std::unique_ptr<ContentDescription> parsed(
       ContentDescription::ParseXml(xml.get(), false));
@@ -48,8 +48,8 @@ TEST(ContentDescriptionTest, ParseUnknown) {
       "  <video transport=\"stream\" version=\"2\" codec=\"vp8\"/>"
       "  <authentication/>"
       "</description>";
-  std::unique_ptr<buzz::XmlElement> xml(
-      buzz::XmlElement::ForStr(kTestDescription));
+  std::unique_ptr<jingle_xmpp::XmlElement> xml(
+      jingle_xmpp::XmlElement::ForStr(kTestDescription));
   std::unique_ptr<ContentDescription> parsed(
       ContentDescription::ParseXml(xml.get(), false));
   ASSERT_TRUE(parsed.get());
@@ -73,8 +73,8 @@ TEST(ContentDescriptionTest, NoneTransport) {
       "  <audio transport=\"none\"/>"
       "  <authentication/>"
       "</description>";
-  std::unique_ptr<buzz::XmlElement> xml(
-      buzz::XmlElement::ForStr(kTestDescription));
+  std::unique_ptr<jingle_xmpp::XmlElement> xml(
+      jingle_xmpp::XmlElement::ForStr(kTestDescription));
   std::unique_ptr<ContentDescription> parsed(
       ContentDescription::ParseXml(xml.get(), false));
   ASSERT_TRUE(parsed.get());
@@ -95,8 +95,8 @@ TEST(ContentDescriptionTest, NoneTransportWithCodec) {
       "  <audio transport=\"none\" version=\"2\" codec=\"verbatim\"/>"
       "  <authentication/>"
       "</description>";
-  std::unique_ptr<buzz::XmlElement> xml(
-      buzz::XmlElement::ForStr(kTestDescription));
+  std::unique_ptr<jingle_xmpp::XmlElement> xml(
+      jingle_xmpp::XmlElement::ForStr(kTestDescription));
   std::unique_ptr<ContentDescription> parsed(
       ContentDescription::ParseXml(xml.get(), false));
   ASSERT_TRUE(parsed.get());

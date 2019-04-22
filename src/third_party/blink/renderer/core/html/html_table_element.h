@@ -43,6 +43,8 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLTableElement);
 
+  explicit HTMLTableElement(Document&);
+
   HTMLTableCaptionElement* caption() const;
   void setCaption(HTMLTableCaptionElement*, ExceptionState&);
 
@@ -73,10 +75,9 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
 
   bool HasNonInBodyInsertionMode() const override { return true; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
-  explicit HTMLTableElement(Document&);
   ~HTMLTableElement() override;
 
   void ParseAttribute(const AttributeModificationParams&) override;
@@ -131,7 +132,7 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
   // otherwise).
   TableRules rules_attr_;
 
-  unsigned short padding_;
+  uint16_t padding_;
   Member<CSSPropertyValueSet> shared_cell_style_;
 };
 

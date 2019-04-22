@@ -8,6 +8,7 @@
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,7 +19,11 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
  public:
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
-    id_ = WebContentsObserver::MediaPlayerId(contents()->GetMainFrame(), 0);
+
+    test_service_manager_context_ =
+        std::make_unique<content::TestServiceManagerContext>();
+
+    id_ = MediaPlayerId(contents()->GetMainFrame(), 0);
     controller_ = CreateController();
   }
 
@@ -26,6 +31,8 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     // Destruct the controller prior to any other teardown to avoid out of order
     // destruction relative to the MediaSession instance.
     controller_.reset();
+
+    test_service_manager_context_.reset();
     RenderViewHostImplTestHarness::TearDown();
   }
 
@@ -65,7 +72,7 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
   }
 
   template <typename T>
-  bool ReceivedMessagePlayPause() {
+  bool ReceivedMessagePlay() {
     const IPC::Message* msg = test_sink().GetUniqueMessageMatching(T::ID);
     if (!msg)
       return false;
@@ -77,6 +84,26 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     EXPECT_EQ(id_.delegate_id, std::get<0>(result));
     test_sink().ClearMessages();
     return id_.delegate_id == std::get<0>(result);
+  }
+
+  template <typename T>
+  bool ReceivedMessagePause(bool triggered_by_user) {
+    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(T::ID);
+    if (!msg)
+      return false;
+
+    std::tuple<int, bool> result;
+    if (!T::Read(msg, &result))
+      return false;
+
+    EXPECT_EQ(id_.delegate_id, std::get<0>(result));
+    test_sink().ClearMessages();
+    if (id_.delegate_id != std::get<0>(result))
+      return false;
+
+    EXPECT_EQ(triggered_by_user, std::get<1>(result));
+    test_sink().ClearMessages();
+    return triggered_by_user == std::get<1>(result);
   }
 
   template <typename T>
@@ -117,9 +144,12 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     return expected_multiplier == std::get<1>(result);
   }
 
-  WebContentsObserver::MediaPlayerId id_ =
-      WebContentsObserver::MediaPlayerId::createMediaPlayerIdForTests();
+  MediaPlayerId id_ = MediaPlayerId::CreateMediaPlayerIdForTests();
   std::unique_ptr<MediaSessionController> controller_;
+
+ private:
+  std::unique_ptr<content::TestServiceManagerContext>
+      test_service_manager_context_;
 };
 
 TEST_F(MediaSessionControllerTest, NoAudioNoSession) {
@@ -151,11 +181,12 @@ TEST_F(MediaSessionControllerTest, BasicControls) {
 
   // Verify suspend notifies the renderer and maintains its session.
   Suspend();
-  EXPECT_TRUE(ReceivedMessagePlayPause<MediaPlayerDelegateMsg_Pause>());
+  EXPECT_TRUE(ReceivedMessagePause<MediaPlayerDelegateMsg_Pause>(
+      true /* triggered_by_user */));
 
   // Likewise verify the resume behavior.
   Resume();
-  EXPECT_TRUE(ReceivedMessagePlayPause<MediaPlayerDelegateMsg_Play>());
+  EXPECT_TRUE(ReceivedMessagePlay<MediaPlayerDelegateMsg_Play>());
 
   // ...as well as the seek behavior.
   const base::TimeDelta kTestSeekForwardTime = base::TimeDelta::FromSeconds(1);
@@ -231,11 +262,12 @@ TEST_F(MediaSessionControllerTest, Reinitialize) {
 
   // Verify suspend notifies the renderer and maintains its session.
   Suspend();
-  EXPECT_TRUE(ReceivedMessagePlayPause<MediaPlayerDelegateMsg_Pause>());
+  EXPECT_TRUE(ReceivedMessagePause<MediaPlayerDelegateMsg_Pause>(
+      true /* triggered_by_user */));
 
   // Likewise verify the resume behavior.
   Resume();
-  EXPECT_TRUE(ReceivedMessagePlayPause<MediaPlayerDelegateMsg_Play>());
+  EXPECT_TRUE(ReceivedMessagePlay<MediaPlayerDelegateMsg_Play>());
 
   // Attempt to switch to no audio player, which should do nothing.
   // TODO(dalecurtis): Delete this test once we're no longer using WMPA and

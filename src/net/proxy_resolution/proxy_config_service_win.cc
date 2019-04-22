@@ -78,20 +78,21 @@ void ProxyConfigServiceWin::StartWatchingRegistryForChanges() {
 
   AddKeyToWatchList(
       HKEY_CURRENT_USER,
-      L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings");
+      STRING16_LITERAL("Software\\Microsoft\\Windows\\CurrentVersion\\")
+          STRING16_LITERAL("Internet Settings"));
 
   AddKeyToWatchList(
       HKEY_LOCAL_MACHINE,
-      L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings");
+      STRING16_LITERAL("Software\\Microsoft\\Windows\\CurrentVersion\\")
+          STRING16_LITERAL("Internet Settings"));
 
-  AddKeyToWatchList(
-      HKEY_LOCAL_MACHINE,
-      L"SOFTWARE\\Policies\\Microsoft\\Windows\\CurrentVersion\\"
-      L"Internet Settings");
+  AddKeyToWatchList(HKEY_LOCAL_MACHINE,
+                    STRING16_LITERAL("SOFTWARE\\Policies\\Microsoft\\Windows\\")
+                        STRING16_LITERAL("CurrentVersion\\Internet Settings"));
 }
 
 bool ProxyConfigServiceWin::AddKeyToWatchList(HKEY rootkey,
-                                              const wchar_t* subkey) {
+                                              const base::char16* subkey) {
   std::unique_ptr<base::win::RegKey> key =
       std::make_unique<base::win::RegKey>();
   if (key->Create(rootkey, subkey, KEY_NOTIFY) != ERROR_SUCCESS)
@@ -153,10 +154,10 @@ void ProxyConfigServiceWin::SetFromIEConfig(
     // lpszProxy may be a single proxy, or a proxy per scheme. The format
     // is compatible with ProxyConfig::ProxyRules's string format.
     config->proxy_rules().ParseFromString(
-        base::UTF16ToASCII(ie_config.lpszProxy));
+        base::WideToUTF8(ie_config.lpszProxy));
   }
   if (ie_config.lpszProxyBypass) {
-    std::string proxy_bypass = base::UTF16ToASCII(ie_config.lpszProxyBypass);
+    std::string proxy_bypass = base::WideToUTF8(ie_config.lpszProxyBypass);
 
     base::StringTokenizer proxy_server_bypass_list(proxy_bypass, ";, \t\n\r");
     while (proxy_server_bypass_list.GetNext()) {
@@ -165,7 +166,7 @@ void ProxyConfigServiceWin::SetFromIEConfig(
     }
   }
   if (ie_config.lpszAutoConfigUrl)
-    config->set_pac_url(GURL(ie_config.lpszAutoConfigUrl));
+    config->set_pac_url(GURL(base::as_u16cstr(ie_config.lpszAutoConfigUrl)));
 }
 
 }  // namespace net

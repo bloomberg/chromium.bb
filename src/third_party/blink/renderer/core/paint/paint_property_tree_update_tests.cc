@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder_test.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
@@ -15,7 +17,7 @@ namespace blink {
 // Tests covering incremental updates of paint property trees.
 class PaintPropertyTreeUpdateTest : public PaintPropertyTreeBuilderTest {};
 
-INSTANTIATE_PAINT_TEST_CASE_P(PaintPropertyTreeUpdateTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PaintPropertyTreeUpdateTest);
 
 TEST_P(PaintPropertyTreeUpdateTest,
        ThreadedScrollingDisabledMainThreadScrollReason) {
@@ -62,6 +64,10 @@ TEST_P(PaintPropertyTreeUpdateTest,
 
 TEST_P(PaintPropertyTreeUpdateTest,
        BackgroundAttachmentFixedMainThreadScrollReasonsWithNestedScrollers) {
+  // This test needs the |FastMobileScrolling| feature to be disabled
+  // although it is stable on Android.
+  ScopedFastMobileScrollingForTest fast_mobile_scrolling(false);
+
   SetBodyInnerHTML(R"HTML(
     <style>
       #overflowA {
@@ -145,6 +151,10 @@ TEST_P(PaintPropertyTreeUpdateTest,
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ParentFrameMainThreadScrollReasons) {
+  // This test needs the |FastMobileScrolling| feature to be disabled
+  // although it is stable on Android.
+  ScopedFastMobileScrollingForTest fast_mobile_scrolling(false);
+
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -181,6 +191,10 @@ TEST_P(PaintPropertyTreeUpdateTest, ParentFrameMainThreadScrollReasons) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ChildFrameMainThreadScrollReasons) {
+  // This test needs the |FastMobileScrolling| feature to be disabled
+  // although it is stable on Android.
+  ScopedFastMobileScrollingForTest fast_mobile_scrolling(false);
+
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
     <iframe></iframe>
@@ -220,6 +234,10 @@ TEST_P(PaintPropertyTreeUpdateTest, ChildFrameMainThreadScrollReasons) {
 
 TEST_P(PaintPropertyTreeUpdateTest,
        BackgroundAttachmentFixedMainThreadScrollReasonsWithFixedScroller) {
+  // This test needs the |FastMobileScrolling| feature to be disabled
+  // although it is stable on Android.
+  ScopedFastMobileScrollingForTest fast_mobile_scrolling(false);
+
   SetBodyInnerHTML(R"HTML(
     <style>
       #overflowA {
@@ -600,7 +618,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
   Element* target = GetDocument().getElementById("target");
   const ObjectPaintProperties* properties =
       target->GetLayoutObject()->FirstFragment().PaintProperties();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
 
   // Removing the animation should remove the transform node.
@@ -617,7 +635,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
   Element* target = GetDocument().getElementById("target");
   const ObjectPaintProperties* properties =
       target->GetLayoutObject()->FirstFragment().PaintProperties();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     EXPECT_TRUE(properties->Effect()->HasDirectCompositingReasons());
 
   // Removing the animation should remove the effect node.
@@ -629,7 +647,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
 
 TEST_P(PaintPropertyTreeUpdateTest,
        TransformNodeDoesNotLoseCompositorElementIdWhenAnimationRemoved) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   LoadTestData("transform-animation.html");
@@ -652,7 +670,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
 
 TEST_P(PaintPropertyTreeUpdateTest,
        EffectNodeDoesNotLoseCompositorElementIdWhenAnimationRemoved) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   LoadTestData("opacity-animation.html");
@@ -722,20 +740,18 @@ TEST_P(PaintPropertyTreeUpdateTest, TransformUpdatesOnRelativeLengthChanges) {
 
   auto* transform = GetDocument().getElementById("transform");
   auto* transform_object = transform->GetLayoutObject();
-  EXPECT_EQ(TransformationMatrix().Translate3d(50, 100, 0),
-            transform_object->FirstFragment()
-                .PaintProperties()
-                ->Transform()
-                ->Matrix());
+  EXPECT_EQ(FloatSize(50, 100), transform_object->FirstFragment()
+                                    .PaintProperties()
+                                    ->Transform()
+                                    ->Translation2D());
 
   transform->setAttribute(html_names::kStyleAttr,
                           "width: 200px; height: 300px;");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(TransformationMatrix().Translate3d(100, 150, 0),
-            transform_object->FirstFragment()
-                .PaintProperties()
-                ->Transform()
-                ->Matrix());
+  EXPECT_EQ(FloatSize(100, 150), transform_object->FirstFragment()
+                                     .PaintProperties()
+                                     ->Transform()
+                                     ->Translation2D());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, CSSClipDependingOnSize) {
@@ -1050,24 +1066,24 @@ TEST_P(PaintPropertyTreeUpdateTest, WillTransformChangeAboveFixed) {
   const auto* container = GetLayoutObjectByElementId("container");
   const auto* fixed = GetLayoutObjectByElementId("fixed");
   EXPECT_EQ(container->FirstFragment().PaintProperties()->Transform(),
-            fixed->FirstFragment().LocalBorderBoxProperties().Transform());
+            &fixed->FirstFragment().LocalBorderBoxProperties().Transform());
 
   ToElement(container->GetNode())
       ->setAttribute(html_names::kStyleAttr, "will-change: top");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(
-      GetLayoutView().FirstFragment().LocalBorderBoxProperties().Transform(),
-      fixed->FirstFragment().LocalBorderBoxProperties().Transform());
+      &GetLayoutView().FirstFragment().LocalBorderBoxProperties().Transform(),
+      &fixed->FirstFragment().LocalBorderBoxProperties().Transform());
 
   ToElement(container->GetNode())
       ->setAttribute(html_names::kStyleAttr, "will-change: transform");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(container->FirstFragment().PaintProperties()->Transform(),
-            fixed->FirstFragment().LocalBorderBoxProperties().Transform());
+            &fixed->FirstFragment().LocalBorderBoxProperties().Transform());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, CompositingReasonForAnimation) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -1095,9 +1111,9 @@ TEST_P(PaintPropertyTreeUpdateTest, CompositingReasonForAnimation) {
 
   target->setAttribute(html_names::kStyleAttr, "transform: translateX(11px)");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_TRUE(transform->HasDirectCompositingReasons());
-    EXPECT_TRUE(transform->RequiresCompositingForAnimation());
+    EXPECT_TRUE(transform->HasActiveTransformAnimation());
   }
   // TODO(flackr): After https://crbug.com/900241 is fixed the filter effect
   // should no longer have direct compositing reasons due to the animation.
@@ -1107,13 +1123,13 @@ TEST_P(PaintPropertyTreeUpdateTest, CompositingReasonForAnimation) {
                        "transform: translateX(11px); filter: opacity(40%)");
   UpdateAllLifecyclePhasesForTest();
   // The transform animation still continues.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_TRUE(transform->HasDirectCompositingReasons());
-    EXPECT_TRUE(transform->RequiresCompositingForAnimation());
+    EXPECT_TRUE(transform->HasActiveTransformAnimation());
     // The filter node should have correct direct compositing reasons, not
     // shadowed by the transform animation.
     EXPECT_TRUE(filter->HasDirectCompositingReasons());
-    EXPECT_TRUE(filter->RequiresCompositingForAnimation());
+    EXPECT_TRUE(transform->HasActiveTransformAnimation());
   }
 }
 
@@ -1321,9 +1337,10 @@ TEST_P(PaintPropertyTreeUpdateTest, EnsureSnapContainerData) {
 
   auto doc_snap_container_data = DocScroll()->GetSnapContainerData();
   ASSERT_TRUE(doc_snap_container_data);
-  EXPECT_EQ(doc_snap_container_data->scroll_snap_type().axis, SnapAxis::kBoth);
+  EXPECT_EQ(doc_snap_container_data->scroll_snap_type().axis,
+            cc::SnapAxis::kBoth);
   EXPECT_EQ(doc_snap_container_data->scroll_snap_type().strictness,
-            SnapStrictness::kProximity);
+            cc::SnapStrictness::kProximity);
   EXPECT_EQ(doc_snap_container_data->rect(), gfx::RectF(0, 0, 300, 300));
   EXPECT_EQ(doc_snap_container_data->size(), 1u);
   EXPECT_EQ(doc_snap_container_data->at(0).rect,
@@ -1384,8 +1401,9 @@ TEST_P(PaintPropertyTreeUpdateTest, ForwardReferencedSVGElementUpdate) {
             rect_properties->Transform()->Parent());
   EXPECT_EQ(TransformationMatrix().Translate(1, 0),
             GeometryMapper::SourceToDestinationProjection(
-                rect_properties->Transform(),
-                svg2_properties->PaintOffsetTranslation()));
+                *rect_properties->Transform(),
+                *svg2_properties->PaintOffsetTranslation())
+                .Matrix());
 
   // Change filter which forward references rect, and insert a transform
   // node above rect's transform.
@@ -1405,8 +1423,278 @@ TEST_P(PaintPropertyTreeUpdateTest, ForwardReferencedSVGElementUpdate) {
   // Ensure that GeometryMapper's cache is properly invalidated and updated.
   EXPECT_EQ(TransformationMatrix().Translate(3, 0),
             GeometryMapper::SourceToDestinationProjection(
-                rect_properties->Transform(),
-                svg2_properties->PaintOffsetTranslation()));
+                *rect_properties->Transform(),
+                *svg2_properties->PaintOffsetTranslation())
+                .Matrix());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, OverflowClipUpdateForImage) {
+  // This test verifies clip nodes are correctly updated in response to
+  // content box mutation.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    img {
+      box-sizing: border-box;
+      width: 8px;
+      height: 8px;
+    }
+    </style>
+    <!-- An image of 10x10 white pixels. -->
+    <img id="target" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAA
+        AAKCAIAAAACUFjqAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gcVABQvx8CBmA
+        AAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAFUlEQVQY02P
+        8//8/A27AxIAXjFRpAKXjAxH/0Dm5AAAAAElFTkSuQmCC">
+  )HTML");
+
+  auto* target = GetDocument().getElementById("target");
+  const auto* properties = PaintPropertiesForElement("target");
+  // We don't need paint properties for object-fit: fill because the content
+  // never overflows.
+  EXPECT_EQ(nullptr, properties);
+
+  target->setAttribute(html_names::kStyleAttr, "object-fit: cover");
+  UpdateAllLifecyclePhasesForTest();
+  properties = PaintPropertiesForElement("target");
+  // We don't need paint properties because image painter always clip to the
+  // content box.
+  EXPECT_EQ(nullptr, properties);
+
+  target->setAttribute(html_names::kStyleAttr, "object-fit: none");
+  UpdateAllLifecyclePhasesForTest();
+  properties = PaintPropertiesForElement("target");
+  // Ditto.
+  EXPECT_EQ(nullptr, properties);
+
+  // We need overflow clip when there is border radius.
+  target->setAttribute(html_names::kStyleAttr,
+                       "object-fit: none; border-radius: 2px");
+  UpdateAllLifecyclePhasesForTest();
+  properties = PaintPropertiesForElement("target");
+  ASSERT_TRUE(properties);
+  ASSERT_TRUE(properties->OverflowClip());
+  FloatSize corner(2, 2);
+  FloatRoundedRect::Radii radii(corner, corner, corner, corner);
+  EXPECT_EQ(FloatRoundedRect(FloatRect(8, 8, 8, 8), radii),
+            properties->OverflowClip()->ClipRect());
+
+  // We should update clip rect on border radius change.
+  target->setAttribute(html_names::kStyleAttr,
+                       "object-fit: none; border-radius: 3px");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(properties, PaintPropertiesForElement("target"));
+  ASSERT_TRUE(properties->OverflowClip());
+  radii.Expand(1);
+  EXPECT_EQ(FloatRoundedRect(FloatRect(8, 8, 8, 8), radii),
+            properties->OverflowClip()->ClipRect());
+
+  // We should update clip rect on padding change.
+  target->setAttribute(
+      html_names::kStyleAttr,
+      "object-fit: none; border-radius: 3px; padding: 1px 2px 3px 4px");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(properties, PaintPropertiesForElement("target"));
+  ASSERT_TRUE(properties->OverflowClip());
+  // The rounded clip rect is the intersection of the rounded inner border
+  // rect and the content box rect.
+  EXPECT_EQ(
+      FloatRoundedRect(FloatRect(12, 9, 2, 4),
+                       FloatRoundedRect::Radii(FloatSize(0, 2), FloatSize(1, 2),
+                                               FloatSize(), FloatSize(1, 0))),
+      properties->OverflowClip()->ClipRect());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, OverflowClipUpdateForVideo) {
+  // This test verifies clip nodes are correctly updated in response to
+  // content box mutation.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    video {
+      box-sizing: border-box;
+      width: 8px;
+      height: 8px;
+    }
+    </style>
+    <video id="target"></video>
+  )HTML");
+
+  auto* target = GetDocument().getElementById("target");
+  const auto* properties = PaintPropertiesForElement("target");
+  // We always create overflow clip for video regardless of object-fit.
+  ASSERT_TRUE(properties);
+  ASSERT_TRUE(properties->OverflowClip());
+  EXPECT_EQ(FloatRoundedRect(8, 8, 8, 8),
+            properties->OverflowClip()->ClipRect());
+
+  target->setAttribute(html_names::kStyleAttr, "object-fit: cover");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(properties, PaintPropertiesForElement("target"));
+  ASSERT_TRUE(properties->OverflowClip());
+  EXPECT_EQ(FloatRoundedRect(8, 8, 8, 8),
+            properties->OverflowClip()->ClipRect());
+
+  // We need OverflowClip for object-fit: cover, too.
+  target->setAttribute(html_names::kStyleAttr, "object-fit: none");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(properties, PaintPropertiesForElement("target"));
+  ASSERT_TRUE(properties->OverflowClip());
+  EXPECT_EQ(FloatRoundedRect(8, 8, 8, 8),
+            properties->OverflowClip()->ClipRect());
+
+  // We should update clip rect on padding change.
+  target->setAttribute(html_names::kStyleAttr,
+                       "object-fit: none; padding: 1px 2px 3px 4px");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(properties, PaintPropertiesForElement("target"));
+  ASSERT_TRUE(properties->OverflowClip());
+  EXPECT_EQ(FloatRoundedRect(12, 9, 2, 4),
+            properties->OverflowClip()->ClipRect());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, ChangingClipPath) {
+  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #content {
+        height: 500px;
+        width: 200px;
+        overflow: scroll;
+      }
+      .aclippath { clip-path: circle(115px at 20px 20px); }
+      .bclippath { clip-path: circle(135px at 22px 20px); }
+    </style>
+    <div id="content"></div>
+  )HTML");
+  auto* content = GetDocument().getElementById("content");
+  content->setAttribute(html_names::kClassAttr, "aclippath");
+  UpdateAllLifecyclePhasesForTest();
+
+  content->setAttribute(html_names::kClassAttr, "bclippath");
+  UpdateAllLifecyclePhasesForTest();
+  // Pass if no crash.
+
+  content->removeAttribute(html_names::kClassAttr);
+  UpdateAllLifecyclePhasesForTest();
+  // Pass if no crash.
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, SubpixelAccumulationAcrossIsolation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0 }</style>
+    <div id="parent" style="margin-left: 10.25px">
+      <div id="isolation" style="contain: paint">
+        <div id="child"><div>
+      </div>
+    </div>
+  )HTML");
+  auto* parent_element = GetDocument().getElementById("parent");
+  auto* parent = parent_element->GetLayoutObject();
+  auto* isolation_properties = PaintPropertiesForElement("isolation");
+  auto* child = GetLayoutObjectByElementId("child");
+  EXPECT_EQ(LayoutPoint(LayoutUnit(10.25), LayoutUnit()),
+            parent->FirstFragment().PaintOffset());
+  EXPECT_EQ(FloatSize(10, 0),
+            isolation_properties->PaintOffsetTranslation()->Translation2D());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(LayoutPoint(), child->FirstFragment().PaintOffset());
+  } else {
+    EXPECT_EQ(LayoutPoint(LayoutUnit(0.25), LayoutUnit()),
+              child->FirstFragment().PaintOffset());
+  }
+
+  parent_element->setAttribute(html_names::kStyleAttr, "margin-left: 12.75px");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(LayoutPoint(LayoutUnit(12.75), LayoutUnit()),
+            parent->FirstFragment().PaintOffset());
+  EXPECT_EQ(FloatSize(13, 0),
+            isolation_properties->PaintOffsetTranslation()->Translation2D());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(LayoutPoint(), child->FirstFragment().PaintOffset());
+  } else {
+    EXPECT_EQ(LayoutPoint(LayoutUnit(-0.25), LayoutUnit()),
+              child->FirstFragment().PaintOffset());
+  }
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
+  SetBodyInnerHTML("<div id='target' style='width: 100px; height: 100px'>");
+  auto* target = GetLayoutObjectByElementId("target");
+  auto style = ComputedStyle::Clone(target->StyleRef());
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  // Simulates starting a composite animation.
+  style->SetHasCurrentTransformAnimation(true);
+  style->SetIsRunningTransformAnimationOnCompositor(true);
+  target->SetStyle(std::move(style));
+  EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  const auto* transform_node =
+      target->FirstFragment().PaintProperties()->Transform();
+  ASSERT_TRUE(transform_node);
+  EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
+  EXPECT_EQ(TransformationMatrix(), transform_node->Matrix());
+  EXPECT_EQ(FloatPoint3D(50, 50, 0), transform_node->Origin());
+  // Change of animation status should update PaintArtifactCompositor.
+  auto* paint_artifact_compositor =
+      GetDocument().View()->GetPaintArtifactCompositorForTesting();
+  EXPECT_TRUE(paint_artifact_compositor->NeedsUpdate());
+  // PaintArtifactCompositor can't clear the NeedsUpdate flag by itself when
+  // there is no cc::LayerTreeHost.
+  paint_artifact_compositor->ClearNeedsUpdateForTesting();
+
+  // Simulates changing transform during animation.
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  style = ComputedStyle::Clone(target->StyleRef());
+  TransformOperations transform;
+  transform.Operations().push_back(
+      RotateTransformOperation::Create(10, TransformOperation::kRotate));
+  style->SetTransform(transform);
+  target->SetStyle(std::move(style));
+  EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  ASSERT_EQ(transform_node,
+            target->FirstFragment().PaintProperties()->Transform());
+  EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
+  EXPECT_EQ(TransformationMatrix().Rotate(10), transform_node->Matrix());
+  EXPECT_EQ(FloatPoint3D(50, 50, 0), transform_node->Origin());
+  // Only transform value change during composited animation should not schedule
+  // PaintArtifactCompositor update.
+  EXPECT_FALSE(paint_artifact_compositor->NeedsUpdate());
+
+  // Simulates changing transform origin during animation.
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  style = ComputedStyle::Clone(target->StyleRef());
+  style->SetTransformOrigin(TransformOrigin(Length(70, Length::kFixed),
+                                            Length(30, Length::kFixed), 0));
+  target->SetStyle(std::move(style));
+  EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  ASSERT_EQ(transform_node,
+            target->FirstFragment().PaintProperties()->Transform());
+  EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
+  EXPECT_EQ(TransformationMatrix().Rotate(10), transform_node->Matrix());
+  EXPECT_EQ(FloatPoint3D(70, 30, 0), transform_node->Origin());
+  // Only transform value change during composited animation should not schedule
+  // PaintArtifactCompositor update.
+  EXPECT_TRUE(paint_artifact_compositor->NeedsUpdate());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, BackfaceVisibilityInvalidatesProperties) {
+  SetBodyInnerHTML("<span id='span'>a</span>");
+
+  auto* span = GetDocument().getElementById("span");
+  span->setAttribute(html_names::kStyleAttr, "backface-visibility: hidden;");
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  EXPECT_TRUE(span->GetLayoutObject()->NeedsPaintPropertyUpdate());
 }
 
 }  // namespace blink

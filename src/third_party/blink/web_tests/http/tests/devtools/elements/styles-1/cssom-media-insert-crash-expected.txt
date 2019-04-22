@@ -4,12 +4,12 @@ Tests that the inspected page does not crash after inspecting element with CSSOM
 element.style { ()
 
 [expanded] 
-#box { (<style>…</style>)
+#box { (<style>)
     color: white;
     background: red;
 
 [expanded] 
-div { (<style>…</style>)
+div { (<style>)
     border: 1px solid black;
 /-- overloaded --/     background-color: white;
     padding: 20px;
@@ -17,5 +17,10 @@ div { (<style>…</style>)
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
 
 

@@ -31,11 +31,10 @@ import logging
 import json
 import re
 import urllib
-import urllib2
 
 from blinkpy.common.memoized import memoized
-from blinkpy.common.net.layout_test_results import LayoutTestResults
-from blinkpy.common.net.network_transaction import NetworkTransaction
+from blinkpy.common.net.web import Web
+from blinkpy.common.net.web_test_results import WebTestResults
 from blinkpy.web_tests.layout_package import json_results_generator
 
 _log = logging.getLogger(__name__)
@@ -57,13 +56,16 @@ class Build(collections.namedtuple('Build', ('builder_name', 'build_number'))):
 class BuildBot(object):
     """This class represents an interface to BuildBot-related functionality.
 
-    This includes fetching layout test results from Google Storage;
-    for more information about the layout test result format, see:
+    This includes fetching web test results from Google Storage;
+    for more information about the web test result format, see:
         https://www.chromium.org/developers/the-json-test-results-format
     """
 
+    def __init__(self):
+        self.web = Web()
+
     def results_url(self, builder_name, build_number=None, step_name=None):
-        """Returns a URL for one set of archived layout test results.
+        """Returns a URL for one set of archived web test results.
 
         If a build number is given, this will be results for a particular run;
         otherwise it will be the accumulated results URL, which should have
@@ -93,30 +95,40 @@ class BuildBot(object):
     def fetch_retry_summary_json(self, build):
         """Fetches and returns the text of the archived retry_summary file.
 
-        This file is expected to contain the results of retrying layout tests
+        This file is expected to contain the results of retrying web tests
         with and without a patch in a try job. It includes lists of tests
         that failed only with the patch ("failures"), and tests that failed
         both with and without ("ignored").
         """
         url_base = '%s/%s' % (self.builder_results_url_base(build.builder_name), build.build_number)
-        return NetworkTransaction(return_none_on_404=True).run(
-            lambda: self.fetch_file('%s/%s' % (url_base, 'retry_summary.json')))
+        # Originally we used retry_summary.json, which is the summary of retry
+        # without patch; now we retry again with patch and ignore the flakes.
+        # See https://crbug.com/882969.
+        return self.web.get_binary('%s/%s' % (url_base, 'retry_with_patch_summary.json'),
+                                   return_none_on_404=True)
 
     def accumulated_results_url_base(self, builder_name):
         return self.builder_results_url_base(builder_name) + '/results/layout-test-results'
 
     @memoized
     def fetch_results(self, build, full=False):
-        """Returns a LayoutTestResults object for results from a given Build.
+        """Returns a WebTestResults object for results from a given Build.
         Uses full_results.json if full is True, otherwise failing_results.json.
         """
-        return self.fetch_layout_test_results(
+        if not build.builder_name or not build.build_number:
+            _log.debug('Builder name or build number is None')
+            return None
+        return self.fetch_web_test_results(
             self.results_url(build.builder_name, build.build_number,
                              step_name=self.get_layout_test_step_name(build)),
             full)
 
     @memoized
     def get_layout_test_step_name(self, build):
+        if not build.builder_name or not build.build_number:
+            _log.debug('Builder name or build number is None')
+            return None
+
         url = '%s/testfile?%s' % (TEST_RESULTS_SERVER, urllib.urlencode({
             'builder': build.builder_name,
             'buildnumber': build.build_number,
@@ -124,8 +136,7 @@ class BuildBot(object):
             # This forces the server to gives us JSON rather than an HTML page.
             'callback': json_results_generator.JSON_CALLBACK,
         }))
-        data = NetworkTransaction(return_none_on_404=True).run(
-            lambda: self.fetch_file(url))
+        data = self.web.get_binary(url, return_none_on_404=True)
         if not data:
             _log.debug('Got 404 response from:\n%s', url)
             return None
@@ -146,38 +157,24 @@ class BuildBot(object):
         suites = list(set(suites))
         if len(suites) != 1:
             raise Exception(
-                'build %s on builder %s expected to only have one layout test '
+                'build %s on builder %s expected to only have one web test '
                 'step, instead has %s' % (
                     build.build_number, build.builder_name, suites))
 
         return suites[0]
 
     @memoized
-    def fetch_layout_test_results(self, results_url, full=False):
-        """Returns a LayoutTestResults object for results fetched from a given URL.
+    def fetch_web_test_results(self, results_url, full=False):
+        """Returns a WebTestResults object for results fetched from a given URL.
         Uses full_results.json if full is True, otherwise failing_results.json.
         """
         base_filename = 'full_results.json' if full else 'failing_results.json'
-        results_file = NetworkTransaction(return_none_on_404=True).run(
-            lambda: self.fetch_file('%s/%s' % (results_url, base_filename)))
+        results_file = self.web.get_binary('%s/%s' % (results_url, base_filename),
+                                           return_none_on_404=True)
         if results_file is None:
             _log.debug('Got 404 response from:\n%s/%s', results_url, base_filename)
             return None
-        revision = NetworkTransaction(return_none_on_404=True).run(
-            lambda: self.fetch_file('%s/LAST_CHANGE' % results_url))
-        if revision is None:
-            _log.debug('Got 404 response from:\n%s/LAST_CHANGE', results_url)
-        return LayoutTestResults.results_from_string(results_file, revision)
-
-    def fetch_file(self, url):
-        # It seems this can return None if the url redirects and then returns 404.
-        # FIXME: This could use Web instead of using urllib2 directly.
-        result = urllib2.urlopen(url)
-        if not result:
-            return None
-        # urlopen returns a file-like object which sometimes works fine with str()
-        # but sometimes is a addinfourl object.  In either case calling read() is correct.
-        return result.read()
+        return WebTestResults.results_from_string(results_file)
 
 
 def current_build_link(host):

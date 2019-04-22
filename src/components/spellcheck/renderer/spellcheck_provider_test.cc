@@ -109,10 +109,6 @@ void TestingSpellCheckProvider::RequestTextCheck(
   text_check_requests_.push_back(std::make_pair(text, std::move(callback)));
 }
 
-void TestingSpellCheckProvider::ToggleSpellCheck(bool, bool) {
-  NOTREACHED();
-}
-
 void TestingSpellCheckProvider::CheckSpelling(const base::string16&,
                                               int,
                                               CheckSpellingCallback) {
@@ -124,6 +120,12 @@ void TestingSpellCheckProvider::FillSuggestionList(const base::string16&,
   NOTREACHED();
 }
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+
+#if defined(OS_ANDROID)
+void TestingSpellCheckProvider::DisconnectSessionBridge() {
+  NOTREACHED();
+}
+#endif
 
 void TestingSpellCheckProvider::SetLastResults(
     const base::string16 last_request,

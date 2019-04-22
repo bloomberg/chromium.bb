@@ -25,15 +25,22 @@ class InternetConfigDialog : public SystemWebDialogDelegate {
   static void ShowDialogForNetworkType(const std::string& network_type);
 
  protected:
-  InternetConfigDialog(const std::string& network_type,
+  // |dialog_id| provides a pre-calculated identifier for the dialog based on
+  // the network type and the network id.
+  InternetConfigDialog(const std::string& dialog_id,
+                       const std::string& network_type,
                        const std::string& network_id);
   ~InternetConfigDialog() override;
+
+  // SystemWebDialogDelegate
+  const std::string& Id() override;
 
   // ui::WebDialogDelegate
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
 
  private:
+  std::string dialog_id_;
   std::string network_type_;
   std::string network_id_;
 

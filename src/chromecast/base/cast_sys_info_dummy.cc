@@ -15,7 +15,7 @@ CastSysInfoDummy::CastSysInfoDummy()
       manufacturer_("google"),
       system_build_number_(__DATE__ " - " __TIME__),
       factory_country_("US"),
-      factory_locale_("en-US") {
+      factory_locale_list_({"en-US"}) {
 }
 
 CastSysInfoDummy::~CastSysInfoDummy() {
@@ -61,8 +61,8 @@ std::string CastSysInfoDummy::GetFactoryCountry() {
   return factory_country_;
 }
 
-std::string CastSysInfoDummy::GetFactoryLocale(std::string* second_locale) {
-  return factory_locale_;
+std::vector<std::string> CastSysInfoDummy::GetFactoryLocaleList() {
+  return factory_locale_list_;
 }
 
 std::string CastSysInfoDummy::GetWifiInterface() {
@@ -71,18 +71,6 @@ std::string CastSysInfoDummy::GetWifiInterface() {
 
 std::string CastSysInfoDummy::GetApInterface() {
   return ap_interface_;
-}
-
-std::string CastSysInfoDummy::GetGlVendor() {
-  return gl_vendor_;
-}
-
-std::string CastSysInfoDummy::GetGlRenderer() {
-  return gl_renderer_;
-}
-
-std::string CastSysInfoDummy::GetGlVersion() {
-  return gl_version_;
 }
 
 void CastSysInfoDummy::SetBuildTypeForTesting(
@@ -134,9 +122,9 @@ void CastSysInfoDummy::SetFactoryCountryForTesting(
   factory_country_ = factory_country;
 }
 
-void CastSysInfoDummy::SetFactoryLocaleForTesting(
-    const std::string& factory_locale) {
-  factory_locale_ = factory_locale;
+void CastSysInfoDummy::SetFactoryLocaleListForTesting(
+    const std::vector<std::string>& factory_locale_list) {
+  factory_locale_list_ = factory_locale_list;
 }
 
 void CastSysInfoDummy::SetWifiInterfaceForTesting(
@@ -147,18 +135,6 @@ void CastSysInfoDummy::SetWifiInterfaceForTesting(
 void CastSysInfoDummy::SetApInterfaceForTesting(
     const std::string& ap_interface) {
   ap_interface_ = ap_interface;
-}
-
-void CastSysInfoDummy::SetGlVendorForTesting(const std::string& gl_vendor) {
-  gl_vendor_ = gl_vendor;
-}
-
-void CastSysInfoDummy::SetGlRendererForTesting(const std::string& gl_renderer) {
-  gl_renderer_ = gl_renderer;
-}
-
-void CastSysInfoDummy::SetGlVersionForTesting(const std::string& gl_version) {
-  gl_version_ = gl_version;
 }
 
 }  // namespace chromecast

@@ -4,9 +4,9 @@
 
 #import "ios/chrome/search_widget_extension/search_widget_view.h"
 #include "base/logging.h"
-#import "ios/chrome/search_widget_extension/copied_url_view.h"
+#import "ios/chrome/search_widget_extension/copied_content_view.h"
 #import "ios/chrome/search_widget_extension/search_action_view.h"
-#import "ios/chrome/search_widget_extension/ui_util.h"
+#import "ios/chrome/search_widget_extension/search_widget_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,7 +24,7 @@ const CGFloat kMaxContentSize = 421;
 // The actions section. Can be bigger than the content within.
 @property(nonatomic, strong) UIView* actionsSection;
 // The copied URL section. Fits its contents.
-@property(nonatomic, strong) CopiedURLView* copiedURLSection;
+@property(nonatomic, strong) CopiedContentView* copiedURLSection;
 // The height used in the compact display mode.
 @property(nonatomic) CGFloat compactHeight;
 // The target for actions in the view.
@@ -79,9 +79,9 @@ const CGFloat kMaxContentSize = 421;
   _actionsSection.translatesAutoresizingMaskIntoConstraints = NO;
   [self addSubview:_actionsSection];
 
-  _copiedURLSection =
-      [[CopiedURLView alloc] initWithActionTarget:self.target
-                                   actionSelector:@selector(openCopiedURL:)];
+  _copiedURLSection = [[CopiedContentView alloc]
+      initWithActionTarget:self.target
+            actionSelector:@selector(openCopiedContent:)];
   [self addSubview:_copiedURLSection];
 
   _actionsSectionHeightConstraint = [self.actionsSection.heightAnchor
@@ -124,7 +124,7 @@ const CGFloat kMaxContentSize = 421;
       [self.actionsContent
           systemLayoutSizeFittingSize:UILayoutFittingCompressedSize]
           .height;
-  return height + 2 * ui_util::kContentMargin;
+  return height + 2 * kContentMargin;
 }
 
 - (CGFloat)copiedURLSectionHeight {
@@ -169,7 +169,7 @@ const CGFloat kMaxContentSize = 421;
   actionsContentStack.axis = UILayoutConstraintAxisHorizontal;
   actionsContentStack.alignment = UIStackViewAlignmentTop;
   actionsContentStack.distribution = UIStackViewDistributionFillEqually;
-  actionsContentStack.spacing = ui_util::kIconSpacing;
+  actionsContentStack.spacing = kIconSpacing;
   actionsContentStack.layoutMargins = UIEdgeInsetsZero;
   actionsContentStack.layoutMarginsRelativeArrangement = YES;
   actionsContentStack.translatesAutoresizingMaskIntoConstraints = NO;
@@ -186,12 +186,12 @@ const CGFloat kMaxContentSize = 421;
   NSLayoutConstraint* actionsLeadingConstraint =
       [self.actionsContent.leadingAnchor
           constraintEqualToAnchor:self.actionsSection.leadingAnchor
-                         constant:ui_util::kContentMargin];
+                         constant:kContentMargin];
   actionsLeadingConstraint.priority = UILayoutPriorityDefaultHigh;
   NSLayoutConstraint* actionsTrailingConstraint =
       [self.actionsContent.trailingAnchor
           constraintEqualToAnchor:self.actionsSection.trailingAnchor
-                         constant:-ui_util::kContentMargin];
+                         constant:-kContentMargin];
   actionsTrailingConstraint.priority = UILayoutPriorityDefaultHigh;
 
   [NSLayoutConstraint activateConstraints:@[
@@ -217,8 +217,9 @@ const CGFloat kMaxContentSize = 421;
   return [self actionContentHeight] + [self copiedURLSectionHeight];
 }
 
-- (void)setCopiedURLString:(NSString*)URL {
-  [self.copiedURLSection setCopiedURLString:URL];
+- (void)setCopiedContentType:(CopiedContentType)type
+                  copiedText:(NSString*)copiedText {
+  [self.copiedURLSection setCopiedContentType:type copiedText:copiedText];
 }
 
 @end

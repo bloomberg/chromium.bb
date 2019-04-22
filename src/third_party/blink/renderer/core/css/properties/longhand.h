@@ -9,11 +9,15 @@
 
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
 class CSSValue;
 class StyleResolverState;
+class CSSParserContext;
+class CSSParserLocalContext;
+class CSSParserTokenRange;
 
 class Longhand : public CSSProperty {
  public:
@@ -34,20 +38,23 @@ class Longhand : public CSSProperty {
     NOTREACHED();
     return Color();
   }
-  bool IsLonghand() const override { return true; }
   virtual const CSSValue* InitialValue() const {
     return CSSInitialValue::Create();
   }
 
  protected:
-  constexpr Longhand() : CSSProperty() {}
+  constexpr Longhand(CSSPropertyID id,
+                     uint16_t flags,
+                     char repetition_separator)
+      : CSSProperty(id, flags | kLonghand, repetition_separator) {}
 };
 
-DEFINE_TYPE_CASTS(Longhand,
-                  CSSProperty,
-                  longhand,
-                  longhand->IsLonghand(),
-                  longhand.IsLonghand());
+template <>
+struct DowncastTraits<Longhand> {
+  static bool AllowFrom(const CSSProperty& longhand) {
+    return longhand.IsLonghand();
+  }
+};
 
 }  // namespace blink
 

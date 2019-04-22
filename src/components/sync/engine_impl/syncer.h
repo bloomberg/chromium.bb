@@ -69,16 +69,10 @@ class Syncer {
   // otherwise.
   virtual bool PollSyncShare(ModelTypeSet request_types, SyncCycle* cycle);
 
-  // Posts a ClearServerData command.
-  // Returns: false if an error occurred and retries should backoff, true
-  // otherwise.
-  virtual bool PostClearServerData(SyncCycle* cycle);
-
  private:
   bool DownloadAndApplyUpdates(ModelTypeSet* request_types,
                                SyncCycle* cycle,
-                               const GetUpdatesDelegate& delegate,
-                               bool create_mobile_bookmarks_folder);
+                               const GetUpdatesDelegate& delegate);
 
   // This function will commit batches of unsynced items to the server until the
   // number of unsynced and ready to commit items reaches zero or an error is

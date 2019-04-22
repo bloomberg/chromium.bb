@@ -18,11 +18,10 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "third_party/blink/public/platform/reporting.mojom.h"
+#include "third_party/blink/public/mojom/reporting/reporting.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -85,7 +84,7 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
                                int line_number,
                                int column_number,
                                const base::Optional<std::string>& source_file,
-                               int status_code,
+                               uint16_t status_code,
                                const std::string& script_sample) override {
     auto body = std::make_unique<base::DictionaryValue>();
     body->SetString("document-uri", document_uri);

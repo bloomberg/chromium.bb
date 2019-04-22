@@ -155,7 +155,7 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
 void FileSystemDirURLRequestJob::GetMetadata(size_t index) {
   const filesystem::mojom::DirectoryEntry& entry = entries_[index];
   const FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-      url_.origin(), url_.type(),
+      url_.origin().GetURL(), url_.type(),
       url_.path().Append(base::FilePath(entry.name)));
   DCHECK(url.is_valid());
   file_system_context_->operation_runner()->GetMetadata(

@@ -159,8 +159,8 @@ MATCHER_P(MatchMessage, type, "") {
 
 MATCHER_P2(MatchSendPacketMetrics, rtc_packet_id, test_start_time, "") {
   return arg.rtc_packet_id == rtc_packet_id &&
-         arg.send_time >= test_start_time &&
-         arg.send_time <= base::TimeTicks::Now();
+         arg.send_time_ms >= test_start_time &&
+         arg.send_time_ms <= rtc::TimeMillis();
 }
 
 }  // namespace network

@@ -10,12 +10,12 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/supports_user_data.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
 
 namespace base {
@@ -37,7 +37,7 @@ class BlobStorageContext;
 // resources remain around for the duration of reading the blob.  This snapshot
 // can be read on any thread, but it must be destructed on the IO thread.
 // This object has delete semantics and may be deleted on any thread.
-class STORAGE_EXPORT BlobDataHandle
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataHandle
     : public base::SupportsUserData::Data {
  public:
   static constexpr uint64_t kUnknownSize = std::numeric_limits<uint64_t>::max();

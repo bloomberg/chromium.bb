@@ -179,6 +179,8 @@ class LoadHandler final : public DataHandler {
 
   // Decodes the KeyedAccessLoadMode from a {handler}.
   static KeyedAccessLoadMode GetKeyedAccessLoadMode(MaybeObject handler);
+
+  OBJECT_CONSTRUCTORS(LoadHandler, DataHandler);
 };
 
 // A set of bit fields representing Smi handlers for stores and a HeapObject
@@ -298,6 +300,8 @@ class StoreHandler final : public DataHandler {
   static inline Handle<Smi> StoreField(Isolate* isolate, Kind kind,
                                        int descriptor, FieldIndex field_index,
                                        Representation representation);
+
+  OBJECT_CONSTRUCTORS(StoreHandler, DataHandler);
 };
 
 }  // namespace internal

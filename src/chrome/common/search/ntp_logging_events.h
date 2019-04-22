@@ -128,7 +128,12 @@ enum NTPLoggingEventType {
   // A custom shortcut was updated.
   NTP_CUSTOMIZE_SHORTCUT_UPDATE = 59,
 
-  NTP_EVENT_TYPE_LAST = NTP_CUSTOMIZE_SHORTCUT_UPDATE
+  // A middle slot promo was shown.
+  NTP_MIDDLE_SLOT_PROMO_SHOWN = 60,
+  // A promo link was clicked.
+  NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED = 61,
+
+  NTP_EVENT_TYPE_LAST = NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED
 };
 
 #endif  // CHROME_COMMON_SEARCH_NTP_LOGGING_EVENTS_H_

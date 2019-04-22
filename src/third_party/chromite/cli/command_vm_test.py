@@ -12,6 +12,7 @@ the CLI commands.
 from __future__ import print_function
 
 from chromite.cli import deploy
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import remote_access
@@ -81,8 +82,8 @@ class CommandVMTest(object):
     """
     self.board = board
     self.image_path = image_path
-    self.working_image_path = None
-    self.vm = None
+    self.port = None
+    self.device_addr = None
 
   def BuildCommand(self, command, device=None, pos_args=None, opt_args=None):
     """Builds a CLI command.
@@ -97,25 +98,22 @@ class CommandVMTest(object):
 
   def SetUp(self):
     """Creates and starts the VM instance for testing."""
-    try:
-      logging.info('Setting up the VM for testing.')
-      self.working_image_path = vm.CreateVMImage(
-          image=self.image_path, board=self.board, updatable=True)
-      self.vm = vm.VMInstance(self.working_image_path)
-      self.vm.Start()
-      logging.info('The VM has been successfully set up. Ready to run tests.')
-    except vm.VMError as e:
-      raise SetupError('Failed to set up the VM for testing: %s' % e)
+    self.port = remote_access.GetUnusedPort()
+    self.device_addr = 'ssh://%s:%d' % (remote_access.LOCALHOST, self.port)
+    vm_path = vm.CreateVMImage(image=self.image_path, board=self.board,
+                               updatable=True)
+    vm_cmd = ['./cros_vm', '--ssh-port=%d' % self.port, '--copy-on-write',
+              '--image-path=%s' % vm_path, '--start']
+    cros_build_lib.RunCommand(vm_cmd, cwd=constants.CHROMITE_BIN_DIR)
 
   def TearDown(self):
     """Stops the VM instance after testing."""
-    try:
-      logging.info('Stopping the VM.')
-      if self.vm:
-        self.vm.Stop()
-      logging.info('The VM has been stopped.')
-    except vm.VMStopError as e:
-      logging.warning('Failed to stop the VM: %s', e)
+    if not self.port:
+      return
+    cros_build_lib.RunCommand(['./cros_vm', '--stop',
+                               '--ssh-port=%d' % self.port],
+                              cwd=constants.CHROMITE_BIN_DIR,
+                              error_code_ok=True)
 
   @TestCommandDecorator('shell')
   def TestShell(self):
@@ -124,7 +122,7 @@ class CommandVMTest(object):
     path = '/tmp/shell-test'
     content = 'shell command test file'
 
-    cmd = self.BuildCommand('shell', device=self.vm.device_addr,
+    cmd = self.BuildCommand('shell', device=self.device_addr,
                             opt_args=['--no-known-hosts'])
 
     logging.info('Test to use shell command to write a file to the VM device.')
@@ -156,7 +154,7 @@ class CommandVMTest(object):
     """Tests the debug command."""
     logging.info('Test to start and debug a new process on the VM device.')
     exe_path = '/bin/bash'
-    start_cmd = self.BuildCommand('debug', device=self.vm.device_addr,
+    start_cmd = self.BuildCommand('debug', device=self.device_addr,
                                   opt_args=['--exe', exe_path])
     result = cros_build_lib.RunCommand(start_cmd, capture_output=True,
                                        error_code_ok=True, input='\n')
@@ -166,14 +164,14 @@ class CommandVMTest(object):
 
     logging.info('Test to attach a running process on the VM device.')
     with remote_access.ChromiumOSDeviceHandler(
-        remote_access.LOCALHOST, port=self.vm.port) as device:
+        remote_access.LOCALHOST, port=self.port) as device:
       exe = 'update_engine'
       pids = device.GetRunningPids(exe, full_path=False)
       if not pids:
         logging.error('Failed to find any running process to debug.')
         raise CommandError()
       pid = pids[0]
-      attach_cmd = self.BuildCommand('debug', device=self.vm.device_addr,
+      attach_cmd = self.BuildCommand('debug', device=self.device_addr,
                                      opt_args=['--pid', str(pid)])
       result = cros_build_lib.RunCommand(attach_cmd, capture_output=True,
                                          error_code_ok=True, input='\n')
@@ -187,7 +185,7 @@ class CommandVMTest(object):
     # We explicitly disable reboot after the update because VMs sometimes do
     # not come back after reboot. The flash command does not need to verify
     # the integrity of the updated image. We have AU tests for that.
-    cmd = self.BuildCommand('flash', device=self.vm.device_addr,
+    cmd = self.BuildCommand('flash', device=self.device_addr,
                             pos_args=['latest'],
                             opt_args=['--no-wipe', '--no-reboot'])
 
@@ -204,7 +202,7 @@ class CommandVMTest(object):
     packages = ['dev-python/cherrypy', 'app-portage/portage-utils']
     # Set the installation root to /usr/local so that the command does not
     # attempt to remount rootfs (which leads to VM reboot).
-    cmd = self.BuildCommand('deploy', device=self.vm.device_addr,
+    cmd = self.BuildCommand('deploy', device=self.device_addr,
                             pos_args=packages, opt_args=['--log-level=info',
                                                          '--root=/usr/local'])
 
@@ -243,7 +241,7 @@ class CommandVMTest(object):
 
     # Verify that the packages are installed.
     with remote_access.ChromiumOSDeviceHandler(
-        remote_access.LOCALHOST, port=self.vm.port) as device:
+        remote_access.LOCALHOST, port=self.port) as device:
       try:
         device.RunCommand(['python', '-c', '"import cherrypy"'])
         device.RunCommand(['qmerge', '-h'])

@@ -38,12 +38,12 @@ TEST(CrossesExtensionBoundaryTest, InstalledExtensions) {
 
   GURL web_url("https://example.com");
 
-  EXPECT_TRUE(CrossesExtensionProcessBoundary(extensions, web_url,
-                                              extension1->url(), false));
+  EXPECT_TRUE(
+      CrossesExtensionProcessBoundary(extensions, web_url, extension1->url()));
   EXPECT_TRUE(CrossesExtensionProcessBoundary(extensions, extension1->url(),
-                                              extension2->url(), false));
-  EXPECT_TRUE(CrossesExtensionProcessBoundary(extensions, extension1->url(),
-                                              web_url, false));
+                                              extension2->url()));
+  EXPECT_TRUE(
+      CrossesExtensionProcessBoundary(extensions, extension1->url(), web_url));
 }
 
 TEST(CrossesExtensionBoundaryTest, UninstalledExtensions) {
@@ -54,10 +54,10 @@ TEST(CrossesExtensionBoundaryTest, UninstalledExtensions) {
   GURL non_existent_extension_url("chrome-extension://" + std::string(32, 'a') +
                                   "/foo");
 
-  EXPECT_TRUE(CrossesExtensionProcessBoundary(
-      extensions, web_url, non_existent_extension_url, false));
-  EXPECT_TRUE(CrossesExtensionProcessBoundary(
-      extensions, extension1->url(), non_existent_extension_url, false));
+  EXPECT_TRUE(CrossesExtensionProcessBoundary(extensions, web_url,
+                                              non_existent_extension_url));
+  EXPECT_TRUE(CrossesExtensionProcessBoundary(extensions, extension1->url(),
+                                              non_existent_extension_url));
 }
 
 }  // namespace extensions

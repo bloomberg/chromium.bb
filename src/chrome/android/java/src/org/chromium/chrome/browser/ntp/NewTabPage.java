@@ -12,7 +12,6 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,15 +19,18 @@ import android.view.ViewGroup;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.Log;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
@@ -51,29 +53,27 @@ import org.chromium.chrome.browser.suggestions.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.common.BrowserControlsState;
-import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Provides functionality when the user interacts with the NTP.
  */
-public class NewTabPage
-        implements NativePage, InvalidationAwareThumbnailProvider, TemplateUrlServiceObserver {
+public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvider,
+                                   TemplateUrlServiceObserver,
+                                   ChromeFullscreenManager.FullscreenListener {
     private static final String TAG = "NewTabPage";
 
     // Key for the scroll position data that may be stored in a navigation entry.
@@ -84,10 +84,10 @@ public class NewTabPage
 
     private final String mTitle;
     private final int mBackgroundColor;
-    private final int mThemeColor;
     protected final NewTabPageManagerImpl mNewTabPageManager;
     protected final TileGroup.Delegate mTileGroupDelegate;
     private final boolean mIsTablet;
+    private final ChromeFullscreenManager mFullscreenManager;
 
     /**
      * The {@link NewTabPageView} shown in this NewTabPageLayout. This may be null in sub-classes.
@@ -101,7 +101,7 @@ public class NewTabPage
     private LocationBarVoiceRecognitionHandler mVoiceRecognitionHandler;
 
     // The timestamp at which the constructor was called.
-    private final long mConstructedTimeNs;
+    protected final long mConstructedTimeNs;
 
     // The timestamp at which this NTP was last shown to the user.
     private long mLastShownTimeNs;
@@ -110,6 +110,20 @@ public class NewTabPage
 
     // Whether destroy() has been called.
     private boolean mIsDestroyed;
+
+    @Override
+    public void onContentOffsetChanged(int offset) {}
+
+    @Override
+    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {}
+
+    @Override
+    public void onToggleOverlayVideoMode(boolean enabled) {}
+
+    @Override
+    public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+        updateMargins();
+    }
 
     /**
      * Allows clients to listen for updates to the scroll changes of the search box on the
@@ -224,8 +238,7 @@ public class NewTabPage
             if (mIsDestroyed) return;
 
             long loadTimeMs = (System.nanoTime() - mConstructedTimeNs) / 1000000;
-            RecordHistogram.recordTimesHistogram(
-                    "Tab.NewTabOnload", loadTimeMs, TimeUnit.MILLISECONDS);
+            RecordHistogram.recordTimesHistogram("Tab.NewTabOnload", loadTimeMs);
             mIsLoaded = true;
             NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
             // If not visible when loading completes, wait until onShown is received.
@@ -259,8 +272,8 @@ public class NewTabPage
 
             if (windowDisposition != WindowOpenDisposition.NEW_WINDOW) {
                 RecordHistogram.recordMediumTimesHistogram("NewTabPage.MostVisitedTime",
-                        TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - mLastShownTimeNs),
-                        TimeUnit.MILLISECONDS);
+                        (System.nanoTime() - mLastShownTimeNs)
+                                / TimeUtils.NANOSECONDS_PER_MILLISECOND);
             }
         }
     }
@@ -286,14 +299,13 @@ public class NewTabPage
         SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegate(
                 activity, profile, nativePageHost, tabModelSelector);
         mNewTabPageManager = new NewTabPageManagerImpl(suggestionsSource, eventReporter,
-                navigationDelegate, profile, nativePageHost,
-                activity.getChromeApplication().getReferencePool(), activity.getSnackbarManager());
+                navigationDelegate, profile, nativePageHost, ChromeApplication.getReferencePool(),
+                activity.getSnackbarManager());
         mTileGroupDelegate = new NewTabPageTileGroupDelegate(activity, profile, navigationDelegate);
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
         mBackgroundColor = ApiCompatibilityUtils.getColor(
                 activity.getResources(), R.color.modern_primary_color);
-        mThemeColor = ColorUtils.getDefaultThemeColor(activity.getResources(), false);
         mIsTablet = activity.isTablet();
         TemplateUrlService.getInstance().addObserver(this);
 
@@ -318,32 +330,35 @@ public class NewTabPage
 
             @Override
             public void onBrowserControlsConstraintsUpdated(Tab tab, int constraints) {
-                updateMargins(constraints);
+                updateMargins();
             }
         };
         mTab.addObserver(mTabObserver);
         updateSearchProviderHasLogo();
 
         initializeMainView(activity);
+
+        mFullscreenManager = activity.getFullscreenManager();
         getView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View view) {
-                updateMargins(mTab.getBrowserControlsStateConstraints());
+                updateMargins();
                 getView().removeOnAttachStateChangeListener(this);
             }
 
             @Override
             public void onViewDetachedFromWindow(View view) {}
         });
+        mFullscreenManager.addListener(this);
 
         eventReporter.onSurfaceOpened();
 
         DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
                 /*isOffTheRecord=*/false);
 
-        RecordHistogram.recordBooleanHistogram(
-                "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());
+        NewTabPageUma.recordIsUserOnline();
         NewTabPageUma.recordLoadType(activity);
+        NewTabPageUma.recordContentSuggestionsDisplayStatus();
         TraceEvent.end(TAG);
     }
 
@@ -359,7 +374,8 @@ public class NewTabPage
         mNewTabPageView.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
                 mSearchProviderHasLogo,
                 TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(),
-                getScrollPositionFromNavigationEntry());
+                getScrollPositionFromNavigationEntry(NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mTab),
+                mConstructedTimeNs);
     }
 
     /**
@@ -368,10 +384,23 @@ public class NewTabPage
     protected void saveLastScrollPosition() {
         int scrollPosition = mNewTabPageView.getScrollPosition();
         if (scrollPosition == RecyclerView.NO_POSITION) return;
+        saveStringToNavigationEntry(
+                mTab, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, Integer.toString(scrollPosition));
+    }
 
-        if (mTab.getWebContents() == null) return;
-
-        NavigationController controller = mTab.getWebContents().getNavigationController();
+    /**
+     * Saves a single string under a given key to the navigation entry. It is up to the caller to
+     * extract and interpret later.
+     * @param tab A tab that is used to access the NavigationController and the NavigationEntry
+     *            extras.
+     * @param key The key to store the data under, will need to be used to access later.
+     * @param value The payload to persist.
+     *
+     * TODO(https://crbug.com/941581): Refactor this to be reusable across NativePage components.
+     */
+    public static void saveStringToNavigationEntry(Tab tab, String key, String value) {
+        if (tab.getWebContents() == null) return;
+        NavigationController controller = tab.getWebContents().getNavigationController();
         int index = controller.getLastCommittedEntryIndex();
         NavigationEntry entry = controller.getEntryAtIndex(index);
         if (entry == null) return;
@@ -382,12 +411,14 @@ public class NewTabPage
         // committed entry is for the NTP. The extra data must only be set in the latter case.
         if (!isNTPUrl(entry.getUrl())) return;
 
-        controller.setEntryExtraData(
-                index, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, Integer.toString(scrollPosition));
+        controller.setEntryExtraData(index, key, value);
     }
 
-    /** Update the margins for the content when browser controls constraints are changed. */
-    private void updateMargins(@BrowserControlsState int constraints) {
+    /**
+     * Update the margins for the content when browser controls constraints or bottom control
+     *  height are changed.
+     */
+    private void updateMargins() {
         // TODO(mdjones): can this be merged with BasicNativePage's updateMargins?
 
         View view = getView();
@@ -395,12 +426,20 @@ public class NewTabPage
                 ((ViewGroup.MarginLayoutParams) view.getLayoutParams());
         if (layoutParams == null) return;
 
-        int bottomMargin = 0;
-        if (FeatureUtilities.isBottomToolbarEnabled()
-                && constraints != BrowserControlsState.HIDDEN) {
-            bottomMargin = mTab.getActivity().getFullscreenManager().getBottomControlsHeight();
-        }
-        layoutParams.bottomMargin = bottomMargin;
+        final @BrowserControlsState int constraints =
+                TabBrowserControlsState.get(mTab).getConstraints();
+        layoutParams.bottomMargin = (constraints != BrowserControlsState.HIDDEN)
+                ? mFullscreenManager.getBottomControlsHeight()
+                : 0;
+
+        view.setLayoutParams(layoutParams);
+
+        // Apply negative margin to the top of the N logo (which would otherwise be the height of
+        // the top toolbar) when Duet is enabled to remove some of the empty space.
+        mNewTabPageLayout.setSearchProviderTopMargin((layoutParams.bottomMargin == 0)
+                        ? view.getResources().getDimensionPixelSize(R.dimen.ntp_logo_margin_top)
+                        : -view.getResources().getDimensionPixelSize(
+                                R.dimen.duet_ntp_logo_top_margin));
     }
 
     /** @return The view container for the new tab page. */
@@ -551,8 +590,7 @@ public class NewTabPage
     /** Records UMA for the NTP being hidden and the time spent on it. */
     private void recordNTPHidden() {
         RecordHistogram.recordMediumTimesHistogram("NewTabPage.TimeSpent",
-                TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - mLastShownTimeNs),
-                TimeUnit.MILLISECONDS);
+                (System.nanoTime() - mLastShownTimeNs) / TimeUtils.NANOSECONDS_PER_MILLISECOND);
         SuggestionsMetrics.recordSurfaceHidden();
     }
 
@@ -560,23 +598,55 @@ public class NewTabPage
      * Returns the value of the adapter scroll position that was stored in the last committed
      * navigation entry. Returns {@code RecyclerView.NO_POSITION} if there is no last committed
      * navigation entry, or if no data is found.
+     * @param scrollPositionKey The key under which the scroll position has been stored in the
+     *                          NavigationEntryExtraData.
+     * @param tab A tab that is used to access the NavigationController and the NavigationEntry
+     *            extras.
      * @return The adapter scroll position.
      */
-    private int getScrollPositionFromNavigationEntry() {
-        if (mTab.getWebContents() == null) return RecyclerView.NO_POSITION;
+    public static int getScrollPositionFromNavigationEntry(String scrollPositionKey, Tab tab) {
+        return getIntFromNavigationEntry(scrollPositionKey, tab, RecyclerView.NO_POSITION);
+    }
 
-        NavigationController controller = mTab.getWebContents().getNavigationController();
-        int index = controller.getLastCommittedEntryIndex();
-        String scrollPositionData =
-                controller.getEntryExtraData(index, NAVIGATION_ENTRY_SCROLL_POSITION_KEY);
-        if (TextUtils.isEmpty(scrollPositionData)) return RecyclerView.NO_POSITION;
+    /**
+     * Returns an arbitrary int value stored in the last committed navigation entry. If some step
+     * fails then the default is returned instead.
+     * @param key The string previously used to tag this piece of data.
+     * @param tab A tab that is used to access the NavigationController and the NavigationEntry
+     *            extras.
+     * @param defaultValue The value to return if lookup or parsing is unsuccessful.
+     * @return The value for the given key.
+     *
+     * TODO(https://crbug.com/941581): Refactor this to be reusable across NativePage components.
+     */
+    private static int getIntFromNavigationEntry(String key, Tab tab, int defaultValue) {
+        if (tab.getWebContents() == null) return defaultValue;
+
+        String stringValue = getStringFromNavigationEntry(tab, key);
 
         try {
-            return Integer.parseInt(scrollPositionData);
+            return Integer.parseInt(stringValue);
         } catch (NumberFormatException e) {
-            Log.w(TAG, "Bad data found for scroll position: %s", scrollPositionData, e);
+            Log.w(TAG, "Bad data found for %s : %s", key, stringValue, e);
             return RecyclerView.NO_POSITION;
         }
+    }
+
+    /**
+     * Returns an arbitrary string value stored in the last committed navigation entry. If the look
+     * up fails, an empty string is returned.
+     * @param tab A tab that is used to access the NavigationController and the NavigationEntry
+     *            extras.
+     * @param key The string previously used to tag this piece of data.
+     * @return The value previously stored with the given key.
+     *
+     * TODO(https://crbug.com/941581): Refactor this to be reusable across NativePage components.
+     */
+    public static String getStringFromNavigationEntry(Tab tab, String key) {
+        if (tab.getWebContents() == null) return "";
+        NavigationController controller = tab.getWebContents().getNavigationController();
+        int index = controller.getLastCommittedEntryIndex();
+        return controller.getEntryExtraData(index, key);
     }
 
     /**
@@ -608,6 +678,7 @@ public class NewTabPage
         TemplateUrlService.getInstance().removeObserver(this);
         mTab.removeObserver(mTabObserver);
         mTabObserver = null;
+        mFullscreenManager.removeListener(this);
         mIsDestroyed = true;
     }
 
@@ -624,11 +695,6 @@ public class NewTabPage
     @Override
     public int getBackgroundColor() {
         return mBackgroundColor;
-    }
-
-    @Override
-    public int getThemeColor() {
-        return isLocationBarShownInNTP() ? mBackgroundColor : mThemeColor;
     }
 
     @Override

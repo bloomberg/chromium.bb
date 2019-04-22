@@ -19,18 +19,18 @@ function test() {
     // page being navigated to. Instead, we go through a dummy redirect page,
     // to make sure that the onunload handler has run before we get to 
     // check-ping.php.
-    location.assign("resources/ping-redirect.html");
+    location.assign("resources/ping-redirect.html?test=unload-image");
 }
 
 function ping() {
     var img = new Image(1, 1);
-    img.src = "resources/save-Ping.php";
+    img.src = "resources/save-Ping.php?test=unload-image";
 }
 
 </script>
 </head>
 <body onload="test();" onunload="ping();">
-<img src="resources/delete-ping.php" onload="test();" onerror="test();"></img>
+<img src="resources/delete-ping.php?test=unload-image" onload="test();" onerror="test();"></img>
 Test case for https://bugs.webkit.org/show_bug.cgi?id=30457. Previously, if an image<br>
 load was trigger from an unload handler, we would kill it almost immediately due to the<br>
 navigation stopping all loaders. These loads now happen entirely in the background and detached<br>

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/drive/chromeos/dummy_file_system.h"
+#include "base/bind_helpers.h"
 
 namespace drive {
 

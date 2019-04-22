@@ -12,11 +12,11 @@
 #include <memory>
 #include <queue>
 #include <string>
+#include <unordered_map>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory_mapping.h"
@@ -72,9 +72,6 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
     virtual ~DeletionObserver() = default;
   };
 
-  typedef base::Callback<void(const std::string& msg, int id)>
-      GpuConsoleMessageCallback;
-
   CommandBufferProxyImpl(
       scoped_refptr<GpuChannelHost> channel,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -102,7 +99,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
                                 int32_t start,
                                 int32_t end) override;
   void SetGetBuffer(int32_t shm_id) override;
-  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
                                                   int32_t* id) override;
   void DestroyTransferBuffer(int32_t id) override;
 
@@ -128,7 +125,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   bool IsFenceSyncReleased(uint64_t release) override;
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        base::OnceClosure callback) override;
-  void WaitSyncTokenHint(const gpu::SyncToken& sync_token) override;
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) override;
   void TakeFrontBuffer(const gpu::Mailbox& mailbox);
   void ReturnFrontBuffer(const gpu::Mailbox& mailbox,
@@ -141,7 +138,8 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   bool EnsureBackbuffer();
 
   using UpdateVSyncParametersCallback =
-      base::Callback<void(base::TimeTicks timebase, base::TimeDelta interval)>;
+      base::RepeatingCallback<void(base::TimeTicks timebase,
+                                   base::TimeDelta interval)>;
   void SetUpdateVSyncParametersCallback(
       const UpdateVSyncParametersCallback& callback);
 
@@ -156,7 +154,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
 
  private:
   typedef std::map<int32_t, scoped_refptr<gpu::Buffer>> TransferBufferMap;
-  typedef base::hash_map<uint32_t, base::OnceClosure> SignalTaskMap;
+  typedef std::unordered_map<uint32_t, base::OnceClosure> SignalTaskMap;
 
   void CheckLock() {
     if (lock_) {
@@ -186,6 +184,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
                          const gfx::PresentationFeedback& feedback);
   void OnGetGpuFenceHandleComplete(uint32_t gpu_fence_id,
                                    const gfx::GpuFenceHandle&);
+  void OnReturnData(const std::vector<uint8_t>& data);
 
   // Try to read an updated copy of the state from shared memory, and calls
   // OnGpuStateError() if the new state has an error.
@@ -261,14 +260,6 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
 
   // Sync token waits that haven't been flushed yet.
   std::vector<SyncToken> pending_sync_token_fences_;
-
-  // Last flushed fence sync release, same as last item in queue if not empty.
-  uint64_t flushed_fence_sync_release_ = 0;
-
-  // Last verified fence sync.
-  uint64_t verified_fence_sync_release_ = 0;
-
-  GpuConsoleMessageCallback console_message_callback_;
 
   // Tasks to be invoked in SignalSyncPoint responses.
   uint32_t next_signal_id_ = 0;

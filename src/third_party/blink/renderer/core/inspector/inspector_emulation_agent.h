@@ -17,9 +17,7 @@
 namespace blink {
 
 class DocumentLoader;
-class ExecutionContext;
 class ResourceRequest;
-class ResourceResponse;
 class WebLocalFrameImpl;
 class WebViewImpl;
 enum class ResourceType : uint8_t;
@@ -32,8 +30,7 @@ class RGBA;
 }  // namespace protocol
 
 class CORE_EXPORT InspectorEmulationAgent final
-    : public InspectorBaseAgent<protocol::Emulation::Metainfo>,
-      public PageScheduler::VirtualTimeObserver {
+    : public InspectorBaseAgent<protocol::Emulation::Metainfo> {
  public:
   explicit InspectorEmulationAgent(WebLocalFrameImpl*);
   ~InspectorEmulationAgent() override;
@@ -83,21 +80,14 @@ class CORE_EXPORT InspectorEmulationAgent final
   void ApplyAcceptLanguageOverride(String* accept_lang);
   void ApplyUserAgentOverride(String* user_agent);
   void FrameStartedLoading(LocalFrame*);
-  void WillSendRequest(ExecutionContext*,
-                       unsigned long identifier,
-                       DocumentLoader*,
-                       ResourceRequest&,
-                       const ResourceResponse& redirect_response,
-                       const FetchInitiatorInfo&,
-                       ResourceType);
+  void PrepareRequest(DocumentLoader*,
+                      ResourceRequest&,
+                      const FetchInitiatorInfo&,
+                      ResourceType);
 
   // InspectorBaseAgent overrides.
   protocol::Response disable() override;
   void Restore() override;
-
-  // scheduler::PageScheduler::VirtualTimeObserver implementation.
-  void OnVirtualTimeAdvanced(WTF::TimeDelta virtual_time_offset) override;
-  void OnVirtualTimePaused(WTF::TimeDelta virtual_time_offset) override;
 
   void Trace(blink::Visitor*) override;
 
@@ -115,7 +105,6 @@ class CORE_EXPORT InspectorEmulationAgent final
   void ApplyVirtualTimePolicy(const PendingVirtualTimePolicy& new_policy);
 
   Member<WebLocalFrameImpl> web_local_frame_;
-  bool virtual_time_setup_ = false;
   WTF::TimeTicks virtual_time_base_ticks_;
 
   // Supports a virtual time policy change scheduled to occur after any

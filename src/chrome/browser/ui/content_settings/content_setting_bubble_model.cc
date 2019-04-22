@@ -9,9 +9,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -191,11 +191,11 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
       {CONTENT_SETTINGS_TYPE_SENSORS, IDS_ALLOWED_SENSORS_TITLE},
   };
   const ContentSettingsTypeIdEntry* title_ids = kBlockedTitleIDs;
-  size_t num_title_ids = arraysize(kBlockedTitleIDs);
+  size_t num_title_ids = base::size(kBlockedTitleIDs);
   if (content_settings->IsContentAllowed(content_type()) &&
       !content_settings->IsContentBlocked(content_type())) {
     title_ids = kAccessedTitleIDs;
-    num_title_ids = arraysize(kAccessedTitleIDs);
+    num_title_ids = base::size(kAccessedTitleIDs);
   }
   int title_id = GetIdForContentType(title_ids, num_title_ids, content_type());
   if (title_id)
@@ -225,11 +225,11 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
       {CONTENT_SETTINGS_TYPE_SENSORS, IDS_ALLOWED_SENSORS_MESSAGE},
   };
   const ContentSettingsTypeIdEntry* message_ids = kBlockedMessageIDs;
-  size_t num_message_ids = arraysize(kBlockedMessageIDs);
+  size_t num_message_ids = base::size(kBlockedMessageIDs);
   if (content_settings->IsContentAllowed(content_type()) &&
       !content_settings->IsContentBlocked(content_type())) {
     message_ids = kAccessedMessageIDs;
-    num_message_ids = arraysize(kAccessedMessageIDs);
+    num_message_ids = base::size(kAccessedMessageIDs);
   }
   int message_id =
       GetIdForContentType(message_ids, num_message_ids, content_type());
@@ -262,7 +262,7 @@ void ContentSettingSimpleBubbleModel::SetCustomLink() {
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, IDS_ALLOW_INSECURE_CONTENT_BUTTON},
   };
   int custom_link_id =
-      GetIdForContentType(kCustomIDs, arraysize(kCustomIDs), content_type());
+      GetIdForContentType(kCustomIDs, base::size(kCustomIDs), content_type());
   if (custom_link_id)
     set_custom_link(l10n_util::GetStringUTF16(custom_link_id));
 }
@@ -669,15 +669,8 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
   if (!managed_by_user)
     set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kNone);
 
-  // The user cannot manually run Flash on the BLOCK setting when either holds:
-  //  - The setting is from Policy. User cannot override admin intent.
-  //  - HTML By Default is on - Flash has been hidden from the plugin list, so
-  //    it's impossible to dynamically run the nonexistent plugin.
-  bool run_blocked =
-      setting == CONTENT_SETTING_BLOCK &&
-      (!managed_by_user || PluginUtils::ShouldPreferHtmlOverPlugins(map));
-
-  if (!run_blocked) {
+  // The user can only load Flash dynamically if not on the BLOCK setting.
+  if (setting != CONTENT_SETTING_BLOCK) {
     set_custom_link(l10n_util::GetStringUTF16(IDS_BLOCKED_PLUGINS_LOAD_ALL));
     // Disable the "Run all plugins this time" link if the user already clicked
     // on the link and ran all plugins.
@@ -790,11 +783,11 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   base::string16 radio_allow_label;
   if (allowed) {
     int resource_id = GetIdForContentType(
-        kAllowedAllowIDs, arraysize(kAllowedAllowIDs), content_type());
+        kAllowedAllowIDs, base::size(kAllowedAllowIDs), content_type());
     radio_allow_label = l10n_util::GetStringUTF16(resource_id);
   } else {
     radio_allow_label = l10n_util::GetStringFUTF16(
-        GetIdForContentType(kBlockedAllowIDs, arraysize(kBlockedAllowIDs),
+        GetIdForContentType(kBlockedAllowIDs, base::size(kBlockedAllowIDs),
                             content_type()),
         display_host);
   }
@@ -819,11 +812,11 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   base::string16 radio_block_label;
   if (allowed) {
     int resource_id = GetIdForContentType(
-        kAllowedBlockIDs, arraysize(kAllowedBlockIDs), content_type());
+        kAllowedBlockIDs, base::size(kAllowedBlockIDs), content_type());
     radio_block_label = l10n_util::GetStringFUTF16(resource_id, display_host);
   } else {
     radio_block_label = l10n_util::GetStringUTF16(GetIdForContentType(
-        kBlockedBlockIDs, arraysize(kBlockedBlockIDs), content_type()));
+        kBlockedBlockIDs, base::size(kBlockedBlockIDs), content_type()));
   }
 
   radio_group.radio_items = {radio_allow_label, radio_block_label};
@@ -976,11 +969,11 @@ ContentSettingPopupBubbleModel::~ContentSettingPopupBubbleModel() = default;
 
 namespace {
 
-const content::MediaStreamDevice& GetMediaDeviceById(
+const blink::MediaStreamDevice& GetMediaDeviceById(
     const std::string& device_id,
-    const content::MediaStreamDevices& devices) {
+    const blink::MediaStreamDevices& devices) {
   DCHECK(!devices.empty());
-  for (const content::MediaStreamDevice& device : devices) {
+  for (const blink::MediaStreamDevice& device : devices) {
     if (device.id == device_id)
       return device;
   }
@@ -1205,13 +1198,13 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
 }
 
 void ContentSettingMediaStreamBubbleModel::UpdateDefaultDeviceForType(
-    content::MediaStreamType type,
+    blink::MediaStreamType type,
     const std::string& device) {
   PrefService* prefs = GetProfile()->GetPrefs();
-  if (type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
+  if (type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
     prefs->SetString(prefs::kDefaultAudioCaptureDevice, device);
   } else {
-    DCHECK_EQ(content::MEDIA_DEVICE_VIDEO_CAPTURE, type);
+    DCHECK_EQ(blink::MEDIA_DEVICE_VIDEO_CAPTURE, type);
     prefs->SetString(prefs::kDefaultVideoCaptureDevice, device);
   }
 }
@@ -1228,7 +1221,7 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
   PrefService* prefs = GetProfile()->GetPrefs();
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
-  const content::MediaStreamDevices& microphones =
+  const blink::MediaStreamDevices& microphones =
       dispatcher->GetAudioCaptureDevices();
 
   if (MicrophoneAccessed()) {
@@ -1250,11 +1243,11 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
       mic_menu.default_device = GetMediaDeviceById(preferred_mic, microphones);
       mic_menu.selected_device = mic_menu.default_device;
     }
-    add_media_menu(content::MEDIA_DEVICE_AUDIO_CAPTURE, mic_menu);
+    add_media_menu(blink::MEDIA_DEVICE_AUDIO_CAPTURE, mic_menu);
   }
 
   if (CameraAccessed()) {
-    const content::MediaStreamDevices& cameras =
+    const blink::MediaStreamDevices& cameras =
         dispatcher->GetVideoCaptureDevices();
     MediaMenu camera_menu;
     camera_menu.label =
@@ -1275,7 +1268,7 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
           GetMediaDeviceById(preferred_camera, cameras);
       camera_menu.selected_device = camera_menu.default_device;
     }
-    add_media_menu(content::MEDIA_DEVICE_VIDEO_CAPTURE, camera_menu);
+    add_media_menu(blink::MEDIA_DEVICE_VIDEO_CAPTURE, camera_menu);
   }
 }
 
@@ -1294,15 +1287,15 @@ void ContentSettingMediaStreamBubbleModel::SetCustomLink() {
 }
 
 void ContentSettingMediaStreamBubbleModel::OnMediaMenuClicked(
-    content::MediaStreamType type,
+    blink::MediaStreamType type,
     const std::string& selected_device_id) {
-  DCHECK(type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
+  DCHECK(type == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type == blink::MEDIA_DEVICE_VIDEO_CAPTURE);
   DCHECK_EQ(1U, bubble_content().media_menus.count(type));
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
-  const content::MediaStreamDevices& devices =
-      (type == content::MEDIA_DEVICE_AUDIO_CAPTURE)
+  const blink::MediaStreamDevices& devices =
+      (type == blink::MEDIA_DEVICE_AUDIO_CAPTURE)
           ? dispatcher->GetAudioCaptureDevices()
           : dispatcher->GetVideoCaptureDevices();
   set_selected_device(GetMediaDeviceById(selected_device_id, devices));

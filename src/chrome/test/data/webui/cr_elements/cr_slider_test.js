@@ -10,6 +10,7 @@ suite('cr-slider', function() {
     document.body.innerHTML = '<cr-slider min="0" max="100"></cr-slider>';
 
     crSlider = document.body.querySelector('cr-slider');
+    return PolymerTest.flushTasks();
   });
 
   /** @param {boolean} expected */
@@ -17,6 +18,9 @@ suite('cr-slider', function() {
     assertEquals(
         expected,
         window.getComputedStyle(crSlider)['pointer-events'] == 'none');
+    const expectedTabindex = expected ? '-1' : '0';
+    assertEquals(expectedTabindex, crSlider.getAttribute('tabindex'));
+    assertEquals(expectedTabindex, crSlider.$.knob.getAttribute('tabindex'));
   }
 
   function pressArrowRight() {
@@ -72,14 +76,6 @@ suite('cr-slider', function() {
     // Ignores clientX for pointerup event.
     pointerEvent('pointerup', 0);
   }
-
-  // Ensure that value-changed event bubbles, since users of cr-slider rely on
-  // such event.
-  test('value-changed bubbles', function() {
-    const whenFired = test_util.eventToPromise('value-changed', crSlider);
-    crSlider.value = 50;
-    return whenFired;
-  });
 
   test('key events', () => {
     crSlider.value = 0;
@@ -149,34 +145,30 @@ suite('cr-slider', function() {
     assertEquals(100, crSlider.value);
   });
 
-  test('update value instantly both off and on', () => {
-    crSlider.updateValueInstantly = false;
-    assertEquals(0, crSlider.value);
-    pointerDown(.5);
-    assertEquals(0, crSlider.value);
-    pointerUp();
-    assertEquals(50, crSlider.value);
-
-    // Once |updateValueInstantly| is turned on, |value| should start updating
-    // again during drag.
-    pointerDown(0);
-    assertEquals(50, crSlider.value);
-    crSlider.updateValueInstantly = true;
-    pointerMove(0);
-    assertEquals(0, crSlider.value);
-    crSlider.updateValueInstantly = false;
-    pointerMove(.4);
-    assertEquals(0, crSlider.value);
-    pointerUp();
-    assertEquals(40, crSlider.value);
-  });
-
-  test('snaps to closest value', () => {
+  test('snaps to closest value after minimum traversal', () => {
+    // Snaps to closest value after traversing a minimum of .8 units.
+    const tolerance = .000001;
     crSlider.snaps = true;
+    crSlider.ticks = [];
     pointerDown(.501);
     assertEquals(50, crSlider.value);
     pointerMove(.505);
+    assertEquals(50, crSlider.value);
+    // Before threshold.
+    pointerMove(.508 - tolerance);
+    assertEquals(50, crSlider.value);
+    // After threshold.
+    pointerMove(.508 + tolerance);
     assertEquals(51, crSlider.value);
+    // Before threshold.
+    pointerMove(.502 + tolerance);
+    assertEquals(51, crSlider.value);
+    // After threshold.
+    pointerMove(.502 - tolerance);
+    assertEquals(50, crSlider.value);
+    // Move far away rounds to closest whole number.
+    pointerMove(.605);
+    assertEquals(61, crSlider.value);
   });
 
   test('markers', () => {
@@ -204,7 +196,7 @@ suite('cr-slider', function() {
   });
 
   test('ticks and aria', () => {
-    crSlider.value = 1.5;
+    crSlider.value = 2;
     crSlider.ticks = [1, 2, 4, 8];
     assertEquals('1', crSlider.getAttribute('aria-valuemin'));
     assertEquals('8', crSlider.getAttribute('aria-valuemax'));
@@ -212,11 +204,12 @@ suite('cr-slider', function() {
     assertEquals('4', crSlider.getAttribute('aria-valuenow'));
     assertEquals('', crSlider.$.label.innerHTML.trim());
     assertEquals(2, crSlider.value);
-    crSlider.value = 100;
+    pressArrowRight();
     assertEquals(3, crSlider.value);
     assertEquals('8', crSlider.getAttribute('aria-valuetext'));
     assertEquals('8', crSlider.getAttribute('aria-valuenow'));
     assertEquals('', crSlider.$.label.innerHTML.trim());
+    crSlider.value = 2;
     crSlider.ticks = [
       {
         value: 10,
@@ -238,7 +231,7 @@ suite('cr-slider', function() {
     assertEquals('Third', crSlider.getAttribute('aria-valuetext'));
     assertEquals('Third', crSlider.$.label.innerHTML.trim());
     assertEquals('3', crSlider.getAttribute('aria-valuenow'));
-    crSlider.value = 1;
+    pressArrowLeft();
     assertEquals('Second', crSlider.getAttribute('aria-valuetext'));
     assertEquals('20', crSlider.getAttribute('aria-valuenow'));
     assertEquals('Second', crSlider.$.label.innerHTML.trim());
@@ -315,5 +308,92 @@ suite('cr-slider', function() {
     return wait.then(() => {
       assertEquals(50, crSlider.value);
     });
+  });
+
+  test('smooth position transition only on pointerdown', () => {
+    const assertNoTransition = () => {
+      const expected = 'all 0s ease 0s';
+      assertEquals(expected, getComputedStyle(crSlider.$.knob).transition);
+      assertEquals(expected, getComputedStyle(crSlider.$.bar).transition);
+      assertEquals(expected, getComputedStyle(crSlider.$.label).transition);
+    };
+    const assertTransition = () => {
+      const getValue = propName => `${propName} 0.08s ease 0s`;
+      assertEquals(
+          getValue('margin-inline-start'),
+          getComputedStyle(crSlider.$.knob).transition);
+      assertEquals(
+          getValue('width'), getComputedStyle(crSlider.$.bar).transition);
+      assertEquals(
+          getValue('margin-inline-start'),
+          getComputedStyle(crSlider.$.label).transition);
+    };
+
+    assertNoTransition();
+    pointerDown(.5);
+    assertTransition();
+    return test_util.eventToPromise('transitionend', crSlider.$.knob)
+        .then(() => {
+          assertNoTransition();
+          // Other operations that change the value do not have transitions.
+          pointerMove(0);
+          assertNoTransition();
+          assertEquals(0, crSlider.value);
+          pointerUp();
+          pressArrowRight();
+          assertNoTransition();
+          assertEquals(1, crSlider.value);
+          crSlider.value = 50;
+          assertNoTransition();
+
+          // Check that the slider is not stuck with a transition when the value
+          // does not change.
+          crSlider.value = 0;
+          pointerDown(0);
+          assertTransition();
+          return test_util.eventToPromise('transitionend', crSlider.$.knob);
+        })
+        .then(() => {
+          assertNoTransition();
+        });
+  });
+
+  test('getRatio()', () => {
+    crSlider.min = 1;
+    crSlider.max = 11;
+    crSlider.value = 1;
+    assertEquals(0, crSlider.getRatio());
+    crSlider.value = 11;
+    assertEquals(1, crSlider.getRatio());
+    crSlider.value = 6;
+    assertEquals(.5, crSlider.getRatio());
+  });
+
+  test('cr-slider-value-changed event when mouse clicked', () => {
+    const wait = test_util.eventToPromise('cr-slider-value-changed', crSlider);
+    pointerDown(.1);
+    return wait;
+  });
+
+  test('cr-slider-value-changed event when key pressed', () => {
+    const wait = test_util.eventToPromise('cr-slider-value-changed', crSlider);
+    pressArrowRight();
+    return wait;
+  });
+
+  test('out of range value updated back into min/max range', () => {
+    crSlider.min = 0;
+    crSlider.max = 100;
+    crSlider.value = 50;
+    assertEquals(50, crSlider.value);
+    crSlider.value = 150;
+    assertEquals(100, crSlider.value);
+    crSlider.value = -50;
+    assertEquals(0, crSlider.value);
+    crSlider.min = 25;
+    assertEquals(25, crSlider.value);
+    crSlider.value = 100;
+    crSlider.max = 50;
+    assertEquals(50, crSlider.value);
   });
 });

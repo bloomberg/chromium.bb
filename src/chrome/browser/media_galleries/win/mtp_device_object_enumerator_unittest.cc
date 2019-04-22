@@ -11,7 +11,7 @@
 
 #include <ctime>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
@@ -66,7 +66,7 @@ TEST_F(MTPDeviceObjectEnumeratorWinTest, Empty) {
 
 TEST_F(MTPDeviceObjectEnumeratorWinTest, Traversal) {
   MTPDeviceObjectEntries entries;
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     entries.push_back(MTPDeviceObjectEntry(
         kTestCases[i].object_id,
         kTestCases[i].name,
@@ -77,7 +77,7 @@ TEST_F(MTPDeviceObjectEnumeratorWinTest, Traversal) {
   MTPDeviceObjectEnumerator enumerator(entries);
   TestEnumeratorIsEmpty(&enumerator);
   TestEnumeratorIsEmpty(&enumerator);
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     EXPECT_EQ(kTestCases[i].name, enumerator.Next().value());
     EXPECT_EQ(kTestCases[i].object_id, enumerator.GetObjectId());
     EXPECT_EQ(kTestCases[i].size, enumerator.Size());

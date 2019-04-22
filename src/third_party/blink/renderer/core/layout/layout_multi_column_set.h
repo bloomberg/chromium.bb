@@ -63,7 +63,7 @@ namespace blink {
 // (page / column) that the inner multicol container lives in. Each
 // fragmentainer group has its own column height, but the column height is
 // uniform within a group.
-class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
+class CORE_EXPORT LayoutMultiColumnSet final : public LayoutBlockFlow {
  public:
   static LayoutMultiColumnSet* CreateAnonymous(
       LayoutFlowThread&,
@@ -127,7 +127,7 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   LayoutFlowThread* FlowThread() const { return flow_thread_; }
 
   LayoutBlockFlow* MultiColumnBlockFlow() const {
-    return ToLayoutBlockFlow(Parent());
+    return To<LayoutBlockFlow>(Parent());
   }
   LayoutMultiColumnFlowThread* MultiColumnFlowThread() const {
     return ToLayoutMultiColumnFlowThread(FlowThread());
@@ -255,7 +255,7 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   void PaintObject(const PaintInfo&,
                    const LayoutPoint& paint_offset) const override;
 
-  void ComputeVisualOverflow(const LayoutRect&, bool recompute_floats) final;
+  void ComputeVisualOverflow(bool recompute_floats) final;
 
   void AddVisualOverflowFromChildren();
   void AddLayoutOverflowFromChildren() override;

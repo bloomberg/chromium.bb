@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/fileapi/watcher_manager.h"
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
@@ -55,11 +56,8 @@ void AddWatcherOnUIThread(const storage::FileSystemURL& url,
     return;
   }
 
-  parser.file_system()->AddWatcher(url.origin(),
-                                   parser.file_path(),
-                                   recursive,
-                                   false /* persistent */,
-                                   callback,
+  parser.file_system()->AddWatcher(url.origin().GetURL(), parser.file_path(),
+                                   recursive, false /* persistent */, callback,
                                    notification_callback);
 }
 
@@ -79,8 +77,8 @@ void RemoveWatcherOnUIThread(const storage::FileSystemURL& url,
     return;
   }
 
-  parser.file_system()->RemoveWatcher(
-      url.origin(), parser.file_path(), recursive, callback);
+  parser.file_system()->RemoveWatcher(url.origin().GetURL(), parser.file_path(),
+                                      recursive, callback);
 }
 
 }  // namespace

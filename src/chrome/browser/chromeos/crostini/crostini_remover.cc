@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
@@ -24,11 +25,9 @@ namespace crostini {
 CrostiniRemover::CrostiniRemover(
     Profile* profile,
     std::string vm_name,
-    std::string container_name,
     CrostiniManager::RemoveCrostiniCallback callback)
     : profile_(profile),
       vm_name_(std::move(vm_name)),
-      container_name_(std::move(container_name)),
       callback_(std::move(callback)) {}
 
 CrostiniRemover::~CrostiniRemover() = default;
@@ -69,10 +68,11 @@ void CrostiniRemover::StopVmFinished(CrostiniResult result) {
     std::move(callback_).Run(result);
     return;
   }
+
   CrostiniRegistryServiceFactory::GetForProfile(profile_)->ClearApplicationList(
-      vm_name_, container_name_);
+      vm_name_, "");
   CrostiniMimeTypesServiceFactory::GetForProfile(profile_)->ClearMimeTypes(
-      vm_name_, container_name_);
+      vm_name_, "");
   CrostiniManager::GetForProfile(profile_)->DestroyDiskImage(
       base::FilePath(vm_name_),
       vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,
@@ -101,6 +101,8 @@ void CrostiniRemover::StopConciergeFinished(bool is_successful) {
       CrostiniManager::GetForProfile(profile_)->UninstallTerminaComponent()) {
     profile_->GetPrefs()->SetBoolean(prefs::kCrostiniEnabled, false);
     profile_->GetPrefs()->ClearPref(prefs::kCrostiniLastDiskSize);
+    profile_->GetPrefs()->Set(prefs::kCrostiniContainers,
+                              base::Value(base::Value::Type::LIST));
   }
   std::move(callback_).Run(CrostiniResult::SUCCESS);
 }

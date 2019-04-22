@@ -49,6 +49,10 @@ namespace blink {
 
 namespace {
 
+// There are some cases where |SelectionModifier::ModifyWithPageGranularity()|
+// enters an infinite loop. Work around it by hard-limiting the iteration.
+const unsigned kMaxIterationForPageGranularityMovement = 1024;
+
 VisiblePosition LeftBoundaryOfLine(const VisiblePosition& c,
                                    TextDirection direction) {
   DCHECK(c.IsValid()) << c;
@@ -131,7 +135,7 @@ TextDirection SelectionModifier::DirectionOfEnclosingBlock() const {
   const Position& selection_extent = selection_.Extent();
 
   // TODO(editing-dev): Check for Position::IsNotNull is an easy fix for few
-  // editing/ layout tests, that didn't expect that (e.g.
+  // editing/ web tests, that didn't expect that (e.g.
   // editing/selection/extend-byline-withfloat.html).
   // That should be fixed in a more appropriate manner.
   // We should either have SelectionModifier aborted earlier for null selection,
@@ -240,7 +244,7 @@ VisiblePosition SelectionModifier::PositionForPlatform(
   // FIXME: VisibleSelection should be fixed to ensure as an invariant that
   // base/extent always point to the same nodes as start/end, but which points
   // to which depends on the value of isBaseFirst. Then this can be changed
-  // to just return m_sel.extent().
+  // to just return selection_.extent().
   return selection_.IsBaseFirst() ? selection_.VisibleEnd()
                                   : selection_.VisibleStart();
 }
@@ -829,7 +833,11 @@ bool SelectionModifier::ModifyWithPageGranularity(
 
   VisiblePosition result;
   VisiblePosition next;
-  for (VisiblePosition p = pos;; p = next) {
+  unsigned iteration_count = 0;
+  for (VisiblePosition p = pos;
+       iteration_count < kMaxIterationForPageGranularityMovement; p = next) {
+    ++iteration_count;
+
     if (direction == SelectionModifyVerticalDirection::kUp)
       next = PreviousLinePosition(p, x_pos);
     else

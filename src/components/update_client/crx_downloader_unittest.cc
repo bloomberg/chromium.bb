@@ -17,6 +17,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/update_client/net/network_chromium.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
 #include "net/base/net_errors.h"
@@ -122,8 +123,9 @@ void CrxDownloaderTest::SetUp() {
   num_progress_calls_ = 0;
 
   // Do not use the background downloader in these tests.
-  crx_downloader_ =
-      CrxDownloader::Create(false, test_shared_url_loader_factory_);
+  crx_downloader_ = CrxDownloader::Create(
+      false, base::MakeRefCounted<NetworkFetcherChromiumFactory>(
+                 test_shared_url_loader_factory_));
   crx_downloader_->set_progress_callback(progress_callback_);
 
   test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(

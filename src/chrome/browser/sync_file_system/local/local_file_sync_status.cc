@@ -19,7 +19,7 @@ namespace {
 using OriginAndType = LocalFileSyncStatus::OriginAndType;
 
 OriginAndType GetOriginAndType(const storage::FileSystemURL& url) {
-  return std::make_pair(url.origin(), url.type());
+  return std::make_pair(url.origin().GetURL(), url.type());
 }
 
 base::FilePath NormalizePath(const base::FilePath& path) {

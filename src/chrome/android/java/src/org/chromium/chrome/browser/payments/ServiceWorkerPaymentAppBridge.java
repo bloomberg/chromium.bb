@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
 
@@ -15,11 +16,13 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNIAdditionalImport;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.payments.OriginSecurityChecker;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
@@ -29,8 +32,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * Native bridge for interacting with service worker based payment apps.
@@ -91,7 +92,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         ThreadUtils.assertOnUiThread();
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     callback.onHasServiceWorkerPaymentAppsResponse(false);
@@ -112,7 +113,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         ThreadUtils.assertOnUiThread();
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     callback.onGetServiceWorkerPaymentAppsInfo(
@@ -143,7 +144,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         ThreadUtils.assertOnUiThread();
 
         if (sCanMakePaymentForTesting) {
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     callback.onCanMakePaymentResponse(true);
@@ -361,7 +362,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     @CalledByNative
     private static void onInstallablePaymentAppCreated(@Nullable String name, String swUrl,
             String scope, boolean useCache, @Nullable Bitmap icon, String methodName,
-            WebContents webContents, PaymentAppFactory.PaymentAppCreatedCallback callback) {
+            String[] preferredRelatedApplications, WebContents webContents,
+            PaymentAppFactory.PaymentAppCreatedCallback callback) {
         ThreadUtils.assertOnUiThread();
 
         Context context = ChromeActivity.fromWebContents(webContents);
@@ -378,8 +380,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         }
         callback.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents, name,
                 scopeUri.getHost(), swUri, scopeUri, useCache,
-                icon == null ? null : new BitmapDrawable(context.getResources(), icon),
-                methodName));
+                icon == null ? null : new BitmapDrawable(context.getResources(), icon), methodName,
+                preferredRelatedApplications));
     }
 
     @CalledByNative

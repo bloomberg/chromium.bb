@@ -17,9 +17,7 @@ namespace content {
 
 bool IsPinchToZoomEnabled();
 
-V8CacheOptions GetV8CacheOptions();
-
-SavePreviousDocumentResources GetSavePreviousDocumentResources();
+blink::mojom::V8CacheOptions GetV8CacheOptions();
 
 void WaitForDebugger(const std::string& label);
 

@@ -143,4 +143,4 @@ TEST_F(VideoCaptureDeviceFactoryLinuxTest,
   device->StopAndDeAllocate();
 }
 
-};  // namespace media
+}  // namespace media

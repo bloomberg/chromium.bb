@@ -18,6 +18,8 @@
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 // Initializes the coordinator with the |viewController| which will present the
 // dialog, the |title| of the alert and the |cancelHandler| callback if the

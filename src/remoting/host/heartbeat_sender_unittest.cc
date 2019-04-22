@@ -21,8 +21,8 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
-using buzz::QName;
-using buzz::XmlElement;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlElement;
 
 using testing::_;
 using testing::DeleteArg;
@@ -100,21 +100,21 @@ void HeartbeatSenderTest::ValidateHeartbeatStanza(
     XmlElement* stanza,
     const std::string& expected_sequence_id,
     const std::string& expected_host_offline_reason) {
-  EXPECT_EQ(stanza->Attr(buzz::QName(std::string(), "to")),
+  EXPECT_EQ(stanza->Attr(jingle_xmpp::QName(std::string(), "to")),
             std::string(kTestBotJid));
-  EXPECT_EQ(stanza->Attr(buzz::QName(std::string(), "type")), "set");
+  EXPECT_EQ(stanza->Attr(jingle_xmpp::QName(std::string(), "type")), "set");
   XmlElement* heartbeat_stanza =
       stanza->FirstNamed(QName(kChromotingXmlNamespace, "heartbeat"));
   ASSERT_TRUE(heartbeat_stanza != nullptr);
-  EXPECT_EQ(expected_sequence_id, heartbeat_stanza->Attr(buzz::QName(
+  EXPECT_EQ(expected_sequence_id, heartbeat_stanza->Attr(jingle_xmpp::QName(
                                       kChromotingXmlNamespace, "sequence-id")));
   if (expected_host_offline_reason.empty()) {
     EXPECT_FALSE(heartbeat_stanza->HasAttr(
-        buzz::QName(kChromotingXmlNamespace, "host-offline-reason")));
+        jingle_xmpp::QName(kChromotingXmlNamespace, "host-offline-reason")));
   } else {
     EXPECT_EQ(expected_host_offline_reason,
               heartbeat_stanza->Attr(
-                  buzz::QName(kChromotingXmlNamespace, "host-offline-reason")));
+                  jingle_xmpp::QName(kChromotingXmlNamespace, "host-offline-reason")));
   }
   EXPECT_EQ(std::string(kHostId),
             heartbeat_stanza->Attr(QName(kChromotingXmlNamespace, "hostid")));
@@ -134,7 +134,7 @@ void HeartbeatSenderTest::ValidateHeartbeatStanza(
 void HeartbeatSenderTest::SendResponse(int message_index,
                                        base::TimeDelta interval,
                                        int expected_sequence_id) {
-  auto response = std::make_unique<XmlElement>(buzz::QN_IQ);
+  auto response = std::make_unique<XmlElement>(jingle_xmpp::QN_IQ);
   response->AddAttr(QName(std::string(), "type"), "result");
   response->AddAttr(QName(std::string(), "to"), kTestJid);
 
@@ -154,14 +154,15 @@ void HeartbeatSenderTest::SendResponse(int message_index,
     XmlElement* set_interval =
         new XmlElement(QName(kChromotingXmlNamespace, "set-interval"));
     result->AddElement(set_interval);
-    set_interval->AddText(base::IntToString(interval.InSeconds()));
+    set_interval->AddText(base::NumberToString(interval.InSeconds()));
   }
 
   if (expected_sequence_id > 0) {
     XmlElement* expected_sequence_id_tag =
         new XmlElement(QName(kChromotingXmlNamespace, "expected-sequence-id"));
     result->AddElement(expected_sequence_id_tag);
-    expected_sequence_id_tag->AddText(base::IntToString(expected_sequence_id));
+    expected_sequence_id_tag->AddText(
+        base::NumberToString(expected_sequence_id));
   }
 
   bot_signal_strategy_.SendStanza(std::move(response));
@@ -216,7 +217,7 @@ TEST_F(HeartbeatSenderTest, ExpectedSequenceId) {
 
   ASSERT_EQ(bot_signal_strategy_.received_messages().size(), 2U);
   ValidateHeartbeatStanza(bot_signal_strategy_.received_messages()[1].get(),
-                          base::IntToString(kExpectedSequenceId).c_str(),
+                          base::NumberToString(kExpectedSequenceId).c_str(),
                           std::string());
 
   signal_strategy_.Disconnect();

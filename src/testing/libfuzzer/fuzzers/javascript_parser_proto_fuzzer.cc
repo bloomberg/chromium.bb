@@ -39,7 +39,8 @@ LLVMFuzzerInitialize(int* argc, char*** argv) {
   v8::V8::InitializeExternalStartupData((*argv)[0]);
   v8::V8::SetFlagsFromCommandLine(argc, *argv, true);
 
-  v8::Platform* platform = v8::platform::CreateDefaultPlatform();
+  // Intentionally leaked during fuzzing.
+  v8::Platform* platform = v8::platform::NewDefaultPlatform().release();
   v8::V8::InitializePlatform(platform);
   v8::V8::Initialize();
 

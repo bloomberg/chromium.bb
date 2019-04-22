@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/public/cpp/shelf_model.h"
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"

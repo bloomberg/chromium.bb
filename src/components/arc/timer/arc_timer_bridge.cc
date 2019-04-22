@@ -4,6 +4,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -11,10 +12,10 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
-#include "components/arc/arc_bridge_service.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/timer/arc_timer_bridge.h"
 #include "components/arc/timer/arc_timer_struct_traits.h"
 #include "mojo/public/cpp/system/handle.h"
@@ -127,6 +128,7 @@ void ArcTimerBridge::CreateTimers(
   // Convert mojo arguments to D-Bus arguments required by powerd to create
   // timers.
   std::vector<std::pair<clockid_t, base::ScopedFD>> requests;
+  std::vector<clockid_t> clock_ids;
   for (auto& request : arc_timer_requests) {
     clockid_t clock_id = request->clock_id;
     base::ScopedFD expiration_fd =
@@ -137,11 +139,13 @@ void ArcTimerBridge::CreateTimers(
       return;
     }
     requests.emplace_back(clock_id, std::move(expiration_fd));
+    clock_ids.emplace_back(clock_id);
   }
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->DeleteArcTimers(
-      kTag, base::BindOnce(&ArcTimerBridge::OnDeleteBeforeCreateArcTimers,
-                           weak_ptr_factory_.GetWeakPtr(), std::move(requests),
-                           std::move(callback)));
+  chromeos::PowerManagerClient::Get()->CreateArcTimers(
+      kTag, std::move(requests),
+      base::BindOnce(&ArcTimerBridge::OnCreateArcTimers,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(clock_ids),
+                     std::move(callback)));
 }
 
 void ArcTimerBridge::StartTimer(clockid_t clock_id,
@@ -153,13 +157,13 @@ void ArcTimerBridge::StartTimer(clockid_t clock_id,
     std::move(callback).Run(mojom::ArcTimerResult::FAILURE);
     return;
   }
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->StartArcTimer(
+  chromeos::PowerManagerClient::Get()->StartArcTimer(
       timer_id.value(), absolute_expiration_time,
       base::BindOnce(&OnStartTimer, std::move(callback)));
 }
 
 void ArcTimerBridge::DeleteArcTimers() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->DeleteArcTimers(
+  chromeos::PowerManagerClient::Get()->DeleteArcTimers(
       kTag, base::BindOnce(&ArcTimerBridge::OnDeleteArcTimers,
                            weak_ptr_factory_.GetWeakPtr()));
 }
@@ -176,36 +180,15 @@ void ArcTimerBridge::OnDeleteArcTimers(bool result) {
   timer_ids_.clear();
 }
 
-void ArcTimerBridge::OnDeleteBeforeCreateArcTimers(
-    std::vector<std::pair<clockid_t, base::ScopedFD>>
-        create_arc_timers_requests,
-    CreateTimersCallback callback,
-    bool result) {
-  if (!result) {
-    LOG(ERROR) << "Delete timers before create failed";
-    std::move(callback).Run(mojom::ArcTimerResult::FAILURE);
-    return;
-  }
-
-  DVLOG(1) << "Delete before create timers succeeded";
-  // If the delete call succeeded then delete any timer ids stored and make a
-  // create timers call.
-  timer_ids_.clear();
-  std::vector<clockid_t> clock_ids;
-  for (const auto& request : create_arc_timers_requests)
-    clock_ids.emplace_back(request.first);
-
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->CreateArcTimers(
-      kTag, std::move(create_arc_timers_requests),
-      base::BindOnce(&ArcTimerBridge::OnCreateArcTimers,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(clock_ids),
-                     std::move(callback)));
-}
-
 void ArcTimerBridge::OnCreateArcTimers(
     std::vector<clockid_t> clock_ids,
     CreateTimersCallback callback,
     base::Optional<std::vector<TimerId>> timer_ids) {
+  // Any old timers associated with the same tag are always cleared by the API
+  // regardless of the new timers being created successfully or not. Clear the
+  // cached timer ids in that case.
+  timer_ids_.clear();
+
   // The API returns a list of timer ids corresponding to each clock in
   // |clock_ids|.
   if (!timer_ids.has_value()) {

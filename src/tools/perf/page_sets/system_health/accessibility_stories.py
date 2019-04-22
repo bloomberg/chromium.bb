@@ -17,10 +17,15 @@ class _AccessibilityStory(system_health_story.SystemHealthStory):
   ABSTRACT_STORY = True
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
-  def __init__(self, story_set, take_memory_measurement):
+  def __init__(self, story_set, take_memory_measurement,
+    extra_browser_args=None):
+    FORCE_A11Y = '--force-renderer-accessibility'
+    if extra_browser_args is None:
+      extra_browser_args = [FORCE_A11Y]
+    else:
+      extra_browser_args.append(FORCE_A11Y)
     super(_AccessibilityStory, self).__init__(
-        story_set, take_memory_measurement,
-        extra_browser_args=['--force-renderer-accessibility'])
+        story_set, take_memory_measurement, extra_browser_args)
 
 
 class AccessibilityScrollingCodeSearchStory(_AccessibilityStory):
@@ -80,6 +85,14 @@ class AccessibilityYouTubeHomepageStory(_AccessibilityStory):
   URL = 'https://www.youtube.com/'
   TAGS = [story_tags.ACCESSIBILITY, story_tags.KEYBOARD_INPUT,
           story_tags.YEAR_2016]
+
+  # TODO(yoichio): Remove this flags when YouTube finish V0 migration.
+  # crbug.com/911943.
+  def __init__(self, story_set, take_memory_measurement):
+    super(AccessibilityYouTubeHomepageStory, self).__init__(
+        story_set, take_memory_measurement,
+        extra_browser_args=[
+          '--enable-blink-features=HTMLImports,CustomElementsV0'])
 
   def RunNavigateSteps(self, action_runner):
     action_runner.Navigate('https://www.youtube.com/')

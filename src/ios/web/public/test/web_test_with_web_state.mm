@@ -56,6 +56,8 @@ void WebTestWithWebState::SetUp() {
 
   // Force generation of child views; necessary for some tests.
   web_state_->GetView();
+
+  web_state()->SetKeepRenderProcessAlive(true);
 }
 
 void WebTestWithWebState::TearDown() {
@@ -79,81 +81,51 @@ void WebTestWithWebState::AddTransientItem(const GURL& url) {
 }
 
 bool WebTestWithWebState::LoadHtmlWithoutSubresources(const std::string& html) {
-  if (@available(iOS 11, *)) {
-    NSString* block_all = @"[{"
-                           "  \"trigger\": {"
-                           "    \"url-filter\": \".*\""
-                           "  },"
-                           "  \"action\": {"
-                           "    \"type\": \"block\""
-                           "  }"
-                           "}]";
-    __block WKContentRuleList* content_rule_list = nil;
-    __block NSError* error = nil;
-    __block BOOL rule_compilation_completed = NO;
-    [WKContentRuleListStore.defaultStore
-        compileContentRuleListForIdentifier:@"block_everything"
-                     encodedContentRuleList:block_all
-                          completionHandler:^(WKContentRuleList* rule_list,
-                                              NSError* err) {
-                            error = err;
-                            content_rule_list = rule_list;
-                            rule_compilation_completed = YES;
-                          }];
+  NSString* block_all = @"[{"
+                         "  \"trigger\": {"
+                         "    \"url-filter\": \".*\""
+                         "  },"
+                         "  \"action\": {"
+                         "    \"type\": \"block\""
+                         "  }"
+                         "}]";
+  __block WKContentRuleList* content_rule_list = nil;
+  __block NSError* error = nil;
+  __block BOOL rule_compilation_completed = NO;
+  [WKContentRuleListStore.defaultStore
+      compileContentRuleListForIdentifier:@"block_everything"
+                   encodedContentRuleList:block_all
+                        completionHandler:^(WKContentRuleList* rule_list,
+                                            NSError* err) {
+                          error = err;
+                          content_rule_list = rule_list;
+                          rule_compilation_completed = YES;
+                        }];
 
-    bool success = WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
-      return rule_compilation_completed;
-    });
-    if (!success) {
-      DLOG(WARNING) << "ContentRuleList compilation timed out.";
-      return false;
-    }
-    if (error) {
-      DLOG(WARNING) << "ContentRuleList compilation failed with error: "
-                    << base::SysNSStringToUTF8(error.description);
-      return false;
-    }
-    DCHECK(content_rule_list);
-    WKWebViewConfigurationProvider& configuration_provider =
-        WKWebViewConfigurationProvider::FromBrowserState(GetBrowserState());
-    WKWebViewConfiguration* configuration =
-        configuration_provider.GetWebViewConfiguration();
-    [configuration.userContentController addContentRuleList:content_rule_list];
-    bool result = LoadHtml(html);
-    [configuration.userContentController
-        removeContentRuleList:content_rule_list];
-    return result;
+  bool success = WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
+    return rule_compilation_completed;
+  });
+  if (!success) {
+    DLOG(WARNING) << "ContentRuleList compilation timed out.";
+    return false;
   }
-  return LoadHtml(html);
+  if (error) {
+    DLOG(WARNING) << "ContentRuleList compilation failed with error: "
+                  << base::SysNSStringToUTF8(error.description);
+    return false;
+  }
+  DCHECK(content_rule_list);
+  WKWebViewConfigurationProvider& configuration_provider =
+      WKWebViewConfigurationProvider::FromBrowserState(GetBrowserState());
+  WKWebViewConfiguration* configuration =
+      configuration_provider.GetWebViewConfiguration();
+  [configuration.userContentController addContentRuleList:content_rule_list];
+  bool result = LoadHtml(html);
+  [configuration.userContentController removeContentRuleList:content_rule_list];
+  return result;
 }
 
 void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
-  // Sets MIME type to "text/html" once navigation is committed.
-  class MimeTypeUpdater : public WebStateObserver {
-   public:
-    MimeTypeUpdater() = default;
-
-    // WebStateObserver overrides:
-    void NavigationItemCommitted(WebState* web_state,
-                                 const LoadCommittedDetails&) override {
-      // loadHTML:forURL: does not notify web view delegate about received
-      // response, so web controller does not get a chance to properly update
-      // MIME type and it should be set manually after navigation is committed
-      // but before WebState signal load completion and clients will start
-      // checking if MIME type is in fact HTML.
-      static_cast<WebStateImpl*>(web_state)->SetContentsMimeType("text/html");
-    }
-    void WebStateDestroyed(WebState* web_state) override { NOTREACHED(); }
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(MimeTypeUpdater);
-  };
-
-  MimeTypeUpdater mime_type_updater;
-  ScopedObserver<WebState, WebStateObserver> scoped_observer(
-      &mime_type_updater);
-  scoped_observer.Add(web_state());
-
   // Initiate asynchronous HTML load.
   CRWWebController* web_controller = GetWebController(web_state());
   ASSERT_EQ(PAGE_LOADED, web_controller.loadPhase);

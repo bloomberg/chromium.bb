@@ -5,10 +5,13 @@
 #include "device/bluetooth/dbus/bluetooth_agent_manager_client.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_manager.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -18,11 +21,25 @@ const char BluetoothAgentManagerClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
 
 // The BluetoothAgentManagerClient implementation used in production.
-class BluetoothAgentManagerClientImpl : public BluetoothAgentManagerClient {
+class BluetoothAgentManagerClientImpl : public BluetoothAgentManagerClient,
+                                        public dbus::ObjectManager::Interface {
  public:
   BluetoothAgentManagerClientImpl() : weak_ptr_factory_(this) {}
 
   ~BluetoothAgentManagerClientImpl() override = default;
+
+  // BluetoothAgentManagerClient override.
+  void AddObserver(BluetoothAgentManagerClient::Observer* observer) override {
+    DCHECK(observer);
+    observers_.AddObserver(observer);
+  }
+
+  // BluetoothAgentManagerClient override.
+  void RemoveObserver(
+      BluetoothAgentManagerClient::Observer* observer) override {
+    DCHECK(observer);
+    observers_.RemoveObserver(observer);
+  }
 
   // BluetoothAgentManagerClient override.
   void RegisterAgent(const dbus::ObjectPath& agent_path,
@@ -91,9 +108,41 @@ class BluetoothAgentManagerClientImpl : public BluetoothAgentManagerClient {
         bluetooth_service_name,
         dbus::ObjectPath(
             bluetooth_agent_manager::kBluetoothAgentManagerServicePath));
+
+    object_manager_ = bus->GetObjectManager(
+        bluetooth_service_name,
+        dbus::ObjectPath(
+            bluetooth_object_manager::kBluetoothObjectManagerServicePath));
+    object_manager_->RegisterInterface(
+        bluetooth_agent_manager::kBluetoothAgentManagerInterface, this);
   }
 
  private:
+  // Called by dbus::ObjectManager when an object with the agent manager
+  // interface is created. Informs observers.
+  void ObjectAdded(const dbus::ObjectPath& object_path,
+                   const std::string& interface_name) override {
+    for (auto& observer : observers_)
+      observer.AgentManagerAdded(object_path);
+  }
+
+  // Called by dbus::ObjectManager when an object with the adapter interface
+  // is removed. Informs observers.
+  void ObjectRemoved(const dbus::ObjectPath& object_path,
+                     const std::string& interface_name) override {
+    for (auto& observer : observers_)
+      observer.AgentManagerRemoved(object_path);
+  }
+
+  // dbus::ObjectManager::Interface override.
+  dbus::PropertySet* CreateProperties(
+      dbus::ObjectProxy* object_proxy,
+      const dbus::ObjectPath& object_path,
+      const std::string& interface_name) override {
+    return new dbus::PropertySet(object_proxy, interface_name,
+                                 base::DoNothing());
+  }
+
   // Called when a response for successful method call is received.
   void OnSuccess(const base::Closure& callback, dbus::Response* response) {
     DCHECK(response);
@@ -118,6 +167,11 @@ class BluetoothAgentManagerClientImpl : public BluetoothAgentManagerClient {
   }
 
   dbus::ObjectProxy* object_proxy_;
+
+  dbus::ObjectManager* object_manager_;
+
+  // List of observers interested in event notifications from us.
+  base::ObserverList<BluetoothAgentManagerClient::Observer> observers_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.

@@ -92,7 +92,7 @@ class RenderFrameProxyHost
     return site_instance_.get();
   }
 
-  FrameTreeNode* frame_tree_node() const { return frame_tree_node_; };
+  FrameTreeNode* frame_tree_node() const { return frame_tree_node_; }
 
   // Associates the RenderWidgetHostViewChildFrame |view| with this
   // RenderFrameProxyHost. If |initial_frame_size| isn't specified at this time,

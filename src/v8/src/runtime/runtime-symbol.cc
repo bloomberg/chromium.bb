@@ -4,6 +4,7 @@
 
 #include "src/arguments-inl.h"
 #include "src/counters.h"
+#include "src/heap/heap-inl.h"  // For ToBoolean. TODO(jkummerow): Drop.
 #include "src/isolate-inl.h"
 #include "src/objects-inl.h"
 #include "src/runtime/runtime-utils.h"
@@ -26,8 +27,9 @@ RUNTIME_FUNCTION(Runtime_CreatePrivateSymbol) {
 
 RUNTIME_FUNCTION(Runtime_CreatePrivateNameSymbol) {
   HandleScope scope(isolate);
-  DCHECK_EQ(0, args.length());
-  Handle<Symbol> symbol = isolate->factory()->NewPrivateNameSymbol();
+  DCHECK_EQ(1, args.length());
+  CONVERT_ARG_HANDLE_CHECKED(String, name, 0);
+  Handle<Symbol> symbol = isolate->factory()->NewPrivateNameSymbol(name);
   return *symbol;
 }
 

@@ -220,7 +220,8 @@ TEST_F('ChromeVoxOutputE2ETest', 'Headings', function() {
   });
 });
 
-TEST_F('ChromeVoxOutputE2ETest', 'Audio', function() {
+// TODO(crbug.com/901725): test is flaky.
+TEST_F('ChromeVoxOutputE2ETest', 'DISABLED_Audio', function() {
   this.runWithLoadedTree('<audio src="foo.mp3" controls></audio>',
     function(root) {
       var el = root.find({role: 'button'});
@@ -995,5 +996,71 @@ TEST_F('ChromeVoxOutputE2ETest', 'ARCListItem', function() {
     assertEquals('storage 128 GB|List item|Press Search+Space to activate.',
                  o.speechOutputForTest.string_);
     assertEquals('storage 128 GB lstitm', o.brailleOutputForTest.string_);
+  });
+});
+
+TEST_F('ChromeVoxOutputE2ETest', 'NestedList', function() {
+  this.runWithLoadedTree(function() {/*!
+    <ul role="tree">schedule
+      <li role="treeitem">wake up
+      <li role="treeitem">drink coffee
+      <ul role="tree">tasks
+        <li role="treeitem" aria-level='2'>meeting
+        <li role="treeitem" aria-level='2'>lunch
+      </ul>
+      <li role="treeitem">cook dinner
+    </ul>
+  */},
+
+  function(root) {
+    var lists = root.findAll({role: 'tree'});
+    var outer_list = lists[0];
+    var inner_list = lists[1];
+
+    var el = outer_list.children[0];
+    var start_range = cursors.Range.fromNode(el);
+    var o = new Output().withSpeech(start_range, null, 'navigate');
+    assertEquals('schedule|Tree|with 3 items', o.speechOutputForTest.string_);
+
+    el = outer_list.children[1];
+    start_range = cursors.Range.fromNode(el);
+    o = new Output().withSpeech(start_range,
+      cursors.Range.fromNode(outer_list.children[0]), 'navigate');
+    assertEquals('wake up|Tree item|Not selected| 1 of 3 | level 1 ',
+      o.speechOutputForTest.string_);
+
+    el = outer_list.children[2];
+    start_range = cursors.Range.fromNode(el);
+    o = new Output().withSpeech(start_range,
+      cursors.Range.fromNode(outer_list.children[0]), 'navigate');
+    assertEquals('drink coffee|Tree item|Not selected| 2 of 3 | level 1 ',
+      o.speechOutputForTest.string_);
+
+    el = outer_list.children[3];
+    start_range = cursors.Range.fromNode(el);
+    o = new Output().withSpeech(start_range,
+      cursors.Range.fromNode(outer_list.children[0]), 'navigate');
+    assertEquals('cook dinner|Tree item|Not selected| 3 of 3 | level 1 ',
+      o.speechOutputForTest.string_);
+
+    el = inner_list.children[0];
+    start_range = cursors.Range.fromNode(el);
+    o = new Output().withSpeech(start_range,
+      cursors.Range.fromNode(outer_list.children[2]), 'navigate');
+    assertEquals('tasks|Tree|with 2 items',o.speechOutputForTest.string_);
+
+    el = inner_list.children[1];
+    start_range = cursors.Range.fromNode(el);
+    o = new Output().withSpeech(start_range,
+      cursors.Range.fromNode(inner_list.children[0]), 'navigate');
+    assertEquals('meeting|Tree item|Not selected| 1 of 2 | level 2 ',
+      o.speechOutputForTest.string_);
+
+    el = inner_list.children[2];
+    start_range = cursors.Range.fromNode(el);
+    o = new Output().withSpeech(start_range,
+      cursors.Range.fromNode(inner_list.children[0]), 'navigate');
+    assertEquals('lunch|Tree item|Not selected| 2 of 2 | level 2 ',
+      o.speechOutputForTest.string_);
   });
 });

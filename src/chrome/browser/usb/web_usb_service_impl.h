@@ -34,7 +34,8 @@ class UsbChooserContext;
 // permission model as well as permission granted by the user through a device
 // chooser UI.
 class WebUsbServiceImpl : public blink::mojom::WebUsbService,
-                          public UsbChooserContext::Observer,
+                          public ChooserContextBase::PermissionObserver,
+                          public UsbChooserContext::DeviceObserver,
                           public device::mojom::UsbDeviceClient {
  public:
   WebUsbServiceImpl(content::RenderFrameHost* render_frame_host,
@@ -61,12 +62,14 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
       GetDevicesCallback callback,
       std::vector<device::mojom::UsbDeviceInfoPtr> device_info_list);
 
-  // UsbChooserContext::Observer implementation:
+  // ChooserContextBase::PermissionObserver implementation:
+  void OnPermissionRevoked(const GURL& requesting_origin,
+                           const GURL& embedding_origin) override;
+
+  // UsbChooserContext::DeviceObserver implementation:
   void OnDeviceAdded(const device::mojom::UsbDeviceInfo& device_info) override;
   void OnDeviceRemoved(
       const device::mojom::UsbDeviceInfo& device_info) override;
-  void OnPermissionRevoked(const GURL& requesting_origin,
-                           const GURL& embedding_origin) override;
   void OnDeviceManagerConnectionError() override;
 
   // device::mojom::UsbDeviceClient implementation:
@@ -89,7 +92,10 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
   // Tracks DeviceClient bindings for each device (by GUID).
   std::unordered_map<std::string, DeviceClientBindings> device_client_bindings_;
 
-  ScopedObserver<UsbChooserContext, UsbChooserContext::Observer> observer_;
+  ScopedObserver<UsbChooserContext, UsbChooserContext::DeviceObserver>
+      device_observer_;
+  ScopedObserver<ChooserContextBase, ChooserContextBase::PermissionObserver>
+      permission_observer_;
 
   base::WeakPtrFactory<WebUsbServiceImpl> weak_factory_;
 

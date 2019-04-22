@@ -59,6 +59,7 @@ TEST_F(SSLBlockingPageTest, VerifySecurityInterstitialExtensionEvents) {
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   base::RepeatingCallback<void(content::CertificateRequestResultType)>
       callback = base::BindRepeating(&EmptyCallback);
+  ssl_info.cert_status = net::CERT_STATUS_DATE_INVALID;
 
   // Simulates the showing of a SSL blocking page.
   SSLBlockingPage* blocking_page = SSLBlockingPage::Create(
@@ -76,7 +77,7 @@ TEST_F(SSLBlockingPageTest, VerifySecurityInterstitialExtensionEvents) {
 
   // Simulates a proceed action.
   blocking_page->CommandReceived(
-      base::IntToString(security_interstitials::CMD_PROCEED));
+      base::NumberToString(security_interstitials::CMD_PROCEED));
 
   // Verifies that security interstitial proceeded event is observed.
   observer.VerifyLatestSecurityInterstitialEvent(

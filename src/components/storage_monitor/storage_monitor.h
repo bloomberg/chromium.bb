@@ -21,7 +21,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_CHROMEOS)
-#include "services/device/public/mojom/mtp_manager.mojom.h"
+#include "services/device/public/mojom/mtp_manager.mojom-forward.h"
 #endif
 
 class MediaFileSystemRegistryTest;

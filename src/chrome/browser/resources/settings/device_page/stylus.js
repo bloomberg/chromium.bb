@@ -141,7 +141,7 @@ Polymer({
    * @private
    */
   toggleLockScreenSupport_: function() {
-    assert(!!this.selectedApp_);
+    assert(this.selectedApp_);
     if (this.selectedApp_.lockScreenSupport !=
             settings.NoteAppLockScreenSupport.ENABLED &&
         this.selectedApp_.lockScreenSupport !=
@@ -159,8 +159,9 @@ Polymer({
     const app = this.findApp_(this.$.selectApp.value);
     this.selectedApp_ = app;
 
-    if (app && !app.preferred)
+    if (app && !app.preferred) {
       this.browserProxy_.setPreferredNoteTakingApp(app.value);
+    }
   },
 
   /**

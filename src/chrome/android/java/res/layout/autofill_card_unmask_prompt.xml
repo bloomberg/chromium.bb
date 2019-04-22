@@ -72,12 +72,12 @@
                   android:gravity="center_horizontal"
                   android:imeOptions="actionNext"
                   android:inputType="number"
-                  android:hint="@string/card_unmask_month_hint" />
+                  android:hint="@string/autofill_expiration_date_month_hint" />
 
               <TextView
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:text="@string/autofill_card_unmask_expiration_date_separator" />
+                  android:text="@string/autofill_expiration_date_separator" />
 
               <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
               <EditText
@@ -90,7 +90,7 @@
                   android:gravity="center_horizontal"
                   android:imeOptions="actionNext"
                   android:inputType="number"
-                  android:hint="@string/card_unmask_year_hint" />
+                  android:hint="@string/autofill_expiration_date_year_hint" />
             </LinearLayout>
 
             <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
@@ -103,6 +103,7 @@
                 android:layout_marginStart="16dp"
                 android:ems="5"
                 android:imeOptions="actionDone"
+                android:imeActionLabel="@string/autofill_save_card_prompt_confirm"
                 android:hint="@string/card_unmask_input_hint" />
 
             <ImageView
@@ -119,7 +120,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
-                android:textAppearance="@style/BlueLink2"
+                android:textAppearance="@style/TextAppearance.BlueLink2"
                 android:text="@string/autofill_card_unmask_new_card_link"
                 android:visibility="gone" />
         </LinearLayout>
@@ -201,6 +202,6 @@
             android:id="@+id/verification_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/BlueTitle2" />
+            android:textAppearance="@style/TextAppearance.BlueTitle2" />
     </LinearLayout>
 </RelativeLayout>

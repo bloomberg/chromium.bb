@@ -52,6 +52,8 @@ std::string PermissionUtil::GetPermissionString(
       return "PaymentHandler";
     case CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH:
       return "BackgroundFetch";
+    case CONTENT_SETTINGS_TYPE_IDLE_DETECTION:
+      return "IdleDetection";
     default:
       break;
   }

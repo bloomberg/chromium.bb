@@ -12,11 +12,10 @@
 
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
 
+#include "base/logging.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"
-#include "third_party/webrtc/rtc_base/checks.h"
-#include "third_party/webrtc/rtc_base/logging.h"
 
-namespace rtc {
+namespace jingle_xmpp {
 
 TaskRunner::TaskRunner()
     : TaskParent(this) {}
@@ -29,11 +28,6 @@ TaskRunner::~TaskRunner() {
 
 void TaskRunner::StartTask(Task * task) {
   tasks_.push_back(task);
-
-  // the task we just started could be about to timeout --
-  // make sure our "next timeout task" is correct
-  UpdateTaskTimeout(task, 0);
-
   WakeTasks();
 }
 
@@ -47,8 +41,8 @@ void TaskRunner::InternalRunTasks(bool in_destructor) {
   // but pointers to them will still be in the
   // "ChildSet copy" in TaskParent::AbortAllChildren.
   // Subsequent use of those task may cause data corruption or crashes.
-#if RTC_DCHECK_IS_ON
-  RTC_DCHECK(!abort_count_);
+#if DCHECK_IS_ON
+  DCHECK(!abort_count_);
 #endif
   // Running continues until all tasks are Blocked (ok for a small # of tasks)
   if (tasks_running_) {
@@ -56,8 +50,6 @@ void TaskRunner::InternalRunTasks(bool in_destructor) {
   }
 
   tasks_running_ = true;
-
-  int64_t previous_timeout_time = next_task_timeout();
 
   int did_run = true;
   while (did_run) {
@@ -71,21 +63,14 @@ void TaskRunner::InternalRunTasks(bool in_destructor) {
     }
   }
   // Tasks are deleted when running has paused
-  bool need_timeout_recalc = false;
   for (size_t i = 0; i < tasks_.size(); ++i) {
     if (tasks_[i]->IsDone()) {
       Task* task = tasks_[i];
-      if (next_timeout_task_ &&
-          task->unique_id() == next_timeout_task_->unique_id()) {
-        next_timeout_task_ = NULL;
-        need_timeout_recalc = true;
-      }
-
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
       deleting_task_ = task;
 #endif
       delete task;
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
       deleting_task_ = NULL;
 #endif
       tasks_[i] = NULL;
@@ -93,125 +78,10 @@ void TaskRunner::InternalRunTasks(bool in_destructor) {
   }
   // Finally, remove nulls
   std::vector<Task *>::iterator it;
-  it = std::remove(tasks_.begin(),
-                   tasks_.end(),
-                   reinterpret_cast<Task *>(NULL));
+  it = std::remove(tasks_.begin(), tasks_.end(), static_cast<Task*>(NULL));
 
   tasks_.erase(it, tasks_.end());
-
-  if (need_timeout_recalc)
-    RecalcNextTimeout(NULL);
-
-  // Make sure that adjustments are done to account
-  // for any timeout changes (but don't call this
-  // while being destroyed since it calls a pure virtual function).
-  if (!in_destructor)
-    CheckForTimeoutChange(previous_timeout_time);
-
   tasks_running_ = false;
 }
 
-void TaskRunner::PollTasks() {
-  // see if our "next potentially timed-out task" has indeed timed out.
-  // If it has, wake it up, then queue up the next task in line
-  // Repeat while we have new timed-out tasks.
-  // TODO: We need to guard against WakeTasks not updating
-  // next_timeout_task_. Maybe also add documentation in the header file once
-  // we understand this code better.
-  Task* old_timeout_task = NULL;
-  while (next_timeout_task_ &&
-      old_timeout_task != next_timeout_task_ &&
-      next_timeout_task_->TimedOut()) {
-    old_timeout_task = next_timeout_task_;
-    next_timeout_task_->Wake();
-    WakeTasks();
-  }
-}
-
-int64_t TaskRunner::next_task_timeout() const {
-  if (next_timeout_task_) {
-    return next_timeout_task_->timeout_time();
-  }
-  return 0;
-}
-
-// this function gets called frequently -- when each task changes
-// state to something other than DONE, ERROR or BLOCKED, it calls
-// ResetTimeout(), which will call this function to make sure that
-// the next timeout-able task hasn't changed.  The logic in this function
-// prevents RecalcNextTimeout() from getting called in most cases,
-// effectively making the task scheduler O-1 instead of O-N
-
-void TaskRunner::UpdateTaskTimeout(Task* task,
-                                   int64_t previous_task_timeout_time) {
-  RTC_DCHECK(task != NULL);
-  int64_t previous_timeout_time = next_task_timeout();
-  bool task_is_timeout_task = next_timeout_task_ != NULL &&
-      task->unique_id() == next_timeout_task_->unique_id();
-  if (task_is_timeout_task) {
-    previous_timeout_time = previous_task_timeout_time;
-  }
-
-  // if the relevant task has a timeout, then
-  // check to see if it's closer than the current
-  // "about to timeout" task
-  if (task->timeout_time()) {
-    if (next_timeout_task_ == NULL ||
-        (task->timeout_time() <= next_timeout_task_->timeout_time())) {
-      next_timeout_task_ = task;
-    }
-  } else if (task_is_timeout_task) {
-    // otherwise, if the task doesn't have a timeout,
-    // and it used to be our "about to timeout" task,
-    // walk through all the tasks looking for the real
-    // "about to timeout" task
-    RecalcNextTimeout(task);
-  }
-
-  // Note when task_running_, then the running routine
-  // (TaskRunner::InternalRunTasks) is responsible for calling
-  // CheckForTimeoutChange.
-  if (!tasks_running_) {
-    CheckForTimeoutChange(previous_timeout_time);
-  }
-}
-
-void TaskRunner::RecalcNextTimeout(Task *exclude_task) {
-  // walk through all the tasks looking for the one
-  // which satisfies the following:
-  //   it's not finished already
-  //   we're not excluding it
-  //   it has the closest timeout time
-
-  int64_t next_timeout_time = 0;
-  next_timeout_task_ = NULL;
-
-  for (size_t i = 0; i < tasks_.size(); ++i) {
-    Task *task = tasks_[i];
-    // if the task isn't complete, and it actually has a timeout time
-    if (!task->IsDone() && (task->timeout_time() > 0))
-      // if it doesn't match our "exclude" task
-      if (exclude_task == NULL ||
-          exclude_task->unique_id() != task->unique_id())
-        // if its timeout time is sooner than our current timeout time
-        if (next_timeout_time == 0 ||
-            task->timeout_time() <= next_timeout_time) {
-          // set this task as our next-to-timeout
-          next_timeout_time = task->timeout_time();
-          next_timeout_task_ = task;
-        }
-  }
-}
-
-void TaskRunner::CheckForTimeoutChange(int64_t previous_timeout_time) {
-  int64_t next_timeout = next_task_timeout();
-  bool timeout_change = (previous_timeout_time == 0 && next_timeout != 0) ||
-      next_timeout < previous_timeout_time ||
-      (previous_timeout_time <= CurrentTime() &&
-       previous_timeout_time != next_timeout);
-  if (timeout_change) {
-    OnTimeoutChange();
-  }
-}
-
-} // namespace rtc
+} // namespace jingle_xmpp

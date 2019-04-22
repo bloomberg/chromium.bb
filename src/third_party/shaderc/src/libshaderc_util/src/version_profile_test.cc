@@ -71,7 +71,7 @@ TEST_P(ParseVersionProfileTest, Sample) {
 // For OpenGL ES GLSL (ESSL) versions, see
 // https://www.khronos.org/registry/OpenGL/index_e.php
 
-INSTANTIATE_TEST_CASE_P(OpenGLESCases, ParseVersionProfileTest,
+INSTANTIATE_TEST_SUITE_P(OpenGLESCases, ParseVersionProfileTest,
                         ValuesIn(std::vector<ParseVersionProfileCase>{
                             {"100es", true, 100, EEsProfile},
                             {"300es", true, 300, EEsProfile},
@@ -79,12 +79,12 @@ INSTANTIATE_TEST_CASE_P(OpenGLESCases, ParseVersionProfileTest,
                             {"320es", true, 320, EEsProfile},
                             {"99es", false, 0, EBadProfile},
                             {"500es", false, 0, EBadProfile},
-                        }), );
+                        }));
 
 // For OpenGL GLSL versions, see
 // https://www.khronos.org/registry/OpenGL/index_gl.php
 
-INSTANTIATE_TEST_CASE_P(OpenGLBlankCases, ParseVersionProfileTest,
+INSTANTIATE_TEST_SUITE_P(OpenGLBlankCases, ParseVersionProfileTest,
                         ValuesIn(std::vector<ParseVersionProfileCase>{
                             {"110", true, 110, ENoProfile},
                             {"120", true, 120, ENoProfile},
@@ -101,9 +101,9 @@ INSTANTIATE_TEST_CASE_P(OpenGLBlankCases, ParseVersionProfileTest,
                             {"460", true, 460, ENoProfile},
                             {"99", false, 0, EBadProfile},
                             {"500", false, 0, EBadProfile},
-                        }), );
+                        }));
 
-INSTANTIATE_TEST_CASE_P(OpenGLCoreCases, ParseVersionProfileTest,
+INSTANTIATE_TEST_SUITE_P(OpenGLCoreCases, ParseVersionProfileTest,
                         ValuesIn(std::vector<ParseVersionProfileCase>{
                             {"320core", true, 320, ECoreProfile},
                             {"330core", true, 330, ECoreProfile},
@@ -114,9 +114,9 @@ INSTANTIATE_TEST_CASE_P(OpenGLCoreCases, ParseVersionProfileTest,
                             {"440core", true, 440, ECoreProfile},
                             {"450core", true, 450, ECoreProfile},
                             {"460core", true, 460, ECoreProfile},
-                        }), );
+                        }));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     OpenGLCompatibilityCases, ParseVersionProfileTest,
     ValuesIn(std::vector<ParseVersionProfileCase>{
         {"320compatibility", true, 320, ECompatibilityProfile},
@@ -128,6 +128,6 @@ INSTANTIATE_TEST_CASE_P(
         {"440compatibility", true, 440, ECompatibilityProfile},
         {"450compatibility", true, 450, ECompatibilityProfile},
         {"460compatibility", true, 460, ECompatibilityProfile},
-    }), );
+    }));
 
 }  // anonymous namespace

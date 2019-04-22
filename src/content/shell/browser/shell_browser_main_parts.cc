@@ -49,7 +49,7 @@
 #include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
 #endif
 #if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #endif
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -116,7 +116,7 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize();
-  bluez::BluezDBusManager::Initialize();
+  bluez::BluezDBusManager::InitializeFake();
 #elif defined(OS_LINUX)
   bluez::DBusBluezManagerWrapperLinux::Initialize();
 #endif
@@ -154,11 +154,8 @@ int ShellBrowserMainParts::PreCreateThreads() {
       base::CommandLine::ForCurrentProcess();
   crash_reporter::ChildExitObserver::Create();
   if (command_line->HasSwitch(switches::kEnableCrashReporter)) {
-    base::FilePath crash_dumps_dir =
-        command_line->GetSwitchValuePath(switches::kCrashDumpsDir);
     crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
-        std::make_unique<crash_reporter::ChildProcessCrashObserver>(
-            crash_dumps_dir, kAndroidMinidumpDescriptor));
+        std::make_unique<crash_reporter::ChildProcessCrashObserver>());
   }
 #endif
 

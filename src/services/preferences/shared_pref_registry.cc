@@ -146,9 +146,8 @@ void SharedPrefRegistry::ProcessPublicPrefs(
                        << key << "\"";
 #endif
       registry_->RegisterForeignPref(key);
-      registry_->SetDefaultForeignPrefValue(
-          key, base::Value::ToUniquePtrValue(std::move(default_value)),
-          registration->flags);
+      registry_->SetDefaultForeignPrefValue(key, std::move(default_value),
+                                            registration->flags);
 
       observed_prefs->push_back(key);
       new_public_prefs.push_back(key);

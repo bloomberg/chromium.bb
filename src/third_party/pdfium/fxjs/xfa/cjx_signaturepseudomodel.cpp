@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "fxjs/cfx_v8.h"
-#include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cscript_signaturepseudomodel.h"
 
 const CJX_MethodSpec CJX_SignaturePseudoModel::MethodSpecs[] = {
@@ -26,6 +26,10 @@ CJX_SignaturePseudoModel::CJX_SignaturePseudoModel(
 }
 
 CJX_SignaturePseudoModel::~CJX_SignaturePseudoModel() {}
+
+bool CJX_SignaturePseudoModel::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
 
 CJS_Result CJX_SignaturePseudoModel::verifySignature(
     CFX_V8* runtime,

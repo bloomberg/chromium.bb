@@ -77,7 +77,7 @@ LiveRegions.LIVE_REGION_MIN_SAME_NODE_MS = 20;
  * @type {boolean}
  * @private
  */
-LiveRegions.announceLiveRegionsFromBackgroundTabs_ = true;
+LiveRegions.announceLiveRegionsFromBackgroundTabs_ = false;
 
 LiveRegions.prototype = {
   /**
@@ -87,8 +87,10 @@ LiveRegions.prototype = {
   onTreeChange: function(treeChange) {
     var type = treeChange.type;
     var node = treeChange.target;
-    if (!node.containerLiveStatus && type != TreeChangeType.SUBTREE_UPDATE_END)
+    if ((!node.containerLiveStatus || node.containerLiveStatus == 'off') &&
+        type != TreeChangeType.SUBTREE_UPDATE_END) {
       return;
+    }
 
     var currentRange = this.chromeVoxState_.currentRange;
 
@@ -140,11 +142,15 @@ LiveRegions.prototype = {
    * @private
    */
   processQueuedTreeChanges_: function() {
+    // Schedule all live regions after all events in the native C++ EventBundle.
     this.liveRegionNodeSet_ = new WeakSet();
-    this.changedNodes_.forEach(function(node) {
-      this.outputLiveRegionChange_(node, null);
-    }.bind(this));
-    this.changedNodes_ = [];
+    setTimeout(function() {
+      for (var i = 0; i < this.changedNodes_.length; i++) {
+        var node = this.changedNodes_[i];
+        this.outputLiveRegionChange_(node, null);
+      }
+      this.changedNodes_ = [];
+    }.bind(this), 0);
   },
 
   /**

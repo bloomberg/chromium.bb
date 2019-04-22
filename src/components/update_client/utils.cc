@@ -21,77 +21,16 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
-#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/update_client/component.h"
 #include "components/update_client/configurator.h"
+#include "components/update_client/network.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
-#include "net/base/load_flags.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace update_client {
-
-std::unique_ptr<network::SimpleURLLoader> SendProtocolRequest(
-    const GURL& url,
-    const base::flat_map<std::string, std::string>&
-        protocol_request_extra_headers,
-    const std::string& protocol_request,
-    network::SimpleURLLoader::BodyAsStringCallback callback,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("component_updater_utils", R"(
-        semantics {
-          sender: "Component Updater"
-          description:
-            "The component updater in Chrome is responsible for updating code "
-            "and data modules such as Flash, CrlSet, Origin Trials, etc. These "
-            "modules are updated on cycles independent of the Chrome release "
-            "tracks. It runs in the browser process and communicates with a "
-            "set of servers using the Omaha protocol to find the latest "
-            "versions of components, download them, and register them with the "
-            "rest of Chrome."
-          trigger: "Manual or automatic software updates."
-          data:
-            "Various OS and Chrome parameters such as version, bitness, "
-            "release tracks, etc."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: NO
-          setting: "This feature cannot be disabled."
-          chrome_policy {
-            ComponentUpdatesEnabled {
-              policy_options {mode: MANDATORY}
-              ComponentUpdatesEnabled: false
-            }
-          }
-        })");
-  // Create and initialize URL loader.
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = url;
-  resource_request->method = "POST";
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES |
-                                 net::LOAD_DISABLE_CACHE;
-  for (const auto& header : protocol_request_extra_headers)
-    resource_request->headers.SetHeader(header.first, header.second);
-
-  auto simple_loader = network::SimpleURLLoader::Create(
-      std::move(resource_request), traffic_annotation);
-  const int max_retry_on_network_change = 3;
-  simple_loader->SetRetryOptions(
-      max_retry_on_network_change,
-      network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
-  simple_loader->AttachStringForUpload(protocol_request, "application/xml");
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory.get(), std::move(callback));
-  return simple_loader;
-}
 
 bool HasDiffUpdate(const Component& component) {
   return !component.crx_diffurls().empty();

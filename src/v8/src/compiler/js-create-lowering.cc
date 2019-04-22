@@ -21,6 +21,8 @@
 #include "src/objects-inl.h"
 #include "src/objects/arguments.h"
 #include "src/objects/hash-table-inl.h"
+#include "src/objects/heap-number.h"
+#include "src/objects/js-collection-iterator.h"
 #include "src/objects/js-generator.h"
 #include "src/objects/js-promise.h"
 #include "src/objects/js-regexp-inl.h"
@@ -38,16 +40,6 @@ Node* GetArgumentsFrameState(Node* frame_state) {
   return outer_state_info.type() == FrameStateType::kArgumentsAdaptor
              ? outer_state
              : frame_state;
-}
-
-// Checks whether allocation using the given target and new.target can be
-// inlined.
-bool IsAllocationInlineable(const JSFunctionRef& target,
-                            const JSFunctionRef& new_target) {
-  CHECK_IMPLIES(new_target.has_initial_map(),
-                !new_target.initial_map().is_dictionary_map());
-  return new_target.has_initial_map() &&
-         new_target.initial_map().GetConstructor().equals(target);
 }
 
 // When initializing arrays, we'll unfold the loop if the number of
@@ -116,48 +108,32 @@ Reduction JSCreateLowering::Reduce(Node* node) {
 
 Reduction JSCreateLowering::ReduceJSCreate(Node* node) {
   DCHECK_EQ(IrOpcode::kJSCreate, node->opcode());
-  Node* const target = NodeProperties::GetValueInput(node, 0);
-  Type const target_type = NodeProperties::GetType(target);
   Node* const new_target = NodeProperties::GetValueInput(node, 1);
-  Type const new_target_type = NodeProperties::GetType(new_target);
   Node* const effect = NodeProperties::GetEffectInput(node);
   Node* const control = NodeProperties::GetControlInput(node);
-  // Extract constructor and original constructor function.
-  if (!target_type.IsHeapConstant() || !new_target_type.IsHeapConstant() ||
-      !target_type.AsHeapConstant()->Ref().IsJSFunction() ||
-      !new_target_type.AsHeapConstant()->Ref().IsJSFunction()) {
-    return NoChange();
-  }
 
-  JSFunctionRef constructor =
-      target_type.AsHeapConstant()->Ref().AsJSFunction();
-  if (!constructor.map().is_constructor()) return NoChange();
+  base::Optional<MapRef> initial_map =
+      NodeProperties::GetJSCreateMap(broker(), node);
+  if (!initial_map.has_value()) return NoChange();
+
   JSFunctionRef original_constructor =
-      new_target_type.AsHeapConstant()->Ref().AsJSFunction();
-  if (!original_constructor.map().is_constructor()) return NoChange();
-
-  // Check if we can inline the allocation.
-  if (!IsAllocationInlineable(constructor, original_constructor)) {
-    return NoChange();
-  }
-
+      HeapObjectMatcher(new_target).Ref(broker()).AsJSFunction();
   SlackTrackingPrediction slack_tracking_prediction =
       dependencies()->DependOnInitialMapInstanceSizePrediction(
           original_constructor);
-  MapRef initial_map = original_constructor.initial_map();
 
   // Emit code to allocate the JSObject instance for the
   // {original_constructor}.
   AllocationBuilder a(jsgraph(), effect, control);
   a.Allocate(slack_tracking_prediction.instance_size());
-  a.Store(AccessBuilder::ForMap(), initial_map);
+  a.Store(AccessBuilder::ForMap(), *initial_map);
   a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(),
           jsgraph()->EmptyFixedArrayConstant());
   a.Store(AccessBuilder::ForJSObjectElements(),
           jsgraph()->EmptyFixedArrayConstant());
   for (int i = 0; i < slack_tracking_prediction.inobject_property_count();
        ++i) {
-    a.Store(AccessBuilder::ForJSObjectInObjectProperty(initial_map, i),
+    a.Store(AccessBuilder::ForJSObjectInObjectProperty(*initial_map, i),
             jsgraph()->UndefinedConstant());
   }
 
@@ -205,7 +181,7 @@ Reduction JSCreateLowering::ReduceJSCreateArguments(Node* node) {
         // Actually allocate and initialize the arguments object.
         AllocationBuilder a(jsgraph(), effect, control);
         Node* properties = jsgraph()->EmptyFixedArrayConstant();
-        STATIC_ASSERT(JSSloppyArgumentsObject::kSize == 5 * kPointerSize);
+        STATIC_ASSERT(JSSloppyArgumentsObject::kSize == 5 * kTaggedSize);
         a.Allocate(JSSloppyArgumentsObject::kSize);
         a.Store(AccessBuilder::ForMap(), arguments_map);
         a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(), properties);
@@ -234,7 +210,7 @@ Reduction JSCreateLowering::ReduceJSCreateArguments(Node* node) {
         // Actually allocate and initialize the arguments object.
         AllocationBuilder a(jsgraph(), effect, control);
         Node* properties = jsgraph()->EmptyFixedArrayConstant();
-        STATIC_ASSERT(JSStrictArgumentsObject::kSize == 4 * kPointerSize);
+        STATIC_ASSERT(JSStrictArgumentsObject::kSize == 4 * kTaggedSize);
         a.Allocate(JSStrictArgumentsObject::kSize);
         a.Store(AccessBuilder::ForMap(), arguments_map);
         a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(), properties);
@@ -264,7 +240,7 @@ Reduction JSCreateLowering::ReduceJSCreateArguments(Node* node) {
         // Actually allocate and initialize the jsarray.
         AllocationBuilder a(jsgraph(), effect, control);
         Node* properties = jsgraph()->EmptyFixedArrayConstant();
-        STATIC_ASSERT(JSArray::kSize == 4 * kPointerSize);
+        STATIC_ASSERT(JSArray::kSize == 4 * kTaggedSize);
         a.Allocate(JSArray::kSize);
         a.Store(AccessBuilder::ForMap(), jsarray_map);
         a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(), properties);
@@ -310,7 +286,7 @@ Reduction JSCreateLowering::ReduceJSCreateArguments(Node* node) {
       AllocationBuilder a(jsgraph(), effect, control);
       Node* properties = jsgraph()->EmptyFixedArrayConstant();
       int length = args_state_info.parameter_count() - 1;  // Minus receiver.
-      STATIC_ASSERT(JSSloppyArgumentsObject::kSize == 5 * kPointerSize);
+      STATIC_ASSERT(JSSloppyArgumentsObject::kSize == 5 * kTaggedSize);
       a.Allocate(JSSloppyArgumentsObject::kSize);
       a.Store(AccessBuilder::ForMap(), arguments_map);
       a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(), properties);
@@ -346,7 +322,7 @@ Reduction JSCreateLowering::ReduceJSCreateArguments(Node* node) {
       AllocationBuilder a(jsgraph(), effect, control);
       Node* properties = jsgraph()->EmptyFixedArrayConstant();
       int length = args_state_info.parameter_count() - 1;  // Minus receiver.
-      STATIC_ASSERT(JSStrictArgumentsObject::kSize == 4 * kPointerSize);
+      STATIC_ASSERT(JSStrictArgumentsObject::kSize == 4 * kTaggedSize);
       a.Allocate(JSStrictArgumentsObject::kSize);
       a.Store(AccessBuilder::ForMap(), arguments_map);
       a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(), properties);
@@ -386,7 +362,7 @@ Reduction JSCreateLowering::ReduceJSCreateArguments(Node* node) {
       // -1 to minus receiver
       int argument_count = args_state_info.parameter_count() - 1;
       int length = std::max(0, argument_count - start_index);
-      STATIC_ASSERT(JSArray::kSize == 4 * kPointerSize);
+      STATIC_ASSERT(JSArray::kSize == 4 * kTaggedSize);
       a.Allocate(JSArray::kSize);
       a.Store(AccessBuilder::ForMap(), jsarray_map);
       a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(), properties);
@@ -478,7 +454,7 @@ Reduction JSCreateLowering::ReduceJSCreateGeneratorObject(Node* node) {
 // is known for the capacity.
 Reduction JSCreateLowering::ReduceNewArray(
     Node* node, Node* length, MapRef initial_map, ElementsKind elements_kind,
-    PretenureFlag pretenure,
+    AllocationType allocation,
     const SlackTrackingPrediction& slack_tracking_prediction) {
   DCHECK_EQ(IrOpcode::kJSCreateArray, node->opcode());
   Node* effect = NodeProperties::GetEffectInput(node);
@@ -501,14 +477,14 @@ Reduction JSCreateLowering::ReduceNewArray(
   // Construct elements and properties for the resulting JSArray.
   Node* elements = effect =
       graph()->NewNode(IsDoubleElementsKind(initial_map.elements_kind())
-                           ? simplified()->NewDoubleElements(pretenure)
-                           : simplified()->NewSmiOrObjectElements(pretenure),
+                           ? simplified()->NewDoubleElements(allocation)
+                           : simplified()->NewSmiOrObjectElements(allocation),
                        length, effect, control);
   Node* properties = jsgraph()->EmptyFixedArrayConstant();
 
   // Perform the allocation of the actual JSArray object.
   AllocationBuilder a(jsgraph(), effect, control);
-  a.Allocate(slack_tracking_prediction.instance_size(), pretenure);
+  a.Allocate(slack_tracking_prediction.instance_size(), allocation);
   a.Store(AccessBuilder::ForMap(), initial_map);
   a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(), properties);
   a.Store(AccessBuilder::ForJSObjectElements(), elements);
@@ -527,7 +503,7 @@ Reduction JSCreateLowering::ReduceNewArray(
 // upper bound is known for the {capacity}.
 Reduction JSCreateLowering::ReduceNewArray(
     Node* node, Node* length, int capacity, MapRef initial_map,
-    ElementsKind elements_kind, PretenureFlag pretenure,
+    ElementsKind elements_kind, AllocationType allocation,
     const SlackTrackingPrediction& slack_tracking_prediction) {
   DCHECK(node->opcode() == IrOpcode::kJSCreateArray ||
          node->opcode() == IrOpcode::kJSCreateEmptyLiteralArray);
@@ -548,13 +524,13 @@ Reduction JSCreateLowering::ReduceNewArray(
     elements = jsgraph()->EmptyFixedArrayConstant();
   } else {
     elements = effect =
-        AllocateElements(effect, control, elements_kind, capacity, pretenure);
+        AllocateElements(effect, control, elements_kind, capacity, allocation);
   }
   Node* properties = jsgraph()->EmptyFixedArrayConstant();
 
   // Perform the allocation of the actual JSArray object.
   AllocationBuilder a(jsgraph(), effect, control);
-  a.Allocate(slack_tracking_prediction.instance_size(), pretenure);
+  a.Allocate(slack_tracking_prediction.instance_size(), allocation);
   a.Store(AccessBuilder::ForMap(), initial_map);
   a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(), properties);
   a.Store(AccessBuilder::ForJSObjectElements(), elements);
@@ -571,7 +547,7 @@ Reduction JSCreateLowering::ReduceNewArray(
 
 Reduction JSCreateLowering::ReduceNewArray(
     Node* node, std::vector<Node*> values, MapRef initial_map,
-    ElementsKind elements_kind, PretenureFlag pretenure,
+    ElementsKind elements_kind, AllocationType allocation,
     const SlackTrackingPrediction& slack_tracking_prediction) {
   DCHECK_EQ(IrOpcode::kJSCreateArray, node->opcode());
   Node* effect = NodeProperties::GetEffectInput(node);
@@ -606,13 +582,13 @@ Reduction JSCreateLowering::ReduceNewArray(
 
   // Setup elements, properties and length.
   Node* elements = effect =
-      AllocateElements(effect, control, elements_kind, values, pretenure);
+      AllocateElements(effect, control, elements_kind, values, allocation);
   Node* properties = jsgraph()->EmptyFixedArrayConstant();
   Node* length = jsgraph()->Constant(static_cast<int>(values.size()));
 
   // Perform the allocation of the actual JSArray object.
   AllocationBuilder a(jsgraph(), effect, control);
-  a.Allocate(slack_tracking_prediction.instance_size(), pretenure);
+  a.Allocate(slack_tracking_prediction.instance_size(), allocation);
   a.Store(AccessBuilder::ForMap(), initial_map);
   a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(), properties);
   a.Store(AccessBuilder::ForJSObjectElements(), elements);
@@ -638,125 +614,109 @@ Reduction JSCreateLowering::ReduceJSCreateArray(Node* node) {
       site_ref = AllocationSiteRef(broker(), site);
     }
   }
-  PretenureFlag pretenure = NOT_TENURED;
-  JSFunctionRef constructor = native_context().array_function();
-  Node* target = NodeProperties::GetValueInput(node, 0);
+  AllocationType allocation = AllocationType::kYoung;
+
+  base::Optional<MapRef> initial_map =
+      NodeProperties::GetJSCreateMap(broker(), node);
+  if (!initial_map.has_value()) return NoChange();
+
   Node* new_target = NodeProperties::GetValueInput(node, 1);
-  Type new_target_type = (target == new_target)
-                             ? Type::HeapConstant(constructor, zone())
-                             : NodeProperties::GetType(new_target);
+  JSFunctionRef original_constructor =
+      HeapObjectMatcher(new_target).Ref(broker()).AsJSFunction();
+  SlackTrackingPrediction slack_tracking_prediction =
+      dependencies()->DependOnInitialMapInstanceSizePrediction(
+          original_constructor);
 
-  // Extract original constructor function.
-  if (new_target_type.IsHeapConstant() &&
-      new_target_type.AsHeapConstant()->Ref().IsJSFunction()) {
-    JSFunctionRef original_constructor =
-        new_target_type.AsHeapConstant()->Ref().AsJSFunction();
-    DCHECK(constructor.map().is_constructor());
-    DCHECK(original_constructor.map().is_constructor());
+  // Tells whether we are protected by either the {site} or a
+  // protector cell to do certain speculative optimizations.
+  bool can_inline_call = false;
 
-    // Check if we can inline the allocation.
-    if (IsAllocationInlineable(constructor, original_constructor)) {
-      SlackTrackingPrediction slack_tracking_prediction =
-          dependencies()->DependOnInitialMapInstanceSizePrediction(
-              original_constructor);
-      MapRef initial_map = original_constructor.initial_map();
+  // Check if we have a feedback {site} on the {node}.
+  ElementsKind elements_kind = initial_map->elements_kind();
+  if (site_ref) {
+    elements_kind = site_ref->GetElementsKind();
+    can_inline_call = site_ref->CanInlineCall();
+    allocation = dependencies()->DependOnPretenureMode(*site_ref);
+    dependencies()->DependOnElementsKind(*site_ref);
+  } else {
+    CellRef array_constructor_protector(
+        broker(), factory()->array_constructor_protector());
+    can_inline_call =
+        array_constructor_protector.value().AsSmi() == Isolate::kProtectorValid;
+  }
 
-      // Tells whether we are protected by either the {site} or a
-      // protector cell to do certain speculative optimizations.
-      bool can_inline_call = false;
-
-      // Check if we have a feedback {site} on the {node}.
-      ElementsKind elements_kind = initial_map.elements_kind();
-      if (site_ref) {
-        elements_kind = site_ref->GetElementsKind();
-        can_inline_call = site_ref->CanInlineCall();
-        pretenure = dependencies()->DependOnPretenureMode(*site_ref);
-        dependencies()->DependOnElementsKind(*site_ref);
-      } else {
-        CellRef array_constructor_protector(
-            broker(), factory()->array_constructor_protector());
-        can_inline_call = array_constructor_protector.value().AsSmi() ==
-                          Isolate::kProtectorValid;
-      }
-
-      if (arity == 0) {
-        Node* length = jsgraph()->ZeroConstant();
-        int capacity = JSArray::kPreallocatedArrayElements;
-        return ReduceNewArray(node, length, capacity, initial_map,
-                              elements_kind, pretenure,
-                              slack_tracking_prediction);
-      } else if (arity == 1) {
-        Node* length = NodeProperties::GetValueInput(node, 2);
-        Type length_type = NodeProperties::GetType(length);
-        if (!length_type.Maybe(Type::Number())) {
-          // Handle the single argument case, where we know that the value
-          // cannot be a valid Array length.
-          elements_kind = GetMoreGeneralElementsKind(
-              elements_kind, IsHoleyElementsKind(elements_kind)
-                                 ? HOLEY_ELEMENTS
-                                 : PACKED_ELEMENTS);
-          return ReduceNewArray(node, std::vector<Node*>{length}, initial_map,
-                                elements_kind, pretenure,
-                                slack_tracking_prediction);
-        }
-        if (length_type.Is(Type::SignedSmall()) && length_type.Min() >= 0 &&
-            length_type.Max() <= kElementLoopUnrollLimit &&
-            length_type.Min() == length_type.Max()) {
-          int capacity = static_cast<int>(length_type.Max());
-          return ReduceNewArray(node, length, capacity, initial_map,
-                                elements_kind, pretenure,
-                                slack_tracking_prediction);
-        }
-        if (length_type.Maybe(Type::UnsignedSmall()) && can_inline_call) {
-          return ReduceNewArray(node, length, initial_map, elements_kind,
-                                pretenure, slack_tracking_prediction);
-        }
-      } else if (arity <= JSArray::kInitialMaxFastElementArray) {
-        // Gather the values to store into the newly created array.
-        bool values_all_smis = true, values_all_numbers = true,
-             values_any_nonnumber = false;
-        std::vector<Node*> values;
-        values.reserve(p.arity());
-        for (int i = 0; i < arity; ++i) {
-          Node* value = NodeProperties::GetValueInput(node, 2 + i);
-          Type value_type = NodeProperties::GetType(value);
-          if (!value_type.Is(Type::SignedSmall())) {
-            values_all_smis = false;
-          }
-          if (!value_type.Is(Type::Number())) {
-            values_all_numbers = false;
-          }
-          if (!value_type.Maybe(Type::Number())) {
-            values_any_nonnumber = true;
-          }
-          values.push_back(value);
-        }
-
-        // Try to figure out the ideal elements kind statically.
-        if (values_all_smis) {
-          // Smis can be stored with any elements kind.
-        } else if (values_all_numbers) {
-          elements_kind = GetMoreGeneralElementsKind(
-              elements_kind, IsHoleyElementsKind(elements_kind)
-                                 ? HOLEY_DOUBLE_ELEMENTS
-                                 : PACKED_DOUBLE_ELEMENTS);
-        } else if (values_any_nonnumber) {
-          elements_kind = GetMoreGeneralElementsKind(
-              elements_kind, IsHoleyElementsKind(elements_kind)
-                                 ? HOLEY_ELEMENTS
-                                 : PACKED_ELEMENTS);
-        } else if (!can_inline_call) {
-          // We have some crazy combination of types for the {values} where
-          // there's no clear decision on the elements kind statically. And
-          // we don't have a protection against deoptimization loops for the
-          // checks that are introduced in the call to ReduceNewArray, so
-          // we cannot inline this invocation of the Array constructor here.
-          return NoChange();
-        }
-        return ReduceNewArray(node, values, initial_map, elements_kind,
-                              pretenure, slack_tracking_prediction);
-      }
+  if (arity == 0) {
+    Node* length = jsgraph()->ZeroConstant();
+    int capacity = JSArray::kPreallocatedArrayElements;
+    return ReduceNewArray(node, length, capacity, *initial_map, elements_kind,
+                          allocation, slack_tracking_prediction);
+  } else if (arity == 1) {
+    Node* length = NodeProperties::GetValueInput(node, 2);
+    Type length_type = NodeProperties::GetType(length);
+    if (!length_type.Maybe(Type::Number())) {
+      // Handle the single argument case, where we know that the value
+      // cannot be a valid Array length.
+      elements_kind = GetMoreGeneralElementsKind(
+          elements_kind, IsHoleyElementsKind(elements_kind) ? HOLEY_ELEMENTS
+                                                            : PACKED_ELEMENTS);
+      return ReduceNewArray(node, std::vector<Node*>{length}, *initial_map,
+                            elements_kind, allocation,
+                            slack_tracking_prediction);
     }
+    if (length_type.Is(Type::SignedSmall()) && length_type.Min() >= 0 &&
+        length_type.Max() <= kElementLoopUnrollLimit &&
+        length_type.Min() == length_type.Max()) {
+      int capacity = static_cast<int>(length_type.Max());
+      return ReduceNewArray(node, length, capacity, *initial_map, elements_kind,
+                            allocation, slack_tracking_prediction);
+    }
+    if (length_type.Maybe(Type::UnsignedSmall()) && can_inline_call) {
+      return ReduceNewArray(node, length, *initial_map, elements_kind,
+                            allocation, slack_tracking_prediction);
+    }
+  } else if (arity <= JSArray::kInitialMaxFastElementArray) {
+    // Gather the values to store into the newly created array.
+    bool values_all_smis = true, values_all_numbers = true,
+         values_any_nonnumber = false;
+    std::vector<Node*> values;
+    values.reserve(p.arity());
+    for (int i = 0; i < arity; ++i) {
+      Node* value = NodeProperties::GetValueInput(node, 2 + i);
+      Type value_type = NodeProperties::GetType(value);
+      if (!value_type.Is(Type::SignedSmall())) {
+        values_all_smis = false;
+      }
+      if (!value_type.Is(Type::Number())) {
+        values_all_numbers = false;
+      }
+      if (!value_type.Maybe(Type::Number())) {
+        values_any_nonnumber = true;
+      }
+      values.push_back(value);
+    }
+
+    // Try to figure out the ideal elements kind statically.
+    if (values_all_smis) {
+      // Smis can be stored with any elements kind.
+    } else if (values_all_numbers) {
+      elements_kind = GetMoreGeneralElementsKind(
+          elements_kind, IsHoleyElementsKind(elements_kind)
+                             ? HOLEY_DOUBLE_ELEMENTS
+                             : PACKED_DOUBLE_ELEMENTS);
+    } else if (values_any_nonnumber) {
+      elements_kind = GetMoreGeneralElementsKind(
+          elements_kind, IsHoleyElementsKind(elements_kind) ? HOLEY_ELEMENTS
+                                                            : PACKED_ELEMENTS);
+    } else if (!can_inline_call) {
+      // We have some crazy combination of types for the {values} where
+      // there's no clear decision on the elements kind statically. And
+      // we don't have a protection against deoptimization loops for the
+      // checks that are introduced in the call to ReduceNewArray, so
+      // we cannot inline this invocation of the Array constructor here.
+      return NoChange();
+    }
+    return ReduceNewArray(node, values, *initial_map, elements_kind, allocation,
+                          slack_tracking_prediction);
   }
   return NoChange();
 }
@@ -771,7 +731,8 @@ Reduction JSCreateLowering::ReduceJSCreateArrayIterator(Node* node) {
 
   // Create the JSArrayIterator result.
   AllocationBuilder a(jsgraph(), effect, control);
-  a.Allocate(JSArrayIterator::kSize, NOT_TENURED, Type::OtherObject());
+  a.Allocate(JSArrayIterator::kSize, AllocationType::kYoung,
+             Type::OtherObject());
   a.Store(AccessBuilder::ForMap(),
           native_context().initial_array_iterator_map());
   a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(),
@@ -878,7 +839,8 @@ Reduction JSCreateLowering::ReduceJSCreateCollectionIterator(Node* node) {
 
   // Create the JSArrayIterator result.
   AllocationBuilder a(jsgraph(), effect, control);
-  a.Allocate(JSCollectionIterator::kSize, NOT_TENURED, Type::OtherObject());
+  a.Allocate(JSCollectionIterator::kSize, AllocationType::kYoung,
+             Type::OtherObject());
   a.Store(AccessBuilder::ForMap(),
           MapForCollectionIterationKind(native_context(), p.collection_kind(),
                                         p.iteration_kind()));
@@ -919,7 +881,8 @@ Reduction JSCreateLowering::ReduceJSCreateBoundFunction(Node* node) {
 
   // Create the JSBoundFunction result.
   AllocationBuilder a(jsgraph(), effect, control);
-  a.Allocate(JSBoundFunction::kSize, NOT_TENURED, Type::BoundFunction());
+  a.Allocate(JSBoundFunction::kSize, AllocationType::kYoung,
+             Type::BoundFunction());
   a.Store(AccessBuilder::ForMap(), map);
   a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(),
           jsgraph()->EmptyFixedArrayConstant());
@@ -966,12 +929,12 @@ Reduction JSCreateLowering::ReduceJSCreateClosure(Node* node) {
   // for old-space allocation, which doesn't always make sense. For
   // example in case of the bluebird-parallel benchmark, where this
   // is a core part of the *promisify* logic (see crbug.com/810132).
-  PretenureFlag pretenure = NOT_TENURED;
+  AllocationType allocation = AllocationType::kYoung;
 
   // Emit code to allocate the JSFunction instance.
-  STATIC_ASSERT(JSFunction::kSizeWithoutPrototype == 7 * kPointerSize);
+  STATIC_ASSERT(JSFunction::kSizeWithoutPrototype == 7 * kTaggedSize);
   AllocationBuilder a(jsgraph(), effect, control);
-  a.Allocate(function_map.instance_size(), pretenure, Type::Function());
+  a.Allocate(function_map.instance_size(), allocation, Type::Function());
   a.Store(AccessBuilder::ForMap(), function_map);
   a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(),
           jsgraph()->EmptyFixedArrayConstant());
@@ -981,11 +944,11 @@ Reduction JSCreateLowering::ReduceJSCreateClosure(Node* node) {
   a.Store(AccessBuilder::ForJSFunctionContext(), context);
   a.Store(AccessBuilder::ForJSFunctionFeedbackCell(), feedback_cell);
   a.Store(AccessBuilder::ForJSFunctionCode(), code);
-  STATIC_ASSERT(JSFunction::kSizeWithoutPrototype == 7 * kPointerSize);
+  STATIC_ASSERT(JSFunction::kSizeWithoutPrototype == 7 * kTaggedSize);
   if (function_map.has_prototype_slot()) {
     a.Store(AccessBuilder::ForJSFunctionPrototypeOrInitialMap(),
             jsgraph()->TheHoleConstant());
-    STATIC_ASSERT(JSFunction::kSizeWithPrototype == 8 * kPointerSize);
+    STATIC_ASSERT(JSFunction::kSizeWithPrototype == 8 * kTaggedSize);
   }
   for (int i = 0; i < function_map.GetInObjectProperties(); i++) {
     a.Store(AccessBuilder::ForJSObjectInObjectProperty(function_map, i),
@@ -1015,7 +978,7 @@ Reduction JSCreateLowering::ReduceJSCreateIterResultObject(Node* node) {
           jsgraph()->EmptyFixedArrayConstant());
   a.Store(AccessBuilder::ForJSIteratorResultValue(), value);
   a.Store(AccessBuilder::ForJSIteratorResultDone(), done);
-  STATIC_ASSERT(JSIteratorResult::kSize == 5 * kPointerSize);
+  STATIC_ASSERT(JSIteratorResult::kSize == 5 * kTaggedSize);
   a.FinishAndChange(node);
   return Changed(node);
 }
@@ -1029,7 +992,8 @@ Reduction JSCreateLowering::ReduceJSCreateStringIterator(Node* node) {
       jsgraph()->Constant(native_context().initial_string_iterator_map());
   // Allocate new iterator and attach the iterator to this string.
   AllocationBuilder a(jsgraph(), effect, graph()->start());
-  a.Allocate(JSStringIterator::kSize, NOT_TENURED, Type::OtherObject());
+  a.Allocate(JSStringIterator::kSize, AllocationType::kYoung,
+             Type::OtherObject());
   a.Store(AccessBuilder::ForMap(), map);
   a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(),
           jsgraph()->EmptyFixedArrayConstant());
@@ -1037,7 +1001,7 @@ Reduction JSCreateLowering::ReduceJSCreateStringIterator(Node* node) {
           jsgraph()->EmptyFixedArrayConstant());
   a.Store(AccessBuilder::ForJSStringIteratorString(), string);
   a.Store(AccessBuilder::ForJSStringIteratorIndex(), jsgraph()->SmiConstant(0));
-  STATIC_ASSERT(JSIteratorResult::kSize == 5 * kPointerSize);
+  STATIC_ASSERT(JSIteratorResult::kSize == 5 * kTaggedSize);
   a.FinishAndChange(node);
   return Changed(node);
 }
@@ -1067,7 +1031,7 @@ Reduction JSCreateLowering::ReduceJSCreateKeyValueArray(Node* node) {
   a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(), properties);
   a.Store(AccessBuilder::ForJSObjectElements(), elements);
   a.Store(AccessBuilder::ForJSArrayLength(PACKED_ELEMENTS), length);
-  STATIC_ASSERT(JSArray::kSize == 4 * kPointerSize);
+  STATIC_ASSERT(JSArray::kSize == 4 * kTaggedSize);
   a.FinishAndChange(node);
   return Changed(node);
 }
@@ -1090,7 +1054,7 @@ Reduction JSCreateLowering::ReduceJSCreatePromise(Node* node) {
   STATIC_ASSERT(v8::Promise::kPending == 0);
   a.Store(AccessBuilder::ForJSObjectOffset(JSPromise::kFlagsOffset),
           jsgraph()->ZeroConstant());
-  STATIC_ASSERT(JSPromise::kSize == 5 * kPointerSize);
+  STATIC_ASSERT(JSPromise::kSize == 5 * kTaggedSize);
   for (int offset = JSPromise::kSize;
        offset < JSPromise::kSizeWithEmbedderFields; offset += kTaggedSize) {
     a.Store(AccessBuilder::ForJSObjectOffset(offset),
@@ -1112,14 +1076,14 @@ Reduction JSCreateLowering::ReduceJSCreateLiteralArrayOrObject(Node* node) {
   if (feedback.IsAllocationSite()) {
     AllocationSiteRef site = feedback.AsAllocationSite();
     if (site.IsFastLiteral()) {
-      PretenureFlag pretenure = NOT_TENURED;
+      AllocationType allocation = AllocationType::kYoung;
       if (FLAG_allocation_site_pretenuring) {
-        pretenure = dependencies()->DependOnPretenureMode(site);
+        allocation = dependencies()->DependOnPretenureMode(site);
       }
       dependencies()->DependOnElementsKinds(site);
       JSObjectRef boilerplate = site.boilerplate().value();
       Node* value = effect =
-          AllocateFastLiteral(effect, control, boilerplate, pretenure);
+          AllocateFastLiteral(effect, control, boilerplate, allocation);
       ReplaceWithValue(node, value, effect, control);
       return Replace(value);
     }
@@ -1137,14 +1101,15 @@ Reduction JSCreateLowering::ReduceJSCreateEmptyLiteralArray(Node* node) {
     DCHECK(!site.PointsToLiteral());
     MapRef initial_map =
         native_context().GetInitialJSArrayMap(site.GetElementsKind());
-    PretenureFlag const pretenure = dependencies()->DependOnPretenureMode(site);
+    AllocationType const allocation =
+        dependencies()->DependOnPretenureMode(site);
     dependencies()->DependOnElementsKind(site);
     Node* length = jsgraph()->ZeroConstant();
     DCHECK(!initial_map.IsInobjectSlackTrackingInProgress());
     SlackTrackingPrediction slack_tracking_prediction(
         initial_map, initial_map.instance_size());
     return ReduceNewArray(node, length, 0, initial_map,
-                          initial_map.elements_kind(), pretenure,
+                          initial_map.elements_kind(), allocation,
                           slack_tracking_prediction);
   }
   return NoChange();
@@ -1367,7 +1332,7 @@ Reduction JSCreateLowering::ReduceJSCreateObject(Node* node) {
     int size = NameDictionary::SizeFor(length);
 
     AllocationBuilder a(jsgraph(), effect, control);
-    a.Allocate(size, NOT_TENURED, Type::Any());
+    a.Allocate(size, AllocationType::kYoung, Type::Any());
     a.Store(AccessBuilder::ForMap(), map);
     // Initialize FixedArray fields.
     a.Store(AccessBuilder::ForFixedArrayLength(),
@@ -1403,7 +1368,7 @@ Reduction JSCreateLowering::ReduceJSCreateObject(Node* node) {
   // Emit code to allocate the JSObject instance for the given
   // {instance_map}.
   AllocationBuilder a(jsgraph(), effect, control);
-  a.Allocate(instance_size, NOT_TENURED, Type::Any());
+  a.Allocate(instance_size, AllocationType::kYoung, Type::Any());
   a.Store(AccessBuilder::ForMap(), instance_map);
   a.Store(AccessBuilder::ForJSObjectPropertiesOrHash(), properties);
   a.Store(AccessBuilder::ForJSObjectElements(),
@@ -1411,7 +1376,7 @@ Reduction JSCreateLowering::ReduceJSCreateObject(Node* node) {
   // Initialize Object fields.
   Node* undefined = jsgraph()->UndefinedConstant();
   for (int offset = JSObject::kHeaderSize; offset < instance_size;
-       offset += kPointerSize) {
+       offset += kTaggedSize) {
     a.Store(AccessBuilder::ForJSObjectOffset(offset, kNoWriteBarrier),
             undefined);
   }
@@ -1586,7 +1551,7 @@ Node* JSCreateLowering::AllocateAliasedArguments(
 Node* JSCreateLowering::AllocateElements(Node* effect, Node* control,
                                          ElementsKind elements_kind,
                                          int capacity,
-                                         PretenureFlag pretenure) {
+                                         AllocationType allocation) {
   DCHECK_LE(1, capacity);
   DCHECK_LE(capacity, JSArray::kInitialMaxFastElementArray);
 
@@ -1600,7 +1565,7 @@ Node* JSCreateLowering::AllocateElements(Node* effect, Node* control,
 
   // Actually allocate the backing store.
   AllocationBuilder a(jsgraph(), effect, control);
-  a.AllocateArray(capacity, elements_map, pretenure);
+  a.AllocateArray(capacity, elements_map, allocation);
   for (int i = 0; i < capacity; ++i) {
     Node* index = jsgraph()->Constant(i);
     a.Store(access, index, value);
@@ -1611,7 +1576,7 @@ Node* JSCreateLowering::AllocateElements(Node* effect, Node* control,
 Node* JSCreateLowering::AllocateElements(Node* effect, Node* control,
                                          ElementsKind elements_kind,
                                          std::vector<Node*> const& values,
-                                         PretenureFlag pretenure) {
+                                         AllocationType allocation) {
   int const capacity = static_cast<int>(values.size());
   DCHECK_LE(1, capacity);
   DCHECK_LE(capacity, JSArray::kInitialMaxFastElementArray);
@@ -1625,7 +1590,7 @@ Node* JSCreateLowering::AllocateElements(Node* effect, Node* control,
 
   // Actually allocate the backing store.
   AllocationBuilder a(jsgraph(), effect, control);
-  a.AllocateArray(capacity, elements_map, pretenure);
+  a.AllocateArray(capacity, elements_map, allocation);
   for (int i = 0; i < capacity; ++i) {
     Node* index = jsgraph()->Constant(i);
     a.Store(access, index, values[i]);
@@ -1635,7 +1600,7 @@ Node* JSCreateLowering::AllocateElements(Node* effect, Node* control,
 
 Node* JSCreateLowering::AllocateFastLiteral(Node* effect, Node* control,
                                             JSObjectRef boilerplate,
-                                            PretenureFlag pretenure) {
+                                            AllocationType allocation) {
   // Setup the properties backing store.
   Node* properties = jsgraph()->EmptyFixedArrayConstant();
 
@@ -1664,13 +1629,13 @@ Node* JSCreateLowering::AllocateFastLiteral(Node* effect, Node* control,
       ObjectRef boilerplate_value = boilerplate.RawFastPropertyAt(index);
       if (boilerplate_value.IsJSObject()) {
         JSObjectRef boilerplate_object = boilerplate_value.AsJSObject();
-        value = effect =
-            AllocateFastLiteral(effect, control, boilerplate_object, pretenure);
+        value = effect = AllocateFastLiteral(effect, control,
+                                             boilerplate_object, allocation);
       } else if (property_details.representation().IsDouble()) {
         double number = boilerplate_value.AsMutableHeapNumber().value();
         // Allocate a mutable HeapNumber box and store the value into it.
         AllocationBuilder builder(jsgraph(), effect, control);
-        builder.Allocate(HeapNumber::kSize, pretenure);
+        builder.Allocate(HeapNumber::kSize, allocation);
         builder.Store(AccessBuilder::ForMap(),
                       factory()->mutable_heap_number_map());
         builder.Store(AccessBuilder::ForHeapNumberValue(),
@@ -1704,12 +1669,12 @@ Node* JSCreateLowering::AllocateFastLiteral(Node* effect, Node* control,
 
   // Setup the elements backing store.
   Node* elements =
-      AllocateFastLiteralElements(effect, control, boilerplate, pretenure);
+      AllocateFastLiteralElements(effect, control, boilerplate, allocation);
   if (elements->op()->EffectOutputCount() > 0) effect = elements;
 
   // Actually allocate and initialize the object.
   AllocationBuilder builder(jsgraph(), effect, control);
-  builder.Allocate(boilerplate_map.instance_size(), pretenure,
+  builder.Allocate(boilerplate_map.instance_size(), allocation,
                    Type::For(boilerplate_map));
   builder.Store(AccessBuilder::ForMap(), boilerplate_map);
   builder.Store(AccessBuilder::ForJSObjectPropertiesOrHash(), properties);
@@ -1728,14 +1693,14 @@ Node* JSCreateLowering::AllocateFastLiteral(Node* effect, Node* control,
 
 Node* JSCreateLowering::AllocateFastLiteralElements(Node* effect, Node* control,
                                                     JSObjectRef boilerplate,
-                                                    PretenureFlag pretenure) {
+                                                    AllocationType allocation) {
   FixedArrayBaseRef boilerplate_elements = boilerplate.elements();
 
   // Empty or copy-on-write elements just store a constant.
   int const elements_length = boilerplate_elements.length();
   MapRef elements_map = boilerplate_elements.map();
   if (boilerplate_elements.length() == 0 || elements_map.IsFixedCowArrayMap()) {
-    if (pretenure == TENURED) {
+    if (allocation == AllocationType::kOld) {
       boilerplate.EnsureElementsTenured();
       boilerplate_elements = boilerplate.elements();
     }
@@ -1759,7 +1724,7 @@ Node* JSCreateLowering::AllocateFastLiteralElements(Node* effect, Node* control,
       ObjectRef element_value = elements.get(i);
       if (element_value.IsJSObject()) {
         elements_values[i] = effect = AllocateFastLiteral(
-            effect, control, element_value.AsJSObject(), pretenure);
+            effect, control, element_value.AsJSObject(), allocation);
       } else {
         elements_values[i] = jsgraph()->Constant(element_value);
       }
@@ -1768,7 +1733,7 @@ Node* JSCreateLowering::AllocateFastLiteralElements(Node* effect, Node* control,
 
   // Allocate the backing store array and store the elements.
   AllocationBuilder builder(jsgraph(), effect, control);
-  builder.AllocateArray(elements_length, elements_map.object(), pretenure);
+  builder.AllocateArray(elements_length, elements_map.object(), allocation);
   ElementAccess const access =
       (elements_map.instance_type() == FIXED_DOUBLE_ARRAY_TYPE)
           ? AccessBuilder::ForFixedDoubleArrayElement()
@@ -1784,21 +1749,21 @@ Node* JSCreateLowering::AllocateLiteralRegExp(Node* effect, Node* control,
   MapRef boilerplate_map = boilerplate.map();
 
   // Sanity check that JSRegExp object layout hasn't changed.
-  STATIC_ASSERT(JSRegExp::kDataOffset == JSObject::kHeaderSize);
-  STATIC_ASSERT(JSRegExp::kSourceOffset ==
-                JSRegExp::kDataOffset + kPointerSize);
+  STATIC_ASSERT(static_cast<int>(JSRegExp::kDataOffset) ==
+                static_cast<int>(JSObject::kHeaderSize));
+  STATIC_ASSERT(JSRegExp::kSourceOffset == JSRegExp::kDataOffset + kTaggedSize);
   STATIC_ASSERT(JSRegExp::kFlagsOffset ==
-                JSRegExp::kSourceOffset + kPointerSize);
-  STATIC_ASSERT(JSRegExp::kSize == JSRegExp::kFlagsOffset + kPointerSize);
+                JSRegExp::kSourceOffset + kTaggedSize);
+  STATIC_ASSERT(JSRegExp::kSize == JSRegExp::kFlagsOffset + kTaggedSize);
   STATIC_ASSERT(JSRegExp::kLastIndexOffset == JSRegExp::kSize);
   STATIC_ASSERT(JSRegExp::kInObjectFieldCount == 1);  // LastIndex.
 
-  const PretenureFlag pretenure = NOT_TENURED;
+  const AllocationType allocation = AllocationType::kYoung;
   const int size =
-      JSRegExp::kSize + JSRegExp::kInObjectFieldCount * kPointerSize;
+      JSRegExp::kSize + JSRegExp::kInObjectFieldCount * kTaggedSize;
 
   AllocationBuilder builder(jsgraph(), effect, control);
-  builder.Allocate(size, pretenure, Type::For(boilerplate_map));
+  builder.Allocate(size, allocation, Type::For(boilerplate_map));
   builder.Store(AccessBuilder::ForMap(), boilerplate_map);
   builder.Store(AccessBuilder::ForJSObjectPropertiesOrHash(),
                 boilerplate.raw_properties_or_hash());

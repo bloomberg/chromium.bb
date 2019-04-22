@@ -7,15 +7,18 @@
 #include <sstream>
 
 #include "base/bind.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/common/time_measurements.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/console_message_level.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace subresource_filter {
 
@@ -99,7 +102,7 @@ void SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy(
       navigation_handle()
           ->GetWebContents()
           ->GetMainFrame()
-          ->AddMessageToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR,
+          ->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
                                 console_message);
     }
 
@@ -124,7 +127,6 @@ void SubframeNavigationFilteringThrottle::NotifyLoadPolicy() const {
   content::RenderFrameHost* starting_rfh =
       navigation_handle()->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
           navigation_handle()->GetFrameTreeNodeId());
-  DCHECK(starting_rfh);
   if (!starting_rfh) {
     // TODO(arthursonzogni): Remove this block, this must not happen.
     // See https://crbug.com/904248.

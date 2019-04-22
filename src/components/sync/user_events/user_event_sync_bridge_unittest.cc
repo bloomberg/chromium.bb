@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_type_store_test_util.h"
@@ -185,7 +185,7 @@ class UserEventSyncBridgeTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   TestGlobalIdMapper test_global_id_mapper_;
   std::unique_ptr<UserEventSyncBridge> bridge_;
@@ -216,9 +216,7 @@ TEST_F(UserEventSyncBridgeTest, ApplyStopSyncChanges) {
   bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics));
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
-  EXPECT_THAT(
-      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -258,9 +256,10 @@ TEST_F(UserEventSyncBridgeTest, ApplySyncChanges) {
   bridge()->RecordUserEvent(SpecificsUniquePtr(2u, 2u, 2u));
   EXPECT_THAT(GetAllData(), SizeIs(2));
 
-  auto error_on_delete =
-      bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
-                                 {EntityChange::CreateDelete(storage_key1)});
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(EntityChange::CreateDelete(storage_key1));
+  auto error_on_delete = bridge()->ApplySyncChanges(
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
   EXPECT_FALSE(error_on_delete);
   EXPECT_THAT(GetAllData(), SizeIs(1));
   EXPECT_THAT(GetData(storage_key1), IsNull());
@@ -294,9 +293,10 @@ TEST_F(UserEventSyncBridgeTest, HandleGlobalIdChange) {
   EXPECT_THAT(GetAllData(),
               ElementsAre(Pair(storage_key, MatchesUserEvent(CreateSpecifics(
                                                 1u, third_id, 2u)))));
-  auto error_on_delete =
-      bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
-                                 {EntityChange::CreateDelete(storage_key)});
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(EntityChange::CreateDelete(storage_key));
+  auto error_on_delete = bridge()->ApplySyncChanges(
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
   EXPECT_FALSE(error_on_delete);
   EXPECT_THAT(GetAllData(), IsEmpty());
 

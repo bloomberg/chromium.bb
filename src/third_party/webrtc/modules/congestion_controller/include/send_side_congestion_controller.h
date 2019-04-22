@@ -14,7 +14,8 @@
 #include <memory>
 #include <vector>
 
-#include "common_types.h"  // NOLINT(build/include)
+#include "api/transport/field_trial_based_config.h"
+#include "api/transport/webrtc_key_value_config.h"
 #include "modules/congestion_controller/goog_cc/delay_based_bwe.h"
 #include "modules/congestion_controller/include/network_changed_observer.h"
 #include "modules/congestion_controller/include/send_side_congestion_controller_interface.h"
@@ -22,9 +23,10 @@
 #include "modules/include/module.h"
 #include "modules/include/module_common_types.h"
 #include "modules/pacing/paced_sender.h"
-#include "rtc_base/constructormagic.h"
-#include "rtc_base/criticalsection.h"
-#include "rtc_base/networkroute.h"
+#include "rtc_base/constructor_magic.h"
+#include "rtc_base/critical_section.h"
+#include "rtc_base/deprecation.h"
+#include "rtc_base/network_route.h"
 #include "rtc_base/race_checker.h"
 
 namespace rtc {
@@ -41,15 +43,19 @@ class RateLimiter;
 class RtcEventLog;
 class CongestionWindowPushbackController;
 
-class SendSideCongestionController
+// Deprecated, for somewhat similar funtionality GoogCcNetworkController can be
+// used via GoogCcNetworkControllerFactory.
+class DEPRECATED_SendSideCongestionController
     : public SendSideCongestionControllerInterface {
  public:
   using Observer = NetworkChangedObserver;
-  SendSideCongestionController(const Clock* clock,
-                               Observer* observer,
-                               RtcEventLog* event_log,
-                               PacedSender* pacer);
-  ~SendSideCongestionController() override;
+  DEPRECATED_SendSideCongestionController(
+      Clock* clock,
+      Observer* observer,
+      RtcEventLog* event_log,
+      PacedSender* pacer,
+      const WebRtcKeyValueConfig* key_value_config = nullptr);
+  ~DEPRECATED_SendSideCongestionController() override;
 
   void RegisterPacketFeedbackObserver(
       PacketFeedbackObserver* observer) override;
@@ -116,6 +122,10 @@ class SendSideCongestionController
   void EnableCongestionWindowPushback(int64_t accepted_queue_ms,
                                       uint32_t min_pushback_target_bitrate_bps);
 
+  void SetAlrLimitedBackoffExperiment(bool enable);
+
+  void SetMaxProbingBitrate(int64_t max_probing_bitrate_bps);
+
  private:
   void MaybeTriggerOnNetworkChanged();
 
@@ -127,7 +137,9 @@ class SendSideCongestionController
   void LimitOutstandingBytes(size_t num_outstanding_bytes);
   void SendProbes(std::vector<ProbeClusterConfig> probe_configs)
       RTC_EXCLUSIVE_LOCKS_REQUIRED(&probe_lock_);
-  const Clock* const clock_;
+  const FieldTrialBasedConfig field_trial_config_;
+  const WebRtcKeyValueConfig* const key_value_config_;
+  Clock* const clock_;
   rtc::CriticalSection observer_lock_;
   Observer* observer_ RTC_GUARDED_BY(observer_lock_);
   RtcEventLog* const event_log_;
@@ -155,21 +167,23 @@ class SendSideCongestionController
   std::unique_ptr<ProbeBitrateEstimator> probe_bitrate_estimator_
       RTC_GUARDED_BY(bwe_lock_);
   std::unique_ptr<DelayBasedBwe> delay_based_bwe_ RTC_GUARDED_BY(bwe_lock_);
-  bool in_cwnd_experiment_;
-  int64_t accepted_queue_ms_;
+  absl::optional<int64_t> cwnd_experiment_parameter_;
   bool was_in_alr_;
   const bool send_side_bwe_with_overhead_;
   size_t transport_overhead_bytes_per_packet_ RTC_GUARDED_BY(bwe_lock_);
 
   rtc::RaceChecker worker_race_;
 
-  bool pacer_pushback_experiment_ = false;
-  float encoding_rate_ = 1.0;
-
   std::unique_ptr<CongestionWindowPushbackController>
       congestion_window_pushback_controller_;
 
-  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(SendSideCongestionController);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(DEPRECATED_SendSideCongestionController);
+};
+class RTC_DEPRECATED SendSideCongestionController
+    : public DEPRECATED_SendSideCongestionController {
+ public:
+  using DEPRECATED_SendSideCongestionController::
+      DEPRECATED_SendSideCongestionController;
 };
 
 }  // namespace webrtc

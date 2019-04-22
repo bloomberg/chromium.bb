@@ -4,11 +4,12 @@
 
 #include "content/renderer/media/stream/remote_media_stream_track_adapter.h"
 
-#include "content/renderer/media/stream/media_stream_audio_source.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc/track_observer.h"
+#include "media/base/limits.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 
 namespace content {
 
@@ -28,7 +29,7 @@ RemoteVideoTrackAdapter::~RemoteVideoTrackAdapter() {
   DCHECK(main_thread_->BelongsToCurrentThread());
   if (initialized()) {
     static_cast<MediaStreamRemoteVideoSource*>(
-        web_track()->Source().GetExtraData())
+        web_track()->Source().GetPlatformSource())
         ->OnSourceTerminated();
   }
 }
@@ -37,19 +38,19 @@ void RemoteVideoTrackAdapter::InitializeWebVideoTrack(
     std::unique_ptr<TrackObserver> observer,
     bool enabled) {
   DCHECK(main_thread_->BelongsToCurrentThread());
-  std::unique_ptr<MediaStreamRemoteVideoSource> video_source(
-      new MediaStreamRemoteVideoSource(std::move(observer)));
+  std::unique_ptr<MediaStreamRemoteVideoSource> video_source_ptr =
+      std::make_unique<MediaStreamRemoteVideoSource>(std::move(observer));
+  MediaStreamRemoteVideoSource* video_source = video_source_ptr.get();
   InitializeWebTrack(blink::WebMediaStreamSource::kTypeVideo);
-  web_track()->Source().SetExtraData(video_source.get());
+  web_track()->Source().SetPlatformSource(std::move(video_source_ptr));
 
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = blink::WebString::FromUTF8(id());
   web_track()->Source().SetCapabilities(capabilities);
 
-  MediaStreamVideoTrack* media_stream_track = new MediaStreamVideoTrack(
-      video_source.release(), MediaStreamVideoSource::ConstraintsCallback(),
-      enabled);
-  web_track()->SetTrackData(media_stream_track);
+  web_track()->SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
+      video_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
+      enabled));
 }
 
 RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(
@@ -65,7 +66,7 @@ RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(
   // Here, we use base::Unretained() to avoid a circular reference.
   web_initialize_ =
       base::Bind(&RemoteAudioTrackAdapter::InitializeWebAudioTrack,
-                 base::Unretained(this));
+                 base::Unretained(this), main_thread);
 }
 
 RemoteAudioTrackAdapter::~RemoteAudioTrackAdapter() {
@@ -82,18 +83,24 @@ void RemoteAudioTrackAdapter::Unregister() {
   observed_track()->UnregisterObserver(this);
 }
 
-void RemoteAudioTrackAdapter::InitializeWebAudioTrack() {
+void RemoteAudioTrackAdapter::InitializeWebAudioTrack(
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread) {
   InitializeWebTrack(blink::WebMediaStreamSource::kTypeAudio);
 
-  MediaStreamAudioSource* const source =
-      new PeerConnectionRemoteAudioSource(observed_track().get());
-  web_track()->Source().SetExtraData(source);  // Takes ownership.
+  blink::MediaStreamAudioSource* const source =
+      new PeerConnectionRemoteAudioSource(observed_track().get(), main_thread);
+  web_track()->Source().SetPlatformSource(
+      base::WrapUnique(source));  // Takes ownership.
 
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = blink::WebString::FromUTF8(id());
   capabilities.echo_cancellation = std::vector<bool>({false});
   capabilities.auto_gain_control = std::vector<bool>({false});
   capabilities.noise_suppression = std::vector<bool>({false});
+  capabilities.sample_size = {
+      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
+      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
+  };
   web_track()->Source().SetCapabilities(capabilities);
 
   source->ConnectToTrack(*(web_track()));

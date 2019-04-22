@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
@@ -54,27 +55,27 @@ PropertyRegistration::PropertyRegistration(
 static bool ComputationallyIndependent(const CSSValue& value) {
   DCHECK(!value.IsCSSWideKeyword());
 
-  if (value.IsVariableReferenceValue())
-    return !ToCSSVariableReferenceValue(value)
-                .VariableDataValue()
+  if (auto* variable_reference_value =
+          DynamicTo<CSSVariableReferenceValue>(value)) {
+    return !variable_reference_value->VariableDataValue()
                 ->NeedsVariableResolution();
+  }
 
-  if (value.IsValueList()) {
-    for (const CSSValue* inner_value : ToCSSValueList(value)) {
+  if (auto* value_list = DynamicTo<CSSValueList>(value)) {
+    for (const CSSValue* inner_value : *value_list) {
       if (!ComputationallyIndependent(*inner_value))
         return false;
     }
     return true;
   }
 
-  if (value.IsPrimitiveValue()) {
-    const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
-    if (!primitive_value.IsLength() &&
-        !primitive_value.IsCalculatedPercentageWithLength())
+  if (const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value)) {
+    if (!primitive_value->IsLength() &&
+        !primitive_value->IsCalculatedPercentageWithLength())
       return true;
 
     CSSPrimitiveValue::CSSLengthArray length_array;
-    primitive_value.AccumulateLengthArray(length_array);
+    primitive_value->AccumulateLengthArray(length_array);
     for (size_t i = 0; i < length_array.values.size(); i++) {
       if (length_array.type_flags.Get(i) &&
           i != CSSPrimitiveValue::kUnitTypePixels &&
@@ -115,8 +116,9 @@ void PropertyRegistration::registerProperty(
     return;
   }
 
-  CSSSyntaxDescriptor syntax_descriptor(descriptor->syntax());
-  if (!syntax_descriptor.IsValid()) {
+  base::Optional<CSSSyntaxDescriptor> syntax_descriptor =
+      CSSSyntaxStringParser(descriptor->syntax()).Parse();
+  if (!syntax_descriptor) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
         "The syntax provided is not a valid custom property syntax.");
@@ -132,8 +134,8 @@ void PropertyRegistration::registerProperty(
     CSSTokenizer tokenizer(descriptor->initialValue());
     const auto tokens = tokenizer.TokenizeToEOF();
     bool is_animation_tainted = false;
-    initial = syntax_descriptor.Parse(CSSParserTokenRange(tokens),
-                                      parser_context, is_animation_tainted);
+    initial = syntax_descriptor->Parse(CSSParserTokenRange(tokens),
+                                       parser_context, is_animation_tainted);
     if (!initial) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
@@ -148,11 +150,11 @@ void PropertyRegistration::registerProperty(
     }
     initial = &StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(
         *document, *initial);
-    initial_variable_data = CSSVariableData::Create(
-        CSSParserTokenRange(tokens), is_animation_tainted, false,
-        parser_context->BaseURL(), parser_context->Charset());
+    initial_variable_data =
+        StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
+            *initial, is_animation_tainted);
   } else {
-    if (!syntax_descriptor.IsTokenStream()) {
+    if (!syntax_descriptor->IsTokenStream()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
           "An initial value must be provided if the syntax is not '*'");
@@ -161,7 +163,7 @@ void PropertyRegistration::registerProperty(
   }
   registry.RegisterProperty(
       atomic_name, *MakeGarbageCollected<PropertyRegistration>(
-                       atomic_name, syntax_descriptor, descriptor->inherits(),
+                       atomic_name, *syntax_descriptor, descriptor->inherits(),
                        initial, std::move(initial_variable_data)));
 
   document->GetStyleEngine().CustomPropertyRegistered();

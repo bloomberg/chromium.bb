@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_CLIENT_H_
 
 #include "cc/paint/paint_canvas.h"
+#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
@@ -30,6 +31,9 @@ class RemoteFrameClient : public FrameClient {
 
   virtual void Navigate(const ResourceRequest&,
                         bool should_replace_current_entry,
+                        bool is_opener_navigation,
+                        bool has_download_sandbox_flag,
+                        bool initiator_frame_is_ad,
                         mojom::blink::BlobURLTokenPtr) = 0;
   unsigned BackForwardLength() override = 0;
 
@@ -52,11 +56,9 @@ class RemoteFrameClient : public FrameClient {
 
   virtual void UpdateRemoteViewportIntersection(
       const IntRect& viewport_intersection,
-      bool occluded_or_obscured) = 0;
+      FrameOcclusionState occlusion_state) = 0;
 
   virtual void AdvanceFocus(WebFocusType, LocalFrame* source) = 0;
-
-  virtual void VisibilityChanged(bool visible) = 0;
 
   virtual void SetIsInert(bool) = 0;
 

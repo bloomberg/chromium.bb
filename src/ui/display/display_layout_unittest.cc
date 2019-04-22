@@ -202,156 +202,261 @@ TEST_P(TwoDisplays, Placement) {
   EXPECT_EQ(expected_secondary_display_bounds, display_list[1].bounds());
 }
 
-INSTANTIATE_TEST_CASE_P(DisplayLayoutTestZero, TwoDisplays, testing::Values(
-    std::make_tuple(
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-        DisplayPlacement::Position::LEFT, 0, 0,
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(-1024, 0, 1024, 768)),
-    std::make_tuple(
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-        DisplayPlacement::Position::TOP, 0, 0,
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(0, -768, 1024, 768)),
-    std::make_tuple(
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-        DisplayPlacement::Position::RIGHT, 0, 0,
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(800, 0, 1024, 768)),
-    std::make_tuple(
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-        DisplayPlacement::Position::BOTTOM, 0, 0,
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 600, 1024, 768))));
+INSTANTIATE_TEST_SUITE_P(
+    DisplayLayoutTestZero,
+    TwoDisplays,
+    testing::Values(std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::LEFT,
+                                    0,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(-1024, 0, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::TOP,
+                                    0,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, -768, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::RIGHT,
+                                    0,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(800, 0, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::BOTTOM,
+                                    0,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 600, 1024, 768))));
 
-INSTANTIATE_TEST_CASE_P(DisplayLayoutTestOffset, TwoDisplays, testing::Values(
-    std::make_tuple(
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-        DisplayPlacement::Position::LEFT, 37, 0,
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(-1024, 37, 1024, 768)),
-    std::make_tuple(
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-        DisplayPlacement::Position::TOP, 37, 0,
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(37, -768, 1024, 768)),
-    std::make_tuple(
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-        DisplayPlacement::Position::RIGHT, 37, 0,
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(800, 37, 1024, 768)),
-    std::make_tuple(
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-        DisplayPlacement::Position::BOTTOM, 37, 0,
-        gfx::Rect(0, 0, 800, 600), gfx::Rect(37, 600, 1024, 768))));
+INSTANTIATE_TEST_SUITE_P(
+    DisplayLayoutTestOffset,
+    TwoDisplays,
+    testing::Values(std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::LEFT,
+                                    37,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(-1024, 37, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::TOP,
+                                    37,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(37, -768, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::RIGHT,
+                                    37,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(800, 37, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::BOTTOM,
+                                    37,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(37, 600, 1024, 768))));
 
-INSTANTIATE_TEST_CASE_P(DisplayLayoutTestCorner, TwoDisplays, testing::Values(
-    // Top-Left
-    std::make_tuple(
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-        DisplayPlacement::Position::LEFT, -60, 0,
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(-30, -60, 30, 60)),
-    std::make_tuple(
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-        DisplayPlacement::Position::TOP, -30, 0,
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(-30, -60, 30, 60)),
-    // Top-Right
-    std::make_tuple(
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-        DisplayPlacement::Position::RIGHT, -60, 0,
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(20, -60, 30, 60)),
-    std::make_tuple(
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-        DisplayPlacement::Position::TOP, 20, 0,
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(20, -60, 30, 60)),
-    // Bottom-Right
-    std::make_tuple(
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-        DisplayPlacement::Position::RIGHT, 40, 0,
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(20, 40, 30, 60)),
-    std::make_tuple(
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-        DisplayPlacement::Position::BOTTOM, 20, 0,
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(20, 40, 30, 60)),
-    // Bottom-Left
-    std::make_tuple(
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-        DisplayPlacement::Position::LEFT, 40, 0,
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(-30, 40, 30, 60)),
-    std::make_tuple(
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-        DisplayPlacement::Position::BOTTOM, -30, 0,
-        gfx::Rect(0, 0, 20, 40), gfx::Rect(-30, 40, 30, 60))));
+INSTANTIATE_TEST_SUITE_P(DisplayLayoutTestCorner,
+                         TwoDisplays,
+                         testing::Values(
+                             // Top-Left
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::LEFT,
+                                             -60,
+                                             0,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(-30, -60, 30, 60)),
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::TOP,
+                                             -30,
+                                             0,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(-30, -60, 30, 60)),
+                             // Top-Right
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::RIGHT,
+                                             -60,
+                                             0,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(20, -60, 30, 60)),
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::TOP,
+                                             20,
+                                             0,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(20, -60, 30, 60)),
+                             // Bottom-Right
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::RIGHT,
+                                             40,
+                                             0,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(20, 40, 30, 60)),
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::BOTTOM,
+                                             20,
+                                             0,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(20, 40, 30, 60)),
+                             // Bottom-Left
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::LEFT,
+                                             40,
+                                             0,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(-30, 40, 30, 60)),
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::BOTTOM,
+                                             -30,
+                                             0,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(-30, 40, 30, 60))));
 
-INSTANTIATE_TEST_CASE_P(DisplayLayoutTestZeroMinimumOverlap, TwoDisplays,
-    testing::Values(
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::LEFT, 0, 14,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(-1024, 0, 1024, 768)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::TOP, 0, 14,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, -768, 1024, 768)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::RIGHT, 0, 14,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(800, 0, 1024, 768)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::BOTTOM, 0, 14,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 600, 1024, 768))));
+INSTANTIATE_TEST_SUITE_P(
+    DisplayLayoutTestZeroMinimumOverlap,
+    TwoDisplays,
+    testing::Values(std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::LEFT,
+                                    0,
+                                    14,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(-1024, 0, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::TOP,
+                                    0,
+                                    14,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, -768, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::RIGHT,
+                                    0,
+                                    14,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(800, 0, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::BOTTOM,
+                                    0,
+                                    14,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 600, 1024, 768))));
 
-INSTANTIATE_TEST_CASE_P(DisplayLayoutTestOffsetMinimumOverlap, TwoDisplays,
-    testing::Values(
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::LEFT, 37, 14,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(-1024, 37, 1024, 768)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::TOP, 37, 14,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(37, -768, 1024, 768)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::RIGHT, 37, 14,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(800, 37, 1024, 768)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::BOTTOM, 37, 14,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(37, 600, 1024, 768))));
+INSTANTIATE_TEST_SUITE_P(
+    DisplayLayoutTestOffsetMinimumOverlap,
+    TwoDisplays,
+    testing::Values(std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::LEFT,
+                                    37,
+                                    14,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(-1024, 37, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::TOP,
+                                    37,
+                                    14,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(37, -768, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::RIGHT,
+                                    37,
+                                    14,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(800, 37, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::BOTTOM,
+                                    37,
+                                    14,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(37, 600, 1024, 768))));
 
-INSTANTIATE_TEST_CASE_P(DisplayLayoutTestMinimumOverlap, TwoDisplays,
-    testing::Values(
-        // Top-Left
-        std::make_tuple(
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-            DisplayPlacement::Position::LEFT, -60, 14,
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(-30, -46, 30, 60)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-            DisplayPlacement::Position::TOP, -30, 14,
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(-16, -60, 30, 60)),
-        // Top-Right
-        std::make_tuple(
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-            DisplayPlacement::Position::RIGHT, -60, 14,
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(20, -46, 30, 60)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-            DisplayPlacement::Position::TOP, 20, 14,
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(6, -60, 30, 60)),
-        // Bottom-Right
-        std::make_tuple(
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-            DisplayPlacement::Position::RIGHT, 40, 14,
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(20, 26, 30, 60)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-            DisplayPlacement::Position::BOTTOM, 20, 14,
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(6, 40, 30, 60)),
-        // Bottom-Left
-        std::make_tuple(
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-            DisplayPlacement::Position::LEFT, 40, 14,
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(-30, 26, 30, 60)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(0, 0, 30, 60),
-            DisplayPlacement::Position::BOTTOM, -30, 14,
-            gfx::Rect(0, 0, 20, 40), gfx::Rect(-16, 40, 30, 60))));
+INSTANTIATE_TEST_SUITE_P(DisplayLayoutTestMinimumOverlap,
+                         TwoDisplays,
+                         testing::Values(
+                             // Top-Left
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::LEFT,
+                                             -60,
+                                             14,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(-30, -46, 30, 60)),
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::TOP,
+                                             -30,
+                                             14,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(-16, -60, 30, 60)),
+                             // Top-Right
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::RIGHT,
+                                             -60,
+                                             14,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(20, -46, 30, 60)),
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::TOP,
+                                             20,
+                                             14,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(6, -60, 30, 60)),
+                             // Bottom-Right
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::RIGHT,
+                                             40,
+                                             14,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(20, 26, 30, 60)),
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::BOTTOM,
+                                             20,
+                                             14,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(6, 40, 30, 60)),
+                             // Bottom-Left
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::LEFT,
+                                             40,
+                                             14,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(-30, 26, 30, 60)),
+                             std::make_tuple(gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(0, 0, 30, 60),
+                                             DisplayPlacement::Position::BOTTOM,
+                                             -30,
+                                             14,
+                                             gfx::Rect(0, 0, 20, 40),
+                                             gfx::Rect(-16, 40, 30, 60))));
 
 // Display Layout
 //     [1]  [4]
@@ -455,42 +560,68 @@ TEST_P(TwoDisplaysBottomRightReference, Placement) {
   EXPECT_EQ(expected_secondary_display_bounds, display_list[1].bounds());
 }
 
-INSTANTIATE_TEST_CASE_P(DisplayLayoutTestZero, TwoDisplaysBottomRightReference,
-    testing::Values(
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::LEFT, 0, 0,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(-1024, -168, 1024, 768)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::TOP, 0, 0,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(-224, -768, 1024, 768)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::RIGHT, 0, 0,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(800, -168, 1024, 768)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::BOTTOM, 0, 0,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(-224, 600, 1024, 768))));
+INSTANTIATE_TEST_SUITE_P(
+    DisplayLayoutTestZero,
+    TwoDisplaysBottomRightReference,
+    testing::Values(std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::LEFT,
+                                    0,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(-1024, -168, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::TOP,
+                                    0,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(-224, -768, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::RIGHT,
+                                    0,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(800, -168, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::BOTTOM,
+                                    0,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(-224, 600, 1024, 768))));
 
-INSTANTIATE_TEST_CASE_P(DisplayLayoutTestOffset,
-    TwoDisplaysBottomRightReference, testing::Values(
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::LEFT, 7, 0,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(-1024, -175, 1024, 768)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::TOP, 7, 0,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(-231, -768, 1024, 768)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::RIGHT, 7, 0,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(800, -175, 1024, 768)),
-        std::make_tuple(
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
-            DisplayPlacement::Position::BOTTOM, 7, 0,
-            gfx::Rect(0, 0, 800, 600), gfx::Rect(-231, 600, 1024, 768))));
+INSTANTIATE_TEST_SUITE_P(
+    DisplayLayoutTestOffset,
+    TwoDisplaysBottomRightReference,
+    testing::Values(std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::LEFT,
+                                    7,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(-1024, -175, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::TOP,
+                                    7,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(-231, -768, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::RIGHT,
+                                    7,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(800, -175, 1024, 768)),
+                    std::make_tuple(gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(0, 0, 1024, 768),
+                                    DisplayPlacement::Position::BOTTOM,
+                                    7,
+                                    0,
+                                    gfx::Rect(0, 0, 800, 600),
+                                    gfx::Rect(-231, 600, 1024, 768))));
 
 }  // namespace display

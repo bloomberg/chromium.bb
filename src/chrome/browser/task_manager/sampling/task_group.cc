@@ -33,9 +33,9 @@ const int kBackgroundRefreshTypesMask =
 #if defined(OS_WIN)
     REFRESH_TYPE_START_TIME | REFRESH_TYPE_CPU_TIME |
 #endif  // defined(OS_WIN)
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
     REFRESH_TYPE_FD_COUNT |
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 #if BUILDFLAG(ENABLE_NACL)
     REFRESH_TYPE_NACL |
 #endif  // BUILDFLAG(ENABLE_NACL)
@@ -83,11 +83,13 @@ int GetNaClDebugStubPortOnIoThread(int process_id) {
 TaskGroup::TaskGroup(
     base::ProcessHandle proc_handle,
     base::ProcessId proc_id,
+    bool is_running_in_vm,
     const base::Closure& on_background_calculations_done,
     const scoped_refptr<SharedSampler>& shared_sampler,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner)
     : process_handle_(proc_handle),
       process_id_(proc_id),
+      is_running_in_vm_(is_running_in_vm),
       on_background_calculations_done_(on_background_calculations_done),
       worker_thread_sampler_(nullptr),
       shared_sampler_(shared_sampler),
@@ -96,7 +98,7 @@ TaskGroup::TaskGroup(
 #endif  // defined(OS_CHROMEOS)
       expected_on_bg_done_flags_(kBackgroundRefreshTypesMask),
       current_on_bg_done_flags_(0),
-      platform_independent_cpu_usage_(0.0),
+      platform_independent_cpu_usage_(std::numeric_limits<double>::quiet_NaN()),
       swapped_mem_bytes_(-1),
       memory_footprint_(-1),
       gpu_memory_(-1),
@@ -112,14 +114,14 @@ TaskGroup::TaskGroup(
 #if BUILDFLAG(ENABLE_NACL)
       nacl_debug_stub_port_(nacl::kGdbDebugStubPortUnknown),
 #endif  // BUILDFLAG(ENABLE_NACL)
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
       open_fd_count_(-1),
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
       idle_wakeups_per_second_(-1),
       gpu_memory_has_duplicates_(false),
       is_backgrounded_(false),
       weak_ptr_factory_(this) {
-  if (process_id_ != base::kNullProcessId) {
+  if (process_id_ != base::kNullProcessId && !is_running_in_vm_) {
     worker_thread_sampler_ = base::MakeRefCounted<TaskGroupSampler>(
         base::Process::Open(process_id_), blocking_pool_runner,
         base::Bind(&TaskGroup::OnCpuRefreshDone,
@@ -128,10 +130,10 @@ TaskGroup::TaskGroup(
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&TaskGroup::OnIdleWakeupsRefreshDone,
                    weak_ptr_factory_.GetWeakPtr()),
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
         base::Bind(&TaskGroup::OnOpenFdCountRefreshDone,
                    weak_ptr_factory_.GetWeakPtr()),
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
         base::Bind(&TaskGroup::OnProcessPriorityDone,
                    weak_ptr_factory_.GetWeakPtr()));
 
@@ -164,6 +166,9 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
                         int64_t refresh_flags) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!empty());
+  if (is_running_in_vm_)
+    refresh_flags &= ~kUnsupportedVMRefreshFlags;
+
   expected_on_bg_done_flags_ = refresh_flags & kBackgroundRefreshTypesMask;
   // If a refresh type was recently disabled, we need to account for that too.
   current_on_bg_done_flags_ &= expected_on_bg_done_flags_;
@@ -296,14 +301,14 @@ void TaskGroup::OnRefreshNaClDebugStubPortDone(int nacl_debug_stub_port) {
 }
 #endif  // BUILDFLAG(ENABLE_NACL)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 void TaskGroup::OnOpenFdCountRefreshDone(int open_fd_count) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   open_fd_count_ = open_fd_count;
   OnBackgroundRefreshTypeFinished(REFRESH_TYPE_FD_COUNT);
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
 void TaskGroup::OnCpuRefreshDone(double cpu_usage) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

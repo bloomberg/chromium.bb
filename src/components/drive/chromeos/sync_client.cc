@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system/download_operation.h"

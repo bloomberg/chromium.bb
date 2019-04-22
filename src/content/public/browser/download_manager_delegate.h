@@ -123,10 +123,14 @@ class CONTENT_EXPORT DownloadManagerDelegate {
 
   // Checks and hands off the downloading to be handled by another system based
   // on mime type. Returns true if the download was intercepted.
-  virtual bool InterceptDownloadIfApplicable(const GURL& url,
-                                             const std::string& mime_type,
-                                             const std::string& request_origin,
-                                             WebContents* web_contents);
+  virtual bool InterceptDownloadIfApplicable(
+      const GURL& url,
+      const std::string& user_agent,
+      const std::string& content_disposition,
+      const std::string& mime_type,
+      const std::string& request_origin,
+      int64_t content_length,
+      WebContents* web_contents);
 
   // Returns true if we need to generate a binary hash for downloads.
   virtual bool GenerateFileHash();

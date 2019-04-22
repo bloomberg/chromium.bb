@@ -1,0 +1,34 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Error in remote http://web-platform.test:8001/common/get-host-info.sub.js: Uncaught ReferenceError: window is not defined
+PASS same-origin redirect 301 in error redirect and cors mode
+PASS same-origin redirect 301 in error redirect and no-cors mode
+PASS same-origin redirect 301 in manual redirect and cors mode
+PASS same-origin redirect 301 in manual redirect and no-cors mode
+PASS same-origin redirect 301 in follow redirect and cors mode
+PASS same-origin redirect 301 in follow redirect and no-cors mode
+PASS same-origin redirect 302 in error redirect and cors mode
+PASS same-origin redirect 302 in error redirect and no-cors mode
+PASS same-origin redirect 302 in manual redirect and cors mode
+PASS same-origin redirect 302 in manual redirect and no-cors mode
+PASS same-origin redirect 302 in follow redirect and cors mode
+PASS same-origin redirect 302 in follow redirect and no-cors mode
+PASS same-origin redirect 303 in error redirect and cors mode
+PASS same-origin redirect 303 in error redirect and no-cors mode
+PASS same-origin redirect 303 in manual redirect and cors mode
+PASS same-origin redirect 303 in manual redirect and no-cors mode
+PASS same-origin redirect 303 in follow redirect and cors mode
+PASS same-origin redirect 303 in follow redirect and no-cors mode
+PASS same-origin redirect 307 in error redirect and cors mode
+PASS same-origin redirect 307 in error redirect and no-cors mode
+PASS same-origin redirect 307 in manual redirect and cors mode
+PASS same-origin redirect 307 in manual redirect and no-cors mode
+PASS same-origin redirect 307 in follow redirect and cors mode
+PASS same-origin redirect 307 in follow redirect and no-cors mode
+PASS same-origin redirect 308 in error redirect and cors mode
+PASS same-origin redirect 308 in error redirect and no-cors mode
+PASS same-origin redirect 308 in manual redirect and cors mode
+PASS same-origin redirect 308 in manual redirect and no-cors mode
+PASS same-origin redirect 308 in follow redirect and cors mode
+PASS same-origin redirect 308 in follow redirect and no-cors mode
+Harness: the test ran to completion.
+

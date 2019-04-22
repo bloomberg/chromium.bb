@@ -23,18 +23,18 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/layouttest_support.h"
 #include "content/public/test/ppapi_test_utils.h"
+#include "content/public/test/web_test_support.h"
 #include "content/shell/app/blink_test_platform_support.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
-#include "content/shell/browser/layout_test/layout_test_browser_main.h"
-#include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/shell_browser_main.h"
 #include "content/shell/browser/shell_content_browser_client.h"
-#include "content/shell/common/layout_test/layout_test_content_client.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
+#include "content/shell/browser/web_test/web_test_browser_main.h"
+#include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/shell/common/web_test/web_test_content_client.h"
+#include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/gpu/shell_content_gpu_client.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
 #include "content/shell/renderer/web_test/web_test_content_renderer_client.h"
@@ -46,6 +46,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/embedder/switches.h"
+#include "skia/ext/test_fonts.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -58,7 +59,6 @@
 #include "content/public/common/content_ipc_logging.h"
 #define IPC_LOG_TABLE_ADD_ENTRY(msg_id, logger) \
     content::RegisterIPCLogger(msg_id, logger)
-#include "content/shell/common/shell_messages.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -68,7 +68,7 @@
 #include "content/shell/android/shell_descriptors.h"
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
 #include "components/crash/content/app/crashpad.h"  // nogncheck
 #endif
 
@@ -85,8 +85,9 @@
 #include "content/shell/common/v8_crashpad_support_win.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include "components/crash/content/app/breakpad_linux.h"
+#include "v8/include/v8-wasm-trap-handler-posix.h"
 #endif
 
 #if defined(OS_FUCHSIA)
@@ -167,7 +168,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   v8_crashpad_support::SetUp();
 #endif
 #if defined(OS_LINUX)
-  breakpad::SetFirstChanceExceptionHandler(v8::V8::TryHandleSignal);
+  breakpad::SetFirstChanceExceptionHandler(v8::TryHandleWebAssemblyTrapPosix);
 #endif
 #if defined(OS_MACOSX)
   // Needs to happen before InitializeResourceBundle() and before
@@ -191,17 +192,17 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   }
 
   if (command_line.HasSwitch(switches::kRunWebTests)) {
-    // Only run CheckLayoutSystemDeps on the browser process.
-    if (!command_line.HasSwitch(switches::kProcessType)) {
-      // If CheckLayoutSystemDeps fails, we early exit as there's no point in
-      // running the tests.
-      if (!CheckLayoutSystemDeps()) {
-        *exit_code = 1;
-        return true;
-      }
+#if defined(OS_WIN)
+    // Run CheckLayoutSystemDeps() in the browser process and exit early if it
+    // fails.
+    if (!command_line.HasSwitch(switches::kProcessType) &&
+        !CheckLayoutSystemDeps()) {
+      *exit_code = 1;
+      return true;
     }
+#endif
 
-    EnableBrowserLayoutTestMode();
+    EnableBrowserWebTestMode();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     if (!ppapi::RegisterBlinkTestPlugin(&command_line)) {
@@ -212,13 +213,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(cc::switches::kEnableGpuBenchmarking);
     command_line.AppendSwitch(switches::kEnableLogging);
     command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
-#if !defined(OS_ANDROID)
-    // TODO(crbug/567947) Enable display compositor pixel dumps for Android
-    // once testing becomes possible on post-kitkat OSes, and once we've
-    // had a chance to debug the layout test failures that occur when this
-    // flag is present.
-    command_line.AppendSwitch(switches::kEnableDisplayCompositorPixelDump);
-#endif
     // only default to a software GL if the flag isn't already specified.
     if (!command_line.HasSwitch(switches::kUseGpuInTests) &&
         !command_line.HasSwitch(switches::kUseGL)) {
@@ -248,16 +242,15 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
     }
 
-    // If we're doing a display compositor pixel dump we ensure that
-    // we complete all stages of compositing before draw. We also can't have
-    // checker imaging, since it's imcompatible with single threaded compositor
-    // and display compositor pixel dumps.
-    if (command_line.HasSwitch(switches::kEnableDisplayCompositorPixelDump)) {
-      // TODO(crbug.com/894613) Add kRunAllCompositorStagesBeforeDraw back here
-      // once you figure out why it causes so much layout test flakiness.
-      // command_line.AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
-      command_line.AppendSwitch(cc::switches::kDisableCheckerImaging);
-    }
+    // With display compositor pixel dumps, we ensure that we complete all
+    // stages of compositing before draw. We also can't have checker imaging,
+    // since it's imcompatible with single threaded compositor and display
+    // compositor pixel dumps.
+    //
+    // TODO(crbug.com/894613) Add kRunAllCompositorStagesBeforeDraw back here
+    // once you figure out why it causes so much web test flakiness.
+    // command_line.AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
+    command_line.AppendSwitch(cc::switches::kDisableCheckerImaging);
 
     command_line.AppendSwitch(switches::kMuteAudio);
 
@@ -265,6 +258,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
     command_line.AppendSwitchASCII(network::switches::kHostResolverRules,
                                    "MAP nonexistent.*.test ~NOTFOUND,"
+                                   "MAP *.test. 127.0.0.1,"
                                    "MAP *.test 127.0.0.1");
 
     command_line.AppendSwitch(switches::kEnablePartialRaster);
@@ -282,7 +276,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
                                      "srgb");
     }
 
-    // We want stable/baseline results when running layout tests.
+    // We want stable/baseline results when running web tests.
     command_line.AppendSwitch(switches::kDisableSkiaRuntimeOpts);
 
     command_line.AppendSwitch(switches::kDisallowNonExactResourceReuse);
@@ -297,14 +291,19 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(
         switches::kDisableGpuProcessForDX12VulkanInfoCollection);
 
-    if (!BlinkTestPlatformInitialize()) {
-      *exit_code = 1;
-      return true;
-    }
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    BlinkTestPlatformInitialize();
+#endif
+
+#if !defined(OS_WIN)
+    // On Windows BlinkTestPlatformInitialize() is responsible for font
+    // initialization.
+    skia::ConfigureTestFont();
+#endif
   }
 
   content_client_.reset(switches::IsRunWebTestsSwitchPresent()
-                            ? new LayoutTestContentClient
+                            ? new WebTestContentClient
                             : new ShellContentClient);
   SetContentClient(content_client_.get());
 
@@ -328,18 +327,13 @@ void ShellMainDelegate::PreSandboxStartup() {
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kProcessType);
     crash_reporter::SetCrashReporterClient(g_shell_crash_client.Pointer());
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
     crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
 #elif defined(OS_LINUX)
     // Reporting for sub-processes will be initialized in ZygoteForked.
     if (process_type != service_manager::switches::kZygoteProcess)
       breakpad::InitCrashReporter(process_type);
-#elif defined(OS_ANDROID)
-    if (process_type.empty())
-      breakpad::InitCrashReporter(process_type);
-    else
-      breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
   }
 #endif  // !defined(OS_FUCHSIA)
 
@@ -364,10 +358,10 @@ int ShellMainDelegate::RunProcess(
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 
-  browser_runner_.reset(BrowserMainRunner::Create());
+  browser_runner_ = BrowserMainRunner::Create();
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   return command_line.HasSwitch(switches::kRunWebTests)
-             ? LayoutTestBrowserMain(main_function_params, browser_runner_)
+             ? WebTestBrowserMain(main_function_params, browser_runner_)
              : ShellBrowserMain(main_function_params, browser_runner_);
 }
 
@@ -440,7 +434,7 @@ void ShellMainDelegate::PreCreateMainMessageLoop() {
 
 ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
   browser_client_.reset(switches::IsRunWebTestsSwitchPresent()
-                            ? new LayoutTestContentBrowserClient
+                            ? new WebTestContentBrowserClient
                             : new ShellContentBrowserClient);
 
   return browser_client_.get();

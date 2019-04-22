@@ -73,14 +73,14 @@ class MutationObserver::V8DelegateImpl final
     callback_->InvokeAndReportException(&observer, records, &observer);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(callback_);
     MutationObserver::Delegate::Trace(visitor);
     ContextClient::Trace(visitor);
   }
 
  private:
-  TraceWrapperMember<V8MutationCallback> callback_;
+  Member<V8MutationCallback> callback_;
 };
 
 static unsigned g_observer_priority = 0;
@@ -231,7 +231,7 @@ using SlotChangeList = HeapVector<Member<HTMLSlotElement>>;
 
 // TODO(hayato): We should have a SlotChangeList for each unit of related
 // similar-origin browsing context.
-// https://html.spec.whatwg.org/multipage/browsers.html#unit-of-related-similar-origin-browsing-contexts
+// https://html.spec.whatwg.org/C/#unit-of-related-similar-origin-browsing-contexts
 static SlotChangeList& ActiveSlotChangeList() {
   DEFINE_STATIC_LOCAL(Persistent<SlotChangeList>, slot_change_list,
                       (MakeGarbageCollected<SlotChangeList>()));
@@ -372,7 +372,7 @@ void MutationObserver::DeliverMutations() {
     slot->DispatchSlotChangeEvent();
 }
 
-void MutationObserver::Trace(blink::Visitor* visitor) {
+void MutationObserver::Trace(Visitor* visitor) {
   visitor->Trace(delegate_);
   visitor->Trace(records_);
   visitor->Trace(registrations_);

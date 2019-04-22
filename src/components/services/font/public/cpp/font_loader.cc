@@ -22,25 +22,20 @@ FontLoader::FontLoader(service_manager::Connector* connector) {
 
 FontLoader::~FontLoader() {}
 
-void FontLoader::Shutdown() {
-  thread_->Stop();
-  thread_ = nullptr;
-}
-
 bool FontLoader::matchFamilyName(const char family_name[],
                                  SkFontStyle requested,
                                  FontIdentity* out_font_identifier,
                                  SkString* out_family_name,
                                  SkFontStyle* out_style) {
-  TRACE_EVENT1("font_service", "FontServiceThread::MatchFamilyName",
-               "family_name", family_name);
+  TRACE_EVENT1("fonts", "FontServiceThread::MatchFamilyName", "family_name",
+               TRACE_STR_COPY(family_name));
   return thread_->MatchFamilyName(family_name, requested, out_font_identifier,
                                   out_family_name, out_style);
 }
 
 SkStreamAsset* FontLoader::openStream(const FontIdentity& identity) {
-  TRACE_EVENT2("font_loader", "FontLoader::openStream", "identity",
-               identity.fID, "name", identity.fString.c_str());
+  TRACE_EVENT2("fonts", "FontLoader::openStream", "identity", identity.fID,
+               "name", TRACE_STR_COPY(identity.fString.c_str()));
   {
     base::AutoLock lock(lock_);
     auto mapped_font_files_it = mapped_font_files_.find(identity.fID);
@@ -65,6 +60,11 @@ SkStreamAsset* FontLoader::openStream(const FontIdentity& identity) {
             .first;
     return mapped_font_files_it->second->CreateMemoryStream();
   }
+}
+
+sk_sp<SkTypeface> FontLoader::makeTypeface(const FontIdentity& identity) {
+  TRACE_EVENT0("fonts", "FontServiceThread::makeTypeface");
+  return SkFontConfigInterface::makeTypeface(identity);
 }
 
 // Additional cross-thread accessible methods.
@@ -110,8 +110,8 @@ void FontLoader::MatchFontWithFallback(std::string family,
 }
 
 void FontLoader::OnMappedFontFileDestroyed(internal::MappedFontFile* f) {
-  TRACE_EVENT1("font_loader", "FontLoader::OnMappedFontFileDestroyed",
-               "identity", f->font_id());
+  TRACE_EVENT1("fonts", "FontLoader::OnMappedFontFileDestroyed", "identity",
+               f->font_id());
   base::AutoLock lock(lock_);
   mapped_font_files_.erase(f->font_id());
 }

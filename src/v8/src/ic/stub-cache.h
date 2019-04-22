@@ -28,8 +28,7 @@ class SCTableReference {
   friend class StubCache;
 };
 
-
-class StubCache {
+class V8_EXPORT_PRIVATE StubCache {
  public:
   struct Entry {
     // The values here have plain Address types because they are read
@@ -88,6 +87,10 @@ class StubCache {
   static const int kPrimaryTableSize = (1 << kPrimaryTableBits);
   static const int kSecondaryTableBits = 9;
   static const int kSecondaryTableSize = (1 << kSecondaryTableBits);
+
+  // We compute the hash code for a map as follows:
+  //   <code> = <address> ^ (<address> >> kMapKeyShift)
+  static const int kMapKeyShift = kPrimaryTableBits + kCacheIndexShift;
 
   // Some magic number used in the secondary hash computation.
   static const int kSecondaryMagic = 0xb16ca6e5;

@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -35,11 +36,11 @@ class FakeScreen : public display::Screen {
  public:
   FakeScreen() = default;
   ~FakeScreen() override = default;
-  display::Display GetPrimaryDisplay() const override { return display; };
+  display::Display GetPrimaryDisplay() const override { return display; }
 
   // Unused functions
-  gfx::Point GetCursorScreenPoint() override { return gfx::Point(); };
-  bool IsWindowUnderCursor(gfx::NativeWindow window) override { return false; };
+  gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
+  bool IsWindowUnderCursor(gfx::NativeWindow window) override { return false; }
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
     return nullptr;
   }
@@ -51,7 +52,7 @@ class FakeScreen : public display::Screen {
       const gfx::Point& point) const override {
     return display;
   }
-  int GetNumDisplays() const override { return 0; };
+  int GetNumDisplays() const override { return 0; }
   display::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const override {
     return display;

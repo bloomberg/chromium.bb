@@ -23,6 +23,7 @@ class Origin;
 namespace media_router {
 
 class CastActivityManager;
+class CastSessionTracker;
 
 // MediaRouteProvider for Cast sinks. This class may be created on any sequence.
 // All other methods, however, must be called on the task runner provided
@@ -95,6 +96,7 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
  private:
   void Init(mojom::MediaRouteProviderRequest request,
             mojom::MediaRouterPtrInfo media_router,
+            CastSessionTracker* session_tracker,
             std::unique_ptr<DataDecoder> data_decoder,
             const std::string& hash_token);
 
@@ -112,7 +114,7 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
   // Mojo pointer to the Media Router.
   mojom::MediaRouterPtr media_router_;
 
-  // Non-owned pointer to the Cast MediaSinkServiceBase.
+  // Non-owned pointer to the Cast MediaSinkServiceBase instance.
   MediaSinkServiceBase* const media_sink_service_;
 
   // Non-owned pointer to the CastAppDiscoveryService instance.

@@ -30,9 +30,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_MULTI_CHANNEL_RESAMPLER_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/audio/sinc_resampler.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -41,7 +42,6 @@ class AudioBus;
 
 class PLATFORM_EXPORT MultiChannelResampler {
   USING_FAST_MALLOC(MultiChannelResampler);
-  WTF_MAKE_NONCOPYABLE(MultiChannelResampler);
 
  public:
   MultiChannelResampler(double scale_factor, unsigned number_of_channels);
@@ -61,6 +61,8 @@ class PLATFORM_EXPORT MultiChannelResampler {
   Vector<std::unique_ptr<SincResampler>> kernels_;
 
   unsigned number_of_channels_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultiChannelResampler);
 };
 
 }  // namespace blink

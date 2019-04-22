@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -103,8 +104,9 @@ void Scheduler::Sequence::UpdateSchedulingPriority() {
 }
 
 bool Scheduler::Sequence::NeedsRescheduling() const {
-  return running_state_ != IDLE &&
-         scheduling_state_.priority != current_priority();
+  return (running_state_ != IDLE &&
+          scheduling_state_.priority != current_priority()) ||
+         (running_state_ == SCHEDULED && !IsRunnable());
 }
 
 bool Scheduler::Sequence::IsRunnable() const {
@@ -122,16 +124,15 @@ bool Scheduler::Sequence::ShouldYieldTo(const Sequence* other) const {
 void Scheduler::Sequence::SetEnabled(bool enabled) {
   if (enabled_ == enabled)
     return;
-  DCHECK_EQ(running_state_, enabled ? IDLE : RUNNING);
   enabled_ = enabled;
   if (enabled) {
     TRACE_EVENT_ASYNC_BEGIN1("gpu", "SequenceEnabled", this, "sequence_id",
                              sequence_id_.GetUnsafeValue());
-    scheduler_->TryScheduleSequence(this);
   } else {
     TRACE_EVENT_ASYNC_END1("gpu", "SequenceEnabled", this, "sequence_id",
                            sequence_id_.GetUnsafeValue());
   }
+  scheduler_->TryScheduleSequence(this);
 }
 
 Scheduler::SchedulingState Scheduler::Sequence::SetScheduled() {
@@ -293,6 +294,8 @@ Scheduler::Scheduler(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       sync_point_manager_(sync_point_manager),
       weak_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // Store weak ptr separately because calling GetWeakPtr() is not thread safe.
+  weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
 Scheduler::~Scheduler() {
@@ -332,7 +335,6 @@ Scheduler::Sequence* Scheduler::GetSequence(SequenceId sequence_id) {
 }
 
 void Scheduler::EnableSequence(SequenceId sequence_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   Sequence* sequence = GetSequence(sequence_id);
   DCHECK(sequence);
@@ -340,7 +342,6 @@ void Scheduler::EnableSequence(SequenceId sequence_id) {
 }
 
 void Scheduler::DisableSequence(SequenceId sequence_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   Sequence* sequence = GetSequence(sequence_id);
   DCHECK(sequence);
@@ -390,11 +391,11 @@ void Scheduler::ScheduleTaskHelper(Task task) {
     Sequence* release_sequence = GetSequence(release_sequence_id);
     if (!release_sequence)
       continue;
-    if (sync_point_manager_->Wait(
-            sync_token, sequence_id, order_num,
-            base::Bind(&Scheduler::SyncTokenFenceReleased,
-                       weak_factory_.GetWeakPtr(), sync_token, order_num,
-                       release_sequence_id, sequence_id))) {
+    if (sync_point_manager_->WaitNonThreadSafe(
+            sync_token, sequence_id, order_num, task_runner_,
+            base::BindOnce(&Scheduler::SyncTokenFenceReleased, weak_ptr_,
+                           sync_token, order_num, release_sequence_id,
+                           sequence_id))) {
       sequence->AddWaitFence(sync_token, order_num, release_sequence_id,
                              release_sequence);
     }
@@ -464,8 +465,8 @@ void Scheduler::TryScheduleSequence(Sequence* sequence) {
     if (!running_) {
       TRACE_EVENT_ASYNC_BEGIN0("gpu", "Scheduler::Running", this);
       running_ = true;
-      task_runner_->PostTask(FROM_HERE, base::Bind(&Scheduler::RunNextTask,
-                                                   weak_factory_.GetWeakPtr()));
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&Scheduler::RunNextTask, weak_ptr_));
     }
   }
 }
@@ -540,8 +541,8 @@ void Scheduler::RunNextTask() {
     }
   }
 
-  task_runner_->PostTask(FROM_HERE, base::Bind(&Scheduler::RunNextTask,
-                                               weak_factory_.GetWeakPtr()));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&Scheduler::RunNextTask, weak_ptr_));
 }
 
 }  // namespace gpu

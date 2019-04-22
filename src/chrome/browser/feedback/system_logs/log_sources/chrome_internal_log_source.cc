@@ -8,20 +8,22 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/pref_names.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/about_sync_util.h"
+#include "components/sync/driver/sync_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/power/power_api.h"
 #include "extensions/browser/extension_registry.h"
@@ -268,12 +270,11 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
 void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
   // We are only interested in sync logs for the primary user profile.
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  if (!profile ||
-      !ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(profile))
+  if (!profile || !ProfileSyncServiceFactory::HasSyncService(profile))
     return;
 
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  syncer::SyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
   std::unique_ptr<base::DictionaryValue> sync_logs(
       syncer::sync_ui_util::ConstructAboutInformation(service,
                                                       chrome::GetChannel()));
@@ -350,12 +351,15 @@ void ChromeInternalLogSource::PopulatePowerApiLogs(
 
 void ChromeInternalLogSource::PopulateDataReductionProxyLogs(
     SystemLogsResponse* response) {
-  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  bool is_data_reduction_proxy_enabled =
-      prefs->HasPrefPath(prefs::kDataSaverEnabled) &&
-      prefs->GetBoolean(prefs::kDataSaverEnabled);
+  data_reduction_proxy::DataReductionProxySettings*
+      data_reduction_proxy_settings =
+          DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+              ProfileManager::GetActiveUserProfile());
+  bool data_saver_enabled =
+      data_reduction_proxy_settings &&
+      data_reduction_proxy_settings->IsDataReductionProxyEnabled();
   response->emplace(kDataReductionProxyKey,
-                    is_data_reduction_proxy_enabled ? "enabled" : "disabled");
+                    data_saver_enabled ? "enabled" : "disabled");
 }
 
 #if defined(OS_CHROMEOS)

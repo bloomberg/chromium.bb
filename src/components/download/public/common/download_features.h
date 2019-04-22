@@ -6,10 +6,19 @@
 #define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_export.h"
 
 namespace download {
 namespace features {
+
+// Whether offline content provider should be used for the downloads UI..
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kUseDownloadOfflineContentProvider;
+
+// Whether download auto-resumptions are enabled in native.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kDownloadAutoResumptionNative;
 
 // Whether a download can be handled by parallel jobs.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kParallelDownloading;
@@ -18,6 +27,11 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kParallelDownloading;
 // DB, rather than history DB.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
     kDownloadDBForNewDownloads;
+
+#if defined(OS_ANDROID)
+// Whether download expiration date will be refreshed on resumption.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kRefreshExpirationDate;
+#endif
 
 }  // namespace features
 }  // namespace download

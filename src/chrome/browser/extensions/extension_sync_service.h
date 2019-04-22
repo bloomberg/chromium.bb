@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SYNC_SERVICE_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SYNC_SERVICE_H_
 
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -53,6 +55,7 @@ class ExtensionSyncService : public syncer::SyncableService,
                           const base::Version& version) const;
 
   // syncer::SyncableService implementation.
+  void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,

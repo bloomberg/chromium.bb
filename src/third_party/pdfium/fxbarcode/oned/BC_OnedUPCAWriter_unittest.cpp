@@ -3,18 +3,16 @@
 // found in the LICENSE file.
 
 #include "fxbarcode/oned/BC_OnedUPCAWriter.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
 TEST(OnedUPCAWriterTest, Encode) {
   CBC_OnedUPCAWriter writer;
+  writer.InitEANWriter();
   int32_t width;
   int32_t height;
-
-  // TODO(hnakashima): CBC_OnedUPCAWriter is unique in that it needs to be
-  // Init()'d. Get rid of this call.
-  writer.Init();
 
   // UPCA barcodes encode 12-digit numbers into 95 modules in a unidimensional
   // disposition.
@@ -87,6 +85,7 @@ TEST(OnedUPCAWriterTest, Encode) {
 
 TEST(OnedUPCAWriterTest, Checksum) {
   CBC_OnedUPCAWriter writer;
+  writer.InitEANWriter();
   EXPECT_EQ(0, writer.CalcChecksum(""));
   EXPECT_EQ(6, writer.CalcChecksum("123"));
   EXPECT_EQ(2, writer.CalcChecksum("12345678901"));

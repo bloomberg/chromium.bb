@@ -6,9 +6,9 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_SEQUENCE_LOCAL_SYNC_EVENT_WATCHER_H_
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 
 namespace mojo {
 
@@ -27,7 +27,7 @@ namespace mojo {
 // of such events fixed at a small constant value per sequence regardless of the
 // number of active interface endpoints supporting sync messages on that
 // sequence.
-class MOJO_CPP_BINDINGS_EXPORT SequenceLocalSyncEventWatcher {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SequenceLocalSyncEventWatcher {
  public:
   explicit SequenceLocalSyncEventWatcher(
       const base::RepeatingClosure& callback);

@@ -38,7 +38,7 @@
     [RuntimeEnabled=FileSystem] void webkitResolveLocalFileSystemURL(DOMString url,
             EntryCallback successCallback, optional ErrorCallback? errorCallback);
 
-    // https://wicg.github.io/writable-files/#api-choosefilesystementries
+    // https://wicg.github.io/native-file-system/#api-choosefilesystementries
     [RuntimeEnabled=WritableFiles, CallWith=ScriptState, SecureContext]
     Promise<(FileSystemBaseHandle or sequence<FileSystemBaseHandle>)>
         chooseFileSystemEntries(optional ChooseFileSystemEntriesOptions options);

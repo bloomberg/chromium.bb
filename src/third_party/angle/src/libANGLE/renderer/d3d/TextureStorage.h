@@ -70,19 +70,21 @@ class TextureStorage : angle::NonCopyable
     virtual angle::Result useLevelZeroWorkaroundTexture(const gl::Context *context,
                                                         bool useLevelZeroTexture);
 
+    virtual void invalidateTextures() {}
+
   protected:
     const angle::Subject *mSubject;
 };
 
 inline angle::Result TextureStorage::onDestroy(const gl::Context *context)
 {
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 inline angle::Result TextureStorage::useLevelZeroWorkaroundTexture(const gl::Context *context,
                                                                    bool useLevelZeroTexture)
 {
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 using TexStoragePointer = angle::UniqueObjectPointer<TextureStorage, gl::Context>;

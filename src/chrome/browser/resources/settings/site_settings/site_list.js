@@ -110,6 +110,8 @@ Polymer({
 
     /** @private */
     tooltipText_: String,
+
+    searchFilter: String,
   },
 
   // <if expr="chromeos">
@@ -152,8 +154,9 @@ Polymer({
    * @private
    */
   siteWithinCategoryChanged_: function(category, site) {
-    if (category == this.category)
+    if (category == this.category) {
       this.configureWidget_();
+    }
   },
 
   /**
@@ -167,8 +170,9 @@ Polymer({
 
     // The SESSION_ONLY list won't have any incognito exceptions. (Minor
     // optimization, not required).
-    if (this.categorySubtype == settings.ContentSetting.SESSION_ONLY)
+    if (this.categorySubtype == settings.ContentSetting.SESSION_ONLY) {
       return;
+    }
 
     // A change notification is not sent for each site. So we repopulate the
     // whole list when the incognito profile is created or destroyed.
@@ -180,8 +184,9 @@ Polymer({
    * @private
    */
   configureWidget_: function() {
-    if (this.category == undefined)
+    if (this.category == undefined) {
       return;
+    }
 
     // The observer for All Sites fires before the attached/ready event, so
     // initialize this here.
@@ -213,7 +218,15 @@ Polymer({
    * @private
    */
   hasSites_: function() {
-    return !!this.sites.length;
+    return this.sites.length > 0;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showNoSearchResults_: function() {
+    return this.sites.length > 0 && this.getFilteredSites_().length == 0;
   },
 
   /**
@@ -234,7 +247,7 @@ Polymer({
   /**
    * Need to use common tooltip since the tooltip in the entry is cut off from
    * the iron-list.
-   * @param {!{detail: {target: HTMLElement, text: string}}} e
+   * @param {!CustomEvent<!{target: HTMLElement, text: string}>} e
    * @private
    */
   onShowTooltip_: function(e) {
@@ -242,18 +255,10 @@ Polymer({
     const target = e.detail.target;
     // paper-tooltip normally determines the target from the |for| property,
     // which is a selector. Here paper-tooltip is being reused by multiple
-    // potential targets. Since paper-tooltip does not expose a public property
-    // or method to update the target, the private property |_target| is
-    // updated directly.
+    // potential targets.
     const tooltip = this.$.tooltip;
+    tooltip.target = target;
     /** @type {{updatePosition: Function}} */ (tooltip).updatePosition();
-    tooltip._target = target;
-    const parentRect = tooltip.offsetParent.getBoundingClientRect();
-    const rect = tooltip.getBoundingClientRect();
-    if (parentRect.left + parentRect.width < rect.left + rect.width) {
-      tooltip.style.right = '0';
-      tooltip.style.left = 'auto';
-    }
     const hide = () => {
       this.$.tooltip.hide();
       target.removeEventListener('mouseleave', hide);
@@ -278,8 +283,6 @@ Polymer({
     // |androidSmsInfo_| is only relevant for NOTIFICATIONS category. Don't
     // bother fetching it for other categories.
     if (this.category === settings.ContentSettingsTypes.NOTIFICATIONS &&
-        loadTimeData.valueExists('enableMultideviceSettings') &&
-        loadTimeData.getBoolean('enableMultideviceSettings') &&
         loadTimeData.valueExists('multideviceAllowedByPolicy') &&
         loadTimeData.getBoolean('multideviceAllowedByPolicy') &&
         !this.androidSmsInfo_) {
@@ -369,8 +372,9 @@ Polymer({
     // It makes no sense to show "clear on exit" for exceptions that only apply
     // to incognito. It gives the impression that they might under some
     // circumstances not be cleared on exit, which isn't true.
-    if (!this.actionMenuSite_ || this.actionMenuSite_.incognito)
+    if (!this.actionMenuSite_ || this.actionMenuSite_.incognito) {
       return false;
+    }
 
     return this.showSessionOnlyAction_;
   },
@@ -449,7 +453,27 @@ Polymer({
     this.activeDialogAnchor_ = null;
     const actionMenu =
         /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'));
-    if (actionMenu.open)
+    if (actionMenu.open) {
       actionMenu.close();
+    }
+  },
+
+  /**
+   * @return {!Array<!SiteException>}
+   * @private
+   */
+  getFilteredSites_: function() {
+    if (!this.searchFilter) {
+      return this.sites.slice();
+    }
+
+    const propNames = [
+      'displayName',
+      'origin',
+    ];
+    const searchFilter = this.searchFilter.toLowerCase();
+    return this.sites.filter(
+        site => propNames.some(
+            propName => site[propName].toLowerCase().includes(searchFilter)));
   },
 });

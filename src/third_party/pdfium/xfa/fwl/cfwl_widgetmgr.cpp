@@ -10,7 +10,6 @@
 
 #include "third_party/base/ptr_util.h"
 #include "xfa/fwl/cfwl_app.h"
-#include "xfa/fwl/cfwl_form.h"
 #include "xfa/fwl/cfwl_notedriver.h"
 #include "xfa/fxfa/cxfa_ffapp.h"
 #include "xfa/fxfa/cxfa_fwladapterwidgetmgr.h"
@@ -264,38 +263,6 @@ CFWL_Widget* CFWL_WidgetMgr::NextTab(CFWL_Widget* parent,
   return nullptr;
 }
 
-int32_t CFWL_WidgetMgr::CountRadioButtonGroup(CFWL_Widget* pFirst) const {
-  int32_t iRet = 0;
-  CFWL_Widget* pChild = pFirst;
-  while (pChild) {
-    pChild = GetNextSiblingWidget(pChild);
-    ++iRet;
-  }
-  return iRet;
-}
-
-CFWL_Widget* CFWL_WidgetMgr::GetRadioButtonGroupHeader(
-    CFWL_Widget* pRadioButton) const {
-  CFWL_Widget* pNext = pRadioButton;
-  if (pNext && (pNext->GetStyles() & FWL_WGTSTYLE_Group))
-    return pNext;
-  return nullptr;
-}
-
-std::vector<CFWL_Widget*> CFWL_WidgetMgr::GetSameGroupRadioButton(
-    CFWL_Widget* pRadioButton) const {
-  CFWL_Widget* pFirst = GetFirstSiblingWidget(pRadioButton);
-  if (!pFirst)
-    pFirst = pRadioButton;
-
-  if (CountRadioButtonGroup(pFirst) < 2)
-    return std::vector<CFWL_Widget*>();
-
-  std::vector<CFWL_Widget*> group;
-  group.push_back(GetRadioButtonGroupHeader(pRadioButton));
-  return group;
-}
-
 CFWL_Widget* CFWL_WidgetMgr::GetDefaultButton(CFWL_Widget* pParent) const {
   if ((pParent->GetClassID() == FWL_Type::PushButton) &&
       (pParent->GetStates() & (1 << (FWL_WGTSTATE_MAX + 2)))) {
@@ -355,15 +322,7 @@ void CFWL_WidgetMgr::OnProcessMessageToForm(CFWL_Message* pMessage) {
   if (!pDstWidget)
     return;
 
-  const CFWL_App* pApp = pDstWidget->GetOwnerApp();
-  if (!pApp)
-    return;
-
-  CFWL_NoteDriver* pNoteDriver =
-      static_cast<CFWL_NoteDriver*>(pApp->GetNoteDriver());
-  if (!pNoteDriver)
-    return;
-
+  CFWL_NoteDriver* pNoteDriver = pDstWidget->GetOwnerApp()->GetNoteDriver();
   pNoteDriver->ProcessMessage(pMessage->Clone());
 
 #if (_FX_OS_ == _FX_OS_MACOSX_)

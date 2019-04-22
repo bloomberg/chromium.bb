@@ -31,10 +31,11 @@ import org.chromium.android_webview.test.OnlyRunIn;
 import org.chromium.android_webview.test.RenderProcessGoneHelper;
 import org.chromium.android_webview.test.TestAwContents;
 import org.chromium.android_webview.test.TestAwContentsClient;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.concurrent.TimeUnit;
@@ -99,7 +100,8 @@ public class VisualStateCallbackTest {
 
         public void doInvokeVisualStateCallbackOnUiThread() {
             final VisualStateCallbackTestAwContents awContents = this;
-            ThreadUtils.runOnUiThread(() -> awContents.doInvokeVisualStateCallback());
+            PostTask.runOrPostTask(
+                    UiThreadTaskTraits.DEFAULT, () -> awContents.doInvokeVisualStateCallback());
         }
 
         private void doInvokeVisualStateCallback() {

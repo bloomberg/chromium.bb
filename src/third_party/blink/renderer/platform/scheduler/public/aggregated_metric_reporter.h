@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace base {
 class HistogramBase;
@@ -29,6 +30,8 @@ namespace scheduler {
 // All values reported to RecordTask should have lower values.
 template <class TaskClass, class ValueType>
 class AggregatedMetricReporter {
+  DISALLOW_NEW();
+
  public:
   // Aggregation function: takes ValueType, returns the integer value to return
   // to histogram and modifies the passed value.

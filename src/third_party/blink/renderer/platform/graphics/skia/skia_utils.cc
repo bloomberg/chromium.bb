@@ -31,11 +31,11 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
 #include "third_party/skia/third_party/skcms/skcms.h"
-#include "ui/gfx/icc_profile.h"
 
 #include <algorithm>
 #include <cmath>
@@ -319,29 +319,6 @@ SkColor ScaleAlpha(SkColor color, float alpha) {
   return SkColorSetA(color, rounded_alpha);
 }
 
-gfx::ColorSpace SkColorSpaceToGfxColorSpace(
-    const sk_sp<SkColorSpace> color_space) {
-  if (!color_space)
-    return gfx::ColorSpace::CreateSRGB();
-
-  SkMatrix44 toXYZD50;
-  SkColorSpaceTransferFn transfer_fn;
-  if (color_space->toXYZD50(&toXYZD50) &&
-      color_space->isNumericalTransferFn(&transfer_fn))
-    return gfx::ColorSpace::CreateCustom(toXYZD50, transfer_fn);
-
-  // Use an intermediate ICC profile to convert the color space data structure.
-  // If this fails, we fall back to sRGB.
-  sk_sp<SkData> sk_profile = color_space->serialize();
-  if (sk_profile) {
-    gfx::ICCProfile icc_profile =
-        gfx::ICCProfile::FromData(sk_profile->data(), sk_profile->size());
-    if (icc_profile.IsValid())
-      return icc_profile.GetColorSpace();
-  }
-  return gfx::ColorSpace::CreateSRGB();
-}
-
 bool ApproximatelyEqualSkColorSpaces(sk_sp<SkColorSpace> src_color_space,
                                      sk_sp<SkColorSpace> dst_color_space) {
   if ((!src_color_space && dst_color_space) ||
@@ -353,6 +330,12 @@ bool ApproximatelyEqualSkColorSpaces(sk_sp<SkColorSpace> src_color_space,
   src_color_space->toProfile(&src_profile);
   dst_color_space->toProfile(&dst_profile);
   return skcms_ApproximatelyEqualProfiles(&src_profile, &dst_profile);
+}
+
+SkRect LayoutRectToSkRect(const blink::LayoutRect& rect) {
+  return SkRect::MakeXYWH(SkFloatToScalar(rect.X()), SkFloatToScalar(rect.Y()),
+                          SkFloatToScalar(rect.Width()),
+                          SkFloatToScalar(rect.Height()));
 }
 
 template <typename PrimitiveType>

@@ -26,7 +26,6 @@ views::Widget* CreateWindowAsFramelessChild(views::WidgetDelegate* delegate,
   params.delegate = delegate;
   params.child = true;
   params.parent = parent;
-  params.remove_standard_frame = true;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
 
   widget->Init(params);

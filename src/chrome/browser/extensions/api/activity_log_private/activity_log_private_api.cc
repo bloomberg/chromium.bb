@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -85,11 +86,19 @@ bool ActivityLogAPI::IsExtensionWhitelisted(const std::string& extension_id) {
 }
 
 void ActivityLogAPI::OnListenerAdded(const EventListenerInfo& details) {
-  // TODO(felt): Only observe activity_log_ events when we have a customer.
+  if (activity_log_->has_listeners())
+    return;
+  StartOrStopListeningForExtensionActivities();
 }
 
 void ActivityLogAPI::OnListenerRemoved(const EventListenerInfo& details) {
-  // TODO(felt): Only observe activity_log_ events when we have a customer.
+  StartOrStopListeningForExtensionActivities();
+}
+
+void ActivityLogAPI::StartOrStopListeningForExtensionActivities() {
+  EventRouter* event_router = EventRouter::Get(browser_context_);
+  activity_log_->SetHasListeners(event_router->HasEventListener(
+      activity_log_private::OnExtensionActivity::kEventName));
 }
 
 void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
@@ -106,7 +115,7 @@ void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
 bool ActivityLogPrivateGetExtensionActivitiesFunction::RunAsync() {
   std::unique_ptr<activity_log_private::GetExtensionActivities::Params> params(
       activity_log_private::GetExtensionActivities::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   // Get the arguments in the right format.
   Filter filter = std::move(params->filter);
@@ -180,7 +189,7 @@ ExtensionFunction::ResponseAction
 ActivityLogPrivateDeleteActivitiesFunction::Run() {
   std::unique_ptr<activity_log_private::DeleteActivities::Params> params(
       activity_log_private::DeleteActivities::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   // Put the arguments in the right format.
   std::vector<int64_t> action_ids;
@@ -197,6 +206,19 @@ ActivityLogPrivateDeleteActivitiesFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
+ActivityLogPrivateDeleteActivitiesByExtensionFunction::Run() {
+  std::unique_ptr<activity_log_private::DeleteActivitiesByExtension::Params>
+      params(activity_log_private::DeleteActivitiesByExtension::Params::Create(
+          *args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  ActivityLog* activity_log = ActivityLog::GetInstance(browser_context());
+  DCHECK(activity_log);
+  activity_log->RemoveExtensionData(params->extension_id);
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
 ActivityLogPrivateDeleteDatabaseFunction::Run() {
   ActivityLog* activity_log = ActivityLog::GetInstance(browser_context());
   DCHECK(activity_log);
@@ -207,7 +229,7 @@ ActivityLogPrivateDeleteDatabaseFunction::Run() {
 ExtensionFunction::ResponseAction ActivityLogPrivateDeleteUrlsFunction::Run() {
   std::unique_ptr<activity_log_private::DeleteUrls::Params> params(
       activity_log_private::DeleteUrls::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   // Put the arguments in the right format.
   std::vector<GURL> gurls;

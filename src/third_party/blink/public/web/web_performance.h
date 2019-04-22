@@ -69,7 +69,7 @@ class WebPerformance {
   BLINK_EXPORT double UnloadEventEnd() const;
   BLINK_EXPORT double RedirectStart() const;
   BLINK_EXPORT double RedirectEnd() const;
-  BLINK_EXPORT unsigned short RedirectCount() const;
+  BLINK_EXPORT uint16_t RedirectCount() const;
   BLINK_EXPORT double FetchStart() const;
   BLINK_EXPORT double DomainLookupStart() const;
   BLINK_EXPORT double DomainLookupEnd() const;
@@ -87,15 +87,14 @@ class WebPerformance {
   BLINK_EXPORT double LoadEventEnd() const;
   BLINK_EXPORT double FirstLayout() const;
   BLINK_EXPORT double FirstPaint() const;
-  BLINK_EXPORT double FirstTextPaint() const;
   BLINK_EXPORT double FirstImagePaint() const;
   BLINK_EXPORT double FirstContentfulPaint() const;
   BLINK_EXPORT double FirstMeaningfulPaint() const;
   BLINK_EXPORT double FirstMeaningfulPaintCandidate() const;
   BLINK_EXPORT double LargestImagePaint() const;
-  BLINK_EXPORT double LastImagePaint() const;
+  BLINK_EXPORT uint64_t LargestImagePaintSize() const;
   BLINK_EXPORT double LargestTextPaint() const;
-  BLINK_EXPORT double LastTextPaint() const;
+  BLINK_EXPORT uint64_t LargestTextPaintSize() const;
   BLINK_EXPORT double PageInteractive() const;
   BLINK_EXPORT double PageInteractiveDetection() const;
   BLINK_EXPORT double FirstInputInvalidatingInteractive() const;

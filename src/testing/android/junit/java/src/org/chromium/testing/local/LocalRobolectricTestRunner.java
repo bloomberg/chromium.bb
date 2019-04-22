@@ -13,14 +13,17 @@ import org.robolectric.internal.ManifestFactory;
  * A custom Robolectric Junit4 Test Runner with Chromium specific settings.
  */
 public class LocalRobolectricTestRunner extends RobolectricTestRunner {
-    public static final int DEFAULT_SDK = 26;
+    public static final int DEFAULT_SDK = 28;
     private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
 
-    public LocalRobolectricTestRunner(Class<?> testClass) throws InitializationError {
-        super(testClass);
+    static {
         // Setting robolectric.offline which tells Robolectric to look for runtime dependency
         // JARs from a local directory and to not download them from Maven.
         System.setProperty("robolectric.offline", "true");
+    }
+
+    public LocalRobolectricTestRunner(Class<?> testClass) throws InitializationError {
+        super(testClass);
     }
 
     @Override
@@ -28,7 +31,12 @@ public class LocalRobolectricTestRunner extends RobolectricTestRunner {
         String packageName =
                 System.getProperty("chromium.robolectric.package.name", DEFAULT_PACKAGE_NAME);
 
-        return new Config.Builder().setSdk(DEFAULT_SDK).setPackageName(packageName).build();
+        return new Config.Builder()
+                .setSdk(DEFAULT_SDK)
+                .setPackageName(packageName)
+                // Shadows to fix robolectric shortcomings.
+                .setShadows(new Class[] {CustomShadowApplicationPackageManager.class})
+                .build();
     }
 
     @Override

@@ -17,6 +17,11 @@
 #include "src/vector.h"
 
 namespace v8 {
+
+namespace tracing {
+class TracedValue;
+}
+
 namespace internal {
 
 class DeferredHandles;
@@ -25,6 +30,10 @@ class Isolate;
 class JavaScriptFrame;
 class JSGlobalObject;
 class Zone;
+
+namespace wasm {
+struct WasmCompilationResult;
+}
 
 // OptimizedCompilationInfo encapsulates the information needed to compile
 // optimized code for a given function, and the results of the optimized
@@ -51,7 +60,9 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
     kTraceTurboJson = 1 << 14,
     kTraceTurboGraph = 1 << 15,
     kTraceTurboScheduled = 1 << 16,
-    kWasmRuntimeExceptionSupport = 1 << 17
+    kWasmRuntimeExceptionSupport = 1 << 17,
+    kTurboControlFlowAwareAllocation = 1 << 18,
+    kTurboPreprocessRanges = 1 << 19
   };
 
   // Construct a compilation info for optimized compilation.
@@ -73,14 +84,24 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
   Handle<JSFunction> closure() const { return closure_; }
   Handle<Code> code() const { return code_; }
   Code::Kind code_kind() const { return code_kind_; }
-  uint32_t stub_key() const { return stub_key_; }
-  void set_stub_key(uint32_t stub_key) { stub_key_ = stub_key; }
   int32_t builtin_index() const { return builtin_index_; }
   void set_builtin_index(int32_t index) { builtin_index_ = index; }
   BailoutId osr_offset() const { return osr_offset_; }
   JavaScriptFrame* osr_frame() const { return osr_frame_; }
 
   // Flags used by optimized compilation.
+
+  void MarkAsTurboControlFlowAwareAllocation() {
+    SetFlag(kTurboControlFlowAwareAllocation);
+  }
+  bool is_turbo_control_flow_aware_allocation() const {
+    return GetFlag(kTurboControlFlowAwareAllocation);
+  }
+
+  void MarkAsTurboPreprocessRanges() { SetFlag(kTurboPreprocessRanges); }
+  bool is_turbo_preprocess_ranges() const {
+    return GetFlag(kTurboPreprocessRanges);
+  }
 
   void MarkAsFunctionContextSpecializing() {
     SetFlag(kFunctionContextSpecializing);
@@ -176,6 +197,9 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
 
   void SetCode(Handle<Code> code) { code_ = code; }
 
+  void SetWasmCompilationResult(std::unique_ptr<wasm::WasmCompilationResult>);
+  std::unique_ptr<wasm::WasmCompilationResult> ReleaseWasmCompilationResult();
+
   bool has_context() const;
   Context context() const;
 
@@ -183,12 +207,12 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
   Context native_context() const;
 
   bool has_global_object() const;
-  JSGlobalObject* global_object() const;
+  JSGlobalObject global_object() const;
 
   // Accessors for the different compilation modes.
   bool IsOptimizing() const { return code_kind() == Code::OPTIMIZED_FUNCTION; }
   bool IsWasm() const { return code_kind() == Code::WASM_FUNCTION; }
-  bool IsStub() const {
+  bool IsNotOptimizedFunctionOrWasmFunction() const {
     return code_kind() != Code::OPTIMIZED_FUNCTION &&
            code_kind() != Code::WASM_FUNCTION;
   }
@@ -206,19 +230,15 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
 
   void ReopenHandlesInNewHandleScope(Isolate* isolate);
 
-  void AbortOptimization(BailoutReason reason) {
-    DCHECK_NE(reason, BailoutReason::kNoReason);
-    if (bailout_reason_ == BailoutReason::kNoReason) bailout_reason_ = reason;
-    SetFlag(kDisableFutureOptimization);
-  }
+  void AbortOptimization(BailoutReason reason);
 
-  void RetryOptimization(BailoutReason reason) {
-    DCHECK_NE(reason, BailoutReason::kNoReason);
-    if (GetFlag(kDisableFutureOptimization)) return;
-    bailout_reason_ = reason;
-  }
+  void RetryOptimization(BailoutReason reason);
 
   BailoutReason bailout_reason() const { return bailout_reason_; }
+
+  bool is_disable_future_optimization() const {
+    return GetFlag(kDisableFutureOptimization);
+  }
 
   int optimization_id() const {
     DCHECK(IsOptimizing());
@@ -227,18 +247,12 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
 
   struct InlinedFunctionHolder {
     Handle<SharedFunctionInfo> shared_info;
-    Handle<BytecodeArray> bytecode_array;
-
+    Handle<BytecodeArray> bytecode_array;  // Explicit to prevent flushing.
     InliningPosition position;
 
     InlinedFunctionHolder(Handle<SharedFunctionInfo> inlined_shared_info,
                           Handle<BytecodeArray> inlined_bytecode,
-                          SourcePosition pos)
-        : shared_info(inlined_shared_info), bytecode_array(inlined_bytecode) {
-      position.position = pos;
-      // initialized when generating the deoptimization literals
-      position.inlined_function_id = DeoptimizationData::kNotInlinedIndex;
-    }
+                          SourcePosition pos);
 
     void RegisterInlinedFunctionId(size_t inlined_function_id) {
       position.inlined_function_id = static_cast<int>(inlined_function_id);
@@ -265,6 +279,8 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
     trace_turbo_filename_ = std::move(filename);
   }
 
+  std::unique_ptr<v8::tracing::TracedValue> ToTracedValue();
+
  private:
   OptimizedCompilationInfo(Code::Kind code_kind, Zone* zone);
   void ConfigureFlags();
@@ -280,7 +296,6 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
       PoisoningMitigationLevel::kDontPoison;
 
   Code::Kind code_kind_;
-  uint32_t stub_key_ = 0;
   int32_t builtin_index_ = -1;
 
   // We retain a reference the bytecode array specifically to ensure it doesn't
@@ -293,6 +308,9 @@ class V8_EXPORT_PRIVATE OptimizedCompilationInfo final {
 
   // The compiled code.
   Handle<Code> code_;
+
+  // The WebAssembly compilation result, not published in the NativeModule yet.
+  std::unique_ptr<wasm::WasmCompilationResult> wasm_compilation_result_;
 
   // Entry point when compiling for OSR, {BailoutId::None} otherwise.
   BailoutId osr_offset_ = BailoutId::None();

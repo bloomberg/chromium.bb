@@ -14,6 +14,7 @@
 
 #include "SampleUtils.h"
 
+#include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/DawnHelpers.h"
 #include "utils/SystemUtils.h"
 
@@ -53,9 +54,10 @@ void initTextures() {
     descriptor.size.width = 1024;
     descriptor.size.height = 1024;
     descriptor.size.depth = 1;
-    descriptor.arrayLayer = 1;
+    descriptor.arrayLayerCount = 1;
+    descriptor.sampleCount = 1;
     descriptor.format = dawn::TextureFormat::R8G8B8A8Unorm;
-    descriptor.levelCount = 1;
+    descriptor.mipLevelCount = 1;
     descriptor.usage = dawn::TextureUsageBit::TransferDst | dawn::TextureUsageBit::Sampled;
     texture = device.CreateTexture(&descriptor);
 
@@ -70,14 +72,13 @@ void initTextures() {
 
     dawn::Buffer stagingBuffer = utils::CreateBufferFromData(device, data.data(), static_cast<uint32_t>(data.size()), dawn::BufferUsageBit::TransferSrc);
     dawn::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(stagingBuffer, 0, 0, 0);
-    dawn::TextureCopyView textureCopyView =
-        utils::CreateTextureCopyView(texture, 0, 0, {0, 0, 0}, dawn::TextureAspect::Color);
+    dawn::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, 0, {0, 0, 0});
     dawn::Extent3D copySize = {1024, 1024, 1};
-    dawn::CommandBuffer copy =
-        device.CreateCommandBufferBuilder()
-            .CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize)
-            .GetResult();
 
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+    encoder.CopyBufferToTexture(&bufferCopyView, &textureCopyView, &copySize);
+
+    dawn::CommandBuffer copy = encoder.Finish();
     queue.Submit(1, &copy);
 }
 
@@ -110,11 +111,6 @@ void init() {
             fragColor = texture(sampler2D(myTexture, mySampler), gl_FragCoord.xy / vec2(640.0, 480.0));
         })");
 
-    auto inputState = device.CreateInputStateBuilder()
-        .SetAttribute(0, 0, dawn::VertexFormat::FloatR32G32B32A32, 0)
-        .SetInput(0, 4 * sizeof(float), dawn::InputStepMode::Vertex)
-        .GetResult();
-
     auto bgl = utils::MakeBindGroupLayout(
         device, {
                     {0, dawn::ShaderStageBit::Fragment, dawn::BindingType::Sampler},
@@ -125,23 +121,26 @@ void init() {
 
     depthStencilView = CreateDefaultDepthStencilView(device);
 
-    pipeline = device.CreateRenderPipelineBuilder()
-        .SetColorAttachmentFormat(0, GetPreferredSwapChainTextureFormat())
-        .SetDepthStencilAttachmentFormat(dawn::TextureFormat::D32FloatS8Uint)
-        .SetLayout(pl)
-        .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-        .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-        .SetIndexFormat(dawn::IndexFormat::Uint32)
-        .SetInputState(inputState)
-        .GetResult();
+    utils::ComboRenderPipelineDescriptor descriptor(device);
+    descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
+    descriptor.cVertexStage.module = vsModule;
+    descriptor.cFragmentStage.module = fsModule;
+    descriptor.cInputState.numAttributes = 1;
+    descriptor.cInputState.cAttributes[0].format = dawn::VertexFormat::Float4;
+    descriptor.cInputState.numInputs = 1;
+    descriptor.cInputState.cInputs[0].stride = 4 * sizeof(float);
+    descriptor.depthStencilState = &descriptor.cDepthStencilState;
+    descriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
+    descriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
 
-    dawn::TextureView view = texture.CreateDefaultTextureView();
+    pipeline = device.CreateRenderPipeline(&descriptor);
 
-    bindGroup = device.CreateBindGroupBuilder()
-        .SetLayout(bgl)
-        .SetSamplers(0, 1, &sampler)
-        .SetTextureViews(1, 1, &view)
-        .GetResult();
+    dawn::TextureView view = texture.CreateDefaultView();
+
+    bindGroup = utils::MakeBindGroup(device, bgl, {
+        {0, sampler},
+        {1, view}
+    });
 }
 
 struct {uint32_t a; float b;} s;
@@ -150,23 +149,23 @@ void frame() {
     s.b += 0.02f;
     if (s.b >= 1.0f) {s.b = 0.0f;}
 
-    dawn::Texture backbuffer;
-    dawn::RenderPassDescriptor renderPass;
-    GetNextRenderPassDescriptor(device, swapchain, depthStencilView, &backbuffer, &renderPass);
+    dawn::Texture backbuffer = swapchain.GetNextTexture();
+    utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateDefaultView()},
+                                                depthStencilView);
 
-    static const uint32_t vertexBufferOffsets[1] = {0};
-    dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+    static const uint64_t vertexBufferOffsets[1] = {0};
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
-        dawn::RenderPassEncoder pass = builder.BeginRenderPass(renderPass);
-        pass.SetRenderPipeline(pipeline);
-        pass.SetBindGroup(0, bindGroup);
+        dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetPipeline(pipeline);
+        pass.SetBindGroup(0, bindGroup, 0, nullptr);
         pass.SetVertexBuffers(0, 1, &vertexBuffer, vertexBufferOffsets);
         pass.SetIndexBuffer(indexBuffer, 0);
-        pass.DrawElements(3, 1, 0, 0);
+        pass.DrawIndexed(3, 1, 0, 0, 0);
         pass.EndPass();
     }
 
-    dawn::CommandBuffer commands = builder.GetResult();
+    dawn::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
     swapchain.Present(backbuffer);
     DoFlush();

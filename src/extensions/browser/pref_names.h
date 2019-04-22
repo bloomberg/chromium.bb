@@ -52,6 +52,9 @@ extern const char kExtensions[];
 // policy.
 extern const char kExtensionManagement[];
 
+// Policy that indicates whether CRX2 extension updates are allowed.
+extern const char kInsecureExtensionUpdatesEnabled[];
+
 // A whitelist of extension ids the user can install: exceptions from the
 // following blacklist.
 extern const char kInstallAllowList[];
@@ -68,19 +71,16 @@ extern const char kInstallDenyList[];
 // accessed through extensions::ExternalPolicyProvider.
 extern const char kInstallForceList[];
 
-// A list containing apps that Chrome will silently install on the login screen
-// on Chrome OS at startup time. It is a list of strings, each string contains
-// an app ID and an update URL, delimited by a semicolon.
-// This preference is set by an admin policy, and meant to be only
-// accessed through extensions::ExternalPolicyProvider.
-extern const char kInstallLoginScreenAppList[];
+// A list containing apps or extensions that Chrome will silently install on the
+// login screen on Chrome OS at startup time. It is a list of strings, each
+// string contains an app ID and an update URL, delimited by a semicolon. This
+// preference is set by an admin policy, and meant to be only accessed through
+// extensions::ExternalPolicyProvider.
+extern const char kLoginScreenExtensions[];
 
 // String pref for what version chrome was last time the extension prefs were
 // loaded.
 extern const char kLastChromeVersion[];
-
-// Time of the last extensions auto-update check.
-extern const char kLastUpdateCheck[];
 
 // Blacklist and whitelist for Native Messaging Hosts.
 extern const char kNativeMessagingBlacklist[];
@@ -120,6 +120,9 @@ extern const char kPrefContentSettings[];
 
 // Extension-set incognito content settings.
 extern const char kPrefIncognitoContentSettings[];
+
+// A boolean that when set removes blacklisted extensions automatically.
+extern const char kUninstallBlacklistedExtensions[];
 
 }  // namespace pref_names
 }  // namespace extensions

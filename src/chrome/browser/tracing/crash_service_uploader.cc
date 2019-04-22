@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -97,8 +98,8 @@ void TraceCrashServiceUploader::OnSimpleURLLoaderComplete(
       response_code =
           simple_url_loader_->ResponseInfo()->headers->response_code();
     }
-    feedback =
-        "Uploading failed, response code: " + base::IntToString(response_code);
+    feedback = "Uploading failed, response code: " +
+               base::NumberToString(response_code);
   }
 
   base::PostTaskWithTraits(
@@ -117,7 +118,7 @@ void TraceCrashServiceUploader::OnURLLoaderUploadProgress(uint64_t current,
   if (progress_callback_.is_null())
     return;
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::Bind(progress_callback_, current, total));
+                           base::BindOnce(progress_callback_, current, total));
 }
 
 void TraceCrashServiceUploader::DoUpload(
@@ -133,9 +134,9 @@ void TraceCrashServiceUploader::DoUpload(
 
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT},
-      base::Bind(&TraceCrashServiceUploader::DoCompressOnBackgroundThread,
-                 base::Unretained(this), file_contents, upload_mode,
-                 upload_url_, base::Passed(std::move(metadata))));
+      base::BindOnce(&TraceCrashServiceUploader::DoCompressOnBackgroundThread,
+                     base::Unretained(this), file_contents, upload_mode,
+                     upload_url_, std::move(metadata)));
 }
 
 void TraceCrashServiceUploader::DoCompressOnBackgroundThread(

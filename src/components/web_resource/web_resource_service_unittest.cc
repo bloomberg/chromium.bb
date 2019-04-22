@@ -87,7 +87,7 @@ class TestWebResourceService : public WebResourceService {
                                [](network::NetworkConnectionTracker* tracker) {
                                  return tracker;
                                },
-                               network_connection_tracker)){};
+                               network_connection_tracker)) {}
 
   void Unpack(const base::DictionaryValue& parsed_json) override {}
 };

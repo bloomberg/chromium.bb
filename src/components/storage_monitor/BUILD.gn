@@ -84,7 +84,7 @@ static_library("storage_monitor") {
       "storage_monitor_linux.cc",
       "storage_monitor_linux.h",
     ]
-    deps += [ "//chromeos" ]
+    deps += [ "//chromeos/disks" ]
   }
 }
 
@@ -157,6 +157,6 @@ source_set("unit_tests") {
     }
   }
   if (is_chromeos) {
-    deps += [ "//chromeos:test_support" ]
+    deps += [ "//chromeos/disks:test_support" ]
   }
 }

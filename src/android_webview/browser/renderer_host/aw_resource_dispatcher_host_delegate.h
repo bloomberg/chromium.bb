@@ -46,12 +46,6 @@ class AwResourceDispatcherHostDelegate
   void OnResponseStarted(net::URLRequest* request,
                          content::ResourceContext* resource_context,
                          network::ResourceResponse* response) override;
-
-  void OnRequestRedirected(const GURL& redirect_url,
-                           net::URLRequest* request,
-                           content::ResourceContext* resource_context,
-                           network::ResourceResponse* response) override;
-
   void RequestComplete(net::URLRequest* request) override;
 
   void RemovePendingThrottleOnIoThread(IoThreadClientThrottle* throttle);
@@ -73,8 +67,6 @@ class AwResourceDispatcherHostDelegate
   void AddPendingThrottleOnIoThread(int render_process_id,
                                     int render_frame_id,
                                     IoThreadClientThrottle* pending_throttle);
-  void AddExtraHeadersIfNeeded(net::URLRequest* request,
-                               content::ResourceContext* resource_context);
 
   // Pair of render_process_id and render_frame_id.
   typedef std::map<content::GlobalFrameRoutingId, IoThreadClientThrottle*>

@@ -21,9 +21,5 @@
             assert_unreached("FAIL: small resource was not loaded");
         t.done();
         }, false));
-    var w = window.open("resources/media-link-headers.php");
-    if (w.internals) {
-        w.internals.settings.setViewportEnabled(true);
-        w.internals.settings.setViewportMetaEnabled(true);
-    }
+    var w = window.open("resources/enable-viewport-and-refresh.html?media-link-headers.php");
 </script>

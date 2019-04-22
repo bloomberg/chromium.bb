@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_GEOMETRY_MAPPER_CLIP_CACHE_H_
 
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
+#include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -39,7 +39,10 @@ class PLATFORM_EXPORT GeometryMapperClipCache {
                      OverlayScrollbarClipBehavior clip_behavior_arg)
         : ancestor_clip(ancestor_clip_arg),
           ancestor_transform(ancestor_transform_arg),
-          clip_behavior(clip_behavior_arg) {}
+          clip_behavior(clip_behavior_arg) {
+      DCHECK(ancestor_clip);
+      DCHECK(ancestor_transform);
+    }
   };
 
   // Returns the clip visual rect  of the owning

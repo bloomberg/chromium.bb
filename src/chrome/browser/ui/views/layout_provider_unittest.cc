@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -46,7 +47,7 @@ class LayoutProviderTest : public testing::Test {
     // later, since it's known to have flaky results on Windows 7. See
     // http://crbug.com/759870.
     if (base::win::GetVersion() >= base::win::VERSION_WIN10)
-      gfx::win::MaybeInitializeDirectWrite();
+      gfx::win::InitializeDirectWrite();
   }
 #endif
 
@@ -290,7 +291,7 @@ TEST_F(LayoutProviderTest, TypographyLineHeight) {
                             {CONTEXT_BODY_TEXT_LARGE, 2, 4},
                             {CONTEXT_BODY_TEXT_SMALL, 4, 5}};
 
-  for (size_t i = 0; i < arraysize(kExpectedIncreases); ++i) {
+  for (size_t i = 0; i < base::size(kExpectedIncreases); ++i) {
     SCOPED_TRACE(testing::Message() << "Testing index: " << i);
     const auto& increase = kExpectedIncreases[i];
     const gfx::FontList& font = views::style::GetFont(increase.context, kStyle);
@@ -310,7 +311,8 @@ TEST_F(LayoutProviderTest, TypographyLineHeight) {
 // Ensure that line heights reported in a default bot configuration match the
 // Harmony spec. This test will only run if it detects that the current machine
 // has the default OS configuration.
-TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
+// Flaky. http://crbug.com/759870
+TEST_F(LayoutProviderTest, DISABLED_ExplicitTypographyLineHeight) {
   std::unique_ptr<views::LayoutProvider> layout_provider =
       ChromeLayoutProvider::CreateLayoutProvider();
 
@@ -331,7 +333,7 @@ TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
                          {CONTEXT_BODY_TEXT_LARGE, kBodyLineHeight},
                          {CONTEXT_BODY_TEXT_SMALL, kBodyLineHeight}};
 
-  for (size_t i = 0; i < arraysize(kHarmonyHeights); ++i) {
+  for (size_t i = 0; i < base::size(kHarmonyHeights); ++i) {
     SCOPED_TRACE(testing::Message() << "Testing index: " << i);
     EXPECT_EQ(kHarmonyHeights[i].line_height,
               views::style::GetLineHeight(kHarmonyHeights[i].context, kStyle));

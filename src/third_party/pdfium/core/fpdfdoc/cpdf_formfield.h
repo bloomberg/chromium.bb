@@ -147,9 +147,7 @@ class CPDF_FormField {
 
   WideString GetOptionLabel(int index) const;
   WideString GetOptionValue(int index) const;
-
-  int FindOption(WideString csOptLabel) const;
-  int FindOptionValue(const WideString& csOptValue) const;
+  int FindOption(const WideString& csOptValue) const;
 
   bool CheckControl(int iControlIndex,
                     bool bChecked,
@@ -184,6 +182,8 @@ class CPDF_FormField {
   bool SetCheckValue(const WideString& value,
                      bool bDefault,
                      NotificationOption notify);
+  void SetItemSelectionSelected(int index, const WideString& opt_value);
+  void SetItemSelectionUnselected(int index, const WideString& opt_value);
   bool NotifyBeforeSelectionChange(const WideString& value);
   void NotifyAfterSelectionChange();
   bool NotifyBeforeValueChange(const WideString& value);

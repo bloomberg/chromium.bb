@@ -22,4 +22,19 @@ interface WakeLockProvider {
                             WakeLockReason reason,
                             string description,
                             WakeLock& wake_lock);
+
+  // Notifies the caller if no wake lock of type |type| is currently activated.
+  // If it is activated then the caller is notified on each deactivation event
+  // after this call.
+  NotifyOnWakeLockDeactivation(WakeLockType type, WakeLockObserver observer);
+
+  // Test-only method that returns the number of activated wake locks of type
+  // |type|.
+  GetActiveWakeLocksForTests(WakeLockType type) => (int32 count);
+};
+
+interface WakeLockObserver {
+  // Called when a wake lock of type |type| is canceled for the last time i.e.
+  // no wake lock of type |type| is held across the system.
+  OnWakeLockDeactivated(WakeLockType type);
 };

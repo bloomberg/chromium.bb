@@ -12,10 +12,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 class SSLClientCertificateSelectorTestBase : public InProcessBrowserTest {
  public:
   SSLClientCertificateSelectorTestBase();
@@ -30,13 +26,7 @@ class SSLClientCertificateSelectorTestBase : public InProcessBrowserTest {
   virtual void TearDownOnIOThread();
 
  protected:
-  std::unique_ptr<net::URLRequest> MakeURLRequest(
-      net::URLRequestContextGetter* context_getter);
-
   base::WaitableEvent io_loop_finished_event_;
-
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  net::URLRequest* url_request_;
 
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
   scoped_refptr<testing::StrictMock<SSLClientAuthRequestorMock> >

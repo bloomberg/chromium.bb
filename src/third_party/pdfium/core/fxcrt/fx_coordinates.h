@@ -236,10 +236,7 @@ class CFX_FloatRect {
 
   void Normalize();
 
-  void Reset();
-
   bool IsEmpty() const { return left >= right || bottom >= top; }
-
   bool Contains(const CFX_PointF& point) const;
   bool Contains(const CFX_FloatRect& other_rect) const;
 
@@ -345,12 +342,6 @@ class CFX_RectF {
         width(other.width),
         height(other.height) {}
 
-  void Reset() {
-    left = 0;
-    top = 0;
-    width = 0;
-    height = 0;
-  }
   CFX_RectF& operator+=(const PointType& p) {
     left += p.x;
     top += p.y;
@@ -521,51 +512,45 @@ std::ostream& operator<<(std::ostream& os, const CFX_RectF& rect);
 //
 class CFX_Matrix {
  public:
-  CFX_Matrix() { SetIdentity(); }
+  CFX_Matrix() = default;
 
   explicit CFX_Matrix(const float n[6])
       : a(n[0]), b(n[1]), c(n[2]), d(n[3]), e(n[4]), f(n[5]) {}
 
-  CFX_Matrix(const CFX_Matrix& other) = default;
-
   CFX_Matrix(float a1, float b1, float c1, float d1, float e1, float f1)
       : a(a1), b(b1), c(c1), d(d1), e(e1), f(f1) {}
 
-  void operator=(const CFX_Matrix& other) {
-    a = other.a;
-    b = other.b;
-    c = other.c;
-    d = other.d;
-    e = other.e;
-    f = other.f;
-  }
+  CFX_Matrix(const CFX_Matrix& other) = default;
 
   std::tuple<float, float, float, float, float, float> AsTuple() const;
 
-  void SetIdentity() {
-    a = 1;
-    b = 0;
-    c = 0;
-    d = 1;
-    e = 0;
-    f = 0;
+  CFX_Matrix& operator=(const CFX_Matrix& other) = default;
+
+  bool operator==(const CFX_Matrix& other) const {
+    return a == other.a && b == other.b && c == other.c && d == other.d &&
+           e == other.e && f == other.f;
+  }
+  bool operator!=(const CFX_Matrix& other) const { return !(*this == other); }
+
+  CFX_Matrix operator*(const CFX_Matrix& right) const {
+    return CFX_Matrix(a * right.a + b * right.c, a * right.b + b * right.d,
+                      c * right.a + d * right.c, c * right.b + d * right.d,
+                      e * right.a + f * right.c + right.e,
+                      e * right.b + f * right.d + right.f);
+  }
+  CFX_Matrix& operator*=(const CFX_Matrix& other) {
+    *this = *this * other;
+    return *this;
   }
 
+  bool IsIdentity() const { return *this == CFX_Matrix(); }
   CFX_Matrix GetInverse() const;
-
-  void Concat(const CFX_Matrix& right);
-  void ConcatPrepend(const CFX_Matrix& left);
-  void ConcatInverse(const CFX_Matrix& m);
-  void ConcatInversePrepend(const CFX_Matrix& m);
-
-  bool IsIdentity() const {
-    return a == 1 && b == 0 && c == 0 && d == 1 && e == 0 && f == 0;
-  }
 
   bool Is90Rotated() const;
   bool IsScaled() const;
   bool WillScale() const { return a != 1.0f || b != 0 || c != 0 || d != 1.0f; }
 
+  void Concat(const CFX_Matrix& right) { *this *= right; }
   void Translate(float x, float y);
   void TranslatePrepend(float x, float y);
   void Translate(int32_t x, int32_t y) {
@@ -593,12 +578,12 @@ class CFX_Matrix {
   CFX_RectF TransformRect(const CFX_RectF& rect) const;
   CFX_FloatRect TransformRect(const CFX_FloatRect& rect) const;
 
-  float a;
-  float b;
-  float c;
-  float d;
-  float e;
-  float f;
+  float a = 1.0f;
+  float b = 0.0f;
+  float c = 0.0f;
+  float d = 1.0f;
+  float e = 0.0f;
+  float f = 0.0f;
 };
 
 #endif  // CORE_FXCRT_FX_COORDINATES_H_

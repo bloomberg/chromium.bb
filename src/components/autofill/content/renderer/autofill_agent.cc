@@ -87,12 +87,6 @@ namespace {
 // upon, instead of multiple in close succession (debounce time).
 size_t kWaitTimeForSelectOptionsChangesMs = 50;
 
-// Whether the "single click" autofill feature is enabled, through command-line
-// or field trial.
-bool IsSingleClickEnabled() {
-  return base::FeatureList::IsEnabled(features::kSingleClickAutofill);
-}
-
 // Gets all the data list values (with corresponding label) for the given
 // element.
 void GetDataListSuggestions(const WebInputElement& element,
@@ -165,8 +159,8 @@ void AutofillAgent::BindRequest(mojom::AutofillAgentAssociatedRequest request) {
 
 bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
                                                 const FormData& rhs) const {
-  return std::tie(lhs.name, lhs.origin, lhs.action, lhs.is_form_tag) <
-         std::tie(rhs.name, rhs.origin, rhs.action, rhs.is_form_tag);
+  return std::tie(lhs.name, lhs.url, lhs.action, lhs.is_form_tag) <
+         std::tie(rhs.name, rhs.url, rhs.action, rhs.is_form_tag);
 }
 
 void AutofillAgent::DidCommitProvisionalLoad(bool is_same_document_navigation,
@@ -301,8 +295,7 @@ void AutofillAgent::FireHostSubmitEvents(const FormData& form_data,
   if (!submitted_forms_.insert(form_data).second)
     return;
 
-  GetAutofillDriver()->FormSubmitted(form_data, known_success, source,
-                                     base::TimeTicks::Now());
+  GetAutofillDriver()->FormSubmitted(form_data, known_success, source);
 }
 
 void AutofillAgent::Shutdown() {
@@ -425,9 +418,6 @@ void AutofillAgent::DoAcceptDataListSuggestion(
 }
 
 void AutofillAgent::TriggerRefillIfNeeded(const FormData& form) {
-  if (!base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
-    return;
-
   ReplaceElementIfNowInvalid(form);
 
   FormFieldData field;
@@ -457,8 +447,7 @@ void AutofillAgent::FillForm(int32_t id, const FormData& form) {
   was_last_action_fill_ = true;
 
   // If this is a re-fill, replace the triggering element if it's invalid.
-  if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms) &&
-      id == kNoQueryId)
+  if (id == kNoQueryId)
     ReplaceElementIfNowInvalid(form);
 
   query_node_autofill_state_ = element_.GetAutofillState();
@@ -660,7 +649,14 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
 
   // Password field elements should only have suggestions shown by the password
   // autofill agent.
-  if (input_element && input_element->IsPasswordFieldForAutofill() &&
+  // The /*disable presubmit*/ comment below is used to disable a presubmit
+  // script that ensures that only IsPasswordFieldForAutofill() is used in this
+  // code (it has to appear between the function name and the parentesis to not
+  // match a regex). In this specific case we are actually interested in whether
+  // the field is currently a password field, not whether it has ever been a
+  // password field.
+  if (input_element &&
+      input_element->IsPasswordField /*disable presubmit*/ () &&
       !query_password_suggestion_) {
     return;
   }
@@ -926,10 +922,6 @@ void AutofillAgent::FormControlElementClicked(
   // Show full suggestions when clicking on an already-focused form field.
   options.show_full_suggestion_list = element.IsAutofilled() || was_focused;
 
-  if (!IsSingleClickEnabled()) {
-    // On  the initial click (not focused yet), only show password suggestions.
-    options.show_password_suggestions_only = !was_focused;
-  }
   ShowSuggestions(element, options);
 }
 

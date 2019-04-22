@@ -19,9 +19,10 @@
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "remoting/base/leaky_bucket.h"
-#include "third_party/webrtc/media/base/rtputils.h"
-#include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
+#include "third_party/webrtc/media/base/rtp_utils.h"
+#include "third_party/webrtc/rtc_base/async_packet_socket.h"
 #include "third_party/webrtc/rtc_base/socket.h"
+#include "third_party/webrtc/rtc_base/time_utils.h"
 
 namespace remoting {
 
@@ -124,10 +125,7 @@ int FakeUdpSocket::SendTo(const void* data, size_t data_size,
   cricket::ApplyPacketOptions(reinterpret_cast<uint8_t*>(buffer->data()),
                               data_size, options.packet_time_params,
                               (now - base::TimeTicks()).InMicroseconds());
-  SignalSentPacket(
-      this,
-      rtc::SentPacket(options.packet_id,
-                      (now - base::TimeTicks::UnixEpoch()).InMilliseconds()));
+  SignalSentPacket(this, rtc::SentPacket(options.packet_id, rtc::TimeMillis()));
   dispatcher_->DeliverPacket(local_address_, address, buffer, data_size);
   return data_size;
 }
@@ -325,8 +323,8 @@ void FakePacketSocketFactory::ReceivePacket(
   pending_packets_.push_back(packet);
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FakePacketSocketFactory::DoReceivePacket,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&FakePacketSocketFactory::DoReceivePacket,
+                     weak_factory_.GetWeakPtr()),
       delay);
 }
 

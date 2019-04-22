@@ -238,7 +238,7 @@ TEST_F(URLBlacklistManagerTest, SingleUpdateForTwoPrefChanges) {
   EXPECT_EQ(1, blacklist_manager_->update_called());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     URLBlacklistFilterToComponentsTestInstance,
     URLBlacklistFilterToComponentsTest,
     testing::Values(

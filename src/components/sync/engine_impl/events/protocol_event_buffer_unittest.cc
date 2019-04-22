@@ -33,12 +33,16 @@ ProtocolEventBufferTest::~ProtocolEventBufferTest() {}
 std::unique_ptr<ProtocolEvent> ProtocolEventBufferTest::MakeTestEvent(
     int64_t id) {
   sync_pb::ClientToServerMessage message;
-  return std::unique_ptr<ProtocolEvent>(new PollGetUpdatesRequestEvent(
-      base::Time::FromInternalValue(id), message));
+  return std::make_unique<PollGetUpdatesRequestEvent>(
+      base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromMicroseconds(id)),
+      message);
 }
 
 bool ProtocolEventBufferTest::HasId(const ProtocolEvent& event, int64_t id) {
-  return event.GetTimestamp() == base::Time::FromInternalValue(id);
+  return event.GetTimestampForTesting() ==
+         base::Time::FromDeltaSinceWindowsEpoch(
+             base::TimeDelta::FromMicroseconds(id));
 }
 
 TEST_F(ProtocolEventBufferTest, AddThenReturnEvents) {

@@ -6,14 +6,14 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
+#include "ash/public/interfaces/accessibility_controller_enums.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
@@ -90,12 +90,12 @@ void DictationButtonTray::UpdateIcon(bool dictation_active) {
 
 void DictationButtonTray::UpdateVisibility() {
   bool is_visible =
-      Shell::Get()->accessibility_controller()->IsDictationEnabled();
+      Shell::Get()->accessibility_controller()->dictation_enabled();
   SetVisible(is_visible);
 }
 
 void DictationButtonTray::CheckDictationStatusAndUpdateIcon() {
-  UpdateIcon(Shell::Get()->accessibility_controller()->IsDictationActive());
+  UpdateIcon(Shell::Get()->accessibility_controller()->dictation_active());
 }
 
 }  // namespace ash

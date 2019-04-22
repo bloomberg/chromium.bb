@@ -60,6 +60,13 @@ class CHROME_DBUS_EXPORT ExportedObject
                                bool success)>
       OnExportedCallback;
 
+  // Called when method unexporting is done.
+  // |success| indicates whether unexporting was successful or not.
+  typedef base::Callback<void(const std::string& interface_name,
+                              const std::string& method_name,
+                              bool success)>
+      OnUnexportedCallback;
+
   // Exports the method specified by |interface_name| and |method_name|,
   // and blocks until exporting is done. Returns true on success.
   //
@@ -81,6 +88,11 @@ class CHROME_DBUS_EXPORT ExportedObject
                                     const std::string& method_name,
                                     MethodCallCallback method_call_callback);
 
+  // Unexports the method specified by |interface_name| and |method_name|,
+  // and blocks until unexporting is done. Returns true on success.
+  virtual bool UnexportMethodAndBlock(const std::string& interface_name,
+                                      const std::string& method_name);
+
   // Requests to export the method specified by |interface_name| and
   // |method_name|. See Also ExportMethodAndBlock().
   //
@@ -92,6 +104,17 @@ class CHROME_DBUS_EXPORT ExportedObject
                             const std::string& method_name,
                             MethodCallCallback method_call_callback,
                             OnExportedCallback on_exported_callback);
+
+  // Requests to unexport the method specified by |interface_name| and
+  // |method_name|. See also UnexportMethodAndBlock().
+  //
+  // |on_unexported_callback| is called when the method is unexported or
+  // failed to be unexported, in the origin thread.
+  //
+  // Must be called in the origin thread.
+  virtual void UnexportMethod(const std::string& interface_name,
+                              const std::string& method_name,
+                              OnUnexportedCallback on_unexported_callback);
 
   // Requests to send the signal from this object. The signal will be sent
   // synchronously if this method is called from the message loop in the D-Bus
@@ -117,11 +140,22 @@ class CHROME_DBUS_EXPORT ExportedObject
                             MethodCallCallback method_call_callback,
                             OnExportedCallback exported_callback);
 
+  // Helper function for UnexportMethod().
+  void UnexportMethodInternal(const std::string& interface_name,
+                              const std::string& method_name,
+                              OnUnexportedCallback unexported_callback);
+
   // Called when the object is exported.
   void OnExported(OnExportedCallback on_exported_callback,
                   const std::string& interface_name,
                   const std::string& method_name,
                   bool success);
+
+  // Called when a method is unexported.
+  void OnUnexported(OnExportedCallback on_unexported_callback,
+                    const std::string& interface_name,
+                    const std::string& method_name,
+                    bool success);
 
   // Helper function for SendSignal().
   void SendSignalInternal(base::TimeTicks start_time,

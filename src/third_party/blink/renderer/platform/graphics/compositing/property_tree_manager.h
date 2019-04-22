@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -34,7 +35,7 @@ class TransformPaintPropertyNode;
 class PropertyTreeManagerClient {
  public:
   virtual cc::Layer* CreateOrReuseSynthesizedClipLayer(
-      const ClipPaintPropertyNode*,
+      const ClipPaintPropertyNode&,
       CompositorElementId& mask_isolation_id,
       CompositorElementId& mask_effect_id) = 0;
 };
@@ -42,21 +43,22 @@ class PropertyTreeManagerClient {
 // Mutates a cc property tree to reflect Blink paint property tree
 // state. Intended for use by PaintArtifactCompositor.
 class PropertyTreeManager {
+  DISALLOW_NEW();
 
  public:
-  PropertyTreeManager(PropertyTreeManagerClient&,
-                      cc::PropertyTrees&,
-                      cc::Layer* root_layer,
-                      LayerListBuilder*);
+  PropertyTreeManager(PropertyTreeManagerClient&);
   ~PropertyTreeManager() {
     DCHECK(!effect_stack_.size()) << "PropertyTreeManager::Finalize() must be "
                                      "called at the end of tree conversion.";
   }
 
-  void SetupRootTransformNode();
-  void SetupRootClipNode();
-  void SetupRootEffectNode();
-  void SetupRootScrollNode();
+  void Initialize(cc::PropertyTrees* property_trees,
+                  LayerListBuilder* layer_list_builder);
+
+  void SetRootLayer(cc::Layer* root_layer) {
+    DCHECK(!root_layer_) << "We can only set root layer once.";
+    root_layer_ = root_layer;
+  }
 
   // A brief discourse on cc property tree nodes, identifiers, and current and
   // future design evolution envisioned:
@@ -93,14 +95,14 @@ class PropertyTreeManager {
   // Returns the compositor transform node id. If a compositor transform node
   // does not exist, it is created. Any transforms that are for scroll offset
   // translation will ensure the associated scroll node exists.
-  int EnsureCompositorTransformNode(const TransformPaintPropertyNode*);
-  int EnsureCompositorClipNode(const ClipPaintPropertyNode*);
+  int EnsureCompositorTransformNode(const TransformPaintPropertyNode&);
+  int EnsureCompositorClipNode(const ClipPaintPropertyNode&);
   // Ensure the compositor scroll node using the associated scroll offset
   // translation.
   int EnsureCompositorScrollNode(
-      const TransformPaintPropertyNode* scroll_offset_translation);
+      const TransformPaintPropertyNode& scroll_offset_translation);
 
-  int EnsureCompositorPageScaleTransformNode(const TransformPaintPropertyNode*);
+  int EnsureCompositorPageScaleTransformNode(const TransformPaintPropertyNode&);
 
   // This function is expected to be invoked right before emitting each layer.
   // It keeps track of the nesting of clip and effects, output a composited
@@ -112,20 +114,47 @@ class PropertyTreeManager {
   // effect, i.e. applying the clip as a mask.
   int SwitchToEffectNodeWithSynthesizedClip(
       const EffectPaintPropertyNode& next_effect,
-      const ClipPaintPropertyNode& next_clip);
+      const ClipPaintPropertyNode& next_clip,
+      bool layer_draws_content);
   // Expected to be invoked after emitting the last layer. This will exit all
   // effects on the effect stack, generating clip mask layers for all the
   // unclosed synthesized clips.
   void Finalize();
 
+  bool DirectlyUpdateCompositedOpacityValue(cc::PropertyTrees*,
+                                            const EffectPaintPropertyNode&);
+  bool DirectlyUpdateScrollOffsetTransform(cc::PropertyTrees*,
+                                           const TransformPaintPropertyNode&);
+  bool DirectlyUpdateTransform(cc::PropertyTrees*,
+                               const TransformPaintPropertyNode&);
+
  private:
-  bool BuildEffectNodesRecursively(const EffectPaintPropertyNode* next_effect);
+  void SetupRootTransformNode();
+  void SetupRootClipNode();
+  void SetupRootEffectNode();
+  void SetupRootScrollNode();
+
+  void BuildEffectNodesRecursively(const EffectPaintPropertyNode& next_effect);
   SkBlendMode SynthesizeCcEffectsForClipsIfNeeded(
-      const ClipPaintPropertyNode* target_clip,
-      SkBlendMode delegated_blend,
-      bool effect_is_newly_built);
+      const ClipPaintPropertyNode& target_clip,
+      SkBlendMode delegated_blend);
   void EmitClipMaskLayer();
   void CloseCcEffect();
+
+  // For a given effect node, this returns the blend mode, clip property node,
+  // and an int indicating cc clip node's id.
+  std::tuple<SkBlendMode, const ClipPaintPropertyNode*, int>
+  GetBlendModeAndOutputClipForEffect(const EffectPaintPropertyNode&);
+  void PopulateCcEffectNode(cc::EffectNode&,
+                            const EffectPaintPropertyNode&,
+                            int output_clip_id,
+                            SkBlendMode);
+
+  void UpdateCcTransformLocalMatrix(cc::TransformNode&,
+                                    const TransformPaintPropertyNode&);
+  void SetCcTransformNodeScrollToTransformTranslation(
+      cc::TransformNode&,
+      const TransformPaintPropertyNode&);
 
   bool IsCurrentCcEffectSynthetic() const {
     return current_.effect_type != CcEffectType::kEffect;
@@ -155,8 +184,8 @@ class PropertyTreeManager {
 
   void SetCurrentEffectState(const cc::EffectNode&,
                              CcEffectType,
-                             const EffectPaintPropertyNode*,
-                             const ClipPaintPropertyNode*);
+                             const EffectPaintPropertyNode&,
+                             const ClipPaintPropertyNode&);
   void SetCurrentEffectHasRenderSurface();
 
   cc::TransformTree& GetTransformTree();
@@ -167,44 +196,62 @@ class PropertyTreeManager {
   // Should only be called from EnsureCompositorTransformNode as part of
   // creating the associated scroll offset transform node.
   void CreateCompositorScrollNode(
-      const ScrollPaintPropertyNode*,
+      const ScrollPaintPropertyNode&,
       const cc::TransformNode& scroll_offset_translation);
 
   PropertyTreeManagerClient& client_;
 
   // Property trees which should be updated by the manager.
-  cc::PropertyTrees& property_trees_;
+  cc::PropertyTrees* property_trees_ = nullptr;
 
   // The special layer which is the parent of every other layers.
   // This is where clip mask layers we generated for synthesized clips are
   // appended into.
-  cc::Layer* root_layer_;
+  cc::Layer* root_layer_ = nullptr;
 
-  LayerListBuilder* layer_list_builder_;
+  LayerListBuilder* layer_list_builder_ = nullptr;
 
   // Maps from Blink-side property tree nodes to cc property node indices.
-  HashMap<const TransformPaintPropertyNode*, int> transform_node_map_;
-  HashMap<const ClipPaintPropertyNode*, int> clip_node_map_;
-  HashMap<const ScrollPaintPropertyNode*, int> scroll_node_map_;
+  HashMap<scoped_refptr<const TransformPaintPropertyNode>, int>
+      transform_node_map_;
+  HashMap<scoped_refptr<const ClipPaintPropertyNode>, int> clip_node_map_;
+  HashMap<scoped_refptr<const ScrollPaintPropertyNode>, int> scroll_node_map_;
+  HashMap<scoped_refptr<const EffectPaintPropertyNode>, int> effect_node_map_;
 
   struct EffectState {
     // The cc effect node that has the corresponding drawing state to the
     // effect and clip state from the last
     // SwitchToEffectNodeWithSynthesizedClip.
     int effect_id;
+
     CcEffectType effect_type;
-    // The effect state of the cc effect node.
+
+    // The effect state of the cc effect node. It's never nullptr.
     const EffectPaintPropertyNode* effect;
+
     // The clip state of the cc effect node. This value may be shallower than
     // the one passed into SwitchToEffectNodeWithSynthesizedClip because not
-    // every clip needs to be synthesized as cc effect.
-    // Is set to output clip of the effect if the type is kEffect, or set to the
-    // synthesized clip node if the type is kSyntheticForNonTrivialClip.
+    // every clip needs to be synthesized as cc effect. Is set to output clip of
+    // the effect if the type is kEffect, or set to the synthesized clip node.
+    // It's never nullptr.
     const ClipPaintPropertyNode* clip;
-    // The transform space of the containing render surface.
-    // TODO(crbug.com/504464): Remove this when move render surface decision
-    // logic into cc compositor thread.
-    const TransformPaintPropertyNode* render_surface_transform;
+
+    // Whether the transform space of this state may be 2d axis misaligned to
+    // the containing render surface. As there may be new render surfaces
+    // created between this state and the current known ancestor render surface
+    // after this state is created, we must conservatively accumulate this flag
+    // from the known render surface instead of checking if the combined
+    // transform is 2d axis aligned, in case of:
+    //  Effect1 (Current known render surface)
+    //  Rotate(45deg)
+    //  Effect2 (Not known now, but may become render surface later)
+    //  Rotate(-45deg)
+    //  Clip (Would be mistakenly treated as 2d axis aligned if we used
+    //        accumulated transform from the clip to the known render surface.)
+    bool may_be_2d_axis_misaligned_to_render_surface;
+
+    // The transform space of the state.
+    const TransformPaintPropertyNode& Transform() const;
   };
 
   // The current effect state. Virtually it's the top of the effect stack if
@@ -218,8 +265,13 @@ class PropertyTreeManager {
   // recent push.
   Vector<EffectState> effect_stack_;
 
+  // A set of synthetic clips masks which will be applied if a layer under them
+  // is encountered which draws content (and thus necessitates the mask).
+  HashSet<int> pending_synthetic_mask_layers_;
+
 #if DCHECK_IS_ON()
   HashSet<const EffectPaintPropertyNode*> effect_nodes_converted_;
+  bool initialized_ = false;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PropertyTreeManager);

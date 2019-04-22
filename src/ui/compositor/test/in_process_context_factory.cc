@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -110,8 +111,7 @@ class DirectOutputSurface : public viz::OutputSurface {
 
     context_provider_->ContextSupport()->SignalSyncToken(
         sync_token, base::BindOnce(&DirectOutputSurface::OnSwapBuffersComplete,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   frame.need_presentation_feedback));
+                                   weak_ptr_factory_.GetWeakPtr()));
   }
   uint32_t GetFramebufferCopyTextureFormat() override {
     auto* gl = static_cast<InProcessContextProvider*>(context_provider());
@@ -128,16 +128,12 @@ class DirectOutputSurface : public viz::OutputSurface {
   }
   bool HasExternalStencilTest() const override { return false; }
   void ApplyExternalStencil() override {}
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* GetVulkanSurface() override { return nullptr; }
-#endif
   unsigned UpdateGpuFence() override { return 0; }
 
  private:
-  void OnSwapBuffersComplete(bool need_presentation_feedback) {
+  void OnSwapBuffersComplete() {
     client_->DidReceiveSwapBuffersAck();
-    if (need_presentation_feedback)
-      client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
+    client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
   }
 
   viz::OutputSurfaceClient* client_ = nullptr;
@@ -312,6 +308,14 @@ InProcessContextFactory::SharedMainThreadContextProvider() {
   if (result != gpu::ContextResult::kSuccess)
     shared_main_thread_contexts_ = NULL;
 
+  return shared_main_thread_contexts_;
+}
+
+scoped_refptr<viz::RasterContextProvider>
+InProcessContextFactory::SharedMainThreadRasterContextProvider() {
+  SharedMainThreadContextProvider();
+  DCHECK(!shared_main_thread_contexts_ ||
+         shared_main_thread_contexts_->RasterInterface());
   return shared_main_thread_contexts_;
 }
 

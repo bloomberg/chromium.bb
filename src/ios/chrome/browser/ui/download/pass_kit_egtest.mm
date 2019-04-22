@@ -7,11 +7,12 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/download/download_test_util.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -105,9 +106,12 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   // PKAddPassesViewController UI is rendered out of host process so EarlGrey
   // matcher can not find PassKit Dialog UI. Instead this test relies on view
   // controller presentation as the signal that PassKit Dialog is shown.
-  UIViewController* BVC = GetMainController().browserViewInformation.mainBVC;
+  id<BrowserInterface> interface =
+      GetMainController().interfaceProvider.mainInterface;
+  UIViewController* viewController = interface.viewController;
   bool dialogShown = WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
-    UIViewController* presentedController = BVC.presentedViewController;
+    UIViewController* presentedController =
+        viewController.presentedViewController;
     return [presentedController class] == [PKAddPassesViewController class];
   });
   GREYAssert(dialogShown, @"PassKit dialog was not shown");

@@ -11,11 +11,11 @@ import org.chromium.content_public.browser.WebContents;
 /**
  * Notifies the provided {@link CustomTabObserver} when first meaningful paint occurs.
  */
-/* package */ class FirstMeaningfulPaintObserver implements PageLoadMetrics.Observer {
+public class FirstMeaningfulPaintObserver implements PageLoadMetrics.Observer {
     private final Tab mTab;
     private final CustomTabObserver mCustomTabObserver;
 
-    /* package */ FirstMeaningfulPaintObserver(CustomTabObserver tabObserver, Tab tab) {
+    public FirstMeaningfulPaintObserver(CustomTabObserver tabObserver, Tab tab) {
         mCustomTabObserver = tabObserver;
         mTab = tab;
     }

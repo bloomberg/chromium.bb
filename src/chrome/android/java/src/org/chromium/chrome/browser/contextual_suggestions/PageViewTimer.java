@@ -17,9 +17,9 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -27,7 +27,6 @@ import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /** Class allowing to measure and report a page view time in UMA. */
 public class PageViewTimer {
@@ -45,11 +44,11 @@ public class PageViewTimer {
     @IntDef({DurationBucket.SHORT_CLICK, DurationBucket.MEDIUM_CLICK, DurationBucket.LONG_CLICK})
     @Retention(RetentionPolicy.SOURCE)
     public @interface DurationBucket {
-        int SHORT_CLICK = 0; /** Click <= 4 secconds */
+        int SHORT_CLICK = 0; /** Click <= 4 seconds */
         int MEDIUM_CLICK = 1; /** 4 seconds < Click <= 180 seconds */
         int LONG_CLICK = 2; /** 180 seconds < Click */
+        int NUM_ENTRIES = 3;
     }
-    private static final int DURATION_BUCKET_COUNT = 3;
 
     /** Track the navigation source to report the page view time under. */
     @IntDef({NavigationSource.OTHER, NavigationSource.CONTEXTUAL_SUGGESTIONS})
@@ -214,28 +213,27 @@ public class PageViewTimer {
 
     private void reportDurationRaw(long durationMs) {
         RecordHistogram.recordLongTimesHistogram100(
-                "ContextualSuggestions.PageViewTime", durationMs, TimeUnit.MILLISECONDS);
+                "ContextualSuggestions.PageViewTime", durationMs);
         if (mNavigationSource == NavigationSource.CONTEXTUAL_SUGGESTIONS) {
             RecordHistogram.recordLongTimesHistogram100(
-                    "ContextualSuggestions.PageViewTime.ContextualSuggestions", durationMs,
-                    TimeUnit.MILLISECONDS);
+                    "ContextualSuggestions.PageViewTime.ContextualSuggestions", durationMs);
             return;
         }
 
         RecordHistogram.recordLongTimesHistogram100(
-                "ContextualSuggestions.PageViewTime.Other", durationMs, TimeUnit.MILLISECONDS);
+                "ContextualSuggestions.PageViewTime.Other", durationMs);
     }
 
     private void reportDurationBucket(@DurationBucket int durationBucket) {
         if (mNavigationSource == NavigationSource.CONTEXTUAL_SUGGESTIONS) {
             RecordHistogram.recordEnumeratedHistogram(
                     "ContextualSuggestions.PageViewClickLength.ContextualSuggestions",
-                    durationBucket, DURATION_BUCKET_COUNT);
+                    durationBucket, DurationBucket.NUM_ENTRIES);
             return;
         }
 
         RecordHistogram.recordEnumeratedHistogram("ContextualSuggestions.PageViewClickLength.Other",
-                durationBucket, DURATION_BUCKET_COUNT);
+                durationBucket, DurationBucket.NUM_ENTRIES);
     }
 
     private void switchObserverToTab(Tab tab) {

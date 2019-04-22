@@ -10,13 +10,17 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/search/instant_test_base.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
-#include "chrome/browser/ui/search/instant_uitest_base.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -26,7 +30,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class InstantExtendedTest : public InProcessBrowserTest,
-                            public InstantUITestBase {
+                            public InstantTestBase {
  public:
   InstantExtendedTest()
       : on_most_visited_change_calls_(0),
@@ -57,6 +61,48 @@ class InstantExtendedTest : public InProcessBrowserTest,
                                              &is_focused_);
   }
 
+  OmniboxView* omnibox() {
+    return instant_browser()->window()->GetLocationBar()->GetOmniboxView();
+  }
+
+  void FocusOmnibox() {
+    // If the omnibox already has focus, just notify SearchTabHelper.
+    if (omnibox()->model()->has_focus()) {
+      content::WebContents* active_tab =
+          instant_browser()->tab_strip_model()->GetActiveWebContents();
+      SearchTabHelper::FromWebContents(active_tab)
+          ->OmniboxFocusChanged(OMNIBOX_FOCUS_VISIBLE,
+                                OMNIBOX_FOCUS_CHANGE_EXPLICIT);
+    } else {
+      instant_browser()->window()->GetLocationBar()->FocusLocation(false);
+    }
+  }
+
+  void SetOmniboxText(const std::string& text) {
+    FocusOmnibox();
+    omnibox()->SetUserText(base::UTF8ToUTF16(text));
+  }
+
+  void PressEnterAndWaitForNavigation() {
+    content::WindowedNotificationObserver nav_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        content::NotificationService::AllSources());
+    instant_browser()->window()->GetLocationBar()->AcceptInput();
+    nav_observer.Wait();
+  }
+
+  void PressEnterAndWaitForFrameLoad() {
+    content::WindowedNotificationObserver nav_observer(
+        content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+        content::NotificationService::AllSources());
+    instant_browser()->window()->GetLocationBar()->AcceptInput();
+    nav_observer.Wait();
+  }
+
+  std::string GetOmniboxText() {
+    return base::UTF16ToUTF8(omnibox()->GetText());
+  }
+
   int on_most_visited_change_calls_;
   int most_visited_items_count_;
   int first_most_visited_item_id_;
@@ -85,10 +131,10 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoMostVisitedChangedOnTabSwitch) {
   EXPECT_EQ(1, on_most_visited_change_calls_);
 
   // Activate the previous tab.
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
 
   // Switch back to new tab.
-  browser()->tab_strip_model()->ActivateTabAt(1, false);
+  browser()->tab_strip_model()->ActivateTabAt(1);
 
   // Confirm that new tab got no onmostvisitedchanged event.
   active_tab = browser()->tab_strip_model()->GetActiveWebContents();

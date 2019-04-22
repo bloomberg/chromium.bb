@@ -3,6 +3,8 @@
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../assert_selection.js"></script>
 <script>
+const usesBidiAffinity = window.internals && internals.runtimeFlags.bidiCaretAffinityEnabled;
+
 selection_test(
   '<div contenteditable dir="rtl">|<br>abc</div>',
   selection => selection.modify('move', 'right', 'character'),
@@ -12,7 +14,9 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl"><br>|abc</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl">|<br>abc</div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl"><br>a|bc</div>'
+      : '<div contenteditable dir="rtl">|<br>abc</div>',
   '3-1 rtl right character');
 
 selection_test(
@@ -24,12 +28,16 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl"><br>ab|c</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl"><br>|abc</div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl"><br>abc|</div>'
+      : '<div contenteditable dir="rtl"><br>|abc</div>',
   '3-3 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl"><br>abc|</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl"><br>a|bc</div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl">|<br>abc</div>'
+      : '<div contenteditable dir="rtl"><br>a|bc</div>',
   '3-4 rtl right character');
 </script>

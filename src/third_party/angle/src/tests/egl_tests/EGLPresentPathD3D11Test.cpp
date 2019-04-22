@@ -8,12 +8,13 @@
 
 #include <d3d11.h>
 #include <cstdint>
-#include "OSWindow.h"
-#include "com_utils.h"
+
+#include "util/OSWindow.h"
+#include "util/com_utils.h"
 
 using namespace angle;
 
-class EGLPresentPathD3D11 : public testing::TestWithParam<PlatformParameters>
+class EGLPresentPathD3D11 : public EGLTest, public testing::WithParamInterface<PlatformParameters>
 {
   protected:
     EGLPresentPathD3D11()
@@ -28,7 +29,9 @@ class EGLPresentPathD3D11 : public testing::TestWithParam<PlatformParameters>
 
     void SetUp() override
     {
-        mOSWindow    = CreateOSWindow();
+        EGLTest::SetUp();
+
+        mOSWindow    = OSWindow::New();
         mWindowWidth = 64;
         mOSWindow->initialize("EGLPresentPathD3D11", mWindowWidth, mWindowWidth);
     }
@@ -36,15 +39,6 @@ class EGLPresentPathD3D11 : public testing::TestWithParam<PlatformParameters>
     void initializeEGL(bool usePresentPathFast)
     {
         int clientVersion = GetParam().majorVersion;
-
-        const char *extensionString =
-            static_cast<const char *>(eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS));
-        ASSERT_NE(nullptr, strstr(extensionString, "EGL_ANGLE_experimental_present_path"));
-
-        PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
-            reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(
-                eglGetProcAddress("eglGetPlatformDisplayEXT"));
-        ASSERT_NE(nullptr, eglGetPlatformDisplayEXT);
 
         // Set up EGL Display
         EGLint displayAttribs[] = {EGL_PLATFORM_ANGLE_TYPE_ANGLE,
@@ -175,7 +169,7 @@ class EGLPresentPathD3D11 : public testing::TestWithParam<PlatformParameters>
         }
 
         mOSWindow->destroy();
-        SafeDelete(mOSWindow);
+        OSWindow::Delete(&mOSWindow);
     }
 
     void drawQuadUsingGL()
@@ -183,7 +177,7 @@ class EGLPresentPathD3D11 : public testing::TestWithParam<PlatformParameters>
         GLuint m2DProgram;
         GLint mTexture2DUniformLocation;
 
-        const std::string vertexShaderSource =
+        constexpr char kVS[] =
             R"(precision highp float;
             attribute vec4 position;
             varying vec2 texcoord;
@@ -194,7 +188,7 @@ class EGLPresentPathD3D11 : public testing::TestWithParam<PlatformParameters>
                 texcoord = (position.xy * 0.5) + 0.5;
             })";
 
-        const std::string fragmentShaderSource2D =
+        constexpr char kFS[] =
             R"(precision highp float;
             uniform sampler2D tex;
             varying vec2 texcoord;
@@ -204,7 +198,7 @@ class EGLPresentPathD3D11 : public testing::TestWithParam<PlatformParameters>
                 gl_FragColor = texture2D(tex, texcoord);
             })";
 
-        m2DProgram                = CompileProgram(vertexShaderSource, fragmentShaderSource2D);
+        m2DProgram                = CompileProgram(kVS, kFS);
         mTexture2DUniformLocation = glGetUniformLocation(m2DProgram, "tex");
 
         uint8_t textureInitData[16] = {

@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -91,8 +92,9 @@ bool SubresourceFilterAgent::IsAdSubframe() {
   return render_frame()->GetWebFrame()->IsAdSubframe();
 }
 
-void SubresourceFilterAgent::SetIsAdSubframe() {
-  render_frame()->GetWebFrame()->SetIsAdSubframe();
+void SubresourceFilterAgent::SetIsAdSubframe(
+    blink::mojom::AdFrameType ad_frame_type) {
+  render_frame()->GetWebFrame()->SetIsAdSubframe(ad_frame_type);
 }
 
 // static
@@ -186,10 +188,11 @@ void SubresourceFilterAgent::OnSubresourceFilterAgentRequest(
 
 void SubresourceFilterAgent::ActivateForNextCommittedLoad(
     mojom::ActivationStatePtr activation_state,
-    bool is_ad_subframe) {
+    blink::mojom::AdFrameType ad_frame_type) {
   activation_state_for_next_commit_ = *activation_state;
-  if (is_ad_subframe)
-    SetIsAdSubframe();
+  if (ad_frame_type != blink::mojom::AdFrameType::kNonAd) {
+    SetIsAdSubframe(ad_frame_type);
+  }
 }
 
 void SubresourceFilterAgent::OnDestruct() {
@@ -197,24 +200,6 @@ void SubresourceFilterAgent::OnDestruct() {
 }
 
 void SubresourceFilterAgent::DidCreateNewDocument() {
-  if (!first_document_)
-    return;
-  first_document_ = false;
-
-  // Local subframes will first navigate to kAboutBlankURL. Frames created by
-  // the browser initialize the LocalFrame before creating
-  // RenderFrameObservers, so the about:blank document isn't observed. We only
-  // care about local subframes.
-  if (IsAdSubframe() && GetDocumentURL() == url::kAboutBlankURL)
-    SendFrameIsAdSubframe();
-}
-
-void SubresourceFilterAgent::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
-    ui::PageTransition transition) {
-  if (is_same_document_navigation)
-    return;
-
   // Filter may outlive us, so reset the ad tracker.
   if (filter_for_last_committed_load_)
     filter_for_last_committed_load_->set_ad_resource_tracker(nullptr);
@@ -223,6 +208,20 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
   // TODO(csharrison): Use WebURL and WebSecurityOrigin for efficiency here,
   // which require changes to the unit tests.
   const GURL& url = GetDocumentURL();
+
+  if (first_document_) {
+    first_document_ = false;
+
+    // Local subframes will first navigate to kAboutBlankURL. Frames created by
+    // the browser initialize the LocalFrame before creating
+    // RenderFrameObservers, so the about:blank document isn't observed. We only
+    // care about local subframes.
+    if (url == url::kAboutBlankURL) {
+      if (IsAdSubframe())
+        SendFrameIsAdSubframe();
+      return;
+    }
+  }
 
   bool use_parent_activation = !IsMainFrame() && ShouldUseParentActivation(url);
 

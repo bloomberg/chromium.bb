@@ -4,6 +4,8 @@
 
 package org.chromium.chromecast.shell;
 
+import android.os.Build;
+
 import com.google.android.things.AndroidThings;
 import com.google.android.things.factory.FactoryDataManager;
 import com.google.android.things.update.UpdateManager;
@@ -23,22 +25,34 @@ import java.util.ArrayList;
  */
 @JNINamespace("chromecast")
 public final class CastSysInfoAndroidThings {
-    private static final String TAG = "CastSysInfoAndroidThings";
+    private static final String TAG = CastSysInfoAndroidThings.class.getSimpleName();
     private static final String FACTORY_LOCALE_LIST_FILE = "locale_list.txt";
 
     @CalledByNative
     private static String getProductName() {
-        return AndroidThings.Product.NAME;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return AndroidThings.Product.NAME;
+        } else {
+            return Build.PRODUCT;
+        }
     }
 
     @CalledByNative
     private static String getDeviceModel() {
-        return AndroidThings.Product.MODEL;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return AndroidThings.Product.MODEL;
+        } else {
+            return Build.MODEL;
+        }
     }
 
     @CalledByNative
     private static String getManufacturer() {
-        return AndroidThings.Product.MANUFACTURER;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return AndroidThings.Product.MANUFACTURER;
+        } else {
+            return Build.MANUFACTURER;
+        }
     }
 
     @CalledByNative
@@ -62,6 +76,9 @@ public final class CastSysInfoAndroidThings {
         } catch (IllegalArgumentException | IOException e) {
             Log.w(TAG, "Factory file %s doesn't exist or can't be opened.",
                     FACTORY_LOCALE_LIST_FILE, e);
+        } catch (java.lang.SecurityException e) {
+            // Thrown when com.google.android.things.permission.READ_FACTORY_DATA is missing.
+            Log.e(TAG, "Failed to read factory data.", e);
         }
         return locale_list.toArray(new String[locale_list.size()]);
     }

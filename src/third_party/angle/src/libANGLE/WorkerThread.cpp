@@ -24,14 +24,21 @@ namespace angle
 WaitableEvent::WaitableEvent()  = default;
 WaitableEvent::~WaitableEvent() = default;
 
+void WaitableEventDone::wait() {}
+
+bool WaitableEventDone::isReady()
+{
+    return true;
+}
+
 WorkerThreadPool::WorkerThreadPool()  = default;
 WorkerThreadPool::~WorkerThreadPool() = default;
 
 class SingleThreadedWaitableEvent final : public WaitableEvent
 {
   public:
-    SingleThreadedWaitableEvent()  = default;
-    ~SingleThreadedWaitableEvent() = default;
+    SingleThreadedWaitableEvent()           = default;
+    ~SingleThreadedWaitableEvent() override = default;
 
     void wait() override;
     bool isReady() override;
@@ -49,6 +56,7 @@ class SingleThreadedWorkerPool final : public WorkerThreadPool
   public:
     std::shared_ptr<WaitableEvent> postWorkerTask(std::shared_ptr<Closure> task) override;
     void setMaxThreads(size_t maxThreads) override;
+    bool isAsync() override;
 };
 
 // SingleThreadedWorkerPool implementation.
@@ -61,12 +69,17 @@ std::shared_ptr<WaitableEvent> SingleThreadedWorkerPool::postWorkerTask(
 
 void SingleThreadedWorkerPool::setMaxThreads(size_t maxThreads) {}
 
+bool SingleThreadedWorkerPool::isAsync()
+{
+    return false;
+}
+
 #if (ANGLE_STD_ASYNC_WORKERS == ANGLE_ENABLED)
 class AsyncWaitableEvent final : public WaitableEvent
 {
   public:
     AsyncWaitableEvent() : mIsPending(true) {}
-    ~AsyncWaitableEvent() = default;
+    ~AsyncWaitableEvent() override = default;
 
     void wait() override;
     bool isReady() override;
@@ -115,11 +128,12 @@ bool AsyncWaitableEvent::isReady()
 class AsyncWorkerPool final : public WorkerThreadPool
 {
   public:
-    AsyncWorkerPool(size_t maxThreads) : mMaxThreads(maxThreads), mRunningThreads(0){};
-    ~AsyncWorkerPool() = default;
+    AsyncWorkerPool(size_t maxThreads) : mMaxThreads(maxThreads), mRunningThreads(0) {}
+    ~AsyncWorkerPool() override = default;
 
     std::shared_ptr<WaitableEvent> postWorkerTask(std::shared_ptr<Closure> task) override;
     void setMaxThreads(size_t maxThreads) override;
+    bool isAsync() override;
 
   private:
     void checkToRunPendingTasks();
@@ -154,6 +168,11 @@ void AsyncWorkerPool::setMaxThreads(size_t maxThreads)
         mMaxThreads = (maxThreads == 0xFFFFFFFF ? std::thread::hardware_concurrency() : maxThreads);
     }
     checkToRunPendingTasks();
+}
+
+bool AsyncWorkerPool::isAsync()
+{
+    return true;
 }
 
 void AsyncWorkerPool::checkToRunPendingTasks()
@@ -205,6 +224,19 @@ std::shared_ptr<WorkerThreadPool> WorkerThreadPool::Create(bool multithreaded)
             static_cast<WorkerThreadPool *>(new SingleThreadedWorkerPool()));
     }
     return pool;
+}
+
+// static
+std::shared_ptr<WaitableEvent> WorkerThreadPool::PostWorkerTask(
+    std::shared_ptr<WorkerThreadPool> pool,
+    std::shared_ptr<Closure> task)
+{
+    std::shared_ptr<WaitableEvent> event = pool->postWorkerTask(task);
+    if (event.get())
+    {
+        event->setWorkerThreadPool(pool);
+    }
+    return event;
 }
 
 }  // namespace angle

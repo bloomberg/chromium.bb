@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -44,6 +45,8 @@ struct PolicyAreasHashTraits : HashTraits<SchemeRegistry::PolicyAreas> {
 };
 
 class URLSchemesRegistry final {
+  USING_FAST_MALLOC(URLSchemesRegistry);
+
  public:
   URLSchemesRegistry()
       :  // For ServiceWorker schemes: HTTP is required because http://localhost
@@ -291,6 +294,16 @@ bool SchemeRegistry::ShouldTreatURLSchemeAsSupportingFetchAPI(
   if (scheme.IsEmpty())
     return false;
   return GetURLSchemesRegistry().fetch_api_schemes.Contains(scheme);
+}
+
+// https://fetch.spec.whatwg.org/#fetch-scheme
+bool SchemeRegistry::IsFetchScheme(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.LowerASCII());
+  // "A fetch scheme is a scheme that is "about", "blob", "data", "file",
+  // "filesystem", or a network scheme." [spec text]
+  return scheme == "about" || scheme == "blob" || scheme == "data" ||
+         scheme == "file" || scheme == "filesystem" || scheme == "ftp" ||
+         scheme == "http" || scheme == "https";
 }
 
 void SchemeRegistry::RegisterURLSchemeAsFirstPartyWhenTopLevel(

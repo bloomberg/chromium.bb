@@ -47,7 +47,7 @@ namespace blink {
 
 struct SameSizeAsInlineTextBox : public InlineBox {
   unsigned variables[1];
-  unsigned short variables2[2];
+  uint16_t variables2[2];
   void* pointers[2];
 };
 
@@ -315,7 +315,7 @@ void InlineTextBox::AttachLine() {
   GetLineLayoutItem().AttachTextBox(this);
 }
 
-void InlineTextBox::SetTruncation(unsigned truncation) {
+void InlineTextBox::SetTruncation(uint16_t truncation) {
   if (truncation == truncation_)
     return;
 
@@ -519,10 +519,6 @@ void InlineTextBox::PaintTextMatchMarkerForeground(
     const Font& font) const {
   InlineTextBoxPainter(*this).PaintTextMatchMarkerForeground(
       paint_info, box_origin, marker, style, font);
-  if (GetLineLayoutItem().ContainsOnlyWhitespaceOrNbsp() !=
-      OnlyWhitespaceOrNbsp::kYes) {
-    paint_info.context.GetPaintController().SetTextPainted();
-  }
 }
 
 void InlineTextBox::PaintTextMatchMarkerBackground(
@@ -705,17 +701,17 @@ void InlineTextBox::DumpBox(StringBuilder& string_inlinetextbox) const {
   String value = GetText();
   value.Replace('\\', "\\\\");
   value.Replace('\n', "\\n");
-  string_inlinetextbox.Append(String::Format("%s %p", BoxName(), this));
+  string_inlinetextbox.AppendFormat("%s %p", BoxName(), this);
   while (string_inlinetextbox.length() < kShowTreeCharacterOffset)
-    string_inlinetextbox.Append(" ");
+    string_inlinetextbox.Append(' ');
   const LineLayoutText obj = GetLineLayoutItem();
-  string_inlinetextbox.Append(
-      String::Format("\t%s %p", obj.GetName(), obj.DebugPointer()));
+  string_inlinetextbox.AppendFormat("\t%s %p", obj.GetName(),
+                                    obj.DebugPointer());
   const int kLayoutObjectCharacterOffset = 75;
   while (string_inlinetextbox.length() < kLayoutObjectCharacterOffset)
-    string_inlinetextbox.Append(" ");
-  string_inlinetextbox.Append(String::Format(
-      "(%d,%d) \"%s\"", Start(), Start() + Len(), value.Utf8().data()));
+    string_inlinetextbox.Append(' ');
+  string_inlinetextbox.AppendFormat("(%d,%d) \"%s\"", Start(), Start() + Len(),
+                                    value.Utf8().data());
 }
 
 #endif

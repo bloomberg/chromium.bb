@@ -39,7 +39,7 @@ TEST_F(PaintContainmentTest, BlockPaintContainment) {
   LayoutObject* obj = div->GetLayoutObject();
   DCHECK(obj);
   DCHECK(obj->IsLayoutBlock());
-  LayoutBlock& block = ToLayoutBlock(*obj);
+  auto& block = To<LayoutBlock>(*obj);
   EXPECT_TRUE(block.CreatesNewFormattingContext());
   EXPECT_FALSE(block.CanBeScrolledAndHasScrollableArea());
   CheckIsClippingStackingContextAndContainer(block);

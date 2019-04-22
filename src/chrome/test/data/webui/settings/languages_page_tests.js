@@ -8,7 +8,8 @@ cr.define('languages_page_tests', function() {
     AddLanguagesDialog: 'add languages dialog',
     LanguageMenu: 'language menu',
     InputMethods: 'input methods',
-    Spellcheck: 'spellcheck',
+    Spellcheck: 'spellcheck_all',
+    SpellcheckOfficialBuild: 'spellcheck_official',
   };
 
   suite('languages page', function() {
@@ -192,7 +193,7 @@ cr.define('languages_page_tests', function() {
       // Test that searching languages works whether the displayed or native
       // language name is queried.
       test('search languages', function() {
-        const searchInput = dialog.$$('settings-subpage-search');
+        const searchInput = dialog.$$('cr-search-field');
 
         const getItems = function() {
           return dialog.$.dialog.querySelectorAll('.list-item:not([hidden])');
@@ -223,7 +224,7 @@ cr.define('languages_page_tests', function() {
       });
 
       test('Escape key behavior', function() {
-        const searchInput = dialog.$$('settings-subpage-search');
+        const searchInput = dialog.$$('cr-search-field');
         searchInput.setValue('dummyquery');
 
         // Test that dialog is not closed if 'Escape' is pressed on the input
@@ -270,7 +271,7 @@ cr.define('languages_page_tests', function() {
 
       test('structure', function() {
         const languageOptionsDropdownTrigger =
-            languagesCollapse.querySelector('button');
+            languagesCollapse.querySelector('cr-icon-button');
         assertTrue(!!languageOptionsDropdownTrigger);
         languageOptionsDropdownTrigger.click();
         assertTrue(actionMenu.open);
@@ -302,10 +303,47 @@ cr.define('languages_page_tests', function() {
         assertTrue(newToggleValue);
       });
 
+      test('test translate target language is labelled', function() {
+        // Translate target language disabled.
+        const targetLanguageCode = languageHelper.languages.translateTarget;
+        assertTrue(!!targetLanguageCode);
+        assertTrue(languageHelper.languages.enabled.some(
+            l => languageHelper.convertLanguageCodeForTranslate(
+                     l.language.code) == targetLanguageCode));
+        assertTrue(languageHelper.languages.enabled.some(
+            l => languageHelper.convertLanguageCodeForTranslate(
+                     l.language.code) != targetLanguageCode));
+        let translateTargetLabel = null;
+        let item = null;
+
+        let listItems = languagesCollapse.querySelectorAll('.list-item');
+        let domRepeat = assert(languagesCollapse.querySelector(
+            Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
+
+        let num_visibles = 0;
+        Array.from(listItems).forEach(function(el) {
+          item = domRepeat.itemForElement(el);
+          if (item) {
+            translateTargetLabel = el.querySelector('.target-info');
+            assertTrue(!!translateTargetLabel);
+            if (getComputedStyle(translateTargetLabel).display != 'none') {
+              num_visibles++;
+              assertEquals(
+                  targetLanguageCode,
+                  languageHelper.convertLanguageCodeForTranslate(
+                      item.language.code));
+            }
+          }
+          assertEquals(
+              1, num_visibles,
+              'Not exactly one target info label (' + num_visibles + ').');
+        });
+      });
+
       test('toggle translate for a specific language', function(done) {
         // Open options for 'sw'.
         const languageOptionsDropdownTrigger =
-            languagesCollapse.querySelectorAll('button')[1];
+            languagesCollapse.querySelectorAll('cr-icon-button')[1];
         assertTrue(!!languageOptionsDropdownTrigger);
         languageOptionsDropdownTrigger.click();
         assertTrue(actionMenu.open);
@@ -333,7 +371,7 @@ cr.define('languages_page_tests', function() {
       test('toggle translate for target language', function() {
         // Open options for 'en'.
         const languageOptionsDropdownTrigger =
-            languagesCollapse.querySelectorAll('button')[0];
+            languagesCollapse.querySelectorAll('cr-icon-button')[0];
         assertTrue(!!languageOptionsDropdownTrigger);
         languageOptionsDropdownTrigger.click();
         assertTrue(actionMenu.open);
@@ -349,7 +387,7 @@ cr.define('languages_page_tests', function() {
 
         // Open options for 'sw'.
         const languageOptionsDropdownTrigger =
-            languagesCollapse.querySelectorAll('button')[1];
+            languagesCollapse.querySelectorAll('cr-icon-button')[1];
         assertTrue(!!languageOptionsDropdownTrigger);
         languageOptionsDropdownTrigger.click();
         assertTrue(actionMenu.open);
@@ -377,11 +415,12 @@ cr.define('languages_page_tests', function() {
         });
 
         // Open the menu and select Remove.
-        item.querySelector('button').click();
+        item.querySelector('cr-icon-button').click();
 
         assertTrue(actionMenu.open);
         const removeMenuItem = getMenuItem('removeLanguage');
         assertFalse(removeMenuItem.disabled);
+        assertFalse(removeMenuItem.hidden);
         removeMenuItem.click();
         assertFalse(actionMenu.open);
 
@@ -389,9 +428,28 @@ cr.define('languages_page_tests', function() {
             initialLanguages, languageHelper.getPref(languagesPref).value);
       });
 
-      test('remove language when starting with 2 languages', function() {
+      test('remove last blocked language', function() {
         assertEquals(
             initialLanguages, languageHelper.getPref(languagesPref).value);
+        assertDeepEquals(
+            ['en-US'], languageHelper.prefs.translate_blocked_languages.value);
+
+        const items = languagesCollapse.querySelectorAll('.list-item');
+        const domRepeat = assert(languagesCollapse.querySelector(
+            Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
+        const item = Array.from(items).find(function(el) {
+          return domRepeat.itemForElement(el) &&
+              domRepeat.itemForElement(el).language.code == 'en-US';
+        });
+        // Open the menu and select Remove.
+        item.querySelector('cr-icon-button').click();
+
+        assertTrue(actionMenu.open);
+        const removeMenuItem = getMenuItem('removeLanguage');
+        assertTrue(removeMenuItem.hidden);
+      });
+
+      test('remove language when starting with 2 languages', function() {
         const items = languagesCollapse.querySelectorAll('.list-item');
         const domRepeat = assert(languagesCollapse.querySelector(
             Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
@@ -401,11 +459,12 @@ cr.define('languages_page_tests', function() {
         });
 
         // Open the menu and select Remove.
-        item.querySelector('button').click();
+        item.querySelector('cr-icon-button').click();
 
         assertTrue(actionMenu.open);
         const removeMenuItem = getMenuItem('removeLanguage');
         assertFalse(removeMenuItem.disabled);
+        assertFalse(removeMenuItem.hidden);
         removeMenuItem.click();
         assertFalse(actionMenu.open);
 
@@ -414,16 +473,17 @@ cr.define('languages_page_tests', function() {
 
       test('move up/down buttons', function() {
         // Add several languages.
-        for (const language of ['en-CA', 'en-US', 'tk', 'no'])
+        for (const language of ['en-CA', 'en-US', 'tk', 'no']) {
           languageHelper.enableLanguage(language);
+        }
 
         Polymer.dom.flush();
 
         const menuButtons = languagesCollapse.querySelectorAll(
-            '.list-item paper-icon-button-light.icon-more-vert');
+            '.list-item cr-icon-button.icon-more-vert');
 
         // First language should not have "Move up" or "Move to top".
-        menuButtons[0].querySelector('button').click();
+        menuButtons[0].click();
         assertMenuItemButtonsVisible({
           moveToTop: false,
           moveUp: false,
@@ -432,7 +492,7 @@ cr.define('languages_page_tests', function() {
         actionMenu.close();
 
         // Second language should not have "Move up".
-        menuButtons[1].querySelector('button').click();
+        menuButtons[1].click();
         assertMenuItemButtonsVisible({
           moveToTop: true,
           moveUp: false,
@@ -441,7 +501,7 @@ cr.define('languages_page_tests', function() {
         actionMenu.close();
 
         // Middle languages should have all buttons.
-        menuButtons[2].querySelector('button').click();
+        menuButtons[2].click();
         assertMenuItemButtonsVisible({
           moveToTop: true,
           moveUp: true,
@@ -450,7 +510,7 @@ cr.define('languages_page_tests', function() {
         actionMenu.close();
 
         // Last language should not have "Move down".
-        menuButtons[menuButtons.length - 1].querySelector('button').click();
+        menuButtons[menuButtons.length - 1].click();
         assertMenuItemButtonsVisible({
           moveToTop: true,
           moveUp: true,
@@ -485,38 +545,42 @@ cr.define('languages_page_tests', function() {
 
         assertTrue(spellCheckSettingsExist);
 
-        // The row button should have a secondary row specifying which
-        // language spell check is enabled for.
-        const triggerRow = languagesPage.$.spellCheckSubpageTrigger;
-
-        // en-US starts with spellcheck enabled, so the secondary row is
-        // populated.
-        assertTrue(triggerRow.classList.contains('two-line'));
-        assertLT(0, triggerRow.querySelector('.secondary').textContent.length);
-
-        triggerRow.click();
-        Polymer.dom.flush();
+        const triggerRow = languagesPage.$.enableSpellcheckingToggle;
 
         // Disable spellcheck for en-US.
+        const spellcheckLanguageRow =
+            spellCheckCollapse.querySelector('.list-item');
         const spellcheckLanguageToggle =
-            spellCheckCollapse.querySelector('cr-toggle[checked]');
+            spellcheckLanguageRow.querySelector('cr-toggle');
         assertTrue(!!spellcheckLanguageToggle);
         spellcheckLanguageToggle.click();
         assertFalse(spellcheckLanguageToggle.checked);
         assertEquals(
             0, languageHelper.prefs.spellcheck.dictionaries.value.length);
 
-        // Now the secondary row is empty, so it shouldn't be shown.
-        assertFalse(triggerRow.classList.contains('two-line'));
-        assertEquals(
-            0, triggerRow.querySelector('.secondary').textContent.length);
-
         // Force-enable a language via policy.
         languageHelper.setPrefValue('spellcheck.forced_dictionaries', ['nb']);
+        Polymer.dom.flush();
+        const forceEnabledNbLanguageRow =
+            spellCheckCollapse.querySelectorAll('.list-item')[2];
+        assertTrue(!!forceEnabledNbLanguageRow);
+        assertTrue(
+            forceEnabledNbLanguageRow.querySelector('cr-toggle').checked);
+        assertTrue(!!forceEnabledNbLanguageRow.querySelector(
+            'cr-policy-pref-indicator'));
 
-        // The second row should no longer be empty.
-        assertTrue(triggerRow.classList.contains('two-line'));
-        assertLT(0, triggerRow.querySelector('.secondary').textContent.length);
+        // Force-disable the same language via policy.
+        languageHelper.setPrefValue('spellcheck.forced_dictionaries', []);
+        languageHelper.setPrefValue(
+            'spellcheck.blacklisted_dictionaries', ['nb']);
+        languageHelper.enableLanguage('nb');
+        Polymer.dom.flush();
+        const forceDisabledNbLanguageRow =
+            spellCheckCollapse.querySelectorAll('.list-item')[2];
+        assertFalse(
+            forceDisabledNbLanguageRow.querySelector('cr-toggle').checked);
+        assertTrue(!!forceDisabledNbLanguageRow.querySelector(
+            'cr-policy-pref-indicator'));
 
         // Sets |browser.enable_spellchecking| to |value| as if it was set by
         // policy.
@@ -541,12 +605,8 @@ cr.define('languages_page_tests', function() {
         setEnableSpellcheckingViaPolicy(false);
         Polymer.dom.flush();
 
-        // The second row should not be empty.
-        assertTrue(triggerRow.classList.contains('two-line'));
-        assertLT(0, triggerRow.querySelector('.secondary').textContent.length);
-
         // The policy indicator should be present.
-        assertTrue(!!triggerRow.querySelector('cr-policy-pref-indicator'));
+        assertTrue(!!triggerRow.$$('cr-policy-pref-indicator'));
 
         // Force-enable spellchecking via policy, and ensure that the policy
         // indicator is not present. |enable_spellchecking| can be forced to
@@ -554,11 +614,22 @@ cr.define('languages_page_tests', function() {
         setEnableSpellcheckingViaPolicy(true);
         Polymer.dom.flush();
         assertFalse(!!triggerRow.querySelector('cr-policy-pref-indicator'));
+
+        const spellCheckLanguagesCount =
+            spellCheckCollapse.querySelectorAll('.list-item').length;
+        // Enabling a language without spellcheck support should not add it to
+        // the list
+        languageHelper.enableLanguage('tk');
+        Polymer.dom.flush();
+        assertEquals(
+            spellCheckCollapse.querySelectorAll('.list-item').length,
+            spellCheckLanguagesCount);
       });
 
       test('error handling', function() {
-        if (cr.isMac)
+        if (cr.isMac) {
           return;
+        }
 
         const checkAllHidden = nodes => {
           assertTrue(nodes.every(node => node.hidden));
@@ -604,6 +675,27 @@ cr.define('languages_page_tests', function() {
         retryButtons[0].click();
         Polymer.dom.flush();
         assertFalse(moreInfo.hidden);
+      });
+    });
+
+    suite(TestNames.SpellcheckOfficialBuild, function() {
+      test('enabling and disabling the spelling service', () => {
+        const previousValue =
+            languagesPage.prefs.spellcheck.use_spelling_service.value;
+        languagesPage.$.spellingServiceEnable.click();
+        Polymer.dom.flush();
+        assertNotEquals(
+            previousValue,
+            languagesPage.prefs.spellcheck.use_spelling_service.value);
+      });
+
+      test('disabling spell check turns off spelling service', () => {
+        languageHelper.setPrefValue('browser.enable_spellchecking', true);
+        languageHelper.setPrefValue('spellcheck.use_spelling_service', true);
+        languagesPage.$.enableSpellcheckingToggle.click();
+        Polymer.dom.flush();
+        assertFalse(
+            languageHelper.getPref('spellcheck.use_spelling_service').value);
       });
     });
   });

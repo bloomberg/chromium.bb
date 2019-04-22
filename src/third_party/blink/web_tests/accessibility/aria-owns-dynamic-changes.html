@@ -2,38 +2,42 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container { display: none; }
-</style>
-
 <div class="container">
     <ul id="future_parent" aria-owns="future_child"></ul>
 </div>
 
 <script>
-test(function(t)
-{
+test(function(t) {
     var axFutureParent = accessibilityController.accessibleElementById("future_parent");
     assert_equals(axFutureParent.childrenCount, 0);
     var futureParent = document.getElementById("future_parent");
     var child = document.createElement("li");
     child.id = "future_child";
-    assert_equals(axFutureParent.childrenCount, 0);
+    assert_equals(axFutureParent.childrenCount, 0, "before appending child");
 
     futureParent.parentElement.appendChild(child);
-    assert_equals(axFutureParent.childrenCount, 1);
+    assert_equals(axFutureParent.childrenCount, 1, "after appending child");
 
     child.id = "";
-    assert_equals(axFutureParent.childrenCount, 0);
+    assert_equals(axFutureParent.childrenCount, 0, "after clearing id");
 
     child.id = "future_child";
-    assert_equals(axFutureParent.childrenCount, 1);
+    assert_equals(axFutureParent.childrenCount, 1, "after setting id");
 
     futureParent.setAttribute("aria-owns", "");
-    assert_equals(axFutureParent.childrenCount, 0);
+    assert_equals(axFutureParent.childrenCount, 0, "after clearing aria-owns");
 
     futureParent.setAttribute("aria-owns", "future_child");
-    assert_equals(axFutureParent.childrenCount, 1);
+    assert_equals(axFutureParent.childrenCount, 1, "after setting aria-oens");
+
+    child.style.visibility = 'hidden';
+    assert_equals(axFutureParent.childrenCount, 0, "after setting hidden");
+
+    child.style.visibility = 'visible';
+    assert_equals(axFutureParent.childrenCount, 1, "after setting visible");
+
+    child.remove();
+    assert_equals(axFutureParent.childrenCount, 0);
 }, "Aria-owns is dynamically recomputed.");
 </script>
 
@@ -88,9 +92,4 @@ test(function(t)
     assert_equals(axLogicalParent.childAtIndex(2).childAtIndex(0).name, "1");
     assert_equals(axLogicalParent.childAtIndex(3).childAtIndex(0).name, "3");
 }, "A parent can use aria-owns to reorder its children into a more logical AX ordering.");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

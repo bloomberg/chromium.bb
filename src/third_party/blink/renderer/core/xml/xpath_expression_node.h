@@ -46,8 +46,8 @@ struct CORE_EXPORT EvaluationContext {
   explicit EvaluationContext(Node&);
 
   Member<Node> node;
-  unsigned long size;
-  unsigned long position;
+  wtf_size_t size;
+  wtf_size_t position;
   HashMap<String, String> variable_bindings;
 
   bool had_type_conversion_error;

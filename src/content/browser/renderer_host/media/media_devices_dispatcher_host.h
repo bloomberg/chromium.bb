@@ -15,7 +15,7 @@
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/common/content_export.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -40,6 +40,7 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
                         bool request_video_input,
                         bool request_audio_output,
                         bool request_video_input_capabilities,
+                        bool request_audio_input_capabilities,
                         EnumerateDevicesCallback client_callback) override;
   void GetVideoInputCapabilities(
       GetVideoInputCapabilitiesCallback client_callback) override;

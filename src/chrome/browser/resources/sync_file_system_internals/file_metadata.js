@@ -5,10 +5,10 @@
 /**
  * WebUI to monitor File Metadata per Extension ID.
  */
-var FileMetadata = (function() {
+const FileMetadata = (function() {
   'use strict';
 
-  var FileMetadata = {};
+  const FileMetadata = {};
 
   /**
    * Gets extension data so the select drop down can be filled.
@@ -23,22 +23,23 @@ var FileMetadata = (function() {
    *     'extensionID', 'status'.
    */
   FileMetadata.onGetExtensions = function(extensionStatuses) {
-    var select = $('extensions-select');
+    const select = $('extensions-select');
 
     // Record existing drop down extension ID. If it's still there after the
     // refresh then keep it as the selected value.
-    var oldSelectedExtension = getSelectedExtensionId();
+    const oldSelectedExtension = getSelectedExtensionId();
 
     select.textContent = '';
-    for (var i = 0; i < extensionStatuses.length; i++) {
-      var originEntry = extensionStatuses[i];
-      var tr = document.createElement('tr');
-      var title = originEntry.extensionName + ' [' + originEntry.status + ']';
+    for (let i = 0; i < extensionStatuses.length; i++) {
+      const originEntry = extensionStatuses[i];
+      const tr = document.createElement('tr');
+      const title = originEntry.extensionName + ' [' + originEntry.status + ']';
       select.options.add(new Option(title, originEntry.extensionID));
 
       // If option was the previously only selected, make it selected again.
-      if (originEntry.extensionID != oldSelectedExtension)
+      if (originEntry.extensionID != oldSelectedExtension) {
         continue;
+      }
       select.options[select.options.length - 1].selected = true;
     }
 
@@ -50,9 +51,10 @@ var FileMetadata = (function() {
    * @return {string} extension ID that's currently selected in drop down box.
    */
   function getSelectedExtensionId() {
-    var dropDown = $('extensions-select').options;
-    if (dropDown.selectedIndex >= 0)
+    const dropDown = $('extensions-select').options;
+    if (dropDown.selectedIndex >= 0) {
       return dropDown[dropDown.selectedIndex].value;
+    }
 
     return null;
   }
@@ -62,14 +64,14 @@ var FileMetadata = (function() {
    * down if any.
    */
   function getFileMetadata() {
-    var dropDown = $('extensions-select');
+    const dropDown = $('extensions-select');
     if (dropDown.options.length === 0) {
       $('file-metadata-header').textContent = '';
       $('file-metadata-entries').textContent = 'No file metadata available.';
       return;
     }
 
-    var selectedExtensionId = getSelectedExtensionId();
+    const selectedExtensionId = getSelectedExtensionId();
     chrome.send('getFileMetadata', [selectedExtensionId]);
   }
 
@@ -77,10 +79,10 @@ var FileMetadata = (function() {
    * Renders result of getFileMetadata as a table.
    */
   FileMetadata.onGetFileMetadata = function(fileMetadataMap) {
-    var header = $('file-metadata-header');
+    const header = $('file-metadata-header');
     // Only draw the header if it hasn't been drawn yet
     if (header.children.length === 0) {
-      var tr = document.createElement('tr');
+      const tr = document.createElement('tr');
       tr.appendChild(createElementFromText('td', 'Type'));
       tr.appendChild(createElementFromText('td', 'Status'));
       tr.appendChild(createElementFromText('td', 'Path', {width: '250px'}));
@@ -89,11 +91,11 @@ var FileMetadata = (function() {
     }
 
     // Add row entries.
-    var itemContainer = $('file-metadata-entries');
+    const itemContainer = $('file-metadata-entries');
     itemContainer.textContent = '';
-    for (var i = 0; i < fileMetadataMap.length; i++) {
-      var metadatEntry = fileMetadataMap[i];
-      var tr = document.createElement('tr');
+    for (let i = 0; i < fileMetadataMap.length; i++) {
+      const metadatEntry = fileMetadataMap[i];
+      const tr = document.createElement('tr');
       tr.appendChild(createFileIconCell(metadatEntry.type));
       tr.appendChild(createElementFromText('td', metadatEntry.status));
       tr.appendChild(createElementFromText('td', metadatEntry.path));
@@ -107,8 +109,8 @@ var FileMetadata = (function() {
    * @return {HTMLElement} TD with file or folder icon depending on type.
    */
   function createFileIconCell(type) {
-    var img = document.createElement('div');
-    var lowerType = type.toLowerCase();
+    const img = document.createElement('div');
+    const lowerType = type.toLowerCase();
     if (lowerType == 'file') {
       img.style.content =
           cr.icon.getImage('chrome://theme/IDR_DEFAULT_FAVICON');
@@ -117,10 +119,10 @@ var FileMetadata = (function() {
       img.className = 'folder-image';
     }
 
-    var imgWrapper = document.createElement('div');
+    const imgWrapper = document.createElement('div');
     imgWrapper.appendChild(img);
 
-    var td = document.createElement('td');
+    const td = document.createElement('td');
     td.className = 'file-icon-cell';
     td.appendChild(imgWrapper);
     td.appendChild(document.createTextNode(type));

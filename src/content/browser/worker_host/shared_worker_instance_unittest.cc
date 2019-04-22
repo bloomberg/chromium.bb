@@ -22,7 +22,7 @@ class SharedWorkerInstanceTest : public testing::Test {
                                       const url::Origin& constructor_origin) {
     return SharedWorkerInstance(
         script_url, name, constructor_origin, std::string(),
-        blink::kWebContentSecurityPolicyTypeReport,
+        blink::mojom::ContentSecurityPolicyType::kReport,
         blink::mojom::IPAddressSpace::kPublic,
         blink::mojom::SharedWorkerCreationContextType::kNonsecure);
   }
@@ -270,7 +270,7 @@ TEST_F(SharedWorkerInstanceTest, AddressSpace) {
     SharedWorkerInstance instance(
         GURL("http://example.com/w.js"), "name",
         url::Origin::Create(GURL("http://example.com/")), std::string(),
-        blink::kWebContentSecurityPolicyTypeReport, address_space,
+        blink::mojom::ContentSecurityPolicyType::kReport, address_space,
         blink::mojom::SharedWorkerCreationContextType::kNonsecure);
     EXPECT_EQ(address_space, instance.creation_address_space());
   }

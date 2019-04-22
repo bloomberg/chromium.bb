@@ -85,7 +85,10 @@ void TextInputControllerBindings::Install(
   if (bindings.IsEmpty())
     return;
   v8::Local<v8::Object> global = context->Global();
-  global->Set(gin::StringToV8(isolate, "textInputController"), bindings.ToV8());
+  global
+      ->Set(context, gin::StringToV8(isolate, "textInputController"),
+            bindings.ToV8())
+      .Check();
 }
 
 TextInputControllerBindings::TextInputControllerBindings(
@@ -193,10 +196,8 @@ void TextInputControllerBindings::ForceTextInputStateUpdate() {
 }
 // TextInputController ---------------------------------------------------------
 
-TextInputController::TextInputController(
-    WebViewTestProxyBase* web_view_test_proxy_base)
-    : web_view_test_proxy_base_(web_view_test_proxy_base),
-      weak_factory_(this) {}
+TextInputController::TextInputController(WebViewTestProxy* web_view_test_proxy)
+    : web_view_test_proxy_(web_view_test_proxy), weak_factory_(this) {}
 
 TextInputController::~TextInputController() {}
 
@@ -272,12 +273,12 @@ void TextInputController::SetMarkedText(const std::string& text,
     ime_text_span.start_offset = start;
     ime_text_span.end_offset = start + length;
   }
-  ime_text_span.thickness = ws::mojom::ImeTextSpanThickness::kThick;
+  ime_text_span.thickness = ui::mojom::ImeTextSpanThickness::kThick;
   ime_text_spans.push_back(ime_text_span);
   if (start + length < static_cast<int>(web_text.length())) {
     ime_text_span.start_offset = ime_text_span.end_offset;
     ime_text_span.end_offset = web_text.length();
-    ime_text_span.thickness = ws::mojom::ImeTextSpanThickness::kThin;
+    ime_text_span.thickness = ui::mojom::ImeTextSpanThickness::kThin;
     ime_text_spans.push_back(ime_text_span);
   }
 
@@ -384,7 +385,7 @@ void TextInputController::SetComposition(const std::string& text) {
   std::vector<blink::WebImeTextSpan> ime_text_spans;
   ime_text_spans.push_back(blink::WebImeTextSpan(
       blink::WebImeTextSpan::Type::kComposition, 0, textLength,
-      ws::mojom::ImeTextSpanThickness::kThin, SK_ColorTRANSPARENT));
+      ui::mojom::ImeTextSpanThickness::kThin, SK_ColorTRANSPARENT));
   if (auto* controller = GetInputMethodController()) {
     controller->SetComposition(
         newText, blink::WebVector<blink::WebImeTextSpan>(ime_text_spans),
@@ -393,16 +394,16 @@ void TextInputController::SetComposition(const std::string& text) {
 }
 
 void TextInputController::ForceTextInputStateUpdate() {
-  // TODO(lukasza): Finish adding OOPIF support to the layout tests harness.
+  // TODO(lukasza): Finish adding OOPIF support to the web tests harness.
   CHECK(view()->MainFrame()->IsWebLocalFrame())
       << "WebView does not have a local main frame and"
          " cannot handle input method controller tasks.";
-  web_view_test_proxy_base_->delegate()->ForceTextInputStateUpdate(
+  web_view_test_proxy_->delegate()->ForceTextInputStateUpdate(
       view()->MainFrame()->ToWebLocalFrame());
 }
 
 blink::WebView* TextInputController::view() {
-  return web_view_test_proxy_base_->web_view();
+  return web_view_test_proxy_->webview();
 }
 
 blink::WebInputMethodController*
@@ -410,7 +411,7 @@ TextInputController::GetInputMethodController() {
   if (!view()->MainFrame())
     return nullptr;
 
-  // TODO(lukasza): Finish adding OOPIF support to the layout tests harness.
+  // TODO(lukasza): Finish adding OOPIF support to the web tests harness.
   CHECK(view()->MainFrame()->IsWebLocalFrame())
       << "WebView does not have a local main frame and"
          " cannot handle input method controller tasks.";

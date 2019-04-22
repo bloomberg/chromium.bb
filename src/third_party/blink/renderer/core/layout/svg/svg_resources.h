@@ -147,10 +147,6 @@ class SVGResources {
     ClipperFilterMaskerData()
         : clipper(nullptr), filter(nullptr), masker(nullptr) {}
 
-    static std::unique_ptr<ClipperFilterMaskerData> Create() {
-      return base::WrapUnique(new ClipperFilterMaskerData);
-    }
-
     LayoutSVGResourceClipper* clipper;
     LayoutSVGResourceFilter* filter;
     LayoutSVGResourceMasker* masker;
@@ -164,10 +160,6 @@ class SVGResources {
    public:
     MarkerData()
         : marker_start(nullptr), marker_mid(nullptr), marker_end(nullptr) {}
-
-    static std::unique_ptr<MarkerData> Create() {
-      return std::make_unique<MarkerData>();
-    }
 
     LayoutSVGResourceMarker* marker_start;
     LayoutSVGResourceMarker* marker_mid;
@@ -184,10 +176,6 @@ class SVGResources {
 
    public:
     FillStrokeData() : fill(nullptr), stroke(nullptr) {}
-
-    static std::unique_ptr<FillStrokeData> Create() {
-      return std::make_unique<FillStrokeData>();
-    }
 
     LayoutSVGResourcePaintServer* fill;
     LayoutSVGResourcePaintServer* stroke;

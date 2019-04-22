@@ -89,6 +89,14 @@ void FullscreenControllerImpl::DecrementDisabledCounter() {
   model_.DecrementDisabledCounter();
 }
 
+void FullscreenControllerImpl::BrowserTraitCollectionChangedBegin() {
+  mediator_.StopFrameChangeCompensation();
+}
+
+void FullscreenControllerImpl::BrowserTraitCollectionChangedEnd() {
+  mediator_.StartFrameChangeCompensation();
+}
+
 CGFloat FullscreenControllerImpl::GetProgress() const {
   return model_.progress();
 }

@@ -91,10 +91,6 @@ class ChromeLayoutProvider : public views::LayoutProvider {
   // This value controls the alignment used for "Label 1" and "Label 2".
   virtual views::GridLayout::Alignment GetControlLabelGridAlignment() const;
 
-  // Returns whether to use extra padding on dialogs. If this is false, content
-  // Views for dialogs should not insert extra padding at their own edges.
-  virtual bool UseExtraDialogPadding() const;
-
   // Returns whether to show the icon next to the title text on a dialog.
   virtual bool ShouldShowWindowIcon() const;
 

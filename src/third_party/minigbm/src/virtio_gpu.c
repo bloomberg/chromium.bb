@@ -26,11 +26,12 @@
 #define MESA_LLVMPIPE_TILE_SIZE (1 << MESA_LLVMPIPE_TILE_ORDER)
 
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
-						  DRM_FORMAT_BGR888,   DRM_FORMAT_RGB565,
-						  DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888 };
+						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
+						  DRM_FORMAT_XRGB8888 };
 
 static const uint32_t dumb_texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
-							DRM_FORMAT_YVU420_ANDROID };
+							DRM_FORMAT_YVU420_ANDROID,
+							DRM_FORMAT_NV12 };
 
 static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_RG88 };
 
@@ -63,12 +64,10 @@ static uint32_t translate_format(uint32_t drm_fourcc, uint32_t plane)
 static int virtio_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
 				 uint64_t use_flags)
 {
-	width = ALIGN(width, MESA_LLVMPIPE_TILE_SIZE);
-	height = ALIGN(height, MESA_LLVMPIPE_TILE_SIZE);
-
-	/* HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned. */
-	if (bo->format == DRM_FORMAT_YVU420_ANDROID)
-		height = bo->height;
+	if (bo->format != DRM_FORMAT_R8) {
+		width = ALIGN(width, MESA_LLVMPIPE_TILE_SIZE);
+		height = ALIGN(height, MESA_LLVMPIPE_TILE_SIZE);
+	}
 
 	return drv_dumb_bo_create(bo, width, height, format, use_flags);
 }
@@ -187,6 +186,14 @@ static int virtio_gpu_init(struct driver *drv)
 				     ARRAY_SIZE(dumb_texture_source_formats), &LINEAR_METADATA,
 				     BO_USE_TEXTURE_MASK);
 
+	/* Android CTS tests require this. */
+	drv_add_combination(drv, DRM_FORMAT_BGR888, &LINEAR_METADATA, BO_USE_SW_MASK);
+
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	drv_modify_combination(drv, DRM_FORMAT_R8, &LINEAR_METADATA,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+
 	return drv_modify_linear_combinations(drv);
 }
 
@@ -283,6 +290,9 @@ static uint32_t virtio_gpu_resolve_format(uint32_t format, uint64_t use_flags)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
+		/* Camera subsystem requires NV12. */
+		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
+			return DRM_FORMAT_NV12;
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:

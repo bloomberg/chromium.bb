@@ -10,7 +10,7 @@
 #include <sstream>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 #if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 
@@ -78,7 +78,7 @@ bool IsStackFrameValid(uintptr_t fp, uintptr_t prev_fp, uintptr_t stack_end) {
   }
 
   return true;
-};
+}
 
 // ScanStackForNextFrame() scans the stack for a valid frame to allow unwinding
 // past system libraries. Only supported on Linux where system libraries are
@@ -200,10 +200,14 @@ uintptr_t GetStackEnd() {
 }
 #endif  // BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 
-StackTrace::StackTrace() : StackTrace(arraysize(trace_)) {}
+StackTrace::StackTrace() : StackTrace(base::size(trace_)) {}
+
+StackTrace::StackTrace(size_t count) {
+  count_ = CollectStackTrace(trace_, std::min(count, base::size(trace_)));
+}
 
 StackTrace::StackTrace(const void* const* trace, size_t count) {
-  count = std::min(count, arraysize(trace_));
+  count = std::min(count, base::size(trace_));
   if (count)
     memcpy(trace_, trace, count * sizeof(trace_[0]));
   count_ = count;
@@ -233,6 +237,15 @@ std::string StackTrace::ToStringWithPrefix(const char* prefix_string) const {
   OutputToStreamWithPrefix(&stream, prefix_string);
 #endif
   return stream.str();
+}
+
+std::ostream& operator<<(std::ostream& os, const StackTrace& s) {
+#if !defined(__UCLIBC__) & !defined(_AIX)
+  s.OutputToStream(&os);
+#else
+  os << "StackTrace::OutputToStream not implemented.";
+#endif
+  return os;
 }
 
 #if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)

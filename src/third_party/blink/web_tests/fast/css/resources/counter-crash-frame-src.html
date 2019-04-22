@@ -1,6 +1,9 @@
 
 <script>
 function boom() {
+    if (sessionStorage.reloaded)
+      return;
+    sessionStorage.reloaded = true;
     var p = document.getElementById('p').cloneNode(false);
     document.getElementById('fig').appendChild(p);
 

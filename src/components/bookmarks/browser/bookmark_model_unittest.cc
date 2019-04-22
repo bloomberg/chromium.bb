@@ -8,16 +8,16 @@
 #include <stdint.h>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 #include <memory>
+#include <unordered_set>
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -139,7 +139,7 @@ void PopulateNodeImpl(const std::vector<std::string>& description,
       // in debugging.
       static int next_folder_id = 1;
       TestNode* new_node = parent->Add(
-          std::make_unique<TestNode>(base::IntToString16(next_folder_id++),
+          std::make_unique<TestNode>(base::NumberToString16(next_folder_id++),
                                      BookmarkNode::FOLDER),
           parent->child_count());
       PopulateNodeImpl(description, index, new_node);
@@ -223,7 +223,7 @@ void VerifyModelMatchesNode(TestNode* expected, const BookmarkNode* actual) {
 
 void VerifyNoDuplicateIDs(BookmarkModel* model) {
   ui::TreeNodeIterator<const BookmarkNode> it(model->root_node());
-  base::hash_set<int64_t> ids;
+  std::unordered_set<int64_t> ids;
   while (it.has_next())
     ASSERT_TRUE(ids.insert(it.Next()->id()).second);
 }
@@ -538,7 +538,7 @@ TEST_F(BookmarkModelTest, AddURLWithUnicodeTitle) {
 }
 
 TEST_F(BookmarkModelTest, AddURLWithWhitespaceTitle) {
-  for (size_t i = 0; i < arraysize(url_whitespace_test_cases); ++i) {
+  for (size_t i = 0; i < base::size(url_whitespace_test_cases); ++i) {
     const BookmarkNode* root = model_->bookmark_bar_node();
     const base::string16 title(
         ASCIIToUTF16(url_whitespace_test_cases[i].input_title));
@@ -625,7 +625,7 @@ TEST_F(BookmarkModelTest, AddFolder) {
 }
 
 TEST_F(BookmarkModelTest, AddFolderWithWhitespaceTitle) {
-  for (size_t i = 0; i < arraysize(title_whitespace_test_cases); ++i) {
+  for (size_t i = 0; i < base::size(title_whitespace_test_cases); ++i) {
     const BookmarkNode* root = model_->bookmark_bar_node();
     const base::string16 title(
         ASCIIToUTF16(title_whitespace_test_cases[i].input_title));
@@ -738,7 +738,7 @@ TEST_F(BookmarkModelTest, SetTitle) {
 }
 
 TEST_F(BookmarkModelTest, SetTitleWithWhitespace) {
-  for (size_t i = 0; i < arraysize(title_whitespace_test_cases); ++i) {
+  for (size_t i = 0; i < base::size(title_whitespace_test_cases); ++i) {
     const BookmarkNode* root = model_->bookmark_bar_node();
     base::string16 title(ASCIIToUTF16("dummy"));
     const GURL url("http://foo.com");
@@ -1311,7 +1311,7 @@ TEST(BookmarkModelTest2, CreateAndRestore) {
     { "a b c [ d e [ f ] ]", "g h i [ j k [ l ] ]"},
   };
   std::unique_ptr<BookmarkModel> model;
-  for (size_t i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < base::size(data); ++i) {
     model = TestBookmarkClient::CreateModel();
 
     TestNode bbn;

@@ -4,9 +4,9 @@
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
 <script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
-<script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
@@ -17,7 +17,7 @@ let watcherDone = new Event("watcherdone");
 
 let fakeDeviceInitParams = { supportsImmersive:true };
 
-let requestSessionOptions = [{ immersive: true }];
+let requestSessionOptions = ['immersive-vr'];
 
 let testFunction = function(session, t, fakeDeviceController) {
   let eventWatcher = new EventWatcher(
@@ -36,11 +36,24 @@ let testFunction = function(session, t, fakeDeviceController) {
       viewMatrix: VALID_VIEW_MATRIX
     }]);
 
+  function tryCallingFrameMethods(frame) {
+    t.step(() => {
+      // Frame is active but not an animation frame, so calling getPose is
+      // allowed while getViewerPose is not.
+      assert_throws('InvalidStateError', () => frame.getViewerPose(currentReferenceSpace));
+      let pose = frame.getPose(session.viewerSpace, currentReferenceSpace);
+      assert_not_equals(pose, null);
+      assert_true(pose instanceof XRPose);
+      assert_false(pose instanceof XRViewerPose);
+    });
+  }
+
   function onSessionSelectStart(event) {
     t.step( () => {
       let input_sources = session.getInputSources();
       assert_equals(event.frame.session, session);
       assert_equals(event.inputSource, input_sources[0]);
+      tryCallingFrameMethods(event.frame);
     });
   }
 
@@ -49,6 +62,7 @@ let testFunction = function(session, t, fakeDeviceController) {
       let input_sources = session.getInputSources();
       assert_equals(event.frame.session, session);
       assert_equals(event.inputSource, input_sources[0]);
+      tryCallingFrameMethods(event.frame);
     });
   }
 
@@ -57,6 +71,7 @@ let testFunction = function(session, t, fakeDeviceController) {
       let input_sources = session.getInputSources();
       assert_equals(event.frame.session, session);
       assert_equals(event.inputSource, input_sources[0]);
+      tryCallingFrameMethods(event.frame);
     });
     session.dispatchEvent(watcherDone);
   }
@@ -65,23 +80,29 @@ let testFunction = function(session, t, fakeDeviceController) {
   session.addEventListener("select", onSessionSelect, false);
 
   // Session must have a baseLayer or frame requests will be ignored.
-  session.baseLayer = new XRWebGLLayer(session, gl);
+  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
   let input_source = new MockXRInputSource();
 
   fakeDeviceController.addInputSource(input_source);
 
-  // Press the primary input button and then release it a short time later.
-  session.requestAnimationFrame((time, xrFrame) => {
-    input_source.primaryInputPressed = true;
+  let currentReferenceSpace = null;
 
-      session.requestAnimationFrame((time, xrFrame) => {
-        input_source.primaryInputPressed = false;
+  session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((referenceSpace) => {
+    currentReferenceSpace = referenceSpace;
+
+    // Press the primary input button and then release it a short time later.
+    session.requestAnimationFrame((time, xrFrame) => {
+      input_source.primaryInputPressed = true;
 
         session.requestAnimationFrame((time, xrFrame) => {
-          // Need to process one more frame to allow select to propegate.
+          input_source.primaryInputPressed = false;
+
+          session.requestAnimationFrame((time, xrFrame) => {
+            // Need to process one more frame to allow select to propegate.
+          });
         });
-      });
+    });
   });
 
   return eventPromise;

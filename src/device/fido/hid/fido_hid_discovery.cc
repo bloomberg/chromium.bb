@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "device/fido/hid/fido_hid_device.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -38,8 +39,21 @@ void FidoHidDiscovery::StartInternal() {
 
 void FidoHidDiscovery::DeviceAdded(
     device::mojom::HidDeviceInfoPtr device_info) {
+  // The init packet header is the larger of the headers so we only compare
+  // against it below.
+  static_assert(
+      kHidInitPacketHeaderSize >= kHidContinuationPacketHeaderSize,
+      "init header is expected to be larger than continuation header");
+
   // Ignore non-U2F devices.
-  if (filter_.Matches(*device_info)) {
+  if (filter_.Matches(*device_info) &&
+      // Check that the supported report sizes are sufficient for at least one
+      // byte of non-header data per report and not larger than our maximum
+      // size.
+      device_info->max_input_report_size > kHidInitPacketHeaderSize &&
+      device_info->max_input_report_size <= kHidMaxPacketSize &&
+      device_info->max_output_report_size > kHidInitPacketHeaderSize &&
+      device_info->max_output_report_size <= kHidMaxPacketSize) {
     AddDevice(std::make_unique<FidoHidDevice>(std::move(device_info),
                                               hid_manager_.get()));
   }

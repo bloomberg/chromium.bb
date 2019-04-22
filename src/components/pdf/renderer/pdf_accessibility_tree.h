@@ -23,7 +23,7 @@ class RendererPpapiHost;
 
 namespace gfx {
 class Transform;
-};
+}
 
 namespace pdf {
 

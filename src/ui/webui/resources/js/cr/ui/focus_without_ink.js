@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  if (cr.ui.focusWithoutInk)
+  if (cr.ui.focusWithoutInk) {
     return;
+  }
 
-  var hideInk = false;
+  let hideInk = false;
 
   assert(!cr.isIOS, 'pointerdown doesn\'t work on iOS');
 
@@ -25,8 +26,8 @@ cr.define('cr.ui', function() {
    * helpful to show focus ripples in that case. This is Polymer-specific.
    * @param {!Element} toFocus
    */
-  var focusWithoutInk = function(toFocus) {
-    var innerButton = null;
+  const focusWithoutInk = function(toFocus) {
+    let innerButton = null;
 
     if (toFocus.parentElement &&
         toFocus.parentElement.tagName == 'PAPER-ICON-BUTTON-LIGHT') {
@@ -44,7 +45,7 @@ cr.define('cr.ui', function() {
     // Make sure the element is in the document we're listening to events on.
     assert(document == toFocus.ownerDocument);
 
-    var origNoInk;
+    let origNoInk;
 
     if (hideInk) {
       origNoInk = toFocus.noink;
@@ -53,13 +54,15 @@ cr.define('cr.ui', function() {
 
     // For paper-icon-button-light elements, focus() needs to be  called on the
     // inner native <button> for it to work.
-    if (innerButton)
+    if (innerButton) {
       innerButton.focus();
-    else
+    } else {
       toFocus.focus();
+    }
 
-    if (hideInk)
+    if (hideInk) {
       toFocus.noink = origNoInk;
+    }
   };
 
   return {focusWithoutInk: focusWithoutInk};

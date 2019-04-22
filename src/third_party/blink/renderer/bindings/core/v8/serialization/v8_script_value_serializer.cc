@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shared_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_transform_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix_read_only.h"
@@ -36,6 +37,7 @@
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/transform_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_base.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
@@ -143,7 +145,7 @@ void V8ScriptValueSerializer::FinalizeTransfer(
     ExceptionState& exception_state) {
   // TODO(jbroman): Strictly speaking, this is not correct; transfer should
   // occur in the order of the transfer list.
-  // https://html.spec.whatwg.org/multipage/infrastructure.html#structuredclonewithtransfer
+  // https://html.spec.whatwg.org/C/#structuredclonewithtransfer
 
   v8::Isolate* isolate = script_state_->GetIsolate();
 
@@ -170,12 +172,19 @@ void V8ScriptValueSerializer::FinalizeTransfer(
       return;
 
     if (RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+      // Order matters here, because the order in which streams are added to the
+      // |stream_ports_| array must match the indexes which are calculated in
+      // WriteDOMObject().
       serialized_script_value_->TransferReadableStreams(
           script_state_, transferables_->readable_streams, exception_state);
       if (exception_state.HadException())
         return;
       serialized_script_value_->TransferWritableStreams(
           script_state_, transferables_->writable_streams, exception_state);
+      if (exception_state.HadException())
+        return;
+      serialized_script_value_->TransferTransformStreams(
+          script_state_, transferables_->transform_streams, exception_state);
       if (exception_state.HadException())
         return;
     }
@@ -186,14 +195,14 @@ void V8ScriptValueSerializer::WriteUTF8String(const String& string) {
   // TODO(jbroman): Ideally this method would take a WTF::StringView, but the
   // StringUTF8Adaptor trick doesn't yet work with StringView.
   StringUTF8Adaptor utf8(string);
-  WriteUint32(utf8.length());
-  WriteRawBytes(utf8.Data(), utf8.length());
+  WriteUint32(utf8.size());
+  WriteRawBytes(utf8.data(), utf8.size());
 }
 
 bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
                                              ExceptionState& exception_state) {
   const WrapperTypeInfo* wrapper_type_info = wrappable->GetWrapperTypeInfo();
-  if (wrapper_type_info == &V8Blob::wrapper_type_info) {
+  if (wrapper_type_info == V8Blob::GetWrapperTypeInfo()) {
     Blob* blob = wrappable->ToImpl<Blob>();
     serialized_script_value_->BlobDataHandles().Set(blob->Uuid(),
                                                     blob->GetBlobDataHandle());
@@ -212,11 +221,11 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == &V8File::wrapper_type_info) {
+  if (wrapper_type_info == V8File::GetWrapperTypeInfo()) {
     WriteTag(blob_info_array_ ? kFileIndexTag : kFileTag);
     return WriteFile(wrappable->ToImpl<File>(), exception_state);
   }
-  if (wrapper_type_info == &V8FileList::wrapper_type_info) {
+  if (wrapper_type_info == V8FileList::GetWrapperTypeInfo()) {
     // This does not presently deduplicate a File object and its entry in a
     // FileList, which is non-standard behavior.
     FileList* file_list = wrappable->ToImpl<FileList>();
@@ -229,7 +238,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == &V8ImageBitmap::wrapper_type_info) {
+  if (wrapper_type_info == V8ImageBitmap::GetWrapperTypeInfo()) {
     ImageBitmap* image_bitmap = wrappable->ToImpl<ImageBitmap>();
     if (image_bitmap->IsNeutered()) {
       exception_state.ThrowDOMException(
@@ -270,7 +279,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteRawBytes(pixels->Data(), pixels->length());
     return true;
   }
-  if (wrapper_type_info == &V8ImageData::wrapper_type_info) {
+  if (wrapper_type_info == V8ImageData::GetWrapperTypeInfo()) {
     ImageData* image_data = wrappable->ToImpl<ImageData>();
     WriteTag(kImageDataTag);
     SerializedColorParams color_params(image_data->GetCanvasColorParams(),
@@ -289,7 +298,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteRawBytes(pixel_buffer->Data(), pixel_buffer_length);
     return true;
   }
-  if (wrapper_type_info == &V8DOMPoint::wrapper_type_info) {
+  if (wrapper_type_info == V8DOMPoint::GetWrapperTypeInfo()) {
     DOMPoint* point = wrappable->ToImpl<DOMPoint>();
     WriteTag(kDOMPointTag);
     WriteDouble(point->x());
@@ -298,7 +307,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteDouble(point->w());
     return true;
   }
-  if (wrapper_type_info == &V8DOMPointReadOnly::wrapper_type_info) {
+  if (wrapper_type_info == V8DOMPointReadOnly::GetWrapperTypeInfo()) {
     DOMPointReadOnly* point = wrappable->ToImpl<DOMPointReadOnly>();
     WriteTag(kDOMPointReadOnlyTag);
     WriteDouble(point->x());
@@ -307,7 +316,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteDouble(point->w());
     return true;
   }
-  if (wrapper_type_info == &V8DOMRect::wrapper_type_info) {
+  if (wrapper_type_info == V8DOMRect::GetWrapperTypeInfo()) {
     DOMRect* rect = wrappable->ToImpl<DOMRect>();
     WriteTag(kDOMRectTag);
     WriteDouble(rect->x());
@@ -316,7 +325,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteDouble(rect->height());
     return true;
   }
-  if (wrapper_type_info == &V8DOMRectReadOnly::wrapper_type_info) {
+  if (wrapper_type_info == V8DOMRectReadOnly::GetWrapperTypeInfo()) {
     DOMRectReadOnly* rect = wrappable->ToImpl<DOMRectReadOnly>();
     WriteTag(kDOMRectReadOnlyTag);
     WriteDouble(rect->x());
@@ -325,7 +334,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteDouble(rect->height());
     return true;
   }
-  if (wrapper_type_info == &V8DOMQuad::wrapper_type_info) {
+  if (wrapper_type_info == V8DOMQuad::GetWrapperTypeInfo()) {
     DOMQuad* quad = wrappable->ToImpl<DOMQuad>();
     WriteTag(kDOMQuadTag);
     for (const DOMPoint* point :
@@ -337,7 +346,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == &V8DOMMatrix::wrapper_type_info) {
+  if (wrapper_type_info == V8DOMMatrix::GetWrapperTypeInfo()) {
     DOMMatrix* matrix = wrappable->ToImpl<DOMMatrix>();
     if (matrix->is2D()) {
       WriteTag(kDOMMatrix2DTag);
@@ -368,7 +377,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == &V8DOMMatrixReadOnly::wrapper_type_info) {
+  if (wrapper_type_info == V8DOMMatrixReadOnly::GetWrapperTypeInfo()) {
     DOMMatrixReadOnly* matrix = wrappable->ToImpl<DOMMatrixReadOnly>();
     if (matrix->is2D()) {
       WriteTag(kDOMMatrix2DReadOnlyTag);
@@ -399,7 +408,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
     return true;
   }
-  if (wrapper_type_info == &V8MessagePort::wrapper_type_info) {
+  if (wrapper_type_info == V8MessagePort::GetWrapperTypeInfo()) {
     MessagePort* message_port = wrappable->ToImpl<MessagePort>();
     size_t index = kNotFound;
     if (transferables_)
@@ -415,7 +424,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(static_cast<uint32_t>(index));
     return true;
   }
-  if (wrapper_type_info == &V8MojoHandle::wrapper_type_info &&
+  if (wrapper_type_info == V8MojoHandle::GetWrapperTypeInfo() &&
       RuntimeEnabledFeatures::MojoJSEnabled()) {
     MojoHandle* mojo_handle = wrappable->ToImpl<MojoHandle>();
     size_t index = kNotFound;
@@ -435,7 +444,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(static_cast<uint32_t>(index));
     return true;
   }
-  if (wrapper_type_info == &V8OffscreenCanvas::wrapper_type_info) {
+  if (wrapper_type_info == V8OffscreenCanvas::GetWrapperTypeInfo()) {
     OffscreenCanvas* canvas = wrappable->ToImpl<OffscreenCanvas>();
     size_t index = kNotFound;
     if (transferables_)
@@ -468,7 +477,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(canvas->SinkId());
     return true;
   }
-  if (wrapper_type_info == &V8ReadableStream::wrapper_type_info &&
+  if (wrapper_type_info == V8ReadableStream::GetWrapperTypeInfo() &&
       RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
     ReadableStream* stream = wrappable->ToImpl<ReadableStream>();
     size_t index = kNotFound;
@@ -492,7 +501,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(static_cast<uint32_t>(index));
     return true;
   }
-  if (wrapper_type_info == &V8WritableStream::wrapper_type_info &&
+  if (wrapper_type_info == V8WritableStream::GetWrapperTypeInfo() &&
       RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
     WritableStream* stream = wrappable->ToImpl<WritableStream>();
     size_t index = kNotFound;
@@ -521,6 +530,41 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
         static_cast<uint32_t>(index + transferables_->readable_streams.size()));
     return true;
   }
+  if (wrapper_type_info == V8TransformStream::GetWrapperTypeInfo() &&
+      RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+    TransformStream* stream = wrappable->ToImpl<TransformStream>();
+    size_t index = kNotFound;
+    if (transferables_)
+      index = transferables_->transform_streams.Find(stream);
+    if (index == kNotFound) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "A TransformStream could not be cloned "
+                                        "because it was not transferred.");
+      return false;
+    }
+    if (stream->Readable()
+            ->IsLocked(script_state_, exception_state)
+            .value_or(true) ||
+        stream->Writable()
+            ->IsLocked(script_state_, exception_state)
+            .value_or(true)) {
+      if (exception_state.HadException())
+        return false;
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataCloneError,
+          "A TransformStream could not be cloned because it was locked");
+      return false;
+    }
+    WriteTag(kTransformStreamTransferTag);
+    DCHECK(transferables_);
+    // TransformStreams use two ports each. The stored index is the index of the
+    // first one. The first TransformStream is stored in the array after all the
+    // ReadableStreams and WritableStreams.
+    WriteUint32(static_cast<uint32_t>(index * 2 +
+                                      transferables_->readable_streams.size() +
+                                      transferables_->writable_streams.size()));
+    return true;
+  }
   return false;
 }
 
@@ -531,7 +575,7 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
   if (blob_info_array_) {
     size_t index = blob_info_array_->size();
     DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
-    long long size = -1;
+    uint64_t size;
     double last_modified_ms = InvalidFileTime();
     file->CaptureSnapshot(size, last_modified_ms);
     // FIXME: transition WebBlobInfo.lastModified to be milliseconds-based also.
@@ -550,11 +594,11 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
     // Why this inconsistency?
     if (file->HasValidSnapshotMetadata()) {
       WriteUint32(1);
-      long long size;
+      uint64_t size;
       double last_modified_ms;
       file->CaptureSnapshot(size, last_modified_ms);
-      DCHECK_GE(size, 0);
-      WriteUint64(static_cast<uint64_t>(size));
+      DCHECK_NE(size, std::numeric_limits<uint64_t>::max());
+      WriteUint64(size);
       WriteDouble(last_modified_ms);
     } else {
       WriteUint32(0);
@@ -635,7 +679,7 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetSharedArrayBufferId(
 
 v8::Maybe<uint32_t> V8ScriptValueSerializer::GetWasmModuleTransferId(
     v8::Isolate* isolate,
-    v8::Local<v8::WasmCompiledModule> module) {
+    v8::Local<v8::WasmModuleObject> module) {
   if (for_storage_) {
     DCHECK(exception_state_);
     DCHECK_EQ(isolate, script_state_->GetIsolate());

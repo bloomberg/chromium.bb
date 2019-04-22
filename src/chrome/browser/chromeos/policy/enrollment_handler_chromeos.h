@@ -17,9 +17,9 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
-#include "chromeos/dbus/attestation_constants.h"
-#include "chromeos/dbus/auth_policy_client.h"
-#include "chromeos/settings/install_attributes.h"
+#include "chromeos/dbus/auth_policy/auth_policy_client.h"
+#include "chromeos/dbus/constants/attestation_constants.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -79,6 +79,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       std::unique_ptr<DMAuth> dm_auth,
       const std::string& client_id,
       const std::string& requisition,
+      const std::string& sub_organization,
       const EnrollmentCallback& completion_callback);
   ~EnrollmentHandlerChromeOS() override;
 
@@ -236,6 +237,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::unique_ptr<policy::DMAuth> dm_auth_;
   std::string client_id_;
   std::string requisition_;
+  std::string sub_organization_;
   EnrollmentCallback completion_callback_;
   AvailableLicensesCallback available_licenses_callback_;
   enterprise_management::LicenseType::LicenseTypeEnum license_type_ =

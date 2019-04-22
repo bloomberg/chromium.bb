@@ -1,0 +1,90 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module ime.mojom;
+
+import "ui/base/ime/mojo/ime_types.mojom";
+import "ui/events/mojo/event.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
+
+// The data of the text input field for the IME.
+// It is passed from the client to the IME through StartInput method.
+struct EditorInfo {
+  ui.mojom.TextInputType type;
+  ui.mojom.TextInputMode mode;
+  int32 flags;
+  ui.mojom.FocusReason focus_reason;
+  bool should_do_learning;
+};
+
+// Represents the IME (a.k.a. input-method engine).
+// The client uses this interface to communicate with the IME.
+interface ImeEngine {
+  // This method is called when the app starts to receive text (e.g. an input
+  // field is focused) and it is ready for this ImeEngine to process received
+  // events and send result text back to the app.
+  StartInput(EditorInfo info);
+
+  // This method is called when the app stops to receive text (e.g. the focused
+  // input field lost the focus). The ImeEngine usually handles this to reset
+  // its internal states.
+  FinishInput();
+
+  // This method is called when the app wants to cancel the ongoing composition.
+  CancelInput();
+
+  // Dispatches a key event to this ImeEngine, which will respond with a boolean
+  // value of true means the key event is handled and false unhandled.
+  // If the key event is handled, the app should NOT apply its default behaviors
+  // (e.g. shortcuts, generate text, etc.).
+  ProcessKeyEvent(ui.mojom.Event key_event) => (bool handled);
+
+  // Called when a new surrounding text is set by the app.
+  // The |text| is the surrounding text and |cursor| is 0 based index of cursor
+  // position in |text|. If there is selection range, |anchor| represents
+  // opposite index from |cursor|. Otherwise |anchor| is equal to |cursor|.
+  // If not all surrounding text is given |offset| indicates the starting
+  // offset of |text|.
+  UpdateSurroundingInfo(string text, int32 cursor, int32 anchor, int32 offset);
+
+  // Called when the composition bounds in screen changes.
+  // The composition bounds can be changed when ImeEngine changes composition or
+  // the text field's coordinates is changed by the app.
+  UpdateCompositionBounds(array<gfx.mojom.Rect> bounds);
+};
+
+// Used by |ImeEngine| to communicate state back to the client.
+// The app should generate the corresponding results to the input field:
+//  - immediately if didn't dispatch a key event to IME;
+//    (e.g. by IME's on-screen keyboard)
+//  - later after the IME responds the |ProcessKeyEvent| with the result;
+interface ImeEngineClient {
+  // Called when the IME wants to insert the |text| to the input field.
+  CommitText(string text);
+
+  // Called when the IME wants to generate/update the composition text to the
+  // input field.
+  UpdateCompositionText(ui.mojom.CompositionText composition_text,
+                        uint32 cursor_pos,
+                        bool visible);
+
+  // Called when the IME wants to remove a piece of text in the input field.
+  DeleteSurroundingText(int32 offset, uint32 length);
+
+  // Called when the IME wants to silumate a physical key event to the app.
+  // Usually this is for on-screen keyboard support (e.g. simulate Enter key).
+  SendKeyEvent(ui.mojom.Event key_event);
+
+  // Called when the ImeEngine is deactivated and this client should reconnect
+  // for the new active ImeEngine.
+  Reconnect();
+};
+
+// Implemented by the IME.
+// An IME should implement both ImeEngine and ImeEngineFactory interfaces.
+// The |ImeEngineFactoryRegistry| calls |CreateEngine| to make the ImeEngine
+// and ImeEngineClient can hold each other.
+interface ImeEngineFactory {
+  CreateEngine(ImeEngine& engine_request, ImeEngineClient client);
+};

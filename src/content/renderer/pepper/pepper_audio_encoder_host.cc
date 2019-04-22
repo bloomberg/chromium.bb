@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "base/stl_util.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/render_thread_impl.h"
@@ -93,7 +93,7 @@ PepperAudioEncoderHost::AudioEncoderImpl::GetSupportedProfiles() {
   std::vector<PP_AudioProfileDescription> profiles;
   static const uint32_t sampling_rates[] = {8000, 12000, 16000, 24000, 48000};
 
-  for (uint32_t i = 0; i < arraysize(sampling_rates); ++i) {
+  for (uint32_t i = 0; i < base::size(sampling_rates); ++i) {
     PP_AudioProfileDescription profile;
     profile.profile = PP_AUDIOPROFILE_OPUS;
     profile.max_channels = 2;

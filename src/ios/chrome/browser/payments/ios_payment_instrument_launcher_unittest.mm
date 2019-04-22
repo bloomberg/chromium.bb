@@ -80,7 +80,7 @@ class PaymentRequestIOSPaymentInstrumentLauncherTest : public PlatformTest {
     test_personal_data_manager_.SetAutofillWalletImportEnabled(true);
   }
 
-  std::unique_ptr<base::DictionaryValue> SerializeMethodDataWrapper(
+  base::Value SerializeMethodDataWrapper(
       const std::map<std::string, std::set<std::string>>&
           stringified_method_data) {
     IOSPaymentInstrumentLauncher launcher;
@@ -107,11 +107,9 @@ TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
                                      chrome_browser_state_.get(), &web_state_,
                                      &test_personal_data_manager_);
 
-  base::DictionaryValue expected_dict;
-
-  EXPECT_TRUE(expected_dict.Equals(
-      SerializeMethodDataWrapper(payment_request.stringified_method_data())
-          .get()));
+  base::Value expected_dict(base::Value::Type::DICTIONARY);
+  EXPECT_EQ(expected_dict, SerializeMethodDataWrapper(
+                               payment_request.stringified_method_data()));
 }
 
 // Tests that serializing populated stringified method data yields the expected
@@ -149,27 +147,33 @@ TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
                                      chrome_browser_state_.get(), &web_state_,
                                      &test_personal_data_manager_);
 
-  base::DictionaryValue expected_dict;
-  base::ListValue jef_data_list;
-  base::DictionaryValue jef_data;
-  jef_data.SetString("Some data", "Some stringified data");
+  // Jef data...
+  base::Value jef_data(base::Value::Type::DICTIONARY);
+  jef_data.SetKey("Some data", base::Value("Some stringified data"));
   std::string jef_stringified_data;
   base::JSONWriter::Write(jef_data, &jef_stringified_data);
+  base::Value jef_data_list(base::Value::Type::LIST);
   jef_data_list.GetList().emplace_back(jef_stringified_data);
-  expected_dict.SetKey("https://jefpay.com", std::move(jef_data_list));
-  base::ListValue bob_data_list;
-  base::DictionaryValue bob_data;
-  bob_data.SetString("Some data", "Some stringified data");
+
+  // Bob data...
+  base::Value bob_data(base::Value::Type::DICTIONARY);
+  bob_data.SetKey("Some data", base::Value("Some stringified data"));
   std::string bob_stringified_data;
   base::JSONWriter::Write(bob_data, &bob_stringified_data);
+  base::Value bob_data_list(base::Value::Type::LIST);
   bob_data_list.GetList().emplace_back(bob_stringified_data);
+
+  // Alice data...
+  base::Value alice_data_list(base::Value::Type::LIST);
+
+  // Expected output.
+  base::Value expected_dict(base::Value::Type::DICTIONARY);
+  expected_dict.SetKey("https://jefpay.com", std::move(jef_data_list));
   expected_dict.SetKey("https://bobpay.com", std::move(bob_data_list));
-  base::ListValue alice_data_list;
   expected_dict.SetKey("https://alicepay.com", std::move(alice_data_list));
 
-  EXPECT_TRUE(expected_dict.Equals(
-      SerializeMethodDataWrapper(payment_request.stringified_method_data())
-          .get()));
+  EXPECT_EQ(expected_dict, SerializeMethodDataWrapper(
+                               payment_request.stringified_method_data()));
 }
 
 // Tests that attempting to open an invalid universal link calls the

@@ -13,27 +13,25 @@
 #include "GrRenderTargetPriv.h"
 #include "GrSurfaceProxy.h"
 #include "GrTextureProxyPriv.h"
-
-#include "SkAtomics.h"
+#include <atomic>
 
 uint32_t GrOpList::CreateUniqueID() {
-    static int32_t gUniqueID = SK_InvalidUniqueID;
+    static std::atomic<uint32_t> nextID{1};
     uint32_t id;
-    // Loop in case our global wraps around, as we never want to return a 0.
     do {
-        id = static_cast<uint32_t>(sk_atomic_inc(&gUniqueID) + 1);
+        id = nextID++;
     } while (id == SK_InvalidUniqueID);
     return id;
 }
 
 GrOpList::GrOpList(GrResourceProvider* resourceProvider, sk_sp<GrOpMemoryPool> opMemoryPool,
-                   GrSurfaceProxy* surfaceProxy, GrAuditTrail* auditTrail)
+                   sk_sp<GrSurfaceProxy> surfaceProxy, GrAuditTrail* auditTrail)
         : fOpMemoryPool(std::move(opMemoryPool))
         , fAuditTrail(auditTrail)
         , fUniqueID(CreateUniqueID())
         , fFlags(0) {
     SkASSERT(fOpMemoryPool);
-    fTarget.setProxy(sk_ref_sp(surfaceProxy), kWrite_GrIOType);
+    fTarget.setProxy(std::move(surfaceProxy), kWrite_GrIOType);
     fTarget.get()->setLastOpList(this);
 
     if (resourceProvider && !resourceProvider->explicitlyAllocateGPUResources()) {
@@ -56,8 +54,14 @@ GrOpList::~GrOpList() {
     }
 }
 
+// TODO: this can go away when explicit allocation has stuck
 bool GrOpList::instantiate(GrResourceProvider* resourceProvider) {
-    return SkToBool(fTarget.get()->instantiate(resourceProvider));
+    if (resourceProvider->explicitlyAllocateGPUResources()) {
+        SkASSERT(fTarget.get()->isInstantiated());
+        return true;
+    } else {
+        return SkToBool(fTarget.get()->instantiate(resourceProvider));
+    }
 }
 
 void GrOpList::endFlush() {

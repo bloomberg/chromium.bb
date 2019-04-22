@@ -4,119 +4,62 @@
 
 #include <memory>
 
-#include "base/at_exit.h"
-#include "base/command_line.h"
+#include "base/bind.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/c/main.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "base/message_loop/message_loop.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_runner.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
-#include "services/service_manager/public/mojom/service_manager.mojom.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/tests/service_manager/test_manifests.h"
 
 namespace {
 
-class RegularService : public service_manager::Service {
+class PackagedService : public service_manager::Service {
  public:
-  RegularService() = default;
-  ~RegularService() override = default;
+  explicit PackagedService(service_manager::mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {}
+  ~PackagedService() override = default;
 
  private:
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {}
+  service_manager::ServiceBinding service_binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(RegularService);
+  DISALLOW_COPY_AND_ASSIGN(PackagedService);
 };
 
-class AllUsersService : public service_manager::Service {
+class Embedder : public service_manager::Service {
  public:
-  AllUsersService() = default;
-  ~AllUsersService() override = default;
+  explicit Embedder(service_manager::mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {}
+  ~Embedder() override = default;
 
  private:
   // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {}
-
-  DISALLOW_COPY_AND_ASSIGN(AllUsersService);
-};
-
-class SingletonService : public service_manager::Service {
- public:
-  explicit SingletonService() = default;
-  ~SingletonService() override = default;
-
- private:
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {}
-
-  DISALLOW_COPY_AND_ASSIGN(SingletonService);
-};
-
-class Embedder : public service_manager::Service,
-                 public service_manager::mojom::ServiceFactory {
- public:
-  Embedder() {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(
-        base::Bind(&Embedder::Create, base::Unretained(this)));
-  }
-  ~Embedder() override {}
-
- private:
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(interface_name, std::move(interface_pipe));
-  }
-
-  bool OnServiceManagerConnectionLost() override {
-    context()->QuitNow();
-    return true;
-  }
-
-  void Create(service_manager::mojom::ServiceFactoryRequest request) {
-    service_factory_bindings_.AddBinding(this, std::move(request));
-  }
-
-  // mojom::ServiceFactory:
-  void CreateService(
-      service_manager::mojom::ServiceRequest request,
-      const std::string& name,
-      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
-    if (name == "service_manager_unittest_shared_instance_across_users") {
-      context_.reset(new service_manager::ServiceContext(
-          std::make_unique<AllUsersService>(), std::move(request)));
-    } else if (name == "service_manager_unittest_singleton") {
-      context_.reset(new service_manager::ServiceContext(
-          std::make_unique<SingletonService>(), std::move(request)));
-    } else if (name == "service_manager_unittest_regular") {
-      context_.reset(new service_manager::ServiceContext(
-          std::make_unique<RegularService>(), std::move(request)));
+  void CreatePackagedServiceInstance(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver,
+      CreatePackagedServiceInstanceCallback callback) override {
+    if (service_name == service_manager::kTestRegularServiceName ||
+        service_name == service_manager::kTestSharedServiceName ||
+        service_name == service_manager::kTestSingletonServiceName) {
+      packaged_service_ = std::make_unique<PackagedService>(
+          service_manager::mojom::ServiceRequest(std::move(receiver)));
+      std::move(callback).Run(base::GetCurrentProcId());
     } else {
-      LOG(ERROR) << "Failed to create unknow service " << name;
+      LOG(ERROR) << "Failed to create unknown service " << service_name;
+      std::move(callback).Run(base::nullopt);
     }
   }
 
-  std::unique_ptr<service_manager::ServiceContext> context_;
-  service_manager::BinderRegistry registry_;
-  mojo::BindingSet<service_manager::mojom::ServiceFactory>
-      service_factory_bindings_;
+  service_manager::ServiceBinding service_binding_;
+  std::unique_ptr<service_manager::Service> packaged_service_;
 
   DISALLOW_COPY_AND_ASSIGN(Embedder);
 };
 
 }  // namespace
 
-MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(new Embedder);
-  return runner.Run(service_request_handle);
+void ServiceMain(service_manager::mojom::ServiceRequest request) {
+  base::MessageLoop message_loop;
+  Embedder(std::move(request)).RunUntilTermination();
 }

@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://html.spec.whatwg.org/#htmlhyperlinkelementutils
+// https://html.spec.whatwg.org/C/#htmlhyperlinkelementutils
 
-[
-    NoInterfaceObject // Always used on target of 'implements'
-] interface HTMLHyperlinkElementUtils {
+interface mixin HTMLHyperlinkElementUtils {
 
     [CEReactions, RaisesException=Setter] stringifier attribute URLString href;
     readonly attribute USVString origin;

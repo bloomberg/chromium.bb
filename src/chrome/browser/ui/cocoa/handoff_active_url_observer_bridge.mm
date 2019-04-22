@@ -13,7 +13,7 @@ HandoffActiveURLObserverBridge::HandoffActiveURLObserverBridge(
   observer_.reset(new HandoffActiveURLObserver(this));
 }
 
-HandoffActiveURLObserverBridge::~HandoffActiveURLObserverBridge(){};
+HandoffActiveURLObserverBridge::~HandoffActiveURLObserverBridge() {}
 
 void HandoffActiveURLObserverBridge::HandoffActiveURLChanged(
     content::WebContents* web_contents) {

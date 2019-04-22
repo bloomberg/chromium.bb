@@ -71,10 +71,11 @@ cr.define('object_fieldset', function() {
     redraw: function() {
       this.innerHTML = '';
 
-      Object.keys(this.value).forEach(function(propName) {
+      Object.keys(assert(this.value)).forEach(function(propName) {
         var value = this.value[propName];
-        if (value === false && !this.showAll_)
+        if (value === false && !this.showAll_) {
           return;
+        }
 
         var name = this.nameMap_[propName] || propName;
         var newField = document.createElement('div');

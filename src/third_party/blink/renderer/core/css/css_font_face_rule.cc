@@ -36,9 +36,10 @@ CSSFontFaceRule::~CSSFontFaceRule() = default;
 
 CSSStyleDeclaration* CSSFontFaceRule::style() const {
   if (!properties_cssom_wrapper_) {
-    properties_cssom_wrapper_ = StyleRuleCSSStyleDeclaration::Create(
-        font_face_rule_->MutableProperties(),
-        const_cast<CSSFontFaceRule*>(this));
+    properties_cssom_wrapper_ =
+        MakeGarbageCollected<StyleRuleCSSStyleDeclaration>(
+            font_face_rule_->MutableProperties(),
+            const_cast<CSSFontFaceRule*>(this));
   }
   return properties_cssom_wrapper_.Get();
 }
@@ -56,7 +57,7 @@ String CSSFontFaceRule::cssText() const {
 
 void CSSFontFaceRule::Reattach(StyleRuleBase* rule) {
   DCHECK(rule);
-  font_face_rule_ = ToStyleRuleFontFace(rule);
+  font_face_rule_ = To<StyleRuleFontFace>(rule);
   if (properties_cssom_wrapper_)
     properties_cssom_wrapper_->Reattach(font_face_rule_->MutableProperties());
 }

@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "gpu/gpu_export.h"
@@ -29,16 +30,17 @@ class GPU_EXPORT GpuMemoryBufferImplNativePixmap : public GpuMemoryBufferImpl {
 
   static std::unique_ptr<GpuMemoryBufferImplNativePixmap> CreateFromHandle(
       gfx::ClientNativePixmapFactory* client_native_pixmap_factory,
-      const gfx::GpuMemoryBufferHandle& handle,
+      gfx::GpuMemoryBufferHandle handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      const DestructionCallback& callback);
+      DestructionCallback callback);
 
-  static base::Closure AllocateForTesting(const gfx::Size& size,
-                                          gfx::BufferFormat format,
-                                          gfx::BufferUsage usage,
-                                          gfx::GpuMemoryBufferHandle* handle);
+  static base::OnceClosure AllocateForTesting(
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
+      gfx::GpuMemoryBufferHandle* handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map() override;
@@ -53,14 +55,12 @@ class GPU_EXPORT GpuMemoryBufferImplNativePixmap : public GpuMemoryBufferImpl {
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::BufferFormat format,
-      const DestructionCallback& callback,
+      DestructionCallback callback,
       std::unique_ptr<gfx::ClientNativePixmap> native_pixmap,
-      const std::vector<gfx::NativePixmapPlane>& planes,
-      base::ScopedFD fd);
+      gfx::NativePixmapHandle handle);
 
-  std::unique_ptr<gfx::ClientNativePixmap> pixmap_;
-  std::vector<gfx::NativePixmapPlane> planes_;
-  base::ScopedFD fd_;
+  const std::unique_ptr<gfx::ClientNativePixmap> pixmap_;
+  gfx::NativePixmapHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplNativePixmap);
 };

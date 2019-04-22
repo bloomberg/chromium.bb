@@ -11,7 +11,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="8dp"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:background="@color/modern_primary_color">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,7 +30,7 @@
             android:lineSpacingExtra="6dp"
             android:paddingTop="16dp"
             android:textAlignment="viewStart"
-            android:textAppearance="@style/BlackTitle1" />
+            android:textAppearance="@style/TextAppearance.BlackTitle1" />
 
         <TextView
             android:id="@+id/page_info_connection_summary"
@@ -37,7 +38,7 @@
             android:layout_height="wrap_content"
             android:lineSpacingExtra="3dp"
             android:paddingTop="16dp"
-            android:textAppearance="@style/BlackTitle1"
+            android:textAppearance="@style/TextAppearance.BlackTitle1"
             android:visibility="gone" />
 
         <TextView
@@ -46,7 +47,7 @@
             android:layout_height="wrap_content"
             android:lineSpacingExtra="3dp"
             android:paddingTop="8dp"
-            android:textAppearance="@style/BlackBodyDefault"
+            android:textAppearance="@style/TextAppearance.BlackBodyDefault"
             android:visibility="gone" />
 
         <View
@@ -60,7 +61,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="14dp"
-            android:textAppearance="@style/BlackTitle1"
+            android:textAppearance="@style/TextAppearance.BlackTitle1"
             android:text="@string/page_info_preview_message"
             android:visibility="gone" />
 
@@ -68,7 +69,7 @@
             android:id="@+id/page_info_stale_preview_timestamp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/BlackCaption"
+            android:textAppearance="@style/TextAppearance.BlackCaption"
             android:visibility="gone" />
 
         <TextView
@@ -76,7 +77,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="12dp"
-            android:textAppearance="@style/BlackTitle1"
+            android:textAppearance="@style/TextAppearance.BlackTitle1"
             android:visibility="gone" />
     </LinearLayout>
 

@@ -49,6 +49,50 @@ found in the LICENSE file.
       #touch_area_three {
         position: absolute;
       }
+
+      #terms-and-conditions {
+        position: absolute;
+        z-index: -1;
+        left: -9999px;
+      }
+
+      #terms-and-conditions::before {
+          content: "before";
+      }
+
+      #with_inner_text span::before {
+          content: "before";
+      }
+
+      #button::before {
+          content: "before";
+          display: none;
+      }
+
+      label[for="terms-and-conditions"] {
+        padding-left: 48px;
+        position: relative;
+        display: inline-block;
+        min-height: 48px;
+        font-weight: normal;
+      }
+
+      label[for="terms-and-conditions"]:before {
+        content: "";
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        border: 1px solid #acacac;
+        position: absolute;
+        z-index: 0;
+        top: 0;
+        left: 0;
+        text-align: center;
+      }
+
+      #terms-and-conditions:checked + label[for="terms-and-conditions"]:before {
+        content: "\2714";
+      }
     </style>
   </head>
 
@@ -117,6 +161,19 @@ found in the LICENSE file.
       <input id="input6" type="field" value="" />
     </div>
 
+    <div>
+      <input id="input_js_event_listener" type="text">
+      <!-- Uses the 'key' property of a keydown event. -->
+      <script>
+        var t = document.getElementById("input_js_event_listener");
+        t.addEventListener('keydown', e => {
+          var value = e.target.value;
+          e.preventDefault();
+          e.target.value = value + e.key;
+        });
+      </script>
+    </div>
+
     <div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>
 
     <div id="hidden" style="display: none;">This text is hidden</div>
@@ -124,11 +181,22 @@ found in the LICENSE file.
     <iframe id="iframe" name="test_iframe" width="100%" height="500" src=
         "autofill_assistant_target_website_iframe_one.html"></iframe>
 
+    <input type="checkbox" id="terms-and-conditions" />
+    <label for="terms-and-conditions" >
+      <a href="#">I have read and understood <br />the terms and conditions</a>
+    </label>
+
     <script>
       let upperCaseInput = document.querySelector("#uppercase_input");
       document.addEventListener('keyup', () => {
         upperCaseInput.value = upperCaseInput.value.toUpperCase();
       });
     </script>
+
+    <div id="with_inner_text">
+      <span>hello</span>
+      <span>hello, world</span>
+      <span style="display: none">world</span>
+    </div>
   </body>
 </html>

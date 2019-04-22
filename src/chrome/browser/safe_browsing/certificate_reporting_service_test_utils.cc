@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/certificate_reporting_service_test_utils.h"
 
+#include "base/bind.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"

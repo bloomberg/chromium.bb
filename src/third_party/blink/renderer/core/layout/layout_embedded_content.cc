@@ -60,9 +60,8 @@ void LayoutEmbeddedContent::WillBeDestroyed() {
     cache->Remove(this);
   }
 
-  Node* node = GetNode();
-  if (node && node->IsFrameOwnerElement())
-    ToHTMLFrameOwnerElement(node)->SetEmbeddedContentView(nullptr);
+  if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(GetNode()))
+    frame_owner->SetEmbeddedContentView(nullptr);
 
   LayoutReplaced::WillBeDestroyed();
 }
@@ -88,12 +87,7 @@ LayoutEmbeddedContent::~LayoutEmbeddedContent() {
 }
 
 FrameView* LayoutEmbeddedContent::ChildFrameView() const {
-  EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
-
-  if (embedded_content_view && embedded_content_view->IsFrameView())
-    return ToFrameView(embedded_content_view);
-
-  return nullptr;
+  return DynamicTo<FrameView>(GetEmbeddedContentView());
 }
 
 WebPluginContainerImpl* LayoutEmbeddedContent::Plugin() const {
@@ -104,9 +98,8 @@ WebPluginContainerImpl* LayoutEmbeddedContent::Plugin() const {
 }
 
 EmbeddedContentView* LayoutEmbeddedContent::GetEmbeddedContentView() const {
-  Node* node = GetNode();
-  if (node && node->IsFrameOwnerElement())
-    return ToHTMLFrameOwnerElement(node)->OwnedEmbeddedContentView();
+  if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(GetNode()))
+    return frame_owner_element->OwnedEmbeddedContentView();
   return nullptr;
 }
 
@@ -129,10 +122,10 @@ bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
   if (plugin_view && plugin_view->CcLayer())
     return true;
 
-  if (!GetNode() || !GetNode()->IsFrameOwnerElement())
+  auto* element = DynamicTo<HTMLFrameOwnerElement>(GetNode());
+  if (!element)
     return false;
 
-  HTMLFrameOwnerElement* element = ToHTMLFrameOwnerElement(GetNode());
   if (element->ContentFrame() && element->ContentFrame()->IsRemoteFrame())
     return true;
 
@@ -169,19 +162,23 @@ bool LayoutEmbeddedContent::NodeAtPoint(
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
     HitTestAction action) {
-  FrameView* frame_view = ChildFrameView();
+  auto* local_frame_view = DynamicTo<LocalFrameView>(ChildFrameView());
   bool skip_contents = (result.GetHitTestRequest().GetStopNode() == this ||
                         !result.GetHitTestRequest().AllowsChildFrameContent());
-  if (!frame_view || !frame_view->IsLocalFrameView() || skip_contents) {
+  if (!local_frame_view || skip_contents) {
     return NodeAtPointOverEmbeddedContentView(result, location_in_container,
                                               accumulated_offset, action);
   }
 
-  LocalFrameView* local_frame_view = ToLocalFrameView(frame_view);
-
   // A hit test can never hit an off-screen element; only off-screen iframes are
   // throttled; therefore, hit tests can skip descending into throttled iframes.
-  if (local_frame_view->ShouldThrottleRendering()) {
+  // We also check the document lifecycle state because the frame may have been
+  // throttled at the time lifecycle updates happened, in which case it will not
+  // be up-to-date and we can't hit test it.
+  if (local_frame_view->ShouldThrottleRendering() ||
+      !local_frame_view->GetFrame().GetDocument() ||
+      local_frame_view->GetFrame().GetDocument()->Lifecycle().GetState() <
+          DocumentLifecycle::kCompositingClean) {
     return NodeAtPointOverEmbeddedContentView(result, location_in_container,
                                               accumulated_offset, action);
   }
@@ -257,9 +254,8 @@ void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,
   LayoutReplaced::StyleDidChange(diff, old_style);
 
   if (!old_style || Style()->PointerEvents() != old_style->PointerEvents()) {
-    Node* node = GetNode();
-    if (node->IsFrameOwnerElement())
-      ToHTMLFrameOwnerElement(node)->PointerEventsChanged();
+    if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(GetNode()))
+      frame_owner->PointerEventsChanged();
   }
 
   EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
@@ -382,9 +378,8 @@ void LayoutEmbeddedContent::UpdateGeometry(
 }
 
 bool LayoutEmbeddedContent::IsThrottledFrameView() const {
-  FrameView* frame_view = ChildFrameView();
-  if (frame_view && frame_view->IsLocalFrameView())
-    return ToLocalFrameView(frame_view)->ShouldThrottleRendering();
+  if (auto* local_frame_view = DynamicTo<LocalFrameView>(ChildFrameView()))
+    return local_frame_view->ShouldThrottleRendering();
   return false;
 }
 

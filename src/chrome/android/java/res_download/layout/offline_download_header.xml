@@ -20,7 +20,7 @@
             android:id="@+id/icon_view"
             style="@style/DownloadIconView"
             android:src="@drawable/ic_chrome"
-            app:tint="@color/dark_mode_tint" />
+            app:tint="@color/standard_mode_tint" />
 
         <RelativeLayout
             android:id="@+id/completed_layout"
@@ -56,7 +56,7 @@
                     android:paddingEnd="16dp"
                     tools:ignore="ContentDescription"
                     android:src="@drawable/ic_expand_more_black_24dp"
-                    app:tint="@color/dark_mode_tint" />
+                    app:tint="@color/standard_mode_tint" />
             </LinearLayout>
 
             <TextView

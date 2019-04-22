@@ -27,10 +27,8 @@ class MediaDevicesSelectionHandler
   void RegisterMessages() override;
 
   // MediaCaptureDevicesDispatcher::Observer:
-  void OnUpdateAudioDevices(
-      const content::MediaStreamDevices& devices) override;
-  void OnUpdateVideoDevices(
-      const content::MediaStreamDevices& devices) override;
+  void OnUpdateAudioDevices(const blink::MediaStreamDevices& devices) override;
+  void OnUpdateVideoDevices(const blink::MediaStreamDevices& devices) override;
 
  private:
   enum DeviceType {
@@ -49,11 +47,11 @@ class MediaDevicesSelectionHandler
   // Helpers methods to update the device menus.
   void UpdateDevicesMenuForType(DeviceType type);
   void UpdateDevicesMenu(DeviceType type,
-                         const content::MediaStreamDevices& devices);
+                         const blink::MediaStreamDevices& devices);
 
   // Gets the human readable name of the device.
   std::string GetDeviceDisplayName(
-      const content::MediaStreamDevice& device) const;
+      const blink::MediaStreamDevice& device) const;
 
   Profile* profile_;  // Weak pointer.
 

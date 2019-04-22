@@ -14,7 +14,7 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/i18n.h"
-#include "chrome/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 
 namespace GetAcceptLanguages = extensions::api::i18n::GetAcceptLanguages;
@@ -29,19 +29,20 @@ static const char kEmptyAcceptLanguagesError[] = "accept-languages is empty.";
 }
 
 ExtensionFunction::ResponseAction I18nGetAcceptLanguagesFunction::Run() {
-  std::string accept_languages = Profile::FromBrowserContext(browser_context())
-                                     ->GetPrefs()
-                                     ->GetString(prefs::kAcceptLanguages);
+  std::string accept_languages =
+      Profile::FromBrowserContext(browser_context())
+          ->GetPrefs()
+          ->GetString(language::prefs::kAcceptLanguages);
   // Currently, there are 2 ways to set browser's accept-languages: through UI
   // or directly modify the preference file. The accept-languages set through
-  // UI is guranteed to be valid, and the accept-languages string returned from
-  // profile()->GetPrefs()->GetString(prefs::kAcceptLanguages) is guranteed to
-  // be valid and well-formed, which means each accept-langauge is a valid
-  // code, and accept-languages are seperatd by "," without surrrounding
-  // spaces. But we do not do any validation (either the format or the validity
-  // of the language code) on accept-languages set through editing preference
-  // file directly. So, here, we're adding extra checks to be resistant to
-  // crashes caused by data corruption.
+  // UI is guaranteed to be valid, and the accept-languages string returned from
+  // profile()->GetPrefs()->GetString(language::prefs::kAcceptLanguages) is
+  // guaranteed to be valid and well-formed, which means each accept-language is
+  // a valid code, and accept-languages are separated by "," without
+  // surrrounding spaces. But we do not do any validation (either the format or
+  // the validity of the language code) on accept-languages set through editing
+  // preference file directly. So, here, we're adding extra checks to be
+  // resistant to crashes caused by data corruption.
   if (accept_languages.empty())
     return RespondNow(Error(kEmptyAcceptLanguagesError));
 

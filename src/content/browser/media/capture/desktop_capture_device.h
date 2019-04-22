@@ -17,6 +17,7 @@
 
 namespace base {
 class Thread;
+class TickClock;
 }  // namespace base
 
 namespace webrtc {

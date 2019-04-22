@@ -39,12 +39,13 @@ class DisplayCutoutMockChromeClient : public EmptyChromeClient {
 class MediaControlsDisplayCutoutDelegateTest : public PageTestBase {
  public:
   void SetUp() override {
-    chrome_client_ = new DisplayCutoutMockChromeClient();
+    chrome_client_ = MakeGarbageCollected<DisplayCutoutMockChromeClient>();
 
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
-    SetupPageWithClients(&clients, EmptyLocalFrameClient::Create());
+    SetupPageWithClients(&clients,
+                         MakeGarbageCollected<EmptyLocalFrameClient>());
 
     RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
     RuntimeEnabledFeatures::SetMediaControlsExpandGestureEnabled(true);

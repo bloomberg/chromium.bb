@@ -10,25 +10,24 @@
 
 namespace autofill_assistant {
 
-Action::Action(const ActionProto& proto) : proto_(proto), show_overlay_(true) {}
+Action::Action(const ActionProto& proto) : proto_(proto) {}
 
 Action::~Action() {}
 
 void Action::ProcessAction(ActionDelegate* delegate,
                            ProcessActionCallback callback) {
-  if (show_overlay_) {
-    delegate->ShowOverlay();
-  } else {
-    delegate->HideOverlay();
-  }
   processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   InternalProcessAction(delegate, std::move(callback));
 }
 
-void Action::UpdateProcessedAction(ProcessedActionStatusProto status) {
+void Action::UpdateProcessedAction(ProcessedActionStatusProto status_proto) {
+  UpdateProcessedAction(ClientStatus(status_proto));
+}
+
+void Action::UpdateProcessedAction(const ClientStatus& status) {
   // Safety check in case process action is run twice.
   *processed_action_proto_->mutable_action() = proto_;
-  processed_action_proto_->set_status(status);
+  status.FillProto(processed_action_proto_.get());
 }
 
 // static
@@ -41,12 +40,89 @@ std::vector<std::string> Action::ExtractVector(
   return vector;
 }
 
-Selector Action::ExtractSelector(const ElementReferenceProto& element) {
-  Selector a_selector;
-  for (const auto& selector : element.selectors()) {
-    a_selector.selectors.emplace_back(selector);
+std::ostream& operator<<(std::ostream& out, const Action& action) {
+  out << action.proto().action_info_case();
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const ActionProto::ActionInfoCase& action_case) {
+#ifdef NDEBUG
+  out << static_cast<int>(action_case);
+  return out;
+#else
+  switch (action_case) {
+    case ActionProto::ActionInfoCase::kClick:
+      out << "Click";
+      break;
+    case ActionProto::ActionInfoCase::kSetFormValue:
+      out << "KeyboardInput";
+      break;
+    case ActionProto::ActionInfoCase::kSelectOption:
+      out << "SelectOption";
+      break;
+    case ActionProto::ActionInfoCase::kNavigate:
+      out << "Navigate";
+      break;
+    case ActionProto::ActionInfoCase::kPrompt:
+      out << "Prompt";
+      break;
+    case ActionProto::ActionInfoCase::kTell:
+      out << "Tell";
+      break;
+    case ActionProto::ActionInfoCase::kFocusElement:
+      out << "FocusElement";
+      break;
+    case ActionProto::ActionInfoCase::kWaitForDom:
+      out << "WaitForDom";
+      break;
+    case ActionProto::ActionInfoCase::kUseCard:
+      out << "UseCard";
+      break;
+    case ActionProto::ActionInfoCase::kUseAddress:
+      out << "UseAddress";
+      break;
+    case ActionProto::ActionInfoCase::kUploadDom:
+      out << "UploadDom";
+      break;
+    case ActionProto::ActionInfoCase::kShowProgressBar:
+      out << "ShowProgressBar";
+      break;
+    case ActionProto::ActionInfoCase::kHighlightElement:
+      out << "HighlightElement";
+      break;
+    case ActionProto::ActionInfoCase::kShowDetails:
+      out << "ShowDetails";
+      break;
+    case ActionProto::ActionInfoCase::kReset:
+      out << "Reset";
+      break;
+    case ActionProto::ActionInfoCase::kStop:
+      out << "Stop";
+      break;
+    case ActionProto::ActionInfoCase::kGetPaymentInformation:
+      out << "GetPaymentInformation";
+      break;
+    case ActionProto::ActionInfoCase::kSetAttribute:
+      out << "SetAttribute";
+      break;
+    case ActionProto::ActionInfoCase::kShowInfoBox:
+      out << "ShowInfoBox";
+      break;
+    case ActionProto::ActionInfoCase::kExpectNavigation:
+      out << "ExpectNavigation";
+      break;
+    case ActionProto::ActionInfoCase::kWaitForNavigation:
+      out << "WaitForNavigation";
+      break;
+    case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
+      out << "ACTION_INFO_NOT_SET";
+      break;
+      // Intentionally no default case to make compilation fail if a new value
+      // was added to the enum but not to this list.
   }
-  return a_selector;
+  return out;
+#endif  // NDEBUG
 }
 
 }  // namespace autofill_assistant

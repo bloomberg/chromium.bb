@@ -51,7 +51,7 @@
 hb_atomic_int_t _hb_options;
 
 void
-_hb_options_init (void)
+_hb_options_init ()
 {
   hb_options_union_t u;
   u.i = 0;
@@ -247,11 +247,10 @@ struct hb_language_item_t {
   struct hb_language_item_t *next;
   hb_language_t lang;
 
-  inline bool operator == (const char *s) const {
-    return lang_equal (lang, s);
-  }
+  bool operator == (const char *s) const
+  { return lang_equal (lang, s); }
 
-  inline hb_language_item_t & operator = (const char *s) {
+  hb_language_item_t & operator = (const char *s) {
     /* If a custom allocated is used calling strdup() pairs
     badly with a call to the custom free() in fini() below.
     Therefore don't call strdup(), implement its behavior.
@@ -268,7 +267,7 @@ struct hb_language_item_t {
     return *this;
   }
 
-  void fini (void) { free ((void *) lang); }
+  void fini () { free ((void *) lang); }
 };
 
 
@@ -278,7 +277,7 @@ static hb_atomic_ptr_t <hb_language_item_t> langs;
 
 #if HB_USE_ATEXIT
 static void
-free_langs (void)
+free_langs ()
 {
 retry:
   hb_language_item_t *first_lang = langs;
@@ -404,7 +403,7 @@ hb_language_to_string (hb_language_t language)
  * Since: 0.9.2
  **/
 hb_language_t
-hb_language_get_default (void)
+hb_language_get_default ()
 {
   static hb_atomic_ptr_t <hb_language_t> default_language;
 
@@ -668,7 +667,7 @@ hb_version (unsigned int *major,
  * Since: 0.9.2
  **/
 const char *
-hb_version_string (void)
+hb_version_string ()
 {
   return HB_VERSION_STRING;
 }
@@ -732,7 +731,7 @@ parse_uint (const char **pp, const char *end, unsigned int *pv)
   /* Intentionally use strtol instead of strtoul, such that
    * -1 turns into "big number"... */
   errno = 0;
-  v = strtol (p, &pend, 0);
+  v = strtol (p, &pend, 10);
   if (errno || p == pend)
     return false;
 
@@ -756,7 +755,7 @@ parse_uint32 (const char **pp, const char *end, uint32_t *pv)
   /* Intentionally use strtol instead of strtoul, such that
    * -1 turns into "big number"... */
   errno = 0;
-  v = strtol (p, &pend, 0);
+  v = strtol (p, &pend, 10);
   if (errno || p == pend)
     return false;
 
@@ -781,13 +780,13 @@ parse_uint32 (const char **pp, const char *end, uint32_t *pv)
 #ifdef USE_XLOCALE
 
 #if HB_USE_ATEXIT
-static void free_static_C_locale (void);
+static void free_static_C_locale ();
 #endif
 
 static struct hb_C_locale_lazy_loader_t : hb_lazy_loader_t<hb_remove_pointer (HB_LOCALE_T),
 							  hb_C_locale_lazy_loader_t>
 {
-  static inline HB_LOCALE_T create (void)
+  static HB_LOCALE_T create ()
   {
     HB_LOCALE_T C_locale = HB_CREATE_LOCALE ("C");
 
@@ -797,11 +796,11 @@ static struct hb_C_locale_lazy_loader_t : hb_lazy_loader_t<hb_remove_pointer (HB
 
     return C_locale;
   }
-  static inline void destroy (HB_LOCALE_T p)
+  static void destroy (HB_LOCALE_T p)
   {
     HB_FREE_LOCALE (p);
   }
-  static inline HB_LOCALE_T get_null (void)
+  static HB_LOCALE_T get_null ()
   {
     return nullptr;
   }
@@ -809,14 +808,14 @@ static struct hb_C_locale_lazy_loader_t : hb_lazy_loader_t<hb_remove_pointer (HB
 
 #if HB_USE_ATEXIT
 static
-void free_static_C_locale (void)
+void free_static_C_locale ()
 {
   static_C_locale.free_instance ();
 }
 #endif
 
 static HB_LOCALE_T
-get_C_locale (void)
+get_C_locale ()
 {
   return static_C_locale.get_unconst ();
 }
@@ -858,9 +857,14 @@ parse_bool (const char **pp, const char *end, uint32_t *pv)
     (*pp)++;
 
   /* CSS allows on/off as aliases 1/0. */
-  if (*pp - p == 2 && 0 == strncmp (p, "on", 2))
+  if (*pp - p == 2
+      && TOLOWER (p[0]) == 'o'
+      && TOLOWER (p[1]) == 'n')
     *pv = 1;
-  else if (*pp - p == 3 && 0 == strncmp (p, "off", 3))
+  else if (*pp - p == 3
+	   && TOLOWER (p[0]) == 'o'
+	   && TOLOWER (p[1]) == 'f'
+	   && TOLOWER (p[2]) == 'f')
     *pv = 0;
   else
     return false;
@@ -975,7 +979,41 @@ parse_one_feature (const char **pp, const char *end, hb_feature_t *feature)
  *
  * Parses a string into a #hb_feature_t.
  *
- * TODO: document the syntax here.
+ * The format for specifying feature strings follows. All valid CSS
+ * font-feature-settings values other than 'normal' and the global values are
+ * also accepted, though not documented below. CSS string escapes are not
+ * supported.
+ *
+ * The range indices refer to the positions between Unicode characters. The
+ * position before the first character is always 0.
+ *
+ * The format is Python-esque.  Here is how it all works:
+ *
+ * <informaltable pgwide='1' align='left' frame='none'>
+ * <tgroup cols='5'>
+ * <thead>
+ * <row><entry>Syntax</entry>    <entry>Value</entry> <entry>Start</entry> <entry>End</entry></row>
+ * </thead>
+ * <tbody>
+ * <row><entry>Setting value:</entry></row>
+ * <row><entry>kern</entry>      <entry>1</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature on</entry></row>
+ * <row><entry>+kern</entry>     <entry>1</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature on</entry></row>
+ * <row><entry>-kern</entry>     <entry>0</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature off</entry></row>
+ * <row><entry>kern=0</entry>    <entry>0</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature off</entry></row>
+ * <row><entry>kern=1</entry>    <entry>1</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature on</entry></row>
+ * <row><entry>aalt=2</entry>    <entry>2</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Choose 2nd alternate</entry></row>
+ * <row><entry>Setting index:</entry></row>
+ * <row><entry>kern[]</entry>    <entry>1</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature on</entry></row>
+ * <row><entry>kern[:]</entry>   <entry>1</entry>     <entry>0</entry>      <entry>∞</entry>   <entry>Turn feature on</entry></row>
+ * <row><entry>kern[5:]</entry>  <entry>1</entry>     <entry>5</entry>      <entry>∞</entry>   <entry>Turn feature on, partial</entry></row>
+ * <row><entry>kern[:5]</entry>  <entry>1</entry>     <entry>0</entry>      <entry>5</entry>   <entry>Turn feature on, partial</entry></row>
+ * <row><entry>kern[3:5]</entry> <entry>1</entry>     <entry>3</entry>      <entry>5</entry>   <entry>Turn feature on, range</entry></row>
+ * <row><entry>kern[3]</entry>   <entry>1</entry>     <entry>3</entry>      <entry>3+1</entry> <entry>Turn feature on, single char</entry></row>
+ * <row><entry>Mixing it all:</entry></row>
+ * <row><entry>aalt[3:5]=2</entry> <entry>2</entry>   <entry>3</entry>      <entry>5</entry>   <entry>Turn 2nd alternate on for range</entry></row>
+ * </tbody>
+ * </tgroup>
+ * </informaltable>
  *
  * Return value:
  * %true if @str is successfully parsed, %false otherwise.

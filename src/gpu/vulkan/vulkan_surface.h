@@ -30,11 +30,9 @@ class VULKAN_EXPORT VulkanSurface {
     DEFAULT_SURFACE_FORMAT = FORMAT_RGBA_32
   };
 
-  VulkanSurface(VkInstance vk_instance,
-                VkSurfaceKHR surface,
-                base::OnceClosure destruction_callback);
+  VulkanSurface(VkInstance vk_instance, VkSurfaceKHR surface);
 
-  ~VulkanSurface();
+  virtual ~VulkanSurface();
 
   bool Initialize(VulkanDeviceQueue* device_queue,
                   VulkanSurface::Format format);
@@ -46,20 +44,20 @@ class VULKAN_EXPORT VulkanSurface {
 
   void Finish();
 
-  bool SetSize(const gfx::Size& size);
+  virtual bool SetSize(const gfx::Size& size);
+
   const gfx::Size& size() const { return size_; }
   VkSurfaceFormatKHR surface_format() const { return surface_format_; }
 
  private:
+  bool CreateSwapChain(const gfx::Size& size);
+
   const VkInstance vk_instance_;
   gfx::Size size_;
   VkSurfaceKHR surface_ = VK_NULL_HANDLE;
   VkSurfaceFormatKHR surface_format_ = {};
   VulkanDeviceQueue* device_queue_ = nullptr;
   std::unique_ptr<VulkanSwapChain> swap_chain_;
-
-  // Called after destruction to clean up platform state, if any.
-  base::OnceClosure destruction_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanSurface);
 };

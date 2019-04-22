@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -28,18 +29,9 @@ namespace crostini {
 
 class CrostiniRegistryServiceTest : public testing::Test {
  public:
-  CrostiniRegistryServiceTest() = default;
-
-  // testing::Test:
-  void SetUp() override {
-    SetCrostiniUIAllowedForTesting(true);
-
-    CrostiniTestHelper::EnableCrostini(&profile_);
-
+  CrostiniRegistryServiceTest() : crostini_test_helper_(&profile_) {
     RecreateService();
   }
-
-  void TearDown() override { SetCrostiniUIAllowedForTesting(false); }
 
  protected:
   void RecreateService() {
@@ -69,6 +61,7 @@ class CrostiniRegistryServiceTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
+  CrostiniTestHelper crostini_test_helper_;
 
   std::unique_ptr<CrostiniRegistryService> service_;
 
@@ -81,8 +74,11 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   std::string container_name = "awesomecontainer";
   std::map<std::string, std::string> name = {{"", "Vim"}};
   std::map<std::string, std::string> comment = {{"", "Edit text files"}};
+  std::map<std::string, std::set<std::string>> keywords = {
+      {"", {"very", "awesome"}}};
   std::set<std::string> mime_types = {"text/plain", "text/x-python"};
   bool no_display = true;
+  std::string executable_file_name = "execName";
 
   std::string app_id = CrostiniTestHelper::GenerateAppId(
       desktop_file_id, vm_name, container_name);
@@ -95,6 +91,7 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   App* app = app_list.add_apps();
   app->set_desktop_file_id(desktop_file_id);
   app->set_no_display(no_display);
+  app->set_executable_file_name(executable_file_name);
 
   for (const auto& localized_name : name) {
     App::LocaleString::Entry* entry = app->mutable_name()->add_values();
@@ -106,6 +103,14 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
     App::LocaleString::Entry* entry = app->mutable_comment()->add_values();
     entry->set_locale(localized_comment.first);
     entry->set_value(localized_comment.second);
+  }
+
+  for (const auto& localized_keywords : keywords) {
+    auto* keywords_with_locale = app->mutable_keywords()->add_values();
+    keywords_with_locale->set_locale(localized_keywords.first);
+    for (const auto& localized_keyword : localized_keywords.second) {
+      keywords_with_locale->add_value(localized_keyword);
+    }
   }
 
   for (const std::string& mime_type : mime_types)
@@ -120,8 +125,10 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   EXPECT_EQ(result->ContainerName(), container_name);
   EXPECT_EQ(result->Name(), name[""]);
   EXPECT_EQ(result->Comment(), comment[""]);
+  EXPECT_EQ(result->Keywords(), keywords[""]);
   EXPECT_EQ(result->MimeTypes(), mime_types);
   EXPECT_EQ(result->NoDisplay(), no_display);
+  EXPECT_EQ(result->ExecutableFileName(), executable_file_name);
 }
 
 TEST_F(CrostiniRegistryServiceTest, Observer) {
@@ -279,7 +286,7 @@ TEST_F(CrostiniRegistryServiceTest, MultipleContainers) {
 }
 
 // Test that ClearApplicationList works, and only removes apps from the
-// specified container.
+// specified VM.
 TEST_F(CrostiniRegistryServiceTest, ClearApplicationList) {
   service()->UpdateApplicationList(
       CrostiniTestHelper::BasicAppList("app", "vm 1", "container 1"));
@@ -302,7 +309,7 @@ TEST_F(CrostiniRegistryServiceTest, ClearApplicationList) {
               testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3,
                                             app_id_4, kCrostiniTerminalId));
 
-  service()->ClearApplicationList("vm 2", "container 1");
+  service()->ClearApplicationList("vm 2", "");
 
   EXPECT_THAT(
       service()->GetRegisteredAppIds(),
@@ -350,10 +357,6 @@ TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdNoStartupID) {
   window_app_id = "fancy.app";
   EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
             "crostini:fancy.app");
-
-  window_app_id = "org.chromium.arc.h";
-  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
-            std::string());
 }
 
 TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdStartupWMClass) {
@@ -449,6 +452,60 @@ TEST_F(CrostiniRegistryServiceTest, SetScaledWorks) {
   registration = service()->GetRegistration(app_id);
   EXPECT_TRUE(registration.has_value());
   EXPECT_FALSE(registration.value().IsScaled());
+}
+
+TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistrationKeywords) {
+  std::map<std::string, std::set<std::string>> keywords = {
+      {"", {"very", "awesome"}},
+      {"fr", {"sum", "ward"}},
+      {"ge", {"extra", "average"}},
+      {"te", {"not", "terrible"}}};
+  std::string app_id =
+      CrostiniTestHelper::GenerateAppId("app", "vm", "container");
+  ApplicationList app_list =
+      CrostiniTestHelper::BasicAppList("app", "vm", "container");
+
+  for (const auto& localized_keywords : keywords) {
+    auto* keywords_with_locale =
+        app_list.mutable_apps(0)->mutable_keywords()->add_values();
+    keywords_with_locale->set_locale(localized_keywords.first);
+    for (const auto& localized_keyword : localized_keywords.second) {
+      keywords_with_locale->add_value(localized_keyword);
+    }
+  }
+  service()->UpdateApplicationList(app_list);
+
+  base::Optional<CrostiniRegistryService::Registration> result =
+      service()->GetRegistration(app_id);
+  g_browser_process->SetApplicationLocale("");
+  EXPECT_EQ(result->Keywords(), keywords[""]);
+  g_browser_process->SetApplicationLocale("fr");
+  EXPECT_EQ(result->Keywords(), keywords["fr"]);
+  g_browser_process->SetApplicationLocale("ge");
+  EXPECT_EQ(result->Keywords(), keywords["ge"]);
+  g_browser_process->SetApplicationLocale("te");
+  EXPECT_EQ(result->Keywords(), keywords["te"]);
+}
+
+TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistrationExecutableFileName) {
+  std::string executable_file_name = "myExec";
+  std::string app_id_valid_exec =
+      CrostiniTestHelper::GenerateAppId("app", "vm", "container");
+  std::string app_id_no_exec =
+      CrostiniTestHelper::GenerateAppId("noExec", "vm", "container");
+  ApplicationList app_list =
+      CrostiniTestHelper::BasicAppList("app", "vm", "container");
+  *app_list.add_apps() = CrostiniTestHelper::BasicApp("noExec");
+
+  app_list.mutable_apps(0)->set_executable_file_name(executable_file_name);
+  service()->UpdateApplicationList(app_list);
+
+  base::Optional<CrostiniRegistryService::Registration> result_valid_exec =
+      service()->GetRegistration(app_id_valid_exec);
+  base::Optional<CrostiniRegistryService::Registration> result_no_exec =
+      service()->GetRegistration(app_id_no_exec);
+  EXPECT_EQ(result_valid_exec->ExecutableFileName(), executable_file_name);
+  EXPECT_EQ(result_no_exec->ExecutableFileName(), "");
 }
 
 }  // namespace crostini

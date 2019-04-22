@@ -26,29 +26,32 @@ constexpr uint32_t kDefaultMipLevels = 6u;
 constexpr dawn::TextureFormat kDefaultTextureFormat = dawn::TextureFormat::R8G8B8A8Unorm;
 
 dawn::Texture Create2DArrayTexture(dawn::Device& device,
-                                   uint32_t arrayLayers,
+                                   uint32_t arrayLayerCount,
                                    uint32_t width = kWidth,
-                                   uint32_t height = kHeight) {
+                                   uint32_t height = kHeight,
+                                   uint32_t mipLevelCount = kDefaultMipLevels,
+                                   uint32_t sampleCount = 1) {
     dawn::TextureDescriptor descriptor;
     descriptor.dimension = dawn::TextureDimension::e2D;
     descriptor.size.width = width;
     descriptor.size.height = height;
     descriptor.size.depth = 1;
-    descriptor.arrayLayer = arrayLayers;
+    descriptor.arrayLayerCount = arrayLayerCount;
+    descriptor.sampleCount = sampleCount;
     descriptor.format = kDefaultTextureFormat;
-    descriptor.levelCount = kDefaultMipLevels;
+    descriptor.mipLevelCount = mipLevelCount;
     descriptor.usage = dawn::TextureUsageBit::Sampled;
     return device.CreateTexture(&descriptor);
 }
 
-dawn::TextureViewDescriptor CreateDefaultTextureViewDescriptor(dawn::TextureViewDimension dimension) {
+dawn::TextureViewDescriptor CreateDefaultViewDescriptor(dawn::TextureViewDimension dimension) {
     dawn::TextureViewDescriptor descriptor;
     descriptor.format = kDefaultTextureFormat;
     descriptor.dimension = dimension;
     descriptor.baseMipLevel = 0;
-    descriptor.levelCount = kDefaultMipLevels;
+    descriptor.mipLevelCount = kDefaultMipLevels;
     descriptor.baseArrayLayer = 0;
-    descriptor.layerCount = 1;
+    descriptor.arrayLayerCount = 1;
     return descriptor;
 }
 
@@ -57,44 +60,44 @@ TEST_F(TextureViewValidationTest, CreateTextureViewOnTexture2D) {
     dawn::Texture texture = Create2DArrayTexture(device, 1);
 
     dawn::TextureViewDescriptor base2DTextureViewDescriptor =
-        CreateDefaultTextureViewDescriptor(dawn::TextureViewDimension::e2D);
+        CreateDefaultViewDescriptor(dawn::TextureViewDimension::e2D);
 
     // It is OK to create a 2D texture view on a 2D texture.
     {
         dawn::TextureViewDescriptor descriptor = base2DTextureViewDescriptor;
-        descriptor.layerCount = 1;
-        texture.CreateTextureView(&descriptor);
+        descriptor.arrayLayerCount = 1;
+        texture.CreateView(&descriptor);
     }
 
     // It is an error to specify the layer count of the texture view > 1 when texture view dimension
     // is 2D.
     {
         dawn::TextureViewDescriptor descriptor = base2DTextureViewDescriptor;
-        descriptor.layerCount = 2;
-        ASSERT_DEVICE_ERROR(texture.CreateTextureView(&descriptor));
+        descriptor.arrayLayerCount = 2;
+        ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
     }
 
     // It is OK to create a 1-layer 2D array texture view on a 2D texture.
     {
         dawn::TextureViewDescriptor descriptor = base2DTextureViewDescriptor;
         descriptor.dimension = dawn::TextureViewDimension::e2DArray;
-        descriptor.layerCount = 1;
-        texture.CreateTextureView(&descriptor);
+        descriptor.arrayLayerCount = 1;
+        texture.CreateView(&descriptor);
     }
 
-    // It is an error to specify levelCount == 0.
+    // It is an error to specify mipLevelCount == 0.
     {
         dawn::TextureViewDescriptor descriptor = base2DTextureViewDescriptor;
-        descriptor.levelCount = 0;
-        ASSERT_DEVICE_ERROR(texture.CreateTextureView(&descriptor));
+        descriptor.mipLevelCount = 0;
+        ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
     }
 
     // It is an error to make the mip level out of range.
     {
         dawn::TextureViewDescriptor descriptor = base2DTextureViewDescriptor;
         descriptor.baseMipLevel = kDefaultMipLevels - 1;
-        descriptor.levelCount = 2;
-        ASSERT_DEVICE_ERROR(texture.CreateTextureView(&descriptor));
+        descriptor.mipLevelCount = 2;
+        ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
     }
 }
 
@@ -105,35 +108,35 @@ TEST_F(TextureViewValidationTest, CreateTextureViewOnTexture2DArray) {
     dawn::Texture texture = Create2DArrayTexture(device, kDefaultArrayLayers);
 
     dawn::TextureViewDescriptor base2DArrayTextureViewDescriptor =
-        CreateDefaultTextureViewDescriptor(dawn::TextureViewDimension::e2DArray);
+        CreateDefaultViewDescriptor(dawn::TextureViewDimension::e2DArray);
 
     // It is OK to create a 2D texture view on a 2D array texture.
     {
         dawn::TextureViewDescriptor descriptor = base2DArrayTextureViewDescriptor;
         descriptor.dimension = dawn::TextureViewDimension::e2D;
-        descriptor.layerCount = 1;
-        texture.CreateTextureView(&descriptor);
+        descriptor.arrayLayerCount = 1;
+        texture.CreateView(&descriptor);
     }
 
     // It is OK to create a 2D array texture view on a 2D array texture.
     {
         dawn::TextureViewDescriptor descriptor = base2DArrayTextureViewDescriptor;
-        descriptor.layerCount = kDefaultArrayLayers;
-        texture.CreateTextureView(&descriptor);
+        descriptor.arrayLayerCount = kDefaultArrayLayers;
+        texture.CreateView(&descriptor);
     }
 
-    // It is an error to specify layerCount == 0.
+    // It is an error to specify arrayLayerCount == 0.
     {
         dawn::TextureViewDescriptor descriptor = base2DArrayTextureViewDescriptor;
-        descriptor.layerCount = 0;
-        ASSERT_DEVICE_ERROR(texture.CreateTextureView(&descriptor));
+        descriptor.arrayLayerCount = 0;
+        ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
     }
 
     // It is an error to make the array layer out of range.
     {
         dawn::TextureViewDescriptor descriptor = base2DArrayTextureViewDescriptor;
-        descriptor.layerCount = kDefaultArrayLayers + 1;
-        ASSERT_DEVICE_ERROR(texture.CreateTextureView(&descriptor));
+        descriptor.arrayLayerCount = kDefaultArrayLayers + 1;
+        ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
     }
 }
 
@@ -144,38 +147,38 @@ TEST_F(TextureViewValidationTest, CreateCubeMapTextureView) {
     dawn::Texture texture = Create2DArrayTexture(device, kDefaultArrayLayers);
 
     dawn::TextureViewDescriptor base2DArrayTextureViewDescriptor =
-        CreateDefaultTextureViewDescriptor(dawn::TextureViewDimension::e2DArray);
+        CreateDefaultViewDescriptor(dawn::TextureViewDimension::e2DArray);
 
-    // It is OK to create a cube map texture view with layerCount == 6.
+    // It is OK to create a cube map texture view with arrayLayerCount == 6.
     {
         dawn::TextureViewDescriptor descriptor = base2DArrayTextureViewDescriptor;
         descriptor.dimension = dawn::TextureViewDimension::Cube;
-        descriptor.layerCount = 6;
-        texture.CreateTextureView(&descriptor);
+        descriptor.arrayLayerCount = 6;
+        texture.CreateView(&descriptor);
     }
 
-    // It is an error to create a cube map texture view with layerCount != 6.
+    // It is an error to create a cube map texture view with arrayLayerCount != 6.
     {
         dawn::TextureViewDescriptor descriptor = base2DArrayTextureViewDescriptor;
         descriptor.dimension = dawn::TextureViewDimension::Cube;
-        descriptor.layerCount = 3;
-        ASSERT_DEVICE_ERROR(texture.CreateTextureView(&descriptor));
+        descriptor.arrayLayerCount = 3;
+        ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
     }
 
-    // It is OK to create a cube map array texture view with layerCount % 6 == 0.
+    // It is OK to create a cube map array texture view with arrayLayerCount % 6 == 0.
     {
         dawn::TextureViewDescriptor descriptor = base2DArrayTextureViewDescriptor;
         descriptor.dimension = dawn::TextureViewDimension::CubeArray;
-        descriptor.layerCount = 12;
-        texture.CreateTextureView(&descriptor);
+        descriptor.arrayLayerCount = 12;
+        texture.CreateView(&descriptor);
     }
 
-    // It is an error to create a cube map array texture view with layerCount % 6 != 0.
+    // It is an error to create a cube map array texture view with arrayLayerCount % 6 != 0.
     {
         dawn::TextureViewDescriptor descriptor = base2DArrayTextureViewDescriptor;
         descriptor.dimension = dawn::TextureViewDimension::CubeArray;
-        descriptor.layerCount = 11;
-        ASSERT_DEVICE_ERROR(texture.CreateTextureView(&descriptor));
+        descriptor.arrayLayerCount = 11;
+        ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
     }
 
     // It is an error to create a cube map texture view with width != height.
@@ -184,8 +187,8 @@ TEST_F(TextureViewValidationTest, CreateCubeMapTextureView) {
 
         dawn::TextureViewDescriptor descriptor = base2DArrayTextureViewDescriptor;
         descriptor.dimension = dawn::TextureViewDimension::Cube;
-        descriptor.layerCount = 6;
-        ASSERT_DEVICE_ERROR(nonSquareTexture.CreateTextureView(&descriptor));
+        descriptor.arrayLayerCount = 6;
+        ASSERT_DEVICE_ERROR(nonSquareTexture.CreateView(&descriptor));
     }
 
     // It is an error to create a cube map array texture view with width != height.
@@ -194,8 +197,8 @@ TEST_F(TextureViewValidationTest, CreateCubeMapTextureView) {
 
         dawn::TextureViewDescriptor descriptor = base2DArrayTextureViewDescriptor;
         descriptor.dimension = dawn::TextureViewDimension::CubeArray;
-        descriptor.layerCount = 12;
-        ASSERT_DEVICE_ERROR(nonSquareTexture.CreateTextureView(&descriptor));
+        descriptor.arrayLayerCount = 12;
+        ASSERT_DEVICE_ERROR(nonSquareTexture.CreateView(&descriptor));
     }
 }
 
@@ -205,14 +208,22 @@ TEST_F(TextureViewValidationTest, TextureViewFormatCompatibility) {
     dawn::Texture texture = Create2DArrayTexture(device, 1);
 
     dawn::TextureViewDescriptor base2DTextureViewDescriptor =
-        CreateDefaultTextureViewDescriptor(dawn::TextureViewDimension::e2D);
+        CreateDefaultViewDescriptor(dawn::TextureViewDimension::e2D);
 
     // It is an error to create a texture view in depth-stencil format on a RGBA texture.
     {
         dawn::TextureViewDescriptor descriptor = base2DTextureViewDescriptor;
         descriptor.format = dawn::TextureFormat::D32FloatS8Uint;
-        ASSERT_DEVICE_ERROR(texture.CreateTextureView(&descriptor));
+        ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
     }
 }
 
+// Test that it's invalid to create a texture view from a destroyed texture
+TEST_F(TextureViewValidationTest, DestroyCreateTextureView) {
+    dawn::Texture texture = Create2DArrayTexture(device, 1);
+    dawn::TextureViewDescriptor descriptor =
+        CreateDefaultViewDescriptor(dawn::TextureViewDimension::e2D);
+    texture.Destroy();
+    ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
+}
 }

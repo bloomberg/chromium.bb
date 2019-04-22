@@ -47,6 +47,20 @@ void InputDeviceServer::AddObserver(
   observers_.AddPtr(std::move(observer));
 }
 
+void InputDeviceServer::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & ui::InputDeviceEventObserver::kKeyboard)
+    OnKeyboardDeviceConfigurationChanged();
+  if (input_device_types & ui::InputDeviceEventObserver::kMouse)
+    OnMouseDeviceConfigurationChanged();
+  if (input_device_types & ui::InputDeviceEventObserver::kTouchpad)
+    OnTouchpadDeviceConfigurationChanged();
+  if (input_device_types & ui::InputDeviceEventObserver::kTouchscreen)
+    OnTouchscreenDeviceConfigurationChanged();
+  if (input_device_types & ui::InputDeviceEventObserver::kUncategorized)
+    OnUncategorizedDeviceConfigurationChanged();
+}
+
 void InputDeviceServer::OnKeyboardDeviceConfigurationChanged() {
   if (!manager_->AreDeviceListsComplete())
     return;
@@ -55,10 +69,6 @@ void InputDeviceServer::OnKeyboardDeviceConfigurationChanged() {
   observers_.ForAllPtrs([&devices](mojom::InputDeviceObserverMojo* observer) {
     observer->OnKeyboardDeviceConfigurationChanged(devices);
   });
-}
-
-void InputDeviceServer::OnTouchscreenDeviceConfigurationChanged() {
-  CallOnTouchscreenDeviceConfigurationChanged();
 }
 
 void InputDeviceServer::OnMouseDeviceConfigurationChanged() {
@@ -94,7 +104,7 @@ void InputDeviceServer::OnStylusStateChanged(ui::StylusState state) {
 }
 
 void InputDeviceServer::OnTouchDeviceAssociationChanged() {
-  CallOnTouchscreenDeviceConfigurationChanged();
+  OnTouchscreenDeviceConfigurationChanged();
 }
 
 void InputDeviceServer::SendDeviceListsComplete(
@@ -104,10 +114,11 @@ void InputDeviceServer::SendDeviceListsComplete(
   observer->OnDeviceListsComplete(
       manager_->GetKeyboardDevices(), manager_->GetTouchscreenDevices(),
       manager_->GetMouseDevices(), manager_->GetTouchpadDevices(),
+      manager_->GetUncategorizedDevices(),
       manager_->AreTouchscreenTargetDisplaysValid());
 }
 
-void InputDeviceServer::CallOnTouchscreenDeviceConfigurationChanged() {
+void InputDeviceServer::OnTouchscreenDeviceConfigurationChanged() {
   if (!manager_->AreDeviceListsComplete())
     return;
 
@@ -118,6 +129,16 @@ void InputDeviceServer::CallOnTouchscreenDeviceConfigurationChanged() {
                             mojom::InputDeviceObserverMojo* observer) {
     observer->OnTouchscreenDeviceConfigurationChanged(
         devices, are_touchscreen_target_displays_valid);
+  });
+}
+
+void InputDeviceServer::OnUncategorizedDeviceConfigurationChanged() {
+  if (!manager_->AreDeviceListsComplete())
+    return;
+
+  auto& devices = manager_->GetUncategorizedDevices();
+  observers_.ForAllPtrs([&devices](mojom::InputDeviceObserverMojo* observer) {
+    observer->OnUncategorizedDeviceConfigurationChanged(devices);
   });
 }
 

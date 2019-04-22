@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/search_engines/template_url_service_observer.h"
-#include "components/security_state/core/security_state.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -96,6 +95,13 @@ class OmniboxViewViews : public OmniboxView,
   bool SelectionAtBeginning() const;
   bool SelectionAtEnd() const;
 
+  // Returns the width in pixels needed to display the current text. The
+  // returned value includes margins.
+  int GetTextWidth() const;
+
+  // Returns the omnibox's width in pixels.
+  int GetWidth() const;
+
   // OmniboxView:
   void EmphasizeURLComponents() override;
   void Update() override;
@@ -103,13 +109,17 @@ class OmniboxViewViews : public OmniboxView,
   using OmniboxView::SetUserText;
   void SetUserText(const base::string16& text,
                    bool update_popup) override;
+  void SetWindowTextAndCaretPos(const base::string16& text,
+                                size_t caret_pos,
+                                bool update_popup,
+                                bool notify_text_changed) override;
   void EnterKeywordModeForDefaultSearchProvider() override;
+  bool IsSelectAll() const override;
   void GetSelectionBounds(base::string16::size_type* start,
                           base::string16::size_type* end) const override;
   void SelectAll(bool reversed) override;
   void RevertAll() override;
   void SetFocus() override;
-  int GetTextWidth() const override;
   bool IsImeComposing() const override;
 
   // views::Textfield:
@@ -120,45 +130,26 @@ class OmniboxViewViews : public OmniboxView,
   void AddedToWidget() override;
   void RemovedFromWidget() override;
   bool ShouldDoLearning() override;
+  base::string16 GetLabelForCommandId(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
 
- protected:
   // For testing only.
-  OmniboxPopupContentsView* GetPopupContentsView() const {
+  OmniboxPopupContentsView* GetPopupContentsViewForTesting() const {
     return popup_view_.get();
   }
 
+ protected:
   // views::Textfield:
   bool IsDropCursorForInsertion() const override;
 
  private:
+  // TODO(tommycli): Remove the rest of these friends after porting these
+  // browser tests to unit tests.
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, FriendlyAccessibleLabel);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, AccessiblePopup);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, OnBlur);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, DoNotNavigateOnDrop);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
-                           MouseMoveAndExitSetsHoveredState);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
-                           FirstMouseClickFocusesOnly);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
-                           NegligibleDragKeepsElisions);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
-                           CaretPlacementByMouse);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
-                           MouseDoubleClick);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
-                           MouseTripleClick);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
-                           MouseClickDrag);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
-                           MouseClickDragToBeginningSelectingText);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
-                           MouseClickDragToBeginningSelectingURL);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
-                           MouseDoubleClickDrag);
-  friend class OmniboxViewViewsTest;
-  friend class OmniboxViewViewsSteadyStateElisionsTest;
+
+  class PathFadeAnimation;
 
   enum class UnelisionGesture {
     HOME_KEY_PRESSED,
@@ -183,10 +174,10 @@ class OmniboxViewViews : public OmniboxView,
   // Handle keyword hint tab-to-search and tabbing through dropdown results.
   bool HandleEarlyTabActions(const ui::KeyEvent& event);
 
-  // Updates |security_level_| based on the location bar model's current value.
-  void UpdateSecurityLevel();
-
   void ClearAccessibilityLabel();
+
+  void SetAccessibilityLabel(const base::string16& display_text,
+                             const AutocompleteMatch& match);
 
   // Selects the whole omnibox contents as a result of the user gesture. This
   // may also unapply steady state elisions depending on user preferences.
@@ -200,10 +191,11 @@ class OmniboxViewViews : public OmniboxView,
   // flip.)
   bool TextAndUIDirectionMatch() const;
 
-  // Returns true if the caret is completely at the end of the input, and if
-  // there's a tab match present. Helper function for MaybeFocusTabButton()
-  // and MaybeUnfocusTabButton().
-  bool AtEndWithTabMatch() const;
+  // Helper function for MaybeFocusTabButton() and MaybeUnfocusTabButton().
+  bool SelectedSuggestionHasTabMatch() const;
+
+  // Like SelectionAtEnd(), but accounts for RTL.
+  bool DirectionAwareSelectionAtEnd() const;
 
   // Attempts to either focus or unfocus the tab switch button (tests if all
   // conditions are met and makes necessary subroutine call) and returns
@@ -212,12 +204,7 @@ class OmniboxViewViews : public OmniboxView,
   bool MaybeUnfocusTabButton();
 
   // OmniboxView:
-  void SetWindowTextAndCaretPos(const base::string16& text,
-                                size_t caret_pos,
-                                bool update_popup,
-                                bool notify_text_changed) override;
   void SetCaretPos(size_t caret_pos) override;
-  bool IsSelectAll() const override;
   void UpdatePopup() override;
   void ApplyCaretVisibility() override;
   void OnTemporaryTextMaybeChanged(const base::string16& display_text,
@@ -227,12 +214,12 @@ class OmniboxViewViews : public OmniboxView,
   bool OnInlineAutocompleteTextMaybeChanged(const base::string16& display_text,
                                             size_t user_text_length) override;
   void OnInlineAutocompleteTextCleared() override;
-  void OnRevertTemporaryText() override;
+  void OnRevertTemporaryText(const base::string16& display_text,
+                             const AutocompleteMatch& match) override;
   void OnBeforePossibleChange() override;
   bool OnAfterPossibleChange(bool allow_keyword_ui_change) override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetRelativeWindowForPopup() const override;
-  int GetWidth() const override;
   bool IsImeShowingPopup() const override;
   void ShowVirtualKeyboardIfEnabled() override;
   void HideImeIfNeeded() override;
@@ -246,7 +233,6 @@ class OmniboxViewViews : public OmniboxView,
 
   // views::Textfield:
   bool IsItemForCommandIdDynamic(int command_id) const override;
-  base::string16 GetLabelForCommandId(int command_id) const override;
   const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -258,7 +244,6 @@ class OmniboxViewViews : public OmniboxView,
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
   void OnFocus() override;
   void OnBlur() override;
-  bool IsCommandIdEnabled(int command_id) const override;
   base::string16 GetSelectionClipboardText() const override;
   void DoInsertChar(base::char16 ch) override;
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
@@ -285,7 +270,7 @@ class OmniboxViewViews : public OmniboxView,
   void OnGetDragOperationsForTextfield(int* drag_operations) override;
   void AppendDropFormats(
       int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) override;
+      std::set<ui::ClipboardFormatType>* format_types) override;
   int OnDrop(const ui::OSExchangeData& data) override;
   void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) override;
 
@@ -294,7 +279,6 @@ class OmniboxViewViews : public OmniboxView,
   void OnCompositingStarted(ui::Compositor* compositor,
                             base::TimeTicks start_time) override;
   void OnCompositingEnded(ui::Compositor* compositor) override;
-  void OnCompositingChildResizing(ui::Compositor* compositor) override;
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
   // TemplateURLServiceObserver:
@@ -306,7 +290,8 @@ class OmniboxViewViews : public OmniboxView,
 
   std::unique_ptr<OmniboxPopupContentsView> popup_view_;
 
-  security_state::SecurityLevel security_level_;
+  // Animation used to fade out the path under some elision settings.
+  std::unique_ptr<PathFadeAnimation> path_fade_animation_;
 
   // Selection persisted across temporary text changes, like popup suggestions.
   gfx::Range saved_temporary_selection_;
@@ -317,29 +302,36 @@ class OmniboxViewViews : public OmniboxView,
 
   // Tracking state before and after a possible change.
   State state_before_change_;
-  bool ime_composing_before_change_;
+  bool ime_composing_before_change_ = false;
 
   // |location_bar_view_| can be NULL in tests.
   LocationBarView* location_bar_view_;
 
+#if defined(OS_CHROMEOS)
   // True if the IME candidate window is open. When this is true, we want to
   // avoid showing the popup. So far, the candidate window is detected only
   // on Chrome OS.
-  bool ime_candidate_window_open_;
+  bool ime_candidate_window_open_ = false;
+#endif
 
   // True if any mouse button is currently depressed.
-  bool is_mouse_pressed_;
+  bool is_mouse_pressed_ = false;
+
+  // Applies a minimum threshold to drag events after unelision. Because the
+  // text shifts after unelision, we don't want unintentional mouse drags to
+  // change the selection.
+  bool filter_drag_events_for_unelision_ = false;
 
   // Should we select all the text when we see the mouse button get released?
   // We select in response to a click that focuses the omnibox, but we defer
   // until release, setting this variable back to false if we saw a drag, to
   // allow the user to select just a portion of the text.
-  bool select_all_on_mouse_release_;
+  bool select_all_on_mouse_release_ = false;
 
   // Indicates if we want to select all text in the omnibox when we get a
   // GESTURE_TAP. We want to select all only when the textfield is not in focus
   // and gets a tap. So we use this variable to remember focus state before tap.
-  bool select_all_on_gesture_tap_;
+  bool select_all_on_gesture_tap_ = false;
 
   // The time of the first character insert operation that has not yet been
   // painted. Used to measure omnibox responsiveness with a histogram.

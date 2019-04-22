@@ -6,12 +6,14 @@
 
 #include <stdint.h>
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
+#include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -27,6 +29,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
@@ -55,7 +58,8 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/legacy_strike_database.h"
+#include "components/autofill/core/browser/payments/legacy_strike_database.h"
+#include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
@@ -75,7 +79,6 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/language/core/browser/url_language_histogram.h"
-#include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -111,11 +114,15 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#include "chrome/common/chrome_paths.h"
+#include "components/upload_list/crash_upload_list.h"
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
@@ -142,12 +149,10 @@ using testing::ByRef;
 using testing::Eq;
 using testing::FloatEq;
 using testing::Invoke;
-using testing::IsEmpty;
 using testing::Matcher;
 using testing::MakeMatcher;
 using testing::MatcherInterface;
 using testing::MatchResultListener;
-using testing::Not;
 using testing::Return;
 using testing::SizeIs;
 using testing::WithArgs;
@@ -260,31 +265,36 @@ class RemoveCookieTester {
     base::RunLoop run_loop;
     cookie_manager_->GetCookieList(
         kOrigin1, net::CookieOptions(),
-        base::BindLambdaForTesting([&](const net::CookieList& cookie_list) {
-          std::string cookie_line =
-              net::CanonicalCookie::BuildCookieLine(cookie_list);
-          if (cookie_line == "A=1") {
-            result = true;
-          } else {
-            EXPECT_EQ("", cookie_line);
-            result = false;
-          }
-          run_loop.Quit();
-        }));
+        base::BindLambdaForTesting(
+            [&](const net::CookieList& cookie_list,
+                const net::CookieStatusList& excluded_cookies) {
+              std::string cookie_line =
+                  net::CanonicalCookie::BuildCookieLine(cookie_list);
+              if (cookie_line == "A=1") {
+                result = true;
+              } else {
+                EXPECT_EQ("", cookie_line);
+                result = false;
+              }
+              run_loop.Quit();
+            }));
     run_loop.Run();
     return result;
   }
 
   void AddCookie() {
     base::RunLoop run_loop;
-    auto cookie = net::CanonicalCookie::Create(
-        kOrigin1, "A=1", base::Time::Now(), net::CookieOptions());
+    net::CookieOptions options;
+    auto cookie = net::CanonicalCookie::Create(kOrigin1, "A=1",
+                                               base::Time::Now(), options);
     cookie_manager_->SetCanonicalCookie(
-        *cookie, /*secure_source=*/false, /*modify_http_only=*/false,
-        base::BindLambdaForTesting([&](bool result) {
-          EXPECT_TRUE(result);
-          run_loop.Quit();
-        }));
+        *cookie, "http", options,
+        base::BindLambdaForTesting(
+            [&](net::CanonicalCookie::CookieInclusionStatus result) {
+              EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
+                        result);
+              run_loop.Quit();
+            }));
     run_loop.Run();
   }
 
@@ -482,11 +492,40 @@ class RemoveFaviconTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveFaviconTester);
 };
 
+// Custom ProtocolHandlerRegistry delegate that doesn't change any OS settings.
+class FakeProtocolHandlerRegistryDelegate
+    : public ProtocolHandlerRegistry::Delegate {
+ public:
+  ~FakeProtocolHandlerRegistryDelegate() override = default;
+
+  void RegisterExternalHandler(const std::string& protocol) override {
+    registered_protocols_.insert(protocol);
+  }
+
+  void DeregisterExternalHandler(const std::string& protocol) override {
+    registered_protocols_.erase(protocol);
+  }
+
+  bool IsExternalHandlerRegistered(const std::string& protocol) override {
+    return registered_protocols_.count(protocol);
+  }
+
+  void RegisterWithOSAsDefaultClient(
+      const std::string& protocol,
+      ProtocolHandlerRegistry* registry) override {}
+
+  void CheckDefaultClientWithOS(const std::string& protocol,
+                                ProtocolHandlerRegistry* registry) override {}
+
+ private:
+  std::set<std::string> registered_protocols_;
+};
+
 std::unique_ptr<KeyedService> BuildProtocolHandlerRegistry(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   return std::make_unique<ProtocolHandlerRegistry>(
-      profile, new ProtocolHandlerRegistry::Delegate());
+      profile, new FakeProtocolHandlerRegistryDelegate());
 }
 
 class ClearDomainReliabilityTester {
@@ -790,19 +829,32 @@ class RemoveDownloadsTester {
 
 }  // namespace
 
+ACTION(QuitMainMessageLoop) {
+  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+}
+
+class PersonalDataLoadedObserverMock
+    : public autofill::PersonalDataManagerObserver {
+ public:
+  PersonalDataLoadedObserverMock() {}
+  ~PersonalDataLoadedObserverMock() override {}
+  MOCK_METHOD0(OnPersonalDataChanged, void());
+  MOCK_METHOD0(OnPersonalDataFinishedProfileTasks, void());
+};
+
 // RemoveAutofillTester is not a part of the anonymous namespace above, as
 // PersonalDataManager declares it a friend in an empty namespace.
-class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
+class RemoveAutofillTester {
  public:
   explicit RemoveAutofillTester(TestingProfile* profile)
       : personal_data_manager_(
             autofill::PersonalDataManagerFactory::GetForProfile(profile)) {
     autofill::test::DisableSystemServices(profile->GetPrefs());
-    personal_data_manager_->AddObserver(this);
+    personal_data_manager_->AddObserver(&personal_data_observer_);
   }
 
-  ~RemoveAutofillTester() override {
-    personal_data_manager_->RemoveObserver(this);
+  ~RemoveAutofillTester() {
+    personal_data_manager_->RemoveObserver(&personal_data_observer_);
     autofill::test::ReenableSystemServices();
   }
 
@@ -850,7 +902,8 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
     profiles.push_back(profile);
 
     personal_data_manager_->SetProfiles(&profiles);
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+
+    WaitForOnPersonalDataFinishedProfileTasks();
 
     std::vector<autofill::CreditCard> cards;
     autofill::CreditCard card;
@@ -865,15 +918,24 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
     cards.push_back(card);
 
     personal_data_manager_->SetCreditCards(&cards);
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    WaitForOnPersonalDataChanged();
   }
 
  private:
-  void OnPersonalDataChanged() override {
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  void WaitForOnPersonalDataChanged() {
+    EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+        .WillRepeatedly(QuitMainMessageLoop());
+    base::RunLoop().Run();
+  }
+
+  void WaitForOnPersonalDataFinishedProfileTasks() {
+    EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
+        .WillRepeatedly(QuitMainMessageLoop());
+    base::RunLoop().Run();
   }
 
   autofill::PersonalDataManager* personal_data_manager_;
+  PersonalDataLoadedObserverMock personal_data_observer_;
   DISALLOW_COPY_AND_ASSIGN(RemoveAutofillTester);
 };
 
@@ -914,10 +976,17 @@ class MockReportingService : public net::ReportingService {
     last_origin_filter_ = base::RepeatingCallback<bool(const GURL&)>();
   }
 
+  void OnShutdown() override {}
+
   const net::ReportingPolicy& GetPolicy() const override {
     static net::ReportingPolicy dummy_policy_;
     NOTREACHED();
     return dummy_policy_;
+  }
+
+  net::ReportingContext* GetContextForTesting() const override {
+    NOTREACHED();
+    return nullptr;
   }
 
   int remove_calls() const { return remove_calls_; }
@@ -959,6 +1028,30 @@ class LegacyStrikeDatabaseTester {
 
  private:
   autofill::LegacyStrikeDatabase* legacy_strike_database_;
+};
+
+// StrikeDatabaseTester is in the autofill namespace since
+// StrikeDatabase declares it as a friend in the autofill namespace.
+class StrikeDatabaseTester {
+ public:
+  explicit StrikeDatabaseTester(Profile* profile)
+      : strike_database_(
+            autofill::StrikeDatabaseFactory::GetForProfile(profile)) {}
+
+  bool IsEmpty() {
+    int num_keys;
+    base::RunLoop run_loop;
+    strike_database_->LoadKeys(base::BindLambdaForTesting(
+        [&](bool success, std::unique_ptr<std::vector<std::string>> keys) {
+          num_keys = keys.get()->size();
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    return (num_keys == 0);
+  }
+
+ private:
+  autofill::StrikeDatabase* strike_database_;
 };
 
 }  // namespace autofill
@@ -1006,6 +1099,11 @@ class MockNetworkErrorLoggingService : public net::NetworkErrorLoggingService {
   }
 
   void OnRequest(RequestDetails details) override { NOTREACHED(); }
+
+  void QueueSignedExchangeReport(
+      const SignedExchangeReportDetails& details) override {
+    NOTREACHED();
+  }
 
   void RemoveBrowsingData(const base::RepeatingCallback<bool(const GURL&)>&
                               origin_filter) override {
@@ -1134,7 +1232,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     remover_->RemoveAndReply(
         delete_begin, delete_end, remove_mask, origin_type_mask,
         &completion_observer);
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     completion_observer.BlockUntilCompletion();
   }
 
@@ -1149,7 +1247,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
         delete_begin, delete_end, remove_mask,
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
         std::move(filter_builder), &completion_observer);
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     completion_observer.BlockUntilCompletion();
   }
 
@@ -1172,7 +1270,8 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   bool Match(const GURL& origin,
              int mask,
              storage::SpecialStoragePolicy* policy) {
-    return remover_->DoesOriginMatchMask(mask, origin, policy);
+    return remover_->DoesOriginMatchMask(mask, url::Origin::Create(origin),
+                                         policy);
   }
 
  private:
@@ -1601,6 +1700,30 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   ASSERT_FALSE(tester.HasProfile());
 }
 
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       StrikeDatabaseEmptyOnAutofillRemoveEverything) {
+  GetProfile()->CreateWebDataService();
+  RemoveAutofillTester tester(GetProfile());
+
+  ASSERT_FALSE(tester.HasProfile());
+  tester.AddProfilesAndCards();
+  ASSERT_TRUE(tester.HasProfile());
+
+  autofill::StrikeDatabaseTester strike_database_tester(GetProfile());
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA, false);
+
+  // StrikeDatabase should be empty when DATA_TYPE_FORM_DATA browsing data
+  // gets deleted.
+  ASSERT_TRUE(strike_database_tester.IsEmpty());
+  EXPECT_EQ(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA,
+            GetRemovalMask());
+  EXPECT_EQ(content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+            GetOriginTypeMask());
+  ASSERT_FALSE(tester.HasProfile());
+}
+
 // Verify that clearing autofill form data works.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        AutofillOriginsRemovedWithHistory) {
@@ -1650,10 +1773,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   user_manager::ScopedUserManager user_manager_enabler(
       base::WrapUnique(mock_user_manager));
 
-  // Owned by DBusThreadManager.
-  FakeCryptohomeClient* cryptohome_client = new FakeCryptohomeClient();
-  chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-      base::WrapUnique(cryptohome_client));
+  // Creates a derived fake global instance destroyed in
+  // CryptohomeClient::Shutdown().
+  auto* cryptohome_client = new FakeCryptohomeClient();
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -1663,7 +1785,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   // than one call means a significant performance problem.
   EXPECT_EQ(1, cryptohome_client->delete_keys_call_count());
 
-  chromeos::DBusThreadManager::Shutdown();
+  chromeos::CryptohomeClient::Shutdown();
 }
 #endif
 
@@ -1967,8 +2089,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveContentSettings) {
 
 #if defined(OS_ANDROID)
   expect_geolocation_dse_origin = true;
-  expect_notifications_dse_origin =
-      base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE);
+  expect_notifications_dse_origin = true;
 #endif
 
   ContentSettingsForOneType host_settings;
@@ -2548,71 +2669,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePluginData) {
 }
 #endif
 
-// Test that the remover clears bookmark meta data (normally added in a tab
-// helper).
-TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       BookmarkLastVisitDatesGetCleared) {
-  GetProfile()->CreateBookmarkModel(true);
-
-  bookmarks::BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForBrowserContext(GetProfile());
-  bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
-
-  const base::Time delete_begin =
-      base::Time::Now() - base::TimeDelta::FromDays(1);
-
-  // Create a couple of bookmarks.
-  bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
-                         base::string16(),
-                         GURL("http://foo.org/desktop"));
-  bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
-                         base::string16(),
-                         GURL("http://foo.org/mobile"));
-
-  // Simulate their visits (this is using Time::Now() as timestamps).
-  ntp_snippets::UpdateBookmarkOnURLVisitedInMainFrame(
-      bookmark_model, GURL("http://foo.org/desktop"),
-      /*is_mobile_platform=*/false);
-  ntp_snippets::UpdateBookmarkOnURLVisitedInMainFrame(
-      bookmark_model, GURL("http://foo.org/mobile"),
-      /*is_mobile_platform=*/true);
-
-  // Add a bookmark with a visited timestamp before the deletion interval.
-  bookmarks::BookmarkNode::MetaInfoMap meta_info = {
-      {"last_visited",
-       base::Int64ToString((delete_begin - base::TimeDelta::FromSeconds(1))
-                               .ToInternalValue())}};
-  bookmark_model->AddURLWithCreationTimeAndMetaInfo(
-      bookmark_model->mobile_node(), 0, base::ASCIIToUTF16("my title"),
-      GURL("http://foo-2.org/"), delete_begin - base::TimeDelta::FromDays(1),
-      &meta_info);
-
-  // There should be some recently visited bookmarks.
-  EXPECT_THAT(ntp_snippets::GetRecentlyVisitedBookmarks(
-                  bookmark_model, 2, base::Time::UnixEpoch(),
-                  /*consider_visits_from_desktop=*/false),
-              Not(IsEmpty()));
-
-  // Inject the bookmark model into the remover.
-  content::BrowsingDataRemover* remover =
-      content::BrowserContext::GetBrowsingDataRemover(GetProfile());
-
-  content::BrowsingDataRemoverCompletionObserver completion_observer(remover);
-  remover->RemoveAndReply(delete_begin, base::Time::Max(),
-                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
-                          ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES,
-                          &completion_observer);
-  completion_observer.BlockUntilCompletion();
-
-  // There should be only 1 recently visited bookmarks.
-  std::vector<const bookmarks::BookmarkNode*> remaining_nodes =
-      ntp_snippets::GetRecentlyVisitedBookmarks(
-          bookmark_model, 3, base::Time::UnixEpoch(),
-          /*consider_visits_from_desktop=*/true);
-  EXPECT_THAT(remaining_nodes, SizeIs(1));
-  EXPECT_THAT(remaining_nodes[0]->url().spec(), Eq("http://foo-2.org/"));
-}
-
 // Test that the remover clears language model data (normally added by the
 // LanguageDetectionDriver).
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
@@ -2903,3 +2959,34 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, WipeOriginVerifierData) {
       customtabs::OriginVerifier::GetClearBrowsingDataCallCountForTesting());
 }
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, WipeCrashData) {
+  base::FilePath crash_dir_path;
+  base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
+  base::FilePath upload_log_path =
+      crash_dir_path.AppendASCII(CrashUploadList::kReporterLogFilename);
+
+  constexpr char kCrashEntry1[] = "12345,abc\n";
+  constexpr char kCrashEntry2[] = "67890,def\n";
+  std::string initial_contents = kCrashEntry1;
+  initial_contents.append(kCrashEntry2);
+  ASSERT_GT(base::WriteFile(upload_log_path, initial_contents.c_str(),
+                            static_cast<int>(initial_contents.size())),
+            0);
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time::FromTimeT(67890u), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
+
+  std::string contents;
+  base::ReadFileToString(upload_log_path, &contents);
+  EXPECT_EQ(kCrashEntry1, contents);
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
+
+  EXPECT_FALSE(base::PathExists(upload_log_path));
+}
+#endif

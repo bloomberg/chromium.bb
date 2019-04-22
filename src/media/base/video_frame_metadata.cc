@@ -9,6 +9,8 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/value_conversions.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace media {
 
@@ -17,7 +19,7 @@ namespace {
 // Map enum key to internal std::string key used by base::DictionaryValue.
 inline std::string ToInternalKey(VideoFrameMetadata::Key key) {
   DCHECK_LT(key, VideoFrameMetadata::NUM_KEYS);
-  return base::IntToString(static_cast<int>(key));
+  return base::NumberToString(static_cast<int>(key));
 }
 
 }  // namespace
@@ -75,6 +77,22 @@ void VideoFrameMetadata::SetTimeDelta(Key key, const base::TimeDelta& value) {
 
 void VideoFrameMetadata::SetTimeTicks(Key key, const base::TimeTicks& value) {
   SetTimeValue(key, value, &dictionary_);
+}
+
+void VideoFrameMetadata::SetUnguessableToken(
+    Key key,
+    const base::UnguessableToken& value) {
+  dictionary_.SetKey(ToInternalKey(key),
+                     base::CreateUnguessableTokenValue(value));
+}
+
+void VideoFrameMetadata::SetRect(Key key, const gfx::Rect& value) {
+  base::Value init[] = {base::Value(value.x()), base::Value(value.y()),
+                        base::Value(value.width()),
+                        base::Value(value.height())};
+  SetValue(key, std::make_unique<base::ListValue>(base::Value::ListStorage{
+                    std::make_move_iterator(std::begin(init)),
+                    std::make_move_iterator(std::end(init))}));
 }
 
 void VideoFrameMetadata::SetValue(Key key, std::unique_ptr<base::Value> value) {
@@ -138,6 +156,31 @@ bool VideoFrameMetadata::GetTimeDelta(Key key, base::TimeDelta* value) const {
 bool VideoFrameMetadata::GetTimeTicks(Key key, base::TimeTicks* value) const {
   const base::Value* const binary_value = GetBinaryValue(key);
   return binary_value && ToTimeValue(*binary_value, value);
+}
+
+bool VideoFrameMetadata::GetUnguessableToken(
+    Key key,
+    base::UnguessableToken* value) const {
+  const base::Value* internal_value = dictionary_.FindKey(ToInternalKey(key));
+  if (!internal_value)
+    return false;
+  return base::GetValueAsUnguessableToken(*internal_value, value);
+}
+
+bool VideoFrameMetadata::GetRect(Key key, gfx::Rect* value) const {
+  const base::ListValue* internal_value = GetList(key);
+  if (!internal_value || internal_value->GetList().size() != 4)
+    return false;
+  *value = gfx::Rect(internal_value->GetList()[0].GetInt(),
+                     internal_value->GetList()[1].GetInt(),
+                     internal_value->GetList()[2].GetInt(),
+                     internal_value->GetList()[3].GetInt());
+  return true;
+}
+
+const base::ListValue* VideoFrameMetadata::GetList(Key key) const {
+  return static_cast<const base::ListValue*>(
+      dictionary_.FindKeyOfType(ToInternalKey(key), base::Value::Type::LIST));
 }
 
 const base::Value* VideoFrameMetadata::GetValue(Key key) const {

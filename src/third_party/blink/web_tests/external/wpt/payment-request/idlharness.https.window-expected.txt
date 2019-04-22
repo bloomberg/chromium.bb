@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 107 tests; 105 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS PaymentRequest interface: existence and properties of interface object
 PASS PaymentRequest interface object length
@@ -46,7 +47,6 @@ PASS PaymentAddress interface: attribute phone
 PASS PaymentAddress interface: attribute postalCode
 PASS PaymentAddress interface: attribute recipient
 PASS PaymentAddress interface: attribute region
-FAIL PaymentAddress interface: attribute regionCode assert_true: The prototype object must have a property "regionCode" expected true got false
 PASS PaymentAddress interface: attribute sortingCode
 PASS PaymentAddress interface: attribute addressLine
 PASS PaymentResponse interface: existence and properties of interface object
@@ -67,21 +67,21 @@ PASS PaymentResponse interface: attribute payerPhone
 PASS PaymentResponse interface: operation complete(PaymentComplete)
 PASS PaymentResponse interface: operation retry(PaymentValidationErrors)
 PASS PaymentResponse interface: attribute onpayerdetailchange
-FAIL MerchantValidationEvent interface: existence and properties of interface object assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
-FAIL MerchantValidationEvent interface object length assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
-FAIL MerchantValidationEvent interface object name assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
-FAIL MerchantValidationEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
-FAIL MerchantValidationEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
-FAIL MerchantValidationEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
-FAIL MerchantValidationEvent interface: attribute methodName assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
-FAIL MerchantValidationEvent interface: attribute validationURL assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
-FAIL MerchantValidationEvent interface: operation complete([object Object]) assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
-FAIL MerchantValidationEvent must be primary interface of new MerchantValidationEvent("merchantvalidation") assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: MerchantValidationEvent is not defined"
-FAIL Stringification of new MerchantValidationEvent("merchantvalidation") assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: MerchantValidationEvent is not defined"
-FAIL MerchantValidationEvent interface: new MerchantValidationEvent("merchantvalidation") must inherit property "methodName" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: MerchantValidationEvent is not defined"
-FAIL MerchantValidationEvent interface: new MerchantValidationEvent("merchantvalidation") must inherit property "validationURL" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: MerchantValidationEvent is not defined"
-FAIL MerchantValidationEvent interface: new MerchantValidationEvent("merchantvalidation") must inherit property "complete([object Object])" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: MerchantValidationEvent is not defined"
-FAIL MerchantValidationEvent interface: calling complete([object Object]) on new MerchantValidationEvent("merchantvalidation") with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: MerchantValidationEvent is not defined"
+PASS MerchantValidationEvent interface: existence and properties of interface object
+PASS MerchantValidationEvent interface object length
+PASS MerchantValidationEvent interface object name
+PASS MerchantValidationEvent interface: existence and properties of interface prototype object
+PASS MerchantValidationEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS MerchantValidationEvent interface: existence and properties of interface prototype object's @@unscopables property
+PASS MerchantValidationEvent interface: attribute methodName
+PASS MerchantValidationEvent interface: attribute validationURL
+PASS MerchantValidationEvent interface: operation complete([object Object])
+PASS MerchantValidationEvent must be primary interface of new MerchantValidationEvent("merchantvalidation")
+PASS Stringification of new MerchantValidationEvent("merchantvalidation")
+PASS MerchantValidationEvent interface: new MerchantValidationEvent("merchantvalidation") must inherit property "methodName" with the proper type
+PASS MerchantValidationEvent interface: new MerchantValidationEvent("merchantvalidation") must inherit property "validationURL" with the proper type
+PASS MerchantValidationEvent interface: new MerchantValidationEvent("merchantvalidation") must inherit property "complete([object Object])" with the proper type
+PASS MerchantValidationEvent interface: calling complete([object Object]) on new MerchantValidationEvent("merchantvalidation") with too few arguments must throw TypeError
 PASS PaymentMethodChangeEvent interface: existence and properties of interface object
 PASS PaymentMethodChangeEvent interface object length
 PASS PaymentMethodChangeEvent interface object name

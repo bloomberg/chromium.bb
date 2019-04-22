@@ -15,7 +15,8 @@ class FakeLockScreenController : public LockScreenController {
   ~FakeLockScreenController() override;
 
   void DismissLockScreenThenExecute(base::OnceClosure pending_callback,
-                                    base::OnceClosure cancal_callback) override;
+                                    base::OnceClosure cancal_callback,
+                                    int message_id) override;
   bool IsScreenLocked() const override;
 
   // Methods for tests:

@@ -34,7 +34,7 @@ using testing::Sequence;
 class HTMLVideoElementPersistentTest : public PageTestBase {
  protected:
   void SetUp() override {
-    chrome_client_ = new FullscreenMockChromeClient();
+    chrome_client_ = MakeGarbageCollected<FullscreenMockChromeClient>();
 
     Page::PageClients clients;
     FillWithEmptyClients(clients);

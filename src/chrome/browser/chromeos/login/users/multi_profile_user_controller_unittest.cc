@@ -9,10 +9,10 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
@@ -152,7 +152,7 @@ class MultiProfileUserControllerTest
       : fake_user_manager_(new FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)),
         user_not_allowed_count_(0) {
-    for (size_t i = 0; i < arraysize(kUsers); ++i) {
+    for (size_t i = 0; i < base::size(kUsers); ++i) {
       test_users_.push_back(AccountId::FromUserEmail(kUsers[i]));
     }
   }
@@ -262,7 +262,7 @@ TEST_F(MultiProfileUserControllerTest, AllAllowedBeforeLogin) {
       MultiProfileUserController::kBehaviorPrimaryOnly,
       MultiProfileUserController::kBehaviorNotAllowed,
   };
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SetCachedBehavior(0, kTestCases[i]);
     MultiProfileUserController::UserAllowedInSessionReason reason;
     EXPECT_TRUE(controller()->IsUserAllowedInSession(
@@ -293,7 +293,7 @@ TEST_F(MultiProfileUserControllerTest, CachedBehaviorUpdate) {
       MultiProfileUserController::kBehaviorNotAllowed,
       MultiProfileUserController::kBehaviorUnrestricted,
   };
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SetPrefBehavior(0, kTestCases[i]);
     EXPECT_EQ(kTestCases[i], GetCachedBehavior(0));
   }
@@ -325,7 +325,7 @@ TEST_F(MultiProfileUserControllerTest, CompromisedCacheFixedOnLogin) {
 TEST_F(MultiProfileUserControllerTest, IsSecondaryAllowed) {
   LoginUser(0);
 
-  for (size_t i = 0; i < arraysize(kBehaviorTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kBehaviorTestCases); ++i) {
     SetPrefBehavior(0, kBehaviorTestCases[i].primary);
     SetCachedBehavior(1, kBehaviorTestCases[i].secondary);
     EXPECT_EQ(kBehaviorTestCases[i].expected_primary_policy,
@@ -344,7 +344,7 @@ TEST_F(MultiProfileUserControllerTest, PrimaryBehaviorChange) {
   LoginUser(0);
   LoginUser(1);
 
-  for (size_t i = 0; i < arraysize(kBehaviorTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kBehaviorTestCases); ++i) {
     SetPrefBehavior(0, MultiProfileUserController::kBehaviorUnrestricted);
     SetPrefBehavior(1, MultiProfileUserController::kBehaviorUnrestricted);
     ResetCounts();

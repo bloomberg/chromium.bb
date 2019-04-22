@@ -5,18 +5,15 @@
 mojom = "//third_party/blink/public/mojom/indexeddb/indexeddb.mojom"
 public_headers = [
   "//third_party/blink/public/common/indexeddb/web_idb_types.h",
-  "//third_party/blink/public/platform/modules/indexeddb/web_idb_key.h",
-  "//third_party/blink/public/platform/modules/indexeddb/web_idb_key_path.h",
-  "//third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h",
-  "//third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h",
-  "//third_party/blink/public/platform/modules/indexeddb/web_idb_name_and_version.h",
+  "//third_party/blink/renderer/modules/indexeddb/idb_key_path.h",
   "//third_party/blink/renderer/modules/indexeddb/idb_key_range.h",
+  "//third_party/blink/renderer/modules/indexeddb/idb_metadata.h",
+  "//third_party/blink/renderer/modules/indexeddb/idb_name_and_version.h",
+  "//third_party/blink/renderer/modules/indexeddb/idb_value.h",
 ]
 traits_headers = [
   "//mojo/public/cpp/base/string16_mojom_traits.h",
-  "//mojo/public/cpp/bindings/array_traits_web_vector.h",
   "//mojo/public/cpp/bindings/array_traits_wtf_vector.h",
-  "//third_party/blink/public/common/indexeddb/indexed_db_default_mojom_traits.h",
   "//third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h",
   "//third_party/blink/renderer/platform/mojo/string16_mojom_traits.h",
 ]
@@ -25,11 +22,11 @@ deps = [
   "//third_party/blink/renderer/platform/wtf",
 ]
 type_mappings = [
-  "blink.mojom.IDBDatabaseMetadata=::blink::WebIDBMetadata",
-  "blink.mojom.IDBIndexKeys=::blink::WebIDBIndexKeys",
-  "blink.mojom.IDBIndexMetadata=::blink::WebIDBMetadata::Index",
-  "blink.mojom.IDBKey=::blink::WebIDBKey[move_only]",
-  "blink.mojom.IDBKeyPath=::blink::WebIDBKeyPath",
-  "blink.mojom.IDBKeyRange=::blink::WebIDBKeyRange",
-  "blink.mojom.IDBObjectStoreMetadata=::blink::WebIDBMetadata::ObjectStore",
+  "blink.mojom.IDBDatabaseMetadata=::blink::IDBDatabaseMetadata",
+  "blink.mojom.IDBIndexKeys=::blink::IDBIndexKeys[move_only]",
+  "blink.mojom.IDBIndexMetadata=scoped_refptr<::blink::IDBIndexMetadata>",
+  "blink.mojom.IDBKey=std::unique_ptr<::blink::IDBKey>[move_only]",
+  "blink.mojom.IDBKeyPath=::blink::IDBKeyPath",
+  "blink.mojom.IDBObjectStoreMetadata=scoped_refptr<::blink::IDBObjectStoreMetadata>",
+  "blink.mojom.IDBValue=std::unique_ptr<::blink::IDBValue>[move_only]",
 ]

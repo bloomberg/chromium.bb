@@ -11,6 +11,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
 
@@ -105,7 +107,7 @@ public class AwContentsStatics {
         // API.
         Callback<Boolean> wrapperCallback = b -> {
             if (callback != null) {
-                ThreadUtils.runOnUiThread(() -> callback.onResult(b));
+                PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(b));
             }
         };
 
@@ -119,21 +121,6 @@ public class AwContentsStatics {
 
     public static void setCheckClearTextPermitted(boolean permitted) {
         nativeSetCheckClearTextPermitted(permitted);
-    }
-
-    @CalledByNative
-    private static void proxyOverrideChanged(Runnable callback) {
-        if (callback == null) return;
-        callback.run();
-    }
-
-    public static void setProxyOverride(
-            String host, int port, String[] exclusionList, Runnable callback) {
-        nativeSetProxyOverride(host, port, exclusionList, callback);
-    }
-
-    public static void clearProxyOverride(Runnable callback) {
-        nativeClearProxyOverride(callback);
     }
 
     /**
@@ -150,6 +137,13 @@ public class AwContentsStatics {
         return FindAddress.findAddress(addr);
     }
 
+    /**
+     * Returns true if WebView is running in multi process mode.
+     */
+    public static boolean isMultiProcessEnabled() {
+        return nativeIsMultiProcessEnabled();
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
@@ -162,7 +156,5 @@ public class AwContentsStatics {
     private static native void nativeSetSafeBrowsingWhitelist(
             String[] urls, Callback<Boolean> callback);
     private static native void nativeSetCheckClearTextPermitted(boolean permitted);
-    private static native void nativeSetProxyOverride(
-            String host, int port, String[] exclusionList, Runnable callback);
-    private static native void nativeClearProxyOverride(Runnable callback);
+    private static native boolean nativeIsMultiProcessEnabled();
 }

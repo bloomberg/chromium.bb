@@ -6,10 +6,10 @@
 #define PPAPI_PROXY_PLUGIN_RESOURCE_TRACKER_H_
 
 #include <map>
+#include <unordered_set>
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
@@ -61,7 +61,7 @@ class PPAPI_PROXY_EXPORT PluginResourceTracker : public ResourceTracker {
   typedef std::map<HostResource, PP_Resource> HostResourceMap;
   HostResourceMap host_resource_map_;
 
-  base::hash_set<PP_Resource> abandoned_resources_;
+  std::unordered_set<PP_Resource> abandoned_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginResourceTracker);
 };

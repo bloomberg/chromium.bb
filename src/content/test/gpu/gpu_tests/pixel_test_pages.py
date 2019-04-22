@@ -2,13 +2,44 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
+
+_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS = [
+  {
+    'comment': 'top left video, yellow',
+    'location': [5, 5],
+    'size': [110, 57],
+    'color': [255, 255, 15],
+  },
+  {
+    'comment': 'top right video, red',
+    'location': [125, 5],
+    'size': [110, 57],
+    'color': [255, 17, 24],
+  },
+  {
+    'comment': 'bottom left video, blue',
+    'location': [5, 72],
+    'size': [110, 57],
+    'color': [12, 12, 255],
+  },
+  {
+    'comment': 'bottom right video, green',
+    'location': [125, 72],
+    'size': [110, 57],
+    'color': [44, 255, 16],
+  }
+]
+
+
 class PixelTestPage(object):
   """A wrapper class mimicking the functionality of the PixelTestsStorySet
   from the old-style GPU tests.
   """
   def __init__(self, url, name, test_rect, revision,
                tolerance=2, browser_args=None, expected_colors=None,
-               gpu_process_disabled=False, optional_action=None):
+               gpu_process_disabled=False, optional_action=None,
+               other_args=None):
     super(PixelTestPage, self).__init__()
     self.url = url
     self.name = name
@@ -33,6 +64,8 @@ class PixelTestPage(object):
     # action here is "CrashGpuProcess" then it would be defined in a
     # "_CrashGpuProcess" method in PixelIntegrationTest.
     self.optional_action = optional_action
+    # Whatever other settings a test need to specify.
+    self.other_args = other_args
 
   def CopyWithNewBrowserArgsAndSuffix(self, browser_args, suffix):
     return PixelTestPage(
@@ -93,18 +126,26 @@ SCALE_FACTOR_OVERRIDES = {
 def DefaultPages(base_name):
   sw_compositing_args = ['--disable-gpu-compositing']
 
+  tolerance = 3
+  tolerance_vp9 = 5 # VP9 video requires larger tolerance
+  if sys.platform == 'darwin':
+    # On MacOSX, pixels are slightly off.
+    # https://crbug.com/911895
+    tolerance = 10
+    tolerance_vp9 = 20
+
   return [
     PixelTestPage(
       'pixel_background_image.html',
       base_name + '_BackgroundImage',
       test_rect=[20, 20, 370, 370],
-      revision=2),
+      revision=3),
 
     PixelTestPage(
       'pixel_canvas2d.html',
       base_name + '_Canvas2DRedBox',
       test_rect=[0, 0, 300, 300],
-      revision=11),
+      revision=13),
 
     PixelTestPage(
       'pixel_canvas2d_untagged.html',
@@ -122,31 +163,31 @@ def DefaultPages(base_name):
       'pixel_webgl_aa_alpha.html',
       base_name + '_WebGLGreenTriangle_AA_Alpha',
       test_rect=[0, 0, 300, 300],
-      revision=8),
+      revision=9),
 
     PixelTestPage(
       'pixel_webgl_noaa_alpha.html',
       base_name + '_WebGLGreenTriangle_NoAA_Alpha',
       test_rect=[0, 0, 300, 300],
-      revision=5),
+      revision=6),
 
     PixelTestPage(
       'pixel_webgl_aa_noalpha.html',
       base_name + '_WebGLGreenTriangle_AA_NoAlpha',
       test_rect=[0, 0, 300, 300],
-      revision=9),
+      revision=10),
 
     PixelTestPage(
       'pixel_webgl_noaa_noalpha.html',
       base_name + '_WebGLGreenTriangle_NoAA_NoAlpha',
       test_rect=[0, 0, 300, 300],
-      revision=5),
+      revision=6),
 
     PixelTestPage(
       'pixel_webgl_noalpha_implicit_clear.html',
       base_name + '_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
       test_rect=[0, 0, 300, 300],
-      revision=5),
+      revision=6),
 
     PixelTestPage(
       'pixel_webgl_sad_canvas.html',
@@ -159,28 +200,26 @@ def DefaultPages(base_name):
       'pixel_scissor.html',
       base_name + '_ScissorTestWithPreserveDrawingBuffer',
       test_rect=[0, 0, 300, 300],
-      revision=0, # This is not used.
+      revision=0, # Golden image revision is not used
+      tolerance=3,
       expected_colors=[
         {
           'comment': 'red top',
           'location': [1, 1],
           'size': [198, 188],
           'color': [255, 0, 0],
-          'tolerance': 3
         },
         {
           'comment': 'green bottom left',
           'location': [1, 191],
           'size': [8, 8],
           'color': [0, 255, 0],
-          'tolerance': 3
         },
         {
           'comment': 'red bottom right',
           'location': [11, 191],
           'size': [188, 8],
           'color': [255, 0, 0],
-          'tolerance': 3
         }
       ]),
 
@@ -188,7 +227,7 @@ def DefaultPages(base_name):
       'pixel_canvas2d_webgl.html',
       base_name + '_2DCanvasWebGL',
       test_rect=[0, 0, 300, 300],
-      revision=11),
+      revision=13),
 
     PixelTestPage(
       'pixel_background.html',
@@ -199,20 +238,229 @@ def DefaultPages(base_name):
     PixelTestPage(
       'pixel_video_mp4.html',
       base_name + '_Video_MP4',
-      test_rect=[0, 0, 300, 300],
-      revision=10),
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      tolerance=tolerance,
+      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+
+    PixelTestPage(
+      'pixel_video_mp4.html',
+      base_name + '_Video_MP4_DXVA',
+      browser_args=['--disable-features=D3D11VideoDecoder'],
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      tolerance=tolerance,
+      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_aspect_4x3.html',
+      base_name + '_Video_MP4_FourColors_Aspect_4x3',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      tolerance=tolerance,
+      expected_colors=[
+        {
+          'comment': 'outside video content, left side, white',
+          'location': [1, 1],
+          'size': [28, 133],
+          'color': [255, 255, 255],
+        },
+        {
+          'comment': 'outside video content, right side, white',
+          'location': [211, 1],
+          'size': [28, 133],
+          'color': [255, 255, 255],
+        },
+        {
+          'comment': 'top left video, yellow',
+          'location': [35, 5],
+          'size': [80, 57],
+          'color': [255, 255, 15],
+        },
+        {
+          'comment': 'top right video, red',
+          'location': [125, 5],
+          'size': [80, 57],
+          'color': [255, 17, 24],
+        },
+        {
+          'comment': 'bottom left video, blue',
+          'location': [35, 73],
+          'size': [80, 57],
+          'color': [12, 12, 255],
+        },
+        {
+          'comment': 'bottom right video, green',
+          'location': [125, 73],
+          'size': [80, 57],
+          'color': [44, 255, 16],
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_rot_90.html',
+      base_name + '_Video_MP4_FourColors_Rot_90',
+      test_rect=[0, 0, 427, 240],
+      revision=0, # Golden image revision is not used
+      tolerance=tolerance,
+      expected_colors=[
+        {
+          'comment': 'outside video content, left side, white',
+          'location': [1, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+        },
+        {
+          'comment': 'outside video content, right side, white',
+          'location': [282, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+        },
+        {
+          'comment': 'top left video, red',
+          'location': [152, 5],
+          'size': [55, 110],
+          'color': [255, 17, 24],
+        },
+        {
+          'comment': 'top right video, green',
+          'location': [220, 5],
+          'size': [55, 110],
+          'color': [44, 255, 16],
+        },
+        {
+          'comment': 'bottom left video, yellow',
+          'location': [152, 125],
+          'size': [55, 110],
+          'color': [255, 255, 15],
+        },
+        {
+          'comment': 'bottom right video, blue',
+          'location': [220, 125],
+          'size': [55, 110],
+          'color': [12, 12, 255],
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_rot_180.html',
+      base_name + '_Video_MP4_FourColors_Rot_180',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      tolerance=tolerance,
+      expected_colors=[
+        {
+          'comment': 'top left video, green',
+          'location': [5, 5],
+          'size': [110, 57],
+          'color': [44, 255, 16],
+        },
+        {
+          'comment': 'top right video, blue',
+          'location': [125, 5],
+          'size': [110, 57],
+          'color': [12, 12, 255],
+        },
+        {
+          'comment': 'bottom left video, red',
+          'location': [5, 72],
+          'size': [110, 57],
+          'color': [255, 17, 24],
+        },
+        {
+          'comment': 'bottom right video, yellow',
+          'location': [125, 72],
+          'size': [110, 57],
+          'color': [255, 255, 15],
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_rot_270.html',
+      base_name + '_Video_MP4_FourColors_Rot_270',
+      test_rect=[0, 0, 427, 240],
+      revision=0, # Golden image revision is not used
+      tolerance=tolerance,
+      expected_colors=[
+        {
+          'comment': 'outside video content, left side, white',
+          'location': [1, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+        },
+        {
+          'comment': 'outside video content, right side, white',
+          'location': [282, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+        },
+        {
+          'comment': 'top left video, blue',
+          'location': [152, 5],
+          'size': [55, 110],
+          'color': [12, 12, 255],
+        },
+        {
+          'comment': 'top right video, yellow',
+          'location': [220, 5],
+          'size': [55, 110],
+          'color': [255, 255, 15],
+        },
+        {
+          'comment': 'bottom left video, green',
+          'location': [152, 125],
+          'size': [55, 110],
+          'color': [44, 255, 16],
+        },
+        {
+          'comment': 'bottom right video, red',
+          'location': [220, 125],
+          'size': [55, 110],
+          'color': [255, 17, 24],
+        }
+      ]),
 
     PixelTestPage(
       'pixel_video_vp9.html',
       base_name + '_Video_VP9',
-      test_rect=[0, 0, 300, 300],
-      revision=10),
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      tolerance=tolerance_vp9,
+      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+
+    PixelTestPage(
+      'pixel_video_vp9.html',
+      base_name + '_Video_VP9_DXVA',
+      browser_args=['--disable-features=D3D11VideoDecoder'],
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      tolerance=tolerance_vp9,
+      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+
+    # The MP4 contains H.264 which is primarily hardware decoded on bots.
+    PixelTestPage(
+      'pixel_video_context_loss.html?src=/media/test/data/four-colors.mp4',
+      base_name + '_Video_Context_Loss_MP4',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      tolerance=tolerance,
+      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+
+    # The VP9 test clip is primarily software decoded on bots.
+    PixelTestPage(
+      'pixel_video_context_loss.html?src=/media/test/data/four-colors-vp9.webm',
+      base_name + '_Video_Context_Loss_VP9',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      tolerance=tolerance_vp9,
+      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
     PixelTestPage(
       'pixel_webgl_premultiplied_alpha_false.html',
       base_name + '_WebGL_PremultipliedAlpha_False',
       test_rect=[0, 0, 150, 150],
-      revision=0, # This is not used.
+      revision=0, # Golden image revision is not used
+      tolerance=3,
       expected_colors=[
         SCALE_FACTOR_OVERRIDES,
         {
@@ -224,7 +472,6 @@ def DefaultPages(base_name):
           'color': [102, 77, 0],
           # This is the color if it isn't.
           # 'color': [101, 76, 12],
-          'tolerance': 3
         },
       ]),
 
@@ -232,7 +479,8 @@ def DefaultPages(base_name):
       'pixel_webgl2_blitframebuffer_result_displayed.html',
       base_name + '_WebGL2_BlitFramebuffer_Result_Displayed',
       test_rect=[0, 0, 200, 200],
-      revision=0, # This is not used.
+      revision=0, # Golden image revision is not used
+      tolerance=3,
       expected_colors=[
         SCALE_FACTOR_OVERRIDES,
         {
@@ -240,7 +488,6 @@ def DefaultPages(base_name):
           'location': [1, 1],
           'size': [180, 180],
           'color': [0, 255, 0],
-          'tolerance': 3
         },
       ]),
 
@@ -248,7 +495,8 @@ def DefaultPages(base_name):
       'pixel_webgl2_clearbufferfv_result_displayed.html',
       base_name + '_WebGL2_ClearBufferfv_Result_Displayed',
       test_rect=[0, 0, 200, 200],
-      revision=0, # This is not used.
+      revision=0, # Golden image revision is not used
+      tolerance=3,
       expected_colors=[
         SCALE_FACTOR_OVERRIDES,
         {
@@ -256,7 +504,6 @@ def DefaultPages(base_name):
           'location': [1, 1],
           'size': [180, 180],
           'color': [0, 255, 0],
-          'tolerance': 3
         },
       ]),
 
@@ -264,7 +511,8 @@ def DefaultPages(base_name):
       'pixel_repeated_webgl_to_2d.html',
       base_name + '_RepeatedWebGLTo2D',
       test_rect=[0, 0, 256, 256],
-      revision=0, # This is not used.
+      revision=0, # Golden image revision is not used
+      tolerance=3,
       expected_colors=[
         SCALE_FACTOR_OVERRIDES,
         {
@@ -273,7 +521,6 @@ def DefaultPages(base_name):
           'location': [96, 96],
           'size': [64, 64],
           'color': [0, 255, 0],
-          'tolerance': 3,
         },
       ]),
 
@@ -281,8 +528,9 @@ def DefaultPages(base_name):
       'pixel_repeated_webgl_to_2d.html',
       base_name + '_RepeatedWebGLTo2D_SoftwareCompositing',
       test_rect=[0, 0, 256, 256],
-      revision=0, # This is not used.
+      revision=0, # Golden image revision is not used
       browser_args=sw_compositing_args,
+      tolerance=3,
       expected_colors=[
         SCALE_FACTOR_OVERRIDES,
         {
@@ -291,7 +539,6 @@ def DefaultPages(base_name):
           'location': [96, 96],
           'size': [64, 64],
           'color': [0, 255, 0],
-          'tolerance': 3
         },
       ]),
   ]
@@ -305,128 +552,114 @@ def GpuRasterizationPages(base_name):
       'pixel_background.html',
       base_name + '_GpuRasterization_BlueBox',
       test_rect=[0, 0, 220, 220],
-      revision=0, # This is not used.
+      revision=0, # Golden image revision is not used
       browser_args=browser_args,
+      tolerance=0,
       expected_colors=[
         {
           'comment': 'body-t',
           'location': [5, 5],
           'size': [1, 1],
           'color': [0, 128, 0],
-          'tolerance': 0
         },
         {
           'comment': 'body-r',
           'location': [215, 5],
           'size': [1, 1],
           'color': [0, 128, 0],
-          'tolerance': 0
         },
         {
           'comment': 'body-b',
           'location': [215, 215],
           'size': [1, 1],
           'color': [0, 128, 0],
-          'tolerance': 0
         },
         {
           'comment': 'body-l',
           'location': [5, 215],
           'size': [1, 1],
           'color': [0, 128, 0],
-          'tolerance': 0
         },
         {
           'comment': 'background-t',
           'location': [30, 30],
           'size': [1, 1],
           'color': [0, 0, 0],
-          'tolerance': 0
         },
         {
           'comment': 'background-r',
           'location': [170, 30],
           'size': [1, 1],
           'color': [0, 0, 0],
-          'tolerance': 0
         },
         {
           'comment': 'background-b',
           'location': [170, 170],
           'size': [1, 1],
           'color': [0, 0, 0],
-          'tolerance': 0
         },
         {
           'comment': 'background-l',
           'location': [30, 170],
           'size': [1, 1],
           'color': [0, 0, 0],
-          'tolerance': 0
         },
         {
           'comment': 'box-t',
           'location': [70, 70],
           'size': [1, 1],
           'color': [0, 0, 255],
-          'tolerance': 0
         },
         {
           'comment': 'box-r',
           'location': [140, 70],
           'size': [1, 1],
           'color': [0, 0, 255],
-          'tolerance': 0
         },
         {
           'comment': 'box-b',
           'location': [140, 140],
           'size': [1, 1],
           'color': [0, 0, 255],
-          'tolerance': 0
         },
         {
           'comment': 'box-l',
           'location': [70, 140],
           'size': [1, 1],
           'color': [0, 0, 255],
-          'tolerance': 0
         }
       ]),
     PixelTestPage(
       'concave_paths.html',
       base_name + '_GpuRasterization_ConcavePaths',
       test_rect=[0, 0, 100, 100],
-      revision=0, # This is not used.
+      revision=0, # Golden image revision is not used
       browser_args=browser_args,
+      tolerance=0,
       expected_colors=[
         {
           'comment': 'outside',
           'location': [80, 60],
           'size': [1, 1],
           'color': [255, 255, 255],
-          'tolerance': 0
         },
         {
           'comment': 'outside',
           'location': [28, 20],
           'size': [1, 1],
           'color': [255, 255, 255],
-          'tolerance': 0
         },
         {
           'comment': 'inside',
           'location': [32, 25],
           'size': [1, 1],
           'color': [255, 215, 0],
-          'tolerance': 0
         },
         {
           'comment': 'inside',
           'location': [80, 80],
           'size': [1, 1],
           'color': [255, 215, 0],
-          'tolerance': 0
         }
       ])
   ]
@@ -459,7 +692,8 @@ def ExperimentalCanvasFeaturesPages(base_name):
       base_name + '_OffscreenCanvasWebGLPaintAfterResize',
       test_rect=[0, 0, 200, 200],
       browser_args=browser_args,
-      revision=0, # This is not used.
+      revision=0, # Golden image revision is not used
+      tolerance=0,
       expected_colors=[
         SCALE_FACTOR_OVERRIDES,
         {
@@ -467,14 +701,12 @@ def ExperimentalCanvasFeaturesPages(base_name):
           'location': [1, 1],
           'size': [48, 98],
           'color': [0, 255, 0],
-          'tolerance': 0
         },
         {
           'comment': 'outside resized area',
           'location': [51, 1],
           'size': [48, 98],
           'color': [255, 255, 255],
-          'tolerance': 0
         },
       ]),
 
@@ -538,21 +770,21 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_2d_commit_main.html',
       base_name + '_OffscreenCanvasUnaccelerated2D',
       test_rect=[0, 0, 360, 200],
-      revision=8,
+      revision=9,
       browser_args=browser_args + unaccelerated_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_2d_commit_worker.html',
       base_name + '_OffscreenCanvasUnaccelerated2DWorker',
       test_rect=[0, 0, 360, 200],
-      revision=8,
+      revision=9,
       browser_args=browser_args + unaccelerated_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_2d_commit_main.html',
       base_name + '_OffscreenCanvasUnaccelerated2DGPUCompositing',
       test_rect=[0, 0, 360, 200],
-      revision=13,
+      revision=14,
       browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
     PixelTestPage(
@@ -580,35 +812,56 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBAccelerated2D',
       test_rect=[0, 0, 140, 140],
-      revision=6,
+      revision=9,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBUnaccelerated2D',
       test_rect=[0, 0, 140, 140],
-      revision=1,
+      revision=2,
       browser_args=browser_args + unaccelerated_args),
 
     PixelTestPage(
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
       test_rect=[0, 0, 140, 140],
-      revision=6,
+      revision=8,
+      browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
+
+    PixelTestPage(
+      'pixel_canvas_display_srgb.html',
+      base_name + '_CanvasDisplaySRGBAccelerated2D',
+      test_rect=[0, 0, 140, 140],
+      revision=0, # not used, unsupported
+      browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_canvas_display_srgb.html',
+      base_name + '_CanvasDisplaySRGBUnaccelerated2D',
+      test_rect=[0, 0, 140, 140],
+      revision=1,
+      browser_args=browser_args + unaccelerated_args),
+
+    PixelTestPage(
+      'pixel_canvas_display_srgb.html',
+      base_name + '_CanvasDisplaySRGBUnaccelerated2DGPUCompositing',
+      test_rect=[0, 0, 140, 140],
+      revision=1,
       browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
     PixelTestPage(
       'pixel_canvas_low_latency_2d.html',
       base_name + '_CanvasLowLatency2D',
       test_rect=[0, 0, 100, 100],
-      revision=3,
+      revision=7,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_canvas_low_latency_2d.html',
       base_name + '_CanvasUnacceleratedLowLatency2D',
       test_rect=[0, 0, 100, 100],
-      revision=2,
+      revision=3,
       browser_args=browser_args + unaccelerated_args),
 
     PixelTestPage(
@@ -617,6 +870,7 @@ def ExperimentalCanvasFeaturesPages(base_name):
       test_rect=[0, 0, 200, 200],
       revision=0, # not used
       browser_args=browser_args,
+      tolerance=0,
       expected_colors=[
         SCALE_FACTOR_OVERRIDES,
         {
@@ -624,7 +878,6 @@ def ExperimentalCanvasFeaturesPages(base_name):
           'location': [1, 1],
           'size': [98, 98],
           'color': [0, 255, 0],
-          'tolerance': 0
         },
       ]),
   ]
@@ -646,7 +899,7 @@ def SwiftShaderPages(base_name):
       'pixel_css3d.html',
       base_name + '_CSS3DBlueBox' + suffix,
       test_rect=[0, 0, 300, 300],
-      revision=1,
+      revision=2,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -660,8 +913,9 @@ def SwiftShaderPages(base_name):
       'pixel_repeated_webgl_to_2d.html',
       base_name + '_RepeatedWebGLTo2D' + suffix,
       test_rect=[0, 0, 256, 256],
-      revision=0, # This is not used.
+      revision=0, # Golden image revision is not used
       browser_args=browser_args,
+      tolerance=3,
       expected_colors=[
         SCALE_FACTOR_OVERRIDES,
         {
@@ -670,7 +924,6 @@ def SwiftShaderPages(base_name):
           'location': [96, 96],
           'size': [64, 64],
           'color': [0, 255, 0],
-          'tolerance': 3
         },
       ]),
   ]
@@ -756,12 +1009,12 @@ def MacSpecificPages(base_name):
       'filter_effects.html',
       base_name + '_CSSFilterEffects',
       test_rect=[0, 0, 300, 300],
-      revision=8),
+      revision=10),
     PixelTestPage(
       'filter_effects.html',
       base_name + '_CSSFilterEffects_NoOverlays',
       test_rect=[0, 0, 300, 300],
-      revision=9,
+      revision=10,
       tolerance=10,
       browser_args=no_overlays_args),
 
@@ -770,8 +1023,9 @@ def MacSpecificPages(base_name):
       'pixel_webgl_premultiplied_alpha_false.html',
       base_name + '_WebGL_PremultipliedAlpha_False_NoOverlays',
       test_rect=[0, 0, 150, 150],
-      revision=0, # This is not used.
+      revision=0, # Golden image revision is not used
       browser_args=no_overlays_args,
+      tolerance=3,
       expected_colors=[
         SCALE_FACTOR_OVERRIDES,
         {
@@ -783,7 +1037,6 @@ def MacSpecificPages(base_name):
           'color': [102, 77, 0],
           # This is the color if it isn't.
           # 'color': [101, 76, 12],
-          'tolerance': 3
         },
       ]),
   ]
@@ -799,20 +1052,314 @@ def DirectCompositionPages(base_name):
     '--enable-features=DirectCompositionComplexOverlays,' +
     'DirectCompositionNonrootOverlays,' +
     'DirectCompositionUnderlays']
+  browser_args_YUY2 = browser_args + [
+    '--disable-features=DirectCompositionPreferNV12Overlays']
+  browser_args_DXVA = browser_args + [
+    '--disable-features=D3D11VideoDecoder']
+  browser_args_Underlay_DXVA = browser_args + [
+    '--enable-features=DirectCompositionUnderlays',
+    '--disable-features=D3D11VideoDecoder']
+
+  tolerance_dc = 5
+
   return [
     PixelTestPage(
       'pixel_video_mp4.html',
       base_name + '_DirectComposition_Video_MP4',
-      test_rect=[0, 0, 300, 300],
-      revision=8,
-      browser_args=browser_args),
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args,
+      tolerance=tolerance_dc,
+      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+
+    PixelTestPage(
+      'pixel_video_mp4.html',
+      base_name + '_DirectComposition_Video_MP4_DXVA',
+      browser_args=browser_args_DXVA,
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      tolerance=tolerance_dc,
+      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+
+    PixelTestPage(
+      'pixel_video_mp4_fullsize.html',
+      base_name + '_DirectComposition_Video_MP4_Fullsize',
+      browser_args=browser_args,
+      test_rect=[0, 0, 960, 540],
+      revision=0, # Golden image revision is not used
+      other_args={'zero_copy': True},
+      tolerance=tolerance_dc,
+      expected_colors=[
+        {
+          'comment': 'top left video, yellow',
+          'location': [10, 10],
+          'size': [460, 250],
+          'color': [255, 255, 15],
+        },
+        {
+          'comment': 'top right video, red',
+          'location': [490, 10],
+          'size': [460, 250],
+          'color': [255, 17, 24],
+        },
+        {
+          'comment': 'bottom left video, blue',
+          'location': [10, 280],
+          'size': [460, 250],
+          'color': [12, 12, 255],
+        },
+        {
+          'comment': 'bottom right video, green',
+          'location': [490, 280],
+          'size': [460, 250],
+          'color': [44, 255, 16],
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_mp4.html',
+      base_name + '_DirectComposition_Video_MP4_YUY2',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args_YUY2,
+      other_args={'expect_yuy2': True},
+      tolerance=tolerance_dc,
+      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_aspect_4x3.html',
+      base_name + '_DirectComposition_Video_MP4_FourColors_Aspect_4x3',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args,
+      tolerance=tolerance_dc,
+      expected_colors=[
+        {
+          'comment': 'outside video content, left side, white',
+          'location': [1, 1],
+          'size': [28, 133],
+          'color': [255, 255, 255],
+        },
+        {
+          'comment': 'outside video content, right side, white',
+          'location': [211, 1],
+          'size': [28, 133],
+          'color': [255, 255, 255],
+        },
+        {
+          'comment': 'top left video, yellow',
+          'location': [35, 5],
+          'size': [80, 57],
+          'color': [255, 255, 15],
+        },
+        {
+          'comment': 'top right video, red',
+          'location': [125, 5],
+          'size': [80, 57],
+          'color': [255, 17, 24],
+        },
+        {
+          'comment': 'bottom left video, blue',
+          'location': [35, 73],
+          'size': [80, 57],
+          'color': [12, 12, 255],
+        },
+        {
+          'comment': 'bottom right video, green',
+          'location': [125, 73],
+          'size': [80, 57],
+          'color': [44, 255, 16],
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_rot_90.html',
+      base_name + '_DirectComposition_Video_MP4_FourColors_Rot_90',
+      test_rect=[0, 0, 427, 240],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args,
+      other_args={'video_is_rotated': True},
+      tolerance=tolerance_dc,
+      expected_colors=[
+        {
+          'comment': 'outside video content, left side, white',
+          'location': [1, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+        },
+        {
+          'comment': 'outside video content, right side, white',
+          'location': [282, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+        },
+        {
+          'comment': 'top left video, red',
+          'location': [152, 5],
+          'size': [55, 110],
+          'color': [255, 17, 24],
+        },
+        {
+          'comment': 'top right video, green',
+          'location': [220, 5],
+          'size': [55, 110],
+          'color': [44, 255, 16],
+        },
+        {
+          'comment': 'bottom left video, yellow',
+          'location': [152, 125],
+          'size': [55, 110],
+          'color': [255, 255, 15],
+        },
+        {
+          'comment': 'bottom right video, blue',
+          'location': [220, 125],
+          'size': [55, 110],
+          'color': [12, 12, 255],
+        }]),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_rot_180.html',
+      base_name + '_DirectComposition_Video_MP4_FourColors_Rot_180',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args,
+      other_args={'video_is_rotated': True},
+      tolerance=tolerance_dc,
+      expected_colors=[
+        {
+          'comment': 'top left video, green',
+          'location': [5, 5],
+          'size': [110, 57],
+          'color': [44, 255, 16],
+        },
+        {
+          'comment': 'top right video, blue',
+          'location': [125, 5],
+          'size': [110, 57],
+          'color': [12, 12, 255],
+        },
+        {
+          'comment': 'bottom left video, red',
+          'location': [5, 72],
+          'size': [110, 57],
+          'color': [255, 17, 24],
+        },
+        {
+          'comment': 'bottom right video, yellow',
+          'location': [125, 72],
+          'size': [110, 57],
+          'color': [255, 255, 15],
+        }]),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_rot_270.html',
+      base_name + '_DirectComposition_Video_MP4_FourColors_Rot_270',
+      test_rect=[0, 0, 427, 240],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args,
+      other_args={'video_is_rotated': True},
+      tolerance=tolerance_dc,
+      expected_colors=[
+        {
+          'comment': 'outside video content, left side, white',
+          'location': [1, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+        },
+        {
+          'comment': 'outside video content, right side, white',
+          'location': [282, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+        },
+        {
+          'comment': 'top left video, blue',
+          'location': [152, 5],
+          'size': [55, 110],
+          'color': [12, 12, 255],
+        },
+        {
+          'comment': 'top right video, yellow',
+          'location': [220, 5],
+          'size': [55, 110],
+          'color': [255, 255, 15],
+        },
+        {
+          'comment': 'bottom left video, green',
+          'location': [152, 125],
+          'size': [55, 110],
+          'color': [44, 255, 16],
+        },
+        {
+          'comment': 'bottom right video, red',
+          'location': [220, 125],
+          'size': [55, 110],
+          'color': [255, 17, 24],
+        }]),
 
     PixelTestPage(
       'pixel_video_vp9.html',
       base_name + '_DirectComposition_Video_VP9',
-      test_rect=[0, 0, 300, 300],
-      revision=10,
-      browser_args=browser_args),
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args,
+      tolerance=tolerance_dc,
+      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+
+    PixelTestPage(
+      'pixel_video_vp9.html',
+      base_name + '_DirectComposition_Video_VP9_DXVA',
+      browser_args=browser_args_DXVA,
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      tolerance=tolerance_dc,
+      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+
+    PixelTestPage(
+      'pixel_video_vp9_fullsize.html',
+      base_name + '_DirectComposition_Video_VP9_Fullsize',
+      test_rect=[0, 0, 960, 540],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args,
+      other_args={'zero_copy': True},
+      tolerance=tolerance_dc,
+      expected_colors=[
+        {
+          'comment': 'top left video, yellow',
+          'location': [10, 10],
+          'size': [460, 250],
+          'color': [255, 255, 15],
+        },
+        {
+          'comment': 'top right video, red',
+          'location': [490, 10],
+          'size': [460, 250],
+          'color': [255, 17, 24],
+        },
+        {
+          'comment': 'bottom left video, blue',
+          'location': [10, 280],
+          'size': [460, 250],
+          'color': [12, 12, 255],
+        },
+        {
+          'comment': 'bottom right video, green',
+          'location': [490, 280],
+          'size': [460, 250],
+          'color': [44, 255, 16],
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_vp9.html',
+      base_name + '_DirectComposition_Video_VP9_YUY2',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args_YUY2,
+      other_args={'expect_yuy2': True},
+      tolerance=tolerance_dc,
+      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
 
     PixelTestPage(
       'pixel_video_underlay.html',
@@ -820,41 +1367,118 @@ def DirectCompositionPages(base_name):
       test_rect=[0, 0, 240, 136],
       revision=0, # Golden image revision is not used
       browser_args=browser_args_Underlay,
+      tolerance=tolerance_dc,
       expected_colors=[
         {
           'comment': 'black top left',
           'location': [4, 4],
           'size': [20, 20],
           'color': [0, 0, 0],
-          'tolerance': 3
         },
         {
           'comment': 'yellow top left quadrant',
           'location': [4, 34],
           'size': [110, 30],
           'color': [255, 255, 15],
-          'tolerance': 3
         },
         {
           'comment': 'red top right quadrant',
           'location': [124, 4],
           'size': [110, 60],
           'color': [255, 17, 24],
-          'tolerance': 3
         },
         {
           'comment': 'blue bottom left quadrant',
           'location': [4, 72],
           'size': [110, 60],
           'color': [12, 12, 255],
-          'tolerance': 3
         },
         {
           'comment': 'green bottom right quadrant',
           'location': [124, 72],
           'size': [110, 60],
           'color': [44, 255, 16],
-          'tolerance': 3
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_underlay.html',
+      base_name + '_DirectComposition_Underlay_DXVA',
+      test_rect=[0, 0, 240, 136],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args_Underlay_DXVA,
+      tolerance=tolerance_dc,
+      expected_colors=[
+        {
+          'comment': 'black top left',
+          'location': [4, 4],
+          'size': [20, 20],
+          'color': [0, 0, 0],
+        },
+        {
+          'comment': 'yellow top left quadrant',
+          'location': [4, 34],
+          'size': [110, 30],
+          'color': [255, 255, 15],
+        },
+        {
+          'comment': 'red top right quadrant',
+          'location': [124, 4],
+          'size': [110, 60],
+          'color': [255, 17, 24],
+        },
+        {
+          'comment': 'blue bottom left quadrant',
+          'location': [4, 72],
+          'size': [110, 60],
+          'color': [12, 12, 255],
+        },
+        {
+          'comment': 'green bottom right quadrant',
+          'location': [124, 72],
+          'size': [110, 60],
+          'color': [44, 255, 16],
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_underlay_fullsize.html',
+      base_name + '_DirectComposition_Underlay_Fullsize',
+      test_rect=[0, 0, 960, 540],
+      revision=0, # Golden image revision is not used
+      browser_args=browser_args_Underlay,
+      other_args={'zero_copy': True},
+      tolerance=tolerance_dc,
+      expected_colors=[
+        {
+          'comment': 'black top left',
+          'location': [4, 4],
+          'size': [20, 20],
+          'color': [0, 0, 0],
+        },
+        {
+          'comment': 'yellow top left quadrant',
+          'location': [10, 35],
+          'size': [460, 225],
+          'color': [255, 255, 15],
+        },
+        {
+          'comment': 'red top right quadrant',
+          'location': [490, 10],
+          'size': [460, 250],
+          'color': [255, 17, 24],
+        },
+        {
+          'comment': 'blue bottom left quadrant',
+          'location': [10, 280],
+          'size': [460, 250],
+          'color': [12, 12, 255],
+        },
+        {
+          'comment': 'green bottom right quadrant',
+          'location': [490, 290],
+          'size': [460, 250],
+          'color': [44, 255, 16],
         }
       ]),
 
@@ -864,41 +1488,37 @@ def DirectCompositionPages(base_name):
       test_rect=[0, 0, 240, 136],
       revision=0, # Golden image revision is not used
       browser_args=browser_args_Nonroot,
+      tolerance=tolerance_dc,
       expected_colors=[
         {
           'comment': 'black top left',
           'location': [4, 4],
           'size': [20, 20],
           'color': [0, 0, 0],
-          'tolerance': 3
         },
         {
           'comment': 'yellow top left quadrant',
           'location': [4, 34],
           'size': [110, 30],
           'color': [255, 255, 15],
-          'tolerance': 3
         },
         {
           'comment': 'red top right quadrant',
           'location': [124, 4],
           'size': [50, 60],
           'color': [255, 17, 24],
-          'tolerance': 3
         },
         {
           'comment': 'blue bottom left quadrant',
           'location': [4, 72],
           'size': [110, 60],
           'color': [12, 12, 255],
-          'tolerance': 3
         },
         {
           'comment': 'green bottom right quadrant',
           'location': [124, 72],
           'size': [50, 60],
           'color': [44, 255, 16],
-          'tolerance': 3
         }
       ]),
 
@@ -908,41 +1528,37 @@ def DirectCompositionPages(base_name):
       test_rect=[0, 0, 240, 136],
       revision=0, # Golden image revision is not used
       browser_args=browser_args_Complex,
+      other_args={'video_is_rotated': True},
+      tolerance=tolerance_dc,
       expected_colors=[
         {
           'comment': 'black top left',
           'location': [4, 4],
           'size': [20, 20],
           'color': [0, 0, 0],
-          'tolerance': 3
         },
         {
           'comment': 'yellow top left quadrant',
           'location': [60, 10],
           'size': [65, 30],
           'color': [255, 255, 15],
-          'tolerance': 3
         },
         {
           'comment': 'red top right quadrant',
           'location': [150, 45],
           'size': [65, 30],
           'color': [255, 17, 24],
-          'tolerance': 3
         },
         {
           'comment': 'blue bottom left quadrant',
           'location': [30, 70],
           'size': [65, 30],
           'color': [12, 12, 255],
-          'tolerance': 3
         },
         {
           'comment': 'green bottom right quadrant',
           'location': [130, 100],
           'size': [65, 30],
           'color': [44, 255, 16],
-          'tolerance': 3
-        }
-      ]),
+        }]),
     ]

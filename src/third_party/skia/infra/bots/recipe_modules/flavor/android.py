@@ -38,8 +38,8 @@ class AndroidFlavor(default.DefaultFlavor):
 
     # A list of devices we can't root.  If rooting fails and a device is not
     # on the list, we fail the task to avoid perf inconsistencies.
-    self.rootable_blacklist = ['GalaxyS6', 'GalaxyS7_G930FD', 'MotoG4',
-                               'NVIDIA_Shield']
+    self.rootable_blacklist = ['GalaxyS6', 'GalaxyS7_G930FD', 'GalaxyS9',
+                               'MotoG4', 'NVIDIA_Shield']
 
     # Maps device type -> CPU ids that should be scaled for nanobench.
     # Many devices have two (or more) different CPUs (e.g. big.LITTLE
@@ -344,13 +344,15 @@ if actual_freq != str(freq):
         infra_step=True,
         timeout=30)
 
+
   def install(self):
     self._adb('mkdir ' + self.device_dirs.resource_dir,
               'shell', 'mkdir', '-p', self.device_dirs.resource_dir)
     if 'ASAN' in self.m.vars.extra_tokens:
+      self._ever_ran_adb = True
       asan_setup = self.m.vars.slave_dir.join(
             'android_ndk_linux', 'toolchains', 'llvm', 'prebuilt',
-            'linux-x86_64', 'lib64', 'clang', '6.0.2', 'bin',
+            'linux-x86_64', 'lib64', 'clang', '8.0.2', 'bin',
             'asan_device_setup')
       self.m.run(self.m.python.inline, 'Setting up device to run ASAN',
         program="""
@@ -421,13 +423,33 @@ if not installASAN():
 # Sleep because device does not reboot instantly
 time.sleep(10)
 wait_for_device()
+# Sleep again to hopefully avoid error "secure_mkdirs failed: No such file or
+# directory" when pushing resources to the device.
+time.sleep(60)
 """,
         args = [self.ADB_BINARY, asan_setup],
           infra_step=True,
           timeout=300,
           abort_on_failure=True)
 
+
   def cleanup_steps(self):
+    if 'ASAN' in self.m.vars.extra_tokens:
+      self._ever_ran_adb = True
+      # Remove ASAN.
+      asan_setup = self.m.vars.slave_dir.join(
+            'android_ndk_linux', 'toolchains', 'llvm', 'prebuilt',
+            'linux-x86_64', 'lib64', 'clang', '8.0.2', 'bin',
+            'asan_device_setup')
+      self.m.run(self.m.step,
+                 'wait for device before uninstalling ASAN',
+                 cmd=[self.ADB_BINARY, 'wait-for-device'], infra_step=True,
+                 timeout=180, abort_on_failure=False,
+                 fail_build_on_failure=False)
+      self.m.run(self.m.step, 'uninstall ASAN',
+                 cmd=[asan_setup, '--revert'], infra_step=True, timeout=300,
+                 abort_on_failure=False, fail_build_on_failure=False)
+
     if self._ever_ran_adb:
       self.m.run(self.m.python.inline, 'dump log', program="""
           import os
@@ -467,13 +489,14 @@ wait_for_device()
       self._adb('kill adb server', 'kill-server')
 
   def step(self, name, cmd, **kwargs):
-    if (cmd[0] == 'nanobench'):
-      self._scale_for_nanobench()
-    else:
-      self._scale_for_dm()
-    app = self.host_dirs.bin_dir.join(cmd[0])
-    self._adb('push %s' % cmd[0],
-              'push', app, self.device_dirs.bin_dir)
+    if not kwargs.get('skip_binary_push', False):
+      if (cmd[0] == 'nanobench'):
+        self._scale_for_nanobench()
+      else:
+        self._scale_for_dm()
+      app = self.host_dirs.bin_dir.join(cmd[0])
+      self._adb('push %s' % cmd[0],
+                'push', app, self.device_dirs.bin_dir)
 
     sh = '%s.sh' % cmd[0]
     self.m.run.writefile(self.m.vars.tmp_dir.join(sh),

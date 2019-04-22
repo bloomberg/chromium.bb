@@ -21,7 +21,7 @@
 #include "perfetto/base/scoped_file.h"
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) && \
-    !PERFETTO_BUILDFLAG(PERFETTO_CHROMIUM_BUILD)
+    !PERFETTO_BUILDFLAG(PERFETTO_EMBEDDER_BUILD)
 #include "perfetto/base/android_task_runner.h"
 #endif
 
@@ -29,6 +29,7 @@
 
 #include "perfetto/base/file_utils.h"
 #include "perfetto/base/pipe.h"
+#include "src/base/test/gtest_test_suite.h"
 
 namespace perfetto {
 namespace base {
@@ -41,12 +42,13 @@ class TaskRunnerTest : public ::testing::Test {
 };
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) && \
-    !PERFETTO_BUILDFLAG(PERFETTO_CHROMIUM_BUILD)
+    !PERFETTO_BUILDFLAG(PERFETTO_EMBEDDER_BUILD)
 using TaskRunnerTypes = ::testing::Types<AndroidTaskRunner, UnixTaskRunner>;
 #else
 using TaskRunnerTypes = ::testing::Types<UnixTaskRunner>;
 #endif
-TYPED_TEST_CASE(TaskRunnerTest, TaskRunnerTypes);
+
+TYPED_TEST_SUITE(TaskRunnerTest, TaskRunnerTypes);
 
 struct TestPipe : Pipe {
   TestPipe() : Pipe(Pipe::Create()) {
@@ -56,12 +58,14 @@ struct TestPipe : Pipe {
 
   void Read() {
     char b;
-    PERFETTO_DCHECK(read(*this->rd, &b, 1) == 1);
+    ssize_t rd = read(*this->rd, &b, 1);
+    PERFETTO_DCHECK(rd == 1);
   }
 
   void Write() {
     const char b = '?';
-    PERFETTO_DCHECK(WriteAll(*this->wr, &b, 1) == 1);
+    ssize_t wr = WriteAll(*this->wr, &b, 1);
+    PERFETTO_DCHECK(wr == 1);
   }
 };
 
@@ -354,6 +358,22 @@ TYPED_TEST(TaskRunnerTest, IsIdleForTesting) {
     task_runner.Quit();
   });
   task_runner.Run();
+}
+
+TYPED_TEST(TaskRunnerTest, RunsTasksOnCurrentThread) {
+  auto& main_tr = this->task_runner;
+
+  EXPECT_TRUE(main_tr.RunsTasksOnCurrentThread());
+  std::thread thread([&main_tr] {
+    typename std::remove_reference<decltype(main_tr)>::type second_tr;
+    second_tr.PostTask([&main_tr, &second_tr] {
+      EXPECT_FALSE(main_tr.RunsTasksOnCurrentThread());
+      EXPECT_TRUE(second_tr.RunsTasksOnCurrentThread());
+      second_tr.Quit();
+    });
+    second_tr.Run();
+  });
+  thread.join();
 }
 
 }  // namespace

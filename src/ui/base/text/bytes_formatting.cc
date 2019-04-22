@@ -6,7 +6,7 @@
 
 #include "base/i18n/number_formatting.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -82,7 +82,7 @@ DataUnits GetByteDisplayUnits(int64_t bytes) {
     return DATA_UNITS_BYTE;
   }
 
-  int unit_index = arraysize(kUnitThresholds);
+  int unit_index = base::size(kUnitThresholds);
   while (--unit_index > 0) {
     if (bytes >= kUnitThresholds[unit_index])
       break;

@@ -43,7 +43,7 @@ class FrameThrottlingTest : public PaintTestConfigurations, public SimTest {
  protected:
   void SetUp() override {
     SimTest::SetUp();
-    WebView().Resize(WebSize(640, 480));
+    WebView().MainFrameWidget()->Resize(WebSize(640, 480));
   }
 
   SimCanvas::Commands CompositeFrame() {
@@ -82,7 +82,7 @@ class FrameThrottlingTest : public PaintTestConfigurations, public SimTest {
   }
 };
 
-INSTANTIATE_PAINT_TEST_CASE_P(FrameThrottlingTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(FrameThrottlingTest);
 
 TEST_P(FrameThrottlingTest, ThrottleInvisibleFrames) {
   SimRequest main_resource("https://example.com/", "text/html");
@@ -286,13 +286,26 @@ TEST_P(FrameThrottlingTest, ThrottledLifecycleUpdate) {
   // ran.
   frame_element->setAttribute(kWidthAttr, "50");
   CompositeFrame();
-  EXPECT_EQ(DocumentLifecycle::kPaintClean,
-            frame_document->Lifecycle().GetState());
 
-  // A hit test will not force a complete lifecycle update.
-  WebView().HitTestResultAt(gfx::Point());
-  EXPECT_EQ(DocumentLifecycle::kPaintClean,
-            frame_document->Lifecycle().GetState());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(DocumentLifecycle::kPaintClean,
+              frame_document->Lifecycle().GetState());
+
+    // A hit test will not force a complete lifecycle update.
+    WebView().HitTestResultAt(gfx::Point());
+    EXPECT_EQ(DocumentLifecycle::kPaintClean,
+              frame_document->Lifecycle().GetState());
+  } else {
+    // TODO(chrishtr): fix this test by manually resetting to
+    // kVisualUpdatePending before call to CompositeFrame.
+    EXPECT_EQ(DocumentLifecycle::kPaintClean,
+              frame_document->Lifecycle().GetState());
+
+    // A hit test will not force a complete lifecycle update.
+    WebView().HitTestResultAt(gfx::Point());
+    EXPECT_EQ(DocumentLifecycle::kPaintClean,
+              frame_document->Lifecycle().GetState());
+  }
 }
 
 TEST_P(FrameThrottlingTest, UnthrottlingFrameSchedulesAnimation) {
@@ -563,8 +576,8 @@ TEST_P(FrameThrottlingTest, ThrottledFrameWithFocus) {
 }
 
 TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
-  // TODO(crbug.com/809638): Make this test pass for SPv2.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // TODO(crbug.com/809638): Make this test pass for CAP.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   // Create a hidden frame which is throttled.
@@ -673,6 +686,10 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {
 
 TEST_P(FrameThrottlingTest,
        ScrollingCoordinatorShouldSkipCompositedThrottledFrame) {
+  // TODO(crbug.com/922419): The test is broken for LayoutNG.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
 
   // Create a hidden frame which is throttled.
@@ -722,9 +739,9 @@ TEST_P(FrameThrottlingTest,
                      // frame.
   EXPECT_EQ(DocumentLifecycle::kPaintClean,
             frame_element->contentDocument()->Lifecycle().GetState());
-  // TODO(szager): Re-enable this check for SPv2 when it properly sets the
+  // TODO(szager): Re-enable this check for CAP when it properly sets the
   // bits for composited scrolling.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_TRUE(frame_element->contentDocument()
                     ->View()
                     ->LayoutViewport()
@@ -759,8 +776,8 @@ TEST_P(FrameThrottlingTest, UnthrottleByTransformingWithoutLayout) {
 }
 
 TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
-  // TODO(crbug.com/809638): Make this test pass for SPv2.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // TODO(crbug.com/809638): Make this test pass for CAP.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   WebView().GetSettings()->SetJavaScriptEnabled(true);
@@ -800,14 +817,7 @@ TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
   // throttled or not. Since the layers are associated with the main document
   // which is not throttled, we expect the main document to have one touch
   // handler region.
-  // In the Non-PaintTouchActionRects world, the
-  // AccumulateDocumentTouchEventTargetRects goes through every document and
-  // check whether the document is throttled or not. So we expect no touch
-  // handler region.
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    EXPECT_EQ(1u, TouchHandlerRegionSize());
-  else
-    EXPECT_EQ(0u, TouchHandlerRegionSize());
+  EXPECT_EQ(1u, TouchHandlerRegionSize());
 
   // Unthrottling the frame makes the touch handlers active again. Note that
   // both handlers get combined into the same rectangle in the region, so
@@ -819,8 +829,8 @@ TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
 }
 
 TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
-  // TODO(crbug.com/809638): Make this test pass for SPv2.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // TODO(crbug.com/809638): Make this test pass for CAP.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   WebView().GetSettings()->SetJavaScriptEnabled(true);
@@ -861,14 +871,7 @@ TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
   // throttled or not. Since the layers are associated with the main document
   // which is not throttled, we expect the main document to have one touch
   // handler region.
-  // In the Non-PaintTouchActionRects world, the
-  // AccumulateDocumentTouchEventTargetRects goes through every document and
-  // check whether the document is throttled or not. So we expect no touch
-  // handler region.
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    EXPECT_EQ(1u, TouchHandlerRegionSize());
-  else
-    EXPECT_EQ(0u, TouchHandlerRegionSize());
+  EXPECT_EQ(1u, TouchHandlerRegionSize());
 
   // Unthrottling the frame makes the touch handler active again.
   frame_element->setAttribute(kStyleAttr, "transform: translateY(0px)");
@@ -894,7 +897,7 @@ TEST_P(FrameThrottlingTest, DumpThrottledFrame) {
   CompositeFrame();
   EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
 
-  LocalFrame* local_frame = ToLocalFrame(frame_element->ContentFrame());
+  LocalFrame* local_frame = To<LocalFrame>(frame_element->ContentFrame());
   local_frame->GetScriptController().ExecuteScriptInMainWorld(
       "document.body.innerHTML = 'throttled'");
   EXPECT_FALSE(Compositor().NeedsBeginFrame());
@@ -908,7 +911,7 @@ TEST_P(FrameThrottlingTest, DumpThrottledFrame) {
 }
 
 TEST_P(FrameThrottlingTest, PaintingViaGraphicsLayerIsThrottled) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
@@ -944,7 +947,7 @@ TEST_P(FrameThrottlingTest, PaintingViaGraphicsLayerIsThrottled) {
 }
 
 TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
@@ -1022,6 +1025,10 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
 }
 
 TEST_P(FrameThrottlingTest, ThrottleSubtreeAtomically) {
+  // TODO(crbug.com/922419): The test is broken for LayoutNG.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
   // Create two nested frames which are throttled.
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
@@ -1034,57 +1041,21 @@ TEST_P(FrameThrottlingTest, ThrottleSubtreeAtomically) {
       "<iframe id=child-frame sandbox src=child-iframe.html></iframe>");
   child_frame_resource.Complete("");
 
-  // Move both frames offscreen, but don't run the intersection observers yet.
+  // Move both frames offscreen. IntersectionObservers will run during
+  // post-lifecycle steps and synchronously update throttling status.
   auto* frame_element =
       ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   auto* child_frame_element = ToHTMLIFrameElement(
       frame_element->contentDocument()->getElementById("child-frame"));
   frame_element->setAttribute(kStyleAttr, "transform: translateY(480px)");
   Compositor().BeginFrame();
-  EXPECT_FALSE(
-      frame_element->contentDocument()->View()->CanThrottleRendering());
-  EXPECT_FALSE(
-      child_frame_element->contentDocument()->View()->CanThrottleRendering());
-
-  // Only run the intersection observer for the parent frame. Both frames
-  // should immediately become throttled. This simulates the case where a task
-  // such as BeginMainFrame runs in the middle of dispatching intersection
-  // observer notifications.
-  frame_element->contentDocument()
-      ->View()
-      ->UpdateRenderThrottlingStatusForTesting();
   EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
   EXPECT_TRUE(
       child_frame_element->contentDocument()->View()->CanThrottleRendering());
 
-  // Both frames should still be throttled after the second notification.
-  child_frame_element->contentDocument()
-      ->View()
-      ->UpdateRenderThrottlingStatusForTesting();
-  EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
-  EXPECT_TRUE(
-      child_frame_element->contentDocument()->View()->CanThrottleRendering());
-
-  // Move the frame back on screen but don't update throttling yet.
+  // Move the frame back on screen.
   frame_element->setAttribute(kStyleAttr, "transform: translateY(0px)");
   Compositor().BeginFrame();
-  EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
-  EXPECT_TRUE(
-      child_frame_element->contentDocument()->View()->CanThrottleRendering());
-
-  // Update throttling for the child. It should remain throttled because the
-  // parent is still throttled.
-  child_frame_element->contentDocument()
-      ->View()
-      ->UpdateRenderThrottlingStatusForTesting();
-  EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
-  EXPECT_TRUE(
-      child_frame_element->contentDocument()->View()->CanThrottleRendering());
-
-  // Updating throttling on the parent should unthrottle both frames.
-  frame_element->contentDocument()
-      ->View()
-      ->UpdateRenderThrottlingStatusForTesting();
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
   EXPECT_FALSE(
@@ -1165,7 +1136,8 @@ TEST_P(FrameThrottlingTest, SynchronousLayoutInAnimationFrameCallback) {
   // frame is throttled during the animation frame callback.
   auto* second_frame_element =
       ToHTMLIFrameElement(GetDocument().getElementById("second"));
-  LocalFrame* local_frame = ToLocalFrame(second_frame_element->ContentFrame());
+  LocalFrame* local_frame =
+      To<LocalFrame>(second_frame_element->ContentFrame());
   local_frame->GetScriptController().ExecuteScriptInMainWorld(
       "window.requestAnimationFrame(function() {\n"
       "  var throttledFrame = window.parent.frames.first;\n"
@@ -1198,7 +1170,7 @@ TEST_P(FrameThrottlingTest, AllowOneAnimationFrame) {
   CompositeFrame();
   EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
 
-  LocalFrame* local_frame = ToLocalFrame(frame_element->ContentFrame());
+  LocalFrame* local_frame = To<LocalFrame>(frame_element->ContentFrame());
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> result =
       local_frame->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
@@ -1248,12 +1220,11 @@ TEST_P(FrameThrottlingTest, UpdatePaintPropertiesOnUnthrottling) {
   CompositeFrame();
   CompositeFrame();
   EXPECT_FALSE(frame_document->View()->CanThrottleRendering());
-  EXPECT_EQ(TransformationMatrix().Translate(0, 20),
-            inner_div->GetLayoutObject()
-                ->FirstFragment()
-                .PaintProperties()
-                ->Transform()
-                ->Matrix());
+  EXPECT_EQ(FloatSize(0, 20), inner_div->GetLayoutObject()
+                                  ->FirstFragment()
+                                  .PaintProperties()
+                                  ->Transform()
+                                  ->Translation2D());
 }
 
 TEST_P(FrameThrottlingTest, DisplayNoneNotThrottled) {
@@ -1313,7 +1284,7 @@ TEST_P(FrameThrottlingTest, DisplayNoneChildrenRemainThrottled) {
 }
 
 TEST_P(FrameThrottlingTest, RebuildCompositedLayerTreeOnLayerRemoval) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   // This test verifies removal of PaintLayer due to style change will force
@@ -1368,8 +1339,7 @@ TEST_P(FrameThrottlingTest, RebuildCompositedLayerTreeOnLayerRemoval) {
   // This simulates a javascript query to layout results, e.g.
   // document.body.offsetTop, which will force style & layout to be computed,
   // whether the frame is throttled or not.
-  frame_element->contentDocument()
-      ->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_element->contentDocument()->UpdateStyleAndLayout();
   EXPECT_EQ(DocumentLifecycle::kLayoutClean,
             frame_element->contentDocument()->Lifecycle().GetState());
   {

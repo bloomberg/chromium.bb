@@ -40,6 +40,10 @@ struct CompletionInfo {
   // account changed values during retries/resumptions.
   scoped_refptr<const net::HttpResponseHeaders> response_headers;
 
+  // An optional base::HexEncoded SHA-256 hash (if available) of the file
+  // contents.  If empty there is no available hash value.
+  std::string hash256;
+
   CompletionInfo();
   CompletionInfo(
       const base::FilePath& path,

@@ -17,25 +17,24 @@
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_event_dispatcher.h"
 #include "content/browser/background_fetch/storage/get_initialization_data_task.h"
+#include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 namespace storage {
 class QuotaManagerProxy;
-}
+}  // namespace storage
 
 namespace content {
 
 class BackgroundFetchDataManager;
-struct BackgroundFetchOptions;
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRegistrationNotifier;
 class BackgroundFetchRequestMatchParams;
 class BackgroundFetchScheduler;
 class BrowserContext;
 class CacheStorageContextImpl;
-class RenderFrameHost;
 class ServiceWorkerContextWrapper;
 
 // The BackgroundFetchContext is the central moderator of ongoing background
@@ -51,9 +50,9 @@ class CONTENT_EXPORT BackgroundFetchContext
   BackgroundFetchContext(
       BrowserContext* browser_context,
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
-      const scoped_refptr<content::CacheStorageContextImpl>&
-          cache_storage_context,
-      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
+      const scoped_refptr<CacheStorageContextImpl>& cache_storage_context,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
 
   void InitializeOnIOThread();
 
@@ -81,10 +80,11 @@ class CONTENT_EXPORT BackgroundFetchContext
   // been registered, or an error occurred that prevents it from doing so.
   void StartFetch(const BackgroundFetchRegistrationId& registration_id,
                   std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-                  const BackgroundFetchOptions& options,
+                  blink::mojom::BackgroundFetchOptionsPtr options,
                   const SkBitmap& icon,
                   blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
-                  RenderFrameHost* render_frame_host,
+                  int render_frame_tree_node_id,
+                  const ResourceRequestInfo::WebContentsGetter& wc_getter,
                   blink::mojom::BackgroundFetchService::FetchCallback callback);
 
   // Gets display size for the icon for Background Fetch UI.
@@ -96,13 +96,15 @@ class CONTENT_EXPORT BackgroundFetchContext
   void MatchRequests(
       const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
-      blink::mojom::BackgroundFetchService::MatchRequestsCallback callback);
+      blink::mojom::BackgroundFetchRegistrationService::MatchRequestsCallback
+          callback);
 
   // Aborts the Background Fetch for the |registration_id|. The callback will be
   // invoked with INVALID_ID if the registration has already completed or
   // aborted, STORAGE_ERROR if an I/O error occurs, or NONE for success.
-  void Abort(const BackgroundFetchRegistrationId& registration_id,
-             blink::mojom::BackgroundFetchService::AbortCallback callback);
+  void Abort(
+      const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchRegistrationService::AbortCallback callback);
 
   // Registers the |observer| to be notified of progress events for the
   // registration identified by |unique_id| whenever they happen. The observer
@@ -120,7 +122,12 @@ class CONTENT_EXPORT BackgroundFetchContext
       const BackgroundFetchRegistrationId& registration_id,
       const base::Optional<std::string>& title,
       const base::Optional<SkBitmap>& icon,
-      blink::mojom::BackgroundFetchService::UpdateUICallback callback);
+      blink::mojom::BackgroundFetchRegistrationService::UpdateUICallback
+          callback);
+
+  BackgroundFetchRegistrationNotifier* registration_notifier() const {
+    return registration_notifier_.get();
+  }
 
  private:
   using GetPermissionCallback =
@@ -144,21 +151,25 @@ class CONTENT_EXPORT BackgroundFetchContext
   void DidGetRegistration(
       blink::mojom::BackgroundFetchService::GetRegistrationCallback callback,
       blink::mojom::BackgroundFetchError error,
-      const BackgroundFetchRegistration& registration);
+      BackgroundFetchRegistrationId registration_id,
+      blink::mojom::BackgroundFetchRegistrationDataPtr registration_data);
 
   // Called when a new registration has been created by the data manager.
   void DidCreateRegistration(
       const BackgroundFetchRegistrationId& registration_id,
       blink::mojom::BackgroundFetchError error,
-      const BackgroundFetchRegistration& registration);
+      blink::mojom::BackgroundFetchRegistrationDataPtr registration_data);
 
   // Called when the sequence of matching settled fetches have been received
   // from storage, and |callback| can be invoked to pass these on to the
   // renderer.
   void DidGetMatchingRequests(
-      blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
+      const std::string& unique_id,
+      blink::mojom::BackgroundFetchRegistrationService::MatchRequestsCallback
+          callback,
       blink::mojom::BackgroundFetchError error,
-      std::vector<BackgroundFetchSettledFetch> settled_fetches);
+      std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>
+          settled_fetches);
 
   // Called when the data manager finishes getting the initialization data.
   void DidGetInitializationData(
@@ -171,16 +182,10 @@ class CONTENT_EXPORT BackgroundFetchContext
   void SetDataManagerForTesting(
       std::unique_ptr<BackgroundFetchDataManager> data_manager);
 
-  // Check if |origin| has permission to start a fetch.
-  // virtual for testing.
-  void GetPermissionForOrigin(const url::Origin& origin,
-                              RenderFrameHost* render_frame_host,
-                              GetPermissionCallback callback);
-
   // Callback for GetPermissionForOrigin.
   void DidGetPermission(const BackgroundFetchRegistrationId& registration_id,
                         std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-                        const BackgroundFetchOptions& options,
+                        blink::mojom::BackgroundFetchOptionsPtr options,
                         const SkBitmap& icon,
                         blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
                         int frame_tree_node_id,
@@ -191,6 +196,7 @@ class CONTENT_EXPORT BackgroundFetchContext
 
   std::unique_ptr<BackgroundFetchDataManager> data_manager_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  scoped_refptr<DevToolsBackgroundServicesContext> devtools_context_;
   std::unique_ptr<BackgroundFetchRegistrationNotifier> registration_notifier_;
   BackgroundFetchDelegateProxy delegate_proxy_;
   std::unique_ptr<BackgroundFetchScheduler> scheduler_;

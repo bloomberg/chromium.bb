@@ -6,11 +6,13 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
@@ -150,6 +152,107 @@ bool WasEventWithinPeriod(AppBannerSettingsHelper::AppBannerEvent event,
   // Null times are in the distant past, so the delta between real times and
   // null events will always be greater than the limits.
   return (now - event_time < period);
+}
+
+base::Optional<base::TimeDelta> ParseTimeDelta(const base::Value* value) {
+  std::string delta_string;
+  if (!value || !value->GetAsString(&delta_string))
+    return base::nullopt;
+
+  int64_t delta_int64;
+  if (!base::StringToInt64(delta_string, &delta_int64))
+    return base::nullopt;
+  return base::TimeDelta::FromMicroseconds(delta_int64);
+}
+
+base::Value SerializeTimeDelta(const base::TimeDelta& delta) {
+  return base::Value(base::NumberToString(delta.InMicroseconds()));
+}
+
+// Dictionary of time information for how long to wait before showing the
+// "Install" text slide animation again.
+// Data format: {"last_shown": timestamp, "delay": duration}
+constexpr char kNextInstallTextAnimation[] = "next_install_text_animation";
+constexpr char kLastShownKey[] = "last_shown";
+constexpr char kDelayKey[] = "delay";
+
+struct NextInstallTextAnimation {
+  base::Time last_shown;
+  base::TimeDelta delay;
+
+  static base::Optional<NextInstallTextAnimation> Get(
+      content::WebContents* web_contents,
+      const GURL& scope);
+
+  base::Time Time() const { return last_shown + delay; }
+
+  void RecordToPrefs(content::WebContents* web_contents,
+                     const GURL& scope) const;
+};
+
+base::Optional<NextInstallTextAnimation> NextInstallTextAnimation::Get(
+    content::WebContents* web_contents,
+    const GURL& scope) {
+  const NextInstallTextAnimation kNever = {base::Time::Max(),
+                                           base::TimeDelta::Max()};
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->IsOffTheRecord() || !scope.is_valid())
+    return kNever;
+
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  std::unique_ptr<base::DictionaryValue> origin_dict =
+      GetOriginAppBannerData(settings, scope);
+
+  base::Value* app_dict = GetAppDict(origin_dict.get(), scope.spec());
+  if (!app_dict)
+    return kNever;
+
+  const base::Value* next_dict = app_dict->FindKey(kNextInstallTextAnimation);
+  if (!next_dict || !next_dict->is_dict())
+    return base::nullopt;
+
+  base::Optional<base::TimeDelta> last_shown_since_epoch =
+      ParseTimeDelta(next_dict->FindKey(kLastShownKey));
+  if (!last_shown_since_epoch)
+    return base::nullopt;
+
+  base::Optional<base::TimeDelta> delay =
+      ParseTimeDelta(next_dict->FindKey(kDelayKey));
+  if (!delay)
+    return base::nullopt;
+
+  return NextInstallTextAnimation{
+      base::Time::FromDeltaSinceWindowsEpoch(*last_shown_since_epoch), *delay};
+}
+
+void NextInstallTextAnimation::RecordToPrefs(content::WebContents* web_contents,
+                                             const GURL& scope) const {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->IsOffTheRecord() || !scope.is_valid())
+    return;
+
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  std::unique_ptr<base::DictionaryValue> origin_dict =
+      GetOriginAppBannerData(settings, scope);
+
+  base::Value* app_dict = GetAppDict(origin_dict.get(), scope.spec());
+  if (!app_dict)
+    return;
+
+  base::Value next_dict(base::Value::Type::DICTIONARY);
+  next_dict.SetKey(kLastShownKey,
+                   SerializeTimeDelta(last_shown.ToDeltaSinceWindowsEpoch()));
+  next_dict.SetKey(kDelayKey, SerializeTimeDelta(delay));
+  app_dict->SetKey(kNextInstallTextAnimation, std::move(next_dict));
+
+  settings->SetWebsiteSettingDefaultScope(
+      scope, GURL(), CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
+      std::move(origin_dict));
 }
 
 }  // namespace
@@ -421,6 +524,44 @@ AppBannerSettingsHelper::GetHomescreenLanguageOption() {
   }
 
   return static_cast<LanguageOption>(language_option);
+}
+
+bool AppBannerSettingsHelper::CanShowInstallTextAnimation(
+    content::WebContents* web_contents,
+    const GURL& scope) {
+  base::Optional<NextInstallTextAnimation> next_prompt =
+      NextInstallTextAnimation::Get(web_contents, scope);
+
+  if (!next_prompt)
+    return true;
+
+  return banners::AppBannerManager::GetCurrentTime() >= next_prompt->Time();
+}
+
+void AppBannerSettingsHelper::RecordInstallTextAnimationShown(
+    content::WebContents* web_contents,
+    const GURL& scope) {
+  DCHECK(scope.is_valid());
+
+  constexpr base::TimeDelta kInitialAnimationSuppressionPeriod =
+      base::TimeDelta::FromDays(1);
+  constexpr base::TimeDelta kMaxAnimationSuppressionPeriod =
+      base::TimeDelta::FromDays(90);
+  constexpr double kExponentialBackoffFactor = 2;
+
+  NextInstallTextAnimation next_prompt = {
+      banners::AppBannerManager::GetCurrentTime(),
+      kInitialAnimationSuppressionPeriod};
+
+  base::Optional<NextInstallTextAnimation> last_prompt =
+      NextInstallTextAnimation::Get(web_contents, scope);
+  if (last_prompt) {
+    next_prompt.delay =
+        std::min(kMaxAnimationSuppressionPeriod,
+                 last_prompt->delay * kExponentialBackoffFactor);
+  }
+
+  next_prompt.RecordToPrefs(web_contents, scope);
 }
 
 AppBannerSettingsHelper::ScopedTriggerSettings::ScopedTriggerSettings(

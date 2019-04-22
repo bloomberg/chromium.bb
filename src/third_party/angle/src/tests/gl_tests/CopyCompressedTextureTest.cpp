@@ -30,21 +30,25 @@ class CopyCompressedTextureTest : public ANGLETest
 
         glGenTextures(2, mTextures);
 
-        mProgram = CompileProgram(
+        constexpr char kVS[] =
             "attribute vec2 a_position;\n"
             "varying vec2 v_texcoord;\n"
             "void main()\n"
             "{\n"
             "   gl_Position = vec4(a_position, 0.0, 1.0);\n"
             "   v_texcoord = (a_position + 1.0) * 0.5;\n"
-            "}\n",
+            "}\n";
+
+        constexpr char kFS[] =
             "precision mediump float;\n"
             "uniform sampler2D u_texture;\n"
             "varying vec2 v_texcoord;\n"
             "void main()\n"
             "{\n"
             "    gl_FragColor = texture2D(u_texture, v_texcoord);\n"
-            "}\n");
+            "}\n";
+
+        mProgram = CompileProgram(kVS, kFS);
         ASSERT_NE(0u, mProgram);
 
         if (extensionEnabled("GL_CHROMIUM_copy_compressed_texture"))
@@ -256,6 +260,8 @@ TEST_P(CopyCompressedTextureTest, InvalidTextureIds)
         return;
     }
 
+    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_dxt1"));
+
     glBindTexture(GL_TEXTURE_2D, mTextures[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -292,6 +298,8 @@ TEST_P(CopyCompressedTextureTest, BindingPoints)
     {
         return;
     }
+
+    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_dxt1"));
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, mTextures[0]);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

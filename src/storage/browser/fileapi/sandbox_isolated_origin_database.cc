@@ -10,20 +10,13 @@
 
 namespace storage {
 
-// Special directory name for isolated origin.
-const base::FilePath::CharType
-SandboxIsolatedOriginDatabase::kObsoleteOriginDirectory[] =
-    FILE_PATH_LITERAL("iso");
-
 SandboxIsolatedOriginDatabase::SandboxIsolatedOriginDatabase(
     const std::string& origin,
     const base::FilePath& file_system_directory,
     const base::FilePath& origin_directory)
-    : migration_checked_(false),
-      origin_(origin),
+    : origin_(origin),
       file_system_directory_(file_system_directory),
-      origin_directory_(origin_directory) {
-}
+      origin_directory_(origin_directory) {}
 
 SandboxIsolatedOriginDatabase::~SandboxIsolatedOriginDatabase() = default;
 
@@ -51,29 +44,8 @@ bool SandboxIsolatedOriginDatabase::ListAllOrigins(
   return true;
 }
 
-void SandboxIsolatedOriginDatabase::DropDatabase() {
-}
+void SandboxIsolatedOriginDatabase::DropDatabase() {}
 
-void SandboxIsolatedOriginDatabase::MigrateBackFromObsoleteOriginDatabase(
-    const std::string& origin,
-    const base::FilePath& file_system_directory,
-    SandboxOriginDatabase* database) {
-  base::FilePath isolated_directory =
-      file_system_directory.Append(kObsoleteOriginDirectory);
-
-  if (database->HasOriginPath(origin)) {
-    // Don't bother.
-    base::DeleteFile(isolated_directory, true /* recursive */);
-    return;
-  }
-
-  base::FilePath directory_name;
-  if (database->GetPathForOrigin(origin, &directory_name)) {
-    base::FilePath origin_directory =
-        file_system_directory.Append(directory_name);
-    base::DeleteFile(origin_directory, true /* recursive */);
-    base::Move(isolated_directory, origin_directory);
-  }
-}
+void SandboxIsolatedOriginDatabase::RewriteDatabase() {}
 
 }  // namespace storage

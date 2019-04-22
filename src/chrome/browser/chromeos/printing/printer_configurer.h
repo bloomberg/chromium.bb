@@ -25,6 +25,7 @@ enum PrinterSetupResult {
   kNativePrintersNotAllowed = 4,  // Tried adding/editing printers policy set
   kInvalidPrinterUpdate = 5,      // Tried updating printer with invalid values
   kComponentUnavailable = 6,      // Could not install component
+  kEditSuccess = 7,               // Printer editted successfully
   // Space left for additional errors
 
   // PPD errors
@@ -32,7 +33,13 @@ enum PrinterSetupResult {
   kInvalidPpd = 11,        // PPD rejected by cupstestppd
   kPpdNotFound = 12,       // Could not find PPD
   kPpdUnretrievable = 13,  // Could not download PPD
-  kMaxValue                // Maximum value for histograms
+  // Space left for additional errors
+
+  // Specific DBus errors. This must stay in sync with the DbusLibraryError
+  // enum and PrinterSetupResultFromDbusErrorCode().
+  kDbusNoReply = 64,  // Expected remote response but got nothing
+  kDbusTimeout = 65,  // Generic timeout error (c.f. dbus-protocol.h)
+  kMaxValue           // Maximum value for histograms
 };
 
 using PrinterSetupCallback = base::OnceCallback<void(PrinterSetupResult)>;

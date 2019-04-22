@@ -16,7 +16,6 @@
 <translation id="152892567002884378">เพิ่มระดับเสียง</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> แล้วกด <ph name="ESC" /></translation>
 <translation id="1652741121070700329">ย้ายไปยังจุดเริ่มต้นของคำก่อนหน้า</translation>
-<translation id="1671169355475348905">เปลี่ยนไปใช้วิธีการป้อนข้อมูลของภาษาก่อนหน้า</translation>
 <translation id="1679841710523778799">เพิ่มความสว่าง</translation>
 <translation id="168356808214100546">กด <ph name="ALT" /> ค้างไว้แล้วแตะ <ph name="TAB" /> จนกว่าคุณจะไปถึงหน้าต่างที่ต้องการเปิดแล้วจึงปล่อย</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">แสดงหรือซ่อนแถบบุ๊กมาร์ก</translation>
 <translation id="2185166372312820725">ไปที่แท็บก่อนหน้า</translation>
 <translation id="2194790690264064655">กด <ph name="CTRL" /> แล้วคลิกลิงก์</translation>
+<translation id="2246352309084894470">เปิด/ปิด Launcher แบบเต็มหน้าจอ</translation>
 <translation id="2382644247745281995">ไม่รองรับการจัดวางแป้นพิมพ์ปัจจุบัน</translation>
 <translation id="2397416548179033562">แสดงเมนู Chrome</translation>
 <translation id="2424073332829844142">เปิดและปิดใช้งาน Caps Lock</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">รีเซ็ตระดับการซูมในหน้าเว็บ</translation>
 <translation id="2596078834055697711">ถ่ายภาพหน้าจอของหน้าต่าง</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> แล้วกด <ph name="TAB" /> หรือ <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">เปลี่ยนไปใช้วิธีการป้อนข้อมูลของภาษาถัดไป</translation>
 <translation id="2699509451653686398">บันทึกหน้าเว็บปัจจุบันเป็นบุ๊กมาร์ก</translation>
 <translation id="2750942583782703988">โหลดหน้าเว็บปัจจุบันซ้ำ</translation>
 <translation id="2764005613199379871">วางโฟกัสบนแถบที่อยู่การค้นหา</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">ล็อกหน้าจอ</translation>
 <translation id="6727005317916125192">แผงก่อนหน้า</translation>
 <translation id="6740781404993465795">เลือกคำหรือตัวอักษรถัดไป</translation>
+<translation id="6755851152783057058">เปลี่ยนไปใช้วิธีการป้อนข้อมูลที่ใช้ล่าสุด</translation>
 <translation id="6760706756348334449">ลดระดับเสียง</translation>
 <translation id="6941333068993625698">ส่งความคิดเห็น</translation>
 <translation id="6981982820502123353">การเข้าถึง</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">พิมพ์ที่อยู่เว็บในแถบที่อยู่แล้วกด <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">ตั้งค่าอุปกรณ์ให้อยู่ในโหมดสลีป (ระงับ)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> หรือ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">เปลี่ยนไปใช้วิธีการป้อนข้อมูลถัดไปที่ใช้ได้</translation>
 <translation id="743754632698445141">เลิกตรึงแอป</translation>
 <translation id="7439718573248533901">ลบอักษรถัดไป (ลบไปข้างหน้า)</translation>
 <translation id="7611271430932669992">ย้ายโฟกัสไปที่ป๊อปอัปและกล่องโต้ตอบ</translation>

@@ -175,7 +175,7 @@ void CFWL_DateTimePicker::SetEditText(const WideString& wsText) {
 }
 
 WideString CFWL_DateTimePicker::GetEditText() const {
-  return m_pEdit ? m_pEdit->GetText() : L"";
+  return m_pEdit ? m_pEdit->GetText() : WideString();
 }
 
 int32_t CFWL_DateTimePicker::GetEditTextLength() const {
@@ -211,7 +211,7 @@ void CFWL_DateTimePicker::DrawDropDownButton(CXFA_Graphics* pGraphics,
   param.m_rtPart = m_rtBtn;
   if (pMatrix)
     param.m_matrix.Concat(*pMatrix);
-  pTheme->DrawBackground(&param);
+  pTheme->DrawBackground(param);
 }
 
 WideString CFWL_DateTimePicker::FormatDateString(int32_t iYear,
@@ -403,8 +403,7 @@ void CFWL_DateTimePicker::OnFocusChanged(CFWL_Message* pMsg, bool bSet) {
     m_pEdit->GetDelegate()->OnProcessMessage(pMsg);
   } else {
     m_pProperties->m_dwStates &= ~FWL_WGTSTATE_Focused;
-    m_rtBtn.Reset();
-
+    m_rtBtn = CFX_RectF();
     if (IsMonthCalendarVisible())
       ShowMonthCalendar(false);
     if (m_pEdit->GetStates() & FWL_WGTSTATE_Focused) {

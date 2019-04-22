@@ -9,12 +9,6 @@
 
 namespace switches {
 
-// Enable compositing individual elements via hardware overlays when
-// permitted by device.
-// Setting the flag to "single-fullscreen" will try to promote a single
-// fullscreen overlay and use it as main framebuffer where possible.
-const char kEnableHardwareOverlays[] = "enable-hardware-overlays";
-
 // Forces tests to produce pixel output when they normally wouldn't.
 const char kEnablePixelOutputInTests[] = "enable-pixel-output-in-tests";
 
@@ -28,6 +22,9 @@ const char kUIShowPaintRects[] = "ui-show-paint-rects";
 const char kUISlowAnimations[] = "ui-slow-animations";
 
 const char kDisableVsyncForTests[] = "disable-vsync-for-tests";
+
+const char kUiCompositorMemoryLimitWhenVisibleMB[] =
+    "ui-compositor-memory-limit-when-visible-mb";
 
 }  // namespace switches
 

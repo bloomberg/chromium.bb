@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/chrome_features.h"
@@ -44,14 +45,6 @@ class FlashDownloadInterceptionTest : public ChromeRenderViewHostTestHarness {
  private:
   const GURL source_url_;
 };
-
-TEST_F(FlashDownloadInterceptionTest, PreferHtmlOverPluginsOff) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
-
-  EXPECT_FALSE(
-      ShouldStopFlashDownloadAction("https://get.adobe.com/flashplayer/"));
-}
 
 TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
   const char* const flash_intercept_urls[] = {

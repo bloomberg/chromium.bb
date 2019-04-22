@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/safe_math.h"
 
 namespace safe_browsing {
 
@@ -187,7 +188,10 @@ bool PeImageReader::EnumCertificates(EnumCertificatesCallback callback,
       return false;
     }
     size_t padded_length = (win_certificate->dwLength + 7) & ~0x7;
-    data_size -= padded_length;
+    // Don't overflow when recalculating data_size, since padded_length can be
+    // attacker controlled.
+    if (!base::CheckSub(data_size, padded_length).AssignIfValid(&data_size))
+      return false;
     data += padded_length;
   }
   return true;

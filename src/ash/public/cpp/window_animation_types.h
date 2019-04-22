@@ -24,6 +24,8 @@ enum WindowVisibilityAnimationType {
   // Animate a window out of the closest side of the screen. Fade in if it
   // re-appears.
   WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT,
+  // Show or hide the window at the end of animation.
+  WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END,
 };
 
 }  // namespace wm

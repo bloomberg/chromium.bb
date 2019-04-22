@@ -15,21 +15,64 @@ source_set("infobars") {
     "infobar_controller+protected.h",
     "infobar_controller.h",
     "infobar_controller.mm",
-    "infobar_controller_delegate.h",
     "infobar_manager_impl.h",
     "infobar_manager_impl.mm",
     "infobar_utils.h",
     "infobar_utils.mm",
   ]
   deps = [
+    ":public",
     "//base",
-    "//components/translate/core/browser",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
+    "//ios/chrome/browser/ui/infobars/coordinators",
     "//ios/web",
-    "//ui/base",
     "//ui/gfx",
   ]
   public_deps = [
     "//components/infobars/core",
+  ]
+}
+
+source_set("badge") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "infobar_badge_tab_helper.h",
+    "infobar_badge_tab_helper.mm",
+    "infobar_badge_tab_helper_delegate.h",
+  ]
+  deps = [
+    ":infobars",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
+    "//ios/chrome/browser/ui/infobars:infobars_ui",
+    "//ios/web",
+  ]
+}
+
+source_set("public") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "infobar_controller_delegate.h",
+  ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "infobar_badge_tab_helper_unittest.mm",
+  ]
+  deps = [
+    ":badge",
+    ":infobars",
+    "//base/test:test_support",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
+    "//ios/chrome/browser/ui/infobars:infobars_ui",
+    "//ios/chrome/browser/ui/infobars:test_support",
+    "//ios/chrome/browser/ui/infobars/coordinators",
+    "//ios/chrome/test:test_support",
+    "//ios/web/public/test/fakes",
+    "//testing/gtest",
   ]
 }

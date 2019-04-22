@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/user_metrics.h"
 #include "base/single_thread_task_runner.h"
@@ -206,7 +207,7 @@ void WebViewPermissionHelper::RequestMediaAccessPermission(
 bool WebViewPermissionHelper::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type) {
+    blink::MediaStreamType type) {
   if (!web_view_guest()->attached() ||
       !web_view_guest()->embedder_web_contents()->GetDelegate()) {
     return false;
@@ -223,15 +224,15 @@ void WebViewPermissionHelper::OnMediaPermissionResponse(
     bool allow,
     const std::string& user_input) {
   if (!allow) {
-    std::move(callback).Run(content::MediaStreamDevices(),
-                            content::MEDIA_DEVICE_PERMISSION_DENIED,
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_PERMISSION_DENIED,
                             std::unique_ptr<content::MediaStreamUI>());
     return;
   }
   if (!web_view_guest()->attached() ||
       !web_view_guest()->embedder_web_contents()->GetDelegate()) {
-    std::move(callback).Run(content::MediaStreamDevices(),
-                            content::MEDIA_DEVICE_INVALID_STATE,
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_INVALID_STATE,
                             std::unique_ptr<content::MediaStreamUI>());
     return;
   }
@@ -246,9 +247,9 @@ void WebViewPermissionHelper::OnMediaPermissionResponse(
 void WebViewPermissionHelper::CanDownload(
     const GURL& url,
     const std::string& request_method,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   web_view_permission_helper_delegate_->CanDownload(url, request_method,
-                                                    callback);
+                                                    std::move(callback));
 }
 
 void WebViewPermissionHelper::RequestPointerLockPermission(

@@ -4,7 +4,7 @@
 
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/lib/task_runner_helper.h"
 
 namespace mojo {
@@ -51,7 +51,7 @@ void AssociatedBindingBase::BindImpl(
     MessageReceiverWithResponderStatus* receiver,
     std::unique_ptr<MessageReceiver> payload_validator,
     bool expect_sync_requests,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    scoped_refptr<base::SequencedTaskRunner> runner,
     uint32_t interface_version) {
   if (!handle.is_valid()) {
     endpoint_client_.reset();

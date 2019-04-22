@@ -19,22 +19,30 @@
 
 namespace {
 
+// Document the assumptions made on the ProcessType enum in order to convert
+// them to bits.
+static_assert(content::PROCESS_TYPE_UNKNOWN == 1,
+              "assumes unknown process type has value 1");
+static_assert(content::PROCESS_TYPE_BROWSER == 2,
+              "assumes browser process type has value 2");
+constexpr uint32_t kFirstValidProcessType = content::PROCESS_TYPE_BROWSER;
+
 // Using the module path, populates |inspection_result| with information
 // available via the file on disk. For example, this includes the description
 // and the certificate information.
-void PopulateModuleInfoData(const ModuleInfoKey& key,
+void PopulateModuleInfoData(const base::FilePath& module_path,
                             ModuleInspectionResult* inspection_result) {
-  inspection_result->location = key.module_path.value();
+  inspection_result->location = module_path.value();
 
   std::unique_ptr<FileVersionInfo> file_version_info(
-      FileVersionInfo::CreateFileVersionInfo(key.module_path));
+      FileVersionInfo::CreateFileVersionInfo(module_path));
   if (file_version_info) {
     inspection_result->product_name = file_version_info->product_name();
     inspection_result->description = file_version_info->file_description();
     inspection_result->version = file_version_info->product_version();
   }
 
-  GetCertificateInfo(key.module_path, &(inspection_result->certificate_info));
+  GetCertificateInfo(module_path, &(inspection_result->certificate_info));
 }
 
 // Returns the long path name given a short path name. A short path name is a
@@ -59,12 +67,10 @@ bool ConvertToLongPath(const base::string16& short_path,
 
 ModuleInfoKey::ModuleInfoKey(const base::FilePath& module_path,
                              uint32_t module_size,
-                             uint32_t module_time_date_stamp,
-                             uint32_t module_id)
+                             uint32_t module_time_date_stamp)
     : module_path(module_path),
       module_size(module_size),
-      module_time_date_stamp(module_time_date_stamp),
-      module_id(module_id) {}
+      module_time_date_stamp(module_time_date_stamp) {}
 
 bool ModuleInfoKey::operator<(const ModuleInfoKey& mik) const {
   // The key consists of the triplet of
@@ -78,6 +84,16 @@ bool ModuleInfoKey::operator<(const ModuleInfoKey& mik) const {
 
 ModuleInspectionResult::ModuleInspectionResult() = default;
 
+ModuleInspectionResult::ModuleInspectionResult(
+    const ModuleInspectionResult& other) = default;
+ModuleInspectionResult::ModuleInspectionResult(ModuleInspectionResult&& other) =
+    default;
+
+ModuleInspectionResult& ModuleInspectionResult::operator=(
+    const ModuleInspectionResult& other) = default;
+ModuleInspectionResult& ModuleInspectionResult::operator=(
+    ModuleInspectionResult&& other) = default;
+
 ModuleInspectionResult::~ModuleInspectionResult() = default;
 
 // ModuleInfoData --------------------------------------------------------------
@@ -90,22 +106,47 @@ ModuleInfoData::ModuleInfoData(ModuleInfoData&& module_data) noexcept = default;
 
 // -----------------------------------------------------------------------------
 
-std::unique_ptr<ModuleInspectionResult> InspectModule(
-    const StringMapping& env_variable_mapping,
-    const ModuleInfoKey& module_key) {
-  auto inspection_result = std::make_unique<ModuleInspectionResult>();
+ModuleInspectionResult InspectModule(const base::FilePath& module_path) {
+  ModuleInspectionResult inspection_result;
 
-  PopulateModuleInfoData(module_key, inspection_result.get());
-  internal::NormalizeInspectionResult(inspection_result.get());
-  CollapseMatchingPrefixInPath(env_variable_mapping,
-                               &inspection_result->location);
+  PopulateModuleInfoData(module_path, &inspection_result);
+  internal::NormalizeInspectionResult(&inspection_result);
 
   return inspection_result;
+}
+
+// Returns the time stamp to be used in the inspection results cache.
+// Represents the number of hours between |time| and the Windows epoch
+// (1601-01-01 00:00:00 UTC).
+uint32_t CalculateTimeStamp(base::Time time) {
+  const auto delta = time.ToDeltaSinceWindowsEpoch();
+  return delta < base::TimeDelta() ? 0 : static_cast<uint32_t>(delta.InHours());
 }
 
 std::string GenerateCodeId(const ModuleInfoKey& module_key) {
   return base::StringPrintf("%08X%x", module_key.module_time_date_stamp,
                             module_key.module_size);
+}
+
+uint32_t ProcessTypeToBit(content::ProcessType process_type) {
+  uint32_t bit_index =
+      static_cast<uint32_t>(process_type) - kFirstValidProcessType;
+  DCHECK_GE(31u, bit_index);
+  uint32_t bit = (1 << bit_index);
+  return bit;
+}
+
+content::ProcessType BitIndexToProcessType(uint32_t bit_index) {
+  DCHECK_GE(31u, bit_index);
+  return static_cast<content::ProcessType>(bit_index + kFirstValidProcessType);
+}
+
+bool IsBlockingEnabledInProcessTypes(uint32_t process_types) {
+  uint64_t process_types_mask =
+      ProcessTypeToBit(content::PROCESS_TYPE_BROWSER) |
+      ProcessTypeToBit(content::PROCESS_TYPE_RENDERER);
+
+  return (process_types & process_types_mask) != 0;
 }
 
 namespace internal {

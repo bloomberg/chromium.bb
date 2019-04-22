@@ -49,6 +49,9 @@ class VideoStream {
 
   // Sets stream observer.
   virtual void SetObserver(Observer* observer) = 0;
+
+  // Selects the current desktop display (if multiple displays).
+  virtual void SelectSource(int id) = 0;
 };
 
 }  // namespace protocol

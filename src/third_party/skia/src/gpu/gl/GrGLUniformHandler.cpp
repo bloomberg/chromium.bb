@@ -7,6 +7,7 @@
 
 #include "gl/GrGLUniformHandler.h"
 
+#include "GrTexturePriv.h"
 #include "gl/GrGLCaps.h"
 #include "gl/GrGLGpu.h"
 #include "gl/builders/GrGLProgramBuilder.h"
@@ -26,7 +27,6 @@ bool valid_name(const char* name) {
 GrGLSLUniformHandler::UniformHandle GrGLUniformHandler::internalAddUniformArray(
                                                                             uint32_t visibility,
                                                                             GrSLType type,
-                                                                            GrSLPrecision precision,
                                                                             const char* name,
                                                                             bool mangleName,
                                                                             int arrayCount,
@@ -34,7 +34,6 @@ GrGLSLUniformHandler::UniformHandle GrGLUniformHandler::internalAddUniformArray(
     SkASSERT(name && strlen(name));
     SkASSERT(valid_name(name));
     SkASSERT(0 != visibility);
-    SkASSERT(kDefault_GrSLPrecision == precision || GrSLTypeTemporarilyAcceptsPrecision(type));
 
     UniformInfo& uni = fUniforms.push_back();
     uni.fVariable.setType(type);
@@ -52,7 +51,6 @@ GrGLSLUniformHandler::UniformHandle GrGLUniformHandler::internalAddUniformArray(
     fProgramBuilder->nameVariable(uni.fVariable.accessName(), prefix, name, mangleName);
     uni.fVariable.setArrayCount(arrayCount);
     uni.fVisibility = visibility;
-    uni.fVariable.setPrecision(precision);
     uni.fLocation = -1;
 
     if (outName) {
@@ -61,20 +59,22 @@ GrGLSLUniformHandler::UniformHandle GrGLUniformHandler::internalAddUniformArray(
     return GrGLSLUniformHandler::UniformHandle(fUniforms.count() - 1);
 }
 
-GrGLSLUniformHandler::SamplerHandle GrGLUniformHandler::addSampler(GrSwizzle swizzle,
-                                                                   GrTextureType type,
-                                                                   GrSLPrecision precision,
-                                                                   const char* name) {
+GrGLSLUniformHandler::SamplerHandle GrGLUniformHandler::addSampler(const GrTexture* texture,
+                                                                   const GrSamplerState&,
+                                                                   const char* name,
+                                                                   const GrShaderCaps* shaderCaps) {
     SkASSERT(name && strlen(name));
 
     SkString mangleName;
     char prefix = 'u';
     fProgramBuilder->nameVariable(&mangleName, prefix, name, true);
 
+    GrSwizzle swizzle = shaderCaps->configTextureSwizzle(texture->config());
+    GrTextureType type = texture->texturePriv().textureType();
+
     UniformInfo& sampler = fSamplers.push_back();
     sampler.fVariable.setType(GrSLCombinedSamplerTypeForTextureType(type));
     sampler.fVariable.setTypeModifier(GrShaderVar::kUniform_TypeModifier);
-    sampler.fVariable.setPrecision(precision);
     sampler.fVariable.setName(mangleName);
     sampler.fLocation = -1;
     sampler.fVisibility = kFragment_GrShaderFlag;

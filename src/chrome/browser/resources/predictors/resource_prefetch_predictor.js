@@ -45,10 +45,11 @@ function updateResourcePrefetchPredictorDbView(database) {
   $('rpp_enabled').style.display = 'block';
   $('rpp_disabled').style.display = 'none';
 
-  var hasOriginData = database.origin_db && database.origin_db.length > 0;
+  const hasOriginData = database.origin_db && database.origin_db.length > 0;
 
-  if (hasOriginData)
+  if (hasOriginData) {
     renderOriginData($('rpp_origin_body'), database.origin_db);
+  }
 }
 
 /**
@@ -58,13 +59,13 @@ function updateResourcePrefetchPredictorDbView(database) {
  */
 function renderOriginData(body, database) {
   body.textContent = '';
-  for (let main of database) {
-    for (var j = 0; j < main.origins.length; ++j) {
-      var origin = main.origins[j];
-      var row = document.createElement('tr');
+  for (const main of database) {
+    for (let j = 0; j < main.origins.length; ++j) {
+      const origin = main.origins[j];
+      const row = document.createElement('tr');
 
       if (j == 0) {
-        var t = document.createElement('td');
+        const t = document.createElement('td');
         t.rowSpan = main.origins.length;
         t.textContent = truncateString(main.main_frame_host);
         row.appendChild(t);

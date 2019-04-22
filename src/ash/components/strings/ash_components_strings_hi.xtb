@@ -16,7 +16,6 @@
 <translation id="152892567002884378">वॉल्यूम बढ़ाएं</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, फिर <ph name="ESC" /></translation>
 <translation id="1652741121070700329">पिछले शब्द की शुरुआत में ले जाएं</translation>
-<translation id="1671169355475348905">पिछली भाषा के इनपुट के तरीके का इस्तेमाल करें</translation>
 <translation id="1679841710523778799">स्क्रीन की रोशनी बढ़ाएं</translation>
 <translation id="168356808214100546">जब तक कि आप उस विंडो पर नहीं पहुंच जाते जिसे आप खोलना चाहते हैं, तब तक <ph name="ALT" /> दबाकर रखें और <ph name="TAB" /> पर टैप करें, फिर छोड़ दें.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">बुकमार्क बार दिखाएं या छिपाएं</translation>
 <translation id="2185166372312820725">पिछले टैब पर जाएं</translation>
 <translation id="2194790690264064655"><ph name="CTRL" /> दबाएं और किसी लिंक पर क्लिक करें</translation>
+<translation id="2246352309084894470">फ़ुलस्क्रीन लॉन्चर खोलें/बंद करें</translation>
 <translation id="2382644247745281995">मौजूदा कीबोर्ड लेआउट के साथ काम नहीं करता है</translation>
 <translation id="2397416548179033562">Chrome मेनू दिखाएं</translation>
 <translation id="2424073332829844142">Caps Lock को चालू और बंद करें</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">पेज पर ज़ूम लेवल को रीसेट करें</translation>
 <translation id="2596078834055697711">विंडो का स्क्रीनशॉट लें</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, फिर <ph name="TAB" /> या <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">अगली भाषा के इनपुट के तरीके का इस्तेमाल करें</translation>
 <translation id="2699509451653686398">अपना अभी वाला वेबपेज बुकमार्क के रूप में सेव करें</translation>
 <translation id="2750942583782703988">अपना अभी वाला पेज फिर लोड करें</translation>
 <translation id="2764005613199379871">खोज पता बार में फ़ोकस रखें</translation>
@@ -104,7 +103,7 @@
 <translation id="5042305953558921026">खास जानकारी मोड कुंजी</translation>
 <translation id="5104462712192763270">अपना अभी वाला पेज सेव करें</translation>
 <translation id="5121628974188116412">पेज में सबसे नीचे जाएं</translation>
-<translation id="5222676887888702881">प्रस्थान करें</translation>
+<translation id="5222676887888702881">साइन आउट करें</translation>
 <translation id="5236674127086649162">कैश की गई सामग्री का इस्तेमाल किए बिना अपना अभी वाला पेज फिर लोड करें</translation>
 <translation id="526651782186312376">पंक्‍ति की शुरुआत तक का लेख चुनें</translation>
 <translation id="5316716239522500219">मॉनीटर मिरर करें</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">लॉक स्‍क्रीन</translation>
 <translation id="6727005317916125192">पिछला फलक</translation>
 <translation id="6740781404993465795">अगला शब्‍द या अक्षर चुनें</translation>
+<translation id="6755851152783057058">आखिरी बार इस्तेमाल किए गए इनपुट के तरीके पर जाएं</translation>
 <translation id="6760706756348334449">वॉल्यूम कम करें</translation>
 <translation id="6941333068993625698">फ़ीडबैक सबमिट करें</translation>
 <translation id="6981982820502123353">पहुंच क्षमता</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">पता बार में, कोई वेब पता लिखें, फिर <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> दबाएं</translation>
 <translation id="7254764037241667478">डिवाइस को नींद मोड में रखें (निलंबित करें)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> या <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">इनपुट करने के अगले मौजूदा तरीके पर जाएं</translation>
 <translation id="743754632698445141">किसी ऐप्लिकेशन को अनपिन करें</translation>
 <translation id="7439718573248533901">अगला अक्षर मिटाएं (आगे से मिटाएं)</translation>
 <translation id="7611271430932669992">फ़ोकस को पॉपअप और संवाद पर ले जाएं</translation>

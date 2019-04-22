@@ -38,7 +38,7 @@ class NGCaretPositionTest : public NGLayoutTest {
     SetBodyInnerHTML(String::Format(pattern, id, width, html));
     container_ = GetElementById(id);
     DCHECK(container_);
-    context_ = ToLayoutBlockFlow(container_->GetLayoutObject());
+    context_ = To<LayoutBlockFlow>(container_->GetLayoutObject());
     DCHECK(context_);
     DCHECK(context_->IsLayoutNGMixin());
     root_fragment_ = context_->CurrentFragment();
@@ -214,8 +214,7 @@ TEST_F(NGCaretPositionTest,
 
   const Position wrap_position(text_c, 1);
   const NGOffsetMapping& mapping = *NGOffsetMapping::GetFor(wrap_position);
-  const unsigned wrap_offset =
-      mapping.GetTextContentOffset(wrap_position).value();
+  const unsigned wrap_offset = *mapping.GetTextContentOffset(wrap_position);
 
   TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kUpstream),
              fragment_c, kAtTextOffset, base::Optional<unsigned>(wrap_offset));
@@ -240,8 +239,7 @@ TEST_F(NGCaretPositionTest,
 
   const Position wrap_position(text_c, 1);
   const NGOffsetMapping& mapping = *NGOffsetMapping::GetFor(wrap_position);
-  const unsigned wrap_offset =
-      mapping.GetTextContentOffset(wrap_position).value();
+  const unsigned wrap_offset = *mapping.GetTextContentOffset(wrap_position);
 
   TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kUpstream),
              fragment_c, kAtTextOffset, base::Optional<unsigned>(wrap_offset));
@@ -267,8 +265,7 @@ TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrapBetweenDeepTextNodes) {
 
   const Position wrap_position(text_c, 1);
   const NGOffsetMapping& mapping = *NGOffsetMapping::GetFor(wrap_position);
-  const unsigned wrap_offset =
-      mapping.GetTextContentOffset(wrap_position).value();
+  const unsigned wrap_offset = *mapping.GetTextContentOffset(wrap_position);
 
   TEST_CARET(ComputeNGCaretPosition(wrap_offset, TextAffinity::kUpstream),
              fragment_c, kAtTextOffset, base::Optional<unsigned>(wrap_offset));
@@ -288,7 +285,7 @@ TEST_F(NGCaretPositionTest, InlineBlockBeforeContent) {
   // Test caret position of "|bar", which shouldn't be affected by ::before
   const Position position(text, 0);
   const NGOffsetMapping& mapping = *NGOffsetMapping::GetFor(position);
-  const unsigned text_offset = mapping.GetTextContentOffset(position).value();
+  const unsigned text_offset = *mapping.GetTextContentOffset(position);
 
   TEST_CARET(ComputeNGCaretPosition(text_offset, TextAffinity::kDownstream),
              text_fragment, kAtTextOffset,

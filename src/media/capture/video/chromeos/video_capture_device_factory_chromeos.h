@@ -10,9 +10,13 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #include "media/capture/video/video_capture_device_factory.h"
 
 namespace media {
+
+class CrosImageCaptureImpl;
+class ReprocessManager;
 
 class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
     : public VideoCaptureDeviceFactory {
@@ -35,6 +39,9 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
   static gpu::GpuMemoryBufferManager* GetBufferManager();
   static void SetGpuBufferManager(gpu::GpuMemoryBufferManager* buffer_manager);
 
+  void BindCrosImageCaptureRequest(
+      cros::mojom::CrosImageCaptureRequest request);
+
  private:
   // Initializes the factory. The factory is functional only after this call
   // succeeds.
@@ -52,6 +59,10 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
   // that |camera_hal_delegate_| issues and receives must be sequenced through
   // |camera_hal_ipc_thread_|.
   scoped_refptr<CameraHalDelegate> camera_hal_delegate_;
+
+  std::unique_ptr<ReprocessManager> reprocess_manager_;
+
+  std::unique_ptr<CrosImageCaptureImpl> cros_image_capture_;
 
   bool initialized_;
 

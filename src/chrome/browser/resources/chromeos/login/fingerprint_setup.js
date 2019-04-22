@@ -8,9 +8,9 @@
  */
 
 /**
- * @enum {number}
  * These values must be kept in sync with the values in
  * third_party/cros_system_api/dbus/service_constants.h.
+ * @enum {number}
  */
 var FingerprintResultType = {
   SUCCESS: 0,
@@ -82,7 +82,7 @@ Polymer({
 
   /**
    * Called when a fingerprint enroll scan result is received.
-   * @param {number} scanResult Result of the enroll scan.
+   * @param {FingerprintResultType} scanResult Result of the enroll scan.
    * @param {boolean} isComplete Whether fingerprint enrollment is complete.
    * @param {number} percentComplete Percentage of completion of the enrollment.
    */
@@ -218,11 +218,12 @@ Polymer({
   onProgressChanged_: function(newValue, oldValue) {
     // Start a new enrollment, so reset all enrollment related states.
     if (newValue === 0) {
-      this.$.arc.reset();
+      /** @type {!CrFingerprintProgressArcElement} */ (this.$.arc).reset();
       this.scanResult_ = FingerprintResultType.SUCCESS;
       return;
     }
 
-    this.$.arc.setProgress(oldValue, newValue, newValue === 100);
+    /** @type {!CrFingerprintProgressArcElement} */ (this.$.arc)
+        .setProgress(oldValue, newValue, newValue === 100);
   },
 });

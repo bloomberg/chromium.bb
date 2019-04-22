@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
+#include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -23,11 +25,10 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/fake_shill_manager_client.h"
-#include "chromeos/dbus/session_manager_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/shill/fake_shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/web_contents.h"
@@ -58,7 +59,7 @@ class DeviceDisablingTest
     : public OobeBaseTest,
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
-  DeviceDisablingTest();
+  DeviceDisablingTest() = default;
 
   // Sets up a device state blob that indicates the device is disabled.
   void SetDeviceDisabledPolicy();
@@ -78,25 +79,25 @@ class DeviceDisablingTest
   void UpdateState(NetworkError::ErrorReason reason) override;
 
   std::unique_ptr<base::RunLoop> network_state_change_wait_run_loop_;
+  NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 
  private:
-  FakeSessionManagerClient* fake_session_manager_client_;
   policy::DevicePolicyCrosTestHelper test_helper_;
+
+  chromeos::DeviceStateMixin device_state_{
+      &mixin_host_,
+      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDisablingTest);
 };
 
-
-DeviceDisablingTest::DeviceDisablingTest()
-    : fake_session_manager_client_(new FakeSessionManagerClient) {
-}
 
 void DeviceDisablingTest::SetDeviceDisabledPolicy() {
   // Prepare a policy fetch response that indicates the device is disabled.
   test_helper_.device_policy()->policy_data().mutable_device_state()->
       set_device_mode(enterprise_management::DeviceState::DEVICE_MODE_DISABLED);
   test_helper_.device_policy()->Build();
-  fake_session_manager_client_->set_device_policy(
+  FakeSessionManagerClient::Get()->set_device_policy(
       test_helper_.device_policy()->GetBlob());
 }
 
@@ -108,7 +109,7 @@ void DeviceDisablingTest::MarkDisabledAndWaitForPolicyFetch() {
                                                run_loop.QuitClosure());
   SetDeviceDisabledPolicy();
   // Trigger a policy fetch.
-  fake_session_manager_client_->OnPropertyChangeComplete(true);
+  FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
   // Wait for the policy fetch to complete and the disabled setting to change.
   run_loop.Run();
 }
@@ -126,13 +127,12 @@ std::string DeviceDisablingTest::GetCurrentScreenName(
 }
 
 void DeviceDisablingTest::SetUpInProcessBrowserTestFixture() {
+  // Override FakeSessionManagerClient. This will be shut down by the browser.
+  chromeos::SessionManagerClient::InitializeFakeInMemory();
+
   OobeBaseTest::SetUpInProcessBrowserTestFixture();
 
-  DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-      std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
-
   test_helper_.InstallOwnerKey();
-  test_helper_.MarkAsEnterpriseOwned();
 }
 
 void DeviceDisablingTest::SetUpOnMainThread() {
@@ -213,7 +213,8 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   ASSERT_TRUE(signin_screen_handler);
   signin_screen_handler->SetOfflineTimeoutForTesting(
       base::TimeDelta::FromSeconds(0));
-  SimulateNetworkOffline();
+  network_portal_detector_.SimulateDefaultNetworkState(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
   network_state_change_wait_run_loop_->Run();
   network_state_informer->RemoveObserver(this);
   base::RunLoop().RunUntilIdle();

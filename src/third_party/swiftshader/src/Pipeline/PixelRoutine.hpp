@@ -25,7 +25,10 @@ namespace sw
 	class PixelRoutine : public sw::QuadRasterizer, public ShaderCore
 	{
 	public:
-		PixelRoutine(const PixelProcessor::State &state, const PixelShader *shader);
+		PixelRoutine(const PixelProcessor::State &state,
+			vk::PipelineLayout const *pipelineLayout,
+			SpirvShader const *spirvShader,
+			const vk::DescriptorSet::Bindings &descriptorSets);
 
 		virtual ~PixelRoutine();
 
@@ -34,27 +37,24 @@ namespace sw
 		Float4 w;    // Used as is
 		Float4 rhw;  // Reciprocal w
 
-		RegisterArray<MAX_FRAGMENT_INPUTS> v;   // Varying registers
+		SpirvRoutine routine;
+		const vk::DescriptorSet::Bindings &descriptorSets;
 
 		// Depth output
 		Float4 oDepth;
 
-		typedef Shader::SourceParameter Src;
-		typedef Shader::DestinationParameter Dst;
-
 		virtual void setBuiltins(Int &x, Int &y, Float4(&z)[4], Float4 &w) = 0;
 		virtual void applyShader(Int cMask[4]) = 0;
 		virtual Bool alphaTest(Int cMask[4]) = 0;
-		virtual void rasterOperation(Float4 &fog, Pointer<Byte> cBuffer[4], Int &x, Int sMask[4], Int zMask[4], Int cMask[4]) = 0;
+		virtual void rasterOperation(Pointer<Byte> cBuffer[4], Int &x, Int sMask[4], Int zMask[4], Int cMask[4]) = 0;
 
-		virtual void quad(Pointer<Byte> cBuffer[4], Pointer<Byte> &zBuffer, Pointer<Byte> &sBuffer, Int cMask[4], Int &x, Int &y);
+		void quad(Pointer<Byte> cBuffer[4], Pointer<Byte> &zBuffer, Pointer<Byte> &sBuffer, Int cMask[4], Int &x, Int &y) override;
 
 		void alphaTest(Int &aMask, Short4 &alpha);
 		void alphaToCoverage(Int cMask[4], Float4 &alpha);
 
 		// Raster operations
 		void alphaBlend(int index, Pointer<Byte> &cBuffer, Vector4s &current, Int &x);
-		void logicOperation(int index, Pointer<Byte> &cBuffer, Vector4s &current, Int &x);
 		void writeColor(int index, Pointer<Byte> &cBuffer, Int &i, Vector4s &current, Int &sMask, Int &zMask, Int &cMask);
 		void alphaBlend(int index, Pointer<Byte> &cBuffer, Vector4f &oC, Int &x);
 		void writeColor(int index, Pointer<Byte> &cBuffer, Int &i, Vector4f &oC, Int &sMask, Int &zMask, Int &cMask);
@@ -66,9 +66,9 @@ namespace sw
 	private:
 		Float4 interpolateCentroid(Float4 &x, Float4 &y, Float4 &rhw, Pointer<Byte> planeEquation, bool flat, bool perspective);
 		void stencilTest(Pointer<Byte> &sBuffer, int q, Int &x, Int &sMask, Int &cMask);
-		void stencilTest(Byte8 &value, VkCompareOp stencilCompareMode, bool CCW);
-		void stencilOperation(Byte8 &newValue, Byte8 &bufferValue, VkStencilOp stencilPassOperation, VkStencilOp stencilZFailOperation, VkStencilOp stencilFailOperation, bool CCW, Int &zMask, Int &sMask);
-		void stencilOperation(Byte8 &output, Byte8 &bufferValue, VkStencilOp operation, bool CCW);
+		void stencilTest(Byte8 &value, VkCompareOp stencilCompareMode, bool isBack);
+		void stencilOperation(Byte8 &newValue, Byte8 &bufferValue, VkStencilOpState const &ops, bool isBack, Int &zMask, Int &sMask);
+		void stencilOperation(Byte8 &output, Byte8 &bufferValue, VkStencilOp operation, bool isBack);
 		Bool depthTest(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &sMask, Int &zMask, Int &cMask);
 
 		// Raster operations
@@ -83,6 +83,12 @@ namespace sw
 		void sRGBtoLinear16_12_16(Vector4s &c);
 		void linearToSRGB16_12_16(Vector4s &c);
 		Float4 sRGBtoLinear(const Float4 &x);
+
+		Bool depthTest32F(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &sMask, Int &zMask, Int &cMask);
+		Bool depthTest16(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &sMask, Int &zMask, Int &cMask);
+
+		void writeDepth32F(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &zMask);
+		void writeDepth16(Pointer<Byte> &zBuffer, int q, Int &x, Float4 &z, Int &zMask);
 
 		bool colorUsed();
 	};

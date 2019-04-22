@@ -12,11 +12,14 @@
  */
 function onKeysetReady(keyset, continueTestCallback) {
   var container = document.querySelector('.inputview-container');
-  var bounds = container.getBoundingClientRect();
-  if (bounds.bottom > 0 && keyset in controller.container_.keysetViewMap &&
-      keyset == controller.currentKeyset_) {
-    continueTestCallback();
-    return;
+  if (container) {
+    var bounds = container.getBoundingClientRect();
+    console.log(['container', container, bounds]);
+    if (bounds.bottom > 0 && keyset in controller.container_.keysetViewMap &&
+        keyset == controller.currentKeyset_) {
+      continueTestCallback();
+      return;
+    }
   }
   setTimeout(function() {
     onKeysetReady(keyset, continueTestCallback);

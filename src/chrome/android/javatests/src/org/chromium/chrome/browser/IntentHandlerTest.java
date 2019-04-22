@@ -463,4 +463,23 @@ public class IntentHandlerTest {
         checkIntentForMhtmlFileOrContent(INTENT_URLS_AND_TYPES_FOR_MHTML, true);
         checkIntentForMhtmlFileOrContent(INTENT_URLS_AND_TYPES_NOT_FOR_MHTML, false);
     }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testCreateTrustedOpenNewTabIntent() {
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent intent = IntentHandler.createTrustedOpenNewTabIntent(context, true);
+
+        Assert.assertEquals(intent.getAction(), Intent.ACTION_VIEW);
+        Assert.assertEquals(intent.getData(), Uri.parse(UrlConstants.NTP_URL));
+        Assert.assertTrue(intent.getBooleanExtra(Browser.EXTRA_CREATE_NEW_TAB, false));
+        Assert.assertTrue(IntentHandler.wasIntentSenderChrome(intent));
+        Assert.assertTrue(
+                intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false));
+
+        intent = IntentHandler.createTrustedOpenNewTabIntent(context, false);
+        Assert.assertFalse(
+                intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true));
+    }
 }

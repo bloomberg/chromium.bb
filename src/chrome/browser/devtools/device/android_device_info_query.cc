@@ -4,7 +4,8 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -91,7 +92,7 @@ const BrowserDescriptor kBrowserDescriptors[] = {
 };
 
 const BrowserDescriptor* FindBrowserDescriptor(const std::string& package) {
-  size_t count = arraysize(kBrowserDescriptors);
+  size_t count = base::size(kBrowserDescriptors);
   for (size_t i = 0; i < count; i++) {
     if (kBrowserDescriptors[i].package == package)
       return &kBrowserDescriptors[i];
@@ -101,7 +102,7 @@ const BrowserDescriptor* FindBrowserDescriptor(const std::string& package) {
 
 bool BrowserCompare(const AndroidDeviceManager::BrowserInfo& a,
                     const AndroidDeviceManager::BrowserInfo& b) {
-  size_t count = arraysize(kBrowserDescriptors);
+  size_t count = base::size(kBrowserDescriptors);
   for (size_t i = 0; i < count; i++) {
     bool isA = kBrowserDescriptors[i].display_name == a.display_name;
     bool isB = kBrowserDescriptors[i].display_name == b.display_name;
@@ -158,7 +159,7 @@ StringMap MapSocketsToProcesses(const std::string& response) {
     if (fields[3] != "00010000" || fields[5] != "01")
       continue;
     std::string path_field = fields[7];
-    if (path_field.size() < 1 || path_field[0] != '@')
+    if (path_field.empty() || path_field[0] != '@')
       continue;
     size_t socket_name_pos = path_field.find(kDevToolsSocketSuffix);
     if (socket_name_pos == std::string::npos)

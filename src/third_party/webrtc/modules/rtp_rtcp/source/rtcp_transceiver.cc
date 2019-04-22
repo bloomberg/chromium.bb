@@ -16,12 +16,16 @@
 #include "modules/rtp_rtcp/source/rtcp_packet/transport_feedback.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/event.h"
-#include "rtc_base/timeutils.h"
+#include "rtc_base/task_utils/to_queued_task.h"
+#include "rtc_base/time_utils.h"
 
 namespace webrtc {
 namespace {
 struct Destructor {
-  void operator()() { rtcp_transceiver = nullptr; }
+  void operator()() {
+    rtcp_transceiver->StopPeriodicTask();
+    rtcp_transceiver = nullptr;
+  }
   std::unique_ptr<RtcpTransceiverImpl> rtcp_transceiver;
 };
 }  // namespace
@@ -41,8 +45,8 @@ RtcpTransceiver::~RtcpTransceiver() {
 
 void RtcpTransceiver::Stop(std::function<void()> on_destroyed) {
   RTC_DCHECK(rtcp_transceiver_);
-  task_queue_->PostTask(rtc::NewClosure(
-      Destructor{std::move(rtcp_transceiver_)}, std::move(on_destroyed)));
+  task_queue_->PostTask(ToQueuedTask(Destructor{std::move(rtcp_transceiver_)},
+                                     std::move(on_destroyed)));
   RTC_DCHECK(!rtcp_transceiver_);
 }
 
@@ -65,8 +69,7 @@ void RtcpTransceiver::RemoveMediaReceiverRtcpObserver(
   auto remove = [ptr, remote_ssrc, observer] {
     ptr->RemoveMediaReceiverRtcpObserver(remote_ssrc, observer);
   };
-  task_queue_->PostTask(
-      rtc::NewClosure(std::move(remove), std::move(on_removed)));
+  task_queue_->PostTask(ToQueuedTask(std::move(remove), std::move(on_removed)));
 }
 
 void RtcpTransceiver::SetReadyToSend(bool ready) {

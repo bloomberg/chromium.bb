@@ -15,9 +15,9 @@
 #include <vector>
 
 #include "absl/types/optional.h"
-#include "modules/congestion_controller/goog_cc/bitrate_estimator.h"
-
+#include "api/transport/webrtc_key_value_config.h"
 #include "api/units/data_rate.h"
+#include "modules/congestion_controller/goog_cc/bitrate_estimator.h"
 
 namespace webrtc {
 
@@ -25,10 +25,12 @@ struct PacketFeedback;
 
 class AcknowledgedBitrateEstimator {
  public:
-  explicit AcknowledgedBitrateEstimator(
+  AcknowledgedBitrateEstimator(
+      const WebRtcKeyValueConfig* key_value_config,
       std::unique_ptr<BitrateEstimator> bitrate_estimator);
 
-  AcknowledgedBitrateEstimator();
+  explicit AcknowledgedBitrateEstimator(
+      const WebRtcKeyValueConfig* key_value_config);
   ~AcknowledgedBitrateEstimator();
 
   void IncomingPacketFeedbackVector(
@@ -38,14 +40,11 @@ class AcknowledgedBitrateEstimator {
   absl::optional<DataRate> bitrate() const;
   absl::optional<DataRate> PeekRate() const;
   void SetAlrEndedTimeMs(int64_t alr_ended_time_ms);
-  void SetAllocatedBitrateWithoutFeedback(uint32_t bitrate_bps);
 
  private:
   void MaybeExpectFastRateChange(int64_t packet_arrival_time_ms);
-  const bool account_for_unacknowledged_traffic_;
   absl::optional<int64_t> alr_ended_time_ms_;
   std::unique_ptr<BitrateEstimator> bitrate_estimator_;
-  uint32_t allocated_bitrate_without_feedback_bps_ = 0;
 };
 
 }  // namespace webrtc

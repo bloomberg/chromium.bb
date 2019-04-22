@@ -153,7 +153,7 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
         assertTrue(task.isPersisted());
 
         task = BackgroundTaskSchedulerGcmNetworkManager.createTaskFromTaskInfo(
-                taskBuilder.setRequiredNetworkType(TaskInfo.NETWORK_TYPE_UNMETERED).build());
+                taskBuilder.setRequiredNetworkType(TaskInfo.NetworkType.UNMETERED).build());
         assertEquals(Task.NETWORK_STATE_UNMETERED, task.getRequiredNetwork());
 
         task = BackgroundTaskSchedulerGcmNetworkManager.createTaskFromTaskInfo(

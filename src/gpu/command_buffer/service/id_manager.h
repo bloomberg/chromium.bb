@@ -5,7 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_ID_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_ID_MANAGER_H_
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+
 #include "base/macros.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_gles2_export.h"
@@ -38,7 +39,7 @@ class GPU_GLES2_EXPORT IdManager {
   bool GetClientId(GLuint service_id, GLuint* client_id);
 
  private:
-  typedef base::hash_map<GLuint, GLuint> MapType;
+  typedef std::unordered_map<GLuint, GLuint> MapType;
   MapType id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IdManager);
@@ -48,4 +49,3 @@ class GPU_GLES2_EXPORT IdManager {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_ID_MANAGER_H_
-

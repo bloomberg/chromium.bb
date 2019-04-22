@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
@@ -23,6 +24,7 @@
 #include "content/public/common/drop_data.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_view_host.h"
@@ -71,8 +73,8 @@ class RenderViewHostTest : public RenderViewHostImplTestHarness {
 // All about URLs reported by the renderer should get rewritten to about:blank.
 // See RenderViewHost::OnNavigate for a discussion.
 TEST_F(RenderViewHostTest, FilterAbout) {
-  main_test_rfh()->NavigateAndCommitRendererInitiated(
-      true, GURL("about:cache"));
+  NavigationSimulator::NavigateAndCommitFromDocument(GURL("about:cache"),
+                                                     main_test_rfh());
   ASSERT_TRUE(controller().GetVisibleEntry());
   EXPECT_EQ(GURL(kBlockedURL), controller().GetVisibleEntry()->GetURL());
 }
@@ -85,6 +87,34 @@ TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
   std::unique_ptr<MockWidgetImpl> widget_impl =
       std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
   test_rvh()->CreateNewFullscreenWidget(routing_id, std::move(widget));
+}
+
+// The RenderViewHost tells the renderer process about SetBackgroundOpaque()
+// changes.
+TEST_F(RenderViewHostTest, SetBackgroundOpaque) {
+  for (bool value : {true, false}) {
+    SCOPED_TRACE(value);
+    // This method is part of RenderWidgetHostOwnerDelegate, provided to the
+    // main frame RenderWidgetHost, which uses it to inform the RenderView
+    // in the renderer process of the background opaque state.
+    auto* as_owner_delegate =
+        static_cast<RenderWidgetHostOwnerDelegate*>(test_rvh());
+    as_owner_delegate->SetBackgroundOpaque(value);
+
+    // This RenderWidget(View) was a main frame, so it passes along
+    // transparent background color to the RenderView.
+    const IPC::Message* set_background =
+        process()->sink().GetUniqueMessageMatching(
+            ViewMsg_SetBackgroundOpaque::ID);
+    ASSERT_TRUE(set_background);
+    std::tuple<bool> sent_background;
+    ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
+    EXPECT_EQ(std::get<0>(sent_background), value);
+
+    // GetUniqueMessageMatching() on the next trip through the loop should
+    // not find the message from the current loop, so remove that one.
+    process()->sink().ClearMessages();
+  }
 }
 
 // Ensure we do not grant bindings to a process shared with unprivileged views.

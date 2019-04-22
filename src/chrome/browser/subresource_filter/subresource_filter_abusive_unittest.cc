@@ -151,7 +151,7 @@ TEST_P(SubresourceFilterAbusiveTest, ConfigCombination) {
             DidSendConsoleMessage(kAbusiveWarnMessage));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     SubresourceFilterAbusiveTest,
     ::testing::Combine(

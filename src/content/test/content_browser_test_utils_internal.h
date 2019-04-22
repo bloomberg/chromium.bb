@@ -231,18 +231,67 @@ class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(ShowWidgetMessageFilter);
 };
 
-// A BrowserMessageFilter that drops SwapOut ACK messages.
-class SwapoutACKMessageFilter : public BrowserMessageFilter {
+// A BrowserMessageFilter that drops a blacklisted message.
+class DropMessageFilter : public BrowserMessageFilter {
  public:
-  SwapoutACKMessageFilter();
+  DropMessageFilter(uint32_t message_class, uint32_t drop_message_id);
 
  protected:
-  ~SwapoutACKMessageFilter() override;
+  ~DropMessageFilter() override;
 
  private:
   // BrowserMessageFilter:
   bool OnMessageReceived(const IPC::Message& message) override;
-  DISALLOW_COPY_AND_ASSIGN(SwapoutACKMessageFilter);
+
+  const uint32_t drop_message_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(DropMessageFilter);
+};
+
+// A BrowserMessageFilter that observes a message without handling it, and
+// reports when it was seen.
+class ObserveMessageFilter : public BrowserMessageFilter {
+ public:
+  ObserveMessageFilter(uint32_t message_class, uint32_t watch_message_id);
+
+  bool has_received_message() { return received_; }
+
+  // Spins a RunLoop until the message is observed.
+  void Wait();
+
+ protected:
+  ~ObserveMessageFilter() override;
+
+  // BrowserMessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override;
+
+ private:
+  void QuitWait();
+
+  const uint32_t watch_message_id_;
+  bool received_ = false;
+  base::OnceClosure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(ObserveMessageFilter);
+};
+
+// This observer waits until WebContentsObserver::OnRendererUnresponsive
+// notification.
+class UnresponsiveRendererObserver : public WebContentsObserver {
+ public:
+  explicit UnresponsiveRendererObserver(WebContents* web_contents);
+  ~UnresponsiveRendererObserver() override;
+
+  RenderProcessHost* Wait(base::TimeDelta timeout = base::TimeDelta::Max());
+
+ private:
+  // WebContentsObserver:
+  void OnRendererUnresponsive(RenderProcessHost* render_process_host) override;
+
+  RenderProcessHost* captured_render_process_host_ = nullptr;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(UnresponsiveRendererObserver);
 };
 
 }  // namespace content

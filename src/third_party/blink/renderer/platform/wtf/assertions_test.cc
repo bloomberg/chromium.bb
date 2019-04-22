@@ -33,6 +33,6 @@ TEST(AssertionsTest, Assertions) {
 
   SECURITY_CHECK(true);
   EXPECT_DEATH_IF_SUPPORTED(SECURITY_CHECK(false), "");
-};
+}
 
 }  // namespace WTF

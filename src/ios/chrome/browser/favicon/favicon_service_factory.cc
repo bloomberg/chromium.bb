@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/favicon/core/favicon_service_impl.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -34,7 +34,8 @@ favicon::FaviconService* FaviconServiceFactory::GetForBrowserState(
 
 // static
 FaviconServiceFactory* FaviconServiceFactory::GetInstance() {
-  return base::Singleton<FaviconServiceFactory>::get();
+  static base::NoDestructor<FaviconServiceFactory> instance;
+  return instance.get();
 }
 
 FaviconServiceFactory::FaviconServiceFactory()

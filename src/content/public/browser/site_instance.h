@@ -82,7 +82,7 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // Whether this SiteInstance has a running process associated with it.
   // This may return true before the first call to GetProcess(), in cases where
   // we use process-per-site and there is an existing process available.
-  virtual bool HasProcess() const = 0;
+  virtual bool HasProcess() = 0;
 
   // Returns the current RenderProcessHost being used to render pages for this
   // SiteInstance.  If there is no RenderProcessHost (because either none has
@@ -100,14 +100,20 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // SiteInstances) belongs.
   virtual content::BrowserContext* GetBrowserContext() const = 0;
 
-  // Get the web site that this SiteInstance is rendering pages for.  This
+  // Get the web site that this SiteInstance is rendering pages for. This
   // includes the scheme and registered domain, but not the port.
   //
-  // NOTE: In most cases, this value should not be considered authoritative
-  // because a SiteInstance can usually host pages from multiple sites.  It is
-  // only an accurate representation of the pages within the SiteInstance in
-  // the "site per process" process model, or for sites that require process
-  // isolation (e.g., WebUI, extensions).
+  // NOTE: In most cases, code should be performing checks against the origin
+  // returned by |RenderFrameHost::GetLastCommittedOrigin()|. In contrast, the
+  // GURL returned by |GetSiteURL()| should not be considered authoritative
+  // because:
+  // - a SiteInstance can host pages from multiple sites if "site per process"
+  //   is not enabled and the SiteInstance isn't hosting pages that require
+  //   process isolation (e.g. WebUI or extensions)
+  // - even with site per process, the site URL is not an origin: while often
+  //   derived from the origin, it only contains the scheme and the eTLD + 1,
+  //   i.e. an origin with the host "deeply.nested.subdomain.example.com"
+  //   corresponds to a site URL with the host "example.com".
   virtual const GURL& GetSiteURL() const = 0;
 
   // Gets a SiteInstance for the given URL that shares the current
@@ -130,6 +136,18 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // process. This only returns true under the "site per process" process model.
   virtual bool RequiresDedicatedProcess() = 0;
 
+  // Return whether this SiteInstance and the provided |url| are part of the
+  // same web site, for the purpose of assigning them to processes accordingly.
+  // The decision is currently based on the registered domain of the URLs
+  // (google.com, bbc.co.uk), as well as the scheme (https, http). This ensures
+  // that two pages will be in the same process if they can communicate with
+  // other via JavaScript. (e.g., docs.google.com and mail.google.com have DOM
+  // access to each other if they both set their document.domain properties to
+  // google.com.) Note that if the destination is a blank page, we consider
+  // that to be part of the same web site for the purposes for process
+  // assignment.
+  virtual bool IsSameSiteWithURL(const GURL& url) = 0;
+
   // Factory method to create a new SiteInstance.  This will create a new
   // new BrowsingInstance, so it should only be used when creating a new tab
   // from scratch (or similar circumstances).
@@ -151,24 +169,25 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // chrome-native:// leave the site unassigned.
   static bool ShouldAssignSiteForURL(const GURL& url);
 
-  // Return whether both URLs are part of the same web site, for the purpose of
-  // assigning them to processes accordingly.  The decision is currently based
-  // on the registered domain of the URLs (google.com, bbc.co.uk), as well as
-  // the scheme (https, http).  This ensures that two pages will be in
-  // the same process if they can communicate with other via JavaScript.
-  // (e.g., docs.google.com and mail.google.com have DOM access to each other
-  // if they both set their document.domain properties to google.com.)
-  // Note that if the destination is a blank page, we consider that to be part
-  // of the same web site for the purposes for process assignment.
-  static bool IsSameWebSite(content::BrowserContext* browser_context,
-                            const GURL& src_url,
-                            const GURL& dest_url);
-
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host. Prior to
   // determining the site, |url| is resolved to an effective URL via
   // ContentBrowserClient::GetEffectiveURL().
   static GURL GetSiteForURL(BrowserContext* context, const GURL& url);
+
+  // Starts requiring a dedicated process for |url|'s site.  On platforms where
+  // strict site isolation is disabled, this may be used as a runtime signal
+  // that a certain site should become process-isolated, because its security
+  // is important to the user (e.g., if the user has typed a password on that
+  // site).  The site will be determined from |url|'s scheme and eTLD+1. If
+  // |context| is non-null, the site will be isolated only within that
+  // BrowserContext; if |context| is null, the site will be isolated globally
+  // for all BrowserContexts.
+  //
+  // Note that this has no effect if site isolation is turned off, such as via
+  // the kDisableSiteIsolation cmdline flag or enterprise policy -- see also
+  // SiteIsolationPolicy::AreDynamicIsolatedOriginsEnabled().
+  static void StartIsolatingSite(BrowserContext* context, const GURL& url);
 
  protected:
   friend class base::RefCounted<SiteInstance>;

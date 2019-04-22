@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.uiautomator.By;
@@ -25,7 +25,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -55,8 +56,9 @@ public class NotificationIntentInterceptorTest {
     // Builds a simple notification used in tests.
     private Notification buildSimpleNotification(String title) {
         ChromeNotificationBuilder builder =
-                NotificationBuilderFactory.createChromeNotificationBuilder(
-                        true /* preferCompat */, ChannelDefinitions.ChannelId.DOWNLOADS);
+                NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
+                        ChannelDefinitions.ChannelId.DOWNLOADS, null /* remoteAppPackageName */,
+                        NotificationTestUtil.getTestNotificationMetadata());
 
         // Set content intent. UI automator may tap the notification and expand the action buttons,
         // in order to reduce flakiness, don't add action button.
@@ -65,12 +67,10 @@ public class NotificationIntentInterceptorTest {
         Uri uri = Uri.parse("www.example.com");
         contentIntent.setData(uri);
         contentIntent.setAction(Intent.ACTION_VIEW);
-        int flags = PendingIntent.FLAG_ONE_SHOT;
-        PendingIntent contentPendingIntent =
-                PendingIntent.getActivity(context, 0, contentIntent, flags);
+        PendingIntentProvider contentPendingIntent =
+                PendingIntentProvider.getActivity(context, 0, contentIntent, 0);
         assert contentPendingIntent != null;
-        builder.setContentIntent(NotificationIntentInterceptor.createInterceptPendingIntent(
-                NotificationIntentInterceptor.IntentType.CONTENT_INTENT, contentPendingIntent));
+        builder.setContentIntent(contentPendingIntent);
         builder.setContentTitle(title);
         builder.setSmallIcon(R.drawable.offline_pin);
         return builder.build();
@@ -84,9 +84,9 @@ public class NotificationIntentInterceptorTest {
     private void clickNotification(String text) {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.openNotification();
-        device.wait(
-                Until.hasObject(By.text(text)), WAIT_FOR_NOTIFICATION_SHOWN_TIMEOUT_MILLISECONDS);
-        UiObject2 textObject = device.findObject(By.text(text));
+        device.wait(Until.hasObject(By.textContains(text)),
+                WAIT_FOR_NOTIFICATION_SHOWN_TIMEOUT_MILLISECONDS);
+        UiObject2 textObject = device.findObject(By.textContains(text));
         Assert.assertEquals(text, textObject.getText());
         textObject.click();
     }
@@ -99,12 +99,14 @@ public class NotificationIntentInterceptorTest {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "Flaky on Kitkat, crbug.com/906843")
+    @RetryOnFailure
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testContentIntentInterception() {
         // Send notification.
         NotificationManager notificationManager =
                 (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
         notificationManager.notify(0, buildSimpleNotification(TEST_NOTIFICATION_TITLE));
 
         // Click notification body.

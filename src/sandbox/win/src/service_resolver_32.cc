@@ -156,7 +156,7 @@ struct ServiceFullThunk {
 
 #pragma pack(pop)
 
-};  // namespace
+}  // namespace
 
 namespace sandbox {
 

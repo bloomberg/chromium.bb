@@ -13,6 +13,9 @@ config("ocmock_warnings") {
   cflags = [
     "-Wno-semicolon-before-method-body",
     "-Wno-undeclared-selector",
+
+    # https://github.com/erikdoe/ocmock/issues/369
+    "-Wno-incompatible-pointer-types",
   ]
 }
 

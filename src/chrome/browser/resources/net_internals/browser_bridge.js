@@ -6,7 +6,7 @@
  * This class provides a "bridge" for communicating between the javascript and
  * the browser.
  */
-var BrowserBridge = (function() {
+const BrowserBridge = (function() {
   'use strict';
 
   /**
@@ -97,6 +97,10 @@ var BrowserBridge = (function() {
       this.send('storeDebugLogs');
     },
 
+    storeCombinedDebugLogs: function() {
+      this.send('storeCombinedDebugLogs');
+    },
+
     setNetworkDebugMode: function(subsystem) {
       this.send('setNetworkDebugMode', [subsystem]);
     },
@@ -110,33 +114,45 @@ var BrowserBridge = (function() {
     },
 
     receivedHSTSResult: function(info) {
-      for (var i = 0; i < this.hstsObservers_.length; i++)
+      for (let i = 0; i < this.hstsObservers_.length; i++) {
         this.hstsObservers_[i].onHSTSQueryResult(info);
+      }
     },
 
     receivedExpectCTResult: function(info) {
-      for (var i = 0; i < this.expectCTObservers_.length; i++)
+      for (let i = 0; i < this.expectCTObservers_.length; i++) {
         this.expectCTObservers_[i].onExpectCTQueryResult(info);
+      }
     },
 
     receivedExpectCTTestReportResult: function(result) {
-      for (var i = 0; i < this.expectCTObservers_.length; i++)
+      for (let i = 0; i < this.expectCTObservers_.length; i++) {
         this.expectCTObservers_[i].onExpectCTTestReportResult(result);
+      }
     },
 
     receivedONCFileParse: function(error) {
-      for (var i = 0; i < this.crosONCFileParseObservers_.length; i++)
+      for (let i = 0; i < this.crosONCFileParseObservers_.length; i++) {
         this.crosONCFileParseObservers_[i].onONCFileParse(error);
+      }
     },
 
     receivedStoreDebugLogs: function(status) {
-      for (var i = 0; i < this.storeDebugLogsObservers_.length; i++)
+      for (let i = 0; i < this.storeDebugLogsObservers_.length; i++) {
         this.storeDebugLogsObservers_[i].onStoreDebugLogs(status);
+      }
+    },
+
+    receivedStoreCombinedDebugLogs: function(status) {
+      for (let i = 0; i < this.storeDebugLogsObservers_.length; i++) {
+        this.storeDebugLogsObservers_[i].onStoreCombinedDebugLogs(status);
+      }
     },
 
     receivedSetNetworkDebugMode: function(status) {
-      for (var i = 0; i < this.setNetworkDebugModeObservers_.length; i++)
+      for (let i = 0; i < this.setNetworkDebugModeObservers_.length; i++) {
         this.setNetworkDebugModeObservers_[i].onSetNetworkDebugMode(status);
+      }
     },
 
     //--------------------------------------------------------------------------
@@ -176,6 +192,7 @@ var BrowserBridge = (function() {
      * back with:
      *
      *   observer.onStoreDebugLogs(status);
+     *   observer.onStoreCombinedDebugLogs(status);
      */
     addStoreDebugLogsObserver: function(observer) {
       this.storeDebugLogsObservers_.push(observer);

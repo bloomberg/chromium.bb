@@ -14,7 +14,9 @@
 #include "core/fxge/cfx_facecache.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_gemodule.h"
+#include "core/fxge/cfx_glyphbitmap.h"
 #include "core/fxge/cfx_renderdevice.h"
+#include "core/fxge/cfx_substfont.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/fx_freetype.h"
 #include "third_party/base/span.h"
@@ -31,7 +33,7 @@ void DoNothing(void* info, const void* data, size_t size) {}
 
 bool CGDrawGlyphRun(CGContextRef pContext,
                     int nChars,
-                    const FXTEXT_CHARPOS* pCharPos,
+                    const TextCharPos* pCharPos,
                     CFX_Font* pFont,
                     const CFX_Matrix* pObject2Device,
                     float font_size,
@@ -103,7 +105,7 @@ void CFX_AggDeviceDriver::DestroyPlatform() {
 }
 
 bool CFX_AggDeviceDriver::DrawDeviceText(int nChars,
-                                         const FXTEXT_CHARPOS* pCharPos,
+                                         const TextCharPos* pCharPos,
                                          CFX_Font* pFont,
                                          const CFX_Matrix* pObject2Device,
                                          float font_size,

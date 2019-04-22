@@ -39,7 +39,7 @@ public class TextScalePreference extends SeekBarPreference {
     public TextScalePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        mFontSizePrefs = FontSizePrefs.getInstance(getContext());
+        mFontSizePrefs = FontSizePrefs.getInstance();
 
         setLayoutResource(R.layout.custom_preference);
         setWidgetLayoutResource(R.layout.preference_text_scale);

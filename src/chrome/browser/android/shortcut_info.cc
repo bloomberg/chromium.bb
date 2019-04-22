@@ -53,8 +53,7 @@ void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
   if (manifest.start_url.is_valid())
     url = manifest.start_url;
 
-  if (manifest.scope.is_valid())
-    scope = manifest.scope;
+  scope = manifest.scope;
 
   // Set the display based on the manifest value, if any.
   if (manifest.display != blink::kWebDisplayModeUndefined)
@@ -112,7 +111,7 @@ void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
     if (!manifest.share_target->params.url.is_null())
       share_target->params.url = manifest.share_target->params.url.string();
 
-    for (blink::Manifest::ShareTargetFile manifest_share_target_file :
+    for (blink::Manifest::FileFilter manifest_share_target_file :
          manifest.share_target->params.files) {
       ShareTargetParamsFile share_target_params_file;
       share_target_params_file.name = manifest_share_target_file.name;

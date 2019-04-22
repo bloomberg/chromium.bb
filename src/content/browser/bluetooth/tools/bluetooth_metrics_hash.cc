@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/logging.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 

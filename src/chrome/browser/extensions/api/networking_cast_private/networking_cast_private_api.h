@@ -22,7 +22,7 @@ class NetworkingCastPrivateVerifyDestinationFunction
  public:
   NetworkingCastPrivateVerifyDestinationFunction() {}
   DECLARE_EXTENSION_FUNCTION("networking.castPrivate.verifyDestination",
-                             NETWORKINGCASTPRIVATE_VERIFYDESTINATION);
+                             NETWORKINGCASTPRIVATE_VERIFYDESTINATION)
 
  protected:
   ~NetworkingCastPrivateVerifyDestinationFunction() override;
@@ -42,7 +42,7 @@ class NetworkingCastPrivateVerifyAndEncryptDataFunction
  public:
   NetworkingCastPrivateVerifyAndEncryptDataFunction() {}
   DECLARE_EXTENSION_FUNCTION("networking.castPrivate.verifyAndEncryptData",
-                             NETWORKINGCASTPRIVATE_VERIFYANDENCRYPTDATA);
+                             NETWORKINGCASTPRIVATE_VERIFYANDENCRYPTDATA)
 
  protected:
   ~NetworkingCastPrivateVerifyAndEncryptDataFunction() override;
@@ -62,7 +62,7 @@ class NetworkingCastPrivateSetWifiTDLSEnabledStateFunction
  public:
   NetworkingCastPrivateSetWifiTDLSEnabledStateFunction() {}
   DECLARE_EXTENSION_FUNCTION("networking.castPrivate.setWifiTDLSEnabledState",
-                             NETWORKINGCASTPRIVATE_SETWIFITDLSENABLEDSTATE);
+                             NETWORKINGCASTPRIVATE_SETWIFITDLSENABLEDSTATE)
 
  protected:
   ~NetworkingCastPrivateSetWifiTDLSEnabledStateFunction() override;
@@ -86,7 +86,7 @@ class NetworkingCastPrivateGetWifiTDLSStatusFunction
  public:
   NetworkingCastPrivateGetWifiTDLSStatusFunction() {}
   DECLARE_EXTENSION_FUNCTION("networking.castPrivate.getWifiTDLSStatus",
-                             NETWORKINGCASTPRIVATE_GETWIFITDLSSTATUS);
+                             NETWORKINGCASTPRIVATE_GETWIFITDLSSTATUS)
 
  protected:
   ~NetworkingCastPrivateGetWifiTDLSStatusFunction() override;

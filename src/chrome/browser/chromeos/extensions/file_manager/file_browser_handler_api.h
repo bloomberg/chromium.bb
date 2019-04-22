@@ -16,7 +16,8 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
+#include "extensions/browser/extension_function.h"
 
 class Browser;
 class FileBrowserHandlerInternalSelectFileFunction;
@@ -80,7 +81,7 @@ class FileSelectorFactory {
 // The fileBrowserHandlerInternal.selectFile extension function implementation.
 // See the file description for more info.
 class FileBrowserHandlerInternalSelectFileFunction
-    : public ChromeAsyncExtensionFunction {
+    : public extensions::LoggedUIThreadExtensionFunction {
  public:
   // Default constructor used in production code.
   // It will create its own FileSelectorFactory implementation, and set the
@@ -107,9 +108,9 @@ class FileBrowserHandlerInternalSelectFileFunction
   // The class is ref counted, so destructor should not be public.
   ~FileBrowserHandlerInternalSelectFileFunction() override;
 
-  // ChromeAsyncExtensionFunction implementation.
+  // UIThreadExtensionFunction implementation.
   // Runs the extension function implementation.
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   // Respond to the API with selected entry definition.
@@ -118,15 +119,15 @@ class FileBrowserHandlerInternalSelectFileFunction
 
   // Creates dictionary value that will be used to as the extension function's
   // callback argument and ends extension function execution by calling
-  // |SendResponse(true)|.
+  // |Respond()|.
   // The |results_| value will be set to dictionary containing two properties:
   // * boolean 'success', which will be equal to |success|.
   // * object 'entry', which will be set only when |success| is true, and the
   //   conversion to |entry_definition| was successful. In such case, it will
   //   contain information needed to create a FileEntry object for the selected
   //   file.
-  void Respond(const file_manager::util::EntryDefinition& entry_definition,
-               bool success);
+  void RespondWith(const file_manager::util::EntryDefinition& entry_definition,
+                   bool success);
 
   // Factory used to create FileSelector to be used for prompting user to select
   // file.

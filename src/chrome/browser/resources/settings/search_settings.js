@@ -33,14 +33,13 @@ cr.define('settings', function() {
     'CONTENT',
     'CR-ACTION-MENU',
     'CR-DIALOG',
+    'CR-ICON-BUTTON',
+    'CR-SLIDER',
     'DIALOG',
     'IMG',
     'IRON-ICON',
     'IRON-LIST',
-    'PAPER-ICON-BUTTON',
-    'PAPER-ICON-BUTTON-LIGHT',
     'PAPER-RIPPLE',
-    'PAPER-SLIDER',
     'PAPER-SPINNER-LITE',
     'SLOT',
     'STYLE',
@@ -59,8 +58,8 @@ cr.define('settings', function() {
    */
   function findAndHighlightMatches_(request, root) {
     let foundMatches = false;
-    let highlights = [];
-    let bubbles = [];
+    const highlights = [];
+    const bubbles = [];
 
     const domIfTag = Polymer.DomIf ? 'DOM-IF' : 'TEMPLATE';
 
@@ -82,8 +81,9 @@ cr.define('settings', function() {
         return;
       }
 
-      if (IGNORED_ELEMENTS.has(node.nodeName))
+      if (IGNORED_ELEMENTS.has(node.nodeName)) {
         return;
+      }
 
       if (node instanceof HTMLElement) {
         const element = /** @type {HTMLElement} */ (node);
@@ -95,14 +95,16 @@ cr.define('settings', function() {
 
       if (node.nodeType == Node.TEXT_NODE) {
         const textContent = node.nodeValue.trim();
-        if (textContent.length == 0)
+        if (textContent.length == 0) {
           return;
+        }
 
         if (request.regExp.test(textContent)) {
           foundMatches = true;
-          let bubble = revealParentSection_(node, request.rawQuery_);
-          if (bubble)
+          const bubble = revealParentSection_(node, request.rawQuery_);
+          if (bubble) {
             bubbles.push(bubble);
+          }
 
           // Don't highlight <select> nodes, yellow rectangles can't be
           // displayed within an <option>.
@@ -128,8 +130,9 @@ cr.define('settings', function() {
       }
 
       const shadowRoot = node.shadowRoot;
-      if (shadowRoot)
+      if (shadowRoot) {
         doSearch(shadowRoot);
+      }
     }
 
     doSearch(root);
@@ -161,8 +164,9 @@ cr.define('settings', function() {
                 parent.pageTitle + ', but was not found.');
       }
     }
-    if (parent)
+    if (parent) {
       parent.hiddenBySearch = false;
+    }
 
     // Need to add the search bubble after the parent SETTINGS-SECTION has
     // become visible, otherwise |offsetWidth| returns zero.
@@ -280,8 +284,9 @@ cr.define('settings', function() {
     setSectionsVisibility_(visible) {
       const sections = this.node.querySelectorAll('settings-section');
 
-      for (let i = 0; i < sections.length; i++)
+      for (let i = 0; i < sections.length; i++) {
         sections[i].hiddenBySearch = !visible;
+      }
     }
   }
 
@@ -353,14 +358,16 @@ cr.define('settings', function() {
 
     /** @private */
     consumePending_() {
-      if (this.running_)
+      if (this.running_) {
         return;
+      }
 
       const task = this.popNextTask_();
       if (!task) {
         this.running_ = false;
-        if (this.onEmptyCallback_)
+        if (this.onEmptyCallback_) {
           this.onEmptyCallback_();
+        }
         return;
       }
 
@@ -426,8 +433,8 @@ cr.define('settings', function() {
      * @param {!Array<!Node>} bubbles The search bubbles to add.
      */
     addHighlightsAndBubbles(highlights, bubbles) {
-      this.highlights_.push.apply(this.highlights_, highlights);
-      this.bubbles_.push.apply(this.bubbles_, bubbles);
+      this.highlights_.push(...highlights);
+      this.bubbles_.push(...bubbles);
     }
 
     removeAllTextObservers() {
@@ -439,8 +446,9 @@ cr.define('settings', function() {
 
     removeAllHighlightsAndBubbles() {
       cr.search_highlight_utils.removeHighlights(this.highlights_);
-      for (let bubble of this.bubbles_)
+      for (const bubble of this.bubbles_) {
         bubble.remove();
+      }
       this.highlights_ = [];
       this.bubbles_ = [];
     }
@@ -480,8 +488,9 @@ cr.define('settings', function() {
       // Generate search text by escaping any characters that would be
       // problematic for regular expressions.
       const searchText = this.rawQuery_.trim().replace(SANITIZE_REGEX, '\\$&');
-      if (searchText.length > 0)
+      if (searchText.length > 0) {
         regExp = new RegExp(`(${searchText})`, 'i');
+      }
 
       return regExp;
     }
@@ -572,8 +581,9 @@ cr.define('settings', function() {
 
   /** @return {!SearchManager} */
   function getSearchManager() {
-    if (instance === null)
+    if (instance === null) {
       instance = new SearchManagerImpl();
+    }
     return instance;
   }
 

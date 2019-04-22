@@ -12,11 +12,12 @@ include_rules = [
   "+ui",
 
   # Needed to embed the ServiceManager in //ios/web.
-  "+services/catalog",
   "+services/service_manager",
 
   # For tests.
   "+ios/testing",
   "+ios/third_party/earl_grey/src",
+  "+ios/third_party/earl_grey2/src/CommonLib",
+  "+ios/third_party/earl_grey2/src/TestLib",
   "+mojo/core/embedder/embedder.h",
 ]

@@ -4,6 +4,7 @@
 
 #include "components/sync_bookmarks/bookmark_remote_updates_handler.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -22,8 +23,6 @@
 namespace sync_bookmarks {
 
 namespace {
-
-const char kMobileBookmarksTag[] = "synced_bookmarks";
 
 // Recursive method to traverse a forest created by ReorderUpdates() to to
 // emit updates in top-down order. |ordered_updates| must not be null because
@@ -77,7 +76,7 @@ void ApplyRemoteUpdate(
     bookmarks::BookmarkModel* model,
     SyncedBookmarkTracker* tracker,
     favicon::FaviconService* favicon_service) {
-  const syncer::EntityData& update_entity = update.entity.value();
+  const syncer::EntityData& update_entity = *update.entity;
   DCHECK(!update_entity.is_deleted());
   DCHECK(tracked_entity);
   DCHECK(new_parent_tracked_entity);
@@ -134,13 +133,14 @@ BookmarkRemoteUpdatesHandler::BookmarkRemoteUpdatesHandler(
 void BookmarkRemoteUpdatesHandler::Process(
     const syncer::UpdateResponseDataList& updates,
     bool got_new_encryption_requirements) {
+  bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
   // If new encryption requirements come from the server, the entities that are
   // in |updates| will be recorded here so they can be ignored during the
   // re-encryption phase at the end.
   std::unordered_set<std::string> entities_with_up_to_date_encryption;
 
   for (const syncer::UpdateResponseData* update : ReorderUpdates(&updates)) {
-    const syncer::EntityData& update_entity = update->entity.value();
+    const syncer::EntityData& update_entity = *update->entity;
     // Only non deletions and non premanent node should have valid specifics and
     // unique positions.
     if (!update_entity.is_deleted() &&
@@ -191,19 +191,27 @@ void BookmarkRemoteUpdatesHandler::Process(
 
     if (tracked_entity && tracked_entity->IsUnsynced()) {
       ProcessConflict(*update, tracked_entity);
+      if (!bookmark_tracker_->GetEntityForSyncId(update_entity.id)) {
+        // During conflict resolution, the entity could be dropped in case of
+        // a conflict between local and remote deletions. We shouldn't worry
+        // about changes to the encryption in that case.
+        continue;
+      }
     } else if (update_entity.is_deleted()) {
       ProcessDelete(update_entity, tracked_entity);
       // If the local entity has been deleted, no need to check for out of date
       // encryption. Therefore, we can go ahead and process the next update.
       continue;
     } else if (!tracked_entity) {
-      ProcessCreate(*update);
-      // Because the Synced Bookmarks node can be created server side, it's
-      // possible it'll arrive at the client as a creation. No need to check
-      // encryption for permanent folders.
-      if (update_entity.server_defined_unique_tag == kMobileBookmarksTag) {
+      bool success = ProcessCreate(*update);
+      if (!success) {
+        // If no new node has been tracked, we shouldn't worry about changes to
+        // the encryption.
         continue;
       }
+      // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+      // Should be removed after figuring out the reason for the crash.
+      CHECK(bookmark_tracker_->GetEntityForSyncId(update_entity.id));
     } else {
       // Ignore changes to the permanent nodes (e.g. bookmarks bar). We only
       // care about their children.
@@ -211,6 +219,9 @@ void BookmarkRemoteUpdatesHandler::Process(
         continue;
       }
       ProcessUpdate(*update, tracked_entity);
+      // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+      // Should be removed after figuring out the reason for the crash.
+      CHECK(bookmark_tracker_->GetEntityForSyncId(update_entity.id));
     }
     // If the received entity has out of date encryption, we schedule another
     // commit to fix it.
@@ -248,6 +259,7 @@ void BookmarkRemoteUpdatesHandler::Process(
           entity->metadata()->server_id());
     }
   }
+  bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
 }
 
 // static
@@ -288,8 +300,9 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
       parent_to_children;
 
   // Add only non-deletions to |id_to_updates|.
-  for (const syncer::UpdateResponseData& update : *updates) {
-    const syncer::EntityData& update_entity = update.entity.value();
+  for (const std::unique_ptr<syncer::UpdateResponseData>& update : *updates) {
+    DCHECK(update);
+    const syncer::EntityData& update_entity = *update->entity;
     // Ignore updates to root nodes.
     if (update_entity.parent_id == "0") {
       continue;
@@ -297,13 +310,13 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
     if (update_entity.is_deleted()) {
       continue;
     }
-    id_to_updates[update_entity.id] = &update;
+    id_to_updates[update_entity.id] = update.get();
   }
   // Iterate over |id_to_updates| and construct |roots| and
   // |parent_to_children|.
   for (const std::pair<base::StringPiece, const syncer::UpdateResponseData*>&
            pair : id_to_updates) {
-    const syncer::EntityData& update_entity = pair.second->entity.value();
+    const syncer::EntityData& update_entity = *pair.second->entity;
     parent_to_children[update_entity.parent_id].push_back(update_entity.id);
     // If this entity's parent has no pending update, add it to |roots|.
     if (id_to_updates.count(update_entity.parent_id) == 0) {
@@ -320,15 +333,16 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
 
   int root_node_updates_count = 0;
   // Add deletions.
-  for (const syncer::UpdateResponseData& update : *updates) {
-    const syncer::EntityData& update_entity = update.entity.value();
+  for (const std::unique_ptr<syncer::UpdateResponseData>& update : *updates) {
+    DCHECK(update);
+    const syncer::EntityData& update_entity = *update->entity;
     // Ignore updates to root nodes.
     if (update_entity.parent_id == "0") {
       root_node_updates_count++;
       continue;
     }
     if (update_entity.is_deleted()) {
-      ordered_updates.push_back(&update);
+      ordered_updates.push_back(update.get());
     }
   }
   // All non root updates should have been included in |ordered_updates|.
@@ -336,23 +350,14 @@ BookmarkRemoteUpdatesHandler::ReorderUpdates(
   return ordered_updates;
 }
 
-void BookmarkRemoteUpdatesHandler::ProcessCreate(
+bool BookmarkRemoteUpdatesHandler::ProcessCreate(
     const syncer::UpdateResponseData& update) {
-  const syncer::EntityData& update_entity = update.entity.value();
+  const syncer::EntityData& update_entity = *update.entity;
   DCHECK(!update_entity.is_deleted());
-  // Because the Synced Bookmarks node can be created server side, it's possible
-  // it'll arrive at the client as an update.
-  if (update_entity.server_defined_unique_tag == kMobileBookmarksTag) {
-    bookmark_tracker_->Add(update_entity.id, bookmark_model_->mobile_node(),
-                           update.response_version, update_entity.creation_time,
-                           update_entity.unique_position,
-                           update_entity.specifics);
-    return;
-  }
   if (!update_entity.server_defined_unique_tag.empty()) {
-    DLOG(ERROR) << "Permanent nodes other than the Synced Bookmarks node "
-                   "should have been merged during intial sync.";
-    return;
+    DLOG(ERROR)
+        << "Permanent nodes should have been merged during intial sync.";
+    return false;
   }
 
   DCHECK(IsValidBookmarkSpecifics(update_entity.specifics.bookmark(),
@@ -364,7 +369,7 @@ void BookmarkRemoteUpdatesHandler::ProcessCreate(
     DLOG(ERROR) << "Could not find parent of node being added."
                 << " Node title: " << update_entity.specifics.bookmark().title()
                 << ", parent id = " << update_entity.parent_id;
-    return;
+    return false;
   }
   const bookmarks::BookmarkNode* bookmark_node =
       CreateBookmarkNodeFromSpecifics(
@@ -377,18 +382,19 @@ void BookmarkRemoteUpdatesHandler::ProcessCreate(
     DLOG(ERROR) << "Failed to create bookmark node with title "
                 << update_entity.specifics.bookmark().title() << " and url "
                 << update_entity.specifics.bookmark().url();
-    return;
+    return false;
   }
   bookmark_tracker_->Add(update_entity.id, bookmark_node,
                          update.response_version, update_entity.creation_time,
                          update_entity.unique_position,
                          update_entity.specifics);
+  return true;
 }
 
 void BookmarkRemoteUpdatesHandler::ProcessUpdate(
     const syncer::UpdateResponseData& update,
     const SyncedBookmarkTracker::Entity* tracked_entity) {
-  const syncer::EntityData& update_entity = update.entity.value();
+  const syncer::EntityData& update_entity = *update.entity;
   // Can only update existing nodes.
   DCHECK(tracked_entity);
   DCHECK_EQ(tracked_entity,
@@ -465,11 +471,9 @@ void BookmarkRemoteUpdatesHandler::ProcessDelete(
 void BookmarkRemoteUpdatesHandler::ProcessConflict(
     const syncer::UpdateResponseData& update,
     const SyncedBookmarkTracker::Entity* tracked_entity) {
-  const syncer::EntityData& update_entity = update.entity.value();
+  const syncer::EntityData& update_entity = *update.entity;
   // TODO(crbug.com/516866): Handle the case of conflict as a result of
   // re-encryption request.
-
-  // TODO(crbug.com/516866): Add basic unit test for this function.
 
   // Can only conflict with existing nodes.
   DCHECK(tracked_entity);

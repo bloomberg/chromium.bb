@@ -43,6 +43,14 @@ const size_t kNumExpiredHistograms = {hashes_size};
 
 _DATE_FORMAT_ERROR = "Unable to parse expiry {date} in histogram {name}."
 
+# Some extra "grace" time is given to expired histograms during which they
+# will contintue to be collected and reported.  The dashboard should ignore
+# data from this period making the expiry noticeable and giving time for
+# owners to re-enable them without any discontinuity of data. Releases are
+# geneally 6 weeks apart but sometimes 7 so +2 to be safe.
+_EXPIRE_GRACE_MSTONES = 2
+_EXPIRE_GRACE_WEEKS = _EXPIRE_GRACE_MSTONES * 6 + 2
+
 
 class Error(Exception):
   pass
@@ -67,6 +75,8 @@ def _GetExpiredHistograms(histograms, base_date, current_milestone):
     if "obsolete" in content or "expires_after" not in content:
       continue
     expiry_str = content["expires_after"]
+    if expiry_str == "never":
+      continue
 
     match = _MILESTONE_EXPIRY_RE.search(expiry_str)
     if match:
@@ -178,6 +188,38 @@ def _GenerateHeaderFileContent(header_filename, namespace,
       hashes_size=len(histograms_map))
 
 
+def _GenerateFileContent(descriptions, branch_file_content,
+                         mstone_file_content, header_filename, namespace):
+  """Generates header file containing array with hashes of expired histograms.
+
+  Args:
+    descriptions: Combined histogram descriptions.
+    branch_file_content: Content of file with base date.
+    mstone_file_content: Content of file with milestone information.
+    header_filename: A filename of the generated header file.
+    namespace: A namespace to contain generated array.
+
+  Raises:
+    Error if there is an error in input xml files.
+  """
+  histograms, had_errors = (
+      extract_histograms.ExtractHistogramsFromDom(descriptions))
+  if had_errors:
+    raise Error("Error parsing inputs.")
+  base_date = _GetBaseDate(branch_file_content, _DATE_FILE_RE)
+  base_date -= datetime.timedelta(weeks=_EXPIRE_GRACE_WEEKS)
+  current_milestone = _GetCurrentMilestone(
+      mstone_file_content, _CURRENT_MILESTONE_RE)
+  current_milestone -= _EXPIRE_GRACE_MSTONES
+
+  expired_histograms_names = _GetExpiredHistograms(
+      histograms, base_date, current_milestone)
+  expired_histograms_map = _GetHashToNameMap(expired_histograms_names)
+  header_file_content = _GenerateHeaderFileContent(
+      header_filename, namespace, expired_histograms_map)
+  return header_file_content
+
+
 def _GenerateFile(arguments):
   """Generates header file containing array with hashes of expired histograms.
 
@@ -189,28 +231,17 @@ def _GenerateFile(arguments):
       arguments.output_dir: A directory to put the generated file.
       arguments.major_branch_date_filepath: File path for base date.
       arguments.milestone_filepath: File path for milestone information.
-
-  Raises:
-    Error if there is an error in input xml files.
   """
   descriptions = merge_xml.MergeFiles(arguments.inputs)
-  histograms, had_errors = (
-      extract_histograms.ExtractHistogramsFromDom(descriptions))
-  if had_errors:
-    raise Error("Error parsing inputs.")
   with open(arguments.major_branch_date_filepath, "r") as date_file:
-    file_content = date_file.read()
-  base_date = _GetBaseDate(file_content, _DATE_FILE_RE)
+    branch_file_content = date_file.read()
   with open(arguments.milestone_filepath, "r") as milestone_file:
-    file_content = milestone_file.read()
-  current_milestone = _GetCurrentMilestone(file_content, _CURRENT_MILESTONE_RE)
+    mstone_file_content = milestone_file.read()
 
-  expired_histograms_names = _GetExpiredHistograms(
-      histograms, base_date, current_milestone)
-  expired_histograms_map = _GetHashToNameMap(expired_histograms_names)
-  header_file_content = _GenerateHeaderFileContent(
-      arguments.header_filename, arguments.namespace,
-      expired_histograms_map)
+  header_file_content = _GenerateFileContent(
+      descriptions, branch_file_content, mstone_file_content,
+      arguments.header_filename, arguments.namespace)
+
   with open(os.path.join(arguments.output_dir, arguments.header_filename),
             "w") as generated_file:
     generated_file.write(header_file_content)

@@ -23,7 +23,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
  public:
   // Alpha to use for features in the titlebar (the window title and caption
   // buttons) when the window is inactive. They are opaque when active.
-  static constexpr SkAlpha kInactiveTitlebarFeatureAlpha = 0x65;
+  static constexpr SkAlpha kInactiveTitlebarFeatureAlpha = 0x66;
 
   static constexpr char kClassName[] = "GlassBrowserFrameView";
 
@@ -35,14 +35,15 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // BrowserNonClientFrameView:
   bool CaptionButtonsOnLeadingEdge() const override;
-  gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
+  gfx::Rect GetBoundsForTabStripRegion(
+      const views::View* tabstrip) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   bool HasVisibleBackgroundTabShapes(ActiveState active_state) const override;
   bool CanDrawStrokes() const override;
+  SkColor GetCaptionColor(ActiveState active_state) const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
-  bool IsSingleTabModeAvailable() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -51,7 +52,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   int NonClientHitTest(const gfx::Point& point) override;
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
-  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {}
+  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {}
   void ResetWindowControls() override;
   void SizeConstraintsChanged() override {}
 
@@ -120,8 +121,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   Windows10CaptionButton* CreateCaptionButton(ViewID button_type,
                                               int accessible_name_resource_id);
-
-  SkColor GetTitlebarFeatureColor(ActiveState active_state) const;
 
   // Paint various sub-components of this view.
   void PaintTitlebar(gfx::Canvas* canvas) const;

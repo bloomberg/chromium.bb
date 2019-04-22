@@ -1,4 +1,5 @@
 <!doctype html>
+<html>
 <head>
 <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
 <style>
@@ -60,7 +61,7 @@
 </style>
 <script>
 
-function setup(options) {
+function setupHeaderFooterTemplate(options) {
   const body = document.querySelector('body');
   const header = document.querySelector('#header');
   const footer = document.querySelector('#footer');
@@ -81,8 +82,11 @@ function setup(options) {
 
   options.date = new Date(options.date).toLocaleDateString();
   for (const cssClass of ['date', 'title', 'url', 'pageNumber', 'totalPages']) {
-    for (const element of document.querySelectorAll(`.${cssClass}`))
+    for (const element of document.querySelectorAll(`.${cssClass}`)) {
       element.textContent = options[cssClass];
+      if (options.isRtl)
+        element.dir = 'rtl';
+    }
   }
 }
 

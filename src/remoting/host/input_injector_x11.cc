@@ -220,7 +220,8 @@ bool InputInjectorX11::Core::Init() {
   CHECK(display_);
 
   if (!task_runner_->BelongsToCurrentThread())
-    task_runner_->PostTask(FROM_HERE, base::Bind(&Core::InitClipboard, this));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&Core::InitClipboard, this));
 
   root_window_ = XRootWindow(display_, DefaultScreen(display_));
   if (root_window_ == BadValue) {
@@ -240,7 +241,7 @@ void InputInjectorX11::Core::InjectClipboardEvent(
     const ClipboardEvent& event) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::InjectClipboardEvent, this, event));
+        FROM_HERE, base::BindOnce(&Core::InjectClipboardEvent, this, event));
     return;
   }
 
@@ -255,7 +256,7 @@ void InputInjectorX11::Core::InjectKeyEvent(const KeyEvent& event) {
 
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&Core::InjectKeyEvent, this, event));
+                           base::BindOnce(&Core::InjectKeyEvent, this, event));
     return;
   }
 
@@ -314,7 +315,7 @@ void InputInjectorX11::Core::InjectKeyEvent(const KeyEvent& event) {
 void InputInjectorX11::Core::InjectTextEvent(const TextEvent& event) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&Core::InjectTextEvent, this, event));
+                           base::BindOnce(&Core::InjectTextEvent, this, event));
     return;
   }
 
@@ -416,8 +417,8 @@ void InputInjectorX11::Core::InjectScrollWheelClicks(int button, int count) {
 
 void InputInjectorX11::Core::InjectMouseEvent(const MouseEvent& event) {
   if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&Core::InjectMouseEvent, this, event));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Core::InjectMouseEvent, this, event));
     return;
   }
 
@@ -623,7 +624,7 @@ void InputInjectorX11::Core::Start(
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&Core::Start, this, base::Passed(&client_clipboard)));
+        base::BindOnce(&Core::Start, this, std::move(client_clipboard)));
     return;
   }
 
@@ -645,7 +646,7 @@ void InputInjectorX11::Core::Start(
 
 void InputInjectorX11::Core::Stop() {
   if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(&Core::Stop, this));
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(&Core::Stop, this));
     return;
   }
 

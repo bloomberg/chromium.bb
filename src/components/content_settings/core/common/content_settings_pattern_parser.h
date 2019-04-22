@@ -8,13 +8,14 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string_piece_forward.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 
 namespace content_settings {
 
 class PatternParser {
  public:
-  static void Parse(const std::string& pattern_spec,
+  static void Parse(base::StringPiece pattern_spec,
                     ContentSettingsPattern::BuilderInterface* builder);
 
   static std::string ToString(

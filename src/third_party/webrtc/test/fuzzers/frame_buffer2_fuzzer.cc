@@ -56,7 +56,6 @@ class FuzzyFrameObject : public video_coding::EncodedFrame {
   FuzzyFrameObject() {}
   ~FuzzyFrameObject() {}
 
-  bool GetBitstream(uint8_t* destination) const override { return false; }
   int64_t ReceivedTime() const override { return 0; }
   int64_t RenderTime() const override { return _renderTimeMs; }
 };
@@ -68,7 +67,7 @@ void FuzzOneInput(const uint8_t* data, size_t size) {
   }
   DataReader reader(data, size);
   Clock* clock = Clock::GetRealTimeClock();
-  VCMJitterEstimator jitter_estimator(clock, 0, 0);
+  VCMJitterEstimator jitter_estimator(clock);
   VCMTiming timing(clock);
   video_coding::FrameBuffer frame_buffer(clock, &jitter_estimator, &timing,
                                          nullptr);

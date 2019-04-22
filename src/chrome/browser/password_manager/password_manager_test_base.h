@@ -116,10 +116,12 @@ class BubbleObserver {
   // PasswordManagerBrowserTestBase.
   void WaitForAutomaticSavePrompt() const;
 
-  // Returns once the fallback for saving becomes available.
+  // Returns true if the browser shows the fallback for saving password within
+  // the allotted timeout.
   // |web_contents| must be the custom one returned by
   // PasswordManagerBrowserTestBase.
-  void WaitForFallbackForSaving() const;
+  bool WaitForFallbackForSaving(
+      const base::TimeDelta timeout = base::TimeDelta::Max()) const;
 
  private:
   ManagePasswordsUIController* const passwords_ui_controller_;

@@ -15,6 +15,7 @@ cr.define('expandable_list', function() {
    * A list item that has expandable content that toggles when the item is
    * clicked.
    * @constructor
+   * @extends {cr.ui.ListItem}
    */
   var ExpandableListItem = cr.ui.define('li');
 
@@ -55,8 +56,8 @@ cr.define('expandable_list', function() {
 
   /**
    * A list that contains expandable list items.
-   * @abstract
    * @constructor
+   * @extends {cr.ui.List}
    */
   var ExpandableList = cr.ui.define('list');
 
@@ -91,8 +92,9 @@ cr.define('expandable_list', function() {
      * @param {cr.ui.ArrayDataModel} data
      */
     setData: function(data) {
-      if (this.dataModel)
+      if (this.dataModel) {
         this.dataModel.removeEventListener('splice', this.boundUpdateMessage_);
+      }
 
       this.dataModel = data;
       this.dataModel.addEventListener('splice', this.boundUpdateMessage_);

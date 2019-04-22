@@ -18,13 +18,21 @@ class MockBadgeService {
     });
   }
 
-  setBadge(contents) {
+  setInteger(contents) {
     try {
-      assert_equals(this.expectCalled_, 'setBadge');
-      assert_equals(contents, undefined);
+      assert_equals(this.expectCalled_, 'setInteger');
       this.resolve_();
     } catch (error) {
       this.reject_(error);
+    }
+  }
+
+  setFlag() {
+    try {
+      assert_equals(this.expectCalled_, 'setFlag');
+      this.resolve_();
+    } catch (error) {
+      this.reject(error);
     }
   }
 

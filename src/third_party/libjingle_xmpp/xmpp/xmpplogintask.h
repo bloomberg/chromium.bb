@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_LOGINTASK_H_
-#define WEBRTC_LIBJINGLE_XMPP_LOGINTASK_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_LOGINTASK_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_LOGINTASK_H_
 
 #include <memory>
 #include <string>
@@ -17,9 +17,8 @@
 
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc_overrides/rtc_base/logging.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlElement;
 class XmppEngineImpl;
@@ -63,6 +62,10 @@ private:
   bool Failure(XmppEngine::Error reason);
   void FlushQueuedStanzas();
 
+#if !defined(NDEBUG)
+  const char* ErrorName(int err);
+#endif
+
   XmppEngineImpl * pctx_;
   bool authNeeded_;
   bool allowNonGoogleLogin_;
@@ -76,12 +79,8 @@ private:
   std::unique_ptr<std::vector<XmlElement *> > pvecQueuedStanzas_;
 
   std::unique_ptr<SaslMechanism> sasl_mech_;
-
-#if !defined(NDEBUG)
-  static const rtc::ConstantLabel LOGINTASK_STATES[];
-#endif
 };
 
 }
 
-#endif  //  WEBRTC_LIBJINGLE_XMPP_LOGINTASK_H_
+#endif  //  THIRD_PARTY_LIBJINGLE_XMPP_XMPP_LOGINTASK_H_

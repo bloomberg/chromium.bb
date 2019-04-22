@@ -61,6 +61,8 @@ import java.util.regex.Pattern;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class CronetUrlRequestTest {
+    private static final String TAG = CronetUrlRequestTest.class.getSimpleName();
+
     // URL used for base tests.
     private static final String TEST_URL = "http://127.0.0.1:8000";
 
@@ -2327,6 +2329,10 @@ public class CronetUrlRequestTest {
     @Feature({"Cronet"})
     @RequiresMinApi(9) // Tagging support added in API level 9: crrev.com/c/chromium/src/+/930086
     public void testTagging() throws Exception {
+        if (!CronetTestUtil.nativeCanGetTaggedBytes()) {
+            Log.i(TAG, "Skipping test - GetTaggedBytes unsupported.");
+            return;
+        }
         String url = NativeTestServer.getEchoMethodURL();
 
         // Test untagged requests are given tag 0.
@@ -2382,7 +2388,8 @@ public class CronetUrlRequestTest {
      */
     public void testManyRequests() throws Exception {
         String url = NativeTestServer.getMultiRedirectURL();
-        final int numRequests = 2000;
+        // Jelly Bean has a 2000 limit on global references, crbug.com/922656.
+        final int numRequests = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT ? 2000 : 1500;
         TestUrlRequestCallback callbacks[] = new TestUrlRequestCallback[numRequests];
         UrlRequest requests[] = new UrlRequest[numRequests];
         for (int i = 0; i < numRequests; i++) {

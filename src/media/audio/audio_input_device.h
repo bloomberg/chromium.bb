@@ -67,9 +67,12 @@ namespace media {
 class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
                                       public AudioInputIPCDelegate {
  public:
+  enum Purpose : int8_t { kUserInput, kLoopback };
+
   // NOTE: Clients must call Initialize() before using.
-  AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc,
-                   base::ThreadPriority thread_priority);
+  // |enable_uma| controls logging of UMA stats. It is used to ensure that
+  // stats are not logged for mirroring service streams.
+  AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc, Purpose purpose);
 
   // AudioCapturerSource implementation.
   void Initialize(const AudioParameters& params,
@@ -121,6 +124,8 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   AudioParameters audio_parameters_;
 
   const base::ThreadPriority thread_priority_;
+
+  const bool enable_uma_;
 
   CaptureCallback* callback_;
 

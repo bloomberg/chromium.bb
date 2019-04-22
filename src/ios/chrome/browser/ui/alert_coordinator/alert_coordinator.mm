@@ -30,8 +30,6 @@
 // Called when the alert is dismissed to perform cleanup.
 - (void)alertDismissed;
 
-- (UIAlertController*)alertControllerWithTitle:(NSString*)title
-                                       message:(NSString*)message;
 @end
 
 @implementation AlertCoordinator
@@ -44,20 +42,32 @@
 @synthesize rawCancelAction = _rawCancelAction;
 @synthesize message = _message;
 
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                      title:(NSString*)title
                                    message:(NSString*)message {
   self = [super initWithBaseViewController:viewController browserState:nullptr];
   if (self) {
-    _title = [title copy];
-    _message = [message copy];
+    [self commonInitWithTitle:title message:message];
   }
   return self;
+}
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                     title:(NSString*)title
+                                   message:(NSString*)message
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState {
+  self = [super initWithBaseViewController:viewController
+                              browserState:browserState];
+  if (self) {
+    [self commonInitWithTitle:title message:message];
+  }
+  return self;
+}
+
+- (void)commonInitWithTitle:(NSString*)title message:(NSString*)message {
+  _title = title;
+  _message = message;
 }
 
 #pragma mark - Public Methods.

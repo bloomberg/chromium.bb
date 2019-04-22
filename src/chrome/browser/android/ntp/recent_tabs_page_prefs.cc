@@ -19,7 +19,6 @@ using base::android::JavaParamRef;
 
 static jlong JNI_RecentTabsPagePrefs_Init(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& profile) {
   RecentTabsPagePrefs* recent_tabs_page_prefs =
       new RecentTabsPagePrefs(ProfileAndroid::FromProfileAndroid(profile));

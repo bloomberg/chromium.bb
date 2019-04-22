@@ -53,14 +53,6 @@
 
 namespace blink {
 
-std::unique_ptr<DedicatedWorkerObjectProxy> DedicatedWorkerObjectProxy::Create(
-    DedicatedWorkerMessagingProxy* messaging_proxy_weak_ptr,
-    ParentExecutionContextTaskRunners* parent_execution_context_task_runners) {
-  DCHECK(messaging_proxy_weak_ptr);
-  return base::WrapUnique(new DedicatedWorkerObjectProxy(
-      messaging_proxy_weak_ptr, parent_execution_context_task_runners));
-}
-
 DedicatedWorkerObjectProxy::~DedicatedWorkerObjectProxy() = default;
 
 void DedicatedWorkerObjectProxy::PostMessageToWorkerObject(
@@ -77,7 +69,7 @@ void DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject(
     BlinkTransferableMessage message,
     WorkerThread* worker_thread) {
   To<WorkerGlobalScope>(worker_thread->GlobalScope())
-      ->ReceiveMessagePausable(std::move(message));
+      ->ReceiveMessage(std::move(message));
 }
 
 void DedicatedWorkerObjectProxy::ProcessUnhandledException(
@@ -98,6 +90,22 @@ void DedicatedWorkerObjectProxy::ReportException(
       CrossThreadBind(&DedicatedWorkerMessagingProxy::DispatchErrorEvent,
                       messaging_proxy_weak_ptr_, error_message,
                       WTF::Passed(location->Clone()), exception_id));
+}
+
+void DedicatedWorkerObjectProxy::DidFailToFetchClassicScript() {
+  PostCrossThreadTask(
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
+      FROM_HERE,
+      CrossThreadBind(&DedicatedWorkerMessagingProxy::DidFailToFetchScript,
+                      messaging_proxy_weak_ptr_));
+}
+
+void DedicatedWorkerObjectProxy::DidFailToFetchModuleScript() {
+  PostCrossThreadTask(
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
+      FROM_HERE,
+      CrossThreadBind(&DedicatedWorkerMessagingProxy::DidFailToFetchScript,
+                      messaging_proxy_weak_ptr_));
 }
 
 void DedicatedWorkerObjectProxy::DidEvaluateClassicScript(bool success) {

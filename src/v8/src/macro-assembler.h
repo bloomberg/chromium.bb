@@ -175,28 +175,11 @@ class AllowExternalCallThatCantCauseGC: public FrameScope {
       : FrameScope(masm, StackFrame::NONE) { }
 };
 
-
-class NoCurrentFrameScope {
- public:
-  explicit NoCurrentFrameScope(MacroAssembler* masm)
-      : masm_(masm), saved_(masm->has_frame()) {
-    masm->set_has_frame(false);
-  }
-
-  ~NoCurrentFrameScope() {
-    masm_->set_has_frame(saved_);
-  }
-
- private:
-  MacroAssembler* masm_;
-  bool saved_;
-};
-
 // Prevent the use of the RootArray during the lifetime of this
 // scope object.
 class NoRootArrayScope {
  public:
-  explicit NoRootArrayScope(MacroAssembler* masm)
+  explicit NoRootArrayScope(TurboAssembler* masm)
       : masm_(masm), old_value_(masm->root_array_available()) {
     masm->set_root_array_available(false);
   }
@@ -204,7 +187,7 @@ class NoRootArrayScope {
   ~NoRootArrayScope() { masm_->set_root_array_available(old_value_); }
 
  private:
-  MacroAssembler* masm_;
+  TurboAssembler* masm_;
   bool old_value_;
 };
 

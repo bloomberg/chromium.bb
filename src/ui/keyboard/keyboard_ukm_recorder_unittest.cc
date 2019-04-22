@@ -4,20 +4,15 @@
 
 #include "ui/keyboard/keyboard_ukm_recorder.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/ui_base_features.h"
 
 namespace keyboard {
 
 TEST(KeyboardUkmRecorderTest, RecordUkmWithEmptySource) {
   base::test::ScopedTaskEnvironment env;
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kEnableVirtualKeyboardUkm);
 
   ukm::TestAutoSetUkmRecorder test_recorder;
   test_recorder.EnableRecording(false /* extensions */);
@@ -31,9 +26,6 @@ TEST(KeyboardUkmRecorderTest, RecordUkmWithEmptySource) {
 
 TEST(KeyboardUkmRecorderTest, RecordUkmWithNavigationId) {
   base::test::ScopedTaskEnvironment env;
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kEnableVirtualKeyboardUkm);
 
   ukm::TestAutoSetUkmRecorder test_recorder;
   test_recorder.EnableRecording(false /* extensions */);

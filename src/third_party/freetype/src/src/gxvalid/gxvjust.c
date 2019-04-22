@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT just table validation (body).
  *
- * Copyright 2005-2018 by
+ * Copyright (C) 2005-2019 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -72,6 +72,8 @@
                           const FT_String*  msg_tag,
                           GXV_Validator     gxvalid )
   {
+    FT_UNUSED( msg_tag );
+
     if ( gid < gxvalid->face->num_glyphs )
       return;
 

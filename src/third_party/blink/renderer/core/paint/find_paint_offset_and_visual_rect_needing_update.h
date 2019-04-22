@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -23,6 +24,8 @@ namespace blink {
 // function called by several public paint-invalidation-flag setting functions).
 
 class FindPaintOffsetNeedingUpdateScope {
+  STACK_ALLOCATED();
+
  public:
   FindPaintOffsetNeedingUpdateScope(const LayoutObject& object,
                                     const FragmentData& fragment_data,
@@ -34,7 +37,7 @@ class FindPaintOffsetNeedingUpdateScope {
     if (const auto* properties = fragment_data.PaintProperties()) {
       if (const auto* translation = properties->PaintOffsetTranslation()) {
         old_parent_ = translation->Parent();
-        old_translation_ = translation->Matrix();
+        old_translation_ = translation->Translation2D();
       }
     }
   }
@@ -46,11 +49,11 @@ class FindPaintOffsetNeedingUpdateScope {
     DCHECK_EQ(old_paint_offset_, paint_offset) << object_.DebugName();
 
     const TransformPaintPropertyNode* new_parent = nullptr;
-    base::Optional<TransformationMatrix> new_translation;
+    base::Optional<FloatSize> new_translation;
     if (const auto* properties = fragment_data_.PaintProperties()) {
       if (const auto* translation = properties->PaintOffsetTranslation()) {
         new_parent = translation->Parent();
-        new_translation = translation->Matrix();
+        new_translation = translation->Translation2D();
       }
     }
     DCHECK_EQ(!!old_translation_, !!new_translation) << object_.DebugName();
@@ -65,14 +68,14 @@ class FindPaintOffsetNeedingUpdateScope {
   const bool& is_actually_needed_;
   LayoutPoint old_paint_offset_;
   const TransformPaintPropertyNode* old_parent_ = nullptr;
-  base::Optional<TransformationMatrix> old_translation_;
+  base::Optional<FloatSize> old_translation_;
 };
 
 class FindVisualRectNeedingUpdateScopeBase {
  protected:
   FindVisualRectNeedingUpdateScopeBase(const LayoutObject& object,
                                        const PaintInvalidatorContext& context,
-                                       const LayoutRect& old_visual_rect)
+                                       const IntRect& old_visual_rect)
       : object_(object),
         context_(context),
         old_visual_rect_(old_visual_rect),
@@ -91,13 +94,13 @@ class FindVisualRectNeedingUpdateScopeBase {
               context_.NeedsVisualRectUpdate(object_));
   }
 
-  static LayoutRect InflatedRect(const LayoutRect& r) {
-    LayoutRect result = r;
+  static IntRect InflatedRect(const IntRect& r) {
+    IntRect result = r;
     result.Inflate(1);
     return result;
   }
 
-  void CheckVisualRect(const LayoutRect& new_visual_rect) {
+  void CheckVisualRect(const IntRect& new_visual_rect) {
     if (needed_visual_rect_update_)
       return;
     DCHECK((old_visual_rect_.IsEmpty() && new_visual_rect.IsEmpty()) ||
@@ -108,7 +111,7 @@ class FindVisualRectNeedingUpdateScopeBase {
            // while we need neither paint invalidation nor raster invalidation
            // for the change. This may miss some real subpixel changes of visual
            // rects. TODO(wangxianzhu): Look into whether we can tighten this
-           // for SPv2.
+           // for CAP.
            (InflatedRect(old_visual_rect_).Contains(new_visual_rect) &&
             InflatedRect(new_visual_rect).Contains(old_visual_rect_)))
         << "Visual rect changed without needing update"
@@ -119,7 +122,7 @@ class FindVisualRectNeedingUpdateScopeBase {
 
   const LayoutObject& object_;
   const PaintInvalidatorContext& context_;
-  LayoutRect old_visual_rect_;
+  IntRect old_visual_rect_;
   bool needed_visual_rect_update_;
 };
 
@@ -129,17 +132,17 @@ class FindVisualRectNeedingUpdateScope : FindVisualRectNeedingUpdateScopeBase {
  public:
   FindVisualRectNeedingUpdateScope(const LayoutObject& object,
                                    const PaintInvalidatorContext& context,
-                                   const LayoutRect& old_visual_rect,
+                                   const IntRect& old_visual_rect,
                                    // Must be a reference to a rect that
                                    // outlives this scope.
-                                   const LayoutRect& new_visual_rect)
+                                   const IntRect& new_visual_rect)
       : FindVisualRectNeedingUpdateScopeBase(object, context, old_visual_rect),
         new_visual_rect_ref_(new_visual_rect) {}
 
   ~FindVisualRectNeedingUpdateScope() { CheckVisualRect(new_visual_rect_ref_); }
 
  private:
-  const LayoutRect& new_visual_rect_ref_;
+  const IntRect& new_visual_rect_ref_;
 };
 
 // For updates of object visual rect and location.

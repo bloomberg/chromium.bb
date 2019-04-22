@@ -14,63 +14,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/window.h"  // nogncheck
-#include "ui/aura/window_observer.h"  // nogncheck
-#endif  // defined(USE_AURA)
-
-namespace  {
-
-#if defined(USE_AURA)
-
-class AuraWindowRegistry : public aura::WindowObserver {
- public:
-  static AuraWindowRegistry* GetInstance() {
-    return base::Singleton<AuraWindowRegistry>::get();
-  }
-
-  int RegisterWindow(aura::Window* window) {
-    base::IDMap<aura::Window*>::const_iterator it(&registered_windows_);
-    for (; !it.IsAtEnd(); it.Advance()) {
-      if (it.GetCurrentValue() == window)
-        return it.GetCurrentKey();
-    }
-
-    window->AddObserver(this);
-    return registered_windows_.Add(window);
-  }
-
-  aura::Window* GetWindowById(int id) {
-    return registered_windows_.Lookup(id);
-  }
-
- private:
-  friend struct base::DefaultSingletonTraits<AuraWindowRegistry>;
-
-  AuraWindowRegistry() {}
-  ~AuraWindowRegistry() override {}
-
-  // WindowObserver overrides.
-  void OnWindowDestroying(aura::Window* window) override {
-    base::IDMap<aura::Window*>::iterator it(&registered_windows_);
-    for (; !it.IsAtEnd(); it.Advance()) {
-      if (it.GetCurrentValue() == window) {
-        registered_windows_.Remove(it.GetCurrentKey());
-        return;
-      }
-    }
-    NOTREACHED();
-  }
-
-  base::IDMap<aura::Window*> registered_windows_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuraWindowRegistry);
-};
-
-#endif  // defined(USE_AURA)
-
-}  // namespace
+#include "build/build_config.h"
+#include "content/browser/media/desktop_media_window_registry.h"
 
 namespace content {
 
@@ -82,56 +27,43 @@ const DesktopMediaID::Id DesktopMediaID::kNullId = 0;
 // static
 const DesktopMediaID::Id DesktopMediaID::kFakeId = -3;
 
-#if defined(USE_AURA)
-
+#if defined(USE_AURA) || defined(OS_MACOSX)
 // static
-DesktopMediaID DesktopMediaID::RegisterAuraWindow(DesktopMediaID::Type type,
-                                                  aura::Window* window) {
+DesktopMediaID DesktopMediaID::RegisterNativeWindow(DesktopMediaID::Type type,
+                                                    gfx::NativeWindow window) {
   DCHECK(type == TYPE_SCREEN || type == TYPE_WINDOW);
   DCHECK(window);
   DesktopMediaID media_id(type, kNullId);
-  media_id.aura_id = AuraWindowRegistry::GetInstance()->RegisterWindow(window);
+  media_id.window_id =
+      DesktopMediaWindowRegistry::GetInstance()->RegisterWindow(window);
   return media_id;
 }
 
 // static
-aura::Window* DesktopMediaID::GetAuraWindowById(const DesktopMediaID& id) {
-  return AuraWindowRegistry::GetInstance()->GetWindowById(id.aura_id);
+gfx::NativeWindow DesktopMediaID::GetNativeWindowById(
+    const DesktopMediaID& id) {
+  return DesktopMediaWindowRegistry::GetInstance()->GetWindowById(id.window_id);
 }
-
-#endif  // defined(USE_AURA)
+#endif
 
 bool DesktopMediaID::operator<(const DesktopMediaID& other) const {
-#if defined(USE_AURA)
-  return std::tie(type, id, aura_id, web_contents_id, audio_share) <
-         std::tie(other.type, other.id, other.aura_id, other.web_contents_id,
+  return std::tie(type, id, window_id, web_contents_id, audio_share) <
+         std::tie(other.type, other.id, other.window_id, other.web_contents_id,
                   other.audio_share);
-#else
-  return std::tie(type, id, web_contents_id, audio_share) <
-         std::tie(other.type, other.id, other.web_contents_id,
-                  other.audio_share);
-#endif
 }
 
 bool DesktopMediaID::operator==(const DesktopMediaID& other) const {
-#if defined(USE_AURA)
-  return type == other.type && id == other.id && aura_id == other.aura_id &&
+  return type == other.type && id == other.id && window_id == other.window_id &&
          web_contents_id == other.web_contents_id &&
          audio_share == other.audio_share;
-#else
-  return type == other.type && id == other.id &&
-         web_contents_id == other.web_contents_id &&
-         audio_share == other.audio_share;
-#endif
 }
 
 // static
 // Input string should in format:
 // for WebContents:
-// web-contents-media-stream://"render_process_id":"render_process_id"
-// for no aura screen and window: screen:"window_id" or window:"window_id"
-// for aura screen and window: screen:"window_id:aura_id" or
-//                         window:"window_id:aura_id".
+// web-contents-media-stream://"render_process_id":"render_process_id" for
+// screen: screen:window_id:native_window_id for window:
+// window:window_id:native_window_id
 DesktopMediaID DesktopMediaID::Parse(const std::string& str) {
   // For WebContents type.
   WebContentsMediaCaptureId web_id;
@@ -142,13 +74,8 @@ DesktopMediaID DesktopMediaID::Parse(const std::string& str) {
   std::vector<std::string> parts = base::SplitString(
       str, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
-#if defined(USE_AURA)
   if (parts.size() != 3)
     return DesktopMediaID();
-#else
-  if (parts.size() != 2)
-    return DesktopMediaID();
-#endif
 
   Type type = TYPE_NONE;
   if (parts[0] == kScreenPrefix) {
@@ -165,12 +92,10 @@ DesktopMediaID DesktopMediaID::Parse(const std::string& str) {
 
   DesktopMediaID media_id(type, id);
 
-#if defined(USE_AURA)
-  int64_t aura_id;
-  if (!base::StringToInt64(parts[2], &aura_id))
+  int64_t window_id;
+  if (!base::StringToInt64(parts[2], &window_id))
     return DesktopMediaID();
-  media_id.aura_id = aura_id;
-#endif  // defined(USE_AURA)
+  media_id.window_id = window_id;
 
   return media_id;
 }
@@ -195,12 +120,10 @@ std::string DesktopMediaID::ToString() const {
 
   // Screen and Window types.
   prefix.append(":");
-  prefix.append(base::Int64ToString(id));
+  prefix.append(base::NumberToString(id));
 
-#if defined(USE_AURA)
   prefix.append(":");
-  prefix.append(base::Int64ToString(aura_id));
-#endif  // defined(USE_AURA)
+  prefix.append(base::NumberToString(window_id));
 
   return prefix;
 }

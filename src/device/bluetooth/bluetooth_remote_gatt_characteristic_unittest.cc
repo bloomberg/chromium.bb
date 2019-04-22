@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+
+#include <functional>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
@@ -766,7 +768,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 
   characteristic1_->ReadRemoteCharacteristic(
       base::Bind(test_callback, GetReadValueCallback(Call::EXPECTED),
-                 base::ConstRef(observer)),
+                 std::cref(observer)),
       GetGattErrorCallback(Call::NOT_EXPECTED));
 
   std::vector<uint8_t> test_vector = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
@@ -807,7 +809,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_WriteRemoteCharacteristic) {
   TestBluetoothAdapterObserver observer(adapter_);
 
   uint8_t values[] = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
-  std::vector<uint8_t> test_vector(values, values + arraysize(values));
+  std::vector<uint8_t> test_vector(values, values + base::size(values));
   characteristic1_->WriteRemoteCharacteristic(
       test_vector, GetCallback(Call::EXPECTED),
       GetGattErrorCallback(Call::NOT_EXPECTED));
@@ -848,7 +850,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
       GetGattErrorCallback(Call::NOT_EXPECTED));
 
   uint8_t values[] = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
-  std::vector<uint8_t> test_vector(values, values + arraysize(values));
+  std::vector<uint8_t> test_vector(values, values + base::size(values));
   SimulateGattCharacteristicRead(characteristic1_, test_vector);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, gatt_read_characteristic_attempts_);
@@ -894,7 +896,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
   uint8_t values[] = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
-  std::vector<uint8_t> test_vector(values, values + arraysize(values));
+  std::vector<uint8_t> test_vector(values, values + base::size(values));
   characteristic1_->WriteRemoteCharacteristic(
       test_vector, GetCallback(Call::EXPECTED),
       GetGattErrorCallback(Call::NOT_EXPECTED));
@@ -3743,17 +3745,17 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ExtraDidDiscoverDescriptorsCall) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BluetoothRemoteGattCharacteristicTestWinrt,
     ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BluetoothRemoteGattCharacteristicTestWin32Only,
     ::testing::Values(false));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BluetoothRemoteGattCharacteristicTestWinrtOnly,
     ::testing::Values(true));

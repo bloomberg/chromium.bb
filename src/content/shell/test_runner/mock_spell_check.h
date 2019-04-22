@@ -38,8 +38,8 @@ class MockSpellCheck {
   // For example, when the given text is "   zz zz", this function sets 3 to
   // misspelledOffset and 2 to misspelledLength, respectively.
   bool SpellCheckWord(const blink::WebString& text,
-                      int* misspelled_offset,
-                      int* misspelled_length);
+                      size_t* misspelled_offset,
+                      size_t* misspelled_length);
 
   // Checks whether the specified text can be spell checked immediately using
   // the spell checker cache.

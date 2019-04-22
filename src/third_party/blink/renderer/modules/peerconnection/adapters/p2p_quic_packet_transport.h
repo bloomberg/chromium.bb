@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_P2P_QUIC_PACKET_TRANSPORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_P2P_QUIC_PACKET_TRANSPORT_H_
 
-#include "net/third_party/quic/core/quic_packet_writer.h"
-#include "net/third_party/quic/core/quic_types.h"
-#include "net/third_party/quic/platform/api/quic_export.h"
+#include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
+#include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 
 namespace blink {
 
@@ -41,7 +41,7 @@ class P2PQuicPacketTransport {
     // set. Packet numbers are used to provide metadata to the implementation of
     // the P2PQuicPacketTransport, but this number is not used by the QUIC
     // library itself.
-    quic::QuicPacketNumber packet_number;
+    uint64_t packet_number;
     const char* buffer;
     size_t buf_len;
   };

@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -25,15 +26,13 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation_flow.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -126,6 +125,9 @@ bool GetBlockdevmodeFromPolicy(
     }
   }
 
+  VLOG(1) << (block_devmode ? "Blocking" : "Allowing")
+          << " dev mode by device policy";
+
   return block_devmode;
 }
 
@@ -173,6 +175,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     std::unique_ptr<DMAuth> dm_auth,
     const std::string& client_id,
     const std::string& requisition,
+    const std::string& sub_organization,
     const EnrollmentCallback& completion_callback)
     : store_(store),
       install_attributes_(install_attributes),
@@ -184,6 +187,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       enrollment_config_(enrollment_config),
       client_id_(client_id),
       requisition_(requisition),
+      sub_organization_(sub_organization),
       completion_callback_(completion_callback),
       enrollment_step_(STEP_PENDING),
       weak_ptr_factory_(this) {
@@ -218,7 +222,7 @@ void EnrollmentHandlerChromeOS::CheckAvailableLicenses(
   CHECK_EQ(STEP_PENDING, enrollment_step_);
   available_licenses_callback_ = license_callback;
   client_->RequestAvailableLicenses(
-      dm_auth_->Clone(),
+      dm_auth_->oauth_token(),
       base::Bind(&EnrollmentHandlerChromeOS::HandleAvailableLicensesResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -236,10 +240,11 @@ void EnrollmentHandlerChromeOS::HandleAvailableLicensesResult(
     return;
   } else if (status != DM_STATUS_SUCCESS) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&EnrollmentHandlerChromeOS::ReportResult,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              EnrollmentStatus::ForStatus(
-                                  EnrollmentStatus::LICENSE_REQUEST_FAILED)));
+        FROM_HERE,
+        base::BindOnce(&EnrollmentHandlerChromeOS::ReportResult,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       EnrollmentStatus::ForStatus(
+                           EnrollmentStatus::LICENSE_REQUEST_FAILED)));
     return;
   }
   if (available_licenses_callback_)
@@ -347,9 +352,7 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
         // Do nothing.
         break;
       case DEVICE_MODE_ENTERPRISE_AD:
-        chromeos::DBusThreadManager::Get()
-            ->GetUpstartClient()
-            ->StartAuthPolicyService();
+        chromeos::UpstartClient::Get()->StartAuthPolicyService();
         break;
       default:
         LOG(ERROR) << "Supplied device mode is not supported:" << device_mode_;
@@ -439,7 +442,7 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
         em::DeviceRegisterRequest::DEVICE,
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE, license_type_,
-        dm_auth_->Clone(), client_id_, requisition_, current_state_key_);
+        dm_auth_->oauth_token(), client_id_, requisition_, current_state_key_);
   }
 }
 
@@ -463,7 +466,7 @@ void EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult(
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE, license_type_,
         dm_auth_->Clone(), pem_certificate_chain, client_id_, requisition_,
-        current_state_key_);
+        current_state_key_, sub_organization_);
   } else {
     ReportResult(EnrollmentStatus::ForStatus(
         EnrollmentStatus::REGISTRATION_CERT_FETCH_FAILED));
@@ -746,11 +749,9 @@ void EnrollmentHandlerChromeOS::OnDeviceAccountTokenStored() {
     // policy is accepted.
     chromeos::DeviceSettingsService::Get()->SetDeviceMode(
         install_attributes_->GetMode());
-    chromeos::DBusThreadManager::Get()
-        ->GetAuthPolicyClient()
-        ->RefreshDevicePolicy(base::BindOnce(
-            &EnrollmentHandlerChromeOS::HandleActiveDirectoryPolicyRefreshed,
-            weak_ptr_factory_.GetWeakPtr()));
+    chromeos::AuthPolicyClient::Get()->RefreshDevicePolicy(base::BindOnce(
+        &EnrollmentHandlerChromeOS::HandleActiveDirectoryPolicyRefreshed,
+        weak_ptr_factory_.GetWeakPtr()));
   } else {
     store_->InstallInitialPolicy(*policy_);
   }

@@ -21,11 +21,15 @@ class CORE_EXPORT DocumentModuleScriptFetcher final
   USING_GARBAGE_COLLECTED_MIXIN(DocumentModuleScriptFetcher);
 
  public:
-  explicit DocumentModuleScriptFetcher(ResourceFetcher*);
+  DocumentModuleScriptFetcher() = default;
   ~DocumentModuleScriptFetcher() override = default;
 
   // Implements ModuleScriptFetcher.
-  void Fetch(FetchParameters&, ModuleGraphLevel, Client*) override;
+  void Fetch(FetchParameters&,
+             ResourceFetcher*,
+             const Modulator* modulator_for_built_in_modules,
+             ModuleGraphLevel,
+             Client*) override;
 
   // Implements ResourceClient
   void NotifyFinished(Resource*) override;
@@ -34,9 +38,9 @@ class CORE_EXPORT DocumentModuleScriptFetcher final
   void Trace(blink::Visitor*) override;
 
  private:
-  bool FetchIfLayeredAPI(FetchParameters&);
+  bool FetchIfLayeredAPI(const Modulator& modulator_for_built_in_modules,
+                         FetchParameters&);
 
-  const Member<ResourceFetcher> fetcher_;
   Member<Client> client_;
 };
 

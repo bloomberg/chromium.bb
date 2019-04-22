@@ -268,6 +268,105 @@ static_assert(ToGLenum(PrimitiveMode::TrianglesAdjacency) == GL_TRIANGLES_ADJACE
               "PrimitiveMode violation");
 static_assert(ToGLenum(PrimitiveMode::TriangleStripAdjacency) == GL_TRIANGLE_STRIP_ADJACENCY,
               "PrimitiveMode violation");
+
+enum class DrawElementsType : size_t
+{
+    UnsignedByte  = 0,
+    UnsignedShort = 1,
+    UnsignedInt   = 2,
+    InvalidEnum   = 3,
+    EnumCount     = 3,
+};
+
+template <>
+constexpr DrawElementsType FromGLenum<DrawElementsType>(GLenum from)
+{
+
+    GLenum scaled = (from - GL_UNSIGNED_BYTE);
+    // This code sequence generates a ROR instruction on x86/arm. We want to check if the lowest bit
+    // of scaled is set and if (scaled >> 1) is greater than a non-pot value. If we rotate the
+    // lowest bit to the hightest bit both conditions can be checked with a single test.
+    static_assert(sizeof(GLenum) == 4, "Update (scaled << 31) to sizeof(GLenum) * 8 - 1");
+    GLenum packed = (scaled >> 1) | (scaled << 31);
+
+    // operator ? with a simple assignment usually translates to a cmov instruction and thus avoids
+    // a branch.
+    packed = (packed >= static_cast<GLenum>(DrawElementsType::EnumCount))
+                 ? static_cast<GLenum>(DrawElementsType::InvalidEnum)
+                 : packed;
+
+    return static_cast<DrawElementsType>(packed);
+}
+
+constexpr GLenum ToGLenum(DrawElementsType from)
+{
+    return ((static_cast<GLenum>(from) << 1) + GL_UNSIGNED_BYTE);
+}
+
+#define ANGLE_VALIDATE_PACKED_ENUM(type, packed, glenum)                 \
+    static_assert(ToGLenum(type::packed) == glenum, #type " violation"); \
+    static_assert(FromGLenum<type>(glenum) == type::packed, #type " violation")
+
+ANGLE_VALIDATE_PACKED_ENUM(DrawElementsType, UnsignedByte, GL_UNSIGNED_BYTE);
+ANGLE_VALIDATE_PACKED_ENUM(DrawElementsType, UnsignedShort, GL_UNSIGNED_SHORT);
+ANGLE_VALIDATE_PACKED_ENUM(DrawElementsType, UnsignedInt, GL_UNSIGNED_INT);
+
+enum class VertexAttribType
+{
+    Byte               = 0,   // GLenum == 0x1400
+    UnsignedByte       = 1,   // GLenum == 0x1401
+    Short              = 2,   // GLenum == 0x1402
+    UnsignedShort      = 3,   // GLenum == 0x1403
+    Int                = 4,   // GLenum == 0x1404
+    UnsignedInt        = 5,   // GLenum == 0x1405
+    Float              = 6,   // GLenum == 0x1406
+    Unused1            = 7,   // GLenum == 0x1407
+    Unused2            = 8,   // GLenum == 0x1408
+    Unused3            = 9,   // GLenum == 0x1409
+    Unused4            = 10,  // GLenum == 0x140A
+    HalfFloat          = 11,  // GLenum == 0x140B
+    Fixed              = 12,  // GLenum == 0x140C
+    MaxBasicType       = 12,
+    UnsignedInt2101010 = 13,  // GLenum == 0x8368
+    Int2101010         = 14,  // GLenum == 0x8D9F
+    InvalidEnum        = 15,
+    EnumCount          = 15,
+};
+
+template <>
+constexpr VertexAttribType FromGLenum<VertexAttribType>(GLenum from)
+{
+    GLenum packed = from - GL_BYTE;
+    if (packed <= static_cast<GLenum>(VertexAttribType::MaxBasicType))
+        return static_cast<VertexAttribType>(packed);
+    if (from == GL_UNSIGNED_INT_2_10_10_10_REV)
+        return VertexAttribType::UnsignedInt2101010;
+    if (from == GL_INT_2_10_10_10_REV)
+        return VertexAttribType::Int2101010;
+    return VertexAttribType::InvalidEnum;
+}
+
+constexpr GLenum ToGLenum(VertexAttribType from)
+{
+    // This could be optimized using a constexpr table.
+    if (from == VertexAttribType::Int2101010)
+        return GL_INT_2_10_10_10_REV;
+    if (from == VertexAttribType::UnsignedInt2101010)
+        return GL_UNSIGNED_INT_2_10_10_10_REV;
+    return static_cast<GLenum>(from) + GL_BYTE;
+}
+
+ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, Byte, GL_BYTE);
+ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, UnsignedByte, GL_UNSIGNED_BYTE);
+ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, Short, GL_SHORT);
+ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, UnsignedShort, GL_UNSIGNED_SHORT);
+ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, Int, GL_INT);
+ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, UnsignedInt, GL_UNSIGNED_INT);
+ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, Float, GL_FLOAT);
+ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, HalfFloat, GL_HALF_FLOAT);
+ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, Fixed, GL_FIXED);
+ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, Int2101010, GL_INT_2_10_10_10_REV);
+ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, UnsignedInt2101010, GL_UNSIGNED_INT_2_10_10_10_REV);
 }  // namespace gl
 
 namespace egl

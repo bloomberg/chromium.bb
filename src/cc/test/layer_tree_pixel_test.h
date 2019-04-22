@@ -11,10 +11,18 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "cc/test/layer_tree_test.h"
+#include "cc/trees/clip_node.h"
+#include "cc/trees/effect_node.h"
+#include "cc/trees/scroll_node.h"
+#include "cc/trees/transform_node.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "ui/gl/gl_implementation.h"
 
 class SkBitmap;
+
+namespace gfx {
+class ColorSpace;
+}
 
 namespace viz {
 class CopyOutputRequest;
@@ -28,10 +36,24 @@ class TextureLayer;
 
 class LayerTreePixelTest : public LayerTreeTest {
  public:
+  // TODO(sgilhuly): Once the pixel tests are working on skia gl, add the option
+  // for skia vulkan.
   enum PixelTestType {
     PIXEL_TEST_GL,
+    PIXEL_TEST_SKIA_GL,
     PIXEL_TEST_SOFTWARE,
   };
+
+  static std::string TestTypeToString(PixelTestType test_type) {
+    switch (test_type) {
+      case PIXEL_TEST_GL:
+        return "GL";
+      case PIXEL_TEST_SKIA_GL:
+        return "Skia GL";
+      case PIXEL_TEST_SOFTWARE:
+        return "Software";
+    }
+  }
 
  protected:
   LayerTreePixelTest();
@@ -67,12 +89,23 @@ class LayerTreePixelTest : public LayerTreeTest {
       int border_width,
       SkColor border_color);
 
+  // Initializes the root layer and root PropertyTrees for layer list mode.
+  // In this mode, all other layers are direct children of |root_layer| and
+  // any property nodes are descendants of node id 1 in the respective trees.
+  void InitializeForLayerListMode(scoped_refptr<Layer>* root_layer,
+                                  PropertyTrees* property_trees);
+
   void RunPixelTest(PixelTestType type,
                     scoped_refptr<Layer> content_root,
                     base::FilePath file_name);
   void RunPixelTest(PixelTestType type,
                     scoped_refptr<Layer> content_root,
                     const SkBitmap& expected_bitmap);
+
+  void RunPixelTestWithLayerList(PixelTestType type,
+                                 scoped_refptr<Layer> root_layer,
+                                 base::FilePath file_name,
+                                 PropertyTrees* property_trees);
 
   void RunSingleThreadedPixelTest(PixelTestType test_type,
                                   scoped_refptr<Layer> content_root,
@@ -83,9 +116,15 @@ class LayerTreePixelTest : public LayerTreeTest {
                                       Layer* target,
                                       base::FilePath file_name);
 
+  void SetPixelTestType(PixelTestType test_type) {
+    test_type_ = test_type;
+    use_skia_renderer_ = test_type == PIXEL_TEST_SKIA_GL;
+  }
+
   SkBitmap CopyMailboxToBitmap(const gfx::Size& size,
                                const gpu::Mailbox& mailbox,
-                               const gpu::SyncToken& sync_token);
+                               const gpu::SyncToken& sync_token,
+                               const gfx::ColorSpace& color_space);
 
   void Finish();
 
@@ -106,6 +145,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   std::unique_ptr<PixelComparator> pixel_comparator_;
   PixelTestType test_type_;
   scoped_refptr<Layer> content_root_;
+  PropertyTrees* property_trees_;
   Layer* readback_target_;
   base::FilePath ref_file_;
   SkBitmap expected_bitmap_;

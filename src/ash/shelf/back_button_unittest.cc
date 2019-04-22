@@ -15,6 +15,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/run_loop.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/events/test/event_generator.h"
@@ -39,7 +40,7 @@ class BackButtonTest : public AshTestBase {
     // GetSwitchStates post task in (Fake)PowerManagerClient which is triggered
     // by TabletModeController otherwise this will cause tablet mode to exit
     // while we wait for animations in the test.
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -106,11 +107,15 @@ TEST_F(BackButtonTest, BackKeySequenceGenerated) {
   ui::TestAcceleratorTarget target_back_release;
   controller->Register({accelerator_back_release}, &target_back_release);
 
-  // Verify that by clicking the back button, a back key sequence will be
-  // generated.
+  // Verify that by pressing the back button no event is generated on the press,
+  // but there is one generated on the release.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(back_button()->GetBoundsInScreen().CenterPoint());
-  generator->ClickLeftButton();
+  generator->PressLeftButton();
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+
+  generator->ReleaseLeftButton();
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());
 }

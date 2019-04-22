@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
@@ -77,7 +78,7 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
     return usage;
   }
 
-  void DeletePhysicalOrigin(GURL origin) {
+  void DeletePhysicalOrigin(url::Origin origin) {
     auto* context = BrowserContext::GetDefaultStoragePartition(
                         shell()->web_contents()->GetBrowserContext())
                         ->GetDOMStorageContext();

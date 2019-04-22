@@ -20,13 +20,13 @@ WebBluetoothDeviceId::WebBluetoothDeviceId() {}
 
 WebBluetoothDeviceId::WebBluetoothDeviceId(std::string device_id)
     : device_id_(std::move(device_id)) {
-  CHECK(IsValid(device_id_));
+  CHECK(IsValid());
 }
 
 WebBluetoothDeviceId::~WebBluetoothDeviceId() {}
 
 const std::string& WebBluetoothDeviceId::str() const {
-  CHECK(IsValid(device_id_));
+  CHECK(IsValid());
   return device_id_;
 }
 
@@ -67,6 +67,10 @@ bool WebBluetoothDeviceId::IsValid(const std::string& device_id) {
   }
 
   return true;
+}
+
+bool WebBluetoothDeviceId::IsValid() const {
+  return WebBluetoothDeviceId::IsValid(device_id_);
 }
 
 bool WebBluetoothDeviceId::operator==(

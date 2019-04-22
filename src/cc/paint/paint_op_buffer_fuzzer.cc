@@ -68,8 +68,9 @@ void Raster(scoped_refptr<viz::TestContextProvider> context_provider,
 
   cc::PlaybackParams params(nullptr, canvas->getTotalMatrix());
   cc::TransferCacheTestHelper transfer_cache_helper;
+  std::vector<uint8_t> scratch_buffer;
   cc::PaintOp::DeserializeOptions deserialize_options(
-      &transfer_cache_helper, paint_cache, strike_client);
+      &transfer_cache_helper, paint_cache, strike_client, &scratch_buffer);
 
   // Need 4 bytes to be able to read the type/skip.
   while (size >= 4) {
@@ -111,7 +112,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::CommandLine::Init(0, nullptr);
 
   // Partition the data to use some bytes for populating the font cache.
-  size_t bytes_for_fonts = data[0];
+  uint32_t bytes_for_fonts = data[0];
   if (bytes_for_fonts > size)
     bytes_for_fonts = size / 2;
 

@@ -19,6 +19,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
+
 namespace {
 void LogUma(int value) {}
 }
@@ -92,6 +94,7 @@ class AudioRendererMixerInputTest : public testing::Test,
   MOCK_METHOD1(ReturnMixer, void(AudioRendererMixer*));
 
   MOCK_METHOD1(SwitchCallbackCalled, void(OutputDeviceStatus));
+  MOCK_METHOD1(OnDeviceInfoReceived, void(OutputDeviceInfo));
 
   void SwitchCallback(base::RunLoop* loop, OutputDeviceStatus result) {
     SwitchCallbackCalled(result);
@@ -318,6 +321,131 @@ TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceBeforeInitialize) {
 
   mixer_input_->Initialize(audio_parameters_, fake_callback_.get());
   mixer_input_->Start();
+  mixer_input_->Stop();
+}
+
+// Test that calling SwitchOutputDevice() before
+// GetOutputDeviceInfoAsync() works correctly.
+TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceBeforeGODIA) {
+  mixer_input_->Stop();
+  mixer_input_ = new AudioRendererMixerInput(
+      this, kRenderFrameId, kDefaultDeviceId, AudioLatency::LATENCY_PLAYBACK);
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_OK));
+  mixer_input_->SwitchOutputDevice(
+      kAnotherDeviceId,
+      base::BindOnce(&AudioRendererMixerInputTest::SwitchCallback,
+                     base::Unretained(this), &run_loop));
+  run_loop.Run();
+  mixer_input_->Stop();
+}
+
+// Test that calling SwitchOutputDevice() during an ongoing
+// GetOutputDeviceInfoAsync() call works correctly.
+TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceDuringGODIA) {
+  mixer_input_->Stop();
+  mixer_input_ = new AudioRendererMixerInput(
+      this, kRenderFrameId, kDefaultDeviceId, AudioLatency::LATENCY_PLAYBACK);
+
+  mixer_input_->GetOutputDeviceInfoAsync(
+      base::BindOnce(&AudioRendererMixerInputTest::OnDeviceInfoReceived,
+                     base::Unretained(this)));
+  mixer_input_->SwitchOutputDevice(
+      kAnotherDeviceId,
+      base::BindOnce(&AudioRendererMixerInputTest::SwitchCallbackCalled,
+                     base::Unretained(this)));
+  {
+    // Verify that first the GODIA call returns, then the SwitchOutputDevice().
+    testing::InSequence sequence_required;
+    OutputDeviceInfo info;
+    constexpr auto kExpectedStatus = OUTPUT_DEVICE_STATUS_OK;
+    EXPECT_CALL(*this, OnDeviceInfoReceived(_))
+        .WillOnce(testing::SaveArg<0>(&info));
+    EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_OK));
+    scoped_task_environment_.RunUntilIdle();
+    EXPECT_EQ(kExpectedStatus, info.device_status());
+    EXPECT_EQ(kDefaultDeviceId, info.device_id());
+  }
+
+  mixer_input_->Stop();
+}
+
+// Test that calling GetOutputDeviceInfoAsync() during an ongoing
+// SwitchOutputDevice() call works correctly.
+TEST_F(AudioRendererMixerInputTest, GODIADuringSwitchOutputDevice) {
+  mixer_input_->Stop();
+  mixer_input_ = new AudioRendererMixerInput(
+      this, kRenderFrameId, kDefaultDeviceId, AudioLatency::LATENCY_PLAYBACK);
+
+  mixer_input_->SwitchOutputDevice(
+      kAnotherDeviceId,
+      base::BindOnce(&AudioRendererMixerInputTest::SwitchCallbackCalled,
+                     base::Unretained(this)));
+  mixer_input_->GetOutputDeviceInfoAsync(
+      base::BindOnce(&AudioRendererMixerInputTest::OnDeviceInfoReceived,
+                     base::Unretained(this)));
+
+  {
+    // Verify that first the SwitchOutputDevice call returns, then the GODIA().
+    testing::InSequence sequence_required;
+    EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_OK));
+    OutputDeviceInfo info;
+    constexpr auto kExpectedStatus = OUTPUT_DEVICE_STATUS_OK;
+    EXPECT_CALL(*this, OnDeviceInfoReceived(_))
+        .WillOnce(testing::SaveArg<0>(&info));
+    scoped_task_environment_.RunUntilIdle();
+    EXPECT_EQ(kExpectedStatus, info.device_status());
+    EXPECT_EQ(kAnotherDeviceId, info.device_id());
+  }
+
+  mixer_input_->Stop();
+}
+
+// Test that calling GetOutputDeviceInfoAsync() during an ongoing
+// SwitchOutputDevice() call which eventually fails works correctly.
+TEST_F(AudioRendererMixerInputTest, GODIADuringSwitchOutputDeviceWhichFails) {
+  mixer_input_->Stop();
+  mixer_input_ = new AudioRendererMixerInput(
+      this, kRenderFrameId, kDefaultDeviceId, AudioLatency::LATENCY_PLAYBACK);
+
+  mixer_input_->SwitchOutputDevice(
+      kNonexistentDeviceId,
+      base::BindOnce(&AudioRendererMixerInputTest::SwitchCallbackCalled,
+                     base::Unretained(this)));
+  mixer_input_->GetOutputDeviceInfoAsync(
+      base::BindOnce(&AudioRendererMixerInputTest::OnDeviceInfoReceived,
+                     base::Unretained(this)));
+
+  {
+    // Verify that first the SwitchOutputDevice call returns, then the GODIA().
+    testing::InSequence sequence_required;
+    EXPECT_CALL(*this,
+                SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND));
+    OutputDeviceInfo info;
+    constexpr auto kExpectedStatus = OUTPUT_DEVICE_STATUS_OK;
+    EXPECT_CALL(*this, OnDeviceInfoReceived(_))
+        .WillOnce(testing::SaveArg<0>(&info));
+    scoped_task_environment_.RunUntilIdle();
+    EXPECT_EQ(kExpectedStatus, info.device_status());
+    EXPECT_EQ(kDefaultDeviceId, info.device_id());
+  }
+
+  mixer_input_->Stop();
+}
+
+// Test that calling SwitchOutputDevice() with an empty device id does nothing
+// when we're already on the default device.
+TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceEmptyDeviceId) {
+  EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_OK));
+  mixer_input_->SwitchOutputDevice(
+      std::string(),
+      base::BindOnce(&AudioRendererMixerInputTest::SwitchCallbackCalled,
+                     base::Unretained(this)));
+
+  // No RunUntilIdle() since switch should immediately return success.
+  testing::Mock::VerifyAndClear(this);
+
   mixer_input_->Stop();
 }
 

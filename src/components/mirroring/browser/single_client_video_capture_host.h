@@ -38,7 +38,7 @@ class SingleClientVideoCaptureHost final
   using DeviceLauncherCreateCallback = base::RepeatingCallback<
       std::unique_ptr<content::VideoCaptureDeviceLauncher>()>;
   SingleClientVideoCaptureHost(const std::string& device_id,
-                               content::MediaStreamType type,
+                               blink::MediaStreamType type,
                                DeviceLauncherCreateCallback callback);
   ~SingleClientVideoCaptureHost() override;
 
@@ -65,6 +65,9 @@ class SingleClientVideoCaptureHost final
   void GetDeviceFormatsInUse(int32_t device_id,
                              int32_t session_id,
                              GetDeviceFormatsInUseCallback callback) override;
+  void OnFrameDropped(int32_t device_id,
+                      media::VideoCaptureFrameDropReason reason) override;
+  void OnLog(int32_t device_id, const std::string& message) override;
 
   // media::VideoFrameReceiver implementations
   using Buffer = VideoCaptureDevice::Client::Buffer;
@@ -83,6 +86,7 @@ class SingleClientVideoCaptureHost final
   void OnLog(const std::string& message) override;
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;
+  void OnStopped() override;
 
   void OnDeviceLaunched(
       std::unique_ptr<content::LaunchedVideoCaptureDevice> device);
@@ -95,7 +99,7 @@ class SingleClientVideoCaptureHost final
                                  double consumer_resource_utilization);
 
   const std::string device_id_;
-  const content::MediaStreamType type_;
+  const blink::MediaStreamType type_;
   const DeviceLauncherCreateCallback device_launcher_callback_;
 
   media::mojom::VideoCaptureObserverPtr observer_;

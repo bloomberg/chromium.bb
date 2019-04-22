@@ -35,6 +35,9 @@ class SVGClipPathElement final : public SVGGraphicsElement {
 
  public:
   DECLARE_NODE_FACTORY(SVGClipPathElement);
+
+  explicit SVGClipPathElement(Document&);
+
   SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* clipPathUnits() {
     return clip_path_units_.Get();
   }
@@ -44,12 +47,10 @@ class SVGClipPathElement final : public SVGGraphicsElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGClipPathElement(Document&);
-
   void SvgAttributeChanged(const QualifiedName&) override;
   void ChildrenChanged(const ChildrenChange&) override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> clip_path_units_;
 };

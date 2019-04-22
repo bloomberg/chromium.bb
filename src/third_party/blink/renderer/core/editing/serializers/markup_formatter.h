@@ -30,7 +30,6 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/editing/editing_strategy.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -39,8 +38,6 @@ class Attribute;
 class DocumentType;
 class Element;
 class Node;
-
-typedef HashMap<AtomicString, AtomicString> Namespaces;
 
 enum EntityMask {
   kEntityAmp = 0x0001,
@@ -73,6 +70,17 @@ class MarkupFormatter final {
 
  public:
   static void AppendAttributeValue(StringBuilder&, const String&, bool);
+  static void AppendAttributeAsHTML(StringBuilder& result,
+                                    const Attribute& attribute,
+                                    const String& value);
+  static void AppendAttributeAsXMLWithoutNamespace(StringBuilder& result,
+                                                   const Attribute& attribute,
+                                                   const String& value);
+  static void AppendAttribute(StringBuilder& result,
+                              const AtomicString& prefix,
+                              const AtomicString& local_name,
+                              const String& value,
+                              bool document_is_html);
   static void AppendCDATASection(StringBuilder&, const String&);
   static void AppendCharactersReplacingEntities(StringBuilder&,
                                                 const String&,
@@ -81,44 +89,39 @@ class MarkupFormatter final {
                                                 EntityMask);
   static void AppendComment(StringBuilder&, const String&);
   static void AppendDocumentType(StringBuilder&, const DocumentType&);
-  static void AppendNamespace(StringBuilder&,
-                              const AtomicString& prefix,
-                              const AtomicString& namespace_uri,
-                              Namespaces&);
   static void AppendProcessingInstruction(StringBuilder&,
                                           const String& target,
                                           const String& data);
   static void AppendXMLDeclaration(StringBuilder&, const Document&);
 
-  MarkupFormatter(EAbsoluteURLs,
+  MarkupFormatter(AbsoluteURLs,
                   SerializationType = SerializationType::kAsOwnerDocument);
   ~MarkupFormatter();
 
-  void AppendStartMarkup(StringBuilder&, const Node&, Namespaces*);
+  void AppendStartMarkup(StringBuilder&, const Node&);
   void AppendEndMarkup(StringBuilder&, const Element&);
+  void AppendEndMarkup(StringBuilder& result,
+                       const Element& element,
+                       const AtomicString& prefix,
+                       const AtomicString& local_name);
 
   bool SerializeAsHTMLDocument(const Node&) const;
 
-  void AppendText(StringBuilder&, Text&);
-  void AppendOpenTag(StringBuilder&, const Element&, Namespaces*);
-  void AppendCloseTag(StringBuilder&, const Element&);
-  void AppendAttribute(StringBuilder&,
-                       const Element&,
-                       const Attribute&,
-                       Namespaces*);
+  void AppendText(StringBuilder&, const Text&);
+  // Serialize '<' and the element name.
+  void AppendStartTagOpen(StringBuilder&, const Element&);
+  void AppendStartTagOpen(StringBuilder& result,
+                          const AtomicString& prefix,
+                          const AtomicString& local_name);
+  // Serialize '>' or '/>'
+  void AppendStartTagClose(StringBuilder&, const Element&);
 
-  bool ShouldAddNamespaceElement(const Element&, Namespaces&) const;
-  bool ShouldAddNamespaceAttribute(const Attribute&, const Element&) const;
   EntityMask EntityMaskForText(const Text&) const;
   bool ShouldSelfClose(const Element&) const;
+  String ResolveURLIfNeeded(const Element&, const Attribute& attribute) const;
 
  private:
-  String ResolveURLIfNeeded(const Element&, const String&) const;
-  void AppendQuotedURLAttributeValue(StringBuilder&,
-                                     const Element&,
-                                     const Attribute&);
-
-  const EAbsoluteURLs resolve_urls_method_;
+  const AbsoluteURLs resolve_urls_method_;
   SerializationType serialization_type_;
 
   DISALLOW_COPY_AND_ASSIGN(MarkupFormatter);

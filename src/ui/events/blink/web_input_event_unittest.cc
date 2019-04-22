@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
@@ -206,7 +206,7 @@ TEST(WebInputEventTest, TestMakeWebKeyboardEventKeyPadKeyCode) {
   }
 #if defined(USE_X11)
   ScopedXI2Event xev;
-  for (size_t i = 0; i < arraysize(kTesCases); ++i) {
+  for (size_t i = 0; i < base::size(kTesCases); ++i) {
     const TestCase& test_case = kTesCases[i];
 
     // TODO: re-enable the two cases excluded here once all trybots
@@ -472,7 +472,7 @@ TEST(WebInputEventTest, KeyEvent) {
       {ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_C, ui::EF_ALT_DOWN),
        blink::WebInputEvent::kKeyUp, blink::WebInputEvent::kAltKey}};
 
-  for (size_t i = 0; i < arraysize(tests); i++) {
+  for (size_t i = 0; i < base::size(tests); i++) {
     blink::WebKeyboardEvent web_event = MakeWebKeyboardEvent(tests[i].event);
     ASSERT_TRUE(blink::WebInputEvent::IsKeyboardEventType(web_event.GetType()));
     ASSERT_EQ(tests[i].web_type, web_event.GetType());
@@ -517,7 +517,7 @@ TEST(WebInputEventTest, MousePointerEvent) {
        gfx::Point(13, 3), gfx::Point(53, 3)},
   };
 
-  for (size_t i = 0; i < arraysize(tests); i++) {
+  for (size_t i = 0; i < base::size(tests); i++) {
     ui::MouseEvent ui_event(tests[i].ui_type, tests[i].location,
                             tests[i].screen_location, base::TimeTicks(),
                             tests[i].ui_modifiers, 0);
@@ -531,5 +531,23 @@ TEST(WebInputEventTest, MousePointerEvent) {
     ASSERT_EQ(tests[i].screen_location.y(), web_event.PositionInScreen().y);
   }
 }
+
+#if defined(OS_WIN)
+TEST(WebInputEventTest, MouseLeaveScreenCoordinate) {
+  MSG msg_event = {nullptr, WM_MOUSELEAVE, 0, MAKELPARAM(300, 200)};
+  ::SetCursorPos(250, 350);
+  ui::MouseEvent ui_event(msg_event);
+
+  blink::WebMouseEvent web_event = MakeWebMouseEvent(ui_event);
+  ASSERT_EQ(blink::WebInputEvent::kMouseLeave, web_event.GetType());
+
+  // WM_MOUSELEAVE events take coordinates from cursor position instead of
+  // LPARAM.
+  ASSERT_EQ(250, web_event.PositionInWidget().x);
+  ASSERT_EQ(350, web_event.PositionInWidget().y);
+  ASSERT_EQ(250, web_event.PositionInScreen().x);
+  ASSERT_EQ(350, web_event.PositionInScreen().y);
+}
+#endif
 
 }  // namespace ui

@@ -3,14 +3,19 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win.h"
-#include "chrome/browser/ui/startup/credential_provider_signin_info_fetcher_win.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string16.h"
 #include "base/syslog_logging.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/startup/credential_provider_signin_info_fetcher_win.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
@@ -30,6 +35,33 @@ namespace {
 // This message must match the one sent in inline_login.js: sendLSTFetchResults.
 constexpr char kLSTFetchResultsMessage[] = "lstFetchResults";
 
+void WriteResultToHandle(const base::Value& result) {
+  std::string json_result;
+  if (base::JSONWriter::Write(result, &json_result) && !json_result.empty()) {
+    // The caller of this Chrome process must provide a stdout handle  to
+    // which Chrome can output the results, otherwise by default the call to
+    // ::GetStdHandle(STD_OUTPUT_HANDLE) will result in an invalid or null
+    // handle if Chrome was started without providing a console.
+    HANDLE output_handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    if (output_handle != nullptr && output_handle != INVALID_HANDLE_VALUE) {
+      DWORD written;
+      if (!::WriteFile(output_handle, json_result.c_str(), json_result.length(),
+                       &written, nullptr)) {
+        SYSLOG(ERROR)
+            << "Failed to write result of GCPW signin to inherited handle.";
+      }
+    }
+  }
+}
+
+void WriteResultToHandleWithKeepAlive(
+    std::unique_ptr<ScopedKeepAlive> keep_alive,
+    base::Value signin_result) {
+  WriteResultToHandle(signin_result);
+
+  // Release the keep_alive implicitly and allow the dialog to die.
+}
+
 void HandleAllGcpwInfoFetched(
     std::unique_ptr<ScopedKeepAlive> keep_alive,
     std::unique_ptr<CredentialProviderSigninInfoFetcher> fetcher,
@@ -38,24 +70,8 @@ void HandleAllGcpwInfoFetched(
   DCHECK(signin_result.is_dict());
   DCHECK(fetch_result.is_dict());
   if (!signin_result.DictEmpty() && !fetch_result.DictEmpty()) {
-    std::string json_result;
     signin_result.MergeDictionary(&fetch_result);
-    if (base::JSONWriter::Write(signin_result, &json_result) &&
-        !json_result.empty()) {
-      // The caller of this Chrome process must provide a stdout handle  to
-      // which Chrome can output the results, otherwise by default the call to
-      // ::GetStdHandle(STD_OUTPUT_HANDLE) will result in an invalid or null
-      // handle if Chrome was started without providing a console.
-      HANDLE output_handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
-      if (output_handle != nullptr && output_handle != INVALID_HANDLE_VALUE) {
-        DWORD written;
-        if (!::WriteFile(output_handle, json_result.c_str(),
-                         json_result.length(), &written, nullptr)) {
-          SYSLOG(ERROR)
-              << "Failed to write result of GCPW signin to inherited handle.";
-        }
-      }
-    }
+    WriteResultToHandle(signin_result);
   }
 
   // Release the fetcher and mark it for eventual delete. It is not immediately
@@ -69,13 +85,36 @@ void HandleAllGcpwInfoFetched(
 void HandleSigninCompleteForGcpwLogin(
     std::unique_ptr<ScopedKeepAlive> keep_alive,
     base::Value signin_result,
-    const std::string& access_token,
-    const std::string& refresh_token,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DCHECK(signin_result.is_dict());
-  DCHECK_EQ(signin_result.DictEmpty(),
-            access_token.empty() && refresh_token.empty());
-  if (!signin_result.DictEmpty()) {
+  DCHECK(!signin_result.DictEmpty());
+  int exit_code = signin_result
+                      .FindKeyOfType(credential_provider::kKeyExitCode,
+                                     base::Value::Type::INTEGER)
+                      ->GetInt();
+
+  // If there is an error code, write out the signin results directly.
+  // Otherwise fetch more info required for the signin.  In either case,
+  // make sure the keep alive is not destroyed on return of this function
+  // or a reentrancy crash will occur in HWNDMessageHandler().
+  if (exit_code != credential_provider::kUiecSuccess) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WriteResultToHandleWithKeepAlive, std::move(keep_alive),
+                       std::move(signin_result)));
+  } else if (signin_result.DictSize() > 1) {
+    std::string access_token =
+        signin_result
+            .FindKeyOfType(credential_provider::kKeyAccessToken,
+                           base::Value::Type::STRING)
+            ->GetString();
+    std::string refresh_token =
+        signin_result
+            .FindKeyOfType(credential_provider::kKeyRefreshToken,
+                           base::Value::Type::STRING)
+            ->GetString();
+    DCHECK(!access_token.empty() && !refresh_token.empty());
+
     // Create the fetcher and pass it to the callback so that it can be
     // deleted once it is finished.
     auto fetcher = std::make_unique<CredentialProviderSigninInfoFetcher>(
@@ -86,10 +125,10 @@ void HandleSigninCompleteForGcpwLogin(
                        std::move(fetcher), std::move(signin_result)));
   }
 
-  // If the function has not pass ownership of the keep alive yet at this point
-  // this means there was some error reading the sign in result or the result
-  // was empty. In this case, return from the method which will implicitly
-  // release the keep_alive which will close and release everything.
+  // If the function has not passed ownership of the keep alive yet at this
+  // point this means there was some error reading the sign in result or the
+  // result was empty. In this case, return from the method which will
+  // implicitly release the keep_alive which will close and release everything.
 }
 
 class CredentialProviderWebUIMessageHandler
@@ -108,13 +147,37 @@ class CredentialProviderWebUIMessageHandler
             base::Unretained(this)));
   }
 
+  void AbortIfPossible() {
+    // If the callback was already called, ignore.
+    if (!signin_callback_)
+      return;
+
+    // Build a result for the credential provider that includes only the abort
+    // exit code.
+    std::unique_ptr<base::Value> result(
+        new base::Value(base::Value::Type::DICTIONARY));
+    result->SetKey(credential_provider::kKeyExitCode,
+                   base::Value(credential_provider::kUiecAbort));
+    base::ListValue args;
+    args.Append(std::move(result));
+    OnSigninComplete(&args);
+  }
+
  private:
-  base::Value ParseArgs(const base::ListValue* args,
-                        std::string* out_access_token,
-                        std::string* out_refresh_token) {
+  base::Value ParseArgs(const base::ListValue* args, int* out_exit_code) {
+    DCHECK(out_exit_code);
+
     const base::Value* dict_result = nullptr;
     if (!args || args->empty() || !args->Get(0, &dict_result) ||
         !dict_result->is_dict()) {
+      *out_exit_code = credential_provider::kUiecMissingSigninData;
+      return base::Value(base::Value::Type::DICTIONARY);
+    }
+    const base::Value* exit_code = dict_result->FindKeyOfType(
+        credential_provider::kKeyExitCode, base::Value::Type::INTEGER);
+
+    if (exit_code && exit_code->GetInt() != credential_provider::kUiecSuccess) {
+      *out_exit_code = exit_code->GetInt();
       return base::Value(base::Value::Type::DICTIONARY);
     }
 
@@ -133,18 +196,27 @@ class CredentialProviderWebUIMessageHandler
         password->GetString().empty() || !id || id->GetString().empty() ||
         !access_token || access_token->GetString().empty() || !refresh_token ||
         refresh_token->GetString().empty()) {
+      *out_exit_code = credential_provider::kUiecMissingSigninData;
       return base::Value(base::Value::Type::DICTIONARY);
     }
 
-    *out_access_token = access_token->GetString();
-    *out_refresh_token = refresh_token->GetString();
+    *out_exit_code = credential_provider::kUiecSuccess;
     return dict_result->Clone();
   }
 
   void OnSigninComplete(const base::ListValue* args) {
-    std::string access_token;
-    std::string refresh_token;
-    base::Value signin_result = ParseArgs(args, &access_token, &refresh_token);
+    // If the callback was already called, ignore.  This may happen if the
+    // user presses Escape right after finishing the signin process, the
+    // Escape is processed first by AbortIfPossible(), and the signin then
+    // completes before WriteResultToHandleWithKeepAlive() executes.
+    if (!signin_callback_)
+      return;
+
+    int exit_code;
+    base::Value signin_result = ParseArgs(args, &exit_code);
+
+    signin_result.SetKey(credential_provider::kKeyExitCode,
+                         base::Value(exit_code));
 
     content::WebContents* contents = web_ui()->GetWebContents();
     content::StoragePartition* partition =
@@ -156,7 +228,7 @@ class CredentialProviderWebUIMessageHandler
     // (like the keep_alive in HandleSigninCompleteForGCPWLogin) or perform
     // possible error handling.
     std::move(signin_callback_)
-        .Run(std::move(signin_result), access_token, refresh_token,
+        .Run(std::move(signin_result),
              partition->GetURLLoaderFactoryForBrowserProcess());
   }
 
@@ -174,14 +246,18 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   // |reauth_email| is used to pre fill in the sign in dialog with the user's
   // e-mail during a reauthorize sign in. This type of sign in is used to update
   // the user's password.
-  // |email_domain| is used to pre fill the email domain on Gaia's signin page
+  // |email_domains| is used to pre fill the email domain on Gaia's signin page
   // so that the user only needs to enter their user name.
   CredentialProviderWebDialogDelegate(
       const std::string& reauth_email,
-      const std::string& email_domain,
+      const std::string& reauth_gaia_id,
+      const std::string& email_domains,
+      const std::string& gcpw_endpoint_path,
       HandleGcpwSigninCompleteResult signin_callback)
       : reauth_email_(reauth_email),
-        email_domain_(email_domain),
+        reauth_gaia_id_(reauth_gaia_id),
+        email_domains_(email_domains),
+        gcpw_endpoint_path_(gcpw_endpoint_path),
         signin_callback_(std::move(signin_callback)) {}
 
   GURL GetDialogContentURL() const override {
@@ -192,16 +268,27 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
 
     auto base_url =
         reauth_email_.empty()
-            ? signin::GetPromoURLForDialog(access_point, reason, false)
-            : signin::GetReauthURLWithEmailForDialog(access_point, reason,
-                                                     reauth_email_);
+            ? signin::GetEmbeddedPromoURL(access_point, reason, false)
+            : signin::GetEmbeddedReauthURLWithEmail(access_point, reason,
+                                                    reauth_email_);
+    if (!reauth_gaia_id_.empty()) {
+      base_url = net::AppendQueryParameter(
+          base_url, credential_provider::kValidateGaiaIdSigninPromoParameter,
+          reauth_gaia_id_);
+    }
 
-    if (email_domain_.empty())
+    if (!gcpw_endpoint_path_.empty()) {
+      base_url = net::AppendQueryParameter(
+          base_url, credential_provider::kGcpwEndpointPathPromoParameter,
+          gcpw_endpoint_path_);
+    }
+
+    if (email_domains_.empty())
       return base_url;
 
     return net::AppendQueryParameter(
-        base_url, credential_provider::kEmailDomainSigninPromoParameter,
-        email_domain_);
+        base_url, credential_provider::kEmailDomainsSigninPromoParameter,
+        email_domains_);
   }
 
   ui::ModalType GetDialogModalType() const override {
@@ -223,8 +310,10 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const override {
     // The WebDialogUI will own and delete this message handler.
-    handlers->push_back(
-        new CredentialProviderWebUIMessageHandler(std::move(signin_callback_)));
+    DCHECK(!handler_);
+    handler_ =
+        new CredentialProviderWebUIMessageHandler(std::move(signin_callback_));
+    handlers->push_back(handler_);
   }
 
   void GetDialogSize(gfx::Size* size) const override {
@@ -240,6 +329,13 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   std::string GetDialogArgs() const override { return std::string(); }
 
   void OnDialogClosed(const std::string& json_retval) override {
+    // To handle the case where the user presses Esc to cancel the sign in,
+    // write out an "abort" result for the credential provider.  However,
+    // this function is also called when the user completes the sign in
+    // successfully and output has already been written.  In this case the
+    // abort is not possible and this call is a noop.
+    handler_->AbortIfPossible();
+
     // Class owns itself and thus needs to be deleted eventually after the
     // closed call back has been signalled since it will no longer be accessed
     // by the WebDialogView.
@@ -249,7 +345,8 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override {}
 
-  bool HandleContextMenu(const content::ContextMenuParams& params) override {
+  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                         const content::ContextMenuParams& params) override {
     return true;
   }
 
@@ -259,12 +356,25 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   // E-mail used to pre-fill the e-mail field when a reauth signin is required.
   const std::string reauth_email_;
 
+  // Gaia id to check against if a |reauth_email_| is provided but the final
+  // e-mail used in sign in does not match. This allows the same gaia user to
+  // sign in with another e-mail if it has changed.
+  const std::string reauth_gaia_id_;
+
   // Default domain used for all sign in requests.
-  const std::string email_domain_;
+  const std::string email_domains_;
+
+  // Specific gaia endpoint path to use for signin page.
+  const std::string gcpw_endpoint_path_;
 
   // Callback that will be called when a valid sign in has been completed
   // through the dialog.
   mutable HandleGcpwSigninCompleteResult signin_callback_;
+
+  mutable CredentialProviderWebUIMessageHandler* handler_ = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CredentialProviderWebDialogDelegate);
 };
 
 bool ValidateSigninCompleteResult(const std::string& access_token,
@@ -300,23 +410,30 @@ views::WebDialogView* ShowCredentialProviderSigninDialog(
 
   // Open a frameless window whose entire surface displays a gaia sign in web
   // page.
-  std::string reauth_email =
-      command_line.GetSwitchValueASCII(credential_provider::kGcpwSigninSwitch);
-  std::string email_domain =
-      command_line.GetSwitchValueASCII(credential_provider::kEmailDomainSwitch);
+  std::string reauth_email = command_line.GetSwitchValueASCII(
+      credential_provider::kPrefillEmailSwitch);
+  std::string reauth_gaia_id =
+      command_line.GetSwitchValueASCII(credential_provider::kGaiaIdSwitch);
+  std::string email_domains = command_line.GetSwitchValueASCII(
+      credential_provider::kEmailDomainsSwitch);
+  std::string gcpw_endpoint_path = command_line.GetSwitchValueASCII(
+      credential_provider::kGcpwEndpointPathSwitch);
 
   // Delegate to handle the result of the sign in request. This will
   // delete itself eventually when it receives the OnDialogClosed call.
   auto delegate = std::make_unique<CredentialProviderWebDialogDelegate>(
-      reauth_email, email_domain, std::move(signin_complete_handler));
+      reauth_email, reauth_gaia_id, email_domains, gcpw_endpoint_path,
+      std::move(signin_complete_handler));
 
   // The web dialog view that will contain the web ui for the login screen.
   // This view will be automatically deleted by the widget that owns it when it
   // is closed.
   auto view = std::make_unique<views::WebDialogView>(
-      context, delegate.release(), new ChromeWebContentsHandler);
+      context, delegate.release(),
+      std::make_unique<ChromeWebContentsHandler>());
   views::Widget::InitParams init_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  init_params.keep_on_top = true;
   views::WebDialogView* web_view = view.release();
   init_params.name = "GCPW";  // Used for debugging only.
   init_params.delegate = web_view;

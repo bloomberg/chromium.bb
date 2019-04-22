@@ -519,22 +519,27 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
  * @return {boolean} Whether the request appears valid.
  */
 function isValidEnrollRequest(request) {
-  if (!request.hasOwnProperty('registerRequests'))
+  if (!request.hasOwnProperty('registerRequests')) {
     return false;
+  }
   var enrollChallenges = request['registerRequests'];
-  if (!enrollChallenges.length)
+  if (!enrollChallenges.length) {
     return false;
+  }
   var hasAppId = request.hasOwnProperty('appId');
-  if (!isValidEnrollChallengeArray(enrollChallenges, !hasAppId))
+  if (!isValidEnrollChallengeArray(enrollChallenges, !hasAppId)) {
     return false;
+  }
   var signChallenges = getSignChallenges(request);
   // A missing sign challenge array is ok, in the case the user is not already
   // enrolled.
   // A challenge value need not necessarily be supplied with every challenge.
   var challengeRequired = false;
   if (signChallenges &&
-      !isValidSignChallengeArray(signChallenges, challengeRequired, !hasAppId))
+      !isValidSignChallengeArray(
+          signChallenges, challengeRequired, !hasAppId)) {
     return false;
+  }
   return true;
 }
 
@@ -718,8 +723,9 @@ Enroller.prototype.doEnroll = function(
   getTabIdWhenPossible(this.sender_)
       .then(
           function() {
-            if (self.done_)
+            if (self.done_) {
               return;
+            }
             self.approveOrigin_();
           },
           function() {
@@ -738,8 +744,9 @@ Enroller.prototype.approveOrigin_ = function() {
   FACTORY_REGISTRY.getApprovedOrigins()
       .isApprovedOrigin(this.sender_.origin, this.sender_.tabId)
       .then(function(result) {
-        if (self.done_)
+        if (self.done_) {
           return;
+        }
         if (!result) {
           // Origin not approved: rather than give an explicit indication to
           // the web page, let a timeout occur.
@@ -810,8 +817,9 @@ Enroller.prototype.sendEnrollRequestToHelper_ = function() {
   }
   var self = this;
   this.checkAppIds_(enrollAppIds, async (result) => {
-    if (self.done_)
+    if (self.done_) {
       return;
+    }
     if (result) {
       // AppID is valid, so the request should be sent.
       await new Promise(resolve => {
@@ -830,6 +838,7 @@ Enroller.prototype.sendEnrollRequestToHelper_ = function() {
 
         if (v2Challenge && shouldUseWebAuthn) {
           // If we can proxy to WebAuthn, send the request via WebAuthn.
+          console.log('Proxying registration request to WebAuthn');
           this.doRegisterWebAuthn_(enrollAppIds[0], v2Challenge, request);
         } else {
           self.handler_ =
@@ -879,12 +888,29 @@ Enroller.prototype.doRegisterWebAuthnContinue_ = function(
   const randomId = new Uint8Array(new ArrayBuffer(16));
   crypto.getRandomValues(randomId);
 
+  const decodedChallenge = B64_decode(challenge);
+  if (decodedChallenge.length == 0) {
+    this.notifyError_({
+      errorCode: ErrorCodes.BAD_REQUEST,
+      errorMessage: 'challenge must be base64url encoded',
+    });
+    return;
+  }
+
   const excludeList = [];
   for (let index = 0; index < request['signData'].length; index++) {
     const element = request['signData'][index];
+    const decodedKeyHandle = B64_decode(element['keyHandle']);
+    if (decodedKeyHandle.length == 0) {
+      this.notifyError_({
+        errorCode: ErrorCodes.BAD_REQUEST,
+        errorMessage: 'keyHandle must be base64url encoded',
+      });
+      return;
+    }
     excludeList.push({
       type: 'public-key',
-      id: new Uint8Array(B64_decode(element['keyHandle'])).buffer,
+      id: new Uint8Array(decodedKeyHandle).buffer,
       transports: ['usb'],
     });
   }
@@ -904,7 +930,7 @@ Enroller.prototype.doRegisterWebAuthnContinue_ = function(
         displayName: this.sender_.origin,
         name: this.sender_.origin,
       },
-      challenge: new Uint8Array(B64_decode(challenge)).buffer,
+      challenge: new Uint8Array(decodedChallenge).buffer,
       pubKeyCredParams: [{
         type: 'public-key',
         alg: -7,  // ES-256
@@ -1185,8 +1211,9 @@ Enroller.prototype.close = function() {
  * @private
  */
 Enroller.prototype.notifyError_ = function(error) {
-  if (this.done_)
+  if (this.done_) {
     return;
+  }
   this.close();
   this.done_ = true;
   this.errorCb_(error);
@@ -1201,8 +1228,9 @@ Enroller.prototype.notifyError_ = function(error) {
  */
 Enroller.prototype.notifySuccess_ = function(
     u2fVersion, info, opt_browserData) {
-  if (this.done_)
+  if (this.done_) {
     return;
+  }
   this.close();
   this.done_ = true;
   this.successCb_(u2fVersion, info, opt_browserData);
@@ -1222,8 +1250,9 @@ Enroller.prototype.helperComplete_ = function(reply) {
     // Log non-expected reply codes if we have url to send them.
     if (reportedError.errorCode == ErrorCodes.OTHER_ERROR) {
       var logMsg = 'log=u2fenroll&rc=' + reply.code.toString(16);
-      if (this.logMsgUrl_)
+      if (this.logMsgUrl_) {
         logMessage(logMsg, this.logMsgUrl_);
+      }
     }
     this.notifyError_(reportedError);
   } else {

@@ -18,8 +18,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.IncognitoTabModel.IncognitoTabModelDelegate;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorBase;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -108,6 +108,13 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
                 //                    Revisit this when we have a Samsung L multi-instance device.
                 return mIncognitoTabModel.getCount() > 0;
             }
+
+            @Override
+            public boolean isCurrentModel(TabModel model) {
+                return DocumentTabModelSelector.this.isCurrentModel(model);
+            }
+
+
         }, mActivityDelegate);
         initializeTabIdCounter();
 

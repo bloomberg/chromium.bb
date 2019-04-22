@@ -63,6 +63,11 @@ class Warning {
   static Warning CreateRulesetFailedToLoadWarning(
       const ExtensionId& extension_id);
 
+  // Compare Warnings based on the tuple of (extension_id, type).
+  // The message associated with Warnings is purely informational
+  // and does not contribute to distinguishing extensions.
+  bool operator<(const Warning& other) const;
+
   // Returns the specific warning type.
   WarningType warning_type() const { return type_; }
 
@@ -89,11 +94,6 @@ class Warning {
   // Parameters to be filled into the string identified by |message_id_|.
   std::vector<std::string> message_parameters_;
 };
-
-// Compare Warnings based on the tuple of (extension_id, type).
-// The message associated with Warnings is purely informational
-// and does not contribute to distinguishing extensions.
-bool operator<(const Warning& a, const Warning& b);
 
 typedef std::set<Warning> WarningSet;
 

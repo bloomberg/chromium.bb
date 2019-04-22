@@ -4,8 +4,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#include "ToolUtils.h"
 #include "gm.h"
-#include "sk_tool_utils.h"
 
 #include "SkAnnotation.h"
 #include "SkData.h"
@@ -60,11 +60,9 @@ private:
                                        SkIntToScalar(50), SkIntToScalar(20));
         canvas->drawRect(rect, paint);
 
-        paint.setAntiAlias(true);
-        sk_tool_utils::set_portable_typeface(&paint);
-        paint.setTextSize(SkIntToScalar(25));
+        SkFont font(ToolUtils::create_portable_typeface(), 25);
         paint.setColor(SK_ColorBLACK);
-        canvas->drawString(text, x, y, paint);
+        canvas->drawString(text, x, y, font, paint);
     }
 
     typedef GM INHERITED;
@@ -72,7 +70,6 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new InternalLinksGM; }
-static GMRegistry reg(MyFactory);
+DEF_GM( return new InternalLinksGM; )
 
 }

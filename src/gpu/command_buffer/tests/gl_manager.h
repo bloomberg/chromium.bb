@@ -12,6 +12,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/client/gpu_control.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
@@ -39,7 +40,6 @@ class CommandBufferDirect;
 class GpuMemoryBufferFactory;
 class ImageFactory;
 class MailboxManager;
-class SyncPointManager;
 class TransferBuffer;
 
 namespace gles2 {
@@ -47,7 +47,7 @@ namespace gles2 {
 class GLES2CmdHelper;
 class GLES2Implementation;
 
-};
+}  // namespace gles2
 
 class GLManager : private GpuControl {
  public:
@@ -55,8 +55,6 @@ class GLManager : private GpuControl {
     Options();
     // The size of the backbuffer.
     gfx::Size size = gfx::Size(4, 4);
-    // If not null will have a corresponding sync point manager.
-    SyncPointManager* sync_point_manager = nullptr;
     // If not null will share resources with this context.
     GLManager* share_group_manager = nullptr;
     // If not null will share a mailbox manager with this context.
@@ -80,6 +78,8 @@ class GLManager : private GpuControl {
     gpu::ImageFactory* image_factory = nullptr;
     // Whether to preserve the backbuffer after a call to SwapBuffers().
     bool preserve_backbuffer = false;
+    // Shared memory limits
+    SharedMemoryLimits shared_memory_limits = {};
   };
   GLManager();
   ~GLManager() override;
@@ -114,8 +114,6 @@ class GLManager : private GpuControl {
       bool use_native_pixmap_memory_buffers) {
     use_native_pixmap_memory_buffers_ = use_native_pixmap_memory_buffers;
   }
-
-  void SetCommandsPaused(bool paused);
 
   gles2::GLES2Decoder* decoder() const {
     return decoder_.get();
@@ -164,7 +162,7 @@ class GLManager : private GpuControl {
   bool IsFenceSyncReleased(uint64_t release) override;
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        base::OnceClosure callback) override;
-  void WaitSyncTokenHint(const gpu::SyncToken& sync_token) override;
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) override;
 
   size_t GetSharedMemoryBytesAllocated() const;
@@ -199,8 +197,6 @@ class GLManager : private GpuControl {
   std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
   SharedImageManager shared_image_manager_;
-
-  uint64_t next_fence_sync_release_ = 1;
 
   bool use_iosurface_memory_buffers_ = false;
   bool use_native_pixmap_memory_buffers_ = false;

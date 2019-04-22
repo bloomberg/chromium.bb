@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/time/default_clock.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/android_sms_app_installing_status_observer.h"
 #include "chromeos/services/multidevice_setup/device_reenroller.h"
@@ -78,15 +78,13 @@ MultiDeviceSetupImpl::Factory::BuildInstance(
     device_sync::DeviceSyncClient* device_sync_client,
     AuthTokenValidator* auth_token_validator,
     OobeCompletionTracker* oobe_completion_tracker,
-    std::unique_ptr<AndroidSmsAppHelperDelegate>
-        android_sms_app_helper_delegate,
-    std::unique_ptr<AndroidSmsPairingStateTracker>
-        android_sms_pairing_state_tracker,
-    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider) {
+    AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+    AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
+    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider) {
   return base::WrapUnique(new MultiDeviceSetupImpl(
       pref_service, device_sync_client, auth_token_validator,
-      oobe_completion_tracker, std::move(android_sms_app_helper_delegate),
-      std::move(android_sms_pairing_state_tracker), gcm_device_info_provider));
+      oobe_completion_tracker, android_sms_app_helper_delegate,
+      android_sms_pairing_state_tracker, gcm_device_info_provider));
 }
 
 MultiDeviceSetupImpl::MultiDeviceSetupImpl(
@@ -94,11 +92,9 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
     device_sync::DeviceSyncClient* device_sync_client,
     AuthTokenValidator* auth_token_validator,
     OobeCompletionTracker* oobe_completion_tracker,
-    std::unique_ptr<AndroidSmsAppHelperDelegate>
-        android_sms_app_helper_delegate,
-    std::unique_ptr<AndroidSmsPairingStateTracker>
-        android_sms_pairing_state_tracker,
-    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
+    AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+    AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
+    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider)
     : eligible_host_devices_provider_(
           EligibleHostDevicesProviderImpl::Factory::Get()->BuildInstance(
               device_sync_client)),
@@ -127,7 +123,7 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
               pref_service,
               host_status_provider_.get(),
               device_sync_client,
-              std::move(android_sms_pairing_state_tracker))),
+              android_sms_pairing_state_tracker)),
       host_device_timestamp_manager_(
           HostDeviceTimestampManagerImpl::Factory::Get()->BuildInstance(
               host_status_provider_.get(),
@@ -144,10 +140,12 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
           device_sync_client,
           gcm_device_info_provider)),
       android_sms_app_installing_host_observer_(
-          AndroidSmsAppInstallingStatusObserver::Factory::Get()->BuildInstance(
-              host_status_provider_.get(),
-              feature_state_manager_.get(),
-              std::move(android_sms_app_helper_delegate))),
+          android_sms_app_helper_delegate
+              ? AndroidSmsAppInstallingStatusObserver::Factory::Get()
+                    ->BuildInstance(host_status_provider_.get(),
+                                    feature_state_manager_.get(),
+                                    android_sms_app_helper_delegate)
+              : nullptr),
       auth_token_validator_(auth_token_validator) {
   host_status_provider_->AddObserver(this);
   feature_state_manager_->AddObserver(this);
@@ -175,7 +173,7 @@ void MultiDeviceSetupImpl::AddFeatureStateObserver(
 
 void MultiDeviceSetupImpl::GetEligibleHostDevices(
     GetEligibleHostDevicesCallback callback) {
-  std::vector<cryptauth::RemoteDevice> eligible_remote_devices;
+  std::vector<multidevice::RemoteDevice> eligible_remote_devices;
   for (const auto& remote_device_ref :
        eligible_host_devices_provider_->GetEligibleHostDevices()) {
     eligible_remote_devices.push_back(remote_device_ref.GetRemoteDevice());
@@ -218,9 +216,9 @@ void MultiDeviceSetupImpl::GetHostStatus(GetHostStatusCallback callback) {
   HostStatusProvider::HostStatusWithDevice host_status_with_device =
       host_status_provider_->GetHostWithStatus();
 
-  // The Mojo API requires a raw cryptauth::RemoteDevice instead of a
-  // cryptauth::RemoteDeviceRef.
-  base::Optional<cryptauth::RemoteDevice> device_for_callback;
+  // The Mojo API requires a raw multidevice::RemoteDevice instead of a
+  // multidevice::RemoteDeviceRef.
+  base::Optional<multidevice::RemoteDevice> device_for_callback;
   if (host_status_with_device.host_device()) {
     device_for_callback =
         host_status_with_device.host_device()->GetRemoteDevice();
@@ -319,9 +317,9 @@ void MultiDeviceSetupImpl::OnHostStatusChange(
     const HostStatusProvider::HostStatusWithDevice& host_status_with_device) {
   mojom::HostStatus status_for_callback = host_status_with_device.host_status();
 
-  // The Mojo API requires a raw cryptauth::RemoteDevice instead of a
-  // cryptauth::RemoteDeviceRef.
-  base::Optional<cryptauth::RemoteDevice> device_for_callback;
+  // The Mojo API requires a raw multidevice::RemoteDevice instead of a
+  // multidevice::RemoteDeviceRef.
+  base::Optional<multidevice::RemoteDevice> device_for_callback;
   if (host_status_with_device.host_device()) {
     device_for_callback =
         host_status_with_device.host_device()->GetRemoteDevice();
@@ -343,7 +341,7 @@ void MultiDeviceSetupImpl::OnFeatureStatesChange(
 }
 
 bool MultiDeviceSetupImpl::AttemptSetHost(const std::string& host_device_id) {
-  cryptauth::RemoteDeviceRefList eligible_devices =
+  multidevice::RemoteDeviceRefList eligible_devices =
       eligible_host_devices_provider_->GetEligibleHostDevices();
   auto it =
       std::find_if(eligible_devices.begin(), eligible_devices.end(),

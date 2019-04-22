@@ -53,8 +53,7 @@ import v8_utilities
 from v8_utilities import (binding_header_filename, context_enabled_feature_name,
                           cpp_name_or_partial, cpp_name,
                           has_extended_attribute_value,
-                          runtime_enabled_feature_name,
-                          is_legacy_interface_type_checking)
+                          runtime_enabled_feature_name)
 
 
 INTERFACE_H_INCLUDES = frozenset([
@@ -71,6 +70,7 @@ INTERFACE_CPP_INCLUDES = frozenset([
     'base/memory/scoped_refptr.h',
     'bindings/core/v8/v8_dom_configuration.h',
     'core/execution_context/execution_context.h',
+    'platform/scheduler/public/cooperative_scheduling_manager.h',
     'platform/bindings/exception_messages.h',
     'platform/bindings/exception_state.h',
     'platform/bindings/v8_object_constructor.h',
@@ -120,7 +120,7 @@ def origin_trial_features(interface, constants, attributes, methods):
     KEY = 'origin_trial_feature_name'  # pylint: disable=invalid-name
 
     def member_filter(members):
-        return sorted([member for member in members if member.get(KEY) and not member.get('exposed_test')])
+        return sorted([member for member in members if member.get(KEY)])
 
     def member_filter_by_name(members, name):
         return [member for member in members if member[KEY] == name]
@@ -147,10 +147,13 @@ def origin_trial_features(interface, constants, attributes, methods):
         # TODO(chasej): Need to handle method overloads? e.g.
         # (method['overloads']['secure_context_test_all'] if 'overloads' in method else method['secure_context_test'])
         feature['needs_secure_context'] = any(member.get('secure_context_test', False) for member in members)
+        feature['needs_context'] = feature['needs_secure_context'] or any(member.get('exposed_test', False) for member in members)
 
     if features:
         includes.add('platform/bindings/script_state.h')
-        includes.add('core/origin_trials/origin_trials.h')
+        includes.add('platform/runtime_enabled_features.h')
+        includes.add('core/execution_context/execution_context.h')
+
     return features
 
 
@@ -192,13 +195,15 @@ def runtime_call_stats_context(interface):
         'named_property_setter_counter': counter_prefix + 'NamedPropertySetter',
     }
 
-def interface_context(interface, interfaces):
+
+def interface_context(interface, interfaces, component_info):
     """Creates a Jinja template context for an interface.
 
     Args:
         interface: An interface to create the context for
         interfaces: A dict which maps an interface name to the definition
             which can be referred if needed
+        component_info: A dict containing component wide information
 
     Returns:
         A Jinja template context for |interface|
@@ -277,6 +282,8 @@ def interface_context(interface, interfaces):
     needs_runtime_enabled_installer = v8_class_name in [
         'V8Window', 'V8HTMLDocument', 'V8Document', 'V8Node', 'V8EventTarget']
 
+    runtime_features = component_info['runtime_enabled_features']
+
     context = {
         'active_scriptwrappable': active_scriptwrappable,
         'context_enabled_feature_name': context_enabled_feature_name(interface),  # [ContextEnabled]
@@ -302,11 +309,11 @@ def interface_context(interface, interfaces):
         'is_typed_array_type': is_typed_array_type,
         'measure_as': v8_utilities.measure_as(interface, None),  # [MeasureAs]
         'needs_runtime_enabled_installer': needs_runtime_enabled_installer,
-        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(interface),
+        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(interface, runtime_features),
         'parent_interface': parent_interface,
         'pass_cpp_type': cpp_name(interface) + '*',
         'runtime_call_stats': runtime_call_stats_context(interface),
-        'runtime_enabled_feature_name': runtime_enabled_feature_name(interface),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name': runtime_enabled_feature_name(interface, runtime_features),  # [RuntimeEnabled]
         'snake_case_v8_class': NameStyleConverter(v8_class_name).to_snake_case(),
         'v8_class': v8_class_name,
         'v8_class_or_partial': v8_class_name_or_partial,
@@ -331,12 +338,13 @@ def interface_context(interface, interfaces):
 
     # [HTMLConstructor]
     has_html_constructor = 'HTMLConstructor' in extended_attributes
-    # https://html.spec.whatwg.org/multipage/dom.html#html-element-constructors
+    # https://html.spec.whatwg.org/C/#html-element-constructors
     if has_html_constructor:
-        if ('Constructor' in extended_attributes) or ('NoInterfaceObject' in extended_attributes):
-            raise Exception('[Constructor] and [NoInterfaceObject] MUST NOT be'
-                            ' specified with [HTMLConstructor]: '
-                            '%s' % interface.name)
+        if ('Constructor' in extended_attributes or
+                'NoInterfaceObject' in extended_attributes or interface.is_mixin):
+            raise Exception('[HTMLConstructor] cannot be specified with '
+                            '[Constructor] or [NoInterfaceObject], or on '
+                            'a mixin : %s' % interface.name)
         includes.add('bindings/core/v8/v8_html_constructor.h')
 
     # [NamedConstructor]
@@ -366,10 +374,10 @@ def interface_context(interface, interfaces):
     unscopables = []
     for attribute in interface.attributes:
         if 'Unscopable' in attribute.extended_attributes:
-            unscopables.append((attribute.name, runtime_enabled_feature_name(attribute)))
+            unscopables.append((attribute.name, runtime_enabled_feature_name(attribute, runtime_features)))
     for method in interface.operations:
         if 'Unscopable' in method.extended_attributes:
-            unscopables.append((method.name, runtime_enabled_feature_name(method)))
+            unscopables.append((method.name, runtime_enabled_feature_name(method, runtime_features)))
 
     # [CEReactions]
     setter_or_deleters = (
@@ -396,12 +404,12 @@ def interface_context(interface, interfaces):
 
     # Constants
     context.update({
-        'constants': [constant_context(constant, interface) for constant in interface.constants],
+        'constants': [constant_context(constant, interface, component_info) for constant in interface.constants],
         'do_not_check_constants': 'DoNotCheckConstants' in extended_attributes,
     })
 
     # Attributes
-    attributes = attributes_context(interface, interfaces)
+    attributes = attributes_context(interface, interfaces, component_info)
 
     context.update({
         'attributes': attributes,
@@ -424,7 +432,7 @@ def interface_context(interface, interfaces):
     })
 
     # Methods
-    context.update(methods_context(interface))
+    context.update(methods_context(interface, component_info))
     methods = context['methods']
     context.update({
         'has_origin_safe_method_setter': any(method['is_cross_origin'] and not method['is_unforgeable']
@@ -522,7 +530,7 @@ def interface_context(interface, interfaces):
     return context
 
 
-def attributes_context(interface, interfaces):
+def attributes_context(interface, interfaces, component_info):
     """Creates a list of Jinja template contexts for attributes of an interface.
 
     Args:
@@ -534,7 +542,7 @@ def attributes_context(interface, interfaces):
         A list of attribute contexts
     """
 
-    attributes = [v8_attributes.attribute_context(interface, attribute, interfaces)
+    attributes = [v8_attributes.attribute_context(interface, attribute, interfaces, component_info)
                   for attribute in interface.attributes]
 
     has_conditional_attributes = any(attribute['exposed_test'] for attribute in attributes)
@@ -556,16 +564,17 @@ def attributes_context(interface, interfaces):
         size_attribute.is_read_only = True
         size_attribute.extended_attributes['NotEnumerable'] = None
         attributes.append(v8_attributes.attribute_context(
-            interface, size_attribute, interfaces))
+            interface, size_attribute, interfaces, component_info))
 
     return attributes
 
 
-def methods_context(interface):
+def methods_context(interface, component_info):
     """Creates a list of Jinja template contexts for methods of an interface.
 
     Args:
         interface: An interface to create contexts for
+        component_info: A dict containing component wide information
 
     Returns:
         A dictionary with 3 keys:
@@ -578,16 +587,16 @@ def methods_context(interface):
     methods = []
 
     if interface.original_interface:
-        methods.extend([v8_methods.method_context(interface, operation, is_visible=False)
+        methods.extend([v8_methods.method_context(interface, operation, component_info, is_visible=False)
                         for operation in interface.original_interface.operations
                         if operation.name])
-    methods.extend([v8_methods.method_context(interface, method)
+    methods.extend([v8_methods.method_context(interface, method, component_info)
                     for method in interface.operations
                     if method.name])  # Skip anonymous special operations (methods)
     if interface.partial_interfaces:
         assert len(interface.partial_interfaces) == len(set(interface.partial_interfaces))
         for partial_interface in interface.partial_interfaces:
-            methods.extend([v8_methods.method_context(interface, operation, is_visible=False)
+            methods.extend([v8_methods.method_context(interface, operation, component_info, is_visible=False)
                             for operation in partial_interface.operations
                             if operation.name])
     compute_method_overloads_context(interface, methods)
@@ -603,7 +612,7 @@ def methods_context(interface):
         if implemented_as is None:
             implemented_as = name + 'ForBinding'
         operation.extended_attributes['ImplementedAs'] = implemented_as
-        return v8_methods.method_context(interface, operation)
+        return v8_methods.method_context(interface, operation, component_info)
 
     def generated_argument(idl_type, name, is_optional=False, extended_attributes=None):
         argument = IdlArgument()
@@ -685,13 +694,12 @@ def methods_context(interface):
                     generated_iterator_method('keys'),
                     entries_or_values_method,
 
-                    # void forEach(Function callback, [Default=Undefined] optional any thisArg)
+                    # void forEach(ForEachIteratorCallback callback, [DefaultValue=Undefined] optional any thisArg)
                     generated_method(IdlType('void'), 'forEach',
-                                     # TODO(yukishiino): |callback| should be type of Function.
-                                     arguments=[generated_argument(IdlType('CallbackFunctionTreatedAsScriptValue'), 'callback'),
+                                     arguments=[generated_argument(IdlType('ForEachIteratorCallback'), 'callback'),
                                                 generated_argument(IdlType('any'), 'thisArg',
                                                                    is_optional=True,
-                                                                   extended_attributes={'Default': 'Undefined'})],
+                                                                   extended_attributes={'DefaultValue': 'Undefined'})],
                                      extended_attributes=forEach_extended_attributes),
                 ])
 
@@ -762,24 +770,6 @@ def methods_context(interface):
         # FIXME: maplike<> and setlike<> should also imply the presence of a
         # 'size' attribute.
 
-    # Serializer
-    if interface.serializer:
-        serializer = interface.serializer
-        serializer_ext_attrs = serializer.extended_attributes.copy()
-        if serializer.operation:
-            return_type = serializer.operation.idl_type
-            implemented_as = serializer.operation.name
-        else:
-            return_type = IdlType('any')
-            implemented_as = None
-            if 'CallWith' not in serializer_ext_attrs:
-                serializer_ext_attrs['CallWith'] = 'ScriptState'
-        methods.append(generated_method(
-            return_type=return_type,
-            name='toJSON',
-            extended_attributes=serializer_ext_attrs,
-            implemented_as=implemented_as))
-
     # Stringifier
     if interface.stringifier:
         stringifier = interface.stringifier
@@ -831,8 +821,9 @@ def reflected_name(constant_name):
 
 
 # [DeprecateAs], [OriginTrialEnabled], [Reflect], [RuntimeEnabled]
-def constant_context(constant, interface):
+def constant_context(constant, interface, component_info):
     extended_attributes = constant.extended_attributes
+    runtime_features = component_info['runtime_enabled_features']
 
     return {
         'camel_case_name': NameStyleConverter(constant.name).to_upper_camel_case(),
@@ -841,12 +832,13 @@ def constant_context(constant, interface):
         'deprecate_as': v8_utilities.deprecate_as(constant),  # [DeprecateAs]
         'idl_type': constant.idl_type.name,
         'measure_as': v8_utilities.measure_as(constant, interface),  # [MeasureAs]
+        'high_entropy': v8_utilities.high_entropy(constant),  # [HighEntropy]
         'name': constant.name,
-        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(constant),  # [OriginTrialEnabled]
+        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(constant, runtime_features),  # [OriginTrialEnabled]
         # FIXME: use 'reflected_name' as correct 'name'
         'rcs_counter': 'Blink_' + v8_utilities.cpp_name(interface) + '_' + constant.name + '_ConstantGetter',
         'reflected_name': extended_attributes.get('Reflect', reflected_name(constant.name)),
-        'runtime_enabled_feature_name': runtime_enabled_feature_name(constant),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name': runtime_enabled_feature_name(constant, runtime_features),  # [RuntimeEnabled]
         'value': constant.value,
     }
 
@@ -1520,10 +1512,7 @@ def property_setter(setter, interface):
     is_raises_exception = 'RaisesException' in extended_attributes
     is_ce_reactions = 'CEReactions' in extended_attributes
 
-    # [LegacyInterfaceTypeChecking]
-    has_type_checking_interface = (
-        not is_legacy_interface_type_checking(interface, setter) and
-        idl_type.is_wrapper_type)
+    has_type_checking_interface = idl_type.is_wrapper_type
 
     return {
         'has_exception_state': (is_raises_exception or

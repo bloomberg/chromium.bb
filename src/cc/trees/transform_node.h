@@ -89,9 +89,6 @@ struct CC_EXPORT TransformNode {
   // (i.e., irrespective of exact timeline) transform
   // animation.
   bool to_screen_is_potentially_animated : 1;
-  // Whether all animations on this transform node are simple
-  // translations.
-  bool has_only_translation_animations : 1;
 
   // Flattening, when needed, is only applied to a node's inherited transform,
   // never to its local transform.
@@ -138,6 +135,11 @@ struct CC_EXPORT TransformNode {
   // TODO(vollick): will be moved when accelerated effects are implemented.
   gfx::Vector2dF source_offset;
   gfx::Vector2dF source_to_parent;
+
+  // See ElementAnimations::MaximumTargetScale() and AnimationStartScale() for
+  // their meanings. Updated by PropertyTrees::AnimationScalesChanged().
+  float maximum_animation_scale;
+  float starting_animation_scale;
 
   bool operator==(const TransformNode& other) const;
 

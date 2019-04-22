@@ -9,11 +9,13 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_tooltip_bubble_base.h"
+#include "ash/shelf/shelf_bubble.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/pip/pip_positioner.h"
+#include "base/run_loop.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -79,14 +81,13 @@ TEST_F(ShelfTooltipManagerTest, DoNotShowForInvalidView) {
   item.type = TYPE_PINNED_APP;
   const int index = model->Add(item);
   // Note: There's no easy way to correlate shelf a model index/id to its view.
-  tooltip_manager_->ShowTooltipWithDelay(
-      shelf_view_->child_at(shelf_view_->child_count() - 1));
+  tooltip_manager_->ShowTooltipWithDelay(shelf_view_->children().back());
   EXPECT_TRUE(IsTimerRunning());
 
   // Removing the view won't stop the timer, but the tooltip shouldn't be shown.
   model->RemoveItemAt(index);
   EXPECT_TRUE(IsTimerRunning());
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTimerRunning());
   EXPECT_FALSE(tooltip_manager_->IsVisible());
 }
@@ -208,14 +209,26 @@ TEST_F(ShelfTooltipManagerTest, HideForExternalEvents) {
   EXPECT_FALSE(tooltip_manager_->IsVisible());
 }
 
-TEST_F(ShelfTooltipManagerTest, DoNotHideForKeyEvents) {
+TEST_F(ShelfTooltipManagerTest, KeyEvents) {
   ui::test::EventGenerator* generator = GetEventGenerator();
 
-  // Should not hide for key events.
+  // Should hide when 'Esc' is pressed.
   tooltip_manager_->ShowTooltip(shelf_view_->GetAppListButton());
   ASSERT_TRUE(tooltip_manager_->IsVisible());
-  generator->PressKey(ui::VKEY_A, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  EXPECT_FALSE(tooltip_manager_->IsVisible());
+}
+
+TEST_F(ShelfTooltipManagerTest, ShelfTooltipDoesNotAffectPipWindow) {
+  tooltip_manager_->ShowTooltip(shelf_view_->GetAppListButton());
   EXPECT_TRUE(tooltip_manager_->IsVisible());
+
+  auto display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  auto tooltip_bounds = GetTooltip()->GetWindowBoundsInScreen();
+  tooltip_bounds.Intersect(PipPositioner::GetMovementArea(display));
+  EXPECT_FALSE(tooltip_bounds.IsEmpty());
+  EXPECT_EQ(tooltip_bounds,
+            PipPositioner::GetRestingPosition(display, tooltip_bounds));
 }
 
 }  // namespace ash

@@ -4,6 +4,8 @@
 
 #include "components/sync/engine_impl/loopback_server/persistent_unique_client_entity.h"
 
+#include "components/sync/base/hash_util.h"
+#include "components/sync/engine_impl/loopback_server/loopback_server_entity.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,11 +31,24 @@ TEST(PersistentUniqueClientEntityTest, CreateFromEntity) {
   ASSERT_TRUE(PersistentUniqueClientEntity::CreateFromEntity(entity));
 }
 
-TEST(PersistentUniqueClientEntityTest, CreateFromEntitySpecifics) {
+TEST(PersistentUniqueClientEntityTest, CreateFromSpecificsForTesting) {
+  const std::string kNonUniqueName = "somename";
+  const std::string kClientTag = "someclienttag";
+
   sync_pb::EntitySpecifics specifics;
   specifics.mutable_preference();
-  ASSERT_TRUE(PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-      "name", specifics, 0, 0));
+
+  std::unique_ptr<LoopbackServerEntity> entity =
+      PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+          kNonUniqueName, kClientTag, specifics, 0, 0);
+
+  ASSERT_TRUE(entity);
+  EXPECT_EQ(kNonUniqueName, entity->GetName());
+  EXPECT_EQ(syncer::PREFERENCES, entity->GetModelType());
+  EXPECT_EQ(LoopbackServerEntity::CreateId(
+                syncer::PREFERENCES,
+                GenerateSyncableHash(syncer::PREFERENCES, kClientTag)),
+            entity->GetId());
 }
 
 }  // namespace

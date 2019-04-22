@@ -71,7 +71,7 @@ OnDemandServer *OnDemandServer::Create(const char *server_command,
 
   delete server;
   return NULL;
-};
+}
 
 //==============================================================================
 kern_return_t OnDemandServer::Initialize(const char *server_command,

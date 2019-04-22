@@ -40,8 +40,12 @@ endif()
 # as ${gtest_SOURCE_DIR} and to the root binary directory as
 # ${gtest_BINARY_DIR}.
 # Language "C" is required for find_package(Threads).
+
+# Project version:
+
 if (CMAKE_VERSION VERSION_LESS 3.0)
   project(gtest CXX C)
+  set(PROJECT_VERSION ${GOOGLETEST_VERSION})
 else()
   cmake_policy(SET CMP0048 NEW)
   project(gtest VERSION ${GOOGLETEST_VERSION} LANGUAGES CXX C)
@@ -218,6 +222,7 @@ $env:Path = \"$project_bin;$env:Path\"
     test/gtest-typed-test2_test.cc)
   cxx_test(gtest_unittest gtest_main)
   cxx_test(gtest-unittest-api_test gtest)
+  cxx_test(gtest_skip_in_environment_setup_test gtest_main)
   cxx_test(gtest_skip_test gtest_main)
 
   ############################################################
@@ -257,6 +262,8 @@ $env:Path = \"$project_bin;$env:Path\"
 
   cxx_executable(googletest-break-on-failure-unittest_ test gtest)
   py_test(googletest-break-on-failure-unittest)
+
+  py_test(gtest_skip_environment_check_output_test)
 
   # Visual Studio .NET 2003 does not support STL with exceptions disabled.
   if (NOT MSVC OR MSVC_VERSION GREATER 1310)  # 1310 is Visual Studio .NET 2003

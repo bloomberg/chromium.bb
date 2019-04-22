@@ -6,7 +6,8 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.mojom.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -210,12 +211,12 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   EXPECT_FALSE(widget->IsFullscreen());
 }
 
-INSTANTIATE_TEST_CASE_P(InitiallyRestored,
-                        AcceleratorCommandsFullscreenBrowserTest,
-                        Values(ui::SHOW_STATE_NORMAL));
-INSTANTIATE_TEST_CASE_P(InitiallyMaximized,
-                        AcceleratorCommandsFullscreenBrowserTest,
-                        Values(ui::SHOW_STATE_MAXIMIZED));
+INSTANTIATE_TEST_SUITE_P(InitiallyRestored,
+                         AcceleratorCommandsFullscreenBrowserTest,
+                         Values(ui::SHOW_STATE_NORMAL));
+INSTANTIATE_TEST_SUITE_P(InitiallyMaximized,
+                         AcceleratorCommandsFullscreenBrowserTest,
+                         Values(ui::SHOW_STATE_MAXIMIZED));
 
 class AcceleratorCommandsPlatformAppFullscreenBrowserTest
     : public WithParamInterface<ui::WindowShowState>,
@@ -309,9 +310,9 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(InitiallyRestored,
-                        AcceleratorCommandsPlatformAppFullscreenBrowserTest,
-                        Values(ui::SHOW_STATE_NORMAL));
-INSTANTIATE_TEST_CASE_P(InitiallyMaximized,
-                        AcceleratorCommandsPlatformAppFullscreenBrowserTest,
-                        Values(ui::SHOW_STATE_MAXIMIZED));
+INSTANTIATE_TEST_SUITE_P(InitiallyRestored,
+                         AcceleratorCommandsPlatformAppFullscreenBrowserTest,
+                         Values(ui::SHOW_STATE_NORMAL));
+INSTANTIATE_TEST_SUITE_P(InitiallyMaximized,
+                         AcceleratorCommandsPlatformAppFullscreenBrowserTest,
+                         Values(ui::SHOW_STATE_MAXIMIZED));

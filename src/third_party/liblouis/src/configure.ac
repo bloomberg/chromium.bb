@@ -1,40 +1,34 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.68)
-AC_INIT([Liblouis], [2.6.0], [liblouis-liblouisxml@freelists.org], [liblouis], [http://www.liblouis.org])
+AC_INIT([Liblouis], [3.7.0], [liblouis-liblouisxml@freelists.org], [liblouis], [http://www.liblouis.org])
 AC_CONFIG_SRCDIR([liblouis/lou_backTranslateString.c])
 AM_CONFIG_HEADER(liblouis/config.h)
 
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([-Wall dist-zip])
 
 # Checks for programs.
-AC_PROG_CC
+# Try to compile using C99
+AC_PROG_CC_C99
 
-# gnulib
+# gnulib for the library
 gl_EARLY
+# gnulib for the tools
+gl_tools_EARLY
+
 gl_INIT
-
-# make sure we have a decent malloc and realloc
-gl_FUNC_MALLOC_GNU
-if test $REPLACE_MALLOC = 1; then
-AC_LIBOBJ([malloc])
-fi
-gl_MODULE_INDICATOR([malloc-gnu])
-
-gl_FUNC_REALLOC_GNU
-if test $REPLACE_REALLOC = 1; then
-AC_LIBOBJ([realloc])
-fi
-gl_MODULE_INDICATOR([realloc-gnu])
+gl_tools_INIT
 
 # Checks for more programs.
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AM_PROG_AR
 
 # Checks for libraries.
+AC_CHECK_LIB([yaml], [yaml_parser_initialize])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -59,25 +53,50 @@ AH_BOTTOM([
 ])
 
 # increment if the interface has additions, changes, removals.
-LIBLOUIS_CURRENT=7
+LIBLOUIS_CURRENT=16
 
-# increment any time the source changes; set to
-#  0 if you increment CURRENT
-LIBLOUIS_REVISION=0
+# increment any time the source changes; set to 0 if you increment
+# CURRENT
+LIBLOUIS_REVISION=1
 
-# increment if any interfaces have been added; set to 0
-#  if any interfaces have been changed or removed. removal has
-#  precedence over adding, so set to 0 if both happened.
-LIBLOUIS_AGE=5
+# increment if any interfaces have been added; set to 0 if any
+# interfaces have been changed or removed. removal has precedence over
+# adding, so set to 0 if both happened.
+LIBLOUIS_AGE=0
 
 AC_SUBST(LIBLOUIS_CURRENT)
 AC_SUBST(LIBLOUIS_REVISION)
 AC_SUBST(LIBLOUIS_AGE)
 
+# needed to build the liblouis.def
+DLL_VERSION=`expr ${LIBLOUIS_CURRENT} - ${LIBLOUIS_AGE}`
+AC_SUBST(DLL_VERSION)
+
 AC_ISC_POSIX
 AC_HEADER_STDC
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
+
+# catch as many warnings as possible with the help of the gnulib manywarnings module
+gl_MANYWARN_ALL_GCC([warnings])
+# Set up the list of the pointless, undesired warnings.
+nw=
+nw="$nw -Wsystem-headers"       # Don't let system headers trigger warnings
+nw="$nw -Wsuggest-attribute=pure"   # ignore recommendations to use
+nw="$nw -Wsuggest-attribute=format" # attributes, most of these only
+nw="$nw -Wsuggest-attribute=const"  # work in gcc
+nw="$nw -Wsuggest-attribute=noreturn"
+# Enable all GCC warnings not in this list.
+gl_MANYWARN_COMPLEMENT([warnings], [$warnings], [$nw])
+for w in $warnings; do
+  gl_WARN_ADD([$w])
+done
+
+# define an additional recursive make target to format the sources.
+# Also check if clang-format is installed
+AM_EXTRA_RECURSIVE_TARGETS([format-sources])
+AC_CHECK_PROG([SOURCE_FORMATTER], [clang-format], [clang-format])
+AM_CONDITIONAL([HAVE_SOURCE_FORMATTER], [test x$SOURCE_FORMATTER = xclang-format])
 
 # GNU help2man creates man pages from --help output; in many cases,
 # this is sufficient, and obviates the need to maintain man pages
@@ -90,15 +109,57 @@ else
 fi
 AM_CONDITIONAL([HAVE_HELP2MAN], [test x$HELP2MAN = xhelp2man])
 
-# Check if we have Python installed
-AM_PATH_PYTHON([2.6],, [:])
-AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != :])
+# Only run parts of the tests if we are cross compiling
+AM_CONDITIONAL([CROSS_COMPILING], [test "x$cross_compiling" = xyes])
+
+# Check for makeinfo version >= 5, required for building documentation.
+have_makeinfo_5=false
+AC_PROG_SED
+AC_CHECK_PROG([MAKEINFO_FOUND], [makeinfo], [yes])
+if test x"${MAKEINFO_FOUND}" = xyes
+then
+  MAKEINFO_VERSION_REQ=5
+  AC_MSG_CHECKING([for makeinfo version >= $MAKEINFO_VERSION_REQ])
+  MAKEINFO_VERSION=`makeinfo --version | sed -ne 's/^\(makeinfo\|texi2any\) .* \([[0-9]][[0-9]]*\)\.[[0-9]][[0-9]]*.*$/\2/p'`
+  if test x$MAKEINFO_VERSION = x -o 0$MAKEINFO_VERSION -lt $MAKEINFO_VERSION_REQ
+  then
+    AC_MSG_RESULT([no])
+    AC_MSG_WARN([Program 'makeinfo' version >= $MAKEINFO_VERSION_REQ is required. Documentation will not be built.])
+  else
+    AC_MSG_RESULT([yes])
+    have_makeinfo_5=true
+  fi
+else
+  AC_MSG_WARN([Missing program 'makeinfo', Documentation will not be built. Please install you you want documentation or refer to online resources.])
+fi
+AM_CONDITIONAL([HAVE_MAKEINFO_5], [test x$have_makeinfo_5 = xtrue])
+
+# Check if the user wants to enable yaml tests
+AC_ARG_WITH([yaml],
+  [AS_HELP_STRING([--with-yaml], [enable YAML-based tests @<:@default=yes@:>@])],
+  [with_yaml=$withval],
+  [])
+
+if test "x$with_yaml" == xno; then
+  AC_DEFINE([WITHOUT_YAML],[1],[Disable YAML tests])
+fi
+
+# if libyaml is missing warn or die depending on --with-yaml
+if test x$ac_cv_lib_yaml_yaml_parser_initialize != xyes; then
+  case "$with_yaml" in
+  yes) AC_MSG_ERROR([--with-yaml was given, but libyaml was not found]);;
+  no) ;;
+  *) AC_MSG_WARN([libyaml was not found. YAML tests will be skipped]);;
+  esac
+fi
+
+AM_CONDITIONAL([WITH_YAML], [test "x$ac_cv_lib_yaml_yaml_parser_initialize" == xyes -a "x$with_yaml" != xno])
 
 AC_PATH_PROG(PKG_CONFIG, pkg-config)
 
 AC_ARG_ENABLE(ucs4,
               AC_HELP_STRING(--enable-ucs4, Enable 4 byte-wide characters),
-              [],
+              [AC_DEFINE([WIDECHARS_ARE_UCS4], [1], [Define if widechars are ucs4])],
               [enable_ucs4=no])
 
 AC_MSG_CHECKING([whether 4 byte-wide characters should be supported])
@@ -114,34 +175,49 @@ AM_CONDITIONAL([HAVE_UCS4], [test x$enable_ucs4 = xyes])
 case $host in
   *mingw* | *cygwin*)
     CFLAGS="$CFLAGS -Wl,--add-stdcall-alias"
+    LDFLAGS="$LDFLAGS -avoid-version"
   ;;
 esac
 
+AC_CANONICAL_HOST
+build_macosx=no
+case $host_os in
+  darwin*)
+    build_macosx=yes
+  ;;
+esac
+AM_CONDITIONAL([OSX], [test "$build_macosx" = "yes"])
+
 AC_CONFIG_FILES([
 	Makefile
-        doc/Makefile
-        man/Makefile
-        liblouis/Makefile
-        liblouis/liblouis.h
+	doc/Makefile
+	man/Makefile
+	liblouis/Makefile
+	liblouis/liblouis.h
 	windows/Makefile
 	windows/include/Makefile
-        tables/Makefile
+	windows/utils/Makefile
+	tables/Makefile
 	liblouis.pc
-        tests/Makefile
-        tests/resolve_table.h
-        tests/tables/Makefile
-        tests/tables/moreTables/Makefile
-        tests/tables/resolve_table/Makefile
-        tests/tables/resolve_table/dir_1/Makefile
-        tests/tables/resolve_table/dir_1/dir_1.1/Makefile
-        tests/tables/resolve_table/dir_2/Makefile
-        tests/doctests/Makefile
-        tests/harness/Makefile
-        tests/harnessSources/Makefile
+	tests/Makefile
+	tests/braille-specs/Makefile
+	tests/resolve_table.h
+	tests/tables/Makefile
+	tests/tables/emphclass/Makefile
+	tests/tables/moreTables/Makefile
+	tests/tables/resolve_table/Makefile
+	tests/tables/resolve_table/dir_1/Makefile
+	tests/tables/resolve_table/dir_1/dir_1.1/Makefile
+	tests/tables/resolve_table/dir_2/Makefile
+	tests/tablesWithMetadata/Makefile
+	tests/ueb_test_data/Makefile
+	tests/yaml/Makefile
 	python/Makefile
+	python/setup.py
 	python/louis/Makefile
-        tools/Makefile
-	gnulib/Makefile
-	m4/Makefile])
+	tools/Makefile
+	tools/gnulib/Makefile
+	tools/lou_maketable.d/Makefile
+	tools/lou_maketable.d/lou_maketable
+	gnulib/Makefile])
 AC_OUTPUT
-

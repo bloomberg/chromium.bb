@@ -149,29 +149,12 @@ class CORE_EXPORT StyleSheetContents
   // style sheet. This property probably isn't useful for much except the
   // JavaScript binding (which needs to use this value for security).
   String OriginalURL() const { return original_url_; }
-  // The final request URL after redirects. WARNING: Be careful when
-  // using this for security checks. It can be different from the actual
-  // response URL if a service worker is involved. See
-  // IsOpaqueResponseFromServiceWorker().
+  // The response URL after redirects and service worker interception.
   const KURL& BaseURL() const { return parser_context_->BaseURL(); }
 
-  // True if a service worker intercepted the request for this style sheet and
-  // returned an opaque response. This context should NOT have access to the
-  // contents, regardless of BaseURL().
-  //
-  // For example:
-  // 1. Page at a.com requests a.com/style.css.
-  // 2. Service worker responds with b.com/style.css (without CORS).
-  // 3. The BaseURL() is "a.com/style.css" but this context is should not have
-  // access to contents.
-  //
-  // You might ask why we don't change BaseURL() to be the actual response URL.
-  // In fact, the spec says we should! See crbug.com/553535. But we would still
-  // need this "is opaque" bit, since in step 2 above the service worker might
-  // have used CORS to get a non-opaque response from b.com.
-  bool IsOpaqueResponseFromServiceWorker() const {
-    return parser_context_->IsOpaqueResponseFromServiceWorker();
-  }
+  // If true, allows reading and modifying of the CSS rules.
+  // https://drafts.csswg.org/cssom/#concept-css-style-sheet-origin-clean-flag
+  bool IsOriginClean() const { return parser_context_->IsOriginClean(); }
 
   unsigned RuleCount() const;
   StyleRuleBase* RuleAt(unsigned index) const;

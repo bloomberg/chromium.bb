@@ -9,8 +9,8 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_input_method_observer.h"
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
+#include "ui/base/ime/chromeos/input_method_chromeos.h"
 #include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ime/input_method_chromeos.h"
 
 namespace {
 
@@ -29,6 +29,7 @@ InputMethodBridge::InputMethodBridge(
       accessibility_input_method_observer_(
           std::make_unique<AccessibilityInputMethodObserver>(
               input_method_chromeos_.get())) {
+  input_method_chromeos_->OnFocus();
   input_method_chromeos_->SetFocusedTextInputClient(client_.get());
 }
 
@@ -38,9 +39,9 @@ InputMethodBridge::~InputMethodBridge() {
     accessibility_input_method_observer_->ResetCaretBounds();
 }
 
-void InputMethodBridge::OnTextInputTypeChanged(
-    ui::TextInputType text_input_type) {
-  client_->SetTextInputType(text_input_type);
+void InputMethodBridge::OnTextInputStateChanged(
+    ws::mojom::TextInputStatePtr text_input_state) {
+  client_->SetTextInputState(std::move(text_input_state));
 
   if (IsActiveInputContextHandler(input_method_chromeos_.get()))
     input_method_chromeos_->OnTextInputTypeChanged(client_.get());
@@ -53,13 +54,19 @@ void InputMethodBridge::OnCaretBoundsChanged(const gfx::Rect& caret_bounds) {
     input_method_chromeos_->OnCaretBoundsChanged(client_.get());
 }
 
+void InputMethodBridge::OnTextInputClientDataChanged(
+    ws::mojom::TextInputClientDataPtr data) {
+  client_->SetTextInputClientData(std::move(data));
+}
+
 void InputMethodBridge::ProcessKeyEvent(std::unique_ptr<ui::Event> event,
                                         ProcessKeyEventCallback callback) {
   DCHECK(event->IsKeyEvent());
   ui::KeyEvent* key_event = event->AsKeyEvent();
   if (IsActiveInputContextHandler(input_method_chromeos_.get()) &&
       !key_event->is_char()) {
-    input_method_chromeos_->DispatchKeyEvent(key_event, std::move(callback));
+    input_method_chromeos_->DispatchKeyEventAsync(key_event,
+                                                  std::move(callback));
   } else {
     const bool handled = false;
     std::move(callback).Run(handled);

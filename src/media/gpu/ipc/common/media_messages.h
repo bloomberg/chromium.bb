@@ -14,7 +14,7 @@
 #include "ipc/param_traits_macros.h"
 #include "media/base/overlay_info.h"
 #include "media/gpu/ipc/common/media_param_traits.h"
-#include "media/video/jpeg_decode_accelerator.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -27,6 +27,7 @@ IPC_STRUCT_BEGIN(AcceleratedVideoDecoderHostMsg_PictureReady_Params)
   IPC_STRUCT_MEMBER(gfx::Rect, visible_rect)
   IPC_STRUCT_MEMBER(gfx::ColorSpace, color_space)
   IPC_STRUCT_MEMBER(bool, allow_overlay)
+  IPC_STRUCT_MEMBER(bool, read_lock_fences_enabled)
   IPC_STRUCT_MEMBER(bool, size_changed)
   IPC_STRUCT_MEMBER(bool, surface_texture)
   IPC_STRUCT_MEMBER(bool, wants_promotion_hint)

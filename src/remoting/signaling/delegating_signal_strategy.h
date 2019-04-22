@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_PLUGIN_DELEGATING_SIGNAL_STRATEGY_H_
-#define REMOTING_CLIENT_PLUGIN_DELEGATING_SIGNAL_STRATEGY_H_
+#ifndef REMOTING_SIGNALING_DELEGATING_SIGNAL_STRATEGY_H_
+#define REMOTING_SIGNALING_DELEGATING_SIGNAL_STRATEGY_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list_threadsafe.h"
+#include "base/observer_list.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
 
@@ -51,7 +51,7 @@ class DelegatingSignalStrategy : public SignalStrategy {
   const SignalingAddress& GetLocalAddress() const override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
-  bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza) override;
+  bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) override;
   std::string GetNextId() override;
 
  private:
@@ -68,7 +68,7 @@ class DelegatingSignalStrategy : public SignalStrategy {
 
   IqCallback incoming_iq_callback_;
   IqCallback send_iq_callback_;
-  base::ObserverList<Listener>::Unchecked listeners_;
+  base::ObserverList<Listener> listeners_;
 
   base::WeakPtrFactory<DelegatingSignalStrategy> weak_factory_;
 
@@ -77,4 +77,4 @@ class DelegatingSignalStrategy : public SignalStrategy {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_PLUGIN_DELEGATING_SIGNAL_STRATEGY_H_
+#endif  // REMOTING_SIGNALING_DELEGATING_SIGNAL_STRATEGY_H_

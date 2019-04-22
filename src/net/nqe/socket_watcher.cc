@@ -120,7 +120,7 @@ void SocketWatcher::OnUpdatedRTTAvailable(const base::TimeDelta& rtt) {
   last_rtt_notification_ = tick_clock_->NowTicks();
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(updated_rtt_observation_callback_, protocol_, rtt, host_));
+      base::BindOnce(updated_rtt_observation_callback_, protocol_, rtt, host_));
 }
 
 void SocketWatcher::OnConnectionChanged() {

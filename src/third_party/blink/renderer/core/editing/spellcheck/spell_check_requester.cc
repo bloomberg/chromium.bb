@@ -59,12 +59,14 @@ class WebTextCheckingCompletionImpl : public WebTextCheckingCompletion {
 
   void DidFinishCheckingText(
       const WebVector<WebTextCheckingResult>& results) override {
-    request_->DidSucceed(ToCoreResults(results));
+    if (request_)
+      request_->DidSucceed(ToCoreResults(results));
     delete this;
   }
 
   void DidCancelCheckingText() override {
-    request_->DidCancel();
+    if (request_)
+      request_->DidCancel();
     // TODO(dgozman): use std::unique_ptr.
     delete this;
   }
@@ -72,7 +74,9 @@ class WebTextCheckingCompletionImpl : public WebTextCheckingCompletion {
  private:
   virtual ~WebTextCheckingCompletionImpl() = default;
 
-  Persistent<SpellCheckRequest> request_;
+  // As |WebTextCheckingCompletionImpl| is mananaged outside Blink, it should
+  // only keep weak references to Blink objects to prevent memory leaks.
+  WeakPersistent<SpellCheckRequest> request_;
 };
 
 }  // namespace
@@ -92,7 +96,7 @@ SpellCheckRequest::SpellCheckRequest(Range* checking_range,
 
 SpellCheckRequest::~SpellCheckRequest() = default;
 
-void SpellCheckRequest::Trace(blink::Visitor* visitor) {
+void SpellCheckRequest::Trace(Visitor* visitor) {
   visitor->Trace(requester_);
   visitor->Trace(checking_range_);
   visitor->Trace(root_editable_element_);
@@ -223,21 +227,14 @@ void SpellCheckRequester::CancelCheck() {
     processing_request_->DidCancel();
 }
 
-void SpellCheckRequester::PrepareForLeakDetection() {
+void SpellCheckRequester::Deactivate() {
   timer_to_process_queued_request_.Stop();
-  // Empty the queue of pending requests to prevent it being a leak source.
-  // Pending spell checker requests are cancellable requests not representing
-  // leaks, just async work items waiting to be processed.
-  //
-  // Rather than somehow wait for this async queue to drain before running
-  // the leak detector, they're all cancelled to prevent flaky leaks being
-  // reported.
+  // Empty all pending requests to prevent them from being a leak source, as the
+  // requests may hold reference to a closed document.
   request_queue_.clear();
-  // WebTextCheckClient stores a set of WebTextCheckingCompletion objects,
-  // which may store references to already invoked requests. We should clear
-  // these references to prevent them from being a leak source.
-  if (WebTextCheckClient* text_checker_client = GetTextCheckerClient())
-    text_checker_client->CancelAllPendingRequests();
+  // Must be called after clearing the queue. Otherwise, another request from
+  // the queue will be invoked.
+  CancelCheck();
 }
 
 void SpellCheckRequester::InvokeRequest(SpellCheckRequest* request) {
@@ -319,7 +316,7 @@ void SpellCheckRequester::DidCheckCancel(int sequence) {
   DidCheck(sequence);
 }
 
-void SpellCheckRequester::Trace(blink::Visitor* visitor) {
+void SpellCheckRequester::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(processing_request_);
   visitor->Trace(request_queue_);

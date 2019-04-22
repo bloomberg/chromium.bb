@@ -48,6 +48,7 @@ class TestNavigationManager : public NavigationManager {
   NavigationItemList GetForwardItems() const override;
   void Restore(int last_committed_item_index,
                std::vector<std::unique_ptr<NavigationItem>> items) override;
+  bool IsRestoreSessionInProgress() const override;
   void AddRestoreCompletionCallback(base::OnceClosure callback) override;
   void CopyStateFromAndPrune(const NavigationManager* source) override;
   bool CanPruneAllButLastCommittedItem() const override;

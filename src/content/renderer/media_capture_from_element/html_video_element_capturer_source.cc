@@ -4,6 +4,7 @@
 
 #include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -11,14 +12,14 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
-#include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #include "media/base/limits.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 namespace {
@@ -49,6 +50,7 @@ HtmlVideoElementCapturerSource::HtmlVideoElementCapturerSource(
     : web_media_player_(player),
       io_task_runner_(io_task_runner),
       task_runner_(task_runner),
+      is_opaque_(player->IsOpaque()),
       capture_frame_rate_(0.0),
       weak_factory_(this) {
   DCHECK(web_media_player_);
@@ -67,7 +69,8 @@ HtmlVideoElementCapturerSource::GetPreferredFormats() {
   // to specify it.
   const media::VideoCaptureFormat format(
       web_media_player_->NaturalSize(),
-      MediaStreamVideoSource::kDefaultFrameRate, media::PIXEL_FORMAT_I420);
+      blink::MediaStreamVideoSource::kDefaultFrameRate,
+      media::PIXEL_FORMAT_I420);
   media::VideoCaptureFormats formats;
   formats.push_back(format);
   return formats;
@@ -87,13 +90,6 @@ void HtmlVideoElementCapturerSource::StartCapture(
     running_callback_.Run(false);
     return;
   }
-  const blink::WebSize resolution = web_media_player_->NaturalSize();
-  if (!bitmap_.tryAllocPixels(
-          SkImageInfo::MakeN32Premul(resolution.width, resolution.height))) {
-    running_callback_.Run(false);
-    return;
-  }
-  canvas_ = std::make_unique<cc::SkiaPaintCanvas>(bitmap_);
 
   new_frame_callback_ = new_frame_callback;
   // Force |capture_frame_rate_| to be in between k{Min,Max}FramesPerSecond.
@@ -129,6 +125,18 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
     start_capture_time_ = current_time;
   const blink::WebSize resolution = web_media_player_->NaturalSize();
 
+  if (!canvas_ || is_opaque_ != web_media_player_->IsOpaque()) {
+    LOG(ERROR) << " Change in opacity !!!";
+    is_opaque_ = web_media_player_->IsOpaque();
+    if (!bitmap_.tryAllocPixels(SkImageInfo::MakeN32(
+            resolution.width, resolution.height,
+            is_opaque_ ? kOpaque_SkAlphaType : kPremul_SkAlphaType))) {
+      running_callback_.Run(false);
+      return;
+    }
+    canvas_ = std::make_unique<cc::SkiaPaintCanvas>(bitmap_);
+  }
+
   cc::PaintFlags flags;
   flags.setBlendMode(SkBlendMode::kSrc);
   flags.setFilterQuality(kLow_SkFilterQuality);
@@ -148,7 +156,8 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   }
 
   scoped_refptr<media::VideoFrame> frame = frame_pool_.CreateFrame(
-      media::PIXEL_FORMAT_I420, resolution, gfx::Rect(resolution), resolution,
+      is_opaque_ ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_I420A,
+      resolution, gfx::Rect(resolution), resolution,
       current_time - start_capture_time_);
 
   const uint32_t source_pixel_format =
@@ -168,7 +177,15 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
           frame->visible_rect().size().height(), bitmap_.info().width(),
           bitmap_.info().height(), libyuv::kRotate0,
           source_pixel_format) == 0) {
-    // Success!
+    if (!is_opaque_) {
+      // OK to use ARGB...() because alpha has the same alignment for both ABGR
+      // and ARGB.
+      libyuv::ARGBExtractAlpha(static_cast<uint8_t*>(bitmap_.getPixels()),
+                               bitmap_.rowBytes() /* stride */,
+                               frame->visible_data(media::VideoFrame::kAPlane),
+                               frame->stride(media::VideoFrame::kAPlane),
+                               bitmap_.info().width(), bitmap_.info().height());
+    }  // Success!
     io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(new_frame_callback_, frame, current_time));
   }

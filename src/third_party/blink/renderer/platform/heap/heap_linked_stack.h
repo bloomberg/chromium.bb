@@ -109,14 +109,6 @@ inline size_t HeapLinkedStack<T>::size() {
   return size_;
 }
 
-template <typename T>
-class TraceEagerlyTrait<HeapLinkedStack<T>> {
-  STATIC_ONLY(TraceEagerlyTrait);
-
- public:
-  static const bool value = TraceEagerlyTrait<T>::value;
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_LINKED_STACK_H_

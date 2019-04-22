@@ -25,11 +25,19 @@ viewer-pdf-toolbar {
   z-index: 4;
 }
 
-#plugin {
+#content {
   height: 100%;
   position: fixed;
   width: 100%;
   z-index: 1;
+}
+
+
+viewer-ink-host,
+#plugin {
+  height: 100%;
+  position: absolute;
+  width: 100%;
 }
 
 #sizer {

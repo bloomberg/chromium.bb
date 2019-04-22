@@ -4,6 +4,9 @@
 
 #include "components/metrics/metrics_service_client.h"
 
+#include "base/command_line.h"
+#include "base/strings/string_util.h"
+#include "components/metrics/metrics_switches.h"
 #include "components/metrics/url_constants.h"
 
 namespace metrics {
@@ -28,12 +31,12 @@ bool MetricsServiceClient::IsUMACellularUploadLogicEnabled() {
   return false;
 }
 
-std::string MetricsServiceClient::GetMetricsServerUrl() {
-  return kNewMetricsServerUrl;
+GURL MetricsServiceClient::GetMetricsServerUrl() {
+  return GURL(kNewMetricsServerUrl);
 }
 
-std::string MetricsServiceClient::GetInsecureMetricsServerUrl() {
-  return kNewMetricsServerUrlInsecure;
+GURL MetricsServiceClient::GetInsecureMetricsServerUrl() {
+  return GURL(kNewMetricsServerUrlInsecure);
 }
 
 bool MetricsServiceClient::SyncStateAllowsUkm() {
@@ -48,6 +51,14 @@ bool MetricsServiceClient::AreNotificationListenersEnabledOnAllProfiles() {
   return false;
 }
 
+std::string MetricsServiceClient::GetAppPackageName() {
+  return std::string();
+}
+
+std::string MetricsServiceClient::GetUploadSigningKey() {
+  return std::string();
+}
+
 void MetricsServiceClient::SetUpdateRunningServicesCallback(
     const base::Closure& callback) {
   update_running_services_ = callback;
@@ -58,8 +69,9 @@ void MetricsServiceClient::UpdateRunningServices() {
     update_running_services_.Run();
 }
 
-std::string MetricsServiceClient::GetAppPackageName() {
-  return std::string();
+bool MetricsServiceClient::IsMetricsReportingForceEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceEnableMetricsReporting);
 }
 
 }  // namespace metrics

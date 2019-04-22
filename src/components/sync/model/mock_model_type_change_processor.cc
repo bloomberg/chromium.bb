@@ -21,7 +21,7 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   // |other| must not be nullptr and must outlive this object.
   explicit ForwardingModelTypeChangeProcessor(ModelTypeChangeProcessor* other)
       : other_(other) {}
-  ~ForwardingModelTypeChangeProcessor() override{};
+  ~ForwardingModelTypeChangeProcessor() override {}
 
   void Put(const std::string& client_tag,
            std::unique_ptr<EntityData> entity_data,
@@ -51,6 +51,16 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
 
   bool IsEntityUnsynced(const std::string& storage_key) override {
     return other_->IsEntityUnsynced(storage_key);
+  }
+
+  base::Time GetEntityCreationTime(
+      const std::string& storage_key) const override {
+    return other_->GetEntityCreationTime(storage_key);
+  }
+
+  base::Time GetEntityModificationTime(
+      const std::string& storage_key) const override {
+    return other_->GetEntityModificationTime(storage_key);
   }
 
   void OnModelStarting(ModelTypeSyncBridge* bridge) override {

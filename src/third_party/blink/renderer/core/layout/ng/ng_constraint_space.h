@@ -21,7 +21,7 @@
 
 namespace blink {
 
-class LayoutBox;
+class LayoutBlock;
 class NGConstraintSpaceBuilder;
 
 enum NGFragmentationType {
@@ -37,7 +37,7 @@ enum NGFragmentationType {
 //
 // This enum is used for communicating to *direct* children of table cells,
 // which layout phase the table cell is in.
-enum NGTableCellChildLayoutPhase {
+enum class NGTableCellChildLayoutPhase {
   kNotTableCellChild,  // The node isn't a table cell child.
   kMeasure,  // The node is a table cell child, in the "measure" phase.
   kLayout    // The node is a table cell child, in the "layout" phase.
@@ -136,7 +136,7 @@ class CORE_EXPORT NGConstraintSpace final {
   // Creates NGConstraintSpace representing LayoutObject's containing block.
   // This should live on NGBlockNode or another layout bridge and probably take
   // a root NGConstraintSpace.
-  static NGConstraintSpace CreateFromLayoutObject(const LayoutBox&);
+  static NGConstraintSpace CreateFromLayoutObject(const LayoutBlock&);
 
   const NGExclusionSpace& ExclusionSpace() const { return exclusion_space_; }
 
@@ -199,22 +199,7 @@ class CORE_EXPORT NGConstraintSpace final {
   }
 
   LayoutUnit ReplacedPercentageResolutionInlineSize() const {
-    switch (static_cast<NGPercentageStorage>(
-        bitfields_.replaced_percentage_inline_storage)) {
-      case kSameAsAvailable:
-        return available_size_.inline_size;
-      case kZero:
-        return LayoutUnit();
-      case kIndefinite:
-        return NGSizeIndefinite;
-      case kRareDataPercentage:
-        DCHECK(HasRareData());
-        return rare_data_->replaced_percentage_resolution_size.inline_size;
-      default:
-        NOTREACHED();
-    }
-
-    return available_size_.inline_size;
+    return PercentageResolutionInlineSize();
   }
 
   LayoutUnit ReplacedPercentageResolutionBlockSize() const {
@@ -228,7 +213,7 @@ class CORE_EXPORT NGConstraintSpace final {
         return NGSizeIndefinite;
       case kRareDataPercentage:
         DCHECK(HasRareData());
-        return rare_data_->replaced_percentage_resolution_size.block_size;
+        return rare_data_->replaced_percentage_resolution_block_size;
       default:
         NOTREACHED();
     }
@@ -436,19 +421,20 @@ class CORE_EXPORT NGConstraintSpace final {
   // to verify that any constraint space size (available size, percentage size,
   // and so on) and BFC offset changes won't require re-layout, before skipping.
   bool MaySkipLayout(const NGConstraintSpace& other) const {
-    if (HasRareData() && other.HasRareData()) {
-      if (!rare_data_->MaySkipLayout(*other.rare_data_))
-        return false;
-    } else if (!HasRareData() && !other.HasRareData()) {
-      if (bfc_offset_.line_offset != other.bfc_offset_.line_offset)
-        return false;
-    } else {
-      // We have a bfc_offset_, and a rare_data_ (or vice-versa).
+    if (!bitfields_.MaySkipLayout(other.bitfields_))
       return false;
-    }
 
-    return exclusion_space_ == other.exclusion_space_ &&
-           bitfields_.MaySkipLayout(other.bitfields_);
+    if (!HasRareData() && !other.HasRareData())
+      return true;
+
+    if (HasRareData() && other.HasRareData())
+      return rare_data_->MaySkipLayout(*other.rare_data_);
+
+    if (HasRareData())
+      return rare_data_->IsInitialForMaySkipLayout();
+
+    DCHECK(other.HasRareData());
+    return other.rare_data_->IsInitialForMaySkipLayout();
   }
 
   bool AreSizesEqual(const NGConstraintSpace& other) const {
@@ -461,10 +447,6 @@ class CORE_EXPORT NGConstraintSpace final {
 
     if (bitfields_.percentage_block_storage !=
         other.bitfields_.percentage_block_storage)
-      return false;
-
-    if (bitfields_.replaced_percentage_inline_storage !=
-        other.bitfields_.replaced_percentage_inline_storage)
       return false;
 
     if (bitfields_.replaced_percentage_block_storage !=
@@ -488,25 +470,14 @@ class CORE_EXPORT NGConstraintSpace final {
             other.rare_data_->percentage_resolution_size.block_size)
       return false;
 
-    if (bitfields_.replaced_percentage_inline_storage == kRareDataPercentage &&
-        other.bitfields_.replaced_percentage_inline_storage ==
-            kRareDataPercentage &&
-        rare_data_->replaced_percentage_resolution_size.inline_size !=
-            other.rare_data_->replaced_percentage_resolution_size.inline_size)
-      return false;
-
     if (bitfields_.replaced_percentage_block_storage == kRareDataPercentage &&
         other.bitfields_.replaced_percentage_block_storage ==
             kRareDataPercentage &&
-        rare_data_->replaced_percentage_resolution_size.block_size !=
-            other.rare_data_->replaced_percentage_resolution_size.block_size)
+        rare_data_->replaced_percentage_resolution_block_size !=
+            other.rare_data_->replaced_percentage_resolution_block_size)
       return false;
 
     return true;
-  }
-  bool operator==(const NGConstraintSpace&) const;
-  bool operator!=(const NGConstraintSpace& other) const {
-    return !(*this == other);
   }
 
   String ToString() const;
@@ -539,7 +510,7 @@ class CORE_EXPORT NGConstraintSpace final {
     ~RareData() = default;
 
     NGLogicalSize percentage_resolution_size;
-    NGLogicalSize replaced_percentage_resolution_size;
+    LayoutUnit replaced_percentage_resolution_block_size;
 
     NGBfcOffset bfc_offset;
     NGMarginStrut margin_strut;
@@ -554,14 +525,21 @@ class CORE_EXPORT NGConstraintSpace final {
 
     bool MaySkipLayout(const RareData& other) const {
       return margin_strut == other.margin_strut &&
-             bfc_offset.line_offset == other.bfc_offset.line_offset &&
              floats_bfc_block_offset == other.floats_bfc_block_offset &&
-             clearance_offset == other.clearance_offset &&
              fragmentainer_block_size == other.fragmentainer_block_size &&
              fragmentainer_space_at_bfc_start ==
                  other.fragmentainer_space_at_bfc_start &&
              block_direction_fragmentation_type ==
                  other.block_direction_fragmentation_type;
+    }
+
+    // Must be kept in sync with members checked within |MaySkipLayout|.
+    bool IsInitialForMaySkipLayout() const {
+      return margin_strut == NGMarginStrut() &&
+             floats_bfc_block_offset == base::nullopt &&
+             fragmentainer_block_size == NGSizeIndefinite &&
+             fragmentainer_space_at_bfc_start == NGSizeIndefinite &&
+             block_direction_fragmentation_type == kFragmentNone;
     }
   };
 
@@ -577,15 +555,14 @@ class CORE_EXPORT NGConstraintSpace final {
     Bitfields() : Bitfields(WritingMode::kHorizontalTb) {}
 
     explicit Bitfields(WritingMode writing_mode)
-        : table_cell_child_layout_phase(
-              static_cast<unsigned>(kNotTableCellChild)),
+        : table_cell_child_layout_phase(static_cast<unsigned>(
+              NGTableCellChildLayoutPhase::kNotTableCellChild)),
           adjoining_floats(static_cast<unsigned>(kFloatTypeNone)),
           writing_mode(static_cast<unsigned>(writing_mode)),
           direction(static_cast<unsigned>(TextDirection::kLtr)),
           flags(kFixedSizeBlockIsDefinite),
           percentage_inline_storage(kSameAsAvailable),
           percentage_block_storage(kSameAsAvailable),
-          replaced_percentage_inline_storage(kSameAsAvailable),
           replaced_percentage_block_storage(kSameAsAvailable) {}
 
     bool MaySkipLayout(const Bitfields& other) const {
@@ -605,7 +582,6 @@ class CORE_EXPORT NGConstraintSpace final {
 
     unsigned percentage_inline_storage : 2;           // NGPercentageStorage
     unsigned percentage_block_storage : 2;            // NGPercentageStorage
-    unsigned replaced_percentage_inline_storage : 2;  // NGPercentageStorage
     unsigned replaced_percentage_block_storage : 2;   // NGPercentageStorage
   };
 

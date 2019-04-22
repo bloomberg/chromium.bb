@@ -4,6 +4,8 @@
 
 #include "components/services/unzip/public/cpp/test_unzip_service.h"
 
+#include "components/services/filesystem/public/interfaces/directory.mojom.h"
+
 namespace unzip {
 
 CrashyUnzipService::CrashyUnzipService(

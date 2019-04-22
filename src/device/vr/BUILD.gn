@@ -25,6 +25,12 @@ if (enable_vr) {
       "orientation/orientation_device.h",
       "orientation/orientation_device_provider.cc",
       "orientation/orientation_device_provider.h",
+      "util/fps_meter.cc",
+      "util/fps_meter.h",
+      "util/sample_queue.cc",
+      "util/sample_queue.h",
+      "util/sliding_average.cc",
+      "util/sliding_average.h",
       "vr_device.h",
       "vr_device_base.cc",
       "vr_device_base.h",
@@ -36,6 +42,7 @@ if (enable_vr) {
     deps += [
       "//base",
       "//components/ukm:ukm",
+      "//device/base",
       "//gpu/ipc/common:interfaces",
       "//mojo/public/cpp/bindings",
       "//services/device/public/cpp/generic_sensor",
@@ -104,18 +111,18 @@ if (enable_vr) {
         "openvr/openvr_render_loop.h",
         "openvr/openvr_type_converters.cc",
         "openvr/openvr_type_converters.h",
-        "openvr/test/test_hook.h",
+        "test/test_hook.h",
       ]
     }
 
-    if (enable_openvr || enable_oculus_vr) {
+    if (enable_openvr || enable_oculus_vr || enable_windows_mr) {
       sources += [
         "windows/compositor_base.cc",
         "windows/compositor_base.h",
       ]
     }
 
-    if (is_win && (enable_openvr || enable_oculus_vr)) {
+    if (is_win && (enable_openvr || enable_oculus_vr || enable_windows_mr)) {
       libs = [
         "d3d11.lib",
         "DXGI.lib",
@@ -127,7 +134,21 @@ if (enable_vr) {
         "windows/d3d11_texture_helper.cc",
         "windows/d3d11_texture_helper.h",
         "windows/flip_pixel_shader.h",
-        "windows/flip_vertex_shader.h",
+        "windows/geometry_shader.h",
+        "windows/vertex_shader.h",
+      ]
+    }
+
+    if (is_win && enable_windows_mr) {
+      sources += [
+        "windows_mixed_reality/mixed_reality_device.cc",
+        "windows_mixed_reality/mixed_reality_device.h",
+        "windows_mixed_reality/mixed_reality_input_helper.cc",
+        "windows_mixed_reality/mixed_reality_input_helper.h",
+        "windows_mixed_reality/mixed_reality_renderloop.cc",
+        "windows_mixed_reality/mixed_reality_renderloop.h",
+        "windows_mixed_reality/mixed_reality_statics.cc",
+        "windows_mixed_reality/mixed_reality_statics.h",
       ]
     }
 
@@ -204,7 +225,7 @@ if (enable_openvr) {
       "openvr/test/fake_openvr_impl_api.cc",
       "openvr/test/test_helper.cc",
       "openvr/test/test_helper.h",
-      "openvr/test/test_hook.h",
+      "test/test_hook.h",
     ]
 
     libs = [
@@ -232,8 +253,10 @@ if (enable_gvr_services) {
   android_library("java") {
     java_files = java_sources_needing_jni
     deps = [
-      "//base:base_java",
       "//third_party/gvr-android-sdk:gvr_common_java",
+    ]
+    classpath_deps = [
+      "//base:base_java",
       "//ui/android:ui_java",
     ]
   }

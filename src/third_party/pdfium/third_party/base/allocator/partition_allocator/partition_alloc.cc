@@ -209,12 +209,10 @@ bool PartitionReallocDirectMappedInPlace(PartitionRootGeneric* root,
 
   // bucket->slot_size is the current size of the allocation.
   size_t current_size = page->bucket->slot_size;
-  if (new_size == current_size)
-    return true;
-
   char* char_ptr = static_cast<char*>(internal::PartitionPage::ToPointer(page));
-
-  if (new_size < current_size) {
+  if (new_size == current_size) {
+    // No need to move any memory around, but update size and cookie below.
+  } else if (new_size < current_size) {
     size_t map_size =
         internal::PartitionDirectMapExtent::FromPage(page)->map_size;
 
@@ -226,15 +224,13 @@ bool PartitionReallocDirectMappedInPlace(PartitionRootGeneric* root,
     // Shrink by decommitting unneeded pages and making them inaccessible.
     size_t decommit_size = current_size - new_size;
     root->DecommitSystemPages(char_ptr + new_size, decommit_size);
-    CHECK(SetSystemPagesAccess(char_ptr + new_size, decommit_size,
-                               PageInaccessible));
+    SetSystemPagesAccess(char_ptr + new_size, decommit_size, PageInaccessible);
   } else if (new_size <=
              internal::PartitionDirectMapExtent::FromPage(page)->map_size) {
     // Grow within the actually allocated memory. Just need to make the
     // pages accessible again.
     size_t recommit_size = new_size - current_size;
-    CHECK(SetSystemPagesAccess(char_ptr + current_size, recommit_size,
-                               PageReadWrite));
+    SetSystemPagesAccess(char_ptr + current_size, recommit_size, PageReadWrite);
     root->RecommitSystemPages(char_ptr + current_size, recommit_size);
 
 #if DCHECK_IS_ON()
@@ -265,6 +261,10 @@ void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
                                    size_t new_size,
                                    const char* type_name) {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+  // Make MEMORY_TOOL_REPLACES_ALLOCATOR behave the same for max size
+  // as other alloc code.
+  if (new_size > kGenericMaxDirectMapped)
+    return nullptr;
   void* result = realloc(ptr, new_size);
   CHECK(result || flags & PartitionAllocReturnNull);
   return result;

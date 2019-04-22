@@ -25,12 +25,12 @@ struct POLICY_EXPORT PolicyDetails {
 
   // The id of the protobuf field that contains this policy,
   // in the cloud policy protobuf.
-  int id;
+  short id;
 
   // If this policy references external data then this is the maximum size
   // allowed for that data.
   // Otherwise this field is 0 and doesn't have any meaning.
-  size_t max_external_data_size;
+  uint32_t max_external_data_size;
 
   // Contains tags that describe impact on a user's privacy or security.
   RiskTag risk_tags[kMaxRiskTagCount];

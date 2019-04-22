@@ -42,13 +42,6 @@
 
 #define UNUSED __attribute__((unused))
 
-// See commentary in crazy_linker_elf_loader.cpp for the effect of setting
-// this. If changing there, change here also.
-//
-// For more, see:
-//   https://crbug.com/504410
-#define RESERVE_BREAKPAD_GUARD_REGION 1
-
 #if defined(ARCH_CPU_X86)
 // Dalvik JIT generated code doesn't guarantee 16-byte stack alignment on
 // x86 - use force_align_arg_pointer to realign the stack at the JNI
@@ -65,13 +58,6 @@ namespace {
 
 // Larger than the largest library we might attempt to load.
 constexpr size_t kAddressSpaceReservationSize = 192 * 1024 * 1024;
-
-// Size of any Breakpad guard region. 16MB is comfortably larger than the
-// ~6MB relocation packing of the current 64-bit libchrome.so, the largest we
-// expect to encounter.
-#if RESERVE_BREAKPAD_GUARD_REGION
-constexpr size_t kBreakpadGuardRegionBytes = 16 * 1024 * 1024;
-#endif
 
 // A simple scoped UTF String class that can be initialized from
 // a Java jstring handle. Modeled like std::string, which cannot
@@ -142,65 +128,6 @@ bool InitFieldId(JNIEnv* env,
     return false;
   }
   LOG_INFO("Found ID %p for field '%s'", *field_id, field_name);
-  return true;
-}
-
-// Initialize a jmethodID corresponding to the static method of a given
-// |clazz|, with name |method_name| and signature |method_sig|.
-// |env| is the current JNI environment handle.
-// On success, return true and set |*method_id|.
-bool InitStaticMethodId(JNIEnv* env,
-                        jclass clazz,
-                        const char* method_name,
-                        const char* method_sig,
-                        jmethodID* method_id) {
-  *method_id = env->GetStaticMethodID(clazz, method_name, method_sig);
-  if (!*method_id) {
-    LOG_ERROR("Could not find ID for static method '%s'", method_name);
-    return false;
-  }
-  LOG_INFO("Found ID %p for static method '%s'", *method_id, method_name);
-  return true;
-}
-
-// Initialize a jfieldID corresponding to the static field of a given |clazz|,
-// with name |field_name| and signature |field_sig|.
-// |env| is the current JNI environment handle.
-// On success, return true and set |*field_id|.
-bool InitStaticFieldId(JNIEnv* env,
-                       jclass clazz,
-                       const char* field_name,
-                       const char* field_sig,
-                       jfieldID* field_id) {
-  *field_id = env->GetStaticFieldID(clazz, field_name, field_sig);
-  if (!*field_id) {
-    LOG_ERROR("Could not find ID for static field '%s'", field_name);
-    return false;
-  }
-  LOG_INFO("Found ID %p for static field '%s'", *field_id, field_name);
-  return true;
-}
-
-// Initialize a jint corresponding to the static integer field of a class
-// with class name |class_name| and field name |field_name|.
-// |env| is the current JNI environment handle.
-// On success, return true and set |*value|.
-bool InitStaticInt(JNIEnv* env,
-                   const char* class_name,
-                   const char* field_name,
-                   jint* value) {
-  jclass clazz;
-  if (!InitClassReference(env, class_name, &clazz))
-    return false;
-
-  jfieldID field_id;
-  if (!InitStaticFieldId(env, clazz, field_name, "I", &field_id))
-    return false;
-
-  *value = env->GetStaticIntField(clazz, field_id);
-  LOG_INFO("Found value %d for class '%s', static field '%s'",
-           *value, class_name, field_name);
-
   return true;
 }
 
@@ -290,8 +217,8 @@ crazy_context_t* GetCrazyContext() {
 
     // Ensure libraries located in the same directory as the linker
     // can be loaded before system ones.
-    crazy_context_add_search_path_for_address(
-        s_crazy_context, reinterpret_cast<void*>(&GetCrazyContext));
+    crazy_add_search_path_for_address(
+        reinterpret_cast<void*>(&GetCrazyContext));
   }
 
   return s_crazy_context;
@@ -322,22 +249,6 @@ class ScopedLibrary {
   crazy_library_t* lib_;
 };
 
-// Retrieve the SDK build version and pass it into the crazy linker. This
-// needs to be done early in initialization, before any other crazy linker
-// code is run.
-// |env| is the current JNI environment handle.
-// On success, return true.
-bool InitSDKVersionInfo(JNIEnv* env) {
-  jint value = 0;
-  if (!InitStaticInt(env, "android/os/Build$VERSION", "SDK_INT", &value))
-    return false;
-
-  crazy_set_sdk_build_version(static_cast<int>(value));
-  LOG_INFO("Set SDK build version to %d", static_cast<int>(value));
-
-  return true;
-}
-
 }  // namespace
 
 // Use Android ASLR to create a random address into which we expect to be
@@ -353,11 +264,6 @@ Java_org_chromium_base_library_1loader_Linker_nativeGetRandomBaseLoadAddress(
     jclass clazz) {
   size_t bytes = kAddressSpaceReservationSize;
 
-#if RESERVE_BREAKPAD_GUARD_REGION
-  // Pad the requested address space size for a Breakpad guard region.
-  bytes += kBreakpadGuardRegionBytes;
-#endif
-
   void* address =
       mmap(nullptr, bytes, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   if (address == MAP_FAILED) {
@@ -365,12 +271,6 @@ Java_org_chromium_base_library_1loader_Linker_nativeGetRandomBaseLoadAddress(
     return 0;
   }
   munmap(address, bytes);
-
-#if RESERVE_BREAKPAD_GUARD_REGION
-  // Allow for a Breakpad guard region ahead of the returned address.
-  address = reinterpret_cast<void*>(
-      reinterpret_cast<uintptr_t>(address) + kBreakpadGuardRegionBytes);
-#endif
 
   LOG_INFO("Random base load address is %p", address);
   return static_cast<jlong>(reinterpret_cast<uintptr_t>(address));
@@ -408,8 +308,7 @@ Java_org_chromium_base_library_1loader_Linker_nativeAddZipArchivePath(
   snprintf(search_path, sizeof(search_path), "%s!lib/" CURRENT_ABI "/",
            apk_path.c_str());
 
-  crazy_context_t* context = GetCrazyContext();
-  crazy_context_add_search_path(context, search_path);
+  crazy_add_search_path(search_path);
   return true;
 }
 
@@ -465,90 +364,6 @@ Java_org_chromium_base_library_1loader_Linker_nativeLoadLibrary(
   s_lib_info_fields.SetLoadInfo(env, lib_info_obj, info.load_address,
                                 info.load_size);
   LOG_INFO("Success loading library %s", library_name.c_str());
-  return true;
-}
-
-// Class holding the Java class and method ID for the Java side Linker
-// postCallbackOnMainThread method.
-struct JavaCallbackBindings_class {
-  jclass clazz;
-  jmethodID method_id;
-
-  // Initialize an instance.
-  bool Init(JNIEnv* env, jclass linker_class) {
-    clazz = reinterpret_cast<jclass>(env->NewGlobalRef(linker_class));
-    return InitStaticMethodId(env, linker_class, "postCallbackOnMainThread",
-                              "(J)V", &method_id);
-  }
-};
-
-static JavaCallbackBindings_class s_java_callback_bindings;
-
-// Designated receiver function for callbacks from Java. Its name is known
-// to the Java side.
-// |env| is the current JNI environment handle and is ignored here.
-// |clazz| is the static class handle for org.chromium.base.Linker,
-// and is ignored here.
-// |arg| is a pointer to an allocated crazy_callback_t, deleted after use.
-JNI_GENERATOR_EXPORT void
-Java_org_chromium_base_library_1loader_Linker_nativeRunCallbackOnUiThread(
-    JNIEnv* env,
-    jclass clazz,
-    jlong arg) {
-  crazy_callback_t* callback = reinterpret_cast<crazy_callback_t*>(arg);
-
-  LOG_INFO("Called back from java with handler %p, opaque %p",
-           callback->handler, callback->opaque);
-
-  crazy_callback_run(callback);
-  delete callback;
-}
-
-// Request a callback from Java. The supplied crazy_callback_t is valid only
-// for the duration of this call, so we copy it to a newly allocated
-// crazy_callback_t and then call the Java side's postCallbackOnMainThread.
-// This will call back to to our RunCallbackOnUiThread some time
-// later on the UI thread.
-// |callback_request| is a crazy_callback_t.
-// |poster_opaque| is unused.
-// Returns true if the callback request succeeds.
-static bool PostForLaterExecution(crazy_callback_t* callback_request,
-                                  void* poster_opaque UNUSED) {
-  crazy_context_t* context = GetCrazyContext();
-
-  JavaVM* vm;
-  int minimum_jni_version;
-  crazy_context_get_java_vm(context, reinterpret_cast<void**>(&vm),
-                            &minimum_jni_version);
-
-  // Do not reuse JNIEnv from JNI_OnLoad, but retrieve our own.
-  JNIEnv* env;
-  if (JNI_OK !=
-      vm->GetEnv(reinterpret_cast<void**>(&env), minimum_jni_version)) {
-    LOG_ERROR("Could not create JNIEnv");
-    return false;
-  }
-
-  // Copy the callback; the one passed as an argument may be temporary.
-  crazy_callback_t* callback = new crazy_callback_t();
-  *callback = *callback_request;
-
-  LOG_INFO("Calling back to java with handler %p, opaque %p", callback->handler,
-           callback->opaque);
-
-  jlong arg = static_cast<jlong>(reinterpret_cast<uintptr_t>(callback));
-
-  env->CallStaticVoidMethod(s_java_callback_bindings.clazz,
-                            s_java_callback_bindings.method_id, arg);
-
-  // Back out and return false if we encounter a JNI exception.
-  if (env->ExceptionCheck() == JNI_TRUE) {
-    env->ExceptionDescribe();
-    env->ExceptionClear();
-    delete callback;
-    return false;
-  }
-
   return true;
 }
 
@@ -634,11 +449,6 @@ Java_org_chromium_base_library_1loader_Linker_nativeUseSharedRelro(
 static bool LinkerJNIInit(JavaVM* vm, JNIEnv* env) {
   LOG_INFO("Entering");
 
-  // Initialize SDK version info.
-  LOG_INFO("Retrieving SDK version info");
-  if (!InitSDKVersionInfo(env))
-    return false;
-
   // Find LibInfo field ids.
   LOG_INFO("Caching field IDs");
   if (!s_lib_info_fields.Init(env)) {
@@ -651,19 +461,9 @@ static bool LinkerJNIInit(JavaVM* vm, JNIEnv* env) {
                           &linker_class))
     return false;
 
-  // Resolve and save the Java side Linker callback class and method.
-  LOG_INFO("Resolving callback bindings");
-  if (!s_java_callback_bindings.Init(env, linker_class)) {
-    return false;
-  }
-
-  // Save JavaVM* handle into context.
-  crazy_context_t* context = GetCrazyContext();
-  crazy_context_set_java_vm(context, vm, JNI_VERSION_1_4);
-
-  // Register the function that the crazy linker can call to post code
-  // for later execution.
-  crazy_context_set_callback_poster(context, &PostForLaterExecution, nullptr);
+  // Save JavaVM* handle into linker, so that it can call JNI_OnLoad()
+  // automatically when loading libraries containing JNI entry points.
+  crazy_set_java_vm(vm, JNI_VERSION_1_4);
 
   return true;
 }

@@ -16,7 +16,6 @@
 <translation id="152892567002884378">વૉલ્યૂમ વધારો</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, પછી <ph name="ESC" /></translation>
 <translation id="1652741121070700329">પાછલા શબ્દની શરૂઆત પર જાઓ</translation>
-<translation id="1671169355475348905">પાછલી ભાષાની ઇનપુટ પદ્ધતિ પર સ્વિચ કરો</translation>
 <translation id="1679841710523778799">બ્રાઇટનેસ વધારો</translation>
 <translation id="168356808214100546"><ph name="ALT" />ને દબાવી રાખો, તમે જે વિંડોને ખોલવા માગો છો તે ખુલી જાય ત્યાં સુધી <ph name="TAB" />ને ટૅપ કરો, પછી રિલીઝ કરો.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">બુકમાર્ક બાર બતાવો અથવા છુપાવો</translation>
 <translation id="2185166372312820725">પાછલી ટૅબ પર જાઓ</translation>
 <translation id="2194790690264064655"><ph name="CTRL" />ને દબાવો અને લિંકને ક્લિક કરો</translation>
+<translation id="2246352309084894470">પૂર્ણ-સ્ક્રીન લૉન્ચર ખોલો/બંધ કરો</translation>
 <translation id="2382644247745281995">વર્તમાન કીબોર્ડ લેઆઉટ સાથે સમર્થિત નથી</translation>
 <translation id="2397416548179033562">Chrome મેનૂ દર્શાવો</translation>
 <translation id="2424073332829844142">Caps Lock ચાલુ અને બંધ કરો</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">પેજ પર ઝૂમ લેવલ રીસેટ કરો</translation>
 <translation id="2596078834055697711">વિંડો સ્ક્રીનશૉટ લો</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, પછી <ph name="TAB" /> અથવા <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">આગલી ભાષાની ઇનપુટ પદ્ધતિ પર સ્વિચ કરો</translation>
 <translation id="2699509451653686398">તમારા વર્તમાન વેબપેજને બુકમાર્ક તરીકે સાચવો</translation>
 <translation id="2750942583782703988">તમારું વર્તમાન પેજ ફરીથી લોડ કરો</translation>
 <translation id="2764005613199379871">શોધ ઍડ્રેસ બારમાં ફોકસ કરો</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">સ્ક્રીન લૉક કરો</translation>
 <translation id="6727005317916125192">પાછલી પેન</translation>
 <translation id="6740781404993465795">આગલો શબ્દ અથવા અક્ષર પસંદ કરો</translation>
+<translation id="6755851152783057058">છેલ્લે ઉપયોગમાં લેવાયેલી ઇનપુટ પદ્ધતિ પર સ્વિચ કરો</translation>
 <translation id="6760706756348334449">વૉલ્યૂમ ઘટાડો</translation>
 <translation id="6941333068993625698">પ્રતિસાદ સબમિટ કરો</translation>
 <translation id="6981982820502123353">ઍક્સેસિબિલિટી</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">ઍડ્રેસ બારમાં વેબ ઍડ્રેસ ટાઇપ કરો, પછી <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> દબાવો</translation>
 <translation id="7254764037241667478">ઉપકરણને સ્લીપ મોડમાં મૂકો (સસ્પેન્ડ કરો)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> અથવા <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">ભાષાની આગલી ઇનપુટ પદ્ધતિ પર સ્વિચ કરો</translation>
 <translation id="743754632698445141">ઍપને અનપિન કરો</translation>
 <translation id="7439718573248533901">આગલો અક્ષર ડિલીટ કરો (ફૉર્વર્ડ ડિલીટ કરો)</translation>
 <translation id="7611271430932669992">પૉપઅપ અને સંવાદો પર ફોકસ લઈ જાઓ</translation>

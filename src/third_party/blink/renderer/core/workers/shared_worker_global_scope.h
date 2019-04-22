@@ -41,13 +41,13 @@
 namespace blink {
 
 class SharedWorkerThread;
+class WorkerClassicScriptLoader;
 
-class SharedWorkerGlobalScope final : public WorkerGlobalScope {
+class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  SharedWorkerGlobalScope(const String& name,
-                          std::unique_ptr<GlobalScopeCreationParams>,
+  SharedWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                           SharedWorkerThread*,
                           base::TimeTicks time_origin);
   ~SharedWorkerGlobalScope() override;
@@ -58,23 +58,30 @@ class SharedWorkerGlobalScope final : public WorkerGlobalScope {
   const AtomicString& InterfaceName() const override;
 
   // WorkerGlobalScope
-  void ImportModuleScript(
+  void FetchAndRunClassicScript(
+      const KURL& script_url,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      const v8_inspector::V8StackTraceId& stack_id) override;
+  void FetchAndRunModuleScript(
       const KURL& module_url_record,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) override;
 
-  // Setters/Getters for attributes in SharedWorkerGlobalScope.idl
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect);
-  String name() const { return name_; }
+  // shared_worker_global_scope.idl
+  const String name() const;
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
 
-  void ConnectPausable(MessagePortChannel channel);
+  void Connect(MessagePortChannel channel);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  void ExceptionThrown(ErrorEvent*) override;
+  void DidReceiveResponseForClassicScript(
+      WorkerClassicScriptLoader* classic_script_loader);
+  void DidFetchClassicScript(WorkerClassicScriptLoader* classic_script_loader,
+                             const v8_inspector::V8StackTraceId& stack_id);
 
-  const String name_;
+  void ExceptionThrown(ErrorEvent*) override;
 };
 
 template <>

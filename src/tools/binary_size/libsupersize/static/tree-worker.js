@@ -223,59 +223,73 @@ class TreeBuilder {
    * @param {TreeNode} node
    */
   _joinDexMethodClasses(node) {
-    const hasDexMethods = node.childStats[_DEX_METHOD_SYMBOL_TYPE] != null;
-    if (!hasDexMethods || node.children == null) return node;
+    const hasDex = node.childStats[_DEX_SYMBOL_TYPE] ||
+        node.childStats[_DEX_METHOD_SYMBOL_TYPE];
+    if (!hasDex || !node.children) return node;
 
-    if (node.type[0] === _CONTAINER_TYPES.FILE) {
-      /** @type {Map<string, TreeNode>} */
-      const javaClassContainers = new Map();
-      /** @type {TreeNode[]} */
-      const otherSymbols = [];
-
-      // Place all dex methods into buckets
-      for (const childNode of node.children) {
-        // Java classes are denoted with a "#", such as "LogoView#onDraw"
-        const splitIndex = childNode.idPath.lastIndexOf('#');
-
-        const isDexMethodWithClass =
-          childNode.type === _DEX_METHOD_SYMBOL_TYPE &&
-          splitIndex > childNode.shortNameIndex;
-
-        if (isDexMethodWithClass) {
-          // Get the idPath of the class
-          const classIdPath = childNode.idPath.slice(0, splitIndex);
-
-          let classNode = javaClassContainers.get(classIdPath);
-          if (classNode == null) {
-            classNode = createNode({
-              idPath: classIdPath,
-              srcPath: node.srcPath,
-              component: node.component,
-              shortNameIndex: childNode.shortNameIndex,
-              type: _CONTAINER_TYPES.JAVA_CLASS,
-            });
-            javaClassContainers.set(classIdPath, classNode);
-          }
-
-          // Adjust the dex method's short name so it starts after the "#"
-          childNode.shortNameIndex = splitIndex + 1;
-          this._attachToParent(childNode, classNode);
-        } else {
-          otherSymbols.push(childNode);
-        }
-      }
-
-      node.children = otherSymbols;
-      for (const containerNode of javaClassContainers.values()) {
-        // Delay setting the parent until here so that `_attachToParent`
-        // doesn't add method stats twice
-        containerNode.parent = node;
-        node.children.push(containerNode);
-      }
-    } else {
+    if (node.type[0] !== _CONTAINER_TYPES.FILE) {
       for (const child of node.children) {
         this._joinDexMethodClasses(child);
       }
+      return node;
+    }
+    /** @type {Map<string, TreeNode>} */
+    const javaClassContainers = new Map();
+    /** @type {TreeNode[]} */
+    const otherSymbols = [];
+
+    // Place all dex symbols into buckets
+    for (const childNode of node.children) {
+      // Java classes are denoted with a "#", such as "LogoView#onDraw"
+      // Except for some older .ndjson files, which didn't do this for fields.
+      const splitIndex = childNode.idPath.lastIndexOf('#');
+      const isClassNode = childNode.idPath.indexOf(' ') == -1;
+      const hasClassPrefix = isClassNode || splitIndex != -1;
+
+      if (hasClassPrefix) {
+        // Get the idPath of the class
+        let classIdPath = splitIndex == -1 ? childNode.idPath :
+            childNode.idPath.slice(0, splitIndex);
+
+        // Strip package from the node name for classes in .java files since the
+        // directory tree already shows it.
+        let shortNameIndex = childNode.shortNameIndex;
+        const javaIdx = childNode.idPath.indexOf('.java:');
+        if (javaIdx != -1) {
+          const dotIdx = classIdPath.lastIndexOf('.');
+          if (dotIdx > javaIdx) {
+            shortNameIndex += dotIdx - (javaIdx + 6) + 1;
+          }
+        }
+
+        let classNode = javaClassContainers.get(classIdPath);
+        if (!classNode) {
+          classNode = createNode({
+            idPath: classIdPath,
+            srcPath: node.srcPath,
+            component: node.component,
+            shortNameIndex: shortNameIndex,
+            type: _CONTAINER_TYPES.JAVA_CLASS,
+          });
+          javaClassContainers.set(classIdPath, classNode);
+        }
+
+        // Adjust the dex method's short name so it starts after the "#"
+        if (splitIndex != -1) {
+          childNode.shortNameIndex = splitIndex + 1;
+        }
+        this._attachToParent(childNode, classNode);
+      } else {
+        otherSymbols.push(childNode);
+      }
+    }
+
+    node.children = otherSymbols;
+    for (const containerNode of javaClassContainers.values()) {
+      // Delay setting the parent until here so that `_attachToParent`
+      // doesn't add method stats twice
+      containerNode.parent = node;
+      node.children.push(containerNode);
     }
     return node;
   }

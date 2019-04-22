@@ -32,6 +32,7 @@
 #include "vktTestCaseUtil.hpp"
 #include "vkPrograms.hpp"
 #include "vkImageUtil.hpp"
+#include "vkBarrierUtil.hpp"
 #include "vktImageTestsUtil.hpp"
 #include "vkBuilderUtil.hpp"
 #include "vkRef.hpp"
@@ -104,6 +105,7 @@ struct TestParameters
 	Operation			operation;
 	ShaderType			shader;
 	UVec3				size;
+	deUint32			layers;
 	ImageType			imageType;
 	VkFormat			formatCompressed;
 	VkFormat			formatUncompressed;
@@ -299,7 +301,7 @@ deUint32 BasicTranscodingTestInstance::getLevelCount()
 
 deUint32 BasicTranscodingTestInstance::getLayerCount()
 {
-	return m_parameters.size.z();
+	return m_parameters.layers;
 }
 
 UVec3 BasicTranscodingTestInstance::getLayerDims()
@@ -312,17 +314,28 @@ vector<UVec3> BasicTranscodingTestInstance::getMipLevelSizes (UVec3 baseSize)
 	vector<UVec3>	levelSizes;
 	const deUint32	levelCount = getLevelCount();
 
-	DE_ASSERT(m_parameters.imageType == IMAGE_TYPE_2D || m_parameters.imageType == IMAGE_TYPE_2D_ARRAY);
-
 	baseSize.z() = 1u;
 
 	levelSizes.push_back(baseSize);
 
-	while (levelSizes.size() < levelCount && (baseSize.x() != 1 || baseSize.y() != 1))
+	if (m_parameters.imageType == IMAGE_TYPE_1D)
 	{
-		baseSize.x() = deMax32(baseSize.x() >> 1, 1);
-		baseSize.y() = deMax32(baseSize.y() >> 1, 1);
-		levelSizes.push_back(baseSize);
+		baseSize.y() = 1u;
+
+		while (levelSizes.size() < levelCount && (baseSize.x() != 1))
+		{
+			baseSize.x() = deMax32(baseSize.x() >> 1, 1);
+			levelSizes.push_back(baseSize);
+		}
+	}
+	else
+	{
+		while (levelSizes.size() < levelCount && (baseSize.x() != 1 || baseSize.y() != 1))
+		{
+			baseSize.x() = deMax32(baseSize.x() >> 1, 1);
+			baseSize.y() = deMax32(baseSize.y() >> 1, 1);
+			levelSizes.push_back(baseSize);
+		}
 	}
 
 	DE_ASSERT(levelSizes.size() == getLevelCount());
@@ -528,7 +541,8 @@ TestStatus BasicComputeTestInstance::iterate (void)
 	Allocator&								allocator			= m_context.getDefaultAllocator();
 	const Unique<VkCommandPool>				cmdPool				(createCommandPool(vk, device, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, queueFamilyIndex));
 	const Unique<VkCommandBuffer>			cmdBuffer			(allocateCommandBuffer(vk, device, *cmdPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
-	const vector<UVec3>						mipMapSizes			= m_parameters.useMipmaps ? getMipLevelSizes (getLayerDims()) : vector<UVec3>(1, m_parameters.size);
+	const UVec3								fullSize			(m_parameters.size.x(), m_parameters.size.y(), 1);
+	const vector<UVec3>						mipMapSizes			= m_parameters.useMipmaps ? getMipLevelSizes (getLayerDims()) : vector<UVec3>(1, fullSize);
 	vector<ImageData>						imageData			(m_parameters.imagesCount);
 	const deUint32							compressedNdx		= 0u;
 	const deUint32							resultImageNdx		= m_parameters.imagesCount -1u;
@@ -664,7 +678,7 @@ void BasicComputeTestInstance::copyDataToImage (const VkCommandBuffer&	cmdBuffer
 	{
 		const Allocation& alloc = imageBuffer.getAllocation();
 		deMemcpy(alloc.getHostPtr(), &m_data[0], m_data.size());
-		flushMappedMemoryRange(vk, device, alloc.getMemory(), alloc.getOffset(), m_data.size());
+		flushAlloc(vk, device, alloc);
 	}
 
 	beginCommandBuffer(vk, cmdBuffer);
@@ -874,7 +888,7 @@ bool BasicComputeTestInstance::copyResultAndCompare (const VkCommandBuffer&	cmdB
 	submitCommandsAndWait(vk, device, queue, cmdBuffer);
 
 	const Allocation& allocResult = imageBufferResult.getAllocation();
-	invalidateMappedMemoryRange(vk, device, allocResult.getMemory(), allocResult.getOffset(), imageResultSize);
+	invalidateAlloc(vk, device, allocResult);
 	if (deMemCmp((const void *)allocResult.getHostPtr(), (const void *)&m_data[static_cast<size_t>(offset)], static_cast<size_t>(imageResultSize)) == 0ull)
 		return true;
 	return false;
@@ -917,11 +931,16 @@ void BasicComputeTestInstance::descriptorSetUpdate (VkDescriptorSet descriptorSe
 
 void BasicComputeTestInstance::createImageInfos (ImageData& imageData, const vector<UVec3>& mipMapSizes, const bool isCompressed)
 {
-	const VkImageType			imageType			= mapImageType(m_parameters.imageType);
+	const VkImageType		imageType			= mapImageType(m_parameters.imageType);
 
 	if (isCompressed)
 	{
-		const VkExtent3D			extentCompressed	= makeExtent3D(getLayerSize(m_parameters.imageType, m_parameters.size));
+		VkFormatProperties properties;
+		m_context.getInstanceInterface().getPhysicalDeviceFormatProperties(m_context.getPhysicalDevice(), m_parameters.formatCompressed, &properties);
+		if (!(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT))
+			TCU_THROW(NotSupportedError, "Format storage feature not supported");
+
+		const VkExtent3D	extentCompressed	= makeExtent3D(getLayerSize(m_parameters.imageType, m_parameters.size));
 		const VkImageCreateInfo compressedInfo =
 		{
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,					// VkStructureType			sType;
@@ -949,12 +968,16 @@ void BasicComputeTestInstance::createImageInfos (ImageData& imageData, const vec
 	}
 	else
 	{
+		UVec3 size = m_parameters.size;
+		size.z() = 1;
+		const VkExtent3D originalResolutionInBlocks = makeExtent3D(getCompressedImageResolutionInBlocks(m_parameters.formatCompressed, size));
+
 		for (size_t mipNdx = 0ull; mipNdx < mipMapSizes.size(); ++mipNdx)
 		for (size_t layerNdx = 0ull; layerNdx < getLayerCount(); ++layerNdx)
 		{
 			const VkExtent3D		extentUncompressed	= m_parameters.useMipmaps ?
 															makeExtent3D(getCompressedImageResolutionInBlocks(m_parameters.formatCompressed, mipMapSizes[mipNdx])) :
-															makeExtent3D(getCompressedImageResolutionInBlocks(m_parameters.formatCompressed, m_parameters.size));
+															originalResolutionInBlocks;
 			const VkImageCreateInfo	uncompressedInfo	=
 			{
 				VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,				// VkStructureType			sType;
@@ -989,6 +1012,7 @@ bool BasicComputeTestInstance::decompressImage (const VkCommandBuffer&	cmdBuffer
 	Allocator&						allocator				= m_context.getDefaultAllocator();
 	const Unique<VkShaderModule>	shaderModule			(createShaderModule(vk, device, m_context.getBinaryCollection().get("decompress"), 0));
 	const VkImage&					compressed				= imageData[0].getImage(0);
+	const VkImageType				imageType				= mapImageType(m_parameters.imageType);
 
 	for (deUint32 ndx = 0u; ndx < imageData.size(); ndx++)
 		imageData[ndx].resetViews();
@@ -1003,12 +1027,17 @@ bool BasicComputeTestInstance::decompressImage (const VkCommandBuffer&	cmdBuffer
 		const VkExtent3D				extentUncompressed		= imageData[m_parameters.imagesCount -1].getImageInfo(imageNdx).extent;
 		const VkDeviceSize				bufferSizeComp			= getCompressedImageSizeInBytes(m_parameters.formatCompressed, mipMapSizes[mipNdx]);
 
+		VkFormatProperties properties;
+		m_context.getInstanceInterface().getPhysicalDeviceFormatProperties(m_context.getPhysicalDevice(), m_parameters.formatForVerify, &properties);
+		if (!(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT))
+			TCU_THROW(NotSupportedError, "Format storage feature not supported");
+
 		const VkImageCreateInfo			decompressedImageInfo	=
 		{
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,								// VkStructureType			sType;
 			DE_NULL,															// const void*				pNext;
 			0u,																	// VkImageCreateFlags		flags;
-			VK_IMAGE_TYPE_2D,													// VkImageType				imageType;
+			imageType,															// VkImageType				imageType;
 			m_parameters.formatForVerify,										// VkFormat					format;
 			extentCompressed,													// VkExtent3D				extent;
 			1u,																	// deUint32					mipLevels;
@@ -1030,7 +1059,7 @@ bool BasicComputeTestInstance::decompressImage (const VkCommandBuffer&	cmdBuffer
 			VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,								// VkStructureType			sType;
 			DE_NULL,															// const void*				pNext;
 			0u,																	// VkImageCreateFlags		flags;
-			VK_IMAGE_TYPE_2D,													// VkImageType				imageType;
+			imageType,															// VkImageType				imageType;
 			m_parameters.formatCompressed,										// VkFormat					format;
 			extentCompressed,													// VkExtent3D				extent;
 			1u,																	// deUint32					mipLevels;
@@ -1051,16 +1080,17 @@ bool BasicComputeTestInstance::decompressImage (const VkCommandBuffer&	cmdBuffer
 			DE_NULL,															//const void*			pNext;
 			compressedViewUsageFlags,											//VkImageUsageFlags		usage;
 		};
+		const VkImageViewType			imageViewType			(mapImageViewType(m_parameters.imageType));
 		Image							resultImage				(vk, device, allocator, decompressedImageInfo, MemoryRequirement::Any);
 		Image							referenceImage			(vk, device, allocator, decompressedImageInfo, MemoryRequirement::Any);
 		Image							uncompressedImage		(vk, device, allocator, compressedImageInfo, MemoryRequirement::Any);
-		Move<VkImageView>				resultView				= makeImageView(vk, device, resultImage.get(), mapImageViewType(m_parameters.imageType), decompressedImageInfo.format,
+		Move<VkImageView>				resultView				= makeImageView(vk, device, resultImage.get(), imageViewType, decompressedImageInfo.format,
 																	makeImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0u, decompressedImageInfo.extent.depth, 0u, decompressedImageInfo.arrayLayers));
-		Move<VkImageView>				referenceView			= makeImageView(vk, device, referenceImage.get(), mapImageViewType(m_parameters.imageType), decompressedImageInfo.format,
+		Move<VkImageView>				referenceView			= makeImageView(vk, device, referenceImage.get(), imageViewType, decompressedImageInfo.format,
 																	makeImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0u, decompressedImageInfo.extent.depth, 0u, decompressedImageInfo.arrayLayers));
-		Move<VkImageView>				uncompressedView		= makeImageView(vk, device, uncompressedImage.get(), mapImageViewType(m_parameters.imageType), m_parameters.formatCompressed,
+		Move<VkImageView>				uncompressedView		= makeImageView(vk, device, uncompressedImage.get(), imageViewType, m_parameters.formatCompressed,
 																	makeImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0u, compressedImageInfo.extent.depth, 0u, compressedImageInfo.arrayLayers));
-		Move<VkImageView>				compressedView			= makeImageView(vk, device, compressed, mapImageViewType(m_parameters.imageType), m_parameters.formatCompressed,
+		Move<VkImageView>				compressedView			= makeImageView(vk, device, compressed, imageViewType, m_parameters.formatCompressed,
 																	makeImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, mipNdx, 1u, layerNdx, 1u), &compressedViewUsageCI);
 		Move<VkDescriptorSetLayout>		descriptorSetLayout		= DescriptorSetLayoutBuilder()
 																	.addSingleBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT)
@@ -1261,8 +1291,8 @@ bool BasicComputeTestInstance::decompressImage (const VkCommandBuffer&	cmdBuffer
 
 		const Allocation&		resultAlloc		= resultBuffer.getAllocation();
 		const Allocation&		referenceAlloc	= referenceBuffer.getAllocation();
-		invalidateMappedMemoryRange(vk, device, resultAlloc.getMemory(), resultAlloc.getOffset(), bufferSize);
-		invalidateMappedMemoryRange(vk, device, referenceAlloc.getMemory(), referenceAlloc.getOffset(), bufferSize);
+		invalidateAlloc(vk, device, resultAlloc);
+		invalidateAlloc(vk, device, referenceAlloc);
 
 		BinaryCompareMode compareMode =
 			(m_parameters.formatIsASTC)
@@ -1615,7 +1645,7 @@ void GraphicsAttachmentsTestInstance::prepareVertexBuffer ()
 	// Upload vertex data
 	const Allocation&	vertexBufferAlloc	= m_vertexBuffer->getAllocation();
 	deMemcpy(vertexBufferAlloc.getHostPtr(), &vertexArray[0], vertexBufferSizeInBytes);
-	flushMappedMemoryRange(vk, device, vertexBufferAlloc.getMemory(), vertexBufferAlloc.getOffset(), vertexBufferSizeInBytes);
+	flushAlloc(vk, device, vertexBufferAlloc);
 }
 
 void GraphicsAttachmentsTestInstance::transcodeRead ()
@@ -1696,7 +1726,7 @@ void GraphicsAttachmentsTestInstance::transcodeRead ()
 			// Upload source image data
 			const Allocation& alloc = srcImageBuffer->getAllocation();
 			deMemcpy(alloc.getHostPtr(), &m_srcData[levelNdx][layerNdx]->at(0), srcImageSizeInBytes);
-			flushMappedMemoryRange(vk, device, alloc.getMemory(), alloc.getOffset(), srcImageSizeInBytes);
+			flushAlloc(vk, device, alloc);
 
 			beginCommandBuffer(vk, *cmdBuffer);
 			vk.cmdBindPipeline(*cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
@@ -1744,7 +1774,7 @@ void GraphicsAttachmentsTestInstance::transcodeRead ()
 			submitCommandsAndWait(vk, device, queue, *cmdBuffer);
 
 			const Allocation& dstImageBufferAlloc = dstImageBuffer->getAllocation();
-			invalidateMappedMemoryRange(vk, device, dstImageBufferAlloc.getMemory(), dstImageBufferAlloc.getOffset(), dstImageSizeInBytes);
+			invalidateAlloc(vk, device, dstImageBufferAlloc);
 			deMemcpy(&m_dstData[levelNdx][layerNdx]->at(0), dstImageBufferAlloc.getHostPtr(), dstImageSizeInBytes);
 		}
 	}
@@ -1830,7 +1860,7 @@ void GraphicsAttachmentsTestInstance::transcodeWrite ()
 			// Upload source image data
 			const Allocation& alloc = srcImageBuffer->getAllocation();
 			deMemcpy(alloc.getHostPtr(), &m_srcData[levelNdx][layerNdx]->at(0), srcImageSizeInBytes);
-			flushMappedMemoryRange(vk, device, alloc.getMemory(), alloc.getOffset(), srcImageSizeInBytes);
+			flushAlloc(vk, device, alloc);
 
 			beginCommandBuffer(vk, *cmdBuffer);
 			vk.cmdBindPipeline(*cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
@@ -1878,7 +1908,7 @@ void GraphicsAttachmentsTestInstance::transcodeWrite ()
 			submitCommandsAndWait(vk, device, queue, *cmdBuffer);
 
 			const Allocation& dstImageBufferAlloc = dstImageBuffer->getAllocation();
-			invalidateMappedMemoryRange(vk, device, dstImageBufferAlloc.getMemory(), dstImageBufferAlloc.getOffset(), dstImageSizeInBytes);
+			invalidateAlloc(vk, device, dstImageBufferAlloc);
 			deMemcpy(&m_dstData[levelNdx][layerNdx]->at(0), dstImageBufferAlloc.getHostPtr(), dstImageSizeInBytes);
 		}
 	}
@@ -1903,6 +1933,13 @@ VkImageCreateInfo GraphicsAttachmentsTestInstance::makeCreateImageInfo (const Vk
 	const VkImageCreateFlags	imageCreateFlagsBase	= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
 	const VkImageCreateFlags	imageCreateFlagsAddOn	= isCompressedFormat(format) ? VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT_KHR | VK_IMAGE_CREATE_EXTENDED_USAGE_BIT_KHR : 0;
 	const VkImageCreateFlags	imageCreateFlags		= (createFlags != DE_NULL) ? *createFlags : (imageCreateFlagsBase | imageCreateFlagsAddOn);
+
+	VkFormatProperties properties;
+	m_context.getInstanceInterface().getPhysicalDeviceFormatProperties(m_context.getPhysicalDevice(), format, &properties);
+	if ((usageFlags & VK_IMAGE_USAGE_STORAGE_BIT) && !(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT))
+		TCU_THROW(NotSupportedError, "Format storage feature not supported");
+	if ((usageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) && !(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT))
+		TCU_THROW(NotSupportedError, "Format color attachment feature not supported");
 
 	const VkImageCreateInfo createImageInfo =
 	{
@@ -2052,7 +2089,7 @@ bool GraphicsAttachmentsTestInstance::verifyDecompression (const std::vector<deU
 	{
 		const Allocation& refSrcImageBufferAlloc = refSrcImageBuffer->getAllocation();
 		deMemcpy(refSrcImageBufferAlloc.getHostPtr(), &refCompressedData[0], refCompressedData.size());
-		flushMappedMemoryRange(vk, device, refSrcImageBufferAlloc.getMemory(), refSrcImageBufferAlloc.getOffset(), refCompressedData.size());
+		flushAlloc(vk, device, refSrcImageBufferAlloc);
 	}
 
 	beginCommandBuffer(vk, *cmdBuffer);
@@ -2124,10 +2161,10 @@ bool GraphicsAttachmentsTestInstance::verifyDecompression (const std::vector<deU
 	// Compare decompressed pixel data in reference and result images
 	{
 		const Allocation&	refDstBufferAlloc	= refDstBuffer->getAllocation();
-		invalidateMappedMemoryRange(vk, device, refDstBufferAlloc.getMemory(), refDstBufferAlloc.getOffset(), dstBufferSize);
+		invalidateAlloc(vk, device, refDstBufferAlloc);
 
 		const Allocation&	resDstBufferAlloc	= resDstBuffer->getAllocation();
-		invalidateMappedMemoryRange(vk, device, resDstBufferAlloc.getMemory(), resDstBufferAlloc.getOffset(), dstBufferSize);
+		invalidateAlloc(vk, device, resDstBufferAlloc);
 
 		BinaryCompareMode compareMode =
 			(m_parameters.formatIsASTC)
@@ -2143,8 +2180,8 @@ bool GraphicsAttachmentsTestInstance::verifyDecompression (const std::vector<deU
 		if (res == COMPARE_RESULT_FAILED)
 		{
 			// Do fuzzy to log error mask
-			invalidateMappedMemoryRange(vk, device, resDstBufferAlloc.getMemory(), resDstBufferAlloc.getOffset(), dstBufferSize);
-			invalidateMappedMemoryRange(vk, device, refDstBufferAlloc.getMemory(), refDstBufferAlloc.getOffset(), dstBufferSize);
+			invalidateAlloc(vk, device, resDstBufferAlloc);
+			invalidateAlloc(vk, device, refDstBufferAlloc);
 
 			tcu::ConstPixelBufferAccess	resPixels	(mapVkFormat(m_parameters.formatForVerify), renderSize.width, renderSize.height, 1u, resDstBufferAlloc.getHostPtr());
 			tcu::ConstPixelBufferAccess	refPixels	(mapVkFormat(m_parameters.formatForVerify), renderSize.width, renderSize.height, 1u, refDstBufferAlloc.getHostPtr());
@@ -2273,7 +2310,7 @@ void GraphicsTextureTestInstance::transcodeRead ()
 			// Upload source image data
 			const Allocation& alloc = srcImageBuffer->getAllocation();
 			deMemcpy(alloc.getHostPtr(), &m_srcData[levelNdx][layerNdx]->at(0), srcImageSizeInBytes);
-			flushMappedMemoryRange(vk, device, alloc.getMemory(), alloc.getOffset(), srcImageSizeInBytes);
+			flushAlloc(vk, device, alloc);
 
 			beginCommandBuffer(vk, *cmdBuffer);
 			vk.cmdBindPipeline(*cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
@@ -2321,7 +2358,7 @@ void GraphicsTextureTestInstance::transcodeRead ()
 			submitCommandsAndWait(vk, device, queue, *cmdBuffer);
 
 			const Allocation& dstImageBufferAlloc = dstImageBuffer->getAllocation();
-			invalidateMappedMemoryRange(vk, device, dstImageBufferAlloc.getMemory(), dstImageBufferAlloc.getOffset(), dstImageSizeInBytes);
+			invalidateAlloc(vk, device, dstImageBufferAlloc);
 			deMemcpy(&m_dstData[levelNdx][layerNdx]->at(0), dstImageBufferAlloc.getHostPtr(), dstImageSizeInBytes);
 		}
 	}
@@ -2413,7 +2450,7 @@ void GraphicsTextureTestInstance::transcodeWrite ()
 			// Upload source image data
 			const Allocation& alloc = srcImageBuffer->getAllocation();
 			deMemcpy(alloc.getHostPtr(), &m_srcData[levelNdx][layerNdx]->at(0), srcImageSizeInBytes);
-			flushMappedMemoryRange(vk, device, alloc.getMemory(), alloc.getOffset(), srcImageSizeInBytes);
+			flushAlloc(vk, device, alloc);
 
 			beginCommandBuffer(vk, *cmdBuffer);
 			vk.cmdBindPipeline(*cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
@@ -2461,7 +2498,7 @@ void GraphicsTextureTestInstance::transcodeWrite ()
 			submitCommandsAndWait(vk, device, queue, *cmdBuffer);
 
 			const Allocation& dstImageBufferAlloc = dstImageBuffer->getAllocation();
-			invalidateMappedMemoryRange(vk, device, dstImageBufferAlloc.getMemory(), dstImageBufferAlloc.getOffset(), dstImageSizeInBytes);
+			invalidateAlloc(vk, device, dstImageBufferAlloc);
 			deMemcpy(&m_dstData[levelNdx][layerNdx]->at(0), dstImageBufferAlloc.getHostPtr(), dstImageSizeInBytes);
 		}
 	}
@@ -2493,6 +2530,10 @@ void TexelViewCompatibleCase::initPrograms (vk::SourceCollections&	programCollec
 	DE_ASSERT(m_parameters.size.x() > 0);
 	DE_ASSERT(m_parameters.size.y() > 0);
 
+	const unsigned int imageTypeIndex =
+		(m_parameters.imageType == IMAGE_TYPE_2D) +
+		(m_parameters.imageType == IMAGE_TYPE_3D) * 2;
+
 	switch (m_parameters.shader)
 	{
 		case SHADER_TYPE_COMPUTE:
@@ -2510,11 +2551,21 @@ void TexelViewCompatibleCase::initPrograms (vk::SourceCollections&	programCollec
 			{
 				case OPERATION_IMAGE_LOAD:
 				{
+					const char* posDefinitions[3] =
+					{
+						// IMAGE_TYPE_1D
+						"    highp int pos = int(gl_GlobalInvocationID.x);\n",
+						// IMAGE_TYPE_2D
+						"    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);\n",
+						// IMAGE_TYPE_3D
+						"    ivec3 pos = ivec3(gl_GlobalInvocationID);\n",
+					};
+
 					src << "layout (binding = 0, "<<formatQualifierStr<<") readonly uniform "<<imageTypeStr<<" u_image0;\n"
 						<< "layout (binding = 1, "<<formatQualifierStr<<") writeonly uniform "<<imageTypeStr<<" u_image1;\n\n"
 						<< "void main (void)\n"
 						<< "{\n"
-						<< "    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);\n"
+						<< posDefinitions[imageTypeIndex]
 						<< "    imageStore(u_image1, pos, imageLoad(u_image0, pos));\n"
 						<< "}\n";
 
@@ -2523,12 +2574,22 @@ void TexelViewCompatibleCase::initPrograms (vk::SourceCollections&	programCollec
 
 				case OPERATION_TEXEL_FETCH:
 				{
+					const char* storeDefinitions[3] =
+					{
+						// IMAGE_TYPE_1D
+						"    imageStore(u_image1, pos.x, texelFetch(u_image0, pos.x, pos.z));\n",
+						// IMAGE_TYPE_2D
+						"    imageStore(u_image1, pos.xy, texelFetch(u_image0, pos.xy, pos.z));\n",
+						// IMAGE_TYPE_3D
+						"    imageStore(u_image1, pos, texelFetch(u_image0, pos, pos.z));\n",
+					};
+
 					src << "layout (binding = 0) uniform "<<getGlslSamplerType(mapVkFormat(m_parameters.formatUncompressed), mapImageViewType(m_parameters.imageType))<<" u_image0;\n"
 						<< "layout (binding = 1, "<<formatQualifierStr<<") writeonly uniform "<<imageTypeStr<<" u_image1;\n\n"
 						<< "void main (void)\n"
 						<< "{\n"
 						<< "    ivec3 pos = ivec3(gl_GlobalInvocationID.xyz);\n"
-						<< "    imageStore(u_image1, pos.xy, texelFetch(u_image0, pos.xy, pos.z));\n"
+						<< storeDefinitions[imageTypeIndex]
 						<< "}\n";
 
 					break;
@@ -2536,13 +2597,26 @@ void TexelViewCompatibleCase::initPrograms (vk::SourceCollections&	programCollec
 
 				case OPERATION_TEXTURE:
 				{
+					const char* coordDefinitions[3] =
+					{
+						// IMAGE_TYPE_1D
+						"    const int     pos = int(gl_GlobalInvocationID.x);\n"
+						"    const float coord = float(gl_GlobalInvocationID.x) / pixels_resolution.x;\n",
+						// IMAGE_TYPE_2D
+						"    const ivec2  pos = ivec2(gl_GlobalInvocationID.xy);\n"
+						"    const vec2 coord = vec2(gl_GlobalInvocationID.xy) / vec2(pixels_resolution);\n",
+						// IMAGE_TYPE_3D
+						"    const ivec3  pos = ivec3(gl_GlobalInvocationID.xy, 0);\n"
+						"    const vec2    v2 = vec2(gl_GlobalInvocationID.xy) / vec2(pixels_resolution);\n"
+						"    const vec3 coord = vec3(v2, 0.0);\n",
+					};
+
 					src << "layout (binding = 0) uniform "<<getGlslSamplerType(mapVkFormat(m_parameters.formatUncompressed), mapImageViewType(m_parameters.imageType))<<" u_image0;\n"
 						<< "layout (binding = 1, "<<formatQualifierStr<<") writeonly uniform "<<imageTypeStr<<" u_image1;\n\n"
 						<< "void main (void)\n"
 						<< "{\n"
 						<< "    const vec2 pixels_resolution = vec2(gl_NumWorkGroups.x - 1, gl_NumWorkGroups.y - 1);\n"
-						<< "    const ivec2 pos = ivec2(gl_GlobalInvocationID.xy);\n"
-						<< "    const vec2 coord = vec2(gl_GlobalInvocationID.xy) / vec2(pixels_resolution);\n"
+						<< coordDefinitions[imageTypeIndex]
 						<< "    imageStore(u_image1, pos, texture(u_image0, coord));\n"
 						<< "}\n";
 
@@ -2551,12 +2625,22 @@ void TexelViewCompatibleCase::initPrograms (vk::SourceCollections&	programCollec
 
 				case OPERATION_IMAGE_STORE:
 				{
+					const char* posDefinitions[3] =
+					{
+						// IMAGE_TYPE_1D
+						"    highp int pos = int(gl_GlobalInvocationID.x);\n",
+						// IMAGE_TYPE_2D
+						"    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);\n",
+						// IMAGE_TYPE_3D
+						"    ivec3 pos = ivec3(gl_GlobalInvocationID);\n",
+					};
+
 					src << "layout (binding = 0, "<<formatQualifierStr<<") uniform "<<imageTypeStr<<"           u_image0;\n"
 						<< "layout (binding = 1, "<<formatQualifierStr<<") readonly uniform "<<imageTypeStr<<"  u_image1;\n"
 						<< "layout (binding = 2, "<<formatQualifierStr<<") writeonly uniform "<<imageTypeStr<<" u_image2;\n\n"
 						<< "void main (void)\n"
 						<< "{\n"
-						<< "    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);\n"
+						<< posDefinitions[imageTypeIndex]
 						<< "    imageStore(u_image0, pos, imageLoad(u_image1, pos));\n"
 						<< "    imageStore(u_image2, pos, imageLoad(u_image0, pos));\n"
 						<< "}\n";
@@ -2568,6 +2652,19 @@ void TexelViewCompatibleCase::initPrograms (vk::SourceCollections&	programCollec
 					DE_ASSERT(false);
 			}
 
+			const char* cordDefinitions[3] =
+			{
+				// IMAGE_TYPE_1D
+				"    const highp float cord = float(gl_GlobalInvocationID.x) / pixels_resolution.x;\n"
+				"    const highp int    pos = int(gl_GlobalInvocationID.x); \n",
+				// IMAGE_TYPE_2D
+				"    const vec2 cord = vec2(gl_GlobalInvocationID.xy) / vec2(pixels_resolution);\n"
+				"    const ivec2 pos = ivec2(gl_GlobalInvocationID.xy); \n",
+				// IMAGE_TYPE_3D
+				"    const vec2 v2 = vec2(gl_GlobalInvocationID.xy) / vec2(pixels_resolution);\n"
+				"    const vec3 cord = vec3(v2, 0.0);\n"
+				"    const ivec3 pos = ivec3(gl_GlobalInvocationID); \n",
+			};
 			src_decompress	<< "layout (binding = 0) uniform "<<getGlslSamplerType(mapVkFormat(m_parameters.formatUncompressed), mapImageViewType(m_parameters.imageType))<<" compressed_result;\n"
 							<< "layout (binding = 1) uniform "<<getGlslSamplerType(mapVkFormat(m_parameters.formatUncompressed), mapImageViewType(m_parameters.imageType))<<" compressed_reference;\n"
 							<< "layout (binding = 2, "<<formatQualifierStr<<") writeonly uniform "<<imageTypeStr<<" decompressed_result;\n"
@@ -2575,8 +2672,7 @@ void TexelViewCompatibleCase::initPrograms (vk::SourceCollections&	programCollec
 							<< "void main (void)\n"
 							<< "{\n"
 							<< "    const vec2 pixels_resolution = vec2(gl_NumWorkGroups.xy);\n"
-							<< "    const vec2 cord = vec2(gl_GlobalInvocationID.xy) / vec2(pixels_resolution);\n"
-							<< "    const ivec2 pos = ivec2(gl_GlobalInvocationID.xy); \n"
+							<< cordDefinitions[imageTypeIndex]
 							<< "    imageStore(decompressed_result, pos, texture(compressed_result, cord));\n"
 							<< "    imageStore(decompressed_reference, pos, texture(compressed_reference, cord));\n"
 							<< "}\n";
@@ -2642,15 +2738,29 @@ void TexelViewCompatibleCase::initPrograms (vk::SourceCollections&	programCollec
 						const std::string	dstImageTypeStr			= getShaderImageType(mapVkFormat(m_parameters.formatUncompressed), imageTypeForFS);
 						const std::string	dstFormatQualifierStr	= getShaderImageFormatQualifier(mapVkFormat(m_parameters.formatUncompressed));
 
+						const char* inDefinitions[3] =
+						{
+							// IMAGE_TYPE_1D
+							"    const highp int out_pos = int(gl_FragCoord.x);\n"
+							"    const highp int pixels_resolution = textureSize(u_imageIn, 0) - 1;\n"
+							"    const highp float in_pos = float(out_pos) / pixels_resolution;\n",
+							// IMAGE_TYPE_2D
+							"    const ivec2 out_pos = ivec2(gl_FragCoord.xy);\n"
+							"    const ivec2 pixels_resolution = ivec2(textureSize(u_imageIn, 0)) - ivec2(1,1);\n"
+							"    const vec2 in_pos = vec2(out_pos) / vec2(pixels_resolution);\n",
+							// IMAGE_TYPE_3D
+							"    const ivec3 out_pos = ivec3(gl_FragCoord.xy, 0);\n"
+							"    const ivec3 pixels_resolution = ivec3(textureSize(u_imageIn, 0)) - ivec3(1,1,1);\n"
+							"    const vec3 in_pos = vec3(out_pos) / vec3(pixels_resolution.xy, 1.0);\n",
+						};
+
 						src << glu::getGLSLVersionDeclaration(glu::GLSL_VERSION_450) << "\n\n"
 							<< "layout (binding = 0) uniform " << srcSamplerTypeStr << " u_imageIn;\n"
 							<< "layout (binding = 1, " << dstFormatQualifierStr << ") writeonly uniform " << dstImageTypeStr << " u_imageOut;\n"
 							<< "\n"
 							<< "void main (void)\n"
 							<< "{\n"
-							<< "    const ivec2 out_pos = ivec2(gl_FragCoord.xy);\n"
-							<< "    const ivec2 pixels_resolution = ivec2(textureSize(u_imageIn, 0)) - ivec2(1,1);\n"
-							<< "    const vec2 in_pos = vec2(out_pos) / vec2(pixels_resolution);\n"
+							<< inDefinitions[imageTypeIndex]
 							<< "    imageStore(u_imageOut, out_pos, texture(u_imageIn, in_pos));\n"
 							<< "}\n";
 
@@ -2672,6 +2782,34 @@ void TexelViewCompatibleCase::initPrograms (vk::SourceCollections&	programCollec
 				const std::string	imageTypeStr		= getShaderImageType(mapVkFormat(m_parameters.formatForVerify), imageTypeForFS);
 				const std::string	formatQualifierStr	= getShaderImageFormatQualifier(mapVkFormat(m_parameters.formatForVerify));
 
+				const char* pos0Definitions[3] =
+				{
+					// IMAGE_TYPE_1D
+					"    const highp int out_pos = int(gl_FragCoord.x);\n"
+					"    const highp int pixels_resolution0 = textureSize(u_imageIn0, 0) - 1;\n"
+					"    const highp float in_pos0 = float(out_pos) / pixels_resolution0;\n",
+					// IMAGE_TYPE_2D
+					"    const ivec2 out_pos = ivec2(gl_FragCoord.xy);\n"
+					"    const ivec2 pixels_resolution0 = ivec2(textureSize(u_imageIn0, 0)) - ivec2(1,1);\n"
+					"    const vec2 in_pos0 = vec2(out_pos) / vec2(pixels_resolution0);\n",
+					// IMAGE_TYPE_3D
+					"    const ivec3 out_pos = ivec3(ivec2(gl_FragCoord.xy), 0);\n"
+					"    const ivec3 pixels_resolution0 = ivec3(textureSize(u_imageIn0, 0)) - ivec3(1,1,1);\n"
+					"    const vec3 in_pos0 = vec3(out_pos) / vec3(pixels_resolution0);\n",
+				};
+				const char* pos1Definitions[3] =
+				{
+					// IMAGE_TYPE_1D
+					"    const highp int pixels_resolution1 = textureSize(u_imageIn1, 0) - 1;\n"
+					"    const highp float in_pos1 = float(out_pos) / pixels_resolution1;\n",
+					// IMAGE_TYPE_2D
+					"    const ivec2 pixels_resolution1 = ivec2(textureSize(u_imageIn1, 0)) - ivec2(1,1);\n"
+					"    const vec2 in_pos1 = vec2(out_pos) / vec2(pixels_resolution1);\n",
+					// IMAGE_TYPE_3D
+					"    const ivec3 pixels_resolution1 = ivec3(textureSize(u_imageIn1, 0)) - ivec3(1,1,1);\n"
+					"    const vec3 in_pos1 = vec3(out_pos) / vec3(pixels_resolution1);\n",
+				};
+
 				src << glu::getGLSLVersionDeclaration(glu::GLSL_VERSION_450) << "\n\n"
 					<< "layout (binding = 0) uniform " << samplerType << " u_imageIn0;\n"
 					<< "layout (binding = 1) uniform " << samplerType << " u_imageIn1;\n"
@@ -2680,14 +2818,10 @@ void TexelViewCompatibleCase::initPrograms (vk::SourceCollections&	programCollec
 					<< "\n"
 					<< "void main (void)\n"
 					<< "{\n"
-					<< "    const ivec2 out_pos = ivec2(gl_FragCoord.xy);\n"
-					<< "\n"
-					<< "    const ivec2 pixels_resolution0 = ivec2(textureSize(u_imageIn0, 0)) - ivec2(1,1);\n"
-					<< "    const vec2 in_pos0 = vec2(out_pos) / vec2(pixels_resolution0);\n"
+					<< pos0Definitions[imageTypeIndex]
 					<< "    imageStore(u_imageOut0, out_pos, texture(u_imageIn0, in_pos0));\n"
 					<< "\n"
-					<< "    const ivec2 pixels_resolution1 = ivec2(textureSize(u_imageIn1, 0)) - ivec2(1,1);\n"
-					<< "    const vec2 in_pos1 = vec2(out_pos) / vec2(pixels_resolution1);\n"
+					<< pos1Definitions[imageTypeIndex]
 					<< "    imageStore(u_imageOut1, out_pos, texture(u_imageIn1, in_pos1));\n"
 					<< "}\n";
 
@@ -2710,7 +2844,6 @@ TestInstance* TexelViewCompatibleCase::createInstance (Context& context) const
 	if (!m_parameters.useMipmaps)
 	{
 		DE_ASSERT(getNumLayers(m_parameters.imageType, m_parameters.size)     == 1u);
-		DE_ASSERT(getLayerSize(m_parameters.imageType, m_parameters.size).z() == 1u);
 	}
 
 	DE_ASSERT(getLayerSize(m_parameters.imageType, m_parameters.size).x() >  0u);
@@ -2853,6 +2986,18 @@ tcu::TestCaseGroup* createImageCompressionTranscodingTests (tcu::TestContext& te
 		"texture_write",
 	};
 
+	struct ImageTypeName
+	{
+		ImageType		type;
+		std::string		name;
+	};
+	ImageTypeName imageTypes[] =
+	{
+		{ IMAGE_TYPE_1D, "1d_image" },
+		{ IMAGE_TYPE_2D, "2d_image" },
+		{ IMAGE_TYPE_3D, "3d_image" },
+	};
+
 	const VkImageUsageFlags		baseImageUsageFlagSet							= VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	const VkImageUsageFlags		compressedImageUsageFlags[OPERATION_LAST]		=
 	{
@@ -2960,23 +3105,23 @@ tcu::TestCaseGroup* createImageCompressionTranscodingTests (tcu::TestContext& te
 		VK_FORMAT_R16G16B16A16_SSCALED,
 		VK_FORMAT_R16G16B16A16_UINT,
 		VK_FORMAT_R16G16B16A16_SINT,
-		VK_FORMAT_R16G16B16A16_SFLOAT,
+		//VK_FORMAT_R16G16B16A16_SFLOAT,	removed as float views can't preserve NAN/INF/Denorm values
 		VK_FORMAT_R32G32_UINT,
 		VK_FORMAT_R32G32_SINT,
-		VK_FORMAT_R32G32_SFLOAT,
-		//VK_FORMAT_R64_UINT, remove from the test it couln'd not be use
-		//VK_FORMAT_R64_SINT, remove from the test it couln'd not be use
-		//VK_FORMAT_R64_SFLOAT, remove from the test it couln'd not be use
+		//VK_FORMAT_R32G32_SFLOAT,			removed as float views can't preserve NAN/INF/Denorm values
+		//VK_FORMAT_R64_UINT,				remove from the test it couldn't be used
+		//VK_FORMAT_R64_SINT,				remove from the test it couldn't be used
+		//VK_FORMAT_R64_SFLOAT,				remove from the test it couldn't be used
 	};
 
 	const VkFormat				uncompressedFormats128bit[]						=
 	{
 		VK_FORMAT_R32G32B32A32_UINT,
 		VK_FORMAT_R32G32B32A32_SINT,
-		VK_FORMAT_R32G32B32A32_SFLOAT,
-		//VK_FORMAT_R64G64_UINT, remove from the test it couln'd not be use
-		//VK_FORMAT_R64G64_SINT, remove from the test it couln'd not be use
-		//VK_FORMAT_R64G64_SFLOAT, remove from the test it couln'd not be use
+		//VK_FORMAT_R32G32B32A32_SFLOAT,	removed as float views can't preserve NAN/INF/Denorm values
+		//VK_FORMAT_R64G64_UINT,			remove from the test it couldn't be used
+		//VK_FORMAT_R64G64_SINT,			remove from the test it couldn't be used
+		//VK_FORMAT_R64G64_SFLOAT,			remove from the test it couldn't be used
 	};
 
 	const FormatsArray			formatsCompressedSets[]							=
@@ -2991,6 +3136,10 @@ tcu::TestCaseGroup* createImageCompressionTranscodingTests (tcu::TestContext& te
 		},
 	};
 
+	// Uncompressed formats - floating point formats should not be used in these
+	// tests as they cannot be relied upon to preserve all possible values in the
+	// underlying texture data. Refer to the note under the 'VkImageViewCreateInfo'
+	// section of the specification.
 	const FormatsArray			formatsUncompressedSets[]						=
 	{
 		{
@@ -3017,54 +3166,70 @@ tcu::TestCaseGroup* createImageCompressionTranscodingTests (tcu::TestContext& te
 
 			MovePtr<tcu::TestCaseGroup>	mipmapTypeGroup	(new tcu::TestCaseGroup(testCtx, mipmanpnessName[mipmapTestNdx].c_str(), ""));
 
-			for (int operationNdx = OPERATION_IMAGE_LOAD; operationNdx < OPERATION_LAST; ++operationNdx)
+			for (int imageTypeNdx = 0; imageTypeNdx < DE_LENGTH_OF_ARRAY(imageTypes); imageTypeNdx++)
 			{
-				if (shaderType != SHADER_TYPE_FRAGMENT && deInRange32(operationNdx, OPERATION_ATTACHMENT_READ, OPERATION_TEXTURE_WRITE))
-					continue;
+				MovePtr<tcu::TestCaseGroup> imageTypeGroup	(new tcu::TestCaseGroup(testCtx, imageTypes[imageTypeNdx].name.c_str(), ""));
+				ImageType					imageType = imageTypes[imageTypeNdx].type;
 
-				if (shaderType != SHADER_TYPE_COMPUTE && deInRange32(operationNdx, OPERATION_IMAGE_LOAD, OPERATION_IMAGE_STORE))
-					continue;
-
-				MovePtr<tcu::TestCaseGroup>	imageOperationGroup	(new tcu::TestCaseGroup(testCtx, operationName[operationNdx].c_str(), ""));
-
-				// Iterate through bitness groups (64 bit, 128 bit, etc)
-				for (deUint32 formatBitnessGroup = 0; formatBitnessGroup < DE_LENGTH_OF_ARRAY(formatsCompressedSets); ++formatBitnessGroup)
+				for (int operationNdx = OPERATION_IMAGE_LOAD; operationNdx < OPERATION_LAST; ++operationNdx)
 				{
-					for (deUint32 formatCompressedNdx = 0; formatCompressedNdx < formatsCompressedSets[formatBitnessGroup].count; ++formatCompressedNdx)
+					if (shaderType != SHADER_TYPE_FRAGMENT && deInRange32(operationNdx, OPERATION_ATTACHMENT_READ, OPERATION_TEXTURE_WRITE))
+						continue;
+
+					if (shaderType != SHADER_TYPE_COMPUTE && deInRange32(operationNdx, OPERATION_IMAGE_LOAD, OPERATION_IMAGE_STORE))
+						continue;
+
+					if (imageType == IMAGE_TYPE_3D && (operationNdx == OPERATION_ATTACHMENT_READ || operationNdx == OPERATION_ATTACHMENT_WRITE))
+						continue;
+
+					MovePtr<tcu::TestCaseGroup>	imageOperationGroup	(new tcu::TestCaseGroup(testCtx, operationName[operationNdx].c_str(), ""));
+
+					deUint32 depth		= 1u + 2 * (imageType == IMAGE_TYPE_3D);
+					deUint32 imageCount	= 2u + (operationNdx == OPERATION_IMAGE_STORE);
+
+					// Iterate through bitness groups (64 bit, 128 bit, etc)
+					for (deUint32 formatBitnessGroup = 0; formatBitnessGroup < DE_LENGTH_OF_ARRAY(formatsCompressedSets); ++formatBitnessGroup)
 					{
-						const VkFormat				formatCompressed			= formatsCompressedSets[formatBitnessGroup].formats[formatCompressedNdx];
-						const std::string			compressedFormatGroupName	= getFormatShortString(formatCompressed);
-						MovePtr<tcu::TestCaseGroup>	compressedFormatGroup		(new tcu::TestCaseGroup(testCtx, compressedFormatGroupName.c_str(), ""));
-
-						for (deUint32 formatUncompressedNdx = 0; formatUncompressedNdx < formatsUncompressedSets[formatBitnessGroup].count; ++formatUncompressedNdx)
+						for (deUint32 formatCompressedNdx = 0; formatCompressedNdx < formatsCompressedSets[formatBitnessGroup].count; ++formatCompressedNdx)
 						{
-							const VkFormat			formatUncompressed			= formatsUncompressedSets[formatBitnessGroup].formats[formatUncompressedNdx];
-							const std::string		uncompressedFormatGroupName	= getFormatShortString(formatUncompressed);
-							const TestParameters	parameters					=
+							const VkFormat				formatCompressed			= formatsCompressedSets[formatBitnessGroup].formats[formatCompressedNdx];
+							const std::string			compressedFormatGroupName	= getFormatShortString(formatCompressed);
+							MovePtr<tcu::TestCaseGroup>	compressedFormatGroup		(new tcu::TestCaseGroup(testCtx, compressedFormatGroupName.c_str(), ""));
+
+							for (deUint32 formatUncompressedNdx = 0; formatUncompressedNdx < formatsUncompressedSets[formatBitnessGroup].count; ++formatUncompressedNdx)
 							{
-								static_cast<Operation>(operationNdx),
-								static_cast<ShaderType>(shaderType),
-								mipmapTest ? getUnniceResolution(formatCompressed, 3u) : UVec3(64u, 64u, 1u),
-								IMAGE_TYPE_2D,
-								formatCompressed,
-								formatUncompressed,
-								(operationNdx == OPERATION_IMAGE_STORE) ? 3u : 2u,
-								compressedImageUsageFlags[operationNdx],
-								compressedImageViewUsageFlags[operationNdx],
-								uncompressedImageUsageFlags[operationNdx],
-								mipmapTest,
-								VK_FORMAT_R8G8B8A8_UNORM,
-								FormatIsASTC(formatCompressed)
-							};
+								const VkFormat			formatUncompressed			= formatsUncompressedSets[formatBitnessGroup].formats[formatUncompressedNdx];
+								const std::string		uncompressedFormatGroupName	= getFormatShortString(formatUncompressed);
 
-							compressedFormatGroup->addChild(new TexelViewCompatibleCase(testCtx, uncompressedFormatGroupName, "", parameters));
+								const TestParameters	parameters					=
+								{
+									static_cast<Operation>(operationNdx),
+									static_cast<ShaderType>(shaderType),
+									mipmapTest ? getUnniceResolution(formatCompressed, 1u) : UVec3(64u, 64u, depth),
+									1u + 2u * mipmapTest * (imageType != IMAGE_TYPE_3D),		// 1 or 3 if mipmapTest is true but image is not 3d
+									imageType,
+									formatCompressed,
+									formatUncompressed,
+									imageCount,
+									compressedImageUsageFlags[operationNdx],
+									compressedImageViewUsageFlags[operationNdx],
+									uncompressedImageUsageFlags[operationNdx],
+									mipmapTest,
+									VK_FORMAT_R8G8B8A8_UNORM,
+									FormatIsASTC(formatCompressed)
+								};
+
+								compressedFormatGroup->addChild(new TexelViewCompatibleCase(testCtx, uncompressedFormatGroupName, "", parameters));
+							}
+
+							imageOperationGroup->addChild(compressedFormatGroup.release());
 						}
-
-						imageOperationGroup->addChild(compressedFormatGroup.release());
 					}
+
+					imageTypeGroup->addChild(imageOperationGroup.release());
 				}
 
-				mipmapTypeGroup->addChild(imageOperationGroup.release());
+				mipmapTypeGroup->addChild(imageTypeGroup.release());
 			}
 
 			pipelineTypeGroup->addChild(mipmapTypeGroup.release());

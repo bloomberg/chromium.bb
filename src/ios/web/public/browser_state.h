@@ -12,7 +12,6 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/service_manager/public/cpp/embedded_service_info.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
@@ -101,16 +100,16 @@ class BrowserState : public base::SupportsUserData {
   static ServiceManagerConnection* GetServiceManagerConnectionFor(
       BrowserState* browser_state);
 
-  using StaticServiceMap =
-      std::map<std::string, service_manager::EmbeddedServiceInfo>;
-
-  // Registers per-browser-state services to be loaded by the Service Manager.
-  virtual void RegisterServices(StaticServiceMap* services) {}
-
   // Handles an incoming request for a per-browser-state service.
   virtual std::unique_ptr<service_manager::Service> HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request);
+
+  // Updates |cors_exempt_header_list| field of the given |param| to register
+  // headers that are used in content for special purpose and should not be
+  // blocked by CORS checks.
+  virtual void UpdateCorsExemptHeader(
+      network::mojom::NetworkContextParams* params) {}
 
  protected:
   BrowserState();

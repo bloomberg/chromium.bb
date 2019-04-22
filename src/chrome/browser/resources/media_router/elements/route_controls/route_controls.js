@@ -378,7 +378,9 @@ Polymer({
       this.displayedCurrentTime_ = newRouteStatus.currentTime;
     }
     if (this.shouldAcceptVolumeUpdates_()) {
-      this.displayedVolume_ = Math.round(newRouteStatus.volume * 100) / 100;
+      const volume = Math.round(newRouteStatus.volume * 100);
+      this.$['route-volume-slider'].value = volume;
+      this.displayedVolume_ = volume / 100;
     }
     if (!this.initialLoadTime_) {
       this.initialLoadTime_ = Date.now();
@@ -422,59 +424,67 @@ Polymer({
     }
   },
 
-  /**
-   * Called when the user clicks on or stops dragging the seek bar.
-   * @param {!Event} e
-   * @private
-   */
-  onSeekComplete_: function(e) {
+  /** @private */
+  updateTime_: function() {
     this.stopIncrementingCurrentTime_();
-    this.displayedCurrentTime_ = e.target.value;
-    media_router.browserApi.seekCurrentMedia(this.displayedCurrentTime_);
-    this.isSeeking_ = false;
-    this.lastSeekByUser_ = Date.now();
+    this.displayedCurrentTime_ = this.$['route-time-slider'].value;
+    if (!this.isSeeking_) {
+      media_router.browserApi.seekCurrentMedia(this.displayedCurrentTime_);
+      this.lastSeekByUser_ = Date.now();
+    }
   },
 
   /**
-   * Called while the user is dragging the seek bar.
-   * @param {!Event} e
+   * @param {!CustomEvent<{value: boolean}>} e
    * @private
    */
-  onSeekByDragging_: function(e) {
-    this.isSeeking_ = true;
-    var target = /** @type {{immediateValue: number}} */ (e.target);
-    this.displayedCurrentTime_ = target.immediateValue;
+  onSeekingChanged_: function(e) {
+    this.isSeeking_ = e.detail.value;
+    this.updateTime_();
   },
 
-  /**
-   * Called when the user clicks on or stops dragging the volume bar.
-   * @param {!Event} e
-   * @private
-   */
-  onVolumeChangeComplete_: function(e) {
-    this.displayedVolume_ = e.target.value;
-    media_router.browserApi.setCurrentMediaVolume(this.displayedVolume_);
-    this.isVolumeChanging_ = false;
+  /** @private */
+  onSeekSliderValueChanged_: function() {
+    this.updateTime_();
+  },
+
+  /** @private */
+  updateVolume_: function() {
     this.lastVolumeChangeByUser_ = Date.now();
+    const volume = this.$['route-volume-slider'].value / 100;
+    if (volume == this.displayedVolume_) {
+      return;
+    }
+    this.displayedVolume_ = volume;
+    media_router.browserApi.setCurrentMediaVolume(volume);
   },
 
   /**
-   * Called while the user is dragging the volume bar.
-   * @param {!Event} e
+   * Called when the user updates volume with the slider.
    * @private
    */
-  onVolumeChangeByDragging_: function(e) {
+  onVolumeChanged_: function() {
     /** @const */ var currentTime = Date.now();
     // We limit the frequency of volume change requests during dragging to
     // limit the number of Mojo calls to the component extension.
     if (currentTime - this.lastVolumeChangeByUser_ < 300) {
       return;
     }
-    this.lastVolumeChangeByUser_ = currentTime;
-    this.isVolumeChanging_ = true;
-    var target = /** @type {{immediateValue: number}} */ (e.target);
-    this.displayedVolume_ = target.immediateValue;
-    media_router.browserApi.setCurrentMediaVolume(this.displayedVolume_);
+    this.updateVolume_();
+  },
+
+  /**
+   * @param {!CustomEvent<{value: boolean}>} e
+   * @private
+   */
+  onVolumeDraggingChanged_: function(e) {
+    if (!!this.isVolumeChanging_ == !!e.detail.value) {
+      return;
+    }
+    this.isVolumeChanging_ = e.detail.value;
+    if (!this.isVolumeChanging_) {
+      this.updateVolume_();
+    }
   },
 
   /**

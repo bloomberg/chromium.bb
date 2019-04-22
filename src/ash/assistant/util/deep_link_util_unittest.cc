@@ -18,6 +18,23 @@ namespace util {
 
 using DeepLinkUnitTest = AshTestBase;
 
+TEST_F(DeepLinkUnitTest, CreateAssistantQueryDeepLink) {
+  const std::map<std::string, std::string> test_cases = {
+      // OK: Simple query.
+      {"query", "googleassistant://send-query?q=query"},
+
+      // OK: Query containing spaces and special characters.
+      {"query with spaces & special characters?",
+       "googleassistant://"
+       "send-query?q=query+with+spaces+%26+special+characters%3F"},
+  };
+
+  for (const auto& test_case : test_cases) {
+    ASSERT_EQ(GURL(test_case.second),
+              CreateAssistantQueryDeepLink(test_case.first));
+  }
+}
+
 TEST_F(DeepLinkUnitTest, CreateAssistantSettingsDeepLink) {
   ASSERT_EQ(GURL("googleassistant://settings"),
             CreateAssistantSettingsDeepLink());
@@ -74,8 +91,9 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParam) {
   AssertDeepLinkParamEq("true", DeepLinkParam::kRelaunch);
 
   // Case: Deep link parameter present, URL encoded.
-  params["q"] = "multiple+word+query";
-  AssertDeepLinkParamEq("multiple word query", DeepLinkParam::kQuery);
+  params["q"] = "query+with+spaces+%26+special+characters%3F";
+  AssertDeepLinkParamEq("query with spaces & special characters?",
+                        DeepLinkParam::kQuery);
 
   // Case: Deep link parameters absent.
   params.clear();
@@ -117,10 +135,38 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsBool) {
   AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kRelaunch);
 }
 
+TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsRemindersAction) {
+  std::map<std::string, std::string> params;
+
+  auto AssertDeepLinkParamEq =
+      [&params](const base::Optional<ReminderAction>& expected,
+                DeepLinkParam param) {
+        ASSERT_EQ(expected, GetDeepLinkParamAsRemindersAction(params, param));
+      };
+
+  // Case: Deep link parameter present, well formed "create.
+  params["action"] = "create";
+  AssertDeepLinkParamEq(ReminderAction::kCreate, DeepLinkParam::kAction);
+
+  // Case: Deep link parameter present, well formed "edit".
+  params["action"] = "edit";
+  AssertDeepLinkParamEq(ReminderAction::kEdit, DeepLinkParam::kAction);
+
+  // Case: Deep link parameter present, incorrect parameter.
+  params["action"] = "invalid";
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kAction);
+
+  // Case: Deep link parameter absent.
+  params.clear();
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kAction);
+}
+
 TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
   const std::map<std::string, DeepLinkType> test_cases = {
       // OK: Supported deep links.
       {"googleassistant://chrome-settings", DeepLinkType::kChromeSettings},
+      {"googleassistant://lists", DeepLinkType::kLists},
+      {"googleassistant://notes", DeepLinkType::kNotes},
       {"googleassistant://onboarding", DeepLinkType::kOnboarding},
       {"googleassistant://reminders", DeepLinkType::kReminders},
       {"googleassistant://send-feedback", DeepLinkType::kFeedback},
@@ -133,6 +179,8 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
       // OK: Parameterized deep links.
       {"googleassistant://chrome-settings?param=true",
        DeepLinkType::kChromeSettings},
+      {"googleassistant://lists?param=true", DeepLinkType::kLists},
+      {"googleassistant://notes?param=true", DeepLinkType::kNotes},
       {"googleassistant://onboarding?param=true", DeepLinkType::kOnboarding},
       {"googleassistant://reminders?param=true", DeepLinkType::kReminders},
       {"googleassistant://send-feedback?param=true", DeepLinkType::kFeedback},
@@ -146,6 +194,8 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
 
       // UNSUPPORTED: Deep links are case sensitive.
       {"GOOGLEASSISTANT://CHROME-SETTINGS", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://LISTS", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://NOTES", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://ONBOARDING", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://REMINDERS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://SEND-FEEDBACK", DeepLinkType::kUnsupported},
@@ -171,6 +221,8 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
   const std::map<std::string, DeepLinkType> test_cases = {
       // OK: Supported deep link types.
       {"googleassistant://chrome-settings", DeepLinkType::kChromeSettings},
+      {"googleassistant://lists", DeepLinkType::kLists},
+      {"googleassistant://notes", DeepLinkType::kNotes},
       {"googleassistant://onboarding", DeepLinkType::kOnboarding},
       {"googleassistant://reminders", DeepLinkType::kReminders},
       {"googleassistant://send-feedback", DeepLinkType::kFeedback},
@@ -183,6 +235,8 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
       // OK: Parameterized deep link types.
       {"googleassistant://chrome-settings?param=true",
        DeepLinkType::kChromeSettings},
+      {"googleassistant://lists?param=true", DeepLinkType::kLists},
+      {"googleassistant://notes?param=true", DeepLinkType::kNotes},
       {"googleassistant://onboarding?param=true", DeepLinkType::kOnboarding},
       {"googleassistant://reminders?param=true", DeepLinkType::kReminders},
       {"googleassistant://send-feedback?param=true", DeepLinkType::kFeedback},
@@ -196,6 +250,8 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
 
       // UNSUPPORTED: Deep links are case sensitive.
       {"GOOGLEASSISTANT://CHROME-SETTINGS", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://LISTS", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://NOTES", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://ONBOARDING", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://REMINDERS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://SEND-FEEDBACK", DeepLinkType::kUnsupported},
@@ -219,6 +275,8 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
   const std::map<std::string, bool> test_cases = {
       // OK: Supported deep links.
       {"googleassistant://chrome-settings", true},
+      {"googleassistant://lists", true},
+      {"googleassistant://notes", true},
       {"googleassistant://onboarding", true},
       {"googleassistant://reminders", true},
       {"googleassistant://send-feedback", true},
@@ -230,6 +288,8 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
 
       // OK: Parameterized deep links.
       {"googleassistant://chrome-settings?param=true", true},
+      {"googleassistant://lists?param=true", true},
+      {"googleassistant://notes?param=true", true},
       {"googleassistant://onboarding?param=true", true},
       {"googleassistant://reminders?param=true", true},
       {"googleassistant://send-feedback?param=true", true},
@@ -241,6 +301,8 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
 
       // FAIL: Deep links are case sensitive.
       {"GOOGLEASSISTANT://CHROME-SETTINGS", false},
+      {"GOOGLEASSISTANT://LISTS", false},
+      {"GOOGLEASSISTANT://NOTES", false},
       {"GOOGLEASSISTANT://ONBOARDING", false},
       {"GOOGLEASSISTANT://REMINDERS", false},
       {"GOOGLEASSISTANT://SEND-FEEDBACK", false},
@@ -262,21 +324,119 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
     ASSERT_EQ(test_case.second, IsDeepLinkUrl(GURL(test_case.first)));
 }
 
-TEST_F(DeepLinkUnitTest, GetAssistantRemindersUrl) {
-  const std::map<base::Optional<std::string>, std::string> test_cases = {
-      // OK: Absent/empty id.
-      {base::nullopt,
-       "https://assistant.google.com/reminders/mainview?hl=en-US"},
-      {base::Optional<std::string>(std::string()),
-       "https://assistant.google.com/reminders/mainview?hl=en-US"},
+TEST_F(DeepLinkUnitTest, GetAssistantUrl) {
+  using TestCase = std::pair<DeepLinkType, base::Optional<std::string>>;
 
-      // OK: Specified id.
-      {base::Optional<std::string>("123456"),
-       "https://assistant.google.com/reminders/id/123456?hl=en-US"}};
+  auto CreateTestCase = [](DeepLinkType type, base::Optional<std::string> id) {
+    return std::make_pair(type, id);
+  };
 
-  for (const auto& test_case : test_cases)
-    ASSERT_EQ(test_case.second, GetAssistantRemindersUrl(test_case.first));
-}
+  auto CreateIgnoreCase = [](DeepLinkType type,
+                             base::Optional<std::string> id) {
+    return std::make_pair(std::make_pair(type, id), base::nullopt);
+  };
+
+  const std::map<TestCase, base::Optional<GURL>> test_cases = {
+      // OK: Top-level lists.
+
+      {CreateTestCase(DeepLinkType::kLists, /*id=*/base::nullopt),
+       GURL("https://assistant.google.com/lists/"
+            "mainview?hl=en-US&source=Assistant")},
+
+      {CreateTestCase(DeepLinkType::kLists, /*id=*/std::string()),
+       GURL("https://assistant.google.com/lists/"
+            "mainview?hl=en-US&source=Assistant")},
+
+      // OK: List by |id|.
+
+      {CreateTestCase(DeepLinkType::kLists, /*id=*/"123456"),
+       GURL("https://assistant.google.com/lists/list/"
+            "123456?hl=en-US&source=Assistant")},
+
+      // OK: Top-level notes.
+
+      {CreateTestCase(DeepLinkType::kNotes, /*id=*/base::nullopt),
+       GURL("https://assistant.google.com/lists/"
+            "mainview?note_tap=true&hl=en-US&source=Assistant")},
+
+      {CreateTestCase(DeepLinkType::kNotes, /*id=*/std::string()),
+       GURL("https://assistant.google.com/lists/"
+            "mainview?note_tap=true&hl=en-US&source=Assistant")},
+
+      // OK: Note by |id|.
+
+      {CreateTestCase(DeepLinkType::kNotes, /*id=*/"123456"),
+       GURL("https://assistant.google.com/lists/note/"
+            "123456?hl=en-US&source=Assistant")},
+
+      // OK: Top-level reminders.
+
+      {CreateTestCase(DeepLinkType::kReminders, /*id=*/base::nullopt),
+       GURL("https://assistant.google.com/reminders/"
+            "mainview?hl=en-US&source=Assistant")},
+
+      {CreateTestCase(DeepLinkType::kReminders, /*id=*/std::string()),
+       GURL("https://assistant.google.com/reminders/"
+            "mainview?hl=en-US&source=Assistant")},
+
+      // OK: Reminder by |id|.
+
+      {CreateTestCase(DeepLinkType::kReminders, /*id=*/"123456"),
+       GURL("https://assistant.google.com/reminders/id/"
+            "123456?hl=en-US&source=Assistant")},
+
+      // IGNORE: Deep links of other types.
+
+      CreateIgnoreCase(DeepLinkType::kUnsupported, /*id=*/base::nullopt),
+      CreateIgnoreCase(DeepLinkType::kUnsupported, /*id=*/std::string()),
+      CreateIgnoreCase(DeepLinkType::kUnsupported, /*id=*/"123456"),
+      CreateIgnoreCase(DeepLinkType::kChromeSettings, /*id=*/base::nullopt),
+      CreateIgnoreCase(DeepLinkType::kChromeSettings, /*id=*/std::string()),
+      CreateIgnoreCase(DeepLinkType::kChromeSettings, /*id=*/"123456"),
+      CreateIgnoreCase(DeepLinkType::kFeedback, /*id=*/base::nullopt),
+      CreateIgnoreCase(DeepLinkType::kFeedback, /*id=*/std::string()),
+      CreateIgnoreCase(DeepLinkType::kFeedback, /*id=*/"123456"),
+      CreateIgnoreCase(DeepLinkType::kOnboarding, /*id=*/base::nullopt),
+      CreateIgnoreCase(DeepLinkType::kOnboarding, /*id=*/std::string()),
+      CreateIgnoreCase(DeepLinkType::kOnboarding, /*id=*/"123456"),
+      CreateIgnoreCase(DeepLinkType::kQuery, /*id=*/base::nullopt),
+      CreateIgnoreCase(DeepLinkType::kQuery, /*id=*/std::string()),
+      CreateIgnoreCase(DeepLinkType::kQuery, /*id=*/"123456"),
+      CreateIgnoreCase(DeepLinkType::kScreenshot, /*id=*/base::nullopt),
+      CreateIgnoreCase(DeepLinkType::kScreenshot, /*id=*/std::string()),
+      CreateIgnoreCase(DeepLinkType::kScreenshot, /*id=*/"123456"),
+      CreateIgnoreCase(DeepLinkType::kSettings, /*id=*/base::nullopt),
+      CreateIgnoreCase(DeepLinkType::kSettings, /*id=*/std::string()),
+      CreateIgnoreCase(DeepLinkType::kSettings, /*id=*/"123456"),
+      CreateIgnoreCase(DeepLinkType::kTaskManager, /*id=*/base::nullopt),
+      CreateIgnoreCase(DeepLinkType::kTaskManager, /*id=*/std::string()),
+      CreateIgnoreCase(DeepLinkType::kTaskManager, /*id=*/"123456"),
+      CreateIgnoreCase(DeepLinkType::kWhatsOnMyScreen, /*id=*/base::nullopt),
+      CreateIgnoreCase(DeepLinkType::kWhatsOnMyScreen, /*id=*/std::string()),
+      CreateIgnoreCase(DeepLinkType::kWhatsOnMyScreen, /*id=*/"123456")};
+
+  // For deep links that are not one of type {kLists, kNotes, kReminders}, we
+  // will hit NOTREACHED since this API isn't meant to be used in such cases.
+  // In unit tests, this would normally result in a DCHECK failure that would
+  // cause the test to fail so we'll use a |ScopedLogAssertHandler| to safely
+  // ignore the NOTREACHED assertion.
+  logging::ScopedLogAssertHandler handler(base::BindRepeating(
+      [](const char* file, int line, const base::StringPiece message,
+         const base::StringPiece stack_trace) {}));
+
+  for (const auto& test_case : test_cases) {
+    const base::Optional<GURL>& expected = test_case.second;
+    const base::Optional<GURL> actual = GetAssistantUrl(
+        /*type=*/test_case.first.first, /*id=*/test_case.first.second);
+
+    // Assert |has_value| equivalence.
+    ASSERT_EQ(expected, actual);
+
+    // Assert |value| equivalence.
+    if (expected)
+      ASSERT_EQ(expected.value(), actual.value());
+  }
+}  // namespace util
 
 TEST_F(DeepLinkUnitTest, GetChromeSettingsUrl) {
   const std::map<base::Optional<std::string>, std::string> test_cases = {
@@ -303,18 +463,33 @@ TEST_F(DeepLinkUnitTest, GetChromeSettingsUrl) {
 TEST_F(DeepLinkUnitTest, GetWebUrl) {
   const std::map<std::string, base::Optional<GURL>> test_cases = {
       // OK: Supported web deep links.
+      {"googleassistant://lists", GURL("https://assistant.google.com/lists/"
+                                       "mainview?hl=en-US&source=Assistant")},
+      {"googleassistant://notes",
+       GURL("https://assistant.google.com/lists/"
+            "mainview?note_tap=true&hl=en-US&source=Assistant")},
       {"googleassistant://reminders",
-       GURL("https://assistant.google.com/reminders/mainview?hl=en-US")},
+       GURL("https://assistant.google.com/reminders/"
+            "mainview?hl=en-US&source=Assistant")},
       {"googleassistant://settings",
        GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
       // OK: Parameterized deep links.
+      {"googleassistant://lists?id=123456",
+       GURL("https://assistant.google.com/lists/list/"
+            "123456?hl=en-US&source=Assistant")},
+      {"googleassistant://notes?id=123456",
+       GURL("https://assistant.google.com/lists/note/"
+            "123456?hl=en-US&source=Assistant")},
       {"googleassistant://reminders?id=123456",
-       GURL("https://assistant.google.com/reminders/id/123456?hl=en-US")},
+       GURL("https://assistant.google.com/reminders/id/"
+            "123456?hl=en-US&source=Assistant")},
       {"googleassistant://settings?param=true",
        GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
       // FAIL: Deep links are case sensitive.
+      {"GOOGLEASSISTANT://LISTS", base::nullopt},
+      {"GOOGLEASSISTANT://NOTES", base::nullopt},
       {"GOOGLEASSISTANT://REMINDERS", base::nullopt},
       {"GOOGLEASSISTANT://SETTINGS", base::nullopt},
 
@@ -366,11 +541,27 @@ TEST_F(DeepLinkUnitTest, GetWebUrlByType) {
 
   const std::map<TestCase, base::Optional<GURL>> test_cases = {
       // OK: Supported web deep link types.
+      {CreateTestCase(DeepLinkType::kLists),
+       GURL("https://assistant.google.com/lists/"
+            "mainview?hl=en-US&source=Assistant")},
+      {CreateTestCaseWithParam(DeepLinkType::kLists,
+                               std::make_pair("id", "123456")),
+       GURL("https://assistant.google.com/lists/list/"
+            "123456?hl=en-US&source=Assistant")},
+      {CreateTestCase(DeepLinkType::kNotes),
+       GURL("https://assistant.google.com/lists/"
+            "mainview?note_tap=true&hl=en-US&source=Assistant")},
+      {CreateTestCaseWithParam(DeepLinkType::kNotes,
+                               std::make_pair("id", "123456")),
+       GURL("https://assistant.google.com/lists/note/"
+            "123456?hl=en-US&source=Assistant")},
       {CreateTestCase(DeepLinkType::kReminders),
-       GURL("https://assistant.google.com/reminders/mainview?hl=en-US")},
+       GURL("https://assistant.google.com/reminders/"
+            "mainview?hl=en-US&source=Assistant")},
       {CreateTestCaseWithParam(DeepLinkType::kReminders,
                                std::make_pair("id", "123456")),
-       GURL("https://assistant.google.com/reminders/id/123456?hl=en-US")},
+       GURL("https://assistant.google.com/reminders/id/"
+            "123456?hl=en-US&source=Assistant")},
       {CreateTestCase(DeepLinkType::kSettings),
        GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
@@ -403,14 +594,20 @@ TEST_F(DeepLinkUnitTest, GetWebUrlByType) {
 TEST_F(DeepLinkUnitTest, IsWebDeepLink) {
   const std::map<std::string, bool> test_cases = {
       // OK: Supported web deep links.
+      {"googleassistant://lists", true},
+      {"googleassistant://notes", true},
       {"googleassistant://reminders", true},
       {"googleassistant://settings", true},
 
       // OK: Parameterized deep links.
+      {"googleassistant://lists?param=true", true},
+      {"googleassistant://notes?param=true", true},
       {"googleassistant://reminders?param=true", true},
       {"googleassistant://settings?param=true", true},
 
       // FAIL: Deep links are case sensitive.
+      {"GOOGLEASSISTANT://LISTS", false},
+      {"GOOGLEASSISTANT://NOTES", false},
       {"GOOGLEASSISTANT://REMINDERS", false},
       {"GOOGLEASSISTANT://SETTINGS", false},
 
@@ -422,6 +619,8 @@ TEST_F(DeepLinkUnitTest, IsWebDeepLink) {
       {"googleassistant://take-screenshot", false},
       {"googleassistant://task-manager", false},
       {"googleassistant://whats-on-my-screen", false},
+      {"googleassistant://reminders?action=create", false},
+      {"googleassistant://reminders?action=edit", false},
 
       // FAIL: Non-deep link URLs.
       {std::string(), false},
@@ -434,6 +633,8 @@ TEST_F(DeepLinkUnitTest, IsWebDeepLink) {
 TEST_F(DeepLinkUnitTest, IsWebDeepLinkType) {
   const std::map<DeepLinkType, bool> test_cases = {
       // OK: Supported web deep link types.
+      {DeepLinkType::kLists, true},
+      {DeepLinkType::kNotes, true},
       {DeepLinkType::kReminders, true},
       {DeepLinkType::kSettings, true},
 
@@ -449,8 +650,15 @@ TEST_F(DeepLinkUnitTest, IsWebDeepLinkType) {
       // FAIL: Unsupported deep link types.
       {DeepLinkType::kUnsupported, false}};
 
+  auto params = std::map<std::string, std::string>();
+
   for (const auto& test_case : test_cases)
-    ASSERT_EQ(test_case.second, IsWebDeepLinkType(test_case.first));
+    ASSERT_EQ(test_case.second, IsWebDeepLinkType(test_case.first, params));
+
+  ASSERT_FALSE(
+      IsWebDeepLinkType(DeepLinkType::kReminders, {{"action", "edit"}}));
+  ASSERT_FALSE(
+      IsWebDeepLinkType(DeepLinkType::kReminders, {{"action", "create"}}));
 }
 
 }  // namespace util

@@ -4,6 +4,7 @@
 
 import("//build/util/branding.gni")
 import("//components/vector_icons/vector_icons.gni")
+import("//device/vr/buildflags/buildflags.gni")
 
 aggregate_vector_icons("chrome_vector_icons") {
   icon_directory = "."
@@ -53,10 +54,9 @@ aggregate_vector_icons("chrome_vector_icons") {
     "forward_arrow_touch.icon",
     "generic_stop.icon",
     "globe.icon",
-    "google_g_logo.icon",
-    "google_pay_logo.icon",
     "horizontal_menu.icon",
     "incognito.icon",
+    "incognito_profile.icon",
     "input.icon",
     "key.icon",
     "laptop.icon",
@@ -116,6 +116,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "user_menu_guest.icon",
     "user_menu_right_arrow.icon",
     "volume_up.icon",
+    "vr_headset.icon",
     "warning_badge.icon",
     "web.icon",
     "zoom_minus.icon",
@@ -141,6 +142,18 @@ aggregate_vector_icons("chrome_vector_icons") {
 
   if (is_chromeos) {
     icons += [ "warning_badge_circle.icon" ]
+  }
+
+  if (enable_vr && !is_android) {
+    # Used on desktop VR headsets and Linux unit tests.
+    icons += [ "open_in_browser.icon" ]
+  }
+
+  if (is_chrome_branded) {
+    icons += [
+      "google_chrome/google_g_logo.icon",
+      "google_chrome/google_pay_logo.icon",
+    ]
   }
 }
 

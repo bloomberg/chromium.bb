@@ -22,3 +22,16 @@ source_set("cpp") {
     "//skia",
   ]
 }
+
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/services/font/public/interfaces",
+    "//services/service_manager/public/cpp",
+  ]
+}

@@ -6,6 +6,7 @@
 #define V8_OBJECTS_PROPERTY_ARRAY_H_
 
 #include "src/objects/heap-object.h"
+#include "torque-generated/class-definitions-from-dsl.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -13,7 +14,7 @@
 namespace v8 {
 namespace internal {
 
-class PropertyArray : public HeapObjectPtr {
+class PropertyArray : public HeapObject {
  public:
   // [length]: length of the array.
   inline int length() const;
@@ -28,30 +29,31 @@ class PropertyArray : public HeapObjectPtr {
   inline void SetHash(int hash);
   inline int Hash() const;
 
-  inline Object* get(int index) const;
+  inline Object get(int index) const;
 
-  inline void set(int index, Object* value);
+  inline void set(int index, Object value);
   // Setter with explicit barrier mode.
-  inline void set(int index, Object* value, WriteBarrierMode mode);
+  inline void set(int index, Object value, WriteBarrierMode mode);
 
   // Gives access to raw memory which stores the array's data.
   inline ObjectSlot data_start();
 
   // Garbage collection support.
   static constexpr int SizeFor(int length) {
-    return kHeaderSize + length * kPointerSize;
+    return kHeaderSize + length * kTaggedSize;
   }
+  static constexpr int OffsetOfElementAt(int index) { return SizeFor(index); }
 
-  DECL_CAST2(PropertyArray)
+  DECL_CAST(PropertyArray)
   DECL_PRINTER(PropertyArray)
   DECL_VERIFIER(PropertyArray)
 
-  // Layout description.
-  static const int kLengthAndHashOffset = HeapObject::kHeaderSize;
-  static const int kHeaderSize = kLengthAndHashOffset + kPointerSize;
+  DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize,
+                                TORQUE_GENERATED_PROPERTY_ARRAY_FIELDS)
+  static const int kHeaderSize = kSize;
 
   // Garbage collection support.
-  typedef FlexibleBodyDescriptor<kHeaderSize> BodyDescriptor;
+  using BodyDescriptor = FlexibleBodyDescriptor<kHeaderSize>;
 
   static const int kLengthFieldSize = 10;
   class LengthField : public BitField<int, 0, kLengthFieldSize> {};
@@ -61,7 +63,7 @@ class PropertyArray : public HeapObjectPtr {
 
   static const int kNoHashSentinel = 0;
 
-  OBJECT_CONSTRUCTORS(PropertyArray, HeapObjectPtr);
+  OBJECT_CONSTRUCTORS(PropertyArray, HeapObject);
 };
 
 }  // namespace internal

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
@@ -111,14 +111,14 @@ bool GlobalShortcutListenerX11::RegisterAcceleratorImpl(
   // Because XGrabKey only works on the exact modifiers mask, we should register
   // our hot keys with modifiers that we want to ignore, including Num lock,
   // Caps lock, Scroll lock. See comment about |kModifiersMasks|.
-  for (size_t i = 0; i < arraysize(kModifiersMasks); ++i) {
+  for (size_t i = 0; i < base::size(kModifiersMasks); ++i) {
     XGrabKey(x_display_, keycode, modifiers | kModifiersMasks[i],
              x_root_window_, x11::False, GrabModeAsync, GrabModeAsync);
   }
 
   if (err_tracker.FoundNewError()) {
     // We may have part of the hotkeys registered, clean up.
-    for (size_t i = 0; i < arraysize(kModifiersMasks); ++i) {
+    for (size_t i = 0; i < base::size(kModifiersMasks); ++i) {
       XUngrabKey(x_display_, keycode, modifiers | kModifiersMasks[i],
                  x_root_window_);
     }
@@ -138,7 +138,7 @@ void GlobalShortcutListenerX11::UnregisterAcceleratorImpl(
   KeyCode keycode = XKeysymToKeycode(x_display_,
       XKeysymForWindowsKeyCode(accelerator.key_code(), false));
 
-  for (size_t i = 0; i < arraysize(kModifiersMasks); ++i) {
+  for (size_t i = 0; i < base::size(kModifiersMasks); ++i) {
     XUngrabKey(x_display_, keycode, modifiers | kModifiersMasks[i],
                x_root_window_);
   }

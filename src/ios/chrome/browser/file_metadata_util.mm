@@ -16,7 +16,8 @@
 
 void SetSkipSystemBackupAttributeToItem(const base::FilePath& path,
                                         bool skip_system_backup) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   NSURL* file_url =
       [NSURL fileURLWithPath:base::SysUTF8ToNSString(path.value())];

@@ -138,7 +138,8 @@ ReceiverResponse& ReceiverResponse::operator=(
     ReceiverResponse&& receiver_response) = default;
 
 bool ReceiverResponse::Parse(const std::string& message_data) {
-  std::unique_ptr<base::Value> raw_value = base::JSONReader::Read(message_data);
+  std::unique_ptr<base::Value> raw_value =
+      base::JSONReader::ReadDeprecated(message_data);
   if (!raw_value || !raw_value->is_dict() ||
       !GetInt(*raw_value, "sessionId", &session_id) ||
       !GetInt(*raw_value, "seqNum", &sequence_number) ||

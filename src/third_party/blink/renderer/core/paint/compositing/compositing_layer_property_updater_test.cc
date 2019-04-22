@@ -43,7 +43,7 @@ TEST_F(CompositingLayerPropertyUpdaterTest, MaskLayerState) {
   EXPECT_TRUE(paint_properties->CssClip());
   EXPECT_TRUE(paint_properties->MaskClip());
   EXPECT_EQ(paint_properties->MaskClip(),
-            mask_layer->layer_state_->state.Clip());
+            &mask_layer->layer_state_->state.Clip());
 }
 
 TEST_F(CompositingLayerPropertyUpdaterTest,
@@ -89,24 +89,24 @@ TEST_F(CompositingLayerPropertyUpdaterTest,
   // Ensure each overlay scrollbar has its own effect node and effect node has
   // correct element_id.
   EXPECT_EQ(paint_properties->HorizontalScrollbarEffect(),
-            horizontal_scrollbar_layer->GetPropertyTreeState().Effect());
+            &horizontal_scrollbar_layer->GetPropertyTreeState().Effect());
   EXPECT_EQ(paint_properties->VerticalScrollbarEffect(),
-            vertical_scrollbar_layer->GetPropertyTreeState().Effect());
-  EXPECT_NE(horizontal_scrollbar_layer->GetPropertyTreeState().Effect(),
-            vertical_scrollbar_layer->GetPropertyTreeState().Effect());
+            &vertical_scrollbar_layer->GetPropertyTreeState().Effect());
+  EXPECT_NE(&horizontal_scrollbar_layer->GetPropertyTreeState().Effect(),
+            &vertical_scrollbar_layer->GetPropertyTreeState().Effect());
   EXPECT_NE(horizontal_scrollbar_layer->GetPropertyTreeState()
                 .Effect()
-                ->GetCompositorElementId(),
+                .GetCompositorElementId(),
             vertical_scrollbar_layer->GetPropertyTreeState()
                 .Effect()
-                ->GetCompositorElementId());
+                .GetCompositorElementId());
   EXPECT_EQ(horizontal_scrollbar_layer->GetPropertyTreeState()
                 .Effect()
-                ->GetCompositorElementId(),
+                .GetCompositorElementId(),
             horizontal_scrollbar_layer->ContentsLayer()->element_id());
   EXPECT_EQ(vertical_scrollbar_layer->GetPropertyTreeState()
                 .Effect()
-                ->GetCompositorElementId(),
+                .GetCompositorElementId(),
             vertical_scrollbar_layer->ContentsLayer()->element_id());
 }
 
@@ -148,7 +148,7 @@ TEST_F(CompositingLayerPropertyUpdaterTest,
     auto* vertical_scrollbar_layer =
         root_scrollable->LayerForVerticalScrollbar();
     ASSERT_TRUE(vertical_scrollbar_layer);
-    EXPECT_EQ(vertical_scrollbar_layer->GetPropertyTreeState().Transform(),
+    EXPECT_EQ(&vertical_scrollbar_layer->GetPropertyTreeState().Transform(),
               visual_viewport.GetOverscrollElasticityTransformNode()->Parent());
   }
 
@@ -168,8 +168,8 @@ TEST_F(CompositingLayerPropertyUpdaterTest,
                                 .FirstFragment()
                                 .LocalBorderBoxProperties();
 
-    EXPECT_EQ(vertical_scrollbar_layer->GetPropertyTreeState().Transform(),
-              paint_properties.Transform());
+    EXPECT_EQ(&vertical_scrollbar_layer->GetPropertyTreeState().Transform(),
+              &paint_properties.Transform());
   }
 }
 

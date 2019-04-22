@@ -37,6 +37,10 @@ void MockPipeline::Resume(std::unique_ptr<Renderer> renderer,
   Resume(&renderer, timestamp, seek_cb);
 }
 
+MockMediaResource::MockMediaResource() = default;
+
+MockMediaResource::~MockMediaResource() = default;
+
 MockDemuxer::MockDemuxer() = default;
 
 MockDemuxer::~MockDemuxer() = default;
@@ -261,5 +265,9 @@ void MockCdmFactory::SetBeforeCreationCB(
 MockStreamParser::MockStreamParser() = default;
 
 MockStreamParser::~MockStreamParser() = default;
+
+MockMediaClient::MockMediaClient() = default;
+
+MockMediaClient::~MockMediaClient() = default;
 
 }  // namespace media

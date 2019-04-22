@@ -84,7 +84,7 @@ class SelectionTemplate final {
     explicit InvalidSelectionResetter(const SelectionTemplate&);
     ~InvalidSelectionResetter();
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
    private:
     const Member<const Document> document_;
@@ -121,7 +121,7 @@ class SelectionTemplate final {
   // Returns |SelectionType| for |this| based on |base_| and |extent_|.
   SelectionType Type() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void PrintTo(std::ostream*, const char* type) const;
 #ifndef NDEBUG

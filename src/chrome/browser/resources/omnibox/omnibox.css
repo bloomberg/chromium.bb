@@ -2,126 +2,24 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-@import url(omnibox_column_widths.css);
-
-.details-and-table {
-  margin-bottom: 60px;
-}
-
-.left-20 {
-  margin-left: 20px
-}
-
-.check-mark,
-.x-mark {
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  font-size: 0;
-  height: 16px;
-  width: 16px;
-}
-
-.check-mark {
-  background-image: url(../../../../ui/webui/resources/images/check_circle_green.svg);
-}
-
-.x-mark {
-  background-image: url(../../../../ui/webui/resources/images/cancel_red.svg);
-}
-
-p,
-pre {
-  margin: 0;
-}
-
-.section {
-  margin-bottom: 10px;
-  margin-top: 10px;
+html {
+  height: 100%;
 }
 
 body {
+  --action-color: rgb(66, 133, 244);
+  --border-color: #ddd;
+
   background-color: #fcfcfc;
-}
-
-table {
-  background-color: white;
-  border: 2px solid #ccc;
-  border-collapse: collapse;
-  font-family: monospace;
-  font-size: 12px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
   min-width: 900px;
-  overflow-wrap: break-word;
-  table-layout: fixed;
-  text-align: left;
-  width: 100%;
+  padding: 8px;
 }
 
-table * {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-thead tr {
-  background-color: #f8f8f8;
-  color: #555;
-  font-size: 15px;
-  font-weight: bold;
-  letter-spacing: 0;
-  vertical-align: bottom;
-  white-space: nowrap;
-}
-
-tbody tr {
-  height: 44px;
-  transition-duration: 300ms;
-}
-
-tbody tr:hover * {
-  background-color: #f8f8f8;
-  white-space: normal;
-}
-
-th,
-td {
-  padding: 0 5px;
-}
-
-th {
-  padding-bottom: 10px;
-  padding-top: 20px;
-}
-
-tbody:not(:first-of-type) td:first-of-type {
-  font-size: 0;
-}
-
-.filtered-hidden {
-  display: none;
-}
-
-.filtered-highlighted {
-  background-color: lightskyblue;
-  /* TODO(manukh) This is a placholder color until other ui changes occur. */
-}
-
-.toggle input,
-.toggle input:not(:checked) ~ .toggle-on,
-.toggle input:checked ~ .toggle-off {
-  display: none;
-}
-
-.toggle span {
-  user-select: none;
-  display: inline-block;
-  padding: 3px 5px;
-  min-width: 60px;
-  text-align: center;
-  cursor: pointer;
-  border: 1px solid;
-}
-
-.toggle span:hover {
-  background-color: #f0f0f0;
+omnibox-input {
+  margin-bottom: 30px;
 }

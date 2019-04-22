@@ -181,7 +181,7 @@ kea{
         MF{"Sãu Martinhu di Fransa"}
         MG{"Madagaskar"}
         MH{"Ilhas Marxal"}
-        MK{"Masidónia (FYROM)"}
+        MK{"Masidónia"}
         ML{"Mali"}
         MM{"Mianmar (Birmánia)"}
         MN{"Mongólia"}
@@ -301,6 +301,7 @@ kea{
         CG{"Repúblika di Kongu"}
         CI{"Kosta di Marfin (Côte d’Ivoire)"}
         CZ{"Repúblika Txeka"}
+        MK{"Masidónia (FYROM)"}
     }
-    Version{"2.1.43.65"}
+    Version{"2.1.48.9"}
 }

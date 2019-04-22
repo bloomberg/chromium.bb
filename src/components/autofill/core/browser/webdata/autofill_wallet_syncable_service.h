@@ -29,9 +29,13 @@ class AutofillWalletSyncableService
     : public base::SupportsUserData::Data,
       public syncer::SyncableService {
  public:
+  AutofillWalletSyncableService(AutofillWebDataBackend* webdata_backend,
+                                const std::string& app_locale);
+
   ~AutofillWalletSyncableService() override;
 
   // syncer::SyncableService implementation.
+  void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
@@ -59,11 +63,6 @@ class AutofillWalletSyncableService
   // sync_start_util for more.
   void InjectStartSyncFlare(
       const syncer::SyncableService::StartSyncFlare& flare);
-
- protected:
-  AutofillWalletSyncableService(
-      AutofillWebDataBackend* webdata_backend,
-      const std::string& app_locale);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillWalletSyncableServiceTest,
@@ -102,7 +101,8 @@ class AutofillWalletSyncableService
   static Diff ComputeDiff(const std::vector<std::unique_ptr<Item>>& old_data,
                           const std::vector<Item>& new_data);
 
-  syncer::SyncMergeResult SetSyncData(const syncer::SyncDataList& data_list);
+  syncer::SyncMergeResult SetSyncData(const syncer::SyncDataList& data_list,
+                                      bool is_initial_merge);
 
   // Populates the wallet datatypes from the sync data and uses the sync data to
   // link the card to its billing address.

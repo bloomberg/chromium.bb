@@ -86,11 +86,11 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
   // If optional_suggestions is NULL, suggested words will not be looked up.
   // Note that doing suggest lookups can be slow.
   bool SpellCheckWord(const base::char16* text_begin,
-                      int position_in_text,
-                      int text_length,
+                      size_t position_in_text,
+                      size_t text_length,
                       int tag,
-                      int* misspelling_start,
-                      int* misspelling_len,
+                      size_t* misspelling_start,
+                      size_t* misspelling_len,
                       std::vector<base::string16>* optional_suggestions);
 
   // SpellCheck a paragraph.

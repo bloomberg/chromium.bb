@@ -81,10 +81,7 @@ DragDetails::DragDetails(aura::Window* window,
       size_change_direction(
           GetSizeChangeDirectionForWindowComponent(window_component)),
       is_resizable(bounds_change != WindowResizer::kBoundsChangeDirection_None),
-      source(source),
-      should_attach_to_shelf(window->type() ==
-                                 aura::client::WINDOW_TYPE_PANEL &&
-                             window->GetProperty(kPanelAttachedKey)) {
+      source(source) {
   if (window_component != HTCAPTION)
     return;
 

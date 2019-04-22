@@ -554,7 +554,6 @@ void InputController::OnStreamActive(Snoopable* output_stream) {
       if (output_stream)
         stream_->SetOutputDeviceForAec(output_stream->GetDeviceId());
       break;
-    case media::EchoCancellationType::kAec2:
     case media::EchoCancellationType::kAec3:
 #if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
       if (processing_helper_)
@@ -803,7 +802,6 @@ void InputController::CheckMutedState() {
 void InputController::UpdateVolumeAndAPMStats(
     base::Optional<double> new_volume) {
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
-  processing_helper_->GetAudioProcessor()->UpdateInternalStats();
   if (new_volume)
     SetVolume(*new_volume);
 }

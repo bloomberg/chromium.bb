@@ -1,3 +1,12 @@
+/* liblouis Braille Translation and Back-Translation Library
+
+Copyright (C) 2012 James Teh <jamie@nvaccess.org>
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved. This file is offered as-is,
+without any warranty. */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -6,8 +15,8 @@
 int
 main(int argc, char **argv)
 {
-  const char* goodTable = "en-us-g1.ctb";
-  const char* badTable = "bad.ctb";
+  const char* goodTable = "tables/en-us-g1.ctb";
+  const char* badTable = "tests/tables/bad.ctb";
   void* table = NULL;
   int result = 0;
 

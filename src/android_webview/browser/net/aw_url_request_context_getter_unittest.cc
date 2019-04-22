@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "android_webview/browser/aw_browser_context.h"
 #include "base/android/jni_android.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
@@ -63,8 +64,7 @@ class AwURLRequestContextGetterTest : public ::testing::Test {
     ASSERT_TRUE(env_);
 
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
-    android_webview::AwURLRequestContextGetter::RegisterPrefs(
-        pref_service_->registry());
+    AwBrowserContext::RegisterPrefs(pref_service_->registry());
 
     std::unique_ptr<net::ProxyConfigServiceAndroid> config_service_android;
     config_service_android.reset(static_cast<net::ProxyConfigServiceAndroid*>(
@@ -74,8 +74,8 @@ class AwURLRequestContextGetterTest : public ::testing::Test {
             .release()));
 
     getter_ = base::MakeRefCounted<android_webview::AwURLRequestContextGetter>(
-        temp_dir_.GetPath(), temp_dir_.GetPath().AppendASCII("ChannelID"),
-        std::move(config_service_android), pref_service_.get(), &net_log_);
+        temp_dir_.GetPath(), std::move(config_service_android),
+        pref_service_.get(), &net_log_);
 
     // AwURLRequestContextGetter implicitly depends on having protocol handlers
     // provided for url::kBlobScheme, url::kFileSystemScheme, and

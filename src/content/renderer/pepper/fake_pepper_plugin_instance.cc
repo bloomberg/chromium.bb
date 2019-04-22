@@ -19,7 +19,9 @@ blink::WebPluginContainer* FakePepperPluginInstance::GetContainer() {
   return nullptr;
 }
 
-v8::Isolate* FakePepperPluginInstance::GetIsolate() const { return nullptr; }
+v8::Isolate* FakePepperPluginInstance::GetIsolate() {
+  return nullptr;
+}
 
 ppapi::VarTracker* FakePepperPluginInstance::GetVarTracker() { return nullptr; }
 

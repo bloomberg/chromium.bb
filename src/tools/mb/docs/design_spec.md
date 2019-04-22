@@ -232,15 +232,15 @@ and return the union of `test_targets` and `additional_compile_targets` for
 Continuing the example given above, suppose we have the following build
 graph:
 
-* `blink_tests` is a meta target that depends on `webkit_unit_tests`,
+* `blink_tests` is a meta target that depends on `blink_unittests`,
   `wtf_unittests`, and `webkit_tests` and represents all of the targets
   needed to fully test Blink. Each of those is a separate test step.
 * `webkit_tests` is also a meta target; it depends on `content_shell`
   and `image_diff`.
 * `base_unittests` is a separate test binary.
-* `wtf_unittests` depends on `Assertions.cpp` and `AssertionsTest.cpp`.
-* `webkit_unit_tests` depends on `WebNode.cpp` and `WebNodeTest.cpp`.
-* `content_shell` depends on `WebNode.cpp` and `Assertions.cpp`.
+* `wtf_unittests` depends on `assertions.cc` and `assertions_test.cc`.
+* `blink_unittests` depends on `web_node.cc` and `web_node_test.cc`.
+* `content_shell` depends on `web_node.cc` and `assertions.cc`.
 * `base_unittests` depends on `logging.cc` and `logging_unittest.cc`.
 
 #### Example 1
@@ -248,10 +248,10 @@ graph:
 We wish to run 'wtf_unittests' and 'webkit_tests' on a bot, but not
 compile any additional targets.
 
-If a patch touches WebNode.cpp, then analyze gets as input:
+If a patch touches web_node.cc, then analyze gets as input:
 
     {
-      "files": ["WebNode.cpp"],
+      "files": ["web_node.cc"],
       "test_targets": ["wtf_unittests", "webkit_tests"],
       "additional_compile_targets": []
     }
@@ -260,7 +260,7 @@ and should return as output:
 
     {
       "status": "Found dependency",
-      "compile_targets": ["webkit_unit_tests"],
+      "compile_targets": ["blink_unittests"],
       "test_targets": ["webkit_tests"]
     }
 
@@ -274,7 +274,7 @@ but additionally build everything needed to test Blink (`blink_tests`):
 We pass as input:
 
     {
-      "files": ["WebNode.cpp"],
+      "files": ["web_node.cc"],
       "test_targets": ["wtf_unittests"],
       "additional_compile_targets": ["blink_tests"]
     }
@@ -283,7 +283,7 @@ And should get as output:
 
     {
       "status": "Found dependency",
-      "compile_targets": ["webkit_unit_tests"],
+      "compile_targets": ["blink_unittests"],
       "test_targets": []
     }
 
@@ -298,7 +298,7 @@ Build everything, but do not run any tests.
 Input:
 
     {
-      "files": ["WebNode.cpp"],
+      "files": ["web_node.cc"],
       "test_targets": [],
       "additional_compile_targets": ["all"]
     }
@@ -307,7 +307,7 @@ Output:
 
     {
       "status": "Found dependency",
-      "compile_targets": ["webkit_unit_tests", "content_shell"],
+      "compile_targets": ["blink_unittests", "content_shell"],
       "test_targets": []
     }
 
@@ -327,7 +327,7 @@ Output:
 
     {
       "status": "Found dependency (all)",
-      "compile_targets": ["webkit_unit_tests", "wtf_unittests"],
+      "compile_targets": ["blink_unittests", "wtf_unittests"],
       "test_targets": ["wtf_unittests"]
     }
 

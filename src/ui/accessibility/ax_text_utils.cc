@@ -6,12 +6,35 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace ui {
+
+namespace {
+
+base::i18n::BreakIterator::BreakType ICUBreakTypeForBoundaryType(
+    TextBoundaryType boundary) {
+  switch (boundary) {
+    case CHAR_BOUNDARY:
+      return base::i18n::BreakIterator::BREAK_CHARACTER;
+    case SENTENCE_BOUNDARY:
+      return base::i18n::BreakIterator::BREAK_SENTENCE;
+    case WORD_BOUNDARY:
+      return base::i18n::BreakIterator::BREAK_WORD;
+    // These are currently unused since line breaking is done via an array of
+    // line break offsets.
+    case LINE_BOUNDARY:
+    case PARAGRAPH_BOUNDARY:
+    case ALL_BOUNDARY:
+      return base::i18n::BreakIterator::BREAK_NEWLINE;
+  }
+}
+
+}  // namespace
 
 // line_breaks is a Misnomer. Blink provides the start offsets of each line
 // not the line breaks.
@@ -25,17 +48,12 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
   size_t text_size = text.size();
   DCHECK_LE(start_offset, text_size);
 
-  if (boundary == CHAR_BOUNDARY) {
-    if (direction == FORWARDS_DIRECTION && start_offset < text_size)
-      return start_offset + 1;
-    else
-      return start_offset;
-  }
-
-  base::i18n::BreakIterator word_iter(text,
-                                      base::i18n::BreakIterator::BREAK_WORD);
-  if (boundary == WORD_BOUNDARY) {
-    if (!word_iter.Init())
+  base::i18n::BreakIterator::BreakType break_type =
+      ICUBreakTypeForBoundaryType(boundary);
+  base::i18n::BreakIterator break_iter(text, break_type);
+  if (boundary == WORD_BOUNDARY || boundary == SENTENCE_BOUNDARY ||
+      boundary == CHAR_BOUNDARY) {
+    if (!break_iter.Init())
       return start_offset;
   }
 
@@ -79,28 +97,46 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
     }
 
     switch (boundary) {
-      case CHAR_BOUNDARY:
       case LINE_BOUNDARY:
         NOTREACHED();  // These are handled above.
         break;
+      case CHAR_BOUNDARY:
+        if (break_iter.IsGraphemeBoundary(result)) {
+          // If we are searching forward and we are still at the start offset,
+          // we need to find the next character.
+          if (direction == BACKWARDS_DIRECTION || result != start_offset)
+            return result;
+        }
+        break;
+
       case WORD_BOUNDARY:
-        if (word_iter.IsStartOfWord(result)) {
+        if (break_iter.IsStartOfWord(result)) {
           // If we are searching forward and we are still at the start offset,
           // we need to find the next word.
           if (direction == BACKWARDS_DIRECTION || result != start_offset)
             return result;
         }
         break;
+      case SENTENCE_BOUNDARY:
+        if (break_iter.IsSentenceBoundary(result)) {
+          // If we are searching forward and we are still at the start offset,
+          // we need to find the next sentence.
+          if (direction == BACKWARDS_DIRECTION || result != start_offset) {
+            // ICU sometimes returns sentence boundaries in the whitespace
+            // between sentences. For the purposes of accessibility, we want to
+            // include all whitespace at the end of a sentence. We move the
+            // boundary past the last whitespace offset. This works the same for
+            // backwards and forwards searches.
+            while (result < text_size &&
+                   base::IsUnicodeWhitespace(text[result]))
+              result++;
+            return result;
+          }
+        }
+        break;
       case PARAGRAPH_BOUNDARY:
         if (text[pos] == '\n')
           return result;
-        break;
-      case SENTENCE_BOUNDARY:
-        if ((text[pos] == '.' || text[pos] == '!' || text[pos] == '?') &&
-            (pos == text_size - 1 ||
-             base::IsUnicodeWhitespace(text[pos + 1]))) {
-          return result;
-        }
         break;
       case ALL_BOUNDARY:
       default:

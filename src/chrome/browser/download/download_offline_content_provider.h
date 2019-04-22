@@ -9,9 +9,10 @@
 #include <set>
 
 #include "base/macros.h"
-#include "components/download/content/public/all_download_item_notifier.h"
+#include "components/download/public/common/download_item.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
+#include "content/public/browser/download_manager.h"
 
 using DownloadItem = download::DownloadItem;
 using DownloadManager = content::DownloadManager;
@@ -24,14 +25,19 @@ using LaunchLocation = offline_items_collection::LaunchLocation;
 
 class SkBitmap;
 
-// This class handles the task of observing a single DownloadManager and
-// notifies UI about updates about various downloads.
-class DownloadOfflineContentProvider
-    : public OfflineContentProvider,
-      public download::AllDownloadItemNotifier::Observer {
+// This class handles the task of observing the downloads associated with a
+// single DownloadManager (or in-progress download manager in service manager
+// only mode) and notifies UI about updates about various downloads.
+class DownloadOfflineContentProvider : public OfflineContentProvider,
+                                       public download::DownloadItem::Observer,
+                                       public DownloadManager::Observer {
  public:
-  explicit DownloadOfflineContentProvider(DownloadManager* manager);
+  explicit DownloadOfflineContentProvider(OfflineContentAggregator* aggregator,
+                                          const std::string& name_space);
   ~DownloadOfflineContentProvider() override;
+
+  // Should be called when a DownloadManager is available.
+  void SetDownloadManager(DownloadManager* manager);
 
   // OfflineContentProvider implmentation.
   void OpenItem(LaunchLocation location, const ContentId& id) override;
@@ -49,23 +55,42 @@ class DownloadOfflineContentProvider
       OfflineContentProvider::VisualsCallback callback) override;
   void GetShareInfoForItem(const ContentId& id,
                            ShareCallback callback) override;
+  void RenameItem(const ContentId& id,
+                  const std::string& name,
+                  RenameCallback callback) override;
   void AddObserver(OfflineContentProvider::Observer* observer) override;
   void RemoveObserver(OfflineContentProvider::Observer* observer) override;
 
- private:
-  // AllDownloadItemNotifier::Observer methods.
-  void OnDownloadUpdated(DownloadManager* manager, DownloadItem* item) override;
-  void OnDownloadRemoved(DownloadManager* manager, DownloadItem* item) override;
+  // Entry point for associating this class with a download item. Must be called
+  // for all new and in-progress downloads, after which this class will start
+  // observing the given download.
+  void OnDownloadStarted(DownloadItem* download_item);
 
+ private:
+  // DownloadItem::Observer overrides
+  void OnDownloadUpdated(DownloadItem* item) override;
+  void OnDownloadRemoved(DownloadItem* item) override;
+  void OnDownloadDestroyed(DownloadItem* download) override;
+
+  // DownloadManager::Observer overrides
+  void ManagerGoingDown(DownloadManager* manager) override;
+
+  void GetAllDownloads(DownloadManager::DownloadVector* all_items);
+  DownloadItem* GetDownload(const std::string& download_guid);
   void OnThumbnailRetrieved(const ContentId& id,
                             VisualsCallback callback,
                             const SkBitmap& bitmap);
+  void AddCompletedDownload(DownloadItem* item);
+  void AddCompletedDownloadDone(DownloadItem* item,
+                                int64_t system_download_id,
+                                bool can_resolve);
+  void UpdateObservers(DownloadItem* item);
 
-  DownloadManager* manager_;
-  download::AllDownloadItemNotifier download_notifier_;
   base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
   OfflineContentAggregator* aggregator_;
   std::string name_space_;
+  DownloadManager* manager_;
+  std::set<std::string> completed_downloads_;
 
   base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_;
 

@@ -6,8 +6,11 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -18,11 +21,10 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/net_errors.h"
@@ -98,10 +100,18 @@ void ServiceWorkerRegisterJob::AddCallback(RegistrationCallback callback) {
 }
 
 void ServiceWorkerRegisterJob::Start() {
-  BrowserThread::PostAfterStartupTask(
-      FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-      base::BindOnce(&ServiceWorkerRegisterJob::StartImpl,
-                     weak_factory_.GetWeakPtr()));
+  // Schedule the job based on job type. For registration, give it the
+  // current task priority as it's an explicit JavaScript API and sites
+  // may show a message like "offline enabled". For update, give it a lower
+  // priority as (soft) update doesn't affect user interactions directly.
+  // TODO(bashi): For explicit update() API, we may want to prioritize it too.
+  auto traits = (job_type_ == REGISTRATION_JOB)
+                    ? base::TaskTraits(BrowserThread::IO)
+                    : base::TaskTraits(BrowserThread::IO,
+                                       base::TaskPriority::BEST_EFFORT);
+  base::PostTaskWithTraits(FROM_HERE, std::move(traits),
+                           base::BindOnce(&ServiceWorkerRegisterJob::StartImpl,
+                                          weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerRegisterJob::StartImpl() {
@@ -300,8 +310,12 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
         registration()->GetNewestVersion();
     std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
     version_to_update->script_cache_map()->GetResources(&resources);
+    int64_t script_resource_id =
+        version_to_update->script_cache_map()->LookupResourceId(script_url_);
+    DCHECK_NE(kInvalidServiceWorkerResourceId, script_resource_id);
     update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
-        resources, version_to_update,
+        std::move(resources), script_url_, script_resource_id,
+        version_to_update,
         context_->loader_factory_getter()->GetNetworkFactory());
     update_checker_->Start(
         base::BindOnce(&ServiceWorkerRegisterJob::OnUpdateCheckFinished,
@@ -330,6 +344,8 @@ void ServiceWorkerRegisterJob::OnUpdateCheckFinished(bool script_changed) {
     return;
   }
 
+  compared_script_info_map_ = update_checker_->TakeComparedResults();
+  update_checker_.reset();
   UpdateAndContinue();
 }
 
@@ -427,6 +443,12 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
         base::BindOnce(&ServiceWorkerRegisterJob::OnPausedAfterDownload,
                        weak_factory_.GetWeakPtr()));
   }
+
+  if (!compared_script_info_map_.empty()) {
+    new_version()->set_compared_script_info_map(
+        std::move(compared_script_info_map_));
+  }
+
   new_version()->StartWorker(
       ServiceWorkerMetrics::EventType::INSTALL,
       base::BindOnce(&ServiceWorkerRegisterJob::OnStartWorkerFinished,
@@ -677,8 +699,7 @@ void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
     // OnPausedAfterDownload() signifies a successful network load, which
     // translates into a script cache error only in the byte-for-byte identical
     // case.
-    DCHECK_EQ(status.error(),
-              ServiceWorkerWriteToCacheJob::kIdenticalScriptError);
+    DCHECK_EQ(status.error(), net::ERR_FILE_EXISTS);
 
     BumpLastUpdateCheckTimeIfNeeded();
     ResolvePromise(blink::ServiceWorkerStatusCode::kOk, std::string(),

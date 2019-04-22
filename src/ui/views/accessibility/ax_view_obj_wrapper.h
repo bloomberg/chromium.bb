@@ -12,12 +12,14 @@
 #include "ui/views/view_observer.h"
 
 namespace views {
+class AXAuraObjCache;
 class View;
 
 // Describes a |View| for use with other AX classes.
 class AXViewObjWrapper : public AXAuraObjWrapper, public ViewObserver {
  public:
-  explicit AXViewObjWrapper(View* view);
+  // |aura_obj_cache| must outlive this object.
+  AXViewObjWrapper(AXAuraObjCache* aura_obj_cache, View* view);
   ~AXViewObjWrapper() override;
 
   View* view() { return view_; }

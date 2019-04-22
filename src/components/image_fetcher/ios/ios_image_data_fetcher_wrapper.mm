@@ -50,9 +50,7 @@ void IOSImageDataFetcherWrapper::FetchImageDataWebpDecoded(
 }
 
 void IOSImageDataFetcherWrapper::SetDataUseServiceName(
-    DataUseServiceName data_use_service_name) {
-  image_data_fetcher_.SetDataUseServiceName(data_use_service_name);
-}
+    DataUseServiceName data_use_service_name) {}
 
 ImageDataFetcherCallback
 IOSImageDataFetcherWrapper::CallbackForImageDataFetcher(

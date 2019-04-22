@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/request_queue_task_test_base.h"
 #include "components/offline_pages/core/background/test_request_queue_store.h"
@@ -39,7 +38,9 @@ class RemoveRequestsTaskTest : public RequestQueueTaskTestBase {
   UpdateRequestsResult* last_result() const { return result_.get(); }
 
  private:
-  void AddRequestDone(ItemActionStatus status);
+  static void AddRequestDone(AddRequestResult result) {
+    ASSERT_EQ(AddRequestResult::SUCCESS, result);
+  }
 
   std::unique_ptr<UpdateRequestsResult> result_;
 };
@@ -49,27 +50,21 @@ void RemoveRequestsTaskTest::PumpLoop() {
 }
 
 void RemoveRequestsTaskTest::AddRequestsToStore() {
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
-  store_.AddRequest(request_1,
-                    base::BindOnce(&RemoveRequestsTaskTest::AddRequestDone,
-                                   base::Unretained(this)));
+  store_.AddRequest(request_1, RequestQueue::AddOptions(),
+                    base::BindOnce(&RemoveRequestsTaskTest::AddRequestDone));
   SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time,
                             true);
-  store_.AddRequest(request_2,
-                    base::BindOnce(&RemoveRequestsTaskTest::AddRequestDone,
-                                   base::Unretained(this)));
+  store_.AddRequest(request_2, RequestQueue::AddOptions(),
+                    base::BindOnce(&RemoveRequestsTaskTest::AddRequestDone));
   PumpLoop();
 }
 
 void RemoveRequestsTaskTest::RemoveRequestsCallback(
     UpdateRequestsResult result) {
   result_ = std::make_unique<UpdateRequestsResult>(std::move(result));
-}
-
-void RemoveRequestsTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
 }
 
 TEST_F(RemoveRequestsTaskTest, RemoveWhenStoreEmpty) {

@@ -82,16 +82,16 @@ class BiodClientTest : public testing::Test {
     EXPECT_CALL(*proxy_.get(), DoConnectToSignal(kInterface, _, _, _))
         .WillRepeatedly(Invoke(this, &BiodClientTest::ConnectToSignal));
 
-    client_.reset(BiodClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION));
-    client_->Init(bus_.get());
+    BiodClient::Initialize(bus_.get());
+    client_ = BiodClient::Get();
 
     // Execute callbacks posted by Init().
     base::RunLoop().RunUntilIdle();
   }
 
-  void GetBiometricType(uint32_t type) {
-    biometric_type_ = static_cast<biod::BiometricType>(type);
-  }
+  void TearDown() override { BiodClient::Shutdown(); }
+
+  void GetBiometricType(biod::BiometricType type) { biometric_type_ = type; }
 
  protected:
   // Add an expectation for method with |method_name| to be called. When the
@@ -164,7 +164,8 @@ class BiodClientTest : public testing::Test {
   scoped_refptr<dbus::MockBus> bus_;
   scoped_refptr<dbus::MockObjectProxy> proxy_;
 
-  std::unique_ptr<BiodClient> client_;
+  // Convenience pointer to the global instance.
+  BiodClient* client_;
 
   // Maps from biod signal name to the corresponding callback provided by
   // |client_|.
@@ -346,8 +347,7 @@ TEST_F(BiodClientTest, TestStartAuthentication) {
 }
 
 TEST_F(BiodClientTest, TestRequestBiometricType) {
-  const biod::BiometricType kFakeBiometricType =
-      biod::BIOMETRIC_TYPE_FINGERPRINT;
+  const auto kFakeBiometricType = biod::BIOMETRIC_TYPE_FINGERPRINT;
 
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
@@ -369,7 +369,7 @@ TEST_F(BiodClientTest, TestRequestBiometricType) {
   client_->RequestType(
       base::Bind(&BiodClientTest::GetBiometricType, base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(biod::BiometricType::BIOMETRIC_TYPE_UNKNOWN, biometric_type_);
+  EXPECT_EQ(biod::BIOMETRIC_TYPE_UNKNOWN, biometric_type_);
 }
 
 TEST_F(BiodClientTest, TestRequestRecordLabel) {

@@ -49,7 +49,7 @@ using namespace vector_math;
 const unsigned kMaxBusChannels = 32;
 
 scoped_refptr<AudioBus> AudioBus::Create(unsigned number_of_channels,
-                                         size_t length,
+                                         uint32_t length,
                                          bool allocate) {
   DCHECK_LE(number_of_channels, kMaxBusChannels);
   if (number_of_channels > kMaxBusChannels)
@@ -58,7 +58,7 @@ scoped_refptr<AudioBus> AudioBus::Create(unsigned number_of_channels,
   return base::AdoptRef(new AudioBus(number_of_channels, length, allocate));
 }
 
-AudioBus::AudioBus(unsigned number_of_channels, size_t length, bool allocate)
+AudioBus::AudioBus(unsigned number_of_channels, uint32_t length, bool allocate)
     : length_(length), sample_rate_(0) {
   channels_.ReserveInitialCapacity(number_of_channels);
 
@@ -74,7 +74,7 @@ AudioBus::AudioBus(unsigned number_of_channels, size_t length, bool allocate)
 
 void AudioBus::SetChannelMemory(unsigned channel_index,
                                 float* storage,
-                                size_t length) {
+                                uint32_t length) {
   if (channel_index < channels_.size()) {
     Channel(channel_index)->Set(storage, length);
     // FIXME: verify that this length matches all the other channel lengths
@@ -82,7 +82,7 @@ void AudioBus::SetChannelMemory(unsigned channel_index,
   }
 }
 
-void AudioBus::ResizeSmaller(size_t new_length) {
+void AudioBus::ResizeSmaller(uint32_t new_length) {
   DCHECK_LE(new_length, length_);
   if (new_length <= length_)
     length_ = new_length;
@@ -190,7 +190,7 @@ scoped_refptr<AudioBus> AudioBus::CreateBufferFromRange(
     const AudioBus* source_buffer,
     unsigned start_frame,
     unsigned end_frame) {
-  size_t number_of_source_frames = source_buffer->length();
+  uint32_t number_of_source_frames = source_buffer->length();
   unsigned number_of_channels = source_buffer->NumberOfChannels();
 
   // Sanity checking
@@ -200,7 +200,7 @@ scoped_refptr<AudioBus> AudioBus::CreateBufferFromRange(
   if (!is_range_safe)
     return nullptr;
 
-  size_t range_length = end_frame - start_frame;
+  uint32_t range_length = end_frame - start_frame;
 
   scoped_refptr<AudioBus> audio_bus = Create(number_of_channels, range_length);
   audio_bus->SetSampleRate(source_buffer->SampleRate());

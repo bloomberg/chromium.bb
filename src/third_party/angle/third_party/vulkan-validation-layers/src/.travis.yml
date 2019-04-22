@@ -1,7 +1,7 @@
 # Build Configuration for Travis CI
 # https://travis-ci.org
 
-dist: trusty
+dist: xenial
 sudo: required
 language: cpp
 
@@ -14,11 +14,11 @@ matrix:
     # Android build.
     - os: linux
       compiler: gcc
-      env: VULKAN_BUILD_TARGET=ANDROID ANDROID_TARGET=android-23 ANDROID_ABI=armeabi-v7a
+      env: VULKAN_BUILD_TARGET=ANDROID ANDROID_TARGET=android-26 ANDROID_ABI=armeabi-v7a
     # Android 64-bit build.
     - os: linux
       compiler: gcc
-      env: VULKAN_BUILD_TARGET=ANDROID ANDROID_TARGET=android-23 ANDROID_ABI=arm64-v8a
+      env: VULKAN_BUILD_TARGET=ANDROID ANDROID_TARGET=android-26 ANDROID_ABI=arm64-v8a
     # Linux GCC debug build.
     - os: linux
       compiler: gcc
@@ -46,15 +46,16 @@ before_install:
       # Install the appropriate Linux packages.
       sudo apt-get -qq update
       sudo apt-get -y install libxkbcommon-dev libwayland-dev libmirclient-dev libxrandr-dev \
-                              libx11-xcb-dev libxcb-keysyms1 libxcb-keysyms1-dev libxcb-ewmh-dev
+                              libx11-xcb-dev libxcb-keysyms1 libxcb-keysyms1-dev libxcb-ewmh-dev \
+                              libxcb-randr0-dev
     fi
   - |
     if [[ "$VULKAN_BUILD_TARGET" == "ANDROID" ]]; then
       # Install the Android NDK.
       export ARCH=`uname -m`
-      wget http://dl.google.com/android/repository/android-ndk-r15c-linux-${ARCH}.zip
-      unzip -u -q android-ndk-r15c-linux-${ARCH}.zip
-      export ANDROID_NDK_HOME=`pwd`/android-ndk-r15c
+      wget http://dl.google.com/android/repository/android-ndk-r18b-linux-${ARCH}.zip
+      unzip -u -q android-ndk-r18b-linux-${ARCH}.zip
+      export ANDROID_NDK_HOME=`pwd`/android-ndk-r18b
       export JAVA_HOME="/usr/lib/jvm/java-8-oracle"
       export PATH="$ANDROID_NDK_HOME:$PATH"
     fi
@@ -86,6 +87,9 @@ script:
       # Fetch googletest component to build validation layer tests
       echo Fetching googletest external dependencies for building validation layer tests
       git clone https://github.com/google/googletest.git ${TRAVIS_BUILD_DIR}/external/googletest
+      pushd ${TRAVIS_BUILD_DIR}/external/googletest
+      git checkout tags/release-1.8.1
+      popd
     fi
   - |
     if [[ "$VULKAN_BUILD_TARGET" == "LINUX" ]]; then

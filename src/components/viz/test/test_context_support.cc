@@ -105,7 +105,7 @@ bool TestContextSupport::ThreadsafeDiscardableTextureIsDeletedForTracing(
   return false;
 }
 
-void* TestContextSupport::MapTransferCacheEntry(size_t serialized_size) {
+void* TestContextSupport::MapTransferCacheEntry(uint32_t serialized_size) {
   NOTIMPLEMENTED();
   return nullptr;
 }
@@ -131,6 +131,11 @@ void TestContextSupport::DeleteTransferCacheEntry(uint32_t entry_type,
 unsigned int TestContextSupport::GetTransferBufferFreeSize() const {
   NOTIMPLEMENTED();
   return 0;
+}
+bool TestContextSupport::CanDecodeWithHardwareAcceleration(
+    base::span<const uint8_t> encoded_data) const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool TestContextSupport::HasGrContextSupport() const {

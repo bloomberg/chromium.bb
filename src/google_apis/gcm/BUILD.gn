@@ -174,4 +174,7 @@ test("gcm_unit_tests") {
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
   ]
+  if (is_android) {
+    deps += [ "//net/android:net_java" ]
+  }
 }

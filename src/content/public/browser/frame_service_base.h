@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_FRAME_SERVICE_BASE_H_
 #define CONTENT_PUBLIC_BROWSER_FRAME_SERVICE_BASE_H_
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/browser/navigation_handle.h"

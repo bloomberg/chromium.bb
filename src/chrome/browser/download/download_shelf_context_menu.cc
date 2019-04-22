@@ -16,7 +16,7 @@
 
 bool DownloadShelfContextMenu::WantsContextMenu(
     DownloadUIModel* download_model) {
-  return !download_model->IsDangerous() || !download_model->MightBeMalicious();
+  return !download_model->IsDangerous() || download_model->MightBeMalicious();
 }
 
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {

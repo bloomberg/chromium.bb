@@ -12,7 +12,6 @@ using base::android::JavaParamRef;
 
 static void JNI_SingleTabModel_PermanentlyBlockAllNewWindows(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_tab_android) {
   TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab_android);
   if (!tab)

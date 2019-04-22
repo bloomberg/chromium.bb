@@ -29,6 +29,26 @@
         },
         {
           "object": "LayoutSVGRect rect",
+          "rect": [200, 100, 403, 249],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [200, 100, 403, 249],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [200, 100, 403, 249],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [200, 100, 403, 249],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutSVGRect rect",
           "rect": [100, 100, 403, 249],
           "reason": "chunk appeared"
         },

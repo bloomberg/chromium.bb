@@ -9,7 +9,7 @@
 
 if (window.testRunner) {
   // Inject a subresource filter to disallow 'beta.png' (but not 'alpha.png').
-  testRunner.setDisallowedSubresourcePathSuffixes(["beta.png"]);
+  testRunner.setDisallowedSubresourcePathSuffixes(["beta.png"], true /* block_subresources */);
 }
 
 function createPicture(selectedSourceUrl, notSelectedSourceUrl) {

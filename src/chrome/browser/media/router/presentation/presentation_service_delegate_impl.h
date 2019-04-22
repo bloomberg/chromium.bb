@@ -41,6 +41,46 @@ class MediaRoute;
 class PresentationFrame;
 class RouteRequestResult;
 
+// Helper data structure to hold information for a request from the
+// Presentation API. Contains information on the PresentationRequest, and
+// success / error callbacks. Depending on the route creation outcome,
+// only one of the callbacks will be invoked exactly once.
+class StartPresentationContext {
+ public:
+  using PresentationConnectionCallback =
+      base::OnceCallback<void(const blink::mojom::PresentationInfo&,
+                              mojom::RoutePresentationConnectionPtr,
+                              const MediaRoute&)>;
+  using PresentationConnectionErrorCallback =
+      content::PresentationConnectionErrorCallback;
+
+  StartPresentationContext(
+      const content::PresentationRequest& presentation_request,
+      PresentationConnectionCallback success_cb,
+      PresentationConnectionErrorCallback error_cb);
+  ~StartPresentationContext();
+
+  const content::PresentationRequest& presentation_request() const {
+    return presentation_request_;
+  }
+
+  // Invokes |success_cb_| or |error_cb_| with the given arguments.
+  void InvokeSuccessCallback(const std::string& presentation_id,
+                             const GURL& presentation_url,
+                             const MediaRoute& route,
+                             mojom::RoutePresentationConnectionPtr connection);
+  void InvokeErrorCallback(const blink::mojom::PresentationError& error);
+
+  // Handle route creation/joining response by invoking the right callback.
+  void HandleRouteResponse(mojom::RoutePresentationConnectionPtr connection,
+                           const RouteRequestResult& result);
+
+ private:
+  content::PresentationRequest presentation_request_;
+  PresentationConnectionCallback success_cb_;
+  PresentationConnectionErrorCallback error_cb_;
+};
+
 // Implementation of PresentationServiceDelegate that interfaces an instance of
 // WebContents with the Chrome Media Router. It uses the Media Router to handle
 // presentation API calls forwarded from PresentationServiceImpl. In addition,
@@ -153,6 +193,12 @@ class PresentationServiceDelegateImpl
       int render_frame_id,
       const MediaSource::Id& source_id) const;
 
+  void set_start_presentation_cb(
+      base::RepeatingCallback<void(std::unique_ptr<StartPresentationContext>)>
+          callback) {
+    start_presentation_cb_ = std::move(callback);
+  }
+
  private:
   friend class content::WebContentsUserData<PresentationServiceDelegateImpl>;
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
@@ -247,6 +293,11 @@ class PresentationServiceDelegateImpl
   content::DefaultPresentationConnectionCallback
       default_presentation_started_callback_;
 
+  // If this callback is set when a request to start a presentation is made, it
+  // is called instead of showing the Media Router dialog.
+  base::RepeatingCallback<void(std::unique_ptr<StartPresentationContext>)>
+      start_presentation_cb_;
+
   // Maps a frame identifier to a PresentationFrame object for frames
   // that are using Presentation API.
   std::unordered_map<content::GlobalFrameRoutingId,
@@ -257,6 +308,8 @@ class PresentationServiceDelegateImpl
   PresentationServiceDelegateObservers observers_;
 
   base::WeakPtrFactory<PresentationServiceDelegateImpl> weak_factory_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PresentationServiceDelegateImpl);
 };

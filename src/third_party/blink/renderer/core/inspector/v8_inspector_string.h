@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_V8_INSPECTOR_STRING_H_
 
 #include <memory>
+#include <vector>
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -25,6 +26,7 @@ namespace blink {
 // Note that passed string must outlive the resulting StringView. This implies
 // it must not be a temporary object.
 CORE_EXPORT v8_inspector::StringView ToV8InspectorStringView(const StringView&);
+
 CORE_EXPORT std::unique_ptr<v8_inspector::StringBuffer>
 ToV8InspectorStringBuffer(const StringView&);
 CORE_EXPORT String ToCoreString(const v8_inspector::StringView&);
@@ -36,6 +38,11 @@ class Value;
 
 using String = WTF::String;
 using StringBuilder = WTF::StringBuilder;
+
+struct ProtocolMessage {
+  String json;
+  std::vector<uint8_t> binary;
+};
 
 class CORE_EXPORT StringUtil {
   STATIC_ONLY(StringUtil);
@@ -76,6 +83,27 @@ class CORE_EXPORT StringUtil {
     return builder.ToString();
   }
   static std::unique_ptr<protocol::Value> parseJSON(const String&);
+  static ProtocolMessage jsonToMessage(const String& message);
+  static ProtocolMessage binaryToMessage(std::vector<uint8_t> message);
+
+  static String fromUTF8(const uint8_t* data, size_t length) {
+    return String::FromUTF8(reinterpret_cast<const char*>(data), length);
+  }
+
+  static String fromUTF16(const uint16_t* data, size_t length);
+
+  static const uint8_t* CharactersLatin1(const String& s) {
+    if (!s.Is8Bit())
+      return nullptr;
+    return reinterpret_cast<const uint8_t*>(s.Characters8());
+  }
+  static const uint8_t* CharactersUTF8(const String& s) { return nullptr; }
+  static const uint16_t* CharactersUTF16(const String& s) {
+    if (s.Is8Bit())
+      return nullptr;
+    return reinterpret_cast<const uint16_t*>(s.Characters16());
+  }
+  static size_t CharacterCount(const String& s) { return s.length(); }
 };
 
 // A read-only sequence of uninterpreted bytes with reference-counted storage.
@@ -98,6 +126,7 @@ class CORE_EXPORT Binary {
   static Binary fromBase64(const String& base64, bool* success);
   static Binary fromSharedBuffer(scoped_refptr<SharedBuffer> buffer);
   static Binary fromVector(Vector<uint8_t> in);
+  static Binary fromSpan(const uint8_t* data, size_t size);
 
   // Note: |data.buffer_policy| must be
   // ScriptCompiler::ScriptCompiler::CachedData::BufferOwned.

@@ -35,8 +35,8 @@ class AccessibilityEventRecorderMac : public AccessibilityEventRecorder {
 
   // Convenience function to get the value of an AX attribute from
   // an AXUIElementRef as a string.
-  std::string GetAXAttributeValue(
-      AXUIElementRef element, NSString* attribute_name);
+  std::string GetAXAttributeValue(AXUIElementRef element,
+                                  NSString* attribute_name);
 
   // The AXUIElement for the Chrome application.
   base::ScopedCFTypeRef<AXUIElementRef> application_;
@@ -49,11 +49,10 @@ class AccessibilityEventRecorderMac : public AccessibilityEventRecorder {
 };
 
 // Callback function registered using AXObserverCreate.
-static void EventReceivedThunk(
-    AXObserverRef observer_ref,
-    AXUIElementRef element,
-    CFStringRef notification,
-    void *refcon) {
+static void EventReceivedThunk(AXObserverRef observer_ref,
+                               AXUIElementRef element,
+                               CFStringRef notification,
+                               void* refcon) {
   AccessibilityEventRecorderMac* this_ptr =
       static_cast<AccessibilityEventRecorderMac*>(refcon);
   this_ptr->EventReceived(element, notification);
@@ -71,6 +70,15 @@ std::unique_ptr<AccessibilityEventRecorder> AccessibilityEventRecorder::Create(
   }
 
   return std::make_unique<AccessibilityEventRecorderMac>(manager, pid);
+}
+
+std::vector<AccessibilityEventRecorder::TestPass>
+AccessibilityEventRecorder::GetTestPasses() {
+  // Both the Blink pass and native pass use the same recorder
+  return {
+      {"blink", &AccessibilityEventRecorder::Create},
+      {"mac", &AccessibilityEventRecorder::Create},
+  };
 }
 
 AccessibilityEventRecorderMac::AccessibilityEventRecorderMac(

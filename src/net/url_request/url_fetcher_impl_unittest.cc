@@ -264,11 +264,11 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
     if (!network_task_runner_->RunsTasksInCurrentSequence()) {
       network_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&FetcherTestURLRequestContextGetter::AddThrottlerEntry,
-                     this, url, url_id, sliding_window_period_ms,
-                     max_send_threshold, initial_backoff_ms, multiply_factor,
-                     jitter_factor, maximum_backoff_ms,
-                     reserve_sending_time_for_next_request));
+          base::BindOnce(&FetcherTestURLRequestContextGetter::AddThrottlerEntry,
+                         this, url, url_id, sliding_window_period_ms,
+                         max_send_threshold, initial_backoff_ms,
+                         multiply_factor, jitter_factor, maximum_backoff_ms,
+                         reserve_sending_time_for_next_request));
       return;
     }
     scoped_refptr<URLRequestThrottlerEntry> entry(new URLRequestThrottlerEntry(
@@ -289,7 +289,7 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
     if (!network_task_runner_->RunsTasksInCurrentSequence()) {
       network_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&FetcherTestURLRequestContextGetter::Shutdown, this));
+          base::BindOnce(&FetcherTestURLRequestContextGetter::Shutdown, this));
       return;
     }
 
@@ -523,7 +523,6 @@ TEST_F(URLFetcherTest, FetchedUsingProxy) {
   EXPECT_EQ(kDefaultResponseBody, data);
 
   EXPECT_EQ(proxy_server, delegate.fetcher()->ProxyServerUsed());
-  EXPECT_TRUE(delegate.fetcher()->WasFetchedViaProxy());
 }
 
 // Create the fetcher on the main thread.  Since network IO will happen on the
@@ -551,7 +550,6 @@ TEST_F(URLFetcherTest, SameThreadTest) {
             delegate.fetcher()->GetTotalReceivedBytes());
   EXPECT_EQ(ProxyServer::SCHEME_DIRECT,
             delegate.fetcher()->ProxyServerUsed().scheme());
-  EXPECT_FALSE(delegate.fetcher()->WasFetchedViaProxy());
 }
 
 // Create a separate thread that will create the URLFetcher.  A separate thread
@@ -569,7 +567,7 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
   EXPECT_EQ(kDefaultResponseBody, data);
 }
 
-// Verifies that a URLFetcher works correctly on a TaskScheduler Sequence.
+// Verifies that a URLFetcher works correctly on a ThreadPool Sequence.
 TEST_F(URLFetcherTest, SequencedTaskTest) {
   auto sequenced_task_runner = base::CreateSequencedTaskRunnerWithTraits({});
 
@@ -1166,7 +1164,7 @@ TEST_F(URLFetcherTest, SocketAddress) {
   EXPECT_EQ(test_server_->host_port_pair().port(),
             delegate.fetcher()->GetSocketAddress().port());
   EXPECT_EQ(test_server_->host_port_pair().host(),
-            delegate.fetcher()->GetSocketAddress().host());
+            delegate.fetcher()->GetSocketAddress().ToStringWithoutPort());
 }
 
 TEST_F(URLFetcherTest, StopOnRedirect) {

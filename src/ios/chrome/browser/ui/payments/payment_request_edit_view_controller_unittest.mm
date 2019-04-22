@@ -10,8 +10,8 @@
 #import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_selector_edit_item.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_data_source.h"
@@ -43,7 +43,7 @@ NSString* const kTestTitle = @"title";
 }
 
 - (CollectionViewItem*)headerItem {
-  return [[CollectionViewTextItem alloc] init];
+  return [[PaymentMethodItem alloc] init];
 }
 
 - (BOOL)shouldHideBackgroundForHeaderItem {
@@ -122,10 +122,10 @@ TEST_F(PaymentRequestEditViewControllerTest, TestModel) {
   ASSERT_EQ(5, NumberOfSections());
 
   // The header section is the first section and has one item of the type
-  // CollectionViewTextItem.
+  // PaymentMethodItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
   id item = GetCollectionViewItem(0, 0);
-  EXPECT_TRUE([item isMemberOfClass:[CollectionViewTextItem class]]);
+  EXPECT_TRUE([item isMemberOfClass:[PaymentMethodItem class]]);
 
   // The next section has one item of the type LegacyAutofillEditItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(1)));

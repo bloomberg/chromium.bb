@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 Tests fast animating gif (10ms per frame). Passes if it doesn't crash.<br>
 <img src="resources/animated-10color-fast.gif">
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <script>
 
 // Busy-wait 50ms to trigger the bug of invalidation during paint.
@@ -16,7 +17,7 @@ var count = 3;
 function displayOneFrame() {
   delay();
   if (--count >= 0)
-    testRunner.layoutAndPaintAsyncThen(displayOneFrame);
+    runAfterLayoutAndPaint(displayOneFrame);
   else
     testRunner.notifyDone();
 }

@@ -49,50 +49,62 @@ class GLES3DecoderTest3 : public GLES2DecoderTest3 {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest3, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderTest3, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES2DecoderTest3, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES3DecoderTest3, ::testing::Bool());
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4ivImmediate, 0>(
+    bool /* valid */) {
+  SetupShaderForUniform(GL_INT_VEC4);
+}
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<UniformMatrix3fvImmediate, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_MAT3);
-};
+}
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<UniformMatrix4fvImmediate, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_MAT4);
-};
+}
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<UniformMatrix2x3fvImmediate, 0>(
+    bool /* valid */) {
+  SetupShaderForUniform(GL_FLOAT_MAT2x3);
+}
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<
     UniformMatrix2x4fvImmediate, 0>(bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_MAT2x4);
-};
+}
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<
     UniformMatrix3x2fvImmediate, 0>(bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_MAT3x2);
-};
+}
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<
     UniformMatrix3x4fvImmediate, 0>(bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_MAT3x4);
-};
+}
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<
     UniformMatrix4x2fvImmediate, 0>(bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_MAT4x2);
-};
+}
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<
     UniformMatrix4x3fvImmediate, 0>(bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_MAT4x3);
-};
+}
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<UseProgram, 0>(
@@ -107,7 +119,7 @@ void GLES2DecoderTestBase::SpecializedSetup<UseProgram, 0>(
   LinkProgram link_cmd;
   link_cmd.Init(client_program_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(link_cmd));
-};
+}
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<ValidateProgram, 0>(
@@ -126,7 +138,7 @@ void GLES2DecoderTestBase::SpecializedSetup<ValidateProgram, 0>(
   EXPECT_CALL(*gl_, GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
       .WillOnce(SetArgPointee<2>(0))
       .RetiresOnSaturation();
-};
+}
 
 TEST_P(GLES2DecoderTest3, TraceBeginCHROMIUM) {
   const uint32_t kCategoryBucketId = 123;

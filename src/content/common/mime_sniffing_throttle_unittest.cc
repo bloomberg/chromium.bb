@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/common/mime_sniffing_url_loader.h"
@@ -190,7 +191,8 @@ class MimeSniffingThrottleTest : public testing::Test {
 };
 
 TEST_F(MimeSniffingThrottleTest, NoMimeTypeWithSniffableScheme) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -203,7 +205,8 @@ TEST_F(MimeSniffingThrottleTest, NoMimeTypeWithSniffableScheme) {
 }
 
 TEST_F(MimeSniffingThrottleTest, SniffableMimeTypeWithSniffableScheme) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -217,7 +220,8 @@ TEST_F(MimeSniffingThrottleTest, SniffableMimeTypeWithSniffableScheme) {
 }
 
 TEST_F(MimeSniffingThrottleTest, NotSniffableMimeTypeWithSniffableScheme) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -231,7 +235,8 @@ TEST_F(MimeSniffingThrottleTest, NotSniffableMimeTypeWithSniffableScheme) {
 }
 
 TEST_F(MimeSniffingThrottleTest, NoMimeTypeWithNotSniffableScheme) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -244,7 +249,8 @@ TEST_F(MimeSniffingThrottleTest, NoMimeTypeWithNotSniffableScheme) {
 }
 
 TEST_F(MimeSniffingThrottleTest, SniffableMimeTypeWithNotSniffableScheme) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -258,7 +264,8 @@ TEST_F(MimeSniffingThrottleTest, SniffableMimeTypeWithNotSniffableScheme) {
 }
 
 TEST_F(MimeSniffingThrottleTest, NotSniffableMimeTypeWithNotSniffableScheme) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -272,7 +279,8 @@ TEST_F(MimeSniffingThrottleTest, NotSniffableMimeTypeWithNotSniffableScheme) {
 }
 
 TEST_F(MimeSniffingThrottleTest, SniffableButAlreadySniffed) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -287,7 +295,8 @@ TEST_F(MimeSniffingThrottleTest, SniffableButAlreadySniffed) {
 }
 
 TEST_F(MimeSniffingThrottleTest, NoBody) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -310,7 +319,8 @@ TEST_F(MimeSniffingThrottleTest, NoBody) {
 }
 
 TEST_F(MimeSniffingThrottleTest, EmptyBody) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -337,7 +347,8 @@ TEST_F(MimeSniffingThrottleTest, EmptyBody) {
 }
 
 TEST_F(MimeSniffingThrottleTest, Body_PlainText) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -360,7 +371,8 @@ TEST_F(MimeSniffingThrottleTest, Body_PlainText) {
 }
 
 TEST_F(MimeSniffingThrottleTest, Body_Docx) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -383,7 +395,8 @@ TEST_F(MimeSniffingThrottleTest, Body_Docx) {
 }
 
 TEST_F(MimeSniffingThrottleTest, Body_PNG) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -406,7 +419,8 @@ TEST_F(MimeSniffingThrottleTest, Body_PNG) {
 }
 
 TEST_F(MimeSniffingThrottleTest, Body_LongPlainText) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -461,7 +475,8 @@ TEST_F(MimeSniffingThrottleTest, Body_LongPlainText) {
 }
 
 TEST_F(MimeSniffingThrottleTest, Abort_NoBodyPipe) {
-  auto throttle = std::make_unique<MimeSniffingThrottle>();
+  auto throttle = std::make_unique<MimeSniffingThrottle>(
+      scoped_task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 

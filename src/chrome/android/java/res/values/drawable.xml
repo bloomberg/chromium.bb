@@ -4,5 +4,5 @@
      found in the LICENSE file. -->
 
 <resources>
-    <item type="drawable" name="ntp_search_box">@drawable/modern_toolbar_background</item>
+    <item type="drawable" name="ntp_search_box">@drawable/modern_toolbar_text_box_background</item>
 </resources>

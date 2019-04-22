@@ -63,49 +63,59 @@ export interface PermalinkConfig {
   hash?: string;       // Set by the controller when the link has been created.
 }
 
-export interface RecordConfig {
-  [key: string]: null|number|boolean|string|string[];
-
-  // Global settings
-  durationSeconds: number;
-  writeIntoFile: boolean;
-  fileWritePeriodMs: number|null;
-
-  // Buffer setup
-  bufferSizeMb: number;
-
-  // Ftrace
-  ftrace: boolean;
-  ftraceEvents: string[];
-  atraceCategories: string[];
-  atraceApps: string[];
-  ftraceDrainPeriodMs: number|null;
-  ftraceBufferSizeKb: number|null;
-
-  // Ps
-  processMetadata: boolean;
-  scanAllProcessesOnStart: boolean;
-  procStatusPeriodMs: number|null;
-
-  // SysStats
-  sysStats: boolean;
-  meminfoPeriodMs: number|null;
-  meminfoCounters: string[];
-  vmstatPeriodMs: number|null;
-  vmstatCounters: string[];
-  statPeriodMs: number|null;
-  statCounters: string[];
-}
-
 export interface TraceTime {
   startSec: number;
   endSec: number;
+}
+
+export interface FrontendLocalState {
+  visibleTraceTime: TraceTime;
   lastUpdate: number;  // Epoch in seconds (Date.now() / 1000).
 }
 
 export interface Status {
   msg: string;
   timestamp: number;  // Epoch in seconds (Date.now() / 1000).
+}
+
+export interface Note {
+  id: string;
+  timestamp: number;
+  color: string;
+  text: string;
+}
+
+export interface NoteSelection {
+  kind: 'NOTE';
+  id: string;
+}
+
+export interface SliceSelection {
+  kind: 'SLICE';
+  utid: number;
+  id: number;
+}
+
+export interface TimeSpanSelection {
+  kind: 'TIMESPAN';
+  startTs: number;
+  endTs: number;
+}
+
+export interface ThreadStateSelection {
+  kind: 'THREAD_STATE';
+  utid: number;
+  ts: number;
+  dur: number;
+  state: string;
+}
+
+type Selection =
+    NoteSelection|SliceSelection|TimeSpanSelection|ThreadStateSelection;
+
+export interface LogsPagination {
+  offset: number;
+  count: number;
 }
 
 export interface State {
@@ -123,21 +133,127 @@ export interface State {
    */
   engines: ObjectById<EngineConfig>;
   traceTime: TraceTime;
-  visibleTraceTime: TraceTime;
   trackGroups: ObjectById<TrackGroupState>;
   tracks: ObjectById<TrackState>;
   scrollingTracks: string[];
   pinnedTracks: string[];
   queries: ObjectById<QueryConfig>;
   permalink: PermalinkConfig;
+  notes: ObjectById<Note>;
   status: Status;
+  currentSelection: Selection|null;
+
+  logsPagination: LogsPagination;
+
+  /**
+   * This state is updated on the frontend at 60Hz and eventually syncronised to
+   * the controller at 10Hz. When the controller sends state updates to the
+   * frontend the frontend has special logic to pick whichever version of this
+   * key is most up to date.
+   */
+  frontendLocalState: FrontendLocalState;
 }
 
 export const defaultTraceTime = {
   startSec: 0,
   endSec: 10,
-  lastUpdate: 0
 };
+
+export declare type RecordMode =
+    'STOP_WHEN_FULL' | 'RING_BUFFER' | 'LONG_TRACE';
+
+export interface RecordConfig {
+  [key: string]: null|number|boolean|string|string[];
+
+  // Global settings
+  targetOS: string;  // 'Q','P','O' for Android, 'L' for Linux
+  mode: RecordMode;
+  durationMs: number;
+  bufferSizeMb: number;
+  maxFileSizeMb: number;      // Only for mode == 'LONG_TRACE'.
+  fileWritePeriodMs: number;  // Only for mode == 'LONG_TRACE'.
+
+  cpuSched: boolean;
+  cpuLatency: boolean;
+  cpuFreq: boolean;
+  cpuCoarse: boolean;
+  cpuCoarsePollMs: number;
+
+  ftrace: boolean;
+  atrace: boolean;
+  ftraceEvents: string[];
+  ftraceExtraEvents: string;
+  atraceCats: string[];
+  atraceApps: string;
+  ftraceBufferSizeKb: number;
+  ftraceDrainPeriodMs: number;
+  androidLogs: boolean;
+  androidLogBuffers: string[];
+
+  batteryDrain: boolean;
+  batteryDrainPollMs: number;
+
+  boardSensors: boolean;
+
+  memHiFreq: boolean;
+  memLmk: boolean;
+  meminfo: boolean;
+  meminfoPeriodMs: number;
+  meminfoCounters: string[];
+  vmstat: boolean;
+  vmstatPeriodMs: number;
+  vmstatCounters: string[];
+
+  procStats: boolean;
+  procStatsPeriodMs: number;
+}
+
+export function createEmptyRecordConfig(): RecordConfig {
+  return {
+    targetOS: 'Q',
+    mode: 'STOP_WHEN_FULL',
+    durationMs: 10000.0,
+    maxFileSizeMb: 100,
+    fileWritePeriodMs: 2500,
+    bufferSizeMb: 10.0,
+
+    cpuSched: false,
+    cpuLatency: false,
+    cpuFreq: false,
+
+    ftrace: false,
+    atrace: false,
+    ftraceEvents: [],
+    ftraceExtraEvents: '',
+    atraceCats: [],
+    atraceApps: '',
+    ftraceBufferSizeKb: 2 * 1024,
+    ftraceDrainPeriodMs: 250,
+    androidLogs: false,
+    androidLogBuffers: [],
+
+    cpuCoarse: false,
+    cpuCoarsePollMs: 1000,
+
+    batteryDrain: false,
+    batteryDrainPollMs: 1000,
+
+    boardSensors: false,
+
+    memHiFreq: false,
+    meminfo: false,
+    meminfoPeriodMs: 1000,
+    meminfoCounters: [],
+
+    vmstat: false,
+    vmstatPeriodMs: 1000,
+    vmstatCounters: [],
+
+    memLmk: false,
+    procStats: false,
+    procStatsPeriodMs: 1000,
+  };
+}
 
 export function createEmptyState(): State {
   return {
@@ -145,45 +261,28 @@ export function createEmptyState(): State {
     nextId: 0,
     engines: {},
     traceTime: {...defaultTraceTime},
-    visibleTraceTime: {...defaultTraceTime},
     tracks: {},
     trackGroups: {},
     pinnedTracks: [],
     scrollingTracks: [],
     queries: {},
     permalink: {},
+    notes: {},
 
     recordConfig: createEmptyRecordConfig(),
     displayConfigAsPbtxt: false,
 
+    frontendLocalState: {
+      visibleTraceTime: {...defaultTraceTime},
+      lastUpdate: 0,
+    },
+
+    logsPagination: {
+      offset: 0,
+      count: 0,
+    },
+
     status: {msg: '', timestamp: 0},
-  };
-}
-
-export function createEmptyRecordConfig(): RecordConfig {
-  return {
-    durationSeconds: 10.0,
-    writeIntoFile: false,
-    fileWritePeriodMs: null,
-    bufferSizeMb: 10.0,
-
-    ftrace: false,
-    ftraceEvents: [],
-    atraceApps: [],
-    atraceCategories: [],
-    ftraceDrainPeriodMs: null,
-    ftraceBufferSizeKb: null,
-
-    processMetadata: false,
-    scanAllProcessesOnStart: false,
-    procStatusPeriodMs: null,
-
-    sysStats: false,
-    meminfoPeriodMs: null,
-    meminfoCounters: [],
-    vmstatPeriodMs: null,
-    vmstatCounters: [],
-    statPeriodMs: null,
-    statCounters: [],
+    currentSelection: null,
   };
 }

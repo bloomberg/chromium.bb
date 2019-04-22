@@ -64,7 +64,8 @@ void ShowLinuxProxyConfigUrl(int render_process_id, int render_view_id) {
 
 // Start the given proxy configuration utility.
 bool StartProxyConfigUtil(const char* const command[]) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   // base::LaunchProcess() returns true ("success") if the fork()
   // succeeds, but not necessarily the exec(). We'd like to be able to
   // use StartProxyConfigUtil() to search possible options and stop on
@@ -90,7 +91,8 @@ bool StartProxyConfigUtil(const char* const command[]) {
 // failure to do so, show the Linux proxy config URL in a new tab instead.
 void DetectAndStartProxyConfigUtil(int render_process_id,
                                    int render_view_id) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   bool launched = false;

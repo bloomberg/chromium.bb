@@ -10,14 +10,11 @@ cr.define('discards', function() {
   let uiHandler;
 
   /**
-   * @return {!mojom.DiscardsDetailsProviderPtr} The UI handler.
+   * @return {!mojom.DiscardsDetailsProviderProxy} The UI handler.
    */
   function getOrCreateUiHandler() {
     if (!uiHandler) {
-      uiHandler = new mojom.DiscardsDetailsProviderPtr;
-      Mojo.bindInterface(
-          mojom.DiscardsDetailsProvider.name,
-          mojo.makeRequest(uiHandler).handle);
+      uiHandler = mojom.DiscardsDetailsProvider.getProxy();
     }
     return uiHandler;
   }
@@ -51,8 +48,9 @@ cr.define('discards', function() {
     const SECONDS_PER_YEAR = SECONDS_PER_DAY * 365;
 
     // Seconds.
-    if (seconds < SECONDS_PER_MINUTE)
+    if (seconds < SECONDS_PER_MINUTE) {
       return seconds.toString() + maybeMakePlural(' second', seconds);
+    }
 
     // Minutes.
     let minutes = Math.floor(seconds / SECONDS_PER_MINUTE);
@@ -61,7 +59,7 @@ cr.define('discards', function() {
     }
 
     // Hours and minutes.
-    let hours = Math.floor(seconds / SECONDS_PER_HOUR);
+    const hours = Math.floor(seconds / SECONDS_PER_HOUR);
     minutes = minutes % MINUTES_PER_HOUR;
     if (hours < HOURS_PER_DAY) {
       let s = hours.toString() + maybeMakePlural(' hour', hours);
@@ -72,21 +70,21 @@ cr.define('discards', function() {
     }
 
     // Days.
-    let days = Math.floor(seconds / SECONDS_PER_DAY);
+    const days = Math.floor(seconds / SECONDS_PER_DAY);
     if (days < DAYS_PER_WEEK) {
       return days.toString() + maybeMakePlural(' day', days);
     }
 
     // Weeks. There's an awkward gap to bridge where 4 weeks can have
     // elapsed but not quite 1 month. Be sure to use weeks to report that.
-    let weeks = Math.floor(seconds / SECONDS_PER_WEEK);
-    let months = Math.floor(seconds / SECONDS_PER_MONTH);
+    const weeks = Math.floor(seconds / SECONDS_PER_WEEK);
+    const months = Math.floor(seconds / SECONDS_PER_MONTH);
     if (months < 1) {
       return 'over ' + weeks.toString() + maybeMakePlural(' week', weeks);
     }
 
     // Months.
-    let years = Math.floor(seconds / SECONDS_PER_YEAR);
+    const years = Math.floor(seconds / SECONDS_PER_YEAR);
     if (years < 1) {
       return 'over ' + months.toString() + maybeMakePlural(' month', months);
     }
@@ -101,10 +99,11 @@ cr.define('discards', function() {
    * @return {string} An English string representing the duration.
    */
   function durationToString(secondsAgo) {
-    let ret = secondsToString(secondsAgo);
+    const ret = secondsToString(secondsAgo);
 
-    if (ret.endsWith(' seconds') || ret.endsWith(' second'))
+    if (ret.endsWith(' seconds') || ret.endsWith(' second')) {
       return 'just now';
+    }
 
     return ret + ' ago';
   }

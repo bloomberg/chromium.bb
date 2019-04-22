@@ -5,10 +5,10 @@
 /**
  * Handles the Extension ID -> SyncStatus tab for syncfs-internals.
  */
-var ExtensionStatuses = (function() {
+const ExtensionStatuses = (function() {
   'use strict';
 
-  var ExtensionStatuses = {};
+  const ExtensionStatuses = {};
 
   /**
    * Get initial map of extension statuses (pending batch sync, enabled and
@@ -26,7 +26,7 @@ var ExtensionStatuses = (function() {
    * @return {HTMLElement} The newly created HTML element.
    */
   function createElementFromText(elementName, text) {
-    var element = document.createElement(elementName);
+    const element = document.createElement(elementName);
     element.appendChild(document.createTextNode(text));
     return element;
   }
@@ -37,12 +37,12 @@ var ExtensionStatuses = (function() {
    *     'extensionID, 'status'.
    */
   ExtensionStatuses.onGetExtensionStatuses = function(extensionStatuses) {
-    var itemContainer = $('extension-entries');
+    const itemContainer = $('extension-entries');
     itemContainer.textContent = '';
 
-    for (var i = 0; i < extensionStatuses.length; i++) {
-      var originEntry = extensionStatuses[i];
-      var tr = document.createElement('tr');
+    for (let i = 0; i < extensionStatuses.length; i++) {
+      const originEntry = extensionStatuses[i];
+      const tr = document.createElement('tr');
       tr.appendChild(createElementFromText('td', originEntry.extensionName));
       tr.appendChild(createElementFromText('td', originEntry.extensionID));
       tr.appendChild(createElementFromText('td', originEntry.status));

@@ -552,24 +552,31 @@ SlideMode.prototype.__proto__ = cr.EventTarget.prototype;
  * @private
  */
 SlideMode.prototype.onExitClicked_ = function() {
-  if (this.isEditing())
+  if (this.isEditing()) {
     this.toggleEditor();
+  }
 };
 
 /**
  * @return {string} Mode name.
  */
-SlideMode.prototype.getName = function() { return 'slide'; };
+SlideMode.prototype.getName = function() {
+  return 'slide';
+};
 
 /**
  * @return {string} Mode title.
  */
-SlideMode.prototype.getTitle = function() { return 'GALLERY_SLIDE'; };
+SlideMode.prototype.getTitle = function() {
+  return 'GALLERY_SLIDE';
+};
 
 /**
  * @return {!Viewport} Viewport.
  */
-SlideMode.prototype.getViewport = function() { return this.viewport_; };
+SlideMode.prototype.getViewport = function() {
+  return this.viewport_;
+};
 
 /**
  * Load items, display the selected item.
@@ -598,10 +605,11 @@ SlideMode.prototype.enter = function(
     // Remember the selection if it is empty or multiple. It will be restored
     // in |leave| if the user did not changing the selection manually.
     var currentSelection = this.selectionModel_.selectedIndexes;
-    if (currentSelection.length === 1)
+    if (currentSelection.length === 1) {
       this.savedSelection_ = null;
-    else
+    } else {
       this.savedSelection_ = currentSelection;
+    }
 
     // Ensure valid single selection.
     // Note that the SlideMode object is not listening to selection change yet.
@@ -637,8 +645,9 @@ SlideMode.prototype.enter = function(
     this.requestPrefetch(1, delay + 1000);
 
     // Call load callback.
-    if (loadCallback)
+    if (loadCallback) {
       loadCallback();
+    }
   }.bind(this)).catch(function(error) {
     console.error(error.stack, error);
   });
@@ -660,8 +669,9 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
     this.dataModel_.removeEventListener('splice', this.onSpliceBound_);
     this.ribbon_.disable();
     this.active_ = false;
-    if (this.savedSelection_)
+    if (this.savedSelection_) {
       this.selectionModel_.selectedIndexes = this.savedSelection_;
+    }
     this.unloadImage_(zoomToRect);
     callback();
   }.bind(this);
@@ -745,10 +755,11 @@ SlideMode.prototype.getSelectedIndex = function() {
  * @return {ImageRect} Screen rectangle of the selected image.
  */
 SlideMode.prototype.getSelectedImageRect = function() {
-  if (this.getSelectedIndex() < 0)
+  if (this.getSelectedIndex() < 0) {
     return null;
-  else
+  } else {
     return this.viewport_.getImageBoundsOnScreen();
+  }
 };
 
 /**
@@ -774,15 +785,18 @@ SlideMode.prototype.toggleFullScreen_ = function() {
  * @private
  */
 SlideMode.prototype.onSelection_ = function() {
-  if (this.selectionModel_.selectedIndexes.length === 0)
+  if (this.selectionModel_.selectedIndexes.length === 0) {
     return;  // Ignore temporary empty selection.
+  }
 
   // Forget the saved selection if the user changed the selection manually.
-  if (!this.isSlideshowOn_())
+  if (!this.isSlideshowOn_()) {
     this.savedSelection_ = null;
+  }
 
-  if (this.getSelectedItem() === this.displayedItem_)
+  if (this.getSelectedItem() === this.displayedItem_) {
     return;  // Do not reselect.
+  }
 
   this.commitItem_(this.loadSelectedItem_.bind(this));
 };
@@ -808,12 +822,14 @@ SlideMode.prototype.loadSelectedItem_ = function() {
   var slideHint = this.slideHint_;
   this.slideHint_ = null;
 
-  if (this.getSelectedItem() === this.displayedItem_)
-    return;  // Do not reselect.
+  if (this.getSelectedItem() === this.displayedItem_) {
+    return;
+  }  // Do not reselect.
 
   var index = this.getSelectedIndex();
-  if (index < 0)
+  if (index < 0) {
     return;
+  }
 
   var displayedIndex = this.dataModel_.indexOf(this.displayedItem_);
   var step =
@@ -837,12 +853,14 @@ SlideMode.prototype.loadSelectedItem_ = function() {
 
   function shouldPrefetch(loadType, step, sequenceLength) {
     // Never prefetch when selecting out of sequence.
-    if (Math.abs(step) != 1)
+    if (Math.abs(step) != 1) {
       return false;
+    }
 
     // Always prefetch if the previous load was from cache.
-    if (loadType === ImageView.LoadType.CACHED_FULL)
+    if (loadType === ImageView.LoadType.CACHED_FULL) {
       return true;
+    }
 
     // Prefetch if we have been going in the same direction for long enough.
     return sequenceLength >= 3;
@@ -852,8 +870,9 @@ SlideMode.prototype.loadSelectedItem_ = function() {
   var selectedUniqueKey = this.currentUniqueKey_;
 
   // Discard, since another load has been invoked after this one.
-  if (selectedUniqueKey != this.currentUniqueKey_)
+  if (selectedUniqueKey != this.currentUniqueKey_) {
     return;
+  }
 
   this.loadItem_(
       selectedItem,
@@ -861,12 +880,15 @@ SlideMode.prototype.loadSelectedItem_ = function() {
       function() {} /* no displayCallback */,
       function(loadType, delay) {
         // Discard, since another load has been invoked after this one.
-        if (selectedUniqueKey != this.currentUniqueKey_)
+        if (selectedUniqueKey != this.currentUniqueKey_) {
           return;
-        if (shouldPrefetch(loadType, step, this.sequenceLength_))
+        }
+        if (shouldPrefetch(loadType, step, this.sequenceLength_)) {
           this.requestPrefetch(step, delay);
-        if (this.isSlideshowPlaying_())
+        }
+        if (this.isSlideshowPlaying_()) {
           this.scheduleNextSlide_();
+        }
       }.bind(this));
 };
 
@@ -892,8 +914,9 @@ SlideMode.prototype.onSplice_ = function(event) {
   // Splice invalidates saved indices, drop the saved selection.
   this.savedSelection_ = null;
 
-  if (event.removed.length != 1)
+  if (event.removed.length != 1) {
     return;
+  }
 
   // Delay the selection to let the ribbon splice handler work first.
   setTimeout(function() {
@@ -905,8 +928,9 @@ SlideMode.prototype.onSplice_ = function(event) {
         this.printButton_.disabled = true;
         this.editButton_.disabled = true;
         this.errorBanner_.show('GALLERY_NO_IMAGES');
-        if (this.isEditing())
+        if (this.isEditing()) {
           this.toggleEditor();
+        }
       }.bind(this));
       return;
     }
@@ -921,8 +945,9 @@ SlideMode.prototype.onSplice_ = function(event) {
       this.selectionModel_.unselectAll();
       this.select(nextIndex);
       // If the removed image was edit, leave the editing mode.
-      if (this.isEditing())
+      if (this.isEditing()) {
         this.toggleEditor();
+      }
     }
   }.bind(this), 0);
 };
@@ -935,10 +960,12 @@ SlideMode.prototype.onSplice_ = function(event) {
 SlideMode.prototype.getNextSelectedIndex_ = function(direction) {
   function advance(index, limit) {
     index += (direction > 0 ? 1 : -1);
-    if (index < 0)
+    if (index < 0) {
       return limit - 1;
-    if (index === limit)
+    }
+    if (index === limit) {
       return 0;
+    }
     return index;
   }
 
@@ -959,8 +986,9 @@ SlideMode.prototype.getNextSelectedIndex_ = function(direction) {
  * @param {string} keyID Key of the KeyboardEvent.
  */
 SlideMode.prototype.advanceWithKeyboard = function(keyID) {
-  if (this.getItemCount_() === 0)
+  if (this.getItemCount_() === 0) {
     return;
+  }
 
   var prev = (keyID === 'ArrowUp' ||
               keyID === 'ArrowLeft' ||
@@ -974,8 +1002,9 @@ SlideMode.prototype.advanceWithKeyboard = function(keyID) {
  * @param {number} direction -1 for left, 1 for right.
  */
 SlideMode.prototype.advanceManually = function(direction) {
-  if (this.isSlideshowPlaying_())
+  if (this.isSlideshowPlaying_()) {
     this.pauseSlideshow_();
+  }
   cr.dispatchSimpleEvent(this, 'useraction');
   this.selectNext(direction);
 };
@@ -1153,8 +1182,9 @@ SlideMode.prototype.requestPrefetch = function(direction, delay) {
  */
 SlideMode.prototype.onDocumentClick_ = function(event) {
   // Events created in fakeMouseClick in test util don't pass this test.
-  if (!window.IN_TEST)
+  if (!window.IN_TEST) {
     event = assertInstanceof(event, MouseEvent);
+  }
 
   var targetElement = assertInstanceof(event.target, HTMLElement);
   // Close the bubble if clicked outside of it and if it is visible.
@@ -1203,20 +1233,23 @@ SlideMode.prototype.onKeyDown = function(event) {
   // Handles shortcut keys common for both modes (editing and not-editing).
   switch (keyID) {
     case 'Ctrl-p':  // Ctrl+'p' prints the current image.
-      if (!this.printButton_.disabled)
+      if (!this.printButton_.disabled) {
         this.print_();
+      }
       return true;
 
     case 'e':  // 'e' toggles the editor.
-      if (!this.editButton_.disabled)
+      if (!this.editButton_.disabled) {
         this.toggleEditor(event);
+      }
       return true;
   }
 
   // Handles shortcurt keys for editing mode.
   if (this.isEditing()) {
-    if (this.editor_.onKeyDown(event))
+    if (this.editor_.onKeyDown(event)) {
       return true;
+    }
 
     if (keyID === 'Escape') { // Escape
       this.toggleEditor(event);
@@ -1312,8 +1345,9 @@ SlideMode.prototype.onViewportResize_ = function() {
  */
 SlideMode.prototype.updateThumbnails = function() {
   this.ribbon_.reset();
-  if (this.active_)
+  if (this.active_) {
     this.ribbon_.redraw();
+  }
 };
 
 // Saving
@@ -1338,8 +1372,9 @@ SlideMode.prototype.saveCurrentImage_ = function(item, callback) {
     this.flashSavedLabel_();
 
     // Record UMA for the first edit.
-    if (this.imageView_.getContentRevision() === 1)
+    if (this.imageView_.getContentRevision() === 1) {
       metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
+    }
 
     // Users can change overwrite original setting only if there is no undo
     // stack and item is original and writable.
@@ -1473,8 +1508,9 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
     return;
   }
 
-  if (opt_event)  // Caused by user action, notify the Gallery.
+  if (opt_event) {  // Caused by user action, notify the Gallery.
     cr.dispatchSimpleEvent(this, 'useraction');
+  }
 
   this.fullscreenBeforeSlideshow_ = util.isFullScreen(this.context_.appWindow);
   if (!this.fullscreenBeforeSlideshow_) {
@@ -1500,11 +1536,13 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
  * @private
  */
 SlideMode.prototype.stopSlideshow_ = function(opt_event) {
-  if (!this.isSlideshowOn_())
+  if (!this.isSlideshowOn_()) {
     return;
+  }
 
-  if (opt_event)  // Caused by user action, notify the Gallery.
+  if (opt_event) {  // Caused by user action, notify the Gallery.
     cr.dispatchSimpleEvent(this, 'useraction');
+  }
 
   this.pauseSlideshow_();
   this.container_.removeAttribute('slideshow');
@@ -1555,8 +1593,9 @@ SlideMode.prototype.toggleSlideshowPause_ = function() {
 SlideMode.prototype.scheduleNextSlide_ = function(opt_interval) {
   console.assert(this.isSlideshowPlaying_(), 'Inconsistent slideshow state');
 
-  if (this.slideShowTimeout_)
+  if (this.slideShowTimeout_) {
     clearTimeout(this.slideShowTimeout_);
+  }
 
   this.slideShowTimeout_ = setTimeout(function() {
     this.slideShowTimeout_ = null;
@@ -1598,8 +1637,9 @@ SlideMode.prototype.isEditing = function() {
  * @private
  */
 SlideMode.prototype.stopEditing_ = function() {
-  if (this.isEditing())
+  if (this.isEditing()) {
     this.toggleEditor();
+  }
 };
 
 /**
@@ -1608,8 +1648,9 @@ SlideMode.prototype.stopEditing_ = function() {
  * @private
  */
 SlideMode.prototype.setSubMode_ = function(subMode) {
-  if (this.subMode_ === subMode)
+  if (this.subMode_ === subMode) {
     return;
+  }
 
   this.subMode_ = subMode;
 
@@ -1631,8 +1672,9 @@ SlideMode.prototype.getSubMode = function() {
  * @param {Event=} opt_event Event.
  */
 SlideMode.prototype.toggleEditor = function(opt_event) {
-  if (opt_event)  // Caused by user action, notify the Gallery.
+  if (opt_event) {  // Caused by user action, notify the Gallery.
     cr.dispatchSimpleEvent(this, 'useraction');
+  }
 
   if (!this.active_) {
     this.toggleMode_(this.toggleEditor.bind(this));
@@ -1642,13 +1684,19 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
   this.stopSlideshow_();
 
   // Disable entering edit mode for videos.
-  var item = assert(this.getItem(this.getSelectedIndex()));
-  var startEditing = !this.isEditing() && item.isEditable();
+  let startEditing = false;
+  let item = this.getItem(this.getSelectedIndex());
+  if (item != null) {
+    startEditing = !this.isEditing() && item.isEditable();
+  }
 
   ImageUtil.setAttribute(this.container_, 'editing', startEditing);
   this.editButtonToggleRipple_.activated = this.isEditing();
 
   if (this.isEditing()) { // isEditing has just been flipped to a new value.
+    // The item should not be null.
+    item = assert(item);
+
     // Reset zoom.
     this.viewport_.resetView();
 
@@ -1666,16 +1714,18 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
             item, this.context_.readonlyDirName,
             assert(this.dataModel_.fallbackSaveDirectory))
         .then(function(warningMessage) {
-          if (!warningMessage)
+          if (!warningMessage) {
             return;
+          }
 
           this.filesToast_.show(warningMessage);
         }.bind(this));
 
     // Show overwrite original bubble if it hasn't been shown for max times.
     this.getOverwriteBubbleCount_().then(function(count) {
-      if (count >= SlideMode.OVERWRITE_BUBBLE_MAX_TIMES)
+      if (count >= SlideMode.OVERWRITE_BUBBLE_MAX_TIMES) {
         return;
+      }
 
       this.setOverwriteBubbleCount_(count + 1);
       this.bubble_.hidden = false;
@@ -1982,8 +2032,9 @@ TouchHandler.prototype = /** @struct */ {
    */
   set enabled(flag) {
     this.enabled_ = flag;
-    if (!this.enabled_)
+    if (!this.enabled_) {
       this.stopOperation();
+    }
   }
 };
 
@@ -2005,8 +2056,9 @@ TouchHandler.prototype.stopOperation = function() {
  */
 TouchHandler.prototype.onTouchStart_ = function(event) {
   event = assertInstanceof(event, TouchEvent);
-  if (this.enabled_ && event.touches.length === 1)
+  if (this.enabled_ && event.touches.length === 1) {
     this.touchStarted_ = true;
+  }
 };
 
 /**
@@ -2018,8 +2070,9 @@ TouchHandler.prototype.onTouchEvent_ = function(event) {
   event = assertInstanceof(event, TouchEvent);
   // Check if the current touch operation started from the target element or
   // not.
-  if (!this.touchStarted_)
+  if (!this.touchStarted_) {
     return;
+  }
 
   // Check if the current touch operation ends with the event.
   if (event.touches.length === 0) {
@@ -2058,8 +2111,9 @@ TouchHandler.prototype.onTouchEvent_ = function(event) {
         this.slideMode_.applyViewportChange();
       } else {
         // Traversing images by swipe.
-        if (this.done_)
+        if (this.done_) {
           break;
+        }
         var dx =
             event.touches[0].clientX -
             this.gestureStartEvent_.touches[0].clientX;
@@ -2077,20 +2131,22 @@ TouchHandler.prototype.onTouchEvent_ = function(event) {
       // Pinch zoom.
       var distance1 = TouchHandler.getDistance(this.lastEvent_);
       var distance2 = TouchHandler.getDistance(event);
-      if (distance1 === 0)
+      if (distance1 === 0) {
         break;
+      }
       var zoom = distance2 / distance1 * this.lastZoom_;
       viewport.setZoom(zoom);
 
       // Pinch rotation.
       assert(this.gestureStartEvent_);
       var angle = TouchHandler.getTwistAngle(this.gestureStartEvent_, event);
-      if (angle > TouchHandler.ROTATION_THRESHOLD)
+      if (angle > TouchHandler.ROTATION_THRESHOLD) {
         viewport.setRotation(this.gestureStartRotation_ + 1);
-      else if (angle < -TouchHandler.ROTATION_THRESHOLD)
+      } else if (angle < -TouchHandler.ROTATION_THRESHOLD) {
         viewport.setRotation(this.gestureStartRotation_ - 1);
-      else
+      } else {
         viewport.setRotation(this.gestureStartRotation_);
+      }
       this.slideMode_.applyViewportChange();
       break;
   }
@@ -2114,8 +2170,9 @@ TouchHandler.WHEEL_ZOOM_FACTOR = 1.05;
  */
 TouchHandler.prototype.onMouseWheel_ = function(event) {
   var event = assertInstanceof(event, MouseEvent);
-  if (!this.enabled_)
+  if (!this.enabled_) {
     return;
+  }
 
   this.stopOperation();
 
@@ -2130,8 +2187,9 @@ TouchHandler.prototype.onMouseWheel_ = function(event) {
   // Request animation frame not to set zoom more than once in a frame. This is
   // a fix for https://crbug.com/591033
   requestAnimationFrame(function(operationId) {
-    if (this.mouseWheelZoomOperationId_ !== operationId)
+    if (this.mouseWheelZoomOperationId_ !== operationId) {
       return;
+    }
 
     viewport.setZoom(zoom);
     this.slideMode_.applyViewportChange();
@@ -2146,8 +2204,9 @@ TouchHandler.prototype.onMouseWheel_ = function(event) {
 TouchHandler.prototype.onMouseDown_ = function(event) {
   var event = assertInstanceof(event, MouseEvent);
   var viewport = this.slideMode_.getViewport();
-  if (!this.enabled_ || event.button !== 0)
+  if (!this.enabled_ || event.button !== 0) {
     return;
+  }
   this.clickStarted_ = true;
 };
 
@@ -2159,8 +2218,9 @@ TouchHandler.prototype.onMouseDown_ = function(event) {
 TouchHandler.prototype.onMouseMove_ = function(event) {
   var event = assertInstanceof(event, MouseEvent);
   var viewport = this.slideMode_.getViewport();
-  if (!this.enabled_ || !this.clickStarted_)
+  if (!this.enabled_ || !this.clickStarted_) {
     return;
+  }
   this.stopOperation();
   viewport.setOffset(
       viewport.getOffsetX() +
@@ -2176,7 +2236,8 @@ TouchHandler.prototype.onMouseMove_ = function(event) {
  * @private
  */
 TouchHandler.prototype.onMouseUp_ = function(event) {
-  if (event.button !== 0)
+  if (event.button !== 0) {
     return;
+  }
   this.clickStarted_ = false;
 };

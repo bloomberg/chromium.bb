@@ -44,7 +44,7 @@ TestContentClient::TestContentClient() {
 #if defined(OS_ANDROID)
     ui::ResourceBundle::InitSharedInstanceWithLocale(
         base::android::GetDefaultLocaleString(), NULL,
-        ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+        ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
     ui::LoadMainAndroidPackFile("assets/content_shell.pak",
                                 content_shell_pack_path);
@@ -55,10 +55,6 @@ TestContentClient::TestContentClient() {
 }
 
 TestContentClient::~TestContentClient() {
-}
-
-std::string TestContentClient::GetUserAgent() const {
-  return std::string("TestContentClient");
 }
 
 base::StringPiece TestContentClient::GetDataResource(

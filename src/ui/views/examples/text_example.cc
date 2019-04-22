@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -76,11 +76,7 @@ void SetFlagFromCheckbox(Checkbox* checkbox, int* flags, int flag) {
 // TextExample's content view, which draws stylized string.
 class TextExample::TextExampleView : public View {
  public:
-  TextExampleView()
-    : text_(base::ASCIIToUTF16(kShortText)),
-      flags_(0),
-      elide_(gfx::NO_ELIDE) {
-  }
+  TextExampleView() : text_(base::ASCIIToUTF16(kShortText)) {}
 
   void OnPaint(gfx::Canvas* canvas) override {
     View::OnPaint(canvas);
@@ -121,10 +117,10 @@ class TextExample::TextExampleView : public View {
   base::string16 text_;
 
   // Text flags for passing to |DrawStringRect()|.
-  int flags_;
+  int flags_ = 0;
 
   // The eliding, fading, or truncating behavior.
-  gfx::ElideBehavior elide_;
+  gfx::ElideBehavior elide_ = gfx::NO_ELIDE;
 
   DISALLOW_COPY_AND_ASSIGN(TextExampleView);
 };
@@ -170,15 +166,15 @@ void TextExample::CreateExampleView(View* container) {
   column_set->AddPaddingColumn(0, 8);
 
   h_align_cb_ = AddCombobox(layout, "H-Align", kHorizontalAligments,
-                            arraysize(kHorizontalAligments));
+                            base::size(kHorizontalAligments));
   eliding_cb_ = AddCombobox(layout, "Eliding", kElideBehaviors,
-                            arraysize(kElideBehaviors));
-  prefix_cb_ = AddCombobox(layout, "Prefix", kPrefixOptions,
-                           arraysize(kPrefixOptions));
+                            base::size(kElideBehaviors));
+  prefix_cb_ =
+      AddCombobox(layout, "Prefix", kPrefixOptions, base::size(kPrefixOptions));
   text_cb_ = AddCombobox(layout, "Example Text", kTextExamples,
-                         arraysize(kTextExamples));
+                         base::size(kTextExamples));
   weight_cb_ = AddCombobox(layout, "Font Weight", kWeightLabels,
-                           arraysize(kWeightLabels));
+                           base::size(kWeightLabels));
   weight_cb_->SelectValue(base::ASCIIToUTF16("Normal"));
 
   layout->StartRow(0, 0);

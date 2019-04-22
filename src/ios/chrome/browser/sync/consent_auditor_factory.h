@@ -8,9 +8,10 @@
 // TODO(crbug.com/850428): Move this and .cc back to
 // ios/chrome/browser/consent_auditor, when it does not depend on
 // UserEventService anymore. Currently this is not possible due to a BUILD.gn
-// depedency.
+// dependency.
 
-#include "base/memory/singleton.h"
+#include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 namespace consent_auditor {
@@ -32,7 +33,7 @@ class ConsentAuditorFactory : public BrowserStateKeyedServiceFactory {
   static ConsentAuditorFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<ConsentAuditorFactory>;
+  friend class base::NoDestructor<ConsentAuditorFactory>;
 
   ConsentAuditorFactory();
   ~ConsentAuditorFactory() override;

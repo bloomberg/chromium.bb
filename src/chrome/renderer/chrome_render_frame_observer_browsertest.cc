@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_test.h"

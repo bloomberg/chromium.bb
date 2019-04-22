@@ -76,7 +76,7 @@ void PolicyUpdateCallback(
     std::unique_ptr<base::DictionaryValue> policies) {
   DCHECK(callback);
   task_runner->PostTask(FROM_HERE,
-                        base::Bind(callback, base::Passed(&policies)));
+                        base::BindOnce(callback, std::move(policies)));
 }
 
 void PolicyErrorCallback(
@@ -124,7 +124,8 @@ void It2MeNativeMessagingHost::OnMessage(const std::string& message) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
-  std::unique_ptr<base::Value> message_value = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> message_value =
+      base::JSONReader::ReadDeprecated(message);
   if (!message_value->is_dict()) {
     LOG(ERROR) << "Received a message that's not a dictionary.";
     client_->CloseChannel(std::string());
@@ -345,7 +346,7 @@ void It2MeNativeMessagingHost::ProcessIncomingIq(
 
   incoming_message_callback_.Run(iq);
   SendMessageToClient(std::move(response));
-};
+}
 
 void It2MeNativeMessagingHost::SendOutgoingIq(const std::string& iq) {
   std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());

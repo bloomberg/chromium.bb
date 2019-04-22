@@ -32,50 +32,79 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_ICE_CANDIDATE_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
-class WebRTCICECandidate final : public base::RefCounted<WebRTCICECandidate> {
+class BLINK_PLATFORM_EXPORT WebRTCICECandidate final
+    : public base::RefCounted<WebRTCICECandidate> {
  public:
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
-  // TODO(guidou): Support setting sdp_m_line_index to -1 to indicate the
-  // absence of a value for sdp_m_line_index. crbug.com/614958
+  // Creates a new WebRTCICECandidate using |candidate|, |sdp_mid| and
+  // |sdp_m_line_index|. If |sdp_m_line_index| is negative, it is
+  // considered as having no value.
+  static scoped_refptr<WebRTCICECandidate> Create(WebString candidate,
+                                                  WebString sdp_mid,
+                                                  int sdp_m_line_index);
+
+  // Creates a new WebRTCICECandidate using |candidate|, |sdp_mid|,
+  // |sdp_m_line_index|, and |username_fragment|.
   static scoped_refptr<WebRTCICECandidate> Create(
-      const WebString& candidate,
-      const WebString& sdp_mid,
-      unsigned short sdp_m_line_index) {
-    return base::AdoptRef(
-        new WebRTCICECandidate(candidate, sdp_mid, sdp_m_line_index));
-  }
+      WebString candidate,
+      WebString sdp_mid,
+      base::Optional<uint16_t> sdp_m_line_index,
+      WebString username_fragment);
 
   const WebString& Candidate() const { return candidate_; }
   const WebString& SdpMid() const { return sdp_mid_; }
-  unsigned short SdpMLineIndex() const { return sdp_m_line_index_; }
-  void SetCandidate(WebString candidate) { candidate_ = std::move(candidate); }
-  void SetSdpMid(WebString sdp_mid) { sdp_mid_ = std::move(sdp_mid); }
-  void SetSdpMLineIndex(unsigned short sdp_m_line_index) {
-    sdp_m_line_index_ = sdp_m_line_index;
+  const base::Optional<uint16_t>& SdpMLineIndex() const {
+    return sdp_m_line_index_;
   }
+  const WebString& Foundation() const { return foundation_; }
+  const WebString& Component() const { return component_; }
+  const base::Optional<uint32_t>& Priority() const { return priority_; }
+  const WebString& Address() const { return address_; }
+  const WebString Protocol() const { return protocol_; }
+  const base::Optional<uint16_t>& Port() const { return port_; }
+  const WebString& Type() const { return type_; }
+  const WebString& TcpType() const { return tcp_type_; }
+  const WebString& RelatedAddress() const { return related_address_; }
+  const base::Optional<uint16_t>& RelatedPort() const { return related_port_; }
+  const WebString& UsernameFragment() const { return username_fragment_; }
 
  private:
   friend class base::RefCounted<WebRTCICECandidate>;
 
-  WebRTCICECandidate(const WebString& candidate,
-                     const WebString& sdp_mid,
-                     unsigned short sdp_m_line_index)
-      : candidate_(candidate),
-        sdp_mid_(sdp_mid),
-        sdp_m_line_index_(sdp_m_line_index) {}
+  WebRTCICECandidate(WebString candidate,
+                     WebString sdp_mid,
+                     base::Optional<uint16_t> sdp_m_line_index);
+
+  WebRTCICECandidate(WebString candidate,
+                     WebString sdp_mid,
+                     base::Optional<uint16_t> sdp_m_line_index,
+                     WebString username_fragment);
+
+  void PopulateFields(bool use_username_from_candidate);
 
   ~WebRTCICECandidate() = default;
 
   WebString candidate_;
   WebString sdp_mid_;
-  unsigned short sdp_m_line_index_;
+  base::Optional<uint16_t> sdp_m_line_index_;
+  WebString foundation_;
+  WebString component_;
+  base::Optional<uint32_t> priority_;
+  WebString address_;
+  WebString protocol_;
+  base::Optional<uint16_t> port_;
+  WebString type_;
+  WebString tcp_type_;
+  WebString related_address_;
+  base::Optional<uint16_t> related_port_;
+  WebString username_fragment_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRTCICECandidate);
 };

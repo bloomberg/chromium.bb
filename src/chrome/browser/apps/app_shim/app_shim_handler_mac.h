@@ -9,55 +9,23 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/process/process.h"
 #include "chrome/common/mac/app_shim_launch.h"
 
-namespace views {
-class BridgeFactoryHost;
-}  // namespace views
-
+class AppShimHost;
 class AppShimHostBootstrap;
 
 namespace apps {
+
+using ShimLaunchedCallback = base::OnceCallback<void(base::Process)>;
+using ShimTerminatedCallback = base::OnceClosure;
 
 // Registrar, and interface for services that can handle interactions with OSX
 // shim processes.
 class AppShimHandler {
  public:
-  // TODO(ccameron): Remove this virtual interface and always use AppShimHost
-  // directly.
-  // https://crbug.com/896917
-  class Host {
-   public:
-    // Returns true if an AppShimHostBootstrap has already connected to this
-    // host.
-    virtual bool HasBootstrapConnected() const = 0;
-    // Invoked when the app shim process has finished launching. The |bootstrap|
-    // object owns the lifetime of the app shim process.
-    virtual void OnBootstrapConnected(
-        std::unique_ptr<AppShimHostBootstrap> bootstrap) = 0;
-    // Invoked when the app is successfully launched.
-    virtual void OnAppLaunchComplete(AppShimLaunchResult result) = 0;
-    // Invoked when the app is closed in the browser process.
-    virtual void OnAppClosed() = 0;
-    // Invoked when the app should be hidden.
-    virtual void OnAppHide() = 0;
-    // Invoked when a window becomes visible while the app is hidden. Ensures
-    // the shim's "Hide/Show" state is updated correctly and the app can be
-    // re-hidden.
-    virtual void OnAppUnhideWithoutActivation() = 0;
-    // Invoked when the app is requesting user attention.
-    virtual void OnAppRequestUserAttention(AppShimAttentionType type) = 0;
-
-    // Allows the handler to determine which app this host corresponds to.
-    virtual base::FilePath GetProfilePath() const = 0;
-    virtual std::string GetAppId() const = 0;
-    virtual views::BridgeFactoryHost* GetViewsBridgeFactoryHost() const = 0;
-
-   protected:
-    virtual ~Host() {}
-  };
-
   // Register a handler for an |app_mode_id|.
   static void RegisterHandler(const std::string& app_mode_id,
                               AppShimHandler* handler);
@@ -83,29 +51,35 @@ class AppShimHandler {
   // running.
   static bool ShouldRestoreSession();
 
-  // Invoked by the shim host when the shim process is launched. The handler
-  // must call OnAppLaunchComplete to inform the shim of the result.
-  // |launch_type| indicates the type of launch.
-  // |files|, if non-empty, holds an array of files paths given as arguments, or
-  // dragged onto the app bundle or dock icon.
-  virtual void OnShimLaunch(
+  // Request that the handler launch the app shim process.
+  virtual void OnShimLaunchRequested(
+      AppShimHost* host,
+      bool recreate_shims,
+      apps::ShimLaunchedCallback launched_callback,
+      apps::ShimTerminatedCallback terminated_callback) = 0;
+
+  // Invoked by the AppShimHostBootstrap when a shim process has connected to
+  // the browser process. This will connect to (creating, if needed) an
+  // AppShimHost. |bootstrap| must have OnConnectedToHost or
+  // OnFailedToConnectToHost called on it to inform the shim of the result.
+  virtual void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) = 0;
 
   // Invoked by the shim host when the connection to the shim process is closed.
-  virtual void OnShimClose(Host* host) = 0;
+  virtual void OnShimClose(AppShimHost* host) = 0;
 
   // Invoked by the shim host when the shim process receives a focus event.
   // |files|, if non-empty, holds an array of files dragged onto the app bundle
   // or dock icon.
-  virtual void OnShimFocus(Host* host,
+  virtual void OnShimFocus(AppShimHost* host,
                            AppShimFocusType focus_type,
                            const std::vector<base::FilePath>& files) = 0;
 
   // Invoked by the shim host when the shim process is hidden or shown.
-  virtual void OnShimSetHidden(Host* host, bool hidden) = 0;
+  virtual void OnShimSetHidden(AppShimHost* host, bool hidden) = 0;
 
   // Invoked by the shim host when the shim process receives a quit event.
-  virtual void OnShimQuit(Host* host) = 0;
+  virtual void OnShimQuit(AppShimHost* host) = 0;
 
  protected:
   AppShimHandler() {}

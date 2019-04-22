@@ -7,9 +7,20 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
+#include "video/video_loopback.h"
 
 #include <stdio.h>
+#include <memory>
+#include <string>
+#include <vector>
 
+#include "absl/memory/memory.h"
+#include "absl/types/optional.h"
+#include "api/bitrate_constraints.h"
+#include "api/test/simulated_network.h"
+#include "api/test/video_quality_test_fixture.h"
+#include "api/video_codecs/video_codec.h"
+#include "rtc_base/checks.h"
 #include "rtc_base/flags.h"
 #include "rtc_base/logging.h"
 #include "system_wrappers/include/field_trial.h"
@@ -236,6 +247,14 @@ std::string SL1() {
 }
 
 WEBRTC_DEFINE_string(
+    sl2,
+    "",
+    "Comma separated values describing SpatialLayer for layer #2.");
+std::string SL2() {
+  return static_cast<std::string>(FLAG_sl2);
+}
+
+WEBRTC_DEFINE_string(
     encoded_frame_path,
     "",
     "The base path for encoded frame logs. Created files will have "
@@ -331,7 +350,7 @@ void Loopback() {
                      0,  // No min transmit bitrate.
                      flags::FLAG_use_ulpfec,
                      flags::FLAG_use_flexfec,
-                     false,
+                     flags::NumStreams() < 2,  // Automatic quality scaling.
                      flags::Clip(),
                      flags::GetCaptureDevice()};
   params.audio = {flags::FLAG_audio, flags::FLAG_audio_video_sync,
@@ -358,6 +377,7 @@ void Loopback() {
   std::vector<std::string> SL_descriptors;
   SL_descriptors.push_back(flags::SL0());
   SL_descriptors.push_back(flags::SL1());
+  SL_descriptors.push_back(flags::SL2());
   VideoQualityTest::FillScalabilitySettings(
       &params, 0, stream_descriptors, flags::NumStreams(),
       flags::SelectedStream(), flags::NumSpatialLayers(), flags::SelectedSL(),
@@ -370,9 +390,8 @@ void Loopback() {
     fixture->RunWithRenderers(params);
   }
 }
-}  // namespace webrtc
 
-int main(int argc, char* argv[]) {
+int RunLoopbackTest(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   rtc::FlagList::SetFlagsFromCommandLine(&argc, argv, true);
   if (webrtc::flags::FLAG_help) {
@@ -392,3 +411,4 @@ int main(int argc, char* argv[]) {
   webrtc::test::RunTest(webrtc::Loopback);
   return 0;
 }
+}  // namespace webrtc

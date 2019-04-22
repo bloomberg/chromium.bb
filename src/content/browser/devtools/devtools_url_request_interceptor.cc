@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/devtools_url_request_interceptor.h"
 
+#include "base/bind.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -14,8 +15,26 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
+
+// static
+std::unique_ptr<DevToolsURLRequestInterceptor>
+DevToolsURLRequestInterceptor::MaybeCreate(BrowserContext* browser_context) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return nullptr;
+
+  // TODO(caseq): Technically, this is wrong -- we currently maintain one
+  // interception controller per browser context, while in reality it is
+  // created per StoragePartition.
+  // So we only support interception for the first StoragePartition, which
+  // results in extensions not being supported. Luckily, this implementation
+  // of the interception is going away when network service is enabled.
+  if (DevToolsInterceptorController::FromBrowserContext(browser_context))
+    return nullptr;
+  return std::make_unique<DevToolsURLRequestInterceptor>(browser_context);
+}
 
 // static
 bool DevToolsURLRequestInterceptor::IsNavigationRequest(
@@ -45,7 +64,7 @@ DevToolsURLRequestInterceptor::~DevToolsURLRequestInterceptor() {
 
 const DevToolsTargetRegistry::TargetInfo*
 DevToolsURLRequestInterceptor::TargetInfoForRequestInfo(
-    const ResourceRequestInfo* request_info) const {
+    ResourceRequestInfo* request_info) const {
   int frame_node_id = request_info->GetFrameTreeNodeId();
   if (frame_node_id != -1)
     return target_resolver_->GetInfoByFrameTreeNodeId(frame_node_id);
@@ -121,7 +140,7 @@ net::URLRequestJob* DevToolsURLRequestInterceptor::InnerMaybeInterceptRequest(
   // Don't try to intercept blob resources.
   if (request->url().SchemeIsBlob())
     return nullptr;
-  const ResourceRequestInfo* resource_request_info =
+  ResourceRequestInfo* resource_request_info =
       ResourceRequestInfo::ForRequest(request);
   if (!resource_request_info)
     return nullptr;

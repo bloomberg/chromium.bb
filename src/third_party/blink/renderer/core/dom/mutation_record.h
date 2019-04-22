@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_MUTATION_RECORD_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_MUTATION_RECORD_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -43,7 +44,7 @@ template <typename NodeType>
 class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
 
-class MutationRecord : public ScriptWrappable {
+class CORE_EXPORT MutationRecord : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

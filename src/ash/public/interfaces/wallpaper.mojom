@@ -53,14 +53,11 @@ interface WallpaperController {
   //                                    reside.
   // |device_policy_wallpaper_path|: The file path of the device policy
   //                                 wallpaper (if any).
-  // |is_device_wallpaper_policy_enforced|: Whether the device wallpaper policy
-  //                                        is enforced on the device.
   Init(WallpaperControllerClient client,
        mojo_base.mojom.FilePath user_data_path,
        mojo_base.mojom.FilePath chromeos_wallpapers_path,
        mojo_base.mojom.FilePath chromeos_custom_wallpapers_path,
-       mojo_base.mojom.FilePath device_policy_wallpaper_path,
-       bool is_device_wallpaper_policy_enforced);
+       mojo_base.mojom.FilePath device_policy_wallpaper_path);
 
   // Sets wallpaper from a local file and updates the saved wallpaper info for
   // the user.
@@ -145,9 +142,12 @@ interface WallpaperController {
                      string wallpaper_files_id,
                      string data);
 
-  // Sets whether device wallpaper policy is enforced on this device. Updates/
-  // clears the device policy controlled wallpaper if applicable.
-  SetDeviceWallpaperPolicyEnforced(bool enforced);
+  // Sets the path of device policy wallpaper.
+  // |device_policy_wallpaper_path|: The file path of the device policy
+  //                                 wallpaper if it was set or empty value if
+  //                                 it was cleared.
+  SetDevicePolicyWallpaperPath(
+      mojo_base.mojom.FilePath device_policy_wallpaper_path);
 
   // Sets wallpaper from a third-party app (as opposed to the Chrome OS
   // wallpaper picker).
@@ -204,6 +204,17 @@ interface WallpaperController {
   // blurred because it's assumed that the caller wants to show the image as is
   // when using this method.
   ShowOneShotWallpaper(gfx.mojom.ImageSkia image);
+
+  // Shows a wallpaper that stays on top of everything except for the power off
+  // animation. All other wallpaper requests are ignored when the always-on-top
+  // wallpaper is being shown.
+  // |image_path|: The file path to read the image data from.
+  ShowAlwaysOnTopWallpaper(mojo_base.mojom.FilePath image_path);
+
+  // Removes the always-on-top wallpaper. The wallpaper will revert to the
+  // previous one, or a default one if there was none. No-op if the current
+  // wallpaper is not always-on-top.
+  RemoveAlwaysOnTopWallpaper();
 
   // Removes all of the user's saved wallpapers and related info.
   // |wallpaper_files_id|: The file id for user_info.account_id.
@@ -278,10 +289,10 @@ interface WallpaperControllerClient {
   // able to decide whatever the first wallpaper it wants to display.
   OnReadyToSetWallpaper();
 
-  // TODO(wzang|784495): Consider removing this after views-based login is
-  // enabled.
-  // Notifies the client that the animation of the first wallpaper since
-  // the controller initialization has completed.
+  // Notifies the client that the animation of the first wallpaper since the
+  // controller initialization has completed.
+  // TODO(crbug.com/875128): Remove this after web-ui login code is completely
+  // removed.
   OnFirstWallpaperAnimationFinished();
 };
 
@@ -298,7 +309,8 @@ interface WallpaperObserver {
   // are ordered and are referenced in wallpaper::ColorProfileType.
   OnWallpaperColorsChanged(array<uint32> prominent_colors);
 
-  // TODO(wzang|784495): Remove this after views-based login is enabled.
   // Invoked when the blur state of the wallpaper changes.
+  // TODO(crbug.com/875128): Remove this after web-ui login code is completely
+  // removed.
   OnWallpaperBlurChanged(bool blurred);
 };

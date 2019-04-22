@@ -4,10 +4,10 @@
 
 #include "components/viz/service/display_embedder/software_output_device_win.h"
 
+#include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/windows_version.h"
-#include "base/win/wrapped_window_proc.h"
 #include "components/viz/common/display/use_layered_window.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/service/display_embedder/output_device_backing.h"
@@ -16,10 +16,10 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/base/win/hidden_window.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/win/hwnd_util.h"
+#include "ui/gl/vsync_provider_win.h"
 
 namespace viz {
 namespace {
@@ -27,7 +27,10 @@ namespace {
 // Shared base class for Windows SoftwareOutputDevice implementations.
 class SoftwareOutputDeviceWinBase : public SoftwareOutputDevice {
  public:
-  explicit SoftwareOutputDeviceWinBase(HWND hwnd) : hwnd_(hwnd) {}
+  explicit SoftwareOutputDeviceWinBase(HWND hwnd) : hwnd_(hwnd) {
+    vsync_provider_ = std::make_unique<gl::VSyncProviderWin>(hwnd);
+  }
+
   ~SoftwareOutputDeviceWinBase() override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(!in_paint_);
@@ -335,96 +338,6 @@ void SoftwareOutputDeviceWinProxy::DrawAck() {
   std::move(swap_ack_callback_).Run();
 }
 
-// WindowProc callback function for SoftwareOutputDeviceWinDirectChild.
-LRESULT CALLBACK IntermediateWindowProc(HWND window,
-                                        UINT message,
-                                        WPARAM w_param,
-                                        LPARAM l_param) {
-  switch (message) {
-    case WM_ERASEBKGND:
-      // Prevent Windows from erasing all window content on resize.
-      return 1;
-    default:
-      return DefWindowProc(window, message, w_param, l_param);
-  }
-}
-
-// SoftwareOutputDevice implementation that creates a child HWND and draws
-// directly to it. This is intended to be used in the GPU process. The child
-// HWND is initially parented to a hidden window and needs be reparented to the
-// appropriate browser HWND. The backing buffer for paint is shared for all
-// instances of this class.
-class SoftwareOutputDeviceWinDirectChild
-    : public SoftwareOutputDeviceWinDirect {
- public:
-  static std::unique_ptr<SoftwareOutputDeviceWinDirectChild> Create(
-      OutputDeviceBacking* backing);
-  ~SoftwareOutputDeviceWinDirectChild() override;
-
-  // SoftwareOutputDeviceWinBase implementation.
-  void ResizeDelegated() override;
-
- private:
-  static wchar_t* GetWindowClass();
-
-  SoftwareOutputDeviceWinDirectChild(HWND child_hwnd,
-                                     OutputDeviceBacking* backing);
-
-  DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceWinDirectChild);
-};
-
-// static
-std::unique_ptr<SoftwareOutputDeviceWinDirectChild>
-SoftwareOutputDeviceWinDirectChild::Create(OutputDeviceBacking* backing) {
-  // Create a child window that is initially parented to a hidden window.
-  // |child_hwnd| needs to be reparented to a browser created HWND to be
-  // visible.
-  HWND child_hwnd =
-      CreateWindowEx(WS_EX_NOPARENTNOTIFY, GetWindowClass(), L"",
-                     WS_CHILDWINDOW | WS_DISABLED | WS_VISIBLE, 0, 0, 0, 0,
-                     ui::GetHiddenWindow(), nullptr, nullptr, nullptr);
-  DCHECK(child_hwnd);
-  return base::WrapUnique(
-      new SoftwareOutputDeviceWinDirectChild(child_hwnd, backing));
-}
-
-SoftwareOutputDeviceWinDirectChild::~SoftwareOutputDeviceWinDirectChild() {
-  DestroyWindow(hwnd());
-}
-
-void SoftwareOutputDeviceWinDirectChild::ResizeDelegated() {
-  SoftwareOutputDeviceWinDirect::ResizeDelegated();
-  // Resize the child HWND to match the content size.
-  SetWindowPos(hwnd(), nullptr, 0, 0, viewport_pixel_size_.width(),
-               viewport_pixel_size_.height(),
-               SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS |
-                   SWP_NOOWNERZORDER | SWP_NOZORDER);
-}
-
-// static
-wchar_t* SoftwareOutputDeviceWinDirectChild::GetWindowClass() {
-  static ATOM window_class = 0;
-
-  // Register window class on first call.
-  if (!window_class) {
-    WNDCLASSEX intermediate_class;
-    base::win::InitializeWindowClass(
-        L"Intermediate Software Window",
-        &base::win::WrappedWindowProc<IntermediateWindowProc>, CS_OWNDC, 0, 0,
-        nullptr, reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)), nullptr,
-        nullptr, nullptr, &intermediate_class);
-    window_class = RegisterClassEx(&intermediate_class);
-    DCHECK(window_class);
-  }
-
-  return reinterpret_cast<wchar_t*>(window_class);
-}
-
-SoftwareOutputDeviceWinDirectChild::SoftwareOutputDeviceWinDirectChild(
-    HWND child_hwnd,
-    OutputDeviceBacking* backing)
-    : SoftwareOutputDeviceWinDirect(child_hwnd, backing) {}
-
 }  // namespace
 
 std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWinBrowser(
@@ -439,8 +352,7 @@ std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWinBrowser(
 std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWinGpu(
     HWND hwnd,
     OutputDeviceBacking* backing,
-    mojom::DisplayClient* display_client,
-    HWND* out_child_hwnd) {
+    mojom::DisplayClient* display_client) {
   if (NeedsToUseLayerWindow(hwnd)) {
     DCHECK(display_client);
 
@@ -450,18 +362,10 @@ std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWinGpu(
     display_client->CreateLayeredWindowUpdater(
         mojo::MakeRequest(&layered_window_updater));
 
-    *out_child_hwnd = nullptr;
-
     return std::make_unique<SoftwareOutputDeviceWinProxy>(
         hwnd, std::move(layered_window_updater));
   } else {
-    auto software_output_device =
-        SoftwareOutputDeviceWinDirectChild::Create(backing);
-
-    // The child HWND needs to be parented to the browser HWND to be visible.
-    *out_child_hwnd = software_output_device->hwnd();
-
-    return software_output_device;
+    return std::make_unique<SoftwareOutputDeviceWinDirect>(hwnd, backing);
   }
 }
 

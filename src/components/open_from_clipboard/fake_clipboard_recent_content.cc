@@ -9,15 +9,27 @@ FakeClipboardRecentContent::FakeClipboardRecentContent()
 
 FakeClipboardRecentContent::~FakeClipboardRecentContent() {}
 
-bool FakeClipboardRecentContent::GetRecentURLFromClipboard(GURL* url) {
+base::Optional<GURL> FakeClipboardRecentContent::GetRecentURLFromClipboard() {
   if (suppress_content_)
-    return false;
+    return base::nullopt;
 
-  if (!clipboard_content_.is_valid())
-    return false;
+  return clipboard_url_content_;
+}
 
-  *url = clipboard_content_;
-  return true;
+base::Optional<base::string16>
+FakeClipboardRecentContent::GetRecentTextFromClipboard() {
+  if (suppress_content_)
+    return base::nullopt;
+
+  return clipboard_text_content_;
+}
+
+base::Optional<gfx::Image>
+FakeClipboardRecentContent::GetRecentImageFromClipboard() {
+  if (suppress_content_)
+    return base::nullopt;
+
+  return clipboard_image_content_;
 }
 
 base::TimeDelta FakeClipboardRecentContent::GetClipboardContentAge() const {
@@ -28,10 +40,31 @@ void FakeClipboardRecentContent::SuppressClipboardContent() {
   suppress_content_ = true;
 }
 
-void FakeClipboardRecentContent::SetClipboardContent(
-    const GURL& url,
+void FakeClipboardRecentContent::SetClipboardURL(const GURL& url,
+                                                 base::TimeDelta content_age) {
+  DCHECK(url.is_valid());
+  clipboard_url_content_ = url;
+  clipboard_text_content_ = base::nullopt;
+  clipboard_image_content_ = base::nullopt;
+  content_age_ = content_age;
+  suppress_content_ = false;
+}
+
+void FakeClipboardRecentContent::SetClipboardText(const base::string16& text,
+                                                  base::TimeDelta content_age) {
+  clipboard_url_content_ = base::nullopt;
+  clipboard_text_content_ = text;
+  clipboard_image_content_ = base::nullopt;
+  content_age_ = content_age;
+  suppress_content_ = false;
+}
+
+void FakeClipboardRecentContent::SetClipboardImage(
+    const gfx::Image& image,
     base::TimeDelta content_age) {
-  clipboard_content_ = url;
+  clipboard_url_content_ = base::nullopt;
+  clipboard_text_content_ = base::nullopt;
+  clipboard_image_content_ = image;
   content_age_ = content_age;
   suppress_content_ = false;
 }

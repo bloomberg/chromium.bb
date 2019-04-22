@@ -80,16 +80,6 @@ CastDetailedView::CastDetailedView(
 
 CastDetailedView::~CastDetailedView() = default;
 
-void CastDetailedView::SimulateViewClickedForTest(
-    const std::string& receiver_id) {
-  for (const auto& it : view_to_sink_map_) {
-    if (it.second->id == receiver_id) {
-      HandleViewClicked(it.first);
-      break;
-    }
-  }
-}
-
 void CastDetailedView::CreateItems() {
   CreateScrollableList();
   CreateTitleRow(IDS_ASH_STATUS_TRAY_CAST);

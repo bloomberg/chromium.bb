@@ -146,7 +146,7 @@ class SourceBufferStateTest
   ChunkDemuxerStream* CreateDemuxerStream(DemuxerStream::Type type) {
     static unsigned track_id = 0;
     demuxer_streams_.push_back(base::WrapUnique(new ChunkDemuxerStream(
-        type, base::UintToString(++track_id), range_api_)));
+        type, base::NumberToString(++track_id), range_api_)));
     return demuxer_streams_.back().get();
   }
 
@@ -350,11 +350,11 @@ TEST_P(SourceBufferStateTest, TrackIdsSwappedInSecondInitSegment) {
   AppendDataAndReportTracks(sbs, std::move(tracks2));
 }
 
-INSTANTIATE_TEST_CASE_P(LegacyByDts,
-                        SourceBufferStateTest,
-                        Values(ChunkDemuxerStream::RangeApi::kLegacyByDts));
-INSTANTIATE_TEST_CASE_P(NewByPts,
-                        SourceBufferStateTest,
-                        Values(ChunkDemuxerStream::RangeApi::kNewByPts));
+INSTANTIATE_TEST_SUITE_P(LegacyByDts,
+                         SourceBufferStateTest,
+                         Values(ChunkDemuxerStream::RangeApi::kLegacyByDts));
+INSTANTIATE_TEST_SUITE_P(NewByPts,
+                         SourceBufferStateTest,
+                         Values(ChunkDemuxerStream::RangeApi::kNewByPts));
 
 }  // namespace media

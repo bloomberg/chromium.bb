@@ -59,6 +59,20 @@ std::unique_ptr<protocol::Value> StringUtil::parseJSON(const String& string) {
 }
 
 // static
+ProtocolMessage StringUtil::jsonToMessage(const String& message) {
+  ProtocolMessage result;
+  result.json = message;
+  return result;
+}
+
+// static
+ProtocolMessage StringUtil::binaryToMessage(std::vector<uint8_t> message) {
+  ProtocolMessage result;
+  result.binary = std::move(message);
+  return result;
+}
+
+// static
 void StringUtil::builderAppendQuotedString(StringBuilder& builder,
                                            const String& str) {
   builder.Append('"');
@@ -74,6 +88,11 @@ void StringUtil::builderAppendQuotedString(StringBuilder& builder,
     }
   }
   builder.Append('"');
+}
+
+// static
+String StringUtil::fromUTF16(const uint16_t* data, size_t length) {
+  return String(reinterpret_cast<const UChar*>(data), length);
 }
 
 namespace {
@@ -141,6 +160,13 @@ Binary Binary::fromSharedBuffer(scoped_refptr<SharedBuffer> buffer) {
 // static
 Binary Binary::fromVector(Vector<uint8_t> in) {
   return Binary(base::AdoptRef(new BinaryBasedOnVector(std::move(in))));
+}
+
+// static
+Binary Binary::fromSpan(const uint8_t* data, size_t size) {
+  Vector<uint8_t> in;
+  in.Append(data, size);
+  return Binary::fromVector(std::move(in));
 }
 
 // static

@@ -34,8 +34,11 @@ LOGDOG_TERMINATION_TIMEOUT = 30
 def CommandParser():
   # Parses the command line arguments being passed in
   parser = argparse.ArgumentParser()
-  parser.add_argument('--target', required=True,
-                      help='The test target to be run.')
+  parser.add_argument(
+      '--target',
+      help='The test target to be run. If not set, any extra '
+      'args passed to this script are assumed to be the '
+      'full test command to run.')
   parser.add_argument('--logdog-bin-cmd', required=True,
                       help='The logdog bin cmd.')
   return parser
@@ -67,9 +70,11 @@ def main():
   args, extra_cmd_args = parser.parse_known_args(sys.argv[1:])
 
   logging.basicConfig(level=logging.INFO)
-  test_cmd = [
-      os.path.join('bin', 'run_%s' % args.target),
-      '-v']
+  if args.target:
+    test_cmd = [os.path.join('bin', 'run_%s' % args.target), '-v']
+    test_cmd += extra_cmd_args
+  else:
+    test_cmd = extra_cmd_args
 
   test_env = dict(os.environ)
   logdog_cmd = []
@@ -101,8 +106,6 @@ def main():
           'LOGDOG_STREAM_SERVER_PATH': streamserver_uri,
           'LOGDOG_COORDINATOR_HOST': COORDINATOR_HOST,
       })
-
-    test_cmd += extra_cmd_args
 
     logdog_proc = None
     if logdog_cmd:

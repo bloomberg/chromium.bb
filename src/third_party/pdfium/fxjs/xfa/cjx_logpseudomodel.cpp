@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "fxjs/cfxjse_value.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cscript_logpseudomodel.h"
 
 const CJX_MethodSpec CJX_LogPseudoModel::MethodSpecs[] = {
@@ -24,6 +24,10 @@ CJX_LogPseudoModel::CJX_LogPseudoModel(CScript_LogPseudoModel* model)
 }
 
 CJX_LogPseudoModel::~CJX_LogPseudoModel() {}
+
+bool CJX_LogPseudoModel::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
 
 CJS_Result CJX_LogPseudoModel::message(
     CFX_V8* runtime,

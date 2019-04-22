@@ -10,9 +10,9 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 
 namespace chromeos {
@@ -26,7 +26,7 @@ class UserContext;
 // Typical flow:
 // AuthenticateToMount() calls cryptohomed to perform offline login,
 // AuthenticateToCreate() calls cryptohomed to create new cryptohome.
-class CHROMEOS_EXPORT ExtendedAuthenticator
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticator
     : public base::RefCountedThreadSafe<ExtendedAuthenticator> {
  public:
   enum AuthState {

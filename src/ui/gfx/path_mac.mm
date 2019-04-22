@@ -6,8 +6,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/stl_util.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/gfx/path.h"
 
 namespace {
 
@@ -38,7 +39,7 @@ NSBezierPath* CreateNSBezierPathFromSkPath(const SkPath& path) {
   SkPath::Verb verb;
   NSPoint points[4];
   while ((verb = iter.next(sk_points)) != SkPath::kDone_Verb) {
-    for (size_t i = 0; i < arraysize(points); i++)
+    for (size_t i = 0; i < base::size(points); i++)
       points[i] = NSMakePoint(sk_points[i].x(), sk_points[i].y());
 
     switch (verb) {

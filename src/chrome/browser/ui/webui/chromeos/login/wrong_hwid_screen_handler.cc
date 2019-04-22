@@ -8,17 +8,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.WrongHWIDScreen";
-
-}  // namespace
-
 namespace chromeos {
 
-WrongHWIDScreenHandler::WrongHWIDScreenHandler()
-    : BaseScreenHandler(kScreenId) {
-  set_call_js_prefix(kJsScreenPath);
+WrongHWIDScreenHandler::WrongHWIDScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
 }
 
 WrongHWIDScreenHandler::~WrongHWIDScreenHandler() {

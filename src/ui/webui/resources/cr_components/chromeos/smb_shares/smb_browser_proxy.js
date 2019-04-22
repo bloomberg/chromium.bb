@@ -44,28 +44,47 @@ cr.define('smb_shares', function() {
      * @param {string} username
      * @param {string} password
      * @param {string} authMethod
+     * @param {boolean} shouldOpenFileManagerAfterMount
      * @return {!Promise<SmbMountResult>}
      */
-    smbMount(smbUrl, smbName, username, password, authMethod) {}
+    smbMount(
+        smbUrl, smbName, username, password, authMethod,
+        shouldOpenFileManagerAfterMount) {}
 
     /**
      * Starts the file share discovery process.
      */
     startDiscovery() {}
+
+    /**
+     * Updates the credentials for a mounted share.
+     * @param {number} mountId
+     * @param {string} username
+     * @param {string} password
+     */
+    updateCredentials(mountId, username, password) {}
   }
 
   /** @implements {smb_shares.SmbBrowserProxy} */
   class SmbBrowserProxyImpl {
     /** @override */
-    smbMount(smbUrl, smbName, username, password, authMethod) {
+    smbMount(
+        smbUrl, smbName, username, password, authMethod,
+        shouldOpenFileManagerAfterMount) {
       return cr.sendWithPromise(
           'smbMount', smbUrl, smbName, username, password,
-          authMethod == SmbAuthMethod.KERBEROS);
+          authMethod == SmbAuthMethod.KERBEROS,
+          shouldOpenFileManagerAfterMount);
     }
 
     /** @override */
     startDiscovery() {
       chrome.send('startDiscovery');
+    }
+
+    /** @override */
+    updateCredentials(mountId, username, password) {
+      chrome.send('updateCredentials', [mountId, username, password]);
     }
   }
 

@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import <EarlGrey/EarlGrey.h>
+@protocol GREYMatcher;
 
 namespace testing {
 

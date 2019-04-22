@@ -7,6 +7,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -22,12 +23,10 @@ class VirtualKeyboardTrayTest : public AshTestBase {
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
     ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+    keyboard::test::WaitUntilLoaded();
 
     // These tests only apply to the floating virtual keyboard, as it is the
     // only case where both the virtual keyboard and the shelf are visible.
-    keyboard_controller()->LoadKeyboardWindowInBackground();
-    // Wait for the keyboard window to load.
-    base::RunLoop().RunUntilIdle();
     keyboard_controller()->SetContainerType(
         keyboard::mojom::ContainerType::kFloating, base::nullopt,
         base::DoNothing());

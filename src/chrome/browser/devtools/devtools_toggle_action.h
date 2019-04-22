@@ -17,6 +17,7 @@ struct DevToolsToggleAction {
     kShow,
     kShowConsolePanel,
     kShowElementsPanel,
+    kPauseInDebugger,
     kInspect,
     kToggle,
     kReveal,
@@ -41,6 +42,7 @@ struct DevToolsToggleAction {
   static DevToolsToggleAction Show();
   static DevToolsToggleAction ShowConsolePanel();
   static DevToolsToggleAction ShowElementsPanel();
+  static DevToolsToggleAction PauseInDebugger();
   static DevToolsToggleAction Inspect();
   static DevToolsToggleAction Toggle();
   static DevToolsToggleAction Reveal(const base::string16& url,

@@ -88,16 +88,13 @@ class CookieStoreIOS : public net::CookieStore,
                                  const net::CookieOptions& options,
                                  SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
-                               bool secure_source,
-                               bool modify_http_only,
+                               std::string source_scheme,
+                               const net::CookieOptions& options,
                                SetCookiesCallback callback) override;
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const net::CookieOptions& options,
                                      GetCookieListCallback callback) override;
   void GetAllCookiesAsync(GetCookieListCallback callback) override;
-  void DeleteCookieAsync(const GURL& url,
-                         const std::string& cookie_name,
-                         base::OnceClosure callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
   void DeleteAllCreatedInTimeRangeAsync(
@@ -108,6 +105,8 @@ class CookieStoreIOS : public net::CookieStore,
   void DeleteSessionCookiesAsync(DeleteCallback callback) override;
   void FlushStore(base::OnceClosure callback) override;
   CookieChangeDispatcher& GetChangeDispatcher() override;
+  void SetCookieableSchemes(const std::vector<std::string>& schemes,
+                            SetCookieableSchemesCallback callback) override;
   bool IsEphemeral() override;
 
  protected:
@@ -193,6 +192,11 @@ class CookieStoreIOS : public net::CookieStore,
   void DeleteCookiesMatchingInfoAsync(net::CookieDeletionInfo delete_info,
                                       DeleteCallback callback);
 
+  void DeleteCookiesMatchingPredicateAsync(
+      const base::RepeatingCallback<bool(const net::CanonicalCookie&)>&
+          predicate,
+      DeleteCallback callback);
+
   // Flush to CookieMonster from |cookies|, and run |callback|.
   void FlushStoreFromCookies(base::OnceClosure callback,
                              NSArray<NSHTTPCookie*>* cookies);
@@ -240,7 +244,8 @@ class CookieStoreIOS : public net::CookieStore,
   // GetAllCookiesForURLAsync() completes. Updates the cookie cache and runs
   // callbacks if the cache changed.
   void GotCookieListFor(const std::pair<GURL, std::string> key,
-                        const net::CookieList& cookies);
+                        const net::CookieList& cookies,
+                        const net::CookieStatusList& excluded_cookies);
 
   // Fetches new values for all (url, name) pairs that have hooks registered,
   // asynchronously invoking callbacks if necessary.
@@ -264,7 +269,8 @@ class CookieStoreIOS : public net::CookieStore,
   // asynchronous cache update (using UpdateCachesFromCookieMonster()) and
   // calling the provided callback.
 
-  void UpdateCachesAfterSet(SetCookiesCallback callback, bool success);
+  void UpdateCachesAfterSet(SetCookiesCallback callback,
+                            net::CanonicalCookie::CookieInclusionStatus status);
   void UpdateCachesAfterDelete(DeleteCallback callback, uint32_t num_deleted);
   void UpdateCachesAfterClosure(base::OnceClosure callback);
 

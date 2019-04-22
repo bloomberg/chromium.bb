@@ -12,8 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
-import org.chromium.base.ApiCompatibilityUtils;
-
 import java.util.ArrayList;
 
 /**
@@ -47,7 +45,7 @@ public class CompatibilityTextInputLayout extends TextInputLayout {
         ArrayList<EditText> views = new ArrayList<>();
         findEditTextChildren(this, views);
         if (views.size() == 1) {
-            ApiCompatibilityUtils.setLabelFor(this, views.get(0).getId());
+            setLabelFor(views.get(0).getId());
         }
     }
 

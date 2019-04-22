@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
@@ -179,6 +180,12 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
   base::android::ScopedJavaLocalRef<jstring> j_quick_action_uri =
       base::android::ConvertUTF8ToJavaString(
           env, resolved_search_term.quick_action_uri);
+  base::android::ScopedJavaLocalRef<jstring> j_search_url_full =
+      base::android::ConvertUTF8ToJavaString(
+          env, resolved_search_term.search_url_full);
+  base::android::ScopedJavaLocalRef<jstring> j_search_url_preload =
+      base::android::ConvertUTF8ToJavaString(
+          env, resolved_search_term.search_url_preload);
   Java_ContextualSearchManager_onSearchTermResolutionResponse(
       env, java_manager_, resolved_search_term.is_invalid,
       resolved_search_term.response_code, j_search_term, j_display_text,
@@ -186,7 +193,9 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
       resolved_search_term.selection_start_adjust,
       resolved_search_term.selection_end_adjust, j_context_language,
       j_thumbnail_url, j_caption, j_quick_action_uri,
-      resolved_search_term.quick_action_category);
+      resolved_search_term.quick_action_category,
+      resolved_search_term.logged_event_id, j_search_url_full,
+      j_search_url_preload, resolved_search_term.coca_card_tag);
 }
 
 void ContextualSearchManager::OnTextSurroundingSelectionAvailable(

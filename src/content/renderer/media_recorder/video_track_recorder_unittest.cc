@@ -19,13 +19,14 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
+#include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 using media::VideoFrame;
@@ -72,18 +73,19 @@ class VideoTrackRecorderTest
         blink::WebString::FromASCII("dummy"));
     blink_source_.Initialize(webkit_track_id,
                              blink::WebMediaStreamSource::kTypeVideo,
-                             webkit_track_id);
-    blink_source_.SetExtraData(mock_source_);
+                             webkit_track_id, false /*remote*/);
+    blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
     blink_track_.Initialize(blink_source_);
 
-    track_ = new MediaStreamVideoTrack(mock_source_,
-                                       MediaStreamSource::ConstraintsCallback(),
-                                       true /* enabled */);
-    blink_track_.SetTrackData(track_);
+    track_ = new blink::MediaStreamVideoTrack(
+        mock_source_,
+        blink::WebPlatformMediaStreamSource::ConstraintsCallback(),
+        true /* enabled */);
+    blink_track_.SetPlatformTrack(base::WrapUnique(track_));
 
     // Paranoia checks.
-    EXPECT_EQ(blink_track_.Source().GetExtraData(),
-              blink_source_.GetExtraData());
+    EXPECT_EQ(blink_track_.Source().GetPlatformSource(),
+              blink_source_.GetPlatformSource());
     EXPECT_TRUE(blink::scheduler::GetSingleThreadTaskRunnerForTesting()
                     ->BelongsToCurrentThread());
   }
@@ -146,7 +148,7 @@ class VideoTrackRecorderTest
 
   // A ChildProcess is needed to fool the Tracks and Sources into believing they
   // are on the right threads. A ScopedTaskEnvironment must be instantiated
-  // before ChildProcess to prevent it from leaking a TaskScheduler.
+  // before ChildProcess to prevent it from leaking a ThreadPool.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   const ChildProcess child_process_;
 
@@ -154,7 +156,7 @@ class VideoTrackRecorderTest
   // |mock_source_| is owned by |blink_source_|, |track_| by |blink_track_|.
   MockMediaStreamVideoSource* mock_source_;
   blink::WebMediaStreamSource blink_source_;
-  MediaStreamVideoTrack* track_;
+  blink::MediaStreamVideoTrack* track_;
   blink::WebMediaStreamTrack blink_track_;
 
   std::unique_ptr<VideoTrackRecorder> video_track_recorder_;
@@ -368,10 +370,96 @@ TEST_F(VideoTrackRecorderTest, ReleasesFrame) {
   Mock::VerifyAndClearExpectations(this);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        VideoTrackRecorderTest,
-                        ::testing::Combine(ValuesIn(kTrackRecorderTestCodec),
-                                           ValuesIn(kTrackRecorderTestSize),
-                                           ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoTrackRecorderTest,
+                         ::testing::Combine(ValuesIn(kTrackRecorderTestCodec),
+                                            ValuesIn(kTrackRecorderTestSize),
+                                            ::testing::Bool()));
+
+class CodecEnumeratorTest : public ::testing::Test {
+ public:
+  using CodecEnumerator = VideoTrackRecorder::CodecEnumerator;
+  using CodecId = VideoTrackRecorder::CodecId;
+
+  CodecEnumeratorTest() = default;
+  ~CodecEnumeratorTest() override = default;
+
+  media::VideoEncodeAccelerator::SupportedProfiles MakeVp8Profiles() {
+    media::VideoEncodeAccelerator::SupportedProfiles profiles;
+    profiles.emplace_back(media::VP8PROFILE_ANY, gfx::Size(1920, 1080), 30, 1);
+    return profiles;
+  }
+
+  media::VideoEncodeAccelerator::SupportedProfiles MakeVp9Profiles() {
+    media::VideoEncodeAccelerator::SupportedProfiles profiles;
+    profiles.emplace_back(media::VP9PROFILE_PROFILE1, gfx::Size(1920, 1080), 60,
+                          1);
+    profiles.emplace_back(media::VP9PROFILE_PROFILE2, gfx::Size(1920, 1080), 30,
+                          1);
+    return profiles;
+  }
+
+  media::VideoEncodeAccelerator::SupportedProfiles MakeVp8Vp9Profiles() {
+    media::VideoEncodeAccelerator::SupportedProfiles profiles =
+        MakeVp8Profiles();
+    media::VideoEncodeAccelerator::SupportedProfiles vp9_profiles =
+        MakeVp9Profiles();
+    profiles.insert(profiles.end(), vp9_profiles.begin(), vp9_profiles.end());
+    return profiles;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CodecEnumeratorTest);
+};
+
+TEST_F(CodecEnumeratorTest, GetPreferredCodecIdDefault) {
+  // Empty supported profiles.
+  const CodecEnumerator emulator(
+      (media::VideoEncodeAccelerator::SupportedProfiles()));
+  EXPECT_EQ(CodecId::VP8, emulator.GetPreferredCodecId());
+}
+
+TEST_F(CodecEnumeratorTest, GetPreferredCodecIdVp8) {
+  const CodecEnumerator emulator(MakeVp8Profiles());
+  EXPECT_EQ(CodecId::VP8, emulator.GetPreferredCodecId());
+}
+
+TEST_F(CodecEnumeratorTest, GetPreferredCodecIdVp9) {
+  const CodecEnumerator emulator(MakeVp9Profiles());
+  EXPECT_EQ(CodecId::VP9, emulator.GetPreferredCodecId());
+}
+
+TEST_F(CodecEnumeratorTest, GetPreferredCodecIdVp8Vp9) {
+  const CodecEnumerator emulator(MakeVp8Vp9Profiles());
+  EXPECT_EQ(CodecId::VP8, emulator.GetPreferredCodecId());
+}
+
+TEST_F(CodecEnumeratorTest, MakeSupportedProfilesVp9) {
+  const CodecEnumerator emulator(MakeVp9Profiles());
+  media::VideoEncodeAccelerator::SupportedProfiles profiles =
+      emulator.GetSupportedProfiles(CodecId::VP9);
+  EXPECT_EQ(2u, profiles.size());
+  EXPECT_EQ(media::VP9PROFILE_PROFILE1, profiles[0].profile);
+  EXPECT_EQ(media::VP9PROFILE_PROFILE2, profiles[1].profile);
+}
+
+TEST_F(CodecEnumeratorTest, MakeSupportedProfilesNoVp8) {
+  const CodecEnumerator emulator(MakeVp9Profiles());
+  media::VideoEncodeAccelerator::SupportedProfiles profiles =
+      emulator.GetSupportedProfiles(CodecId::VP8);
+  EXPECT_TRUE(profiles.empty());
+}
+
+TEST_F(CodecEnumeratorTest, GetFirstSupportedVideoCodecProfileVp9) {
+  const CodecEnumerator emulator(MakeVp9Profiles());
+  EXPECT_EQ(media::VP9PROFILE_PROFILE1,
+            emulator.GetFirstSupportedVideoCodecProfile(CodecId::VP9));
+}
+
+TEST_F(CodecEnumeratorTest, GetFirstSupportedVideoCodecProfileNoVp8) {
+  const CodecEnumerator emulator(MakeVp9Profiles());
+  EXPECT_EQ(media::VIDEO_CODEC_PROFILE_UNKNOWN,
+            emulator.GetFirstSupportedVideoCodecProfile(CodecId::VP8));
+}
 
 }  // namespace content

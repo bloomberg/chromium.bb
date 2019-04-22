@@ -75,7 +75,7 @@ function deleteAllObjectStores(db)
 
 // The following functions are based on
 // blink/web_tests/resources/js-test.js
-// so that the tests will look similar to the existing layout tests.
+// so that the tests will look similar to the existing web tests.
 function stringify(v)
 {
   if (v === 0 && 1/v < 0)
@@ -144,6 +144,75 @@ function indexedDBTest(upgradeCallback, optionalOpenCallback) {
     openRequest.onblocked = unexpectedBlockedCallback;
     if (optionalOpenCallback)
       openRequest.onsuccess = optionalOpenCallback;
+  };
+}
+
+function promiseDeleteThenOpenDb(dbName, upgradeCallback) {
+  return new Promise((resolve, reject) => {
+    const deleteRequest = indexedDB.deleteDatabase(dbName);
+    deleteRequest.onerror = () => {
+      reject(new Error('An error occurred on deleting database ${dbName}'));
+    };
+    deleteRequest.onsuccess = () => {
+      const openRequest = indexedDB.open(dbName);
+      openRequest.onerror = () => {
+        reject(new Error('An error occurred on opening database ${dbName}'));
+      };
+      openRequest.onblocked = () => {
+        reject(new Error('Opening database ${dbName} was blocked'));
+      };
+      openRequest.onupgradeneeded = () => {
+        upgradeCallback();
+      };
+      openRequest.onsuccess = () => {
+        resolve(event.target.result);
+      };
+    }
+  });
+}
+
+function promiseOpenDb(dbName, optionalUpgradeCallback) {
+  return new Promise((resolve, reject) => {
+    const openRequest = indexedDB.open(dbName);
+    openRequest.onerror = () => {
+      const e = new Error('Error opening database ${dbName}');
+      unexepectedErrorCallback(e);
+      reject(e);
+    };
+    openRequest.onblocked = () => {
+      const e = new Error('Opening database ${dbName}');
+      unexpectedBlockedCallback(e);
+      reject(e);
+    };
+    if (optionalUpgradeCallback) {
+      openRequest.onupgradeneeded = () => {
+        const db = event.target.result;
+        optionalUpgradeCallback(db);
+      };
+    }
+    openRequest.onsuccess = () => {
+      db = event.target.result;
+      resolve(db);
+    };
+  });
+}
+
+function keepAlive(transaction, storeName) {
+  let completed = false;
+  transaction.addEventListener('complete', () => { completed = true; });
+
+  let pin = true;
+
+  function spin() {
+    if (!pin)
+      return;
+    transaction.objectStore(storeName).get(0).onsuccess = spin;
+  }
+  spin();
+
+  return () => {
+    shouldBeFalse(completed);
+    pin = false;
   };
 }
 

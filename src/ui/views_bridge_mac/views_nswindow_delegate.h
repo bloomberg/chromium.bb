@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
-#include "ui/views/views_export.h"
+#include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
 namespace views {
 class BridgedNativeWidgetImpl;
@@ -16,7 +16,7 @@ class BridgedNativeWidgetImpl;
 
 // The delegate set on the NSWindow when a views::BridgedNativeWidgetImpl is
 // initialized.
-VIEWS_EXPORT
+VIEWS_BRIDGE_MAC_EXPORT
 @interface ViewsNSWindowDelegate : NSObject<NSWindowDelegate> {
  @private
   views::BridgedNativeWidgetImpl* parent_;  // Weak. Owns this.

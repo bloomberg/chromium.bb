@@ -12,10 +12,12 @@
 #include <memory>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
+#include "ui/gfx/animation/animation.h"
 
 namespace content {
 
@@ -67,17 +69,35 @@ class WindowsAccessibilityEnabler : public ui::IAccessible2UsageObserver {
   bool acc_name_called_ = false;
 };
 
+void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (message == WM_SETTINGCHANGE && wparam == SPI_SETCLIENTAREAANIMATION) {
+    gfx::Animation::UpdatePrefersReducedMotion();
+    for (WebContentsImpl* wc : WebContentsImpl::GetAllWebContents()) {
+      wc->GetRenderViewHost()->OnWebkitPreferencesChanged();
+    }
+  }
+}
+
 }  // namespace
 
 void BrowserAccessibilityStateImpl::PlatformInitialize() {
   ui::GetIAccessible2UsageObserverList().AddObserver(
       new WindowsAccessibilityEnabler());
+
+  singleton_hwnd_observer_.reset(
+      new gfx::SingletonHwndObserver(base::BindRepeating(&OnWndProc)));
 }
 
-void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
-  // NOTE: this method is run from the file thread to reduce jank, since
-  // there's no guarantee these system calls will return quickly. Be careful
-  // not to add any code that isn't safe to run from a non-main thread!
+void BrowserAccessibilityStateImpl::
+    UpdatePlatformSpecificHistogramsOnUIThread() {}
+
+void BrowserAccessibilityStateImpl::
+    UpdatePlatformSpecificHistogramsOnOtherThread() {
+  // NOTE: this method is run from another thread to reduce jank, since
+  // there's no guarantee these system calls will return quickly. Code that
+  // needs to run in the UI thread can be run in
+  // UpdatePlatformSpecificHistogramsOnUIThread instead.
 
   AUDIODESCRIPTION audio_description = {0};
   audio_description.cbSize = sizeof(AUDIODESCRIPTION);
@@ -87,8 +107,7 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
 
   BOOL win_screen_reader = FALSE;
   SystemParametersInfo(SPI_GETSCREENREADER, 0, &win_screen_reader, 0);
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinScreenReader",
-                        !!win_screen_reader);
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinScreenReader", !!win_screen_reader);
 
   STICKYKEYS sticky_keys = {0};
   sticky_keys.cbSize = sizeof(STICKYKEYS);
@@ -125,7 +144,7 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
   size_t module_count = bytes_required / sizeof(HMODULE);
   for (size_t i = 0; i < module_count; i++) {
     TCHAR filename[MAX_PATH];
-    GetModuleFileName(modules[i], filename, arraysize(filename));
+    GetModuleFileName(modules[i], filename, base::size(filename));
     base::string16 module_name(base::FilePath(filename).BaseName().value());
     if (base::LowerCaseEqualsASCII(module_name, "fsdomsrv.dll"))
       jaws = true;

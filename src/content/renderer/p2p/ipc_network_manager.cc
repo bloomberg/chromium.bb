@@ -5,6 +5,8 @@
 #include "content/renderer/p2p/ipc_network_manager.h"
 
 #include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -17,7 +19,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
-#include "third_party/webrtc/rtc_base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/socket_address.h"
 
 namespace content {
 
@@ -45,7 +47,7 @@ rtc::AdapterType ConvertConnectionTypeToAdapterType(
 
 IpcNetworkManager::IpcNetworkManager(
     NetworkListManager* network_list_manager,
-    std::unique_ptr<MdnsResponderAdapter> mdns_responder)
+    std::unique_ptr<webrtc::MdnsResponderInterface> mdns_responder)
     : network_list_manager_(network_list_manager),
       mdns_responder_(std::move(mdns_responder)),
       weak_factory_(this) {
@@ -110,6 +112,7 @@ void IpcNetworkManager::OnNetworkListChanged(
     std::unique_ptr<rtc::Network> network(new rtc::Network(
         it->name, it->name, prefix, it->prefix_length, adapter_type));
     network->set_default_local_address_provider(this);
+    network->set_mdns_responder_provider(this);
 
     rtc::InterfaceAddress iface_addr;
     if (it->address.IsIPv4()) {
@@ -153,6 +156,7 @@ void IpcNetworkManager::OnNetworkListChanged(
     rtc::Network* network_v4 = new rtc::Network(
         name_v4, name_v4, ip_address_v4, 32, rtc::ADAPTER_TYPE_UNKNOWN);
     network_v4->set_default_local_address_provider(this);
+    network_v4->set_mdns_responder_provider(this);
     network_v4->AddIP(ip_address_v4);
     networks.push_back(network_v4);
 
@@ -167,6 +171,7 @@ void IpcNetworkManager::OnNetworkListChanged(
       rtc::Network* network_v6 = new rtc::Network(
           name_v6, name_v6, ip_address_v6, 64, rtc::ADAPTER_TYPE_UNKNOWN);
       network_v6->set_default_local_address_provider(this);
+      network_v6->set_mdns_responder_provider(this);
       network_v6->AddIP(ip_address_v6);
       networks.push_back(network_v6);
     }

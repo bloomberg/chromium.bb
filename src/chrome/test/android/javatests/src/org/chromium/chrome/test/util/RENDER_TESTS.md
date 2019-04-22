@@ -31,7 +31,15 @@ and fix your code! If there's some other error or flakiness, file a bug to
 was stored.
 2. Right click on the `Download Failure Image` link to save the failure image in
 the appropriate place in your local repository.
-3. Reupload the CL and run it through the trybots again.
+3. Run the script
+`//chrome/test/data/android/manage_render_test_goldens.py upload` to upload the
+new goldens to Google Storage and update the hashes used to download them.
+4. Reupload the CL and run it through the trybots again.
+
+When putting a change up for review that changes goldens, please include links
+to the results_details/Render Results pages that you grabbed the new goldens
+from. This will help reviewers confirm that the changes to the goldens are
+acceptable.
 
 ### Failing locally
 
@@ -40,7 +48,7 @@ below to generate renders.
 
 You can rename the renders as appropriate and move them to the correct place in
 the repository, or you can open the locally generated **Render Results** pages
-and follow steps 2-3 in the second part of the 
+and follow steps 2-3 in the second part of the
 [*Failing on trybots*](#failing-on-trybots) section.
 
 
@@ -61,6 +69,11 @@ failed renders, eg:
 ```
 ./out/Debug/bin/run_chrome_public_test_apk -A Feature=RenderTest --local-output
 ```
+
+The golden images should be downloaded as part of the `gclient sync` process,
+but if there appear to be goldens missing that should be there, try running
+`//chrome/test/data/android/manage_render_test_goldens.py download` to ensure
+that the downloaded goldens are current for the git revision.
 
 
 ## Implementation Details

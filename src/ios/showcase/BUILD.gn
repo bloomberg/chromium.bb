@@ -24,6 +24,8 @@ group("features") {
   deps = [
     "//ios/showcase/bubble",
     "//ios/showcase/content_suggestions",
+    "//ios/showcase/infobars",
+    "//ios/showcase/omnibox_popup",
     "//ios/showcase/payments",
     "//ios/showcase/recent_tabs",
     "//ios/showcase/settings",
@@ -52,6 +54,7 @@ ios_eg_test("ios_showcase_egtests") {
     "//ios/showcase/bubble:eg_tests",
     "//ios/showcase/content_suggestions:eg_tests",
     "//ios/showcase/core:eg_tests",
+    "//ios/showcase/infobars:eg_tests",
     "//ios/showcase/payments:eg_tests",
     "//ios/showcase/text_badge_view:eg_tests",
   ]

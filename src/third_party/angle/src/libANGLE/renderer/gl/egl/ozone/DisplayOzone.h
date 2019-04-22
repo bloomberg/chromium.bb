@@ -128,7 +128,8 @@ class DisplayOzone final : public DisplayEGL
                                      NativePixmapType nativePixmap,
                                      const egl::AttributeMap &attribs) override;
 
-    ContextImpl *createContext(const gl::ContextState &state,
+    ContextImpl *createContext(const gl::State &state,
+                               gl::ErrorSet *errorSet,
                                const egl::Config *configuration,
                                const gl::Context *shareContext,
                                const egl::AttributeMap &attribs) override;
@@ -154,6 +155,10 @@ class DisplayOzone final : public DisplayEGL
     // This function will make sure the drawable's swap interval is the
     // one required so that the subsequent swapBuffers acts as expected.
     void setSwapInterval(EGLSurface drawable, SwapControlData *data);
+
+    WorkerContext *createWorkerContext(std::string *infoLog,
+                                       EGLContext sharedContext,
+                                       const native_egl::AttributeVector workerAttribs) override;
 
   private:
     void generateExtensions(egl::DisplayExtensions *outExtensions) const override;

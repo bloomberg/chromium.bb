@@ -8,7 +8,7 @@ A functional bisect determines the revision at which a particular benchmark or s
 
 The first step is to launching a bisect is to identify a revision at which you're confident the test was passing more often (the good revision) and a revision at which you're confident the test was failing more often (the bad revision).
 
-The easiest way to do this is to use the [flakiness dashboard](https://test-results.appspot.com/dashboards/flakiness_dashboard.html#testType=blink_perf.canvas) (basic instructions [here](https://docs.google.com/document/d/1YJ7TCXz8Oh0ai3fG9pkxmdoYkLOt0cuoRswuEzpovJ4/edit)). 
+The easiest way to do this is to use the [flakiness dashboard](https://test-results.appspot.com/dashboards/flakiness_dashboard.html#testType=performance_test_suite) (basic instructions [here](https://docs.google.com/document/d/1YJ7TCXz8Oh0ai3fG9pkxmdoYkLOt0cuoRswuEzpovJ4/edit)). 
 
 The below screenshot shows the easiest possible case: it's clear when the test went from passing to failing. (Remember, runs are listed from most recent on the left to oldest on the right.)
 

@@ -19,10 +19,12 @@
 #include "extensions/browser/api_unittest.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
+#include "extensions/browser/test_event_router_observer.h"
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "extensions/browser/value_store/value_store_factory_impl.h"
+#include "extensions/common/api/storage.h"
 #include "extensions/common/manifest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -52,6 +54,19 @@ class StorageApiUnittest : public ApiUnitTest {
   ~StorageApiUnittest() override {}
 
  protected:
+  void SetUp() override {
+    ApiUnitTest::SetUp();
+
+    EventRouterFactory::GetInstance()->SetTestingFactory(
+        browser_context(), base::BindRepeating(&BuildEventRouter));
+
+    // Ensure a StorageFrontend can be created on demand. The StorageFrontend
+    // will be owned by the KeyedService system.
+    StorageFrontend::GetFactoryInstance()->SetTestingFactory(
+        browser_context(),
+        base::BindRepeating(&CreateStorageFrontendForTesting));
+  }
+
   // Runs the storage.set() API function with local storage.
   void RunSetFunction(const std::string& key, const std::string& value) {
     RunFunction(
@@ -84,14 +99,6 @@ class StorageApiUnittest : public ApiUnitTest {
 };
 
 TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
-  EventRouterFactory::GetInstance()->SetTestingFactory(
-      browser_context(), base::BindRepeating(&BuildEventRouter));
-
-  // Ensure a StorageFrontend can be created on demand. The StorageFrontend
-  // will be owned by the KeyedService system.
-  StorageFrontend::GetFactoryInstance()->SetTestingFactory(
-      browser_context(), base::BindRepeating(&CreateStorageFrontendForTesting));
-
   const char kKey[] = "key";
   const char kValue[] = "value";
   std::string result;
@@ -125,6 +132,18 @@ TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
   RunSetFunction(kKey, kValue);
   EXPECT_TRUE(RunGetFunction(kKey, &result));
   EXPECT_EQ(kValue, result);
+}
+
+TEST_F(StorageApiUnittest, StorageAreaOnChanged) {
+  TestEventRouterObserver event_observer(EventRouter::Get(browser_context()));
+
+  RunSetFunction("key", "value");
+  EXPECT_EQ(2u, event_observer.events().size());
+
+  EXPECT_TRUE(base::ContainsKey(event_observer.events(),
+                                api::storage::OnChanged::kEventName));
+  EXPECT_TRUE(
+      base::ContainsKey(event_observer.events(), "storage.local.onChanged"));
 }
 
 }  // namespace extensions

@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
+#include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/test_runner/test_preferences.h"
 #include "net/base/filename_util.h"
 
@@ -68,9 +68,8 @@ WebURL RewriteAbsolutePathInCsswgTest(const std::string& utf8_url) {
 
 namespace content {
 
-void ExportLayoutTestSpecificPreferences(
-    const test_runner::TestPreferences& from,
-    WebPreferences* to) {
+void ExportWebTestSpecificPreferences(const test_runner::TestPreferences& from,
+                                      WebPreferences* to) {
   to->allow_universal_access_from_file_urls =
       from.allow_universal_access_from_file_urls;
   to->javascript_can_access_clipboard = from.java_script_can_access_clipboard;
@@ -97,10 +96,10 @@ void ExportLayoutTestSpecificPreferences(
   to->spatial_navigation_enabled = from.spatial_navigation_enabled;
 }
 
-// Applies settings that differ between layout tests and regular mode. Some
+// Applies settings that differ between web tests and regular mode. Some
 // of the defaults are controlled via command line flags which are
-// automatically set for layout tests.
-void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
+// automatically set for web tests.
+void ApplyWebTestDefaultPreferences(WebPreferences* prefs) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   prefs->allow_universal_access_from_file_urls = true;
@@ -173,7 +172,7 @@ base::FilePath GetBuildDirectory() {
   return result;
 }
 
-WebURL RewriteLayoutTestsURL(const std::string& utf8_url, bool is_wpt_mode) {
+WebURL RewriteWebTestsURL(const std::string& utf8_url, bool is_wpt_mode) {
   if (is_wpt_mode) {
     WebURL rewritten_url = RewriteAbsolutePathInCsswgTest(utf8_url);
     if (!rewritten_url.IsEmpty())

@@ -4,7 +4,8 @@
 
 #include "components/viz/service/display_embedder/gl_output_surface.h"
 
-#include <stdint.h>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -22,9 +23,9 @@ namespace viz {
 
 GLOutputSurface::GLOutputSurface(
     scoped_refptr<VizProcessContextProvider> context_provider,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source)
+    UpdateVSyncParametersCallback update_vsync_callback)
     : OutputSurface(context_provider),
-      synthetic_begin_frame_source_(synthetic_begin_frame_source),
+      wants_vsync_parameter_updates_(!update_vsync_callback.is_null()),
       use_gpu_fence_(
           context_provider->ContextCapabilities().chromium_gpu_fence &&
           context_provider->ContextCapabilities()
@@ -40,8 +41,7 @@ GLOutputSurface::GLOutputSurface(
   capabilities_.max_frames_pending =
       context_provider->ContextCapabilities().num_surface_buffers - 1;
   context_provider->SetUpdateVSyncParametersCallback(
-      base::BindRepeating(&GLOutputSurface::OnVSyncParametersUpdated,
-                          weak_ptr_factory_.GetWeakPtr()));
+      std::move(update_vsync_callback));
 }
 
 GLOutputSurface::~GLOutputSurface() {
@@ -66,6 +66,9 @@ void GLOutputSurface::BindFramebuffer() {
 }
 
 void GLOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
+  if (!context_provider_->ContextCapabilities().dc_layers)
+    return;
+
   if (set_draw_rectangle_for_frame_)
     return;
   DCHECK(gfx::Rect(size_).Contains(rect));
@@ -93,23 +96,24 @@ void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(context_provider_);
 
   uint32_t flags = 0;
-  if (synthetic_begin_frame_source_)
+  if (wants_vsync_parameter_updates_)
     flags |= gpu::SwapBuffersFlags::kVSyncParams;
 
   auto swap_callback = base::BindOnce(
       &GLOutputSurface::OnGpuSwapBuffersCompleted,
       weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info), size_);
   gpu::ContextSupport::PresentationCallback presentation_callback;
-  if (frame.need_presentation_feedback) {
-    flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
-    presentation_callback = base::BindOnce(&GLOutputSurface::OnPresentation,
-                                           weak_ptr_factory_.GetWeakPtr());
-  }
+  presentation_callback = base::BindOnce(&GLOutputSurface::OnPresentation,
+                                         weak_ptr_factory_.GetWeakPtr());
 
   set_draw_rectangle_for_frame_ = false;
   if (frame.sub_buffer_rect) {
     HandlePartialSwap(*frame.sub_buffer_rect, flags, std::move(swap_callback),
                       std::move(presentation_callback));
+  } else if (!frame.content_bounds.empty()) {
+    context_provider_->ContextSupport()->SwapWithBounds(
+        frame.content_bounds, flags, std::move(swap_callback),
+        std::move(presentation_callback));
   } else {
     context_provider_->ContextSupport()->Swap(flags, std::move(swap_callback),
                                               std::move(presentation_callback));
@@ -176,27 +180,10 @@ void GLOutputSurface::OnGpuSwapBuffersCompleted(
     client_->DidSwapWithSize(pixel_size);
 }
 
-void GLOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,
-                                               base::TimeDelta interval) {
-  if (synthetic_begin_frame_source_) {
-    // TODO(brianderson): We should not be receiving 0 intervals.
-    synthetic_begin_frame_source_->OnUpdateVSyncParameters(
-        timebase,
-        interval.is_zero() ? BeginFrameArgs::DefaultInterval() : interval);
-  }
-}
-
 void GLOutputSurface::OnPresentation(
     const gfx::PresentationFeedback& feedback) {
   client_->DidReceivePresentationFeedback(feedback);
 }
-
-#if BUILDFLAG(ENABLE_VULKAN)
-gpu::VulkanSurface* GLOutputSurface::GetVulkanSurface() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-#endif
 
 unsigned GLOutputSurface::UpdateGpuFence() {
   if (!use_gpu_fence_)

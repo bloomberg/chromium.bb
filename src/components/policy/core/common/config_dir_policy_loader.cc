@@ -17,7 +17,6 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_load_status.h"
@@ -100,7 +99,7 @@ base::Time ConfigDirPolicyLoader::LastModificationTime() {
   base::Time last_modification = base::Time();
   base::File::Info info;
 
-  for (size_t i = 0; i < arraysize(kConfigDirSuffixes); ++i) {
+  for (size_t i = 0; i < base::size(kConfigDirSuffixes); ++i) {
     base::FilePath path(config_dir_.Append(kConfigDirSuffixes[i]));
 
     // Skip if the file doesn't exist, or it isn't a directory.

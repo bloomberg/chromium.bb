@@ -66,23 +66,13 @@ const wchar_t* GetCrashpadDatabasePath_ExportThunk() {
   return crash_reporter::GetCrashpadDatabasePathImpl();
 }
 
+void ClearReportsBetween_ExportThunk(time_t begin, time_t end) {
+  crash_reporter::ClearReportsBetweenImpl(begin, end);
+}
+
 bool DumpHungProcessWithPtype_ExportThunk(HANDLE process_handle,
                                           const char* ptype) {
   base::Process process(process_handle);
 
   return crash_reporter::DumpHungProcessWithPtypeImpl(process, ptype);
 }
-
-#if defined(ARCH_CPU_X86_64)
-
-void RegisterNonABICompliantCodeRange_ExportThunk(void* start,
-                                                  size_t size_in_bytes) {
-  crash_reporter::internal::RegisterNonABICompliantCodeRangeImpl(start,
-                                                                 size_in_bytes);
-}
-
-void UnregisterNonABICompliantCodeRange_ExportThunk(void* start) {
-  crash_reporter::internal::UnregisterNonABICompliantCodeRangeImpl(start);
-}
-
-#endif  // ARCH_CPU_X86_64

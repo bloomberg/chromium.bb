@@ -25,7 +25,6 @@ import org.chromium.ui.widget.Toast;
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class allows to trigger and complete the UX flow for exporting passwords. A {@link Fragment}
@@ -274,7 +273,7 @@ public class ExportFlow {
         // desktop (where writing is blocked on the user choosing a file
         // destination).
         RecordHistogram.recordMediumTimesHistogram("PasswordManager.TimeReadingExportedPasswords",
-                System.currentTimeMillis() - mExportPreparationStart, TimeUnit.MILLISECONDS);
+                System.currentTimeMillis() - mExportPreparationStart);
 
         tryExporting();
     }

@@ -25,9 +25,9 @@ bool {{class_name}}::Validate(
   };
 
   if (object->header_.version <=
-          kVersionSizes[arraysize(kVersionSizes) - 1].version) {
+          kVersionSizes[base::size(kVersionSizes) - 1].version) {
     // Scan in reverse order to optimize for more recent versions.
-    for (int i = arraysize(kVersionSizes) - 1; i >= 0; --i) {
+    for (int i = base::size(kVersionSizes) - 1; i >= 0; --i) {
       if (object->header_.version >= kVersionSizes[i].version) {
         if (object->header_.num_bytes == kVersionSizes[i].num_bytes)
           break;
@@ -39,7 +39,7 @@ bool {{class_name}}::Validate(
       }
     }
   } else if (object->header_.num_bytes <
-                 kVersionSizes[arraysize(kVersionSizes) - 1].num_bytes) {
+                 kVersionSizes[base::size(kVersionSizes) - 1].num_bytes) {
     ReportValidationError(
         validation_context,
         mojo::internal::VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);

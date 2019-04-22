@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/authenticated_channel_impl.h"
 #include "chromeos/services/secure_channel/ble_advertiser_impl.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
@@ -18,10 +18,10 @@
 #include "chromeos/services/secure_channel/ble_listener_failure_type.h"
 #include "chromeos/services/secure_channel/ble_scanner_impl.h"
 #include "chromeos/services/secure_channel/ble_synchronizer.h"
+#include "chromeos/services/secure_channel/ble_weave_client_connection.h"
 #include "chromeos/services/secure_channel/latency_metrics_logger.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_disconnector_impl.h"
-#include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace chromeos {
@@ -335,46 +335,45 @@ void BleConnectionManagerImpl::OnFailureToGenerateAdvertisement(
 }
 
 void BleConnectionManagerImpl::OnReceivedAdvertisement(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     device::BluetoothDevice* bluetooth_device,
     ConnectionRole connection_role) {
   remote_device_id_to_timestamps_map_[remote_device.GetDeviceId()]
       ->RecordAdvertisementReceived();
 
   // Create a connection to the device.
-  std::unique_ptr<cryptauth::Connection> connection =
-      cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
-          NewInstance(remote_device, bluetooth_adapter_,
-                      device::BluetoothUUID(kGattServerUuid), bluetooth_device,
-                      false /* should_set_low_connection_latency */);
+  std::unique_ptr<Connection> connection =
+      weave::BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
+          remote_device, bluetooth_adapter_,
+          device::BluetoothUUID(kGattServerUuid), bluetooth_device,
+          true /* should_set_low_connection_latency */);
 
   SetAuthenticatingChannel(
       remote_device.GetDeviceId(),
-      cryptauth::SecureChannel::Factory::NewInstance(std::move(connection)),
+      SecureChannel::Factory::NewInstance(std::move(connection)),
       connection_role);
 }
 
 void BleConnectionManagerImpl::OnSecureChannelStatusChanged(
-    cryptauth::SecureChannel* secure_channel,
-    const cryptauth::SecureChannel::Status& old_status,
-    const cryptauth::SecureChannel::Status& new_status) {
+    SecureChannel* secure_channel,
+    const SecureChannel::Status& old_status,
+    const SecureChannel::Status& new_status) {
   std::string remote_device_id =
       GetRemoteDeviceIdForSecureChannel(secure_channel);
 
-  if (new_status == cryptauth::SecureChannel::Status::DISCONNECTED) {
+  if (new_status == SecureChannel::Status::DISCONNECTED) {
     HandleSecureChannelDisconnection(
-        remote_device_id,
-        old_status == cryptauth::SecureChannel::Status::AUTHENTICATING
+        remote_device_id, old_status == SecureChannel::Status::AUTHENTICATING
         /* was_authenticating */);
     return;
   }
 
-  if (new_status == cryptauth::SecureChannel::Status::CONNECTED) {
+  if (new_status == SecureChannel::Status::CONNECTED) {
     remote_device_id_to_timestamps_map_[remote_device_id]
         ->RecordGattConnectionEstablished();
   }
 
-  if (new_status == cryptauth::SecureChannel::Status::AUTHENTICATED) {
+  if (new_status == SecureChannel::Status::AUTHENTICATED) {
     HandleChannelAuthenticated(remote_device_id);
     return;
   }
@@ -388,7 +387,7 @@ bool BleConnectionManagerImpl::DoesAuthenticatingChannelExist(
 
 void BleConnectionManagerImpl::SetAuthenticatingChannel(
     const std::string& remote_device_id,
-    std::unique_ptr<cryptauth::SecureChannel> secure_channel,
+    std::unique_ptr<SecureChannel> secure_channel,
     ConnectionRole connection_role) {
   // Since a channel has been established, all connection attempts to the device
   // should be stopped. Otherwise, it would be possible to pick up additional
@@ -400,17 +399,17 @@ void BleConnectionManagerImpl::SetAuthenticatingChannel(
     PA_LOG(ERROR) << "BleConnectionManager::OnReceivedAdvertisement(): A new "
                   << "channel was created, one already exists for the same "
                   << "remote device ID. ID: "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          remote_device_id);
     NOTREACHED();
   }
 
-  cryptauth::SecureChannel* secure_channel_raw = secure_channel.get();
+  SecureChannel* secure_channel_raw = secure_channel.get();
 
   PA_LOG(INFO) << "BleConnectionManager::OnReceivedAdvertisement(): Connection "
                << "established; starting authentication process. Remote device "
                << "ID: "
-               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+               << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                       remote_device_id)
                << ", Connection role: " << connection_role;
   remote_device_id_to_secure_channel_map_[remote_device_id] =
@@ -477,14 +476,15 @@ void BleConnectionManagerImpl::ProcessPotentialLingeringChannel(
       << "ProcessPotentialLingeringChannel(): Disconnecting lingering "
       << "channel which is no longer associated with any active "
       << "requests. Remote device ID: "
-      << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(remote_device_id);
+      << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
+             remote_device_id);
   channel_with_role.first->RemoveObserver(this);
   secure_channel_disconnector_->DisconnectSecureChannel(
       std::move(channel_with_role.first));
 }
 
 std::string BleConnectionManagerImpl::GetRemoteDeviceIdForSecureChannel(
-    cryptauth::SecureChannel* secure_channel) {
+    SecureChannel* secure_channel) {
   for (const auto& map_entry : remote_device_id_to_secure_channel_map_) {
     if (map_entry.second.first.get() == secure_channel)
       return map_entry.first;
@@ -507,7 +507,7 @@ void BleConnectionManagerImpl::HandleSecureChannelDisconnection(
     PA_LOG(ERROR) << "BleConnectionManagerImpl::"
                   << "HandleSecureChannelDisconnection(): Disconnected channel "
                   << "not present in map. Remote device ID: "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          remote_device_id);
     NOTREACHED();
   }
@@ -609,7 +609,7 @@ ConnectionAttemptDetails BleConnectionManagerImpl::ChooseChannelRecipient(
 
   PA_LOG(ERROR) << "BleConnectionManager::ChooseChannelRecipient(): Could not "
                 << "find DeviceIdPair to receive channel. Remote device ID: "
-                << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                        remote_device_id)
                 << ", Role: " << connection_role;
   NOTREACHED();

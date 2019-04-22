@@ -44,7 +44,7 @@ ACTION_TEMPLATE(MoveArg,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(out)) {
   *out = std::move(*testing::get<k>(args));
-};
+}
 
 class MockAppInstallEventLogUploaderDelegate
     : public AppInstallEventLogUploader::Delegate {
@@ -278,7 +278,7 @@ TEST_F(AppInstallEventLogUploaderTest, Retry) {
 
   EXPECT_EQ(expected_delay, task_runner_->NextPendingTaskDelay());
 
-  log_.add_app_install_report()->set_package(kPackageName);
+  log_.add_app_install_reports()->set_package(kPackageName);
   CompleteSerializeAndUpload(true /* success */);
   EXPECT_CALL(delegate_, OnUploadSuccess());
   task_runner_->FastForwardBy(expected_delay);
@@ -341,7 +341,7 @@ TEST_F(AppInstallEventLogUploaderTest,
   UnregisterClient();
   Mock::VerifyAndClearExpectations(&client_);
 
-  log_.add_app_install_report()->set_package(kPackageName);
+  log_.add_app_install_reports()->set_package(kPackageName);
   CompleteSerializeAndUpload(true /* success */);
   EXPECT_CALL(delegate_, OnUploadSuccess());
   RegisterClient();
@@ -374,7 +374,7 @@ TEST_F(AppInstallEventLogUploaderTest,
   Mock::VerifyAndClearExpectations(&delegate_);
   Mock::VerifyAndClearExpectations(&client_);
 
-  log_.add_app_install_report()->set_package(kPackageName);
+  log_.add_app_install_reports()->set_package(kPackageName);
   CompleteSerializeAndUpload(true /* success */);
   EXPECT_CALL(delegate_, OnUploadSuccess());
   RegisterClient();
@@ -413,7 +413,7 @@ TEST_F(AppInstallEventLogUploaderTest,
   Mock::VerifyAndClearExpectations(&delegate_);
   Mock::VerifyAndClearExpectations(&client_);
 
-  log_.add_app_install_report()->set_package(kPackageName);
+  log_.add_app_install_reports()->set_package(kPackageName);
   CompleteUpload(true /* success */);
   EXPECT_CALL(delegate_, OnUploadSuccess());
   std::move(serialization_callback_2).Run(&log_);

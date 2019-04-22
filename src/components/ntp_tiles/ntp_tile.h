@@ -29,15 +29,16 @@ struct NTPTile {
   // is also available from another, higher-priority source.
   base::FilePath whitelist_icon_path;
 
-  // Only valid for source == SUGGESTIONS_SERVICE (empty otherwise).
-  // May point to a local chrome:// URL or to a remote one. May be empty.
-  GURL thumbnail_url;
   // This won't be empty, but might 404 etc.
   GURL favicon_url;
 
   // Timestamp representing when the tile was originally generated (produced by
   // a ranking algorithm).
   base::Time data_generation_time;
+
+  // True if this tile is a custom link and was initialized from a Most Visited
+  // item. Used for debugging.
+  bool from_most_visited = false;
 
   NTPTile();
   NTPTile(const NTPTile&);

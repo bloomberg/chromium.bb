@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_file_util.h"
@@ -20,6 +21,7 @@
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
@@ -31,6 +33,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_session_peer.h"
 #include "net/http/http_network_transaction.h"
+#include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_test_util.h"
@@ -39,7 +42,6 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
-#include "net/socket/client_socket_pool_base.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
 #include "net/spdy/buffered_spdy_framer.h"
@@ -53,8 +55,8 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_scoped_task_environment.h"
-#include "net/third_party/spdy/core/spdy_protocol.h"
-#include "net/third_party/spdy/core/spdy_test_utils.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_test_util.h"
@@ -177,8 +179,8 @@ class SpdyNetworkTransactionTest : public TestWithScopedTaskEnvironment {
       EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
       EXPECT_TRUE(response->was_fetched_via_spdy);
       EXPECT_TRUE(response->was_alpn_negotiated);
-      EXPECT_EQ("127.0.0.1", response->socket_address.host());
-      EXPECT_EQ(443, response->socket_address.port());
+      EXPECT_EQ("127.0.0.1", response->remote_endpoint.ToStringWithoutPort());
+      EXPECT_EQ(443, response->remote_endpoint.port());
       output_.status_line = response->headers->GetStatusLine();
       output_.response_info = *response;  // Make a copy so we can verify.
       output_.rv = ReadTransaction(trans_.get(), &output_.response_data);
@@ -402,7 +404,7 @@ class SpdyNetworkTransactionTest : public TestWithScopedTaskEnvironment {
     // all closed and not leaked at this point.
     SpdySessionKey key(HostPortPair::FromURL(request_.url),
                        ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-                       SocketTag());
+                       SpdySessionKey::IsProxySession::kFalse, SocketTag());
     HttpNetworkSession* session = helper.session();
     base::WeakPtr<SpdySession> spdy_session =
         session->spdy_session_pool()->FindAvailableSession(
@@ -743,7 +745,8 @@ TEST_F(SpdyNetworkTransactionTest, RequestsOrderedByPriority) {
   // starting the first transaction would call Socket::Write() with the first
   // HEADERS frame, so the second transaction could not get ahead of it.
   SpdySessionKey key(HostPortPair("www.example.org", 443),
-                     ProxyServer::Direct(), PRIVACY_MODE_DISABLED, SocketTag());
+                     ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
   auto spdy_session = CreateSpdySession(helper.session(), key, log_);
   EXPECT_TRUE(spdy_session);
 
@@ -1604,9 +1607,11 @@ class KillerCallback : public TestCompletionCallbackBase {
 // closes the socket while we have a pending transaction waiting for
 // a pending stream creation.  http://crbug.com/52901
 TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
-  // Construct the request.
+  // Construct the request. Each stream uses a different priority to provide
+  // more useful failure information if the requests are made in an unexpected
+  // order.
   spdy::SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, HIGHEST));
   spdy::SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, false));
@@ -1615,7 +1620,7 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
   spdy_util_.UpdateWithStreamDestruction(1);
 
   spdy::SpdySerializedFrame req2(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 3, MEDIUM));
   spdy::SpdySerializedFrame resp2(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
 
@@ -1626,32 +1631,35 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
       spdy_util_.ConstructSpdySettings(settings));
   spdy::SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
-  MockWrite writes[] = {
-      CreateMockWrite(req, 0), CreateMockWrite(settings_ack, 5),
-      CreateMockWrite(req2, 6),
-  };
+  MockWrite writes[] = {CreateMockWrite(req, 0),
+                        CreateMockWrite(settings_ack, 6),
+                        CreateMockWrite(req2, 7)};
   MockRead reads[] = {
-      CreateMockRead(settings_frame, 1),
-      CreateMockRead(resp, 2),
+      CreateMockRead(settings_frame, 1), CreateMockRead(resp, 2),
       CreateMockRead(body, 3),
-      CreateMockRead(fin_body, 4),
-      CreateMockRead(resp2, 7),
-      MockRead(ASYNC, ERR_CONNECTION_RESET, 8),  // Abort!
+      // Delay the request here. For this test to pass, the three HTTP streams
+      // have to be created in order, but SpdySession doesn't actually guarantee
+      // that (See note in SpdySession::ProcessPendingStreamRequests). As a
+      // workaround, delay finishing up the first stream until the second and
+      // third streams are waiting in the SPDY stream request queue.
+      MockRead(ASYNC, ERR_IO_PENDING, 4), CreateMockRead(fin_body, 5),
+      CreateMockRead(resp2, 8),
+      MockRead(ASYNC, ERR_CONNECTION_RESET, 9),  // Abort!
   };
 
   SequencedSocketData data(reads, writes);
   SequencedSocketData data_placeholder;
 
   TransactionHelperResult out;
-  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
+  NormalSpdyTransactionHelper helper(request_, HIGHEST, log_, nullptr);
   helper.RunPreTestSetup();
   helper.AddData(&data);
   // We require placeholder data because three get requests are sent out, so
   // there needs to be three sets of SSL connection data.
   helper.AddData(&data_placeholder);
   helper.AddData(&data_placeholder);
-  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
-  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans1(HIGHEST, helper.session());
+  HttpNetworkTransaction trans2(MEDIUM, helper.session());
   HttpNetworkTransaction* trans3(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
 
@@ -1669,8 +1677,14 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
   ASSERT_EQ(out.rv, ERR_IO_PENDING);
   out.rv = trans3->Start(&request_, callback3.callback(), log_);
   ASSERT_EQ(out.rv, ERR_IO_PENDING);
+
+  // Run until both transactions are in the SpdySession's queue, waiting for the
+  // final request to complete.
+  base::RunLoop().RunUntilIdle();
+  data.Resume();
+
   out.rv = callback3.WaitForResult();
-  ASSERT_THAT(out.rv, IsError(ERR_ABORTED));
+  EXPECT_THAT(out.rv, IsError(ERR_ABORTED));
 
   const HttpResponseInfo* response1 = trans1.GetResponseInfo();
   ASSERT_TRUE(response1);
@@ -2054,14 +2068,15 @@ TEST_F(SpdyNetworkTransactionTest, SocketWriteReturnsZero) {
   spdy::SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(req, 0, SYNCHRONOUS), MockWrite(SYNCHRONOUS, 0, 0, 2),
+      CreateMockWrite(req, 0, SYNCHRONOUS),
+      MockWrite(SYNCHRONOUS, nullptr, 0, 2),
       CreateMockWrite(rst, 3, SYNCHRONOUS),
   };
 
   spdy::SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   MockRead reads[] = {
-      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, 0, 0, 4)  // EOF
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, nullptr, 0, 4)  // EOF
   };
 
   SequencedSocketData data(reads, writes);
@@ -2197,7 +2212,7 @@ TEST_F(SpdyNetworkTransactionTest, ResetPushWithTransferEncoding) {
     "transfer-encoding", "chunked"
   };
   spdy::SpdySerializedFrame push(spdy_util_.ConstructSpdyPush(
-      headers, arraysize(headers) / 2, 2, 1, "https://www.example.org/1"));
+      headers, base::size(headers) / 2, 2, 1, "https://www.example.org/1"));
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
       CreateMockRead(resp, 1), CreateMockRead(push, 2), CreateMockRead(body, 4),
@@ -2267,7 +2282,7 @@ TEST_F(SpdyNetworkTransactionTest, CancelledTransactionSendRst) {
   spdy::SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   MockRead reads[] = {
-      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, 0, 0, 3)  // EOF
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, nullptr, 0, 3)  // EOF
   };
 
   SequencedSocketData data(reads, writes);
@@ -2312,12 +2327,12 @@ TEST_F(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
       CreateMockRead(resp, 1),
       MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause
       MockRead(ASYNC, reinterpret_cast<const char*>(kGetBodyFrame2),
-               arraysize(kGetBodyFrame2), 3),
+               base::size(kGetBodyFrame2), 3),
       MockRead(ASYNC, ERR_IO_PENDING, 4),  // Force a pause
-      MockRead(ASYNC, 0, 0, 5),            // EOF
+      MockRead(ASYNC, nullptr, 0, 5),      // EOF
   };
   MockRead reads2[] = {
-      CreateMockRead(resp, 1), MockRead(ASYNC, 0, 0, 2),  // EOF
+      CreateMockRead(resp, 1), MockRead(ASYNC, nullptr, 0, 2),  // EOF
   };
 
   SequencedSocketData data(reads, writes);
@@ -2365,8 +2380,8 @@ TEST_F(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
       CreateMockRead(resp, 1),
-      MockRead(ASYNC, ERR_IO_PENDING, 2),                 // Force a pause
-      CreateMockRead(body, 3), MockRead(ASYNC, 0, 0, 4),  // EOF
+      MockRead(ASYNC, ERR_IO_PENDING, 2),                       // Force a pause
+      CreateMockRead(body, 3), MockRead(ASYNC, nullptr, 0, 4),  // EOF
   };
 
   SequencedSocketData data(reads, writes);
@@ -2420,7 +2435,7 @@ TEST_F(SpdyNetworkTransactionTest, TestRawHeaderSizeSuccessfullRequest) {
   MockRead response_headers(CreateMockRead(resp, 1));
   MockRead reads[] = {
       response_headers, CreateMockRead(response_body_frame, 2),
-      MockRead(ASYNC, 0, 0, 3)  // EOF
+      MockRead(ASYNC, nullptr, 0, 3)  // EOF
   };
   SequencedSocketData data(reads, writes);
 
@@ -2552,7 +2567,7 @@ TEST_F(SpdyNetworkTransactionTest, RedirectGetRequest) {
   const char* const kExtraHeaders[] = {"location",
                                        "https://www.foo.com/index.php"};
   spdy::SpdySerializedFrame resp0(spdy_util_.ConstructSpdyReplyError(
-      "301", kExtraHeaders, arraysize(kExtraHeaders) / 2, 1));
+      "301", kExtraHeaders, base::size(kExtraHeaders) / 2, 1));
   MockRead reads0[] = {CreateMockRead(resp0, 1), MockRead(ASYNC, 0, 3)};
 
   SequencedSocketData data0(reads0, writes0);
@@ -2590,7 +2605,8 @@ TEST_F(SpdyNetworkTransactionTest, RedirectGetRequest) {
 
   EXPECT_EQ(1, delegate.received_redirect_count());
 
-  request->FollowDeferredRedirect(base::nullopt /* modified_request_headers */);
+  request->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                                  base::nullopt /* modified_headers */);
   delegate.RunUntilComplete();
 
   EXPECT_EQ(1, delegate.response_started_count());
@@ -2685,8 +2701,8 @@ TEST_F(SpdyNetworkTransactionTest, RedirectServerPush) {
   delegate1.RunUntilRedirect();
   EXPECT_EQ(1, delegate1.received_redirect_count());
 
-  request1->FollowDeferredRedirect(
-      base::nullopt /* modified_request_headers */);
+  request1->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                                   base::nullopt /* modified_headers */);
   delegate1.RunUntilComplete();
   EXPECT_EQ(1, delegate1.response_started_count());
   EXPECT_FALSE(delegate1.received_data_before_response());
@@ -3651,7 +3667,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsPush) {
 
   SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
   SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED, SocketTag());
+                     PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -3765,7 +3782,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsCrossOriginPush) {
 
   SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
   SpdySessionKey key1(HostPortPair::FromURL(GURL(kUrl1)), ProxyServer::Direct(),
-                      PRIVACY_MODE_DISABLED, SocketTag());
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
   base::WeakPtr<SpdySession> spdy_session1 =
       spdy_session_pool->FindAvailableSession(
           key1, /* enable_ip_based_pooling = */ true,
@@ -3776,7 +3794,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsCrossOriginPush) {
   // a client-initiated request would not pool to this connection,
   // because the IP address does not match.
   SpdySessionKey key2(HostPortPair::FromURL(GURL(kUrl2)), ProxyServer::Direct(),
-                      PRIVACY_MODE_DISABLED, SocketTag());
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
   EXPECT_FALSE(spdy_session_pool->FindAvailableSession(
       key2, /* enable_ip_based_pooling = */ true,
       /* is_websocket = */ false, log_));
@@ -3917,7 +3936,7 @@ TEST_F(SpdyNetworkTransactionTest, ResponseHeaders) {
        3,
        {"status", "200", "hello", "bye", "cookie", "val1; val2"}}};
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     SpdyTestUtil spdy_test_util;
     spdy::SpdySerializedFrame req(
         spdy_test_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
@@ -4003,7 +4022,7 @@ TEST_F(SpdyNetworkTransactionTest, ResponseHeadersVary) {
         {spdy::kHttp2StatusHeader, "200", spdy::kHttp2PathHeader, "/index.php",
          "vary", "friend,enemy", nullptr}}}};
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     SpdyTestUtil spdy_test_util;
 
     // Construct the request.
@@ -4102,7 +4121,7 @@ TEST_F(SpdyNetworkTransactionTest, InvalidResponseHeaders) {
       },
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     SpdyTestUtil spdy_test_util;
 
     spdy::SpdySerializedFrame req(
@@ -4319,25 +4338,27 @@ TEST_F(SpdyNetworkTransactionTest, NetLog) {
                                    NetLogEventType::HTTP2_SESSION_SEND_HEADERS,
                                    NetLogEventPhase::NONE);
 
-  base::ListValue* header_list;
-  ASSERT_TRUE(entries[pos].params.get());
-  ASSERT_TRUE(entries[pos].params->GetList("headers", &header_list));
+  ASSERT_TRUE(entries[pos].params);
+  auto* header_list = entries[pos].params->FindKey("headers");
+  ASSERT_TRUE(header_list);
+  ASSERT_TRUE(header_list->is_list());
+  ASSERT_EQ(5u, header_list->GetList().size());
 
-  std::vector<std::string> expected;
-  expected.push_back(std::string(spdy::kHttp2AuthorityHeader) +
-                     ": www.example.org");
-  expected.push_back(std::string(spdy::kHttp2PathHeader) + ": /");
-  expected.push_back(std::string(spdy::kHttp2SchemeHeader) + ": " +
-                     default_url_.scheme());
-  expected.push_back(std::string(spdy::kHttp2MethodHeader) + ": GET");
-  expected.push_back("user-agent: Chrome");
-  EXPECT_EQ(expected.size(), header_list->GetSize());
-  for (std::vector<std::string>::const_iterator it = expected.begin();
-       it != expected.end(); ++it) {
-    base::Value header(*it);
-    EXPECT_NE(header_list->end(), header_list->Find(header)) <<
-        "Header not found: " << *it;
-  }
+  ASSERT_TRUE(header_list->GetList()[0].is_string());
+  EXPECT_EQ(":method: GET", header_list->GetList()[0].GetString());
+
+  ASSERT_TRUE(header_list->GetList()[1].is_string());
+  EXPECT_EQ(":authority: www.example.org",
+            header_list->GetList()[1].GetString());
+
+  ASSERT_TRUE(header_list->GetList()[2].is_string());
+  EXPECT_EQ(":scheme: https", header_list->GetList()[2].GetString());
+
+  ASSERT_TRUE(header_list->GetList()[3].is_string());
+  EXPECT_EQ(":path: /", header_list->GetList()[3].GetString());
+
+  ASSERT_TRUE(header_list->GetList()[4].is_string());
+  EXPECT_EQ("user-agent: Chrome", header_list->GetList()[4].GetString());
 }
 
 // Since we buffer the IO from the stream to the renderer, this test verifies
@@ -4828,7 +4849,8 @@ TEST_F(SpdyNetworkTransactionTest, GracefulGoaway) {
   // GOAWAY frame has not yet been received, SpdySession should be available.
   SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
   SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED, SocketTag());
+                     PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -4856,8 +4878,8 @@ TEST_F(SpdyNetworkTransactionTest, GracefulGoaway) {
   EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_alpn_negotiated);
-  EXPECT_EQ("127.0.0.1", response->socket_address.host());
-  EXPECT_EQ(443, response->socket_address.port());
+  EXPECT_EQ("127.0.0.1", response->remote_endpoint.ToStringWithoutPort());
+  EXPECT_EQ(443, response->remote_endpoint.port());
   std::string response_data;
   rv = ReadTransaction(&trans2, &response_data);
   EXPECT_THAT(rv, IsOk());
@@ -4989,8 +5011,8 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
             response->connection_info);
   EXPECT_TRUE(response->was_alpn_negotiated);
   EXPECT_TRUE(request_.url.SchemeIs("https"));
-  EXPECT_EQ("127.0.0.1", response->socket_address.host());
-  EXPECT_EQ(443, response->socket_address.port());
+  EXPECT_EQ("127.0.0.1", response->remote_endpoint.ToStringWithoutPort());
+  EXPECT_EQ(443, response->remote_endpoint.port());
   std::string response_data;
   ASSERT_THAT(ReadTransaction(helper.trans(), &response_data), IsOk());
   EXPECT_EQ("hello", response_data);
@@ -5010,7 +5032,8 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
 
   // First socket: HTTP/2 CONNECT rejected with HTTP_1_1_REQUIRED.
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   MockWrite writes0[] = {CreateMockWrite(req, 0)};
   spdy::SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_HTTP_1_1_REQUIRED));
@@ -5079,8 +5102,8 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
             response->connection_info);
   EXPECT_FALSE(response->was_alpn_negotiated);
   EXPECT_TRUE(request_.url.SchemeIs("https"));
-  EXPECT_EQ("127.0.0.1", response->socket_address.host());
-  EXPECT_EQ(70, response->socket_address.port());
+  EXPECT_EQ("127.0.0.1", response->remote_endpoint.ToStringWithoutPort());
+  EXPECT_EQ(70, response->remote_endpoint.port());
   std::string response_data;
   ASSERT_THAT(ReadTransaction(helper.trans(), &response_data), IsOk());
   EXPECT_EQ("hello", response_data);
@@ -5108,13 +5131,14 @@ TEST_F(SpdyNetworkTransactionTest, ProxyConnect) {
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
   MockWrite writes[] = {
-      MockWrite(SYNCHRONOUS, kConnect443, arraysize(kConnect443) - 1, 0),
+      MockWrite(SYNCHRONOUS, kConnect443, base::size(kConnect443) - 1, 0),
       CreateMockWrite(req, 2),
   };
   MockRead reads[] = {
-      MockRead(SYNCHRONOUS, kHTTP200, arraysize(kHTTP200) - 1, 1),
-      CreateMockRead(resp, 3), CreateMockRead(body, 4),
-      MockRead(ASYNC, 0, 0, 5),
+      MockRead(SYNCHRONOUS, kHTTP200, base::size(kHTTP200) - 1, 1),
+      CreateMockRead(resp, 3),
+      CreateMockRead(body, 4),
+      MockRead(ASYNC, nullptr, 0, 5),
   };
   SequencedSocketData data(reads, writes);
 
@@ -5193,13 +5217,15 @@ TEST_F(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   EXPECT_EQ("hello!", out.response_data);
 
   // Check that the SpdySession is still in the SpdySessionPool.
-  SpdySessionKey session_pool_key_direct(host_port_pair_, ProxyServer::Direct(),
-                                         PRIVACY_MODE_DISABLED, SocketTag());
+  SpdySessionKey session_pool_key_direct(
+      host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+      SpdySessionKey::IsProxySession::kFalse, SocketTag());
   EXPECT_TRUE(HasSpdySession(spdy_session_pool, session_pool_key_direct));
   SpdySessionKey session_pool_key_proxy(
       host_port_pair_,
       ProxyServer::FromURI("www.foo.com", ProxyServer::SCHEME_HTTP),
-      PRIVACY_MODE_DISABLED, SocketTag());
+      PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
+      SocketTag());
   EXPECT_FALSE(HasSpdySession(spdy_session_pool, session_pool_key_proxy));
 
   // New SpdyTestUtil instance for the session that will be used for the
@@ -5219,11 +5245,11 @@ TEST_F(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   spdy::SpdySerializedFrame body2(spdy_util_2.ConstructSpdyDataFrame(1, true));
 
   MockWrite writes2[] = {
-      MockWrite(SYNCHRONOUS, kConnect443, arraysize(kConnect443) - 1, 0),
+      MockWrite(SYNCHRONOUS, kConnect443, base::size(kConnect443) - 1, 0),
       CreateMockWrite(req2, 2),
   };
   MockRead reads2[] = {
-      MockRead(SYNCHRONOUS, kHTTP200, arraysize(kHTTP200) - 1, 1),
+      MockRead(SYNCHRONOUS, kHTTP200, base::size(kHTTP200) - 1, 1),
       CreateMockRead(resp2, 3), CreateMockRead(body2, 4),
       MockRead(ASYNC, 0, 5)  // EOF
   };
@@ -5361,7 +5387,7 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
     "authorization", "Basic Zm9vOmJhcg=="
   };
   spdy::SpdySerializedFrame req_get_authorization(spdy_util_.ConstructSpdyGet(
-      kExtraAuthorizationHeaders, arraysize(kExtraAuthorizationHeaders) / 2, 3,
+      kExtraAuthorizationHeaders, base::size(kExtraAuthorizationHeaders) / 2, 3,
       LOWEST));
   MockWrite spdy_writes[] = {
       CreateMockWrite(req_get, 0), CreateMockWrite(req_get_authorization, 3),
@@ -5377,7 +5403,7 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
   spdy::SpdySerializedFrame resp_authentication(
       spdy_util_.ConstructSpdyReplyError(
           "401", kExtraAuthenticationHeaders,
-          arraysize(kExtraAuthenticationHeaders) / 2, 1));
+          base::size(kExtraAuthenticationHeaders) / 2, 1));
   spdy::SpdySerializedFrame body_authentication(
       spdy_util_.ConstructSpdyDataFrame(1, true));
   spdy::SpdySerializedFrame resp_data(
@@ -5411,7 +5437,8 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
   ASSERT_TRUE(response_start->headers);
   EXPECT_EQ(401, response_start->headers->response_code());
   EXPECT_TRUE(response_start->was_fetched_via_spdy);
-  AuthChallengeInfo* auth_challenge = response_start->auth_challenge.get();
+  const base::Optional<AuthChallengeInfo>& auth_challenge =
+      response_start->auth_challenge;
   ASSERT_TRUE(auth_challenge);
   EXPECT_FALSE(auth_challenge->is_proxy);
   EXPECT_EQ(kBasicAuthScheme, auth_challenge->scheme);
@@ -5432,7 +5459,7 @@ TEST_F(SpdyNetworkTransactionTest, SpdyBasicAuth) {
   ASSERT_TRUE(response_restart);
   ASSERT_TRUE(response_restart->headers);
   EXPECT_EQ(200, response_restart->headers->response_code());
-  EXPECT_TRUE(response_restart->auth_challenge.get() == nullptr);
+  EXPECT_FALSE(response_restart->auth_challenge);
 }
 
 struct PushHeaderTestParams {
@@ -5644,9 +5671,9 @@ class SpdyNetworkTransactionPushHeaderTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SpdyNetworkTransactionPushHeaderTest,
-                        ::testing::ValuesIn(push_header_test_cases));
+INSTANTIATE_TEST_SUITE_P(,
+                         SpdyNetworkTransactionPushHeaderTest,
+                         ::testing::ValuesIn(push_header_test_cases));
 
 TEST_P(SpdyNetworkTransactionPushHeaderTest,
        PushedResponseHeadersReceivedBeforeRequest) {
@@ -5851,9 +5878,9 @@ class SpdyNetworkTransactionPushUrlTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SpdyNetworkTransactionPushUrlTest,
-                        ::testing::ValuesIn(push_url_test_cases));
+INSTANTIATE_TEST_SUITE_P(,
+                         SpdyNetworkTransactionPushUrlTest,
+                         ::testing::ValuesIn(push_url_test_cases));
 
 TEST_P(SpdyNetworkTransactionPushUrlTest, PushUrlTest) {
   RunTest();
@@ -5906,7 +5933,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
 
   SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
   SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED, SocketTag());
+                     PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -6108,7 +6136,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
   HostPortPair host_port_pair0("mail.example.org", 443);
   SpdySessionKey key0(host_port_pair0, ProxyServer::Direct(),
-                      PRIVACY_MODE_DISABLED, SocketTag());
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
   base::WeakPtr<SpdySession> spdy_session0 =
       spdy_session_pool->FindAvailableSession(
           key0, /* enable_ip_based_pooling = */ true,
@@ -6118,7 +6147,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
 
   HostPortPair host_port_pair1("docs.example.org", 443);
   SpdySessionKey key1(host_port_pair1, ProxyServer::Direct(),
-                      PRIVACY_MODE_DISABLED, SocketTag());
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
   base::WeakPtr<SpdySession> spdy_session1 =
       spdy_session_pool->FindAvailableSession(
           key1, /* enable_ip_based_pooling = */ true,
@@ -7458,10 +7488,10 @@ TEST_F(SpdyNetworkTransactionTest, IgnoreUnsupportedOriginFrame) {
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {MockRead(ASYNC, origin_frame_on_stream_zero,
-                               arraysize(origin_frame_on_stream_zero), 1),
+                               base::size(origin_frame_on_stream_zero), 1),
                       CreateMockRead(resp, 2),
                       MockRead(ASYNC, origin_frame_on_stream_one,
-                               arraysize(origin_frame_on_stream_one), 3),
+                               base::size(origin_frame_on_stream_one), 3),
                       CreateMockRead(body, 4), MockRead(ASYNC, 0, 5)};
 
   SequencedSocketData data(reads, writes);
@@ -7622,7 +7652,8 @@ TEST_F(SpdyNetworkTransactionTest, PushCanceledByServerAfterClaimed) {
 
   // Get a SpdySession.
   SpdySessionKey key(HostPortPair::FromURL(request_.url), ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED, SocketTag());
+                     PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
   HttpNetworkSession* session = helper.session();
   base::WeakPtr<SpdySession> spdy_session =
       session->spdy_session_pool()->FindAvailableSession(
@@ -7740,7 +7771,8 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOpensNewConnection) {
   EXPECT_EQ("hello!", response_data);
 
   SpdySessionKey key(HostPortPair::FromURL(request_.url), ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED, SocketTag());
+                     PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
   base::WeakPtr<SpdySession> spdy_session =
       helper.session()->spdy_session_pool()->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -7845,7 +7877,8 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
   base::RunLoop().RunUntilIdle();
 
   SpdySessionKey key(HostPortPair::FromURL(request_.url), ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED, SocketTag());
+                     PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
   base::WeakPtr<SpdySession> spdy_session =
       helper.session()->spdy_session_pool()->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -7956,7 +7989,8 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketNegotiatesHttp2) {
 // https://crbug.com/684681.
 TEST_F(SpdyNetworkTransactionTest, PlaintextWebSocketOverHttp2Proxy) {
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 80)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 80)));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
 
   spdy::SpdySerializedFrame resp(
@@ -7991,7 +8025,8 @@ TEST_F(SpdyNetworkTransactionTest, PlaintextWebSocketOverHttp2Proxy) {
 // request should reuse the first connection.
 TEST_F(SpdyNetworkTransactionTest, TwoWebSocketRequestsOverHttp2Proxy) {
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 80)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 80)));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
 
   spdy::SpdySerializedFrame resp(
@@ -8039,7 +8074,8 @@ TEST_F(SpdyNetworkTransactionTest, TwoWebSocketRequestsOverHttp2Proxy) {
 
 TEST_F(SpdyNetworkTransactionTest, SecureWebSocketOverHttp2Proxy) {
   spdy::SpdySerializedFrame connect_request(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   const char kWebSocketRequest[] =
       "GET / HTTP/1.1\r\n"
       "Host: www.example.org\r\n"
@@ -8108,7 +8144,7 @@ TEST_F(SpdyNetworkTransactionTest, SecureWebSocketOverHttp2Proxy) {
             response->connection_info);
   EXPECT_TRUE(response->was_alpn_negotiated);
   EXPECT_FALSE(response->was_fetched_via_spdy);
-  EXPECT_EQ(70, response->socket_address.port());
+  EXPECT_EQ(70, response->remote_endpoint.port());
   ASSERT_TRUE(response->headers);
   EXPECT_EQ("HTTP/1.1 101 Switching Protocols",
             response->headers->GetStatusLine());
@@ -8121,7 +8157,8 @@ TEST_F(SpdyNetworkTransactionTest, SecureWebSocketOverHttp2Proxy) {
 TEST_F(SpdyNetworkTransactionTest,
        SecureWebSocketOverHttp2ProxyNegotiatesHttp2) {
   spdy::SpdySerializedFrame connect_request(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   MockWrite writes[] = {CreateMockWrite(connect_request, 0)};
   spdy::SpdySerializedFrame connect_response(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
@@ -8168,5 +8205,541 @@ TEST_F(SpdyNetworkTransactionTest,
 }
 
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
+
+TEST_F(SpdyNetworkTransactionTest, ZeroRTTDoesntConfirm) {
+  spdy::SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
+
+  spdy::SpdySerializedFrame resp(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockRead reads[] = {
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
+      MockRead(ASYNC, 0, 3)  // EOF
+  };
+
+  SequencedSocketData data(reads, writes);
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_early_data = true;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  // Configure |ssl_provider| to fail if ConfirmHandshake is called. The request
+  // should still succeed.
+  ssl_provider->confirm = MockConfirm(SYNCHRONOUS, ERR_SSL_PROTOCOL_ERROR);
+  helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+}
+
+// Run multiple concurrent streams that don't require handshake confirmation.
+TEST_F(SpdyNetworkTransactionTest, ZeroRTTNoConfirmMultipleStreams) {
+  spdy::SpdySerializedFrame req1(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
+  spdy::SpdySerializedFrame req2(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST));
+  MockWrite writes1[] = {CreateMockWrite(req1, 0), CreateMockWrite(req2, 3)};
+
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  spdy::SpdySerializedFrame resp2(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  spdy::SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
+  MockRead reads1[] = {
+      CreateMockRead(resp1, 1), CreateMockRead(body1, 2),
+      CreateMockRead(resp2, 4), CreateMockRead(body2, 5),
+      MockRead(ASYNC, 0, 6)  // EOF
+  };
+
+  SequencedSocketData data1(reads1, writes1);
+  SequencedSocketData data2({}, {});
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_early_data = true;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  auto ssl_provider1 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider1->confirm = MockConfirm(SYNCHRONOUS, ERR_SSL_PROTOCOL_ERROR);
+  auto ssl_provider2 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider2->confirm = MockConfirm(SYNCHRONOUS, ERR_SSL_PROTOCOL_ERROR);
+
+  helper.RunPreTestSetup();
+  helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));
+  helper.AddDataWithSSLSocketDataProvider(&data2, std::move(ssl_provider2));
+  EXPECT_TRUE(helper.StartDefaultTest());
+
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL(kDefaultUrl);
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestCompletionCallback callback2;
+  int rv = trans2.Start(&request2, callback2.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  helper.FinishDefaultTest();
+  EXPECT_THAT(callback2.GetResult(ERR_IO_PENDING), IsOk());
+  helper.VerifyDataConsumed();
+
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+}
+
+// Run multiple concurrent streams that require handshake confirmation.
+TEST_F(SpdyNetworkTransactionTest, ZeroRTTConfirmMultipleStreams) {
+  spdy::SpdyHeaderBlock req_block1(
+      spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, 0));
+  spdy::SpdySerializedFrame req1(
+      spdy_util_.ConstructSpdyHeaders(1, std::move(req_block1), LOWEST, true));
+  spdy::SpdyHeaderBlock req_block2(
+      spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, 0));
+  spdy::SpdySerializedFrame req2(
+      spdy_util_.ConstructSpdyHeaders(3, std::move(req_block2), LOWEST, true));
+  MockWrite writes[] = {
+      CreateMockWrite(req1, 0),
+      CreateMockWrite(req2, 3),
+  };
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  spdy::SpdySerializedFrame resp2(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  spdy::SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
+  MockRead reads[] = {
+      CreateMockRead(resp1, 1), CreateMockRead(body1, 2),
+      CreateMockRead(resp2, 4), CreateMockRead(body2, 5),
+      MockRead(ASYNC, 0, 6)  // EOF
+  };
+
+  SequencedSocketData data1(reads, writes);
+  SequencedSocketData data2({}, {});
+  UsePostRequest();
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_early_data = true;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  auto ssl_provider1 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider1->confirm = MockConfirm(ASYNC, OK);
+  auto ssl_provider2 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider2->confirm = MockConfirm(ASYNC, OK);
+
+  helper.RunPreTestSetup();
+  helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));
+  helper.AddDataWithSSLSocketDataProvider(&data2, std::move(ssl_provider2));
+
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
+  HttpRequestInfo request1;
+  request1.method = "POST";
+  request1.url = GURL(kDefaultUrl);
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestCompletionCallback callback1;
+  int rv = trans1.Start(&request1, callback1.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  HttpRequestInfo request2;
+  request2.method = "POST";
+  request2.url = GURL(kDefaultUrl);
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestCompletionCallback callback2;
+  rv = trans2.Start(&request2, callback2.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  EXPECT_THAT(callback1.GetResult(ERR_IO_PENDING), IsOk());
+  EXPECT_THAT(callback2.GetResult(ERR_IO_PENDING), IsOk());
+
+  const HttpResponseInfo* response1 = trans1.GetResponseInfo();
+  ASSERT_TRUE(response1);
+  ASSERT_TRUE(response1->headers);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP2,
+            response1->connection_info);
+  EXPECT_EQ("HTTP/1.1 200", response1->headers->GetStatusLine());
+  std::string response_data;
+  ReadTransaction(&trans1, &response_data);
+  EXPECT_EQ("hello!", response_data);
+
+  const HttpResponseInfo* response2 = trans2.GetResponseInfo();
+  ASSERT_TRUE(response2);
+  ASSERT_TRUE(response2->headers);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP2,
+            response2->connection_info);
+  EXPECT_EQ("HTTP/1.1 200", response2->headers->GetStatusLine());
+  ReadTransaction(&trans2, &response_data);
+  EXPECT_EQ("hello!", response_data);
+
+  helper.VerifyDataConsumed();
+}
+
+// Run multiple concurrent streams, the first require a confirmation and the
+// second not requiring confirmation.
+TEST_F(SpdyNetworkTransactionTest, ZeroRTTConfirmNoConfirmStreams) {
+  // This test orders the writes such that the GET (no confirmation) is written
+  // before the POST (confirmation required).
+  spdy::SpdyHeaderBlock req_block1(
+      spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
+  spdy::SpdySerializedFrame req1(
+      spdy_util_.ConstructSpdyHeaders(1, std::move(req_block1), LOWEST, true));
+  spdy::SpdyHeaderBlock req_block2(
+      spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, 0));
+  spdy::SpdySerializedFrame req2(
+      spdy_util_.ConstructSpdyHeaders(3, std::move(req_block2), LOWEST, true));
+  MockWrite writes[] = {
+      CreateMockWrite(req1, 0),
+      CreateMockWrite(req2, 3),
+  };
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  spdy::SpdySerializedFrame resp2(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  spdy::SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
+  MockRead reads[] = {
+      CreateMockRead(resp1, 1), CreateMockRead(body1, 2),
+      CreateMockRead(resp2, 4), CreateMockRead(body2, 5),
+      MockRead(ASYNC, 0, 6)  // EOF
+  };
+
+  SequencedSocketData data1(reads, writes);
+  SequencedSocketData data2({}, {});
+  UsePostRequest();
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_early_data = true;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  auto ssl_provider1 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider1->confirm = MockConfirm(ASYNC, OK);
+  auto ssl_provider2 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider2->confirm = MockConfirm(ASYNC, OK);
+
+  helper.RunPreTestSetup();
+  helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));
+  helper.AddDataWithSSLSocketDataProvider(&data2, std::move(ssl_provider2));
+
+  // TODO(https://crbug.com/949724): Explicitly verify the ordering of
+  // ConfirmHandshake and the second stream.
+
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
+  HttpRequestInfo request1;
+  request1.method = "POST";
+  request1.url = GURL(kDefaultUrl);
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestCompletionCallback callback1;
+  int rv = trans1.Start(&request1, callback1.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL(kDefaultUrl);
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestCompletionCallback callback2;
+  rv = trans2.Start(&request2, callback2.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  EXPECT_THAT(callback1.GetResult(ERR_IO_PENDING), IsOk());
+  EXPECT_THAT(callback2.GetResult(ERR_IO_PENDING), IsOk());
+
+  const HttpResponseInfo* response1 = trans1.GetResponseInfo();
+  ASSERT_TRUE(response1);
+  ASSERT_TRUE(response1->headers);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP2,
+            response1->connection_info);
+  EXPECT_EQ("HTTP/1.1 200", response1->headers->GetStatusLine());
+  std::string response_data;
+  ReadTransaction(&trans1, &response_data);
+  EXPECT_EQ("hello!", response_data);
+
+  const HttpResponseInfo* response2 = trans2.GetResponseInfo();
+  ASSERT_TRUE(response2);
+  ASSERT_TRUE(response2->headers);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP2,
+            response2->connection_info);
+  EXPECT_EQ("HTTP/1.1 200", response2->headers->GetStatusLine());
+  ReadTransaction(&trans2, &response_data);
+  EXPECT_EQ("hello!", response_data);
+
+  helper.VerifyDataConsumed();
+}
+
+// Run multiple concurrent streams, the first not requiring confirmation and the
+// second requiring confirmation.
+TEST_F(SpdyNetworkTransactionTest, ZeroRTTNoConfirmConfirmStreams) {
+  // This test orders the writes such that the GET (no confirmation) is written
+  // before the POST (confirmation required).
+  spdy::SpdyHeaderBlock req_block1(
+      spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
+  spdy::SpdySerializedFrame req1(
+      spdy_util_.ConstructSpdyHeaders(1, std::move(req_block1), LOWEST, true));
+  spdy::SpdyHeaderBlock req_block2(
+      spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, 0));
+  spdy::SpdySerializedFrame req2(
+      spdy_util_.ConstructSpdyHeaders(3, std::move(req_block2), LOWEST, true));
+  MockWrite writes[] = {
+      CreateMockWrite(req1, 0),
+      CreateMockWrite(req2, 3),
+  };
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  spdy::SpdySerializedFrame resp2(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  spdy::SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
+  MockRead reads[] = {
+      CreateMockRead(resp1, 1), CreateMockRead(body1, 2),
+      CreateMockRead(resp2, 4), CreateMockRead(body2, 5),
+      MockRead(ASYNC, 0, 6)  // EOF
+  };
+
+  SequencedSocketData data1(reads, writes);
+  SequencedSocketData data2({}, {});
+  UsePostRequest();
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_early_data = true;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  auto ssl_provider1 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider1->confirm = MockConfirm(ASYNC, OK);
+  auto ssl_provider2 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider2->confirm = MockConfirm(ASYNC, OK);
+
+  helper.RunPreTestSetup();
+  helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));
+  helper.AddDataWithSSLSocketDataProvider(&data2, std::move(ssl_provider2));
+
+  // TODO(https://crbug.com/949724): Explicitly verify the ordering of
+  // ConfirmHandshake and the second stream.
+
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL(kDefaultUrl);
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestCompletionCallback callback1;
+  int rv = trans1.Start(&request1, callback1.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  HttpRequestInfo request2;
+  request2.method = "POST";
+  request2.url = GURL(kDefaultUrl);
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestCompletionCallback callback2;
+  rv = trans2.Start(&request2, callback2.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  EXPECT_THAT(callback1.GetResult(ERR_IO_PENDING), IsOk());
+  EXPECT_THAT(callback2.GetResult(ERR_IO_PENDING), IsOk());
+
+  const HttpResponseInfo* response1 = trans1.GetResponseInfo();
+  ASSERT_TRUE(response1);
+  ASSERT_TRUE(response1->headers);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP2,
+            response1->connection_info);
+  EXPECT_EQ("HTTP/1.1 200", response1->headers->GetStatusLine());
+  std::string response_data;
+  ReadTransaction(&trans1, &response_data);
+  EXPECT_EQ("hello!", response_data);
+
+  const HttpResponseInfo* response2 = trans2.GetResponseInfo();
+  ASSERT_TRUE(response2);
+  ASSERT_TRUE(response2->headers);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP2,
+            response2->connection_info);
+  EXPECT_EQ("HTTP/1.1 200", response2->headers->GetStatusLine());
+  ReadTransaction(&trans2, &response_data);
+  EXPECT_EQ("hello!", response_data);
+
+  helper.VerifyDataConsumed();
+}
+
+TEST_F(SpdyNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
+      kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
+  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockWrite writes[] = {
+      CreateMockWrite(req, 0, SYNCHRONOUS),
+      CreateMockWrite(body, 1),  // POST upload frame
+  };
+
+  spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
+  MockRead reads[] = {
+      CreateMockRead(resp, 2), CreateMockRead(body, 3),
+      MockRead(ASYNC, 0, 4)  // EOF
+  };
+
+  SequencedSocketData data(reads, writes);
+  UsePostRequest();
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_early_data = true;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider->confirm = MockConfirm(SYNCHRONOUS, OK);
+  helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+}
+
+TEST_F(SpdyNetworkTransactionTest, ZeroRTTSyncConfirmAsyncWrite) {
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
+      kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
+  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockWrite writes[] = {
+      CreateMockWrite(req, 0, ASYNC),
+      CreateMockWrite(body, 1),  // POST upload frame
+  };
+
+  spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
+  MockRead reads[] = {
+      CreateMockRead(resp, 2), CreateMockRead(body, 3),
+      MockRead(ASYNC, 0, 4)  // EOF
+  };
+
+  SequencedSocketData data(reads, writes);
+  UsePostRequest();
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_early_data = true;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider->confirm = MockConfirm(SYNCHRONOUS, OK);
+  helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+}
+
+TEST_F(SpdyNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
+      kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
+  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockWrite writes[] = {
+      CreateMockWrite(req, 0, SYNCHRONOUS),
+      CreateMockWrite(body, 1),  // POST upload frame
+  };
+
+  spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
+  MockRead reads[] = {
+      CreateMockRead(resp, 2), CreateMockRead(body, 3),
+      MockRead(ASYNC, 0, 4)  // EOF
+  };
+
+  SequencedSocketData data(reads, writes);
+  UsePostRequest();
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_early_data = true;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider->confirm = MockConfirm(ASYNC, OK);
+  helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+}
+
+TEST_F(SpdyNetworkTransactionTest, ZeroRTTAsyncConfirmAsyncWrite) {
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
+      kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
+  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockWrite writes[] = {
+      CreateMockWrite(req, 0, ASYNC),
+      CreateMockWrite(body, 1),  // POST upload frame
+  };
+
+  spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
+  MockRead reads[] = {
+      CreateMockRead(resp, 2), CreateMockRead(body, 3),
+      MockRead(ASYNC, 0, 4)  // EOF
+  };
+
+  SequencedSocketData data(reads, writes);
+  UsePostRequest();
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_early_data = true;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider->confirm = MockConfirm(ASYNC, OK);
+  helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+}
+
+TEST_F(SpdyNetworkTransactionTest, ZeroRTTConfirmErrorSync) {
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
+      kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
+  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockWrite writes[] = {
+      CreateMockWrite(req, 0), CreateMockWrite(body, 1),  // POST upload frame
+  };
+
+  spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
+  MockRead reads[] = {
+      CreateMockRead(resp, 2), CreateMockRead(body, 3),
+      MockRead(ASYNC, 0, 4)  // EOF
+  };
+
+  SequencedSocketData data(reads, writes);
+  UsePostRequest();
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_early_data = true;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider->confirm = MockConfirm(SYNCHRONOUS, ERR_SSL_PROTOCOL_ERROR);
+  helper.RunPreTestSetup();
+  helper.AddDataWithSSLSocketDataProvider(&data, std::move(ssl_provider));
+  helper.RunDefaultTest();
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsError(ERR_SSL_PROTOCOL_ERROR));
+}
+
+TEST_F(SpdyNetworkTransactionTest, ZeroRTTConfirmErrorAsync) {
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
+      kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
+  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockWrite writes[] = {
+      CreateMockWrite(req, 0), CreateMockWrite(body, 1),  // POST upload frame
+  };
+
+  spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
+  MockRead reads[] = {
+      CreateMockRead(resp, 2), CreateMockRead(body, 3),
+      MockRead(ASYNC, 0, 4)  // EOF
+  };
+
+  SequencedSocketData data(reads, writes);
+  UsePostRequest();
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_early_data = true;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider->confirm = MockConfirm(ASYNC, ERR_SSL_PROTOCOL_ERROR);
+  helper.RunPreTestSetup();
+  helper.AddDataWithSSLSocketDataProvider(&data, std::move(ssl_provider));
+  helper.RunDefaultTest();
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsError(ERR_SSL_PROTOCOL_ERROR));
+}
 
 }  // namespace net

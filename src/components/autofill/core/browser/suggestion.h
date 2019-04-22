@@ -53,7 +53,7 @@ struct Suggestion {
   // Contains an image to display for the suggestion.
   gfx::Image custom_icon;
   // If |custom_icon| is empty, the name of the fallback built-in icon.
-  base::string16 icon;
+  std::string icon;
   MatchMode match;
   bool is_value_secondary;  // |value| should be displayed as secondary text.
 };

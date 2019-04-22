@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 // Typically we use the same global thread pool for all RAR modules.
 static ThreadPool *GlobalPool=NULL;
 static uint GlobalPoolUseCount=0;
@@ -209,3 +211,4 @@ uint GetNumberOfThreads()
   return NumCPU;
 }
 
+}  // namespace third_party_unrar

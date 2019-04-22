@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/paint/list_item_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -141,7 +140,8 @@ LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
     if (curr->HasOverflowClip())
       return curr;
 
-    if (!curr_child->IsLayoutBlockFlow() ||
+    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(curr_child);
+    if (!child_block_flow ||
         (curr_child->IsBox() && ToLayoutBox(curr_child)->IsWritingModeRoot()))
       return curr_child;
 
@@ -150,8 +150,7 @@ LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
          IsHTMLOListElement(*curr_child->GetNode())))
       break;
 
-    LayoutObject* line_box =
-        GetParentOfFirstLineBox(ToLayoutBlockFlow(curr_child), marker);
+    LayoutObject* line_box = GetParentOfFirstLineBox(child_block_flow, marker);
     if (line_box)
       return line_box;
   }
@@ -174,7 +173,8 @@ void ForceLogicalHeight(LayoutObject& layout_object, const Length& height) {
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::Clone(layout_object.StyleRef());
   new_style->SetLogicalHeight(height);
-  layout_object.SetStyleInternal(std::move(new_style));
+  layout_object.SetModifiedStyleOutsideStyleRecalc(
+      std::move(new_style), LayoutObject::ApplyStyleChanges::kNo);
 }
 
 }  // namespace
@@ -190,11 +190,11 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
   // Deal with the situation of layout tree changed.
   if (marker_parent && marker_parent->IsAnonymous()) {
     // When list-position-style change from outside to inside, we need to
-    // restore LogicalHeight. So add IsInside().
+    // restore LogicalHeight to auto. So add IsInside().
     if (marker_->IsInside() || marker_->NextSibling()) {
-      // Restore old marker_container LogicalHeight.
+      // Set marker_container's LogicalHeight to auto.
       if (marker_parent->StyleRef().LogicalHeight().IsZero())
-        ForceLogicalHeight(*marker_parent, StyleRef().LogicalHeight());
+        ForceLogicalHeight(*marker_parent, Length());
 
       // If marker_parent isn't the ancestor of line_box_parent, marker might
       // generate a new empty line. We need to remove marker here.E.g:
@@ -204,7 +204,7 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
         marker_parent = nullptr;
       }
     } else if (line_box_parent) {
-      ForceLogicalHeight(*marker_parent, Length(0, kFixed));
+      ForceLogicalHeight(*marker_parent, Length::Fixed(0));
     }
   }
 
@@ -215,7 +215,7 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
       // Create marker_container and set its LogicalHeight to 0px.
       LayoutBlock* marker_container = CreateAnonymousBlock();
       if (line_box_parent)
-        ForceLogicalHeight(*marker_container, Length(0, kFixed));
+        ForceLogicalHeight(*marker_container, Length::Fixed(0));
       marker_container->AddChild(marker_,
                                  FirstNonMarkerChild(marker_container));
       AddChild(marker_container, before_child);
@@ -287,9 +287,15 @@ bool LayoutListItem::UpdateMarkerLocation() {
   return false;
 }
 
-void LayoutListItem::ComputeVisualOverflow(
-    const LayoutRect& previous_visual_overflow_rect,
-    bool recompute_floats) {
+void LayoutListItem::RecalcVisualOverflow() {
+  RecalcChildVisualOverflow();
+  RecalcSelfVisualOverflow();
+}
+
+void LayoutListItem::ComputeVisualOverflow(bool recompute_floats) {
+  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
+  ClearVisualOverflow();
+
   AddVisualOverflowFromChildren();
 
   AddVisualEffectOverflow();
@@ -300,20 +306,14 @@ void LayoutListItem::ComputeVisualOverflow(
     AddVisualOverflowFromFloats();
 
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
-    if (Layer())
-      Layer()->SetNeedsCompositingInputsUpdate();
+    SetShouldCheckForPaintInvalidation();
     GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
   }
 }
 
-void LayoutListItem::AddVisualOverflowFromChildren() {
-  LayoutBlockFlow::AddVisualOverflowFromChildren();
-  UpdateOverflow(Visual);
-}
-
 void LayoutListItem::AddLayoutOverflowFromChildren() {
   LayoutBlockFlow::AddLayoutOverflowFromChildren();
-  UpdateOverflow(Layout);
+  UpdateOverflow();
 }
 
 // Align marker_inline_box in block direction according to line_box_root's
@@ -338,11 +338,12 @@ void LayoutListItem::AlignMarkerInBlockDirection() {
 
   InlineBox* marker_inline_box = marker_->InlineBoxWrapper();
   RootInlineBox& marker_root = marker_inline_box->Root();
-  if (line_box_parent_block && line_box_parent_block->IsLayoutBlockFlow()) {
+  auto* line_box_parent_block_flow =
+      DynamicTo<LayoutBlockFlow>(line_box_parent_block);
+  if (line_box_parent_block && line_box_parent_block_flow) {
     // If marker_ and line_box_parent_block share a same RootInlineBox, no need
     // to align marker.
-    if (ToLayoutBlockFlow(line_box_parent_block)->FirstRootBox() ==
-        &marker_root)
+    if (line_box_parent_block_flow->FirstRootBox() == &marker_root)
       return;
   }
 
@@ -387,7 +388,7 @@ void LayoutListItem::AlignMarkerInBlockDirection() {
   }
 }
 
-void LayoutListItem::UpdateOverflow(OverflowType overflow_type) {
+void LayoutListItem::UpdateOverflow() {
   if (!marker_ || !marker_->Parent() || !marker_->Parent()->IsBox() ||
       marker_->IsInside() || !marker_->InlineBoxWrapper())
     return;
@@ -428,39 +429,39 @@ void LayoutListItem::UpdateOverflow(OverflowType overflow_type) {
                                           kDoNotIndentText, LayoutUnit()));
     marker_logical_left = marker_line_offset - line_offset - PaddingStart() -
                           BorderStart() + marker_->MarginStart();
+
     marker_inline_box->MoveInInlineDirection(marker_logical_left -
                                              marker_old_logical_left);
+
     for (InlineFlowBox* box = marker_inline_box->Parent(); box;
          box = box->Parent()) {
-      if (overflow_type == Visual) {
-        LayoutRect new_logical_visual_overflow_rect =
-            box->LogicalVisualOverflowRect(line_top, line_bottom);
-        if (marker_logical_left < new_logical_visual_overflow_rect.X() &&
-            !hit_self_painting_layer) {
-          new_logical_visual_overflow_rect.SetWidth(
-              new_logical_visual_overflow_rect.MaxX() - marker_logical_left);
-          new_logical_visual_overflow_rect.SetX(marker_logical_left);
-          if (box == root)
-            adjust_overflow = true;
-        }
-        box->OverrideVisualOverflowFromLogicalRect(
-            new_logical_visual_overflow_rect, line_top, line_bottom);
-
-        if (box->BoxModelObject().HasSelfPaintingLayer())
-          hit_self_painting_layer = true;
-      } else {
-        LayoutRect new_logical_layout_overflow_rect =
-            box->LogicalLayoutOverflowRect(line_top, line_bottom);
-        if (marker_logical_left < new_logical_layout_overflow_rect.X()) {
-          new_logical_layout_overflow_rect.SetWidth(
-              new_logical_layout_overflow_rect.MaxX() - marker_logical_left);
-          new_logical_layout_overflow_rect.SetX(marker_logical_left);
-          if (box == root)
-            adjust_overflow = true;
-        }
-        box->OverrideLayoutOverflowFromLogicalRect(
-            new_logical_layout_overflow_rect, line_top, line_bottom);
+      box->AddReplacedChildrenVisualOverflow(line_top, line_bottom);
+      LayoutRect new_logical_visual_overflow_rect =
+          box->LogicalVisualOverflowRect(line_top, line_bottom);
+      if (marker_logical_left < new_logical_visual_overflow_rect.X() &&
+          !hit_self_painting_layer) {
+        new_logical_visual_overflow_rect.SetWidth(
+            new_logical_visual_overflow_rect.MaxX() - marker_logical_left);
+        new_logical_visual_overflow_rect.SetX(marker_logical_left);
+        if (box == root)
+          adjust_overflow = true;
       }
+      box->OverrideVisualOverflowFromLogicalRect(
+          new_logical_visual_overflow_rect, line_top, line_bottom);
+
+      if (box->BoxModelObject().HasSelfPaintingLayer())
+        hit_self_painting_layer = true;
+      LayoutRect new_logical_layout_overflow_rect =
+          box->LogicalLayoutOverflowRect(line_top, line_bottom);
+      if (marker_logical_left < new_logical_layout_overflow_rect.X()) {
+        new_logical_layout_overflow_rect.SetWidth(
+            new_logical_layout_overflow_rect.MaxX() - marker_logical_left);
+        new_logical_layout_overflow_rect.SetX(marker_logical_left);
+        if (box == root)
+          adjust_overflow = true;
+      }
+      box->OverrideLayoutOverflowFromLogicalRect(
+          new_logical_layout_overflow_rect, line_top, line_bottom);
     }
   } else {
     LayoutUnit marker_line_offset =
@@ -469,41 +470,41 @@ void LayoutListItem::UpdateOverflow(OverflowType overflow_type) {
                                            kDoNotIndentText, LayoutUnit()));
     marker_logical_left = marker_line_offset - line_offset + PaddingStart() +
                           BorderStart() + marker_->MarginEnd();
+
     marker_inline_box->MoveInInlineDirection(marker_logical_left -
                                              marker_old_logical_left);
+
     for (InlineFlowBox* box = marker_inline_box->Parent(); box;
          box = box->Parent()) {
-      if (overflow_type == Visual) {
-        LayoutRect new_logical_visual_overflow_rect =
-            box->LogicalVisualOverflowRect(line_top, line_bottom);
-        if (marker_logical_left + marker_->LogicalWidth() >
-                new_logical_visual_overflow_rect.MaxX() &&
-            !hit_self_painting_layer) {
-          new_logical_visual_overflow_rect.SetWidth(
-              marker_logical_left + marker_->LogicalWidth() -
-              new_logical_visual_overflow_rect.X());
-          if (box == root)
-            adjust_overflow = true;
-        }
-        box->OverrideVisualOverflowFromLogicalRect(
-            new_logical_visual_overflow_rect, line_top, line_bottom);
-
-        if (box->BoxModelObject().HasSelfPaintingLayer())
-          hit_self_painting_layer = true;
-      } else {
-        LayoutRect new_logical_layout_overflow_rect =
-            box->LogicalLayoutOverflowRect(line_top, line_bottom);
-        if (marker_logical_left + marker_->LogicalWidth() >
-            new_logical_layout_overflow_rect.MaxX()) {
-          new_logical_layout_overflow_rect.SetWidth(
-              marker_logical_left + marker_->LogicalWidth() -
-              new_logical_layout_overflow_rect.X());
-          if (box == root)
-            adjust_overflow = true;
-        }
-        box->OverrideLayoutOverflowFromLogicalRect(
-            new_logical_layout_overflow_rect, line_top, line_bottom);
+      box->AddReplacedChildrenVisualOverflow(line_top, line_bottom);
+      LayoutRect new_logical_visual_overflow_rect =
+          box->LogicalVisualOverflowRect(line_top, line_bottom);
+      if (marker_logical_left + marker_->LogicalWidth() >
+              new_logical_visual_overflow_rect.MaxX() &&
+          !hit_self_painting_layer) {
+        new_logical_visual_overflow_rect.SetWidth(
+            marker_logical_left + marker_->LogicalWidth() -
+            new_logical_visual_overflow_rect.X());
+        if (box == root)
+          adjust_overflow = true;
       }
+      box->OverrideVisualOverflowFromLogicalRect(
+          new_logical_visual_overflow_rect, line_top, line_bottom);
+
+      if (box->BoxModelObject().HasSelfPaintingLayer())
+        hit_self_painting_layer = true;
+      LayoutRect new_logical_layout_overflow_rect =
+          box->LogicalLayoutOverflowRect(line_top, line_bottom);
+      if (marker_logical_left + marker_->LogicalWidth() >
+          new_logical_layout_overflow_rect.MaxX()) {
+        new_logical_layout_overflow_rect.SetWidth(
+            marker_logical_left + marker_->LogicalWidth() -
+            new_logical_layout_overflow_rect.X());
+        if (box == root)
+          adjust_overflow = true;
+      }
+      box->OverrideLayoutOverflowFromLogicalRect(
+          new_logical_layout_overflow_rect, line_top, line_bottom);
     }
   }
 
@@ -517,28 +518,26 @@ void LayoutListItem::UpdateOverflow(OverflowType overflow_type) {
         marker_->Size());
     if (!StyleRef().IsHorizontalWritingMode())
       marker_rect = marker_rect.TransposedRect();
-    LayoutBox* o = marker_;
+    LayoutBox* object = marker_;
 
-    if (overflow_type == Visual) {
-      do {
-        o = o->ParentBox();
-        if (o->IsLayoutBlock())
-          ToLayoutBlock(o)->AddContentsVisualOverflow(marker_rect);
-        if (o->HasOverflowClip() || o->HasSelfPaintingLayer())
-          break;
-        marker_rect.MoveBy(-o->Location());
-      } while (o != this);
-    } else {
-      do {
-        o = o->ParentBox();
-        if (o->IsLayoutBlock()) {
-          ToLayoutBlock(o)->AddLayoutOverflow(marker_rect);
-        }
-        if (o->HasOverflowClip())
-          break;
-        marker_rect.MoveBy(-o->Location());
-      } while (o != this);
-    }
+    bool found_self_painting_layer = false;
+    do {
+      object = object->ParentBox();
+      auto* layout_block_object = DynamicTo<LayoutBlock>(object);
+      if (layout_block_object) {
+        if (!found_self_painting_layer)
+          layout_block_object->AddContentsVisualOverflow(marker_rect);
+        layout_block_object->AddLayoutOverflow(marker_rect);
+      }
+
+      if (object->HasOverflowClip())
+        break;
+
+      if (object->HasSelfPaintingLayer())
+        found_self_painting_layer = true;
+
+      marker_rect.MoveBy(-object->Location());
+    } while (object != this);
   }
 }
 

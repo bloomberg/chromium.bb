@@ -21,6 +21,7 @@ class DesktopLinuxBrowserFrameView : public OpaqueBrowserFrameView {
  protected:
   // OpaqueBrowserFrameView:
   void Layout() override;
+  FrameButtonStyle GetFrameButtonStyle() const override;
 
  private:
   struct DrawFrameButtonParams {
@@ -37,8 +38,7 @@ class DesktopLinuxBrowserFrameView : public OpaqueBrowserFrameView {
 
   // Returns one of |{minimize,maximize,restore,close}_button_|
   // corresponding to |type|.
-  views::ImageButton* GetButtonFromDisplayType(
-      chrome::FrameButtonDisplayType type);
+  views::Button* GetButtonFromDisplayType(chrome::FrameButtonDisplayType type);
 
   std::unique_ptr<views::NavButtonProvider> nav_button_provider_;
 

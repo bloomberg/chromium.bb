@@ -5,87 +5,82 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<link rel="import" href="/tracing/value/histogram.html">
-<link rel="import" href="/tracing/value/histogram_set.html">
 <link rel="import" href="/tracing/value/ui/metrics_visualization.html">
+<link rel="import" href="/tracing/value/ui/visualizations_data_container.html">
 
 <script>
 'use strict';
-
 tr.b.unittest.testSuite(function() {
-  function getHistogram(name) {
-    const samples = [];
-    for (let i = 0; i < 5; ++i) {
-      const total = Math.random();
-      const values = {};
-      values[name + 'a'] = total / 2.0;
-      values[name + 'b'] = total / 4.0;
-      values[name + 'c'] = total / 4.0;
-      samples.push({
-        value: total,
-        diagnostics: {
-          breakdown: tr.v.d.Breakdown.fromDict({values})
-        },
-      });
+  function generateChartBar(metrics, benchmark, page) {
+    const data = {x: benchmark, group: page};
+    for (const metric of metrics) {
+      const key = metric + '-' + benchmark;
+      const mean = Math.random() * 100;
+      data[key] = Math.round(mean * 100) / 100;
     }
-    return tr.v.Histogram.create(name, tr.b.Unit.byName.count, samples);
+    return data;
   }
 
-  function getRepeatedHistogram(name, value) {
-    return tr.v.Histogram.create(name, tr.b.Unit.byName.count, value);
-  }
-
-  function getHistogramSet(displayLabel, story) {
-    const histograms = new tr.v.HistogramSet();
-    for (let i = 0; i < 3; ++i) {
-      histograms.addHistogram(getHistogram('main_step_' + (i + 1)));
+  function generateSubmetricBar(submetric, benchmark, page,
+      metricToSubmetricMap) {
+    let submetricToBenchmarkMap = metricToSubmetricMap.get(submetric);
+    if (!submetricToBenchmarkMap) {
+      submetricToBenchmarkMap = [];
+      metricToSubmetricMap.set(submetric, submetricToBenchmarkMap);
     }
-    histograms.addSharedDiagnosticToAllHistograms(
-        tr.v.d.RESERVED_NAMES.LABELS, new tr.v.d.GenericSet([displayLabel]));
-    histograms.addSharedDiagnosticToAllHistograms(
-        tr.v.d.RESERVED_NAMES.STORIES, new tr.v.d.GenericSet([story]));
-    return histograms;
+    const data = {x: submetric, hide: 0, group: benchmark};
+    const mean = Math.random() * 100;
+    data[submetric + '-' + benchmark] = Math.round(mean * 100) / 100;
+    submetricToBenchmarkMap.push(data);
   }
 
   test('instantiate', function() {
-    const cp = document.createElement('tr-v-ui-metrics-visualization');
-    this.addHTMLOutput(cp);
+    const mv = document.createElement('tr-v-ui-metrics-visualization');
+    this.addHTMLOutput(mv);
 
-    const histograms = getHistogramSet('Run 1', 'test.com');
+    const testMetrics = tr.v.ui.METRICS.get('Thread');
 
-    const histograms2 = getHistogramSet('Run 2', 'test.com');
-    histograms.importDicts(histograms2.asDicts());
+    // generate aggregate chart
+    const aggregateChart = [];
+    for (let i = 1; i <= 5; i++) {
+      aggregateChart.push(generateChartBar(testMetrics,
+          'Run ' + i, 'aggregate'));
+    }
 
-    const histograms3 = getHistogramSet('Run 1', 'abc.com');
-    histograms.importDicts(histograms3.asDicts());
+    // generate chart with individual page metrics
+    const chartData = [];
+    for (let i = 1; i <= 5; i++) {
+      for (let j = 1; j <= 5; j++) {
+        chartData.push(generateChartBar(testMetrics,
+            'Run ' + i, 'Page ' + j));
+      }
+    }
 
-    const histograms4 = getHistogramSet('Run 2', 'abc.com');
-    histograms.importDicts(histograms4.asDicts());
+    // generate submetrics
+    const submetricsData = new Map();
+    for (const metric in testMetrics) {
+      const testSubmetrics = [metric + 'a', metric + 'b', metric + 'c'];
+      for (let i = 1; i <= 5; i++) {
+        const page = 'Page ' + i;
+        const pageToMetricMap = tr.v.ui.getValueFromMap(page,
+            submetricsData);
+        const metricToSubmetricMap = tr.v.ui.getValueFromMap(metric,
+            pageToMetricMap);
+        for (let j = 1; j <= 5; j++) {
+          for (const submetric in testSubmetrics) {
+            generateSubmetricBar(submetric, 'Run ' + j, page,
+                metricToSubmetricMap);
+          }
+        }
+      }
+    }
 
-    const mainMetricNames = ['main_step_1',
-      'main_step_2', 'main_step_3'];
-
-    cp.build(histograms, mainMetricNames);
-  });
-
-  test('instantiateWithRepeat', function() {
-    const cp = document.createElement('tr-v-ui-metrics-visualization');
-    this.addHTMLOutput(cp);
-
-    const histograms = new tr.v.HistogramSet();
-    histograms.addHistogram(getRepeatedHistogram('main_step_1', 2.5));
-    histograms.addHistogram(getRepeatedHistogram('main_step_1', 3.5));
-    histograms.addHistogram(getRepeatedHistogram('main_step_2', 3.5));
-    histograms.addHistogram(getRepeatedHistogram('main_step_2', 4.5));
-
-    histograms.addSharedDiagnosticToAllHistograms(
-        tr.v.d.RESERVED_NAMES.LABELS, new tr.v.d.GenericSet(['Run 1']));
-    histograms.addSharedDiagnosticToAllHistograms(
-        tr.v.d.RESERVED_NAMES.STORIES, new tr.v.d.GenericSet(['repeat.com']));
-
-    const mainMetricNames = ['main_step_1', 'main_step_2'];
-
-    cp.build(histograms, mainMetricNames);
+    mv.build({
+      title: 'Thread',
+      aggregate: aggregateChart,
+      page: chartData,
+      submetrics: submetricsData
+    });
   });
 });
 </script>

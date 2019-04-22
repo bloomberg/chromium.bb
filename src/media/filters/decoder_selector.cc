@@ -46,11 +46,10 @@ DecoderSelector<StreamType>::~DecoderSelector() {
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderSelector<StreamType>::Initialize(
-    StreamTraits* traits,
-    DemuxerStream* stream,
-    CdmContext* cdm_context,
-    base::RepeatingClosure waiting_for_decryption_key_cb) {
+void DecoderSelector<StreamType>::Initialize(StreamTraits* traits,
+                                             DemuxerStream* stream,
+                                             CdmContext* cdm_context,
+                                             WaitingCB waiting_cb) {
   DVLOG(2) << __func__;
   DCHECK(traits);
   DCHECK(stream);
@@ -58,7 +57,7 @@ void DecoderSelector<StreamType>::Initialize(
   traits_ = traits;
   stream_ = stream;
   cdm_context_ = cdm_context;
-  waiting_for_decryption_key_cb_ = std::move(waiting_for_decryption_key_cb);
+  waiting_cb_ = std::move(waiting_cb);
 }
 
 template <DemuxerStream::Type StreamType>
@@ -157,7 +156,7 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
       decoder_.get(), config_, is_live, cdm_context_,
       base::BindRepeating(&DecoderSelector<StreamType>::OnDecoderInitializeDone,
                           weak_this_factory_.GetWeakPtr()),
-      output_cb_, waiting_for_decryption_key_cb_);
+      output_cb_, waiting_cb_);
 }
 
 template <DemuxerStream::Type StreamType>
@@ -196,7 +195,7 @@ void DecoderSelector<StreamType>::InitializeDecryptingDemuxerStream() {
                                "DecryptingDemuxerStream");
 
   decrypting_demuxer_stream_ = std::make_unique<DecryptingDemuxerStream>(
-      task_runner_, media_log_, waiting_for_decryption_key_cb_);
+      task_runner_, media_log_, waiting_cb_);
 
   decrypting_demuxer_stream_->Initialize(
       stream_, cdm_context_,

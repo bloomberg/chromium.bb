@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "RECIPE_REPO[depot_tools]/git_cl.py",
       "upload",
       "--message-file",
       "Do the thing foobar\nNow with emoji: \ud83d\ude04"
@@ -10,7 +10,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "RECIPE_REPO[depot_tools]/git_cl.py",
       "issue"
     ],
     "name": "git_cl issue",
@@ -18,7 +18,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "RECIPE_REPO[depot_tools]/git_cl.py",
       "description",
       "-d",
       "--rietveld",
@@ -29,7 +29,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "RECIPE_REPO[depot_tools]/git_cl.py",
       "description",
       "-n",
       "-",
@@ -49,11 +49,11 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "RECIPE_REPO[depot_tools]/git_cl.py",
       "description",
       "-d"
     ],
-    "cwd": "[TMP_BASE]/fakerepo_tmp_1",
+    "cwd": "[CLEANUP]/fakerepo_tmp_1",
     "name": "git_cl description",
     "stdout": "/path/to/tmp/"
   },
@@ -66,23 +66,23 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "RECIPE_REPO[depot_tools]/git_cl.py",
       "description",
       "-n",
       "-"
     ],
-    "cwd": "[TMP_BASE]/fakerepo_tmp_1",
+    "cwd": "[CLEANUP]/fakerepo_tmp_1",
     "name": "git_cl set description (2)",
     "stdin": "new description woo",
     "stdout": "/path/to/tmp/"
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "RECIPE_REPO[depot_tools]/git_cl.py",
       "description",
       "-d"
     ],
-    "cwd": "[TMP_BASE]/fakerepo_tmp_1",
+    "cwd": "[CLEANUP]/fakerepo_tmp_1",
     "name": "git_cl description (2)",
     "stdout": "/path/to/tmp/"
   },

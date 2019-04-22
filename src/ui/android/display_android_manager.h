@@ -10,8 +10,11 @@
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "ui/display/screen_base.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ui {
+
+class WindowAndroid;
 
 class DisplayAndroidManager : public display::ScreenBase {
  public:
@@ -47,9 +50,19 @@ class DisplayAndroidManager : public display::ScreenBase {
                            jint sdkDisplayId);
 
  private:
-  friend void SetScreenAndroid();
-  DisplayAndroidManager();
+  friend class WindowAndroid;
+  friend void SetScreenAndroid(bool use_display_wide_color_gamut);
+  explicit DisplayAndroidManager(bool use_display_wide_color_gamut);
 
+  static void DoUpdateDisplay(display::Display* display,
+                              gfx::Size size_in_pixels,
+                              float dipScale,
+                              int rotationDegrees,
+                              int bitsPerPixel,
+                              int bitsPerComponent,
+                              bool isWideColorGamut);
+
+  const bool use_display_wide_color_gamut_;
   int primary_display_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayAndroidManager);

@@ -49,13 +49,6 @@ class ExtensionActionManager : public KeyedService,
   // rule of mutual exclusion, they are not checked or returned.
   ExtensionAction* GetExtensionAction(const Extension& extension) const;
 
-  // Gets the best fit ExtensionAction for the given |extension|. This takes
-  // into account |extension|'s browser or page actions, if any, along with its
-  // name and any declared icons.
-  std::unique_ptr<ExtensionAction> GetBestFitAction(
-      const Extension& extension,
-      ActionInfo::Type type) const;
-
  private:
   // Implement ExtensionRegistryObserver.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,

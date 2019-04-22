@@ -22,6 +22,10 @@ namespace password_manager {
 class PasswordFormManagerForUI;
 }
 
+namespace web {
+class WebState;
+}
+
 @protocol PasswordManagerClientDelegate
 
 // Shows UI to prompt the user to save the password.
@@ -35,6 +39,8 @@ class PasswordFormManagerForUI;
 // Shows UI to notify the user about auto sign in.
 - (void)showAutosigninNotification:
     (std::unique_ptr<autofill::PasswordForm>)formSignedIn;
+
+@property(readonly, nonatomic) web::WebState* webState;
 
 @property(readonly, nonatomic) ios::ChromeBrowserState* browserState;
 
@@ -66,6 +72,9 @@ class IOSChromePasswordManagerClient
       bool has_generated_password,
       bool is_update) override;
   void HideManualFallbackForSaving() override;
+  void FocusedInputChanged(const url::Origin& last_committed_origin,
+                           bool is_fillable,
+                           bool is_password_field) override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const GURL& origin,
@@ -75,6 +84,7 @@ class IOSChromePasswordManagerClient
           saved_form_manager) override;
   bool IsIncognito() const override;
   const password_manager::PasswordManager* GetPasswordManager() const override;
+  bool IsMainFrameSecure() const override;
   PrefService* GetPrefs() const override;
   password_manager::PasswordStore* GetPasswordStore() const override;
   void NotifyUserAutoSignin(
@@ -94,6 +104,9 @@ class IOSChromePasswordManagerClient
   ukm::SourceId GetUkmSourceId() override;
   password_manager::PasswordManagerMetricsRecorder* GetMetricsRecorder()
       override;
+  password_manager::PasswordRequirementsService*
+  GetPasswordRequirementsService() override;
+  bool IsIsolationForPasswordSitesEnabled() const override;
 
  private:
   // password_manager::PasswordManagerClientHelperDelegate implementation.

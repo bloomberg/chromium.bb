@@ -1,6 +1,6 @@
 os: linux
-dist: trusty
-sudo: false
+dist: xenial
+sudo: true
 
 language: cpp
 
@@ -14,22 +14,20 @@ addons:
       - ubuntu-toolchain-r-test
 
 env:
-  global: CLANG_VERSION=8 GCC_VERSION=7
+  global: GCC_VERSION=7
 
 matrix:
   include:
-    - env: BUILD_TYPE=Release CC_COMPILER=clang-${CLANG_VERSION} CXX_COMPILER=clang++-${CLANG_VERSION}
+    - env: BUILD_TYPE=Release CC_COMPILER=clang CXX_COMPILER=clang++
       addons: &clang
         apt:
           packages:
             - *common_packages
-            - clang-8
+            - clang
           sources:
             - *common_sources
-            - sourceline: 'deb http://apt.llvm.org/jessie/ llvm-toolchain-jessie main'
-              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: BUILD_TYPE=Debug CC_COMPILER=clang-${CLANG_VERSION} CXX_COMPILER=clang++-${CLANG_VERSION}
+    - env: BUILD_TYPE=Debug CC_COMPILER=clang CXX_COMPILER=clang++
       addons: *clang
 
     - env: BUILD_TYPE=Release CC_COMPILER=gcc-${GCC_VERSION} CXX_COMPILER=g++-${GCC_VERSION}
@@ -42,9 +40,12 @@ matrix:
           sources:
             - *common_sources
 
+    - env: BUILD_TYPE=Debug CC_COMPILER=gcc-${GCC_VERSION} CXX_COMPILER=g++-${GCC_VERSION}
+      addons: *gcc
+
 install:
   - mkdir -p deps && cd deps
-  - travis_retry wget --no-check-certificate --quiet -O - https://cmake.org/files/v3.7/cmake-3.7.1-Linux-x86_64.tar.gz | tar --strip-components=1 -xz
+  - travis_retry wget --no-check-certificate --quiet -O - https://cmake.org/files/v3.12/cmake-3.12.3-Linux-x86_64.tar.gz | tar --strip-components=1 -xz
   - export PATH=${TRAVIS_BUILD_DIR}/deps/bin:${PATH}
   - cd -
 
@@ -52,9 +53,10 @@ before_script:
   - travis_retry wget --quiet -O - https://raw.githubusercontent.com/cpplint/cpplint/master/cpplint.py | python - --recursive src examples
   - mkdir -p build && cd build
   - rm -rf *
-  - cmake .. -GNinja -DLIB_PROTO_MUTATOR_WITH_ASAN=ON -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DCMAKE_C_COMPILER=${CC_COMPILER} -DCMAKE_CXX_COMPILER=${CXX_COMPILER} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DLIB_PROTO_MUTATOR_CTEST_JOBS=8
+  - cmake .. -GNinja -DLIB_PROTO_MUTATOR_WITH_ASAN=ON -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DCMAKE_C_COMPILER=${CC_COMPILER} -DCMAKE_CXX_COMPILER=${CXX_COMPILER} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=/usr
 
 script:
   - export ASAN_OPTIONS=detect_leaks=0
   - ninja
   - ninja check
+  - DESTDIR="/tmp/testing/" ninja install

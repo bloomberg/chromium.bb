@@ -9,6 +9,8 @@ template("remoting_apk_tmpl") {
   android_apk(target_name) {
     forward_variables_from(invoker, "*")
 
+    enable_multidex = false
+
     android_manifest = "$root_gen_dir/remoting/android/AndroidManifest.xml"
     android_manifest_dep = "//remoting/android:remoting_apk_manifest"
     shared_libraries = [ "//remoting/client/jni:remoting_client_jni" ]

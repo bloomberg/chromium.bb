@@ -346,8 +346,8 @@ std::unique_ptr<PasswordForm> ParseFormData(const FormData& form_data,
 
   // Create parse result and set non-field related information.
   std::unique_ptr<PasswordForm> result = std::make_unique<PasswordForm>();
-  result->origin = form_data.origin;
-  result->signon_realm = form_data.origin.GetOrigin().spec();
+  result->origin = form_data.url;
+  result->signon_realm = form_data.url.GetOrigin().spec();
   result->action = form_data.action;
   result->form_data = form_data;
 

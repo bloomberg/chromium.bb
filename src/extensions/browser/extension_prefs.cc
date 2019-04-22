@@ -201,6 +201,9 @@ constexpr const char kPrefDNRRulesetChecksum[] = "dnr_ruleset_checksum";
 // extension for the Declarative Net Request API.
 constexpr const char kPrefDNRAllowedPages[] = "dnr_whitelisted_pages";
 
+constexpr const char kPrefDNRDynamicRulesetChecksum[] =
+    "dnr_dynamic_ruleset_checksum";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
  public:
@@ -580,8 +583,9 @@ std::unique_ptr<const PermissionSet> ExtensionPrefs::ReadPrefAsPermissionSet(
       extension_id, JoinPrefs(pref_key, kPrefScriptableHosts),
       &scriptable_hosts, UserScript::ValidUserScriptSchemes());
 
-  return std::make_unique<PermissionSet>(apis, manifest_permissions,
-                                         explicit_hosts, scriptable_hosts);
+  return std::make_unique<PermissionSet>(
+      std::move(apis), std::move(manifest_permissions),
+      std::move(explicit_hosts), std::move(scriptable_hosts));
 }
 
 // Set the API or Manifest permissions.
@@ -779,6 +783,22 @@ void ExtensionPrefs::ClearDisableReasons(const std::string& extension_id) {
                        DISABLE_REASON_CLEAR);
 }
 
+void ExtensionPrefs::ClearInapplicableDisableReasonsForComponentExtension(
+    const std::string& component_extension_id) {
+  static constexpr int kAllowDisableReasons =
+      disable_reason::DISABLE_RELOAD |
+      disable_reason::DISABLE_UNSUPPORTED_REQUIREMENT |
+      disable_reason::DISABLE_CORRUPTED;
+
+  // Some disable reasons incorrectly cause component extensions to never
+  // activate on load. See https://crbug.com/946839 for more details on why we
+  // do this.
+  ModifyDisableReasons(
+      component_extension_id,
+      kAllowDisableReasons & GetDisableReasons(component_extension_id),
+      DISABLE_REASON_REPLACE);
+}
+
 void ExtensionPrefs::ModifyDisableReasons(const std::string& extension_id,
                                           int reasons,
                                           DisableReasonChange change) {
@@ -862,6 +882,10 @@ bool ExtensionPrefs::IsExtensionBlacklisted(const std::string& id) const {
   return ext_prefs && IsBlacklistBitSet(ext_prefs);
 }
 
+bool ExtensionPrefs::InsecureExtensionUpdatesEnabled() const {
+  return prefs_->GetBoolean(pref_names::kInsecureExtensionUpdatesEnabled);
+}
+
 namespace {
 
 // Serializes a 64bit integer as a string value.
@@ -871,7 +895,7 @@ void SaveInt64(prefs::DictionaryValueUpdate* dictionary,
   if (!dictionary)
     return;
 
-  std::string string_value = base::Int64ToString(value);
+  std::string string_value = base::NumberToString(value);
   dictionary->SetString(key, string_value);
 }
 
@@ -1384,7 +1408,7 @@ bool ExtensionPrefs::FinishDelayedInstallInfo(
 
   const base::Time install_time = clock_->Now();
   pending_install_dict->SetString(
-      kPrefInstallTime, base::Int64ToString(install_time.ToInternalValue()));
+      kPrefInstallTime, base::NumberToString(install_time.ToInternalValue()));
 
   // Commit the delayed install data.
   for (base::DictionaryValue::Iterator it(
@@ -1738,15 +1762,28 @@ void ExtensionPrefs::SetNeedsSync(const std::string& extension_id,
 }
 
 bool ExtensionPrefs::GetDNRRulesetChecksum(const ExtensionId& extension_id,
-                                           int* dnr_ruleset_checksum) const {
-  return ReadPrefAsInteger(extension_id, kPrefDNRRulesetChecksum,
-                           dnr_ruleset_checksum);
+                                           int* checksum) const {
+  return ReadPrefAsInteger(extension_id, kPrefDNRRulesetChecksum, checksum);
 }
 
 void ExtensionPrefs::SetDNRRulesetChecksum(const ExtensionId& extension_id,
-                                           int dnr_ruleset_checksum) {
+                                           int checksum) {
   UpdateExtensionPref(extension_id, kPrefDNRRulesetChecksum,
-                      std::make_unique<base::Value>(dnr_ruleset_checksum));
+                      std::make_unique<base::Value>(checksum));
+}
+
+bool ExtensionPrefs::GetDNRDynamicRulesetChecksum(
+    const ExtensionId& extension_id,
+    int* checksum) const {
+  return ReadPrefAsInteger(extension_id, kPrefDNRDynamicRulesetChecksum,
+                           checksum);
+}
+
+void ExtensionPrefs::SetDNRDynamicRulesetChecksum(
+    const ExtensionId& extension_id,
+    int checksum) {
+  UpdateExtensionPref(extension_id, kPrefDNRDynamicRulesetChecksum,
+                      std::make_unique<base::Value>(checksum));
 }
 
 void ExtensionPrefs::SetDNRAllowedPages(const ExtensionId& extension_id,
@@ -1819,11 +1856,9 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterListPref(pref_names::kInstallAllowList);
   registry->RegisterListPref(pref_names::kInstallDenyList);
   registry->RegisterDictionaryPref(pref_names::kInstallForceList);
-  registry->RegisterDictionaryPref(pref_names::kInstallLoginScreenAppList);
+  registry->RegisterDictionaryPref(pref_names::kLoginScreenExtensions);
   registry->RegisterListPref(pref_names::kAllowedTypes);
   registry->RegisterBooleanPref(pref_names::kStorageGarbageCollect, false);
-  registry->RegisterInt64Pref(pref_names::kLastUpdateCheck, 0);
-  registry->RegisterInt64Pref(pref_names::kNextUpdateCheck, 0);
   registry->RegisterListPref(pref_names::kAllowedInstallSites);
   registry->RegisterStringPref(pref_names::kLastChromeVersion, std::string());
   registry->RegisterDictionaryPref(kInstallSignature);
@@ -1833,6 +1868,10 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(pref_names::kNativeMessagingUserLevelHosts,
                                 true);
   registry->RegisterIntegerPref(kCorruptedDisableCount, 0);
+  registry->RegisterBooleanPref(pref_names::kInsecureExtensionUpdatesEnabled,
+                                true);
+  registry->RegisterBooleanPref(pref_names::kUninstallBlacklistedExtensions,
+                                false);
 
 #if !defined(OS_MACOSX)
   registry->RegisterBooleanPref(pref_names::kAppFullscreenAllowed, true);
@@ -1894,7 +1933,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   extension_dict->SetBoolean(kPrefWasInstalledByOem,
                              extension->was_installed_by_oem());
   extension_dict->SetString(
-      kPrefInstallTime, base::Int64ToString(install_time.ToInternalValue()));
+      kPrefInstallTime, base::NumberToString(install_time.ToInternalValue()));
   if (install_flags & kInstallFlagIsBlacklistedForMalware)
     extension_dict->SetBoolean(kPrefBlacklist, true);
   if (dnr_ruleset_checksum)
@@ -1965,10 +2004,9 @@ void ExtensionPrefs::LoadExtensionControlledPrefs(
   if (!source_dict->GetDictionary(key, &preferences))
     return;
 
-  for (base::DictionaryValue::Iterator iter(*preferences); !iter.IsAtEnd();
-       iter.Advance()) {
-    extension_pref_value_map_->SetExtensionPref(extension_id, iter.key(), scope,
-                                                iter.value().DeepCopy());
+  for (const auto& pair : preferences->DictItems()) {
+    extension_pref_value_map_->SetExtensionPref(extension_id, pair.first, scope,
+                                                pair.second.Clone());
   }
 }
 

@@ -42,11 +42,6 @@ class BrowserProcessPlatformPartBase {
   virtual std::unique_ptr<policy::ChromeBrowserPolicyConnector>
   CreateBrowserPolicyConnector();
 
-  // Called from ChromeContentBrowserClient::RegisterInProcessServices().
-  virtual void RegisterInProcessServices(
-      content::ContentBrowserClient::StaticServiceMap* services,
-      content::ServiceManagerConnection* connection);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPartBase);
 };

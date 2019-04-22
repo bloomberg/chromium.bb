@@ -21,7 +21,9 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/process/environment_internal.h"
 #include "base/process/kill.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/win/scoped_handle.h"
@@ -62,8 +64,7 @@ bool GetAppOutputInternal(const StringPiece16& cl,
     return false;
   }
 
-  FilePath::StringType writable_command_line_string;
-  writable_command_line_string.assign(cl.data(), cl.size());
+  FilePath::StringType writable_command_line_string(cl);
 
   STARTUPINFO start_info = {};
 
@@ -80,17 +81,16 @@ bool GetAppOutputInternal(const StringPiece16& cl,
 
   // Create the child process.
   PROCESS_INFORMATION temp_process_info = {};
-  if (!CreateProcess(nullptr, &writable_command_line_string[0], nullptr,
-                     nullptr,
+  if (!CreateProcess(nullptr, as_writable_wcstr(writable_command_line_string),
+                     nullptr, nullptr,
                      TRUE,  // Handles are inherited.
                      0, nullptr, nullptr, &start_info, &temp_process_info)) {
     NOTREACHED() << "Failed to start process";
     return false;
   }
 
-  base::win::ScopedProcessInformation proc_info(temp_process_info);
-  base::debug::GlobalActivityTracker* tracker =
-      base::debug::GlobalActivityTracker::Get();
+  win::ScopedProcessInformation proc_info(temp_process_info);
+  debug::GlobalActivityTracker* tracker = debug::GlobalActivityTracker::Get();
   if (tracker)
     tracker->RecordProcessLaunch(proc_info.process_id(), cl.as_string());
 
@@ -114,12 +114,12 @@ bool GetAppOutputInternal(const StringPiece16& cl,
   // Let's wait for the process to finish.
   WaitForSingleObject(proc_info.process_handle(), INFINITE);
 
-  base::TerminationStatus status = GetTerminationStatus(
-      proc_info.process_handle(), exit_code);
-  base::debug::GlobalActivityTracker::RecordProcessExitIfEnabled(
+  TerminationStatus status =
+      GetTerminationStatus(proc_info.process_handle(), exit_code);
+  debug::GlobalActivityTracker::RecordProcessExitIfEnabled(
       proc_info.process_id(), *exit_code);
-  return status != base::TERMINATION_STATUS_PROCESS_CRASHED &&
-         status != base::TERMINATION_STATUS_ABNORMAL_TERMINATION;
+  return status != TERMINATION_STATUS_PROCESS_CRASHED &&
+         status != TERMINATION_STATUS_ABNORMAL_TERMINATION;
 }
 
 }  // namespace
@@ -273,7 +273,7 @@ Process LaunchProcess(const string16& cmdline,
 
   LPCTSTR current_directory = options.current_directory.empty()
                                   ? nullptr
-                                  : options.current_directory.value().c_str();
+                                  : as_wcstr(options.current_directory.value());
 
   string16 writable_cmdline(cmdline);
   DCHECK(!(flags & CREATE_SUSPENDED))
@@ -289,9 +289,13 @@ Process LaunchProcess(const string16& cmdline,
       return Process();
     }
 
+    // Environment options are not implemented for use with |as_user|.
+    DCHECK(!options.clear_environment);
+    DCHECK(options.environment.empty());
+
     BOOL launched = CreateProcessAsUser(
-        options.as_user, nullptr, &writable_cmdline[0], nullptr, nullptr,
-        inherit_handles, flags, enviroment_block, current_directory,
+        options.as_user, nullptr, as_writable_wcstr(writable_cmdline), nullptr,
+        nullptr, inherit_handles, flags, enviroment_block, current_directory,
         startup_info, &temp_process_info);
     DestroyEnvironmentBlock(enviroment_block);
     if (!launched) {
@@ -300,15 +304,36 @@ Process LaunchProcess(const string16& cmdline,
       return Process();
     }
   } else {
-    if (!CreateProcess(nullptr, &writable_cmdline[0], nullptr, nullptr,
-                       inherit_handles, flags, nullptr, current_directory,
-                       startup_info, &temp_process_info)) {
-      DPLOG(ERROR) << "Command line:" << std::endl << UTF16ToUTF8(cmdline)
-                   << std::endl;
+    wchar_t* new_environment = nullptr;
+    string16 env_storage;
+    if (options.clear_environment || !options.environment.empty()) {
+      if (options.clear_environment) {
+        static const wchar_t kEmptyEnvironment[] = {0};
+        env_storage =
+            internal::AlterEnvironment(kEmptyEnvironment, options.environment);
+      } else {
+        wchar_t* old_environment = GetEnvironmentStrings();
+        if (!old_environment) {
+          DPLOG(ERROR);
+          return Process();
+        }
+        env_storage =
+            internal::AlterEnvironment(old_environment, options.environment);
+        FreeEnvironmentStrings(old_environment);
+      }
+      new_environment = const_cast<wchar_t*>(env_storage.data());
+      flags |= CREATE_UNICODE_ENVIRONMENT;
+    }
+
+    if (!CreateProcess(nullptr, as_writable_wcstr(writable_cmdline), nullptr,
+                       nullptr, inherit_handles, flags, new_environment,
+                       current_directory, startup_info, &temp_process_info)) {
+      DPLOG(ERROR) << "Command line:" << std::endl
+                   << UTF16ToUTF8(cmdline) << std::endl;
       return Process();
     }
   }
-  base::win::ScopedProcessInformation process_info(temp_process_info);
+  win::ScopedProcessInformation process_info(temp_process_info);
 
   if (options.job_handle &&
       !AssignProcessToJobObject(options.job_handle,
@@ -327,7 +352,7 @@ Process LaunchProcess(const string16& cmdline,
   if (options.wait)
     WaitForSingleObject(process_info.process_handle(), INFINITE);
 
-  base::debug::GlobalActivityTracker::RecordProcessLaunchIfEnabled(
+  debug::GlobalActivityTracker::RecordProcessLaunchIfEnabled(
       process_info.process_id(), cmdline);
   return Process(process_info.TakeProcessHandle());
 }
@@ -342,8 +367,8 @@ Process LaunchElevatedProcess(const CommandLine& cmdline,
   shex_info.fMask = SEE_MASK_NOCLOSEPROCESS;
   shex_info.hwnd = GetActiveWindow();
   shex_info.lpVerb = L"runas";
-  shex_info.lpFile = file.c_str();
-  shex_info.lpParameters = arguments.c_str();
+  shex_info.lpFile = as_wcstr(file);
+  shex_info.lpParameters = as_wcstr(arguments);
   shex_info.lpDirectory = nullptr;
   shex_info.nShow = options.start_hidden ? SW_HIDE : SW_SHOWNORMAL;
   shex_info.hInstApp = nullptr;
@@ -356,7 +381,7 @@ Process LaunchElevatedProcess(const CommandLine& cmdline,
   if (options.wait)
     WaitForSingleObject(shex_info.hProcess, INFINITE);
 
-  base::debug::GlobalActivityTracker::RecordProcessLaunchIfEnabled(
+  debug::GlobalActivityTracker::RecordProcessLaunchIfEnabled(
       GetProcessId(shex_info.hProcess), file, arguments);
   return Process(shex_info.hProcess);
 }

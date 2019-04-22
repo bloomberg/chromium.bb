@@ -64,9 +64,6 @@ class MODULES_EXPORT DatabaseTracker {
   // notificationMutex() is currently independent of the other locks.
 
   bool CanEstablishDatabase(DatabaseContext*,
-                            const String& name,
-                            const String& display_name,
-                            unsigned estimated_size,
                             DatabaseError&);
   String FullPathForDatabase(const SecurityOrigin*,
                              const String& name,
@@ -75,7 +72,7 @@ class MODULES_EXPORT DatabaseTracker {
   void AddOpenDatabase(Database*);
   void RemoveOpenDatabase(Database*);
 
-  unsigned long long GetMaxSizeForDatabase(const Database*);
+  uint64_t GetMaxSizeForDatabase(const Database*);
 
   void CloseDatabasesImmediately(const SecurityOrigin*, const String& name);
 

@@ -28,7 +28,7 @@ class RelaunchRecommendedBubbleView : public LocationBarBubbleDelegateView {
   // |detection_time|. |on_accept| is run if the user accepts the prompt to
   // restart.
   static views::Widget* ShowBubble(Browser* browser,
-                                   base::TimeTicks detection_time,
+                                   base::Time detection_time,
                                    base::RepeatingClosure on_accept);
   ~RelaunchRecommendedBubbleView() override;
 
@@ -53,7 +53,7 @@ class RelaunchRecommendedBubbleView : public LocationBarBubbleDelegateView {
  private:
   RelaunchRecommendedBubbleView(views::Button* anchor_button,
                                 const gfx::Point& anchor_point,
-                                base::TimeTicks detection_time,
+                                base::Time detection_time,
                                 base::RepeatingClosure on_accept);
 
   // Invoked when the timer fires to refresh the title text.

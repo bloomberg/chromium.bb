@@ -1,5 +1,5 @@
 var middleClickAutoscrollRadius = 15; // from FrameView::noPanScrollRadius
-var waitTimeBeforeMoveInSeconds = 0.1;
+var waitTimeBeforeMoveInMilliseconds = 100;
 var scrollable;
 var scrolledObject;
 var startX;
@@ -43,7 +43,7 @@ function testSetUp(param) {
     } else {
       assert_equals('drag', autoscrollParam.clickOrDrag);
       mouseDragAndDrop(startX, startY, endX, endY, middleButton,
-          waitTimeBeforeMoveInSeconds);
+          waitTimeBeforeMoveInMilliseconds);
     }
 
     // Wait for some scrolling, then end the autoscroll.

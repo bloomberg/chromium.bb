@@ -24,6 +24,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="1520828917794284345">Ajuster le bureau à la taille du client</translation>
 <translation id="154040539590487450">Échec du démarrage du service d'accès à distance.</translation>
 <translation id="1546934824884762070">Une erreur inattendue s'est produite. Veuillez signaler le problème aux développeurs.</translation>
+<translation id="1624185583382384493">Le bureau à distance Chrome est à présent disponible sur le Web. Essayez notre <ph name="LINK_BEGIN" />application Web<ph name="LINK_END" />. Rapide et gratuite, elle propose encore plus de fonctionnalités. Elle est par exemple plus adaptée à l'utilisation de plusieurs écrans.</translation>
 <translation id="1643640058022401035">En quittant cette page, vous mettrez fin à la session Google Chromoting.</translation>
 <translation id="1654128982815600832">Activation des connexions à distance pour cet ordinateur en cours…</translation>
 <translation id="170207782578677537">Échec de l'enregistrement de cet ordinateur.</translation>
@@ -138,6 +139,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="3989511127559254552">Pour continuer, vous devez autoriser l'accès étendu à votre ordinateur. Vous n'aurez à effectuer cette opération qu'une seule fois.</translation>
 <translation id="4006787130661126000">Si vous souhaitez utiliser le bureau à distance Google Chrome pour accéder à cet ordinateur, vous devez activer les connexions à distance.</translation>
 <translation id="405887016757208221">Échec de l'initialisation de la session par l'ordinateur distant. Si le problème persiste, veuillez réessayer de configurer l'hôte.</translation>
+<translation id="4060747889721220580">Télécharger le fichier</translation>
 <translation id="4068946408131579958">Toutes les connexions</translation>
 <translation id="409800995205263688">REMARQUE : Les paramètres des règles n'autorisent que les connexions entre les ordinateurs de votre réseau.</translation>
 <translation id="4126409073460786861">Une fois la configuration terminée, actualisez la page. Vous pourrez alors accéder à l'ordinateur en choisissant votre appareil et en saisissant le code d'accès</translation>
@@ -242,6 +244,7 @@ Pour activer cette fonctionnalité, sélectionnez <ph name="BUTTON_NAME" /> afin
 <translation id="6198252989419008588">Modifier le code PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (obsolète)</translation>
 <translation id="6221358653751391898">Vous n'êtes pas connecté à Chrome. Veuillez vous connecter et réessayer.</translation>
+<translation id="6227369581881558336">Le bureau à distance Chrome est à présent disponible sur Internet et présente de nouvelles fonctionnalités, y compris la possibilité de transférer des fichiers ! Découvrez notre <ph name="LINK_BEGIN" />application Web<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">L'exécution de l'hôte sur l'écran de connexion de la console s'est arrêtée pour accepter le mode Rideau en passant à une exécution d'hôte dans une session propre à l'utilisateur.</translation>
 <translation id="629730747756840877">Compte</translation>
 <translation id="6304318647555713317">Client</translation>
@@ -289,7 +292,6 @@ Pour activer cette fonctionnalité, sélectionnez <ph name="BUTTON_NAME" /> afin
 <translation id="7434397035092923453">Accès refusé au client : <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Client connecté : <ph name="CLIENT_USERNAME" /></translation>
 <translation id="7526139040829362392">Changer de compte</translation>
-<translation id="7589941250119944644">L'application Bureau à distance Chrome est désormais hébergée sur le Web. Essayez notre <ph name="LINK_BEGIN" />nouvelle application<ph name="LINK_END" /> ! Rapide et gratuite, elle offre les mêmes fonctionnalités qu'avant.</translation>
 <translation id="7606912958770842224">Activer les connexions à distance</translation>
 <translation id="7628469622942688817">Mémoriser mon code sur cet appareil.</translation>
 <translation id="7649070708921625228">Aide</translation>

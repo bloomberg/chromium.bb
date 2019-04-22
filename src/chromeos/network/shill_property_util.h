@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -22,26 +22,28 @@ class NetworkUIData;
 namespace shill_property_util {
 
 // Sets the |ssid| in |properties|.
-CHROMEOS_EXPORT void SetSSID(const std::string& ssid, base::Value* properties);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+void SetSSID(const std::string& ssid, base::Value* properties);
 
 // Returns the SSID from |properties| in UTF-8 encoding. If |verbose_logging| is
 // true, detailed DEBUG log events will be added to the device event log. If
 // |unknown_encoding| != nullptr, it is set to whether the SSID is of unknown
 // encoding.
-CHROMEOS_EXPORT std::string GetSSIDFromProperties(const base::Value& properties,
-                                                  bool verbose_logging,
-                                                  bool* unknown_encoding);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::string GetSSIDFromProperties(const base::Value& properties,
+                                  bool verbose_logging,
+                                  bool* unknown_encoding);
 
 // Returns the GUID (if available), SSID, or Name from |properties|. Only used
 // for logging and debugging. |properties| must be type DICTIONARY.
-CHROMEOS_EXPORT std::string GetNetworkIdFromProperties(
-    const base::Value& properties);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::string GetNetworkIdFromProperties(const base::Value& properties);
 
 // Returns the name for the network represented by the Shill |properties|. For
 // WiFi it refers to the HexSSID.
-CHROMEOS_EXPORT std::string GetNameFromProperties(
-    const std::string& service_path,
-    const base::Value& properties);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+std::string GetNameFromProperties(const std::string& service_path,
+                                  const base::Value& properties);
 
 // Returns the UIData specified by |value|. Returns NULL if the value cannot be
 // parsed.

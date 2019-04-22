@@ -15,24 +15,14 @@ class CSSValue;
 
 class CORE_EXPORT CSSSyntaxDescriptor {
  public:
-  explicit CSSSyntaxDescriptor(const String& syntax);
-
   const CSSValue* Parse(CSSParserTokenRange,
                         const CSSParserContext*,
                         bool is_animation_tainted) const;
   const CSSSyntaxComponent* Match(const CSSStyleValue&) const;
   bool CanTake(const CSSStyleValue&) const;
-  bool IsValid() const { return !syntax_components_.IsEmpty(); }
   bool IsTokenStream() const {
     return syntax_components_.size() == 1 &&
            syntax_components_[0].GetType() == CSSSyntaxType::kTokenStream;
-  }
-  bool HasUrlSyntax() const {
-    for (const CSSSyntaxComponent& component : syntax_components_) {
-      if (component.GetType() == CSSSyntaxType::kUrl)
-        return true;
-    }
-    return false;
   }
   const Vector<CSSSyntaxComponent>& Components() const {
     return syntax_components_;
@@ -45,6 +35,14 @@ class CORE_EXPORT CSSSyntaxDescriptor {
   }
 
  private:
+  friend class CSSSyntaxStringParser;
+  friend class CSSSyntaxStringParserTest;
+
+  explicit CSSSyntaxDescriptor(Vector<CSSSyntaxComponent>);
+
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#universal-syntax-descriptor
+  static CSSSyntaxDescriptor CreateUniversal();
+
   Vector<CSSSyntaxComponent> syntax_components_;
 };
 

@@ -25,9 +25,10 @@ struct EnumTraits<ash::mojom::AppListState, ash::AppListState> {
         return ash::mojom::AppListState::kStateApps;
       case ash::AppListState::kStateSearchResults:
         return ash::mojom::AppListState::kStateSearchResults;
-      case ash::AppListState::kStateStart:
-        return ash::mojom::AppListState::kStateStart;
-      case ash::AppListState::kStateCustomLauncherPageDeprecated:
+      case ash::AppListState::kStateStart_DEPRECATED:
+        return ash::mojom::AppListState::kStateStart_DEPRECATED;
+      case ash::AppListState::kStateEmbeddedAssistant:
+        return ash::mojom::AppListState::kStateEmbeddedAssistant;
       case ash::AppListState::kInvalidState:
         break;
     }
@@ -44,8 +45,11 @@ struct EnumTraits<ash::mojom::AppListState, ash::AppListState> {
       case ash::mojom::AppListState::kStateSearchResults:
         *out = ash::AppListState::kStateSearchResults;
         return true;
-      case ash::mojom::AppListState::kStateStart:
-        *out = ash::AppListState::kStateStart;
+      case ash::mojom::AppListState::kStateStart_DEPRECATED:
+        *out = ash::AppListState::kStateStart_DEPRECATED;
+        return true;
+      case ash::mojom::AppListState::kStateEmbeddedAssistant:
+        *out = ash::AppListState::kStateEmbeddedAssistant;
         return true;
     }
     NOTREACHED();
@@ -109,6 +113,10 @@ struct EnumTraits<ash::mojom::SearchResultType, ash::SearchResultType> {
         return ash::mojom::SearchResultType::kLauncher;
       case ash::SearchResultType::kAnswerCard:
         return ash::mojom::SearchResultType::kAnswerCard;
+      case ash::SearchResultType::kPlayStoreReinstallApp:
+        return ash::mojom::SearchResultType::kPlayStoreReinstallApp;
+      case ash::SearchResultType::kArcAppShortcut:
+        return ash::mojom::SearchResultType::kArcAppShortcut;
       case ash::SearchResultType::kUnknown:
         break;
     }
@@ -145,6 +153,12 @@ struct EnumTraits<ash::mojom::SearchResultType, ash::SearchResultType> {
         return true;
       case ash::mojom::SearchResultType::kAnswerCard:
         *out = ash::SearchResultType::kAnswerCard;
+        return true;
+      case ash::mojom::SearchResultType::kPlayStoreReinstallApp:
+        *out = ash::SearchResultType::kPlayStoreReinstallApp;
+        return true;
+      case ash::mojom::SearchResultType::kArcAppShortcut:
+        *out = ash::SearchResultType::kArcAppShortcut;
         return true;
     }
     NOTREACHED();
@@ -216,58 +230,7 @@ struct StructTraits<ash::mojom::SearchResultTagDataView, ash::SearchResultTag> {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// SearchResultActionLabel:
-
-template <>
-struct UnionTraits<ash::mojom::SearchResultActionLabelDataView,
-                   ash::SearchResultAction> {
-  static ash::mojom::SearchResultActionLabelDataView::Tag GetTag(
-      const ash::SearchResultAction& action);
-
-  static bool Read(ash::mojom::SearchResultActionLabelDataView data,
-                   ash::SearchResultAction* out);
-
-  static const ash::SearchResultAction& image_label(
-      const ash::SearchResultAction& action) {
-    return action;
-  }
-
-  static const ash::SearchResultAction& text_label(
-      const ash::SearchResultAction& action) {
-    return action;
-  }
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // SearchResultAction:
-
-template <>
-struct StructTraits<ash::mojom::SearchResultActionImageLabelDataView,
-                    ash::SearchResultAction> {
-  static const gfx::ImageSkia& base_image(
-      const ash::SearchResultAction& action) {
-    return action.base_image;
-  }
-  static const gfx::ImageSkia& hover_image(
-      const ash::SearchResultAction& action) {
-    return action.hover_image;
-  }
-  static const gfx::ImageSkia& pressed_image(
-      const ash::SearchResultAction& action) {
-    return action.pressed_image;
-  }
-};
-
-template <>
-struct StructTraits<mojo_base::mojom::String16DataView,
-                    ash::SearchResultAction> {
-  static base::span<const uint16_t> data(
-      const ash::SearchResultAction& action) {
-    return base::make_span(
-        reinterpret_cast<const uint16_t*>(action.label_text.data()),
-        action.label_text.size());
-  }
-};
 
 template <>
 struct StructTraits<ash::mojom::SearchResultActionDataView,
@@ -280,9 +243,12 @@ struct StructTraits<ash::mojom::SearchResultActionDataView,
     return action.tooltip_text;
   }
 
-  static const ash::SearchResultAction& label(
-      const ash::SearchResultAction& action) {
-    return action;
+  static const gfx::ImageSkia& image(const ash::SearchResultAction& action) {
+    return action.image;
+  }
+
+  static bool visible_on_hover(const ash::SearchResultAction& action) {
+    return action.visible_on_hover;
   }
 };
 

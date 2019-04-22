@@ -6,32 +6,22 @@
 
 #include <utility>
 
-#include "base/fuchsia/component_context.h"
+#include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/logging.h"
-#include "ui/base/ime/text_input_client.h"
-#include "ui/events/base_event_utils.h"
-#include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace ui {
 
 InputMethodKeyboardControllerFuchsia::InputMethodKeyboardControllerFuchsia(
-    InputMethodFuchsia* input_method)
-    : event_converter_(input_method),
-      ime_client_binding_(this),
-      ime_service_(base::fuchsia::ComponentContext::GetDefault()
-                       ->ConnectToService<fuchsia::ui::input::ImeService>()),
+    fuchsia::ui::input::ImeService* ime_service)
+    : ime_service_(ime_service),
       ime_visibility_(
-          base::fuchsia::ComponentContext::GetDefault()
-              ->ConnectToService<fuchsia::ui::input::ImeVisibilityService>()),
-      input_method_(input_method) {
+          base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
+              ->ConnectToService<fuchsia::ui::input::ImeVisibilityService>()) {
   DCHECK(ime_service_);
-  DCHECK(input_method_);
 
-  ime_service_.set_error_handler([this](zx_status_t status) {
-    LOG(ERROR) << "Lost connection to IME service.";
-    ime_.Unbind();
-    ime_client_binding_.Unbind();
+  ime_visibility_.set_error_handler([](zx_status_t status) {
+    ZX_LOG(FATAL, status) << " ImeVisibilityService lost.";
   });
 
   ime_visibility_.events().OnKeyboardVisibilityChanged = [this](bool visible) {
@@ -43,54 +33,26 @@ InputMethodKeyboardControllerFuchsia::~InputMethodKeyboardControllerFuchsia() =
     default;
 
 bool InputMethodKeyboardControllerFuchsia::DisplayVirtualKeyboard() {
-  if (!ime_) {
-    // TODO(crbug.com/876934): Instantiate the IME with details about the
-    // current composition.
-    fuchsia::ui::input::TextInputState state = {};
-    state.text = "";
-    ime_service_->GetInputMethodEditor(
-        fuchsia::ui::input::KeyboardType::TEXT,
-        fuchsia::ui::input::InputMethodAction::UNSPECIFIED, std::move(state),
-        ime_client_binding_.NewBinding(), ime_.NewRequest());
-  }
-
-  if (!keyboard_visible_) {
-    ime_service_->ShowKeyboard();
-  }
-
+  ime_service_->ShowKeyboard();
   return true;
 }
 
 void InputMethodKeyboardControllerFuchsia::DismissVirtualKeyboard() {
-  if (keyboard_visible_) {
-    ime_service_->HideKeyboard();
-  }
+  ime_service_->HideKeyboard();
 }
 
 void InputMethodKeyboardControllerFuchsia::AddObserver(
-    InputMethodKeyboardControllerObserver* observer) {}
+    InputMethodKeyboardControllerObserver* observer) {
+  NOTIMPLEMENTED();
+}
 
 void InputMethodKeyboardControllerFuchsia::RemoveObserver(
-    InputMethodKeyboardControllerObserver* observer) {}
+    InputMethodKeyboardControllerObserver* observer) {
+  NOTIMPLEMENTED();
+}
 
 bool InputMethodKeyboardControllerFuchsia::IsKeyboardVisible() {
   return keyboard_visible_;
-}
-
-void InputMethodKeyboardControllerFuchsia::DidUpdateState(
-    fuchsia::ui::input::TextInputState state,
-    std::unique_ptr<fuchsia::ui::input::InputEvent> input_event) {
-  if (input_event->is_keyboard())
-    event_converter_.ProcessEvent(*input_event);
-}
-
-void InputMethodKeyboardControllerFuchsia::OnAction(
-    fuchsia::ui::input::InputMethodAction action) {
-  // Synthesize an ENTER keypress and send it to the Window.
-  KeyEvent key_event(ET_KEY_PRESSED, KeyboardCode::VKEY_RETURN,
-                     ui::DomCode::ENTER, ui::EF_NONE, ui::DomKey::ENTER,
-                     ui::EventTimeForNow());
-  input_method_->DispatchKeyEvent(&key_event);
 }
 
 }  // namespace ui

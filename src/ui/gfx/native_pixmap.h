@@ -26,7 +26,6 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
   NativePixmap() {}
 
   virtual bool AreDmaBufFdsValid() const = 0;
-  virtual size_t GetDmaBufFdCount() const = 0;
   virtual int GetDmaBufFd(size_t plane) const = 0;
   virtual int GetDmaBufPitch(size_t plane) const = 0;
   virtual int GetDmaBufOffset(size_t plane) const = 0;

@@ -2,22 +2,18 @@
 
 ;; Copyright (C) 2009, 2011 Christian Egli
 
-;; This file is not part of GNU Emacs.
+;; This file is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published
+;; by the Free Software Foundation, either version 3 of the License,
+;; or (at your option) any later version.
 
-;; GNU Emacs is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 3, or (at your option)
-;; any later version.
-
-;; GNU Emacs is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; This file is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+;; General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-;; Boston, MA 02110-1301, USA.
+;; along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -50,8 +46,7 @@
     (concat "^"
 	    (regexp-opt
 	     '("include" "locale" "noletsign" "noletsignbefore" "noletsignafter"
-	       "nocont" "compbrl" "literal"
-	       "contraction") 'words)
+	       "nocont" "compbrl" "contraction" "emphclass") 'words)
 	    "\\s-+\\([^       ]+\\)" liblouis-comment-regexp "$")
     '(1 font-lock-keyword-face)
     '(2 font-lock-constant-face)
@@ -61,16 +56,15 @@
    (list
     (concat "^"
 	    (regexp-opt
-	     '("numsign" "capsign" "italsign" "begital" "endital" "boldsign"
-	       "begbold" "endbold" "undersign" "begunder" "endunder"
-	       "firstwordital" "lastworditalbefore" "lastworditalafter"
+	     '("numsign" "capsletter" "firstwordital"
+	       "lastworditalbefore" "lastworditalafter"
 	       "firstletterital" "lastletterital" "singleletterital"
 	       "firstwordbold" "lastwordboldbefore" "lastwordboldafter"
 	       "firstletterbold" "lastletterbold" "singleletterbold"
 	       "firstwordunder" "lastwordunderbefore" "lastwordunderafter"
 	       "firstletterunder" "lastletterunder" "singleletterunder"
 	       "begcomp" "endcomp"
-	       "begcaps" "endcaps" "letsign"
+	       "begcaps" "endcaps" "letsign" "nocontractsign"
 	       "exactdots") 'words)
 	    "\\s-+\\([0-9-@]+\\)" liblouis-comment-regexp "$")
     '(1 font-lock-keyword-face)
@@ -85,13 +79,26 @@
 	       "letter" "uplow" "litdigit" "sign" "math" "display" "repeated"  "always"
 	       "nocross" "syllable" "largesign" "word" "partword" "joinnum" "joinword"
 	       "lowword" "sufword" "prfword" "begword" "begmidword" "midword" "midendword"
-	       "endword" "prepunc" "postpunc" "begnum" "midnum" "endnum" "decpoint" "hyphen") 'words)
-	    "\\s-+\\([^       ]+?\\)\\s-+\\([-0-9=@a]+\\)" liblouis-comment-regexp "$")
+	       "endword" "prepunc" "postpunc" "begnum" "midnum" "endnum" "decpoint" "hyphen"
+	       "begemphword" "endemphword" "begemphphrase" "lenemphphrase") 'words)
+	    "\\s-+\\([^       ]+?\\)\\s-+\\([-0-9=@a-f]+\\)" liblouis-comment-regexp "$")
     '(1 font-lock-keyword-face)
     '(2 font-lock-string-face)
     '(3 font-lock-constant-face)
     '(4 font-lock-comment-face nil t))
    
+   ;; Opcodes (with three args)
+   (list
+    (concat "^"
+	    (regexp-opt
+	     '("endemphphrase") 'words)
+	    "\\s-+\\([^       ]+?\\)\\s-+\\([^       ]+?\\)\\s-+\\([-0-9=@a-f]+\\)" liblouis-comment-regexp "$")
+    '(1 font-lock-keyword-face)
+    '(2 font-lock-string-face)
+    '(3 font-lock-string-face)
+    '(4 font-lock-constant-face)
+    '(5 font-lock-comment-face nil t))
+
    ;; Opcodes (with two args where the second one is not a dot pattern)
    (list
     (concat "^"
@@ -107,7 +114,7 @@
   "Default expressions to highlight in liblouis mode.")
 
 ;;###autoload
-(define-derived-mode liblouis-mode text-mode "liblouis"
+(define-derived-mode liblouis-mode prog-mode "liblouis"
   "Major mode for editing liblouis translation tables.
 Turning on liblouis mode runs the normal hook `liblouis-mode-hook'.
 "
@@ -126,6 +133,9 @@ Turning on liblouis mode runs the normal hook `liblouis-mode-hook'.
          nil				; CASE-FOLD: no
          ((?_ . "w"))			; SYNTAX-ALIST
 	 ))
+
+  (set (make-local-variable 'comment-start) "#")
+
   (run-hooks 'liblouis-mode-hook))
 
 (provide 'liblouis-mode)

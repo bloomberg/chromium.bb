@@ -14,7 +14,7 @@ bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return false;
 }
 
-void BookmarkNodeData::WriteToClipboard(ui::ClipboardType type) {
+void BookmarkNodeData::WriteToClipboard() {
   NOTREACHED();
 }
 

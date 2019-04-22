@@ -35,17 +35,17 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -53,9 +53,8 @@ namespace blink {
 
 ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
                                          ExecutionContext* target,
-                                         const ScriptValue& handler,
+                                         V8Function* handler,
                                          const Vector<ScriptValue>& arguments) {
-  DCHECK(handler.IsFunction());
   if (!script_state->World().IsWorkerWorld()) {
     if (!BindingSecurity::ShouldAllowAccessToFrame(
             EnteredDOMWindow(script_state->GetIsolate()),
@@ -84,21 +83,48 @@ ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
   return MakeGarbageCollected<ScheduledAction>(script_state, handler);
 }
 
+ScheduledAction::ScheduledAction(ScriptState* script_state,
+                                 V8Function* function,
+                                 const Vector<ScriptValue>& arguments)
+    : script_state_(
+          MakeGarbageCollected<ScriptStateProtectingContext>(script_state)),
+      function_(function),
+      arguments_(arguments) {}
+
+ScheduledAction::ScheduledAction(ScriptState* script_state, const String& code)
+    : script_state_(
+          MakeGarbageCollected<ScriptStateProtectingContext>(script_state)),
+      code_(code) {}
+
+ScheduledAction::ScheduledAction(ScriptState* script_state)
+    : script_state_(
+          MakeGarbageCollected<ScriptStateProtectingContext>(script_state)) {}
+
 ScheduledAction::~ScheduledAction() {
   // Verify that owning DOMTimer has eagerly disposed.
-  DCHECK(info_.IsEmpty());
+  DCHECK(!script_state_);
+  DCHECK(!function_);
+  DCHECK(arguments_.IsEmpty());
+  DCHECK(code_.IsNull());
 }
 
 void ScheduledAction::Dispose() {
-  code_ = String();
-  info_.Clear();
-  function_.Clear();
   script_state_->Reset();
   script_state_.Clear();
-}
-
-void ScheduledAction::Trace(blink::Visitor* visitor) {
-  visitor->Trace(script_state_);
+  if (function_) {
+    // setTimeout is pretty common and heavily used, and we need a special
+    // optimization to let V8 Scavenger GC collect the function object as
+    // soon as possible in order to reduce the memory usage.
+    // See also https://crbug.com/919474 and https://crbug.com/919475 .
+    //
+    // This optimization is safe because this ScheduledAction *owns* |function_|
+    // (i.e. no other objects reference |function_|) and this ScheduledAction
+    // immediately discards |function_| (so never uses it).
+    function_->DisposeV8FunctionImmediatelyToReduceMemoryFootprint();
+    function_.Clear();
+  }
+  arguments_.clear();
+  code_ = String();
 }
 
 void ScheduledAction::Execute(ExecutionContext* context) {
@@ -128,47 +154,19 @@ void ScheduledAction::Execute(ExecutionContext* context) {
   }
 }
 
-ScheduledAction::ScheduledAction(ScriptState* script_state,
-                                 const ScriptValue& function,
-                                 const Vector<ScriptValue>& arguments)
-    : ScheduledAction(script_state) {
-  DCHECK(function.IsFunction());
-  function_.Set(script_state->GetIsolate(),
-                v8::Local<v8::Function>::Cast(function.V8Value()));
-  info_.ReserveCapacity(arguments.size());
-  for (const ScriptValue& argument : arguments)
-    info_.Append(argument.V8Value());
+void ScheduledAction::Trace(blink::Visitor* visitor) {
+  visitor->Trace(script_state_);
+  visitor->Trace(function_);
 }
-
-ScheduledAction::ScheduledAction(ScriptState* script_state, const String& code)
-    : ScheduledAction(script_state) {
-  code_ = code;
-}
-
-ScheduledAction::ScheduledAction(ScriptState* script_state)
-    : script_state_(ScriptStateProtectingContext::Create(script_state)),
-      info_(script_state->GetIsolate()) {}
 
 void ScheduledAction::Execute(LocalFrame* frame) {
   DCHECK(script_state_->ContextIsValid());
 
+  // https://html.spec.whatwg.org/C/#timer-initialisation-steps
   TRACE_EVENT0("v8", "ScheduledAction::execute");
-  if (!function_.IsEmpty()) {
+  if (function_) {
     DVLOG(1) << "ScheduledAction::execute " << this << ": have function";
-    v8::Local<v8::Function> function =
-        function_.NewLocal(script_state_->GetIsolate());
-    ScriptState* script_state_for_func =
-        ScriptState::From(function->CreationContext());
-    if (!script_state_for_func->ContextIsValid()) {
-      DVLOG(1) << "ScheduledAction::execute " << this
-               << ": function's context is empty";
-      return;
-    }
-    Vector<v8::Local<v8::Value>> info;
-    CreateLocalHandlesForArgs(&info);
-    V8ScriptRunner::CallFunction(
-        function, frame->GetDocument(), script_state_->GetContext()->Global(),
-        info.size(), info.data(), script_state_->GetIsolate());
+    function_->InvokeAndReportException(frame->DomWindow(), arguments_);
   } else {
     DVLOG(1) << "ScheduledAction::execute " << this
              << ": executing from source";
@@ -188,29 +186,12 @@ void ScheduledAction::Execute(LocalFrame* frame) {
 }
 
 void ScheduledAction::Execute(WorkerGlobalScope* worker) {
+  DCHECK(script_state_->ContextIsValid());
   DCHECK(worker->GetThread()->IsCurrentThread());
 
-  if (!script_state_->ContextIsValid()) {
-    DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
-    return;
-  }
-
-  if (!function_.IsEmpty()) {
-    ScriptState::Scope scope(script_state_->Get());
-    v8::Local<v8::Function> function =
-        function_.NewLocal(script_state_->GetIsolate());
-    ScriptState* script_state_for_func =
-        ScriptState::From(function->CreationContext());
-    if (!script_state_for_func->ContextIsValid()) {
-      DVLOG(1) << "ScheduledAction::execute " << this
-               << ": function's context is empty";
-      return;
-    }
-    Vector<v8::Local<v8::Value>> info;
-    CreateLocalHandlesForArgs(&info);
-    V8ScriptRunner::CallFunction(
-        function, worker, script_state_->GetContext()->Global(), info.size(),
-        info.data(), script_state_->GetIsolate());
+  // https://html.spec.whatwg.org/C/#timer-initialisation-steps
+  if (function_) {
+    function_->InvokeAndReportException(worker, arguments_);
   } else {
     // We're using |SanitizeScriptErrors::kDoNotSanitize| to keep the existing
     // behavior, but this causes failures on
@@ -221,14 +202,6 @@ void ScheduledAction::Execute(WorkerGlobalScope* worker) {
                          ScriptSourceLocationType::kEvalForScheduledAction),
         SanitizeScriptErrors::kDoNotSanitize);
   }
-}
-
-void ScheduledAction::CreateLocalHandlesForArgs(
-    Vector<v8::Local<v8::Value>>* handles) {
-  wtf_size_t handle_count = SafeCast<wtf_size_t>(info_.Size());
-  handles->ReserveCapacity(handle_count);
-  for (wtf_size_t i = 0; i < handle_count; ++i)
-    handles->push_back(info_.Get(i));
 }
 
 }  // namespace blink

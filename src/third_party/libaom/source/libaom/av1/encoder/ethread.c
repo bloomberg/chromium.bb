@@ -29,6 +29,43 @@ static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
   td->rd_counts.skip_mode_used_flag |= td_t->rd_counts.skip_mode_used_flag;
 }
 
+static void update_delta_lf_for_row_mt(AV1_COMP *cpi) {
+  AV1_COMMON *cm = &cpi->common;
+  MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
+  const int mib_size = cm->seq_params.mib_size;
+  const int frame_lf_count =
+      av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+  for (int row = 0; row < cm->tile_rows; row++) {
+    for (int col = 0; col < cm->tile_cols; col++) {
+      TileDataEnc *tile_data = &cpi->tile_data[row * cm->tile_cols + col];
+      const TileInfo *const tile_info = &tile_data->tile_info;
+      for (int mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
+           mi_row += mib_size) {
+        if (mi_row == tile_info->mi_row_start)
+          av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
+        for (int mi_col = tile_info->mi_col_start;
+             mi_col < tile_info->mi_col_end; mi_col += mib_size) {
+          const int idx_str = cm->mi_stride * mi_row + mi_col;
+          MB_MODE_INFO **mi = cm->mi_grid_visible + idx_str;
+          MB_MODE_INFO *mbmi = mi[0];
+          if (mbmi->skip == 1 && (mbmi->sb_type == cm->seq_params.sb_size)) {
+            for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
+              mbmi->delta_lf[lf_id] = xd->delta_lf[lf_id];
+            mbmi->delta_lf_from_base = xd->delta_lf_from_base;
+          } else {
+            if (cm->delta_q_info.delta_lf_multi) {
+              for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
+                xd->delta_lf[lf_id] = mbmi->delta_lf[lf_id];
+            } else {
+              xd->delta_lf_from_base = mbmi->delta_lf_from_base;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 void av1_row_mt_sync_read_dummy(struct AV1RowMTSyncData *const row_mt_sync,
                                 int r, int c) {
   (void)row_mt_sync;
@@ -127,10 +164,7 @@ void av1_row_mt_sync_mem_alloc(AV1RowMTSync *row_mt_sync, AV1_COMMON *cm,
                   aom_malloc(sizeof(*row_mt_sync->cur_col) * rows));
 
   // Set up nsync.
-  if (cm->seq_params.mib_size_log2 == 4)
-    row_mt_sync->sync_range = 2;
-  else
-    row_mt_sync->sync_range = 1;
+  row_mt_sync->sync_range = 1;
 }
 
 // Deallocate row based multi-threading synchronization related mutex and data
@@ -276,9 +310,14 @@ static int enc_row_mt_worker_hook(void *arg1, void *unused) {
 
     td->mb.e_mbd.tile_ctx = td->tctx;
     td->mb.tile_pb_ctx = &this_tile->tctx;
-    td->mb.backup_tile_ctx = &this_tile->backup_tctx;
-    if (current_mi_row == this_tile->tile_info.mi_row_start)
+    if (this_tile->allow_update_cdf) {
+      td->mb.row_ctx = this_tile->row_ctx;
+      if (current_mi_row == this_tile->tile_info.mi_row_start)
+        memcpy(td->mb.e_mbd.tile_ctx, &this_tile->tctx, sizeof(FRAME_CONTEXT));
+    } else {
       memcpy(td->mb.e_mbd.tile_ctx, &this_tile->tctx, sizeof(FRAME_CONTEXT));
+    }
+
     av1_init_above_context(cm, &td->mb.e_mbd, tile_row);
 
     // Disable exhaustive search speed features for row based multi-threading of
@@ -319,10 +358,8 @@ static int enc_worker_hook(void *arg1, void *unused) {
 
     TileDataEnc *const this_tile =
         &cpi->tile_data[tile_row * cm->tile_cols + tile_col];
-    thread_data->td->tctx = &this_tile->tctx;
-    thread_data->td->mb.e_mbd.tile_ctx = thread_data->td->tctx;
-    thread_data->td->mb.tile_pb_ctx = thread_data->td->tctx;
-    thread_data->td->mb.backup_tile_ctx = &this_tile->backup_tctx;
+    thread_data->td->mb.e_mbd.tile_ctx = &this_tile->tctx;
+    thread_data->td->mb.tile_pb_ctx = &this_tile->tctx;
     av1_encode_tile(cpi, thread_data->td, tile_row, tile_col);
   }
 
@@ -349,7 +386,7 @@ static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
   }
 #endif
 
-  for (int i = 0; i < num_workers; i++) {
+  for (int i = num_workers - 1; i >= 0; i--) {
     AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = &cpi->tile_thr_data[i];
 
@@ -360,7 +397,7 @@ static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
     thread_data->cpi = cpi;
     thread_data->thread_id = i;
 
-    if (i < num_workers - 1) {
+    if (i > 0) {
       // Allocate thread data.
       CHECK_MEM_ERROR(cm, thread_data->td,
                       aom_memalign(32, sizeof(*thread_data->td)));
@@ -441,14 +478,14 @@ static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
 static void launch_enc_workers(AV1_COMP *cpi, int num_workers) {
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
   // Encode a frame
-  for (int i = 0; i < num_workers; i++) {
+  for (int i = num_workers - 1; i >= 0; i--) {
     AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = (EncWorkerData *)worker->data1;
 
     // Set the starting tile for each thread.
     thread_data->start = i;
 
-    if (i == cpi->num_workers - 1)
+    if (i == 0)
       winterface->execute(worker);
     else
       winterface->launch(worker);
@@ -460,7 +497,7 @@ static void sync_enc_workers(AV1_COMP *cpi, int num_workers) {
   int had_error = 0;
 
   // Encoding ends.
-  for (int i = 0; i < num_workers; i++) {
+  for (int i = num_workers - 1; i >= 0; i--) {
     AVxWorker *const worker = &cpi->workers[i];
     had_error |= !winterface->sync(worker);
   }
@@ -471,22 +508,25 @@ static void sync_enc_workers(AV1_COMP *cpi, int num_workers) {
 }
 
 static void accumulate_counters_enc_workers(AV1_COMP *cpi, int num_workers) {
-  for (int i = 0; i < num_workers; i++) {
+  for (int i = num_workers - 1; i >= 0; i--) {
     AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = (EncWorkerData *)worker->data1;
     cpi->intrabc_used |= thread_data->td->intrabc_used;
     // Accumulate counters.
-    if (i < cpi->num_workers - 1) {
+    if (i > 0) {
       av1_accumulate_frame_counts(&cpi->counts, thread_data->td->counts);
       accumulate_rd_opt(&cpi->td, thread_data->td);
       cpi->td.mb.txb_split_count += thread_data->td->mb.txb_split_count;
+#if CONFIG_SPEED_STATS
+      cpi->td.mb.tx_search_count += thread_data->td->mb.tx_search_count;
+#endif  // CONFIG_SPEED_STATS
     }
   }
 }
 
 static void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
                                 int num_workers) {
-  for (int i = 0; i < num_workers; i++) {
+  for (int i = num_workers - 1; i >= 0; i--) {
     AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = &cpi->tile_thr_data[i];
 
@@ -523,7 +563,7 @@ static void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
       memcpy(thread_data->td->counts, &cpi->counts, sizeof(cpi->counts));
     }
 
-    if (i < num_workers - 1) {
+    if (i > 0) {
       thread_data->td->mb.palette_buffer = thread_data->td->palette_buffer;
       thread_data->td->mb.tmp_conv_dst = thread_data->td->tmp_conv_dst;
       for (int j = 0; j < 2; ++j) {
@@ -643,5 +683,6 @@ void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
   prepare_enc_workers(cpi, enc_row_mt_worker_hook, num_workers);
   launch_enc_workers(cpi, num_workers);
   sync_enc_workers(cpi, num_workers);
+  if (cm->delta_q_info.delta_lf_present_flag) update_delta_lf_for_row_mt(cpi);
   accumulate_counters_enc_workers(cpi, num_workers);
 }

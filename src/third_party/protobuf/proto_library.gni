@@ -57,7 +57,15 @@
 #       Extra flags passed to the plugin. See cc_generator_options.
 #
 #   deps (optional)
+#       DEPRECATED: use proto_deps or link_deps instead (crbug.com/938011).
 #       Additional dependencies.
+#
+#   link_deps (optional)
+#       Additional dependencies linked to library.
+#
+#   proto_deps (optional)
+#       Additional dependencies required before running protoc.
+#       e.g. proto file generating action.
 #
 #   use_protobuf_full (optional)
 #       If adding protobuf library would be required, adds protobuf_full to deps
@@ -84,6 +92,10 @@
 #
 #   extra_configs (optional)
 #       A list of config labels that will be appended to the configs applying
+#       to the source set.
+#
+#   remove_configs (optional)
+#       A list of config labels that will be removed from the configs apllying
 #       to the source set.
 #
 # Example:
@@ -311,8 +323,11 @@ template("proto_library") {
       }
     }
 
+    # The deps may have steps that have to run before running protoc.
+    if (defined(invoker.proto_deps)) {
+      deps += invoker.proto_deps
+    }
     if (defined(invoker.deps)) {
-      # The deps may have steps that have to run before running protoc.
       deps += invoker.deps
     }
   }
@@ -329,10 +344,16 @@ template("proto_library") {
   # use relative paths starting at |cc_out_dir|.
   # However there is no necessity to add an additional directory, if all protos
   # are located in the same directory which is in the search path by default.
-  if (has_nested_dirs) {
-    config_name = "${target_name}_config"
-    config(config_name) {
-      include_dirs = [ cc_out_dir ]
+  config_name = "${target_name}_config"
+  config(config_name) {
+    include_dirs = []
+    if (has_nested_dirs) {
+      include_dirs += [ cc_out_dir ]
+    }
+    if (defined(invoker.import_dirs)) {
+      foreach(path, invoker.import_dirs) {
+        include_dirs += [ "$root_gen_dir/" + rebase_path(path, "//") ]
+      }
     }
   }
 
@@ -347,6 +368,10 @@ template("proto_library") {
 
     sources = get_target_outputs(":$action_name")
 
+    if (defined(invoker.remove_configs)) {
+      configs -= invoker.remove_configs
+    }
+
     if (defined(invoker.extra_configs)) {
       configs += invoker.extra_configs
     }
@@ -358,10 +383,11 @@ template("proto_library") {
     configs += [ "//build/config/sanitizers:not_fuzzed" ]
 
     public_configs = [ "//third_party/protobuf:using_proto" ]
+    public_deps = []
 
     if (generate_cc || generate_with_plugin) {
       # Not necessary if all protos are located in the same directory.
-      if (has_nested_dirs) {
+      if (has_nested_dirs || defined(invoker.import_dirs)) {
         # It's not enough to set |include_dirs| for target since public imports
         # expose corresponding includes to header files as well.
         public_configs += [ ":$config_name" ]
@@ -373,13 +399,9 @@ template("proto_library") {
       if (generate_cc) {
         if (defined(invoker.use_protobuf_full) &&
             invoker.use_protobuf_full == true) {
-          public_deps = [
-            "//third_party/protobuf:protobuf_full",
-          ]
+          public_deps += [ "//third_party/protobuf:protobuf_full" ]
         } else {
-          public_deps = [
-            "//third_party/protobuf:protobuf_lite",
-          ]
+          public_deps += [ "//third_party/protobuf:protobuf_lite" ]
         }
 
         if (is_win) {
@@ -394,14 +416,86 @@ template("proto_library") {
       }
     }
 
-    deps = [
-      ":$action_name",
-    ]
+    public_deps += [ ":$action_name" ]
+    deps = []
 
     # This will link any libraries in the deps (the use of invoker.deps in the
     # action won't link it).
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
+    if (defined(invoker.link_deps)) {
+      deps += invoker.link_deps
+    }
+  }
+}
+
+# Convert a protocol buffer between text and binary formats.
+# This can be used to run protoc with the --encode or --decode options.
+# Parameters:
+#
+#   sources: list of string
+#       The sources to loop over and run protoc on
+#
+#   inputs: list of string
+#       The file dependencies for the action. This should be the list of .proto
+#       files involved in the conversion operation.
+#
+#   output_pattern: string
+#       A path pattern with source expansion variables (like source_name_part)
+#       for where the result of conversion should be placed.
+#
+#   deps: (optional) list of label
+#       Additional dependencies for the target.
+#
+#   args: list of string
+#       Arguments to pass to the protoc tool. This could include -I for include
+#       paths, as well as the name of the proto file.
+#
+#
+# Example to convert a .textproto to a .binarybp:
+#   protoc_convert("convert_foo") {
+#     sources = [
+#       "test/data/example1.textproto",
+#       "test/data/example2.textproto",
+#     ]
+#     inputs = [
+#       "//component/core/foo.proto",
+#     ]
+#     output_pattern = "$target_gen_dir/foo_data/{{source_name_part}}.binarypb"
+#     args = [
+#       "--encode=foo.FooMessage",
+#       "-I",
+#       rebase_path("//component/core"),
+#       "foo.proto",
+#     ]
+#   }
+template("protoc_convert") {
+  action_foreach(target_name) {
+    script = "//tools/protoc_wrapper/protoc_convert.py"
+
+    sources = invoker.sources
+
+    inputs = invoker.inputs
+
+    deps = [
+      "//third_party/protobuf:protoc",
+    ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+
+    outputs = [
+      invoker.output_pattern,
+    ]
+
+    args = [
+             "--protoc",
+             rebase_path("$root_out_dir/protoc"),
+             "--infile",
+             "{{source}}",
+             "--outfile",
+             rebase_path(invoker.output_pattern),
+           ] + invoker.args
   }
 }

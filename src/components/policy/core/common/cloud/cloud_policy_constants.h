@@ -26,6 +26,12 @@ POLICY_EXPORT extern const char kParamPlatform[];
 POLICY_EXPORT extern const char kParamRequest[];
 POLICY_EXPORT extern const char kParamRetry[];
 
+// Policy constants used in authorization header.
+POLICY_EXPORT extern const char kAuthHeader[];
+POLICY_EXPORT extern const char kServiceTokenAuthHeaderPrefix[];
+POLICY_EXPORT extern const char kDMTokenAuthHeaderPrefix[];
+POLICY_EXPORT extern const char kEnrollmentTokenAuthHeaderPrefix[];
+
 // String extern constants for the device and app type we report to the server.
 POLICY_EXPORT extern const char kValueAppType[];
 POLICY_EXPORT extern const char kValueDeviceType[];
@@ -146,9 +152,12 @@ enum DeviceMode {
                                           // launch a kiosk webapp.
   DEVICE_MODE_DEMO,                       // The device is in demo mode. It was
                                           // either enrolled online or setup
-                                          // offline into demo mode domain
-                                          // cros-demo-mode.com.
+                                          // offline into demo mode domain -
+                                          // see kDemoModeDomain.
 };
+
+// Domain that demo mode devices are enrolled into: cros-demo-mode.com
+POLICY_EXPORT extern const char kDemoModeDomain[];
 
 // License types available for enrollment.
 enum class LicenseType {

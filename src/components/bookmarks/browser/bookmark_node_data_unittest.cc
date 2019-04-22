@@ -285,7 +285,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardURL) {
   const base::string16 title(ASCIIToUTF16("blah"));
 
   data.ReadFromTuple(url, title);
-  data.WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  data.WriteToClipboard();
 
   // Now read the data back in.
   base::string16 clipboard_result;
@@ -307,7 +307,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardMultipleURLs) {
   nodes.push_back(url_node2);
 
   data.ReadFromVector(nodes);
-  data.WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  data.WriteToClipboard();
 
   // Now read the data back in.
   base::string16 combined_text;
@@ -331,7 +331,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardEmptyFolder) {
   nodes.push_back(folder);
 
   data.ReadFromVector(nodes);
-  data.WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  data.WriteToClipboard();
 
   // Now read the data back in.
   base::string16 clipboard_result;
@@ -350,7 +350,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardFolderWithChildren) {
   nodes.push_back(folder);
 
   data.ReadFromVector(nodes);
-  data.WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  data.WriteToClipboard();
 
   // Now read the data back in.
   base::string16 clipboard_result;
@@ -370,7 +370,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardFolderAndURL) {
   nodes.push_back(folder);
 
   data.ReadFromVector(nodes);
-  data.WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  data.WriteToClipboard();
 
   // Now read the data back in.
   base::string16 combined_text;

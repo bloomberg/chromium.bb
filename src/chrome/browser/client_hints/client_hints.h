@@ -6,43 +6,41 @@
 #define CHROME_BROWSER_CLIENT_HINTS_CLIENT_HINTS_H_
 
 #include <memory>
+#include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/client_hints_controller_delegate.h"
 
 class GURL;
 
-namespace content {
-class BrowserContext;
-}
-
-namespace net {
-class HttpRequestHeaders;
-}
-
 namespace client_hints {
 
-namespace internal {
+class ClientHints : public KeyedService,
+                    public content::ClientHintsControllerDelegate {
+ public:
+  explicit ClientHints(content::BrowserContext* context);
+  ~ClientHints() override;
 
-// Returns |rtt| after adding host-specific random noise, and rounding it as
-// per the NetInfo spec to improve privacy.
-unsigned long RoundRtt(const std::string& host,
-                       const base::Optional<base::TimeDelta>& rtt);
+  // content::ClientHintsControllerDelegate:
+  network::NetworkQualityTracker* GetNetworkQualityTracker() override;
 
-// Returns downlink (in Mbps) after adding host-specific random noise to
-// |downlink_kbps| (which is in Kbps), and rounding it as per the NetInfo spec
-// to improve privacy.
-double RoundKbpsToMbps(const std::string& host,
-                       const base::Optional<int32_t>& downlink_kbps);
+  void GetAllowedClientHintsFromSource(
+      const GURL& url,
+      blink::WebEnabledClientHints* client_hints) override;
 
-}  // namespace internal
+  bool IsJavaScriptAllowed(const GURL& url) override;
 
-// Allow the embedder to return additional headers related to client hints that
-// should be sent when fetching |url|. May return a nullptr.
-std::unique_ptr<net::HttpRequestHeaders>
-GetAdditionalNavigationRequestClientHintsHeaders(
-    content::BrowserContext* context,
-    const GURL& url);
+  std::string GetAcceptLanguageString() override;
+
+  blink::UserAgentMetadata GetUserAgentMetadata() override;
+
+ private:
+  content::BrowserContext* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClientHints);
+};
 
 }  // namespace client_hints
 

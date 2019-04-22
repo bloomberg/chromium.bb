@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
@@ -129,15 +130,14 @@ class ConstrainedWebDialogSurfaceSynchronizationBrowserTest
 
 // Tests that opening/closing the constrained window won't crash it.
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, BasicTest) {
-  // The delegate deletes itself.
-  WebDialogDelegate* delegate = new ui::test::TestWebDialogDelegate(
+  auto delegate = std::make_unique<ui::test::TestWebDialogDelegate>(
       GURL(chrome::kChromeUIConstrainedHTMLTestURL));
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
 
-  ConstrainedWebDialogDelegate* dialog_delegate =
-      ShowConstrainedWebDialog(browser()->profile(), delegate, web_contents);
+  ConstrainedWebDialogDelegate* dialog_delegate = ShowConstrainedWebDialog(
+      browser()->profile(), std::move(delegate), web_contents);
   ASSERT_TRUE(dialog_delegate);
   EXPECT_TRUE(dialog_delegate->GetNativeDialog());
   EXPECT_TRUE(IsShowingWebContentsModalDialog(web_contents));
@@ -145,15 +145,14 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, BasicTest) {
 
 // Tests that ReleaseWebContents() works.
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, ReleaseWebContents) {
-  // The delegate deletes itself.
-  WebDialogDelegate* delegate = new ui::test::TestWebDialogDelegate(
+  auto delegate = std::make_unique<ui::test::TestWebDialogDelegate>(
       GURL(chrome::kChromeUIConstrainedHTMLTestURL));
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
 
-  ConstrainedWebDialogDelegate* dialog_delegate =
-      ShowConstrainedWebDialog(browser()->profile(), delegate, web_contents);
+  ConstrainedWebDialogDelegate* dialog_delegate = ShowConstrainedWebDialog(
+      browser()->profile(), std::move(delegate), web_contents);
   ASSERT_TRUE(dialog_delegate);
   WebContents* dialog_contents = dialog_delegate->GetWebContents();
   ASSERT_TRUE(dialog_contents);
@@ -172,8 +171,16 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, ReleaseWebContents) {
 
 // Tests that dialog autoresizes based on web contents when autoresizing
 // is enabled.
+// Flaky on CrOS: http://crbug.com/928924
+#if defined(OS_CHROMEOS)
+#define MAYBE_ContentResizeInAutoResizingDialog \
+  DISABLED_ContentResizeInAutoResizingDialog
+#else
+#define MAYBE_ContentResizeInAutoResizingDialog \
+  ContentResizeInAutoResizingDialog
+#endif
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
-                       ContentResizeInAutoResizingDialog) {
+                       MAYBE_ContentResizeInAutoResizingDialog) {
   // During auto-resizing, dialogs size to (WebContents size) + 16.
   const int dialog_border_space = 16;
 
@@ -181,9 +188,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   const int initial_size = 150 + dialog_border_space;
   const int new_size = 175 + dialog_border_space;
 
-  // The delegate deletes itself.
-  WebDialogDelegate* delegate =
-      new AutoResizingTestWebDialogDelegate(GURL(kTestDataURL));
+  auto delegate =
+      std::make_unique<AutoResizingTestWebDialogDelegate>(GURL(kTestDataURL));
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
@@ -199,9 +205,9 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   delegate->GetDialogSize(&initial_dialog_size);
 
   ConstrainedWebDialogDelegate* dialog_delegate =
-      ShowConstrainedWebDialogWithAutoResize(browser()->profile(), delegate,
-                                               web_contents, min_size,
-                                               max_size);
+      ShowConstrainedWebDialogWithAutoResize(browser()->profile(),
+                                             std::move(delegate), web_contents,
+                                             min_size, max_size);
   ASSERT_TRUE(dialog_delegate);
   EXPECT_TRUE(dialog_delegate->GetNativeDialog());
   ASSERT_FALSE(IsShowingWebContentsModalDialog(web_contents));
@@ -254,10 +260,18 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
 // ConstrainedWebDialogBrowserTest.ContentResizeInAutoResizingDialog but
 // has the surface synchronization flag turned on. Once surface synchronization
 // is on by default, this test can be deleted.
-// TODO(fsamuel): Fix tis for Mac too.
+// TODO(fsamuel): Fix this for Mac too.
 #if defined(USE_AURA)
+// Flaky on CrOS: http://crbug.com/928924
+#if defined(OS_CHROMEOS)
+#define MAYBE_ContentResizeInAutoResizingDialog \
+  DISABLED_ContentResizeInAutoResizingDialog
+#else
+#define MAYBE_ContentResizeInAutoResizingDialog \
+  ContentResizeInAutoResizingDialog
+#endif
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogSurfaceSynchronizationBrowserTest,
-                       ContentResizeInAutoResizingDialog) {
+                       MAYBE_ContentResizeInAutoResizingDialog) {
   // During auto-resizing, dialogs size to (WebContents size) + 16.
   const int dialog_border_space = 16;
 
@@ -265,9 +279,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogSurfaceSynchronizationBrowserTest,
   const int initial_size = 150 + dialog_border_space;
   const int new_size = 175 + dialog_border_space;
 
-  // The delegate deletes itself.
-  WebDialogDelegate* delegate =
-      new AutoResizingTestWebDialogDelegate(GURL(kTestDataURL));
+  auto delegate =
+      std::make_unique<AutoResizingTestWebDialogDelegate>(GURL(kTestDataURL));
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
@@ -283,8 +296,9 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogSurfaceSynchronizationBrowserTest,
   delegate->GetDialogSize(&initial_dialog_size);
 
   ConstrainedWebDialogDelegate* dialog_delegate =
-      ShowConstrainedWebDialogWithAutoResize(browser()->profile(), delegate,
-                                             web_contents, min_size, max_size);
+      ShowConstrainedWebDialogWithAutoResize(browser()->profile(),
+                                             std::move(delegate), web_contents,
+                                             min_size, max_size);
   ASSERT_TRUE(dialog_delegate);
   EXPECT_TRUE(dialog_delegate->GetNativeDialog());
   ASSERT_FALSE(IsShowingWebContentsModalDialog(web_contents));
@@ -329,15 +343,15 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogSurfaceSynchronizationBrowserTest,
 // Tests that dialog does not autoresize when autoresizing is not enabled.
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
                        ContentResizeInNonAutoResizingDialog) {
-  // The delegate deletes itself.
-  WebDialogDelegate* delegate =
-      new ui::test::TestWebDialogDelegate(GURL(kTestDataURL));
+  auto delegate =
+      std::make_unique<ui::test::TestWebDialogDelegate>(GURL(kTestDataURL));
+  auto* delegate_ptr = delegate.get();
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
 
-  ConstrainedWebDialogDelegate* dialog_delegate =
-      ShowConstrainedWebDialog(browser()->profile(), delegate, web_contents);
+  ConstrainedWebDialogDelegate* dialog_delegate = ShowConstrainedWebDialog(
+      browser()->profile(), std::move(delegate), web_contents);
   ASSERT_TRUE(dialog_delegate);
   EXPECT_TRUE(dialog_delegate->GetNativeDialog());
   EXPECT_TRUE(IsShowingWebContentsModalDialog(web_contents));
@@ -346,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   WaitForLoadStop(dialog_delegate->GetWebContents());
 
   gfx::Size initial_dialog_size;
-  delegate->GetDialogSize(&initial_dialog_size);
+  delegate_ptr->GetDialogSize(&initial_dialog_size);
 
   // Check for initial sizing. Dialog was created as a 400x400 dialog.
   ASSERT_EQ(initial_dialog_size,

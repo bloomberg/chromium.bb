@@ -272,8 +272,8 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
   std::vector<std::string> adj_oom_score_cmdline;
   adj_oom_score_cmdline.push_back(sandbox_binary_);
   adj_oom_score_cmdline.push_back(sandbox::kAdjustOOMScoreSwitch);
-  adj_oom_score_cmdline.push_back(base::Int64ToString(pid));
-  adj_oom_score_cmdline.push_back(base::IntToString(score));
+  adj_oom_score_cmdline.push_back(base::NumberToString(pid));
+  adj_oom_score_cmdline.push_back(base::NumberToString(score));
 
   // sandbox_helper_process is a setuid binary.
   base::LaunchOptions options;

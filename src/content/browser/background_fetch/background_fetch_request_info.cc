@@ -10,19 +10,24 @@
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/download/public/common/download_item.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_response_headers.h"
+#include "storage/browser/blob/blob_data_builder.h"
+#include "storage/browser/blob/blob_storage_context.h"
 
 namespace content {
 
 BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
     int request_index,
-    blink::mojom::FetchAPIRequestPtr fetch_request)
+    blink::mojom::FetchAPIRequestPtr fetch_request,
+    uint64_t request_body_size)
     : RefCountedDeleteOnSequence<BackgroundFetchRequestInfo>(
           base::SequencedTaskRunnerHandle::Get()),
       request_index_(request_index),
-      fetch_request_(std::move(fetch_request)) {}
+      fetch_request_(std::move(fetch_request)),
+      request_body_size_(request_body_size) {}
 
 BackgroundFetchRequestInfo::~BackgroundFetchRequestInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -48,7 +53,19 @@ void BackgroundFetchRequestInfo::SetResult(
   DCHECK(result);
 
   result_ = std::move(result);
-  PopulateWithResponse(std::move(result_->response));
+  // The BackgroundFetchResponse was extracted when the download started.
+  // This is sent over again when the download was complete in case the
+  // browser was restarted.
+  if (response_headers_.empty())
+    PopulateWithResponse(std::move(result_->response));
+  else
+    result_->response.reset();
+
+  // Get the response size.
+  if (result_->blob_handle)
+    response_size_ = result_->blob_handle->size();
+  else
+    response_size_ = result_->file_size;
 }
 
 void BackgroundFetchRequestInfo::SetEmptyResultWithFailureReason(
@@ -56,7 +73,7 @@ void BackgroundFetchRequestInfo::SetEmptyResultWithFailureReason(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   result_ = std::make_unique<BackgroundFetchResult>(
-      nullptr /* response */, base::Time::Now(), failure_reason);
+      /* response= */ nullptr, base::Time::Now(), failure_reason);
 }
 
 void BackgroundFetchRequestInfo::PopulateWithResponse(
@@ -102,23 +119,54 @@ const std::vector<GURL>& BackgroundFetchRequestInfo::GetURLChain() const {
   return url_chain_;
 }
 
-const base::Optional<storage::BlobDataHandle>&
-BackgroundFetchRequestInfo::GetBlobDataHandle() const {
+void BackgroundFetchRequestInfo::CreateResponseBlobDataHandle(
+    ChromeBlobStorageContext* blob_storage_context) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(result_);
-  return result_->blob_handle;
+  DCHECK(!blob_data_handle_);
+
+  if (!result_->blob_handle && result_->file_path.empty())
+    return;
+
+  // In Incognito mode the |result_->blob_handle| will be populated.
+  if (result_->blob_handle) {
+    blob_data_handle_ =
+        std::make_unique<storage::BlobDataHandle>(*result_->blob_handle);
+    result_->blob_handle.reset();
+    return;
+  }
+
+  // In a normal profile, |result_->file_path| and |result_->file_size| will be
+  // populated.
+  auto blob_builder =
+      std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
+  blob_builder->AppendFile(result_->file_path, /* offset= */ 0,
+                           result_->file_size,
+                           /* expected_modification_time= */ base::Time());
+
+  blob_data_handle_ = GetBlobStorageContext(blob_storage_context)
+                          ->AddFinishedBlob(std::move(blob_builder));
+  DCHECK_EQ(response_size_, blob_data_handle_ ? blob_data_handle_->size() : 0);
 }
 
-const base::FilePath& BackgroundFetchRequestInfo::GetFilePath() const {
+storage::BlobDataHandle*
+BackgroundFetchRequestInfo::GetResponseBlobDataHandle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(result_);
-  return result_->file_path;
+
+  return blob_data_handle_.get();
 }
 
-int64_t BackgroundFetchRequestInfo::GetFileSize() const {
+std::unique_ptr<storage::BlobDataHandle>
+BackgroundFetchRequestInfo::TakeResponseBlobDataHandle() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return std::move(blob_data_handle_);
+}
+
+uint64_t BackgroundFetchRequestInfo::GetResponseSize() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(result_);
-  return result_->file_size;
+  return response_size_;
 }
 
 const base::Time& BackgroundFetchRequestInfo::GetResponseTime() const {

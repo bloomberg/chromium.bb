@@ -39,7 +39,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,12 +96,6 @@ public class HttpNegotiateAuthenticatorTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        ApplicationStatus.initialize(RuntimeEnvironment.application);
-    }
-
-    @After
-    public void tearDown() {
-        ApplicationStatus.destroyForJUnitTests();
     }
 
     /**
@@ -234,7 +227,7 @@ public class HttpNegotiateAuthenticatorTest {
 
         // Send the intent to the receiver.
         BroadcastReceiver receiver = receivers.get(0);
-        receiver.onReceive(ShadowApplication.getInstance().getApplicationContext(), intent);
+        receiver.onReceive(RuntimeEnvironment.application.getApplicationContext(), intent);
 
         // Verify that the auth token is properly requested from the account manager.
         verify(sMockAccountManager)

@@ -19,16 +19,16 @@ namespace certificate_transparency {
 
 struct CTLogInfo {
   // The DER-encoded SubjectPublicKeyInfo for the log.
-  const char* log_key;
+  const char* const log_key;
   // The length, in bytes, of |log_key|.
-  size_t log_key_length;
+  const size_t log_key_length;
   // The user-friendly log name.
   // Note: This will not be translated.
-  const char* log_name;
+  const char* const log_name;
   // The DNS API endpoint for the log.
   // This is used as the parent domain for all queries about the log.
   // https://github.com/google/certificate-transparency-rfcs/blob/master/dns/draft-ct-over-dns.md.
-  const char* log_dns_domain;
+  const char* const log_dns_domain;
 };
 
 // Returns information about all known logs, which includes those that are

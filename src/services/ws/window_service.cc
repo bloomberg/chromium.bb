@@ -14,13 +14,13 @@
 #include "services/ws/embedding.h"
 #include "services/ws/event_injector.h"
 #include "services/ws/event_queue.h"
-#include "services/ws/host_event_queue.h"
+#include "services/ws/proxy_window.h"
 #include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/remoting_event_injector.h"
 #include "services/ws/screen_provider.h"
-#include "services/ws/server_window.h"
 #include "services/ws/user_activity_monitor.h"
+#include "services/ws/window_occlusion_change_builder.h"
 #include "services/ws/window_server_test_impl.h"
 #include "services/ws/window_service_delegate.h"
 #include "services/ws/window_service_observer.h"
@@ -36,10 +36,17 @@ namespace ws {
 
 namespace {
 
-// Returns true if |window| has remote client and marked as has-content.
-bool IsRemoteOpaqueWindow(const aura::Window* window) {
-  return WindowService::HasRemoteClient(window) &&
-         window->GetProperty(aura::client::kClientWindowHasContent);
+// Returns true if |window| is a proxy window and marked as has-content.
+bool IsOpaqueProxyWindow(const aura::Window* window) {
+  return WindowService::IsProxyWindow(window) &&
+         window->GetProperty(aura::client::kWindowLayerDrawn);
+}
+
+// Factory to create ws::WindowOcclusionChangeBuilder that dispatches occlusion
+// change per WindowTree in a single mojo call.
+std::unique_ptr<aura::WindowOcclusionChangeBuilder>
+CreateOcclusionChangeBuilder() {
+  return std::make_unique<ws::WindowOcclusionChangeBuilder>();
 }
 
 }  // namespace
@@ -76,8 +83,14 @@ WindowService::WindowService(
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
 
   // Extends WindowOcclusionTracker to check whether remote window has content.
-  env_->GetWindowOcclusionTracker()->set_window_has_content_callback(
-      base::BindRepeating(&IsRemoteOpaqueWindow));
+  auto* occlusion_tracker = env_->GetWindowOcclusionTracker();
+  DCHECK(occlusion_tracker);
+  occlusion_tracker->set_window_has_content_callback(
+      base::BindRepeating(&IsOpaqueProxyWindow));
+
+  // Makes WindowOcclusionTracker to use ws::WindowOcclusionChangeBuilder.
+  occlusion_tracker->set_occlusion_change_builder_factory(
+      base::BindRepeating(&CreateOcclusionChangeBuilder));
 }
 
 WindowService::~WindowService() {
@@ -89,17 +102,23 @@ WindowService::~WindowService() {
   DCHECK(window_trees_.empty());
 }
 
-ServerWindow* WindowService::GetServerWindowForWindowCreateIfNecessary(
+void WindowService::BindServiceRequest(
+    service_manager::mojom::ServiceRequest request) {
+  DCHECK(!service_binding_.is_bound());
+  service_binding_.Bind(std::move(request));
+}
+
+ProxyWindow* WindowService::GetProxyWindowForWindowCreateIfNecessary(
     aura::Window* window) {
-  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  if (server_window)
-    return server_window;
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window);
+  if (proxy_window)
+    return proxy_window;
 
   const viz::FrameSinkId frame_sink_id =
       ClientWindowId(kWindowServerClientId, next_window_id_++);
   CHECK_NE(0u, next_window_id_);
   const bool is_top_level = false;
-  return ServerWindow::Create(window, nullptr, frame_sink_id, is_top_level);
+  return ProxyWindow::Create(window, nullptr, frame_sink_id, is_top_level);
 }
 
 std::unique_ptr<WindowTree> WindowService::CreateWindowTree(
@@ -127,14 +146,14 @@ void WindowService::SetDisplayForNewWindows(int64_t display_id) {
 }
 
 // static
-bool WindowService::HasRemoteClient(const aura::Window* window) {
-  return ServerWindow::GetMayBeNull(window);
+bool WindowService::IsProxyWindow(const aura::Window* window) {
+  return ProxyWindow::GetMayBeNull(window);
 }
 
 // static
 bool WindowService::IsTopLevelWindow(const aura::Window* window) {
-  const ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  return server_window && server_window->IsTopLevel();
+  const ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window);
+  return proxy_window && proxy_window->IsTopLevel();
 }
 
 aura::Window* WindowService::GetWindowByClientId(Id transport_id) {
@@ -142,6 +161,23 @@ aura::Window* WindowService::GetWindowByClientId(Id transport_id) {
   WindowTree* window_tree = GetTreeById(client_id);
   return window_tree ? window_tree->GetWindowByTransportId(transport_id)
                      : nullptr;
+}
+
+Id WindowService::GetCompleteTransportIdForWindow(aura::Window* window) {
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window);
+  if (!proxy_window)
+    return kInvalidTransportId;
+  WindowTree* tree = proxy_window->owning_window_tree()
+                         ? proxy_window->owning_window_tree()
+                         : proxy_window->embedded_window_tree();
+  if (!tree)
+    return kInvalidTransportId;
+  // NOTE: WindowTree::TransportIdForWindow() is the id sent to the client,
+  // which has the client_id portion set to 0. This function wants to see the
+  // real client_id, so it has to build it.
+  return BuildTransportId(
+      tree->client_id(),
+      ClientWindowIdFromTransportId(tree->TransportIdForWindow(window)));
 }
 
 WindowService::TreeAndWindowId
@@ -164,11 +200,7 @@ bool WindowService::CompleteScheduleEmbedForExistingClient(
     aura::Window* window,
     const base::UnguessableToken& embed_token,
     int embed_flags) {
-  // Caller must supply a window, and further the window should not be exposed
-  // to a remote client yet.
   DCHECK(window);
-  DCHECK(!HasRemoteClient(window));
-
   const TreeAndWindowId tree_and_id =
       FindTreeWithScheduleEmbedForExistingClient(embed_token);
   if (!tree_and_id.tree)
@@ -178,14 +210,15 @@ bool WindowService::CompleteScheduleEmbedForExistingClient(
   DCHECK(!(embed_flags & mojom::kEmbedFlagEmbedderInterceptsEvents));
   const bool owner_intercept_events = false;
 
-  ServerWindow* server_window =
-      GetServerWindowForWindowCreateIfNecessary(window);
+  ProxyWindow* proxy_window = GetProxyWindowForWindowCreateIfNecessary(window);
+  // Allow |window| to replace an existing embed by destroying the old one now.
+  proxy_window->SetEmbedding(nullptr);
   tree_and_id.tree->CompleteScheduleEmbedForExistingClient(
       window, tree_and_id.id, embed_token);
   std::unique_ptr<Embedding> embedding =
       std::make_unique<Embedding>(nullptr, window, owner_intercept_events);
   embedding->InitForEmbedInExistingTree(tree_and_id.tree);
-  server_window->SetEmbedding(std::move(embedding));
+  proxy_window->SetEmbedding(std::move(embedding));
   return true;
 }
 
@@ -210,11 +243,11 @@ void WindowService::OnWillDestroyWindowTree(WindowTree* tree) {
 }
 
 bool WindowService::RequestClose(aura::Window* window) {
-  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  if (!server_window || !server_window->IsTopLevel())
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window);
+  if (!proxy_window || !proxy_window->IsTopLevel())
     return false;
 
-  server_window->owning_window_tree()->RequestClose(server_window);
+  proxy_window->owning_window_tree()->RequestClose(proxy_window);
   return true;
 }
 
@@ -223,18 +256,17 @@ void WindowService::OnDisplayMetricsChanged(const display::Display& display,
   screen_provider_->DisplayMetricsChanged(display, changed_metrics);
 }
 
-std::string WindowService::GetIdForDebugging(aura::Window* window) {
-  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  if (!server_window)
-    return std::string();
-  return server_window->GetIdForDebugging();
+void WindowService::OnWindowTreeHostsDisplayIdChanged(
+    const std::set<aura::Window*>& root_windows) {
+  for (WindowTree* tree : window_trees_)
+    tree->OnWindowTreeHostsDisplayIdChanged(root_windows);
 }
 
-std::unique_ptr<HostEventQueue> WindowService::RegisterHostEventDispatcher(
-    aura::WindowTreeHost* window_tree_host,
-    HostEventDispatcher* dispatcher) {
-  return event_queue_->RegisterHostEventDispatcher(window_tree_host,
-                                                   dispatcher);
+std::string WindowService::GetIdForDebugging(aura::Window* window) {
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window);
+  if (!proxy_window)
+    return std::string();
+  return proxy_window->GetIdForDebugging();
 }
 
 void WindowService::OnStart() {
@@ -268,10 +300,6 @@ void WindowService::OnStart() {
   // |gpu_interface_provider_| may be null in tests.
   if (gpu_interface_provider_) {
     gpu_interface_provider_->RegisterGpuInterfaces(&registry_);
-
-#if defined(USE_OZONE)
-    gpu_interface_provider_->RegisterOzoneGpuInterfaces(&registry_);
-#endif
   }
 
   if (test_config_) {
@@ -284,10 +312,18 @@ void WindowService::OnBindInterface(
     const service_manager::BindSourceInfo& remote_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle handle) {
-  if (!registry_with_source_info_.TryBindInterface(interface_name, &handle,
-                                                   remote_info)) {
-    registry_.BindInterface(interface_name, std::move(handle));
+  if (registry_with_source_info_.TryBindInterface(interface_name, &handle,
+                                                  remote_info) ||
+      registry_.TryBindInterface(interface_name, &handle)) {
+    return;
   }
+
+#if defined(USE_OZONE)
+  gpu_interface_provider_->BindOzoneGpuInterface(interface_name,
+                                                 std::move(handle));
+#else
+  NOTREACHED();
+#endif
 }
 
 WindowTree* WindowService::GetTreeById(ClientSpecificId id) {

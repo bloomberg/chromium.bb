@@ -12,8 +12,12 @@
 namespace blink {
 
 enum class MediaConfigurationType {
+  // for decodingInfo
   kFile,
   kMediaSource,
+  // for encodingInfo
+  kRecord,
+  kTransmission,
 };
 
 // Represents a MediaConfiguration dictionary to be used outside of Blink. At

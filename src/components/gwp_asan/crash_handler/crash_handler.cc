@@ -5,6 +5,8 @@
 #include "components/gwp_asan/crash_handler/crash_handler.h"
 
 #include <stddef.h>
+#include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -25,7 +27,7 @@ using GwpAsanCrashAnalysisResult = CrashAnalyzer::GwpAsanCrashAnalysisResult;
 class BufferExtensionStreamDataSource final
     : public crashpad::MinidumpUserExtensionStreamDataSource {
  public:
-  BufferExtensionStreamDataSource(uint32_t stream_type, Crash& crash);
+  BufferExtensionStreamDataSource(uint32_t stream_type, const Crash& crash);
 
   size_t StreamDataSize() override;
   bool ReadStreamData(Delegate* delegate) override;
@@ -38,7 +40,7 @@ class BufferExtensionStreamDataSource final
 
 BufferExtensionStreamDataSource::BufferExtensionStreamDataSource(
     uint32_t stream_type,
-    Crash& crash)
+    const Crash& crash)
     : crashpad::MinidumpUserExtensionStreamDataSource(stream_type) {
   bool result = crash.SerializeToString(&data_);
   DCHECK(result);
@@ -67,6 +69,8 @@ const char* ErrorToString(Crash_ErrorType type) {
       return "double-free";
     case Crash::UNKNOWN:
       return "unknown";
+    case Crash::FREE_INVALID_ADDRESS:
+      return "free-invalid-address";
     default:
       return "unexpected error type";
   }
@@ -76,14 +80,23 @@ std::unique_ptr<crashpad::MinidumpUserExtensionStreamDataSource>
 HandleException(const crashpad::ProcessSnapshot& snapshot) {
   gwp_asan::Crash proto;
   auto result = CrashAnalyzer::GetExceptionInfo(snapshot, &proto);
-  UMA_HISTOGRAM_ENUMERATION("GwpAsan.CrashAnalysisResult", result);
-
+  if (result != GwpAsanCrashAnalysisResult::kUnrelatedCrash)
+    UMA_HISTOGRAM_ENUMERATION("GwpAsan.CrashAnalysisResult", result);
   if (result != GwpAsanCrashAnalysisResult::kGwpAsanCrash)
     return nullptr;
 
-  LOG(ERROR) << "Detected GWP-ASan crash for allocation at 0x" << std::hex
-             << proto.allocation_address() << std::dec << " of type "
-             << ErrorToString(proto.error_type());
+  if (proto.missing_metadata()) {
+    LOG(ERROR) << "Detected GWP-ASan crash with missing metadata.";
+  } else {
+    LOG(ERROR) << "Detected GWP-ASan crash for allocation at 0x" << std::hex
+               << proto.allocation_address() << std::dec << " of type "
+               << ErrorToString(proto.error_type());
+  }
+
+  if (proto.has_free_invalid_address()) {
+    LOG(ERROR) << "Invalid address passed to free() is " << std::hex
+               << proto.free_invalid_address() << std::dec;
+  }
 
   return std::make_unique<BufferExtensionStreamDataSource>(
       kGwpAsanMinidumpStreamType, proto);

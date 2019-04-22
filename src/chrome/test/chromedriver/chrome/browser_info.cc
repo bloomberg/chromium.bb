@@ -34,7 +34,7 @@ BrowserInfo::BrowserInfo()
 BrowserInfo::~BrowserInfo() {}
 
 Status ParseBrowserInfo(const std::string& data, BrowserInfo* browser_info) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(data);
   if (!value.get())
     return Status(kUnknownError, "version info not in JSON");
 

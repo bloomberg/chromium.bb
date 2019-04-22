@@ -40,13 +40,13 @@ IDBKeyRange* IDBKeyRange::FromScriptValue(ExecutionContext* context,
   if (value.IsUndefined() || value.IsNull())
     return nullptr;
 
-  IDBKeyRange* const range =
-      ScriptValue::To<IDBKeyRange*>(ToIsolate(context), value, exception_state);
+  IDBKeyRange* const range = ScriptValue::To<IDBKeyRange*>(
+      context->GetIsolate(), value, exception_state);
   if (range)
     return range;
 
   std::unique_ptr<IDBKey> key = ScriptValue::To<std::unique_ptr<IDBKey>>(
-      ToIsolate(context), value, exception_state);
+      context->GetIsolate(), value, exception_state);
   if (exception_state.HadException())
     return nullptr;
   if (!key || !key->IsValid()) {
@@ -105,8 +105,7 @@ IDBKeyRange* IDBKeyRange::only(ScriptState* script_state,
                                const ScriptValue& key_value,
                                ExceptionState& exception_state) {
   std::unique_ptr<IDBKey> key = ScriptValue::To<std::unique_ptr<IDBKey>>(
-      ToIsolate(ExecutionContext::From(script_state)), key_value,
-      exception_state);
+      script_state->GetIsolate(), key_value, exception_state);
   if (exception_state.HadException())
     return nullptr;
   if (!key || !key->IsValid()) {
@@ -126,7 +125,7 @@ IDBKeyRange* IDBKeyRange::lowerBound(ScriptState* script_state,
                                      bool open,
                                      ExceptionState& exception_state) {
   std::unique_ptr<IDBKey> bound = ScriptValue::To<std::unique_ptr<IDBKey>>(
-      ToIsolate(ExecutionContext::From(script_state)), bound_value,
+      ExecutionContext::From(script_state)->GetIsolate(), bound_value,
       exception_state);
   if (exception_state.HadException())
     return nullptr;
@@ -146,7 +145,7 @@ IDBKeyRange* IDBKeyRange::upperBound(ScriptState* script_state,
                                      bool open,
                                      ExceptionState& exception_state) {
   std::unique_ptr<IDBKey> bound = ScriptValue::To<std::unique_ptr<IDBKey>>(
-      ToIsolate(ExecutionContext::From(script_state)), bound_value,
+      ExecutionContext::From(script_state)->GetIsolate(), bound_value,
       exception_state);
   if (exception_state.HadException())
     return nullptr;
@@ -167,7 +166,7 @@ IDBKeyRange* IDBKeyRange::bound(ScriptState* script_state,
                                 bool upper_open,
                                 ExceptionState& exception_state) {
   std::unique_ptr<IDBKey> lower = ScriptValue::To<std::unique_ptr<IDBKey>>(
-      ToIsolate(ExecutionContext::From(script_state)), lower_value,
+      ExecutionContext::From(script_state)->GetIsolate(), lower_value,
       exception_state);
   if (exception_state.HadException())
     return nullptr;
@@ -178,7 +177,7 @@ IDBKeyRange* IDBKeyRange::bound(ScriptState* script_state,
   }
 
   std::unique_ptr<IDBKey> upper = ScriptValue::To<std::unique_ptr<IDBKey>>(
-      ToIsolate(ExecutionContext::From(script_state)), upper_value,
+      ExecutionContext::From(script_state)->GetIsolate(), upper_value,
       exception_state);
 
   if (exception_state.HadException())
@@ -214,7 +213,7 @@ bool IDBKeyRange::includes(ScriptState* script_state,
                            const ScriptValue& key_value,
                            ExceptionState& exception_state) {
   std::unique_ptr<IDBKey> key = ScriptValue::To<std::unique_ptr<IDBKey>>(
-      ToIsolate(ExecutionContext::From(script_state)), key_value,
+      ExecutionContext::From(script_state)->GetIsolate(), key_value,
       exception_state);
   if (exception_state.HadException())
     return false;

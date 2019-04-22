@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "chrome/browser/vr/gl_texture_location.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 
 namespace vr {
 
-class VR_EXPORT SchedulerUiInterface {
+class VR_BASE_EXPORT SchedulerUiInterface {
  public:
   virtual ~SchedulerUiInterface() {}
 

@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "components/previews/core/previews_experiments.h"
@@ -407,7 +409,11 @@ void GetPagesToServeURL(
       OfflinePageModel* offline_page_model =
           OfflinePageModelFactory::GetForBrowserContext(
               web_contents->GetBrowserContext());
-      DCHECK(offline_page_model);
+      if (!offline_page_model) {
+        FailedToFindOfflinePage(RequestResult::OFFLINE_PAGE_NOT_FOUND,
+                                network_state, job);
+        return;
+      }
       offline_page_model->GetPageByOfflineId(
           offline_id, base::Bind(&GetPageByOfflineIdDone, url, offline_header,
                                  network_state, web_contents_getter, job));
@@ -544,8 +550,8 @@ OfflinePageRequestHandler::GetNetworkState() const {
 
 void OfflinePageRequestHandler::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&OfflinePageRequestHandler::StartAsync,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&OfflinePageRequestHandler::StartAsync,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OfflinePageRequestHandler::StartAsync() {
@@ -612,7 +618,7 @@ void OfflinePageRequestHandler::OnTrustedOfflinePageFound() {
   // after intermediate redirects for authentication. Previously this case was
   // not handled and some pages might be saved with same URLs. Though we fixed
   // the problem, we still need to support those pages already saved with this
-  if (url_ == GetCurrentOfflinePage().original_url &&
+  if (url_ == GetCurrentOfflinePage().original_url_if_different &&
       url_ != GetCurrentOfflinePage().url) {
     ReportRequestResult(RequestResult::REDIRECTED, network_state_);
     Redirect(GetCurrentOfflinePage().url);
@@ -622,7 +628,7 @@ void OfflinePageRequestHandler::OnTrustedOfflinePageFound() {
   // If the page is being loaded on a slow network, only use the offline page
   // if it was created within the past day.
   if (network_state_ == NetworkState::PROHIBITIVELY_SLOW_NETWORK &&
-      base::Time::Now() - GetCurrentOfflinePage().creation_time >
+      OfflineTimeNow() - GetCurrentOfflinePage().creation_time >
           previews::params::OfflinePreviewFreshnessDuration()) {
     ReportRequestResult(RequestResult::PAGE_NOT_FRESH, network_state_);
     delegate_->FallbackToDefault();
@@ -795,7 +801,8 @@ void OfflinePageRequestHandler::UpdateDigestOnBackground(
 
 void OfflinePageRequestHandler::FinalizeDigestOnBackground(
     base::OnceCallback<void(const std::string&)> digest_finalized_callback) {
-  DCHECK(archive_validator_.get());
+  if (!archive_validator_)
+    archive_validator_ = new ThreadSafeArchiveValidator();
 
   // Delegate to background task runner to finalize the hash to get the digest
   // since it is time consuming. Once it is done, |digest_finalized_callback|
@@ -1036,9 +1043,9 @@ void OfflinePageRequestHandler::DidComputeActualDigestForServing(
     // be called before the response is being received. Furthermore, there is
     // no need to clear the offline bit since the error code should already
     // indicate that the offline page is not loaded.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::Bind(&ClearOfflinePageData, delegate_->GetWebContentsGetter()));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(&ClearOfflinePageData,
+                                            delegate_->GetWebContentsGetter()));
     result = net::ERR_FAILED;
   }
 

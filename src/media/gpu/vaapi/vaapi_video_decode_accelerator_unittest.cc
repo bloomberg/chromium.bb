@@ -32,12 +32,15 @@ ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-constexpr VideoCodecProfile kCodecProfiles[] = {H264PROFILE_MIN, VP8PROFILE_MIN,
-                                                VP9PROFILE_MIN};
+struct TestParams {
+  VideoCodecProfile video_codec;
+  bool decode_using_client_picture_buffers;
+};
+
 constexpr int32_t kBitstreamId = 123;
 constexpr size_t kInputSize = 256;
 
-constexpr size_t kNumPictures = 2;
+constexpr size_t kNumPictures = 4;
 const gfx::Size kPictureSize(64, 48);
 
 constexpr size_t kNewNumPictures = 3;
@@ -58,6 +61,7 @@ class MockAcceleratedVideoDecoder : public AcceleratedVideoDecoder {
   MOCK_METHOD0(Decode, DecodeResult());
   MOCK_CONST_METHOD0(GetPicSize, gfx::Size());
   MOCK_CONST_METHOD0(GetRequiredNumOfPictures, size_t());
+  MOCK_CONST_METHOD0(GetNumReferenceFrames, size_t());
 };
 
 class MockVaapiWrapper : public VaapiWrapper {
@@ -66,6 +70,7 @@ class MockVaapiWrapper : public VaapiWrapper {
   MOCK_METHOD4(
       CreateContextAndSurfaces,
       bool(unsigned int, const gfx::Size&, size_t, std::vector<VASurfaceID>*));
+  MOCK_METHOD2(CreateContext, bool(unsigned int, const gfx::Size&));
   MOCK_METHOD0(DestroyContextAndSurfaces, void());
 
  private:
@@ -96,7 +101,7 @@ class MockVaapiPicture : public VaapiPicture {
   bool Allocate(gfx::BufferFormat format) override { return true; }
   bool ImportGpuMemoryBufferHandle(
       gfx::BufferFormat format,
-      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) override {
+      gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) override {
     return true;
   }
   bool DownloadFromSurface(
@@ -104,6 +109,10 @@ class MockVaapiPicture : public VaapiPicture {
     return true;
   }
   bool AllowOverlay() const override { return false; }
+  VASurfaceID va_surface_id() const override {
+    // Return any number different from VA_INVALID_ID and VaapiPicture specific.
+    return static_cast<VASurfaceID>(texture_id_);
+  }
 };
 
 class MockVaapiPictureFactory : public VaapiPictureFactory {
@@ -127,7 +136,7 @@ class MockVaapiPictureFactory : public VaapiPictureFactory {
   }
 };
 
-class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
+class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
                                         public VideoDecodeAccelerator::Client {
  public:
   VaapiVideoDecodeAcceleratorTest()
@@ -140,18 +149,29 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
         mock_decoder_(new MockAcceleratedVideoDecoder),
         mock_vaapi_picture_factory_(new MockVaapiPictureFactory()),
         mock_vaapi_wrapper_(new MockVaapiWrapper()),
+        mock_vpp_vaapi_wrapper_(new MockVaapiWrapper()),
         weak_ptr_factory_(this) {
     decoder_thread_.Start();
 
     // Don't want to go through a vda_->Initialize() because it binds too many
-    // items of the environment. Instead, just start the decoder thread.
+    // items of the environment. Instead, do all the necessary steps here.
+
     vda_.decoder_thread_task_runner_ = decoder_thread_.task_runner();
 
     // Plug in all the mocks and ourselves as the |client_|.
     vda_.decoder_.reset(mock_decoder_);
     vda_.client_ = weak_ptr_factory_.GetWeakPtr();
     vda_.vaapi_wrapper_ = mock_vaapi_wrapper_;
+    vda_.vpp_vaapi_wrapper_ = mock_vpp_vaapi_wrapper_;
     vda_.vaapi_picture_factory_.reset(mock_vaapi_picture_factory_);
+
+    // TODO(crbug.com/917999): add IMPORT mode to test variations.
+    vda_.output_mode_ = VideoDecodeAccelerator::Config::OutputMode::ALLOCATE;
+
+    vda_.buffer_allocation_mode_ =
+        GetParam().decode_using_client_picture_buffers
+            ? VaapiVideoDecodeAccelerator::BufferAllocationMode::kNone
+            : VaapiVideoDecodeAccelerator::BufferAllocationMode::kSuperReduced;
 
     vda_.state_ = VaapiVideoDecodeAccelerator::kIdle;
   }
@@ -163,6 +183,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
   }
 
   void SetVdaStateToUnitialized() {
+    base::AutoLock auto_lock(vda_.lock_);
     vda_.state_ = VaapiVideoDecodeAccelerator::kUninitialized;
   }
 
@@ -205,6 +226,9 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
     EXPECT_CALL(*mock_decoder_, GetRequiredNumOfPictures())
         .WillOnce(Return(num_pictures));
     EXPECT_CALL(*mock_decoder_, GetPicSize()).WillOnce(Return(picture_size));
+    const size_t kNumReferenceFrames = num_pictures / 2;
+    EXPECT_CALL(*mock_decoder_, GetNumReferenceFrames())
+        .WillOnce(Return(kNumReferenceFrames));
     EXPECT_CALL(*mock_vaapi_wrapper_, DestroyContextAndSurfaces());
 
     if (expect_dismiss_picture_buffers) {
@@ -212,8 +236,15 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
           .Times(num_picture_buffers_to_dismiss);
     }
 
+    const size_t expected_num_picture_buffers_requested =
+        vda_.buffer_allocation_mode_ ==
+                VaapiVideoDecodeAccelerator::BufferAllocationMode::kSuperReduced
+            ? num_pictures - kNumReferenceFrames
+            : num_pictures;
+
     EXPECT_CALL(*this,
-                ProvidePictureBuffers(num_pictures, _, 1, picture_size, _))
+                ProvidePictureBuffers(expected_num_picture_buffers_requested, _,
+                                      1, picture_size, _))
         .WillOnce(RunClosure(quit_closure));
 
     base::SharedMemoryHandle handle;
@@ -237,17 +268,33 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
 
-    EXPECT_CALL(*mock_vaapi_wrapper_,
-                CreateContextAndSurfaces(_, picture_size, num_pictures, _))
-        .WillOnce(
-            DoAll(WithArg<3>(Invoke(
-                      [num_pictures](std::vector<VASurfaceID>* va_surface_ids) {
-                        va_surface_ids->resize(num_pictures);
-                      })),
-                  Return(true)));
-    EXPECT_CALL(*mock_vaapi_picture_factory_,
-                MockCreateVaapiPicture(mock_vaapi_wrapper_.get(), picture_size))
-        .Times(num_pictures);
+    // |decode_using_client_picture_buffers| determines the concrete method for
+    // creation of context, surfaces and VaapiPictures.
+    if (GetParam().decode_using_client_picture_buffers) {
+      EXPECT_CALL(*mock_vaapi_wrapper_, CreateContext(_, picture_size))
+          .WillOnce(Return(true));
+      EXPECT_CALL(
+          *mock_vaapi_picture_factory_,
+          MockCreateVaapiPicture(mock_vaapi_wrapper_.get(), picture_size))
+          .Times(num_pictures);
+    } else {
+      EXPECT_EQ(
+          vda_.buffer_allocation_mode_,
+          VaapiVideoDecodeAccelerator::BufferAllocationMode::kSuperReduced);
+      const size_t kNumReferenceFrames = 1 + num_pictures / 2;
+      EXPECT_CALL(
+          *mock_vaapi_wrapper_,
+          CreateContextAndSurfaces(_, picture_size, kNumReferenceFrames, _))
+          .WillOnce(DoAll(
+              WithArg<3>(Invoke([kNumReferenceFrames](
+                                    std::vector<VASurfaceID>* va_surface_ids) {
+                va_surface_ids->resize(kNumReferenceFrames);
+              })),
+              Return(true)));
+      EXPECT_CALL(*mock_vaapi_picture_factory_,
+                  MockCreateVaapiPicture(_, picture_size))
+          .Times(num_pictures);
+    }
 
     ::testing::InSequence s;
     EXPECT_CALL(*mock_decoder_, Decode())
@@ -314,6 +361,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
   MockVaapiPictureFactory* mock_vaapi_picture_factory_;
 
   scoped_refptr<MockVaapiWrapper> mock_vaapi_wrapper_;
+  scoped_refptr<MockVaapiWrapper> mock_vpp_vaapi_wrapper_;
 
   std::unique_ptr<base::SharedMemory> in_shm_;
 
@@ -412,8 +460,14 @@ TEST_P(VaapiVideoDecodeAcceleratorTest,
   ResetSequence();
 }
 
-INSTANTIATE_TEST_CASE_P(/* No prefix. */,
-                        VaapiVideoDecodeAcceleratorTest,
-                        ValuesIn(kCodecProfiles));
+constexpr TestParams kTestCases[] = {
+    {H264PROFILE_MIN, false /* decode_using_client_picture_buffers */},
+    {VP8PROFILE_MIN, false /* decode_using_client_picture_buffers */},
+    {VP9PROFILE_MIN, false /* decode_using_client_picture_buffers */},
+    {VP9PROFILE_MIN, true /* decode_using_client_picture_buffers */}};
+
+INSTANTIATE_TEST_SUITE_P(/* No prefix. */,
+                         VaapiVideoDecodeAcceleratorTest,
+                         ValuesIn(kTestCases));
 
 }  // namespace media

@@ -38,8 +38,9 @@ HidGnubbyDevice.NAMESPACE = 'hid';
 
 /** Destroys this low-level device instance. */
 HidGnubbyDevice.prototype.destroy = function() {
-  if (!this.dev)
-    return;  // Already dead.
+  if (!this.dev) {
+    return;
+  }  // Already dead.
 
   function closeLowLevelDevice(dev) {
     chrome.hid.disconnect(dev.connectionId, function() {
@@ -72,8 +73,9 @@ HidGnubbyDevice.prototype.destroy = function() {
   // Set all clients to closed status and remove them.
   while (this.clients.length != 0) {
     var client = this.clients.shift();
-    if (client)
+    if (client) {
       client.closed = true;
+    }
   }
 
   if (this.lockTID) {
@@ -128,8 +130,9 @@ HidGnubbyDevice.prototype.publishFrame_ = function(f) {
       console.log(UTIL_fmt('[' + Gnubby.hexCid(client.cid) + '] left?'));
     }
   }
-  if (changes)
+  if (changes) {
     this.clients = remaining;
+  }
 };
 
 /**
@@ -138,8 +141,9 @@ HidGnubbyDevice.prototype.publishFrame_ = function(f) {
  */
 HidGnubbyDevice.prototype.registerClient = function(who) {
   for (var i = 0; i < this.clients.length; ++i) {
-    if (this.clients[i] === who)
-      return;  // Already registered.
+    if (this.clients[i] === who) {
+      return;
+    }  // Already registered.
   }
   this.clients.push(who);
   if (this.clients.length == 1) {
@@ -157,13 +161,15 @@ HidGnubbyDevice.prototype.registerClient = function(who) {
  */
 HidGnubbyDevice.prototype.deregisterClient = function(who) {
   var current = this.clients;
-  if (current.length == 0)
+  if (current.length == 0) {
     return -1;
+  }
   this.clients = [];
   for (var i = 0; i < current.length; ++i) {
     var client = current[i];
-    if (client !== who)
+    if (client !== who) {
       this.clients.push(client);
+    }
   }
   return this.clients.length;
 };
@@ -173,11 +179,13 @@ HidGnubbyDevice.prototype.deregisterClient = function(who) {
  * @return {boolean} Whether this device has who as a client.
  */
 HidGnubbyDevice.prototype.hasClient = function(who) {
-  if (this.clients.length == 0)
+  if (this.clients.length == 0) {
     return false;
+  }
   for (var i = 0; i < this.clients.length; ++i) {
-    if (who === this.clients[i])
+    if (who === this.clients[i]) {
       return true;
+    }
   }
   return false;
 };
@@ -188,8 +196,9 @@ HidGnubbyDevice.prototype.hasClient = function(who) {
  */
 HidGnubbyDevice.prototype.readLoop_ = function() {
   // console.log(UTIL_fmt('entering readLoop'));
-  if (!this.dev)
+  if (!this.dev) {
     return;
+  }
 
   if (this.closing) {
     this.destroy();
@@ -321,10 +330,12 @@ HidGnubbyDevice.prototype.updateLock_ = function(cid, cmd, arg) {
  * @param {ArrayBuffer|Uint8Array} data Command arguments
  */
 HidGnubbyDevice.prototype.queueCommand = function(cid, cmd, data) {
-  if (!this.dev)
+  if (!this.dev) {
     return;
-  if (!this.checkLock_(cid, cmd))
+  }
+  if (!this.checkLock_(cid, cmd)) {
     return;
+  }
 
   var u8 = new Uint8Array(data);
   var f = new Uint8Array(64);
@@ -381,8 +392,9 @@ HidGnubbyDevice.prototype.queueFrame_ = function(frame, cid, cmd, arg) {
   this.updateLock_(cid, cmd, arg);
   var wasEmpty = (this.txqueue.length == 0);
   this.txqueue.push(frame);
-  if (wasEmpty)
+  if (wasEmpty) {
     this.writePump_();
+  }
 };
 
 /**
@@ -390,11 +402,13 @@ HidGnubbyDevice.prototype.queueFrame_ = function(frame, cid, cmd, arg) {
  * @private
  */
 HidGnubbyDevice.prototype.writePump_ = function() {
-  if (!this.dev)
-    return;  // Ignore.
+  if (!this.dev) {
+    return;
+  }  // Ignore.
 
-  if (this.txqueue.length == 0)
-    return;  // Done with current queue.
+  if (this.txqueue.length == 0) {
+    return;
+  }  // Done with current queue.
 
   var frame = this.txqueue[0];
 

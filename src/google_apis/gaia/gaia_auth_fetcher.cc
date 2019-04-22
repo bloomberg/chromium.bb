@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -48,7 +49,7 @@ const size_t kMaxMessageSize = 1024 * 1024;  // 1MB
 
 std::unique_ptr<const GaiaAuthConsumer::ClientOAuthResult>
 ExtractOAuth2TokenPairResponse(const std::string& data) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(data);
   if (!value.get() || value->type() != base::Value::Type::DICTIONARY)
     return nullptr;
 
@@ -78,16 +79,6 @@ ExtractOAuth2TokenPairResponse(const std::string& data) {
       service_flags.is_under_advanced_protection);
 }
 
-void GetCookiesFromResponse(
-    const network::HttpRawRequestResponseInfo::HeadersVector& headers,
-    net::ResponseCookies* cookies) {
-  for (const auto& header : headers) {
-    if (header.first == "Set-Cookie" && !header.second.empty()) {
-      cookies->push_back(header.second);
-    }
-  }
-}
-
 // Parses server responses for token revocation.
 GaiaAuthConsumer::TokenRevocationStatus
 GetTokenRevocationStatusFromResponseData(const std::string& data,
@@ -98,7 +89,7 @@ GetTokenRevocationStatusFromResponseData(const std::string& data,
   if (response_code == net::HTTP_INTERNAL_SERVER_ERROR)
     return GaiaAuthConsumer::TokenRevocationStatus::kServerError;
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(data);
   if (!value.get() || value->type() != base::Value::Type::DICTIONARY)
     return GaiaAuthConsumer::TokenRevocationStatus::kUnknownError;
 
@@ -1116,21 +1107,18 @@ void GaiaAuthFetcher::OnURLLoadCompleteInternal(
     const network::HttpRawRequestResponseInfo::HeadersVector& headers,
     std::string data) {
   fetch_pending_ = false;
-  net::ResponseCookies cookies;
-  GetCookiesFromResponse(headers, &cookies);
 
   // Some of the GAIA requests perform redirects, which results in the final URL
   // of the fetcher not being the original URL requested.  Therefore use the
   // original URL when determining which OnXXX function to call.
   GURL url = original_url_;
   original_url_ = GURL();
-  DispatchFetchedRequest(url, data, cookies, net_error, response_code);
+  DispatchFetchedRequest(url, data, net_error, response_code);
 }
 
 void GaiaAuthFetcher::DispatchFetchedRequest(
     const GURL& url,
     const std::string& data,
-    const net::ResponseCookies& cookies,
     net::Error net_error,
     int response_code) {
   if (url == oauth2_token_gurl_) {

@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div id="link1" class="container" tabIndex=0 role="link">
     <p>1</p>
     <table role="presentation">
@@ -94,9 +88,4 @@ test(function(t) {
     var axInput4 = accessibilityController.accessibleElementById("input4");
     assert_equals(axInput4.name, " 1 2 7 ");
 }, "Visibility: 'hidden' and display: 'none' inside aria-labelledby label subtree, where entire label subtree is display: 'none'");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

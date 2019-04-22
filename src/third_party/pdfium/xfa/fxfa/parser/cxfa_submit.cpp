@@ -6,27 +6,26 @@
 
 #include "xfa/fxfa/parser/cxfa_submit.h"
 
-#include "fxjs/xfa/cjx_submit.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
 
 const CXFA_Node::PropertyData kSubmitPropertyData[] = {
     {XFA_Element::Encrypt, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kSubmitAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Format, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Xdp},
+     (void*)XFA_AttributeValue::Xdp},
     {XFA_Attribute::EmbedPDF, XFA_AttributeType::Boolean, (void*)0},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Target, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::TextEncoding, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::XdpContent, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kSubmitName[] = L"submit";
+};
 
 }  // namespace
 
@@ -38,16 +37,15 @@ CXFA_Submit::CXFA_Submit(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Submit,
                 kSubmitPropertyData,
                 kSubmitAttributeData,
-                kSubmitName,
-                pdfium::MakeUnique<CJX_Submit>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Submit::~CXFA_Submit() {}
+CXFA_Submit::~CXFA_Submit() = default;
 
 bool CXFA_Submit::IsSubmitEmbedPDF() {
   return JSObject()->GetBoolean(XFA_Attribute::EmbedPDF);
 }
 
-XFA_AttributeEnum CXFA_Submit::GetSubmitFormat() {
+XFA_AttributeValue CXFA_Submit::GetSubmitFormat() {
   return JSObject()->GetEnum(XFA_Attribute::Format);
 }
 

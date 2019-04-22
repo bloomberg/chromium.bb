@@ -4,7 +4,10 @@
 
 #include "ui/compositor/test/test_utils.h"
 
+#include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -34,6 +37,15 @@ void CheckApproximatelyEqual(const gfx::Rect& lhs, const gfx::Rect& rhs) {
   EXPECT_FLOAT_EQ(lhs.y(), rhs.y());
   EXPECT_FLOAT_EQ(lhs.width(), rhs.width());
   EXPECT_FLOAT_EQ(lhs.height(), rhs.height());
+}
+
+void WaitForNextFrameToBePresented(ui::Compositor* compositor) {
+  base::RunLoop runloop;
+  compositor->RequestPresentationTimeForNextFrame(base::BindLambdaForTesting(
+      [&runloop](const gfx::PresentationFeedback& feedback) {
+        runloop.QuitClosure().Run();
+      }));
+  runloop.Run();
 }
 
 }  // namespace ui

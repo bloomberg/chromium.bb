@@ -6,18 +6,21 @@
 <head>
   <script>window.localNTPUnitTest = true;</script>
   <link rel="stylesheet" href="chrome-search://local-ntp/animations.css"></link>
+  <link rel="stylesheet" href="chrome-search://local-ntp/local-ntp-common.css"></link>
+  <link rel="stylesheet" href="chrome-search://local-ntp/custom-backgrounds.css"></link>
+  <link rel="stylesheet" href="chrome-search://local-ntp/doodles.css"></link>
   <link rel="stylesheet" href="chrome-search://local-ntp/local-ntp.css"></link>
   <link rel="stylesheet" href="chrome-search://local-ntp/voice.css"></link>
-  <link rel="stylesheet" href="chrome-search://local-ntp/custom-backgrounds.css"></link>
-  <script src="chrome-search://local-ntp/local-ntp.js" charset="utf-8"></script>
-  <script src="chrome-search://local-ntp/voice.js" charset="utf-8"></script>
-  <script src="chrome-search://local-ntp/config.js" charset="utf-8"></script>
-  <script src="chrome-search://local-ntp/utils.js" charset="utf-8"></script>
   <script src="chrome-search://local-ntp/animations.js" charset="utf-8"></script>
+  <script src="chrome-search://local-ntp/config.js" charset="utf-8"></script>
   <script src="chrome-search://local-ntp/custom-backgrounds.js" charset="utf-8"></script>
+  <script src="chrome-search://local-ntp/doodles.js" charset="utf-8"></script>
+  <script src="chrome-search://local-ntp/local-ntp.js" charset="utf-8"></script>
+  <script src="chrome-search://local-ntp/utils.js" charset="utf-8"></script>
+  <script src="chrome-search://local-ntp/voice.js" charset="utf-8"></script>
   <script src="test_utils.js" charset="utf-8"></script>
-  <script src="local_ntp_browsertest.js" charset="utf-8"></script>
   <script src="custom_backgrounds_browsertest.js" charset="utf-8"></script>
+  <script src="local_ntp_browsertest.js" charset="utf-8"></script>
   <template id="local-ntp-template">
     <div id="custom-bg"></div>
     <!-- Container for the OneGoogleBar HTML. -->
@@ -31,9 +34,11 @@
         <div id="logo-non-white" title="Google"></div>
         <!-- A doodle, if any: its link and image. -->
         <div id="logo-doodle">
-          <button id="logo-doodle-button">
-            <img id="logo-doodle-image" tabindex="-1"></img>
-          </button>
+          <div id="logo-doodle-container">
+            <button id="logo-doodle-button">
+              <img id="logo-doodle-image" tabindex="-1"></img>
+            </button>
+          </div>
           <iframe id="logo-doodle-iframe" scrolling="no"></iframe>
           <!-- A spinner, visible on dark-themed NTPs, prompting the doodle -->
           <button id="logo-doodle-notifier">
@@ -55,23 +60,26 @@
         </div>
       </div>
 
-      <div id="most-visited">
-        <!-- The container for the tiles. The MV iframe goes in here. -->
-        <div id="mv-tiles"></div>
-        <!-- Notification shown when a tile is blacklisted. -->
-        <div id="mv-notice-container">
-          <div id="mv-notice" class="notice-hide" role="alert">
-            <span id="mv-msg"></span>
-            <!-- Links in the notification. -->
-            <span id="mv-notice-links">
-              <span id="mv-undo" class="ripple" tabindex="0" role="button"></span>
-              <span id="mv-restore" class="ripple" tabindex="0" role="button">
-              </span>
-              <div id="mv-notice-x" tabindex="0" role="button"></div>
-            </span>
-          </div>
+      <div id="user-content">
+        <!-- Search suggestions will be inserted here. -->
+        <div id="most-visited">
+          <!-- The container for the tiles. The MV iframe goes in here. -->
+          <div id="mv-tiles"></div>
         </div>
       </div>
+
+      <!-- Notification shown when a tile is blacklisted. -->
+      <div id="mv-notice-container">
+        <div id="mv-notice" class="notice-hide" role="alert">
+          <span id="mv-msg"></span>
+          <!-- Links in the notification. -->
+          <span id="mv-notice-links">
+            <span id="mv-undo" class="ripple" tabindex="0" role="button"></span>
+            <span id="mv-restore" class="ripple" tabindex="0" role="button"></span>
+          </span>
+        </div>
+      </div>
+
       <div id="attribution"><div id="attribution-text"></div></div>
 
       <div id="error-notice-container">
@@ -82,14 +90,15 @@
         </div>
       </div>
 
-      <div id="edit-bg" tabindex="0" hidden>
-        <div id="edit-bg-gear" tabindex="-1" role="button"></div>
+      <div id="edit-bg" tabindex="0" role="button" hidden>
+        <div id="edit-bg-icon"></div>
+        <span id="edit-bg-text"></span>
       </div>
 
       <div id="custom-bg-attr"></div>
     </div>
 
-    <dialog div id="edit-bg-dialog">
+    <dialog div id="edit-bg-dialog" class="customize-dialog">
       <div id="edit-bg-menu">
         <div id="edit-bg-title"></div>
         <div id="edit-bg-default-wallpapers" class="bg-option" tabindex="0">
@@ -113,6 +122,23 @@
       </div>
     </dialog>
 
+    <dialog id="ddlsd">
+      <div id="ddlsd-title"></div>
+      <button id="ddlsd-close"></button>
+      <div id="ddlsd-content">
+        <button id="ddlsd-fbb" class="ddlsd-sbtn"></button>
+        <button id="ddlsd-twb" class="ddlsd-sbtn"></button>
+        <button id="ddlsd-emb" class="ddlsd-sbtn"></button>
+        <hr id="ddlsd-hr">
+        <div id="ddlsd-link">
+          <button id="ddlsd-copy"></button>
+          <span id="ddlsd-text-ctr">
+            <input type="text" id="ddlsd-text" dir="ltr">
+          </span>
+        </div>
+      </div>
+    </dialog>
+
     <dialog id="bg-sel-menu">
       <div id="bg-sel-title-bar">
       <div id="bg-sel-back-circle" tabindex="0" role="button">
@@ -127,8 +153,10 @@
           <span class="toggle"></span>
         </label>
         <div id="bg-sel-refresh-text"></div>
-        <button id="bg-sel-footer-cancel" class="bg-sel-footer-button ripple" tabindex="0"></button>
-        <button id="bg-sel-footer-done" class="bg-sel-footer-button ripple" tabindex="-1"></button>
+        <button id="bg-sel-footer-cancel" class="bg-sel-footer-button paper secondary ripple"
+            tabindex="0"></button>
+        <button id="bg-sel-footer-done" class="bg-sel-footer-button paper primary ripple"
+            tabindex="-1"></button>
       </div>
     </dialog>
 
@@ -152,7 +180,7 @@
                 </div>
               </span>
             </div>
-            <div class="text-container">
+            <div id="text-container" aria-live="polite">
               <!-- Low confidence text underneath high confidence text. -->
               <span id="voice-text-i" class="voice-text"></span>
               <!-- High confidence text on top of low confidence text. -->

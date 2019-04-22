@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
@@ -106,7 +107,7 @@ PluginPrivateFileSystemBackend::PluginPrivateFileSystemBackend(
       special_storage_policy, base_path_, env_override,
       base::BindRepeating(&FileSystemIDToPluginMap::GetPluginIDForURL,
                           base::Owned(plugin_map_)),
-      std::set<std::string>(), nullptr));
+      std::set<std::string>(), nullptr, file_system_options.is_incognito()));
 }
 
 PluginPrivateFileSystemBackend::~PluginPrivateFileSystemBackend() {
@@ -230,6 +231,15 @@ PluginPrivateFileSystemBackend::DeleteOriginDataOnFileTaskRunner(
   if (result)
     return base::File::FILE_OK;
   return base::File::FILE_ERROR_FAILED;
+}
+
+void PluginPrivateFileSystemBackend::PerformStorageCleanupOnFileTaskRunner(
+    FileSystemContext* context,
+    storage::QuotaManagerProxy* proxy,
+    FileSystemType type) {
+  if (!CanHandleType(type))
+    return;
+  obfuscated_file_util()->RewriteDatabases();
 }
 
 void PluginPrivateFileSystemBackend::GetOriginsForTypeOnFileTaskRunner(

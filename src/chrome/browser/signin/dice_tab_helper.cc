@@ -101,3 +101,5 @@ bool DiceTabHelper::IsSigninPageNavigation(
          navigation_handle->GetURL().GetOrigin() ==
              GaiaUrls::GetInstance()->gaia_url();
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(DiceTabHelper)

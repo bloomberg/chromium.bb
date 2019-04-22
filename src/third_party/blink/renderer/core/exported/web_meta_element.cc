@@ -18,7 +18,7 @@ WebMetaElement::WebMetaElement(HTMLMetaElement* element)
     : WebElement(element) {}
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebMetaElement,
-                           IsHTMLMetaElement(ConstUnwrap<Node>()));
+                           IsHTMLMetaElement(ConstUnwrap<Node>()))
 
 WebMetaElement& WebMetaElement::operator=(HTMLMetaElement* element) {
   private_ = element;

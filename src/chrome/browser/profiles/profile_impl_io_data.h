@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_IMPL_IO_DATA_H_
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -18,8 +17,6 @@ class ReportingPermissionsChecker;
 
 namespace net {
 class CookieStore;
-struct ReportingPolicy;
-class ReportingService;
 class URLRequestContextBuilder;
 }  // namespace net
 
@@ -70,6 +67,9 @@ class ProfileImplIOData : public ProfileIOData {
         GetIsolatedMediaRequestContextGetter(
             const base::FilePath& partition_path,
             bool in_memory) const;
+
+    // Called to initialize Data Reduction Proxy.
+    void InitializeDataReductionProxy() const;
 
    private:
     typedef std::map<StoragePartitionDescriptor,
@@ -148,17 +148,6 @@ class ProfileImplIOData : public ProfileIOData {
       net::URLRequestContext* app_context,
       const StoragePartitionDescriptor& partition_descriptor) const override;
   net::CookieStore* GetExtensionsCookieStore() const override;
-
-  // Returns a net::ReportingService, if reporting should be enabled. Otherwise,
-  // returns nullptr.
-  // TODO(mmenke): Remove once URLRequestContextBuilders are always used to
-  // create URLRequestContexts.
-  std::unique_ptr<net::ReportingService> MaybeCreateReportingService(
-      net::URLRequestContext* url_request_context) const;
-
-  // Returns a net::ReportingPolicy, if reporting should be enabled. Otherwise,
-  // returns nullptr.
-  static std::unique_ptr<net::ReportingPolicy> MaybeCreateReportingPolicy();
 
   // Lazy initialization params.
   mutable std::unique_ptr<LazyParams> lazy_params_;

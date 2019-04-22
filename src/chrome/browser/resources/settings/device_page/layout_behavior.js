@@ -226,8 +226,9 @@ const LayoutBehavior = {
       // there may be duplicates so merge the lists.
       for (let ii = 0; ii < newOrphans.length; ++ii) {
         const o = newOrphans[ii];
-        if (!orphans.includes(o))
+        if (!orphans.includes(o)) {
           orphans.push(o);
+        }
       }
     }
 
@@ -374,30 +375,35 @@ const LayoutBehavior = {
     const keys = this.calculatedBoundsMap_.keys();
     for (let iter = keys.next(); !iter.done; iter = keys.next()) {
       const otherId = iter.value;
-      if (otherId == displayId)
+      if (otherId == displayId) {
         continue;
-      if (opt_ignoreIds && opt_ignoreIds.includes(otherId))
+      }
+      if (opt_ignoreIds && opt_ignoreIds.includes(otherId)) {
         continue;
+      }
       const otherBounds = this.getCalculatedDisplayBounds(otherId);
       const left = otherBounds.left;
       const top = otherBounds.top;
       const width = otherBounds.width;
       const height = otherBounds.height;
-      if (x >= left && x < left + width && y >= top && y < top + height)
-        return otherId;  // point is inside rect
+      if (x >= left && x < left + width && y >= top && y < top + height) {
+        return otherId;
+      }  // point is inside rect
       let dx, dy;
-      if (x < left)
+      if (x < left) {
         dx = left - x;
-      else if (x > left + width)
+      } else if (x > left + width) {
         dx = x - (left + width);
-      else
+      } else {
         dx = 0;
-      if (y < top)
+      }
+      if (y < top) {
         dy = top - y;
-      else if (y > top + height)
+      } else if (y > top + height) {
         dy = y - (top + height);
-      else
+      } else {
         dy = 0;
+      }
       const delta2 = dx * dx + dy * dy;
       if (closestId == '' || delta2 < closestDelta2) {
         closestId = otherId;
@@ -433,15 +439,17 @@ const LayoutBehavior = {
     const disty = Math.abs(dy) - height / 2;
 
     if (distx > disty) {
-      if (dx < 0)
+      if (dx < 0) {
         return chrome.system.display.LayoutPosition.LEFT;
-      else
+      } else {
         return chrome.system.display.LayoutPosition.RIGHT;
+      }
     } else {
-      if (dy < 0)
+      if (dy < 0) {
         return chrome.system.display.LayoutPosition.TOP;
-      else
+      } else {
         return chrome.system.display.LayoutPosition.BOTTOM;
+      }
     }
   },
 
@@ -528,10 +536,11 @@ const LayoutBehavior = {
     const startDiff = Math.abs(point - basePoint);
     const endDiff = Math.abs(point + width - (basePoint + baseWidth));
     // Prefer the closer one if both edges are close enough.
-    if ((!snapDist || startDiff < snapDist) && startDiff < endDiff)
+    if ((!snapDist || startDiff < snapDist) && startDiff < endDiff) {
       return basePoint;
-    else if (!snapDist || endDiff < snapDist)
+    } else if (!snapDist || endDiff < snapDist) {
       return basePoint + baseWidth - width;
+    }
 
     return point;
   },
@@ -561,8 +570,9 @@ const LayoutBehavior = {
         const otherBounds = this.getCalculatedDisplayBounds(otherId);
         if (this.collideWithBoundsAndModifyDelta_(
                 bounds, otherBounds, deltaPos)) {
-          if (deltaPos.x == 0 && deltaPos.y == 0)
+          if (deltaPos.x == 0 && deltaPos.y == 0) {
             return;
+          }
           others.delete(otherId);
           checkCollisions = true;
           break;
@@ -668,15 +678,17 @@ const LayoutBehavior = {
    */
   getCornerBounds_: function(bounds, parentBounds) {
     let x;
-    if (bounds.left > parentBounds.left + parentBounds.width / 2)
+    if (bounds.left > parentBounds.left + parentBounds.width / 2) {
       x = parentBounds.left + parentBounds.width;
-    else
+    } else {
       x = parentBounds.left - bounds.width;
+    }
     let y;
-    if (bounds.top > parentBounds.top + parentBounds.height / 2)
+    if (bounds.top > parentBounds.top + parentBounds.height / 2) {
       y = parentBounds.top + parentBounds.height;
-    else
+    } else {
       y = parentBounds.top - bounds.height;
+    }
     return {
       left: x,
       top: y,

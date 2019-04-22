@@ -82,7 +82,7 @@ def lint(host, options):
 def check_virtual_test_suites(host, options):
     port = host.port_factory.get(options=options)
     fs = host.filesystem
-    layout_tests_dir = port.layout_tests_dir()
+    web_tests_dir = port.web_tests_dir()
     virtual_suites = port.virtual_test_suites()
 
     failures = []
@@ -91,9 +91,9 @@ def check_virtual_test_suites(host, options):
         # - a top-level README.md (e.g. virtual/foo/README.md)
         # - a README.txt for each covered dir/file (e.g.
         #   virtual/foo/http/tests/README.txt, virtual/foo/fast/README.txt, ...)
-        comps = [layout_tests_dir] + suite.name.split('/') + ['README.txt']
+        comps = [web_tests_dir] + suite.name.split('/') + ['README.txt']
         path_to_readme_txt = fs.join(*comps)
-        comps = [layout_tests_dir] + suite.name.split('/')[:2] + ['README.md']
+        comps = [web_tests_dir] + suite.name.split('/')[:2] + ['README.md']
         path_to_readme_md = fs.join(*comps)
         if not fs.exists(path_to_readme_txt) and not fs.exists(path_to_readme_md):
             failure = '{} and {} are both missing (each virtual suite must have one).'.format(
@@ -107,7 +107,7 @@ def check_virtual_test_suites(host, options):
 
 def check_smoke_tests(host, options):
     port = host.port_factory.get(options=options)
-    smoke_tests_file = host.filesystem.join(port.layout_tests_dir(), 'SmokeTests')
+    smoke_tests_file = host.filesystem.join(port.web_tests_dir(), 'SmokeTests')
     failures = []
     if not host.filesystem.exists(smoke_tests_file):
         return failures

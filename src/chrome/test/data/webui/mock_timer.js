@@ -184,20 +184,23 @@ MockTimer.prototype = {
   fireElapsedCallbacks_: function() {
     while (this.schedule_.length > 0) {
       var when = this.schedule_[this.schedule_.length - 1].when;
-      if (when > this.until_)
+      if (when > this.until_) {
         break;
+      }
 
       var task = this.schedule_.pop();
       var details = this.timers_[task.key];
-      if (!details)
-        continue;  // Cancelled task.
+      if (!details) {
+        continue;
+      }  // Cancelled task.
 
       this.now_ = when;
       details.callback.apply(window);
-      if (details.repeats)
+      if (details.repeats) {
         this.scheduleTask_(details);
-      else
+      } else {
         this.clearTimeout_(details.key);
+      }
     }
     this.now_ = this.until_;
   },

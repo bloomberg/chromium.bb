@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -189,8 +189,6 @@ class LockScreenNoteTakingTest : public extensions::ExtensionBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, Launch) {
-  ASSERT_TRUE(lock_screen_apps::StateController::IsEnabled());
-
   std::string error_message;
   ASSERT_TRUE(RunTestAppInLockScreenContext("lock_screen_apps/app_launch",
                                             &error_message))
@@ -204,8 +202,6 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, Launch) {
 // lock screen context - the test app runs tests as a response to a launch event
 // in the user's profile (rather than the lock screen profile).
 IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, LaunchInNonLockScreenContext) {
-  ASSERT_TRUE(lock_screen_apps::StateController::IsEnabled());
-
   scoped_refptr<const extensions::Extension> app = LoadExtension(
       test_data_dir_.AppendASCII("lock_screen_apps/non_lock_screen_context"));
   ASSERT_TRUE(app);
@@ -237,8 +233,6 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, LaunchInNonLockScreenContext) {
 }
 
 IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, DataCreation) {
-  ASSERT_TRUE(lock_screen_apps::StateController::IsEnabled());
-
   std::string error_message;
   ASSERT_TRUE(RunTestAppInLockScreenContext("lock_screen_apps/data_provider",
                                             &error_message))
@@ -257,8 +251,6 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, DataCreation) {
 }
 
 IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, PRE_DataAvailableOnRestart) {
-  ASSERT_TRUE(lock_screen_apps::StateController::IsEnabled());
-
   std::string error_message;
   ASSERT_TRUE(RunTestAppInLockScreenContext("lock_screen_apps/data_provider",
                                             &error_message))
@@ -279,8 +271,6 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, DataAvailableOnRestart) {
 }
 
 IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, AppLaunchActionDataParams) {
-  ASSERT_TRUE(lock_screen_apps::StateController::IsEnabled());
-
   scoped_refptr<const extensions::Extension> app = LoadExtension(
       test_data_dir_.AppendASCII("lock_screen_apps/app_launch_action_data"));
   ASSERT_TRUE(app);

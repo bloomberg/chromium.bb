@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninActivity;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.signin.ChromeSigninController;
@@ -88,27 +88,29 @@ public class ContextualSuggestionsPreference
                 ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT);
         boolean isSignedIn = ChromeSigninController.get().isSignedIn();
         if (!isUnifiedConsentEnabled || !isSignedIn
-                || (!ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(false)
-                           && !ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(true))) {
-            final NoUnderlineClickableSpan span = new NoUnderlineClickableSpan((widget) -> {
-                if (isUnifiedConsentEnabled) {
-                    if (isSignedIn) {
-                        PreferencesLauncher.launchSettingsPage(
-                                context, SyncAndServicesPreferences.class);
-                    } else {
-                        startActivity(SigninActivity.createIntentForPromoChooseAccountFlow(
-                                context, SigninAccessPoint.SETTINGS, null));
-                    }
-                } else {
-                    if (isSignedIn) {
-                        PreferencesLauncher.launchSettingsPage(
-                                context, SyncCustomizationFragment.class);
-                    } else {
-                        startActivity(AccountSigninActivity.createIntentForDefaultSigninFlow(
-                                context, SigninAccessPoint.SETTINGS, false));
-                    }
-                }
-            });
+                || !UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled()) {
+            final NoUnderlineClickableSpan span =
+                    new NoUnderlineClickableSpan(context.getResources(), (widget) -> {
+                        if (isUnifiedConsentEnabled) {
+                            if (isSignedIn) {
+                                PreferencesLauncher.launchSettingsPage(context,
+                                        SyncAndServicesPreferences.class,
+                                        SyncAndServicesPreferences.createArguments(false));
+                            } else {
+                                startActivity(SigninActivity.createIntentForPromoChooseAccountFlow(
+                                        context, SigninAccessPoint.SETTINGS, null));
+                            }
+                        } else {
+                            if (isSignedIn) {
+                                PreferencesLauncher.launchSettingsPage(
+                                        context, SyncCustomizationFragment.class);
+                            } else {
+                                startActivity(
+                                        AccountSigninActivity.createIntentForDefaultSigninFlow(
+                                                context, SigninAccessPoint.SETTINGS, false));
+                            }
+                        }
+                    });
             final SpannableString spannable = SpanApplier.applySpans(
                     getResources().getString(isUnifiedConsentEnabled
                                     ? R.string.contextual_suggestions_message_unified_consent

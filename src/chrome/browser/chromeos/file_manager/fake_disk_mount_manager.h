@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FAKE_DISK_MOUNT_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FAKE_DISK_MOUNT_MANAGER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -70,6 +71,10 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   // otherwise.
   bool FinishAllUnmountPathRequests();
 
+  // Fails a future unmount request for |mount_path| with |error_code|.
+  void FailUnmountRequest(const std::string& mount_path,
+                          chromeos::MountError error_code);
+
   // DiskMountManager overrides.
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
@@ -107,7 +112,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;
-  base::queue<UnmountPathCallback> pending_unmount_callbacks_;
+  base::queue<base::OnceClosure> pending_unmount_callbacks_;
 
   DiskMap disks_;
   MountPointMap mount_points_;
@@ -115,6 +120,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   std::vector<MountRequest> mount_requests_;
   std::vector<UnmountRequest> unmount_requests_;
   std::vector<RemountAllRequest> remount_all_requests_;
+  std::map<std::string, chromeos::MountError> unmount_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDiskMountManager);
 };

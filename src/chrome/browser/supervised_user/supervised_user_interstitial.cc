@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
@@ -81,9 +82,9 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
 
   explicit TabCloser(WebContents* web_contents)
       : web_contents_(web_contents), weak_ptr_factory_(this) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::Bind(&TabCloser::CloseTabImpl, weak_ptr_factory_.GetWeakPtr()));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(&TabCloser::CloseTabImpl,
+                                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   void CloseTabImpl() {
@@ -106,8 +107,12 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
   WebContents* web_contents_;
   base::WeakPtrFactory<TabCloser> weak_ptr_factory_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(TabCloser);
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabCloser)
 
 }  // namespace
 
@@ -183,8 +188,7 @@ void SupervisedUserInterstitial::Init() {
     // is default true. This results in is_navigation_to_different_page()
     // returning true.
     DCHECK(details.is_navigation_to_different_page());
-    const content::NavigationController& controller =
-        web_contents_->GetController();
+    content::NavigationController& controller = web_contents_->GetController();
     details.entry = controller.GetVisibleEntry();
     if (controller.GetLastCommittedEntry()) {
       details.previous_entry_index = controller.GetLastCommittedEntryIndex();
@@ -353,7 +357,7 @@ void SupervisedUserInterstitial::OnAccessRequestAdded(bool success) {
       base::StringPrintf("setRequestStatus(%s);", success ? "true" : "false");
   if (interstitial_page_->GetMainFrame()) {
     interstitial_page_->GetMainFrame()->ExecuteJavaScript(
-        base::ASCIIToUTF16(jsFunc));
+        base::ASCIIToUTF16(jsFunc), base::NullCallback());
   }
 }
 

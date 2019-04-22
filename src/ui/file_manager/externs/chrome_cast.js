@@ -270,7 +270,7 @@ chrome.cast.media.TextTrackFontStyle = {
  * @constructor
  * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.Error
  */
-chrome.cast.Error = function(code, opt_description, opt_details) {}
+chrome.cast.Error = function(code, opt_description, opt_details) {};
 
 /** @type {!chrome.cast.ErrorCode} */
 chrome.cast.Error.prototype.code;

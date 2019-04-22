@@ -47,7 +47,6 @@ class RootTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'cStringIO',
         'determine_scm',
         'ElementTree',
         'gclient_utils',
@@ -55,6 +54,7 @@ class RootTestCase(BaseSCMTestCase):
         'GetCasedPath',
         'GIT',
         'glob',
+        'io',
         'logging',
         'only_int',
         'os',
@@ -96,6 +96,7 @@ class GitWrapperTestCase(BaseSCMTestCase):
         'IsValidRevision',
         'IsWorkTreeDirty',
         'RefToRemoteRef',
+        'RemoteRefToRef',
         'ShortBranchName',
     ]
     # If this test fails, you should add the relevant test.
@@ -108,33 +109,9 @@ class GitWrapperTestCase(BaseSCMTestCase):
     self.mox.ReplayAll()
     self.assertEqual(scm.GIT.GetEmail(self.root_dir), 'mini@me.com')
 
-  def testRefToRemoteRefNoRemote(self):
-    refs = {
-        # local ref for upstream branch-head
-        'refs/remotes/branch-heads/1234': ('refs/remotes/branch-heads/',
-                                           '1234'),
-        # upstream ref for branch-head
-        'refs/branch-heads/1234': ('refs/remotes/branch-heads/', '1234'),
-        # could be either local or upstream ref, assumed to refer to
-        # upstream, but probably don't want to encourage refs like this.
-        'branch-heads/1234': ('refs/remotes/branch-heads/', '1234'),
-        # actively discouraging refs like this, should prepend with 'refs/'
-        'remotes/branch-heads/1234': None,
-        # might be non-"branch-heads" upstream branches, but can't resolve
-        # without knowing the remote.
-        'refs/heads/1234': None,
-        'heads/1234': None,
-        # underspecified, probably intended to refer to a local branch
-        '1234': None,
-        }
-    for k, v in refs.items():
-      r = scm.GIT.RefToRemoteRef(k)
-      self.assertEqual(r, v, msg='%s -> %s, expected %s' % (k, r, v))
-
-  def testRefToRemoteRefWithRemote(self):
+  def testRefToRemoteRef(self):
     remote = 'origin'
     refs = {
-        # This shouldn't be any different from the NoRemote() version.
         'refs/branch-heads/1234': ('refs/remotes/branch-heads/', '1234'),
         # local refs for upstream branch
         'refs/remotes/%s/foobar' % remote: ('refs/remotes/%s/' % remote,
@@ -147,9 +124,33 @@ class GitWrapperTestCase(BaseSCMTestCase):
         'heads/foobar': ('refs/remotes/%s/' % remote, 'foobar'),
         # underspecified, probably intended to refer to a local branch
         'foobar': None,
-        }
+        # tags and other refs
+        'refs/tags/TAG': None,
+        'refs/changes/34/1234': None,
+    }
     for k, v in refs.items():
       r = scm.GIT.RefToRemoteRef(k, remote)
+      self.assertEqual(r, v, msg='%s -> %s, expected %s' % (k, r, v))
+
+  def testRemoteRefToRef(self):
+    remote = 'origin'
+    refs = {
+        'refs/remotes/branch-heads/1234': 'refs/branch-heads/1234',
+        # local refs for upstream branch
+        'refs/remotes/origin/foobar': 'refs/heads/foobar',
+        # tags and other refs
+        'refs/tags/TAG': 'refs/tags/TAG',
+        'refs/changes/34/1234': 'refs/changes/34/1234',
+        # different remote
+        'refs/remotes/other-remote/foobar': None,
+        # underspecified, probably intended to refer to a local branch
+        'heads/foobar': None,
+        'origin/foobar': None,
+        'foobar': None,
+        None: None,
+      }
+    for k, v in refs.items():
+      r = scm.GIT.RemoteRefToRef(k, remote)
       self.assertEqual(r, v, msg='%s -> %s, expected %s' % (k, r, v))
 
 

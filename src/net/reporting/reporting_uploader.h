@@ -41,10 +41,15 @@ class NET_EXPORT ReportingUploader {
                            int max_depth,
                            UploadCallback callback) = 0;
 
+  // Cancels pending uploads.
+  virtual void OnShutdown() = 0;
+
   // Creates a real implementation of |ReportingUploader| that uploads reports
   // using |context|.
   static std::unique_ptr<ReportingUploader> Create(
       const URLRequestContext* context);
+
+  virtual int GetPendingUploadCountForTesting() const = 0;
 };
 
 }  // namespace net

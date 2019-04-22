@@ -7,10 +7,12 @@
 #include <map>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/services/leveldb/public/cpp/util.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -89,7 +91,7 @@ class SessionStorageDataMapTest : public testing::Test {
   ~SessionStorageDataMapTest() override {}
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  TestBrowserThreadBundle test_browser_thread_bundle_;
   testing::StrictMock<MockListener> listener_;
   url::Origin test_origin_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
@@ -103,10 +105,12 @@ TEST_F(SessionStorageDataMapTest, BasicEmptyCreation) {
               OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
       .Times(1);
 
-  scoped_refptr<SessionStorageDataMap> map = SessionStorageDataMap::Create(
-      &listener_,
-      base::MakeRefCounted<SessionStorageMetadata::MapData>(1, test_origin_),
-      &database_);
+  scoped_refptr<SessionStorageDataMap> map =
+      SessionStorageDataMap::CreateFromDisk(
+          &listener_,
+          base::MakeRefCounted<SessionStorageMetadata::MapData>(1,
+                                                                test_origin_),
+          &database_);
 
   bool success;
   std::vector<blink::mojom::KeyValuePtr> data;
@@ -130,15 +134,47 @@ TEST_F(SessionStorageDataMapTest, BasicEmptyCreation) {
   EXPECT_EQ(2u, mock_data_.size());
 }
 
+TEST_F(SessionStorageDataMapTest, ExplicitlyEmpty) {
+  EXPECT_CALL(listener_,
+              OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
+      .Times(1);
+
+  scoped_refptr<SessionStorageDataMap> map = SessionStorageDataMap::CreateEmpty(
+      &listener_,
+      base::MakeRefCounted<SessionStorageMetadata::MapData>(1, test_origin_),
+      &database_);
+
+  bool success;
+  std::vector<blink::mojom::KeyValuePtr> data;
+  bool done = false;
+  base::RunLoop loop;
+  map->storage_area()->GetAll(
+      GetAllCallback::CreateAndBind(&done, loop.QuitClosure()),
+      MakeGetAllCallback(&success, &data));
+  loop.Run();
+
+  EXPECT_TRUE(done);
+  ASSERT_EQ(0u, data.size());
+
+  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("1")))
+      .Times(1);
+
+  // Test data is not cleared on deletion.
+  map = nullptr;
+  EXPECT_EQ(2u, mock_data_.size());
+}
+
 TEST_F(SessionStorageDataMapTest, Clone) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
       .Times(1);
 
-  scoped_refptr<SessionStorageDataMap> map1 = SessionStorageDataMap::Create(
-      &listener_,
-      base::MakeRefCounted<SessionStorageMetadata::MapData>(1, test_origin_),
-      &database_);
+  scoped_refptr<SessionStorageDataMap> map1 =
+      SessionStorageDataMap::CreateFromDisk(
+          &listener_,
+          base::MakeRefCounted<SessionStorageMetadata::MapData>(1,
+                                                                test_origin_),
+          &database_);
 
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("2"), testing::_))
@@ -152,7 +188,7 @@ TEST_F(SessionStorageDataMapTest, Clone) {
           &listener_,
           base::MakeRefCounted<SessionStorageMetadata::MapData>(2,
                                                                 test_origin_),
-          map1->storage_area());
+          map1);
 
   bool success;
   std::vector<blink::mojom::KeyValuePtr> data;

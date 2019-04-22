@@ -14,10 +14,10 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/signin/core/browser/account_reconcilor.h"
+#include "components/sync/driver/sync_service.h"
 
 namespace base {
 class ListValue;
@@ -92,9 +92,9 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   // Counters that calculate the data volume for individual data types.
   std::vector<std::unique_ptr<browsing_data::BrowsingDataCounter>> counters_;
 
-  // ProfileSyncService to observe sync state changes.
-  browser_sync::ProfileSyncService* sync_service_;
-  ScopedObserver<browser_sync::ProfileSyncService, syncer::SyncServiceObserver>
+  // SyncService to observe sync state changes.
+  syncer::SyncService* sync_service_;
+  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observer_;
 
   // Whether we should show a dialog informing the user about other forms of

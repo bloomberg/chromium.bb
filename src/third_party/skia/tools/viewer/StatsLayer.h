@@ -22,9 +22,9 @@ public:
     Timer addTimer(const char* label, SkColor color, SkColor labelColor = 0);
     void beginTiming(Timer);
     void endTiming(Timer);
-    double getLastTime(Timer);
 
-    void onPaint(SkCanvas* canvas) override;
+    void onPrePaint() override;
+    void onPaint(SkSurface*) override;
 
     void setDisplayScale(float scale) { fDisplayScale = scale; }
 
@@ -37,7 +37,9 @@ private:
         SkColor fLabelColor;
     };
     SkTArray<TimerData> fTimers;
+    double fTotalTimes[kMeasurementCount];
     int fCurrentMeasurement;
+    double fLastTotalBegin;
     double fCumulativeMeasurementTime;
     int fCumulativeMeasurementCount;
     float fDisplayScale;

@@ -12,6 +12,7 @@ namespace blink {
 
 class LayoutPoint;
 class NGPaintFragment;
+class NGPhysicalFragment;
 struct PaintInfo;
 
 // Generic fragment painter for paint logic shared between all types of
@@ -26,6 +27,9 @@ class NGFragmentPainter : public ObjectPainterBase {
   void PaintOutline(const PaintInfo&, const LayoutPoint& paint_offset);
 
   void AddPDFURLRectIfNeeded(const PaintInfo&, const LayoutPoint& paint_offset);
+
+  static bool ShouldRecordHitTestData(const PaintInfo&,
+                                      const NGPhysicalFragment&);
 
  private:
 

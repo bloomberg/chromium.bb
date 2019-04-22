@@ -7,23 +7,22 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
-#include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "device/usb/usb_device.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api.h"
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api_observer.h"
-#include "extensions/browser/api/usb/usb_guid_map.h"
+#include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -31,8 +30,6 @@
 #include "extensions/common/api/printer_provider_internal.h"
 #include "extensions/common/api/usb.h"
 #include "extensions/common/extension.h"
-
-using device::UsbDevice;
 
 namespace extensions {
 
@@ -186,7 +183,7 @@ class PendingPrintRequests {
 
   // Adds a new request to the set. Only information needed is the callback
   // associated with the request. Returns the id assigned to the request.
-  int Add(const PrinterProviderPrintJob& job,
+  int Add(PrinterProviderPrintJob job,
           PrinterProviderAPI::PrintCallback callback);
 
   // Gets print job associated with a request.
@@ -249,13 +246,13 @@ class PrinterProviderAPIImpl : public PrinterProviderAPI,
       const GetPrintersCallback& callback) override;
   void DispatchGetCapabilityRequested(const std::string& printer_id,
                                       GetCapabilityCallback callback) override;
-  void DispatchPrintRequested(const PrinterProviderPrintJob& job,
+  void DispatchPrintRequested(PrinterProviderPrintJob job,
                               PrintCallback callback) override;
   const PrinterProviderPrintJob* GetPrintJob(const Extension* extension,
                                              int request_id) const override;
   void DispatchGetUsbPrinterInfoRequested(
       const std::string& extension_id,
-      scoped_refptr<UsbDevice> device,
+      const device::mojom::UsbDeviceInfo& device,
       GetPrinterInfoCallback callback) override;
 
   // PrinterProviderInternalAPIObserver implementation:
@@ -423,11 +420,11 @@ PendingPrintRequests::PendingPrintRequests() : last_request_id_(0) {
 PendingPrintRequests::~PendingPrintRequests() {
 }
 
-int PendingPrintRequests::Add(const PrinterProviderPrintJob& job,
+int PendingPrintRequests::Add(PrinterProviderPrintJob job,
                               PrinterProviderAPI::PrintCallback callback) {
   PrintRequest request;
   request.callback = std::move(callback);
-  request.job = job;
+  request.job = std::move(job);
   pending_requests_[++last_request_id_] = std::move(request);
   return last_request_id_;
 }
@@ -542,8 +539,8 @@ void PrinterProviderAPIImpl::DispatchGetPrintersRequested(
   // This callback is called synchronously during |BroadcastEvent|, so
   // Unretained is safe.
   event->will_dispatch_callback =
-      base::Bind(&PrinterProviderAPIImpl::WillRequestPrinters,
-                 base::Unretained(this), request_id);
+      base::BindRepeating(&PrinterProviderAPIImpl::WillRequestPrinters,
+                          base::Unretained(this), request_id);
 
   event_router->BroadcastEvent(std::move(event));
 }
@@ -583,9 +580,8 @@ void PrinterProviderAPIImpl::DispatchGetCapabilityRequested(
   event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
-void PrinterProviderAPIImpl::DispatchPrintRequested(
-    const PrinterProviderPrintJob& job,
-    PrintCallback callback) {
+void PrinterProviderAPIImpl::DispatchPrintRequested(PrinterProviderPrintJob job,
+                                                    PrintCallback callback) {
   std::string extension_id;
   std::string internal_printer_id;
   if (!ParsePrinterId(job.printer_id, &extension_id, &internal_printer_id)) {
@@ -603,11 +599,7 @@ void PrinterProviderAPIImpl::DispatchPrintRequested(
   api::printer_provider::PrintJob print_job;
   print_job.printer_id = internal_printer_id;
 
-  JSONStringValueDeserializer deserializer(job.ticket_json);
-  std::unique_ptr<base::Value> ticket_value =
-      deserializer.Deserialize(NULL, NULL);
-  if (!ticket_value ||
-      !api::printer_provider::PrintJob::Ticket::Populate(*ticket_value,
+  if (!api::printer_provider::PrintJob::Ticket::Populate(job.ticket,
                                                          &print_job.ticket)) {
     std::move(callback).Run(base::Value(api::printer_provider::ToString(
         api::printer_provider::PRINT_ERROR_INVALID_TICKET)));
@@ -616,8 +608,8 @@ void PrinterProviderAPIImpl::DispatchPrintRequested(
 
   print_job.content_type = job.content_type;
   print_job.title = base::UTF16ToUTF8(job.job_title);
-  int request_id =
-      pending_print_requests_[extension_id].Add(job, std::move(callback));
+  int request_id = pending_print_requests_[extension_id].Add(
+      std::move(job), std::move(callback));
 
   std::unique_ptr<base::ListValue> internal_args(new base::ListValue);
   // Request id is not part of the public API and it will be massaged out in
@@ -642,7 +634,7 @@ const PrinterProviderPrintJob* PrinterProviderAPIImpl::GetPrintJob(
 
 void PrinterProviderAPIImpl::DispatchGetUsbPrinterInfoRequested(
     const std::string& extension_id,
-    scoped_refptr<UsbDevice> device,
+    const device::mojom::UsbDeviceInfo& device,
     GetPrinterInfoCallback callback) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router->ExtensionHasEventListener(
@@ -655,7 +647,7 @@ void PrinterProviderAPIImpl::DispatchGetUsbPrinterInfoRequested(
   int request_id =
       pending_usb_printer_info_requests_[extension_id].Add(std::move(callback));
   api::usb::Device api_device;
-  UsbGuidMap::Get(browser_context_)->GetApiDevice(device, &api_device);
+  UsbDeviceManager::Get(browser_context_)->GetApiDevice(device, &api_device);
 
   std::unique_ptr<base::ListValue> internal_args(new base::ListValue());
   // Request id is not part of the public API and it will be massaged out in

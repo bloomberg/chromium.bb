@@ -5,21 +5,18 @@
 #include "chrome/browser/net/dns_probe_runner.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/net/dns_probe_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/dns/dns_client.h"
-#include "net/dns/dns_config.h"
+#include "services/network/test/test_network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::RunLoop;
 using content::TestBrowserThreadBundle;
-using net::DnsClient;
-using net::DnsConfig;
-using net::MockDnsClientRule;
 
 namespace chrome_browser_net {
 
@@ -27,12 +24,12 @@ namespace {
 
 class TestDnsProbeRunnerCallback {
  public:
-  TestDnsProbeRunnerCallback()
-      : callback_(base::Bind(&TestDnsProbeRunnerCallback::OnCalled,
-                             base::Unretained(this))),
-        called_(false) {}
+  TestDnsProbeRunnerCallback() : called_(false) {}
 
-  const base::Closure& callback() const { return callback_; }
+  base::OnceClosure callback() {
+    return base::BindOnce(&TestDnsProbeRunnerCallback::OnCalled,
+                          base::Unretained(this));
+  }
   bool called() const { return called_; }
 
  private:
@@ -41,71 +38,159 @@ class TestDnsProbeRunnerCallback {
     called_ = true;
   }
 
-  base::Closure callback_;
   bool called_;
+};
+
+class FakeNetworkContext : public network::TestNetworkContext {
+ public:
+  explicit FakeNetworkContext(
+      std::vector<FakeHostResolver::SingleResult> result_list)
+      : result_list_(std::move(result_list)) {}
+
+  void CreateHostResolver(
+      const base::Optional<net::DnsConfigOverrides>& config_overrides,
+      network::mojom::HostResolverRequest request) override {
+    ASSERT_FALSE(resolver_);
+    resolver_ = std::make_unique<FakeHostResolver>(std::move(request),
+                                                   std::move(result_list_));
+  }
+
+ private:
+  std::unique_ptr<FakeHostResolver> resolver_;
+  std::vector<FakeHostResolver::SingleResult> result_list_;
+};
+
+class FirstHangingThenFakeResolverNetworkContext
+    : public network::TestNetworkContext {
+ public:
+  explicit FirstHangingThenFakeResolverNetworkContext(
+      std::vector<FakeHostResolver::SingleResult> result_list)
+      : result_list_(std::move(result_list)) {}
+
+  void CreateHostResolver(
+      const base::Optional<net::DnsConfigOverrides>& config_overrides,
+      network::mojom::HostResolverRequest request) override {
+    if (call_num == 0) {
+      resolver_ = std::make_unique<HangingHostResolver>(std::move(request));
+    } else {
+      resolver_ = std::make_unique<FakeHostResolver>(std::move(request),
+                                                     std::move(result_list_));
+    }
+    call_num++;
+  }
+
+  void DestroyHostResolver() { resolver_ = nullptr; }
+
+ private:
+  int call_num = 0;
+  std::unique_ptr<network::mojom::HostResolver> resolver_;
+  std::vector<FakeHostResolver::SingleResult> result_list_;
 };
 
 class DnsProbeRunnerTest : public testing::Test {
  protected:
-  void RunTest(MockDnsClientRule::ResultType query_result,
-               DnsProbeRunner::Result expected_probe_result);
+  void SetupTest(int query_result, FakeHostResolver::Response query_response);
+  void SetupTest(std::vector<FakeHostResolver::SingleResult> result_list);
+  void RunTest(DnsProbeRunner::Result expected_probe_results);
+
+  network::mojom::NetworkContext* network_context() const {
+    return network_context_.get();
+  }
 
   TestBrowserThreadBundle bundle_;
-  DnsProbeRunner runner_;
+  std::unique_ptr<network::mojom::NetworkContext> network_context_;
+  std::unique_ptr<DnsProbeRunner> runner_;
 };
 
-void DnsProbeRunnerTest::RunTest(
-    MockDnsClientRule::ResultType query_result,
-    DnsProbeRunner::Result expected_probe_result) {
-  TestDnsProbeRunnerCallback callback;
+void DnsProbeRunnerTest::SetupTest(int query_result,
+                                   FakeHostResolver::Response query_response) {
+  SetupTest({{query_result, query_response}});
+}
 
-  runner_.SetClient(CreateMockDnsClientForProbes(query_result));
-  runner_.RunProbe(callback.callback());
-  EXPECT_TRUE(runner_.IsRunning());
+void DnsProbeRunnerTest::SetupTest(
+    std::vector<FakeHostResolver::SingleResult> result_list) {
+  network_context_ =
+      std::make_unique<FakeNetworkContext>(std::move(result_list));
+  runner_ = std::make_unique<DnsProbeRunner>(
+      net::DnsConfigOverrides(),
+      base::BindRepeating(&DnsProbeRunnerTest::network_context,
+                          base::Unretained(this)));
+}
+
+void DnsProbeRunnerTest::RunTest(DnsProbeRunner::Result expected_probe_result) {
+  TestDnsProbeRunnerCallback callback;
+  runner_->RunProbe(callback.callback());
+  EXPECT_TRUE(runner_->IsRunning());
 
   RunLoop().RunUntilIdle();
-  EXPECT_FALSE(runner_.IsRunning());
+  EXPECT_FALSE(runner_->IsRunning());
   EXPECT_TRUE(callback.called());
-  EXPECT_EQ(expected_probe_result, runner_.result());
+  EXPECT_EQ(expected_probe_result, runner_->result());
 }
 
 TEST_F(DnsProbeRunnerTest, Probe_OK) {
-  RunTest(MockDnsClientRule::OK, DnsProbeRunner::CORRECT);
+  SetupTest(net::OK, FakeHostResolver::kOneAddressResponse);
+  RunTest(DnsProbeRunner::CORRECT);
 }
 
 TEST_F(DnsProbeRunnerTest, Probe_EMPTY) {
-  RunTest(MockDnsClientRule::EMPTY, DnsProbeRunner::INCORRECT);
+  SetupTest(net::OK, FakeHostResolver::kEmptyResponse);
+  RunTest(DnsProbeRunner::INCORRECT);
 }
 
 TEST_F(DnsProbeRunnerTest, Probe_TIMEOUT) {
-  RunTest(MockDnsClientRule::TIMEOUT, DnsProbeRunner::UNREACHABLE);
+  SetupTest(net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse);
+  RunTest(DnsProbeRunner::UNREACHABLE);
 }
 
-TEST_F(DnsProbeRunnerTest, Probe_FAIL) {
-  RunTest(MockDnsClientRule::FAIL, DnsProbeRunner::INCORRECT);
+TEST_F(DnsProbeRunnerTest, Probe_NXDOMAIN) {
+  SetupTest(net::ERR_NAME_NOT_RESOLVED, FakeHostResolver::kNoResponse);
+  RunTest(DnsProbeRunner::INCORRECT);
+}
+
+TEST_F(DnsProbeRunnerTest, Probe_FAILING) {
+  SetupTest(net::ERR_DNS_SERVER_FAILED, FakeHostResolver::kNoResponse);
+  RunTest(DnsProbeRunner::FAILING);
 }
 
 TEST_F(DnsProbeRunnerTest, TwoProbes) {
-  RunTest(MockDnsClientRule::OK, DnsProbeRunner::CORRECT);
-  RunTest(MockDnsClientRule::EMPTY, DnsProbeRunner::INCORRECT);
+  SetupTest({{net::OK, FakeHostResolver::kOneAddressResponse},
+             {net::ERR_NAME_NOT_RESOLVED, FakeHostResolver::kNoResponse}});
+  RunTest(DnsProbeRunner::CORRECT);
+  RunTest(DnsProbeRunner::INCORRECT);
 }
 
-TEST_F(DnsProbeRunnerTest, InvalidDnsConfig) {
-  std::unique_ptr<DnsClient> dns_client(DnsClient::CreateClient(NULL));
-  DnsConfig empty_config;
-  dns_client->SetConfig(empty_config);
-  ASSERT_EQ(NULL, dns_client->GetTransactionFactory());
-  runner_.SetClient(std::move(dns_client));
+TEST_F(DnsProbeRunnerTest, MojoConnectionError) {
+  // Use a HostResolverGetter that returns a HangingHostResolver on the first
+  // call, and a FakeHostResolver on the second call.
+  FirstHangingThenFakeResolverNetworkContext network_context(
+      {{net::OK, FakeHostResolver::kOneAddressResponse}});
+  runner_ = std::make_unique<DnsProbeRunner>(
+      net::DnsConfigOverrides(),
+      base::BindRepeating(
+          [](network::mojom::NetworkContext* context) { return context; },
+          base::Unretained(&network_context)));
 
   TestDnsProbeRunnerCallback callback;
-
-  runner_.RunProbe(callback.callback());
-  EXPECT_TRUE(runner_.IsRunning());
-
+  runner_->RunProbe(callback.callback());
+  EXPECT_TRUE(runner_->IsRunning());
   RunLoop().RunUntilIdle();
-  EXPECT_FALSE(runner_.IsRunning());
+  EXPECT_TRUE(runner_->IsRunning());
+  EXPECT_FALSE(callback.called());
+  // Destroy the HangingHostResolver while runner_ is still waiting for a
+  // response. The set_connection_error_handler callback should be invoked.
+  network_context.DestroyHostResolver();
+  RunLoop().RunUntilIdle();
+  // That should cause the RunProbe callback to be called with an UNKNOWN
+  // status since the HostResolver request never returned.
+  EXPECT_FALSE(runner_->IsRunning());
   EXPECT_TRUE(callback.called());
-  EXPECT_EQ(DnsProbeRunner::UNKNOWN, runner_.result());
+  EXPECT_EQ(DnsProbeRunner::UNKNOWN, runner_->result());
+
+  // Try another probe. The DnsProbeRunner should call the HostResolverGetter
+  // again, this time getting a FakeHostResolver that will successfully return
+  // an OK result.
+  RunTest(DnsProbeRunner::CORRECT);
 }
 
 }  // namespace

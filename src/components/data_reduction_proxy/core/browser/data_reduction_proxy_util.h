@@ -8,10 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
-#include "components/previews/core/previews_lite_page_redirect.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/proxy_server.h"
 #include "net/nqe/effective_connection_type.h"
@@ -139,12 +137,6 @@ net::ProxyServer::Scheme SchemeFromProxyScheme(
 
 // Returns the ProxyServer_ProxyScheme for a |net::ProxyServer::Scheme|.
 ProxyServer_ProxyScheme ProxySchemeFromScheme(net::ProxyServer::Scheme scheme);
-
-// Returns the HTTPSLitePagePreviewInfo_Status for a
-// |previews::ServerLitePageStatus|.
-HTTPSLitePagePreviewInfo_Status
-ProtoLitePageRedirectStatusFromLitePageRedirectStatus(
-    previews::ServerLitePageStatus status);
 
 // Returns the |Duration| representation of |time_delta|.
 void TimeDeltaToDuration(const base::TimeDelta& time_delta, Duration* duration);

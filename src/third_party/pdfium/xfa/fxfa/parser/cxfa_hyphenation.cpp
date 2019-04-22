@@ -6,6 +6,9 @@
 
 #include "xfa/fxfa/parser/cxfa_hyphenation.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kHyphenationAttributeData[] = {
@@ -18,9 +21,7 @@ const CXFA_Node::AttributeData kHyphenationAttributeData[] = {
     {XFA_Attribute::RemainCharacterCount, XFA_AttributeType::Integer, (void*)3},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::ExcludeAllCaps, XFA_AttributeType::Boolean, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kHyphenationName[] = L"hyphenation";
+};
 
 }  // namespace
 
@@ -30,8 +31,8 @@ CXFA_Hyphenation::CXFA_Hyphenation(CXFA_Document* doc, XFA_PacketType packet)
                 (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
                 XFA_ObjectType::Node,
                 XFA_Element::Hyphenation,
-                nullptr,
+                {},
                 kHyphenationAttributeData,
-                kHyphenationName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Hyphenation::~CXFA_Hyphenation() {}
+CXFA_Hyphenation::~CXFA_Hyphenation() = default;

@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/common/chrome_version.h"
@@ -38,16 +38,16 @@ std::vector<base::FilePath> GetCriticalBinariesPath() {
     NOTREACHED();
 
   std::vector<base::FilePath> critical_binaries;
-  critical_binaries.reserve(arraysize(kUnversionedFiles) +
-                            arraysize(kVersionedFiles));
+  critical_binaries.reserve(base::size(kUnversionedFiles) +
+                            base::size(kVersionedFiles));
 
-  for (size_t i = 0; i < arraysize(kUnversionedFiles); ++i) {
+  for (size_t i = 0; i < base::size(kUnversionedFiles); ++i) {
     critical_binaries.push_back(chrome_exe_dir.Append(kUnversionedFiles[i]));
   }
 
   base::FilePath version_dir(
       chrome_exe_dir.AppendASCII(CHROME_VERSION_STRING));
-  for (size_t i = 0; i < arraysize(kVersionedFiles); ++i) {
+  for (size_t i = 0; i < base::size(kVersionedFiles); ++i) {
     critical_binaries.push_back(version_dir.Append(kVersionedFiles[i]));
   }
 

@@ -28,6 +28,12 @@ const char kParamPlatform[] = "platform";
 const char kParamRequest[] = "request";
 const char kParamRetry[] = "retry";
 
+// Policy constants used in authorization header.
+const char kAuthHeader[] = "Authorization";
+const char kServiceTokenAuthHeaderPrefix[] = "GoogleLogin auth=";
+const char kDMTokenAuthHeaderPrefix[] = "GoogleDMToken token=";
+const char kEnrollmentTokenAuthHeaderPrefix[] = "GoogleEnrollmentToken token=";
+
 // String constants for the device and app type we report to the server.
 const char kValueAppType[] = "Chrome";
 const char kValueDeviceType[] = "2";
@@ -110,6 +116,8 @@ const uint8_t kPolicyVerificationKey[] = {
     0x87, 0x02, 0x03, 0x01, 0x00, 0x01};
 
 const char kPolicyVerificationKeyHash[] = "1:356l7w";
+
+const char kDemoModeDomain[] = "cros-demo-mode.com";
 
 std::string GetPolicyVerificationKey() {
   return std::string(reinterpret_cast<const char*>(kPolicyVerificationKey),

@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/load_timing_info.h"
@@ -52,7 +53,7 @@ namespace net {
 namespace {
 
 const char kBodyData[] = "Body data";
-const size_t kBodyDataSize = arraysize(kBodyData);
+const size_t kBodyDataSize = base::size(kBodyData);
 const std::string kBodyDataString(kBodyData, kBodyDataSize);
 // Size of the buffer to be allocated for each read.
 const size_t kReadBufferSize = 4096;
@@ -431,7 +432,8 @@ class BidirectionalStreamTest : public TestWithScopedTaskEnvironment {
     session_deps_.net_log = net_log_.bound().net_log();
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
     SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
-                       PRIVACY_MODE_DISABLED, socket_tag);
+                       PRIVACY_MODE_DISABLED,
+                       SpdySessionKey::IsProxySession::kFalse, socket_tag);
     session_ = CreateSpdySession(http_session_.get(), key, net_log_.bound());
   }
 
@@ -624,7 +626,8 @@ TEST_F(BidirectionalStreamTest, ClientAuthRequestIgnored) {
 
   http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
   SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED, SocketTag());
+                     PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "GET";

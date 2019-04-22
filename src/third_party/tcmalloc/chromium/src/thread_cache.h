@@ -43,7 +43,6 @@
 #include <stdint.h>                     // for uint32_t, uint64_t
 #endif
 #include <sys/types.h>  // for ssize_t
-#include "base/commandlineflags.h"
 #include "common.h"
 #include "free_list.h"         // for FL_Pop, FL_PopRange, etc
 #include "internal_logging.h"  // for ASSERT, etc
@@ -52,8 +51,6 @@
 #include "page_heap_allocator.h"  // for PageHeapAllocator
 #include "sampler.h"              // for Sampler
 #include "static_vars.h"          // for Static
-
-DECLARE_int64(tcmalloc_sample_parameter);
 
 namespace tcmalloc {
 

@@ -16,7 +16,7 @@ class MediaPerceptionPrivateGetStateFunction
  public:
   MediaPerceptionPrivateGetStateFunction();
   DECLARE_EXTENSION_FUNCTION("mediaPerceptionPrivate.getState",
-                             MEDIAPERCEPTIONPRIVATE_GETSTATE);
+                             MEDIAPERCEPTIONPRIVATE_GETSTATE)
 
  private:
   ~MediaPerceptionPrivateGetStateFunction() override;
@@ -34,7 +34,7 @@ class MediaPerceptionPrivateSetStateFunction
  public:
   MediaPerceptionPrivateSetStateFunction();
   DECLARE_EXTENSION_FUNCTION("mediaPerceptionPrivate.setState",
-                             MEDIAPERCEPTIONPRIVATE_SETSTATE);
+                             MEDIAPERCEPTIONPRIVATE_SETSTATE)
 
  private:
   ~MediaPerceptionPrivateSetStateFunction() override;
@@ -52,7 +52,7 @@ class MediaPerceptionPrivateGetDiagnosticsFunction
  public:
   MediaPerceptionPrivateGetDiagnosticsFunction();
   DECLARE_EXTENSION_FUNCTION("mediaPerceptionPrivate.getDiagnostics",
-                             MEDIAPERCEPTIONPRIVATE_GETDIAGNOSTICS);
+                             MEDIAPERCEPTIONPRIVATE_GETDIAGNOSTICS)
 
  private:
   ~MediaPerceptionPrivateGetDiagnosticsFunction() override;
@@ -71,7 +71,7 @@ class MediaPerceptionPrivateSetAnalyticsComponentFunction
  public:
   MediaPerceptionPrivateSetAnalyticsComponentFunction();
   DECLARE_EXTENSION_FUNCTION("mediaPerceptionPrivate.setAnalyticsComponent",
-                             MEDIAPERCEPTIONPRIVATE_SETANALYTICSCOMPONENT);
+                             MEDIAPERCEPTIONPRIVATE_SETANALYTICSCOMPONENT)
 
  private:
   ~MediaPerceptionPrivateSetAnalyticsComponentFunction() override;
@@ -91,7 +91,7 @@ class MediaPerceptionPrivateSetComponentProcessStateFunction
  public:
   MediaPerceptionPrivateSetComponentProcessStateFunction();
   DECLARE_EXTENSION_FUNCTION("mediaPerceptionPrivate.setComponentProcessState",
-                             MEDIAPERCEPTIONPRIVATE_SETCOMPONENTPROCESSSTATE);
+                             MEDIAPERCEPTIONPRIVATE_SETCOMPONENTPROCESSSTATE)
 
  private:
   ~MediaPerceptionPrivateSetComponentProcessStateFunction() override;

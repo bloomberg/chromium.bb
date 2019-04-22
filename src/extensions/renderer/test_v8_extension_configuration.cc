@@ -4,6 +4,9 @@
 
 #include "extensions/renderer/test_v8_extension_configuration.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "v8/include/v8.h"
@@ -18,12 +21,11 @@ base::LazyInstance<TestV8ExtensionConfiguration>::Leaky
 }  // namespace
 
 TestV8ExtensionConfiguration::TestV8ExtensionConfiguration()
-    : safe_builtins_(SafeBuiltins::CreateV8Extension()),
-      v8_extension_names_(1, safe_builtins_->name()),
-      v8_extension_configuration_(new v8::ExtensionConfiguration(
-          static_cast<int>(v8_extension_names_.size()),
-          v8_extension_names_.data())) {
-  v8::RegisterExtension(safe_builtins_.get());
+    : v8_extension_configuration_(
+          new v8::ExtensionConfiguration(1, &v8_extension_name_)) {
+  auto safe_builtins = SafeBuiltins::CreateV8Extension();
+  v8_extension_name_ = safe_builtins->name();
+  v8::RegisterExtension(std::move(safe_builtins));
 }
 
 TestV8ExtensionConfiguration::~TestV8ExtensionConfiguration() {}

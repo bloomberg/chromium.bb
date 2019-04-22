@@ -264,6 +264,10 @@ class BASE_EXPORT File {
   bool GetInfo(Info* info);
 
 #if !defined(OS_FUCHSIA)  // Fuchsia's POSIX API does not support file locking.
+  enum class LockMode {
+    kShared,
+    kExclusive,
+  };
 
   // Attempts to take an exclusive write lock on the file. Returns immediately
   // (i.e. does not wait for another process to unlock the file). If the lock
@@ -283,9 +287,9 @@ class BASE_EXPORT File {
   // POSIX-specific semantics:
   //  * Locks are advisory only.
   //  * Within a process, locking the same file (by the same or new handle)
-  //    will succeed.
+  //    will succeed. The new lock replaces the old lock.
   //  * Closing any descriptor on a given file releases the lock.
-  Error Lock();
+  Error Lock(LockMode mode = LockMode::kExclusive);
 
   // Unlock a file previously locked.
   Error Unlock();

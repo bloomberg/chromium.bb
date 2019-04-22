@@ -19,7 +19,7 @@ void RequestGlobalDumpForInProcessTesting(
                                       level_of_detail};
   MemoryDumpManager::GetInstance()->CreateProcessDump(
       local_args, ProcessMemoryDumpCallback());
-};
+}
 
 // Short circuits the RequestGlobalDumpFunction() to CreateProcessDump(),
 // effectively allowing to use both in unittests with the same behavior.

@@ -18,12 +18,13 @@
 
 namespace blink {
 
+class Document;
 class ScriptState;
 
 class ComputedAccessibleNodePromiseResolver final
     : public GarbageCollectedFinalized<ComputedAccessibleNodePromiseResolver> {
  public:
-  static ComputedAccessibleNodePromiseResolver* Create(ScriptState*, Element&);
+  ComputedAccessibleNodePromiseResolver(ScriptState*, Element&);
   ~ComputedAccessibleNodePromiseResolver() {}
 
   ScriptPromise Promise();
@@ -32,7 +33,6 @@ class ComputedAccessibleNodePromiseResolver final
   void Trace(blink::Visitor*);
 
  private:
-  ComputedAccessibleNodePromiseResolver(ScriptState*, Element&);
   void UpdateTreeAndResolve();
   class RequestAnimationFrameCallback;
 
@@ -47,7 +47,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ComputedAccessibleNode* Create(AXID, WebComputedAXTree*, LocalFrame*);
+  ComputedAccessibleNode(AXID, WebComputedAXTree*, Document*);
   ~ComputedAccessibleNode() override;
 
   void Trace(Visitor*) override;
@@ -96,7 +96,6 @@ class ComputedAccessibleNode : public ScriptWrappable {
   ScriptPromise ensureUpToDate(ScriptState*);
 
  private:
-  ComputedAccessibleNode(AXID, WebComputedAXTree*, LocalFrame*);
   bool GetBoolAttribute(WebAOMBoolAttribute, bool& is_null) const;
   int32_t GetIntAttribute(WebAOMIntAttribute, bool& is_null) const;
   float GetFloatAttribute(WebAOMFloatAttribute, bool& is_null) const;
@@ -106,7 +105,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
 
   // This tree is owned by the RenderFrame.
   blink::WebComputedAXTree* tree_;
-  Member<LocalFrame> frame_;
+  Member<Document> document_;
   std::unique_ptr<AXContext> ax_context_;
 };
 

@@ -14,8 +14,8 @@
 #include "common/Color.h"
 #include "common/MemoryBuffer.h"
 #include "common/debug.h"
-#include "libANGLE/ContextState.h"
 #include "libANGLE/Device.h"
+#include "libANGLE/State.h"
 #include "libANGLE/Version.h"
 #include "libANGLE/angletypes.h"
 #include "libANGLE/formatutils.h"
@@ -92,24 +92,25 @@ class Context : angle::NonCopyable
 
 // ANGLE_TRY for HRESULT errors.
 #define ANGLE_TRY_HR(CONTEXT, EXPR, MESSAGE)                                                     \
-                                                                                                 \
+    do                                                                                           \
     {                                                                                            \
         auto ANGLE_LOCAL_VAR = (EXPR);                                                           \
         if (ANGLE_UNLIKELY(FAILED(ANGLE_LOCAL_VAR)))                                             \
         {                                                                                        \
             CONTEXT->handleResult(ANGLE_LOCAL_VAR, MESSAGE, __FILE__, ANGLE_FUNCTION, __LINE__); \
-            return angle::Result::Stop();                                                        \
+            return angle::Result::Stop;                                                          \
         }                                                                                        \
-    }
+    } while (0)
 
 #define ANGLE_CHECK_HR(CONTEXT, EXPR, MESSAGE, ERROR)                                  \
+    do                                                                                 \
     {                                                                                  \
         if (ANGLE_UNLIKELY(!(EXPR)))                                                   \
         {                                                                              \
             CONTEXT->handleResult(ERROR, MESSAGE, __FILE__, ANGLE_FUNCTION, __LINE__); \
-            return angle::Result::Stop();                                              \
+            return angle::Result::Stop;                                                \
         }                                                                              \
-    }
+    } while (0)
 
 #define ANGLE_HR_UNREACHABLE(context) \
     UNREACHABLE();                    \
@@ -155,7 +156,7 @@ class RendererD3D : public BufferFactoryD3D
     virtual egl::ConfigSet generateConfigs()                                            = 0;
     virtual void generateDisplayExtensions(egl::DisplayExtensions *outExtensions) const = 0;
 
-    virtual ContextImpl *createContext(const gl::ContextState &state) = 0;
+    virtual ContextImpl *createContext(const gl::State &state, gl::ErrorSet *errorSet) = 0;
 
     std::string getVendorString() const;
 
@@ -342,7 +343,7 @@ class RendererD3D : public BufferFactoryD3D
                                                   const gl::Box &destArea)    = 0;
 
     // Device lost
-    GLenum getResetStatus();
+    gl::GraphicsResetStatus getResetStatus();
     void notifyDeviceLost();
     virtual bool resetDevice()          = 0;
     virtual bool testDeviceLost()       = 0;

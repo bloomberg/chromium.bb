@@ -18,10 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-caption-element
+// https://html.spec.whatwg.org/C/#the-caption-element
 [HTMLConstructor]
 interface HTMLTableCaptionElement : HTMLElement {
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLTableCaptionElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLTableCaptionElement-partial
     [CEReactions, Reflect] attribute DOMString align;
 };

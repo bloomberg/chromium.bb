@@ -7,12 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "components/web_resource/resource_request_allowed_notifier.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace ios_web_view {
 
@@ -54,7 +50,7 @@ class WebViewTranslateService {
   WebViewTranslateService();
   ~WebViewTranslateService();
 
-  friend struct base::DefaultSingletonTraits<WebViewTranslateService>;
+  friend class base::NoDestructor<WebViewTranslateService>;
 
   // Listener which manages when translate requests can occur.
   TranslateRequestsAllowedListener translate_requests_allowed_listener_;

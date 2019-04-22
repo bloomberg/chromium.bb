@@ -6,7 +6,8 @@
 
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/system_tray_test_api.mojom.h"
+#include "ash/public/interfaces/system_tray_test_api.test-mojom-test-utils.h"
+#include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -65,10 +66,6 @@ class SystemTrayClientTest : public InProcessBrowserTest {
 using SystemTrayClientEnterpriseTest = policy::DevicePolicyCrosBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseTest, TrayEnterprise) {
-  // Mark the device as enterprise managed.
-  policy::DevicePolicyCrosTestHelper::MarkAsEnterpriseOwnedBy("example.com");
-  content::RunAllPendingInMessageLoop();
-
   // Connect to ash.
   ash::mojom::SystemTrayTestApiPtr tray_test_api;
   content::ServiceManagerConnection::GetForProcess()

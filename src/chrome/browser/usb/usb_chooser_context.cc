@@ -7,8 +7,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/common/service_manager_connection.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_ids.h"
@@ -30,8 +33,7 @@ constexpr char kGuidKey[] = "ephemeral-guid";
 constexpr char kProductIdKey[] = "product-id";
 constexpr char kSerialNumberKey[] = "serial-number";
 constexpr char kVendorIdKey[] = "vendor-id";
-constexpr char kSourcePolicy[] = "policy";
-constexpr char kSourcePreference[] = "preference";
+constexpr int kDeviceIdWildcard = -1;
 
 // Reasons a permission may be closed. These are used in histograms so do not
 // remove/reorder entries. Only add at the end just before
@@ -65,7 +67,78 @@ std::pair<int, int> GetDeviceIds(const base::DictionaryValue& object) {
   return std::make_pair(vendor_id, product_id);
 }
 
-std::unique_ptr<base::DictionaryValue> DeviceInfoToDictValue(
+base::string16 GetDeviceNameFromIds(int vendor_id, int product_id) {
+#if !defined(OS_ANDROID)
+  const char* product_name =
+      device::UsbIds::GetProductName(vendor_id, product_id);
+  if (product_name)
+    return base::UTF8ToUTF16(product_name);
+
+  const char* vendor_name = device::UsbIds::GetVendorName(vendor_id);
+  if (vendor_name) {
+    if (product_id == kDeviceIdWildcard) {
+      return l10n_util::GetStringFUTF16(IDS_DEVICE_DESCRIPTION_FOR_VENDOR_NAME,
+                                        base::UTF8ToUTF16(vendor_name));
+    }
+
+    return l10n_util::GetStringFUTF16(
+        IDS_DEVICE_DESCRIPTION_FOR_PRODUCT_ID_AND_VENDOR_NAME,
+        base::ASCIIToUTF16(base::StringPrintf("0x%04X", product_id)),
+        base::UTF8ToUTF16(vendor_name));
+  }
+#endif  // !defined(OS_ANDROID)
+
+  if (product_id == kDeviceIdWildcard) {
+    if (vendor_id == kDeviceIdWildcard)
+      return l10n_util::GetStringUTF16(IDS_DEVICE_DESCRIPTION_FOR_ANY_VENDOR);
+
+    return l10n_util::GetStringFUTF16(
+        IDS_DEVICE_DESCRIPTION_FOR_VENDOR_ID,
+        base::ASCIIToUTF16(base::StringPrintf("0x%04X", vendor_id)));
+  }
+
+  return l10n_util::GetStringFUTF16(
+      IDS_DEVICE_DESCRIPTION_FOR_PRODUCT_ID_AND_VENDOR_ID,
+      base::ASCIIToUTF16(base::StringPrintf("0x%04X", product_id)),
+      base::ASCIIToUTF16(base::StringPrintf("0x%04X", vendor_id)));
+}
+
+std::unique_ptr<base::DictionaryValue> DeviceIdsToDictValue(int vendor_id,
+                                                            int product_id) {
+  auto device_dict = std::make_unique<base::DictionaryValue>();
+  base::string16 device_name = GetDeviceNameFromIds(vendor_id, product_id);
+
+  device_dict->SetKey(kDeviceNameKey, base::Value(device_name));
+  device_dict->SetKey(kVendorIdKey, base::Value(vendor_id));
+  device_dict->SetKey(kProductIdKey, base::Value(product_id));
+  device_dict->SetKey(kSerialNumberKey, base::Value(std::string()));
+
+  return device_dict;
+}
+
+}  // namespace
+
+void UsbChooserContext::DeviceObserver::OnDeviceAdded(
+    const device::mojom::UsbDeviceInfo& device_info) {}
+
+void UsbChooserContext::DeviceObserver::OnDeviceRemoved(
+    const device::mojom::UsbDeviceInfo& device_info) {}
+
+void UsbChooserContext::DeviceObserver::OnDeviceManagerConnectionError() {}
+
+UsbChooserContext::UsbChooserContext(Profile* profile)
+    : ChooserContextBase(profile,
+                         CONTENT_SETTINGS_TYPE_USB_GUARD,
+                         CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA),
+      is_incognito_(profile->IsOffTheRecord()),
+      client_binding_(this),
+      weak_factory_(this) {
+  usb_policy_allowed_devices_.reset(
+      new UsbPolicyAllowedDevices(profile->GetPrefs()));
+}
+
+// static
+std::unique_ptr<base::DictionaryValue> UsbChooserContext::DeviceInfoToDictValue(
     const device::mojom::UsbDeviceInfo& device_info) {
   auto device_dict = std::make_unique<base::DictionaryValue>();
   device_dict->SetKey(kDeviceNameKey,
@@ -84,70 +157,6 @@ std::unique_ptr<base::DictionaryValue> DeviceInfoToDictValue(
   }
 
   return device_dict;
-}
-
-base::string16 GetDeviceNameFromIds(int vendor_id, int product_id) {
-// This is currently using the UI strings used for the chooser prompt. This is
-// fine for now since the policy allowed devices are not being displayed in
-// Site Settings yet. However, policy allowed devices can contain wildcards for
-// the IDs, so more specific UI string need to be defined.
-// TODO(https://crbug.com/854329): Add UI strings that are more specific to
-// the Site Settings UI.
-#if !defined(OS_ANDROID)
-  const char* product_name =
-      device::UsbIds::GetProductName(vendor_id, product_id);
-  if (product_name)
-    return base::UTF8ToUTF16(product_name);
-
-  const char* vendor_name = device::UsbIds::GetVendorName(vendor_id);
-  if (vendor_name) {
-    return l10n_util::GetStringFUTF16(
-        IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_NAME,
-        base::UTF8ToUTF16(vendor_name));
-  }
-#endif  // !defined(OS_ANDROID)
-  return l10n_util::GetStringFUTF16(
-      IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_ID_AND_PRODUCT_ID,
-      base::ASCIIToUTF16(base::StringPrintf("%04x", vendor_id)),
-      base::ASCIIToUTF16(base::StringPrintf("%04x", product_id)));
-}
-
-std::unique_ptr<base::DictionaryValue> DeviceIdsToDictValue(int vendor_id,
-                                                            int product_id) {
-  auto device_dict = std::make_unique<base::DictionaryValue>();
-  base::string16 device_name = GetDeviceNameFromIds(vendor_id, product_id);
-
-  device_dict->SetKey(kDeviceNameKey, base::Value(device_name));
-  device_dict->SetKey(kVendorIdKey, base::Value(vendor_id));
-  device_dict->SetKey(kProductIdKey, base::Value(product_id));
-  device_dict->SetKey(kSerialNumberKey, base::Value(std::string()));
-
-  return device_dict;
-}
-
-}  // namespace
-
-void UsbChooserContext::Observer::OnDeviceAdded(
-    const device::mojom::UsbDeviceInfo& device_info) {}
-
-void UsbChooserContext::Observer::OnDeviceRemoved(
-    const device::mojom::UsbDeviceInfo& device_info) {}
-
-void UsbChooserContext::Observer::OnPermissionRevoked(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {}
-
-void UsbChooserContext::Observer::OnDeviceManagerConnectionError() {}
-
-UsbChooserContext::UsbChooserContext(Profile* profile)
-    : ChooserContextBase(profile,
-                         CONTENT_SETTINGS_TYPE_USB_GUARD,
-                         CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA),
-      is_incognito_(profile->IsOffTheRecord()),
-      client_binding_(this),
-      weak_factory_(this) {
-  usb_policy_allowed_devices_.reset(
-      new UsbPolicyAllowedDevices(profile->GetPrefs()));
 }
 
 void UsbChooserContext::InitDeviceList(
@@ -201,10 +210,10 @@ UsbChooserContext::~UsbChooserContext() {
   OnDeviceManagerConnectionError();
 }
 
-std::vector<std::unique_ptr<base::DictionaryValue>>
+std::vector<std::unique_ptr<ChooserContextBase::Object>>
 UsbChooserContext::GetGrantedObjects(const GURL& requesting_origin,
                                      const GURL& embedding_origin) {
-  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       ChooserContextBase::GetGrantedObjects(requesting_origin,
                                             embedding_origin);
 
@@ -220,8 +229,68 @@ UsbChooserContext::GetGrantedObjects(const GURL& requesting_origin,
         // which always returns after the device list initialization in this
         // class.
         DCHECK(base::ContainsKey(devices_, guid));
-        objects.push_back(DeviceInfoToDictValue(*devices_[guid]));
+        objects.push_back(std::make_unique<ChooserContextBase::Object>(
+            requesting_origin, embedding_origin,
+            DeviceInfoToDictValue(*devices_[guid]).get(),
+            content_settings::SettingSource::SETTING_SOURCE_USER,
+            is_incognito_));
       }
+    }
+  }
+
+  // Iterate through the user granted objects and create a mapping of device IDs
+  // to device object if the object is also allowed by policy. Any objects that
+  // have been granted by policy are removed from |objects| to avoid duplicate
+  // permissions from being displayed.
+  // TODO(https://crbug.com/926984): This logic is very similar to the logic for
+  // GetAllGrantedObjects(), so it could potentially be centralized.
+  std::map<std::pair<int, int>, base::Value> device_ids_to_object_map;
+  for (auto it = objects.begin(); it != objects.end();) {
+    ChooserContextBase::Object& object = **it;
+    auto device_ids = GetDeviceIds(object.value);
+
+    if (usb_policy_allowed_devices_->IsDeviceAllowed(
+            requesting_origin, embedding_origin, device_ids)) {
+      device_ids_to_object_map[device_ids] = std::move(object.value);
+      it = objects.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  for (const auto& allowed_devices_entry : usb_policy_allowed_devices_->map()) {
+    // The map key is a tuple of (vendor_id, product_id).
+    const int vendor_id = allowed_devices_entry.first.first;
+    const int product_id = allowed_devices_entry.first.second;
+
+    for (const auto& url_pair : allowed_devices_entry.second) {
+      // Skip entries that do not match the |requesting_origin|.
+      if (url_pair.first.GetOrigin() != requesting_origin.GetOrigin())
+        continue;
+
+      // Skip entries that have a non-empty embedding origin that does not match
+      // the given |embedding_origin|.
+      if (!url_pair.second.is_empty() &&
+          url_pair.second.GetOrigin() != embedding_origin.GetOrigin()) {
+        continue;
+      }
+
+      // If there is an entry for the device in |device_ids_to_object_map|, use
+      // that object to represent the device. Otherwise, attempt to figure out
+      // the name of the device from the |vendor_id| and |product_id|.
+      std::unique_ptr<base::DictionaryValue> object;
+      auto it =
+          device_ids_to_object_map.find(std::make_pair(vendor_id, product_id));
+      if (it != device_ids_to_object_map.end()) {
+        object = base::DictionaryValue::From(
+            base::Value::ToUniquePtrValue(std::move(it->second)));
+      } else {
+        object = DeviceIdsToDictValue(vendor_id, product_id);
+      }
+
+      objects.push_back(std::make_unique<ChooserContextBase::Object>(
+          url_pair.first, url_pair.second, object.get(),
+          content_settings::SETTING_SOURCE_POLICY, is_incognito_));
     }
   }
 
@@ -245,25 +314,26 @@ UsbChooserContext::GetAllGrantedObjects() {
       // ChooserContextBase::Object constructor will swap the object.
       auto object = DeviceInfoToDictValue(*devices_[guid]);
       objects.push_back(std::make_unique<ChooserContextBase::Object>(
-          requesting_origin, embedding_origin, object.get(), kSourcePreference,
-          is_incognito_));
+          requesting_origin, embedding_origin, object.get(),
+          content_settings::SETTING_SOURCE_USER, is_incognito_));
     }
   }
 
   // Iterate through the user granted objects to create a mapping of device IDs
   // to device object for the policy granted objects to use, and remove
   // objects that have already been granted permission by the policy.
+  // TODO(https://crbug.com/926984): This logic is very similar to the logic for
+  // GetGrantedObjects(), so it could potentially be centralized.
   std::map<std::pair<int, int>, base::Value> device_ids_to_object_map;
   for (auto it = objects.begin(); it != objects.end();) {
-    const Object& object = **it;
-    auto device_ids = GetDeviceIds(object.object);
+    Object& object = **it;
+    auto device_ids = GetDeviceIds(object.value);
     const GURL& requesting_origin = object.requesting_origin;
     const GURL& embedding_origin = object.embedding_origin;
 
-    device_ids_to_object_map[device_ids] = object.object.Clone();
-
     if (usb_policy_allowed_devices_->IsDeviceAllowed(
             requesting_origin, embedding_origin, device_ids)) {
+      device_ids_to_object_map[device_ids] = std::move(object.value);
       it = objects.erase(it);
     } else {
       ++it;
@@ -276,6 +346,9 @@ UsbChooserContext::GetAllGrantedObjects() {
     const int product_id = allowed_devices_entry.first.second;
 
     for (const auto& url_pair : allowed_devices_entry.second) {
+      // If there is an entry for the device in |device_ids_to_object_map|, use
+      // that object to represent the device. Otherwise, attempt to figure out
+      // the name of the device from the |vendor_id| and |product_id|.
       std::unique_ptr<base::DictionaryValue> object;
       auto it =
           device_ids_to_object_map.find(std::make_pair(vendor_id, product_id));
@@ -287,7 +360,8 @@ UsbChooserContext::GetAllGrantedObjects() {
       }
 
       objects.push_back(std::make_unique<ChooserContextBase::Object>(
-          url_pair.first, url_pair.second, object.get(), kSourcePolicy,
+          url_pair.first, url_pair.second, object.get(),
+          content_settings::SettingSource::SETTING_SOURCE_POLICY,
           is_incognito_));
     }
   }
@@ -307,17 +381,15 @@ void UsbChooserContext::RevokeObjectPermission(
       it->second.erase(guid);
       if (it->second.empty())
         ephemeral_devices_.erase(it);
+      NotifyPermissionRevoked(requesting_origin, embedding_origin);
     }
+
     RecordPermissionRevocation(WEBUSB_PERMISSION_REVOKED_EPHEMERAL);
   } else {
     ChooserContextBase::RevokeObjectPermission(requesting_origin,
                                                embedding_origin, object);
     RecordPermissionRevocation(WEBUSB_PERMISSION_REVOKED);
   }
-
-  // Notify observers about the permission revocation.
-  for (auto& observer : observer_list_)
-    observer.OnPermissionRevoked(requesting_origin, embedding_origin);
 }
 
 void UsbChooserContext::GrantDevicePermission(
@@ -330,6 +402,7 @@ void UsbChooserContext::GrantDevicePermission(
   } else {
     ephemeral_devices_[std::make_pair(requesting_origin, embedding_origin)]
         .insert(device_info.guid);
+    NotifyPermissionChanged();
   }
 }
 
@@ -355,18 +428,18 @@ bool UsbChooserContext::HasDevicePermission(
     return true;
   }
 
-  std::vector<std::unique_ptr<base::DictionaryValue>> device_list =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> object_list =
       GetGrantedObjects(requesting_origin, embedding_origin);
-  for (const std::unique_ptr<base::DictionaryValue>& device_dict :
-       device_list) {
+  for (const auto& object : object_list) {
     int vendor_id;
     int product_id;
     base::string16 serial_number;
-    if (device_dict->GetInteger(kVendorIdKey, &vendor_id) &&
+    const base::DictionaryValue& device_dict = object->value;
+    if (device_dict.GetInteger(kVendorIdKey, &vendor_id) &&
         device_info.vendor_id == vendor_id &&
-        device_dict->GetInteger(kProductIdKey, &product_id) &&
+        device_dict.GetInteger(kProductIdKey, &product_id) &&
         device_info.product_id == product_id &&
-        device_dict->GetString(kSerialNumberKey, &serial_number) &&
+        device_dict.GetString(kSerialNumberKey, &serial_number) &&
         device_info.serial_number == serial_number) {
       return true;
     }
@@ -405,13 +478,13 @@ const device::mojom::UsbDeviceInfo* UsbChooserContext::GetDeviceInfo(
   return it == devices_.end() ? nullptr : it->second.get();
 }
 
-void UsbChooserContext::AddObserver(Observer* observer) {
+void UsbChooserContext::AddObserver(DeviceObserver* observer) {
   EnsureConnectionWithDeviceManager();
-  observer_list_.AddObserver(observer);
+  device_observer_list_.AddObserver(observer);
 }
 
-void UsbChooserContext::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
+void UsbChooserContext::RemoveObserver(DeviceObserver* observer) {
+  device_observer_list_.RemoveObserver(observer);
 }
 
 base::WeakPtr<UsbChooserContext> UsbChooserContext::AsWeakPtr() {
@@ -441,7 +514,7 @@ void UsbChooserContext::OnDeviceAdded(
   devices_.insert(std::make_pair(device_info->guid, device_info->Clone()));
 
   // Notify all observers.
-  for (auto& observer : observer_list_)
+  for (auto& observer : device_observer_list_)
     observer.OnDeviceAdded(*device_info);
 }
 
@@ -452,12 +525,29 @@ void UsbChooserContext::OnDeviceRemoved(
   DCHECK(base::ContainsKey(devices_, device_info->guid));
   devices_.erase(device_info->guid);
 
-  // Notify all observers.
-  for (auto& observer : observer_list_)
+  // Notify all device observers.
+  for (auto& observer : device_observer_list_)
     observer.OnDeviceRemoved(*device_info);
 
-  for (auto& map_entry : ephemeral_devices_)
-    map_entry.second.erase(device_info->guid);
+  // If the device was persistent, return. Otherwise, notify all permission
+  // observers that its permissions were revoked.
+  if (device_info->serial_number &&
+      !device_info->serial_number.value().empty()) {
+    return;
+  }
+
+  std::vector<std::pair<GURL, GURL>> revoked_url_pairs;
+  for (auto& map_entry : ephemeral_devices_) {
+    if (map_entry.second.erase(device_info->guid) > 0)
+      revoked_url_pairs.push_back(map_entry.first);
+  }
+
+  for (auto& observer : permission_observer_list_) {
+    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
+                                              data_content_settings_type_);
+    for (auto& url_pair : revoked_url_pairs)
+      observer.OnPermissionRevoked(url_pair.first, url_pair.second);
+  }
 }
 
 void UsbChooserContext::OnDeviceManagerConnectionError() {
@@ -465,11 +555,24 @@ void UsbChooserContext::OnDeviceManagerConnectionError() {
   client_binding_.Close();
   devices_.clear();
   is_initialized_ = false;
+
+  // Store the revoked URLs to notify observers of the revoked permissions.
+  std::vector<std::pair<GURL, GURL>> revoked_url_pairs;
+  for (auto& map_entry : ephemeral_devices_)
+    revoked_url_pairs.push_back(map_entry.first);
   ephemeral_devices_.clear();
 
-  // Notify all observers.
-  for (auto& observer : observer_list_)
+  // Notify all device observers.
+  for (auto& observer : device_observer_list_)
     observer.OnDeviceManagerConnectionError();
+
+  // Notify all permission observers.
+  for (auto& observer : permission_observer_list_) {
+    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
+                                              data_content_settings_type_);
+    for (auto& url_pair : revoked_url_pairs)
+      observer.OnPermissionRevoked(url_pair.first, url_pair.second);
+  }
 }
 
 void UsbChooserContext::SetDeviceManagerForTesting(

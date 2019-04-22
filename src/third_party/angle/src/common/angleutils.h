@@ -307,11 +307,11 @@ std::string ToString(const T &value)
 #ifndef ANGLE_STRINGIFY
 #    define ANGLE_STRINGIFY(x) #x
 #endif
+// clang-format on
 
 #ifndef ANGLE_MACRO_STRINGIFY
 #    define ANGLE_MACRO_STRINGIFY(x) ANGLE_STRINGIFY(x)
 #endif
-// clang-format on
 
 // Detect support for C++17 [[nodiscard]]
 #if !defined(__has_cpp_attribute)
@@ -323,5 +323,11 @@ std::string ToString(const T &value)
 #else
 #    define ANGLE_NO_DISCARD
 #endif  // __has_cpp_attribute(nodiscard)
+
+#if __has_cpp_attribute(maybe_unused)
+#    define ANGLE_MAYBE_UNUSED [[maybe_unused]]
+#else
+#    define ANGLE_MAYBE_UNUSED
+#endif  // __has_cpp_attribute(maybe_unused)
 
 #endif  // COMMON_ANGLEUTILS_H_

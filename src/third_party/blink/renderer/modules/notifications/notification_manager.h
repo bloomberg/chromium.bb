@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
 
-#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
+#include "base/macros.h"
+#include "third_party/blink/public/mojom/notifications/notification_service.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_notification_permission_callback.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -27,7 +27,6 @@ class NotificationManager final
     : public GarbageCollectedFinalized<NotificationManager>,
       public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(NotificationManager);
-  WTF_MAKE_NONCOPYABLE(NotificationManager);
 
  public:
   static const char kSupplementName[];
@@ -71,9 +70,11 @@ class NotificationManager final
 
   // Asynchronously gets the persistent notifications belonging to the Service
   // Worker Registration. If |filter_tag| is not an empty string, only the
-  // notification with the given tag will be considered.
+  // notification with the given tag will be considered. If |include_triggered|
+  // is true, this will include scheduled notifications.
   void GetNotifications(int64_t service_worker_registration_id,
                         const WebString& filter_tag,
+                        bool include_triggered,
                         ScriptPromiseResolver* resolver);
 
   void Trace(blink::Visitor* visitor) override;
@@ -103,6 +104,8 @@ class NotificationManager final
 
   mojom::blink::NotificationServicePtr notification_service_;
   mojom::blink::PermissionServicePtr permission_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationManager);
 };
 
 }  // namespace blink

@@ -61,11 +61,11 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   void OnConsoleMessage(int32_t id, const std::string& message) override;
   void CacheShader(const std::string& key, const std::string& shader) override;
   void OnFenceSyncRelease(uint64_t release) override;
-  bool OnWaitSyncToken(const gpu::SyncToken&) override;
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
   void ScheduleGrContextCleanup() override {}
+  void HandleReturnData(base::span<const uint8_t> data) override {}
 
   // Template to call glGenXXX functions.
   template <typename T>
@@ -532,9 +532,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   void DoLockDiscardableTextureCHROMIUM(GLuint texture_id);
   bool IsDiscardableTextureUnlocked(GLuint texture_id);
 
-  GLvoid* BufferOffset(unsigned i) {
-    return static_cast<int8_t*>(nullptr) + (i);
-  }
+  GLvoid* BufferOffset(unsigned i) { return reinterpret_cast<GLvoid*>(i); }
 
   template <typename Command, typename Result>
   bool IsObjectHelper(GLuint client_id) {
@@ -853,11 +851,11 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
   void OnConsoleMessage(int32_t id, const std::string& message) override;
   void CacheShader(const std::string& key, const std::string& shader) override;
   void OnFenceSyncRelease(uint64_t release) override;
-  bool OnWaitSyncToken(const gpu::SyncToken&) override;
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
   void ScheduleGrContextCleanup() override {}
+  void HandleReturnData(base::span<const uint8_t> data) override {}
 
   void SetUp() override;
   void TearDown() override;
@@ -1003,6 +1001,7 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
     return &passthrough_discardable_manager_;
   }
   ContextGroup* group() { return group_.get(); }
+  FeatureInfo* feature_info() { return group_->feature_info(); }
 
   static const size_t kSharedBufferSize = 2048;
   static const uint32_t kSharedMemoryOffset = 132;

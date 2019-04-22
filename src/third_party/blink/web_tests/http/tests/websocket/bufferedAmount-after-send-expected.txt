@@ -2,7 +2,6 @@ WebSocket bufferedAmount after send
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 onopen
 PASS ws.bufferedAmount is 5
 PASS ws.bufferedAmount is 37

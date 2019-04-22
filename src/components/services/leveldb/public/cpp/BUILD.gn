@@ -17,3 +17,16 @@ static_library("cpp") {
     "//third_party/leveldatabase",
   ]
 }
+
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/services/leveldb/public/interfaces",
+    "//services/service_manager/public/cpp",
+  ]
+}

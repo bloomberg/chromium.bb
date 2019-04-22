@@ -41,9 +41,8 @@ void ExternalClearKeyTestHelper::LoadLibrary() {
   ASSERT_TRUE(base::PathExists(library_path_)) << library_path_.value();
 
   // Now load the CDM library.
-  base::NativeLibraryLoadError error;
-  library_.Reset(base::LoadNativeLibrary(library_path_, &error));
-  ASSERT_TRUE(library_.is_valid()) << error.ToString();
+  library_ = base::ScopedNativeLibrary(library_path_);
+  ASSERT_TRUE(library_.is_valid()) << library_.GetError()->ToString();
 
   // Call INITIALIZE_CDM_MODULE()
   typedef void (*InitializeCdmFunc)();

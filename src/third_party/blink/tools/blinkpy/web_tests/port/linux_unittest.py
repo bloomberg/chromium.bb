@@ -29,6 +29,7 @@
 import logging
 import optparse
 
+from blinkpy.common.exit_codes import SYS_DEPS_EXIT_STATUS
 from blinkpy.common.system.executive_mock import MockExecutive, MockProcess
 from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.common.system.system_host_mock import MockSystemHost
@@ -85,15 +86,23 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
         self.assertEqual('linux', self.make_port().operating_system())
 
     def test_driver_name_option(self):
+        # pylint: disable=protected-access
         self.assertTrue(self.make_port()._path_to_driver().endswith('content_shell'))
         port = self.make_port(options=optparse.Values({'driver_name': 'OtherDriver'}))
-        self.assertTrue(port._path_to_driver().endswith('OtherDriver'))  # pylint: disable=protected-access
+        self.assertTrue(port._path_to_driver().endswith('OtherDriver'))
 
     def test_path_to_image_diff(self):
+        # pylint: disable=protected-access
         self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/image_diff')
 
     def test_dummy_home_dir_is_created_and_cleaned_up(self):
+        def run_command_fake(args):
+            if args[0:2] == ['xdpyinfo', '-display']:
+                return 1
+            return 0
+
         port = self.make_port()
+        port.host.executive = MockExecutive(run_command_fn=run_command_fake)
         port.host.environ['HOME'] = '/home/user'
         port.host.filesystem.files['/home/user/.Xauthority'] = ''
 
@@ -116,9 +125,9 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
             return 0
 
         port = self.make_port()
-        port.host.executive = MockExecutive(
-            run_command_fn=run_command_fake)
-        port.setup_test_run()
+        port.host.executive = MockExecutive(run_command_fn=run_command_fake)
+
+        self.assertIsNone(port.setup_test_run())
         self.assertEqual(
             port.host.executive.calls,
             [
@@ -138,8 +147,8 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
         port = self.make_port()
         port.host.environ['TMPDIR'] = '/foo/bar'
         port.host.executive = MockExecutive(run_command_fn=run_command_fake)
-        port.setup_test_run()
 
+        self.assertIsNone(port.setup_test_run())
         self.assertEqual(
             port.host.executive.calls,
             [
@@ -158,13 +167,14 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
             return 0
 
         port = self.make_port()
-        port.host.executive = MockExecutive(
-            run_command_fn=run_command_fake)
-        port.setup_test_run()
+        port.host.filesystem.files['/tmp/.X99-lock'] = ''
+        port.host.executive = MockExecutive(run_command_fn=run_command_fake)
+
+        self.assertIsNone(port.setup_test_run())
         self.assertEqual(
             port.host.executive.calls,
             [
-                ['xdpyinfo', '-display', ':99'],
+                # Do not call `xdpyinfo -display :99` because the lock exists.
                 ['xdpyinfo', '-display', ':100'],
                 ['xdpyinfo', '-display', ':101'],
                 ['xdpyinfo', '-display', ':102'],
@@ -188,9 +198,9 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
             return 0
 
         port = self.make_port()
-        port.host.executive = MockExecutive(
-            run_command_fn=run_command_fake)
-        port.setup_test_run()
+        port.host.executive = MockExecutive(run_command_fn=run_command_fake)
+
+        self.assertIsNone(port.setup_test_run())
         self.assertEqual(
             port.host.executive.calls,
             [
@@ -212,11 +222,10 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
 
         host = MockSystemHost(os_name=self.os_name, os_version=self.os_version)
         port = self.make_port(host=host)
-        port.host.executive = MockExecutive(
-            run_command_fn=run_command_fake)
+        port.host.executive = MockExecutive(run_command_fn=run_command_fake)
         self.set_logging_level(logging.DEBUG)
 
-        port.setup_test_run()
+        self.assertEqual(port.setup_test_run(), SYS_DEPS_EXIT_STATUS)
         self.assertEqual(
             port.host.executive.calls,
             [
@@ -249,7 +258,7 @@ class LinuxPortTest(port_testcase.PortTestCase, LoggingTestCase):
             run_command_fn=run_command_fake, proc=proc)
         self.set_logging_level(logging.DEBUG)
 
-        port.setup_test_run()
+        self.assertEqual(port.setup_test_run(), SYS_DEPS_EXIT_STATUS)
         self.assertEqual(
             port.host.executive.calls,
             [

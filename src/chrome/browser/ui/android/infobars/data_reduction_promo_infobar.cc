@@ -11,7 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_promo_infobar_delegate_android.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_promo_infobar_delegate_android.h"
 #include "content/public/browser/web_contents.h"
 
 // DataReductionPromoInfoBar --------------------------------------------------

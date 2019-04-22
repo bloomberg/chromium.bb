@@ -16,10 +16,55 @@ FrameOrWorkerScheduler::LifecycleObserverHandle::~LifecycleObserverHandle() {
     scheduler_->RemoveLifecycleObserver(observer_);
 }
 
+FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle::
+    SchedulingAffectingFeatureHandle(
+        SchedulingPolicy::Feature feature,
+        SchedulingPolicy policy,
+        base::WeakPtr<FrameOrWorkerScheduler> scheduler)
+    : feature_(feature), policy_(policy), scheduler_(std::move(scheduler)) {
+  if (!scheduler_)
+    return;
+  scheduler_->OnStartedUsingFeature(feature_, policy_);
+}
+
+FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle::
+    SchedulingAffectingFeatureHandle(SchedulingAffectingFeatureHandle&& other)
+    : feature_(other.feature_), scheduler_(std::move(other.scheduler_)) {
+  other.scheduler_ = nullptr;
+}
+
+FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle&
+FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle::operator=(
+    SchedulingAffectingFeatureHandle&& other) {
+  feature_ = other.feature_;
+  policy_ = std::move(other.policy_);
+  scheduler_ = std::move(other.scheduler_);
+  other.scheduler_ = nullptr;
+  return *this;
+}
+
 FrameOrWorkerScheduler::FrameOrWorkerScheduler() : weak_factory_(this) {}
 
 FrameOrWorkerScheduler::~FrameOrWorkerScheduler() {
   weak_factory_.InvalidateWeakPtrs();
+}
+
+FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
+FrameOrWorkerScheduler::RegisterFeature(SchedulingPolicy::Feature feature,
+                                        SchedulingPolicy policy) {
+  DCHECK(!SchedulingPolicy::IsFeatureSticky(feature));
+  // We reset feature sets upon frame navigation, so having a document-bound
+  // weak pointer ensures that the feature handle associated with previous
+  // document can't influence the new one.
+  return SchedulingAffectingFeatureHandle(feature, policy,
+                                          GetDocumentBoundWeakPtr());
+}
+
+void FrameOrWorkerScheduler::RegisterStickyFeature(
+    SchedulingPolicy::Feature feature,
+    SchedulingPolicy policy) {
+  DCHECK(SchedulingPolicy::IsFeatureSticky(feature));
+  OnStartedUsingFeature(feature, policy);
 }
 
 std::unique_ptr<FrameOrWorkerScheduler::LifecycleObserverHandle>
@@ -43,6 +88,11 @@ void FrameOrWorkerScheduler::NotifyLifecycleObservers() {
     observer.first->OnLifecycleStateChanged(
         CalculateLifecycleState(observer.second));
   }
+}
+
+base::WeakPtr<FrameOrWorkerScheduler>
+FrameOrWorkerScheduler::GetDocumentBoundWeakPtr() {
+  return nullptr;
 }
 
 base::WeakPtr<FrameOrWorkerScheduler> FrameOrWorkerScheduler::GetWeakPtr() {

@@ -306,7 +306,7 @@ class AutofillTable : public WebDatabaseTable,
   // |prefix|.  The comparison of the prefix is case insensitive.
   bool GetFormValuesForElementName(const base::string16& name,
                                    const base::string16& prefix,
-                                   std::vector<base::string16>* values,
+                                   std::vector<AutofillEntry>* entries,
                                    int limit);
 
   // Removes rows from the autofill table if they were created on or after
@@ -409,11 +409,13 @@ class AutofillTable : public WebDatabaseTable,
   // addresses.
   bool AddServerCardMetadata(const AutofillMetadata& card_metadata);
   bool UpdateServerCardMetadata(const CreditCard& credit_card);
+  bool UpdateServerCardMetadata(const AutofillMetadata& card_metadata);
   bool RemoveServerCardMetadata(const std::string& id);
   bool GetServerCardsMetadata(
       std::map<std::string, AutofillMetadata>* cards_metadata) const;
   bool AddServerAddressMetadata(const AutofillMetadata& address_metadata);
   bool UpdateServerAddressMetadata(const AutofillProfile& profile);
+  bool UpdateServerAddressMetadata(const AutofillMetadata& address_metadata);
   bool RemoveServerAddressMetadata(const std::string& id);
   bool GetServerAddressesMetadata(
       std::map<std::string, AutofillMetadata>* addresses_metadata) const;
@@ -450,8 +452,8 @@ class AutofillTable : public WebDatabaseTable,
   bool RemoveAutofillDataModifiedBetween(
       const base::Time& delete_begin,
       const base::Time& delete_end,
-      std::vector<std::string>* profile_guids,
-      std::vector<std::string>* credit_card_guids);
+      std::vector<std::unique_ptr<AutofillProfile>>* profiles,
+      std::vector<std::unique_ptr<CreditCard>>* credit_cards);
 
   // Removes origin URLs from the autofill_profiles and credit_cards tables if
   // they were written on or after |delete_begin| and strictly before
@@ -558,6 +560,12 @@ class AutofillTable : public WebDatabaseTable,
   FRIEND_TEST_ALL_PREFIXES(
       AutofillTableTest,
       Autofill_RemoveFormElementsAddedBetween_OlderThan30Days);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
+                           RemoveExpiredFormElements_FlagOff_Removes);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
+                           RemoveExpiredFormElements_FlagOn_Expires);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
+                           RemoveExpiredFormElements_FlagOn_NotOldEnough);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_AddFormFieldValues);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, AutofillProfile);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, UpdateAutofillProfile);
@@ -573,6 +581,7 @@ class AutofillTable : public WebDatabaseTable,
                            Autofill_GetAllAutofillEntries_TwoDistinct);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
                            Autofill_GetAllAutofillEntries_TwoSame);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_GetEntry_Populated);
 
   // Methods for adding autofill entries at a specified time.  For
   // testing only.

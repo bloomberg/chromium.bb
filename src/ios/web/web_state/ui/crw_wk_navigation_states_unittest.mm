@@ -6,6 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
+#import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/web_state/navigation_context_impl.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -92,6 +93,53 @@ TEST_F(CRWWKNavigationStatesTest, LastAddedNavigation) {
   EXPECT_EQ(WKNavigationState::NONE, [states_ lastAddedNavigationState]);
 }
 
+// Tests |lastNavigationWithPendingItemInNavigationContext| method.
+TEST_F(CRWWKNavigationStatesTest,
+       LastNavigationWithPendingItemInNavigationContext) {
+  // Empty state.
+  EXPECT_FALSE([states_ lastNavigationWithPendingItemInNavigationContext]);
+
+  // Navigation without context.
+  [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation1_];
+  EXPECT_FALSE([states_ lastNavigationWithPendingItemInNavigationContext]);
+
+  // Navigation with context that does not have pending item.
+  std::unique_ptr<web::NavigationContextImpl> context =
+      NavigationContextImpl::CreateNavigationContext(
+          nullptr /*web_state*/, GURL(kTestUrl1), /*has_user_gesture=*/false,
+          ui::PageTransition::PAGE_TRANSITION_SERVER_REDIRECT,
+          /*is_renderer_initiated=*/true);
+  web::NavigationContextImpl* context_ptr = context.get();
+  [states_ setContext:std::move(context) forNavigation:navigation1_];
+  EXPECT_FALSE([states_ lastNavigationWithPendingItemInNavigationContext]);
+
+  // Navigation with context that has pending item.
+  auto item = std::make_unique<NavigationItemImpl>();
+  context_ptr->SetNavigationItemUniqueID(item->GetUniqueID());
+  context_ptr->SetItem(std::move(item));
+  EXPECT_EQ(navigation1_,
+            [states_ lastNavigationWithPendingItemInNavigationContext]);
+
+  // Newest context does not have pending item.
+  std::unique_ptr<web::NavigationContextImpl> context2 =
+      NavigationContextImpl::CreateNavigationContext(
+          nullptr /*web_state*/, GURL(kTestUrl1), /*has_user_gesture=*/false,
+          ui::PageTransition::PAGE_TRANSITION_SERVER_REDIRECT,
+          /*is_renderer_initiated=*/true);
+  web::NavigationContextImpl* context_ptr2 = context2.get();
+  [states_ setState:WKNavigationState::REQUESTED forNavigation:navigation2_];
+  [states_ setContext:std::move(context2) forNavigation:navigation2_];
+  EXPECT_EQ(navigation1_,
+            [states_ lastNavigationWithPendingItemInNavigationContext]);
+
+  // Navigation with newest context that has pending item.
+  auto item2 = std::make_unique<NavigationItemImpl>();
+  context_ptr2->SetNavigationItemUniqueID(item2->GetUniqueID());
+  context_ptr2->SetItem(std::move(item2));
+  EXPECT_EQ(navigation2_,
+            [states_ lastNavigationWithPendingItemInNavigationContext]);
+}
+
 // Tests |setContext:forNavigation:| and |contextForNavigation:| methods.
 TEST_F(CRWWKNavigationStatesTest, Context) {
   EXPECT_FALSE([states_ contextForNavigation:navigation1_]);
@@ -134,6 +182,14 @@ TEST_F(CRWWKNavigationStatesTest, Context) {
   EXPECT_EQ(error, [states_ contextForNavigation:navigation1_]->GetError());
   EXPECT_TRUE(
       [states_ contextForNavigation:navigation1_]->IsRendererInitiated());
+
+  // Extract existing context.
+  std::unique_ptr<web::NavigationContextImpl> extractedContext =
+      [states_ removeNavigation:navigation1_];
+  EXPECT_EQ(GURL(kTestUrl2), extractedContext->GetUrl());
+  EXPECT_FALSE(extractedContext->IsSameDocument());
+  EXPECT_EQ(error, extractedContext->GetError());
+  EXPECT_TRUE(extractedContext->IsRendererInitiated());
 }
 
 // Tests null WKNavigation object.

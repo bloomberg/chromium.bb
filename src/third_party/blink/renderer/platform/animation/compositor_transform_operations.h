@@ -7,12 +7,15 @@
 
 #include "cc/animation/transform_operations.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 class SkMatrix44;
 
 namespace blink {
 
 class PLATFORM_EXPORT CompositorTransformOperations {
+  STACK_ALLOCATED();
+
  public:
   const cc::TransformOperations& AsCcTransformOperations() const;
   cc::TransformOperations ReleaseCcTransformOperations();

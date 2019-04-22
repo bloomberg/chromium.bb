@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/transformer_helper.h"
-#include "services/ws/host_event_dispatcher.h"
 #include "ui/aura/mus/input_method_mus_delegate.h"
 #include "ui/aura/window_tree_host_platform.h"
 
@@ -19,7 +18,7 @@ class InputMethodMus;
 }
 
 namespace ws {
-class HostEventQueue;
+class EventQueue;
 }
 
 namespace ui {
@@ -27,12 +26,12 @@ struct PlatformWindowInitProperties;
 }
 
 namespace ash {
+class ExtendedMouseWarpControllerTest;
 
 class ASH_EXPORT AshWindowTreeHostPlatform
     : public AshWindowTreeHost,
       public aura::WindowTreeHostPlatform,
-      public aura::InputMethodMusDelegate,
-      public ws::HostEventDispatcher {
+      public aura::InputMethodMusDelegate {
  public:
   explicit AshWindowTreeHostPlatform(
       ui::PlatformWindowInitProperties properties);
@@ -40,6 +39,10 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   ~AshWindowTreeHostPlatform() override;
 
  protected:
+  friend ExtendedMouseWarpControllerTest;
+  FRIEND_TEST_ALL_PREFIXES(ExtendedMouseWarpControllerTest,
+                           CheckHostPointToScreenInMouseWarpRegion);
+
   AshWindowTreeHostPlatform();
 
   // AshWindowTreeHost:
@@ -68,16 +71,14 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   void SetBoundsInPixels(const gfx::Rect& bounds,
                          const viz::LocalSurfaceIdAllocation&
                              local_surface_id_allocation) override;
-  void DispatchEvent(ui::Event* event) override;
   bool ShouldSendKeyEventToIme() override;
+  void DispatchEvent(ui::Event* event) override;
+  ui::EventDispatchDetails DeliverEventToSink(ui::Event* event) override;
 
   // aura::InputMethodMusDelegate:
   void SetTextInputState(ui::mojom::TextInputStatePtr state) override;
   void SetImeVisibility(bool visible,
                         ui::mojom::TextInputStatePtr state) override;
-
-  // ws::HostEventDispatcher:
-  void DispatchEventFromQueue(ui::Event* event) override;
 
  private:
   // All constructors call into this.
@@ -97,7 +98,7 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   // those connections are correctly established.
   std::unique_ptr<aura::InputMethodMus> input_method_;
 
-  std::unique_ptr<ws::HostEventQueue> host_event_queue_;
+  ws::EventQueue* event_queue_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AshWindowTreeHostPlatform);
 };

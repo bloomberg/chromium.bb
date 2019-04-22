@@ -29,7 +29,8 @@ namespace {
 const int kMaxImageFileSize = 50*1014*1024;
 
 std::unique_ptr<std::string> ReadOnFileThread(const base::FilePath& path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   std::unique_ptr<std::string> result;
 
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);

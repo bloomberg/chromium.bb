@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -137,9 +138,8 @@ class TestURLFetcher : public URLFetcher {
   void SaveResponseWithWriter(
       std::unique_ptr<URLFetcherResponseWriter> response_writer) override;
   HttpResponseHeaders* GetResponseHeaders() const override;
-  HostPortPair GetSocketAddress() const override;
+  IPEndPoint GetSocketAddress() const override;
   const ProxyServer& ProxyServerUsed() const override;
-  bool WasFetchedViaProxy() const override;
   bool WasCached() const override;
   // Only valid when the response was set via SetResponseString().
   int64_t GetReceivedResponseContentLength() const override;
@@ -234,7 +234,6 @@ class TestURLFetcher : public URLFetcher {
   base::FilePath fake_response_file_path_;
   bool write_response_file_;
   ProxyServer fake_proxy_server_;
-  bool fake_was_fetched_via_proxy_;
   bool fake_was_cached_;
   int64_t fake_response_bytes_;
   scoped_refptr<HttpResponseHeaders> fake_response_headers_;

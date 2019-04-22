@@ -35,7 +35,10 @@ enum class InstallResultCode {
   kPreviouslyUninstalled = 4,
   kWebContentsDestroyed = 5,
   kWriteDataFailed = 6,
-  kMaxValue = kWriteDataFailed,
+  kUserInstallDeclined = 7,
+  kInstallManagerDestroyed = 8,
+  kWindowOpened = 9,
+  kMaxValue = kWindowOpened,
 };
 
 // Where an app was installed from. This affects what flags will be used when
@@ -87,6 +90,11 @@ enum class InstallSource {
   // The corresponding SynchronizeInstalledApps call site is in
   // SystemWebAppManager::RefreshPolicyInstalledApps.
   kSystemInstalled = 3,
+  // Installed from ARC.
+  //
+  // There is no call to SynchronizeInstalledApps for this type, as these apps
+  // are not installed via PendingAppManager.
+  kArc = 4,
 };
 
 }  // namespace web_app

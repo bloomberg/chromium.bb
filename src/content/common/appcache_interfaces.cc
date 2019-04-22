@@ -6,8 +6,6 @@
 
 #include <set>
 
-#include "base/strings/pattern.h"
-#include "base/strings/string_util.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -16,34 +14,6 @@ namespace content {
 
 const char kHttpGETMethod[] = "GET";
 const char kHttpHEADMethod[] = "HEAD";
-
-AppCacheNamespace::AppCacheNamespace()
-    : type(APPCACHE_FALLBACK_NAMESPACE), is_pattern(false) {}
-
-AppCacheNamespace::AppCacheNamespace(AppCacheNamespaceType type,
-                                     const GURL& url,
-                                     const GURL& target,
-                                     bool is_pattern)
-    : type(type),
-      namespace_url(url),
-      target_url(target),
-      is_pattern(is_pattern) {}
-
-AppCacheNamespace::~AppCacheNamespace() {
-}
-
-bool AppCacheNamespace::IsMatch(const GURL& url) const {
-  if (is_pattern) {
-    // We have to escape '?' characters since MatchPattern also treats those
-    // as wildcards which we don't want here, we only do '*'s.
-    std::string pattern = namespace_url.spec();
-    if (namespace_url.has_query())
-      base::ReplaceSubstringsAfterOffset(&pattern, 0, "?", "\\?");
-    return base::MatchPattern(url.spec(), pattern);
-  }
-  return base::StartsWith(url.spec(), namespace_url.spec(),
-                          base::CompareCase::SENSITIVE);
-}
 
 bool IsSchemeSupportedForAppCache(const GURL& url) {
   bool supported = url.SchemeIs(url::kHttpScheme) ||

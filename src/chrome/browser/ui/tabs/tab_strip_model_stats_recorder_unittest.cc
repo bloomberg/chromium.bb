@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_model_stats_recorder.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -21,21 +24,8 @@ using content::WebContents;
 class TabStripModelStatsRecorderTest : public ChromeRenderViewHostTestHarness {
 };
 
-class NoUnloadListenerTabStripModelDelegate : public TestTabStripModelDelegate {
- public:
-  NoUnloadListenerTabStripModelDelegate() {}
-  ~NoUnloadListenerTabStripModelDelegate() override {}
-
-  bool RunUnloadListenerBeforeClosing(WebContents* contents) override {
-    return false;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NoUnloadListenerTabStripModelDelegate);
-};
-
 TEST_F(TabStripModelStatsRecorderTest, BasicTabLifecycle) {
-  NoUnloadListenerTabStripModelDelegate delegate;
+  TestTabStripModelDelegate delegate;
   TabStripModel tabstrip(&delegate, profile());
 
   TabStripModelStatsRecorder recorder;
@@ -60,7 +50,8 @@ TEST_F(TabStripModelStatsRecorderTest, BasicTabLifecycle) {
       static_cast<int>(TabStripModelStatsRecorder::TabState::INACTIVE), 1);
 
   // Reactivate the first tab.
-  tabstrip.ActivateTabAt(tabstrip.GetIndexOfWebContents(raw_contents1), true);
+  tabstrip.ActivateTabAt(tabstrip.GetIndexOfWebContents(raw_contents1),
+                         {TabStripModel::GestureType::kOther});
 
   tester.ExpectUniqueSample(
       "Tabs.StateTransfer.Target_Active",
@@ -97,7 +88,7 @@ TEST_F(TabStripModelStatsRecorderTest, BasicTabLifecycle) {
 }
 
 TEST_F(TabStripModelStatsRecorderTest, ObserveMultipleTabStrips) {
-  NoUnloadListenerTabStripModelDelegate delegate;
+  TestTabStripModelDelegate delegate;
   TabStripModel tabstrip1(&delegate, profile());
   TabStripModel tabstrip2(&delegate, profile());
 
@@ -143,7 +134,7 @@ TEST_F(TabStripModelStatsRecorderTest, ObserveMultipleTabStrips) {
       static_cast<int>(TabStripModelStatsRecorder::TabState::ACTIVE), 1);
 
   // Switch to the first tab in strip 2.
-  tabstrip2.ActivateTabAt(0, true);
+  tabstrip2.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   tester.ExpectUniqueSample(
       "Tabs.StateTransfer.Target_Active",
       static_cast<int>(TabStripModelStatsRecorder::TabState::INACTIVE), 4);
@@ -166,7 +157,7 @@ TEST_F(TabStripModelStatsRecorderTest, ObserveMultipleTabStrips) {
 
 TEST_F(TabStripModelStatsRecorderTest,
        NumberOfOtherTabsActivatedBeforeMadeActive) {
-  NoUnloadListenerTabStripModelDelegate delegate;
+  TestTabStripModelDelegate delegate;
   TabStripModel tabstrip(&delegate, profile());
 
   TabStripModelStatsRecorder recorder;
@@ -187,7 +178,8 @@ TEST_F(TabStripModelStatsRecorderTest,
   }
 
   // Reactivate the first tab
-  tabstrip.ActivateTabAt(tabstrip.GetIndexOfWebContents(raw_contents0), true);
+  tabstrip.ActivateTabAt(tabstrip.GetIndexOfWebContents(raw_contents0),
+                         {TabStripModel::GestureType::kOther});
 
   tester.ExpectUniqueSample(
       "Tabs.StateTransfer.NumberOfOtherTabsActivatedBeforeMadeActive", 9, 1);
@@ -198,7 +190,7 @@ TEST_F(TabStripModelStatsRecorderTest,
 
 TEST_F(TabStripModelStatsRecorderTest,
        NumberOfOtherTabsActivatedBeforeMadeActive_CycleTabs) {
-  NoUnloadListenerTabStripModelDelegate delegate;
+  TestTabStripModelDelegate delegate;
   TabStripModel tabstrip(&delegate, profile());
 
   TabStripModelStatsRecorder recorder;
@@ -222,10 +214,13 @@ TEST_F(TabStripModelStatsRecorderTest,
 
   // Switch between tabs {0,1} for 5 times, then switch to tab 2
   for (int i = 0; i < 5; ++i) {
-    tabstrip.ActivateTabAt(tabstrip.GetIndexOfWebContents(raw_contents0), true);
-    tabstrip.ActivateTabAt(tabstrip.GetIndexOfWebContents(raw_contents1), true);
+    tabstrip.ActivateTabAt(tabstrip.GetIndexOfWebContents(raw_contents0),
+                           {TabStripModel::GestureType::kOther});
+    tabstrip.ActivateTabAt(tabstrip.GetIndexOfWebContents(raw_contents1),
+                           {TabStripModel::GestureType::kOther});
   }
-  tabstrip.ActivateTabAt(tabstrip.GetIndexOfWebContents(raw_contents2), true);
+  tabstrip.ActivateTabAt(tabstrip.GetIndexOfWebContents(raw_contents2),
+                         {TabStripModel::GestureType::kOther});
 
   EXPECT_THAT(
       tester.GetAllSamples(

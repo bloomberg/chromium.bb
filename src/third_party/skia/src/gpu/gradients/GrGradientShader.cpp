@@ -7,24 +7,26 @@
 
 #include "GrGradientShader.h"
 
-#include "GrClampedGradientEffect.h"
-#include "GrTiledGradientEffect.h"
+#include "generated/GrClampedGradientEffect.h"
+#include "generated/GrTiledGradientEffect.h"
 
-#include "GrLinearGradientLayout.h"
-#include "GrRadialGradientLayout.h"
-#include "GrSweepGradientLayout.h"
-#include "GrTwoPointConicalGradientLayout.h"
+#include "generated/GrLinearGradientLayout.h"
+#include "generated/GrRadialGradientLayout.h"
+#include "generated/GrSweepGradientLayout.h"
+#include "generated/GrTwoPointConicalGradientLayout.h"
 
-#include "GrDualIntervalGradientColorizer.h"
-#include "GrSingleIntervalGradientColorizer.h"
-#include "GrTextureGradientColorizer.h"
-#include "GrUnrolledBinaryGradientColorizer.h"
+#include "generated/GrDualIntervalGradientColorizer.h"
+#include "generated/GrSingleIntervalGradientColorizer.h"
+#include "generated/GrTextureGradientColorizer.h"
+#include "generated/GrUnrolledBinaryGradientColorizer.h"
 #include "GrGradientBitmapCache.h"
 
-#include "SkGr.h"
+#include "GrCaps.h"
 #include "GrColor.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
+#include "GrColorSpaceInfo.h"
+#include "GrRecordingContext.h"
+#include "GrRecordingContextPriv.h"
+#include "SkGr.h"
 
 // Intervals smaller than this (that aren't hard stops) on low-precision-only devices force us to
 // use the textured gradient
@@ -44,7 +46,7 @@ static std::unique_ptr<GrFragmentProcessor> make_textured_colorizer(const SkPMCo
     // TODO: Use 1010102 for opaque gradients, at least if destination is 1010102?
     SkColorType colorType = kRGBA_8888_SkColorType;
     if (kLow_GrSLPrecision != GrSLSamplerPrecision(args.fDstColorSpaceInfo->config()) &&
-        args.fContext->contextPriv().caps()->isConfigTexturable(kRGBA_half_GrPixelConfig)) {
+        args.fContext->priv().caps()->isConfigTexturable(kRGBA_half_GrPixelConfig)) {
         colorType = kRGBA_F16_SkColorType;
     }
     SkAlphaType alphaType = premul ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
@@ -55,7 +57,7 @@ static std::unique_ptr<GrFragmentProcessor> make_textured_colorizer(const SkPMCo
     SkASSERT(bitmap.isImmutable());
 
     sk_sp<GrTextureProxy> proxy = GrMakeCachedBitmapProxy(
-            args.fContext->contextPriv().proxyProvider(), bitmap);
+            args.fContext->priv().proxyProvider(), bitmap);
     if (proxy == nullptr) {
         SkDebugf("Gradient won't draw. Could not create texture.");
         return nullptr;
@@ -103,7 +105,7 @@ static std::unique_ptr<GrFragmentProcessor> make_colorizer(const SkPMColor4f* co
     // 32-bit, output can be incorrect if the thresholds are too close together. However, the
     // analytic shaders are higher quality, so they can be used with lower precision hardware when
     // the thresholds are not ill-conditioned.
-    const GrShaderCaps* caps = args.fContext->contextPriv().caps()->shaderCaps();
+    const GrShaderCaps* caps = args.fContext->priv().caps()->shaderCaps();
     if (!caps->floatIs32Bits() && tryAnalyticColorizer) {
         // Could run into problems, check if thresholds are close together (with a limit of .01, so
         // that scales will be less than 100, which leaves 4 decimals of precision on 16-bit).
@@ -205,15 +207,15 @@ static std::unique_ptr<GrFragmentProcessor> make_gradient(const SkGradientShader
     // All tile modes are supported (unless something was added to SkShader)
     std::unique_ptr<GrFragmentProcessor> master;
     switch(shader.getTileMode()) {
-        case SkShader::kRepeat_TileMode:
+        case SkTileMode::kRepeat:
             master = GrTiledGradientEffect::Make(std::move(colorizer), std::move(layout),
                                                  /* mirror */ false, makePremul, allOpaque);
             break;
-        case SkShader::kMirror_TileMode:
+        case SkTileMode::kMirror:
             master = GrTiledGradientEffect::Make(std::move(colorizer), std::move(layout),
                                                  /* mirror */ true, makePremul, allOpaque);
             break;
-        case SkShader::kClamp_TileMode:
+        case SkTileMode::kClamp:
             // For the clamped mode, the border colors are the first and last colors, corresponding
             // to t=0 and t=1, because SkGradientShaderBase enforces that by adding color stops as
             // appropriate. If there is a hard stop, this grabs the expected outer colors for the
@@ -221,7 +223,7 @@ static std::unique_ptr<GrFragmentProcessor> make_gradient(const SkGradientShader
             master = GrClampedGradientEffect::Make(std::move(colorizer), std::move(layout),
                     colors[0], colors[shader.fColorCount - 1], makePremul, allOpaque);
             break;
-        case SkShader::kDecal_TileMode:
+        case SkTileMode::kDecal:
             // Even if the gradient colors are opaque, the decal borders are transparent so
             // disable that optimization
             master = GrClampedGradientEffect::Make(std::move(colorizer), std::move(layout),
@@ -234,7 +236,9 @@ static std::unique_ptr<GrFragmentProcessor> make_gradient(const SkGradientShader
         // Unexpected tile mode
         return nullptr;
     }
-
+    if (args.fInputColorIsOpaque) {
+        return GrFragmentProcessor::OverrideInput(std::move(master), SK_PMColor4fWHITE, false);
+    }
     return GrFragmentProcessor::MulChildByInputAlpha(std::move(master));
 }
 
@@ -294,7 +298,7 @@ RandomParams::RandomParams(SkRandom* random) {
             stop = i < fColorCount - 1 ? stop + random->nextUScalar1() * (1.f - stop) : 1.f;
         }
     }
-    fTileMode = static_cast<SkShader::TileMode>(random->nextULessThan(SkShader::kTileModeCount));
+    fTileMode = static_cast<SkTileMode>(random->nextULessThan(kSkTileModeCount));
 }
 #endif
 

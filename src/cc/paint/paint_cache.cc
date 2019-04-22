@@ -52,7 +52,7 @@ void ClientPaintCache::FinalizePendingEntries() {
 }
 
 void ClientPaintCache::AbortPendingEntries() {
-  for (const auto& entry : pending_entries_.container()) {
+  for (const auto& entry : pending_entries_) {
     auto it = cache_map_.Peek(entry);
     DCHECK(it != cache_map_.end());
     EraseFromMap(it);

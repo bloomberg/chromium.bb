@@ -31,10 +31,10 @@
 
 namespace blink {
 
-class DeviceAcceleration;
+class DeviceMotionEventAcceleration;
 class DeviceMotionData;
 class DeviceMotionEventInit;
-class DeviceRotationRate;
+class DeviceMotionEventRotationRate;
 
 class DeviceMotionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
@@ -62,9 +62,9 @@ class DeviceMotionEvent final : public Event {
     return device_motion_data_.Get();
   }
 
-  DeviceAcceleration* acceleration();
-  DeviceAcceleration* accelerationIncludingGravity();
-  DeviceRotationRate* rotationRate();
+  DeviceMotionEventAcceleration* acceleration();
+  DeviceMotionEventAcceleration* accelerationIncludingGravity();
+  DeviceMotionEventRotationRate* rotationRate();
   double interval() const;
 
   const AtomicString& InterfaceName() const override;

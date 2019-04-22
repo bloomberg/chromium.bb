@@ -13,12 +13,14 @@
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "media/learning/common/learning_task.h"
+#include "media/learning/impl/random_number_generator.h"
 #include "media/learning/impl/training_algorithm.h"
 
 namespace media {
 namespace learning {
 
-// Trains RandomTree decision tree classifier (doesn't handle regression).
+// Trains RandomTree decision tree classifier / regressor.
 //
 // Decision trees, including RandomTree, classify instances as follows.  Each
 // non-leaf node is marked with a feature number |i|.  The value of the |i|-th
@@ -40,6 +42,22 @@ namespace learning {
 // target values that ended up in each group.  The index with the best score is
 // chosen for the split.
 //
+// For nominal features, we split the feature into all of its nominal values.
+// This is somewhat nonstandard; one would normally convert to one-hot numeric
+// features first.  See OneHotConverter if you'd like to do this.
+//
+// For numeric features, we choose a split point uniformly at random between its
+// min and max values in the training data.  We do this because it's suitable
+// for extra trees.  RandomForest trees want to select the best split point for
+// each feature, rather than uniformly.  Either way, of course, we choose the
+// best split among the (feature, split point) pairs we're considering.
+//
+// Also note that for one-hot features, these are the same thing.  So, this
+// implementation is suitable for extra trees with numeric (possibly one hot)
+// features, or RF with one-hot nominal features.  Note that non-one-hot nominal
+// features probably work fine with RF too.  Numeric, non-binary features don't
+// work with RF, unless one changes the split point selection.
+//
 // The training algorithm then recurses to build child nodes.  One child node is
 // created for each observed value of the |i|-th feature in the training set.
 // The child node is trained using the subset of the training set that shares
@@ -53,20 +71,28 @@ namespace learning {
 // See https://en.wikipedia.org/wiki/Random_forest for information.  Note that
 // this is just a single tree, not the whole forest.
 //
-// TODO(liberato): Right now, it not-so-randomly selects from the entire set.
-// TODO(liberato): consider PRF or other simplified approximations.
-// TODO(liberato): separate Model and TrainingAlgorithm.  This is the latter.
-class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
+// Note that this variant chooses split points randomly, as described by the
+// ExtraTrees algorithm.  This is slightly different than RandomForest, which
+// chooses split points to improve the split's score.
+class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
+    : public TrainingAlgorithm,
+      public HasRandomNumberGenerator {
  public:
-  RandomTreeTrainer();
-  ~RandomTreeTrainer();
+  explicit RandomTreeTrainer(RandomNumberGenerator* rng = nullptr);
+  ~RandomTreeTrainer() override;
 
-  // Return a callback that can be used to train a random tree.
-  static TrainingAlgorithmCB GetTrainingAlgorithmCB();
-
-  std::unique_ptr<Model> Train(const TrainingData& examples);
+  // Train on all examples.  Calls |model_cb| with the trained model, which
+  // won't happen before this returns.
+  void Train(const LearningTask& task,
+             const TrainingData& examples,
+             TrainedModelCB model_cb) override;
 
  private:
+  // Train on the subset |training_idx|.
+  std::unique_ptr<Model> Train(const LearningTask& task,
+                               const TrainingData& examples,
+                               const std::vector<size_t>& training_idx);
+
   // Set of feature indices.
   using FeatureSet = std::set<int>;
 
@@ -83,6 +109,9 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
     // Feature index to split on.
     size_t split_index = 0;
 
+    // For numeric splits, branch 0 is <= |split_point|, and 1 is > .
+    FeatureValue split_point;
+
     // Expected nats needed to compute the class, given that we're at this
     // node in the tree.
     // "nat" == entropy measured with natural log rather than base-2.
@@ -90,7 +119,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
 
     // Per-branch (i.e. per-child node) information about this split.
     struct BranchInfo {
-      explicit BranchInfo(scoped_refptr<TrainingDataStorage> storage);
+      explicit BranchInfo();
       BranchInfo(const BranchInfo& rhs) = delete;
       BranchInfo(BranchInfo&& rhs);
       ~BranchInfo();
@@ -98,14 +127,15 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
       BranchInfo& operator=(const BranchInfo& rhs) = delete;
       BranchInfo& operator=(BranchInfo&& rhs) = delete;
 
-      // Training set for this branch of the split.
-      TrainingData training_data;
+      // Training set for this branch of the split.  |training_idx| holds the
+      // indices that we're using out of our training data.
+      std::vector<size_t> training_idx;
 
       // Number of occurances of each target value in |training_data| along this
       // branch of the split.
       // This is a flat_map since we're likely to have a very small (e.g.,
       // "true / "false") number of targets.
-      base::flat_map<TargetValue, int> class_counts;
+      TargetHistogram target_histogram;
     };
 
     // [feature value at this split] = info about which examples take this
@@ -117,11 +147,34 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
 
   // Build this node from |training_data|.  |used_set| is the set of features
   // that we already used higher in the tree.
-  std::unique_ptr<Model> Build(const TrainingData& training_data,
+  std::unique_ptr<Model> Build(const LearningTask& task,
+                               const TrainingData& training_data,
+                               const std::vector<size_t>& training_idx,
                                const FeatureSet& used_set);
 
   // Compute and return a split of |training_data| on the |index|-th feature.
-  Split ConstructSplit(const TrainingData& training_data, int index);
+  Split ConstructSplit(const LearningTask& task,
+                       const TrainingData& training_data,
+                       const std::vector<size_t>& training_idx,
+                       int index);
+
+  // Fill in |nats_remaining| for |split| for a nominal target.
+  // |total_incoming_weight| is the total weight of all instances coming into
+  // the node that we're splitting.
+  void ComputeSplitScore_Nominal(Split* split, double total_incoming_weight);
+
+  // Fill in |nats_remaining| for |split| for a numeric target.
+  void ComputeSplitScore_Numeric(Split* split, double total_incoming_weight);
+
+  // Compute the split point for |training_data| for a nominal feature.
+  FeatureValue FindSplitPoint_Nominal(size_t index,
+                                      const TrainingData& training_data,
+                                      const std::vector<size_t>& training_idx);
+
+  // Compute the split point for |training_data| for a numeric feature.
+  FeatureValue FindSplitPoint_Numeric(size_t index,
+                                      const TrainingData& training_data,
+                                      const std::vector<size_t>& training_idx);
 
   DISALLOW_COPY_AND_ASSIGN(RandomTreeTrainer);
 };

@@ -4,16 +4,17 @@
 
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "content/browser/browsing_data/clear_site_data_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
@@ -50,7 +51,7 @@ int ParametersMask(bool clear_cookies, bool clear_storage, bool clear_cache) {
 
 // Outputs a single |formatted_message| on the UI thread.
 void OutputFormattedMessage(WebContents* web_contents,
-                            ConsoleMessageLevel level,
+                            blink::mojom::ConsoleMessageLevel level,
                             const std::string& formatted_text) {
   if (web_contents)
     web_contents->GetMainFrame()->AddMessageToConsole(level, formatted_text);
@@ -70,7 +71,7 @@ ClearSiteDataHandler::ConsoleMessagesDelegate::~ConsoleMessagesDelegate() {}
 void ClearSiteDataHandler::ConsoleMessagesDelegate::AddMessage(
     const GURL& url,
     const std::string& text,
-    ConsoleMessageLevel level) {
+    blink::mojom::ConsoleMessageLevel level) {
   messages_.push_back({url, text, level});
 }
 
@@ -166,14 +167,14 @@ bool ClearSiteDataHandler::Run() {
   // Only accept the header on secure non-unique origins.
   if (!IsOriginSecure(url_)) {
     delegate_->AddMessage(url_, "Not supported for insecure origins.",
-                          CONSOLE_MESSAGE_LEVEL_ERROR);
+                          blink::mojom::ConsoleMessageLevel::kError);
     return false;
   }
 
   url::Origin origin = url::Origin::Create(url_);
   if (origin.opaque()) {
     delegate_->AddMessage(url_, "Not supported for unique origins.",
-                          CONSOLE_MESSAGE_LEVEL_ERROR);
+                          blink::mojom::ConsoleMessageLevel::kError);
     return false;
   }
 
@@ -188,7 +189,7 @@ bool ClearSiteDataHandler::Run() {
         url_,
         "The request's credentials mode prohibits modifying cookies "
         "and other local data.",
-        CONSOLE_MESSAGE_LEVEL_ERROR);
+        blink::mojom::ConsoleMessageLevel::kError);
     return false;
   }
 
@@ -225,7 +226,7 @@ bool ClearSiteDataHandler::ParseHeader(const std::string& header,
                                        const GURL& current_url) {
   if (!base::IsStringASCII(header)) {
     delegate->AddMessage(current_url, "Must only contain ASCII characters.",
-                         CONSOLE_MESSAGE_LEVEL_ERROR);
+                         blink::mojom::ConsoleMessageLevel::kError);
     return false;
   }
 
@@ -256,7 +257,7 @@ bool ClearSiteDataHandler::ParseHeader(const std::string& header,
       delegate->AddMessage(
           current_url,
           base::StringPrintf("Unrecognized type: %s.", input_types[i].c_str()),
-          CONSOLE_MESSAGE_LEVEL_ERROR);
+          blink::mojom::ConsoleMessageLevel::kError);
       continue;
     }
 
@@ -273,7 +274,7 @@ bool ClearSiteDataHandler::ParseHeader(const std::string& header,
 
   if (!*clear_cookies && !*clear_storage && !*clear_cache) {
     delegate->AddMessage(current_url, "No recognized types specified.",
-                         CONSOLE_MESSAGE_LEVEL_ERROR);
+                         blink::mojom::ConsoleMessageLevel::kError);
     return false;
   }
 
@@ -286,7 +287,8 @@ bool ClearSiteDataHandler::ParseHeader(const std::string& header,
         " Clearing channel IDs and HTTP authentication cache is currently not"
         " supported, as it breaks active network connections.";
   }
-  delegate->AddMessage(current_url, console_output, CONSOLE_MESSAGE_LEVEL_INFO);
+  delegate->AddMessage(current_url, console_output,
+                       blink::mojom::ConsoleMessageLevel::kInfo);
 
   return true;
 }
@@ -296,9 +298,9 @@ void ClearSiteDataHandler::ExecuteClearingTask(const url::Origin& origin,
                                                bool clear_storage,
                                                bool clear_cache,
                                                base::OnceClosure callback) {
-  clear_site_data_utils::ClearSiteData(browser_context_getter_, origin,
-                                       clear_cookies, clear_storage,
-                                       clear_cache, std::move(callback));
+  ClearSiteData(browser_context_getter_, origin, clear_cookies, clear_storage,
+                clear_cache, true /*avoid_closing_connections*/,
+                std::move(callback));
 }
 
 // static

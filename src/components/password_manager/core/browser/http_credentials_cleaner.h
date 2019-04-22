@@ -65,11 +65,8 @@ class HttpCredentialCleaner : public PasswordStoreConsumer,
       PrefService* prefs);
   ~HttpCredentialCleaner() override;
 
-  // Indicate whether there are at least |kCleanUpDelayInDays| days passed in
-  // order to run the clean-up.
-  static bool ShouldRunCleanUp(PrefService* prefs);
-
   // CredentialsCleaner:
+  bool NeedsCleaning() override;
   void StartCleaning(Observer* observer) override;
 
   // The time that should pass in order to do the clean-up again.

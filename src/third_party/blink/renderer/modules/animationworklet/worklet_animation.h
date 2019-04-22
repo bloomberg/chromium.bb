@@ -70,9 +70,16 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
                    scoped_refptr<SerializedScriptValue>);
   ~WorkletAnimation() override = default;
 
+  AnimationEffect* effect() { return GetEffect(); }
   AnimationTimeline* timeline() { return timeline_; }
   String playState();
+  double currentTime(bool& is_null);
+  double startTime(bool& is_null);
+
+  double playbackRate(ScriptState* script_state) const;
+  void setPlaybackRate(ScriptState* script_state, double playback_rate);
   void play(ExceptionState& exception_state);
+  void pause(ExceptionState& exception_state);
   void cancel();
 
   // AnimationEffectOwner implementation:
@@ -106,8 +113,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void NotifyAnimationFinished(double monotonic_time, int group) override {}
   void NotifyAnimationAborted(double monotonic_time, int group) override {}
 
-  void Dispose();
-
   Document* GetDocument() const override { return document_.Get(); }
   AnimationTimeline* GetTimeline() const override { return timeline_; }
   const String& Name() { return animator_name_; }
@@ -118,14 +123,27 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   }
   bool IsActiveAnimation() const override;
 
+  bool NeedsPeek(base::TimeDelta current_time);
+
   void UpdateInputState(AnimationWorkletDispatcherInput* input_state) override;
   void SetOutputState(
       const AnimationWorkletOutput::AnimationState& state) override;
 
+  void SetRunningOnMainThreadForTesting(bool running_on_main_thread) {
+    running_on_main_thread_ = running_on_main_thread;
+  }
+
   void Trace(blink::Visitor*) override;
+  void Dispose();
 
  private:
   void DestroyCompositorAnimation();
+  bool IsTimelineActive() const;
+  base::Optional<base::TimeDelta> CurrentTime();
+  base::Optional<base::TimeDelta> CurrentTimeInternal() const;
+  void UpdateCurrentTimeIfNeeded();
+  bool IsCurrentTimeInitialized() const;
+  base::Optional<base::TimeDelta> InitialCurrentTime() const;
 
   // Attempts to start the animation on the compositor side, returning true if
   // it succeeds or false otherwise. If false is returned and the animation
@@ -133,7 +151,28 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   bool StartOnCompositor();
   void StartOnMain();
   bool CheckCanStart(String* failure_message);
-  void SetStartTimeToNow();
+
+  // Sets the current time for the animation.
+  //
+  // Note that the current time of the animation is a computed value that
+  // depends on either the start time (for playing animations) or the hold time
+  // (for pending, paused, or idle animations). So this procedure updates either
+  // the start time or the hold time so that the computed current time is
+  // matched.
+  //
+  // Generally, when an animation play state transitions, we expect to see the
+  // current time is set. Here are some interesting examples of this:
+  //  - when transitioning to play, the current time is either set to
+  //  zero (first time) or the last current time (when resuming from pause).
+  //  - when transitioning to idle or cancel, the current time is set to
+  //  "null".
+  //  - when transitioning to pause, the current time is set to the last
+  //  current time for holding.
+  void SetCurrentTime(base::Optional<base::TimeDelta> current_time);
+
+  // Adjusts start_time_ according to playback rate change to preserve current
+  // time and avoid the animation output from jumping.
+  void SetPlaybackRateInternal(double);
 
   // Updates a running animation on the compositor side.
   void UpdateOnCompositor();
@@ -142,10 +181,10 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
     return options_ ? options_->Clone() : nullptr;
   }
 
+  Animation::AnimationPlayState PlayState() const { return play_state_; }
   void SetPlayState(const Animation::AnimationPlayState& state) {
     play_state_ = state;
   }
-  base::Optional<double> CurrentTime() const;
 
   unsigned sequence_number_;
 
@@ -154,12 +193,25 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   const String animator_name_;
   Animation::AnimationPlayState play_state_;
   Animation::AnimationPlayState last_play_state_;
-  // Start time in ms.
+  // Controls speed of the animation.
+  // https://drafts.csswg.org/web-animations-2/#animation-effect-playback-rate
+  double playback_rate_;
   base::Optional<base::TimeDelta> start_time_;
   Vector<base::Optional<base::TimeDelta>> local_times_;
+  // Hold time is used when animation is paused.
+  // TODO(majidvp): Replace base::TimeDelta usage with AnimationTimeDelta.
+  base::Optional<base::TimeDelta> hold_time_;
+  // Keeps last set or calculated current time. It's used as a hold time when
+  // the timeline is inactive.
+  base::Optional<base::TimeDelta> last_current_time_;
+  // Indicates if the timeline was active when the current time was calculated
+  // last time.
+  bool was_timeline_active_;
   // We use this to skip updating if current time has not changed since last
   // update.
-  base::Optional<base::TimeDelta> last_current_time_;
+  base::Optional<base::TimeDelta> last_input_update_current_time_;
+  // Time the main thread sends a peek request.
+  base::Optional<base::TimeDelta> last_peek_request_time_;
 
   Member<Document> document_;
 
@@ -169,12 +221,14 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
   std::unique_ptr<CompositorAnimation> compositor_animation_;
   bool running_on_main_thread_;
-
+  bool has_started_;
   // Tracks whether any KeyframeEffect associated with this WorkletAnimation has
   // been invalidated and needs to be restarted. Used to avoid unnecessarily
   // restarting the effect on the compositor. When true, a call to
   // |UpdateOnCompositor| will update the effect on the compositor.
   bool effect_needs_restart_;
+
+  FRIEND_TEST_ALL_PREFIXES(WorkletAnimationTest, PausePlay);
 };
 
 }  // namespace blink

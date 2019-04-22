@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
 <!-- Start with -->
 <div role="main">
   <input id="comboBox"
@@ -17,11 +16,11 @@
 </div>
 
 <script>
-  let comboBox = accessibilityController.accessibleElementById('comboBox');
-
   async_test((t) => {
+    let comboBox = accessibilityController.accessibleElementById('comboBox');
     document.getElementById('container').innerHTML =
-      '<ul id="stateList" role="listbox"><li id="state1" role="option">Alabama</li><li id="state2" role="option">Alaska</li></ul>';
+          '<ul id="stateList" role="listbox"><li id="state1" role="option">Alabama</li><li id="state2" role="option">Alaska</li></ul>';
+    document.body.offsetTop;
     t.step_timeout(() => {
       assert_true(comboBox.isFocused, 'Combo box should be focused.');
       let state1 = accessibilityController.accessibleElementById('state1');

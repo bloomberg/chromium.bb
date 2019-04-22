@@ -477,6 +477,26 @@ def ProcessProfile(input_profile, proguard_mapping):
   return profile
 
 
+def ObfuscateProfile(nonobfuscated_profile, dex_file, proguard_mapping,
+                     dexdump_path, output_filename):
+  """Helper method for obfuscating a profile.
+
+  Args:
+    nonobfuscated_profile: a profile with nonobfuscated symbols.
+    dex_file: path to the dex file matching the mapping.
+    proguard_mapping: a mapping from nonobfuscated to obfuscated symbols used
+      in the dex file.
+    dexdump_path: path to the dexdump utility.
+    output_filename: output filename in which to write the obfuscated profile.
+  """
+  dexinfo = ProcessDex(_RunDexDump(dexdump_path, dex_file))
+  _, reverse_mapping = ProcessProguardMapping(
+      _ReadFile(proguard_mapping), dexinfo)
+  obfuscated_profile = ProcessProfile(
+      _ReadFile(nonobfuscated_profile), reverse_mapping)
+  obfuscated_profile.WriteToFile(output_filename)
+
+
 def main(args):
   parser = argparse.ArgumentParser()
   parser.add_argument(

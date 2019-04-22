@@ -72,6 +72,7 @@ cr.define('settings', function() {
           code: 'sw',
           displayName: 'Swahili',
           nativeDisplayName: 'Kiswahili',
+          supportsSpellcheck: true,
           supportsTranslate: true,
           supportsUI: true,
         },
@@ -171,8 +172,9 @@ cr.define('settings', function() {
     enableLanguage(languageCode) {
       let languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
       const languages = languageCodes.split(',');
-      if (languages.indexOf(languageCode) != -1)
+      if (languages.indexOf(languageCode) != -1) {
         return;
+      }
       languages.push(languageCode);
       languageCodes = languages.join(',');
       this.settingsPrefs_.set(
@@ -191,8 +193,9 @@ cr.define('settings', function() {
       let languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
       const languages = languageCodes.split(',');
       const index = languages.indexOf(languageCode);
-      if (index == -1)
+      if (index == -1) {
         return;
+      }
       languages.splice(index, 1);
       languageCodes = languages.join(',');
       this.settingsPrefs_.set(
@@ -215,13 +218,15 @@ cr.define('settings', function() {
           this.settingsPrefs_.prefs.translate_blocked_languages.value.indexOf(
               languageCode);
       if (enable) {
-        if (index == -1)
+        if (index == -1) {
           return;
+        }
         this.settingsPrefs_.splice(
             'prefs.translate_blocked_languages.value', index, 1);
       } else {
-        if (index != -1)
+        if (index != -1) {
           return;
+        }
         this.settingsPrefs_.push(
             'prefs.translate_blocked_languages.value', languageCode);
       }
@@ -239,21 +244,24 @@ cr.define('settings', function() {
       const index = languages.indexOf(languageCode);
 
       if (moveType == chrome.languageSettingsPrivate.MoveType.TOP) {
-        if (index < 1)
+        if (index < 1) {
           return;
+        }
 
         languages.splice(index, 1);
         languages.unshift(languageCode);
       } else if (moveType == chrome.languageSettingsPrivate.MoveType.UP) {
-        if (index < 1)
+        if (index < 1) {
           return;
+        }
 
         let temp = languages[index - 1];
         languages[index - 1] = languageCode;
         languages[index] = temp;
       } else if (moveType == chrome.languageSettingsPrivate.MoveType.DOWN) {
-        if (index == -1 || index == languages.length - 1)
+        if (index == -1 || index == languages.length - 1) {
           return;
+        }
 
         let temp = languages[index + 1];
         languages[index + 1] = languageCode;
@@ -300,8 +308,8 @@ cr.define('settings', function() {
      * Removes a word from the custom dictionary.
      * @param {string} word
      */
-    removeSpellcheckWord() {
-      assertNotReached('Not implemented in fake: removeSpellcheckWord');
+    removeSpellcheckWord(word) {
+      this.onCustomDictionaryChanged.callListeners([], [word]);
     }
 
     /**
@@ -319,8 +327,9 @@ cr.define('settings', function() {
      *     callback
      */
     getInputMethodLists(callback) {
-      if (!cr.isChromeOS)
+      if (!cr.isChromeOS) {
         assertNotReached();
+      }
       callback({
         componentExtensionImes:
             JSON.parse(JSON.stringify(this.componentExtensionImes)),
@@ -397,6 +406,11 @@ cr.define('settings', function() {
         value: 'en-US,sw',
       },
       {
+        key: 'spellcheck.blacklisted_dictionaries',
+        type: chrome.settingsPrivate.PrefType.LIST,
+        value: [],
+      },
+      {
         key: 'spellcheck.dictionaries',
         type: chrome.settingsPrivate.PrefType.LIST,
         value: ['en-US'],
@@ -405,6 +419,11 @@ cr.define('settings', function() {
         key: 'spellcheck.forced_dictionaries',
         type: chrome.settingsPrivate.PrefType.LIST,
         value: [],
+      },
+      {
+        key: 'spellcheck.use_spelling_service',
+        type: chrome.settingsPrivate.PrefType.BOOLEAN,
+        value: false,
       },
       {
         key: 'translate.enabled',

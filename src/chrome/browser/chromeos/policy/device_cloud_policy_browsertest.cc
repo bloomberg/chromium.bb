@@ -13,13 +13,11 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/test/null_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/extensions/signin_screen_policy_provider.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -28,24 +26,20 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/chromeos_paths.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
-#include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/policy_constants.h"
@@ -58,6 +52,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -114,20 +109,13 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
 
   void SetUp() override {
     UpdateBuiltTestPolicyValue(kTestPolicyValue);
-    StartPolicyTestServer();
     DevicePolicyCrosBrowserTest::SetUp();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
-                                    policy_test_server_.GetServiceURL().spec());
+    local_policy_mixin_.server()->EnableAutomaticRotationOfSigningKeys();
+    UpdateServedTestPolicy();
   }
 
   void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
     SetFakeDevicePolicy();
   }
 
@@ -154,9 +142,8 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
   }
 
   void UpdateServedTestPolicy() {
-    EXPECT_TRUE(policy_test_server_.UpdatePolicy(
-        dm_protocol::kChromeDevicePolicyType, std::string() /* entity_id */,
-        device_policy()->payload().SerializeAsString()));
+    EXPECT_TRUE(
+        local_policy_mixin_.UpdateDevicePolicy(device_policy()->payload()));
   }
 
   int GetTestPolicyValue() {
@@ -187,14 +174,6 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
   }
 
  private:
-  void StartPolicyTestServer() {
-    policy_test_server_.RegisterClient(PolicyBuilder::kFakeToken,
-                                       PolicyBuilder::kFakeDeviceId);
-    UpdateServedTestPolicy();
-    policy_test_server_.EnableAutomaticRotationOfSigningKeys();
-    EXPECT_TRUE(policy_test_server_.Start());
-  }
-
   void SetFakeDevicePolicy() {
     device_policy()
         ->payload()
@@ -226,7 +205,7 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
     }
   }
 
-  LocalPolicyTestServer policy_test_server_;
+  chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
   std::unique_ptr<PolicyChangeRegistrar> policy_change_registrar_;
   int awaited_policy_value_ = -1;
   std::unique_ptr<base::RunLoop> policy_change_waiting_run_loop_;
@@ -264,28 +243,30 @@ IN_PROC_BROWSER_TEST_F(KeyRotationDeviceCloudPolicyTest, DISABLED_Basic) {
 
 namespace {
 
-// This class is the base class for the tests of the behavior regarding
-// extensions installed on the signin screen (which is generally possible only
-// through an admin policy, but the tests may install the extensions directly
-// for the test purposes).
-class SigninExtensionsDeviceCloudPolicyBrowserTestBase
+// Tests how component policy is handled for extensions installed on the sign-in
+// screen.
+class SigninExtensionsDeviceCloudPolicyBrowserTest
     : public DevicePolicyCrosBrowserTest {
- protected:
+ public:
   static constexpr const char* kTestExtensionId =
-      "baogpbmpccplckhhehfipokjaflkmbno";
-  static constexpr const char* kTestExtensionSourceDir =
-      "extensions/signin_screen_managed_storage";
-  static constexpr const char* kTestExtensionVersion = "1.0";
-  static constexpr const char* kTestExtensionTestPage = "test.html";
+      "hifnmfgfdfhmoaponfpmnlpeahiomjim";
+  static constexpr const char* kTestExtensionPath =
+      "extensions/signin_screen_managed_storage/extension.crx";
+  static constexpr const char* kTestExtensionUpdateManifestPath =
+      "/extensions/signin_screen_managed_storage/update_manifest.xml";
+  static constexpr const char* kTestExtensionUpdateManifest =
+      R"(<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
+           <app appid='$1'>
+             <updatecheck codebase='http://$2/$3' version='1.0' />
+           </app>
+         </gupdate>)";
   static constexpr const char* kFakePolicyPath = "/test-policy.json";
   static constexpr const char* kFakePolicy =
       "{\"string-policy\": {\"Value\": \"value\"}}";
   static constexpr int kFakePolicyPublicKeyVersion = 1;
-  static constexpr const char* kPolicyProtoCacheKey = "signinextension-policy";
-  static constexpr const char* kPolicyDataCacheKey =
-      "signinextension-policy-data";
 
-  SigninExtensionsDeviceCloudPolicyBrowserTestBase() {}
+  SigninExtensionsDeviceCloudPolicyBrowserTest() = default;
+  ~SigninExtensionsDeviceCloudPolicyBrowserTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
@@ -296,18 +277,20 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
     DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
-    // This flag is required for the successful installation of the test
-    // extension into the signin profile, due to some checks in
-    // |ExtensionService|.
-    command_line->AppendSwitchASCII(::switches::kDisableExtensionsExcept,
-                                    GetTestExtensionSourcePath().value());
+    // The test app has to be whitelisted for sign-in screen.
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID, kTestExtensionId);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
     SetFakeDevicePolicy();
+
+    EXPECT_TRUE(
+        local_policy_mixin_.UpdateDevicePolicy(device_policy()->payload()));
+    EXPECT_TRUE(local_policy_mixin_.server()->UpdatePolicy(
+        dm_protocol::kChromeSigninExtensionPolicyType, kTestExtensionId,
+        BuildTestComponentPolicyPayload().SerializeAsString()));
   }
 
   void SetUpOnMainThread() override {
@@ -316,50 +299,81 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
     BrowserPolicyConnectorChromeOS* connector =
         g_browser_process->platform_part()->browser_policy_connector_chromeos();
     connector->device_management_service()->ScheduleInitialization(0);
+  }
 
+  // |hang_component_policy_fetch| - whether requests for the component policy
+  // download should be hung indefinitely.
+  void StartTestServer(bool hang_component_policy_fetch) {
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &SigninExtensionsDeviceCloudPolicyBrowserTest::InterceptComponentPolicy,
+        base::Unretained(this), hang_component_policy_fetch));
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &SigninExtensionsDeviceCloudPolicyBrowserTest::InterceptUpdateManifest,
+        base::Unretained(this)));
     embedded_test_server()->StartAcceptingConnections();
   }
 
-  static base::FilePath GetTestExtensionSourcePath() {
-    base::FilePath test_data_dir;
-    EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-    return test_data_dir.AppendASCII(kTestExtensionSourceDir);
+ private:
+  // Intercepts the request for the test extension update manifest.
+  std::unique_ptr<net::test_server::HttpResponse> InterceptUpdateManifest(
+      const net::test_server::HttpRequest& request) {
+    if (request.GetURL().path() != kTestExtensionUpdateManifestPath)
+      return nullptr;
+
+    // Create update manifest for the test extension, setting the extension URL
+    // with a test server URL pointing to the extension under the test data
+    // path.
+    std::string manifest_response = base::ReplaceStringPlaceholders(
+        kTestExtensionUpdateManifest,
+        {kTestExtensionId, embedded_test_server()->host_port_pair().ToString(),
+         kTestExtensionPath},
+        nullptr);
+
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_content_type("text/xml");
+    response->set_content(manifest_response);
+    return response;
   }
 
-  static Profile* GetSigninProfile() {
-    Profile* signin_profile =
-        chromeos::ProfileHelper::GetSigninProfile()->GetOriginalProfile();
-    EXPECT_TRUE(signin_profile);
-    return signin_profile;
+  // Intercepts the component policy requests.
+  // |hang| - if set, this will return a hung response, thus preventing the
+  //     policy download. Otherwise, the response will contain the test policy.
+  std::unique_ptr<net::test_server::HttpResponse> InterceptComponentPolicy(
+      bool hang,
+      const net::test_server::HttpRequest& request) {
+    if (request.relative_url != kFakePolicyPath)
+      return nullptr;
+
+    if (hang)
+      return std::make_unique<net::test_server::HungResponse>();
+
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_content(kFakePolicy);
+    return response;
   }
 
-  static const extensions::Extension* GetTestExtension() {
-    extensions::ExtensionRegistry* registry =
-        extensions::ExtensionRegistry::Get(GetSigninProfile());
-    const extensions::Extension* extension =
-        registry->enabled_extensions().GetByID(kTestExtensionId);
-    EXPECT_TRUE(extension);
-    return extension;
-  }
+  void SetFakeDevicePolicy() {
+    device_policy()->policy_data().set_public_key_version(
+        kFakePolicyPublicKeyVersion);
 
-  enterprise_management::PolicyFetchResponse BuildTestComponentPolicy() {
-    ComponentCloudPolicyBuilder builder;
-    MakeTestComponentPolicyBuilder(&builder);
-    return builder.policy();
+    const GURL update_manifest_url =
+        embedded_test_server()->GetURL(kTestExtensionUpdateManifestPath);
+    const std::string policy_item_value = base::ReplaceStringPlaceholders(
+        "$1;$2", {kTestExtensionId, update_manifest_url.spec()}, nullptr);
+
+    device_policy()
+        ->payload()
+        .mutable_device_login_screen_extensions()
+        ->add_device_login_screen_extensions(policy_item_value);
+
+    device_policy()->Build();
+    session_manager_client()->set_device_policy(device_policy()->GetBlob());
   }
 
   enterprise_management::ExternalPolicyData BuildTestComponentPolicyPayload() {
     ComponentCloudPolicyBuilder builder;
     MakeTestComponentPolicyBuilder(&builder);
     return builder.payload();
-  }
-
- private:
-  void SetFakeDevicePolicy() {
-    device_policy()->policy_data().set_public_key_version(
-        kFakePolicyPublicKeyVersion);
-    device_policy()->Build();
-    session_manager_client()->set_device_policy(device_policy()->GetBlob());
   }
 
   void MakeTestComponentPolicyBuilder(ComponentCloudPolicyBuilder* builder) {
@@ -373,192 +387,43 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
     builder->Build();
   }
 
-  DISALLOW_COPY_AND_ASSIGN(SigninExtensionsDeviceCloudPolicyBrowserTestBase);
-};
+  chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
 
-// This class tests whether the component policy is successfully processed and
-// passed to the extension that is installed into the signin profile after the
-// initialization finishes.
-//
-// The fake component policy is injected by using the local policy test server.
-// The test extension is installed into the profile manually by the test code
-// (i.e. this class doesn't test the installation of the signin screen
-// extensions through the admin policy).
-class SigninExtensionsDeviceCloudPolicyBrowserTest
-    : public SigninExtensionsDeviceCloudPolicyBrowserTestBase {
- protected:
-  scoped_refptr<const extensions::Extension> InstallAndLoadTestExtension()
-      const {
-    extensions::ChromeTestExtensionLoader loader(GetSigninProfile());
-    return loader.LoadExtension(GetTestExtensionSourcePath());
-  }
-
- private:
-  void SetUp() override {
-    StartPolicyTestServer();
-    SigninExtensionsDeviceCloudPolicyBrowserTestBase::SetUp();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SigninExtensionsDeviceCloudPolicyBrowserTestBase::SetUpCommandLine(
-        command_line);
-    command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
-                                    policy_test_server_.GetServiceURL().spec());
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    SigninExtensionsDeviceCloudPolicyBrowserTestBase::
-        SetUpInProcessBrowserTestFixture();
-    signin_policy_provided_disabler_ =
-        chromeos::GetScopedSigninScreenPolicyProviderDisablerForTesting();
-    EXPECT_TRUE(
-        base::PathService::Get(chromeos::DIR_SIGNIN_PROFILE_COMPONENT_POLICY,
-                               &component_policy_cache_dir_));
-    PrepareFakeComponentPolicyResponse();
-  }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    // Check that the component policy cache was not cleared during browser
-    // teardown.
-    ResourceCache cache(component_policy_cache_dir_, new base::NullTaskRunner,
-                        /* max_cache_size */ base::nullopt);
-    std::string stub;
-    EXPECT_TRUE(cache.Load(kPolicyProtoCacheKey, kTestExtensionId, &stub));
-    EXPECT_TRUE(cache.Load(kPolicyDataCacheKey, kTestExtensionId, &stub));
-
-    SigninExtensionsDeviceCloudPolicyBrowserTestBase::
-        TearDownInProcessBrowserTestFixture();
-  }
-
-  void StartPolicyTestServer() {
-    std::unique_ptr<crypto::RSAPrivateKey> signing_key(
-        PolicyBuilder::CreateTestSigningKey());
-    EXPECT_TRUE(policy_test_server_.SetSigningKeyAndSignature(
-        signing_key.get(), PolicyBuilder::GetTestSigningKeySignature()));
-    policy_test_server_.RegisterClient(PolicyBuilder::kFakeToken,
-                                       PolicyBuilder::kFakeDeviceId);
-    EXPECT_TRUE(policy_test_server_.Start());
-  }
-
-  void PrepareFakeComponentPolicyResponse() {
-    EXPECT_TRUE(policy_test_server_.UpdatePolicy(
-        dm_protocol::kChromeSigninExtensionPolicyType, kTestExtensionId,
-        BuildTestComponentPolicyPayload().SerializeAsString()));
-    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
-        [](const net::test_server::HttpRequest& request)
-            -> std::unique_ptr<net::test_server::HttpResponse> {
-          if (request.relative_url != kFakePolicyPath)
-            return nullptr;
-
-          auto response =
-              std::make_unique<net::test_server::BasicHttpResponse>();
-          response->set_content(kFakePolicy);
-          return response;
-        }));
-  }
-
-  LocalPolicyTestServer policy_test_server_;
-  base::FilePath component_policy_cache_dir_;
-  std::unique_ptr<base::AutoReset<bool>> signin_policy_provided_disabler_;
+  DISALLOW_COPY_AND_ASSIGN(SigninExtensionsDeviceCloudPolicyBrowserTest);
 };
 
 }  // namespace
 
+// The ManagedStorage test is done in two steps:
+//  1. Test that fetches the component policy and verifies that the fetched
+//     policy is exposed to a test extension installed into the sign-in profile.
+//  2. Test that blocks the component policy fetch, and verifies that a test
+//     extension installed into the sign-in profile can access the component
+//     policy downloaded during the first step.
+// PRE_ManagedStorage test handles the first step.
 IN_PROC_BROWSER_TEST_F(SigninExtensionsDeviceCloudPolicyBrowserTest,
-                       InstallAndRunInWindow) {
-  scoped_refptr<const extensions::Extension> extension =
-      InstallAndLoadTestExtension();
-  ASSERT_TRUE(extension);
-  Browser* browser = CreateBrowser(GetSigninProfile());
+                       PRE_ManagedStorage) {
+  // The test app will be installed via policy, at which point its
+  // background page will be loaded.
   extensions::ResultCatcher result_catcher;
-  ui_test_utils::NavigateToURL(
-      browser, extension->GetResourceURL(kTestExtensionTestPage));
+  StartTestServer(false /*hang_component_policy_fetch*/);
   EXPECT_TRUE(result_catcher.GetNextResult());
-  CloseBrowserSynchronously(browser);
 }
 
-namespace {
-
-// This class tests that the cached component policy is successfully loaded and
-// passed to the extension that is already installed into the signin profile.
-//
-// To accomplish this, the class prefills the signin profile with, first, the
-// installed test extension, and, second, with the cached component policy.
-class PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest
-    : public SigninExtensionsDeviceCloudPolicyBrowserTestBase {
- protected:
-  static constexpr const char* kFakeProfileSourceDir =
-      "extensions/profiles/signin_screen_managed_storage";
-
-  bool SetUpUserDataDirectory() override {
-    PrefillSigninProfile();
-    PrefillComponentPolicyCache();
-    return DevicePolicyCrosBrowserTest::SetUpUserDataDirectory();
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    SigninExtensionsDeviceCloudPolicyBrowserTestBase::
-        SetUpInProcessBrowserTestFixture();
-    signin_policy_provided_disabler_ =
-        chromeos::GetScopedSigninScreenPolicyProviderDisablerForTesting();
-  }
-
- private:
-  static void PrefillSigninProfile() {
-    base::FilePath profile_source_path;
-    EXPECT_TRUE(
-        base::PathService::Get(chrome::DIR_TEST_DATA, &profile_source_path));
-    profile_source_path = profile_source_path.AppendASCII(kFakeProfileSourceDir)
-                              .AppendASCII(chrome::kInitialProfile);
-
-    base::FilePath profile_target_path;
-    EXPECT_TRUE(
-        base::PathService::Get(chrome::DIR_USER_DATA, &profile_target_path));
-
-    EXPECT_TRUE(
-        base::CopyDirectory(profile_source_path, profile_target_path, true));
-
-    base::FilePath extension_target_path =
-        profile_target_path.AppendASCII(chrome::kInitialProfile)
-            .AppendASCII(extensions::kInstallDirectoryName)
-            .AppendASCII(kTestExtensionId)
-            .AppendASCII(kTestExtensionVersion);
-    EXPECT_TRUE(base::CopyDirectory(GetTestExtensionSourcePath(),
-                                    extension_target_path, true));
-  }
-
-  void PrefillComponentPolicyCache() {
-    base::FilePath user_data_dir;
-    EXPECT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-    chromeos::RegisterStubPathOverrides(user_data_dir);
-
-    base::FilePath cache_dir;
-    EXPECT_TRUE(base::PathService::Get(
-        chromeos::DIR_SIGNIN_PROFILE_COMPONENT_POLICY, &cache_dir));
-
-    ResourceCache cache(cache_dir, new base::NullTaskRunner,
-                        /* max_cache_size */ base::nullopt);
-    EXPECT_TRUE(cache.Store(kPolicyProtoCacheKey, kTestExtensionId,
-                            BuildTestComponentPolicy().SerializeAsString()));
-    EXPECT_TRUE(
-        cache.Store(kPolicyDataCacheKey, kTestExtensionId, kFakePolicy));
-  }
-
-  std::unique_ptr<base::AutoReset<bool>> signin_policy_provided_disabler_;
-};
-
-}  // namespace
-
-IN_PROC_BROWSER_TEST_F(PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest,
-                       OfflineStart) {
-  const extensions::Extension* extension = GetTestExtension();
-  ASSERT_TRUE(extension);
-  Browser* browser = CreateBrowser(GetSigninProfile());
+// The second step of the ManagedStorage test, which blocks component policy
+// download and verifies that a cached component policy is available to the test
+// extenion.
+// See PRE_ManagedStorage test.
+IN_PROC_BROWSER_TEST_F(SigninExtensionsDeviceCloudPolicyBrowserTest,
+                       ManagedStorage) {
+  // The test app will be installed via policy, at which point its
+  // background page will be loaded. Note that the app will not be installed
+  // before the test server is started, even if the app is installed from the
+  // extension cache - the server will be pinged at least to check whether the
+  // cached app version is the latest.
   extensions::ResultCatcher result_catcher;
-  ui_test_utils::NavigateToURL(
-      browser, extension->GetResourceURL(kTestExtensionTestPage));
+  StartTestServer(true /*hang_component_policy_fetch*/);
   EXPECT_TRUE(result_catcher.GetNextResult());
-  CloseBrowserSynchronously(browser);
 }
 
 }  // namespace policy

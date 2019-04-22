@@ -7,7 +7,7 @@
 
 #include <fuchsia/media/cpp/fidl.h>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/time/time.h"
 #include "chromecast/public/media/mixer_output_stream.h"
 
@@ -50,7 +50,7 @@ class MixerOutputStreamFuchsia : public MixerOutputStream {
   // Audio renderer connection.
   fuchsia::media::AudioRendererPtr audio_renderer_;
 
-  base::SharedMemory payload_buffer_;
+  base::WritableSharedMemoryMapping payload_buffer_;
   size_t payload_buffer_pos_ = 0;
 
   // Set only while stream is playing.

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include <memory>
@@ -37,7 +38,6 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
 using testing::ElementToDismissAlert;
-using web::test::ElementSelector;
 
 namespace {
 
@@ -544,7 +544,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(currentWebState)]
       performAction:web::WebViewTapElement(
                         currentWebState,
-                        ElementSelector::ElementSelectorId(ID))];
+                        [ElementSelector selectorWithElementID:ID])];
 
   // Wait until the keyboard shows up before tapping.
   GREYCondition* condition = [GREYCondition

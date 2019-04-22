@@ -266,7 +266,7 @@ TEST_P(PerfTest, NSURLSessionReceivesImageLoop) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(Loops,
-                        PerfTest,
-                        ::testing::ValuesIn(test_combinations));
+INSTANTIATE_TEST_SUITE_P(Loops,
+                         PerfTest,
+                         ::testing::ValuesIn(test_combinations));
 }  // namespace cronet

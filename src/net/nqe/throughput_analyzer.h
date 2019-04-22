@@ -7,8 +7,10 @@
 
 #include <stdint.h>
 
+#include <unordered_map>
+#include <unordered_set>
+
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
@@ -124,12 +126,12 @@ class NET_EXPORT_PRIVATE ThroughputAnalyzer {
 
   // Mapping from URL request to the last time data was received for that
   // request.
-  typedef base::hash_map<const URLRequest*, base::TimeTicks> Requests;
+  typedef std::unordered_map<const URLRequest*, base::TimeTicks> Requests;
 
   // Set of URL requests to hold the requests that reduce the accuracy of
   // throughput computation. These requests are not used in throughput
   // computation.
-  typedef base::hash_set<const URLRequest*> AccuracyDegradingRequests;
+  typedef std::unordered_set<const URLRequest*> AccuracyDegradingRequests;
 
   // Returns true if downstream throughput can be recorded. In that case,
   // |downstream_kbps| is set to the computed downstream throughput (in

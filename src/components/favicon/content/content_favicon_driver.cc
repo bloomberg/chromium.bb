@@ -73,8 +73,7 @@ void ContentFaviconDriver::SaveFaviconEvenIfInIncognito() {
 gfx::Image ContentFaviconDriver::GetFavicon() const {
   // Like GetTitle(), we also want to use the favicon for the last committed
   // entry rather than a pending navigation entry.
-  const content::NavigationController& controller =
-      web_contents()->GetController();
+  content::NavigationController& controller = web_contents()->GetController();
   content::NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->GetFavicon().image;
@@ -86,8 +85,7 @@ gfx::Image ContentFaviconDriver::GetFavicon() const {
 }
 
 bool ContentFaviconDriver::FaviconIsValid() const {
-  const content::NavigationController& controller =
-      web_contents()->GetController();
+  content::NavigationController& controller = web_contents()->GetController();
   content::NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
     return entry->GetFavicon().valid;
@@ -143,7 +141,8 @@ void ContentFaviconDriver::OnFaviconUpdated(
     const gfx::Image& image) {
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
-  DCHECK(entry && entry->GetURL() == page_url);
+  DCHECK(entry);
+  DCHECK_EQ(entry->GetURL(), page_url);
 
   if (notification_icon_type == FaviconDriverObserver::NON_TOUCH_16_DIP) {
     entry->GetFavicon().valid = true;
@@ -263,5 +262,7 @@ void ContentFaviconDriver::DidFinishNavigation(
 void ContentFaviconDriver::DocumentOnLoadCompletedInMainFrame() {
   document_on_load_completed_ = true;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ContentFaviconDriver)
 
 }  // namespace favicon

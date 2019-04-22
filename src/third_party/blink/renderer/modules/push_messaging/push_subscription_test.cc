@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -35,8 +35,8 @@ TEST(PushSubscriptionTest, SerializesToBase64URLWithoutPadding) {
   WebPushSubscription web_subscription(
       WebURL() /* endpoint */, true /* user_visible_only */,
       WebString() /* application_server_key */,
-      WebVector<unsigned char>(kP256DH, arraysize(kP256DH)),
-      WebVector<unsigned char>(kAuthSecret, arraysize(kAuthSecret)));
+      WebVector<unsigned char>(kP256DH, base::size(kP256DH)),
+      WebVector<unsigned char>(kAuthSecret, base::size(kAuthSecret)));
 
   PushSubscription subscription(web_subscription,
                                 nullptr /* service_worker_registration */);

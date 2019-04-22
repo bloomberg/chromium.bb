@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -52,13 +53,19 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     private static final long HIDE_PROGRESS_BAR_DELAY_MS = 1000 / 60 * 4;
 
     /** State of the Overlay Panel. */
-    public static enum PanelState {
+    @IntDef({PanelState.UNDEFINED, PanelState.CLOSED, PanelState.PEEKED, PanelState.EXPANDED,
+            PanelState.MAXIMIZED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PanelState {
+        // Values can't have gaps and should be numerated from 0.
+        // Values CLOSED - MAXIMIZED are sorted and show next states.
         // TODO(pedrosimonetti): consider removing the UNDEFINED state
-        UNDEFINED,
-        CLOSED,
-        PEEKED,
-        EXPANDED,
-        MAXIMIZED
+        int UNDEFINED = 0;
+        int CLOSED = 1;
+        int PEEKED = 2;
+        int EXPANDED = 3;
+        int MAXIMIZED = 4;
+        int NUM_ENTRIES = 5;
     }
 
     /**
@@ -96,6 +103,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         int PANEL_SUPPRESS = 18;
         int PANEL_UNSUPPRESS = 19;
         int TAP_SUPPRESS = 20;
+        // Always update MAX_VALUE to match the last StateChangeReason in the list.
+        int MAX_VALUE = 20;
     }
 
     /** The activity this panel is in. */
@@ -304,7 +313,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      * @return The absolute amount in DP that the browser controls have shifted off screen.
      */
     protected float getBrowserControlsOffsetDp() {
-        if (mActivity == null || mActivity.getFullscreenManager() == null) return 0.0f;
+        if (mActivity == null) return 0.0f;
         return -mActivity.getFullscreenManager().getTopControlOffset() * mPxToDp;
     }
 
@@ -345,6 +354,16 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         } else {
             baseContentView.clearFocus();
         }
+    }
+
+    /**
+     * Returns whether the panel has been activated -- asked to show.  It may not yet be physically
+     * showing due animation.  Use {@link #isShowing} instead to determine if the panel is
+     * physically visible.
+     * @return Whether the panel is showing or about to show.
+     */
+    public boolean isActive() {
+        return mPanelShown;
     }
 
     // ============================================================================================
@@ -442,7 +461,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
         return new OverlayPanelContent(new OverlayContentDelegate(),
-                new OverlayContentProgressObserver(), mActivity, getBarHeight());
+                new OverlayContentProgressObserver(), mActivity, /* isIncognito= */ false,
+                getBarHeight());
     }
 
     /**
@@ -490,7 +510,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     public void updateBrowserControlsState(int current, boolean animate) {
         Tab currentTab = mActivity.getActivityTab();
         if (currentTab != null) {
-            currentTab.updateBrowserControlsState(current, animate);
+            TabBrowserControlsState.get(currentTab).update(current, animate);
         }
     }
 
@@ -909,7 +929,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     @Override
     public boolean onBackPressed() {
-        if (!isPanelOpened()) return false;
+        if (!isShowing()) return false;
         closePanel(StateChangeReason.BACK_PRESS, true);
         return true;
     }

@@ -10,4 +10,10 @@ package org.chromium.base.task;
  * unless specified otherwise by the provider of a given SingleThreadTaskRunner there are
  * no ordering guarantees w.r.t. other SingleThreadTaskRunner.
  */
-public interface SingleThreadTaskRunner extends SequencedTaskRunner {}
+public interface SingleThreadTaskRunner extends SequencedTaskRunner {
+    /**
+     *
+     * @return true iff this SingleThreadTaskRunner is bound to the current thread.
+     */
+    boolean belongsToCurrentThread();
+}

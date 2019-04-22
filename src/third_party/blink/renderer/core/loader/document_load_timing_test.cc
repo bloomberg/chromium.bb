@@ -14,12 +14,13 @@ namespace blink {
 class DocumentLoadTimingTest : public testing::Test {};
 
 TEST_F(DocumentLoadTimingTest, ensureValidNavigationStartAfterEmbedder) {
-  std::unique_ptr<DummyPageHolder> dummy_page = DummyPageHolder::Create();
+  auto dummy_page = std::make_unique<DummyPageHolder>();
   DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
 
   double delta = -1000;
   double embedder_navigation_start = CurrentTimeTicksInSeconds() + delta;
-  timing.SetNavigationStart(TimeTicksFromSeconds(embedder_navigation_start));
+  timing.SetNavigationStart(base::TimeTicks() + base::TimeDelta::FromSecondsD(
+                                                    embedder_navigation_start));
 
   double real_wall_time = CurrentTime();
   TimeDelta adjusted_wall_time =
@@ -29,7 +30,7 @@ TEST_F(DocumentLoadTimingTest, ensureValidNavigationStartAfterEmbedder) {
 }
 
 TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
-  std::unique_ptr<DummyPageHolder> dummy_page = DummyPageHolder::Create();
+  auto dummy_page = std::make_unique<DummyPageHolder>();
   DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
 
   double navigation_start_delta = -456;
@@ -37,7 +38,8 @@ TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
   double embedder_navigation_start =
       current_monotonic_time + navigation_start_delta;
 
-  timing.SetNavigationStart(TimeTicksFromSeconds(embedder_navigation_start));
+  timing.SetNavigationStart(base::TimeTicks() + base::TimeDelta::FromSecondsD(
+                                                    embedder_navigation_start));
 
   // Super quick load! Expect the wall time reported by this event to be
   // dominated by the navigationStartDelta, but similar to currentTime().
@@ -59,7 +61,7 @@ TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
 TEST_F(DocumentLoadTimingTest, ensureRedirectEndExcludesNextFetch) {
   // Regression test for https://crbug.com/823254.
 
-  std::unique_ptr<DummyPageHolder> dummy_page = DummyPageHolder::Create();
+  auto dummy_page = std::make_unique<DummyPageHolder>();
   DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
 
   base::TimeTicks origin;

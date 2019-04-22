@@ -44,7 +44,9 @@ std::string GetContentUriMimeType(const FilePath& content_uri) {
 
 bool MaybeGetFileDisplayName(const FilePath& content_uri,
                              base::string16* file_display_name) {
-  DCHECK(content_uri.IsContentUri());
+  if (!content_uri.IsContentUri())
+    return false;
+
   DCHECK(file_display_name);
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -58,6 +60,15 @@ bool MaybeGetFileDisplayName(const FilePath& content_uri,
 
   *file_display_name = base::android::ConvertJavaStringToUTF16(j_display_name);
   return true;
+}
+
+void DeleteContentUri(const FilePath& content_uri) {
+  DCHECK(content_uri.IsContentUri());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_uri =
+      ConvertUTF8ToJavaString(env, content_uri.value());
+
+  Java_ContentUriUtils_delete(env, j_uri);
 }
 
 }  // namespace base

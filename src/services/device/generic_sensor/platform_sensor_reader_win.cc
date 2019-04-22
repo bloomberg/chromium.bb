@@ -10,7 +10,9 @@
 
 #include <iomanip>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/win/iunknown_impl.h"
@@ -370,7 +372,7 @@ std::unique_ptr<PlatformSensorReaderWin> PlatformSensorReaderWin::Create(
     params->min_reporting_interval_ms = min_interval.get().ulVal;
 
   GUID interests[] = {SENSOR_EVENT_STATE_CHANGED, SENSOR_EVENT_DATA_UPDATED};
-  hr = sensor->SetEventInterest(interests, arraysize(interests));
+  hr = sensor->SetEventInterest(interests, base::size(interests));
   if (FAILED(hr))
     return nullptr;
 
@@ -438,8 +440,8 @@ bool PlatformSensorReaderWin::StartSensor(
 
   if (!sensor_active_) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PlatformSensorReaderWin::ListenSensorEvent,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&PlatformSensorReaderWin::ListenSensorEvent,
+                                  weak_factory_.GetWeakPtr()));
     sensor_active_ = true;
   }
 

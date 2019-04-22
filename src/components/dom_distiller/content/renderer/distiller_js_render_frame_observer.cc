@@ -32,9 +32,9 @@ DistillerJsRenderFrameObserver::DistillerJsRenderFrameObserver(
 
 DistillerJsRenderFrameObserver::~DistillerJsRenderFrameObserver() {}
 
-void DistillerJsRenderFrameObserver::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader,
-    bool is_content_initiated) {
+void DistillerJsRenderFrameObserver::DidStartNavigation(
+    const GURL& url,
+    base::Optional<blink::WebNavigationType> navigation_type) {
   load_active_ = true;
 }
 

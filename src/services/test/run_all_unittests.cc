@@ -12,6 +12,7 @@
 #include "base/test/test_suite.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "mojo/core/embedder/configuration.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -77,7 +78,9 @@ class ServiceTestSuite : public base::TestSuite {
 int main(int argc, char** argv) {
   ServiceTestSuite test_suite(argc, argv);
 
-  mojo::core::Init();
+  mojo::core::Configuration mojo_config;
+  mojo_config.is_broker_process = true;
+  mojo::core::Init(mojo_config);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   mojo::core::SetMachPortProvider(

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -16,6 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test.h"
@@ -92,8 +94,7 @@ class NetworkConnectionTrackerBrowserTest : public InProcessBrowserTest {
 
   // Simulates a network connection change.
   void SimulateNetworkChange(network::mojom::ConnectionType type) {
-    if (network_service_enabled_ &&
-        !content::IsNetworkServiceRunningInProcess()) {
+    if (network_service_enabled_ && !content::IsInProcessNetworkService()) {
       network::mojom::NetworkServiceTestPtr network_service_test;
       content::ServiceManagerConnection::GetForProcess()
           ->GetConnector()
@@ -158,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(NetworkConnectionTrackerBrowserTest,
                        SimulateNetworkServiceCrash) {
   // Out-of-process network service is not enabled, so network service's crash
   // and restart aren't applicable.
-  if (!network_service_enabled())
+  if (!content::IsOutOfProcessNetworkService())
     return;
 
   network::NetworkConnectionTracker* tracker =

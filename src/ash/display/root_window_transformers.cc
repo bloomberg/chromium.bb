@@ -55,13 +55,6 @@ gfx::Transform CreateInsetsAndScaleTransform(const gfx::Insets& insets,
   return transform;
 }
 
-gfx::Transform CreateMirrorTransform(const display::Display& display) {
-  gfx::Transform transform;
-  transform.matrix().set3x3(-1, 0, 0, 0, 1, 0, 0, 0, 1);
-  transform.Translate(-display.size().width(), 0);
-  return transform;
-}
-
 // RootWindowTransformer for ash environment.
 class AshRootWindowTransformer : public RootWindowTransformer {
  public:
@@ -75,14 +68,6 @@ class AshRootWindowTransformer : public RootWindowTransformer {
         CreateInsetsAndScaleTransform(host_insets_,
                                       display.device_scale_factor()) *
         CreateRootWindowRotationTransform(root, display);
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kAshEnableMirroredScreen)) {
-      // Apply the transform that flips the screen image horizontally so that
-      // the screen looks normal when reflected on a mirror.
-      root_window_bounds_transform_ =
-          root_window_bounds_transform_ * CreateMirrorTransform(display);
-    }
-
     transform_ = root_window_bounds_transform_;
     MagnificationController* magnifier =
         Shell::Get()->magnification_controller();

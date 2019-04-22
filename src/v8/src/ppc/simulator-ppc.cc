@@ -2,33 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "src/ppc/simulator-ppc.h"
+
+#if defined(USE_SIMULATOR)
+
 #include <stdarg.h>
 #include <stdlib.h>
 #include <cmath>
 
-#if V8_TARGET_ARCH_PPC
-
 #include "src/assembler.h"
 #include "src/base/bits.h"
-#include "src/codegen.h"
+#include "src/base/lazy-instance.h"
 #include "src/disasm.h"
 #include "src/macro-assembler.h"
+#include "src/objects-inl.h"
 #include "src/ostreams.h"
 #include "src/ppc/constants-ppc.h"
 #include "src/ppc/frame-constants-ppc.h"
-#include "src/ppc/simulator-ppc.h"
 #include "src/register-configuration.h"
 #include "src/runtime/runtime-utils.h"
-
-#if defined(USE_SIMULATOR)
 
 // Only build the simulator if not compiling for real PPC hardware.
 namespace v8 {
 namespace internal {
 
-// static
-base::LazyInstance<Simulator::GlobalMonitor>::type Simulator::global_monitor_ =
-    LAZY_INSTANCE_INITIALIZER;
+DEFINE_LAZY_LEAKY_OBJECT_GETTER(Simulator::GlobalMonitor,
+                                Simulator::GlobalMonitor::Get)
 
 // This macro provides a platform independent use of sscanf. The reason for
 // SScanF not being implemented in a platform independent way through
@@ -348,7 +347,7 @@ void PPCDebugger::Debug() {
           intptr_t value;
           StdoutStream os;
           if (GetValue(arg1, &value)) {
-            Object* obj = reinterpret_cast<Object*>(value);
+            Object obj(value);
             os << arg1 << ": \n";
 #ifdef DEBUG
             obj->Print(os);
@@ -400,14 +399,12 @@ void PPCDebugger::Debug() {
         while (cur < end) {
           PrintF("  0x%08" V8PRIxPTR ":  0x%08" V8PRIxPTR " %10" V8PRIdPTR,
                  reinterpret_cast<intptr_t>(cur), *cur, *cur);
-          HeapObject* obj = reinterpret_cast<HeapObject*>(*cur);
-          intptr_t value = *cur;
+          Object obj(*cur);
           Heap* current_heap = sim_->isolate_->heap();
-          if (((value & 1) == 0) || current_heap->Contains(obj)) {
+          if (obj.IsSmi() || current_heap->Contains(HeapObject::cast(obj))) {
             PrintF(" (");
-            if ((value & 1) == 0) {
-              PrintF("smi %d", PlatformSmiTagging::SmiToInt(
-                                   reinterpret_cast<Address>(obj)));
+            if (obj.IsSmi()) {
+              PrintF("smi %d", Smi::ToInt(obj));
             } else {
               obj->ShortPrint();
             }
@@ -886,7 +883,7 @@ void Simulator::TrashCallerSaveRegisters() {
     return WriteEx(addr, value);                                 \
   }
 
-RW_VAR_LIST(GENERATE_RW_FUNC);
+RW_VAR_LIST(GENERATE_RW_FUNC)
 #undef GENERATE_RW_FUNC
 
 // Returns the limit of the stack area to enable checking for stack overflows.
@@ -951,23 +948,10 @@ bool Simulator::OverflowFrom(int32_t alu_out, int32_t left, int32_t right,
   return overflow;
 }
 
-
-#if V8_TARGET_ARCH_PPC64
 static void decodeObjectPair(ObjectPair* pair, intptr_t* x, intptr_t* y) {
-  *x = reinterpret_cast<intptr_t>(pair->x);
-  *y = reinterpret_cast<intptr_t>(pair->y);
+  *x = static_cast<intptr_t>(pair->x);
+  *y = static_cast<intptr_t>(pair->y);
 }
-#else
-static void decodeObjectPair(ObjectPair* pair, intptr_t* x, intptr_t* y) {
-#if V8_TARGET_BIG_ENDIAN
-  *x = static_cast<int32_t>(*pair >> 32);
-  *y = static_cast<int32_t>(*pair);
-#else
-  *x = static_cast<int32_t>(*pair);
-  *y = static_cast<int32_t>(*pair >> 32);
-#endif
-}
-#endif
 
 // Calls into the V8 runtime.
 typedef intptr_t (*SimulatorRuntimeCall)(intptr_t arg0, intptr_t arg1,
@@ -3125,11 +3109,10 @@ void Simulator::ExecuteGeneric(Instruction* instr) {
       return;
     }
     case FSQRT: {
-      lazily_initialize_fast_sqrt();
       int frt = instr->RTValue();
       int frb = instr->RBValue();
       double frb_val = get_double_from_d_register(frb);
-      double frt_val = fast_sqrt(frb_val);
+      double frt_val = std::sqrt(frb_val);
       set_d_register_from_double(frt, frt_val);
       return;
     }
@@ -3967,12 +3950,6 @@ uintptr_t Simulator::PopAddress() {
   return address;
 }
 
-Simulator::GlobalMonitor::GlobalMonitor()
-    : access_state_(MonitorAccess::Open),
-      tagged_addr_(0),
-      size_(TransactionSize::None),
-      thread_id_(ThreadId::Invalid()) {}
-
 void Simulator::GlobalMonitor::Clear() {
   access_state_ = MonitorAccess::Open;
   tagged_addr_ = 0;
@@ -4005,7 +3982,7 @@ void Simulator::GlobalMonitor::NotifyStore(uintptr_t addr, TransactionSize size,
         tagged_addr_ + static_cast<uintptr_t>(size_);
     bool is_not_overlapped = transaction_end < exclusive_transaction_start ||
                              exclusive_transaction_end < transaction_start;
-    if (!is_not_overlapped && !thread_id_.Equals(thread_id)) {
+    if (!is_not_overlapped && thread_id_ != thread_id) {
       Clear();
     }
   }
@@ -4016,7 +3993,7 @@ bool Simulator::GlobalMonitor::NotifyStoreExcl(uintptr_t addr,
                                                ThreadId thread_id) {
   bool permission = access_state_ == MonitorAccess::Exclusive &&
                     addr == tagged_addr_ && size_ == size &&
-                    thread_id_.Equals(thread_id);
+                    thread_id_ == thread_id;
   // The reservation is cleared if the processor holding the reservation
   // executes a store conditional instruction to any address.
   Clear();
@@ -4028,4 +4005,3 @@ bool Simulator::GlobalMonitor::NotifyStoreExcl(uintptr_t addr,
 
 #undef SScanF
 #endif  // USE_SIMULATOR
-#endif  // V8_TARGET_ARCH_PPC

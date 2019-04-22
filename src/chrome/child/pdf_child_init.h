@@ -5,6 +5,12 @@
 #ifndef CHROME_CHILD_PDF_CHILD_INIT_H_
 #define CHROME_CHILD_PDF_CHILD_INIT_H_
 
+#include "pdf/buildflags.h"
+
+#if !BUILDFLAG(ENABLE_PDF)
+#error "PDF must be enabled"
+#endif
+
 // Initializes child-process specific code for the PDF module.
 void InitializePDF();
 

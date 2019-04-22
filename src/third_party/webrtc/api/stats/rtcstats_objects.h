@@ -11,11 +11,12 @@
 #ifndef API_STATS_RTCSTATS_OBJECTS_H_
 #define API_STATS_RTCSTATS_OBJECTS_H_
 
+#include <stdint.h>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "api/stats/rtcstats.h"
+#include "api/stats/rtc_stats.h"
 #include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
@@ -71,6 +72,12 @@ struct RTCNetworkType {
   static const char* const kWimax;
   static const char* const kVpn;
   static const char* const kUnknown;
+};
+
+// https://webrtc.org/experiments/rtp-hdrext/video-content-type/
+struct RTCContentType {
+  static const char* const kUnspecified;
+  static const char* const kScreenshare;
 };
 
 // https://w3c.github.io/webrtc-stats/#certificatestats-dict*
@@ -283,6 +290,7 @@ class RTC_EXPORT RTCMediaStreamTrackStats final : public RTCStats {
   // implemented for audio only).
   // https://crbug.com/webrtc/8318
   RTCStatsMember<double> jitter_buffer_delay;
+  RTCStatsMember<uint64_t> jitter_buffer_emitted_count;
   // Video-only members
   RTCStatsMember<uint32_t> frame_width;
   RTCStatsMember<uint32_t> frame_height;
@@ -312,6 +320,15 @@ class RTC_EXPORT RTCMediaStreamTrackStats final : public RTCStats {
   // TODO(kuddai): Add description to standard. crbug.com/webrtc/10042
   RTCNonStandardStatsMember<uint64_t> jitter_buffer_flushes;
   RTCNonStandardStatsMember<uint64_t> delayed_packet_outage_samples;
+  RTCNonStandardStatsMember<double> relative_packet_arrival_delay;
+  // Non-standard video-only members.
+  // https://henbos.github.io/webrtc-provisional-stats/#RTCVideoReceiverStats-dict*
+  RTCNonStandardStatsMember<uint32_t> freeze_count;
+  RTCNonStandardStatsMember<uint32_t> pause_count;
+  RTCNonStandardStatsMember<double> total_freezes_duration;
+  RTCNonStandardStatsMember<double> total_pauses_duration;
+  RTCNonStandardStatsMember<double> total_frames_duration;
+  RTCNonStandardStatsMember<double> sum_squared_frame_durations;
 };
 
 // https://w3c.github.io/webrtc-stats/#pcstats-dict*
@@ -380,6 +397,7 @@ class RTC_EXPORT RTCInboundRTPStreamStats final : public RTCRTPStreamStats {
   RTCStatsMember<uint32_t> packets_received;
   RTCStatsMember<uint64_t> bytes_received;
   RTCStatsMember<int32_t> packets_lost;  // Signed per RFC 3550
+  RTCStatsMember<double> last_packet_received_timestamp;
   // TODO(hbos): Collect and populate this value for both "audio" and "video",
   // currently not collected for "video". https://bugs.webrtc.org/7065
   RTCStatsMember<double> jitter;
@@ -407,6 +425,8 @@ class RTC_EXPORT RTCInboundRTPStreamStats final : public RTCRTPStreamStats {
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7065
   RTCStatsMember<double> gap_discard_rate;
   RTCStatsMember<uint32_t> frames_decoded;
+  // https://henbos.github.io/webrtc-provisional-stats/#dom-rtcinboundrtpstreamstats-contenttype
+  RTCStatsMember<std::string> content_type;
 };
 
 // https://w3c.github.io/webrtc-stats/#outboundrtpstats-dict*
@@ -422,10 +442,15 @@ class RTC_EXPORT RTCOutboundRTPStreamStats final : public RTCRTPStreamStats {
   ~RTCOutboundRTPStreamStats() override;
 
   RTCStatsMember<uint32_t> packets_sent;
+  RTCStatsMember<uint64_t> retransmitted_packets_sent;
   RTCStatsMember<uint64_t> bytes_sent;
+  RTCStatsMember<uint64_t> retransmitted_bytes_sent;
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7066
   RTCStatsMember<double> target_bitrate;
   RTCStatsMember<uint32_t> frames_encoded;
+  RTCStatsMember<double> total_encode_time;
+  // https://henbos.github.io/webrtc-provisional-stats/#dom-rtcoutboundrtpstreamstats-contenttype
+  RTCStatsMember<std::string> content_type;
 };
 
 // https://w3c.github.io/webrtc-stats/#transportstats-dict*

@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://html.spec.whatwg.org/#the-canvas-element
+// https://html.spec.whatwg.org/C/#the-canvas-element
 
 typedef (CanvasRenderingContext2D or
          WebGLRenderingContext or
          WebGL2RenderingContext or
          WebGL2ComputeRenderingContext or
          ImageBitmapRenderingContext or
-         XRPresentationContext) RenderingContext;
+         XRPresentationContext or
+         GPUCanvasContext) RenderingContext;
 
 [
     ImplementedAs=HTMLCanvasElementModule

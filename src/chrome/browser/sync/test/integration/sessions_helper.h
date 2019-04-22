@@ -117,6 +117,9 @@ void NavigateTabBack(int browser_index);
 // one; if this isn't possible, does nothing
 void NavigateTabForward(int browser_index);
 
+// Runs Javascript within a specified tab.
+bool ExecJs(int browser_index, int tab_index, const std::string& script);
+
 // Wait for a session change to |web_contents| to propagate to the model
 // associator. Will return true once |url| has been found, or false if it times
 // out while waiting.

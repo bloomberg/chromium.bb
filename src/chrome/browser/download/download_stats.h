@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
 
 #include "build/build_config.h"
-#include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_path_reservation_tracker.h"
 
 // Used for counting UMA stats. Similar to content's
 // download_stats::DownloadCountTypes but from the chrome layer.
@@ -114,7 +114,7 @@ void RecordDownloadPathGeneration(DownloadPathGenerationEvent event,
                                   bool is_transient);
 
 // Record path validation result.
-void RecordDownloadPathValidation(PathValidationResult result,
+void RecordDownloadPathValidation(download::PathValidationResult result,
                                   bool is_transient);
 
 // Records drags of completed downloads from the shelf. Used in UMA, do not

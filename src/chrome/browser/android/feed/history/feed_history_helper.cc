@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_row.h"
 

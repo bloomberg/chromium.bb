@@ -15,8 +15,6 @@
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "components/prefs/pref_change_registrar.h"
 
-class ComponentActionDelegate;
-
 // Controller for the Cast toolbar icon that determines when to show and hide
 // icon. There should be one instance of this class per profile, and it should
 // only be used on the UI thread.
@@ -25,24 +23,27 @@ class MediaRouterActionController : public media_router::IssuesObserver,
                                     public media_router::MediaRoutesObserver,
                                     public MediaRouterContextualMenu::Observer {
  public:
+  // TODO(takumif): CastToolbarIcon is the only Observer implementation.
+  // Observer should be renamed to make it clear that it is responsible for
+  // changing icon states when its methods are called.
   class Observer {
    public:
-    virtual void ShowIcon() = 0;
-    virtual void HideIcon() = 0;
+    virtual ~Observer() = default;
+
+    virtual void ShowIcon() {}
+    virtual void HideIcon() {}
     // TODO(https://crbug.com/872392): Use the common code path to show and hide
     // the icon's inkdrop.
     // This is called when the icon should enter pressed state.
-    virtual void ActivateIcon() = 0;
+    virtual void ActivateIcon() {}
     // This is called when the icon should enter unpressed state.
-    virtual void DeactivateIcon() = 0;
+    virtual void DeactivateIcon() {}
   };
 
   explicit MediaRouterActionController(Profile* profile);
   // Constructor for injecting dependencies in tests.
-  MediaRouterActionController(
-      Profile* profile,
-      media_router::MediaRouter* router,
-      ComponentActionDelegate* component_action_delegate);
+  MediaRouterActionController(Profile* profile,
+                              media_router::MediaRouter* router);
   ~MediaRouterActionController() override;
 
   // Whether the media router action is shown by an administrator policy.
@@ -92,24 +93,13 @@ class MediaRouterActionController : public media_router::IssuesObserver,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterActionControllerUnitTest,
                            EphemeralIconForDialog);
 
-  // Adds or removes the Media Router action icon to/from
-  // |component_action_delegate_| if necessary, depending on whether or not
-  // we have issues, local routes or a dialog.
+  // Adds or removes the Cast icon to/from the toolbar if necessary,
+  // depending on whether or not we have issues, local routes or a dialog.
   virtual void MaybeAddOrRemoveAction();
-
-  // Implementation-specific helper methods for MaybeAddOrRemoveAction().
-  // TODO(takumif): Remove MaybeAddOrRemoveComponentAction() once the trusted
-  // area icon is completely rolled out.
-  void MaybeAddOrRemoveComponentAction();
-  void MaybeAddOrRemoveTrustedAreaIcon();
 
   // The profile |this| is associated with. There should be one instance of this
   // class per profile.
   Profile* const profile_;
-
-  // The delegate that is responsible for showing and hiding the icon on the
-  // toolbar. It outlives |this|.
-  ComponentActionDelegate* const component_action_delegate_;
 
   bool has_issue_ = false;
   bool has_local_display_route_ = false;

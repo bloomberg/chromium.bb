@@ -70,11 +70,12 @@ bool FilterOperations::CanInterpolateWith(const FilterOperations& other) const {
   return true;
 }
 
-bool FilterOperations::HasReferenceFilter() const {
+bool FilterOperations::HasBlurOrReferenceFilter() const {
   for (const auto& operation : operations_) {
-    if (operation->GetType() == FilterOperation::REFERENCE ||
-        operation->GetType() == FilterOperation::BOX_REFLECT)
+    FilterOperation::OperationType type = operation->GetType();
+    if (type == FilterOperation::BLUR || type == FilterOperation::REFERENCE) {
       return true;
+    }
   }
   return false;
 }
@@ -103,14 +104,14 @@ bool FilterOperations::HasFilterThatMovesPixels() const {
 void FilterOperations::AddClient(SVGResourceClient& client) const {
   for (FilterOperation* operation : operations_) {
     if (operation->GetType() == FilterOperation::REFERENCE)
-      ToReferenceFilterOperation(*operation).AddClient(client);
+      To<ReferenceFilterOperation>(*operation).AddClient(client);
   }
 }
 
 void FilterOperations::RemoveClient(SVGResourceClient& client) const {
   for (FilterOperation* operation : operations_) {
     if (operation->GetType() == FilterOperation::REFERENCE)
-      ToReferenceFilterOperation(*operation).RemoveClient(client);
+      To<ReferenceFilterOperation>(*operation).RemoveClient(client);
   }
 }
 

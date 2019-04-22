@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -70,13 +71,12 @@ void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
 }
 
 void PrimaryAccountAccessTokenFetcher::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   ProcessSigninStateChange();
 }
 
 void PrimaryAccountAccessTokenFetcher::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
+    const CoreAccountInfo& account_info) {
   ProcessSigninStateChange();
 }
 

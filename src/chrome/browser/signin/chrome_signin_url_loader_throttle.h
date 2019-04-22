@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_URL_LOADER_THROTTLE_H_
 
 #include "base/macros.h"
+#include "base/supports_user_data.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/url_loader_throttle.h"
 
@@ -19,7 +20,8 @@ class HeaderModificationDelegate;
 
 // This class is used to modify the main frame request made when loading the
 // GAIA signin realm.
-class URLLoaderThrottle : public content::URLLoaderThrottle {
+class URLLoaderThrottle : public content::URLLoaderThrottle,
+                          public base::SupportsUserData {
  public:
   // Creates a new throttle if |delegate| says that this request should be
   // intercepted.

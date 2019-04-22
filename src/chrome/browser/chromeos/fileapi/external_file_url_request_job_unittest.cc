@@ -20,12 +20,13 @@
 #include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/drive/chromeos/drive_test_util.h"
 #include "components/drive/chromeos/fake_file_system.h"
 #include "components/drive/service/fake_drive_service.h"
@@ -120,7 +121,8 @@ class TestDelegate : public net::TestDelegate {
 
 constexpr char kExtensionId[] = "abc";
 constexpr char kFileSystemId[] = "test-filesystem";
-constexpr char kTestUrl[] = "externalfile:abc:test-filesystem:/hello.txt";
+constexpr char kTestUrl[] =
+    "externalfile:abc:test-filesystem:test-user-hash/hello.txt";
 constexpr char kExpectedFileContents[] =
     "This is a testing file. Lorem ipsum dolor sit amet est.";
 
@@ -142,8 +144,11 @@ class ExternalFileURLRequestJobTest : public testing::Test {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
+    user_manager_ = std::make_unique<chromeos::FakeChromeUserManager>();
     Profile* const profile =
         profile_manager_->CreateTestingProfile("test-user");
+    user_manager_->AddUser(
+        AccountId::FromUserEmailGaiaId(profile->GetProfileUserName(), "12345"));
 
     auto* service = chromeos::file_system_provider::Service::Get(profile);
     service->RegisterProvider(
@@ -254,6 +259,7 @@ class ExternalFileURLRequestJobTest : public testing::Test {
   std::unique_ptr<TestURLRequestJobFactory> test_url_request_job_factory_;
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<chromeos::FakeChromeUserManager> user_manager_;
   base::ScopedTempDir drive_cache_dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 };
@@ -308,8 +314,8 @@ TEST_F(ExternalFileURLRequestJobTest, HostedDocument) {
 
 TEST_F(ExternalFileURLRequestJobTest, RootDirectory) {
   std::unique_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      GURL("externalfile:abc:test-filesystem:/"), net::DEFAULT_PRIORITY,
-      test_delegate_.get()));
+      GURL("externalfile:abc:test-filesystem:test-user-hash/"),
+      net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->Start();
 
   base::RunLoop().Run();
@@ -319,7 +325,8 @@ TEST_F(ExternalFileURLRequestJobTest, RootDirectory) {
 
 TEST_F(ExternalFileURLRequestJobTest, NonExistingFile) {
   std::unique_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      GURL("externalfile:abc:test-filesystem:/non-existing-file.txt"),
+      GURL("externalfile:abc:test-filesystem:test-user-hash/"
+           "non-existing-file.txt"),
       net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->Start();
 

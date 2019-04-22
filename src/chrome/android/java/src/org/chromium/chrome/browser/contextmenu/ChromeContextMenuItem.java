@@ -8,12 +8,19 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.SuperscriptSpan;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.text.SpanApplier.SpanInfo;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -168,6 +175,10 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             }
         }
 
+        if (FeatureUtilities.isTabGroupsAndroidEnabled() && item == Item.OPEN_IN_NEW_TAB) {
+            return R.string.contextmenu_open_in_new_tab_group;
+        }
+
         return STRING_IDS[item];
     }
 
@@ -178,7 +189,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
      * @return Returns a string for the menu item.
      */
     @Override
-    public String getTitle(Context context) {
+    public CharSequence getTitle(Context context) {
         switch (mItem) {
             case Item.OPEN_IN_BROWSER_ID:
                 return DefaultBrowserInfo.getTitleOpenInDefaultBrowser(false);
@@ -187,6 +198,13 @@ public class ChromeContextMenuItem implements ContextMenuItem {
                         TemplateUrlService.getInstance()
                                 .getDefaultSearchEngineTemplateUrl()
                                 .getShortName());
+            case Item.OPEN_IN_EPHEMERAL_TAB:
+            case Item.OPEN_IMAGE_IN_EPHEMERAL_TAB:
+                return SpanApplier.applySpans(context.getString(getStringID(mItem)),
+                        new SpanInfo("<new>", "</new>", new SuperscriptSpan(),
+                                new RelativeSizeSpan(0.75f),
+                                new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
+                                        context.getResources(), R.color.default_text_color_blue))));
             default:
                 return context.getString(getStringID(mItem));
         }

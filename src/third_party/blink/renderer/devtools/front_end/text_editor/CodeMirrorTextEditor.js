@@ -42,8 +42,6 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
     this.registerRequiredCSS('cm/codemirror.css');
     this.registerRequiredCSS('text_editor/cmdevtools.css');
 
-    TextEditor.CodeMirrorUtils.appendThemeStyle(this.element);
-
     this._codeMirror = new CodeMirror(this.element, {
       lineNumbers: options.lineNumbers,
       matchBrackets: true,
@@ -162,6 +160,9 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
 
     this._codeMirror.on('changes', this._changes.bind(this));
     this._codeMirror.on('beforeSelectionChange', this._beforeSelectionChange.bind(this));
+    this._codeMirror.on('cursorActivity', () => {
+      this.dispatchEventToListeners(UI.TextEditor.Events.CursorChanged);
+    });
 
     this.element.style.overflow = 'hidden';
     this._codeMirrorElement.classList.add('source-code');
@@ -374,6 +375,19 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
   }
 
   /**
+   * @override
+   * @param {string} placeholder
+   */
+  setPlaceholder(placeholder) {
+    if (!this._placeholderElement) {
+      this._placeholderElement = createElement('pre');
+      this._placeholderElement.classList.add('placeholder-text');
+    }
+    this._placeholderElement.textContent = placeholder || '';
+    this._updatePlaceholder();
+  }
+
+  /**
    * @param {number} lineNumber
    * @param {number} lineLength
    * @param {number} charNumber
@@ -550,6 +564,10 @@ TextEditor.CodeMirrorTextEditor = class extends UI.VBox {
    * @param {!Event} e
    */
   _handleKeyDown(e) {
+    if (e.key === 'Tab' && Common.moduleSetting('textEditorTabMovesFocus').get()) {
+      e.consume(false);
+      return;
+    }
     if (this._autocompleteController && this._autocompleteController.keyDown(e))
       e.consume(true);
   }

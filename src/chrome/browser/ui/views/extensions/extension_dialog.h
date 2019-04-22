@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_DIALOG_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_DIALOG_H_
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -91,7 +93,7 @@ class ExtensionDialog : public views::DialogDelegate,
   friend class base::RefCounted<ExtensionDialog>;
 
   // Use Show() to create instances.
-  ExtensionDialog(extensions::ExtensionViewHost* host,
+  ExtensionDialog(std::unique_ptr<extensions::ExtensionViewHost> host,
                   ExtensionDialogObserver* observer);
 
   void InitWindow(gfx::NativeWindow parent_window,

@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview_export.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
@@ -45,10 +46,10 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
                                      public ui::WebDialogDelegate,
                                      public views::WidgetDelegate {
  public:
-  // |handler| must not be NULL and this class takes the ownership.
+  // |handler| must not be nullptr.
   WebDialogView(content::BrowserContext* context,
                 ui::WebDialogDelegate* delegate,
-                WebContentsHandler* handler);
+                std::unique_ptr<WebContentsHandler> handler);
   ~WebDialogView() override;
 
   // For testing.
@@ -92,7 +93,8 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
-  bool HandleContextMenu(const content::ContextMenuParams& params) override;
+  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                         const content::ContextMenuParams& params) override;
 
   // Overridden from content::WebContentsDelegate:
   void SetContentsBounds(content::WebContents* source,
@@ -160,6 +162,9 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
 
   // Whether CloseContents() has been called.
   bool close_contents_called_ = false;
+
+  // Handler for unhandled key events from renderer.
+  UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDialogView);
 };

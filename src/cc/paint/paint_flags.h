@@ -11,14 +11,11 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
-#include "third_party/skia/include/core/SkFont.h"
-#include "third_party/skia/include/core/SkFontTypes.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMaskFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPathEffect.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "third_party/skia/include/core/SkTypeface.h"
 
 namespace cc {
 class PaintFilter;
@@ -56,63 +53,10 @@ class CC_PAINT_EXPORT PaintFlags {
   ALWAYS_INLINE SkBlendMode getBlendMode() const {
     return static_cast<SkBlendMode>(blend_mode_);
   }
-  ALWAYS_INLINE bool isAntiAlias() const {
-    return !!(bitfields_.flags_ & SkPaint::kAntiAlias_Flag);
-  }
-  ALWAYS_INLINE void setAntiAlias(bool aa) {
-    SetInternalFlag(aa, SkPaint::kAntiAlias_Flag);
-  }
-  ALWAYS_INLINE bool isSubpixelText() const {
-    return !!(bitfields_.flags_ & SkPaint::kSubpixelText_Flag);
-  }
-  ALWAYS_INLINE void setSubpixelText(bool subpixel_text) {
-    SetInternalFlag(subpixel_text, SkPaint::kSubpixelText_Flag);
-  }
-  ALWAYS_INLINE bool isLCDRenderText() const {
-    return !!(bitfields_.flags_ & SkPaint::kLCDRenderText_Flag);
-  }
-  ALWAYS_INLINE void setLCDRenderText(bool lcd_text) {
-    SetInternalFlag(lcd_text, SkPaint::kLCDRenderText_Flag);
-  }
-  enum Hinting {
-    kNo_Hinting = static_cast<unsigned>(SkFontHinting::kNone),
-    kSlight_Hinting = static_cast<unsigned>(SkFontHinting::kSlight),
-    kNormal_Hinting =
-        static_cast<unsigned>(SkFontHinting::kNormal),  //!< this is the default
-    kFull_Hinting = static_cast<unsigned>(SkFontHinting::kFull)
-  };
-  ALWAYS_INLINE Hinting getHinting() const {
-    return static_cast<Hinting>(bitfields_.hinting_);
-  }
-  ALWAYS_INLINE void setHinting(Hinting hinting) {
-    bitfields_.hinting_ = hinting;
-  }
-  ALWAYS_INLINE bool isAutohinted() const {
-    return !!(bitfields_.flags_ & SkPaint::kAutoHinting_Flag);
-  }
-  ALWAYS_INLINE void setAutohinted(bool use_auto_hinter) {
-    SetInternalFlag(use_auto_hinter, SkPaint::kAutoHinting_Flag);
-  }
-  ALWAYS_INLINE bool isDither() const {
-    return !!(bitfields_.flags_ & SkPaint::kDither_Flag);
-  }
-  ALWAYS_INLINE void setDither(bool dither) {
-    SetInternalFlag(dither, SkPaint::kDither_Flag);
-  }
-  enum TextEncoding {
-    kUTF8_TextEncoding = SkPaint::kUTF8_TextEncoding,
-    kUTF16_TextEncoding = SkPaint::kUTF16_TextEncoding,
-    kUTF32_TextEncoding = SkPaint::kUTF32_TextEncoding,
-    kGlyphID_TextEncoding = SkPaint::kGlyphID_TextEncoding
-  };
-  ALWAYS_INLINE TextEncoding getTextEncoding() const {
-    return static_cast<TextEncoding>(bitfields_.text_encoding_);
-  }
-  ALWAYS_INLINE void setTextEncoding(TextEncoding encoding) {
-    bitfields_.text_encoding_ = encoding;
-  }
-  ALWAYS_INLINE SkScalar getTextSize() const { return text_size_; }
-  ALWAYS_INLINE void setTextSize(SkScalar text_size) { text_size_ = text_size; }
+  ALWAYS_INLINE bool isAntiAlias() const { return bitfields_.antialias_; }
+  ALWAYS_INLINE void setAntiAlias(bool aa) { bitfields_.antialias_ = aa; }
+  ALWAYS_INLINE bool isDither() const { return bitfields_.dither_; }
+  ALWAYS_INLINE void setDither(bool dither) { bitfields_.dither_ = dither; }
   ALWAYS_INLINE void setFilterQuality(SkFilterQuality quality) {
     bitfields_.filter_quality_ = quality;
   }
@@ -148,12 +92,6 @@ class CC_PAINT_EXPORT PaintFlags {
   }
   ALWAYS_INLINE void setStrokeJoin(Join join) { bitfields_.join_type_ = join; }
 
-  ALWAYS_INLINE const sk_sp<SkTypeface>& getTypeface() const {
-    return typeface_;
-  }
-  ALWAYS_INLINE void setTypeface(sk_sp<SkTypeface> typeface) {
-    typeface_ = std::move(typeface);
-  }
   ALWAYS_INLINE const sk_sp<SkColorFilter>& getColorFilter() const {
     return color_filter_;
   }
@@ -209,7 +147,6 @@ class CC_PAINT_EXPORT PaintFlags {
   bool SupportsFoldingAlpha() const;
 
   SkPaint ToSkPaint() const;
-  SkFont ToSkFont() const;
 
   bool IsValid() const;
   bool operator==(const PaintFlags& other) const;
@@ -223,14 +160,6 @@ class CC_PAINT_EXPORT PaintFlags {
   friend class PaintOpReader;
   friend class PaintOpWriter;
 
-  ALWAYS_INLINE void SetInternalFlag(bool value, uint32_t mask) {
-    if (value)
-      bitfields_.flags_ |= mask;
-    else
-      bitfields_.flags_ &= ~mask;
-  }
-
-  sk_sp<SkTypeface> typeface_;
   sk_sp<SkPathEffect> path_effect_;
   sk_sp<PaintShader> shader_;
   sk_sp<SkMaskFilter> mask_filter_;
@@ -240,19 +169,17 @@ class CC_PAINT_EXPORT PaintFlags {
 
   // Match(ish) SkPaint defaults.  SkPaintDefaults is not public, so this
   // just uses these values and ignores any SkUserConfig overrides.
-  float text_size_ = 12.f;
   SkColor color_ = SK_ColorBLACK;
   float width_ = 0.f;
   float miter_limit_ = 4.f;
   uint32_t blend_mode_ = static_cast<uint32_t>(SkBlendMode::kSrcOver);
 
   struct PaintFlagsBitfields {
-    uint32_t flags_ : 16;
+    uint32_t antialias_ : 1;
+    uint32_t dither_ : 1;
     uint32_t cap_type_ : 2;
     uint32_t join_type_ : 2;
     uint32_t style_ : 2;
-    uint32_t text_encoding_ : 2;
-    uint32_t hinting_ : 2;
     uint32_t filter_quality_ : 2;
   };
 

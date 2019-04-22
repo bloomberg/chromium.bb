@@ -6,7 +6,7 @@
  * Contains the possible states a ServiceEntry can be in.
  * @enum {string}
  */
-var ServiceEntryState = {
+const ServiceEntryState = {
   NEW: 'NEW',
   AVAILABLE: 'AVAILABLE',
   ACTIVE: 'ACTIVE',
@@ -18,7 +18,7 @@ var ServiceEntryState = {
  * Contains the possible states a ServiceEntry's driver can be in.
  * @enum {string}
  */
-var DriverEntryState = {
+const DriverEntryState = {
   IN_PROGRESS: 'IN_PROGRESS',
   COMPLETE: 'COMPLETE',
   CANCELLED: 'CANCELLED',
@@ -29,7 +29,7 @@ var DriverEntryState = {
  * Contains the possible results a ServiceEntry can have.
  * @enum {string}
  */
-var ServiceEntryResult = {
+const ServiceEntryResult = {
   SUCCEED: 'SUCCEED',
   FAIL: 'FAIL',
   ABORT: 'ABORT',
@@ -44,7 +44,7 @@ var ServiceEntryResult = {
  * Contains the possible results of a ServiceRequest.
  * @enum {string}
  */
-var ServiceRequestResult = {
+const ServiceRequestResult = {
   ACCEPTED: 'ACCEPTED',
   BACKOFF: 'BACKOFF',
   UNEXPECTED_CLIENT: 'UNEXPECTED_CLIENT',
@@ -61,7 +61,7 @@ var ServiceRequestResult = {
  *   fileMonitorStatus: string
  * }}
  */
-var ServiceStatus;
+let ServiceStatus;
 
 /**
  * @typedef {{
@@ -78,7 +78,7 @@ var ServiceStatus;
  *   }
  * }}
  */
-var ServiceEntry;
+let ServiceEntry;
 
 /**
  * @typedef {{
@@ -87,7 +87,7 @@ var ServiceEntry;
  *   result: !ServiceRequestResult
  * }}
  */
-var ServiceRequest;
+let ServiceRequest;
 
 cr.define('downloadInternals', function() {
   /** @interface */

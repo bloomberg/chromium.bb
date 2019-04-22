@@ -35,9 +35,8 @@ void ObjectPainter::PaintOutline(const PaintInfo& paint_info,
     return;
   }
 
-  Vector<LayoutRect> outline_rects;
-  layout_object_.AddOutlineRects(
-      outline_rects, paint_offset,
+  auto outline_rects = layout_object_.PhysicalOutlineRects(
+      paint_offset,
       layout_object_.OutlineRectsShouldIncludeBlockVisualOverflow());
   if (outline_rects.IsEmpty())
     return;
@@ -46,18 +45,6 @@ void ObjectPainter::PaintOutline(const PaintInfo& paint_info,
           paint_info.context, layout_object_, paint_info.phase))
     return;
 
-  // The result rects are in coordinates of m_layoutObject's border box.
-  // Block flipping is not applied yet if !m_layoutObject.isBox().
-  if (!layout_object_.IsBox() &&
-      layout_object_.StyleRef().IsFlippedBlocksWritingMode()) {
-    LayoutBlock* container = layout_object_.ContainingBlock();
-    if (container) {
-      layout_object_.LocalToAncestorRects(outline_rects, container,
-                                          -paint_offset, paint_offset);
-      if (outline_rects.IsEmpty())
-        return;
-    }
-  }
   DrawingRecorder recorder(paint_info.context, layout_object_,
                            paint_info.phase);
   PaintOutlineRects(paint_info, outline_rects, style_to_use);
@@ -87,10 +74,9 @@ void ObjectPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
   if (!url.IsValid())
     return;
 
-  Vector<LayoutRect> visual_overflow_rects;
-  layout_object_.AddElementVisualOverflowRects(visual_overflow_rects,
-                                               paint_offset);
-  IntRect rect = PixelSnappedIntRect(UnionRect(visual_overflow_rects));
+  auto outline_rects = layout_object_.PhysicalOutlineRects(
+      paint_offset, NGOutlineType::kIncludeBlockVisualOverflow);
+  IntRect rect = PixelSnappedIntRect(UnionRect(outline_rects));
   if (rect.IsEmpty())
     return;
 

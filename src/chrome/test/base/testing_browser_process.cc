@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/testing_browser_process.h"
 
+#include "base/bind.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
@@ -291,7 +292,7 @@ TestingBrowserProcess::extension_event_router_forwarder() {
 NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   if (!notification_ui_manager_.get())
-    notification_ui_manager_.reset(NotificationUIManager::Create());
+    notification_ui_manager_ = NotificationUIManager::Create();
   return notification_ui_manager_.get();
 #else
   NOTIMPLEMENTED();

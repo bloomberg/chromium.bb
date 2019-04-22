@@ -15,7 +15,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/containers/hash_tables.h"
+#include "base/debug/debugger.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -42,8 +42,8 @@
 #include "gpu/config/gpu_switches.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/base/ui_features.h"
 
 #if defined(OS_POSIX)
 #include "base/files/file_descriptor_watcher_posix.h"
@@ -137,6 +137,8 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
 
   // base::TestLauncherDelegate:
   bool GetTests(std::vector<base::TestIdentifier>* output) override;
+  bool WillRunTest(const std::string& test_case_name,
+                   const std::string& test_name) override;
   bool ShouldRunTest(const std::string& test_case_name,
                      const std::string& test_name) override;
   size_t RunTests(base::TestLauncher* test_launcher,
@@ -262,9 +264,8 @@ bool IsPreTestName(const std::string& test_name) {
                           base::CompareCase::SENSITIVE);
 }
 
-bool WrapperTestLauncherDelegate::ShouldRunTest(
-    const std::string& test_case_name,
-    const std::string& test_name) {
+bool WrapperTestLauncherDelegate::WillRunTest(const std::string& test_case_name,
+                                              const std::string& test_name) {
   all_test_names_.insert(test_case_name + "." + test_name);
 
   if (base::StartsWith(test_name, kManualTestPrefix,
@@ -272,6 +273,15 @@ bool WrapperTestLauncherDelegate::ShouldRunTest(
       !base::CommandLine::ForCurrentProcess()->HasSwitch(kRunManualTestsFlag)) {
     return false;
   }
+
+  return true;
+}
+
+bool WrapperTestLauncherDelegate::ShouldRunTest(
+    const std::string& test_case_name,
+    const std::string& test_name) {
+  if (!WillRunTest(test_case_name, test_name))
+    return false;
 
   if (IsPreTestName(test_name)) {
     // We will actually run PRE_ tests, but to ensure they run on the same shard
@@ -463,10 +473,10 @@ void WrapperTestLauncherDelegate::RunDependentTest(
     test_list.push_back(test_name);
     DoRunTests(test_launcher, test_list);
   } else {
-    // Otherwise skip the test.
+    // Otherwise mark the test as a failure.
     base::TestResult test_result;
     test_result.full_name = test_name;
-    test_result.status = base::TestResult::TEST_SKIPPED;
+    test_result.status = base::TestResult::TEST_FAILURE;
     test_launcher->OnTestFinished(test_result);
 
     if (base::ContainsKey(dependent_test_map_, test_name)) {
@@ -508,7 +518,8 @@ void WrapperTestLauncherDelegate::GTestCallback(
   // parsing failed.
   if (have_test_results && !parsed_results.empty()) {
     // We expect only one test result here.
-    DCHECK_EQ(1U, parsed_results.size());
+    DCHECK_EQ(1U, parsed_results.size())
+        << "Unexpectedly ran test more than once: " << test_name;
     DCHECK_EQ(test_name, parsed_results.front().full_name);
 
     result = parsed_results.front();
@@ -658,6 +669,8 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
       "--single_process (to run the test in one launcher/browser process) or\n"
       "--single-process (to do the above, and also run Chrome in single-"
           "process mode).\n");
+
+  base::debug::VerifyDebugger();
 
   base::MessageLoopForIO message_loop;
 #if defined(OS_POSIX)

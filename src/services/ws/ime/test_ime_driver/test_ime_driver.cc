@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 
@@ -20,10 +21,15 @@ class TestInputMethod : public mojom::InputMethod {
 
  private:
   // mojom::InputMethod:
-  void OnTextInputTypeChanged(ui::TextInputType text_input_type) override {
-    NOTIMPLEMENTED();
+  void OnTextInputStateChanged(
+      ws::mojom::TextInputStatePtr text_input_state) override {
+    NOTIMPLEMENTED_LOG_ONCE();
   }
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {
+    NOTIMPLEMENTED_LOG_ONCE();
+  }
+  void OnTextInputClientDataChanged(
+      ws::mojom::TextInputClientDataPtr data) override {
     NOTIMPLEMENTED();
   }
   void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
@@ -35,16 +41,17 @@ class TestInputMethod : public mojom::InputMethod {
     // Using base::Unretained is safe because |client_| is owned by this class.
     client_->DispatchKeyEventPostIME(
         std::move(key_event),
-        base::BindOnce(&TestInputMethod::PostProcssKeyEvent,
+        base::BindOnce(&TestInputMethod::PostProcessKeyEvent,
                        base::Unretained(this), std::move(cloned_event),
                        std::move(callback)));
   }
-  void CancelComposition() override { NOTIMPLEMENTED(); }
-  void ShowVirtualKeyboardIfEnabled() override { NOTIMPLEMENTED(); }
+  void CancelComposition() override { NOTIMPLEMENTED_LOG_ONCE(); }
+  void ShowVirtualKeyboardIfEnabled() override { NOTIMPLEMENTED_LOG_ONCE(); }
 
-  void PostProcssKeyEvent(std::unique_ptr<ui::Event> key_event,
-                          ProcessKeyEventCallback callback,
-                          bool stopped_propagation) {
+  void PostProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
+                           ProcessKeyEventCallback callback,
+                           bool handled,
+                           bool stopped_propagation) {
     // Ignore any events with modifiers set. This is useful for running things
     // like ash_shell_with_content and having accelerators (such as control-n)
     // work.
@@ -69,11 +76,11 @@ TestIMEDriver::TestIMEDriver() {}
 
 TestIMEDriver::~TestIMEDriver() {}
 
-void TestIMEDriver::StartSession(mojom::StartSessionDetailsPtr details) {
-  mojo::MakeStrongBinding(
-      std::make_unique<TestInputMethod>(
-          mojom::TextInputClientPtr(std::move(details->client))),
-      std::move(details->input_method_request));
+void TestIMEDriver::StartSession(mojom::InputMethodRequest input_method_request,
+                                 mojom::TextInputClientPtr client,
+                                 mojom::SessionDetailsPtr details) {
+  mojo::MakeStrongBinding(std::make_unique<TestInputMethod>(std::move(client)),
+                          std::move(input_method_request));
 }
 
 }  // namespace test

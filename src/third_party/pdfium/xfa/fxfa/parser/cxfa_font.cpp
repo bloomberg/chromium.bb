@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_font.h"
 
-#include "fxjs/xfa/cjx_font.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 #include "xfa/fxfa/parser/cxfa_fill.h"
 #include "xfa/fxfa/parser/cxfa_measurement.h"
@@ -16,7 +16,8 @@ namespace {
 const CXFA_Node::PropertyData kFontPropertyData[] = {
     {XFA_Element::Fill, 1, 0},
     {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kFontAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::LineThrough, XFA_AttributeType::Integer, (void*)0},
@@ -25,31 +26,29 @@ const CXFA_Node::AttributeData kFontAttributeData[] = {
      (void*)L"100%"},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::KerningMode, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::None},
+     (void*)XFA_AttributeValue::None},
     {XFA_Attribute::Underline, XFA_AttributeType::Integer, (void*)0},
     {XFA_Attribute::BaselineShift, XFA_AttributeType::Measure, (void*)L"0in"},
     {XFA_Attribute::OverlinePeriod, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::All},
+     (void*)XFA_AttributeValue::All},
     {XFA_Attribute::LetterSpacing, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::LineThroughPeriod, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::All},
+     (void*)XFA_AttributeValue::All},
     {XFA_Attribute::FontVerticalScale, XFA_AttributeType::CData,
      (void*)L"100%"},
     {XFA_Attribute::PsName, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Size, XFA_AttributeType::Measure, (void*)L"10pt"},
     {XFA_Attribute::Posture, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Normal},
+     (void*)XFA_AttributeValue::Normal},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Weight, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Normal},
+     (void*)XFA_AttributeValue::Normal},
     {XFA_Attribute::UnderlinePeriod, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::All},
+     (void*)XFA_AttributeValue::All},
     {XFA_Attribute::Overline, XFA_AttributeType::Integer, (void*)0},
     {XFA_Attribute::GenericFamily, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Serif},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kFontName[] = L"font";
+     (void*)XFA_AttributeValue::Serif},
+};
 
 }  // namespace
 
@@ -62,15 +61,13 @@ CXFA_Font::CXFA_Font(CXFA_Document* doc, XFA_PacketType packet)
           XFA_Element::Font,
           kFontPropertyData,
           kFontAttributeData,
-          kFontName,
-          pdfium::MakeUnique<CJX_Font>(this)) {}
+          pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Font::~CXFA_Font() {}
+CXFA_Font::~CXFA_Font() = default;
 
 float CXFA_Font::GetBaselineShift() const {
-  return JSObject()
-      ->GetMeasure(XFA_Attribute::BaselineShift)
-      .ToUnit(XFA_Unit::Pt);
+  return JSObject()->GetMeasureInUnit(XFA_Attribute::BaselineShift,
+                                      XFA_Unit::Pt);
 }
 
 float CXFA_Font::GetHorizontalScale() {
@@ -101,14 +98,14 @@ int32_t CXFA_Font::GetUnderline() {
   return JSObject()->GetInteger(XFA_Attribute::Underline);
 }
 
-XFA_AttributeEnum CXFA_Font::GetUnderlinePeriod() {
+XFA_AttributeValue CXFA_Font::GetUnderlinePeriod() {
   return JSObject()
       ->TryEnum(XFA_Attribute::UnderlinePeriod, true)
-      .value_or(XFA_AttributeEnum::All);
+      .value_or(XFA_AttributeValue::All);
 }
 
 float CXFA_Font::GetFontSize() const {
-  return JSObject()->GetMeasure(XFA_Attribute::Size).ToUnit(XFA_Unit::Pt);
+  return JSObject()->GetMeasureInUnit(XFA_Attribute::Size, XFA_Unit::Pt);
 }
 
 WideString CXFA_Font::GetTypeface() {
@@ -116,12 +113,12 @@ WideString CXFA_Font::GetTypeface() {
 }
 
 bool CXFA_Font::IsBold() {
-  return JSObject()->GetEnum(XFA_Attribute::Weight) == XFA_AttributeEnum::Bold;
+  return JSObject()->GetEnum(XFA_Attribute::Weight) == XFA_AttributeValue::Bold;
 }
 
 bool CXFA_Font::IsItalic() {
   return JSObject()->GetEnum(XFA_Attribute::Posture) ==
-         XFA_AttributeEnum::Italic;
+         XFA_AttributeValue::Italic;
 }
 
 void CXFA_Font::SetColor(FX_ARGB color) {

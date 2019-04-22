@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -191,6 +192,9 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
         // Set GUID for adding a new card.
         card.setGUID(personalDataManager.setCreditCard(card));
         SettingsAutofillAndPaymentsObserver.getInstance().notifyOnCreditCardUpdated(card);
+        if (mIsNewEntry) {
+            RecordUserAction.record("AutofillCreditCardsAdded");
+        }
         return true;
     }
 

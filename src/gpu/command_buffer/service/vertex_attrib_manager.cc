@@ -286,8 +286,9 @@ bool VertexAttribManager::ValidateBindings(
         ERRORSTATE_SET_GL_ERROR(
             error_state, GL_INVALID_OPERATION, function_name,
             (std::string(
-                "attempt to access out of range vertices in attribute ") +
-             base::UintToString(attrib->index())).c_str());
+                 "attempt to access out of range vertices in attribute ") +
+             base::NumberToString(attrib->index()))
+                .c_str());
         return false;
       }
       if (use_client_side_arrays_for_stream_buffers) {

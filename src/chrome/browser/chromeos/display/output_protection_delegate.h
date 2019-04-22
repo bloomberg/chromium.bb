@@ -13,12 +13,14 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/display/display_observer.h"
 
 namespace chromeos {
 
 // A class to query output protection status and/or enable output protection.
 // All methods except constructor should be invoked in UI thread.
-class OutputProtectionDelegate : public aura::WindowObserver {
+class OutputProtectionDelegate : public aura::WindowObserver,
+                                 public display::DisplayObserver {
  public:
   typedef base::Callback<void(bool /* success */,
                               uint32_t /* link_mask */,
@@ -29,7 +31,11 @@ class OutputProtectionDelegate : public aura::WindowObserver {
   OutputProtectionDelegate(int render_process_id, int render_frame_id);
   ~OutputProtectionDelegate() override;
 
-  // aura::WindowObserver overrides.
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
+
+  // aura::WindowObserver:
   void OnWindowHierarchyChanged(
       const aura::WindowObserver::HierarchyChangeParams& params) override;
   void OnWindowDestroying(aura::Window* window) override;
@@ -54,6 +60,8 @@ class OutputProtectionDelegate : public aura::WindowObserver {
   };
 
  private:
+  void OnWindowMayHaveMovedToAnotherDisplay();
+
   bool InitializeControllerIfNecessary();
 
   // Used to lookup the WebContents associated with the render frame.

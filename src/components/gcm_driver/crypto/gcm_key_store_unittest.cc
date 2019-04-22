@@ -11,14 +11,14 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
-#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "crypto/random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,7 +67,7 @@ class GCMKeyStoreTest : public ::testing::Test {
   void TearDown() override {
     gcm_key_store_.reset();
 
-    // |gcm_key_store_| owns a ProtoDatabaseImpl whose destructor deletes the
+    // |gcm_key_store_| owns a ProtoDatabase whose destructor deletes the
     // underlying LevelDB database on the task runner.
     base::RunLoop().RunUntilIdle();
   }
@@ -75,8 +75,9 @@ class GCMKeyStoreTest : public ::testing::Test {
   // Creates the GCM Key Store instance. May be called from within a test's body
   // to re-create the key store, causing the database to re-open.
   void CreateKeyStore() {
-    gcm_key_store_.reset(new GCMKeyStore(scoped_temp_dir_.GetPath(),
-                                         message_loop_.task_runner()));
+    gcm_key_store_.reset(
+        new GCMKeyStore(scoped_temp_dir_.GetPath(),
+                        task_environment_.GetMainThreadTaskRunner()));
   }
 
   // Callback to use with GCMKeyStore::{GetKeys, CreateKeys} calls.
@@ -145,7 +146,7 @@ class GCMKeyStoreTest : public ::testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::ScopedTempDir scoped_temp_dir_;
   base::HistogramTester histogram_tester_;
 

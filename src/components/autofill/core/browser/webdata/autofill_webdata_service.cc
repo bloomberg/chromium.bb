@@ -39,12 +39,17 @@ AutofillWebDataService::AutofillWebDataService(
   base::Closure on_changed_callback =
       Bind(&AutofillWebDataService::NotifyAutofillMultipleChangedOnUISequence,
            weak_ptr_factory_.GetWeakPtr());
+  base::Closure on_address_conversion_completed_callback =
+      Bind(&AutofillWebDataService::
+               NotifyAutofillAddressConversionCompletedOnUISequence,
+           weak_ptr_factory_.GetWeakPtr());
   base::Callback<void(syncer::ModelType)> on_sync_started_callback =
       Bind(&AutofillWebDataService::NotifySyncStartedOnUISequence,
            weak_ptr_factory_.GetWeakPtr());
   autofill_backend_ = new AutofillWebDataBackendImpl(
       wdbs_->GetBackend(), ui_task_runner_, db_task_runner_,
-      on_changed_callback, on_sync_started_callback);
+      on_changed_callback, on_address_conversion_completed_callback,
+      on_sync_started_callback);
 }
 
 AutofillWebDataService::AutofillWebDataService(
@@ -59,6 +64,7 @@ AutofillWebDataService::AutofillWebDataService(
           nullptr,
           ui_task_runner_,
           db_task_runner_,
+          base::Closure(),
           base::Closure(),
           base::Callback<void(syncer::ModelType)>())),
       weak_ptr_factory_(this) {}
@@ -107,6 +113,11 @@ void AutofillWebDataService::AddAutofillProfile(
            autofill_backend_, profile));
 }
 
+void AutofillWebDataService::SetAutofillProfileChangedCallback(
+    base::RepeatingCallback<void(const AutofillProfileDeepChange&)> change_cb) {
+  autofill_backend_->SetAutofillProfileChangedCallback(std::move(change_cb));
+}
+
 void AutofillWebDataService::UpdateAutofillProfile(
     const AutofillProfile& profile) {
   wdbs_->ScheduleDBTask(FROM_HERE,
@@ -134,6 +145,15 @@ WebDataServiceBase::Handle AutofillWebDataService::GetServerProfiles(
       FROM_HERE,
       Bind(&AutofillWebDataBackendImpl::GetServerProfiles, autofill_backend_),
       consumer);
+}
+
+void AutofillWebDataService::ConvertWalletAddressesAndUpdateWalletCards(
+    const std::string& app_locale,
+    const std::string& primary_account_email) {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE, Bind(&AutofillWebDataBackendImpl::
+                          ConvertWalletAddressesAndUpdateWalletCards,
+                      autofill_backend_, app_locale, primary_account_email));
 }
 
 WebDataServiceBase::Handle
@@ -315,13 +335,30 @@ base::SingleThreadTaskRunner* AutofillWebDataService::GetDBTaskRunner() {
   return db_task_runner_.get();
 }
 
+WebDataServiceBase::Handle
+AutofillWebDataService::RemoveExpiredAutocompleteEntries(
+    WebDataServiceConsumer* consumer) {
+  return wdbs_->ScheduleDBTaskWithResult(
+      FROM_HERE,
+      Bind(&AutofillWebDataBackendImpl::RemoveExpiredAutocompleteEntries,
+           autofill_backend_),
+      consumer);
+}
+
 AutofillWebDataService::~AutofillWebDataService() {
 }
 
 void AutofillWebDataService::NotifyAutofillMultipleChangedOnUISequence() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   for (auto& ui_observer : ui_observer_list_)
-    ui_observer.AutofillMultipleChanged();
+    ui_observer.AutofillMultipleChangedBySync();
+}
+
+void AutofillWebDataService::
+    NotifyAutofillAddressConversionCompletedOnUISequence() {
+  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
+  for (auto& ui_observer : ui_observer_list_)
+    ui_observer.AutofillAddressConversionCompleted();
 }
 
 void AutofillWebDataService::NotifySyncStartedOnUISequence(

@@ -60,8 +60,8 @@ void RawEventSubscriberBundle::AddEventSubscribers(bool is_audio) {
 
   subscribers_.insert(std::make_pair(
       is_audio,
-      make_linked_ptr(new RawEventSubscriberBundleForStream(
-          cast_environment_, is_audio, receiver_offset_estimator_.get()))));
+      std::make_unique<RawEventSubscriberBundleForStream>(
+          cast_environment_, is_audio, receiver_offset_estimator_.get())));
 }
 
 void RawEventSubscriberBundle::RemoveEventSubscribers(bool is_audio) {
@@ -79,15 +79,15 @@ void RawEventSubscriberBundle::RemoveEventSubscribers(bool is_audio) {
 EncodingEventSubscriber*
 RawEventSubscriberBundle::GetEncodingEventSubscriber(bool is_audio) {
   auto it = subscribers_.find(is_audio);
-  return it == subscribers_.end() ?
-      NULL : it->second->GetEncodingEventSubscriber();
+  return it == subscribers_.end() ? nullptr
+                                  : it->second->GetEncodingEventSubscriber();
 }
 
 StatsEventSubscriber*
 RawEventSubscriberBundle::GetStatsEventSubscriber(bool is_audio) {
   auto it = subscribers_.find(is_audio);
-  return it == subscribers_.end() ?
-      NULL : it->second->GetStatsEventSubscriber();
+  return it == subscribers_.end() ? nullptr
+                                  : it->second->GetStatsEventSubscriber();
 }
 
 }  // namespace cast

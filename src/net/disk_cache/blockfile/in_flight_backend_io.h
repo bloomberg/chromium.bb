@@ -28,6 +28,7 @@ namespace disk_cache {
 class BackendImpl;
 class Entry;
 class EntryImpl;
+struct EntryWithOpened;
 
 // This class represents a single asynchronous disk cache IO operation while it
 // is being bounced between threads.
@@ -55,6 +56,7 @@ class BackendIO : public BackgroundIO {
 
   // The operations we proxy:
   void Init();
+  void OpenOrCreateEntry(const std::string& key, EntryWithOpened* entry_struct);
   void OpenEntry(const std::string& key, Entry** entry);
   void CreateEntry(const std::string& key, Entry** entry);
   void DoomEntry(const std::string& key);
@@ -98,6 +100,7 @@ class BackendIO : public BackgroundIO {
   enum Operation {
     OP_NONE = 0,
     OP_INIT,
+    OP_OPEN_OR_CREATE,
     OP_OPEN,
     OP_CREATE,
     OP_DOOM,
@@ -126,6 +129,7 @@ class BackendIO : public BackgroundIO {
 
   // Returns true if this operation returns an entry.
   bool ReturnsEntry();
+  bool ReturnsEntryWithOpened();
 
   // Returns the time that has passed since the operation was created.
   base::TimeDelta ElapsedTime() const;
@@ -140,6 +144,7 @@ class BackendIO : public BackgroundIO {
   // The arguments of all the operations we proxy:
   std::string key_;
   Entry** entry_ptr_;
+  EntryWithOpened* entry_with_opened_ptr_;
   base::Time initial_time_;
   base::Time end_time_;
   Rankings::Iterator* iterator_;
@@ -168,6 +173,9 @@ class InFlightBackendIO : public InFlightIO {
 
   // Proxied operations.
   void Init(net::CompletionOnceCallback callback);
+  void OpenOrCreateEntry(const std::string& key,
+                         EntryWithOpened* entry_struct,
+                         net::CompletionOnceCallback callback);
   void OpenEntry(const std::string& key,
                  Entry** entry,
                  net::CompletionOnceCallback callback);

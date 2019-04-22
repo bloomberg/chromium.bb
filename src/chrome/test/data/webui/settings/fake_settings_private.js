@@ -24,10 +24,12 @@ cr.define('settings', function() {
   function FakeSettingsPrivate(opt_initialPrefs) {
     this.prefs = {};
 
-    if (!opt_initialPrefs)
+    if (!opt_initialPrefs) {
       return;
-    for (const pref of opt_initialPrefs)
+    }
+    for (const pref of opt_initialPrefs) {
       this.addPref_(pref.type, pref.key, pref.value);
+    }
   }
 
   FakeSettingsPrivate.prototype = {
@@ -37,8 +39,9 @@ cr.define('settings', function() {
     getAllPrefs: function(callback) {
       // Send a copy of prefs to keep our internal state private.
       const prefs = [];
-      for (const key in this.prefs)
+      for (const key in this.prefs) {
         prefs.push(deepCopy(this.prefs[key]));
+      }
 
       // Run the callback asynchronously to test that the prefs aren't actually
       // used before they become available.
@@ -63,8 +66,9 @@ cr.define('settings', function() {
       callback(true);
 
       // Like chrome.settingsPrivate, send a notification when prefs change.
-      if (changed)
+      if (changed) {
         this.sendPrefChanges([{key: key, value: deepCopy(value)}]);
+      }
     },
 
     getPref: function(key, callback) {

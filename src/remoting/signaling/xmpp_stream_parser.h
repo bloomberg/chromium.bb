@@ -11,9 +11,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 
@@ -22,7 +22,7 @@ namespace remoting {
 // |on_error_callback| specified using SetCallbacks().
 class XmppStreamParser {
  public:
-  typedef base::Callback<void(std::unique_ptr<buzz::XmlElement> stanza)>
+  typedef base::Callback<void(std::unique_ptr<jingle_xmpp::XmlElement> stanza)>
       OnStanzaCallback;
 
   XmppStreamParser();

@@ -65,8 +65,9 @@ suite('cr-toggle', function() {
    *     moveDirection is non-zero.
    */
   function triggerPointerDownMoveUpTapSequence(moveDirection, diff) {
-    if (window.getComputedStyle(toggle)['pointer-events'] === 'none')
+    if (window.getComputedStyle(toggle)['pointer-events'] === 'none') {
       return;
+    }
 
     // Simulate events in the same order they are fired by the browser.
     // Need to provide a valid |pointerId| for setPointerCapture() to not throw
@@ -185,16 +186,6 @@ suite('cr-toggle', function() {
         .then(function() {
           assertChecked();
         });
-  });
-
-  // Ensure that even if user clicks on the element, the entire element gets
-  // focused, as opposed to focusing the inner <button> only.
-  test('FocusAfterClicking', function() {
-    const innerButton = toggle.$$('button');
-    innerButton.focus();
-    assertNotChecked();
-    assertEquals(null, toggle.shadowRoot.activeElement);
-    assertEquals('CR-TOGGLE', document.activeElement.tagName);
   });
 
   // Test that the control is not affected by user interaction when disabled.

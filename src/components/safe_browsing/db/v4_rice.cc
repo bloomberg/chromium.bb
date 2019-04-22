@@ -273,7 +273,7 @@ uint32_t V4RiceDecoder::GetBitsFromCurrentWord(
   current_word_ = current_word_ >> num_requested_bits;
   current_word_bit_index_ += num_requested_bits;
   return x;
-};
+}
 
 std::string V4RiceDecoder::DebugString() const {
   // Calculates the total number of bits that we have read from the buffer,

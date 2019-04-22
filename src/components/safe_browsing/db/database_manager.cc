@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/db/v4_get_hash_protocol_manager.h"
@@ -150,6 +151,11 @@ SafeBrowsingDatabaseManager::RegisterDatabaseUpdatedCallback(
 void SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   update_complete_callback_list_.Notify();
+}
+
+std::string SafeBrowsingDatabaseManager::GetSafetyNetId() const {
+  NOTREACHED() << "Only implemented on Android";
+  return "";
 }
 
 SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::SafeBrowsingApiCheck(

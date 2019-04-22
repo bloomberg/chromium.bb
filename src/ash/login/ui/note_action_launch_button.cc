@@ -161,7 +161,7 @@ class BubbleTargeterDelegate : public views::MaskedTargeterDelegate {
       : view_width_(view_width), circle_radius_(circle_radius) {}
   ~BubbleTargeterDelegate() override = default;
 
-  bool GetHitTestMask(gfx::Path* mask) const override {
+  bool GetHitTestMask(SkPath* mask) const override {
     int center_x = base::i18n::IsRTL() ? 0 : view_width_;
     mask->addCircle(SkIntToScalar(center_x), SkIntToScalar(0),
                     SkIntToScalar(circle_radius_));

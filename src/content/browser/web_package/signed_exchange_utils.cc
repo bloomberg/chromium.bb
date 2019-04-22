@@ -4,22 +4,23 @@
 
 #include "content/browser/web_package/signed_exchange_utils.h"
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/download_utils_impl.h"
-#include "content/browser/web_package/origins_list.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/browser/web_package/signed_exchange_request_handler.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
-#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 
 namespace content {
 namespace signed_exchange_utils {
@@ -35,54 +36,21 @@ void ReportErrorAndTraceEvent(
     devtools_proxy->ReportError(error_message, std::move(error_field));
 }
 
-namespace {
-
-OriginsList CreateAdvertiseAcceptHeaderOriginsList() {
-  std::string param = base::GetFieldTrialParamValueByFeature(
-      features::kSignedHTTPExchangeAcceptHeader,
-      features::kSignedHTTPExchangeAcceptHeaderFieldTrialParamName);
-  if (param.empty())
-    DLOG(ERROR) << "The Accept-SXG origins list param is empty.";
-
-  return OriginsList(param);
-}
-
-}  //  namespace
-
-bool NeedToCheckRedirectedURLForAcceptHeader() {
-  // When SignedHTTPExchange is enabled, the SignedExchange accept header must
-  // be sent to all origins. So we don't need to check the redirected URL.
-  return !base::FeatureList::IsEnabled(features::kSignedHTTPExchange) &&
-         base::FeatureList::IsEnabled(
-             features::kSignedHTTPExchangeOriginTrial) &&
-         base::FeatureList::IsEnabled(
-             features::kSignedHTTPExchangeAcceptHeader);
-}
-
-bool ShouldAdvertiseAcceptHeader(const url::Origin& origin) {
-  // When SignedHTTPExchange is enabled, we must send the SignedExchange accept
-  // header to all origins.
-  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
-    return true;
-  // When SignedHTTPExchangeOriginTrial is not enabled or
-  // SignedHTTPExchangeAcceptHeader is not enabled, we must not send the
-  // SignedExchange accept header.
-  if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchangeOriginTrial) ||
-      !base::FeatureList::IsEnabled(
-          features::kSignedHTTPExchangeAcceptHeader)) {
+bool IsSignedExchangeHandlingEnabled(ResourceContext* context) {
+  if (!GetContentClient()->browser()->AllowSignedExchange(context))
     return false;
-  }
 
-  // |origins_list| is initialized in a thread-safe manner.
-  // Querying OriginsList::Match() should be safe since it's read-only access.
-  static base::NoDestructor<OriginsList> origins_list(
-      CreateAdvertiseAcceptHeaderOriginsList());
-  return origins_list->Match(origin);
+  return base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableExperimentalWebPlatformFeatures);
 }
 
-bool IsSignedExchangeHandlingEnabled() {
-  return base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
-         base::FeatureList::IsEnabled(features::kSignedHTTPExchangeOriginTrial);
+bool IsSignedExchangeReportingForDistributorsEnabled() {
+  return base::FeatureList::IsEnabled(network::features::kReporting) &&
+         (base::FeatureList::IsEnabled(
+              features::kSignedExchangeReportingForDistributors) ||
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableExperimentalWebPlatformFeatures));
 }
 
 bool ShouldHandleAsSignedHTTPExchange(
@@ -95,19 +63,15 @@ bool ShouldHandleAsSignedHTTPExchange(
     return false;
   if (!SignedExchangeRequestHandler::IsSupportedMimeType(head.mime_type))
     return false;
+  // Do not handle responses without HttpResponseHeaders.
+  // (Example: data:application/signed-exchange,)
+  if (!head.headers.get())
+    return false;
   if (download_utils::MustDownload(request_url, head.headers.get(),
                                    head.mime_type)) {
     return false;
   }
-  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
-    return true;
-  if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchangeOriginTrial))
-    return false;
-  std::unique_ptr<blink::TrialTokenValidator> validator =
-      std::make_unique<blink::TrialTokenValidator>();
-  return validator->RequestEnablesFeature(
-      request_url, head.headers.get(),
-      features::kSignedHTTPExchangeOriginTrial.name, base::Time::Now());
+  return true;
 }
 
 base::Optional<SignedExchangeVersion> GetSignedExchangeVersion(
@@ -140,11 +104,94 @@ base::Optional<SignedExchangeVersion> GetSignedExchangeVersion(
   //        [spec text]
   auto iter = params.find("v");
   if (iter != params.end()) {
-    if (iter->second == "b2")
-      return base::make_optional(SignedExchangeVersion::kB2);
+    if (iter->second == "b3")
+      return base::make_optional(SignedExchangeVersion::kB3);
     return base::make_optional(SignedExchangeVersion::kUnknown);
   }
   return base::nullopt;
+}
+
+SignedExchangeLoadResult GetLoadResultFromSignatureVerifierResult(
+    SignedExchangeSignatureVerifier::Result verify_result) {
+  switch (verify_result) {
+    case SignedExchangeSignatureVerifier::Result::kSuccess:
+      return SignedExchangeLoadResult::kSuccess;
+    case SignedExchangeSignatureVerifier::Result::kErrCertificateSHA256Mismatch:
+      // "Handling the certificate reference
+      //   ...
+      //   - If the SHA-256 hash of chain’s leaf's certificate is not equal to
+      //     certSha256, return "signature_verification_error"." [spec text]
+      return SignedExchangeLoadResult::kSignatureVerificationError;
+    case SignedExchangeSignatureVerifier::Result::
+        kErrSignatureVerificationFailed:
+      // "Validating a signature
+      //   ...
+      //   - If parsedSignature’s signature is not a valid signature of message
+      //     by publicKey using the ecdsa_secp256r1_sha256 algorithm, return
+      //     invalid." [spec text]
+      //
+      // "Parsing signed exchanges
+      //   - ...
+      //   - If parsedSignature is not valid for headerBytes and
+      //     requestUrlBytes, and signed exchange version version, return
+      //     "signature_verification_error"." [spec text]
+      return SignedExchangeLoadResult::kSignatureVerificationError;
+    case SignedExchangeSignatureVerifier::Result::kErrUnsupportedCertType:
+      // "Validating a signature
+      //   ...
+      //   - If parsedSignature’s signature is not a valid signature of message
+      //     by publicKey using the ecdsa_secp256r1_sha256 algorithm, return
+      //     invalid." [spec text]
+      //
+      // "Parsing signed exchanges
+      //   - ...
+      //   - If parsedSignature is not valid for headerBytes and
+      //     requestUrlBytes, and signed exchange version version, return
+      //     "signature_verification_error"." [spec text]
+      return SignedExchangeLoadResult::kSignatureVerificationError;
+    case SignedExchangeSignatureVerifier::Result::kErrValidityPeriodTooLong:
+      // "Cross-origin trust
+      //   ...
+      //   - If signature’s expiration time is more than 604800 seconds (7 days)
+      //     after signature’s date, return "untrusted"." [spec text]
+      //
+      // "Parsing signed exchanges
+      //   - ...
+      //   - If parsedSignature does not establish cross-origin trust for
+      //     parsedExchange, return "cert_verification_error"." [spec text]
+      return SignedExchangeLoadResult::kCertVerificationError;
+    case SignedExchangeSignatureVerifier::Result::kErrFutureDate:
+    case SignedExchangeSignatureVerifier::Result::kErrExpired:
+      // "Validating a signature
+      //   ...
+      //   - If the UA’s estimate of the current time is more than clockSkew
+      //     before signature’s date, return "untrusted".
+      //   - If the UA’s estimate of the current time is after signature’s
+      //     expiration time, return "untrusted"." [spec text]
+      //
+      // "Parsing signed exchanges
+      //   - ...
+      //   - If parsedSignature is not valid for headerBytes and
+      //     requestUrlBytes, and signed exchange version version, return
+      //     "signature_verification_error"." [spec text]
+      return SignedExchangeLoadResult::kSignatureVerificationError;
+
+    // Deprecated error results.
+    case SignedExchangeSignatureVerifier::Result::kErrNoCertificate_deprecated:
+    case SignedExchangeSignatureVerifier::Result::
+        kErrNoCertificateSHA256_deprecated:
+    case SignedExchangeSignatureVerifier::Result::
+        kErrInvalidSignatureFormat_deprecated:
+    case SignedExchangeSignatureVerifier::Result::
+        kErrInvalidSignatureIntegrity_deprecated:
+    case SignedExchangeSignatureVerifier::Result::
+        kErrInvalidTimestamp_deprecated:
+      NOTREACHED();
+      return SignedExchangeLoadResult::kSignatureVerificationError;
+  }
+
+  NOTREACHED();
+  return SignedExchangeLoadResult::kSignatureVerificationError;
 }
 
 }  // namespace signed_exchange_utils

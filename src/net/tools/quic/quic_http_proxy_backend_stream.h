@@ -30,9 +30,9 @@
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"
 
-#include "net/third_party/quic/tools/quic_backend_response.h"
-#include "net/third_party/quic/tools/quic_simple_server_backend.h"
-#include "net/third_party/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/quic/tools/quic_backend_response.h"
+#include "net/third_party/quiche/src/quic/tools/quic_simple_server_backend.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 #include "net/tools/quic/quic_http_proxy_backend.h"
 
 namespace base {
@@ -55,9 +55,12 @@ class UploadDataStream;
 class QuicHttpProxyBackend;
 
 // An adapter for making HTTP requests to net::URLRequest.
+//
+// TODO(https://crbug.com/937621):  This class does not appear to be thread
+// safe, so all its tests are disabled.
 class QuicHttpProxyBackendStream : public net::URLRequest::Delegate {
  public:
-  QuicHttpProxyBackendStream(QuicHttpProxyBackend* context);
+  explicit QuicHttpProxyBackendStream(QuicHttpProxyBackend* context);
   ~QuicHttpProxyBackendStream() override;
 
   static const std::set<std::string> kHopHeaders;

@@ -12,6 +12,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
+class PrefService;
 class Profile;
 
 // PrefMetricsService is responsible for recording prefs-related UMA stats.

@@ -17,8 +17,8 @@ CFX_XMLInstruction::CFX_XMLInstruction(const WideString& wsTarget)
 
 CFX_XMLInstruction::~CFX_XMLInstruction() = default;
 
-FX_XMLNODETYPE CFX_XMLInstruction::GetType() const {
-  return FX_XMLNODE_Instruction;
+CFX_XMLNode::Type CFX_XMLInstruction::GetType() const {
+  return Type::kInstruction;
 }
 
 CFX_XMLNode* CFX_XMLInstruction::Clone(CFX_XMLDocument* doc) {
@@ -32,16 +32,16 @@ void CFX_XMLInstruction::AppendData(const WideString& wsData) {
 }
 
 bool CFX_XMLInstruction::IsOriginalXFAVersion() const {
-  return name_ == L"originalXFAVersion";
+  return name_.EqualsASCII("originalXFAVersion");
 }
 
 bool CFX_XMLInstruction::IsAcrobat() const {
-  return name_ == L"acrobat";
+  return name_.EqualsASCII("acrobat");
 }
 
 void CFX_XMLInstruction::Save(
     const RetainPtr<IFX_SeekableWriteStream>& pXMLStream) {
-  if (name_.CompareNoCase(L"xml") == 0) {
+  if (name_.EqualsASCIINoCase("xml")) {
     pXMLStream->WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     return;
   }

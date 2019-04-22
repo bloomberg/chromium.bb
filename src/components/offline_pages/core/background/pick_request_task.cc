@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/background/device_conditions.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
@@ -139,8 +138,7 @@ void PickRequestTask::Choose(
     if (policy_controller_->GetPolicy(request->client_id().name_space)
             .defer_background_fetch_while_page_is_active) {
       if (!request->last_attempt_time().is_null() &&
-          OfflineClock()->Now() - request->last_attempt_time() <
-              kDeferInterval) {
+          OfflineTimeNow() - request->last_attempt_time() < kDeferInterval) {
         defer_available_time = request->last_attempt_time() + kDeferInterval;
         continue;
       }

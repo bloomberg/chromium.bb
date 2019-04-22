@@ -5,6 +5,12 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_USB_USB_DEVICE_PROVIDER_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_USB_USB_DEVICE_PROVIDER_H_
 
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 
 namespace crypto {
@@ -15,8 +21,6 @@ class AndroidUsbDevice;
 
 class UsbDeviceProvider : public AndroidDeviceManager::DeviceProvider {
  public:
-  static void CountDevices(const base::Callback<void(int)>& callback);
-
   explicit UsbDeviceProvider(Profile* profile);
 
   void QueryDevices(const SerialsCallback& callback) override;

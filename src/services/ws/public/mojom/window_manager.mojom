@@ -39,12 +39,9 @@ interface WindowManager {
   const string kDisplayId_InitProperty = "init:display_id";
 
   // Specifies that the system default caption and icon should not be rendered,
-  // and the client area should be equivalent to the window area. Type: bool
-  const string kRemoveStandardFrame_InitProperty = "init:remove-standard-frame";
-
-  // A flag controlling the window's presence on the mash shelf. Type: bool
-  const string kWindowIgnoredByShelf_InitProperty =
-      "init:window-ignored-by-shelf";
+  // and the client area should be equivalent to the window area. This is used
+  // for frameless Chrome app windows and all Chrome browser windows. Type: bool
+  const string kClientProvidesFrame_InitProperty = "init:client-provides-frame";
 
   // The window type. This maps to aura::client::kWindowTypeKey as well as
   // Window::type(). This mapping is only done for top-level windows that are
@@ -66,12 +63,21 @@ interface WindowManager {
   // A boolean determining whether animations are disabled for the window.
   const string kAnimationsDisabled_Property = "prop:animations-disabled";
 
-  // The application icon; typically larger for shelf icons, etc. Type: SkBitmap
-  const string kAppIcon_Property = "prop:app-icon";
+  // A large version of the application icon. Type: SkBitmap
+  const string kAppIconLarge_Property = "prop:app-icon-large";
+
+  // A small version of the application icon. Type: SkBitmap
+  const string kAppIconSmall_Property = "prop:app-icon-small";
+
+  // The avatar icon to display in the frame header, if any. Type: SkBitmap
+  const string kAvatarIcon_Property = "prop:avatar-icon";
 
   // The Android Java-style package name for an ARC++ window, such as
   // "com.google.Photos". Type: mojom::String.
   const string kArcPackageName_Property = "prop:arc-package-name";
+
+  // The aspect ratio to be kept. Type: gfx::SizeF.
+  const string kAspectRatio_Property = "prop:aspect-ratio";
 
   // The accessibility ui::AXTreeID for a views::Widget.
   // TODO(dmazzoni): Convert to base::UnguessableToken. https://crbug.com/881986
@@ -81,14 +87,18 @@ interface WindowManager {
   // The modal parent of a child modal window. Type: window Id.
   const string kChildModalParent_Property = "prop:child-modal-parent";
 
-  // If true, the window is considered as has-content and occludes windows
-  // behind it.
-  const string kClientWindowHasContent_Property =
-      "prop:client-window-has-content";
+  // If true, the window's layer has drawn content.
+  const string kWindowLayerDrawn_Property = "prop:window-layer-drawn";
 
   // Whether the window is trying to draw attention to itself (e.g. pulsing its
   // shelf icon). Type: bool.
   const string kDrawAttention_Property = "prop:draw-attention";
+
+  // The bounds in screen coordinates that an embedded window wants to be moved
+  // out of. Maps to aura::client::kEmbeddedWindowEnsureNotInRect.
+  // Type: gfx::Rect.
+  const string kEmbeddedWindowEnsureNotInRect =
+      "prop:embedded-window-ensure-not-in-rect";
 
   // Used to explicitly control whether a window appears in the most recently
   // used list of windows. Maps to aura::client::kExcludeFromMruKey. Type: bool.
@@ -102,6 +112,10 @@ interface WindowManager {
   const string kFrameActiveColor_Property = "prop:frame-active-color";
   const string kFrameInactiveColor_Property = "prop:frame-inactive-color";
 
+  // The window's maximum size as defined by its content. Maps to
+  // aura::client::kMaximumSize_Property. Type: gfx::Size.
+  const string kMaximumSize_Property = "prop:maximum-size";
+
   // The window's minimum size as defined by its content. Maps to
   // aura::client::kMinimumSize_Property. Type: gfx::Size.
   const string kMinimumSize_Property = "prop:minimum-size";
@@ -109,9 +123,6 @@ interface WindowManager {
   // Internal window name. Useful for debugging. Maps to aura::client::kNameKey.
   // Type: mojom::String
   const string kName_Property = "prop:name";
-
-  // If true (and the window is a panel), it's attached to its shelf item.
-  const string kPanelAttached_Property = "prop:panel-attached";
 
   // The window's preferred size as defined by its content. Maps to
   // aura::client::kPreferredSize_Property. Type: gfx::Size.
@@ -151,9 +162,6 @@ interface WindowManager {
   // The window corner radius in DIPs. Maps to
   // aura::client::kWindowCornerRadiusKey. Type: int.
   const string kWindowCornerRadius_Property = "prop:window-corner-radius";
-
-  // The window icon; typically 16x16 for titlebars. Type: SkBitmap
-  const string kWindowIcon_Property = "prop:window-icon";
 
   // The window's title. Maps to aura::client::kTitleKey. Type: mojom::String
   const string kWindowTitle_Property = "prop:window-title";

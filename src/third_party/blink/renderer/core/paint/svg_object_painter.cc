@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 
@@ -15,7 +16,8 @@ void SVGObjectPainter::PaintResourceSubtree(GraphicsContext& context) {
 
   PaintInfo info(context, LayoutRect::InfiniteIntRect(),
                  PaintPhase::kForeground, kGlobalPaintNormalPhase,
-                 kPaintLayerPaintingRenderingResourceSubtree);
+                 kPaintLayerPaintingRenderingResourceSubtree,
+                 &layout_object_.PaintingLayer()->GetLayoutObject());
   layout_object_.Paint(info);
 }
 

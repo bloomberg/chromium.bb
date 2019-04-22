@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "remoting/protocol/content_description.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -15,9 +15,9 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
-using buzz::QName;
-using buzz::XmlAttr;
-using buzz::XmlElement;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlAttr;
+using jingle_xmpp::XmlElement;
 
 namespace remoting {
 namespace protocol {
@@ -402,7 +402,7 @@ TEST(JingleMessageTest, SessionInfo) {
   EXPECT_EQ(message.action, JingleMessage::SESSION_INFO);
   ASSERT_TRUE(message.info.get() != nullptr);
   EXPECT_TRUE(message.info->Name() ==
-              buzz::QName("urn:xmpp:jingle:1", "test-info"));
+              jingle_xmpp::QName("urn:xmpp:jingle:1", "test-info"));
 }
 
 TEST(JingleMessageTest, IgnoreInvalidAddress) {
@@ -506,7 +506,7 @@ TEST(JingleMessageReplyTest, ToXml) {
        kTestIncomingMessage2},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::unique_ptr<XmlElement> incoming_message(
         XmlElement::ForStr(tests[i].incoming_message));
     ASSERT_TRUE(incoming_message.get());

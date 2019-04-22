@@ -33,11 +33,6 @@ class VIEWS_EXAMPLES_EXPORT ExampleBase {
   // Prints a message in the status area, at the bottom of the window.
   void PrintStatus(const char* format, ...);
 
-  // Converts an boolean value to "on" or "off".
-  const char* BoolToOnOff(bool value) {
-    return value ? "on" : "off";
-  }
-
  private:
   // Name of the example - used as title in the combobox list.
   std::string example_title_;

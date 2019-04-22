@@ -5,6 +5,7 @@
 #include "remoting/protocol/webrtc_audio_sink_adapter.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_stub.h"
@@ -70,8 +71,8 @@ void WebrtcAudioSinkAdapter::OnData(const void* audio_data,
   audio_packet->add_data(reinterpret_cast<const char*>(audio_data), data_size);
 
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AudioStub::ProcessAudioPacket, audio_stub_,
-                            base::Passed(&audio_packet), base::Closure()));
+      FROM_HERE, base::BindOnce(&AudioStub::ProcessAudioPacket, audio_stub_,
+                                std::move(audio_packet), base::Closure()));
 }
 
 }  // namespace protocol

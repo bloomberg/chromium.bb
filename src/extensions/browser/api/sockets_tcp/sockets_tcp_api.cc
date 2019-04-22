@@ -5,9 +5,11 @@
 #include "extensions/browser/api/sockets_tcp/sockets_tcp_api.h"
 
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -319,8 +321,9 @@ void SocketsTcpConnectFunction::StartConnect() {
     return;
   }
 
-  socket->Connect(addresses_,
-                  base::Bind(&SocketsTcpConnectFunction::OnCompleted, this));
+  socket->Connect(
+      addresses_,
+      base::BindOnce(&SocketsTcpConnectFunction::OnCompleted, this));
 }
 
 void SocketsTcpConnectFunction::OnCompleted(int net_result) {
@@ -377,9 +380,8 @@ void SocketsTcpSendFunction::AsyncWorkStart() {
     return;
   }
 
-  socket->Write(io_buffer_,
-                io_buffer_size_,
-                base::Bind(&SocketsTcpSendFunction::OnCompleted, this));
+  socket->Write(io_buffer_, io_buffer_size_,
+                base::BindOnce(&SocketsTcpSendFunction::OnCompleted, this));
 }
 
 void SocketsTcpSendFunction::OnCompleted(int net_result) {
@@ -456,7 +458,7 @@ bool SocketsTcpGetSocketsFunction::Prepare() { return true; }
 
 void SocketsTcpGetSocketsFunction::Work() {
   std::vector<sockets_tcp::SocketInfo> socket_infos;
-  base::hash_set<int>* resource_ids = GetSocketIds();
+  std::unordered_set<int>* resource_ids = GetSocketIds();
   if (resource_ids != NULL) {
     for (int socket_id : *resource_ids) {
       ResumableTCPSocket* socket = GetTcpSocket(socket_id);

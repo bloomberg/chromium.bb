@@ -15,7 +15,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
@@ -25,7 +24,6 @@ import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneL
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
@@ -64,13 +62,6 @@ public class ContextualSearchPanel extends OverlayPanel {
     private ContextualSearchSceneLayer mSceneLayer;
 
     /**
-     * Whether to use the Generic Sheet UX.
-     * This activates the closebox in the peeking Bar, and may someday do more,
-     * e.g. swipe-closed behavior.  See crbug.com/831783 for details.
-     */
-    private boolean mUseGenericSheetUx;
-
-    /**
      * A ScrimView for adjusting the Status Bar's brightness when a scrim is present (when the panel
      * is open).
      */
@@ -107,15 +98,9 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    protected void initializeUiState() {
-        mUseGenericSheetUx = mActivity.supportsContextualSuggestionsBottomSheet()
-                && FeatureUtilities.areContextualSuggestionsEnabled(mActivity);
-    }
-
-    @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
         return new OverlayPanelContent(mManagementDelegate.getOverlayContentDelegate(),
-                new PanelProgressObserver(), mActivity, getBarHeight());
+                new PanelProgressObserver(), mActivity, /* isIncognito= */ false, getBarHeight());
     }
 
     // ============================================================================================
@@ -172,8 +157,9 @@ public class ContextualSearchPanel extends OverlayPanel {
     // ============================================================================================
 
     @Override
-    public void setPanelState(PanelState toState, @StateChangeReason int reason) {
-        PanelState fromState = getPanelState();
+    public void setPanelState(@PanelState int toState, @StateChangeReason int reason) {
+        @PanelState
+        int fromState = getPanelState();
 
         mPanelMetrics.onPanelStateChanged(
                 fromState, toState, reason, Profile.getLastUsedProfile().getOriginalProfile());
@@ -195,7 +181,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    protected boolean isSupportedState(PanelState state) {
+    protected boolean isSupportedState(@PanelState int state) {
         return canDisplayContentInPanel() || state != PanelState.MAXIMIZED;
     }
 
@@ -209,8 +195,9 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    protected PanelState getProjectedState(float velocity) {
-        PanelState projectedState = super.getProjectedState(velocity);
+    protected @PanelState int getProjectedState(float velocity) {
+        @PanelState
+        int projectedState = super.getProjectedState(velocity);
 
         // Prevent the fling gesture from moving the Panel from PEEKED to MAXIMIZED. This is to
         // make sure the Promo will be visible, considering that the EXPANDED state is the only
@@ -228,6 +215,13 @@ public class ContextualSearchPanel extends OverlayPanel {
         }
 
         return projectedState;
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        if (!isShowing()) return false;
+        mManagementDelegate.hideContextualSearch(StateChangeReason.BACK_PRESS);
+        return true;
     }
 
     // ============================================================================================
@@ -270,9 +264,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         getSearchBarControl().onSearchBarClick(x);
 
         if (isPeeking()) {
-            if (useGenericSheetUx() && isCoordinateInsideCloseButton(x)) {
-                closePanel(StateChangeReason.CLOSE_BUTTON, true);
-            } else if (getSearchBarControl().getQuickActionControl().hasQuickAction()
+            if (getSearchBarControl().getQuickActionControl().hasQuickAction()
                     && isCoordinateInsideActionTarget(x)) {
                 mPanelMetrics.setWasQuickActionClicked();
                 getSearchBarControl().getQuickActionControl().sendIntent(
@@ -517,7 +509,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    public PanelState getPanelState() {
+    public @PanelState int getPanelState() {
         // NOTE(pedrosimonetti): exposing superclass method to the interface.
         return super.getPanelState();
     }
@@ -714,33 +706,6 @@ public class ContextualSearchPanel extends OverlayPanel {
             }
             mScrimView.setViewAlpha(statusBarAlpha);
         }
-    }
-
-    @Override
-    public float getArrowIconOpacity() {
-        if (useGenericSheetUx()) {
-            return ARROW_ICON_OPACITY_GENERIC_UX;
-        } else {
-            return super.getArrowIconOpacity();
-        }
-    }
-
-    @Override
-    public float getCloseIconOpacity() {
-        if (useGenericSheetUx()) {
-            return CLOSE_ICON_OPACITY_GENERIC_UX;
-        } else {
-            return super.getCloseIconOpacity();
-        }
-    }
-
-    /**
-     * Whether the UX should match the generic sheet UX used by the generic assistive surface.
-     * TODO(crbug.com/831783) remove when the generic sheet UX is the default.
-     * @return Whether to apply the generic UX, rather than the legacy Contextual Search UX.
-     */
-    boolean useGenericSheetUx() {
-        return mUseGenericSheetUx;
     }
 
     // ============================================================================================

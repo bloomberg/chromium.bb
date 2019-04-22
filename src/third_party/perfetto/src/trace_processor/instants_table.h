@@ -17,28 +17,28 @@
 #ifndef SRC_TRACE_PROCESSOR_INSTANTS_TABLE_H_
 #define SRC_TRACE_PROCESSOR_INSTANTS_TABLE_H_
 
-#include "src/trace_processor/storage_schema.h"
-#include "src/trace_processor/table.h"
+#include <string>
+#include <vector>
+
+#include "src/trace_processor/storage_table.h"
 #include "src/trace_processor/trace_storage.h"
 
 namespace perfetto {
 namespace trace_processor {
 
-class InstantsTable : public Table {
+class InstantsTable : public StorageTable {
  public:
   static void RegisterTable(sqlite3* db, const TraceStorage* storage);
 
   InstantsTable(sqlite3*, const TraceStorage*);
 
-  // Table implementation.
-  Table::Schema CreateSchema(int argc, const char* const* argv) override;
-  std::unique_ptr<Table::Cursor> CreateCursor(const QueryConstraints&,
-                                              sqlite3_value**) override;
+  // StorageTable implementation.
+  StorageSchema CreateStorageSchema() override;
+  uint32_t RowCount() override;
   int BestIndex(const QueryConstraints&, BestIndexInfo*) override;
 
  private:
-  std::deque<std::string> ref_types_;
-  StorageSchema schema_;
+  std::vector<const char*> ref_types_;
   const TraceStorage* const storage_;
 };
 }  // namespace trace_processor

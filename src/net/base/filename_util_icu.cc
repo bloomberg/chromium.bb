@@ -51,6 +51,7 @@ base::string16 GetSuggestedFilename(const GURL& url,
                                     const std::string& default_name) {
   return GetSuggestedFilenameImpl(url, content_disposition, referrer_charset,
                                   suggested_name, mime_type, default_name,
+                                  false, /* should_replace_extension */
                                   &base::i18n::ReplaceIllegalCharactersInPath);
 }
 
@@ -60,9 +61,22 @@ base::FilePath GenerateFileName(const GURL& url,
                                 const std::string& suggested_name,
                                 const std::string& mime_type,
                                 const std::string& default_file_name) {
+  return GenerateFileName(url, content_disposition, referrer_charset,
+                          suggested_name, mime_type, default_file_name,
+                          false /* should_replace_extension */);
+}
+
+base::FilePath GenerateFileName(const GURL& url,
+                                const std::string& content_disposition,
+                                const std::string& referrer_charset,
+                                const std::string& suggested_name,
+                                const std::string& mime_type,
+                                const std::string& default_file_name,
+                                bool should_replace_extension) {
   base::FilePath generated_name(GenerateFileNameImpl(
       url, content_disposition, referrer_charset, suggested_name, mime_type,
-      default_file_name, &base::i18n::ReplaceIllegalCharactersInPath));
+      default_file_name, should_replace_extension,
+      &base::i18n::ReplaceIllegalCharactersInPath));
 
 #if defined(OS_CHROMEOS)
   // When doing file manager operations on ChromeOS, the file paths get

@@ -43,7 +43,7 @@ class TestAuthService : public DummyAuthService {
 
     if (refresh_token() == kTestRefreshToken) {
       const std::string token =
-          kTestAccessToken + base::IntToString(auth_try_count_);
+          kTestAccessToken + base::NumberToString(auth_try_count_);
       set_access_token(token);
       callback.Run(HTTP_SUCCESS, token);
     } else {
@@ -62,8 +62,8 @@ class RequestSenderTest : public testing::Test {
   RequestSenderTest()
       : auth_service_(new TestAuthService),
         request_sender_(base::WrapUnique(auth_service_),
-                        NULL,
-                        NULL,
+                        nullptr,
+                        nullptr,
                         "dummy-user-agent",
                         TRAFFIC_ANNOTATION_FOR_TESTS) {
     auth_service_->set_refresh_token(kTestRefreshToken);

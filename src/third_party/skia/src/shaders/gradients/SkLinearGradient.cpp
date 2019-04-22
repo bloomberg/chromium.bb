@@ -8,7 +8,6 @@
 #include "SkLinearGradient.h"
 
 #include "Sk4fLinearGradient.h"
-#include "SkColorSpaceXformer.h"
 #include "SkReadBuffer.h"
 #include "SkWriteBuffer.h"
 
@@ -56,7 +55,16 @@ void SkLinearGradient::flatten(SkWriteBuffer& buffer) const {
 SkShaderBase::Context* SkLinearGradient::onMakeContext(
     const ContextRec& rec, SkArenaAlloc* alloc) const
 {
-    return fTileMode != kDecal_TileMode
+    // make sure our colorspaces are compatible with legacy blits
+    if (!rec.isLegacyCompatible(fColorSpace.get())) {
+        return nullptr;
+    }
+    // Can't use legacy blit if we can't represent our colors as SkColors
+    if (!this->colorsCanConvertToSkColor()) {
+        return nullptr;
+    }
+
+    return fTileMode != SkTileMode::kDecal
         ? CheckedMakeContext<LinearGradient4fContext>(alloc, *this, rec)
         : nullptr;
 }
@@ -64,7 +72,7 @@ SkShaderBase::Context* SkLinearGradient::onMakeContext(
 SkShaderBase::Context* SkLinearGradient::onMakeBurstPipelineContext(
     const ContextRec& rec, SkArenaAlloc* alloc) const {
 
-    if (fTileMode == SkShader::kDecal_TileMode) {
+    if (fTileMode == SkTileMode::kDecal) {
         // we only support decal w/ stages
         return nullptr;
     }
@@ -77,13 +85,6 @@ SkShaderBase::Context* SkLinearGradient::onMakeBurstPipelineContext(
 void SkLinearGradient::appendGradientStages(SkArenaAlloc*, SkRasterPipeline*,
                                             SkRasterPipeline*) const {
     // No extra stage needed for linear gradients.
-}
-
-sk_sp<SkShader> SkLinearGradient::onMakeColorSpace(SkColorSpaceXformer* xformer) const {
-    const AutoXformColors xformedColors(*this, xformer);
-    SkPoint pts[2] = { fStart, fEnd };
-    return SkGradientShader::MakeLinear(pts, xformedColors.fColors.get(), fOrigPos, fColorCount,
-                                        fTileMode, fGradFlags, &this->getLocalMatrix());
 }
 
 SkShader::GradientType SkLinearGradient::asAGradient(GradientInfo* info) const {

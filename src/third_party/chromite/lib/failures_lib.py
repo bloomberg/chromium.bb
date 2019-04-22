@@ -67,7 +67,7 @@ class StepFailure(Exception):
     stage_failure = failure_message_lib.StageFailure(
         None, build_stage_id, None, self.__class__.__name__, self.message,
         self.EXCEPTION_CATEGORY, self.EncodeExtraInfo(), None, stage_name,
-        None, None, None, None, None, None, None, None, None, None, None)
+        None, None, None, None, None, None, None, None, None, None)
     return failure_message_lib.StageFailureMessage(
         stage_failure, stage_prefix_name=stage_prefix_name)
 
@@ -177,7 +177,7 @@ class CompoundFailure(StepFailure):
     stage_failure = failure_message_lib.StageFailure(
         None, build_stage_id, None, self.__class__.__name__, self.message,
         self.EXCEPTION_CATEGORY, self.EncodeExtraInfo(), None, stage_name,
-        None, None, None, None, None, None, None, None, None, None, None)
+        None, None, None, None, None, None, None, None, None, None)
     compound_failure_message = failure_message_lib.CompoundFailureMessage(
         stage_failure, stage_prefix_name=stage_prefix_name)
 
@@ -185,7 +185,7 @@ class CompoundFailure(StepFailure):
       inner_failure = failure_message_lib.StageFailure(
           None, build_stage_id, None, exc_class.__name__, exc_str,
           _GetExceptionCategory(exc_class), None, None, stage_name,
-          None, None, None, None, None, None, None, None, None, None, None)
+          None, None, None, None, None, None, None, None, None, None)
       innner_failure_message = failure_message_lib.StageFailureMessage(
           inner_failure, stage_prefix_name=stage_prefix_name)
       compound_failure_message.inner_failures.append(innner_failure_message)
@@ -330,6 +330,17 @@ class PackageBuildFailure(BuildScriptFailure):
     }
     return json.dumps(extra_info_dict)
 
+  def BuildCompileFailureOutputJson(self):
+    """Build proto BuildCompileFailureOutput compatible JSON output.
+
+    Returns:
+      A json string with BuildCompileFailureOutput proto as json.
+    """
+    failures = []
+    for pkg in self.failed_packages:
+      failures.append({'rule': 'emerge', 'output_targets': pkg})
+    wrapper = {'failures': failures}
+    return json.dumps(wrapper, indent=2)
 
 class InfrastructureFailure(CompoundFailure):
   """Raised if a stage fails due to infrastructure issues."""
@@ -409,11 +420,12 @@ class TestWarning(StepFailure):
   """Raised if a test stage (e.g. VMTest) returns a warning code."""
 
 
-def ReportStageFailure(db, build_stage_id, exception, metrics_fields=None):
+def ReportStageFailure(buildstore, build_stage_id, exception,
+                       metrics_fields=None):
   """Reports stage failure to CIDB and Mornach along with inner exceptions.
 
   Args:
-    db: A valid cidb handle.
+    buildstore: BuildStore instance to make DB calls with.
     build_stage_id: The cidb id for the build stage that failed.
     exception: The failure exception to report.
     metrics_fields: (Optional) Fields for ts_mon metric.
@@ -430,7 +442,7 @@ def ReportStageFailure(db, build_stage_id, exception, metrics_fields=None):
                 if isinstance(exception, StepFailure) else None)
 
   outer_failure_id = _InsertFailureToCIDBAndMornach(
-      db,
+      buildstore,
       build_stage_id,
       type(exception).__name__,
       exception_message,
@@ -442,7 +454,7 @@ def ReportStageFailure(db, build_stage_id, exception, metrics_fields=None):
   if isinstance(exception, CompoundFailure):
     for exc_class, exc_str, _ in exception.exc_infos:
       _InsertFailureToCIDBAndMornach(
-          db,
+          buildstore,
           build_stage_id,
           exc_class.__name__,
           exc_str,
@@ -454,7 +466,7 @@ def ReportStageFailure(db, build_stage_id, exception, metrics_fields=None):
 
 
 def _InsertFailureToCIDBAndMornach(
-    db, build_stage_id, exception_type, exception_message,
+    buildstore, build_stage_id, exception_type, exception_message,
     exception_category=constants.EXCEPTION_CATEGORY_UNKNOWN,
     outer_failure_id=None,
     extra_info=None,
@@ -462,7 +474,7 @@ def _InsertFailureToCIDBAndMornach(
   """Report a single stage failure to CIDB and Mornach if needed.
 
   Args:
-    db: A valid cidb handle.
+    buildstore: BuildStore instance to make DB calls.
     build_stage_id: The cidb id for the build stage that failed.
     exception_type: str name of the exception class.
     exception_message: str description of the failure.
@@ -479,7 +491,8 @@ def _InsertFailureToCIDBAndMornach(
   Returns:
     The Integer id of this exception in the failureTable.
   """
-  failure_id = db.InsertFailure(
+  assert buildstore.AreClientsReady()
+  failure_id = buildstore.InsertFailure(
       build_stage_id, exception_type, exception_message,
       exception_category=exception_category,
       outer_failure_id=outer_failure_id,
@@ -515,7 +528,7 @@ def GetStageFailureMessageFromException(stage_name, build_stage_id,
     stage_failure = failure_message_lib.StageFailure(
         None, build_stage_id, None, type(exception).__name__, str(exception),
         _GetExceptionCategory(type(exception)), None, None, stage_name,
-        None, None, None, None, None, None, None, None, None, None, None)
+        None, None, None, None, None, None, None, None, None, None)
 
     return failure_message_lib.StageFailureMessage(
         stage_failure, stage_prefix_name=stage_prefix_name)

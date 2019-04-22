@@ -64,7 +64,7 @@ class HostZoomMap {
 
   // Extracts the URL from NavigationEntry, substituting the error page
   // URL in the event that the error page is showing.
-  CONTENT_EXPORT static GURL GetURLFromEntry(const NavigationEntry* entry);
+  CONTENT_EXPORT static GURL GetURLFromEntry(NavigationEntry* entry);
 
   CONTENT_EXPORT static HostZoomMap* GetDefaultForBrowserContext(
       BrowserContext* browser_context);

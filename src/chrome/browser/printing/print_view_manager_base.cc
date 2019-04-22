@@ -56,9 +56,6 @@
 #include "chrome/browser/printing/print_error_dialog.h"
 #endif
 
-using base::TimeDelta;
-using content::BrowserThread;
-
 namespace printing {
 
 namespace {
@@ -78,26 +75,28 @@ void ShowWarningMessageBox(const base::string16& message) {
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-void CreateQueryWithSettings(
-    std::unique_ptr<base::DictionaryValue> job_settings,
-    int render_process_id,
-    int render_frame_id,
-    scoped_refptr<PrintQueriesQueue> queue,
-    PrintSettingsCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  scoped_refptr<printing::PrinterQuery> printer_query =
-      queue->CreatePrinterQuery(render_process_id, render_frame_id);
-  printer_query->SetSettings(
-      std::move(job_settings),
-      base::BindOnce(std::move(callback), printer_query));
-}
-
 void OnPrintSettingsDoneWrapper(PrintSettingsCallback settings_callback,
                                 scoped_refptr<PrinterQuery> query) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                            base::BindOnce(std::move(settings_callback), query));
+}
+
+void CreateQueryWithSettings(base::Value job_settings,
+                             int render_process_id,
+                             int render_frame_id,
+                             scoped_refptr<PrintQueriesQueue> queue,
+                             PrintSettingsCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  PrintSettingsCallback callback_wrapper =
+      base::BindOnce(OnPrintSettingsDoneWrapper, std::move(callback));
+  scoped_refptr<printing::PrinterQuery> printer_query =
+      queue->CreatePrinterQuery(render_process_id, render_frame_id);
+  printer_query->SetSettings(
+      std::move(job_settings),
+      base::BindOnce(std::move(callback_wrapper), printer_query));
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -133,23 +132,21 @@ bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintViewManagerBase::PrintForPrintPreview(
-    std::unique_ptr<base::DictionaryValue> job_settings,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
+    base::Value job_settings,
+    scoped_refptr<base::RefCountedMemory> print_data,
     content::RenderFrameHost* rfh,
     PrinterHandler::PrintCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  int page_count;
-  job_settings->GetInteger(kSettingPreviewPageCount, &page_count);
   PrintSettingsCallback settings_callback =
       base::BindOnce(&PrintViewManagerBase::OnPrintSettingsDone,
-                     weak_ptr_factory_.GetWeakPtr(), print_data, page_count,
+                     weak_ptr_factory_.GetWeakPtr(), print_data,
+                     job_settings.FindIntKey(kSettingPreviewPageCount).value(),
                      std::move(callback));
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(CreateQueryWithSettings, std::move(job_settings),
                      rfh->GetProcess()->GetID(), rfh->GetRoutingID(), queue_,
-                     base::BindOnce(OnPrintSettingsDoneWrapper,
-                                    std::move(settings_callback))));
+                     std::move(settings_callback)));
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -179,10 +176,11 @@ void PrintViewManagerBase::OnPrintSettingsDone(
     PrinterHandler::PrintCallback callback,
     scoped_refptr<printing::PrinterQuery> printer_query) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(printer_query);
+
   // Check if the job was cancelled. This should only happen on Windows when
   // the system dialog is cancelled.
-  if (printer_query &&
-      printer_query->last_status() == PrintingContext::CANCEL) {
+  if (printer_query->last_status() == PrintingContext::CANCEL) {
     queue_->QueuePrinterQuery(printer_query.get());
 #if defined(OS_WIN)
     base::PostTaskWithTraits(
@@ -194,16 +192,16 @@ void PrintViewManagerBase::OnPrintSettingsDone(
     return;
   }
 
-  if (!printer_query || !printer_query->cookie() ||
-      !printer_query->settings().dpi()) {
-    if (printer_query)
-      printer_query->StopWorker();
+  if (!printer_query->cookie() || !printer_query->settings().dpi()) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
+        base::BindOnce(&PrinterQuery::StopWorker, printer_query));
     std::move(callback).Run(base::Value("Update settings failed"));
     return;
   }
 
   // Post task so that the query has time to reset the callback before calling
-  // OnDidGetPrintedPagesCount.
+  // OnDidGetPrintedPagesCount().
   queue_->QueuePrinterQuery(printer_query.get());
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
@@ -448,12 +446,18 @@ void PrintViewManagerBase::OnNotifyPrintJobEvent(
       ShouldQuitFromInnerMessageLoop();
       break;
     }
-    case JobEventDetails::NEW_DOC:
 #if defined(OS_WIN)
     case JobEventDetails::PAGE_DONE:
 #endif
-    case JobEventDetails::DOC_DONE: {
+    case JobEventDetails::NEW_DOC: {
       // Don't care about the actual printing process.
+      break;
+    }
+    case JobEventDetails::DOC_DONE: {
+      // Don't care about the actual printing process, except on Android.
+#if defined(OS_ANDROID)
+      PdfWritingDone(number_pages_);
+#endif
       break;
     }
     case JobEventDetails::JOB_DONE: {
@@ -524,6 +528,7 @@ void PrintViewManagerBase::ShouldQuitFromInnerMessageLoop() {
 }
 
 bool PrintViewManagerBase::CreateNewPrintJob(PrinterQuery* query) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!quit_inner_loop_);
   DCHECK(query);
 
@@ -570,6 +575,9 @@ void PrintViewManagerBase::TerminatePrintJob(bool cancel) {
     // We don't need the metafile data anymore because the printing is canceled.
     print_job_->Cancel();
     quit_inner_loop_.Reset();
+#if defined(OS_ANDROID)
+    PdfWritingDone(0);
+#endif
   } else {
     DCHECK(!quit_inner_loop_);
     DCHECK(!print_job_->document() || print_job_->document()->IsComplete());
@@ -613,11 +621,11 @@ bool PrintViewManagerBase::RunInnerMessageLoop() {
   // - If we're looping because of renderer page generation, the renderer could
   // be CPU bound, the page overly complex/large or the system just
   // memory-bound.
-  static const int kPrinterSettingsTimeout = 60000;
+  static constexpr base::TimeDelta kPrinterSettingsTimeout =
+      base::TimeDelta::FromSeconds(60);
   base::OneShotTimer quit_timer;
   base::RunLoop run_loop;
-  quit_timer.Start(FROM_HERE,
-                   TimeDelta::FromMilliseconds(kPrinterSettingsTimeout),
+  quit_timer.Start(FROM_HERE, kPrinterSettingsTimeout,
                    run_loop.QuitWhenIdleClosure());
 
   quit_inner_loop_ = run_loop.QuitClosure();
@@ -695,7 +703,7 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
   if (!printer_query)
     return;
   base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&PrinterQuery::StopWorker, printer_query));
 }
 

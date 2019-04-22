@@ -15,25 +15,14 @@ namespace blink {
 // compiled.
 class JSEventHandlerForContentAttribute final : public JSEventHandler {
  public:
-  static JSEventHandlerForContentAttribute* Create(
-      const AtomicString& function_name,
-      const String& code,
-      const String& source_url,
-      const TextPosition& position,
+  JSEventHandlerForContentAttribute(
       v8::Isolate* isolate,
       DOMWrapperWorld& world,
-      HandlerType type = HandlerType::kEventHandler) {
-    return MakeGarbageCollected<JSEventHandlerForContentAttribute>(
-        isolate, world, function_name, code, source_url, position, type);
-  }
-
-  JSEventHandlerForContentAttribute(v8::Isolate* isolate,
-                                    DOMWrapperWorld& world,
-                                    const AtomicString& function_name,
-                                    const String& script_body,
-                                    const String& source_url,
-                                    const TextPosition& position,
-                                    HandlerType type)
+      const AtomicString& function_name,
+      const String& script_body,
+      const String& source_url,
+      const TextPosition& position,
+      HandlerType type = HandlerType::kEventHandler)
       : JSEventHandler(type),
         did_compile_(false),
         function_name_(function_name),
@@ -66,7 +55,7 @@ class JSEventHandlerForContentAttribute final : public JSEventHandler {
   // The compiled v8::Function is returned and |JSEventHandler::event_handler_|
   // gets initialized with it if lazy compilation succeeds.
   // Otherwise, v8::Null is returned.
-  // https://html.spec.whatwg.org/multipage/webappapis.html#getting-the-current-value-of-the-event-handler
+  // https://html.spec.whatwg.org/C/#getting-the-current-value-of-the-event-handler
   v8::Local<v8::Value> GetCompiledHandler(EventTarget&);
 
   // Lazy compilation for content attribute should be tried only once, but we

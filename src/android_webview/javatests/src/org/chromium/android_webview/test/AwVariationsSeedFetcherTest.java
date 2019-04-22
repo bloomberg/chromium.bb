@@ -109,7 +109,7 @@ public class AwVariationsSeedFetcherTest {
         public CallbackHelper helper = new CallbackHelper();
 
         @Override
-        public SeedInfo downloadContent(VariationsSeedFetcher.VariationsPlatform platform,
+        public SeedInfo downloadContent(@VariationsSeedFetcher.VariationsPlatform int platform,
                 String restrictMode, String milestone, String channel)
                 throws SocketTimeoutException, UnknownHostException, IOException {
             Assert.assertEquals(VariationsSeedFetcher.VariationsPlatform.ANDROID_WEBVIEW, platform);

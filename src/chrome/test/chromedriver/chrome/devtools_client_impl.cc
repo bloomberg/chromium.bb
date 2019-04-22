@@ -26,22 +26,23 @@ const char kInspectorDefaultContextError[] =
     "Cannot find default execution context";
 const char kInspectorContextError[] =
     "Cannot find execution context with given id";
-// Builds older than commit position 353387 return a different error message.
-// TODO(samuong): Remove this once we stop supporting Chrome 47.
-const char kOldInspectorContextError[] =
-    "Execution context with given id not found.";
+const char kInspectorInvalidURL[] = "Cannot navigate to invalid URL";
 
 Status ParseInspectorError(const std::string& error_json) {
-  std::unique_ptr<base::Value> error = base::JSONReader::Read(error_json);
+  std::unique_ptr<base::Value> error =
+      base::JSONReader::ReadDeprecated(error_json);
   base::DictionaryValue* error_dict;
   if (!error || !error->GetAsDictionary(&error_dict))
     return Status(kUnknownError, "inspector error with no error message");
   std::string error_message;
-  if (error_dict->GetString("message", &error_message) &&
-      (error_message == kInspectorDefaultContextError ||
-       error_message == kInspectorContextError ||
-       error_message == kOldInspectorContextError)) {
-    return Status(kNoSuchExecutionContext);
+  bool error_found = error_dict->GetString("message", &error_message);
+  if (error_found) {
+    if (error_message == kInspectorDefaultContextError ||
+        error_message == kInspectorContextError) {
+      return Status(kNoSuchExecutionContext);
+    } else if (error_message == kInspectorInvalidURL) {
+      return Status(kInvalidArgument);
+    }
   }
   return Status(kUnknownError, "unhandled inspector error: " + error_json);
 }
@@ -334,8 +335,8 @@ Status DevToolsClientImpl::SendCommandInternal(
   }
 
   if (expect_response) {
-    linked_ptr<ResponseInfo> response_info =
-        make_linked_ptr(new ResponseInfo(method));
+    scoped_refptr<ResponseInfo> response_info =
+        base::MakeRefCounted<ResponseInfo>(method);
     if (timeout)
       response_info->command_timeout = *timeout;
     response_info_map_[command_id] = response_info;
@@ -472,7 +473,7 @@ Status DevToolsClientImpl::ProcessEvent(const internal::InspectorEvent& event) {
     base::DictionaryValue enable_params;
     enable_params.SetString("purpose", "detect if alert blocked any cmds");
     Status enable_status = SendCommand("Inspector.enable", enable_params);
-    for (ResponseInfoMap::const_iterator iter = response_info_map_.begin();
+    for (auto iter = response_info_map_.begin();
          iter != response_info_map_.end(); ++iter) {
       if (iter->first > max_id)
         continue;
@@ -526,7 +527,7 @@ Status DevToolsClientImpl::ProcessCommandResponse(
   if (iter == response_info_map_.end())
     return Status(kUnknownError, "unexpected command response");
 
-  linked_ptr<ResponseInfo> response_info = response_info_map_[response.id];
+  scoped_refptr<ResponseInfo> response_info = response_info_map_[response.id];
   response_info_map_.erase(response.id);
 
   if (response_info->state != kIgnored) {
@@ -599,8 +600,8 @@ bool ParseInspectorMessage(
     InspectorCommandResponse* command_response) {
   // We want to allow invalid characters in case they are valid ECMAScript
   // strings. For example, webplatform tests use this to check string handling
-  std::unique_ptr<base::Value> message_value =
-      base::JSONReader::Read(message, base::JSON_REPLACE_INVALID_CHARACTERS);
+  std::unique_ptr<base::Value> message_value = base::JSONReader::ReadDeprecated(
+      message, base::JSON_REPLACE_INVALID_CHARACTERS);
   base::DictionaryValue* message_dict;
   if (!message_value || !message_value->GetAsDictionary(&message_dict))
     return false;

@@ -106,6 +106,8 @@ class SigninMetricsTest : public ::testing::Test {
         return "ManageCardsBubble";
       case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
         return "MachineLogon";
+      case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
+        return "GoogleServicesSettings";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED();
         return "";

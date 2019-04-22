@@ -30,6 +30,8 @@ class PDFPluginPlaceholderObserver
   // Message handlers:
   void OnOpenPDF(content::RenderFrameHost* render_frame_host, const GURL& url);
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(PDFPluginPlaceholderObserver);
 };
 

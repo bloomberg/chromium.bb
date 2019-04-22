@@ -11,6 +11,7 @@ cr.define('header_test', function() {
     HeaderWithNup: 'header with nup',
     HeaderChangesForState: 'header changes for state',
     ButtonOrder: 'button order',
+    EnterprisePolicy: 'enterprise policy',
   };
 
   const suiteName = 'HeaderTest';
@@ -20,41 +21,25 @@ cr.define('header_test', function() {
 
     /** @override */
     setup(function() {
-      // Only care about copies, duplex, pages, and pages per sheet.
-      const settings = {
-        copies: {
-          value: '1',
-          unavailableValue: '1',
-          valid: true,
-          available: true,
-          key: '',
-        },
-        duplex: {
-          value: false,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          key: 'isDuplexEnabled',
-        },
-        pages: {
-          value: [1],
-          unavailableValue: [],
-          valid: true,
-          available: true,
-          key: '',
-        },
-      };
-
+      loadTimeData.overrideValues({
+        newPrintPreviewLayoutEnabled: false,
+      });
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       header = document.createElement('print-preview-header');
-      header.settings = settings;
+      header.settings = model.settings;
+      model.set('settings.duplex.available', true);
+      model.set('settings.duplex.value', false);
+
       header.destination = new print_preview.Destination(
           'FooDevice', print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, 'FooName',
-          true /* isRecent */,
           print_preview.DestinationConnectionStatus.ONLINE);
-      header.errorMessage = '';
       header.state = print_preview_new.State.READY;
+      header.managed = false;
+      test_util.fakeDataBind(model, header, 'settings');
       document.body.appendChild(header);
     });
 
@@ -65,7 +50,7 @@ cr.define('header_test', function() {
               print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
               print_preview.DestinationType.LOCAL,
               print_preview.DestinationOrigin.LOCAL,
-              loadTimeData.getString('printToPDF'), false,
+              loadTimeData.getString('printToPDF'),
               print_preview.DestinationConnectionStatus.ONLINE));
     }
 
@@ -116,27 +101,31 @@ cr.define('header_test', function() {
       assertEquals('Total: 1 sheet of paper', summary.textContent);
       assertFalse(printButton.disabled);
 
-      header.set('state', print_preview_new.State.NOT_READY);
+      header.state = print_preview_new.State.NOT_READY;
       assertEquals('', summary.textContent);
       assertTrue(printButton.disabled);
 
-      header.set('state', print_preview_new.State.PRINTING);
+      header.state = print_preview_new.State.PRINTING;
       assertEquals(loadTimeData.getString('printing'), summary.textContent);
       assertTrue(printButton.disabled);
       setPdfDestination();
       assertEquals(loadTimeData.getString('saving'), summary.textContent);
 
-      header.set('state', print_preview_new.State.INVALID_TICKET);
+      header.error = print_preview_new.Error.INVALID_TICKET;
+      header.state = print_preview_new.State.ERROR;
       assertEquals('', summary.textContent);
       assertTrue(printButton.disabled);
 
-      header.set('state', print_preview_new.State.INVALID_PRINTER);
+      header.state = print_preview_new.State.READY;
+      header.error = print_preview_new.Error.INVALID_PRINTER;
+      header.state = print_preview_new.State.ERROR;
       assertEquals('', summary.textContent);
       assertTrue(printButton.disabled);
 
       const testError = 'Error printing to cloud print';
-      header.set('errorMessage', testError);
-      header.set('state', print_preview_new.State.FATAL_ERROR);
+      header.cloudPrintErrorMessage = testError;
+      header.error = print_preview_new.Error.CLOUD_PRINT_ERROR;
+      header.state = print_preview_new.State.FATAL_ERROR;
       assertEquals(testError, summary.textContent);
       assertTrue(printButton.disabled);
     });
@@ -161,6 +150,13 @@ cr.define('header_test', function() {
         assertEquals(firstButton, cancelButton);
         assertEquals(lastButton, printButton);
       }
+    });
+
+    // Tests that enterprise badge shows up if any setting is managed.
+    test(assert(TestNames.EnterprisePolicy), function() {
+      assertTrue(header.$$('iron-icon').hidden);
+      header.managed = true;
+      assertFalse(header.$$('iron-icon').hidden);
     });
   });
 

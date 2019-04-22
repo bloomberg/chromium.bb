@@ -17,13 +17,19 @@ class AppsPageShimHandler : public apps::AppShimHandler {
   AppsPageShimHandler() {}
 
   // AppShimHandler:
-  void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
-  void OnShimClose(apps::AppShimHandler::Host* host) override;
-  void OnShimFocus(apps::AppShimHandler::Host* host,
+  void OnShimLaunchRequested(
+      AppShimHost* host,
+      bool recreate_shims,
+      apps::ShimLaunchedCallback launched_callback,
+      apps::ShimTerminatedCallback terminated_callback) override;
+  void OnShimProcessConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
+  void OnShimClose(AppShimHost* host) override;
+  void OnShimFocus(AppShimHost* host,
                    apps::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override;
-  void OnShimSetHidden(apps::AppShimHandler::Host* host, bool hidden) override;
-  void OnShimQuit(apps::AppShimHandler::Host* host) override;
+  void OnShimSetHidden(AppShimHost* host, bool hidden) override;
+  void OnShimQuit(AppShimHost* host) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppsPageShimHandler);

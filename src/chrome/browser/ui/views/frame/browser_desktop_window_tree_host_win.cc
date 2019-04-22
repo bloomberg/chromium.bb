@@ -129,10 +129,10 @@ bool BrowserDesktopWindowTreeHostWin::GetDwmFrameInsetsInPixels(
   } else {
     // The glass should extend to the bottom of the tabstrip.
     HWND hwnd = GetHWND();
-    gfx::Rect tabstrip_bounds(
-        browser_frame_->GetBoundsForTabStrip(browser_view_->tabstrip()));
-    tabstrip_bounds =
-        display::win::ScreenWin::DIPToClientRect(hwnd, tabstrip_bounds);
+    gfx::Rect tabstrip_region_bounds(
+        browser_frame_->GetBoundsForTabStripRegion(browser_view_->tabstrip()));
+    tabstrip_region_bounds =
+        display::win::ScreenWin::DIPToClientRect(hwnd, tabstrip_region_bounds);
 
     // The 2 px (not DIP) at the inner edges of Win 7 glass are a light and dark
     // line, so we must inset further to account for those.
@@ -140,8 +140,8 @@ bool BrowserDesktopWindowTreeHostWin::GetDwmFrameInsetsInPixels(
     const int inset = (base::win::GetVersion() < base::win::VERSION_WIN8)
                           ? kWin7GlassInset
                           : 0;
-    *insets =
-        gfx::Insets(tabstrip_bounds.bottom() + inset, inset, inset, inset);
+    *insets = gfx::Insets(tabstrip_region_bounds.bottom() + inset, inset, inset,
+                          inset);
   }
   return true;
 }

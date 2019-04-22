@@ -5,11 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
@@ -69,6 +70,7 @@ const char kTestOrigin2[] = "http://host2:1/";
 const char kTestOrigin3[] = "http://host3:1/";
 const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw/";
 const char kTestURL[] = "http://host4/script.js";
+const char kFilterURLForCodeCache[] = "http://host5/script.js";
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 const char kWidevineCdmPluginId[] = "application_x-ppapi-widevine-cdm";
@@ -82,6 +84,7 @@ const url::Origin kOrigin3 = url::Origin::Create(GURL(kTestOrigin3));
 const url::Origin kOriginDevTools =
     url::Origin::Create(GURL(kTestOriginDevTools));
 const GURL kResourceURL(kTestURL);
+const GURL kFilterResourceURLForCodeCache(kFilterURLForCodeCache);
 
 const blink::mojom::StorageType kTemporary =
     blink::mojom::StorageType::kTemporary;
@@ -160,7 +163,8 @@ class RemoveCookieTester {
   }
 
  private:
-  void GetCookieListCallback(const net::CookieList& cookie_list) {
+  void GetCookieListCallback(const net::CookieList& cookie_list,
+                             const net::CookieStatusList& excluded_cookies) {
     std::string cookie_line =
         net::CanonicalCookie::BuildCookieLine(cookie_list);
     if (cookie_line == "A=1") {
@@ -172,8 +176,8 @@ class RemoveCookieTester {
     await_completion_.Notify();
   }
 
-  void SetCookieCallback(bool result) {
-    ASSERT_TRUE(result);
+  void SetCookieCallback(CanonicalCookie::CookieInclusionStatus result) {
+    ASSERT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, result);
     await_completion_.Notify();
   }
 
@@ -200,7 +204,7 @@ class RemoveLocalStorageTester {
     GetLocalStorageUsage();
     await_completion_.BlockUntilNotified();
     for (size_t i = 0; i < infos_.size(); ++i) {
-      if (origin == url::Origin::Create(infos_[i].origin))
+      if (origin == infos_[i].origin)
         return true;
     }
     return false;
@@ -254,8 +258,8 @@ class RemoveLocalStorageTester {
     auto serialized_origin =
         leveldb::StdStringToUint8Vector(origin.Serialize());
     std::vector<uint8_t> key;
-    key.reserve(arraysize(kMetaPrefix) + serialized_origin.size());
-    key.insert(key.end(), kMetaPrefix, kMetaPrefix + arraysize(kMetaPrefix));
+    key.reserve(base::size(kMetaPrefix) + serialized_origin.size());
+    key.insert(key.end(), kMetaPrefix, kMetaPrefix + base::size(kMetaPrefix));
     key.insert(key.end(), serialized_origin.begin(), serialized_origin.end());
     return key;
   }
@@ -310,9 +314,17 @@ class RemoveCodeCacheTester {
     GetCache(cache)->WriteData(url, origin_lock, base::Time::Now(),
                                data_vector);
     base::RunLoop().RunUntilIdle();
-    // TODO(crbug.com/886892): Remove this once we update GeneratedCodeCache
-    // to serialize operations corresponding to each entry.
-    content::RunAllTasksUntilIdle();
+  }
+
+  void SetLastUseTime(Cache cache,
+                      GURL url,
+                      GURL origin_lock,
+                      base::Time time) {
+    GetCache(cache)->SetLastUsedTimeForTest(
+        url, origin_lock, time,
+        base::BindRepeating(&RemoveCodeCacheTester::SetTimeCallback,
+                            base::Unretained(this)));
+    await_completion_.BlockUntilNotified();
   }
 
   std::string received_data() { return received_data_; }
@@ -335,6 +347,8 @@ class RemoveCodeCacheTester {
     }
     await_completion_.Notify();
   }
+
+  void SetTimeCallback() { await_completion_.Notify(); }
 
   bool entry_exists_;
   AwaitCompletionHelper await_completion_;
@@ -562,28 +576,28 @@ class RemovePluginPrivateDataTester {
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 bool IsWebSafeSchemeForTest(const std::string& scheme) {
-  return scheme == "http";
+  return scheme == url::kHttpScheme;
 }
 
 bool DoesOriginMatchForUnprotectedWeb(
-    const GURL& origin,
+    const url::Origin& origin,
     storage::SpecialStoragePolicy* special_storage_policy) {
   if (IsWebSafeSchemeForTest(origin.scheme()))
-    return !special_storage_policy->IsStorageProtected(origin.GetOrigin());
+    return !special_storage_policy->IsStorageProtected(origin.GetURL());
 
   return false;
 }
 
 bool DoesOriginMatchForBothProtectedAndUnprotectedWeb(
-    const GURL& origin,
+    const url::Origin& origin,
     storage::SpecialStoragePolicy* special_storage_policy) {
   return true;
 }
 
 bool DoesOriginMatchUnprotected(
-    const GURL& origin,
+    const url::Origin& origin,
     storage::SpecialStoragePolicy* special_storage_policy) {
-  return origin.GetOrigin().scheme() != kOriginDevTools.scheme();
+  return origin.scheme() != kOriginDevTools.scheme();
 }
 
 void ClearQuotaData(content::StoragePartition* partition,
@@ -671,8 +685,18 @@ void ClearData(content::StoragePartition* partition,
 }
 
 void ClearCodeCache(content::StoragePartition* partition,
+                    base::Time begin_time,
+                    base::Time end_time,
+                    base::RepeatingCallback<bool(const GURL&)> url_predicate,
                     base::RunLoop* run_loop) {
-  partition->ClearCodeCaches(run_loop->QuitClosure());
+  partition->ClearCodeCaches(begin_time, end_time, url_predicate,
+                             run_loop->QuitClosure());
+}
+
+bool FilterURL(const GURL& url) {
+  if (url == kFilterResourceURLForCodeCache)
+    return true;
+  return false;
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1313,11 +1337,107 @@ TEST_F(StoragePartitionImplTest, ClearCodeCache) {
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearCodeCache, partition, &run_loop));
+      FROM_HERE,
+      base::BindOnce(&ClearCodeCache, partition, base::Time(), base::Time(),
+                     base::RepeatingCallback<bool(const GURL&)>(), &run_loop));
   run_loop.Run();
 
   EXPECT_FALSE(
       tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
+
+  // Make sure there isn't a second invalid callback sitting in the queue.
+  // (this used to be a bug).
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(StoragePartitionImplTest, ClearCodeCacheSpecificURL) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(net::features::kIsolatedCodeCache);
+  ASSERT_TRUE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  // Ensure code cache is initialized.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(partition->GetGeneratedCodeCacheContext() != nullptr);
+
+  RemoveCodeCacheTester tester(partition->GetGeneratedCodeCacheContext());
+
+  GURL origin = GURL(kTestOrigin1);
+  std::string data("SomeData");
+  tester.AddEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin, data);
+  tester.AddEntry(RemoveCodeCacheTester::kJs, kFilterResourceURLForCodeCache,
+                  origin, data);
+  EXPECT_TRUE(
+      tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
+  EXPECT_TRUE(tester.ContainsEntry(RemoveCodeCacheTester::kJs,
+                                   kFilterResourceURLForCodeCache, origin));
+  EXPECT_EQ(tester.received_data(), data);
+
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ClearCodeCache, partition, base::Time(), base::Time(),
+                     base::BindRepeating(&FilterURL), &run_loop));
+  run_loop.Run();
+
+  EXPECT_TRUE(
+      tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
+  EXPECT_FALSE(tester.ContainsEntry(RemoveCodeCacheTester::kJs,
+                                    kFilterResourceURLForCodeCache, origin));
+
+  // Make sure there isn't a second invalid callback sitting in the queue.
+  // (this used to be a bug).
+  base::RunLoop().RunUntilIdle();
+}
+
+// TODO(https://crbug.com/925957): Flakes, especially under Fuchsia.
+TEST_F(StoragePartitionImplTest, DISABLED_ClearCodeCacheDateRange) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(net::features::kIsolatedCodeCache);
+  ASSERT_TRUE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  // Ensure code cache is initialized.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(partition->GetGeneratedCodeCacheContext() != nullptr);
+
+  RemoveCodeCacheTester tester(partition->GetGeneratedCodeCacheContext());
+
+  base::Time current_time = base::Time::NowFromSystemTime();
+  base::Time out_of_range_time = current_time - base::TimeDelta::FromHours(3);
+  base::Time begin_time = current_time - base::TimeDelta::FromHours(2);
+  base::Time in_range_time = current_time - base::TimeDelta::FromHours(1);
+
+  GURL origin = GURL(kTestOrigin1);
+  std::string data("SomeData");
+  tester.AddEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin, data);
+  EXPECT_TRUE(
+      tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
+  EXPECT_EQ(tester.received_data(), data);
+  tester.SetLastUseTime(RemoveCodeCacheTester::kJs, kResourceURL, origin,
+                        out_of_range_time);
+
+  // Add a new entry.
+  tester.AddEntry(RemoveCodeCacheTester::kJs, kFilterResourceURLForCodeCache,
+                  origin, data);
+  EXPECT_TRUE(tester.ContainsEntry(RemoveCodeCacheTester::kJs,
+                                   kFilterResourceURLForCodeCache, origin));
+  tester.SetLastUseTime(RemoveCodeCacheTester::kJs, kResourceURL, origin,
+                        in_range_time);
+
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ClearCodeCache, partition, begin_time, current_time,
+                     base::BindRepeating(&FilterURL), &run_loop));
+  run_loop.Run();
+
+  EXPECT_TRUE(
+      tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
+  EXPECT_FALSE(tester.ContainsEntry(RemoveCodeCacheTester::kJs,
+                                    kFilterResourceURLForCodeCache, origin));
 
   // Make sure there isn't a second invalid callback sitting in the queue.
   // (this used to be a bug).
@@ -1351,7 +1471,9 @@ TEST_F(StoragePartitionImplTest, ClearWasmCodeCache) {
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearCodeCache, partition, &run_loop));
+      FROM_HERE,
+      base::BindOnce(&ClearCodeCache, partition, base::Time(), base::Time(),
+                     base::RepeatingCallback<bool(const GURL&)>(), &run_loop));
   run_loop.Run();
 
   EXPECT_FALSE(tester.ContainsEntry(RemoveCodeCacheTester::kWebAssembly,
@@ -1377,7 +1499,9 @@ TEST_F(StoragePartitionImplTest, ClearCodeCacheNoIsolatedCodeCache) {
   base::RunLoop run_loop;
   // This shouldn't crash.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearCodeCache, partition, &run_loop));
+      FROM_HERE,
+      base::BindOnce(&ClearCodeCache, partition, base::Time(), base::Time(),
+                     base::RepeatingCallback<bool(const GURL&)>(), &run_loop));
   run_loop.Run();
 }
 
@@ -1397,7 +1521,9 @@ TEST_F(StoragePartitionImplTest, ClearCodeCacheIncognito) {
   base::RunLoop run_loop;
   // This shouldn't crash.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearCodeCache, partition, &run_loop));
+      FROM_HERE,
+      base::BindOnce(&ClearCodeCache, partition, base::Time(), base::Time(),
+                     base::RepeatingCallback<bool(const GURL&)>(), &run_loop));
   run_loop.Run();
 }
 
@@ -1477,8 +1603,8 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataWhileWriting) {
   const char test_data[] = {0, 1, 2, 3, 4, 5};
   base::File file = tester.OpenClearKeyFileForWrite();
   EXPECT_TRUE(file.IsValid());
-  EXPECT_EQ(static_cast<int>(arraysize(test_data)),
-            file.Write(0, test_data, arraysize(test_data)));
+  EXPECT_EQ(static_cast<int>(base::size(test_data)),
+            file.Write(0, test_data, base::size(test_data)));
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1490,8 +1616,8 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataWhileWriting) {
   EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin2));
 
   const char more_data[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  EXPECT_EQ(static_cast<int>(arraysize(more_data)),
-            file.WriteAtCurrentPos(more_data, arraysize(more_data)));
+  EXPECT_EQ(static_cast<int>(base::size(more_data)),
+            file.WriteAtCurrentPos(more_data, base::size(more_data)));
 
   base::File file2 = tester.OpenClearKeyFileForWrite();
   EXPECT_FALSE(file2.IsValid());

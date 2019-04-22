@@ -28,7 +28,6 @@ class Value;
 namespace chromeos {
 
 class DeviceSettingsService;
-class StubCrosSettingsProvider;
 
 // This class manages per-device/global settings.
 class CrosSettings {
@@ -39,11 +38,21 @@ class CrosSettings {
   static void Shutdown();
   static CrosSettings* Get();
 
+  // Sets the singleton to |test_instance|. Does not take ownership of the
+  // instance. Should be matched with a call to |ShutdownForTesting| once the
+  // test is finished and before the instance is deleted.
+  static void SetForTesting(CrosSettings* test_instance);
+  static void ShutdownForTesting();
+
   // Checks if the given username is whitelisted and allowed to sign-in to
   // this device. |wildcard_match| may be NULL. If it's present, it'll be set to
   // true if the whitelist check was satisfied via a wildcard.
   bool IsUserWhitelisted(const std::string& username,
                          bool* wildcard_match) const;
+
+  // Creates an instance with no providers as yet. This is meant for unit tests,
+  // production code uses the singleton returned by Get() above.
+  CrosSettings();
 
   // Creates a device settings service instance. This is meant for unit tests,
   // production code uses the singleton returned by Get() above.
@@ -53,9 +62,6 @@ class CrosSettings {
 
   // Helper function to test if the given |path| is a valid cros setting.
   static bool IsCrosSettings(const std::string& path);
-
-  // Sets |in_value| to given |path| in cros settings.
-  void Set(const std::string& path, const base::Value& in_value);
 
   // Returns setting value for the given |path|.
   const base::Value* GetPref(const std::string& path) const;
@@ -75,21 +81,6 @@ class CrosSettings {
   //   whether all providers are serving trusted values now.
   virtual CrosSettingsProvider::TrustedStatus PrepareTrustedValues(
       const base::Closure& callback) const;
-
-  // Convenience forms of Set().  These methods will replace any existing
-  // value at that |path|, even if it has a different type.
-  void SetBoolean(const std::string& path, bool in_value);
-  void SetInteger(const std::string& path, int in_value);
-  void SetDouble(const std::string& path, double in_value);
-  void SetString(const std::string& path, const std::string& in_value);
-
-  // Convenience functions for manipulating lists. Note that the following
-  // functions employs a read, modify and write pattern. If underlying settings
-  // provider updates its value asynchronously such as DeviceSettingsProvider,
-  // value cache they read from might not be fresh and multiple calls to those
-  // function would lose data. See http://crbug.com/127215
-  void AppendToList(const std::string& path, const base::Value* value);
-  void RemoveFromList(const std::string& path, const base::Value* value);
 
   // These are convenience forms of Get().  The value will be retrieved
   // and the return value will be true if the |path| is valid and the value at
@@ -130,12 +121,6 @@ class CrosSettings {
   // Returns the provider that handles settings with the |path| or prefix.
   CrosSettingsProvider* GetProvider(const std::string& path) const;
 
-  // Returns the StubCrosSettingsProvider. Returns |nullptr| unless the
-  // kStubCrosSettings switch is set, which is only true during testing.
-  StubCrosSettingsProvider* stubbed_provider_for_test() const {
-    return stubbed_provider_ptr_;
-  }
-
  private:
   friend class CrosSettingsTest;
 
@@ -144,9 +129,6 @@ class CrosSettings {
 
   // List of ChromeOS system settings providers.
   std::vector<std::unique_ptr<CrosSettingsProvider>> providers_;
-
-  // A stubbed provider - only used if the kStubCrosSettings switch is set.
-  StubCrosSettingsProvider* stubbed_provider_ptr_ = nullptr;
 
   // A map from settings names to a list of observers. Observers get fired in
   // the order they are added.

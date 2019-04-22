@@ -6,16 +6,20 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/base/ime/dummy_input_method.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
+#include "ui/keyboard/test/test_keyboard_controller_observer.h"
+#include "ui/keyboard/test/test_keyboard_layout_delegate.h"
+#include "ui/keyboard/test/test_keyboard_ui_factory.h"
 
 namespace keyboard {
 namespace {
 
-class KeyboardUtilTest : public testing::Test {
+class KeyboardUtilTest : public aura::test::AuraTestBase {
  public:
   KeyboardUtilTest() {}
   ~KeyboardUtilTest() override {}
@@ -51,7 +55,23 @@ class KeyboardUtilTest : public testing::Test {
     ClearEnableFlag(mojom::KeyboardEnableFlag::kExtensionEnabled);
   }
 
-  void SetUp() override { ResetAllFlags(); }
+  void SetUp() override {
+    aura::test::AuraTestBase::SetUp();
+
+    layout_delegate_ =
+        std::make_unique<TestKeyboardLayoutDelegate>(root_window());
+    keyboard_controller_.Initialize(
+        std::make_unique<TestKeyboardUIFactory>(&input_method_),
+        layout_delegate_.get());
+
+    ResetAllFlags();
+  }
+
+  void TearDown() override {
+    ResetAllFlags();
+
+    aura::test::AuraTestBase::TearDown();
+  }
 
  protected:
   void SetEnableFlag(mojom::KeyboardEnableFlag flag) {
@@ -64,6 +84,8 @@ class KeyboardUtilTest : public testing::Test {
 
   // Used indirectly by keyboard utils.
   KeyboardController keyboard_controller_;
+  ui::DummyInputMethod input_method_;
+  std::unique_ptr<TestKeyboardLayoutDelegate> layout_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyboardUtilTest);
@@ -166,19 +188,37 @@ TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
   keyboard_controller_.UpdateKeyboardConfig(config);
   EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
+  // Set default overscroll flag.
   config.overscroll_behavior =
       keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
   keyboard_controller_.UpdateKeyboardConfig(config);
   EXPECT_TRUE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
   // Set keyboard_locked() to true.
-  ui::DummyInputMethod input_method;
-  keyboard_controller_.EnableKeyboard(
-      std::make_unique<TestKeyboardUI>(&input_method), nullptr);
   keyboard_controller_.set_keyboard_locked(true);
   EXPECT_TRUE(keyboard_controller_.keyboard_locked());
   EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
-  keyboard_controller_.DisableKeyboard();
+}
+
+// See https://crbug.com/946358.
+TEST_F(KeyboardUtilTest, RebuildsWhenChangingAccessibilityFlag) {
+  // Virtual keyboard enabled with compact layout.
+  keyboard::SetTouchKeyboardEnabled(true);
+
+  keyboard::TestKeyboardControllerObserver observer;
+  keyboard_controller_.AddObserver(&observer);
+
+  // Virtual keyboard should rebuild to switch to a11y layout.
+  keyboard::SetAccessibilityKeyboardEnabled(true);
+  EXPECT_EQ(1, observer.disabled_count);
+  EXPECT_EQ(1, observer.enabled_count);
+
+  // Virtual keyboard should rebuild to switch back to compact layout.
+  keyboard::SetAccessibilityKeyboardEnabled(false);
+  EXPECT_EQ(2, observer.disabled_count);
+  EXPECT_EQ(2, observer.enabled_count);
+
+  keyboard_controller_.RemoveObserver(&observer);
 }
 
 }  // namespace keyboard

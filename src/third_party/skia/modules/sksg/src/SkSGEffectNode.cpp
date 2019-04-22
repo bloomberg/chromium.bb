@@ -9,8 +9,9 @@
 
 namespace sksg {
 
-EffectNode::EffectNode(sk_sp<RenderNode> child)
-    : fChild(std::move(child)) {
+EffectNode::EffectNode(sk_sp<RenderNode> child, uint32_t inval_traits)
+    : INHERITED(inval_traits)
+    , fChild(std::move(child)) {
     this->observeInval(fChild);
 }
 
@@ -20,6 +21,10 @@ EffectNode::~EffectNode() {
 
 void EffectNode::onRender(SkCanvas* canvas, const RenderContext* ctx) const {
     fChild->render(canvas, ctx);
+}
+
+const RenderNode* EffectNode::onNodeAt(const SkPoint& p) const {
+    return fChild->nodeAt(p);
 }
 
 SkRect EffectNode::onRevalidate(InvalidationController* ic, const SkMatrix& ctm) {

@@ -7,7 +7,7 @@
  * @enum {string}
  * @const
  */
-var ProgressCenterEvent = {
+const ProgressCenterEvent = {
   /**
    * Background page notifies item update to application windows.
    */
@@ -25,7 +25,7 @@ Object.freeze(ProgressCenterEvent);
  * @enum {string}
  * @const
  */
-var ProgressItemState = {
+const ProgressItemState = {
   PROGRESSING: 'progressing',
   COMPLETED: 'completed',
   ERROR: 'error',
@@ -38,7 +38,7 @@ Object.freeze(ProgressItemState);
  * @enum {string}
  * @const
  */
-var ProgressItemType = {
+const ProgressItemType = {
   // The item is file copy operation.
   COPY: 'copy',
   // The item is file move operation.
@@ -60,7 +60,7 @@ Object.freeze(ProgressItemType);
  * @constructor
  * @struct
  */
-var ProgressCenterItem = function() {
+const ProgressCenterItem = function() {
   /**
    * Item ID.
    * @type {?string}
@@ -124,10 +124,11 @@ ProgressCenterItem.prototype = /** @struct */ {
    * @param {string} value New value of ID.
    */
   set id(value) {
-    if (!this.id_)
+    if (!this.id_) {
       this.id_ = value;
-    else
+    } else {
       console.error('The ID is already set. (current ID: ' + this.id_ + ')');
+    }
   },
 
   /**
@@ -148,9 +149,12 @@ ProgressCenterItem.prototype = /** @struct */ {
    */
   get progressRateInPercent() {
     switch (this.state) {
-      case ProgressItemState.CANCELED: return 0;
-      case ProgressItemState.COMPLETED: return 100;
-      default: return ~~(100 * this.progressValue / this.progressMax);
+      case ProgressItemState.CANCELED:
+        return 0;
+      case ProgressItemState.COMPLETED:
+        return 100;
+      default:
+        return ~~(100 * this.progressValue / this.progressMax);
     }
   },
 
@@ -159,9 +163,9 @@ ProgressCenterItem.prototype = /** @struct */ {
    * @return {boolean} True if the item can be canceled.
    */
   get cancelable() {
-    return !!(this.state == ProgressItemState.PROGRESSING &&
-              this.cancelCallback &&
-              this.single);
+    return !!(
+        this.state == ProgressItemState.PROGRESSING && this.cancelCallback &&
+        this.single);
   }
 };
 
@@ -170,7 +174,7 @@ ProgressCenterItem.prototype = /** @struct */ {
  * @return {ProgressCenterItem} New item having the same properties with this.
  */
 ProgressCenterItem.prototype.clone = function() {
-  var newItem = new ProgressCenterItem();
+  const newItem = new ProgressCenterItem();
   newItem.id = this.id;
   newItem.state = this.state;
   newItem.message = this.message;

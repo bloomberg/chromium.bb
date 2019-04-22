@@ -52,6 +52,9 @@
 /* Define to 1 if you target processors with SSSE3+ and have <tmmintrin.h>. */
 #define SNAPPY_HAVE_SSSE3 0
 
+/* Define to 1 if you target processors with BMI2+ and have <bmi2intrin.h>. */
+#define SNAPPY_HAVE_BMI2 0
+
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
 /* #undef SNAPPY_IS_BIG_ENDIAN */

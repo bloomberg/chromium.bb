@@ -16,6 +16,11 @@ tr.exportTo('tr.v.d', function() {
     constructor(opt_info) {
       super();
       this.map_ = new Map();
+      if (opt_info) {
+        for (const [key, name] of Object.entries(opt_info)) {
+          this.set(key, name);
+        }
+      }
     }
 
     clone() {
@@ -54,6 +59,15 @@ tr.exportTo('tr.v.d', function() {
       }
     }
 
+    serialize(serializer) {
+      const keys = [...this.map_.keys()];
+      keys.sort();
+      const names = keys.map(k => serializer.getOrAllocateId(this.get(k)));
+      const keysId = serializer.getOrAllocateId(keys.map(k =>
+        serializer.getOrAllocateId(k)));
+      return [keysId, ...names];
+    }
+
     asDictInto_(d) {
       d.names = {};
       for (const [key, name] of this) d.names[key] = name;
@@ -79,6 +93,17 @@ tr.exportTo('tr.v.d', function() {
       const names = new RelatedNameMap();
       for (const [key, name] of entries) {
         names.set(key, name);
+      }
+      return names;
+    }
+
+    static deserialize(data, deserializer) {
+      const names = new RelatedNameMap();
+      const keys = deserializer.getObject(data[0]);
+      for (let i = 0; i < keys.length; ++i) {
+        names.set(
+            deserializer.getObject(keys[i]),
+            deserializer.getObject(data[i + 1]));
       }
       return names;
     }

@@ -30,7 +30,6 @@ namespace content {
 
 class ControllerServiceWorkerConnector;
 
-// S13nServiceWorker:
 // A custom URLLoader implementation used by Service Worker controllees
 // for loading subresources via the controller Service Worker.
 // Currently an instance of this class is created and used only on
@@ -106,11 +105,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream);
 
   // network::mojom::URLLoader overrides:
-  void FollowRedirect(
-      const base::Optional<std::vector<std::string>>&
-          to_be_removed_request_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
-      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      const base::Optional<GURL>& new_url) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
@@ -193,13 +190,13 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   blink::mojom::ServiceWorkerFetchEventTimingPtr fetch_event_timing_;
+  network::mojom::FetchResponseSource response_source_;
 
   base::WeakPtrFactory<ServiceWorkerSubresourceLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoader);
 };
 
-// S13nServiceWorker:
 // A custom URLLoaderFactory implementation used by Service Worker controllees
 // for loading subresources via the controller Service Worker.
 // Self destroys when no more bindings exist.

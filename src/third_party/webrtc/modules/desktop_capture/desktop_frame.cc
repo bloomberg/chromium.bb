@@ -10,11 +10,11 @@
 
 #include "modules/desktop_capture/desktop_frame.h"
 
+#include <string.h>
 #include <utility>
 
-#include <string.h>
-
 #include "absl/memory/memory.h"
+#include "modules/desktop_capture/desktop_capture_types.h"
 #include "modules/desktop_capture/desktop_geometry.h"
 #include "rtc_base/checks.h"
 
@@ -69,8 +69,13 @@ DesktopRect DesktopFrame::rect() const {
 
 float DesktopFrame::scale_factor() const {
   float scale = 1.0f;
+
+#if defined(WEBRTC_MAC)
+  // At least on Windows the logical and physical pixel are the same
+  // See http://crbug.com/948362.
   if (!dpi().is_zero() && dpi().x() == dpi().y())
     scale = dpi().x() / kStandardDPI;
+#endif
 
   return scale;
 }

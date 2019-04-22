@@ -56,7 +56,8 @@ class StructureUnittest(unittest.TestCase):
     grd.RunGatherers()
     node, = grd.GetChildrenOfType(structure.StructureNode)
     filename = node.Process(tempfile.gettempdir())
-    with open(os.path.join(tempfile.gettempdir(), filename)) as f:
+    filepath = os.path.join(tempfile.gettempdir(), filename)
+    with open(filepath) as f:
       result = f.read()
       self.failUnlessEqual(('<h1>Hello!</h1>\n'
                             'Some cool things are foo, bar, baz.\n'
@@ -64,6 +65,7 @@ class StructureUnittest(unittest.TestCase):
                             '<p>\n'
                             '  Hello!\n'
                             '</p>\n'), result)
+    os.remove(filepath)
 
   def testCompressGzip(self):
     test_data_root = util.PathFromRoot('grit/testdata')

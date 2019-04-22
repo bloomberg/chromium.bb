@@ -77,7 +77,7 @@ class SpotlightBookmarkModelBridge;
 class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
  public:
   explicit SpotlightBookmarkModelBridge(BookmarksSpotlightManager* owner)
-      : owner_(owner){};
+      : owner_(owner) {}
 
   ~SpotlightBookmarkModelBridge() override {}
 
@@ -96,7 +96,7 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override {
     [owner_ detachBookmarkModel];
-  };
+  }
 
   void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
                            bool ids_reassigned) override {
@@ -141,7 +141,7 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                          const bookmarks::BookmarkNode* new_parent,
                          int new_index) override {
     [owner_ refreshNodeInIndex:new_parent->GetChild(new_index) initial:NO];
-  };
+  }
 
  private:
   __weak BookmarksSpotlightManager* owner_;

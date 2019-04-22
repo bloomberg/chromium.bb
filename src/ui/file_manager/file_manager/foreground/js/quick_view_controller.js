@@ -103,14 +103,16 @@ function QuickViewController(
       this.onFileSelectionChanged_.bind(this));
   this.listContainer_.element.addEventListener(
       'keydown', this.onKeyDownToOpen_.bind(this));
-  this.listContainer_.element.addEventListener('command', function(event) {
-    if (event.command.id === 'get-info')
+  this.listContainer_.element.addEventListener('command', event => {
+    if (event.command.id === 'get-info') {
       this.display_(QuickViewUma.WayToOpen.CONTEXT_MENU);
-  }.bind(this));
-  selectionMenuButton.addEventListener('command', function(event) {
-    if (event.command.id === 'get-info')
+    }
+  });
+  selectionMenuButton.addEventListener('command', event => {
+    if (event.command.id === 'get-info') {
       this.display_(QuickViewUma.WayToOpen.SELECTION_MENU);
-  }.bind(this));
+    }
+  });
 }
 
 /**
@@ -136,6 +138,7 @@ QuickViewController.LOCAL_VOLUME_TYPES_ = [
   VolumeManagerCommon.VolumeType.ANDROID_FILES,
   VolumeManagerCommon.VolumeType.CROSTINI,
   VolumeManagerCommon.VolumeType.MEDIA_VIEW,
+  VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER,
 ];
 
 /**
@@ -158,13 +161,14 @@ QuickViewController.prototype.init_ = function(quickView) {
   this.metadataBoxController_.init(quickView);
   document.body.addEventListener(
       'keydown', this.onQuickViewKeyDown_.bind(this));
-  quickView.addEventListener('close', function() {
+  quickView.addEventListener('close', () => {
     this.listContainer_.focus();
-  }.bind(this));
+  });
   quickView.onOpenInNewButtonTap = this.onOpenInNewButtonTap_.bind(this);
 
-  var toolTip = this.quickView_.$$('files-tooltip');
-  var elems = this.quickView_.$$('#toolbar').querySelectorAll('[has-tooltip]');
+  const toolTip = this.quickView_.$$('files-tooltip');
+  const elems =
+      this.quickView_.$$('#toolbar').querySelectorAll('[has-tooltip]');
   toolTip.addTargets(elems);
 };
 
@@ -173,11 +177,10 @@ QuickViewController.prototype.init_ = function(quickView) {
  * @return Promise<!FilesQuickView>
  * @private
  */
-QuickViewController.prototype.createQuickView_ = function() {
-  return new Promise(function(resolve, reject) {
-    Polymer.Base.importHref(constants.FILES_QUICK_VIEW_HTML, function() {
-      var quickView = document.querySelector('#quick-view');
-      i18nTemplate.process(quickView, loadTimeData);
+QuickViewController.prototype.createQuickView_ = () => {
+  return new Promise((resolve, reject) => {
+    Polymer.Base.importHref(constants.FILES_QUICK_VIEW_HTML, () => {
+      const quickView = document.querySelector('#quick-view');
       resolve(quickView);
     }, reject);
   });
@@ -219,6 +222,7 @@ QuickViewController.prototype.onKeyDownToOpen_ = function(event) {
  */
 QuickViewController.prototype.onQuickViewKeyDown_ = function(event) {
   if (this.quickView_.isOpened()) {
+    let index;
     switch (event.key) {
       case ' ':
       case 'Escape':
@@ -229,16 +233,18 @@ QuickViewController.prototype.onQuickViewKeyDown_ = function(event) {
         break;
       case 'ArrowRight':
       case 'ArrowDown':
-        var index = this.fileListSelectionModel_.selectedIndex + 1;
-        if (index >= this.fileListSelectionModel_.length)
+        index = this.fileListSelectionModel_.selectedIndex + 1;
+        if (index >= this.fileListSelectionModel_.length) {
           index = 0;
+        }
         this.fileListSelectionModel_.selectedIndex = index;
         break;
       case 'ArrowLeft':
       case 'ArrowUp':
-        var index = this.fileListSelectionModel_.selectedIndex - 1;
-        if (index < 0)
+        index = this.fileListSelectionModel_.selectedIndex - 1;
+        if (index < 0) {
           index = this.fileListSelectionModel_.length - 1;
+        }
         this.fileListSelectionModel_.selectedIndex = index;
         break;
     }
@@ -253,12 +259,12 @@ QuickViewController.prototype.onQuickViewKeyDown_ = function(event) {
  * @private
  */
 QuickViewController.prototype.display_ = function(opt_wayToOpen) {
-  this.updateQuickView_().then(function() {
+  this.updateQuickView_().then(() => {
     if (!this.quickView_.isOpened()) {
       this.quickView_.open();
       this.quickViewUma_.onOpened(this.entries_[0], assert(opt_wayToOpen));
     }
-  }.bind(this));
+  });
 };
 
 /**
@@ -271,7 +277,7 @@ QuickViewController.prototype.onFileSelectionChanged_ = function(event) {
   this.entries_ = event.target.selection.entries;
   if (this.quickView_ && this.quickView_.isOpened()) {
     assert(this.entries_.length > 0);
-    var entry = this.entries_[0];
+    const entry = this.entries_[0];
     if (util.isSameEntry(entry, this.quickViewModel_.getSelectedEntry())) {
       return;
     }
@@ -286,7 +292,7 @@ QuickViewController.prototype.onFileSelectionChanged_ = function(event) {
  * @private
  */
 QuickViewController.prototype.getAvailableTasks_ = function(entry) {
-  return this.taskController_.getFileTasks().then(function(tasks) {
+  return this.taskController_.getFileTasks().then(tasks => {
     return tasks.getTaskItems();
   });
 };
@@ -308,21 +314,21 @@ QuickViewController.prototype.updateQuickView_ = function() {
   // TODO(oka): Support multi-selection.
   this.quickViewModel_.setSelectedEntry(this.entries_[0]);
 
-  var entry =
+  const entry =
       (/** @type {!FileEntry} */ (this.quickViewModel_.getSelectedEntry()));
   assert(entry);
   this.quickViewUma_.onEntryChanged(entry);
   return Promise
       .all([
-        this.metadataModel_.get([entry], ['thumbnailUrl']),
+        this.metadataModel_.get([entry], ['thumbnailUrl', 'mediaMimeType']),
         this.getAvailableTasks_(entry)
       ])
-      .then(function(values) {
-        var items = (/**@type{Array<MetadataItem>}*/ (values[0]));
-        var tasks = (/**@type{!Array<!chrome.fileManagerPrivate.FileTask>}*/ (
+      .then(values => {
+        const items = (/**@type{Array<MetadataItem>}*/ (values[0]));
+        const tasks = (/**@type{!Array<!chrome.fileManagerPrivate.FileTask>}*/ (
             values[1]));
         return this.onMetadataLoaded_(entry, items, tasks);
-      }.bind(this))
+      })
       .catch(console.error);
 };
 
@@ -336,18 +342,17 @@ QuickViewController.prototype.updateQuickView_ = function() {
  */
 QuickViewController.prototype.onMetadataLoaded_ = function(
     entry, items, tasks) {
-  return this.getQuickViewParameters_(entry, items, tasks)
-      .then(function(params) {
-        this.quickView_.type = params.type || '';
-        this.quickView_.subtype = params.subtype || '';
-        this.quickView_.filePath = params.filePath || '';
-        this.quickView_.hasTask = params.hasTask || false;
-        this.quickView_.contentUrl = params.contentUrl || '';
-        this.quickView_.videoPoster = params.videoPoster || '';
-        this.quickView_.audioArtwork = params.audioArtwork || '';
-        this.quickView_.autoplay = params.autoplay || false;
-        this.quickView_.browsable = params.browsable || false;
-      }.bind(this));
+  return this.getQuickViewParameters_(entry, items, tasks).then(params => {
+    this.quickView_.type = params.type || '';
+    this.quickView_.subtype = params.subtype || '';
+    this.quickView_.filePath = params.filePath || '';
+    this.quickView_.hasTask = params.hasTask || false;
+    this.quickView_.contentUrl = params.contentUrl || '';
+    this.quickView_.videoPoster = params.videoPoster || '';
+    this.quickView_.audioArtwork = params.audioArtwork || '';
+    this.quickView_.autoplay = params.autoplay || false;
+    this.quickView_.browsable = params.browsable || false;
+  });
 };
 
 /**
@@ -362,7 +367,7 @@ QuickViewController.prototype.onMetadataLoaded_ = function(
  *   browsable: (boolean|undefined),
  * }}
  */
-var QuickViewParams;
+let QuickViewParams;
 
 /**
  * @param {!FileEntry} entry
@@ -374,43 +379,41 @@ var QuickViewParams;
  */
 QuickViewController.prototype.getQuickViewParameters_ = function(
     entry, items, tasks) {
-  var item = items[0];
-  var typeInfo = FileType.getType(entry);
-  var type = typeInfo.type;
+  const item = items[0];
+  const typeInfo = FileType.getType(entry, item.mediaMimeType);
+  const type = typeInfo.type;
 
   /** @type {!QuickViewParams} */
-  var params = {
+  const params = {
     type: type,
     subtype: typeInfo.subtype,
     filePath: entry.name,
     hasTask: tasks.length > 0,
   };
 
-  var volumeInfo = this.volumeManager_.getVolumeInfo(entry);
-  var localFile =
-      volumeInfo &&
-      QuickViewController.LOCAL_VOLUME_TYPES_.indexOf(
-          volumeInfo.volumeType) >= 0;
+  const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
+  const localFile = volumeInfo &&
+      QuickViewController.LOCAL_VOLUME_TYPES_.indexOf(volumeInfo.volumeType) >=
+          0;
 
   if (!localFile) {
     // For Drive files, display a thumbnail if there is one.
     if (item.thumbnailUrl) {
-      return this.loadThumbnailFromDrive_(item.thumbnailUrl)
-          .then(function(result) {
-            if (result.status === 'success') {
-              if (params.type == 'video') {
-                params.videoPoster = result.data;
-              } else if (params.type == 'image') {
-                params.contentUrl = result.data;
-              } else {
-                // TODO(sashab): Rather than re-use 'image', create a new type
-                // here, e.g. 'thumbnail'.
-                params.type = 'image';
-                params.contentUrl = result.data;
-              }
-            }
-            return params;
-          }.bind(this));
+      return this.loadThumbnailFromDrive_(item.thumbnailUrl).then(result => {
+        if (result.status === 'success') {
+          if (params.type == 'video') {
+            params.videoPoster = result.data;
+          } else if (params.type == 'image') {
+            params.contentUrl = result.data;
+          } else {
+            // TODO(sashab): Rather than re-use 'image', create a new type
+            // here, e.g. 'thumbnail'.
+            params.type = 'image';
+            params.contentUrl = result.data;
+          }
+        }
+        return params;
+      });
     }
 
     // We ask user to open it with external app.
@@ -420,10 +423,10 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
   if (type === '.folder') {
     return Promise.resolve(params);
   }
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
            entry.file(resolve, reject);
          })
-      .then(function(file) {
+      .then(file => {
         switch (type) {
           case 'image':
             if (QuickViewController.UNSUPPORTED_IMAGE_SUBTYPES_.indexOf(
@@ -444,8 +447,8 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
             params.contentUrl = URL.createObjectURL(file);
             params.autoplay = true;
             return this.metadataModel_.get([entry], ['contentThumbnailUrl'])
-                .then(function(items) {
-                  var item = items[0];
+                .then(items => {
+                  const item = items[0];
                   if (item.contentThumbnailUrl) {
                     params.audioArtwork = item.contentThumbnailUrl;
                   }
@@ -458,18 +461,27 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
             } else {
               break;
             }
+          case 'text':
+            if (typeInfo.subtype === 'TXT') {
+              params.contentUrl = URL.createObjectURL(file);
+              params.browsable = true;
+              return params;
+            } else {
+              break;
+            }
         }
-        var browsable = tasks.some(function(task) {
+        const browsable = tasks.some(task => {
           return ['view-in-browser', 'view-pdf'].includes(
               task.taskId.split('|')[2]);
         });
         params.browsable = browsable;
         params.contentUrl = browsable ? URL.createObjectURL(file) : '';
-        if (params.subtype == 'PDF')
+        if (params.subtype == 'PDF') {
           params.contentUrl += '#view=FitH';
+        }
         return params;
-      }.bind(this))
-      .catch(function(e) {
+      })
+      .catch(e => {
         console.error(e);
         return params;
       });
@@ -482,8 +494,8 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
  * @return Promise<{{status: string, data:string, width:number, height:number}}>
  * @private
  */
-QuickViewController.prototype.loadThumbnailFromDrive_ = function(url) {
-  return new Promise(function(resolve) {
+QuickViewController.prototype.loadThumbnailFromDrive_ = url => {
+  return new Promise(resolve => {
     ImageLoaderClient.getInstance().load(
         LoadImageRequest.createForUrl(url), resolve);
   });

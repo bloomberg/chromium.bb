@@ -9,12 +9,6 @@
 #include "fxjs/xfa/cjx_model.h"
 #include "third_party/base/ptr_util.h"
 
-namespace {
-
-constexpr wchar_t kConnectionSetName[] = L"connectionSet";
-
-}  // namespace
-
 CXFA_ConnectionSet::CXFA_ConnectionSet(CXFA_Document* doc,
                                        XFA_PacketType packet)
     : CXFA_Node(doc,
@@ -22,9 +16,8 @@ CXFA_ConnectionSet::CXFA_ConnectionSet(CXFA_Document* doc,
                 XFA_XDPPACKET_ConnectionSet,
                 XFA_ObjectType::ModelNode,
                 XFA_Element::ConnectionSet,
-                nullptr,
-                nullptr,
-                kConnectionSetName,
+                {},
+                {},
                 pdfium::MakeUnique<CJX_Model>(this)) {}
 
-CXFA_ConnectionSet::~CXFA_ConnectionSet() {}
+CXFA_ConnectionSet::~CXFA_ConnectionSet() = default;

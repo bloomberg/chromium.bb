@@ -4,6 +4,7 @@
 
 #include "components/browsing_data/core/counters/bookmark_counter.h"
 
+#include "base/bind.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -41,7 +42,7 @@ class BookmarkModelHelper : public bookmarks::BaseBookmarkModelObserver {
                            bool ids_reassigned) override {
     std::move(callback_).Run(model);
     delete this;
-  };
+  }
 
   void BookmarkModelBeingDeleted(
       bookmarks::BookmarkModel* bookmark_model) override {

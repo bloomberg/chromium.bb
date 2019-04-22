@@ -4,6 +4,8 @@
 
 #include "remoting/client/audio/audio_playback_stream.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "remoting/client/audio/audio_jitter_buffer.h"
 #include "remoting/client/audio/audio_playback_sink.h"
@@ -64,13 +66,13 @@ AudioPlaybackStream::~AudioPlaybackStream() {
 
 void AudioPlaybackStream::ProcessAudioPacket(
     std::unique_ptr<AudioPacket> packet,
-    const base::RepeatingClosure& done) {
+    base::OnceClosure done) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   audio_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&Core::AddAudioPacket, base::Unretained(core_.get()),
                      std::move(packet)),
-      done);
+      std::move(done));
 }
 
 }  // namespace remoting

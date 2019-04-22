@@ -14,15 +14,16 @@
 
 namespace ui {
 
+class ScenicSurfaceFactory;
+
 class VulkanImplementationScenic : public gpu::VulkanImplementation {
  public:
-  VulkanImplementationScenic(mojom::ScenicGpuHost* scenic_gpu_host,
-                             fuchsia::ui::scenic::Scenic* scenic);
+  VulkanImplementationScenic(ScenicSurfaceFactory* scenic_surface_factory);
   ~VulkanImplementationScenic() override;
 
   // VulkanImplementation:
-  bool InitializeVulkanInstance() override;
-  VkInstance GetVulkanInstance() override;
+  bool InitializeVulkanInstance(bool using_surface) override;
+  gpu::VulkanInstance* GetVulkanInstance() override;
   std::unique_ptr<gpu::VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window) override;
   bool GetPhysicalDevicePresentationSupport(
@@ -34,14 +35,19 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
   std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
       VkFence vk_fence) override;
+  VkSemaphore CreateExternalSemaphore(VkDevice vk_device) override;
+  VkSemaphore ImportSemaphoreHandle(VkDevice vk_device,
+                                    gpu::SemaphoreHandle handle) override;
+  gpu::SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
+                                          VkSemaphore vk_semaphore) override;
+  VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
 
  private:
-  mojom::ScenicGpuHost* const scenic_gpu_host_;
-  fuchsia::ui::scenic::Scenic* const scenic_;
+  ScenicSurfaceFactory* const scenic_surface_factory_;
   gpu::VulkanInstance vulkan_instance_;
 
-  PFN_vkVoidFunction vkCreateMagmaSurfaceKHR_ = nullptr;
-  PFN_vkVoidFunction vkGetPhysicalDeviceMagmaPresentationSupportKHR_ = nullptr;
+  PFN_vkCreateImagePipeSurfaceFUCHSIA vkCreateImagePipeSurfaceFUCHSIA_ =
+      nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementationScenic);
 };

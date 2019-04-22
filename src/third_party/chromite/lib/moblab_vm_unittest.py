@@ -20,6 +20,8 @@ from chromite.lib import osutils
 class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
   """Tests for MoablabVm class."""
 
+  _PORT = 937
+
   def setUp(self):
     # Mock out all file-system and KVM operations. Most of these are channeled
     # though a private helper function in moblab_vm which we mock. Where
@@ -36,14 +38,14 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
         moblab_vm, '_ConnectDeviceToBridge', autospec=True)
     self._mock_device_up = self.PatchObject(
         moblab_vm, '_DeviceUp', autospec=True)
-    self._mock_start_kvm = self.PatchObject(
-        moblab_vm, '_StartKvm', autospec=True)
+    self._mock_start_vm = self.PatchObject(
+        moblab_vm, '_StartVM', autospec=True)
     self._mock_remove_network_bridge = self.PatchObject(
         moblab_vm, '_RemoveNetworkBridgeIgnoringErrors', autospec=True)
     self._mock_remove_tap_device = self.PatchObject(
         moblab_vm, '_RemoveTapDeviceIgnoringErrors', autospec=True)
-    self._mock_stop_kvm = self.PatchObject(
-        moblab_vm, '_StopKvmIgnoringErrors', autospec=True)
+    self._mock_stop_vm = self.PatchObject(
+        moblab_vm, '_StopVM', autospec=True)
 
     self._mock_mount = self.PatchObject(osutils, 'MountDir', autospec=True)
     self._mock_umount = self.PatchObject(osutils, 'UmountDir', autospec=True)
@@ -79,12 +81,12 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     self.moblab_image_path = os.path.join(self.moblab_workdir_path,
                                           'chromiumos_qemu_image.bin')
     self.moblab_disk_path = os.path.join(self.moblab_workdir_path, 'disk')
-    self.moblab_kvm_pid_path = os.path.join(self.moblab_workdir_path, 'kvmpid')
+    self.moblab_ssh_port = self._PORT + 2
     self.dut_workdir_path = os.path.join(self.workspace,
                                          moblab_vm._WORKSPACE_DUT_DIR)
     self.dut_image_path = os.path.join(self.dut_workdir_path,
                                        'chromiumos_qemu_image.bin')
-    self.dut_kvm_pid_path = os.path.join(self.dut_workdir_path, 'kvmpid')
+    self.dut_ssh_port = self._PORT + 6
 
   def testInstanceInitialization(self):
     """Sanity check attributes before using the instance for anything."""
@@ -181,13 +183,10 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     expectations based on the arguments. DO NOT change the interactions with
     MolabVm.
     """
-    self._mock_try_create_bridge_device.return_value = (937, self.bridge_name)
+    self._mock_try_create_bridge_device.return_value = (self._PORT,
+                                                        self.bridge_name)
     self._mock_create_tap_device.side_effect = iter([self.moblab_tap_dev,
                                                      self.dut_tap_dev])
-    kvm_pids = [self.moblab_kvm_pid_path]
-    if with_dut:
-      kvm_pids.append(self.dut_kvm_pid_path)
-    self._mock_start_kvm.side_effect = iter(kvm_pids)
 
     # Create a new moblabvm instance. MoblabVm persists everything to disk an
     # must work seamlessly across instance discards.
@@ -211,24 +210,25 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
             mock.call('duttap', self.bridge_name),
         ])
 
-    kvm_calls = [mock.call(
-        self.moblab_workdir_path, self.moblab_image_path, mock.ANY,
-        self.moblab_tap_dev, mock.ANY, is_moblab=True, qemu_args=mock.ANY)]
+    vm_calls = [mock.call(
+        self.moblab_image_path, self._PORT + 2, self._PORT + 6,
+        self.moblab_tap_dev, mock.ANY, is_moblab=True,
+        disk_path=self.moblab_disk_path)]
     if with_dut:
-      kvm_calls.append(mock.call(
-          self.dut_workdir_path, self.dut_image_path, mock.ANY,
+      vm_calls.append(mock.call(
+          self.dut_image_path, self._PORT + 6, self._PORT + 7,
           self.dut_tap_dev, mock.ANY, is_moblab=False))
-    self.assertEqual(self._mock_start_kvm.call_args_list, kvm_calls)
+    self.assertEqual(self._mock_start_vm.call_args_list, vm_calls)
     if with_dut:
       # Different SSH ports are used for the two VMs
       self.assertNotEqual(
-          self._mock_start_kvm.call_args_list[0][0][2],
-          self._mock_start_kvm.call_args_list[1][0][2],
+          self._mock_start_vm.call_args_list[0][0][1],
+          self._mock_start_vm.call_args_list[1][0][1],
       )
       # Different MAC addresses are used for secondary networks of two VMs.
       self.assertNotEqual(
-          self._mock_start_kvm.call_args_list[0][0][4],
-          self._mock_start_kvm.call_args_list[1][0][4],
+          self._mock_start_vm.call_args_list[0][0][3],
+          self._mock_start_vm.call_args_list[1][0][3],
       )
 
   def testStopAfterStartUndoesEverythingInStackWithDut(self):
@@ -236,20 +236,19 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     self.testSuccessfulCreateWithDutDir()
 
     # Allow .Start to run, without expectation checking (done in other tests)
-    self._mock_try_create_bridge_device.return_value = (937, self.bridge_name)
+    self._mock_try_create_bridge_device.return_value = (self._PORT,
+                                                        self.bridge_name)
     self._mock_create_tap_device.side_effect = iter([self.moblab_tap_dev,
                                                      self.dut_tap_dev])
-    self._mock_start_kvm.side_effect = iter([self.moblab_kvm_pid_path,
-                                             self.dut_kvm_pid_path])
     vmsetup = moblab_vm.MoblabVm(self.workspace)
     vmsetup.Start()
 
     # Verify .Stop releases global resources.
     vmsetup = moblab_vm.MoblabVm(self.workspace)
     vmsetup.Stop()
-    self.assertEqual(self._mock_stop_kvm.call_args_list,
-                     [mock.call(self.dut_kvm_pid_path),
-                      mock.call(self.moblab_kvm_pid_path)])
+    self.assertEqual(self._mock_stop_vm.call_args_list,
+                     [mock.call(self.dut_ssh_port),
+                      mock.call(self.moblab_ssh_port)])
     self.assertEqual(self._mock_remove_tap_device.call_args_list,
                      [mock.call(self.dut_tap_dev),
                       mock.call(self.moblab_tap_dev)])
@@ -266,11 +265,12 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     self.testSuccessfulCreateWithDutDir()
 
     # Allow .Start to run, without expectation checking (done in other tests)
-    self._mock_try_create_bridge_device.return_value = (937, self.bridge_name)
+    self._mock_try_create_bridge_device.return_value = (self._PORT,
+                                                        self.bridge_name)
     self._mock_create_tap_device.side_effect = iter([self.moblab_tap_dev,
                                                      self.dut_tap_dev])
-    self._mock_start_kvm.side_effect = iter([self.moblab_kvm_pid_path,
-                                             _TestException])
+    self._mock_start_vm.side_effect = iter([self.moblab_ssh_port,
+                                            _TestException])
     vmsetup = moblab_vm.MoblabVm(self.workspace)
     with self.assertRaises(_TestException):
       vmsetup.Start()
@@ -278,8 +278,8 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     # Verify .Stop releases global resources.
     vmsetup = moblab_vm.MoblabVm(self.workspace)
     vmsetup.Stop()
-    self.assertEqual(self._mock_stop_kvm.call_args_list,
-                     [mock.call(self.moblab_kvm_pid_path)])
+    self.assertEqual(self._mock_stop_vm.call_args_list,
+                     [mock.call(self.moblab_ssh_port)])
     self.assertEqual(self._mock_remove_tap_device.call_args_list,
                      [mock.call(self.dut_tap_dev),
                       mock.call(self.moblab_tap_dev)])

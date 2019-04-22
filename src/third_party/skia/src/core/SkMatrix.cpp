@@ -475,15 +475,13 @@ void SkMatrix::setSinCos(SkScalar sinV, SkScalar cosV) {
 }
 
 void SkMatrix::setRotate(SkScalar degrees, SkScalar px, SkScalar py) {
-    SkScalar sinV, cosV;
-    sinV = SkScalarSinCos(SkDegreesToRadians(degrees), &cosV);
-    this->setSinCos(sinV, cosV, px, py);
+    SkScalar rad = SkDegreesToRadians(degrees);
+    this->setSinCos(SkScalarSinSnapToZero(rad), SkScalarCosSnapToZero(rad), px, py);
 }
 
 void SkMatrix::setRotate(SkScalar degrees) {
-    SkScalar sinV, cosV;
-    sinV = SkScalarSinCos(SkDegreesToRadians(degrees), &cosV);
-    this->setSinCos(sinV, cosV);
+    SkScalar rad = SkDegreesToRadians(degrees);
+    this->setSinCos(SkScalarSinSnapToZero(rad), SkScalarCosSnapToZero(rad));
 }
 
 void SkMatrix::preRotate(SkScalar degrees, SkScalar px, SkScalar py) {
@@ -794,6 +792,18 @@ bool SkMatrix::asAffine(SkScalar affine[6]) const {
         affine[kATransY] = this->fMat[kMTransY];
     }
     return true;
+}
+
+void SkMatrix::mapPoints(SkPoint dst[], const SkPoint src[], int count) const {
+    SkASSERT((dst && src && count > 0) || 0 == count);
+    // no partial overlap
+    SkASSERT(src == dst || &dst[count] <= &src[0] || &src[count] <= &dst[0]);
+    this->getMapPtsProc()(*this, dst, src, count);
+}
+
+void SkMatrix::mapXY(SkScalar x, SkScalar y, SkPoint* result) const {
+    SkASSERT(result);
+    this->getMapXYProc()(*this, x, y, result);
 }
 
 void SkMatrix::ComputeInv(SkScalar dst[9], const SkScalar src[9], double invDet, bool isPersp) {

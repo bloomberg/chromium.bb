@@ -4,8 +4,10 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 
+#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/aura_constants.h"
@@ -26,7 +28,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/path_win.h"
 #include "ui/views/corewm/tooltip_win.h"
 #include "ui/views/views_switches.h"
@@ -44,7 +45,7 @@
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/scoped_tooltip_disabler.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostWin*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostWin*)
 
 namespace views {
 
@@ -66,13 +67,13 @@ void InsetBottomRight(gfx::Rect* rect, const gfx::Vector2d& vector) {
 
 }  // namespace
 
-DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kContentWindowForRootWindow, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kContentWindowForRootWindow, NULL)
 
 // Identifies the DesktopWindowTreeHostWin associated with the
 // WindowEventDispatcher.
 DEFINE_UI_CLASS_PROPERTY_KEY(DesktopWindowTreeHostWin*,
                              kDesktopWindowTreeHostKey,
-                             NULL);
+                             NULL)
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, public:
@@ -85,12 +86,11 @@ DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
     : message_handler_(new HWNDMessageHandler(this)),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
-      drag_drop_client_(NULL),
+      drag_drop_client_(nullptr),
       should_animate_window_close_(false),
       pending_close_(false),
       has_non_client_view_(false),
-      tooltip_(NULL) {
-}
+      tooltip_(nullptr) {}
 
 DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
@@ -122,7 +122,7 @@ void DesktopWindowTreeHostWin::Init(const Widget::InitParams& params) {
                         GetWidget()->widget_delegate(),
                         native_widget_delegate_);
 
-  HWND parent_hwnd = NULL;
+  HWND parent_hwnd = nullptr;
   if (params.parent && params.parent->GetHost())
     parent_hwnd = params.parent->GetHost()->GetAcceleratedWidget();
 
@@ -557,6 +557,9 @@ void DesktopWindowTreeHostWin::SetBoundsInPixels(
   window_enlargement_ =
       gfx::Vector2d(new_expanded.width() - expanded.width(),
                     new_expanded.height() - expanded.height());
+  // When |new_expanded| causes the window to be moved to a display with a
+  // different DSF, HWNDMessageHandler::OnDpiChanged() will be called and the
+  // window size will be scaled automatically.
   message_handler_->SetBounds(new_expanded, old_content_size != bounds.size());
 }
 
@@ -717,7 +720,7 @@ int DesktopWindowTreeHostWin::GetNonClientComponent(
 }
 
 void DesktopWindowTreeHostWin::GetWindowMask(const gfx::Size& size,
-                                             gfx::Path* path) {
+                                             SkPath* path) {
   if (GetWidget()->non_client_view()) {
     GetWidget()->non_client_view()->GetWindowMask(size, path);
   } else if (!window_enlargement_.IsZero()) {
@@ -809,7 +812,7 @@ void DesktopWindowTreeHostWin::HandleAccelerator(
 }
 
 void DesktopWindowTreeHostWin::HandleCreate() {
-  native_widget_delegate_->OnNativeWidgetCreated(true);
+  native_widget_delegate_->OnNativeWidgetCreated();
 }
 
 void DesktopWindowTreeHostWin::HandleDestroying() {
@@ -861,6 +864,20 @@ void DesktopWindowTreeHostWin::HandleVisibilityChanged(bool visible) {
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(visible);
 }
 
+void DesktopWindowTreeHostWin::HandleWindowMinimizedOrRestored(bool restored) {
+  // Ignore minimize/restore events that happen before widget initialization is
+  // done. If a window is created minimized, and then activated, restoring
+  // focus will fail because the root window is not visible, which is exposed by
+  // ExtensionWindowCreateTest.AcceptState.
+  if (!native_widget_delegate_->IsNativeWidgetInitialized())
+    return;
+
+  if (restored)
+    window()->Show();
+  else
+    window()->Hide();
+}
+
 void DesktopWindowTreeHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
   CheckForMonitorChange();
@@ -885,9 +902,13 @@ void DesktopWindowTreeHostWin::HandleNativeBlur(HWND focused_window) {
 }
 
 bool DesktopWindowTreeHostWin::HandleMouseEvent(ui::MouseEvent* event) {
-  // TODO(davidbienvenu): Check for getting mouse events for an occluded window
-  // with either a DCHECK or a stat.  Event can cause this object to be deleted
-  // so look at occlusion state before we do anything with the event.
+  // Mouse events in occluded windows should be very rare. If this stat isn't
+  // very close to 0, that would indicate that windows are incorrectly getting
+  // marked occluded, or getting stuck in the occluded state. Event can cause
+  // this object to be deleted so check occlusion state before we do anything
+  // with the event.
+  if (window()->occlusion_state() == aura::Window::OcclusionState::OCCLUDED)
+    UMA_HISTOGRAM_BOOLEAN("OccludedWindowMouseEvents", true);
   SendEventToSink(event);
   return event->handled();
 }
@@ -913,8 +934,8 @@ void DesktopWindowTreeHostWin::HandleTouchEvent(ui::TouchEvent* event) {
       POINT target_location(event->location().ToPOINT());
       ClientToScreen(GetHWND(), &target_location);
       ScreenToClient(target->GetHWND(), &target_location);
-      ui::TouchEvent target_event(*event, static_cast<View*>(NULL),
-                                  static_cast<View*>(NULL));
+      ui::TouchEvent target_event(*event, static_cast<View*>(nullptr),
+                                  static_cast<View*>(nullptr));
       target_event.set_location(gfx::Point(target_location));
       target_event.set_root_location(target_event.location());
       target->SendEventToSink(&target_event);
@@ -956,7 +977,7 @@ bool DesktopWindowTreeHostWin::HandleTooltipNotify(int w_param,
 
 void DesktopWindowTreeHostWin::HandleMenuLoop(bool in_menu_loop) {
   if (in_menu_loop) {
-    tooltip_disabler_.reset(new wm::ScopedTooltipDisabler(window()));
+    tooltip_disabler_ = std::make_unique<wm::ScopedTooltipDisabler>(window());
   } else {
     tooltip_disabler_.reset();
   }

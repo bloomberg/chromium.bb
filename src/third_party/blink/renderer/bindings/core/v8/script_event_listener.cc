@@ -55,7 +55,7 @@ EventListener* CreateAttributeEventListener(Node* node,
                         OrdinalNumber::First());
   String source_url;
 
-  v8::Isolate* isolate = ToIsolate(&node->GetDocument());
+  v8::Isolate* isolate = node->GetDocument().GetIsolate();
 
   if (LocalFrame* frame = node->GetDocument().GetFrame()) {
     ScriptController& script_controller = frame->GetScriptController();
@@ -72,8 +72,8 @@ EventListener* CreateAttributeEventListener(Node* node,
   // of the isolated world for the content script by design.
   DOMWrapperWorld& world = DOMWrapperWorld::MainWorld();
 
-  return JSEventHandlerForContentAttribute::Create(
-      name.LocalName(), value, source_url, position, isolate, world, type);
+  return MakeGarbageCollected<JSEventHandlerForContentAttribute>(
+      isolate, world, name.LocalName(), value, source_url, position, type);
 }
 
 EventListener* CreateAttributeEventListener(LocalFrame* frame,
@@ -101,8 +101,8 @@ EventListener* CreateAttributeEventListener(LocalFrame* frame,
   // of the isolated world for the content script by design.
   DOMWrapperWorld& world = DOMWrapperWorld::MainWorld();
 
-  return JSEventHandlerForContentAttribute::Create(
-      name.LocalName(), value, source_url, position, isolate, world, type);
+  return MakeGarbageCollected<JSEventHandlerForContentAttribute>(
+      isolate, world, name.LocalName(), value, source_url, position, type);
 }
 
 }  // namespace blink

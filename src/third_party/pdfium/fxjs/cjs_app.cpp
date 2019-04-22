@@ -95,11 +95,10 @@ CJS_App::~CJS_App() = default;
 CJS_Result CJS_App::get_active_docs(CJS_Runtime* pRuntime) {
   v8::Local<v8::Object> pObj = pRuntime->GetThisObj();
   auto pJSDocument = JSGetObject<CJS_Document>(pObj);
+  if (!pJSDocument)
+    return CJS_Result::Failure(JSMessage::kObjectTypeError);
   v8::Local<v8::Array> aDocs = pRuntime->NewArray();
-  pRuntime->PutArrayElement(
-      aDocs, 0,
-      pJSDocument ? v8::Local<v8::Value>(pJSDocument->ToV8Object())
-                  : v8::Local<v8::Value>());
+  pRuntime->PutArrayElement(aDocs, 0, pJSDocument->ToV8Object());
   if (pRuntime->GetArrayLength(aDocs) > 0)
     return CJS_Result::Success(aDocs);
 
@@ -224,7 +223,7 @@ CJS_Result CJS_App::openFDF(CJS_Runtime* pRuntime,
 CJS_Result CJS_App::alert(CJS_Runtime* pRuntime,
                           const std::vector<v8::Local<v8::Value>>& params) {
   std::vector<v8::Local<v8::Value>> newParams = ExpandKeywordParams(
-      pRuntime, params, 4, L"cMsg", L"nIcon", L"nType", L"cTitle");
+      pRuntime, params, 4, "cMsg", "nIcon", "nType", "cTitle");
 
   if (!IsExpandedParamKnown(newParams[0]))
     return CJS_Result::Failure(JSMessage::kParamError);
@@ -316,7 +315,8 @@ CJS_Result CJS_App::setInterval(
 
   uint32_t dwInterval = params.size() > 1 ? pRuntime->ToInt32(params[1]) : 1000;
   auto timerRef = pdfium::MakeUnique<GlobalTimer>(
-      this, pRuntime->GetFormFillEnv(), pRuntime, 0, script, dwInterval, 0);
+      this, pRuntime->GetFormFillEnv(), pRuntime, GlobalTimer::Type::kRepeating,
+      script, dwInterval, 0);
   GlobalTimer* pTimerRef = timerRef.get();
   m_Timers.insert(std::move(timerRef));
 
@@ -344,8 +344,8 @@ CJS_Result CJS_App::setTimeOut(
 
   uint32_t dwTimeOut = params.size() > 1 ? pRuntime->ToInt32(params[1]) : 1000;
   auto timerRef = pdfium::MakeUnique<GlobalTimer>(
-      this, pRuntime->GetFormFillEnv(), pRuntime, 1, script, dwTimeOut,
-      dwTimeOut);
+      this, pRuntime->GetFormFillEnv(), pRuntime, GlobalTimer::Type::kOneShot,
+      script, dwTimeOut, dwTimeOut);
   GlobalTimer* pTimerRef = timerRef.get();
   m_Timers.insert(std::move(timerRef));
 
@@ -433,9 +433,8 @@ CJS_Result CJS_App::goForward(CJS_Runtime* pRuntime,
 
 CJS_Result CJS_App::mailMsg(CJS_Runtime* pRuntime,
                             const std::vector<v8::Local<v8::Value>>& params) {
-  std::vector<v8::Local<v8::Value>> newParams =
-      ExpandKeywordParams(pRuntime, params, 6, L"bUI", L"cTo", L"cCc", L"cBcc",
-                          L"cSubject", L"cMsg");
+  std::vector<v8::Local<v8::Value>> newParams = ExpandKeywordParams(
+      pRuntime, params, 6, "bUI", "cTo", "cCc", "cBcc", "cSubject", "cMsg");
 
   if (!IsExpandedParamKnown(newParams[0]))
     return CJS_Result::Failure(JSMessage::kParamError);
@@ -532,8 +531,8 @@ CJS_Result CJS_App::openDoc(CJS_Runtime* pRuntime,
 CJS_Result CJS_App::response(CJS_Runtime* pRuntime,
                              const std::vector<v8::Local<v8::Value>>& params) {
   std::vector<v8::Local<v8::Value>> newParams =
-      ExpandKeywordParams(pRuntime, params, 5, L"cQuestion", L"cTitle",
-                          L"cDefault", L"bPassword", L"cLabel");
+      ExpandKeywordParams(pRuntime, params, 5, "cQuestion", "cTitle",
+                          "cDefault", "bPassword", "cLabel");
 
   if (!IsExpandedParamKnown(newParams[0]))
     return CJS_Result::Failure(JSMessage::kParamError);

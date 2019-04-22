@@ -4,6 +4,7 @@
 
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"

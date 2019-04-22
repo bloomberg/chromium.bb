@@ -44,6 +44,8 @@ class ANGLEInstancedArrays final : public WebGLExtension {
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 
+  explicit ANGLEInstancedArrays(WebGLRenderingContextBase*);
+
   WebGLExtensionName GetName() const override;
 
   void drawArraysInstancedANGLE(GLenum mode,
@@ -53,12 +55,9 @@ class ANGLEInstancedArrays final : public WebGLExtension {
   void drawElementsInstancedANGLE(GLenum mode,
                                   GLsizei count,
                                   GLenum type,
-                                  long long offset,
+                                  int64_t offset,
                                   GLsizei primcount);
   void vertexAttribDivisorANGLE(GLuint index, GLuint divisor);
-
- private:
-  explicit ANGLEInstancedArrays(WebGLRenderingContextBase*);
 };
 
 }  // namespace blink

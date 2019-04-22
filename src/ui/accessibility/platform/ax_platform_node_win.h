@@ -1,3 +1,4 @@
+//
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -11,6 +12,7 @@
 #include <uiautomation.h>
 #include <wrl/client.h>
 
+#include <array>
 #include <map>
 #include <string>
 #include <vector>
@@ -23,6 +25,7 @@
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
+#include "ui/gfx/range/range.h"
 
 // IMPORTANT!
 // These values are written to logs.  Do not renumber or delete
@@ -186,6 +189,94 @@ enum {
   UMA_API_TABLECELL_GET_ROW_INDEX = 155,
   UMA_API_UNSELECT_COLUMN = 156,
   UMA_API_UNSELECT_ROW = 157,
+  UMA_API_GET_BOUNDINGRECTANGLE = 158,
+  UMA_API_GET_FRAGMENTROOT = 159,
+  UMA_API_GETEMBEDDEDFRAGMENTROOTS = 160,
+  UMA_API_NAVIGATE = 161,
+  UMA_API_SETFOCUS = 162,
+  UMA_API_SHOWCONTEXTMENU = 163,
+  UMA_API_EXPANDCOLLAPSE_COLLAPSE = 164,
+  UMA_API_EXPANDCOLLAPSE_EXPAND = 165,
+  UMA_API_EXPANDCOLLAPSE_GET_EXPANDCOLLAPSESTATE = 166,
+  UMA_API_GRIDITEM_GET_COLUMN = 167,
+  UMA_API_GRIDITEM_GET_COLUMNSPAN = 168,
+  UMA_API_GRIDITEM_GET_CONTAININGGRID = 169,
+  UMA_API_GRIDITEM_GET_ROW = 170,
+  UMA_API_GRIDITEM_GET_ROWSPAN = 171,
+  UMA_API_GRID_GETITEM = 172,
+  UMA_API_GRID_GET_ROWCOUNT = 173,
+  UMA_API_GRID_GET_COLUMNCOUNT = 174,
+  UMA_API_INVOKE_INVOKE = 175,
+  UMA_API_RANGEVALUE_SETVALUE = 176,
+  UMA_API_RANGEVALUE_GET_LARGECHANGE = 177,
+  UMA_API_RANGEVALUE_GET_MAXIMUM = 178,
+  UMA_API_RANGEVALUE_GET_MINIMUM = 179,
+  UMA_API_RANGEVALUE_GET_SMALLCHANGE = 180,
+  UMA_API_RANGEVALUE_GET_VALUE = 181,
+  UMA_API_SCROLLITEM_SCROLLINTOVIEW = 182,
+  UMA_API_SCROLL_SCROLL = 183,
+  UMA_API_SCROLL_SETSCROLLPERCENT = 184,
+  UMA_API_SCROLL_GET_HORIZONTALLYSCROLLABLE = 185,
+  UMA_API_SCROLL_GET_HORIZONTALSCROLLPERCENT = 186,
+  UMA_API_SCROLL_GET_HORIZONTALVIEWSIZE = 187,
+  UMA_API_SCROLL_GET_VERTICALLYSCROLLABLE = 188,
+  UMA_API_SCROLL_GET_VERTICALSCROLLPERCENT = 189,
+  UMA_API_SCROLL_GET_VERTICALVIEWSIZE = 190,
+  UMA_API_SELECTIONITEM_ADDTOSELECTION = 191,
+  UMA_API_SELECTIONITEM_REMOVEFROMSELECTION = 192,
+  UMA_API_SELECTIONITEM_SELECT = 193,
+  UMA_API_SELECTIONITEM_GET_ISSELECTED = 194,
+  UMA_API_SELECTIONITEM_GET_SELECTIONCONTAINER = 195,
+  UMA_API_SELECTION_GETSELECTION = 196,
+  UMA_API_SELECTION_GET_CANSELECTMULTIPLE = 197,
+  UMA_API_SELECTION_GET_ISSELECTIONREQUIRED = 198,
+  UMA_API_TABLEITEM_GETCOLUMNHEADERITEMS = 199,
+  UMA_API_TABLEITEM_GETROWHEADERITEMS = 200,
+  UMA_API_TABLE_GETCOLUMNHEADERS = 201,
+  UMA_API_TABLE_GETROWHEADERS = 202,
+  UMA_API_TABLE_GET_ROWORCOLUMNMAJOR = 203,
+  UMA_API_TEXT_GETSELECTION = 204,
+  UMA_API_TEXT_GETVISIBLERANGES = 205,
+  UMA_API_TEXT_RANGEFROMCHILD = 206,
+  UMA_API_TEXT_RANGEFROMPOINT = 207,
+  UMA_API_TEXT_GET_DOCUMENTRANGE = 208,
+  UMA_API_TEXT_GET_SUPPORTEDTEXTSELECTION = 209,
+  UMA_API_TEXTCHILD_GET_TEXTCONTAINER = 210,
+  UMA_API_TEXTCHILD_GET_TEXTRANGE = 211,
+  UMA_API_TEXTEDIT_GETACTIVECOMPOSITION = 212,
+  UMA_API_TEXTEDIT_GETCONVERSIONTARGET = 213,
+  UMA_API_TEXTRANGE_CLONE = 214,
+  UMA_API_TEXTRANGE_COMPARE = 215,
+  UMA_API_TEXTRANGE_COMPAREENDPOINTS = 216,
+  UMA_API_TEXTRANGE_EXPANDTOENCLOSINGUNIT = 217,
+  UMA_API_TEXTRANGE_FINDATTRIBUTE = 218,
+  UMA_API_TEXTRANGE_FINDTEXT = 219,
+  UMA_API_TEXTRANGE_GETATTRIBUTEVALUE = 220,
+  UMA_API_TEXTRANGE_GETBOUNDINGRECTANGLES = 221,
+  UMA_API_TEXTRANGE_GETENCLOSINGELEMENT = 222,
+  UMA_API_TEXTRANGE_GETTEXT = 223,
+  UMA_API_TEXTRANGE_MOVE = 224,
+  UMA_API_TEXTRANGE_MOVEENDPOINTBYUNIT = 225,
+  UMA_API_TEXTRANGE_MOVEENPOINTBYRANGE = 226,
+  UMA_API_TEXTRANGE_SELECT = 227,
+  UMA_API_TEXTRANGE_ADDTOSELECTION = 228,
+  UMA_API_TEXTRANGE_REMOVEFROMSELECTION = 229,
+  UMA_API_TEXTRANGE_SCROLLINTOVIEW = 230,
+  UMA_API_TEXTRANGE_GETCHILDREN = 231,
+  UMA_API_TOGGLE_TOGGLE = 232,
+  UMA_API_TOGGLE_GET_TOGGLESTATE = 233,
+  UMA_API_VALUE_SETVALUE = 234,
+  UMA_API_VALUE_GET_ISREADONLY = 235,
+  UMA_API_VALUE_GET_VALUE = 236,
+  UMA_API_WINDOW_SETVISUALSTATE = 237,
+  UMA_API_WINDOW_CLOSE = 238,
+  UMA_API_WINDOW_WAITFORINPUTIDLE = 239,
+  UMA_API_WINDOW_GET_CANMAXIMIZE = 240,
+  UMA_API_WINDOW_GET_CANMINIMIZE = 241,
+  UMA_API_WINDOW_GET_ISMODAL = 242,
+  UMA_API_WINDOW_GET_WINDOWVISUALSTATE = 243,
+  UMA_API_WINDOW_GET_WINDOWINTERACTIONSTATE = 244,
+  UMA_API_WINDOW_GET_ISTOPMOST = 245,
 
   // This must always be the last enum. It's okay for its value to
   // increase, but none of the other enum values may change.
@@ -194,6 +285,22 @@ enum {
 
 #define WIN_ACCESSIBILITY_API_HISTOGRAM(enum_value) \
   UMA_HISTOGRAM_ENUMERATION("Accessibility.WinAPIs", enum_value, UMA_API_MAX)
+
+//
+// Macros to use at the top of any AXPlatformNodeWin (or derived class) method
+// that implements a UIA COM interface. The error code UIA_E_ELEMENTNOTAVAILABLE
+// signals to the OS that the object is no longer valid and no further methods
+// should be called on it.
+//
+#define UIA_VALIDATE_CALL()               \
+  if (!AXPlatformNodeBase::GetDelegate()) \
+    return UIA_E_ELEMENTNOTAVAILABLE;
+#define UIA_VALIDATE_CALL_1_ARG(arg)      \
+  if (!AXPlatformNodeBase::GetDelegate()) \
+    return UIA_E_ELEMENTNOTAVAILABLE;     \
+  if (!arg)                               \
+    return E_INVALIDARG;                  \
+  *arg = {};
 
 namespace ui {
 class AXPlatformNodeWin;
@@ -218,10 +325,11 @@ class AX_EXPORT IAccessible2UsageObserver {
 extern AX_EXPORT base::ObserverList<IAccessible2UsageObserver>::Unchecked&
 GetIAccessible2UsageObserverList();
 
+// TODO(nektar): Remove multithread superclass since we don't support it.
 class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     AXPlatformNodeWin : public CComObjectRootEx<CComMultiThreadModel>,
-                        public IDispatchImpl<IAccessible2_2,
-                                             &IID_IAccessible2,
+                        public IDispatchImpl<IAccessible2_4,
+                                             &IID_IAccessible2_4,
                                              &LIBID_IAccessible2Lib>,
                         public IAccessibleEx,
                         public IAccessibleText,
@@ -231,8 +339,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IExpandCollapseProvider,
                         public IGridItemProvider,
                         public IGridProvider,
+                        public IInvokeProvider,
                         public IRangeValueProvider,
-                        public IRawElementProviderSimple,
+                        public IRawElementProviderFragment,
+                        public IRawElementProviderSimple2,
                         public IScrollItemProvider,
                         public IScrollProvider,
                         public ISelectionItemProvider,
@@ -242,14 +352,23 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public ITableProvider,
                         public IToggleProvider,
                         public IValueProvider,
+                        public IWindowProvider,
                         public AXPlatformNodeBase {
+  using IDispatchImpl::Invoke;
+
  public:
   BEGIN_COM_MAP(AXPlatformNodeWin)
+    // TODO(nektar): Change the following to COM_INTERFACE_ENTRY(IDispatch).
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible2_2)
+    COM_INTERFACE_ENTRY2(IUnknown, IDispatchImpl)
+    // TODO(nektar): Find a way to remove the following entry because it's not
+    // an interface.
     COM_INTERFACE_ENTRY(AXPlatformNodeWin)
     COM_INTERFACE_ENTRY(IAccessible)
     COM_INTERFACE_ENTRY(IAccessible2)
     COM_INTERFACE_ENTRY(IAccessible2_2)
+    COM_INTERFACE_ENTRY(IAccessible2_3)
+    COM_INTERFACE_ENTRY(IAccessible2_4)
     COM_INTERFACE_ENTRY(IAccessibleEx)
     COM_INTERFACE_ENTRY(IAccessibleText)
     COM_INTERFACE_ENTRY(IAccessibleTable)
@@ -258,8 +377,11 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IExpandCollapseProvider)
     COM_INTERFACE_ENTRY(IGridItemProvider)
     COM_INTERFACE_ENTRY(IGridProvider)
+    COM_INTERFACE_ENTRY(IInvokeProvider)
     COM_INTERFACE_ENTRY(IRangeValueProvider)
+    COM_INTERFACE_ENTRY(IRawElementProviderFragment)
     COM_INTERFACE_ENTRY(IRawElementProviderSimple)
+    COM_INTERFACE_ENTRY(IRawElementProviderSimple2)
     COM_INTERFACE_ENTRY(IScrollItemProvider)
     COM_INTERFACE_ENTRY(IScrollProvider)
     COM_INTERFACE_ENTRY(ISelectionItemProvider)
@@ -268,19 +390,16 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(ITableProvider)
     COM_INTERFACE_ENTRY(IToggleProvider)
     COM_INTERFACE_ENTRY(IValueProvider)
+    COM_INTERFACE_ENTRY(IWindowProvider)
     COM_INTERFACE_ENTRY(IServiceProvider)
   END_COM_MAP()
 
   ~AXPlatformNodeWin() override;
 
-  // Return the number of instances of AXPlatformNodeWin, for leak testing.
-  static size_t GetInstanceCountForTesting();
-
   void Init(AXPlatformNodeDelegate* delegate) override;
 
   // Clear any AXPlatformRelationWin nodes owned by this node.
   void ClearOwnRelations();
-  static AXPlatformNode* GetFromUniqueId(int32_t unique_id);
 
   // AXPlatformNode overrides.
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
@@ -289,12 +408,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // AXPlatformNodeBase overrides.
   void Destroy() override;
   int GetIndexInParent() override;
-  base::string16 GetValue() override;
-
-  // For the moment, we add a special version of this method which returns a
-  // base::string16, but once the hypertext generation code is shared between
-  // platforms we can just override AXPlatformNodeBase::GetText().
-  base::string16 GetTextAsString16();
+  base::string16 GetValue() const override;
+  base::string16 GetText() const override;
 
   //
   // IAccessible methods.
@@ -422,6 +537,18 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                          LONG* caret_offset) override;
 
   //
+  // IAccessible2_3 methods.
+  //
+
+  IFACEMETHODIMP get_selectionRanges(IA2Range** ranges, LONG* nRanges);
+
+  //
+  // IAccessible2_4 methods.
+  //
+
+  IFACEMETHODIMP setSelectionRanges(LONG nRanges, IA2Range* ranges);
+
+  //
   // IAccessibleEx methods.
   //
 
@@ -467,6 +594,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   IFACEMETHODIMP get_RowCount(int* result) override;
 
   IFACEMETHODIMP get_ColumnCount(int* result) override;
+
+  //
+  // IInvokeProvider methods.
+  //
+
+  IFACEMETHODIMP Invoke() override;
 
   //
   // IScrollItemProvider methods.
@@ -562,6 +695,29 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   IFACEMETHODIMP get_Value(BSTR* result) override;
 
   //
+  // IWindowProvider methods.
+  //
+
+  IFACEMETHODIMP SetVisualState(WindowVisualState window_visual_state) override;
+
+  IFACEMETHODIMP Close() override;
+
+  IFACEMETHODIMP WaitForInputIdle(int milliseconds, BOOL* result) override;
+
+  IFACEMETHODIMP get_CanMaximize(BOOL* result) override;
+
+  IFACEMETHODIMP get_CanMinimize(BOOL* result) override;
+
+  IFACEMETHODIMP get_IsModal(BOOL* result) override;
+
+  IFACEMETHODIMP get_WindowVisualState(WindowVisualState* result) override;
+
+  IFACEMETHODIMP get_WindowInteractionState(
+      WindowInteractionState* result) override;
+
+  IFACEMETHODIMP get_IsTopmost(BOOL* result) override;
+
+  //
   // IRangeValueProvider methods.
   //
 
@@ -578,8 +734,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   IFACEMETHODIMP get_Value(double* result) override;
 
   // IAccessibleEx methods not implemented.
-  IFACEMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override;
-
   IFACEMETHODIMP
   ConvertReturnedElement(IRawElementProviderSimple* element,
                          IAccessibleEx** acc) override;
@@ -798,6 +952,21 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                         LONG y) override;
 
   //
+  // IRawElementProviderFragment methods.
+  //
+
+  IFACEMETHODIMP Navigate(
+      NavigateDirection direction,
+      IRawElementProviderFragment** element_provider) override;
+  IFACEMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override;
+  IFACEMETHODIMP get_BoundingRectangle(UiaRect* bounding_rectangle) override;
+  IFACEMETHODIMP GetEmbeddedFragmentRoots(
+      SAFEARRAY** embedded_fragment_roots) override;
+  IFACEMETHODIMP SetFocus() override;
+  IFACEMETHODIMP get_FragmentRoot(
+      IRawElementProviderFragmentRoot** fragment_root) override;
+
+  //
   // IRawElementProviderSimple methods.
   //
 
@@ -807,13 +976,17 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   IFACEMETHODIMP GetPropertyValue(PROPERTYID property_id,
                                   VARIANT* result) override;
 
-  // IRawElementProviderSimple methods not implemented.
-
   IFACEMETHODIMP
   get_ProviderOptions(enum ProviderOptions* ret) override;
 
   IFACEMETHODIMP
   get_HostRawElementProvider(IRawElementProviderSimple** provider) override;
+
+  //
+  // IRawElementProviderSimple2 methods.
+  //
+
+  IFACEMETHODIMP ShowContextMenu() override;
 
   //
   // IServiceProvider methods.
@@ -823,10 +996,35 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                               REFIID riid,
                               void** object) override;
 
+  // Support method for ITextRangeProvider::GetAttributeValue
+  HRESULT GetTextAttributeValue(TEXTATTRIBUTEID attribute_id, VARIANT* result);
+
+  // IRawElementProviderSimple support method.
+  bool IsPatternProviderSupported(PATTERNID pattern_id);
+
+  // Helper to return the runtime id (without going through a SAFEARRAY)
+  using RuntimeIdArray = std::array<int, 2>;
+  void GetRuntimeIdArray(RuntimeIdArray& runtime_id);
+
+  // Updates the active composition range and fires UIA text edit event about
+  // composition (active or committed)
+  void OnActiveComposition(const gfx::Range& range,
+                           const base::string16& active_composition_text,
+                           bool is_composition_committed);
+  // Returns true if there is an active composition
+  bool HasActiveComposition() const;
+  // Returns the start/end offsets of the active composition
+  gfx::Range GetActiveCompositionOffsets() const;
+
  protected:
+  // This is hard-coded; all products based on the Chromium engine will have the
+  // same framework name, so that assistive technology can detect any
+  // Chromium-based product.
+  static constexpr const base::char16* FRAMEWORK_ID = L"Chrome";
+
   AXPlatformNodeWin();
 
-  int MSAAState();
+  int MSAAState() const;
 
   int MSAARole();
   std::string StringOverrideForMSAARole();
@@ -843,6 +1041,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   LONG ComputeUIAControlType();
 
+  bool IsUIAControl() const;
+
+  base::Optional<LONG> ComputeUIALandmarkType() const;
+
   // AXPlatformNodeBase overrides.
   void Dispose() override;
 
@@ -850,28 +1052,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   std::vector<Microsoft::WRL::ComPtr<AXPlatformRelationWin>> relations_;
 
   AXHypertext old_hypertext_;
-  AXHypertext hypertext_;
 
   // These protected methods are still used by BrowserAccessibilityComWin. At
   // some point post conversion, we can probably move these to be private
   // methods.
-  //
-  //
-  // Selection helper functions.
-  // The following functions retrieve the endpoints of the current selection.
-  // First they check for a local selection found on the current control, e.g.
-  // when querying the selection on a textarea.
-  // If not found they retrieve the global selection found on the current frame.
-  int GetSelectionAnchor();
-  int GetSelectionFocus();
-
-  // Retrieves the selection offsets in the way required by the IA2 APIs.
-  // selection_start and selection_end are -1 when there is no selection active
-  // on this object.
-  // The greatest of the two offsets is one past the last character of the
-  // selection.)
-  void GetSelectionOffsets(int* selection_start, int* selection_end);
-
   //
   // Helper methods for IA2 hyperlinks.
   //
@@ -880,28 +1064,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Also, in IA2, text that includes embedded objects is called hypertext.
   // Returns true if the current object is an IA2 hyperlink.
   bool IsHyperlink();
-
-  // Returns the hyperlink at the given text position, or nullptr if no
-  // hyperlink can be found.
-  AXPlatformNodeWin* GetHyperlinkFromHypertextOffset(int offset);
-
-  // Functions for retrieving offsets for hyperlinks and hypertext.
-  // Return -1 in case of failure.
-  int32_t GetHyperlinkIndexFromChild(AXPlatformNodeWin* child);
-  int32_t GetHypertextOffsetFromHyperlinkIndex(int32_t hyperlink_index);
-  int32_t GetHypertextOffsetFromChild(AXPlatformNodeWin* child);
-  int32_t GetHypertextOffsetFromDescendant(AXPlatformNodeWin* descendant);
-
-  // If the selection endpoint is either equal to or an ancestor of this object,
-  // returns endpoint_offset.
-  // If the selection endpoint is a descendant of this object, returns its
-  // offset. Otherwise, returns either 0 or the length of the hypertext
-  // depending on the direction of the selection.
-  // Returns -1 in case of unexpected failure, e.g. the selection endpoint
-  // cannot be found in the accessibility tree.
-  int GetHypertextOffsetFromEndpoint(AXPlatformNodeWin* endpoint_object,
-                                     int endpoint_offset);
-  bool IsSameHypertextCharacter(size_t old_char_index, size_t new_char_index);
   void ComputeHypertextRemovedAndInserted(size_t* start,
                                           size_t* old_len,
                                           size_t* new_len);
@@ -919,10 +1081,14 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                           PlatformAttributeList* attributes) override;
 
  private:
-  int MSAAEvent(ax::mojom::Event event);
+  base::Optional<DWORD> MSAAEvent(ax::mojom::Event event);
+  base::Optional<EVENTID> UIAEvent(ax::mojom::Event event);
   bool IsWebAreaForPresentationalIframe();
-  bool ShouldNodeHaveReadonlyStateByDefault(const AXNodeData& data) const;
   bool ShouldNodeHaveFocusableState(const AXNodeData& data) const;
+
+  // Get the value attribute as a Bstr, this means something different depending
+  // on the type of element being queried. (e.g. kColorWell uses kColorValue).
+  static BSTR GetValueAttributeAsBstr(AXPlatformNodeWin* target);
 
   HRESULT GetStringAttributeAsBstr(ax::mojom::StringAttribute attribute,
                                    BSTR* value_bstr) const;
@@ -976,12 +1142,22 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // If the IntList attribute |attribute| is present, return an array
   // of automation elements referenced by the ids in the
   // IntList attribute. Otherwise return an empty array.
+  // The function will skip over any ids that cannot be resolved.
   SAFEARRAY* CreateUIAElementsArrayForRelation(
+      const ax::mojom::IntListAttribute& attribute);
+
+  // Return an unordered array of automation elements which reference this node
+  // for the given attribute.
+  SAFEARRAY* CreateUIAElementsArrayForReverseRelation(
       const ax::mojom::IntListAttribute& attribute);
 
   // Return an array of automation elements given a vector
   // of |AXNode| ids.
   SAFEARRAY* CreateUIAElementsArrayFromIdVector(std::vector<int32_t>& ids);
+
+  // Return an array that contains the center x, y coordinates of the
+  // clickable point.
+  SAFEARRAY* CreateClickablePointArray();
 
   // Returns the scroll offsets to which UI Automation should scroll an
   // accessible object, given the horizontal and vertical scroll amounts.
@@ -1003,11 +1179,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                     LONG start_offset,
                     TextBoundaryDirection direction);
 
-  // Return true if the index represents a text character.
-  bool IsText(const base::string16& text,
-              size_t index,
-              bool is_indexed_from_end = false);
-
   // Many MSAA methods take a var_id parameter indicating that the operation
   // should be performed on a particular child ID, rather than this object.
   // This method tries to figure out the target object from |var_id| and
@@ -1025,7 +1196,62 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                      LONG** selected,
                                      LONG* n_selected);
 
+  // Helper method for mutating the ISelectionItemProvider selected state
+  HRESULT ISelectionItemProviderSetSelected(bool selected);
+
+  //
+  // Getters for UIA GetTextAttributeValue
+  //
+
+  // Lookup the LCID for the language this node is using
+  HRESULT GetCultureAttributeAsVariant(VARIANT* result) const;
+  // Converts an int attribute to a COLORREF
+  COLORREF GetIntAttributeAsCOLORREF(ax::mojom::IntAttribute attribute) const;
+  // Converts the ListStyle to UIA BulletStyle
+  BulletStyle ComputeUIABulletStyle() const;
+  // Helper to get the UIA StyleId enumeration for this node
+  LONG ComputeUIAStyleId() const;
+  // Converts IntAttribute::kHierarchicalLevel to UIA StyleId enumeration
+  static LONG AXHierarchicalLevelToUIAStyleId(int32_t hierarchical_level);
+  // Converts a ListStyle to UIA StyleId enumeration
+  static LONG AXListStyleToUIAStyleId(ax::mojom::ListStyle list_style);
+  // Convert mojom TextDirection to UIA FlowDirections enumeration
+  static FlowDirections TextDirectionToFlowDirections(ax::mojom::TextDirection);
+
   bool IsAncestorComboBox();
+
+  // Helper method for getting the horizontal scroll percent.
+  double GetHorizontalScrollPercent();
+
+  // Helper method for getting the vertical scroll percent.
+  double GetVerticalScrollPercent();
+
+  // Helper to get the UIA FontName for this node as a BSTR.
+  BSTR GetFontNameAttributeAsBSTR() const;
+
+  // Helper to get the UIA StyleName for this node as a BSTR.
+  BSTR GetStyleNameAttributeAsBSTR() const;
+
+  // Gets the TextDecorationLineStyle based on the provided int attribute.
+  TextDecorationLineStyle GetUIATextDecorationStyle(
+      const ax::mojom::IntAttribute int_attribute) const;
+
+  // IRawElementProviderSimple support methods.
+
+  using PatternProviderFactoryMethod = HRESULT (*)(AXPlatformNodeWin*,
+                                                   IUnknown**);
+
+  PatternProviderFactoryMethod GetPatternProviderFactoryMethod(
+      PATTERNID pattern_id);
+
+  // Fires UIA text edit event about composition (active or committed)
+  void FireUiaTextEditTextChangedEvent(
+      const gfx::Range& range,
+      const base::string16& active_composition_text,
+      bool is_composition_committed);
+
+  // Start and end offsets of an active composition
+  gfx::Range active_composition_range_;
 };
 
 }  // namespace ui

@@ -4,14 +4,14 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 #include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
@@ -20,7 +20,7 @@ namespace blink {
 
 void ModuleTreeLinker::Fetch(
     const KURL& url,
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     mojom::RequestContextType destination,
     const ScriptFetchOptions& options,
     Modulator* modulator,
@@ -28,8 +28,8 @@ void ModuleTreeLinker::Fetch(
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client) {
   ModuleTreeLinker* fetcher = MakeGarbageCollected<ModuleTreeLinker>(
-      fetch_client_settings_object, destination, modulator, custom_fetch_type,
-      registry, client);
+      fetch_client_settings_object_fetcher, destination, modulator,
+      custom_fetch_type, registry, client);
   registry->AddFetcher(fetcher);
   fetcher->FetchRoot(url, options);
   DCHECK(fetcher->IsFetching());
@@ -37,7 +37,7 @@ void ModuleTreeLinker::Fetch(
 
 void ModuleTreeLinker::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     mojom::RequestContextType destination,
     Modulator* modulator,
     ModuleScriptCustomFetchType custom_fetch_type,
@@ -45,21 +45,22 @@ void ModuleTreeLinker::FetchDescendantsForInlineScript(
     ModuleTreeClient* client) {
   DCHECK(module_script);
   ModuleTreeLinker* fetcher = MakeGarbageCollected<ModuleTreeLinker>(
-      fetch_client_settings_object, destination, modulator, custom_fetch_type,
-      registry, client);
+      fetch_client_settings_object_fetcher, destination, modulator,
+      custom_fetch_type, registry, client);
   registry->AddFetcher(fetcher);
   fetcher->FetchRootInline(module_script);
   DCHECK(fetcher->IsFetching());
 }
 
 ModuleTreeLinker::ModuleTreeLinker(
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     mojom::RequestContextType destination,
     Modulator* modulator,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client)
-    : fetch_client_settings_object_(fetch_client_settings_object),
+    : fetch_client_settings_object_fetcher_(
+          fetch_client_settings_object_fetcher),
       destination_(destination),
       modulator_(modulator),
       custom_fetch_type_(custom_fetch_type),
@@ -71,7 +72,7 @@ ModuleTreeLinker::ModuleTreeLinker(
 }
 
 void ModuleTreeLinker::Trace(blink::Visitor* visitor) {
-  visitor->Trace(fetch_client_settings_object_);
+  visitor->Trace(fetch_client_settings_object_fetcher_);
   visitor->Trace(modulator_);
   visitor->Trace(registry_);
   visitor->Trace(client_);
@@ -148,13 +149,18 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
   }
 }
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
+// https://html.spec.whatwg.org/C/#fetch-a-module-script-tree
 void ModuleTreeLinker::FetchRoot(const KURL& original_url,
                                  const ScriptFetchOptions& options) {
 #if DCHECK_IS_ON()
   original_url_ = original_url;
   root_is_inline_ = false;
 #endif
+
+  // https://github.com/WICG/import-maps/blob/master/spec.md#when-import-maps-can-be-encountered
+  // The internal module script graph fetching procedure flips the boolean to
+  // false. [spec text]
+  modulator_->ClearIsAcquiringImportMaps();
 
   AdvanceState(State::kFetchingSelf);
 
@@ -163,8 +169,8 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
   // href="https://github.com/drufball/layered-apis/blob/master/spec.md#fetch-a-module-script-graph"
   // step="1">Set url to the layered API fetching URL given url and the current
   // settings object's API base URL.</spec>
-  if (RuntimeEnabledFeatures::LayeredAPIEnabled())
-    url = blink::layered_api::ResolveFetchingURL(url);
+  if (modulator_->BuiltInModuleInfraEnabled())
+    url = blink::layered_api::ResolveFetchingURL(*modulator_, url);
 
 #if DCHECK_IS_ON()
   url_ = url;
@@ -205,6 +211,11 @@ void ModuleTreeLinker::FetchRootInline(ModuleScript* module_script) {
   root_is_inline_ = true;
 #endif
 
+  // https://github.com/WICG/import-maps/blob/master/spec.md#when-import-maps-can-be-encountered
+  // The internal module script graph fetching procedure flips the boolean to
+  // false. [spec text]
+  modulator_->ClearIsAcquiringImportMaps();
+
   AdvanceState(State::kFetchingSelf);
 
   // Store the |module_script| here which will be used as result of the
@@ -228,8 +239,8 @@ void ModuleTreeLinker::InitiateInternalModuleScriptGraphFetching(
   ++num_incomplete_fetches_;
 
   // [IMSGF] Step 2. Fetch a single module script given ...
-  modulator_->FetchSingle(request, fetch_client_settings_object_.Get(), level,
-                          custom_fetch_type_, this);
+  modulator_->FetchSingle(request, fetch_client_settings_object_fetcher_.Get(),
+                          level, custom_fetch_type_, this);
 
   // [IMSGF] Step 3-- are executed when NotifyModuleLoadFinished() is called.
 }
@@ -253,7 +264,7 @@ void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* module_script) {
 
   if (state_ == State::kFetchingSelf) {
     // Corresponds to top-level calls to
-    // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-the-descendants-of-and-instantiate-a-module-script
+    // https://html.spec.whatwg.org/C/#fetch-the-descendants-of-and-instantiate-a-module-script
     // i.e. [IMSGF] with the top-level module fetch flag set (external), or
     // Step 22 of "prepare a script" (inline).
     // |module_script| is the top-level module, and will be instantiated
@@ -286,7 +297,7 @@ void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* module_script) {
   FetchDescendants(module_script);
 }
 
-void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
+void ModuleTreeLinker::FetchDescendants(const ModuleScript* module_script) {
   DCHECK(module_script);
 
   // [nospec] Abort the steps if the browsing context is discarded.
@@ -297,7 +308,7 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
   }
 
   // [FD] Step 2. Let record be module script's record.
-  ScriptModule record = module_script->Record();
+  ModuleRecord record = module_script->Record();
 
   // [FD] Step 1. If module script's record is null, then asynchronously
   // complete this algorithm with module script and abort these steps.
@@ -327,7 +338,7 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
 
   // [FD] Step 5. For each string requested of record.[[RequestedModules]],
   Vector<Modulator::ModuleRequest> module_requests =
-      modulator_->ModuleRequestsFromScriptModule(record);
+      modulator_->ModuleRequestsFromModuleRecord(record);
   for (const auto& module_request : module_requests) {
     // [FD] Step 5.1. Let url be the result of resolving a module specifier
     // given module script and requested.
@@ -337,7 +348,7 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
     // specifier must have been previously successful with these same two
     // arguments.
     CHECK(url.IsValid()) << "ModuleScript::ResolveModuleSpecifier() impl must "
-                            "return either a valid url or null.";
+                            "return a valid url.";
 
     // [FD] Step 5.3. If visited set does not contain url, then:
     if (!visited_set_.Contains(url)) {
@@ -363,15 +374,20 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
 
   // [FD] Step 6. Let options be the descendant script fetch options for module
   // script's fetch options.
-  // https://html.spec.whatwg.org/multipage/webappapis.html#descendant-script-fetch-options
+  // https://html.spec.whatwg.org/C/#descendant-script-fetch-options
   // the descendant script fetch options are a new script fetch options whose
   // items all have the same values, except for the integrity metadata, which is
   // instead the empty string.
+  // TODO(domfarolino): It has not yet been decided how a root module script's
+  // "importance" mode should trickle down to imports. There is discussion of
+  // this at https://github.com/whatwg/html/issues/3670, but for now, descendant
+  // scripts get "auto" importance (Also see https://crbug.com/821464).
   ScriptFetchOptions options(module_script->FetchOptions().Nonce(),
                              IntegrityMetadataSet(), String(),
                              module_script->FetchOptions().ParserState(),
                              module_script->FetchOptions().CredentialsMode(),
-                             module_script->FetchOptions().GetReferrerPolicy());
+                             module_script->FetchOptions().GetReferrerPolicy(),
+                             mojom::FetchImportanceMode::kImportanceAuto);
 
   // [FD] Step 7. For each url in urls, ...
   //
@@ -429,12 +445,12 @@ void ModuleTreeLinker::Instantiate() {
   // thus skip FindFirstParseError() call.
   if (!found_parse_error_) {
 #if DCHECK_IS_ON()
-    HeapHashSet<Member<ModuleScript>> discovered_set;
+    HeapHashSet<Member<const ModuleScript>> discovered_set;
     DCHECK(FindFirstParseError(result_, &discovered_set).IsEmpty());
 #endif
 
     // [FDaI] Step 6.1. Let record be result's record.
-    ScriptModule record = result_->Record();
+    ModuleRecord record = result_->Record();
 
     // [FDaI] Step 6.2. Perform record.Instantiate().
     AdvanceState(State::kInstantiating);
@@ -448,7 +464,7 @@ void ModuleTreeLinker::Instantiate() {
     // [FDaI] Step 7. Otherwise ...
 
     // [FFPE] Step 2. If discoveredSet was not given, let it be an empty set.
-    HeapHashSet<Member<ModuleScript>> discovered_set;
+    HeapHashSet<Member<const ModuleScript>> discovered_set;
 
     // [FDaI] Step 5. Let parse error be the result of finding the first parse
     // error given result.
@@ -463,12 +479,12 @@ void ModuleTreeLinker::Instantiate() {
   AdvanceState(State::kFinished);
 }
 
-// [FFPE] https://html.spec.whatwg.org/#finding-the-first-parse-error
+// [FFPE] https://html.spec.whatwg.org/C/#finding-the-first-parse-error
 //
 // This returns non-empty ScriptValue iff a parse error is found.
 ScriptValue ModuleTreeLinker::FindFirstParseError(
-    ModuleScript* module_script,
-    HeapHashSet<Member<ModuleScript>>* discovered_set) const {
+    const ModuleScript* module_script,
+    HeapHashSet<Member<const ModuleScript>>* discovered_set) const {
   // FindFirstParseError() is called only when there is no fetch errors, i.e.
   // all module scripts in the graph are non-null.
   DCHECK(module_script);
@@ -485,14 +501,14 @@ ScriptValue ModuleTreeLinker::FindFirstParseError(
 
   // [FFPE] Step 4. If moduleScript's record is null, then return moduleScript's
   // parse error.
-  ScriptModule record = module_script->Record();
+  ModuleRecord record = module_script->Record();
   if (record.IsNull())
     return module_script->CreateParseError();
 
   // [FFPE] Step 5. Let childSpecifiers be the value of moduleScript's record's
   // [[RequestedModules]] internal slot.
   Vector<Modulator::ModuleRequest> child_specifiers =
-      modulator_->ModuleRequestsFromScriptModule(record);
+      modulator_->ModuleRequestsFromModuleRecord(record);
 
   for (const auto& module_request : child_specifiers) {
     // [FFPE] Step 6. Let childURLs be the list obtained by calling resolve a
@@ -505,13 +521,14 @@ ScriptValue ModuleTreeLinker::FindFirstParseError(
     // moduleScript would have been marked as itself having a parse error.)
     CHECK(child_url.IsValid())
         << "ModuleScript::ResolveModuleSpecifier() impl must "
-           "return either a valid url or null.";
+           "return a valid url.";
 
     // [FFPE] Step 7. Let childModules be the list obtained by getting each
     // value in moduleMap whose key is given by an item of childURLs.
     //
     // [FFPE] Step 8. For each childModule of childModules:
-    ModuleScript* child_module = modulator_->GetFetchedModuleScript(child_url);
+    const ModuleScript* child_module =
+        modulator_->GetFetchedModuleScript(child_url);
 
     // [FFPE] Step 8.1. Assert: childModule is a module script (i.e., it is not
     // "fetching" or null)

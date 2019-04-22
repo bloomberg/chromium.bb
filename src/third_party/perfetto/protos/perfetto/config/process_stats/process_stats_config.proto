@@ -44,14 +44,20 @@ message ProcessStatsConfig {
   optional bool record_thread_names = 3;
 
   // If > 0 samples counters (see process_stats.proto) from
-  // /proc/pid/status every X ms.
+  // /proc/pid/status and oom_score_adj every X ms.
   // This is required to be > 100ms to avoid excessive CPU usage.
   // TODO(primiano): add CPU cost for change this value.
   optional uint32 proc_stats_poll_ms = 4;
 
   // If empty samples stats for all processes. If non empty samples stats only
   // for processes matching the given string in their argv0 (i.e. the first
-  // entry of of /proc/pid/cmdline).
+  // entry of /proc/pid/cmdline).
   // TODO(primiano): implement this feature.
   // repeated string proc_stats_filter = 5;
+
+  // This is required to be either = 0 or a multiple of |proc_stats_poll_ms|
+  // (default: |proc_stats_poll_ms|). If = 0, will be set to
+  // |proc_stats_poll_ms|. Non-multiples will be rounded down to the nearest
+  // multiple.
+  optional uint32 proc_stats_cache_ttl_ms = 6;
 }

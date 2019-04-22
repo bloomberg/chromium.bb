@@ -13,6 +13,7 @@
 #include "services/viz/public/cpp/compositing/quads_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/render_pass.mojom-shared.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
+#include "ui/gfx/mojo/rrect_f_struct_traits.h"
 #include "ui/gfx/mojo/transform_struct_traits.h"
 
 namespace mojo {
@@ -48,6 +49,11 @@ struct StructTraits<viz::mojom::RenderPassDataView,
   static const cc::FilterOperations& backdrop_filters(
       const std::unique_ptr<viz::RenderPass>& input) {
     return input->backdrop_filters;
+  }
+
+  static const gfx::RRectF& backdrop_filter_bounds(
+      const std::unique_ptr<viz::RenderPass>& input) {
+    return input->backdrop_filter_bounds;
   }
 
   static const gfx::ColorSpace& color_space(

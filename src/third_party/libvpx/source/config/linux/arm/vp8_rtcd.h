@@ -92,6 +92,13 @@ void vp8_blend_mb_outer_c(unsigned char* y,
 int vp8_block_error_c(short* coeff, short* dqcoeff);
 #define vp8_block_error vp8_block_error_c
 
+void vp8_copy32xn_c(const unsigned char* src_ptr,
+                    int src_stride,
+                    unsigned char* dst_ptr,
+                    int dst_stride,
+                    int height);
+#define vp8_copy32xn vp8_copy32xn_c
+
 void vp8_copy_mem16x16_c(unsigned char* src,
                          int src_stride,
                          unsigned char* dst,

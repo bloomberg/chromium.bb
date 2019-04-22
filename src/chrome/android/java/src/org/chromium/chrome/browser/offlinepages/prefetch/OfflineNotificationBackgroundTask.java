@@ -5,14 +5,15 @@
 package org.chromium.chrome.browser.offlinepages.prefetch;
 
 import android.content.Context;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask.StartBeforeNativeResult;
-import org.chromium.chrome.browser.offlinepages.DeviceConditions;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
@@ -23,7 +24,6 @@ import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.net.ConnectionType;
 
 import java.util.Calendar;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Detects when the user has been offline and notifies them if they have offline content.
@@ -186,9 +186,9 @@ public class OfflineNotificationBackgroundTask extends NativeBackgroundTask {
     private static long delayForDetectionMode(int detectionMode) {
         switch (detectionMode) {
             case DETECTION_MODE_ONLINE:
-                return TimeUnit.MINUTES.toMillis(DEFAULT_START_DELAY_MINUTES);
+                return DateUtils.MINUTE_IN_MILLIS * DEFAULT_START_DELAY_MINUTES;
             case DETECTION_MODE_OFFLINE:
-                return TimeUnit.MINUTES.toMillis(OFFLINE_POLL_DELAY_MINUTES);
+                return DateUtils.MINUTE_IN_MILLIS * OFFLINE_POLL_DELAY_MINUTES;
             default:
                 return -1;
         }

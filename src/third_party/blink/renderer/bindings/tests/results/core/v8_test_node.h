@@ -25,6 +25,8 @@
 
 namespace blink {
 
+CORE_EXPORT extern const WrapperTypeInfo v8_test_node_wrapper_type_info;
+
 class V8TestNode {
   STATIC_ONLY(V8TestNode);
  public:
@@ -35,7 +37,11 @@ class V8TestNode {
     return ToScriptWrappable(object)->ToImpl<TestNode>();
   }
   CORE_EXPORT static TestNode* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  CORE_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_node_wrapper_type_info;
+  }
+
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions

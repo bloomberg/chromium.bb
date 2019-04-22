@@ -31,17 +31,20 @@ void PaintArc(Canvas* canvas,
               const Rect& bounds,
               SkColor color,
               SkScalar start_angle,
-              SkScalar sweep) {
-  // Stroke width depends on size.
-  // . For size < 28:          3 - (28 - size) / 16
-  // . For 28 <= size:         (8 + size) / 12
-  SkScalar stroke_width = bounds.width() < 28
-                              ? 3.0 - SkIntToScalar(28 - bounds.width()) / 16.0
-                              : SkIntToScalar(bounds.width() + 8) / 12.0;
+              SkScalar sweep,
+              base::Optional<SkScalar> stroke_width) {
+  if (!stroke_width) {
+    // Stroke width depends on size.
+    // . For size < 28:          3 - (28 - size) / 16
+    // . For 28 <= size:         (8 + size) / 12
+    stroke_width = bounds.width() < 28
+                       ? 3.0 - SkIntToScalar(28 - bounds.width()) / 16.0
+                       : SkIntToScalar(bounds.width() + 8) / 12.0;
+  }
   Rect oval = bounds;
   // Inset by half the stroke width to make sure the whole arc is inside
   // the visible rect.
-  int inset = SkScalarCeilToInt(stroke_width / 2.0);
+  int inset = SkScalarCeilToInt(*stroke_width / 2.0);
   oval.Inset(inset, inset);
 
   SkPath path;
@@ -50,7 +53,7 @@ void PaintArc(Canvas* canvas,
   cc::PaintFlags flags;
   flags.setColor(color);
   flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
-  flags.setStrokeWidth(stroke_width);
+  flags.setStrokeWidth(*stroke_width);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setAntiAlias(true);
   canvas->DrawPath(path, flags);
@@ -78,11 +81,13 @@ void CalculateWaitingAngles(const base::TimeDelta& elapsed_time,
 
 // This is a Skia port of the MD spinner SVG. The |start_angle| rotation
 // here corresponds to the 'rotate' animation.
-void PaintThrobberSpinningWithStartAngle(Canvas* canvas,
-                                         const Rect& bounds,
-                                         SkColor color,
-                                         const base::TimeDelta& elapsed_time,
-                                         int64_t start_angle) {
+void PaintThrobberSpinningWithStartAngle(
+    Canvas* canvas,
+    const Rect& bounds,
+    SkColor color,
+    const base::TimeDelta& elapsed_time,
+    int64_t start_angle,
+    base::Optional<SkScalar> stroke_width) {
   // The sweep angle ranges from -270 to 270 over 1333ms. CSS
   // animation timing functions apply in between key frames, so we have to
   // break up the 1333ms into two keyframes (-270 to 0, then 0 to 270).
@@ -112,7 +117,7 @@ void PaintThrobberSpinningWithStartAngle(Canvas* canvas,
   // |arc_time| period has elapsed. See SVG's 'rot' animation.
   int64_t rot_keyframe = (elapsed_time / (arc_time * 2)) % 4;
   PaintArc(canvas, bounds, color, start_angle + rot_keyframe * kMaxArcSize,
-           sweep);
+           sweep, stroke_width);
 }
 
 }  // namespace
@@ -120,26 +125,31 @@ void PaintThrobberSpinningWithStartAngle(Canvas* canvas,
 void PaintThrobberSpinning(Canvas* canvas,
                            const Rect& bounds,
                            SkColor color,
-                           const base::TimeDelta& elapsed_time) {
+                           const base::TimeDelta& elapsed_time,
+                           base::Optional<SkScalar> stroke_width) {
   base::TimeDelta rotation_time =
       base::TimeDelta::FromMilliseconds(kRotationTimeMs);
   int64_t start_angle = 270 + 360 * elapsed_time / rotation_time;
   PaintThrobberSpinningWithStartAngle(canvas, bounds, color, elapsed_time,
-                                      start_angle);
+                                      start_angle, stroke_width);
 }
 
 void PaintThrobberWaiting(Canvas* canvas,
-    const Rect& bounds, SkColor color, const base::TimeDelta& elapsed_time) {
+                          const Rect& bounds,
+                          SkColor color,
+                          const base::TimeDelta& elapsed_time,
+                          base::Optional<SkScalar> stroke_width) {
   int64_t start_angle = 0, sweep = 0;
   CalculateWaitingAngles(elapsed_time, &start_angle, &sweep);
-  PaintArc(canvas, bounds, color, start_angle, sweep);
+  PaintArc(canvas, bounds, color, start_angle, sweep, stroke_width);
 }
 
 void PaintThrobberSpinningAfterWaiting(Canvas* canvas,
                                        const Rect& bounds,
                                        SkColor color,
                                        const base::TimeDelta& elapsed_time,
-                                       ThrobberWaitingState* waiting_state) {
+                                       ThrobberWaitingState* waiting_state,
+                                       base::Optional<SkScalar> stroke_width) {
   int64_t waiting_start_angle = 0, waiting_sweep = 0;
   CalculateWaitingAngles(waiting_state->elapsed_time, &waiting_start_angle,
                          &waiting_sweep);
@@ -162,15 +172,15 @@ void PaintThrobberSpinningAfterWaiting(Canvas* canvas,
 
   // Blend the color between "waiting" and "spinning" states.
   base::TimeDelta color_fade_time = base::TimeDelta::FromMilliseconds(900);
-  double color_progress = 1.0;
+  float color_progress = 1.0f;
   if (elapsed_time < color_fade_time) {
-    color_progress = Tween::CalculateValue(
+    color_progress = static_cast<float>(Tween::CalculateValue(
         Tween::LINEAR_OUT_SLOW_IN,
         static_cast<double>(elapsed_time.InMicroseconds()) /
-            color_fade_time.InMicroseconds());
+            color_fade_time.InMicroseconds()));
   }
-  SkColor blend_color = color_utils::AlphaBlend(color, waiting_state->color,
-                                                color_progress * 255);
+  SkColor blend_color =
+      color_utils::AlphaBlend(color, waiting_state->color, color_progress);
 
   int64_t start_angle =
       waiting_start_angle +
@@ -179,7 +189,8 @@ void PaintThrobberSpinningAfterWaiting(Canvas* canvas,
       elapsed_time + waiting_state->arc_time_offset;
 
   PaintThrobberSpinningWithStartAngle(canvas, bounds, blend_color,
-                                      effective_elapsed_time, start_angle);
+                                      effective_elapsed_time, start_angle,
+                                      stroke_width);
 }
 
 GFX_EXPORT void PaintNewThrobberWaiting(Canvas* canvas,
@@ -223,11 +234,9 @@ GFX_EXPORT void PaintNewThrobberWaiting(Canvas* canvas,
   cc::PaintFlags flags;
   flags.setColor(color);
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  // Disable anti-aliasing to effectively "pixel align" the rectangle.
-  flags.setAntiAlias(false);
 
   // Draw with circular end caps.
-  canvas->DrawRect(bounds, flags);
+  canvas->DrawRoundRect(bounds, bounds.height() / 2, flags);
 }
 
 }  // namespace gfx

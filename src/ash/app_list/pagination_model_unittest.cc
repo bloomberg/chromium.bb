@@ -58,7 +58,7 @@ class TestPaginationModelObserver : public PaginationModelObserver {
   void AppendSelectedPage(int page) {
     if (selected_pages_.length())
       selected_pages_.append(std::string(" "));
-    selected_pages_.append(base::IntToString(page));
+    selected_pages_.append(base::NumberToString(page));
   }
 
   // PaginationModelObserver overrides:

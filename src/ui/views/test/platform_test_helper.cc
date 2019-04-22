@@ -4,6 +4,8 @@
 
 #include "ui/views/test/platform_test_helper.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -17,8 +19,7 @@
 namespace views {
 namespace {
 
-PlatformTestHelper::Factory test_helper_factory;
-bool is_mus = false;
+PlatformTestHelper::Factory g_test_helper_factory;
 
 }  // namespace
 
@@ -26,26 +27,16 @@ PlatformTestHelper::~PlatformTestHelper() {
   ui::TerminateContextFactoryForTests();
 }
 
-void PlatformTestHelper::set_factory(const Factory& factory) {
-  DCHECK(test_helper_factory.is_null());
-  test_helper_factory = factory;
+void PlatformTestHelper::set_factory(Factory factory) {
+  DCHECK_NE(factory.is_null(), g_test_helper_factory.is_null());
+  g_test_helper_factory = std::move(factory);
 }
 
 // static
 std::unique_ptr<PlatformTestHelper> PlatformTestHelper::Create() {
-  return !test_helper_factory.is_null()
-             ? test_helper_factory.Run()
-             : base::WrapUnique(new PlatformTestHelper);
-}
-
-// static
-void PlatformTestHelper::SetIsMus() {
-  is_mus = true;
-}
-
-// static
-bool PlatformTestHelper::IsMus() {
-  return is_mus;
+  return g_test_helper_factory.is_null()
+             ? base::WrapUnique(new PlatformTestHelper)
+             : g_test_helper_factory.Run();
 }
 
 #if defined(USE_AURA)

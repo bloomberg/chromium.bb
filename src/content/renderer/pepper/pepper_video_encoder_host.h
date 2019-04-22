@@ -85,6 +85,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
       const gpu::SwapBuffersCompleteParams& params) final {}
   void OnSwapBufferPresented(uint64_t swap_id,
                              const gfx::PresentationFeedback& feedback) final {}
+  void OnGpuControlReturnData(base::span<const uint8_t> data) final;
 
   int32_t OnHostMsgGetSupportedProfiles(
       ppapi::host::HostMessageContext* context);

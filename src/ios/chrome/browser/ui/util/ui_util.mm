@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
 
 #import <UIKit/UIKit.h>
 #include <limits>
@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/web/public/features.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/gfx/ios/uikit_util.h"
 
@@ -69,38 +68,18 @@ bool IsRefreshLocationBarEnabled() {
   return true;
 }
 
-bool IsUIRefreshPhase1Enabled() {
-  return true;
-}
-
-// TODO(crbug.com/885003) : Remove this flag.
-bool IsWKWebViewSnapshotsEnabled() {
-  return base::FeatureList::IsEnabled(kWKWebViewSnapshots);
-}
-
 CGFloat StatusBarHeight() {
-  if (base::FeatureList::IsEnabled(
-          web::features::kBrowserContainerFullscreen) &&
-      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
-      base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
+  if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
     DCHECK(!base::ios::IsRunningOnIOS11OrLater());
   }
 
   // This is a temporary solution until usage of StatusBarHeight has been
   // replaced with topLayoutGuide.
-
   if (IsIPhoneX()) {
     return IsPortrait() ? 44 : 0;
   }
 
-  // Checking [UIApplication sharedApplication].statusBarFrame will return the
-  // wrong offset when the application is started while in a phone call, so
-  // simply return 20 here.
-  if (!IsUIRefreshPhase1Enabled()) {
-    return 20;
-  }
-
-  // With the UI refresh, the location bar is hidden on landscape.
+  // The location bar is hidden on landscape.
   BOOL isCompactHeight = [UIApplication sharedApplication]
                              .keyWindow.traitCollection.verticalSizeClass ==
                          UIUserInterfaceSizeClassCompact;

@@ -71,6 +71,8 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
 
   bool NeedsPreferredWidthsRecalculation() const override;
 
+  void RecalcVisualOverflow() override;
+
   // These values are specified to be 300 and 150 pixels in the CSS 2.1 spec.
   // http://www.w3.org/TR/CSS2/visudet.html#inline-replaced-width
   static const int kDefaultWidth;

@@ -120,7 +120,7 @@ CREATE TABLE `buildTable` (
   `waterfall` varchar(80) DEFAULT NULL,
   `build_number` int(11) NOT NULL,
   `build_config` varchar(80) NOT NULL,
-  `bot_hostname` varchar(80) NOT NULL,
+  `bot_hostname` varchar(160) NOT NULL,
   `start_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `finish_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `status` enum('fail','pass','inflight','missing','aborted') NOT NULL DEFAULT 'inflight',

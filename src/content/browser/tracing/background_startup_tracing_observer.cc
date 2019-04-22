@@ -4,6 +4,7 @@
 
 #include "content/browser/tracing/background_startup_tracing_observer.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/browser/tracing/background_tracing_rule.h"

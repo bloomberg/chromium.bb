@@ -9,13 +9,6 @@
 login.createScreen('AutolaunchScreen', 'autolaunch', function() {
   return {
     EXTERNAL_API: ['updateApp', 'confirmAutoLaunchForTesting'],
-    /**
-     * Header text of the screen.
-     * @type {string}
-     */
-    get header() {
-      return loadTimeData.getString('autolaunchTitle');
-    },
 
     /**
      * Buttons in oobe wizard's button strip.

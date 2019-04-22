@@ -61,7 +61,7 @@ class ConstantPoolEntry {
   enum Type { INTPTR, DOUBLE, NUMBER_OF_TYPES };
 
   static int size(Type type) {
-    return (type == INTPTR) ? kPointerSize : kDoubleSize;
+    return (type == INTPTR) ? kSystemPointerSize : kDoubleSize;
   }
 
   enum Access { REGULAR, OVERFLOWED };
@@ -87,6 +87,14 @@ class ConstantPoolEntry {
 class ConstantPoolBuilder {
  public:
   ConstantPoolBuilder(int ptr_reach_bits, int double_reach_bits);
+
+#ifdef DEBUG
+  ~ConstantPoolBuilder() {
+    // Unused labels to prevent DCHECK failures.
+    emitted_label_.Unuse();
+    emitted_label_.UnuseNear();
+  }
+#endif
 
   // Add pointer-sized constant to the embedded constant pool
   ConstantPoolEntry::Access AddEntry(int position, intptr_t value,

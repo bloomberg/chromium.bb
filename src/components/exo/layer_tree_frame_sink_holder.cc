@@ -4,7 +4,6 @@
 
 #include "components/exo/layer_tree_frame_sink_holder.h"
 
-#include "ash/shell.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -30,11 +29,8 @@ LayerTreeFrameSinkHolder::~LayerTreeFrameSinkHolder() {
   if (frame_sink_)
     frame_sink_->DetachFromClient();
 
-  for (auto& callback : release_callbacks_)
-    std::move(callback.second).Run(gpu::SyncToken(), true /* lost */);
-
-  if (shell_)
-    shell_->RemoveShellObserver(this);
+  if (lifetime_manager_)
+    lifetime_manager_->RemoveObserver(this);
 }
 
 // static
@@ -54,6 +50,7 @@ void LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
   frame.metadata.begin_frame_ack.sequence_number =
       viz::BeginFrameArgs::kStartingFrameNumber;
   frame.metadata.begin_frame_ack.has_damage = true;
+  frame.metadata.frame_token = ++holder->next_frame_token_;
   frame.metadata.device_scale_factor = holder->last_frame_device_scale_factor_;
   frame.metadata.local_surface_id_allocation_time =
       holder->last_local_surface_id_allocation_time_;
@@ -63,21 +60,24 @@ void LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
   frame.render_pass_list.push_back(std::move(pass));
   holder->last_frame_resources_.clear();
   holder->frame_sink_->SubmitCompositorFrame(std::move(frame),
+                                             /*hit_test_data_changed=*/true,
                                              /*show_hit_test_borders=*/false);
 
   // Delete sink holder immediately if not waiting for resources to be
   // reclaimed.
-  if (holder->release_callbacks_.empty())
+  if (holder->resource_manager_.HasNoCallbacks())
     return;
 
-  ash::Shell* shell = ash::Shell::Get();
-  holder->shell_ = shell;
+  WMHelper::LifetimeManager* lifetime_manager =
+      WMHelper::GetInstance()->GetLifetimeManager();
+  holder->lifetime_manager_ = lifetime_manager;
   holder->surface_tree_host_ = nullptr;
 
   // If we have pending release callbacks then extend the lifetime of holder
-  // by adding it as a shell observer. The holder will delete itself when shell
-  // shuts down or when all pending release callbacks have been called.
-  shell->AddShellObserver(holder.release());
+  // by adding it as a LifetimeManager observer. The holder will delete itself
+  // when LifetimeManager shuts down or when all pending release callbacks have
+  // been called.
+  lifetime_manager->AddObserver(holder.release());
 }
 
 void LayerTreeFrameSinkHolder::SubmitCompositorFrame(
@@ -90,28 +90,13 @@ void LayerTreeFrameSinkHolder::SubmitCompositorFrame(
   for (auto& resource : frame.resource_list)
     last_frame_resources_.push_back(resource.id);
   frame_sink_->SubmitCompositorFrame(std::move(frame),
+                                     /*hit_test_data_changed=*/true,
                                      /*show_hit_test_borders=*/false);
 }
 
 void LayerTreeFrameSinkHolder::DidNotProduceFrame(
     const viz::BeginFrameAck& ack) {
   frame_sink_->DidNotProduceFrame(ack);
-}
-
-bool LayerTreeFrameSinkHolder::HasReleaseCallbackForResource(
-    viz::ResourceId id) {
-  return release_callbacks_.find(id) != release_callbacks_.end();
-}
-
-void LayerTreeFrameSinkHolder::SetResourceReleaseCallback(
-    viz::ResourceId id,
-    viz::ReleaseCallback callback) {
-  DCHECK(!callback.is_null());
-  release_callbacks_[id] = std::move(callback);
-}
-
-int LayerTreeFrameSinkHolder::AllocateResourceId() {
-  return next_resource_id_++;
 }
 
 base::WeakPtr<LayerTreeFrameSinkHolder> LayerTreeFrameSinkHolder::GetWeakPtr() {
@@ -134,15 +119,10 @@ void LayerTreeFrameSinkHolder::ReclaimResources(
     if (base::ContainsValue(last_frame_resources_, resource.id)) {
       continue;
     }
-    auto it = release_callbacks_.find(resource.id);
-    DCHECK(it != release_callbacks_.end());
-    if (it != release_callbacks_.end()) {
-      std::move(it->second).Run(resource.sync_token, resource.lost);
-      release_callbacks_.erase(it);
-    }
+    resource_manager_.ReclaimResource(resource);
   }
 
-  if (shell_ && release_callbacks_.empty())
+  if (lifetime_manager_ && resource_manager_.HasNoCallbacks())
     ScheduleDelete();
 }
 
@@ -160,24 +140,10 @@ void LayerTreeFrameSinkHolder::DidPresentCompositorFrame(
 
 void LayerTreeFrameSinkHolder::DidLoseLayerTreeFrameSink() {
   last_frame_resources_.clear();
-  for (auto& callback : release_callbacks_)
-    std::move(callback.second).Run(gpu::SyncToken(), true /* lost */);
-  release_callbacks_.clear();
+  resource_manager_.ClearAllCallbacks();
 
-  if (shell_)
+  if (lifetime_manager_)
     ScheduleDelete();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ash::ShellObserver overrides:
-
-void LayerTreeFrameSinkHolder::OnShellDestroyed() {
-  shell_->RemoveShellObserver(this);
-  shell_ = nullptr;
-  // Make sure frame sink never outlives the shell.
-  frame_sink_->DetachFromClient();
-  frame_sink_.reset();
-  ScheduleDelete();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -188,6 +154,16 @@ void LayerTreeFrameSinkHolder::ScheduleDelete() {
     return;
   delete_pending_ = true;
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+}
+
+void LayerTreeFrameSinkHolder::OnDestroyed() {
+  lifetime_manager_->RemoveObserver(this);
+  lifetime_manager_ = nullptr;
+
+  // Make sure frame sink never outlives the shell.
+  frame_sink_->DetachFromClient();
+  frame_sink_.reset();
+  ScheduleDelete();
 }
 
 }  // namespace exo

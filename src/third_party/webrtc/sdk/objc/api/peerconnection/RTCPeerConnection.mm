@@ -28,7 +28,7 @@
 
 #include <memory>
 
-#include "api/jsepicecandidate.h"
+#include "api/jsep_ice_candidate.h"
 #include "api/media_transport_interface.h"
 #include "rtc_base/checks.h"
 
@@ -579,7 +579,7 @@ void PeerConnectionDelegateAdapter::OnRemoveTrack(
   std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> nativeTransceivers(
       _peerConnection->GetTransceivers());
   NSMutableArray *transceivers = [[NSMutableArray alloc] init];
-  for (auto nativeTransceiver : nativeTransceivers) {
+  for (const auto &nativeTransceiver : nativeTransceivers) {
     RTCRtpTransceiver *transceiver = [[RTCRtpTransceiver alloc] initWithFactory:self.factory
                                                            nativeRtpTransceiver:nativeTransceiver];
     [transceivers addObject:transceiver];

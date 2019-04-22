@@ -13,8 +13,6 @@ TypeConverter<ws::mojom::WindowType, views::Widget::InitParams::Type>::Convert(
   switch (type) {
     case views::Widget::InitParams::TYPE_WINDOW:
       return ws::mojom::WindowType::WINDOW;
-    case views::Widget::InitParams::TYPE_PANEL:
-      return ws::mojom::WindowType::PANEL;
     case views::Widget::InitParams::TYPE_WINDOW_FRAMELESS:
       return ws::mojom::WindowType::WINDOW_FRAMELESS;
     case views::Widget::InitParams::TYPE_CONTROL:

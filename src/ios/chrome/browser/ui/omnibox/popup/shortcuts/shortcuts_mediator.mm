@@ -14,7 +14,8 @@
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_consumer.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
-#import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 
@@ -50,30 +51,34 @@ const CGFloat kFaviconMinimalSize = 32;
   // ShortcutsMediator observes the reading list model to get the reading list
   // badge.
   std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
+  UrlLoadingService* _loadingService;
 }
 
 - (instancetype)
-initWithLargeIconService:(favicon::LargeIconService*)largeIconService
-          largeIconCache:(LargeIconCache*)largeIconCache
-         mostVisitedSite:
-             (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
-        readingListModel:(ReadingListModel*)readingListModel {
+    initWithLargeIconService:(favicon::LargeIconService*)largeIconService
+              largeIconCache:(LargeIconCache*)largeIconCache
+             mostVisitedSite:
+                 (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
+            readingListModel:(ReadingListModel*)readingListModel
+              loadingService:(UrlLoadingService*)loadingService {
   self = [super init];
   if (self) {
-    _mostVisitedSites = std::move(mostVisitedSites);
-    _mostVisitedBridge =
-        std::make_unique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
-    _mostVisitedSites->SetMostVisitedURLsObserver(_mostVisitedBridge.get(),
-                                                  kMaxNumMostVisitedTiles);
-
     _faviconAttributesProvider = [[FaviconAttributesProvider alloc]
         initWithFaviconSize:kFaviconSize
              minFaviconSize:kFaviconMinimalSize
            largeIconService:largeIconService];
     _faviconAttributesProvider.cache = largeIconCache;
 
+    _mostVisitedSites = std::move(mostVisitedSites);
+    _mostVisitedBridge =
+        std::make_unique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
+    _mostVisitedSites->SetMostVisitedURLsObserver(_mostVisitedBridge.get(),
+                                                  kMaxNumMostVisitedTiles);
+
     _readingListModelBridge =
         std::make_unique<ReadingListModelBridge>(self, readingListModel);
+
+    _loadingService = loadingService;
   }
   return self;
 }
@@ -102,11 +107,10 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
 #pragma mark - ShortcutsViewControllerDelegate
 
 - (void)openMostVisitedItem:(ShortcutsMostVisitedItem*)item {
-  web::NavigationManager::WebLoadParams params(item.URL);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  ChromeLoadParams chromeParams(params);
   [self.dispatcher cancelOmniboxEdit];
-  [self.dispatcher loadURLWithParams:chromeParams];
+  UrlLoadParams params = UrlLoadParams::InCurrentTab(item.URL);
+  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  _loadingService->Load(params);
 }
 
 - (void)openBookmarks {

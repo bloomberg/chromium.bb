@@ -23,7 +23,6 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/ui.gni")
 import("//chromeos/assistant/assistant.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//ui/base/ui_features.gni")
 
@@ -41,7 +40,7 @@ public_app_shared_deps = [
   "//base:i18n",
   "//content:export",
   "//content/public/common:common_sources",
-  "//services/service_manager/background:lib",
+  "//services/service_manager",
   "//services/service_manager/embedder",
   "//services/service_manager/public/cpp",
 ]
@@ -180,71 +179,158 @@ if (is_component_build) {
   }
 }
 
-service_manifest("packaged_services_manifest") {
-  name = "content_packaged_services"
-  source = "mojo/content_packaged_services_manifest.json"
-  packaged_services = [
-    "//components/services/heap_profiling:manifest",
+source_set("content_browser_manifest") {
+  sources = [
+    "content_browser_manifest.cc",
+    "content_browser_manifest.h",
+  ]
+
+  deps = [
+    ":v8_snapshot_overlay_manifest",
+    "//base",
+    "//content/public/common:service_names",
+    "//services/content/public/cpp:manifest",
+    "//services/file/public/cpp:manifest",
+  ]
+
+  public_deps = [
+    "//services/service_manager/public/cpp",
+  ]
+}
+
+source_set("content_gpu_manifest") {
+  sources = [
+    "content_gpu_manifest.cc",
+    "content_gpu_manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content/public/common:service_names",
+  ]
+
+  public_deps = [
+    "//services/service_manager/public/cpp",
+  ]
+}
+
+source_set("content_packaged_services_manifest") {
+  sources = [
+    "content_packaged_services_manifest.cc",
+    "content_packaged_services_manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/services/heap_profiling/public/cpp:manifest",
+    "//content/public/common:service_names",
     "//media/mojo/services:cdm_manifest",
     "//media/mojo/services:media_manifest",
-    "//services/audio:manifest",
-    "//services/data_decoder:manifest",
-    "//services/device:manifest",
-    "//services/media_session:manifest",
-    "//services/metrics:manifest",
-    "//services/network:manifest",
-    "//services/resource_coordinator:manifest",
-    "//services/shape_detection:manifest",
+    "//services/audio/public/cpp:manifest",
+    "//services/data_decoder/public/cpp:manifest",
+    "//services/device/public/cpp:manifest",
+    "//services/media_session/public/cpp:manifest",
+    "//services/metrics/public/cpp:manifest",
+    "//services/network/public/cpp:manifest",
+    "//services/resource_coordinator/public/cpp:manifest",
+    "//services/shape_detection/public/cpp:manifest",
     "//services/tracing:manifest",
-    "//services/video_capture:manifest",
-    "//services/viz:manifest",
+    "//services/video_capture/public/cpp:manifest",
+    "//services/viz/public/cpp:manifest",
+  ]
+
+  public_deps = [
+    "//services/service_manager/public/cpp",
   ]
 
   if (is_linux) {
-    packaged_services += [ "//components/services/font:manifest" ]
+    deps += [ "//components/services/font/public/cpp:manifest" ]
   }
 
-  if (enable_cros_libassistant) {
-    packaged_services +=
-        [ "//chromeos/services/assistant/audio_decoder:manifest" ]
+  if (is_chromeos) {
+    deps += [ "//chromeos/assistant:buildflags" ]
+    if (enable_cros_libassistant) {
+      deps +=
+          [ "//chromeos/services/assistant/public/cpp:audio_decoder_manifest" ]
+    }
   }
 }
 
-service_manifest("browser_manifest") {
-  name = "content_browser"
-  source = "mojo/content_browser_manifest.json"
-  packaged_services = [
-    "//services/content:manifest",
-    "//services/file:manifest",
+source_set("content_plugin_manifest") {
+  sources = [
+    "content_plugin_manifest.cc",
+    "content_plugin_manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content/public/common:service_names",
+  ]
+
+  public_deps = [
+    "//services/service_manager/public/cpp",
   ]
 }
 
-service_manifest("gpu_manifest") {
-  name = "content_gpu"
-  source = "mojo/content_gpu_manifest.json"
+source_set("content_renderer_manifest") {
+  sources = [
+    "content_renderer_manifest.cc",
+    "content_renderer_manifest.h",
+  ]
+
+  deps = [
+    ":v8_snapshot_overlay_manifest",
+    "//base",
+    "//content/public/common:service_names",
+  ]
+
+  public_deps = [
+    "//services/service_manager/public/cpp",
+  ]
 }
 
-service_manifest("plugin_manifest") {
-  name = "content_plugin"
-  source = "mojo/content_plugin_manifest.json"
+source_set("content_utility_manifest") {
+  sources = [
+    "content_utility_manifest.cc",
+    "content_utility_manifest.h",
+  ]
+
+  deps = [
+    ":v8_snapshot_overlay_manifest",
+    "//base",
+    "//content/public/common:service_names",
+  ]
+
+  public_deps = [
+    "//services/service_manager/public/cpp",
+  ]
 }
 
-service_manifest("snapshot_manifest") {
-  if (use_v8_context_snapshot) {
-    source = "mojo/context_snapshot_manifest.json"
-  } else {
-    source = "mojo/snapshot_blob_manifest.json"
-  }
+source_set("v8_snapshot_overlay_manifest") {
+  sources = [
+    "v8_snapshot_overlay_manifest.cc",
+    "v8_snapshot_overlay_manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content/public/common:content_descriptor_keys",
+  ]
+
+  public_deps = [
+    "//services/service_manager/public/cpp",
+  ]
+
+  configs += [ "//tools/v8_context_snapshot:use_v8_context_snapshot" ]
 }
 
-service_manifest("renderer_manifest") {
-  name = "content_renderer"
-  source = "mojo/content_renderer_manifest.json"
-  overlays = [ ":snapshot_manifest" ]
-}
-
-service_manifest("utility_manifest") {
-  name = "content_utility"
-  source = "mojo/content_utility_manifest.json"
-  overlays = [ ":snapshot_manifest" ]
+group("service_manifests") {
+  public_deps = [
+    ":content_browser_manifest",
+    ":content_gpu_manifest",
+    ":content_packaged_services_manifest",
+    ":content_plugin_manifest",
+    ":content_renderer_manifest",
+    ":content_utility_manifest",
+  ]
 }

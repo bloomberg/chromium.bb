@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
@@ -331,7 +332,8 @@ bool HTMLSelectElement::CanSelectAll() const {
   return !UsesMenuList();
 }
 
-LayoutObject* HTMLSelectElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLSelectElement::CreateLayoutObject(const ComputedStyle&,
+                                                    LegacyLayout) {
   if (UsesMenuList())
     return new LayoutMenuList(this);
   return new LayoutListBox(this);
@@ -380,7 +382,8 @@ void HTMLSelectElement::SetOption(unsigned index,
   if (index >= kMaxListItems ||
       GetListItems().size() + diff + 1 > kMaxListItems) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning,
         String::Format("Blocked to expand the option list and set an option at "
                        "index=%u.  The maximum list length is %u.",
                        index, kMaxListItems)));
@@ -412,7 +415,8 @@ void HTMLSelectElement::setLength(unsigned new_len,
   if (new_len > kMaxListItems ||
       GetListItems().size() + new_len - length() > kMaxListItems) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning,
         String::Format("Blocked to expand the option list to %u items.  The "
                        "maximum list length is %u.",
                        new_len, kMaxListItems)));
@@ -793,7 +797,7 @@ void HTMLSelectElement::RecalcListItems() const {
 }
 
 void HTMLSelectElement::ResetToDefaultSelection(ResetReason reason) {
-  // https://html.spec.whatwg.org/multipage/forms.html#ask-for-a-reset
+  // https://html.spec.whatwg.org/C/#ask-for-a-reset
   if (IsMultiple())
     return;
   HTMLOptionElement* first_enabled_option = nullptr;
@@ -908,7 +912,7 @@ void HTMLSelectElement::ScrollToOptionTask() {
   // OptionRemoved() makes sure option_to_scroll_to_ doesn't have an option with
   // another owner.
   DCHECK_EQ(option->OwnerSelectElement(), this);
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   if (!GetLayoutObject() || !GetLayoutObject()->IsListBox())
     return;
   LayoutRect bounds = option->BoundingBoxForScrollIntoView();
@@ -1383,7 +1387,7 @@ void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
 
   if (event.type() == event_type_names::kMousedown && event.IsMouseEvent() &&
       ToMouseEvent(event).button() ==
-          static_cast<short>(WebPointerProperties::Button::kLeft)) {
+          static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     InputDeviceCapabilities* source_capabilities =
         GetDocument()
             .domWindow()
@@ -1511,7 +1515,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
   } else if (event.type() == event_type_names::kMousedown &&
              event.IsMouseEvent() &&
              ToMouseEvent(event).button() ==
-                 static_cast<short>(WebPointerProperties::Button::kLeft)) {
+                 static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     focus();
     // Calling focus() may cause us to lose our layoutObject, in which case
     // do not want to handle the event.
@@ -1541,7 +1545,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
              event.IsMouseEvent()) {
     auto& mouse_event = ToMouseEvent(event);
     if (mouse_event.button() !=
-            static_cast<short>(WebPointerProperties::Button::kLeft) ||
+            static_cast<int16_t>(WebPointerProperties::Button::kLeft) ||
         !mouse_event.ButtonDown())
       return;
 
@@ -1576,7 +1580,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
   } else if (event.type() == event_type_names::kMouseup &&
              event.IsMouseEvent() &&
              ToMouseEvent(event).button() ==
-                 static_cast<short>(WebPointerProperties::Button::kLeft) &&
+                 static_cast<int16_t>(WebPointerProperties::Button::kLeft) &&
              GetLayoutObject()) {
     if (GetDocument().GetPage() &&
         GetDocument()
@@ -1843,7 +1847,7 @@ bool HTMLSelectElement::SupportsAutofocus() const {
   return true;
 }
 
-void HTMLSelectElement::Trace(blink::Visitor* visitor) {
+void HTMLSelectElement::Trace(Visitor* visitor) {
   visitor->Trace(list_items_);
   visitor->Trace(last_on_change_option_);
   visitor->Trace(active_selection_anchor_);
@@ -1996,10 +2000,23 @@ void HTMLSelectElement::HidePopup() {
     popup_->Hide();
 }
 
-void HTMLSelectElement::DidRecalcStyle(StyleRecalcChange change) {
+void HTMLSelectElement::DidRecalcStyle(const StyleRecalcChange change) {
   HTMLFormControlElementWithState::DidRecalcStyle(change);
   if (PopupIsVisible())
     popup_->UpdateFromElement(PopupMenu::kByStyleChange);
+}
+
+void HTMLSelectElement::AttachLayoutTree(AttachContext& context) {
+  HTMLFormControlElementWithState::AttachLayoutTree(context);
+
+  if (const ComputedStyle* style = GetComputedStyle()) {
+    if (style->Visibility() != EVisibility::kHidden) {
+      if (IsMultiple())
+        UseCounter::Count(GetDocument(), WebFeature::kSelectElementMultiple);
+      else
+        UseCounter::Count(GetDocument(), WebFeature::kSelectElementSingle);
+    }
+  }
 }
 
 void HTMLSelectElement::DetachLayoutTree(const AttachContext& context) {
@@ -2059,7 +2076,7 @@ class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
 
   void Dispose() { observer_->disconnect(); }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(select_);
     visitor->Trace(observer_);
     MutationObserver::Delegate::Trace(visitor);

@@ -21,10 +21,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -99,17 +99,23 @@ class ClientCertResolverTest : public testing::Test,
   void SetUp() override {
     ASSERT_TRUE(test_nssdb_.is_open());
     ASSERT_TRUE(test_system_nssdb_.is_open());
-
-    // Use the same DB for public and private slot.
-    test_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
+    // Use the same slot as public and private slot for the user's
+    // NSSCertDatabse for testing.
+    test_nsscertdb_ = std::make_unique<net::NSSCertDatabaseChromeOS>(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())),
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot()))));
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_nssdb_.slot())));
+    // Create a NSSCertDatabase for the system slot. While NetworkCertLoader
+    // does not care about the public slot in this database, NSSCertDatabase
+    // requires a public slot. Pass the system slot there for testing.
+    test_system_nsscertdb_ = std::make_unique<net::NSSCertDatabaseChromeOS>(
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot())),
+        crypto::ScopedPK11Slot() /* private_slot */);
+    test_system_nsscertdb_->SetSystemSlot(
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot())));
 
-    DBusThreadManager::Initialize();
-    service_test_ =
-        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
-    profile_test_ =
-        DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+    shill_clients::InitializeFakes();
+    service_test_ = ShillServiceClient::Get()->GetTestInterface();
+    profile_test_ = ShillProfileClient::Get()->GetTestInterface();
     profile_test_->AddProfile(kUserProfilePath, kUserHash);
     scoped_task_environment_.RunUntilIdle();
     service_test_->ClearServices();
@@ -132,12 +138,13 @@ class ClientCertResolverTest : public testing::Test,
     network_profile_handler_.reset();
     network_state_handler_.reset();
     NetworkCertLoader::Shutdown();
-    DBusThreadManager::Shutdown();
+    shill_clients::Shutdown();
   }
 
  protected:
   void StartNetworkCertLoader() {
     network_cert_loader_->SetUserNSSDB(test_nsscertdb_.get());
+    network_cert_loader_->SetSystemNSSDB(test_system_nsscertdb_.get());
     if (test_client_cert_.get()) {
       int slot_id = 0;
       const std::string pkcs11_id =
@@ -206,9 +213,6 @@ class ClientCertResolverTest : public testing::Test,
   }
 
   void SetupTestCertInSystemToken(const std::string& prefix) {
-    test_nsscertdb_->SetSystemSlot(
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot())));
-
     net::ImportClientCertAndKeyFromFile(
         net::GetTestCertsDirectory(), prefix + ".pem", prefix + ".pk8",
         test_system_nssdb_.slot(), &test_client_cert_);
@@ -254,10 +258,8 @@ class ClientCertResolverTest : public testing::Test,
                                       base::Value("invalid id"));
     profile_test_->AddService(kUserProfilePath, kWifiStub);
 
-    DBusThreadManager::Get()
-        ->GetShillManagerClient()
-        ->GetTestInterface()
-        ->AddManagerService(kWifiStub, true);
+    ShillManagerClient::Get()->GetTestInterface()->AddManagerService(kWifiStub,
+                                                                     true);
   }
 
   // Sets up a policy with a certificate pattern that matches any client cert
@@ -322,9 +324,9 @@ class ClientCertResolverTest : public testing::Test,
         })";
     std::string error;
     std::unique_ptr<base::Value> onc_pattern_value =
-        base::JSONReader::ReadAndReturnError(test_onc_pattern,
-                                             base::JSON_ALLOW_TRAILING_COMMAS,
-                                             nullptr, &error);
+        base::JSONReader::ReadAndReturnErrorDeprecated(
+            test_onc_pattern, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
+            &error);
     ASSERT_TRUE(onc_pattern_value) << error;
 
     base::DictionaryValue* onc_pattern_dict;
@@ -366,7 +368,7 @@ class ClientCertResolverTest : public testing::Test,
                                base::StringPiece policy_json) {
     std::string error;
     std::unique_ptr<base::Value> policy_value =
-        base::JSONReader::ReadAndReturnError(
+        base::JSONReader::ReadAndReturnErrorDeprecated(
             policy_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
     ASSERT_TRUE(policy_value) << error;
 
@@ -414,6 +416,7 @@ class ClientCertResolverTest : public testing::Test,
   std::unique_ptr<ClientCertResolver> client_cert_resolver_;
   NetworkCertLoader* network_cert_loader_ = nullptr;
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
+  std::unique_ptr<net::NSSCertDatabaseChromeOS> test_system_nsscertdb_;
 
  private:
   // ClientCertResolver::Observer:
@@ -631,7 +634,8 @@ TEST_F(ClientCertResolverTest, UserPolicyUsesSystemToken) {
 
   StartNetworkCertLoader();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(1U, network_cert_loader_->system_token_client_certs().size());
+  ASSERT_EQ(1U, network_cert_loader_->client_certs().size());
+  EXPECT_TRUE(network_cert_loader_->client_certs()[0].is_device_wide());
 
   // Verify that the resolver positively matched the pattern in the policy with
   // the test client cert and configured the network.
@@ -670,7 +674,8 @@ TEST_F(ClientCertResolverTest, DevicePolicyUsesSystemToken) {
 
   StartNetworkCertLoader();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(1U, network_cert_loader_->system_token_client_certs().size());
+  ASSERT_EQ(1U, network_cert_loader_->client_certs().size());
+  EXPECT_TRUE(network_cert_loader_->client_certs()[0].is_device_wide());
 
   // Verify that the resolver positively matched the pattern in the policy with
   // the test client cert and configured the network.
@@ -710,7 +715,8 @@ TEST_F(ClientCertResolverTest, DevicePolicyDoesNotUseUserToken) {
   network_properties_changed_count_ = 0;
   StartNetworkCertLoader();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(0U, network_cert_loader_->system_token_client_certs().size());
+  ASSERT_EQ(1U, network_cert_loader_->client_certs().size());
+  EXPECT_FALSE(network_cert_loader_->client_certs()[0].is_device_wide());
 
   // Verify that no client certificate was configured.
   std::string pkcs11_id;
@@ -806,7 +812,7 @@ TEST_F(ClientCertResolverTest, TestResolveTaskQueued) {
   // Pretend that certificates have changed. One resolving task should still be
   // queued.
   static_cast<NetworkCertLoader::Observer*>(client_cert_resolver_.get())
-      ->OnCertificatesLoaded(NetworkCertLoader::Get()->all_certs());
+      ->OnCertificatesLoaded();
   EXPECT_TRUE(client_cert_resolver_->IsAnyResolveTaskRunning());
 
   scoped_task_environment_.RunUntilIdle();

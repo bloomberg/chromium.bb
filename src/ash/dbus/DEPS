@@ -1,3 +1,5 @@
 include_rules = [
+  "+chromeos/dbus/constants",
+  "+chromeos/dbus/services",
   "+dbus",
 ]

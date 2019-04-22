@@ -65,20 +65,22 @@ static inline GrColor GrColorPackRGBA(unsigned r, unsigned g, unsigned b, unsign
  */
 #define GrColor_ILLEGAL     (~(0xFF << GrColor_SHIFT_A))
 
-#define GrColor_WHITE 0xFFFFFFFF
-
 /** Normalizes and coverts an uint8_t to a float. [0, 255] -> [0.0, 1.0] */
 static inline float GrNormalizeByteToFloat(uint8_t value) {
     static const float ONE_OVER_255 = 1.f / 255.f;
     return value * ONE_OVER_255;
 }
 
-/** Returns true if all channels are in [0, 1]. Used to pick vertex attribute types. */
+/** Used to pick vertex attribute types. */
 static inline bool SkPMColor4fFitsInBytes(const SkPMColor4f& color) {
-    SkASSERT(color.fA >= 0.0f && color.fA <= 1.0f);
-    return color.fR >= 0.0f && color.fR <= 1.0f &&
-           color.fG >= 0.0f && color.fG <= 1.0f &&
-           color.fB >= 0.0f && color.fB <= 1.0f;
+    // Might want to instead check that the components are [0...a] instead of [0...1]?
+    return color.fitsInBytes();
+}
+
+static inline uint64_t SkPMColor4f_toFP16(const SkPMColor4f& color) {
+    uint64_t halfColor;
+    SkFloatToHalf_finite_ftz(Sk4f::Load(color.vec())).store(&halfColor);
+    return halfColor;
 }
 
 /**
@@ -97,6 +99,8 @@ public:
             fColor[0] = color.toBytes_RGBA();
         }
     }
+
+    size_t size() const { return fWideColor ? 8 : 4; }
 
 private:
     friend struct GrVertexWriter;

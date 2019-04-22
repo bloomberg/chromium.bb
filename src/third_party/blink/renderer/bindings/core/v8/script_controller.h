@@ -31,6 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_CONTROLLER_H_
 
+#include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
@@ -38,8 +41,8 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
@@ -59,19 +62,11 @@ class SecurityOrigin;
 // LocalFrame::GetScriptController().
 class CORE_EXPORT ScriptController final
     : public GarbageCollected<ScriptController> {
-  WTF_MAKE_NONCOPYABLE(ScriptController);
-
  public:
   enum ExecuteScriptPolicy {
     kExecuteScriptWhenScriptsDisabled,
     kDoNotExecuteScriptWhenScriptsDisabled
   };
-
-  static ScriptController* Create(
-      LocalFrame& frame,
-      LocalWindowProxyManager& window_proxy_manager) {
-    return MakeGarbageCollected<ScriptController>(frame, window_proxy_manager);
-  }
 
   ScriptController(LocalFrame& frame,
                    LocalWindowProxyManager& window_proxy_manager)
@@ -120,7 +115,11 @@ class CORE_EXPORT ScriptController final
       SanitizeScriptErrors sanitize_script_errors);
 
   // Returns true if argument is a JavaScript URL.
-  bool ExecuteScriptIfJavaScriptURL(const KURL&, Element*);
+  bool ExecuteScriptIfJavaScriptURL(
+      const KURL&,
+      Element*,
+      ContentSecurityPolicyDisposition check_main_world_csp =
+          kCheckContentSecurityPolicy);
 
   // Creates a new isolated world for DevTools with the given human readable
   // |world_name| and returns it id or nullptr on failure.
@@ -139,9 +138,8 @@ class CORE_EXPORT ScriptController final
   void ClearForClose();
 
   // Registers a v8 extension to be available on webpages. Will only
-  // affect v8 contexts initialized after this call. Takes ownership of
-  // the v8::Extension object passed.
-  static void RegisterExtensionIfNeeded(v8::Extension*);
+  // affect v8 contexts initialized after this call.
+  static void RegisterExtensionIfNeeded(std::unique_ptr<v8::Extension>);
   static v8::ExtensionConfiguration ExtensionsFor(const ExecutionContext*);
 
  private:
@@ -159,6 +157,8 @@ class CORE_EXPORT ScriptController final
 
   const Member<LocalFrame> frame_;
   const Member<LocalWindowProxyManager> window_proxy_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptController);
 };
 
 }  // namespace blink

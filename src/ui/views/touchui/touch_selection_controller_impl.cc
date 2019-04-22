@@ -19,7 +19,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/path.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -32,7 +31,7 @@ namespace {
 
 // The distance by which a handle image is offset from the bottom of the
 // selection/text baseline.
-const int kSelectionHandleVerticalVisualOffset = 2;
+constexpr int kSelectionHandleVerticalVisualOffset = 2;
 
 // When a handle is dragged, the drag position reported to the client view is
 // offset vertically to represent the cursor position. This constant specifies
@@ -57,23 +56,23 @@ const int kSelectionHandleVerticalVisualOffset = 2;
 //                                  T
 //                          Horizontal Padding
 //
-const int kSelectionHandleVerticalDragOffset = 5;
+constexpr int kSelectionHandleVerticalDragOffset = 5;
 
 // Padding around the selection handle defining the area that will be included
 // in the touch target to make dragging the handle easier (see pic above).
-const int kSelectionHandleHorizPadding = 10;
-const int kSelectionHandleVertPadding = 20;
+constexpr int kSelectionHandleHorizPadding = 10;
+constexpr int kSelectionHandleVertPadding = 20;
 
-const int kQuickMenuTimoutMs = 200;
+constexpr int kQuickMenuTimoutMs = 200;
 
-const int kSelectionHandleQuickFadeDurationMs = 50;
+constexpr int kSelectionHandleQuickFadeDurationMs = 50;
 
 // Minimum height for selection handle bar. If the bar height is going to be
 // less than this value, handle will not be shown.
-const int kSelectionHandleBarMinHeight = 5;
+constexpr int kSelectionHandleBarMinHeight = 5;
 // Maximum amount that selection handle bar can stick out of client view's
 // boundaries.
-const int kSelectionHandleBarBottomAllowance = 3;
+constexpr int kSelectionHandleBarBottomAllowance = 3;
 
 // Creates a widget to host SelectionHandleView.
 views::Widget* CreateTouchSelectionPopupWidget(
@@ -618,12 +617,10 @@ void TouchSelectionControllerImpl::RunContextMenu() {
 }
 
 bool TouchSelectionControllerImpl::ShouldShowQuickMenu() {
-  NOTREACHED();
   return false;
 }
 
 base::string16 TouchSelectionControllerImpl::GetSelectedText() {
-  NOTREACHED();
   return base::string16();
 }
 

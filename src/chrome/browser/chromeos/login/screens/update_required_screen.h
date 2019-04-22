@@ -16,7 +16,6 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
 class UpdateRequiredView;
 
 // Controller for the update required screen.
@@ -24,8 +23,7 @@ class UpdateRequiredScreen : public BaseScreen {
  public:
   constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_UPDATE_REQUIRED;
 
-  UpdateRequiredScreen(BaseScreenDelegate* base_screen_delegate,
-                       UpdateRequiredView* view);
+  explicit UpdateRequiredScreen(UpdateRequiredView* view);
   ~UpdateRequiredScreen() override;
 
   // Called when the being destroyed. This should call Unbind() on the

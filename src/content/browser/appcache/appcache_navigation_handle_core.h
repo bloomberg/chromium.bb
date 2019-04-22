@@ -6,11 +6,14 @@
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_NAVIGATION_HANDLE_CORE_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/appcache_interfaces.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
 
@@ -26,12 +29,12 @@ class ChromeAppCacheService;
 // pendant of AppCacheNavigationHandle. See the
 // AppCacheNavigationHandle header for more details about the lifetime of
 // both classes.
-class AppCacheNavigationHandleCore : public AppCacheFrontend {
+class AppCacheNavigationHandleCore {
  public:
-  AppCacheNavigationHandleCore(
-      ChromeAppCacheService* appcache_service,
-      int appcache_host_id);
-  ~AppCacheNavigationHandleCore() override;
+  AppCacheNavigationHandleCore(ChromeAppCacheService* appcache_service,
+                               int appcache_host_id,
+                               int process_id);
+  ~AppCacheNavigationHandleCore();
 
   // Returns the raw AppCacheHost pointer. Ownership remains with this class.
   AppCacheHost* host() { return precreated_host_.get(); }
@@ -45,33 +48,17 @@ class AppCacheNavigationHandleCore : public AppCacheFrontend {
 
   AppCacheServiceImpl* GetAppCacheService();
 
- protected:
-  // AppCacheFrontend methods
-  // We don't expect calls on the AppCacheFrontend methods while the
-  // AppCacheHost is not registered with the AppCacheBackend.
-  void OnCacheSelected(int host_id, const AppCacheInfo& info) override;
-  void OnStatusChanged(const std::vector<int>& host_ids,
-                       AppCacheStatus status) override;
-  void OnEventRaised(const std::vector<int>& host_ids,
-                     AppCacheEventID event_id) override;
-  void OnProgressEventRaised(const std::vector<int>& host_ids,
-                             const GURL& url,
-                             int num_total,
-                             int num_complete) override;
-  void OnErrorEventRaised(const std::vector<int>& host_ids,
-                          const AppCacheErrorDetails& details) override;
-  void OnLogMessage(int host_id,
-                    AppCacheLogLevel log_level,
-                    const std::string& message) override;
-  void OnContentBlocked(int host_id, const GURL& manifest_url) override;
-  void OnSetSubresourceFactory(
-      int host_id,
-      network::mojom::URLLoaderFactoryPtr url_loader_factory) override;
+  // SetProcessId may only be called once, and only if kInvalidUniqueID was
+  // passed to the AppCacheNavigationHandleCore's constructor (e.g. in a
+  // scenario where NavigationHandleImpl needs to delay specifying the
+  // |process_id| until ReadyToCommit time).
+  void SetProcessId(int process_id);
 
  private:
   std::unique_ptr<AppCacheHost> precreated_host_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   int appcache_host_id_;
+  int process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheNavigationHandleCore);
 };

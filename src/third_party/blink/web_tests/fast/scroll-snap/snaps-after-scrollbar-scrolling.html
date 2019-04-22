@@ -43,7 +43,7 @@ promise_test (async () => {
 
 promise_test (async () => {
   scroller.scrollTo(0, 0);
-  await mousePressOn(398, 350, 1);
+  await mousePressOn(398, 350, 1000);
   await waitForAnimationEnd(scrollTop, 500, 5);
   await waitFor( () => {
     return scroller.scrollTop == 400;
@@ -52,7 +52,7 @@ promise_test (async () => {
 
 promise_test (async () => {
   scroller.scrollTo(0, 0);
-  await mousePressOn(350, 398, 1);
+  await mousePressOn(350, 398, 1000);
   await waitForAnimationEnd(scrollLeft, 500, 5);
   await waitFor( () => {
     return scroller.scrollLeft == 400;

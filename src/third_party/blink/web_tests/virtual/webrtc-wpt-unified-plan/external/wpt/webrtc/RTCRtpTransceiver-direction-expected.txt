@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS setting direction should change transceiver.direction
-PASS setting direction with same direction should have no effect
-PASS setting direction should change transceiver.direction independent of transceiver.currentDirection
-Harness: the test ran to completion.
-

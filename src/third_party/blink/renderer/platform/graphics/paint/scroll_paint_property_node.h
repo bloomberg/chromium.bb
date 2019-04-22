@@ -5,16 +5,17 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCROLL_PAINT_PROPERTY_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCROLL_PAINT_PROPERTY_NODE_H_
 
+#include <algorithm>
 #include "base/optional.h"
+#include "cc/input/main_thread_scrolling_reason.h"
+#include "cc/input/overscroll_behavior.h"
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
-#include "third_party/blink/renderer/platform/scroll/overscroll_behavior.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_snap_data.h"
 
 namespace blink {
 
@@ -46,27 +47,31 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     bool scrolls_outer_viewport = false;
     bool max_scroll_offset_affected_by_page_scale = false;
     MainThreadScrollingReasons main_thread_scrolling_reasons =
-        MainThreadScrollingReason::kNotScrollingOnMain;
+        cc::MainThreadScrollingReason::kNotScrollingOnMain;
     // The scrolling element id is stored directly on the scroll node and not
     // on the associated TransformPaintPropertyNode used for scroll offset.
     CompositorElementId compositor_element_id;
-    OverscrollBehavior overscroll_behavior = blink::OverscrollBehavior(
-        blink::OverscrollBehavior::kOverscrollBehaviorTypeAuto);
-    base::Optional<SnapContainerData> snap_container_data;
+    cc::OverscrollBehavior overscroll_behavior = cc::OverscrollBehavior(
+        cc::OverscrollBehavior::kOverscrollBehaviorTypeAuto);
+    base::Optional<cc::SnapContainerData> snap_container_data;
 
-    bool operator==(const State& o) const {
-      return container_rect == o.container_rect &&
-             contents_size == o.contents_size &&
-             user_scrollable_horizontal == o.user_scrollable_horizontal &&
-             user_scrollable_vertical == o.user_scrollable_vertical &&
-             scrolls_inner_viewport == o.scrolls_inner_viewport &&
-             scrolls_outer_viewport == o.scrolls_outer_viewport &&
-             max_scroll_offset_affected_by_page_scale ==
-                 o.max_scroll_offset_affected_by_page_scale &&
-             main_thread_scrolling_reasons == o.main_thread_scrolling_reasons &&
-             compositor_element_id == o.compositor_element_id &&
-             overscroll_behavior == o.overscroll_behavior &&
-             snap_container_data == o.snap_container_data;
+    PaintPropertyChangeType ComputeChange(const State& other) const {
+      if (container_rect != other.container_rect ||
+          contents_size != other.contents_size ||
+          user_scrollable_horizontal != other.user_scrollable_horizontal ||
+          user_scrollable_vertical != other.user_scrollable_vertical ||
+          scrolls_inner_viewport != other.scrolls_inner_viewport ||
+          scrolls_outer_viewport != other.scrolls_outer_viewport ||
+          max_scroll_offset_affected_by_page_scale !=
+              other.max_scroll_offset_affected_by_page_scale ||
+          main_thread_scrolling_reasons !=
+              other.main_thread_scrolling_reasons ||
+          compositor_element_id != other.compositor_element_id ||
+          overscroll_behavior != other.overscroll_behavior ||
+          snap_container_data != other.snap_container_data) {
+        return PaintPropertyChangeType::kChangedOnlyValues;
+      }
+      return PaintPropertyChangeType::kUnchanged;
     }
   };
 
@@ -86,26 +91,31 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return nullptr;
   }
 
-  bool Update(const ScrollPaintPropertyNode& parent, State&& state) {
-    bool parent_changed = SetParent(&parent);
-    if (state == state_)
-      return parent_changed;
-
-    state_ = std::move(state);
-    Validate();
-    SetChanged();
-    return true;
+  // The empty AnimationState struct is to meet the requirement of
+  // ObjectPaintProperties.
+  struct AnimationState {};
+  PaintPropertyChangeType Update(const ScrollPaintPropertyNode& parent,
+                                 State&& state,
+                                 const AnimationState& = AnimationState()) {
+    auto parent_changed = SetParent(&parent);
+    auto state_changed = state_.ComputeChange(state);
+    if (state_changed != PaintPropertyChangeType::kUnchanged) {
+      state_ = std::move(state);
+      Validate();
+      AddChanged(state_changed);
+    }
+    return std::max(parent_changed, state_changed);
   }
 
-  OverscrollBehavior::OverscrollBehaviorType OverscrollBehaviorX() const {
+  cc::OverscrollBehavior::OverscrollBehaviorType OverscrollBehaviorX() const {
     return state_.overscroll_behavior.x;
   }
 
-  OverscrollBehavior::OverscrollBehaviorType OverscrollBehaviorY() const {
+  cc::OverscrollBehavior::OverscrollBehaviorType OverscrollBehaviorY() const {
     return state_.overscroll_behavior.y;
   }
 
-  base::Optional<SnapContainerData> GetSnapContainerData() const {
+  base::Optional<cc::SnapContainerData> GetSnapContainerData() const {
     return state_.snap_container_data;
   }
 
@@ -138,13 +148,13 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // Main thread scrolling reason for the threaded scrolling disabled setting.
   bool ThreadedScrollingDisabled() const {
     return state_.main_thread_scrolling_reasons &
-           MainThreadScrollingReason::kThreadedScrollingDisabled;
+           cc::MainThreadScrollingReason::kThreadedScrollingDisabled;
   }
 
   // Main thread scrolling reason for background attachment fixed descendants.
   bool HasBackgroundAttachmentFixedDescendants() const {
     return state_.main_thread_scrolling_reasons &
-           MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+           cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
   }
 
   const CompositorElementId& GetCompositorElementId() const {

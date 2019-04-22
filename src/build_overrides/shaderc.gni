@@ -4,3 +4,4 @@
 
 shaderc_glslang_dir = "//third_party/glslang/src"
 shaderc_spirv_tools_dir = "//third_party/SPIRV-Tools/src"
+shaderc_spirv_cross_dir = "//third_party/dawn/third_party"

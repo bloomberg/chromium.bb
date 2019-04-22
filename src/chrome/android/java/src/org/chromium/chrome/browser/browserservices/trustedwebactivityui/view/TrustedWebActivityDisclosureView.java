@@ -15,10 +15,12 @@ import android.support.annotation.Nullable;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyObservable;
+import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyObservable;
 
 import javax.inject.Inject;
 
@@ -33,7 +35,7 @@ import dagger.Lazy;
  */
 @ActivityScope
 public class TrustedWebActivityDisclosureView implements
-        PropertyObservable.PropertyObserver<PropertyKey> {
+        PropertyObservable.PropertyObserver<PropertyKey>, StartStopWithNativeObserver {
     private final Resources mResources;
     private final Lazy<SnackbarManager> mSnackbarManager;
     private final TrustedWebActivityModel mModel;
@@ -58,11 +60,13 @@ public class TrustedWebActivityDisclosureView implements
 
     @Inject
     TrustedWebActivityDisclosureView(Resources resources,
-            Lazy<SnackbarManager> snackbarManager, TrustedWebActivityModel model) {
+            Lazy<SnackbarManager> snackbarManager, TrustedWebActivityModel model,
+            ActivityLifecycleDispatcher lifecycleDispatcher) {
         mResources = resources;
         mSnackbarManager = snackbarManager;
         mModel = model;
         mModel.addObserver(this);
+        lifecycleDispatcher.register(this);
     }
 
     @Override
@@ -79,6 +83,17 @@ public class TrustedWebActivityDisclosureView implements
                 break;
         }
     }
+
+    @Override
+    public void onStartWithNative() {
+        // SnackbarManager removes all snackbars when Chrome goes to background. Restore if needed.
+        if (mModel.get(DISCLOSURE_STATE) == DISCLOSURE_STATE_SHOWN) {
+            mSnackbarManager.get().showSnackbar(makeRunningInChromeInfobar());
+        }
+    }
+
+    @Override
+    public void onStopWithNative() {}
 
     private Snackbar makeRunningInChromeInfobar() {
         String title = mResources.getString(R.string.twa_running_in_chrome);

@@ -57,7 +57,7 @@ class TabCloseButton : public views::ImageButton,
  private:
   // views::MaskedTargeterDelegate:
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
-  bool GetHitTestMask(gfx::Path* mask) const override;
+  bool GetHitTestMask(SkPath* mask) const override;
 
   // Draw the highlight circle.
   void DrawHighlight(gfx::Canvas* canvas, ButtonState state);

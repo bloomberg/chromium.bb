@@ -18,7 +18,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 /**
  * JNI interface for native SpellCheckerSessionBridge to use Android's spellchecker.
@@ -141,8 +140,7 @@ public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
                 convertListToArray(offsets), convertListToArray(lengths),
                 suggestions.toArray(new String[suggestions.size()][]));
 
-        RecordHistogram.recordTimesHistogram("SpellCheck.Android.Latency",
-                mStopMs - mStartMs, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordTimesHistogram("SpellCheck.Android.Latency", mStopMs - mStartMs);
     }
 
     /**

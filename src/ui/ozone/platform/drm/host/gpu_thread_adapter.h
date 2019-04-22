@@ -15,7 +15,7 @@
 namespace ui {
 
 class DrmDisplayHostManager;
-class DrmOverlayManager;
+class DrmOverlayManagerHost;
 class GpuThreadObserver;
 
 // Provides the services that the various host components need
@@ -41,12 +41,12 @@ class GpuThreadAdapter {
                                     base::ScopedFD fd) = 0;
   virtual bool GpuRemoveGraphicsDevice(const base::FilePath& path) = 0;
 
-  // Methods for DrmOverlayManager.
+  // Methods for DrmOverlayManagerHost.
   virtual void RegisterHandlerForDrmOverlayManager(
-      DrmOverlayManager* handler) = 0;
+      DrmOverlayManagerHost* handler) = 0;
   virtual void UnRegisterHandlerForDrmOverlayManager() = 0;
 
-  // Services needed by DrmOverlayManager
+  // Services needed by DrmOverlayManagerHost
   virtual bool GpuCheckOverlayCapabilities(
       gfx::AcceleratedWidget widget,
       const OverlaySurfaceCandidateList& overlays) = 0;

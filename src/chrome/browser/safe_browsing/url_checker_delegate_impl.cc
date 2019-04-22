@@ -5,8 +5,9 @@
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/data_reduction_proxy_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +20,7 @@
 #include "components/safe_browsing/triggers/suspicious_site_trigger.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "services/network/public/cpp/features.h"
 
@@ -38,7 +40,7 @@ void DestroyPrerenderContents(
 }
 
 void StartDisplayingBlockingPage(
-    scoped_refptr<BaseUIManager> ui_manager,
+    scoped_refptr<SafeBrowsingUIManager> ui_manager,
     const security_interstitials::UnsafeResource& resource) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
   if (web_contents) {
@@ -47,6 +49,22 @@ void StartDisplayingBlockingPage(
     if (prerender_contents) {
       prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
     } else {
+      // With committed interstitials, if this is a main frame load, we need to
+      // get the navigation URL and referrer URL from the navigation entry now,
+      // since they are required for threat reporting, and the entry will be
+      // destroyed once the request is failed.
+      if (base::FeatureList::IsEnabled(kCommittedSBInterstitials) &&
+          resource.IsMainPageLoadBlocked()) {
+        content::NavigationEntry* entry =
+            web_contents->GetController().GetPendingEntry();
+        if (entry) {
+          security_interstitials::UnsafeResource resource_copy(resource);
+          resource_copy.navigation_url = entry->GetURL();
+          resource_copy.referrer_url = entry->GetReferrer().url;
+          ui_manager->DisplayBlockingPage(resource_copy);
+          return;
+        }
+      }
       ui_manager->DisplayBlockingPage(resource);
       return;
     }
@@ -54,7 +72,7 @@ void StartDisplayingBlockingPage(
 
   // Tab is gone or it's being prerendered.
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::Bind(resource.callback, false));
+                           base::BindOnce(resource.callback, false));
 }
 
 }  // namespace
@@ -67,17 +85,13 @@ UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
       threat_types_(CreateSBThreatTypeSet({
 // TODO(crbug.com/835961): Enable on Android when list is available.
 #if defined(SAFE_BROWSING_DB_LOCAL)
-            safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE,
+        safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE,
 #endif
             safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
             safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-            safe_browsing::SB_THREAT_TYPE_URL_UNWANTED
+            safe_browsing::SB_THREAT_TYPE_URL_UNWANTED,
+            safe_browsing::SB_THREAT_TYPE_BILLING
       })) {
-  if (base::FeatureList::IsEnabled(safe_browsing::kBillingInterstitial)) {
-    SBThreatTypeSet billing =
-        CreateSBThreatTypeSet({safe_browsing::SB_THREAT_TYPE_BILLING});
-    threat_types_.insert(billing.begin(), billing.end());
-  }
 }
 
 UrlCheckerDelegateImpl::~UrlCheckerDelegateImpl() = default;
@@ -112,12 +126,7 @@ bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(
     int render_process_id,
     int render_frame_id,
     bool originated_from_service_worker) {
-  // When DataReductionProxyResourceThrottle is enabled for a request, it is
-  // responsible for checking whether the resource is safe, so we skip
-  // SafeBrowsing URL checks in that case.
-  return !base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         IsDataReductionProxyResourceThrottleEnabledForUrl(resource_context,
-                                                           original_url);
+  return false;
 }
 
 void UrlCheckerDelegateImpl::NotifySuspiciousSiteDetected(

@@ -8,9 +8,9 @@
 
 #include <vector>
 
-#include "fxjs/cfxjse_engine.h"
-#include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
+#include "fxjs/xfa/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 #include "xfa/fxfa/parser/cxfa_treelist.h"
@@ -23,6 +23,10 @@ CJX_TreeList::CJX_TreeList(CXFA_TreeList* list) : CJX_List(list) {
 }
 
 CJX_TreeList::~CJX_TreeList() {}
+
+bool CJX_TreeList::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
 
 CXFA_TreeList* CJX_TreeList::GetXFATreeList() {
   return ToTreeList(GetXFAObject());
@@ -40,9 +44,7 @@ CJS_Result CJX_TreeList::namedItem(
     return CJS_Result::Success();
 
   CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetJSValueFromMap(pNode);
-  if (!value)
-    return CJS_Result::Success(runtime->NewNull());
+      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(pNode);
 
   return CJS_Result::Success(
       value->DirectGetValue().Get(runtime->GetIsolate()));

@@ -14,7 +14,7 @@ namespace blink {
 class CompositingRequirementsUpdaterTest : public RenderingTest {
  public:
   CompositingRequirementsUpdaterTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
   void SetUp() final;
 };
@@ -22,30 +22,6 @@ class CompositingRequirementsUpdaterTest : public RenderingTest {
 void CompositingRequirementsUpdaterTest::SetUp() {
   RenderingTest::SetUp();
   EnableCompositing();
-}
-
-TEST_F(CompositingRequirementsUpdaterTest, FixedPosOverlap) {
-  SetBodyInnerHTML(R"HTML(
-    <div style="position: relative; width: 500px; height: 300px;
-        will-change: transform"></div>
-    <div id=fixed style="position: fixed; width: 500px; height: 300px;
-        top: 300px"></div>
-    <div style="width: 200px; height: 3000px"></div>
-  )HTML");
-
-  LayoutBoxModelObject* fixed =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("fixed"));
-
-  EXPECT_EQ(
-      CompositingReason::kOverlap | CompositingReason::kSquashingDisallowed,
-      fixed->Layer()->GetCompositingReasons());
-
-  GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 100),
-                                                   kUserScroll);
-  UpdateAllLifecyclePhasesForTest();
-
-  // No longer overlaps the first div.
-  EXPECT_EQ(CompositingReason::kNone, fixed->Layer()->GetCompositingReasons());
 }
 
 TEST_F(CompositingRequirementsUpdaterTest,

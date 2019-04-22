@@ -17,4 +17,5 @@ include_rules = [
   "+third_party/metrics_proto",
   "+third_party/zlib/google",
   "-net",
+  "+url"
 ]

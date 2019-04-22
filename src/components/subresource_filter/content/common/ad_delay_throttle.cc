@@ -79,7 +79,7 @@ class NonIsolatedCondition : public AdDelayThrottle::DeferCondition {
   }
 };
 
-};  // namespace
+}  // namespace
 
 AdDelayThrottle::DeferCondition::DeferCondition(
     base::TimeDelta delay,

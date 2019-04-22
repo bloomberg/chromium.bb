@@ -9,6 +9,7 @@
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -42,6 +43,8 @@ struct RasterUnderInvalidationCheckingParams {
 };
 
 class PLATFORM_EXPORT PaintChunksToCcLayer {
+  STATIC_ONLY(PaintChunksToCcLayer);
+
  public:
   // Converts a list of Blink paint chunks and display items into cc display
   // items, inserting appropriate begin/end items with respect to property

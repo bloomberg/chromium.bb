@@ -10,8 +10,8 @@
 #include "ash/components/shortcut_viewer/keyboard_shortcut_item.h"
 #include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 #include "ash/public/cpp/accelerators.h"
+#include "base/hash/md5.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
@@ -20,9 +20,9 @@
 namespace {
 
 // The total number of Ash accelerators.
-constexpr int kAshAcceleratorsTotalNum = 101;
+constexpr int kAshAcceleratorsTotalNum = 103;
 // The hash of Ash accelerators.
-constexpr char kAshAcceleratorsHash[] = "5fb453f20fff60b7c085057ac30f3dd7";
+constexpr char kAshAcceleratorsHash[] = "66c583323442f52e04d8b29ea7e2db59";
 #if defined(GOOGLE_CHROME_BUILD)
 // Internal builds add an extra accelerator for the Feedback app.
 // The total number of Chrome accelerators (available on Chrome OS).
@@ -31,9 +31,9 @@ constexpr int kChromeAcceleratorsTotalNum = 92;
 constexpr char kChromeAcceleratorsHash[] = "15a6c673dc62825b04e80036ad690514";
 #else
 // The total number of Chrome accelerators (available on Chrome OS).
-constexpr int kChromeAcceleratorsTotalNum = 91;
+constexpr int kChromeAcceleratorsTotalNum = 92;
 // The hash of Chrome accelerators (available on Chrome OS).
-constexpr char kChromeAcceleratorsHash[] = "cde825b73b85f0ff34a1ff78086e61c8";
+constexpr char kChromeAcceleratorsHash[] = "ef8dbf7ba5329cf7de66fdaebc3f5108";
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 const char* BooleanToString(bool value) {
@@ -80,7 +80,7 @@ struct ChromeAcceleratorMappingCmp {
 };
 
 std::string HashAshAcceleratorData(
-    const std::vector<ash::AcceleratorData> accelerators) {
+    const std::vector<ash::AcceleratorData>& accelerators) {
   base::MD5Context context;
   base::MD5Init(&context);
   for (const auto& accelerator : accelerators)
@@ -92,7 +92,7 @@ std::string HashAshAcceleratorData(
 }
 
 std::string HashChromeAcceleratorMapping(
-    const std::vector<AcceleratorMapping> accelerators) {
+    const std::vector<AcceleratorMapping>& accelerators) {
   base::MD5Context context;
   base::MD5Init(&context);
   for (const auto& accelerator : accelerators)

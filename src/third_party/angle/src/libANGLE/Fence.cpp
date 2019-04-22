@@ -4,8 +4,7 @@
 // found in the LICENSE file.
 //
 
-// Fence.cpp: Implements the gl::FenceNV and gl::Sync classes, which support the GL_NV_fence
-// extension and GLES3 sync objects.
+// Fence.cpp: Implements the gl::FenceNV and gl::Sync classes.
 
 #include "libANGLE/Fence.h"
 
@@ -35,7 +34,7 @@ angle::Result FenceNV::set(const Context *context, GLenum condition)
     mStatus    = GL_FALSE;
     mIsSet     = true;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result FenceNV::test(const Context *context, GLboolean *outResult)
@@ -44,7 +43,7 @@ angle::Result FenceNV::test(const Context *context, GLboolean *outResult)
     ANGLE_TRY(mFence->test(context, &mStatus));
 
     *outResult = mStatus;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result FenceNV::finish(const Context *context)
@@ -55,7 +54,7 @@ angle::Result FenceNV::finish(const Context *context)
 
     mStatus = GL_TRUE;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 Sync::Sync(rx::SyncImpl *impl, GLuint id)
@@ -66,14 +65,18 @@ Sync::Sync(rx::SyncImpl *impl, GLuint id)
       mFlags(0)
 {}
 
-void Sync::onDestroy(const Context *context) {}
+void Sync::onDestroy(const Context *context)
+{
+    ASSERT(mFence);
+    mFence->onDestroy(context);
+}
 
 Sync::~Sync()
 {
     SafeDelete(mFence);
 }
 
-void Sync::setLabel(const std::string &label)
+void Sync::setLabel(const Context *context, const std::string &label)
 {
     mLabel = label;
 }
@@ -89,7 +92,7 @@ angle::Result Sync::set(const Context *context, GLenum condition, GLbitfield fla
 
     mCondition = condition;
     mFlags     = flags;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Sync::clientWait(const Context *context,

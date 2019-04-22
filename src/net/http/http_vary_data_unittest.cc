@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/stl_util.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_vary_data.h"
@@ -43,7 +44,7 @@ TEST(HttpVaryDataTest, IsInvalid) {
 
   const bool kExpectedValid[] = {false, true, true, true};
 
-  for (size_t i = 0; i < arraysize(kTestResponses); ++i) {
+  for (size_t i = 0; i < base::size(kTestResponses); ++i) {
     TestTransaction t;
     t.Init(std::string(), kTestResponses[i]);
 

@@ -9,8 +9,8 @@
 #include <windows.h>
 #include <wrl/client.h>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {
 class TextInputClient;
@@ -26,7 +26,7 @@ class TextInputClient;
 // of text inputting and current focused TextInputClient.
 //
 // All methods in this class must be used in UI thread.
-class UI_BASE_IME_EXPORT TSFBridge {
+class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFBridge {
  public:
   virtual ~TSFBridge();
 
@@ -74,6 +74,13 @@ class UI_BASE_IME_EXPORT TSFBridge {
   // Removes currently focused TextInputClient.
   // Caller must free |client|.
   virtual void RemoveFocusedClient(TextInputClient* client) = 0;
+
+  // Lets TSFTextstore see InputMethodDelegate instance when in focus.
+  virtual void SetInputMethodDelegate(
+      internal::InputMethodDelegate* delegate) = 0;
+
+  // Remove InputMethodDelegate instance from TSFTextStore when not in focus.
+  virtual void RemoveInputMethodDelegate() = 0;
 
   // Obtains current thread manager.
   virtual Microsoft::WRL::ComPtr<ITfThreadMgr> GetThreadManager() = 0;

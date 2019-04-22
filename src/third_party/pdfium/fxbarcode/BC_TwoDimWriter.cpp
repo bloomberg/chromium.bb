@@ -4,28 +4,29 @@
 
 // Original code copyright 2014 Foxit Software Inc. http://www.foxitsoftware.com
 
+#include "fxbarcode/BC_TwoDimWriter.h"
+
 #include <algorithm>
 
 #include "core/fxge/cfx_graphstatedata.h"
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_renderdevice.h"
-#include "fxbarcode/BC_TwoDimWriter.h"
 #include "fxbarcode/BC_Writer.h"
 #include "fxbarcode/common/BC_CommonBitMatrix.h"
 #include "third_party/base/numerics/safe_math.h"
 #include "third_party/base/ptr_util.h"
 
-CBC_TwoDimWriter::CBC_TwoDimWriter() : m_iCorrectLevel(1), m_bFixedSize(true) {}
+CBC_TwoDimWriter::CBC_TwoDimWriter(bool bFixedSize)
+    : m_bFixedSize(bFixedSize) {}
 
-CBC_TwoDimWriter::~CBC_TwoDimWriter() {}
+CBC_TwoDimWriter::~CBC_TwoDimWriter() = default;
 
-int32_t CBC_TwoDimWriter::GetErrorCorrectionLevel() const {
-  return m_iCorrectLevel;
-}
-
-bool CBC_TwoDimWriter::RenderResult(uint8_t* code,
+bool CBC_TwoDimWriter::RenderResult(const std::vector<uint8_t>& code,
                                     int32_t codeWidth,
                                     int32_t codeHeight) {
+  if (code.empty())
+    return false;
+
   m_inputWidth = codeWidth;
   m_inputHeight = codeHeight;
   int32_t tempWidth = m_inputWidth + 2;
@@ -87,7 +88,7 @@ void CBC_TwoDimWriter::RenderDeviceResult(CFX_RenderDevice* device,
 
   CFX_GraphStateData stateData;
   CFX_PathData path;
-  path.AppendRect(0, 0, (float)m_Width, (float)m_Height);
+  path.AppendRect(0, 0, m_Width, m_Height);
   device->DrawPath(&path, matrix, &stateData, m_backgroundColor,
                    m_backgroundColor, FXFILL_ALTERNATE);
   int32_t leftPos = m_leftPadding;

@@ -8,19 +8,21 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.text.format.DateUtils;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlSerializer;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.identity.SettingsSecureBasedIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.IOException;
@@ -36,7 +38,6 @@ public abstract class RequestGenerator {
     // The Omaha specs say that new installs should use "-1".
     public static final int INSTALL_AGE_IMMEDIATELY_AFTER_INSTALLING = -1;
 
-    private static final long MS_PER_DAY = 1000 * 60 * 60 * 24;
     private static final String SALT = "omahaSalt";
     private static final String URL_OMAHA_SERVER = "https://update.googleapis.com/service/update2";
 
@@ -59,7 +60,7 @@ public abstract class RequestGenerator {
         if (sendInstallEvent) {
             return INSTALL_AGE_IMMEDIATELY_AFTER_INSTALLING;
         } else {
-            return Math.max(0L, (currentTimestamp - installTimestamp) / MS_PER_DAY);
+            return Math.max(0L, (currentTimestamp - installTimestamp) / DateUtils.DAY_IN_MILLIS);
         }
     }
 
@@ -197,7 +198,7 @@ public abstract class RequestGenerator {
     public int getNumGoogleAccountsOnDevice() {
         // RequestGenerator may be invoked from JobService or AlarmManager (through OmahaService),
         // so have to make sure AccountManagerFacade instance is initialized.
-        ThreadUtils.runOnUiThreadBlocking(
+        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT,
                 () -> ProcessInitializationHandler.getInstance().initializePreNative());
         int numAccounts = 0;
         try {

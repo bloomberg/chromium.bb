@@ -28,6 +28,9 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View {
   // Get height of the view when |expanded_amount| is set to 1.0.
   int GetExpandedHeight() const;
 
+  // Get the height of the view when |expanded_amount| is set to 0.0.
+  int GetCollapsedHeight() const;
+
   // Save and restore keyboard focus of a child feature pod button. If no button
   // has focus or no focus is saved, these methods are no-op.
   void SaveFocus();
@@ -37,11 +40,14 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View {
   gfx::Size CalculatePreferredSize() const override;
   void ChildVisibilityChanged(View* child) override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
   void Layout() override;
 
  private:
   void UpdateChildVisibility();
+
+  // Returns the number of children that prefer to be visible.
+  int GetVisibleCount() const;
 
   // Calculate the current position of the button from |visible_index| and
   // |expanded_amount_|.

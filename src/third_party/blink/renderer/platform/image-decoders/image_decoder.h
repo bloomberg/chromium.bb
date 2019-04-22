@@ -28,6 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_IMAGE_DECODER_H_
 
 #include <memory>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
@@ -61,7 +62,6 @@ inline skcms_PixelFormat XformColorFormat() {
 // instead of using an ImageFrame.
 class PLATFORM_EXPORT ImagePlanes final {
   USING_FAST_MALLOC(ImagePlanes);
-  WTF_MAKE_NONCOPYABLE(ImagePlanes);
 
  public:
   ImagePlanes();
@@ -73,11 +73,12 @@ class PLATFORM_EXPORT ImagePlanes final {
  private:
   void* planes_[3];
   size_t row_bytes_[3];
+
+  DISALLOW_COPY_AND_ASSIGN(ImagePlanes);
 };
 
 class PLATFORM_EXPORT ColorProfile final {
   USING_FAST_MALLOC(ColorProfile);
-  WTF_MAKE_NONCOPYABLE(ColorProfile);
 
  public:
   ColorProfile(const skcms_ICCProfile&, std::unique_ptr<uint8_t[]> = nullptr);
@@ -88,11 +89,12 @@ class PLATFORM_EXPORT ColorProfile final {
  private:
   skcms_ICCProfile profile_;
   std::unique_ptr<uint8_t[]> buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ColorProfile);
 };
 
 class PLATFORM_EXPORT ColorProfileTransform final {
   USING_FAST_MALLOC(ColorProfileTransform);
-  WTF_MAKE_NONCOPYABLE(ColorProfileTransform);
 
  public:
   ColorProfileTransform(const skcms_ICCProfile* src_profile,
@@ -104,13 +106,14 @@ class PLATFORM_EXPORT ColorProfileTransform final {
  private:
   const skcms_ICCProfile* src_profile_;
   skcms_ICCProfile dst_profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(ColorProfileTransform);
 };
 
 // ImageDecoder is a base for all format-specific decoders
 // (e.g. JPEGImageDecoder). This base manages the ImageFrame cache.
 //
 class PLATFORM_EXPORT ImageDecoder {
-  WTF_MAKE_NONCOPYABLE(ImageDecoder);
   USING_FAST_MALLOC(ImageDecoder);
 
  public:
@@ -165,6 +168,9 @@ class PLATFORM_EXPORT ImageDecoder {
   // failure is due to insufficient or bad data.
   static bool HasSufficientDataToSniffImageType(const SharedBuffer&);
 
+  // Looks at the image data to determine and return the image MIME type.
+  static String SniffImageType(scoped_refptr<SharedBuffer> image_data);
+
   void SetData(scoped_refptr<SegmentReader> data, bool all_data_received) {
     if (failed_)
       return;
@@ -191,7 +197,7 @@ class PLATFORM_EXPORT ImageDecoder {
   bool IsDecodedSizeAvailable() const { return !failed_ && size_available_; }
 
   virtual IntSize Size() const { return size_; }
-  virtual std::vector<SkISize> GetSupportedDecodeSizes() const { return {}; };
+  virtual std::vector<SkISize> GetSupportedDecodeSizes() const { return {}; }
 
   // Decoders which downsample images should override this method to
   // return the actual decoded size.
@@ -322,7 +328,9 @@ class PLATFORM_EXPORT ImageDecoder {
   }
 
   virtual bool CanDecodeToYUV() { return false; }
-  virtual bool DecodeToYUV() { return false; }
+  // Should only be called if CanDecodeToYuv() returns true, in which case
+  // the subclass of ImageDecoder must override this method.
+  virtual void DecodeToYUV() { NOTREACHED(); }
   virtual void SetImagePlanes(std::unique_ptr<ImagePlanes>) {}
 
  protected:
@@ -453,21 +461,20 @@ class PLATFORM_EXPORT ImageDecoder {
  private:
   // Some code paths compute the size of the image as "width * height * 4 or 8"
   // and return it as a (signed) int.  Avoid overflow.
-  static bool SizeCalculationMayOverflow(unsigned width,
+  inline bool SizeCalculationMayOverflow(unsigned width,
                                          unsigned height,
                                          unsigned decoded_bytes_per_pixel) {
-    unsigned long long total_size = static_cast<unsigned long long>(width) *
-                                    static_cast<unsigned long long>(height);
-    if (decoded_bytes_per_pixel == 4)
-      return total_size > ((1 << 29) - 1);
-    return total_size > ((1 << 28) - 1);
+    base::CheckedNumeric<int32_t> total_size = width;
+    total_size *= height;
+    total_size *= decoded_bytes_per_pixel;
+    return !total_size.IsValid();
   }
 
   bool purge_aggressively_;
 
   // This methods gets called at the end of InitFrameBuffer. Subclasses can do
   // format specific initialization, for e.g. alpha settings, here.
-  virtual void OnInitFrameBuffer(size_t){};
+  virtual void OnInitFrameBuffer(size_t) {}
 
   // Called by InitFrameBuffer to determine if it can take the bitmap of the
   // previous frame. This condition is different for GIF and WEBP.
@@ -484,6 +491,8 @@ class PLATFORM_EXPORT ImageDecoder {
 
   bool source_to_target_color_transform_needs_update_ = false;
   std::unique_ptr<ColorProfileTransform> source_to_target_color_transform_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageDecoder);
 };
 
 }  // namespace blink

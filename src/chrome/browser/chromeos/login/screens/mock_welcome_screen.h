@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_WELCOME_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MOCK_WELCOME_SCREEN_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/welcome_view.h"
@@ -14,14 +16,15 @@ namespace chromeos {
 
 class MockWelcomeScreen : public WelcomeScreen {
  public:
-  MockWelcomeScreen(BaseScreenDelegate* base_screen_delegate,
-                    Delegate* delegate,
-                    WelcomeView* view);
+  MockWelcomeScreen(WelcomeView* view,
+                    const base::RepeatingClosure& exit_callback);
   ~MockWelcomeScreen() override;
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD2(SetConfiguration, void(base::Value* configuration, bool notify));
+
+  void ExitScreen();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWelcomeScreen);
@@ -41,6 +44,8 @@ class MockWelcomeView : public WelcomeView {
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD0(StopDemoModeDetection, void());
   MOCK_METHOD0(ReloadLocalizedContent, void());
+  MOCK_METHOD1(SetInputMethodId, void(const std::string& input_method_id));
+  MOCK_METHOD1(SetTimezoneId, void(const std::string& timezone_id));
 
  private:
   WelcomeScreen* screen_ = nullptr;

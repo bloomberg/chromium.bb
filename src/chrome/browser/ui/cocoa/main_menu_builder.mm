@@ -100,7 +100,9 @@ base::scoped_nsobject<NSMenuItem> BuildFileMenu(
                 Item(IDS_REOPEN_CLOSED_TABS_MAC)
                     .command_id(IDC_RESTORE_TAB)
                     .remove_if(is_pwa),
-                Item(IDS_OPEN_FILE_MAC).command_id(IDC_OPEN_FILE),
+                Item(IDS_OPEN_FILE_MAC)
+                    .command_id(IDC_OPEN_FILE)
+                    .remove_if(is_pwa),
                 Item(IDS_OPEN_LOCATION_MAC)
                     .command_id(IDC_FOCUS_LOCATION)
                     .remove_if(is_pwa),
@@ -118,7 +120,7 @@ base::scoped_nsobject<NSMenuItem> BuildFileMenu(
                     .remove_if(is_pwa),
                 Item().is_separator().remove_if(is_pwa),
                 Item(IDS_SHARE_MAC).remove_if(is_pwa), Item().is_separator(),
-                Item(IDS_PRINT).command_id(IDC_PRINT).remove_if(is_pwa),
+                Item(IDS_PRINT).command_id(IDC_PRINT),
                 Item(IDS_PRINT_USING_SYSTEM_DIALOG_MAC)
                     .command_id(IDC_BASIC_PRINT)
                     .is_alternate()

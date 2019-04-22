@@ -19,8 +19,6 @@ class Profile;
 
 namespace chromeos {
 
-class BaseScreenDelegate;
-
 // This is Sync settings screen that is displayed as a part of user first
 // sign-in flow.
 class SyncConsentScreen : public BaseScreen,
@@ -57,8 +55,8 @@ class SyncConsentScreen : public BaseScreen,
   // them after completing OOBE.
   static void MaybeLaunchSyncConsentSettings(Profile* profile);
 
-  SyncConsentScreen(BaseScreenDelegate* base_screen_delegate,
-                    SyncConsentScreenView* view);
+  SyncConsentScreen(SyncConsentScreenView* view,
+                    const base::RepeatingClosure& exit_callback);
   ~SyncConsentScreen() override;
 
   // BaseScreen:
@@ -110,6 +108,7 @@ class SyncConsentScreen : public BaseScreen,
   SyncScreenBehavior behavior_ = UNKNOWN;
 
   SyncConsentScreenView* const view_;
+  base::RepeatingClosure exit_callback_;
 
   // Primary user ind his Profile (if screen is shown).
   const user_manager::User* user_ = nullptr;

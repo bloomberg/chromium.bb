@@ -46,7 +46,7 @@ TEST_P(SetFullNameTest, SetFullName) {
             name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ContactInfoTest,
     SetFullNameTest,
     testing::Values(
@@ -215,7 +215,7 @@ struct ParsedNamesAreEqualTestCase {
               starting_profile.ParsedNamesAreEqual(additional_profile));
   }
 
-  INSTANTIATE_TEST_CASE_P(
+  INSTANTIATE_TEST_SUITE_P(
       ContactInfoTest,
       ParsedNamesAreEqualTest,
       testing::Values(
@@ -308,7 +308,7 @@ struct ParsedNamesAreEqualTestCase {
               existing_name.GetRawInfo(NAME_FULL));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ContactInfoTest,
     OverwriteNameTest,
     testing::Values(
@@ -387,7 +387,7 @@ struct NamePartsAreEmptyTestCase {
     EXPECT_EQ(test_case.expected_result, name.NamePartsAreEmpty());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ContactInfoTest,
     NamePartsAreEmptyTest,
     testing::Values(NamePartsAreEmptyTestCase{"", "", "", "", true},

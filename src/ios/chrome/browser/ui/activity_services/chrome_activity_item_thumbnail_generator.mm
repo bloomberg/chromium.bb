@@ -29,8 +29,7 @@ ThumbnailGeneratorBlock ThumbnailGeneratorForTab(Tab* tab) {
         return nil;
 
       UIImage* snapshot = SnapshotTabHelper::FromWebState(strongTab.webState)
-                              ->GenerateSnapshot(/*with_overlays=*/false,
-                                                 /*visible_frame_only=*/true);
+                              ->GenerateSnapshotWithoutOverlays();
 
       if (!snapshot)
         return nil;

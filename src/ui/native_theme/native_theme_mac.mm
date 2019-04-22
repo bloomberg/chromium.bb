@@ -7,14 +7,32 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #import "skia/ext/skia_utils_mac.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
+
+namespace {
+
+bool IsDarkMode() {
+  if (@available(macOS 10.14, *)) {
+    NSAppearanceName appearance =
+        [[NSApp effectiveAppearance] bestMatchFromAppearancesWithNames:@[
+          NSAppearanceNameAqua, NSAppearanceNameDarkAqua
+        ]];
+    return [appearance isEqual:NSAppearanceNameDarkAqua];
+  }
+
+  return false;
+}
+}  // namespace
 
 @interface NSWorkspace (Redeclarations)
 
@@ -22,12 +40,45 @@
 
 @end
 
-namespace {
+// Helper object to respond to light mode/dark mode changeovers.
+@interface NativeThemeEffectiveAppearanceObserver : NSObject
+@end
 
-const SkColor kMenuPopupBackgroundColor = SK_ColorWHITE;
-// TODO(crbug.com/893598): Finalize dark mode color.
-const SkColor kMenuPopupBackgroundColorDarkMode =
-    SkColorSetRGB(0x2B, 0x2B, 0x2B);
+@implementation NativeThemeEffectiveAppearanceObserver {
+  ui::NativeThemeMac* owner_;
+}
+
+- (instancetype)initWithOwner:(ui::NativeThemeMac*)owner {
+  self = [super init];
+  if (self) {
+    owner_ = owner;
+    if (@available(macOS 10.14, *)) {
+      [NSApp addObserver:self
+              forKeyPath:@"effectiveAppearance"
+                 options:0
+                 context:nullptr];
+    }
+  }
+  return self;
+}
+
+- (void)dealloc {
+  if (@available(macOS 10.14, *)) {
+    [NSApp removeObserver:self forKeyPath:@"effectiveAppearance"];
+  }
+  [super dealloc];
+}
+
+- (void)observeValueForKeyPath:(NSString*)forKeyPath
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context {
+  owner_->UpdateDarkModeStatus();
+}
+
+@end
+
+namespace {
 
 // Helper to make indexing an array by an enum class easier.
 template <class KEY, class VALUE>
@@ -113,7 +164,42 @@ SkColor NativeThemeMac::ApplySystemControlTint(SkColor color) {
   return color;
 }
 
+// static
+void NativeThemeMac::MaybeUpdateBrowserAppearance() {
+  if (@available(macOS 10.14, *)) {
+    if (!base::FeatureList::IsEnabled(features::kDarkMode)) {
+      NSAppearanceName new_appearance_name =
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kForceDarkMode)
+              ? NSAppearanceNameDarkAqua
+              : NSAppearanceNameAqua;
+
+      [NSApp setAppearance:[NSAppearance appearanceNamed:new_appearance_name]];
+    }
+  }
+}
+
 SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
+  // Empirically, currentAppearance is incorrect when switching
+  // appearances. It's unclear exactly why right now, so work
+  // around it for the time being by resynchronizing.
+  if (@available(macOS 10.14, *)) {
+    NSAppearance* effective_appearance = [NSApp effectiveAppearance];
+    if (![effective_appearance isEqual:[NSAppearance currentAppearance]]) {
+      [NSAppearance setCurrentAppearance:effective_appearance];
+    }
+  }
+
+  if (UsesHighContrastColors()) {
+    switch (color_id) {
+      case kColorId_SelectedMenuItemForegroundColor:
+        return SystemDarkModeEnabled() ? SK_ColorBLACK : SK_ColorWHITE;
+      case kColorId_FocusedMenuItemBackgroundColor:
+        return SystemDarkModeEnabled() ? SK_ColorLTGRAY : SK_ColorDKGRAY;
+      default:
+        break;
+    }
+  }
   // Even with --secondary-ui-md, menus use the platform colors and styling, and
   // Mac has a couple of specific color overrides, documented below.
   switch (color_id) {
@@ -121,21 +207,11 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       return NSSystemColorToSkColor([NSColor controlTextColor]);
     case kColorId_DisabledMenuItemForegroundColor:
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
-    case kColorId_SelectedMenuItemForegroundColor:
-      return UsesHighContrastColors() ? SK_ColorWHITE : SK_ColorBLACK;
-    case kColorId_FocusedMenuItemBackgroundColor:
-      return UsesHighContrastColors() ? SK_ColorDKGRAY : gfx::kGoogleGrey200;
-    case kColorId_MenuBackgroundColor:
-    case kColorId_BubbleBackground:
-    case kColorId_DialogBackground:
-      return SystemDarkModeEnabled() ? kMenuPopupBackgroundColorDarkMode
-                                     : kMenuPopupBackgroundColor;
     case kColorId_MenuSeparatorColor:
-      return UsesHighContrastColors() ? SK_ColorBLACK
-                                      : SkColorSetA(SK_ColorBLACK, 0x26);
+      return SystemDarkModeEnabled() ? SkColorSetA(gfx::kGoogleGrey800, 0xCC)
+                                     : SkColorSetA(SK_ColorBLACK, 0x26);
     case kColorId_MenuBorderColor:
-      return UsesHighContrastColors() ? SK_ColorBLACK
-                                      : SkColorSetA(SK_ColorBLACK, 0x60);
+      return SkColorSetA(SK_ColorBLACK, 0x60);
 
     // Mac has a different "pressed button" styling because it doesn't use
     // ripples.
@@ -204,19 +280,35 @@ bool NativeThemeMac::UsesHighContrastColors() const {
 
 bool NativeThemeMac::SystemDarkModeEnabled() const {
   if (@available(macOS 10.14, *)) {
-    NSAppearanceName appearance =
-        [[NSApp effectiveAppearance] bestMatchFromAppearancesWithNames:@[
-          NSAppearanceNameAqua, NSAppearanceNameDarkAqua
-        ]];
-    return [appearance isEqual:NSAppearanceNameDarkAqua];
+    return is_dark_mode_;
+  } else {
+    // Support "--force-dark-mode" in macOS < 10.14.
+    return NativeThemeBase::SystemDarkModeEnabled();
   }
-  return NativeThemeBase::SystemDarkModeEnabled();
 }
 
 NativeThemeMac::NativeThemeMac() {
+  if (base::FeatureList::IsEnabled(features::kDarkMode)) {
+    is_dark_mode_ = IsDarkMode();
+    appearance_observer_.reset(
+        [[NativeThemeEffectiveAppearanceObserver alloc] initWithOwner:this]);
+  }
+  if (@available(macOS 10.10, *)) {
+    high_contrast_notification_token_ = [[[NSWorkspace sharedWorkspace]
+        notificationCenter]
+        addObserverForName:
+            NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
+                    object:nil
+                     queue:nil
+                usingBlock:^(NSNotification* notification) {
+                  ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
+                }];
+  }
 }
 
 NativeThemeMac::~NativeThemeMac() {
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:high_contrast_notification_token_];
 }
 
 void NativeThemeMac::PaintSelectedMenuItem(cc::PaintCanvas* canvas,
@@ -225,6 +317,13 @@ void NativeThemeMac::PaintSelectedMenuItem(cc::PaintCanvas* canvas,
   cc::PaintFlags flags;
   flags.setColor(GetSystemColor(kColorId_FocusedMenuItemBackgroundColor));
   canvas->drawRect(gfx::RectToSkRect(rect), flags);
+}
+
+void NativeThemeMac::UpdateDarkModeStatus() {
+  bool was_dark_mode = is_dark_mode_;
+  is_dark_mode_ = IsDarkMode();
+  if (was_dark_mode != is_dark_mode_)
+    NotifyObservers();
 }
 
 }  // namespace ui

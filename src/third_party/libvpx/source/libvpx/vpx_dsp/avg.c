@@ -37,7 +37,7 @@ unsigned int vpx_avg_4x4_c(const uint8_t *s, int p) {
 // coeff: 16 bit
 static void hadamard_highbd_col8_first_pass(const int16_t *src_diff,
                                             ptrdiff_t src_stride,
-                                            int32_t *coeff) {
+                                            int16_t *coeff) {
   int16_t b0 = src_diff[0 * src_stride] + src_diff[1 * src_stride];
   int16_t b1 = src_diff[0 * src_stride] - src_diff[1 * src_stride];
   int16_t b2 = src_diff[2 * src_stride] + src_diff[3 * src_stride];
@@ -68,7 +68,7 @@ static void hadamard_highbd_col8_first_pass(const int16_t *src_diff,
 
 // src_diff: 16 bit, dynamic range [-32760, 32760]
 // coeff: 19 bit
-static void hadamard_highbd_col8_second_pass(const int32_t *src_diff,
+static void hadamard_highbd_col8_second_pass(const int16_t *src_diff,
                                              ptrdiff_t src_stride,
                                              int32_t *coeff) {
   int32_t b0 = src_diff[0 * src_stride] + src_diff[1 * src_stride];
@@ -104,9 +104,9 @@ static void hadamard_highbd_col8_second_pass(const int32_t *src_diff,
 void vpx_highbd_hadamard_8x8_c(const int16_t *src_diff, ptrdiff_t src_stride,
                                tran_low_t *coeff) {
   int idx;
-  int32_t buffer[64];
+  int16_t buffer[64];
   int32_t buffer2[64];
-  int32_t *tmp_buf = &buffer[0];
+  int16_t *tmp_buf = &buffer[0];
   for (idx = 0; idx < 8; ++idx) {
     // src_diff: 13 bit
     // buffer: 16 bit, dynamic range [-32760, 32760]
@@ -313,6 +313,19 @@ void vpx_hadamard_32x32_c(const int16_t *src_diff, ptrdiff_t src_stride,
     ++coeff;
   }
 }
+
+#if CONFIG_VP9_HIGHBITDEPTH
+// coeff: dynamic range 20 bit.
+// length: value range {16, 64, 256, 1024}.
+int vpx_highbd_satd_c(const tran_low_t *coeff, int length) {
+  int i;
+  int satd = 0;
+  for (i = 0; i < length; ++i) satd += abs(coeff[i]);
+
+  // satd: 30 bits
+  return satd;
+}
+#endif  // CONFIG_VP9_HIGHBITDEPTH
 
 // coeff: 16 bits, dynamic range [-32640, 32640].
 // length: value range {16, 64, 256, 1024}.

@@ -9,7 +9,7 @@
 
 #include <unordered_map>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "ui/events/event.h"
 #include "ui/events/events_export.h"
 #include "ui/events/keycodes/dom/dom_key.h"
@@ -43,6 +43,9 @@ class EVENTS_EXPORT PlatformKeyMap {
   friend class PlatformKeyMapTest;
 
   PlatformKeyMap();
+
+  // Returns the PlatformKeyMap instance for the current thread.
+  static PlatformKeyMap* GetThreadLocalPlatformKeyMap();
 
   // TODO(input-dev): Expose this function when we need to access separate
   // layout. Returns the DomKey 'meaning' of |KeyboardCode| in the context of

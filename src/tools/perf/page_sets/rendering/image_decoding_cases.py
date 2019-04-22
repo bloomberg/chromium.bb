@@ -32,3 +32,4 @@ class ImageDecodingPage(rendering_story.RenderingStory):
 class YuvDecodingPage(ImageDecodingPage):
   BASE_NAME = 'yuv_decoding'
   URL = 'file://../image_decoding_cases/yuv_decoding.html'
+  TAGS = ImageDecodingPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]

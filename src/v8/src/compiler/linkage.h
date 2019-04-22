@@ -12,10 +12,10 @@
 #include "src/globals.h"
 #include "src/interface-descriptors.h"
 #include "src/machine-type.h"
+#include "src/register-arch.h"
 #include "src/reglist.h"
 #include "src/runtime/runtime.h"
 #include "src/signature.h"
-#include "src/turbo-assembler.h"
 #include "src/zone/zone.h"
 
 namespace v8 {
@@ -67,14 +67,14 @@ class LinkageLocation {
   static LinkageLocation ForSavedCallerReturnAddress() {
     return ForCalleeFrameSlot((StandardFrameConstants::kCallerPCOffset -
                                StandardFrameConstants::kCallerPCOffset) /
-                                  kPointerSize,
+                                  kSystemPointerSize,
                               MachineType::Pointer());
   }
 
   static LinkageLocation ForSavedCallerFramePtr() {
     return ForCalleeFrameSlot((StandardFrameConstants::kCallerPCOffset -
                                StandardFrameConstants::kCallerFPOffset) /
-                                  kPointerSize,
+                                  kSystemPointerSize,
                               MachineType::Pointer());
   }
 
@@ -82,14 +82,14 @@ class LinkageLocation {
     DCHECK(V8_EMBEDDED_CONSTANT_POOL);
     return ForCalleeFrameSlot((StandardFrameConstants::kCallerPCOffset -
                                StandardFrameConstants::kConstantPoolOffset) /
-                                  kPointerSize,
+                                  kSystemPointerSize,
                               MachineType::AnyTagged());
   }
 
   static LinkageLocation ForSavedCallerFunction() {
     return ForCalleeFrameSlot((StandardFrameConstants::kCallerPCOffset -
                                StandardFrameConstants::kFunctionOffset) /
-                                  kPointerSize,
+                                  kSystemPointerSize,
                               MachineType::AnyTagged());
   }
 
@@ -111,7 +111,7 @@ class LinkageLocation {
 
   int GetSizeInPointers() const {
     // Round up
-    return (GetSize() + kPointerSize - 1) / kPointerSize;
+    return (GetSize() + kSystemPointerSize - 1) / kSystemPointerSize;
   }
 
   int32_t GetLocation() const {
@@ -153,7 +153,9 @@ class LinkageLocation {
   LinkageLocation(LocationType type, int32_t location,
                   MachineType machine_type) {
     bit_field_ = TypeField::encode(type) |
-                 ((location << LocationField::kShift) & LocationField::kMask);
+                 // {location} can be -1 (ANY_REGISTER).
+                 ((static_cast<uint32_t>(location) << LocationField::kShift) &
+                  LocationField::kMask);
     machine_type_ = machine_type;
   }
 
@@ -161,7 +163,7 @@ class LinkageLocation {
   MachineType machine_type_;
 };
 
-typedef Signature<LinkageLocation> LocationSignature;
+using LocationSignature = Signature<LinkageLocation>;
 
 // Describes a call to various parts of the compiler. Every call has the notion
 // of a "target", which is the first input to the call.
@@ -170,11 +172,12 @@ class V8_EXPORT_PRIVATE CallDescriptor final
  public:
   // Describes the kind of this call, which determines the target.
   enum Kind {
-    kCallCodeObject,        // target is a Code object
-    kCallJSFunction,        // target is a JSFunction object
-    kCallAddress,           // target is a machine pointer
-    kCallWasmFunction,      // target is a wasm function
-    kCallWasmImportWrapper  // target is a wasm import wrapper
+    kCallCodeObject,         // target is a Code object
+    kCallJSFunction,         // target is a JSFunction object
+    kCallAddress,            // target is a machine pointer
+    kCallWasmFunction,       // target is a wasm function
+    kCallWasmImportWrapper,  // target is a wasm import wrapper
+    kCallBuiltinPointer,     // target is a builtin pointer
   };
 
   enum Flag {
@@ -195,7 +198,7 @@ class V8_EXPORT_PRIVATE CallDescriptor final
     kFixedTargetRegister = 1u << 7,
     kAllowCallThroughSlot = 1u << 8
   };
-  typedef base::Flags<Flag> Flags;
+  using Flags = base::Flags<Flag>;
 
   CallDescriptor(Kind kind, MachineType target_type, LinkageLocation target_loc,
                  LocationSignature* location_sig, size_t stack_param_count,
@@ -314,6 +317,8 @@ class V8_EXPORT_PRIVATE CallDescriptor final
 
   int GetStackParameterDelta(const CallDescriptor* tail_caller) const;
 
+  int GetTaggedParameterSlots() const;
+
   bool CanTailCall(const Node* call) const;
 
   int CalculateFixedFrameSize() const;
@@ -397,7 +402,7 @@ class V8_EXPORT_PRIVATE Linkage : public NON_EXPORTED_BASE(ZoneObject) {
       Zone* zone, const CallInterfaceDescriptor& descriptor,
       int stack_parameter_count, CallDescriptor::Flags flags,
       Operator::Properties properties = Operator::kNoProperties,
-      StubCallMode stub_mode = StubCallMode::kCallOnHeapBuiltin);
+      StubCallMode stub_mode = StubCallMode::kCallCodeObject);
 
   static CallDescriptor* GetBytecodeDispatchCallDescriptor(
       Zone* zone, const CallInterfaceDescriptor& descriptor,

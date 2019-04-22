@@ -45,17 +45,17 @@ class ClientCertIdentityNSS : public ClientCertIdentity {
         password_delegate_(std::move(password_delegate)) {}
   ~ClientCertIdentityNSS() override = default;
 
-  void AcquirePrivateKey(
-      const base::Callback<void(scoped_refptr<SSLPrivateKey>)>&
-          private_key_callback) override {
+  void AcquirePrivateKey(base::OnceCallback<void(scoped_refptr<SSLPrivateKey>)>
+                             private_key_callback) override {
     // Caller is responsible for keeping the ClientCertIdentity alive until
     // the |private_key_callback| is run, so it's safe to use Unretained here.
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::Bind(&FetchClientCertPrivateKey, base::Unretained(certificate()),
-                   cert_certificate_.get(), password_delegate_),
-        private_key_callback);
+        base::BindOnce(&FetchClientCertPrivateKey,
+                       base::Unretained(certificate()), cert_certificate_.get(),
+                       password_delegate_),
+        std::move(private_key_callback));
   }
 
  private:
@@ -72,21 +72,20 @@ ClientCertStoreNSS::ClientCertStoreNSS(
 
 ClientCertStoreNSS::~ClientCertStoreNSS() = default;
 
-void ClientCertStoreNSS::GetClientCerts(
-    const SSLCertRequestInfo& request,
-    const ClientCertListCallback& callback) {
+void ClientCertStoreNSS::GetClientCerts(const SSLCertRequestInfo& request,
+                                        ClientCertListCallback callback) {
   scoped_refptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate;
   if (!password_delegate_factory_.is_null())
     password_delegate = password_delegate_factory_.Run(request.host_and_port);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&ClientCertStoreNSS::GetAndFilterCertsOnWorkerThread,
-                 // Caller is responsible for keeping the ClientCertStore
-                 // alive until the callback is run.
-                 base::Unretained(this), std::move(password_delegate),
-                 base::Unretained(&request)),
-      callback);
+      base::BindOnce(&ClientCertStoreNSS::GetAndFilterCertsOnWorkerThread,
+                     // Caller is responsible for keeping the ClientCertStore
+                     // alive until the callback is run.
+                     base::Unretained(this), std::move(password_delegate),
+                     base::Unretained(&request)),
+      std::move(callback));
 }
 
 // static
@@ -153,7 +152,8 @@ ClientCertIdentityList ClientCertStoreNSS::GetAndFilterCertsOnWorkerThread(
   // hooks (such as smart card UI). To ensure threads are not starved or
   // deadlocked, the base::ScopedBlockingCall below increments the thread pool
   // capacity if this method takes too much time to run.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   ClientCertIdentityList selected_identities;
   GetPlatformCertsOnWorkerThread(std::move(password_delegate), CertFilter(),
                                  &selected_identities);

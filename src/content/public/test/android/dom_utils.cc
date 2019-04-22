@@ -17,15 +17,13 @@ namespace content {
 // of shrinking Blink's view size, otherwise 0.
 jint JNI_DOMUtils_GetTopControlsShrinkBlinkHeight(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jweb_contents) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
 
   // Android obtains the top control size via WebContentsDelegate.
   WebContentsDelegate* delegate = web_contents->GetDelegate();
-  float scale = web_contents->GetNativeView()->GetDipScale();
   return delegate && delegate->DoBrowserControlsShrinkRendererSize(web_contents)
-             ? delegate->GetTopControlsHeight() * scale
+             ? delegate->GetTopControlsHeight()
              : 0;
 }
 

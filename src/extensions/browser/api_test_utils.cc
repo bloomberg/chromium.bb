@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
@@ -22,7 +23,7 @@ using extensions::ExtensionFunctionDispatcher;
 namespace {
 
 std::unique_ptr<base::Value> ParseJSON(const std::string& data) {
-  return base::JSONReader::Read(data);
+  return base::JSONReader::ReadDeprecated(data);
 }
 
 std::unique_ptr<base::ListValue> ParseList(const std::string& data) {
@@ -192,7 +193,7 @@ bool RunFunction(
     std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
     RunFunctionFlags flags) {
   SendResponseHelper response_helper(function);
-  function->SetArgs(args.get());
+  function->SetArgs(base::Value::FromUniquePtrValue(std::move(args)));
 
   CHECK(dispatcher);
   function->set_dispatcher(dispatcher->AsWeakPtr());

@@ -86,10 +86,11 @@ std::unique_ptr<CmaBackend> MediaPipelineBackendManager::CreateCmaBackend(
     const media::MediaPipelineDeviceParams& params) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  if (active_backend_wrapper_) {
-    active_backend_wrapper_->Revoke();
-    active_backend_wrapper_ = nullptr;
-  }
+  // TODO(guohuideng): Because we now allow multiple CmaBackends to exist,
+  // we can no longer revoke |active_backend_wrapper_| here unconditionally.
+  // We will need to only revoke the old |backend_wrapper| if it has active
+  // video decoder and it has a different |session_id| within its
+  // MediaPipelineDeviceParams.
 
   std::unique_ptr<MediaPipelineBackendWrapper> backend_wrapper =
       std::make_unique<MediaPipelineBackendWrapper>(params, this);
@@ -136,13 +137,14 @@ void MediaPipelineBackendManager::UpdatePlayingAudioCount(
   bool had_playing_audio_streams = (TotalPlayingAudioStreamsCount() > 0);
   playing_audio_streams_count_[type] += change;
   DCHECK_GE(playing_audio_streams_count_[type], 0);
-  if (VolumeControl::SetPowerSaveMode) {
-    int new_playing_audio_streams = TotalPlayingAudioStreamsCount();
-    if (new_playing_audio_streams == 0) {
-      power_save_timer_.Start(FROM_HERE, kPowerSaveWaitTime, this,
-                              &MediaPipelineBackendManager::EnterPowerSaveMode);
-    } else if (!had_playing_audio_streams && new_playing_audio_streams > 0) {
-      power_save_timer_.Stop();
+
+  int new_playing_audio_streams = TotalPlayingAudioStreamsCount();
+  if (new_playing_audio_streams == 0) {
+    power_save_timer_.Start(FROM_HERE, kPowerSaveWaitTime, this,
+                            &MediaPipelineBackendManager::EnterPowerSaveMode);
+  } else if (!had_playing_audio_streams && new_playing_audio_streams > 0) {
+    power_save_timer_.Stop();
+    if (VolumeControl::SetPowerSaveMode) {
       metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
           "Cast.Platform.VolumeControl.PowerSaveOff");
       VolumeControl::SetPowerSaveMode(false);
@@ -185,8 +187,7 @@ int MediaPipelineBackendManager::TotalPlayingNoneffectsAudioStreamsCount() {
 
 void MediaPipelineBackendManager::EnterPowerSaveMode() {
   DCHECK_EQ(TotalPlayingAudioStreamsCount(), 0);
-  DCHECK(VolumeControl::SetPowerSaveMode);
-  if (!power_save_enabled_) {
+  if (!VolumeControl::SetPowerSaveMode || !power_save_enabled_) {
     return;
   }
   metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
@@ -264,10 +265,8 @@ void MediaPipelineBackendManager::RemoveAudioDecoder(
 void MediaPipelineBackendManager::SetPowerSaveEnabled(bool power_save_enabled) {
   MAKE_SURE_MEDIA_THREAD(SetPowerSaveEnabled, power_save_enabled);
   power_save_enabled_ = power_save_enabled;
-  if (!power_save_enabled_) {
-    if (VolumeControl::SetPowerSaveMode) {
-      VolumeControl::SetPowerSaveMode(false);
-    }
+  if (VolumeControl::SetPowerSaveMode && !power_save_enabled_) {
+    VolumeControl::SetPowerSaveMode(false);
   }
 }
 

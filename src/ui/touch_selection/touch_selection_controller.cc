@@ -66,8 +66,7 @@ TouchSelectionController::TouchSelectionController(
       longpress_drag_selector_(this),
       selection_handle_dragged_(false),
       consume_touch_sequence_(false),
-      show_touch_handles_(true)
-{
+      show_touch_handles_(false) {
   DCHECK(client_);
 }
 

@@ -25,11 +25,20 @@
  */
 
 #include "third_party/blink/renderer/core/workers/worker_navigator.h"
+#include "third_party/blink/public/platform/web_worker_fetch_context.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
 
-WorkerNavigator::WorkerNavigator(const String& user_agent)
-    : user_agent_(user_agent) {}
+WorkerNavigator::WorkerNavigator(const String& user_agent,
+                                 ExecutionContext* context)
+    : NavigatorLanguage(context), user_agent_(user_agent) {}
 
 WorkerNavigator::~WorkerNavigator() = default;
 
@@ -37,8 +46,27 @@ String WorkerNavigator::userAgent() const {
   return user_agent_;
 }
 
+String WorkerNavigator::GetAcceptLanguages() {
+  WorkerOrWorkletGlobalScope* global_scope =
+      To<WorkerOrWorkletGlobalScope>(context_.Get());
+  WebWorkerFetchContext* worker_fetch_context =
+      static_cast<WorkerFetchContext*>(
+          (&global_scope->EnsureFetcher()->Context()))
+          ->GetWebWorkerFetchContext();
+  return worker_fetch_context->GetAcceptLanguages();
+}
+
+void WorkerNavigator::NotifyUpdate() {
+  SetLanguagesDirty();
+  WorkerOrWorkletGlobalScope* global_scope =
+      To<WorkerOrWorkletGlobalScope>(context_.Get());
+  global_scope->DispatchEvent(
+      *Event::Create(event_type_names::kLanguagechange));
+}
+
 void WorkerNavigator::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
+  NavigatorLanguage::Trace(visitor);
   Supplementable<WorkerNavigator>::Trace(visitor);
 }
 

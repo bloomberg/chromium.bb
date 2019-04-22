@@ -7,6 +7,7 @@
 #ifndef COMPONENTS_CRASH_CONTENT_APP_BREAKPAD_LINUX_H_
 #define COMPONENTS_CRASH_CONTENT_APP_BREAKPAD_LINUX_H_
 
+#include <signal.h>
 #include <string>
 
 #include "build/build_config.h"
@@ -67,7 +68,7 @@ void GenerateMinidumpOnDemandForAndroid(int dump_fd);
 
 // Install a handler that gets a change to handle faults before Breakpad does
 // any processing. This is used by V8 for trap-based bounds checks.
-void SetFirstChanceExceptionHandler(bool (*handler)(int, void*, void*));
+void SetFirstChanceExceptionHandler(bool (*handler)(int, siginfo_t*, void*));
 }  // namespace breakpad
 
 #endif  // COMPONENTS_CRASH_CONTENT_APP_BREAKPAD_LINUX_H_

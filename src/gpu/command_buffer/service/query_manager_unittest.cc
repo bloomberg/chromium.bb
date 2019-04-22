@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
@@ -69,8 +70,8 @@ class QueryManagerTest : public GpuServiceTest {
     buffer = command_buffer_service_->CreateTransferBufferHelper(
         kSharedBufferSize, &shared_memory2_id_);
     memset(buffer->memory(), kInitialMemoryValue, kSharedBufferSize);
-    decoder_.reset(
-        new MockGLES2Decoder(command_buffer_service_.get(), &outputter_));
+    decoder_.reset(new MockGLES2Decoder(&client_, command_buffer_service_.get(),
+                                        &outputter_));
     TestHelper::SetupFeatureInfoInitExpectations(
         gl_.get(), extension_expectations);
     EXPECT_CALL(*decoder_.get(), GetGLContext())
@@ -125,6 +126,7 @@ class QueryManagerTest : public GpuServiceTest {
 
   TraceOutputter outputter_;
   std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
+  FakeDecoderClient client_;
   std::unique_ptr<MockGLES2Decoder> decoder_;
   std::unique_ptr<GLES2QueryManager> manager_;
 
@@ -561,7 +563,7 @@ TEST_F(QueryManagerTest, TimeElapsedQuery) {
   const base::subtle::Atomic32 kSubmitCount = 123;
   gl::GPUTimingFake fake_timing_queries;
   decoder_->GetGLContext()->CreateGPUTimingClient()->SetCpuTimeForTesting(
-      base::Bind(&gl::GPUTimingFake::GetFakeCPUTime));
+      base::BindRepeating(&gl::GPUTimingFake::GetFakeCPUTime));
 
   QueryManager::Query* query = CreateQuery(
       kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset, 0);
@@ -593,7 +595,7 @@ TEST_F(QueryManagerTest, TimeElapsedPauseResume) {
   const base::subtle::Atomic32 kSubmitCount = 123;
   gl::GPUTimingFake fake_timing_queries;
   decoder_->GetGLContext()->CreateGPUTimingClient()->SetCpuTimeForTesting(
-      base::Bind(&gl::GPUTimingFake::GetFakeCPUTime));
+      base::BindRepeating(&gl::GPUTimingFake::GetFakeCPUTime));
 
   QueryManager::Query* query = CreateQuery(
       kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset, 0);
@@ -698,7 +700,7 @@ TEST_F(QueryManagerTest, TimeStampQuery) {
   gl::GPUTimingFake fake_timing_queries;
 
   decoder_->GetGLContext()->CreateGPUTimingClient()->SetCpuTimeForTesting(
-      base::Bind(&gl::GPUTimingFake::GetFakeCPUTime));
+      base::BindRepeating(&gl::GPUTimingFake::GetFakeCPUTime));
 
   QueryManager::Query* query = CreateQuery(
       kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset, 0);
@@ -725,7 +727,7 @@ TEST_F(QueryManagerTest, TimeStampQueryPending) {
   gl::GPUTimingFake fake_timing_queries;
 
   decoder_->GetGLContext()->CreateGPUTimingClient()->SetCpuTimeForTesting(
-      base::Bind(&gl::GPUTimingFake::GetFakeCPUTime));
+      base::BindRepeating(&gl::GPUTimingFake::GetFakeCPUTime));
 
   QueryManager::Query* query = CreateQuery(
       kTarget, kClient1Id, shared_memory_id_, kSharedMemoryOffset, 0);

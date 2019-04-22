@@ -4,13 +4,19 @@
 
 #include "services/video_capture/service_impl.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/video_capture/device_factory_provider_impl.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
 #include "services/video_capture/testing_controls_impl.h"
+
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace video_capture {
 
@@ -28,12 +34,20 @@ constexpr base::Optional<base::TimeDelta> kDefaultIdleTimeout =
 
 }  // namespace
 
-ServiceImpl::ServiceImpl(service_manager::mojom::ServiceRequest request)
-    : ServiceImpl(std::move(request), kDefaultIdleTimeout) {}
+ServiceImpl::ServiceImpl(
+    service_manager::mojom::ServiceRequest request,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : ServiceImpl(std::move(request),
+                  std::move(ui_task_runner),
+                  kDefaultIdleTimeout) {}
 
-ServiceImpl::ServiceImpl(service_manager::mojom::ServiceRequest request,
-                         base::Optional<base::TimeDelta> idle_timeout)
-    : binding_(this, std::move(request)), keepalive_(&binding_, idle_timeout) {
+ServiceImpl::ServiceImpl(
+    service_manager::mojom::ServiceRequest request,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::Optional<base::TimeDelta> idle_timeout)
+    : binding_(this, std::move(request)),
+      keepalive_(&binding_, idle_timeout),
+      ui_task_runner_(std::move(ui_task_runner)) {
   keepalive_.AddObserver(this);
 }
 
@@ -65,6 +79,10 @@ bool ServiceImpl::HasNoContextRefs() {
   return keepalive_.HasNoRefs();
 }
 
+void ServiceImpl::ShutdownServiceAsap() {
+  binding_.RequestClose();
+}
+
 void ServiceImpl::OnStart() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -79,6 +97,11 @@ void ServiceImpl::OnStart() {
       // Unretained |this| is safe because |registry_| is owned by |this|.
       base::BindRepeating(&ServiceImpl::OnTestingControlsRequest,
                           base::Unretained(this)));
+
+#if defined(OS_CHROMEOS)
+  registry_.AddInterface<cros::mojom::CrosImageCapture>(base::BindRepeating(
+      &ServiceImpl::OnCrosImageCaptureRequest, base::Unretained(this)));
+#endif  // defined(OS_CHROMEOS)
 
   // Unretained |this| is safe because |factory_provider_bindings_| is owned by
   // |this|.
@@ -133,11 +156,23 @@ void ServiceImpl::OnTestingControlsRequest(
       std::move(request));
 }
 
+#if defined(OS_CHROMEOS)
+void ServiceImpl::OnCrosImageCaptureRequest(
+    cros::mojom::CrosImageCaptureRequest request) {
+  LazyInitializeDeviceFactoryProvider();
+  device_factory_provider_->BindCrosImageCaptureRequest(std::move(request));
+}
+#endif  // defined(OS_CHROMEOS)
+
 void ServiceImpl::LazyInitializeDeviceFactoryProvider() {
   if (device_factory_provider_)
     return;
 
-  device_factory_provider_ = std::make_unique<DeviceFactoryProviderImpl>();
+  // Use of base::Unretained() is safe because |this| owns, and therefore
+  // outlives |device_factory_provider_|
+  device_factory_provider_ = std::make_unique<DeviceFactoryProviderImpl>(
+      ui_task_runner_, base::BindOnce(&ServiceImpl::ShutdownServiceAsap,
+                                      base::Unretained(this)));
 }
 
 void ServiceImpl::OnProviderClientDisconnected() {

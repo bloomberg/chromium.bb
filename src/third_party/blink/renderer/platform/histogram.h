@@ -10,15 +10,18 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/tick_clock.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace base {
 class HistogramBase;
-};
+}
 
 namespace blink {
 
 class PLATFORM_EXPORT CustomCountHistogram {
+  USING_FAST_MALLOC(CustomCountHistogram);
+
  public:
   // Min values should be >=1 as emitted 0s still go into the underflow bucket.
   CustomCountHistogram(const char* name,
@@ -27,6 +30,7 @@ class PLATFORM_EXPORT CustomCountHistogram {
                        int32_t bucket_count);
   void Count(base::HistogramBase::Sample);
   void CountMicroseconds(base::TimeDelta);
+  void CountMilliseconds(base::TimeDelta);
 
  protected:
   explicit CustomCountHistogram(base::HistogramBase*);
@@ -47,6 +51,8 @@ class PLATFORM_EXPORT EnumerationHistogram : public CustomCountHistogram {
 };
 
 class PLATFORM_EXPORT SparseHistogram {
+  USING_FAST_MALLOC(SparseHistogram);
+
  public:
   explicit SparseHistogram(const char* name);
 
@@ -65,6 +71,8 @@ class PLATFORM_EXPORT LinearHistogram : public CustomCountHistogram {
 };
 
 class PLATFORM_EXPORT ScopedUsHistogramTimer {
+  USING_FAST_MALLOC(ScopedUsHistogramTimer);
+
  public:
   explicit ScopedUsHistogramTimer(CustomCountHistogram& counter)
       : start_time_(CurrentTimeTicks()), counter_(counter) {}
@@ -79,6 +87,8 @@ class PLATFORM_EXPORT ScopedUsHistogramTimer {
 };
 
 class PLATFORM_EXPORT ScopedHighResUsHistogramTimer {
+  USING_FAST_MALLOC(ScopedUsHistogramTimer);
+
  public:
   explicit ScopedHighResUsHistogramTimer(CustomCountHistogram& counter)
       : start_time_(CurrentTimeTicks()), counter_(counter) {}

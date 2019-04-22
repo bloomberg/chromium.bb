@@ -4,12 +4,13 @@
 
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 
 namespace chromeos {
 namespace {
@@ -30,7 +31,6 @@ const char* kScreenNames[] = {
     "autolaunch",                      // SCREEN_KIOSK_AUTOLAUNCH
     "kiosk-enable",                    // SCREEN_KIOSK_ENABLE
     "error-message",                   // SCREEN_ERROR_MESSAGE
-    "user-image",                      // SCREEN_USER_IMAGE_PICKER
     "tpm-error-message",               // SCREEN_TPM_ERROR
     "password-changed",                // SCREEN_PASSWORD_CHANGED
     "supervised-user-creation",        // SCREEN_CREATE_SUPERVISED_USER_FLOW
@@ -42,15 +42,11 @@ const char* kScreenNames[] = {
     "arc-kiosk-splash",                // SCREEN_ARC_KIOSK_SPLASH
     "confirm-password",                // SCREEN_CONFIRM_PASSWORD
     "fatal-error",                     // SCREEN_FATAL_ERROR
-    "controller-pairing",              // SCREEN_OOBE_CONTROLLER_PAIRING
-    "host-pairing",                    // SCREEN_OOBE_HOST_PAIRING
     "device-disabled",                 // SCREEN_DEVICE_DISABLED
-    "unrecoverable-cryptohome-error",  // SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR
     "userBoard",                       // SCREEN_USER_SELECTION
     "ad-password-change",            // SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE
     "encryption-migration",          // SCREEN_ENCRYPTION_MIGRATION
-    "voice-interaction-value-prop",  // SCREEN_VOICE_INTERACTION_VALUE_PROP
-    "wait-for-container-ready",      // SCREEN_WAIT_FOR_CONTAINTER_READY
+    "supervision-transition",        // SCREEN_SUPERVISION_TRANSITION
     "update-required",               // SCREEN_UPDATE_REQUIRED
     "assistant-optin-flow",          // SCREEN_ASSISTANT_OPTIN_FLOW
     "login",                         // SCREEN_SPECIAL_LOGIN
@@ -69,7 +65,7 @@ const char* kScreenNames[] = {
 };
 
 static_assert(static_cast<size_t>(OobeScreen::SCREEN_UNKNOWN) ==
-                  arraysize(kScreenNames) - 1,
+                  base::size(kScreenNames) - 1,
               "Missing element in OobeScreen or kScreenNames");
 
 }  // namespace
@@ -80,24 +76,12 @@ std::string GetOobeScreenName(OobeScreen screen) {
 }
 
 OobeScreen GetOobeScreenFromName(const std::string& name) {
-  for (size_t i = 0; i < arraysize(kScreenNames); ++i) {
+  for (size_t i = 0; i < base::size(kScreenNames); ++i) {
     if (name == kScreenNames[i])
       return static_cast<OobeScreen>(i);
   }
 
   return OobeScreen::SCREEN_UNKNOWN;
-}
-
-bool ForceShowOobeScreen(OobeScreen screen) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kOobeForceShowScreen))
-    return false;
-  std::string option_str =
-      command_line->GetSwitchValueASCII(switches::kOobeForceShowScreen);
-  std::vector<std::string> screens = base::SplitString(
-      option_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  std::string name = GetOobeScreenName(screen);
-  return base::ContainsValue(screens, name);
 }
 
 }  // namespace chromeos

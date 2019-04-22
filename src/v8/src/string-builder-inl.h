@@ -43,7 +43,7 @@ class FixedArrayBuilder {
   bool HasCapacity(int elements);
   void EnsureCapacity(Isolate* isolate, int elements);
 
-  void Add(Object* value);
+  void Add(Object value);
   void Add(Smi value);
 
   Handle<FixedArray> array() { return array_; }
@@ -65,6 +65,7 @@ class ReplacementStringBuilder {
   ReplacementStringBuilder(Heap* heap, Handle<String> subject,
                            int estimated_part_count);
 
+  // Caution: Callers must ensure the builder has enough capacity.
   static inline void AddSubjectSlice(FixedArrayBuilder* builder, int from,
                                      int to) {
     DCHECK_GE(from, 0);
@@ -82,9 +83,8 @@ class ReplacementStringBuilder {
     }
   }
 
-  void EnsureCapacity(int elements);
-
   void AddSubjectSlice(int from, int to) {
+    EnsureCapacity(2);  // Subject slices are encoded with up to two smis.
     AddSubjectSlice(&array_builder_, from, to);
     IncrementCharacterCount(to - from);
   }
@@ -103,7 +103,8 @@ class ReplacementStringBuilder {
   }
 
  private:
-  void AddElement(Object* element);
+  void AddElement(Handle<Object> element);
+  void EnsureCapacity(int elements);
 
   Heap* heap_;
   FixedArrayBuilder array_builder_;
@@ -182,14 +183,15 @@ class IncrementalStringBuilder {
   template <typename DestChar>
   class NoExtend {
    public:
-    explicit NoExtend(Handle<String> string, int offset) {
+    NoExtend(Handle<String> string, int offset,
+             const DisallowHeapAllocation& no_gc) {
       DCHECK(string->IsSeqOneByteString() || string->IsSeqTwoByteString());
       if (sizeof(DestChar) == 1) {
         start_ = reinterpret_cast<DestChar*>(
-            Handle<SeqOneByteString>::cast(string)->GetChars() + offset);
+            Handle<SeqOneByteString>::cast(string)->GetChars(no_gc) + offset);
       } else {
         start_ = reinterpret_cast<DestChar*>(
-            Handle<SeqTwoByteString>::cast(string)->GetChars() + offset);
+            Handle<SeqTwoByteString>::cast(string)->GetChars(no_gc) + offset);
       }
       cursor_ = start_;
     }
@@ -205,7 +207,7 @@ class IncrementalStringBuilder {
    private:
     DestChar* start_;
     DestChar* cursor_;
-    DISALLOW_HEAP_ALLOCATION(no_gc_);
+    DISALLOW_HEAP_ALLOCATION(no_gc_)
   };
 
   template <typename DestChar>
@@ -231,8 +233,10 @@ class IncrementalStringBuilder {
   template <typename DestChar>
   class NoExtendBuilder : public NoExtend<DestChar> {
    public:
-    NoExtendBuilder(IncrementalStringBuilder* builder, int required_length)
-        : NoExtend<DestChar>(builder->current_part(), builder->current_index_),
+    NoExtendBuilder(IncrementalStringBuilder* builder, int required_length,
+                    const DisallowHeapAllocation& no_gc)
+        : NoExtend<DestChar>(builder->current_part(), builder->current_index_,
+                             no_gc),
           builder_(builder) {
       DCHECK(builder->CurrentPartCanFit(required_length));
     }

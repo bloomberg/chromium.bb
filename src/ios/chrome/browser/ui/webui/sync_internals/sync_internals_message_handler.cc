@@ -7,14 +7,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/cycle/update_counters.h"
@@ -196,7 +197,7 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(
 
   syncer::SyncService* service = GetSyncService();
   if (service) {
-    service->GetAllNodes(
+    service->GetAllNodesForDebugging(
         base::Bind(&SyncInternalsMessageHandler::OnReceivedAllNodes,
                    weak_ptr_factory_.GetWeakPtr(), request_id));
   }
@@ -245,7 +246,7 @@ void SyncInternalsMessageHandler::HandleRequestStopClearData(
     return;
   }
 
-  service->RequestStop(syncer::SyncService::CLEAR_DATA);
+  service->StopAndClear();
 }
 
 void SyncInternalsMessageHandler::HandleTriggerRefresh(
@@ -265,8 +266,11 @@ void SyncInternalsMessageHandler::OnReceivedAllNodes(
     int request_id,
     std::unique_ptr<base::ListValue> nodes) {
   base::Value id(request_id);
+  base::Value nodes_clone = nodes->Clone();
+
+  std::vector<const base::Value*> args{&id, &nodes_clone};
   web_ui()->CallJavascriptFunction(syncer::sync_ui_util::kGetAllNodesCallback,
-                                   id, *nodes);
+                                   args);
 }
 
 void SyncInternalsMessageHandler::OnStateChanged(syncer::SyncService* sync) {
@@ -276,7 +280,7 @@ void SyncInternalsMessageHandler::OnStateChanged(syncer::SyncService* sync) {
 void SyncInternalsMessageHandler::OnProtocolEvent(
     const syncer::ProtocolEvent& event) {
   std::unique_ptr<base::DictionaryValue> value(
-      syncer::ProtocolEvent::ToValue(event, include_specifics_));
+      event.ToValue(include_specifics_));
   DispatchEvent(syncer::sync_ui_util::kOnProtocolEvent, *value);
 }
 
@@ -336,6 +340,9 @@ syncer::SyncService* SyncInternalsMessageHandler::GetSyncService() {
 void SyncInternalsMessageHandler::DispatchEvent(
     const std::string& name,
     const base::Value& details_value) {
-  web_ui()->CallJavascriptFunction(syncer::sync_ui_util::kDispatchEvent,
-                                   base::Value(name), details_value);
+  base::Value event_name = base::Value(name);
+
+  std::vector<const base::Value*> args{&event_name, &details_value};
+
+  web_ui()->CallJavascriptFunction(syncer::sync_ui_util::kDispatchEvent, args);
 }

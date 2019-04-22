@@ -28,7 +28,7 @@ namespace net {
 
 namespace ct {
 enum class CTPolicyCompliance;
-};
+}
 
 class HostPortPair;
 class SSLInfo;

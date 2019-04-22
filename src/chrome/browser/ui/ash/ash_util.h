@@ -38,6 +38,14 @@ bool WillAshProcessAcceleratorForEvent(const ui::KeyEvent& key_event);
 void SetupWidgetInitParamsForContainer(views::Widget::InitParams* params,
                                        int container_id);
 
+// Returns the the SystemModalContainer id if a session is active, ortherwise
+// returns the LockSystemModalContainer id so that the dialog appears above the
+// lock screen.
+int GetSystemModalDialogContainerId();
+
+// Returns InitParams for a frameless window with no shadow.
+views::Widget::InitParams GetFramelessInitParams();
+
 // Returns the connector from ServiceManagerConnection::GetForProcess().
 // May be null in unit tests.
 service_manager::Connector* GetServiceManagerConnector();

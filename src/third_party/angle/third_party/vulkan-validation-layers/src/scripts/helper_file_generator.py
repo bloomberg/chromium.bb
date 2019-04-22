@@ -192,9 +192,10 @@ class HelperFileOutputGenerator(OutputGenerator):
         if self.helper_file_type == 'enum_string_header':
             value_set = set()
             for elem in groupElem.findall('enum'):
-                if elem.get('supported') != 'disabled' and elem.get('alias') == None:
+                if elem.get('supported') != 'disabled' and elem.get('alias') is None:
                     value_set.add(elem.get('name'))
-            self.enum_output += self.GenerateEnumStringConversion(groupName, value_set)
+            if value_set != set():
+                self.enum_output += self.GenerateEnumStringConversion(groupName, value_set)
         elif self.helper_file_type == 'object_types_header':
             if groupName == 'VkDebugReportObjectTypeEXT':
                 for elem in groupElem.findall('enum'):
@@ -272,9 +273,9 @@ class HelperFileOutputGenerator(OutputGenerator):
                 decoratedName = '{}/{}'.format(*match.group(2, 3))
         else:
             # Matches expressions similar to 'latexmath : [dataSize \over 4]'
-            match = re.match(r'latexmath\s*\:\s*\[\s*(\w+)\s*\\over\s*(\d+)\s*\]', source)
-            name = match.group(1)
-            decoratedName = '{}/{}'.format(*match.group(1, 2))
+            match = re.match(r'latexmath\s*\:\s*\[\s*(\\textrm\{)?(\w+)\}?\s*\\over\s*(\d+)\s*\]', source)
+            name = match.group(2)
+            decoratedName = '{}/{}'.format(*match.group(2, 3))
         return name, decoratedName
     #
     # Retrieve the value of the len tag
@@ -296,7 +297,7 @@ class HelperFileOutputGenerator(OutputGenerator):
             result = str(result).replace('::', '->')
         return result
     #
-    # Check if a structure is or contains a dispatchable (dispatchable = True) or 
+    # Check if a structure is or contains a dispatchable (dispatchable = True) or
     # non-dispatchable (dispatchable = False) handle
     def TypeContainsObjectHandle(self, handle_type, dispatchable):
         if dispatchable:
@@ -428,7 +429,7 @@ class HelperFileOutputGenerator(OutputGenerator):
         for item in self.structMembers:
             if self.NeedSafeStruct(item) == True:
                 safe_struct_header += '\n'
-                if item.ifdef_protect != None:
+                if item.ifdef_protect is not None:
                     safe_struct_header += '#ifdef %s\n' % item.ifdef_protect
                 safe_struct_header += 'struct safe_%s {\n' % (item.name)
                 for member in item.members:
@@ -454,7 +455,7 @@ class HelperFileOutputGenerator(OutputGenerator):
                 safe_struct_header += '    %s *ptr() { return reinterpret_cast<%s *>(this); }\n' % (item.name, item.name)
                 safe_struct_header += '    %s const *ptr() const { return reinterpret_cast<%s const *>(this); }\n' % (item.name, item.name)
                 safe_struct_header += '};\n'
-                if item.ifdef_protect != None:
+                if item.ifdef_protect is not None:
                     safe_struct_header += '#endif // %s\n' % item.ifdef_protect
         return safe_struct_header
     #
@@ -537,10 +538,11 @@ class HelperFileOutputGenerator(OutputGenerator):
             struct  = [struct_decl]
             struct.extend([ '    bool %s{false};' % field_name[ext_name] for ext_name, info in extension_items])
 
-            # Create struct entries for saving extension count and extension list from DeviceCreateInfo
-            struct.extend([
-                '',
-                '    std::unordered_set<std::string> device_extension_set;'])
+            # Create struct entries for saving extension count and extension list from Instance, DeviceCreateInfo
+            if type == 'Instance':
+                struct.extend([
+                    '',
+                    '    std::unordered_set<std::string> device_extension_set;'])
 
             # Construct the extension information map -- mapping name to data member (field), and required extensions
             # The map is contained within a static function member for portability reasons.
@@ -605,13 +607,13 @@ class HelperFileOutputGenerator(OutputGenerator):
                     '        // Initialize: this to defaults,  base class fields to input.',
                     '        assert(instance_extensions);',
                     '        *this = %s(*instance_extensions);' % struct_type,
+                    '']),
+            struct.extend([
                     '',
                     '        // Save pCreateInfo device extension list',
                     '        for (uint32_t extn = 0; extn < pCreateInfo->enabledExtensionCount; extn++) {',
                     '           device_extension_set.insert(pCreateInfo->ppEnabledExtensionNames[extn]);',
-                    '        }']),
-
-            struct.extend([
+                    '        }',
                 '',
                 '        static const std::vector<const char *> V_1_0_promoted_%s_extensions = {' % type.lower() ])
             struct.extend(['            %s_EXTENSION_NAME,' % ext_name.upper() for ext_name in promoted_ext_list])
@@ -791,7 +793,6 @@ class HelperFileOutputGenerator(OutputGenerator):
         wsi_structs = ['VkXlibSurfaceCreateInfoKHR',
                        'VkXcbSurfaceCreateInfoKHR',
                        'VkWaylandSurfaceCreateInfoKHR',
-                       'VkMirSurfaceCreateInfoKHR',
                        'VkAndroidSurfaceCreateInfoKHR',
                        'VkWin32SurfaceCreateInfoKHR'
                        ]
@@ -806,7 +807,7 @@ class HelperFileOutputGenerator(OutputGenerator):
                 continue
             if item.name in wsi_structs:
                 continue
-            if item.ifdef_protect != None:
+            if item.ifdef_protect is not None:
                 safe_struct_body.append("#ifdef %s\n" % item.ifdef_protect)
             ss_name = "safe_%s" % item.name
             init_list = ''          # list of members in struct constructor initializer
@@ -1117,7 +1118,7 @@ class HelperFileOutputGenerator(OutputGenerator):
             init_copy = copy_construct_init.replace('src.', 'src->')
             init_construct = copy_construct_txt.replace('src.', 'src->')
             safe_struct_body.append("\nvoid %s::initialize(const %s* src)\n{\n%s%s}" % (ss_name, ss_name, init_copy, init_construct))
-            if item.ifdef_protect != None:
+            if item.ifdef_protect is not None:
                 safe_struct_body.append("#endif // %s\n" % item.ifdef_protect)
         return "\n".join(safe_struct_body)
     #
@@ -1209,7 +1210,7 @@ class HelperFileOutputGenerator(OutputGenerator):
             if not info:
                 continue
 
-            if item.ifdef_protect != None:
+            if item.ifdef_protect is not None:
                 code.append('#ifdef %s' % item.ifdef_protect)
 
             code.append('// Map type {} to id {}'.format(typename, info.value))
@@ -1217,7 +1218,7 @@ class HelperFileOutputGenerator(OutputGenerator):
                 id_decl=id_decl, id_member=id_member))
             code.append(idmap_format.format(template=idmap, typename=typename, id_value=info.value, typedef=type_member))
 
-            if item.ifdef_protect != None:
+            if item.ifdef_protect is not None:
                 code.append('#endif // %s' % item.ifdef_protect)
 
         # Generate utilities for all types
@@ -1246,4 +1247,3 @@ class HelperFileOutputGenerator(OutputGenerator):
             return self.GenerateTypeMapHelperHeader()
         else:
             return 'Bad Helper File Generator Option %s' % self.helper_file_type
-

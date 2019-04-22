@@ -170,7 +170,7 @@ Closure compilation runs in the compile step of Linux, Android and ChromeOS buil
 From the command line, you try your change with:
 
 ```shell
-git cl try -b linux_chromium_rel_ng
+git cl try -b linux-rel
 ```
 
 ## Integrating with the continuous build

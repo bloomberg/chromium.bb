@@ -30,6 +30,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -52,12 +53,6 @@ class XMLHttpRequestProgressEventThrottle final
     : public GarbageCollectedFinalized<XMLHttpRequestProgressEventThrottle>,
       public TimerBase {
  public:
-  static XMLHttpRequestProgressEventThrottle* Create(
-      XMLHttpRequest* event_target) {
-    return MakeGarbageCollected<XMLHttpRequestProgressEventThrottle>(
-        event_target);
-  }
-
   explicit XMLHttpRequestProgressEventThrottle(XMLHttpRequest*);
   ~XMLHttpRequestProgressEventThrottle() override;
 
@@ -79,14 +74,11 @@ class XMLHttpRequestProgressEventThrottle final
   // as well.
   void DispatchProgressEvent(const AtomicString&,
                              bool length_computable,
-                             unsigned long long loaded,
-                             unsigned long long total);
+                             uint64_t loaded,
+                             uint64_t total);
   // Dispatches the given event after operation about the "progress" event
   // depending on the value of the ProgressEventAction argument.
   void DispatchReadyStateChangeEvent(Event*, DeferredEventAction);
-
-  void Pause();
-  void Unpause();
 
   // Need to promptly stop this timer when it is deemed finalizable.
   EAGERLY_FINALIZE();
@@ -101,18 +93,18 @@ class XMLHttpRequestProgressEventThrottle final
   // ProgressEvent dispatching. This class represents such a deferred
   // "progress" ProgressEvent.
   class DeferredEvent {
+    DISALLOW_NEW();
+
    public:
     DeferredEvent();
-    void Set(bool length_computable,
-             unsigned long long loaded,
-             unsigned long long total);
+    void Set(bool length_computable, uint64_t loaded, uint64_t total);
     void Clear();
     bool IsSet() const { return is_set_; }
     Event* Take();
 
    private:
-    unsigned long long loaded_;
-    unsigned long long total_;
+    uint64_t loaded_;
+    uint64_t total_;
     bool length_computable_;
 
     bool is_set_;

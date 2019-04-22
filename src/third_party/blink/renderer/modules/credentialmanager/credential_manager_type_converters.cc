@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/modules/credentialmanager/authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/modules/credentialmanager/cable_authentication_data.h"
@@ -312,6 +313,9 @@ TypeConverter<PublicKeyCredentialRpEntityPtr,
   if (rp->hasId()) {
     entity->id = rp->id();
   }
+  if (!rp->name()) {
+    return nullptr;
+  }
   entity->name = rp->name();
   if (rp->hasIcon()) {
     entity->icon = blink::KURL(blink::KURL(), rp->icon());
@@ -445,6 +449,11 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
     if (extensions->hasHmacCreateSecret()) {
       mojo_options->hmac_create_secret = extensions->hmacCreateSecret();
     }
+#if defined(OS_ANDROID)
+    if (extensions->hasUvm()) {
+      mojo_options->user_verification_methods = extensions->uvm();
+    }
+#endif
   }
 
   return mojo_options;
@@ -528,6 +537,11 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
       }
       mojo_options->cable_authentication_data = std::move(mojo_data);
     }
+#if defined(OS_ANDROID)
+    if (extensions->hasUvm()) {
+      mojo_options->user_verification_methods = extensions->uvm();
+    }
+#endif
   }
 
   return mojo_options;

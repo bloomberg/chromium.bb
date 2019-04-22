@@ -12,7 +12,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/window_mirror_view.h"
+#include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -65,15 +65,15 @@ class LayerFillBackgroundPainter : public views::Background {
 
 // This view represents a single aura::Window by displaying a title and a
 // thumbnail of the window's contents.
-class WindowPreviewView : public views::View, public aura::WindowObserver {
+class WindowCycleItemView : public views::View, public aura::WindowObserver {
  public:
-  explicit WindowPreviewView(aura::Window* window)
+  explicit WindowCycleItemView(aura::Window* window)
       : window_title_(new views::Label),
         preview_background_(new views::View),
-        mirror_view_(
-            new wm::WindowMirrorView(window,
-                                     /*trilinear_filtering_on_init=*/
-                                     features::IsTrilinearFilteringEnabled())),
+        preview_view_(
+            new wm::WindowPreviewView(window,
+                                      /*trilinear_filtering_on_init=*/
+                                      features::IsTrilinearFilteringEnabled())),
         window_observer_(this) {
     window_observer_.Add(window);
     window_title_->SetText(window->GetTitle());
@@ -97,11 +97,11 @@ class WindowPreviewView : public views::View, public aura::WindowObserver {
         views::CreateSolidBackground(SkColorSetA(SK_ColorBLACK, 0xFF / 2)));
     AddChildView(preview_background_);
 
-    AddChildView(mirror_view_);
+    AddChildView(preview_view_);
 
     SetFocusBehavior(FocusBehavior::ALWAYS);
   }
-  ~WindowPreviewView() override = default;
+  ~WindowCycleItemView() override = default;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override {
@@ -118,11 +118,11 @@ class WindowPreviewView : public views::View, public aura::WindowObserver {
 
     gfx::Rect preview_area_bounds(preview_area_size);
     preview_area_bounds.set_y(height() - preview_area_size.height());
-    mirror_view_->SetSize(GetMirrorViewScaledSize());
-    if (mirror_view_->size() == preview_area_size) {
+    preview_view_->SetSize(GetMirrorViewScaledSize());
+    if (preview_view_->size() == preview_area_size) {
       // Padding is not needed, hide the background and set the mirror view
       // to take up the entire preview area.
-      mirror_view_->SetPosition(preview_area_bounds.origin());
+      preview_view_->SetPosition(preview_area_bounds.origin());
       preview_background_->SetVisible(false);
       return;
     }
@@ -131,8 +131,8 @@ class WindowPreviewView : public views::View, public aura::WindowObserver {
     // centered within it.
     preview_background_->SetBoundsRect(preview_area_bounds);
     preview_background_->SetVisible(true);
-    preview_area_bounds.ClampToCenteredSize(mirror_view_->size());
-    mirror_view_->SetPosition(preview_area_bounds.origin());
+    preview_area_bounds.ClampToCenteredSize(preview_view_->size());
+    preview_view_->SetPosition(preview_area_bounds.origin());
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -159,7 +159,7 @@ class WindowPreviewView : public views::View, public aura::WindowObserver {
   // Returns the size for the mirror view, scaled to fit within the max bounds.
   // Scaling is always 1:1 and we only scale down, never up.
   gfx::Size GetMirrorViewScaledSize() const {
-    gfx::Size mirror_pref_size = mirror_view_->GetPreferredSize();
+    gfx::Size mirror_pref_size = preview_view_->GetPreferredSize();
 
     if (mirror_pref_size.width() > kMaxPreviewWidth ||
         mirror_pref_size.height() > kFixedPreviewHeight) {
@@ -199,15 +199,15 @@ class WindowPreviewView : public views::View, public aura::WindowObserver {
 
   // Displays the title of the window above the preview.
   views::Label* window_title_;
-  // When visible, shows a darkened background area behind |mirror_view_|
+  // When visible, shows a darkened background area behind |preview_view_|
   // (effectively padding the preview to fit the desired bounds).
   views::View* preview_background_;
   // The view that actually renders a thumbnail version of the window.
-  views::View* mirror_view_;
+  wm::WindowPreviewView* preview_view_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowPreviewView);
+  DISALLOW_COPY_AND_ASSIGN(WindowCycleItemView);
 };
 
 // A view that shows a collection of windows the user can tab through.
@@ -241,10 +241,9 @@ class WindowCycleView : public views::WidgetDelegateView {
     mirror_container_->layer()->SetFillsBoundsOpaquely(false);
 
     for (auto* window : windows) {
-      // |mirror_container_| owns |view|.
-      // The |mirror_view_| in |view| will use trilinear filtering in
-      // InitLayerOwner().
-      views::View* view = new WindowPreviewView(window);
+      // |mirror_container_| owns |view|. The |preview_view_| in |view| will use
+      // trilinear filtering in InitLayerOwner().
+      views::View* view = new WindowCycleItemView(window);
       window_view_map_[window] = view;
       mirror_container_->AddChildView(view);
     }

@@ -111,10 +111,10 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   void UpdateLabel();
 
   // Represents 'selectedness'.
-  // https://html.spec.whatwg.org/multipage/forms.html#concept-option-selectedness
+  // https://html.spec.whatwg.org/C/#concept-option-selectedness
   bool is_selected_;
   // Represents 'dirtiness'.
-  // https://html.spec.whatwg.org/multipage/forms.html#concept-option-dirtiness
+  // https://html.spec.whatwg.org/C/#concept-option-dirtiness
   bool is_dirty_ = false;
 };
 

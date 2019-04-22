@@ -49,7 +49,7 @@ class PepperTrueTypeFont
 
  protected:
   friend class base::RefCountedThreadSafe<PepperTrueTypeFont>;
-  virtual ~PepperTrueTypeFont() {};
+  virtual ~PepperTrueTypeFont() {}
 };
 
 }  // namespace content

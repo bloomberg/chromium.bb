@@ -102,7 +102,8 @@ initWithCollectionController:
   [link addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
 }
 
-- (void)shiftTilesUpWithCompletionBlock:(ProceduralBlock)completion {
+- (void)shiftTilesUpWithAnimations:(ProceduralBlock)animations
+                        completion:(ProceduralBlock)completion {
   // Add gesture recognizer to collection view when the omnibox is focused.
   [self.collectionView addGestureRecognizer:self.tapGestureRecognizer];
 
@@ -133,6 +134,8 @@ initWithCollectionController:
   [UIView animateWithDuration:kShiftTilesUpAnimationDuration
       animations:^{
         if (self.collectionView.contentOffset.y < pinnedOffsetY) {
+          if (animations)
+            animations();
           // Changing the contentOffset of the collection results in a scroll
           // and a change in the constraints of the header.
           self.collectionView.contentOffset = CGPointMake(0, pinnedOffsetY);

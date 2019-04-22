@@ -66,7 +66,7 @@ int ParseListing(const base::string16& text,
     },
   };
 
-  for (size_t i = 0; i < arraysize(parsers); i++) {
+  for (size_t i = 0; i < base::size(parsers); i++) {
     entries->clear();
     if (parsers[i].callback.Run()) {
       *server_type = parsers[i].server_type;
@@ -95,7 +95,7 @@ int DecodeAndParse(const std::string& text,
                             &converted_text)) {
     const char* const kNewlineSeparators[] = {"\n", "\r\n"};
 
-    for (size_t j = 0; j < arraysize(kNewlineSeparators); j++) {
+    for (size_t j = 0; j < base::size(kNewlineSeparators); j++) {
       int rv = ParseListing(converted_text,
                             base::ASCIIToUTF16(kNewlineSeparators[j]),
                             encoding_name, current_time, entries, server_type);

@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -119,18 +120,18 @@ void SyncFileSystemBackend::ResolveURL(const storage::FileSystemURL& url,
   DCHECK(CanHandleType(url.type()));
 
   if (skip_initialize_syncfs_service_for_testing_) {
-    GetDelegate()->OpenFileSystem(url.origin(), url.type(), mode,
-                                  std::move(callback),
-                                  GetSyncableFileSystemRootURI(url.origin()));
+    GetDelegate()->OpenFileSystem(
+        url.origin().GetURL(), url.type(), mode, std::move(callback),
+        GetSyncableFileSystemRootURI(url.origin().GetURL()));
     return;
   }
 
   // It is safe to pass Unretained(this) since |context_| owns it.
-  SyncStatusCallback initialize_callback =
-      base::Bind(&SyncFileSystemBackend::DidInitializeSyncFileSystemService,
-                 base::Unretained(this), base::RetainedRef(context_),
-                 url.origin(), url.type(), mode, base::Passed(&callback));
-  InitializeSyncFileSystemService(url.origin(), initialize_callback);
+  SyncStatusCallback initialize_callback = base::Bind(
+      &SyncFileSystemBackend::DidInitializeSyncFileSystemService,
+      base::Unretained(this), base::RetainedRef(context_),
+      url.origin().GetURL(), url.type(), mode, base::Passed(&callback));
+  InitializeSyncFileSystemService(url.origin().GetURL(), initialize_callback);
 }
 
 storage::AsyncFileUtil* SyncFileSystemBackend::GetAsyncFileUtil(

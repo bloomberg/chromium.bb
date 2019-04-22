@@ -4,7 +4,7 @@
 
 #include "chrome/common/pref_names.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_font_webkit_names.h"
@@ -48,6 +48,7 @@ const char kDisableScreenshots[] = "disable_screenshots";
 // 1 - Block dangerous downloads
 // 2 - Block potentially dangerous downloads
 // 3 - Block all downloads
+// 4 - Block malicious downloads
 const char kDownloadRestrictions[] = "download_restrictions";
 
 // If set to true profiles are created in ephemeral mode and do not store their
@@ -238,10 +239,6 @@ const char kAllowedLanguages[] = "intl.allowed_languages";
 // absence of MIME charset specification
 const char kDefaultCharset[] = "intl.charset_default";
 
-// The value to use for Accept-Languages HTTP header when making an HTTP
-// request.
-const char kAcceptLanguages[] = "intl.accept_languages";
-
 // If these change, the corresponding enums in the extension API
 // experimental.fontSettings.json must also change.
 const char* const kWebKitScriptsForFontFamilyMaps[] = {
@@ -252,7 +249,7 @@ ALL_FONT_SCRIPTS("unused param")
 };
 
 const size_t kWebKitScriptsForFontFamilyMapsLength =
-    arraysize(kWebKitScriptsForFontFamilyMaps);
+    base::size(kWebKitScriptsForFontFamilyMaps);
 
 // Strings for WebKit font family preferences. If these change, the pref prefix
 // in pref_names_util.cc and the pref format in font_settings_api.cc must also
@@ -357,6 +354,8 @@ const char kWebKitFontScaleFactor[] = "webkit.webprefs.font_scale_factor";
 const char kWebKitForceEnableZoom[] = "webkit.webprefs.force_enable_zoom";
 const char kWebKitPasswordEchoEnabled[] =
     "webkit.webprefs.password_echo_enabled";
+const char kWebKitForceDarkModeEnabled[] =
+    "webkit.webprefs.force_dark_mode_enabled";
 #endif
 
 const char kWebKitCommonScript[] = "Zyyy";
@@ -379,11 +378,6 @@ const char kWebKitJavascriptEnabled[] = "webkit.webprefs.javascript_enabled";
 const char kWebKitLoadsImagesAutomatically[] =
     "webkit.webprefs.loads_images_automatically";
 const char kWebKitPluginsEnabled[] = "webkit.webprefs.plugins_enabled";
-
-// Boolean that is true when Data Saver is enabled.
-// TODO(bengr): Migrate the preference string to "data_saver.enabled"
-// (crbug.com/564207).
-const char kDataSaverEnabled[] = "spdy_proxy.enabled";
 
 // Boolean that is true when the SSL interstitial should allow users to
 // proceed anyway. Otherwise, proceeding is not possible.
@@ -467,6 +461,16 @@ const char kDefaultAppsInstallState[] = "default_apps_install_state";
 const char kHideWebStoreIcon[] = "hide_web_store_icon";
 
 #if defined(OS_CHROMEOS)
+// An integer preference to store the number of times the Chrome OS Account
+// Manager migration flow ran successfully.
+const char kAccountManagerNumTimesMigrationRanSuccessfully[] =
+    "account_manager.num_times_migration_ran_successfully";
+
+// An integer preference to store the number of times the Chrome OS Account
+// Manager welcome screen has been shown.
+const char kAccountManagerNumTimesWelcomeScreenShown[] =
+    "account_manager.num_times_welcome_screen_shown";
+
 // A boolean pref set to true if touchpad tap-to-click is enabled.
 const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
 
@@ -527,13 +531,6 @@ const char kLanguagePreviousInputMethod[] =
 const char kLanguageAllowedInputMethods[] =
     "settings.language.allowed_input_methods";
 
-// A string pref (comma-separated list) set to the preferred language IDs
-// (ex. "en-US,fr,ko").
-const char kLanguagePreferredLanguages[] =
-    "settings.language.preferred_languages";
-const char kLanguagePreferredLanguagesSyncable[] =
-    "settings.language.preferred_languages_syncable";
-
 // A string pref (comma-separated list) set to the preloaded (active) input
 // method IDs (ex. "pinyin,mozc").
 const char kLanguagePreloadEngines[] = "settings.language.preload_engines";
@@ -587,8 +584,10 @@ const char kLabsAdvancedFilesystemEnabled[] =
 // A boolean pref which turns on the mediaplayer.
 const char kLabsMediaplayerEnabled[] = "settings.labs.mediaplayer";
 
-// A boolean pref of whether to show 3G promo notification.
-const char kShow3gPromoNotification[] =
+// A boolean pref of whether to show mobile data first-use warning notification.
+// Note: 3g in the name is for legacy reasons. The pref was added while only 3G
+// mobile data was supported.
+const char kShowMobileDataNotification[] =
     "settings.internet.mobile.show_3g_promo_notification";
 
 // An integer pref counting times Data Saver prompt has been shown.
@@ -843,6 +842,10 @@ const char kTextToSpeechPitch[] = "settings.tts.speech_pitch";
 // system volume, and higher than 1.0 is louder.
 const char kTextToSpeechVolume[] = "settings.tts.speech_volume";
 
+// A dictionary containing the latest Time Limits override authorized by parent
+// access code.
+const char kTimeLimitLocalOverride[] = "screen_time.local_override";
+
 // A dictionary preference holding the usage time limit definitions for a user.
 const char kUsageTimeLimit[] = "screen_time.limit";
 
@@ -868,6 +871,18 @@ const char kManagedSessionEnabled[] = "managed_session.enabled";
 const char kTPMFirmwareUpdateCleanupDismissed[] =
     "tpm_firmware_update.cleanup_dismissed";
 
+// Int64 pref indicating the time in microseconds since Windows epoch
+// (1601-01-01 00:00:00 UTC) when the notification informing the user about a
+// planned TPM update that will clear all user data was shown. If the
+// notification was not yet shown the pref holds the value Time::Min().
+const char kTPMUpdatePlannedNotificationShownTime[] =
+    "tpm_auto_update.planned_notification_shown_time";
+
+// Boolean pref indicating whether the notification informing the user that an
+// auto-update that will clear all the user data at next reboot was shown.
+const char kTPMUpdateOnNextRebootNotificationShown[] =
+    "tpm_auto_update.update_on_reboot_notification_shown";
+
 // Boolean pref indicating whether the NetBios Name Query Request Protocol is
 // used for discovering shares on the user's network by the Network File
 // Shares for Chrome OS feature.
@@ -889,6 +904,10 @@ const char kLastChildScreenTimeReset[] = "last_child_screen_time_reset";
 const char kNTLMShareAuthenticationEnabled[] =
     "network_file_shares.ntlm_share_authentication.enabled";
 
+// Dictionary pref containing configuration used to verify Parent Access Code.
+// Controlled by ParentAccessCodeConfig policy.
+const char kParentAccessCodeConfig[] = "child_user.parent_access_code.config";
+
 // List of preconfigured network file shares.
 const char kNetworkFileSharesPreconfiguredShares[] =
     "network_file_shares.preconfigured_shares";
@@ -896,6 +915,10 @@ const char kNetworkFileSharesPreconfiguredShares[] =
 // URL path string of the most recently used SMB NetworkFileShare path.
 const char kMostRecentlyUsedNetworkFileShareURL[] =
     "network_file_shares.most_recently_used_url";
+
+// A string pref storing the path of device wallpaper image file.
+const char kDeviceWallpaperImageFilePath[] =
+    "policy.device_wallpaper_image_file_path";
 
 #endif  // defined(OS_CHROMEOS)
 
@@ -908,17 +931,14 @@ const char kShowHomeButton[] = "browser.show_home_button";
 const char kSpeechRecognitionFilterProfanities[] =
     "browser.speechinput_censor_results";
 
-// Boolean controlling whether history saving is disabled.
-const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
-
 // Boolean controlling whether deleting browsing and download history is
 // permitted.
 const char kAllowDeletingBrowserHistory[] = "history.deleting_enabled";
 
 #if !defined(OS_ANDROID)
 // Whether the "Click here to clear your browsing data" tooltip promo has been
-// shown on the Material Design History page.
-const char kMdHistoryMenuPromoShown[] = "history.menu_promo_shown";
+// shown on the History page.
+const char kHistoryMenuPromoShown[] = "history.menu_promo_shown";
 #endif
 
 // Boolean controlling whether SafeSearch is mandatory for Google Web Searches.
@@ -939,10 +959,7 @@ const char kUsesSystemTheme[] = "extensions.theme.use_system";
 #endif
 const char kCurrentThemePackFilename[] = "extensions.theme.pack";
 const char kCurrentThemeID[] = "extensions.theme.id";
-const char kCurrentThemeImages[] = "extensions.theme.images";
-const char kCurrentThemeColors[] = "extensions.theme.colors";
-const char kCurrentThemeTints[] = "extensions.theme.tints";
-const char kCurrentThemeDisplayProperties[] = "extensions.theme.properties";
+const char kAutogeneratedThemeColor[] = "autogenerated.theme.color";
 
 // Boolean pref which persists whether the extensions_ui is in developer mode
 // (showing developer packing tools and extensions details)
@@ -1013,6 +1030,15 @@ const char kDefaultBrowserSettingEnabled[] =
 const char kShowInternalAccessibilityTree[] =
     "accessibility.show_internal_accessibility_tree";
 
+// Additional features for image labels for accessibility.
+const char kAccessibilityImageLabelsEnabled[] =
+    "settings.a11y.enable_accessibility_image_labels";
+
+// Whether the opt-in dialog for image labels has been accepted yet. The opt-in
+// need not be shown every time if it has already been accepted once.
+const char kAccessibilityImageLabelsOptInAccepted[] =
+    "settings.a11y.enable_accessibility_image_labels_opt_in_accepted";
+
 #if defined(OS_MACOSX)
 // Boolean that indicates whether the application should show the info bar
 // asking the user to set up automatic updates when Keystone promotion is
@@ -1063,7 +1089,7 @@ const char kEnableDoNotTrack[] = "enable_do_not_track";
 // use of Clear Key key sytems, which is always allowed as required by the spec.
 // TODO(crbug.com/784675): This pref was used as a WebPreference which is why
 // the string is prefixed with "webkit.webprefs". Now this is used in
-// RendererPreferences and we should migrate the pref to use a new
+// blink::mojom::RendererPreferences and we should migrate the pref to use a new
 // non-webkit-prefixed string.
 const char kEnableEncryptedMedia[] = "webkit.webprefs.encrypted_media_enabled";
 
@@ -1182,6 +1208,9 @@ const char kPrintingAllowedColorModes[] = "printing.allowed_color_modes";
 // of |printing::DuplexModeRestriction| values. 0 is no restriction.
 const char kPrintingAllowedDuplexModes[] = "printing.allowed_duplex_modes";
 
+// A pref holding the allowed PIN printing modes.
+const char kPrintingAllowedPinModes[] = "printing.allowed_pin_modes";
+
 // A pref holding the list of allowed printing duplex mode.
 // Empty list is no restriction.
 const char kPrintingAllowedPageSizes[] = "printing.allowed_page_sizes";
@@ -1192,8 +1221,16 @@ const char kPrintingColorDefault[] = "printing.color_default";
 // A pref holding the default duplex mode.
 const char kPrintingDuplexDefault[] = "printing.duplex_default";
 
+// A pref holding the default PIN mode.
+const char kPrintingPinDefault[] = "printing.pin_default";
+
 // A pref holding the default page size.
 const char kPrintingSizeDefault[] = "printing.size_default";
+
+// Boolean flag which represents whether username and filename should be sent
+// to print server.
+const char kPrintingSendUsernameAndFilenameEnabled[] =
+    "printing.send_username_and_filename_enabled";
 #endif  // OS_CHROMEOS
 
 // An integer pref specifying the fallback behavior for sites outside of content
@@ -1237,7 +1274,11 @@ const char kMigratedToSiteNotificationChannels[] =
 // TODO(https://crbug.com/837614): Remove this after a few releases (M69?).
 const char kClearedBlockedSiteNotificationChannels[] =
     "notifications.cleared_blocked_channels";
-#endif
+
+// Usage stats reporting opt-in.
+const char kUsageStatsEnabled[] = "usage_stats_reporting.enabled";
+
+#endif  // defined(OS_ANDROID)
 
 // Maps from app ids to origin + Service Worker registration ID.
 const char kPushMessagingAppIdentifierMap[] =
@@ -1510,10 +1551,22 @@ const char kContentSuggestionsNotificationsSentDay[] =
 const char kContentSuggestionsNotificationsSentCount[] =
     "ntp.content_suggestions.notifications.sent_count";
 #else
+// Tracks whether a field trial to hide shortcuts on the NTP has been activated.
+// It is only activated for fresh installs, and remains active for those clients
+// after a browser restart.
+const char kNtpActivateHideShortcutsFieldTrial[] =
+    "ntp.activate_hide_shortcuts_field_trial";
 // Holds info for New Tab Page custom background
 const char kNtpCustomBackgroundDict[] = "ntp.custom_background_dict";
 const char kNtpCustomBackgroundLocalToDevice[] =
     "ntp.custom_background_local_to_device";
+
+// Data associated with search suggestions that appear on the NTP.
+const char kNtpSearchSuggestionsBlocklist[] =
+    "ntp.search_suggestions_blocklist";
+const char kNtpSearchSuggestionsImpressions[] =
+    "ntp.search_suggestions_impressions";
+const char kNtpSearchSuggestionsOptOut[] = "ntp.search_suggestions_opt_out";
 #endif  // defined(OS_ANDROID)
 
 // Which page should be visible on the new tab page v4
@@ -1524,6 +1577,10 @@ const char kDevToolsAdbKey[] = "devtools.adb_key";
 
 // Defines administrator-set availability of developer tools.
 const char kDevToolsAvailability[] = "devtools.availability";
+
+// Dictionary from background service to recording expiration time.
+const char kDevToolsBackgroundServicesExpirationDict[] =
+    "devtools.backgroundserviceexpiration";
 
 // Determines whether devtools should be discovering usb devices for
 // remote debugging at chrome://inspect.
@@ -1564,12 +1621,6 @@ const char kDevToolsPreferences[] = "devtools.preferences";
 // menu.
 const char kDiceSigninUserMenuPromoCount[] = "sync_promo.user_menu_show_count";
 
-// Tracks the number of times that we have shown the sign in promo at startup.
-const char kSignInPromoStartupCount[] = "sync_promo.startup_count";
-
-// Boolean tracking whether the user chose to skip the sign in promo.
-const char kSignInPromoUserSkipped[] = "sync_promo.user_skipped";
-
 // Boolean that specifies if the sign in promo is allowed to show on first run.
 // This preference is specified in the master preference file to suppress the
 // sign in promo for some installations.
@@ -1594,6 +1645,11 @@ const char kWebAppInstallForceList[] = "profile.web_app.install.forcelist";
 
 // Dictionary that maps web app URLs to Chrome extension IDs.
 const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
+
+// A string representing the last version of Chrome that System Web Apps were
+// updated for.
+const char kSystemWebAppLastUpdateVersion[] =
+    "web_apps.system_web_app_last_update";
 
 // The default audio capture device used by the Media content setting.
 const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
@@ -1657,6 +1713,13 @@ const char kAuthAndroidNegotiateAccountType[] =
 // domain sub-content requests.
 const char kAllowCrossOriginAuthPrompt[] = "auth.allow_cross_origin_prompt";
 
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+// Boolean that specifies whether OK-AS-DELEGATE flag from KDC is respected
+// along with kAuthNegotiateDelegateWhitelist.
+const char kAuthNegotiateDelegateByKdcPolicy[] =
+    "auth.negotiate_delegate_by_kdc_policy";
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
 #if defined(OS_POSIX)
 // Boolean that specifies whether NTLMv2 is enabled.
 const char kNtlmV2Enabled[] = "auth.ntlm_v2_enabled";
@@ -1672,12 +1735,6 @@ const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
 const char kCertRevocationCheckingRequiredLocalAnchors[] =
     "ssl.rev_checking.required_for_local_anchors";
 
-// Boolean that specifies whether to allow certificates from the Legacy
-// Symantec Infrastructure, disabling the mitigations documented in
-// https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
-const char kCertEnableSymantecLegacyInfrastructure[] =
-    "ssl.enable_symantec_legacy_infrastructure";
-
 // String specifying the minimum TLS version to negotiate. Supported values
 // are "tls1", "tls1.1", "tls1.2", "tls1.3".
 const char kSSLVersionMin[] = "ssl.version_min";
@@ -1685,11 +1742,6 @@ const char kSSLVersionMin[] = "ssl.version_min";
 // String specifying the maximum TLS version to negotiate. Supported values
 // are "tls1.2", "tls1.3"
 const char kSSLVersionMax[] = "ssl.version_max";
-
-// String specifying the TLS 1.3 variant to negotiate when negotiating TLS 1.3.
-// Supported values are "disabled", which disables TLS 1.3, "draft23", and
-// "final".
-const char kTLS13Variant[] = "ssl.tls13_variant";
 
 // String specifying the TLS ciphersuites to disable. Ciphersuites are
 // specified as a comma-separated list of 16-bit hexadecimal values, with
@@ -1738,6 +1790,9 @@ const char kVideoCaptureAllowedUrls[] = "hardware.video_capture_allowed_urls";
 // An integer pref that holds enum value of current demo mode configuration.
 // Values are defined by DemoSession::DemoModeConfig enum.
 const char kDemoModeConfig[] = "demo_mode.config";
+
+// A string pref holding the value of the current country for demo sessions.
+const char kDemoModeCountry[] = "demo_mode.country";
 
 // A string pref holding the value of the default locale for demo sessions.
 const char kDemoModeDefaultLocale[] = "demo_mode.default_locale";
@@ -1806,6 +1861,9 @@ const char kDeviceRobotAnyApiRefreshToken[] =
 // Device requisition for enterprise enrollment.
 const char kDeviceEnrollmentRequisition[] = "enrollment.device_requisition";
 
+// Sub organization for enterprise enrollment.
+const char kDeviceEnrollmentSubOrganization[] = "enrollment.sub_organization";
+
 // Whether to automatically start the enterprise enrollment step during OOBE.
 const char kDeviceEnrollmentAutoStart[] = "enrollment.auto_start";
 
@@ -1841,11 +1899,6 @@ const char kOobeComplete[] = "OobeComplete";
 // The name of the screen that has to be shown if OOBE has been interrupted.
 const char kOobeScreenPending[] = "OobeScreenPending";
 
-// A boolean pref to indicate if an eligible controller (either a Chrome OS
-// device, or an Android device) is detected during bootstrapping or
-// shark/remora setup process. A controller can help the device go through OOBE
-// and get enrolled into a domain automatically.
-const char kOobeControllerDetected[] = "OobeControllerDetected";
 
 // A boolean pref to indicate if the marketing opt-in screen in OOBE is finished
 // for the user.
@@ -1882,13 +1935,13 @@ const char kCustomizationDefaultWallpaperURL[] =
 // This is saved to file and cleared after chrome process starts.
 const char kLogoutStartedLast[] = "chromeos.logout-started";
 
-// The role of the device in the OOBE bootstrapping process. If it's a "slave"
-// device, then it's eligible to be enrolled by a "master" device (which could
-// be an Android app).
-const char kIsBootstrappingSlave[] = "is_oobe_bootstrapping_slave";
 
 // A boolean preference controlling Android status reporting.
 const char kReportArcStatusEnabled[] = "arc.status_reporting_enabled";
+
+// A string preference indicating the name of the OS level task scheduler
+// configuration to use.
+const char kSchedulerConfiguration[] = "chromeos.scheduler_configuration";
 
 // Dictionary indicating current network bandwidth throttling settings.
 // Contains a boolean (is throttling enabled) and two integers (upload rate
@@ -1923,9 +1976,6 @@ const char kRemoveUsersRemoteCommand[] = "remove_users_remote_command";
 // Whether camera-produced media files have been consolidated to one place.
 const char kCameraMediaConsolidated[] = "camera_media_consolidated";
 
-// Whether the user is allowed to disconnect and configure VPN connections.
-const char kVpnConfigAllowed[] = "vpn_config_allowed";
-
 // Integer pref used by the metrics::DailyEvent owned by
 // chromeos::power::auto_screen_brightness::MetricsReporter.
 const char kAutoScreenBrightnessMetricsDailySample[] =
@@ -1933,12 +1983,32 @@ const char kAutoScreenBrightnessMetricsDailySample[] =
 
 // Integer prefs used to back event counts reported by
 // chromeos::power::auto_screen_brightness::MetricsReporter.
+const char kAutoScreenBrightnessMetricsAtlasUserAdjustmentCount[] =
+    "auto_screen_brightness.metrics.atlas_user_adjustment_count";
+const char kAutoScreenBrightnessMetricsEveUserAdjustmentCount[] =
+    "auto_screen_brightness.metrics.eve_user_adjustment_count";
 const char kAutoScreenBrightnessMetricsNoAlsUserAdjustmentCount[] =
     "auto_screen_brightness.metrics.no_als_user_adjustment_count";
 const char kAutoScreenBrightnessMetricsSupportedAlsUserAdjustmentCount[] =
     "auto_screen_brightness.metrics.supported_als_user_adjustment_count";
 const char kAutoScreenBrightnessMetricsUnsupportedAlsUserAdjustmentCount[] =
     "auto_screen_brightness.metrics.unsupported_als_user_adjustment_count";
+
+// Dictionary pref containing the configuration used to verify Parent Access
+// Code. The data is sent through the ParentAccessCodeConfig policy, which is
+// set for child users only, and kept on the known user storage.
+const char kKnownUserParentAccessCodeConfig[] =
+    "child_user.parent_access_code.config";
+
+// Enable chrome://password-change page for in-session change of SAML passwords.
+// Also enables SAML password expiry notifications, if we have that information.
+const char kSamlInSessionPasswordChangeEnabled[] =
+    "saml.in_session_password_change_enabled";
+// The number of days in advance to notify the user that their SAML password
+// will expire (works when kSamlInSessionPasswordChangeEnabled is true).
+const char kSamlPasswordExpirationAdvanceWarningDays[] =
+    "saml.password_expiration_advance_warning_days";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.
@@ -2140,14 +2210,6 @@ const char kMediaGalleriesRememberedGalleries[] =
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-// This value stores chrome icon's index in the launcher. This should be handled
-// separately with app shortcut's index because of ShelfModel's backward
-// compatibility. If we add chrome icon index to |kPinnedLauncherApps|, its
-// index is also stored in the |kPinnedLauncherApp| pref. It may causes
-// creating two chrome icons.
-const char kShelfChromeIconIndex[] = "shelf_chrome_icon_index";
-
-const char kPinnedLauncherApps[] = "pinned_launcher_apps";
 const char kPolicyPinnedLauncherApps[] = "policy_pinned_launcher_apps";
 #endif  // defined(OS_CHROMEOS)
 
@@ -2214,24 +2276,6 @@ const char kPartnerBookmarkMappings[] = "partnerbookmarks.mappings";
 // rules, or an implicit fallback to DIRECT connections).
 const char kQuickCheckEnabled[] = "proxy.quick_check_enabled";
 
-// Whether PAC scripts are given a stripped https:// URL (enabled), or
-// the full URL for https:// (disabled).
-//
-// This is a security feature which is on by default, and prevents PAC
-// scripts (which may have been sourced in an untrusted manner) from
-// having access to data that is ordinarily protected by a TLS channel
-// (i.e. the path and query components of an https:// URL).
-//
-// This preference is not exposed in the UI, but is overridable using
-// a Policy (PacHttpsUrlStrippingEnabled), or using a commandline
-// flag --unsafe-pac-url.
-//
-// The ability to turn off this security feature is not intended to be
-// a long-lived feature, but rather an escape-hatch for enterprises
-// while rolling out the change to PAC.
-const char kPacHttpsUrlStrippingEnabled[] =
-    "proxy.pac_https_url_stripping_enabled";
-
 // Whether Guest Mode is enabled within the browser.
 const char kBrowserGuestModeEnabled[] = "profile.browser_guest_enabled";
 
@@ -2273,10 +2317,6 @@ const char kRecoveryComponentNeedsElevation[] =
 // (name and a list of clients that registered the whitelist).
 const char kRegisteredSupervisedUserWhitelists[] =
     "supervised_users.whitelists";
-
-// Boolean that specifies whether the cloud policy will override conflicting
-// machine policy.
-const char kCloudPolicyOverridesMachinePolicy[] = "policy.cloud_override";
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 // Boolean that indicates whether Chrome enterprise cloud reporting is enabled
@@ -2550,6 +2590,10 @@ const char kBlockAutoplayEnabled[] = "media.block_autoplay";
 // used.
 const char kNotificationNextPersistentId[] = "persistent_notifications.next_id";
 
+// Time that holds the value of the next notification trigger timestamp.
+const char kNotificationNextTriggerTime[] =
+    "persistent_notifications.next_trigger";
+
 // Preference for controlling whether tab lifecycles
 // (throttling/freezing/discarding) are enabled.
 const char kTabLifecyclesEnabled[] = "tab_lifecycles_enabled";
@@ -2558,5 +2602,22 @@ const char kTabLifecyclesEnabled[] = "tab_lifecycles_enabled";
 // extensions installed by enterprise policy.
 const char kEnterpriseHardwarePlatformAPIEnabled[] =
     "enterprise_hardware_platform_api.enabled";
+
+// Boolean that specifies whether Signed HTTP Exchange (SXG) loading is enabled.
+const char kSignedHTTPExchangeEnabled[] = "web_package.signed_exchange.enabled";
+
+// Boolean that allows a page to show popups during its unloading.
+// TODO(https://crbug.com/937569): Remove this in Chrome 82.
+const char kAllowPopupsDuringPageUnload[] = "allow_popups_during_page_unload";
+
+#if defined(OS_CHROMEOS)
+// Enum that specifies certificate management permissions for user. It can have
+// one of the following values.
+// 0: Users can manage all certificates.
+// 1: Users can manage user certificates, but not device certificates.
+// 2: Disallow users from managing certificates
+// Controlled by CertificateManagementAllowed policy.
+const char kCertificateManagementAllowed[] = "certificate_management_allowed";
+#endif
 
 }  // namespace prefs

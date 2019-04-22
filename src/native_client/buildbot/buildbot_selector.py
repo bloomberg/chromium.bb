@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import json
 import os
 import subprocess
@@ -246,7 +248,7 @@ special_for_arm = [
     'linux64'
 ]
 for platform in [
-    'vista', 'win7', 'win8', 'win',
+    'win7', 'win8', 'win',
     'mac', 'linux'] + special_for_arm:
   if platform in special_for_arm:
     arch_variants = ['arm']
@@ -264,9 +266,9 @@ for platform in [
     # Test with Breakpad tools only on basic Linux builds.
     if sys.platform.startswith('linux'):
       arch_flags += ' --use-breakpad-tools'
-    # GN executable can no longer run on Vista.
-    if platform == 'vista':
       arch_flags += ' --no-gn'
+    if arch != 'arm' and not 'win' in platform:
+      arch_flags += ' --clang'
     for mode in ['dbg', 'opt']:
       for libc in ['newlib', 'glibc']:
         # Buildbots.
@@ -366,10 +368,10 @@ def Main():
   # Set all temp directory variants to the same thing.
   env['TMPDIR'] = env['TEMP']
   env['TMP'] = env['TEMP']
-  print 'TEMP=%s' % env['TEMP']
+  print('TEMP=%s' % env['TEMP'])
   sys.stdout.flush()
 
-  print "%s runs: %s\n" % (builder, cmd)
+  print("%s runs: %s\n" % (builder, cmd))
   sys.stdout.flush()
   retcode = subprocess.call(cmd, env=env, shell=True)
   sys.exit(retcode)

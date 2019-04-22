@@ -178,6 +178,15 @@ class TryserverApi(recipe_api.RecipeApi):
     step_result = self.m.step.active_result
     step_result.presentation.properties['failure_type'] = failure_type
 
+  def set_do_not_retry_build(self):
+    """A flag to indicate the build should not be retried by the CQ.
+
+    This mechanism is used to reduce CQ duration when retrying will likely
+    return an identical result.
+    """
+    step_result = self.m.step.active_result
+    step_result.presentation.properties['do_not_retry'] = True
+
   def set_patch_failure_tryjob_result(self):
     """Mark the tryjob result as failure to apply the patch."""
     self._set_failure_type('PATCH_FAILURE')
@@ -254,7 +263,7 @@ class TryserverApi(recipe_api.RecipeApi):
             int(self.gerrit_change.patchset))
 
     result = self.m.python(
-        'parse description', self.package_repo_resource('git_footers.py'),
+        'parse description', self.repo_resource('git_footers.py'),
         args=['--json', self.m.json.output()],
         stdin=self.m.raw_io.input(data=patch_text))
     return result.json.output

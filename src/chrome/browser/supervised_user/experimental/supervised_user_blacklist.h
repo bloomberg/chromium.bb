@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/hash/sha1.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sha1.h"
 
 namespace base {
 class FilePath;

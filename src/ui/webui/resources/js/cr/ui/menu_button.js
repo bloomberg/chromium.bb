@@ -18,13 +18,13 @@ cr.ui.HideType = {
 
 cr.define('cr.ui', function() {
   /** @const */
-  var Menu = cr.ui.Menu;
+  const Menu = cr.ui.Menu;
 
   /** @const */
-  var HideType = cr.ui.HideType;
+  const HideType = cr.ui.HideType;
 
   /** @const */
-  var positionPopupAroundElement = cr.ui.positionPopupAroundElement;
+  const positionPopupAroundElement = cr.ui.positionPopupAroundElement;
 
   /**
    * Creates a new menu button element.
@@ -33,7 +33,7 @@ cr.define('cr.ui', function() {
    * @extends {HTMLButtonElement}
    * @implements {EventListener}
    */
-  var MenuButton = cr.ui.define('button');
+  const MenuButton = cr.ui.define('button');
 
   MenuButton.prototype = {
     __proto__: HTMLButtonElement.prototype,
@@ -55,9 +55,10 @@ cr.define('cr.ui', function() {
       this.classList.add('custom-appearance');
       this.classList.add('menu-button');  // For styles in menu_button.css.
 
-      var menu;
-      if ((menu = this.getAttribute('menu')))
+      let menu;
+      if ((menu = this.getAttribute('menu'))) {
         this.menu = menu;
+      }
 
       // An event tracker for events we only connect to while the menu is
       // displayed.
@@ -82,8 +83,9 @@ cr.define('cr.ui', function() {
 
       this.menu_ = menu;
       if (menu) {
-        if (menu.id)
+        if (menu.id) {
           this.setAttribute('menu', '#' + menu.id);
+        }
       }
     },
 
@@ -112,8 +114,9 @@ cr.define('cr.ui', function() {
      * @param {Event} e The event object.
      */
     handleEvent: function(e) {
-      if (!this.menu)
+      if (!this.menu) {
         return;
+      }
 
       switch (e.type) {
         case 'touchstart':
@@ -171,9 +174,9 @@ cr.define('cr.ui', function() {
           this.classList.remove('using-mouse');
           break;
         case 'activate':
-          var hideDelayed =
+          const hideDelayed =
               e.target instanceof cr.ui.MenuItem && e.target.checkable;
-          var hideType = hideDelayed ? HideType.DELAYED : HideType.INSTANT;
+          const hideType = hideDelayed ? HideType.DELAYED : HideType.INSTANT;
           if (e.originalEvent instanceof MouseEvent ||
               e.originalEvent instanceof TouchEvent) {
             this.hideMenuWithoutTakingFocus_(hideType);
@@ -183,8 +186,9 @@ cr.define('cr.ui', function() {
           }
           break;
         case 'scroll':
-          if (!(e.target == this.menu || this.menu.contains(e.target)))
+          if (!(e.target == this.menu || this.menu.contains(e.target))) {
             this.hideMenu();
+          }
           break;
         case 'popstate':
         case 'resize':
@@ -192,8 +196,9 @@ cr.define('cr.ui', function() {
           break;
         case 'contextmenu':
           if ((!this.menu || !this.menu.contains(e.target)) &&
-              (!this.hideTimestamp_ || Date.now() - this.hideTimestamp_ > 50))
+              (!this.hideTimestamp_ || Date.now() - this.hideTimestamp_ > 50)) {
             this.showMenu(true, {x: e.screenX, y: e.screenY});
+          }
           e.preventDefault();
           // Don't allow elements further up in the DOM to show their menus.
           e.stopPropagation();
@@ -218,18 +223,19 @@ cr.define('cr.ui', function() {
 
       this.menu.updateCommands(this);
 
-      var event = new UIEvent(
+      const event = new UIEvent(
           'menushow', {bubbles: true, cancelable: true, view: window});
-      if (!this.dispatchEvent(event))
+      if (!this.dispatchEvent(event)) {
         return;
+      }
 
       this.menu.show(opt_mousePos);
 
       this.setAttribute('menu-shown', '');
 
       // When the menu is shown we steal all keyboard events.
-      var doc = this.ownerDocument;
-      var win = doc.defaultView;
+      const doc = this.ownerDocument;
+      const win = doc.defaultView;
       this.showingEvents_.add(doc, 'keydown', this, true);
       this.showingEvents_.add(doc, 'mousedown', this, true);
       this.showingEvents_.add(doc, 'focus', this, true);
@@ -240,8 +246,9 @@ cr.define('cr.ui', function() {
       this.showingEvents_.add(this.menu, 'activate', this);
       this.positionMenu_();
 
-      if (shouldSetFocus)
+      if (shouldSetFocus) {
         this.menu.focusSelectedItem();
+      }
     },
 
     /**
@@ -272,21 +279,24 @@ cr.define('cr.ui', function() {
      *     default: cr.ui.HideType.INSTANT.
      */
     hideMenuInternal_: function(shouldTakeFocus, opt_hideType) {
-      if (!this.isMenuShown())
+      if (!this.isMenuShown()) {
         return;
+      }
 
       this.removeAttribute('menu-shown');
-      if (opt_hideType == HideType.DELAYED)
+      if (opt_hideType == HideType.DELAYED) {
         this.menu.classList.add('hide-delayed');
-      else
+      } else {
         this.menu.classList.remove('hide-delayed');
+      }
       this.menu.hide();
 
       this.showingEvents_.removeAll();
-      if (shouldTakeFocus)
+      if (shouldTakeFocus) {
         this.focus();
+      }
 
-      var event = new UIEvent(
+      const event = new UIEvent(
           'menuhide', {bubbles: true, cancelable: false, view: window});
       this.dispatchEvent(event);
 
@@ -320,12 +330,14 @@ cr.define('cr.ui', function() {
       switch (e.key) {
         case 'ArrowDown':
         case 'ArrowUp':
-          if (!this.respondToArrowKeys)
+          if (!this.respondToArrowKeys) {
             break;
+          }
         case 'Enter':
         case ' ':
-          if (!this.isMenuShown())
+          if (!this.isMenuShown()) {
             this.showMenu(true);
+          }
           e.preventDefault();
           break;
         case 'Escape':

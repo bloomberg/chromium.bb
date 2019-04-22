@@ -171,7 +171,8 @@ bool MsiUtil::GetMsiComponentPaths(
     const base::string16& product_guid,
     const base::string16& user_sid,
     std::vector<base::string16>* component_paths) const {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
   base::string16 msi_path;
   if (!GetMsiPath(product_guid, &msi_path))

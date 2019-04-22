@@ -15,11 +15,10 @@
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chromeos/chromeos_features.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/proximity_auth/messenger_observer.h"
 #include "chromeos/components/proximity_auth/remote_status_update.h"
-#include "components/cryptauth/wire_message.h"
+#include "chromeos/constants/chromeos_features.h"
 
 namespace proximity_auth {
 
@@ -209,7 +208,8 @@ void MessengerImpl::OnMessageReceived(const std::string& payload) {
 
 void MessengerImpl::HandleMessage(const std::string& message) {
   // The decoded message should be a JSON string.
-  std::unique_ptr<base::Value> message_value = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> message_value =
+      base::JSONReader::ReadDeprecated(message);
   if (!message_value || !message_value->is_dict()) {
     PA_LOG(ERROR) << "Unable to parse message as JSON:\n" << message;
     return;

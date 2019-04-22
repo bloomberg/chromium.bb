@@ -14,8 +14,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/win/direct_write.h"
 
@@ -23,7 +23,7 @@ namespace content {
 
 namespace {
 
-bool SetupFonts() {
+void SetupFonts() {
   // Load Ahem font. Ahem.ttf is copied to the build directory by
   // //third_party/test_fonts .
   base::FilePath base_path;
@@ -36,8 +36,6 @@ bool SetupFonts() {
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   command_line.AppendSwitchASCII(kRegisterFontFiles,
                                  base::WideToUTF8(font_path.value()));
-
-  return true;
 }
 
 }  // namespace
@@ -59,7 +57,7 @@ bool CheckLayoutSystemDeps() {
       {&metrics.lfStatusFont, &metrics.lfMenuFont, &metrics.lfSmCaptionFont};
   const wchar_t required_font[] = L"Segoe UI";
   int required_font_size = -12;
-  for (size_t i = 0; i < arraysize(system_fonts); ++i) {
+  for (size_t i = 0; i < base::size(system_fonts); ++i) {
     if (system_fonts[i]->lfHeight != required_font_size ||
         wcscmp(required_font, system_fonts[i]->lfFaceName)) {
       errors.push_back("Must use either the Aero or Basic theme.");
@@ -72,8 +70,8 @@ bool CheckLayoutSystemDeps() {
   return errors.empty();
 }
 
-bool BlinkTestPlatformInitialize() {
-  return SetupFonts();
+void BlinkTestPlatformInitialize() {
+  SetupFonts();
 }
 
 }  // namespace content

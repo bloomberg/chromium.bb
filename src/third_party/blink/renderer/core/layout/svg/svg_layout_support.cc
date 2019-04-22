@@ -76,10 +76,11 @@ FloatRect SVGLayoutSupport::LocalVisualRect(const LayoutObject& object) {
 
 LayoutRect SVGLayoutSupport::VisualRectInAncestorSpace(
     const LayoutObject& object,
-    const LayoutBoxModelObject& ancestor) {
+    const LayoutBoxModelObject& ancestor,
+    VisualRectFlags flags) {
   LayoutRect rect;
   MapToVisualRectInAncestorSpace(object, &ancestor, LocalVisualRect(object),
-                                 rect);
+                                 rect, flags);
   return rect;
 }
 
@@ -282,16 +283,6 @@ void SVGLayoutSupport::ComputeContainerBoundingBoxes(
                                 local_visual_rect);
 }
 
-const LayoutSVGRoot* SVGLayoutSupport::FindTreeRootObject(
-    const LayoutObject* start) {
-  while (start && !start->IsSVGRoot())
-    start = start->Parent();
-
-  DCHECK(start);
-  DCHECK(start->IsSVGRoot());
-  return ToLayoutSVGRoot(start);
-}
-
 bool SVGLayoutSupport::LayoutSizeOfNearestViewportChanged(
     const LayoutObject* start) {
   for (; start; start = start->Parent()) {
@@ -428,14 +419,14 @@ bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
 }
 
 bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
+                                          const FloatRect& reference_box,
                                           const HitTestLocation& location) {
   ClipPathOperation* clip_path_operation = object.StyleRef().ClipPath();
   if (!clip_path_operation)
     return true;
-  const FloatRect& reference_box = object.ObjectBoundingBox();
   if (clip_path_operation->GetType() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation& clip_path =
-        ToShapeClipPathOperation(*clip_path_operation);
+        To<ShapeClipPathOperation>(*clip_path_operation);
     return clip_path.GetPath(reference_box)
         .Contains(location.TransformedPoint());
   }

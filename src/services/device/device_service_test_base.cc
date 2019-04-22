@@ -6,17 +6,18 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/device_service.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 
 namespace device {
@@ -51,19 +52,17 @@ std::unique_ptr<DeviceService> CreateTestDeviceService(
 }  // namespace
 
 DeviceServiceTestBase::DeviceServiceTestBase()
-    : file_thread_("DeviceServiceTestFileThread"),
-      io_thread_("DeviceServiceTestIOThread"),
-      connector_(test_connector_factory_.CreateConnector()) {
-  file_thread_.Start();
-  io_thread_.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-}
+    : file_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
+      io_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
+          {base::TaskPriority::USER_VISIBLE})),
+      connector_(test_connector_factory_.CreateConnector()) {}
 
 DeviceServiceTestBase::~DeviceServiceTestBase() = default;
 
 void DeviceServiceTestBase::SetUp() {
   service_ = CreateTestDeviceService(
-      file_thread_.task_runner(), io_thread_.task_runner(),
+      file_task_runner_, io_task_runner_,
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &test_url_loader_factory_),
       test_connector_factory_.RegisterInstance(mojom::kServiceName));

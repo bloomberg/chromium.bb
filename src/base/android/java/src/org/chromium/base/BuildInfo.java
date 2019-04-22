@@ -57,13 +57,29 @@ public class BuildInfo {
         BuildInfo buildInfo = getInstance();
         String hostPackageName = ContextUtils.getApplicationContext().getPackageName();
         return new String[] {
-                Build.BRAND, Build.DEVICE, Build.ID, Build.MANUFACTURER, Build.MODEL,
-                String.valueOf(Build.VERSION.SDK_INT), Build.TYPE, Build.BOARD, hostPackageName,
-                String.valueOf(buildInfo.hostVersionCode), buildInfo.hostPackageLabel,
-                buildInfo.packageName, String.valueOf(buildInfo.versionCode), buildInfo.versionName,
-                buildInfo.androidBuildFingerprint, buildInfo.gmsVersionCode,
-                buildInfo.installerPackageName, buildInfo.abiString, BuildConfig.FIREBASE_APP_ID,
-                buildInfo.customThemes, buildInfo.resourcesVersion, buildInfo.extractedFileSuffix,
+                Build.BRAND,
+                Build.DEVICE,
+                Build.ID,
+                Build.MANUFACTURER,
+                Build.MODEL,
+                String.valueOf(Build.VERSION.SDK_INT),
+                Build.TYPE,
+                Build.BOARD,
+                hostPackageName,
+                String.valueOf(buildInfo.hostVersionCode),
+                buildInfo.hostPackageLabel,
+                buildInfo.packageName,
+                String.valueOf(buildInfo.versionCode),
+                buildInfo.versionName,
+                buildInfo.androidBuildFingerprint,
+                buildInfo.gmsVersionCode,
+                buildInfo.installerPackageName,
+                buildInfo.abiString,
+                BuildConfig.FIREBASE_APP_ID,
+                buildInfo.customThemes,
+                buildInfo.resourcesVersion,
+                buildInfo.extractedFileSuffix,
+                isAtLeastQ() ? "1" : "0",
         };
     }
 
@@ -163,6 +179,7 @@ public class BuildInfo {
 
     /**
      * Check if this is a debuggable build of Android. Use this to enable developer-only features.
+     * This is a rough approximation of the hidden API {@code Build.IS_DEBUGGABLE}.
      */
     public static boolean isDebugAndroid() {
         return "eng".equals(Build.TYPE) || "userdebug".equals(Build.TYPE);

@@ -11,7 +11,7 @@
 // MessagePump interface called CFRunLoopBase.  CFRunLoopBase contains all
 // of the machinery necessary to dispatch events to a delegate, but does not
 // implement the specific run loop.  Concrete subclasses must provide their
-// own DoRun and Quit implementations.
+// own DoRun and DoQuit implementations.
 //
 // A concrete subclass that just runs a CFRunLoop loop is provided in
 // MessagePumpCFRunLoop.  For an NSRunLoop, the similar MessagePumpNSRunLoop
@@ -38,6 +38,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/timer_slack.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 
 #if defined(__OBJC__)
@@ -82,6 +83,7 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
  public:
   // MessagePump:
   void Run(Delegate* delegate) override;
+  void Quit() override;
   void ScheduleWork() override;
   void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
   void SetTimerSlack(TimerSlack timer_slack) override;
@@ -103,10 +105,20 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // up and tear down things before and after the "meat" of DoRun.
   virtual void DoRun(Delegate* delegate) = 0;
 
+  // Similar to DoRun, this allows subclasses to perform custom handling when
+  // quitting a run loop. Return true if the quit took effect immediately;
+  // otherwise call OnDidQuit() when the quit is actually applied (e.g., a
+  // nested native runloop exited).
+  virtual bool DoQuit() = 0;
+
+  // Should be called by subclasses to signal when a deferred quit takes place.
+  void OnDidQuit();
+
   // Accessors for private data members to be used by subclasses.
   CFRunLoopRef run_loop() const { return run_loop_; }
   int nesting_level() const { return nesting_level_; }
   int run_nesting_level() const { return run_nesting_level_; }
+  bool keep_running() const { return keep_running_; }
 
   // Sets this pump's delegate.  Signals the appropriate sources if
   // |delegateless_work_| is true.  |delegate| can be NULL.
@@ -123,6 +135,10 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
 
   // Get the current mode mask from |enabled_modes_|.
   int GetModeMask() const;
+
+  // Controls whether the timer invalidation performance optimization is
+  // allowed.
+  void SetTimerInvalidationAllowed(bool allowed);
 
  private:
   class ScopedModeEnabler;
@@ -144,6 +160,10 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // Sets a Core Foundation object's "invalid" bit to |valid|. Based on code
   // from CFRunLoop.c.
   static void ChromeCFRunLoopTimerSetValid(CFRunLoopTimerRef timer, bool valid);
+
+  // Controls the validity of the delayed work timer. Does nothing if timer
+  // invalidation is disallowed.
+  void SetDelayedWorkTimerValid(bool valid);
 
   // Timer callback scheduled by ScheduleDelayedWork.  This does not do any
   // work, but it signals work_source_ so that delayed work can be performed
@@ -242,6 +262,10 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // most recent attempt to run nesting-deferred work.
   int deepest_nesting_level_;
 
+  // Whether we should continue running application tasks. Set to false when
+  // Quit() is called for the innermost run loop.
+  bool keep_running_;
+
   // "Delegateless" work flags are set when work is ready to be performed but
   // must wait until a delegate is available to process it.  This can happen
   // when a MessagePumpCFRunLoopBase is instantiated and work arrives without
@@ -249,6 +273,14 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // work on entry and redispatch it as needed once a delegate is available.
   bool delegateless_work_;
   bool delegateless_idle_work_;
+
+  // Whether or not timer invalidation can be used in order to reduce the number
+  // of reschedulings.
+  bool allow_timer_invalidation_;
+
+  // If changing timer validitity was attempted while it was disallowed, this
+  // value tracks the desired state of the timer.
+  Optional<bool> pending_timer_validity_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpCFRunLoopBase);
 };
@@ -259,7 +291,7 @@ class BASE_EXPORT MessagePumpCFRunLoop : public MessagePumpCFRunLoopBase {
   ~MessagePumpCFRunLoop() override;
 
   void DoRun(Delegate* delegate) override;
-  void Quit() override;
+  bool DoQuit() override;
 
  private:
   void EnterExitRunLoop(CFRunLoopActivity activity) override;
@@ -278,16 +310,13 @@ class BASE_EXPORT MessagePumpNSRunLoop : public MessagePumpCFRunLoopBase {
   ~MessagePumpNSRunLoop() override;
 
   void DoRun(Delegate* delegate) override;
-  void Quit() override;
+  bool DoQuit() override;
 
  private:
   // A source that doesn't do anything but provide something signalable
   // attached to the run loop.  This source will be signalled when Quit
   // is called, to cause the loop to wake up so that it can stop.
   CFRunLoopSourceRef quit_source_;
-
-  // False after Quit is called.
-  bool keep_running_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpNSRunLoop);
 };
@@ -301,7 +330,7 @@ class MessagePumpUIApplication : public MessagePumpCFRunLoopBase {
   MessagePumpUIApplication();
   ~MessagePumpUIApplication() override;
   void DoRun(Delegate* delegate) override;
-  void Quit() override;
+  bool DoQuit() override;
 
   // This message pump can not spin the main message loop directly.  Instead,
   // call |Attach()| to set up a delegate.  It is an error to call |Run()|.
@@ -334,19 +363,22 @@ class MessagePumpNSApplication : public MessagePumpCFRunLoopBase {
   ~MessagePumpNSApplication() override;
 
   void DoRun(Delegate* delegate) override;
-  void Quit() override;
+  bool DoQuit() override;
 
  private:
   friend class ScopedPumpMessagesInPrivateModes;
 
-  // False after Quit is called.
-  bool keep_running_;
+  void EnterExitRunLoop(CFRunLoopActivity activity) override;
 
   // True if DoRun is managing its own run loop as opposed to letting
   // -[NSApplication run] handle it.  The outermost run loop in the application
   // is managed by -[NSApplication run], inner run loops are handled by a loop
   // in DoRun.
   bool running_own_loop_;
+
+  // True if Quit() was called while a modal window was shown and needed to be
+  // deferred.
+  bool quit_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpNSApplication);
 };

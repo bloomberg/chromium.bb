@@ -7,8 +7,8 @@
 
 #include "GrConvexPolyEffect.h"
 #include "SkPathPriv.h"
-#include "effects/GrAARectEffect.h"
-#include "effects/GrConstColorProcessor.h"
+#include "effects/generated/GrAARectEffect.h"
+#include "effects/generated/GrConstColorProcessor.h"
 #include "glsl/GrGLSLFragmentProcessor.h"
 #include "glsl/GrGLSLFragmentShaderBuilder.h"
 #include "glsl/GrGLSLProgramDataManager.h"
@@ -50,8 +50,9 @@ void GrGLConvexPolyEffect::emitCode(EmitArgs& args) {
     fragBuilder->codeAppend("\t\thalf alpha = 1.0;\n");
     fragBuilder->codeAppend("\t\thalf edge;\n");
     for (int i = 0; i < cpe.getEdgeCount(); ++i) {
-        fragBuilder->codeAppendf("\t\tedge = dot(%s[%d], half3(sk_FragCoord.x, sk_FragCoord.y, "
-                                                             "1));\n",
+        fragBuilder->codeAppendf("\t\tedge = dot(%s[%d], half3(half(sk_FragCoord.x), "
+                                                              "half(sk_FragCoord.y), "
+                                                              "1));\n",
                                  edgeArrayName, i);
         if (GrProcessorEdgeTypeIsAA(cpe.getEdgeType())) {
             fragBuilder->codeAppend("\t\tedge = saturate(edge);\n");

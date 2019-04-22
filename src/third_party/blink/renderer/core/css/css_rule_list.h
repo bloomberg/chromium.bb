@@ -51,10 +51,6 @@ class CSSRuleList : public ScriptWrappable {
 
 class StaticCSSRuleList final : public CSSRuleList {
  public:
-  static StaticCSSRuleList* Create() {
-    return MakeGarbageCollected<StaticCSSRuleList>();
-  }
-
   StaticCSSRuleList();
 
   HeapVector<Member<CSSRule>>& Rules() { return rules_; }
@@ -75,10 +71,6 @@ class StaticCSSRuleList final : public CSSRuleList {
 template <class Rule>
 class LiveCSSRuleList final : public CSSRuleList {
  public:
-  static LiveCSSRuleList* Create(Rule* rule) {
-    return MakeGarbageCollected<LiveCSSRuleList>(rule);
-  }
-
   LiveCSSRuleList(Rule* rule) : rule_(rule) {}
 
   void Trace(blink::Visitor* visitor) override {

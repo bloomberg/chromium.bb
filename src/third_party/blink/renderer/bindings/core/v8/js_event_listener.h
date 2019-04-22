@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_listener.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -15,21 +14,12 @@ namespace blink {
 // https://dom.spec.whatwg.org/#callbackdef-eventlistener
 class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
  public:
-  static JSEventListener* Create(ScriptState* script_state,
-                                 v8::Local<v8::Object> listener,
-                                 const V8PrivateProperty::Symbol& property) {
-    return MakeGarbageCollected<JSEventListener>(script_state, listener,
-                                                 property);
+  static JSEventListener* CreateOrNull(V8EventListener* listener) {
+    return listener ? MakeGarbageCollected<JSEventListener>(listener) : nullptr;
   }
 
-  JSEventListener(ScriptState* script_state,
-                  v8::Local<v8::Object> listener,
-                  const V8PrivateProperty::Symbol& property)
-      : JSBasedEventListener(kJSEventListenerType),
-        event_listener_(V8EventListener::CreateOrNull(listener)) {
-    DCHECK(event_listener_);
-    Attach(script_state, listener, property, this);
-  }
+  explicit JSEventListener(V8EventListener* listener)
+      : event_listener_(listener) {}
 
   // blink::CustomWrappable overrides:
   void Trace(blink::Visitor*) override;
@@ -40,11 +30,10 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
   // multiple CallbackInterfaceBase objects that have the same
   // |CallbackInterfaceBase::callback_object_| but have different
   // |CallbackInterfaceBase::incumbent_script_state_|s.
-  bool operator==(const EventListener& other) const override {
-    if (other.GetType() != kJSEventListenerType)
-      return false;
-    return event_listener_->HasTheSameCallbackObject(
-        *static_cast<const JSEventListener*>(&other)->event_listener_);
+  bool Matches(const EventListener& other) const override {
+    const auto* other_listener = DynamicTo<JSEventListener>(other);
+    return other_listener && event_listener_->HasTheSameCallbackObject(
+                                 *other_listener->event_listener_);
   }
 
   // blink::JSBasedEventListener overrides:
@@ -55,6 +44,9 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
   }
   v8::Local<v8::Value> GetEffectiveFunction(EventTarget&) override;
 
+  // Helper functions for DowncastTraits.
+  bool IsJSEventListener() const override { return true; }
+
  protected:
   // blink::JSBasedEventListener overrides:
   v8::Isolate* GetIsolate() const override {
@@ -63,8 +55,13 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
   ScriptState* GetScriptState() const override {
     return event_listener_->CallbackRelevantScriptState();
   }
+  ScriptState* GetScriptStateOrReportError(
+      const char* operation) const override {
+    return event_listener_->CallbackRelevantScriptStateOrReportError(
+        "EventListener", operation);
+  }
   DOMWrapperWorld& GetWorld() const override {
-    return event_listener_->CallbackRelevantScriptState()->World();
+    return event_listener_->GetWorld();
   }
 
  private:
@@ -73,7 +70,15 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
                       Event&,
                       v8::Local<v8::Value> js_event) override;
 
-  const TraceWrapperMember<V8EventListener> event_listener_;
+  const Member<V8EventListener> event_listener_;
+};
+
+template <>
+struct DowncastTraits<JSEventListener> {
+  static bool AllowFrom(const EventListener& event_listener) {
+    auto* js_based = DynamicTo<JSBasedEventListener>(event_listener);
+    return js_based && js_based->IsJSEventListener();
+  }
 };
 
 }  // namespace blink

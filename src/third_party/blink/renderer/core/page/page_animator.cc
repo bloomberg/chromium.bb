@@ -22,10 +22,6 @@ PageAnimator::PageAnimator(Page& page)
       servicing_animations_(false),
       updating_layout_and_style_for_painting_(false) {}
 
-PageAnimator* PageAnimator::Create(Page& page) {
-  return MakeGarbageCollected<PageAnimator>(page);
-}
-
 void PageAnimator::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_);
 }
@@ -38,8 +34,8 @@ void PageAnimator::ServiceScriptedAnimations(
   HeapVector<Member<Document>, 32> documents;
   for (Frame* frame = page_->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (frame->IsLocalFrame())
-      documents.push_back(ToLocalFrame(frame)->GetDocument());
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame))
+      documents.push_back(local_frame->GetDocument());
   }
 
   for (auto& document : documents) {

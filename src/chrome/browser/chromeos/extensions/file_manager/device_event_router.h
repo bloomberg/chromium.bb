@@ -13,7 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 
 namespace file_manager {
 

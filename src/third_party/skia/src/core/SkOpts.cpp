@@ -55,6 +55,7 @@ namespace SkOpts {
 
     DEFINE_DEFAULT(blit_mask_d32_a8);
 
+    DEFINE_DEFAULT(blit_row_color32);
     DEFINE_DEFAULT(blit_row_s32a_opaque);
 
     DEFINE_DEFAULT(RGBA_to_BGRA);
@@ -75,7 +76,6 @@ namespace SkOpts {
     DEFINE_DEFAULT(hash_fn);
 
     DEFINE_DEFAULT(S32_alpha_D32_filter_DX);
-
 #undef DEFINE_DEFAULT
 
 #define M(st) (StageFn)SK_OPTS_NS::st,

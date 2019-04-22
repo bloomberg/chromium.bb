@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -65,30 +66,33 @@ enum class TransformedWritingMode {
 typedef Vector<FlexItem, 8> FlexItemVector;
 
 class FlexItem {
+  DISALLOW_NEW();
+
  public:
-  // flex_base_content_size includes scrollbar width but not border or padding.
+  // flex_base_content_size does not include border/scrollbar/padding.
+  // min_max_sizes is the min and max size in the main axis direction.
   FlexItem(LayoutBox*,
            LayoutUnit flex_base_content_size,
            MinMaxSize min_max_sizes,
-           LayoutUnit main_axis_border_and_padding,
+           LayoutUnit main_axis_border_scrollbar_padding,
            LayoutUnit main_axis_margin);
 
   LayoutUnit HypotheticalMainAxisMarginBoxSize() const {
-    return hypothetical_main_content_size + main_axis_border_and_padding +
+    return hypothetical_main_content_size + main_axis_border_scrollbar_padding +
            main_axis_margin;
   }
 
   LayoutUnit FlexBaseMarginBoxSize() const {
-    return flex_base_content_size + main_axis_border_and_padding +
+    return flex_base_content_size + main_axis_border_scrollbar_padding +
            main_axis_margin;
   }
 
   LayoutUnit FlexedBorderBoxSize() const {
-    return flexed_content_size + main_axis_border_and_padding;
+    return flexed_content_size + main_axis_border_scrollbar_padding;
   }
 
   LayoutUnit FlexedMarginBoxSize() const {
-    return flexed_content_size + main_axis_border_and_padding +
+    return flexed_content_size + main_axis_border_scrollbar_padding +
            main_axis_margin;
   }
 
@@ -125,22 +129,23 @@ class FlexItem {
   const LayoutUnit flex_base_content_size;
   const MinMaxSize min_max_sizes;
   const LayoutUnit hypothetical_main_content_size;
-  const LayoutUnit main_axis_border_and_padding;
+  const LayoutUnit main_axis_border_scrollbar_padding;
   const LayoutUnit main_axis_margin;
   LayoutUnit flexed_content_size;
 
+  // When set by the caller, this should be the size pre-stretching.
   LayoutUnit cross_axis_size;
-  LayoutUnit cross_axis_intrinsic_size;
   LayoutPoint desired_location;
 
   bool frozen;
 
-  // TODO(dgrogan): Change this to NGBlockNode when all items are blockified.
-  NGLayoutInputNode ng_input_node;
-  scoped_refptr<NGLayoutResult> layout_result;
+  NGBlockNode ng_input_node;
+  scoped_refptr<const NGLayoutResult> layout_result;
 };
 
 class FlexItemVectorView {
+  DISALLOW_NEW();
+
  public:
   FlexItemVectorView(FlexItemVector* flex_vector,
                      wtf_size_t start,
@@ -168,6 +173,8 @@ class FlexItemVectorView {
 };
 
 class FlexLine {
+  DISALLOW_NEW();
+
  public:
   typedef Vector<FlexItem*, 8> ViolationsVector;
 
@@ -244,12 +251,13 @@ class FlexLine {
   LayoutUnit initial_free_space;
   LayoutUnit remaining_free_space;
 
-  // These get filled in by ComputeLineItemsPosition (for now)
-  // TODO(cbiesinger): Move that to FlexibleBoxAlgorithm.
+  // These get filled in by ComputeLineItemsPosition
+  LayoutUnit main_axis_offset;
   LayoutUnit main_axis_extent;
   LayoutUnit cross_axis_offset;
   LayoutUnit cross_axis_extent;
   LayoutUnit max_ascent;
+  LayoutUnit sum_justify_adjustments;
 };
 
 // This class implements the CSS Flexbox layout algorithm:
@@ -275,6 +283,8 @@ class FlexLine {
 //     }
 //     // The final position of each flex item is in item.desired_location
 class FlexLayoutAlgorithm {
+  DISALLOW_NEW();
+
  public:
   FlexLayoutAlgorithm(const ComputedStyle*, LayoutUnit line_break_length);
 
@@ -303,6 +313,20 @@ class FlexLayoutAlgorithm {
   TransformedWritingMode GetTransformedWritingMode() const;
 
   bool ShouldApplyMinSizeAutoForChild(const LayoutBox& child) const;
+
+  // Returns the intrinsic size of this box in the block direction. Call this
+  // after all flex lines have been created and processed (ie. after the
+  // ComputeLineItemsPosition stage).
+  // For a column flexbox, this will return the max across all flex lines of
+  // the length of the line, minus any added spacing due to justification.
+  // For row flexboxes, this returns the bottom (block axis) of the last flex
+  // line. In both cases, border/padding is not included.
+  LayoutUnit IntrinsicContentBlockSize() const;
+
+  // Positions flex lines by modifying FlexLine::cross_axis_offset, and
+  // FlexItem::desired_position. When lines stretch, also modifies
+  // FlexLine::cross_axis_extent.
+  void AlignFlexLines(LayoutUnit cross_axis_content_extent);
 
   static TransformedWritingMode GetTransformedWritingMode(const ComputedStyle&);
 

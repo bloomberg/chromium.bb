@@ -7,25 +7,24 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-@protocol UrlLoader;
-
 // Coordinator for Reading List, displaying the Reading List when starting.
 @interface ReadingListCoordinator : ChromeCoordinator
 
 // Designated initialier for a ReadingListCoordinator that loads reading list
 // items using |loader|.
-- (nullable instancetype)
-initWithBaseViewController:(nullable UIViewController*)viewController
-              browserState:(nonnull ios::ChromeBrowserState*)browserState
-                    loader:(nullable id<UrlLoader>)loader
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
-- (nullable instancetype)initWithBaseViewController:
-    (nullable UIViewController*)viewController NS_UNAVAILABLE;
-- (nullable instancetype)
-initWithBaseViewController:(nullable UIViewController*)viewController
-              browserState:(nullable ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 @end
 

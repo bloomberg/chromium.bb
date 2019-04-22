@@ -26,16 +26,16 @@ bool StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
     return false;
   out->version = data.version();
   out->max_object_store_id = data.max_object_store_id();
-  ArrayDataView<blink::mojom::IDBObjectStoreMetadataDataView> object_stores;
+  MapDataView<int64_t, blink::mojom::IDBObjectStoreMetadataDataView>
+      object_stores;
   data.GetObjectStoresDataView(&object_stores);
   for (size_t i = 0; i < object_stores.size(); ++i) {
-    blink::mojom::IDBObjectStoreMetadataDataView object_store;
-    object_stores.GetDataView(i, &object_store);
-    DCHECK(!base::ContainsKey(out->object_stores, object_store.id()));
-    if (!StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
-                      blink::IndexedDBObjectStoreMetadata>::
-            Read(object_store, &out->object_stores[object_store.id()]))
+    const int64_t key = object_stores.keys()[i];
+    blink::IndexedDBObjectStoreMetadata object_store;
+    if (!object_stores.values().Read(i, &object_store))
       return false;
+    DCHECK_EQ(out->object_stores.count(key), 0UL);
+    out->object_stores[key] = object_store;
   }
   return true;
 }
@@ -69,25 +69,26 @@ blink::mojom::IDBKeyDataDataView::Tag
 UnionTraits<blink::mojom::IDBKeyDataDataView, blink::IndexedDBKey>::GetTag(
     const blink::IndexedDBKey& key) {
   switch (key.type()) {
-    case blink::kWebIDBKeyTypeArray:
+    case blink::mojom::IDBKeyType::Array:
       return blink::mojom::IDBKeyDataDataView::Tag::KEY_ARRAY;
-    case blink::kWebIDBKeyTypeBinary:
+    case blink::mojom::IDBKeyType::Binary:
       return blink::mojom::IDBKeyDataDataView::Tag::BINARY;
-    case blink::kWebIDBKeyTypeString:
+    case blink::mojom::IDBKeyType::String:
       return blink::mojom::IDBKeyDataDataView::Tag::STRING;
-    case blink::kWebIDBKeyTypeDate:
+    case blink::mojom::IDBKeyType::Date:
       return blink::mojom::IDBKeyDataDataView::Tag::DATE;
-    case blink::kWebIDBKeyTypeNumber:
+    case blink::mojom::IDBKeyType::Number:
       return blink::mojom::IDBKeyDataDataView::Tag::NUMBER;
-    case blink::kWebIDBKeyTypeInvalid:
-    case blink::kWebIDBKeyTypeNull:
-      return blink::mojom::IDBKeyDataDataView::Tag::OTHER;
+    case blink::mojom::IDBKeyType::Invalid:
+      return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;
+    case blink::mojom::IDBKeyType::Null:
+      return blink::mojom::IDBKeyDataDataView::Tag::OTHER_NULL;
 
     // Not used, fall through to NOTREACHED.
-    case blink::kWebIDBKeyTypeMin:;
+    case blink::mojom::IDBKeyType::Min:;
   }
   NOTREACHED();
-  return blink::mojom::IDBKeyDataDataView::Tag::OTHER;
+  return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;
 }
 
 // static
@@ -117,20 +118,18 @@ bool UnionTraits<blink::mojom::IDBKeyDataDataView, blink::IndexedDBKey>::Read(
       return true;
     }
     case blink::mojom::IDBKeyDataDataView::Tag::DATE:
-      *out = blink::IndexedDBKey(data.date(), blink::kWebIDBKeyTypeDate);
+      *out = blink::IndexedDBKey(data.date(), blink::mojom::IDBKeyType::Date);
       return true;
     case blink::mojom::IDBKeyDataDataView::Tag::NUMBER:
-      *out = blink::IndexedDBKey(data.number(), blink::kWebIDBKeyTypeNumber);
+      *out =
+          blink::IndexedDBKey(data.number(), blink::mojom::IDBKeyType::Number);
       return true;
-    case blink::mojom::IDBKeyDataDataView::Tag::OTHER:
-      switch (data.other()) {
-        case blink::mojom::IDBDatalessKeyType::Invalid:
-          *out = blink::IndexedDBKey(blink::kWebIDBKeyTypeInvalid);
-          return true;
-        case blink::mojom::IDBDatalessKeyType::Null:
-          *out = blink::IndexedDBKey(blink::kWebIDBKeyTypeNull);
-          return true;
-      }
+    case blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID:
+      *out = blink::IndexedDBKey(blink::mojom::IDBKeyType::Invalid);
+      return true;
+    case blink::mojom::IDBKeyDataDataView::Tag::OTHER_NULL:
+      *out = blink::IndexedDBKey(blink::mojom::IDBKeyType::Null);
+      return true;
   }
 
   return false;
@@ -159,16 +158,16 @@ StructTraits<blink::mojom::IDBKeyPathDataView, blink::IndexedDBKeyPath>::data(
 
   auto data = blink::mojom::IDBKeyPathData::New();
   switch (key_path.type()) {
-    case blink::kWebIDBKeyPathTypeString:
+    case blink::mojom::IDBKeyPathType::String:
       data->set_string(key_path.string());
       return data;
-    case blink::kWebIDBKeyPathTypeArray:
+    case blink::mojom::IDBKeyPathType::Array:
       data->set_string_array(key_path.array());
       return data;
 
     // The following key path types are not used.
-    case blink::kWebIDBKeyPathTypeNull:;  // No-op, fall out of switch block to
-                                          // NOTREACHED().
+    case blink::mojom::IDBKeyPathType::Null:;  // No-op, fall out of switch
+                                               // block to NOTREACHED().
   }
   NOTREACHED();
   return data;
@@ -231,17 +230,15 @@ bool StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
     return false;
   out->auto_increment = data.auto_increment();
   out->max_index_id = data.max_index_id();
-  ArrayDataView<blink::mojom::IDBIndexMetadataDataView> indexes;
+  MapDataView<int64_t, blink::mojom::IDBIndexMetadataDataView> indexes;
   data.GetIndexesDataView(&indexes);
   for (size_t i = 0; i < indexes.size(); ++i) {
-    blink::mojom::IDBIndexMetadataDataView index;
-    indexes.GetDataView(i, &index);
-    DCHECK(!base::ContainsKey(out->indexes, index.id()));
-    if (!StructTraits<
-            blink::mojom::IDBIndexMetadataDataView,
-            blink::IndexedDBIndexMetadata>::Read(index,
-                                                 &out->indexes[index.id()]))
+    const int64_t key = indexes.keys()[i];
+    blink::IndexedDBIndexMetadata index;
+    if (!indexes.values().Read(i, &index))
       return false;
+    DCHECK_EQ(out->indexes.count(key), 0UL);
+    out->indexes[key] = index;
   }
   return true;
 }

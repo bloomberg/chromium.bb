@@ -12,6 +12,12 @@ config("proxy_implementation") {
 jumbo_component("proxy") {
   output_name = "ppapi_proxy"
 
+  if (is_nacl) {
+    # The nacl toolchain has template related bugs that are triggered
+    # in jumbo builds. https://crbug.com/912152
+    never_build_jumbo = true
+  }
+
   sources = [
     # Take some standalone files from the C++ wrapper allowing us to more
     # easily make async callbacks in the proxy. We can't depend on the
@@ -30,10 +36,6 @@ jumbo_component("proxy") {
     "camera_capabilities_resource.h",
     "camera_device_resource.cc",
     "camera_device_resource.h",
-    "compositor_layer_resource.cc",
-    "compositor_layer_resource.h",
-    "compositor_resource.cc",
-    "compositor_resource.h",
     "connection.h",
     "dispatcher.cc",
     "dispatcher.h",

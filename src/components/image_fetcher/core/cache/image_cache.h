@@ -53,7 +53,7 @@ class ImageCache : public base::RefCounted<ImageCache> {
   void DeleteImage(std::string url);
 
  private:
-  friend class ImageCacheTest;
+  friend class CachedImageFetcherImageCacheTest;
   friend class base::RefCounted<ImageCache>;
   ~ImageCache();
 

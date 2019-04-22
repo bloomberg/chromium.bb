@@ -5,9 +5,10 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/common/omnibox_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
@@ -298,6 +299,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Start typing url of the first page.
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(kPage1URL)];
 
+  // Make sure that the "Switch to Open Tab" element is visible.
+  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
   // Close the first page.
   chrome_test_util::CloseTabAtIndex(0);
   [ChromeEarlGrey waitForMainTabCount:1];
@@ -309,6 +314,34 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Check that the URL has been opened in a new foreground tab.
   [ChromeEarlGrey waitForWebViewContainingText:kPage1];
   [ChromeEarlGrey waitForMainTabCount:2];
+}
+
+// Tests that having multiple suggestions with corresponding opened tabs display
+// multiple buttons.
+- (void)testMultiplePageOpened {
+  // Open the first page.
+  GURL URL1 = self.testServer->GetURL(kPage1URL);
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+
+  // Open the second page in a new tab.
+  [ChromeEarlGrey openNewTab];
+  GURL URL2 = self.testServer->GetURL(kPage2URL);
+  [ChromeEarlGrey loadURL:URL2];
+  [ChromeEarlGrey waitForWebViewContainingText:kPage2];
+
+  // Start typing url of the two opened pages in a new tab.
+  [ChromeEarlGrey openNewTab];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   ntp_home::FakeOmniboxAccessibilityID())]
+      performAction:grey_typeText(@"page")];
+
+  // Check that both elements are displayed.
+  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL2)]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 @end

@@ -22,6 +22,12 @@ namespace content {
 
 class CONTENT_EXPORT NetworkServiceClient
     : public network::mojom::NetworkServiceClient,
+#if defined(OS_ANDROID)
+      public net::NetworkChangeNotifier::ConnectionTypeObserver,
+      public net::NetworkChangeNotifier::MaxBandwidthObserver,
+      public net::NetworkChangeNotifier::IPAddressObserver,
+      public net::NetworkChangeNotifier::DNSObserver,
+#endif
       public net::CertDatabase::Observer {
  public:
   explicit NetworkServiceClient(network::mojom::NetworkServiceClientRequest
@@ -35,7 +41,7 @@ class CONTENT_EXPORT NetworkServiceClient
                       const GURL& url,
                       const GURL& site_for_cookies,
                       bool first_auth_attempt,
-                      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+                      const net::AuthChallengeInfo& auth_info,
                       int32_t resource_type,
                       const base::Optional<network::ResourceResponseHead>& head,
                       network::mojom::AuthChallengeResponderPtr
@@ -86,6 +92,14 @@ class CONTENT_EXPORT NetworkServiceClient
   void OnDataUseUpdate(int32_t network_traffic_annotation_id_hash,
                        int64_t recv_bytes,
                        int64_t sent_bytes) override;
+#if defined(OS_ANDROID)
+  void OnGenerateHttpNegotiateAuthToken(
+      const std::string& server_auth_token,
+      bool can_delegate,
+      const std::string& auth_negotiate_android_account_type,
+      const std::string& spn,
+      OnGenerateHttpNegotiateAuthTokenCallback callback) override;
+#endif
 
   // net::CertDatabase::Observer implementation:
   void OnCertDBChanged() override;
@@ -95,6 +109,22 @@ class CONTENT_EXPORT NetworkServiceClient
 
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state);
+
+  // net::NetworkChangeNotifier::ConnectionTypeObserver implementation:
+  void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // net::NetworkChangeNotifier::MaxBandwidthObserver implementation:
+  void OnMaxBandwidthChanged(
+      double max_bandwidth_mbps,
+      net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // net::NetworkChangeNotifier::IPAddressObserver implementation:
+  void OnIPAddressChanged() override;
+
+  // net::NetworkChangeNotifier::DNSObserver implementation:
+  void OnDNSChanged() override;
+  void OnInitialDNSConfigRead() override;
 #endif
 
  private:
@@ -105,6 +135,7 @@ class CONTENT_EXPORT NetworkServiceClient
 #if defined(OS_ANDROID)
   std::unique_ptr<base::android::ApplicationStatusListener>
       app_status_listener_;
+  network::mojom::NetworkChangeManagerPtr network_change_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceClient);

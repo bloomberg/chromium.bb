@@ -47,13 +47,15 @@ struct IsGarbageCollectedMixin {
   static const bool value = sizeof(CheckMarker<T>(nullptr)) == sizeof(YesType);
 };
 
+// TraceDescriptor is used to describe how to trace an object.
 struct TraceDescriptor {
   STACK_ALLOCATED();
 
  public:
+  // The adjusted base pointer of the object that should be traced.
   void* base_object_payload;
+  // A callback for tracing the object.
   TraceCallback callback;
-  bool can_trace_eagerly;
 };
 
 // The GarbageCollectedMixin interface and helper macro
@@ -72,11 +74,14 @@ struct TraceDescriptor {
 //   USING_GARBAGE_COLLECTED_MIXIN(A);
 // };
 //
-// With the helper, as long as we are using Member<B>, TypeTrait<B> will
-// dispatch dynamically to retrieve the necessary tracing and header methods.
-// Note that this is only enabled for Member<B>. For Member<A> which we can
-// compute the necessary methods and pointers statically and this dynamic
-// dispatch is not used.
+// The classes involved and the helper macros allow for properly handling
+// definitions for Member<B> and friends. The mechanisms for handling Member<B>
+// involve dynamic dispatch. Note that for Member<A> all methods and pointers
+// are statically computed and no dynamic dispatch is involved.
+//
+// Note that garbage collections are allowed during mixin construction as
+// conservative scanning of objects does not rely on the Trace method but rather
+// scans the object field by field.
 class PLATFORM_EXPORT GarbageCollectedMixin {
  public:
   typedef int IsGarbageCollectedMixinMarker;
@@ -86,7 +91,8 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
   // these objects can processed later on. This is necessary as
   // not-fully-constructed mixin objects potentially require being processed
   // as part emitting a write barrier for incremental marking. See
-  // IncrementalMarkingTest::WriteBarrierDuringMixinConstruction as an example.
+  // |IncrementalMarkingTest::WriteBarrierDuringMixinConstruction| as an
+  // example.
   //
   // The not-fully-constructed objects are handled as follows:
   //   1. Write barrier or marking of not fully constructed mixin gets called.
@@ -106,7 +112,7 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
         BlinkGC::kNotFullyConstructedObject);
   }
   virtual TraceDescriptor GetTraceDescriptor() const {
-    return {BlinkGC::kNotFullyConstructedObject, nullptr, false};
+    return {BlinkGC::kNotFullyConstructedObject, nullptr};
   }
 };
 
@@ -122,96 +128,25 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
                                                                              \
   TraceDescriptor GetTraceDescriptor() const override {                      \
     return {const_cast<TYPE*>(static_cast<const TYPE*>(this)),               \
-            TraceTrait<TYPE>::Trace, TraceEagerlyTrait<TYPE>::value};        \
+            TraceTrait<TYPE>::Trace};                                        \
   }                                                                          \
                                                                              \
  private:
 
-// A C++ object's vptr will be initialized to its leftmost base's vtable after
-// the constructors of all its subclasses have run, so if a subclass constructor
-// tries to access any of the vtbl entries of its leftmost base prematurely,
-// it'll find an as-yet incorrect vptr and fail. Which is exactly what a
-// garbage collector will try to do if it tries to access the leftmost base
-// while one of the subclass constructors of a GC mixin object triggers a GC.
-// It is consequently not safe to allow any GCs while these objects are under
-// (sub constructor) construction.
-//
-// To prevent GCs in that restricted window of a mixin object's construction:
-//
-//  - The initial allocation of the mixin object will enter a no GC scope.
-//    This is done by overriding 'operator new' for mixin instances.
-//  - When the constructor for the mixin is invoked, after all the
-//    derived constructors have run, it will invoke the constructor
-//    for a field whose only purpose is to leave the GC scope.
-//    GarbageCollectedMixinConstructorMarker's constructor takes care of
-//    this and the field is declared by way of USING_GARBAGE_COLLECTED_MIXIN().
-
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)           \
- public:                                                                  \
-  GC_PLUGIN_IGNORE("crbug.com/456823")                                    \
-  NO_SANITIZE_UNRELATED_CAST void* operator new(size_t size) {            \
-    CHECK_GE(kLargeObjectSizeThreshold, size)                             \
-        << "GarbageCollectedMixin may not be a large object";             \
-    void* object =                                                        \
-        TYPE::AllocateObject(size, IsEagerlyFinalizedType<TYPE>::value);  \
-    ThreadState* state =                                                  \
-        ThreadStateFor<ThreadingTrait<TYPE>::kAffinity>::GetState();      \
-    state->EnterGCForbiddenScopeIfNeeded(                                 \
-        &(reinterpret_cast<TYPE*>(object)->mixin_constructor_marker_));   \
-    return object;                                                        \
-  }                                                                       \
-  GarbageCollectedMixinConstructorMarker<ThreadingTrait<TYPE>::kAffinity> \
-      mixin_constructor_marker_;                                          \
-                                                                          \
+// The Oilpan GC plugin checks for proper usages of the
+// USING_GARBAGE_COLLECTED_MIXIN macro using a typedef marker.
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE) \
+ public:                                                        \
+  typedef int HasUsingGarbageCollectedMixinMacro;               \
+                                                                \
  private:
 
-// Mixins that wrap/nest others requires extra handling:
-//
-//  class A : public GarbageCollected<A>, public GarbageCollectedMixin {
-//  USING_GARBAGE_COLLECTED_MIXIN(A);
-//  ...
-//  }'
-//  public B final : public A, public SomeOtherMixinInterface {
-//  USING_GARBAGE_COLLECTED_MIXIN(B);
-//  ...
-//  };
-//
-// The "operator new" for B will enter the forbidden GC scope, but
-// upon construction, two GarbageCollectedMixinConstructorMarker constructors
-// will run -- one for A (first) and another for B (secondly). Only
-// the second one should leave the forbidden GC scope. This is realized by
-// recording the address of B's GarbageCollectedMixinConstructorMarker
-// when the "operator new" for B runs, and leaving the forbidden GC scope
-// when the constructor of the recorded GarbageCollectedMixinConstructorMarker
-// runs.
-#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)    \
-  IS_GARBAGE_COLLECTED_TYPE();                 \
-  DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(TYPE) \
-  DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)
-
-// An empty class with a constructor that's arranged invoked when all derived
-// constructors of a mixin instance have completed and it is safe to allow GCs
-// again. See AllocateObjectTrait<> comment for more.
-//
-// USING_GARBAGE_COLLECTED_MIXIN() declares a
-// GarbageCollectedMixinConstructorMarker<> private field. By following Blink
-// convention of using the macro at the top of a class declaration, its
-// constructor will run first.
-class GarbageCollectedMixinConstructorMarkerBase {};
-template <ThreadAffinity affinity>
-class GarbageCollectedMixinConstructorMarker
-    : public GarbageCollectedMixinConstructorMarkerBase {
- public:
-  GarbageCollectedMixinConstructorMarker() {
-    // FIXME: if prompt conservative GCs are needed, forced GCs that
-    // were denied while within this scope, could now be performed.
-    // For now, assume the next out-of-line allocation request will
-    // happen soon enough and take care of it. Mixin objects aren't
-    // overly common.
-    ThreadState* state = ThreadStateFor<affinity>::GetState();
-    state->LeaveGCForbiddenScopeIfNeeded(this);
-  }
-};
+// The USING_GARBAGE_COLLECTED_MIXIN macro defines all methods and markers
+// needed for handling mixins.
+#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)               \
+  DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE) \
+  DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(TYPE)            \
+  IS_GARBAGE_COLLECTED_TYPE()
 
 // Merge two or more Mixins into one:
 //
@@ -219,22 +154,27 @@ class GarbageCollectedMixinConstructorMarker
 //  class B : public GarbageCollectedMixin {};
 //  class C : public A, public B {
 //    // C::GetTraceDescriptor is now ambiguous because there are two
-//    candidates:
-//    // A::GetTraceDescriptor and B::GetTraceDescriptor.  Ditto for other
-//    functions.
+//    // candidates: A::GetTraceDescriptor and B::GetTraceDescriptor.  Ditto for
+//    // other functions.
 //
 //    MERGE_GARBAGE_COLLECTED_MIXINS();
-//    // The macro defines C::GetTraceDescriptor, etc. so that they are no
-//    longer
-//    // ambiguous. USING_GARBAGE_COLLECTED_MIXIN(TYPE) overrides them later
-//    // and provides the implementations.
+//    // The macro defines C::GetTraceDescriptor, similar to
+//    GarbageCollectedMixin,
+//    // so that they are no longer ambiguous.
+//    // USING_GARBAGE_COLLECTED_MIXIN(TYPE) overrides them later and provides
+//    // the implementations.
 //  };
-#define MERGE_GARBAGE_COLLECTED_MIXINS()                                 \
- public:                                                                 \
-  HeapObjectHeader* GetHeapObjectHeader() const override = 0;            \
-  TraceDescriptor GetTraceDescriptor() const override = 0;               \
-                                                                         \
- private:                                                                \
+#define MERGE_GARBAGE_COLLECTED_MIXINS()                   \
+ public:                                                   \
+  HeapObjectHeader* GetHeapObjectHeader() const override { \
+    return reinterpret_cast<HeapObjectHeader*>(            \
+        BlinkGC::kNotFullyConstructedObject);              \
+  }                                                        \
+  TraceDescriptor GetTraceDescriptor() const override {    \
+    return {BlinkGC::kNotFullyConstructedObject, nullptr}; \
+  }                                                        \
+                                                           \
+ private:                                                  \
   using merge_garbage_collected_mixins_requires_semicolon = void
 
 // Base class for objects allocated in the Blink garbage-collected heap.

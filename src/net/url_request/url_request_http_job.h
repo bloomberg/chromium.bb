@@ -10,13 +10,14 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/auth.h"
-#include "net/base/completion_callback.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/http/http_request_info.h"
@@ -107,13 +108,13 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   bool GetCharset(std::string* charset) override;
   void GetResponseInfo(HttpResponseInfo* info) override;
   void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
-  bool GetRemoteEndpoint(IPEndPoint* endpoint) const override;
+  bool GetTransactionRemoteEndpoint(IPEndPoint* endpoint) const override;
   int GetResponseCode() const override;
   void PopulateNetErrorDetails(NetErrorDetails* details) const override;
   bool CopyFragmentOnRedirect(const GURL& location) const override;
   bool IsSafeRedirect(const GURL& location) override;
   bool NeedsAuth() override;
-  void GetAuthChallengeInfo(scoped_refptr<AuthChallengeInfo>*) override;
+  std::unique_ptr<AuthChallengeInfo> GetAuthChallengeInfo() override;
   void SetAuth(const AuthCredentials& credentials) override;
   void CancelAuth() override;
   void ContinueWithCertificate(
@@ -128,7 +129,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void DoneReading() override;
   void DoneReadingRedirectResponse() override;
 
-  HostPortPair GetSocketAddress() const override;
+  IPEndPoint GetResponseRemoteEndpoint() const override;
   void NotifyURLRequestDestroyed() override;
 
   void RecordTimer();
@@ -148,7 +149,14 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void DoneWithRequest(CompletionCause reason);
 
   // Callback functions for Cookie Monster
-  void SetCookieHeaderAndStart(const CookieList& cookie_list);
+  void SetCookieHeaderAndStart(const CookieList& cookie_list,
+                               const CookieStatusList& excluded_list);
+
+  // Another Cookie Monster callback
+  void OnSetCookieResult(std::string cookie_string,
+                         CanonicalCookie::CookieInclusionStatus status);
+  int num_cookie_lines_left_;
+  std::vector<CookieLineWithStatus> cs_status_list_;
 
   // Some servers send the body compressed, but specify the content length as
   // the uncompressed size. If this is the case, we return true in order

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
@@ -167,7 +168,7 @@ void ServiceClient::Core::OnURLLoadComplete(
         {
         std::string data = *response_body;
         std::unique_ptr<base::Value> message_value =
-            base::JSONReader::Read(data);
+            base::JSONReader::ReadDeprecated(data);
         base::DictionaryValue* dict;
         std::string code;
         if (message_value.get() && message_value->is_dict() &&

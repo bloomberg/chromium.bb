@@ -27,14 +27,13 @@
 #ifndef HTMLTokenizer_h
 #define HTMLTokenizer_h
 
+#include "base/macros.h"
 #include "ios/third_party/blink/src/html_input_stream_preprocessor.h"
 #include "ios/third_party/blink/src/html_token.h"
 
 namespace WebCore {
 
 class HTMLTokenizer {
-    WTF_MAKE_NONCOPYABLE(HTMLTokenizer);
-
 public:
     HTMLTokenizer();
     ~HTMLTokenizer();
@@ -151,6 +150,8 @@ private:
 
     // http://www.whatwg.org/specs/web-apps/current-work/#preprocessing-the-input-stream
     InputStreamPreprocessor<HTMLTokenizer> m_inputStreamPreprocessor;
+
+    DISALLOW_COPY_AND_ASSIGN(HTMLTokenizer);
 };
 }
 

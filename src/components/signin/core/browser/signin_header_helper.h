@@ -40,12 +40,13 @@ extern const char kDiceResponseHeader[];
 // The ServiceType specified by Gaia in the response header accompanying the 204
 // response. This indicates the action Chrome is supposed to lead the user to
 // perform.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin
 enum GAIAServiceType {
   GAIA_SERVICE_TYPE_NONE = 0,    // No Gaia response header.
   GAIA_SERVICE_TYPE_SIGNOUT,     // Logout all existing sessions.
   GAIA_SERVICE_TYPE_INCOGNITO,   // Open an incognito tab.
   GAIA_SERVICE_TYPE_ADDSESSION,  // Add a secondary account.
-  GAIA_SERVICE_TYPE_REAUTH,      // Re-authenticate an account.
   GAIA_SERVICE_TYPE_SIGNUP,      // Create a new account.
   GAIA_SERVICE_TYPE_DEFAULT,     // All other cases.
 };
@@ -235,7 +236,6 @@ bool AppendOrRemoveDiceRequestHeader(
     const GURL& redirect_url,
     const std::string& account_id,
     bool sync_enabled,
-    bool sync_has_auth_error,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     const std::string& device_id);

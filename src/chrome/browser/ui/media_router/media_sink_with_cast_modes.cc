@@ -10,12 +10,18 @@ MediaSinkWithCastModes::MediaSinkWithCastModes(const MediaSink& sink)
     : sink(sink) {}
 
 MediaSinkWithCastModes::MediaSinkWithCastModes(
+    const MediaSink& sink,
+    std::initializer_list<MediaCastMode> cast_modes)
+    : sink(sink), cast_modes(cast_modes) {}
+
+MediaSinkWithCastModes::MediaSinkWithCastModes(
     const MediaSinkWithCastModes& other) = default;
 
 MediaSinkWithCastModes::~MediaSinkWithCastModes() {}
 
-bool MediaSinkWithCastModes::Equals(const MediaSinkWithCastModes& other) const {
-  return sink.Equals(other.sink) && cast_modes == other.cast_modes;
+bool MediaSinkWithCastModes::operator==(
+    const MediaSinkWithCastModes& other) const {
+  return sink.id() == other.sink.id() && cast_modes == other.cast_modes;
 }
 
 }  // namespace media_router

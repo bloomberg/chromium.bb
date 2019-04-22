@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/workers/experimental/thread_pool.h"
 
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/dedicated_worker_factory.mojom-blink.h"
+#include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -64,11 +64,11 @@ ConnectToWorkerInterfaceProviderForThreadPool(
     ExecutionContext* execution_context,
     scoped_refptr<const SecurityOrigin> script_origin) {
   // TODO(japhet): Implement a proper factory.
-  mojom::blink::DedicatedWorkerFactoryPtr worker_factory;
-  execution_context->GetInterfaceProvider()->GetInterface(&worker_factory);
+  mojom::blink::DedicatedWorkerHostFactoryPtr worker_host_factory;
+  execution_context->GetInterfaceProvider()->GetInterface(&worker_host_factory);
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       interface_provider_ptr;
-  worker_factory->CreateDedicatedWorker(
+  worker_host_factory->CreateWorkerHost(
       script_origin, mojo::MakeRequest(&interface_provider_ptr));
   return interface_provider_ptr;
 }
@@ -78,7 +78,7 @@ const char ThreadPool::kSupplementName[] = "ThreadPool";
 ThreadPool* ThreadPool::From(Document& document) {
   ThreadPool* thread_pool = Supplement<Document>::From<ThreadPool>(document);
   if (!thread_pool) {
-    thread_pool = new ThreadPool(document);
+    thread_pool = MakeGarbageCollected<ThreadPool>(document);
     Supplement<Document>::ProvideTo(document, thread_pool);
   }
   return thread_pool;
@@ -104,19 +104,22 @@ ThreadPoolThread* ThreadPool::CreateNewThread() {
                  : base::UnguessableToken::Create();
   ExecutionContext* context = GetExecutionContext();
 
-  ThreadPoolMessagingProxy* proxy = new ThreadPoolMessagingProxy(context);
+  ThreadPoolMessagingProxy* proxy =
+      MakeGarbageCollected<ThreadPoolMessagingProxy>(context);
   std::unique_ptr<WorkerSettings> settings =
       std::make_unique<WorkerSettings>(GetFrame()->GetSettings());
 
   // WebWorkerFetchContext is provided later in
   // ThreadedMessagingProxyBase::InitializeWorkerThread().
   proxy->StartWorker(std::make_unique<GlobalScopeCreationParams>(
-      context->Url(), mojom::ScriptType::kClassic, context->UserAgent(),
-      nullptr /* web_worker_fetch_context */,
+      context->Url(), mojom::ScriptType::kClassic,
+      OffMainThreadWorkerScriptFetchOption::kDisabled, "ThreadPool",
+      context->UserAgent(), nullptr /* web_worker_fetch_context */,
       context->GetContentSecurityPolicy()->Headers(),
       network::mojom::ReferrerPolicy::kDefault, context->GetSecurityOrigin(),
       context->IsSecureContext(), context->GetHttpsState(),
-      WorkerClients::Create(), context->GetSecurityContext().AddressSpace(),
+      MakeGarbageCollected<WorkerClients>(),
+      context->GetSecurityContext().AddressSpace(),
       OriginTrialContext::GetTokens(context).get(), devtools_worker_token,
       std::move(settings), kV8CacheOptionsDefault,
       nullptr /* worklet_module_responses_map */,

@@ -174,6 +174,15 @@ const char kDailyOriginalContentLengthWithDataReductionProxyEnabledUnknown[] =
 // authentication, if any.
 const char kDataReductionProxy[] = "auth.spdyproxy.origin";
 
+// A boolean specifying whether the DataSaver feature is enabled for this
+// client. Note that this preference key name is a legacy string for the sdpy
+// proxy.
+//
+// WARNING: This pref is not the source of truth for determining if Data Saver
+// is enabled. Use |DataReductionSettings::IsDataSaverEnabledByUser| instead or
+// consult the OWNERS.
+const char kDataSaverEnabled[] = "spdy_proxy.enabled";
+
 // String that specifies a persisted Data Reduction Proxy configuration.
 const char kDataReductionProxyConfig[] = "data_reduction.config";
 

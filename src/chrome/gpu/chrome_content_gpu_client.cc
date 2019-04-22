@@ -7,11 +7,13 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/token.h"
 #include "build/build_config.h"
 #include "content/public/child/child_thread.h"
+#include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -49,21 +51,23 @@ void ChromeContentGpuClient::InitializeRegistry(
     service_manager::BinderRegistry* registry) {
 #if defined(OS_CHROMEOS)
   registry->AddInterface(
-      base::Bind(&ChromeContentGpuClient::CreateArcVideoDecodeAccelerator,
-                 base::Unretained(this)),
+      base::BindRepeating(
+          &ChromeContentGpuClient::CreateArcVideoDecodeAccelerator,
+          base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(
-      base::Bind(&ChromeContentGpuClient::CreateArcVideoEncodeAccelerator,
-                 base::Unretained(this)),
+      base::BindRepeating(
+          &ChromeContentGpuClient::CreateArcVideoEncodeAccelerator,
+          base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(
-      base::Bind(
+      base::BindRepeating(
           &ChromeContentGpuClient::CreateArcVideoProtectedBufferAllocator,
           base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(
-      base::Bind(&ChromeContentGpuClient::CreateProtectedBufferManager,
-                 base::Unretained(this)),
+      base::BindRepeating(&ChromeContentGpuClient::CreateProtectedBufferManager,
+                          base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
 #endif
 }
@@ -74,15 +78,19 @@ void ChromeContentGpuClient::GpuServiceInitialized(
   gpu_preferences_ = gpu_preferences;
   ui::OzonePlatform::GetInstance()
       ->GetSurfaceFactoryOzone()
-      ->SetGetProtectedNativePixmapDelegate(
-          base::Bind(&arc::ProtectedBufferManager::GetProtectedNativePixmapFor,
-                     base::Unretained(protected_buffer_manager_.get())));
+      ->SetGetProtectedNativePixmapDelegate(base::BindRepeating(
+          &arc::ProtectedBufferManager::GetProtectedNativePixmapFor,
+          base::Unretained(protected_buffer_manager_.get())));
 #endif
 
-  main_thread_profiler_->SetMainThreadTaskRunner(
-      base::ThreadTaskRunnerHandle::Get());
-  ThreadProfiler::SetServiceManagerConnectorForChildProcess(
-      content::ChildThread::Get()->GetConnector());
+  // This doesn't work in single-process mode.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
+    main_thread_profiler_->SetMainThreadTaskRunner(
+        base::ThreadTaskRunnerHandle::Get());
+    ThreadProfiler::SetServiceManagerConnectorForChildProcess(
+        content::ChildThread::Get()->GetConnector());
+  }
 }
 
 void ChromeContentGpuClient::PostIOThreadCreated(

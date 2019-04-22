@@ -10,11 +10,11 @@ cr.define('settings_subpage', function() {
 
     test('clear search (event)', function() {
       const subpage = document.createElement('settings-subpage');
-      // Having a searchLabel will create the settings-subpage-search.
+      // Having a searchLabel will create the cr-search-field.
       subpage.searchLabel = 'test';
       document.body.appendChild(subpage);
       Polymer.dom.flush();
-      const search = subpage.$$('settings-subpage-search');
+      const search = subpage.$$('cr-search-field');
       assertTrue(!!search);
       search.setValue('Hello');
       subpage.fire('clear-subpage-search');
@@ -24,11 +24,11 @@ cr.define('settings_subpage', function() {
 
     test('clear search (click)', function() {
       const subpage = document.createElement('settings-subpage');
-      // Having a searchLabel will create the settings-subpage-search.
+      // Having a searchLabel will create the cr-search-field.
       subpage.searchLabel = 'test';
       document.body.appendChild(subpage);
       Polymer.dom.flush();
-      const search = subpage.$$('settings-subpage-search');
+      const search = subpage.$$('cr-search-field');
       assertTrue(!!search);
       search.setValue('Hello');
       assertEquals(null, search.root.activeElement);
@@ -48,7 +48,7 @@ cr.define('settings_subpage', function() {
       const subpage = document.createElement('settings-subpage');
       document.body.appendChild(subpage);
 
-      subpage.$$('button').click();
+      subpage.$$('cr-icon-button').click();
       assertEquals(settings.routes.PRIVACY, settings.getCurrentRoute());
     });
 
@@ -60,19 +60,33 @@ cr.define('settings_subpage', function() {
       const subpage = document.createElement('settings-subpage');
       document.body.appendChild(subpage);
 
-      subpage.$$('button').click();
+      subpage.$$('cr-icon-button').click();
 
       window.addEventListener('popstate', function(event) {
         assertEquals(settings.routes.BASIC, settings.getCurrentRoute());
         done();
       });
     });
+
+    test('updates the title of the document when active', function() {
+      const expectedTitle = 'My Subpage Title';
+      settings.navigateTo(settings.routes.SEARCH);
+      const subpage = document.createElement('settings-subpage');
+      subpage.setAttribute('route-path', settings.routes.SEARCH_ENGINES.path);
+      subpage.setAttribute('page-title', expectedTitle);
+      document.body.appendChild(subpage);
+
+      settings.navigateTo(settings.routes.SEARCH_ENGINES);
+      assertEquals(
+          document.title,
+          loadTimeData.getStringF('settingsAltPageTitle', expectedTitle));
+    });
   });
 
   suite('SettingsSubpageSearch', function() {
     test('host autofocus propagates to <cr-input>', function() {
       PolymerTest.clearBody();
-      const element = document.createElement('settings-subpage-search');
+      const element = document.createElement('cr-search-field');
       element.setAttribute('autofocus', true);
       document.body.appendChild(element);
 

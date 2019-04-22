@@ -11,10 +11,10 @@ component("cpp") {
     "accelerators.h",
     "app_list/app_list_config.cc",
     "app_list/app_list_config.h",
-    "app_list/app_list_constants.cc",
-    "app_list/app_list_constants.h",
     "app_list/app_list_features.cc",
     "app_list/app_list_features.h",
+    "app_list/app_list_metrics.cc",
+    "app_list/app_list_metrics.h",
     "app_list/app_list_switches.cc",
     "app_list/app_list_switches.h",
     "app_list/app_list_types.cc",
@@ -35,8 +35,6 @@ component("cpp") {
     "ash_constants.h",
     "ash_features.cc",
     "ash_features.h",
-    "ash_layout_constants.cc",
-    "ash_layout_constants.h",
     "ash_pref_names.cc",
     "ash_pref_names.h",
     "ash_public_export.h",
@@ -51,11 +49,8 @@ component("cpp") {
     "assistant/assistant_state_proxy.h",
     "assistant/default_voice_interaction_observer.h",
     "caption_buttons/caption_button_model.h",
-    "caption_buttons/caption_button_types.h",
     "caption_buttons/frame_back_button.cc",
     "caption_buttons/frame_back_button.h",
-    "caption_buttons/frame_caption_button.cc",
-    "caption_buttons/frame_caption_button.h",
     "caption_buttons/frame_caption_button_container_view.cc",
     "caption_buttons/frame_caption_button_container_view.h",
     "caption_buttons/frame_caption_delegate.h",
@@ -66,6 +61,8 @@ component("cpp") {
     "default_frame_header.h",
     "default_scale_factor_retriever.cc",
     "default_scale_factor_retriever.h",
+    "fps_counter.cc",
+    "fps_counter.h",
     "frame_header.cc",
     "frame_header.h",
     "frame_utils.cc",
@@ -79,6 +76,8 @@ component("cpp") {
     "immersive/immersive_fullscreen_controller_delegate.h",
     "immersive/immersive_revealed_lock.cc",
     "immersive/immersive_revealed_lock.h",
+    "lock_screen_widget_factory.cc",
+    "lock_screen_widget_factory.h",
     "login_constants.h",
     "menu_utils.cc",
     "menu_utils.h",
@@ -90,6 +89,8 @@ component("cpp") {
     "notification_utils.h",
     "power_utils.cc",
     "power_utils.h",
+    "presentation_time_recorder.cc",
+    "presentation_time_recorder.h",
     "remote_shelf_item_delegate.cc",
     "remote_shelf_item_delegate.h",
     "rounded_corner_decorator.cc",
@@ -112,12 +113,13 @@ component("cpp") {
     "shell_window_ids.h",
     "stylus_utils.cc",
     "stylus_utils.h",
+    "system_tray_focus_observer.h",
     "tablet_mode.cc",
     "tablet_mode.h",
+    "touch_uma.cc",
+    "touch_uma.h",
     "wallpaper_types.h",
     "window_animation_types.h",
-    "window_pin_type.cc",
-    "window_pin_type.h",
     "window_properties.cc",
     "window_properties.h",
     "window_state_type.cc",
@@ -128,9 +130,12 @@ component("cpp") {
 
   deps = [
     "//ash/public/cpp/vector_icons",
-    "//chromeos:power_manager_proto",
+    "//chromeos/constants",
+    "//chromeos/dbus/power:power_manager_proto",
     "//components/prefs",
+    "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
+    "//services/ws/public/cpp",
     "//services/ws/public/mojom",
     "//skia/public/interfaces",
     "//ui/aura",
@@ -141,6 +146,7 @@ component("cpp") {
     "//ui/message_center/public/cpp",
     "//ui/views",
     "//ui/views/mus",
+    "//ui/views/window/vector_icons",
     "//ui/wm",
     "//ui/wm/public",
   ]
@@ -155,6 +161,45 @@ component("cpp") {
       [ "//ash/public/interfaces:interfaces_internal" ]
 
   output_name = "ash_public_cpp"
+}
+
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//ash/public/interfaces:interfaces_internal",
+    "//base",
+    "//chromeos/services/multidevice_setup/public/mojom",
+    "//services/content/public/mojom",
+    "//services/data_decoder/public/mojom",
+    "//services/device/public/mojom",
+    "//services/preferences/public/mojom",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
+    "//services/viz/public/interfaces",
+    "//services/ws/public/cpp:manifest",
+    "//services/ws/public/mojom",
+  ]
+}
+
+source_set("manifest_for_tests") {
+  testonly = true
+
+  sources = [
+    "test_manifest.cc",
+    "test_manifest.h",
+  ]
+
+  deps = [
+    ":manifest",
+    "//ash/public/interfaces:test_interfaces",
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
+  ]
 }
 
 # Using a test service because the traits need to pass handles around. Revisit
@@ -187,6 +232,7 @@ source_set("unit_tests") {
     ":cpp",
     ":test_interfaces",
     "//base",
+    "//base/test:test_support",
     "//testing/gtest",
     "//ui/aura:test_support",
     "//ui/gfx:test_support",
@@ -194,6 +240,7 @@ source_set("unit_tests") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "immersive/immersive_fullscreen_controller_test_api.cc",
     "immersive/immersive_fullscreen_controller_test_api.h",
@@ -206,6 +253,7 @@ source_set("test_support") {
     "//base",
     "//services/service_manager/public/cpp",
     "//ui/aura",
+    "//ui/aura:test_support",
     "//ui/gfx",
     "//ui/keyboard:mojom",
     "//ui/views",

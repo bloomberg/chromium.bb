@@ -131,7 +131,6 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
     : ContextLifecycleObserver(execution_context),
       registration_id_(info.registration_id),
       scope_(std::move(info.scope)),
-      type_(info.type),
       binding_(this),
       stopped_(false) {
   DCHECK_NE(mojom::blink::kInvalidServiceWorkerRegistrationId,
@@ -143,7 +142,6 @@ void ServiceWorkerRegistration::Attach(
     WebServiceWorkerRegistrationObjectInfo info) {
   DCHECK_EQ(registration_id_, info.registration_id);
   DCHECK_EQ(scope_.GetString(), WTF::String(info.scope.GetString()));
-  DCHECK_EQ(type_, info.type);
 
   // If |host_| is bound, it already points to the same object host as
   // |info.host_ptr_info|, so there is no need to bind again.
@@ -230,7 +228,7 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
                              "Failed to update a ServiceWorkerRegistration: No "
                              "associated provider is available."));
   }
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   host_->Update(
       WTF::Bind(&DidUpdate, WrapPersistent(resolver), WrapPersistent(this)));
   return resolver->Promise();
@@ -245,7 +243,7 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
                              "ServiceWorkerRegistration: No "
                              "associated provider is available."));
   }
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   host_->Unregister(WTF::Bind(&DidUnregister, WrapPersistent(resolver)));
   return resolver->Promise();
 }

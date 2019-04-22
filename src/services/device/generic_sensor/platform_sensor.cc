@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/device/generic_sensor/platform_sensor_provider.h"
@@ -112,9 +113,9 @@ bool PlatformSensor::GetLatestReading(SensorReading* result) {
 void PlatformSensor::UpdateSharedBufferAndNotifyClients(
     const SensorReading& reading) {
   UpdateSharedBuffer(reading);
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&PlatformSensor::NotifySensorReadingChanged,
-                                    weak_factory_.GetWeakPtr()));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&PlatformSensor::NotifySensorReadingChanged,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void PlatformSensor::UpdateSharedBuffer(const SensorReading& reading) {

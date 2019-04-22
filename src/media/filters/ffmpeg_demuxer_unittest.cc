@@ -12,19 +12,21 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/decrypt_config.h"
-#include "media/base/media_log.h"
+#include "media/base/media_client.h"
 #include "media/base/media_tracks.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_demuxer_host.h"
+#include "media/base/mock_filters.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/test_helpers.h"
 #include "media/base/timestamp_constants.h"
@@ -35,9 +37,12 @@
 #include "media/formats/mp4/bitstream_converter.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/color_space.h"
 
+using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
+using ::testing::Eq;
 using ::testing::Exactly;
 using ::testing::InSequence;
 using ::testing::Invoke;
@@ -47,7 +52,6 @@ using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
-using ::testing::_;
 
 namespace media {
 
@@ -66,9 +70,11 @@ MATCHER_P(SimpleCreatedFFmpegDemuxerStream, stream_type, "") {
 
 MATCHER_P(FailedToCreateValidDecoderConfigFromStream, stream_type, "") {
   return CONTAINS_STRING(
-      arg, "\"debug\":\"Warning, FFmpegDemuxer failed to create a valid " +
-               std::string(stream_type) +
-               " decoder configuration from muxed stream");
+      arg,
+      "\"debug\":\"Warning, FFmpegDemuxer failed to create a "
+      "valid/supported " +
+          std::string(stream_type) +
+          " decoder configuration from muxed stream");
 }
 
 MATCHER_P(SkippingUnsupportedStream, stream_type, "") {
@@ -97,8 +103,7 @@ static void EosOnReadDone(bool* got_eos_buffer,
   EXPECT_TRUE(buffer->data());
   EXPECT_GT(buffer->data_size(), 0u);
   *got_eos_buffer = false;
-};
-
+}
 
 // Fixture class to facilitate writing tests.  Takes care of setting up the
 // FFmpeg, pipeline and filter host mocks.
@@ -269,7 +274,7 @@ class FFmpegDemuxerTest : public testing::Test {
   // using StrictMock<MockMediaLog> for all FFmpegDemuxerTests. See
   // https://crbug.com/749178.
   StrictMock<MockMediaLog> media_log_;
-  MediaLog dummy_media_log_;
+  NullMediaLog dummy_media_log_;
 
   std::unique_ptr<FileDataSource> data_source_;
   std::unique_ptr<FFmpegDemuxer> demuxer_;
@@ -445,12 +450,12 @@ TEST_F(FFmpegDemuxerTest, Initialize_Multitrack) {
 #endif
 
 TEST_F(FFmpegDemuxerTest, Initialize_Encrypted) {
-  EXPECT_CALL(*this,
-              OnEncryptedMediaInitData(
-                  EmeInitDataType::WEBM,
-                  std::vector<uint8_t>(kEncryptedMediaInitData,
-                                       kEncryptedMediaInitData +
-                                           arraysize(kEncryptedMediaInitData))))
+  EXPECT_CALL(
+      *this, OnEncryptedMediaInitData(
+                 EmeInitDataType::WEBM,
+                 std::vector<uint8_t>(kEncryptedMediaInitData,
+                                      kEncryptedMediaInitData +
+                                          base::size(kEncryptedMediaInitData))))
       .Times(Exactly(2));
 
   CreateDemuxer("bear-320x240-av_enc-av.webm");
@@ -770,7 +775,7 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOpusDiscard_Sync) {
 
   // Run the test twice with a seek in between.
   for (int i = 0; i < 2; ++i) {
-    for (size_t j = 0; j < arraysize(kTestExpectations); ++j) {
+    for (size_t j = 0; j < base::size(kTestExpectations); ++j) {
       audio->Read(NewReadCB(FROM_HERE, kTestExpectations[j][0],
                             kTestExpectations[j][1], true));
       base::RunLoop().Run();
@@ -844,7 +849,7 @@ TEST_F(FFmpegDemuxerTest,
         FROM_HERE, 408, 0, base::TimeDelta::FromMicroseconds(6500), true));
     base::RunLoop().Run();
 
-    for (size_t j = 0; j < arraysize(kTestExpectations); ++j) {
+    for (size_t j = 0; j < base::size(kTestExpectations); ++j) {
       audio->Read(NewReadCB(FROM_HERE, kTestExpectations[j][0],
                             kTestExpectations[j][1], true));
       base::RunLoop().Run();
@@ -1211,11 +1216,12 @@ TEST_P(Mp3SeekFFmpegDemuxerTest, TestFastSeek) {
 // MP3s should seek quickly without sequentially reading up to the seek point.
 // VBR vs CBR and the presence/absence of TOC influence the seeking algorithm.
 // See http://crbug.com/530043 and FFmpeg flag AVFMT_FLAG_FAST_SEEK.
-INSTANTIATE_TEST_CASE_P(, Mp3SeekFFmpegDemuxerTest,
-                        ::testing::Values("bear-audio-10s-CBR-has-TOC.mp3",
-                                          "bear-audio-10s-CBR-no-TOC.mp3",
-                                          "bear-audio-10s-VBR-has-TOC.mp3",
-                                          "bear-audio-10s-VBR-no-TOC.mp3"));
+INSTANTIATE_TEST_SUITE_P(,
+                         Mp3SeekFFmpegDemuxerTest,
+                         ::testing::Values("bear-audio-10s-CBR-has-TOC.mp3",
+                                           "bear-audio-10s-CBR-no-TOC.mp3",
+                                           "bear-audio-10s-VBR-has-TOC.mp3",
+                                           "bear-audio-10s-VBR-no-TOC.mp3"));
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 static void ValidateAnnexB(DemuxerStream* stream,
@@ -1247,7 +1253,7 @@ static void ValidateAnnexB(DemuxerStream* stream,
   }
 
   stream->Read(base::Bind(&ValidateAnnexB, stream));
-};
+}
 
 TEST_F(FFmpegDemuxerTest, IsValidAnnexB) {
   const char* files[] = {
@@ -1255,7 +1261,7 @@ TEST_F(FFmpegDemuxerTest, IsValidAnnexB) {
     "bear-1280x720-av_with-aud-nalus_frag.mp4"
   };
 
-  for (size_t i = 0; i < arraysize(files); ++i) {
+  for (size_t i = 0; i < base::size(files); ++i) {
     DVLOG(1) << "Testing " << files[i];
     CreateDemuxer(files[i]);
     InitializeDemuxer();
@@ -1343,6 +1349,20 @@ TEST_F(FFmpegDemuxerTest, NaturalSizeWithPASP) {
 TEST_F(FFmpegDemuxerTest, HEVC_in_MP4_container) {
   CreateDemuxer("bear-hevc-frag.mp4");
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  // HEVC is not supported by default media platform. Embedders who add support
+  // must declare it via MediaClient.
+  MockMediaClient media_client;
+  SetMediaClient(&media_client);
+
+  VideoColorSpace color_space(VideoColorSpace::PrimaryID::SMPTE170M,
+                              VideoColorSpace::TransferID::SMPTE170M,
+                              VideoColorSpace::MatrixID::SMPTE170M,
+                              gfx::ColorSpace::RangeID::LIMITED);
+  VideoType hevc_type = {VideoCodec::kCodecHEVC,
+                         VideoCodecProfile::HEVCPROFILE_MAIN, 10, color_space};
+  EXPECT_CALL(media_client, IsSupportedVideoType(Eq(hevc_type)))
+      .WillRepeatedly(Return(true));
+
   InitializeDemuxer();
 
   DemuxerStream* video = GetStream(DemuxerStream::VIDEO);
@@ -1353,6 +1373,8 @@ TEST_F(FFmpegDemuxerTest, HEVC_in_MP4_container) {
 
   video->Read(NewReadCB(FROM_HERE, 1042, 200200, false));
   base::RunLoop().Run();
+
+  SetMediaClient(nullptr);
 #else
   InitializeDemuxerAndExpectPipelineStatus(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
 #endif
@@ -1361,6 +1383,15 @@ TEST_F(FFmpegDemuxerTest, HEVC_in_MP4_container) {
 TEST_F(FFmpegDemuxerTest, Read_AC3_Audio) {
   CreateDemuxer("bear-ac3-only-frag.mp4");
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+  // AC3 is not supported by default media platform. Embedders who add support
+  // must declare it via MediaClient.
+  MockMediaClient media_client;
+  SetMediaClient(&media_client);
+
+  AudioType ac3_type = {AudioCodec::kCodecAC3};
+  EXPECT_CALL(media_client, IsSupportedAudioType(Eq(ac3_type)))
+      .WillRepeatedly(Return(true));
+
   InitializeDemuxer();
 
   // Attempt a read from the audio stream and run the message loop until done.
@@ -1372,6 +1403,8 @@ TEST_F(FFmpegDemuxerTest, Read_AC3_Audio) {
 
   audio->Read(NewReadCB(FROM_HERE, 836, 34830, true));
   base::RunLoop().Run();
+
+  SetMediaClient(nullptr);
 #else
   InitializeDemuxerAndExpectPipelineStatus(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
 #endif
@@ -1380,6 +1413,15 @@ TEST_F(FFmpegDemuxerTest, Read_AC3_Audio) {
 TEST_F(FFmpegDemuxerTest, Read_EAC3_Audio) {
   CreateDemuxer("bear-eac3-only-frag.mp4");
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+  // EAC3 is not supported by default media platform. Embedders who add support
+  // must declare it via MediaClient.
+  MockMediaClient media_client;
+  SetMediaClient(&media_client);
+
+  AudioType eac3_type = {AudioCodec::kCodecEAC3};
+  EXPECT_CALL(media_client, IsSupportedAudioType(Eq(eac3_type)))
+      .WillRepeatedly(Return(true));
+
   InitializeDemuxer();
 
   // Attempt a read from the audio stream and run the message loop until done.
@@ -1391,6 +1433,8 @@ TEST_F(FFmpegDemuxerTest, Read_EAC3_Audio) {
 
   audio->Read(NewReadCB(FROM_HERE, 872, 34830, true));
   base::RunLoop().Run();
+
+  SetMediaClient(nullptr);
 #else
   InitializeDemuxerAndExpectPipelineStatus(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
 #endif
@@ -1549,7 +1593,7 @@ TEST_F(FFmpegDemuxerTest, UTCDateToTime_Invalid) {
       "2012-11-1012:34:56",
   };
 
-  for (size_t i = 0; i < arraysize(invalid_date_strings); ++i) {
+  for (size_t i = 0; i < base::size(invalid_date_strings); ++i) {
     const char* date_string = invalid_date_strings[i];
     base::Time result;
     EXPECT_FALSE(base::Time::FromUTCString(date_string, &result))

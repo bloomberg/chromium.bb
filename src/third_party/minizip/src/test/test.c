@@ -1,10 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
-#include <time.h>
-#include <errno.h>
-#include <fcntl.h>
+/* test.c - Test bed area
+   Version 2.8.1, December 1, 2018
+   part of the MiniZip project
+
+   Copyright (C) 2018 Nathan Moinvaziri
+     https://github.com/nmoinvaz/minizip
+
+   This program is distributed under the terms of the same license as zlib.
+   See the accompanying LICENSE file for the full text of the license.
+*/
 
 #include "mz.h"
 #include "mz_crypt.h"
@@ -18,7 +21,7 @@
 #endif
 #include "mz_strm_mem.h"
 #include "mz_strm_os.h"
-#ifdef HAVE_AES
+#ifdef HAVE_WZAES
 #include "mz_strm_wzaes.h"
 #endif
 #ifdef HAVE_ZLIB
@@ -26,57 +29,41 @@
 #endif
 #include "mz_zip.h"
 
+#include <stdio.h> /* printf, snprintf */
+
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+#  define snprintf _snprintf
+#endif
+
 /***************************************************************************/
 
-void test_path_resolve(void)
+void test_path_resolve_int(char *path, char *expected_path)
 {
     char output[256];
     int32_t ok = 0;
+    
+    memset(output, 'z', sizeof(output));
+    mz_path_resolve(path, output, sizeof(output));
+    ok = (strcmp(output, expected_path) == 0);
+    printf("path resolve - %s -> %s (%"PRId32")\n", path, expected_path, ok);
+}
 
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve("c:\\test\\.", output, sizeof(output));
-    ok = (strcmp(output, "c:\\test\\") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve("c:\\test\\.\\", output, sizeof(output));
-    ok = (strcmp(output, "c:\\test\\") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve("c:\\test\\..", output, sizeof(output));
-    ok = (strcmp(output, "c:\\") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve("c:\\test\\..\\", output, sizeof(output));
-    ok = (strcmp(output, "c:\\") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve("c:\\test\\.\\..", output, sizeof(output));
-    ok = (strcmp(output, "c:\\") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve("c:\\test\\.\\\\..", output, sizeof(output));
-    ok = (strcmp(output, "c:\\") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve(".", output, sizeof(output));
-    ok = (strcmp(output, ".") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve(".\\", output, sizeof(output));
-    ok = (strcmp(output, "") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve("..", output, sizeof(output));
-    ok = (strcmp(output, "") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve("..\\", output, sizeof(output));
-    ok = (strcmp(output, "") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve("c:\\test\\123\\.\\abc.txt", output, sizeof(output));
-    ok = (strcmp(output, "c:\\test\\123\\abc.txt") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve("c:\\test\\123\\..\\abc.txt", output, sizeof(output));
-    ok = (strcmp(output, "c:\\test\\abc.txt") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve("c:\\test\\123\\..\\..\\abc.txt", output, sizeof(output));
-    ok = (strcmp(output, "c:\\abc.txt") == 0);
-    memset(output, 'z', sizeof(output));
-    mz_path_resolve("c:\\test\\123\\..\\..\\..\\abc.txt", output, sizeof(output));
-    ok = (strcmp(output, "abc.txt") == 0);
-    memset(output, 'z', sizeof(output));
-    printf("ok = %"PRId32"", ok);
+void test_path_resolve(void)
+{
+    test_path_resolve_int("c:\\test\\.", "c:\\test\\");
+    test_path_resolve_int("c:\\test\\.\\", "c:\\test\\");
+    test_path_resolve_int("c:\\test\\..", "c:\\");
+    test_path_resolve_int("c:\\test\\..\\", "c:\\");
+    test_path_resolve_int("c:\\test\\.\\..", "c:\\");
+    test_path_resolve_int("c:\\test\\.\\\\..", "c:\\");
+    test_path_resolve_int(".", ".");
+    test_path_resolve_int(".\\", "");
+    test_path_resolve_int("..", "");
+    test_path_resolve_int("..\\", "");
+    test_path_resolve_int("c:\\test\\123\\.\\abc.txt", "c:\\test\\123\\abc.txt");
+    test_path_resolve_int("c:\\test\\123\\..\\abc.txt", "c:\\test\\abc.txt");
+    test_path_resolve_int("c:\\test\\123\\..\\..\\abc.txt", "c:\\abc.txt");
+    test_path_resolve_int("c:\\test\\123\\..\\..\\..\\abc.txt", "abc.txt");
 }
 
 void test_encrypt(char *method, mz_stream_create_cb crypt_create, char *password)
@@ -84,12 +71,13 @@ void test_encrypt(char *method, mz_stream_create_cb crypt_create, char *password
     char buf[UINT16_MAX];
     int32_t read = 0;
     int32_t written = 0;
+    int64_t total_written = 0;
     void *out_stream = NULL;
     void *in_stream = NULL;
     void *crypt_out_stream = NULL;
     char encrypt_path[120];
     char decrypt_path[120];
-    
+
     snprintf(encrypt_path, sizeof(encrypt_path), "LICENSE.encrypt.%s", method);
     snprintf(decrypt_path, sizeof(decrypt_path), "LICENSE.decrypt.%s", method);
 
@@ -114,6 +102,7 @@ void test_encrypt(char *method, mz_stream_create_cb crypt_create, char *password
         {
             written = mz_stream_write(crypt_out_stream, buf, read);
             mz_stream_close(crypt_out_stream);
+            mz_stream_get_prop_int64(crypt_out_stream, MZ_STREAM_PROP_TOTAL_OUT, &total_written);
         }
 
         mz_stream_delete(&crypt_out_stream);
@@ -131,6 +120,7 @@ void test_encrypt(char *method, mz_stream_create_cb crypt_create, char *password
         crypt_create(&crypt_out_stream);
 
         mz_stream_set_base(crypt_out_stream, in_stream);
+        mz_stream_set_prop_int64(crypt_out_stream, MZ_STREAM_PROP_TOTAL_IN_MAX, total_written);
 
         if (mz_stream_open(crypt_out_stream, password, MZ_OPEN_MODE_READ) == MZ_OK)
         {
@@ -270,7 +260,7 @@ void test_stream_pkcrypt(void)
     test_encrypt("pkcrypt", mz_stream_pkcrypt_create, "hello");
 }
 #endif
-#ifdef HAVE_AES
+#ifdef HAVE_WZAES
 void test_stream_wzaes(void)
 {
     int32_t iteration_count = 1000;
@@ -334,7 +324,7 @@ void test_stream_mem(void)
 
     text_size = (int32_t)strlen(text_ptr);
 
-    // Write zip to memory stream
+    /* Write zip to memory stream */
     mz_stream_mem_create(&write_mem_stream);
     mz_stream_mem_set_grow_size(write_mem_stream, 128 * 1024);
     mz_stream_open(write_mem_stream, NULL, MZ_OPEN_MODE_CREATE);
@@ -348,7 +338,7 @@ void test_stream_mem(void)
         file_info.compression_method = MZ_COMPRESS_METHOD_DEFLATE;
         file_info.filename = text_name;
         file_info.uncompressed_size = text_size;
-#ifdef HAVE_AES
+#ifdef HAVE_WZAES
         file_info.aes_version = MZ_AES_VERSION;
 #endif
 
@@ -376,7 +366,7 @@ void test_stream_mem(void)
 
     if (err == MZ_OK)
     {
-        // Create a zip file on disk for inspection
+        /* Create a zip file on disk for inspection */
         mz_stream_os_create(&os_stream);
         mz_stream_os_open(os_stream, "mytest.zip", MZ_OPEN_MODE_WRITE | MZ_OPEN_MODE_CREATE);
         mz_stream_os_write(os_stream, buffer_ptr, buffer_size);
@@ -386,7 +376,7 @@ void test_stream_mem(void)
 
     if (err == MZ_OK)
     {
-        // Read from a memory stream
+        /* Read from a memory stream */
         mz_stream_mem_create(&read_mem_stream);
         mz_stream_mem_set_buffer(read_mem_stream, (void *)buffer_ptr, buffer_size);
         mz_stream_open(read_mem_stream, NULL, MZ_OPEN_MODE_READ);
@@ -444,9 +434,9 @@ int32_t test_stream_find_run(char *name, int32_t count, const uint8_t *find, int
             mz_stream_write_uint8(mem_stream, 0);
 
         if (find_cb == mz_stream_find)
-            mz_stream_seek(mem_stream, 0, SEEK_SET);
+            mz_stream_seek(mem_stream, 0, MZ_SEEK_SET);
 
-        err = find_cb(mem_stream, (const void *)find, find_size, i + find_size, &position);
+        err = find_cb(mem_stream, (const void *)find, find_size, (int64_t)i + find_size, &position);
         last_pos = mz_stream_tell(mem_stream);
         mz_stream_mem_delete(&mem_stream);
 
@@ -465,9 +455,9 @@ int32_t test_stream_find_run(char *name, int32_t count, const uint8_t *find, int
             mz_stream_write_uint8(mem_stream, find[x]);
         
         if (find_cb == mz_stream_find)
-            mz_stream_seek(mem_stream, 0, SEEK_SET);
+            mz_stream_seek(mem_stream, 0, MZ_SEEK_SET);
 
-        err = find_cb(mem_stream, (const void *)find, find_size, i + find_size, &position);
+        err = find_cb(mem_stream, (const void *)find, find_size, (int64_t)i + find_size, &position);
         last_pos = mz_stream_tell(mem_stream);
         mz_stream_mem_delete(&mem_stream);
 
@@ -488,9 +478,9 @@ int32_t test_stream_find_run(char *name, int32_t count, const uint8_t *find, int
             mz_stream_write_uint8(mem_stream, 0);
 
         if (find_cb == mz_stream_find)
-            mz_stream_seek(mem_stream, 0, SEEK_SET);
+            mz_stream_seek(mem_stream, 0, MZ_SEEK_SET);
 
-        err = find_cb(mem_stream, (const void *)find, find_size, i + find_size + i, &position);
+        err = find_cb(mem_stream, (const void *)find, find_size, (int64_t)i + find_size + i, &position);
         last_pos = mz_stream_tell(mem_stream);
         mz_stream_mem_delete(&mem_stream);
 
@@ -512,9 +502,9 @@ int32_t test_stream_find_run(char *name, int32_t count, const uint8_t *find, int
         mz_stream_write_uint8(mem_stream, 0);
 
         if (find_cb == mz_stream_find)
-            mz_stream_seek(mem_stream, 0, SEEK_SET);
+            mz_stream_seek(mem_stream, 0, MZ_SEEK_SET);
 
-        err = find_cb(mem_stream, (const void *)find, find_size, i + find_size + i + 1, &position);
+        err = find_cb(mem_stream, (const void *)find, find_size, (int64_t)i + find_size + i + 1, &position);
         last_pos = mz_stream_tell(mem_stream);
         mz_stream_mem_delete(&mem_stream);
 

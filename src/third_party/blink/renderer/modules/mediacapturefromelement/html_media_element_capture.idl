@@ -7,5 +7,5 @@
 [
     ImplementedAs=HTMLMediaElementCapture
 ] partial interface HTMLMediaElement {
-    [RaisesException, CallWith=ScriptState] MediaStream captureStream();
+    [RaisesException, Measure, CallWith=ScriptState] MediaStream captureStream();
 };

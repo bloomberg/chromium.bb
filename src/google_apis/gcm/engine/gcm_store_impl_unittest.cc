@@ -470,10 +470,8 @@ TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
     message.set_from(kAppName);
     message.set_category(kCategoryName);
     EXPECT_TRUE(gcm_store->AddOutgoingMessage(
-                    base::IntToString(i),
-                    MCSMessage(message),
-                    base::Bind(&GCMStoreImplTest::UpdateCallback,
-                               base::Unretained(this))));
+        base::NumberToString(i), MCSMessage(message),
+        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this))));
     PumpLoop();
   }
 
@@ -483,10 +481,8 @@ TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
     message.set_from(kAppName);
     message.set_category(kCategoryName);
     EXPECT_FALSE(gcm_store->AddOutgoingMessage(
-                     base::IntToString(i + kNumMessagesPerApp),
-                     MCSMessage(message),
-                     base::Bind(&GCMStoreImplTest::UpdateCallback,
-                                base::Unretained(this))));
+        base::NumberToString(i + kNumMessagesPerApp), MCSMessage(message),
+        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this))));
     PumpLoop();
   }
 
@@ -500,19 +496,16 @@ TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
     message.set_from(kAppName);
     message.set_category(kCategoryName);
     EXPECT_FALSE(gcm_store->AddOutgoingMessage(
-                     base::IntToString(i + kNumMessagesPerApp),
-                     MCSMessage(message),
-                     base::Bind(&GCMStoreImplTest::UpdateCallback,
-                                base::Unretained(this))));
+        base::NumberToString(i + kNumMessagesPerApp), MCSMessage(message),
+        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this))));
     PumpLoop();
   }
 
   // Remove the existing messages.
   for (int i = 0; i < kNumMessagesPerApp; ++i) {
     gcm_store->RemoveOutgoingMessage(
-        base::IntToString(i),
-        base::Bind(&GCMStoreImplTest::UpdateCallback,
-                   base::Unretained(this)));
+        base::NumberToString(i),
+        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
     PumpLoop();
   }
 
@@ -522,10 +515,8 @@ TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
     message.set_from(kAppName);
     message.set_category(kCategoryName);
     EXPECT_TRUE(gcm_store->AddOutgoingMessage(
-                    base::IntToString(i + kNumMessagesPerApp),
-                    MCSMessage(message),
-                    base::Bind(&GCMStoreImplTest::UpdateCallback,
-                               base::Unretained(this))));
+        base::NumberToString(i + kNumMessagesPerApp), MCSMessage(message),
+        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this))));
     PumpLoop();
   }
 }
@@ -667,10 +658,8 @@ TEST_F(GCMStoreImplTest, AddMessageAfterDestroy) {
     message.set_category(kCategoryName);
     // Because all adds are failing, none should hit the per-app message limits.
     EXPECT_TRUE(gcm_store->AddOutgoingMessage(
-                    base::IntToString(i),
-                    MCSMessage(message),
-                    base::Bind(&GCMStoreImplTest::UpdateCallback,
-                               base::Unretained(this))));
+        base::NumberToString(i), MCSMessage(message),
+        base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this))));
     PumpLoop();
   }
 }

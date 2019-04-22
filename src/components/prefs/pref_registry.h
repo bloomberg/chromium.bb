@@ -7,10 +7,9 @@
 
 #include <stdint.h>
 
-#include <memory>
 #include <set>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/prefs/pref_value_map.h"
@@ -54,7 +53,7 @@ class COMPONENTS_PREFS_EXPORT PrefRegistry
   };
 
   typedef PrefValueMap::const_iterator const_iterator;
-  typedef base::hash_map<std::string, uint32_t> PrefRegistrationFlagsMap;
+  typedef std::unordered_map<std::string, uint32_t> PrefRegistrationFlagsMap;
 
   PrefRegistry();
 
@@ -81,7 +80,7 @@ class COMPONENTS_PREFS_EXPORT PrefRegistry
   // Sets the default value and flags of a previously-registered foreign pref
   // value.
   void SetDefaultForeignPrefValue(const std::string& path,
-                                  std::unique_ptr<base::Value> default_value,
+                                  base::Value default_value,
                                   uint32_t flags);
 
   const std::set<std::string>& foreign_pref_keys() const {
@@ -95,12 +94,11 @@ class COMPONENTS_PREFS_EXPORT PrefRegistry
   // Used by subclasses to register a default value and registration flags for
   // a preference. |flags| is a bitmask of |PrefRegistrationFlags|.
   void RegisterPreference(const std::string& path,
-                          std::unique_ptr<base::Value> default_value,
+                          base::Value default_value,
                           uint32_t flags);
 
   // Allows subclasses to hook into pref registration.
   virtual void OnPrefRegistered(const std::string& path,
-                                base::Value* default_value,
                                 uint32_t flags);
 
   scoped_refptr<DefaultPrefStore> defaults_;

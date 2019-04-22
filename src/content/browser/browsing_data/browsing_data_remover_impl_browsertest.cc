@@ -83,8 +83,7 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
     // Use localhost instead of 127.0.0.1, as HSTS isn't allowed on IPs.
     ssl_server_.SetSSLConfig(
         net::test_server::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
-    ssl_server_.AddDefaultHandlers(
-        base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+    ssl_server_.AddDefaultHandlers(GetTestDataFilePath());
     ssl_server_.RegisterRequestHandler(base::BindRepeating(&HandleHstsRequest));
     ssl_server_.RegisterRequestHandler(
         base::BindRepeating(&HandleHttpAuthRequest));

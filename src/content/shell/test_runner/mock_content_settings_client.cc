@@ -4,16 +4,16 @@
 
 #include "content/shell/test_runner/mock_content_settings_client.h"
 
-#include "content/shell/test_runner/layout_test_runtime_flags.h"
 #include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/web_test_delegate.h"
+#include "content/shell/test_runner/web_test_runtime_flags.h"
 #include "third_party/blink/public/platform/web_url.h"
 
 namespace test_runner {
 
 MockContentSettingsClient::MockContentSettingsClient(
-    LayoutTestRuntimeFlags* layout_test_runtime_flags)
-    : delegate_(nullptr), flags_(layout_test_runtime_flags) {}
+    WebTestRuntimeFlags* web_test_runtime_flags)
+    : delegate_(nullptr), flags_(web_test_runtime_flags) {}
 
 MockContentSettingsClient::~MockContentSettingsClient() {}
 
@@ -23,7 +23,7 @@ bool MockContentSettingsClient::AllowImage(bool enabled_per_settings,
   if (flags_->dump_web_content_settings_client_callbacks() && delegate_) {
     delegate_->PrintMessage(
         std::string("MockContentSettingsClient: allowImage(") +
-        NormalizeLayoutTestURL(image_url.GetString().Utf8()) +
+        NormalizeWebTestURL(image_url.GetString().Utf8()) +
         "): " + (allowed ? "true" : "false") + "\n");
   }
   return allowed;
@@ -40,7 +40,7 @@ bool MockContentSettingsClient::AllowScriptFromSource(
   if (flags_->dump_web_content_settings_client_callbacks() && delegate_) {
     delegate_->PrintMessage(
         std::string("MockContentSettingsClient: allowScriptFromSource(") +
-        NormalizeLayoutTestURL(script_url.GetString().Utf8()) +
+        NormalizeWebTestURL(script_url.GetString().Utf8()) +
         "): " + (allowed ? "true" : "false") + "\n");
   }
   return allowed;

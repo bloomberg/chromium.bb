@@ -160,17 +160,17 @@ dictionary OverconstrainedErrorEventInit : EventInit {
 };
 
 partial interface Navigator {
-    [SameObject]
+    [SameObject, SecureContext]
     readonly        attribute MediaDevices mediaDevices;
 };
 
-[Exposed=Window]
+[Exposed=Window, SecureContext]
 interface MediaDevices : EventTarget {
                     attribute EventHandler ondevicechange;
     Promise<sequence<MediaDeviceInfo>> enumerateDevices();
 };
 
-[Exposed=Window]
+[Exposed=Window, SecureContext]
 interface MediaDeviceInfo {
     readonly        attribute DOMString deviceId;
     readonly        attribute MediaDeviceKind kind;
@@ -190,6 +190,7 @@ enum MediaDeviceKind {
 };
 
 partial interface Navigator {
+    [SecureContext]
     void getUserMedia(MediaStreamConstraints constraints, NavigatorUserMediaSuccessCallback successCallback, NavigatorUserMediaErrorCallback errorCallback);
 };
 
@@ -208,15 +209,6 @@ callback NavigatorUserMediaSuccessCallback = void (MediaStream stream);
 callback NavigatorUserMediaErrorCallback = void (MediaStreamError error);
 
 typedef object MediaStreamError;
-
-[NoInterfaceObject]
-interface ConstrainablePattern {
-    Capabilities getCapabilities();
-    Constraints getConstraints();
-    Settings getSettings();
-    Promise<void> applyConstraints(optional Constraints constraints);
-                    attribute EventHandler onoverconstrained;
-};
 
 dictionary DoubleRange {
              double max;

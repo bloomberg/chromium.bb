@@ -18,6 +18,7 @@ namespace blink {
 class AXObject;
 class AXObjectCacheImpl;
 class LocalFrameClient;
+class Node;
 
 namespace test {
 
@@ -31,6 +32,8 @@ class AccessibilityTest : public RenderingTest {
   void SetUp() override;
 
   AXObjectCacheImpl& GetAXObjectCache() const;
+
+  AXObject* GetAXObject(const Node& node) const;
 
   AXObject* GetAXRootObject() const;
 

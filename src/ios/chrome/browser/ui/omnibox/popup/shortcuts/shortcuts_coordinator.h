@@ -9,7 +9,6 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
-@protocol UrlLoader;
 @protocol OmniboxFocuser;
 
 // The coordinator for the shortcuts.
@@ -17,10 +16,11 @@
 @interface ShortcutsCoordinator : ChromeCoordinator
 
 // The view controller managed by this coordinator.
-@property(nonatomic, strong, readonly) UIViewController* viewController;
+@property(nonatomic, strong, readonly)
+    UICollectionViewController* viewController;
 
 @property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, UrlLoader, OmniboxFocuser>
+    id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
         dispatcher;
 @end
 

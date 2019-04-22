@@ -37,8 +37,8 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/third_party/quic/core/quic_error_codes.h"
-#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -107,11 +107,11 @@ const char* NetInfoSourceToString(NetInfoSource source) {
 // Despite the name, can return an in memory "disk cache".
 disk_cache::Backend* GetDiskCacheBackend(URLRequestContext* context) {
   if (!context->http_transaction_factory())
-    return NULL;
+    return nullptr;
 
   HttpCache* http_cache = context->http_transaction_factory()->GetCache();
   if (!http_cache)
-    return NULL;
+    return nullptr;
 
   return http_cache->GetCurrentBackend();
 }
@@ -282,10 +282,8 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
         base::TimeTicks::Now() - base::TimeTicks();
     int64_t tick_to_unix_time_ms =
         (time_since_epoch - reference_time_ticks).InMilliseconds();
-
-    // Pass it as a string, since it may be too large to fit in an integer.
-    constants_dict->SetString("timeTickOffset",
-                              base::Int64ToString(tick_to_unix_time_ms));
+    constants_dict->SetKey("timeTickOffset",
+                           NetLogNumberValue(tick_to_unix_time_ms));
   }
 
   // TODO(eroman): Is this needed?

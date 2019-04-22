@@ -13,14 +13,15 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_source.h"
 #include "net/spdy/header_coalescer.h"
-#include "net/third_party/spdy/core/http2_frame_decoder_adapter.h"
-#include "net/third_party/spdy/core/spdy_alt_svc_wire_format.h"
-#include "net/third_party/spdy/core/spdy_framer.h"
-#include "net/third_party/spdy/core/spdy_header_block.h"
-#include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/spdy/core/http2_frame_decoder_adapter.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_alt_svc_wire_format.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
 namespace net {
 
@@ -43,7 +44,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
                          spdy::SpdyStreamId parent_stream_id,
                          bool exclusive,
                          bool fin,
-                         spdy::SpdyHeaderBlock headers) = 0;
+                         spdy::SpdyHeaderBlock headers,
+                         base::TimeTicks recv_first_byte_time) = 0;
 
   // Called when a data frame header is received.
   virtual void OnDataFrameHeader(spdy::SpdyStreamId stream_id,
@@ -125,8 +127,11 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
 class NET_EXPORT_PRIVATE BufferedSpdyFramer
     : public spdy::SpdyFramerVisitorInterface {
  public:
+  using TimeFunc = base::TimeTicks (*)(void);
+
   BufferedSpdyFramer(uint32_t max_header_list_size,
-                     const NetLogWithSource& net_log);
+                     const NetLogWithSource& net_log,
+                     TimeFunc time_func = base::TimeTicks::Now);
   BufferedSpdyFramer() = delete;
   ~BufferedSpdyFramer() override;
 
@@ -240,6 +245,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   // Collection of fields from control frames that we need to
   // buffer up from the spdy framer.
   struct ControlFrameFields {
+    ControlFrameFields();
+
     spdy::SpdyFrameType type;
     spdy::SpdyStreamId stream_id;
     spdy::SpdyStreamId associated_stream_id;
@@ -251,6 +258,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     bool exclusive;
     bool fin;
     bool unidirectional;
+    base::TimeTicks recv_first_byte_time;
   };
   std::unique_ptr<ControlFrameFields> control_frame_fields_;
 
@@ -269,6 +277,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
 
   const uint32_t max_header_list_size_;
   NetLogWithSource net_log_;
+  TimeFunc time_func_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedSpdyFramer);
 };

@@ -51,8 +51,6 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD3(StartAppLaunch, void(const std::string&, bool, bool));
   MOCK_METHOD0(StartDemoAppLaunch, void(void));
   MOCK_METHOD1(StartArcKiosk, void(const AccountId&));
-  MOCK_METHOD0(StartVoiceInteractionOobe, void(void));
-  MOCK_METHOD0(IsVoiceInteractionOobe, bool(void));
   MOCK_METHOD2(ShowGaiaDialog,
                void(bool can_close,
                     const base::Optional<AccountId>& prefilled_account));

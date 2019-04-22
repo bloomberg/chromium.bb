@@ -11,10 +11,9 @@
 #include "ops/GrMeshDrawOp.h"
 #include "text/GrTextBlob.h"
 #include "text/GrDistanceFieldAdjustTable.h"
-#include "text/GrGlyphCache.h"
 
+class GrRecordingContext;
 class SkAtlasTextTarget;
-class GrContext;
 
 class GrAtlasTextOp final : public GrMeshDrawOp {
 public:
@@ -41,20 +40,20 @@ public:
         SkPMColor4f fColor;
     };
 
-    static std::unique_ptr<GrAtlasTextOp> MakeBitmap(GrContext* context,
-                                                     GrPaint&& paint,
-                                                     GrMaskFormat maskFormat,
+    static std::unique_ptr<GrAtlasTextOp> MakeBitmap(GrRecordingContext*,
+                                                     GrPaint&&,
+                                                     GrMaskFormat,
                                                      int glyphCount,
                                                      bool needsTransform);
 
     static std::unique_ptr<GrAtlasTextOp> MakeDistanceField(
-            GrContext* context,
-            GrPaint&& paint,
+            GrRecordingContext*,
+            GrPaint&&,
             int glyphCount,
-            const GrDistanceFieldAdjustTable* distanceAdjustTable,
+            const GrDistanceFieldAdjustTable*,
             bool useGammaCorrectDistanceTable,
             SkColor luminanceColor,
-            const SkSurfaceProps& props,
+            const SkSurfaceProps&,
             bool isAntiAliased,
             bool useLCD);
 
@@ -76,7 +75,8 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override;
 
-    RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override;
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrFSAAType,
+                                      GrClampType) override;
 
     enum MaskType {
         kGrayscaleCoverageMask_MaskType,
@@ -108,13 +108,13 @@ private:
         sk_sp<const GrBuffer> fVertexBuffer;
         sk_sp<const GrBuffer> fIndexBuffer;
         sk_sp<GrGeometryProcessor> fGeometryProcessor;
-        const GrPipeline* fPipeline;
         GrPipeline::FixedDynamicState* fFixedDynamicState;
         int fGlyphsToFlush;
         int fVertexOffset;
     };
 
     void onPrepareDraws(Target*) override;
+    void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
 
     GrMaskFormat maskFormat() const {
         switch (fMaskType) {
@@ -162,7 +162,6 @@ private:
     GrProcessorSet fProcessors;
     struct {
         uint32_t fUsesLocalCoords : 1;
-        uint32_t fCanCombineOnTouchOrOverlap : 1;
         uint32_t fUseGammaCorrectDistanceTable : 1;
         uint32_t fNeedsGlyphTransform : 1;
     };

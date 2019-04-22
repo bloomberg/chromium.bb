@@ -6,7 +6,6 @@
 Handles benchmark configuration, but all the logic for
 actually running the benchmark is in Benchmark and StoryRunner."""
 
-import argparse
 import json
 import logging
 import optparse
@@ -15,6 +14,7 @@ import sys
 
 from telemetry import benchmark
 from telemetry import decorators
+from telemetry.internal import story_runner
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_options
 from telemetry.internal.util import binary_manager
@@ -169,12 +169,9 @@ class Help(command_line.OptparseCommand):
 
   usage = '[command]'
 
-  def __init__(self, commands):
-    self._all_commands = commands
-
   def Run(self, args):
     if len(args.positional_args) == 1:
-      commands = _MatchingCommands(args.positional_args[0], self._all_commands)
+      commands = _MatchingCommands(args.positional_args[0])
       if len(commands) == 1:
         command = commands[0]
         parser = command.CreateParser()
@@ -184,7 +181,7 @@ class Help(command_line.OptparseCommand):
 
     print >> sys.stderr, ('usage: %s [command] [<options>]' % _ScriptName())
     print >> sys.stderr, 'Available commands are:'
-    for command in self._all_commands:
+    for command in ALL_COMMANDS:
       print >> sys.stderr, '  %-10s %s' % (command.Name(),
                                            command.Description())
     print >> sys.stderr, ('"%s help <command>" to see usage information '
@@ -209,29 +206,34 @@ class List(command_line.OptparseCommand):
     return parser
 
   @classmethod
-  def ProcessCommandLineArgs(cls, parser, args, environment):
-    if not args.positional_args:
-      args.benchmarks = _Benchmarks(environment)
-    elif len(args.positional_args) == 1:
-      args.benchmarks = _MatchBenchmarkName(
-          args.positional_args[0], environment, exact_matches=False)
+  def ProcessCommandLineArgs(cls, parser, options, environment):
+    if environment.expectations_files:
+      assert len(environment.expectations_files) == 1
+      expectations_file = environment.expectations_files[0]
+    else:
+      expectations_file = None
+    if not options.positional_args:
+      options.benchmarks = _Benchmarks(environment)
+    elif len(options.positional_args) == 1:
+      options.benchmarks = _MatchBenchmarkName(
+          options.positional_args[0], environment, exact_matches=False)
     else:
       parser.error('Must provide at most one benchmark name.')
-    cls._expectations_file = environment.expectations_file
+    cls._expectations_file = expectations_file
 
-  def Run(self, args):
+  def Run(self, options):
     # Set at least log info level for List command.
     # TODO(nedn): remove this once crbug.com/656224 is resolved. The recipe
     # should be change to use verbose logging instead.
     logging.getLogger().setLevel(logging.INFO)
-    possible_browser = browser_finder.FindBrowser(args)
-    if args.json_filename:
-      with open(args.json_filename, 'w') as json_out:
-        PrintBenchmarkList(args.benchmarks, possible_browser,
+    possible_browser = browser_finder.FindBrowser(options)
+    if options.json_filename:
+      with open(options.json_filename, 'w') as json_out:
+        PrintBenchmarkList(options.benchmarks, possible_browser,
                            self._expectations_file,
                            json_pipe=json_out)
     else:
-      PrintBenchmarkList(args.benchmarks, possible_browser,
+      PrintBenchmarkList(options.benchmarks, possible_browser,
                          self._expectations_file)
     return 0
 
@@ -249,7 +251,7 @@ class Run(command_line.OptparseCommand):
 
   @classmethod
   def AddCommandLineArgs(cls, parser, environment):
-    benchmark.AddCommandLineArgs(parser)
+    story_runner.AddCommandLineArgs(parser)
 
     # Allow benchmarks to add their own command line options.
     matching_benchmarks = []
@@ -266,16 +268,21 @@ class Run(command_line.OptparseCommand):
       matching_benchmark.SetArgumentDefaults(parser)
 
   @classmethod
-  def ProcessCommandLineArgs(cls, parser, args, environment):
+  def ProcessCommandLineArgs(cls, parser, options, environment):
     all_benchmarks = _Benchmarks(environment)
-    if not args.positional_args:
-      possible_browser = (browser_finder.FindBrowser(args)
-                          if args.browser_type else None)
+    if environment.expectations_files:
+      assert len(environment.expectations_files) == 1
+      expectations_file = environment.expectations_files[0]
+    else:
+      expectations_file = None
+    if not options.positional_args:
+      possible_browser = (browser_finder.FindBrowser(options)
+                          if options.browser_type else None)
       PrintBenchmarkList(
-          all_benchmarks, possible_browser, environment.expectations_file)
+          all_benchmarks, possible_browser, expectations_file)
       sys.exit(-1)
 
-    input_benchmark_name = args.positional_args[0]
+    input_benchmark_name = options.positional_args[0]
     matching_benchmarks = _MatchBenchmarkName(input_benchmark_name, environment)
     if not matching_benchmarks:
       print >> sys.stderr, 'No benchmark named "%s".' % input_benchmark_name
@@ -285,7 +292,7 @@ class Run(command_line.OptparseCommand):
       if most_likely_matched_benchmarks:
         print >> sys.stderr, 'Do you mean any of those benchmarks below?'
         PrintBenchmarkList(most_likely_matched_benchmarks, None,
-                           environment.expectations_file, sys.stderr)
+                           expectations_file, sys.stderr)
       sys.exit(-1)
 
     if len(matching_benchmarks) > 1:
@@ -294,34 +301,35 @@ class Run(command_line.OptparseCommand):
       print >> sys.stderr, 'Did you mean one of these?'
       print >> sys.stderr
       PrintBenchmarkList(matching_benchmarks, None,
-                         environment.expectations_file, sys.stderr)
+                         expectations_file, sys.stderr)
       sys.exit(-1)
 
     benchmark_class = matching_benchmarks.pop()
-    if len(args.positional_args) > 1:
+    if len(options.positional_args) > 1:
       parser.error('Too many arguments.')
 
     assert issubclass(benchmark_class,
                       benchmark.Benchmark), ('Trying to run a non-Benchmark?!')
 
-    benchmark.ProcessCommandLineArgs(parser, args)
-    benchmark_class.ProcessCommandLineArgs(parser, args)
+    story_runner.ProcessCommandLineArgs(parser, options)
+    benchmark_class.ProcessCommandLineArgs(parser, options)
 
     cls._benchmark = benchmark_class
-    cls._expectations_path = environment.expectations_file
+    cls._expectations_path = expectations_file
 
-  def Run(self, args):
+  def Run(self, options):
     b = self._benchmark()
     _SetExpectations(b, self._expectations_path)
-    return min(255, b.Run(args))
+    return min(255, story_runner.SetUpAndRunBenchmark(b, options))
 
 
 def _ScriptName():
   return os.path.basename(sys.argv[0])
 
 
-def _MatchingCommands(string, commands):
-  return [command for command in commands if command.Name().startswith(string)]
+def _MatchingCommands(string):
+  return [command for command in ALL_COMMANDS
+          if command.Name().startswith(string)]
 
 
 @decorators.Cache
@@ -374,37 +382,37 @@ def GetBenchmarkByName(name, environment):
   return matched[0]
 
 
-def main(environment, extra_commands=None, **log_config_kwargs):
+ALL_COMMANDS = [Help, List, Run]
+
+
+def main(environment, argv=None):
   # The log level is set in browser_options.
   # Clear the log handlers to ensure we can set up logging properly here.
   logging.getLogger().handlers = []
-  log_config_kwargs.pop('level', None)
-  log_config_kwargs.setdefault('format', DEFAULT_LOG_FORMAT)
-  logging.basicConfig(**log_config_kwargs)
+  logging.basicConfig(format=DEFAULT_LOG_FORMAT)
 
   ps_util.EnableListingStrayProcessesUponExitHook()
 
+  if argv is None:
+    argv = sys.argv
+
   # Get the command name from the command line.
-  if len(sys.argv) > 1 and sys.argv[1] == '--help':
-    sys.argv[1] = 'help'
+  if len(argv) > 1 and argv[1] == '--help':
+    argv[1] = 'help'
 
   command_name = 'run'
-  for arg in sys.argv[1:]:
+  for arg in argv[1:]:
     if not arg.startswith('-'):
       command_name = arg
       break
 
   # TODO(eakuefner): Remove this hack after we port to argparse.
-  if command_name == 'help' and len(sys.argv) > 2 and sys.argv[2] == 'run':
+  if command_name == 'help' and len(argv) > 2 and argv[2] == 'run':
     command_name = 'run'
-    sys.argv[2] = '--help'
-
-  if extra_commands is None:
-    extra_commands = []
-  all_commands = [Help, List, Run] + extra_commands
+    argv[2] = '--help'
 
   # Validate and interpret the command name.
-  commands = _MatchingCommands(command_name, all_commands)
+  commands = _MatchingCommands(command_name)
   if len(commands) > 1:
     print >> sys.stderr, (
         '"%s" is not a %s command. Did you mean one of these?' %
@@ -418,7 +426,8 @@ def main(environment, extra_commands=None, **log_config_kwargs):
   else:
     command = Run
 
-  binary_manager.InitDependencyManager(environment.client_configs)
+  if binary_manager.NeedsInit():
+    binary_manager.InitDependencyManager(environment.client_configs)
 
   # Parse and run the command.
   parser = command.CreateParser()
@@ -427,22 +436,11 @@ def main(environment, extra_commands=None, **log_config_kwargs):
   # Set the default chrome root variable.
   parser.set_defaults(chrome_root=environment.default_chrome_root)
 
-  if isinstance(parser, argparse.ArgumentParser):
-    commandline_args = sys.argv[1:]
-    options, args = parser.parse_known_args(commandline_args[1:])
-    command.ProcessCommandLineArgs(parser, options, args, environment)
-  else:
-    options, args = parser.parse_args()
-    if commands:
-      args = args[1:]
-    options.positional_args = args
-    command.ProcessCommandLineArgs(parser, options, environment)
+  options, args = parser.parse_args(argv[1:])
+  if commands:
+    args = args[1:]
+  options.positional_args = args
+  command.ProcessCommandLineArgs(parser, options, environment)
 
-  if command == Help:
-    command_instance = command(all_commands)
-  else:
-    command_instance = command()
-  if isinstance(command_instance, command_line.OptparseCommand):
-    return command_instance.Run(options)
-  else:
-    return command_instance.Run(options, args)
+  return command().Run(options)
+

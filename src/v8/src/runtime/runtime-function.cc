@@ -6,6 +6,7 @@
 #include "src/arguments-inl.h"
 #include "src/compiler.h"
 #include "src/counters.h"
+#include "src/heap/heap-inl.h"  // For ToBoolean. TODO(jkummerow): Drop.
 #include "src/isolate-inl.h"
 #include "src/runtime/runtime-utils.h"
 
@@ -70,23 +71,6 @@ RUNTIME_FUNCTION(Runtime_FunctionIsAPIFunction) {
 
   CONVERT_ARG_CHECKED(JSFunction, f, 0);
   return isolate->heap()->ToBoolean(f->shared()->IsApiFunction());
-}
-
-
-// Set the native flag on the function.
-// This is used to decide if we should transform null and undefined
-// into the global object when doing call and apply.
-RUNTIME_FUNCTION(Runtime_SetNativeFlag) {
-  SealHandleScope shs(isolate);
-  DCHECK_EQ(1, args.length());
-
-  CONVERT_ARG_CHECKED(Object, object, 0);
-
-  if (object->IsJSFunction()) {
-    JSFunction* func = JSFunction::cast(object);
-    func->shared()->set_native(true);
-  }
-  return ReadOnlyRoots(isolate).undefined_value();
 }
 
 

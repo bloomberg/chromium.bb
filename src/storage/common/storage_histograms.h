@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_COMMON_HISTOGRAMS_H
-#define STORAGE_COMMON_HISTOGRAMS_H
+#ifndef STORAGE_COMMON_STORAGE_HISTOGRAMS_H_
+#define STORAGE_COMMON_STORAGE_HISTOGRAMS_H_
 
 #include <string>
-#include "storage/common/storage_common_export.h"
+
+#include "base/component_export.h"
 
 namespace storage {
 
-STORAGE_COMMON_EXPORT void RecordBytesWritten(const char* label, int bytes);
-STORAGE_COMMON_EXPORT void RecordBytesRead(const char* label, int bytes);
+COMPONENT_EXPORT(STORAGE_COMMON)
+void RecordBytesWritten(const char* label, int bytes);
+COMPONENT_EXPORT(STORAGE_COMMON)
+void RecordBytesRead(const char* label, int bytes);
 
 }  // namespace storage
 
-#endif  // STORAGE_COMMON_HISTOGRAMS_H
+#endif  // STORAGE_COMMON_STORAGE_HISTOGRAMS_H_

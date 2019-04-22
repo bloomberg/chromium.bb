@@ -1,6 +1,8 @@
 #include "rar.hpp"
 #include "log.cpp"
 
+namespace third_party_unrar {
+
 static MESSAGE_TYPE MsgStream=MSG_STDOUT;
 static RAR_CHARSET RedirectCharset=RCH_DEFAULT;
 
@@ -51,13 +53,13 @@ void InitConsole()
 
 void SetConsoleMsgStream(MESSAGE_TYPE MsgStream)
 {
-  ::MsgStream=MsgStream;
+  ::third_party_unrar::MsgStream=MsgStream;
 }
 
 
 void SetConsoleRedirectCharset(RAR_CHARSET RedirectCharset)
 {
-  ::RedirectCharset=RedirectCharset;
+  ::third_party_unrar::RedirectCharset=RedirectCharset;
 }
 
 
@@ -361,3 +363,5 @@ void OutComment(const wchar *Comment,size_t Size)
   }
   mprintf(L"\n");
 }
+
+}  // namespace third_party_unrar

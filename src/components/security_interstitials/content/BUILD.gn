@@ -6,6 +6,8 @@ static_library("security_interstitial_page") {
   sources = [
     "connection_help_ui.cc",
     "connection_help_ui.h",
+    "origin_policy_interstitial_page.cc",
+    "origin_policy_interstitial_page.h",
     "origin_policy_ui.cc",
     "origin_policy_ui.h",
     "security_interstitial_controller_client.cc",

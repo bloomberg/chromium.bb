@@ -9,9 +9,12 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+
+class NGInlineBreakToken;
 
 // Represents a break token for a block node.
 class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
@@ -107,6 +110,10 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
     return ChildTokenList(num_children_, &child_break_tokens_[0]);
   }
 
+  // Find the child NGInlineBreakToken for the specified node.
+  const NGInlineBreakToken* InlineBreakTokenFor(const NGLayoutInputNode&) const;
+  const NGInlineBreakToken* InlineBreakTokenFor(const LayoutBox&) const;
+
 #ifndef NDEBUG
   String ToString() const override;
 #endif
@@ -127,23 +134,17 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
 
   LayoutUnit used_block_size_;
 
-  bool is_break_before_ = false;
-
-  // We're attempting to break at an undesirable place. Sometimes that's
-  // unavoidable, but we should only break here if we cannot find a better break
-  // point further up in the ancestry.
-  bool has_last_resort_break_ = false;
-
   wtf_size_t num_children_;
   // This must be the last member, because it is a flexible array.
   NGBreakToken* child_break_tokens_[];
 };
 
-DEFINE_TYPE_CASTS(NGBlockBreakToken,
-                  NGBreakToken,
-                  token,
-                  token->IsBlockType(),
-                  token.IsBlockType());
+template <>
+struct DowncastTraits<NGBlockBreakToken> {
+  static bool AllowFrom(const NGBreakToken& token) {
+    return token.IsBlockType();
+  }
+};
 
 }  // namespace blink
 

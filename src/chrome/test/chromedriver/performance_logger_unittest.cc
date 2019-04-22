@@ -132,8 +132,9 @@ bool FakeLog::Emptied() const {
 std::unique_ptr<base::DictionaryValue> ParseDictionary(
     const std::string& json) {
   std::string error;
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      json, base::JSON_PARSE_RFC, nullptr, &error);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadAndReturnErrorDeprecated(json, base::JSON_PARSE_RFC,
+                                                     nullptr, &error);
   if (value == nullptr) {
     SCOPED_TRACE(json.c_str());
     SCOPED_TRACE(error.c_str());

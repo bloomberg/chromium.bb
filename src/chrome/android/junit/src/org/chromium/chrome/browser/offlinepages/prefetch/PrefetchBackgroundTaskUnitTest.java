@@ -18,7 +18,6 @@ import android.content.Context;
 import android.os.Bundle;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -34,11 +33,11 @@ import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.DeviceConditions;
+import org.chromium.chrome.browser.ShadowDeviceConditions;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.offlinepages.DeviceConditions;
-import org.chromium.chrome.browser.offlinepages.ShadowDeviceConditions;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -91,6 +90,7 @@ public class PrefetchBackgroundTaskUnitTest {
     public static final int HIGH_BATTERY_LEVEL = 75;
     public static final int LOW_BATTERY_LEVEL = 25;
     public static final boolean METERED = true;
+    private static final String GCM_TOKEN = "dummy_gcm_token";
 
     @Spy
     private PrefetchBackgroundTask mPrefetchBackgroundTask = new PrefetchBackgroundTask();
@@ -128,7 +128,7 @@ public class PrefetchBackgroundTaskUnitTest {
             }
         })
                 .when(mPrefetchBackgroundTask)
-                .nativeStartPrefetchTask(any());
+                .nativeStartPrefetchTask(any(), eq(GCM_TOKEN));
         doReturn(true).when(mPrefetchBackgroundTask).nativeOnStopTask(1);
         doReturn(null).when(mPrefetchBackgroundTask).getProfile();
 
@@ -139,7 +139,7 @@ public class PrefetchBackgroundTaskUnitTest {
     @Test
     public void scheduleTask() {
         final int additionalDelaySeconds = 15;
-        PrefetchBackgroundTaskScheduler.scheduleTask(additionalDelaySeconds);
+        PrefetchBackgroundTaskScheduler.scheduleTask(additionalDelaySeconds, GCM_TOKEN);
         TaskInfo scheduledTask =
                 mFakeTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNotNull(scheduledTask);
@@ -148,26 +148,24 @@ public class PrefetchBackgroundTaskUnitTest {
                              + additionalDelaySeconds),
                 scheduledTask.getOneOffInfo().getWindowStartTimeMs());
         assertEquals(true, scheduledTask.isPersisted());
-        assertEquals(TaskInfo.NETWORK_TYPE_UNMETERED, scheduledTask.getRequiredNetworkType());
+        assertEquals(TaskInfo.NetworkType.UNMETERED, scheduledTask.getRequiredNetworkType());
     }
 
     /**
      * Tests that the background task is scheduled when limitless prefetching is enabled:
      * the waiting delay is shorter but the provided backoff time should be respected.
-     * TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
      */
-    @Ignore
     @Test
     public void scheduleTaskLimitless() {
         final int additionalDelaySeconds = 20;
-        PrefetchBackgroundTaskScheduler.scheduleTaskLimitless(additionalDelaySeconds);
+        PrefetchBackgroundTaskScheduler.scheduleTaskLimitless(additionalDelaySeconds, GCM_TOKEN);
         TaskInfo scheduledTask =
                 mFakeTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNotNull(scheduledTask);
         assertEquals(TimeUnit.SECONDS.toMillis(additionalDelaySeconds),
                 scheduledTask.getOneOffInfo().getWindowStartTimeMs());
         assertEquals(true, scheduledTask.isPersisted());
-        assertEquals(TaskInfo.NETWORK_TYPE_ANY, scheduledTask.getRequiredNetworkType());
+        assertEquals(TaskInfo.NetworkType.ANY, scheduledTask.getRequiredNetworkType());
     }
 
     @Test
@@ -176,7 +174,7 @@ public class PrefetchBackgroundTaskUnitTest {
                 mFakeTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNull(scheduledTask);
 
-        PrefetchBackgroundTaskScheduler.scheduleTask(0);
+        PrefetchBackgroundTaskScheduler.scheduleTask(0, GCM_TOKEN);
         scheduledTask = mFakeTaskScheduler.getTaskInfo(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
         assertNotNull(scheduledTask);
         assertEquals(TimeUnit.SECONDS.toMillis(
@@ -192,7 +190,9 @@ public class PrefetchBackgroundTaskUnitTest {
     public void createNativeTask() {
         final ArrayList<Boolean> reschedules = new ArrayList<>();
         TaskParameters params =
-                TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID).build();
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
+                        .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(GCM_TOKEN))
+                        .build();
 
         // Setup battery conditions with no power connected.
         DeviceConditions deviceConditions =
@@ -215,13 +215,11 @@ public class PrefetchBackgroundTaskUnitTest {
     /**
      * Tests that the background task is correctly started when conditions are sufficient for
      * limitless prefetching.
-     * TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
      */
-    @Ignore
     @Test
     public void createNativeTaskLimitless() {
         final ArrayList<Boolean> reschedules = new ArrayList<>();
-        Bundle extrasBundle = new Bundle();
+        Bundle extrasBundle = PrefetchBackgroundTaskScheduler.createGCMTokenBundle(GCM_TOKEN);
         extrasBundle.putBoolean(PrefetchBackgroundTask.LIMITLESS_BUNDLE_KEY, true);
         TaskParameters params = TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
                                         .addExtras(extrasBundle)
@@ -253,7 +251,9 @@ public class PrefetchBackgroundTaskUnitTest {
 
         // Check impact on starting before native loaded.
         TaskParameters params =
-                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID)
+                        .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(GCM_TOKEN))
+                        .build();
 
         int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
                 RuntimeEnvironment.application, params, new TaskFinishedCallback() {
@@ -274,7 +274,9 @@ public class PrefetchBackgroundTaskUnitTest {
 
         // Check impact on starting before native loaded.
         TaskParameters params =
-                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID)
+                        .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(GCM_TOKEN))
+                        .build();
 
         int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
                 RuntimeEnvironment.application, params, new TaskFinishedCallback() {
@@ -295,7 +297,9 @@ public class PrefetchBackgroundTaskUnitTest {
 
         // Check impact on starting before native loaded.
         TaskParameters params =
-                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID)
+                        .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(GCM_TOKEN))
+                        .build();
 
         int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
                 RuntimeEnvironment.application, params, new TaskFinishedCallback() {
@@ -310,9 +314,7 @@ public class PrefetchBackgroundTaskUnitTest {
     /**
      * Tests that the background task is not started (rescheduled) when there's no connection and
      * limitless prefetching is enabled.
-     * TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
      */
-    @Ignore
     @Test
     public void testNoNetworkLimitless() throws Exception {
         // Setup no network conditions.
@@ -322,7 +324,7 @@ public class PrefetchBackgroundTaskUnitTest {
         ShadowDeviceConditions.setCurrentConditions(deviceConditionsNoNetwork);
 
         // Check impact on starting before native loaded.
-        Bundle extrasBundle = new Bundle();
+        Bundle extrasBundle = PrefetchBackgroundTaskScheduler.createGCMTokenBundle(GCM_TOKEN);
         extrasBundle.putBoolean(PrefetchBackgroundTask.LIMITLESS_BUNDLE_KEY, true);
         TaskParameters params = TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
                                         .addExtras(extrasBundle)
@@ -347,7 +349,9 @@ public class PrefetchBackgroundTaskUnitTest {
 
         // Check impact on starting before native loaded.
         TaskParameters params =
-                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID)
+                        .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(GCM_TOKEN))
+                        .build();
 
         int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
                 RuntimeEnvironment.application, params, new TaskFinishedCallback() {
@@ -368,7 +372,9 @@ public class PrefetchBackgroundTaskUnitTest {
 
         // Check impact on starting before native loaded.
         TaskParameters params =
-                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID)
+                        .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(GCM_TOKEN))
+                        .build();
 
         int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
                 RuntimeEnvironment.application, params, new TaskFinishedCallback() {
@@ -390,7 +396,9 @@ public class PrefetchBackgroundTaskUnitTest {
 
         // Check impact on starting before native loaded.
         TaskParameters params =
-                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID)
+                        .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(GCM_TOKEN))
+                        .build();
 
         int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
                 RuntimeEnvironment.application, params, new TaskFinishedCallback() {
@@ -412,7 +420,9 @@ public class PrefetchBackgroundTaskUnitTest {
 
         // Check impact on starting before native loaded.
         TaskParameters params =
-                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID)
+                        .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(GCM_TOKEN))
+                        .build();
 
         int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
                 RuntimeEnvironment.application, params, new TaskFinishedCallback() {
@@ -428,7 +438,9 @@ public class PrefetchBackgroundTaskUnitTest {
     public void testOnStopAfterCallback() throws Exception {
         final ArrayList<Boolean> reschedules = new ArrayList<>();
         TaskParameters params =
-                TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID).build();
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
+                        .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(GCM_TOKEN))
+                        .build();
 
         // Conditions should be appropriate for running the task.
         DeviceConditions deviceConditions =
@@ -458,7 +470,9 @@ public class PrefetchBackgroundTaskUnitTest {
 
         // Check impact on starting before native loaded.
         TaskParameters params =
-                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID)
+                        .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(GCM_TOKEN))
+                        .build();
 
         int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
                 RuntimeEnvironment.application, params, new TaskFinishedCallback() {

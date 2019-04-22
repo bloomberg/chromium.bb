@@ -223,6 +223,7 @@ base::string16 GetSuggestedFilenameImpl(
     const std::string& suggested_name,
     const std::string& mime_type,
     const std::string& default_name,
+    bool should_replace_extension,
     ReplaceIllegalCharactersFunction replace_illegal_characters_function) {
   // TODO: this function to be updated to match the httpbis recommendations.
   // Talk to abarth for the latest news.
@@ -283,6 +284,7 @@ base::string16 GetSuggestedFilenameImpl(
   }
   replace_illegal_characters_function(&result_str, '_');
   base::FilePath result(result_str);
+  overwrite_extension |= should_replace_extension;
   // extension should not appended to filename derived from
   // content-disposition, if it does not have one.
   // Hence mimetype and overwrite_extension values are not used.
@@ -309,10 +311,12 @@ base::FilePath GenerateFileNameImpl(
     const std::string& suggested_name,
     const std::string& mime_type,
     const std::string& default_file_name,
+    bool should_replace_extension,
     ReplaceIllegalCharactersFunction replace_illegal_characters_function) {
   base::string16 file_name = GetSuggestedFilenameImpl(
       url, content_disposition, referrer_charset, suggested_name, mime_type,
-      default_file_name, replace_illegal_characters_function);
+      default_file_name, should_replace_extension,
+      replace_illegal_characters_function);
 
 #if defined(OS_WIN)
   base::FilePath generated_name(file_name);

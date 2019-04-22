@@ -17,17 +17,19 @@
  */
 function assert(condition, opt_message) {
   if (!condition) {
-    var message = 'Assertion failed';
-    if (opt_message)
+    let message = 'Assertion failed';
+    if (opt_message) {
       message = message + ': ' + opt_message;
-    var error = new Error(message);
-    var global = function() {
+    }
+    const error = new Error(message);
+    const global = function() {
       /** @type {boolean} */
       this.traceAssertionsForTesting;
       return this;
     }();
-    if (global.traceAssertionsForTesting)
+    if (global.traceAssertionsForTesting) {
       console.warn(error.stack);
+    }
     throw error;
   }
   return condition;

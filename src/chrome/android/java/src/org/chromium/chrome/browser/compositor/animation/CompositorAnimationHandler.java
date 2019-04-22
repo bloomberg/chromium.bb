@@ -18,6 +18,9 @@ import java.util.ArrayList;
  * CompositorAnimators.
  */
 public class CompositorAnimationHandler {
+    /** Whether or not testing mode is enabled. In this mode, animations end immediately. */
+    private static boolean sIsInTestingMode;
+
     /** A list of all the handler's animators. */
     private final ArrayList<CompositorAnimator> mAnimators = new ArrayList<>();
 
@@ -35,9 +38,6 @@ public class CompositorAnimationHandler {
      * starting.
      */
     private boolean mWasUpdateRequestedForAnimationStart;
-
-    /** Whether or not testing mode is enabled. In this mode, animations end immediately. */
-    private boolean mIsInTestingMode;
 
     /** The last time that an update was pushed to animations. */
     private long mLastUpdateTimeMs;
@@ -76,7 +76,7 @@ public class CompositorAnimationHandler {
         }
 
         // If in testing mode, immediately push an update and end the animation.
-        if (mIsInTestingMode) pushUpdate(animator.getDuration());
+        if (sIsInTestingMode) pushUpdate(animator.getDuration());
     }
 
     /**
@@ -134,10 +134,28 @@ public class CompositorAnimationHandler {
     }
 
     /**
-     * Enable testing mode. This causes any animations to end immediately.
+     * Enable or disable testing mode. This causes any animations to end immediately.
+     * @param enabled Whether testing mode is enabled or disabled.
      */
     @VisibleForTesting
-    public void enableTestingMode() {
-        mIsInTestingMode = true;
+    public static void setTestingMode(boolean enabled) {
+        sIsInTestingMode = enabled;
+    }
+
+    /**
+     * @return Whether we are in testing mode or not.
+     */
+    @VisibleForTesting
+    public static boolean isInTestingMode() {
+        return sIsInTestingMode;
+    }
+
+    /**
+     * Provides update for animation in testing mode.
+     * @return Whether update was successful or not.
+     */
+    @VisibleForTesting
+    public final boolean pushUpdateInTestingMode(long deltaTimeMs) {
+        return sIsInTestingMode ? pushUpdate(deltaTimeMs) : false;
     }
 }

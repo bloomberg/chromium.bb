@@ -5,6 +5,7 @@
 #include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
 
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,13 +21,14 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "net/base/address_list.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/trace_constants.h"
-#include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/proxy_host_resolver.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "net/proxy_resolution/proxy_resolver_error_observer.h"
 #include "net/proxy_resolution/proxy_resolver_v8.h"
 
@@ -48,6 +50,9 @@
 // execution is "aborted", and then re-started once the DNS result is
 // known.
 namespace net {
+
+class ScopedAllowThreadJoinForProxyResolverV8Tracing
+    : public base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {};
 
 namespace {
 
@@ -139,7 +144,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
 
   ProxyResolverV8* v8_resolver();
   const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner();
-  HostResolver* host_resolver();
+  ProxyHostResolver* host_resolver();
 
   // Invokes the user's callback.
   void NotifyCaller(int result);
@@ -153,47 +158,45 @@ class Job : public base::RefCountedThreadSafe<Job>,
 
   // Implementation of ProxyResolverv8::JSBindings
   bool ResolveDns(const std::string& host,
-                  ResolveDnsOperation op,
+                  ProxyResolveDnsOperation op,
                   std::string* output,
                   bool* terminate) override;
   void Alert(const base::string16& message) override;
   void OnError(int line_number, const base::string16& error) override;
 
   bool ResolveDnsBlocking(const std::string& host,
-                          ResolveDnsOperation op,
+                          ProxyResolveDnsOperation op,
                           std::string* output);
 
   bool ResolveDnsNonBlocking(const std::string& host,
-                             ResolveDnsOperation op,
+                             ProxyResolveDnsOperation op,
                              std::string* output,
                              bool* terminate);
 
   bool PostDnsOperationAndWait(const std::string& host,
-                               ResolveDnsOperation op,
+                               ProxyResolveDnsOperation op,
                                bool* completed_synchronously)
-                               WARN_UNUSED_RESULT;
+      WARN_UNUSED_RESULT;
 
   void DoDnsOperation();
   void OnDnsOperationComplete(int result);
 
   void ScheduleRestartWithBlockingDns();
 
-  bool GetDnsFromLocalCache(const std::string& host, ResolveDnsOperation op,
-                            std::string* output, bool* return_value);
+  bool GetDnsFromLocalCache(const std::string& host,
+                            ProxyResolveDnsOperation op,
+                            std::string* output,
+                            bool* return_value);
 
   void SaveDnsToLocalCache(const std::string& host,
-                           ResolveDnsOperation op,
+                           ProxyResolveDnsOperation op,
                            int net_error,
-                           const AddressList& addresses);
-
-  // Builds a RequestInfo to service the specified PAC DNS operation.
-  static HostResolver::RequestInfo MakeDnsRequestInfo(const std::string& host,
-                                                      ResolveDnsOperation op);
+                           const std::vector<IPAddress>& addresses);
 
   // Makes a key for looking up |host, op| in |dns_cache_|. Strings are used for
   // convenience, to avoid defining custom comparators.
   static std::string MakeDnsCacheKey(const std::string& host,
-                                     ResolveDnsOperation op);
+                                     ProxyResolveDnsOperation op);
 
   void HandleAlertOrError(bool is_alert, int line_number,
                           const base::string16& message);
@@ -281,10 +284,10 @@ class Job : public base::RefCountedThreadSafe<Job>,
   // State for pending DNS request.
   // ---------------------------------------------------------------------------
 
-  // Handle to the outstanding request in the HostResolver, or NULL.
+  // Handle to the outstanding request in the ProxyHostResolver, or NULL.
   // This is mutated and used on the origin thread, however it may be read by
   // the worker thread for some DCHECKS().
-  std::unique_ptr<HostResolver::Request> pending_dns_;
+  std::unique_ptr<ProxyHostResolver::Request> pending_dns_;
 
   // Indicates if the outstanding DNS request completed synchronously. Written
   // on the origin thread, and read by the worker thread.
@@ -293,11 +296,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
   // These are the inputs to DoDnsOperation(). Written on the worker thread,
   // read by the origin thread.
   std::string pending_dns_host_;
-  ResolveDnsOperation pending_dns_op_;
-
-  // This contains the resolved address list that DoDnsOperation() fills in.
-  // Used exclusively on the origin thread.
-  AddressList pending_dns_addresses_;
+  ProxyResolveDnsOperation pending_dns_op_;
 };
 
 class ProxyResolverV8TracingImpl : public ProxyResolverV8Tracing {
@@ -413,7 +412,7 @@ void Job::Cancel() {
   event_.Signal();
 
   bindings_.reset();
-  owned_self_reference_ = NULL;
+  owned_self_reference_ = nullptr;
 }
 
 LoadState Job::GetLoadState() const {
@@ -453,7 +452,7 @@ void Job::ReleaseCallback() {
   callback_.Reset();
 
   // For good measure, clear this other user-owned pointer.
-  user_results_ = NULL;
+  user_results_ = nullptr;
 }
 
 ProxyResolverV8* Job::v8_resolver() {
@@ -464,7 +463,7 @@ const scoped_refptr<base::SingleThreadTaskRunner>& Job::worker_task_runner() {
   return params_->worker_task_runner;
 }
 
-HostResolver* Job::host_resolver() {
+ProxyHostResolver* Job::host_resolver() {
   return bindings_->GetHostResolver();
 }
 
@@ -472,7 +471,7 @@ void Job::NotifyCaller(int result) {
   CheckIsOnWorkerThread();
 
   origin_runner_->PostTask(
-      FROM_HERE, base::Bind(&Job::NotifyCallerOnOriginLoop, this, result));
+      FROM_HERE, base::BindOnce(&Job::NotifyCallerOnOriginLoop, this, result));
 }
 
 void Job::NotifyCallerOnOriginLoop(int result) {
@@ -500,7 +499,7 @@ void Job::NotifyCallerOnOriginLoop(int result) {
   std::move(callback).Run(result);
 
   bindings_.reset();
-  owned_self_reference_ = NULL;
+  owned_self_reference_ = nullptr;
 }
 
 void Job::Start(Operation op,
@@ -586,7 +585,7 @@ int Job::ExecuteProxyResolver() {
 }
 
 bool Job::ResolveDns(const std::string& host,
-                     ResolveDnsOperation op,
+                     ProxyResolveDnsOperation op,
                      std::string* output,
                      bool* terminate) {
   if (cancelled_.IsSet()) {
@@ -594,7 +593,9 @@ bool Job::ResolveDns(const std::string& host,
     return false;
   }
 
-  if ((op == DNS_RESOLVE || op == DNS_RESOLVE_EX) && host.empty()) {
+  if ((op == ProxyResolveDnsOperation::DNS_RESOLVE ||
+       op == ProxyResolveDnsOperation::DNS_RESOLVE_EX) &&
+      host.empty()) {
     // a DNS resolve with an empty hostname is considered an error.
     return false;
   }
@@ -613,7 +614,7 @@ void Job::OnError(int line_number, const base::string16& error) {
 }
 
 bool Job::ResolveDnsBlocking(const std::string& host,
-                             ResolveDnsOperation op,
+                             ProxyResolveDnsOperation op,
                              std::string* output) {
   CheckIsOnWorkerThread();
 
@@ -631,7 +632,7 @@ bool Job::ResolveDnsBlocking(const std::string& host,
     return false;
   }
 
-  if (!PostDnsOperationAndWait(host, op, NULL))
+  if (!PostDnsOperationAndWait(host, op, nullptr))
     return false;  // Was cancelled.
 
   CHECK(GetDnsFromLocalCache(host, op, output, &rv));
@@ -639,7 +640,7 @@ bool Job::ResolveDnsBlocking(const std::string& host,
 }
 
 bool Job::ResolveDnsNonBlocking(const std::string& host,
-                                ResolveDnsOperation op,
+                                ProxyResolveDnsOperation op,
                                 std::string* output,
                                 bool* terminate) {
   CheckIsOnWorkerThread();
@@ -692,13 +693,14 @@ bool Job::ResolveDnsNonBlocking(const std::string& host,
 }
 
 bool Job::PostDnsOperationAndWait(const std::string& host,
-                                  ResolveDnsOperation op,
+                                  ProxyResolveDnsOperation op,
                                   bool* completed_synchronously) {
   // Post the DNS request to the origin thread.
   DCHECK(!pending_dns_);
   pending_dns_host_ = host;
   pending_dns_op_ = op;
-  origin_runner_->PostTask(FROM_HERE, base::Bind(&Job::DoDnsOperation, this));
+  origin_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&Job::DoDnsOperation, this));
 
   event_.Wait();
   event_.Reset();
@@ -719,11 +721,13 @@ void Job::DoDnsOperation() {
   if (cancelled_.IsSet())
     return;
 
-  std::unique_ptr<HostResolver::Request> dns_request;
-  int result = host_resolver()->Resolve(
-      MakeDnsRequestInfo(pending_dns_host_, pending_dns_op_), DEFAULT_PRIORITY,
-      &pending_dns_addresses_, base::Bind(&Job::OnDnsOperationComplete, this),
-      &dns_request, bindings_->GetNetLogWithSource());
+  bool is_myip_request =
+      pending_dns_op_ == ProxyResolveDnsOperation::MY_IP_ADDRESS ||
+      pending_dns_op_ == ProxyResolveDnsOperation::MY_IP_ADDRESS_EX;
+  pending_dns_ = host_resolver()->CreateRequest(
+      is_myip_request ? GetHostName() : pending_dns_host_, pending_dns_op_);
+  int result =
+      pending_dns_->Start(base::BindOnce(&Job::OnDnsOperationComplete, this));
 
   pending_dns_completed_synchronously_ = result != ERR_IO_PENDING;
 
@@ -735,11 +739,9 @@ void Job::DoDnsOperation() {
 
   if (pending_dns_completed_synchronously_) {
     OnDnsOperationComplete(result);
-  } else {
-    DCHECK(dns_request);
-    pending_dns_ = std::move(dns_request);
-    // OnDnsOperationComplete() will be called by host resolver on completion.
   }
+  // Else OnDnsOperationComplete() will be called by host resolver on
+  // completion.
 
   if (!blocking_dns_) {
     // The worker thread always blocks waiting to see if the result can be
@@ -752,10 +754,9 @@ void Job::OnDnsOperationComplete(int result) {
   CheckIsOnOriginThread();
 
   DCHECK(!cancelled_.IsSet());
-  DCHECK(pending_dns_completed_synchronously_ == (pending_dns_ == NULL));
 
   SaveDnsToLocalCache(pending_dns_host_, pending_dns_op_, result,
-                      pending_dns_addresses_);
+                      pending_dns_->GetResults());
   pending_dns_.reset();
 
   if (blocking_dns_) {
@@ -766,8 +767,8 @@ void Job::OnDnsOperationComplete(int result) {
   if (!blocking_dns_ && !pending_dns_completed_synchronously_) {
     // Restart. This time it should make more progress due to having
     // cached items.
-    worker_task_runner()->PostTask(FROM_HERE,
-                                   base::Bind(&Job::ExecuteNonBlocking, this));
+    worker_task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&Job::ExecuteNonBlocking, this));
   }
 }
 
@@ -785,7 +786,7 @@ void Job::ScheduleRestartWithBlockingDns() {
 }
 
 bool Job::GetDnsFromLocalCache(const std::string& host,
-                               ResolveDnsOperation op,
+                               ProxyResolveDnsOperation op,
                                std::string* output,
                                bool* return_value) {
   CheckIsOnWorkerThread();
@@ -800,56 +801,34 @@ bool Job::GetDnsFromLocalCache(const std::string& host,
 }
 
 void Job::SaveDnsToLocalCache(const std::string& host,
-                              ResolveDnsOperation op,
+                              ProxyResolveDnsOperation op,
                               int net_error,
-                              const AddressList& addresses) {
+                              const std::vector<IPAddress>& addresses) {
   CheckIsOnOriginThread();
 
   // Serialize the result into a string to save to the cache.
   std::string cache_value;
   if (net_error != OK) {
     cache_value = std::string();
-  } else if (op == DNS_RESOLVE || op == MY_IP_ADDRESS) {
+  } else if (op == ProxyResolveDnsOperation::DNS_RESOLVE ||
+             op == ProxyResolveDnsOperation::MY_IP_ADDRESS) {
     // dnsResolve() and myIpAddress() are expected to return a single IP
     // address.
-    cache_value = addresses.front().ToStringWithoutPort();
+    cache_value = addresses.front().ToString();
   } else {
     // The *Ex versions are expected to return a semi-colon separated list.
     for (auto iter = addresses.begin(); iter != addresses.end(); ++iter) {
       if (!cache_value.empty())
         cache_value += ";";
-      cache_value += iter->ToStringWithoutPort();
+      cache_value += iter->ToString();
     }
   }
 
   dns_cache_[MakeDnsCacheKey(host, op)] = cache_value;
 }
 
-// static
-HostResolver::RequestInfo Job::MakeDnsRequestInfo(const std::string& host,
-                                                  ResolveDnsOperation op) {
-  HostPortPair host_port = HostPortPair(host, 80);
-  if (op == MY_IP_ADDRESS || op == MY_IP_ADDRESS_EX) {
-    // TODO(eroman): Remove the need for hostname. This is currently relied on
-    // for the cache key (is_my_ip_address isn't part of it).
-    host_port.set_host(GetHostName());
-  }
-
-  HostResolver::RequestInfo info(host_port);
-  // Flag myIpAddress requests.
-  if (op == MY_IP_ADDRESS || op == MY_IP_ADDRESS_EX)
-    info.set_is_my_ip_address(true);
-
-  // The non-ex flavors are limited to IPv4 results.
-  if (op == MY_IP_ADDRESS || op == DNS_RESOLVE) {
-    info.set_address_family(ADDRESS_FAMILY_IPV4);
-  }
-
-  return info;
-}
-
 std::string Job::MakeDnsCacheKey(const std::string& host,
-                                 ResolveDnsOperation op) {
+                                 ProxyResolveDnsOperation op) {
   return base::StringPrintf("%d:%s", op, host.c_str());
 }
 
@@ -864,8 +843,8 @@ void Job::HandleAlertOrError(bool is_alert,
   if (blocking_dns_) {
     // In blocking DNS mode the events can be dispatched immediately.
     origin_runner_->PostTask(
-        FROM_HERE, base::Bind(&Job::DispatchAlertOrErrorOnOriginThread, this,
-                              is_alert, line_number, message));
+        FROM_HERE, base::BindOnce(&Job::DispatchAlertOrErrorOnOriginThread,
+                                  this, is_alert, line_number, message));
     return;
   }
 
@@ -943,7 +922,7 @@ ProxyResolverV8TracingImpl::~ProxyResolverV8TracingImpl() {
   CHECK_EQ(0, num_outstanding_callbacks_);
 
   // Join the worker thread. See http://crbug.com/69710.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  ScopedAllowThreadJoinForProxyResolverV8Tracing allow_thread_join;
   thread_.reset();
 }
 
@@ -1060,7 +1039,7 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
 
   void StopWorkerThread() {
     // Join the worker thread. See http://crbug.com/69710.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    ScopedAllowThreadJoinForProxyResolverV8Tracing allow_thread_join;
     thread_.reset();
   }
 

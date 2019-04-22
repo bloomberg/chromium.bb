@@ -148,12 +148,14 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
     bool emphasize_label,
     base::string16* accessible_content);
 
-// Computes a readable foreground color given |background_color| and returns it.
-// This reimplements the algorithm specified by Clank's
-// ColorUtils.shouldUseLightForegroundOnBackground rather than use
-// color_utils::GetReadableColor to provide Payment Handlers with a consistent
-// experience across platforms.
-SkColor GetForegroundColorForBackground(SkColor background_color);
+// Creates a warning message when address is not valid or an informational
+// message when the user has not selected their shipping address yet. The
+// warning icon is displayed only for warning messages.
+// ---------------------------------------------
+// | Warning icon | Warning message            |
+// ---------------------------------------------
+std::unique_ptr<views::View> CreateWarningView(const base::string16& message,
+                                               bool show_icon);
 
 }  // namespace payments
 

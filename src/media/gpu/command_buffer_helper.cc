@@ -28,7 +28,8 @@ class CommandBufferHelperImpl
     : public CommandBufferHelper,
       public gpu::CommandBufferStub::DestructionObserver {
  public:
-  explicit CommandBufferHelperImpl(gpu::CommandBufferStub* stub) : stub_(stub) {
+  explicit CommandBufferHelperImpl(gpu::CommandBufferStub* stub)
+      : CommandBufferHelper(stub->channel()->task_runner()), stub_(stub) {
     DVLOG(1) << __func__;
     DCHECK(stub_->channel()->task_runner()->BelongsToCurrentThread());
 
@@ -48,25 +49,18 @@ class CommandBufferHelperImpl
     return decoder_helper_->GetGLContext();
   }
 
+  bool HasStub() override {
+    DVLOG(4) << __func__;
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+    return stub_;
+  }
+
   bool MakeContextCurrent() override {
     DVLOG(2) << __func__;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
     return decoder_helper_ && decoder_helper_->MakeContextCurrent();
-  }
-
-  bool IsContextCurrent() const override {
-    DVLOG(2) << __func__;
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-    if (!stub_)
-      return false;
-
-    gl::GLContext* context = stub_->decoder_context()->GetGLContext();
-    if (!context)
-      return false;
-
-    return context->IsCurrent(nullptr);
   }
 
   GLuint CreateTexture(GLenum target,
@@ -214,6 +208,11 @@ class CommandBufferHelperImpl
 };
 
 }  // namespace
+
+CommandBufferHelper::CommandBufferHelper(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : base::RefCountedDeleteOnSequence<CommandBufferHelper>(
+          std::move(task_runner)) {}
 
 // static
 scoped_refptr<CommandBufferHelper> CommandBufferHelper::Create(

@@ -45,7 +45,7 @@ class PaymentResponseHelperTest : public testing::Test,
   // PaymentRequestState::Delegate:
   void OnPaymentResponseReady(mojom::PaymentResponsePtr response) override {
     payment_response_ = std::move(response);
-  };
+  }
 
   // Convenience method to create a PaymentRequestSpec with specified |details|
   // and |method_data|.
@@ -121,7 +121,6 @@ TEST_F(PaymentResponseHelperTest, GeneratePaymentResponse_SupportedMethod) {
       "\"city\":\"Elysium\","
       "\"country\":\"US\","
       "\"dependentLocality\":\"\","
-      "\"languageCode\":\"\","
       "\"organization\":\"Underworld\","
       "\"phone\":\"16502111111\","
       "\"postalCode\":\"91111\","
@@ -160,7 +159,6 @@ TEST_F(PaymentResponseHelperTest, GeneratePaymentResponse_BasicCard) {
       "\"city\":\"Elysium\","
       "\"country\":\"US\","
       "\"dependentLocality\":\"\","
-      "\"languageCode\":\"\","
       "\"organization\":\"Underworld\","
       "\"phone\":\"16502111111\","
       "\"postalCode\":\"91111\","
@@ -204,7 +202,6 @@ TEST_F(PaymentResponseHelperTest, GeneratePaymentResponse_ShippingAddress) {
   EXPECT_EQ("", response()->shipping_address->dependent_locality);
   EXPECT_EQ("91111", response()->shipping_address->postal_code);
   EXPECT_EQ("", response()->shipping_address->sorting_code);
-  EXPECT_EQ("", response()->shipping_address->language_code);
   EXPECT_EQ("Underworld", response()->shipping_address->organization);
   EXPECT_EQ("John H. Doe", response()->shipping_address->recipient);
   EXPECT_EQ("16502111111", response()->shipping_address->phone);

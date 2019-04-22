@@ -37,7 +37,7 @@ class TestReporter : public ContextualSuggestionsReporter {
   ukm::SourceId GetSourceId() { return source_id_; }
   int GetNSetupForPage() { return called_setup_for_page_count_; }
   int GetNRecordEvent() { return called_record_event_count_; }
-  int GetNFlush() { return called_flush_count_; };
+  int GetNFlush() { return called_flush_count_; }
 
   /* Static variables*/
   static int GetReporterDestroyCount() { return reporter_destroy_count_; }

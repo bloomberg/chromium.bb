@@ -28,10 +28,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_test_helper.h"
@@ -121,6 +123,8 @@ class Number {
 };
 
 class CountGeneration {
+  STACK_ALLOCATED();
+
  public:
   CountGeneration() : copies_(0) {}
   CountGeneration(const CountGeneration& other) : copies_(other.copies_ + 1) {}

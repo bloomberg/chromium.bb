@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_P(UnaffiliatedArcAllowedTest, ProfileTest) {
       << "affiliated users.";
 }
 
-INSTANTIATE_TEST_CASE_P(Blub,
-                        UnaffiliatedArcAllowedTest,
-                        ::testing::Values(Params(true), Params(false)));
+INSTANTIATE_TEST_SUITE_P(Blub,
+                         UnaffiliatedArcAllowedTest,
+                         ::testing::Values(Params(true), Params(false)));
 }  // namespace policy

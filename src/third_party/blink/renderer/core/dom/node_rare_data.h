@@ -23,7 +23,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_RARE_DATA_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -44,13 +43,11 @@ class NodeMutationObserverData final
 
   NodeMutationObserverData() = default;
 
-  const HeapVector<TraceWrapperMember<MutationObserverRegistration>>&
-  Registry() {
+  const HeapVector<Member<MutationObserverRegistration>>& Registry() {
     return registry_;
   }
 
-  const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>&
-  TransientRegistry() {
+  const HeapHashSet<Member<MutationObserverRegistration>>& TransientRegistry() {
     return transient_registry_;
   }
 
@@ -59,12 +56,11 @@ class NodeMutationObserverData final
   void AddRegistration(MutationObserverRegistration* registration);
   void RemoveRegistration(MutationObserverRegistration* registration);
 
-  void Trace(blink::Visitor* visitor);
+  void Trace(Visitor* visitor);
 
  private:
-  HeapVector<TraceWrapperMember<MutationObserverRegistration>> registry_;
-  HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>
-      transient_registry_;
+  HeapVector<Member<MutationObserverRegistration>> registry_;
+  HeapHashSet<Member<MutationObserverRegistration>> transient_registry_;
   DISALLOW_COPY_AND_ASSIGN(NodeMutationObserverData);
 };
 
@@ -73,7 +69,7 @@ class NodeRenderingData {
 
  public:
   explicit NodeRenderingData(LayoutObject*,
-                             scoped_refptr<ComputedStyle> non_attached_style);
+                             scoped_refptr<ComputedStyle> computed_style);
   ~NodeRenderingData();
 
   LayoutObject* GetLayoutObject() const { return layout_object_; }
@@ -82,17 +78,15 @@ class NodeRenderingData {
     layout_object_ = layout_object;
   }
 
-  ComputedStyle* GetNonAttachedStyle() const {
-    return non_attached_style_.get();
-  }
-  void SetNonAttachedStyle(scoped_refptr<ComputedStyle> non_attached_style);
+  ComputedStyle* GetComputedStyle() const { return computed_style_.get(); }
+  void SetComputedStyle(scoped_refptr<ComputedStyle> computed_style);
 
   static NodeRenderingData& SharedEmptyData();
   bool IsSharedEmptyData() { return this == &SharedEmptyData(); }
 
  private:
   LayoutObject* layout_object_;
-  scoped_refptr<ComputedStyle> non_attached_style_;
+  scoped_refptr<ComputedStyle> computed_style_;
   DISALLOW_COPY_AND_ASSIGN(NodeRenderingData);
 };
 
@@ -191,15 +185,15 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
     kNumberOfDynamicRestyleFlags = 14
   };
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   void TraceAfterDispatch(blink::Visitor*);
   void FinalizeGarbageCollectedObject();
 
  private:
   NodeListsNodeData& CreateNodeLists();
 
-  TraceWrapperMember<NodeListsNodeData> node_lists_;
-  TraceWrapperMember<NodeMutationObserverData> mutation_observer_data_;
+  Member<NodeListsNodeData> node_lists_;
+  Member<NodeMutationObserverData> mutation_observer_data_;
   Member<FlatTreeNodeData> flat_tree_node_data_;
 
   unsigned connected_frame_count_ : kConnectedFrameCountBits;

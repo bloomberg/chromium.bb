@@ -237,7 +237,8 @@ class ModelTypeWorker : public UpdateHandler,
 
   // A map of update responses, keyed by server_id.
   // Holds updates encrypted with pending keys.
-  std::map<std::string, UpdateResponseData> entries_pending_decryption_;
+  std::map<std::string, std::unique_ptr<UpdateResponseData>>
+      entries_pending_decryption_;
 
   // Accumulates all the updates from a single GetUpdates cycle in memory so
   // they can all be sent to the processor at once.

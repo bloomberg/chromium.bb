@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -104,6 +105,20 @@ PrefService::PrefService(
 
 PrefService::~PrefService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(crbug.com/942491, 946668, 945772) The following code collects
+  // augments stack dumps created by ~PrefNotifierImpl() with information
+  // whether the profile owning the PrefService is an incognito profile.
+  // Delete this, once the bugs are closed.
+  const bool is_incognito_profile = user_pref_store_->IsInMemoryPrefStore();
+  base::debug::Alias(&is_incognito_profile);
+  // Export value of is_incognito_profile to a string so that `grep`
+  // is a sufficient tool to analyze crashdumps.
+  char is_incognito_profile_string[32];
+  strncpy(is_incognito_profile_string,
+          is_incognito_profile ? "is_incognito: yes" : "is_incognito: no",
+          sizeof(is_incognito_profile_string));
+  base::debug::Alias(&is_incognito_profile_string);
 }
 
 void PrefService::InitFromStorage(bool async) {
@@ -491,7 +506,7 @@ void PrefService::SetFilePath(const std::string& path,
 
 void PrefService::SetInt64(const std::string& path, int64_t value) {
   SetUserPrefValue(path,
-                   std::make_unique<base::Value>(base::Int64ToString(value)));
+                   std::make_unique<base::Value>(base::NumberToString(value)));
 }
 
 int64_t PrefService::GetInt64(const std::string& path) const {
@@ -567,20 +582,18 @@ base::Value* PrefService::GetMutableUserPref(const std::string& path,
   }
 
   // Look for an existing preference in the user store. If it doesn't
-  // exist or isn't the correct type, create a new user preference.
+  // exist, create a new user preference.
   base::Value* value = nullptr;
-  if (!user_pref_store_->GetMutableValue(path, &value) ||
-      value->type() != type) {
-    if (type == base::Value::Type::DICTIONARY) {
-      value = new base::DictionaryValue;
-    } else if (type == base::Value::Type::LIST) {
-      value = new base::ListValue;
-    } else {
-      NOTREACHED();
-    }
-    user_pref_store_->SetValueSilently(path, base::WrapUnique(value),
-                                       GetWriteFlags(pref));
-  }
+  if (user_pref_store_->GetMutableValue(path, &value))
+    return value;
+
+  // If no user preference exists, clone default value.
+  const base::Value* default_value = nullptr;
+  pref_registry_->defaults()->GetValue(path, &default_value);
+  DCHECK_EQ(default_value->type(), type);
+  user_pref_store_->SetValueSilently(path, default_value->CreateDeepCopy(),
+                                     GetWriteFlags(pref));
+  user_pref_store_->GetMutableValue(path, &value);
   return value;
 }
 

@@ -5,18 +5,24 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ANDROID_SMS_CONNECTION_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_ANDROID_SMS_CONNECTION_MANAGER_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/chromeos/android_sms/connection_establisher.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
 
-using chromeos::multidevice_setup::MultiDeviceSetupClient;
+class Profile;
+
+namespace content {
+class ServiceWorkerContext;
+}  // namespace content
 
 namespace chromeos {
 
 namespace android_sms {
+
+class ConnectionEstablisher;
 
 // ConnectionManager checks to see when the user has no Android Messages for Web
 // pages open (in a web page or PWA) and notifies the corresponding
@@ -36,31 +42,67 @@ namespace android_sms {
 // connection as required. E.g., The service worker will not establish a
 // connection if it's is already connected to the Android Messages for Web page
 // or if a connection already exists.
-class ConnectionManager : public content::ServiceWorkerContextObserver,
-                          public MultiDeviceSetupClient::Observer {
+class ConnectionManager
+    : public content::ServiceWorkerContextObserver,
+      public AndroidSmsAppManager::Observer,
+      public multidevice_setup::MultiDeviceSetupClient::Observer {
  public:
   ConnectionManager(
-      content::ServiceWorkerContext* service_worker_context,
       std::unique_ptr<ConnectionEstablisher> connection_establisher,
-      MultiDeviceSetupClient* multidevice_setup_client);
+      Profile* profile,
+      AndroidSmsAppManager* android_sms_app_manager,
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client);
   ~ConnectionManager() override;
 
  private:
+  friend class ConnectionManagerTest;
+
+  // Thin wrapper for fetching ServiceWorkerContexts; overridden in tests.
+  class ServiceWorkerProvider {
+   public:
+    ServiceWorkerProvider();
+    virtual ~ServiceWorkerProvider();
+
+    virtual content::ServiceWorkerContext* Get(const GURL& url,
+                                               Profile* profile);
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProvider);
+  };
+
+  ConnectionManager(
+      std::unique_ptr<ConnectionEstablisher> connection_establisher,
+      Profile* profile,
+      AndroidSmsAppManager* android_sms_app_manager,
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      std::unique_ptr<ServiceWorkerProvider> service_worker_provider);
+
   // content::ServiceWorkerContextObserver:
   void OnVersionActivated(int64_t version_id, const GURL& scope) override;
   void OnVersionRedundant(int64_t version_id, const GURL& scope) override;
   void OnNoControllees(int64_t version_id, const GURL& scope) override;
 
-  // MultideviceSetupClient::Observer:
-  void OnFeatureStatesChanged(const MultiDeviceSetupClient::FeatureStatesMap&
-                                  feature_state_map) override;
+  // AndroidSmsAppManager::Observer:
+  void OnInstalledAppUrlChanged() override;
 
-  void UpdateAndroidSmsFeatureState(
-      multidevice_setup::mojom::FeatureState feature_state);
+  // multidevice_setup::MultideviceSetupClient::Observer:
+  void OnFeatureStatesChanged(
+      const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+          feature_state_map) override;
 
-  content::ServiceWorkerContext* service_worker_context_;
+  void UpdateConnectionStatus();
+  base::Optional<GURL> GenerateEnabledPwaUrl();
+  content::ServiceWorkerContext* GetCurrentServiceWorkerContext();
+
+  void SetServiceWorkerProviderForTesting(
+      std::unique_ptr<ServiceWorkerProvider> service_worker_provider);
+
   std::unique_ptr<ConnectionEstablisher> connection_establisher_;
-  MultiDeviceSetupClient* multidevice_setup_client_;
+  Profile* profile_;
+  AndroidSmsAppManager* android_sms_app_manager_;
+  multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
+
+  std::unique_ptr<ServiceWorkerProvider> service_worker_provider_;
 
   // Version ID of the Android Messages for Web service worker that's currently
   // active i.e., capable of handling messages and controlling pages.
@@ -70,7 +112,9 @@ class ConnectionManager : public content::ServiceWorkerContextObserver,
   // service worker.
   base::Optional<int64_t> prev_active_version_id_;
 
-  bool is_android_sms_enabled_ = false;
+  // The URL of the Android Messages PWA, if it is currently enabled. If the
+  // feature is not currently enabled, this field is null.
+  base::Optional<GURL> enabled_pwa_url_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };

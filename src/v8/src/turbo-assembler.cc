@@ -8,7 +8,6 @@
 #include "src/builtins/constants-table-builder.h"
 #include "src/isolate-data.h"
 #include "src/isolate-inl.h"
-#include "src/lsan.h"
 #include "src/snapshot/serializer-common.h"
 
 namespace v8 {
@@ -16,9 +15,9 @@ namespace internal {
 
 TurboAssemblerBase::TurboAssemblerBase(Isolate* isolate,
                                        const AssemblerOptions& options,
-                                       void* buffer, int buffer_size,
-                                       CodeObjectRequired create_code_object)
-    : Assembler(options, buffer, buffer_size), isolate_(isolate) {
+                                       CodeObjectRequired create_code_object,
+                                       std::unique_ptr<AssemblerBuffer> buffer)
+    : Assembler(options, std::move(buffer)), isolate_(isolate) {
   if (create_code_object == CodeObjectRequired::kYes) {
     code_object_ = Handle<HeapObject>::New(
         ReadOnlyRoots(isolate).self_reference_marker(), isolate);
@@ -48,7 +47,7 @@ void TurboAssemblerBase::IndirectLoadConstant(Register destination,
     LoadRootRelative(destination,
                      RootRegisterOffsetForBuiltinIndex(maybe_builtin_index_));
   } else {
-    CHECK(isolate()->ShouldLoadConstantsFromRootList());
+    CHECK(isolate()->IsGeneratingEmbeddedBuiltins());
     // Ensure the given object is in the builtins constants table and fetch its
     // index.
     BuiltinsConstantsTableBuilder* builder =
@@ -118,14 +117,9 @@ bool TurboAssemblerBase::IsAddressableThroughRootRegister(
 
 void TurboAssemblerBase::RecordCommentForOffHeapTrampoline(int builtin_index) {
   if (!FLAG_code_comments) return;
-  size_t len = strlen("-- Inlined Trampoline to  --") +
-               strlen(Builtins::name(builtin_index)) + 1;
-  Vector<char> buffer = Vector<char>::New(static_cast<int>(len));
-  char* buffer_start = buffer.start();
-  LSAN_IGNORE_OBJECT(buffer_start);
-  SNPrintF(buffer, "-- Inlined Trampoline to %s --",
-           Builtins::name(builtin_index));
-  RecordComment(buffer_start);
+  std::ostringstream str;
+  str << "-- Inlined Trampoline to " << Builtins::name(builtin_index) << " --";
+  RecordComment(str.str().c_str());
 }
 
 }  // namespace internal

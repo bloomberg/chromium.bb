@@ -4,18 +4,20 @@
 
 #include "content/renderer/media/stream/media_stream_renderer_factory_impl.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/stream/media_stream_video_renderer_sink.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/track_audio_renderer.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc/webrtc_audio_renderer.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace content {
 
@@ -48,12 +50,13 @@ MediaStreamRendererFactoryImpl::MediaStreamRendererFactoryImpl() {
 MediaStreamRendererFactoryImpl::~MediaStreamRendererFactoryImpl() {
 }
 
-scoped_refptr<MediaStreamVideoRenderer>
+scoped_refptr<blink::WebMediaStreamVideoRenderer>
 MediaStreamRendererFactoryImpl::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
-    const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
+    const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) {
   DCHECK(!web_stream.IsNull());
 
   DVLOG(1) << "MediaStreamRendererFactoryImpl::GetVideoRenderer stream:"
@@ -61,16 +64,17 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
       web_stream.VideoTracks();
-  if (video_tracks.IsEmpty() ||
-      !MediaStreamVideoTrack::GetTrack(video_tracks[0])) {
+  if (video_tracks.empty() ||
+      !blink::MediaStreamVideoTrack::GetTrack(video_tracks[0])) {
     return nullptr;
   }
 
   return new MediaStreamVideoRendererSink(video_tracks[0], error_cb, repaint_cb,
-                                          io_task_runner);
+                                          std::move(io_task_runner),
+                                          std::move(main_render_task_runner));
 }
 
-scoped_refptr<MediaStreamAudioRenderer>
+scoped_refptr<blink::WebMediaStreamAudioRenderer>
 MediaStreamRendererFactoryImpl::GetAudioRenderer(
     const blink::WebMediaStream& web_stream,
     int render_frame_id,
@@ -78,7 +82,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   DCHECK(!web_stream.IsNull());
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
       web_stream.AudioTracks();
-  if (audio_tracks.IsEmpty()) {
+  if (audio_tracks.empty()) {
     WebRtcLogMessage("No audio tracks in media stream (return null).");
     return nullptr;
   }
@@ -93,8 +97,8 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   // and mixes audio from all the tracks that belong to the media stream.
   // For now, we have separate renderers depending on if the first audio track
   // in the stream is local or remote.
-  MediaStreamAudioTrack* audio_track =
-      MediaStreamAudioTrack::From(audio_tracks[0]);
+  blink::MediaStreamAudioTrack* audio_track =
+      blink::MediaStreamAudioTrack::From(audio_tracks[0]);
   if (!audio_track) {
     // This can happen if the track was cloned.
     // TODO(tommi, perkj): Fix cloning of tracks to handle extra data too.

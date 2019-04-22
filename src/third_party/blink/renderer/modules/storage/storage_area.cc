@@ -113,8 +113,10 @@ String StorageArea::key(unsigned index, ExceptionState& exception_state) const {
     return cached_area_->GetKey(index);
   bool did_decrease_iterator = false;
   String result = storage_area_->Key(index, &did_decrease_iterator);
-  if (did_decrease_iterator)
-    UseCounter::Count(GetFrame(), WebFeature::kReverseIterateDOMStorage);
+  if (did_decrease_iterator) {
+    UseCounter::Count(GetFrame()->GetDocument(),
+                      WebFeature::kReverseIterateDOMStorage);
+  }
   return result;
 }
 
@@ -299,9 +301,9 @@ void StorageArea::DispatchLocalStorageEvent(
          frame = frame->Tree().TraverseNext()) {
       // Remote frames are cross-origin and do not need to be notified of
       // events.
-      if (!frame->IsLocalFrame())
+      auto* local_frame = DynamicTo<LocalFrame>(frame);
+      if (!local_frame)
         continue;
-      LocalFrame* local_frame = ToLocalFrame(frame);
       LocalDOMWindow* local_window = local_frame->DomWindow();
       StorageArea* storage =
           DOMWindowStorage::From(*local_window).OptionalLocalStorage();
@@ -336,9 +338,9 @@ void StorageArea::DispatchSessionStorageEvent(
   for (Frame* frame = page->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
     // Remote frames are cross-origin and do not need to be notified of events.
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
-    LocalFrame* local_frame = ToLocalFrame(frame);
     LocalDOMWindow* local_window = local_frame->DomWindow();
     StorageArea* storage =
         DOMWindowStorage::From(*local_window).OptionalSessionStorage();

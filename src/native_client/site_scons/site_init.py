@@ -11,6 +11,8 @@ of an environment, it should instead go in a tool in site_tools and be invoked
 for the target environment.
 """
 
+from __future__ import print_function
+
 import __builtin__
 import sys
 import SCons
@@ -56,8 +58,8 @@ def _HostPlatform():
   }
 
   if sys.platform not in platform_map:
-    print ('site_init.py warning: platform "%s" is not in platfom map.' %
-           sys.platform)
+    print('site_init.py warning: platform "%s" is not in platfom map.' %
+          sys.platform)
 
   return platform_map.get(sys.platform, sys.platform)
 
@@ -104,7 +106,7 @@ def BuildEnvironmentSConscripts(env):
       start = time.clock()
       ec.SConscript(c_script, exports={'env': ec}, duplicate=0)
       if SCons.Script.ARGUMENTS.get('verbose'):
-        print "[%5d] Loaded" %  (1000 * (time.clock() - start)), c_script
+        print("[%5d] Loaded" % (1000 * (time.clock() - start)), c_script)
 
     elif not ec.RelativePath('$MAIN_DIR', c_dir).startswith('..'):
       # The above expression means: if c_dir is $MAIN_DIR or anything
@@ -117,7 +119,7 @@ def BuildEnvironmentSConscripts(env):
       ec.SConscript(c_script, variant_dir='$OBJ_ROOT/' + c_dir,
                     exports={'env': ec}, duplicate=0)
       if SCons.Script.ARGUMENTS.get('verbose'):
-        print "[%5d] Loaded" %  (1000 * (time.clock() - start)), c_script
+        print("[%5d] Loaded" % (1000 * (time.clock() - start)), c_script)
     else:
       raise SCons.Errors.UserError(
           'Bad location for a SConscript. "%s" is not under '

@@ -30,6 +30,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_CONVOLVER_H_
 
 #include <memory>
+
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/audio/direct_convolver.h"
 #include "third_party/blink/renderer/platform/audio/fft_convolver.h"
@@ -46,7 +47,6 @@ class AudioChannel;
 
 class PLATFORM_EXPORT ReverbConvolver {
   USING_FAST_MALLOC(ReverbConvolver);
-  WTF_MAKE_NONCOPYABLE(ReverbConvolver);
 
  public:
   // maxFFTSize can be adjusted (from say 2048 to 32768) depending on how much
@@ -94,6 +94,8 @@ class PLATFORM_EXPORT ReverbConvolver {
 
   // Background thread and synchronization
   std::unique_ptr<Thread> background_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReverbConvolver);
 };
 
 }  // namespace blink

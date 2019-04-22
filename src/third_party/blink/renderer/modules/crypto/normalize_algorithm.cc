@@ -32,6 +32,9 @@
 
 #include <algorithm>
 #include <memory>
+
+#include "base/stl_util.h"
+#include "base/strings/char_traits.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
@@ -42,6 +45,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -86,7 +90,7 @@ const AlgorithmNameMapping kAlgorithmNameMappings[] = {
 // Reminder to update the table mapping names to IDs whenever adding a new
 // algorithm ID.
 static_assert(kWebCryptoAlgorithmIdLast + 1 ==
-                  arraysize(kAlgorithmNameMappings),
+                  base::size(kAlgorithmNameMappings),
               "algorithmNameMappings needs to be updated");
 
 #if DCHECK_IS_ON()
@@ -177,7 +181,7 @@ bool LookupAlgorithmIdByName(const String& algorithm_name,
                              WebCryptoAlgorithmId& id) {
   const AlgorithmNameMapping* begin = kAlgorithmNameMappings;
   const AlgorithmNameMapping* end =
-      kAlgorithmNameMappings + arraysize(kAlgorithmNameMappings);
+      kAlgorithmNameMappings + base::size(kAlgorithmNameMappings);
 
 #if DCHECK_IS_ON()
   DCHECK(VerifyAlgorithmNameMappings(begin, end));
@@ -217,6 +221,8 @@ void SetNotSupportedError(const String& message, AlgorithmError* error) {
 // parsing of the algorithm dictionary can be recursive and it is difficult to
 // tell what went wrong from a failure alone.
 class ErrorContext {
+  STACK_ALLOCATED();
+
  public:
   void Add(const char* message) { messages_.push_back(message); }
 
@@ -228,16 +234,18 @@ class ErrorContext {
       return String();
 
     StringBuilder result;
-    constexpr const char* separator = ": ";
+    constexpr const char* const separator = ": ";
+    constexpr wtf_size_t separator_length =
+        base::CharTraits<char>::length(separator);
 
-    wtf_size_t length = (messages_.size() - 1) * strlen(separator);
+    wtf_size_t length = (messages_.size() - 1) * separator_length;
     for (wtf_size_t i = 0; i < messages_.size(); ++i)
       length += strlen(messages_[i]);
     result.ReserveCapacity(length);
 
     for (wtf_size_t i = 0; i < messages_.size(); ++i) {
       if (i)
-        result.Append(separator, strlen(separator));
+        result.Append(separator, separator_length);
       result.Append(messages_[i],
                     static_cast<wtf_size_t>(strlen(messages_[i])));
     }
@@ -341,7 +349,7 @@ bool GetBigInteger(const Dictionary& raw,
   if (!GetUint8Array(raw, property_name, bytes, context, error))
     return false;
 
-  if (bytes.IsEmpty()) {
+  if (bytes.empty()) {
     // Empty BigIntegers represent 0 according to the spec
     bytes = WebVector<uint8_t>(static_cast<size_t>(1u));
     DCHECK_EQ(0u, bytes[0]);
@@ -772,7 +780,7 @@ const CurveNameMapping kCurveNameMappings[] = {
     {"P-521", kWebCryptoNamedCurveP521}};
 
 // Reminder to update curveNameMappings when adding a new curve.
-static_assert(kWebCryptoNamedCurveLast + 1 == arraysize(kCurveNameMappings),
+static_assert(kWebCryptoNamedCurveLast + 1 == base::size(kCurveNameMappings),
               "curveNameMappings needs to be updated");
 
 bool ParseNamedCurve(const Dictionary& raw,
@@ -786,7 +794,7 @@ bool ParseNamedCurve(const Dictionary& raw,
     return false;
   }
 
-  for (size_t i = 0; i < arraysize(kCurveNameMappings); ++i) {
+  for (size_t i = 0; i < base::size(kCurveNameMappings); ++i) {
     if (kCurveNameMappings[i].name == named_curve_string) {
       named_curve = kCurveNameMappings[i].value;
       return true;

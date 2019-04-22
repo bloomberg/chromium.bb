@@ -9,7 +9,11 @@
 Polymer({
   is: 'settings-basic-page',
 
-  behaviors: [MainPageBehavior, WebUIListenerBehavior],
+  behaviors: [
+    settings.MainPageBehavior,
+    settings.RouteObserverBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /** Preferences state. */
@@ -23,7 +27,7 @@ Polymer({
 
     showCrostini: Boolean,
 
-    showMultidevice: Boolean,
+    allowCrostini_: Boolean,
 
     havePlayStoreApp: Boolean,
     // </if>
@@ -38,7 +42,7 @@ Polymer({
 
     /**
      * Dictionary defining page visibility.
-     * @type {!GuestModePageVisibility}
+     * @type {!PageVisibility}
      */
     pageVisibility: {
       type: Object,
@@ -109,6 +113,9 @@ Polymer({
   attached: function() {
     this.currentRoute_ = settings.getCurrentRoute();
 
+    this.allowCrostini_ = loadTimeData.valueExists('allowCrostini') &&
+        loadTimeData.getBoolean('allowCrostini');
+
     this.addWebUIListener('change-password-visibility', visibility => {
       this.showChangePassword = visibility;
     });
@@ -127,26 +134,35 @@ Polymer({
   },
 
   /**
-   * Overrides MainPageBehaviorImpl from MainPageBehavior.
    * @param {!settings.Route} newRoute
    * @param {settings.Route} oldRoute
    */
   currentRouteChanged: function(newRoute, oldRoute) {
     this.currentRoute_ = newRoute;
 
-    if (settings.routes.ADVANCED && settings.routes.ADVANCED.contains(newRoute))
+    if (settings.routes.ADVANCED &&
+        settings.routes.ADVANCED.contains(newRoute)) {
       this.advancedToggleExpanded = true;
+    }
 
     if (oldRoute && oldRoute.isSubpage()) {
       // If the new route isn't the same expanded section, reset
       // hasExpandedSection_ for the next transition.
-      if (!newRoute.isSubpage() || newRoute.section != oldRoute.section)
+      if (!newRoute.isSubpage() || newRoute.section != oldRoute.section) {
         this.hasExpandedSection_ = false;
+      }
     } else {
       assert(!this.hasExpandedSection_);
     }
 
-    MainPageBehaviorImpl.currentRouteChanged.call(this, newRoute, oldRoute);
+    settings.MainPageBehavior.currentRouteChanged.call(
+        this, newRoute, oldRoute);
+  },
+
+  // Override settings.MainPageBehavior method.
+  containsRoute: function(route) {
+    return !route || settings.routes.BASIC.contains(route) ||
+        settings.routes.ADVANCED.contains(route);
   },
 
   /**
@@ -156,12 +172,6 @@ Polymer({
    */
   showPage_: function(visibility) {
     return visibility !== false;
-  },
-
-  focusSection: function() {
-    const section = this.getSection(settings.getCurrentRoute().section);
-    assert(section);
-    section.show();
   },
 
   /**
@@ -224,35 +234,30 @@ Polymer({
   },
 
   /**
+   * Returns true in case Android apps settings needs to be created. It is not
+   * created in case ARC++ is not allowed for the current profile.
    * @return {boolean}
    * @private
    */
-  shouldShowAndroidApps_: function() {
+  shouldCreateAndroidAppsSection_: function() {
     const visibility = /** @type {boolean|undefined} */ (
         this.get('pageVisibility.androidApps'));
-    if (!this.showAndroidApps || !this.showPage_(visibility)) {
-      return false;
-    }
-
-    // Section is invisible in case we don't have the Play Store app and
-    // settings app is not yet available.
-    if (!this.havePlayStoreApp &&
-        (!this.androidAppsInfo || !this.androidAppsInfo.settingsAppAvailable)) {
-      return false;
-    }
-
-    return true;
+    return this.showAndroidApps && this.showPage_(visibility);
   },
 
   /**
-   * @return {boolean} Whether the account supports the features managed in
-   * this section.
+   * Returns true in case Android apps settings should be shown. It is not
+   * shown in case we don't have the Play Store app and settings app is not
+   * yet available.
+   * @return {boolean}
    * @private
    */
-  canShowMultideviceSection_: function() {
-    const visibility = /** @type {boolean|undefined} */ (
-        this.get('pageVisibility.multidevice'));
-    return this.showMultidevice && this.showPage_(visibility);
+  shouldShowAndroidAppsSection_: function() {
+    if (this.havePlayStoreApp ||
+        (this.androidAppsInfo && this.androidAppsInfo.settingsAppAvailable)) {
+      return true;
+    }
+    return false;
   },
 
   /**
@@ -286,8 +291,9 @@ Polymer({
   },
 
   advancedToggleClicked_: function() {
-    if (this.advancedTogglingInProgress_)
+    if (this.advancedTogglingInProgress_) {
       return;
+    }
 
     this.advancedTogglingInProgress_ = true;
     const toggle = this.$$('#toggleContainer');

@@ -4,8 +4,11 @@
 
 #import "ios/web/public/test/fakes/test_web_client.h"
 
+#import <UIKit/UIKit.h>
+
 #include "base/logging.h"
-#include "ios/web/public/features.h"
+#include "base/task/post_task.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/test/test_url_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -16,10 +19,9 @@
 
 namespace web {
 
-TestWebClient::TestWebClient()
-    : last_cert_error_code_(0), last_cert_error_overridable_(true) {}
+TestWebClient::TestWebClient() = default;
 
-TestWebClient::~TestWebClient() {}
+TestWebClient::~TestWebClient() = default;
 
 void TestWebClient::AddAdditionalSchemes(Schemes* schemes) const {
   schemes->standard_schemes.push_back(kTestWebUIScheme);
@@ -31,6 +33,10 @@ bool TestWebClient::IsAppSpecificURL(const GURL& url) const {
   return url.SchemeIs(kTestWebUIScheme) ||
          url.SchemeIs(kTestNativeContentScheme) ||
          url.SchemeIs(kTestAppSpecificScheme);
+}
+
+base::string16 TestWebClient::GetPluginNotSupportedText() const {
+  return plugin_not_supported_text_;
 }
 
 std::string TestWebClient::GetUserAgent(UserAgentType type) const {
@@ -50,6 +56,10 @@ NSString* TestWebClient::GetDocumentStartScriptForMainFrame(
   return early_page_script_ ? early_page_script_ : @"";
 }
 
+void TestWebClient::SetPluginNotSupportedText(const base::string16& text) {
+  plugin_not_supported_text_ = text;
+}
+
 void TestWebClient::SetEarlyPageScript(NSString* page_script) {
   early_page_script_ = [page_script copy];
 }
@@ -66,7 +76,17 @@ void TestWebClient::AllowCertificateError(
   last_cert_error_request_url_ = request_url;
   last_cert_error_overridable_ = overridable;
 
-  callback.Run(false);
+  // Embedder should consult the user, so reply is asynchronous.
+  base::PostTaskWithTraits(FROM_HERE, {WebThread::UI},
+                           base::BindOnce(callback, allow_certificate_errors_));
+}
+
+void TestWebClient::SetAllowCertificateErrors(bool flag) {
+  allow_certificate_errors_ = flag;
+}
+
+UIView* TestWebClient::GetWindowedContainer() {
+  return UIApplication.sharedApplication.keyWindow.rootViewController.view;
 }
 
 }  // namespace web

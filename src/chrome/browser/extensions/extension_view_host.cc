@@ -12,10 +12,12 @@
 #include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/file_select_helper.h"
+#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/color_chooser.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -81,6 +83,10 @@ ExtensionViewHost::ExtensionViewHost(
       autofill::ChromeAutofillClient::FromWebContents(host_contents()),
       g_browser_process->GetApplicationLocale(),
       autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
+  if (performance_manager::PerformanceManager::GetInstance()) {
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        host_contents());
+  }
 }
 
 ExtensionViewHost::~ExtensionViewHost() {
@@ -107,10 +113,10 @@ void ExtensionViewHost::SetAssociatedWebContents(WebContents* web_contents) {
   }
 }
 
-void ExtensionViewHost::UnhandledKeyboardEvent(
+bool ExtensionViewHost::UnhandledKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  view_->HandleKeyboardEvent(source, event);
+  return view_->HandleKeyboardEvent(source, event);
 }
 
 // ExtensionHost overrides:
@@ -203,8 +209,7 @@ bool ExtensionViewHost::HandleKeyboardEvent(
       return true;
     }
   }
-  UnhandledKeyboardEvent(source, event);
-  return true;
+  return UnhandledKeyboardEvent(source, event);
 }
 
 bool ExtensionViewHost::PreHandleGestureEvent(

@@ -10,7 +10,8 @@
 namespace chromeos {
 
 // A fake implementation of ArcOemCryptoClient.
-class CHROMEOS_EXPORT FakeArcOemCryptoClient : public ArcOemCryptoClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeArcOemCryptoClient
+    : public ArcOemCryptoClient {
  public:
   FakeArcOemCryptoClient();
   ~FakeArcOemCryptoClient() override;

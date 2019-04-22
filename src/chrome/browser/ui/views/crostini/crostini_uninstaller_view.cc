@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
@@ -86,7 +87,7 @@ bool CrostiniUninstallerView::Accept() {
 
   // Kick off the Crostini Remove sequence.
   crostini::CrostiniManager::GetForProfile(profile_)->RemoveCrostini(
-      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
+      crostini::kCrostiniDefaultVmName,
       base::BindOnce(&CrostiniUninstallerView::UninstallCrostiniFinished,
                      weak_ptr_factory_.GetWeakPtr()));
 

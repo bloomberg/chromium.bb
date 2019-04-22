@@ -15,20 +15,13 @@
 #include "tests/unittests/validation/ValidationTest.h"
 
 #include "common/Constants.h"
+#include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/DawnHelpers.h"
 
 class RenderPipelineValidationTest : public ValidationTest {
     protected:
         void SetUp() override {
             ValidationTest::SetUp();
-
-            renderpass = CreateSimpleRenderPass();
-
-            dawn::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, nullptr);
-
-            inputState = device.CreateInputStateBuilder().GetResult();
-
-            blendState = device.CreateBlendStateBuilder().GetResult();
 
             vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
                 #version 450
@@ -45,167 +38,209 @@ class RenderPipelineValidationTest : public ValidationTest {
                 })");
         }
 
-        dawn::RenderPipelineBuilder& AddDefaultStates(dawn::RenderPipelineBuilder&& builder) {
-            builder.SetColorAttachmentFormat(0, dawn::TextureFormat::R8G8B8A8Unorm)
-                .SetLayout(pipelineLayout)
-                .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-                .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-                .SetPrimitiveTopology(dawn::PrimitiveTopology::TriangleList);
-            return builder;
-        }
-
-        dawn::RenderPassDescriptor renderpass;
         dawn::ShaderModule vsModule;
         dawn::ShaderModule fsModule;
-        dawn::InputState inputState;
-        dawn::BlendState blendState;
-        dawn::PipelineLayout pipelineLayout;
 };
 
 // Test cases where creation should succeed
 TEST_F(RenderPipelineValidationTest, CreationSuccess) {
-    AddDefaultStates(AssertWillBeSuccess(device.CreateRenderPipelineBuilder()))
-        .GetResult();
+    utils::ComboRenderPipelineDescriptor descriptor(device);
+    descriptor.cVertexStage.module = vsModule;
+    descriptor.cFragmentStage.module = fsModule;
 
-    AddDefaultStates(AssertWillBeSuccess(device.CreateRenderPipelineBuilder()))
-        .SetInputState(inputState)
-        .GetResult();
-
-    AddDefaultStates(AssertWillBeSuccess(device.CreateRenderPipelineBuilder()))
-        .SetColorAttachmentBlendState(0, blendState)
-        .GetResult();
+    device.CreateRenderPipeline(&descriptor);
 }
 
-// Test creation failure when properties are missing
-TEST_F(RenderPipelineValidationTest, CreationMissingProperty) {
-    // Vertex stage not set
-    {
-        AssertWillBeError(device.CreateRenderPipelineBuilder())
-            .SetColorAttachmentFormat(0, dawn::TextureFormat::R8G8B8A8Unorm)
-            .SetLayout(pipelineLayout)
-            .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-            .SetPrimitiveTopology(dawn::PrimitiveTopology::TriangleList)
-            .GetResult();
-    }
-
-    // Fragment stage not set
-    {
-        AssertWillBeError(device.CreateRenderPipelineBuilder())
-            .SetColorAttachmentFormat(0, dawn::TextureFormat::R8G8B8A8Unorm)
-            .SetLayout(pipelineLayout)
-            .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-            .SetPrimitiveTopology(dawn::PrimitiveTopology::TriangleList)
-            .GetResult();
-    }
-
-    // No attachment set
-    {
-        AssertWillBeError(device.CreateRenderPipelineBuilder())
-            .SetLayout(pipelineLayout)
-            .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-            .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-            .SetPrimitiveTopology(dawn::PrimitiveTopology::TriangleList)
-            .GetResult();
-    }
-}
-
-TEST_F(RenderPipelineValidationTest, BlendState) {
-    // Fails because blend state is set on a nonexistent color attachment
+TEST_F(RenderPipelineValidationTest, ColorState) {
     {
         // This one succeeds because attachment 0 is the color attachment
-        AssertWillBeSuccess(device.CreateRenderPipelineBuilder())
-            .SetColorAttachmentFormat(0, dawn::TextureFormat::R8G8B8A8Unorm)
-            .SetLayout(pipelineLayout)
-            .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-            .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-            .SetPrimitiveTopology(dawn::PrimitiveTopology::TriangleList)
-            .SetColorAttachmentBlendState(0, blendState)
-            .GetResult();
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.cVertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.colorStateCount = 1;
 
-        // This fails because attachment 1 is not one of the color attachments
-        AssertWillBeError(device.CreateRenderPipelineBuilder())
-            .SetColorAttachmentFormat(0, dawn::TextureFormat::R8G8B8A8Unorm)
-            .SetLayout(pipelineLayout)
-            .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-            .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-            .SetPrimitiveTopology(dawn::PrimitiveTopology::TriangleList)
-            .SetColorAttachmentBlendState(1, blendState)
-            .GetResult();
+        device.CreateRenderPipeline(&descriptor);
     }
 
-    // Fails because color attachment is out of bounds
-    {
-        AddDefaultStates(AssertWillBeError(device.CreateRenderPipelineBuilder()))
-            .SetColorAttachmentBlendState(kMaxColorAttachments, blendState)
-            .GetResult();
-    }
+    {  // Fail because lack of color states (and depth/stencil state)
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.cVertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.colorStateCount = 0;
 
-    // Fails because color attachment blend state is set twice
-    {
-        AddDefaultStates(AssertWillBeError(device.CreateRenderPipelineBuilder()))
-            .SetColorAttachmentBlendState(0, blendState)
-            .SetColorAttachmentBlendState(0, blendState)
-            .GetResult();
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
     }
 }
 
-// TODO(enga@google.com): These should be added to the test above when validation is implemented
-TEST_F(RenderPipelineValidationTest, DISABLED_TodoCreationMissingProperty) {
-    // Fails because pipeline layout is not set
+/// Tests that the sample count of the render pipeline must be valid.
+TEST_F(RenderPipelineValidationTest, SampleCount) {
     {
-        AssertWillBeError(device.CreateRenderPipelineBuilder())
-            .SetColorAttachmentFormat(0, dawn::TextureFormat::R8G8B8A8Unorm)
-            .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-            .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-            .SetPrimitiveTopology(dawn::PrimitiveTopology::TriangleList)
-            .GetResult();
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.cVertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.sampleCount = 4;
+
+        device.CreateRenderPipeline(&descriptor);
     }
 
-    // Fails because primitive topology is not set
     {
-        AssertWillBeError(device.CreateRenderPipelineBuilder())
-            .SetColorAttachmentFormat(0, dawn::TextureFormat::R8G8B8A8Unorm)
-            .SetLayout(pipelineLayout)
-            .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-            .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-            .GetResult();
+        utils::ComboRenderPipelineDescriptor descriptor(device);
+        descriptor.cVertexStage.module = vsModule;
+        descriptor.cFragmentStage.module = fsModule;
+        descriptor.sampleCount = 3;
+
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
     }
 }
 
-// Test creation failure when specifying properties multiple times
-TEST_F(RenderPipelineValidationTest, DISABLED_CreationDuplicates) {
-    // Fails because input state is set twice
+// Tests that the sample count of the render pipeline must be equal to the one of every attachments
+// in the render pass.
+TEST_F(RenderPipelineValidationTest, SampleCountCompatibilityWithRenderPass) {
+    constexpr uint32_t kMultisampledCount = 4;
+    constexpr dawn::TextureFormat kColorFormat = dawn::TextureFormat::R8G8B8A8Unorm;
+    constexpr dawn::TextureFormat kDepthStencilFormat = dawn::TextureFormat::D32FloatS8Uint;
+
+    dawn::TextureDescriptor baseTextureDescriptor;
+    baseTextureDescriptor.size.width = 4;
+    baseTextureDescriptor.size.height = 4;
+    baseTextureDescriptor.size.depth = 1;
+    baseTextureDescriptor.arrayLayerCount = 1;
+    baseTextureDescriptor.mipLevelCount = 1;
+    baseTextureDescriptor.dimension = dawn::TextureDimension::e2D;
+    baseTextureDescriptor.usage = dawn::TextureUsageBit::OutputAttachment;
+
+    utils::ComboRenderPipelineDescriptor nonMultisampledPipelineDescriptor(device);
+    nonMultisampledPipelineDescriptor.sampleCount = 1;
+    nonMultisampledPipelineDescriptor.cVertexStage.module = vsModule;
+    nonMultisampledPipelineDescriptor.cFragmentStage.module = fsModule;
+    dawn::RenderPipeline nonMultisampledPipeline =
+        device.CreateRenderPipeline(&nonMultisampledPipelineDescriptor);
+
+    nonMultisampledPipelineDescriptor.colorStateCount = 0;
+    nonMultisampledPipelineDescriptor.depthStencilState =
+        &nonMultisampledPipelineDescriptor.cDepthStencilState;
+    dawn::RenderPipeline nonMultisampledPipelineWithDepthStencilOnly =
+        device.CreateRenderPipeline(&nonMultisampledPipelineDescriptor);
+
+    utils::ComboRenderPipelineDescriptor multisampledPipelineDescriptor(device);
+    multisampledPipelineDescriptor.sampleCount = kMultisampledCount;
+    multisampledPipelineDescriptor.cVertexStage.module = vsModule;
+    multisampledPipelineDescriptor.cFragmentStage.module = fsModule;
+    dawn::RenderPipeline multisampledPipeline =
+        device.CreateRenderPipeline(&multisampledPipelineDescriptor);
+
+    multisampledPipelineDescriptor.colorStateCount = 0;
+    multisampledPipelineDescriptor.depthStencilState =
+        &multisampledPipelineDescriptor.cDepthStencilState;
+    dawn::RenderPipeline multisampledPipelineWithDepthStencilOnly =
+        device.CreateRenderPipeline(&multisampledPipelineDescriptor);
+
+    // It is not allowed to use multisampled render pass and non-multisampled render pipeline.
     {
-        AddDefaultStates(AssertWillBeError(device.CreateRenderPipelineBuilder()))
-            .SetInputState(inputState)
-            .GetResult();
+        {
+            dawn::TextureDescriptor textureDescriptor = baseTextureDescriptor;
+            textureDescriptor.format = kColorFormat;
+            textureDescriptor.sampleCount = kMultisampledCount;
+            dawn::Texture multisampledColorTexture = device.CreateTexture(&textureDescriptor);
+            utils::ComboRenderPassDescriptor renderPassDescriptor(
+                {multisampledColorTexture.CreateDefaultView()});
+
+            dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+            dawn::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
+            renderPass.SetPipeline(nonMultisampledPipeline);
+            renderPass.EndPass();
+
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+
+        {
+            dawn::TextureDescriptor textureDescriptor = baseTextureDescriptor;
+            textureDescriptor.sampleCount = kMultisampledCount;
+            textureDescriptor.format = kDepthStencilFormat;
+            dawn::Texture multisampledDepthStencilTexture =
+                device.CreateTexture(&textureDescriptor);
+            utils::ComboRenderPassDescriptor renderPassDescriptor(
+                {}, multisampledDepthStencilTexture.CreateDefaultView());
+
+            dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+            dawn::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
+            renderPass.SetPipeline(nonMultisampledPipelineWithDepthStencilOnly);
+            renderPass.EndPass();
+
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
     }
 
-    // Fails because primitive topology is set twice
+    // It is allowed to use multisampled render pass and multisampled render pipeline.
     {
-        AddDefaultStates(AssertWillBeError(device.CreateRenderPipelineBuilder()))
-            .SetPrimitiveTopology(dawn::PrimitiveTopology::TriangleList)
-            .GetResult();
+        {
+            dawn::TextureDescriptor textureDescriptor = baseTextureDescriptor;
+            textureDescriptor.format = kColorFormat;
+            textureDescriptor.sampleCount = kMultisampledCount;
+            dawn::Texture multisampledColorTexture = device.CreateTexture(&textureDescriptor);
+            utils::ComboRenderPassDescriptor renderPassDescriptor(
+                {multisampledColorTexture.CreateDefaultView()});
+
+            dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+            dawn::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
+            renderPass.SetPipeline(multisampledPipeline);
+            renderPass.EndPass();
+
+            encoder.Finish();
+        }
+
+        {
+            dawn::TextureDescriptor textureDescriptor = baseTextureDescriptor;
+            textureDescriptor.sampleCount = kMultisampledCount;
+            textureDescriptor.format = kDepthStencilFormat;
+            dawn::Texture multisampledDepthStencilTexture =
+                device.CreateTexture(&textureDescriptor);
+            utils::ComboRenderPassDescriptor renderPassDescriptor(
+                {}, multisampledDepthStencilTexture.CreateDefaultView());
+
+            dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+            dawn::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
+            renderPass.SetPipeline(multisampledPipelineWithDepthStencilOnly);
+            renderPass.EndPass();
+
+            encoder.Finish();
+        }
     }
 
-    // Fails because vertex stage is set twice
+    // It is not allowed to use non-multisampled render pass and multisampled render pipeline.
     {
-        AddDefaultStates(AssertWillBeError(device.CreateRenderPipelineBuilder()))
-            .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-            .GetResult();
-    }
+        {
+            dawn::TextureDescriptor textureDescriptor = baseTextureDescriptor;
+            textureDescriptor.format = kColorFormat;
+            textureDescriptor.sampleCount = 1;
+            dawn::Texture nonMultisampledColorTexture = device.CreateTexture(&textureDescriptor);
+            utils::ComboRenderPassDescriptor nonMultisampledRenderPassDescriptor(
+                { nonMultisampledColorTexture.CreateDefaultView() });
 
-    // Fails because fragment stage is set twice
-    {
-        AddDefaultStates(AssertWillBeError(device.CreateRenderPipelineBuilder()))
-            .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-            .GetResult();
-    }
+            dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+            dawn::RenderPassEncoder renderPass =
+                encoder.BeginRenderPass(&nonMultisampledRenderPassDescriptor);
+            renderPass.SetPipeline(multisampledPipeline);
+            renderPass.EndPass();
 
-    // Fails because the layout is set twice
-    {
-        AddDefaultStates(AssertWillBeError(device.CreateRenderPipelineBuilder()))
-            .SetLayout(pipelineLayout)
-            .GetResult();
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
+
+        {
+            dawn::TextureDescriptor textureDescriptor = baseTextureDescriptor;
+            textureDescriptor.sampleCount = 1;
+            textureDescriptor.format = kDepthStencilFormat;
+            dawn::Texture multisampledDepthStencilTexture =
+                device.CreateTexture(&textureDescriptor);
+            utils::ComboRenderPassDescriptor renderPassDescriptor(
+                {}, multisampledDepthStencilTexture.CreateDefaultView());
+
+            dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+            dawn::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
+            renderPass.SetPipeline(multisampledPipelineWithDepthStencilOnly);
+            renderPass.EndPass();
+
+            ASSERT_DEVICE_ERROR(encoder.Finish());
+        }
     }
 }

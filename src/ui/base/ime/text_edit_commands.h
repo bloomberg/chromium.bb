@@ -9,7 +9,8 @@ namespace ui {
 
 // Text editing commands for use by ui::TextInputClient.
 enum class TextEditCommand {
-  DELETE_BACKWARD,
+  FIRST_COMMAND = 0,
+  DELETE_BACKWARD = FIRST_COMMAND,
   DELETE_FORWARD,
   DELETE_TO_BEGINNING_OF_LINE,
   DELETE_TO_BEGINNING_OF_PARAGRAPH,
@@ -66,7 +67,10 @@ enum class TextEditCommand {
   INSERT_TEXT,
   SET_MARK,
   UNSELECT,
-  INVALID_COMMAND,
+
+  // LAST_COMMAND must be the last one. Add new command before it.
+  LAST_COMMAND,
+  INVALID_COMMAND = LAST_COMMAND,
 };
 
 }  // namespace ui

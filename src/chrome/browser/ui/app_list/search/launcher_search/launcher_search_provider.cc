@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service.h"
 
@@ -25,6 +27,9 @@ LauncherSearchProvider::LauncherSearchProvider(Profile* profile)
 }
 
 LauncherSearchProvider::~LauncherSearchProvider() {
+  Service* service = Service::Get(profile_);
+  if (service->IsQueryRunning())
+    service->OnQueryEnded();
 }
 
 void LauncherSearchProvider::Start(const base::string16& query) {
@@ -54,6 +59,10 @@ void LauncherSearchProvider::SetSearchResults(
     std::vector<std::unique_ptr<LauncherSearchResult>> results) {
   DCHECK(Service::Get(profile_)->IsQueryRunning());
 
+  // Record file search query latency metrics.
+  UMA_HISTOGRAM_TIMES("Apps.AppList.LauncherSearchProvider.QueryTime",
+                      base::TimeTicks::Now() - query_start_time_);
+
   // Add this extension's results (erasing any existing results).
   extension_results_[extension_id] = std::move(results);
 
@@ -80,6 +89,7 @@ void LauncherSearchProvider::DelayQuery(const base::Closure& closure) {
 
 void LauncherSearchProvider::StartInternal(const base::string16& query) {
   if (!query.empty()) {
+    query_start_time_ = base::TimeTicks::Now();
     Service::Get(profile_)->OnQueryStarted(this, base::UTF16ToUTF8(query),
                                            kLauncherSearchProviderMaxResults);
   }

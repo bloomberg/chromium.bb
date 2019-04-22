@@ -17,20 +17,20 @@ namespace vr {
 // Tests that non-focused tabs cannot get pose information from WebVR/WebXR.
 void TestPoseDataUnfocusedTabImpl(WebXrVrBrowserTestBase* t,
                                   std::string filename) {
-  t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
+  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
   t->ExecuteStepAndWait("stepCheckFrameDataWhileFocusedTab()");
+  auto* first_tab_web_contents = t->GetCurrentWebContents();
   chrome::AddTabAt(t->browser(), GURL(url::kAboutBlankURL),
                    -1 /* index, append to end */, true /* foreground */);
-  t->ExecuteStepAndWait("stepCheckFrameDataWhileNonFocusedTab()");
-  t->EndTest();
+  t->ExecuteStepAndWait("stepCheckFrameDataWhileNonFocusedTab()",
+                        first_tab_web_contents);
+  t->EndTest(first_tab_web_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
-                       REQUIRES_GPU(TestPoseDataUnfocusedTab)) {
+IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard, TestPoseDataUnfocusedTab) {
   TestPoseDataUnfocusedTabImpl(this, "test_pose_data_unfocused_tab");
 }
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       REQUIRES_GPU(TestPoseDataUnfocusedTab)) {
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestPoseDataUnfocusedTab) {
   TestPoseDataUnfocusedTabImpl(this, "webxr_test_pose_data_unfocused_tab");
 }
 

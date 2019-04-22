@@ -8,8 +8,8 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -23,13 +23,13 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "content/public/browser/web_contents.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "url/url_constants.h"
 
 namespace {
 
-#if !defined(OS_CHROMEOS)
 // Returns the sign-in reason for |mode|.
 signin_metrics::Reason GetSigninReasonFromMode(profiles::BubbleViewMode mode) {
   DCHECK(SigninViewController::ShouldShowSigninForMode(mode));
@@ -68,32 +68,32 @@ void ShowTabOverwritingNTP(Browser* browser, const GURL& url) {
 }
 
 // Returns the index of an existing re-usable Dice signin tab, or -1.
-int FindDiceSigninTab(TabStripModel* tab_strip) {
+int FindDiceSigninTab(TabStripModel* tab_strip, const GURL& signin_url) {
   int tab_count = tab_strip->count();
   for (int tab_index = 0; tab_index < tab_count; ++tab_index) {
     content::WebContents* web_contents = tab_strip->GetWebContentsAt(tab_index);
     DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents);
-    if (tab_helper && tab_helper->IsChromeSigninPage())
+    if (tab_helper && tab_helper->signin_url() == signin_url &&
+        tab_helper->IsChromeSigninPage()) {
       return tab_index;
+    }
   }
   return -1;
 }
 
 // Returns the promo action to be used when signing with a new account.
 signin_metrics::PromoAction GetPromoActionForNewAccount(
-    AccountTrackerService* account_tracker,
+    identity::IdentityManager* identity_manager,
     signin::AccountConsistencyMethod account_consistency) {
   if (account_consistency != signin::AccountConsistencyMethod::kDice)
     return signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_PRE_DICE;
 
-  return account_tracker->GetAccounts().size() > 0
+  return !identity_manager->GetAccountsWithRefreshTokens().empty()
              ? signin_metrics::PromoAction::
                    PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT
              : signin_metrics::PromoAction::
                    PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT;
 }
-
-#endif
 
 }  // namespace
 
@@ -117,47 +117,19 @@ void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
                                       const GURL& redirect_url) {
   DCHECK(ShouldShowSigninForMode(mode));
 
-#if defined(OS_CHROMEOS)
-  ShowModalSigninDialog(mode, browser, access_point);
-#else   // defined(OS_CHROMEOS)
   Profile* profile = browser->profile();
   signin::AccountConsistencyMethod account_consistency =
       AccountConsistencyModeManager::GetMethodForProfile(profile);
-  if (signin::DiceMethodGreaterOrEqual(
-          account_consistency,
-          signin::AccountConsistencyMethod::kDiceMigration)) {
-    std::string email;
-    if (GetSigninReasonFromMode(mode) ==
-        signin_metrics::Reason::REASON_REAUTHENTICATION) {
-      auto* manager = IdentityManagerFactory::GetForProfile(profile);
-      email = manager->GetPrimaryAccountInfo().email;
-    }
-    signin_metrics::PromoAction promo_action = GetPromoActionForNewAccount(
-        AccountTrackerServiceFactory::GetForProfile(profile),
-        account_consistency);
-    ShowDiceSigninTab(mode, browser, access_point, promo_action, email,
-                      redirect_url);
-  } else {
-    ShowModalSigninDialog(mode, browser, access_point);
+  std::string email;
+  signin_metrics::Reason signin_reason = GetSigninReasonFromMode(mode);
+  if (signin_reason == signin_metrics::Reason::REASON_REAUTHENTICATION) {
+    auto* manager = IdentityManagerFactory::GetForProfile(profile);
+    email = manager->GetPrimaryAccountInfo().email;
   }
-#endif  // defined(OS_CHROMEOS)
-}
-
-void SigninViewController::ShowModalSigninDialog(
-    profiles::BubbleViewMode mode,
-    Browser* browser,
-    signin_metrics::AccessPoint access_point) {
-  CloseModalSignin();
-  // The delegate will delete itself on request of the UI code when the widget
-  // is closed.
-  delegate_ = SigninViewControllerDelegate::CreateModalSigninDelegate(
-      this, mode, browser, access_point);
-
-  // When the user has a proxy that requires HTTP auth, loading the sign-in
-  // dialog can trigger the HTTP auth dialog.  This means the signin view
-  // controller needs a dialog manager to handle any such dialog.
-  delegate_->AttachDialogManager();
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGN_IN);
+  signin_metrics::PromoAction promo_action = GetPromoActionForNewAccount(
+      IdentityManagerFactory::GetForProfile(profile), account_consistency);
+  ShowDiceSigninTab(browser, signin_reason, access_point, promo_action, email,
+                    redirect_url);
 }
 
 void SigninViewController::ShowModalSyncConfirmationDialog(Browser* browser) {
@@ -195,25 +167,40 @@ void SigninViewController::SetModalSigninHeight(int height) {
     delegate_->ResizeNativeView(height);
 }
 
-void SigninViewController::PerformNavigation() {
-  if (delegate_)
-    delegate_->PerformNavigation();
-}
-
 void SigninViewController::ResetModalSigninDelegate() {
   delegate_ = nullptr;
 }
 
-#if !defined(OS_CHROMEOS)
 void SigninViewController::ShowDiceSigninTab(
-    profiles::BubbleViewMode mode,
     Browser* browser,
+    signin_metrics::Reason signin_reason,
     signin_metrics::AccessPoint access_point,
     signin_metrics::PromoAction promo_action,
-    const std::string& email,
+    const std::string& email_hint,
     const GURL& redirect_url) {
-  signin_metrics::Reason signin_reason = GetSigninReasonFromMode(mode);
-  GURL signin_url = signin::GetSigninURLForDice(browser->profile(), email);
+  Profile* profile = browser->profile();
+  DCHECK(signin::DiceMethodGreaterOrEqual(
+      AccountConsistencyModeManager::GetMethodForProfile(profile),
+      signin::AccountConsistencyMethod::kDiceMigration));
+
+  // If redirect_url is empty, we would like to redirect to the NTP, but it's
+  // not possible through the continue_url, because Gaia cannot redirect to
+  // chrome:// URLs. Use the google base URL instead here, and the DiceTabHelper
+  // may do the redirect to the NTP later.
+  // Note: Gaia rejects some continue URLs as invalid and responds with HTTP
+  // error 400. This seems to happen in particular if the continue URL is not a
+  // Google-owned domain. Chrome cannot enforce that only valid URLs are used,
+  // because the set of valid URLs is not specified.
+  std::string continue_url =
+      (redirect_url.is_empty() || !redirect_url.SchemeIsHTTPOrHTTPS())
+          ? UIThreadSearchTermsData(profile).GoogleBaseURLValue()
+          : redirect_url.spec();
+
+  GURL signin_url =
+      signin_reason == signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT
+          ? signin::GetAddAccountURLForDice(email_hint, continue_url)
+          : signin::GetChromeSyncURLForDice(email_hint, continue_url);
+
   content::WebContents* active_contents = nullptr;
   if (access_point == signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE) {
     active_contents = browser->tab_strip_model()->GetActiveWebContents();
@@ -224,13 +211,14 @@ void SigninViewController::ShowDiceSigninTab(
   } else {
     // Check if there is already a signin-tab open.
     TabStripModel* tab_strip = browser->tab_strip_model();
-    int dice_tab_index = FindDiceSigninTab(tab_strip);
+    int dice_tab_index = FindDiceSigninTab(tab_strip, signin_url);
     if (dice_tab_index != -1) {
       if (access_point !=
           signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS) {
         // Extensions do not activate the tab to prevent misbehaving
         // extensions to keep focusing the signin tab.
-        tab_strip->ActivateTabAt(dice_tab_index, true /* user_gesture */);
+        tab_strip->ActivateTabAt(dice_tab_index,
+                                 {TabStripModel::GestureType::kOther});
       }
       // Do not create a new signin tab, because there is already one.
       return;
@@ -244,13 +232,43 @@ void SigninViewController::ShowDiceSigninTab(
   DCHECK_EQ(signin_url, active_contents->GetVisibleURL());
   DiceTabHelper::CreateForWebContents(active_contents);
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(active_contents);
+
+  // Use |redirect_url| and not |continue_url|, so that the DiceTabHelper can
+  // redirect to chrome:// URLs such as the NTP.
   tab_helper->InitializeSigninFlow(signin_url, access_point, signin_reason,
                                    promo_action, redirect_url);
 }
-#endif  // !defined(OS_CHROMEOS)
+
+void SigninViewController::ShowDiceEnableSyncTab(
+    Browser* browser,
+    signin_metrics::AccessPoint access_point,
+    signin_metrics::PromoAction promo_action,
+    const std::string& email_hint) {
+  signin_metrics::Reason reason =
+      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT;
+  std::string email_to_use = email_hint;
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser->profile());
+  if (identity_manager->HasPrimaryAccount()) {
+    reason = signin_metrics::Reason::REASON_REAUTHENTICATION;
+    email_to_use = identity_manager->GetPrimaryAccountInfo().email;
+    DCHECK(email_hint.empty() || gaia::AreEmailsSame(email_hint, email_to_use));
+  }
+  ShowDiceSigninTab(browser, reason, access_point, promo_action, email_to_use);
+}
+
+void SigninViewController::ShowDiceAddAccountTab(
+    Browser* browser,
+    signin_metrics::AccessPoint access_point,
+    const std::string& email_hint) {
+  ShowDiceSigninTab(
+      browser, signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT,
+      access_point, signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
+      email_hint);
+}
 
 content::WebContents*
 SigninViewController::GetModalDialogWebContentsForTesting() {
   DCHECK(delegate_);
-  return delegate_->web_contents();
+  return delegate_->GetWebContents();
 }

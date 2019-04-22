@@ -44,6 +44,8 @@
 
 #include "net/cookies/canonical_cookie.h"
 
+#include <utility>
+
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -189,17 +191,27 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
     const GURL& url,
     const std::string& cookie_line,
     const base::Time& creation_time,
-    const CookieOptions& options) {
+    const CookieOptions& options,
+    CookieInclusionStatus* status) {
+  // Put a pointer on the stack so the rest of the function can assign to it if
+  // the default nullptr is passed in.
+  CookieInclusionStatus blank_status;
+  if (status == nullptr) {
+    status = &blank_status;
+  }
+
   ParsedCookie parsed_cookie(cookie_line);
 
   if (!parsed_cookie.IsValid()) {
     VLOG(net::cookie_util::kVlogSetCookies) << "WARNING: Couldn't parse cookie";
+    *status = CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE;
     return nullptr;
   }
 
   if (options.exclude_httponly() && parsed_cookie.IsHttpOnly()) {
     VLOG(net::cookie_util::kVlogSetCookies)
         << "Create() is not creating a httponly cookie";
+    *status = CookieInclusionStatus::EXCLUDE_HTTP_ONLY;
     return nullptr;
   }
 
@@ -207,6 +219,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   if (!GetCookieDomain(url, parsed_cookie, &cookie_domain)) {
     VLOG(net::cookie_util::kVlogSetCookies)
         << "Create() failed to get a cookie domain";
+    *status = CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN;
     return nullptr;
   }
 
@@ -217,6 +230,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   if (parsed_cookie.IsSecure() && !url.SchemeIsCryptographic()) {
     VLOG(net::cookie_util::kVlogSetCookies)
         << "Create() is trying to create a secure cookie from an insecure URL";
+    *status = CookieInclusionStatus::EXCLUDE_SECURE_ONLY;
     return nullptr;
   }
 
@@ -238,6 +252,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   if (!is_cookie_valid) {
     VLOG(net::cookie_util::kVlogSetCookies)
         << "Create() failed because the cookie violated prefix rules.";
+    *status = CookieInclusionStatus::EXCLUDE_INVALID_PREFIX;
     return nullptr;
   }
 
@@ -247,6 +262,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
       parsed_cookie.IsHttpOnly(), parsed_cookie.SameSite(),
       parsed_cookie.Priority()));
   DCHECK(cc->IsCanonical());
+  *status = CookieInclusionStatus::INCLUDE;
   return cc;
 }
 
@@ -349,41 +365,42 @@ bool CanonicalCookie::IsDomainMatch(const std::string& host) const {
   return cookie_util::IsDomainMatch(domain_, host);
 }
 
-bool CanonicalCookie::IncludeForRequestURL(const GURL& url,
-                                           const CookieOptions& options) const {
+CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
+    const GURL& url,
+    const CookieOptions& options) const {
   // Filter out HttpOnly cookies, per options.
   if (options.exclude_httponly() && IsHttpOnly())
-    return false;
+    return CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY;
   // Secure cookies should not be included in requests for URLs with an
   // insecure scheme.
   if (IsSecure() && !url.SchemeIsCryptographic())
-    return false;
+    return CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY;
   // Don't include cookies for requests that don't apply to the cookie domain.
   if (!IsDomainMatch(url.host()))
-    return false;
+    return CanonicalCookie::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH;
   // Don't include cookies for requests with a url path that does not path
   // match the cookie-path.
   if (!IsOnPath(url.path()))
-    return false;
+    return CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH;
   // Don't include same-site cookies for cross-site requests.
   switch (SameSite()) {
     case CookieSameSite::STRICT_MODE:
-      if (options.same_site_cookie_mode() !=
-          CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX) {
-        return false;
+      if (options.same_site_cookie_context() <
+          CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT) {
+        return CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT;
       }
       break;
     case CookieSameSite::LAX_MODE:
-      if (options.same_site_cookie_mode() ==
-          CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE) {
-        return false;
+      if (options.same_site_cookie_context() <
+          CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
+        return CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX;
       }
       break;
     default:
       break;
   }
 
-  return true;
+  return CanonicalCookie::CookieInclusionStatus::INCLUDE;
 }
 
 std::string CanonicalCookie::DebugString() const {
@@ -536,5 +553,10 @@ std::string CanonicalCookie::DomainWithoutDot() const {
     return domain_;
   return domain_.substr(1);
 }
+
+CookieLineWithStatus::CookieLineWithStatus(
+    std::string cookie_string,
+    CanonicalCookie::CookieInclusionStatus status)
+    : cookie_string(std::move(cookie_string)), status(status) {}
 
 }  // namespace net

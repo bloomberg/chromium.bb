@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -29,7 +29,7 @@ void SingleThreadTaskGraphRunner::Start(
     const base::SimpleThread::Options& thread_options) {
   thread_.reset(
       new base::DelegateSimpleThread(this, thread_name, thread_options));
-  thread_->Start();
+  thread_->StartAsync();
 }
 
 void SingleThreadTaskGraphRunner::Shutdown() {

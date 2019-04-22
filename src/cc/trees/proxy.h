@@ -5,6 +5,8 @@
 #ifndef CC_TREES_PROXY_H_
 #define CC_TREES_PROXY_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 
@@ -27,6 +29,7 @@ class Rect;
 namespace cc {
 class LayerTreeFrameSink;
 class LayerTreeMutator;
+class PaintWorkletLayerPainter;
 class RenderFrameMetadataObserver;
 
 // Abstract interface responsible for proxying commands from the main-thread
@@ -57,11 +60,18 @@ class CC_EXPORT Proxy {
   // completed yet.
   virtual bool RequestedAnimatePending() = 0;
 
-  virtual void NotifyInputThrottledUntilCommit() = 0;
-
   // Defers LayerTreeHost::BeginMainFrameUpdate and commits until it is
   // reset. It is only supported when using a scheduler.
   virtual void SetDeferMainFrameUpdate(bool defer_main_frame_update) = 0;
+
+  // Defers commits until at most the given |timeout| period has passed,
+  // but continues to update the document lifecycle in
+  // LayerTreeHost::BeginMainFrameUpdate. If multiple calls are made when
+  // deferal is active the first |timeout| continues to apply.
+  virtual void StartDeferringCommits(base::TimeDelta timeout) = 0;
+
+  // Immediately stop deferring commits.
+  virtual void StopDeferringCommits() = 0;
 
   virtual bool CommitRequested() const = 0;
 
@@ -72,6 +82,9 @@ class CC_EXPORT Proxy {
 
   virtual void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) = 0;
 
+  virtual void SetPaintWorkletLayerPainter(
+      std::unique_ptr<PaintWorkletLayerPainter> painter) = 0;
+
   virtual bool SupportsImplScrolling() const = 0;
 
   virtual void UpdateBrowserControlsState(BrowserControlsState constraints,
@@ -79,6 +92,9 @@ class CC_EXPORT Proxy {
                                           bool animate) = 0;
 
   virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
+
+  // See description in LayerTreeHost
+  virtual uint32_t GenerateChildSurfaceSequenceNumberSync() = 0;
 
   // Testing hooks
   virtual bool MainFrameWillHappenForTesting() = 0;

@@ -27,13 +27,6 @@
 
 namespace blink {
 
-MediaQueryList* MediaQueryList::Create(ExecutionContext* context,
-                                       MediaQueryMatcher* matcher,
-                                       scoped_refptr<MediaQuerySet> media) {
-  return MakeGarbageCollected<MediaQueryList>(
-      context, matcher, scoped_refptr<MediaQuerySet>(media));
-}
-
 MediaQueryList::MediaQueryList(ExecutionContext* context,
                                MediaQueryMatcher* matcher,
                                scoped_refptr<MediaQuerySet> media)
@@ -52,18 +45,12 @@ String MediaQueryList::media() const {
   return media_->MediaText();
 }
 
-void MediaQueryList::addDeprecatedListener(EventListener* listener) {
-  if (!listener)
-    return;
-
-  addEventListener(event_type_names::kChange, listener, false);
+void MediaQueryList::addDeprecatedListener(V8EventListener* listener) {
+  addEventListener(event_type_names::kChange, listener);
 }
 
-void MediaQueryList::removeDeprecatedListener(EventListener* listener) {
-  if (!listener)
-    return;
-
-  removeEventListener(event_type_names::kChange, listener, false);
+void MediaQueryList::removeDeprecatedListener(V8EventListener* listener) {
+  removeEventListener(event_type_names::kChange, listener);
 }
 
 void MediaQueryList::AddListener(MediaQueryListListener* listener) {

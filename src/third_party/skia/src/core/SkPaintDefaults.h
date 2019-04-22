@@ -8,17 +8,13 @@
 #ifndef SkPaintDefaults_DEFINED
 #define SkPaintDefaults_DEFINED
 
-#include "SkPaint.h"
+#include "SkFontTypes.h"
 
 /**
  *  Any of these can be specified by the build system (or SkUserConfig.h)
  *  to change the default values for a SkPaint. This file should not be
  *  edited directly.
  */
-
-#ifndef SkPaintDefaults_Flags
-    #define SkPaintDefaults_Flags           0
-#endif
 
 #ifndef SkPaintDefaults_TextSize
     #define SkPaintDefaults_TextSize        SkIntToScalar(12)

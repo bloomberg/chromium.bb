@@ -60,10 +60,11 @@ DEFINE_NODE_FACTORY(HTMLTrackElement)
 
 HTMLTrackElement::~HTMLTrackElement() = default;
 
-const HashSet<AtomicString>& HTMLTrackElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLTrackElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 Node::InsertionNotificationRequest HTMLTrackElement::InsertedInto(
@@ -127,7 +128,7 @@ void HTMLTrackElement::setKind(const AtomicString& kind) {
 LoadableTextTrack* HTMLTrackElement::EnsureTrack() {
   if (!track_) {
     // kind, label and language are updated by parseAttribute
-    track_ = LoadableTextTrack::Create(this);
+    track_ = MakeGarbageCollected<LoadableTextTrack>(this);
   }
   return track_.Get();
 }
@@ -339,7 +340,7 @@ HTMLMediaElement* HTMLTrackElement::MediaElement() const {
   return nullptr;
 }
 
-void HTMLTrackElement::Trace(blink::Visitor* visitor) {
+void HTMLTrackElement::Trace(Visitor* visitor) {
   visitor->Trace(track_);
   visitor->Trace(loader_);
   HTMLElement::Trace(visitor);

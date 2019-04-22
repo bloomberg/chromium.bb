@@ -6,14 +6,15 @@
 
 #include "xfa/fxfa/parser/cxfa_margin.h"
 
-#include "fxjs/xfa/cjx_margin.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
 
 const CXFA_Node::PropertyData kMarginPropertyData[] = {
     {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kMarginAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
@@ -22,9 +23,7 @@ const CXFA_Node::AttributeData kMarginAttributeData[] = {
     {XFA_Attribute::TopInset, XFA_AttributeType::Measure, (void*)L"0in"},
     {XFA_Attribute::RightInset, XFA_AttributeType::Measure, (void*)L"0in"},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kMarginName[] = L"margin";
+};
 
 }  // namespace
 
@@ -36,10 +35,9 @@ CXFA_Margin::CXFA_Margin(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Margin,
                 kMarginPropertyData,
                 kMarginAttributeData,
-                kMarginName,
-                pdfium::MakeUnique<CJX_Margin>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Margin::~CXFA_Margin() {}
+CXFA_Margin::~CXFA_Margin() = default;
 
 float CXFA_Margin::GetLeftInset() const {
   return TryLeftInset().value_or(0);

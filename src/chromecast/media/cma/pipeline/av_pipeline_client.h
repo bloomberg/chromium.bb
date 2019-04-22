@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/waiting.h"
 
 namespace chromecast {
 namespace media {
@@ -20,8 +21,8 @@ struct AvPipelineClient {
   AvPipelineClient(const AvPipelineClient& other);
   ~AvPipelineClient();
 
-  // Decryption key status notification.
-  base::Closure wait_for_key_cb;
+  // Waiting status notification.
+  ::media::WaitingCB waiting_cb;
 
   // End of stream notification.
   base::Closure eos_cb;

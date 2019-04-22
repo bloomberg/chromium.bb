@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/folder_upload_confirmation_view.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"

@@ -79,14 +79,20 @@ blink::mojom::QuotaStatusCode DeleteOriginOnFileTaskRunner(
   return blink::mojom::QuotaStatusCode::kErrorInvalidModification;
 }
 
+void PerformStorageCleanupOnFileTaskRunner(FileSystemContext* context,
+                                           FileSystemType type) {
+  FileSystemBackend* provider = context->GetFileSystemBackend(type);
+  if (!provider || !provider->GetQuotaUtil())
+    return;
+  provider->GetQuotaUtil()->PerformStorageCleanupOnFileTaskRunner(
+      context, context->quota_manager_proxy(), type);
+}
+
 }  // namespace
 
 FileSystemQuotaClient::FileSystemQuotaClient(
-    FileSystemContext* file_system_context,
-    bool is_incognito)
-    : file_system_context_(file_system_context),
-      is_incognito_(is_incognito) {
-}
+    FileSystemContext* file_system_context)
+    : file_system_context_(file_system_context) {}
 
 FileSystemQuotaClient::~FileSystemQuotaClient() = default;
 
@@ -102,12 +108,6 @@ void FileSystemQuotaClient::GetOriginUsage(const url::Origin& origin,
                                            StorageType storage_type,
                                            GetUsageCallback callback) {
   DCHECK(!callback.is_null());
-
-  if (is_incognito_) {
-    // We don't support FileSystem in incognito mode yet.
-    std::move(callback).Run(0);
-    return;
-  }
 
   FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
   DCHECK(type != kFileSystemTypeUnknown);
@@ -132,13 +132,6 @@ void FileSystemQuotaClient::GetOriginsForType(StorageType storage_type,
                                               GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
 
-  if (is_incognito_) {
-    // We don't support FileSystem in incognito mode yet.
-    std::set<url::Origin> origins;
-    std::move(callback).Run(origins);
-    return;
-  }
-
   std::set<url::Origin>* origins_ptr = new std::set<url::Origin>();
   file_task_runner()->PostTaskAndReply(
       FROM_HERE,
@@ -153,13 +146,6 @@ void FileSystemQuotaClient::GetOriginsForHost(StorageType storage_type,
                                               const std::string& host,
                                               GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
-
-  if (is_incognito_) {
-    // We don't support FileSystem in incognito mode yet.
-    std::set<url::Origin> origins;
-    std::move(callback).Run(origins);
-    return;
-  }
 
   std::set<url::Origin>* origins_ptr = new std::set<url::Origin>();
   file_task_runner()->PostTaskAndReply(
@@ -181,6 +167,17 @@ void FileSystemQuotaClient::DeleteOriginData(const url::Origin& origin,
       file_task_runner(), FROM_HERE,
       base::BindOnce(&DeleteOriginOnFileTaskRunner,
                      base::RetainedRef(file_system_context_), origin, fs_type),
+      std::move(callback));
+}
+
+void FileSystemQuotaClient::PerformStorageCleanup(StorageType type,
+                                                  base::OnceClosure callback) {
+  FileSystemType fs_type = QuotaStorageTypeToFileSystemType(type);
+  DCHECK(fs_type != kFileSystemTypeUnknown);
+  file_task_runner()->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&PerformStorageCleanupOnFileTaskRunner,
+                     base::RetainedRef(file_system_context_), fs_type),
       std::move(callback));
 }
 

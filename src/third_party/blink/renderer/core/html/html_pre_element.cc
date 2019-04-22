@@ -48,7 +48,7 @@ void HTMLPreElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kWrapAttr)
-    style->SetProperty(CSSPropertyWhiteSpace, CSSValuePreWrap);
+    style->SetProperty(CSSPropertyID::kWhiteSpace, CSSValueID::kPreWrap);
   else
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
 }

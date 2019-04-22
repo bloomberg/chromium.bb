@@ -85,7 +85,7 @@ is with the following parameters:
 ```
 python ../../build/android/gyp/write_build_config.py \
     --type=android_resources \
-    --depfile gen/ui/android/ui_java_resources__build_config.d \
+    --depfile gen/ui/android/ui_java_resources__build_config_crbug_908819.d \
     --deps-configs=\[\"gen/ui/android/ui_strings_grd.build_config\"\] \
     --build-config gen/ui/android/ui_java_resources.build_config \
     --resources-zip resource_zips/ui/android/ui_java_resources.resources.zip \
@@ -126,8 +126,8 @@ generate various related files (e.g. `ui_java_resources_R.txt`):
 ```sh
 python ../../build/android/gyp/process_resources.py \
     --depfile gen/ui/android/ui_java_resources_1.d \
-    --android-sdk-jar ../../third_party/android_tools/sdk/platforms/android-27/android.jar \
-    --aapt-path ../../third_party/android_tools/sdk/build-tools/27.0.3/aapt \
+    --android-sdk-jar ../../third_party/android_sdk/public/platforms/android-28/android.jar \
+    --aapt-path ../../third_party/android_sdk/public/build-tools/27.0.3/aapt \
     --dependencies-res-zips=@FileArg\(gen/ui/android/ui_java_resources.build_config:resources:dependency_zips\) \
     --extra-res-packages=@FileArg\(gen/ui/android/ui_java_resources.build_config:resources:extra_package_names\) \
     --extra-r-text-files=@FileArg\(gen/ui/android/ui_java_resources.build_config:resources:extra_r_text_files\) \

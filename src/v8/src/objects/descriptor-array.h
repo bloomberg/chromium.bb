@@ -7,6 +7,8 @@
 
 #include "src/objects.h"
 #include "src/objects/fixed-array.h"
+#include "src/objects/struct.h"
+#include "src/utils.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -18,22 +20,23 @@ template <typename T>
 class Handle;
 
 class Isolate;
-class MaybeObjectSlot;
 
 // An EnumCache is a pair used to hold keys and indices caches.
-class EnumCache : public Tuple2 {
+class EnumCache : public Struct {
  public:
-  DECL_ACCESSORS2(keys, FixedArray)
-  DECL_ACCESSORS2(indices, FixedArray)
+  DECL_ACCESSORS(keys, FixedArray)
+  DECL_ACCESSORS(indices, FixedArray)
 
   DECL_CAST(EnumCache)
 
-  // Layout description.
-  static const int kKeysOffset = kValue1Offset;
-  static const int kIndicesOffset = kValue2Offset;
+  DECL_PRINTER(EnumCache)
+  DECL_VERIFIER(EnumCache)
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(EnumCache);
+  // Layout description.
+  DEFINE_FIELD_OFFSET_CONSTANTS(Struct::kHeaderSize,
+                                TORQUE_GENERATED_ENUM_CACHE_FIELDS)
+
+  OBJECT_CONSTRUCTORS(EnumCache, Struct);
 };
 
 // A DescriptorArray is a custom array that holds instance descriptors.
@@ -41,7 +44,7 @@ class EnumCache : public Tuple2 {
 //   Header:
 //     [16:0  bits]: number_of_all_descriptors (including slack)
 //     [32:16 bits]: number_of_descriptors
-//     [48:32 bits]: number_of_marked_descriptors (used by GC)
+//     [48:32 bits]: raw_number_of_marked_descriptors (used by GC)
 //     [64:48 bits]: alignment filler
 //     [kEnumCacheOffset]: enum cache
 //   Elements:
@@ -62,16 +65,16 @@ class DescriptorArray : public HeapObject {
   DECL_ACCESSORS(enum_cache, EnumCache)
 
   void ClearEnumCache();
-  inline void CopyEnumCacheFrom(DescriptorArray* array);
+  inline void CopyEnumCacheFrom(DescriptorArray array);
   static void InitializeOrChangeEnumCache(Handle<DescriptorArray> descriptors,
                                           Isolate* isolate,
                                           Handle<FixedArray> keys,
                                           Handle<FixedArray> indices);
 
   // Accessors for fetching instance descriptor at descriptor number.
-  inline Name GetKey(int descriptor_number);
-  inline Object* GetStrongValue(int descriptor_number);
-  inline void SetValue(int descriptor_number, Object* value);
+  inline Name GetKey(int descriptor_number) const;
+  inline Object GetStrongValue(int descriptor_number);
+  inline void SetValue(int descriptor_number, Object value);
   inline MaybeObject GetValue(int descriptor_number);
   inline PropertyDetails GetDetails(int descriptor_number);
   inline int GetFieldIndex(int descriptor_number);
@@ -119,14 +122,15 @@ class DescriptorArray : public HeapObject {
   // necessary.
   V8_INLINE int SearchWithCache(Isolate* isolate, Name name, Map map);
 
-  bool IsEqualUpTo(DescriptorArray* desc, int nof_descriptors);
+  bool IsEqualUpTo(DescriptorArray desc, int nof_descriptors);
 
   // Allocates a DescriptorArray, but returns the singleton
   // empty descriptor array object if number_of_descriptors is 0.
-  static Handle<DescriptorArray> Allocate(Isolate* isolate, int nof_descriptors,
-                                          int slack);
+  V8_EXPORT_PRIVATE static Handle<DescriptorArray> Allocate(
+      Isolate* isolate, int nof_descriptors, int slack,
+      AllocationType allocation = AllocationType::kYoung);
 
-  void Initialize(EnumCache* enum_cache, HeapObject* undefined_value,
+  void Initialize(EnumCache enum_cache, HeapObject undefined_value,
                   int nof_descriptors, int slack);
 
   DECL_CAST(DescriptorArray)
@@ -135,13 +139,13 @@ class DescriptorArray : public HeapObject {
   static const int kNotFound = -1;
 
   // Layout description.
-#define DESCRIPTOR_ARRAY_FIELDS(V)                 \
-  V(kNumberOfAllDescriptorsOffset, kUInt16Size)    \
-  V(kNumberOfDescriptorsOffset, kUInt16Size)       \
-  V(kNumberOfMarkedDescriptorsOffset, kUInt16Size) \
-  V(kFiller16BitsOffset, kUInt16Size)              \
-  V(kPointersStartOffset, 0)                       \
-  V(kEnumCacheOffset, kTaggedSize)                 \
+#define DESCRIPTOR_ARRAY_FIELDS(V)                    \
+  V(kNumberOfAllDescriptorsOffset, kUInt16Size)       \
+  V(kNumberOfDescriptorsOffset, kUInt16Size)          \
+  V(kRawNumberOfMarkedDescriptorsOffset, kUInt16Size) \
+  V(kFiller16BitsOffset, kUInt16Size)                 \
+  V(kPointersStartOffset, 0)                          \
+  V(kEnumCacheOffset, kTaggedSize)                    \
   V(kHeaderSize, 0)
 
   DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize,
@@ -152,7 +156,13 @@ class DescriptorArray : public HeapObject {
   STATIC_ASSERT(IsAligned(kHeaderSize, kTaggedSize));
 
   // Garbage collection support.
-  DECL_INT16_ACCESSORS(number_of_marked_descriptors)
+  DECL_INT16_ACCESSORS(raw_number_of_marked_descriptors)
+  // Atomic compare-and-swap operation on the raw_number_of_marked_descriptors.
+  int16_t CompareAndSwapRawNumberOfMarkedDescriptors(int16_t expected,
+                                                     int16_t value);
+  int16_t UpdateNumberOfMarkedDescriptors(unsigned mark_compact_epoch,
+                                          int16_t number_of_marked_descriptors);
+
   static constexpr int SizeFor(int number_of_all_descriptors) {
     return offset(number_of_all_descriptors * kEntrySize);
   }
@@ -164,7 +174,7 @@ class DescriptorArray : public HeapObject {
   inline ObjectSlot GetKeySlot(int descriptor);
   inline MaybeObjectSlot GetValueSlot(int descriptor);
 
-  typedef FlexibleWeakBodyDescriptor<kPointersStartOffset> BodyDescriptor;
+  using BodyDescriptor = FlexibleWeakBodyDescriptor<kPointersStartOffset>;
 
   // Layout of descriptor.
   // Naming is consistent with Dictionary classes for easy templating.
@@ -183,10 +193,10 @@ class DescriptorArray : public HeapObject {
 
 #ifdef DEBUG
   // Is the descriptor array sorted and without duplicates?
-  bool IsSortedNoDuplicates(int valid_descriptors = -1);
+  V8_EXPORT_PRIVATE bool IsSortedNoDuplicates(int valid_descriptors = -1);
 
   // Are two DescriptorArrays equal?
-  bool IsEqualTo(DescriptorArray* other);
+  bool IsEqualTo(DescriptorArray other);
 #endif
 
   static constexpr int ToDetailsIndex(int descriptor_number) {
@@ -206,7 +216,7 @@ class DescriptorArray : public HeapObject {
   DECL_INT16_ACCESSORS(filler16bits)
   // Low-level per-element accessors.
   static constexpr int offset(int index) {
-    return kHeaderSize + index * kPointerSize;
+    return kHeaderSize + index * kTaggedSize;
   }
   inline int length() const;
   inline MaybeObject get(int index) const;
@@ -214,12 +224,49 @@ class DescriptorArray : public HeapObject {
 
   // Transfer a complete descriptor from the src descriptor array to this
   // descriptor array.
-  void CopyFrom(int index, DescriptorArray* src);
+  void CopyFrom(int index, DescriptorArray src);
 
   // Swap first and second descriptor.
   inline void SwapSortedKeys(int first, int second);
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DescriptorArray);
+  OBJECT_CONSTRUCTORS(DescriptorArray, HeapObject);
+};
+
+class NumberOfMarkedDescriptors {
+ public:
+// Bit positions for |bit_field|.
+#define BIT_FIELD_FIELDS(V, _) \
+  V(Epoch, unsigned, 2, _)     \
+  V(Marked, int16_t, 14, _)
+  DEFINE_BIT_FIELDS(BIT_FIELD_FIELDS)
+#undef BIT_FIELD_FIELDS
+  static const int kMaxNumberOfMarkedDescriptors = Marked::kMax;
+  // Decodes the raw value of the number of marked descriptors for the
+  // given mark compact garbage collection epoch.
+  static inline int16_t decode(unsigned mark_compact_epoch, int16_t raw_value) {
+    unsigned epoch_from_value = Epoch::decode(static_cast<uint16_t>(raw_value));
+    int16_t marked_from_value =
+        Marked::decode(static_cast<uint16_t>(raw_value));
+    unsigned actual_epoch = mark_compact_epoch & Epoch::kMask;
+    if (actual_epoch == epoch_from_value) return marked_from_value;
+    // If the epochs do not match, then either the raw_value is zero (freshly
+    // allocated descriptor array) or the epoch from value lags by 1.
+    DCHECK_IMPLIES(raw_value != 0,
+                   Epoch::decode(epoch_from_value + 1) == actual_epoch);
+    // Not matching epochs means that the no descriptors were marked in the
+    // current epoch.
+    return 0;
+  }
+
+  // Encodes the number of marked descriptors for the given mark compact
+  // garbage collection epoch.
+  static inline int16_t encode(unsigned mark_compact_epoch, int16_t value) {
+    // TODO(ulan): avoid casting to int16_t by adding support for uint16_t
+    // atomics.
+    return static_cast<int16_t>(
+        Epoch::encode(mark_compact_epoch & Epoch::kMask) |
+        Marked::encode(value));
+  }
 };
 
 }  // namespace internal

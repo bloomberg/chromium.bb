@@ -4,10 +4,11 @@
 
 #include "components/sync/engine/sync_backend_registrar.h"
 
+#include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sequenced_model_worker.h"
@@ -61,7 +62,7 @@ class SyncBackendRegistrarTest : public testing::Test {
   }
 
   void ExpectHasProcessorsForTypes(ModelTypeSet types) {
-    for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
       ModelType model_type = ModelTypeFromInt(i);
       EXPECT_EQ(types.Has(model_type),
                 registrar_->IsTypeActivatedForTest(model_type));
@@ -95,7 +96,8 @@ class SyncBackendRegistrarTest : public testing::Test {
       ModelSafeGroup group) {
     switch (group) {
       case GROUP_UI:
-        return new SequencedModelWorker(message_loop_.task_runner(), group);
+        return new SequencedModelWorker(
+            task_environment_.GetMainThreadTaskRunner(), group);
       case GROUP_DB:
         return new SequencedModelWorker(db_thread_.task_runner(), group);
       case GROUP_FILE:
@@ -107,7 +109,7 @@ class SyncBackendRegistrarTest : public testing::Test {
     }
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::Thread db_thread_;
   base::Thread file_thread_;
   base::Thread sync_thread_;

@@ -28,12 +28,12 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_global_value_map.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -61,7 +60,6 @@ struct WrapperTypeInfo;
 // has a 1:1 relationship with v8::Isolate.
 class PLATFORM_EXPORT V8PerIsolateData {
   USING_FAST_MALLOC(V8PerIsolateData);
-  WTF_MAKE_NONCOPYABLE(V8PerIsolateData);
 
  public:
   enum class V8ContextSnapshotMode {
@@ -206,22 +204,13 @@ class PLATFORM_EXPORT V8PerIsolateData {
     return active_script_wrappables_.Get();
   }
 
-  ScriptWrappableMarkingVisitor* GetScriptWrappableMarkingVisitor() const {
-    return script_wrappable_visitor_.get();
-  }
-
-  void SwapScriptWrappableMarkingVisitor(
-      std::unique_ptr<ScriptWrappableMarkingVisitor>& other) {
-    script_wrappable_visitor_.swap(other);
-  }
-
   UnifiedHeapController* GetUnifiedHeapController() const {
     return unified_heap_controller_.get();
   }
 
-  int IsNearV8HeapLimitHandled() { return handled_near_v8_heap_limit_; }
-
-  void HandledNearV8HeapLimit() { handled_near_v8_heap_limit_ = true; }
+  v8::EmbedderHeapTracer* GetEmbedderHeapTracer() const {
+    return static_cast<v8::EmbedderHeapTracer*>(GetUnifiedHeapController());
+  }
 
  private:
   V8PerIsolateData(scoped_refptr<base::SingleThreadTaskRunner>,
@@ -290,11 +279,11 @@ class PLATFORM_EXPORT V8PerIsolateData {
   std::unique_ptr<Data> thread_debugger_;
 
   Persistent<ActiveScriptWrappableSet> active_script_wrappables_;
-  std::unique_ptr<ScriptWrappableMarkingVisitor> script_wrappable_visitor_;
   std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
 
   RuntimeCallStats runtime_call_stats_;
-  bool handled_near_v8_heap_limit_;
+
+  DISALLOW_COPY_AND_ASSIGN(V8PerIsolateData);
 };
 
 }  // namespace blink

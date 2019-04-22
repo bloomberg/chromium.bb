@@ -18,18 +18,9 @@ cr.define('print_preview', function() {
   'use strict';
 
   class InvitationStore extends cr.EventTarget {
-    /**
-     * Printer sharing invitations data store.
-     * @param {!print_preview.UserInfo} userInfo User information repository.
-     */
-    constructor(userInfo) {
+    /** Printer sharing invitations data store. */
+    constructor() {
       super();
-
-      /**
-       * User information repository.
-       * @private {!print_preview.UserInfo}
-       */
-      this.userInfo_ = userInfo;
 
       /**
        * Maps user account to the list of invitations for this account.
@@ -96,35 +87,39 @@ cr.define('print_preview', function() {
       this.tracker_.add(
           this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.INVITES_FAILED,
-          this.onCloudPrintInvitesDone_.bind(this));
+          this.onCloudPrintInvitesFailed_.bind(this));
       this.tracker_.add(
           this.cloudPrintInterface_.getEventTarget(),
           cloudprint.CloudPrintInterfaceEventType.PROCESS_INVITE_DONE,
           this.onCloudPrintProcessInviteDone_.bind(this));
-      this.tracker_.add(
-          this.cloudPrintInterface_.getEventTarget(),
-          cloudprint.CloudPrintInterfaceEventType.PROCESS_INVITE_FAILED,
-          this.onCloudPrintProcessInviteFailed_.bind(this));
     }
 
-    /** Initiates loading of cloud printer sharing invitations. */
-    startLoadingInvitations() {
-      if (!this.cloudPrintInterface_)
+    /** Removes all events being tracked from the tracker. */
+    resetTracker() {
+      this.tracker_.removeAll();
+    }
+
+    /**
+     * Initiates loading of cloud printer sharing invitations for the user
+     * account given by |user|.
+     * @param {string} user The user to load invitations for.
+     */
+    startLoadingInvitations(user) {
+      if (!this.cloudPrintInterface_) {
         return;
-      if (!this.userInfo_.activeUser)
-        return;
-      if (this.loadStatus_.hasOwnProperty(this.userInfo_.activeUser)) {
-        if (this.loadStatus_[this.userInfo_.activeUser] ==
+      }
+      if (this.loadStatus_.hasOwnProperty(user)) {
+        if (this.loadStatus_[user] ==
             print_preview.InvitationStoreLoadStatus.DONE) {
-          cr.dispatchSimpleEvent(
-              this, InvitationStore.EventType.INVITATION_SEARCH_DONE);
+          this.dispatchEvent(new CustomEvent(
+              InvitationStore.EventType.INVITATION_SEARCH_DONE));
         }
         return;
       }
 
-      this.loadStatus_[this.userInfo_.activeUser] =
+      this.loadStatus_[user] =
           print_preview.InvitationStoreLoadStatus.IN_PROGRESS;
-      this.cloudPrintInterface_.invites(this.userInfo_.activeUser);
+      this.cloudPrintInterface_.invites(user);
     }
 
     /**
@@ -133,8 +128,9 @@ cr.define('print_preview', function() {
      * @param {boolean} accept Whether to accept this invitation.
      */
     processInvitation(invitation, accept) {
-      if (this.invitationInProgress_)
+      if (this.invitationInProgress_) {
         return;
+      }
       this.invitationInProgress_ = invitation;
       this.cloudPrintInterface_.processInvite(invitation, accept);
     }
@@ -151,60 +147,47 @@ cr.define('print_preview', function() {
               return i != invitation;
             });
       }
-      if (this.invitationInProgress_ == invitation)
+      if (this.invitationInProgress_ == invitation) {
         this.invitationInProgress_ = null;
+      }
     }
 
     /**
      * Called when printer sharing invitations are fetched.
-     * @param {!cloudprint.CloudPrintInterfaceInvitesDoneEvent} event Contains
-     *     the list of invitations.
+     * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceInvitesDoneDetail>}
+     *     event Contains the list of invitations.
      * @private
      */
     onCloudPrintInvitesDone_(event) {
-      this.loadStatus_[event.user] =
+      this.loadStatus_[event.detail.user] =
           print_preview.InvitationStoreLoadStatus.DONE;
-      this.invitations_[event.user] = event.invitations;
+      this.invitations_[event.detail.user] = event.detail.invitations;
 
-      cr.dispatchSimpleEvent(
-          this, InvitationStore.EventType.INVITATION_SEARCH_DONE);
+      this.dispatchEvent(
+          new CustomEvent(InvitationStore.EventType.INVITATION_SEARCH_DONE));
     }
 
     /**
      * Called when printer sharing invitations fetch has failed.
-     * @param {!cloudprint.CloudPrintInterfaceInvitesFailedEvent} event
+     * @param {!CustomEvent<string>} event Contains the user for whom invite
+     *     fetch failed.
      * @private
      */
     onCloudPrintInvitesFailed_(event) {
-      this.loadStatus_[event.user] =
+      this.loadStatus_[event.detail] =
           print_preview.InvitationStoreLoadStatus.FAILED;
     }
 
     /**
      * Called when printer sharing invitation was processed successfully.
-     * @param {!cloudprint.CloudPrintInterfaceProcessInviteEvent} event
-     *     Contains detailed information about the invite and newly accepted
-     *     destination.
+     * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceProcessInviteDetail>}
+     *     event Contains detailed information about the invite.
      * @private
      */
     onCloudPrintProcessInviteDone_(event) {
-      this.invitationProcessed_(event.invitation);
-      cr.dispatchSimpleEvent(
-          this, InvitationStore.EventType.INVITATION_PROCESSED);
-    }
-
-    /**
-     * Called when /printer call completes. Updates the specified destination's
-     * print capabilities.
-     * @param {!cloudprint.CloudPrintInterfaceProcessInviteEvent} event
-     *     Contains detailed information about the invite and destination.
-     * @private
-     */
-    onCloudPrintProcessInviteFailed_(event) {
-      this.invitationProcessed_(event.invitation);
-      // TODO: Display an error.
-      cr.dispatchSimpleEvent(
-          this, InvitationStore.EventType.INVITATION_PROCESSED);
+      this.invitationProcessed_(event.detail.invitation);
+      this.dispatchEvent(
+          new CustomEvent(InvitationStore.EventType.INVITATION_PROCESSED));
     }
   }
 

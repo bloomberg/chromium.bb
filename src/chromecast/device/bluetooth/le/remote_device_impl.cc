@@ -5,6 +5,7 @@
 #include "chromecast/device/bluetooth/le/remote_device_impl.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chromecast/base/bind_to_task_runner.h"
 #include "chromecast/device/bluetooth/bluetooth_util.h"
 #include "chromecast/device/bluetooth/le/gatt_client_manager_impl.h"
@@ -69,65 +70,101 @@ RemoteDeviceImpl::~RemoteDeviceImpl() = default;
 
 void RemoteDeviceImpl::Connect(StatusCallback cb) {
   MAKE_SURE_IO_THREAD(Connect, BindToCurrentSequence(std::move(cb)));
-  if (!ConnectSync()) {
-    // Error logged.
-    EXEC_CB_AND_RET(cb, false);
-  }
-
-  connect_cb_ = std::move(cb);
-}
-
-bool RemoteDeviceImpl::ConnectSync() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
   LOG(INFO) << "Connect(" << util::AddrLastByteString(addr_) << ")";
 
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
-    return false;
+    EXEC_CB_AND_RET(cb, false);
   }
+
   if (connect_pending_) {
     LOG(ERROR) << __func__ << " failed: Connection pending";
-    return false;
+    EXEC_CB_AND_RET(cb, false);
   }
 
   gatt_client_manager_->NotifyConnect(addr_);
-
   connect_pending_ = true;
-  gatt_client_manager_->EnqueueConnectRequest(addr_);
-
-  return true;
+  connect_cb_ = std::move(cb);
+  gatt_client_manager_->EnqueueConnectRequest(addr_, true);
 }
 
 void RemoteDeviceImpl::Disconnect(StatusCallback cb) {
   MAKE_SURE_IO_THREAD(Disconnect, BindToCurrentSequence(std::move(cb)));
-  if (!DisconnectSync()) {
-    // Error logged.
-    EXEC_CB_AND_RET(cb, false);
-  }
-
-  disconnect_cb_ = std::move(cb);
-}
-
-bool RemoteDeviceImpl::DisconnectSync() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
   LOG(INFO) << "Disconnect(" << util::AddrLastByteString(addr_) << ")";
+
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
-    return false;
+    EXEC_CB_AND_RET(cb, false);
   }
 
   if (!connected_) {
     LOG(ERROR) << "Not connected";
-    return false;
+    EXEC_CB_AND_RET(cb, false);
   }
 
-  if (!gatt_client_manager_->gatt_client()->Disconnect(addr_)) {
-    LOG(ERROR) << __func__ << " failed";
-    return false;
-  }
   disconnect_pending_ = true;
+  disconnect_cb_ = std::move(cb);
+  gatt_client_manager_->EnqueueConnectRequest(addr_, false);
+}
 
-  return true;
+void RemoteDeviceImpl::CreateBond(StatusCallback cb) {
+  MAKE_SURE_IO_THREAD(CreateBond, BindToCurrentSequence(std::move(cb)));
+  LOG(INFO) << "CreateBond(" << util::AddrLastByteString(addr_) << ")";
+  if (!gatt_client_manager_) {
+    LOG(ERROR) << __func__ << " failed: Destroyed";
+    EXEC_CB_AND_RET(cb, false);
+  }
+
+  if (!connected_) {
+    LOG(ERROR) << "Not connected";
+    EXEC_CB_AND_RET(cb, false);
+  }
+
+  if (create_bond_pending_ || remove_bond_pending_) {
+    // TODO(tiansong): b/120489954 Implement queuing and timeout logic.
+    LOG(ERROR) << __func__ << " failed: waiting for pending bond command";
+    EXEC_CB_AND_RET(cb, false);
+  }
+
+  if (bonded_) {
+    LOG(ERROR) << "Already bonded";
+    EXEC_CB_AND_RET(cb, false);
+  }
+
+  if (!gatt_client_manager_->gatt_client()->CreateBond(addr_)) {
+    LOG(ERROR) << __func__ << " failed";
+    EXEC_CB_AND_RET(cb, false);
+  }
+
+  create_bond_pending_ = true;
+  create_bond_cb_ = std::move(cb);
+}
+
+void RemoteDeviceImpl::RemoveBond(StatusCallback cb) {
+  MAKE_SURE_IO_THREAD(RemoveBond, BindToCurrentSequence(std::move(cb)));
+  LOG(INFO) << "RemoveBond(" << util::AddrLastByteString(addr_) << ")";
+  if (!gatt_client_manager_) {
+    LOG(ERROR) << __func__ << " failed: Destroyed";
+    EXEC_CB_AND_RET(cb, false);
+  }
+
+  if (create_bond_pending_ || remove_bond_pending_) {
+    // TODO(tiansong): b/120489954 Implement queuing and timeout logic.
+    LOG(ERROR) << __func__ << " failed: waiting for pending bond command";
+    EXEC_CB_AND_RET(cb, false);
+  }
+
+  if (!bonded_) {
+    LOG(WARNING) << "Not bonded";
+  }
+
+  if (!gatt_client_manager_->gatt_client()->RemoveBond(addr_)) {
+    LOG(ERROR) << __func__ << " failed";
+    EXEC_CB_AND_RET(cb, false);
+  }
+
+  remove_bond_pending_ = true;
+  remove_bond_cb_ = std::move(cb);
 }
 
 void RemoteDeviceImpl::ReadRemoteRssi(RssiCallback cb) {
@@ -184,6 +221,10 @@ void RemoteDeviceImpl::ConnectionParameterUpdate(int min_interval,
 
 bool RemoteDeviceImpl::IsConnected() {
   return connected_;
+}
+
+bool RemoteDeviceImpl::IsBonded() {
+  return bonded_;
 }
 
 int RemoteDeviceImpl::GetMtu() {
@@ -322,6 +363,26 @@ void RemoteDeviceImpl::SetConnected(bool connected) {
     // Reset state after disconnection
     mtu_ = kDefaultMtu;
     ClearServices();
+  }
+}
+
+void RemoteDeviceImpl::SetBonded(bool bonded) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  bonded_ = bonded;
+
+  if (create_bond_pending_) {
+    create_bond_pending_ = false;
+    if (create_bond_cb_) {
+      std::move(create_bond_cb_).Run(bonded);
+    }
+  }
+
+  if (remove_bond_pending_) {
+    remove_bond_pending_ = false;
+    if (remove_bond_cb_) {
+      std::move(remove_bond_cb_).Run(!bonded);
+    }
   }
 }
 

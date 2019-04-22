@@ -95,7 +95,8 @@ bool SecurityKeyExtensionSession::OnExtensionMessage(
     return false;
   }
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(message.data());
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(message.data());
   base::DictionaryValue* client_message;
   if (!value || !value->GetAsDictionary(&client_message)) {
     LOG(WARNING) << "Failed to retrieve data from gnubby-auth message.";

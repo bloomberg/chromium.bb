@@ -9,7 +9,7 @@
 
 @protocol StartupInformation;
 
-@protocol BrowserViewInformation;
+@protocol BrowserInterfaceProvider;
 @protocol StartupInformation;
 
 namespace metrics_mediator {
@@ -38,8 +38,8 @@ extern NSString* const kAppEnteredBackgroundDateKey;
 // Logs the number of tabs open and the start type.
 + (void)logLaunchMetricsWithStartupInformation:
             (id<StartupInformation>)startupInformation
-                        browserViewInformation:
-                            (id<BrowserViewInformation>)browserViewInformation;
+                             interfaceProvider:(id<BrowserInterfaceProvider>)
+                                                   interfaceProvider;
 // Logs in UserDefaults the current date with kAppEnteredBackgroundDateKey as
 // key.
 + (void)logDateInUserDefaults;

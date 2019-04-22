@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/i18n/message_formatter.h"
 #include "base/macros.h"
@@ -236,6 +237,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       scroll_view_(nullptr),
       handled_result_(false),
       install_button_enabled_(false) {
+  set_close_on_deactivate(false);
   CreateContents();
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.InstallPrompt.Type", prompt_->type(),
@@ -352,9 +354,7 @@ void ExtensionInstallDialogView::AddedToWidget() {
     layout->AddView(title_label.release());
   }
 
-  views::BubbleFrameView* frame_view = static_cast<views::BubbleFrameView*>(
-      GetWidget()->non_client_view()->frame_view());
-  frame_view->SetTitleView(std::move(title_container));
+  GetBubbleFrameView()->SetTitleView(std::move(title_container));
 }
 
 views::View* ExtensionInstallDialogView::CreateExtraView() {
@@ -420,7 +420,11 @@ bool ExtensionInstallDialogView::IsDialogButtonEnabled(
   return true;
 }
 
-ax::mojom::Role ExtensionInstallDialogView::GetAccessibleWindowRole() const {
+bool ExtensionInstallDialogView::ShouldShowCloseButton() const {
+  return true;
+}
+
+ax::mojom::Role ExtensionInstallDialogView::GetAccessibleWindowRole() {
   return ax::mojom::Role::kAlertDialog;
 }
 
@@ -521,7 +525,7 @@ void ExtensionInstallDialogView::CreateContents() {
 
   scroll_view_ = new views::ScrollView();
   scroll_view_->set_hide_horizontal_scrollbar(true);
-  scroll_view_->SetContents(extension_info_container.release());
+  scroll_view_->SetContents(std::move(extension_info_container));
   scroll_view_->ClipHeightTo(
       0, provider->GetDistanceMetric(
              views::DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT));

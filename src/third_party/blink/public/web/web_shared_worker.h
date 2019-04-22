@@ -37,10 +37,10 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
+#include "third_party/blink/public/mojom/csp/content_security_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_content_security_policy.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -70,7 +70,7 @@ class BLINK_EXPORT WebSharedWorker {
       const WebURL& script_url,
       const WebString& name,
       const WebString& content_security_policy,
-      WebContentSecurityPolicyType,
+      mojom::ContentSecurityPolicyType,
       mojom::IPAddressSpace,
       const base::UnguessableToken& devtools_worker_token,
       PrivacyPreferences privacy_preferences,

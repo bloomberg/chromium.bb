@@ -33,7 +33,8 @@ class FeedLoggingBridge {
   void OnContentDismissed(JNIEnv* j_env,
                           const base::android::JavaRef<jobject>& j_this,
                           const jint j_position,
-                          const base::android::JavaRef<jstring>& j_url);
+                          const base::android::JavaRef<jstring>& j_url,
+                          const jboolean was_committed);
 
   void OnContentSwiped(JNIEnv* j_env,
                        const base::android::JavaRef<jobject>& j_this);
@@ -59,9 +60,19 @@ class FeedLoggingBridge {
                            const base::android::JavaRef<jobject>& j_this,
                            const jint j_position);
 
+  void OnNotInterestedInSource(JNIEnv* j_env,
+                               const base::android::JavaRef<jobject>& j_this,
+                               const jint j_position,
+                               const jboolean was_committed);
+
+  void OnNotInterestedInTopic(JNIEnv* j_env,
+                              const base::android::JavaRef<jobject>& j_this,
+                              const jint j_position,
+                              const jboolean was_committed);
+
   void OnOpenedWithContent(JNIEnv* j_env,
                            const base::android::JavaRef<jobject>& j_this,
-                           const jint j_time_to_Populate,
+                           const jlong j_time_to_populate,
                            const jint j_content_count);
 
   void OnOpenedWithNoImmediateContent(
@@ -71,9 +82,54 @@ class FeedLoggingBridge {
   void OnOpenedWithNoContent(JNIEnv* j_env,
                              const base::android::JavaRef<jobject>& j_this);
 
-  void OnSpinnerShown(JNIEnv* j_env,
-                      const base::android::JavaRef<jobject>& j_this,
-                      const jlong j_shownTimeMs);
+  void OnSpinnerStarted(JNIEnv* j_env,
+                        const base::android::JavaRef<jobject>& j_this,
+                        const jint j_spinner_type);
+
+  void OnSpinnerFinished(JNIEnv* j_env,
+                         const base::android::JavaRef<jobject>& j_this,
+                         const jlong j_shownTimeMs,
+                         const jint j_spinner_type);
+
+  void OnSpinnerDestroyedWithoutCompleting(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const jlong j_shownTimeMs,
+      const jint j_spinner_type);
+
+  void OnPietFrameRenderingEvent(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const base::android::JavaRef<jintArray>& j_piet_error_codes);
+
+  void OnInternalError(JNIEnv* j_env,
+                       const base::android::JavaRef<jobject>& j_this,
+                       const jint j_internal_error);
+
+  void OnTokenCompleted(JNIEnv* j_env,
+                        const base::android::JavaRef<jobject>& j_this,
+                        const jboolean j_was_synthetic,
+                        const jint j_content_count,
+                        const jint j_token_count);
+
+  void OnTokenFailedToComplete(JNIEnv* j_env,
+                               const base::android::JavaRef<jobject>& j_this,
+                               const jboolean j_was_synthetic,
+                               const jint j_failure_count);
+
+  void OnServerRequest(JNIEnv* j_env,
+                       const base::android::JavaRef<jobject>& j_this,
+                       const jint j_request_reason);
+
+  void OnZeroStateShown(JNIEnv* j_env,
+                        const base::android::JavaRef<jobject>& j_this,
+                        const jint j_zero_state_show_reason);
+
+  void OnZeroStateRefreshCompleted(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const jint j_new_content_count,
+      const jint j_new_token_count);
 
   void OnContentTargetVisited(JNIEnv* j_env,
                               const base::android::JavaRef<jobject>& j_this,

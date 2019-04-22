@@ -15,7 +15,7 @@
 #    which is also the default if no directory is provided).
 #    This script will produce a shadow test_rebaseline/ directory
 #    with the new rebased expectation files.
-#    It is recommended to run this script from it's local
+#    It is recommended to run this script from its local
 #    directory in order to have the rebaseline files placed
 #    at the same level as the original test files.
 #

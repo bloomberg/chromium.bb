@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -393,7 +394,7 @@ void ExtensionInstallPrompt::Prompt::AppendRatingStars(
 base::string16 ExtensionInstallPrompt::Prompt::GetRatingCount() const {
   CHECK(AllowWebstoreData(type_));
   return l10n_util::GetStringFUTF16(IDS_EXTENSION_RATING_COUNT,
-                                    base::IntToString16(rating_count_));
+                                    base::NumberToString16(rating_count_));
 }
 
 base::string16 ExtensionInstallPrompt::Prompt::GetUserCount() const {
@@ -580,8 +581,9 @@ void ExtensionInstallPrompt::ShowDialog(
   LoadImageIfNeeded();
 }
 
-void ExtensionInstallPrompt::OnInstallSuccess(const Extension* extension,
-                                              SkBitmap* icon) {
+void ExtensionInstallPrompt::OnInstallSuccess(
+    scoped_refptr<const Extension> extension,
+    SkBitmap* icon) {
   extension_ = extension;
   SetIcon(icon);
 
@@ -621,8 +623,7 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
   }
 
   extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
-      extension_,
-      extension_misc::EXTENSION_ICON_LARGE,
+      extension_.get(), extension_misc::EXTENSION_ICON_LARGE,
       ExtensionIconSet::MATCH_BIGGER);
 
   // Load the image asynchronously. The response will be sent to OnImageLoaded.
@@ -634,7 +635,7 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
       extensions::ImageLoader::ImageRepresentation::NEVER_RESIZE,
       gfx::Size(),
       ui::SCALE_FACTOR_100P));
-  loader->LoadImagesAsync(extension_, images_list,
+  loader->LoadImagesAsync(extension_.get(), images_list,
                           base::BindOnce(&ExtensionInstallPrompt::OnImageLoaded,
                                          weak_factory_.GetWeakPtr()));
 }
@@ -649,14 +650,15 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     // any transformations are correctly reflected in the install prompt.
     extensions::PermissionsUpdater(
         profile_, extensions::PermissionsUpdater::INIT_FLAG_TRANSIENT)
-        .InitializePermissions(extension_);
+        .InitializePermissions(extension_.get());
     permissions_to_display =
         &extension_->permissions_data()->active_permissions();
     // For delegated installs, all optional permissions are pre-approved by the
     // person who triggers the install, so add them to the list.
     if (prompt_->type() == DELEGATED_PERMISSIONS_PROMPT) {
       const PermissionSet& optional_permissions =
-          extensions::PermissionsParser::GetOptionalPermissions(extension_);
+          extensions::PermissionsParser::GetOptionalPermissions(
+              extension_.get());
       permissions_wrapper = PermissionSet::CreateUnion(*permissions_to_display,
                                                        optional_permissions);
       permissions_to_display = permissions_wrapper.get();
@@ -673,7 +675,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
         message_provider->GetAllPermissionIDs(*permissions_to_display, type)));
   }
 
-  prompt_->set_extension(extension_);
+  prompt_->set_extension(extension_.get());
   prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
 
   if (show_params_->WasParentDestroyed()) {

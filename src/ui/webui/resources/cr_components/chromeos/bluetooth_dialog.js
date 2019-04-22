@@ -9,7 +9,7 @@
  * NOTE: This module depends on I18nBehavior which depends on loadTimeData.
  */
 
-var PairingEventType = chrome.bluetoothPrivate.PairingEventType;
+const PairingEventType = chrome.bluetoothPrivate.PairingEventType;
 
 Polymer({
   is: 'bluetooth-dialog',
@@ -105,9 +105,10 @@ Polymer({
 
   close: function() {
     this.endPairing();
-    var dialog = this.getDialog_();
-    if (dialog.open)
+    const dialog = this.getDialog_();
+    if (dialog.open) {
       dialog.close();
+    }
   },
 
   /**
@@ -119,7 +120,7 @@ Polymer({
    * @return {boolean}
    */
   handleError: function(device, lastError, result) {
-    var error;
+    let error;
     if (lastError) {
       error = lastError.message;
     } else {
@@ -135,8 +136,8 @@ Polymer({
       }
     }
 
-    var name = device.name || device.address;
-    var id = 'bluetooth_connect_' + error;
+    const name = device.name || device.address;
+    const id = 'bluetooth_connect_' + error;
     if (this.i18nExists(id)) {
       this.errorMessage_ = this.i18n(id, name);
     } else {
@@ -148,10 +149,13 @@ Polymer({
 
   /** @private */
   dialogUpdated_: function() {
-    if (this.showEnterPincode_())
+    if (this.showEnterPincode_()) {
       this.$$('#pincode').focus();
-    else if (this.showEnterPasskey_())
+    } else if (this.showEnterPasskey_()) {
       this.$$('#passkey').focus();
+    } else if (this.showAcceptReject_()) {
+      this.$$('#accept-button').focus();
+    }
   },
 
   /**
@@ -169,8 +173,9 @@ Polymer({
 
   /** @private */
   onDialogCanceled_: function() {
-    if (!this.errorMessage_)
+    if (!this.errorMessage_) {
       this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CANCEL);
+    }
     this.endPairing();
   },
 
@@ -231,15 +236,17 @@ Polymer({
    * @private
    */
   onBluetoothDeviceChanged_: function(device) {
-    if (!this.pairingDevice || device.address != this.pairingDevice.address)
+    if (!this.pairingDevice || device.address != this.pairingDevice.address) {
       return;
+    }
     this.pairingDevice = device;
   },
 
   /** @private */
   pairingChanged_: function() {
-    if (this.pairingDevice === undefined)
+    if (this.pairingDevice === undefined) {
       return;
+    }
 
     // Auto-close the dialog when pairing completes.
     if (this.pairingDevice.paired && !this.pairingDevice.connecting &&
@@ -256,11 +263,12 @@ Polymer({
    * @private
    */
   getMessage_: function() {
-    var message;
-    if (!this.pairingEvent_)
+    let message;
+    if (!this.pairingEvent_) {
       message = 'bluetoothStartConnecting';
-    else
+    } else {
       message = this.getEventDesc_(this.pairingEvent_.pairing);
+    }
     return this.i18n(message, this.pairingDevice.name || '');
   },
 
@@ -287,9 +295,10 @@ Polymer({
    * @private
    */
   showDisplayPassOrPin_: function() {
-    if (!this.pairingEvent_)
+    if (!this.pairingEvent_) {
       return false;
-    var pairing = this.pairingEvent_.pairing;
+    }
+    const pairing = this.pairingEvent_.pairing;
     return (
         pairing == PairingEventType.DISPLAY_PINCODE ||
         pairing == PairingEventType.DISPLAY_PASSKEY ||
@@ -311,9 +320,10 @@ Polymer({
    * @private
    */
   showConnect_: function() {
-    if (!this.pairingEvent_)
+    if (!this.pairingEvent_) {
       return false;
-    var pairing = this.pairingEvent_.pairing;
+    }
+    const pairing = this.pairingEvent_.pairing;
     return pairing == PairingEventType.REQUEST_PINCODE ||
         pairing == PairingEventType.REQUEST_PASSKEY;
   },
@@ -323,15 +333,16 @@ Polymer({
    * @private
    */
   enableConnect_: function() {
-    if (!this.showConnect_())
+    if (!this.showConnect_()) {
       return false;
-    var inputId =
+    }
+    const inputId =
         (this.pairingEvent_.pairing == PairingEventType.REQUEST_PINCODE) ?
         '#pincode' :
         '#passkey';
-    var crInput = /** @type {!CrInputElement} */ (this.$$(inputId));
+    const crInput = /** @type {!CrInputElement} */ (this.$$(inputId));
     assert(crInput);
-    /** @type {string} */ var value = crInput.value;
+    /** @type {string} */ const value = crInput.value;
     return !!value && crInput.validate();
   },
 
@@ -365,17 +376,19 @@ Polymer({
    * @private
    */
   sendResponse_: function(response) {
-    if (!this.pairingDevice)
+    if (!this.pairingDevice) {
       return;
-    var options =
+    }
+    const options =
         /** @type {!chrome.bluetoothPrivate.SetPairingResponseOptions} */ (
             {device: this.pairingDevice, response: response});
     if (response == chrome.bluetoothPrivate.PairingResponse.CONFIRM) {
-      var pairing = this.pairingEvent_.pairing;
-      if (pairing == PairingEventType.REQUEST_PINCODE)
+      const pairing = this.pairingEvent_.pairing;
+      if (pairing == PairingEventType.REQUEST_PINCODE) {
         options.pincode = this.$$('#pincode').value;
-      else if (pairing == PairingEventType.REQUEST_PASSKEY)
+      } else if (pairing == PairingEventType.REQUEST_PASSKEY) {
         options.passkey = parseInt(this.$$('#passkey').value, 10);
+      }
     }
     this.bluetoothPrivate.setPairingResponse(options, () => {
       if (chrome.runtime.lastError) {
@@ -412,10 +425,11 @@ Polymer({
    * @private
    */
   getPinDigit_: function(index) {
-    if (!this.pairingEvent_)
+    if (!this.pairingEvent_) {
       return '';
-    var digit = '0';
-    var pairing = this.pairingEvent_.pairing;
+    }
+    let digit = '0';
+    const pairing = this.pairingEvent_.pairing;
     if (pairing == PairingEventType.DISPLAY_PINCODE &&
         this.pairingEvent_.pincode &&
         index < this.pairingEvent_.pincode.length) {
@@ -425,7 +439,7 @@ Polymer({
         (pairing == PairingEventType.DISPLAY_PASSKEY ||
          pairing == PairingEventType.KEYS_ENTERED ||
          pairing == PairingEventType.CONFIRM_PASSKEY)) {
-      var passkeyString =
+      const passkeyString =
           String(this.pairingEvent_.passkey).padStart(this.digits_.length, '0');
       digit = passkeyString[index];
     }
@@ -438,25 +452,29 @@ Polymer({
    * @private
    */
   getPinClass_: function(index) {
-    if (!this.pairingEvent_)
+    if (!this.pairingEvent_) {
       return '';
-    if (this.pairingEvent_.pairing == PairingEventType.CONFIRM_PASSKEY)
+    }
+    if (this.pairingEvent_.pairing == PairingEventType.CONFIRM_PASSKEY) {
       return 'confirm';
-    var cssClass = 'display';
+    }
+    let cssClass = 'display';
     if (this.pairingEvent_.pairing == PairingEventType.DISPLAY_PASSKEY) {
-      if (index == 0)
+      if (index == 0) {
         cssClass += ' next';
-      else
+      } else {
         cssClass += ' untyped';
+      }
     } else if (
         this.pairingEvent_.pairing == PairingEventType.KEYS_ENTERED &&
         this.pairingEvent_.enteredKey) {
-      var enteredKey = this.pairingEvent_.enteredKey;  // 1-7
-      var lastKey = this.digits_.length;               // 6
-      if ((index == -1 && enteredKey > lastKey) || (index + 1 == enteredKey))
+      const enteredKey = this.pairingEvent_.enteredKey;  // 1-7
+      const lastKey = this.digits_.length;               // 6
+      if ((index == -1 && enteredKey > lastKey) || (index + 1 == enteredKey)) {
         cssClass += ' next';
-      else if (index > enteredKey)
+      } else if (index > enteredKey) {
         cssClass += ' untyped';
+      }
     }
     return cssClass;
   },

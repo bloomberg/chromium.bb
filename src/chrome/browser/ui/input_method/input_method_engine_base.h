@@ -122,6 +122,8 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
     // Called when a menu item for this IME is interacted with.
     virtual void OnMenuItemActivated(const std::string& component_id,
                                      const std::string& menu_id) = 0;
+
+    virtual void OnScreenProjectionChanged(bool is_projected) = 0;
 #endif  // defined(OS_CHROMEOS)
   };
 
@@ -147,17 +149,29 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
                           uint32_t anchor_pos,
                           uint32_t offset_pos) override;
   void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
-  bool ClearComposition(int context_id, std::string* error) override;
-  bool CommitText(int context_id,
-                  const char* text,
-                  std::string* error) override;
-  const std::string& GetActiveComponentId() const override;
+  bool IsInterestedInKeyEvent() const override;
+
+  // Returns the current active input_component id.
+  const std::string& GetActiveComponentId() const;
+
+  // Clear the current composition.
+  bool ClearComposition(int context_id, std::string* error);
+
+  // Commit the specified text to the specified context.  Fails if the context
+  // is not focused.
+  bool CommitText(int context_id, const char* text, std::string* error);
+
+  // Deletes |number_of_chars| unicode characters as the basis of |offset| from
+  // the surrounding text. The |offset| is relative position based on current
+  // caret.
+  // NOTE: Currently we are falling back to backspace forwarding workaround,
+  // because delete_surrounding_text is not supported in Chrome. So this
+  // function is restricted for only preceding text.
+  // TODO(nona): Support full spec delete surrounding text.
   bool DeleteSurroundingText(int context_id,
                              int offset,
                              size_t number_of_chars,
-                             std::string* error) override;
-  int GetCotextIdForTesting() { return context_id_; }
-  bool IsInterestedInKeyEvent() const override;
+                             std::string* error);
 
   // Send the sequence of key events.
   bool SendKeyEvents(int context_id, const std::vector<KeyboardEvent>& events);
@@ -180,12 +194,17 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
       const std::string& component_id,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data);
 
+  int GetContextIdForTesting() const { return context_id_; }
+
   // Get the composition bounds.
   const std::vector<gfx::Rect>& composition_bounds() const {
     return composition_bounds_;
   }
 
  protected:
+  // Returns true if this IME is active, false if not.
+  virtual bool IsActive() const = 0;
+
   // Notifies InputContextHandler that the composition is changed.
   virtual void UpdateComposition(const ui::CompositionText& composition_text,
                                  uint32_t cursor_pos,
@@ -193,6 +212,9 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   // Notifies InputContextHanlder to commit |text|.
   virtual void CommitTextToInputContext(int context_id,
                                         const std::string& text) = 0;
+  // Notifies InputContextHandler to delete surrounding text.
+  virtual void DeleteSurroundingTextToInputContext(int offset,
+                                                   size_t number_of_chars) = 0;
   // Sends the key event to the window tree host.
   virtual bool SendKeyEvent(ui::KeyEvent* ui_event,
                             const std::string& code) = 0;
@@ -217,10 +239,6 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   // The current preedit text, and it's cursor position.
   std::unique_ptr<ui::CompositionText> composition_text_;
   int composition_cursor_;
-
-  // Used with SendKeyEvents and ProcessKeyEvent to check if the key event
-  // sent to ProcessKeyEvent is sent by SendKeyEvents.
-  const ui::KeyEvent* sent_key_event_;
 
   Profile* profile_;
 

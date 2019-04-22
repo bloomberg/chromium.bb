@@ -343,8 +343,9 @@ UsbEnrollHandler.ENUMERATE_DELAY_INTERVAL_MILLIS = 200;
  * @private
  */
 UsbEnrollHandler.prototype.notifyError_ = function(code) {
-  if (this.notified_ || this.closed_)
+  if (this.notified_ || this.closed_) {
     return;
+  }
   this.notified_ = true;
   this.close();
   var reply = {'type': 'enroll_helper_reply', 'code': code};
@@ -357,8 +358,9 @@ UsbEnrollHandler.prototype.notifyError_ = function(code) {
  * @private
  */
 UsbEnrollHandler.prototype.notifySuccess_ = function(version, info) {
-  if (this.notified_ || this.closed_)
+  if (this.notified_ || this.closed_) {
     return;
+  }
   this.notified_ = true;
   this.close();
   var reply = {

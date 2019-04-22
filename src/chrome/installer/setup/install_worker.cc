@@ -721,14 +721,16 @@ base::string16 GetUpdatedBrandCode(const base::string16& brand_code) {
 
 bool AppendPostInstallTasks(const InstallerState& installer_state,
                             const base::FilePath& setup_path,
+                            const base::FilePath& src_path,
+                            const base::FilePath& temp_path,
                             const base::Version* current_version,
                             const base::Version& new_version,
                             WorkItemList* post_install_task_list) {
   DCHECK(post_install_task_list);
 
   HKEY root = installer_state.root_key();
-  base::FilePath new_chrome_exe(
-      installer_state.target_path().Append(installer::kChromeNewExe));
+  const base::FilePath& target_path = installer_state.target_path();
+  base::FilePath new_chrome_exe(target_path.Append(kChromeNewExe));
 
   // Append work items that will only be executed if this was an update.
   // We update the 'opv' value with the current version that is active,
@@ -779,6 +781,12 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
         root, clients_key, KEY_WOW64_32KEY, google_update::kRegRenameCmdField,
         product_rename_cmd.GetCommandLineString(), true);
 
+    // Delay deploying the new chrome_proxy while chrome is running.
+    in_use_update_work_items->AddCopyTreeWorkItem(
+        src_path.Append(kChromeProxyExe).value(),
+        target_path.Append(kChromeProxyNewExe).value(), temp_path.value(),
+        WorkItem::ALWAYS);
+
     post_install_task_list->AddWorkItem(in_use_update_work_items.release());
   }
 
@@ -798,6 +806,13 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
         google_update::kRegCriticalVersionField);
     regular_update_work_items->AddDeleteRegValueWorkItem(
         root, clients_key, KEY_WOW64_32KEY, google_update::kRegRenameCmdField);
+
+    // Only copy chrome_proxy.exe directly when chrome.exe isn't in use to avoid
+    // different versions getting mixed up between the two binaries.
+    regular_update_work_items->AddCopyTreeWorkItem(
+        src_path.Append(kChromeProxyExe).value(),
+        target_path.Append(kChromeProxyExe).value(), temp_path.value(),
+        WorkItem::ALWAYS);
 
     post_install_task_list->AddWorkItem(regular_update_work_items.release());
   }
@@ -846,6 +861,32 @@ void AddInstallWorkItems(const InstallationState& original_state,
   install_list->AddCreateDirWorkItem(temp_path);
   install_list->AddCreateDirWorkItem(target_path);
 
+  // Set permissions early on both temp and target, since moved files may not
+  // inherit permissions.
+  WorkItem* add_ac_acl_to_install =
+      install_list->AddCallbackWorkItem(base::BindRepeating(
+          [](const base::FilePath& target_path, const base::FilePath& temp_path,
+             const CallbackWorkItem& work_item) {
+            DCHECK(!work_item.IsRollback());
+            std::vector<const wchar_t*> sids = {
+                kChromeInstallFilesCapabilitySid,
+                kLpacChromeInstallFilesCapabilitySid};
+            bool success_target = AddAclToPath(
+                target_path, sids, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE,
+                CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE);
+            bool success_temp = AddAclToPath(
+                temp_path, sids, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE,
+                CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE);
+
+            bool success = (success_target && success_temp);
+            base::UmaHistogramBoolean("Setup.Install.AddAppContainerAce",
+                                      success);
+            return success;
+          },
+          target_path, temp_path));
+  add_ac_acl_to_install->set_best_effort(true);
+  add_ac_acl_to_install->set_rollback_enabled(false);
+
   // Create the directory in which persistent metrics will be stored.
   const base::FilePath histogram_storage_dir(
       target_path.AppendASCII(kSetupHistogramAllocatorName));
@@ -874,25 +915,6 @@ void AddInstallWorkItems(const InstallationState& original_state,
   // Copy installer in install directory
   AddInstallerCopyTasks(installer_state, setup_path, archive_path, temp_path,
                         new_version, install_list);
-
-  WorkItem* add_ac_acl_to_install =
-      install_list->AddCallbackWorkItem(base::BindRepeating(
-          [](const base::FilePath& target_path,
-             const CallbackWorkItem& work_item) {
-            DCHECK(!work_item.IsRollback());
-            std::vector<const wchar_t*> sids = {
-                kChromeInstallFilesCapabilitySid,
-                kLpacChromeInstallFilesCapabilitySid};
-            bool success = AddAclToPath(
-                target_path, sids, FILE_GENERIC_READ | FILE_GENERIC_EXECUTE,
-                CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE);
-            base::UmaHistogramBoolean("Setup.Install.AddAppContainerAce",
-                                      success);
-            return success;
-          },
-          target_path));
-  add_ac_acl_to_install->set_best_effort(true);
-  add_ac_acl_to_install->set_rollback_enabled(false);
 
   const HKEY root = installer_state.root_key();
   // Only set "lang" for user-level installs since for system-level, the install
@@ -939,11 +961,8 @@ void AddInstallWorkItems(const InstallationState& original_state,
   AddUpdateBrandCodeWorkItem(installer_state, install_list);
 
   // Append the tasks that run after the installation.
-  AppendPostInstallTasks(installer_state,
-                         setup_path,
-                         current_version,
-                         new_version,
-                         install_list);
+  AppendPostInstallTasks(installer_state, setup_path, src_path, temp_path,
+                         current_version, new_version, install_list);
 }
 
 void AddNativeNotificationWorkItems(

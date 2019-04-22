@@ -63,17 +63,23 @@ CustomWrappableAdapter* CustomWrappableAdapter::LookupInternal(
 
 void CustomWrappableAdapter::Attach(ScriptState* script_state,
                                     v8::Local<v8::Object> object,
-                                    const V8PrivateProperty::Symbol& property,
-                                    CustomWrappableAdapter* adapter) {
+                                    const V8PrivateProperty::Symbol& property) {
+  v8::Local<v8::Object> wrapper_object =
+      CreateAndInitializeWrapper(script_state);
+  property.Set(object, wrapper_object);
+}
+
+v8::Local<v8::Object> CustomWrappableAdapter::CreateAndInitializeWrapper(
+    ScriptState* script_state) {
   DCHECK(wrapper_.IsEmpty());
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::Local<v8::Object> wrapper_object = V8DOMWrapper::CreateWrapper(
       isolate, script_state->GetContext()->Global(), &custom_wrappable_info);
   V8DOMWrapper::AssociateObjectWithWrapper(
-      isolate, adapter, &custom_wrappable_info, wrapper_object);
-  property.Set(object, wrapper_object);
+      isolate, this, &custom_wrappable_info, wrapper_object);
   wrapper_.Set(isolate, wrapper_object);
   custom_wrappable_info.ConfigureWrapper(&wrapper_.Get());
+  return wrapper_object;
 }
 
 }  // namespace blink

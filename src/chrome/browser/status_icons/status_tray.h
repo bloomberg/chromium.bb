@@ -32,7 +32,7 @@ class StatusTray {
   // Static factory method that is implemented separately for each platform to
   // produce the appropriate platform-specific instance. Returns NULL if this
   // platform does not support status icons.
-  static StatusTray* Create();
+  static std::unique_ptr<StatusTray> Create();
 
   virtual ~StatusTray();
 

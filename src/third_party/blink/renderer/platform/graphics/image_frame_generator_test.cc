@@ -27,6 +27,7 @@
 
 #include <memory>
 #include "base/location.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -88,7 +89,7 @@ class ImageFrameGeneratorTest : public testing::Test,
 
   void ClearCacheExceptFrameRequested(size_t clear_except_frame) override {
     requested_clear_except_frame_ = clear_except_frame;
-  };
+  }
 
   size_t FrameCount() override { return frame_count_; }
   int RepetitionCount() const override {
@@ -243,7 +244,16 @@ static void DecodeThreadMain(ImageFrameGenerator* generator,
                             cc::PaintImage::kDefaultGeneratorClientId);
 }
 
-TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded) {
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+// TODO(crbug.com/948641)
+#define MAYBE_incompleteDecodeBecomesCompleteMultiThreaded \
+  DISABLED_incompleteDecodeBecomesCompleteMultiThreaded
+#else
+#define MAYBE_incompleteDecodeBecomesCompleteMultiThreaded \
+  incompleteDecodeBecomesCompleteMultiThreaded
+#endif  // defined(OS_ANDROID) || defined(OS_LINUX)
+TEST_F(ImageFrameGeneratorTest,
+       MAYBE_incompleteDecodeBecomesCompleteMultiThreaded) {
   SetFrameStatus(ImageFrame::kFramePartial);
 
   char buffer[100 * 100 * 4];

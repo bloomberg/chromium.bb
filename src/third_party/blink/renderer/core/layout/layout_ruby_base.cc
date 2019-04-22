@@ -89,7 +89,7 @@ void LayoutRubyBase::MoveInlineChildren(LayoutRubyBase* to_base,
     LayoutObject* last_child = to_base->LastChild();
     if (last_child && last_child->IsAnonymousBlock() &&
         last_child->ChildrenInline()) {
-      to_block = ToLayoutBlock(last_child);
+      to_block = To<LayoutBlock>(last_child);
     } else {
       to_block = to_base->CreateAnonymousBlock();
       to_base->Children()->AppendChildNode(to_base, to_block);
@@ -118,8 +118,8 @@ void LayoutRubyBase::MoveBlockChildren(LayoutRubyBase* to_base,
       first_child_here->ChildrenInline() && last_child_there &&
       last_child_there->IsAnonymousBlock() &&
       last_child_there->ChildrenInline()) {
-    LayoutBlockFlow* anon_block_here = ToLayoutBlockFlow(first_child_here);
-    LayoutBlockFlow* anon_block_there = ToLayoutBlockFlow(last_child_there);
+    auto* anon_block_here = To<LayoutBlockFlow>(first_child_here);
+    auto* anon_block_there = To<LayoutBlockFlow>(last_child_there);
     anon_block_here->MoveAllChildrenTo(anon_block_there,
                                        anon_block_there->Children());
     anon_block_here->DeleteLineBoxTree();
@@ -128,8 +128,15 @@ void LayoutRubyBase::MoveBlockChildren(LayoutRubyBase* to_base,
   // Move all remaining children normally. If moving all children, include our
   // float list.
   if (!before_child) {
-    MoveAllChildrenIncludingFloatsTo(to_base,
-                                     to_base->HasLayer() || HasLayer());
+    bool full_remove_insert = to_base->HasLayer() || HasLayer();
+    // TODO(kojii): |this| is |!ChildrenInline()| when we enter this function,
+    // but it may turn to |ChildrenInline()| when |anon_block_here| is destroyed
+    // above. Probably the correct fix is to do it earlier and switch to
+    // |MoveInlineChildren()| if this happens. For the short term safe fix,
+    // using |full_remove_insert| can prevent inconsistent LayoutObject tree
+    // that leads to CHECK failures.
+    full_remove_insert |= ChildrenInline();
+    MoveAllChildrenIncludingFloatsTo(to_base, full_remove_insert);
   } else {
     MoveChildrenTo(to_base, FirstChild(), before_child);
     RemoveFloatingObjectsFromDescendants();

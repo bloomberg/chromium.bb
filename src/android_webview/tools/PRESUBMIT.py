@@ -5,14 +5,21 @@
 """Presubmit for android_webview/tools."""
 
 
+def _GetPythonUnitTests(input_api, output_api):
+  return input_api.canned_checks.GetUnitTestsRecursively(
+      input_api, output_api,
+      input_api.PresubmitLocalPath(),
+      whitelist=['.*_test\\.py$'],
+      blacklist=[])
+
+
 def CommonChecks(input_api, output_api):
   """Presubmit checks run on both upload and commit.
-
-  This is currently limited to pylint.
   """
   checks = []
   checks.extend(input_api.canned_checks.GetPylint(
       input_api, output_api, pylintrc='pylintrc'))
+  checks.extend(_GetPythonUnitTests(input_api, output_api))
   return input_api.RunTests(checks, False)
 
 

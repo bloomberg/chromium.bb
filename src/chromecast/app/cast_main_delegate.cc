@@ -80,7 +80,7 @@ bool CastMainDelegate::BasicStartupComplete(int* exit_code) {
   if (process_type.empty()) {
     base::FilePath log_file;
     base::PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
-    settings.logging_dest = logging::LOG_TO_ALL;
+    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
     settings.log_file = log_file.value().c_str();
     settings.delete_old = logging::DELETE_OLD_LOG_FILE;
   }
@@ -99,7 +99,7 @@ bool CastMainDelegate::BasicStartupComplete(int* exit_code) {
   if (process_type.empty()) {
     // Get a listing of all of the crash dump files.
     base::FilePath crash_directory;
-    if (CastCrashReporterClientAndroid::GetCrashDumpLocation(
+    if (CastCrashReporterClientAndroid::GetCrashReportsLocation(
             process_type, &crash_directory)) {
       base::FileEnumerator crash_directory_list(crash_directory, false,
                                                 base::FileEnumerator::FILES);
@@ -177,7 +177,7 @@ int CastMainDelegate::RunProcess(
 
   // Note: Android must handle running its own browser process.
   // See ChromeMainDelegateAndroid::RunProcess.
-  browser_runner_.reset(content::BrowserMainRunner::Create());
+  browser_runner_ = content::BrowserMainRunner::Create();
   return browser_runner_->Initialize(main_function_params);
 #else
   return -1;

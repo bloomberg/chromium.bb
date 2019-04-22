@@ -8,7 +8,7 @@ suite('SettingsSlider', function() {
   let slider;
 
   /**
-   * paper-slider instance wrapped by settings-slider.
+   * cr-slider instance wrapped by settings-slider.
    * @type {!CrSliderElement}
    */
   let crSlider;
@@ -24,6 +24,7 @@ suite('SettingsSlider', function() {
     };
     document.body.appendChild(slider);
     crSlider = slider.$$('cr-slider');
+    return PolymerTest.flushTasks();
   });
 
   function pressArrowRight() {
@@ -58,6 +59,34 @@ suite('SettingsSlider', function() {
     MockInteractions.pressAndReleaseKeyOn(crSlider, 35, [], 'End');
   }
 
+  function pointerEvent(eventType, ratio) {
+    const rect = crSlider.$.barContainer.getBoundingClientRect();
+    crSlider.dispatchEvent(new PointerEvent(eventType, {
+      buttons: 1,
+      pointerId: 1,
+      clientX: rect.left + (ratio * rect.width),
+    }));
+  }
+
+  function pointerDown(ratio) {
+    pointerEvent('pointerdown', ratio);
+  }
+
+  function pointerMove(ratio) {
+    pointerEvent('pointermove', ratio);
+  }
+
+  function pointerUp() {
+    // Ignores clientX for pointerup event.
+    pointerEvent('pointerup', 0);
+  }
+
+  function assertCloseTo(actual, expected) {
+    assertTrue(
+        Math.abs(1 - actual / expected) <= Number.EPSILON,
+        `expected ${expected} to be close to ${actual}`);
+  }
+
   test('enforce value', function() {
     // Test that the indicator is not present until after the pref is
     // enforced.
@@ -84,13 +113,19 @@ suite('SettingsSlider', function() {
     // settings-slider only supports snapping to a range of tick values.
     // Setting to an in-between value should snap to an indexed value.
     slider.set('pref.value', 70);
-    expectEquals(5, crSlider.value);
-    expectEquals(64, slider.pref.value);
+    return PolymerTest.flushTasks()
+        .then(() => {
+          expectEquals(5, crSlider.value);
+          expectEquals(64, slider.pref.value);
 
-    // Setting the value out-of-range should clamp the slider.
-    slider.set('pref.value', -100);
-    expectEquals(0, crSlider.value);
-    expectEquals(2, slider.pref.value);
+          // Setting the value out-of-range should clamp the slider.
+          slider.set('pref.value', -100);
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          expectEquals(0, crSlider.value);
+          expectEquals(2, slider.pref.value);
+        });
   });
 
   test('move slider', function() {
@@ -176,5 +211,67 @@ suite('SettingsSlider', function() {
     pressPageUp();
     expectEquals(4, crSlider.value);
     expectEquals(.4, slider.pref.value);
+  });
+
+  test('update value instantly both off and on with ticks', () => {
+    slider.ticks = ticks;
+    slider.set('pref.value', 2);
+    slider.updateValueInstantly = false;
+    assertEquals(0, crSlider.value);
+    pointerDown(3 / crSlider.max);
+    assertEquals(3, crSlider.value);
+    assertEquals(2, slider.pref.value);
+    pointerUp();
+    assertEquals(3, crSlider.value);
+    assertEquals(16, slider.pref.value);
+
+    // Once |updateValueInstantly| is turned on, |value| should start updating
+    // again during drag.
+    pointerDown(0);
+    assertEquals(0, crSlider.value);
+    assertEquals(16, slider.pref.value);
+    slider.updateValueInstantly = true;
+    assertEquals(2, slider.pref.value);
+    pointerMove(1 / crSlider.max);
+    assertEquals(1, crSlider.value);
+    assertEquals(4, slider.pref.value);
+    slider.updateValueInstantly = false;
+    pointerMove(2 / crSlider.max);
+    assertEquals(2, crSlider.value);
+    assertEquals(4, slider.pref.value);
+    pointerUp();
+    assertEquals(2, crSlider.value);
+    assertEquals(8, slider.pref.value);
+  });
+
+  test('update value instantly both off and on', () => {
+    slider.scale = 10;
+    slider.set('pref.value', 2);
+    slider.updateValueInstantly = false;
+    assertCloseTo(20, crSlider.value);
+    pointerDown(.3);
+    assertCloseTo(30, crSlider.value);
+    assertEquals(2, slider.pref.value);
+    pointerUp();
+    assertCloseTo(30, crSlider.value);
+    assertCloseTo(3, slider.pref.value);
+
+    // Once |updateValueInstantly| is turned on, |value| should start updating
+    // again during drag.
+    pointerDown(0);
+    assertEquals(0, crSlider.value);
+    assertCloseTo(3, slider.pref.value);
+    slider.updateValueInstantly = true;
+    assertEquals(0, slider.pref.value);
+    pointerMove(.1);
+    assertCloseTo(10, crSlider.value);
+    assertCloseTo(1, slider.pref.value);
+    slider.updateValueInstantly = false;
+    pointerMove(.2);
+    assertCloseTo(20, crSlider.value);
+    assertCloseTo(1, slider.pref.value);
+    pointerUp();
+    assertCloseTo(20, crSlider.value);
+    assertCloseTo(2, slider.pref.value);
   });
 });

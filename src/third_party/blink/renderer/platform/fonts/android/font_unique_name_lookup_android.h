@@ -20,7 +20,7 @@ class FontUniqueNameLookupAndroid : public FontUniqueNameLookup {
 
  private:
   bool EnsureMatchingServiceConnected();
-  std::unique_ptr<FontTableMatcher> font_table_matcher_;
+
   DISALLOW_COPY_AND_ASSIGN(FontUniqueNameLookupAndroid);
 };
 

@@ -8,18 +8,18 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_BASE_TASKRUNNER_H__
-#define WEBRTC_BASE_TASKRUNNER_H__
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKRUNNER_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKRUNNER_H_
 
 #include <stdint.h>
 
 #include <vector>
 
+#include "base/logging.h"
 #include "third_party/libjingle_xmpp/task_runner/taskparent.h"
-#include "third_party/webrtc/rtc_base/checks.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
-namespace rtc {
+namespace jingle_xmpp {
 class Task;
 
 const int64_t kSecToMsec = 1000;
@@ -33,20 +33,10 @@ class TaskRunner : public TaskParent, public sigslot::has_slots<> {
 
   virtual void WakeTasks() = 0;
 
-  // Returns the current time in 100ns units.  It is used for
-  // determining timeouts.  The origin is not important, only
-  // the units and that rollover while the computer is running.
-  //
-  // On Windows, GetSystemTimeAsFileTime is the typical implementation.
-  virtual int64_t CurrentTime() = 0;
-
   void StartTask(Task *task);
   void RunTasks();
-  void PollTasks();
 
-  void UpdateTaskTimeout(Task* task, int64_t previous_task_timeout_time);
-
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
   bool is_ok_to_delete(Task* task) {
     return task == deleting_task_;
   }
@@ -84,19 +74,15 @@ class TaskRunner : public TaskParent, public sigslot::has_slots<> {
 
  private:
   void InternalRunTasks(bool in_destructor);
-  void CheckForTimeoutChange(int64_t previous_timeout_time);
 
   std::vector<Task *> tasks_;
-  Task *next_timeout_task_ = nullptr;
   bool tasks_running_ = false;
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
   int abort_count_ = 0;
   Task* deleting_task_ = nullptr;
 #endif
-
-  void RecalcNextTimeout(Task *exclude_task);
 };
 
-} // namespace rtc
+} // namespace jingle_xmpp
 
-#endif  // TASK_BASE_TASKRUNNER_H__
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKRUNNER_H_

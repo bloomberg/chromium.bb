@@ -4,7 +4,7 @@ Tests that source data are extracted correctly from external stylesheets in UTF-
 element.style { ()
 
 [expanded] 
-h1 { (parse-utf8-bom-main.css:3 -> parse-utf8-bom-main.css:3:5)
+h1 { (parse-utf8-…-main.css:3 -> parse-utf8-bom-main.css:3:5)
     color: red;
 
 [expanded] 
@@ -16,5 +16,10 @@ h1 { (user agent stylesheet)
     margin-inline-start: 0px;
     margin-inline-end: 0px;
     font-weight: bold;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
 
 

@@ -12,15 +12,18 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_action_handler.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_presenter.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_presenter.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_presenter_delegate.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 
@@ -37,8 +40,8 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 }
 }  // namespace
 
-@interface PopupMenuCoordinator ()<ContainedPresenterDelegate,
-                                   PopupMenuCommands>
+@interface PopupMenuCoordinator () <PopupMenuCommands,
+                                    PopupMenuPresenterDelegate>
 
 // Presenter for the popup menu, managing the animations.
 @property(nonatomic, strong) PopupMenuPresenter* presenter;
@@ -46,6 +49,8 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 @property(nonatomic, strong) PopupMenuMediator* mediator;
 // ViewController for this mediator.
 @property(nonatomic, strong) PopupMenuTableViewController* viewController;
+// Handles user interaction with the popup menu items.
+@property(nonatomic, strong) PopupMenuActionHandler* actionHandler;
 // Time when the presentation of the popup menu is requested.
 @property(nonatomic, assign) NSTimeInterval requestStartTime;
 
@@ -166,6 +171,12 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   // No-op.
 }
 
+#pragma mark - PopupMenuPresenterDelegate
+
+- (void)popupMenuPresenterWillDismiss:(PopupMenuPresenter*)presenter {
+  [self dismissPopupMenuAnimated:NO];
+}
+
 #pragma mark - Notification callback
 
 - (void)applicationDidEnterBackground:(NSNotification*)note {
@@ -190,9 +201,6 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 
   PopupMenuTableViewController* tableViewController =
       [[PopupMenuTableViewController alloc] init];
-  tableViewController.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands, LoadQueryCommands>>(
-          self.dispatcher);
   tableViewController.baseViewController = self.baseViewController;
   if (type == PopupMenuTypeToolsMenu) {
     tableViewController.tableView.accessibilityIdentifier =
@@ -223,14 +231,23 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   self.mediator.engagementTracker =
       feature_engagement::TrackerFactory::GetForBrowserState(self.browserState);
   self.mediator.webStateList = self.webStateList;
-  self.mediator.popupMenu = tableViewController;
   self.mediator.dispatcher = static_cast<id<BrowserCommands>>(self.dispatcher);
   self.mediator.bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(self.browserState);
+  self.mediator.templateURLService =
+      ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
+  self.mediator.popupMenu = tableViewController;
+
+  self.actionHandler = [[PopupMenuActionHandler alloc] init];
+  self.actionHandler.baseViewController = self.baseViewController;
+  self.actionHandler.dispatcher =
+      static_cast<id<ApplicationCommands, BrowserCommands, LoadQueryCommands>>(
+          self.dispatcher);
+  self.actionHandler.commandHandler = self.mediator;
+  tableViewController.delegate = self.actionHandler;
 
   self.presenter = [[PopupMenuPresenter alloc] init];
   self.presenter.baseViewController = self.baseViewController;
-  self.presenter.commandHandler = self;
   self.presenter.presentedViewController = tableViewController;
   self.presenter.guideName = guideName;
   self.presenter.delegate = self;

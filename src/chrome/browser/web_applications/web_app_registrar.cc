@@ -4,6 +4,9 @@
 
 #include "chrome/browser/web_applications/web_app_registrar.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -42,7 +45,7 @@ std::unique_ptr<WebApp> WebAppRegistrar::UnregisterApp(const AppId& app_id) {
   return web_app;
 }
 
-WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) {
+WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
   auto kv = registry_.find(app_id);
   return kv == registry_.end() ? nullptr : kv->second.get();
 }
@@ -58,17 +61,37 @@ void WebAppRegistrar::UnregisterAll() {
   registry_.clear();
 }
 
-void WebAppRegistrar::Init(base::OnceClosure closure) {
+void WebAppRegistrar::Init(base::OnceClosure callback) {
   database_->OpenDatabase(base::BindOnce(&WebAppRegistrar::OnDatabaseOpened,
                                          weak_ptr_factory_.GetWeakPtr(),
-                                         std::move(closure)));
+                                         std::move(callback)));
 }
 
-void WebAppRegistrar::OnDatabaseOpened(base::OnceClosure closure,
+void WebAppRegistrar::OnDatabaseOpened(base::OnceClosure callback,
                                        Registry registry) {
   DCHECK(is_empty());
   registry_ = std::move(registry);
-  std::move(closure).Run();
+  std::move(callback).Run();
+}
+
+bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {
+  return GetAppById(app_id) != nullptr;
+}
+
+bool WebAppRegistrar::WasExternalAppUninstalledByUser(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool WebAppRegistrar::HasScopeUrl(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+GURL WebAppRegistrar::GetScopeUrlForApp(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return GURL();
 }
 
 }  // namespace web_app

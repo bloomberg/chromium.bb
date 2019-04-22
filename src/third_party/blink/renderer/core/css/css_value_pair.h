@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -30,13 +31,6 @@ namespace blink {
 class CORE_EXPORT CSSValuePair : public CSSValue {
  public:
   enum IdenticalValuesPolicy { kDropIdenticalValues, kKeepIdenticalValues };
-
-  static CSSValuePair* Create(const CSSValue* first,
-                              const CSSValue* second,
-                              IdenticalValuesPolicy identical_values_policy) {
-    return MakeGarbageCollected<CSSValuePair>(first, second,
-                                              identical_values_policy);
-  }
 
   CSSValuePair(const CSSValue* first,
                const CSSValue* second,
@@ -54,7 +48,7 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
 
   bool KeepIdenticalValues() const {
     return identical_values_policy_ == kKeepIdenticalValues;
-  };
+  }
 
   String CustomCSSText() const {
     String first = first_->CssText();
@@ -78,7 +72,10 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
   IdenticalValuesPolicy identical_values_policy_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSValuePair, IsValuePair());
+template <>
+struct DowncastTraits<CSSValuePair> {
+  static bool AllowFrom(const CSSValue& value) { return value.IsValuePair(); }
+};
 
 }  // namespace blink
 

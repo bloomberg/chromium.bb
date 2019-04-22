@@ -16,7 +16,14 @@ namespace media {
 // TODO(https://crbug.com/820277): Deduplicate media_router::MediaStatus.
 struct MEDIA_EXPORT MediaStatus {
  public:
-  enum class State { UNKNOWN, PLAYING, PAUSED, BUFFERING, STOPPED };
+  enum class State {
+    UNKNOWN,
+    PLAYING,
+    PAUSED,
+    BUFFERING,
+    STOPPED,
+    STATE_MAX = STOPPED,
+  };
 
   MediaStatus();
   MediaStatus(const MediaStatus& other);

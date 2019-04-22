@@ -18,10 +18,6 @@ struct SandboxedPageInfo : public Extension::ManifestData {
   SandboxedPageInfo();
   ~SandboxedPageInfo() override;
 
-  // Returns the extension's Content Security Policy for the sandboxed pages.
-  static const std::string& GetContentSecurityPolicy(
-      const Extension* extension);
-
   // Returns the extension's sandboxed pages.
   static const URLPatternSet& GetPages(const Extension* extension);
 
@@ -32,13 +28,10 @@ struct SandboxedPageInfo : public Extension::ManifestData {
   // Optional list of extension pages that are sandboxed (served from a unique
   // origin with a different Content Security Policy).
   URLPatternSet pages;
-
-  // Content Security Policy that should be used to enforce the sandbox used
-  // by sandboxed pages (guaranteed to have the "sandbox" directive without the
-  // "allow-same-origin" token).
-  std::string content_security_policy;
 };
 
+// Responsible for parsing the "sandbox.pages" manifest key.
+// "sandbox.content_security_policy" is parsed by CSPHandler.
 class SandboxedPageHandler : public ManifestHandler {
  public:
   SandboxedPageHandler();

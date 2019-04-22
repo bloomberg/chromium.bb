@@ -38,7 +38,7 @@ bool MediaControlsDisplayCutoutDelegate::IsEnabled() {
 
 MediaControlsDisplayCutoutDelegate::MediaControlsDisplayCutoutDelegate(
     HTMLVideoElement& video_element)
-    : EventListener(kCPPEventListenerType), video_element_(video_element) {}
+    : video_element_(video_element) {}
 
 void MediaControlsDisplayCutoutDelegate::Attach() {
   DCHECK(video_element_->isConnected());
@@ -58,13 +58,8 @@ void MediaControlsDisplayCutoutDelegate::Detach() {
                                     this, true);
 }
 
-bool MediaControlsDisplayCutoutDelegate::operator==(
-    const EventListener& other) const {
-  return this == &other;
-}
-
 void MediaControlsDisplayCutoutDelegate::Trace(blink::Visitor* visitor) {
-  EventListener::Trace(visitor);
+  NativeEventListener::Trace(visitor);
   visitor->Trace(video_element_);
 }
 

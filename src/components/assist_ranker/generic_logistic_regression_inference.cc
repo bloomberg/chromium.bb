@@ -76,8 +76,8 @@ float GenericLogisticRegressionInference::PredictScore(
     }
   } else {
     RankerExample processed_example = example;
-    ExamplePreprocessor(proto_.preprocessor_config())
-        .Process(&processed_example);
+    ExamplePreprocessor::Process(proto_.preprocessor_config(),
+                                 &processed_example);
     for (const auto& field : ExampleFloatIterator(processed_example)) {
       if (field.error != ExamplePreprocessor::kSuccess)
         continue;

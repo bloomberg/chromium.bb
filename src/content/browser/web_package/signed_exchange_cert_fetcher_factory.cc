@@ -4,9 +4,12 @@
 
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 
+#include <utility>
+
 #include "base/unguessable_token.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -16,24 +19,21 @@ class SignedExchangeCertFetcherFactoryImpl
     : public SignedExchangeCertFetcherFactory {
  public:
   SignedExchangeCertFetcherFactoryImpl(
-      url::Origin request_initiator,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       const base::Optional<base::UnguessableToken>& throttling_profile_id)
-      : request_initiator_(std::move(request_initiator)),
-        url_loader_factory_(std::move(url_loader_factory)),
+      : url_loader_factory_(std::move(url_loader_factory)),
         url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
         throttling_profile_id_(throttling_profile_id) {}
 
   std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
       const GURL& cert_url,
       bool force_fetch,
-      SignedExchangeVersion version,
       SignedExchangeCertFetcher::CertificateCallback callback,
-      SignedExchangeDevToolsProxy* devtools_proxy) override;
+      SignedExchangeDevToolsProxy* devtools_proxy,
+      SignedExchangeReporter* reporter) override;
 
  private:
-  url::Origin request_initiator_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   const base::Optional<base::UnguessableToken> throttling_profile_id_;
@@ -43,29 +43,28 @@ std::unique_ptr<SignedExchangeCertFetcher>
 SignedExchangeCertFetcherFactoryImpl::CreateFetcherAndStart(
     const GURL& cert_url,
     bool force_fetch,
-    SignedExchangeVersion version,
     SignedExchangeCertFetcher::CertificateCallback callback,
-    SignedExchangeDevToolsProxy* devtools_proxy) {
+    SignedExchangeDevToolsProxy* devtools_proxy,
+    SignedExchangeReporter* reporter) {
   DCHECK(url_loader_factory_);
   DCHECK(url_loader_throttles_getter_);
   std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
       std::move(url_loader_throttles_getter_).Run();
   return SignedExchangeCertFetcher::CreateAndStart(
       std::move(url_loader_factory_), std::move(throttles), cert_url,
-      std::move(request_initiator_), force_fetch, version, std::move(callback),
-      devtools_proxy, throttling_profile_id_);
+      force_fetch, std::move(callback), devtools_proxy, reporter,
+      throttling_profile_id_);
 }
 
 // static
 std::unique_ptr<SignedExchangeCertFetcherFactory>
 SignedExchangeCertFetcherFactory::Create(
-    url::Origin request_initiator,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     const base::Optional<base::UnguessableToken>& throttling_profile_id) {
   return std::make_unique<SignedExchangeCertFetcherFactoryImpl>(
-      std::move(request_initiator), std::move(url_loader_factory),
-      std::move(url_loader_throttles_getter), throttling_profile_id);
+      std::move(url_loader_factory), std::move(url_loader_throttles_getter),
+      throttling_profile_id);
 }
 
 }  // namespace content

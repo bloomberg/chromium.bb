@@ -4,6 +4,7 @@
 
 #include "headless/lib/browser/protocol/page_handler.h"
 
+#include "base/bind.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/units.h"
 

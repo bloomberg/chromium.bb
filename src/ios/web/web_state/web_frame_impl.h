@@ -50,7 +50,7 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
       const std::string& name,
       const std::vector<base::Value>& parameters) override;
   bool CallJavaScriptFunction(
-      std::string name,
+      const std::string& name,
       const std::vector<base::Value>& parameters,
       base::OnceCallback<void(const base::Value*)> callback,
       base::TimeDelta timeout) override;

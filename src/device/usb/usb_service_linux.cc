@@ -64,10 +64,10 @@ void OnDeviceOpenedToReadDescriptors(
 
 }  // namespace
 
-class UsbServiceLinux::FileThreadHelper : public UdevWatcher::Observer {
+class UsbServiceLinux::BlockingTaskRunnerHelper : public UdevWatcher::Observer {
  public:
-  FileThreadHelper(base::WeakPtr<UsbServiceLinux> service);
-  ~FileThreadHelper() override;
+  BlockingTaskRunnerHelper(base::WeakPtr<UsbServiceLinux> service);
+  ~BlockingTaskRunnerHelper() override;
 
   void Start();
 
@@ -84,10 +84,10 @@ class UsbServiceLinux::FileThreadHelper : public UdevWatcher::Observer {
 
   base::SequenceChecker sequence_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileThreadHelper);
+  DISALLOW_COPY_AND_ASSIGN(BlockingTaskRunnerHelper);
 };
 
-UsbServiceLinux::FileThreadHelper::FileThreadHelper(
+UsbServiceLinux::BlockingTaskRunnerHelper::BlockingTaskRunnerHelper(
     base::WeakPtr<UsbServiceLinux> service)
     : service_(service), task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   // Detaches from the sequence on which this object was created. It will be
@@ -95,14 +95,14 @@ UsbServiceLinux::FileThreadHelper::FileThreadHelper(
   sequence_checker_.DetachFromSequence();
 }
 
-UsbServiceLinux::FileThreadHelper::~FileThreadHelper() {
+UsbServiceLinux::BlockingTaskRunnerHelper::~BlockingTaskRunnerHelper() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
-// static
-void UsbServiceLinux::FileThreadHelper::Start() {
+void UsbServiceLinux::BlockingTaskRunnerHelper::Start() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Initializing udev for device enumeration and monitoring may fail. In that
   // case this service will continue to exist but no devices will be found.
@@ -114,11 +114,12 @@ void UsbServiceLinux::FileThreadHelper::Start() {
       FROM_HERE, base::BindOnce(&UsbServiceLinux::HelperStarted, service_));
 }
 
-void UsbServiceLinux::FileThreadHelper::OnDeviceAdded(
+void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceAdded(
     ScopedUdevDevicePtr device) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   const char* subsystem = udev_device_get_subsystem(device.get());
   if (!subsystem || strcmp(subsystem, "usb") != 0)
     return;
@@ -169,16 +170,28 @@ void UsbServiceLinux::FileThreadHelper::OnDeviceAdded(
   if (value)
     base::StringToUint(value, &active_configuration);
 
+  unsigned bus_number = 0;
+  value = udev_device_get_sysattr_value(device.get(), "busnum");
+  if (value)
+    base::StringToUint(value, &bus_number);
+
+  unsigned port_number = 0;
+  value = udev_device_get_sysattr_value(device.get(), "devnum");
+  if (value)
+    base::StringToUint(value, &port_number);
+
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&UsbServiceLinux::OnDeviceAdded, service_,
-                                device_path, descriptor, manufacturer, product,
-                                serial_number, active_configuration));
+      FROM_HERE,
+      base::BindOnce(&UsbServiceLinux::OnDeviceAdded, service_, device_path,
+                     descriptor, manufacturer, product, serial_number,
+                     active_configuration, bus_number, port_number));
 }
 
-void UsbServiceLinux::FileThreadHelper::OnDeviceRemoved(
+void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceRemoved(
     ScopedUdevDevicePtr device) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   const char* device_path = udev_device_get_devnode(device.get());
   if (device_path) {
@@ -189,16 +202,17 @@ void UsbServiceLinux::FileThreadHelper::OnDeviceRemoved(
 }
 
 UsbServiceLinux::UsbServiceLinux()
-    : UsbService(CreateBlockingTaskRunner()), weak_factory_(this) {
-  helper_ = std::make_unique<FileThreadHelper>(weak_factory_.GetWeakPtr());
-  blocking_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&FileThreadHelper::Start,
+    : UsbService(),
+      blocking_task_runner_(CreateBlockingTaskRunner()),
+      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)),
+      weak_factory_(this) {
+  helper_.reset(new BlockingTaskRunnerHelper(weak_factory_.GetWeakPtr()));
+  blocking_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Start,
                                 base::Unretained(helper_.get())));
 }
 
-UsbServiceLinux::~UsbServiceLinux() {
-  blocking_task_runner()->DeleteSoon(FROM_HERE, helper_.release());
-}
+UsbServiceLinux::~UsbServiceLinux() = default;
 
 void UsbServiceLinux::GetDevices(const GetDevicesCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -213,7 +227,8 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
                                     const std::string& manufacturer,
                                     const std::string& product,
                                     const std::string& serial_number,
-                                    uint8_t active_configuration) {
+                                    uint8_t active_configuration,
+                                    uint32_t bus_number, uint32_t port_number) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (ContainsKey(devices_by_path_, device_path)) {
@@ -229,7 +244,8 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
 
   scoped_refptr<UsbDeviceLinux> device(
       new UsbDeviceLinux(device_path, descriptor, manufacturer, product,
-                         serial_number, active_configuration));
+                         serial_number, active_configuration,
+                         bus_number, port_number));
   devices_by_path_[device->device_path()] = device;
   if (device->usb_version() >= kUsbVersion2_1) {
     device->Open(

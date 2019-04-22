@@ -66,21 +66,12 @@ class BackForwardMenuModel : public ui::MenuModel {
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override;
   bool IsEnabledAt(int index) const override;
   MenuModel* GetSubmenuModelAt(int index) const override;
-  void HighlightChangedTo(int index) override;
   void ActivatedAt(int index) override;
   void ActivatedAt(int index, int event_flags) override;
   void MenuWillShow() override;
 
   // Is the item at |index| a separator?
   bool IsSeparator(int index) const;
-
-  // Set the delegate for triggering OnIconChanged.
-  void SetMenuModelDelegate(
-      ui::MenuModelDelegate* menu_model_delegate) override;
-  ui::MenuModelDelegate* GetMenuModelDelegate() const override;
-
- protected:
-  ui::MenuModelDelegate* menu_model_delegate() { return menu_model_delegate_; }
 
  private:
   friend class BackFwdMenuModelTest;
@@ -89,6 +80,8 @@ class BackForwardMenuModel : public ui::MenuModel {
   FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, ChapterStops);
   FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, EscapeLabel);
   FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, FaviconLoadTest);
+  FRIEND_TEST_ALL_PREFIXES(ChromeNavigationBrowserTest,
+                           NoUserActivationSetSkipOnBackForward);
 
   // Requests a favicon from the FaviconService. Called by GetIconAt if the
   // NavigationEntry has an invalid favicon.
@@ -200,9 +193,6 @@ class BackForwardMenuModel : public ui::MenuModel {
 
   // Used for loading favicons.
   base::CancelableTaskTracker cancelable_task_tracker_;
-
-  // Used for receiving notifications when an icon is changed.
-  ui::MenuModelDelegate* menu_model_delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardMenuModel);
 };

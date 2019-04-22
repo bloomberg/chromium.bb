@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -255,7 +256,7 @@ void UseMockKeyStorageForTesting(
     std::string* (*get_password_v11_mock)()) {
   // Save the real implementation to restore it later.
   static bool is_get_password_saved = false;
-  static std::string* (*get_password_save[arraysize(g_get_password)])();
+  static std::string* (*get_password_save[base::size(g_get_password)])();
   if (!is_get_password_saved) {
     std::copy(std::begin(g_get_password), std::end(g_get_password),
               std::begin(get_password_save));

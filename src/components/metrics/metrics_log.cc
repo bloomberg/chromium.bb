@@ -87,8 +87,7 @@ void MetricsLog::IndependentMetricsLoader::Run(
     base::OnceCallback<void(bool)> done_callback,
     MetricsProvider* metrics_provider) {
   metrics_provider->ProvideIndependentMetrics(
-      std::move(done_callback), log_->uma_proto()->mutable_system_profile(),
-      snapshot_manager_.get());
+      std::move(done_callback), log_->uma_proto(), snapshot_manager_.get());
 }
 
 std::unique_ptr<MetricsLog> MetricsLog::IndependentMetricsLoader::ReleaseLog() {
@@ -210,6 +209,8 @@ void MetricsLog::RecordCoreSystemProfile(MetricsServiceClient* client,
   std::string package_name = client->GetAppPackageName();
   if (!package_name.empty() && package_name != "com.android.chrome")
     system_profile->set_app_package_name(package_name);
+#elif defined(OS_IOS)
+  os->set_build_number(base::SysInfo::GetIOSBuildNumber());
 #endif
 }
 
@@ -295,13 +296,6 @@ const SystemProfileProto& MetricsLog::RecordEnvironment(
   std::string brand_code;
   if (client_->GetBrand(&brand_code))
     system_profile->set_brand_code(brand_code);
-
-  SystemProfileProto::Hardware::CPU* cpu =
-      system_profile->mutable_hardware()->mutable_cpu();
-  base::CPU cpu_info;
-  cpu->set_vendor_name(cpu_info.vendor_name());
-  cpu->set_signature(cpu_info.signature());
-  cpu->set_num_cores(base::SysInfo::NumberOfProcessors());
 
   delegating_provider->ProvideSystemProfileMetrics(system_profile);
 

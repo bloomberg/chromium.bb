@@ -17,6 +17,7 @@
 #import "remoting/ios/facade/remoting_authentication.h"
 #import "remoting/ios/facade/remoting_service.h"
 
+#include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -52,7 +53,7 @@ std::string GetRequestErrorMessage(int error_code) {
       return l10n_util::GetStringUTF8(IDS_ERROR_NETWORK_ERROR);
     default:
       return l10n_util::GetStringFUTF8(IDS_SERVER_COMMUNICATION_ERROR,
-                                       base::IntToString16(error_code));
+                                       base::NumberToString16(error_code));
   }
 }
 

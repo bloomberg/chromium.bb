@@ -43,14 +43,14 @@ public class TestChildProcessConnection extends ChildProcessConnection {
      */
     public TestChildProcessConnection(ComponentName serviceName, boolean bindToCaller,
             boolean bindAsExternalService, Bundle serviceBundle) {
-        super(null /* context */, serviceName, bindToCaller, bindAsExternalService, serviceBundle,
-                new ChildServiceConnectionFactory() {
+        super(null /* context */, serviceName, bindToCaller, bindAsExternalService,
+                serviceBundle, new ChildServiceConnectionFactory() {
                     @Override
                     public ChildServiceConnection createConnection(Intent bindIntent, int bindFlags,
-                            ChildServiceConnectionDelegate delegate) {
+                            ChildServiceConnectionDelegate delegate, String instanceName) {
                         return new MockChildServiceConnection();
                     }
-                });
+                }, null /* instanceName */);
     }
 
     public void setPid(int pid) {

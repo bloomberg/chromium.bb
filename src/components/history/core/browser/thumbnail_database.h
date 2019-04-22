@@ -63,9 +63,8 @@ class ThumbnailDatabase {
   // unused space in the file. It can be VERY SLOW.
   void Vacuum();
 
-  // Try to trim the cache memory used by the database.  If |aggressively| is
-  // true try to trim all unused cache, otherwise trim by half.
-  void TrimMemory(bool aggressively);
+  // Release all non-essential memory associated with this database connection.
+  void TrimMemory();
 
   // Get all on-demand favicon bitmaps that have been last requested prior to
   // |threshold|.

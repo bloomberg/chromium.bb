@@ -32,7 +32,10 @@
 #include "samples/pdfium_test_dump_helper.h"
 #include "samples/pdfium_test_event_helper.h"
 #include "samples/pdfium_test_write_helper.h"
-#include "testing/test_support.h"
+#include "testing/fx_string_testhelpers.h"
+#include "testing/test_loader.h"
+#include "testing/utils/file_util.h"
+#include "testing/utils/hash.h"
 #include "testing/utils/path_service.h"
 #include "third_party/base/logging.h"
 #include "third_party/base/optional.h"
@@ -48,6 +51,7 @@
 #endif  // ENABLE_CALLGRIND
 
 #ifdef PDF_ENABLE_V8
+#include "testing/v8_initializer.h"
 #include "v8/include/libplatform/libplatform.h"
 #include "v8/include/v8.h"
 #endif  // PDF_ENABLE_V8
@@ -693,7 +697,7 @@ void RenderPdf(const std::string& name,
                size_t len,
                const Options& options,
                const std::string& events) {
-  TestLoader loader(pBuf, len);
+  TestLoader loader({pBuf, len});
 
   FPDF_FILEACCESS file_access = {};
   file_access.m_FileLen = static_cast<unsigned long>(len);
@@ -743,6 +747,9 @@ void RenderPdf(const std::string& name,
     PrintLastError();
     return;
   }
+
+  if (!FPDF_DocumentHasValidCrossReferenceTable(doc.get()))
+    fprintf(stderr, "Document has invalid cross reference table\n");
 
   (void)FPDF_GetDocPermissions(doc.get());
 
@@ -932,10 +939,13 @@ int main(int argc, const char* argv[]) {
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   v8::StartupData natives;
   v8::StartupData snapshot;
-  platform = InitializeV8ForPDFiumWithStartupData(
-      options.exe_path, options.bin_directory, &natives, &snapshot);
+  if (!options.disable_javascript) {
+    platform = InitializeV8ForPDFiumWithStartupData(
+        options.exe_path, options.bin_directory, &natives, &snapshot);
+  }
 #else   // V8_USE_EXTERNAL_STARTUP_DATA
-  platform = InitializeV8ForPDFium(options.exe_path);
+  if (!options.disable_javascript)
+    platform = InitializeV8ForPDFium(options.exe_path);
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 #endif  // PDF_ENABLE_V8
 
@@ -1008,13 +1018,15 @@ int main(int argc, const char* argv[]) {
   }
 
   FPDF_DestroyLibrary();
-#ifdef PDF_ENABLE_V8
-  v8::V8::ShutdownPlatform();
 
+#ifdef PDF_ENABLE_V8
+  if (!options.disable_javascript) {
+    v8::V8::ShutdownPlatform();
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-  free(const_cast<char*>(natives.data));
-  free(const_cast<char*>(snapshot.data));
+    free(const_cast<char*>(natives.data));
+    free(const_cast<char*>(snapshot.data));
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
+  }
 #endif  // PDF_ENABLE_V8
 
   return 0;

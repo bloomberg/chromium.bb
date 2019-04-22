@@ -262,9 +262,9 @@ class KeyStorageKWalletFailuresTest
   DISALLOW_COPY_AND_ASSIGN(KeyStorageKWalletFailuresTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        KeyStorageKWalletFailuresTest,
-                        ::testing::Values(CANNOT_READ, CANNOT_CONTACT));
+INSTANTIATE_TEST_SUITE_P(,
+                         KeyStorageKWalletFailuresTest,
+                         ::testing::Values(CANNOT_READ, CANNOT_CONTACT));
 
 TEST_P(KeyStorageKWalletFailuresTest, PostInitFailureOpen) {
   EXPECT_CALL(*kwallet_dbus_mock_, Open(_, _, _)).WillOnce(Return(GetParam()));

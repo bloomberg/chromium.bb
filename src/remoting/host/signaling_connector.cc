@@ -86,7 +86,7 @@ void SignalingConnector::OnSignalStrategyStateChange(
 }
 
 bool SignalingConnector::OnSignalStrategyIncomingStanza(
-    const buzz::XmlElement* stanza) {
+    const jingle_xmpp::XmlElement* stanza) {
   return false;
 }
 
@@ -175,7 +175,7 @@ void SignalingConnector::OnDnsBlackholeCheckerDone(bool allow) {
 
   if (signal_strategy_->GetState() == SignalStrategy::DISCONNECTED) {
     HOST_LOG << "Attempting to connect signaling.";
-    oauth_token_getter_->CallWithToken(base::Bind(
+    oauth_token_getter_->CallWithToken(base::BindOnce(
         &SignalingConnector::OnAccessToken, weak_factory_.GetWeakPtr()));
   }
 }

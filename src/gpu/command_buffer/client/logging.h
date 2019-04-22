@@ -9,9 +9,15 @@
 #include "base/macros.h"
 #include "gpu/command_buffer/client/gles2_impl_export.h"
 
-// Macros to log information if DCHECK_IS_ON() and --enable-gpu-client-logging
-// flag is set. Code is optimized out if DCHECK is disabled. Requires that a
-// LogSettings named log_settings_ is in scope whenever a macro is used.
+// Macros to log information if --enable-gpu-client-logging is set and either:
+//   DCHECK_IS_ON(), or
+//   enable_gpu_client_logging=true is set in GN args.
+// Code is optimized out if DCHECK is disabled or the other GN arg is not set.
+// Requires that a LogSettings named log_settings_ is in scope whenever a macro
+// is used.
+//
+// Note that it's typically necessary to also specify --enable-logging=stderr to
+// see this logging output on Linux or macOS.
 //
 // Example usage:
 //
@@ -32,13 +38,14 @@
 //   LogSettings log_settings_;
 // };
 
-#if DCHECK_IS_ON() && !defined(__native_client__) && \
-    !defined(GLES2_CONFORMANCE_TESTS) && !defined(GLES2_INLINE_OPTIMIZATION)
+#if (DCHECK_IS_ON() || defined(GPU_ENABLE_CLIENT_LOGGING)) &&           \
+    !defined(__native_client__) && !defined(GLES2_CONFORMANCE_TESTS) && \
+    !defined(GLES2_INLINE_OPTIMIZATION)
 #define GPU_CLIENT_DEBUG
 #endif
 
 #if defined(GPU_CLIENT_DEBUG)
-#define GPU_CLIENT_LOG(args) DLOG_IF(INFO, log_settings_.enabled()) << args;
+#define GPU_CLIENT_LOG(args) LOG_IF(INFO, log_settings_.enabled()) << args;
 #define GPU_CLIENT_LOG_CODE_BLOCK(code) code
 #define GPU_CLIENT_DCHECK_CODE_BLOCK(code) code
 #else  // !defined(GPU_CLIENT_DEBUG)

@@ -5,8 +5,8 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape>
-            <solid android:color="@android:color/white" />
-            <corners android:radius="@dimen/keyboard_accessory_action_height" />
+            <solid android:color="@color/modern_primary_color" />
+            <corners android:radius="@dimen/keyboard_accessory_bar_item_height" />
         </shape>
     </item>
 </layer-list>

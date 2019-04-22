@@ -32,15 +32,16 @@ PluginMetadata::PluginMetadata(const std::string& identifier,
                                const GURL& plugin_url,
                                const GURL& help_url,
                                const base::string16& group_name_matcher,
-                               const std::string& language)
+                               const std::string& language,
+                               bool plugin_is_deprecated)
     : identifier_(identifier),
       name_(name),
       group_name_matcher_(group_name_matcher),
       url_for_display_(url_for_display),
       plugin_url_(plugin_url),
       help_url_(help_url),
-      language_(language) {
-}
+      language_(language),
+      plugin_is_deprecated_(plugin_is_deprecated) {}
 
 PluginMetadata::~PluginMetadata() {
 }
@@ -99,6 +100,12 @@ bool PluginMetadata::ParseSecurityStatus(
 
 PluginMetadata::SecurityStatus PluginMetadata::GetSecurityStatus(
     const content::WebPluginInfo& plugin) const {
+  // Deprecated plugins should be treated as out-of-date by the renderer.
+  // The browser will show an infobar explaining that it is deprecated without
+  // the ability to update.
+  if (plugin_is_deprecated())
+    return SECURITY_STATUS_OUT_OF_DATE;
+
   if (versions_.empty()) {
     // Unknown plugins require authorization.
     return SECURITY_STATUS_REQUIRES_AUTHORIZATION;
@@ -126,13 +133,9 @@ bool PluginMetadata::VersionComparator::operator() (
 }
 
 std::unique_ptr<PluginMetadata> PluginMetadata::Clone() const {
-  PluginMetadata* copy = new PluginMetadata(identifier_,
-                                            name_,
-                                            url_for_display_,
-                                            plugin_url_,
-                                            help_url_,
-                                            group_name_matcher_,
-                                            language_);
+  PluginMetadata* copy = new PluginMetadata(
+      identifier_, name_, url_for_display_, plugin_url_, help_url_,
+      group_name_matcher_, language_, plugin_is_deprecated_);
   copy->versions_ = versions_;
   return base::WrapUnique(copy);
 }

@@ -50,8 +50,7 @@ class AutofillProvider {
   virtual void OnFormSubmitted(AutofillHandlerProxy* handler,
                                const FormData& form,
                                bool known_success,
-                               SubmissionSource source,
-                               base::TimeTicks timestamp) = 0;
+                               SubmissionSource source) = 0;
 
   virtual void OnFocusNoLongerOnForm(AutofillHandlerProxy* handler) = 0;
 

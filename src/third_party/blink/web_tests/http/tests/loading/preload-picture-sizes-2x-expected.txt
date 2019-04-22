@@ -1,11 +1,14 @@
-main frame - didStartProvisionalLoadForFrame
+main frame - DidStartNavigation
+main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
 CONSOLE WARNING: <source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead.
 main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
-main frame - didStartProvisionalLoadForFrame
+main frame - BeginNavigation request to 'http://127.0.0.1:8000/loading/preload-picture-sizes-2x.html', http method GET
+main frame - DidStartNavigation
+main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
 CONSOLE WARNING: <source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead.
 main frame - didReceiveTitle: 
@@ -60,4 +63,5 @@ PASS internals.isPreloaded('resources/base-image3.png?10'); is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
-                  
+
+          

@@ -27,7 +27,7 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetListenerObject(
 }
 
 // Implements Step 3. of "get the current value of the event handler"
-// https://html.spec.whatwg.org/multipage/webappapis.html#getting-the-current-value-of-the-event-handler
+// https://html.spec.whatwg.org/C/#getting-the-current-value-of-the-event-handler
 v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
     EventTarget& event_target) {
   // Do not compile the same code twice.
@@ -54,22 +54,29 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
   // object, let element be null, and document be eventTarget's associated
   // Document.
   Element* element = nullptr;
+  const LocalDOMWindow* window = nullptr;
   Document* document = nullptr;
-  Node* node = event_target.ToNode();
-  const DOMWindow* window = event_target.ToDOMWindow();
-  if (node && node->IsElementNode()) {
-    element = ToElement(node);
-    document = &node->GetDocument();
-  } else if (node && node->IsDocumentNode()) {
-    // Attributes for |blink::HTMLBodyElement| is treated as ones for
-    // |blink::Document| unlike the definition in standards.
-    document = &node->GetDocument();
+  if (Node* node = event_target.ToNode()) {
+    if (node->IsDocumentNode()) {
+      // Some of content attributes for |HTMLBodyElement| are treated as ones
+      // for |Document| unlike the definition in HTML standard.  Those content
+      // attributes are not listed in the Window-reflecting body element event
+      // handler set.
+      // https://html.spec.whatwg.org/C/#window-reflecting-body-element-event-handler-set
+      document = &node->GetDocument();
+    } else {
+      element = ToElement(node);
+      document = &node->GetDocument();
+    }
+    // EventTarget::GetExecutionContext() sometimes returns the document which
+    // created the EventTarget, and sometimes returns the document to which
+    // the EventTarget is currently attached.  The former might be different
+    // from |document|.
   } else {
-    // TODO(crbug.com/891635): Add these checks here:
-    //   DCHECK(window);
-    //   DCHECK(event_target.ToLocalDOMWindow());
-    //   DCHECK_EQ(event_target.ToLocalDOMWindow()->document(), document);
-    document = To<Document>(execution_context_of_event_target);
+    window = event_target.ToLocalDOMWindow();
+    DCHECK(window);
+    document = window->document();
+    DCHECK_EQ(document, To<Document>(execution_context_of_event_target));
   }
   DCHECK(document);
 
@@ -83,7 +90,7 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
   v8::Context::Scope event_target_context_scope(v8_context_of_event_target);
 
   // Step 2. If scripting is disabled for document, then return null.
-  if (!document->AllowInlineEventHandler(node, this, source_url_,
+  if (!document->AllowInlineEventHandler(element, this, source_url_,
                                          position_.line_))
     return v8::Null(GetIsolate());
 
@@ -126,7 +133,7 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
     // SVG requires to introduce evt as an alias to event in event handlers.
     // See ANNOTATION 3: https://www.w3.org/TR/SVG/interact.html#SVGEvents
     parameter_list[parameter_list_size++] =
-        V8String(isolate, node && node->IsSVGElement() ? "evt" : "event");
+        V8String(isolate, element && element->IsSVGElement() ? "evt" : "event");
     parameter_list[parameter_list_size++] = V8String(isolate, "source");
     parameter_list[parameter_list_size++] = V8String(isolate, "lineno");
     parameter_list[parameter_list_size++] = V8String(isolate, "colno");
@@ -135,7 +142,7 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
     // SVG requires to introduce evt as an alias to event in event handlers.
     // See ANNOTATION 3: https://www.w3.org/TR/SVG/interact.html#SVGEvents
     parameter_list[parameter_list_size++] =
-        V8String(isolate, node && node->IsSVGElement() ? "evt" : "event");
+        V8String(isolate, element && element->IsSVGElement() ? "evt" : "event");
   }
   DCHECK_LE(parameter_list_size, base::size(parameter_list));
 
@@ -159,8 +166,7 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
       V8String(isolate, source_url_),
       v8::Integer::New(isolate, position_.line_.ZeroBasedInt()),
       v8::Integer::New(isolate, position_.column_.ZeroBasedInt()),
-      // TODO(yukiy): consider which value should be passed here.
-      v8::True(isolate));
+      v8::True(isolate));  // True as |SanitizeScriptErrors::kDoNotSanitize|
   v8::ScriptCompiler::Source source(V8String(isolate, script_body_), origin);
 
   v8::Local<v8::Function> compiled_function;
@@ -188,9 +194,7 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
   // EventHandler callback function object whose object reference is function
   // and whose callback context is settings object.
   compiled_function->SetName(V8String(isolate, function_name_));
-  SetCompiledHandler(
-      script_state_of_event_target, compiled_function,
-      V8PrivateProperty::GetCustomWrappableEventHandler(GetIsolate()));
+  SetCompiledHandler(script_state_of_event_target, compiled_function);
 
   return JSEventHandler::GetListenerObject(event_target);
 }
@@ -201,8 +205,9 @@ JSEventHandlerForContentAttribute::GetSourceLocation(EventTarget& target) {
   if (source_location)
     return source_location;
   // Fallback to uncompiled source info.
-  return SourceLocation::Create(source_url_, position_.line_.ZeroBasedInt(),
-                                position_.column_.ZeroBasedInt(), nullptr);
+  return std::make_unique<SourceLocation>(
+      source_url_, position_.line_.ZeroBasedInt(),
+      position_.column_.ZeroBasedInt(), nullptr);
 }
 
 }  // namespace blink

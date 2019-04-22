@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 enum class ServiceAccessType;
 
@@ -38,7 +34,7 @@ class HistoryServiceFactory : public BrowserStateKeyedServiceFactory {
   static HistoryServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<HistoryServiceFactory>;
+  friend class base::NoDestructor<HistoryServiceFactory>;
 
   HistoryServiceFactory();
   ~HistoryServiceFactory() override;

@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <sys/select.h>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
@@ -118,7 +119,7 @@ MemoryPressureMonitor::MemoryPressureMonitor(
           GetCriticalMemoryThresholdInPercent(thresholds)),
       low_mem_file_(HANDLE_EINTR(::open(kLowMemFile, O_RDONLY))),
       dispatch_callback_(
-          base::Bind(&MemoryPressureListener::NotifyMemoryPressure)),
+          base::BindRepeating(&MemoryPressureListener::NotifyMemoryPressure)),
       weak_ptr_factory_(this) {
   DCHECK(!g_monitor);
   g_monitor = this;
@@ -153,11 +154,11 @@ MemoryPressureMonitor* MemoryPressureMonitor::Get() {
 }
 
 void MemoryPressureMonitor::StartObserving() {
-  timer_.Start(FROM_HERE,
-               TimeDelta::FromMilliseconds(kMemoryPressureIntervalMs),
-               Bind(&MemoryPressureMonitor::
-                        CheckMemoryPressureAndRecordStatistics,
-                    weak_ptr_factory_.GetWeakPtr()));
+  timer_.Start(
+      FROM_HERE, TimeDelta::FromMilliseconds(kMemoryPressureIntervalMs),
+      BindRepeating(
+          &MemoryPressureMonitor::CheckMemoryPressureAndRecordStatistics,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MemoryPressureMonitor::StopObserving() {

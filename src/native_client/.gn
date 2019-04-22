@@ -15,3 +15,7 @@ buildconfig = "//build/config/BUILDCONFIG.gn"
 # GN build files are placed when they can not be placed directly
 # in the source tree, e.g. for third party source trees.
 secondary_source = "//build/secondary/"
+
+default_args = {
+  use_custom_libcxx = false
+}

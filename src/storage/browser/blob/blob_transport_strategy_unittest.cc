@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/rand_util.h"
@@ -19,6 +20,7 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/test/mock_bytes_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/blob/data_element.mojom.h"
 
 namespace storage {
 
@@ -201,11 +203,11 @@ TEST_P(BasicTests, WithBytes) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(BlobTransportStrategyTest,
-                        BasicTests,
-                        testing::Values(MemoryStrategy::NONE_NEEDED,
-                                        MemoryStrategy::IPC,
-                                        MemoryStrategy::SHARED_MEMORY));
+INSTANTIATE_TEST_SUITE_P(BlobTransportStrategyTest,
+                         BasicTests,
+                         testing::Values(MemoryStrategy::NONE_NEEDED,
+                                         MemoryStrategy::IPC,
+                                         MemoryStrategy::SHARED_MEMORY));
 
 class BasicErrorTests : public BlobTransportStrategyTest,
                         public testing::WithParamInterface<MemoryStrategy> {};
@@ -271,10 +273,10 @@ TEST_P(BasicErrorTests, TooManyBytesInProvider) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(BlobTransportStrategyTest,
-                        BasicErrorTests,
-                        testing::Values(MemoryStrategy::IPC,
-                                        MemoryStrategy::SHARED_MEMORY));
+INSTANTIATE_TEST_SUITE_P(BlobTransportStrategyTest,
+                         BasicErrorTests,
+                         testing::Values(MemoryStrategy::IPC,
+                                         MemoryStrategy::SHARED_MEMORY));
 
 TEST_F(BlobTransportStrategyTest, DataStreamChunksData) {
   BlobDataBuilder builder(kId);

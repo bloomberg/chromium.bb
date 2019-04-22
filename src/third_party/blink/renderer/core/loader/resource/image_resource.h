@@ -39,7 +39,6 @@ class FetchParameters;
 class ImageResourceContent;
 class ResourceClient;
 class ResourceFetcher;
-class SecurityOrigin;
 
 // ImageResource implements blink::Resource interface and image-specific logic
 // for loading images.
@@ -88,8 +87,7 @@ class CORE_EXPORT ImageResource final
 
   scoped_refptr<const SharedBuffer> ResourceBuffer() const override;
   void NotifyStartLoad() override;
-  void ResponseReceived(const ResourceResponse&,
-                        std::unique_ptr<WebDataConsumerHandle>) override;
+  void ResponseReceived(const ResourceResponse&) override;
   void AppendData(const char*, size_t) override;
   void Finish(TimeTicks finish_time, base::SingleThreadTaskRunner*) override;
   void FinishAsError(const ResourceError&,
@@ -127,7 +125,6 @@ class CORE_EXPORT ImageResource final
   // Only for ImageResourceInfoImpl.
   void DecodeError(bool all_data_received);
   bool IsAccessAllowed(
-      const SecurityOrigin*,
       ImageResourceInfo::DoesCurrentFrameHaveSingleSecurityOrigin) const;
 
   bool HasClientsOrObservers() const override;

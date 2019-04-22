@@ -9,9 +9,9 @@
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/finder/find_buffer.h"
 #include "third_party/blink/renderer/core/editing/finder/find_options.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
-#include "third_party/blink/renderer/core/editing/iterators/search_buffer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -27,32 +27,6 @@ constexpr TimeDelta kFindTaskTestTimeout = TimeDelta::FromSeconds(10);
 class FindTaskController::IdleFindTask
     : public ScriptedIdleTaskController::IdleTask {
  public:
-  static IdleFindTask* Create(FindTaskController* controller,
-                              Document* document,
-                              int identifier,
-                              const WebString& search_text,
-                              const mojom::blink::FindOptions& options) {
-    return new IdleFindTask(controller, document, identifier, search_text,
-                            options);
-  }
-
-  void Dispose() {
-    DCHECK_GT(callback_handle_, 0);
-    document_->CancelIdleCallback(callback_handle_);
-  }
-
-  void ForceInvocationForTesting() {
-    invoke(IdleDeadline::Create(CurrentTimeTicks() + kFindTaskTestTimeout,
-                                IdleDeadline::CallbackType::kCalledWhenIdle));
-  }
-
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(controller_);
-    visitor->Trace(document_);
-    ScriptedIdleTaskController::IdleTask::Trace(visitor);
-  }
-
- private:
   IdleFindTask(FindTaskController* controller,
                Document* document,
                int identifier,
@@ -73,6 +47,24 @@ class FindTaskController::IdleFindTask
     callback_handle_ = document_->RequestIdleCallback(this, request_options);
   }
 
+  void Dispose() {
+    DCHECK_GT(callback_handle_, 0);
+    document_->CancelIdleCallback(callback_handle_);
+  }
+
+  void ForceInvocationForTesting() {
+    invoke(MakeGarbageCollected<IdleDeadline>(
+        CurrentTimeTicks() + kFindTaskTestTimeout,
+        IdleDeadline::CallbackType::kCalledWhenIdle));
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(controller_);
+    visitor->Trace(document_);
+    ScriptedIdleTaskController::IdleTask::Trace(visitor);
+  }
+
+ private:
   void invoke(IdleDeadline* deadline) override {
     if (!controller_->ShouldFindMatches(search_text_, *options_)) {
       controller_->DidFinishTask(identifier_, search_text_, *options_,
@@ -84,10 +76,16 @@ class FindTaskController::IdleFindTask
         TimeDelta::FromMillisecondsD(deadline->timeRemaining());
     const TimeTicks start_time = CurrentTimeTicks();
 
-    PositionInFlatTree search_start = PositionInFlatTree::FirstPositionInNode(
-        *controller_->GetLocalFrame()->GetDocument());
-    PositionInFlatTree search_end = PositionInFlatTree::LastPositionInNode(
-        *controller_->GetLocalFrame()->GetDocument());
+    Document& document = *controller_->GetLocalFrame()->GetDocument();
+    PositionInFlatTree search_start =
+        PositionInFlatTree::FirstPositionInNode(document);
+    PositionInFlatTree search_end;
+    if (document.documentElement() && document.documentElement()->lastChild()) {
+      search_end = PositionInFlatTree::AfterNode(
+          *document.documentElement()->lastChild());
+    } else {
+      search_end = PositionInFlatTree::LastPositionInNode(document);
+    }
     DCHECK_EQ(search_start.GetDocument(), search_end.GetDocument());
 
     if (Range* resume_from_range = controller_->ResumeFindingFromRange()) {
@@ -100,55 +98,60 @@ class FindTaskController::IdleFindTask
         return;
     }
 
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited.  see http://crbug.com/590369 for more details.
-    search_start.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    search_start.GetDocument()->UpdateStyleAndLayout();
 
     int match_count = 0;
     bool full_range_searched = false;
-    PositionInFlatTree next_scoping_start;
-    do {
-      // Find next occurrence of the search string.
-      // FIXME: (http://crbug.com/6818) This WebKit operation may run for longer
-      // than the timeout value, and is not interruptible as it is currently
-      // written. We may need to rewrite it with interruptibility in mind, or
-      // find an alternative.
-      const EphemeralRangeInFlatTree result = FindPlainText(
-          EphemeralRangeInFlatTree(search_start, search_end), search_text_,
-          options_->match_case ? 0 : kCaseInsensitive);
-      if (result.IsCollapsed()) {
-        // Not found.
+    PositionInFlatTree next_task_start_position;
+
+    blink::FindOptions find_options =
+        (options_->forward ? 0 : kBackwards) |
+        (options_->match_case ? 0 : kCaseInsensitive) |
+        (options_->find_next ? 0 : kStartInSelection);
+
+    while (search_start != search_end) {
+      // Find in the whole block.
+      FindBuffer buffer(EphemeralRangeInFlatTree(search_start, search_end));
+      std::unique_ptr<FindBuffer::Results> match_results =
+          buffer.FindMatches(search_text_, find_options);
+      for (FindBuffer::BufferMatchResult match : *match_results) {
+        const EphemeralRangeInFlatTree ephemeral_match_range =
+            buffer.RangeFromBufferIndex(match.start,
+                                        match.start + match.length);
+        Range* const match_range = Range::Create(
+            ephemeral_match_range.GetDocument(),
+            ToPositionInDOMTree(ephemeral_match_range.StartPosition()),
+            ToPositionInDOMTree(ephemeral_match_range.EndPosition()));
+        if (match_range->collapsed()) {
+          // resultRange will be collapsed if the matched text spans over
+          // multiple TreeScopes.  TODO(rakina): Show such matches to users.
+          next_task_start_position = ephemeral_match_range.EndPosition();
+          continue;
+        }
+        ++match_count;
+        controller_->DidFindMatch(identifier_, match_range);
+      }
+      // At this point, all text in the block collected above has been
+      // processed. Now we move to the next block if there's any,
+      // otherwise we should stop.
+      search_start = buffer.PositionAfterBlock();
+      if (search_start.IsNull()) {
         full_range_searched = true;
         break;
       }
-      Range* result_range = Range::Create(
-          result.GetDocument(), ToPositionInDOMTree(result.StartPosition()),
-          ToPositionInDOMTree(result.EndPosition()));
-      if (result_range->collapsed()) {
-        // resultRange will be collapsed if the matched text spans over multiple
-        // TreeScopes.  FIXME: Show such matches to users.
-        search_start = result.EndPosition();
-        if (deadline->timeRemaining() > 0)
-          continue;
+      next_task_start_position = search_start;
+      if (deadline->timeRemaining() <= 0)
         break;
-      }
-      ++match_count;
-      controller_->DidFindMatch(identifier_, result_range);
-
-      // Set the new start for the search range to be the end of the previous
-      // result range. There is no need to use a VisiblePosition here,
-      // since findPlainText will use a TextIterator to go over the visible
-      // text nodes.
-      search_start = result.EndPosition();
-      next_scoping_start = search_start;
-    } while (deadline->timeRemaining() > 0);
+    }
 
     const TimeDelta time_spent = CurrentTimeTicks() - start_time;
     UMA_HISTOGRAM_TIMES("WebCore.FindInPage.ScopingTime",
                         time_spent - time_available);
 
     controller_->DidFinishTask(identifier_, search_text_, *options_,
-                               full_range_searched, next_scoping_start,
+                               full_range_searched, next_task_start_position,
                                match_count);
   }
 
@@ -192,8 +195,8 @@ void FindTaskController::RequestIdleFindTask(
     const WebString& search_text,
     const mojom::blink::FindOptions& options) {
   DCHECK_EQ(idle_find_task_, nullptr);
-  idle_find_task_ = IdleFindTask::Create(this, GetLocalFrame()->GetDocument(),
-                                         identifier, search_text, options);
+  idle_find_task_ = MakeGarbageCollected<IdleFindTask>(
+      this, GetLocalFrame()->GetDocument(), identifier, search_text, options);
   // If it's for testing, run the task immediately.
   // TODO(rakina): Change to use general solution when it's available.
   // https://crbug.com/875203
@@ -288,6 +291,10 @@ void FindTaskController::Trace(Visitor* visitor) {
   visitor->Trace(text_finder_);
   visitor->Trace(idle_find_task_);
   visitor->Trace(resume_finding_from_range_);
+}
+
+void FindTaskController::ResetLastFindRequestCompletedWithNoMatches() {
+  last_find_request_completed_with_no_matches_ = false;
 }
 
 }  // namespace blink

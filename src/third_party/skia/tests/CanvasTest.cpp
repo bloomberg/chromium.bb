@@ -88,7 +88,6 @@
 #include <memory>
 #include <utility>
 
-class SkColorSpaceXformer;
 class SkReadBuffer;
 template <typename T> class SkTCopyOnFirstWrite;
 
@@ -477,8 +476,7 @@ static void DrawVerticesShaderTestStep(SkCanvas* canvas, const TestData& d,
     pts[2].set(SkIntToScalar(d.fWidth), SkIntToScalar(d.fHeight));
     pts[3].set(0, SkIntToScalar(d.fHeight));
     SkPaint paint;
-    paint.setShader(SkShader::MakeBitmapShader(d.fBitmap, SkShader::kClamp_TileMode,
-                                               SkShader::kClamp_TileMode));
+    paint.setShader(d.fBitmap.makeShader());
     canvas->drawVertices(SkVertices::MakeCopy(SkVertices::kTriangleFan_VertexMode, 4, pts, pts,
                                               nullptr),
                          SkBlendMode::kModulate, paint);
@@ -562,7 +560,7 @@ TEST_STEP(NestedSaveRestoreWithFlush, NestedSaveRestoreWithFlushTestStep);
 
 static void TestPdfDevice(skiatest::Reporter* reporter, const TestData& d, CanvasTestStep* step) {
     SkDynamicMemoryWStream outStream;
-    sk_sp<SkDocument> doc(SkPDF::MakeDocument(&outStream));
+    auto doc = SkPDF::MakeDocument(&outStream);
     if (!doc) {
         INFOF(reporter, "PDF disabled; TestPdfDevice test skipped.");
         return;
@@ -684,7 +682,7 @@ public:
     MockFilterCanvas(SkCanvas* canvas) : INHERITED(canvas) { }
 
 protected:
-    bool onFilter(SkTCopyOnFirstWrite<SkPaint>*, Type) const override { return true; }
+    bool onFilter(SkPaint&) const override { return true; }
 
 private:
     typedef SkPaintFilterCanvas INHERITED;
@@ -813,8 +811,8 @@ DEF_TEST(CanvasClipType, r) {
 
 #ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
 DEF_TEST(Canvas_LegacyColorBehavior, r) {
-    sk_sp<SkColorSpace> cs = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                                   SkColorSpace::kAdobeRGB_Gamut);
+    sk_sp<SkColorSpace> cs = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB,
+                                                   SkNamedGamut::kAdobeRGB);
 
     // Make a Adobe RGB bitmap.
     SkBitmap bitmap;
@@ -841,7 +839,6 @@ protected:
     sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage*, const Context&, SkIPoint*) const override {
         return nullptr;
     }
-    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override { return nullptr; }
     SkIRect onFilterNodeBounds(const SkIRect&, const SkMatrix&,
                                MapDirection, const SkIRect* inputRect) const override {
         return SkIRect::MakeEmpty();

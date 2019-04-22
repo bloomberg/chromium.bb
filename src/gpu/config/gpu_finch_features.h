@@ -29,11 +29,19 @@ GPU_EXPORT extern const base::Feature kDefaultPassthroughCommandDecoder;
 
 GPU_EXPORT extern const base::Feature kDirectCompositionPreferNV12Overlays;
 
+GPU_EXPORT extern const base::Feature kDirectCompositionUnderlays;
+
 GPU_EXPORT extern const base::Feature kSharedImageManager;
 
 GPU_EXPORT extern const base::Feature kUseDCOverlaysForSoftwareProtectedVideo;
 
+GPU_EXPORT extern const base::Feature kDirectCompositionUseNV12DecodeSwapChain;
+
 GPU_EXPORT extern const base::Feature kVaapiJpegImageDecodeAcceleration;
+
+#if defined(OS_ANDROID)
+GPU_EXPORT bool IsAndroidSurfaceControlEnabled();
+#endif
 
 }  // namespace features
 

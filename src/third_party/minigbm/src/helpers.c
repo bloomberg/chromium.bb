@@ -261,16 +261,24 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 
 	aligned_width = width;
 	aligned_height = height;
-	if (format == DRM_FORMAT_YVU420_ANDROID) {
-		/*
-		 * Align width to 32 pixels, so chroma strides are 16 bytes as
-		 * Android requires.
-		 */
+	switch (format) {
+	case DRM_FORMAT_YVU420_ANDROID:
+		/* Align width to 32 pixels, so chroma strides are 16 bytes as
+		 * Android requires. */
 		aligned_width = ALIGN(width, 32);
-	}
-
-	if (format == DRM_FORMAT_YVU420_ANDROID || format == DRM_FORMAT_YVU420) {
+		/* Adjust the height to include room for chroma planes.
+		 *
+		 * HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not
+		 * be aligned. */
+		aligned_height = 3 * DIV_ROUND_UP(bo->height, 2);
+		break;
+	case DRM_FORMAT_YVU420:
+	case DRM_FORMAT_NV12:
+		/* Adjust the height to include room for chroma planes */
 		aligned_height = 3 * DIV_ROUND_UP(height, 2);
+		break;
+	default:
+		break;
 	}
 
 	memset(&create_dumb, 0, sizeof(create_dumb));
@@ -473,14 +481,14 @@ void drv_decrement_reference_count(struct driver *drv, struct bo *bo, size_t pla
 		drmHashInsert(drv->buffer_table, bo->handles[plane].u32, (void *)(num - 1));
 }
 
-uint32_t drv_log_base2(uint32_t value)
+void drv_add_combination(struct driver *drv, const uint32_t format,
+			 struct format_metadata *metadata, uint64_t use_flags)
 {
-	int ret = 0;
+	struct combination combo = { .format = format,
+				     .metadata = *metadata,
+				     .use_flags = use_flags };
 
-	while (value >>= 1)
-		++ret;
-
-	return ret;
+	drv_array_append(drv->combos, &combo);
 }
 
 void drv_add_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats,

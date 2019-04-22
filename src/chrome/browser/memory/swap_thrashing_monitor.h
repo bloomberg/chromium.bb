@@ -23,9 +23,13 @@
 #ifndef CHROME_BROWSER_MEMORY_SWAP_THRASHING_MONITOR_H_
 #define CHROME_BROWSER_MEMORY_SWAP_THRASHING_MONITOR_H_
 
+#include <memory>
+
 #include "base/base_export.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/memory/swap_thrashing_monitor_delegate.h"
@@ -71,14 +75,26 @@ class SwapThrashingMonitor {
   void StartObserving();
 
  private:
-  // The delegate responsible for measuring the swap-thrashing activity.
-  std::unique_ptr<SwapThrashingMonitorDelegate> delegate_;
+  void RecordSwapThrashingLevel(SwapThrashingLevel swap_thrashing_level);
+
+  // The task runner used to run blocking operations.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_ =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+
+  // The delegate responsible for measuring the swap-thrashing activity. This
+  // task runner is expected to be used and destroyed on
+  // |blocking_task_runner_|.
+  std::unique_ptr<SwapThrashingMonitorDelegate, base::OnTaskRunnerDeleter>
+      delegate_;
 
   SwapThrashingLevel current_swap_thrashing_level_;
 
   base::RepeatingTimer check_timer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<SwapThrashingMonitor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SwapThrashingMonitor);
 };

@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -160,10 +162,10 @@ void ShellDevToolsBindings::ReadyToCommitNavigation(
 #if !defined(OS_ANDROID)
   content::RenderFrameHost* frame = navigation_handle->GetRenderFrameHost();
   if (navigation_handle->IsInMainFrame()) {
-    frontend_host_.reset(DevToolsFrontendHost::Create(
+    frontend_host_ = DevToolsFrontendHost::Create(
         frame,
         base::Bind(&ShellDevToolsBindings::HandleMessageFromDevToolsFrontend,
-                   base::Unretained(this))));
+                   base::Unretained(this)));
     return;
   }
   std::string origin = navigation_handle->GetURL().GetOrigin().spec();
@@ -201,7 +203,8 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
   std::string method;
   base::ListValue* params = nullptr;
   base::DictionaryValue* dict = nullptr;
-  std::unique_ptr<base::Value> parsed_message = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> parsed_message =
+      base::JSONReader::ReadDeprecated(message);
   if (!parsed_message || !parsed_message->GetAsDictionary(&dict) ||
       !dict->GetString("method", &method)) {
     return;
@@ -217,7 +220,8 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     agent_host_->DispatchProtocolMessage(this, protocol_message);
   } else if (method == "loadCompleted") {
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"));
+        base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"),
+        base::NullCallback());
   } else if (method == "loadNetworkResource" && params->GetSize() == 3) {
     // TODO(pfeldman): handle some of the embedder messages in content.
     std::string url;
@@ -297,7 +301,8 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     preferences_.RemoveWithoutPathExpansion(name, nullptr);
   } else if (method == "requestFileSystems") {
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16("DevToolsAPI.fileSystemsLoaded([]);"));
+        base::ASCIIToUTF16("DevToolsAPI.fileSystemsLoaded([]);"),
+        base::NullCallback());
   } else if (method == "reattach") {
     if (!agent_host_)
       return;
@@ -325,7 +330,8 @@ void ShellDevToolsBindings::DispatchProtocolMessage(
     base::EscapeJSONString(message, true, &param);
     std::string code = "DevToolsAPI.dispatchMessage(" + param + ");";
     base::string16 javascript = base::UTF8ToUTF16(code);
-    web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(javascript);
+    web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+        javascript, base::NullCallback());
     return;
   }
 
@@ -338,7 +344,8 @@ void ShellDevToolsBindings::DispatchProtocolMessage(
     std::string code = "DevToolsAPI.dispatchMessageChunk(" + param + "," +
                        std::to_string(pos ? 0 : total_size) + ");";
     base::string16 javascript = base::UTF8ToUTF16(code);
-    web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(javascript);
+    web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+        javascript, base::NullCallback());
   }
 }
 
@@ -362,7 +369,7 @@ void ShellDevToolsBindings::CallClientFunction(const std::string& function_name,
   }
   javascript.append(");");
   web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16(javascript));
+      base::UTF8ToUTF16(javascript), base::NullCallback());
 }
 
 void ShellDevToolsBindings::SendMessageAck(int request_id,

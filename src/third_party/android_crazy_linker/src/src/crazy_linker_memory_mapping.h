@@ -47,11 +47,12 @@ class MemoryMapping {
   MemoryMapping& operator=(const MemoryMapping&) = delete;
 
   // Allow move operations.
-  MemoryMapping(MemoryMapping&& other) : map_(other.map_), size_(other.size_) {
+  MemoryMapping(MemoryMapping&& other) noexcept
+      : map_(other.map_), size_(other.size_) {
     other.map_ = nullptr;
     other.size_ = 0;
   }
-  MemoryMapping& operator=(MemoryMapping&& other);
+  MemoryMapping& operator=(MemoryMapping&& other) noexcept;
 
   // Returns true iff the instance is valid, i.e. there is a mapped segment.
   bool IsValid() const { return map_ != nullptr; }

@@ -727,6 +727,35 @@
     }
   };
 
+  TestSuite.prototype.testKeyEventUnhandled = function() {
+    function onKeyEventUnhandledKeyDown(event) {
+      this.assertEquals('keydown', event.data.type);
+      this.assertEquals('F8', event.data.key);
+      this.assertEquals(119, event.data.keyCode);
+      this.assertEquals(0, event.data.modifiers);
+      this.assertEquals('', event.data.code);
+      InspectorFrontendHost.events.removeEventListener(
+          InspectorFrontendHostAPI.Events.KeyEventUnhandled, onKeyEventUnhandledKeyDown, this);
+      InspectorFrontendHost.events.addEventListener(
+          InspectorFrontendHostAPI.Events.KeyEventUnhandled, onKeyEventUnhandledKeyUp, this);
+      SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+          {type: 'keyUp', key: 'F8', code: 'F8', windowsVirtualKeyCode: 119, nativeVirtualKeyCode: 119});
+    }
+    function onKeyEventUnhandledKeyUp(event) {
+      this.assertEquals('keyup', event.data.type);
+      this.assertEquals('F8', event.data.key);
+      this.assertEquals(119, event.data.keyCode);
+      this.assertEquals(0, event.data.modifiers);
+      this.assertEquals('F8', event.data.code);
+      this.releaseControl();
+    }
+    this.takeControl();
+    InspectorFrontendHost.events.addEventListener(
+        InspectorFrontendHostAPI.Events.KeyEventUnhandled, onKeyEventUnhandledKeyDown, this);
+    SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
+        {type: 'rawKeyDown', key: 'F8', windowsVirtualKeyCode: 119, nativeVirtualKeyCode: 119});
+  };
+
   TestSuite.prototype.testDispatchKeyEventDoesNotCrash = function() {
     SDK.targetManager.mainTarget().inputAgent().invoke_dispatchKeyEvent(
         {type: 'rawKeyDown', windowsVirtualKeyCode: 0x23, key: 'End'});
@@ -1250,7 +1279,7 @@
     this.releaseControl();
   };
 
-  TestSuite.prototype.testLoadResourceForFrontend = async function(baseURL) {
+  TestSuite.prototype.testLoadResourceForFrontend = async function(baseURL, fileURL) {
     const test = this;
     const loggedHeaders = new Set(['cache-control', 'pragma']);
     function testCase(url, headers, expectedStatus, expectedHeaders, expectedContent) {
@@ -1294,6 +1323,8 @@
     });
     await testCase(
         baseURL + 'echoheader?Cookie', undefined, 200, ['cache-control'], 'devtools-test-cookie=same-site-cookie');
+    await testCase('data:text/html,<body>hello</body>', undefined, 200, [], '<body>hello</body>');
+    await testCase(fileURL, undefined, 200, [], '<html>\n<body>\nDummy page.\n</body>\n</html>\n');
 
     this.releaseControl();
   };

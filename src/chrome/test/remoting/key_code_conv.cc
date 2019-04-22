@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/test/remoting/key_code_map.h"
 
 namespace remoting {
@@ -20,7 +20,7 @@ void GetKeyValuesFromChar(
   *code = NULL;
   *vkey_code = InvalidKeyboardCode();
 
-  for (size_t i = 0; i < arraysize(key_code_map); ++i) {
+  for (size_t i = 0; i < base::size(key_code_map); ++i) {
     if (key_code_map[i].lower_char == c) {
       *code = key_code_map[i].code;
       *vkey_code = key_code_map[i].vkey_code;

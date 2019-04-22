@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class FilePath;
@@ -25,7 +25,7 @@ class QuotaReservationBuffer;
 // Represents an open file like a file descriptor.
 // This should be alive while a consumer keeps a file opened and should be
 // deleted when the plugin closes the file.
-class STORAGE_EXPORT OpenFileHandle {
+class COMPONENT_EXPORT(STORAGE_BROWSER) OpenFileHandle {
  public:
   ~OpenFileHandle();
 

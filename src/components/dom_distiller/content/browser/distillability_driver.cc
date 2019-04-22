@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -23,13 +24,13 @@ class DistillabilityServiceImpl : public mojom::DistillabilityService {
       base::WeakPtr<DistillabilityDriver> distillability_driver)
       : distillability_driver_(distillability_driver) {}
 
-  ~DistillabilityServiceImpl() override {
-  }
+  ~DistillabilityServiceImpl() override {}
 
   void NotifyIsDistillable(bool is_distillable,
                            bool is_last_update,
                            bool is_mobile_friendly) override {
-    if (!distillability_driver_) return;
+    if (!distillability_driver_)
+      return;
     distillability_driver_->OnDistillability(is_distillable, is_last_update,
                                              is_mobile_friendly);
   }
@@ -38,11 +39,10 @@ class DistillabilityServiceImpl : public mojom::DistillabilityService {
   base::WeakPtr<DistillabilityDriver> distillability_driver_;
 };
 
-DistillabilityDriver::DistillabilityDriver(
-    content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      weak_factory_(this) {
-  if (!web_contents) return;
+DistillabilityDriver::DistillabilityDriver(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents), weak_factory_(this) {
+  if (!web_contents)
+    return;
   frame_interfaces_.AddInterface(
       base::BindRepeating(&DistillabilityDriver::CreateDistillabilityService,
                           base::Unretained(this)));
@@ -67,7 +67,8 @@ void DistillabilityDriver::SetDelegate(
 void DistillabilityDriver::OnDistillability(bool distillable,
                                             bool is_last,
                                             bool is_mobile_friendly) {
-  if (m_delegate_.is_null()) return;
+  if (m_delegate_.is_null())
+    return;
 
   m_delegate_.Run(distillable, is_last, is_mobile_friendly);
 }
@@ -78,5 +79,7 @@ void DistillabilityDriver::OnInterfaceRequestFromFrame(
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   frame_interfaces_.TryBindInterface(interface_name, interface_pipe);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(DistillabilityDriver)
 
 }  // namespace dom_distiller

@@ -68,12 +68,6 @@ void RecordAbortBeforeCommit(
             "UserGesture",
             abort_info.time_to_abort);
       }
-      if (abort_info.user_initiated_info.user_input_event) {
-        PAGE_LOAD_HISTOGRAM(
-            "PageLoad.Experimental.AbortTiming.Reload.BeforeCommit."
-            "UserInputEvent",
-            abort_info.time_to_abort);
-      }
       if (abort_info.user_initiated_info.browser_initiated) {
         PAGE_LOAD_HISTOGRAM(
             "PageLoad.Experimental.AbortTiming.Reload.BeforeCommit."
@@ -90,12 +84,6 @@ void RecordAbortBeforeCommit(
             "BeforeCommit.UserGesture",
             abort_info.time_to_abort);
       }
-      if (abort_info.user_initiated_info.user_input_event) {
-        PAGE_LOAD_HISTOGRAM(
-            "PageLoad.Experimental.AbortTiming.ForwardBackNavigation."
-            "BeforeCommit.UserInputEvent",
-            abort_info.time_to_abort);
-      }
       if (abort_info.user_initiated_info.browser_initiated) {
         PAGE_LOAD_HISTOGRAM(
             "PageLoad.Experimental.AbortTiming.ForwardBackNavigation."
@@ -110,12 +98,6 @@ void RecordAbortBeforeCommit(
         PAGE_LOAD_HISTOGRAM(
             "PageLoad.Experimental.AbortTiming.NewNavigation.BeforeCommit."
             "UserGesture",
-            abort_info.time_to_abort);
-      }
-      if (abort_info.user_initiated_info.user_input_event) {
-        PAGE_LOAD_HISTOGRAM(
-            "PageLoad.Experimental.AbortTiming.NewNavigation.BeforeCommit."
-            "UserInputEvent",
             abort_info.time_to_abort);
       }
       if (abort_info.user_initiated_info.browser_initiated) {
@@ -160,12 +142,6 @@ void RecordAbortAfterCommitBeforePaint(
             "UserGesture",
             abort_info.time_to_abort);
       }
-      if (abort_info.user_initiated_info.user_input_event) {
-        PAGE_LOAD_HISTOGRAM(
-            "PageLoad.Experimental.AbortTiming.Reload.AfterCommit.BeforePaint."
-            "UserInputEvent",
-            abort_info.time_to_abort);
-      }
       if (abort_info.user_initiated_info.browser_initiated) {
         PAGE_LOAD_HISTOGRAM(
             "PageLoad.Experimental.AbortTiming.Reload.AfterCommit.BeforePaint."
@@ -182,12 +158,6 @@ void RecordAbortAfterCommitBeforePaint(
             "AfterCommit.BeforePaint.UserGesture",
             abort_info.time_to_abort);
       }
-      if (abort_info.user_initiated_info.user_input_event) {
-        PAGE_LOAD_HISTOGRAM(
-            "PageLoad.Experimental.AbortTiming.ForwardBackNavigation."
-            "AfterCommit.BeforePaint.UserInputEvent",
-            abort_info.time_to_abort);
-      }
       if (abort_info.user_initiated_info.browser_initiated) {
         PAGE_LOAD_HISTOGRAM(
             "PageLoad.Experimental.AbortTiming.ForwardBackNavigation."
@@ -202,12 +172,6 @@ void RecordAbortAfterCommitBeforePaint(
         PAGE_LOAD_HISTOGRAM(
             "PageLoad.Experimental.AbortTiming.NewNavigation.AfterCommit."
             "BeforePaint.UserGesture",
-            abort_info.time_to_abort);
-      }
-      if (abort_info.user_initiated_info.user_input_event) {
-        PAGE_LOAD_HISTOGRAM(
-            "PageLoad.Experimental.AbortTiming.NewNavigation.AfterCommit."
-            "BeforePaint.UserInputEvent",
             abort_info.time_to_abort);
       }
       if (abort_info.user_initiated_info.browser_initiated) {

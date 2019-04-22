@@ -29,7 +29,7 @@ class FakeLayerTreeFrameSinkClient : public LayerTreeFrameSinkClient {
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override {}
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
-  void SetTreeActivationCallback(const base::Closure&) override {}
+  void SetTreeActivationCallback(base::RepeatingClosure callback) override {}
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
               bool resourceless_software_draw,

@@ -22,6 +22,8 @@
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/mojo/device_impl.h"
+#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
+#include "device/usb/public/mojom/device_manager_client.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +48,7 @@ ACTION_P2(ExpectGuidAndThen, expected_guid, callback) {
   EXPECT_EQ(expected_guid, arg0->guid);
   if (!callback.is_null())
     callback.Run();
-};
+}
 
 class USBDeviceManagerImplTest : public testing::Test {
  public:

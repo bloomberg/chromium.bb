@@ -10,19 +10,20 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/secure_channel/ble_service_data_helper.h"
-#include "components/cryptauth/data_with_timestamp.h"
-#include "components/cryptauth/remote_device_ref.h"
-
-namespace cryptauth {
-class BackgroundEidGenerator;
-class ForegroundEidGenerator;
-class RemoteDeviceCache;
-}  // namespace cryptauth
+#include "chromeos/services/secure_channel/data_with_timestamp.h"
 
 namespace chromeos {
 
+namespace multidevice {
+class RemoteDeviceCache;
+}  // namespace multidevice
+
 namespace secure_channel {
+
+class BackgroundEidGenerator;
+class ForegroundEidGenerator;
 
 // Concrete BleServiceDataHelper implementation.
 class BleServiceDataHelperImpl : public BleServiceDataHelper {
@@ -33,7 +34,7 @@ class BleServiceDataHelperImpl : public BleServiceDataHelper {
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<BleServiceDataHelper> BuildInstance(
-        cryptauth::RemoteDeviceCache* remote_device_cache);
+        multidevice::RemoteDeviceCache* remote_device_cache);
 
    private:
     static Factory* test_factory_;
@@ -44,10 +45,11 @@ class BleServiceDataHelperImpl : public BleServiceDataHelper {
  private:
   friend class SecureChannelBleServiceDataHelperImplTest;
 
-  BleServiceDataHelperImpl(cryptauth::RemoteDeviceCache* remote_device_cache);
+  explicit BleServiceDataHelperImpl(
+      multidevice::RemoteDeviceCache* remote_device_cache);
 
   // BleServiceDataHelper:
-  std::unique_ptr<cryptauth::DataWithTimestamp> GenerateForegroundAdvertisement(
+  std::unique_ptr<DataWithTimestamp> GenerateForegroundAdvertisement(
       const DeviceIdPair& device_id_pair) override;
   base::Optional<DeviceWithBackgroundBool> PerformIdentifyRemoteDevice(
       const std::string& service_data,
@@ -59,14 +61,13 @@ class BleServiceDataHelperImpl : public BleServiceDataHelper {
       const std::string& local_device_id,
       const std::vector<std::string>& remote_device_ids);
 
-  void SetTestDoubles(std::unique_ptr<cryptauth::BackgroundEidGenerator>
-                          background_eid_generator,
-                      std::unique_ptr<cryptauth::ForegroundEidGenerator>
-                          foreground_eid_generator);
+  void SetTestDoubles(
+      std::unique_ptr<BackgroundEidGenerator> background_eid_generator,
+      std::unique_ptr<ForegroundEidGenerator> foreground_eid_generator);
 
-  cryptauth::RemoteDeviceCache* remote_device_cache_;
-  std::unique_ptr<cryptauth::BackgroundEidGenerator> background_eid_generator_;
-  std::unique_ptr<cryptauth::ForegroundEidGenerator> foreground_eid_generator_;
+  multidevice::RemoteDeviceCache* remote_device_cache_;
+  std::unique_ptr<BackgroundEidGenerator> background_eid_generator_;
+  std::unique_ptr<ForegroundEidGenerator> foreground_eid_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(BleServiceDataHelperImpl);
 };

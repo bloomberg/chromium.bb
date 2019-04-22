@@ -11,14 +11,13 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
@@ -48,8 +47,7 @@ class EnrollmentDialogView : public views::DialogDelegateView {
  public:
   ~EnrollmentDialogView() override;
 
-  static void ShowDialog(gfx::NativeWindow owning_window,
-                         const std::string& network_name,
+  static void ShowDialog(const std::string& network_name,
                          Profile* profile,
                          const GURL& target_uri,
                          const base::Closure& connect);
@@ -102,22 +100,22 @@ EnrollmentDialogView::EnrollmentDialogView(const std::string& network_name,
 EnrollmentDialogView::~EnrollmentDialogView() {}
 
 // static
-void EnrollmentDialogView::ShowDialog(gfx::NativeWindow owning_window,
-                                      const std::string& network_name,
+void EnrollmentDialogView::ShowDialog(const std::string& network_name,
                                       Profile* profile,
                                       const GURL& target_uri,
                                       const base::Closure& connect) {
   EnrollmentDialogView* dialog_view =
       new EnrollmentDialogView(network_name, profile, target_uri, connect);
-  if (owning_window) {
-    views::DialogDelegate::CreateDialogWidget(dialog_view, nullptr,
-                                              owning_window);
-  } else {
-    SystemTrayClient::CreateUnownedDialogWidget(dialog_view);
-  }
+
+  views::Widget::InitParams params =
+      views::DialogDelegate::GetDialogWidgetInitParams(
+          dialog_view, nullptr /* context */, nullptr /* parent */,
+          gfx::Rect() /* bounds */);
+  ash_util::SetupWidgetInitParamsForContainer(
+      &params, ash_util::GetSystemModalDialogContainerId());
+  views::Widget* widget = new views::Widget;  // Owned by native widget.
+  widget->Init(params);
   dialog_view->InitDialog();
-  views::Widget* widget = dialog_view->GetWidget();
-  DCHECK(widget);
   widget->Show();
 }
 
@@ -202,9 +200,7 @@ void EnrollmentDialogView::InitDialog() {
 class DialogEnrollmentDelegate {
  public:
   // |owning_window| is the window that will own the dialog.
-  DialogEnrollmentDelegate(gfx::NativeWindow owning_window,
-                           const std::string& network_name,
-                           Profile* profile);
+  DialogEnrollmentDelegate(const std::string& network_name, Profile* profile);
   ~DialogEnrollmentDelegate();
 
   // EnrollmentDelegate overrides
@@ -212,7 +208,6 @@ class DialogEnrollmentDelegate {
               const base::Closure& connect);
 
  private:
-  gfx::NativeWindow owning_window_;
   std::string network_name_;
   Profile* profile_;
 
@@ -220,12 +215,9 @@ class DialogEnrollmentDelegate {
 };
 
 DialogEnrollmentDelegate::DialogEnrollmentDelegate(
-    gfx::NativeWindow owning_window,
     const std::string& network_name,
     Profile* profile)
-    : owning_window_(owning_window),
-      network_name_(network_name),
-      profile_(profile) {}
+    : network_name_(network_name), profile_(profile) {}
 
 DialogEnrollmentDelegate::~DialogEnrollmentDelegate() {}
 
@@ -244,8 +236,8 @@ bool DialogEnrollmentDelegate::Enroll(const std::vector<std::string>& uri_list,
       // If this is a "standard" scheme, like http, ftp, etc., then open that in
       // the enrollment dialog.
       NET_LOG_EVENT("Showing enrollment dialog", network_name_);
-      EnrollmentDialogView::ShowDialog(owning_window_, network_name_, profile_,
-                                       uri, post_action);
+      EnrollmentDialogView::ShowDialog(network_name_, profile_, uri,
+                                       post_action);
       return true;
     }
     NET_LOG_DEBUG("Nonstandard URI: " + uri.spec(), network_name_);
@@ -301,8 +293,7 @@ bool EnrollmentDialogAllowed(Profile* profile) {
 
 namespace enrollment {
 
-bool CreateEnrollmentDialog(const std::string& network_id,
-                            gfx::NativeWindow owning_window) {
+bool CreateEnrollmentDialog(const std::string& network_id) {
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           network_id);
@@ -310,9 +301,7 @@ bool CreateEnrollmentDialog(const std::string& network_id,
     NET_LOG_ERROR("Enrolling Unknown network", network_id);
     return false;
   }
-  Browser* browser = chrome::FindBrowserWithWindow(owning_window);
-  Profile* profile =
-      browser ? browser->profile() : ProfileManager::GetPrimaryUserProfile();
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (!EnrollmentDialogAllowed(profile))
     return false;
   std::string username_hash = ProfileHelper::GetUserIdHashFromProfile(profile);
@@ -343,7 +332,7 @@ bool CreateEnrollmentDialog(const std::string& network_id,
   NET_LOG_USER("Enrolling", network_id);
 
   DialogEnrollmentDelegate* enrollment =
-      new DialogEnrollmentDelegate(owning_window, network->name(), profile);
+      new DialogEnrollmentDelegate(network->name(), profile);
   return enrollment->Enroll(cert_config.pattern.enrollment_uri_list(),
                             base::Bind(&EnrollmentComplete, network_id));
 }

@@ -5,9 +5,10 @@
 #include <stddef.h>
 
 #include <string>
+#include <unordered_set>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "content/browser/appcache/appcache_manifest_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -42,7 +43,7 @@ TEST(AppCacheManifestParserTest, CheckSignature) {
     "\xEF\xBE\xBF" "CACHE MANIFEST\r",  // bad UTF-8 BOM value
   };
 
-  for (size_t i = 0; i < arraysize(kBadSignatures); ++i) {
+  for (size_t i = 0; i < base::size(kBadSignatures); ++i) {
     const std::string bad = kBadSignatures[i];
     EXPECT_FALSE(ParseManifest(url, bad.c_str(), bad.length(),
                                PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
@@ -61,7 +62,7 @@ TEST(AppCacheManifestParserTest, CheckSignature) {
     "\xEF\xBB\xBF" "CACHE MANIFEST \r\n",   // BOM present
   };
 
-  for (size_t i = 0; i < arraysize(kGoodSignatures); ++i) {
+  for (size_t i = 0; i < base::size(kGoodSignatures); ++i) {
     const std::string good = kGoodSignatures[i];
     EXPECT_TRUE(ParseManifest(url, good.c_str(), good.length(),
                               PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
@@ -113,7 +114,7 @@ TEST(AppCacheManifestParserTest, ExplicitUrls) {
   EXPECT_FALSE(manifest.did_ignore_intercept_namespaces);
   EXPECT_FALSE(manifest.did_ignore_fallback_namespaces);
 
-  base::hash_set<std::string> urls = manifest.explicit_urls;
+  std::unordered_set<std::string> urls = manifest.explicit_urls;
   const size_t kExpected = 5;
   ASSERT_EQ(kExpected, urls.size());
   EXPECT_TRUE(urls.find("http://www.foo.com/relative/one") != urls.end());
@@ -398,7 +399,7 @@ TEST(AppCacheManifestParserTest, ComboUrls) {
                             manifest));
   EXPECT_TRUE(manifest.online_whitelist_all);
 
-  base::hash_set<std::string> urls = manifest.explicit_urls;
+  std::unordered_set<std::string> urls = manifest.explicit_urls;
   size_t expected = 3;
   ASSERT_EQ(expected, urls.size());
   EXPECT_TRUE(urls.find("http://combo.com:42/relative/explicit-1") !=
@@ -446,7 +447,7 @@ TEST(AppCacheManifestParserTest, UnusualUtf8) {
   EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
                             PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
                             manifest));
-  base::hash_set<std::string> urls = manifest.explicit_urls;
+  std::unordered_set<std::string> urls = manifest.explicit_urls;
   EXPECT_TRUE(urls.find("http://bad.com/%EF%BF%BDinvalidutf8") != urls.end())
       << "manifest byte stream was passed through, not UTF-8-decoded";
   EXPECT_TRUE(urls.find("http://bad.com/nonbmp%F1%84%AB%BC") != urls.end());
@@ -462,7 +463,7 @@ TEST(AppCacheManifestParserTest, IgnoreAfterSpace) {
                             PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
                             manifest));
 
-  base::hash_set<std::string> urls = manifest.explicit_urls;
+  std::unordered_set<std::string> urls = manifest.explicit_urls;
   EXPECT_TRUE(urls.find("http://smorg.borg/resource.txt") != urls.end());
 }
 
@@ -482,7 +483,7 @@ TEST(AppCacheManifestParserTest, DifferentOriginUrlWithSecureScheme) {
   EXPECT_TRUE(manifest.fallback_namespaces.empty());
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
 
-  base::hash_set<std::string> urls = manifest.explicit_urls;
+  std::unordered_set<std::string> urls = manifest.explicit_urls;
   const size_t kExpected = 3;
   ASSERT_EQ(kExpected, urls.size());
   EXPECT_TRUE(urls.find("https://www.foo.com/relative/secureschemesameorigin")

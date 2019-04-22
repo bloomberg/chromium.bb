@@ -6,6 +6,7 @@
  */
 
 #include "gm.h"
+#include "SkFont.h"
 #include "SkGradientShader.h"
 
 // NOTE: The positions define hardstops for the red and green borders. For the repeating degenerate
@@ -16,10 +17,10 @@ static const SkColor COLORS[] = { SK_ColorRED, SK_ColorWHITE, SK_ColorBLUE,
 static const SkScalar POS[] = { 0.0, 0.0, 0.5, 1.0, 1.0 };
 static const int COLOR_CT = SK_ARRAY_COUNT(COLORS);
 
-static const SkShader::TileMode TILE_MODES[] = { SkShader::kDecal_TileMode,
-                                                 SkShader::kRepeat_TileMode,
-                                                 SkShader::kMirror_TileMode,
-                                                 SkShader::kClamp_TileMode };
+static const SkTileMode TILE_MODES[] = { SkTileMode::kDecal,
+                                         SkTileMode::kRepeat,
+                                         SkTileMode::kMirror,
+                                         SkTileMode::kClamp };
 static const char* TILE_NAMES[] = { "decal", "repeat", "mirror", "clamp" };
 static const int TILE_MODE_CT = SK_ARRAY_COUNT(TILE_MODES);
 
@@ -28,18 +29,13 @@ static constexpr int TILE_GAP = 10;
 
 static const SkPoint CENTER = SkPoint::Make(TILE_SIZE / 2, TILE_SIZE / 2);
 
-typedef sk_sp<SkShader> (*GradientFactory)(SkShader::TileMode tm);
+typedef sk_sp<SkShader> (*GradientFactory)(SkTileMode tm);
 
 static void draw_tile_header(SkCanvas* canvas) {
     canvas->save();
 
-    SkPaint paint;
-    paint.setColor(SK_ColorBLACK);
-    paint.setTextSize(12.0f);
-    paint.setAntiAlias(true);
-
     for (int i = 0; i < TILE_MODE_CT; ++i) {
-        canvas->drawString(TILE_NAMES[i], 0, 0, paint);
+        canvas->drawString(TILE_NAMES[i], 0, 0, SkFont(), SkPaint());
         canvas->translate(TILE_SIZE + TILE_GAP, 0);
     }
 
@@ -53,12 +49,10 @@ static void draw_row(SkCanvas* canvas, const char* desc, GradientFactory factory
     canvas->save();
 
     SkPaint text;
-    text.setColor(SK_ColorBLACK);
-    text.setTextSize(12.0f);
     text.setAntiAlias(true);
 
     canvas->translate(0, TILE_GAP);
-    canvas->drawString(desc, 0, 0, text);
+    canvas->drawString(desc, 0, 0, SkFont(), text);
     canvas->translate(0, TILE_GAP);
 
     SkPaint paint;
@@ -78,37 +72,37 @@ static void draw_row(SkCanvas* canvas, const char* desc, GradientFactory factory
     canvas->translate(0, 3 * TILE_GAP + TILE_SIZE);
 }
 
-static sk_sp<SkShader> make_linear(SkShader::TileMode mode) {
+static sk_sp<SkShader> make_linear(SkTileMode mode) {
     // Same position
     SkPoint pts[2] = {CENTER, CENTER};
     return SkGradientShader::MakeLinear(pts, COLORS, POS, COLOR_CT, mode);
 }
 
-static sk_sp<SkShader> make_radial(SkShader::TileMode mode) {
+static sk_sp<SkShader> make_radial(SkTileMode mode) {
     // Radius = 0
     return SkGradientShader::MakeRadial(CENTER, 0.0, COLORS, POS, COLOR_CT, mode);
 }
 
-static sk_sp<SkShader> make_sweep(SkShader::TileMode mode) {
+static sk_sp<SkShader> make_sweep(SkTileMode mode) {
     // Start and end angles at 45
     static constexpr SkScalar SWEEP_ANG = 45.0;
     return SkGradientShader::MakeSweep(CENTER.fX, CENTER.fY, COLORS, POS, COLOR_CT, mode,
                                        SWEEP_ANG, SWEEP_ANG, 0, nullptr);
 }
 
-static sk_sp<SkShader> make_sweep_zero_ang(SkShader::TileMode mode) {
+static sk_sp<SkShader> make_sweep_zero_ang(SkTileMode mode) {
     // Start and end angles at 0
     return SkGradientShader::MakeSweep(CENTER.fX, CENTER.fY, COLORS, POS, COLOR_CT, mode,
                                        0.0, 0.0, 0, nullptr);
 }
 
-static sk_sp<SkShader> make_2pt_conic(SkShader::TileMode mode) {
+static sk_sp<SkShader> make_2pt_conic(SkTileMode mode) {
     // Start and end radius = TILE_SIZE, same position
     return SkGradientShader::MakeTwoPointConical(CENTER, TILE_SIZE / 2, CENTER, TILE_SIZE / 2,
                                                  COLORS, POS, COLOR_CT, mode);
 }
 
-static sk_sp<SkShader> make_2pt_conic_zero_rad(SkShader::TileMode mode) {
+static sk_sp<SkShader> make_2pt_conic_zero_rad(SkTileMode mode) {
     // Start and end radius = 0, same position
     return SkGradientShader::MakeTwoPointConical(CENTER, 0.0, CENTER, 0.0, COLORS, POS,
                                                  COLOR_CT, mode);

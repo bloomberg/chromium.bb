@@ -34,10 +34,7 @@
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/renderer/core/core_export.h"
-
-namespace cc {
-class PaintCanvas;
-}
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 class LocalFrame;
@@ -73,10 +70,12 @@ class CORE_EXPORT PageWidgetEventHandler {
 
 // Common implementation of WebViewImpl and WebPagePopupImpl.
 class CORE_EXPORT PageWidgetDelegate {
+  STATIC_ONLY(PageWidgetDelegate);
+
  public:
   static void Animate(Page&, base::TimeTicks monotonic_frame_begin_time);
 
-  // For the following methods, the |root| argument indicates a root localFrame
+  // For the following methods, the |root| argument indicates a root LocalFrame
   // from which to start performing the specified operation.
 
   // See comment of WebWidget::UpdateLifecycle.
@@ -85,23 +84,14 @@ class CORE_EXPORT PageWidgetDelegate {
                               WebWidget::LifecycleUpdate requested_update,
                               WebWidget::LifecycleUpdateReason reason);
 
-  // See documents of methods with the same names in FrameView class.
-  static void PaintContent(Page&,
-                           cc::PaintCanvas*,
-                           const WebRect&,
-                           LocalFrame& root);
-  static void PaintContentIgnoringCompositing(Page&,
-                                              cc::PaintCanvas*,
-                                              const WebRect&,
-                                              LocalFrame& root);
+  // See comment of WebWidget::DidBeginFrame.
+  static void DidBeginFrame(LocalFrame& root);
+
   // See FIXME in the function body about nullptr |root|.
   static WebInputEventResult HandleInputEvent(
       PageWidgetEventHandler&,
       const WebCoalescedInputEvent& coalesced_event,
       LocalFrame* root);
-
- private:
-  PageWidgetDelegate() {}
 };
 
 }  // namespace blink

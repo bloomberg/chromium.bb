@@ -84,7 +84,7 @@ class ScopedVAImage {
 
  private:
   base::Lock* lock_;
-  const VADisplay va_display_;
+  const VADisplay va_display_ GUARDED_BY(lock_);
   std::unique_ptr<VAImage> image_;
   std::unique_ptr<ScopedVABufferMapping> va_buffer_;
 

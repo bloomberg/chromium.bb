@@ -4,66 +4,39 @@
 
 // Provides a minimal wrapping of the Blink image decoders. Used to perform
 // a non-threaded, memory-to-memory image decode using micro second accuracy
-// clocks to measure image decode time. Basic usage:
-//
-//   % ninja -C out/Release image_decode_bench &&
-//      ./out/Release/image_decode_bench file [iterations]
-//
-// TODO(noel): Consider adding md5 checksum support to WTF. Use it to compute
-// the decoded image frame md5 and output that value.
+// clocks to measure image decode time.
 //
 // TODO(noel): Consider integrating this tool in Chrome telemetry for realz,
 // using the image corpora used to assess Blink image decode performance. See
 // http://crbug.com/398235#c103 and http://crbug.com/258324#c5
 
+#include <chrono>
 #include <fstream>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/core/embedder/embedder.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 namespace {
 
 scoped_refptr<SharedBuffer> ReadFile(const char* name) {
-  std::ifstream file(name, std::ios::in | std::ios::binary);
-  if (!file) {
-    fprintf(stderr, "Cannot open file %s\n", name);
-    exit(2);
-  }
-
-  file.seekg(0, std::ios::end);
-  std::streampos file_size = file.tellg();
-  file.seekg(0, std::ios::beg);
-
-  if (!file || file_size <= 0) {
-    fprintf(stderr, "Error seeking file %s\n", name);
-    exit(2);
-  }
-
-  if (file_size > std::numeric_limits<wtf_size_t>::max()) {
-    fprintf(stderr, "File size too large %s\n", name);
-    exit(2);
-  }
-
-  Vector<char> buffer(static_cast<wtf_size_t>(file_size));
-  if (!file.read(buffer.data(), file_size)) {
-    fprintf(stderr, "Error reading file %s\n", name);
-    exit(2);
-  }
-
-  return SharedBuffer::AdoptVector(buffer);
+  std::string file;
+  if (base::ReadFileToString(base::FilePath::FromUTF8Unsafe(name), &file))
+    return SharedBuffer::Create(file.data(), file.size());
+  perror(name);
+  exit(2);
+  return SharedBuffer::Create();
 }
 
 struct ImageMeta {
-  char* name;
+  const char* name;
   int width;
   int height;
   int frames;
@@ -77,27 +50,27 @@ void DecodeFailure(ImageMeta* image) {
 }
 
 void DecodeImageData(SharedBuffer* data, ImageMeta* image) {
-  const bool data_complete = true;
+  const bool all_data_received = true;
+
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-      data, data_complete, ImageDecoder::kAlphaPremultiplied,
+      data, all_data_received, ImageDecoder::kAlphaPremultiplied,
       ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore());
 
-  auto start = CurrentTimeTicks();
+  auto start = std::chrono::steady_clock::now();
 
-  bool all_data_received = true;
   decoder->SetData(data, all_data_received);
-
   size_t frame_count = decoder->FrameCount();
   for (size_t index = 0; index < frame_count; ++index) {
     if (!decoder->DecodeFrameBufferAtIndex(index))
       DecodeFailure(image);
   }
 
-  image->time += (CurrentTimeTicks() - start).InSecondsF();
+  auto end = std::chrono::steady_clock::now();
 
   if (!frame_count || decoder->Failed())
     DecodeFailure(image);
 
+  image->time += std::chrono::duration<double>(end - start).count();
   image->width = decoder->Size().Width();
   image->height = decoder->Size().Height();
   image->frames = frame_count;
@@ -105,54 +78,58 @@ void DecodeImageData(SharedBuffer* data, ImageMeta* image) {
 
 }  // namespace
 
-int ImageDecodeBenchMain(int argc, char* argv[]) {
-  base::CommandLine::Init(argc, argv);
-  const char* program = argv[0];
+void ImageDecodeBenchMain(int argc, char* argv[]) {
+  int option, iterations = 1;
 
-  if (argc < 2) {
-    fprintf(stderr, "Usage: %s file [iterations]\n", program);
+  auto usage_exit = [&] {
+    fprintf(stderr, "Usage: %s [-i iterations] file [file...]\n", argv[0]);
     exit(1);
+  };
+
+  for (option = 1; option < argc; ++option) {
+    if (argv[option][0] != '-')
+      break;  // End of optional arguments.
+    if (std::string(argv[option]) != "-i")
+      usage_exit();
+    iterations = (++option < argc) ? atoi(argv[option]) : 0;
+    if (iterations < 1)
+      usage_exit();
   }
 
-  // Control bench decode iterations.
+  if (option >= argc)
+    usage_exit();
 
-  size_t decode_iterations = 1;
-  if (argc >= 3) {
-    char* end = nullptr;
-    decode_iterations = strtol(argv[2], &end, 10);
-    if (*end != '\0' || !decode_iterations) {
-      fprintf(stderr,
-              "Second argument should be number of iterations. "
-              "The default is 1. You supplied %s\n",
-              argv[2]);
-      exit(1);
-    }
-  }
+  // Setup Blink platform.
 
   std::unique_ptr<Platform> platform = std::make_unique<Platform>();
   Platform::CreateMainThreadAndInitialize(platform.get());
 
-  // Read entire file content into |data| (a contiguous block of memory) then
-  // decode it to verify the image and record its ImageMeta data.
+  // Bench each image file.
 
-  ImageMeta image = {argv[1], 0, 0, 0, 0};
-  scoped_refptr<SharedBuffer> data = ReadFile(argv[1]);
-  DecodeImageData(data.get(), &image);
+  while (option < argc) {
+    const char* name = argv[option++];
 
-  // Image decode bench for decode_iterations.
+    // Read entire file content into |data| (a contiguous block of memory) then
+    // decode it to verify the image and record its ImageMeta data.
 
-  double total_time = 0.0;
-  for (size_t i = 0; i < decode_iterations; ++i) {
-    image.time = 0.0;
+    ImageMeta image = {name, 0, 0, 0, 0};
+    scoped_refptr<SharedBuffer> data = ReadFile(name);
     DecodeImageData(data.get(), &image);
-    total_time += image.time;
+
+    // Image decode bench for iterations.
+
+    double total_time = 0.0;
+    for (int i = 0; i < iterations; ++i) {
+      image.time = 0.0;
+      DecodeImageData(data.get(), &image);
+      total_time += image.time;
+    }
+
+    // Results to stdout.
+
+    double average_time = total_time / iterations;
+    printf("%f %f %s\n", total_time, average_time, name);
   }
-
-  // Results to stdout.
-
-  double average_time = total_time / decode_iterations;
-  printf("%f %f\n", total_time, average_time);
-  return 0;
 }
 
 }  // namespace blink
@@ -160,5 +137,7 @@ int ImageDecodeBenchMain(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
   base::MessageLoop message_loop;
   mojo::core::Init();
-  return blink::ImageDecodeBenchMain(argc, argv);
+  base::CommandLine::Init(argc, argv);
+  blink::ImageDecodeBenchMain(argc, argv);
+  return 0;
 }

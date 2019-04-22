@@ -36,7 +36,8 @@ class LayoutTableCellDeathTest : public RenderingTest {
     RenderingTest::SetUp();
     auto style = ComputedStyle::Create();
     style->SetDisplay(EDisplay::kTableCell);
-    cell_ = LayoutTableCell::CreateAnonymous(&GetDocument(), std::move(style));
+    cell_ = LayoutTableCell::CreateAnonymous(&GetDocument(), std::move(style),
+                                             LegacyLayout::kAuto);
   }
 
   void TearDown() override {
@@ -141,7 +142,7 @@ TEST_F(LayoutTableCellTest, RepaintContentInTableCell) {
   UpdateAllLifecyclePhasesForTest();
 
   // Check that overflow was calculated on the cell.
-  auto* input_block = ToLayoutBlock(cell->GetLayoutObject());
+  auto* input_block = To<LayoutBlock>(cell->GetLayoutObject());
   LayoutRect rect = input_block->LocalVisualRect();
   EXPECT_EQ(LayoutRect(-1, -1, 24, 24), rect);
 }
@@ -326,6 +327,35 @@ TEST_F(LayoutTableCellTest, BorderWidthsWithCollapsedBorders) {
   EXPECT_EQ(7u, cell2->CollapsedOuterBorderEnd());
   EXPECT_EQ(2u, cell2->CollapsedOuterBorderBefore());
   EXPECT_EQ(1u, cell2->CollapsedOuterBorderAfter());
+}
+
+TEST_F(LayoutTableCellTest, HasNonCollapsedBorderDecoration) {
+  SetBodyInnerHTML(R"HTML(
+    <table>
+      <tr><td id="cell"></td></tr>
+    </table>
+  )HTML");
+  auto* cell = GetCellByElementId("cell");
+  EXPECT_FALSE(cell->HasNonCollapsedBorderDecoration());
+
+  ToElement(cell->GetNode())
+      ->setAttribute(html_names::kStyleAttr, "border: 1px solid black");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(cell->HasNonCollapsedBorderDecoration());
+
+  ToElement(cell->Table()->GetNode())
+      ->setAttribute(html_names::kStyleAttr, "border-collapse: collapse");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(cell->HasNonCollapsedBorderDecoration());
+
+  ToElement(cell->GetNode())
+      ->setAttribute(html_names::kStyleAttr, "border: 2px solid black");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(cell->HasNonCollapsedBorderDecoration());
+
+  ToElement(cell->Table()->GetNode())->setAttribute(html_names::kStyleAttr, "");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(cell->HasNonCollapsedBorderDecoration());
 }
 
 }  // namespace blink

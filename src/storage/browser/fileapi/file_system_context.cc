@@ -46,10 +46,8 @@ namespace storage {
 
 namespace {
 
-QuotaClient* CreateQuotaClient(
-    FileSystemContext* context,
-    bool is_incognito) {
-  return new FileSystemQuotaClient(context, is_incognito);
+QuotaClient* CreateQuotaClient(FileSystemContext* context) {
+  return new FileSystemQuotaClient(context);
 }
 
 void DidGetMetadataForResolveURL(const base::FilePath& path,
@@ -101,11 +99,11 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
     case kFileSystemTypeProvided:
     case kFileSystemTypeDeviceMediaAsFileStorage:
     case kFileSystemTypeDriveFs:
+    case kFileSystemTypeArcContent:
+    case kFileSystemTypeArcDocumentsProvider:
       return FILE_PERMISSION_USE_FILE_PERMISSION;
 
     case kFileSystemTypeRestrictedNativeLocal:
-    case kFileSystemTypeArcContent:
-    case kFileSystemTypeArcDocumentsProvider:
       return FILE_PERMISSION_READ_ONLY |
              FILE_PERMISSION_USE_FILE_PERMISSION;
 
@@ -148,7 +146,8 @@ FileSystemContext::FileSystemContext(
     const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
     const base::FilePath& partition_path,
     const FileSystemOptions& options)
-    : env_override_(options.is_in_memory()
+    : base::RefCountedDeleteOnSequence<FileSystemContext>(io_task_runner),
+      env_override_(options.is_in_memory()
                         ? leveldb_chrome::NewMemEnv("FileSystem")
                         : nullptr),
       io_task_runner_(io_task_runner),
@@ -192,8 +191,7 @@ FileSystemContext::FileSystemContext(
 
   if (quota_manager_proxy) {
     // Quota client assumes all backends have registered.
-    quota_manager_proxy->RegisterClient(CreateQuotaClient(
-            this, options.is_incognito()));
+    quota_manager_proxy->RegisterClient(CreateQuotaClient(this));
   }
 
   sandbox_backend_->Initialize(this);
@@ -472,7 +470,8 @@ FileSystemURL FileSystemContext::CreateCrackedFileSystemURL(
     const GURL& origin,
     FileSystemType type,
     const base::FilePath& path) const {
-  return CrackFileSystemURL(FileSystemURL(origin, type, path));
+  return CrackFileSystemURL(
+      FileSystemURL(url::Origin::Create(origin), type, path));
 }
 
 #if defined(OS_CHROMEOS)
@@ -510,14 +509,6 @@ FileSystemContext::~FileSystemContext() {
   // TODO(crbug.com/823854) This is a leak. Delete env after the backends have
   // been deleted.
   env_override_.release();
-}
-
-void FileSystemContext::DeleteOnCorrectSequence() const {
-  if (!io_task_runner_->RunsTasksInCurrentSequence() &&
-      io_task_runner_->DeleteSoon(FROM_HERE, this)) {
-    return;
-  }
-  delete this;
 }
 
 FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
@@ -579,10 +570,10 @@ void FileSystemContext::RegisterBackend(FileSystemBackend* backend) {
     kFileSystemTypeExternal,
   };
   // Register file system backends for public mount types.
-  for (size_t j = 0; j < arraysize(mount_types); ++j) {
-    if (backend->CanHandleType(mount_types[j])) {
-      const bool inserted = backend_map_.insert(
-          std::make_pair(mount_types[j], backend)).second;
+  for (const auto& mount_type : mount_types) {
+    if (backend->CanHandleType(mount_type)) {
+      const bool inserted =
+          backend_map_.insert(std::make_pair(mount_type, backend)).second;
       DCHECK(inserted);
     }
   }

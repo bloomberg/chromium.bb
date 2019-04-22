@@ -141,3 +141,22 @@ group("v8_run_num_fuzzer") {
     "webkit:v8_webkit",
   ]
 }
+
+v8_header_set("common_test_headers") {
+  testonly = true
+
+  configs = []
+
+  public_deps = [
+    "../:v8_for_testing",
+    "../:v8_libbase",
+  ]
+
+  sources = [
+    "common/assembler-tester.h",
+    "common/types-fuzz.h",
+    "common/wasm/flag-utils.h",
+    "common/wasm/test-signatures.h",
+    "common/wasm/wasm-macro-gen.h",
+  ]
+}

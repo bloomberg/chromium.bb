@@ -104,8 +104,11 @@ def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir,
   if distribution:
     if len(distribution) > 1 and distribution[0] == '_':
       distribution = distribution[1:]
-    CopySectionFilesToStagingDir(config, distribution.upper(),
-                                 staging_dir, build_dir)
+
+    distribution = distribution.upper()
+    if config.has_section(distribution):
+      CopySectionFilesToStagingDir(config, distribution,
+                                   staging_dir, build_dir)
   if enable_hidpi == '1':
     CopySectionFilesToStagingDir(config, 'HIDPI', staging_dir, build_dir)
 
@@ -119,9 +122,10 @@ def CopySectionFilesToStagingDir(config, section, staging_dir, src_dir):
     if option.endswith('dir'):
       continue
 
+    src_subdir = option.replace('\\', os.sep)
     dst_dir = os.path.join(staging_dir, config.get(section, option))
     dst_dir = dst_dir.replace('\\', os.sep)
-    src_paths = glob.glob(os.path.join(src_dir, option))
+    src_paths = glob.glob(os.path.join(src_dir, src_subdir))
     if src_paths and not os.path.exists(dst_dir):
       os.makedirs(dst_dir)
     for src_path in src_paths:
@@ -429,36 +433,6 @@ def CopyIfChanged(src, target_dir):
       shutil.copyfile(src, dest)
   else:
     shutil.copyfile(src, dest)
-
-
-# Taken and modified from:
-# third_party\blink\tools\blinkpy\web_tests\port\factory.py
-def _read_configuration_from_gn(build_dir):
-  """Return the configuration to used based on args.gn, if possible."""
-  path = os.path.join(build_dir, 'args.gn')
-  if not os.path.exists(path):
-    path = os.path.join(build_dir, 'toolchain.ninja')
-    if not os.path.exists(path):
-      # This does not appear to be a GN-based build directory, so we don't
-      # know how to interpret it.
-      return None
-
-    # toolchain.ninja exists, but args.gn does not; this can happen when
-    # `gn gen` is run with no --args.
-    return 'Debug'
-
-  args = open(path).read()
-  for l in args.splitlines():
-    # See the original of this function and then gn documentation for why this
-    # regular expression is correct:
-    # https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/reference.md#GN-build-language-grammar
-    m = re.match('^\s*is_debug\s*=\s*false(\s*$|\s*#.*$)', l)
-    if m:
-      return 'Release'
-
-  # if is_debug is set to anything other than false, or if it
-  # does not exist at all, we should use the default value (True).
-  return 'Debug'
 
 
 def ParseDLLsFromDeps(build_dir, runtime_deps_file):

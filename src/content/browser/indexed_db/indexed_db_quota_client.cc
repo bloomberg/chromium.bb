@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/public/browser/browser_thread.h"

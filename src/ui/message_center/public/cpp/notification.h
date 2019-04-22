@@ -65,7 +65,8 @@ struct MESSAGE_CENTER_PUBLIC_EXPORT ButtonInfo {
 
   // Icon that should be displayed on the notification button. Optional. On some
   // platforms, a mask will be applied to the icon, to match the visual
-  // requirements of the notification.
+  // requirements of the notification. As with Android, MD notifications don't
+  // display this icon.
   gfx::Image icon;
 
   // The placeholder string that should be displayed in the input field for

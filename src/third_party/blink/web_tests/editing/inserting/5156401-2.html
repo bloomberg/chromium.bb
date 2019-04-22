@@ -1,11 +1,11 @@
-<body>
-<p>This tests for a bug where inserting at the end of a link would place content in the wrong paragraph.</p>
-<div contenteditable="true"><a id="link" href="#">Everything&nbsp;<br></a></div>
-               
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-var sel = window.getSelection();
-var link = document.getElementById("link");
-sel.collapse(link, link.childNodes.length);
-document.execCommand("InsertText", false, "in this editable region should be in the same paragraph.");
+selection_test(
+  '<div contenteditable><a href="#">Foo&nbsp;<br>|</a></div>',
+  'InsertText bar baz.',
+  '<div contenteditable><a href="#">Foo bar baz.|<br></a></div>',
+  'Inserting at the end of a link should place content in the correct paragraph');
 </script>
-</body>

@@ -7,9 +7,11 @@
 
 #include "SkSGDraw.h"
 
+#include "SkCanvas.h"
+#include "SkPath.h"
 #include "SkSGGeometryNode.h"
 #include "SkSGInvalidationController.h"
-#include "SkSGPaintNode.h"
+#include "SkSGPaint.h"
 #include "SkTLazy.h"
 
 namespace sksg {
@@ -29,7 +31,7 @@ Draw::~Draw() {
 void Draw::onRender(SkCanvas* canvas, const RenderContext* ctx) const {
     auto paint = fPaint->makePaint();
     if (ctx) {
-        ctx->modulatePaint(&paint);
+        ctx->modulatePaint(canvas->getTotalMatrix(), &paint);
     }
 
     const auto skipDraw = paint.nothingToDraw() ||
@@ -38,6 +40,25 @@ void Draw::onRender(SkCanvas* canvas, const RenderContext* ctx) const {
     if (!skipDraw) {
         fGeometry->draw(canvas, paint);
     }
+}
+
+const RenderNode* Draw::onNodeAt(const SkPoint& p) const {
+    const auto paint = fPaint->makePaint();
+
+    if (!paint.getAlpha()) {
+        return nullptr;
+    }
+
+    if (paint.getStyle() == SkPaint::Style::kFill_Style && fGeometry->contains(p)) {
+        return this;
+    }
+
+    SkPath stroke_path;
+    if (!paint.getFillPath(fGeometry->asPath(), &stroke_path)) {
+        return nullptr;
+    }
+
+    return stroke_path.contains(p.x(), p.y()) ? this : nullptr;
 }
 
 SkRect Draw::onRevalidate(InvalidationController* ic, const SkMatrix& ctm) {

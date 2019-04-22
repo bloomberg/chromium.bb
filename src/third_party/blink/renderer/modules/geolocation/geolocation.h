@@ -28,11 +28,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_H_
 
 #include "services/device/public/mojom/geolocation.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/geolocation/geolocation_service.mojom-blink.h"
+#include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_error_callback.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/geolocation/geo_notifier.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_watchers.h"
@@ -42,9 +42,14 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
+
+namespace mojom {
+enum class PermissionStatus;
+}  // namespace mojom
 
 class Document;
 class LocalFrame;
@@ -114,8 +119,8 @@ class MODULES_EXPORT Geolocation final
  private:
   // Customized HeapHashSet class that checks notifiers' timers. Notifier's
   // timer may be active only when the notifier is owned by the Geolocation.
-  class GeoNotifierSet : private HeapHashSet<TraceWrapperMember<GeoNotifier>> {
-    using BaseClass = HeapHashSet<TraceWrapperMember<GeoNotifier>>;
+  class GeoNotifierSet : private HeapHashSet<Member<GeoNotifier>> {
+    using BaseClass = HeapHashSet<Member<GeoNotifier>>;
 
    public:
     using BaseClass::Trace;
@@ -175,7 +180,7 @@ class MODULES_EXPORT Geolocation final
 
   void StopUpdating();
 
-  void UpdateGeolocationConnection();
+  void UpdateGeolocationConnection(GeoNotifier*);
   void QueryNextPosition();
 
   // Attempts to obtain a position for the given notifier, either by using
@@ -195,8 +200,11 @@ class MODULES_EXPORT Geolocation final
 
   void OnGeolocationConnectionError();
 
+  void OnGeolocationPermissionStatusUpdated(GeoNotifier*,
+                                            mojom::PermissionStatus);
+
   GeoNotifierSet one_shots_;
-  TraceWrapperMember<GeolocationWatchers> watchers_;
+  Member<GeolocationWatchers> watchers_;
   // GeoNotifiers that are in the middle of invocation.
   //
   // |HandleError(error)| and |MakeSuccessCallbacks| need to clear |one_shots_|
@@ -209,11 +217,11 @@ class MODULES_EXPORT Geolocation final
   // TODO(https://crbug.com/796145): Remove this hack once on-stack objects
   // get supported by either of wrapper-tracing or unified GC.
   GeoNotifierSet one_shots_being_invoked_;
-  HeapVector<TraceWrapperMember<GeoNotifier>> watchers_being_invoked_;
+  HeapVector<Member<GeoNotifier>> watchers_being_invoked_;
   Member<Geoposition> last_position_;
 
-  device::mojom::blink::RevocableGeolocationPtr geolocation_;
-  mojom::blink::RevocableGeolocationServicePtr geolocation_service_;
+  RevocableInterfacePtr<device::mojom::blink::Geolocation> geolocation_;
+  RevocableInterfacePtr<mojom::blink::GeolocationService> geolocation_service_;
   bool enable_high_accuracy_ = false;
 
   // Whether a GeoNotifier is waiting for a position update.

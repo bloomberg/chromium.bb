@@ -5,10 +5,10 @@
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock.h"
 
 #include "services/device/public/mojom/constants.mojom-blink.h"
-#include "services/device/public/mojom/wake_lock_provider.mojom-blink.h"
+#include "services/device/public/mojom/wake_lock.mojom-blink.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -38,7 +38,7 @@ WakeLock::WakeLock(ScriptState* script_state, LockType type)
 
 ScriptPromise WakeLock::GetPromise(ScriptState* script_state) {
   if (!wake_lock_property_) {
-    wake_lock_property_ = new WakeLockProperty(
+    wake_lock_property_ = MakeGarbageCollected<WakeLockProperty>(
         ExecutionContext::From(script_state), this, WakeLockProperty::kReady);
     wake_lock_property_->Resolve(this);
   }
@@ -94,15 +94,21 @@ void WakeLock::BindToServiceIfNeeded() {
       break;
   }
 
-  device::mojom::blink::WakeLockProviderPtr provider;
-  Platform::Current()->GetConnector()->BindInterface(
-      device::mojom::blink::kServiceName, mojo::MakeRequest(&provider));
-  provider->GetWakeLockWithoutContext(
-      type, device::mojom::blink::WakeLockReason::kOther, "Blink Wake Lock",
-      mojo::MakeRequest(&wake_lock_service_));
+  if (!GetDocument() || !GetDocument()->GetFrame())
+    return;
 
+  blink::mojom::blink::WakeLockServicePtr service;
+  GetDocument()->GetFrame()->GetInterfaceProvider().GetInterface(
+      mojo::MakeRequest(&service));
+  service->GetWakeLock(type, device::mojom::blink::WakeLockReason::kOther,
+                       "Blink Wake Lock",
+                       mojo::MakeRequest(&wake_lock_service_));
   wake_lock_service_.set_connection_error_handler(
       WTF::Bind(&WakeLock::OnConnectionError, WrapWeakPersistent(this)));
+}
+
+Document* WakeLock::GetDocument() {
+  return To<Document>(GetExecutionContext());
 }
 
 WakeLockRequest* WakeLock::createRequest() {

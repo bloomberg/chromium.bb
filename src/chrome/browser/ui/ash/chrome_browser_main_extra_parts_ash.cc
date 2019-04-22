@@ -30,12 +30,12 @@
 #include "chrome/browser/ui/ash/ash_shell_init.h"
 #include "chrome/browser/ui/ash/cast_config_client_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
-#include "chrome/browser/ui/ash/contained_shell_client.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
+#include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/media_client.h"
-#include "chrome/browser/ui/ash/network/data_promo_notification.h"
+#include "chrome/browser/ui/ash/network/mobile_data_notifications.h"
 #include "chrome/browser/ui/ash/network/network_connect_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
 #include "chrome/browser/ui/ash/screen_orientation_delegate_chromeos.h"
@@ -55,6 +55,8 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/ui_devtools/switches.h"
+#include "components/ui_devtools/views/devtools_server_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -150,6 +152,9 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
 void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
   if (features::IsMultiProcessMash()) {
+    // Mash and SingleProcessMash cannot be enabled simultaneously.
+    DCHECK(!features::IsSingleProcessMash());
+
     // ash::Shell will not be created because ash is running out-of-process.
     ash::Shell::SetIsBrowserProcessWithMash();
   }
@@ -180,7 +185,7 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   // IME driver must be available at login screen, so initialize before profile.
-  IMEDriver::Register();
+  IMEDriverMus::Register();
 
   // NetworkConnect handles the network connection state machine for the UI.
   network_connect_delegate_ =
@@ -201,6 +206,18 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
         ->BindInterface(ws::mojom::kServiceName, &user_activity_monitor);
     user_activity_forwarder_ = std::make_unique<aura::UserActivityForwarder>(
         std::move(user_activity_monitor), user_activity_detector_.get());
+  }
+
+  if (ui_devtools::UiDevToolsServer::IsUiDevToolsEnabled(
+          ui_devtools::switches::kEnableUiDevTools)) {
+    // Register Ash's root windows with UI DevTools; warn in multi-process Mash.
+    // TODO(crbug.com/896977): Refine ui_devtools support for Ash and mojo apps.
+    if (features::IsSingleProcessMash()) {
+      ui_devtools::RegisterAdditionalRootWindowsAndEnv(
+          ash::Shell::Get()->GetAllRootWindows());
+    } else if (features::IsMultiProcessMash()) {
+      LOG(WARNING) << "Chrome cannot access Ash and mojo app UIs in Mash.";
+    }
   }
 
   if (features::IsUsingWindowService())
@@ -258,6 +275,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   g_browser_process->platform_part()->InitializeDeviceDisablingManager();
 
   media_client_ = std::make_unique<MediaClient>();
+  media_client_->Init();
 
   // Instantiate DisplaySettingsHandler after CrosSettings has been
   // initialized.
@@ -288,18 +306,16 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
     TabScrubber::GetInstance();
   }
 
-  if (base::FeatureList::IsEnabled(ash::features::kContainedShell))
-    contained_shell_client_ = std::make_unique<ContainedShellClient>();
+  if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell))
+    kiosk_next_shell_client_ = std::make_unique<KioskNextShellClient>();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
-  data_promo_notification_ = std::make_unique<DataPromoNotification>();
+  mobile_data_notifications_ = std::make_unique<MobileDataNotifications>();
 
-  if (ash::features::IsNightLightEnabled()) {
-    night_light_client_ = std::make_unique<NightLightClient>(
-        g_browser_process->shared_url_loader_factory());
-    night_light_client_->Start();
-  }
+  night_light_client_ = std::make_unique<NightLightClient>(
+      g_browser_process->shared_url_loader_factory());
+  night_light_client_->Start();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
@@ -310,7 +326,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 #endif
 
   night_light_client_.reset();
-  data_promo_notification_.reset();
+  mobile_data_notifications_.reset();
   chrome_launcher_controller_initializer_.reset();
 
   wallpaper_controller_client_.reset();
@@ -323,7 +339,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   media_client_.reset();
   login_screen_client_.reset();
   cast_config_client_media_router_.reset();
-  contained_shell_client_.reset();
+  kiosk_next_shell_client_.reset();
 
   // Initialized in PreProfileInit:
   system_tray_client_.reset();

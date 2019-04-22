@@ -11,7 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_metrics_util.h"
+#include "chrome/browser/password_manager/password_generation_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/web_contents.h"
 
 using autofill::AccessorySheetData;
@@ -29,16 +31,19 @@ base::WeakPtr<ManualFillingController> ManualFillingController::GetOrCreate(
 void ManualFillingControllerImpl::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
     base::WeakPtr<PasswordAccessoryController> pwd_controller,
+    PasswordGenerationController* pwd_generation_controller_for_testing,
     std::unique_ptr<ManualFillingViewInterface> view) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
   DCHECK(pwd_controller);
+  DCHECK(pwd_generation_controller_for_testing);
   DCHECK(view);
 
   web_contents->SetUserData(
       UserDataKey(),
       base::WrapUnique(new ManualFillingControllerImpl(
-          web_contents, std::move(pwd_controller), std::move(view))));
+          web_contents, std::move(pwd_controller),
+          pwd_generation_controller_for_testing, std::move(view))));
 }
 
 void ManualFillingControllerImpl::OnAutomaticGenerationStatusChanged(
@@ -68,12 +73,28 @@ void ManualFillingControllerImpl::RefreshSuggestionsForField(
   }
 }
 
-void ManualFillingControllerImpl::ShowWhenKeyboardIsVisible() {
+void ManualFillingControllerImpl::ShowWhenKeyboardIsVisible(
+    FillingSource source) {
+  if (source == FillingSource::AUTOFILL &&
+      !base::FeatureList::IsEnabled(
+          autofill::features::kAutofillKeyboardAccessory)) {
+    // Ignore autofill signals if the feature is disabled.
+    return;
+  }
+  visible_sources_.insert(source);
   view_->ShowWhenKeyboardIsVisible();
 }
 
-void ManualFillingControllerImpl::Hide() {
-  view_->Hide();
+void ManualFillingControllerImpl::Hide(FillingSource source) {
+  if (source == FillingSource::AUTOFILL &&
+      !base::FeatureList::IsEnabled(
+          autofill::features::kAutofillKeyboardAccessory)) {
+    // Ignore autofill signals if the feature is disabled.
+    return;
+  }
+  visible_sources_.erase(source);
+  if (visible_sources_.empty())
+    view_->Hide();
 }
 
 void ManualFillingControllerImpl::OnFillingTriggered(
@@ -90,8 +111,13 @@ void ManualFillingControllerImpl::OnOptionSelected(
 }
 
 void ManualFillingControllerImpl::OnGenerationRequested() {
-  DCHECK(pwd_controller_);
-  pwd_controller_->OnGenerationRequested();
+  PasswordGenerationController* pwd_generation_controller =
+      pwd_generation_controller_for_testing_
+          ? pwd_generation_controller_for_testing_
+          : PasswordGenerationController::GetIfExisting(web_contents_);
+
+  DCHECK(pwd_generation_controller);
+  pwd_generation_controller->OnGenerationRequested();
 }
 
 void ManualFillingControllerImpl::GetFavicon(
@@ -126,8 +152,13 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
 ManualFillingControllerImpl::ManualFillingControllerImpl(
     content::WebContents* web_contents,
     base::WeakPtr<PasswordAccessoryController> pwd_controller,
+    PasswordGenerationController* pwd_generation_controller_for_testing,
     std::unique_ptr<ManualFillingViewInterface> view)
     : web_contents_(web_contents),
       pwd_controller_(std::move(pwd_controller)),
+      pwd_generation_controller_for_testing_(
+          pwd_generation_controller_for_testing),
       view_(std::move(view)),
       weak_factory_(this) {}
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ManualFillingControllerImpl)

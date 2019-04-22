@@ -8,7 +8,6 @@
 
 #include "fxjs/cfx_v8.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/test_support.h"
 #include "third_party/base/ptr_util.h"
 
 void FXV8UnitTest::V8IsolateDeleter::operator()(v8::Isolate* ptr) const {
@@ -187,13 +186,13 @@ TEST_F(FXV8UnitTest, NewObject) {
   auto object = cfx_v8()->NewObject();
   ASSERT_FALSE(object.IsEmpty());
   EXPECT_EQ(0u, cfx_v8()->GetObjectPropertyNames(object).size());
-  EXPECT_FALSE(cfx_v8()->GetObjectProperty(object, L"clams").IsEmpty());
-  EXPECT_TRUE(cfx_v8()->GetObjectProperty(object, L"clams")->IsUndefined());
+  EXPECT_FALSE(cfx_v8()->GetObjectProperty(object, "clams").IsEmpty());
+  EXPECT_TRUE(cfx_v8()->GetObjectProperty(object, "clams")->IsUndefined());
   EXPECT_EQ(0u, cfx_v8()->GetObjectPropertyNames(object).size());
 
-  cfx_v8()->PutObjectProperty(object, L"clams", cfx_v8()->NewNumber(12));
-  EXPECT_FALSE(cfx_v8()->GetObjectProperty(object, L"clams").IsEmpty());
-  EXPECT_TRUE(cfx_v8()->GetObjectProperty(object, L"clams")->IsNumber());
+  cfx_v8()->PutObjectProperty(object, "clams", cfx_v8()->NewNumber(12));
+  EXPECT_FALSE(cfx_v8()->GetObjectProperty(object, "clams").IsEmpty());
+  EXPECT_TRUE(cfx_v8()->GetObjectProperty(object, "clams")->IsNumber());
   EXPECT_EQ(1u, cfx_v8()->GetObjectPropertyNames(object).size());
   EXPECT_EQ(L"clams", cfx_v8()->GetObjectPropertyNames(object)[0]);
 

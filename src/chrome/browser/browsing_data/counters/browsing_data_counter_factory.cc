@@ -10,7 +10,6 @@
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/counters/cache_counter.h"
 #include "chrome/browser/browsing_data/counters/downloads_counter.h"
-#include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
 #include "chrome/browser/browsing_data/counters/signin_data_counter.h"
 #include "chrome/browser/browsing_data/counters/site_data_counter.h"
 #include "chrome/browser/browsing_data/counters/site_settings_counter.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/counters/autofill_counter.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/browsing_data/core/counters/history_counter.h"
@@ -31,6 +29,7 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/sync/driver/sync_service.h"
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -78,13 +77,8 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
     return std::make_unique<SiteDataCounter>(profile);
   }
   if (pref_name == browsing_data::prefs::kDeleteCookiesBasic) {
-// The cookies option on the basic tab doesn't use a counter.
-// However, on Android it does include Media Licenses.
-#if defined(OS_ANDROID)
-    return MediaLicensesCounter::Create(profile);
-#else
+    // The cookies option on the basic tab doesn't use a counter.
     return nullptr;
-#endif
   }
 
   if (pref_name == browsing_data::prefs::kDeletePasswords) {
@@ -112,10 +106,6 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
 
   if (pref_name == browsing_data::prefs::kDeleteDownloadHistory) {
     return std::make_unique<DownloadsCounter>(profile);
-  }
-
-  if (pref_name == browsing_data::prefs::kDeleteMediaLicenses) {
-    return MediaLicensesCounter::Create(profile);
   }
 
   if (pref_name == browsing_data::prefs::kDeleteSiteSettings) {

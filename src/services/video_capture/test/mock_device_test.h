@@ -9,9 +9,10 @@
 #include "media/capture/video/mock_device.h"
 #include "media/capture/video/mock_device_factory.h"
 #include "media/capture/video/video_capture_device.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,7 +47,7 @@ class MockDeviceTest : public ::testing::Test {
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
-  service_manager::ServiceContextRefFactory ref_factory_;
+  service_manager::ServiceKeepalive service_keepalive_;
 };
 
 }  // namespace video_capture

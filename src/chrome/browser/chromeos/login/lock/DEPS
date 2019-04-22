@@ -1,6 +1,0 @@
-specific_include_rules = {
-  # TODO(jdufault): This code is deprecated and will be removed.
-  "webui_screen_locker\.h": [
-    "+ash/login/ui/lock_window.h",
-  ],
-}

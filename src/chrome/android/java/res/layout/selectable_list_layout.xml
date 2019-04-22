@@ -3,7 +3,16 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- This view provides a background for the toolbar when the page's background
+         is visible through the lateral margins of the search view -->
+    <View
+        android:id="@+id/action_bar_bg"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_height_no_shadow"
+        android:background="@color/toolbar_background_primary" />
 
     <ViewStub
         android:id="@+id/action_bar_stub"
@@ -12,7 +21,7 @@
         android:layout_height="@dimen/toolbar_height_no_shadow"
         android:background="@color/default_primary_color" />
 
-    <FrameLayout
+    <org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout
         android:id="@+id/list_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -25,21 +34,28 @@
             android:clipToPadding="false"
             android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/empty_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:drawablePadding="3dp"
-            android:textAppearance="@style/BlackDisabledText1"
-            android:visibility="gone" />
+        <FrameLayout
+            android:id="@+id/empty_view_wrapper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" >
+            <org.chromium.chrome.browser.widget.TextViewWithCompoundDrawables
+                android:id="@+id/empty_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:drawablePadding="3dp"
+                android:visibility="gone"
+                android:textAppearance="@style/TextAppearance.BlackDisabledText1"
+                app:chromeDrawableTint="@color/light_icon_color"/>
+        </FrameLayout>
 
         <org.chromium.chrome.browser.widget.LoadingView
             android:id="@+id/loading_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center" />
-    </FrameLayout>
+    </org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout>
 
     <org.chromium.chrome.browser.widget.FadingShadowView
         android:id="@+id/shadow"

@@ -6,11 +6,14 @@ package org.chromium.chrome.browser.customtabs;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabFullscreenHandler;
 
 import javax.inject.Inject;
+
+import dagger.Lazy;
 
 /**
  * Implementation of {@link BrowserControlsVisibilityDelegate} for custom tabs.
@@ -18,14 +21,15 @@ import javax.inject.Inject;
 @ActivityScope
 public class CustomTabBrowserControlsVisibilityDelegate
         implements BrowserControlsVisibilityDelegate {
-    private final BrowserControlsVisibilityDelegate mFullscreenManagerDelegate;
+    private final Lazy<ChromeFullscreenManager> mFullscreenManagerDelegate;
     private final ActivityTabProvider mTabProvider;
     private boolean mIsInTwaMode;
+    private boolean mIsInModuleLoadingMode;
 
     @Inject
     public CustomTabBrowserControlsVisibilityDelegate(
-            ChromeFullscreenManager fullscreenManager, ActivityTabProvider tabProvider) {
-        mFullscreenManagerDelegate = fullscreenManager.getBrowserVisibilityDelegate();
+            Lazy<ChromeFullscreenManager> fullscreenManager, ActivityTabProvider tabProvider) {
+        mFullscreenManagerDelegate = fullscreenManager;
         mTabProvider = tabProvider;
     }
 
@@ -38,19 +42,36 @@ public class CustomTabBrowserControlsVisibilityDelegate
             return;
         }
         mIsInTwaMode = isInTwaMode;
-        Tab activeTab = mTabProvider.getActivityTab();
-        if (activeTab != null) {
-            activeTab.updateFullscreenEnabledState();
+        updateActiveTabFullscreenEnabledState();
+    }
+
+    /**
+     * Sets module loading mode. In module loading mode browser controls should be hidden.
+     */
+    public void setModuleLoadingMode(boolean isInModuleLoadingMode) {
+        if (mIsInModuleLoadingMode == isInModuleLoadingMode) {
+            return;
         }
+        mIsInModuleLoadingMode = isInModuleLoadingMode;
+        updateActiveTabFullscreenEnabledState();
     }
 
     @Override
     public boolean canShowBrowserControls() {
-        return !mIsInTwaMode && mFullscreenManagerDelegate.canShowBrowserControls();
+        return !mIsInTwaMode && !mIsInModuleLoadingMode
+                && getDefaultVisibilityDelegate().canShowBrowserControls();
     }
 
     @Override
     public boolean canAutoHideBrowserControls() {
-        return mFullscreenManagerDelegate.canAutoHideBrowserControls();
+        return getDefaultVisibilityDelegate().canAutoHideBrowserControls();
+    }
+
+    private BrowserStateBrowserControlsVisibilityDelegate getDefaultVisibilityDelegate() {
+        return mFullscreenManagerDelegate.get().getBrowserVisibilityDelegate();
+    }
+
+    private void updateActiveTabFullscreenEnabledState() {
+        TabFullscreenHandler.updateEnabledState(mTabProvider.get());
     }
 }

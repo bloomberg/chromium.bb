@@ -30,6 +30,11 @@ void StubNotificationDisplayService::SetNotificationAddedClosure(
   notification_added_closure_ = std::move(closure);
 }
 
+void StubNotificationDisplayService::SetNotificationClosedClosure(
+    base::RepeatingClosure closure) {
+  notification_closed_closure_ = std::move(closure);
+}
+
 std::vector<message_center::Notification>
 StubNotificationDisplayService::GetDisplayedNotificationsForType(
     NotificationHandler::Type type) const {
@@ -204,15 +209,17 @@ void StubNotificationDisplayService::Close(
   RemoveNotification(
       notification_type, notification_id, false /* by_user */,
       notification_type != NotificationHandler::Type::TRANSIENT /* silent */);
+
+  if (notification_closed_closure_)
+    notification_closed_closure_.Run();
 }
 
 void StubNotificationDisplayService::GetDisplayed(
     DisplayedNotificationsCallback callback) {
-  std::unique_ptr<std::set<std::string>> notifications =
-      std::make_unique<std::set<std::string>>();
+  std::set<std::string> notifications;
 
   for (const auto& notification_data : notifications_)
-    notifications->insert(notification_data.notification.id());
+    notifications.insert(notification_data.notification.id());
 
   std::move(callback).Run(std::move(notifications),
                           true /* supports_synchronization */);

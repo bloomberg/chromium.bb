@@ -41,7 +41,7 @@ struct MOJO_ALIGNAS(8) MojoCreateDataPipeOptions {
   uint32_t capacity_num_bytes;
 };
 MOJO_STATIC_ASSERT(MOJO_ALIGNOF(int64_t) <= 8, "int64_t has weird alignment");
-MOJO_STATIC_ASSERT(sizeof(MojoCreateDataPipeOptions) == 16,
+MOJO_STATIC_ASSERT(sizeof(struct MojoCreateDataPipeOptions) == 16,
                    "MojoCreateDataPipeOptions has wrong size");
 
 // Flags passed to |MojoWriteData()| via |MojoWriteDataOptions|. See values
@@ -64,7 +64,7 @@ struct MOJO_ALIGNAS(8) MojoWriteDataOptions {
   // See |MojoWriteDataFlags|.
   MojoWriteDataFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoWriteDataOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoWriteDataOptions) == 8,
                    "MojoWriteDataOptions has wrong size");
 
 // Flags passed to |MojoBeginWriteData()| via |MojoBeginWriteDataOptions|. See
@@ -82,7 +82,7 @@ struct MOJO_ALIGNAS(8) MojoBeginWriteDataOptions {
   // See |MojoBeginWriteDataFlags|.
   MojoBeginWriteDataFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoBeginWriteDataOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoBeginWriteDataOptions) == 8,
                    "MojoBeginWriteDataOptions has wrong size");
 
 // Flags passed to |MojoEndWriteData()| via |MojoEndWriteDataOptions|. See
@@ -100,7 +100,7 @@ struct MOJO_ALIGNAS(8) MojoEndWriteDataOptions {
   // See |MojoEndWriteDataFlags|.
   MojoEndWriteDataFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoEndWriteDataOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoEndWriteDataOptions) == 8,
                    "MojoEndWriteDataOptions has wrong size");
 
 // Flags passed to |MojoReadData()| via |MojoReadDataOptions|.
@@ -139,7 +139,7 @@ struct MOJO_ALIGNAS(8) MojoReadDataOptions {
   // See |MojoReadDataFlags|.
   MojoReadDataFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoReadDataOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoReadDataOptions) == 8,
                    "MojoReadDataOptions has wrong size");
 
 // Flags passed to |MojoBeginReadData()| via |MojoBeginReadDataOptions|. See
@@ -157,7 +157,7 @@ struct MOJO_ALIGNAS(8) MojoBeginReadDataOptions {
   // See |MojoBeginReadDataFlags|.
   MojoBeginReadDataFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoBeginReadDataOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoBeginReadDataOptions) == 8,
                    "MojoBeginReadDataOptions has wrong size");
 
 // Flags passed to |MojoEndReadData()| via |MojoEndReadDataOptions|. See
@@ -175,7 +175,7 @@ struct MOJO_ALIGNAS(8) MojoEndReadDataOptions {
   // See |MojoEndReadDataFlags|.
   MojoEndReadDataFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoEndReadDataOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoEndReadDataOptions) == 8,
                    "MojoEndReadDataOptions has wrong size");
 
 #ifdef __cplusplus

@@ -17,7 +17,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_stream_parser.h"
 #include "net/socket/client_socket_handle.h"
-#include "net/third_party/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
@@ -35,6 +35,7 @@ class MockClientSocketFactory;
 class WebSocketBasicHandshakeStream;
 class ProxyResolutionService;
 class SequencedSocketData;
+class IPEndPoint;
 struct SSLSocketDataProvider;
 
 class LinearCongruentialGenerator {
@@ -194,9 +195,9 @@ class DummyConnectDelegate : public WebSocketStream::ConnectDelegate {
           ssl_error_callbacks,
       const SSLInfo& ssl_info,
       bool fatal) override {}
-  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+  int OnAuthRequired(const AuthChallengeInfo& auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
-                     const HostPortPair& host_port_pair,
+                     const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override;
 };
@@ -222,11 +223,9 @@ class TestWebSocketHandshakeStreamCreateHelper
  public:
   // Constructor for using dummy ConnectDelegate and WebSocketStreamRequestAPI.
   TestWebSocketHandshakeStreamCreateHelper()
-      : WebSocketHandshakeStreamCreateHelper(
-            &connect_delegate_,
-            std::vector<std::string>() /* requested_subprotocols */) {
-    WebSocketHandshakeStreamCreateHelper::set_stream_request(&request_);
-  }
+      : WebSocketHandshakeStreamCreateHelper(&connect_delegate_,
+                                             /* requested_subprotocols = */ {},
+                                             &request_) {}
 
   ~TestWebSocketHandshakeStreamCreateHelper() override = default;
 

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
@@ -183,6 +184,8 @@ TEST(IDBValueWrapperTest, WriteBytes) {
 
 // Friend class of IDBValueUnwrapper with access to its internals.
 class IDBValueUnwrapperReadTestHelper {
+  STACK_ALLOCATED();
+
  public:
   void ReadVarInt(const char* start, uint32_t buffer_size) {
     IDBValueUnwrapper unwrapper;
@@ -483,23 +486,24 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
   scoped_refptr<SharedBuffer> wrapped_marker_buffer = wrapper.TakeWireBytes();
   IDBKeyPath key_path(String("primaryKey"));
 
-  std::unique_ptr<IDBValue> wrapped_value =
-      IDBValue::Create(wrapped_marker_buffer, blob_infos);
-  wrapped_value->SetIsolate(scope.GetIsolate());
-  EXPECT_TRUE(IDBValueUnwrapper::IsWrapped(wrapped_value.get()));
-
   Vector<char> wrapped_marker_bytes(
       static_cast<wtf_size_t>(wrapped_marker_buffer->size()));
   ASSERT_TRUE(wrapped_marker_buffer->GetBytes(wrapped_marker_bytes.data(),
                                               wrapped_marker_bytes.size()));
+
+  auto wrapped_value = std::make_unique<IDBValue>(
+      std::move(wrapped_marker_buffer), std::move(blob_infos));
+  wrapped_value->SetIsolate(scope.GetIsolate());
+  EXPECT_TRUE(IDBValueUnwrapper::IsWrapped(wrapped_value.get()));
 
   // IsWrapped() looks at the first 3 bytes in the value's byte array.
   // Truncating the array to fewer than 3 bytes should cause IsWrapped() to
   // return false.
   ASSERT_LT(3U, wrapped_marker_bytes.size());
   for (wtf_size_t i = 0; i < 3; ++i) {
-    std::unique_ptr<IDBValue> mutant_value = IDBValue::Create(
-        SharedBuffer::Create(wrapped_marker_bytes.data(), i), blob_infos);
+    auto mutant_value = std::make_unique<IDBValue>(
+        SharedBuffer::Create(wrapped_marker_bytes.data(), i),
+        std::move(blob_infos));
     mutant_value->SetIsolate(scope.GetIsolate());
 
     EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.get()));
@@ -512,10 +516,10 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
     for (int j = 0; j < 8; ++j) {
       char mask = 1 << j;
       wrapped_marker_bytes[i] ^= mask;
-      std::unique_ptr<IDBValue> mutant_value =
-          IDBValue::Create(SharedBuffer::Create(wrapped_marker_bytes.data(),
-                                                wrapped_marker_bytes.size()),
-                           blob_infos);
+      auto mutant_value = std::make_unique<IDBValue>(
+          SharedBuffer::Create(wrapped_marker_bytes.data(),
+                               wrapped_marker_bytes.size()),
+          std::move(blob_infos));
       mutant_value->SetIsolate(scope.GetIsolate());
       EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.get()));
 

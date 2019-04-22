@@ -6,35 +6,30 @@ component("cpp") {
   output_name = "service_manager_cpp"
 
   sources = [
+    "binder_map.h",
+    "binder_map_internal.h",
     "binder_registry.h",
     "connect.h",
     "connector.cc",
     "connector.h",
     "constants.cc",
     "constants.h",
-    "embedded_instance_manager.cc",
-    "embedded_instance_manager.h",
-    "embedded_service_info.cc",
-    "embedded_service_info.h",
-    "embedded_service_runner.cc",
-    "embedded_service_runner.h",
     "export.h",
     "interface_binder.h",
     "interface_provider.cc",
     "interface_provider.h",
     "local_interface_provider.h",
+    "manifest.cc",
+    "manifest.h",
+    "manifest_builder.cc",
+    "manifest_builder.h",
     "service.cc",
     "service.h",
     "service_binding.cc",
     "service_binding.h",
-    "service_context.cc",
-    "service_context.h",
-    "service_context_ref.cc",
     "service_context_ref.h",
     "service_keepalive.cc",
     "service_keepalive.h",
-    "service_runner.cc",
-    "service_runner.h",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -47,6 +42,10 @@ component("cpp") {
     "//services/service_manager/public/mojom",
     "//services/service_manager/public/mojom:constants",
     "//url",
+  ]
+
+  deps = [
+    "//services/tracing/public/cpp:traced_process",
   ]
 
   defines = [
@@ -107,15 +106,18 @@ component("mojom_traits") {
   defines = [ "IS_SERVICE_MANAGER_MOJOM_TRAITS_IMPL" ]
 }
 
-source_set("tests") {
+source_set("unittests") {
   testonly = true
+
   sources = [
-    "embedded_instance_manager_unittest.cc",
+    "manifest_unittest.cc",
   ]
+
   deps = [
     ":cpp",
     "//base",
-    "//base/test:test_support",
+    "//services/service_manager/public/mojom",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

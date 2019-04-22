@@ -7,6 +7,7 @@
 #include "src/builtins/builtins.h"
 #include "src/counters.h"
 #include "src/debug/interface-types.h"
+#include "src/log.h"
 #include "src/objects-inl.h"
 
 namespace v8 {
@@ -144,7 +145,7 @@ BUILTIN(ConsoleContext) {
   Handle<JSObject> prototype = factory->NewJSObject(isolate->object_function());
   JSFunction::SetPrototype(cons, prototype);
 
-  Handle<JSObject> context = factory->NewJSObject(cons, TENURED);
+  Handle<JSObject> context = factory->NewJSObject(cons, AllocationType::kOld);
   DCHECK(context->IsJSObject());
   int id = isolate->last_console_context_id() + 1;
   isolate->set_last_console_context_id(id);

@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "build/build_config.h"
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
@@ -59,13 +58,13 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   ~BookmarkBubbleView() override;
 
   // LocationBarBubbleDelegateView:
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   View* GetInitiallyFocusedView() override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   void WindowClosing() override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   views::View* CreateExtraView() override;
   bool GetExtraViewPadding(int* padding) override;
   views::View* CreateFootnoteView() override;

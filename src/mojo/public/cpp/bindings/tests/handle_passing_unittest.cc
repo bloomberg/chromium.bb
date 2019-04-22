@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -318,7 +319,7 @@ TEST_P(HandlePassingTest, CreateNamedObject) {
   EXPECT_EQ(std::string("object2"), name2);
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(HandlePassingTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(HandlePassingTest);
 
 }  // namespace
 }  // namespace test

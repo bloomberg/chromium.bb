@@ -5,14 +5,14 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
 #include "SkCanvas.h"
 #include "SkColorFilter.h"
 #include "SkColorPriv.h"
 #include "SkImageFilterPriv.h"
 #include "SkShader.h"
 #include "SkTextUtils.h"
+#include "ToolUtils.h"
+#include "gm.h"
 
 #include "SkBlurImageFilter.h"
 #include "SkColorFilterImageFilter.h"
@@ -32,9 +32,6 @@ protected:
     sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
                                         SkIPoint* offset) const override {
         return nullptr;
-    }
-    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override {
-        return sk_ref_sp(this);
     }
 
 private:
@@ -60,9 +57,6 @@ protected:
                                         SkIPoint* offset) const override {
         offset->set(0, 0);
         return sk_ref_sp<SkSpecialImage>(source);
-    }
-    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override {
-        return sk_ref_sp(const_cast<IdentityImageFilter*>(this));
     }
 
 private:
@@ -127,10 +121,8 @@ static void draw_text(SkCanvas* canvas, const SkRect& r, sk_sp<SkImageFilter> im
     SkPaint paint;
     paint.setImageFilter(imf);
     paint.setColor(SK_ColorCYAN);
-    paint.setAntiAlias(true);
-    sk_tool_utils::set_portable_typeface(&paint);
-    paint.setTextSize(r.height()/2);
-    SkTextUtils::DrawString(canvas, "Text", r.centerX(), r.centerY(), paint,
+    SkFont font(ToolUtils::create_portable_typeface(), r.height() / 2);
+    SkTextUtils::DrawString(canvas, "Text", r.centerX(), r.centerY(), font, paint,
                             SkTextUtils::kCenter_Align);
 }
 
@@ -177,7 +169,7 @@ protected:
             draw_bitmap,
         };
 
-        auto cf = SkColorFilter::MakeModeFilter(SK_ColorRED, SkBlendMode::kSrcIn);
+        auto cf = SkColorFilters::Blend(SK_ColorRED, SkBlendMode::kSrcIn);
         sk_sp<SkImageFilter> filters[] = {
             nullptr,
             IdentityImageFilter::Make(nullptr),
@@ -237,20 +229,18 @@ protected:
 
     SkISize onISize() override { return SkISize::Make(512, 342); }
 
-    void drawWaterfall(SkCanvas* canvas, const SkPaint& origPaint) {
-        const uint32_t flags[] = {
-            0,
-            SkPaint::kAntiAlias_Flag,
-            SkPaint::kAntiAlias_Flag | SkPaint::kLCDRenderText_Flag,
+    void drawWaterfall(SkCanvas* canvas, const SkPaint& paint) {
+        static const SkFont::Edging kEdgings[3] = {
+            SkFont::Edging::kAlias,
+            SkFont::Edging::kAntiAlias,
+            SkFont::Edging::kSubpixelAntiAlias,
         };
-        SkPaint paint(origPaint);
-        sk_tool_utils::set_portable_typeface(&paint);
-        paint.setTextSize(30);
+        SkFont font(ToolUtils::create_portable_typeface(), 30);
 
         SkAutoCanvasRestore acr(canvas, true);
-        for (size_t i = 0; i < SK_ARRAY_COUNT(flags); ++i) {
-            paint.setFlags(flags[i]);
-            canvas->drawString("Hamburgefon", 0, 0, paint);
+        for (SkFont::Edging edging : kEdgings) {
+            font.setEdging(edging);
+            canvas->drawString("Hamburgefon", 0, 0, font, paint);
             canvas->translate(0, 40);
         }
     }
@@ -304,7 +294,7 @@ public:
     ImageFiltersText_CF() : ImageFiltersTextBaseGM("color") {}
 
     void installFilter(SkPaint* paint) override {
-        paint->setColorFilter(SkColorFilter::MakeModeFilter(SK_ColorBLUE, SkBlendMode::kSrcIn));
+        paint->setColorFilter(SkColorFilters::Blend(SK_ColorBLUE, SkBlendMode::kSrcIn));
     }
 };
 DEF_GM( return new ImageFiltersText_CF; )

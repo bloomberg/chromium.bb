@@ -104,14 +104,14 @@ TEST_P(InvalidUrlTest, ParseInvalidUrl) {
 
 // We validate https-vs-http only on Release builds to help with manual testing.
 #if defined(NDEBUG)
-INSTANTIATE_TEST_CASE_P(ThirdPartyAuthConfig,
-                        InvalidUrlTest,
-                        ::testing::Values("http://insecure.com",
-                                          "I am not a URL"));
+INSTANTIATE_TEST_SUITE_P(ThirdPartyAuthConfig,
+                         InvalidUrlTest,
+                         ::testing::Values("http://insecure.com",
+                                           "I am not a URL"));
 #else
-INSTANTIATE_TEST_CASE_P(ThirdPartyAuthConfig,
-                        InvalidUrlTest,
-                        ::testing::Values("I am not a URL"));
+INSTANTIATE_TEST_SUITE_P(ThirdPartyAuthConfig,
+                         InvalidUrlTest,
+                         ::testing::Values("I am not a URL"));
 #endif
 
 TEST(ThirdPartyAuthConfig, ParseInvalidCombination) {

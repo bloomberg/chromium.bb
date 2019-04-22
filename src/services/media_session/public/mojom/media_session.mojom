@@ -9,7 +9,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
 
-// Next MinVersion: 2
+// Next MinVersion: 4
 
 [Extensible]
 enum MediaPlaybackState {
@@ -17,7 +17,6 @@ enum MediaPlaybackState {
   kPlaying,
 };
 
-// Spec: https://wicg.github.io/mediasession/
 [Extensible]
 enum MediaSessionAction {
   kPlay,
@@ -26,6 +25,17 @@ enum MediaSessionAction {
   kNextTrack,
   kSeekBackward,
   kSeekForward,
+  kSkipAd,
+  kStop,
+};
+
+[Extensible]
+enum MediaSessionImageType {
+  // The artwork associated with the media session (e.g album art).
+  kArtwork,
+
+  // The icon associated with the source of the media session.
+  kSourceIcon,
 };
 
 // Album art in MediaMetadata
@@ -37,12 +47,25 @@ struct MediaImage {
 };
 
 // MediaMetadata
-// Spec: https://wicg.github.io/mediasession/
 struct MediaMetadata {
+  // These are defined in the spec: https://wicg.github.io/mediasession/
   mojo_base.mojom.String16 title;
   mojo_base.mojom.String16 artist;
   mojo_base.mojom.String16 album;
-  array<MediaImage> artwork;
+
+  // The |source_title| is a human readable title for the source of the media
+  // session. This could be the name of the app or the name of the site playing
+  // media.
+  mojo_base.mojom.String16 source_title;
+};
+
+// A bitmap image. We use this instead of SkImage or skia.image.Bitmap so we can
+// use it in ARC and we do not use ArcBitmap because we need to use it in the
+// service.
+struct MediaImageBitmap {
+  int32 width;
+  int32 height;
+  array<uint8> pixel_data;  // Must be ARGB_8888
 };
 
 // Contains state information about a MediaSession.
@@ -72,6 +95,13 @@ struct MediaSessionInfo {
   // different from the audio focus state as it is common for a media session
   // to hold audio focus sometimes even though it is not actually playing.
   [MinVersion=1] MediaPlaybackState playback_state;
+
+  // If true then the session should be controllable by the user.
+  [MinVersion=2] bool is_controllable;
+
+  // If true then we will stop this MediaSession instead of suspending when the
+  // session loses focus to a kGain focus type.
+  [MinVersion=4] bool prefer_stop_for_gain_focus_loss;
 };
 
 // Contains debugging information about a MediaSession. This will be displayed
@@ -88,17 +118,30 @@ struct MediaSessionDebugInfo {
 };
 
 // The observer for observing media session events.
-// Next Method ID: 1
+// Next Method ID: 4
 interface MediaSessionObserver {
-  // The info associated with the session changed.
+  // Call when the info associated with the session changed.
   MediaSessionInfoChanged@0(MediaSessionInfo info);
+
+  // Called when the observed MediaSession has changed metadata. The metadata
+  // can be null to be reset, e.g. the media that was being played has been
+  // stopped.
+  MediaSessionMetadataChanged@1(MediaMetadata? metadata);
+
+  // Called when the media session action list has changed. This tells the
+  // observer which actions can be used to control the session.
+  MediaSessionActionsChanged@2(array<MediaSessionAction> action);
+
+  // Called when the images associated with a media session change.
+  MediaSessionImagesChanged@3(
+      map<MediaSessionImageType, array<MediaImage>> images);
 };
 
 // A MediaSession manages the media session and audio focus for a given
 // WebContents or ARC app.
 // TODO(https://crbug.com/875004): migrate media session from content/public
 // to mojo.
-// Next Method ID: 10
+// Next Method ID: 13
 interface MediaSession {
   [Extensible]
   enum SuspendType {
@@ -148,4 +191,19 @@ interface MediaSession {
   // The |kDefaultSeekTimeSeconds| provides a default value for seeking by a
   // few seconds.
   Seek@9(mojo_base.mojom.TimeDelta seek_time);
+
+  // Stop the media session.
+  // |type| represents the origin of the request.
+  Stop@10(SuspendType suspend_type);
+
+  // Skip ad.
+  SkipAd@11();
+
+  // Gets/Downloads the bitmap version of a MediaImage at least
+  // |minimum_size_px| and closest to |desired_size_px|. If the download
+  // failed, was too small or the image did not come from the media session
+  // then returns a null image.
+  GetMediaImageBitmap@12(
+      MediaImage image, int32 minimum_size_px, int32 desired_size_px)
+          => (MediaImageBitmap? image);
 };

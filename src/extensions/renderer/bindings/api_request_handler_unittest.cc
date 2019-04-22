@@ -46,7 +46,7 @@ class APIRequestHandlerTest : public APIBindingTest {
 
   void SaveUserActivationState(base::Optional<bool>* ran_with_user_gesture) {
     *ran_with_user_gesture = GetTestUserActivationState(MainContext());
-  };
+  }
 
  protected:
   APIRequestHandlerTest() {}

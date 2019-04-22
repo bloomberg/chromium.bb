@@ -22,7 +22,6 @@
 @protocol OmniboxFocuser;
 @class PrimaryToolbarViewController;
 class ReadingListModel;
-@protocol UrlLoader;
 
 // Controller for the header containing the logo and the fake omnibox, handling
 // the interactions between the header and the collection, and the rest of the
@@ -42,12 +41,9 @@ class ReadingListModel;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
-@property(nonatomic, weak) id<ApplicationCommands,
-                              BrowserCommands,
-                              OmniboxFocuser,
-                              FakeboxFocuser,
-                              UrlLoader>
-    dispatcher;
+@property(nonatomic, weak)
+    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, FakeboxFocuser>
+        dispatcher;
 @property(nonatomic, weak) id<ContentSuggestionsHeaderViewControllerDelegate>
     delegate;
 @property(nonatomic, weak) id<ContentSuggestionsCommands> commandHandler;

@@ -9,10 +9,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.modelutil.ListModelBase;
-import org.chromium.chrome.browser.modelutil.ListObservable;
-import org.chromium.chrome.browser.modelutil.PropertyListModel;
-import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcpBase;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -27,9 +24,14 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.ui.modelutil.ListModelBase;
+import org.chromium.ui.modelutil.ListObservable;
+import org.chromium.ui.modelutil.PropertyListModel;
+import org.chromium.ui.modelutil.SimpleRecyclerViewMcpBase;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,7 +57,8 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
             new PropertyListModel<>();
 
     // Children
-    private final SectionHeader mHeader;
+    private final @Nullable SectionHeader mHeader;
+    private final @Nullable SignInPromo mSigninPromo;
     private final SuggestionsList mSuggestionsList;
     private final StatusItem mStatus;
     private final ActionItem mMoreButton;
@@ -101,16 +104,33 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         boolean isExpandable = getCategory() == KnownCategories.ARTICLES;
         boolean isExpanded =
                 PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
-        mHeader = isExpandable ? new SectionHeader(info.getTitle(), isExpanded,
-                                         this::updateSuggestionsVisibilityForExpandableHeader)
-                               : new SectionHeader(info.getTitle());
+        // No header when touchless. The header allows users to choose to collapse/hide suggestions,
+        // but when touchless collapsing the suggestions shouldn't be necessary. There is no omnibox
+        // to distract from.
+        if (SuggestionsConfig.isTouchless()) {
+            mHeader = isExpandable ? new SectionHeader(info.getTitle(), isExpanded,
+                              this::updateSuggestionsVisibilityForExpandableHeader)
+                                   : new SectionHeader(info.getTitle());
+        } else {
+            mHeader = null;
+        }
+
+        if (isExpandable && SignInPromo.shouldCreatePromo()) {
+            mSigninPromo = new SignInPromo();
+            mSigninPromo.setCanShowPersonalizedSuggestions(shouldShowSuggestions());
+        } else {
+            mSigninPromo = null;
+        }
+
         mSuggestionsList =
                 new SuggestionsList(mSuggestionsSource, mSuggestions, this::bindSuggestion);
         mMoreButton = new ActionItem(this, ranker);
 
         mStatus = StatusItem.createNoSuggestionsItem(info);
         mStatus.setVisible(shouldShowStatusItem());
-        addChildren(mHeader, mSuggestionsList, mStatus, mMoreButton);
+        if (mHeader != null) addChildren(mHeader);
+        if (mSigninPromo != null) addChildren(mSigninPromo);
+        addChildren(mSuggestionsList, mStatus, mMoreButton);
 
         mOfflineModelObserver = new OfflineModelObserver(offlinePageBridge);
         uiDelegate.addDestructionObserver(mOfflineModelObserver);
@@ -183,6 +203,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
     public void destroy() {
         assert !mIsDestroyed;
         mOfflineModelObserver.onDestroy();
+        if (mSigninPromo != null) mSigninPromo.destroy();
         mSuggestionsList.destroy();
         mIsDestroyed = true;
     }
@@ -202,7 +223,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
     public void dismissItem(int position, Callback<String> itemRemovedCallback) {
         if (getSectionDismissalRange().contains(position)) {
             mDelegate.dismissSection(this);
-            itemRemovedCallback.onResult(getHeaderText());
+            itemRemovedCallback.onResult(mCategoryInfo.getTitle());
             return;
         }
         super.dismissItem(position, itemRemovedCallback);
@@ -325,7 +346,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         int numberOfSuggestionsExposed = getNumberOfSuggestionsExposed();
         if (!canUpdateSuggestions(numberOfSuggestionsExposed)) {
             mIsDataStale = true;
-            Log.d(TAG, "updateSuggestions: Category %d is stale, it can't replace suggestions.",
+            Log.d(TAG, "updateModels: Category %d is stale, it can't replace suggestions.",
                     getCategory());
             return;
         }
@@ -341,8 +362,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
         if (numberOfSuggestionsExposed > 0) {
             mIsDataStale = true;
-            Log.d(TAG,
-                    "updateSuggestions: Category %d is stale, will keep already seen suggestions.",
+            Log.d(TAG, "updateModels: Category %d is stale, will keep already seen suggestions.",
                     getCategory());
         }
         appendSuggestions(suggestions, /* keepSectionSize = */ true,
@@ -364,8 +384,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
         int numberOfSuggestionsExposed = getNumberOfSuggestionsExposed();
         if (keepSectionSize) {
-            Log.d(TAG, "updateSuggestions: keeping the first %d suggestion",
-                    numberOfSuggestionsExposed);
+            Log.d(TAG, "updateModels: keeping the first %d suggestion", numberOfSuggestionsExposed);
             int numSuggestionsToAppend =
                     Math.max(0, suggestions.size() - numberOfSuggestionsExposed);
             int itemCount = mSuggestions.size();
@@ -419,7 +438,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         if (!hasSuggestions()) return true; // If we don't have any, we always accept updates.
 
         if (CardsVariationParameters.ignoreUpdatesForExistingSuggestions()) {
-            Log.d(TAG, "updateSuggestions: replacing existing suggestion disabled");
+            Log.d(TAG, "updateModels: replacing existing suggestion disabled");
             NewTabPageUma.recordUIUpdateResult(
                     NewTabPageUma.ContentSuggestionsUIUpdateResult.FAIL_DISABLED);
             return false;
@@ -428,7 +447,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         if (numberOfSuggestionsExposed >= getSuggestionsCount() || mHasAppended) {
             // In case that suggestions got removed, we assume they already were seen. This might
             // be over-simplifying things, but given the rare occurences it should be good enough.
-            Log.d(TAG, "updateSuggestions: replacing existing suggestion not possible, all seen");
+            Log.d(TAG, "updateModels: replacing existing suggestion not possible, all seen");
             NewTabPageUma.recordUIUpdateResult(
                     NewTabPageUma.ContentSuggestionsUIUpdateResult.FAIL_ALL_SEEN);
             return false;
@@ -485,6 +504,10 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         mMoreButton.updateState(!shouldShowSuggestions()
                         ? ActionItem.State.HIDDEN
                         : (isLoading ? ActionItem.State.LOADING : ActionItem.State.BUTTON));
+
+        if (mSigninPromo != null) {
+            mSigninPromo.setCanShowPersonalizedSuggestions(shouldShowSuggestions());
+        }
     }
 
     /** Clears the suggestions and related data, resetting the state of the section. */
@@ -509,15 +532,21 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         return super.getItemDismissalGroup(position);
     }
 
-    /** Sets the visibility of this section's header. */
+    /**
+     * Sets the visibility of this section's header. Note this will not work when header is not
+     * added to view hierarchy as a result of {@link SuggestionsConfig#isTouchless(boolean)}.
+     */
     public void setHeaderVisibility(boolean headerVisibility) {
-        mHeader.setVisible(headerVisibility);
+        if (mHeader != null) {
+            mHeader.setVisible(headerVisibility);
+        }
     }
 
     /**
      * @return Whether or not the suggestions should be shown in this section.
      */
     private boolean shouldShowSuggestions() {
+        if (mHeader == null) return true;
         return !mHeader.isExpandable() || mHeader.isExpanded();
     }
 
@@ -547,10 +576,10 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
      * happen when the preference is updated by a user click on another new tab page.
      */
     void updateExpandableHeader() {
-        if (mHeader.isExpandable()
+        if (mHeader != null && mHeader.isExpandable()
                 && mHeader.isExpanded()
                         != PrefServiceBridge.getInstance().getBoolean(
-                                   Pref.NTP_ARTICLES_LIST_VISIBLE)) {
+                                Pref.NTP_ARTICLES_LIST_VISIBLE)) {
             mHeader.toggleHeader();
         }
     }
@@ -560,6 +589,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
      * called when the section header is toggled.
      */
     private void updateSuggestionsVisibilityForExpandableHeader() {
+        assert mHeader != null;
         assert mHeader.isExpandable();
         PrefServiceBridge.getInstance().setBoolean(
                 Pref.NTP_ARTICLES_LIST_VISIBLE, mHeader.isExpanded());
@@ -571,10 +601,6 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
     public SuggestionsCategoryInfo getCategoryInfo() {
         return mCategoryInfo;
-    }
-
-    public String getHeaderText() {
-        return mHeader.getHeaderText();
     }
 
     ActionItem getActionItemForTesting() {
@@ -615,5 +641,10 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
         mSuggestionsRanker.rankSuggestion(suggestion);
         ((SnippetArticleViewHolder) holder).onBindViewHolder(suggestion, mCategoryInfo);
+    }
+
+    @VisibleForTesting
+    SignInPromo getSignInPromoForTesting() {
+        return mSigninPromo;
     }
 }

@@ -85,40 +85,46 @@ function cropImage(testVolumeName, volumeType) {
   var launchedPromise = setupPhotoEditor(testVolumeName, volumeType);
   return launchedPromise.then(function(args) {
     var appId = args.appId;
-    return gallery.waitAndClickElement(appId,
-                                       '.gallery:not([locked]) button.crop').
-        then(function() {
+    return gallery
+        .waitAndClickElement(appId, '.gallery:not([locked]) button.crop')
+        .then(function() {
           return Promise.all([
             gallery.waitForElement(appId, '.crop-overlay')
           ]);
-        }).
-        then(function() {
+        })
+        .then(function() {
+          return gallery.callRemoteTestUtil(
+              'queryAllElements', appId, ['.crop-aspect-ratio:focus']);
+        })
+        .then(function(result) {
+          // Tests that crop aspect ratio buttons hold no focus on launch
+          // crbug.com/655943
+          chrome.test.assertEq(0, result.length);
+        })
+        .then(function() {
           return gallery.fakeKeyDown(
               appId, 'body', 'Enter', false, false, false);
-        }).
-        then(function(ret) {
+        })
+        .then(function(ret) {
           chrome.test.assertTrue(ret);
           return Promise.all([
             gallery.waitForElementLost(appId, '.crop-overlay')
           ]);
-        }).
-        then(function() {
+        })
+        .then(function() {
           return gallery.waitForSlideImage(
               appId,
               534,
               400,
               'My Desktop Background');
-        }).
-        then(function() {
+        })
+        .then(function() {
           return gallery.waitAndClickElement(
               appId, '.gallery:not([locked]) button.undo');
-        }).
-        then(function() {
-           return gallery.waitForSlideImage(
-              appId,
-              800,
-              600,
-              'My Desktop Background');
+        })
+        .then(function() {
+          return gallery.waitForSlideImage(
+              appId, 800, 600, 'My Desktop Background');
         });
   });
 }
@@ -140,43 +146,50 @@ function exposureImage(testVolumeName, volumeType) {
     var origMetadata = null;
 
     // Click the exposure button.
-    return gallery.waitAndClickElement(appId, buttonQuery).then(function() {
-      // Wait until the edit controls appear.
-      return Promise.all([
-        gallery.waitForElement(appId, '.brightness > paper-slider'),
-        gallery.waitForElement(appId, '.contrast > paper-slider'),
-      ]);
-    }).then(function() {
-      return gallery.callRemoteTestUtil(
-          'changeValue', appId, ['.brightness > paper-slider', 20]);
-    }).then(function() {
-      return gallery.callRemoteTestUtil(
-          'changeValue', appId, ['.contrast > paper-slider', -20]);
-    }).then(function() {
-      return gallery.callRemoteTestUtil('getMetadata', null, [url]);
-    }).then(function(metadata) {
-      origMetadata = metadata;
-
-      // Push the Enter key.
-      return gallery.fakeKeyDown(appId, 'body', 'Enter', false, false, false);
-    }).then(function() {
-      // Wait until the image is updated.
-      return repeatUntil(function() {
-        return gallery.callRemoteTestUtil('getMetadata', null, [url])
+    return gallery.waitAndClickElement(appId, buttonQuery)
+        .then(function() {
+          // Wait until the edit controls appear.
+          return Promise.all([
+            gallery.waitForElement(appId, '.brightness > cr-slider'),
+            gallery.waitForElement(appId, '.contrast > cr-slider'),
+          ]);
+        })
+        .then(function() {
+          return gallery.callRemoteTestUtil(
+              'changeValue', appId, ['.brightness > cr-slider', 20]);
+        })
+        .then(function() {
+          return gallery.callRemoteTestUtil(
+              'changeValue', appId, ['.contrast > cr-slider', -20]);
+        })
+        .then(function() {
+          return gallery.callRemoteTestUtil('getMetadata', null, [url]);
+        })
         .then(function(metadata) {
-          if (origMetadata.modificationTime != metadata.modificationTime) {
-            return true;
-          } else {
-            return pending(
-                '%s is not updated. ' +
-                    'First last modified: %s, Second last modified: %s.',
-                url,
-                origMetadata.modificationTime,
-                metadata.modificationTime);
-          }
+          origMetadata = metadata;
+
+          // Push the Enter key.
+          return gallery.fakeKeyDown(
+              appId, 'body', 'Enter', false, false, false);
+        })
+        .then(function() {
+          // Wait until the image is updated.
+          return repeatUntil(function() {
+            return gallery.callRemoteTestUtil('getMetadata', null, [url])
+                .then(function(metadata) {
+                  if (origMetadata.modificationTime !=
+                      metadata.modificationTime) {
+                    return true;
+                  } else {
+                    return pending(
+                        '%s is not updated. First ' +
+                            'last modified: %s, Second last modified: %s.',
+                        url, origMetadata.modificationTime,
+                        metadata.modificationTime);
+                  }
+                });
+          });
         });
-      });
-    });
   });
 }
 
@@ -260,6 +273,47 @@ function resizeImage(testVolumeName, volumeType) {
         .then(function() {
           return gallery.waitForSlideImage(appId, 800, 600,
               'My Desktop Background');
+        });
+  });
+}
+
+/**
+ * Tests deleting an image while editing to ensure the edit toolbar
+ * is hidden.
+ *
+ * For reference: crbug.com/912489
+ *
+ * @param {string} testVolumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function deleteImageWhileEditing(testVolumeName, volumeType) {
+  var launchedPromise = setupPhotoEditor(testVolumeName, volumeType);
+  return launchedPromise.then(function(args) {
+    var appId = args.appId;
+
+    return gallery.waitAndClickElement(appId, 'button.delete')
+        .then(result => {
+          chrome.test.assertTrue(!!result);
+          // Wait and click delete button of confirmation dialog.
+          return gallery.waitAndClickElement(appId, '.cr-dialog-ok');
+        })
+        .then(() => {
+          // Wait for the edit mode toolbar to hide.
+          return repeatUntil(function() {
+            return gallery
+                .waitForElementStyles(
+                    appId, '.edit-mode-toolbar', ['visibility'])
+                .then(function(result) {
+                  if (result.styles.visibility != 'hidden') {
+                    return pending(
+                        'Expected edit-mode-toolbar to be hidden but was %s',
+                        result.styles.visibility);
+                  }
+                  return result;
+                });
+          });
         });
   });
 }
@@ -425,4 +479,20 @@ testcase.enableDisableOverwriteOriginalCheckboxOnDownloads = function() {
  */
 testcase.enableDisableOverwriteOriginalCheckboxOnDrive = function() {
   return enableDisableOverwriteOriginalCheckbox('drive', 'drive');
+};
+
+/**
+ * The deleteImageWhileEditing test for Downloads.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.deleteImageWhileEditingOnDownloads = function() {
+  return deleteImageWhileEditing('local', 'downloads');
+};
+
+/**
+ * The deleteImageWhileEditing test for Drive.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.deleteImageWhileEditingOnDrive = function() {
+  return deleteImageWhileEditing('drive', 'drive');
 };

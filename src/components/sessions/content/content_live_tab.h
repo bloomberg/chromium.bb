@@ -16,7 +16,7 @@ namespace content {
 class NavigationController;
 }
 
-class PersistentTabRestoreServiceTest;
+class TabRestoreServiceImplTest;
 
 namespace sessions {
 
@@ -48,7 +48,7 @@ class SESSIONS_EXPORT ContentLiveTab
 
  private:
   friend class base::SupportsUserData;
-  friend class ::PersistentTabRestoreServiceTest;
+  friend class ::TabRestoreServiceImplTest;
 
   explicit ContentLiveTab(content::WebContents* contents);
 

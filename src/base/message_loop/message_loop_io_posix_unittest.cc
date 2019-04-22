@@ -4,6 +4,8 @@
 
 #include "base/message_loop/message_loop.h"
 
+#include <sys/socket.h>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
@@ -98,7 +100,7 @@ class CallClosureHandler : public MessagePumpForIO::FdWatcher {
     write_closure_ = std::move(write_closure);
   }
 
-  // base:MessagePumpFuchsia::Watcher interface.
+  // base::WatchableIOMessagePumpPosix::FdWatcher:
   void OnFileCanReadWithoutBlocking(int fd) override {
     // Empty the pipe buffer to reset the event. Otherwise libevent
     // implementation of MessageLoop may call the event handler again even if
@@ -175,6 +177,151 @@ TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherDeleteInCallback) {
       write_fd_.get(), true, MessagePumpForIO::WATCH_WRITE,
       handler.watcher_to_delete_.get(), &handler);
   RunLoop().Run();
+}
+
+// A watcher that owns its controller and will either delete itself or stop
+// watching the FD after observing the specified event type.
+class ReaderWriterHandler : public MessagePumpForIO::FdWatcher {
+ public:
+  enum Action {
+    // Just call StopWatchingFileDescriptor().
+    kStopWatching,
+    // Delete |this| and its owned controller.
+    kDelete,
+  };
+  enum ActWhen {
+    // Take the Action after observing a read event.
+    kOnReadEvent,
+    // Take the Action after observing a write event.
+    kOnWriteEvent,
+  };
+
+  ReaderWriterHandler(Action action,
+                      ActWhen when,
+                      OnceClosure idle_quit_closure)
+      : action_(action),
+        when_(when),
+        controller_(FROM_HERE),
+        idle_quit_closure_(std::move(idle_quit_closure)) {}
+
+  // base::WatchableIOMessagePumpPosix::FdWatcher:
+  void OnFileCanReadWithoutBlocking(int fd) override {
+    if (when_ == kOnReadEvent) {
+      DoAction();
+    } else {
+      char c;
+      EXPECT_EQ(1, HANDLE_EINTR(read(fd, &c, 1)));
+    }
+  }
+
+  void OnFileCanWriteWithoutBlocking(int fd) override {
+    if (when_ == kOnWriteEvent) {
+      DoAction();
+    } else {
+      char c = '\0';
+      EXPECT_EQ(1, HANDLE_EINTR(write(fd, &c, 1)));
+    }
+  }
+
+  MessagePumpForIO::FdWatchController* controller() { return &controller_; }
+
+ private:
+  void DoAction() {
+    OnceClosure idle_quit_closure = std::move(idle_quit_closure_);
+    if (action_ == kDelete) {
+      delete this;
+    } else if (action_ == kStopWatching) {
+      controller_.StopWatchingFileDescriptor();
+    }
+    std::move(idle_quit_closure).Run();
+  }
+
+  Action action_;
+  ActWhen when_;
+  MessagePumpForIO::FdWatchController controller_;
+  OnceClosure idle_quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReaderWriterHandler);
+};
+
+class MessageLoopForIoPosixReadAndWriteTest
+    : public testing::TestWithParam<ReaderWriterHandler::Action> {
+ protected:
+  bool CreateSocketPair(ScopedFD* one, ScopedFD* two) {
+    int fds[2];
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == -1)
+      return false;
+    one->reset(fds[0]);
+    two->reset(fds[1]);
+    return true;
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(StopWatchingOrDelete,
+                         MessageLoopForIoPosixReadAndWriteTest,
+                         testing::Values(ReaderWriterHandler::kStopWatching,
+                                         ReaderWriterHandler::kDelete));
+
+// Test deleting or stopping watch after a read event for a watcher that is
+// registered for both read and write.
+TEST_P(MessageLoopForIoPosixReadAndWriteTest, AfterRead) {
+  MessageLoopForIO message_loop;
+  ScopedFD one, two;
+  ASSERT_TRUE(CreateSocketPair(&one, &two));
+
+  RunLoop run_loop;
+  ReaderWriterHandler* handler =
+      new ReaderWriterHandler(GetParam(), ReaderWriterHandler::kOnReadEvent,
+                              run_loop.QuitWhenIdleClosure());
+
+  // Trigger a read event on |one| by writing to |two|.
+  char c = '\0';
+  EXPECT_EQ(1, HANDLE_EINTR(write(two.get(), &c, 1)));
+
+  // The triggered read will cause the watcher action to run. |one| would
+  // also be immediately available for writing, so this should not cause a
+  // use-after-free on the |handler|.
+  MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+      one.get(), true, MessagePumpForIO::WATCH_READ_WRITE,
+      handler->controller(), handler);
+  run_loop.Run();
+
+  if (GetParam() == ReaderWriterHandler::kStopWatching) {
+    delete handler;
+  }
+}
+
+// Test deleting or stopping watch after a write event for a watcher that is
+// registered for both read and write.
+TEST_P(MessageLoopForIoPosixReadAndWriteTest, AfterWrite) {
+  MessageLoopForIO message_loop;
+  ScopedFD one, two;
+  ASSERT_TRUE(CreateSocketPair(&one, &two));
+
+  RunLoop run_loop;
+  ReaderWriterHandler* handler =
+      new ReaderWriterHandler(GetParam(), ReaderWriterHandler::kOnWriteEvent,
+                              run_loop.QuitWhenIdleClosure());
+
+  // Trigger two read events on |one| by writing to |two|. Because each read
+  // event only reads one char, |one| will be available for reading again after
+  // the first read event is handled.
+  char c = '\0';
+  EXPECT_EQ(1, HANDLE_EINTR(write(two.get(), &c, 1)));
+  EXPECT_EQ(1, HANDLE_EINTR(write(two.get(), &c, 1)));
+
+  // The triggered read and the immediate availability of |one| for writing
+  // should cause both the read and write watchers to be triggered. The
+  // |handler| will do its action in response to the write event, which should
+  // not trigger a use-after-free for the second read that was queued.
+  MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+      one.get(), true, MessagePumpForIO::WATCH_READ_WRITE,
+      handler->controller(), handler);
+  run_loop.Run();
+
+  if (GetParam() == ReaderWriterHandler::kStopWatching) {
+    delete handler;
+  }
 }
 
 // Verify that basic readable notification works.

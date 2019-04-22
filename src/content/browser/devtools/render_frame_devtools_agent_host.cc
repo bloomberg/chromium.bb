@@ -7,6 +7,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
@@ -19,14 +20,17 @@
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/protocol/background_service_handler.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
+#include "content/browser/devtools/protocol/fetch_handler.h"
 #include "content/browser/devtools/protocol/input_handler.h"
 #include "content/browser/devtools/protocol/inspector_handler.h"
 #include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/memory_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
+#include "content/browser/devtools/protocol/overlay_handler.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
 #include "content/browser/devtools/protocol/schema_handler.h"
@@ -55,7 +59,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/web/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -272,36 +276,52 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   if (!ShouldAllowSession(session))
     return false;
 
-  protocol::EmulationHandler* emulation_handler =
-      new protocol::EmulationHandler();
-  session->AddHandler(base::WrapUnique(new protocol::BrowserHandler()));
-  session->AddHandler(base::WrapUnique(
-      new protocol::DOMHandler(session->client()->MayAffectLocalFiles())));
-  session->AddHandler(base::WrapUnique(emulation_handler));
-  session->AddHandler(base::WrapUnique(new protocol::InputHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::IOHandler(
-      GetIOContext())));
-  session->AddHandler(base::WrapUnique(new protocol::MemoryHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::NetworkHandler(
+  auto emulation_handler = std::make_unique<protocol::EmulationHandler>();
+  protocol::EmulationHandler* emulation_handler_ptr = emulation_handler.get();
+
+  session->AddHandler(std::make_unique<protocol::BackgroundServiceHandler>());
+  session->AddHandler(std::make_unique<protocol::BrowserHandler>());
+  session->AddHandler(std::make_unique<protocol::DOMHandler>(
+      session->client()->MayReadLocalFiles()));
+  session->AddHandler(std::move(emulation_handler));
+  auto input_handler = std::make_unique<protocol::InputHandler>();
+  input_handler->OnPageScaleFactorChanged(page_scale_factor_);
+  session->AddHandler(std::move(input_handler));
+  session->AddHandler(std::make_unique<protocol::InspectorHandler>());
+  session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
+  session->AddHandler(std::make_unique<protocol::MemoryHandler>());
+  if (!frame_tree_node_ || !frame_tree_node_->parent())
+    session->AddHandler(std::make_unique<protocol::OverlayHandler>());
+  session->AddHandler(std::make_unique<protocol::NetworkHandler>(
       GetId(),
       frame_tree_node_ ? frame_tree_node_->devtools_frame_token()
                        : base::UnguessableToken(),
-      GetIOContext())));
-  session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::ServiceWorkerHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::StorageHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::TargetHandler(
+      GetIOContext(),
+      base::BindRepeating(
+          &RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories,
+          base::Unretained(this))));
+  session->AddHandler(std::make_unique<protocol::FetchHandler>(
+      GetIOContext(), base::BindRepeating(
+                          [](RenderFrameDevToolsAgentHost* self,
+                             base::OnceClosure done_callback) {
+                            self->UpdateResourceLoaderFactories();
+                            std::move(done_callback).Run();
+                          },
+                          base::Unretained(this))));
+  session->AddHandler(std::make_unique<protocol::SchemaHandler>());
+  session->AddHandler(std::make_unique<protocol::ServiceWorkerHandler>());
+  session->AddHandler(std::make_unique<protocol::StorageHandler>());
+  session->AddHandler(std::make_unique<protocol::TargetHandler>(
       session->client()->MayAttachToBrowser()
           ? protocol::TargetHandler::AccessMode::kRegular
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
-      GetId(), GetRendererChannel(), session->GetRootSession())));
-  session->AddHandler(base::WrapUnique(new protocol::PageHandler(
-      emulation_handler, session->client()->MayAffectLocalFiles())));
-  session->AddHandler(base::WrapUnique(new protocol::SecurityHandler()));
+      GetId(), GetRendererChannel(), session->GetRootSession()));
+  session->AddHandler(std::make_unique<protocol::PageHandler>(
+      emulation_handler_ptr, session->client()->MayWriteLocalFiles()));
+  session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   if (!frame_tree_node_ || !frame_tree_node_->parent()) {
-    session->AddHandler(base::WrapUnique(
-        new protocol::TracingHandler(frame_tree_node_, GetIOContext())));
+    session->AddHandler(std::make_unique<protocol::TracingHandler>(
+        frame_tree_node_, GetIOContext(), session->UsesBinaryProtocol()));
   }
 
   if (sessions().empty()) {
@@ -314,7 +334,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
     // When video capture API is used, don't instantiate
     // DevToolsFrameTraceRecorder. Taking snapshots happens in TracingHandler.
     if (!use_video_capture_api)
-      frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
+      frame_trace_recorder_ = std::make_unique<DevToolsFrameTraceRecorder>();
     UpdateRawHeadersAccess(nullptr, frame_host_);
 #if defined(OS_ANDROID)
     GetWakeLock()->RequestWakeLock();
@@ -375,6 +395,10 @@ void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
     return;
   }
 
+  // Child workers will eventually disconnect, but timing depends on the
+  // renderer process. To ensure consistent view over protocol, disconnect them
+  // right now.
+  GetRendererChannel()->ForceDetachWorkerSessions();
   UpdateFrameHost(handle->GetRenderFrameHost());
   // UpdateFrameHost may destruct |this|.
 }
@@ -386,7 +410,8 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
   if (handle->frame_tree_node() != frame_tree_node_)
     return;
   navigation_handles_.erase(handle);
-  NotifyNavigated();
+  if (handle->HasCommitted())
+    NotifyNavigated();
 
   // UpdateFrameHost may destruct |this|.
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
@@ -396,10 +421,8 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
     for (DevToolsSession* session : sessions())
       session->ResumeSendingMessagesToAgent();
   }
-  if (handle->HasCommitted()) {
-    for (auto* target : protocol::TargetHandler::ForAgentHost(this))
-      target->DidCommitNavigation();
-  }
+  for (auto* target : protocol::TargetHandler::ForAgentHost(this))
+    target->DidFinishNavigation();
 }
 
 void RenderFrameDevToolsAgentHost::UpdateFrameHost(
@@ -558,6 +581,7 @@ void RenderFrameDevToolsAgentHost::OnVisibilityChanged(
 
 void RenderFrameDevToolsAgentHost::OnPageScaleFactorChanged(
     float page_scale_factor) {
+  page_scale_factor_ = page_scale_factor;
   for (auto* input : protocol::InputHandler::ForAgentHost(this))
     input->OnPageScaleFactorChanged(page_scale_factor);
 }
@@ -753,6 +777,23 @@ bool RenderFrameDevToolsAgentHost::ShouldAllowSession(
   if (!session->client()->MayAttachToRenderer(frame_host_, is_webui))
     return false;
   return true;
+}
+
+void RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories() {
+  if (!frame_tree_node_)
+    return;
+  base::queue<FrameTreeNode*> queue;
+  queue.push(frame_tree_node_);
+  while (!queue.empty()) {
+    FrameTreeNode* node = queue.front();
+    queue.pop();
+    RenderFrameHostImpl* host = node->current_frame_host();
+    if (node != frame_tree_node_ && host->IsCrossProcessSubframe())
+      continue;
+    host->UpdateSubresourceLoaderFactories();
+    for (size_t i = 0; i < node->child_count(); ++i)
+      queue.push(node->child_at(i));
+  }
 }
 
 }  // namespace content

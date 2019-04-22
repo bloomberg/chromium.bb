@@ -46,24 +46,27 @@ void BitmapImageMetrics::CountImageOrientation(
 }
 
 void BitmapImageMetrics::CountImageJpegDensity(int image_min_side,
-                                               int64_t density_centi_bpp) {
+                                               uint64_t density_centi_bpp) {
   // Values are reported in the range 0.01 to 10 bpp, in different metrics
   // depending on the image category (small, medium, large).
   if (image_min_side >= 1000) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, density_histogram,
         ("Blink.DecodedImage.JpegDensity.1000px", 1, 1000, 100));
-    density_histogram.Count(density_centi_bpp);
+    density_histogram.Count(
+        base::saturated_cast<base::Histogram::Sample>(density_centi_bpp));
   } else if (image_min_side >= 400) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, density_histogram,
         ("Blink.DecodedImage.JpegDensity.400px", 1, 1000, 100));
-    density_histogram.Count(density_centi_bpp);
+    density_histogram.Count(
+        base::saturated_cast<base::Histogram::Sample>(density_centi_bpp));
   } else if (image_min_side >= 100) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
         CustomCountHistogram, density_histogram,
         ("Blink.DecodedImage.JpegDensity.100px", 1, 1000, 100));
-    density_histogram.Count(density_centi_bpp);
+    density_histogram.Count(
+        base::saturated_cast<base::Histogram::Sample>(density_centi_bpp));
   } else {
     // We don't report for images with 0 to 99px on the smallest dimension.
   }

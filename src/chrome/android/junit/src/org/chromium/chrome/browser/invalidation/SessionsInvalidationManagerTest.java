@@ -23,8 +23,8 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper;
+import org.chromium.chrome.browser.profiles.Profile;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -35,6 +35,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SessionsInvalidationManagerTest {
     @Mock
     private ResumableDelayedTaskRunner mResumableDelayedTaskRunner;
+
+    @Mock
+    private Profile mProfile;
 
     @Mock
     private ForeignSessionHelper mForeignSessionHelper;
@@ -56,7 +59,7 @@ public class SessionsInvalidationManagerTest {
         final AtomicBoolean listenerCallbackCalled = new AtomicBoolean();
 
         // Create instance.
-        new SessionsInvalidationManager(mForeignSessionHelper, mResumableDelayedTaskRunner) {
+        new SessionsInvalidationManager(mProfile, mResumableDelayedTaskRunner) {
             @Override
             public void onApplicationStateChange(int newState) {
                 listenerCallbackCalled.set(true);
@@ -72,46 +75,12 @@ public class SessionsInvalidationManagerTest {
     }
 
     /**
-     * Test that sessions invalidations state with opening/closing recent pages.
-     */
-    @Test
-    public void testIsSessionInvalidationsEnabled() {
-        SessionsInvalidationManager manager =
-                SessionsInvalidationManager.get(mForeignSessionHelper);
-        assertFalse(manager.isSessionInvalidationsEnabled());
-
-        manager.onRecentTabsPageOpened();
-        Robolectric.getForegroundThreadScheduler().advanceBy(
-                SessionsInvalidationManager.REGISTER_FOR_SESSION_SYNC_INVALIDATIONS_DELAY_MS,
-                TimeUnit.MILLISECONDS);
-        // 1 recent tabs page.
-        assertTrue(manager.isSessionInvalidationsEnabled());
-        verify(mForeignSessionHelper).setInvalidationsForSessionsEnabled(/*enabled=*/true);
-
-        manager.onRecentTabsPageOpened();
-        // 2 recent tabs pages.
-        assertTrue(manager.isSessionInvalidationsEnabled());
-
-        manager.onRecentTabsPageClosed();
-        // 1 recent tabs page.
-        assertTrue(manager.isSessionInvalidationsEnabled());
-
-        manager.onRecentTabsPageClosed();
-        Robolectric.getForegroundThreadScheduler().advanceBy(
-                SessionsInvalidationManager.UNREGISTER_FOR_SESSION_SYNC_INVALIDATIONS_DELAY_MS,
-                TimeUnit.MILLISECONDS);
-        // 0 recent tabs page.
-        assertFalse(manager.isSessionInvalidationsEnabled());
-        verify(mForeignSessionHelper).setInvalidationsForSessionsEnabled(/*enabled=*/false);
-    }
-
-    /**
      * Test that timer pauses when the application goes to the background.
      */
     @Test
     public void testTimerPausesWhenTheApplicationPauses() {
         SessionsInvalidationManager manager =
-                new SessionsInvalidationManager(mForeignSessionHelper, mResumableDelayedTaskRunner);
+                new SessionsInvalidationManager(mProfile, mResumableDelayedTaskRunner);
 
         manager.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
         verify(mResumableDelayedTaskRunner).resume();

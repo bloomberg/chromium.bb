@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/host/resource_message_filter.h"
+#include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 
 struct PP_HostResolver_Private_Hint;
@@ -40,7 +41,7 @@ class BrowserPpapiHostImpl;
 
 class CONTENT_EXPORT PepperHostResolverMessageFilter
     : public ppapi::host::ResourceMessageFilter,
-      public network::mojom::ResolveHostClient {
+      public network::ResolveHostClientBase {
  public:
   PepperHostResolverMessageFilter(BrowserPpapiHostImpl* host,
                                   PP_Instance instance,

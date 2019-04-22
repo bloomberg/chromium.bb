@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.test.util;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Utility functions for dealing with bookmarks in tests.
@@ -19,10 +19,10 @@ public class BookmarkTestUtil {
      */
     public static void waitForBookmarkModelLoaded() throws InterruptedException {
         final BookmarkModel bookmarkModel =
-                ThreadUtils.runOnUiThreadBlockingNoException(BookmarkModel::new);
+                TestThreadUtils.runOnUiThreadBlockingNoException(BookmarkModel::new);
 
         CriteriaHelper.pollUiThread(bookmarkModel::isBookmarkModelLoaded);
 
-        ThreadUtils.runOnUiThreadBlocking(bookmarkModel::destroy);
+        TestThreadUtils.runOnUiThreadBlocking(bookmarkModel::destroy);
     }
 }

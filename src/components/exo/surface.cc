@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/callback_helpers.h"
 #include "base/containers/adapters.h"
 #include "base/logging.h"
@@ -13,8 +14,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
-#include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/buffer.h"
+#include "components/exo/frame_sink_resource_manager.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/wm_helper.h"
@@ -27,9 +29,11 @@
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/base/class_property.h"
 #include "ui/base/cursor/cursor.h"
@@ -40,27 +44,28 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(exo::Surface*);
+#if defined(OS_CHROMEOS)
+#include "ash/wm/desks/desks_util.h"
+#endif  // defined(OS_CHROMEOS)
+
+DEFINE_UI_CLASS_PROPERTY_TYPE(exo::Surface*)
 
 namespace exo {
 namespace {
 
 // A property key containing the surface that is associated with
 // window. If unset, no surface is associated with window.
-DEFINE_UI_CLASS_PROPERTY_KEY(Surface*, kSurfaceKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(Surface*, kSurfaceKey, nullptr)
 
 // A property key to store whether the surface should only consume
 // stylus input events.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kStylusOnlyKey, false);
-
-// Surface Id set by the client.
-DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientSurfaceIdKey, 0);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kStylusOnlyKey, false)
 
 // Helper function that returns an iterator to the first entry in |list|
 // with |key|.
@@ -108,6 +113,14 @@ gfx::Size ToTransformedSize(const gfx::Size& size, Transform transform) {
   NOTREACHED();
 }
 
+bool IsDeskContainer(aura::Window* container) {
+#if defined(OS_CHROMEOS)
+  return ash::desks_util::IsDeskContainer(container);
+#else
+  return container->id() == ash::kShellWindowId_DefaultContainerDeprecated;
+#endif  // defined(OS_CHROMEOS)
+}
+
 class CustomWindowDelegate : public aura::WindowDelegate {
  public:
   explicit CustomWindowDelegate(Surface* surface) : surface_(surface) {}
@@ -126,6 +139,13 @@ class CustomWindowDelegate : public aura::WindowDelegate {
     return ui::CursorType::kNull;
   }
   int GetNonClientComponent(const gfx::Point& point) const override {
+    views::Widget* widget =
+        views::Widget::GetTopLevelWidgetForNativeView(surface_->window());
+    if (widget && IsDeskContainer(widget->GetNativeView()->parent()) &&
+        surface_->HitTest(point)) {
+      return HTCLIENT;
+    }
+
     return HTNOWHERE;
   }
   bool ShouldDescendIntoChildForEventHandling(
@@ -141,8 +161,12 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   void OnWindowDestroying(aura::Window* window) override {}
   void OnWindowDestroyed(aura::Window* window) override { delete this; }
   void OnWindowTargetVisibilityChanged(bool visible) override {}
+  void OnWindowOcclusionChanged(aura::Window::OcclusionState occlusion_state,
+                                const SkRegion& occluded_region) override {
+    surface_->OnWindowOcclusionChanged();
+  }
   bool HasHitTestMask() const override { return true; }
-  void GetHitTestMask(gfx::Path* mask) const override {
+  void GetHitTestMask(SkPath* mask) const override {
     surface_->GetHitTestMask(mask);
   }
   void OnKeyEvent(ui::KeyEvent* event) override {
@@ -184,7 +208,22 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
 
+const std::string& GetApplicationId(aura::Window* window) {
+  static const std::string empty_app_id;
+  if (!window)
+    return empty_app_id;
+  while (window) {
+    const std::string* app_id = exo::GetShellApplicationId(window);
+    if (app_id)
+      return *app_id;
+    window = window->parent();
+  }
+  return empty_app_id;
+}
+
 }  // namespace
+
+DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientSurfaceIdKey, 0)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Surface, public:
@@ -226,11 +265,15 @@ Surface* Surface::AsSurface(const aura::Window* window) {
 }
 
 void Surface::Attach(Buffer* buffer) {
-  TRACE_EVENT1("exo", "Surface::Attach", "buffer",
-               buffer ? buffer->GetSize().ToString() : "null");
-
+  TRACE_EVENT2("exo", "Surface::Attach", "buffer_id",
+               buffer ? buffer->gfx_buffer() : nullptr, "app_id",
+               GetApplicationId(window_.get()));
   has_pending_contents_ = true;
   pending_buffer_.Reset(buffer ? buffer->AsWeakPtr() : base::WeakPtr<Buffer>());
+}
+
+bool Surface::HasPendingAttachedBuffer() const {
+  return pending_buffer_.buffer() != nullptr;
 }
 
 void Surface::Damage(const gfx::Rect& damage) {
@@ -294,7 +337,6 @@ void Surface::AddSubSurface(Surface* sub_surface) {
                sub_surface->AsTracedValue());
 
   DCHECK(!sub_surface->window()->parent());
-  DCHECK(!sub_surface->window()->IsVisible());
   sub_surface->window()->SetBounds(
       gfx::Rect(sub_surface->window()->bounds().size()));
   window_->AddChild(sub_surface->window());
@@ -481,8 +523,22 @@ int32_t Surface::GetClientSurfaceId() const {
   return window_->GetProperty(kClientSurfaceIdKey);
 }
 
+void Surface::SetAcquireFence(std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  TRACE_EVENT1("exo", "Surface::SetAcquireFence", "fence_fd",
+               gpu_fence ? gpu_fence->GetGpuFenceHandle().native_fd.fd : -1);
+
+  pending_acquire_fence_ = std::move(gpu_fence);
+}
+
+bool Surface::HasPendingAcquireFence() const {
+  return !!pending_acquire_fence_;
+}
+
 void Surface::Commit() {
   TRACE_EVENT0("exo", "Surface::Commit");
+
+  if (!commit_callback_.is_null())
+    commit_callback_.Run(this);
 
   needs_commit_surface_ = true;
   if (delegate_)
@@ -492,6 +548,7 @@ void Surface::Commit() {
 }
 
 void Surface::CommitSurfaceHierarchy(bool synchronized) {
+  TRACE_EVENT0("exo", "Surface::CommitSurfaceHierarchy");
   if (needs_commit_surface_ && (synchronized || !IsSynchronized())) {
     needs_commit_surface_ = false;
     synchronized = true;
@@ -542,9 +599,14 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
         needs_update_buffer_transform = true;
 
       current_buffer_ = std::move(pending_buffer_);
+      acquire_fence_ = std::move(pending_acquire_fence_);
       if (state_.alpha)
         needs_update_resource_ = true;
     }
+    // Either we didn't have a pending acquire fence, or we had one along with
+    // a new buffer, and it was already moved to acquire_fence_. Note that
+    // it is a commit-time client error to commit a fence without a buffer.
+    DCHECK(!pending_acquire_fence_);
 
     if (needs_update_buffer_transform)
       UpdateBufferTransform(pending_invert_y);
@@ -639,7 +701,7 @@ void Surface::AppendSurfaceHierarchyCallbacks(
 void Surface::AppendSurfaceHierarchyContentsToFrame(
     const gfx::Point& origin,
     float device_scale_factor,
-    LayerTreeFrameSinkHolder* frame_sink_holder,
+    FrameSinkResourceManager* resource_manager,
     viz::CompositorFrame* frame) {
   // The top most sub-surface is at the front of the RenderPass's quad_list,
   // so we need composite sub-surface in reversed order.
@@ -649,17 +711,23 @@ void Surface::AppendSurfaceHierarchyContentsToFrame(
     // decendents.
     sub_surface->AppendSurfaceHierarchyContentsToFrame(
         origin + sub_surface_entry.second.OffsetFromOrigin(),
-        device_scale_factor, frame_sink_holder, frame);
+        device_scale_factor, resource_manager, frame);
   }
 
   if (needs_update_resource_)
-    UpdateResource(frame_sink_holder);
+    UpdateResource(resource_manager);
+
+  // TODO(afrantzis): Propagate fence to the consumer of the buffer instead of
+  // waiting here.
+  if (acquire_fence_) {
+    acquire_fence_->Wait();
+    acquire_fence_ = nullptr;
+  }
 
   AppendContentsToFrame(origin, device_scale_factor, frame);
 
-  DCHECK(
-      !current_resource_.id ||
-      frame_sink_holder->HasReleaseCallbackForResource(current_resource_.id));
+  DCHECK(!current_resource_.id ||
+         resource_manager->HasReleaseCallbackForResource(current_resource_.id));
 }
 
 bool Surface::IsSynchronized() const {
@@ -678,7 +746,7 @@ bool Surface::HitTest(const gfx::Point& point) const {
   return hit_test_region_.Contains(point);
 }
 
-void Surface::GetHitTestMask(gfx::Path* mask) const {
+void Surface::GetHitTestMask(SkPath* mask) const {
   hit_test_region_.GetBoundaryPath(mask);
 }
 
@@ -701,6 +769,10 @@ void Surface::RemoveSurfaceObserver(SurfaceObserver* observer) {
 
 bool Surface::HasSurfaceObserver(const SurfaceObserver* observer) const {
   return observers_.HasObserver(observer);
+}
+
+void Surface::SetCommitCallback(CommitCallback callback) {
+  commit_callback_ = std::move(callback);
 }
 
 std::unique_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
@@ -729,6 +801,15 @@ bool Surface::FillsBoundsOpaquely() const {
   return !current_resource_has_alpha_ ||
          state_.blend_mode == SkBlendMode::kSrc ||
          state_.opaque_region.Contains(gfx::Rect(content_size_));
+}
+
+void Surface::SetOcclusionTracking(bool tracking) {
+  is_tracking_occlusion_ = tracking;
+  // TODO(edcourtney): Currently, it doesn't seem to be possible to stop
+  // tracking the occlusion state once started, but it would be nice to stop if
+  // the tracked occlusion region becomes empty.
+  if (is_tracking_occlusion_)
+    window()->TrackOcclusionState();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -789,12 +870,12 @@ void Surface::BufferAttachment::Reset(base::WeakPtr<Buffer> buffer) {
   buffer_ = buffer;
 }
 
-void Surface::UpdateResource(LayerTreeFrameSinkHolder* frame_sink_holder) {
+void Surface::UpdateResource(FrameSinkResourceManager* resource_manager) {
   DCHECK(needs_update_resource_);
   needs_update_resource_ = false;
   if (current_buffer_.buffer()) {
     if (current_buffer_.buffer()->ProduceTransferableResource(
-            frame_sink_holder, state_.only_visible_on_secure_output,
+            resource_manager, state_.only_visible_on_secure_output,
             &current_resource_)) {
       current_resource_has_alpha_ =
           FormatHasAlpha(current_buffer_.buffer()->GetFormat());
@@ -878,10 +959,11 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->SetAll(
-      quad_to_target_transform, quad_rect /* quad_layer_rect */,
-      quad_rect /* visible_quad_layer_rect */, gfx::Rect() /* clip_rect */,
-      false /* is_clipped */, are_contents_opaque, state_.alpha /* opacity */,
-      SkBlendMode::kSrcOver /* blend_mode */, 0 /* sorting_context_id */);
+      quad_to_target_transform, quad_rect /*quad_layer_rect=*/,
+      quad_rect /*visible_quad_layer_rect=*/,
+      gfx::RRectF() /*rounded_corner_bounds=*/, gfx::Rect() /*clip_rect=*/,
+      false /*is_clipped=*/, are_contents_opaque, state_.alpha /*opacity=*/,
+      SkBlendMode::kSrcOver /*blend_mode=*/, 0 /*sorting_context_id=*/);
 
   if (current_resource_.id) {
     gfx::RectF uv_crop(gfx::SizeF(1, 1));
@@ -904,13 +986,15 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
       viz::TextureDrawQuad* texture_quad =
           render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
-
+      SkColor background_color = SK_ColorTRANSPARENT;
+      if (current_resource_has_alpha_ && are_contents_opaque)
+        background_color = SK_ColorBLACK;  // Avoid writing alpha < 1
       texture_quad->SetNew(
-          quad_state, quad_rect, quad_rect, !are_contents_opaque,
-          current_resource_.id, true /* premultiplied_alpha */,
-          uv_crop.origin(), uv_crop.bottom_right(),
-          SK_ColorTRANSPARENT /* background_color */, vertex_opacity,
-          false /* y_flipped */, false /* nearest_neighbor */,
+          quad_state, quad_rect, quad_rect,
+          /* needs_blending=*/!are_contents_opaque, current_resource_.id,
+          /* premultiplied_alpha=*/true, uv_crop.origin(),
+          uv_crop.bottom_right(), background_color, vertex_opacity,
+          /* y_flipped=*/false, /* nearest_neighbor=*/false,
           state_.only_visible_on_secure_output, ui::ProtectedVideoType::kClear);
       if (current_resource_.is_overlay_candidate)
         texture_quad->set_resource_size_in_pixels(current_resource_.size);
@@ -951,6 +1035,14 @@ void Surface::UpdateContentSize() {
     content_size_ = content_size;
     window_->SetBounds(gfx::Rect(window_->bounds().origin(), content_size_));
   }
+}
+
+void Surface::OnWindowOcclusionChanged() {
+  if (!is_tracking_occlusion_)
+    return;
+
+  for (SurfaceObserver& observer : observers_)
+    observer.OnWindowOcclusionChanged(this);
 }
 
 }  // namespace exo

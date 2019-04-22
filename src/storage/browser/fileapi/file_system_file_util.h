@@ -9,12 +9,12 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "storage/browser/blob/scoped_file.h"
 #include "storage/browser/fileapi/file_system_operation.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class Time;
@@ -30,12 +30,12 @@ class FileSystemURL;
 //
 // Layering structure of the FileSystemFileUtil was split out.
 // See http://crbug.com/128136 if you need it.
-class STORAGE_EXPORT FileSystemFileUtil {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemFileUtil {
  public:
   using CopyOrMoveOption = FileSystemOperation::CopyOrMoveOption;
 
   // It will be implemented by each subclass such as FileSystemFileEnumerator.
-  class STORAGE_EXPORT AbstractFileEnumerator {
+  class COMPONENT_EXPORT(STORAGE_BROWSER) AbstractFileEnumerator {
    public:
     virtual ~AbstractFileEnumerator() = default;
 
@@ -51,7 +51,7 @@ class STORAGE_EXPORT FileSystemFileUtil {
     virtual bool IsDirectory() = 0;
   };
 
-  class STORAGE_EXPORT EmptyFileEnumerator
+  class COMPONENT_EXPORT(STORAGE_BROWSER) EmptyFileEnumerator
       : public AbstractFileEnumerator {
     base::FilePath Next() override;
     int64_t Size() override;
@@ -101,7 +101,8 @@ class STORAGE_EXPORT FileSystemFileUtil {
   // instance.
   virtual std::unique_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemURL& root_url) = 0;
+      const FileSystemURL& root_url,
+      bool recursive) = 0;
 
   // Maps |file_system_url| given |context| into |local_file_path|
   // which represents physical file location on the host OS.

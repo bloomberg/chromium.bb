@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

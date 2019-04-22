@@ -9,7 +9,8 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/md5.h"
+#include "base/hash/md5.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/audio/clockless_audio_sink.h"
@@ -35,25 +36,13 @@ class RunLoop;
 namespace media {
 
 class FakeEncryptedMedia;
-class MockMediaSource;
+class TestMediaSource;
 
 // Empty MD5 hash string.  Used to verify empty video tracks.
 extern const char kNullVideoHash[];
 
 // Empty hash string.  Used to verify empty audio tracks.
 extern const char kNullAudioHash[];
-
-// Dummy tick clock which advances extremely quickly (1 minute every time
-// NowTicks() is called).
-class DummyTickClock : public base::TickClock {
- public:
-  DummyTickClock() : now_() {}
-  ~DummyTickClock() override {}
-  base::TimeTicks NowTicks() const override;
-
- private:
-  mutable base::TimeTicks now_;
-};
 
 class PipelineTestRendererFactory {
  public:
@@ -89,6 +78,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
     kUnreliableDuration = 8,
     kWebAudio = 16,
     kMonoOutput = 32,
+    kFuzzing = 64,
   };
 
   // Setup method to intialize various state according to flags.
@@ -168,6 +158,11 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   bool clockless_playback_;
   bool webaudio_attached_;
   bool mono_output_;
+  bool fuzzing_;
+#if defined(ADDRESS_SANITIZER) || defined(UNDEFINED_SANITIZER)
+  // TODO(https://crbug.com/924030): ASAN causes Run() timeouts to be reached.
+  const base::RunLoop::ScopedDisableRunTimeoutForTest disable_run_timeout_;
+#endif
   std::unique_ptr<Demuxer> demuxer_;
   std::unique_ptr<DataSource> data_source_;
   std::unique_ptr<PipelineImpl> pipeline_;
@@ -179,7 +174,6 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   VideoPixelFormat last_video_frame_format_;
   gfx::ColorSpace last_video_frame_color_space_;
-  DummyTickClock dummy_clock_;
   PipelineMetadata metadata_;
   scoped_refptr<VideoFrame> last_frame_;
   base::TimeDelta current_duration_;
@@ -202,12 +196,12 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
       CreateAudioDecodersCB prepend_audio_decoders_cb =
           CreateAudioDecodersCB());
 
-  PipelineStatus StartPipelineWithMediaSource(MockMediaSource* source);
+  PipelineStatus StartPipelineWithMediaSource(TestMediaSource* source);
   PipelineStatus StartPipelineWithEncryptedMedia(
-      MockMediaSource* source,
+      TestMediaSource* source,
       FakeEncryptedMedia* encrypted_media);
   PipelineStatus StartPipelineWithMediaSource(
-      MockMediaSource* source,
+      TestMediaSource* source,
       uint8_t test_type,
       FakeEncryptedMedia* encrypted_media);
 
@@ -242,7 +236,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   MOCK_METHOD2(OnAddTextTrack,
                void(const TextTrackConfig& config,
                     const AddTextTrackDoneCB& done_cb));
-  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
+  MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size&));
   MOCK_METHOD1(OnVideoConfigChange, void(const VideoDecoderConfig&));
   MOCK_METHOD1(OnAudioConfigChange, void(const AudioDecoderConfig&));
@@ -250,6 +244,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   MOCK_METHOD0(OnVideoAverageKeyframeDistanceUpdate, void());
   MOCK_METHOD1(OnAudioDecoderChange, void(const std::string&));
   MOCK_METHOD1(OnVideoDecoderChange, void(const std::string&));
+  MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
 
  private:
   // Runs |run_loop| until it is explicitly Quit() by some part of the calling

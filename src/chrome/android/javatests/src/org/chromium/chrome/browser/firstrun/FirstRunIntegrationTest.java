@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.customtabs.CustomTabsIntent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
@@ -24,9 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -36,9 +33,9 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
@@ -64,100 +61,6 @@ public class FirstRunIntegrationTest {
     @After
     public void tearDown() throws Exception {
         if (mActivity != null) mActivity.finish();
-    }
-
-    @Test
-    @SmallTest
-    public void testGenericViewIntentGoesToFirstRun() {
-        final String asyncClassName = ChromeLauncherActivity.class.getName();
-        runFirstRunRedirectTestForActivity(asyncClassName, () -> {
-            final Context context = InstrumentationRegistry.getTargetContext();
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://test.com"));
-            intent.setPackage(context.getPackageName());
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
-        });
-    }
-
-    @Test
-    @SmallTest
-    public void testRedirectCustomTabActivityToFirstRun() {
-        final String asyncClassName = ChromeLauncherActivity.class.getName();
-        runFirstRunRedirectTestForActivity(asyncClassName, () -> {
-            Context context = InstrumentationRegistry.getTargetContext();
-            CustomTabsIntent customTabIntent = new CustomTabsIntent.Builder().build();
-            customTabIntent.intent.setPackage(context.getPackageName());
-            customTabIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            customTabIntent.launchUrl(context, Uri.parse("http://test.com"));
-        });
-    }
-
-    @Test
-    @SmallTest
-    @FlakyTest(message = "crbug.com/907548")
-    public void testRedirectChromeTabbedActivityToFirstRun() {
-        final String asyncClassName = ChromeTabbedActivity.class.getName();
-        runFirstRunRedirectTestForActivity(asyncClassName, () -> {
-            final Context context = InstrumentationRegistry.getTargetContext();
-            Intent intent = new Intent();
-            intent.setClassName(context, asyncClassName);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
-        });
-    }
-
-    @Test
-    @SmallTest
-    public void testRedirectSearchActivityToFirstRun() {
-        final String asyncClassName = SearchActivity.class.getName();
-        runFirstRunRedirectTestForActivity(asyncClassName, () -> {
-            final Context context = InstrumentationRegistry.getTargetContext();
-            Intent intent = new Intent();
-            intent.setClassName(context, asyncClassName);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
-        });
-    }
-
-    /**
-     * Tests that an AsyncInitializationActivity subclass that attempts to be run without first
-     * having gone through First Run kicks the user out into the FRE.
-     * @param asyncClassName Name of the class to expect.
-     * @param runnable       Runnable that launches the Activity.
-     */
-    private void runFirstRunRedirectTestForActivity(String asyncClassName, Runnable runnable) {
-        final ActivityMonitor activityMonitor = new ActivityMonitor(asyncClassName, null, false);
-        final ActivityMonitor freMonitor =
-                new ActivityMonitor(FirstRunActivity.class.getName(), null, false);
-        final ActivityMonitor tabbedFREMonitor =
-                new ActivityMonitor(TabbedModeFirstRunActivity.class.getName(), null, false);
-
-        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        instrumentation.addMonitor(activityMonitor);
-        instrumentation.addMonitor(freMonitor);
-        instrumentation.addMonitor(tabbedFREMonitor);
-        runnable.run();
-
-        // The original activity should be started because it was directly specified.
-        final Activity original = instrumentation.waitForMonitorWithTimeout(
-                activityMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        Assert.assertNotNull(original);
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return original.isFinishing();
-            }
-        });
-
-        // Because the AsyncInitializationActivity notices that the FRE hasn't been run yet, it
-        // redirects to it.  Ideally, we would grab the Activity here, but it seems that the
-        // First Run Activity doesn't live long enough to be grabbed.
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return freMonitor.getHits() == 1 || tabbedFREMonitor.getHits() == 1;
-            }
-        });
     }
 
     @Test
@@ -188,7 +91,6 @@ public class FirstRunIntegrationTest {
 
     @Test
     @SmallTest
-    @DisabledTest // https://crbug.com/901488
     public void testAbortFirstRun() throws Exception {
         Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         final ActivityMonitor launcherActivityMonitor =
@@ -349,7 +251,7 @@ public class FirstRunIntegrationTest {
             }
         });
 
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             Button button = (Button) activity.findViewById(id);
             Assert.assertNotNull(message, button);
             button.performClick();

@@ -47,11 +47,11 @@ Polymer({
   screenShown_: false,
 
   /**
-   * Whether the voice match feature has been enabled.
+   * Whether voice match has been enabled.
    * @type {boolean}
    * @private
    */
-  voiceMatchFeatureEnabled_: false,
+  voiceMatchEnabled_: false,
 
   /**
    * On-tap event handler for next button.
@@ -64,7 +64,7 @@ Polymer({
     }
     this.buttonsDisabled = true;
 
-    if (!this.voiceMatchFeatureEnabled_) {
+    if (!this.voiceMatchEnabled_) {
       var hotword = this.$$('#toggle-hotword').hasAttribute('checked');
       chrome.send('login.AssistantOptInFlowScreen.hotwordResult', [hotword]);
     }
@@ -91,10 +91,7 @@ Polymer({
    * Reload the page with the given consent string text data.
    */
   reloadContent: function(data) {
-    this.$['title-text'].textContent = data['getMoreTitle'];
-    this.$['intro-text'].textContent = data['getMoreIntro'];
-    this.$['next-button-text'].textContent = data['getMoreContinueButton'];
-    this.voiceMatchFeatureEnabled_ = data['voiceMatchFeatureEnabled'];
+    this.voiceMatchEnabled_ = data['voiceMatchEnabled'];
 
     this.consentStringLoaded_ = true;
     if (this.settingZippyLoaded_) {
@@ -107,6 +104,14 @@ Polymer({
    */
   addSettingZippy: function(zippy_data) {
     assert(zippy_data.length <= 3);
+
+    if (this.settingZippyLoaded_) {
+      if (this.consentStringLoaded_) {
+        this.onPageLoaded();
+      }
+      return;
+    }
+
     for (var i in zippy_data) {
       var data = zippy_data[i];
       var zippy = document.createElement('setting-zippy');
@@ -114,6 +119,7 @@ Polymer({
           'icon-src',
           'data:text/html;charset=utf-8,' +
               encodeURIComponent(zippy.getWrappedIcon(data['iconUri'])));
+      zippy.setAttribute('hide-line', true);
       zippy.setAttribute('toggle-style', true);
       zippy.id = 'zippy-' + data['id'];
       var title = document.createElement('div');
@@ -127,6 +133,9 @@ Polymer({
       if (data['defaultEnabled']) {
         toggle.setAttribute('checked', '');
       }
+      if (data['toggleDisabled']) {
+        toggle.disabled = true;
+      }
       zippy.appendChild(toggle);
 
       var description = document.createElement('div');
@@ -139,7 +148,7 @@ Polymer({
       }
       zippy.appendChild(description);
 
-      Polymer.dom(this.$['insertion-point']).appendChild(zippy);
+      Polymer.dom(this.$['toggles-container']).appendChild(zippy);
     }
 
     this.settingZippyLoaded_ = true;

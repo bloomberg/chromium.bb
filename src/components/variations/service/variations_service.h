@@ -27,6 +27,8 @@
 #include "components/variations/variations_seed_store.h"
 #include "components/version_info/version_info.h"
 #include "components/web_resource/resource_request_allowed_notifier.h"
+#include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -174,6 +176,11 @@ class VariationsService
   // Exposed for testing.
   void GetClientFilterableStateForVersionCalledForTesting();
 
+  web_resource::ResourceRequestAllowedNotifier*
+  GetResourceRequestAllowedNotifierForTesting() {
+    return resource_request_allowed_notifier_.get();
+  }
+
   // Wrapper around VariationsFieldTrialCreator::SetupFieldTrials().
   bool SetupFieldTrials(const char* kEnableGpuBenchmarking,
                         const char* kEnableFeatures,
@@ -187,6 +194,12 @@ class VariationsService
   void OverrideCachedUIStrings();
 
   int request_count() const { return request_count_; }
+
+  // Cancels the currently pending fetch request.
+  void CancelCurrentRequestForTesting();
+
+  // Exposes StartRepeatedVariationsSeedFetch for testing.
+  void StartRepeatedVariationsSeedFetchForTesting();
 
  protected:
   // Starts the fetching process once, where |OnURLFetchComplete| is called with
@@ -310,6 +323,17 @@ class VariationsService
 
   // Called by SimpleURLLoader when |pending_seed_request_| load completes.
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
+
+  // Called by SimpleURLLoader when |pending_seed_request_| load is redirected.
+  void OnSimpleLoaderRedirect(
+      const net::RedirectInfo& redirect_info,
+      const network::ResourceResponseHead& response_head,
+      std::vector<std::string>* to_be_removed_headers);
+
+  // Handles post-fetch events.
+  void OnSimpleLoaderCompleteOrRedirect(
+      std::unique_ptr<std::string> response_body,
+      bool was_redirect);
 
   // Retry the fetch over HTTP, called by OnSimpleLoaderComplete when a request
   // fails. Returns true is the fetch was successfully started, this does not

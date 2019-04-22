@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,7 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -68,7 +69,7 @@ ChromeBrowserMainExtraPartsViewsLinux::
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreEarlyInitialization() {
   views::LinuxUI* gtk_ui = BuildGtkUi();
-  gtk_ui->SetNativeThemeOverride(base::Bind(&GetNativeThemeForWindow));
+  gtk_ui->SetNativeThemeOverride(base::BindRepeating(&GetNativeThemeForWindow));
   views::LinuxUI::SetInstance(gtk_ui);
 }
 

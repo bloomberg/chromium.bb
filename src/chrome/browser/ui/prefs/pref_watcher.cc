@@ -12,7 +12,8 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "content/public/common/renderer_preferences.h"
+#include "components/language/core/browser/pref_names.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace {
 
@@ -21,7 +22,6 @@ const char* const kWebPrefsToObserve[] = {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     prefs::kAnimationPolicy,
 #endif
-    prefs::kDataSaverEnabled,
     prefs::kDefaultCharset,
     prefs::kDisable3DAPIs,
     prefs::kEnableHyperlinkAuditing,
@@ -31,6 +31,7 @@ const char* const kWebPrefsToObserve[] = {
     prefs::kWebKitDomPasteEnabled,
 #if defined(OS_ANDROID)
     prefs::kWebKitFontScaleFactor,
+    prefs::kWebKitForceDarkModeEnabled,
     prefs::kWebKitForceEnableZoom,
     prefs::kWebKitPasswordEchoEnabled,
 #endif
@@ -56,7 +57,8 @@ PrefWatcher::PrefWatcher(Profile* profile) : profile_(profile) {
 
   base::RepeatingClosure renderer_callback = base::BindRepeating(
       &PrefWatcher::UpdateRendererPreferences, base::Unretained(this));
-  pref_change_registrar_.Add(prefs::kAcceptLanguages, renderer_callback);
+  pref_change_registrar_.Add(language::prefs::kAcceptLanguages,
+                             renderer_callback);
   pref_change_registrar_.Add(prefs::kEnableDoNotTrack, renderer_callback);
   pref_change_registrar_.Add(prefs::kEnableReferrers, renderer_callback);
   pref_change_registrar_.Add(prefs::kEnableEncryptedMedia, renderer_callback);
@@ -90,9 +92,9 @@ void PrefWatcher::UnregisterHelper(PrefsTabHelper* helper) {
   tab_helpers_.erase(helper);
 }
 
-void PrefWatcher::RegisterWatcherForWorkers(
-    content::mojom::RendererPreferenceWatcherPtr worker_watcher) {
-  worker_watchers_.AddPtr(std::move(worker_watcher));
+void PrefWatcher::RegisterRendererPreferenceWatcher(
+    blink::mojom::RendererPreferenceWatcherPtr watcher) {
+  renderer_preference_watchers_.AddPtr(std::move(watcher));
 }
 
 void PrefWatcher::Shutdown() {
@@ -103,11 +105,11 @@ void PrefWatcher::UpdateRendererPreferences() {
   for (auto* helper : tab_helpers_)
     helper->UpdateRendererPreferences();
 
-  content::RendererPreferences prefs;
+  blink::mojom::RendererPreferences prefs;
   renderer_preferences_util::UpdateFromSystemSettings(&prefs, profile_);
-  worker_watchers_.ForAllPtrs(
-      [&prefs](content::mojom::RendererPreferenceWatcher* watcher) {
-        watcher->NotifyUpdate(prefs);
+  renderer_preference_watchers_.ForAllPtrs(
+      [&prefs](blink::mojom::RendererPreferenceWatcher* watcher) {
+        watcher->NotifyUpdate(prefs.Clone());
       });
 }
 

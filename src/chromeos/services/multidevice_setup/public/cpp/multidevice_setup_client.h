@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -24,7 +24,8 @@ namespace multidevice_setup {
 class MultiDeviceSetupClient {
  public:
   using HostStatusWithDevice =
-      std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDeviceRef>>;
+      std::pair<mojom::HostStatus,
+                base::Optional<multidevice::RemoteDeviceRef>>;
   using FeatureStatesMap = base::flat_map<mojom::Feature, mojom::FeatureState>;
 
   class Observer {
@@ -45,7 +46,7 @@ class MultiDeviceSetupClient {
   };
 
   using GetEligibleHostDevicesCallback =
-      base::OnceCallback<void(const cryptauth::RemoteDeviceRefList&)>;
+      base::OnceCallback<void(const multidevice::RemoteDeviceRefList&)>;
 
   static HostStatusWithDevice GenerateDefaultHostStatusWithDevice();
   static FeatureStatesMap GenerateDefaultFeatureStatesMap();

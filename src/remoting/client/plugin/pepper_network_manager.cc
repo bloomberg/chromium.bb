@@ -14,7 +14,7 @@
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/network_list.h"
 #include "remoting/client/plugin/pepper_util.h"
-#include "third_party/webrtc/rtc_base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/socket_address.h"
 
 namespace remoting {
 
@@ -38,8 +38,9 @@ void PepperNetworkManager::StartUpdating() {
   if (network_list_received_) {
     // Post a task to avoid reentrancy.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&PepperNetworkManager::SendNetworksChangedSignal,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&PepperNetworkManager::SendNetworksChangedSignal,
+                       weak_factory_.GetWeakPtr()));
   }
   ++start_count_;
 }

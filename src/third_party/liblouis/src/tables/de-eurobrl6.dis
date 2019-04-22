@@ -6,7 +6,7 @@
 #
 #  liblouis is free software: you can redistribute it and/or modify it
 #  under the terms of the GNU Lesser General Public License as
-#  published by the Free Software Foundation, either version 3 of the
+#  published by the Free Software Foundation, either version 2.1 of the
 #  License, or (at your option) any later version.
 #
 #  liblouis is distributed in the hope that it will be useful, but
@@ -70,7 +70,7 @@ display 6 1246
 display 7 12456
 display 8 1256
 display 9 246
-display W 2456
+display w 2456
 display , 2
 display ; 23
 display : 25

@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point3_f.h"
 
@@ -28,7 +28,7 @@ TEST(Point3Test, VectorArithmetic) {
     { gfx::Point3F(-9.6f, 9.5f, -2.8f), a - v1 + v2 }
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i)
+  for (size_t i = 0; i < base::size(tests); ++i)
     EXPECT_EQ(tests[i].expected.ToString(),
               tests[i].actual.ToString());
 

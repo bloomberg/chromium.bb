@@ -3,15 +3,33 @@
 <title>Touch-generated events should have the same target</title>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
-<body onload="inject_input()">
 <p>Touch letter 'O' below to run the test. If a "PASS" result appears the test passes, otherwise it fails</p>
 <p><a href="#" id="link">Link</a> <span id="target">O</span></p>
 <div id="log"></div>
-</body>
 <script>
+let input_gesture;
 const target = document.getElementById('target');
 const xPosition = target.offsetLeft + 2;
 const yPosition = target.offsetTop + 2;
+
+function inject_input() {
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      chrome.gpuBenchmarking.pointerActionSequence( [
+        {source: 'touch',
+         actions: [
+            { name: 'pointerDown', x: xPosition, y: yPosition },
+            { name: 'pointerUp' }
+        ]}], resolve);
+    } else {
+      reject();
+    }
+  });
+}
+
+addEventListener('load', () => {
+  input_gesture = inject_input();
+});
 
 async_test(t => {
     const link = document.getElementById('link');
@@ -41,25 +59,9 @@ async_test(t => {
             eventLogRecorder.push(`${event.type}-${targetName}`);
             if (event.type === 'click') {
                 assert_array_equals(eventLogRecorder, expectedEventLog);
-                t.done();
+                input_gesture.then(() => { t.done(); });
             }
         }));
     }
 });
-</script>
-<script>
-    function inject_input() {
-      return new Promise(function(resolve, reject) {
-        if (window.chrome && chrome.gpuBenchmarking) {
-          chrome.gpuBenchmarking.pointerActionSequence( [
-            {source: 'touch',
-             actions: [
-                { name: 'pointerDown', x: xPosition, y: yPosition },
-                { name: 'pointerUp' }
-            ]}], resolve);
-        } else {
-          reject();
-        }
-      });
-    }
 </script>

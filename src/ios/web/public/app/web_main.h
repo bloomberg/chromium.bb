@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ios/web/public/app/task_scheduler_init_params_callback.h"
+#include "ios/web/public/app/thread_pool_init_params_callback.h"
 #include "ios/web/public/app/web_main_delegate.h"
 
 namespace web {
@@ -27,7 +27,7 @@ struct WebMainParams {
   WebMainDelegate* delegate;
 
   bool register_exit_manager;
-  TaskSchedulerInitParamsCallback get_task_scheduler_init_params_callback;
+  ThreadPoolInitParamsCallback get_thread_pool_init_params_callback;
 
   int argc;
   const char** argv;

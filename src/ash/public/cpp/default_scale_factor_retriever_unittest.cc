@@ -5,6 +5,7 @@
 #include "ash/public/cpp/default_scale_factor_retriever.h"
 
 #include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -48,6 +49,7 @@ class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController {
   }
   void SetDisplayProperties(const std::string& id,
                             ash::mojom::DisplayConfigPropertiesPtr properties,
+                            ash::mojom::DisplayConfigSource source,
                             SetDisplayPropertiesCallback callback) override {}
   void SetUnifiedDesktopEnabled(bool enabled) override {}
   void OverscanCalibration(const std::string& display_id,

@@ -26,6 +26,11 @@
           "object": "LayoutBlockFlow DIV",
           "rect": [11, 11, 35, 13],
           "reason": "paint property change"
+        },
+        {
+          "object": "InlineTextBox 'test test test'",
+          "rect": [29, 11, 17, 13],
+          "reason": "selection"
         }
       ]
     }

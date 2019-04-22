@@ -51,7 +51,7 @@ class PrefsTabHelper : public content::NotificationObserver,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Update the WebContents's RendererPreferences.
+  // Update the WebContents's blink::mojom::RendererPreferences.
   void UpdateRendererPreferences();
 
   void OnFontFamilyPrefChanged(const std::string& pref_name);
@@ -70,6 +70,8 @@ class PrefsTabHelper : public content::NotificationObserver,
   FontPrefChangeNotifier::Registrar font_change_registrar_;
 #endif  // !defined(OS_ANDROID)
   base::WeakPtrFactory<PrefsTabHelper> weak_ptr_factory_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PrefsTabHelper);
 };

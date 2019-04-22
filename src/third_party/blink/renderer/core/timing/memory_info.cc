@@ -49,9 +49,15 @@ static constexpr TimeDelta kFiftyMs = TimeDelta::FromMilliseconds(50);
 static void GetHeapSize(HeapInfo& info) {
   v8::HeapStatistics heap_statistics;
   v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_statistics);
-  info.used_js_heap_size = heap_statistics.used_heap_size();
-  info.total_js_heap_size = heap_statistics.total_physical_size();
+  info.used_js_heap_size =
+      heap_statistics.used_heap_size() + heap_statistics.external_memory();
+  info.total_js_heap_size =
+      heap_statistics.total_physical_size() + heap_statistics.external_memory();
   info.js_heap_size_limit = heap_statistics.heap_size_limit();
+  info.used_js_heap_size_without_external_memory =
+      heap_statistics.used_heap_size();
+  info.total_js_heap_size_without_external_memory =
+      heap_statistics.total_physical_size();
 }
 
 class HeapSizeCache {
@@ -96,6 +102,10 @@ class HeapSizeCache {
     info_.used_js_heap_size = QuantizeMemorySize(info_.used_js_heap_size);
     info_.total_js_heap_size = QuantizeMemorySize(info_.total_js_heap_size);
     info_.js_heap_size_limit = QuantizeMemorySize(info_.js_heap_size_limit);
+    info_.used_js_heap_size_without_external_memory =
+        QuantizeMemorySize(info_.used_js_heap_size_without_external_memory);
+    info_.total_js_heap_size_without_external_memory =
+        QuantizeMemorySize(info_.total_js_heap_size_without_external_memory);
   }
 
   base::Optional<TimeTicks> last_update_time_;

@@ -120,7 +120,6 @@ class BaseRequestsTest : public testing::Test {
                                         /*netlog=*/nullptr);
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
-    context_params->enable_data_url_support = true;
     network_service_ptr->CreateNetworkContext(
         mojo::MakeRequest(&network_context_), std::move(context_params));
 
@@ -128,7 +127,8 @@ class BaseRequestsTest : public testing::Test {
     network_service_client_ =
         std::make_unique<network::TestNetworkServiceClient>(
             mojo::MakeRequest(&network_service_client_ptr));
-    network_service_ptr->SetClient(std::move(network_service_client_ptr));
+    network_service_ptr->SetClient(std::move(network_service_client_ptr),
+                                   network::mojom::NetworkServiceParams::New());
 
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
@@ -190,7 +190,7 @@ typedef BaseRequestsTest MultipartUploadRequestBaseTest;
 TEST_F(BaseRequestsTest, ParseValidJson) {
   std::unique_ptr<base::Value> json(ParseJson(kValidJsonString));
 
-  base::DictionaryValue* root_dict = NULL;
+  base::DictionaryValue* root_dict = nullptr;
   ASSERT_TRUE(json);
   ASSERT_TRUE(json->GetAsDictionary(&root_dict));
 

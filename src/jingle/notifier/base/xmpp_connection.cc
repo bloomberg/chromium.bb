@@ -15,6 +15,7 @@
 #include "jingle/notifier/base/weak_xmpp_client.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
+#include "services/network/public/mojom/tls_socket.mojom.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 
 namespace notifier {
@@ -23,13 +24,13 @@ XmppConnection::Delegate::~Delegate() {}
 
 namespace {
 
-buzz::AsyncSocket* CreateSocket(
-    const buzz::XmppClientSettings& xmpp_client_settings,
+jingle_xmpp::AsyncSocket* CreateSocket(
+    const jingle_xmpp::XmppClientSettings& xmpp_client_settings,
     jingle_glue::GetProxyResolvingSocketFactoryCallback
         get_socket_factory_callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   bool use_fake_ssl_client_socket =
-      (xmpp_client_settings.protocol() == cricket::PROTO_SSLTCP);
+      (xmpp_client_settings.protocol() == jingle_xmpp::PROTO_SSLTCP);
   // The default SSLConfig is good enough for us for now.
   const net::SSLConfig ssl_config;
   // These numbers were taken from similar numbers in
@@ -44,11 +45,11 @@ buzz::AsyncSocket* CreateSocket(
 }  // namespace
 
 XmppConnection::XmppConnection(
-    const buzz::XmppClientSettings& xmpp_client_settings,
+    const jingle_xmpp::XmppClientSettings& xmpp_client_settings,
     jingle_glue::GetProxyResolvingSocketFactoryCallback
         get_socket_factory_callback,
     Delegate* delegate,
-    buzz::PreXmppAuth* pre_xmpp_auth,
+    jingle_xmpp::PreXmppAuth* pre_xmpp_auth,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : task_pump_(new jingle_glue::TaskPump()),
       on_connect_called_(false),
@@ -64,13 +65,13 @@ XmppConnection::XmppConnection(
   weak_xmpp_client->SignalLogOutput.connect(
       this, &XmppConnection::OnOutputLog);
   const char kLanguage[] = "en";
-  buzz::XmppReturnStatus connect_status = weak_xmpp_client->Connect(
+  jingle_xmpp::XmppReturnStatus connect_status = weak_xmpp_client->Connect(
       xmpp_client_settings, kLanguage,
       CreateSocket(xmpp_client_settings, get_socket_factory_callback,
                    traffic_annotation),
       pre_xmpp_auth);
-  // buzz::XmppClient::Connect() should never fail.
-  DCHECK_EQ(connect_status, buzz::XMPP_RETURN_OK);
+  // jingle_xmpp::XmppClient::Connect() should never fail.
+  DCHECK_EQ(connect_status, jingle_xmpp::XMPP_RETURN_OK);
   weak_xmpp_client->Start();
   weak_xmpp_client_ = weak_xmpp_client->AsWeakPtr();
 }
@@ -87,7 +88,7 @@ XmppConnection::~XmppConnection() {
                                                   std::move(task_pump_));
 }
 
-void XmppConnection::OnStateChange(buzz::XmppEngine::State state) {
+void XmppConnection::OnStateChange(jingle_xmpp::XmppEngine::State state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << "XmppClient state changed to " << state;
   if (!weak_xmpp_client_.get()) {
@@ -99,7 +100,7 @@ void XmppConnection::OnStateChange(buzz::XmppEngine::State state) {
     return;
   }
   switch (state) {
-    case buzz::XmppEngine::STATE_OPEN:
+    case jingle_xmpp::XmppEngine::STATE_OPEN:
       if (on_connect_called_) {
         LOG(DFATAL) << "State changed to STATE_OPEN more than once";
       } else {
@@ -107,11 +108,11 @@ void XmppConnection::OnStateChange(buzz::XmppEngine::State state) {
         on_connect_called_ = true;
       }
       break;
-    case buzz::XmppEngine::STATE_CLOSED: {
+    case jingle_xmpp::XmppEngine::STATE_CLOSED: {
       int subcode = 0;
-      buzz::XmppEngine::Error error =
+      jingle_xmpp::XmppEngine::Error error =
           weak_xmpp_client_->GetError(&subcode);
-      const buzz::XmlElement* stream_error =
+      const jingle_xmpp::XmlElement* stream_error =
           weak_xmpp_client_->GetStreamError();
       ClearClient();
       Delegate* delegate = delegate_;

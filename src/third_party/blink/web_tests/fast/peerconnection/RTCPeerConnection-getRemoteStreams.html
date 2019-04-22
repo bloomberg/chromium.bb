@@ -10,9 +10,11 @@
 // This is not an external/wpt/webrtc/ test because it tests APIs and behaviors
 // that are not in the spec.
 
-promise_test(function() {
-  let caller = new RTCPeerConnection();
-  let callee = new RTCPeerConnection();
+promise_test(async t => {
+  const caller = new RTCPeerConnection();
+  t.add_cleanup(() => caller.close());
+  const callee = new RTCPeerConnection();
+  t.add_cleanup(() => callee.close());
   return navigator.mediaDevices.getUserMedia({audio:true})
   .then((stream) => {
     caller.addStream(stream);
@@ -25,9 +27,11 @@ promise_test(function() {
 }, 'callee.getRemoteStreams() should match caller.getLocalStreams() for ' +
    'one stream with one track.');
 
-promise_test(function() {
-  let caller = new RTCPeerConnection();
-  let callee = new RTCPeerConnection();
+promise_test(async t => {
+  const caller = new RTCPeerConnection();
+  t.add_cleanup(() => caller.close());
+  const callee = new RTCPeerConnection();
+  t.add_cleanup(() => callee.close());
   return navigator.mediaDevices.getUserMedia({audio:true, video:true})
   .then((stream) => {
     caller.addStream(stream);
@@ -40,9 +44,11 @@ promise_test(function() {
 }, 'callee.getRemoteStreams() should match caller.getLocalStreams() for ' +
    'one stream with two tracks.');
 
-promise_test(function() {
-  let caller = new RTCPeerConnection();
-  let callee = new RTCPeerConnection();
+promise_test(async t => {
+  const caller = new RTCPeerConnection({sdpSemantics:'plan-b'});
+  t.add_cleanup(() => caller.close());
+  const callee = new RTCPeerConnection({sdpSemantics:'plan-b'});
+  t.add_cleanup(() => callee.close());
   let localStreams = null;
   return Promise.all([
       navigator.mediaDevices.getUserMedia({audio:true, video:true}),

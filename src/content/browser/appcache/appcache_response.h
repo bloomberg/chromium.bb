@@ -28,7 +28,7 @@ class AppCacheDiskCacheEntry;
 class AppCacheStorage;
 class MockAppCacheStorage;
 
-static const int kUnkownResponseDataSize = -1;
+static const int kUnknownResponseDataSize = -1;
 
 using OnceCompletionCallback = base::OnceCallback<void(int)>;
 
@@ -37,7 +37,7 @@ using OnceCompletionCallback = base::OnceCallback<void(int)>;
 class CONTENT_EXPORT AppCacheResponseInfo
     : public base::RefCounted<AppCacheResponseInfo> {
  public:
-  AppCacheResponseInfo(AppCacheStorage* storage,
+  AppCacheResponseInfo(base::WeakPtr<AppCacheStorage> storage,
                        const GURL& manifest_url,
                        int64_t response_id,
                        std::unique_ptr<net::HttpResponseInfo> http_info,
@@ -58,7 +58,7 @@ class CONTENT_EXPORT AppCacheResponseInfo
   const int64_t response_id_;
   const std::unique_ptr<net::HttpResponseInfo> http_response_info_;
   const int64_t response_data_size_;
-  AppCacheStorage* const storage_;
+  base::WeakPtr<AppCacheStorage> storage_;
 };
 
 // A refcounted wrapper for HttpResponseInfo so we can apply the

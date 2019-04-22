@@ -28,7 +28,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
@@ -45,6 +44,7 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiDisableIf;
 
 import java.io.Closeable;
@@ -165,7 +165,7 @@ public class BookmarkPersonalizedSigninPromoTest {
     }
 
     private void openBookmarkManager() throws InterruptedException {
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> BookmarkUtils.showBookmarkManager(mActivityTestRule.getActivity()));
     }
 
@@ -175,7 +175,7 @@ public class BookmarkPersonalizedSigninPromoTest {
         mAccountManagerDelegate.addAccountHolderBlocking(accountHolder.build());
         ProfileDataSource.ProfileData profileData =
                 new ProfileDataSource.ProfileData(TEST_ACCOUNT_NAME, null, TEST_FULL_NAME, null);
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> mAccountManagerDelegate.setProfileData(TEST_ACCOUNT_NAME, profileData));
     }
 

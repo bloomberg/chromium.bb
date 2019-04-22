@@ -11,7 +11,7 @@ import android.util.Log;
 import org.junit.Assert;
 
 import org.chromium.base.StreamUtil;
-import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
 
 import java.io.File;

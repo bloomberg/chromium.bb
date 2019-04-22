@@ -15,7 +15,6 @@ class FakeTetherService : public TetherService {
   FakeTetherService(
       Profile* profile,
       chromeos::PowerManagerClient* power_manager_client,
-      cryptauth::CryptAuthService* cryptauth_service,
       chromeos::device_sync::DeviceSyncClient* device_sync_client,
       chromeos::secure_channel::SecureChannelClient* secure_channel_client,
       chromeos::multidevice_setup::MultiDeviceSetupClient*

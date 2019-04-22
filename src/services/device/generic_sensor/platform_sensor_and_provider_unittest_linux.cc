@@ -4,12 +4,15 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
@@ -77,7 +80,8 @@ std::string ReadValueFromFile(const base::FilePath& path,
 // to SensorDeviceManager.
 class MockSensorDeviceManager : public SensorDeviceManager {
  public:
-  MockSensorDeviceManager() = default;
+  MockSensorDeviceManager(base::WeakPtr<SensorDeviceManager::Delegate> delegate)
+      : SensorDeviceManager(std::move(delegate)) {}
   ~MockSensorDeviceManager() override {}
 
   MOCK_METHOD1(GetUdevDeviceGetSubsystem, std::string(udev_device*));
@@ -85,24 +89,22 @@ class MockSensorDeviceManager : public SensorDeviceManager {
   MOCK_METHOD1(GetUdevDeviceGetDevnode, std::string(udev_device* dev));
   MOCK_METHOD2(GetUdevDeviceGetSysattrValue,
                std::string(udev_device*, const std::string&));
-  MOCK_METHOD1(Start, void(Delegate*));
-
-  void InitializeService(Delegate* delegate) { delegate_ = delegate; }
+  MOCK_METHOD0(Start, void());
 
   void EnumerationReady() {
-    bool success = task_runner_->PostTask(
+    bool success = delegate_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SensorDeviceManager::Delegate::OnSensorNodesEnumerated,
-                   base::Unretained(delegate_)));
+        base::BindOnce(&SensorDeviceManager::Delegate::OnSensorNodesEnumerated,
+                       delegate_));
     ASSERT_TRUE(success);
   }
 
-  void DeviceAdded(udev_device* dev) {
-    SensorDeviceManager::OnDeviceAdded(dev);
+  void DeviceAdded() {
+    SensorDeviceManager::OnDeviceAdded(nullptr /* unused */);
   }
 
-  void DeviceRemoved(udev_device* dev) {
-    SensorDeviceManager::OnDeviceRemoved(dev);
+  void DeviceRemoved() {
+    SensorDeviceManager::OnDeviceRemoved(nullptr /* unused */);
   }
 
  private:
@@ -141,49 +143,40 @@ class LinuxMockPlatformSensorClient : public PlatformSensor::Client {
 class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
  public:
   void SetUp() override {
-    provider_ = PlatformSensorProviderLinux::GetInstance();
-    provider_->SetFileTaskRunnerForTesting(message_loop_.task_runner());
+    provider_ = base::WrapUnique(new PlatformSensorProviderLinux);
 
-    auto manager = std::make_unique<NiceMock<MockSensorDeviceManager>>();
+    auto manager = std::make_unique<NiceMock<MockSensorDeviceManager>>(
+        provider_->weak_ptr_factory_.GetWeakPtr());
     manager_ = manager.get();
     provider_->SetSensorDeviceManagerForTesting(std::move(manager));
 
-    ASSERT_TRUE(sensors_dir_.CreateUniqueTempDir());
-
-    disallow_blocking_.reset(new base::ScopedDisallowBlocking);
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(sensors_dir_.CreateUniqueTempDir());
+    }
   }
 
   void TearDown() override {
-    // TODO(rakuco): It should be possible to make |disallow_blocking_| a
-    // regular, non-std::unique_ptr member once we port
-    // PlatformSensorProviderLinux and accompanying APIs to base::PostTask().
-    // At the moment we need to turn |disallow_blocking_| off here because
-    // stopping PlatformSensorProviderLinux's polling thread is a blocking
-    // operation.
-    disallow_blocking_.reset(nullptr);
-
-    provider_->SetSensorDeviceManagerForTesting(nullptr);
-    ASSERT_TRUE(sensors_dir_.Delete());
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(sensors_dir_.Delete());
+    }
     base::RunLoop().RunUntilIdle();
   }
 
  protected:
-  void SensorCreated(scoped_refptr<PlatformSensor> sensor) {
-    platform_sensor_ = sensor;
-    run_loop_->Quit();
-  }
-
   // Sensor creation is asynchronous, therefore inner loop is used to wait for
   // PlatformSensorProvider::CreateSensorCallback completion.
   scoped_refptr<PlatformSensor> CreateSensor(mojom::SensorType type) {
-    run_loop_ = std::make_unique<base::RunLoop>();
-    provider_->CreateSensor(
-        type, base::Bind(&PlatformSensorAndProviderLinuxTest::SensorCreated,
-                         base::Unretained(this)));
-    run_loop_->Run();
     scoped_refptr<PlatformSensor> sensor;
-    sensor.swap(platform_sensor_);
-    run_loop_ = nullptr;
+    base::RunLoop run_loop;
+    provider_->CreateSensor(type,
+                            base::BindLambdaForTesting(
+                                [&](scoped_refptr<PlatformSensor> new_sensor) {
+                                  sensor = std::move(new_sensor);
+                                  run_loop.Quit();
+                                }));
+    run_loop.Run();
     return sensor;
   }
 
@@ -256,34 +249,40 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   // Emulates device enumerations and initial udev events. Once all
   // devices are added, tells manager its ready.
   void SetServiceStart() {
-    EXPECT_CALL(*manager_, Start(NotNull()))
-        .WillOnce(Invoke([this](SensorDeviceManager::Delegate* delegate) {
-          manager_->InitializeService(delegate);
-          udev_device* dev = nullptr;
-          manager_->DeviceAdded(dev /* not used */);
-          manager_->EnumerationReady();
-        }));
+    EXPECT_CALL(*manager_, Start()).WillOnce(Invoke([this]() {
+      manager_->DeviceAdded();
+      manager_->EnumerationReady();
+    }));
   }
 
   // Waits before OnSensorReadingChanged is called.
   void WaitOnSensorReadingChangedEvent(LinuxMockPlatformSensorClient* client,
                                        mojom::SensorType type) {
-    run_loop_ = std::make_unique<base::RunLoop>();
+    base::RunLoop run_loop;
     EXPECT_CALL(*client, OnSensorReadingChanged(type))
-        .WillOnce(
-            Invoke([this](mojom::SensorType type) { run_loop_->Quit(); }));
-    run_loop_->Run();
-    run_loop_ = nullptr;
+        .WillOnce(Invoke([&](mojom::SensorType type) { run_loop.Quit(); }));
+    run_loop.Run();
   }
 
   // Waits before OnSensorError is called.
   void WaitOnSensorErrorEvent(LinuxMockPlatformSensorClient* client) {
-    run_loop_ = std::make_unique<base::RunLoop>();
-    EXPECT_CALL(*client, OnSensorError()).WillOnce(Invoke([this]() {
-      run_loop_->Quit();
+    base::RunLoop run_loop;
+    EXPECT_CALL(*client, OnSensorError()).WillOnce(Invoke([&]() {
+      run_loop.Quit();
     }));
-    run_loop_->Run();
-    run_loop_ = nullptr;
+    run_loop.Run();
+  }
+
+  // Uses the right task runner to notify SensorDeviceManager that a device has
+  // been added.
+  void GenerateDeviceAddedEvent() {
+    bool success = provider_->blocking_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&MockSensorDeviceManager::DeviceAdded,
+                                  base::Unretained(manager_)));
+    ASSERT_TRUE(success);
+    // Make sure all tasks have been delivered (including SensorDeviceManager
+    // notifying PlatformSensorProviderLinux of a device addition).
+    scoped_task_environment_.RunUntilIdle();
   }
 
   // Generates a "remove device" event by removed sensors' directory and
@@ -293,24 +292,25 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
       base::ScopedAllowBlockingForTesting allow_blocking;
       DeleteFile(sensor_dir);
     }
-    udev_device* dev = nullptr;
-    bool success = base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&MockSensorDeviceManager::DeviceRemoved,
-                              base::Unretained(manager_), dev /* not used */));
+    bool success = provider_->blocking_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&MockSensorDeviceManager::DeviceRemoved,
+                                  base::Unretained(manager_)));
     ASSERT_TRUE(success);
+    // Make sure all tasks have been delivered (including SensorDeviceManager
+    // notifying PlatformSensorProviderLinux of a device removal).
+    scoped_task_environment_.RunUntilIdle();
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   MockSensorDeviceManager* manager_;
-  scoped_refptr<PlatformSensor> platform_sensor_;
-  base::MessageLoop message_loop_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-  PlatformSensorProviderLinux* provider_;
+  std::unique_ptr<PlatformSensorProviderLinux> provider_;
   // Holds base dir where a sensor dir is located.
   base::ScopedTempDir sensors_dir_;
 
   // Used to simulate the non-test scenario where we're running in an IO thread
   // that forbids blocking operations.
-  std::unique_ptr<base::ScopedDisallowBlocking> disallow_blocking_;
+  base::ScopedDisallowBlocking disallow_blocking_;
 };
 
 // Tests sensor is not returned if not implemented.
@@ -418,9 +418,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, SensorAddedAndRemoved) {
   InitializeSupportedSensor(SensorType::GYROSCOPE, kGyroscopeFrequencyValue,
                             kGyroscopeOffsetValue, kGyroscopeScalingValue,
                             sensor_value);
-  udev_device* dev = nullptr;
-  manager_->DeviceAdded(dev /* not used */);
-  base::RunLoop().RunUntilIdle();
+  GenerateDeviceAddedEvent();
   gyro_sensor = CreateSensor(SensorType::GYROSCOPE);
   EXPECT_TRUE(gyro_sensor);
   EXPECT_EQ(gyro_sensor->GetType(), SensorType::GYROSCOPE);

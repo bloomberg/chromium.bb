@@ -27,7 +27,7 @@ Rect::Rect(const RECT& r)
     : origin_(r.left, r.top),
       size_(std::abs(r.right - r.left), std::abs(r.bottom - r.top)) {
 }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_IOS)
 Rect::Rect(const CGRect& r)
     : origin_(r.origin.x, r.origin.y), size_(r.size.width, r.size.height) {
 }
@@ -42,7 +42,7 @@ RECT Rect::ToRECT() const {
   r.bottom = bottom();
   return r;
 }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_IOS)
 CGRect Rect::ToCGRect() const {
   return CGRectMake(x(), y(), width(), height());
 }

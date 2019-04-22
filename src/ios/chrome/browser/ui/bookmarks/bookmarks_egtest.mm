@@ -19,9 +19,9 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
@@ -41,7 +41,6 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#include "ios/web/public/features.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -255,6 +254,8 @@ id<GREYMatcher> SearchIconButton() {
         onElementWithMatcher:grey_accessibilityID(
                                  kPopupMenuToolsMenuTableViewId)]
         assertWithMatcher:grey_notNil()];
+    // After veryfing, close the ToolsMenu by tapping on its button.
+    [ChromeEarlGreyUI openToolsMenu];
   } else {
     [[EarlGrey
         selectElementWithMatcher:grey_accessibilityLabel(
@@ -434,7 +435,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 }
 
-- (void)testBookmarkContextBarInVariousSelectionModes {
+- (void)testBookmarkContextBarInSingleSelectionModes {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -560,6 +561,29 @@ id<GREYMatcher> SearchIconButton() {
       selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
                                    [BookmarksTestCase contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+
+  // Cancel edit mode
+  [BookmarksTestCase closeContextBarEditMode];
+
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+}
+
+- (void)testBookmarkContextBarInMultipleSelectionModes {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Verify the context bar is shown.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeUIToolbarIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
 
   // Multi select URL and folders.
   [[EarlGrey
@@ -2080,14 +2104,7 @@ id<GREYMatcher> SearchIconButton() {
 
 // Verify the Open All functionality on multiple url selection.
 // TODO(crbug.com/816699): Re-enable this test on simulators.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testContextMenuForMultipleURLOpenAll \
-  testContextMenuForMultipleURLOpenAll
-#else
-#define MAYBE_testContextMenuForMultipleURLOpenAll \
-  FLAKY_testContextMenuForMultipleURLOpenAll
-#endif
-- (void)MAYBE_testContextMenuForMultipleURLOpenAll {
+- (void)FLAKY_testContextMenuForMultipleURLOpenAll {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -2130,14 +2147,7 @@ id<GREYMatcher> SearchIconButton() {
 
 // Verify the Open All in Incognito functionality on multiple url selection.
 // TODO(crbug.com/816699): Re-enable this test on simulators.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testContextMenuForMultipleURLOpenAllInIncognito \
-  testContextMenuForMultipleURLOpenAllInIncognito
-#else
-#define MAYBE_testContextMenuForMultipleURLOpenAllInIncognito \
-  FLAKY_testContextMenuForMultipleURLOpenAllInIncognito
-#endif
-- (void)MAYBE_testContextMenuForMultipleURLOpenAllInIncognito {
+- (void)FLAKY_testContextMenuForMultipleURLOpenAllInIncognito {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -4218,6 +4228,43 @@ id<GREYMatcher> SearchIconButton() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kBookmarkHomeSearchScrimIdentifier)]
       performAction:grey_tap()];
+
+  // Verify that scrim is not visible.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeSearchScrimIdentifier)]
+      assertWithMatcher:grey_nil()];
+
+  // Verifiy we went back to original folder content.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"French URL")]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that long press on scrim while search box is enabled dismisses the
+// search controller.
+- (void)testSearchLongPressOnScrimCancelsSearchController {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_tap()];
+
+  // Try long press.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_longPress()];
+
+  // Verify context menu is not visible.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
+      assertWithMatcher:grey_nil()];
 
   // Verify that scrim is not visible.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(

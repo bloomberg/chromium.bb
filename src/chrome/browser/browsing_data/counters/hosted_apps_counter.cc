@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
 HostedAppsCounter::HostedAppsCounter(Profile* profile)
@@ -30,8 +31,12 @@ void HostedAppsCounter::Count() {
           ->GenerateInstalledExtensionsSet();
 
   for (const auto& extension : *extensions) {
-    if (extension->is_hosted_app())
+    // Exclude kChromeAppId because this is not a proper hosted app. It is just
+    // a shortcut to launch Chrome on Chrome OS.
+    if (extension->is_hosted_app() &&
+        extension->id() != extension_misc::kChromeAppId) {
       names.push_back(extension->short_name());
+    }
   }
 
   count = names.size();

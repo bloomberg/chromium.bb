@@ -11,7 +11,7 @@ Polymer({
 
   behaviors: [
     CrScrollableBehavior,
-    settings.FindShortcutBehavior,
+    FindShortcutBehavior,
   ],
 
   properties: {
@@ -48,31 +48,31 @@ Polymer({
   /** @override */
   attached: function() {
     this.$.dialog.showModal();
-    this.becomeActiveFindShortcutListener();
   },
 
-  /** @override */
-  detached: function() {
-    this.removeSelfAsFindShortcutListener();
-  },
-
-  // Override settings.FindShortcutBehavior methods.
+  // Override FindShortcutBehavior methods.
   handleFindShortcut: function(modalContextOpen) {
     // Assumes this is the only open modal.
     const searchInput = this.$.search.getSearchInput();
-    if (searchInput != this.$.search.shadowRoot.activeElement) {
-      searchInput.scrollIntoViewIfNeeded();
+    searchInput.scrollIntoViewIfNeeded();
+    if (!this.searchInputHasFocus()) {
       searchInput.focus();
     }
     return true;
   },
 
+  // Override FindShortcutBehavior methods.
+  searchInputHasFocus: function() {
+    return this.$.search.getSearchInput() ==
+        this.$.search.shadowRoot.activeElement;
+  },
+
   /**
-   * @param {!CustomEvent} e
+   * @param {!CustomEvent<string>} e
    * @private
    */
   onSearchChanged_: function(e) {
-    this.filterValue_ = /** @type {string} */ (e.detail);
+    this.filterValue_ = e.detail;
   },
 
   /**
@@ -84,11 +84,13 @@ Polymer({
     const filterValue =
         this.filterValue_ ? this.filterValue_.toLowerCase() : null;
     return this.languages.supported.filter(language => {
-      if (!this.languageHelper.canEnableLanguage(language))
+      if (!this.languageHelper.canEnableLanguage(language)) {
         return false;
+      }
 
-      if (filterValue === null)
+      if (filterValue === null) {
         return true;
+      }
 
       return language.displayName.toLowerCase().includes(filterValue) ||
           language.nativeDisplayName.toLowerCase().includes(filterValue);
@@ -103,8 +105,9 @@ Polymer({
   getDisplayText_: function(language) {
     let displayText = language.displayName;
     // If the native name is different, add it.
-    if (language.displayName != language.nativeDisplayName)
+    if (language.displayName != language.nativeDisplayName) {
       displayText += ' - ' + language.nativeDisplayName;
+    }
     return displayText;
   },
 
@@ -130,10 +133,11 @@ Polymer({
     // iron-list re-uses a previous checkbox), and the checkbox can only be
     // changed after that by user action.
     const language = e.model.item;
-    if (e.target.checked)
+    if (e.target.checked) {
       this.languagesToAdd_.add(language.code);
-    else
+    } else {
       this.languagesToAdd_.delete(language.code);
+    }
 
     this.disableActionButton_ = !this.languagesToAdd_.size;
   },
@@ -160,7 +164,8 @@ Polymer({
    */
   onKeydown_: function(e) {
     // Close dialog if 'esc' is pressed and the search box is already empty.
-    if (e.key == 'Escape' && !this.$.search.getValue().trim())
+    if (e.key == 'Escape' && !this.$.search.getValue().trim()) {
       this.$.dialog.close();
+    }
   },
 });

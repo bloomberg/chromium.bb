@@ -23,21 +23,21 @@ class MockAssistant : public mojom::Assistant {
 
   MOCK_METHOD0(StartCachedScreenContextInteraction, void());
 
+  MOCK_METHOD1(StartEditReminderInteraction, void(const std::string&));
+
   MOCK_METHOD1(StartMetalayerInteraction, void(const gfx::Rect&));
 
   MOCK_METHOD2(StartTextInteraction, void(const std::string&, bool));
 
   MOCK_METHOD0(StartVoiceInteraction, void());
 
+  MOCK_METHOD2(StartWarmerWelcomeInteraction, void(int, bool));
+
   MOCK_METHOD1(StopActiveInteraction, void(bool));
 
   MOCK_METHOD1(
       AddAssistantInteractionSubscriber,
       void(chromeos::assistant::mojom::AssistantInteractionSubscriberPtr));
-
-  MOCK_METHOD1(
-      AddAssistantNotificationSubscriber,
-      void(chromeos::assistant::mojom::AssistantNotificationSubscriberPtr));
 
   MOCK_METHOD2(RetrieveNotification,
                void(chromeos::assistant::mojom::AssistantNotificationPtr, int));
@@ -55,7 +55,12 @@ class MockAssistant : public mojom::Assistant {
     DoCacheScreenContext(&callback);
   }
 
+  MOCK_METHOD0(ClearScreenContextCache, void());
+
   MOCK_METHOD1(OnAccessibilityStatusChanged, void(bool));
+
+  MOCK_METHOD1(SendAssistantFeedback,
+               void(chromeos::assistant::mojom::AssistantFeedbackPtr));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAssistant);

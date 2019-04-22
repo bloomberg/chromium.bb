@@ -45,16 +45,6 @@ void LogSCTOriginToUMA(ct::SignedCertificateTimestamp::Origin origin) {
                             ct::SignedCertificateTimestamp::SCT_ORIGIN_MAX);
 }
 
-// Count the number of SCTs that were available for each SSL connection
-// (including SCTs embedded in the certificate).
-// This metric would allow measuring:
-// * Of all SSL connections, how many had SCTs available for validation.
-// * When SCTs are available, how many are available per connection.
-void LogNumSCTsToUMA(const SignedCertificateTimestampAndStatusList& scts) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.CertificateTransparency.SCTsPerConnection",
-                              scts.size(), 1, 10, 11);
-}
-
 void AddSCTAndLogStatus(scoped_refptr<ct::SignedCertificateTimestamp> sct,
                         ct::SCTVerifyStatus status,
                         SignedCertificateTimestampAndStatusList* sct_list) {
@@ -154,8 +144,6 @@ void MultiLogCTVerifier::Verify(
 
   net_log.AddEvent(NetLogEventType::SIGNED_CERTIFICATE_TIMESTAMPS_CHECKED,
                    net_log_checked_callback);
-
-  LogNumSCTsToUMA(*output_scts);
 }
 
 void MultiLogCTVerifier::VerifySCTs(

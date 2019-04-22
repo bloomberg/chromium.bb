@@ -133,26 +133,29 @@ void SessionStorageAreaImpl::OnConnectionError() {
 void SessionStorageAreaImpl::CreateNewMap(
     NewMapType map_type,
     const base::Optional<std::string>& delete_all_source) {
-  shared_data_map_->RemoveBindingReference();
+  bool bound = IsBound();
+  if (bound)
+    shared_data_map_->RemoveBindingReference();
   switch (map_type) {
     case NewMapType::FORKED:
       shared_data_map_ = SessionStorageDataMap::CreateClone(
           shared_data_map_->listener(),
           register_new_map_callback_.Run(namespace_entry_, origin_),
-          shared_data_map_->storage_area());
+          shared_data_map_);
       break;
     case NewMapType::EMPTY_FROM_DELETE_ALL: {
       // The code optimizes the 'delete all' for shared maps by just creating
       // a new map instead of forking. However, we still need the observers to
       // be correctly called. To do that, we manually call them here.
-      shared_data_map_ = SessionStorageDataMap::Create(
+      shared_data_map_ = SessionStorageDataMap::CreateEmpty(
           shared_data_map_->listener(),
           register_new_map_callback_.Run(namespace_entry_, origin_),
           shared_data_map_->storage_area()->database());
       break;
     }
   }
-  shared_data_map_->AddBindingReference();
+  if (bound)
+    shared_data_map_->AddBindingReference();
 }
 
 }  // namespace content

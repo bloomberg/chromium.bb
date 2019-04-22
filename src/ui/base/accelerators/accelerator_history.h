@@ -50,6 +50,6 @@ class UI_BASE_EXPORT AcceleratorHistory {
   DISALLOW_COPY_AND_ASSIGN(AcceleratorHistory);
 };
 
-}; // namespace ui
+}  // namespace ui
 
 #endif  // UI_BASE_ACCELERATORS_ACCELERATOR_HISTORY_H_

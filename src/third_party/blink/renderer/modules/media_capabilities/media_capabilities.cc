@@ -6,6 +6,9 @@
 
 #include <memory>
 
+#include "media/base/mime_util.h"
+#include "media/base/supported_types.h"
+#include "media/filters/stream_parser_factory.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_client.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
@@ -13,13 +16,14 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
+#include "third_party/blink/public/platform/web_transmission_encoding_info_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info_callbacks.h"
-#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_encoding_info_callbacks.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_info.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_decoding_configuration.h"
@@ -27,6 +31,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -282,7 +287,14 @@ WebMediaConfiguration ToWebMediaConfiguration(
     const MediaEncodingConfiguration* configuration) {
   WebMediaConfiguration web_configuration;
 
-  // TODO(mcasas): parse and set the type for encoding.
+  // |type| is required.
+  DCHECK(configuration->hasType());
+  if (configuration->type() == "record")
+    web_configuration.type = MediaConfigurationType::kRecord;
+  else if (configuration->type() == "transmission")
+    web_configuration.type = MediaConfigurationType::kTransmission;
+  else
+    NOTREACHED();
 
   if (configuration->hasAudio()) {
     web_configuration.audio_configuration =
@@ -297,6 +309,108 @@ WebMediaConfiguration ToWebMediaConfiguration(
   return web_configuration;
 }
 
+// Utility function that will create a MediaCapabilitiesDecodingInfo object with
+// all the values set to either true or false.
+MediaCapabilitiesDecodingInfo* CreateDecodingInfoWith(bool value) {
+  MediaCapabilitiesDecodingInfo* info = MediaCapabilitiesDecodingInfo::Create();
+  info->setSupported(value);
+  info->setSmooth(value);
+  info->setPowerEfficient(value);
+
+  return info;
+}
+
+bool CheckMseSupport(const WebMediaConfiguration& configuration) {
+  DCHECK_EQ(MediaConfigurationType::kMediaSource, configuration.type);
+
+  // For MSE queries, we assume the queried audio and video streams will be
+  // placed into separate source buffers.
+  // TODO(chcunningham): Clarify this assumption in the spec.
+
+  // Media MIME API expects a vector of codec strings. We query audio and video
+  // separately, so |codec_string|.size() should always be 1 or 0 (when no
+  // codecs parameter is required for the given mime type).
+  std::vector<std::string> codec_vector;
+
+  if (configuration.audio_configuration) {
+    const WebAudioConfiguration& audio_config =
+        configuration.audio_configuration.value();
+
+    if (!audio_config.codec.Ascii().empty())
+      codec_vector.push_back(audio_config.codec.Ascii());
+
+    if (!media::StreamParserFactory::IsTypeSupported(
+            audio_config.mime_type.Ascii(), codec_vector)) {
+      DVLOG(2) << __func__ << " MSE does not support audio config: "
+               << audio_config.mime_type.Ascii() << " "
+               << (codec_vector.empty() ? "" : codec_vector[1]);
+      return false;
+    }
+  }
+
+  if (configuration.video_configuration) {
+    const WebVideoConfiguration& video_config =
+        configuration.video_configuration.value();
+
+    codec_vector.clear();
+    if (!video_config.codec.Ascii().empty())
+      codec_vector.push_back(video_config.codec.Ascii());
+
+    if (!media::StreamParserFactory::IsTypeSupported(
+            video_config.mime_type.Ascii(), codec_vector)) {
+      DVLOG(2) << __func__ << " MSE does not support video config: "
+               << video_config.mime_type.Ascii() << " "
+               << (codec_vector.empty() ? "" : codec_vector[1]);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// Returns whether the AudioConfiguration is supported.
+// Sends console warnings if the codec string was badly formatted.
+bool IsAudioConfigurationSupported(const WebAudioConfiguration& audio_config,
+                                   String* console_warning) {
+  media::AudioCodec audio_codec = media::kUnknownAudioCodec;
+  bool is_audio_codec_ambiguous = true;
+
+  if (!media::ParseAudioCodecString(audio_config.mime_type.Ascii(),
+                                    audio_config.codec.Ascii(),
+                                    &is_audio_codec_ambiguous, &audio_codec)) {
+    *console_warning = StringView("Failed to parse audio contentType: ") +
+                       String{audio_config.mime_type} +
+                       StringView("; codecs=") + String{audio_config.codec};
+
+    return false;
+  }
+
+  if (is_audio_codec_ambiguous) {
+    *console_warning = StringView("Invalid (ambiguous) audio codec string: ") +
+                       String{audio_config.codec};
+
+    return false;
+  }
+
+  return media::IsSupportedAudioType({audio_codec});
+}
+
+void OnMediaCapabilitiesEncodingInfo(
+    ScriptPromiseResolver* resolver,
+    std::unique_ptr<WebMediaCapabilitiesInfo> result) {
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed()) {
+    return;
+  }
+
+  Persistent<MediaCapabilitiesInfo> info(MediaCapabilitiesInfo::Create());
+  info->setSupported(result->supported);
+  info->setSmooth(result->smooth);
+  info->setPowerEfficient(result->power_efficient);
+
+  resolver->Resolve(std::move(info));
+}
+
 }  // anonymous namespace
 
 MediaCapabilities::MediaCapabilities() = default;
@@ -304,13 +418,13 @@ MediaCapabilities::MediaCapabilities() = default;
 ScriptPromise MediaCapabilities::decodingInfo(
     ScriptState* script_state,
     const MediaDecodingConfiguration* configuration) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  String error;
-  if (!IsValidMediaDecodingConfiguration(configuration, &error)) {
+  String message;
+  if (!IsValidMediaDecodingConfiguration(configuration, &message)) {
     resolver->Reject(
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(), error));
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(), message));
     return promise;
   }
 
@@ -349,8 +463,45 @@ ScriptPromise MediaCapabilities::decodingInfo(
     }
   }
 
+  WebMediaDecodingConfiguration web_config =
+      ToWebMediaConfiguration(configuration);
+
+  DCHECK(message.IsEmpty());
+
+  // MSE support is cheap to check (regex matching). Do it first.
+  if (web_config.type == MediaConfigurationType::kMediaSource &&
+      !CheckMseSupport(web_config)) {
+    resolver->Resolve(WrapPersistent(CreateDecodingInfoWith(false)));
+    return promise;
+  }
+
+  bool audio_supported = true;
+
+  if (configuration->hasAudio()) {
+    audio_supported = IsAudioConfigurationSupported(
+        *web_config.audio_configuration, &message);
+  }
+
+  // No need to check video capabilities if video not included in configuration
+  // or when audio is already known to be unsupported.
+  if (!audio_supported || !configuration->hasVideo()) {
+    // The call to IsAudioConfiguraationSupported may have returned a console
+    // message to print. It would only happen when |audio_supported| is false.
+    if (!message.IsEmpty()) {
+      if (ExecutionContext* execution_context =
+              ExecutionContext::From(script_state)) {
+        execution_context->AddConsoleMessage(
+            mojom::ConsoleMessageSource::kOther,
+            mojom::ConsoleMessageLevel::kWarning, message);
+      }
+    }
+
+    resolver->Resolve(WrapPersistent(CreateDecodingInfoWith(audio_supported)));
+    return promise;
+  }
+
   Platform::Current()->MediaCapabilitiesClient()->DecodingInfo(
-      ToWebMediaConfiguration(configuration),
+      web_config,
       std::make_unique<MediaCapabilitiesDecodingInfoCallbacks>(resolver));
 
   return promise;
@@ -359,7 +510,7 @@ ScriptPromise MediaCapabilities::decodingInfo(
 ScriptPromise MediaCapabilities::encodingInfo(
     ScriptState* script_state,
     const MediaEncodingConfiguration* configuration) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!IsValidMediaConfiguration(configuration)) {
@@ -386,21 +537,39 @@ ScriptPromise MediaCapabilities::encodingInfo(
     return promise;
   }
 
-  std::unique_ptr<WebMediaRecorderHandler> handler =
-      Platform::Current()->CreateMediaRecorderHandler(
-          ExecutionContext::From(script_state)
-              ->GetTaskRunner(TaskType::kInternalMediaRealTime));
-  if (!handler) {
+  if (configuration->type() == "transmission") {
+    if (auto* handler =
+            Platform::Current()->TransmissionEncodingInfoHandler()) {
+      handler->EncodingInfo(ToWebMediaConfiguration(configuration),
+                            WTF::Bind(&OnMediaCapabilitiesEncodingInfo,
+                                      WrapPersistent(resolver)));
+      return promise;
+    }
+    resolver->Reject(DOMException::Create(
+        DOMExceptionCode::kInvalidStateError,
+        "Platform error: could not get EncodingInfoHandler."));
+    return promise;
+  }
+
+  if (configuration->type() == "record") {
+    if (auto handler = Platform::Current()->CreateMediaRecorderHandler(
+            ExecutionContext::From(script_state)
+                ->GetTaskRunner(TaskType::kInternalMediaRealTime))) {
+      handler->EncodingInfo(ToWebMediaConfiguration(configuration),
+                            WTF::Bind(&OnMediaCapabilitiesEncodingInfo,
+                                      WrapPersistent(resolver)));
+      return promise;
+    }
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kInvalidStateError,
         "Platform error: could not create MediaRecorderHandler."));
     return promise;
   }
 
-  handler->EncodingInfo(
-      ToWebMediaConfiguration(configuration),
-      std::make_unique<MediaCapabilitiesEncodingInfoCallbacks>(resolver));
-
+  resolver->Reject(V8ThrowException::CreateTypeError(
+      script_state->GetIsolate(),
+      "Valid configuration |type| should be either 'transmission' or "
+      "'record'."));
   return promise;
 }
 

@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
 #include "extensions/renderer/bindings/api_binding_hooks_delegate.h"
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/api_signature.h"
 #include "extensions/renderer/bindings/js_runner.h"
 #include "gin/arguments.h"
@@ -247,6 +248,9 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
     // TODO(devlin): What to do with the result of this function call? Can it
     // only fail in the case we've already thrown?
     UpdateArguments(pre_validate_hook, context, arguments);
+    if (!binding::IsContextValid(context))
+      return RequestResult(RequestResult::CONTEXT_INVALIDATED);
+
     if (try_catch.HasCaught()) {
       try_catch.ReThrow();
       return RequestResult(RequestResult::THROWN);
@@ -271,6 +275,10 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
     std::string error;
     bool success = signature->ParseArgumentsToV8(context, *arguments, type_refs,
                                                  &parsed_v8_args, &error);
+
+    if (!binding::IsContextValid(context))
+      return RequestResult(RequestResult::CONTEXT_INVALIDATED);
+
     if (try_catch.HasCaught()) {
       try_catch.ReThrow();
       return RequestResult(RequestResult::THROWN);
@@ -284,6 +292,10 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
   if (!post_validate_hook.IsEmpty()) {
     updated_args = true;
     UpdateArguments(post_validate_hook, context, arguments);
+
+    if (!binding::IsContextValid(context))
+      return RequestResult(RequestResult::CONTEXT_INVALIDATED);
+
     if (try_catch.HasCaught()) {
       try_catch.ReThrow();
       return RequestResult(RequestResult::THROWN);
@@ -302,10 +314,15 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
   v8::MaybeLocal<v8::Value> v8_result =
       JSRunner::Get(context)->RunJSFunctionSync(
           handle_request, context, arguments->size(), arguments->data());
+
+  if (!binding::IsContextValid(context))
+    return RequestResult(RequestResult::CONTEXT_INVALIDATED);
+
   if (try_catch.HasCaught()) {
     try_catch.ReThrow();
     return RequestResult(RequestResult::THROWN);
   }
+
   RequestResult result(RequestResult::HANDLED, custom_callback);
   result.return_value = v8_result.ToLocalChecked();
   return result;

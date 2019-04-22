@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
@@ -59,13 +61,28 @@ class WebRtcGetDisplayMediaBrowserTestWithPicker
 #define MAYBE_GetDisplayMediaVideo DISABLED_GetDisplayMediaVideo
 #else
 #define MAYBE_GetDisplayMediaVideo GetDisplayMediaVideo
-#endif
+#endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(WebRtcGetDisplayMediaBrowserTestWithPicker,
                        MAYBE_GetDisplayMediaVideo) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
   std::string constraints("{video:true}");
+  RunGetDisplayMedia(tab, constraints);
+}
+
+// Real desktop capture is flaky on below platforms.
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#define MAYBE_GetDisplayMediaVideoAndAudio DISABLED_GetDisplayMediaVideoAndAudio
+#else
+#define MAYBE_GetDisplayMediaVideoAndAudio GetDisplayMediaVideoAndAudio
+#endif  // defined(OS_CHROMEOS) || defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(WebRtcGetDisplayMediaBrowserTestWithPicker,
+                       MAYBE_GetDisplayMediaVideoAndAudio) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
+  std::string constraints("{video:true, audio:true}");
   RunGetDisplayMedia(tab, constraints);
 }
 
@@ -94,7 +111,7 @@ class WebRtcGetDisplayMediaBrowserTestWithFakeUI
 };
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
-                       GetDisplayMedia) {
+                       GetDisplayMediaVideo) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
@@ -113,6 +130,20 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab->GetMainFrame(), "getCursorSetting();", &result));
   EXPECT_EQ(result, test_config_.cursor);
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
+                       GetDisplayMediaVideoAndAudio) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
+  std::string constraints("{video:true, audio:true}");
+  RunGetDisplayMedia(tab, constraints);
+
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(), "hasAudioTrack();", &result));
+  EXPECT_EQ(result, "true");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
@@ -137,9 +168,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
   EXPECT_EQ(result, base::StringPrintf("%d", kMaxFrameRate));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebRtcGetDisplayMediaBrowserTestWithFakeUI,
-                        testing::Values(TestConfig{"monitor", "true", "never"},
-                                        TestConfig{"window", "true", "never"},
-                                        TestConfig{"browser", "true",
-                                                   "never"}));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebRtcGetDisplayMediaBrowserTestWithFakeUI,
+                         testing::Values(TestConfig{"monitor", "true", "never"},
+                                         TestConfig{"window", "true", "never"},
+                                         TestConfig{"browser", "true",
+                                                    "never"}));

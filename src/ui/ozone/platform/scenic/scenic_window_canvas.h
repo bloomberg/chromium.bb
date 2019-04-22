@@ -6,12 +6,14 @@
 #define UI_OZONE_PLATFORM_SCENIC_SCENIC_WINDOW_CANVAS_H_
 
 #include <lib/ui/scenic/cpp/resources.h>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/ozone/platform/scenic/scenic_surface.h"
 #include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
@@ -27,10 +29,9 @@ class ScenicWindow;
 // ScenicWindow.
 class ScenicWindowCanvas : public SurfaceOzoneCanvas {
  public:
-  // |window| must outlive the surface. ScenicWindow owns the scenic::Session
-  // used in this class for all drawing operations.
-  explicit ScenicWindowCanvas(fuchsia::ui::scenic::Scenic* scenic,
-                              ScenicWindow* window);
+  // |scenic_surface| must outlive the canvas. ScenicSurface owns the
+  // scenic::Session used in this class for all drawing operations.
+  explicit ScenicWindowCanvas(ScenicSurface* scenic_surface);
   ~ScenicWindowCanvas() override;
 
   // SurfaceOzoneCanvas implementation.
@@ -73,8 +74,6 @@ class ScenicWindowCanvas : public SurfaceOzoneCanvas {
     SkRegion dirty_region;
   };
 
-  ScenicWindow* const window_;
-
   Frame frames_[kNumBuffers];
 
   // Buffer index in |frames_| for the frame that's currently being rendered.
@@ -83,9 +82,7 @@ class ScenicWindowCanvas : public SurfaceOzoneCanvas {
   // View size in device pixels.
   gfx::Size viewport_size_;
 
-  scenic::Session scenic_session_;
-  scenic::ImportNode parent_;
-  scenic::Material material_;
+  ScenicSurface* const scenic_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(ScenicWindowCanvas);
 };

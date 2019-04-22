@@ -31,6 +31,9 @@ BOOL IsSwipingForward(UISwipeGestureRecognizerDirection direction) {
 }
 
 BOOL UseNativeSwipe(web::NavigationItem* item) {
+  if (!item)
+    return NO;
+
   if (IsURLNewTabPage(item->GetVirtualURL()))
     return YES;
 

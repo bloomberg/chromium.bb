@@ -77,7 +77,7 @@ class WebSocketHandleClient {
   // |handle| becomes unavailable once this notification arrives.
   virtual void DidClose(WebSocketHandle* /* handle */,
                         bool was_clean,
-                        unsigned short code,
+                        uint16_t code,
                         const String& reason) = 0;
 
   virtual void DidReceiveFlowControl(WebSocketHandle*, int64_t quota) = 0;

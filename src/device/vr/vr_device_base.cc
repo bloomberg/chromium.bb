@@ -93,7 +93,9 @@ void VRDeviceBase::SetListeningForActivate(bool is_listening) {
   OnListeningForActivate(is_listening);
 }
 
-void VRDeviceBase::EnsureInitialized(EnsureInitializedCallback callback) {
+void VRDeviceBase::EnsureInitialized(int render_process_id,
+                                     int render_frame_id,
+                                     EnsureInitializedCallback callback) {
   std::move(callback).Run();
 }
 

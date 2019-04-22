@@ -8,6 +8,7 @@
 #define FXBARCODE_BC_TWODIMWRITER_H_
 
 #include <memory>
+#include <vector>
 
 #include "core/fxcrt/fx_coordinates.h"
 #include "fxbarcode/BC_Writer.h"
@@ -17,20 +18,18 @@ class CFX_RenderDevice;
 
 class CBC_TwoDimWriter : public CBC_Writer {
  public:
-  CBC_TwoDimWriter();
+  explicit CBC_TwoDimWriter(bool bFixedSize);
   ~CBC_TwoDimWriter() override;
 
-  virtual bool RenderResult(uint8_t* code,
-                            int32_t codeWidth,
-                            int32_t codeHeight);
-  virtual void RenderDeviceResult(CFX_RenderDevice* device,
-                                  const CFX_Matrix* matrix);
+  bool RenderResult(const std::vector<uint8_t>& code,
+                    int32_t codeWidth,
+                    int32_t codeHeight);
+  void RenderDeviceResult(CFX_RenderDevice* device, const CFX_Matrix* matrix);
 
-  int32_t GetErrorCorrectionLevel() const;
+  int32_t error_correction_level() const { return m_iCorrectionLevel; }
 
  protected:
-  int32_t m_iCorrectLevel;
-  bool m_bFixedSize;
+  void set_error_correction_level(int32_t level) { m_iCorrectionLevel = level; }
 
  private:
   std::unique_ptr<CBC_CommonBitMatrix> m_output;
@@ -42,6 +41,8 @@ class CBC_TwoDimWriter : public CBC_Writer {
   int32_t m_inputHeight;
   int32_t m_outputWidth;
   int32_t m_outputHeight;
+  int32_t m_iCorrectionLevel = 1;
+  const bool m_bFixedSize;
 };
 
 #endif  // FXBARCODE_BC_TWODIMWRITER_H_

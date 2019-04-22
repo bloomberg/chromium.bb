@@ -103,8 +103,8 @@ def get_commit_export_state(chromium_commit, local_wpt, wpt_github, verify_merge
         error is a string of error messages if an exportable patch fails to
         apply (i.e. state=CommitExportState.EXPORTABLE_DIRTY).
     """
-    message = chromium_commit.message()
-    if 'NOEXPORT=true' in message or 'No-Export: true' in message:
+    msg_lowercase = chromium_commit.message().lower()
+    if 'noexport=true' in msg_lowercase or 'no-export: true' in msg_lowercase:
         return CommitExportState.IGNORED, ''
 
     patch = chromium_commit.format_patch()

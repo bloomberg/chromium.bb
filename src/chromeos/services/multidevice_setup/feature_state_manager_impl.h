@@ -39,8 +39,7 @@ class FeatureStateManagerImpl : public FeatureStateManager,
         PrefService* pref_service,
         HostStatusProvider* host_status_provider,
         device_sync::DeviceSyncClient* device_sync_client,
-        std::unique_ptr<AndroidSmsPairingStateTracker>
-            android_sms_pairing_state_tracker);
+        AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker);
 
    private:
     static Factory* test_factory_;
@@ -49,11 +48,11 @@ class FeatureStateManagerImpl : public FeatureStateManager,
   ~FeatureStateManagerImpl() override;
 
  private:
-  FeatureStateManagerImpl(PrefService* pref_service,
-                          HostStatusProvider* host_status_provider,
-                          device_sync::DeviceSyncClient* device_sync_client,
-                          std::unique_ptr<AndroidSmsPairingStateTracker>
-                              android_sms_pairing_state_tracker);
+  FeatureStateManagerImpl(
+      PrefService* pref_service,
+      HostStatusProvider* host_status_provider,
+      device_sync::DeviceSyncClient* device_sync_client,
+      AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker);
 
   // FeatureStateManager:
   FeatureStatesMap GetFeatureStates() override;
@@ -76,17 +75,16 @@ class FeatureStateManagerImpl : public FeatureStateManager,
   bool IsAllowedByPolicy(mojom::Feature feature);
   bool IsSupportedByChromebook(mojom::Feature feature);
   bool HasSufficientSecurity(mojom::Feature feature,
-                             const cryptauth::RemoteDeviceRef& host_device);
+                             const multidevice::RemoteDeviceRef& host_device);
   bool HasBeenActivatedByPhone(mojom::Feature feature,
-                               const cryptauth::RemoteDeviceRef& host_device);
+                               const multidevice::RemoteDeviceRef& host_device);
   bool RequiresFurtherSetup(mojom::Feature feature);
   mojom::FeatureState GetEnabledOrDisabledState(mojom::Feature feature);
 
   PrefService* pref_service_;
   HostStatusProvider* host_status_provider_;
   device_sync::DeviceSyncClient* device_sync_client_;
-  std::unique_ptr<AndroidSmsPairingStateTracker>
-      android_sms_pairing_state_tracker_;
+  AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker_;
 
   // Map from feature to the pref name which indicates the enabled/disabled
   // boolean state for the feature.

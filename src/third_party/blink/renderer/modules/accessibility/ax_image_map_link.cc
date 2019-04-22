@@ -43,11 +43,6 @@ AXImageMapLink::AXImageMapLink(HTMLAreaElement* area,
 
 AXImageMapLink::~AXImageMapLink() = default;
 
-AXImageMapLink* AXImageMapLink::Create(HTMLAreaElement* area,
-                                       AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AXImageMapLink>(area, ax_object_cache);
-}
-
 HTMLMapElement* AXImageMapLink::MapElement() const {
   HTMLAreaElement* area = AreaElement();
   if (!area)

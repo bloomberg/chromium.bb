@@ -16,6 +16,7 @@
 #include "cc/paint/filter_operations.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 
 namespace viz {
@@ -48,6 +49,7 @@ struct CC_EXPORT LayerImplTestProperties {
   float opacity;
   FilterOperations filters;
   FilterOperations backdrop_filters;
+  gfx::RRectF backdrop_filter_bounds;
   float backdrop_filter_quality;
   gfx::PointF filters_origin;
   SkBlendMode blend_mode;
@@ -55,6 +57,7 @@ struct CC_EXPORT LayerImplTestProperties {
   LayerStickyPositionConstraint sticky_position_constraint;
   gfx::Point3F transform_origin;
   gfx::Transform transform;
+  gfx::PointF position;
   LayerImpl* scroll_parent;
   LayerImpl* clip_parent;
   std::unique_ptr<std::set<LayerImpl*>> clip_children;
@@ -62,6 +65,7 @@ struct CC_EXPORT LayerImplTestProperties {
   LayerImplList children;
   LayerImpl* mask_layer;
   LayerImpl* parent;
+  uint32_t main_thread_scrolling_reasons = 0;
   bool user_scrollable_horizontal = true;
   bool user_scrollable_vertical = true;
   OverscrollBehavior overscroll_behavior;

@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 // Purely user interface function. Gets and returns user input.
 UIASKREP_RESULT uiAskReplace(wchar *Name,size_t MaxNameSize,int64 FileSize,RarTime *FileTime,uint Flags)
 {
@@ -39,6 +41,12 @@ bool uiGetPassword(UIPASSWORD_TYPE Type,const wchar *FileName,SecPassword *Passw
 }
 
 
+bool uiIsGlobalPasswordSet()
+{
+  return false;
+}
+
+
 void uiAlarm(UIALARM_TYPE Type)
 {
 }
@@ -61,3 +69,5 @@ const wchar *uiGetMonthName(int Month)
   return L"";
 }
 #endif
+
+}  // namespace third_party_unrar

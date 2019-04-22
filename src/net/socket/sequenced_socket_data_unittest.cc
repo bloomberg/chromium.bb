@@ -5,17 +5,16 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_with_source.h"
-#include "net/socket/client_socket_handle.h"
-#include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
-#include "net/socket/transport_client_socket_pool.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -34,13 +33,13 @@ namespace net {
 namespace {
 
 const char kMsg1[] = "\0hello!\xff";
-const int kLen1 = arraysize(kMsg1);
+const int kLen1 = base::size(kMsg1);
 const char kMsg2[] = "\0a2345678\0";
-const int kLen2 = arraysize(kMsg2);
+const int kLen2 = base::size(kMsg2);
 const char kMsg3[] = "bye!";
-const int kLen3 = arraysize(kMsg3);
+const int kLen3 = base::size(kMsg3);
 const char kMsg4[] = "supercalifragilisticexpialidocious";
-const int kLen4 = arraysize(kMsg4);
+const int kLen4 = base::size(kMsg4);
 
 // Helper class for starting the next operation operation reentrantly after the
 // previous operation completed asynchronously. When OnIOComplete is called,
@@ -224,33 +223,16 @@ class SequencedSocketDataTest : public TestWithScopedTaskEnvironment {
   TestCompletionCallback read_callback_;
   scoped_refptr<IOBuffer> read_buf_;
   TestCompletionCallback write_callback_;
-  StreamSocket* sock_;
 
- private:
-  MockConnect connect_data_;
   std::unique_ptr<SequencedSocketData> data_;
 
-  const HostPortPair endpoint_;
-  scoped_refptr<TransportSocketParams> tcp_params_;
   MockClientSocketFactory socket_factory_;
-  MockTransportClientSocketPool socket_pool_;
-  ClientSocketHandle connection_;
   bool expect_eof_;
 
-  DISALLOW_COPY_AND_ASSIGN(SequencedSocketDataTest);
+  std::unique_ptr<StreamSocket> sock_;
 };
 
-SequencedSocketDataTest::SequencedSocketDataTest()
-    : sock_(nullptr),
-      connect_data_(SYNCHRONOUS, OK),
-      endpoint_("www.google.com", 443),
-      tcp_params_(new TransportSocketParams(
-          endpoint_,
-          false,
-          OnHostResolutionCallback(),
-          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
-      socket_pool_(10, 10, &socket_factory_),
-      expect_eof_(true) {}
+SequencedSocketDataTest::SequencedSocketDataTest() : expect_eof_(true) {}
 
 SequencedSocketDataTest::~SequencedSocketDataTest() {
   // Make sure no unexpected pending tasks will cause a failure.
@@ -263,17 +245,15 @@ SequencedSocketDataTest::~SequencedSocketDataTest() {
 
 void SequencedSocketDataTest::Initialize(base::span<const MockRead> reads,
                                          base::span<const MockWrite> writes) {
-  data_.reset(new SequencedSocketData(reads, writes));
-  data_->set_connect_data(connect_data_);
+  data_ = std::make_unique<SequencedSocketData>(MockConnect(SYNCHRONOUS, OK),
+                                                reads, writes);
   socket_factory_.AddSocketDataProvider(data_.get());
-
-  EXPECT_EQ(OK, connection_.Init(
-                    endpoint_.ToString(), tcp_params_, LOWEST, SocketTag(),
-                    ClientSocketPool::RespectLimits::ENABLED,
-                    CompletionOnceCallback(),
-                    reinterpret_cast<TransportClientSocketPool*>(&socket_pool_),
-                    NetLogWithSource()));
-  sock_ = connection_.socket();
+  sock_ = socket_factory_.CreateTransportClientSocket(
+      AddressList(IPEndPoint(IPAddress::IPv4Localhost(), 443)),
+      nullptr /* socket_performance_watcher */, nullptr /* net_log */,
+      NetLogSource());
+  TestCompletionCallback callback;
+  EXPECT_EQ(OK, sock_->Connect(callback.callback()));
 }
 
 void SequencedSocketDataTest::AssertSyncReadEquals(const char* data, int len) {
@@ -518,17 +498,17 @@ TEST_F(SequencedSocketDataTest, ManyReentrantReads) {
 
   read_buf_ = base::MakeRefCounted<IOBuffer>(kLen4);
 
-  ReentrantHelper helper3(sock_);
+  ReentrantHelper helper3(sock_.get());
   helper3.SetExpectedRead(kMsg3, kLen3);
   helper3.SetInvokeRead(read_buf_, kLen4, ERR_IO_PENDING,
                         read_callback_.callback());
 
-  ReentrantHelper helper2(sock_);
+  ReentrantHelper helper2(sock_.get());
   helper2.SetExpectedRead(kMsg2, kLen2);
   helper2.SetInvokeRead(helper3.read_buf(), kLen3, ERR_IO_PENDING,
                         helper3.callback());
 
-  ReentrantHelper helper(sock_);
+  ReentrantHelper helper(sock_.get());
   helper.SetExpectedRead(kMsg1, kLen1);
   helper.SetInvokeRead(helper2.read_buf(), kLen2, ERR_IO_PENDING,
                        helper2.callback());
@@ -678,13 +658,13 @@ TEST_F(SequencedSocketDataTest, SingleSyncWriteTooSmall) {
       "Expected: (data.length()) >= (expected_data.length())",
       "Value of: actual_data == expected_data\n  Actual: false\nExpected: true",
       "Expected equality of these values:\n  rv"};
-  ASSERT_EQ(arraysize(kExpectedFailures),
+  ASSERT_EQ(base::size(kExpectedFailures),
             static_cast<size_t>(gtest_failures.size()));
 
   for (int i = 0; i < gtest_failures.size(); ++i) {
     const ::testing::TestPartResult& result =
         gtest_failures.GetTestPartResult(i);
-    EXPECT_TRUE(strstr(result.message(), kExpectedFailures[i]) != NULL);
+    EXPECT_TRUE(strstr(result.message(), kExpectedFailures[i]) != nullptr);
   }
 
   set_expect_eof(false);
@@ -841,16 +821,16 @@ TEST_F(SequencedSocketDataTest, ManyReentrantWrites) {
 
   Initialize(base::span<MockRead>(), writes);
 
-  ReentrantHelper helper3(sock_);
+  ReentrantHelper helper3(sock_.get());
   helper3.SetExpectedWrite(kLen3);
   helper3.SetInvokeWrite(kMsg4, kLen4, ERR_IO_PENDING,
                          write_callback_.callback());
 
-  ReentrantHelper helper2(sock_);
+  ReentrantHelper helper2(sock_.get());
   helper2.SetExpectedWrite(kLen2);
   helper2.SetInvokeWrite(kMsg3, kLen3, ERR_IO_PENDING, helper3.callback());
 
-  ReentrantHelper helper(sock_);
+  ReentrantHelper helper(sock_.get());
   helper.SetExpectedWrite(kLen1);
   helper.SetInvokeWrite(kMsg2, kLen2, ERR_IO_PENDING, helper2.callback());
 
@@ -1046,16 +1026,16 @@ TEST_F(SequencedSocketDataTest, MixedReentrantOperations) {
 
   read_buf_ = base::MakeRefCounted<IOBuffer>(kLen4);
 
-  ReentrantHelper helper3(sock_);
+  ReentrantHelper helper3(sock_.get());
   helper3.SetExpectedWrite(kLen3);
   helper3.SetInvokeRead(read_buf_, kLen4, ERR_IO_PENDING,
                         read_callback_.callback());
 
-  ReentrantHelper helper2(sock_);
+  ReentrantHelper helper2(sock_.get());
   helper2.SetExpectedRead(kMsg2, kLen2);
   helper2.SetInvokeWrite(kMsg3, kLen3, ERR_IO_PENDING, helper3.callback());
 
-  ReentrantHelper helper(sock_);
+  ReentrantHelper helper(sock_.get());
   helper.SetExpectedWrite(kLen1);
   helper.SetInvokeRead(helper2.read_buf(), kLen2, ERR_IO_PENDING,
                        helper2.callback());
@@ -1081,15 +1061,15 @@ TEST_F(SequencedSocketDataTest, MixedReentrantOperationsThenSynchronousRead) {
 
   read_buf_ = base::MakeRefCounted<IOBuffer>(kLen4);
 
-  ReentrantHelper helper3(sock_);
+  ReentrantHelper helper3(sock_.get());
   helper3.SetExpectedWrite(kLen3);
   helper3.SetInvokeRead(read_buf_, kLen4, kLen4, failing_callback());
 
-  ReentrantHelper helper2(sock_);
+  ReentrantHelper helper2(sock_.get());
   helper2.SetExpectedRead(kMsg2, kLen2);
   helper2.SetInvokeWrite(kMsg3, kLen3, ERR_IO_PENDING, helper3.callback());
 
-  ReentrantHelper helper(sock_);
+  ReentrantHelper helper(sock_.get());
   helper.SetExpectedWrite(kLen1);
   helper.SetInvokeRead(helper2.read_buf(), kLen2, ERR_IO_PENDING,
                        helper2.callback());
@@ -1118,16 +1098,16 @@ TEST_F(SequencedSocketDataTest, MixedReentrantOperationsThenSynchronousWrite) {
 
   read_buf_ = base::MakeRefCounted<IOBuffer>(kLen4);
 
-  ReentrantHelper helper3(sock_);
+  ReentrantHelper helper3(sock_.get());
   helper3.SetExpectedRead(kMsg3, kLen3);
   helper3.SetInvokeWrite(kMsg4, kLen4, kLen4, failing_callback());
 
-  ReentrantHelper helper2(sock_);
+  ReentrantHelper helper2(sock_.get());
   helper2.SetExpectedWrite(kLen2);
   helper2.SetInvokeRead(helper3.read_buf(), kLen3, ERR_IO_PENDING,
                         helper3.callback());
 
-  ReentrantHelper helper(sock_);
+  ReentrantHelper helper(sock_.get());
   helper.SetExpectedRead(kMsg1, kLen1);
   helper.SetInvokeWrite(kMsg2, kLen2, ERR_IO_PENDING, helper2.callback());
 

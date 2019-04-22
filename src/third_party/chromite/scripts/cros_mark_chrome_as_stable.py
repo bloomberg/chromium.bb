@@ -186,7 +186,10 @@ def _GetStickyEBuild(stable_ebuilds):
   if not sticky_ebuilds:
     raise Exception('No sticky ebuilds found')
   elif len(sticky_ebuilds) > 1:
-    logging.warning('More than one sticky ebuild found')
+    logging.warning('More than one sticky ebuild found:')
+    for ebuild in sticky_ebuilds:
+      logging.warning('  %s', ebuild.ebuild_path)
+    logging.warning('Make sure to *not* create xxx.0-r1.ebuilds')
 
   return portage_util.BestEBuild(sticky_ebuilds)
 

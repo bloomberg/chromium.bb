@@ -4,6 +4,7 @@
 
 #include "content/browser/gpu/ca_transaction_gpu_coordinator.h"
 
+#include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/task/post_task.h"
 #include "content/browser/gpu/gpu_process_host.h"

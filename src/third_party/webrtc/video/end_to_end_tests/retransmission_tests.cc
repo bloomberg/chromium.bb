@@ -8,6 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "absl/algorithm/container.h"
+#include "absl/memory/memory.h"
 #include "api/test/simulated_network.h"
 #include "api/test/video/function_video_encoder_factory.h"
 #include "call/fake_network_pipe.h"
@@ -20,9 +22,18 @@
 #include "test/rtcp_packet_parser.h"
 
 namespace webrtc {
+namespace {
+enum : int {  // The first valid value is 1.
+  kVideoRotationExtensionId = 1,
+};
+}  // namespace
+
 class RetransmissionEndToEndTest : public test::CallTest {
  public:
-  RetransmissionEndToEndTest() = default;
+  RetransmissionEndToEndTest() {
+    RegisterRtpExtension(RtpExtension(RtpExtension::kVideoRotationUri,
+                                      kVideoRotationExtensionId));
+  }
 
  protected:
   void DecodesRetransmittedFrame(bool enable_rtx, bool enable_red);
@@ -315,6 +326,7 @@ TEST_F(RetransmissionEndToEndTest, ReceivesPliAndRecoversWithNack) {
 TEST_F(RetransmissionEndToEndTest, ReceivesPliAndRecoversWithoutNack) {
   ReceivesPliAndRecovers(0);
 }
+
 // This test drops second RTP packet with a marker bit set, makes sure it's
 // retransmitted and renders. Retransmission SSRCs are also checked.
 void RetransmissionEndToEndTest::DecodesRetransmittedFrame(bool enable_rtx,
@@ -359,8 +371,8 @@ void RetransmissionEndToEndTest::DecodesRetransmittedFrame(bool enable_rtx,
         // This should be the only dropped packet.
         EXPECT_EQ(0u, retransmitted_timestamp_);
         retransmitted_timestamp_ = header.timestamp;
-        if (std::find(rendered_timestamps_.begin(), rendered_timestamps_.end(),
-                      retransmitted_timestamp_) != rendered_timestamps_.end()) {
+        if (absl::c_linear_search(rendered_timestamps_,
+                                  retransmitted_timestamp_)) {
           // Frame was rendered before last packet was scheduled for sending.
           // This is extremly rare but possible scenario because prober able to
           // resend packet before it was send.
@@ -398,7 +410,8 @@ void RetransmissionEndToEndTest::DecodesRetransmittedFrame(bool enable_rtx,
       RTC_DCHECK(!orig_renderer_);
       orig_renderer_ = (*receive_configs)[0].renderer;
       RTC_DCHECK(orig_renderer_);
-      (*receive_configs)[0].disable_prerenderer_smoothing = true;
+      // To avoid post-decode frame dropping, disable the prerender buffer.
+      (*receive_configs)[0].enable_prerenderer_smoothing = false;
       (*receive_configs)[0].renderer = this;
 
       (*receive_configs)[0].rtp.nack.rtp_history_ms = kNackRtpHistoryMs;

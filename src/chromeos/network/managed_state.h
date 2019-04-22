@@ -11,14 +11,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
-
-namespace ash {
-namespace network_icon {
-class NetworkIconTest;
-}  // namespace network_icon
-}  // namesapce ash
 
 namespace base {
 class Value;
@@ -36,7 +30,7 @@ class NetworkListSorterTest;
 
 // Base class for states managed by NetworkStateManger which are associated
 // with a Shill path (e.g. service path or device path).
-class CHROMEOS_EXPORT ManagedState {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedState {
  public:
   enum ManagedType {
     MANAGED_TYPE_NETWORK,
@@ -124,7 +118,7 @@ class CHROMEOS_EXPORT ManagedState {
 
  private:
   friend class NetworkStateHandler;
-  friend class ash::network_icon::NetworkIconTest;
+  friend class NetworkStateTestHelper;
   friend class chromeos::tether::NetworkListSorterTest;
 
   ManagedType managed_type_;

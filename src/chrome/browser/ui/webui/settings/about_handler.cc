@@ -25,6 +25,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -32,7 +33,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -47,7 +47,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "v8/include/v8-version-string.h"
 
@@ -64,8 +63,8 @@
 #include "chrome/browser/ui/webui/chromeos/image_source.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/browser/ui/webui/help/version_updater_chromeos.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -81,7 +80,8 @@ namespace {
 
 #if defined(OS_CHROMEOS)
 
-// Directory containing the regulatory labels for supported regions.
+// The directory containing the regulatory labels for supported
+// models/regions, relative to chromeos-assets directory
 const char kRegulatoryLabelsDirectory[] = "regulatory_labels";
 
 // File names of the image file and the file containing alt text for the label.
@@ -165,27 +165,31 @@ bool CanChangeChannel(Profile* profile) {
   return service && service->IsOwner();
 }
 
-// Returns the path of the regulatory labels directory for a given region, if
-// found. Must be called from the blocking pool.
+// Returns the relative path under the chromeos-assets dir
+// to the directory of regulatory labels for a given region, if found
+// (e.g. "regulatory_labels/us"). Must be called from the blocking pool.
 base::FilePath GetRegulatoryLabelDirForRegion(const std::string& region) {
-  // Generate the path under the asset dir or URL host to the regulatory files
-  // for the region, e.g., "regulatory_labels/us/".
-  const base::FilePath region_path =
-      base::FilePath(kRegulatoryLabelsDirectory).AppendASCII(region);
-
-  // Check for file existence starting in /usr/share/chromeos-assets/, e.g.,
-  // "/usr/share/chromeos-assets/regulatory_labels/us/label.png".
-  const base::FilePath asset_dir(chrome::kChromeOSAssetPath);
-  if (base::PathExists(asset_dir.Append(region_path)
-                           .AppendASCII(kRegulatoryLabelImageFilename))) {
-    return region_path;
+  base::FilePath region_path(kRegulatoryLabelsDirectory);
+  const std::string model_subdir =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          chromeos::switches::kRegulatoryLabelDir);
+  if (!model_subdir.empty()) {
+    region_path = region_path.AppendASCII(model_subdir);
   }
+  region_path = region_path.AppendASCII(region);
 
-  return base::FilePath();
+  // Check if the label image file exists in the full path, e.g.,
+  // "/usr/share/chromeos-assets/regulatory_labels/us/label.png".
+  const base::FilePath image_path =
+      base::FilePath(chrome::kChromeOSAssetPath)
+          .Append(region_path)
+          .AppendASCII(kRegulatoryLabelImageFilename);
+  return base::PathExists(image_path) ? region_path : base::FilePath();
 }
 
-// Finds the directory for the regulatory label, using the VPD region code.
-// Also tries "us" as a fallback region. Must be called from the blocking pool.
+// Finds the relative path under the chromeos-assets dir to the region
+// subdirectory of regulatory labels, using the VPD region code. Also
+// tries "us" as a fallback region. Must be called from the blocking pool.
 base::FilePath FindRegulatoryLabelDir() {
   std::string region;
   base::FilePath region_path;
@@ -203,12 +207,14 @@ base::FilePath FindRegulatoryLabelDir() {
   return region_path;
 }
 
-// Reads the file containing the regulatory label text, if found, relative to
-// the asset directory. Must be called from the blocking pool.
+// Reads the file containing the regulatory label text, if found
+// in the given relative path under the chromeos-assets dir.
+// Must be called from the blocking pool.
 std::string ReadRegulatoryLabelText(const base::FilePath& label_dir_path) {
-  base::FilePath text_path(chrome::kChromeOSAssetPath);
-  text_path = text_path.Append(label_dir_path);
-  text_path = text_path.AppendASCII(kRegulatoryLabelTextFilename);
+  const base::FilePath text_path =
+      base::FilePath(chrome::kChromeOSAssetPath)
+          .Append(label_dir_path)
+          .AppendASCII(kRegulatoryLabelTextFilename);
 
   std::string contents;
   if (base::ReadFileToString(text_path, &contents))
@@ -354,7 +360,6 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
 
   html_source->AddString("aboutUserAgent", GetUserAgent());
   html_source->AddString("aboutJsEngineVersion", V8_VERSION_STRING);
-  html_source->AddString("aboutBlinkVersion", content::GetWebKitVersion());
   html_source->AddString("endOfLifeMessage",
                          l10n_util::GetStringUTF16(IDS_EOL_NOTIFICATION_EOL));
   html_source->AddString("endOfLifeLearnMoreURL",
@@ -681,7 +686,7 @@ void AboutHandler::SetUpdateStatus(VersionUpdater::Status status,
   event->SetBoolean("rollback", rollback);
   event->SetString("version", version);
   // DictionaryValue does not support int64_t, so convert to string.
-  event->SetString("size", base::Int64ToString(size));
+  event->SetString("size", base::NumberToString(size));
 #if defined(OS_CHROMEOS)
   if (status == VersionUpdater::FAILED_OFFLINE ||
       status == VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED) {

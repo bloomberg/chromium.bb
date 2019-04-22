@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/request_queue_task_test_base.h"
 #include "components/offline_pages/core/background/test_request_queue_store.h"
@@ -37,21 +36,21 @@ class ChangeRequestsStateTaskTest : public RequestQueueTaskTestBase {
 
  private:
   void InitializeStoreDone(bool success);
-  void AddRequestDone(ItemActionStatus status);
+  void AddRequestDone(AddRequestResult result);
 
   std::unique_ptr<UpdateRequestsResult> result_;
 };
 
 void ChangeRequestsStateTaskTest::AddItemsToStore() {
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
-  store_.AddRequest(request_1,
+  store_.AddRequest(request_1, RequestQueue::AddOptions(),
                     base::BindOnce(&ChangeRequestsStateTaskTest::AddRequestDone,
                                    base::Unretained(this)));
   SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time,
                             true);
-  store_.AddRequest(request_2,
+  store_.AddRequest(request_2, RequestQueue::AddOptions(),
                     base::BindOnce(&ChangeRequestsStateTaskTest::AddRequestDone,
                                    base::Unretained(this)));
   PumpLoop();
@@ -66,8 +65,8 @@ void ChangeRequestsStateTaskTest::InitializeStoreDone(bool success) {
   ASSERT_TRUE(success);
 }
 
-void ChangeRequestsStateTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
+void ChangeRequestsStateTaskTest::AddRequestDone(AddRequestResult result) {
+  ASSERT_EQ(AddRequestResult::SUCCESS, result);
 }
 
 TEST_F(ChangeRequestsStateTaskTest, UpdateWhenStoreEmpty) {

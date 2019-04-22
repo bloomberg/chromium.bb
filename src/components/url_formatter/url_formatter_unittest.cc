@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -55,7 +55,7 @@ struct IDNTestCase {
 //    algorithm is correct.
 
 // TODO(jshin): Replace L"..." with "..." in UTF-8 when it's easier to read.
-const IDNTestCase idn_cases[] = {
+const IDNTestCase kIdnCases[] = {
     // No IDN
     {"www.google.com", L"www.google.com", true},
     {"www.google.com.", L"www.google.com.", true},
@@ -1012,8 +1012,21 @@ const IDNTestCase idn_cases[] = {
 
     // Test that top domains whose skeletons are the same as the domain name are
     // handled properly. In this case, tést.net should match test.net top
-    // domain.
+    // domain and not be converted to unicode.
     {"xn--tst-bma.net", L"t\x00e9st.net", false},
+    // Variations of the above, for testing crbug.com/925199.
+    // some.tést.net should match test.net.
+    {"some.xn--tst-bma.net", L"some.t\x00e9st.net", false},
+    // The following should not match test.net, so should be converted to
+    // unicode.
+    // ést.net (a suffix of tést.net).
+    {"xn--st-9ia.net", L"\x00e9st.net", true},
+    // some.ést.net
+    {"some.xn--st-9ia.net", L"some.\x00e9st.net", true},
+    // atést.net (tést.net is a suffix of atést.net)
+    {"xn--atst-cpa.net", L"at\x00e9st.net", true},
+    // some.atést.net
+    {"some.xn--atst-cpa.net", L"some.at\x00e9st.net", true},
 
     // Modifier-letter-voicing should be blocked (wwwˬtest.com).
     {"xn--wwwtest-2be.com", L"www\x02ectest.com", false},
@@ -1079,15 +1092,57 @@ TEST(UrlFormatterTest, IDNToUnicode) {
       test::kTopDomainsRootPosition};
   IDNSpoofChecker::SetTrieParamsForTesting(trie_params);
 
-  for (size_t i = 0; i < arraysize(idn_cases); i++) {
-    base::string16 output(IDNToUnicode(idn_cases[i].input));
-    base::string16 expected(idn_cases[i].unicode_allowed
-                                ? WideToUTF16(idn_cases[i].unicode_output)
-                                : ASCIIToUTF16(idn_cases[i].input));
-    EXPECT_EQ(expected, output) << "input # " << i << ": \""
-                                << idn_cases[i].input << "\"";
+  for (size_t i = 0; i < base::size(kIdnCases); i++) {
+    base::string16 output(IDNToUnicode(kIdnCases[i].input));
+    base::string16 expected(kIdnCases[i].unicode_allowed
+                                ? WideToUTF16(kIdnCases[i].unicode_output)
+                                : ASCIIToUTF16(kIdnCases[i].input));
+    EXPECT_EQ(expected, output)
+        << "input # " << i << ": \"" << kIdnCases[i].input << "\"";
   }
   IDNSpoofChecker::RestoreTrieParamsForTesting();
+}
+
+// Check the unsafe version of IDNToUnicode. Even though the input domain
+// matches a top domain, it should still be converted to unicode.
+TEST(UrlFormatterTest, UnsafeIDNToUnicodeWithDetails) {
+  const struct TestCase {
+    // The IDNA/Punycode version of the domain (plain ASCII).
+    const char* const punycode;
+    // The equivalent Unicode version of the domain, if converted.
+    const wchar_t* const expected_unicode;
+    // Whether the input (punycode) has idn.
+    const bool expected_has_idn;
+    // The top domain that |punycode| matched to, if any.
+    const char* const expected_matching_domain;
+  } kTestCases[] = {
+      {// An ASCII, top domain.
+       "google.com", L"google.com", false,
+       // Since it's not unicode, we won't attempt to match it to a top domain.
+       ""},
+      {// An ASCII domain that's not a top domain.
+       "not-top-domain.com", L"not-top-domain.com", false, ""},
+      {// A unicode domain that's valid according to all of the rules in IDN
+       // spoof checker except that it matches a top domain. Should be
+       // converted to punycode.
+       "xn--googl-fsa.com", L"googlé.com", true, "google.com"},
+      {// A unicode domain that's not valid according to the rules in IDN spoof
+       // checker (mixed script) and it matches a top domain. Should be
+       // converted to punycode.
+       "xn--80ak6aa92e.com", L"аррӏе.com", true, "apple.com"},
+      {// A unicode domain that's not valid according to the rules in IDN spoof
+       // checker (mixed script) but it doesn't match a top domain.
+       "xn--o-o-oai-26a223aia177a7ab7649d.com", L"ɴoτ-τoρ-ďoᛖaiɴ.com", true,
+       ""},
+  };
+
+  for (const TestCase& test_case : kTestCases) {
+    const url_formatter::IDNConversionResult result =
+        UnsafeIDNToUnicodeWithDetails(test_case.punycode);
+    EXPECT_EQ(base::WideToUTF16(test_case.expected_unicode), result.result);
+    EXPECT_EQ(test_case.expected_has_idn, result.has_idn_component);
+    EXPECT_EQ(test_case.expected_matching_domain, result.matching_top_domain);
+  }
 }
 
 TEST(UrlFormatterTest, FormatUrl) {
@@ -1210,6 +1265,10 @@ TEST(UrlFormatterTest, FormatUrl) {
        kFormatUrlOmitFileScheme, net::UnescapeRule::NORMAL,
        L"/Users/homedirname/folder/file.pdf/", 0},
 #endif
+      // -------- omit mailto: --------
+      { "omit mailto", "mailto:foo@bar.com",
+      kFormatUrlOmitMailToScheme, net::UnescapeRule::NORMAL,
+      L"foo@bar.com", 0 },
 
       // -------- omit trailing slash on bare hostname --------
       {"omit slash when it's the entire path", "http://www.google.com/",
@@ -1374,7 +1433,7 @@ TEST(UrlFormatterTest, FormatUrl) {
   };
   // clang-format on
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     size_t prefix_len;
     base::string16 formatted = FormatUrl(
         GURL(tests[i].input), tests[i].format_types, tests[i].escape_rules,
